@@ -83,7 +83,7 @@ void CAttract::ReleaseResources() {
 
 // @early-stop
 RVA(0x00014120, 0x1a9)
-i32 CAttract::EnterState(GameStateId arg) {
+i32 CAttract::EnterState(GameStateId previousState) {
 
     if (ShowCursor(0) >= 0) {
         do {
@@ -122,7 +122,7 @@ i32 CAttract::EnterState(GameStateId arg) {
 }
 
 RVA(0x00014340, 0x71)
-i32 CAttract::LeaveState(GameStateId arg) {
+i32 CAttract::LeaveState(GameStateId nextState) {
     if (m_host == NULL) {
         return 1;
     }

@@ -66,7 +66,7 @@ void CSplashState::ReleaseResources() {
 }
 
 RVA(0x000f9880, 0x43)
-i32 CSplashState::EnterState(GameStateId) {
+i32 CSplashState::EnterState(GameStateId previousState) {
     int(WINAPI * sc)(BOOL) = ShowCursor;
     while (sc(0) >= 0) {
     }
@@ -76,7 +76,7 @@ i32 CSplashState::EnterState(GameStateId) {
 }
 
 RVA(0x000f98f0, 0x16)
-i32 CSplashState::LeaveState(GameStateId) {
+i32 CSplashState::LeaveState(GameStateId nextState) {
     m_world->m_drawTarget->ClearAllPages(0);
     return 1;
 }

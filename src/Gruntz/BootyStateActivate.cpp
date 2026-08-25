@@ -349,7 +349,7 @@ void CBootyState::ReleaseResources() {
 
 // @early-stop
 RVA(0x00018d30, 0xcd)
-i32 CBootyState::EnterState(GameStateId) {
+i32 CBootyState::EnterState(GameStateId previousState) {
     while (ShowCursor(FALSE) >= 0)
         ;
     if (!LoadTitlePage("bg", 0, 0, 0, 0, 1)) {
@@ -378,7 +378,7 @@ static inline LeafCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
 }
 
 RVA(0x00018e40, 0x81)
-i32 CBootyState::LeaveState(GameStateId) {
+i32 CBootyState::LeaveState(GameStateId nextState) {
     LeafCue* found = LookupCue(m_world->m_soundRegistry->m_cues, "BOOTY_LOOP");
     if (found && found->m_sound->IsPlaying()) {
         found->m_sound->RampVolumeTo(0, 0x1f4, 1);
@@ -2213,7 +2213,7 @@ void CMultiBootyState::ReleaseResources() {
 }
 
 RVA(0x0001e570, 0xb4)
-i32 CMultiBootyState::EnterState(GameStateId) {
+i32 CMultiBootyState::EnterState(GameStateId previousState) {
     i32 ok = LoadTitlePage("multi", 0, 0, 0, 0, 1);
     if (!ok) {
         return ok;
@@ -2235,7 +2235,7 @@ i32 CMultiBootyState::EnterState(GameStateId) {
 }
 
 RVA(0x0001e660, 0x81)
-i32 CMultiBootyState::LeaveState(GameStateId) {
+i32 CMultiBootyState::LeaveState(GameStateId nextState) {
     LeafCue* found = LookupCue(m_world->m_soundRegistry->m_cues, "BOOTY_LOOP");
     if (found && found->m_sound->IsPlaying()) {
         found->m_sound->RampVolumeTo(0, 0x1f4, 1);

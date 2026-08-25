@@ -110,8 +110,8 @@ RVA_COMPGEN(0x0015b6b0, 0x1e, ??_GCAniAdvanceCursor@@UAEPAXI@Z)
 RVA_COMPGEN(0x0015b6d0, 0x5b, ??1CAniAdvanceCursor@@UAE@XZ)
 
 RVA(0x0015b730, 0x2b)
-CAniAdvanceCursor::CAniAdvanceCursor(CDDrawSurfaceMgr* owner, i32 field04, i32 field08)
-    : CWapObj(owner, field04, field08, CWapObj::NO_SEED) {
+CAniAdvanceCursor::CAniAdvanceCursor(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
+    : CWapObj(owner, id, flags, CWapObj::NO_SEED) {
     m_boundObject = NULL;
     m_animation = NULL;
     m_element = NULL;

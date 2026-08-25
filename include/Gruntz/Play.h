@@ -86,8 +86,8 @@ public:
     virtual i32 RestoreDisplay() OVERRIDE;
 
     virtual i32 InputVirtual() OVERRIDE;
-    virtual i32 EnterState(GameStateId) OVERRIDE;
-    virtual i32 LeaveState(GameStateId) OVERRIDE;
+    virtual i32 EnterState(GameStateId previousState) OVERRIDE;
+    virtual i32 LeaveState(GameStateId nextState) OVERRIDE;
     virtual i32 OnChar(i32 charCode, i32 keyData) OVERRIDE;
     virtual i32 OnKeyDown(i32 virtualKey, i32 keyData) OVERRIDE;
     virtual i32 OnKeyUp(i32 virtualKey, i32 keyData) OVERRIDE;

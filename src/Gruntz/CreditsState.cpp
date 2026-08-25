@@ -147,7 +147,7 @@ RVA_COMPGEN(0x00038fc0, 0xa5, ??1CMoviePlayer@@QAE@XZ)
 RVA_COMPGEN(0x000390a0, 0x5d, ??1CFecFile@@QAE@XZ)
 
 RVA(0x00039120, 0x2c)
-i32 CCreditsState::EnterState(GameStateId) {
+i32 CCreditsState::EnterState(GameStateId previousState) {
     if (ShowCursor(0) >= 0) {
         do {
         } while (ShowCursor(0) >= 0);
@@ -156,7 +156,7 @@ i32 CCreditsState::EnterState(GameStateId) {
 }
 
 RVA(0x00039160, 0x46)
-i32 CCreditsState::LeaveState(GameStateId unused) {
+i32 CCreditsState::LeaveState(GameStateId nextState) {
     owner()->m_midi->EndCurrent();
     owner()->m_midi->ClearSequences();
     m_stateBank = stateMgr()->ResolvePath("STATEZ_ATTRACT");

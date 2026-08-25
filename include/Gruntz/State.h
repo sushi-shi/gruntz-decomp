@@ -53,10 +53,10 @@ public:
 
     virtual i32 InputVirtual();
     RVA(0x0008c510, 0x8)
-    virtual i32 EnterState(GameStateId) {
+    virtual i32 EnterState(GameStateId previousState) {
         return 1;
     }
-    virtual i32 LeaveState(GameStateId);
+    virtual i32 LeaveState(GameStateId nextState);
 
     RVA(0x0008c550, 0x5)
     virtual i32 OnChar(i32 charCode, i32 keyData) {

@@ -62,26 +62,20 @@ public:
     CResolveNode();
 
     // Out of line at 0x15b2c0 in WwdObjMgr.cpp; the creators there call it.
-    CResolveNode(CDDrawSurfaceMgr* owner, i32 field04, i32 field08);
+    CResolveNode(CDDrawSurfaceMgr* owner, i32 id, i32 flags);
 
     enum EInlineSeed {
         INLINE_SEED
     };
     // The inline sibling 0x15b390 expands; defined in <Wwd/WwdFactoryObject.h>.
-    CResolveNode(CDDrawSurfaceMgr* owner, i32 field04, i32 field08, EInlineSeed);
+    CResolveNode(CDDrawSurfaceMgr* owner, i32 id, i32 flags, EInlineSeed);
 
     enum ENoSeed {
         NO_SEED
     };
     CResolveNode(ENoSeed) : m_dirty(WwdDirtyRect::NO_SEED) {}
-    i32 Init(
-        CDDrawSurfaceMgr* owner,
-        i32 field04,
-        i32 resolveX,
-        i32 resolveY,
-        i32 field40,
-        i32 field08
-    );
+    i32
+    Init(CDDrawSurfaceMgr* owner, i32 id, i32 resolveX, i32 resolveY, i32 stateFlags, i32 flags);
 
     virtual ~CResolveNode() OVERRIDE {
         m_screenX = COORD_UNSET;

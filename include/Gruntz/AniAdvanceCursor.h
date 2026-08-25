@@ -31,9 +31,9 @@ public:
     };
     CAniAdvanceCursor() {}
 
-    CAniAdvanceCursor(class CDDrawSurfaceMgr* owner, i32 field04, i32 field08);
-    CAniAdvanceCursor(class CDDrawSurfaceMgr* owner, i32 field04, i32 field08, EInlineCursor)
-        : CWapObj(owner, field04, field08) {
+    CAniAdvanceCursor(class CDDrawSurfaceMgr* owner, i32 id, i32 flags);
+    CAniAdvanceCursor(class CDDrawSurfaceMgr* owner, i32 id, i32 flags, EInlineCursor)
+        : CWapObj(owner, id, flags) {
         m_boundObject = NULL;
         m_animation = NULL;
         m_element = NULL;
@@ -42,8 +42,8 @@ public:
     // is CWapObj's own.  CWwdGameObject::CreateObject (0x166640) writes
     // id/flags/owner straight to [esi+0x1a4/0x1a8/0x1ac] with no `call 0x156cb0`,
     // where the two other users of the same CWwdGameObjectA ctor keep the call.
-    CAniAdvanceCursor(class CDDrawSurfaceMgr* owner, i32 field04, i32 field08, CWapObj::ENoSeed)
-        : CWapObj(owner, field04, field08, CWapObj::NO_SEED) {
+    CAniAdvanceCursor(class CDDrawSurfaceMgr* owner, i32 id, i32 flags, CWapObj::ENoSeed)
+        : CWapObj(owner, id, flags, CWapObj::NO_SEED) {
         m_boundObject = NULL;
         m_animation = NULL;
         m_element = NULL;

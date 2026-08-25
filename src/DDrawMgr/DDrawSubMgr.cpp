@@ -56,9 +56,9 @@ const float g_sndPanScale = 0.009999999776482582f;
 // The pinned half of the CWapObj two-entity split; the tagged inline sibling
 // lives in Wap32/WapObj.h.
 RVA(0x00156cb0, 0x20)
-CWapObj::CWapObj(CDDrawSurfaceMgr* owner, i32 field04, i32 field08) {
-    m_id = field04;
-    m_flags = field08;
+CWapObj::CWapObj(CDDrawSurfaceMgr* owner, i32 id, i32 flags) {
+    m_id = id;
+    m_flags = flags;
     m_ownerCtx = owner;
 }
 

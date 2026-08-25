@@ -186,11 +186,11 @@ CChatBox::~CChatBox() {
 }
 
 RVA(0x000a03f0, 0x14b)
-i32 CMenuState::EnterState(GameStateId mode) {
+i32 CMenuState::EnterState(GameStateId previousState) {
     char stateName[0x20];
     char titleName[0x20];
 
-    if (mode != GAMESTATE_ATTRACT) {
+    if (previousState != GAMESTATE_ATTRACT) {
         i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
         sprintf(stateName, "STATEZ_ATTRACT");
         sprintf(titleName, "TITLE%d", idx);

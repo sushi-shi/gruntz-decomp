@@ -17,8 +17,8 @@ struct CAniRecordBase2 : public CWapObj {
 
     CAniRecordBase2() {}
 
-    CAniRecordBase2(i32 field04, class CDDrawSurfaceMgr* owner)
-        : CWapObj(owner, field04, 0, CWapObj::NO_SEED) {
+    CAniRecordBase2(i32 id, class CDDrawSurfaceMgr* owner)
+        : CWapObj(owner, id, 0, CWapObj::NO_SEED) {
         m_buf = NULL;
     }
 

@@ -20,8 +20,8 @@ struct CDDrawRect {
 // visible 3-arg body is refuted: the creators' budget slice at its site
 // affords cb 96+ (ASSERT x2 measured insufficient to make them decline), yet
 // retail calls there.
-inline CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 field04, i32 field08, EInlineSeed)
-    : CWapObj(owner, field04, field08, CWapObj::NO_SEED), m_dirty(WwdDirtyRect::INLINE_SEED) {
+inline CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 id, i32 flags, EInlineSeed)
+    : CWapObj(owner, id, flags, CWapObj::NO_SEED), m_dirty(WwdDirtyRect::INLINE_SEED) {
     m_screenX = COORD_UNSET;
     m_clip.left = COORD_UNSET;
     m_level = NULL;

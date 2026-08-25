@@ -597,20 +597,20 @@ i32 CResolveNode::SetPosition(i32 x, i32 y) {
 RVA(0x001647e0, 0x48)
 i32 CResolveNode::Init(
     CDDrawSurfaceMgr* owner,
-    i32 field04,
+    i32 id,
     i32 resolveX,
     i32 resolveY,
-    i32 field40,
-    i32 field08
+    i32 stateFlags,
+    i32 flags
 ) {
     m_ownerCtx = owner;
-    m_id = field04;
-    m_flags = field08;
+    m_id = id;
+    m_flags = flags;
     m_drawFillArg = NULL;
     m_drawActive = 0;
     m_drawFillCmd = SHADE_COPY;
     SetPosition(resolveX, resolveY);
-    m_stateFlags = field40;
+    m_stateFlags = stateFlags;
     return 1;
 }
 

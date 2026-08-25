@@ -45,8 +45,8 @@ static inline CDDrawWorker* LookupWorker(CDDrawSurfaceMgr* host, LPCTSTR name) {
 }
 
 RVA(0x001615a0, 0x9a)
-CDDrawWorkerHost::CDDrawWorkerHost(CDDrawSurfaceMgr* mapData, i32 field04, i32 flags)
-    : CWapObj(mapData, field04, flags, CWapObj::NO_SEED) {
+CDDrawWorkerHost::CDDrawWorkerHost(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
+    : CWapObj(owner, id, flags, CWapObj::NO_SEED) {
 
     m_tileGrid = NULL;
     m_rowOffsets = NULL;

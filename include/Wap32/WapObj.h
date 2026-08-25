@@ -99,14 +99,14 @@ public:
     // serves the callers; the tagged sibling serves the expansions.  The tag
     // must stay on the SIBLING: on the pinned body it would turn `ret 0xc`
     // into `ret 0x10`.
-    CWapObj(CDDrawSurfaceMgr* owner, i32 field04, i32 field08);
+    CWapObj(CDDrawSurfaceMgr* owner, i32 id, i32 flags);
 
     enum ENoSeed {
         NO_SEED
     };
-    CWapObj(CDDrawSurfaceMgr* owner, i32 field04, i32 field08, ENoSeed) {
-        m_id = field04;
-        m_flags = field08;
+    CWapObj(CDDrawSurfaceMgr* owner, i32 id, i32 flags, ENoSeed) {
+        m_id = id;
+        m_flags = flags;
         m_ownerCtx = owner;
     }
 

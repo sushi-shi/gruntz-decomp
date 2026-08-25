@@ -419,7 +419,7 @@ void CPlay::ReleaseResources() {
 }
 
 RVA(0x000c8a10, 0x119)
-i32 CPlay::EnterState(GameStateId mode) {
+i32 CPlay::EnterState(GameStateId previousState) {
     POINT pt;
     GetCursorPos(&pt);
     m_cursorX = pt.x;
@@ -428,14 +428,14 @@ i32 CPlay::EnterState(GameStateId mode) {
         do {
         } while (ShowCursor(0) >= 0);
     }
-    if (mode == GAMESTATE_HELP) {
+    if (previousState == GAMESTATE_HELP) {
         g_frameTime = m_savedClock;
         if (!EnterMode(GAMESTATE_HELP)) {
             return 0;
         }
         m_stepCountdown = 2;
     } else if (m_renderDisabled == 0 || m_mgr->m_gameMode == GAMEMODE_MULTIPLAYER) {
-        if (!EnterMode(mode)) {
+        if (!EnterMode(previousState)) {
             return 0;
         }
     }
@@ -450,7 +450,7 @@ i32 CPlay::EnterState(GameStateId mode) {
     m_cursorTargetValid = 0;
     m_worldReady = 0;
     if (m_renderDisabled == 0) {
-        if (mode != GAMESTATE_HELP) {
+        if (previousState != GAMESTATE_HELP) {
             (static_cast<CWorldSoundSet*>(m_mgr->m_inputState))->Resume();
         }
         (static_cast<CTriggerMgr*>(m_mgr->m_cmdGrid))->DestroyAllAnims();
@@ -460,13 +460,13 @@ i32 CPlay::EnterState(GameStateId mode) {
 }
 
 RVA(0x000c8b80, 0x11b)
-i32 CPlay::LeaveState(GameStateId arg) {
+i32 CPlay::LeaveState(GameStateId nextState) {
     m_mgr->m_cueSink->PauseAllVoices();
     m_savedClock = static_cast<i32>(g_frameTime);
     if (m_notifyLatch) {
         QuitToMenu();
     }
-    if (arg != GAMESTATE_HELP) {
+    if (nextState != GAMESTATE_HELP) {
         RECT r;
         m_world->m_drawTarget->m_overlayPair->m_surface->Fill(0);
         CString s;
