@@ -106,7 +106,7 @@ return again and scores the same 91.72.
 
 Each helper is one more named declaration ahead of everything below it. In
 `wwdgameobject` a SECOND helper (for the `CMapStringToPtr`/`SoundCue` site in
-`LookupAnimSprite`) flipped `CDDrawWorker::GetMemoryUsage`'s commutative
+`SetSoundCueByName`) flipped `CDDrawWorker::GetMemoryUsage`'s commutative
 `imul` operand order (100.00 -> 99.96) three functions later; one helper did
 not. Folding the two helpers into a template did not help - the instantiations
 count too. Source spelling of the multiply (`h*w`, `w*h`, `h; h*=w`, a local for

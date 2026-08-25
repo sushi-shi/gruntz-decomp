@@ -130,7 +130,7 @@ those three workers exist in the CURRENT world at restore time.
 **REFUTED, and recorded so nobody re-derives it:** "our source wrongly restores
 `g_logicTypesRegistered`" is wrong. Retail's `CUserLogic::SerializeMove` @0x16e7f0 reads it
 too — `push 0x4; push 0x6bf674; call [edx+0x2c]`, between `m_reserved2c` and
-`m_prevAnimSetNode` — and RVA 0x2bf674 is exactly our `DATA(0x002bf674) i32
+`m_previousAnimationActId` — and RVA 0x2bf674 is exactly our `DATA(0x002bf674) i32
 g_logicTypesRegistered` (`src/Wwd/WwdGameObject.cpp:45`). Same global, same position, same
 width. The restore-time value of that flag is retail's own behaviour.
 

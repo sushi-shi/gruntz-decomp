@@ -17,7 +17,7 @@ class CAmbientPosSound;
 
 struct CGameObject;
 
-typedef i32(__cdecl* GameObjectLogicFn)(CGameObject* obj);
+typedef i32(__cdecl* LogicRecordDispatchFn)(CGameObject* obj);
 
 class CDDrawSurfaceMgr;
 
@@ -29,7 +29,7 @@ struct CLogicRecord : public CWapObj {
     virtual void Unload() OVERRIDE;
     virtual LoadableClassId GetClassId() OVERRIDE;
 
-    virtual i32 Init(GameObjectLogicFn dispatch, i32 flags);
+    virtual i32 Init(LogicRecordDispatchFn dispatch, i32 flags);
 
     CLogicRecord() {}
 
@@ -61,7 +61,7 @@ struct CLogicRecord : public CWapObj {
 
     i32 ResolveTarget(void* context);
 
-    GameObjectLogicFn m_dispatch;
+    LogicRecordDispatchFn m_dispatch;
     u8* m_payload;
     CUserLogic* m_userLogic;
 

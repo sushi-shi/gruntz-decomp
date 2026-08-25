@@ -148,12 +148,12 @@ i32 CGrunt::RunEntranceMove() {
     }
 
     m_entranceActive = 0;
-    CString* nmSlot = g_typeColl.ScratchResolve(m_prevAnimSetNode);
+    CString* previousActName = g_typeColl.ScratchResolve(m_previousAnimationActId);
     ActNameConstructGrownSlots();
-    const char* nm0 = *nmSlot;
-    bool eq;
-    eq = (strcmp(nm0, DATA_COMPGEN(0x0020cca4, "D")) == 0);
-    if (eq) {
+    const char* previousActNameText = *previousActName;
+    bool previousActWasD;
+    previousActWasD = (strcmp(previousActNameText, DATA_COMPGEN(0x0020cca4, "D")) == 0);
+    if (previousActWasD) {
         if (m_poweredUp != 0 && m_neighborValid == 0) {
             RESET_GRUNT_POWERED_STATE(this)
         }
@@ -749,7 +749,7 @@ i32 CGrunt::StepArrivalCommit() {
     if (eq) {
 
         m_entranceActive = 0;
-        eq = (strcmp(*g_typeColl.GetNameRecord(m_prevAnimSetNode), "D") == 0);
+        eq = (strcmp(*g_typeColl.GetNameRecord(m_previousAnimationActId), "D") == 0);
         if (eq) {
             if (m_poweredUp != 0 && m_neighborValid == 0) {
                 RESET_GRUNT_POWERED_STATE(this)
@@ -1136,7 +1136,7 @@ i32 CGrunt::FinishActiveAction() {
     eq = ANIMATION_ACT_EQUALS("J");
     if (eq) {
         m_entranceActive = 0;
-        eq = (strcmp(*g_typeColl.GetNameRecord(m_prevAnimSetNode), "D") == 0);
+        eq = (strcmp(*g_typeColl.GetNameRecord(m_previousAnimationActId), "D") == 0);
         if (eq) {
             if (m_poweredUp != 0 && m_neighborValid == 0) {
                 RESET_GRUNT_POWERED_STATE(this)

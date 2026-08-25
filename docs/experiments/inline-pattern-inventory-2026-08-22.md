@@ -413,7 +413,7 @@ therefore token-preserving macros, including separate retail-observed source sha
 
 | Family | Retained coverage |
 |---|---:|
-| animation-act transition (`m_prevAnimSetNode` then `ActFindId`) | 110 sites |
+| animation-act transition (`m_previousAnimationActId` then `ActFindId`) | 110 sites |
 | draw-fill table setup | 57 sites |
 | draw-fill fraction setup | 7 sites |
 | scaled/raw plane scroll plus `RecomputePlaneCoords` | 9 sites |

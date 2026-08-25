@@ -886,8 +886,11 @@ void CLogicRecordRegistry::Unload() {
 }
 
 RVA(0x001652c0, 0x92)
-CLogicRecord*
-CLogicRecordRegistry::RegisterLogicType(GameObjectLogicFn dispatch, const char* key, i32 flags) {
+CLogicRecord* CLogicRecordRegistry::RegisterLogicType(
+    LogicRecordDispatchFn dispatch,
+    const char* key,
+    i32 flags
+) {
 
     CLogicRecord* record = new CLogicRecord(OwnerMgr(), m_templatesByName.GetCount());
 

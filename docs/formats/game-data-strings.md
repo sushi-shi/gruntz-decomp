@@ -263,7 +263,7 @@ every key is checkable against the archive.
 | `animation` | 3 157 | 3 156 | 2 945 `<NS>\ANIZ`, 211 `<NS>\SOUNDZ` |
 
 `animation` resolving in **two** registries is not sloppiness: retail calls both
-`ApplyLookupGeometry(s, 0)` and `LookupAnimSprite(s)` on it, and the
+`ApplyLookupGeometry(s, 0)` and `SetSoundCueByName(s)` on it, and the
 `GlobalAmbientSound` objects use it for a `<NS>\SOUNDZ\AMBIENT\<X>` WAV while
 water/candy objects use it for an ANI. `wwd-v1.md` calls the field "sound"; the
 third-party spec calls it "animation". Both are half right — it is a

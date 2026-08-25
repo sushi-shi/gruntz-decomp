@@ -189,8 +189,8 @@ i32 CExitTrigger::AdvanceAnim() {
             POSITION pos = grp->m_list.GetHeadPosition();
             while (pos != NULL) {
                 CGameObject* cur = grp->NextChild(pos);
-                GameObjectLogicFn who = cur->m_logicRecord->m_dispatch;
-                if (who == CreateGruntCreationPoint || who == CreateFortressFlag) {
+                LogicRecordDispatchFn dispatch = cur->m_logicRecord->m_dispatch;
+                if (dispatch == CreateGruntCreationPoint || dispatch == CreateFortressFlag) {
                     if (cur->m_smarts == m_object->m_smarts) {
                         i32 x = cur->m_screenX;
                         i32 y = cur->m_screenY;

@@ -30,13 +30,13 @@ public:
     RVA(0x00013c70, 0x47)
     virtual void FinalizeStep(char*) OVERRIDE {
         if (m_deferredCallback != 0) {
-            if (m_gatedCallback != 0 && m_logicRecord->EventCode() == m_gatedActKey) {
+            if (m_gatedCallback != 0 && m_logicRecord->EventCode() == m_gatedCallbackCode) {
                 (this->*m_gatedCallback)();
                 m_gatedCallback = 0;
             }
             (this->*m_deferredCallback)();
             m_deferredCallback = 0;
-            m_gatedActKey = IDX(ACT_NONE);
+            m_gatedCallbackCode = IDX(ACT_NONE);
         }
         AdvanceMotion();
     }

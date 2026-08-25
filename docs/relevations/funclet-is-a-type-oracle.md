@@ -58,7 +58,7 @@ class CUserLogic {
     CWwdGameObjectA* m_object;
     CLogicRecord*   m_logicRecord;
     CUserBaseLink    m_link;      // <- one member, holding one member
-    i32              m_gatedActKey;
+    i32              m_gatedCallbackCode;
 };
 ```
 
@@ -122,7 +122,7 @@ path** could tell the two apart — which is exactly what the funclets did.
      CLogicRecord* m_logicRecord;
 -    CUserBaseLink m_link;
 +    zBitVec m_actBits;
-     i32 m_gatedActKey;
+     i32 m_gatedCallbackCode;
 
      {
          zBitVec tmp("", 0);
@@ -133,7 +133,7 @@ path** could tell the two apart — which is exactly what the funclets did.
 
 `include/Gruntz/UserBaseLink.h` deleted. The member was also **renamed on evidence**:
 `m_link` was named for the wrapper's supposed role, but the member is a bit-set sized by
-`g_defaultProjActSize` and read and written beside `m_gatedActKey` — so it is `m_actBits`.
+`g_defaultProjActSize` and read and written beside `m_gatedCallbackCode` — so it is `m_actBits`.
 
 ### The result
 

@@ -98,7 +98,7 @@ static inline SoundCue* LookupSoundCue(CMapStringToPtr& map, LPCTSTR name) {
 }
 
 RVA(0x00150610, 0x41)
-i32 CWwdGameObjectA::LookupAnimSprite(const char* name) {
+i32 CWwdGameObjectA::SetSoundCueByName(const char* name) {
     SoundCue* cue = LookupSoundCue(OwnerMgr()->m_soundRegistry->m_cues, name);
     if (cue == NULL) {
         return 0;
@@ -866,7 +866,7 @@ CLogicRecord::~CLogicRecord() {
 }
 
 RVA(0x00151e20, 0x46)
-i32 CLogicRecord::Init(GameObjectLogicFn dispatch, i32 flags) {
+i32 CLogicRecord::Init(LogicRecordDispatchFn dispatch, i32 flags) {
     if (dispatch == NULL) {
         return 0;
     }

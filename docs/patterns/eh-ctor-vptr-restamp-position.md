@@ -37,7 +37,7 @@ LOAD hoists over it:
     retail   mov [esi+0x3c],eax  /  mov [esi],<leaf vtbl>  /  mov eax,[esi+0x38]
     ours     mov [esi+0x3c],eax  /  mov eax,[esi+0x38]     /  mov [esi],<leaf vtbl>
 
-Proof that the store is NOT sunk: replace the body with a pure STORE (`m_prevAnimSetNode = 7;`)
+Proof that the store is NOT sunk: replace the body with a pure STORE (`m_previousAnimationActId = 7;`)
 and cl emits `mov [esi],<vtbl>` FIRST, then the store. The vptr store sits at the canonical
 end-of-initialization position in both compiles; only a load moves. (cl also emits leaf
 MEMBER-inits *before* that store, not after — see the CPathHazard listing below.)

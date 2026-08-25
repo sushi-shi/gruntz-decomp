@@ -43,13 +43,13 @@ void CUserLogic::FinalizeStep(char*) {
     if (m_deferredCallback == NULL) {
         return;
     }
-    if (m_gatedCallback != NULL && m_logicRecord->EventCode() == m_gatedActKey) {
+    if (m_gatedCallback != NULL && m_logicRecord->EventCode() == m_gatedCallbackCode) {
         (this->*m_gatedCallback)();
         m_gatedCallback = NULL;
     }
     (this->*m_deferredCallback)();
     m_deferredCallback = NULL;
-    m_gatedActKey = IDX(ACT_NONE);
+    m_gatedCallbackCode = IDX(ACT_NONE);
 }
 
 // @early-stop

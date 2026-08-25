@@ -31,7 +31,7 @@ on it, because its key is a parameter rather than a pooled literal and there is 
 That function is the minimal case: **68 bytes, every byte identical to retail except this one
 store's position** (`push eax / STORE / push ecx` vs retail `push eax / push ecx / STORE`). It is
 the shared residue of ~14 functions across `wwdgameobject` / `wwdobjmgr` / `levelplane`
-(`AddLogicHit/Attack/Bump`, `LookupAnimSprite`, `ApplyName`, `ApplyLookupSprite/Geometry`,
+(`AddLogicHit/Attack/Bump`, `SetSoundCueByName`, `ApplyName`, `ApplyLookupSprite/Geometry`,
 `ResolveLinkedObject`, `CreateNamed_1593e0/1595b0/159a10`, `CreateSprite`, `Find`,
 `PruneOrphans`, `RegisterNamed`, `Read`), so it is worth knowing exactly what does NOT move it:
 

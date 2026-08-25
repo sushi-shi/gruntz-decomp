@@ -54,7 +54,7 @@ RVA_COMPGEN(0x00013040, 0x44, ??1CSpotLight@@UAE@XZ)
 // `add eax,-0x20` where retail emits `sub eax,0x20`.
 RVA(0x000b1200, 0x2cb)
 CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_prevAnimSetNode = m_logicRecord->m_eventCode;
+    m_previousAnimationActId = m_logicRecord->m_eventCode;
     m_logicRecord->m_eventCode = ActFindId("A");
     SetObjectFlags(2);
 
@@ -153,7 +153,7 @@ i32 CSpotLight::Tick() {
         );
         if (tgt != NULL && tgt->m_gruntKind != GRUNT_INVULNERABLE
             && !(m_storyMode != 0 && m_targetPlayerIndex != 0)) {
-            m_prevAnimSetNode = m_logicRecord->m_eventCode;
+            m_previousAnimationActId = m_logicRecord->m_eventCode;
             m_logicRecord->m_eventCode = ActFindId("B");
             m_object->m_screenX = tgt->m_object->m_screenX;
             m_object->m_screenY = tgt->m_object->m_screenY;
@@ -232,7 +232,7 @@ int CSpotLight::Update() {
         m_angle = newAngle;
     }
     if (g_gameReg->m_cmdGrid->m_units[m_targetUnitIndex + m_targetPlayerIndex * 15] == NULL) {
-        m_prevAnimSetNode = m_logicRecord->m_eventCode;
+        m_previousAnimationActId = m_logicRecord->m_eventCode;
         m_logicRecord->m_eventCode = ActFindId("A");
     }
     return 0;

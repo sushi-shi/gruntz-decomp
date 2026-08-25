@@ -947,9 +947,9 @@ public:
     i32 ArrivalReticleScan();
 };
 
-union NotifyWord {
-    GameObjectLogicFn m_fn;
-    void (CGrunt::*m_method)();
+union LogicDispatchWord {
+    LogicRecordDispatchFn m_dispatch;
+    void (CGrunt::*m_gruntMethod)();
     u32 m_bits;
 };
 

@@ -28,7 +28,7 @@ GZ_ENUM_BEGIN_SPLIT(LogicRecordEvent, u32)
     // The logic exists and is running; the arm is empty everywhere.
     ACT_LIVE = 0x3e8,
     // One past ACT_LIVE, and no record ever holds it: the disarmed value of
-    // CUserLogic::m_gatedActKey, which is only ever compared against
+    // CUserLogic::m_gatedCallbackCode, which is only ever compared against
     // m_logicRecord->EventCode().  Storing it means the gated callback can never fire.
     // Written by all 58 logic ctors, by both FinalizeStep overloads and by the
     // CMovingLogic load path; retail has no other use of the value.

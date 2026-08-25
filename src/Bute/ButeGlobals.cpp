@@ -82,16 +82,16 @@ i32 CUserLogic::SerializeMove(
             istrstream accum(buf, len);
             accum >> m_actBits;
             delete[] buf;
-            ar->Read(&m_gatedActKey, sizeof(m_gatedActKey));
+            ar->Read(&m_gatedCallbackCode, sizeof(m_gatedCallbackCode));
             ar->Read(&m_reserved2c, sizeof(m_reserved2c));
             ar->Read(&g_logicTypesRegistered, sizeof(g_logicTypesRegistered));
-            ar->Read(&m_prevAnimSetNode, sizeof(m_prevAnimSetNode));
+            ar->Read(&m_previousAnimationActId, sizeof(m_previousAnimationActId));
             m_logicObject = object;
             m_object = static_cast<CWwdGameObjectA*>(object);
             m_logicRecord = object->m_logicRecord;
             m_deferredCallback = NULL;
             m_gatedCallback = NULL;
-            m_gatedActKey = IDX(ACT_NONE);
+            m_gatedCallbackCode = IDX(ACT_NONE);
 
             break;
         }
@@ -103,10 +103,10 @@ i32 CUserLogic::SerializeMove(
             i32 len = accum.pcount();
             ar->Write(&len, sizeof(len));
             ar->Write(accum.str(), len);
-            ar->Write(&m_gatedActKey, sizeof(m_gatedActKey));
+            ar->Write(&m_gatedCallbackCode, sizeof(m_gatedCallbackCode));
             ar->Write(&m_reserved2c, sizeof(m_reserved2c));
             ar->Write(&g_logicTypesRegistered, sizeof(g_logicTypesRegistered));
-            ar->Write(&m_prevAnimSetNode, sizeof(m_prevAnimSetNode));
+            ar->Write(&m_previousAnimationActId, sizeof(m_previousAnimationActId));
 
             break;
         }

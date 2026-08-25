@@ -732,7 +732,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
 
     if (sound.GetLength() != 0) {
         obj->ApplyLookupGeometry(static_cast<const char*>(sound), 0);
-        obj->LookupAnimSprite(static_cast<const char*>(sound));
+        obj->SetSoundCueByName(static_cast<const char*>(sound));
     }
 
     if (name.GetLength() != 0) {

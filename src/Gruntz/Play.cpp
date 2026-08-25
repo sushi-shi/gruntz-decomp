@@ -5126,7 +5126,7 @@ b32 CPlay::PlaceStartGruntz() {
         if (obj != NULL) {
             CLogicRecord* record = obj->m_logicRecord;
 
-            GameObjectLogicFn dispatch = record->m_dispatch;
+            LogicRecordDispatchFn dispatch = record->m_dispatch;
             if (dispatch == CreateGruntStartingPoint) {
                 i32 x = (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
                 i32 y = (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
@@ -5202,7 +5202,7 @@ i32 CPlay::ValidateLevelTiles() {
             continue;
         }
 
-        GameObjectLogicFn dispatch = obj->m_logicRecord->m_dispatch;
+        LogicRecordDispatchFn dispatch = obj->m_logicRecord->m_dispatch;
 
         if (dispatch == CreateTileTriggerSwitch) {
             TileCollisionKind type =
@@ -5832,8 +5832,8 @@ i32 CPlay::ScanBuildTiles() {
         if (p->m_clip.left == COORD_UNSET) {
             p->m_clip.left = 0;
         }
-        GameObjectLogicFn vf = p->m_logicRecord->m_dispatch;
-        if (vf == CreateGiantRock) {
+        LogicRecordDispatchFn dispatch = p->m_logicRecord->m_dispatch;
+        if (dispatch == CreateGiantRock) {
             i32 buf[9];
             buf[0] = p->m_extent.left;
             buf[1] = p->m_extent.top;
@@ -5863,7 +5863,7 @@ i32 CPlay::ScanBuildTiles() {
                 m_guts->QueuePickupReward(p->m_points, p->m_score);
             }
             p->m_flags |= 0x10000;
-        } else if (vf == CreateCoveredPowerup) {
+        } else if (dispatch == CreateCoveredPowerup) {
             CGameLevel* ds = m_world->m_level;
             i32 x = p->m_screenX;
             i32 y = p->m_screenY;
@@ -6330,8 +6330,8 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
     while (pos != NULL) {
         CGameObject* obj = static_cast<CGameObject*>(head->GetNext(pos));
         if (obj) {
-            GameObjectLogicFn marker = obj->m_logicRecord->m_dispatch;
-            if (marker == CreateGruntStartingPoint) {
+            LogicRecordDispatchFn dispatch = obj->m_logicRecord->m_dispatch;
+            if (dispatch == CreateGruntStartingPoint) {
                 i32 v = obj->m_powerup;
                 if (v) {
                     if (!BuildGruntTypeNameTable(static_cast<PickupType>(v), 1, 0, ctx)) {
@@ -6427,7 +6427,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         }
                         break;
                 }
-            } else if (marker == CreateInGameIcon) {
+            } else if (dispatch == CreateInGameIcon) {
                 PickupType smarts = static_cast<PickupType>(obj->m_smarts);
                 PickupType cv =
                     smarts == PICKUP_MEGAPHONE ? static_cast<PickupType>(obj->m_points) : smarts;
@@ -6494,7 +6494,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
                         loaded[obj->m_points] = 1;
                     }
                 }
-            } else if (marker == CreateCoveredPowerup || marker == CreateGiantRock) {
+            } else if (dispatch == CreateCoveredPowerup || dispatch == CreateGiantRock) {
                 PickupType powerup = static_cast<PickupType>(obj->m_powerup);
                 PickupType cv =
                     powerup == PICKUP_MEGAPHONE ? static_cast<PickupType>(obj->m_points) : powerup;
@@ -7393,13 +7393,13 @@ i32 CPlay::NotifyVisibleEntities() {
 
     while (pos != NULL) {
         CGameObject* o = NEXT_CHILD_FROM_LIST(chain, pos);
-        GameObjectLogicFn id = o->m_logicRecord->m_dispatch;
-        if (id == CreateGrunt || id == CreateInGameIcon || id == CreateGruntPuddle
-            || id == CreateGruntToySprite || id == CreateGruntStaminaSprite
-            || id == CreateGruntToyTimeSprite || id == CreateGruntWingzTimeSprite
-            || id == CreateGruntHealthSprite || id == CreateGruntSelectedSprite
-            || id == CreateGruntPowerupSprite || id == CreateStatusBarSprite
-            || id == CreateLightFx) {
+        LogicRecordDispatchFn dispatch = o->m_logicRecord->m_dispatch;
+        if (dispatch == CreateGrunt || dispatch == CreateInGameIcon || dispatch == CreateGruntPuddle
+            || dispatch == CreateGruntToySprite || dispatch == CreateGruntStaminaSprite
+            || dispatch == CreateGruntToyTimeSprite || dispatch == CreateGruntWingzTimeSprite
+            || dispatch == CreateGruntHealthSprite || dispatch == CreateGruntSelectedSprite
+            || dispatch == CreateGruntPowerupSprite || dispatch == CreateStatusBarSprite
+            || dispatch == CreateLightFx) {
             o->Render(held);
         }
     }
@@ -7492,11 +7492,12 @@ i32 CPlay::ScanShuffleQuads() {
         if (p == NULL) {
             continue;
         }
-        GameObjectLogicFn vf = p->m_logicRecord->m_dispatch;
-        if (vf == CreateGruntCreationPoint || vf == CreateExitTrigger || vf == CreateFortressFlag
-            || vf == CreateWayPoint || vf == CreateGuardPoint) {
+        LogicRecordDispatchFn dispatch = p->m_logicRecord->m_dispatch;
+        if (dispatch == CreateGruntCreationPoint || dispatch == CreateExitTrigger
+            || dispatch == CreateFortressFlag || dispatch == CreateWayPoint
+            || dispatch == CreateGuardPoint) {
             p->m_smarts = perm[p->m_smarts];
-        } else if (vf == CreateBrickz) {
+        } else if (dispatch == CreateBrickz) {
             if (p->m_extent.left == COORD_UNSET) {
                 p->m_extent.left = 0;
             }

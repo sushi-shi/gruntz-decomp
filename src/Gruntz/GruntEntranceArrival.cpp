@@ -1253,7 +1253,7 @@ i32 CGrunt::StepCombatReaction(
                 eq = ANIMATION_ACT_EQUALS("J");
                 if (eq) {
                     m_entranceActive = 0;
-                    eq = (strcmp(*g_typeColl.GetNameRecord(m_prevAnimSetNode), "D") == 0);
+                    eq = (strcmp(*g_typeColl.GetNameRecord(m_previousAnimationActId), "D") == 0);
                     if (eq) {
                         if (m_poweredUp != 0 && m_neighborValid == 0) {
                             RESET_GRUNT_POWERED_STATE(this)

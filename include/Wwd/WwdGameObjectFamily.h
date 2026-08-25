@@ -263,7 +263,7 @@ public:
     void ApplyLookupSprite(const char* key, i32 frame);
     void ApplyName(const char* name);
     i32 ApplyLookupGeometry(const char* key, i32 flag);
-    i32 LookupAnimSprite(const char* name);
+    i32 SetSoundCueByName(const char* name);
     void ApplyGeometryDirect(CAniElement* srcSprite, i32 applyDefault);
     i32 Test();
 

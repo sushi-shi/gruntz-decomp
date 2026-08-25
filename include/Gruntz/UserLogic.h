@@ -124,14 +124,14 @@ public:
 
     CLogicRecord* m_logicRecord;
     zBitVec m_actBits;
-    i32 m_gatedActKey;
+    i32 m_gatedCallbackCode;
     i32 m_reserved2c;
 
-    i32 m_prevAnimSetNode;
+    i32 m_previousAnimationActId;
 };
 
 #define SET_ANIMATION_ACT(key)                                                                     \
-    m_prevAnimSetNode = m_logicRecord->m_eventCode;                                                \
+    m_previousAnimationActId = m_logicRecord->m_eventCode;                                         \
     m_logicRecord->m_eventCode = ActFindId(key)
 
 #define ANIMATION_ACT_EQUALS(key)                                                                  \
@@ -264,7 +264,7 @@ inline void CUserLogic::RegisterLogicTypesOnce() {
     m_object->AddLogicBump("LogicBump");                                                           \
     m_deferredCallback = 0;                                                                        \
     m_gatedCallback = 0;                                                                           \
-    m_gatedActKey = IDX(ACT_NONE);                                                                 \
+    m_gatedCallbackCode = IDX(ACT_NONE);                                                           \
     m_reserved2c = 2;
 
 // Inline in the shared header: retail expands this whole body into ~57 derived

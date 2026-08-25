@@ -39,7 +39,8 @@ public:
         return CLASSID_LOGICRECORDREGISTRY;
     }
 
-    virtual CLogicRecord* RegisterLogicType(GameObjectLogicFn dispatch, const char* key, i32 flags);
+    virtual CLogicRecord*
+    RegisterLogicType(LogicRecordDispatchFn dispatch, const char* key, i32 flags);
 
     // Out of line at 0x9cab0 in StreamRecordLoaders.cpp;
     // <DDrawMgr/LogicRecordRegistryFindInline.h> is the opt-in inline view - a
