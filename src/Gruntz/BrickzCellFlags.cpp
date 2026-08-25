@@ -100,7 +100,7 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 tileId) {
             cell->m_flags = 0x6021;
             break;
         case TILEKIND_HIDDEN_POWERUP:
-            cell->m_flags = 0x8000;
+            cell->m_flags = IDX(CELL_FLAG_HIDDEN_POWERUP);
             break;
         case TILEKIND_AI_PATH_BLOCKER:
             cell->m_flags = 0x2001;
@@ -112,13 +112,13 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 tileId) {
             cell->m_flags = 0xa;
             break;
         case TILEKIND_DEATH:
-            cell->m_flags = 0x2;
+            cell->m_flags = IDX(CELL_FLAG_SPECIAL);
             break;
         case TILEKIND_REVEALED_POWERUP:
             cell->m_flags = IDX(CELL_FLAG_REVEALED_POWERUP | CELL_FLAG_SPECIAL);
             break;
         case TILEKIND_COVERED_POWERUP:
-            cell->m_flags = 0x10000;
+            cell->m_flags = IDX(CELL_FLAG_COVERED_POWERUP);
             break;
         case TILEKIND_TOGGLEDEATHBRIDGE_UP:
             cell->m_flags = 0x202;
@@ -202,7 +202,7 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 tileId) {
             cell->m_flags = 0x400;
             break;
         default:
-            cell->m_flags = (tileId == -1) ? 2 : 0;
+            cell->m_flags = (tileId == -1) ? IDX(CELL_FLAG_SPECIAL) : 0;
             break;
     }
     if (edgeBit != 0) {

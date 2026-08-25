@@ -30,7 +30,7 @@ CVoiceManager::~CVoiceManager() {
 RVA(0x0011adc0, 0x44)
 BOOL CVoiceManager::Init(CGruntzMgr* game) {
     if (game == NULL) {
-        return 0;
+        return false;
     }
     m_world = NULL;
     CLEAR_VOICE_INDICATORS;
@@ -38,7 +38,7 @@ BOOL CVoiceManager::Init(CGruntzMgr* game) {
     m_game = game;
     m_world = game->m_world;
     m_voiceVolume = 0x64;
-    return BuildVoiceGroups() != 0;
+    return BuildVoiceGroups() != false;
 }
 
 // @early-stop
@@ -92,10 +92,10 @@ BOOL CVoiceManager::CreateVoiceIndicators() {
         CGruntVoice* got = static_cast<CGruntVoice*>(spr->m_logicRecord->m_userLogic);
         *slot = got;
         if (got == NULL) {
-            return 0;
+            return false;
         }
     }
-    return 1;
+    return true;
 }
 
 RVA(0x0011af90, 0xb)
@@ -112,13 +112,13 @@ BOOL CVoiceManager::PlayGruntVoiceCue(
     i32 percent
 ) {
     if (m_indicators[0] == NULL && !CreateVoiceIndicators()) {
-        return 0;
+        return false;
     }
     if (grunt == NULL) {
-        return 0;
+        return false;
     }
     if (!IsVoiceEnabled()) {
-        return 0;
+        return false;
     }
     i32 voiceGroup = ResolveGruntVoiceGroup(grunt, cueId);
     CString voiceSection;
@@ -132,7 +132,7 @@ BOOL CVoiceManager::PlayGruntVoiceCue(
         }
     }
     if (percent < 100 && g_gameReg->Rand() % 0x65 > percent) {
-        return 0;
+        return false;
     }
     if (priority == -1) {
         priority = g_buteMgr.GetIntDef(static_cast<LPCTSTR>(voiceSection), "Pri", -1);
@@ -142,12 +142,12 @@ BOOL CVoiceManager::PlayGruntVoiceCue(
     }
     for (i32 i = 0; i < 2; i++) {
         if (m_indicators[i]->m_priority >= priority) {
-            return 0;
+            return false;
         }
     }
     CRezArchiveEntry* source = SelectVoiceVariant(voiceGroup, variantIndex);
     if (source == NULL || m_world->m_soundStream == NULL) {
-        return 0;
+        return false;
     }
     CGruntVoice* firstIndicator = m_indicators[0];
     CGruntVoice* secondIndicator = m_indicators[1];
@@ -181,7 +181,7 @@ BOOL CVoiceManager::PlayGruntVoiceCue(
         m_streamVoices[slotIndex] =
             m_world->m_soundStream->OpenStream(source, 0x5000, 0x1400, 0x100e0, 0, 0);
         if (m_streamVoices[slotIndex] == NULL) {
-            return 0;
+            return false;
         }
     }
     StreamVoice* stream = m_streamVoices[slotIndex];
@@ -195,12 +195,12 @@ BOOL CVoiceManager::PlayGruntVoiceCue(
                 priority,
                 VOICE_INDICATOR_AT_LOGIC_OBJECT
             )) {
-            return 1;
+            return true;
         } else {
-            return 0;
+            return false;
         }
     }
-    return 0;
+    return false;
 }
 
 RVA(0x0011b3b0, 0x338)
@@ -585,7 +585,7 @@ BOOL CVoiceManager::BuildVoiceGroups() {
     for (i32 i = 1; i < 0x4b0; i++) {
         m_voiceGroups.SetAtGrow(i, BuildVoiceGroup(i));
     }
-    return 1;
+    return true;
 }
 
 // @early-stop

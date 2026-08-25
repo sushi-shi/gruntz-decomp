@@ -236,7 +236,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     } else {
         if (Open() == 0) {
             NetGameMgr()->m_modalBusy = 0;
-            while (ShowCursor(0) >= 0) {
+            while (ShowCursor(false) >= 0) {
             }
             return 0;
         }
@@ -260,7 +260,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     if (ShowMultiStartDlg() == 0) {
         return 0;
     }
-    while (ShowCursor(0) >= 0) {
+    while (ShowCursor(false) >= 0) {
     }
     if (CreateSession() == 0) {
         return 0;
@@ -817,7 +817,7 @@ i32 CMulti::StartTitle() {
 
     m_world->m_deviceManager->m_device->FlipToGDISurface();
     m_stateResources = saved;
-    while (ShowCursor(1) < 0) {
+    while (ShowCursor(true) < 0) {
     }
     IDirectPlayLobby* lobby = Mgr()->m_lobby;
     if (!lobby) {
@@ -958,7 +958,7 @@ BOOL CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
     char gameBuf[0x44];
     NetLobby::g_curDlg = hDlg;
     if (BlockScreenSaver(hDlg, msg, wParam, lParam) != 0) {
-        return 1;
+        return true;
     }
 
     switch (msg) {
@@ -993,7 +993,7 @@ BOOL CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
             HWND edGame = GetDlgItem(hDlg, 0x51c);
             SendMessageA(edGame, EM_LIMITTEXT, 0x3f, 0);
             SetDlgItemTextA(hDlg, 0x51c, gameBuf);
-            return 1;
+            return true;
         }
         case WM_COMMAND:
             break;
@@ -1003,7 +1003,7 @@ BOOL CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
     if (wParam == IDCANCEL) {
         EndDialog(hDlg, 0);
-        return 1;
+        return true;
     }
 
     if (wParam == 1) {
@@ -1019,7 +1019,7 @@ BOOL CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
             GetDlgItemTextA(hDlg, 0x51c, gameBuf, 0x40);
             if (gameBuf[0] == 0) {
                 MessageBeep(0);
-                return 1;
+                return true;
             }
             g_connectRptMgr->SetGameName(CString(gameBuf));
         }
@@ -1031,10 +1031,10 @@ BOOL CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
         }
         g_netMgr->ReadProviderSelection(GetDlgItem(hDlg, 0x3fc));
         EndDialog(hDlg, 1);
-        return 1;
+        return true;
     }
 ret_false:
-    return 0;
+    return false;
 }
 
 RVA(0x000b7e30, 0x63)
@@ -1096,14 +1096,14 @@ BOOL CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam
                 g_netMgr->m_selectedSession = NULL;
                 SetTimer(hDlg, 1, 0x9c4, NULL);
                 SendMessageA(hDlg, WM_TIMER, 0, 0);
-                return 1;
+                return true;
             }
             goto close;
         case WM_COMMAND:
             if (wParam == IDCANCEL) {
                 KillTimer(hDlg, 1);
                 EndDialog(hDlg, 0);
-                return 1;
+                return true;
             }
 
             if (wParam == 1) {
@@ -1117,10 +1117,10 @@ BOOL CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam
                         t = 0x1388;
                     }
                     SetTimer(hDlg, 1, t, NULL);
-                    return 0;
+                    return false;
                 }
                 EndDialog(hDlg, 1);
-                return 1;
+                return true;
             }
             break;
         case WM_TIMER:
@@ -1137,7 +1137,7 @@ BOOL CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam
                     }
                     (static_cast<CMulti*>(g_connectRptMgr))->ReportNetError(0);
                     EndDialog(hDlg, 0);
-                    return 1;
+                    return true;
                 }
                 FillSessionList(g_sessionListHwnd, g_netMgr);
                 if (sel != -1) {
@@ -1153,14 +1153,14 @@ BOOL CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam
                 }
                 SetTimer(hDlg, 1, t, NULL);
             }
-            return 1;
+            return true;
     }
 ret_false:
-    return 0;
+    return false;
 close:
     EndDialog(hDlg, 0);
 ret_true:
-    return 1;
+    return true;
 }
 
 RVA(0x000b82e0, 0x230)

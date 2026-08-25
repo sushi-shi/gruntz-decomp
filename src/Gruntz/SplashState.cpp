@@ -130,7 +130,7 @@ i32 CSplashState::InputVirtual() {
     if (m_world->m_drawTarget->PagesReady() == 0) {
         return 0;
     }
-    while (ShowCursor(FALSE) >= 0) {
+    while (ShowCursor(false) >= 0) {
     }
     return LoadAndPresentTitlePage(
         static_cast<const char*>(CAssetRootStorage::s_value),
@@ -146,7 +146,7 @@ i32 CSplashState::RestoreDisplay() {
     if (IsActive() == 0) {
         return 0;
     }
-    while (ShowCursor(FALSE) >= 0) {
+    while (ShowCursor(false) >= 0) {
     }
     return LoadAndPresentTitlePage(
         static_cast<const char*>(CAssetRootStorage::s_value),

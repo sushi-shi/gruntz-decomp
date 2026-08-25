@@ -39,7 +39,7 @@ RVA_COMPGEN(0x00023500, 0x5, ??1CCheckpointDlg@@UAE@XZ)
 
 RVA(0x00023520, 0x3e)
 void CCheckpointDlg::DoDataExchange(CDataExchange* pDX) {
-    if (pDX->m_bSaveAndValidate == 0) {
+    if (pDX->m_bSaveAndValidate == false) {
         NetLobby::g_curDlg = GetSafeHwnd();
         CWnd* item = GetDlgItem(0x53a);
         ::SendMessageA(item->m_hWnd, BM_SETCHECK, 0, 0);

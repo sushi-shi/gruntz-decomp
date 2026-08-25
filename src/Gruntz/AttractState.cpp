@@ -37,9 +37,9 @@ i32 CAttract::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStat
         return 0;
     }
 
-    if (ShowCursor(0) >= 0) {
+    if (ShowCursor(false) >= 0) {
         do {
-        } while (ShowCursor(0) >= 0);
+        } while (ShowCursor(false) >= 0);
     }
 
     owner()->RestoreVideoMode(0);
@@ -57,9 +57,9 @@ i32 CAttract::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStat
 
     menuRoot()->m_soundRegistry->LoadFromTree(static_cast<CRezArchiveDir*>(sound), "ATTRACT", "_");
 
-    if (ShowCursor(0) >= 0) {
+    if (ShowCursor(false) >= 0) {
         do {
-        } while (ShowCursor(0) >= 0);
+        } while (ShowCursor(false) >= 0);
     }
 
     if (static_cast<GameStateId>(prevStateId) == GAMESTATE_PLAY) {
@@ -87,9 +87,9 @@ void CAttract::ReleaseResources() {
 RVA(0x00014120, 0x1a9)
 i32 CAttract::EnterState(GameStateId previousState) {
 
-    if (ShowCursor(0) >= 0) {
+    if (ShowCursor(false) >= 0) {
         do {
-        } while (ShowCursor(0) >= 0);
+        } while (ShowCursor(false) >= 0);
     }
     i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
     CString s;
@@ -182,9 +182,9 @@ i32 CAttract::InputVirtual() {
         return 0;
     }
 
-    if (ShowCursor(0) >= 0) {
+    if (ShowCursor(false) >= 0) {
         do {
-        } while (ShowCursor(0) >= 0);
+        } while (ShowCursor(false) >= 0);
     }
     i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
     CString s;
@@ -198,9 +198,9 @@ i32 CAttract::RestoreDisplay() {
         return 0;
     }
 
-    if (ShowCursor(0) >= 0) {
+    if (ShowCursor(false) >= 0) {
         do {
-        } while (ShowCursor(0) >= 0);
+        } while (ShowCursor(false) >= 0);
     }
     i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
     CString s;
@@ -235,9 +235,9 @@ i32 CAttract::OnPaint() {
         return 0;
     }
 
-    if (ShowCursor(0) >= 0) {
+    if (ShowCursor(false) >= 0) {
         do {
-        } while (ShowCursor(0) >= 0);
+        } while (ShowCursor(false) >= 0);
     }
     menuRoot()->m_drawTarget->m_frontSurface->m_surface->Flip(NULL);
     menuRoot()->m_drawTarget->BlitPage(menuRoot()->m_drawTarget->m_backPair);

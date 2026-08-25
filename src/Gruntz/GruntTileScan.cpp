@@ -10,6 +10,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/StaminaPct.h>
 #include <Gruntz/TileCollisionKind.h>
@@ -34,7 +35,7 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
             i32 row = c->m_y;
             CMapMgr* grid = m_board;
             i32 flags = grid->CellFlagsAt(col, row);
-            if ((flags & 0x4000)
+            if ((flags & IDX(CELL_FLAG_GAUNTLET_BRICK))
                 && grid->m_rows[row][col].m_typeCode == TILEKIND_GAUNTLET_BRICK_C) {
                 RECYCLE_GRUNT_COORDS(g)
                 return 1;
@@ -63,7 +64,7 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
                     for (i32 col = isect.left; col < isect.right; col++) {
                         if (hits < 5) {
                             i32 flags = cell->m_flags;
-                            if (flags & 0x8000) {
+                            if (flags & IDX(CELL_FLAG_HIDDEN_POWERUP)) {
                                 if (RouteUnitTo(g, col, row, 0xd87, 0, 0)) {
                                     RECT hitClip;
                                     hitClip.left = 0;
@@ -80,7 +81,7 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
                                     return 1;
                                 }
                                 hits++;
-                            } else if ((flags & 0x4000)
+                            } else if ((flags & IDX(CELL_FLAG_GAUNTLET_BRICK))
                                        && cell->m_typeCode != TILEKIND_GAUNTLET_BRICK_C) {
                                 if (RouteUnitTo(g, col, row, 0xd87, 0, 0)) {
                                     RECT brickClip;

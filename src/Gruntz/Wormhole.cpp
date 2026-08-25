@@ -23,6 +23,7 @@
 #include <Gruntz/LightFxMgr.h>
 #include <Gruntz/LogicFnTable.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
@@ -238,7 +239,7 @@ i32 CGruntPuddle::Remove() {
         CMapMgr* grid = reg->m_tileGrid;
         i32 tx = m_tileX;
         i32 flags = grid->CellFlagsAt(tx, ty);
-        if ((flags & BRICKZ_BLOCKED_MASK) != 0 || (flags & 0x2) != 0) {
+        if ((flags & BRICKZ_BLOCKED_MASK) != 0 || (flags & IDX(CELL_FLAG_SPECIAL)) != 0) {
             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             CPtrList& list = g_gameReg->m_triggerMgr->m_baseList;
             POSITION pos = list.GetHeadPosition();

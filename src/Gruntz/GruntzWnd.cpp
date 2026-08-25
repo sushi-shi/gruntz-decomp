@@ -179,7 +179,7 @@ i32 CGruntzWnd::OnActivateApp(WPARAM wParam, LPARAM lParam) {
         mgr->HandleAppActivation(wParam, lParam);
     }
     if (!wParam) {
-        while (ShowCursor(TRUE) < 0) {
+        while (ShowCursor(true) < 0) {
         }
     }
     return CGameWnd::OnActivateApp(wParam, lParam);

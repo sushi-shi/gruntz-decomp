@@ -5,6 +5,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Ints.h>
 #include <Wap32/TileGeometry.h>
 
@@ -48,7 +49,7 @@ i32 CBattlezMapConfig::RerouteSwitchSeeker(CGrunt* grunt) {
             if (flags & BRICKZ_BLOCKED_MASK) {
                 continue;
             }
-            if ((flags & 2) == 0) {
+            if ((flags & IDX(CELL_FLAG_SPECIAL)) == 0) {
                 grunt->TileSwitch(col, row, 0, 0xd87, 0, 0);
                 grunt->m_dwell = 0;
                 return 1;

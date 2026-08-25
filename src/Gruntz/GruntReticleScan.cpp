@@ -142,7 +142,7 @@ i32 CGrunt::StepDefenderBehavior() {
             POINT target;
             target.x = occTX;
             target.y = occTY;
-            if (PtInRect(&scanBounds, target) != 0 && m_defenderRadius > 1) {
+            if (PtInRect(&scanBounds, target) != false && m_defenderRadius > 1) {
                 RECT oldBounds = g_gameReg->m_tileGrid->m_bounds;
                 CDWordArray saved;
                 for (i32 y = oldBounds.top; y < oldBounds.bottom + 1; y++) {

@@ -16,6 +16,7 @@
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/UserLogic.h>
 #include <Ints.h>
 #include <Wap32/TileGeometry.h>
@@ -230,7 +231,7 @@ i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
                     cell->m_flags = 0x1;
                     break;
                 case TILEKIND_DEATH:
-                    cell->m_flags = 0x2;
+                    cell->m_flags = IDX(CELL_FLAG_SPECIAL);
                     break;
                 case TILEKIND_WATER:
                     cell->m_flags = 0x100;
@@ -275,7 +276,7 @@ i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
                     cell->m_flags = 0x2021;
                     break;
                 case TILEKIND_COVERED_POWERUP:
-                    cell->m_flags = 0x10000;
+                    cell->m_flags = IDX(CELL_FLAG_COVERED_POWERUP);
                     break;
                 case TILEKIND_REVEALED_POWERUP:
                     cell->m_flags = 0x42;
@@ -365,7 +366,7 @@ i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
                     cell->m_flags = 0x202;
                     break;
                 case TILEKIND_HIDDEN_POWERUP:
-                    cell->m_flags = 0x8000;
+                    cell->m_flags = IDX(CELL_FLAG_HIDDEN_POWERUP);
                     break;
                 case TILEKIND_GAUNTLET_BRICK_A:
                     cell->m_flags = 0x6021;
@@ -380,7 +381,7 @@ i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
                     cell->m_flags = 0x2001;
                     break;
                 default:
-                    cell->m_flags = (tileId == -1) ? 2 : 0;
+                    cell->m_flags = (tileId == -1) ? IDX(CELL_FLAG_SPECIAL) : 0;
                     break;
             }
             if (edgeBit != 0) {

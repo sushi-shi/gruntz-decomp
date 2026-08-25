@@ -338,7 +338,7 @@ void CBootyState::ReleaseResources() {
 // @early-stop
 RVA(0x00018d30, 0xcd)
 i32 CBootyState::EnterState(GameStateId previousState) {
-    while (ShowCursor(FALSE) >= 0)
+    while (ShowCursor(false) >= 0)
         ;
     if (!LoadTitlePage("bg", 0, 0, 0, 0, 1)) {
         return 0;
@@ -2854,7 +2854,7 @@ i32 CMultiBootyState::InputVirtual() {
         return 0;
     }
 
-    while (ShowCursor(FALSE) >= 0)
+    while (ShowCursor(false) >= 0)
         ;
 
     CRezArchiveDir* tree = StateResources()->FindDirectoryByPath("IMAGEZ");

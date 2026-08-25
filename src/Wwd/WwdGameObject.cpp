@@ -529,7 +529,7 @@ i32 CGameObject::SerializeDispatch(
                         key.m_addr,
                         found
                     )
-                    == 0) {
+                    == false) {
                     found = NULL;
                 }
                 m_carrier = found;
@@ -762,7 +762,7 @@ i32 CGameObject::ResolveLinkedObject(i32 gate) {
                 m_carrierId,
                 found
             )
-            != 0) {
+            != false) {
             m_carrier = found;
             return 1;
         }

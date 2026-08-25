@@ -46,7 +46,7 @@ const AFX_MSGMAP_ENTRY CBattlezDlgCustom::_messageEntries[] = {
 RVA(0x000180e0, 0x23f)
 void CBattlezDlgCustom::DoDataExchange(CDataExchange* pDX) {
     CListBox* item = static_cast<CListBox*>(GetDlgItem(0x516));
-    if (pDX->m_bSaveAndValidate == 0) {
+    if (pDX->m_bSaveAndValidate == false) {
         CWaitCursorScope wait;
         char buf[0x400];
         _getcwd(buf, 0x400);

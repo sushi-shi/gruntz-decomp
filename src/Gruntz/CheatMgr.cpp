@@ -54,7 +54,7 @@ BOOL CCheatMgr::Init(HWND owner) {
     m_flag = 0;
     m_pendingCodeLength = 0;
     m_cheatsUsed = 0;
-    return TRUE;
+    return true;
 }
 
 RVA(0x00022b00, 0xaf)
@@ -94,16 +94,16 @@ BOOL CCheatMgr::AddCheat(const char* code, i32 cmdId, i32 flag) {
     CheatEntry* existing = NULL;
     CheatEntry* hit = MapLookup(m_map, code, existing) ? existing : NULL;
     if (hit != NULL) {
-        return FALSE;
+        return false;
     }
     CheatEntry* entry = new CheatEntry;
     if (entry == NULL) {
-        return FALSE;
+        return false;
     }
     entry->commandId = cmdId;
     entry->flag = flag;
     m_map[code] = entry;
-    return TRUE;
+    return true;
 }
 
 RVA(0x00022c80, 0x173)
@@ -190,7 +190,7 @@ BOOL CCheatMgr::CheckCode(CString code) {
     CheatEntry* value = NULL;
     CheatEntry* found = MapLookup(m_map, static_cast<const char*>(code), value) ? value : NULL;
     if (found == NULL) {
-        return FALSE;
+        return false;
     }
     if (found->commandId > 0) {
         PostMessageA(m_owner, WM_COMMAND, found->commandId, 0);
@@ -200,7 +200,7 @@ BOOL CCheatMgr::CheckCode(CString code) {
         m_flag = 0;
         m_pendingCodeLength = 0;
     }
-    return TRUE;
+    return true;
 }
 
 RVA(0x00085e60, 0x4a)

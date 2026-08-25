@@ -272,6 +272,59 @@ class ConstantControls(unittest.TestCase):
         self.assertEqual([s for s in sites if s.proven], [])
         self.assertTrue(any("NULL is not visible" in s.reason for s in sites))
 
+    def test_conditional_pointer_and_integer_boolean_aliases_are_proven(self):
+        source = ("#define NULL 0\n"
+                  "typedef int BOOL;\n"
+                  "typedef int b32;\n"
+                  "int* Pick(bool use, int* value) { return use ? value : 0; }\n"
+                  "BOOL WinBool() { return 1; }\n"
+                  "void Takes(BOOL win, b32 project);\n"
+                  "void Probe(BOOL win) { b32 project = 0; Takes(0, 1); "
+                  "if (win == 0) {} project = 1; }\n")
+        sites, errors = self._scan(source)
+        self.assertEqual(errors, [])
+        replacements = [s.replacement for s in sites if s.proven]
+        self.assertEqual(replacements.count("NULL"), 1)
+        self.assertEqual(replacements.count("false"), 3)
+        self.assertEqual(replacements.count("true"), 3)
+
+    def test_expected_type_does_not_retype_nested_numeric_expressions(self):
+        source = ("typedef int BOOL;\n"
+                  "BOOL ReturnArithmetic(int n) { return n + 0; }\n"
+                  "void Takes(BOOL value);\n"
+                  "void Probe(int n) { Takes(n + 0); }\n")
+        sites, errors = self._scan(source)
+        self.assertEqual(errors, [])
+        self.assertEqual([s for s in sites if s.proven], [])
+
+    def test_proven_fixer_uses_offsets_and_rejects_stale_source(self):
+        from gruntz.verify import constants
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            source = "typedef int BOOL; BOOL F() { return 0; }\n"
+            sites, errors = self._scan(source)
+            self.assertEqual(errors, [])
+            path = root / "src/Probe.cpp"
+            path.parent.mkdir(parents=True)
+            path.write_text(source)
+            applied = constants.apply_proven(sites, repo=root)
+            self.assertEqual(applied, 1)
+            self.assertEqual(path.read_text(),
+                             "typedef int BOOL; BOOL F() { return false; }\n")
+            with self.assertRaises(RuntimeError):
+                constants.apply_proven(sites, repo=root)
+
+    def test_legacy_boolean_macro_gate_ignores_comments_and_strings(self):
+        from gruntz.verify import constants
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            path = root / "src/Probe.cpp"
+            path.parent.mkdir(parents=True)
+            path.write_text("int a = TRUE; // FALSE\nconst char* s = \"TRUE\";\n")
+            self.assertEqual(
+                constants.legacy_boolean_spellings(repo=root),
+                ["src/Probe.cpp:1:9: TRUE -> true"])
+
     def test_numeric_review_groups_preserve_context_without_claiming_semantics(self):
         source = ("void Sink(int value);\n"
                   "int Probe(int value) {\n"

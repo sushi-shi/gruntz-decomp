@@ -124,7 +124,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
     srand((timeGetTime() + GetTickCount()) >> 1);
     g_gameAppTimerPeriodMs = GRUNTZ_PERIODIC_TIMER_MS;
-    while (ShowCursor(0) >= 0) {
+    while (ShowCursor(false) >= 0) {
     }
 
     Utils::RegistryHelper* reg = new Utils::RegistryHelper;

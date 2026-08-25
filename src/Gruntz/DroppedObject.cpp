@@ -296,7 +296,7 @@ i32 CObjectDropper::Update() {
                         i32 cx = fx >> TILE_SHIFT_PX;
                         i32 cy = fy >> TILE_SHIFT_PX;
                         u32 flags = plane->CellFlagsAt(cx, cy);
-                        if ((flags & 2) == 0) {
+                        if ((flags & IDX(CELL_FLAG_SPECIAL)) == 0) {
                             g_gameReg->m_world->m_childGroup->CreateSprite(
                                 0,
                                 fx,

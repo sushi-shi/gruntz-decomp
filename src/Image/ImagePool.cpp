@@ -9,6 +9,7 @@
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DirPal.h>
 #include <DDrawMgr/PaletteSize.h>
+#include <DDrawMgr/PixelShift.h>
 #include <Enums.h>
 #include <Image/ByteRunEncoding.h>
 #include <Image/FileImageRecords.h>
@@ -107,7 +108,7 @@ CRezImage* CImagePool::CreateSurface(i32 width, i32 height, ColorDepth bitDepth,
     CRezImage* node = new CRezImage();
     if (node->DecodeBmpHeader(hdc, width, height, bitDepth, flags) == BPP_UNSET) {
         if (m_selectedPalette) {
-            SelectPalette(hdc, m_selectedPalette, FALSE);
+            SelectPalette(hdc, m_selectedPalette, false);
             m_selectedPalette = NULL;
         }
         ReleaseDC(m_sourceHwnd, hdc);
@@ -120,7 +121,7 @@ CRezImage* CImagePool::CreateSurface(i32 width, i32 height, ColorDepth bitDepth,
     POSITION pos = m_surfaces.AddTail(node);
     node->m_listPosition = pos;
     if (m_selectedPalette) {
-        SelectPalette(hdc, m_selectedPalette, FALSE);
+        SelectPalette(hdc, m_selectedPalette, false);
         m_selectedPalette = NULL;
     }
     ReleaseDC(m_sourceHwnd, hdc);
@@ -141,7 +142,7 @@ CRezImage* CImagePool::CreateSurfaceFromPixels(
     CRezImage* node = new CRezImage();
     if (node->DecodeBlit(pixels, hdc, width, height, bitDepth, flags) == BPP_UNSET) {
         if (m_selectedPalette) {
-            SelectPalette(hdc, m_selectedPalette, FALSE);
+            SelectPalette(hdc, m_selectedPalette, false);
             m_selectedPalette = NULL;
         }
         ReleaseDC(m_sourceHwnd, hdc);
@@ -154,7 +155,7 @@ CRezImage* CImagePool::CreateSurfaceFromPixels(
     POSITION pos = m_surfaces.AddTail(node);
     node->m_listPosition = pos;
     if (m_selectedPalette) {
-        SelectPalette(hdc, m_selectedPalette, FALSE);
+        SelectPalette(hdc, m_selectedPalette, false);
         m_selectedPalette = NULL;
     }
     ReleaseDC(m_sourceHwnd, hdc);
@@ -167,7 +168,7 @@ CRezImage* CImagePool::LoadSurfaceFromData(u8* data, RezDecodeKind format, i32 f
     CRezImage* node = new CRezImage();
     if (node->DispatchDecode(data, format, hdc, flags) == 0) {
         if (m_selectedPalette) {
-            SelectPalette(hdc, m_selectedPalette, FALSE);
+            SelectPalette(hdc, m_selectedPalette, false);
             m_selectedPalette = NULL;
         }
         ReleaseDC(m_sourceHwnd, hdc);
@@ -180,7 +181,7 @@ CRezImage* CImagePool::LoadSurfaceFromData(u8* data, RezDecodeKind format, i32 f
     POSITION pos = m_surfaces.AddTail(node);
     node->m_listPosition = pos;
     if (m_selectedPalette) {
-        SelectPalette(hdc, m_selectedPalette, FALSE);
+        SelectPalette(hdc, m_selectedPalette, false);
         m_selectedPalette = NULL;
     }
     ReleaseDC(m_sourceHwnd, hdc);
@@ -196,7 +197,7 @@ CRezImage* CImagePool::LoadSurfaceFromResource(char* resourceName, i32 flags) {
     CRezImage* node = new CRezImage();
     if (node->LoadFromRez(resourceName, hdc, flags) == 0) {
         if (m_selectedPalette) {
-            SelectPalette(hdc, m_selectedPalette, FALSE);
+            SelectPalette(hdc, m_selectedPalette, false);
             m_selectedPalette = NULL;
         }
         ReleaseDC(m_sourceHwnd, hdc);
@@ -209,7 +210,7 @@ CRezImage* CImagePool::LoadSurfaceFromResource(char* resourceName, i32 flags) {
     POSITION pos = m_surfaces.AddTail(node);
     node->m_listPosition = pos;
     if (m_selectedPalette) {
-        SelectPalette(hdc, m_selectedPalette, FALSE);
+        SelectPalette(hdc, m_selectedPalette, false);
         m_selectedPalette = NULL;
     }
     ReleaseDC(m_sourceHwnd, hdc);
@@ -224,7 +225,7 @@ CRezImage* CImagePool::ConvertSurface(CRezImage* source, CImagePaletteNode* pale
     CRezImage* node = new CRezImage();
     if (node->Convert8To16(hdc, source, palette) == 0) {
         if (m_selectedPalette) {
-            SelectPalette(hdc, m_selectedPalette, FALSE);
+            SelectPalette(hdc, m_selectedPalette, false);
             m_selectedPalette = NULL;
         }
         ReleaseDC(m_sourceHwnd, hdc);
@@ -237,7 +238,7 @@ CRezImage* CImagePool::ConvertSurface(CRezImage* source, CImagePaletteNode* pale
     POSITION pos = m_surfaces.AddTail(node);
     node->m_listPosition = pos;
     if (m_selectedPalette) {
-        SelectPalette(hdc, m_selectedPalette, FALSE);
+        SelectPalette(hdc, m_selectedPalette, false);
         m_selectedPalette = NULL;
     }
     ReleaseDC(m_sourceHwnd, hdc);
@@ -330,7 +331,7 @@ i32 CImagePool::ResizeSurface(
     HDC dc = GetDC(m_sourceHwnd);
     i32 result = image->EnsureSize(dc, width, height, bitDepth, flags);
     if (m_selectedPalette) {
-        SelectPalette(dc, m_selectedPalette, FALSE);
+        SelectPalette(dc, m_selectedPalette, false);
         m_selectedPalette = NULL;
     }
     ReleaseDC(m_sourceHwnd, dc);
@@ -518,13 +519,13 @@ i32 CRezImage::EnsureSize(HDC dc, i32 w, i32 h, ColorDepth bitCount, i32 flag) {
 RVA(0x00175d50, 0xad)
 void CRezImage::Fill(i32 value) {
     if (m_rowPad == 0) {
-        i32 fill = value & 0xff;
+        i32 fill = value & PIXEL_BYTE_MASK;
         memset(m_pixels, fill, m_stride * m_height);
     } else {
 
         i32 y = 0;
         if (y < m_height) {
-            i32 fill = value & 0xff;
+            i32 fill = value & PIXEL_BYTE_MASK;
             do {
                 memset(m_pixels + m_rowOffsets[y], fill, m_width);
                 y++;
@@ -732,7 +733,7 @@ i32 CRezImage::DecodePidData(void* buf, HDC dc, i32 ctrl) {
     }
 
     if (HAS(flags, PID_FILL_IS_WORD)) {
-        fill &= 0xffff;
+        fill &= PIXEL16_VALUE_MASK;
     } else {
         fill = 0;
     }
@@ -987,7 +988,7 @@ i32 CRezImage::SaveBmp(const char* filename, CImagePaletteNode* paletteObj) {
     }
 
     CFile file;
-    if (file.Open(filename, 0x1001, NULL) == 0) {
+    if (file.Open(filename, 0x1001, NULL) == false) {
         return 0;
     }
     file.Write(&fileHdr.m_hdr, sizeof(fileHdr.m_hdr));
@@ -1155,9 +1156,9 @@ void ResetSystemPalette() {
     }
     HPALETTE hpal = CreatePalette(&lp.m_lp);
     if (hpal) {
-        HPALETTE old = SelectPalette(hdc, hpal, FALSE);
+        HPALETTE old = SelectPalette(hdc, hpal, false);
         RealizePalette(hdc);
-        DeleteObject(SelectPalette(hdc, old, FALSE));
+        DeleteObject(SelectPalette(hdc, old, false));
     }
     ReleaseDC(NULL, hdc);
 }

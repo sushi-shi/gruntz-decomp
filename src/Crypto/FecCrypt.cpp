@@ -59,7 +59,7 @@ i32 CFecFile::ReadArchive(const char* name) {
     if (m_openGate == 0) {
         return 0;
     }
-    if (m_stream.Open(name, 0, NULL) == 0) {
+    if (m_stream.Open(name, 0, NULL) == false) {
         return 0;
     }
     m_readOpen = 1;
@@ -138,7 +138,7 @@ i32 CFecFile::Lookup(u32 idx) {
 RVA(0x0017b8a0, 0xa2)
 i32 CFecFile::CreateArchive(const char* name) {
     if (name != NULL && m_writeOpen == 0 && m_openGate != 0
-        && m_stream.Open(name, CFile::modeCreate | CFile::modeReadWrite, NULL) != 0) {
+        && m_stream.Open(name, CFile::modeCreate | CFile::modeReadWrite, NULL) != false) {
         m_writeOpen = 1;
 
         char magic[FEC_MAGIC_SIZE];
@@ -168,7 +168,7 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
     }
 
     CFile file;
-    if (file.Open(name, 0, NULL) == 0) {
+    if (file.Open(name, 0, NULL) == false) {
         return 0;
     }
 
@@ -280,7 +280,7 @@ i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
         }
         char decoded[FEC_ENTRY_NAME_CAPACITY];
         FecDecode(m_entry.m_name, decoded, m_entry.m_nameLen);
-        if (file.Open(decoded, CFile::modeCreate | CFile::modeReadWrite, NULL) == 0) {
+        if (file.Open(decoded, CFile::modeCreate | CFile::modeReadWrite, NULL) == false) {
             _chdir(cwd);
             return 0;
         }

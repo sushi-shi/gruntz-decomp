@@ -19,6 +19,7 @@
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
@@ -300,7 +301,7 @@ i32 CKitchenSlime::LoadSprites() {
 
         if (tile.m_y >= lvl->m_extent.top && tile.m_x <= lvl->m_extent.right
             && tile.m_y <= lvl->m_extent.bottom && tile.m_x >= lvl->m_extent.left
-            && !(tileFlags & BRICKZ_BLOCKED_MASK) && !(tileFlags & 2)) {
+            && !(tileFlags & BRICKZ_BLOCKED_MASK) && !(tileFlags & IDX(CELL_FLAG_SPECIAL))) {
             found = 1;
         } else {
             if (++i > 4) {

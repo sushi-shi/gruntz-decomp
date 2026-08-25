@@ -3,6 +3,8 @@
 
 #include <rva.h>
 
+#include <stddef.h>
+
 struct IntrusiveLink {
     IntrusiveLink* m_next;
     IntrusiveLink* m_prev;
@@ -10,14 +12,14 @@ struct IntrusiveLink {
 
 // Language-forced container-of adjustment at the intrusive-list boundary.
 template<class T> inline T* ElementFromLink(IntrusiveLink* link) {
-    return link ? reinterpret_cast<T*>((reinterpret_cast<char*>(link) - 4)) : 0;
+    return link ? reinterpret_cast<T*>((reinterpret_cast<char*>(link) - 4)) : NULL;
 }
 
 struct IntrusiveList {
     IntrusiveLink* m_head;
     IntrusiveLink* m_tail;
 
-    IntrusiveList() : m_head(0), m_tail(0) {}
+    IntrusiveList() : m_head(NULL), m_tail(NULL) {}
 
     ~IntrusiveList() {}
 

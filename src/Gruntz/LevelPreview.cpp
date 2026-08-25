@@ -44,7 +44,7 @@ i32 CPreviewState::Enter(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     if (CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId) == 0) {
         return 0;
     }
-    while (ShowCursor(FALSE) >= 0) {
+    while (ShowCursor(false) >= 0) {
     }
     m_stateResources = m_resourceArchive->FindDirectoryByPath("STATEZ_PREVIEW");
     if (m_stateResources == NULL) {
@@ -79,7 +79,7 @@ void CPreviewState::ResetPreview() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000de190, 0x35)
 i32 CPreviewState::NextScreenCmd(i32 unused) {
-    while (ShowCursor(FALSE) >= 0) {
+    while (ShowCursor(false) >= 0) {
     }
     LoadLevelPreviewScreen();
     m_previewCountdownMs = 60000;
@@ -121,7 +121,7 @@ i32 CPreviewState::Refade() {
     if (m_world->m_drawTarget->PagesReady() == 0) {
         return 0;
     }
-    while (ShowCursor(FALSE) >= 0) {
+    while (ShowCursor(false) >= 0) {
     }
     i32 r =
         LoadTitlePage(const_cast<char*>(static_cast<const char*>(m_previewName)), 0, 0, 0, 0, 1);
@@ -136,7 +136,7 @@ i32 CPreviewState::RefadeVirtual() {
     if (IsActive() == 0) {
         return 0;
     }
-    while (ShowCursor(FALSE) >= 0) {
+    while (ShowCursor(false) >= 0) {
     }
     i32 r =
         LoadTitlePage(const_cast<char*>(static_cast<const char*>(m_previewName)), 0, 0, 0, 0, 1);

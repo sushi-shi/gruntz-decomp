@@ -183,7 +183,7 @@ i32 CMultiStartDlg::RefreshWorldControls() {
         i32 canEditWorld = (m_gameManager->m_players[localSlot].m_ready == 0);
         worldCombo->EnableWindow(canEditWorld);
         customWorldButton->EnableWindow(canEditWorld);
-        echoLatencyButton->EnableWindow(0);
+        echoLatencyButton->EnableWindow(false);
         return 1;
     }
     CWnd* worldCombo = GetDlgItem(IDX(IDC_MULTI_WORLD));
@@ -214,9 +214,9 @@ i32 CMultiStartDlg::RefreshWorldControls() {
             worldEdit->SetWindowTextA(g_multiState->BuiltInLevelName());
         }
     }
-    worldCombo->EnableWindow(0);
-    customWorldButton->EnableWindow(0);
-    echoLatencyButton->EnableWindow(0);
+    worldCombo->EnableWindow(false);
+    customWorldButton->EnableWindow(false);
+    echoLatencyButton->EnableWindow(false);
     return 1;
 }
 
@@ -262,7 +262,7 @@ i32 CMultiStartDlg::RefreshLatencyControl() {
         i32 localSlot = GetLocalPlayerSlotIndex();
         latencyCombo->EnableWindow(m_gameManager->m_players[localSlot].m_ready == 0);
     } else {
-        latencyCombo->EnableWindow(0);
+        latencyCombo->EnableWindow(false);
     }
     HWND dialogHwnd = GetSafeHwnd();
     CMulti* currentMulti = g_multiState;
@@ -283,7 +283,7 @@ i32 CMultiStartDlg::RefreshLatencyControl() {
 RVA(0x000c20a0, 0x45a)
 void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
     Utils::RegistryHelper* reg = static_cast<Utils::RegistryHelper*>(g_gameReg->m_settings);
-    if (pDX->m_bSaveAndValidate == 0) {
+    if (pDX->m_bSaveAndValidate == false) {
         GetDlgItem(IDX(IDC_MULTI_GAME_NAME))->SetWindowTextA(g_multiState->GameName());
         NetLobby::g_curDlg = GetSafeHwnd();
         if (!InitializeWorldCombo()) {
@@ -595,8 +595,8 @@ void CMultiStartDlg::ApplyPlayerTypeSelection(i32 slot) {
         }
         player->m_active = 0;
         player->m_ready = 0;
-        nameControl->EnableWindow(0);
-        colorControl->EnableWindow(0);
+        nameControl->EnableWindow(false);
+        colorControl->EnableWindow(false);
     } else {
         if (static_cast<MultiplayerPlayerKind>(sendMessage(typeControl->m_hWnd, CB_GETCURSEL, 0, 0))
             != MULTI_PLAYER_HUMAN) {
@@ -620,8 +620,8 @@ void CMultiStartDlg::ApplyPlayerTypeSelection(i32 slot) {
             player->m_active = 1;
             player->m_name = g_defaultPlayerNames[slot];
         }
-        nameControl->EnableWindow(1);
-        colorControl->EnableWindow(1);
+        nameControl->EnableWindow(true);
+        colorControl->EnableWindow(true);
     }
 }
 
@@ -980,7 +980,7 @@ void CMultiStartDlg::OnPlayerColor0() {
     if (colorDialog.DoModal() == 1) {
         if (SetPlayerColor(0, static_cast<ColorTint>(colorDialog.m_pickedColor))) {
             BroadcastPlayerSlotChanges();
-            GetDlgItem(CTRL_PLAYER_COLOR0)->InvalidateRect(NULL, 1);
+            GetDlgItem(CTRL_PLAYER_COLOR0)->InvalidateRect(NULL, true);
         }
     }
 }
@@ -997,7 +997,7 @@ void CMultiStartDlg::OnPlayerColor1() {
     if (colorDialog.DoModal() == 1) {
         if (SetPlayerColor(1, static_cast<ColorTint>(colorDialog.m_pickedColor))) {
             BroadcastPlayerSlotChanges();
-            GetDlgItem(CTRL_PLAYER_COLOR1)->InvalidateRect(NULL, 1);
+            GetDlgItem(CTRL_PLAYER_COLOR1)->InvalidateRect(NULL, true);
         }
     }
 }
@@ -1014,7 +1014,7 @@ void CMultiStartDlg::OnPlayerColor2() {
     if (colorDialog.DoModal() == 1) {
         if (SetPlayerColor(2, static_cast<ColorTint>(colorDialog.m_pickedColor))) {
             BroadcastPlayerSlotChanges();
-            GetDlgItem(CTRL_PLAYER_COLOR2)->InvalidateRect(NULL, 1);
+            GetDlgItem(CTRL_PLAYER_COLOR2)->InvalidateRect(NULL, true);
         }
     }
 }
@@ -1031,7 +1031,7 @@ void CMultiStartDlg::OnPlayerColor3() {
     if (colorDialog.DoModal() == 1) {
         if (SetPlayerColor(3, static_cast<ColorTint>(colorDialog.m_pickedColor))) {
             BroadcastPlayerSlotChanges();
-            GetDlgItem(CTRL_PLAYER_COLOR3)->InvalidateRect(NULL, 1);
+            GetDlgItem(CTRL_PLAYER_COLOR3)->InvalidateRect(NULL, true);
         }
     }
 }
@@ -1116,13 +1116,13 @@ void CMultiStartDlg::BroadcastPlayerSlotChanges() {
 RVA(0x000c4120, 0xc2)
 i32 CMultiStartDlg::EnableChatControls() {
     CWnd* control = GetDlgItem(IDCANCEL);
-    control->EnableWindow(1);
+    control->EnableWindow(true);
     control = GetDlgItem(IDX(IDC_NETCHAT_SEND));
-    control->EnableWindow(1);
+    control->EnableWindow(true);
     control = GetDlgItem(IDX(IDC_MULTI_CHAT_INPUT));
-    control->EnableWindow(1);
+    control->EnableWindow(true);
     control = GetDlgItem(IDX(IDC_MULTI_CHAT_LOG));
-    control->EnableWindow(1);
+    control->EnableWindow(true);
     CString s1;
     if (g_multiState->m_usesCustomLevel == 0) {
         CString s2;
@@ -1149,22 +1149,22 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
             CWnd* nameControl = GetPlayerNameControl(slotIndex);
             if ((g_multiState->m_isHost && player->m_humanControlled == 0)
                 || player->m_networkPlayerId == g_multiState->m_localPlayerId) {
-                nameControl->EnableWindow(1);
+                nameControl->EnableWindow(true);
             } else {
-                nameControl->EnableWindow(0);
+                nameControl->EnableWindow(false);
             }
             CWnd* typeControl = GetPlayerTypeControl(slotIndex);
             if (g_multiState->m_isHost && localReadyFlag == 0
                 && player->m_networkPlayerId != g_multiState->m_localPlayerId) {
-                typeControl->EnableWindow(1);
+                typeControl->EnableWindow(true);
             } else {
-                typeControl->EnableWindow(0);
+                typeControl->EnableWindow(false);
             }
             CWnd* readyControl = GetReadyControl(slotIndex);
             if (player->m_networkPlayerId == g_multiState->m_localPlayerId) {
-                readyControl->EnableWindow(1);
+                readyControl->EnableWindow(true);
             } else {
-                readyControl->EnableWindow(0);
+                readyControl->EnableWindow(false);
             }
             if (player->m_ready == 0) {
                 if (player->m_active) {
@@ -1220,13 +1220,13 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
         ok->EnableWindow(hasRemoteHumanPlayer & allLivePlayersReady);
     }
     HWND color0 = this->GetDlgItem(CTRL_PLAYER_COLOR0)->m_hWnd;
-    ::InvalidateRect(color0, NULL, 1);
+    ::InvalidateRect(color0, NULL, true);
     HWND color1 = this->GetDlgItem(CTRL_PLAYER_COLOR1)->m_hWnd;
-    ::InvalidateRect(color1, NULL, 1);
+    ::InvalidateRect(color1, NULL, true);
     HWND color2 = this->GetDlgItem(CTRL_PLAYER_COLOR2)->m_hWnd;
-    ::InvalidateRect(color2, NULL, 1);
+    ::InvalidateRect(color2, NULL, true);
     HWND color3 = this->GetDlgItem(CTRL_PLAYER_COLOR3)->m_hWnd;
-    ::InvalidateRect(color3, NULL, 1);
+    ::InvalidateRect(color3, NULL, true);
     return 1;
 }
 
@@ -1251,10 +1251,10 @@ void CMultiStartDlg::Watchdog() {
         if (g_netStatsTick == 0) {
             g_multiState->ReportMaxAckLatency();
         }
-        EnableWindow(0);
+        EnableWindow(false);
         i32 verificationResult =
             g_multiState->VerifyCustomLevel(session, g_multiState->m_localPlayer);
-        EnableWindow(1);
+        EnableWindow(true);
         if (verificationResult != 0) {
             EndDialog(1);
             g_watchdogBusy = 0;
@@ -1405,19 +1405,19 @@ void CMultiStartDlg::OnOK() {
     g_multiState->m_levelVerifyResult = 0;
     if (g_multiState->Poll(verificationToken) == 0) {
         g_multiState->m_customLevelVerificationPending = 0;
-        EnableWindow(0);
+        EnableWindow(false);
         g_gameReg->EnterModalUI(
             "Unable to verify custom level with other players. The game will not start."
         );
-        EnableWindow(1);
+        EnableWindow(true);
     } else if (g_multiState->m_levelVerifyResult != 0) {
         g_multiState->m_customLevelVerificationPending = 1;
         CDialog::OnOK();
     } else {
         g_multiState->m_customLevelVerificationPending = 0;
-        EnableWindow(0);
+        EnableWindow(false);
         g_gameReg->EnterModalUI("Not all players have the (same) custom level.");
-        EnableWindow(1);
+        EnableWindow(true);
     }
 }
 

@@ -13,6 +13,8 @@
 #include <Rez/FrameClock.h>
 #include <Wwd/MoveMode.h>
 
+#include <stddef.h>
+
 extern const u32 g_defaultZ;
 
 class CMovingLogic : public CUserLogic {
@@ -29,13 +31,13 @@ public:
 
     RVA(0x00013c70, 0x47)
     virtual void FinalizeStep(char*) OVERRIDE {
-        if (m_deferredCallback != 0) {
-            if (m_gatedCallback != 0 && m_logicRecord->EventCode() == m_gatedCallbackCode) {
+        if (m_deferredCallback != NULL) {
+            if (m_gatedCallback != NULL && m_logicRecord->EventCode() == m_gatedCallbackCode) {
                 (this->*m_gatedCallback)();
-                m_gatedCallback = 0;
+                m_gatedCallback = NULL;
             }
             (this->*m_deferredCallback)();
-            m_deferredCallback = 0;
+            m_deferredCallback = NULL;
             m_gatedCallbackCode = IDX(ACT_NONE);
         }
         AdvanceMotion();

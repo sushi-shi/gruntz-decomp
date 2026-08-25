@@ -9,6 +9,8 @@
 #include <Ints.h>
 #include <Wap32/WapObj.h>
 
+#include <stddef.h>
+
 struct PidHeader;
 class CImage;
 
@@ -52,7 +54,7 @@ public:
 
     CImage* GetAt(i32 index) {
         if (index < m_minIndex || index > m_maxIndex) {
-            return 0;
+            return NULL;
         }
 
         return static_cast<CImage*>(m_items.GetAt(index));

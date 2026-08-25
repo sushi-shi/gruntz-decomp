@@ -35,6 +35,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
@@ -1152,7 +1153,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                                                        ->m_screenY
                                                                                    >> TILE_SHIFT_PX;
                                                                             if (PtInRect(&spell, pt)
-                                                                                != 0) {
+                                                                                != false) {
                                                                                 goto spellHit;
                                                                             }
                                                                         }
@@ -1336,7 +1337,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                     if (cell & BRICKZ_CELL_OCCUPIED) {
                         goto wingzGate;
                     }
-                    if ((cell & 0x40) == 0) {
+                    if ((cell & IDX(CELL_FLAG_REVEALED_POWERUP)) == 0) {
                         goto flagsArm;
                     }
                 wingzGate: {
@@ -1345,7 +1346,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         goto nexti;
                     }
                 }
-                    if ((cell & 2) == 0 && (cell & 0x100) == 0) {
+                    if ((cell & IDX(CELL_FLAG_SPECIAL)) == 0 && (cell & 0x100) == 0) {
                         goto nexti;
                     }
                     if ((cell & BRICKZ_CELL_OCCUPIED) == 0) {
@@ -1746,11 +1747,12 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             }
         }
 
-        if ((currentCell.m_flags & 0x8000) && unit->m_defenderState == AISTATE_RETURN) {
+        if ((currentCell.m_flags & IDX(CELL_FLAG_HIDDEN_POWERUP))
+            && unit->m_defenderState == AISTATE_RETURN) {
             unit->m_defenderState = AISTATE_SEEK;
         }
         i32 pathHeadFlags = pathHeadCell.m_flags;
-        if ((pathHeadFlags & 0x8000) && prim == PICKUP_BRICK
+        if ((pathHeadFlags & IDX(CELL_FLAG_HIDDEN_POWERUP)) && prim == PICKUP_BRICK
             && unit->m_battleState == BZTASK_CARRY_BRICK) {
             m_triggerMgr->UseEquippedToolAt(
                 unit->m_playerIndex,
@@ -1764,7 +1766,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             }
             return 0;
         }
-        if ((pathHeadFlags & 0x8000) && PathCrossesMarkedTile(unit) == 0
+        if ((pathHeadFlags & IDX(CELL_FLAG_HIDDEN_POWERUP)) && PathCrossesMarkedTile(unit) == 0
             && unit->m_defenderState == AISTATE_BATTLEZ_FINAL_ROUTE) {
             CoordNode* head = unit->CoordHead();
             if (head != NULL) {
@@ -1802,7 +1804,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                     return 1;
                 }
             }
-            i32 wingzGate = pathHeadFlags & 0x2;
+            i32 wingzGate = pathHeadFlags & IDX(CELL_FLAG_SPECIAL);
             if (wingzGate) {
                 PickupType p = ArrivalPickup(unit);
                 if (p == PICKUP_WINGZ) {
@@ -1841,7 +1843,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             EnterDefenderMode(unit, 5);
             return 0;
         }
-        if (pathHeadFlags & 0x40) {
+        if (pathHeadFlags & IDX(CELL_FLAG_REVEALED_POWERUP)) {
             PickupType p = ArrivalPickup(unit);
             if (p != PICKUP_WINGZ) {
                 if (prim == PICKUP_SHOVEL) {
@@ -1854,7 +1856,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                 return 0;
             }
         }
-        if (pathHeadFlags & 0x2) {
+        if (pathHeadFlags & IDX(CELL_FLAG_SPECIAL)) {
             PickupType p = ArrivalPickup(unit);
             if (p != PICKUP_WINGZ) {
                 goto returnZero;
@@ -2933,7 +2935,8 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         }
     }
 
-    if ((maskFlags & 0x8000) && type == PICKUP_BRICK && g->m_battleState == BZTASK_CARRY_BRICK) {
+    if ((maskFlags & IDX(CELL_FLAG_HIDDEN_POWERUP)) && type == PICKUP_BRICK
+        && g->m_battleState == BZTASK_CARRY_BRICK) {
         m_triggerMgr->UseEquippedToolAt(
             g->m_playerIndex,
             g->m_unitIndex,
@@ -2944,7 +2947,8 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         return 0;
     }
 
-    if ((maskFlags & 0x4000) && type == PICKUP_BRICK && g->m_battleState == BZTASK_CARRY_BRICK) {
+    if ((maskFlags & IDX(CELL_FLAG_GAUNTLET_BRICK)) && type == PICKUP_BRICK
+        && g->m_battleState == BZTASK_CARRY_BRICK) {
         if (m_board->m_rows[fcy][fcx].m_typeCode != TILEKIND_GAUNTLET_BRICK_C) {
             m_triggerMgr->UseEquippedToolAt(
                 g->m_playerIndex,
@@ -3008,7 +3012,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         }
     }
 
-    if (maskFlags & 0x4000) {
+    if (maskFlags & IDX(CELL_FLAG_GAUNTLET_BRICK)) {
         PickupType t = ARRIVAL_PICKUP_TERNARY_GT(g);
         if (t == PICKUP_SPY) {
             CTileActionEvent* r = m_cellQuery->FindActionByCellKey((fcx << 8) + fcy);
@@ -3029,7 +3033,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         }
     }
 
-    if (maskFlags & 0x8000) {
+    if (maskFlags & IDX(CELL_FLAG_HIDDEN_POWERUP)) {
         PickupType t = ARRIVAL_PICKUP_TERNARY_GT(g);
         if (t == PICKUP_SPY) {
             ARR_RECYCLE(g);
@@ -3041,7 +3045,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     if (maskFlags & 0x20) {
         PickupType t = ARRIVAL_PICKUP_TERNARY_GT(g);
         if (t == PICKUP_GAUNTLETZ) {
-            if (maskFlags & 0x4000) {
+            if (maskFlags & IDX(CELL_FLAG_GAUNTLET_BRICK)) {
                 CTileActionEvent* r = m_cellQuery->FindActionByCellKey((fcx << 8) + fcy);
                 if (r != NULL) {
                     BrickTileId k = static_cast<BrickTileId>(r->m_actionCode);
@@ -3070,10 +3074,10 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
             return 1;
         }
         i32 flag = 1;
-        if (t == PICKUP_BRICK && (maskFlags & 0x4000)) {
+        if (t == PICKUP_BRICK && (maskFlags & IDX(CELL_FLAG_GAUNTLET_BRICK))) {
             flag = 0;
         }
-        if (t == PICKUP_SPY && (maskFlags & 0x4000)) {
+        if (t == PICKUP_SPY && (maskFlags & IDX(CELL_FLAG_GAUNTLET_BRICK))) {
             flag = 0;
         }
         if (flag == 0) {
@@ -3083,7 +3087,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         return 0;
     }
 
-    if (maskFlags & 0x40) {
+    if (maskFlags & IDX(CELL_FLAG_REVEALED_POWERUP)) {
         PickupType er2 = g->m_entranceReason;
         if (ArrivalPickupOf(g, er2) != PICKUP_WINGZ) {
             if (ArrivalPickupOf(g, er2) == PICKUP_SHOVEL) {
@@ -3142,7 +3146,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
     while (g_stepRun != 0) {
 
         i32 word = m_board->m_rows[row][col].m_flags;
-        if (word & 0x8000) {
+        if (word & IDX(CELL_FLAG_HIDDEN_POWERUP)) {
             CPtrList list(10);
             CGameObject* lvl = unit->m_object;
             if ((m_board)->FindPathWithEndpointOverrides(
@@ -3173,7 +3177,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
                 break;
             }
         }
-        if (word & 0x4000) {
+        if (word & IDX(CELL_FLAG_GAUNTLET_BRICK)) {
             CTileActionEvent* cell = m_cellQuery->FindActionByCellKey((col << 8) + row);
             if (requireUnoccupied != 0) {
                 if (cell != NULL && cell->m_playerFlags[m_playerIndex] == 0) {
@@ -3259,7 +3263,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
             }
         }
 
-        m_board->m_rows[row][col].m_flags |= 0x20000;
+        m_board->m_rows[row][col].m_flags |= IDX(CELL_FLAG_CLAIM_VISITED);
         i32 cm = col - 1;
         i32 cp = col + 1;
         i32 rm = row - 1;
@@ -3270,32 +3274,36 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
         b = m_board;
         if (static_cast<u32>(cm) < static_cast<u32>(b->m_width)) {
             nw = b->m_rows[row][cm].m_flags;
-            if (!(nw & 0x20000)
-                && ((nw & 0xc000) || b->m_rows[row][cm].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
+            if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
+                && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
+                    || b->m_rows[row][cm].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
                 ClaimTilesAround(unit, cm, row, requireUnoccupied);
             }
         }
         b = m_board;
         if (static_cast<u32>(cp) < static_cast<u32>(b->m_width)) {
             nw = b->m_rows[row][cp].m_flags;
-            if (!(nw & 0x20000)
-                && ((nw & 0xc000) || b->m_rows[row][cp].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
+            if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
+                && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
+                    || b->m_rows[row][cp].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
                 ClaimTilesAround(unit, cp, row, requireUnoccupied);
             }
         }
         b = m_board;
         if (static_cast<u32>(rm) < static_cast<u32>(b->m_width)) {
             nw = b->m_rows[rm][col].m_flags;
-            if (!(nw & 0x20000)
-                && ((nw & 0xc000) || b->m_rows[rm][col].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
+            if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
+                && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
+                    || b->m_rows[rm][col].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
                 ClaimTilesAround(unit, col, rm, requireUnoccupied);
             }
         }
         b = m_board;
         if (static_cast<u32>(rp) < static_cast<u32>(b->m_width)) {
             nw = b->m_rows[rp][col].m_flags;
-            if (!(nw & 0x20000)
-                && ((nw & 0xc000) || b->m_rows[rp][col].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
+            if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
+                && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
+                    || b->m_rows[rp][col].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
                 ClaimTilesAround(unit, col, rp, requireUnoccupied);
             }
         }
@@ -3303,8 +3311,9 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
         if (static_cast<u32>(cp) < static_cast<u32>(b->m_width)
             && static_cast<u32>(rm) < static_cast<u32>(b->m_height)) {
             nw = b->m_rows[rm][cp].m_flags;
-            if (!(nw & 0x20000)
-                && ((nw & 0xc000) || b->m_rows[rm][cp].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
+            if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
+                && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
+                    || b->m_rows[rm][cp].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
                 ClaimTilesAround(unit, cp, rm, requireUnoccupied);
             }
         }
@@ -3312,8 +3321,9 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
         if (static_cast<u32>(cp) < static_cast<u32>(b->m_width)
             && static_cast<u32>(rp) < static_cast<u32>(b->m_height)) {
             nw = b->m_rows[rp][cp].m_flags;
-            if (!(nw & 0x20000)
-                && ((nw & 0xc000) || b->m_rows[rp][cp].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
+            if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
+                && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
+                    || b->m_rows[rp][cp].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
                 ClaimTilesAround(unit, cp, rp, requireUnoccupied);
             }
         }
@@ -3321,8 +3331,9 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
         if (static_cast<u32>(cm) < static_cast<u32>(b->m_width)
             && static_cast<u32>(rp) < static_cast<u32>(b->m_height)) {
             nw = b->m_rows[rp][cm].m_flags;
-            if (!(nw & 0x20000)
-                && ((nw & 0xc000) || b->m_rows[rp][cm].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
+            if (!(nw & IDX(CELL_FLAG_CLAIM_VISITED))
+                && ((nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
+                    || b->m_rows[rp][cm].m_typeCode == TILEKIND_AI_PATH_BLOCKER)) {
                 ClaimTilesAround(unit, cm, rp, requireUnoccupied);
             }
         }
@@ -3333,8 +3344,9 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
             break;
         }
         nw = b->m_rows[rm][cm].m_flags;
-        if ((nw & 0x20000)
-            || (!(nw & 0xc000) && b->m_rows[rm][cm].m_typeCode != TILEKIND_AI_PATH_BLOCKER)) {
+        if ((nw & IDX(CELL_FLAG_CLAIM_VISITED))
+            || (!(nw & IDX(CELL_FLAG_GAUNTLET_BRICK | CELL_FLAG_HIDDEN_POWERUP))
+                && b->m_rows[rm][cm].m_typeCode != TILEKIND_AI_PATH_BLOCKER)) {
             break;
         }
         row = rm;

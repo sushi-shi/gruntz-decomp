@@ -283,7 +283,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
             return 0;
         }
 
-        while (ShowCursor(0) >= 0) {
+        while (ShowCursor(false) >= 0) {
         }
         m_initialFramePending = 1;
         m_notifyLatch = 0;
@@ -397,9 +397,9 @@ i32 CPlay::EnterState(GameStateId previousState) {
     GetCursorPos(&pt);
     m_cursorX = pt.x;
     m_cursorY = pt.y;
-    if (ShowCursor(0) >= 0) {
+    if (ShowCursor(false) >= 0) {
         do {
-        } while (ShowCursor(0) >= 0);
+        } while (ShowCursor(false) >= 0);
     }
     if (previousState == GAMESTATE_HELP) {
         g_frameTime = m_savedClock;
@@ -412,9 +412,9 @@ i32 CPlay::EnterState(GameStateId previousState) {
             return 0;
         }
     }
-    if (ShowCursor(0) >= 0) {
+    if (ShowCursor(false) >= 0) {
         do {
-        } while (ShowCursor(0) >= 0);
+        } while (ShowCursor(false) >= 0);
     }
     m_dragSnapActive = 0;
     m_dragInProgress = 0;
@@ -1521,7 +1521,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                     self->m_world->m_childGroup->TickKillCues(0);
                     self->m_statusBar->StartChipMachineCycle();
                     (static_cast<DirectInputMgr2*>(g_inputMgr))->ReadAll();
-                    while (ShowCursor(0) >= 0)
+                    while (ShowCursor(false) >= 0)
                         ;
                     self->m_mgr->RefreshGameClock();
                     if (self->m_world->m_level->m_mainPlane != NULL) {
@@ -1751,7 +1751,7 @@ i32 CPlay::InputVirtual() {
     if (!CState::InputVirtual()) {
         return 0;
     }
-    while (ShowCursor(FALSE) >= 0)
+    while (ShowCursor(false) >= 0)
         ;
 
     CRezArchiveDir* h = m_levelResources->FindDirectoryByPath("TILEZ");
@@ -1779,7 +1779,7 @@ i32 CPlay::InputVirtual() {
     }
 
     g_inputMgr->ReadAll();
-    while (ShowCursor(FALSE) >= 0)
+    while (ShowCursor(false) >= 0)
         ;
 
     m_world->m_drawTarget->m_backPair->m_surface->Fill(0);
@@ -4341,7 +4341,7 @@ void CPlay::PlayCueAt(
 
     if (cueId != m_lastCueId) {
 
-        if (m_cueText.LoadString(cueId) == 0) {
+        if (m_cueText.LoadString(cueId) == false) {
             return;
         }
         m_lastCueId = cueId;
@@ -5022,25 +5022,25 @@ i32 CPlay::ValidateLevelTiles() {
                 CTileTriggerLogic* hit;
                 i32 col = obj->m_speedX - 1;
                 i32 row = obj->m_speedY - 1;
-                b32 found = 0;
+                b32 found = false;
                 i32 colOff = col << 8;
-                while (found == 0 && col < obj->m_speedX + 2) {
+                while (found == false && col < obj->m_speedX + 2) {
                     row = obj->m_speedY - 1;
-                    while (found == 0 && row < obj->m_speedY + 2) {
+                    while (found == false && row < obj->m_speedY + 2) {
                         hit = m_tileTriggers->FindLogic(row + colOff, TRIGID_GIANT_ROCK_22);
                         if (hit != NULL) {
-                            found = 1;
+                            found = true;
                         }
-                        if (found == 0) {
+                        if (found == false) {
                             row++;
                         }
                     }
-                    if (found == 0) {
+                    if (found == false) {
                         col++;
                         colOff += 0x100;
                     }
                 }
-                if (found == 0) {
+                if (found == false) {
                     CString s;
                     s.Format("Bad switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
                     g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
@@ -5329,25 +5329,25 @@ i32 CPlay::ValidateLevelTiles() {
                 CTileTriggerLogic* hit;
                 i32 col = obj->m_speedX - 1;
                 i32 row = obj->m_speedY - 1;
-                b32 found = 0;
+                b32 found = false;
                 i32 colOff = col << 8;
-                while (found == 0 && col < obj->m_speedX + 2) {
+                while (found == false && col < obj->m_speedX + 2) {
                     row = obj->m_speedY - 1;
-                    while (found == 0 && row < obj->m_speedY + 2) {
+                    while (found == false && row < obj->m_speedY + 2) {
                         hit = m_tileTriggers->FindLogic(row + colOff, TRIGID_GIANT_ROCK_22);
                         if (hit != NULL) {
-                            found = 1;
+                            found = true;
                         }
-                        if (found == 0) {
+                        if (found == false) {
                             row++;
                         }
                     }
-                    if (found == 0) {
+                    if (found == false) {
                         col++;
                         colOff += 0x100;
                     }
                 }
-                if (found == 0) {
+                if (found == false) {
                     CString s;
                     s.Format("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
                     g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));

@@ -14,20 +14,20 @@ BOOL CALLBACK VideoOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
     switch (msg) {
         case WM_INITDIALOG:
             DialogInit(hDlg);
-            return TRUE;
+            return true;
         case WM_COMMAND:
             switch (wParam) {
                 case IDOK:
                     SaveVideoCheckboxes(hDlg);
-                    EndDialog(hDlg, TRUE);
-                    return TRUE;
+                    EndDialog(hDlg, true);
+                    return true;
                 case IDCANCEL:
-                    EndDialog(hDlg, FALSE);
-                    return TRUE;
+                    EndDialog(hDlg, false);
+                    return true;
             }
             break;
     }
-    return FALSE;
+    return false;
 }
 
 RVA(0x00037870, 0x3c)

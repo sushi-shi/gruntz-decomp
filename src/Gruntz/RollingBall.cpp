@@ -20,6 +20,7 @@
 #include <Gruntz/KitchenSlime.h>
 #include <Gruntz/LevelArea.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/MovingDeathTileId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
@@ -185,7 +186,7 @@ i32 CRollingBall::Update() {
         CMapMgr* map2 = g_gameReg->m_tileGrid;
         i32 terrain = map2->CellFlagsAt(tx, ty);
 
-        if ((terrain & BRICKZ_BLOCKED_MASK) != 0 || (terrain & 2) != 0) {
+        if ((terrain & BRICKZ_BLOCKED_MASK) != 0 || (terrain & IDX(CELL_FLAG_SPECIAL)) != 0) {
             CString fall;
             CString explosion;
 

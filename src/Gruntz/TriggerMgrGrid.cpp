@@ -22,6 +22,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/HealthPct.h>
 #include <Gruntz/LevelArea.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/PlayerCommandKind.h>
@@ -1223,7 +1224,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
                 return 0;
             }
             i32 flags = map->CellFlagsAt(argTileX, argTileY);
-            if ((flags & 0x40939) != 0 || (flags & 2) != 0) {
+            if ((flags & 0x40939) != 0 || (flags & IDX(CELL_FLAG_SPECIAL)) != 0) {
                 return 0;
             }
             SpawnPowerupIcon(PICKUP_WARPSTONE, bx, by, 0, cell->m_warpstoneAnchorIndex, 0);

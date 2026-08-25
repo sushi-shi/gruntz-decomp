@@ -30,6 +30,7 @@
 #include <Gruntz/LevelArea.h>
 #include <Gruntz/LightFx.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
@@ -133,7 +134,7 @@ static inline CAniElement* LookupAnim(CMapStringToPtr& map, LPCTSTR name) {
 
 static inline CWwdSpriteObject* LookupSerialRef(CMapPtrToPtr& byId, i32 id) {
     CGameObject* found = NULL;
-    if (MapLookupById(byId, id, found) == 0) {
+    if (MapLookupById(byId, id, found) == false) {
         return NULL;
     }
     if (found == NULL) {
@@ -437,8 +438,8 @@ void CProjectile::AdvanceMotion() {
         i32 tileX = m_targetPxX >> TILE_SHIFT_PX;
         u32 flags = plane->CellFlagsAt(tileX, tileY);
         if ((flags & 0x900) == 0) {
-            if (flags & 0x2) {
-                if (flags & 0x40) {
+            if (flags & IDX(CELL_FLAG_SPECIAL)) {
+                if (flags & IDX(CELL_FLAG_REVEALED_POWERUP)) {
                     tier = 1;
                 } else {
                     switch (reg->m_curState->m_levelType) {
@@ -977,7 +978,7 @@ static inline void TBombGridClear(CGameObject* obj) {
 RVA(0x000e1e60, 0x1ac)
 i32 CTimeBomb::UpdateCountdown() {
     i32 cell = TBombGridCell(m_object);
-    if ((cell & BRICKZ_BLOCKED_MASK) || (cell & 2)) {
+    if ((cell & BRICKZ_BLOCKED_MASK) || (cell & IDX(CELL_FLAG_SPECIAL))) {
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         TBombGridClear(m_object);
         return 0;

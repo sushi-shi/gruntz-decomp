@@ -1636,7 +1636,7 @@ i32 CGrunt::FinishToobMoveAnimation() {
             static_cast<void*>(cellObj),
             found
         )
-        == 0) {
+        == false) {
         found = NULL;
     }
     if (found == NULL) {

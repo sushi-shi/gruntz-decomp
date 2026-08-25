@@ -61,7 +61,7 @@ i32 CHelpState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
         return 0;
     }
-    while (ShowCursor(0) >= 0)
+    while (ShowCursor(false) >= 0)
         ;
     m_stateResources = m_resourceArchive->FindDirectoryByPath("STATEZ_HELP");
     if (!m_stateResources) {
@@ -130,10 +130,10 @@ i32 CHelpState::InputVirtual() {
     if (m_world->m_drawTarget->PagesReady() == 0) {
         return 0;
     }
-    while (ShowCursor(FALSE) >= 0) {
+    while (ShowCursor(false) >= 0) {
     }
     i32 r = LoadAndPresentTitlePage(g_titleBuf, 0, 0, 1, 0);
-    while (ShowCursor(FALSE) >= 0) {
+    while (ShowCursor(false) >= 0) {
     }
     return r;
 }
@@ -143,7 +143,7 @@ i32 CHelpState::RestoreDisplay() {
     if (IsActive() == 0) {
         return 0;
     }
-    while (ShowCursor(FALSE) >= 0) {
+    while (ShowCursor(false) >= 0) {
     }
     return LoadAndPresentTitlePage(g_titleBuf, 0, 0, 1, 0);
 }

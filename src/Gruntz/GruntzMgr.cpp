@@ -986,7 +986,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
     if (!m_world->SetDimensions(w, h, m_colorDepth)) {
         return 0;
     }
-    while (ShowCursor(0) >= 0) {
+    while (ShowCursor(false) >= 0) {
     }
     m_modeSize.cx = w;
     m_modeSize.cy = h;
@@ -1104,19 +1104,19 @@ BOOL CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) 
             CDDrawWorkerHost* warp = g_gameReg->m_world->m_level->m_mainPlane;
             i32 seedX = warp->m_scrollPixelX;
             i32 seedY = warp->m_scrollPixelY;
-            SetDlgItemInt(hDlg, 0x40e, seedX, 0);
-            SetDlgItemInt(hDlg, 0x40f, seedY, 0);
-            return 1;
+            SetDlgItemInt(hDlg, 0x40e, seedX, false);
+            SetDlgItemInt(hDlg, 0x40f, seedY, false);
+            return true;
         }
 
         case WM_COMMAND:
             if (wParam == IDCANCEL) {
                 EndDialog(hDlg, 0);
-                return 1;
+                return true;
             }
             if (wParam == IDOK) {
-                i32 valX = GetDlgItemInt(hDlg, 0x40e, NULL, 0);
-                i32 valY = GetDlgItemInt(hDlg, 0x40f, NULL, 0);
+                i32 valX = GetDlgItemInt(hDlg, 0x40e, NULL, false);
+                i32 valY = GetDlgItemInt(hDlg, 0x40f, NULL, false);
                 g_warpX = valX;
                 g_warpY = valY;
                 if (IsDlgButtonChecked(hDlg, 0x410)) {
@@ -1130,11 +1130,11 @@ BOOL CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) 
                     );
                 }
                 EndDialog(hDlg, 1);
-                return 1;
+                return true;
             }
             break;
     }
-    return 0;
+    return false;
 }
 
 RVA(0x0008e6c0, 0x85)
@@ -1163,20 +1163,20 @@ RVA(0x0008e7c0, 0x86)
 BOOL CALLBACK JumpLevelDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_INITDIALOG:
-            SetDlgItemInt(hDlg, 0x40c, g_gameReg->m_curState->m_levelIndex, 0);
-            return 1;
+            SetDlgItemInt(hDlg, 0x40c, g_gameReg->m_curState->m_levelIndex, false);
+            return true;
         case WM_COMMAND:
             if (wParam == IDCANCEL) {
                 EndDialog(hDlg, 0);
-                return 1;
+                return true;
             }
             if (wParam == IDOK) {
-                EndDialog(hDlg, GetDlgItemInt(hDlg, 0x40c, NULL, 0));
-                return 1;
+                EndDialog(hDlg, GetDlgItemInt(hDlg, 0x40c, NULL, false));
+                return true;
             }
             break;
     }
-    return 0;
+    return false;
 }
 
 // @dead-code
@@ -1193,20 +1193,20 @@ RVA(0x0008e8c0, 0x86)
 BOOL CALLBACK SetSkillLevelDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_INITDIALOG:
-            SetDlgItemInt(hDlg, 0x40c, g_gameReg->m_curState->m_levelIndex, 0);
-            return 1;
+            SetDlgItemInt(hDlg, 0x40c, g_gameReg->m_curState->m_levelIndex, false);
+            return true;
         case WM_COMMAND:
             if (wParam == IDCANCEL) {
                 EndDialog(hDlg, 0);
-                return 1;
+                return true;
             }
             if (wParam == IDOK) {
-                EndDialog(hDlg, GetDlgItemInt(hDlg, 0x40c, NULL, 0));
-                return 1;
+                EndDialog(hDlg, GetDlgItemInt(hDlg, 0x40c, NULL, false));
+                return true;
             }
             break;
     }
-    return 0;
+    return false;
 }
 
 RVA(0x0008e980, 0x11e)
@@ -1377,12 +1377,12 @@ i32 CGruntzMgr::ShowMessageBox(const char* text, u32 type) {
         CDDrawDeviceManager* deviceManager = m_world->m_deviceManager;
         deviceManager->m_device->FlipToGDISurface();
     }
-    i32 wasShown = ShowCursor(1);
-    while (ShowCursor(1) < 0) {
+    i32 wasShown = ShowCursor(true);
+    while (ShowCursor(true) < 0) {
     }
     i32 result = MessageBoxA(m_gameWnd->m_hwnd, text, "Gruntz", type);
     if (wasShown <= 0) {
-        while (ShowCursor(0) >= 0) {
+        while (ShowCursor(false) >= 0) {
         }
     }
     return result;
@@ -1523,7 +1523,7 @@ i32 CGruntzMgr::LaunchWebBrowser(char* url) {
     memset(&si, 0, sizeof(si));
     PROCESS_INFORMATION pi;
     si.cb = sizeof(si);
-    return CreateProcessA(NULL, cmdline, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
+    return CreateProcessA(NULL, cmdline, NULL, NULL, false, 0, NULL, NULL, &si, &pi);
 }
 
 // @dead-code
@@ -2093,7 +2093,7 @@ i32 CGruntzMgr::LaunchProcessInDir(char* exe, char* dir) {
     if (dir && *dir == 0) {
         dir = NULL;
     }
-    return CreateProcessA(NULL, cmdline, NULL, NULL, 0, 0, NULL, dir, &si, &pi);
+    return CreateProcessA(NULL, cmdline, NULL, NULL, false, 0, NULL, dir, &si, &pi);
 }
 
 RVA(0x00090980, 0x18)
@@ -3081,62 +3081,62 @@ RVA(0x00092a30, 0x52)
 BOOL CALLBACK PsycheDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_INITDIALOG:
-            return 1;
+            return true;
         case WM_COMMAND:
             if (wParam == IDCANCEL) {
                 EndDialog(hDlg, 0);
-                return 1;
+                return true;
             }
             if (wParam == IDOK) {
                 EndDialog(hDlg, 1);
-                return 1;
+                return true;
             }
             break;
     }
-    return 0;
+    return false;
 }
 
 RVA(0x00092ab0, 0x20d)
 BOOL CALLBACK DebugGruntTypeDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_INITDIALOG:
-            SetDlgItemInt(hDlg, 0x4db, g_debugGruntPlayer, 0);
-            SetDlgItemInt(hDlg, 0x4da, g_debugGruntTool, 0);
-            SetDlgItemInt(hDlg, 0x4dc, g_debugGruntToy, 0);
-            SetDlgItemInt(hDlg, 0x4dd, g_debugGruntAiType, 0);
-            SetDlgItemInt(hDlg, 0x4de, g_debugGruntColumn, 0);
-            SetDlgItemInt(hDlg, 0x4df, g_debugGruntRow, 0);
-            SetDlgItemInt(hDlg, 0x4e0, g_debugGruntColor, 0);
-            SetDlgItemInt(hDlg, 0x4e9, g_debugGruntRadius, 0);
-            SetDlgItemInt(hDlg, 0x4e3, g_debugGruntMoveLeft, 0);
-            SetDlgItemInt(hDlg, 0x4e4, g_debugGruntMoveRight, 0);
-            SetDlgItemInt(hDlg, 0x4e5, g_debugGruntMoveTop, 0);
-            SetDlgItemInt(hDlg, 0x4e6, g_debugGruntMoveBottom, 0);
-            return 1;
+            SetDlgItemInt(hDlg, 0x4db, g_debugGruntPlayer, false);
+            SetDlgItemInt(hDlg, 0x4da, g_debugGruntTool, false);
+            SetDlgItemInt(hDlg, 0x4dc, g_debugGruntToy, false);
+            SetDlgItemInt(hDlg, 0x4dd, g_debugGruntAiType, false);
+            SetDlgItemInt(hDlg, 0x4de, g_debugGruntColumn, false);
+            SetDlgItemInt(hDlg, 0x4df, g_debugGruntRow, false);
+            SetDlgItemInt(hDlg, 0x4e0, g_debugGruntColor, false);
+            SetDlgItemInt(hDlg, 0x4e9, g_debugGruntRadius, false);
+            SetDlgItemInt(hDlg, 0x4e3, g_debugGruntMoveLeft, false);
+            SetDlgItemInt(hDlg, 0x4e4, g_debugGruntMoveRight, false);
+            SetDlgItemInt(hDlg, 0x4e5, g_debugGruntMoveTop, false);
+            SetDlgItemInt(hDlg, 0x4e6, g_debugGruntMoveBottom, false);
+            return true;
         case WM_COMMAND:
             if (wParam == IDCANCEL) {
                 EndDialog(hDlg, 0);
-                return 1;
+                return true;
             }
             if (wParam == IDOK) {
-                g_debugGruntPlayer = GetDlgItemInt(hDlg, 0x4db, NULL, 0);
-                g_debugGruntTool = GetDlgItemInt(hDlg, 0x4da, NULL, 0);
-                g_debugGruntToy = GetDlgItemInt(hDlg, 0x4dc, NULL, 0);
-                g_debugGruntAiType = GetDlgItemInt(hDlg, 0x4dd, NULL, 0);
-                g_debugGruntColumn = GetDlgItemInt(hDlg, 0x4de, NULL, 0);
-                g_debugGruntRow = GetDlgItemInt(hDlg, 0x4df, NULL, 0);
-                g_debugGruntColor = GetDlgItemInt(hDlg, 0x4e0, NULL, 0);
-                g_debugGruntRadius = GetDlgItemInt(hDlg, 0x4e9, NULL, 0);
-                g_debugGruntMoveLeft = GetDlgItemInt(hDlg, 0x4e3, NULL, 0);
-                g_debugGruntMoveRight = GetDlgItemInt(hDlg, 0x4e4, NULL, 0);
-                g_debugGruntMoveTop = GetDlgItemInt(hDlg, 0x4e5, NULL, 0);
-                g_debugGruntMoveBottom = GetDlgItemInt(hDlg, 0x4e6, NULL, 0);
+                g_debugGruntPlayer = GetDlgItemInt(hDlg, 0x4db, NULL, false);
+                g_debugGruntTool = GetDlgItemInt(hDlg, 0x4da, NULL, false);
+                g_debugGruntToy = GetDlgItemInt(hDlg, 0x4dc, NULL, false);
+                g_debugGruntAiType = GetDlgItemInt(hDlg, 0x4dd, NULL, false);
+                g_debugGruntColumn = GetDlgItemInt(hDlg, 0x4de, NULL, false);
+                g_debugGruntRow = GetDlgItemInt(hDlg, 0x4df, NULL, false);
+                g_debugGruntColor = GetDlgItemInt(hDlg, 0x4e0, NULL, false);
+                g_debugGruntRadius = GetDlgItemInt(hDlg, 0x4e9, NULL, false);
+                g_debugGruntMoveLeft = GetDlgItemInt(hDlg, 0x4e3, NULL, false);
+                g_debugGruntMoveRight = GetDlgItemInt(hDlg, 0x4e4, NULL, false);
+                g_debugGruntMoveTop = GetDlgItemInt(hDlg, 0x4e5, NULL, false);
+                g_debugGruntMoveBottom = GetDlgItemInt(hDlg, 0x4e6, NULL, false);
                 EndDialog(hDlg, 1);
-                return 1;
+                return true;
             }
             break;
     }
-    return 0;
+    return false;
 }
 
 // @dead-code

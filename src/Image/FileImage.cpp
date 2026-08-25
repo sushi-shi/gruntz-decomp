@@ -375,14 +375,14 @@ i32 CDDSurface::SaveRle16(char* path, CFileImagePal* pal, i32 flag) {
 
     CFile file;
     if (flag != 0) {
-        if (file.Open(path, 0x2001, NULL) == 0) {
+        if (file.Open(path, 0x2001, NULL) == false) {
             this->m_ddSurface->Unlock(NULL);
             delete[] line;
             return 0;
         }
         file.Seek(0, 2);
     } else {
-        if (file.Open(path, 0x1001, NULL) == 0) {
+        if (file.Open(path, 0x1001, NULL) == false) {
             this->m_ddSurface->Unlock(NULL);
             delete[] line;
             return 0;

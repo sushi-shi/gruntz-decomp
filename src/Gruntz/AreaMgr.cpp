@@ -695,7 +695,7 @@ i32 CAreaMgr::InitializeTrainingStage4() {
 RVA(0x0009b430, 0x49)
 b32 CAreaMgr::IsSameWorld(i32 levelIndex) {
     if (levelIndex <= 0) {
-        return 0;
+        return false;
     }
     i32 requestedWorld = (levelIndex - 1) % 36 / 4 + 1;
     i32 currentWorld = (m_currentLevelIndex - 1) % 36 / 4 + 1;

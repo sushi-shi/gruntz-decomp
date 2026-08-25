@@ -116,7 +116,7 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
     m_bpp = info.bpp;
     m_window = window;
     m_streamOpen = 0;
-    ShowCursor(0);
+    ShowCursor(false);
     m_initialized = 1;
     FreeAll();
     return 1;
@@ -193,7 +193,7 @@ i32 CMoviePlayer::InitMode(
     m_srcSurf = NULL;
     m_srcSurfRaw = NULL;
     m_directSound = dsound;
-    ShowCursor(0);
+    ShowCursor(false);
     m_initialized = 1;
     FreeAll();
     return 1;
@@ -214,7 +214,7 @@ void CMoviePlayer::Teardown() {
         delete m_videoWnd;
         m_videoWnd = NULL;
     }
-    ShowCursor(1);
+    ShowCursor(true);
 }
 
 RVA(0x0017c570, 0xc0)

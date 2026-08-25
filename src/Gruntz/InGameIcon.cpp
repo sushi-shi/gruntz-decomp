@@ -25,6 +25,7 @@
 #include <Gruntz/InGameText.h>
 #include <Gruntz/LogicFnTable.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SerialArchive.h>
@@ -94,7 +95,7 @@ static inline CAniElement* LookupAni(CMapStringToPtr& map, LPCTSTR name) {
 
 static inline CWwdSpriteObject* LookupSerialRef(CMapPtrToPtr& byId, i32 id) {
     CGameObject* found = NULL;
-    if (MapLookupById(byId, id, found) == 0) {
+    if (MapLookupById(byId, id, found) == false) {
         return NULL;
     }
     if (found == NULL) {
@@ -567,7 +568,7 @@ i32 CInGameIcon::PeekCycle() {
         CMapMgr* grid = g_gameReg->m_tileGrid;
         i32 tileX = obj->m_screenX >> TILE_SHIFT_PX;
         i32 cell = grid->CellFlagsAt(tileX, tileY);
-        if ((cell & BRICKZ_BLOCKED_MASK) != 0 || (cell & 2) != 0) {
+        if ((cell & BRICKZ_BLOCKED_MASK) != 0 || (cell & IDX(CELL_FLAG_SPECIAL)) != 0) {
             if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
                 && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
                 grid->m_rows[tileY][tileX].m_objectId = 0;

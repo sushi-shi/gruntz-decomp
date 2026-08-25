@@ -176,7 +176,7 @@ static BOOL __stdcall NetEnumProviderCallback(
 ) {
     CNetMgr* manager = static_cast<CNetMgr*>(context);
     if (manager == NULL) {
-        return 0;
+        return false;
     }
 
     if (g_validateProviders == 0) {
@@ -184,10 +184,10 @@ static BOOL __stdcall NetEnumProviderCallback(
         i32 hr = DirectPlayCreate(providerGuid, &dp, NULL);
         if (hr != 0) {
             CNetMgr::ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0xfe, hr, NULL);
-            return 1;
+            return true;
         }
         if (dp == NULL) {
-            return 1;
+            return true;
         }
         dp->Release();
     }
@@ -351,9 +351,9 @@ NetEnumSessionCallback(
     CNetMgr* manager = static_cast<CNetMgr*>(context);
     if (manager != NULL && (flags & DPESC_TIMEDOUT) == 0 && sessionDesc != NULL) {
         manager->AddSessionListing(sessionDesc);
-        return TRUE;
+        return true;
     }
-    return FALSE;
+    return false;
 }
 
 
@@ -602,10 +602,10 @@ BOOL __stdcall NetEnumPlayerCallback(
 ) {
     CNetMgr* manager = static_cast<CNetMgr*>(context);
     if (manager == NULL) {
-        return FALSE;
+        return false;
     }
     manager->AddPlayer(playerId, name->lpszShortNameA, name->lpszLongNameA, flags);
-    return TRUE;
+    return true;
 }
 
 

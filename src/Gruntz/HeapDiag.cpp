@@ -203,7 +203,7 @@ i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
                         matchCount++;
                         if (matchCount == 1 && pHandleOut != NULL) {
                             *pHandleOut =
-                                OpenProcess(PROCESS_QUERY_INFORMATION, 0, me.th32ProcessID);
+                                OpenProcess(PROCESS_QUERY_INFORMATION, false, me.th32ProcessID);
                         }
                         if (matchCount >= wantCount) {
                             return 1;
@@ -214,7 +214,7 @@ i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
                         matchCount++;
                         if (matchCount == 1 && pHandleOut != NULL) {
                             *pHandleOut =
-                                OpenProcess(PROCESS_QUERY_INFORMATION, 0, me.th32ProcessID);
+                                OpenProcess(PROCESS_QUERY_INFORMATION, false, me.th32ProcessID);
                         }
                         if (matchCount >= wantCount) {
                             return 1;

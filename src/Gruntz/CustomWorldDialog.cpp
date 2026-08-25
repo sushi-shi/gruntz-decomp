@@ -93,36 +93,36 @@ BOOL CALLBACK CustomWorldDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
             if (g_customLevelList) {
                 FillCustomLevelList(hDlg);
             }
-            return 1;
+            return true;
         case WM_COMMAND:
             if (wParam == IDCANCEL) {
                 EndDialog(hDlg, 0);
-                return 1;
+                return true;
             }
             if (wParam == CTRL_CUSTOM_WORLD_INFO) {
                 LoadCustomWorldInfo(hDlg);
-                return 1;
+                return true;
             }
             if (wParam == IDOK) {
                 LoadCustomWorldSelection(hDlg);
                 EndDialog(hDlg, 1);
-                return 1;
+                return true;
             }
             MsgParam listWnd;
             listWnd.m_hwnd = g_customLevelList;
             if (g_customLevelList != NULL && lParam == listWnd.m_lparam) {
                 if (HIWORD(wParam) == LBN_SELCHANGE) {
                     FillLevelInfoDialog(hDlg);
-                    return 1;
+                    return true;
                 }
                 if (HIWORD(wParam) == LBN_DBLCLK) {
                     PostMessageA(hDlg, WM_COMMAND, IDOK, 0);
-                    return 1;
+                    return true;
                 }
             }
             break;
     }
-    return 0;
+    return false;
 }
 
 RVA(0x0003af90, 0x194)
@@ -275,16 +275,16 @@ BOOL CALLBACK CustomWorldInfoDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM 
                 SetDlgItemTextA(hDlg, 0x40c, "Bad Level File");
                 SetDlgItemTextA(hDlg, 0x429, "Bad Level File");
             }
-            return 1;
+            return true;
         }
         case WM_COMMAND:
             if (wParam == IDOK) {
                 EndDialog(hDlg, 1);
-                return 1;
+                return true;
             }
             break;
     }
-    return 0;
+    return false;
 }
 
 RVA(0x0003b7c0, 0x12c)

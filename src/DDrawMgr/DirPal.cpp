@@ -6,6 +6,7 @@
 
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/PaletteSize.h>
+#include <DDrawMgr/PixelShift.h>
 #include <Image/FileImageRecords.h>
 #include <Io/FileStream.h>
 
@@ -81,7 +82,7 @@ i32 CDDPalette::LoadBmp(IDirectDraw2* dd, char* filename, u32 flags) {
     PALETTEENTRY pe[PALETTE_ENTRY_COUNT];
     Bmp256Info info;
     CFile file;
-    if (file.Open(filename, CFile::modeRead, NULL) == 0) {
+    if (file.Open(filename, CFile::modeRead, NULL) == false) {
         return 0;
     }
     if (file.Read(&hdr, sizeof(hdr)) != sizeof(hdr)) {
@@ -108,7 +109,7 @@ i32 CDDPalette::LoadPcx(IDirectDraw2* dd, char* filename, u32 flags) {
     PALETTEENTRY pe[PALETTE_ENTRY_COUNT];
     u8 rgb[PALETTE_RGB_BYTE_COUNT];
     CFile file;
-    if (file.Open(filename, CFile::modeRead, NULL) == 0) {
+    if (file.Open(filename, CFile::modeRead, NULL) == false) {
         return 0;
     }
     file.Seek(-PALETTE_RGB_BYTE_COUNT, CFile::end);
@@ -137,7 +138,7 @@ i32 CDDPalette::LoadPal(IDirectDraw2* dd, char* filename, u32 flags) {
     PALETTEENTRY pe[PALETTE_ENTRY_COUNT];
     u8 rgb[PALETTE_RGB_BYTE_COUNT];
     CFile file;
-    if (file.Open(filename, CFile::modeRead, NULL) == 0) {
+    if (file.Open(filename, CFile::modeRead, NULL) == false) {
         return 0;
     }
     if (file.Read(rgb, PALETTE_RGB_BYTE_COUNT) != PALETTE_RGB_BYTE_COUNT) {
@@ -282,14 +283,16 @@ void CDDPalette::FadeRange(i32 start, i32 count, i32 r, i32 g, i32 b, i32 durati
     for (i32 t = 10; static_cast<u32>(t) < static_cast<u32>(durationMs); t = timeGetTime() - t0) {
         if (t != prev) {
             for (i32 j = start; j < start + count; j++) {
-                m_entries[j].peRed = static_cast<u8>(
-                    (((r & 0xff) - snapshot[j].peRed) * t / durationMs + snapshot[j].peRed)
-                );
+                m_entries[j].peRed = static_cast<u8>((
+                    ((r & PIXEL_BYTE_MASK) - snapshot[j].peRed) * t / durationMs + snapshot[j].peRed
+                ));
                 m_entries[j].peGreen = static_cast<u8>(
-                    (((g & 0xff) - snapshot[j].peGreen) * t / durationMs + snapshot[j].peGreen)
+                    (((g & PIXEL_BYTE_MASK) - snapshot[j].peGreen) * t / durationMs
+                     + snapshot[j].peGreen)
                 );
                 m_entries[j].peBlue = static_cast<u8>(
-                    (((b & 0xff) - snapshot[j].peBlue) * t / durationMs + snapshot[j].peBlue)
+                    (((b & PIXEL_BYTE_MASK) - snapshot[j].peBlue) * t / durationMs
+                     + snapshot[j].peBlue)
                 );
             }
             m_palette->SetEntries(0, start, count, m_entries + start);

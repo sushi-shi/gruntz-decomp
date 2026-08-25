@@ -823,7 +823,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
         case CMD_WEB_SITE:
             if (m_curState->Update() == GAMESTATE_MENU
                 || m_curState->Update() == GAMESTATE_ATTRACT) {
-                while (ShowCursor(1) < 0) {
+                while (ShowCursor(true) < 0) {
                 }
                 LaunchWebBrowser(const_cast<char*>("http://www.gruntzgoo.com/"));
             }

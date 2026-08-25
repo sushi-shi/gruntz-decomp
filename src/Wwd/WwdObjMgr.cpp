@@ -1330,7 +1330,7 @@ i32 CDDrawChildGroup::SerializeObjects(CFileMemBase* ar, LogicTypeId typeId) {
 
 static inline CWwdGameObject* LookupObjectById(CMapPtrToPtr& byId, i32 id) {
     CWwdGameObject* found = NULL;
-    if (MapLookupById(byId, id, found) == 0) {
+    if (MapLookupById(byId, id, found) == false) {
         found = NULL;
     }
     return found;
@@ -1366,7 +1366,7 @@ i32 CDDrawChildGroup::DeserializeObjects(CFileMemBase* ar, u32 count, LogicTypeI
 
 inline CWwdGameObject* LookupActiveObject(CMapPtrToPtr& map, void* key) {
     CWwdGameObject* found = NULL;
-    if (MapLookup(map, key, found) == 0) {
+    if (MapLookup(map, key, found) == false) {
         found = NULL;
     }
     return found;

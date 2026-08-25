@@ -47,26 +47,26 @@ BOOL CALLBACK AdvancedOptionsDialogProc(HWND hWnd, UINT message, WPARAM wParam, 
             }
             SetForegroundWindow(hWnd);
             BringWindowToTop(hWnd);
-            return 1;
+            return true;
 
         case WM_COMMAND:
             if (wParam == IDCANCEL) {
                 EndDialog(hWnd, 0);
-                return 1;
+                return true;
             }
             if (wParam == 1) {
                 SaveOptions(hWnd, &g_registryHelper);
                 EndDialog(hWnd, 1);
-                return 1;
+                return true;
             }
             if (wParam == IDC_DEFAULTS) {
                 SetDefaults(hWnd);
-                return 1;
+                return true;
             }
             break;
     }
 
-    return 0;
+    return false;
 }
 
 RVA(0x0000b110, 0x32)

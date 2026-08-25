@@ -15,6 +15,12 @@ typedef struct tagRECT ShadeRect;
 
 struct PidHeader;
 
+GZ_ENUM_CONST_BEGIN(ShadeRleLayout)
+    SHADE_RLE_MAX_RUN = 0x7e,
+    SHADE_RLE_TRANSPARENT_FLAG = 0x80,
+    SHADE_LIGHT_MIDPOINT = 0x80
+GZ_ENUM_CONST_END(ShadeRleLayout)
+
 struct PidWriteHeader {
     i32 formatTag;
     i32 flags;

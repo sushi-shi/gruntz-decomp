@@ -286,7 +286,8 @@ i32 CSpotLight::SerializeDispatch(
                 s->Read(&id, sizeof(id));
                 CGameObject* out = NULL;
                 CGameObject* resolved;
-                if (MapLookupById(world->m_childGroup->m_registeredGameObjectsById, id, out) == 0) {
+                if (MapLookupById(world->m_childGroup->m_registeredGameObjectsById, id, out)
+                    == false) {
                     resolved = NULL;
                 } else if (out == NULL) {
                     resolved = NULL;

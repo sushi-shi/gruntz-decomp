@@ -230,9 +230,9 @@ i32 CMenuState::EnterState(GameStateId previousState) {
 
     RetireScene(0x50, 0x3e8, 0, 1);
 
-    if (ShowCursor(1) < 0) {
+    if (ShowCursor(true) < 0) {
         do {
-        } while (ShowCursor(1) < 0);
+        } while (ShowCursor(true) < 0);
     }
     StartMusic();
     return 1;
@@ -406,9 +406,9 @@ i32 CMenuState::RestoreDisplay() {
 
     RetireScene(0x50, 0x3e8, 0, 1);
 
-    if (ShowCursor(1) < 0) {
+    if (ShowCursor(true) < 0) {
         do {
-        } while (ShowCursor(1) < 0);
+        } while (ShowCursor(true) < 0);
     }
     return 1;
 }

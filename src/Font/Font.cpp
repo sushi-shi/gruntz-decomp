@@ -260,8 +260,8 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
 
     i32 destX = x;
     i32 red = static_cast<u8>(m_color);
-    i32 green = (m_color >> 8) & 0xff;
-    i32 blue = (m_color >> 16) & 0xff;
+    i32 green = (m_color >> PIXEL_BITS_PER_BYTE) & PIXEL_BYTE_MASK;
+    i32 blue = (m_color >> (PIXEL_BITS_PER_BYTE * 2)) & PIXEL_BYTE_MASK;
     i32 rightPartial = 0;
     i32 firstCol = 0;
     u16 packedColor =

@@ -969,7 +969,7 @@ i32 CAniElement::Configure(SoundCueRegistry* ctx, CRezArchiveEntry* entry, i32 f
 RVA(0x00165620, 0x101)
 i32 CAniElement::LoadFile(SoundCueRegistry* ctx, const char* filename, i32 unused) {
     CFile fr;
-    if (fr.Open(filename, CFile::modeRead, NULL) == 0) {
+    if (fr.Open(filename, CFile::modeRead, NULL) == false) {
         return 0;
     }
     u32 size = fr.GetLength();

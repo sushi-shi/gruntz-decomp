@@ -66,7 +66,7 @@ i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 pre
     if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
         return 0;
     }
-    while (ShowCursor(0) >= 0)
+    while (ShowCursor(false) >= 0)
         ;
 
     m_flashColor = 0;
@@ -145,9 +145,9 @@ RVA_COMPGEN(0x000390a0, 0x5d, ??1CFecFile@@QAE@XZ)
 
 RVA(0x00039120, 0x2c)
 i32 CCreditsState::EnterState(GameStateId previousState) {
-    if (ShowCursor(0) >= 0) {
+    if (ShowCursor(false) >= 0) {
         do {
-        } while (ShowCursor(0) >= 0);
+        } while (ShowCursor(false) >= 0);
     }
     return InitAttractTitle() != 0;
 }
@@ -224,9 +224,9 @@ i32 CCreditsState::InputVirtual() {
     if (m_world->m_drawTarget->PagesReady() == 0) {
         return 0;
     }
-    if (ShowCursor(0) >= 0) {
+    if (ShowCursor(false) >= 0) {
         do {
-        } while (ShowCursor(0) >= 0);
+        } while (ShowCursor(false) >= 0);
     }
     InitAttractTitle();
     return 1;
@@ -237,9 +237,9 @@ i32 CCreditsState::RestoreDisplay() {
     if (IsActive() == 0) {
         return 0;
     }
-    if (ShowCursor(0) >= 0) {
+    if (ShowCursor(false) >= 0) {
         do {
-        } while (ShowCursor(0) >= 0);
+        } while (ShowCursor(false) >= 0);
     }
     return InitAttractTitle();
 }

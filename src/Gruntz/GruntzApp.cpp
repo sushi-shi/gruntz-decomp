@@ -89,7 +89,7 @@ void CGruntzApp::ShowError() {
 
     strcat(g_errorText, detail);
 
-    while (ShowCursor(1) < 0)
+    while (ShowCursor(true) < 0)
         ;
 
     DialogBoxParamA(m_hInstance, "ERROR", NULL, CGruntzApp::ErrorDialogProc, 0);
@@ -108,17 +108,17 @@ BOOL CALLBACK CGruntzApp::ErrorDialogProc(HWND hWnd, UINT message, WPARAM wParam
     switch (message) {
         case WM_INITDIALOG:
             SetDlgItemTextA(hWnd, IDC_ERROR_TEXT, g_errorText);
-            return 1;
+            return true;
 
         case WM_COMMAND:
             if (wParam == IDOK || wParam == IDCANCEL) {
                 EndDialog(hWnd, 0);
-                return 1;
+                return true;
             }
             break;
     }
 
-    return 0;
+    return false;
 }
 
 RVA_COMPGEN(0x00080cf0, 0x12, ??1CGameApp@@UAE@XZ)

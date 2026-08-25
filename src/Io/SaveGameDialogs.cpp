@@ -37,20 +37,20 @@ BOOL CALLBACK SaveGameDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
         case WM_COMMAND:
             if (wParam == IDCANCEL) {
                 EndDialog(hDlg, 0);
-                return 1;
+                return true;
             }
             if (DrawSaveGameMenu(hDlg, wParam, g_saveDlgSink) != 0) {
-                return 1;
+                return true;
             }
 
         default:
-            return 0;
+            return false;
         case WM_INITDIALOG: {
             CSaveGame* v = g_gameReg->m_saveGame;
             g_savedMenuCmd = -1;
             g_saveDlgSink = v;
             FillSaveDialog(hDlg, v);
-            return 1;
+            return true;
         }
     }
 }
@@ -61,7 +61,7 @@ BOOL CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
         case WM_PAINT: {
             HWND item = GetDlgItem(hDlg, CTRL_SAVESLOT_PREVIEW_IMAGE);
             if (g_previewMgr == NULL || g_previewImage == NULL || item == NULL) {
-                return 1;
+                return true;
             }
             RECT wr;
             GetWindowRect(item, &wr);
@@ -120,12 +120,12 @@ BOOL CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 );
             }
             EndPaint(hDlg, &ps);
-            return 1;
+            return true;
         }
         case WM_INITDIALOG: {
             if (g_slotState == NULL) {
                 EndDialog(hDlg, 0);
-                return 1;
+                return true;
             }
             g_previewMgr = new CImagePool;
 
@@ -133,11 +133,11 @@ BOOL CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 break;
             }
             BuildLevelTitleString(hDlg, g_gameReg->m_saveGame, g_slotState);
-            return 1;
+            return true;
         }
         case WM_COMMAND: {
             if (wParam != IDCANCEL && wParam != IDOK) {
-                return 0;
+                return false;
             }
             if (g_previewMgr != NULL) {
                 if (g_previewImage != NULL) {
@@ -147,10 +147,10 @@ BOOL CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 g_previewMgr = NULL;
             }
             EndDialog(hDlg, 0);
-            return 1;
+            return true;
         }
     }
-    return 0;
+    return false;
 }
 
 RVA(0x000e3a40, 0xb0)
@@ -161,25 +161,25 @@ BOOL CALLBACK DeleteSaveDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lP
                 MsgParam ret;
                 ret.m_slot = g_slotState;
                 EndDialog(hDlg, ret.m_lparam);
-                return 1;
+                return true;
             }
             SetSaveSlotDialogName(hDlg, g_gameReg->m_saveGame, g_slotState);
-            return 1;
+            return true;
         case WM_COMMAND:
             if (wParam == IDCANCEL) {
                 EndDialog(hDlg, 0);
-                return 1;
+                return true;
             }
             if (wParam == IDOK) {
                 (static_cast<CSaveGame*>(g_gameReg->m_saveGame))->CloseTempFile(g_slotState);
                 (static_cast<CSaveGame*>(g_gameReg->m_saveGame))
                     ->Save(NULL, SAVE_STRING_SAVING_GAME);
                 EndDialog(hDlg, 1);
-                return 1;
+                return true;
             }
             break;
     }
-    return 0;
+    return false;
 }
 
 RVA(0x000e3b20, 0x86)
@@ -190,41 +190,41 @@ BOOL CALLBACK InfoLineDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                 MsgParam ret;
                 ret.m_slot = g_slotState;
                 EndDialog(hDlg, ret.m_lparam);
-                return 1;
+                return true;
             }
             SetSaveSlotDialogName(hDlg, g_gameReg->m_saveGame, g_slotState);
-            return 1;
+            return true;
         case WM_COMMAND:
             if (wParam == IDCANCEL) {
                 EndDialog(hDlg, 0);
-                return 1;
+                return true;
             }
             if (wParam == IDOK) {
                 EndDialog(hDlg, wParam);
-                return 1;
+                return true;
             }
             break;
     }
-    return 0;
+    return false;
 }
 
 RVA(0x000e3be0, 0x52)
 BOOL CALLBACK OkCancelDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_INITDIALOG:
-            return 1;
+            return true;
         case WM_COMMAND:
             if (wParam == IDCANCEL) {
                 EndDialog(hDlg, 0);
-                return 1;
+                return true;
             }
             if (wParam == IDOK) {
                 EndDialog(hDlg, 1);
-                return 1;
+                return true;
             }
             break;
     }
-    return 0;
+    return false;
 }
 
 RVA(0x000e3c60, 0x1a3)
@@ -324,8 +324,8 @@ void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6
         SetDlgItemTextA(hWnd, id3, "(Empty)");
         flag = 0;
     }
-    EnableWindow(GetDlgItem(hWnd, id3), 1);
-    EnableWindow(GetDlgItem(hWnd, id4), 1);
+    EnableWindow(GetDlgItem(hWnd, id3), true);
+    EnableWindow(GetDlgItem(hWnd, id4), true);
     EnableWindow(GetDlgItem(hWnd, id5), flag);
     EnableWindow(GetDlgItem(hWnd, id6), flag);
 }
@@ -414,9 +414,9 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
         if (g_slotState == NULL) {
             return 0;
         }
-        EnableWindow(hDlg, FALSE);
+        EnableWindow(hDlg, false);
         g_gameReg->RunModalDialog("GAME_INFO", LevelPreviewDlgProc, 0);
-        EnableWindow(hDlg, TRUE);
+        EnableWindow(hDlg, true);
         return 0;
     }
 
@@ -458,9 +458,9 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
         if (g_slotState == NULL) {
             return 0;
         }
-        EnableWindow(hDlg, FALSE);
+        EnableWindow(hDlg, false);
         i32 ok = g_gameReg->RunModalDialog("GAME_DELETE", DeleteSaveDialogProc, 0);
-        EnableWindow(hDlg, TRUE);
+        EnableWindow(hDlg, true);
         if (ok == 0) {
             return 0;
         }
@@ -524,9 +524,9 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
         if (TempFileExists(obj->GetSlot(slot))) {
             g_slotState = obj->GetSlot(slot);
             if (g_slotState != NULL) {
-                EnableWindow(hDlg, FALSE);
+                EnableWindow(hDlg, false);
                 i32 ok = g_gameReg->RunModalDialog("GAME_OVERWRITE", InfoLineDialogProc, 0);
-                EnableWindow(hDlg, TRUE);
+                EnableWindow(hDlg, true);
                 if (ok == 0) {
                     return 1;
                 }
@@ -598,7 +598,7 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
     }
 
     CFile f;
-    if (f.Open(lev->m_savePath, CFile::typeBinary | CFile::modeRead, NULL) == 0) {
+    if (f.Open(lev->m_savePath, CFile::typeBinary | CFile::modeRead, NULL) == false) {
         g_previewImage = NULL;
         return;
     }

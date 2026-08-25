@@ -48,6 +48,7 @@
 #include <Gruntz/LightFx.h>
 #include <Gruntz/LogicRecordHandler.h>
 #include <Gruntz/LogicTypeTableInline.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/MotionState.h>
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/PickupType.h>
@@ -665,7 +666,7 @@ i32 CGrunt::TryPowerupAtTile() {
     } else {
         flags = b->m_rowInts[ty][tx * 7];
     }
-    if ((flags & BRICKZ_BLOCKED_MASK) || (flags & 2)) {
+    if ((flags & BRICKZ_BLOCKED_MASK) || (flags & IDX(CELL_FLAG_SPECIAL))) {
         return 0;
     }
     m_triggerMgr->SpawnPowerupIcon(reason, px, py, 0, 1, 0);
@@ -2255,7 +2256,7 @@ void CGrunt::StepBehavior(char*) {
             }
         }
 
-        if ((flags & 2) == 0 || m_wingzEnabled != 0) {
+        if ((flags & IDX(CELL_FLAG_SPECIAL)) == 0 || m_wingzEnabled != 0) {
             i32 mask = m_arrivalFlags & flags;
             if (!(mask & BRICKZ_CELL_OCCUPIED)) {
                 if (mask == 0) {

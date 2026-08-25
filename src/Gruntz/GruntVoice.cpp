@@ -326,7 +326,7 @@ i32 CGruntVoice::UpdateIndicator() {
                 sourceObjectId,
                 out
             )
-            == 0) {
+            == false) {
             resolved = NULL;
         } else if (out == NULL) {
             resolved = NULL;
@@ -352,7 +352,7 @@ i32 CGruntVoice::UpdateIndicator() {
                 sourceObjectId,
                 out
             )
-            == 0) {
+            == false) {
             resolved = NULL;
         } else if (out == NULL) {
             resolved = NULL;

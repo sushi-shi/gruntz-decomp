@@ -416,7 +416,7 @@ i32 CState::InputVirtual() {
         return 0;
     }
 
-    while (ShowCursor(0) >= 0)
+    while (ShowCursor(false) >= 0)
         ;
     if (m_world->m_drawTarget->PagesReady() == 0) {
         return 0;
@@ -432,7 +432,7 @@ i32 CState::InputVirtual() {
         rect.top = 0;
         DrawTextToFrontSurface(m_world, &text, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
     }
-    while (ShowCursor(0) >= 0)
+    while (ShowCursor(false) >= 0)
         ;
     g_playActive = 0;
     CRezArchiveDir* path = m_resourceArchive->FindDirectoryByPath("GAME_IMAGEZ");

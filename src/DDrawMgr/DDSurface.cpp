@@ -786,15 +786,22 @@ i32 CDDSurface::ShadeBlt(
 
                         u16 v = Clut16(
                             CLUT_BLUE_OFFSET * sizeof(u16) + bank
-                            + (((tp & 0x1f) << 5) + (sp & 0x1f)) * sizeof(u16)
+                            + (((tp & RGB555_CHANNEL_MASK) << RGB555_CHANNEL_BITS)
+                               + (sp & RGB555_CHANNEL_MASK))
+                                  * sizeof(u16)
                         );
                         v |= Clut16(
                             CLUT_RED_OFFSET * sizeof(u16) + bank
-                            + ((sp >> 0xa) + ((tp >> 5) & ~0x1f)) * sizeof(u16)
+                            + ((sp >> RGB555_RED_UP)
+                               + ((tp >> PIXEL16_GREEN_UP) & ~RGB555_CHANNEL_MASK))
+                                  * sizeof(u16)
                         );
                         v |= Clut16(
                             CLUT_GREEN_OFFSET * sizeof(u16) + bank
-                            + ((((tp >> 5) & 0x1f) << 5) + (0x1f & (sp >> 5))) * sizeof(u16)
+                            + ((((tp >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
+                                << RGB555_CHANNEL_BITS)
+                               + (RGB555_CHANNEL_MASK & (sp >> PIXEL16_GREEN_UP)))
+                                  * sizeof(u16)
                         );
                         *dstPtr = v;
                         dstPtr++;
@@ -822,15 +829,22 @@ i32 CDDSurface::ShadeBlt(
 
                         u16 v = Clut16(
                             CLUT_BLUE_OFFSET * sizeof(u16) + bank
-                            + (((tp & 0x1f) << 5) + (sp & 0x1f)) * sizeof(u16)
+                            + (((tp & RGB555_CHANNEL_MASK) << RGB555_CHANNEL_BITS)
+                               + (sp & RGB555_CHANNEL_MASK))
+                                  * sizeof(u16)
                         );
                         v |= Clut16(
                             CLUT_RED_OFFSET * sizeof(u16) + bank
-                            + ((sp >> 0xb) + ((tp >> 6) & ~0x1f)) * sizeof(u16)
+                            + ((sp >> RGB565_RED_UP)
+                               + ((tp >> RGB565_GREEN_TO_5_SHIFT) & ~RGB555_CHANNEL_MASK))
+                                  * sizeof(u16)
                         );
                         v |= Clut16(
                             CLUT_GREEN_OFFSET * sizeof(u16) + bank
-                            + ((((tp >> 6) & 0x1f) << 5) + ((sp >> 6) & 0x1f)) * sizeof(u16)
+                            + ((((tp >> RGB565_GREEN_TO_5_SHIFT) & RGB555_CHANNEL_MASK)
+                                << RGB555_CHANNEL_BITS)
+                               + ((sp >> RGB565_GREEN_TO_5_SHIFT) & RGB555_CHANNEL_MASK))
+                                  * sizeof(u16)
                         );
                         *dstPtr = v;
                         dstPtr++;
@@ -858,7 +872,7 @@ reject:
 
 RVA(0x0013f460, 0x2da)
 i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
-    if (pct > 100) {
+    if (pct > CLUT_BLEND_PERCENT_MAX) {
         return 0;
     }
     RECT rc;
@@ -879,7 +893,7 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
     } else {
         rc = MakeRect(0, 0, m_width, m_height);
     }
-    pct = pct * 32 / 100;
+    pct = pct * CLUT_BLEND_LEVEL_COUNT / CLUT_BLEND_PERCENT_MAX;
     u16* src = static_cast<u16*>(Lock(NULL));
     i32 rowPix = m_pitch / 2;
     u16* srcPix = src + rc.top * rowPix + rc.left;
@@ -887,7 +901,7 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
     i32 width = rc.right - rc.left;
     i32 height = rc.bottom - rc.top;
     u16* scratch = new u16[width * 2];
-    i32 off = pct << 11;
+    i32 off = pct << CLUT_LEVEL_BYTE_SHIFT;
 
     if (g_rDown == PIXEL16_RED_DOWN && g_gDown == RGB555_GREEN_DOWN && g_bDown == PIXEL16_BLUE_DOWN
         && g_rUp == RGB555_RED_UP && g_gUp == PIXEL16_GREEN_UP) {
@@ -898,13 +912,19 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
                 i32 x = width;
                 do {
                     u32 p = *rd++;
-                    u32 blue = p & 0x1f;
-                    u32 hi = p >> 5;
-                    u32 green = hi & 0x1f;
-                    u32 red = hi & 0xffffffe0;
+                    u32 blue = p & RGB555_CHANNEL_MASK;
+                    u32 hi = p >> PIXEL16_GREEN_UP;
+                    u32 green = hi & RGB555_CHANNEL_MASK;
+                    u32 red = hi & ~RGB555_CHANNEL_MASK;
                     *srcPix++ = static_cast<u16>(
-                        (Clut16(CLUT_BLUE_OFFSET * sizeof(u16) + off + (blue << 6))
-                         | Clut16(CLUT_GREEN_OFFSET * sizeof(u16) + off + (green << 6))
+                        (Clut16(
+                             CLUT_BLUE_OFFSET * sizeof(u16) + off
+                             + (blue << CLUT_CHANNEL_VALUE_BYTE_SHIFT)
+                         )
+                         | Clut16(
+                             CLUT_GREEN_OFFSET * sizeof(u16) + off
+                             + (green << CLUT_CHANNEL_VALUE_BYTE_SHIFT)
+                         )
                          | Clut16(CLUT_RED_OFFSET * sizeof(u16) + off + red * sizeof(u16)))
                     );
                 } while (--x != 0);
@@ -921,13 +941,19 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
                 i32 x = width;
                 do {
                     u32 p = *rd++;
-                    u32 blue = p & 0x1f;
-                    u32 hi = p >> 6;
-                    u32 green = hi & 0x1f;
-                    u32 red = hi & 0xffffffe0;
+                    u32 blue = p & RGB555_CHANNEL_MASK;
+                    u32 hi = p >> RGB565_GREEN_TO_5_SHIFT;
+                    u32 green = hi & RGB555_CHANNEL_MASK;
+                    u32 red = hi & ~RGB555_CHANNEL_MASK;
                     *srcPix++ = static_cast<u16>(
-                        (Clut16(CLUT_BLUE_OFFSET * sizeof(u16) + off + (blue << 6))
-                         | Clut16(CLUT_GREEN_OFFSET * sizeof(u16) + off + (green << 6))
+                        (Clut16(
+                             CLUT_BLUE_OFFSET * sizeof(u16) + off
+                             + (blue << CLUT_CHANNEL_VALUE_BYTE_SHIFT)
+                         )
+                         | Clut16(
+                             CLUT_GREEN_OFFSET * sizeof(u16) + off
+                             + (green << CLUT_CHANNEL_VALUE_BYTE_SHIFT)
+                         )
                          | Clut16(CLUT_RED_OFFSET * sizeof(u16) + off + red * sizeof(u16)))
                     );
                 } while (--x != 0);
@@ -950,24 +976,24 @@ void BuildColorChannelTables() {
     if (PIXEL_FORMAT_IS_RGB555) {
         i32 bShift = g_bUp;
         i32 a = 0;
-        i32 stepA = 0x20;
+        i32 stepA = CLUT_BLEND_LEVEL_COUNT;
         do {
-            i32 base = a << 0xb;
+            i32 base = a << CLUT_LEVEL_BYTE_SHIFT;
             i32 varB = 0;
-            i32 countB = 0x20;
+            i32 countB = CLUT_BLEND_LEVEL_COUNT;
             do {
-                i32 bDiv = varB / 32;
+                i32 bDiv = varB / CLUT_BLEND_LEVEL_COUNT;
                 i32 varD = 0;
-                i32 k = 0x20;
+                i32 k = CLUT_BLEND_LEVEL_COUNT;
                 do {
-                    i32 sum = varD / 32 + bDiv;
+                    i32 sum = varD / CLUT_BLEND_LEVEL_COUNT + bDiv;
                     ClutStore16(
                         CLUT_RED_OFFSET * sizeof(u16) + base,
-                        static_cast<u16>((sum << 0xa))
+                        static_cast<u16>((sum << RGB555_RED_UP))
                     );
                     ClutStore16(
                         CLUT_GREEN_OFFSET * sizeof(u16) + base,
-                        static_cast<u16>((sum << 5))
+                        static_cast<u16>((sum << PIXEL16_GREEN_UP))
                     );
                     ClutStore16(
                         CLUT_BLUE_OFFSET * sizeof(u16) + base,
@@ -982,17 +1008,17 @@ void BuildColorChannelTables() {
         } while (--stepA > 0);
     } else {
         i32 a = 0;
-        i32 stepA = 0x20;
+        i32 stepA = CLUT_BLEND_LEVEL_COUNT;
         do {
-            i32 base = a << 0xb;
+            i32 base = a << CLUT_LEVEL_BYTE_SHIFT;
             i32 varB = 0;
-            i32 countB = 0x20;
+            i32 countB = CLUT_BLEND_LEVEL_COUNT;
             do {
-                i32 bDiv = varB / 32;
+                i32 bDiv = varB / CLUT_BLEND_LEVEL_COUNT;
                 i32 varD = 0;
-                i32 k = 0x20;
+                i32 k = CLUT_BLEND_LEVEL_COUNT;
                 do {
-                    i32 sum = varD / 32 + bDiv;
+                    i32 sum = varD / CLUT_BLEND_LEVEL_COUNT + bDiv;
                     ClutStore16(
                         CLUT_RED_OFFSET * sizeof(u16) + base,
                         static_cast<u16>((sum << g_rUp))

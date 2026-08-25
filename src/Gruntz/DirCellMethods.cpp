@@ -154,7 +154,7 @@ BOOL CALLBACK ButeAttributezDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
                 SetDlgItemTextA(hDlg, 0x435, g_buteEditBuf);
                 in.close();
             }
-            return 1;
+            return true;
         }
         case WM_COMMAND:
             switch (wParam) {
@@ -166,15 +166,15 @@ BOOL CALLBACK ButeAttributezDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
                     out.close();
                     g_buteMgr.Parse("Attributez.txt", 0);
                     EndDialog(hDlg, 1);
-                    return 1;
+                    return true;
                 }
                 case IDCANCEL:
                     EndDialog(hDlg, 0);
-                    return 1;
+                    return true;
             }
             break;
     }
-    return 0;
+    return false;
 }
 
 RVA_COMPGEN(0x0003cbc0, 0x14, ??_Difstream@@QAEXXZ)
@@ -226,7 +226,7 @@ BOOL CALLBACK EditDwRectsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                 SetDlgItemTextA(hDlg, 0x435, g_dwRectsEditBuf);
                 in.close();
             }
-            return 1;
+            return true;
         }
         case WM_COMMAND:
             switch (wParam) {
@@ -237,15 +237,15 @@ BOOL CALLBACK EditDwRectsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                     out.write(g_dwRectsEditBuf, g_dwRectsEditLen);
                     out.close();
                     EndDialog(hDlg, 1);
-                    return 1;
+                    return true;
                 }
                 case IDCANCEL:
                     EndDialog(hDlg, 0);
-                    return 1;
+                    return true;
             }
             break;
     }
-    return 0;
+    return false;
 }
 
 RVA(0x0003d2b0, 0xf1)

@@ -27,6 +27,7 @@
 #include <Gruntz/HealthPct.h>
 #include <Gruntz/LightFx.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/PlayerCommandKind.h>
@@ -496,7 +497,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         } else {
             CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
             i32 attr = plane->CellFlagsAt(tx, ty);
-            if ((attr & BRICKZ_BLOCKED_MASK) != 0 || (attr & 2) != 0) {
+            if ((attr & BRICKZ_BLOCKED_MASK) != 0 || (attr & IDX(CELL_FLAG_SPECIAL)) != 0) {
                 world->LoadCursorSprites(pfk, 0);
             } else {
                 world->LoadCursorSprites(IDX(alt) + kPendingFxIdBase, 1);
@@ -701,7 +702,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                 }
                 CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
                 i32 attr = plane->CellFlagsAt(tx, ty);
-                if ((attr & BRICKZ_BLOCKED_MASK) == 0 && (attr & 2) == 0) {
+                if ((attr & BRICKZ_BLOCKED_MASK) == 0 && (attr & IDX(CELL_FLAG_SPECIAL)) == 0) {
                     world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, 1);
                     return 1;
                 }
@@ -1034,7 +1035,7 @@ i32 CTriggerMgr::SpawnTileFx(i32 x, i32 y, i32 anchorIndex) {
     i32 tx = x >> TILE_SHIFT_PX;
     i32 ty = y >> TILE_SHIFT_PX;
     i32 tile = grid->CellFlagsAt(tx, ty);
-    if ((tile & 0x40939) == 0 && (tile & 2) == 0) {
+    if ((tile & 0x40939) == 0 && (tile & IDX(CELL_FLAG_SPECIAL)) == 0) {
         this->SpawnPowerupIcon(
             PICKUP_WARPSTONE,
             (tx << TILE_SHIFT_PX) + TILE_HALF_PX,
@@ -1403,7 +1404,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
             if (key != 0) {
                 CGameObject* found = NULL;
                 if (MapLookupById(world->m_childGroup->m_registeredGameObjectsById, key, found)
-                    == 0) {
+                    == false) {
                     return 0;
                 }
                 if (found == NULL) {
@@ -1471,7 +1472,8 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         if (key != 0) {
             CGameObject* found = NULL;
             CGameObject* looked = NULL;
-            if (MapLookupById(world->m_childGroup->m_registeredGameObjectsById, key, found) != 0) {
+            if (MapLookupById(world->m_childGroup->m_registeredGameObjectsById, key, found)
+                != false) {
                 looked = found;
             }
             CWwdSpriteObject* obj;
@@ -1495,7 +1497,8 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         if (key != 0) {
             CGameObject* found = NULL;
             CGameObject* looked = NULL;
-            if (MapLookupById(world->m_childGroup->m_registeredGameObjectsById, key, found) != 0) {
+            if (MapLookupById(world->m_childGroup->m_registeredGameObjectsById, key, found)
+                != false) {
                 looked = found;
             }
             if (looked == NULL) {
@@ -1522,7 +1525,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         }
         CGameObject* found = NULL;
         CGameObject* looked = NULL;
-        if (MapLookupById(world->m_childGroup->m_registeredGameObjectsById, key, found) != 0) {
+        if (MapLookupById(world->m_childGroup->m_registeredGameObjectsById, key, found) != false) {
             looked = found;
         }
         if (looked == NULL) {

@@ -6,7 +6,7 @@ and separates all genuinely numeric source spellings from the small set whose
 context proves a semantic replacement:
 
   * integer zero implicitly converted to a pointer -> NULL
-  * integer zero/one converted to, or directly compared with, bool -> false/true
+  * integer zero/one used as bool, Win32 BOOL, or project b32 -> false/true
   * integer equality whose other direct operand is an enum with one uniquely
     named value -> member
 
@@ -19,6 +19,7 @@ is zero or one.
 
     gruntz verify constants             # census + derived TSV
     gruntz verify constants -v          # print every proven replacement
+    gruntz verify constants --fix       # apply only compiler-proven replacements
     gruntz verify constants --gate      # nonzero while proven sites remain
 """
 
@@ -34,12 +35,18 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from gruntz.core.paths import BUILD, REPO
+from gruntz.verify.srcscan import blank_comments
 
 
 CDB = BUILD / "clangd/compile_commands.json"
 REPORT = BUILD / "gen/bare_constants.tsv"
 _NUMBER = re.compile(rb"(?:0[xX][0-9A-Fa-f]+|[0-9]+)(?:[uUlL]*)(?![A-Za-z0-9_.])")
 _SUFFIX = re.compile(r"[uUlL]+$")
+_BOOLEAN_TYPE_SPELLINGS = {"BOOL", "b32"}
+_LEGACY_BOOLEAN = re.compile(r"\b(?:FALSE|TRUE)\b")
+_STRING = re.compile(r'"(?:\\.|[^"\\\n])*"')
+_CHAR = re.compile(r"'(?:\\.|[^'\\\n])*'")
+_SOURCE_EXTENSIONS = {".cpp", ".cc", ".cxx", ".h", ".hpp", ".inl"}
 
 
 @dataclass(frozen=True)
@@ -212,8 +219,10 @@ def _direct_operand_type(cidx, operand):
     }
     node = operand
     while True:
-        ty = node.type.get_canonical()
-        if ty.kind in (cidx.TypeKind.ENUM, cidx.TypeKind.BOOL):
+        ty = node.type
+        canonical = ty.get_canonical()
+        if (canonical.kind in (cidx.TypeKind.ENUM, cidx.TypeKind.BOOL)
+                or _type_spelling(ty) in _BOOLEAN_TYPE_SPELLINGS):
             return ty
         if node.kind not in transparent:
             return ty
@@ -228,8 +237,10 @@ def _binary_enum_context(cidx, literal, stack, enum_values):
     if sibling is None:
         return None
     ty = _direct_operand_type(cidx, sibling)
-    if ty.kind == cidx.TypeKind.ENUM:
-        return ty.spelling, enum_values.get(ty.spelling, {})
+    canonical = ty.get_canonical()
+    if canonical.kind == cidx.TypeKind.ENUM:
+        spelling = ty.spelling or canonical.spelling
+        return spelling, enum_values.get(spelling, {})
     return None
 
 
@@ -238,8 +249,113 @@ def _binary_bool_context(cidx, literal, stack):
     if sibling is None:
         return None
     ty = _direct_operand_type(cidx, sibling)
-    if ty.kind == cidx.TypeKind.BOOL:
+    if _semantic_type_role(cidx, ty) == "boolean":
         return ty.spelling or "bool"
+    return None
+
+
+def _type_spelling(ty) -> str:
+    return re.sub(r"\b(?:const|volatile)\b", "", ty.spelling).strip()
+
+
+def _semantic_type_role(cidx, ty):
+    canonical = ty.get_canonical()
+    if canonical.kind in (cidx.TypeKind.POINTER, cidx.TypeKind.MEMBERPOINTER):
+        return "pointer"
+    if (canonical.kind == cidx.TypeKind.BOOL
+            or _type_spelling(ty) in _BOOLEAN_TYPE_SPELLINGS):
+        return "boolean"
+    return None
+
+
+def _typed_value_classification(cidx, value, ty, null_available, reason):
+    role = _semantic_type_role(cidx, ty)
+    if value == 0 and role == "pointer":
+        if not null_available:
+            return ("numeric", "", ty.spelling,
+                    "pointer context, but NULL is not visible in this TU")
+        return "null-pointer", "NULL", ty.spelling, reason
+    if value in (0, 1) and role == "boolean":
+        return ("boolean", "true" if value else "false", ty.spelling or "bool",
+                reason)
+    return None
+
+
+def _direct_value_path(cidx, node, literal) -> bool:
+    """Whether *literal* is the value of *node*, not nested computation/input."""
+    if _same_cursor(node, literal):
+        return True
+    if not _cursor_contains(node, literal):
+        return False
+    transparent = {
+        cidx.CursorKind.PAREN_EXPR,
+        cidx.CursorKind.UNEXPOSED_EXPR,
+    }
+    if node.kind in transparent:
+        children = list(node.get_children())
+        return len(children) == 1 and _direct_value_path(cidx, children[0], literal)
+    if node.kind == cidx.CursorKind.CONDITIONAL_OPERATOR:
+        children = list(node.get_children())
+        if len(children) != 3 or _cursor_contains(children[0], literal):
+            return False
+        return any(_cursor_contains(branch, literal)
+                   and _direct_value_path(cidx, branch, literal)
+                   for branch in children[1:])
+    return False
+
+
+def _expected_semantic_context(cidx, literal, stack):
+    """Return the expected type when the literal is a direct semantic value."""
+    for pos in range(len(stack) - 1, -1, -1):
+        node = stack[pos]
+        if node.kind == cidx.CursorKind.CONDITIONAL_OPERATOR:
+            if _direct_value_path(cidx, node, literal):
+                return node.type, "conditional result"
+            return None
+
+        if node.kind == cidx.CursorKind.CALL_EXPR:
+            args = list(node.get_arguments())
+            target = node.referenced
+            params = list(target.get_arguments()) if target is not None else []
+            for index, arg in enumerate(args):
+                if (_cursor_contains(arg, literal)
+                        and _direct_value_path(cidx, arg, literal)):
+                    if index < len(params):
+                        return params[index].type, f"argument {index + 1} type"
+                    return None
+            return None
+
+        if node.kind == cidx.CursorKind.RETURN_STMT:
+            children = list(node.get_children())
+            if len(children) != 1 or not _direct_value_path(cidx, children[0], literal):
+                return None
+            function_kinds = {
+                cidx.CursorKind.FUNCTION_DECL,
+                cidx.CursorKind.CXX_METHOD,
+                cidx.CursorKind.CONVERSION_FUNCTION,
+                cidx.CursorKind.FUNCTION_TEMPLATE,
+            }
+            function = next((owner for owner in reversed(stack[:pos])
+                             if owner.kind in function_kinds), None)
+            if function is not None:
+                return function.result_type, "function return type"
+            return None
+
+        if node.kind in (cidx.CursorKind.VAR_DECL,
+                          cidx.CursorKind.PARM_DECL,
+                          cidx.CursorKind.FIELD_DECL):
+            children = [child for child in node.get_children()
+                        if _cursor_contains(child, literal)]
+            if any(_direct_value_path(cidx, child, literal) for child in children):
+                return node.type, "declared initializer type"
+            return None
+
+        if node.kind == cidx.CursorKind.BINARY_OPERATOR and node.spelling == "=":
+            children = list(node.get_children())
+            if (len(children) == 2 and _cursor_contains(children[1], literal)
+                    and _direct_value_path(cidx, children[1], literal)):
+                return children[0].type, "assignment target type"
+            return None
     return None
 
 
@@ -249,17 +365,10 @@ def _classify(cidx, literal, stack, value, enum_values, null_available):
 
     parent = stack[-1] if stack else None
     if parent is not None and parent.kind == cidx.CursorKind.UNEXPOSED_EXPR:
-        ty = parent.type.get_canonical()
-        if value == 0 and ty.kind in (cidx.TypeKind.POINTER,
-                                      cidx.TypeKind.MEMBERPOINTER):
-            if not null_available:
-                return ("numeric", "", parent.type.spelling,
-                        "pointer context, but NULL is not visible in this TU")
-            return ("null-pointer", "NULL", parent.type.spelling,
-                    "implicit conversion to pointer")
-        if value in (0, 1) and ty.kind == cidx.TypeKind.BOOL:
-            return ("boolean", "true" if value else "false", "bool",
-                    "implicit conversion to bool")
+        typed = _typed_value_classification(
+            cidx, value, parent.type, null_available, "implicit conversion")
+        if typed is not None:
+            return typed
 
     bool_type = _binary_bool_context(cidx, literal, stack)
     if value in (0, 1) and bool_type:
@@ -277,6 +386,14 @@ def _classify(cidx, literal, stack, value, enum_values, null_available):
         if len(names) > 1:
             return ("numeric", "", enum_type,
                     f"{enum_type} value has aliases: {', '.join(sorted(names))}")
+
+    expected = _expected_semantic_context(cidx, literal, stack)
+    if expected is not None:
+        ty, reason = expected
+        typed = _typed_value_classification(
+            cidx, value, ty, null_available, reason)
+        if typed is not None:
+            return typed
 
     return "numeric", "", "", "no uniquely typed semantic replacement"
 
@@ -472,6 +589,49 @@ def findings(sites: list[Site]) -> list[str]:
             for site in sites if site.proven]
 
 
+def apply_proven(sites: list[Site], *, repo: Path = REPO) -> int:
+    by_file: dict[str, list[Site]] = {}
+    for site in sites:
+        if site.proven:
+            by_file.setdefault(site.file, []).append(site)
+    applied = 0
+    for rel, file_sites in sorted(by_file.items()):
+        path = repo / rel
+        raw = path.read_bytes()
+        for site in sorted(file_sites, key=lambda item: item.offset, reverse=True):
+            old = site.spelling.encode("ascii")
+            replacement = site.replacement.encode("ascii")
+            if raw[site.offset:site.offset + len(old)] != old:
+                raise RuntimeError(
+                    f"{rel}:{site.line}:{site.column}: source changed since scan")
+            raw = raw[:site.offset] + replacement + raw[site.offset + len(old):]
+            applied += 1
+        path.write_bytes(raw)
+    return applied
+
+
+def legacy_boolean_spellings(*, repo: Path = REPO) -> list[str]:
+    findings = []
+    for root_name in ("include", "src"):
+        root = repo / root_name
+        if not root.is_dir():
+            continue
+        for path in sorted(root.rglob("*")):
+            if not path.is_file() or path.suffix not in _SOURCE_EXTENSIONS:
+                continue
+            code = blank_comments(path.read_text(errors="ignore"))
+            code = _STRING.sub(lambda match: " " * len(match.group()), code)
+            code = _CHAR.sub(lambda match: " " * len(match.group()), code)
+            for match in _LEGACY_BOOLEAN.finditer(code):
+                line = code.count("\n", 0, match.start()) + 1
+                column = match.start() - code.rfind("\n", 0, match.start())
+                rel = path.relative_to(repo)
+                findings.append(
+                    f"{rel}:{line}:{column}: {match.group()} -> "
+                    f"{'true' if match.group() == 'TRUE' else 'false'}")
+    return findings
+
+
 def summary(sites: list[Site]) -> str:
     scopes = Counter(site.scope for site in sites)
     classes = Counter(site.classification for site in sites)
@@ -505,6 +665,8 @@ def main(argv=None) -> int:
                         help="fail while any compiler-proven replacement remains")
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="print every compiler-proven replacement")
+    parser.add_argument("--fix", action="store_true",
+                        help="apply every compiler-proven replacement")
     parser.add_argument("--no-report", action="store_true",
                         help="do not write build/gen/bare_constants.tsv")
     parser.add_argument("--jobs", type=int,
@@ -523,17 +685,28 @@ def main(argv=None) -> int:
             print(f"   ... and {len(errors) - 20} more")
         print(f"[constants] FATAL: {len(errors)} translation unit(s) did not parse")
         return 2
+    if args.fix:
+        try:
+            applied = apply_proven(sites, repo=REPO)
+        except (OSError, RuntimeError) as exc:
+            print(f"[constants] FATAL: {exc}")
+            return 2
+        print(f"[constants] applied {applied} compiler-proven replacement(s)")
+        return 0
     if not args.no_report:
         write_report(REPORT, sites)
     bad = findings(sites)
+    legacy_booleans = legacy_boolean_spellings(repo=REPO)
     if args.verbose:
-        for finding in bad:
+        for finding in bad + legacy_booleans:
             print(f"   {finding}")
     print(f"[constants] {summary(sites)}")
+    print(f"[constants] legacy TRUE/FALSE spelling(s): {len(legacy_booleans)}")
     if not args.no_report:
         print(f"[constants] report: {REPORT.relative_to(REPO)}")
-    if args.gate and bad:
-        print(f"[constants] FAIL: {len(bad)} compiler-proven replacement(s) remain")
+    if args.gate and (bad or legacy_booleans):
+        print(f"[constants] FAIL: {len(bad)} compiler-proven replacement(s), "
+              f"{len(legacy_booleans)} legacy boolean spelling(s) remain")
         return 1
     return 0
 

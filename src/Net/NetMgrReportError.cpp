@@ -10,13 +10,13 @@
 #include <string.h>
 
 DATA(0x002bf6e8)
-b32 g_logEnabled = FALSE;
+b32 g_logEnabled = false;
 DATA(0x002bf6ec)
-b32 g_msgBoxEnabled = FALSE;
+b32 g_msgBoxEnabled = false;
 DATA(0x002bf6f0)
-b32 g_beepEnabled = FALSE;
+b32 g_beepEnabled = false;
 DATA(0x002bf6f4)
-b32 g_debugOutputEnabled = FALSE;
+b32 g_debugOutputEnabled = false;
 DATA(0x002bf6f8)
 HRESULT g_hr = 0;
 DATA(0x002bf6fc)

@@ -238,34 +238,34 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             }
         }
 
-        combo->EnableWindow(1);
-        GetDlgItem(0x42b)->EnableWindow(1);
-        GetDlgItem(IDOK)->EnableWindow(1);
-        GetDlgItem(IDCANCEL)->EnableWindow(1);
+        combo->EnableWindow(true);
+        GetDlgItem(0x42b)->EnableWindow(true);
+        GetDlgItem(IDOK)->EnableWindow(true);
+        GetDlgItem(IDCANCEL)->EnableWindow(true);
         for (i = 0; i < 4; i++) {
             CWnd* typeControl = GetPlayerTypeControl(i);
             CWnd* nameControl = GetPlayerNameControl(i);
             CWnd* colorControl = GetPlayerColorControl(i);
             CWnd* maxGruntzControl = GetMaxGruntzControl(i);
-            nameControl->EnableWindow(1);
+            nameControl->EnableWindow(true);
             nameControl->SendMessageA(EM_SETREADONLY, 0, 0);
-            colorControl->EnableWindow(1);
-            typeControl->EnableWindow(1);
-            maxGruntzControl->EnableWindow(1);
+            colorControl->EnableWindow(true);
+            typeControl->EnableWindow(true);
+            maxGruntzControl->EnableWindow(true);
             if (GetPlayerTypeSelection(i) == 0) {
-                nameControl->EnableWindow(0);
+                nameControl->EnableWindow(false);
                 if (i != 0) {
-                    colorControl->EnableWindow(0);
+                    colorControl->EnableWindow(false);
                 }
                 if (i != 0) {
-                    maxGruntzControl->EnableWindow(0);
+                    maxGruntzControl->EnableWindow(false);
                 }
             }
         }
         if (GetPlayerTypeSelection(1) || GetPlayerTypeSelection(2) || GetPlayerTypeSelection(3)) {
-            GetDlgItem(IDOK)->EnableWindow(1);
+            GetDlgItem(IDOK)->EnableWindow(true);
         } else {
-            GetDlgItem(IDOK)->EnableWindow(0);
+            GetDlgItem(IDOK)->EnableWindow(false);
         }
 
         CustomMapSelection customMap = static_cast<CustomMapSelection>(
@@ -309,10 +309,10 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
                 m_gameManager->m_players[3].m_maxGruntz = 1;
                 for (i = 1; i < 4; i++) {
                     SetPlayerTypeSelection(i, 1);
-                    GetPlayerNameControl(i)->EnableWindow(1);
-                    GetPlayerTypeControl(i)->EnableWindow(1);
-                    GetPlayerColorControl(i)->EnableWindow(1);
-                    GetMaxGruntzControl(i)->EnableWindow(1);
+                    GetPlayerNameControl(i)->EnableWindow(true);
+                    GetPlayerTypeControl(i)->EnableWindow(true);
+                    GetPlayerColorControl(i)->EnableWindow(true);
+                    GetMaxGruntzControl(i)->EnableWindow(true);
                 }
             }
             m_customNameFlag = 0;
@@ -499,9 +499,9 @@ void CBattlezDlg::OnPlayerTypeSelection0() {
     UpdatePlayerSlotEnabled(0);
     OnPlayerOptionsChanged();
     if (GetPlayerTypeSelection(1) || GetPlayerTypeSelection(2) || GetPlayerTypeSelection(3)) {
-        GetDlgItem(1)->EnableWindow(1);
+        GetDlgItem(1)->EnableWindow(true);
     } else {
-        GetDlgItem(1)->EnableWindow(0);
+        GetDlgItem(1)->EnableWindow(false);
     }
 }
 
@@ -510,9 +510,9 @@ void CBattlezDlg::OnPlayerTypeSelection1() {
     UpdatePlayerSlotEnabled(1);
     OnPlayerOptionsChanged();
     if (GetPlayerTypeSelection(1) || GetPlayerTypeSelection(2) || GetPlayerTypeSelection(3)) {
-        GetDlgItem(1)->EnableWindow(1);
+        GetDlgItem(1)->EnableWindow(true);
     } else {
-        GetDlgItem(1)->EnableWindow(0);
+        GetDlgItem(1)->EnableWindow(false);
     }
 }
 
@@ -521,9 +521,9 @@ void CBattlezDlg::OnPlayerTypeSelection2() {
     UpdatePlayerSlotEnabled(2);
     OnPlayerOptionsChanged();
     if (GetPlayerTypeSelection(1) || GetPlayerTypeSelection(2) || GetPlayerTypeSelection(3)) {
-        GetDlgItem(1)->EnableWindow(1);
+        GetDlgItem(1)->EnableWindow(true);
     } else {
-        GetDlgItem(1)->EnableWindow(0);
+        GetDlgItem(1)->EnableWindow(false);
     }
 }
 
@@ -532,9 +532,9 @@ void CBattlezDlg::OnPlayerTypeSelection3() {
     UpdatePlayerSlotEnabled(3);
     OnPlayerOptionsChanged();
     if (GetPlayerTypeSelection(1) || GetPlayerTypeSelection(2) || GetPlayerTypeSelection(3)) {
-        GetDlgItem(1)->EnableWindow(1);
+        GetDlgItem(1)->EnableWindow(true);
     } else {
-        GetDlgItem(1)->EnableWindow(0);
+        GetDlgItem(1)->EnableWindow(false);
     }
 }
 
@@ -549,16 +549,16 @@ void CBattlezDlg::UpdatePlayerSlotEnabled(i32 slot) {
     }
     GruntzPlayer* player = &m_gameManager->m_players[slot];
     if (::SendMessageA(typeControl->m_hWnd, CB_GETCURSEL, 0, 0) != 0) {
-        nameControl->EnableWindow(1);
-        colorControl->EnableWindow(1);
+        nameControl->EnableWindow(true);
+        colorControl->EnableWindow(true);
         player->m_active = 1;
-        maxGruntzControl->EnableWindow(1);
+        maxGruntzControl->EnableWindow(true);
         return;
     }
-    nameControl->EnableWindow(0);
-    colorControl->EnableWindow(0);
+    nameControl->EnableWindow(false);
+    colorControl->EnableWindow(false);
     player->m_active = 0;
-    maxGruntzControl->EnableWindow(0);
+    maxGruntzControl->EnableWindow(false);
 }
 
 RVA(0x000160d0, 0xb)
@@ -880,7 +880,7 @@ void CBattlezDlg::OnPlayerColor0() {
     if (dlg.DoModal() == 1) {
         if (SetPlayerColor(0, static_cast<ColorTint>(dlg.m_pickedColor))) {
             OnPlayerOptionsChanged();
-            GetDlgItem(CTRL_PLAYER_COLOR0)->InvalidateRect(NULL, 1);
+            GetDlgItem(CTRL_PLAYER_COLOR0)->InvalidateRect(NULL, true);
         }
     }
 }
@@ -892,7 +892,7 @@ void CBattlezDlg::OnPlayerColor1() {
     if (dlg.DoModal() == 1) {
         if (SetPlayerColor(1, static_cast<ColorTint>(dlg.m_pickedColor))) {
             OnPlayerOptionsChanged();
-            GetDlgItem(CTRL_PLAYER_COLOR1)->InvalidateRect(NULL, 1);
+            GetDlgItem(CTRL_PLAYER_COLOR1)->InvalidateRect(NULL, true);
         }
     }
 }
@@ -903,7 +903,7 @@ void CBattlezDlg::OnPlayerColor2() {
     if (dlg.DoModal() == 1) {
         if (SetPlayerColor(2, static_cast<ColorTint>(dlg.m_pickedColor))) {
             OnPlayerOptionsChanged();
-            GetDlgItem(CTRL_PLAYER_COLOR2)->InvalidateRect(NULL, 1);
+            GetDlgItem(CTRL_PLAYER_COLOR2)->InvalidateRect(NULL, true);
         }
     }
 }
@@ -914,7 +914,7 @@ void CBattlezDlg::OnPlayerColor3() {
     if (dlg.DoModal() == 1) {
         if (SetPlayerColor(3, static_cast<ColorTint>(dlg.m_pickedColor))) {
             OnPlayerOptionsChanged();
-            GetDlgItem(CTRL_PLAYER_COLOR3)->InvalidateRect(NULL, 1);
+            GetDlgItem(CTRL_PLAYER_COLOR3)->InvalidateRect(NULL, true);
         }
     }
 }

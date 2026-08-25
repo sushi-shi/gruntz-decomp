@@ -1585,7 +1585,7 @@ i32 CGameLevel::IsValidWwd(const char* name, WwdHeader* headerBuf) {
 
     CFile stream;
 
-    if (stream.Open(name, 0, NULL) == 0) {
+    if (stream.Open(name, 0, NULL) == false) {
         return 0;
     }
 
@@ -1613,7 +1613,7 @@ i32 CGameLevel::ReadWwdHeaderName(const char* name, char* nameOut) {
 
     CFile stream;
 
-    if (stream.Open(name, 0, NULL) == 0) {
+    if (stream.Open(name, 0, NULL) == false) {
         return 0;
     }
 

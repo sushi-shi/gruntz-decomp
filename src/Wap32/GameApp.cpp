@@ -304,7 +304,7 @@ BOOL CGameApp::InitializeAccelerators(LPCSTR lpTable) {
         m_hAccel = LoadAcceleratorsA(m_hInstance, lpTable);
         return m_hAccel != NULL;
     }
-    return 0;
+    return false;
 }
 
 RVA(0x0013dc70, 0x1d)

@@ -262,22 +262,25 @@ CShadeTableCache::HsvShiftTable(PALETTEENTRY* pal, i32 steps, i32 pct, i32 gamma
             float luma = static_cast<float>(pal[i].peRed) * g_lumaR
                          + static_cast<float>(pal[i].peGreen) * g_lumaG
                          + static_cast<float>(pal[i].peBlue) * g_lumaB;
-            i32 lumaByte = static_cast<i32>(luma) & 0xff;
+            i32 lumaByte = static_cast<i32>(luma) & PIXEL_BYTE_MASK;
             float x = g_one / (static_cast<float>(lumaByte) * g_inv255 - g_negone);
             float factor =
                 static_cast<float>(pow(static_cast<double>(x), static_cast<double>(gamma)));
             float scale = static_cast<float>(j) / static_cast<float>(steps)
                               * (factor * static_cast<float>((pct - 100)) * g_percentScale)
                           - g_negone;
-            u8 rn = static_cast<u8>(
-                HSV_MIN(static_cast<float>(((baseArg & 0xff) + pal[i].peRed)) * scale, g_255)
-            );
-            u8 gn = static_cast<u8>(
-                HSV_MIN(static_cast<float>(((baseArg & 0xff) + pal[i].peGreen)) * scale, g_255)
-            );
-            u8 bn = static_cast<u8>(
-                HSV_MIN(static_cast<float>(((baseArg & 0xff) + pal[i].peBlue)) * scale, g_255)
-            );
+            u8 rn = static_cast<u8>(HSV_MIN(
+                static_cast<float>(((baseArg & PIXEL_BYTE_MASK) + pal[i].peRed)) * scale,
+                g_255
+            ));
+            u8 gn = static_cast<u8>(HSV_MIN(
+                static_cast<float>(((baseArg & PIXEL_BYTE_MASK) + pal[i].peGreen)) * scale,
+                g_255
+            ));
+            u8 bn = static_cast<u8>(HSV_MIN(
+                static_cast<float>(((baseArg & PIXEL_BYTE_MASK) + pal[i].peBlue)) * scale,
+                g_255
+            ));
             data[i * steps + j] = FindNearestColor(pal, rn, gn, bn);
         }
     }
@@ -448,7 +451,7 @@ CShadeTable* CShadeTableCache::GreyTable() {
     if (!t) {
         return NULL;
     }
-    if (!t->Set(0x20000, 0)) {
+    if (!t->Set(PIXEL16_VALUE_COUNT * sizeof(u16), 0)) {
         t->Reset();
         ::operator delete(t);
         return NULL;
@@ -460,16 +463,22 @@ CShadeTable* CShadeTableCache::GreyTable() {
     arr.m_pData[idx] = t;
     u16* out = Pix16(t->m_data);
     if (PIXEL_FORMAT_IS_RGB555) {
-        for (i32 v = 0; v < 0x10000; v++) {
-            i32 acc = static_cast<u8>((v >> 0xb)) << 4;
-            acc = (acc + static_cast<u8>((v >> 6) & 0xf)) << 4;
-            *out++ = static_cast<u16>((acc + static_cast<u8>((v >> 1) & 0xf)));
+        for (i32 v = 0; v < PIXEL16_VALUE_COUNT; v++) {
+            i32 acc = static_cast<u8>((v >> RGB555_RED_TO_4_SHIFT)) << PIXEL_NIBBLE_BITS;
+            acc = (acc + static_cast<u8>((v >> RGB555_GREEN_TO_4_SHIFT) & PIXEL_NIBBLE_MASK))
+                  << PIXEL_NIBBLE_BITS;
+            *out++ = static_cast<u16>(
+                acc + static_cast<u8>((v >> RGB16_BLUE_TO_4_SHIFT) & PIXEL_NIBBLE_MASK)
+            );
         }
     } else {
-        for (i32 v = 0; v < 0x10000; v++) {
-            i32 acc = static_cast<u8>((v >> 0xc)) << 4;
-            acc = (acc + static_cast<u8>((v >> 7) & 0xf)) << 4;
-            *out++ = static_cast<u16>((acc + static_cast<u8>((v >> 1) & 0xf)));
+        for (i32 v = 0; v < PIXEL16_VALUE_COUNT; v++) {
+            i32 acc = static_cast<u8>((v >> RGB565_RED_TO_4_SHIFT)) << PIXEL_NIBBLE_BITS;
+            acc = (acc + static_cast<u8>((v >> RGB565_GREEN_TO_4_SHIFT) & PIXEL_NIBBLE_MASK))
+                  << PIXEL_NIBBLE_BITS;
+            *out++ = static_cast<u16>(
+                acc + static_cast<u8>((v >> RGB16_BLUE_TO_4_SHIFT) & PIXEL_NIBBLE_MASK)
+            );
         }
     }
     return t;
@@ -482,7 +491,7 @@ CShadeTable* CShadeTableCache::AddTable(float scale) {
     if (!t) {
         return NULL;
     }
-    if (!t->Set(0x20000, 0)) {
+    if (!t->Set(PIXEL16_VALUE_COUNT * sizeof(u16), 0)) {
         t->Reset();
         ::operator delete(t);
         return NULL;
@@ -494,16 +503,16 @@ CShadeTable* CShadeTableCache::AddTable(float scale) {
     arr.m_pData[idx] = t;
     u16* out = Pix16(t->m_data);
 
-    for (i32 v = 0; v < PALETTE_ENTRY_COUNT; v += 0x10) {
-        i32 r = 8;
-        for (i32 nr = 0x10; nr != 0; nr--) {
-            i32 g = 8;
-            for (i32 ng = 0x10; ng != 0; ng--) {
-                i32 b = 8;
-                for (i32 nb = 0x10; nb != 0; nb--) {
-                    u8 rc = static_cast<u8>((r < 0xff ? r : 0xff));
-                    u8 gc = static_cast<u8>((g < 0xff ? g : 0xff));
-                    u8 bc = static_cast<u8>((b < 0xff ? b : 0xff));
+    for (i32 v = 0; v < PALETTE_ENTRY_COUNT; v += PIXEL_NIBBLE_VALUE_COUNT) {
+        i32 r = PIXEL_NIBBLE_MIDPOINT;
+        for (i32 nr = PIXEL_NIBBLE_VALUE_COUNT; nr != 0; nr--) {
+            i32 g = PIXEL_NIBBLE_MIDPOINT;
+            for (i32 ng = PIXEL_NIBBLE_VALUE_COUNT; ng != 0; ng--) {
+                i32 b = PIXEL_NIBBLE_MIDPOINT;
+                for (i32 nb = PIXEL_NIBBLE_VALUE_COUNT; nb != 0; nb--) {
+                    u8 rc = static_cast<u8>((r < PIXEL_BYTE_MASK ? r : PIXEL_BYTE_MASK));
+                    u8 gc = static_cast<u8>((g < PIXEL_BYTE_MASK ? g : PIXEL_BYTE_MASK));
+                    u8 bc = static_cast<u8>((b < PIXEL_BYTE_MASK ? b : PIXEL_BYTE_MASK));
 
                     float f = static_cast<float>(v) * scale * g_inv255 - g_negone;
 
@@ -520,11 +529,11 @@ CShadeTable* CShadeTableCache::AddTable(float scale) {
                             << g_gUp)
                          | static_cast<u8>((static_cast<u8>(bn) >> static_cast<u8>(g_bDown))))
                     );
-                    b += 0x10;
+                    b += PIXEL_NIBBLE_VALUE_COUNT;
                 }
-                g += 0x10;
+                g += PIXEL_NIBBLE_VALUE_COUNT;
             }
-            r += 0x10;
+            r += PIXEL_NIBBLE_VALUE_COUNT;
         }
     }
     return t;
@@ -536,7 +545,7 @@ CShadeTable* CShadeTableCache::SubTable(i32 color) {
     if (!t) {
         return NULL;
     }
-    if (!t->Set(0x20000, 0)) {
+    if (!t->Set(PIXEL16_VALUE_COUNT * sizeof(u16), 0)) {
         t->Reset();
         ::operator delete(t);
         return NULL;
@@ -552,17 +561,20 @@ CShadeTable* CShadeTableCache::SubTable(i32 color) {
     i32 cg = GetGValue(rgb);
     i32 cr = GetRValue(rgb);
 
-    for (i32 fill = 0; fill < 0x10; fill++) {
-        i32 subr = cr * fill / 0xf;
-        i32 subg = cg * fill / 0xf;
-        i32 subb = cb * fill / 0xf;
-        i32 level = 0xf - fill;
-        for (i32 r = 0; r < 0x10; r++) {
-            u8 rn = static_cast<u8>((((r * level / 0xf) << 4) + subr));
-            for (i32 g = 0; g < 0x10; g++) {
-                u8 gn = static_cast<u8>((((g * level / 0xf) << 4) + subg));
-                for (i32 b = 0; b < 0x10; b++) {
-                    u8 bn = static_cast<u8>((((b * level / 0xf) << 4) + subb));
+    for (i32 fill = 0; fill < PIXEL_NIBBLE_VALUE_COUNT; fill++) {
+        i32 subr = cr * fill / PIXEL_NIBBLE_MASK;
+        i32 subg = cg * fill / PIXEL_NIBBLE_MASK;
+        i32 subb = cb * fill / PIXEL_NIBBLE_MASK;
+        i32 level = PIXEL_NIBBLE_MASK - fill;
+        for (i32 r = 0; r < PIXEL_NIBBLE_VALUE_COUNT; r++) {
+            u8 rn = static_cast<u8>(((r * level / PIXEL_NIBBLE_MASK) << PIXEL_NIBBLE_BITS) + subr);
+            for (i32 g = 0; g < PIXEL_NIBBLE_VALUE_COUNT; g++) {
+                u8 gn =
+                    static_cast<u8>(((g * level / PIXEL_NIBBLE_MASK) << PIXEL_NIBBLE_BITS) + subg);
+                for (i32 b = 0; b < PIXEL_NIBBLE_VALUE_COUNT; b++) {
+                    u8 bn = static_cast<u8>(
+                        ((b * level / PIXEL_NIBBLE_MASK) << PIXEL_NIBBLE_BITS) + subb
+                    );
                     u16 v = static_cast<u8>(bn >> g_bDown);
                     v |= static_cast<u16>(static_cast<u8>(rn >> g_rDown) << g_rUp);
                     v |= static_cast<u16>(static_cast<u8>(gn >> g_gDown) << g_gUp);

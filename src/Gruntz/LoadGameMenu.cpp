@@ -26,18 +26,18 @@ BOOL CALLBACK GruntzLoadGameDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
                     obj->m_stepCountdown = 2;
                 }
                 EndDialog(hDlg, 0);
-                return 1;
+                return true;
             }
             if (LoadGameCommand(hDlg, static_cast<i32>(wParam), g_dlgLoadSink) != 0) {
-                return 1;
+                return true;
             }
 
         default:
-            return 0;
+            return false;
         case WM_INITDIALOG: {
             g_dlgLoadSink = static_cast<CSaveGame*>(g_gameReg->m_saveGame);
             FillGameInfoDialog(hDlg, g_dlgLoadSink);
-            return 1;
+            return true;
         }
     }
 }
@@ -114,9 +114,9 @@ i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg) {
     if (idx != -1) {
         g_slotState = dlg->GetSlot(idx);
         if (g_slotState) {
-            EnableWindow(hwnd, FALSE);
+            EnableWindow(hwnd, false);
             g_gameReg->RunModalDialog("GAME_INFO", LevelPreviewDlgProc, 0);
-            EnableWindow(hwnd, TRUE);
+            EnableWindow(hwnd, true);
         }
         return 0;
     }
@@ -156,9 +156,9 @@ i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg) {
     if (idx != -1) {
         g_slotState = dlg->GetSlot(idx);
         if (g_slotState) {
-            EnableWindow(hwnd, FALSE);
+            EnableWindow(hwnd, false);
             i32 r = g_gameReg->RunModalDialog("GAME_DELETE", DeleteSaveDialogProc, 0);
-            EnableWindow(hwnd, TRUE);
+            EnableWindow(hwnd, true);
             if (r) {
                 FillGameInfoDialog(hwnd, dlg);
             }
@@ -201,9 +201,9 @@ i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg) {
     if (idx != -1) {
         SaveSlot* slot = dlg->GetSlot(idx);
         if (slot) {
-            EnableWindow(hwnd, FALSE);
+            EnableWindow(hwnd, false);
             i32 r = dlg->VerifySlot(slot);
-            EnableWindow(hwnd, TRUE);
+            EnableWindow(hwnd, true);
             if (r == 0) {
                 return 1;
             }

@@ -11,7 +11,7 @@
 RVA(0x00177480, 0x169)
 i32 CImagePaletteNode::LoadBmpFile(char* path, i32 flags) {
     CFile f;
-    if (f.Open(path, 0, NULL) == 0) {
+    if (f.Open(path, 0, NULL) == false) {
         return 0;
     }
 

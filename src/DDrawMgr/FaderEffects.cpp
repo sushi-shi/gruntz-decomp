@@ -527,7 +527,7 @@ i32 CFaderLight::ApplyInit(CFaderConfig* desc) {
     POINT pt;
     pt.x = m_centerX;
     pt.y = m_centerY;
-    if (PtInRect(&rect, pt) == 0) {
+    if (PtInRect(&rect, pt) == false) {
         return 0;
     }
     if (m_clearMode != 0) {

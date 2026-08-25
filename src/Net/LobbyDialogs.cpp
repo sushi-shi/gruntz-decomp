@@ -40,7 +40,7 @@ namespace NetLobby {
     BOOL CALLBACK HostWaitDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         g_curDlg = hWnd;
         if (BlockScreenSaver(hWnd, msg, wParam, lParam)) {
-            return 1;
+            return true;
         }
         switch (msg) {
             case WM_INITDIALOG:
@@ -48,7 +48,7 @@ namespace NetLobby {
                 g_curMulti = static_cast<CMulti*>(g_gameReg->m_curState);
                 InitializeHostWaitDialog(hWnd, g_curMulti);
                 GetAsyncKeyState(VK_PAUSE);
-                return 1;
+                return true;
             case WM_COMMAND:
                 if (wParam == IDX(IDC_NET_RESUME) || wParam == IDCANCEL) {
                     KillTimer(hWnd, 1);
@@ -58,23 +58,23 @@ namespace NetLobby {
                         DPSEND_GUARANTEED
                     );
                     EndDialog(hWnd, IDX(IDC_NET_RESUME));
-                    return 1;
+                    return true;
                 }
                 if (wParam == IDX(IDC_NETCHAT_SEND)) {
                     NetChatSubmit(hWnd, g_curMulti);
-                    return 1;
+                    return true;
                 }
                 break;
             case WM_TIMER:
                 if (GetAsyncKeyState(VK_PAUSE) & 0x80000001) {
                     PostMessageA(hWnd, WM_COMMAND, IDX(IDC_NET_RESUME), 0);
-                    return 1;
+                    return true;
                 }
                 NetDlgSessionStop(hWnd, g_curMulti);
                 UpdateHostWaitDialog(hWnd, g_curMulti);
-                return 1;
+                return true;
         }
-        return 0;
+        return false;
     }
 
     RVA(0x000bda00, 0x3e)
@@ -93,31 +93,31 @@ namespace NetLobby {
     BOOL CALLBACK JoinWaitDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         g_curDlg = hWnd;
         if (BlockScreenSaver(hWnd, msg, wParam, lParam)) {
-            return 1;
+            return true;
         }
         switch (msg) {
             case WM_INITDIALOG:
                 g_curDlg = hWnd;
                 g_curMulti = static_cast<CMulti*>(g_gameReg->m_curState);
                 InitializeJoinWaitDialog(hWnd, g_curMulti);
-                return 1;
+                return true;
             case WM_COMMAND:
                 if (wParam == IDX(IDC_NETCHAT_SEND)) {
                     NetChatSubmit(hWnd, g_curMulti);
-                    return 1;
+                    return true;
                 }
                 break;
             case WM_TIMER:
                 NetDlgSessionStop(hWnd, g_curMulti);
                 UpdateJoinWaitDialog(hWnd, g_curMulti);
                 if (g_playersInOptionsCount) {
-                    return 1;
+                    return true;
                 }
                 KillTimer(hWnd, 1);
                 EndDialog(hWnd, IDX(IDC_NET_RESUME));
-                return 1;
+                return true;
         }
-        return 0;
+        return false;
     }
 
     RVA(0x000bdb90, 0x3e)
@@ -138,36 +138,36 @@ namespace NetLobby {
     BOOL CALLBACK LobbyDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         g_curDlg = hWnd;
         if (BlockScreenSaver(hWnd, msg, wParam, lParam)) {
-            return 1;
+            return true;
         }
         switch (msg) {
             case WM_INITDIALOG:
                 g_curDlg = hWnd;
                 g_curMulti = static_cast<CMulti*>(g_gameReg->m_curState);
                 InitializeLobbyDialog(hWnd, g_curMulti);
-                return 1;
+                return true;
             case WM_COMMAND:
                 if (wParam == IDX(IDC_NET_LOBBY_LAUNCH)) {
                     KillTimer(hWnd, 1);
                     EndDialog(hWnd, wParam);
-                    return 1;
+                    return true;
                 }
                 if (wParam == IDX(IDC_NET_ABORT)) {
                     KillTimer(hWnd, 1);
                     EndDialog(hWnd, wParam);
-                    return 1;
+                    return true;
                 }
                 if (wParam == IDX(IDC_NETCHAT_SEND)) {
                     NetChatSubmit(hWnd, g_curMulti);
-                    return 1;
+                    return true;
                 }
                 break;
             case WM_TIMER:
                 NetDlgSessionStop(hWnd, g_curMulti);
                 UpdateLobbyDialog(hWnd, g_curMulti);
-                return 1;
+                return true;
         }
-        return 0;
+        return false;
     }
 
     RVA(0x000bdd60, 0x3e)
@@ -186,14 +186,14 @@ namespace NetLobby {
     BOOL CALLBACK SessionWaitDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         g_curDlg = hWnd;
         if (BlockScreenSaver(hWnd, msg, wParam, lParam)) {
-            return 1;
+            return true;
         }
         switch (msg) {
             case WM_INITDIALOG:
                 g_curDlg = hWnd;
                 g_curMulti = static_cast<CMulti*>(g_gameReg->m_curState);
                 InitializeSessionWaitDialog(hWnd, g_curMulti);
-                return 1;
+                return true;
             case WM_COMMAND:
                 if (wParam == IDX(IDC_NET_RESTART)) {
                     KillTimer(hWnd, 1);
@@ -205,7 +205,7 @@ namespace NetLobby {
                         );
                     }
                     EndDialog(hWnd, IDX(IDC_NET_RESTART));
-                    return 1;
+                    return true;
                 }
                 if (wParam == IDX(IDC_NET_CONTINUE)) {
                     KillTimer(hWnd, 1);
@@ -217,7 +217,7 @@ namespace NetLobby {
                         );
                     }
                     EndDialog(hWnd, IDX(IDC_NET_CONTINUE));
-                    return 1;
+                    return true;
                 }
                 if (wParam == IDX(IDC_NET_ABORT)) {
                     KillTimer(hWnd, 1);
@@ -229,19 +229,19 @@ namespace NetLobby {
                         );
                     }
                     EndDialog(hWnd, IDX(IDC_NET_ABORT));
-                    return 1;
+                    return true;
                 }
                 if (wParam == IDX(IDC_NETCHAT_SEND)) {
                     NetChatSubmit(hWnd, g_curMulti);
-                    return 1;
+                    return true;
                 }
                 break;
             case WM_TIMER:
                 NetDlgSessionStop(hWnd, g_curMulti);
                 UpdateSessionWaitDialog(hWnd, g_curMulti);
-                return 1;
+                return true;
         }
-        return 0;
+        return false;
     }
 
     RVA(0x000bdfe0, 0x3e)
@@ -265,14 +265,14 @@ namespace NetLobby {
     BOOL CALLBACK NetGameDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         g_curDlg = hWnd;
         if (BlockScreenSaver(hWnd, msg, wParam, lParam)) {
-            return 1;
+            return true;
         }
         switch (msg) {
             case WM_INITDIALOG:
                 g_curDlg = hWnd;
                 g_curMulti = static_cast<CMulti*>(g_gameReg->m_curState);
                 InitializeDropWaitDialog(hWnd, g_curMulti);
-                return 1;
+                return true;
             case WM_COMMAND:
                 if (wParam == IDX(IDC_NET_DROP_PLAYER)) {
                     KillTimer(hWnd, 1);
@@ -282,7 +282,7 @@ namespace NetLobby {
                         DPSEND_GUARANTEED
                     );
                     EndDialog(hWnd, wParam);
-                    return 1;
+                    return true;
                 }
                 if (wParam == IDX(IDC_NET_CONTINUE)) {
                     KillTimer(hWnd, 1);
@@ -292,7 +292,7 @@ namespace NetLobby {
                         DPSEND_GUARANTEED
                     );
                     EndDialog(hWnd, wParam);
-                    return 1;
+                    return true;
                 }
                 if (wParam == IDX(IDC_NET_ABORT)) {
                     KillTimer(hWnd, 1);
@@ -302,27 +302,27 @@ namespace NetLobby {
                         DPSEND_GUARANTEED
                     );
                     EndDialog(hWnd, wParam);
-                    return 1;
+                    return true;
                 }
                 if (wParam == IDX(IDC_NETCHAT_SEND)) {
                     NetChatSubmit(hWnd, g_curMulti);
-                    return 1;
+                    return true;
                 }
                 break;
             case WM_TIMER:
                 if (g_curMulti->m_pollAbort) {
                     KillTimer(hWnd, 1);
                     EndDialog(hWnd, IDX(IDC_NET_CONTINUE));
-                    return 1;
+                    return true;
                 }
                 NetDlgSessionStop(hWnd, g_curMulti);
                 UpdateDropWaitDialog(hWnd, g_curMulti);
                 if (g_curMulti->Session()->AllActiveLatenciesWithin(0x2710)) {
                     PostMessageA(hWnd, WM_COMMAND, IDX(IDC_NET_CONTINUE), 0);
                 }
-                return 1;
+                return true;
         }
-        return 0;
+        return false;
     }
 
     RVA(0x000be2f0, 0xb9)
@@ -383,14 +383,14 @@ namespace NetLobby {
     BOOL CALLBACK DropInDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         g_curDlg = hWnd;
         if (BlockScreenSaver(hWnd, msg, wParam, lParam)) {
-            return 1;
+            return true;
         }
         switch (msg) {
             case WM_INITDIALOG:
                 g_curDlg = hWnd;
                 g_curMulti = static_cast<CMulti*>(g_gameReg->m_curState);
                 InitializeDropInDialog(hWnd, g_curMulti);
-                return 1;
+                return true;
             case WM_COMMAND:
                 if (wParam == IDX(IDC_NET_DROPIN_ACCEPT)) {
                     KillTimer(hWnd, 1);
@@ -402,7 +402,7 @@ namespace NetLobby {
                         );
                     }
                     EndDialog(hWnd, IDX(IDC_NET_DROPIN_ACCEPT));
-                    return 1;
+                    return true;
                 }
                 if (wParam == IDX(IDC_NET_DROPIN_REJECT)) {
                     KillTimer(hWnd, 1);
@@ -414,7 +414,7 @@ namespace NetLobby {
                         );
                     }
                     EndDialog(hWnd, IDX(IDC_NET_DROPIN_REJECT));
-                    return 1;
+                    return true;
                 }
                 if (wParam == IDX(IDC_NET_ABORT)) {
                     KillTimer(hWnd, 1);
@@ -426,19 +426,19 @@ namespace NetLobby {
                         );
                     }
                     EndDialog(hWnd, IDX(IDC_NET_ABORT));
-                    return 1;
+                    return true;
                 }
                 if (wParam == IDX(IDC_NETCHAT_SEND)) {
                     NetChatSubmit(hWnd, g_curMulti);
-                    return 1;
+                    return true;
                 }
                 break;
             case WM_TIMER:
                 NetDlgSessionStop(hWnd, g_curMulti);
                 UpdateDropInDialog(hWnd, g_curMulti);
-                return 1;
+                return true;
         }
-        return 0;
+        return false;
     }
 
     RVA(0x000be760, 0x82)
