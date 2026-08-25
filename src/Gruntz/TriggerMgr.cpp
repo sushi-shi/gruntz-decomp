@@ -13,7 +13,7 @@
 #include <Gruntz/ErrorStringId.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
-#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>

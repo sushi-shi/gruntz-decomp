@@ -27,7 +27,7 @@ Three independent measurements, all on the retail image:
    from every ordinary global (`0x244000+`, `0x2bf000+`). That is the linker
    gathering `??_C@` COMDATs, not per-object `.data` contributions.
 3. **Reference spread.** `"Grunt"` @`0x20a9ec` is referenced from **28** code
-   sites between `0xa4b5` (`RegisterGameObjectLogicTypes`, unit `gameobjectfactory`)
+   sites between `0xa4b5` (`RegisterGameObjectLogicTypes`, unit `gameobjectlogictypes`)
    and `0xd1da9` (`CPlay::ExecuteCommand`, unit `playercommandstep`) — 0xc7000 of
    `.text` apart. `"GRUNTZ_"` @`0x20d28c`: **104** sites, `CWarlord::CWarlord`
    (`0x42d40`) through `CState::BuildAssetNamespacePrefixes` (`0xdca70`). One
@@ -38,7 +38,7 @@ The pipeline already models this, and says so out loud. In
 string-COMDAT name and are attributed to SEVERAL objects at once:
 
 ```
-0x20a9ec  ??_C@_05DNOF@Grunt?$AA@     gameobjectfactory.c / gruntbehaviorleaf.c
+0x20a9ec  ??_C@_05DNOF@Grunt?$AA@     gameobjectlogictypes.c / gruntbehaviorleaf.c
                                       / triggermgr.c / triggermgrgrid.c
 0x20d28c  ??_C@_07EGPJ@GRUNTZ_?$AA@   grunt.c / play.c
 ```

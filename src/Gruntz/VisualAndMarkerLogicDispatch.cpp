@@ -9,7 +9,7 @@
 #include <Gruntz/EyeCandyAni.h>
 #include <Gruntz/FrontCandy.h>
 #include <Gruntz/FrontCandyAni.h>
-#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GuardPoint.h>
 #include <Gruntz/LogicRecordHandler.h>

@@ -13,7 +13,7 @@
 #include <Gruntz/FixedPtrArray32.h>
 #include <Gruntz/FortressFlag.h>
 #include <Gruntz/GameLevel.h>
-#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntCreationPoint.h>
 #include <Gruntz/GruntDirStatics.h>

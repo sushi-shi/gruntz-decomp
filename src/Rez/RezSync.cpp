@@ -27,7 +27,7 @@
 #include <Gruntz/Fonts.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
-#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameText.h>
 #include <Gruntz/GruntzCmdMgr.h>

@@ -5,7 +5,7 @@
 
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/LogicRecordRegistry.h>
-#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/UserLogic.h>
 
 // Opt-in inline visibility for CUserLogic::BuildLogicTypeTable (out of line at

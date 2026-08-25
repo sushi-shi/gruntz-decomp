@@ -3,7 +3,7 @@
 #include <Gruntz/CursorSnapSprite.h>
 
 #include <Bute/ButeTree.h>
-#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/LogicRecordDispatchInline.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>

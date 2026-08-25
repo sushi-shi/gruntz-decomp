@@ -16,7 +16,7 @@
 #include <Gruntz/CheckpointTrigger.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
-#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>

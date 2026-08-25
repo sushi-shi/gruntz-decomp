@@ -54,7 +54,7 @@ vtables - its run holds their kept inline ctors (`??0CTileTrigger` 0x11160,
 **Traps.** Do not move a non-virtual multi-caller body to a header
 (`nonvirtual-inline-header-craters-delinker-packing.md` - MSVC5 inlines it into
 every caller). Direct-called statics (RegisterActs, called by
-gameobjectfactory) stay out-of-line for the same reason regardless of
+gameobjectlogictypes) stay out-of-line for the same reason regardless of
 placement. And run the test per BODY, not per class: one class routinely mixes
 both spellings (GetTypeTag inline, GetDisplayedValue out-of-line).
 

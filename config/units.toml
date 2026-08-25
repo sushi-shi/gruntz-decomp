@@ -771,8 +771,8 @@ source = "src/Image/ResolveNode.cpp"
 flags = "cpp"
 
 [[unit]]
-unit = "gameobjectfactory"
-source = "src/Gruntz/GameObjectFactory.cpp"
+unit = "gameobjectlogictypes"
+source = "src/Gruntz/GameObjectLogicTypes.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
@@ -1111,23 +1111,23 @@ source = "src/Gruntz/LightFxMgr.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "gruntindicatorworkerhandlers"
-source = "src/Gruntz/GruntIndicatorWorkerHandlers.cpp"
+unit = "gruntindicatorlogicdispatch"
+source = "src/Gruntz/GruntIndicatorLogicDispatch.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "ingameworkerhandlers"
-source = "src/Gruntz/InGameWorkerHandlers.cpp"
+unit = "ingameuilogicdispatch"
+source = "src/Gruntz/InGameUiLogicDispatch.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "logicworkerhandlersa"
-source = "src/Gruntz/LogicWorkerHandlersA.cpp"
+unit = "visualandmarkerlogicdispatch"
+source = "src/Gruntz/VisualAndMarkerLogicDispatch.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "logicworkerhandlersb"
-source = "src/Gruntz/LogicWorkerHandlersB.cpp"
+unit = "hazardlogicdispatch"
+source = "src/Gruntz/HazardLogicDispatch.cpp"
 flags = "cpp-rtti"
 
 [[unit]]

@@ -202,7 +202,7 @@ by a real record walk) as the one logic name with neither a `C<name>` class nor 
 `LOGIC_<NAME>` enumerator. It is neither missing nor misnamed:
 
 ```cpp
-// src/Gruntz/GameObjectFactory.cpp, RVA 0x0000a3b0
+// src/Gruntz/GameObjectLogicTypes.cpp, RVA 0x0000a3b0
 ctx->m_logicRegistry->RegisterLogicType(DispatchGlobalAmbientSoundLogic, "GlobalAmbientSound", 4);
 ctx->m_logicRegistry->RegisterLogicType(DispatchAmbientSoundLogic,       "AmbientSound",       1);
 ctx->m_logicRegistry->RegisterLogicType(DispatchAmbientPosSoundLogic,    "AmbientPosSound",    0);

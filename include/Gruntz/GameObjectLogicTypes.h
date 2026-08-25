@@ -1,5 +1,5 @@
-#ifndef GRUNTZ_GRUNTZ_GAMEOBJECTFACTORY_H
-#define GRUNTZ_GRUNTZ_GAMEOBJECTFACTORY_H
+#ifndef GRUNTZ_GRUNTZ_GAMEOBJECTLOGICTYPES_H
+#define GRUNTZ_GRUNTZ_GAMEOBJECTLOGICTYPES_H
 
 #include <Ints.h>
 
@@ -85,4 +85,4 @@ i32 DispatchLogicHit(CGameObject* obj);
 i32 DispatchLogicAttack(CGameObject* obj);
 i32 DispatchLogicBump(CGameObject* obj);
 
-#endif // GRUNTZ_GRUNTZ_GAMEOBJECTFACTORY_H
+#endif // GRUNTZ_GRUNTZ_GAMEOBJECTLOGICTYPES_H

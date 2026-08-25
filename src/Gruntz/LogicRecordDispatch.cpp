@@ -1,7 +1,7 @@
 #include <rva.h>
 
 #include <Gruntz/Boomerang.h>
-#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/LogicEventDispatch.h>
 #include <Gruntz/LogicRecordState.h>

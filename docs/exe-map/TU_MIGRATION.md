@@ -37,7 +37,7 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x008a40` | `?BuildLogicTypeTable@CUserLogic@@QAEXPAUCGameObject@@@Z` | userlogic | `0x8a40` ? |
 | `0x008c00` | `?Chain@CWapX@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicType` | userlogic | `0x8c00` ? |
 | `0x00a000` | `?WrapCoord@CDDrawWorkerHost@@QAEXPAJ0@Z` | wwdfile | `0xa000` ? |
-| `0x00a3b0` | `?RegisterGameObjectLogicTypes@@YAXPAVCDDrawSurfaceMgr@@@Z` | gameobjectfactory | `0xa3b0` ? |
+| `0x00a3b0` | `?RegisterGameObjectLogicTypes@@YAXPAVCDDrawSurfaceMgr@@@Z` | gameobjectlogictypes | `0xa3b0` ? |
 | `0x00d170` | `?SaveGame@@YAHPAVCGruntzMgr@@PAD@Z` | gamesave | `0xd170` ? |
 | `0x00d210` | `?ParseSerial@@YAHPAVCGruntzMgr@@PAD@Z` | serialobjectfactory | `0xd210` ? |
 | `0x00d2a0` | `?SerialObjectFactory@@YAHPAX0W4SerialMode@@W4LogicTypeId@@0@` | serialobjectfactory | `0xd2a0` ? |
@@ -228,20 +228,20 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 - `0x067850-0x06b265` (1 EH sites): gruntentrancemove (cpp-rtti)
 - `0x06b640-0x06eb25` (2 EH sites): triggermgrgrid (cpp-rtti)
 - `0x077f80-0x07d7ca` (6 EH sites): triggermgr (cpp-rtti)
-- `0x07db20-0x07e391` (7 EH sites): gruntindicatorworkerhandlers (cpp-rtti)
+- `0x07db20-0x07e391` (7 EH sites): gruntindicatorlogicdispatch (cpp-rtti)
 - `0x07e3e0-0x07ea4f` (1 EH sites): gruntselectedsprite (cpp-rtti)
 - `0x07eb00-0x07f234` (1 EH sites): grunthealthsprite (cpp-rtti)
 - `0x07f350-0x07f9e5` (1 EH sites): grunttoysprite (cpp-rtti)
 - `0x07fdb0-0x080461` (1 EH sites): gruntpowerupsprite (cpp-rtti)
 - `0x080850-0x080cc5` (3 EH sites): gruntzapp (cpp-rtti)
 - `0x08b8c0-0x093ce7` (27 EH sites): gruntzmgr (cpp-rtti)
-- `0x095750-0x095ac1` (3 EH sites): ingameworkerhandlers (cpp-rtti)
+- `0x095750-0x095ac1` (3 EH sites): ingameuilogicdispatch (cpp-rtti)
 - `0x095b10-0x099b46` (3 EH sites): ingameicon (cpp-rtti)
 - `0x099ba0-0x09b479` (8 EH sites): areamgr (cpp-rtti)
 - `0x09cdc0-0x09d7f0` (2 EH sites): lightfx (cpp-rtti)
 - `0x09e700-0x09fe39` (2 EH sites): mapmgr (cpp-rtti)
 - `0x0a0280-0x0a0e57` (2 EH sites): menustate (cpp-rtti)
-- `0x0a9a40-0x0aacd1` (15 EH sites): logicworkerhandlersa (cpp-rtti)
+- `0x0a9a40-0x0aacd1` (15 EH sites): visualandmarkerlogicdispatch (cpp-rtti)
 - `0x0aad20-0x0ab2f7` (1 EH sites): anicycle (cpp-rtti)
 - `0x0ab310-0x0ab922` (1 EH sites): singleframemessage (cpp-rtti)
 - `0x0ab940-0x0abf87` (1 EH sites): simpleanimation (cpp-rtti)
@@ -249,7 +249,7 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 - `0x0ad540-0x0adbc7` (1 EH sites): behindcandyani (cpp-rtti)
 - `0x0adbe0-0x0ae32e` (1 EH sites): menusparkle (cpp-rtti)
 - `0x0ae7f0-0x0aedb9` (1 EH sites): singleanimation (cpp-rtti)
-- `0x0af0a0-0x0af7d4` (6 EH sites): logicworkerhandlersb (cpp-rtti)
+- `0x0af0a0-0x0af7d4` (6 EH sites): hazardlogicdispatch (cpp-rtti)
 - `0x0af820-0x0b0ce8` (2 EH sites): rollingball (cpp-rtti)
 - `0x0b1200-0x0b1ffd` (2 EH sites): spotlight (cpp-rtti)
 - `0x0b23a0-0x0b34bc` (1 EH sites): kitchenslime (cpp-rtti)
@@ -475,7 +475,7 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 - videooptions (`cpp-rtti`) — src/Gruntz/VideoOptions.cpp
 - spriteloaders (`cpp-rtti`) — src/Gruntz/SpriteLoaders.cpp
 - cremusnode (`cpp`) — src/Image/ResolveNode.cpp
-- gameobjectfactory (`cpp-rtti`) — src/Gruntz/GameObjectFactory.cpp
+- gameobjectlogictypes (`cpp-rtti`) — src/Gruntz/GameObjectLogicTypes.cpp
 - startupprompt (`cpp-rtti`) — src/Gruntz/StartUpPrompt.cpp
 - kitchenslime (`cpp-rtti`) — src/Gruntz/KitchenSlime.cpp
 - gruntcreationpoint (`cpp-rtti`) — src/Gruntz/GruntCreationPoint.cpp
@@ -544,10 +544,10 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 - waypoint (`cpp-rtti`) — src/Gruntz/WayPoint.cpp
 - actionarea (`cpp-rtti`) — src/Gruntz/ActionArea.cpp
 - lightfxmgr (`cpp-rtti`) — src/Gruntz/LightFxMgr.cpp
-- gruntindicatorworkerhandlers (`cpp-rtti`) — src/Gruntz/GruntIndicatorWorkerHandlers.cpp
-- ingameworkerhandlers (`cpp-rtti`) — src/Gruntz/InGameWorkerHandlers.cpp
-- logicworkerhandlersa (`cpp-rtti`) — src/Gruntz/LogicWorkerHandlersA.cpp
-- logicworkerhandlersb (`cpp-rtti`) — src/Gruntz/LogicWorkerHandlersB.cpp
+- gruntindicatorlogicdispatch (`cpp-rtti`) — src/Gruntz/GruntIndicatorLogicDispatch.cpp
+- ingameuilogicdispatch (`cpp-rtti`) — src/Gruntz/InGameUiLogicDispatch.cpp
+- visualandmarkerlogicdispatch (`cpp-rtti`) — src/Gruntz/VisualAndMarkerLogicDispatch.cpp
+- hazardlogicdispatch (`cpp-rtti`) — src/Gruntz/HazardLogicDispatch.cpp
 - sfselectdevice (`cpp-rtti`) — src/Gruntz/SFSelectDevice.cpp
 - shadetablecache (`cpp`) — src/DDrawMgr/ShadeTableCache.cpp
 - battlezdata (`cpp-rtti`) — src/Gruntz/BattlezData.cpp
@@ -663,18 +663,18 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 Compressed unit sequence of the 1050 attributed $E initializer fragments (of 1075 live; 501 slots zeroed by relinks). This is the obj order of the original project files:
 
 ```
-?x5 | actionareax9 | wormhole | actionoptionsmenubarx9 | gameobjectfactoryx9 | advancedoptionsx9 |
+?x5 | actionareax9 | wormhole | actionoptionsmenubarx9 | gameobjectlogictypesx9 | advancedoptionsx9 |
 worldsoundsetx10 | gamesavex9 | attractstatex9 | dialogsx9 | battlezdlgcolorsx9 | customleveldlgx9 |
 bootystateactivatex9 | dialogs | chatboxownerx9 | fontconfigx9 | checkpointdlgx9 | gruntzcmdmgrx11 |
 battlezmapconfigx10 | battlezunitstepx9 | grunttilescanx9 | gruntstatestepx9 | battlezspawncheckx9 |
 battlezrepathx9 | battlezreserveplacex9 | battlezretargetx9 | tilescanx9 | videoconfigx9 |
 videooptionsx9 | creditsstatex10 | customworlddialogx12 | demox9 | dircellmethodsx9 |
 secretteleportertriggerx9 | dircellmethodsx2 | wormholex6 | warlord | fortressflagx12 | gruntstepsx9
-| gruntcombatx19 | triggermgrhittestx9 | gruntindicatorworkerhandlersx9 | triggermgr |
-gruntindicatorworkerhandlers | gruntzappx11 | brickzloadx9 | gruntzmgrx21 | gruntzwndx9 |
-helpstatex9 | ingameworkerhandlersx9 | ingameiconx3 | areamgr | statedispatchx9 | lightfxx9 |
+| gruntcombatx19 | triggermgrhittestx9 | gruntindicatorlogicdispatchx9 | triggermgr |
+gruntindicatorlogicdispatch | gruntzappx11 | brickzloadx9 | gruntzmgrx21 | gruntzwndx9 |
+helpstatex9 | ingameuilogicdispatchx9 | ingameiconx3 | areamgr | statedispatchx9 | lightfxx9 |
 spriteloaders | lightfxmgrx9 | loadgamemenux9 | mapmgrx9 | menustate | mainmenubuilderx10 |
-lightfxrenderx9 | logicworkerhandlersax11 | frontcandyanix5 | logicworkerhandlersbx11 | spotlightx2
+lightfxrenderx9 | visualandmarkerlogicdispatchx11 | frontcandyanix5 | hazardlogicdispatchx11 | spotlightx2
 | pathhazard | multix9 | pathhazardx2 | netlobbydialogsx9 | multi | multihelpdlgx9 |
 netsessionmgrx10 | netcmdslotx9 | multistartdlgx10 | droppedobjectx9 | multistartdlg |
 droppedobjectx2 | playercommandstep | play | playercommandstep | play | playercommandstep | play |

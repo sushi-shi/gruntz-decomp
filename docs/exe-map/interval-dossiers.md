@@ -448,7 +448,7 @@ Evidence:
   inside worldsoundset runs), the tail is class-grouped — the classic
   single-file class-grouped layout.
 - Init frags: worldsoundset 9@`0xac60` + 18@`0xb310` (single foreign
-  `gameobjectfactory` attribution between) = one contiguous fragment region
+  `gameobjectlogictypes` attribution between) = one contiguous fragment region
   before the code; randomambientsound/ambientsound have no separate runs.
 
 Seam fns: none to move (unit-merge only; `?Recompute@CSoundChannel` @`0xbf10`

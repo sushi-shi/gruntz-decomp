@@ -1,6 +1,6 @@
 #include <rva.h>
 
-#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GameObjectLogicTypes.h>
 
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/LogicRecordRegistry.h>

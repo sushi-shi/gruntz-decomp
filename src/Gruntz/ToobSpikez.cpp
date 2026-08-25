@@ -5,7 +5,7 @@
 #include <Bute/ButeTree.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
-#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/LogicEventDispatch.h>
 #include <Gruntz/LogicTypeId.h>

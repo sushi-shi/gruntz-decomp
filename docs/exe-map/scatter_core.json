@@ -754,7 +754,7 @@
   "spread": 1.2569632909584345
  },
  {
-  "file": "src/Gruntz/LogicWorkerHandlersA.cpp",
+  "file": "src/Gruntz/VisualAndMarkerLogicDispatch.cpp",
   "n": 15,
   "bytes": 3642,
   "lo": 694848,
@@ -1196,7 +1196,7 @@
   "spread": 1.313929313929314
  },
  {
-  "file": "src/Gruntz/GruntIndicatorWorkerHandlers.cpp",
+  "file": "src/Gruntz/GruntIndicatorLogicDispatch.cpp",
   "n": 7,
   "bytes": 1687,
   "lo": 514848,
@@ -1274,7 +1274,7 @@
   "spread": 1.2650822669104205
  },
  {
-  "file": "src/Gruntz/LogicWorkerHandlersB.cpp",
+  "file": "src/Gruntz/HazardLogicDispatch.cpp",
   "n": 6,
   "bytes": 1464,
   "lo": 716960,
@@ -1859,7 +1859,7 @@
   "spread": 1.2726510067114094
  },
  {
-  "file": "src/Gruntz/InGameWorkerHandlers.cpp",
+  "file": "src/Gruntz/InGameUiLogicDispatch.cpp",
   "n": 3,
   "bytes": 726,
   "lo": 612176,
@@ -2535,7 +2535,7 @@
   "spread": 1.0199468085106382
  },
  {
-  "file": "src/Gruntz/GameObjectFactory.cpp",
+  "file": "src/Gruntz/GameObjectLogicTypes.cpp",
   "n": 1,
   "bytes": 1762,
   "lo": 41904,

@@ -1,6 +1,6 @@
 #include <rva.h>
 
-#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/KitchenSlime.h>
 #include <Gruntz/LogicRecordHandler.h>

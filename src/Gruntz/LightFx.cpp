@@ -9,7 +9,7 @@
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/AnimationRegistry.h>
-#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntDirStatics.h>

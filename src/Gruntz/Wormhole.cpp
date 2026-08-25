@@ -14,7 +14,7 @@
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GameLevel.h>
-#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntPuddle.h>

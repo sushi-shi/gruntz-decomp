@@ -8,7 +8,7 @@
 #include <Gruntz/ActionAreaOwner.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
-#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/HaznColl.h>
 #include <Gruntz/LogicRecordHandler.h>

@@ -24,9 +24,10 @@ ja     <hi>          ; unsigned (u32 key); signed key would be `jg`
 je     <eq>
 ```
 Steerable: type the switch-key field `u32` (matching-neutral — same offset/size,
-no mangling change). Flipped all three InGameWorkerHandlers handlers
-(0x095750/0x095890/0x0aa6e0) and all three SiriusWorkerHandlers handlers
-(0x03d670/0x07db20/0x07dda0) from 97.86% to 100%.
+no mangling change). Flipped all three InGameUiLogicDispatch handlers
+(0x095750/0x095890/0x0aa6e0), plus `DispatchWormholeLogic`,
+`DispatchGruntSelectedSpriteLogic`, and `DispatchGruntToySpriteLogic`
+(0x03d670/0x07db20/0x07dda0), from 97.86% to 100%.
 
 ## An enum-typed accessor puts the `jg` BACK
 

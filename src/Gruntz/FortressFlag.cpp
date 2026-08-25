@@ -10,7 +10,7 @@
 #include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/AnimSink.h>
 #include <Gruntz/Explosion.h>
-#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>

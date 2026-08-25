@@ -6,7 +6,7 @@
 
 #include <Dsndmgr/SoundStream.h>
 #include <Gruntz/AmbientSound.h>
-#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/GameRand.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>

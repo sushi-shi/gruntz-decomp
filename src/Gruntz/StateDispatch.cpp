@@ -2,7 +2,7 @@
 
 #include <Gruntz/StateDispatch.h>
 
-#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/LevelTime.h>
 #include <Gruntz/LogicTypeTableInline.h>

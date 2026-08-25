@@ -10,7 +10,7 @@
 #include <Enums.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AnimationRegistry.h>
-#include <Gruntz/GameObjectFactory.h>
+#include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>

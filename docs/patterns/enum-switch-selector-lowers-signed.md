@@ -20,7 +20,7 @@ shows nothing but signed/unsigned twins:
 counts agree while the bytes do not:
 
 ```
-SIGNEDNESS  97.86%  logicworkerhandlersa 0x0aa1e0  @_DispatchFrontCandyLogic
+SIGNEDNESS  97.86%  visualandmarkerlogicdispatch 0x0aa1e0  @_DispatchFrontCandyLogic
            12 branches, rets 1->1:  #0 jg->ja=dest  #4 jg->ja=dest  #7 jg->ja=dest
 ```
 

@@ -21,7 +21,7 @@
 1	zdarrayderived	0x00008710	0x00008765	cmdline	Gruntz	2	thunk(2)
 2	userlogic	0x00008a40	0x00008d52	cmdline	Gruntz	5	thunk(5)
 3	actionoptionsmenubar	0x00009090	0x0000a0ac	cmdline	Gruntz	12	thunk(12)
-4	gameobjectfactory	0x0000a3b0	0x0000aa92	cmdline	Gruntz	1	thunk(1)
+4	gameobjectlogictypes	0x0000a3b0	0x0000aa92	cmdline	Gruntz	1	thunk(1)
 5	advancedoptions	0x0000afb0	0x0000b2e5	cmdline	Gruntz	5	thunk(5),xcu:243
 6	worldsoundset	0x0000b5e0	0x0000ce55	cmdline	Gruntz	30	thunk(30)
 7	gamesave	0x0000d170	0x0000d1e4	cmdline	Io	1	thunk(1)
@@ -95,7 +95,7 @@
 78	brickzcellflags	0x00077790	0x00077f2d	cmdline	Gruntz	3	thunk(3)
 79	triggermgr	0x00077f80	0x0007d7ca	cmdline	Gruntz	48	thunk(48)
 80	gruntpuddle	0x0007d810	0x0007d835	cmdline	Gruntz	1	thunk(1)
-81	gruntindicatorworkerhandlers	0x0007db20	0x0007e391	cmdline	Gruntz	7	thunk(7)
+81	gruntindicatorlogicdispatch	0x0007db20	0x0007e391	cmdline	Gruntz	7	thunk(7)
 82	gruntselectedsprite	0x0007e3e0	0x0007eadf	cmdline	Gruntz	6	thunk(6),xcu:631
 83	grunthealthsprite	0x0007eb00	0x0007f313	cmdline	Gruntz	7	thunk(7),xcu:632
 84	grunttoysprite	0x0007f350	0x0007faa9	cmdline	Gruntz	6	thunk(6),xcu:633
@@ -114,7 +114,7 @@
 98	levelrezpath	0x00093d40	0x000941b3	cmdline	Gruntz	1	thunk(1)
 99	gruntzwnd	0x00094640	0x00094d65	cmdline	Gruntz	27	thunk(27)
 101	helpstate	0x00095090	0x00095464	cmdline	Gruntz	9	thunk(9)
-102	ingameworkerhandlers	0x00095750	0x00095ac1	cmdline	Gruntz	3	thunk(3)
+102	ingameuilogicdispatch	0x00095750	0x00095ac1	cmdline	Gruntz	3	thunk(3)
 103	ingameicon	0x00095b10	0x00099b46	cmdline	Gruntz	19	thunk(19),xcu:716
 104	areamgr	0x00099ba0	0x0009b479	cmdline	Gruntz	55	thunk(55)
 105	statedispatch	0x0009b770	0x0009ba3f	cmdline	Gruntz	2	thunk(2)
@@ -127,7 +127,7 @@
 112	menustate	0x0009fe50	0x000a0e57	cmdline	Gruntz	17	thunk(17)
 113	mainmenubuilder	0x000a1190	0x000a29dd	cmdline	Gruntz	2	thunk(1),xcu:789
 114	lightfxrender	0x000a32c0	0x000a972a	cmdline	Gruntz	23	thunk(23)
-115	logicworkerhandlersa	0x000a9a40	0x000aacd1	cmdline	Gruntz	15	thunk(15)
+115	visualandmarkerlogicdispatch	0x000a9a40	0x000aacd1	cmdline	Gruntz	15	thunk(15)
 116	anicycle	0x000aad20	0x000ab2f7	cmdline	Gruntz	4	thunk(4),xcu:812
 117	singleframemessage	0x000ab310	0x000ab922	cmdline	Gruntz	4	thunk(4),xcu:813
 118	simpleanimation	0x000ab940	0x000abf87	cmdline	Gruntz	4	thunk(4),xcu:814
@@ -138,7 +138,7 @@
 123	waypoint	0x000ae3f0	0x000ae57f	cmdline	Gruntz	1	thunk(1)
 124	guardpoint	0x000ae5f0	0x000ae77f	cmdline	Gruntz	1	thunk(1)
 125	singleanimation	0x000ae7f0	0x000aedb9	cmdline	Gruntz	4	thunk(4),xcu:819
-126	logicworkerhandlersb	0x000af0a0	0x000af7d4	cmdline	Gruntz	6	thunk(6)
+126	hazardlogicdispatch	0x000af0a0	0x000af7d4	cmdline	Gruntz	6	thunk(6)
 127	rollingball	0x000af820	0x000b118b	cmdline	Gruntz	5	thunk(5),xcu:833
 128	spotlight	0x000b1200	0x000b22e5	cmdline	Gruntz	6	thunk(6),xcu:834
 129	kitchenslime	0x000b23a0	0x000b34bc	cmdline	Gruntz	6	thunk(6),xcu:835
