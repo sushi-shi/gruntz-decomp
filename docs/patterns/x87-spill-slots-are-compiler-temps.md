@@ -35,8 +35,9 @@ where the scheduler put the `fild`.
 
 `CBoomerang::AdvanceMotion` 0xe08b0, with retail's rotation association
 (`m_originX + (vy * s - vx * c)`, proven because retail's `fsubrp` precedes the
-`faddl 0x240(%esi)`), reaches retail's instruction count and byte length exactly
-— and allocates FIVE 8-byte slots where retail allocates four:
+`faddl 0x240(%esi)`), both product pairs grouped before their origin adds, and
+the X/Y/phase store order reaches retail's instruction count and byte length
+exactly — and allocates FIVE 8-byte slots where retail allocates four:
 
 ```asm
 ; retail: the fild kills the i64 temp at [esp+0x8] BEFORE `sin` is spilled,
@@ -72,3 +73,20 @@ Declaration order steers frame slots for address-taken scalars. It does not
 steer x87 temps: cl sinks the conversion to its use, and the schedule places
 the `fild`. If the slot map is the only residue and the GPRs already match,
 this is a park, not a work item.
+
+## Source adjudication: keep the structurally exact dipped base
+
+The former 86.25 source grouped neither product pair before its origin add and
+stored the phase before X/Y. It used only three x87 spill slots, but retail has
+neither that expression tree nor that store order. Grouping X alone and moving
+the phase store produces 131/132 instructions. Grouping Y as well is the second
+lever: it produces the exact retail extent and 132/132 instructions, with
+identical FP, displacement, store, immediate, mnemonic, and ordered-referent
+multisets. Its fuzzy score is 71.52 solely because cl assigns five spill slots
+where retail assigns four.
+
+This is an adjudicated exploratory descent: the lower-scoring form is retained
+because the higher-scoring baseline is structurally refuted. A fresh 64-trial
+parser-state campaign found no closure; eight trials only swapped two compiler
+spill slots and reached 71.52713. Reopen this wall only with a source-backed FP
+schedule lever that makes the dead unsigned-conversion slot reusable.
