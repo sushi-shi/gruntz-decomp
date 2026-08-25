@@ -52,7 +52,7 @@ GZ_ENUM_BEGIN(SbiCommandId)
     SBICMD_RESOURCE_BELT_GROUP1 = 0xcc,
     SBICMD_RESOURCE_BELT_GROUP2 = 0xcd,
 
-    // Resource-tab conveyor widgets. SetFallRect accepts either belt segment.
+    // Resource-tab conveyor widgets. DropFallingItemAt accepts either belt segment.
     SBICMD_CONVEYOR_TOP = 0xce,
     SBICMD_CONVEYOR_BOTTOM = 0xd0,
     SBICMD_RESOURCE_MACHINE_BACKGROUND = 0xd1,

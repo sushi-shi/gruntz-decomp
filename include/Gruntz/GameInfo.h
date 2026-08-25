@@ -32,7 +32,7 @@ public:
     i32 SetNames(char* name, char* name2, i32 unused);
     i32 CopyBody(char* body);
     void ClearTime();
-    i32 Update(i32 s, i32 timestamp, i32 type);
+    i32 UpdateBestScore(i32 score, i32 timeMs, i32 gameType);
     i32 CopyIfLarger(CGameInfoTime* src, i32 type);
     i32 HasSupportedVersion();
     i32 FormatGameInfoString();

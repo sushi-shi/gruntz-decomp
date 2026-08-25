@@ -37,7 +37,7 @@ public:
         i32 unitIndex
     );
     void Clear();
-    i32 Activate(i32 a);
+    i32 RefreshIfActive(i32 unusedDeltaMs);
     i32 Refresh();
     i32 Render();
     i32 HitClick(i32 mx, i32 my);

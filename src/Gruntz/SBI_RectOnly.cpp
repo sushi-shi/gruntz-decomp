@@ -3718,11 +3718,11 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
 }
 
 RVA(0x00107920, 0xb7)
-i32 CStatusBarMgr::SetFallRect(i32 x, i32 y, i32 item) {
+i32 CStatusBarMgr::DropFallingItemAt(i32 screenX, i32 screenY, i32 itemFrame) {
     if (m_pendingHlRow == STATUS_HL_ROW_NONE) {
         return 0;
     }
-    CStatusBarItem* r = HitTestRects(x, y);
+    CStatusBarItem* r = HitTestRects(screenX, screenY);
     if (r == NULL) {
         return 0;
     }
@@ -3731,19 +3731,19 @@ i32 CStatusBarMgr::SetFallRect(i32 x, i32 y, i32 item) {
         return 0;
     }
 
-    i32 cx = x;
+    i32 cx = screenX;
     RECT rc = r->m_rect;
     i32 lo = rc.left + 0x1b;
     i32 xHi = rc.right;
-    if (x < lo) {
+    if (screenX < lo) {
         cx = lo;
-    } else if (x > xHi - 0x1a) {
+    } else if (screenX > xHi - 0x1a) {
         cx = xHi - 0x1a;
     }
     i32 localX = cx - m_barRect.left;
     i32 localY = 0x1b3 - m_barRect.top;
-    UpdateFallingItemStatusBar(item, localX, localY);
-    EnterHlRow(1, item);
+    UpdateFallingItemStatusBar(itemFrame, localX, localY);
+    EnterHlRow(1, itemFrame);
     return 1;
 }
 

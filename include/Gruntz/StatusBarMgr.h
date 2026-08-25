@@ -245,7 +245,7 @@ public:
     i32 ClearStat(i32 idx);
     void EnterHlRow(i32 row, i32 group);
     void InitTabRects();
-    i32 SetFallRect(i32 a, i32 b, i32 c);
+    i32 DropFallingItemAt(i32 screenX, i32 screenY, i32 itemFrame);
     void ExitMode();
     i32 ActivateSlot(i32 idx);
     i32 PlaceCursorTarget(i32 unitIndex, i32 activateCamera);

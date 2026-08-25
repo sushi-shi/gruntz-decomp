@@ -1230,7 +1230,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     m_animSprites[i]->m_screenX = g_idleSpriteIds[i];
                     m_animSprites[i]->m_screenY = 0xdc;
                     m_animSprites[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
-                    if ((g_gameReg->m_scoreHud)->GetRecordValue(i) == 0) {
+                    if ((g_gameReg->m_scoreHud)->GetWarpLetterScore(i) == 0) {
                         m_animSprites[i]->ApplyName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
                         m_animSprites[i]->ApplyLookupGeometry("GRUNTZ_NORMALGRUNT_IDLE4", 0);
                     } else {
@@ -1276,7 +1276,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
     }
 
     if (m_soundStarted == 0 && m_animSprites[m_stepIndex]->m_screenY <= 0x195) {
-        if ((g_gameReg->m_scoreHud)->GetRecordValue(m_stepIndex) == 0) {
+        if ((g_gameReg->m_scoreHud)->GetWarpLetterScore(m_stepIndex) == 0) {
             m_soundStarted = 1;
             CDDrawSubMgrLeafScan* ss = g_gameReg->m_world->m_soundRegistry;
             if (ss->m_emitGate == 0) {
@@ -1322,7 +1322,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
             }
             CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(0, 0);
             if (sel != NULL) {
-                if ((g_gameReg->m_scoreHud)->GetRecordValue(m_stepIndex) != 0) {
+                if ((g_gameReg->m_scoreHud)->GetWarpLetterScore(m_stepIndex) != 0) {
                     CDDrawSubMgrLeafScan* ss = g_gameReg->m_world->m_soundRegistry;
                     if (ss->m_emitGate == 0) {
                         LeafCue* res = NULL;
@@ -1715,7 +1715,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                         m_animSprites[p]->m_screenX = g_idleSpriteIds[p];
                         m_animSprites[p]->m_screenY = 0xdc;
                         m_animSprites[p]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
-                        if ((g_gameReg->m_scoreHud)->GetRecordValue(p) == 0) {
+                        if ((g_gameReg->m_scoreHud)->GetWarpLetterScore(p) == 0) {
                             m_animSprites[p]->ApplyName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
                             m_animSprites[p]->ApplyLookupGeometry("GRUNTZ_NORMALGRUNT_IDLE4", 0);
                         } else {

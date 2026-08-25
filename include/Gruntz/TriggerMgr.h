@@ -192,7 +192,7 @@ public:
 
     void HudRect(RECT r, i32 flag);
 
-    i32 LoadTeleporterGooConfig(i32 clock);
+    i32 UpdateFrame(i32 deltaMs);
 
     void LoadFinishLevelSprite(FinishLevelReason state);
 
@@ -308,7 +308,7 @@ public:
     i32 m_pendingFxKind;
     char _pad2ac[0x4];
 
-    // Four 64-bit timers.  LoadTeleporterGooConfig compares them with a real
+    // Four 64-bit timers. UpdateFrame compares them with a real
     // sub/sbb/cmp/cmp pair and writes BOTH halves on every rearm - so they are
     // i64, not the low words alone.
     union {

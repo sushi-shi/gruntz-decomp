@@ -224,8 +224,8 @@ i32 CBattlezData::GroupAllScored() {
 }
 
 RVA(0x000fced0, 0x31)
-i32 CBattlezData::GetRecordValue(i32 b) {
-    i32 idx = b + (m_count - 1) / 4 * 4;
+i32 CBattlezData::GetWarpLetterScore(i32 letterIndex) {
+    i32 idx = letterIndex + (m_count - 1) / 4 * 4;
     if (idx == m_count - 1) {
         return m_scoreValue;
     }

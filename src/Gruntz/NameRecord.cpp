@@ -64,27 +64,27 @@ void CGameInfo::ClearTime() {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001181d0, 0x70)
-i32 CGameInfo::Update(i32 s, i32 timestamp, i32 type) {
-    if (s == 0) {
+i32 CGameInfo::UpdateBestScore(i32 score, i32 timeMs, i32 gameType) {
+    if (score == 0) {
         return 0;
     }
-    if (timestamp == 0) {
+    if (timeMs == 0) {
         return 0;
     }
     CGameInfoTime* b = &m_body.m_time;
     if (b == NULL) {
         return 0;
     }
-    if (b->m_score > s) {
+    if (b->m_score > score) {
         return 0;
     }
-    if (b->m_score == s && b->m_timeMs < timestamp) {
+    if (b->m_score == score && b->m_timeMs < timeMs) {
         return 0;
     }
-    b->m_score = s;
-    b->m_timeMs = timestamp;
+    b->m_score = score;
+    b->m_timeMs = timeMs;
     BuildGameDate(b);
-    m_body.m_type = type;
+    m_body.m_type = gameType;
     return 1;
 }
 

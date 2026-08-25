@@ -60,7 +60,7 @@ public:
     i32 SumGruntzLostForGroup();
     i32 SumGruntzExitedForGroup();
     i32 SumElapsedTimeForGroup();
-    i32 GetRecordValue(i32 b);
+    i32 GetWarpLetterScore(i32 letterIndex);
     void FillRecord(i32 index, i32 phase);
     i32 Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
 

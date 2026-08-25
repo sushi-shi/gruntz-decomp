@@ -128,7 +128,7 @@ void CActionOptionsMenuBar::Clear() {
 }
 
 RVA(0x00009300, 0x14)
-i32 CActionOptionsMenuBar::Activate(i32 a) {
+i32 CActionOptionsMenuBar::RefreshIfActive(i32 unusedDeltaMs) {
     if (m_active) {
         Refresh();
     }

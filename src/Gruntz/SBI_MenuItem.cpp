@@ -88,7 +88,7 @@ i32 CSBI_MenuItem::Refresh(i32) {
 }
 
 RVA(0x000e81e0, 0x8b)
-i32 CSBI_MenuItem::ResolveFrame(const char* key, i32 a) {
+i32 CSBI_MenuItem::ResolveFrame(const char* key, i32 frameIndex) {
     if (key == NULL) {
         return 0;
     }
@@ -99,10 +99,10 @@ i32 CSBI_MenuItem::ResolveFrame(const char* key, i32 a) {
         return 0;
     }
 
-    if (a == -1) {
+    if (frameIndex == -1) {
         SetFrame(static_cast<CImage*>(rec->m_items.GetAt(rec->m_minIndex)));
     } else {
-        SetFrame(rec->GetAt(a));
+        SetFrame(rec->GetAt(frameIndex));
     }
     return m_frame != NULL;
 }
@@ -122,7 +122,7 @@ i32 CSBI_MenuItem::Render() {
 }
 
 RVA(0x000e8310, 0x112)
-i32 CSBI_MenuItem::SetState(SbiMenuItemState state, i32 a) {
+i32 CSBI_MenuItem::SetState(SbiMenuItemState state, i32 playHighlightSound) {
     if (m_state == state || m_record == NULL) {
         return 0;
     }
@@ -138,7 +138,7 @@ i32 CSBI_MenuItem::SetState(SbiMenuItemState state, i32 a) {
         m_owner->m_activeTab = static_cast<StatusBarTab>(IDX(m_cmd));
         m_owner->LoadTabSprites();
         m_owner->Deactivate();
-    } else if (state == MENUITEM_HIGHLIGHT && a) {
+    } else if (state == MENUITEM_HIGHLIGHT && playHighlightSound) {
 
         CDDrawSubMgrLeafScan* mh = g_gameReg->m_world->m_soundRegistry;
         if (mh->m_emitGate == 0) {

@@ -884,7 +884,7 @@ void CPlay::DrawWorldFrame() {
     g_killCueClock = g_lastNow;
     g_engineFrameDelta = g_frameDelta;
     m_world->m_childGroup->TickKillCues(0);
-    m_mgr->m_cmdGrid->LoadTeleporterGooConfig(static_cast<i32>(g_frameDelta));
+    m_mgr->m_cmdGrid->UpdateFrame(static_cast<i32>(g_frameDelta));
     if (g_gameReg->m_gameMode == GAMEMODE_REPLAY) {
 
         (g_gameReg)->AdvanceOptionsCycle();
@@ -941,7 +941,7 @@ i32 CPlay::DrawWorldFrames() {
                 }
             }
             m_world->m_childGroup->TickKillCues(0);
-            m_mgr->m_cmdGrid->LoadTeleporterGooConfig(static_cast<i32>(g_frameDelta));
+            m_mgr->m_cmdGrid->UpdateFrame(static_cast<i32>(g_frameDelta));
             if (g_gameReg->m_gameMode == GAMEMODE_REPLAY) {
                 (g_gameReg)->AdvanceOptionsCycle();
             }
@@ -979,7 +979,7 @@ i32 CPlay::ProfileInputFrame() {
 
     i32 updateMs = static_cast<i32>(tg());
     m_world->m_childGroup->TickKillCues(1);
-    m_mgr->m_cmdGrid->LoadTeleporterGooConfig(static_cast<i32>(g_frameDelta));
+    m_mgr->m_cmdGrid->UpdateFrame(static_cast<i32>(g_frameDelta));
     m_guts->UpdateStatusBar(static_cast<i32>(g_frameDelta));
     updateMs = static_cast<i32>(tg() - static_cast<u32>(updateMs));
 
@@ -2940,9 +2940,9 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
                 RECT* gr = &m_guts->m_barRect;
                 if (CGameLevel::PointInRect(gr, xr, y)) {
                     // No narrowing: retail loads the WHOLE dword (`mov eax,[esi+0x2f4]`),
-                    // and SetFallRect takes an i32.  Casting to char clipped the held
+                    // and DropFallingItemAt takes an i32. Casting to char clipped the held
                     // cursor item to its low signed byte before the status bar saw it.
-                    if (m_guts->SetFallRect(xr, y, m_cursorFrame)) {
+                    if (m_guts->DropFallingItemAt(xr, y, m_cursorFrame)) {
                         m_dragInhibit2 = 0;
                         SetCursorFrame(0);
                         return 1;

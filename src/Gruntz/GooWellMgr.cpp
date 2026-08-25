@@ -25,7 +25,7 @@
 
 // @early-stop
 RVA(0x0006eb80, 0x5ef)
-i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
+i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
     if (g_gameReg->m_soundEnabled) {
 
         if (m_rollingballWanted) {
@@ -169,7 +169,7 @@ i32 CTriggerMgr::LoadTeleporterGooConfig(i32 off) {
         }
 
         if (m_overlay) {
-            m_overlay->Activate(off);
+            m_overlay->RefreshIfActive(deltaMs);
         }
         if (g_gameReg->m_gameMode == GAMEMODE_REPLAY) {
             if (obj->m_winLoseBanner != 0 && m_unitCountByPlayer[g_curPlayer] == 0) {
