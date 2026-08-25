@@ -23,7 +23,7 @@ RVA_COMPGEN(0x00012c30, 0x1e, ??_GCToobSpikez@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012c60, 0x44, ??1CToobSpikez@@UAE@XZ)
 
 RVA(0x00114480, 0xf1)
-i32 CreateToobSpikez(CGameObject* obj) {
+i32 DispatchToobSpikezLogic(CGameObject* obj) {
     CLogicRecord* record = obj->m_logicRecord;
     switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {

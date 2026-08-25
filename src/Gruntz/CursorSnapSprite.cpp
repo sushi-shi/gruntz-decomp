@@ -25,7 +25,7 @@ RVA_COMPGEN(0x000118f0, 0x1e, ??_GCCursorSnapSprite@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011920, 0x44, ??1CCursorSnapSprite@@UAE@XZ)
 
 RVA(0x0003a200, 0xf1)
-i32 CreateCursorSnapSprite(CGameObject* owner) {
+i32 DispatchCursorSnapSpriteLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {

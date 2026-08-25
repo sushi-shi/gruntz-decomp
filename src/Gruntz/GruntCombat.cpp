@@ -1129,7 +1129,7 @@ void CMotionState::SetZ(double z) {
 // The pinned half of the two-entity split (docs/patterns/two-shapes-need-two-entities.md).
 // Retail `call`s this from exactly three sites - CGrunt::CGrunt and
 // CProjectile::CProjectile (both through CMovingLogic's ctor) and
-// CreateDoNothingNormal (through CDoNothingNormal's) - and expands
+// DispatchDoNothingNormalLogic (through CDoNothingNormal's) - and expands
 // CUserLogic(obj, INLINE_BASE) everywhere else.
 RVA(0x00058cd0, 0x195)
 CUserLogic::CUserLogic(CGameObject* obj) {
@@ -1956,7 +1956,7 @@ CObject* SoundCueRegistry::Lookup(const char* key) {
 }
 
 RVA(0x0005baf0, 0xf4)
-i32 CreateGrunt(CGameObject* owner) {
+i32 DispatchGruntLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {

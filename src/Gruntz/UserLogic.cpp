@@ -22,13 +22,13 @@
 RVA(0x00008a40, 0xc8)
 void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {
     if (!obj->OwnerMgr()->m_logicRegistry->FindTemplate("LogicHit")) {
-        obj->OwnerMgr()->m_logicRegistry->RegisterLogicType(LogicHitFactory, "LogicHit", 2);
+        obj->OwnerMgr()->m_logicRegistry->RegisterLogicType(DispatchLogicHit, "LogicHit", 2);
     }
     if (!obj->OwnerMgr()->m_logicRegistry->FindTemplate("LogicAttack")) {
-        obj->OwnerMgr()->m_logicRegistry->RegisterLogicType(LogicAttackFactory, "LogicAttack", 2);
+        obj->OwnerMgr()->m_logicRegistry->RegisterLogicType(DispatchLogicAttack, "LogicAttack", 2);
     }
     if (!obj->OwnerMgr()->m_logicRegistry->FindTemplate("LogicBump")) {
-        obj->OwnerMgr()->m_logicRegistry->RegisterLogicType(LogicBumpFactory, "LogicBump", 2);
+        obj->OwnerMgr()->m_logicRegistry->RegisterLogicType(DispatchLogicBump, "LogicBump", 2);
     }
 }
 

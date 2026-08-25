@@ -37,7 +37,7 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x008a40` | `?BuildLogicTypeTable@CUserLogic@@QAEXPAUCGameObject@@@Z` | userlogic | `0x8a40` ? |
 | `0x008c00` | `?Chain@CWapX@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicType` | userlogic | `0x8c00` ? |
 | `0x00a000` | `?WrapCoord@CDDrawWorkerHost@@QAEXPAJ0@Z` | wwdfile | `0xa000` ? |
-| `0x00a3b0` | `?RegisterGameObjectTypes@@YAXPAVCDDrawSurfaceMgr@@@Z` | gameobjectfactory | `0xa3b0` ? |
+| `0x00a3b0` | `?RegisterGameObjectLogicTypes@@YAXPAVCDDrawSurfaceMgr@@@Z` | gameobjectfactory | `0xa3b0` ? |
 | `0x00d170` | `?SaveGame@@YAHPAVCGruntzMgr@@PAD@Z` | gamesave | `0xd170` ? |
 | `0x00d210` | `?ParseSerial@@YAHPAVCGruntzMgr@@PAD@Z` | serialobjectfactory | `0xd210` ? |
 | `0x00d2a0` | `?SerialObjectFactory@@YAHPAX0W4SerialMode@@W4LogicTypeId@@0@` | serialobjectfactory | `0xd2a0` ? |
@@ -69,7 +69,7 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x0388e0` | `?PopulateInputDeviceCombo@@YAHPAUHWND__@@HH@Z` | inputdeviceconfig | `0x388e0` ? |
 | `0x039dc0` | `?LoadCreditzAssets@CCreditsState@@QAEXXZ` | creditzassets | `0x39dc0` ? |
 | `0x03a1d0` | `?BltSelf@CDDrawSurfacePair@@QAEXPAV1@@Z` | ddrawsurfacepairblt | `0x3a1d0` ? |
-| `0x03a200` | `_CreateCursorSnapSprite` | cursorsnapsprite | `0x3a200` ? |
+| `0x03a200` | `_DispatchCursorSnapSpriteLogic` | cursorsnapsprite | `0x3a200` ? |
 | `0x03a340` | `??0CCursorSnapSprite@@QAE@PAUCGameObject@@@Z` | cursorsnapsprite | `0x3a340` ? |
 | `0x03a710` | `?RegisterCursorSnapActions@@YAXXZ` | cursorsnapactreg | `0x3a710` ? |
 | `0x03a910` | `?AdvanceAnim@CCursorSnapSprite@@QAEHXZ` | cursorsnapactreg | `0x3a910` ? |
@@ -103,7 +103,7 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x093d40` | `?ResolveLevelChecksum@CGruntzMgr@@QAEHHHHHVCString@@@Z` | levelrezpath | `0x93d40` ? |
 | `0x094340` | `??0?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@QAE@XZ` | arrayserialize | `0x94340` ? |
 | `0x094640` | `??0CGruntzWnd@@QAE@XZ` | gruntzwnd | `0x94640` ? |
-| `0x09b770` | `_CreateLevelTime` | statedispatch | `0x9b770` ? |
+| `0x09b770` | `_DispatchLevelTimeLogic` | statedispatch | `0x9b770` ? |
 | `0x09b8b0` | `??0CLevelTime@@QAE@PAUCGameObject@@@Z` | statedispatch | `0x9b8b0` ? |
 | `0x09c650` | `?Deserialize@CTimer@@QAEHPAVCFileMemBase@@@Z` | streamrecordloaders | `0x9c650` ? |
 | `0x09cab0` | `?Find@CLogicRecordRegistry@@QAEPAVCObject@@PBD@Z` | streamrecordloaders | `0x9cab0` ? |
@@ -154,7 +154,7 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x0f9160` | `?ExtractBracketValue@@YAHPAD00@Z` | bracketvalue | `0xf9160` ? |
 | `0x0f9280` | `?MakeButeSectionKey@@YAHPADPBD1@Z` | fxmodedesc | `0xf9280` ? |
 | `0x0f93b0` | `?AppendInt@@YAXPADPBDH@Z` | netsession | `0xf93b0` ? |
-| `0x0fb660` | `_CreateStaticHazard` | logicrecorddispatch | `0xfb660` ? |
+| `0x0fb660` | `_DispatchStaticHazardLogic` | logicrecorddispatch | `0xfb660` ? |
 | `0x10bc30` | `?StartDestructWarning@CStatusBarMgr@@QAEXH@Z` | destructbutton | `0x10bc30` ? |
 | `0x114120` | `?PlayCueIfElapsed@SoundCueRegistry@@QAEHPBD@Z` | ddrawsubmgrrefresh | `0x114120` ? |
 | `0x114ec0` | `?SaveFrontBufferShot@@YAXPAVRegistryHelper@Utils@@PAVCGruntz` | savefrontbuffershot | `0x114ec0` ? |

@@ -67,7 +67,7 @@ inline void DispatchUnhandledLogicEvent(CUserLogic* sub) {
 }
 
 RVA(0x000fb660, 0xf1)
-i32 CreateStaticHazard(CGameObject* owner) {
+i32 DispatchStaticHazardLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (static_cast<u32>(record->EventCode())) {
         case LOGICREC_INIT:

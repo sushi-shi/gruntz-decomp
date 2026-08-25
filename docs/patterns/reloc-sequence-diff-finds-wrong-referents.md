@@ -53,7 +53,7 @@ in minutes:
 | `CRollingBall::Update` | `VtblResolve` is inlined; and the floor/ceil arms were **inverted** (a live behaviour bug) | 83.14 -> 83.96 |
 | `CTriggerMgr::WireTileSwitchLogic` | the arrow-current inner switch has no `default` arm | 88.37 -> 90.00 |
 | `CTriggerMgr::UnregisterUnit` | `CWarlord::RaiseBattleAlert`, not `ResolveDeathAnimation` | referent set now identical |
-| `CTriggerMgr::DestroyAllAnims` | the notify slot is compared against `CreateProjectile`, not a `CGrunt` member pointer | referent set now identical |
+| `CTriggerMgr::DestroyAllAnims` | the notify slot is compared against `DispatchProjectileLogic`, not a `CGrunt` member pointer | referent set now identical |
 
 Two of these (the RollingBall rounding, the ReinitGroup bound compares) were live
 behaviour bugs, not just byte differences.

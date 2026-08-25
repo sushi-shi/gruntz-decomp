@@ -1184,7 +1184,7 @@ i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 col, PickupType kind, i32 move
     while (pos != NULL) {
         CGameObject* obj = fac->NextChild(pos);
         LogicRecordDispatchFn dispatch = obj->m_logicRecord->m_dispatch;
-        if (dispatch == CreateInGameIcon || dispatch == CreateInGameText) {
+        if (dispatch == DispatchInGameIconLogic || dispatch == DispatchInGameTextLogic) {
             i32 ox = obj->m_screenX >> TILE_SHIFT_PX;
             i32 oy = obj->m_screenY >> TILE_SHIFT_PX;
             if (tx == ox && ty == oy) {
@@ -2641,7 +2641,7 @@ void CTriggerMgr::DestroyAllAnims() {
             LogicDispatchWord actualDispatch;
             LogicDispatchWord projectileDispatch;
             actualDispatch.m_dispatch = record->m_dispatch;
-            projectileDispatch.m_dispatch = CreateProjectile;
+            projectileDispatch.m_dispatch = DispatchProjectileLogic;
             if (actualDispatch.m_bits == projectileDispatch.m_bits) {
                 (static_cast<CGrunt*>(record->m_userLogic))->m_neighborPlayerIndex = 0;
             }

@@ -2,7 +2,7 @@
 
 - **confidence**: 9/10
 - **tags**: `cpp:branch` `cpp:local` `cpp:float` | `asm:fild` `asm:fmul` `asm:fxch` `asm:fstp` | `topic:codegen-idiom`
-- **measured**: `CreateDemoMover` 0x3c300 72.68 -> **97.21** (two sites)
+- **measured**: `DispatchDemoMoverLogic` 0x3c300 72.68 -> **97.21** (two sites)
 
 ## Symptoms
 

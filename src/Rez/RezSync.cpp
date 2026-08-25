@@ -298,7 +298,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     world->m_level->m_maxStepY = 0xe;
     world->m_drawTarget->CreateOverlay(0, 0x30000);
     RecomputeViewScale();
-    RegisterGameObjectTypes(world);
+    RegisterGameObjectLogicTypes(world);
     if (!MakeRezPath()) {
         return 0;
     }

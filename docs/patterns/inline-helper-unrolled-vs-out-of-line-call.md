@@ -22,9 +22,9 @@ it's compact again, re-classify).
 ```cpp
 // include/Gruntz/LogicTypeTableInline.h — included by the UNROLLED leaf TUs only:
 inline void CUserLogic::BuildLogicTypeTable(CLogicTypeBuilder* ctx) {
-    if (!ctx->m_0c->m_14->Find("LogicHit"))   ctx->m_0c->m_14->RegisterType((void*)LogicHitFactory,   "LogicHit",   2);
-    if (!ctx->m_0c->m_14->Find("LogicAttack"))ctx->m_0c->m_14->RegisterType((void*)LogicAttackFactory,"LogicAttack",2);
-    if (!ctx->m_0c->m_14->Find("LogicBump"))  ctx->m_0c->m_14->RegisterType((void*)LogicBumpFactory,  "LogicBump",  2);
+    if (!ctx->m_0c->m_14->Find("LogicHit"))   ctx->m_0c->m_14->RegisterType((void*)DispatchLogicHit,   "LogicHit",   2);
+    if (!ctx->m_0c->m_14->Find("LogicAttack"))ctx->m_0c->m_14->RegisterType((void*)DispatchLogicAttack,"LogicAttack",2);
+    if (!ctx->m_0c->m_14->Find("LogicBump"))  ctx->m_0c->m_14->RegisterType((void*)DispatchLogicBump,  "LogicBump",  2);
 }
 ```
 ```asm

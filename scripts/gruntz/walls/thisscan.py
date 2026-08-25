@@ -169,7 +169,7 @@ THE CLASS-LEVEL SOURCE SCREEN IS A CANDIDATE GENERATOR, NOT A SIEVE. Listing
 every free function whose FIRST parameter is a modelled class returns 115 rows
 image-wide, of which 29 have a direct retail call site and exactly ONE has the
 byte evidence. The other 114 are real free functions - object factories
-registered as function pointers (`CreateActionArea(CGameObject*)` and its
+registered as function pointers (`DispatchActionAreaLogic(CGameObject*)` and its
 forty siblings), MFC's `AfxCallWndProc`/`ConstructElements`, serializers. A
 leading class pointer is not a dropped receiver; the receiver-shaped ECX write
 at the call site is. Note also that neither 2026-08-23 hit had a leading class

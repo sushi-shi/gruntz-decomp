@@ -65,7 +65,7 @@ public:
     Clock64 m_peekTimer;
     Clock64 m_peekWindow;
     CWwdGameObjectA* m_glitterSprite;
-    i32 m_reserved7c; // retail news 0x80 (push in CreateInGameIcon); position unproven
+    i32 m_reserved7c; // retail news 0x80 (push in DispatchInGameIconLogic); position unproven
 };
 
 #endif // GRUNTZ_GRUNTZ_CINGAMEICON_H

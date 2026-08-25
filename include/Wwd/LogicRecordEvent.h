@@ -16,7 +16,7 @@
 // The 0x50..0x53 run is the serialisation quartet in the order it is used:
 // prepare, save, load, then fix up references once every object exists - which
 // is the same shape as SerialMode's PRESAVE/SAVE/POSTSAVE ladder.
-// Retail's switch key is UNSIGNED: every one of the sixty-odd `Create<Leaf>`
+// Retail's switch key is UNSIGNED: every one of the sixty-odd `Dispatch<Leaf>Logic`
 // pumps dispatches with `ja`, not `jg` (0x0a9a40 and family), and a probe under
 // cl 5.0 /O2 shows the two spellings differ in exactly those three branch bytes.
 // So the domain is stored and returned as u32; only the comparison form moves.

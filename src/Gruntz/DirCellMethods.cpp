@@ -251,7 +251,7 @@ BOOL CALLBACK EditDwRectsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
 }
 
 RVA(0x0003d2b0, 0xf1)
-i32 CreateGruntStartingPoint(CGameObject* owner) {
+i32 DispatchGruntStartingPointLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
@@ -289,7 +289,7 @@ i32 CreateGruntStartingPoint(CGameObject* owner) {
 }
 
 RVA(0x0003d3f0, 0xf1)
-i32 CreateExitTrigger(CGameObject* owner) {
+i32 DispatchExitTriggerLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
@@ -327,7 +327,7 @@ i32 CreateExitTrigger(CGameObject* owner) {
 }
 
 RVA(0x0003d530, 0xf1)
-i32 CreateGruntCreationPoint(CGameObject* owner) {
+i32 DispatchGruntCreationPointLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
@@ -365,7 +365,7 @@ i32 CreateGruntCreationPoint(CGameObject* owner) {
 }
 
 RVA(0x0003d670, 0xf1)
-i32 CreateWormhole(CGameObject* owner) {
+i32 DispatchWormholeLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
@@ -403,7 +403,7 @@ i32 CreateWormhole(CGameObject* owner) {
 }
 
 RVA(0x0003d7b0, 0xf1)
-i32 CreateGruntPuddle(CGameObject* owner) {
+i32 DispatchGruntPuddleLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
@@ -441,7 +441,7 @@ i32 CreateGruntPuddle(CGameObject* owner) {
 }
 
 RVA(0x0003d8f0, 0xf1)
-i32 CreateTeleporter(CGameObject* owner) {
+i32 DispatchTeleporterLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
@@ -479,7 +479,7 @@ i32 CreateTeleporter(CGameObject* owner) {
 }
 
 RVA(0x0003da30, 0xf1)
-i32 CreateSecretTeleporterTrigger(CGameObject* owner) {
+i32 DispatchSecretTeleporterTriggerLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
@@ -517,7 +517,7 @@ i32 CreateSecretTeleporterTrigger(CGameObject* owner) {
 }
 
 RVA(0x0003db70, 0xf4)
-i32 CreateWarlord(CGameObject* owner) {
+i32 DispatchWarlordLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
@@ -555,7 +555,7 @@ i32 CreateWarlord(CGameObject* owner) {
 }
 
 RVA(0x0003dcb0, 0xf1)
-i32 CreateFortressFlag(CGameObject* owner) {
+i32 DispatchFortressFlagLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
@@ -593,7 +593,7 @@ i32 CreateFortressFlag(CGameObject* owner) {
 }
 
 RVA(0x0003ddf0, 0xf1)
-i32 CreateSecretLevelTrigger(CGameObject* owner) {
+i32 DispatchSecretLevelTriggerLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {

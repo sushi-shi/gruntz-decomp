@@ -270,7 +270,7 @@ inline void CUserLogic::RegisterLogicTypesOnce() {
 // Inline in the shared header: retail expands this whole body into ~57 derived
 // logic constructors (they show the two vptr stamps, the m_actBits zBitVec assign and
 // the g_logicTypesRegistered guard verbatim) and only CGrunt / CProjectile /
-// CreateDoNothingNormal reach the 0x58cd0 out-of-line copy.
+// DispatchDoNothingNormalLogic reach the 0x58cd0 out-of-line copy.
 inline CUserLogic::CUserLogic(CGameObject* obj, EInlineBase) {
     USERLOGIC_ATTACH_TO_OBJECT(obj);
 }

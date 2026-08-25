@@ -16,7 +16,7 @@ inline void DispatchUnhandledLogicEvent(CUserLogic* sub) {
 }
 
 RVA(0x000de8a0, 0xf4)
-i32 CreateProjectile(CGameObject* owner) {
+i32 DispatchProjectileLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (static_cast<u32>(record->EventCode())) {
         case LOGICREC_INIT:
@@ -55,7 +55,7 @@ i32 CreateProjectile(CGameObject* owner) {
 }
 
 RVA(0x000de9e0, 0xf4)
-i32 CreateBoomerang(CGameObject* owner) {
+i32 DispatchBoomerangLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (static_cast<u32>(record->EventCode())) {
         case LOGICREC_INIT:
@@ -94,7 +94,7 @@ i32 CreateBoomerang(CGameObject* owner) {
 }
 
 RVA(0x000deb20, 0xf1)
-i32 CreateTimeBomb(CGameObject* owner) {
+i32 DispatchTimeBombLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (static_cast<u32>(record->EventCode())) {
         case LOGICREC_INIT:

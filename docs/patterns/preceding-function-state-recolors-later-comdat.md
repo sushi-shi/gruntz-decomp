@@ -76,7 +76,7 @@ Second instance: rehoming the exact `0x411f0`/`0x412c0` methods from the false s
 previous compile chose `ecx/eax`; its constants, branches, calls, and relocations are
 unchanged. The ownership proof is independent: RTTI makes CTeleporter and CWormhole
 sibling leaves, and the supposedly wormhole-typed candidate test uses ILT `0x4039b3`,
-which jumps to `CreateTeleporter`, before calling `0x412c0` on the candidate logic
+which jumps to `DispatchTeleporterLogic`, before calling `0x412c0` on the candidate logic
 pointer.
 
 Reverse-use instance: restoring the missing exact

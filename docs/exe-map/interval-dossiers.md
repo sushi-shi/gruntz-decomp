@@ -503,7 +503,7 @@ to CheckpointTrigger.cpp (its class TU, 0x10cb10 interval).
   0x20d194-0x20d1d0 contiguous. The method ownership is not an ICF fold:
   CTeleporter's ctor and SerializeMove pass their unadjusted `this`, while
   CWormhole::SpawnPartners compares the candidate notify function with ILT
-  0x4039b3, which jumps to CreateTeleporter, then calls 0x412c0 on that
+  0x4039b3, which jumps to DispatchTeleporterLogic, then calls 0x412c0 on that
   candidate's CTeleporter logic pointer. RTTI independently shows CTeleporter
   and CWormhole as sibling leaves with direct bases CUserLogic@0 and CWapX@0x34.
   The three in-interval registrar fns (0x406d0/0x408b0/0x41680) are

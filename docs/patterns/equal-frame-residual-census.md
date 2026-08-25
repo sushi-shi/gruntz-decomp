@@ -460,7 +460,7 @@ What the `displacement` bucket is actually made of, after §10, §12 and §14-16
 have been taken out, is three recurring shapes that no source edit reaches:
 
 * a **rematerialization count** - both sides read the same member set and only
-  which copy stays in a register differs (`CEyeCandy`'s ctor, `CreateDemoMover`,
+  which copy stays in a register differs (`CEyeCandy`'s ctor, `DispatchDemoMoverLogic`,
   `CUFO`'s ctor before it was fixed, `FillSessionList`, `BoxesOverlap`,
   `LoadVehicleGruntSprites`, `CGrunt::LoadGruntDecayConfig2`, which recomputes a
   64-bit subtraction retail keeps and cl CSEs);

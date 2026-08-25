@@ -36,7 +36,7 @@ though the storage is unsigned. Measured on a 20-line probe: `switch ((Act)k)`
 gives `jg`, `switch (u32 k)` gives `ja`, and the two functions are otherwise
 byte-identical.
 
-That is why this pattern kept coming back on the `Create<Leaf>` worker pumps:
+That is why this pattern kept coming back on the `Dispatch<Leaf>Logic` event pumps:
 the switch reads `CLogicRecord::LogicEvent()`, which returned `LogicRecordEvent`.
 The fix at the domain layer, not the field:
 
@@ -52,8 +52,8 @@ GZ_ENUM_RETURN(LogicRecordEvent, u32) LogicEvent() const {
 
 and switch **directly on the accessor** — an `LogicRecordEvent act = ...;` local in
 between silently re-signs the key (and is dead anyway). 2026-08-08: **63**
-functions 97.857140% -> 100.00% EXACT in one build, every `_Create<Leaf>` pump
+functions 97.857140% -> 100.00% EXACT in one build, every `_Dispatch<Leaf>Logic` pump
 across thirteen files plus the three hand-written copies
-(`_CreateStatusBarSprite`, `_CreateLevelTime`, `CTileTriggerLogic`'s
+(`_DispatchStatusBarSpriteLogic`, `_DispatchLevelTimeLogic`, `CTileTriggerLogic`'s
 `TILE_LOGIC_RECORD_DISPATCH`). A whole-tree histogram of the residual queue found
 them: 63 functions at the *identical* fuzzy value is one mechanism, never 63.

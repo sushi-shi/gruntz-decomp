@@ -51,7 +51,7 @@ RVA_COMPGEN(0x00012400, 0x1e, ??_GCLightFx@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012430, 0x44, ??1CLightFx@@UAE@XZ)
 
 RVA(0x0009cdc0, 0xf1)
-i32 CreateLightFx(CGameObject* obj) {
+i32 DispatchLightFxLogic(CGameObject* obj) {
     CLogicRecord* record = obj->m_logicRecord;
     switch (record->LogicEvent()) {
         case ACT_UNINITIALISED:

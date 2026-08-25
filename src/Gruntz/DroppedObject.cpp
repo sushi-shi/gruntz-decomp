@@ -86,7 +86,7 @@ RVA_COMPGEN(0x00012640, 0x1e, ??_GCDroppedObjectShadow@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012670, 0x44, ??1CDroppedObjectShadow@@UAE@XZ)
 
 RVA(0x000c5630, 0xf4)
-i32 CreateObjectDropper(CGameObject* obj) {
+i32 DispatchObjectDropperLogic(CGameObject* obj) {
     CLogicRecord* record = obj->m_logicRecord;
     switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
@@ -124,7 +124,7 @@ i32 CreateObjectDropper(CGameObject* obj) {
 }
 
 RVA(0x000c5770, 0xf1)
-i32 CreateDroppedObject(CGameObject* obj) {
+i32 DispatchDroppedObjectLogic(CGameObject* obj) {
     CLogicRecord* record = obj->m_logicRecord;
     switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
@@ -162,7 +162,7 @@ i32 CreateDroppedObject(CGameObject* obj) {
 }
 
 RVA(0x000c58b0, 0xf1)
-i32 CreateDroppedObjectShadow(CGameObject* obj) {
+i32 DispatchDroppedObjectShadowLogic(CGameObject* obj) {
     CLogicRecord* record = obj->m_logicRecord;
     switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {

@@ -136,7 +136,7 @@ width. The restore-time value of that flag is retail's own behaviour.
 
 **The real asymmetry is the SCOPE MISMATCH, and it is structural.** `sema xref` on
 `BuildLogicTypeTable` (0x8a40) gives ~55 retail callers and they are ALL
-`CFoo::CFoo(CGameObject*)` ctors reached from the `_CreateXxx` worker factories — i.e. the
+`CFoo::CFoo(CGameObject*)` ctors reached from the `_DispatchXxxLogic` functions — i.e. the
 single `RegisterLogicTypesOnce()` inside `USERLOGIC_ATTACH_TO_OBJECT`. Our tree has that same
 one call site and every one of those ctors, so **no caller is missing**. But the save-restore
 path does not use those ctors at all: `SerialObjectFactory`'s arm 9 builds logics with the
@@ -147,13 +147,14 @@ load or does without them.
 
 And the two things it depends on have different lifetimes: `g_logicTypesRegistered` is a
 **process-global latch that is never reset**, while the workers it guards live in the
-**per-world** `obj->OwnerMgr()->m_workerCache->m_workers` — the same map
+**per-world** `obj->OwnerMgr()->m_logicRegistry->m_templatesByName` — the same map
 `SerializeObjectState` looks them up in. Any path that builds a fresh `CDDrawSurfaceMgr` (or
 clears its worker cache) after the latch is set leaves the three workers permanently absent.
 `CMD_LOAD_SAVED_GAME` calls `PassClickToPlayState(si->m_levelId, 0, 1)` *before*
 `ParseSerial`, so that ordering is what to audit next — not the flag, and not the factory
-table (`RegisterGameObjectTypes` @0xa3b0 is 100.00% EXACT, and the three Logic* workers are
-not in it anyway; they are created lazily only by `BuildLogicTypeTable`).
+table (`RegisterGameObjectLogicTypes` @0xa3b0 is 100.00% EXACT, and the three callback
+dispatchers are not in it anyway; their templates are registered lazily only by
+`BuildLogicTypeTable`).
 
 And it explains the crash *shape*: `CTriggerMgr::Load` fills `m_units` from object ids during
 `BroadcastCmd(SERIAL_LOAD)`, which `RestoreChildren` invokes **before**

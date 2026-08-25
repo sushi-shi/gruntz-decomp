@@ -125,7 +125,7 @@ tag split is the joint that makes the second pin safe.
 `CUserLogic::CUserLogic` out-of-line as costing 65 derived ctors ~45 points each, and ruled
 "never introduce an out-of-line definition to farm the one row". With the tag split that
 trade disappears: the 65 derived ctors take the tagged inline sibling and the three retail
-`call` sites (`CGrunt::CGrunt`, `CProjectile::CProjectile`, `CreateDoNothingNormal`) take
+`call` sites (`CGrunt::CGrunt`, `CProjectile::CProjectile`, `DispatchDoNothingNormalLogic`) take
 the pinned body. That rewrite is not done yet - it needs the tag threaded through all 65
 derived initialiser lists - but the wall it documents is not a wall.
 

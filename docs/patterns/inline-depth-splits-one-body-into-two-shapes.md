@@ -45,7 +45,7 @@ craters two functions retail DOES expand two levels deep: `CDDrawChildGroup::Sum
 `CreateSpriteObject` 66.73 -> 57.50. So retail's inliner is not capped at one level; it is the
 same greedy per-function budget as the `CLightFx::CLightFx` residue above, and a depth pragma is
 the wrong knob (and a per-TU device besides - see the no-guard-devices ruling). The same
-divergence sits under `_CreateDoNothingNormal` (`0xa9e00`, 39.6%), where retail calls
+divergence sits under `_DispatchDoNothingNormalLogic` (`0xa9e00`, 39.6%), where retail calls
 `??0CUserLogic@@QAE@PAUCGameObject@@@Z` at `0x58cd0` - one of its only three callers, the other
 two being `CGrunt`'s and `CProjectile`'s ctors, both of which exhaust the budget on their own
 bodies first.

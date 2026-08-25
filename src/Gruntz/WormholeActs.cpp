@@ -122,7 +122,7 @@ i32 CExitTrigger::AdvanceAnim() {
             POSITION pos = grp->m_list.GetHeadPosition();
             while (pos != NULL) {
                 CGameObject* cur = grp->NextChild(pos);
-                if (cur->m_logicRecord->m_dispatch == CreateGruntCreationPoint
+                if (cur->m_logicRecord->m_dispatch == DispatchGruntCreationPointLogic
                     && cur->m_smarts == owningPlayer) {
                     cur->m_smarts = hitPlayerIndex;
                     CShadeTable* tbl = g_gameReg->m_spriteFactory->GetSel(
@@ -145,7 +145,7 @@ i32 CExitTrigger::AdvanceAnim() {
                         marks.SetAtGrow(marks.GetSize(), mark);
                     }
                 }
-                if (cur->m_logicRecord->m_dispatch == CreateFortressFlag
+                if (cur->m_logicRecord->m_dispatch == DispatchFortressFlagLogic
                     && cur->m_smarts == owningPlayer) {
                     cur->m_smarts = hitPlayerIndex;
                     CShadeTable* tbl = g_gameReg->m_spriteFactory->GetSel(
@@ -190,7 +190,8 @@ i32 CExitTrigger::AdvanceAnim() {
             while (pos != NULL) {
                 CGameObject* cur = grp->NextChild(pos);
                 LogicRecordDispatchFn dispatch = cur->m_logicRecord->m_dispatch;
-                if (dispatch == CreateGruntCreationPoint || dispatch == CreateFortressFlag) {
+                if (dispatch == DispatchGruntCreationPointLogic
+                    || dispatch == DispatchFortressFlagLogic) {
                     if (cur->m_smarts == m_object->m_smarts) {
                         i32 x = cur->m_screenX;
                         i32 y = cur->m_screenY;

@@ -603,19 +603,19 @@ void CAmbientPosSound::Update(i32 x, i32 y, i32 force) {
 }
 
 RVA(0x0000c810, 0x18)
-i32 CreateGlobalAmbientSound(CGameObject* obj) {
+i32 DispatchGlobalAmbientSoundLogic(CGameObject* obj) {
     g_posSoundReq = 1;
-    return CreateAmbientSound(obj);
+    return DispatchAmbientSoundLogic(obj);
 }
 
 RVA(0x0000c840, 0x13d)
-i32 CreateAmbientSound(CGameObject* obj) {
+i32 DispatchAmbientSoundLogic(CGameObject* obj) {
     CLogicRecord* record = obj->m_logicRecord;
     CWwdGameObjectA* sprite = static_cast<CWwdGameObjectA*>(obj);
     if (record->m_eventCode == 0) {
         obj->m_flags |= 1;
         obj->m_stateFlags |= SPRITE_STATE_HIDDEN;
-        if (record->m_dispatch == CreateGlobalAmbientSound) {
+        if (record->m_dispatch == DispatchGlobalAmbientSoundLogic) {
             obj->m_flags |= 2;
         } else {
             obj->m_flags &= ~2;
@@ -658,13 +658,13 @@ i32 CreateAmbientSound(CGameObject* obj) {
 }
 
 RVA(0x0000c9d0, 0x18)
-i32 CreateAmbientPosSound(CGameObject* obj) {
+i32 DispatchAmbientPosSoundLogic(CGameObject* obj) {
     g_posSoundReq = 2;
-    return CreateSpotAmbientSound(obj);
+    return DispatchSpotAmbientSoundLogic(obj);
 }
 
 RVA(0x0000ca00, 0xf0)
-i32 CreateSpotAmbientSound(CGameObject* obj) {
+i32 DispatchSpotAmbientSoundLogic(CGameObject* obj) {
     CLogicRecord* record = obj->m_logicRecord;
     CWwdGameObjectA* sprite = static_cast<CWwdGameObjectA*>(obj);
     i32 state = record->m_eventCode;

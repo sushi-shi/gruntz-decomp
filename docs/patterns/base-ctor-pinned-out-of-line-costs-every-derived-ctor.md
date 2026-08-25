@@ -51,7 +51,7 @@ Count the CALLERS of the retail body with `gruntz sema xref <rva>`. If the calle
 handful of *specific* functions while dozens of same-family constructors do NOT appear, the
 ctor was **inline in the header** and those few callers merely exhausted cl's inline budget.
 `CUserLogic::CUserLogic` has exactly three: `CGrunt::CGrunt`, `CProjectile::CProjectile`,
-`CreateDoNothingNormal` - all three still incomplete reconstructions here, which is precisely
+`DispatchDoNothingNormalLogic` - all three still incomplete reconstructions here, which is precisely
 why our cl inlines where retail called.
 
 The inlined copy is not a byte-copy of the standalone body: cl inlines *deeper* in the

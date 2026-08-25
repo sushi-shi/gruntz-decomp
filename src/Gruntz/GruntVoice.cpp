@@ -97,7 +97,7 @@ void ButeParseErrorSink(const char* msg) {
 }
 
 RVA(0x00119620, 0xf1)
-i32 CreateGruntVoice(CGameObject* obj) {
+i32 DispatchGruntVoiceLogic(CGameObject* obj) {
     CLogicRecord* record = obj->m_logicRecord;
     switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
@@ -135,7 +135,7 @@ i32 CreateGruntVoice(CGameObject* obj) {
 }
 
 RVA(0x00119760, 0xf1)
-i32 CreateVoiceTrigger(CGameObject* obj) {
+i32 DispatchVoiceTriggerLogic(CGameObject* obj) {
     CLogicRecord* record = obj->m_logicRecord;
     switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {

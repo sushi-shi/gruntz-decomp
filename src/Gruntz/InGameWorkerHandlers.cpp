@@ -9,7 +9,7 @@
 #include <Wwd/LogicRecordEvent.h>
 
 RVA(0x00095750, 0xf4)
-i32 CreateInGameIcon(CGameObject* owner) {
+i32 DispatchInGameIconLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
@@ -47,7 +47,7 @@ i32 CreateInGameIcon(CGameObject* owner) {
 }
 
 RVA(0x00095890, 0xf1)
-i32 CreateInGameText(CGameObject* owner) {
+i32 DispatchInGameTextLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
@@ -85,7 +85,7 @@ i32 CreateInGameText(CGameObject* owner) {
 }
 
 RVA(0x000959d0, 0xf1)
-i32 CreateToyPeek(CGameObject* owner) {
+i32 DispatchToyPeekLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {

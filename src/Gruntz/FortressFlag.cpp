@@ -183,7 +183,7 @@ CActHandler* zDArray<CActHandler>::Resolve(i32 id) {
 }
 
 RVA(0x00046850, 0xf1)
-i32 CreateParticlez(CGameObject* owner) {
+i32 DispatchParticlezLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
@@ -221,7 +221,7 @@ i32 CreateParticlez(CGameObject* owner) {
 }
 
 RVA(0x00046990, 0xf1)
-i32 CreateExplosion(CGameObject* owner) {
+i32 DispatchExplosionLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {

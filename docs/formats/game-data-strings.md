@@ -180,17 +180,17 @@ four packed strings are `name` / `logic` / `image_set` / `animation`.
 | | | | 126 | VoiceTrigger | | 8 | EyeCandyAni |
 | | | | 105 | ExitTrigger | | 8 | SpotLight |
 
-Three-way cross-check against `RegisterGameObjectTypes` @0x0000a3b0 (73 workers)
+Three-way cross-check against `RegisterGameObjectLogicTypes` @0x0000a3b0 (73 dispatchers)
 and `LogicTypeId` (67 enumerators):
 
-* **All 34 WWD logic names are registered workers.** No missing entity.
-* **39 registered workers are never used by a shipped WWD** — they are created
+* **All 34 WWD logic names have registered dispatchers.** No missing entity.
+* **39 registered dispatchers are never used by a shipped WWD** — their objects are created
   at runtime (`Grunt`, `Projectile`, every `Grunt*Sprite`, `Explosion`, …).
-* **Seven registered workers have no `LogicTypeId`**: the four sound factories
+* **Seven registered dispatchers have no `LogicTypeId`**: the four sound dispatchers
   (below), `GruntVoice`, `DemoMover`, `DemoSign`.
-* **One `LogicTypeId` has no worker**: `LOGIC_SINGLEFRAMEMESSAGE` (0x3eb).
+* **One `LogicTypeId` has no registered dispatcher**: `LOGIC_SINGLEFRAMEMESSAGE` (0x3eb).
   `.?AVCSingleFrameMessage@@` is in retail's RTTI, so the class exists and is
-  instantiated without a factory registration.
+  instantiated without a logic-type registration.
 * Two `LogicTypeId` values in the 0x3e8..0x42c band are unattributed: **0x3f9**
   and **0x40e**. The ids are *not* assigned in registration order (checked), so
   registration position does not name them.
@@ -203,28 +203,28 @@ by a real record walk) as the one logic name with neither a `C<name>` class nor 
 
 ```cpp
 // src/Gruntz/GameObjectFactory.cpp, RVA 0x0000a3b0
-ctx->m_workerCache->RegisterLogicType(CreateGlobalAmbientSound, "GlobalAmbientSound", 4);
-ctx->m_workerCache->RegisterLogicType(CreateAmbientSound,       "AmbientSound",       1);
-ctx->m_workerCache->RegisterLogicType(CreateAmbientPosSound,    "AmbientPosSound",    0);
-ctx->m_workerCache->RegisterLogicType(CreateSpotAmbientSound,   "SpotAmbientSound",   0);
+ctx->m_logicRegistry->RegisterLogicType(DispatchGlobalAmbientSoundLogic, "GlobalAmbientSound", 4);
+ctx->m_logicRegistry->RegisterLogicType(DispatchAmbientSoundLogic,       "AmbientSound",       1);
+ctx->m_logicRegistry->RegisterLogicType(DispatchAmbientPosSoundLogic,    "AmbientPosSound",    0);
+ctx->m_logicRegistry->RegisterLogicType(DispatchSpotAmbientSoundLogic,   "SpotAmbientSound",   0);
 ```
 
-The WWD `logic` field names a **worker**, not a class, and the four sound
-workers are four factory entry points over two classes. `CreateGlobalAmbientSound`
-@0x0000c810 is an alias:
+The WWD `logic` field names a **registered dispatcher**, not a class, and the four sound
+keys use four dispatch entry points over two classes. `DispatchGlobalAmbientSoundLogic`
+@0x0000c810 is a dispatch alias:
 
 ```cpp
-i32 CreateGlobalAmbientSound(CGameObject* obj) {
+i32 DispatchGlobalAmbientSoundLogic(CGameObject* obj) {
     g_posSoundReq = 1;
-    return CreateAmbientSound(obj);
+    return DispatchAmbientSoundLogic(obj);
 }
 ```
 
-and `CreateAmbientSound` @0x0000c840 distinguishes the two by comparing the
-worker's own notify pointer, setting object flag `0x2` for the global variant:
+and `DispatchAmbientSoundLogic` @0x0000c840 distinguishes the two by comparing the
+record's own dispatch pointer, setting object flag `0x2` for the global variant:
 
 ```cpp
-if (aux->m_notify == CreateGlobalAmbientSound) { obj->m_flags |= 2; }
+if (aux->m_notify == DispatchGlobalAmbientSoundLogic) { obj->m_flags |= 2; }
 else                                           { obj->m_flags &= ~2; }
 ```
 
@@ -528,8 +528,8 @@ the runtime-concatenated prefixes `GAME_INGAMEICONZ_`, `GRUNTZ_PICKUPS_`,
 
 | Identifier family | Source | Verdict |
 |---|---|---|
-| 34 WWD `logic` names | WWD records | **All 34** are registered workers in `RegisterGameObjectTypes` @0xa3b0. Confirms our factory table exactly. |
-| `GlobalAmbientSound` | WWD, 212 records | **Resolved.** A factory alias over `CAmbientSound`, not a class. No action. [§3b](#3b-globalambientsound--verdict-not-a-missing-class-and-not-a-misnaming) |
+| 34 WWD `logic` names | WWD records | **All 34** have registered dispatchers in `RegisterGameObjectLogicTypes` @0xa3b0. Confirms our logic-type table exactly. |
+| `GlobalAmbientSound` | WWD, 212 records | **Resolved.** A dispatch alias over `CAmbientSound`, not a class. No action. [§3b](#3b-globalambientsound--verdict-not-a-missing-class-and-not-a-misnaming) |
 | 186 `image_set` keys | WWD records | **All resolve** to real `<NS>\IMAGEZ` paths. |
 | 29 `animation` keys | WWD records | 28 resolve; `LEVEL_AMBIENT_AREA6LOOP` is a shipped typo. |
 | 56 `GAME_INGAMEICONZ_*` icons | WWD records | **All** map to a `PICKUP_*` enumerator. `GAME_INGAMEICONZ_SECRET{W,A,R,P}` ↔ `PICKUP_{W,A,R,P}` = 0x5a..0x5d, in that order — the letters spell **WARP** and the enum already has them contiguous and in the right sequence. `PICKUP_MEGAPHONE` = `MEGAPHONEZ`; `PICKUP_WARPSTONE` covers `WARPSTONEZ1..4`. Confirms `PickupType.h`. |
@@ -546,7 +546,7 @@ the runtime-concatenated prefixes `GAME_INGAMEICONZ_`, `GRUNTZ_PICKUPS_`,
 ## 10. Open
 
 * `LogicTypeId` 0x3f9 and 0x40e are unattributed.
-* `LOGIC_SINGLEFRAMEMESSAGE` (0x3eb) has a class and an id but no factory
+* `LOGIC_SINGLEFRAMEMESSAGE` (0x3eb) has a class and an id but no dispatcher
   registration — where is `CSingleFrameMessage` created?
 * `MoveGruntAroundObstacle` and `ActuallyRemoveGrunt` are unbound.
 * `CHEAT_WILD_WACKY` (0x80be) has no reconstructed handler.

@@ -39,7 +39,7 @@ static inline CActHandler* R3Lookup(i32 coord) {
 }
 
 RVA(0x00007c60, 0xf1)
-i32 CreateActionArea(CGameObject* owner){LOGIC_RECORD_DISPATCH(CActionArea)}
+i32 DispatchActionAreaLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CActionArea)}
 
 // @early-stop
 RVA(0x00007da0, 0x17e)

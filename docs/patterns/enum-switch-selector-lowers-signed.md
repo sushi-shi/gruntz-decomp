@@ -20,7 +20,7 @@ shows nothing but signed/unsigned twins:
 counts agree while the bytes do not:
 
 ```
-SIGNEDNESS  97.86%  logicworkerhandlersa 0x0aa1e0  @_CreateFrontCandy
+SIGNEDNESS  97.86%  logicworkerhandlersa 0x0aa1e0  @_DispatchFrontCandyLogic
            12 branches, rets 1->1:  #0 jg->ja=dest  #4 jg->ja=dest  #7 jg->ja=dest
 ```
 
@@ -54,7 +54,7 @@ This is a **regression the enum-domain campaign introduced**. The retail-faithfu
 source had been `switch (static_cast<u32>(rec->EventCode()))`; `33e433fad` ("naked
 numbers: LogicRecordEvent") replaced the raw key with a typed accessor and dropped the
 cast, which cost **63 previously-EXACT functions** at once — the whole
-`_Create<Leaf>` worker-pump family plus `LOGIC_RECORD_DISPATCH`'s users.
+`_Dispatch<Leaf>Logic` event-pump family plus `LOGIC_RECORD_DISPATCH`'s users.
 
 Measured, restoring the cast at 21 call sites plus the one shared macro in
 `include/Gruntz/LogicRecordHandler.h`:

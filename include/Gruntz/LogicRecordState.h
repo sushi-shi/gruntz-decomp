@@ -4,7 +4,7 @@
 #include <Enums.h>
 
 // The logic-record act-key state constants the dispatch compilands switch
-// on (LogicRecordDispatch.cpp and StaticHazard.cpp's CreateStaticHazard).
+// on (LogicRecordDispatch.cpp and StaticHazard.cpp's DispatchStaticHazardLogic).
 GZ_ENUM_CONST_BEGIN(LogicRecordState)
     LOGICREC_INIT = 0,
     LOGICREC_OP_1D = 0x1d,

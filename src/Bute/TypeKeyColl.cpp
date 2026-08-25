@@ -909,17 +909,17 @@ i32 FirstDiffBit(const char* a, const char* b) {
 }
 
 RVA(0x0016e4c0, 0xf)
-i32 LogicHitFactory(CGameObject* obj) {
+i32 DispatchLogicHit(CGameObject* obj) {
     return obj->m_logicRecord->m_userLogic->AdvanceAnimation();
 }
 
 RVA(0x0016e4d0, 0xf)
-i32 LogicAttackFactory(CGameObject* obj) {
+i32 DispatchLogicAttack(CGameObject* obj) {
     return obj->m_logicRecord->m_userLogic->StepAttackFire();
 }
 
 RVA(0x0016e4e0, 0xf)
-i32 LogicBumpFactory(CGameObject* obj) {
+i32 DispatchLogicBump(CGameObject* obj) {
     return obj->m_logicRecord->m_userLogic->RecordFrameTick();
 }
 

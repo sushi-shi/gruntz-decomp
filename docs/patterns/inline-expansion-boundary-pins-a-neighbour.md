@@ -22,7 +22,7 @@ diagnose` REGALLOC/SCHEDULING with identical multisets:
 | `CSymParser::Clear` 0x13b850 | `mov esi,[edi+0x14]` (loop-head `m_list.m_head`) hoisted over `mov [edi+0x20],ebp` (`m_activeNode = NULL`) | loop head reads `HeadRezNode(m_list)` | 99.5493 -> **100.000** |
 | `CSymRec::~CSymRec` 0x139cf0 | `mov ecx,ebx` (the member dtor's receiver) hoisted over BOTH trailing body stores; retail puts it BETWEEN them | second store written `SetSymRec(m_symNode, NULL)` | 98.3099 -> **100.000** |
 | `CSymTab::CSymTab` 0x139de0 | `pop esi` one slot early, before the `m_parent` store instead of after | LAST body statement written `SetSymTab(m_node20, this)` | 97.3333 -> **100.000** |
-| `CreateDoNothingNormal` 0xa9e00 | inlined `new CDoNothingNormal(owner)`: `mov eax,[esi+0x38]` hoisted over the leaf vptr stamp | ctor body `SetObjectFlags(1)` instead of `m_wwdObject->m_flags \|= 1` | 99.6129 -> **100.000** |
+| `DispatchDoNothingNormalLogic` 0xa9e00 | inlined `new CDoNothingNormal(owner)`: `mov eax,[esi+0x38]` hoisted over the leaf vptr stamp | ctor body `SetObjectFlags(1)` instead of `m_wwdObject->m_flags \|= 1` | 99.6129 -> **100.000** |
 | `CDDSurface::DecodeBmp` 0x143fc0 | two entry values spill and restore through the opposite registers after a palette guard | guard reads `HasPalette(pal)` instead of `pal->m_hasPalette` | 99.79 -> **100.000** |
 
 So the rule is: **the boundary pins whichever neighbour was free to float** - a receiver

@@ -159,11 +159,11 @@ Ranked by points, with the mechanism each one turned out to be:
 
 ## 3. Proven mechanism, and a 63-function recovery
 
-**Symptom.** 62 `_Create<Leaf>` worker-pump factories all sat at *exactly* 97.857%,
+**Symptom.** 62 `_Dispatch<Leaf>Logic` event pumps all sat at *exactly* 97.857%,
 each with a recorded peak of 100.000%. A uniform score across dozens of functions is
 never regalloc; it is one shape.
 
-**Evidence** (`gruntz walls diagnose 0x0003d3f0 --asm`, `_CreateExitTrigger`):
+**Evidence** (`gruntz walls diagnose 0x0003d3f0 --asm`, `_DispatchExitTriggerLogic`):
 
 ```
  cmp eax,0x1d

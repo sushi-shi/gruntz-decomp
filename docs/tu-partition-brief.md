@@ -270,10 +270,10 @@ accessors - are excluded; the linker pools those).
 - **Grunt_Combat.cpp** - `0x00056f80`-`0x0005d084` is our `GruntCombat.cpp`
   almost exactly: `OnStruck`, `BeginAttack`, `CommitNeighbor`, `FindGridNeighbor`,
   `EnsureStruckSlot/Voice`, `LoadGruntCombatAnimations`, `PathScan`, plus
-  `CreateGrunt`/`RegisterGruntActions`/`Activate`. Its COMDAT group sits at
+  `DispatchGruntLogic`/`RegisterGruntActions`/`Activate`. Its COMDAT group sits at
   `0x58b60`-`0x58f6c` *bracketed by its own functions* (incl.
   `??0CUserLogic@@QAE@PAUCGameObject@@@Z`, which is exactly what a TU containing
-  `CreateGrunt` emits) - so the band is one compiland. That it is *the* file
+  `DispatchGruntLogic` emits) - so the band is one compiland. That it is *the* file
   called `Grunt_Combat.cpp` is inference from content, not proof; the adjoining
   `0x0005d210`-`0x0005fe6e` (`StepBehavior`, the 17-way AI tick, + `FinalizeStep` +
   `AdvanceMotion`) is contiguous with it and could belong to either side.
@@ -546,7 +546,7 @@ gruntzplayer+gamemodeobjlifecycle units here, /GX unified.
 
 ### demo
 The demo/attract feature obj [0x3bfa0..0x3dee1] (dossier #16): CDemo methods +
-demo setup/camera + bute debug editors + the anim-worker dispatch family. /GX.
+demo setup/camera + bute debug editors + the game-object logic dispatch family. /GX.
 
 ### rockbreakeffectupdate
 Ghidra-missed 0x476b0: per-frame rock-break effect Update (identity-TODO).

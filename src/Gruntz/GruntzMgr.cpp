@@ -2721,7 +2721,7 @@ i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
     CGameLevel* view = m_world->m_level;
     view->m_maxStepX = 0xe;
     view->m_maxStepY = 0xe;
-    RegisterGameObjectTypes(m_world);
+    RegisterGameObjectLogicTypes(m_world);
     if (MakeRezPath() == 0) {
         return 0;
     }

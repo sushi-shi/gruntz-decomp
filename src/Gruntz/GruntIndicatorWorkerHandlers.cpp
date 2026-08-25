@@ -50,7 +50,7 @@
     return 1;
 
 RVA(0x0007db20, 0xf1)
-i32 CreateGruntSelectedSprite(CGameObject* owner) {
+i32 DispatchGruntSelectedSpriteLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
@@ -88,10 +88,10 @@ i32 CreateGruntSelectedSprite(CGameObject* owner) {
 }
 
 RVA(0x0007dc60, 0xf1)
-i32 CreateGruntHealthSprite(CGameObject* owner){LOGIC_RECORD_DISPATCH(CGruntHealthSprite)}
+i32 DispatchGruntHealthSpriteLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CGruntHealthSprite)}
 
 RVA(0x0007dda0, 0xf1)
-i32 CreateGruntToySprite(CGameObject* owner) {
+i32 DispatchGruntToySpriteLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {
         case ACT_UNINITIALISED: {
@@ -129,15 +129,17 @@ i32 CreateGruntToySprite(CGameObject* owner) {
 }
 
 RVA(0x0007dee0, 0xf1)
-i32 CreateGruntStaminaSprite(CGameObject* owner){LOGIC_RECORD_DISPATCH(CGruntStaminaSprite)}
+i32 DispatchGruntStaminaSpriteLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CGruntStaminaSprite)}
 
 RVA(0x0007e020, 0xf1)
-i32 CreateGruntToyTimeSprite(CGameObject* owner){LOGIC_RECORD_DISPATCH(CGruntToyTimeSprite)}
+i32 DispatchGruntToyTimeSpriteLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CGruntToyTimeSprite)}
 
 RVA(0x0007e160, 0xf1)
-i32 CreateGruntWingzTimeSprite(CGameObject* owner){LOGIC_RECORD_DISPATCH(CGruntWingzTimeSprite)}
+i32 DispatchGruntWingzTimeSpriteLogic(CGameObject* owner){
+    LOGIC_RECORD_DISPATCH(CGruntWingzTimeSprite)
+}
 
 RVA(0x0007e2a0, 0xf1)
-i32 CreateGruntPowerupSprite(CGameObject* owner) {
+i32 DispatchGruntPowerupSpriteLogic(CGameObject* owner) {
     LOGIC_RECORD_DISPATCH(CGruntPowerupSprite)
 }

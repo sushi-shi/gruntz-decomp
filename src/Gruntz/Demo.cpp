@@ -113,7 +113,7 @@ i32 CDemo::Render() {
 
 // @early-stop
 RVA(0x0003c300, 0x183)
-i32 CreateDemoMover(CGameObject* owner) {
+i32 DispatchDemoMoverLogic(CGameObject* owner) {
     CLogicRecord* st = owner->m_logicRecord;
     switch (static_cast<DemoMoverState>(st->EventCode())) {
         case DEMO_MOVER_SCROLL_TO_TARGET: {
@@ -163,6 +163,6 @@ i32 CreateDemoMover(CGameObject* owner) {
 }
 
 RVA(0x0003c500, 0x6)
-i32 CreateDemoSign(CGameObject* obj) {
+i32 DispatchDemoSignLogic(CGameObject* obj) {
     return 1;
 }

@@ -120,7 +120,7 @@ The tempting score-free alternative is to read the SOURCE: for every class,
 flag the free functions taking that class as a first parameter. Image-wide that
 returns 115 rows, 29 of them with a retail call site, and exactly ONE with the
 byte evidence. The other 114 are real free functions — object factories stored
-as function pointers (`CreateActionArea(CGameObject*)` and forty siblings),
+as function pointers (`DispatchActionAreaLogic(CGameObject*)` and forty siblings),
 MFC's `ConstructElements`/`DestructElements`, serializers taking `CFileMemBase*`.
 
 Worse, the screen cannot see the shape it was proposed for. Neither
