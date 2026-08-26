@@ -94,7 +94,7 @@ void CMinimap::Reset() {
     m_mapMgr = NULL;
     m_world = NULL;
     m_surface = NULL;
-    m_panActive = 0;
+    m_panActive = false;
     m_refreshInterval = 0;
     m_refreshRemaining = 0;
 }
@@ -175,7 +175,7 @@ i32 CMinimap::Refresh(i32 elapsedMs, i32 forceRefresh) {
                     continue;
                 }
                 SpriteTeamColorVariant teamColor = SPRITE_TEAM_COLOR_PRIMARY;
-                if (grunt->m_arrived != 0) {
+                if (grunt->m_arrived != false) {
                     teamColor = SPRITE_TEAM_COLOR_SECONDARY;
                 }
 
@@ -1355,14 +1355,14 @@ i32 CMinimap::BeginMinimapPan(i32, i32 cursorX, i32 cursorY) {
             cell[1] * TILE_SIZE_PX + TILE_HALF_PX
         );
     }
-    m_panActive = 1;
+    m_panActive = true;
     return 1;
 }
 
 RVA(0x000a9500, 0x16)
 i32 CMinimap::EndMinimapPan(i32, i32, i32) {
-    if (m_panActive != 0) {
-        m_panActive = 0;
+    if (m_panActive != false) {
+        m_panActive = false;
     }
     return 1;
 }
@@ -1395,7 +1395,7 @@ i32 CMinimap::IssueMinimapCommand(i32, i32 cursorX, i32 cursorY) {
 
 RVA(0x000a95d0, 0x69)
 i32 CMinimap::ContinueMinimapPan(i32, i32 cursorX, i32 cursorY) {
-    if (m_panActive == 0) {
+    if (m_panActive == false) {
         return 0;
     }
     i32 cell[2];

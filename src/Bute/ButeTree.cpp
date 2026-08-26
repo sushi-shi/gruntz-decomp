@@ -37,7 +37,7 @@ RVA(0x001933b0, 0x28f)
 void* zPTree::FindOrInsert(const char* key, void* value) {
     i32 path[32];
     i32* p = path;
-    m_lookupPending = 0;
+    m_lookupPending = false;
     if (key == NULL || value == NULL) {
         char* msg = g_errNullArg;
         g_retAddrBreadcrumb = GetCallerRetAddr();
@@ -45,12 +45,12 @@ void* zPTree::FindOrInsert(const char* key, void* value) {
         return NULL;
     }
 
-    i32 nbits = static_cast<i32>((strlen(key) * 8));
+    i32 nbits = static_cast<i32>((strlen(key) * PTREE_BITS_PER_BYTE));
     m_candidateLeaf = NULL;
     m_descentCursor = m_root;
     m_keyBitLength = nbits;
 
-    i32 sbit = nbits + 7;
+    i32 sbit = nbits + PTREE_BYTE_BIT_MASK;
     i32 dir;
     if (m_descentCursor != NULL) {
         do {
@@ -61,7 +61,8 @@ void* zPTree::FindOrInsert(const char* key, void* value) {
                 break;
             }
             i32 b = node->m_bit;
-            dir = (1 << (b & 7)) & static_cast<i32>(static_cast<signed char>(key[b >> 3]));
+            dir = (1 << (b & PTREE_BYTE_BIT_MASK))
+                  & static_cast<i32>(static_cast<signed char>(key[b >> PTREE_BYTE_BIT_SHIFT]));
             *p++ = dir;
             CButeTreeNode** slot = &node->m_child[1];
             if (!dir) {
@@ -97,7 +98,7 @@ void* zPTree::FindOrInsert(const char* key, void* value) {
     }
     nn->m_bit = critbit;
     nn->m_value = static_cast<char*>(value);
-    char* kb = new char[(m_keyBitLength >> 3) + 1];
+    char* kb = new char[(m_keyBitLength >> PTREE_BYTE_BIT_SHIFT) + 1];
     nn->m_key = kb;
     if (kb == NULL) {
         char* msg = g_errOutOfMem;
@@ -108,7 +109,8 @@ void* zPTree::FindOrInsert(const char* key, void* value) {
     strcpy(kb, key);
 
     i32 selfdir =
-        (1 << (critbit & 7)) & static_cast<i32>(static_cast<signed char>(key[critbit >> 3]));
+        (1 << (critbit & PTREE_BYTE_BIT_MASK))
+        & static_cast<i32>(static_cast<signed char>(key[critbit >> PTREE_BYTE_BIT_SHIFT]));
     if (selfdir) {
         nn->m_child[1] = nn;
     } else {

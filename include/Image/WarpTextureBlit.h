@@ -1,8 +1,13 @@
 #ifndef GRUNTZ_IMAGE_WARPTEXTUREBLIT_H
 #define GRUNTZ_IMAGE_WARPTEXTUREBLIT_H
 
+#include <Enums.h>
 #include <Image/RasterVtx.h>
 #include <Ints.h>
+
+GZ_ENUM_CONST_BEGIN(WarpTextureFixedPoint)
+    WARP_TEXTURE_FRACTION_BITS = 14
+GZ_ENUM_CONST_END(WarpTextureFixedPoint)
 
 extern const float g_rasterScale;
 extern const float g_rasterScaleNeg;

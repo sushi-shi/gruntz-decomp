@@ -63,7 +63,7 @@ i32 CGrunt::StepBomberBehavior() {
                     )
                     == -1) {
                     m_dwell = 0;
-                    if (m_blockedVoicePending != 0) {
+                    if (m_blockedVoicePending != false) {
                         CWwdSpriteObject* h = m_object;
                         i32 vx = h->m_screenX;
                         i32 vy = h->m_screenY;
@@ -72,7 +72,7 @@ i32 CGrunt::StepBomberBehavior() {
                         if (CGameLevel::PointInRect(rect, vx, vy)) {
                             g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
                         }
-                        m_blockedVoicePending = 0;
+                        m_blockedVoicePending = false;
                         m_dwell = 0;
                         return 1;
                     }
@@ -85,7 +85,7 @@ i32 CGrunt::StepBomberBehavior() {
 
     {
         u32 dwell = static_cast<u32>(m_dwell);
-        if (dwell > 0x3e8 && m_resetApplied == 0 && m_hasExtent != 0 && dwell > 0xbb8) {
+        if (dwell > 0x3e8 && m_resetApplied == false && m_hasExtent != false && dwell > 0xbb8) {
 
             if (IsArrivalRerollPending() != 0) {
 
@@ -102,7 +102,7 @@ i32 CGrunt::StepBomberBehavior() {
             } else {
                 ResetArrivalReroll();
             }
-            m_blockedVoicePending = 1;
+            m_blockedVoicePending = true;
             goto L8a2;
         }
     }

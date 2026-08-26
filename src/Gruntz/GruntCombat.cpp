@@ -641,7 +641,7 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
     }
 
     LoadGruntTypeTable(PICKUP_NONE, 1, 0, 1);
-    m_entranceActive = 0;
+    m_entranceActive = false;
     return 1;
 }
 
@@ -1183,7 +1183,7 @@ i32 CGrunt::HandleCombatContact(
 
         i32 phase = m_arrivalPhase;
         if ((phase == ARRIVAL_TAG_TRIGGER_B || phase == ARRIVAL_TAG_TRIGGER_A)
-            && m_arrivalActive != 0) {
+            && m_arrivalActive != false) {
             CGrunt* occ =
                 m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
             if (occ != NULL) {
@@ -1316,7 +1316,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         if (fromProjectile == 0) {
             CGrunt* enemy =
                 m_triggerMgr->m_units[srcPlayerIndex * TM_UNITS_PER_PLAYER + srcUnitIndex];
-            if (enemy != NULL && enemy->m_entranceCommitted != 0) {
+            if (enemy != NULL && enemy->m_entranceCommitted != false) {
                 i32 nh = enemy->m_health - hit * 3;
                 nh = (nh < 0) ? 0 : nh;
                 enemy->m_health = nh;
@@ -1336,7 +1336,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         return 0;
     }
     if (nh <= 0) {
-        this->m_entranceCommitted = 0;
+        this->m_entranceCommitted = false;
         this->m_killerPlayerIndex = srcPlayerIndex;
     }
 
@@ -1702,7 +1702,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
             }
         }
 
-        if (this->m_arrivalPending == 0) {
+        if (this->m_arrivalPending == false) {
             m_triggerMgr->ApplySwitch(this, this->m_lastTilePx.m_x, this->m_lastTilePx.m_y);
         }
         CMapMgr* oldGrid = static_cast<CMapMgr*>(g_gameReg->m_tileGrid);
@@ -1741,7 +1741,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         if (m_coordList.GetCount() != 0) {
             RECYCLE_GRUNT_COORDS_EXPANDED(this)
         }
-        this->m_arrivalPending = 0;
+        this->m_arrivalPending = false;
     }
 
     return 1;
@@ -1774,10 +1774,10 @@ i32 CGrunt::CommitNeighbor(
 
     CreateHealthSprite();
     ArmGruntCombatTimeout(this);
-    m_neighborScanEnabled = 1;
+    m_neighborScanEnabled = true;
 
     CGrunt* nb = m_triggerMgr->m_units[targetPlayerIndex * TM_UNITS_PER_PLAYER + targetUnitIndex];
-    if (nb == NULL || nb->m_entranceCommitted == 0 || m_entranceCommitted == 0) {
+    if (nb == NULL || nb->m_entranceCommitted == false || m_entranceCommitted == false) {
         return 0;
     }
 
@@ -1831,11 +1831,11 @@ i32 CGrunt::CommitNeighbor(
         }
     }
 
-    if (m_arrivalPending != 0) {
+    if (m_arrivalPending != false) {
         m_triggerMgr->WireTileSwitchLogic(this, m_object->m_screenX, m_object->m_screenY);
-        m_arrivalPending = 0;
+        m_arrivalPending = false;
     }
-    m_poweredUp = 1;
+    m_poweredUp = true;
     nb->CreateHealthSprite();
     ArmGruntCombatTimeout(nb);
     HandleCombatContact(targetPxX, targetPxY, 1, targetPlayerIndex, targetUnitIndex);
@@ -1843,11 +1843,11 @@ i32 CGrunt::CommitNeighbor(
     m_neighborUnitIndex = targetUnitIndex;
     m_attackTargetPx.m_x = targetPxX;
     m_attackTargetPx.m_y = targetPxY;
-    if (m_stamina < STAMINA_FULL || m_entranceActive != 0) {
-        m_neighborValid = 1;
+    if (m_stamina < STAMINA_FULL || m_entranceActive != false) {
+        m_neighborValid = true;
         return 1;
     }
-    m_neighborValid = 0;
+    m_neighborValid = false;
     nb->HandleCombatContact(
         m_object->m_screenX,
         m_object->m_screenY,
@@ -1862,7 +1862,7 @@ i32 CGrunt::CommitNeighbor(
 // @early-stop
 RVA(0x0005b570, 0x12b)
 i32 CGrunt::BeginAttack(i32 targetPxX, i32 targetPxY) {
-    if (m_entranceCommitted != 0) {
+    if (m_entranceCommitted != false) {
 
         CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
         ActNameConstructGrownSlots();
@@ -1871,12 +1871,12 @@ i32 CGrunt::BeginAttack(i32 targetPxX, i32 targetPxY) {
             if (m_stamina >= STAMINA_FULL) {
 
                 FaceTowardPixel(targetPxX, targetPxY);
-                m_poweredUp = 1;
-                m_combatActive = 1;
+                m_poweredUp = true;
+                m_combatActive = true;
                 CreateHealthSprite();
 
                 ArmGruntCombatTimeout(this);
-                m_neighborScanEnabled = 1;
+                m_neighborScanEnabled = true;
                 m_attackTargetPx.m_x = targetPxX;
                 m_attackTargetPx.m_y = targetPxY;
                 StartRangedAttackAnimation();
@@ -1898,7 +1898,7 @@ CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
 
     CGrunt* n =
         m_triggerMgr->m_units[m_neighborPlayerIndex * TM_UNITS_PER_PLAYER + m_neighborUnitIndex];
-    if (n != NULL && n->m_entranceCommitted != 0) {
+    if (n != NULL && n->m_entranceCommitted != false) {
         if (validate != 0) {
             if (n->GRUNT_SCREEN_X_NOT_AT_SAVED_POS(m_object, n)) {
                 return NULL;
@@ -1918,7 +1918,7 @@ CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
         }
     }
 
-    m_neighborValid = 0;
+    m_neighborValid = false;
     return NULL;
 }
 
@@ -2069,14 +2069,14 @@ void CGrunt::Activate() {
     m_stamina = STAMINA_FULL;
     m_toyTime = 0;
     m_wingzTime = 0;
-    m_entranceActive = 0;
-    m_arrivalPending = 0;
+    m_entranceActive = false;
+    m_arrivalPending = false;
     m_arrivalState = AI_NONE;
-    m_poweredUp = 0;
-    m_resetApplied = 0;
+    m_poweredUp = false;
+    m_resetApplied = false;
     m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
     m_passableMask = 0;
-    m_deathAnimStarted = 0;
+    m_deathAnimStarted = false;
     m_tileClaimed = 0;
 }
 
@@ -2109,7 +2109,7 @@ void CGrunt::StepBehavior(char*) {
     }
     m_dwell += g_frameDelta;
 
-    if (m_entranceDropActive != 0) {
+    if (m_entranceDropActive != false) {
         bool differs = ANIMATION_ACT_DIFFERS("A");
         if (differs) {
             differs = ANIMATION_ACT_DIFFERS("K");
@@ -2121,8 +2121,8 @@ void CGrunt::StepBehavior(char*) {
         if (static_cast<i64>(g_frameTime) - m_entranceClock64 >= m_entranceSafeTime64) {
         dropExpire: {
             CWwdSpriteObject* obj = m_object;
-            m_entranceDropActive = 0;
-            obj->m_drawActive = 1;
+            m_entranceDropActive = false;
+            obj->m_drawActive = true;
             obj->m_drawFillCmd = SHADE_PAL_16;
         }
             m_entranceSafeTimeLo = 0;
@@ -2130,7 +2130,7 @@ void CGrunt::StepBehavior(char*) {
         } else if (static_cast<i64>(g_frameTime) - m_flashClock64 >= m_flashWindow64) {
             CWwdSpriteObject* obj = m_object;
             if (obj->m_drawFillCmd == SHADE_PAL_ALPHA_16) {
-                obj->m_drawActive = 1;
+                obj->m_drawActive = true;
                 obj->m_drawFillCmd = SHADE_PAL_16;
             } else {
                 i32 fade = g_buteMgr.GetIntDef("Grunt", s_FadeTransparency, 0xc0);
@@ -2157,7 +2157,7 @@ void CGrunt::StepBehavior(char*) {
         }
     }
 
-    if (m_deathAnimStarted != 0) {
+    if (m_deathAnimStarted != false) {
         return;
     }
 
@@ -2233,11 +2233,11 @@ void CGrunt::StepBehavior(char*) {
 
         if (onWingzTile != 0) {
             if (flags & 0xd02) {
-                if (m_wingzEnabled == 0) {
+                if (m_wingzEnabled == false) {
                     LoadWingzGruntSprites(1);
                     return;
                 }
-            } else if (m_wingzEnabled != 0) {
+            } else if (m_wingzEnabled != false) {
                 LoadWingzGruntSprites(0);
                 return;
             }
@@ -2256,7 +2256,7 @@ void CGrunt::StepBehavior(char*) {
             }
         }
 
-        if ((flags & IDX(CELL_FLAG_SPECIAL)) == 0 || m_wingzEnabled != 0) {
+        if ((flags & IDX(CELL_FLAG_SPECIAL)) == 0 || m_wingzEnabled != false) {
             i32 mask = m_arrivalFlags & flags;
             if (!(mask & BRICKZ_CELL_OCCUPIED)) {
                 if (mask == 0) {
@@ -2356,7 +2356,7 @@ void CGrunt::StepBehavior(char*) {
             if (reason == PICKUP_SPRING || reason == PICKUP_TOOB) {
                 BuildGruntLoseItemAnimation();
             }
-            if (m_wingzEnabled != 0) {
+            if (m_wingzEnabled != false) {
                 goto afterTile;
             }
             if (m_gruntKind == GRUNT_INVULNERABLE) {
@@ -2423,7 +2423,7 @@ void CGrunt::StepBehavior(char*) {
     }
 
 afterTile:
-    if (m_entranceActive == 0 && m_entranceCommitted != 0) {
+    if (m_entranceActive == false && m_entranceCommitted != false) {
         CWwdSpriteObject* obj = m_object;
         i32 sx = obj->m_screenX;
         if (sx != m_lastTilePx.m_x) {
@@ -2536,8 +2536,8 @@ afterTile:
                         break;
                 }
             }
-        } else if (m_poweredUp != 0 && m_neighborValid == 0 && m_combatActive == 0
-                   && m_stamina >= STAMINA_FULL && m_neighborScanEnabled != 0) {
+        } else if (m_poweredUp != false && m_neighborValid == false && m_combatActive == false
+                   && m_stamina >= STAMINA_FULL && m_neighborScanEnabled != false) {
             FindGridNeighbor(0);
         }
         {
@@ -2592,7 +2592,7 @@ afterArrival:
         }
     }
 
-    if (m_wingzEnabled != 0) {
+    if (m_wingzEnabled != false) {
         i64 left = m_wingzDuration64 - static_cast<i64>(g_frameTime) + m_wingzClock64;
         m_wingzTime = static_cast<i32>(
             static_cast<double>((left < 0 ? 0 : static_cast<u32>(left)))
@@ -2608,7 +2608,7 @@ afterArrival:
     }
 
     if (m_arrivalState == AI_BATTLEZ_PATH) {
-        if (m_poweredUp != 0 && m_stamina >= STAMINA_FULL) {
+        if (m_poweredUp != false && m_stamina >= STAMINA_FULL) {
             bool eq;
             {
                 CString* node = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
@@ -2635,17 +2635,17 @@ afterArrival:
                 eq = (strcmp(*node, "A") == 0);
             }
             if (eq) {
-                if (m_poweredUp != 0 && m_neighborValid == 0) {
+                if (m_poweredUp != false && m_neighborValid == false) {
                     RESET_GRUNT_POWERED_STATE(this)
                 }
             }
         }
     } else {
         if (static_cast<i64>(g_frameTime) - m_combatClock64 >= m_combatTimeout64) {
-            if (m_poweredUp != 0 && m_neighborValid == 0) {
+            if (m_poweredUp != false && m_neighborValid == false) {
                 RESET_GRUNT_POWERED_STATE(this)
             }
-            if (m_arrived == 0
+            if (m_arrived == false
                 && static_cast<i64>(g_frameTime) - m_hudRetireClock64 >= m_hudRetireWindow64) {
                 HIDE_AND_CLEAR_GRUNT_SPRITE(m_healthSprite)
                 HIDE_AND_CLEAR_GRUNT_SPRITE(m_toySprite)
@@ -2719,7 +2719,7 @@ kindDispatch:
                     case PICKUP_GHOST: {
                         CWwdSpriteObject* obj = m_object;
                         m_gruntKind = GRUNT_NORMAL;
-                        obj->m_drawActive = 1;
+                        obj->m_drawActive = true;
                         obj->m_drawFillCmd = SHADE_PAL_16;
                         break;
                     }
@@ -2948,23 +2948,23 @@ void CGrunt::AdvanceMotion() {
                 if (different) {
                     return;
                 }
-                if (m_bombRunActive != 0) {
+                if (m_bombRunActive != false) {
                     return;
                 }
-            } else if (m_entranceStamped != 0) {
+            } else if (m_entranceStamped != false) {
                 return;
             }
         }
     }
     if (GRUNT_AT_SAVED_SCREEN_POS(this)) {
-        if (m_arrivalPending != 0) {
+        if (m_arrivalPending != false) {
             m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
-            m_arrivalPending = 0;
+            m_arrivalPending = false;
 
             if (m_arrivalPhase != ARRIVAL_TAG_NONE) {
                 i32 result = -1;
                 if (m_arrivalPhase == ARRIVAL_TAG_TRIGGER_A) {
-                    if (m_arrivalActive != 0) {
+                    if (m_arrivalActive != false) {
                         CGrunt* other =
                             m_triggerMgr->m_units
                                 [m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
@@ -3013,7 +3013,7 @@ void CGrunt::AdvanceMotion() {
                         );
                     }
                 } else if (m_arrivalPhase == ARRIVAL_TAG_TRIGGER_B) {
-                    if (m_arrivalActive != 0) {
+                    if (m_arrivalActive != false) {
                         CGrunt* other =
                             m_triggerMgr->m_units
                                 [m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];

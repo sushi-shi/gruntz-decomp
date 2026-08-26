@@ -7,6 +7,7 @@
 
 #include <Enums.h>
 #include <Gruntz/LevelArea.h>
+#include <Ints.h>
 
 class CGruntzMgr;
 class CTriggerMgr;
@@ -80,7 +81,7 @@ public:
     RECT m_boundsRect;
     RECT m_drawRect;
     i32 m_cellScale;
-    i32 m_panActive;
+    b32 m_panActive;
     u16 m_tileColors[MINIMAP_TILE_COLOR_COUNT];
     i32 m_refreshInterval;
     i32 m_refreshRemaining;
@@ -92,7 +93,7 @@ inline CMinimap::CMinimap() {
     m_mapMgr = NULL;
     m_world = NULL;
     m_surface = NULL;
-    m_panActive = 0;
+    m_panActive = false;
     m_refreshInterval = 0;
     m_refreshRemaining = 0;
 }

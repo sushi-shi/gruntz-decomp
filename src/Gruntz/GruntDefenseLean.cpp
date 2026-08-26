@@ -47,15 +47,15 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
     CGrunt* occ;
     switch (m_defenderState) {
         case AISTATE_ATTACK:
-            if (m_poweredUp == 0) {
+            if (m_poweredUp == false) {
                 m_defenderState = AISTATE_CHASE;
                 return 1;
             }
             occ =
                 m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
             if (occ != NULL && GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) != 0
-                && occ->m_entranceCommitted != 0) {
-                if (m_combatActive != 0) {
+                && occ->m_entranceCommitted != false) {
+                if (m_combatActive != false) {
                     return 1;
                 }
                 if (m_stamina < STAMINA_FULL) {
@@ -108,7 +108,7 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
             if (occ == NULL) {
                 goto seek;
             }
-            if (occ->m_entranceCommitted == 0) {
+            if (occ->m_entranceCommitted == false) {
                 goto seek;
             }
             if (GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) == 0) {
@@ -125,7 +125,7 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
                 );
                 m_dwell = 0;
             }
-            if (m_poweredUp != 0) {
+            if (m_poweredUp != false) {
                 return 1;
             }
             if (m_stamina < STAMINA_FULL) {
@@ -157,10 +157,10 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
                 );
                 return 1;
             }
-            if (m_resetApplied != 0) {
+            if (m_resetApplied != false) {
                 return 1;
             }
-            if (m_hasExtent == 0) {
+            if (m_hasExtent == false) {
                 return 1;
             }
             if (static_cast<u32>(m_dwell) <= DWELL_STUCK_RESET_MS) {

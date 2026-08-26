@@ -76,7 +76,7 @@ i32 CGrunt::StepDefenderBehavior() {
     }
 
     if (m_poweredUp) {
-        if (m_neighborValid == 0) {
+        if (m_neighborValid == false) {
             if (m_combatActive) {
                 return 1;
             }
@@ -87,7 +87,7 @@ i32 CGrunt::StepDefenderBehavior() {
                 if (occOnTile && occ == NULL) {
                     return 1;
                 }
-                if (m_poweredUp == 0) {
+                if (m_poweredUp == false) {
                     return 1;
                 }
             } else {
@@ -100,7 +100,7 @@ i32 CGrunt::StepDefenderBehavior() {
             }
             RESET_GRUNT_POWERED_STATE(this)
         } else {
-            m_neighborValid = 0;
+            m_neighborValid = false;
         }
         return 1;
     }
@@ -109,7 +109,7 @@ i32 CGrunt::StepDefenderBehavior() {
         if (m_neighborValid) {
             return 1;
         }
-        if (m_combatActive == 0 && m_stamina >= STAMINA_FULL && occOnTile) {
+        if (m_combatActive == false && m_stamina >= STAMINA_FULL && occOnTile) {
             COMMIT_GRUNT_NEIGHBOR(occ);
             RecycleGruntCoords(this);
             return 1;
@@ -119,7 +119,7 @@ i32 CGrunt::StepDefenderBehavior() {
             return 1;
         }
     } else {
-        m_blockedVoicePending = 0;
+        m_blockedVoicePending = false;
     }
 
     if (occ != NULL && static_cast<u32>(m_dwell) > DWELL_REPATH_MS) {
@@ -130,13 +130,13 @@ i32 CGrunt::StepDefenderBehavior() {
         i32 radius = dx > dy ? dx : dy;
 
         if (radius < m_defenderRadius + m_reachRect.right) {
-            if (m_blockedVoicePending != 0) {
+            if (m_blockedVoicePending != false) {
                 const RECT* view = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
                 if (CGameLevel::PointInBounds(view, m_object->m_screenX, m_object->m_screenY)
                     != 0) {
                     g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
                 }
-                m_blockedVoicePending = 0;
+                m_blockedVoicePending = false;
             }
 
             POINT target;

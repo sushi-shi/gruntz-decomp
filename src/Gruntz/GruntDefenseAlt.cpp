@@ -47,14 +47,14 @@ i32 CGrunt::StepObjectGuardBehavior() {
         inRange = 1;
     }
 
-    i32 powered = m_poweredUp;
-    if (powered != 0) {
-        i32 neighborValid = m_neighborValid;
-        if (neighborValid != 0) {
-            m_neighborValid = 0;
+    b32 powered = m_poweredUp;
+    if (powered != false) {
+        b32 neighborValid = m_neighborValid;
+        if (neighborValid != false) {
+            m_neighborValid = false;
             return 1;
         }
-        if (m_combatActive != 0) {
+        if (m_combatActive != false) {
             goto tail;
         }
         if (m_stamina >= STAMINA_FULL) {
@@ -64,10 +64,10 @@ i32 CGrunt::StepObjectGuardBehavior() {
             if (inRange != 0 && occ == NULL) {
                 goto tail;
             }
-            if (m_poweredUp == 0) {
+            if (m_poweredUp == false) {
                 goto tail;
             }
-            if (m_neighborValid != 0) {
+            if (m_neighborValid != false) {
                 goto tail;
             }
             RESET_GRUNT_POWERED_STATE(this)
@@ -76,10 +76,10 @@ i32 CGrunt::StepObjectGuardBehavior() {
             if (inRange != 0) {
                 goto tail;
             }
-            if (m_poweredUp == 0) {
+            if (m_poweredUp == false) {
                 goto tail;
             }
-            if (m_neighborValid != 0) {
+            if (m_neighborValid != false) {
                 goto tail;
             }
             RESET_GRUNT_POWERED_STATE(this)
@@ -91,7 +91,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
         case AISTATE_SEEK: {
             CGrunt* o = m_triggerMgr->FindNearestEnemy(this);
             if (o != NULL) {
-                if (m_poweredUp != 0) {
+                if (m_poweredUp != false) {
                     goto tail;
                 }
                 if (m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(o)
@@ -100,7 +100,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
                     return 1;
                 }
             }
-            if (m_poweredUp != 0) {
+            if (m_poweredUp != false) {
                 goto tail;
             }
             {
@@ -176,7 +176,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
             if (o == NULL) {
                 goto resetState;
             }
-            if (o->m_entranceCommitted == 0) {
+            if (o->m_entranceCommitted == false) {
                 goto resetState;
             }
             if (GruntInRadius(o->m_playerIndex, o->m_unitIndex) == 0) {
@@ -186,7 +186,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
                 goto resetState;
             }
             StepArrivalDrop(o->m_lastTilePx.m_x, o->m_lastTilePx.m_y, 0, m_arrivalFlags, 1, 0);
-            if (m_poweredUp != 0) {
+            if (m_poweredUp != false) {
                 goto tail;
             }
             if (m_stamina < STAMINA_FULL) {
@@ -228,7 +228,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
             if (o == NULL) {
                 goto tail;
             }
-            if (m_poweredUp == 0 && m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(o)
+            if (m_poweredUp == false && m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(o)
                 && RectContains(o->m_object->m_screenX, o->m_object->m_screenY) != 0) {
                 COMMIT_GRUNT_NEIGHBOR(o);
                 m_defenderState = AISTATE_ATTACK;

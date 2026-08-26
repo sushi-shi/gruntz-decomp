@@ -334,7 +334,7 @@ CGrunt::CGrunt(CGameObject* owner)
     m_poseDeath = NULL;
     memset(m_poseToy, 0, sizeof(m_poseToy));
     m_pickupGeoSrc = NULL;
-    m_arrived = 0;
+    m_arrived = false;
     m_wwdObject->m_objectType = WWD_OBJECT_TYPE_GRUNT;
     m_wwdObject->m_hitTypeFlags = 0x3d1;
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_COLLIDE);
@@ -351,7 +351,7 @@ CGrunt::CGrunt(CGameObject* owner)
     m_toolId = PICKUP_NONE;
     m_animSetName = "NORMALGRUNT";
     m_neighborUnitIndex = -1;
-    m_entranceCommitted = 1;
+    m_entranceCommitted = true;
     m_healthSprite = NULL;
     m_staminaSprite = NULL;
     m_toyTimeSprite = NULL;
@@ -360,11 +360,11 @@ CGrunt::CGrunt(CGameObject* owner)
     m_toySprite = NULL;
     m_powerupSprite = NULL;
     m_reserved210 = 0;
-    m_combatActive = 0;
-    m_neighborValid = 0;
-    m_arrivalActive = 0;
+    m_combatActive = false;
+    m_neighborValid = false;
+    m_arrivalActive = false;
     m_coordToggle = 0;
-    m_wingzEnabled = 0;
+    m_wingzEnabled = false;
     m_vehicleLoopSound = NULL;
     m_powerupLoopSound = NULL;
     RECT reach;
@@ -447,7 +447,7 @@ CGrunt::CGrunt(CGameObject* owner)
             h->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_SORT_PENDING);
         }
     }
-    m_blockedVoicePending = 1;
+    m_blockedVoicePending = true;
 }
 
 RVA(0x00048360, 0x7e)
@@ -823,7 +823,7 @@ store:
 // @early-stop
 RVA(0x0004b130, 0xc8)
 i32 CGrunt::CommitArrival() {
-    if (m_arrived != 0) {
+    if (m_arrived != false) {
         return 1;
     }
 
@@ -843,7 +843,7 @@ i32 CGrunt::CommitArrival() {
     CreateStaminaSprite();
     CreateToyTimeSprite();
     CreateWingzTimeSprite();
-    m_arrived = 1;
+    m_arrived = true;
     return 1;
 }
 
@@ -861,7 +861,7 @@ void CGrunt::ClearAllSprites() {
         m_toySprite->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
         m_toySprite = NULL;
     }
-    if (m_entranceCommitted == 0) {
+    if (m_entranceCommitted == false) {
         if (m_staminaSprite) {
             m_staminaSprite->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
             m_staminaSprite = NULL;
@@ -875,7 +875,7 @@ void CGrunt::ClearAllSprites() {
             m_wingzTimeSprite = NULL;
         }
     }
-    m_arrived = 0;
+    m_arrived = false;
 }
 
 RVA(0x0004b320, 0x34)
@@ -977,7 +977,7 @@ i32 CGrunt::StepArrivalDrop(
                 }
             }
         }
-        if (cnt == 1 && m_arrivalPending == 0) {
+        if (cnt == 1 && m_arrivalPending == false) {
 
             SetEntrancePos(1, 1);
             if (m_object->m_screenX == m_lastTilePx.m_x
@@ -1217,7 +1217,7 @@ nudgeDone:
     }
 reCommit:
     SetEntrancePos(1, 1);
-    if (m_arrivalPending == 0) {
+    if (m_arrivalPending == false) {
         return 0;
     }
     m_arrivalPhase = arrivalPhase;
@@ -1247,7 +1247,7 @@ reProbe:
     if (IsGruntAtSavedScreenPos(this) != 0) {
         FaceTowardTile(walkX, walkY);
     }
-    if (m_arrivalPending == 0) {
+    if (m_arrivalPending == false) {
         return 0;
     }
     m_arrivalPhase = arrivalPhase;
@@ -1370,7 +1370,7 @@ i32 CGrunt::StepGruntMovement() {
             }
         }
     }
-    if (m_entranceActive == 0) {
+    if (m_entranceActive == false) {
         i32 ltx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
         i32 lty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
         i32 lastFlag = bd->CellFlagsAt(ltx, lty);
@@ -1501,14 +1501,14 @@ label_4c6e4:
         g_coordPool.m_freeHead = p;
     }
     if (flagHead & 0x80) {
-        m_entranceActive = 1;
+        m_entranceActive = true;
     } else {
         CString* r = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
         ActNameConstructGrownSlots();
         bool ne;
         ne = (strcmp(*r, "L") != 0);
         if (ne) {
-            m_entranceActive = 0;
+            m_entranceActive = false;
         }
     }
 
@@ -1693,7 +1693,7 @@ label_4cb4b:
         m_lastTilePx.m_y = tgtPxY;
         ComputeFacing(1.0);
     }
-    m_arrivalPending = 1;
+    m_arrivalPending = true;
     if (reason12) {
         if (flagHead & 0x100) {
             if (m_coordToggle != 0) {
@@ -1711,7 +1711,7 @@ label_4cb4b:
         if (!(flagHead & 0xd02)) {
             goto label_ret1;
         }
-        if (m_wingzEnabled != 0) {
+        if (m_wingzEnabled != false) {
             goto label_ret1;
         }
         LoadWingzGruntSprites(1);
@@ -1737,7 +1737,7 @@ void CGrunt::SetEntrancePos(i32 clearArrivalState, i32 recycleRoute) {
     m_entrancePx = m_lastTilePx;
     if (clearArrivalState) {
         m_arrivalPhase = 0;
-        m_arrivalActive = 0;
+        m_arrivalActive = false;
     }
     if (recycleRoute && m_arrivalState != AI_BATTLEZ_PATH && CoordCount() != 0) {
         RECYCLE_GRUNT_COORDS_EXPANDED(this)
@@ -1857,7 +1857,7 @@ i32 CGrunt::CreateToyTimeSprite() {
 // @early-stop
 RVA(0x0004d520, 0xe3)
 i32 CGrunt::CreateWingzTimeSprite() {
-    if (m_wingzTimeSprite || m_wingzEnabled == 0 || m_wingzTime == 0) {
+    if (m_wingzTimeSprite || m_wingzEnabled == false || m_wingzTime == 0) {
         return 0;
     }
 
@@ -1969,7 +1969,7 @@ i32 CGrunt::Place(
     m_defenderPx.m_x = -1;
     m_defenderPx.m_y = -1;
     m_powerupDuration = 0;
-    m_blockedVoicePending = 1;
+    m_blockedVoicePending = true;
     m_struckCount = 0;
     m_toyTileIndex = 0;
     m_entrancePickup = PICKUP_INVALID;
@@ -1999,15 +1999,15 @@ i32 CGrunt::Place(
     m_triggerMgr = board;
     m_daFlag = 1;
     m_arrivalPhase = 0;
-    m_toolConfigured = 1;
+    m_toolConfigured = true;
     m_tileClaimed = 0;
-    m_neighborScanEnabled = 1;
-    m_tileMoveCommitted = 0;
-    m_entranceArmed = 0;
-    m_entranceDropActive = 0;
+    m_neighborScanEnabled = true;
+    m_tileMoveCommitted = false;
+    m_entranceArmed = false;
+    m_entranceDropActive = false;
     m_deathType = DEATH_NONE;
     m_pendingTrigger = 0;
-    m_cellRemovalNotified = 0;
+    m_cellRemovalNotified = false;
     m_killerPlayerIndex = -1;
     m_passableMask = 0;
     m_savedMoveIcon = -1;
@@ -2024,9 +2024,9 @@ i32 CGrunt::Place(
     RECT reach;
     CopyRect(&reach, &m_object->m_extent);
     if (reach.right - reach.left == 0 && reach.top - reach.bottom == 0) {
-        m_hasExtent = 0;
+        m_hasExtent = false;
     } else {
-        m_hasExtent = 1;
+        m_hasExtent = true;
     }
     if (m_moveIcon < PICKUP_NONE || m_moveIcon >= PICKUP_MOVEICON_END) {
         m_moveIcon = PICKUP_NONE;
@@ -2046,7 +2046,7 @@ i32 CGrunt::Place(
     i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
     plane->m_rowInts[ty][tx * 7] |= BRICKZ_CELL_OCCUPIED;
     plane->m_rowInts[ty][tx * 7 + 1] = (m_playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | m_unitIndex;
-    m_entranceActive = 0;
+    m_entranceActive = false;
     ReadConfigFromButeMgr();
     LoadCellAnimNames(0, 0);
     LoadAnimNameTable(0, 0);
@@ -2088,7 +2088,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         goto fail;
     }
     if (fresh == 0) {
-        if (m_entranceActive != 0) {
+        if (m_entranceActive != false) {
             goto fail;
         }
         eq = (strcmp((*g_typeColl.GetNameRecord(m_logicRecord->m_eventCode)), "A") != 0);
@@ -2129,7 +2129,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         goto fail;
     }
     if (kind != PICKUP_WINGZ) {
-        m_wingzEnabled = 0;
+        m_wingzEnabled = false;
         m_wingzDurationLo = 0;
         m_wingzDurationHi = 0;
         HIDE_AND_CLEAR_GRUNT_SPRITE(m_wingzTimeSprite)
@@ -2156,7 +2156,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
-            m_toolConfigured = 1;
+            m_toolConfigured = true;
             break;
         }
         case PICKUP_BOMB: {
@@ -2175,7 +2175,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
-            m_toolConfigured = 1;
+            m_toolConfigured = true;
             break;
         }
         case PICKUP_BOOMERANG: {
@@ -2197,7 +2197,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
-            m_toolConfigured = 1;
+            m_toolConfigured = true;
             break;
         }
         case PICKUP_BRICK: {
@@ -2216,7 +2216,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
-            m_toolConfigured = 1;
+            m_toolConfigured = true;
             break;
         }
         case PICKUP_CLUB: {
@@ -2235,7 +2235,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
-            m_toolConfigured = 1;
+            m_toolConfigured = true;
             break;
         }
         case PICKUP_GAUNTLETZ: {
@@ -2254,7 +2254,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
-            m_toolConfigured = 1;
+            m_toolConfigured = true;
             break;
         }
         case PICKUP_GLOVEZ: {
@@ -2273,7 +2273,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
-            m_toolConfigured = 1;
+            m_toolConfigured = true;
             break;
         }
         case PICKUP_GOOBER: {
@@ -2292,7 +2292,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
-            m_toolConfigured = 1;
+            m_toolConfigured = true;
             if (m_arrivalState == AI_BATTLEZ_PATH) {
                 if (m_battleState != BZTASK_ADVANCE) {
                     if (this->CoordCount() != 0) {
@@ -2342,7 +2342,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0x400;
-            m_toolConfigured = 1;
+            m_toolConfigured = true;
             break;
         }
         case PICKUP_GUNHAT: {
@@ -2364,7 +2364,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
-            m_toolConfigured = 1;
+            m_toolConfigured = true;
             break;
         }
         case PICKUP_NERFGUN: {
@@ -2386,7 +2386,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 m_defenderRadius = 1;
             }
             m_passableMask = 0;
-            m_toolConfigured = 1;
+            m_toolConfigured = true;
             break;
         }
         case PICKUP_ROCK: {
@@ -2408,7 +2408,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 m_defenderRadius = 1;
             }
             m_passableMask = 0;
-            m_toolConfigured = 1;
+            m_toolConfigured = true;
             break;
         }
         case PICKUP_SHIELD: {
@@ -2427,7 +2427,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
-            m_toolConfigured = 1;
+            m_toolConfigured = true;
             break;
         }
         case PICKUP_SHOVEL: {
@@ -2446,7 +2446,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
-            m_toolConfigured = 1;
+            m_toolConfigured = true;
             break;
         }
         case PICKUP_SPRING: {
@@ -2465,7 +2465,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0x1000;
-            m_toolConfigured = 1;
+            m_toolConfigured = true;
             break;
         }
         case PICKUP_SPY: {
@@ -2484,7 +2484,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
-            m_toolConfigured = 1;
+            m_toolConfigured = true;
             break;
         }
         case PICKUP_SWORD: {
@@ -2503,7 +2503,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
-            m_toolConfigured = 1;
+            m_toolConfigured = true;
             break;
         }
         case PICKUP_TIMEBOMB: {
@@ -2522,7 +2522,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
-            m_toolConfigured = 1;
+            m_toolConfigured = true;
             break;
         }
         case PICKUP_TOOB: {
@@ -2542,7 +2542,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0x100;
-            m_toolConfigured = 1;
+            m_toolConfigured = true;
             break;
         }
         case PICKUP_WAND: {
@@ -2561,7 +2561,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 m_arrivalFlags |= 0x10;
             }
             m_passableMask = 0;
-            m_toolConfigured = 1;
+            m_toolConfigured = true;
             break;
         }
         case PICKUP_WARPSTONE: {
@@ -2577,7 +2577,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 m_arrivalFlags = ARRIVAL_FLAGS_ENEMY;
             }
             m_passableMask = 0;
-            m_toolConfigured = 0;
+            m_toolConfigured = false;
             break;
         }
         case PICKUP_WELDER: {
@@ -2599,7 +2599,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 m_defenderRadius = 1;
             }
             m_passableMask = 0;
-            m_toolConfigured = 1;
+            m_toolConfigured = true;
             break;
         }
         case PICKUP_WINGZ: {
@@ -2621,9 +2621,9 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 m_defenderRadius = 1;
             }
             m_passableMask = 0xd02;
-            m_wingzEnabled = 0;
+            m_wingzEnabled = false;
             m_wingzTime = 0x64;
-            m_toolConfigured = 1;
+            m_toolConfigured = true;
             break;
         }
         case PICKUP_BABYWALKER: {
@@ -3144,7 +3144,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 handle
             );
         } else {
-            if (m_poweredUp != 0 && m_neighborValid == 0) {
+            if (m_poweredUp != false && m_neighborValid == false) {
                 RESET_GRUNT_POWERED_STATE(this)
             }
             CString* rec2;
@@ -3171,7 +3171,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 SwitchAnimation(m_poseWalk);
             } else {
                 ResetEntranceAnimation(1, 0, 0);
-                if (m_arrivalPending == 0) {
+                if (m_arrivalPending == false) {
                     m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
                 }
             }
@@ -3188,7 +3188,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
     } else {
         UpdateArrival(defer, 1);
     }
-    if (m_arrived != 0) {
+    if (m_arrived != false) {
         if (m_playerIndex == g_curPlayer) {
             m_triggerMgr->StopPendingFx();
         }

@@ -5013,7 +5013,7 @@ void CStatusBarMgr::AdvanceTab(i32 reverse) {
 RVA(0x0010b5d0, 0xdd)
 i32 CStatusBarMgr::SelectToolResource(StatusBarHighlightRow row) {
     i32 rowIndex = IDX(row);
-    if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_playerCommandPending == 0
+    if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_playerCommandPending == false
         && m_resourceSlots[rowIndex].m_state == IDX(HLROW_IDLE_CYCLE)) {
         i32 handle = m_resourceSlots[rowIndex].m_value;
         i32* slot = &m_resourceSlots[rowIndex].m_value;
@@ -5048,7 +5048,7 @@ i32 CStatusBarMgr::SelectToolResource(StatusBarHighlightRow row) {
 RVA(0x0010b6f0, 0xdd)
 i32 CStatusBarMgr::SelectToyResource(StatusBarHighlightRow row) {
     i32 rowIndex = IDX(row);
-    if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_playerCommandPending == 0
+    if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_playerCommandPending == false
         && m_resourceSlots[rowIndex + 4].m_state == IDX(HLROW_IDLE_CYCLE)) {
         i32 handle = m_resourceSlots[rowIndex + 4].m_value;
         i32* slot = &m_resourceSlots[rowIndex + 4].m_value;
@@ -5083,7 +5083,7 @@ i32 CStatusBarMgr::SelectToyResource(StatusBarHighlightRow row) {
 RVA(0x0010b810, 0xdd)
 i32 CStatusBarMgr::SelectBrickResource(StatusBarHighlightRow row) {
     i32 rowIndex = IDX(row);
-    if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_playerCommandPending == 0
+    if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_playerCommandPending == false
         && m_resourceSlots[rowIndex + 8].m_state == IDX(HLROW_IDLE_CYCLE)) {
         i32 handle = m_resourceSlots[rowIndex + 8].m_value;
         i32* slot = &m_resourceSlots[rowIndex + 8].m_value;
@@ -5118,7 +5118,7 @@ i32 CStatusBarMgr::SelectBrickResource(StatusBarHighlightRow row) {
 RVA(0x0010b930, 0x1a7)
 i32 CStatusBarMgr::ActivateSlot(i32 idx) {
 
-    if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_playerCommandPending != 0) {
+    if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_playerCommandPending != false) {
         goto notActivated;
     }
     if (idx == -1) {

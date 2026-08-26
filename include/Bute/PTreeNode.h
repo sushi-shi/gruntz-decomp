@@ -3,6 +3,7 @@
 
 #include <rva.h>
 
+#include <Enums.h>
 #include <Ints.h>
 #include <Wap32/zBitVec.h>
 
@@ -11,6 +12,12 @@
 struct CVariantSlot;
 struct CButeTreeNode;
 extern CVariantSlot g_rezArchiveErrorSlot;
+
+GZ_ENUM_CONST_BEGIN(PTreeBitLayout)
+    PTREE_BITS_PER_BYTE = 8,
+    PTREE_BYTE_BIT_SHIFT = 3,
+    PTREE_BYTE_BIT_MASK = 7
+GZ_ENUM_CONST_END(PTreeBitLayout)
 
 i32 FirstDiffBit(const char* a, const char* b);
 
@@ -34,7 +41,7 @@ public:
     void Reset() {
         ClearRecursive(NULL);
         m_root = NULL;
-        m_lookupPending = 0;
+        m_lookupPending = false;
         m_nodeCount = 0;
     }
 
@@ -56,7 +63,7 @@ public:
     CButeTreeNode* m_descentCursor;
     CButeTreeNode* m_candidateLeaf;
     i32 m_keyBitLength;
-    i32 m_lookupPending;
+    b32 m_lookupPending;
 };
 
 class CButeNode : public zPTree {

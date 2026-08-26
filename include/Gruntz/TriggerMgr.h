@@ -17,6 +17,7 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/TargetSelectionKind.h>
 #include <Gruntz/WarpStoneFragment.h>
+#include <Ints.h>
 #include <Wwd/WwdAniDrawValue.h>
 
 GZ_ENUM_CONST_BEGIN(TmGridDim)
@@ -228,7 +229,7 @@ public:
         m_overlay = NULL;
         m_timerBase = 0;
         m_timerWindow = 0;
-        m_countdownActive = 1;
+        m_countdownActive = true;
         m_gooTimerBase = 0;
         m_gooInterval = 0;
         m_resourceTimerBase = 0;
@@ -285,7 +286,7 @@ public:
     CActionOptionsMenuBar* m_overlay;
     CByteArray m_byteArr;
     char m_reserved274[0x10];
-    i32 m_groupInitialized;
+    b32 m_groupInitialized;
 
     FinishLevelState m_phase;
     char _pad28c[0x4];
@@ -299,7 +300,7 @@ public:
     };
 
     CWarlord* m_pendingFx;
-    i32 m_countdownActive;
+    b32 m_countdownActive;
     i32 m_pendingFxKind;
     char _pad2ac[0x4];
 

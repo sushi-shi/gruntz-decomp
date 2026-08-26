@@ -315,38 +315,38 @@ public:
     CWwdSpriteObject* m_toyTimeSprite;
     CWwdSpriteObject* m_wingzTimeSprite;
     CWwdSpriteObject* m_powerupSprite;
-    i32 m_arrived;
+    b32 m_arrived;
     Coord m_reserved1dc;
-    i32 m_entranceActive;
-    i32 m_arrivalPending;
+    b32 m_entranceActive;
+    b32 m_arrivalPending;
     i32 m_playerIndex;
     i32 m_unitIndex;
     PickupType m_moveIcon;
     i32 m_savedMoveIcon;
-    i32 m_entranceCommitted;
+    b32 m_entranceCommitted;
     i32 m_neighborPlayerIndex;
     i32 m_neighborUnitIndex;
     Coord m_attackTargetPx;
     i32 m_reserved210;
     i32 m_struckPose;
-    i32 m_combatActive;
-    i32 m_neighborValid;
-    i32 m_poweredUp;
+    b32 m_combatActive;
+    b32 m_neighborValid;
+    b32 m_poweredUp;
     i32 m_daFlag;
-    i32 m_entranceStamped;
-    i32 m_bombRunActive;
-    i32 m_arrivalActive;
+    b32 m_entranceStamped;
+    b32 m_bombRunActive;
+    b32 m_arrivalActive;
     i32 m_coordToggle;
-    i32 m_wingzEnabled;
-    i32 m_freezeDelayDone;
-    i32 m_freezeUnfrozen;
-    i32 m_resetApplied;
+    b32 m_wingzEnabled;
+    b32 m_freezeDelayDone;
+    b32 m_freezeUnfrozen;
+    b32 m_resetApplied;
     i32 m_arrivalFlags;
     i32 m_passableMask;
     i32 m_routeBlockedMask;
     i32 m_routePassableMask;
     PickupType m_gruntKind;
-    i32 m_entranceArmed;
+    b32 m_entranceArmed;
 
     class CTriggerMgr* m_triggerMgr;
     i32 m_struckCount;
@@ -423,7 +423,7 @@ public:
         };
         CPairRecord m_arrivalRerollTiming;
     };
-    i32 m_hasExtent;
+    b32 m_hasExtent;
 
     CPtrList m_coordList;
     CPtrList m_payloads;
@@ -448,13 +448,13 @@ public:
         return m_payloads.GetCount();
     }
 
-    i32 m_toolConfigured; // set on every tool (re)config; never read
-    i32 m_neighborScanEnabled;
-    i32 m_tileMoveCommitted;
+    b32 m_toolConfigured; // set on every tool (re)config; never read
+    b32 m_neighborScanEnabled;
+    b32 m_tileMoveCommitted;
     GruntDeathType m_deathType;
-    i32 m_entranceDropActive;
-    i32 m_deathAnimStarted;
-    i32 m_cellRemovalNotified;
+    b32 m_entranceDropActive;
+    b32 m_deathAnimStarted;
+    b32 m_cellRemovalNotified;
     i32 m_killerPlayerIndex;
     i32 m_moveVariantOverride;
     i32 m_powerupDuration;
@@ -463,7 +463,7 @@ public:
     i32 m_coordRetryCount;
     u32 m_toyTileIndex;
     i32 m_warpstoneAnchorIndex;
-    i32 m_blockedVoicePending;
+    b32 m_blockedVoicePending;
 
     CAniElement* m_poseWalk;
     CAniElement* m_poseAttack[2];

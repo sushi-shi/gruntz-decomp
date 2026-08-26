@@ -44,7 +44,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
     CGrunt* occ;
     switch (m_defenderState) {
         case AISTATE_ATTACK:
-            if (m_poweredUp == 0) {
+            if (m_poweredUp == false) {
                 m_defenderState = AISTATE_CHASE;
                 return 1;
             }
@@ -54,11 +54,11 @@ i32 CGrunt::StepScrollGruntBehavior() {
                 goto seek;
             }
             if (GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) != 0
-                && occ->m_entranceCommitted != 0) {
-                if (m_neighborValid != 0) {
+                && occ->m_entranceCommitted != false) {
+                if (m_neighborValid != false) {
                     return 1;
                 }
-                if (m_combatActive != 0) {
+                if (m_combatActive != false) {
                     return 1;
                 }
                 if (m_stamina < STAMINA_FULL) {
@@ -106,7 +106,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
             if (occ == NULL) {
                 goto seek;
             }
-            if (occ->m_entranceCommitted == 0) {
+            if (occ->m_entranceCommitted == false) {
                 goto seek;
             }
             if (GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) == 0) {
@@ -123,7 +123,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
                 );
                 m_dwell = 0;
             }
-            if (m_poweredUp != 0) {
+            if (m_poweredUp != false) {
                 return 1;
             }
             if (m_stamina < STAMINA_FULL) {
@@ -154,7 +154,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
             if (occ == NULL) {
                 goto L_f308a;
             }
-            if (m_poweredUp == 0 && m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(occ)
+            if (m_poweredUp == false && m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(occ)
                 && RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0) {
                 if (m_vehiclePickupType == PICKUP_SCROLL) {
                     g_gameReg->m_triggerMgr->UseToyAt(
@@ -201,10 +201,10 @@ i32 CGrunt::StepScrollGruntBehavior() {
                 return 1;
             }
         L_f308a:
-            if (m_resetApplied != 0) {
+            if (m_resetApplied != false) {
                 return 1;
             }
-            if (m_hasExtent == 0) {
+            if (m_hasExtent == false) {
                 return 1;
             }
             if (static_cast<u32>(m_dwell) <= DWELL_STUCK_RESET_MS) {

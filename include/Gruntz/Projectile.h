@@ -11,6 +11,7 @@
 #include <Gruntz/MovingLogic.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
+#include <Ints.h>
 
 class CLightFx;
 
@@ -60,7 +61,7 @@ public:
     double m_roundY;
     i32 m_curX, m_curY;
     i32 m_isArcing;
-    i32 m_arrived;
+    b32 m_arrived;
 
     enum {
         PF_IMPACT = 5,

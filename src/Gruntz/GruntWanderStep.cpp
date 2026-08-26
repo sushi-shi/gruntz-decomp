@@ -47,11 +47,11 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
     i32 flag = 0;
     FIND_NEAREST_ENEMY_AT_TARGET_WITH_FLAG(g, flag, gx)
 
-    i32 powered = m_poweredUp;
-    if (powered != 0) {
-        i32 neighborValid = m_neighborValid;
-        if (neighborValid == 0) {
-            if (m_combatActive == 0) {
+    b32 powered = m_poweredUp;
+    if (powered != false) {
+        b32 neighborValid = m_neighborValid;
+        if (neighborValid == false) {
+            if (m_combatActive == false) {
                 if (m_stamina >= STAMINA_FULL) {
                     if (FindGridNeighbor(1) != NULL) {
                         m_defenderState = AISTATE_RETREAT;
@@ -60,21 +60,21 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                     if (flag != 0 && g == NULL) {
                         goto retreat;
                     }
-                    if (m_poweredUp == 0 || m_neighborValid != 0) {
+                    if (m_poweredUp == false || m_neighborValid != false) {
                         goto retreat;
                     }
                 } else {
                     if (flag != 0) {
                         goto retreat;
                     }
-                    if (m_poweredUp == 0 || m_neighborValid != 0) {
+                    if (m_poweredUp == false || m_neighborValid != false) {
                         goto retreat;
                     }
                 }
                 RESET_GRUNT_POWERED_STATE(this)
             }
         } else {
-            m_neighborValid = 0;
+            m_neighborValid = false;
         }
     retreat:
         m_defenderState = AISTATE_RETREAT;
@@ -83,10 +83,11 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
     switch (m_defenderState) {
         case AISTATE_SEEK:
             if (g != NULL) {
-                if (m_poweredUp == 0 && m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(g)
+                if (m_poweredUp == false && m_stamina >= STAMINA_FULL
+                    && GRUNT_AT_SAVED_SCREEN_POS(g)
                     && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
                     COMMIT_GRUNT_NEIGHBOR(g);
-                    m_neighborScanEnabled = 0;
+                    m_neighborScanEnabled = false;
                     RecycleGruntCoords(this);
                     m_defenderState = AISTATE_RETREAT;
                     return 1;
@@ -125,7 +126,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
             }
-            if (slot == NULL || slot->m_entranceCommitted == 0
+            if (slot == NULL || slot->m_entranceCommitted == false
                 || GruntInRadius(slot->m_playerIndex, slot->m_unitIndex) == 0) {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
@@ -141,7 +142,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                 );
                 m_dwell = 0;
             }
-            if (m_poweredUp != 0) {
+            if (m_poweredUp != false) {
                 return 1;
             }
             if (m_stamina < STAMINA_FULL) {
@@ -157,27 +158,27 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                 return 1;
             }
             COMMIT_GRUNT_NEIGHBOR(slot);
-            m_neighborScanEnabled = 0;
+            m_neighborScanEnabled = false;
             RecycleGruntCoords(this);
             m_defenderState = AISTATE_RETREAT;
             return 1;
         }
 
         case AISTATE_ATTACK: {
-            if (m_poweredUp == 0) {
+            if (m_poweredUp == false) {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
             }
             CGrunt* slot =
                 m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
             if (slot == NULL || GruntInRadius(slot->m_playerIndex, slot->m_unitIndex) == 0
-                || slot->m_entranceCommitted == 0) {
+                || slot->m_entranceCommitted == false) {
                 goto ph1;
             }
-            if (m_neighborValid != 0) {
+            if (m_neighborValid != false) {
                 return 1;
             }
-            if (m_combatActive != 0) {
+            if (m_combatActive != false) {
                 return 1;
             }
             if (m_stamina < STAMINA_FULL) {
@@ -193,7 +194,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                 goto ph1;
             }
             COMMIT_GRUNT_NEIGHBOR(slot);
-            m_neighborScanEnabled = 0;
+            m_neighborScanEnabled = false;
             if (CoordCount() != 0) {
                 RECYCLE_GRUNT_COORDS_EXPANDED(this)
             }
@@ -207,7 +208,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
         }
 
         case AISTATE_RETREAT: {
-            if (m_combatActive != 0) {
+            if (m_combatActive != false) {
                 return 1;
             }
             if (m_stamina >= STAMINA_FULL) {
@@ -263,7 +264,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
     }
 
 timeout:
-    if (m_resetApplied == 0 && m_hasExtent != 0
+    if (m_resetApplied == false && m_hasExtent != false
         && static_cast<u32>(m_dwell) > DWELL_STUCK_RESET_MS) {
         if (IsArrivalRerollPending() != 0) {
             CWwdSpriteObject* base = m_object;

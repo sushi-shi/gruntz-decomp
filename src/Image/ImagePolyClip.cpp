@@ -499,8 +499,10 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
                 i32 topU = static_cast<i32>(static_cast<double>(top->u) * g_rasterScale);
                 i32 topV = static_cast<i32>(static_cast<double>(top->v) * g_rasterScale);
                 i32 topX = static_cast<i32>(static_cast<double>(top->x) * g_rasterScale);
-                i32 topYi = static_cast<i32>(static_cast<double>(top->y) * g_rasterScale) >> 0xe;
-                i32 botYi = static_cast<i32>(static_cast<double>(bot->y) * g_rasterScale) >> 0xe;
+                i32 topYi = static_cast<i32>(static_cast<double>(top->y) * g_rasterScale)
+                            >> WARP_TEXTURE_FRACTION_BITS;
+                i32 botYi = static_cast<i32>(static_cast<double>(bot->y) * g_rasterScale)
+                            >> WARP_TEXTURE_FRACTION_BITS;
                 i32 h = botYi - topYi;
 
                 ClipVtx* rec = &table[topYi];
@@ -542,14 +544,14 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
     u8* destBase = static_cast<u8*>(dst->Lock(NULL));
     i32 dstPitch = dst->m_pitch;
     g_rasterDestRow = destBase + dstPitch * minY;
-    g_warpUMask = ((src->m_width + 0x3ffff) << 0xe) << shift;
+    g_warpUMask = ((src->m_width + 0x3ffff) << WARP_TEXTURE_FRACTION_BITS) << shift;
 
     if (mode == 0) {
         if (minY < maxY) {
             i32 rows = maxY - minY;
             do {
-                i32 rx = rrow->fx >> 0xe;
-                i32 lx = lrow->fx >> 0xe;
+                i32 rx = rrow->fx >> WARP_TEXTURE_FRACTION_BITS;
+                i32 lx = lrow->fx >> WARP_TEXTURE_FRACTION_BITS;
                 i32 span = lx - rx;
                 if (span > 0) {
                     i32 u = rrow->fu;
@@ -594,8 +596,8 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
         if (minY < maxY) {
             i32 rows = maxY - minY;
             do {
-                i32 rx = rrow->fx >> 0xe;
-                i32 lx = lrow->fx >> 0xe;
+                i32 rx = rrow->fx >> WARP_TEXTURE_FRACTION_BITS;
+                i32 lx = lrow->fx >> WARP_TEXTURE_FRACTION_BITS;
                 i32 span = lx - rx;
                 if (span > 0) {
                     i32 u = rrow->fu;
@@ -643,8 +645,8 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
         if (minY < maxY) {
             i32 rows = maxY - minY;
             do {
-                i32 rx = rrow->fx >> 0xe;
-                i32 lx = lrow->fx >> 0xe;
+                i32 rx = rrow->fx >> WARP_TEXTURE_FRACTION_BITS;
+                i32 lx = lrow->fx >> WARP_TEXTURE_FRACTION_BITS;
                 i32 span = lx - rx;
                 if (span > 0) {
                     i32 u = rrow->fu;
@@ -721,9 +723,9 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
                 i32 topX = static_cast<i32>((top->x * g_rasterScale));
                 i32 topYi = static_cast<i32>((top->y * g_rasterScale));
                 i32 botYi = static_cast<i32>((bottom->y * g_rasterScale));
-                i32 topRow = topYi >> 0xe;
+                i32 topRow = topYi >> WARP_TEXTURE_FRACTION_BITS;
                 ClipVtx* entry = &table[topRow];
-                i32 botRow = botYi >> 0xe;
+                i32 botRow = botYi >> WARP_TEXTURE_FRACTION_BITS;
                 i32 height = botRow - topRow;
                 i32 botX = static_cast<i32>((bottom->x * g_rasterScaleNeg));
                 i32 xSlope = (-topX - botX) / height;
@@ -756,8 +758,8 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
     if (minYi < maxYi) {
         i32 rowCount = maxYi - minYi;
         do {
-            i32 ascendingX = pAsc->fx >> 0xe;
-            i32 descendingX = pDesc->fx >> 0xe;
+            i32 ascendingX = pAsc->fx >> WARP_TEXTURE_FRACTION_BITS;
+            i32 descendingX = pDesc->fx >> WARP_TEXTURE_FRACTION_BITS;
             i32 lo = ascendingX;
             i32 hi = descendingX;
             if (ascendingX > descendingX) {

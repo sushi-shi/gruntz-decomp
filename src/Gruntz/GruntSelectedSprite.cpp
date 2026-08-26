@@ -67,7 +67,7 @@ i32 CGruntSelectedSprite::Update() {
     CGrunt* e =
         reg->m_triggerMgr->m_units
             [m_gruntIdentity.m_unitIndex + m_gruntIdentity.m_playerIndex * TM_UNITS_PER_PLAYER];
-    if (e != NULL && e->m_arrived != 0) {
+    if (e != NULL && e->m_arrived != false) {
         m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
         m_object->m_screenX = e->m_object->m_screenX;
         m_object->m_screenY = e->m_object->m_screenY;

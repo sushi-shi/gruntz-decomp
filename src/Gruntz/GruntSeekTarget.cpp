@@ -56,7 +56,7 @@ i32 CGrunt::StepToolThiefBehavior() {
     }
     if (reason == 0 && (reason = this->m_arrivalCell.m_x, reason >= 0) && reason < 0xf) {
         CGrunt* slot = g_gameReg->m_triggerMgr->m_units[0 * TM_UNITS_PER_PLAYER + reason];
-        if (slot == NULL || slot->m_entranceCommitted == 0) {
+        if (slot == NULL || slot->m_entranceCommitted == false) {
             if (this->CoordCount() != 0) {
                 RECYCLE_GRUNT_COORDS(this)
             }
@@ -98,11 +98,11 @@ i32 CGrunt::StepToolThiefBehavior() {
     }
     if (reason != 0) {
         FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget, x)
-        i32 powered = this->m_poweredUp;
-        if (powered != 0) {
-            i32 neighborValid = this->m_neighborValid;
-            if (neighborValid == 0) {
-                if (this->m_combatActive != 0) {
+        b32 powered = this->m_poweredUp;
+        if (powered != false) {
+            b32 neighborValid = this->m_neighborValid;
+            if (neighborValid == false) {
+                if (this->m_combatActive != false) {
                     return 1;
                 }
                 if (this->m_stamina >= STAMINA_FULL) {
@@ -112,10 +112,10 @@ i32 CGrunt::StepToolThiefBehavior() {
                     if (atTarget && g == NULL) {
                         return 1;
                     }
-                    if (this->m_poweredUp == 0) {
+                    if (this->m_poweredUp == false) {
                         return 1;
                     }
-                    if (this->m_neighborValid != 0) {
+                    if (this->m_neighborValid != false) {
                         return 1;
                     }
                     RESET_CURRENT_GRUNT_POWERED_STATE
@@ -124,26 +124,26 @@ i32 CGrunt::StepToolThiefBehavior() {
                     if (atTarget) {
                         return 1;
                     }
-                    if (this->m_poweredUp == 0) {
+                    if (this->m_poweredUp == false) {
                         return 1;
                     }
-                    if (this->m_neighborValid != 0) {
+                    if (this->m_neighborValid != false) {
                         return 1;
                     }
                     RESET_CURRENT_GRUNT_POWERED_STATE
                     return 1;
                 }
             } else {
-                this->m_neighborValid = 0;
+                this->m_neighborValid = false;
             }
             return 1;
         }
         COPY_CURRENT_GRUNT_LAST_TILE_TO_DEFENDER
         if (g == NULL || GruntInRadius(g->m_playerIndex, g->m_unitIndex) == 0) {
-            this->m_blockedVoicePending = 0;
+            this->m_blockedVoicePending = false;
             return 1;
         }
-        if (this->m_poweredUp == 0 && this->m_stamina >= STAMINA_FULL) {
+        if (this->m_poweredUp == false && this->m_stamina >= STAMINA_FULL) {
             i32 x = g->m_object->m_screenX;
             if (GRUNT_X_AT_SAVED_POS(x, g) && g->GRUNT_SCREEN_Y_AT_SAVED_POS(m_object, g)
 
@@ -165,7 +165,7 @@ i32 CGrunt::StepToolThiefBehavior() {
             == 0) {
             return 1;
         }
-        if (this->m_blockedVoicePending != 0) {
+        if (this->m_blockedVoicePending != false) {
             i32 r = CGameLevel::PointInBounds(
                 &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect,
                 this->m_object->m_screenX,
@@ -174,7 +174,7 @@ i32 CGrunt::StepToolThiefBehavior() {
             if (r != 0) {
                 g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
             }
-            this->m_blockedVoicePending = 0;
+            this->m_blockedVoicePending = false;
             this->m_dwell = 0;
             return 1;
         }
@@ -189,7 +189,7 @@ i32 CGrunt::StepToolThiefBehavior() {
             i32 i = 0;
             do {
                 CGrunt* sv = slots[i];
-                if (sv != NULL && sv->m_entranceCommitted != 0) {
+                if (sv != NULL && sv->m_entranceCommitted != false) {
                     PickupType k = sv->m_entranceReason;
                     if (ARRIVAL_PICKUP_OF_TERNARY_LE(sv, k) != PICKUP_NONE
                         && ARRIVAL_PICKUP_OF_TERNARY_LE(sv, k) != PICKUP_WARPSTONE

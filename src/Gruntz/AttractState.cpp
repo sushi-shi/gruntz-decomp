@@ -63,10 +63,10 @@ i32 CAttract::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStat
     }
 
     if (static_cast<GameStateId>(prevStateId) == GAMESTATE_PLAY) {
-        m_titleCueEnabled = 0;
+        m_titleCueEnabled = false;
         m_titleCue = NULL;
     } else {
-        m_titleCueEnabled = 1;
+        m_titleCueEnabled = true;
         m_titleCue = NULL;
     }
     return 1;
@@ -107,7 +107,7 @@ i32 CAttract::EnterState(GameStateId previousState) {
     SoundCue* found = NULL;
     MapLookup(menuRoot()->m_soundRegistry->m_cues, buf, found);
     m_titleCue = found;
-    if (found != NULL && m_titleCueEnabled != 0) {
+    if (found != NULL && m_titleCueEnabled != false) {
         if (g_soundEnabled) {
             m_titleCue->m_sound->ApplyAndPlay(0x64, 0, 0, 0);
         }

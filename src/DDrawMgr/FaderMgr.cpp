@@ -13,7 +13,7 @@
 RVA(0x0017d8f0, 0x1e)
 CFaderMgr::CFaderMgr() {
     m_active = false;
-    m_traceEnabled = 0;
+    m_traceEnabled = false;
 }
 
 RVA(0x0017d910, 0x65)

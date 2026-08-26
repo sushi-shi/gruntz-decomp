@@ -116,7 +116,7 @@ void CTriggerMgr::HudRect(RECT r, i32 flag) {
                 if (r.left <= box.right && r.right >= box.left && r.top <= box.bottom
                     && r.bottom >= box.top) {
                     if (i == g_curPlayer) {
-                        if (flag == 0 && g->m_entranceCommitted != 0) {
+                        if (flag == 0 && g->m_entranceCommitted != false) {
                             ResetAll();
                             flag = 1;
                         }
@@ -246,7 +246,7 @@ void CTriggerMgr::EnqueueSelectedMove(i32 isLocalCommand, i32 targetX, i32 targe
         Coord* selection = static_cast<Coord*>(m_recList.GetNext(pos));
         CGrunt* grunt = m_units[selection->m_y + selection->m_x * TM_UNITS_PER_PLAYER];
         playerIndex = static_cast<u8>(selection->m_x);
-        if (grunt->m_playerIndex == g_curPlayer && grunt->m_entranceActive == 0) {
+        if (grunt->m_playerIndex == g_curPlayer && grunt->m_entranceActive == false) {
             unitIndices[count] = static_cast<u8>(selection->m_y);
             count++;
         }
@@ -294,7 +294,7 @@ void CTriggerMgr::EnqueueSelectedToolUse(
         Coord* selection = static_cast<Coord*>(m_recList.GetNext(pos));
         CGrunt* grunt = m_units[selection->m_y + selection->m_x * TM_UNITS_PER_PLAYER];
         playerIndex = static_cast<u8>(selection->m_x);
-        if (grunt->m_playerIndex == g_curPlayer && grunt->m_entranceActive == 0) {
+        if (grunt->m_playerIndex == g_curPlayer && grunt->m_entranceActive == false) {
             unitIndices[count] = static_cast<u8>(selection->m_y);
             count++;
         }
@@ -539,7 +539,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
             world->m_pathPreviewDestination.x = x;
             world->m_pathPreviewDestination.y = y;
             world->m_pathPreviewColor = color;
-            world->m_drewThisFrame = 1;
+            world->m_drewThisFrame = true;
             return 1;
         }
     } else {
@@ -691,7 +691,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                     world->m_pathPreviewDestination.x = dx;
                     world->m_pathPreviewDestination.y = dy;
                     world->m_pathPreviewColor = color;
-                    world->m_drewThisFrame = 1;
+                    world->m_drewThisFrame = true;
                     return 1;
                 }
                 break;
@@ -957,7 +957,7 @@ i32 CTriggerMgr::ByteTableHas(WarpStoneFragment fragment) {
 
 RVA(0x00079b80, 0x194)
 void CTriggerMgr::ReinitGroup(i32 col, i32 row) {
-    if (m_groupInitialized != 0 || g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
+    if (m_groupInitialized != false || g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
         return;
     }
     CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
@@ -991,7 +991,7 @@ void CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     } else {
         m_byteArr.Add(static_cast<u8>(IDX(fragment)));
     }
-    m_groupInitialized = 1;
+    m_groupInitialized = true;
 }
 
 RVA(0x00079d90, 0xc5)
@@ -999,7 +999,7 @@ void CTriggerMgr::ResetSpawnState() {
     if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
         return;
     }
-    if (m_groupInitialized == 0) {
+    if (m_groupInitialized == false) {
         return;
     }
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
@@ -1063,10 +1063,10 @@ void CTriggerMgr::UnregisterUnit(i32 playerIndex, i32 unitIndex, i32 exitedLevel
     if (cell == NULL) {
         return;
     }
-    if (cell->m_cellRemovalNotified != 0) {
+    if (cell->m_cellRemovalNotified != false) {
         return;
     }
-    if (cell->m_arrivalPending == 0) {
+    if (cell->m_arrivalPending == false) {
         this->ApplySwitch(cell, cell->m_lastTilePx.m_x, cell->m_lastTilePx.m_y);
     }
     CGruntzMapMgr* tg = g_gameReg->m_tileGrid;
@@ -1104,7 +1104,7 @@ void CTriggerMgr::UnregisterUnit(i32 playerIndex, i32 unitIndex, i32 exitedLevel
         }
         m_gruntzLostByPlayer[playerIndex] += 1;
     }
-    cell->m_cellRemovalNotified = 1;
+    cell->m_cellRemovalNotified = true;
 }
 
 RVA(0x0007a180, 0x86)
@@ -1231,7 +1231,7 @@ i32 CTriggerMgr::StartPlayerDefeatSequence(i32 playerSelector) {
             i32 unitsRemaining = TM_UNITS_PER_PLAYER;
             do {
                 CGrunt* unit = *units;
-                if (unit != NULL && unit->m_deathAnimStarted == 0) {
+                if (unit != NULL && unit->m_deathAnimStarted == false) {
                     (static_cast<CGrunt*>(unit))->StartBombGruntRun();
                 }
                 units++;
@@ -1799,10 +1799,10 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
             if (grunt == NULL) {
                 continue;
             }
-            if (grunt->m_entranceCommitted == 0) {
+            if (grunt->m_entranceCommitted == false) {
                 continue;
             }
-            if (grunt->m_entranceDropActive != 0) {
+            if (grunt->m_entranceDropActive != false) {
                 continue;
             }
             i32 gruntX = grunt->m_object->m_screenX;
@@ -1930,7 +1930,7 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
 RVA(0x0007be10, 0x34)
 void CTriggerMgr::StopPendingFx() {
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
-    if (m_pendingFxKind == 0 && world->m_cursorTargetValid == 0) {
+    if (m_pendingFxKind == 0 && world->m_cursorTargetValid == false) {
         return;
     }
     world->LoadCursorSprites(0, 0);
@@ -2587,7 +2587,7 @@ i32 CTriggerMgr::StartPlayerVictorySequence(i32 playerIndex) {
     i32 unitsRemaining = TM_UNITS_PER_PLAYER;
     do {
         CGrunt* unit = *units;
-        if (unit != NULL && unit->m_deathAnimStarted == 0) {
+        if (unit != NULL && unit->m_deathAnimStarted == false) {
             (static_cast<CGrunt*>(unit))->BuildGruntExitAnimation();
         }
         units++;
@@ -2613,7 +2613,7 @@ i32 CTriggerMgr::NearestOtherPlayerUnitDistSq(i32 skipPlayerIndex, i32 px, i32 p
             CGrunt** units = playerUnits;
             do {
                 CGrunt* g = *units;
-                if (g != NULL && g->m_entranceCommitted != 0) {
+                if (g != NULL && g->m_entranceCommitted != false) {
                     CGameObject* o = g->m_object;
                     i32 dx = (o->m_screenX >> TILE_SHIFT_PX) - tx;
                     i32 dy = (o->m_screenY >> TILE_SHIFT_PX) - ty;
@@ -2813,7 +2813,7 @@ i32 CTriggerMgr::EnqueueGroupCells() {
 
             CGrunt* cell = m_units[p->m_x * TM_UNITS_PER_PLAYER + p->m_y];
             x = static_cast<char>(p->m_x);
-            if (cell->m_playerIndex == magic && cell->m_entranceActive == 0) {
+            if (cell->m_playerIndex == magic && cell->m_entranceActive == false) {
                 buf[count] = static_cast<u8>(p->m_y);
                 count++;
             }

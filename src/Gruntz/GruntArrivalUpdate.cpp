@@ -49,11 +49,11 @@ i32 CGrunt::StepGauntletGruntBehavior() {
     this->m_defenderPx = this->m_lastTilePx;
     FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget, x)
 
-    i32 poweredUp = this->m_poweredUp;
-    if (poweredUp != 0) {
-        i32 neighborValid = this->m_neighborValid;
-        if (neighborValid == 0) {
-            if (this->m_combatActive != 0) {
+    b32 poweredUp = this->m_poweredUp;
+    if (poweredUp != false) {
+        b32 neighborValid = this->m_neighborValid;
+        if (neighborValid == false) {
+            if (this->m_combatActive != false) {
                 return 1;
             }
             if (this->m_stamina >= STAMINA_FULL) {
@@ -63,36 +63,36 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                 if (atTarget && g == NULL) {
                     return 1;
                 }
-                if (this->m_poweredUp == 0) {
+                if (this->m_poweredUp == false) {
                     return 1;
                 }
-                if (this->m_neighborValid != 0) {
+                if (this->m_neighborValid != false) {
                     return 1;
                 }
-                this->m_entranceActive = 0;
-                this->m_combatActive = 0;
-                this->m_neighborValid = 0;
-                this->m_poweredUp = 0;
+                this->m_entranceActive = false;
+                this->m_combatActive = false;
+                this->m_neighborValid = false;
+                this->m_poweredUp = false;
                 ResetEntranceAnimation(1, 0, 0);
                 return 1;
             }
             if (atTarget) {
                 return 1;
             }
-            if (this->m_poweredUp == 0) {
+            if (this->m_poweredUp == false) {
                 return 1;
             }
-            if (this->m_neighborValid != 0) {
+            if (this->m_neighborValid != false) {
                 return 1;
             }
-            this->m_entranceActive = 0;
-            this->m_combatActive = 0;
-            this->m_neighborValid = 0;
-            this->m_poweredUp = 0;
+            this->m_entranceActive = false;
+            this->m_combatActive = false;
+            this->m_neighborValid = false;
+            this->m_poweredUp = false;
             ResetEntranceAnimation(1, 0, 0);
             return 1;
         }
-        this->m_neighborValid = 0;
+        this->m_neighborValid = false;
         return 1;
     }
 
@@ -137,7 +137,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                     break;
                 }
             }
-            if (this->m_resetApplied == 0 && this->m_hasExtent != 0
+            if (this->m_resetApplied == false && this->m_hasExtent != false
                 && static_cast<u32>(this->m_dwell) > 3000) {
                 if (IsArrivalRerollPending() != 0) {
                     CGameObject* base = this->m_object;
@@ -173,7 +173,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                     [this->m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + this->m_arrivalCell.m_y];
             CGrunt* found = m_triggerMgr->FindNearestEnemy(this);
             if (found == NULL || found == slot) {
-                if (slot == NULL || slot->m_entranceCommitted == 0
+                if (slot == NULL || slot->m_entranceCommitted == false
                     || GruntInRadius(slot->m_playerIndex, slot->m_unitIndex) == 0) {
                     this->m_defenderState = AISTATE_SEEK;
                 } else {
@@ -185,7 +185,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                         0,
                         0x20
                     );
-                    if (this->m_poweredUp == 0 && this->m_stamina >= STAMINA_FULL
+                    if (this->m_poweredUp == false && this->m_stamina >= STAMINA_FULL
                         && RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) != 0
                         && GRUNT_AT_SAVED_SCREEN_POS(slot)) {
                         COMMIT_GRUNT_NEIGHBOR(slot);
@@ -200,13 +200,14 @@ i32 CGrunt::StepGauntletGruntBehavior() {
             break;
         }
         case AISTATE_ATTACK: {
-            if (m_poweredUp != 0) {
+            if (m_poweredUp != false) {
                 CGrunt* slot =
                     m_triggerMgr
                         ->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
                 if (slot != NULL && GruntInRadius(slot->m_playerIndex, slot->m_unitIndex) != 0
-                    && slot->m_entranceCommitted != 0) {
-                    if (m_neighborValid != 0 || m_combatActive != 0 || m_stamina < STAMINA_FULL) {
+                    && slot->m_entranceCommitted != false) {
+                    if (m_neighborValid != false || m_combatActive != false
+                        || m_stamina < STAMINA_FULL) {
                         break;
                     }
                     if (RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) != 0

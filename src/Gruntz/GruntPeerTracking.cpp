@@ -50,7 +50,7 @@ i32 CGrunt::StepToyerBehavior() {
     if (p == NULL) {
         return 1;
     }
-    if (p->m_entranceCommitted == 0) {
+    if (p->m_entranceCommitted == false) {
         return 1;
     }
     CGameObject* a = p->m_object;
@@ -74,7 +74,7 @@ i32 CGrunt::StepToyerBehavior() {
             0
         );
         m_dwell = 0;
-        if (m_blockedVoicePending == 0) {
+        if (m_blockedVoicePending == false) {
             return 1;
         }
         CWwdSpriteObject* c = m_object;
@@ -86,6 +86,6 @@ i32 CGrunt::StepToyerBehavior() {
             g->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
         }
     }
-    m_blockedVoicePending = 0;
+    m_blockedVoicePending = false;
     return 1;
 }

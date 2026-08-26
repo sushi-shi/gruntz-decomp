@@ -650,7 +650,7 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
         sub = obj->m_faceDirection;
         idx = playerIndex * TM_UNITS_PER_PLAYER + unitIndex;
         cell = reg->m_triggerMgr->m_units[idx];
-        if (cell == NULL || cell->m_entranceCommitted == 0) {
+        if (cell == NULL || cell->m_entranceCommitted == false) {
             ok = 0;
         } else if (matchActive) {
             ok = cell->LoadPickupSprites(toyboxPickup, flag, 0, sub, 0);
@@ -679,7 +679,7 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
     cmd = static_cast<PickupType>(obj->m_smarts);
     idx = playerIndex * TM_UNITS_PER_PLAYER + unitIndex;
     cell = reg->m_triggerMgr->m_units[idx];
-    if (cell == NULL || cell->m_entranceCommitted == 0) {
+    if (cell == NULL || cell->m_entranceCommitted == false) {
         ok = 0;
     } else {
         ok = cell->LoadPickupSprites(cmd, 0, 0, sub, 1);

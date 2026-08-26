@@ -290,9 +290,9 @@ public:
 
     CString m_reserved1b4;
     char m_pad1b8[0x1bc - 0x1b8];
-    i32 m_returnToMenuOnComplete;
-    i32 m_completedFinalLevel;
-    i32 m_initialFramePending;
+    b32 m_returnToMenuOnComplete;
+    b32 m_completedFinalLevel;
+    b32 m_initialFramePending;
     i32 m_reserved1c8;
     i32 m_savedClock;
 
@@ -306,15 +306,15 @@ public:
     CChatBoxOwner* m_chatBox;
 
     CTileTriggerContainer* m_tileTriggers;
-    i32 m_dragSnapActive;
-    i32 m_dragInProgress;
+    b32 m_dragSnapActive;
+    b32 m_dragInProgress;
     i32 m_reserved2f0;
     i32 m_cursorFrame;
     i32 m_cursorId;
     Coord m_cursorOffset;
     i32 m_dragClampMaxX;
     i32 m_dragClampMaxY;
-    i32 m_worldReady;
+    b32 m_worldReady;
     RECT m_hudRect;
 
     CMinimap* m_minimap;
@@ -322,12 +322,12 @@ public:
     ClockInterval m_bootyTiming;
 
     ClockInterval m_ambientTiming;
-    i32 m_ambientInitDone;
+    b32 m_ambientInitDone;
     char m_pad34c[0x350 - 0x34c];
     ClockInterval m_syncTiming;
     Coord m_tileClick;
-    i32 m_dragInhibit1;
-    i32 m_dragInhibit2;
+    b32 m_dragInhibit1;
+    b32 m_dragInhibit2;
 
     CPtrArray m_startMarkers;
 
@@ -343,7 +343,7 @@ public:
     i32 m_cueToggle;
     i32 m_lastCueId;
     CString m_cueText;
-    i32 m_drewThisFrame;
+    b32 m_drewThisFrame;
 
     POINT m_pathPreviewSource;
     POINT m_pathPreviewDestination;
@@ -359,12 +359,12 @@ public:
     i32 m_region2Gate;
     i32 m_region3Gate;
     ViewportResizeMode m_viewportResizeMode;
-    i32 m_hudSuppressed;
+    b32 m_hudSuppressed;
 
     CPtrArray m_cameraBookmarks;
     i32 m_cameraBookmarkIndex;
     ClockInterval m_defeatCountdownTiming;
-    i32 m_defeatCountdownActive;
+    b32 m_defeatCountdownActive;
     i32 m_scrollEdgeActive;
     i32 m_scrollEdgeLock;
     i32 m_revealFrame;
@@ -373,20 +373,20 @@ public:
 
     CDDrawWorker* m_cursorSprite;
     CImage* m_cursorImage;
-    i32 m_cursorUsesPlayerTint;
+    b32 m_cursorUsesPlayerTint;
     i32 m_cursorFrameDelayMs;
     i32 m_cursorFrameCountdownMs;
     i32 m_cursorFrameIndex;
 
     CWwdSpriteObject* m_cursorSnapSprite;
-    i32 m_cursorAnimationActive;
-    i32 m_renderDisabled;
-    i32 m_playerCommandPending;
+    b32 m_cursorAnimationActive;
+    b32 m_renderDisabled;
+    b32 m_playerCommandPending;
     i32 m_winLoseBanner;
-    i32 m_inGame;
-    i32 m_levelOverlayOpen;
-    i32 m_paused;
-    i32 m_cursorTargetValid;
+    b32 m_inGame;
+    b32 m_levelOverlayOpen;
+    b32 m_paused;
+    b32 m_cursorTargetValid;
     i32 m_lastScrollTimeX;
     i32 m_lastScrollTimeY;
     i32 m_stepCountdown;
@@ -466,8 +466,8 @@ inline CPlay::~CPlay() {
 
 // @early-stop
 inline CPlay::CPlay() {
-    m_returnToMenuOnComplete = 0;
-    m_completedFinalLevel = 0;
+    m_returnToMenuOnComplete = false;
+    m_completedFinalLevel = false;
     m_reserved1c8 = 0;
     m_chatBox = NULL;
     m_levelTimer = NULL;
@@ -481,18 +481,18 @@ inline CPlay::CPlay() {
     m_cursorFrame = 0;
     m_cursorId = -1;
     m_minimap = NULL;
-    m_cursorUsesPlayerTint = 0;
-    m_defeatCountdownActive = 0;
-    m_ambientInitDone = 1;
+    m_cursorUsesPlayerTint = false;
+    m_defeatCountdownActive = false;
+    m_ambientInitDone = true;
     m_stepCountdown = 0;
     m_savedMusicSequence = NULL;
-    m_worldReady = 0;
-    m_dragSnapActive = 0;
-    m_playerCommandPending = 0;
-    m_dragInhibit1 = 0;
-    m_dragInhibit2 = 0;
-    m_dragInProgress = 0;
-    m_cursorTargetValid = 0;
+    m_worldReady = false;
+    m_dragSnapActive = false;
+    m_playerCommandPending = false;
+    m_dragInhibit1 = false;
+    m_dragInhibit2 = false;
+    m_dragInProgress = false;
+    m_cursorTargetValid = false;
 }
 
 #endif // SRC_GRUNTZ_CPLAY_H

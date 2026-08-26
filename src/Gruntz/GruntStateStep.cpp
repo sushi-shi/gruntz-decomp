@@ -129,16 +129,16 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                     if (!g->IsAtSavedScreenPos()) {
                         goto seek;
                     }
-                    if (g->m_entranceCommitted == 0) {
+                    if (g->m_entranceCommitted == false) {
                         goto seek;
                     }
-                    if (g->m_deathAnimStarted != 0) {
+                    if (g->m_deathAnimStarted != false) {
                         goto seek;
                     }
-                    if (g->m_entranceActive != 0) {
+                    if (g->m_entranceActive != false) {
                         goto seek;
                     }
-                    if (g->m_poweredUp != 0) {
+                    if (g->m_poweredUp != false) {
                         goto seek;
                     }
                     eq =

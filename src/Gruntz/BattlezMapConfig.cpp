@@ -414,16 +414,16 @@ i32 CBattlezMapConfig::StepBoard() {
                 if (GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(lvl, unit)) {
                     continue;
                 }
-                if (unit->m_entranceCommitted == 0) {
+                if (unit->m_entranceCommitted == false) {
                     continue;
                 }
-                if (unit->m_deathAnimStarted != 0) {
+                if (unit->m_deathAnimStarted != false) {
                     continue;
                 }
-                if (unit->m_entranceActive != 0) {
+                if (unit->m_entranceActive != false) {
                     continue;
                 }
-                if (unit->m_poweredUp != 0) {
+                if (unit->m_poweredUp != false) {
                     continue;
                 }
                 bool eq;
@@ -630,7 +630,7 @@ i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
     unit->m_defenderPickupType = PICKUP_NONE;
     unit->m_defenderQueuePosition = 0;
     unit->m_dwell = 0;
-    unit->m_blockedVoicePending = 1;
+    unit->m_blockedVoicePending = true;
     return 1;
 }
 
@@ -663,7 +663,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                 if (unit != NULL) {
                     if (!unit->IsArrivalRerollPending()) {
                         RouteToNearbyPickup(unit);
-                        if (unit->m_poweredUp != 0) {
+                        if (unit->m_poweredUp != false) {
                             eq = (ANIMATION_ACT_EQUALS_FOR(unit, "A"));
                             if (eq) {
                                 goto resetEntrance;
@@ -688,9 +688,9 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 }
                             }
                         }
-                        if (unit->IsAtSavedScreenPos() != 0 && unit->m_entranceCommitted != 0
-                            && unit->m_deathAnimStarted == 0 && unit->m_entranceActive == 0
-                            && unit->m_poweredUp == 0) {
+                        if (unit->IsAtSavedScreenPos() != 0 && unit->m_entranceCommitted != false
+                            && unit->m_deathAnimStarted == false && unit->m_entranceActive == false
+                            && unit->m_poweredUp == false) {
                             eq = (ANIMATION_ACT_EQUALS_FOR(unit, "I"));
                             if (!eq) {
                                 eq = (ANIMATION_ACT_EQUALS_FOR(unit, "G"));
@@ -822,9 +822,9 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                                 == unit->m_lastTilePx.m_x
                                                             && unit->m_object->m_screenY
                                                                    == unit->m_lastTilePx.m_y
-                                                            && unit->m_entranceCommitted != 0
-                                                            && unit->m_deathAnimStarted == 0
-                                                            && unit->m_entranceActive == 0) {
+                                                            && unit->m_entranceCommitted != false
+                                                            && unit->m_deathAnimStarted == false
+                                                            && unit->m_entranceActive == false) {
                                                             RECT box;
                                                             Coord c1;
                                                             (static_cast<CUserLogic*>(unit))
@@ -939,13 +939,13 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             if (GRUNT_NOT_AT_SAVED_SCREEN_POS(unit)) {
                                 special = 0;
                             }
-                            if (unit->m_entranceCommitted == 0) {
+                            if (unit->m_entranceCommitted == false) {
                                 special = 0;
                             }
-                            if (unit->m_deathAnimStarted != 0) {
+                            if (unit->m_deathAnimStarted != false) {
                                 special = 0;
                             }
-                            if (unit->m_entranceActive != 0) {
+                            if (unit->m_entranceActive != false) {
                                 special = 0;
                             }
                             eq = (ANIMATION_ACT_EQUALS_FOR(unit, "I"));
@@ -980,8 +980,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 special = 0;
                             }
                             if (special != 0) {
-                                if (unit->m_poweredUp != 0 && unit->m_neighborValid == 0
-                                    && unit->m_combatActive == 0
+                                if (unit->m_poweredUp != false && unit->m_neighborValid == false
+                                    && unit->m_combatActive == false
                                     && unit->m_stamina >= STAMINA_FULL) {
                                     if (unit->FindGridNeighbor(0) != NULL) {
                                         return 1;
@@ -989,9 +989,9 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                 }
                             }
                         }
-                        if (unit->IsAtSavedScreenPos() != 0 && unit->m_entranceCommitted != 0
-                            && unit->m_deathAnimStarted == 0 && unit->m_entranceActive == 0
-                            && unit->m_poweredUp == 0) {
+                        if (unit->IsAtSavedScreenPos() != 0 && unit->m_entranceCommitted != false
+                            && unit->m_deathAnimStarted == false && unit->m_entranceActive == false
+                            && unit->m_poweredUp == false) {
                             eq = (ANIMATION_ACT_EQUALS_FOR(unit, "I"));
                             if (!eq) {
                                 eq = (ANIMATION_ACT_EQUALS_FOR(unit, "G"));
@@ -1027,7 +1027,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                                                 != PICKUP_GHOST) {
                                                                                 if (other
                                                                                         ->m_poweredUp
-                                                                                    == 0) {
+                                                                                    == false) {
                                                                                     if (HandleUnitContact(
                                                                                             unit,
                                                                                             other
@@ -1060,8 +1060,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
             if (!unit->IsArrivalRerollPending()) {
                 BattlezTask d8 = unit->m_battleState;
                 if (d8 != BZTASK_ASSIGNED_TARGET && d8 != BZTASK_SEEK_SWITCH) {
-                    if (unit->m_entranceCommitted != 0 && unit->m_deathAnimStarted == 0
-                        && unit->m_entranceActive == 0 && unit->m_poweredUp == 0) {
+                    if (unit->m_entranceCommitted != false && unit->m_deathAnimStarted == false
+                        && unit->m_entranceActive == false && unit->m_poweredUp == false) {
                         char ne;
                         ne = (ANIMATION_ACT_DIFFERS_FOR(unit, "I"));
                         if (ne) {
@@ -1094,9 +1094,9 @@ i32 CBattlezMapConfig::StepRowUnits() {
             }
         }
         if (unit != NULL) {
-            if (GRUNT_AT_SAVED_SCREEN_POS(unit) && unit->m_entranceCommitted != 0
-                && unit->m_deathAnimStarted == 0 && unit->m_entranceActive == 0
-                && unit->m_poweredUp == 0) {
+            if (GRUNT_AT_SAVED_SCREEN_POS(unit) && unit->m_entranceCommitted != false
+                && unit->m_deathAnimStarted == false && unit->m_entranceActive == false
+                && unit->m_poweredUp == false) {
                 eq = (ANIMATION_ACT_EQUALS_FOR(unit, "I"));
                 if (!eq) {
                     eq = (ANIMATION_ACT_EQUALS_FOR(unit, "G"));
@@ -1183,10 +1183,10 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                         == unit->m_lastTilePx.m_x
                                                     && unit->m_object->m_screenY
                                                            == unit->m_lastTilePx.m_y
-                                                    && unit->m_entranceCommitted != 0
-                                                    && unit->m_deathAnimStarted == 0
-                                                    && unit->m_entranceActive == 0
-                                                    && unit->m_poweredUp == 0) {
+                                                    && unit->m_entranceCommitted != false
+                                                    && unit->m_deathAnimStarted == false
+                                                    && unit->m_entranceActive == false
+                                                    && unit->m_poweredUp == false) {
                                                     eq = (ANIMATION_ACT_EQUALS_FOR(unit, "I"));
                                                     if (!eq) {
                                                         eq = (ANIMATION_ACT_EQUALS_FOR(unit, "G"));
@@ -1366,9 +1366,9 @@ i32 CBattlezMapConfig::StepRowUnits() {
     return 1;
 
 resetEntrance: {
-    i32 pw = unit->m_poweredUp;
-    unit->m_neighborValid = 0;
-    if (pw == 0) {
+    b32 pw = unit->m_poweredUp;
+    unit->m_neighborValid = false;
+    if (pw == false) {
         return 1;
     }
     RESET_GRUNT_POWERED_STATE(unit)
@@ -2085,7 +2085,7 @@ CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 hal
             if (u == NULL) {
                 continue;
             }
-            if (u->m_entranceDropActive != 0) {
+            if (u->m_entranceDropActive != false) {
                 continue;
             }
             CGameObject* lvl = u->m_object;
@@ -2111,7 +2111,7 @@ CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 hal
             if (dist >= bestDist) {
                 continue;
             }
-            if (u->m_poweredUp != 0) {
+            if (u->m_poweredUp != false) {
                 rand();
             }
             best = u;
@@ -2133,7 +2133,7 @@ CGrunt* CBattlezMapConfig::PickRandomIdleUnit(i32) {
     i32 cell = rand() % TM_UNITS_PER_PLAYER;
     for (i32 i = 0; i < TM_UNITS_PER_PLAYER; i++) {
         CGrunt* u = m_triggerMgr->m_units[band * TM_UNITS_PER_PLAYER + i];
-        if (u != NULL && u->m_entranceDropActive == 0) {
+        if (u != NULL && u->m_entranceDropActive == false) {
             return u;
         }
         cell = (cell + 1) % TM_UNITS_PER_PLAYER;
@@ -2149,7 +2149,7 @@ void CBattlezMapConfig::Clear() {
 // @early-stop
 RVA(0x0002ae00, 0x42e)
 i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
-    if (other->m_entranceCommitted == 0) {
+    if (other->m_entranceCommitted == false) {
         return 0;
     }
     bool eq;
@@ -2176,7 +2176,7 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
     if (other->m_gruntKind == GRUNT_GHOST) {
         return 0;
     }
-    if (other->m_entranceDropActive != 0) {
+    if (other->m_entranceDropActive != false) {
         return 0;
     }
     i32 roll = rand() % 4;
@@ -3497,16 +3497,16 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
             if (u == NULL) {
                 continue;
             }
-            if (u->m_entranceCommitted == 0) {
+            if (u->m_entranceCommitted == false) {
                 continue;
             }
-            if (u->m_deathAnimStarted != 0) {
+            if (u->m_deathAnimStarted != false) {
                 continue;
             }
-            if (u->m_entranceActive != 0) {
+            if (u->m_entranceActive != false) {
                 continue;
             }
-            if (u->m_poweredUp != 0) {
+            if (u->m_poweredUp != false) {
                 continue;
             }
             bool ne;
@@ -3607,10 +3607,10 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
                     unit->m_defenderState = AISTATE_SEEK;
                     unit->m_routePassableMask = 0;
                 }
-                if (unit->m_blockedVoicePending != 0) {
+                if (unit->m_blockedVoicePending != false) {
                     __int64 elapsed = static_cast<__int64>(g_frameTime) - m_routeClock.m_v;
                     if (elapsed >= m_routeWindow.m_v) {
-                        unit->m_blockedVoicePending = 0;
+                        unit->m_blockedVoicePending = false;
                         CGameObject* lvl = unit->m_object;
 
                         RECT* hit = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
@@ -3655,7 +3655,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
         }
         return 1;
     }
-    unit->m_blockedVoicePending = 1;
+    unit->m_blockedVoicePending = true;
     return 0;
 }
 
@@ -3733,9 +3733,9 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
         CGrunt* cand = m_triggerMgr->m_units[m_playerIndex * TM_UNITS_PER_PLAYER + r];
         if (cand != NULL) {
             CGameObject* lvl = cand->m_object;
-            if (GRUNT_OBJECT_AT_SAVED_SCREEN_POS(lvl, cand) && cand->m_entranceCommitted != 0
-                && cand->m_deathAnimStarted == 0 && cand->m_entranceActive == 0
-                && cand->m_poweredUp == 0) {
+            if (GRUNT_OBJECT_AT_SAVED_SCREEN_POS(lvl, cand) && cand->m_entranceCommitted != false
+                && cand->m_deathAnimStarted == false && cand->m_entranceActive == false
+                && cand->m_poweredUp == false) {
                 bool eq;
                 eq = (ANIMATION_ACT_EQUALS_FOR(cand, "I"));
                 if (!eq) {
@@ -3827,16 +3827,16 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
 // @early-stop
 RVA(0x0002f620, 0x871)
 i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
-    if (unit->m_entranceCommitted == 0) {
+    if (unit->m_entranceCommitted == false) {
         return 0;
     }
-    if (unit->m_deathAnimStarted != 0) {
+    if (unit->m_deathAnimStarted != false) {
         return 0;
     }
-    if (unit->m_entranceActive != 0) {
+    if (unit->m_entranceActive != false) {
         return 0;
     }
-    if (unit->m_poweredUp != 0) {
+    if (unit->m_poweredUp != false) {
         return 0;
     }
 
@@ -4025,7 +4025,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
                 if (u->m_battleState != BZTASK_UNASSIGNED) {
                     continue;
                 }
-                if (u->m_poweredUp != 0) {
+                if (u->m_poweredUp != false) {
                     continue;
                 }
                 (static_cast<CGrunt*>(u))->LoadPickupSprites(PICKUP_BRICK, 1, 0, 0, 1);
@@ -4460,7 +4460,7 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
     unit->m_defenderPickupType = PICKUP_NONE;
     unit->m_defenderQueuePosition = 0;
     unit->m_dwell = 0;
-    unit->m_blockedVoicePending = 1;
+    unit->m_blockedVoicePending = true;
     unit->m_battleState = BZTASK_ADVANCE;
     return 1;
 }

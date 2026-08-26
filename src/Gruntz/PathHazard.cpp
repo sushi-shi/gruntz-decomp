@@ -230,14 +230,14 @@ i32 CUFO::Tick() {
 
 RVA(0x000b4350, 0x7e)
 i32 CRainCloud::Tick() {
-    if (m_strikeArmed != 0) {
+    if (m_strikeArmed != false) {
         i32 idx = 5;
         if (static_cast<i64>(g_frameTime) - m_strike.m_deadline < m_strike.m_window) {
             if (static_cast<u32>(g_period200CountdownMs) >= 0x64) {
                 idx = 0;
             }
         } else {
-            m_strikeArmed = 0;
+            m_strikeArmed = false;
         }
         CShadeTable* frame = g_gameReg->m_lightFxMgr->m_tables[idx];
         CWwdSpriteObject* spr = m_object;
@@ -249,7 +249,7 @@ i32 CRainCloud::Tick() {
 
 RVA(0x000b43f0, 0x1c7)
 i32 CPathHazard::SiblingTick() {
-    if (m_strikeArmed != 0) {
+    if (m_strikeArmed != false) {
         i32 sel = 5;
         i64 elapsed = static_cast<i64>(g_frameTime) - m_strike.m_deadline;
 
@@ -258,7 +258,7 @@ i32 CPathHazard::SiblingTick() {
                 sel = 0;
             }
         } else {
-            m_strikeArmed = 0;
+            m_strikeArmed = false;
         }
         CShadeTable* frame = g_gameReg->m_lightFxMgr->m_tables[sel];
         CWwdSpriteObject* o = m_object;
@@ -305,14 +305,14 @@ i32 CPathHazard::SiblingTick() {
         SET_DRAW_FILL(o, SHADE_DST_BY_SRC_16, frame);
         this->BeginLeg();
         SET_ANIMATION_ACT("A");
-        m_strikeArmed = 0;
+        m_strikeArmed = false;
     }
     return 0;
 }
 
 RVA(0x000b4640, 0x104)
 i32 CRainCloud::HitTest(i32 playerIndex, i32 unitIndex) {
-    m_strikeArmed = 1;
+    m_strikeArmed = true;
     m_strike.m_window =
         static_cast<i64>(g_buteMgr.GetDwordDef("Hazardz", "RainCloudFlashTime", 0x7d0));
     m_strike.m_deadline = static_cast<i64>(g_frameTime);
@@ -441,7 +441,7 @@ i32 CUFO::SerializeDispatch(
     }
     if (mode == SERIAL_POSTLOAD) {
         CWwdSpriteObject* o = m_object;
-        o->m_drawActive = 1;
+        o->m_drawActive = true;
         o->m_drawFillCmd = static_cast<ShadeMode>(mode);
         o->m_fillFraction = 0x80;
     }

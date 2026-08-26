@@ -87,7 +87,7 @@ static inline CAniElement* LookupAnim(CMapStringToPtr& map, LPCTSTR name) {
 // @early-stop
 RVA(0x00060150, 0xdd0)
 i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerIndex) {
-    if (m_deathAnimStarted != 0) {
+    if (m_deathAnimStarted != false) {
         return 0;
     }
 
@@ -95,9 +95,9 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
     STOP_GRUNT_LOOP_SOUNDS;
 
     m_object->m_stateFlags &= ~SPRITE_STATE_FLASHING;
-    m_deathAnimStarted = 1;
+    m_deathAnimStarted = true;
     m_health = 0;
-    m_entranceCommitted = 0;
+    m_entranceCommitted = false;
 
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_healthSprite)
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_staminaSprite)
@@ -107,7 +107,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_powerupSprite)
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_selectedSprite)
 
-    if (m_poweredUp != 0 && m_neighborValid == 0) {
+    if (m_poweredUp != false && m_neighborValid == false) {
         RESET_GRUNT_POWERED_STATE(this)
     }
     m_triggerMgr->RemoveCellRecord(m_playerIndex, m_unitIndex, 1);

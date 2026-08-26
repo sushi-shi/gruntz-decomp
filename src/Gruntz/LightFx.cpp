@@ -93,7 +93,7 @@ i32 DispatchLightFxLogic(CGameObject* obj) {
 RVA(0x0009cf00, 0x1a5)
 CLightFx::CLightFx(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_shadeTableIndex = 2;
-    m_deleteWhenComplete = 1;
+    m_deleteWhenComplete = true;
 }
 RVA(0x0009d1c0, 0x102)
 void CLightFx::FireActivation(i32 id) {

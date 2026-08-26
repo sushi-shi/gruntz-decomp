@@ -66,7 +66,7 @@ public:
 
     void ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta);
 
-    i32 m_doubleScanlines;
+    b32 m_doubleScanlines;
     i32 m_width;
     i32 m_height;
     u8* m_rleData;
@@ -80,7 +80,7 @@ public:
     u8 m_srcBpp;
     u8 m_dstBpp;
     char _2a[0x2c - 0x2a];
-    i32 m_blendVariant;
+    b32 m_blendVariant;
 
     u16* m_lutBank0;
     u16* m_lutBank1;

@@ -41,7 +41,7 @@
 // @early-stop
 RVA(0x000f60f0, 0xb30)
 i32 CGrunt::StepTimeBomberBehavior() {
-    m_neighborScanEnabled = 0;
+    m_neighborScanEnabled = false;
     bool isFlag = ANIMATION_ACT_EQUALS("F");
     if (isFlag) {
         return 1;
@@ -98,10 +98,10 @@ state0: {
     if (nb == NULL) {
         goto common;
     }
-    if (nb->m_entranceCommitted == 0) {
+    if (nb->m_entranceCommitted == false) {
         goto common;
     }
-    if (m_poweredUp == 0 && m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(nb)
+    if (m_poweredUp == false && m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(nb)
         && RectContains(nb->m_object->m_screenX, nb->m_object->m_screenY) != 0) {
         COMMIT_GRUNT_NEIGHBOR(nb);
         CWwdSpriteObject* hit = nb->m_object;
@@ -137,7 +137,7 @@ state0: {
         m_passableMask &= 0xffffbfdf;
     }
     m_dwell = 0;
-    if (m_blockedVoicePending == 0) {
+    if (m_blockedVoicePending == false) {
         goto common;
     }
     if (CGameLevel::PointInBounds(
@@ -150,7 +150,7 @@ state0: {
     }
     g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
 s0_reset:
-    m_blockedVoicePending = 0;
+    m_blockedVoicePending = false;
     goto common;
 }
 

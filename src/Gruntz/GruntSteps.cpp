@@ -388,7 +388,7 @@ void CGrunt::FaceTowardPixel(i32 x, i32 y) {
 
 RVA(0x000514a0, 0x26)
 i32 CGrunt::CanShowStamina() {
-    if (m_combatActive == 0 && m_stamina >= STAMINA_FULL && m_entranceActive == 0) {
+    if (m_combatActive == false && m_stamina >= STAMINA_FULL && m_entranceActive == false) {
         return 1;
     }
     return 0;
@@ -469,12 +469,12 @@ i32 CGrunt::IsDropReady(i32 clearArrivalState) {
 
     m_lastTilePx = m_commitPx;
     m_commitPx = m_entrancePx;
-    m_tileMoveCommitted = 1;
+    m_tileMoveCommitted = true;
 
     SetEntrancePos(clearArrivalState, 1);
-    if (m_arrivalPending != 0) {
+    if (m_arrivalPending != false) {
         m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
-        m_arrivalPending = 0;
+        m_arrivalPending = false;
     }
     return 1;
 }
@@ -486,10 +486,10 @@ void CGrunt::SnapToLastTile(i32 clearArrivalState) {
     CWwdSpriteObject* h = m_object;
     SET_SORT_KEY_IF_CHANGED(h, h->m_screenY + 0x186a0)
     SetEntrancePos(clearArrivalState, 1);
-    if (m_arrivalPending != 0) {
+    if (m_arrivalPending != false) {
 
         m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
-        m_arrivalPending = 0;
+        m_arrivalPending = false;
     }
 }
 
@@ -883,7 +883,7 @@ commit:
     m_lastTilePx.m_x = moveX;
     m_lastTilePx.m_y = moveY;
     ComputeFacing(1.0);
-    m_arrivalPending = 1;
+    m_arrivalPending = true;
     m_toyTileIndex += 1;
     return 1;
 }
@@ -954,7 +954,7 @@ i32 CGrunt::ClaimSwitchTile() {
     m_lastTilePx.m_x = nextX;
     m_lastTilePx.m_y = nextY;
     ComputeFacing(1.0);
-    m_arrivalPending = 1;
+    m_arrivalPending = true;
     return 1;
 }
 
@@ -969,7 +969,7 @@ i32 CGrunt::SetArrivalTarget(
     cell.m_x = targetPlayerIndex;
     cell.m_y = targetUnitIndex;
     m_arrivalCell = cell;
-    m_arrivalActive = 1;
+    m_arrivalActive = true;
     m_defenderPx.m_x = (targetPxX & ~TILE_MASK_PX) + TILE_HALF_PX;
     m_defenderPx.m_y = (targetPxY & ~TILE_MASK_PX) + TILE_HALF_PX;
     return 1;
@@ -994,7 +994,7 @@ void CGrunt::ConsiderArrival(i32 clearArrivalState) {
 // @early-stop
 RVA(0x00052fb0, 0x96e)
 i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spawnWormhole) {
-    if (m_entranceCommitted == 0) {
+    if (m_entranceCommitted == false) {
         return 1;
     }
     i32 flags = g_gameReg->m_tileGrid->CellFlagsAt(tileX, tileY);
@@ -1051,13 +1051,13 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
                 eq = ANIMATION_ACT_EQUALS("J");
                 if (eq) {
 
-                    m_entranceActive = 0;
+                    m_entranceActive = false;
                     eq = (strcmp(*g_typeColl.GetNameRecord(m_previousAnimationActId), "D") == 0);
                     if (eq) {
-                        if (m_poweredUp != 0 && m_neighborValid == 0) {
+                        if (m_poweredUp != false && m_neighborValid == false) {
                             RESET_GRUNT_POWERED_STATE(this)
                         }
-                        m_tileMoveCommitted = 0;
+                        m_tileMoveCommitted = false;
                         SET_ANIMATION_ACT("D");
                         SwitchAnimation(m_poseWalk);
 
@@ -1147,10 +1147,10 @@ idleReseed:
 
 applyTail:
 
-    if (m_wingzEnabled != 0) {
+    if (m_wingzEnabled != false) {
         LoadWingzGruntSprites(0);
     }
-    if (m_poweredUp != 0 && m_neighborValid == 0) {
+    if (m_poweredUp != false && m_neighborValid == false) {
         RESET_GRUNT_POWERED_STATE(this)
     }
     m_triggerMgr->ApplySwitch(this, m_object->m_screenX, m_object->m_screenY);

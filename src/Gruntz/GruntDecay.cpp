@@ -43,7 +43,7 @@ i32 CGrunt::UpdateDeathAnimation() {
     if (mode == DEATH_NORMAL || mode == DEATH_SQUASH || mode == DEATH_EXPLODE
         || mode == DEATH_SHATTER) {
         SET_ANIMATION_ACT("R");
-        if (m_cellRemovalNotified == 0) {
+        if (m_cellRemovalNotified == false) {
             m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
         }
         i32 dt = static_cast<i32>(g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8));
@@ -69,7 +69,7 @@ i32 CGrunt::UpdateDeathAnimation() {
         SET_DRAW_FILL_FRACTION(o, SHADE_PAL_ALPHA_16, r);
         return 0;
     }
-    if (m_cellRemovalNotified == 0) {
+    if (m_cellRemovalNotified == false) {
         m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
     }
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
@@ -83,7 +83,7 @@ i32 CGrunt::UpdateDecayFade() {
     if (now - m_idleTimer >= m_idleWindow) {
         Hide();
         m_wwdObject->m_imageSet->SetAllTypes(SHADE_COPY);
-        if (m_cellRemovalNotified == 0) {
+        if (m_cellRemovalNotified == false) {
             m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
         }
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));

@@ -7,6 +7,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/UserLogic.h>
+#include <Ints.h>
 
 class CLightFx : public CUserLogic, public CWapX {
 public:
@@ -36,7 +37,7 @@ public:
     i32 RebindNode();
 
     i32 m_shadeTableIndex;
-    i32 m_deleteWhenComplete;
+    b32 m_deleteWhenComplete;
 };
 
 #endif // GRUNTZ_GRUNTZ_CLIGHTFX_H

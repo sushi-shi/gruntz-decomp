@@ -47,14 +47,14 @@ i32 CGrunt::StepPostGuardBehavior() {
             return 1;
     }
 
-    if (m_poweredUp == 0) {
+    if (m_poweredUp == false) {
         m_defenderState = AISTATE_SEEK;
     }
-    if (m_poweredUp != 0) {
-        if (m_neighborValid != 0) {
+    if (m_poweredUp != false) {
+        if (m_neighborValid != false) {
             return 1;
         }
-        if (m_combatActive != 0) {
+        if (m_combatActive != false) {
             return 1;
         }
         if (m_stamina < STAMINA_FULL) {
@@ -68,7 +68,7 @@ i32 CGrunt::StepPostGuardBehavior() {
     if (occ == NULL) {
         return 1;
     }
-    if (m_poweredUp != 0) {
+    if (m_poweredUp != false) {
         return 1;
     }
     if (m_stamina < STAMINA_FULL) {

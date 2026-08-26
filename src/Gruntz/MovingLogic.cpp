@@ -155,7 +155,7 @@ void CMotionState::Step(double dt) {
     m_previousPosition.z = m_position.z;
     m_deltaTime = dt;
     m_time = dt + m_time;
-    if (m_stepDisabled != 0) {
+    if (m_stepDisabled != false) {
         return;
     }
     STEP_AXIS(

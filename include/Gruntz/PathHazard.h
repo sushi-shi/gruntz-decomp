@@ -9,6 +9,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/UserLogic.h>
+#include <Ints.h>
 
 struct CPathWaypoint {
     i32 x;
@@ -69,7 +70,7 @@ public:
     i32 m_wpCount;
 
     CHazardTimer m_leg;
-    i32 m_strikeArmed;
+    b32 m_strikeArmed;
     char m_pad11c[0x120 - 0x11c];
     CHazardTimer m_strike;
 };

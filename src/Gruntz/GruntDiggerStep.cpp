@@ -58,11 +58,11 @@ i32 CGrunt::StepDiggerBehavior() {
 
     m_defenderPx = m_lastTilePx;
 
-    i32 powered = m_poweredUp;
-    if (powered != 0) {
-        i32 neighborValid = m_neighborValid;
-        if (neighborValid == 0) {
-            if (m_combatActive != 0) {
+    b32 powered = m_poweredUp;
+    if (powered != false) {
+        b32 neighborValid = m_neighborValid;
+        if (neighborValid == false) {
+            if (m_combatActive != false) {
                 return 1;
             }
             if (m_stamina >= STAMINA_FULL) {
@@ -72,44 +72,44 @@ i32 CGrunt::StepDiggerBehavior() {
                 if (atTarget && g == NULL) {
                     return 1;
                 }
-                if (m_poweredUp == 0) {
+                if (m_poweredUp == false) {
                     return 1;
                 }
-                if (m_neighborValid != 0) {
+                if (m_neighborValid != false) {
                     return 1;
                 }
-                m_entranceActive = 0;
-                m_combatActive = 0;
-                m_neighborValid = 0;
-                m_poweredUp = 0;
+                m_entranceActive = false;
+                m_combatActive = false;
+                m_neighborValid = false;
+                m_poweredUp = false;
                 ResetEntranceAnimation(1, 0, 0);
                 return 1;
             }
             if (atTarget) {
                 return 1;
             }
-            if (m_poweredUp == 0) {
+            if (m_poweredUp == false) {
                 return 1;
             }
-            if (m_neighborValid != 0) {
+            if (m_neighborValid != false) {
                 return 1;
             }
-            m_entranceActive = 0;
-            m_combatActive = 0;
-            m_neighborValid = 0;
-            m_poweredUp = 0;
+            m_entranceActive = false;
+            m_combatActive = false;
+            m_neighborValid = false;
+            m_poweredUp = false;
             ResetEntranceAnimation(1, 0, 0);
             return 1;
         }
-        m_neighborValid = 0;
+        m_neighborValid = false;
         return 1;
     }
 
     if (g == NULL || GruntInRadius(g->m_playerIndex, g->m_unitIndex) == 0) {
-        m_blockedVoicePending = 0;
+        m_blockedVoicePending = false;
         goto L_tailc;
     }
-    if (m_poweredUp != 0) {
+    if (m_poweredUp != false) {
         goto L_tailc;
     }
     if (m_stamina >= STAMINA_FULL && g->m_object->m_screenX == g->m_lastTilePx.m_x
@@ -119,7 +119,7 @@ i32 CGrunt::StepDiggerBehavior() {
         m_dwell = 0;
         return 1;
     }
-    if (m_poweredUp != 0) {
+    if (m_poweredUp != false) {
         goto L_tailc;
     }
     if (static_cast<u32>(m_dwell) <= DWELL_REPATH_MS) {
@@ -134,21 +134,21 @@ i32 CGrunt::StepDiggerBehavior() {
             0
         )
         != 0) {
-        if (m_blockedVoicePending != 0) {
+        if (m_blockedVoicePending != false) {
             CCueRect* board = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
             i32 x = m_object->m_screenX;
             i32 y = m_object->m_screenY;
             if (CGameLevel::PointInRect(board, x, y)) {
                 g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
             }
-            m_blockedVoicePending = 0;
+            m_blockedVoicePending = false;
         }
         m_dwell = 0;
     }
 
 L_tailc:
     if (CoordCount() == 0) {
-        if ((m_poweredUp == 0) & (static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS)) {
+        if ((m_poweredUp == false) & (static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS)) {
             i32 r = m_defenderRadius;
             RECT box;
             box.left = c1.m_x - r;

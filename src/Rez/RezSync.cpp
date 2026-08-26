@@ -526,15 +526,15 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             g_buteMgr.Init();
             g_buteMgr.m_tags.ClearRecursive(NULL);
             g_buteMgr.m_tags.m_root = NULL;
-            g_buteMgr.m_tags.m_lookupPending = 0;
+            g_buteMgr.m_tags.m_lookupPending = false;
             g_buteMgr.m_tags.m_nodeCount = 0;
             g_buteMgr.m_modifiedTags.ClearRecursive(NULL);
             g_buteMgr.m_modifiedTags.m_root = NULL;
-            g_buteMgr.m_modifiedTags.m_lookupPending = 0;
+            g_buteMgr.m_modifiedTags.m_lookupPending = false;
             g_buteMgr.m_modifiedTags.m_nodeCount = 0;
             g_buteMgr.m_addedTags.ClearRecursive(NULL);
             g_buteMgr.m_addedTags.m_root = NULL;
-            g_buteMgr.m_addedTags.m_lookupPending = 0;
+            g_buteMgr.m_addedTags.m_lookupPending = false;
             g_buteMgr.m_addedTags.m_nodeCount = 0;
             ok = true;
             if (!g_buteMgr.ParseGroup()) {

@@ -230,9 +230,9 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         m_region2Gate = 0;
         m_region3Gate = 0;
         m_viewportResizeMode = VIEW_RESIZE_IDLE;
-        m_hudSuppressed = 1;
+        m_hudSuppressed = true;
         m_cameraBookmarkIndex = -1;
-        m_defeatCountdownActive = 0;
+        m_defeatCountdownActive = false;
         m_scrollEdgeActive = 0;
         m_scrollEdgeLock = 0;
         m_levelTimer = NULL;
@@ -285,9 +285,9 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
 
         while (ShowCursor(false) >= 0) {
         }
-        m_initialFramePending = 1;
+        m_initialFramePending = true;
         m_notifyLatch = 0;
-        m_completedFinalLevel = 0;
+        m_completedFinalLevel = false;
         memset(&m_saveSlot, 0, sizeof(m_saveSlot));
         mgr->ResetClockGlobals();
         m_savedClock = 0;
@@ -407,7 +407,7 @@ i32 CPlay::EnterState(GameStateId previousState) {
             return 0;
         }
         m_stepCountdown = 2;
-    } else if (m_renderDisabled == 0 || m_mgr->m_gameMode == GAMEMODE_MULTIPLAYER) {
+    } else if (m_renderDisabled == false || m_mgr->m_gameMode == GAMEMODE_MULTIPLAYER) {
         if (!EnterMode(previousState)) {
             return 0;
         }
@@ -416,13 +416,13 @@ i32 CPlay::EnterState(GameStateId previousState) {
         do {
         } while (ShowCursor(false) >= 0);
     }
-    m_dragSnapActive = 0;
-    m_dragInProgress = 0;
-    m_dragInhibit1 = 0;
-    m_dragInhibit2 = 0;
-    m_cursorTargetValid = 0;
-    m_worldReady = 0;
-    if (m_renderDisabled == 0) {
+    m_dragSnapActive = false;
+    m_dragInProgress = false;
+    m_dragInhibit1 = false;
+    m_dragInhibit2 = false;
+    m_cursorTargetValid = false;
+    m_worldReady = false;
+    if (m_renderDisabled == false) {
         if (previousState != GAMESTATE_HELP) {
             m_mgr->m_worldSounds->Resume();
         }
@@ -462,14 +462,14 @@ i32 CPlay::LeaveState(GameStateId nextState) {
 RVA(0x000c8cf0, 0xc14)
 i32 CPlay::Render() {
 
-    m_drewThisFrame = 0;
+    m_drewThisFrame = false;
     HandleDragMove(0, m_cursorX, m_cursorY);
 
-    if (m_renderDisabled != 0) {
+    if (m_renderDisabled != false) {
         return 1;
     }
 
-    if (m_inGame != 0) {
+    if (m_inGame != false) {
 
         RestoreCursorSaveUnder();
         LoadScrollSpeedOptions();
@@ -528,7 +528,7 @@ i32 CPlay::Render() {
     }
 
     if (m_mgr->m_frameGate == 0
-        && (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER || m_levelOverlayOpen == 0)) {
+        && (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER || m_levelOverlayOpen == false)) {
         m_levelTimer->Tick(static_cast<i32>(g_frameDelta));
         m_mgr->m_commandMgr->ExecuteScheduledCommands(0);
 
@@ -546,7 +546,7 @@ i32 CPlay::Render() {
         RestoreCursorSaveUnder();
         StepViewportResize();
 
-        if (m_ambientInitDone == 0) {
+        if (m_ambientInitDone == false) {
             if (static_cast<i64>(g_frameTime) - m_ambientTiming.m_start.m_v
                 >= m_ambientTiming.m_interval.m_v) {
                 i32 ambientId = GetAmbientId();
@@ -564,7 +564,7 @@ i32 CPlay::Render() {
                         m_mgr->m_midi->m_currentSequence->SetLooping(1);
                     }
                 }
-                m_ambientInitDone = 1;
+                m_ambientInitDone = true;
             }
         }
 
@@ -573,7 +573,7 @@ i32 CPlay::Render() {
             m_statusBar->Deactivate();
         }
 
-        if (m_worldReady == 0) {
+        if (m_worldReady == false) {
             if (m_mgr->m_triggerMgr->m_armed != 0) {
                 m_mgr->m_triggerMgr->ScrollToActiveRecord();
             }
@@ -644,7 +644,7 @@ i32 CPlay::Render() {
             return 0;
         }
 
-        if (m_defeatCountdownActive != 0) {
+        if (m_defeatCountdownActive != false) {
             i64 deadline =
                 m_defeatCountdownTiming.m_interval.m_v + m_defeatCountdownTiming.m_start.m_v;
             i64 left = deadline - static_cast<i64>(g_frameTime);
@@ -671,7 +671,7 @@ i32 CPlay::Render() {
                 marker->m_running = 0;
                 marker->m_currentMs = 0;
                 m_statusBar->LockDestructButton(0);
-                m_defeatCountdownActive = 0;
+                m_defeatCountdownActive = false;
 
                 if (g_gameReg->m_players[0].m_warlordObjectId != 0) {
                     CGameObject* out = NULL;
@@ -722,7 +722,7 @@ i32 CPlay::Render() {
 
         AdvanceCursorAnimation(static_cast<i32>(g_frameDelta));
         SaveUnderAndDrawCursor(view);
-        if (m_worldReady != 0) {
+        if (m_worldReady != false) {
             view->DrawBox(&m_hudRect, 0xff);
         }
         m_world->m_drawTarget->m_frontSurface->m_surface->Flip(NULL);
@@ -773,7 +773,7 @@ i32 CPlay::Render() {
             stream->TickVolumeRamps(t);
             stream->TickStreams(t);
         }
-        if (m_paused != 0) {
+        if (m_paused != false) {
 
             if (m_stepCountdown > 0) {
                 m_stepCountdown = m_stepCountdown - 1;
@@ -790,7 +790,7 @@ i32 CPlay::Render() {
                 PlayCueAt(m_lastCueId, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
                 m_levelTimer->Draw(back, 1);
             }
-            if (m_ambientInitDone == 0) {
+            if (m_ambientInitDone == false) {
                 if (static_cast<i64>(g_frameTime) - m_ambientTiming.m_start.m_v
                     >= m_ambientTiming.m_interval.m_v) {
                     i32 ambientId = GetAmbientId();
@@ -808,7 +808,7 @@ i32 CPlay::Render() {
                             m_mgr->m_midi->m_currentSequence->SetLooping(1);
                         }
                     }
-                    m_ambientInitDone = 1;
+                    m_ambientInitDone = true;
                 }
             }
         } else {
@@ -1044,7 +1044,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     char nameBuf[0x20];
     i32 initScratch[0x25];
 
-    self->m_hudSuppressed = 1;
+    self->m_hudSuppressed = true;
     g_frameDelta = 0;
     g_lastNow = 0;
     g_frameTime = 0;
@@ -1109,7 +1109,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
     i32 modeFlag = (Update() == GAMESTATE_MULTI) ? 1 : 0;
     CMulti* savedThis = modeFlag ? static_cast<CMulti*>(self) : NULL;
-    self->m_initialFramePending = 1;
+    self->m_initialFramePending = true;
     self->m_levelIndex = level;
     {
         i32 r = (level - 1) % 0x24;
@@ -1126,7 +1126,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     g_gameReg->m_commandMgr->m_pendingLocalCommands.RemoveAll();
     g_gameReg->m_commandMgr->RecycleQueuedCommands();
     g_frameTicks = 0;
-    self->m_returnToMenuOnComplete = 0;
+    self->m_returnToMenuOnComplete = false;
     self->m_mgr->m_isCustomLevel = 0;
 
     CGruntzMgr* mgr = self->m_mgr;
@@ -1196,7 +1196,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         } else {
 
             level = WwdFile::ValidateMainBlock(self->m_mgr->GetWorldFileName());
-            self->m_returnToMenuOnComplete = 1;
+            self->m_returnToMenuOnComplete = true;
             self->m_mgr->m_isCustomLevel = 1;
         }
 
@@ -1566,8 +1566,8 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
         if (gameReg->m_gameMode != GAMEMODE_MULTIPLAYER && gameReg->m_loadingSaveGame == 0) {
             CString scr;
-            self->m_inGame = 1;
-            self->m_hudSuppressed = 0;
+            self->m_inGame = true;
+            self->m_hudSuppressed = false;
             RECT rect;
             rect.left = 0;
             rect.top = 0;
@@ -1577,13 +1577,13 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                 DrawTextToFrontSurface(self->m_world, &scr, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
             }
         } else {
-            self->m_hudSuppressed = 1;
+            self->m_hudSuppressed = true;
         }
 
         self->m_scrollEdgeLock = 0;
-        self->m_levelOverlayOpen = 0;
-        self->m_paused = 0;
-        self->m_playerCommandPending = 0;
+        self->m_levelOverlayOpen = false;
+        self->m_paused = false;
+        self->m_playerCommandPending = false;
         self->m_winLoseBanner = 0;
         self->m_cueTiming.m_interval.m_lo = 0x1f4;
         self->m_cueTiming.m_interval.m_hi = 0;
@@ -1596,14 +1596,14 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         self->m_region1Gate = 0;
         self->m_region2Gate = 0;
         self->m_region3Gate = 0;
-        self->m_defeatCountdownActive = 0;
+        self->m_defeatCountdownActive = false;
         self->m_focusPlayerIndex = 3;
-        self->m_renderDisabled = 1;
+        self->m_renderDisabled = true;
         g_playActive = 0;
         ResetViewport();
         if ((g_gameReg)->m_gameMode == GAMEMODE_MULTIPLAYER) {
             g_playActive = 1;
-            self->m_renderDisabled = 0;
+            self->m_renderDisabled = false;
             self->m_mgr->CheckSavedMode();
             self->m_mgr->m_chatLog->FreeNodes();
         }
@@ -1672,7 +1672,7 @@ void CPlay::FreeListTeardown() {
     CTriggerMgr* tl68 = m_mgr->m_triggerMgr;
 
     tl68->m_byteArr.SetSize(0, -1);
-    tl68->m_groupInitialized = 0;
+    tl68->m_groupInitialized = false;
     m_mgr->m_triggerMgr->m_baseList.RemoveAll();
     m_mgr->m_triggerMgr->m_pendingFx = NULL;
     (static_cast<CDDrawWorkerList*>(m_world->m_workerList))->ClearWorkers();
@@ -1839,25 +1839,25 @@ i32 CPlay::RestoreDisplay() {
 
 RVA(0x000cbaf0, 0x16f)
 i32 CPlay::OnChar(i32 charCode, i32 keyData) {
-    if (m_hudSuppressed != 0) {
+    if (m_hudSuppressed != false) {
         return 1;
     }
-    if (m_renderDisabled != 0) {
-        m_renderDisabled = 0;
-        m_hudSuppressed = 1;
+    if (m_renderDisabled != false) {
+        m_renderDisabled = false;
+        m_hudSuppressed = true;
         EnterMode(GAMESTATE_PLAY);
-        m_inGame = 1;
+        m_inGame = true;
         return 1;
     }
-    if (m_inGame != 0) {
+    if (m_inGame != false) {
 
         if (ResetPlayState() == 0) {
             m_mgr->ReportError(IDX(IDS_INITIALIZE_GAME), 0x456);
         }
         return 1;
     }
-    if (m_paused != 0) {
-        m_paused = 0;
+    if (m_paused != false) {
+        m_paused = false;
         PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
         return 1;
     }
@@ -1896,16 +1896,16 @@ i32 CPlay::OnChar(i32 charCode, i32 keyData) {
 // @early-stop
 RVA(0x000cbcc0, 0x17c0)
 i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
-    if (this->m_hudSuppressed != 0) {
+    if (this->m_hudSuppressed != false) {
         return 1;
     }
-    if (this->m_renderDisabled != 0) {
+    if (this->m_renderDisabled != false) {
         return 1;
     }
-    if (this->m_inGame != 0) {
+    if (this->m_inGame != false) {
         return 1;
     }
-    if (this->m_paused != 0) {
+    if (this->m_paused != false) {
         return 1;
     }
     if (this->m_mgr->m_frameGate != 0) {
@@ -2502,11 +2502,11 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
 recorder_place:
 
 {
-    if (this->m_playerCommandPending != 0) {
+    if (this->m_playerCommandPending != false) {
         return 1;
     }
-    if (this->m_dragInhibit1 != 0) {
-        this->m_dragInhibit1 = 0;
+    if (this->m_dragInhibit1 != false) {
+        this->m_dragInhibit1 = false;
         this->m_statusBar->CommitSlot(0);
         this->SetCursorFrame(0);
         if (vk != VK_INSERT) {
@@ -2514,7 +2514,7 @@ recorder_place:
         }
         return 1;
     }
-    if (this->m_dragInhibit2 == 0) {
+    if (this->m_dragInhibit2 == false) {
         goto tail_default2;
     }
     i32 st = this->m_cursorFrame;
@@ -2525,7 +2525,7 @@ recorder_place:
     } else {
         lvl = (st >= 0x17);
     }
-    this->m_dragInhibit2 = 0;
+    this->m_dragInhibit2 = false;
     if (vk == VK_DELETE || vk == VK_DECIMAL) {
         statusBar->ReportTab(st);
         this->SetCursorFrame(0);
@@ -2722,30 +2722,30 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
     i32 sx;
     i32 sy;
 
-    if (m_hudSuppressed != 0) {
+    if (m_hudSuppressed != false) {
         return 1;
     }
-    if (m_renderDisabled != 0) {
-        m_hudSuppressed = 1;
-        m_renderDisabled = 0;
+    if (m_renderDisabled != false) {
+        m_hudSuppressed = true;
+        m_renderDisabled = false;
         EnterMode(GAMESTATE_PLAY);
-        m_inGame = 1;
+        m_inGame = true;
         return 1;
     }
-    if (m_inGame != 0) {
+    if (m_inGame != false) {
         if (ResetPlayState()) {
             goto ret1;
         }
         m_mgr->ReportError(IDX(IDS_INITIALIZE_GAME), 0x457);
         return 1;
     }
-    if (m_paused != 0) {
-        m_paused = 0;
+    if (m_paused != false) {
+        m_paused = false;
         PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
         return 1;
     }
 
-    if (m_levelOverlayOpen != 0 || g_gameReg->m_triggerMgr->m_groupFlag == 0) {
+    if (m_levelOverlayOpen != false || g_gameReg->m_triggerMgr->m_groupFlag == 0) {
         return m_statusBar->UpdateStatusBarTabHighlight(eventArg, x, y);
     }
 
@@ -2763,7 +2763,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
         sx = view->left - geom->m_viewportRect.left + xr;
         sy = view->top - geom->m_viewportRect.top + y;
 
-        if (m_dragInhibit1 != 0 && m_playerCommandPending == 0) {
+        if (m_dragInhibit1 != false && m_playerCommandPending == false) {
             eventArg = 0;
             RECT* gr = &m_statusBar->m_barRect;
             if (CGameLevel::PointInRect(gr, xr, y)) {
@@ -2788,18 +2788,18 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
             if (eventArg == 0) {
                 g_gameReg->m_voiceManager->PlayVoice(NULL, 0x340, -1, 1, -1, -1);
             }
-            m_dragInhibit1 = 0;
+            m_dragInhibit1 = false;
             m_statusBar->CommitSlot(eventArg);
             SetCursorFrame(0);
             return 1;
         }
 
-        if (m_dragInhibit2 != 0 && m_playerCommandPending == 0) {
+        if (m_dragInhibit2 != false && m_playerCommandPending == false) {
             {
                 RECT* gr = &m_statusBar->m_barRect;
                 if (CGameLevel::PointInRect(gr, xr, y)) {
                     if (m_statusBar->DropFallingItemAt(xr, y, m_cursorFrame)) {
-                        m_dragInhibit2 = 0;
+                        m_dragInhibit2 = false;
                         SetCursorFrame(0);
                         return 1;
                     }
@@ -2827,7 +2827,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
                         static_cast<char>(m_cursorFrame),
                         0
                     );
-                    m_playerCommandPending = 1;
+                    m_playerCommandPending = true;
                     return 1;
                 }
 
@@ -2857,7 +2857,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
             }
 
         waypoint_cancel:
-            m_dragInhibit2 = 0;
+            m_dragInhibit2 = false;
             m_statusBar->EnterHlRow(0, m_cursorFrame);
             SetCursorFrame(0);
             return 1;
@@ -2874,7 +2874,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
         }
         if (m_statusBar->m_position == STATUSBAR_HIDDEN) {
             if (m_statusBar->HitTestLayer(xr, y)) {
-                m_dragSnapActive = 1;
+                m_dragSnapActive = true;
 
                 CGameObject* g8 = m_statusBar->m_barSprite;
                 i32 dx = 0;
@@ -2915,7 +2915,7 @@ drag_box: {
         return 1;
     }
 
-    if (m_cursorTargetValid != 0) {
+    if (m_cursorTargetValid != false) {
         i32 ex = (sx & ~TILE_MASK_PX) + TILE_HALF_PX;
         i32 ey = (sy & ~TILE_MASK_PX) + TILE_HALF_PX;
         i32 lv = m_cursorId - IDX(CURSOR_TOOL_HANDZ);
@@ -2935,7 +2935,7 @@ drag_box: {
         m_hudRect.top = y;
         m_hudRect.right = xr;
         m_hudRect.bottom = y;
-        m_worldReady = 1;
+        m_worldReady = true;
         return 1;
     }
     if (g_gameReg->m_triggerMgr->HandleActionOptionsPointer(sx, sy)) {
@@ -2951,7 +2951,7 @@ drag_box: {
             i32* sel = static_cast<i32*>(cg->m_recList.GetHead());
             slot = cg->m_units[sel[0] * TM_UNITS_PER_PLAYER + sel[1]];
         }
-        if (slot != NULL && slot->m_entranceCommitted != 0) {
+        if (slot != NULL && slot->m_entranceCommitted != false) {
             g_gameReg->m_voiceManager->PlayVoice(slot, 0x324, -1, 0, -1, -1);
         }
     }
@@ -2984,7 +2984,7 @@ drag_box: {
     m_hudRect.right = xr;
     m_hudRect.top = y;
     m_hudRect.bottom = y;
-    m_worldReady = 1;
+    m_worldReady = true;
     goto ret1;
 }
 
@@ -2994,19 +2994,19 @@ ret1:
 
 RVA(0x000ce530, 0xe3)
 i32 CPlay::OnLButtonUp(i32 keyFlags, i32 x, i32 y) {
-    if (m_hudSuppressed == 0) {
+    if (m_hudSuppressed == false) {
         if (m_minimap != NULL && m_statusBar->m_position != STATUSBAR_HIDDEN
             && m_statusBar->m_activeTab != TAB_GAME) {
             m_minimap->EndMinimapPan(keyFlags, x, y);
         }
-        if (m_worldReady != 0) {
+        if (m_worldReady != false) {
             m_mgr->m_triggerMgr->HudRect(
                 m_hudRect,
                 g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)
             );
         }
-        m_worldReady = 0;
-        m_dragSnapActive = 0;
+        m_worldReady = false;
+        m_dragSnapActive = false;
         if (m_statusBar->m_position != STATUSBAR_HIDDEN) {
             LevelCoordRect vp = m_world->m_level->m_viewportRect;
             if (x < vp.left || x > vp.right || y < vp.top || y > vp.bottom) {
@@ -3020,13 +3020,13 @@ i32 CPlay::OnLButtonUp(i32 keyFlags, i32 x, i32 y) {
 // @early-stop
 RVA(0x000ce660, 0x362)
 i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
-    if (m_hudSuppressed != 0 || m_statusBar == NULL) {
+    if (m_hudSuppressed != false || m_statusBar == NULL) {
         return 1;
     }
-    if (m_levelOverlayOpen != 0 || g_gameReg->m_triggerMgr->m_groupFlag == 0) {
+    if (m_levelOverlayOpen != false || g_gameReg->m_triggerMgr->m_groupFlag == 0) {
         return m_statusBar->HandleDoubleClick(keyFlags, x, y);
     }
-    if (m_dragInhibit1 != 0 || m_dragInhibit2 != 0) {
+    if (m_dragInhibit1 != false || m_dragInhibit2 != false) {
         return this->OnLButtonDown(keyFlags, x, y);
     }
 
@@ -3069,7 +3069,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
         }
     }
 
-    if (m_dragInhibit1 != 0) {
+    if (m_dragInhibit1 != false) {
         return 1;
     }
     CGameLevel* h;
@@ -3125,29 +3125,29 @@ i32 CPlay::OnRButtonDblClk(i32 keyFlags, i32 x, i32 y) {
 // @early-stop
 RVA(0x000ceae0, 0x268)
 i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
-    if (m_hudSuppressed != 0) {
+    if (m_hudSuppressed != false) {
         return 1;
     }
-    if (m_renderDisabled != 0) {
-        m_hudSuppressed = 1;
-        m_renderDisabled = 0;
+    if (m_renderDisabled != false) {
+        m_hudSuppressed = true;
+        m_renderDisabled = false;
         EnterMode(GAMESTATE_PLAY);
-        m_inGame = 1;
+        m_inGame = true;
         return 1;
     }
-    if (m_inGame != 0) {
+    if (m_inGame != false) {
         if (ResetPlayState()) {
             return 1;
         }
         m_mgr->ReportError(IDX(IDS_INITIALIZE_GAME), 0x458);
         return 1;
     }
-    if (m_paused != 0) {
-        m_paused = 0;
+    if (m_paused != false) {
+        m_paused = false;
         PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
         return 1;
     }
-    if (m_levelOverlayOpen != 0) {
+    if (m_levelOverlayOpen != false) {
         return 1;
     }
     if (g_gameReg->m_triggerMgr->m_groupFlag == 0) {
@@ -3239,8 +3239,8 @@ i32 CPlay::PauseGame() {
     } else {
         m_statusBar->BuildGameTabResumeButton(1);
     }
-    m_worldReady = 0;
-    m_dragSnapActive = 0;
+    m_worldReady = false;
+    m_dragSnapActive = false;
     m_savedClock = g_frameTime;
     return 1;
 }
@@ -3249,7 +3249,7 @@ RVA(0x000cef00, 0x39)
 i32 CPlay::ResumeGame() {
     m_statusBar->BuildGameTabPauseButton();
     g_frameTime = m_savedClock;
-    m_paused = 0;
+    m_paused = false;
     if (m_statusBar != NULL) {
         m_statusBar->Deactivate();
     }
@@ -3260,7 +3260,7 @@ RVA(0x000cef50, 0x46)
 i32 CPlay::QuitToMenu() {
 
     m_mgr->m_strWorldFile.Empty();
-    if (m_completedFinalLevel != 0) {
+    if (m_completedFinalLevel != false) {
         if (m_world->m_drawTarget->HasOverlay() != 0) {
             m_world->m_drawTarget->TransEnter();
         }
@@ -3509,7 +3509,7 @@ RVA(0x000cfbd0, 0x8f)
 i32 CPlay::CompleteLevel() {
     QuestLevel level = CurrentQuestLevel();
     if (level == QUESTLEVEL_CAMPAIGN_LAST) {
-        m_completedFinalLevel = 1;
+        m_completedFinalLevel = true;
         m_notifyLatch = 1;
 
         SoundCueRegistry* reg = m_world->m_soundRegistry;
@@ -3666,8 +3666,8 @@ i32 CPlay::LoadCursorSprites(i32 cursorId, i32 targetValid) {
         }
         this->m_cursorOffset.m_x = 0;
         this->m_cursorOffset.m_y = 0;
-        this->m_dragInhibit2 = 1;
-        this->m_cursorTargetValid = 0;
+        this->m_dragInhibit2 = true;
+        this->m_cursorTargetValid = false;
         this->m_cursorId = cursorId;
         return 1;
     }
@@ -3680,7 +3680,7 @@ i32 CPlay::LoadCursorSprites(i32 cursorId, i32 targetValid) {
         }
         this->m_cursorOffset.m_x = 0x10;
         this->m_cursorOffset.m_y = 0x10;
-        this->m_cursorTargetValid = 0;
+        this->m_cursorTargetValid = false;
         this->m_cursorId = cursorId;
         return 1;
     }
@@ -3693,8 +3693,8 @@ i32 CPlay::LoadCursorSprites(i32 cursorId, i32 targetValid) {
         }
         this->m_cursorOffset.m_x = 0;
         this->m_cursorOffset.m_y = 0;
-        this->m_dragInhibit1 = 1;
-        this->m_cursorTargetValid = 0;
+        this->m_dragInhibit1 = true;
+        this->m_cursorTargetValid = false;
         g_gameReg->m_voiceManager->PlayVoice(NULL, 0x33e, -1, 1, -1, -1);
         this->m_bootyTiming.m_interval.m_lo = BOOTY_INTERVAL_MS;
         this->m_bootyTiming.m_interval.m_hi = 0;
@@ -3940,7 +3940,7 @@ i32 CPlay::LoadCursorAnimation(
 
 RVA(0x000d0a60, 0x92)
 i32 CPlay::AdvanceCursorAnimation(i32 elapsedMs) {
-    if (m_cursorAnimationActive == 0) {
+    if (m_cursorAnimationActive == false) {
         return 1;
     }
     if (static_cast<u32>(m_cursorFrameCountdownMs) > static_cast<u32>(elapsedMs)) {
@@ -4014,7 +4014,7 @@ i32 CPlay::SaveUnderAndDrawCursor(CDDrawSurfacePair* pair) {
         CDDrawDeviceManager::ReportError(NULL, 0, result);
     }
 
-    if (m_drewThisFrame != 0) {
+    if (m_drewThisFrame != false) {
         RECT vp = m_world->m_level->m_viewportRect;
         RECT clip;
         CopyRect((&clip), (&vp));
@@ -4049,10 +4049,10 @@ RVA(0x000d0db0, 0x347)
 i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
 
     LevelCoordRect box;
-    if (m_inGame != 0) {
+    if (m_inGame != false) {
         return 1;
     }
-    if (m_paused != 0) {
+    if (m_paused != false) {
         return 1;
     }
     if (m_minimap != NULL && m_statusBar->m_position != STATUSBAR_HIDDEN
@@ -4060,7 +4060,7 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
         m_minimap->ContinueMinimapPan(keyFlags, x, y);
     }
 
-    if (m_dragSnapActive != 0) {
+    if (m_dragSnapActive != false) {
         if (m_statusBar == NULL) {
             return 1;
         }
@@ -4068,18 +4068,18 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
         goto rearm;
     }
 
-    if (m_levelOverlayOpen != 0) {
+    if (m_levelOverlayOpen != false) {
         return m_statusBar->HandlePointerDrag(keyFlags, x, y);
     }
 
     box = m_world->m_level->m_viewportRect;
     if (x >= box.left && x <= box.right && y >= box.top && y <= box.bottom) {
 
-        if (m_dragInProgress != 0) {
+        if (m_dragInProgress != false) {
             m_statusBar->ClearTabSprites(TAB_ALL);
         }
-        m_dragInProgress = 0;
-        if (m_worldReady != 0) {
+        m_dragInProgress = false;
+        if (m_worldReady != false) {
 
             {
                 i32 anchorX = m_dragClampMaxX;
@@ -4100,8 +4100,8 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
             return 1;
         }
 
-        if (m_chatBox->HitTest(x, y) == 0 && m_mgr->m_frameGate == 0 && m_inGame == 0
-            && m_dragInhibit1 == 0 && m_dragInhibit2 == 0) {
+        if (m_chatBox->HitTest(x, y) == 0 && m_mgr->m_frameGate == 0 && m_inGame == false
+            && m_dragInhibit1 == false && m_dragInhibit2 == false) {
 
             if (m_cursorId != 0) {
                 if (m_cursorSnapSprite != NULL) {
@@ -4128,9 +4128,9 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
     if (m_cursorSnapSprite != NULL) {
         m_cursorSnapSprite->m_stateFlags |= SPRITE_STATE_HIDDEN;
     }
-    m_dragInProgress = 1;
+    m_dragInProgress = true;
     m_statusBar->HandlePointerDrag(keyFlags, x, y);
-    if (m_worldReady != 0) {
+    if (m_worldReady != false) {
 
         m_hudRect.left = m_cursorX > box.left ? m_cursorX : box.left;
         m_hudRect.left = m_hudRect.left < m_dragClampMaxX ? m_hudRect.left : m_dragClampMaxX;
@@ -4141,7 +4141,7 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
         m_hudRect.bottom = m_cursorY < box.bottom ? m_cursorY : box.bottom;
         m_hudRect.bottom = m_hudRect.bottom > m_dragClampMaxY ? m_hudRect.bottom : m_dragClampMaxY;
     }
-    if (m_cursorTargetValid != 0 && m_mgr->m_triggerMgr->m_pendingFxKind == 0) {
+    if (m_cursorTargetValid != false && m_mgr->m_triggerMgr->m_pendingFxKind == 0) {
         FlushPendingOps();
     }
     return 1;
@@ -4450,8 +4450,8 @@ i32 CPlay::ExecuteCommand(
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
             CGrunt* g = mgr->m_triggerMgr->m_units[gi + player * 0xf];
-            if (g != NULL && g->m_entranceCommitted != 0) {
-                g->m_arrivalActive = 0;
+            if (g != NULL && g->m_entranceCommitted != false) {
+                g->m_arrivalActive = false;
             }
             if (!m_mgr->m_triggerMgr->ClearCell(
                     player,
@@ -4461,14 +4461,14 @@ i32 CPlay::ExecuteCommand(
                     0
                 )) {
                 if (player != static_cast<u32>(g_curPlayer) || g == NULL
-                    || g->m_entranceCommitted == 0) {
+                    || g->m_entranceCommitted == false) {
                     return 0;
                 }
                 g_gameReg->m_voiceManager->PlayVoice(g, 0x324, -1, 0, -1, -1);
                 return 0;
             }
             if (player != static_cast<u32>(g_curPlayer) || g == NULL
-                || g->m_entranceCommitted == 0) {
+                || g->m_entranceCommitted == false) {
                 return 1;
             }
             g_gameReg->m_voiceManager->PlayVoice(g, 0x323, -1, 0, -1, -1);
@@ -4511,7 +4511,7 @@ i32 CPlay::ExecuteCommand(
                     g->m_arrivalState = AI_DEFENDER;
                     g->m_defenderState = AISTATE_SEEK;
                     g->m_arrivalCell.m_y = -1;
-                    g->m_arrivalActive = 0;
+                    g->m_arrivalActive = false;
                     g->m_object->m_extent.left = 0;
                     g->m_object->m_extent.right = 0;
                     g->m_object->m_extent.top = 0;
@@ -4546,7 +4546,7 @@ i32 CPlay::ExecuteCommand(
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
             CGrunt* g = mgr->m_triggerMgr->m_units[gi + player * 0xf];
-            if (g == NULL || g->m_entranceCommitted == 0) {
+            if (g == NULL || g->m_entranceCommitted == false) {
                 return 0;
             }
             if (g->m_tileClaimed != 0) {
@@ -4565,7 +4565,7 @@ i32 CPlay::ExecuteCommand(
             CGrunt* node =
                 m_mgr->m_triggerMgr
                     ->CellHitTest(px, py, &hitPlayerIndex, &hitUnitIndex, TM_ALL_PLAYERS);
-            if (node != NULL && g->m_entranceActive == 0) {
+            if (node != NULL && g->m_entranceActive == false) {
                 g->SetArrivalTarget(
                     hitPlayerIndex,
                     hitUnitIndex,
@@ -4573,11 +4573,11 @@ i32 CPlay::ExecuteCommand(
                     node->m_object->m_screenY
                 );
             } else {
-                g->m_arrivalActive = 0;
+                g->m_arrivalActive = false;
             }
             res = m_mgr->m_triggerMgr->UseEquippedToolAt(player, gi, px, py);
             if (res == 0) {
-                if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
+                if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
                     return 0;
                 }
                 g_gameReg->m_voiceManager->PlayVoice(g, 0x324, -1, 0, -1, -1);
@@ -4585,19 +4585,20 @@ i32 CPlay::ExecuteCommand(
             }
             if (res == -1) {
                 if (!m_mgr->m_triggerMgr->ClearCell(player, gi, px, py, 2)) {
-                    if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
+                    if (player != static_cast<u32>(g_curPlayer)
+                        || g->m_entranceCommitted == false) {
                         return 0;
                     }
                     g_gameReg->m_voiceManager->PlayVoice(g, 0x324, -1, 0, -1, -1);
                     return 0;
                 }
-                if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
+                if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
                     return 1;
                 }
                 g_gameReg->m_voiceManager->PlayVoice(g, 0x323, -1, 0, -1, -1);
                 return 1;
             }
-            if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
+            if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
                 return 1;
             }
             g_gameReg->m_voiceManager->PlayVoice(g, 0x323, -1, 0, -1, -1);
@@ -4608,7 +4609,7 @@ i32 CPlay::ExecuteCommand(
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
             CGrunt* g = mgr->m_triggerMgr->m_units[gi + player * 0xf];
-            if (g == NULL || g->m_entranceCommitted == 0) {
+            if (g == NULL || g->m_entranceCommitted == false) {
                 return 0;
             }
             if (g->m_tileClaimed != 0) {
@@ -4625,8 +4626,8 @@ i32 CPlay::ExecuteCommand(
             i32 targetUnitIndex = static_cast<u16>(targetYOrUnitIndex);
             CGrunt* g2 = m_mgr->m_triggerMgr
                              ->m_units[targetUnitIndex + targetPlayerIndex * TM_UNITS_PER_PLAYER];
-            if (g2 == NULL || g->m_entranceActive != 0) {
-                g->m_arrivalActive = 0;
+            if (g2 == NULL || g->m_entranceActive != false) {
+                g->m_arrivalActive = false;
                 return 0;
             }
             i32 sx = g2->m_object->m_screenX;
@@ -4634,7 +4635,7 @@ i32 CPlay::ExecuteCommand(
             g->SetArrivalTarget(targetPlayerIndex, targetUnitIndex, sx, sy);
             res = m_mgr->m_triggerMgr->UseEquippedToolAt(player, gi, sx, sy);
             if (res == 0) {
-                if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
+                if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
                     return 0;
                 }
                 g_gameReg->m_voiceManager->PlayVoice(g, 0x324, -1, 0, -1, -1);
@@ -4642,7 +4643,8 @@ i32 CPlay::ExecuteCommand(
             }
             if (res == -1) {
                 if (!m_mgr->m_triggerMgr->ClearCell(player, gi, sx, sy, 2)) {
-                    if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
+                    if (player != static_cast<u32>(g_curPlayer)
+                        || g->m_entranceCommitted == false) {
                         return 0;
                     }
                     g_gameReg->m_voiceManager->PlayVoice(g, 0x324, -1, 0, -1, -1);
@@ -4650,7 +4652,7 @@ i32 CPlay::ExecuteCommand(
                 }
                 if (player != static_cast<u32>(g_curPlayer)
                     || static_cast<u32>(g_curPlayer) == static_cast<u32>(targetPlayerIndex)
-                    || g->m_entranceCommitted == 0) {
+                    || g->m_entranceCommitted == false) {
                     return 1;
                 }
                 g_gameReg->m_voiceManager->PlayVoice(g, 0x325, -1, 0, -1, -1);
@@ -4658,7 +4660,7 @@ i32 CPlay::ExecuteCommand(
             }
             if (player != static_cast<u32>(g_curPlayer)
                 || static_cast<u32>(g_curPlayer) == static_cast<u32>(targetPlayerIndex)
-                || g->m_entranceCommitted == 0) {
+                || g->m_entranceCommitted == false) {
                 return 1;
             }
             g_gameReg->m_voiceManager->PlayVoice(g, 0x325, -1, 0, -1, -1);
@@ -4669,7 +4671,7 @@ i32 CPlay::ExecuteCommand(
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
             CGrunt* g = mgr->m_triggerMgr->m_units[gi + player * 0xf];
-            if (g == NULL || g->m_entranceCommitted == 0 || g->m_entranceActive != 0) {
+            if (g == NULL || g->m_entranceCommitted == false || g->m_entranceActive != false) {
                 return 0;
             }
             if (g->m_tileClaimed != 0) {
@@ -4687,7 +4689,7 @@ i32 CPlay::ExecuteCommand(
             CGrunt* node =
                 m_mgr->m_triggerMgr
                     ->CellHitTest(px, py, &hitPlayerIndex, &hitUnitIndex, TM_ALL_PLAYERS);
-            if (node != NULL && g->m_entranceActive == 0) {
+            if (node != NULL && g->m_entranceActive == false) {
                 g->SetArrivalTarget(
                     hitPlayerIndex,
                     hitUnitIndex,
@@ -4695,11 +4697,11 @@ i32 CPlay::ExecuteCommand(
                     node->m_object->m_screenY
                 );
             } else {
-                g->m_arrivalActive = 0;
+                g->m_arrivalActive = false;
             }
             res = m_mgr->m_triggerMgr->UseToyAt(player, gi, px, py);
             if (res == 0) {
-                if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
+                if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
                     return 0;
                 }
                 g_gameReg->m_voiceManager->PlayVoice(g, 0x324, -1, 0, -1, -1);
@@ -4707,19 +4709,20 @@ i32 CPlay::ExecuteCommand(
             }
             if (res == -1) {
                 if (!m_mgr->m_triggerMgr->ClearCell(player, gi, px, py, 3)) {
-                    if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
+                    if (player != static_cast<u32>(g_curPlayer)
+                        || g->m_entranceCommitted == false) {
                         return 0;
                     }
                     g_gameReg->m_voiceManager->PlayVoice(g, 0x324, -1, 0, -1, -1);
                     return 0;
                 }
-                if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
+                if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
                     return 1;
                 }
                 g_gameReg->m_voiceManager->PlayVoice(g, 0x323, -1, 0, -1, -1);
                 return 1;
             }
-            if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
+            if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
                 return 1;
             }
             g_gameReg->m_voiceManager->PlayVoice(g, 0x323, -1, 0, -1, -1);
@@ -4730,7 +4733,7 @@ i32 CPlay::ExecuteCommand(
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
             CGrunt* g = mgr->m_triggerMgr->m_units[gi + player * 0xf];
-            if (g == NULL || g->m_entranceCommitted == 0 || g->m_entranceActive != 0) {
+            if (g == NULL || g->m_entranceCommitted == false || g->m_entranceActive != false) {
                 return 0;
             }
             if (g->m_tileClaimed != 0) {
@@ -4747,8 +4750,8 @@ i32 CPlay::ExecuteCommand(
             i32 targetUnitIndex = static_cast<u16>(targetYOrUnitIndex);
             CGrunt* g2 = m_mgr->m_triggerMgr
                              ->m_units[targetUnitIndex + targetPlayerIndex * TM_UNITS_PER_PLAYER];
-            if (g2 == NULL || g->m_entranceActive != 0) {
-                g->m_arrivalActive = 0;
+            if (g2 == NULL || g->m_entranceActive != false) {
+                g->m_arrivalActive = false;
                 return 0;
             }
             i32 sx = g2->m_object->m_screenX;
@@ -4756,7 +4759,7 @@ i32 CPlay::ExecuteCommand(
             g->SetArrivalTarget(targetPlayerIndex, targetUnitIndex, sx, sy);
             res = m_mgr->m_triggerMgr->UseToyAt(player, gi, sx, sy);
             if (res == 0) {
-                if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
+                if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
                     return 0;
                 }
                 g_gameReg->m_voiceManager->PlayVoice(g, 0x324, -1, 0, -1, -1);
@@ -4764,7 +4767,8 @@ i32 CPlay::ExecuteCommand(
             }
             if (res == -1) {
                 if (!m_mgr->m_triggerMgr->ClearCell(player, gi, sx, sy, 3)) {
-                    if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == 0) {
+                    if (player != static_cast<u32>(g_curPlayer)
+                        || g->m_entranceCommitted == false) {
                         return 0;
                     }
                     g_gameReg->m_voiceManager->PlayVoice(g, 0x324, -1, 0, -1, -1);
@@ -4772,7 +4776,7 @@ i32 CPlay::ExecuteCommand(
                 }
                 if (player != static_cast<u32>(g_curPlayer)
                     || static_cast<u32>(g_curPlayer) == static_cast<u32>(targetPlayerIndex)
-                    || g->m_entranceCommitted == 0) {
+                    || g->m_entranceCommitted == false) {
                     return 1;
                 }
                 g_gameReg->m_voiceManager->PlayVoice(g, 0x325, -1, 0, -1, -1);
@@ -4780,7 +4784,7 @@ i32 CPlay::ExecuteCommand(
             }
             if (player != static_cast<u32>(g_curPlayer)
                 || static_cast<u32>(g_curPlayer) == static_cast<u32>(targetPlayerIndex)
-                || g->m_entranceCommitted == 0) {
+                || g->m_entranceCommitted == false) {
                 return 1;
             }
             g_gameReg->m_voiceManager->PlayVoice(g, 0x325, -1, 0, -1, -1);
@@ -4790,12 +4794,12 @@ i32 CPlay::ExecuteCommand(
         case PLAYERCMD_GIVE_TOOL: {
             u32 player = static_cast<u8>(playerIndex);
             if (player == static_cast<u32>(g_curPlayer)) {
-                m_playerCommandPending = 0;
+                m_playerCommandPending = false;
             }
             u32 gi = static_cast<u8>(unitIndex);
             i32 idx = gi + player * 0xf;
             CGrunt* g = mgr->m_triggerMgr->m_units[idx];
-            if (g != NULL && g->m_entranceCommitted != 0 && g->m_tileClaimed != 0) {
+            if (g != NULL && g->m_entranceCommitted != false && g->m_tileClaimed != 0) {
                 g->m_arrivalRerollLo = 0;
                 g->m_arrivalRerollWindowLo = 0;
                 g->m_arrivalRerollHi = 0;
@@ -4809,7 +4813,7 @@ i32 CPlay::ExecuteCommand(
             i32 live = (g_gameReg->m_gameMode != GAMEMODE_QUESTZ);
             CGrunt* g2 = m_mgr->m_triggerMgr->m_units[idx];
             i32 r;
-            if (g2 == NULL || g2->m_entranceCommitted == 0) {
+            if (g2 == NULL || g2->m_entranceCommitted == false) {
                 r = 0;
             } else {
                 r = g2->LoadPickupSprites(
@@ -4827,7 +4831,7 @@ i32 CPlay::ExecuteCommand(
                 sel = 1;
             }
             if (player == static_cast<u32>(g_curPlayer)) {
-                m_dragInhibit2 = 0;
+                m_dragInhibit2 = false;
                 m_statusBar->EnterHlRow(sel, m_cursorFrame);
                 SetCursorFrame(0);
             }
@@ -4838,7 +4842,7 @@ i32 CPlay::ExecuteCommand(
             CGrunt* g =
                 mgr->m_triggerMgr
                     ->m_units[static_cast<u8>(playerIndex) * 0xf + static_cast<u8>(unitIndex)];
-            if (g == NULL || g->m_entranceCommitted == 0 || g->m_entranceActive != 0) {
+            if (g == NULL || g->m_entranceCommitted == false || g->m_entranceActive != false) {
                 return 0;
             }
             g->SetEntrancePos(1, 1);
@@ -5915,7 +5919,7 @@ i32 CPlay::ResetPlayState() {
         if (g_gameReg->m_musicEnabled != 0) {
             m_mgr->m_midi->PlaySequence(sequenceName, 0);
         }
-        m_ambientInitDone = 0;
+        m_ambientInitDone = false;
     } else {
         wsprintfA(sequenceName, "AMBIENT%d", GetAmbientId());
         MidiManager* midi = m_mgr->m_midi;
@@ -5934,7 +5938,7 @@ i32 CPlay::ResetPlayState() {
         m_ambientTiming.m_interval.m_lo = 0;
         m_ambientTiming.m_start.m_hi = 0;
         m_ambientTiming.m_interval.m_hi = 0;
-        m_ambientInitDone = 1;
+        m_ambientInitDone = true;
     }
     if (m_mgr->m_gameMode == GAMEMODE_QUESTZ) {
         CGruntzMgr* reg = g_gameReg;
@@ -5967,7 +5971,7 @@ i32 CPlay::ResetPlayState() {
     if (m_cursorSnapSprite != NULL) {
         m_cursorSnapSprite->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
     }
-    m_inGame = 0;
+    m_inGame = false;
     if (!PlaceStartGruntz()) {
         return 0;
     }
@@ -5988,7 +5992,7 @@ i32 CPlay::ResetPlayState() {
         }
     }
     CTriggerMgr* tl = m_mgr->m_triggerMgr;
-    tl->m_countdownActive = 1;
+    tl->m_countdownActive = true;
     tl->m_phase = FINISH_STATE_ACTIVE;
     tl->m_pendingFxKind = 0;
     tl->m_gooTimerBaseLo = 0;
@@ -6008,12 +6012,12 @@ i32 CPlay::ResetPlayState() {
 
 RVA(0x000d6440, 0xd3)
 i32 CPlay::OpenLevelOverlay(i32 showQuitConfirmation) {
-    if (m_levelOverlayOpen != 0) {
+    if (m_levelOverlayOpen != false) {
         return 1;
     }
-    m_levelOverlayOpen = 1;
-    m_worldReady = 0;
-    m_dragSnapActive = 0;
+    m_levelOverlayOpen = true;
+    m_worldReady = false;
+    m_dragSnapActive = false;
     FlushPendingOps();
     if (showQuitConfirmation == 0) {
         CStatusBarMgr* g = m_statusBar;
@@ -6040,9 +6044,9 @@ i32 CPlay::OpenLevelOverlay(i32 showQuitConfirmation) {
 
 RVA(0x000d6560, 0x45)
 i32 CPlay::CloseLevelOverlay(i32) {
-    if (m_levelOverlayOpen != 0) {
+    if (m_levelOverlayOpen != false) {
         CStatusBarMgr* worker = m_statusBar;
-        m_levelOverlayOpen = 0;
+        m_levelOverlayOpen = false;
         worker->ExitMode();
         if (g_gameReg->m_gameMode != GAMEMODE_MULTIPLAYER) {
             g_frameTime = m_savedClock;
@@ -6356,8 +6360,8 @@ i32 CPlay::EnterMode(GameStateId mode) {
     m_statusBar->UpdateStatusBar(0);
     m_mgr->RefreshGameClock();
 
-    if (m_initialFramePending != 0) {
-        m_initialFramePending = 0;
+    if (m_initialFramePending != false) {
+        m_initialFramePending = false;
         m_world->m_drawTarget->m_backPair->m_surface->Fill(0);
         UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
         if (m_region1Gate != 0) {
@@ -6421,7 +6425,7 @@ finish:
     }
     m_statusBar->Deactivate();
     RegisterInputBindings();
-    m_hudSuppressed = 0;
+    m_hudSuppressed = false;
     return 1;
 }
 
@@ -6435,7 +6439,7 @@ i32 CPlay::PostActionCue(i32 cueId) {
     }
     m_lastCueId = cueId;
     m_stepCountdown = 2;
-    m_paused = 1;
+    m_paused = true;
 
     PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_FINISH_LEVEL), 0);
     if (m_cursorSnapSprite) {
@@ -6534,7 +6538,7 @@ i32 CPlay::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId type
             if (g_gameReg->m_musicEnabled) {
                 m_mgr->m_midi->PlaySequence(sequenceName, 1);
             }
-            m_ambientInitDone = 1;
+            m_ambientInitDone = true;
             break;
         }
     }
@@ -7578,21 +7582,21 @@ i32 CPlay::GetAmbientId() {
 
 RVA(0x000da2d0, 0xa5)
 i32 CPlay::FlushPendingOps() {
-    if (m_playerCommandPending != 0) {
+    if (m_playerCommandPending != false) {
         return 0;
     }
     i32 changed = 0;
-    if (m_dragInhibit1 != 0) {
+    if (m_dragInhibit1 != false) {
         CStatusBarMgr* worker = m_statusBar;
-        m_dragInhibit1 = 0;
+        m_dragInhibit1 = false;
         worker->CommitSlot(0);
         SetCursorFrame(0);
         changed = 1;
     }
-    if (m_dragInhibit2 != 0) {
+    if (m_dragInhibit2 != false) {
         i32 spr = m_cursorFrame;
         CStatusBarMgr* worker = m_statusBar;
-        m_dragInhibit2 = 0;
+        m_dragInhibit2 = false;
         worker->EnterHlRow(0, spr);
         SetCursorFrame(0);
         changed = 1;
@@ -7608,8 +7612,8 @@ i32 CPlay::FlushPendingOps() {
 
 RVA(0x000da3b0, 0x6e)
 i32 CPlay::CanQuickSave() {
-    if (m_renderDisabled == 0 && m_inGame == 0 && m_levelOverlayOpen == 0
-        && m_defeatCountdownActive == 0 && m_statusBar->m_hlBusy == 0
+    if (m_renderDisabled == false && m_inGame == false && m_levelOverlayOpen == false
+        && m_defeatCountdownActive == false && m_statusBar->m_hlBusy == 0
         && m_statusBar->m_levelOverlayActive == 0 && m_statusBar->m_quitConfirmationActive == 0
         && g_gameReg->m_frameGate == 0 && g_gameReg->m_triggerMgr->m_groupFlag != 0) {
         return 1;
@@ -7619,13 +7623,13 @@ i32 CPlay::CanQuickSave() {
 
 RVA(0x000da440, 0x60)
 i32 CPlay::PostHudRect() {
-    if (m_worldReady != 0) {
+    if (m_worldReady != false) {
         m_mgr->m_triggerMgr->HudRect(
             m_hudRect,
             g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)
         );
     }
-    m_worldReady = 0;
-    m_dragSnapActive = 0;
+    m_worldReady = false;
+    m_dragSnapActive = false;
     return 1;
 }

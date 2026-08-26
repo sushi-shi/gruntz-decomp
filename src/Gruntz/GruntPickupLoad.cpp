@@ -40,7 +40,7 @@ i32 CGrunt::LoadPickupSprites(
         return 0;
     }
     if (forced == 0) {
-        if (m_entranceActive != 0) {
+        if (m_entranceActive != false) {
             return 0;
         }
 
@@ -57,7 +57,7 @@ i32 CGrunt::LoadPickupSprites(
         }
     }
     FinishActiveAction();
-    if (m_entranceActive != 0) {
+    if (m_entranceActive != false) {
         return 0;
     }
     if (type >= PICKUP_COLORBRICK_FIRST && type <= PICKUP_BRICKZ_LAST) {
@@ -72,10 +72,10 @@ i32 CGrunt::LoadPickupSprites(
     if (m_coordToggle != 0) {
         return 0;
     }
-    if (m_wingzEnabled != 0) {
+    if (m_wingzEnabled != false) {
         return 0;
     }
-    if (m_poweredUp != 0 && m_neighborValid == 0) {
+    if (m_poweredUp != false && m_neighborValid == false) {
         RESET_GRUNT_POWERED_STATE(this)
     }
     if (m_entranceReason == PICKUP_WARPSTONE) {
@@ -448,7 +448,7 @@ i32 CGrunt::LoadPickupSprites(
             g->m_voiceManager->PlayVoice(this, id, -1, 0, -1, -1);
         }
     }
-    m_entranceActive = 1;
+    m_entranceActive = true;
     m_entrancePickup = type;
     m_helpCueId = helpCueId;
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_healthSprite)

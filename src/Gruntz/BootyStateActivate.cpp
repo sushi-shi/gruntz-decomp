@@ -609,7 +609,7 @@ i32 CBootyState::BuildGruntSprintAnimation() {
         m_sprintSprites[i]->SetAnimationByName("GAME_GRUNTSPRINT", 0);
         {
             CWwdSpriteObject* o = m_sprintSprites[i];
-            o->m_drawActive = 1;
+            o->m_drawActive = true;
             o->m_drawFillCmd = SHADE_PAL_16;
             o->m_drawFillArg = h;
         }
@@ -830,7 +830,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     m_icons[7]->SetAnimationByName("GAME_TELEPORTER", 0);
     m_icons[7]->m_stateFlags |= SPRITE_STATE_HIDDEN;
     CWwdSpriteObject* icon7 = m_icons[7];
-    icon7->m_drawActive = 1;
+    icon7->m_drawActive = true;
     icon7->m_drawFillCmd = SHADE_DST_BY_SRC_16;
     icon7->m_drawFillArg = tint;
 
@@ -849,7 +849,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     ex->SetImageSetByName("GRUNTZ_EXITZ");
     m_icons[1]->SetAnimationByName("GAME_GRUNTFLEX", 0);
     CWwdSpriteObject* icon1 = m_icons[1];
-    icon1->m_drawActive = 1;
+    icon1->m_drawActive = true;
     icon1->m_drawFillCmd = SHADE_PAL_16;
     icon1->m_drawFillArg = handleA;
     m_icons[1]->m_stateFlags |= SPRITE_STATE_HIDDEN;
@@ -869,7 +869,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     dt->SetImageSetByName("GRUNTZ_NORMALGRUNT_DEATH");
     m_icons[2]->SetAnimationByName("GAME_GRUNTTWITCH", 0);
     CWwdSpriteObject* icon2 = m_icons[2];
-    icon2->m_drawActive = 1;
+    icon2->m_drawActive = true;
     icon2->m_drawFillCmd = SHADE_PAL_16;
     icon2->m_drawFillArg = handleA;
     m_icons[2]->m_stateFlags |= SPRITE_STATE_HIDDEN;
@@ -889,7 +889,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     gl->SetImageSetByName("GAME_INGAMEICONZ_TOOLZ_GAUNTLETZ");
     m_icons[3]->SetAnimationByName("GAME_CYCLE100", 0);
     CWwdSpriteObject* icon3 = m_icons[3];
-    icon3->m_drawActive = 1;
+    icon3->m_drawActive = true;
     icon3->m_drawFillCmd = SHADE_PAL_16;
     icon3->m_drawFillArg = handleA;
     m_icons[3]->m_stateFlags |= SPRITE_STATE_HIDDEN;
@@ -909,7 +909,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     bb->SetImageSetByName("GAME_INGAMEICONZ_TOYZ_BEACHBALLZ");
     m_icons[4]->SetAnimationByName("GAME_CYCLE100", 0);
     CWwdSpriteObject* p30c = m_icons[4];
-    p30c->m_drawActive = 1;
+    p30c->m_drawActive = true;
     p30c->m_drawFillCmd = SHADE_PAL_16;
     p30c->m_drawFillArg = handleA;
     m_icons[4]->m_stateFlags |= SPRITE_STATE_HIDDEN;
@@ -929,7 +929,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     rz->SetImageSetByName("GAME_INGAMEICONZ_POWERUPZ_ROIDZ");
     m_icons[5]->SetAnimationByName("GAME_CYCLE100", 0);
     CWwdSpriteObject* icon5 = m_icons[5];
-    icon5->m_drawActive = 1;
+    icon5->m_drawActive = true;
     icon5->m_drawFillCmd = SHADE_PAL_16;
     icon5->m_drawFillArg = handleA;
     m_icons[5]->m_stateFlags |= SPRITE_STATE_HIDDEN;
@@ -949,7 +949,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     cn->SetImageSetByName("GAME_INGAMEICONZ_POWERUPZ_COIN");
     m_icons[6]->SetAnimationByName("GAME_CYCLE100", 0);
     CWwdSpriteObject* icon6 = m_icons[6];
-    icon6->m_drawActive = 1;
+    icon6->m_drawActive = true;
     icon6->m_drawFillCmd = SHADE_PAL_16;
     icon6->m_drawFillArg = handleA;
     m_icons[6]->m_stateFlags |= SPRITE_STATE_HIDDEN;
@@ -970,7 +970,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
         b->SetImageSetByName("GRUNTZ_BOMBGRUNT_WEST_ITEM");
         m_bomb[i]->SetAnimationByName("GAME_GRUNTBOMBSPRINT", 0);
         CWwdSpriteObject* bp = m_bomb[i];
-        bp->m_drawActive = 1;
+        bp->m_drawActive = true;
         bp->m_drawFillCmd = SHADE_PAL_16;
         bp->m_drawFillArg = handleA;
         m_bomb[i]->m_screenX = 0x2c6;
@@ -1007,7 +1007,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
         g->SetImageSetByName("GRUNTZ_GOKARTGRUNT_EAST");
         m_gokart[i]->SetAnimationByName("GAME_CYCLE100", 0);
         CWwdSpriteObject* gp = m_gokart[i];
-        gp->m_drawActive = 1;
+        gp->m_drawActive = true;
         gp->m_drawFillCmd = SHADE_PAL_16;
         gp->m_drawFillArg = handleB;
         m_gokart[i]->m_screenX = -70;
@@ -1253,7 +1253,7 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
         m_animSprites[i]->SetAnimationByName("GRUNTZ_NORMALGRUNT_WALK", 0);
         m_animSprites[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
         CWwdSpriteObject* anim = m_animSprites[i];
-        anim->m_drawActive = 1;
+        anim->m_drawActive = true;
         anim->m_drawFillCmd = SHADE_PAL_16;
         anim->m_drawFillArg = sel;
         m_visSprites[i] = g_gameReg->m_world->m_childGroup->CreateSprite(
@@ -1410,7 +1410,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     m_animSprites[m_stepIndex]->SetImageSetByName("GRUNTZ_PICKUPS");
                     m_animSprites[m_stepIndex]->SetAnimationByName("GRUNTZ_PICKUPS_" + letter, 0);
                     CWwdSpriteObject* g = m_animSprites[m_stepIndex];
-                    g->m_drawActive = 1;
+                    g->m_drawActive = true;
                     g->m_drawFillCmd = SHADE_PAL_16;
                     g->m_drawFillArg = sel;
                     m_visSprites[m_stepIndex]->m_stateFlags |= SPRITE_STATE_HIDDEN;
@@ -1421,7 +1421,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     m_animSprites[m_stepIndex]->SetImageSetByName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
                     m_animSprites[m_stepIndex]->SetAnimationByName("GRUNTZ_NORMALGRUNT_IDLE4", 0);
                     CWwdSpriteObject* g = m_animSprites[m_stepIndex];
-                    g->m_drawActive = 1;
+                    g->m_drawActive = true;
                     g->m_drawFillCmd = SHADE_PAL_16;
                     g->m_drawFillArg = sel;
                     m_visSprites[m_stepIndex]->m_stateFlags |= SPRITE_STATE_HIDDEN;
@@ -1962,7 +1962,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         m_puddleSprites[i]->SetAnimationByName(g_puddleSpriteKey, 0);
         {
             CWwdSpriteObject* o = m_puddleSprites[i];
-            o->m_drawActive = 1;
+            o->m_drawActive = true;
             o->m_drawFillCmd = SHADE_PAL_16;
             o->m_drawFillArg = tint;
         }
@@ -1982,7 +1982,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             }
             m_gruntSprites[i]->SetImageSetByName("GRUNTZ_EXITZ");
             m_gruntSprites[i]->SetAnimationByName("GAME_GRUNTFLEX", 0);
-            m_gruntSprites[i]->m_drawActive = 1;
+            m_gruntSprites[i]->m_drawActive = true;
             m_gruntSprites[i]->m_drawFillCmd = SHADE_PAL_16;
             m_gruntSprites[i]->m_drawFillArg = tint;
         } else {
@@ -2001,7 +2001,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             m_gruntSprites[i]->SetImageSetByName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
             m_gruntSprites[i]->SetAnimationByName(key, 0);
             CWwdSpriteObject* o = m_gruntSprites[i];
-            o->m_drawActive = 1;
+            o->m_drawActive = true;
             o->m_drawFillCmd = SHADE_PAL_16;
             o->m_drawFillArg = tint;
         }
@@ -2034,7 +2034,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         m_weaponIcons[i]->SetAnimationByName("GAME_CYCLE100", 0);
         {
             CWwdSpriteObject* o = m_weaponIcons[i];
-            o->m_drawActive = 1;
+            o->m_drawActive = true;
             o->m_drawFillCmd = SHADE_PAL_16;
             o->m_drawFillArg = tint;
         }
@@ -2072,7 +2072,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             m_toyIcons[i]->SetAnimationByName("GAME_CYCLE100", 0);
             {
                 CWwdSpriteObject* o = m_toyIcons[i];
-                o->m_drawActive = 1;
+                o->m_drawActive = true;
                 o->m_drawFillCmd = SHADE_PAL_16;
                 o->m_drawFillArg = iconTint;
             }
@@ -2105,7 +2105,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             m_powerupIcons[i]->SetAnimationByName("GAME_CYCLE100", 0);
             {
                 CWwdSpriteObject* o = m_powerupIcons[i];
-                o->m_drawActive = 1;
+                o->m_drawActive = true;
                 o->m_drawFillCmd = SHADE_PAL_16;
                 o->m_drawFillArg = iconTint;
             }
@@ -2138,7 +2138,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             m_miscIcons[i]->SetAnimationByName("GAME_CYCLE100", 0);
             {
                 CWwdSpriteObject* o = m_miscIcons[i];
-                o->m_drawActive = 1;
+                o->m_drawActive = true;
                 o->m_drawFillCmd = SHADE_PAL_16;
                 o->m_drawFillArg = iconTint;
             }
@@ -2191,7 +2191,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         m_tabSprites[t]->SetAnimationByName("GAME_CYCLE100", 0);
         {
             CWwdSpriteObject* o = m_tabSprites[t];
-            o->m_drawActive = 1;
+            o->m_drawActive = true;
             o->m_drawFillCmd = SHADE_PAL_16;
             o->m_drawFillArg = tint;
         }
@@ -2212,7 +2212,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         m_flagSprites[t]->SetAnimationByName("GAME_CYCLE100", 0);
         {
             CWwdSpriteObject* o = m_flagSprites[t];
-            o->m_drawActive = 1;
+            o->m_drawActive = true;
             o->m_drawFillCmd = SHADE_PAL_16;
             o->m_drawFillArg = tint;
         }
@@ -2257,7 +2257,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         m_fortSprite->SetAnimationByName("GAME_CYCLE100", 0);
         {
             CWwdSpriteObject* o = m_fortSprite;
-            o->m_drawActive = 1;
+            o->m_drawActive = true;
             o->m_drawFillCmd = SHADE_PAL_16;
             o->m_drawFillArg = tint;
         }
@@ -2291,7 +2291,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         m_warlordBooty->SetAnimationByName(bootyKey, 0);
         {
             CWwdSpriteObject* o = m_warlordBooty;
-            o->m_drawActive = 1;
+            o->m_drawActive = true;
             o->m_drawFillCmd = SHADE_PAL_16;
             o->m_drawFillArg = tint;
         }

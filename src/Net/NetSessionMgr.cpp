@@ -275,7 +275,7 @@ i32 CNetSession::Poll(i32 elapsedMs) {
     DPID senderId = 0;
     DWORD messageSize = 0x800;
     i32 received = 0;
-    while (status == 0 && availableCount > 0 && m_owner->m_pollAbort == 0) {
+    while (status == 0 && availableCount > 0 && m_owner->m_pollAbort == false) {
         messageSize = 0x800;
         IDirectPlay4A* directPlay = m_netMgr->m_directPlay;
         DPID recipientId = m_localPlayer->m_playerId;

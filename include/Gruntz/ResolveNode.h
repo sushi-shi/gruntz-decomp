@@ -94,7 +94,7 @@ public:
     CShadeTable* m_drawFillArg;
     ShadeMode m_drawFillCmd;
     i32 m_fillFraction;
-    i32 m_drawActive;
+    b32 m_drawActive;
     i32 m_screenX;
 
     i32 m_screenY;
@@ -103,27 +103,27 @@ public:
 };
 
 #define SET_DRAW_FILL(node, mode, table)                                                           \
-    node->m_drawActive = 1;                                                                        \
+    node->m_drawActive = true;                                                                     \
     node->m_drawFillCmd = mode;                                                                    \
     node->m_drawFillArg = table
 
 #define SET_DRAW_FILL_REVERSED(node, mode, table)                                                  \
-    node->m_drawActive = 1;                                                                        \
+    node->m_drawActive = true;                                                                     \
     node->m_drawFillArg = table;                                                                   \
     node->m_drawFillCmd = mode
 
 #define SET_DRAW_FILL_SPLIT(activeNode, node, mode, table)                                         \
-    activeNode->m_drawActive = 1;                                                                  \
+    activeNode->m_drawActive = true;                                                               \
     node->m_drawFillCmd = mode;                                                                    \
     node->m_drawFillArg = table
 
 #define SET_DRAW_FILL_ARG_FIRST(node, mode, table)                                                 \
     node->m_drawFillArg = table;                                                                   \
-    node->m_drawActive = 1;                                                                        \
+    node->m_drawActive = true;                                                                     \
     node->m_drawFillCmd = mode
 
 #define SET_DRAW_FILL_FRACTION(node, mode, fraction)                                               \
-    node->m_drawActive = 1;                                                                        \
+    node->m_drawActive = true;                                                                     \
     node->m_drawFillCmd = mode;                                                                    \
     node->m_fillFraction = fraction
 

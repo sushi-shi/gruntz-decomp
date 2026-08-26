@@ -571,7 +571,7 @@ i32 CResolveNode::SetPosition(i32 x, i32 y) {
     m_stateFlags = SPRITE_STATE_NONE;
     m_flashCountdown = 0;
     m_drawFillArg = NULL;
-    m_drawActive = 0;
+    m_drawActive = false;
     m_screenY = y;
     m_flashInterval = 0x32;
     m_drawFillCmd = SHADE_COPY;
@@ -592,7 +592,7 @@ i32 CResolveNode::Init(
     m_id = id;
     m_flags = flags;
     m_drawFillArg = NULL;
-    m_drawActive = 0;
+    m_drawActive = false;
     m_drawFillCmd = SHADE_COPY;
     SetPosition(resolveX, resolveY);
     m_stateFlags = stateFlags;

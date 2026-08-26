@@ -78,7 +78,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
         }
     }
 
-    if (m_countdownActive == 0) {
+    if (m_countdownActive == false) {
         goto done;
     }
 
@@ -89,10 +89,10 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
         if (static_cast<i64>(g_frameTime) - m_timerBase >= m_timerWindow) {
             if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
 
-                (static_cast<CMulti*>(g_gameReg->m_curState))->m_roundComplete = 1;
+                (static_cast<CMulti*>(g_gameReg->m_curState))->m_roundComplete = true;
             }
             (static_cast<CPlay*>(g_gameReg->m_curState))->OpenLevelOverlay(0);
-            m_countdownActive = 0;
+            m_countdownActive = false;
             return 0;
         }
         goto done;
@@ -106,7 +106,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
             goto done;
         }
         (static_cast<CPlay*>(g_gameReg->m_curState))->OpenLevelOverlay(0);
-        m_countdownActive = 0;
+        m_countdownActive = false;
         return 0;
     }
 

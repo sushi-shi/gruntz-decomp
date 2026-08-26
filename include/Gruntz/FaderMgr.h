@@ -127,8 +127,8 @@ public:
 
     class CDDSurface* m_primarySurface;
     class CDDSurface* m_secondarySurface;
-    i32 m_active;
-    i32 m_traceEnabled;
+    b32 m_active;
+    b32 m_traceEnabled;
     CFaderArray m_arr;
 
     class CDDrawDeviceManager* m_deviceManager;

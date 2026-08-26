@@ -263,7 +263,7 @@ i32 CProjectile::LoadProjectileSprites(
     m_flightDist = fabs(len);
     m_curX = m_object->m_screenX;
     m_curY = m_object->m_screenY;
-    m_arrived = 0;
+    m_arrived = false;
 
     CDDrawChildGroup* factory = g_gameReg->m_world->m_childGroup;
     m_shadow = (factory->CreateSprite(
@@ -311,7 +311,7 @@ void CProjectile::RegisterType() {
 // @early-stop
 RVA(0x000dfd00, 0x70c)
 void CProjectile::AdvanceMotion() {
-    if (m_arrived != 0) {
+    if (m_arrived != false) {
         return;
     }
 
@@ -429,7 +429,7 @@ void CProjectile::AdvanceMotion() {
         m_shadow->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
         m_shadow = NULL;
     }
-    m_arrived = 1;
+    m_arrived = true;
     i32 tier = 0;
     if (m_kind != PICKUP_WINGZ) {
         CGruntzMgr* reg = g_gameReg;
@@ -643,7 +643,7 @@ void CProjectile::ScanTargets(i32 impact) {
             if (g == NULL) {
                 continue;
             }
-            if (g->m_entranceCommitted == 0) {
+            if (g->m_entranceCommitted == false) {
                 continue;
             }
             i32 gx = g->m_object->m_screenX - 7;
@@ -664,7 +664,7 @@ void CProjectile::ScanTargets(i32 impact) {
             }
             if (m_sourcePlayerIndex == playerIndex && m_sourceUnitIndex == unitIndex) {
 
-                if (impact != 0 && g->m_entranceCommitted != 0
+                if (impact != 0 && g->m_entranceCommitted != false
                     && g->m_entranceReason == PICKUP_NONE) {
                     g->LoadGruntTypeTable(PICKUP_BOOMERANG, 1, 0, 0);
                 }

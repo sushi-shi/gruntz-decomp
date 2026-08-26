@@ -35,7 +35,7 @@ public:
 
     u32 m_titleCountdownMs;
     SoundCue* m_titleCue;
-    i32 m_titleCueEnabled;
+    b32 m_titleCueEnabled;
 };
 
 extern i32 g_skipNextScreenEffect;

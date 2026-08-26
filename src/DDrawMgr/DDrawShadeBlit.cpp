@@ -53,7 +53,7 @@ CDDrawShadeBlit::CDDrawShadeBlit() {
     m_palDescr = NULL;
     m_drawType = SHADE_COPY;
     m_light = SHADE_LIGHT_MIDPOINT;
-    m_doubleScanlines = 0;
+    m_doubleScanlines = false;
     m_palette = NULL;
     m_srcBpp = PIXEL8_BYTES_PER_PIXEL;
     m_dstBpp = PIXEL8_BYTES_PER_PIXEL;
@@ -456,9 +456,9 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 
         if (g_rDown == PIXEL16_RED_DOWN && g_gDown == RGB555_GREEN_DOWN
             && g_bDown == PIXEL16_BLUE_DOWN && g_rUp == RGB555_RED_UP
             && g_gUp == PIXEL16_GREEN_UP) {
-            m_blendVariant = 1;
+            m_blendVariant = true;
         } else {
-            m_blendVariant = 0;
+            m_blendVariant = false;
         }
     }
 
@@ -583,19 +583,19 @@ void CDDrawShadeBlit::BlitCopyForward(
                 break;
             }
             if (x < clip->left) {
-                i32 trans;
+                b32 trans;
                 do {
                     if (m_rleData[pos] & SHADE_RLE_TRANSPARENT_FLAG) {
                         x += m_rleData[pos] - SHADE_RLE_TRANSPARENT_FLAG;
                         pos++;
-                        trans = 1;
+                        trans = true;
                     } else {
                         x += m_rleData[pos];
                         pos += static_cast<i32>(m_rleData[pos]) * m_srcBpp + 1;
-                        trans = 0;
+                        trans = false;
                     }
                 } while (x < clip->left);
-                if (x > clip->left && trans == 0) {
+                if (x > clip->left && trans == false) {
                     i32 bytes = (x - clip->left) * m_srcBpp;
                     memcpy(base, &m_rleData[pos] - bytes, bytes);
                 }
@@ -783,19 +783,19 @@ void CDDrawShadeBlit::BlitCopyMirrored(
 
         while (row < clip->bottom) {
             if (x > clip->right) {
-                i32 trans = 0;
+                b32 trans = false;
                 do {
                     if (m_rleData[pos] & SHADE_RLE_TRANSPARENT_FLAG) {
                         x += SHADE_RLE_TRANSPARENT_FLAG - static_cast<i32>(m_rleData[pos]);
                         pos++;
-                        trans = 1;
+                        trans = true;
                     } else {
                         x -= m_rleData[pos];
                         pos += static_cast<i32>(m_rleData[pos]) * m_srcBpp + 1;
-                        trans = 0;
+                        trans = false;
                     }
                 } while (x > clip->right);
-                if (x >= 0 && trans == 0) {
+                if (x >= 0 && trans == false) {
                     i32 bytes = (clip->right - x) * m_srcBpp;
                     u8* s = &m_rleData[pos] - bytes;
                     if (m_srcBpp == 1) {
@@ -1189,19 +1189,19 @@ void CDDrawShadeBlit::BlitShadedForward(
                 break;
             }
             if (x < clip->left) {
-                i32 trans;
+                b32 trans;
                 do {
                     if (m_rleData[pos] & SHADE_RLE_TRANSPARENT_FLAG) {
                         x += m_rleData[pos] - SHADE_RLE_TRANSPARENT_FLAG;
                         pos++;
-                        trans = 1;
+                        trans = true;
                     } else {
                         x += m_rleData[pos];
                         pos += static_cast<i32>(m_rleData[pos]) * m_srcBpp + 1;
-                        trans = 0;
+                        trans = false;
                     }
                 } while (x < clip->left);
-                if (x > clip->left && trans == 0) {
+                if (x > clip->left && trans == false) {
                     if (m_doubleScanlines) {
                         if ((dst->top + row) % 2) {
                             i32 vis = x - clip->left;
@@ -1990,19 +1990,19 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                 break;
             }
             if (x > clip->right) {
-                i32 trans = 0;
+                b32 trans = false;
                 do {
                     if (m_rleData[pos] & SHADE_RLE_TRANSPARENT_FLAG) {
                         x += SHADE_RLE_TRANSPARENT_FLAG - static_cast<i32>(m_rleData[pos]);
                         pos++;
-                        trans = 1;
+                        trans = true;
                     } else {
                         x -= m_rleData[pos];
                         pos += static_cast<i32>(m_rleData[pos]) * m_srcBpp + 1;
-                        trans = 0;
+                        trans = false;
                     }
                 } while (x > clip->right);
-                if (x >= 0 && trans == 0) {
+                if (x >= 0 && trans == false) {
                     if (m_doubleScanlines) {
                         if ((dst->top + row) % 2) {
                             i32 vis = clip->right - x;

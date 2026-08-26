@@ -80,11 +80,11 @@ i32 CGrunt::StepGooSuckerBehavior() {
 
     FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget, x)
 
-    i32 powered = m_poweredUp;
-    if (powered != 0) {
-        i32 neighborValid = m_neighborValid;
-        if (neighborValid == 0) {
-            if (m_combatActive != 0) {
+    b32 powered = m_poweredUp;
+    if (powered != false) {
+        b32 neighborValid = m_neighborValid;
+        if (neighborValid == false) {
+            if (m_combatActive != false) {
                 goto L_yes;
             }
             if (m_stamina >= STAMINA_FULL) {
@@ -94,33 +94,33 @@ i32 CGrunt::StepGooSuckerBehavior() {
                 if (atTarget && g == NULL) {
                     goto L_yes;
                 }
-                if (m_poweredUp == 0) {
+                if (m_poweredUp == false) {
                     goto L_yes;
                 }
             } else {
                 if (atTarget) {
                     goto L_yes;
                 }
-                if (m_poweredUp == 0) {
+                if (m_poweredUp == false) {
                     goto L_yes;
                 }
             }
-            if (m_neighborValid != 0) {
+            if (m_neighborValid != false) {
                 goto L_yes;
             }
             RESET_GRUNT_POWERED_STATE(this)
         } else {
-            m_neighborValid = 0;
+            m_neighborValid = false;
         }
     L_yes:
         return 1;
     }
 
     if (g != NULL) {
-        if (m_neighborValid != 0) {
+        if (m_neighborValid != false) {
             return 1;
         }
-        if (m_combatActive == 0 && m_stamina >= STAMINA_FULL) {
+        if (m_combatActive == false && m_stamina >= STAMINA_FULL) {
             if (atTarget) {
                 COMMIT_GRUNT_NEIGHBOR(g);
                 if (CoordCount() != 0) {
@@ -137,22 +137,22 @@ i32 CGrunt::StepGooSuckerBehavior() {
             }
         }
     } else {
-        m_blockedVoicePending = 0;
+        m_blockedVoicePending = false;
     }
 
 L_ed006b:
     if (g == NULL || GruntInRadius(g->m_playerIndex, g->m_unitIndex) == 0) {
-        m_blockedVoicePending = 0;
+        m_blockedVoicePending = false;
         goto L_scanb;
     }
-    if (m_poweredUp != 0) {
+    if (m_poweredUp != false) {
         goto L_scanb;
     }
     if (m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(g)
         && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
         COMMIT_GRUNT_NEIGHBOR(g);
     }
-    if (m_poweredUp != 0) {
+    if (m_poweredUp != false) {
         goto L_scanb;
     }
     if (static_cast<u32>(m_dwell) <= DWELL_REPATH_MS) {
@@ -163,7 +163,7 @@ L_ed006b:
         g->GetScreenPos(&cc);
         if (TileSwitch(cc.m_x >> TILE_SHIFT_PX, cc.m_y >> TILE_SHIFT_PX, 0, m_arrivalFlags, 1, 0)
             != 0) {
-            if (m_blockedVoicePending != 0) {
+            if (m_blockedVoicePending != false) {
                 i32 x = m_object->m_screenX;
                 i32 y = m_object->m_screenY;
                 CGruntzMgr* game = g_gameReg;
@@ -175,7 +175,7 @@ L_ed006b:
                     != 0) {
                     game->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
                 }
-                m_blockedVoicePending = 0;
+                m_blockedVoicePending = false;
             }
             m_dwell = 0;
         }

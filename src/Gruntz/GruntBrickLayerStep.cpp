@@ -60,10 +60,10 @@ i32 CGrunt::StepBrickLayerBehavior() {
 
     FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget, x)
 
-    i32 powered = m_poweredUp;
-    if (powered != 0) {
-        if (m_neighborValid == 0) {
-            if (m_combatActive != 0) {
+    b32 powered = m_poweredUp;
+    if (powered != false) {
+        if (m_neighborValid == false) {
+            if (m_combatActive != false) {
                 goto L_powered_yes;
             }
             if (m_stamina >= STAMINA_FULL) {
@@ -73,33 +73,33 @@ i32 CGrunt::StepBrickLayerBehavior() {
                 if (atTarget && g == NULL) {
                     goto L_powered_yes;
                 }
-                if (m_poweredUp == 0) {
+                if (m_poweredUp == false) {
                     goto L_powered_yes;
                 }
             } else {
                 if (atTarget) {
                     goto L_powered_yes;
                 }
-                if (m_poweredUp == 0) {
+                if (m_poweredUp == false) {
                     goto L_powered_yes;
                 }
             }
-            if (m_neighborValid != 0) {
+            if (m_neighborValid != false) {
                 goto L_powered_yes;
             }
             RESET_GRUNT_POWERED_STATE(this)
         } else {
-            m_neighborValid = 0;
+            m_neighborValid = false;
         }
     L_powered_yes:
         return 1;
     }
 
     if (g != NULL) {
-        if (m_neighborValid != 0) {
+        if (m_neighborValid != false) {
             return 1;
         }
-        if (m_combatActive == 0 && m_stamina >= STAMINA_FULL) {
+        if (m_combatActive == false && m_stamina >= STAMINA_FULL) {
             if (atTarget) {
                 COMMIT_GRUNT_NEIGHBOR(g);
                 if (CoordCount() != 0) {
@@ -116,15 +116,15 @@ i32 CGrunt::StepBrickLayerBehavior() {
             }
         }
     } else {
-        m_blockedVoicePending = 0;
+        m_blockedVoicePending = false;
     }
 
     if (g == NULL || static_cast<u32>(m_dwell) <= DWELL_REPATH_MS
         || GruntInRadius(g->m_playerIndex, g->m_unitIndex) == 0) {
-        m_blockedVoicePending = 0;
+        m_blockedVoicePending = false;
         goto L_ed153;
     }
-    if (m_poweredUp != 0) {
+    if (m_poweredUp != false) {
         goto L_ed153;
     }
     if (m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(g)
@@ -133,7 +133,7 @@ i32 CGrunt::StepBrickLayerBehavior() {
         m_dwell = 0;
         return 1;
     }
-    if (m_poweredUp != 0) {
+    if (m_poweredUp != false) {
         goto L_ed153;
     }
     if (TileSwitch(
@@ -147,14 +147,14 @@ i32 CGrunt::StepBrickLayerBehavior() {
         == 0) {
         goto L_ed153;
     }
-    if (m_blockedVoicePending != 0) {
+    if (m_blockedVoicePending != false) {
         CCueRect* board = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
         i32 x = m_object->m_screenX;
         i32 y = m_object->m_screenY;
         if (CGameLevel::PointInRect(board, x, y)) {
             g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
         }
-        m_blockedVoicePending = 0;
+        m_blockedVoicePending = false;
     }
     m_dwell = 0;
 

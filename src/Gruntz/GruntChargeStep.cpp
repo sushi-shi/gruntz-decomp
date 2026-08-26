@@ -51,10 +51,10 @@ i32 CGrunt::StepDumbChaserBehavior() {
         }
     }
 
-    i32 powered = m_poweredUp;
-    if (powered != 0) {
-        if (m_neighborValid == 0) {
-            if (m_combatActive != 0) {
+    b32 powered = m_poweredUp;
+    if (powered != false) {
+        if (m_neighborValid == false) {
+            if (m_combatActive != false) {
                 return 1;
             }
             if (m_stamina >= STAMINA_FULL) {
@@ -64,10 +64,10 @@ i32 CGrunt::StepDumbChaserBehavior() {
                 if (hitGate != 0 && g == NULL) {
                     return 1;
                 }
-                if (m_poweredUp == 0) {
+                if (m_poweredUp == false) {
                     return 1;
                 }
-                if (m_neighborValid != 0) {
+                if (m_neighborValid != false) {
                     return 1;
                 }
                 RESET_GRUNT_POWERED_STATE(this)
@@ -76,16 +76,16 @@ i32 CGrunt::StepDumbChaserBehavior() {
             if (hitGate != 0) {
                 return 1;
             }
-            if (m_poweredUp == 0) {
+            if (m_poweredUp == false) {
                 return 1;
             }
-            if (m_neighborValid != 0) {
+            if (m_neighborValid != false) {
                 return 1;
             }
             RESET_GRUNT_POWERED_STATE(this)
             return 1;
         }
-        m_neighborValid = 0;
+        m_neighborValid = false;
         return 1;
     }
 
@@ -132,7 +132,8 @@ i32 CGrunt::StepDumbChaserBehavior() {
                     return 1;
                 }
             }
-            if (m_resetApplied == 0 && m_hasExtent != 0 && static_cast<u32>(m_dwell) > 3000) {
+            if (m_resetApplied == false && m_hasExtent != false
+                && static_cast<u32>(m_dwell) > 3000) {
                 CWwdSpriteObject* mp = m_object;
                 SELECT_RANDOM_EXTENT_POINT(mp, baseX, spanX, baseY, spanY)
                 CGruntzMgr* mgr = g_gameReg;
@@ -163,7 +164,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
             }
-            if (t == NULL || t->m_entranceCommitted == 0
+            if (t == NULL || t->m_entranceCommitted == false
                 || GruntInRadius(t->m_playerIndex, t->m_unitIndex) == 0) {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
@@ -172,7 +173,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                 StepArrivalDrop(t->m_lastTilePx.m_x, t->m_lastTilePx.m_y, 0, m_arrivalFlags, 1, 0);
                 m_dwell = 0;
             }
-            if (m_poweredUp == 0 && m_stamina >= STAMINA_FULL
+            if (m_poweredUp == false && m_stamina >= STAMINA_FULL
                 && RectContains(t->m_object->m_screenX, t->m_object->m_screenY) != 0
                 && GRUNT_AT_SAVED_SCREEN_POS(t)) {
                 COMMIT_GRUNT_NEIGHBOR(t);
@@ -183,17 +184,18 @@ i32 CGrunt::StepDumbChaserBehavior() {
         }
         case AISTATE_ATTACK: {
 
-            if (m_poweredUp != 0) {
+            if (m_poweredUp != false) {
                 CGrunt* t =
                     m_triggerMgr
                         ->m_units[m_arrivalCell.m_y + m_arrivalCell.m_x * TM_UNITS_PER_PLAYER];
                 if (t == NULL || GruntInRadius(t->m_playerIndex, t->m_unitIndex) == 0
-                    || t->m_entranceCommitted == 0) {
+                    || t->m_entranceCommitted == false) {
                     m_defenderState = AISTATE_CHASE;
                     m_dwell = DWELL_REPATH_MS;
                     return 1;
                 }
-                if (m_neighborValid != 0 || m_combatActive != 0 || m_stamina < STAMINA_FULL) {
+                if (m_neighborValid != false || m_combatActive != false
+                    || m_stamina < STAMINA_FULL) {
                     return 1;
                 }
                 if (RectContains(t->m_object->m_screenX, t->m_object->m_screenY) == 0

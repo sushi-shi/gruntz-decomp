@@ -56,7 +56,7 @@ i32 CTriggerMgr::SetLevel(CDDrawSurfaceMgr* lvl) {
     m_world = lvl;
     m_armed = 0;
     m_pendingFx = NULL;
-    m_countdownActive = 1;
+    m_countdownActive = true;
     return 1;
 }
 
@@ -311,7 +311,7 @@ i32 CTriggerMgr::StartUnitDeath(
     if (unit == NULL) {
         return 0;
     }
-    if (unit->m_deathAnimStarted != 0) {
+    if (unit->m_deathAnimStarted != false) {
         UnregisterUnit(playerIndex, unitIndex, 0);
         return 0;
     }
@@ -391,7 +391,7 @@ CGrunt* CTriggerMgr::CellHitTest(
             CGrunt** cell = &m_units[startPlayerIndex * TM_UNITS_PER_PLAYER];
             for (i32 unitIndex = 0; unitIndex < TM_UNITS_PER_PLAYER; unitIndex++) {
                 CGrunt* g = cell[unitIndex];
-                if (g != NULL && g->m_entranceCommitted != 0) {
+                if (g != NULL && g->m_entranceCommitted != false) {
                     CWwdSpriteObject* o = g->m_object;
                     if (o->m_frameImage != NULL) {
                         i32 x0 = o->m_screenX - 15;
@@ -420,7 +420,7 @@ RVA(0x0006bfd0, 0x106)
 i32 CTriggerMgr::ResetCell(i32 playerIndex, i32 unitIndex, i32 force, i32 keep) {
     i32 idx = playerIndex * TM_UNITS_PER_PLAYER + unitIndex;
     CGrunt* cell = m_units[idx];
-    if (cell == NULL || cell->m_entranceCommitted == 0) {
+    if (cell == NULL || cell->m_entranceCommitted == false) {
         return 0;
     }
     if (playerIndex != g_curPlayer) {
@@ -462,7 +462,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
     CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState);
 
     if (g != NULL) {
-        g->m_neighborScanEnabled = 1;
+        g->m_neighborScanEnabled = true;
     }
 
     CGameLevel* level = m_world->m_level;
@@ -723,43 +723,43 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 
         case TILEKIND_ARROW_UP_A:
         case TILEKIND_ARROW_UP_B:
-            if (g == NULL || g->m_deathAnimStarted != 0) {
+            if (g == NULL || g->m_deathAnimStarted != false) {
                 return 1;
             }
-            g->m_entranceActive = 1;
+            g->m_entranceActive = true;
             g->StepArrivalDrop(x, y - 32, 0, -1, 1, 0);
             return 1;
 
         case TILEKIND_ARROW_RIGHT_A:
         case TILEKIND_ARROW_RIGHT_B:
-            if (g == NULL || g->m_deathAnimStarted != 0) {
+            if (g == NULL || g->m_deathAnimStarted != false) {
                 return 1;
             }
-            g->m_entranceActive = 1;
+            g->m_entranceActive = true;
             g->StepArrivalDrop(x + 32, y, 0, -1, 1, 0);
             return 1;
 
         case TILEKIND_ARROW_DOWN_A:
         case TILEKIND_ARROW_DOWN_B:
-            if (g == NULL || g->m_deathAnimStarted != 0) {
+            if (g == NULL || g->m_deathAnimStarted != false) {
                 return 1;
             }
-            g->m_entranceActive = 1;
+            g->m_entranceActive = true;
             g->StepArrivalDrop(x, y + 32, 0, -1, 1, 0);
             return 1;
 
         case TILEKIND_ARROW_LEFT_A:
         case TILEKIND_ARROW_LEFT_B:
-            if (g == NULL || g->m_deathAnimStarted != 0) {
+            if (g == NULL || g->m_deathAnimStarted != false) {
                 return 1;
             }
-            g->m_entranceActive = 1;
+            g->m_entranceActive = true;
             g->StepArrivalDrop(x - 32, y, 0, -1, 1, 0);
             return 1;
 
         case TILEKIND_ARROW_CURRENT:
-            if (g != NULL && g->m_deathAnimStarted == 0) {
-                g->m_entranceActive = 1;
+            if (g != NULL && g->m_deathAnimStarted == false) {
+                g->m_entranceActive = true;
                 switch (static_cast<GruntDirection>(g->m_entranceCell.direction)) {
                     case DIR_NORTH:
                         g->StepArrivalDrop(x, y - 32, 0, -1, 1, 0);
@@ -1099,7 +1099,7 @@ void CTriggerMgr::EnqueueGuardEnd(i32 playerIndex, i32 unitIndex) {
 RVA(0x0006dae0, 0x4f9)
 i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY) {
     CGrunt* cell = m_units[playerIndex * TM_UNITS_PER_PLAYER + unitIndex];
-    if (cell == NULL || cell->m_entranceCommitted == 0) {
+    if (cell == NULL || cell->m_entranceCommitted == false) {
         return 0;
     }
     i32 cellTileX = cell->LastTilePx().m_x >> TILE_SHIFT_PX;
@@ -1229,7 +1229,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
             }
             SpawnPowerupIcon(PICKUP_WARPSTONE, bx, by, 0, cell->m_warpstoneAnchorIndex, 0);
             cell->FaceTowardPixel(bx, by);
-            if (cell->m_poweredUp != 0 && cell->m_neighborValid == 0) {
+            if (cell->m_poweredUp != false && cell->m_neighborValid == false) {
                 RESET_GRUNT_POWERED_STATE(cell)
             }
             cell->LoadGruntTypeTable(PICKUP_NONE, 1, 0, 0);
@@ -1254,7 +1254,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
     bool isP;
     bool isI2;
     CGrunt* cell = m_units[playerIndex * TM_UNITS_PER_PLAYER + unitIndex];
-    if (cell == NULL || cell->m_entranceCommitted == 0 || cell->m_entranceActive != 0) {
+    if (cell == NULL || cell->m_entranceCommitted == false || cell->m_entranceActive != false) {
         return 0;
     }
     i32 cellTileY = cell->LastTilePx().m_y >> TILE_SHIFT_PX;
@@ -1312,7 +1312,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
             );
         }
         cell->FaceTowardPixel(bx, by);
-        if (cell->m_poweredUp != 0 && cell->m_neighborValid == 0) {
+        if (cell->m_poweredUp != false && cell->m_neighborValid == false) {
             RESET_GRUNT_POWERED_STATE(cell)
         }
         cell->LoadVehicleGruntSprites(PICKUP_NONE);
@@ -1345,8 +1345,8 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
         moveKind = cell->m_moveKind;
     }
     cell->FaceTowardPixel(bx, by);
-    cell->m_neighborValid = 0;
-    if (cell->m_poweredUp != 0) {
+    cell->m_neighborValid = false;
+    if (cell->m_poweredUp != false) {
         RESET_GRUNT_POWERED_STATE(cell)
     }
 
@@ -1405,7 +1405,7 @@ i32 CTriggerMgr::ClearCell(
 ) {
     i32 idx = playerIndex * TM_UNITS_PER_PLAYER + unitIndex;
     CGrunt* cell = m_units[idx];
-    if (cell == NULL || cell->m_entranceCommitted == 0) {
+    if (cell == NULL || cell->m_entranceCommitted == false) {
         return 0;
     }
     if (cell->m_tileClaimed != 0) {
@@ -1418,7 +1418,7 @@ i32 CTriggerMgr::ClearCell(
         cell->m_arrivalState = AI_NONE;
         cell->SetEntrancePos(1, 1);
     }
-    if (cell->m_entranceActive != 0) {
+    if (cell->m_entranceActive != false) {
         return 0;
     }
     CString* typeRec = g_typeColl.ScratchResolve(cell->m_logicRecord->m_eventCode);

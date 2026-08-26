@@ -83,16 +83,16 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
     if (GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(lvl, unit)) {
         return 0;
     }
-    if (unit->m_entranceCommitted == 0) {
+    if (unit->m_entranceCommitted == false) {
         return 0;
     }
-    if (unit->m_deathAnimStarted != 0) {
+    if (unit->m_deathAnimStarted != false) {
         return 0;
     }
-    if (unit->m_entranceActive != 0) {
+    if (unit->m_entranceActive != false) {
         return 0;
     }
-    if (unit->m_poweredUp != 0) {
+    if (unit->m_poweredUp != false) {
         return 0;
     }
 

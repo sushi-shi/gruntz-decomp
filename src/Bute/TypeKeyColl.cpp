@@ -166,8 +166,8 @@ void* zPTree::Find(const char* key) {
     CButeTreeNode* root = m_root;
     m_descentCursor = root;
     m_candidateLeaf = NULL;
-    m_lookupPending = 1;
-    i32 bitmax = static_cast<i32>(strlen(key)) * 8 + 7;
+    m_lookupPending = true;
+    i32 bitmax = static_cast<i32>(strlen(key)) * PTREE_BITS_PER_BYTE + PTREE_BYTE_BIT_MASK;
     m_keyBitLength = bitmax;
     if (root == NULL) {
         return NULL;
@@ -175,7 +175,7 @@ void* zPTree::Find(const char* key) {
     i32 b = root->m_bit;
     while (b <= bitmax) {
         CButeTreeNode** slot = m_descentCursor->m_child;
-        if (key[b >> 3] & (1 << (b & 7))) {
+        if (key[b >> PTREE_BYTE_BIT_SHIFT] & (1 << (b & PTREE_BYTE_BIT_MASK))) {
             ++slot;
         }
         CButeTreeNode* child = *slot;
@@ -185,7 +185,7 @@ void* zPTree::Find(const char* key) {
         }
         if (child->m_bit <= b) {
             if (strcmp(key, child->m_key) == 0) {
-                m_lookupPending = 0;
+                m_lookupPending = false;
                 return m_candidateLeaf->m_value;
             }
             return NULL;
@@ -524,13 +524,13 @@ void* _zvec::GrowTo(i32 idx, i32 at) {
 // @early-stop
 RVA(0x0016db90, 0x206)
 void* zPTree::Insert(const char* key, void* value) {
-    if (m_lookupPending == 0) {
+    if (m_lookupPending == false) {
         g_retAddrBreadcrumb = GetCallerRetAddr();
         m_errSink->Set(this, const_cast<char*>("No prior lookup"), 0x16);
         return NULL;
     }
-    m_lookupPending = 0;
-    m_keyBitLength -= 7;
+    m_lookupPending = false;
+    m_keyBitLength -= PTREE_BYTE_BIT_MASK;
     if (key == NULL || value == NULL) {
         char* msg = g_errNullArg;
         g_retAddrBreadcrumb = GetCallerRetAddr();
@@ -554,7 +554,7 @@ void* zPTree::Insert(const char* key, void* value) {
     }
     node->m_value = static_cast<char*>(value);
     node->m_bit = critbit;
-    char* keybuf = new char[(m_keyBitLength >> 3) + 1];
+    char* keybuf = new char[(m_keyBitLength >> PTREE_BYTE_BIT_SHIFT) + 1];
     node->m_key = keybuf;
     if (keybuf == NULL) {
         char* msg = g_errOutOfMem;
@@ -564,7 +564,7 @@ void* zPTree::Insert(const char* key, void* value) {
     }
     strcpy(keybuf, key);
 
-    i32 dir = key[critbit >> 3] & (1 << (critbit & 7));
+    i32 dir = key[critbit >> PTREE_BYTE_BIT_SHIFT] & (1 << (critbit & PTREE_BYTE_BIT_MASK));
     CButeTreeNode** child = node->m_child;
     if (dir) {
         ++child;
@@ -576,7 +576,8 @@ void* zPTree::Insert(const char* key, void* value) {
     if (cursor != NULL) {
         if (critbit >= cursor->m_bit) {
             CButeTreeNode** s1 = cursor->m_child;
-            if (key[cursor->m_bit >> 3] & (1 << (cursor->m_bit & 7))) {
+            if (key[cursor->m_bit >> PTREE_BYTE_BIT_SHIFT]
+                & (1 << (cursor->m_bit & PTREE_BYTE_BIT_MASK))) {
                 ++s1;
             }
             *s1 = node;
@@ -589,7 +590,8 @@ void* zPTree::Insert(const char* key, void* value) {
                 do {
                     p = m_candidateLeaf;
                     m_descentCursor = p;
-                    d2 = key[p->m_bit >> 3] & (1 << (p->m_bit & 7));
+                    d2 = key[p->m_bit >> PTREE_BYTE_BIT_SHIFT]
+                         & (1 << (p->m_bit & PTREE_BYTE_BIT_MASK));
                     CButeTreeNode** s = p->m_child;
                     if (d2) {
                         ++s;
@@ -687,7 +689,7 @@ zPTree::zPTree(void(__cdecl* teardown)(void*), i32 n)
     : zErrHandling(&g_rezArchiveErrorSlot),
       zPtrColl(n, teardown),
       m_root(NULL),
-      m_lookupPending(0) {}
+      m_lookupPending(false) {}
 
 RVA(0x0016e070, 0x7b)
 void zPTree::ClearRecursive(CButeTreeNode* node) {
