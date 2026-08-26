@@ -591,7 +591,14 @@ void CDDrawChildGroup::CollideBroadcast() {
     }
 }
 
-// @early-stop
+#include <Wwd/WwdRectOverlapInline.h>
+
+#define PLACE_OBJECT_RECT(dst, object, rect)                                                       \
+    (dst).left = (object)->rect.left + (object)->m_screenX;                                        \
+    (dst).top = (object)->rect.top + (object)->m_screenY;                                          \
+    (dst).right = (object)->rect.right + (object)->m_screenX;                                      \
+    (dst).bottom = (object)->rect.bottom + (object)->m_screenY
+
 RVA(0x0015a130, 0xdc)
 i32 CDDrawChildGroup::BoxesOverlap(CGameObject* areaObj, CGameObject* switchObj) {
     if (switchObj->m_switchRect.left == COORD_UNSET) {
@@ -602,29 +609,11 @@ i32 CDDrawChildGroup::BoxesOverlap(CGameObject* areaObj, CGameObject* switchObj)
     }
 
     CDDrawRect ra, rb;
-    i32 xi = areaObj->m_screenX;
-    i32 yi = areaObj->m_screenY;
-    ra.left = areaObj->m_area.left + xi;
-    ra.top = areaObj->m_area.top + yi;
-    ra.right = areaObj->m_area.right + xi;
-    ra.bottom = areaObj->m_area.bottom + yi;
-    i32 xj = switchObj->m_screenX;
-    i32 yj = switchObj->m_screenY;
-    rb.left = switchObj->m_switchRect.left + xj;
-    rb.top = switchObj->m_switchRect.top + yj;
-    rb.right = switchObj->m_switchRect.right + xj;
-    rb.bottom = switchObj->m_switchRect.bottom + yj;
-    if (ra.left > rb.right) {
-        return 0;
-    }
-    if (ra.right < rb.left) {
-        return 0;
-    }
-    if (ra.top > rb.bottom) {
-        return 0;
-    }
-    return ra.bottom >= rb.top;
+    PLACE_OBJECT_RECT(ra, areaObj, m_area);
+    PLACE_OBJECT_RECT(rb, switchObj, m_switchRect);
+    return CDDrawRectsOverlap(&ra, &rb);
 }
+#undef PLACE_OBJECT_RECT
 
 DATA(0x0021ab30)
 static char s_dbgRle[] = "RLE";

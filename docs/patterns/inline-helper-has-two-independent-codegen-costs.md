@@ -53,6 +53,22 @@ narrow real inline left the edited setup bodies usable but moved the unedited ex
 `CSBI_ImageSetAni::Render` to 99.8667%. Replacing the helper with
 `INITIALIZE_STATUS_BAR_ITEM` restored the later renderer and the MAX gate.
 
+## Mechanism C: visibility decides which call sites are candidates
+
+An inline body visible throughout a TU can be wrong even when the body and identity are
+right. `CDDrawChildGroup::CollideBroadcast` must call the out-of-line member
+`RectsOverlap`, while the later `BoxesOverlap` expands the same rectangle predicate.
+Putting the member body in the class changed `CollideBroadcast` from six calls to five
+and 94.6071% to 82.4583%. Defining it later in the `.cpp` did not hide it from the earlier
+site: VC5 still treated the whole TU as eligible for expansion.
+
+The retail-compatible boundary is a public out-of-line member delegating to a narrow
+inline predicate, with that predicate's `*Inline.h` included in the caller TU only after
+`CollideBroadcast`. The earlier member call remains external, while `BoxesOverlap`
+expands the predicate and reaches 100% exact. Including the predicate at the top of the
+TU preserved the call set but perturbed `CollideBroadcast` to 94.39%, independently
+confirming the declaration-state mechanism above.
+
 ## Detection and reverse-use rule
 
 After a real-inline A/B, compare two populations:
@@ -64,6 +80,10 @@ After a real-inline A/B, compare two populations:
    as TU state. First move a free helper to the narrowest real owner header. If a class
    declaration is still required and the gate remains red, use a narrow free helper or
    macro instead of retaining an inert declaration.
+3. If retail calls a helper at an early site but expands equivalent logic at a later site,
+   do not assume source order alone limits visibility. Keep the externally called wrapper
+   out of line and expose a narrower inline primitive only at the first site that expands
+   it; a selectively included `*Inline.h` is a real source boundary, not a state probe.
 
 Do not add or retain unused declarations to steer either mechanism. A macro fallback is
 valid only when it names a repeated semantic operation and expands to the caller's

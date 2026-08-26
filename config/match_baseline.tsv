@@ -316,7 +316,7 @@ wwdfactoryobject	56	52
 wwdgameobject	47	43
 wwdgameobjectrender	15	12
 wwdgrid	13	9
-wwdobjmgr	54	47
+wwdobjmgr	54	48
 wwdspatialmgr	14	12
 zdarrayderived	3	3
 zutil	2	2
@@ -4585,7 +4585,7 @@ wwdfactoryobject	?IsLoaded@CWwdDeferredObject@@UAEHXZ	100.0000	100.0000	3	02a1f3
 wwdfactoryobject	?IsLoaded@CWwdDotObject@@UAEHXZ	100.0000	100.0000	3	2f349110d3a3	0x15c000	100.0000	
 wwdfactoryobject	?IsLoaded@CWwdGameObject@@UAEHXZ	100.0000	100.0000	2	930a1eb18903	0x15bcd0	100.0000	
 wwdfactoryobject	?Notify@CGameObject@@QAEXPAU1@@Z	100.0000	100.0000	4	cfccfd75cad3	0x15b650	100.0000	
-wwdfactoryobject	?RectsOverlap@CDDrawChildGroup@@QAEHPAUCDDrawRect@@0@Z	100.0000	100.0000	1	6af30d971a2c	0x15bfb0	100.0000	
+wwdfactoryobject	?RectsOverlap@CDDrawChildGroup@@QAEHPAUCDDrawRect@@0@Z	100.0000	100.0000	2	5c19af57d26f	0x15bfb0	100.0000	
 wwdfactoryobject	?Render@CWwdDeferredObject@@UAEXPAVCDDrawSurfacePair@@@Z	100.0000	100.0000	2	24cbe0b343c4	0x15ba70	100.0000	
 wwdfactoryobject	?Render@CWwdSpriteObject@@UAEXPAVCDDrawSurfacePair@@@Z	100.0000	100.0000	2	24a7e913f68e	0x15ba20	100.0000	
 wwdfactoryobject	?RestartAnimation@CAniAdvanceCursor@@QAEXH@Z	100.0000	100.0000	3	3c9477632755	0x15c320	100.0000	
@@ -4689,7 +4689,7 @@ wwdobjmgr	?AttachSprite@CDDrawChildGroup@@QAEHPAVCWwdGameObject@@HHHPBDH@Z	100.0
 wwdobjmgr	?BltDirtyChildRegions@CDDrawChildGroup@@UAEXPAVCDDrawSurfacePair@@00@Z	100.0000	100.0000	1	a8ed2dd69a4c	0x159d40	100.0000	
 wwdobjmgr	?BltDirtyChildren@CDDrawChildGroup@@UAEXPAVCDDrawSurfacePair@@0@Z	100.0000	100.0000	1	3849464bc47c	0x159cc0	100.0000	
 wwdobjmgr	?BltDirtyChildrenEx@CDDrawChildGroup@@UAEXPAVCDrawSubWorker@@PAVCDDrawSurfacePair@@1@Z	100.0000	100.0000	2	7d7e27b9fdcb	0x159cf0	100.0000	
-wwdobjmgr	?BoxesOverlap@CDDrawChildGroup@@QAEHPAUCGameObject@@0@Z	85.1494	85.1494	1	0517e5b24c5b	0x15a130	85.1494	
+wwdobjmgr	?BoxesOverlap@CDDrawChildGroup@@QAEHPAUCGameObject@@0@Z	100.0000	100.0000	2	6b8c543ab11a	0x15a130	100.0000	
 wwdobjmgr	?CheckSortOrder@CDDrawChildGroup@@QAEHXZ	100.0000	100.0000	2	749621ce4ae1	0x15a780	100.0000	
 wwdobjmgr	?ClearChildren@CDDrawChildGroup@@QAEXXZ	100.0000	100.0000	1	3658e3585089	0x159ef0	100.0000	
 wwdobjmgr	?CollideBroadcast@CDDrawChildGroup@@UAEXXZ	94.6071	94.6071	4	4c37c4663d4c	0x159f00	94.6071	
