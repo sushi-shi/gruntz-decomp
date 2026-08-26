@@ -1,8 +1,8 @@
 # A shared block expanded TWICE in one caller must be a macro, not an inline function
 tags: cpp:inline cpp:call cpp:local | asm:push asm:pop | topic:codegen-idiom
-symptoms: after folding N open-coded copies into one `inline` helper, every caller that uses it
-ONCE stays byte-exact and every caller that uses it TWICE OR MORE drops ~30 points; the diff
-shows an extra `push ebp` / `pop ebp` and esi<->edi swaps
+symptoms: after folding N open-coded copies into one `inline` helper, callers that use it twice
+diverge while once-callers remain stable; the diff may show an extra callee-saved register, or
+only the second expansion may reverse two argument loads/referents
 confidence: 10/10
 
 MSVC 5 shares one register plan across two inline expansions of the same function in one caller,
@@ -48,6 +48,25 @@ written as macros: the same wall, hit from the other direction.
 Corollary for reading the target: a function that expands a shared block N times and uses only
 three callee-saved registers is telling you the source spelled it as a macro. Count the pushes
 before you spend a build.
+
+## Exact pixel-pack witness
+
+`CDDSurface::Blit1624` 0x13fce0 supplies the smaller form of the same mechanism.
+Its two row-order arms perform the same general RGB-to-16-bit pack. A hand-sequenced
+transcription was a 95.1484% local maximum at 0x192 bytes. Calling the existing
+general `PackPalEntry16(r,g,b)` inline helper in both arms made the size, 129
+instructions, 11 branches, two returns, and 11 referents exact, reaching
+99.765625%. The only residue was the second expansion evaluating `g_rDown/g_rUp`
+after `g_gDown/g_gUp`, where retail evaluates red first.
+
+A nine-form Cartesian control separated expression association from expansion
+kind. Five ordinary inline-function associations all produced the same
+99.765625% island; two statement-sequenced inline forms fell to 90.265625% and
+94.914060%. The nested and flat forms of the general function-like macro both
+reached 100.000000%. Thus the answer is not a codegen-shaped per-arm macro: it
+is the reusable `PACK_PIXEL16(r,g,b)` operation, textually substituted so VC5
+allocates each expansion independently. The whole-TU sibling check reported no
+exact-function regressions.
 
 ## Not this
 

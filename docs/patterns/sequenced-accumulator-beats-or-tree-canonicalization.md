@@ -47,8 +47,10 @@ A 32-state compiler-state campaign and 223 generic structural variants each
 found only the baseline island; the hand expression-tree A/B exposed the
 missing axis. Thus the old claim that AlphaTable proved sequencing was false.
 
-The positive sequenced cases remain: GreyTable 0x14eef0 moved 82.23 -> 92.86
-(also recovering its per-arm epilogues), and Blit1624 0x13fce0 moved 79.65 ->
-95.15 with the retail arms' distinct term orders. Blit168 0x13fbb0 reached
-100.00 EXACT through the related indexed-subscript/by-value-helper form
-(`pal[i * 4 + k]`), not by a universal sequencing rule.
+The positive sequenced case that remains is GreyTable 0x14eef0, which moved
+82.23 -> 92.86 and also recovered its per-arm epilogues. Blit1624 0x13fce0 was
+formerly cited here after sequencing moved it 79.65 -> 95.15, but that was an
+intermediate local maximum: the general `PACK_PIXEL16(r,g,b)` macro is now
+100.00 EXACT. Blit168 0x13fbb0 reached 100.00 EXACT through the related
+indexed-subscript/by-value-helper form (`pal[i * 4 + k]`), not by a universal
+sequencing rule.
