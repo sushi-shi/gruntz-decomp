@@ -1616,7 +1616,7 @@ fader	??1CRezBufferObject@@UAE@XZ	100.0000	100.0000	1	cpp:1c066a76ec37	0x17f330	
 fader	??_GCFader@@UAEPAXI@Z	100.0000	100.0000	1	cpp:1c066a76ec37	0x17e480	100.0000	
 fader	??_GCFaderMesh@@UAEPAXI@Z	100.0000	100.0000	1	cpp:1c066a76ec37	0x17e970	100.0000	
 fader	??_GCRezBufferObject@@UAEPAXI@Z	100.0000	100.0000	1	cpp:1c066a76ec37	0x17f310	100.0000	
-fader	?ApplyInit@CFaderMesh@@QAEHPAVCFaderConfig@@@Z	82.3038	82.3038	5	e24bd61df033	0x17ea00	82.3038	
+fader	?ApplyInit@CFaderMesh@@QAEHPAVCFaderConfig@@@Z	82.3038	82.3038	6	c3e63f1e9001	0x17ea00	82.3038	
 fader	?BeginFade@CFader@@UAEXXZ	100.0000	100.0000	1	08a171d5cd43	0x17e790	100.0000	
 fader	?EndFade@CFader@@UAEXXZ	100.0000	100.0000	1	45c905d996ca	0x17e7a0	100.0000	
 fader	?GetFrameCount@CFaderMesh@@UAEHXZ	100.0000	100.0000	1	8f2b2fd363a3	0x17f120	100.0000	
@@ -3620,8 +3620,8 @@ rezarchive	?UnpackTag@CRezArchive@@QAEXW4RezTypeTag@@PAD@Z	100.0000	100.0000	5	5
 rezarchive	?UnusedArchiveAction@CRezArchive@@UAEXH@Z	100.0000	100.0000	2	813f32220984	0x13ba00	100.0000	
 rezarchive	?UnusedArchiveQuery@CRezArchive@@UAEHH@Z	100.0000	100.0000	2	1477a47f5d4c	0x13b9f0	100.0000	
 rezbufferobject	?InitRezElem@@YIPAURezElem40@@PAU1@@Z	100.0000	100.0000	1	47eca8580a36	0x17f300	100.0000	
-rezbufferobject	?Serialize@CRezBufferObject@@UAEXAAVCArchive@@@Z	100.0000	100.0000	2	5c2c3e3bc90f	0x17f130	100.0000	
-rezbufferobject	?SetSize@CRezBufferObject@@QAEXHH@Z	96.0414	96.0414	2	74e71a2c29cb	0x17f390	96.0414	
+rezbufferobject	?Serialize@CRezBufferObject@@UAEXAAVCArchive@@@Z	100.0000	100.0000	3	0c15c6b6f81d	0x17f130	100.0000	
+rezbufferobject	?SetSize@CRezBufferObject@@QAEXHH@Z	96.0414	96.0414	3	e28183865449	0x17f390	96.0414	
 rezbufferobject	?ZeroRecords@@YGXPAXH@Z	100.0000	100.0000	1	82bc3969e03d	0x17f500	100.0000	
 rezcoll	??0CHashBase@@QAE@H@Z	100.0000	100.0000	3	e14937bb3430	0x184960	100.0000	
 rezcoll	??0CHashSlot@@QAE@XZ	100.0000	100.0000	1	b14bb577fa64	0x184a20	100.0000	

@@ -19,7 +19,8 @@ emit byte-identical code (measured, `/O2 /MT /GX /GR`):
 ```cpp
 static_cast<RezElem40*>(::operator new(n * sizeof(RezElem40)))   // lea/shl/push/call ??2
 reinterpret_cast<RezElem40*>(new BYTE[n * sizeof(RezElem40)])    // identical
-new BYTE[n * sizeof(RezElem40)]                                   // identical
+static_cast<RezElem40*>(static_cast<void*>(
+    new BYTE[n * sizeof(RezElem40)]))                             // identical
 ```
 
 ## What DOES read out: the vector constructor iterator
@@ -99,9 +100,18 @@ and moved **nothing** else in the tree. The typed `delete[] m_pData` and MFC's
 `delete[] (BYTE*)m_pData` are equally good here (no destructor, so no cookie arithmetic);
 prefer the typed one — it needs no `reinterpret_cast`, which is a FATAL ratchet.
 
-The `new` half of the same rewrite moved **zero** functions, so spell it whichever way the
-cast board prefers; `static_cast<T*>(::operator new(n * sizeof(T)))` costs no ratcheted
-cast and is honest about the raw byte buffer.
+The `new` half of the same rewrite moved **zero** functions, but source structure still
+decides the spelling. These CArray-shaped functions use MFC's raw backing-store idiom,
+`(TYPE*) new BYTE[n * sizeof(TYPE)]`; they do not spell an allocator function call. Use
+the named-cast equivalent at this genuine allocator boundary:
+
+```cpp
+static_cast<TYPE*>(static_cast<void*>(new BYTE[n * sizeof(TYPE)]))
+```
+
+This preserves the raw-byte lifetime, avoids a ratcheted `reinterpret_cast`, and emits
+the same `??2@YAPAXI@Z` call. Do not replace it with `new TYPE[n]` when retail lacks the
+constructor sequence described above.
 
 ## Corollary: never hardcode a size in a per-class `operator new`
 

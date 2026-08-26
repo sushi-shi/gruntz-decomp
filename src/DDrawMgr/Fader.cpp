@@ -317,8 +317,9 @@ i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
                     mesh->m_nMaxSize = 0;
                     mesh->m_nSize = 0;
                 } else if (mesh->m_pData == NULL) {
-                    mesh->m_pData =
-                        static_cast<RezElem40*>(::operator new(newSize * sizeof(RezElem40)));
+                    mesh->m_pData = static_cast<RezElem40*>(
+                        static_cast<void*>(new BYTE[newSize * sizeof(RezElem40)])
+                    );
                     memset(mesh->m_pData, 0, newSize * sizeof(RezElem40));
                     mesh->m_nMaxSize = newSize;
                     mesh->m_nSize = newSize;
@@ -348,8 +349,9 @@ i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
                     } else {
                         newMax = newSize;
                     }
-                    RezElem40* nd =
-                        static_cast<RezElem40*>(::operator new(newMax * sizeof(RezElem40)));
+                    RezElem40* nd = static_cast<RezElem40*>(
+                        static_cast<void*>(new BYTE[newMax * sizeof(RezElem40)])
+                    );
                     memcpy(nd, mesh->m_pData, mesh->m_nSize * sizeof(RezElem40));
                     memset(&nd[mesh->m_nSize], 0, (newSize - mesh->m_nSize) * sizeof(RezElem40));
                     delete[] mesh->m_pData;

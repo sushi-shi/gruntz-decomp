@@ -34,7 +34,7 @@ void CRezBufferObject::Serialize(CArchive& ar) {
             m_nMaxSize = 0;
             m_nSize = 0;
         } else if (m_pData == NULL) {
-            m_pData = static_cast<RezElem40*>(::operator new(n * sizeof(RezElem40)));
+            m_pData = static_cast<RezElem40*>(static_cast<void*>(new BYTE[n * sizeof(RezElem40)]));
 
             memset(m_pData, 0, n * sizeof(RezElem40));
             m_nMaxSize = n;
@@ -60,7 +60,8 @@ void CRezBufferObject::Serialize(CArchive& ar) {
             } else {
                 newMax = n;
             }
-            RezElem40* nd = static_cast<RezElem40*>(::operator new(newMax * sizeof(RezElem40)));
+            RezElem40* nd =
+                static_cast<RezElem40*>(static_cast<void*>(new BYTE[newMax * sizeof(RezElem40)]));
             memcpy(nd, m_pData, m_nSize * sizeof(RezElem40));
 
             ZeroRecords(&nd[m_nSize], n - m_nSize);
@@ -96,7 +97,8 @@ void CRezBufferObject::SetSize(i32 nNewSize, i32 nGrowBy) {
         }
         m_nSize = m_nMaxSize = 0;
     } else if (m_pData == NULL) {
-        m_pData = static_cast<RezElem40*>(::operator new(nNewSize * sizeof(RezElem40)));
+        m_pData =
+            static_cast<RezElem40*>(static_cast<void*>(new BYTE[nNewSize * sizeof(RezElem40)]));
         memset(m_pData, 0, nNewSize * sizeof(RezElem40));
         m_nSize = m_nMaxSize = nNewSize;
     } else if (nNewSize <= m_nMaxSize) {
@@ -120,7 +122,8 @@ void CRezBufferObject::SetSize(i32 nNewSize, i32 nGrowBy) {
         } else {
             nNewMax = nNewSize;
         }
-        RezElem40* pNewData = static_cast<RezElem40*>(::operator new(nNewMax * sizeof(RezElem40)));
+        RezElem40* pNewData =
+            static_cast<RezElem40*>(static_cast<void*>(new BYTE[nNewMax * sizeof(RezElem40)]));
         memcpy(pNewData, m_pData, m_nSize * sizeof(RezElem40));
         memset(&pNewData[m_nSize], 0, (nNewSize - m_nSize) * sizeof(RezElem40));
         delete[] m_pData;
