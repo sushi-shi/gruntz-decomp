@@ -177,9 +177,12 @@ def target_function(tu: ci.TranslationUnit, source: Path, blob: bytes, rva: int)
             continue
         if marker_start <= cursor.extent.start.offset < span_end:
             matches.append(cursor)
-    if len(matches) != 1:
-        raise ValueError(f"expected one function in RVA marker span, found {len(matches)}")
-    return matches[0]
+    if not matches:
+        raise ValueError("expected a function after the RVA marker, found none")
+    # The marker owns the definition immediately following it. File-local inline
+    # helpers may legitimately sit between that definition and the next RVA marker;
+    # they are not additional candidates for the retail address.
+    return min(matches, key=lambda cursor: cursor.extent.start.offset)
 
 
 def classify_parse_errors(tu: ci.TranslationUnit, source: Path, fn, allowed_external=()):

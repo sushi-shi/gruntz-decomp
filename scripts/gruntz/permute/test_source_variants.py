@@ -162,6 +162,24 @@ class AstVariantTests(unittest.TestCase):
         self.assertEqual(blob[start:start + 4], b"RVA(")
         self.assertTrue(blob[end:].lstrip().startswith(b"RVA("))
 
+    def test_target_function_is_the_first_definition_after_its_marker(self):
+        blob = (
+            b"#define RVA(rva, size)\n"
+            b"RVA(0x00123456, 0x1)\n"
+            b"int Target() { return 1; }\n"
+            b"static inline int Helper() { return 2; }\n"
+            b"RVA(0x00123460, 0x1)\n"
+            b"int Next() { return 3; }\n"
+        )
+        configure_libclang()
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "unit.cpp"
+            source.write_bytes(blob)
+            index = ci.Index.create()
+            tu = index.parse(str(source), args=["-x", "c++", "-std=c++14"])
+            fn = target_function(tu, source, blob, 0x123456)
+            self.assertEqual(fn.spelling, "Target")
+
     def test_candidate_generation_rejects_overlapping_edits(self):
         blob = b"abcdef"
         mutations = [
