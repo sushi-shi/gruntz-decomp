@@ -29,6 +29,7 @@ class CMouseDevice;
 class CInputState {
 public:
     CInputState();
+    ~CInputState();
 
     i32 Init(DirectInputMgr2* manager, InputDeviceSel selection);
 
@@ -60,6 +61,14 @@ inline CInputState::CInputState() {
     m_keyboard = NULL;
     m_joystick = NULL;
     m_mouse = NULL;
+    m_deviceGroup = NULL;
+    m_deviceSelection = static_cast<InputDeviceSel>(0);
+}
+
+inline CInputState::~CInputState() {
+    m_primaryDevice = NULL;
+    m_keyboard = NULL;
+    m_joystick = NULL;
     m_deviceGroup = NULL;
     m_deviceSelection = static_cast<InputDeviceSel>(0);
 }

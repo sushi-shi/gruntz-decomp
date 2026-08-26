@@ -27,6 +27,9 @@ struct CRezArchiveEntryHashNode : public CHashElement {
 struct CRezArchiveEntry {
 
     GZ_ENUM_RETURN(RezTypeTag, u32) GetTypeTag();
+    u32 GetSize() {
+        return m_size;
+    }
     char* LoadData();
     i32 ReleaseData();
 

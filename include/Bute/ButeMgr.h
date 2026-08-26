@@ -10,6 +10,7 @@
 #include <Bute/ButeValue.h>
 #include <Bute/PTreeNode.h>
 #include <Gruntz/String.h>
+#include <Rez/RezArchiveEntry.h>
 #include <Wap32/ZVec.h>
 
 GZ_ENUM_FORWARD(ButeLexAction);
@@ -21,6 +22,7 @@ struct CBSecStream : zPTree {
 };
 
 #include <stdlib.h>
+#include <strstrea.h>
 
 typedef void(__cdecl* ErrCallback)(const char*);
 
@@ -51,6 +53,7 @@ public:
     bool Parse();
 
     bool Parse(CString filename, int streamBase);
+    bool Parse(CRezArchiveEntry* stream, const char* key);
 
     bool Save();
 
@@ -141,6 +144,38 @@ class ButeMgr : public CButeMgr {
 public:
     bool ParseAttributeFile();
 };
+
+inline bool CButeMgr::Parse(CRezArchiveEntry* stream, const char* key) {
+    if (stream == NULL) {
+        return false;
+    }
+
+    m_encrypted = 1;
+    char* encoded = stream->LoadData();
+    i32 length = stream->GetSize();
+    istrstream* input = new istrstream(encoded, length);
+    m_crypt.InitKey(key);
+    char* decoded = new char[length];
+    ostrstream* output = new ostrstream(decoded, length, 2);
+    m_crypt.Decode(input, output);
+    m_stream = new istrstream(decoded, output->pcount());
+    delete input;
+    delete output;
+    stream->ReleaseData();
+
+    Init();
+    m_tags.Reset();
+    m_modifiedTags.Reset();
+    m_addedTags.Reset();
+    bool result = true;
+    if (!ParseGroup()) {
+        m_parseFailed = 1;
+        result = false;
+    }
+    delete m_stream;
+    delete[] decoded;
+    return result;
+}
 
 extern CButeMgr g_buteMgr;
 

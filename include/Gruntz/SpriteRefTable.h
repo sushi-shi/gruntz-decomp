@@ -35,6 +35,7 @@ class CRezArchive;
 class CSpriteRefTable {
 public:
     CSpriteRefTable();
+    ~CSpriteRefTable();
 
     i32 Init(CShadeTableCache* cache, CDDrawSurfaceMgr* holder);
 
@@ -71,6 +72,10 @@ inline CSpriteRefTable::CSpriteRefTable() {
         m_toolRefs[i] = NULL;
         m_toyRefs[i] = NULL;
     }
+}
+
+inline CSpriteRefTable::~CSpriteRefTable() {
+    Reset();
 }
 
 #endif // GRUNTZ_SPRITEREFTABLE_H

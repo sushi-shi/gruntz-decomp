@@ -363,18 +363,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x40d);
         return 0;
     }
-    {
-        b32 f = m_worldSounds->m_enabled;
-        if (vMusic != 0) {
-            if (f == false) {
-                m_worldSounds->m_enabled = true;
-                m_worldSounds->Resume();
-            }
-        } else if (f != false) {
-            m_worldSounds->m_enabled = false;
-            m_worldSounds->Stop();
-        }
-    }
+    m_worldSounds->SetEnabled(vMusic);
     SetSoundVolume(soundVolume);
 
     SetVoiceVolume(voiceVolume);
@@ -429,7 +418,6 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_lightFxMgr = new CLightFxMgr;
     if (!m_lightFxMgr->Init(this, NULL)) {
         if (m_lightFxMgr) {
-            m_lightFxMgr->Reset();
             delete m_lightFxMgr;
             m_lightFxMgr = NULL;
         }
@@ -455,11 +443,6 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     if (!g_gameplayInput->Init(g_inputMgr, INPUTDEV_KEYBOARD_JOYSTICK1)) {
         CInputState* dead = g_gameplayInput;
         if (dead) {
-            dead->m_primaryDevice = NULL;
-            dead->m_keyboard = NULL;
-            dead->m_joystick = NULL;
-            dead->m_deviceGroup = NULL;
-            dead->m_deviceSelection = INPUTDEV_NONE;
             delete dead;
             g_gameplayInput = NULL;
         }
@@ -486,7 +469,6 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
     if (!m_spriteFactory->Init(m_shadeCache, m_world)) {
         if (m_spriteFactory) {
-            m_spriteFactory->Reset();
             delete m_spriteFactory;
             m_spriteFactory = NULL;
         }
@@ -498,7 +480,6 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     g_lastNow = timeGetTime();
     g_frameDelta = 0;
     for (i32 s = 0; s < 4; ++s) {
-
         if (!m_players[s].SeedForSlot(s)) {
             ReportError(IDX(IDS_INITIALIZE_GAME), 0x417);
             return 0;
@@ -510,43 +491,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             g_gameReg->m_resourceArchive->FindEntryByPath("GAME_ATTRIBUTEZ", REZ_TAG_TXT);
         TRACE("%s\n", static_cast<LPCTSTR>(CString("parsing ") + "GAME_ATTRIBUTEZ"));
         g_buteMgr.SetErrCallback(&ButeParseErrorSink);
-        bool ok = false;
-        if (stream) {
-            g_buteMgr.m_encrypted = 1;
-            char* esz = stream->LoadData();
-            i32 eszLen = stream->m_size;
-            istrstream* rdr = new istrstream(esz, eszLen);
-            g_buteMgr.m_crypt.InitKey("1212C");
-            char* decoded = new char[eszLen];
-            ostrstream* snk = new ostrstream(decoded, eszLen, 2);
-            g_buteMgr.m_crypt.Decode(rdr, snk);
-
-            g_buteMgr.m_stream = new istrstream(decoded, snk->pcount());
-            delete rdr;
-            delete snk;
-            stream->ReleaseData();
-            g_buteMgr.Init();
-            g_buteMgr.m_tags.ClearRecursive(NULL);
-            g_buteMgr.m_tags.m_root = NULL;
-            g_buteMgr.m_tags.m_lookupPending = false;
-            g_buteMgr.m_tags.m_nodeCount = 0;
-            g_buteMgr.m_modifiedTags.ClearRecursive(NULL);
-            g_buteMgr.m_modifiedTags.m_root = NULL;
-            g_buteMgr.m_modifiedTags.m_lookupPending = false;
-            g_buteMgr.m_modifiedTags.m_nodeCount = 0;
-            g_buteMgr.m_addedTags.ClearRecursive(NULL);
-            g_buteMgr.m_addedTags.m_root = NULL;
-            g_buteMgr.m_addedTags.m_lookupPending = false;
-            g_buteMgr.m_addedTags.m_nodeCount = 0;
-            ok = true;
-            if (!g_buteMgr.ParseGroup()) {
-                g_buteMgr.m_parseFailed = 1;
-                ok = false;
-            }
-            delete g_buteMgr.m_stream;
-            delete[] decoded;
-        }
-        if (!ok) {
+        if (!g_buteMgr.Parse(stream, "1212C")) {
             ReportError(IDX(IDS_INITIALIZE_GAME), 0x418);
             return 0;
         }

@@ -38,14 +38,13 @@ public:
 
     void ClearRecursive(CButeTreeNode* node);
 
+    RVA(0x000212a0, 0x21)
     void Reset() {
         ClearRecursive(NULL);
         m_root = NULL;
         m_lookupPending = false;
         m_nodeCount = 0;
     }
-
-    void ResetCopy();
 
     virtual ~zPTree() OVERRIDE {
         ClearRecursive(NULL);

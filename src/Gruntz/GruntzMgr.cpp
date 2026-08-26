@@ -329,7 +329,6 @@ void CGruntzMgr::Close() {
         m_curState = NULL;
     }
     if (m_spriteFactory) {
-        m_spriteFactory->Reset();
         delete m_spriteFactory;
         m_spriteFactory = NULL;
     }
@@ -353,13 +352,7 @@ void CGruntzMgr::Close() {
         m_commandMgr = NULL;
     }
     if (g_gameplayInput) {
-        CInputState* v = g_gameplayInput;
-        v->m_primaryDevice = NULL;
-        v->m_keyboard = NULL;
-        v->m_joystick = NULL;
-        v->m_deviceGroup = NULL;
-        v->m_deviceSelection = INPUTDEV_NONE;
-        delete v;
+        delete g_gameplayInput;
         g_gameplayInput = NULL;
     }
     if (g_inputMgr) {
@@ -418,7 +411,6 @@ void CGruntzMgr::Close() {
         m_saveGame = NULL;
     }
     if (m_lightFxMgr) {
-        m_lightFxMgr->Reset();
         delete m_lightFxMgr;
         m_lightFxMgr = NULL;
     }
@@ -2702,18 +2694,7 @@ i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
         return 0;
     }
 
-    CWorldSoundSet* cur = m_worldSounds;
-    if (m_isAmbientEnabled != false) {
-        if (cur->m_enabled == false) {
-            cur->m_enabled = true;
-            cur->Resume();
-        }
-    } else {
-        if (cur->m_enabled != false) {
-            cur->m_enabled = false;
-            cur->Stop();
-        }
-    }
+    m_worldSounds->SetEnabled(m_isAmbientEnabled);
     SetSoundVolume(m_soundVolume);
     return 1;
 }

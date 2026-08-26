@@ -25,6 +25,7 @@ public:
     void SetMasterVolume(i32 masterVolume);
     void Stop();
     void Resume();
+    void SetEnabled(b32 enabled);
     void SetListenerPosition(i32 x, i32 y);
     void Deactivate();
     CWorldSoundSet();
@@ -99,6 +100,18 @@ inline CWorldSoundSet::CWorldSoundSet() : m_list(0xa) {
 
 inline CWorldSoundSet::~CWorldSoundSet() {
     Deactivate();
+}
+
+inline void CWorldSoundSet::SetEnabled(b32 enabled) {
+    if (enabled != false) {
+        if (m_enabled == false) {
+            m_enabled = true;
+            Resume();
+        }
+    } else if (m_enabled != false) {
+        m_enabled = false;
+        Stop();
+    }
 }
 
 extern i32 g_posSoundReq;

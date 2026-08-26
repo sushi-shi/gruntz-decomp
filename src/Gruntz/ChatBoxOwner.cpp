@@ -92,35 +92,7 @@ void CChatBoxOwner::HandleTextInputKey(i32 charCode, i32 keyData) {
                 );
                 CButeMgr bute;
                 bute.Term();
-                bool parsed;
-                if (source == NULL) {
-                    parsed = false;
-                } else {
-                    char* encoded = source->LoadData();
-                    u32 length = source->m_size;
-                    istrstream* inputStream = new istrstream(encoded, length);
-                    bute.m_crypt.InitKey(static_cast<const char*>(key));
-                    char* decoded = new char[length];
-                    ostrstream* outputStream = new ostrstream(decoded, length, 2);
-                    bute.m_crypt.Decode(inputStream, outputStream);
-                    istrstream* parseStream = new istrstream(decoded, outputStream->pcount());
-                    delete inputStream;
-                    delete outputStream;
-                    source->ReleaseData();
-
-                    bute.Init();
-                    bute.m_tags.Reset();
-                    bute.m_modifiedTags.ResetCopy();
-                    bute.m_addedTags.ResetCopy();
-                    bute.m_stream = parseStream;
-                    parsed = true;
-                    if (!bute.ParseGroup()) {
-                        bute.m_parseFailed = true;
-                        parsed = false;
-                    }
-                    delete parseStream;
-                    delete[] decoded;
-                }
+                bool parsed = bute.Parse(source, static_cast<const char*>(key));
 
                 if (parsed) {
                     CString group = "";
@@ -267,11 +239,6 @@ i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
 RVA(0x00021260, 0x8)
 i32 __stdcall ChatBoxOwnerReturnTrue(i32) {
     return 1;
-}
-
-RVA(0x000212a0, 0x21)
-void zPTree::ResetCopy() {
-    Reset();
 }
 
 RVA_COMPGEN(0x000212e0, 0x1e, ??_GzPTree@@UAEPAXI@Z)
