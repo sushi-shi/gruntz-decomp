@@ -708,9 +708,8 @@ void zPTree::ClearRecursive(CButeTreeNode* node) {
     }
     delete[] n->m_key;
     if (m_kind & 2) {
-        // The callback destroys the type-erased value; the tree still owns its storage.
         m_teardown(n->m_value);
-        ::operator delete(n->m_value);
+        delete n->m_value;
     }
     delete n;
 }
