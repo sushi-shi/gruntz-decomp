@@ -66,6 +66,23 @@ if (px < x1 && px >= x0 && py < y1 && py >= y0) {
 80.71 -> 87.78 with that plus walking the `startRow` parameter itself instead of a copy
 (see outparam-through-the-parameter-slot.md).
 
+## Repeated 16-byte groups prove repeated rectangle locals
+
+`CWwdSpatialMgr::DeactivateOutside` 0x168500 was the same signal at larger scale. Its
+frame size already agreed, and twelve scalar bounds produced the right 943-byte extent,
+308 instructions, 19 calls, 51 branches, and eight relocations. The remaining fourteen
+byte differences were only stack displacements: retail grouped the values into three
+contiguous 16-byte runs, each ordered min-X, min-Y, max-X, max-Y. The scalar spelling
+left one compiler temporary between the first run's fields and the next run.
+
+Writing three `WwdRect` locals made the normalized pair **100.0000 EXACT**. This was not
+a generic regalloc coin: 255 syntax-aware source variants, 64 parser-state trials, and
+all five positions of an inline helper's grid parameter were byte-flat at 99.9544%.
+Conversely, a function-scoped grid pointer changed 153 instructions and did not create
+the retail slot layout. When several related quadruples form adjacent 16-byte groups,
+model every group as its aggregate even if scalar locals already reproduce the frame
+size and instruction topology.
+
 ## Read it BACKWARDS too: a 4-byte frame proves there is NO aggregate temp
 
 The inference runs both ways, and the negative direction is the cheaper find because

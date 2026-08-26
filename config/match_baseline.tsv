@@ -317,7 +317,7 @@ wwdgameobject	47	43
 wwdgameobjectrender	15	12
 wwdgrid	13	9
 wwdobjmgr	54	48
-wwdspatialmgr	14	12
+wwdspatialmgr	14	13
 zdarrayderived	3	3
 zutil	2	2
 # [functions]	unit	function	best_pct	cur_pct	tries	src_hash	rva	hist_pct	state
@@ -4736,7 +4736,7 @@ wwdspatialmgr	??_GCWwdGridIter@@UAEPAXI@Z	100.0000	100.0000	1	cpp:fce7074e101f	0
 wwdspatialmgr	?ActivateAt@CWwdSpatialMgr@@QAEHHH@Z	93.8523	93.8523	7	ad7d25f28ac1	0x168340	93.8523	
 wwdspatialmgr	?ActivateKeepActiveFromGrid@CWwdSpatialMgr@@QAEHPAVCWwdGrid@@@Z	100.0000	100.0000	4	7530319421ea	0x168460	100.0000	
 wwdspatialmgr	?ActivateKeepActiveObjects@CWwdSpatialMgr@@QAEHXZ	100.0000	100.0000	2	7ca861e4b12c	0x168430	100.0000	
-wwdspatialmgr	?DeactivateOutside@CWwdSpatialMgr@@QAEHHH@Z	96.7101	96.7101	7	ce0a317e32e8	0x168500	96.7101	
+wwdspatialmgr	?DeactivateOutside@CWwdSpatialMgr@@QAEHHH@Z	100.0000	100.0000	8	ec91d580da0b	0x168500	100.0000	
 wwdspatialmgr	?FlushAll@CWwdSpatialMgr@@QAEHXZ	100.0000	100.0000	2	5b1851c1be44	0x168960	100.0000	
 wwdspatialmgr	?FlushGrid@CWwdSpatialMgr@@QAEHPAVCWwdGrid@@@Z	100.0000	100.0000	3	48559645b844	0x168990	100.0000	
 wwdspatialmgr	?ForEach@CWwdSpatialMgr@@QAEHP6AXPAUCGameObject@@@Z@Z	100.0000	100.0000	2	afc30000dc69	0x168a20	100.0000	
