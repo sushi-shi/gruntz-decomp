@@ -842,17 +842,16 @@ void TmErrorHandler(char* prefix, i32 errNum) {
 
 // @early-stop
 RVA(0x0016e360, 0x11a)
-VariantCallback CVariantSlot::Add(zErrHandling* key, VariantCallback val) {
+void* CVariantSlot::Add(void* key, void* val) {
     int count = g_variantOverrideCount;
     if (val != NULL && count >= 0x20) {
         return NULL;
     }
     int idx;
     if (count != 0) {
-
-        AddrWord<zErrHandling> k;
-        k.m_addr = key;
-        idx = Find(k.m_word);
+        AddrWord<void> keyWord;
+        keyWord.m_addr = key;
+        idx = Find(keyWord.m_word);
     } else {
         idx = -1;
     }
@@ -867,18 +866,20 @@ VariantCallback CVariantSlot::Add(zErrHandling* key, VariantCallback val) {
                 (g_variantOverrideCount - m_searchIndex) * sizeof(TypeKeyRec)
             );
         }
-        g_variantOverrides[m_searchIndex].m_callback = val;
-        AddrWord<zErrHandling> nk;
-        nk.m_addr = key;
-        g_variantOverrides[m_searchIndex].m_key = nk.m_word;
+        g_variantOverrides[m_searchIndex].m_callback =
+            reinterpret_cast<VariantCallback>(val); // PROVEN: retail Add ABI is void*.
+        AddrWord<void> newKeyWord;
+        newKeyWord.m_addr = key;
+        g_variantOverrides[m_searchIndex].m_key = newKeyWord.m_word;
         g_variantOverrideCount = g_variantOverrideCount + 1;
         g_variantOverrides[m_searchIndex].m_value = 0;
         return NULL;
     }
     VariantCallback old = g_variantOverrides[idx].m_callback;
     if (val != NULL) {
-        g_variantOverrides[idx].m_callback = val;
-        return old;
+        g_variantOverrides[idx].m_callback =
+            reinterpret_cast<VariantCallback>(val); // PROVEN: retail Add ABI is void*.
+        return reinterpret_cast<void*>(old);        // PROVEN: retail Add ABI is void*.
     }
     memcpy(
         &g_variantOverrides[m_searchIndex],
@@ -886,7 +887,7 @@ VariantCallback CVariantSlot::Add(zErrHandling* key, VariantCallback val) {
         (g_variantOverrideCount - m_searchIndex - 1) * sizeof(TypeKeyRec)
     );
     g_variantOverrideCount = g_variantOverrideCount - 1;
-    return old;
+    return reinterpret_cast<void*>(old); // PROVEN: retail Add ABI is void*.
 }
 
 RVA(0x0016e480, 0x3e)

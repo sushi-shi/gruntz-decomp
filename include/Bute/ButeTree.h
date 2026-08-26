@@ -20,7 +20,7 @@ struct CVariantSlot {
     void Set(zErrHandling* obj, char* item, i32 b);
     CVariantSlot* EnsureTmErrorCallback();
     i32 Find(i32 key);
-    VariantCallback Add(zErrHandling* key, VariantCallback callback);
+    void* Add(void* key, void* value);
     VariantCallback m_callback;
     i32 m_searchIndex;
     u16 m_valueWord;
