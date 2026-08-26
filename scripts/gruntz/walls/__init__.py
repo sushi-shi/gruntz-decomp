@@ -2,6 +2,8 @@
 
     gruntz walls inventory        the derived worklist (report x Model x
                                   match_baseline) - ascending historical MAX
+    gruntz walls abstractions     classify every sub-100 row by the semantic
+                                  level to inspect before source-shape work
     gruntz walls diagnose <fn>    classify one wall from the normalized pair:
                                   referent -> inline/call-set -> cfg -> regalloc
     gruntz walls inline-model     the cl 5.0 inline-budget model. `--gap <rva>`
@@ -189,6 +191,7 @@ from __future__ import annotations
 
 _SUBS = {"calibrate": "gruntz.walls.calibrate",
          "inventory": "gruntz.walls.inventory",
+         "abstractions": "gruntz.walls.abstractions",
          "diagnose": "gruntz.walls.diagnose",
          "inline-model": "gruntz.walls.inline_model",
          "aggregate-copies": "gruntz.walls.aggregate_copies",
