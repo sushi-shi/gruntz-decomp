@@ -60,7 +60,7 @@ brickz	4	2
 brickzcellflags	3	1
 brickzload	1	0
 buteglobals	4	4
-butemgr	68	50
+butemgr	68	51
 butetail	3	3
 butetree	2	1
 bzkinddispatch	1	1
@@ -688,7 +688,7 @@ butemgr	??_GCBSecStream@@UAEPAXI@Z	100.0000	100.0000	1	cpp:4a31d4474beb	0x174d30
 butemgr	??_GCButeNode@@UAEPAXI@Z	100.0000	100.0000	1	cpp:4a31d4474beb	0x174d50	100.0000	
 butemgr	??_GCString@@QAEPAXI@Z	100.0000	100.0000	1	cpp:4a31d4474beb	0x173700	100.0000	
 butemgr	?AcceptTransition@CButeMgr@@QAEXFD@Z	100.0000	100.0000	2	38f3ac07635c	0x170460	100.0000	
-butemgr	?ButeGroup_Apply@@YAXPADPAX1@Z	87.7283	87.7283	3	c4a88fc0a61b	0x1712b0	87.7283	
+butemgr	?ButeGroup_Apply@@YAXPADPAX1@Z	100.0000	100.0000	4	6ba7f9ac3cbf	0x1712b0	100.0000	
 butemgr	?ButeStoreFreeAdapter@@YAXPAX@Z	100.0000	100.0000	1	56cd9230df23	0x174de0	100.0000	
 butemgr	?ButeTag_Apply@@YAXPADPAX1@Z	100.0000	100.0000	4	0ae444a3be05	0x1714e0	100.0000	
 butemgr	?ButeValueTeardown@@YAXPAX@Z	100.0000	100.0000	5	ebb081bbfcdc	0x174df0	100.0000	
