@@ -123,6 +123,11 @@ self-calls internally - so a raw-byte scan mixes decoder noise into the answer.
   `CGrunt::UpdateDecayFade` (1,1 vs 1,3), `CPlay::HandleDragMove` (4,4,4,4,4 vs
   1,4,4,4,4), `CVariantSlot::Add` (3,3,3,3,3 vs 2,3,3,3,3).
 
+**2026-08-26 correction.** The `CVariantSlot::Add` row belonged to the earlier typed
+callback signature. Restoring retail's generic `void* Add(void*, void*)` ABI makes both
+sides `(3,3,3,3,3)`, so it is no longer a shrink-wrap candidate. Its remaining residue
+is a whole-function EBX/EDI role rotation; return-count edits are not a lever there.
+
 **Screen out TU state before searching the source.** On BuildLevelTitleString, moving the
 function to the head and to the tail of its TU, inserting a static definition immediately
 above it, and declaration-count probes (typedef 0..12, class 0..8) are all byte-identical -
