@@ -8,8 +8,22 @@
 #include <Rez/RezArchiveDir.h>
 #include <Rez/RezArchiveEntry.h>
 
+#include <string.h>
+
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+// @identity-TODO: the owner, field, one-argument ABI, and copy bound are proven; the name is inferred.
+RVA(0x0013c4d0, 0x24)
+void CRezArchive::SetBannerLine2(const char* text) {
+    strncpy(m_bannerLine2, text, REZ_ARCHIVE_BANNER_TEXT_LENGTH);
+    m_bannerLine2[REZ_ARCHIVE_BANNER_TEXT_LENGTH] = 0;
+}
+
 RVA(0x0013c500, 0x14)
 u32 CRezArchiveEntryHashNode::Hash() {
+    if (m_archiveEntry == NULL) {
+        return 0;
+    }
     return static_cast<CRezEntryNameHash*>(m_hash)->HashStr(m_archiveEntry->m_name);
 }
 

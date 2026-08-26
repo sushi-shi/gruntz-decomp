@@ -136,8 +136,8 @@ They are search clues under Gruntz's rules, never final justification.
 
 ## Recommended implementation order
 
-1. Finish the 1.01 address migration; source-line maps bound to stale 1.00
-   claims would only make errors look precise.
+1. Keep the completed 1.01 migration as the address authority; never feed a
+   source-line map claims from the retired 1.00 census.
 2. Port HoMM3's byte-verified `/Z7` statement map to Gruntz's aligned diff.
 3. Add the PDB local/type stack map and bijection checks from ISLE.
 4. Add effective-match diagnostics without changing the 100% gate.

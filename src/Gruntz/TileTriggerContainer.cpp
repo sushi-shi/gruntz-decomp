@@ -46,7 +46,7 @@ RVA_DYNINIT(0x001160e0, 0x1a, s_gruntDirCenter)
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00115c90, 0xa7)
+RVA(0x00115d70, 0x99)
 i32 DrawPageDebugText(
     CDDrawSurfaceMgr* mgr,
     const CString* text,
@@ -79,7 +79,7 @@ i32 DrawPageDebugText(
 
     HDC hdc = NULL;
     surf->m_ddSurface->GetDC(&hdc);
-    g_gameReg->m_chatLog->Draw3DText(text, hdc, dst, fontFlag, r, g, b, 1, 2, 3);
+    g_gameReg->m_chatLog->Draw3DText(text, hdc, dst, fontFlag, r, g, b, 1, 2, 3, true);
     surf->m_ddSurface->ReleaseDC(hdc);
     return 1;
 }

@@ -12,6 +12,11 @@ reader is now modeled as `CRezArchive`, `CRezArchiveDir`, `CRezArchiveType`, and
 storage-driver layer (`CRezItm` / `CRezDir` / `CRezFile` wrapping `FILE*`), and
 `RezColl.cpp` supplies the hash collection used by the archive model.
 
+Unless explicitly marked 1.01, executable RVAs in this format study are the
+1.00 addresses at which the format was first proved. The on-disk format is
+unchanged in 1.01; the later executable only extends the runtime archive object
+to retain header banner line 2.
+
 Implementation: [`tools/gruntz-rez`](../../tools/gruntz-rez) — reader in
 `src/lib.rs`, writer in `src/write.rs`, CLI in `src/bin/{rezls,rezpack}.rs`.
 
@@ -329,14 +334,14 @@ Sizes are ground truth from `push <n>; call operator new`:
 
 | class | size | allocated at |
 |---|---|---|
-| `CRezArchive` | 0x94 | 0x83c66, 0x91bba |
+| `CRezArchive` | 0x94 in 1.00; 0xd4 in 1.01 | 1.00: 0x83c66, 0x91bba; 1.01 allocation sites push 0xd4 |
 | `CRezArchiveDir` | 0x4c | 0x13ae27, 0x13af1f, 0x13b037, 0x13a73a |
 | `CRezArchiveType` | 0x30 | 0x13a961 |
 | `CRezArchiveEntry` | 0x3c | pooled 100 at a time, 0x13c133 |
 | `CRezItm` (file driver, = `src/Rez/RezFile.cpp`) | 0x24 | 0x13ae90 |
 | `CRezDir` (file driver, = `src/Rez/RezFile.cpp`) | 0x38 | 0x13ad9f |
 
-### `CRezArchive` — 0x94
+### `CRezArchive` — 0x94 in 1.00, 0xd4 in 1.01
 
 | Off | Meaning | | Evidence |
 |---|---|---|---|
@@ -372,6 +377,11 @@ Sizes are ground truth from `push <n>; call operator new`:
 | 0x80 | `m_freeEntries` (1 bucket) | I | free-entry pool at 0x13c0c0 |
 | 0x88 | `m_entryPoolBlocks` | I | AddHead @0x13c1c8 |
 | 0x90 | `m_entriesPerPoolBlock` = 100 | P | allocation size is `m_entriesPerPoolBlock * 0x3c` @0x13c127 |
+| 0x94 | `m_bannerLine2[61]` | P, 1.01 only | `Open` copies 60 bytes from header offset 0x40, writes NUL at object offset 0xd0, and trims spaces from element 58 down; the new zero-reference setter @0x13c4d0 uses the same 60-byte bound |
+
+The 61-byte 1.01 field has three bytes of natural tail padding, producing the
+proved `0xd4` allocation size. The setter's class, argument count, copy bound,
+and field are proved; its reconstructed source name remains an identity TODO.
 
 `m_resourceNameBucketCount` is the field behind the stride-19: the packer walked a 19-bucket
 resource-name hash and wrote siblings out in bucket order.

@@ -57,6 +57,16 @@ void FillGameInfoDialog(HWND hWnd, CSaveGame* sg) {
     LabelGameInfoSlot(hWnd, sg->GetSlot(7), 0x43c, 0x497, 0x4a1, 0x4ab);
     LabelGameInfoSlot(hWnd, sg->GetSlot(8), 0x43d, 0x498, 0x4a2, 0x4ac);
     LabelGameInfoSlot(hWnd, sg->GetSlot(9), 0x43e, 0x499, 0x4a3, 0x4ad);
+    SendMessageA(GetDlgItem(hWnd, CTRL_SAVEDLG_SLOT0), EM_LIMITTEXT, 0x20, 0);
+    SendMessageA(GetDlgItem(hWnd, CTRL_SAVEDLG_SLOT1), EM_LIMITTEXT, 0x20, 0);
+    SendMessageA(GetDlgItem(hWnd, CTRL_SAVEDLG_SLOT2), EM_LIMITTEXT, 0x20, 0);
+    SendMessageA(GetDlgItem(hWnd, CTRL_SAVEDLG_SLOT3), EM_LIMITTEXT, 0x20, 0);
+    SendMessageA(GetDlgItem(hWnd, CTRL_SAVEDLG_SLOT4), EM_LIMITTEXT, 0x20, 0);
+    SendMessageA(GetDlgItem(hWnd, CTRL_SAVEDLG_SLOT5), EM_LIMITTEXT, 0x20, 0);
+    SendMessageA(GetDlgItem(hWnd, CTRL_SAVEDLG_SLOT6), EM_LIMITTEXT, 0x20, 0);
+    SendMessageA(GetDlgItem(hWnd, CTRL_SAVEDLG_SLOT7), EM_LIMITTEXT, 0x20, 0);
+    SendMessageA(GetDlgItem(hWnd, CTRL_SAVEDLG_SLOT8), EM_LIMITTEXT, 0x20, 0);
+    SendMessageA(GetDlgItem(hWnd, CTRL_SAVEDLG_SLOT9), EM_LIMITTEXT, 0x20, 0);
 }
 
 RVA(0x0009e2f0, 0x84)

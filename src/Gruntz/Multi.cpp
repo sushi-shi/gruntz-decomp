@@ -3122,8 +3122,14 @@ i32 CMulti::WaitForConnect() {
     m_connectAccepted = false;
 
     u32 deadline = timeGetTime() + 60000;
+    u32 retryDeadline = timeGetTime() + 10000;
 
     while (m_connectAccepted == false) {
+
+        if (m_isHost == false && timeGetTime() > retryDeadline) {
+            BroadcastPlayerIdMessage(STAT_REQUEST_CONFIG, DPSEND_GUARANTEED);
+            retryDeadline = timeGetTime() + 10000;
+        }
 
         if (timeGetTime() > deadline
             || (static_cast<i32>(GetAsyncKeyState(VK_ESCAPE)) & 0x80000000)) {

@@ -471,11 +471,7 @@ i32 CMenuState::OnPaint() {
 RVA(0x000a0da0, 0xb2)
 void CMenuState::BuildVersionString(CRect r) {
     CString str;
-    if (g_versionMid == 0) {
-        str.Format("Gruntz v%d.%d", g_versionMajor, g_versionMinor);
-    } else {
-        str.Format("Gruntz v%d.%d%d", g_versionMajor, g_versionMid, g_versionMinor);
-    }
+    str.Format("Gruntz v%d.%d%d", g_versionMajor, g_versionMid, g_versionMinor);
     if (g_cdPromptResult) {
         str += " (SPAWN MODE)";
     }

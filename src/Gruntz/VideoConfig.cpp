@@ -378,16 +378,16 @@ void LoadVideoResolutionConfig(HWND hDlg, i32 nIDCombo, Resolution nSel) {
 
                 HWND hCaption = GetDlgItem(hDlg, IDC_RESCAPTION);
                 if (hCaption) {
-                    char szCaption[64] = "Video Resolution ";
+                    CString szCaption("Video Resolution ");
                     switch (g_videoResolutionMode) {
                         case RES_640X480:
-                            strcat(szCaption, "(640x480)");
+                            szCaption += "(640x480)";
                             break;
                         case RES_800X600:
-                            strcat(szCaption, "(800x600)");
+                            szCaption += "(800x600)";
                             break;
                         case RES_1024X768:
-                            strcat(szCaption, "(1024x768)");
+                            szCaption += "(1024x768)";
                             break;
                     }
                     SetWindowTextA(hCaption, szCaption);
@@ -406,16 +406,16 @@ void SaveVideoResolutionConfig(HWND hDlg, HWND hCombo, i32, i32) {
 
         HWND hCaption = GetDlgItem(hDlg, IDC_RESCAPTION);
         if (hCaption) {
-            char szCaption[64] = "Video Resolution ";
+            CString szCaption("Video Resolution ");
             switch (g_videoResolutionMode) {
                 case RES_640X480:
-                    strcat(szCaption, "(640x480)");
+                    szCaption += "(640x480)";
                     break;
                 case RES_800X600:
-                    strcat(szCaption, "(800x600)");
+                    szCaption += "(800x600)";
                     break;
                 case RES_1024X768:
-                    strcat(szCaption, "(1024x768)");
+                    szCaption += "(1024x768)";
                     break;
             }
             SetWindowTextA(hCaption, szCaption);

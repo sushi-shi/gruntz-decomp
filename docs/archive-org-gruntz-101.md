@@ -38,6 +38,10 @@ The uploader intentionally does not store credentials and is not invoked by
 the preparation command. Pass another unused identifier as its first argument
 if `gruntz-v1-01-update-preservation` is already occupied.
 
+The executable and seven-level content comparison is recorded in
+[`version-1.00-to-1.01.md`](version-1.00-to-1.01.md); the full-file ZIP is the
+matching target, while the RTPatch executable is preservation evidence only.
+
 Known public sources:
 
 - GooRoo update page: <https://gooroosgruntz.info/patch.html>

@@ -40,77 +40,21 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
     const char* faceTF = static_cast<const char*>(
         *g_buteMgr.GetStringDef("Font", "TrainingFont", static_cast<CString*>(&arial))
     );
-    m_trainingFont = CreateFontA(
-        g_buteMgr.GetIntDef("Font", "TrainingFontHeight", 0x1c),
-        g_buteMgr.GetIntDef("Font", "TrainingFontWidth", 0xe),
-        0,
-        0,
-        FW_BOLD,
-        0,
-        0,
-        0,
-        DEFAULT_CHARSET,
-        0,
-        0,
-        0,
-        0,
-        faceTF
-    );
+    m_trainingFont =
+        CreateFontA(0x24, 0x10, 0, 0, FW_BOLD, 0, 0, 0, DEFAULT_CHARSET, 0, 0, 0, 0, faceTF);
     if (!m_trainingFont) {
-        m_trainingFont = CreateFontA(
-            g_buteMgr.GetIntDef("Font", "TrainingFontHeight", 0x18),
-            g_buteMgr.GetIntDef("Font", "TrainingFontWidth", 0x10),
-            0,
-            0,
-            FW_BOLD,
-            0,
-            0,
-            0,
-            DEFAULT_CHARSET,
-            0,
-            0,
-            0,
-            0,
-            NULL
-        );
+        m_trainingFont =
+            CreateFontA(0x24, 0x10, 0, 0, FW_BOLD, 0, 0, 0, DEFAULT_CHARSET, 0, 0, 0, 0, NULL);
     }
 
     const char* faceMF = static_cast<const char*>(
         *g_buteMgr.GetStringDef("Font", "MessageFont", static_cast<CString*>(&arial))
     );
-    m_messageFont = CreateFontA(
-        g_buteMgr.GetIntDef("Font", "MessageFontHeight", 0x2a),
-        g_buteMgr.GetIntDef("Font", "MessageFontWidth", 0x18),
-        0,
-        0,
-        FW_BOLD,
-        0,
-        0,
-        0,
-        DEFAULT_CHARSET,
-        0,
-        0,
-        0,
-        0,
-        faceMF
-    );
+    m_messageFont =
+        CreateFontA(0x37, 0x17, 0, 0, FW_BOLD, 0, 0, 0, DEFAULT_CHARSET, 0, 0, 0, 0, faceMF);
     if (!m_messageFont) {
-        m_messageFont = CreateFontA(
-            g_buteMgr.GetIntDef("Font", "MessageFontHeight", 0x2a),
-            g_buteMgr.GetIntDef("Font", "MessageFontWidth", 0x18),
-            0,
-            0,
-            FW_BOLD,
-            0,
-            0,
-            0,
-            DEFAULT_CHARSET,
-            0,
-            0,
-            0,
-            0,
-            NULL
-        );
+        m_messageFont =
+            CreateFontA(0x37, 0x17, 0, 0, FW_BOLD, 0, 0, 0, DEFAULT_CHARSET, 0, 0, 0, 0, NULL);
     }
 
     return 1;
@@ -543,7 +487,8 @@ i32 CFontConfig::Draw3DText(
     i32 b,
     i32 shadow,
     i32 dx,
-    i32 dy
+    i32 dy,
+    b32 center
 ) {
     if (hdc == NULL) {
         return 0;
@@ -568,8 +513,16 @@ i32 CFontConfig::Draw3DText(
     SetBkMode(hdc, TRANSPARENT);
     SetBkColor(hdc, RGB(0, 0, 0));
     CString text(*strSrc);
-    DrawTextA(hdc, text, strlen(text), &rc, DT_CALCRECT | DT_WORDBREAK | DT_CENTER);
-    i32 hoff = (dst->right + rc.left - dst->left - rc.right) / 2;
+    UINT format = DT_CALCRECT | DT_WORDBREAK;
+    if (center != false) {
+        format |= DT_CENTER;
+    }
+    DrawTextA(hdc, text, strlen(text), &rc, format);
+    format &= ~DT_CALCRECT;
+    i32 hoff = 0;
+    if (center != false) {
+        hoff = (dst->right + rc.left - dst->left - rc.right) / 2;
+    }
     i32 voff = (dst->bottom - dst->top + rc.top - rc.bottom) / 2;
     rc.left += hoff;
     rc.right += hoff;
@@ -581,14 +534,14 @@ i32 CFontConfig::Draw3DText(
         rc.top += dy;
         rc.right += dx;
         rc.bottom += dy;
-        DrawTextA(hdc, text, strlen(text), &rc, DT_WORDBREAK | DT_CENTER);
+        DrawTextA(hdc, text, strlen(text), &rc, format);
         rc.right -= dx;
         rc.left -= dx;
         rc.bottom -= dy;
         rc.top -= dy;
     }
     SetTextColor(hdc, RGB(r, g, b));
-    DrawTextA(hdc, text, strlen(text), &rc, DT_WORDBREAK | DT_CENTER);
+    DrawTextA(hdc, text, strlen(text), &rc, format);
     if (selPrev) {
         SelectObject(hdc, selPrev);
     }

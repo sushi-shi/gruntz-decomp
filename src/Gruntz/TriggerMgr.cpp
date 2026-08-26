@@ -2141,8 +2141,14 @@ void CTriggerMgr::LoadFinishLevelSprite(FinishLevelReason state) {
         case FINISH_REASON_WARPSTONE_EXIT:
             if (m_phase != FINISH_STATE_DEFEAT) {
                 SoundCue* p = LookupCue(m_world->m_soundRegistry->m_cues, "GAME_FINISHLEVEL");
-                m_timerWindow = static_cast<u32>((p->m_sound->m_durationMs + 500));
-                m_timerBase = g_frameTime;
+                if (p != NULL) {
+                    p = LookupCue(m_world->m_soundRegistry->m_cues, "GAME_FINISHLEVEL");
+                    m_timerWindow = static_cast<u32>((p->m_sound->m_durationMs + 500));
+                    m_timerBase = g_frameTime;
+                } else {
+                    m_timerWindow = 500;
+                    m_timerBase = g_frameTime;
+                }
                 if (m_world->m_soundRegistry->m_silentMode == false) {
                     SoundCue* cue = LookupCue(m_world->m_soundRegistry->m_cues, "GAME_FINISHLEVEL");
                     if (cue != NULL) {

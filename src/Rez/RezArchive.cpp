@@ -895,10 +895,13 @@ GZ_ENUM_CONST_END(RezArchiveDefaults)
 RVA(0x0013ac20, 0xe2)
 CRezArchive::CRezArchive() : m_freeEntries(1) {
     m_isOpen = false;
+    m_reserved24 = 1;
+    m_nextGeneratedResourceId = REZ_ARCHIVE_FIRST_GENERATED_RESOURCE_ID;
     m_primaryStorage = NULL;
     m_storages.m_storageCount = 0;
     m_rootDirectoryOffset = 0;
     m_nextWritePos = 0;
+    m_readOnly = true;
     m_rootDirectory = NULL;
     m_archiveTime = 0;
     m_isNewArchive = false;
@@ -907,20 +910,18 @@ CRezArchive::CRezArchive() : m_freeEntries(1) {
     m_largestDirectoryNameSize = 0;
     m_largestResourceNameSize = 0;
     m_largestCommentSize = 0;
+    m_isDataContiguous = true;
     m_archivePath = NULL;
+    m_maxOpenFiles = REZ_ARCHIVE_DEFAULT_MAX_OPEN_FILES;
     m_pathDelimiters = NULL;
     m_caseSensitive = false;
     m_useIdIndex = false;
     m_resourceNameBucketCount = REZ_ARCHIVE_DEFAULT_RESOURCE_NAME_BUCKET_COUNT;
     m_resourceIdBucketCount = REZ_ARCHIVE_DEFAULT_RESOURCE_ID_BUCKET_COUNT;
-    m_reserved24 = 1;
-    m_nextGeneratedResourceId = REZ_ARCHIVE_FIRST_GENERATED_RESOURCE_ID;
-    m_readOnly = true;
-    m_isDataContiguous = true;
-    m_maxOpenFiles = REZ_ARCHIVE_DEFAULT_MAX_OPEN_FILES;
     m_subdirectoryBucketCount = REZ_ARCHIVE_DEFAULT_SUBDIRECTORY_BUCKET_COUNT;
     m_typeBucketCount = REZ_ARCHIVE_DEFAULT_TYPE_BUCKET_COUNT;
     m_entriesPerPoolBlock = REZ_ARCHIVE_DEFAULT_ENTRIES_PER_POOL_BLOCK;
+    m_bannerLine2[0] = 0;
 }
 
 // @dead-code
@@ -1075,6 +1076,13 @@ i32 CRezArchive::Open(char* path, b32 readOnly, b32 createNew) {
     m_largestResourceNameSize = header.m_largestResourceNameSize;
     m_largestCommentSize = header.m_largestCommentSize;
     m_isDataContiguous = header.m_isDataContiguous;
+    memcpy(m_bannerLine2, header.m_bannerBlock2, REZ_ARCHIVE_BANNER_TEXT_LENGTH);
+    m_bannerLine2[REZ_ARCHIVE_BANNER_TEXT_LENGTH] = 0;
+    for (i32 bannerIndex = REZ_ARCHIVE_BANNER_TEXT_LENGTH - 2;
+         bannerIndex >= 0 && m_bannerLine2[bannerIndex] == ' ';
+         --bannerIndex) {
+        m_bannerLine2[bannerIndex] = 0;
+    }
     if (header.m_initialCarriageReturn != REZ_ARCHIVE_MAGIC_CR) {
         return 0;
     }
@@ -1457,9 +1465,12 @@ CRezArchiveDir* CRezArchiveDir::FindDirectoryByPath(const char* path) {
 
 RVA(0x0013bf20, 0x1ac)
 CRezArchiveEntry* CRezArchiveDir::FindEntryByPath(const char* qualifiedPath) {
-    char directoryPath[0x100];
-    char resourceName[0x20];
+    char directoryPath[REZ_ARCHIVE_PATH_BUFFER_SIZE];
+    char resourceName[REZ_ARCHIVE_PATH_BUFFER_SIZE];
     i32 pathLength = static_cast<i32>(strlen(qualifiedPath));
+    if (pathLength >= REZ_ARCHIVE_PATH_BUFFER_SIZE - 1) {
+        return NULL;
+    }
     if (pathLength > 1) {
         if (!IsPathComponentCharacter(m_archive->m_pathDelimiters, *qualifiedPath)) {
             ++qualifiedPath;
@@ -1477,7 +1488,8 @@ CRezArchiveEntry* CRezArchiveDir::FindEntryByPath(const char* qualifiedPath) {
         return NULL;
     }
     const char* nameStart = qualifiedPath + separatorIndex + 1;
-    strcpy(resourceName, nameStart);
+    strncpy(resourceName, nameStart, REZ_ARCHIVE_PATH_BUFFER_SIZE - 1);
+    resourceName[REZ_ARCHIVE_PATH_BUFFER_SIZE - 1] = 0;
     if (separatorIndex <= 1) {
         return FindEntryByFilename(resourceName);
     }
@@ -1492,9 +1504,12 @@ CRezArchiveEntry* CRezArchiveDir::FindEntryByPath(const char* qualifiedPath) {
 
 RVA(0x0013c0d0, 0x1bc)
 CRezArchiveEntry* CRezArchiveDir::FindEntryByPath(const char* qualifiedPath, RezTypeTag typeTag) {
-    char directoryPath[0x100];
-    char resourceName[0x20];
+    char directoryPath[REZ_ARCHIVE_PATH_BUFFER_SIZE];
+    char resourceName[REZ_ARCHIVE_PATH_BUFFER_SIZE];
     i32 pathLength = static_cast<i32>(strlen(qualifiedPath));
+    if (pathLength >= REZ_ARCHIVE_PATH_BUFFER_SIZE - 1) {
+        return NULL;
+    }
     if (pathLength > 1) {
         if (!IsPathComponentCharacter(m_archive->m_pathDelimiters, *qualifiedPath)) {
             ++qualifiedPath;
@@ -1512,7 +1527,8 @@ CRezArchiveEntry* CRezArchiveDir::FindEntryByPath(const char* qualifiedPath, Rez
         return NULL;
     }
     const char* nameStart = qualifiedPath + separatorIndex + 1;
-    strcpy(resourceName, nameStart);
+    strncpy(resourceName, nameStart, REZ_ARCHIVE_PATH_BUFFER_SIZE - 1);
+    resourceName[REZ_ARCHIVE_PATH_BUFFER_SIZE - 1] = 0;
     if (separatorIndex <= 1) {
         return FindEntry(resourceName, typeTag);
     }

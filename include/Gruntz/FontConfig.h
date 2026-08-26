@@ -55,7 +55,8 @@ public:
         i32 b,
         i32 shadow,
         i32 dx,
-        i32 dy
+        i32 dy,
+        b32 center
     );
 
     CString m_inputText;

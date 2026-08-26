@@ -87,10 +87,13 @@ The active source tree and configuration now describe 1.01 throughout:
   the verified 1.01 comparison while preserving identity-surviving attempt
   counts; MAX and historical fuzzy scores are target-specific.
 
-The function census has four target-only starts: `0x115d70`, `0x13c4d0`,
-`0x1d9c90` and `0x1d9cb0`. `CRezArchiveEntryHashNode::Hash` is at `0x13c500`;
-`0x13c4d0` is a distinct new 1.01 body. Seven removed string/padding identities
-were dropped rather than guessed onto unrelated data. The linked MFC
+The migration initially exposed four target-only starts. The semantic version
+audit subsequently reconstructed the new `CRezArchive` banner setter at
+`0x13c4d0` and corrected the old debug-page wrapper's claim to `0x115d70`.
+The remaining target-only starts are the distinct surface-text helper at
+`0x115c90` and the CString-induced EH funclets at `0x1d9c90` and `0x1d9cb0`.
+Seven removed string/padding identities were dropped rather than guessed onto
+unrelated data. The linked MFC
 `CCmdTarget` vtable at `0x1eb7d4` is genuinely `0x40` bytes in 1.01, so the
 following `CCmdUI` vtable begins at `0x1eb814`.
 

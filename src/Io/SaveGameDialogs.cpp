@@ -312,6 +312,16 @@ void FillSaveDialog(HWND hWnd, CSaveGame* sg) {
         CTRL_SAVESLOT_INFO9,
         CTRL_SAVESLOT_DELETE9
     );
+    SendMessageA(GetDlgItem(hWnd, CTRL_SAVEDLG_SLOT0), EM_LIMITTEXT, 0x20, 0);
+    SendMessageA(GetDlgItem(hWnd, CTRL_SAVEDLG_SLOT1), EM_LIMITTEXT, 0x20, 0);
+    SendMessageA(GetDlgItem(hWnd, CTRL_SAVEDLG_SLOT2), EM_LIMITTEXT, 0x20, 0);
+    SendMessageA(GetDlgItem(hWnd, CTRL_SAVEDLG_SLOT3), EM_LIMITTEXT, 0x20, 0);
+    SendMessageA(GetDlgItem(hWnd, CTRL_SAVEDLG_SLOT4), EM_LIMITTEXT, 0x20, 0);
+    SendMessageA(GetDlgItem(hWnd, CTRL_SAVEDLG_SLOT5), EM_LIMITTEXT, 0x20, 0);
+    SendMessageA(GetDlgItem(hWnd, CTRL_SAVEDLG_SLOT6), EM_LIMITTEXT, 0x20, 0);
+    SendMessageA(GetDlgItem(hWnd, CTRL_SAVEDLG_SLOT7), EM_LIMITTEXT, 0x20, 0);
+    SendMessageA(GetDlgItem(hWnd, CTRL_SAVEDLG_SLOT8), EM_LIMITTEXT, 0x20, 0);
+    SendMessageA(GetDlgItem(hWnd, CTRL_SAVEDLG_SLOT9), EM_LIMITTEXT, 0x20, 0);
 }
 
 RVA(0x000e3fb0, 0x86)

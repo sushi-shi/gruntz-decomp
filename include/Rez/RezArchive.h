@@ -38,6 +38,11 @@ GZ_ENUM_CONST_BEGIN(RezArchiveMagic)
     REZ_ARCHIVE_MAGIC_EOF = 0x1a
 GZ_ENUM_CONST_END(RezArchiveMagic)
 
+GZ_ENUM_CONST_BEGIN(RezArchiveLimits)
+    REZ_ARCHIVE_BANNER_TEXT_LENGTH = 60,
+    REZ_ARCHIVE_PATH_BUFFER_SIZE = 0x400
+GZ_ENUM_CONST_END(RezArchiveLimits)
+
 GZ_ENUM_FORWARD(RezArchiveVersion);
 
 struct RezArchiveHeader {
@@ -104,6 +109,8 @@ public:
 
     void SetPathDelimiters(char* delimiters);
 
+    void SetBannerLine2(const char* text);
+
     void SetBucketCounts(
         i32 resourceNameBuckets,
         i32 resourceIdBuckets,
@@ -148,6 +155,7 @@ public:
     CRezEntryNameHash m_freeEntries;
     CRezEntryPoolBlockList m_entryPoolBlocks;
     i32 m_entriesPerPoolBlock;
+    char m_bannerLine2[REZ_ARCHIVE_BANNER_TEXT_LENGTH + 1];
 };
 
 #endif // REZ_REZARCHIVE_H
