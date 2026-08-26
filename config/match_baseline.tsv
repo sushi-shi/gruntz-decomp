@@ -49,7 +49,7 @@ battlezretarget	1	0
 battlezspawncheck	1	0
 battlezspecialanim	3	2
 battlezunitstep	4	0
-behindcandy	4	4
+behindcandy	1	1
 behindcandyani	8	7
 bitarray	3	2
 bitarraystream	2	2
@@ -98,11 +98,11 @@ dircellmethods	20	19
 directdrawmgr	71	71
 directinputmgr2	45	45
 directsoundmgr	84	83
-donothing	8	8
+donothing	2	2
 droppedobject	29	26
 engstrrendertext	2	2
 exittrigger	5	3
-eyecandy	4	4
+eyecandy	1	1
 fader	25	20
 fadereffects	39	28
 fadermgr	13	13
@@ -167,7 +167,7 @@ grunttilescan	1	0
 grunttoysprite	9	8
 grunttoytimesprite	5	5
 grunttubeanim	1	0
-gruntvoice	22	19
+gruntvoice	21	18
 gruntwanderstep	1	0
 gruntwingztimesprite	5	5
 gruntzapp	16	16
@@ -231,7 +231,7 @@ netmgrerror	2	2
 netsession	1	1
 netsessionmgr	31	25
 palettebmp	2	2
-pathhazard	26	24
+pathhazard	24	22
 play	105	78
 playassetload	17	16
 projectile	28	20
@@ -263,7 +263,7 @@ sbi_wellgoo	6	4
 scattersamples	2	2
 secretteleportertrigger	17	15
 serializesyncmarker	1	1
-serialobjectfactory	40	39
+serialobjectfactory	55	54
 sfselectdevice	1	1
 shadetablecache	26	18
 simpleanimation	7	6
@@ -584,9 +584,6 @@ battlezunitstep	?AdvanceToEnemyBase@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	83.0501
 battlezunitstep	?GetTilePos@CGrunt@@QAE?AUCoord@@XZ	85.7000	85.7000	2	dbe93efd6e63	0x31c70	85.7000	
 battlezunitstep	?Step@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	88.0918	88.0867	13	8f986f9993a1	0x31610	88.0918	
 battlezunitstep	?TrackAssignedEnemy@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	96.2511	96.2511	16	713bf7d352cc	0x31ca0	96.2511	
-behindcandy	??1CBehindCandy@@UAE@XZ	100.0000	100.0000	1	cpp:bc0783caa395	0xfc30	100.0000	
-behindcandy	??_GCBehindCandy@@UAEPAXI@Z	100.0000	100.0000	1	cpp:bc0783caa395	0xfc00	100.0000	
-behindcandy	?GetTypeTag@CBehindCandy@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:281810d27b94	0xfb70	100.0000	
 behindcandy	?SerializeDispatch@CBehindCandy@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	4	8360207c7c30	0xfb90	100.0000	
 behindcandyani	??0CBehindCandyAni@@QAE@PAUCGameObject@@@Z	97.6418	97.6418	6	aea62d3ea41e	0xad540	97.6418	
 behindcandyani	??1CBehindCandyAni@@UAE@XZ	100.0000	100.0000	1	cpp:2ccdaca5f6ed	0x100f0	100.0000	
@@ -929,7 +926,7 @@ ddrawshadeblit	?BuildRle@CDDrawShadeBlit@@QAEHPAEHHHHPAUtagPALETTEENTRY@@@Z	98.5
 ddrawshadeblit	?ConvertRow@CDDrawShadeBlit@@QAEXPAE0H@Z	79.8832	79.8832	6	21c3ac3ab30b	0x14c9f0	82.0527	
 ddrawshadeblit	?ConvertRowDouble@CDDrawShadeBlit@@QAEXPAE0HH@Z	72.2988	72.2988	4	5f1e7d7dbab6	0x14d950	73.5610	
 ddrawshadeblit	?ConvertRowDoubleFwd@CDDrawShadeBlit@@QAEXPAE0HH@Z	68.0032	68.0032	6	6911c1c9c7cf	0x14d5e0	74.5449	
-ddrawshadeblit	?ConvertRowFlip@CDDrawShadeBlit@@QAEXPAE0H@Z	74.7284	74.7284	8	97283f2fb14a	0x14cfc0	75.0324	
+ddrawshadeblit	?ConvertRowFlip@CDDrawShadeBlit@@QAEXPAE0H@Z	73.1043	73.1043	9	d907f09ab9c0	0x14cfc0	75.0324	
 ddrawshadeblit	?Decompress@CDDrawShadeBlit@@QAEHPAE@Z	100.0000	100.0000	4	dc6e7e3f0d9b	0x1494b0	100.0000	
 ddrawshadeblit	?EncodeRle16@CDDrawShadeBlit@@QAEPAEPBE@Z	91.9592	91.9592	5	e418c64abc46	0x1495d0	91.9592	
 ddrawshadeblit	?LoadFromFile@CDDrawShadeBlit@@QAEHVCString@@W4ColorDepth@@@Z	100.0000	100.0000	3	4015a56baaf9	0x148fc0	100.0000	
@@ -1553,13 +1550,7 @@ directsoundmgr	?Unlock@SoundBuffer@@QAEHPAEI0I@Z	100.0000	100.0000	4	d13e8df06e3
 directsoundmgr	?UpdateDuration@SoundBuffer@@QAEXXZ	100.0000	100.0000	3	a0bfbd175d86	0x1359a0	100.0000	
 directsoundmgr	?ValidateRestore@SoundDevice@@QAEHPAVSoundBuffer@@PAUWaveFormatX@@I@Z	100.0000	100.0000	4	3044b709cb92	0x136ab0	100.0000	
 directsoundmgr	?VolumeToAttenuation@SoundDevice@@SAHH@Z	100.0000	100.0000	3	08f37c69e660	0x1350b0	100.0000	
-donothing	??1CDoNothing@@UAE@XZ	100.0000	100.0000	1	cpp:ac2e9822263a	0xf770	100.0000	
-donothing	??1CDoNothingNormal@@UAE@XZ	100.0000	100.0000	1	cpp:ac2e9822263a	0xf8a0	100.0000	
-donothing	??_GCDoNothing@@UAEPAXI@Z	100.0000	100.0000	1	cpp:ac2e9822263a	0xf740	100.0000	
-donothing	??_GCDoNothingNormal@@UAEPAXI@Z	100.0000	100.0000	1	cpp:ac2e9822263a	0xf870	100.0000	
-donothing	?GetTypeTag@CDoNothing@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:281810d27b94	0xf6b0	100.0000	
-donothing	?GetTypeTag@CDoNothingNormal@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:281810d27b94	0xf7e0	100.0000	
-donothing	?SerializeDispatch@CDoNothing@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	4	86f9b3f8fbef	0xf6d0	100.0000	
+donothing	?SerializeDispatch@CDoNothing@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	5	41eb68d6fee0	0xf6d0	100.0000	
 donothing	?SerializeDispatch@CDoNothingNormal@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	4	009b795806a9	0xf800	100.0000	
 droppedobject	??0CDroppedObject@@QAE@PAUCGameObject@@@Z	95.1716	95.1716	8	a53e92a578f4	0xc68b0	95.1716	
 droppedobject	??0CDroppedObjectShadow@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	7	66aa62f85e38	0xc7490	100.0000	
@@ -1597,9 +1588,6 @@ exittrigger	??1CExitTrigger@@UAE@XZ	100.0000	100.0000	1	cpp:7da0823f5878	0x108c0
 exittrigger	??_GCExitTrigger@@UAEPAXI@Z	100.0000	100.0000	1	cpp:7da0823f5878	0x10890	100.0000	
 exittrigger	?GetTypeTag@CExitTrigger@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:281810d27b94	0x10870	100.0000	
 exittrigger	?SerializeDispatch@CExitTrigger@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	98.9474	98.9474	8	487dccd91c66	0x3f040	98.9474	
-eyecandy	??1CEyeCandy@@UAE@XZ	100.0000	100.0000	1	cpp:d473d9a4d515	0xfd60	100.0000	
-eyecandy	??_GCEyeCandy@@UAEPAXI@Z	100.0000	100.0000	1	cpp:d473d9a4d515	0xfd30	100.0000	
-eyecandy	?GetTypeTag@CEyeCandy@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:281810d27b94	0xfca0	100.0000	
 eyecandy	?SerializeDispatch@CEyeCandy@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	4	3be1ef3d087f	0xfcc0	100.0000	
 fader	??0CFader@@QAE@XZ	100.0000	100.0000	3	33740430f8b9	0x17e450	100.0000	
 fader	??0CFaderConfig@@QAE@XZ	100.0000	100.0000	2	49e621db3360	0x17e7b0	100.0000	
@@ -2243,7 +2231,6 @@ gruntvoice	??0CGruntVoice@@QAE@PAUCGameObject@@@Z	99.6429	99.6429	8	555d938cf20b
 gruntvoice	??0CVoiceTrigger@@QAE@PAUCGameObject@@@Z	98.3167	98.3167	5	d90e73cb783e	0x119b50	98.3167	
 gruntvoice	??0CVoiceTrigger@@QAE@XZ	100.0000	100.0000	5	d90e73cb783e	0x13470	100.0000	
 gruntvoice	??1CGruntVoice@@UAE@XZ	100.0000	100.0000	1	cpp:1cfecf45469b	0x119ae0	100.0000	
-gruntvoice	??1CUFO@@UAE@XZ	100.0000	100.0000	1	cpp:1cfecf45469b	0x13400	100.0000	
 gruntvoice	??1CVoiceTrigger@@UAE@XZ	100.0000	100.0000	1	cpp:1cfecf45469b	0x135a0	100.0000	
 gruntvoice	??_GCGruntVoice@@UAEPAXI@Z	100.0000	100.0000	1	cpp:1cfecf45469b	0x119ab0	100.0000	
 gruntvoice	??_GCVoiceTrigger@@UAEPAXI@Z	100.0000	100.0000	1	cpp:1cfecf45469b	0x13570	100.0000	
@@ -2667,7 +2654,7 @@ imagepool	?EnsureSize@CRezImage@@QAEHPAUHDC__@@HHW4ColorDepth@@H@Z	100.0000	100.
 imagepool	?Fill@CRezImage@@QAEXH@Z	100.0000	100.0000	2	2284fdaa66d5	0x175d50	100.0000	
 imagepool	?FillRect@CRezImage@@QAEXPAUCRezFillRect@@H@Z	100.0000	100.0000	1	8a12f27ec459	0x176d20	100.0000	
 imagepool	?FillRectAt@CRezImage@@QAEXHHPAUCRezFillRect@@H@Z	100.0000	66.4444	1	c28ac783e527	0x176da0	100.0000	
-imagepool	?FlipVertical@CRezImage@@QAEXXZ	71.0707	71.0707	3	c2b31689ccc1	0x176840	71.0707	
+imagepool	?FlipVertical@CRezImage@@QAEXXZ	79.7879	79.7879	4	b5a51e9caa03	0x176840	79.7879	
 imagepool	?Free@CRezImage@@QAEXXZ	100.0000	100.0000	1	871a9f6334ab	0x175c90	100.0000	
 imagepool	?LoadBmp@CRezImage@@QAEHPADPAUHDC__@@H@Z	100.0000	100.0000	2	b73042ce3273	0x175e40	100.0000	
 imagepool	?LoadDefault@CRezImage@@QAEHPADPAUHDC__@@H@Z	100.0000	100.0000	2	b788e9500b67	0x1767d0	100.0000	
@@ -3367,7 +3354,6 @@ pathhazard	??1CPathHazard@@UAE@XZ	100.0000	100.0000	1	cpp:92f2e382e981	0x13280	1
 pathhazard	??1CRainCloud@@UAE@XZ	100.0000	100.0000	1	cpp:92f2e382e981	0x13340	100.0000	
 pathhazard	??_GCPathHazard@@UAEPAXI@Z	100.0000	100.0000	1	cpp:92f2e382e981	0x13250	100.0000	
 pathhazard	??_GCRainCloud@@UAEPAXI@Z	100.0000	100.0000	1	cpp:92f2e382e981	0x13310	100.0000	
-pathhazard	??_GCUFO@@UAEPAXI@Z	100.0000	100.0000	1	cpp:92f2e382e981	0x133d0	100.0000	
 pathhazard	?Arrive@CPathHazard@@UAEHXZ	100.0000	100.0000	1	d95e49a4d78b	0xb47a0	100.0000	
 pathhazard	?BeginLeg@CPathHazard@@UAEHXZ	100.0000	100.0000	3	697e13016945	0xb47e0	100.0000	
 pathhazard	?FireActivation@CPathHazard@@UAEXH@Z	100.0000	100.0000	2	a323417332cd	0xb3b60	100.0000	
@@ -3375,7 +3361,6 @@ pathhazard	?ForwardSiblingTick@CPathHazard@@QAEHXZ	100.0000	100.0000	1	9256458c1
 pathhazard	?ForwardTick@CPathHazard@@QAEHXZ	100.0000	100.0000	1	a304183f803d	0xb5070	100.0000	
 pathhazard	?GetTypeTag@CPathHazard@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:281810d27b94	0x13210	100.0000	
 pathhazard	?GetTypeTag@CRainCloud@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:281810d27b94	0x132f0	100.0000	
-pathhazard	?GetTypeTag@CUFO@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:281810d27b94	0x133b0	100.0000	
 pathhazard	?HitTest@CPathHazard@@UAEHHH@Z	100.0000	100.0000	1	cpp:281810d27b94	0x13230	100.0000	
 pathhazard	?HitTest@CRainCloud@@UAEHHH@Z	100.0000	100.0000	13	d916fb85287a	0xb4640	100.0000	
 pathhazard	?RegisterPathHazardActions@@YAXXZ	100.0000	100.0000	1	3cb88b96e2f4	0xb3cc0	100.0000	
@@ -3620,8 +3605,8 @@ rezarchive	?UnpackTag@CRezArchive@@QAEXW4RezTypeTag@@PAD@Z	100.0000	100.0000	5	5
 rezarchive	?UnusedArchiveAction@CRezArchive@@UAEXH@Z	100.0000	100.0000	2	813f32220984	0x13ba00	100.0000	
 rezarchive	?UnusedArchiveQuery@CRezArchive@@UAEHH@Z	100.0000	100.0000	2	1477a47f5d4c	0x13b9f0	100.0000	
 rezbufferobject	?InitRezElem@@YIPAURezElem40@@PAU1@@Z	100.0000	100.0000	1	47eca8580a36	0x17f300	100.0000	
-rezbufferobject	?Serialize@CRezBufferObject@@UAEXAAVCArchive@@@Z	100.0000	100.0000	3	0c15c6b6f81d	0x17f130	100.0000	
-rezbufferobject	?SetSize@CRezBufferObject@@QAEXHH@Z	96.0414	96.0414	3	e28183865449	0x17f390	96.0414	
+rezbufferobject	?Serialize@CRezBufferObject@@UAEXAAVCArchive@@@Z	100.0000	100.0000	4	f22423b925e4	0x17f130	100.0000	
+rezbufferobject	?SetSize@CRezBufferObject@@QAEXHH@Z	96.0414	96.0414	4	0f241264517f	0x17f390	96.0414	
 rezbufferobject	?ZeroRecords@@YGXPAXH@Z	100.0000	100.0000	1	82bc3969e03d	0x17f500	100.0000	
 rezcoll	??0CHashBase@@QAE@H@Z	100.0000	100.0000	3	e14937bb3430	0x184960	100.0000	
 rezcoll	??0CHashSlot@@QAE@XZ	100.0000	100.0000	1	b14bb577fa64	0x184a20	100.0000	
@@ -3929,12 +3914,26 @@ serialobjectfactory	??0CPathHazard@@QAE@XZ	100.0000	100.0000	1	c5294a0cd9a8	0x13
 serialobjectfactory	??0CProjectile@@QAE@XZ	100.0000	100.0000	1	914addbe6169	0x126e0	100.0000	
 serialobjectfactory	??0CTileTrigger@@QAE@XZ	100.0000	100.0000	1	8b171792cfbe	0x11160	100.0000	
 serialobjectfactory	??0CUserLogic@@QAE@XZ	100.0000	100.0000	1	c3177ea0b93d	0x138d0	100.0000	
+serialobjectfactory	??1CBehindCandy@@UAE@XZ	100.0000	100.0000	1	cpp:bc0783caa395	0xfc30	100.0000	
+serialobjectfactory	??1CDoNothing@@UAE@XZ	100.0000	100.0000	1	cpp:ac2e9822263a	0xf770	100.0000	
+serialobjectfactory	??1CDoNothingNormal@@UAE@XZ	100.0000	100.0000	1	cpp:ac2e9822263a	0xf8a0	100.0000	
+serialobjectfactory	??1CEyeCandy@@UAE@XZ	100.0000	100.0000	1	cpp:d473d9a4d515	0xfd60	100.0000	
 serialobjectfactory	??1CMovingLogic@@UAE@XZ	100.0000	100.0000	1	cpp:281810d27b94	0x13bd0	100.0000	
+serialobjectfactory	??1CUFO@@UAE@XZ	100.0000	100.0000	1	cpp:1cfecf45469b	0x13400	100.0000	
+serialobjectfactory	??_GCBehindCandy@@UAEPAXI@Z	100.0000	100.0000	1	cpp:bc0783caa395	0xfc00	100.0000	
+serialobjectfactory	??_GCDoNothing@@UAEPAXI@Z	100.0000	100.0000	1	cpp:ac2e9822263a	0xf740	100.0000	
+serialobjectfactory	??_GCDoNothingNormal@@UAEPAXI@Z	100.0000	100.0000	1	cpp:ac2e9822263a	0xf870	100.0000	
+serialobjectfactory	??_GCEyeCandy@@UAEPAXI@Z	100.0000	100.0000	1	cpp:d473d9a4d515	0xfd30	100.0000	
 serialobjectfactory	??_GCMovingLogic@@UAEPAXI@Z	100.0000	100.0000	1	cpp:281810d27b94	0x13c40	100.0000	
+serialobjectfactory	??_GCUFO@@UAEPAXI@Z	100.0000	100.0000	1	cpp:92f2e382e981	0x133d0	100.0000	
 serialobjectfactory	?GameSerializationCallback@@YAHPAVCDDrawSurfaceMgr@@PAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAX@Z	99.5176	99.5176	4	c1ed2104761d	0xd2a0	99.5550	
+serialobjectfactory	?GetTypeTag@CBehindCandy@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:281810d27b94	0xfb70	100.0000	
 serialobjectfactory	?GetTypeTag@CBrickz@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:3653373a86b4	0x11300	100.0000	
 serialobjectfactory	?GetTypeTag@CCheckpointTrigger@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:3653373a86b4	0x11430	100.0000	
 serialobjectfactory	?GetTypeTag@CCoveredPowerup@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:3653373a86b4	0x11670	100.0000	
+serialobjectfactory	?GetTypeTag@CDoNothing@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:281810d27b94	0xf6b0	100.0000	
+serialobjectfactory	?GetTypeTag@CDoNothingNormal@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:281810d27b94	0xf7e0	100.0000	
+serialobjectfactory	?GetTypeTag@CEyeCandy@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:281810d27b94	0xfca0	100.0000	
 serialobjectfactory	?GetTypeTag@CGiantRock@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:3653373a86b4	0x115b0	100.0000	
 serialobjectfactory	?GetTypeTag@CGruntPuddle@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:369ccf71c95f	0x10cc0	100.0000	
 serialobjectfactory	?GetTypeTag@CLevelTime@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:1aec6b66e776	0x11990	100.0000	
@@ -3950,6 +3949,7 @@ serialobjectfactory	?GetTypeTag@CTileTrigger@@UAE?AW4LogicTypeId@@XZ	100.0000	10
 serialobjectfactory	?GetTypeTag@CTileTriggerSwitch@@EAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:3653373a86b4	0x11030	100.0000	
 serialobjectfactory	?GetTypeTag@CTileTriggerTransition@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:3653373a86b4	0x11730	100.0000	
 serialobjectfactory	?GetTypeTag@CToobSpikez@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:47495a4523b1	0x12ba0	100.0000	
+serialobjectfactory	?GetTypeTag@CUFO@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:281810d27b94	0x133b0	100.0000	
 serialobjectfactory	?GetTypeTag@CWarlord@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:f6598efd5e63	0x107a0	100.0000	
 serialobjectfactory	?GetTypeTag@CWarpStonePad@@EAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:3653373a86b4	0x10f00	100.0000	
 serialobjectfactory	?GetTypeTag@CWayPoint@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:855dd2f8b6f0	0x10220	100.0000	

@@ -428,43 +428,23 @@ changed one target byte. The remaining question is which C1 tuple ordering makes
 C2's per-block rotating picker home the locked buffer rather than `this`; repeat
 source permutation only if that tuple distinction becomes understood.
 
-### Open RE case — `CRezImage::FlipVertical` row-swap homes
+### Bounded case — `CRezImage::FlipVertical` row-swap homes
 
 `CRezImage::FlipVertical` at `0x00176840` is complete at two calls, ten
-branches, one return, and two ordered relocations. Retail emits 100
-instructions in `0x11f` bytes; the current member-direct source emits 91 in
-`0x109`. Retail assigns `this` to EBX and the scratch row to EBP, homes the
-scratch pointer, and carries separate height, top-offset, decreasing-bottom,
-outer-index, and pair-count states in a `0x18` frame. The current compile
-assigns `this` to EBP and the scratch row to EBX and coalesces the same loop
-state into a `0x10` frame. This is the register/frame consequence of a
-different tuple ordering, not a missing copy arm.
+branches, one return, and two ordered relocations. The recovered source keeps
+an explicit one-past `bottom = m_height` counter, derives the middle row from
+`m_height - bottom`, and uses one shared down-counter index in the top and
+bottom copy loops. That restores the independent induction states and raises
+71.0707% to 79.78788%, with retail's `0x18` frame.
 
-The lower current score is an evidence-backed source correction. Retail loads
-`m_pixels` from `[ebx+0x42c]` inside each of the three byte-copy loops. Direct
-member indexing reproduces those alias-barrier reloads. The historical 71.0707%
-shape caches explicit `top` and `bot` pointers, loads `m_pixels` before the
-loops, and is only 246 bytes; it is a useful compiler frontier but contradicts
-the retail load placement. Its MAX remains banked while the faithful
-member-direct source currently scores 52.1616%.
-
-The personal re-audit exhausted the source-visible lifetime axes. A 198-cell
-campaign (six generated source shapes crossed with 33 TU states) produced one
-island at the current bytes. A 100-cell Cartesian matrix of scratch assignment,
-dimension-declaration order, row pointers, explicit top offsets, scoped byte
-indices, and staged bottom arithmetic produced six islands; the best faithful
-member-direct state remained baseline, while captured-height pointer rows
-reached only 56.7778%. Six complete height/row models reproduced the historical
-71.0707% pointer frontier and put member-height/member-direct second at
-61.8586%. Moving dimension captures across allocation produced six worse
-states (best 53.1818%), and all eight `const` combinations for height, width,
-and pair count were byte-identical. Finally, crossing the historical pointer
-shape with 65 TU states yielded one island at 71.0707%.
-
-Reopen this wall only with evidence for a real inlined row primitive or a C1
-tuple distinction that makes the per-block rotating picker home scratch and
-height without caching `m_pixels`. Parser-state noise, declaration order, and
-more row-pointer permutations are bounded.
+The remaining first divergence is register allocation: base assigns `this` to
+EDI and scratch to EBP; retail assigns `this` to EBX and scratch to EBP, then
+differs in four instructions of induction scheduling. The source search is
+exhausted: 300 copy/outer Cartesian cells (272 islands), 144 declaration/update
+cells, 100 focused copy cells, 144 cached-height/copy cells, and 65 TU-state
+trials. Caching height collapses states and tops at 64.20. A CRT `memcpy` lowers
+to `rep movs` and reduces the branch skeleton to six; MFC 4.2 `CopyElements`
+captures `m_pixels` and tops at 63.92. Neither is retail's row primitive.
 
 ### Open RE case — `WarpTextureBlit` edge-cursor allocation
 

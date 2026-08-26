@@ -66,7 +66,7 @@ found three different causes, one of which is not a colour question at all:
 |---|---|---|---|---|
 | `CMinimap::Draw` 0xa3820 | 76.38 @162 | **70.12** @158 | 0x14/**0x14** | callee-saved re-colour (below) |
 | `CBoomerang::AdvanceMotion` 0xe08b0 | 86.25 @128 | **71.52** @138 | 0x28/0x20 | x87 spill temps - **no GPR is involved**, see x87-spill-slots-are-compiler-temps.md |
-| `CRezImage::FlipVertical` 0x176840 | 71.07 @89 | 61.86 @88 | 0x14/0x18 | misfiled - it is a CFG/IV question (below) |
+| `CRezImage::FlipVertical` 0x176840 | 71.07 @89 | **79.79** after IV reconstruction | 0x18/**0x18** | one-past bottom/shared down-counter recovered; remaining register colour |
 
 So: before spending a lever on "the colour", check whether the general-purpose
 registers already pair with retail. In `AdvanceMotion` they do, in every state
@@ -99,15 +99,16 @@ parameter; we enregister `minY`). **Retail spends its callee-saved registers on
 the long-lived receiver/parameter and homes the derived local; our cl does the
 reverse.** That is the detection signature, and no source lever found moves it.
 
-### FlipVertical is not this pattern
+### FlipVertical was an IV reconstruction, then became this pattern
 
-Retail is 101 instructions to our 89 with TWO extra frame dwords: it reloads
-`m_pixels` inside all three inner loops (the byte stores may alias the member)
-and maintains `m_height - i` as a decrementing induction variable, from which
-the middle loop derives its destination as `botOff + (i - counter + 1) * wid`.
-Spelling the three loops as direct `m_pixels[off + x]` indexing does produce the
-in-loop reloads, but flips loops 1 and 3 from retail's down-counted pointer walk
-to an up-counted index loop (71.07 -> 61.86). It is a CFG/IV-selection row.
+The old 71.07 source lacked retail's independent decreasing-bottom state. The
+recovered one-past `bottom = m_height` counter plus shared down-counter copy
+index raises it to 79.79 and gives both sides the `0x18` frame, two calls, ten
+branches, one return and two relocations. It now belongs to the register-colour
+tail of this pattern: base uses EDI for `this` and EBP for scratch; retail uses
+EBX for `this` and EBP for scratch. Cached-height, pointer-row, CRT `memcpy`, MFC
+`CopyElements`, declaration/update and TU-state controls do not reproduce that
+colour without destroying the proven induction states.
 
 ## What DOES convert
 

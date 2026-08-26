@@ -4,12 +4,14 @@ tags: cpp:loop cpp:local | asm:jmp asm:mov | topic:wall topic:scoring-artifact
 symptoms: one side carries an extra unconditional `jmp` at a loop entry that skips a
 one-instruction block reloading a value from a stack home, and the loop latch branches
 back INTO that block; the two sides are otherwise arm-for-arm identical
-confidence: 10/10 (the mechanism), 0/10 (a loop-spelling fix - there is none)
+confidence: 10/10 (the mechanism), 0/10 (an isolated loop-spelling fix), 8/10
+(a cross-arm cursor-lifetime fix when the whole function keeps the entry value live)
 
 Nine independent `bounded` reviews described this same shape and asked for the source
-form behind it. There is none. The block is C2's loop header, spliced in front of the
-loop by `lg.c` (`0x0043aad7`), and it exists exactly when the cursor's loop-carried
-location is MEMORY while the entry edge already has it in a register:
+form behind it. There is no lever in the local loop spelling. The block is C2's loop
+header, spliced in front of the loop by `lg.c` (`0x0043aad7`), and it exists exactly
+when the cursor's loop-carried location is MEMORY while the entry edge already has it
+in a register:
 
 ```asm
 ;   ours - CGameLevel::BroadPhase 0x167ea0
@@ -26,7 +28,7 @@ location is MEMORY while the entry edge already has it in a register:
  167: jne  0x28
 ```
 
-## It is not a loop-spelling question
+## It is not an isolated loop-spelling question
 
 Five spellings of the cursor walk, compiled with cl 5.0 `/O2 /MT` in one probe TU, are
 **byte-identical** (one sha1 across all five):
@@ -54,9 +56,10 @@ side: of the nine rows, retail carries the extra edge in four (`ClaimTilesAround
 0x2d800, `FlipVertical` 0x13ebb0, `BlitShadedForward` 0x14a200 with two,
 `DrawGlyphRun` 0x179e70) and our base carries it in four (`BlitCopyForward` 0x149950,
 `ConvertRowFlip` 0x14cfc0 with two, `SubTable` 0x14f310, `BroadPhase` 0x167ea0). A
-feature that appears on both sides in equal numbers is a coin, not a missing entity.
+feature that appears on both sides in equal numbers is a readout, not by itself a
+missing entity.
 
-## The one case where it DOES close, and how to recognise it
+## The cases where it DOES close, and how to recognise them
 
 The trampoline closes when the pressure difference under it is itself a source defect.
 `CShadeTableCache::SubTable` 0x14f310 wrote its pixel as one OR expression, so cl
@@ -65,9 +68,26 @@ homed it - and the preheader brought its trampoline. Accumulating channel by cha
 (`v |= ...`) denies the reassociation; the hoist, the preheader and the trampoline all
 go together, 7 -> 6 unconditional jumps against retail's 6, and 78.72 -> 89.76.
 
-So the screen is not "who has the extra jmp" but **"does the extra jmp sit above a
-hoisted invariant we created?"** If it sits above a bare reload of a value the other
-side also reloads, it is allocation - park it.
+`CDDrawShadeBlit::ConvertRowFlip` 0x14cfc0 proves the second source class: a
+**cross-arm cursor lifetime**. Testing one PAL-alpha cursor spelling in isolation left
+the two trampolines and looked flat. A 64-cell Cartesian campaign over the six switch
+arms showed that the legacy case-local aliases collectively made cl preload `src`
+before the callee-save pushes. The alpha loop carried the cursor in memory, but its
+entry edge still held that preload, so C2 skipped the first header reload with a
+trampoline. Using the actual `src` parameter in the PAL, raw-alpha and PAL-alpha arms,
+while retaining the natural locals in the ordinary destination, 16-bit destination
+and source-by-level arms, removes exactly both jumps: 30 -> 28 branches against
+retail's 28, with all 11 returns and 24 relocations unchanged. The score descends
+74.73 -> 73.10 because the new allocation exposes later scheduling residue; the CFG
+correction remains decisive. The all-parameter control also has 28 branches, while
+every high-score local-alpha frontier restores the two wrong jumps.
+
+So the screen is not "who has the extra jmp" but **"why does the entry edge already
+own the value whose stack home the latch reloads?"** First inspect a hoisted invariant.
+For a large switch, also inspect parameter aliases across every sibling arm and run the
+Cartesian product: a local test cannot see a function-entry preload selected by the
+other arms. If neither source defect exists and the block sits above a bare reload the
+other side also performs, it is bounded allocation.
 
     # rows where ours carries more unconditional jumps than retail
     # (34 of 579 in the sub-100 queue; 514 agree exactly)

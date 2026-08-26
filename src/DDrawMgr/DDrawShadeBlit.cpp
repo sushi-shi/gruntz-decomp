@@ -2251,9 +2251,8 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
         case SHADE_PAL_16: {
             u16* pal = m_palDescr->Lut16();
             u8* sw = dst;
-            u8* ss = src;
             while (count-- > 0) {
-                Store16(sw, pal[*ss++]);
+                Store16(sw, pal[*src++]);
                 sw -= 2;
             }
             break;
@@ -2262,11 +2261,10 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
             memcpy(g_scratch, dst - count * 2 - 2, count * 2);
             u8* sc = &g_scratch[count * 2 - 2];
             u8* sw = dst;
-            u8* ss = src;
             if (m_blendVariant) {
                 while (count-- > 0) {
                     u32 d = Load16(sc);
-                    u32 a = Load16(ss);
+                    u32 a = Load16(src);
                     u16 r = m_lutBank1
                         [((a >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
                          + (((d >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
@@ -2278,13 +2276,13 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
                          + ((d & RGB555_CHANNEL_MASK) << RGB555_CHANNEL_BITS)];
                     Store16(sw, r);
                     sc -= 2;
-                    ss += 2;
+                    src += 2;
                     sw -= 2;
                 }
             } else {
                 while (count-- > 0) {
                     u32 d = Load16(sc);
-                    u32 a = Load16(ss);
+                    u32 a = Load16(src);
                     u16 r = m_lutBank1
                         [((a >> RGB565_GREEN_TO_5_SHIFT) & RGB555_CHANNEL_MASK)
                          + (((d >> RGB565_GREEN_TO_5_SHIFT) & RGB555_CHANNEL_MASK)
@@ -2297,7 +2295,7 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
                          + ((d & RGB555_CHANNEL_MASK) << RGB555_CHANNEL_BITS)];
                     Store16(sw, r);
                     sc -= 2;
-                    ss += 2;
+                    src += 2;
                     sw -= 2;
                 }
             }
