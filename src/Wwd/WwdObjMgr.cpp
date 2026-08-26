@@ -36,11 +36,11 @@
 
 #include <new>
 
-DATA(0x0021ab14)
+DATA(0x0021ba74)
 i32 g_wwdObjIdCounter = 1;
-DATA(0x0021ab20)
+DATA(0x0021ba80)
 b32 g_soundEnabled = true;
-DATA(0x0021ab24)
+DATA(0x0021ba84)
 i32 g_soundVolumePercent = 100;
 
 inline CLogicRecord* LookupLogicTemplate(CMapStringToOb& map, LPCTSTR name) {
@@ -55,12 +55,12 @@ inline void* WwdKey(CGameObject* o) {
     return k.m_addr;
 }
 
-RVA(0x001591e0, 0x5)
+RVA(0x001594c0, 0x5)
 void CDDrawChildGroup::Unload() {
     this->DestroyChildren();
 }
 
-RVA(0x001591f0, 0x54)
+RVA(0x001594d0, 0x54)
 void CDDrawChildGroup::DestroyChildren() {
     CGameLevel* p = OwnerMgr()->m_level;
     if (p != NULL) {
@@ -83,7 +83,7 @@ void CDDrawChildGroup::DestroyChildren() {
     m_registeredGameObjectsById.RemoveAll();
 }
 
-RVA(0x00159250, 0x185)
+RVA(0x00159530, 0x185)
 CWwdDotObject* CDDrawChildGroup::CreateDotObject(
     int id,
     int x,
@@ -111,7 +111,7 @@ CWwdDotObject* CDDrawChildGroup::CreateDotObject(
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001593e0, 0x53)
+RVA(0x001596c0, 0x53)
 CWwdDotObject* CDDrawChildGroup::CreateNamedDotObject(
     int id,
     int x,
@@ -132,7 +132,7 @@ CWwdDotObject* CDDrawChildGroup::CreateNamedDotObject(
     );
 }
 
-RVA(0x00159440, 0x170)
+RVA(0x00159720, 0x170)
 CWwdDeferredObject* CDDrawChildGroup::CreateDeferredObject(
     int id,
     int sortKey,
@@ -156,7 +156,7 @@ CWwdDeferredObject* CDDrawChildGroup::CreateDeferredObject(
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001595b0, 0x44)
+RVA(0x00159890, 0x44)
 CWwdDeferredObject* CDDrawChildGroup::CreateNamedDeferredObject(
     int id,
     int sortKey,
@@ -171,7 +171,7 @@ CWwdDeferredObject* CDDrawChildGroup::CreateNamedDeferredObject(
     );
 }
 
-RVA(0x00159600, 0x1ab)
+RVA(0x001598e0, 0x1ab)
 CWwdSpriteObject* CDDrawChildGroup::CreateSpriteObject(
     i32 id,
     i32 x,
@@ -196,7 +196,7 @@ CWwdSpriteObject* CDDrawChildGroup::CreateSpriteObject(
     return result;
 }
 
-RVA(0x001597b0, 0x57)
+RVA(0x00159a90, 0x57)
 CWwdSpriteObject* CDDrawChildGroup::CreateSprite(
     i32 id,
     i32 x,
@@ -216,7 +216,7 @@ CWwdSpriteObject* CDDrawChildGroup::CreateSprite(
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00159810, 0x1b)
+RVA(0x00159af0, 0x1b)
 i32 CDDrawChildGroup::AddObject(CGameObject* obj) {
     if (obj == NULL) {
         return 0;
@@ -225,7 +225,7 @@ i32 CDDrawChildGroup::AddObject(CGameObject* obj) {
     return 1;
 }
 
-RVA(0x00159830, 0x92)
+RVA(0x00159b10, 0x92)
 i32 CDDrawChildGroup::AttachSprite(
     CWwdGameObject* obj,
     i32 x,
@@ -256,7 +256,7 @@ i32 CDDrawChildGroup::AttachSprite(
     return 1;
 }
 
-RVA(0x001598d0, 0x13d)
+RVA(0x00159bb0, 0x13d)
 CWwdGameObject* CDDrawChildGroup::CreateContainerObject(
     int id,
     int x,
@@ -282,7 +282,7 @@ CWwdGameObject* CDDrawChildGroup::CreateContainerObject(
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00159a10, 0x57)
+RVA(0x00159cf0, 0x57)
 CWwdGameObject* CDDrawChildGroup::CreateNamedContainerObject(
     int id,
     int x,
@@ -300,13 +300,13 @@ CWwdGameObject* CDDrawChildGroup::CreateNamedContainerObject(
 }
 
 // @early-stop
-RVA(0x00159a70, 0x200)
+RVA(0x00159d50, 0x200)
 void CDDrawChildGroup::TickKillCues(i32 advance) {
-    RVA_DYNINIT(0x00159c80, 0xa, killQueue)
-    DATA(0x002bf3a8)
+    RVA_DYNINIT(0x00159f60, 0xa, killQueue)
+    DATA(0x002c0300)
     static CObArray killQueue;
-    RVA_DYNINIT(0x00159c70, 0xa, sortQueue)
-    DATA(0x002bf390)
+    RVA_DYNINIT(0x00159f50, 0xa, sortQueue)
+    DATA(0x002c02e8)
     static CObArray sortQueue;
     killQueue.SetSize(0, -1);
     sortQueue.SetSize(0, -1);
@@ -369,7 +369,7 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
     }
 }
 
-RVA(0x00159c90, 0x23)
+RVA(0x00159f70, 0x23)
 void CDDrawChildGroup::RenderChildren(CDDrawSurfacePair* target) {
     POSITION n = m_list.GetHeadPosition();
     if (n != NULL) {
@@ -380,7 +380,7 @@ void CDDrawChildGroup::RenderChildren(CDDrawSurfacePair* target) {
     }
 }
 
-RVA(0x00159cc0, 0x2a)
+RVA(0x00159fa0, 0x2a)
 void CDDrawChildGroup::BltDirtyChildren(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) {
     POSITION n = m_list.GetHeadPosition();
     if (n != NULL) {
@@ -391,7 +391,7 @@ void CDDrawChildGroup::BltDirtyChildren(CDDrawSurfacePair* dst, CDDrawSurfacePai
     }
 }
 
-RVA(0x00159cf0, 0x42)
+RVA(0x00159fd0, 0x42)
 void CDDrawChildGroup::BltDirtyChildrenEx(
     CDrawSubWorker* dst,
     CDDrawSurfacePair* src,
@@ -407,7 +407,7 @@ void CDDrawChildGroup::BltDirtyChildrenEx(
     BltDirtyChildren(src, restoreSrc);
 }
 
-RVA(0x00159d40, 0x42)
+RVA(0x0015a020, 0x42)
 void CDDrawChildGroup::BltDirtyChildRegions(
     CDDrawSurfacePair* dst,
     CDDrawSurfacePair* src,
@@ -423,7 +423,7 @@ void CDDrawChildGroup::BltDirtyChildRegions(
     BltDirtyChildren(src, restoreSrc);
 }
 
-RVA(0x00159d90, 0x1c)
+RVA(0x0015a070, 0x1c)
 void CDDrawChildGroup::InvalidateChildShadows() {
     POSITION n = m_list.GetHeadPosition();
     if (n != NULL) {
@@ -436,7 +436,7 @@ void CDDrawChildGroup::InvalidateChildShadows() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00159db0, 0x5e)
+RVA(0x0015a090, 0x5e)
 void CDDrawChildGroup::RemoveAndDelete(CWwdGameObject* obj) {
     if (HAS(static_cast<WwdGameObjectFlags>(obj->m_flags), WWD_GAME_OBJECT_FLAG_UNREGISTERED)) {
         delete obj;
@@ -450,7 +450,7 @@ void CDDrawChildGroup::RemoveAndDelete(CWwdGameObject* obj) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00159e10, 0x2e)
+RVA(0x0015a0f0, 0x2e)
 void CDDrawChildGroup::ReinsertUnflagged(CWwdGameObject* obj) {
     obj->m_flags &= ~IDX(WWD_GAME_OBJECT_FLAG_SORT_PENDING);
     m_list.RemoveAt(obj->m_posCache);
@@ -459,7 +459,7 @@ void CDDrawChildGroup::ReinsertUnflagged(CWwdGameObject* obj) {
 
 #define REGISTER_CHILD_OBJECT_ID(obj) m_registeredGameObjectsById[WwdKey(obj)] = obj
 
-RVA(0x00159e40, 0xaa)
+RVA(0x0015a120, 0xaa)
 void CDDrawChildGroup::InsertSorted(CGameObject* obj, i32 addToMaps) {
     if (HAS(static_cast<WwdGameObjectFlags>(obj->m_flags), WWD_GAME_OBJECT_FLAG_UNREGISTERED)) {
         obj->m_posCache = NULL;
@@ -486,13 +486,13 @@ void CDDrawChildGroup::InsertSorted(CGameObject* obj, i32 addToMaps) {
     obj->m_posCache = m_list.AddTail(static_cast<CObject*>(obj));
 }
 
-RVA(0x00159ef0, 0x5)
+RVA(0x0015a1d0, 0x5)
 void CDDrawChildGroup::ClearChildren() {
     DestroyChildren();
 }
 
 // @early-stop
-RVA(0x00159f00, 0x22e)
+RVA(0x0015a1e0, 0x22e)
 void CDDrawChildGroup::CollideBroadcast() {
     POSITION pos = m_list.GetHeadPosition();
     while (pos != NULL) {
@@ -592,7 +592,7 @@ void CDDrawChildGroup::CollideBroadcast() {
 }
 
 // @early-stop
-RVA(0x0015a130, 0xdc)
+RVA(0x0015a410, 0xdc)
 i32 CDDrawChildGroup::BoxesOverlap(CGameObject* areaObj, CGameObject* switchObj) {
     if (switchObj->m_switchRect.left == COORD_UNSET) {
         return 0;
@@ -626,17 +626,17 @@ i32 CDDrawChildGroup::BoxesOverlap(CGameObject* areaObj, CGameObject* switchObj)
     return ra.bottom >= rb.top;
 }
 
-DATA(0x0021ab30)
+DATA(0x0021ba90)
 static char s_dbgRle[] = "RLE";
-DATA(0x0021ab2c)
+DATA(0x0021ba8c)
 static char s_dbgVid[] = "VID";
-DATA(0x0021ab28)
+DATA(0x0021ba88)
 static char s_dbgSys[] = "SYS";
 
 // @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0015a210, 0x432)
+RVA(0x0015a4f0, 0x432)
 void CDDrawChildGroup::DrawObjectDebugGeometry() {
     if (m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_HIT_RECT)) {
         POSITION pos = m_list.GetHeadPosition();
@@ -809,7 +809,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
 // @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0015a650, 0x12c)
+RVA(0x0015a930, 0x12c)
 void CDDrawChildGroup::DrawObjectCounts() {
     if (!(m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_SORT_KEY))) {
         return;
@@ -866,7 +866,7 @@ void CDDrawChildGroup::DrawObjectCounts() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0015a780, 0x70)
+RVA(0x0015aa60, 0x70)
 i32 CDDrawChildGroup::CheckSortOrder() {
     POSITION node = m_list.GetHeadPosition();
     CWwdGameObject* anchor = static_cast<CWwdGameObject*>(NextChild(node));
@@ -904,7 +904,7 @@ i32 CDDrawChildGroup::CheckSortOrder() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0015a7f0, 0x20)
+RVA(0x0015aad0, 0x20)
 CWwdGameObject* CDDrawChildGroup::FindById(i32 id) {
     POSITION node = m_list.GetHeadPosition();
     while (node != NULL) {
@@ -919,7 +919,7 @@ CWwdGameObject* CDDrawChildGroup::FindById(i32 id) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0015a810, 0x42)
+RVA(0x0015aaf0, 0x42)
 CWwdGameObject* CDDrawChildGroup::FindSerialRefById(i32 id) {
     POSITION node = m_list.GetHeadPosition();
     while (node != NULL) {
@@ -934,7 +934,7 @@ CWwdGameObject* CDDrawChildGroup::FindSerialRefById(i32 id) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0015a860, 0x57)
+RVA(0x0015ab40, 0x57)
 CWwdGameObject* CDDrawChildGroup::FindByLogicRecord(i32 id, CLogicRecord* logicRecord) {
     POSITION pos = m_list.GetHeadPosition();
     while (pos != NULL) {
@@ -952,7 +952,7 @@ CWwdGameObject* CDDrawChildGroup::FindByLogicRecord(i32 id, CLogicRecord* logicR
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0015a8c0, 0x7d)
+RVA(0x0015aba0, 0x7d)
 CGameObject* CDDrawChildGroup::Find(i32 id, const char* key) {
     CLogicRecord* logicTemplate =
         LookupLogicTemplate(OwnerMgr()->m_logicRegistry->m_templatesByName, key);
@@ -970,7 +970,7 @@ CGameObject* CDDrawChildGroup::Find(i32 id, const char* key) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0015a940, 0x52)
+RVA(0x0015ac20, 0x52)
 CWwdGameObject* CDDrawChildGroup::FindByIdAndCollisionCategory(i32 id, u32 collisionCategory) {
     POSITION pos = m_list.GetHeadPosition();
     while (pos != NULL) {
@@ -986,7 +986,7 @@ CWwdGameObject* CDDrawChildGroup::FindByIdAndCollisionCategory(i32 id, u32 colli
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0015a9a0, 0x23)
+RVA(0x0015ac80, 0x23)
 CWwdGameObject* CDDrawChildGroup::FindByObjectId(i32 objectId) {
     POSITION node = m_list.GetHeadPosition();
     while (node != NULL) {
@@ -1001,7 +1001,7 @@ CWwdGameObject* CDDrawChildGroup::FindByObjectId(i32 objectId) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0015a9d0, 0x45)
+RVA(0x0015acb0, 0x45)
 CWwdGameObject* CDDrawChildGroup::FindSerialRefByObjectId(i32 objectId) {
     POSITION node = m_list.GetHeadPosition();
     while (node != NULL) {
@@ -1016,7 +1016,7 @@ CWwdGameObject* CDDrawChildGroup::FindSerialRefByObjectId(i32 objectId) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0015aa20, 0x3c)
+RVA(0x0015ad00, 0x3c)
 i32 CDDrawChildGroup::IsKindUnique(i32 kind) {
     CWwdGameObject* found = NULL;
     POSITION node = m_list.GetHeadPosition();
@@ -1035,7 +1035,7 @@ i32 CDDrawChildGroup::IsKindUnique(i32 kind) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0015aa60, 0x23)
+RVA(0x0015ad40, 0x23)
 i32 CDDrawChildGroup::CountByKind(i32 kind) {
     i32 count = 0;
     POSITION node = m_list.GetHeadPosition();
@@ -1049,7 +1049,7 @@ i32 CDDrawChildGroup::CountByKind(i32 kind) {
     return count;
 }
 
-RVA(0x0015aa90, 0x5d)
+RVA(0x0015ad70, 0x5d)
 void CDDrawChildGroup::PruneList() {
     POSITION pos = m_list.GetHeadPosition();
     while (pos != NULL) {
@@ -1067,7 +1067,7 @@ void CDDrawChildGroup::PruneList() {
 // @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0015aaf0, 0x35)
+RVA(0x0015add0, 0x35)
 i32 CDDrawChildGroup::SumWeighted() {
     i32 i = 0;
     i32 sum = 0;
@@ -1085,23 +1085,23 @@ i32 CDDrawChildGroup::SumWeighted() {
     m_list.RemoveAt(pos);                                                                          \
     m_activeGameObjectsById.RemoveKey(WwdKey(obj))
 
-RVA(0x0015ab30, 0x38)
+RVA(0x0015ae10, 0x38)
 void CDDrawChildGroup::RemoveAll(POSITION pos, CGameObject* obj) {
     REMOVE_ACTIVE_OBJECT_AT(pos, obj);
     m_registeredGameObjectsById.RemoveKey(WwdKey(obj));
 }
 
-RVA(0x0015ab70, 0x27)
+RVA(0x0015ae50, 0x27)
 void CDDrawChildGroup::RemoveByPosition(POSITION pos, CGameObject* obj) {
     REMOVE_ACTIVE_OBJECT_AT(pos, obj);
 }
 
-RVA(0x0015aba0, 0x1a)
+RVA(0x0015ae80, 0x1a)
 void CDDrawChildGroup::RegisterObjectId(CWwdGameObject* obj) {
     REGISTER_CHILD_OBJECT_ID(obj);
 }
 
-RVA(0x0015abc0, 0x5e)
+RVA(0x0015aea0, 0x5e)
 i32 CDDrawChildGroup::CountActive() {
     i32 n = 0;
     POSITION pos = m_registeredGameObjectsById.GetStartPosition();
@@ -1122,7 +1122,7 @@ i32 CDDrawChildGroup::CountActive() {
     return n;
 }
 
-RVA(0x0015ac20, 0x81)
+RVA(0x0015af00, 0x81)
 i32 CDDrawChildGroup::DispatchSerializationToObjects(
     CFileMemBase* ar,
     SerialMode mode,
@@ -1149,7 +1149,7 @@ i32 CDDrawChildGroup::DispatchSerializationToObjects(
     return 1;
 }
 
-RVA(0x0015acb0, 0x76)
+RVA(0x0015af90, 0x76)
 i32 CDDrawChildGroup::WriteObjectSnapshots(CFileMemBase* ar, LogicTypeId typeId) {
     if (ar == NULL) {
         return 0;
@@ -1173,7 +1173,7 @@ i32 CDDrawChildGroup::WriteObjectSnapshots(CFileMemBase* ar, LogicTypeId typeId)
     return 1;
 }
 
-RVA(0x0015ad30, 0x2ec)
+RVA(0x0015b010, 0x2ec)
 i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTypeId unused) {
     i32 savedCounter = 0;
     if (reader == NULL) {
@@ -1303,7 +1303,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
     return 1;
 }
 
-RVA(0x0015b020, 0xc0)
+RVA(0x0015b300, 0xc0)
 i32 CDDrawChildGroup::SerializeObjects(CFileMemBase* ar, LogicTypeId typeId) {
     if (ar == NULL) {
         return 0;
@@ -1336,7 +1336,7 @@ static inline CWwdGameObject* LookupObjectById(CMapPtrToPtr& byId, i32 id) {
     return found;
 }
 
-RVA(0x0015b0e0, 0xec)
+RVA(0x0015b3c0, 0xec)
 i32 CDDrawChildGroup::DeserializeObjects(CFileMemBase* ar, u32 count, LogicTypeId typeId) {
     if (ar == NULL) {
         return 0;
@@ -1372,7 +1372,7 @@ inline CWwdGameObject* LookupActiveObject(CMapPtrToPtr& map, void* key) {
     return found;
 }
 
-RVA(0x0015b1d0, 0x9b)
+RVA(0x0015b4b0, 0x9b)
 i32 CDDrawChildGroup::PruneOrphans() {
     i32 n = 0;
     POSITION pos = m_registeredGameObjectsById.GetStartPosition();
@@ -1394,24 +1394,24 @@ i32 CDDrawChildGroup::PruneOrphans() {
     return n;
 }
 
-RVA(0x0015b270, 0x11)
+RVA(0x0015b550, 0x11)
 WwdDirtyRect::WwdDirtyRect() {
     m_rect.left = COORD_UNSET;
     m_armed = -1;
 }
 
-RVA(0x0015b2a0, 0xb)
+RVA(0x0015b580, 0xb)
 WwdGridNode::WwdGridNode() {
     m_bucket = NULL;
     m_reserved08 = 0;
 }
 
-RVA(0x0015b2b0, 0xe)
+RVA(0x0015b590, 0xe)
 WwdRegion::WwdRegion() : WwdGridNode(WwdGridNode::NO_SEED) {
     SeedFields();
 }
 
-RVA(0x0015b2c0, 0x3d)
+RVA(0x0015b5a0, 0x3d)
 CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
     : CWapObj(owner, id, flags, CWapObj::NO_SEED), m_dirty(WwdDirtyRect::INLINE_SEED) {
     m_screenX = COORD_UNSET;
@@ -1420,7 +1420,7 @@ CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
     m_stateFlags = SPRITE_STATE_NONE;
 }
 
-RVA(0x0015b300, 0x40)
+RVA(0x0015b5e0, 0x40)
 CLogicRecord::CLogicRecord(CDDrawSurfaceMgr* owner, i32 id, i32 logicFlags)
     : CWapObj(owner, id, logicFlags, CWapObj::NO_SEED) {
     ResetLogicFields();

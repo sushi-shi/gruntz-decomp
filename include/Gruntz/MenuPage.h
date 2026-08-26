@@ -35,7 +35,7 @@ public:
         m_flags = MENU_PAGE_FLAGS_NONE;
     }
 
-    RVA(0x00183250, 0x71)
+    RVA(0x00183530, 0x71)
     ~CMenuPage() {
         Reset();
     }

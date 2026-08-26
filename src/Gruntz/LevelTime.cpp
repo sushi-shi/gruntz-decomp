@@ -6,7 +6,7 @@
 #include <Gruntz/LogicTypeTableInline.h>
 #include <Gruntz/SerialArchive.h>
 
-RVA(0x000119b0, 0x47)
+RVA(0x000119c0, 0x47)
 i32 CLevelTime::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,

@@ -17,23 +17,23 @@
 #include <new>
 #include <string.h>
 
-DATA(0x002bf840)
+DATA(0x002c0798)
 b32 g_validateProviders = false;
 
 // clang-format off
-DATA(0x00224d58)
+DATA(0x00225cb8)
 u8 g_directPlayIpxProviderGuid[16] = {0x00, 0xc4, 0x5b, 0x68, 0x2c, 0x9d, 0xcf, 0x11,
                                    0xa9, 0xcd, 0x00, 0xaa, 0x00, 0x68, 0x86, 0xe3};
-DATA(0x00224d68)
+DATA(0x00225cc8)
 u8 g_directPlayTcpIpProviderGuid[16] = {0xe0, 0x5e, 0xe9, 0x36, 0x77, 0x85, 0xcf, 0x11,
                                    0x96, 0x0c, 0x00, 0x80, 0xc7, 0x53, 0x4e, 0x82};
-DATA(0x00224d78)
+DATA(0x00225cd8)
 u8 g_directPlayModemProviderGuid[16] = {0x60, 0xa7, 0xea, 0x44, 0x68, 0xcb, 0xcf, 0x11,
                                    0x9c, 0x4e, 0x00, 0xa0, 0xc9, 0x05, 0x42, 0x5e};
-DATA(0x00224d88)
+DATA(0x00225ce8)
 u8 g_directPlaySerialProviderGuid[16] = {0x60, 0x68, 0x1d, 0x0f, 0xd9, 0x88, 0xcf, 0x11,
                                    0x9c, 0x4e, 0x00, 0xa0, 0xc9, 0x05, 0x42, 0x5e};
-DATA(0x00224d98)
+DATA(0x00225cf8)
 u8 g_unclassifiedProviderGuid[16] = {0x00, 0xb4, 0x23, 0xd2, 0x7d, 0x0a, 0xd1, 0x11,
                                    0x90, 0xc3, 0x00, 0x60, 0x97, 0x72, 0x58, 0x40};
 
@@ -47,7 +47,7 @@ u8 g_unclassifiedProviderGuid[16] = {0x00, 0xb4, 0x23, 0xd2, 0x7d, 0x0a, 0xd1, 0
 
 
 
-RVA(0x001780b0, 0xbb)
+RVA(0x00178390, 0xbb)
 i32 CNetMgr::InitializeFromProvider(CNetProviderNode* provider, GUID appGuid) {
     GUID* guid = provider->m_providerGuid;
     if (guid == NULL) {
@@ -97,7 +97,7 @@ i32 CNetMgr::InitializeFromProvider(CNetProviderNode* provider, GUID appGuid) {
 
 
 
-RVA(0x00178170, 0xba)
+RVA(0x00178450, 0xba)
 i32 CNetMgr::Initialize(void* lobbyIface, NetGuid appGuid) {
     IDirectPlayLobby* lobby = static_cast<IDirectPlayLobby*>(lobbyIface);
 
@@ -132,7 +132,7 @@ i32 CNetMgr::Initialize(void* lobbyIface, NetGuid appGuid) {
     return 1;
 }
 
-RVA(0x00178230, 0x49)
+RVA(0x00178510, 0x49)
 void CNetMgr::Destroy() {
     ClearProviders();
     ClearSessionListings();
@@ -153,7 +153,7 @@ void CNetMgr::Destroy() {
     }
 }
 
-RVA(0x00178280, 0x43)
+RVA(0x00178560, 0x43)
 i32 CNetMgr::EnumServiceProviders(b32 validateProviders) {
     ClearProviders();
 
@@ -166,7 +166,7 @@ i32 CNetMgr::EnumServiceProviders(b32 validateProviders) {
     return 0;
 }
 
-RVA(0x001782d0, 0x86)
+RVA(0x001785b0, 0x86)
 static BOOL __stdcall NetEnumProviderCallback(
     LPGUID providerGuid,
     LPSTR providerName,
@@ -196,7 +196,7 @@ static BOOL __stdcall NetEnumProviderCallback(
 }
 
 
-RVA(0x00178360, 0xc8)
+RVA(0x00178640, 0xc8)
 CNetProviderNode* CNetMgr::AddProvider(GUID* providerGuid, const char* providerName) {
     CNetProviderNode* node = new CNetProviderNode();
 
@@ -211,7 +211,7 @@ CNetProviderNode* CNetMgr::AddProvider(GUID* providerGuid, const char* providerN
     return node;
 }
 
-RVA(0x00178430, 0x3a)
+RVA(0x00178710, 0x3a)
 void CNetMgr::ClearProviders() {
     POSITION pos = m_providers.GetHeadPosition();
     while (pos != NULL) {
@@ -234,7 +234,7 @@ void CNetMgr::ClearProviders() {
 
 
 // @early-stop
-RVA(0x00178470, 0x11e)
+RVA(0x00178750, 0x11e)
 void CNetMgr::PopulateProviderList(HWND hList, i32 excludedProviderKinds) {
     if (hList == NULL) {
         return;
@@ -283,7 +283,7 @@ void CNetMgr::PopulateProviderList(HWND hList, i32 excludedProviderKinds) {
     }
 }
 
-RVA(0x00178590, 0x78)
+RVA(0x00178870, 0x78)
 i32 CNetMgr::ReadProviderSelection(HWND hList) {
     if (hList == NULL) {
         return 0;
@@ -322,7 +322,7 @@ i32 CNetMgr::ReadProviderSelection(HWND hList) {
 
 
 
-RVA(0x00178610, 0x8c)
+RVA(0x001788f0, 0x8c)
 i32 CNetMgr::EnumerateSessions(DWORD timeoutMs, DWORD flags) {
     ClearSessionListings();
 
@@ -340,7 +340,7 @@ i32 CNetMgr::EnumerateSessions(DWORD timeoutMs, DWORD flags) {
     return 0;
 }
 
-RVA(0x001786a0, 0x2a)
+RVA(0x00178980, 0x2a)
 BOOL __stdcall
 NetEnumSessionCallback(
     LPCDPSESSIONDESC2 sessionDesc,
@@ -364,7 +364,7 @@ NetEnumSessionCallback(
 
 
 // @early-stop
-RVA(0x001786d0, 0x77)
+RVA(0x001789b0, 0x77)
 CNetSessionListNode* CNetMgr::AddSessionListing(LPCDPSESSIONDESC2 sessionDesc) {
     if (sessionDesc == NULL) {
         return NULL;
@@ -381,7 +381,7 @@ CNetSessionListNode* CNetMgr::AddSessionListing(LPCDPSESSIONDESC2 sessionDesc) {
     return node;
 }
 
-RVA(0x00178750, 0x3d)
+RVA(0x00178a30, 0x3d)
 void CNetMgr::ClearSessionListings() {
     POSITION pos = m_sessionListings.GetHeadPosition();
     while (pos != NULL) {
@@ -402,7 +402,7 @@ void CNetMgr::ClearSessionListings() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00178790, 0x89)
+RVA(0x00178a70, 0x89)
 void CNetMgr::PopulateSessionList(HWND hList) {
     if (hList == NULL) {
         return;
@@ -441,7 +441,7 @@ void CNetMgr::PopulateSessionList(HWND hList) {
     }
 }
 
-RVA(0x00178820, 0x78)
+RVA(0x00178b00, 0x78)
 i32 CNetMgr::ReadSessionSelection(HWND hList) {
     if (hList == NULL) {
         return 0;
@@ -481,7 +481,7 @@ i32 CNetMgr::ReadSessionSelection(HWND hList) {
 
 
 
-RVA(0x001788a0, 0x13c)
+RVA(0x00178b80, 0x13c)
 CNetSessionListNode*
 CNetMgr::CreateSession(
     i32 maxPlayers,
@@ -534,7 +534,7 @@ CNetMgr::CreateSession(
     return listing;
 }
 
-RVA(0x001789e0, 0x59)
+RVA(0x00178cc0, 0x59)
 CNetPlayerNode*
 CNetMgr::JoinSessionAndCreatePlayer(
     CNetSessionListNode* session,
@@ -557,7 +557,7 @@ CNetMgr::JoinSessionAndCreatePlayer(
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00178a40, 0x3e)
+RVA(0x00178d20, 0x3e)
 i32 CNetMgr::EnumerateAllPlayers() {
     ClearPlayers();
 
@@ -575,7 +575,7 @@ i32 CNetMgr::EnumerateAllPlayers() {
 
 
 
-RVA(0x00178a80, 0x73)
+RVA(0x00178d60, 0x73)
 i32 CNetMgr::EnumerateSessionPlayers(CNetSessionListNode* session, DWORD flags) {
     ClearPlayers();
 
@@ -592,7 +592,7 @@ i32 CNetMgr::EnumerateSessionPlayers(CNetSessionListNode* session, DWORD flags) 
     return 0;
 }
 
-RVA(0x00178b00, 0x30)
+RVA(0x00178de0, 0x30)
 BOOL __stdcall NetEnumPlayerCallback(
     DPID playerId,
     DWORD playerType,
@@ -623,7 +623,7 @@ BOOL __stdcall NetEnumPlayerCallback(
 
 
 // @early-stop
-RVA(0x00178b30, 0x140)
+RVA(0x00178e10, 0x140)
 CNetPlayerNode*
 CNetMgr::AddPlayer(DPID playerId, const char* shortName, const char* longName, DWORD flags) {
     CNetPlayerNode* node = new CNetPlayerNode();
@@ -652,7 +652,7 @@ CNetMgr::AddPlayer(DPID playerId, const char* shortName, const char* longName, D
     return NULL;
 }
 
-RVA(0x00178c70, 0x3d)
+RVA(0x00178f50, 0x3d)
 void CNetMgr::ClearPlayers() {
     POSITION pos = m_players.GetHeadPosition();
     while (pos != NULL) {
@@ -675,7 +675,7 @@ void CNetMgr::ClearPlayers() {
 
 
 
-RVA(0x00178cb0, 0x8b)
+RVA(0x00178f90, 0x8b)
 CNetPlayerNode*
 CNetMgr::CreatePlayer(char* shortName, const char* longName, HANDLE eventHandle) {
     DPID playerId;
@@ -710,7 +710,7 @@ CNetMgr::CreatePlayer(char* shortName, const char* longName, HANDLE eventHandle)
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00178d40, 0xdf)
+RVA(0x00179020, 0xdf)
 void CNetMgr::PopulatePlayerList(HWND hList) {
     if (hList == NULL) {
         return;
@@ -748,7 +748,7 @@ void CNetMgr::PopulatePlayerList(HWND hList) {
     }
 }
 
-RVA(0x00178e20, 0x33)
+RVA(0x00179100, 0x33)
 i32 CNetMgr::RemovePlayer(CNetPlayerNode* player) {
     if (player == NULL) {
         return 0;
@@ -764,7 +764,7 @@ i32 CNetMgr::RemovePlayer(CNetPlayerNode* player) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00178e60, 0x23)
+RVA(0x00179140, 0x23)
 i32 CNetMgr::RemovePlayerById(DPID playerId) {
     CNetPlayerNode* player = GetPlayerNodeData(playerId);
     if (player != NULL) {
@@ -773,7 +773,7 @@ i32 CNetMgr::RemovePlayerById(DPID playerId) {
     return 0;
 }
 
-RVA(0x00178e90, 0x20)
+RVA(0x00179170, 0x20)
 CNetPlayerNode* CNetMgr::FindPlayerById(DPID playerId) {
     POSITION pos = m_players.GetHeadPosition();
     while (pos != NULL) {
@@ -785,7 +785,7 @@ CNetPlayerNode* CNetMgr::FindPlayerById(DPID playerId) {
     return NULL;
 }
 
-RVA(0x00178eb0, 0x3f)
+RVA(0x00179190, 0x3f)
 CNetPlayerNode* CNetMgr::GetPlayerNodeData(DPID playerId) {
     DWORD dataSize = 4;
     CNetPlayerNode* player = NULL;
@@ -793,7 +793,7 @@ CNetPlayerNode* CNetMgr::GetPlayerNodeData(DPID playerId) {
     return hr ? NULL : player;
 }
 
-RVA(0x00178ef0, 0x5c)
+RVA(0x001791d0, 0x5c)
 i32 CNetMgr::Send(
     CNetPlayerNode* sender,
     CNetPlayerNode* recipient,
@@ -812,7 +812,7 @@ i32 CNetMgr::Send(
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00178f50, 0x63)
+RVA(0x00179230, 0x63)
 i32 CNetMgr::SendEx(
     DPID senderId,
     DPID recipientId,
@@ -841,7 +841,7 @@ i32 CNetMgr::SendEx(
     return hr;
 }
 
-RVA(0x00178fc0, 0x44)
+RVA(0x001792a0, 0x44)
 i32 CNetMgr::SendById(
     DPID senderId,
     DPID recipientId,
@@ -858,7 +858,7 @@ i32 CNetMgr::SendById(
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00179010, 0x78)
+RVA(0x001792f0, 0x78)
 i32 CNetMgr::Receive(
     CNetPlayerNode* sender,
     CNetPlayerNode* recipient,
@@ -875,7 +875,7 @@ i32 CNetMgr::Receive(
     return hr;
 }
 
-RVA(0x00179090, 0x4c)
+RVA(0x00179370, 0x4c)
 i32 CNetMgr::BroadcastFrom(
     CNetPlayerNode* sender,
     DWORD flags,
@@ -892,7 +892,7 @@ i32 CNetMgr::BroadcastFrom(
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001790e0, 0x4f)
+RVA(0x001793c0, 0x4f)
 i32 CNetMgr::RemoveSessionListing(CNetSessionListNode* node) {
     if (node == NULL) {
         return 0;
@@ -909,7 +909,7 @@ i32 CNetMgr::RemoveSessionListing(CNetSessionListNode* node) {
     return 1;
 }
 
-RVA(0x00179130, 0x5d)
+RVA(0x00179410, 0x5d)
 i32 CNetMgr::GetCaps(LPDPCAPS caps, DWORD flags) {
     if (caps == NULL) {
         return 0;
@@ -927,7 +927,7 @@ i32 CNetMgr::GetCaps(LPDPCAPS caps, DWORD flags) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00179190, 0x84)
+RVA(0x00179470, 0x84)
 i32 CNetMgr::GetPlayerCaps(CNetPlayerNode* player, LPDPCAPS caps, DWORD flags) {
     if (!player) {
         return 0;
@@ -952,7 +952,7 @@ i32 CNetMgr::GetPlayerCaps(CNetPlayerNode* player, LPDPCAPS caps, DWORD flags) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00179220, 0x1d)
+RVA(0x00179500, 0x1d)
 i32 CNetMgr::GetMaxPlayers() {
     DPCAPS caps;
     i32 ok = GetCaps(&caps, 0);
@@ -961,7 +961,7 @@ i32 CNetMgr::GetMaxPlayers() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00179240, 0x22)
+RVA(0x00179520, 0x22)
 i32 CNetMgr::GetConnectionLatency(DWORD flags) {
 
 
@@ -980,7 +980,7 @@ i32 CNetMgr::GetConnectionLatency(DWORD flags) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00179270, 0x89)
+RVA(0x00179550, 0x89)
 CNetProviderNode* CNetMgr::FindProvider(i32 providerKind) {
     m_providerCursor = m_providers.GetHeadPosition();
     CNetProviderNode* provider =
@@ -1025,28 +1025,28 @@ CNetProviderNode* CNetMgr::FindProvider(i32 providerKind) {
 
 
 
-RVA(0x00179300, 0x20)
+RVA(0x001795e0, 0x20)
 CString CNetProviderNode::ProviderName() {
     return m_providerName;
 }
 
-RVA_COMPGEN(0x00179320, 0x1e, ??_GCNetProviderNode@@UAEPAXI@Z)
-RVA(0x00179340, 0x48)
+RVA_COMPGEN(0x00179600, 0x1e, ??_GCNetProviderNode@@UAEPAXI@Z)
+RVA(0x00179620, 0x48)
 CNetProviderNode::~CNetProviderNode() {
     m_providerGuid = NULL;
     m_listPosition = NULL;
 }
 
-RVA_COMPGEN(0x00179390, 0x1e, ??_GCNetSessionListNode@@UAEPAXI@Z)
+RVA_COMPGEN(0x00179670, 0x1e, ??_GCNetSessionListNode@@UAEPAXI@Z)
 
-RVA(0x001793b0, 0x46)
+RVA(0x00179690, 0x46)
 CNetSessionListNode::~CNetSessionListNode() {
     FreeSessionStrings();
 }
 
-RVA_COMPGEN(0x00179400, 0x1e, ??_GCNetPlayerNode@@UAEPAXI@Z)
+RVA_COMPGEN(0x001796e0, 0x1e, ??_GCNetPlayerNode@@UAEPAXI@Z)
 
-RVA(0x00179420, 0x8a)
+RVA(0x00179700, 0x8a)
 CNetPlayerNode::~CNetPlayerNode() {
     m_playerId = 0;
     m_listPosition = NULL;
@@ -1059,7 +1059,7 @@ CNetPlayerNode::~CNetPlayerNode() {
     }
     m_ownedBufferB = NULL;
 }
-RVA(0x001794b0, 0x21)
+RVA(0x00179790, 0x21)
 i32 CNetProviderNode::IsIpxProvider() {
     if (!m_providerGuid) {
         return 0;
@@ -1067,7 +1067,7 @@ i32 CNetProviderNode::IsIpxProvider() {
     return memcmp(m_providerGuid, g_directPlayIpxProviderGuid, 16) == 0 ? 1 : 0;
 }
 
-RVA(0x001794e0, 0x21)
+RVA(0x001797c0, 0x21)
 i32 CNetProviderNode::IsTcpIpProvider() {
     if (!m_providerGuid) {
         return 0;
@@ -1075,7 +1075,7 @@ i32 CNetProviderNode::IsTcpIpProvider() {
     return memcmp(m_providerGuid, g_directPlayTcpIpProviderGuid, 16) == 0 ? 1 : 0;
 }
 
-RVA(0x00179510, 0x21)
+RVA(0x001797f0, 0x21)
 i32 CNetProviderNode::IsModemProvider() {
     if (!m_providerGuid) {
         return 0;
@@ -1083,7 +1083,7 @@ i32 CNetProviderNode::IsModemProvider() {
     return memcmp(m_providerGuid, g_directPlayModemProviderGuid, 16) == 0 ? 1 : 0;
 }
 
-RVA(0x00179540, 0x21)
+RVA(0x00179820, 0x21)
 i32 CNetProviderNode::IsSerialProvider() {
     if (!m_providerGuid) {
         return 0;
@@ -1091,7 +1091,7 @@ i32 CNetProviderNode::IsSerialProvider() {
     return memcmp(m_providerGuid, g_directPlaySerialProviderGuid, 16) == 0 ? 1 : 0;
 }
 
-RVA(0x00179570, 0x21)
+RVA(0x00179850, 0x21)
 i32 CNetProviderNode::MatchesUnclassifiedProvider() {
     if (!m_providerGuid) {
         return 0;
@@ -1099,7 +1099,7 @@ i32 CNetProviderNode::MatchesUnclassifiedProvider() {
     return memcmp(m_providerGuid, g_unclassifiedProviderGuid, 16) == 0 ? 1 : 0;
 }
 
-RVA(0x001795a0, 0xdb)
+RVA(0x00179880, 0xdb)
 i32 CNetSessionListNode::Initialize(LPCDPSESSIONDESC2 sessionDesc) {
     if (!sessionDesc) {
         return 0;
@@ -1119,7 +1119,7 @@ i32 CNetSessionListNode::Initialize(LPCDPSESSIONDESC2 sessionDesc) {
     return 1;
 }
 
-RVA(0x00179680, 0x3a)
+RVA(0x00179960, 0x3a)
 void CNetSessionListNode::FreeSessionStrings() {
     if (m_sessionDesc.lpszSessionNameA) {
         delete[] m_sessionDesc.lpszSessionNameA;
@@ -1132,7 +1132,7 @@ void CNetSessionListNode::FreeSessionStrings() {
     m_sessionDesc.dwSize = 0;
 }
 
-RVA(0x001796c0, 0x3f)
+RVA(0x001799a0, 0x3f)
 i32 CNetPlayerNode::Initialize(
     DPID playerId,
     const char* shortName,

@@ -8,7 +8,7 @@
 #include <Gruntz/ObjTypeRegistrars.h>
 #include <Gruntz/StaticHazard.h>
 
-RVA(0x0000a3b0, 0x6e2)
+RVA(0x0000a3c0, 0x6e2)
 void RegisterGameObjectLogicTypes(CDDrawSurfaceMgr* ctx) {
     ctx->m_logicRegistry->RegisterLogicType(DispatchAniCycleLogic, "AniCycle", 2);
     CAniCycle::RegisterActs();

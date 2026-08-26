@@ -13,7 +13,7 @@
 
 #include <stddef.h>
 
-RVA(0x00114ec0, 0x27)
+RVA(0x00114ff0, 0x27)
 void SaveFrontBufferShot(
     Utils::RegistryHelper* bute,
     CGruntzMgr* mgr,
@@ -25,7 +25,7 @@ void SaveFrontBufferShot(
     SaveFrontBufferShotImpl(bute, mgr, w, h, name, saveFlag);
 }
 
-RVA(0x00114f00, 0x3e)
+RVA(0x00115030, 0x3e)
 i32 SaveFrontBufferShotImpl(
     Utils::RegistryHelper* bute,
     CGruntzMgr* mgr,

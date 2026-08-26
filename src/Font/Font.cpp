@@ -13,7 +13,7 @@
 
 #define SET_FONT_GLYPH(c, glyph) m_glyphs[c] = glyph
 
-RVA(0x00179700, 0x10)
+RVA(0x001799e0, 0x10)
 Font::Font() {
     m_surfaces = NULL;
     m_glyphs = NULL;
@@ -21,12 +21,12 @@ Font::Font() {
     m_count = 0;
 }
 
-RVA(0x00179710, 0x5)
+RVA(0x001799f0, 0x5)
 Font::~Font() {
     FreeMemory();
 }
 
-RVA(0x00179720, 0x87)
+RVA(0x00179a00, 0x87)
 i32 Font::AllocateMemory(i32 count) {
     FreeMemory();
 
@@ -52,7 +52,7 @@ i32 Font::AllocateMemory(i32 count) {
     return 1;
 }
 
-RVA(0x001797b0, 0x71)
+RVA(0x00179a90, 0x71)
 void Font::FreeMemory() {
     if (m_ready) {
         for (i32 i = 0; i < m_count; i++) {
@@ -72,7 +72,7 @@ void Font::FreeMemory() {
     }
 }
 
-RVA(0x00179830, 0x1b1)
+RVA(0x00179b10, 0x1b1)
 i32 Font::LoadFont(CString szFileName) {
     FreeMemory();
 
@@ -108,7 +108,7 @@ i32 Font::LoadFont(CString szFileName) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001799f0, 0x16d)
+RVA(0x00179cd0, 0x16d)
 i32 Font::SaveFont(CString szFileName) {
     CFile file;
     if (!file.Open(szFileName, 0x1001, NULL)) {
@@ -131,12 +131,12 @@ i32 Font::SaveFont(CString szFileName) {
     return 1;
 }
 
-RVA(0x00179b60, 0x12)
+RVA(0x00179e40, 0x12)
 u8** Font::GetSurface(u8 c) {
     return &m_surfaces[c];
 }
 
-RVA(0x00179b80, 0x22)
+RVA(0x00179e60, 0x22)
 Glyph& Font::GetGlyph(Glyph& out, u8 c) {
     out = m_glyphs[c];
     return out;
@@ -144,17 +144,17 @@ Glyph& Font::GetGlyph(Glyph& out, u8 c) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00179bb0, 0x1e)
+RVA(0x00179e90, 0x1e)
 void Font::SetGlyph(u8 c, Glyph glyph) {
     SET_FONT_GLYPH(c, glyph);
 }
 
-RVA(0x00179bd0, 0x4)
+RVA(0x00179eb0, 0x4)
 i32 Font::GetMaxHeight() {
     return m_maxHeight;
 }
 
-RVA(0x00179be0, 0x14)
+RVA(0x00179ec0, 0x14)
 FontRenderer::FontRenderer() {
     m_font = NULL;
     m_color = 0x00ffffff;
@@ -162,20 +162,20 @@ FontRenderer::FontRenderer() {
     m_surface = 0;
 }
 
-RVA(0x00179c00, 0x1)
+RVA(0x00179ee0, 0x1)
 FontRenderer::~FontRenderer() {}
 
-RVA(0x00179c10, 0x9)
+RVA(0x00179ef0, 0x9)
 void FontRenderer::SetFont(Font* f) {
     m_font = f;
 }
 
-RVA(0x00179c20, 0xa)
+RVA(0x00179f00, 0xa)
 void FontRenderer::SetColor(i32 color) {
     m_color = color;
 }
 
-RVA(0x00179c30, 0xdb)
+RVA(0x00179f10, 0xdb)
 void FontRenderer::DrawLine(CString text, CDDSurface* surf, i32 x, i32 y, i32 z) {
     TextExtent ext = MeasureText(text);
     if (m_font == NULL) {
@@ -188,7 +188,7 @@ void FontRenderer::DrawLine(CString text, CDDSurface* surf, i32 x, i32 y, i32 z)
     DrawLineClipped(text, surf, CRect(0, 0, ext.width, ext.height), x, y, z);
 }
 
-RVA(0x00179d10, 0x15c)
+RVA(0x00179ff0, 0x15c)
 void FontRenderer::DrawLineClipped(CString text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 z) {
     i32 savedColor = m_color;
     if (m_clip) {
@@ -211,7 +211,7 @@ static inline LONG RunRightEdge(const CRect& rc, i32 x) {
     return x - rc.left + rc.right;
 }
 
-RVA(0x00179e70, 0x5ec)
+RVA(0x0017a150, 0x5ec)
 void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 blend) {
     if (m_font == NULL) {
         return;
@@ -365,7 +365,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
     surf->m_ddSurface->Unlock(NULL);
 }
 
-RVA(0x0017a460, 0x7ec)
+RVA(0x0017a740, 0x7ec)
 void FontRenderer::DrawWrapped(
     CString text,
     CDDSurface* surf,
@@ -508,7 +508,7 @@ void FontRenderer::DrawWrapped(
     }
 }
 
-RVA(0x0017ac50, 0xbd)
+RVA(0x0017af30, 0xbd)
 TextExtent FontRenderer::MeasureText(CString text) {
     TextExtent ext;
 
@@ -530,7 +530,7 @@ TextExtent FontRenderer::MeasureText(CString text) {
 }
 
 // @early-stop
-RVA(0x0017ad10, 0x402)
+RVA(0x0017aff0, 0x402)
 TextExtent FontRenderer::MeasureWrapped(CString text, CRect rc) {
     i32 y = rc.top;
     i32 maxWidth = 0;
@@ -636,7 +636,7 @@ TextExtent FontRenderer::MeasureWrapped(CString text, CRect rc) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0017b120, 0x3c6)
+RVA(0x0017b400, 0x3c6)
 TextExtent FontRenderer::LayoutWrapped(CString text, CRect rc, i32* outLen) {
     i32 y = rc.top;
     i32 totalChars = 0;
@@ -737,4 +737,4 @@ TextExtent FontRenderer::LayoutWrapped(CString text, CRect rc, i32* outLen) {
     return TextExtent(x, m_font->GetMaxHeight() + y + 1);
 }
 
-RVA_COMPGEN(0x0017b4f0, 0xc, ?GetAt@CString@@QBEDH@Z)
+RVA_COMPGEN(0x0017b7d0, 0xc, ?GetAt@CString@@QBEDH@Z)

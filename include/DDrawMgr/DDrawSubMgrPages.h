@@ -32,7 +32,7 @@ public:
     virtual i32 IsLoaded() OVERRIDE;
 
     virtual void Unload() OVERRIDE;
-    RVA(0x001574a0, 0x6)
+    RVA(0x00157780, 0x6)
     virtual LoadableClassId GetClassId() OVERRIDE {
         return CLASSID_SUBMGRPAGES;
     }

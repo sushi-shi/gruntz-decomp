@@ -11,10 +11,10 @@
 
 #include <string.h>
 
-DATA(0x00229930)
+DATA(0x0022a888)
 i32 g_saveBuf[0x24];
 
-RVA(0x0000d170, 0x74)
+RVA(0x0000d180, 0x74)
 i32 SaveGame(CGruntzMgr* gameMgr, char* name) {
     if (gameMgr == NULL) {
         return 0;

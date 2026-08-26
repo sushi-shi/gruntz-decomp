@@ -31,7 +31,7 @@
 
 #include <string.h>
 
-RVA(0x000e9600, 0x18c)
+RVA(0x000e9730, 0x18c)
 i32 CSBI_SideTab::BuildStatzTabStatusBar(
     CStatusBarMgr* parent,
     CDDrawSurfaceMgr* host,
@@ -118,13 +118,13 @@ fail:
     return 0;
 }
 
-RVA(0x000e9800, 0x9)
+RVA(0x000e9930, 0x9)
 void CSBI_SideTab::Reset() {
     m_topFrame = NULL;
     m_bottomFrame = NULL;
 }
 
-RVA(0x000e9820, 0x11)
+RVA(0x000e9950, 0x11)
 i32 CSBI_SideTab::Refresh(i32 unused) {
     m_drawGate = BuildHandle();
     return 0;
@@ -137,7 +137,7 @@ static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
 }
 
 // @early-stop
-RVA(0x000e9850, 0x111)
+RVA(0x000e9980, 0x111)
 i32 CSBI_SideTab::BuildHandle() {
     StatusSampleMode mode = m_sampleMode;
     if (mode == STATUS_SAMPLE_NONE) {
@@ -196,7 +196,7 @@ i32 CSBI_SideTab::BuildHandle() {
     return 1;
 }
 
-RVA(0x000e99c0, 0x4c)
+RVA(0x000e9af0, 0x4c)
 i32 CSBI_SideTab::Render() {
     if (m_drawGate) {
         CDDrawSurfacePair* ctx = g_gameReg->m_world->m_drawTarget->m_backPair;
@@ -207,7 +207,7 @@ i32 CSBI_SideTab::Render() {
     return 1;
 }
 
-RVA(0x000e9a30, 0x31e)
+RVA(0x000e9b60, 0x31e)
 i32 CSBI_SideTab::SerializeFields(
     CFileMemBase* s,
     SerialMode mode,
@@ -314,8 +314,8 @@ i32 CSBI_SideTab::SerializeFields(
     return CStatusBarItem::SerializeFields(s, mode, typeId, payload) != 0 ? 1 : 0;
 }
 
-RVA_COMPGEN(0x001051d0, 0x1e, ??_GCSBI_SideTab@@UAEPAXI@Z)
-RVA(0x00105200, 0x55)
+RVA_COMPGEN(0x00105300, 0x1e, ??_GCSBI_SideTab@@UAEPAXI@Z)
+RVA(0x00105330, 0x55)
 CSBI_SideTab::~CSBI_SideTab() {
     Reset();
 }

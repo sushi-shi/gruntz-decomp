@@ -34,14 +34,14 @@
 #include <stdio.h>
 #include <string.h>
 
-DATA(0x0024e360)
+DATA(0x0024f2b8)
 b32 g_skipNextScreenEffect = false;
 
-DATA(0x0024e35c)
+DATA(0x0024f2b4)
 b32 g_playActive;
 
 // @early-stop
-RVA(0x000fa1f0, 0xc6)
+RVA(0x000fa320, 0xc6)
 i32 CState::LoadTitlePage(
     const char* titleName,
     i32 unused1,
@@ -87,7 +87,7 @@ i32 CState::LoadTitlePage(
 }
 
 // @early-stop
-RVA(0x000fa300, 0x3a)
+RVA(0x000fa430, 0x3a)
 i32 CState::PresentTitlePage(
     const char* unusedTitleName,
     i32 unused1,
@@ -113,7 +113,7 @@ i32 CState::PresentTitlePage(
     return 1;
 }
 
-RVA(0x000fa350, 0x84)
+RVA(0x000fa480, 0x84)
 i32 CState::LoadAndPresentTitlePage(
     const char* titleName,
     i32 unused1,
@@ -138,7 +138,7 @@ i32 CState::LoadAndPresentTitlePage(
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000fa410, 0xf5)
+RVA(0x000fa540, 0xf5)
 i32 CState::FadeLightToBlack(i32 centerX, i32 centerY, i32 durationMs, i32 leadMs) {
     CFaderMgr* mgr = m_faderMgr;
     if (mgr == NULL) {
@@ -178,7 +178,7 @@ i32 CState::FadeLightToBlack(i32 centerX, i32 centerY, i32 durationMs, i32 leadM
 // @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000fa550, 0x10c)
+RVA(0x000fa680, 0x10c)
 i32 CState::FadeLightToBackBuffer(i32 centerX, i32 centerY, i32 durationMs, i32 leadMs) {
     CFaderMgr* mgr = m_faderMgr;
     if (mgr == NULL) {
@@ -219,7 +219,7 @@ i32 CState::FadeLightToBackBuffer(i32 centerX, i32 centerY, i32 durationMs, i32 
     return 1;
 }
 
-RVA(0x000fa6b0, 0xa7)
+RVA(0x000fa7e0, 0xa7)
 i32 CState::DrawStateText(i32 x, i32 y, char* str, i32 color, i32 bkMode) {
     if (str == NULL) {
         return 0;
@@ -243,7 +243,7 @@ i32 CState::DrawStateText(i32 x, i32 y, char* str, i32 color, i32 bkMode) {
 // @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000fa790, 0x104)
+RVA(0x000fa8c0, 0x104)
 i32 CState::FadeSineToBackBuffer(i32 intensityPercent, i32 durationMs, i32 leadMs) {
     CFaderMgr* mgr = m_faderMgr;
     if (mgr == NULL) {
@@ -284,7 +284,7 @@ i32 CState::FadeSineToBackBuffer(i32 intensityPercent, i32 durationMs, i32 leadM
 }
 
 // @early-stop
-RVA(0x000fa8f0, 0x118)
+RVA(0x000faa20, 0x118)
 i32 CState::RetireScene(i32 pct, i32 dur, i32 lead, b32 useOverlay) {
     CFaderMgr* mgr = m_faderMgr;
     if (mgr == NULL) {
@@ -330,7 +330,7 @@ i32 CState::RetireScene(i32 pct, i32 dur, i32 lead, b32 useOverlay) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000faa60, 0xed)
+RVA(0x000fab90, 0xed)
 i32 CState::FadeSineToBlack(i32 intensityPercent, i32 durationMs, i32 leadMs) {
     CFaderMgr* mgr = m_faderMgr;
     if (mgr == NULL) {
@@ -369,7 +369,7 @@ i32 CState::FadeSineToBlack(i32 intensityPercent, i32 durationMs, i32 leadMs) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 // @early-stop
-RVA(0x000fab90, 0xaa)
+RVA(0x000facc0, 0xaa)
 i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 unused3, i32 unused4) {
     if (m_world == NULL) {
         return 0;
@@ -395,7 +395,7 @@ i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 unused3, i32 unused4) 
     return 1;
 }
 
-RVA(0x000fac70, 0x4c)
+RVA(0x000fada0, 0x4c)
 i32 CState::OnPaint() {
     if (!m_mgr) {
         return 0;
@@ -410,7 +410,7 @@ i32 CState::OnPaint() {
 }
 
 // @early-stop
-RVA(0x000face0, 0x17c)
+RVA(0x000fae10, 0x17c)
 i32 CState::InputVirtual() {
     if (m_world == NULL) {
         return 0;
@@ -448,7 +448,7 @@ i32 CState::InputVirtual() {
     return 1;
 }
 
-RVA(0x000faec0, 0x67)
+RVA(0x000faff0, 0x67)
 void CState::Present(i32 pct) {
     if (g_skipNextScreenEffect != false) {
         g_skipNextScreenEffect = false;
@@ -462,7 +462,7 @@ void CState::Present(i32 pct) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000faf50, 0x31)
+RVA(0x000fb080, 0x31)
 i32 CState::ShadeScreen(i32 pct) {
     b32 v = g_skipNextScreenEffect;
     if (v != false) {
@@ -472,7 +472,7 @@ i32 CState::ShadeScreen(i32 pct) {
     return m_world->m_drawTarget->m_backPair->m_surface->ShadeRect(pct, NULL);
 }
 
-RVA(0x000fafa0, 0x3b)
+RVA(0x000fb0d0, 0x3b)
 i32 CPlay::SerializeHeader(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload) {
     if (ar == NULL) {
         return 0;
@@ -492,7 +492,7 @@ i32 CPlay::SerializeHeader(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId
     return 1;
 }
 
-RVA(0x000faff0, 0x163)
+RVA(0x000fb120, 0x163)
 i32 CState::HeaderWrite(CFileMemBase* ar) {
     if (!ar) {
         return 0;
@@ -524,7 +524,7 @@ i32 CState::HeaderWrite(CFileMemBase* ar) {
     return 1;
 }
 
-RVA(0x000fb1c0, 0x168)
+RVA(0x000fb2f0, 0x168)
 i32 CState::HeaderRead(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;

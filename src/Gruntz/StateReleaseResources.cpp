@@ -8,7 +8,7 @@
 #include <stddef.h>
 
 // @early-stop
-RVA(0x000fa150, 0x74)
+RVA(0x000fa280, 0x74)
 void CState::ReleaseResources() {
     if (m_world != NULL) {
         if (m_cursorSavedSurfaces[0] != NULL) {

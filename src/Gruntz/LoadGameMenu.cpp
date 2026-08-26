@@ -12,10 +12,10 @@
 #include <Gruntz/SaveSlotCtrlId.h>
 #include <Io/SaveGame.h>
 
-DATA(0x00245ca4)
+DATA(0x00246bfc)
 CSaveGame* g_dlgLoadSink = NULL;
 
-RVA(0x0009dff0, 0x8c)
+RVA(0x0009df10, 0x8c)
 BOOL CALLBACK GruntzLoadGameDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_COMMAND:
@@ -42,7 +42,7 @@ BOOL CALLBACK GruntzLoadGameDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
     }
 }
 
-RVA(0x0009e0b0, 0x1a3)
+RVA(0x0009dfd0, 0x279)
 void FillGameInfoDialog(HWND hWnd, CSaveGame* sg) {
     if (hWnd == NULL || sg == NULL) {
         return;
@@ -59,7 +59,7 @@ void FillGameInfoDialog(HWND hWnd, CSaveGame* sg) {
     LabelGameInfoSlot(hWnd, sg->GetSlot(9), 0x43e, 0x499, 0x4a3, 0x4ad);
 }
 
-RVA(0x0009e2d0, 0x84)
+RVA(0x0009e2f0, 0x84)
 void LabelGameInfoSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6) {
     b32 flag;
     if (TempFileExists(item)) {
@@ -76,7 +76,7 @@ void LabelGameInfoSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32
 }
 
 // @early-stop
-RVA(0x0009e390, 0x2bc)
+RVA(0x0009e3b0, 0x2bc)
 i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg) {
     i32 idx = -1;
     switch (cmdId) {

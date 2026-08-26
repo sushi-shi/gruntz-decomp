@@ -20,24 +20,24 @@
 
 #include <string.h>
 
-RVA_DYNINIT(0x000235e0, 0x5, s_gruntDirNorth)
-RVA_DYNINIT(0x00023600, 0x1a, s_gruntDirNorth)
-RVA_DYNINIT(0x00023630, 0x5, s_gruntDirNorthEast)
-RVA_DYNINIT(0x00023650, 0x1a, s_gruntDirNorthEast)
-RVA_DYNINIT(0x00023680, 0x5, s_gruntDirEast)
-RVA_DYNINIT(0x000236a0, 0x1f, s_gruntDirEast)
-RVA_DYNINIT(0x000236d0, 0x5, s_gruntDirSouthEast)
-RVA_DYNINIT(0x000236f0, 0x1a, s_gruntDirSouthEast)
-RVA_DYNINIT(0x00023720, 0x5, s_gruntDirSouth)
-RVA_DYNINIT(0x00023740, 0x1f, s_gruntDirSouth)
-RVA_DYNINIT(0x00023770, 0x5, s_gruntDirSouthWest)
-RVA_DYNINIT(0x00023790, 0x1f, s_gruntDirSouthWest)
-RVA_DYNINIT(0x000237c0, 0x5, s_gruntDirWest)
-RVA_DYNINIT(0x000237e0, 0x1f, s_gruntDirWest)
-RVA_DYNINIT(0x00023810, 0x5, s_gruntDirNorthWest)
-RVA_DYNINIT(0x00023830, 0x17, s_gruntDirNorthWest)
-RVA_DYNINIT(0x00023860, 0x5, s_gruntDirCenter)
-RVA_DYNINIT(0x00023880, 0x1a, s_gruntDirCenter)
+RVA_DYNINIT(0x00023570, 0x5, s_gruntDirNorth)
+RVA_DYNINIT(0x00023590, 0x1a, s_gruntDirNorth)
+RVA_DYNINIT(0x000235c0, 0x5, s_gruntDirNorthEast)
+RVA_DYNINIT(0x000235e0, 0x1a, s_gruntDirNorthEast)
+RVA_DYNINIT(0x00023610, 0x5, s_gruntDirEast)
+RVA_DYNINIT(0x00023630, 0x1f, s_gruntDirEast)
+RVA_DYNINIT(0x00023660, 0x5, s_gruntDirSouthEast)
+RVA_DYNINIT(0x00023680, 0x1a, s_gruntDirSouthEast)
+RVA_DYNINIT(0x000236b0, 0x5, s_gruntDirSouth)
+RVA_DYNINIT(0x000236d0, 0x1f, s_gruntDirSouth)
+RVA_DYNINIT(0x00023700, 0x5, s_gruntDirSouthWest)
+RVA_DYNINIT(0x00023720, 0x1f, s_gruntDirSouthWest)
+RVA_DYNINIT(0x00023750, 0x5, s_gruntDirWest)
+RVA_DYNINIT(0x00023770, 0x1f, s_gruntDirWest)
+RVA_DYNINIT(0x000237a0, 0x5, s_gruntDirNorthWest)
+RVA_DYNINIT(0x000237c0, 0x17, s_gruntDirNorthWest)
+RVA_DYNINIT(0x000237f0, 0x5, s_gruntDirCenter)
+RVA_DYNINIT(0x00023810, 0x1a, s_gruntDirCenter)
 
 DATA(0x001e9608)
 const u16 g_unitIndexBitTable[16] = {
@@ -68,19 +68,19 @@ static inline void PokeI16(char* p, i16 v) {
     memcpy(p, &v, sizeof(v));
 }
 
-RVA(0x000239d0, 0xf)
+RVA(0x00023960, 0xf)
 i32 CGruntzCmdMgr::SetManager(CGruntzMgr* manager) {
     m_manager = manager;
     return 1;
 }
 
-RVA(0x000239f0, 0xc)
+RVA(0x00023980, 0xc)
 void CGruntzCmdMgr::Shutdown() {
     m_manager = NULL;
     ClearCommands();
 }
 
-RVA(0x00023a10, 0xe7)
+RVA(0x000239a0, 0xe7)
 i32 CGruntzCmdMgr::ExecuteScheduledCommands(i32 scheduleSlot) {
     b32 isMultiplayer = (m_manager->m_curState->Update() == GAMESTATE_MULTI);
     CState* state = m_manager->m_curState;
@@ -123,7 +123,7 @@ i32 CGruntzCmdMgr::ExecuteScheduledCommands(i32 scheduleSlot) {
     return 1;
 }
 
-RVA(0x00023b40, 0x53)
+RVA(0x00023ad0, 0x53)
 void CGruntzCmdMgr::RemoveScheduledCommand(i32 playerIndex, i32 scheduleSlot) {
     for (i32 i = 0; i < m_queuedCommands.GetCount(); i++) {
         POSITION pos = m_queuedCommands.FindIndex(i);
@@ -137,7 +137,7 @@ void CGruntzCmdMgr::RemoveScheduledCommand(i32 playerIndex, i32 scheduleSlot) {
     }
 }
 
-RVA(0x00023bc0, 0x25)
+RVA(0x00023b50, 0x25)
 void CGruntzCmdMgr::RecycleQueuedCommands() {
     while (m_queuedCommands.GetCount()) {
         CGruntzCommand* command = static_cast<CGruntzCommand*>(m_queuedCommands.RemoveTail());
@@ -147,7 +147,7 @@ void CGruntzCmdMgr::RecycleQueuedCommands() {
     }
 }
 
-RVA(0x00023c00, 0x1c)
+RVA(0x00023b90, 0x1c)
 void CGruntzCmdMgr::ClearCommands() {
     RecycleQueuedCommands();
     m_pendingLocalCommands.RemoveAll();
@@ -155,7 +155,7 @@ void CGruntzCmdMgr::ClearCommands() {
     CGruntzMultiCommand::ReleasePool();
 }
 
-RVA(0x00023c30, 0x47)
+RVA(0x00023bc0, 0x47)
 void CGruntzCmdMgr::EnqueueSingle(
     b32 isLocalCommand,
     char playerIndex,
@@ -179,7 +179,7 @@ void CGruntzCmdMgr::EnqueueSingle(
     EnqueueCommand(isLocalCommand, command);
 }
 
-RVA(0x00023ca0, 0x47)
+RVA(0x00023c30, 0x47)
 void CGruntzCmdMgr::EnqueueMulti(
     b32 isLocalCommand,
     char playerIndex,
@@ -203,7 +203,7 @@ void CGruntzCmdMgr::EnqueueMulti(
     EnqueueCommand(isLocalCommand, command);
 }
 
-RVA(0x00023d10, 0x5a)
+RVA(0x00023ca0, 0x5a)
 void CGruntzCmdMgr::EnqueueCommand(b32 isLocalCommand, CGruntzCommand* command) {
     if (!command) {
         return;
@@ -219,7 +219,7 @@ void CGruntzCmdMgr::EnqueueCommand(b32 isLocalCommand, CGruntzCommand* command) 
     m_queuedCommands.AddTail(command);
 }
 
-RVA(0x00023d90, 0x64)
+RVA(0x00023d20, 0x64)
 void CGruntzCmdMgr::EnqueuePlaceGruntAtScreenPoint(
     b32 isLocalCommand,
     i32 playerIndex,
@@ -247,7 +247,7 @@ void CGruntzCmdMgr::EnqueuePlaceGruntAtScreenPoint(
     );
 }
 
-RVA(0x00023e20, 0x2f)
+RVA(0x00023db0, 0x2f)
 i32 CGruntzCommand::InitializeCommon(
     char playerIndex,
     char commandKind,
@@ -263,7 +263,7 @@ i32 CGruntzCommand::InitializeCommon(
     return 1;
 }
 
-RVA(0x00023e60, 0x42)
+RVA(0x00023df0, 0x42)
 i32 CGruntzCommand::InitializeSingle(
     char playerIndex,
     char commandKind,
@@ -287,7 +287,7 @@ i32 CGruntzCommand::InitializeSingle(
     return 1;
 }
 
-RVA(0x00023ed0, 0x83)
+RVA(0x00023e60, 0x83)
 i32 CGruntzCommand::InitializeMulti(
     char playerIndex,
     char commandKind,
@@ -320,7 +320,7 @@ i32 CGruntzCommand::InitializeMulti(
     return 1;
 }
 
-RVA(0x00023f90, 0x48)
+RVA(0x00023f20, 0x48)
 i32 CGruntzSingleCommand::DecodePacket(char* data, i32) {
     char* start = data;
     ++data;
@@ -339,7 +339,7 @@ i32 CGruntzSingleCommand::DecodePacket(char* data, i32) {
     return data - start;
 }
 
-RVA(0x00024000, 0x3e)
+RVA(0x00023f90, 0x3e)
 i32 CGruntzMultiCommand::DecodePacket(char* data, i32) {
     char* start = data;
     ++data;
@@ -355,7 +355,7 @@ i32 CGruntzMultiCommand::DecodePacket(char* data, i32) {
     return data - start;
 }
 
-RVA(0x00024050, 0x57)
+RVA(0x00023fe0, 0x57)
 i32 CGruntzSingleCommand::EncodePacket(char* buffer, i32) {
     char* start = buffer;
     *buffer = static_cast<char>(GetRecordKind());
@@ -376,7 +376,7 @@ i32 CGruntzSingleCommand::EncodePacket(char* buffer, i32) {
     return w - start;
 }
 
-RVA(0x000240d0, 0x4d)
+RVA(0x00024060, 0x4d)
 i32 CGruntzMultiCommand::EncodePacket(char* buffer, i32) {
     char* start = buffer;
     *buffer = static_cast<char>(GetRecordKind());
@@ -393,7 +393,7 @@ i32 CGruntzMultiCommand::EncodePacket(char* buffer, i32) {
     return w - start;
 }
 
-RVA(0x00024140, 0x35)
+RVA(0x000240d0, 0x35)
 i32 CGruntzSingleCommand::Execute(CState* state) {
     CPlay* p = static_cast<CPlay*>(state);
     if (!p) {
@@ -411,7 +411,7 @@ i32 CGruntzSingleCommand::Execute(CState* state) {
     );
 }
 
-RVA(0x00024190, 0x6c)
+RVA(0x00024120, 0x6c)
 i32 CGruntzMultiCommand::Execute(CState* state) {
     CPlay* p = static_cast<CPlay*>(state);
     if (!p) {
@@ -436,7 +436,7 @@ i32 CGruntzMultiCommand::Execute(CState* state) {
     return ok;
 }
 
-RVA(0x00024220, 0x2b)
+RVA(0x000241b0, 0x2b)
 CGruntzSingleCommand* CGruntzSingleCommand::Allocate() {
     CPtrList& freeList = CPtrListPool<CGruntzSingleCommand>::s_freeList;
     if (freeList.GetCount()) {
@@ -445,32 +445,32 @@ CGruntzSingleCommand* CGruntzSingleCommand::Allocate() {
     return new CGruntzSingleCommand;
 }
 
-RVA(0x00024260, 0x6)
+RVA(0x000241f0, 0x6)
 i32 CGruntzSingleCommand::UnusedCommandQuery() {
     return 1;
 }
 
-RVA(0x00024280, 0x3)
+RVA(0x00024210, 0x3)
 char CGruntzSingleCommand::GetRecordKind() {
     return static_cast<char>(IDX(COMMAND_RECORD_SINGLE));
 }
 
-RVA(0x000242a0, 0xc)
+RVA(0x00024230, 0xc)
 void CGruntzSingleCommand::Recycle() {
     CPtrListPool<CGruntzSingleCommand>::s_freeList.AddHead(this);
 }
 
-RVA_COMPGEN(0x000242c0, 0x1e, ??_GCGruntzSingleCommand@@UAEPAXI@Z)
-RVA_COMPGEN(0x000242f0, 0x7, ??1CGruntzSingleCommand@@UAE@XZ)
+RVA_COMPGEN(0x00024250, 0x1e, ??_GCGruntzSingleCommand@@UAEPAXI@Z)
+RVA_COMPGEN(0x00024280, 0x7, ??1CGruntzSingleCommand@@UAE@XZ)
 
-RVA(0x00024310, 0x6)
+RVA(0x000242a0, 0x6)
 i32 CGruntzCommand::UnusedCommandQuery() {
     return 1;
 }
 
-RVA_COMPGEN(0x00024330, 0x20, ??_GCGruntzCommand@@UAEPAXI@Z)
+RVA_COMPGEN(0x000242c0, 0x20, ??_GCGruntzCommand@@UAEPAXI@Z)
 
-RVA(0x00024360, 0x2b)
+RVA(0x000242f0, 0x2b)
 CGruntzMultiCommand* CGruntzMultiCommand::Allocate() {
     CPtrList& freeList = CPtrListPool<CGruntzMultiCommand>::s_freeList;
     if (freeList.GetCount()) {
@@ -479,25 +479,25 @@ CGruntzMultiCommand* CGruntzMultiCommand::Allocate() {
     return new CGruntzMultiCommand;
 }
 
-RVA(0x000243a0, 0x6)
+RVA(0x00024330, 0x6)
 i32 CGruntzMultiCommand::UnusedCommandQuery() {
     return 1;
 }
 
-RVA(0x000243c0, 0x3)
+RVA(0x00024350, 0x3)
 char CGruntzMultiCommand::GetRecordKind() {
     return static_cast<char>(IDX(COMMAND_RECORD_MULTI));
 }
 
-RVA(0x000243e0, 0xc)
+RVA(0x00024370, 0xc)
 void CGruntzMultiCommand::Recycle() {
     CPtrListPool<CGruntzMultiCommand>::s_freeList.AddHead(this);
 }
 
-RVA_COMPGEN(0x00024400, 0x1e, ??_GCGruntzMultiCommand@@UAEPAXI@Z)
-RVA_COMPGEN(0x00024430, 0x7, ??1CGruntzMultiCommand@@UAE@XZ)
+RVA_COMPGEN(0x00024390, 0x1e, ??_GCGruntzMultiCommand@@UAEPAXI@Z)
+RVA_COMPGEN(0x000243c0, 0x7, ??1CGruntzMultiCommand@@UAE@XZ)
 
-RVA(0x00024450, 0x29)
+RVA(0x000243e0, 0x29)
 void CGruntzSingleCommand::ReleasePool() {
     CPtrList& freeList = CPtrListPool<CGruntzSingleCommand>::s_freeList;
     while (freeList.GetCount()) {
@@ -508,7 +508,7 @@ void CGruntzSingleCommand::ReleasePool() {
     }
 }
 
-RVA(0x00024490, 0x29)
+RVA(0x00024420, 0x29)
 void CGruntzMultiCommand::ReleasePool() {
     CPtrList& freeList = CPtrListPool<CGruntzMultiCommand>::s_freeList;
     while (freeList.GetCount()) {
@@ -519,7 +519,7 @@ void CGruntzMultiCommand::ReleasePool() {
     }
 }
 
-RVA(0x000244d0, 0x3b)
+RVA(0x00024460, 0x3b)
 i32 CGruntzSingleCommand::Serialize(CFileMemBase* s, SerialMode mode, LogicTypeId, i32) {
     if (!s) {
         return 0;
@@ -539,7 +539,7 @@ i32 CGruntzSingleCommand::Serialize(CFileMemBase* s, SerialMode mode, LogicTypeI
     return 1;
 }
 
-RVA(0x00024520, 0x98)
+RVA(0x000244b0, 0x98)
 i32 CGruntzSingleCommand::Save(CFileMemBase* s) {
     if (!s) {
         return 0;
@@ -558,7 +558,7 @@ i32 CGruntzSingleCommand::Save(CFileMemBase* s) {
     return 1;
 }
 
-RVA(0x000245f0, 0x98)
+RVA(0x00024580, 0x98)
 i32 CGruntzSingleCommand::Load(CFileMemBase* s) {
     if (!s) {
         return 0;
@@ -577,7 +577,7 @@ i32 CGruntzSingleCommand::Load(CFileMemBase* s) {
     return 1;
 }
 
-RVA(0x000246c0, 0x3b)
+RVA(0x00024650, 0x3b)
 i32 CGruntzMultiCommand::Serialize(CFileMemBase* s, SerialMode mode, LogicTypeId, i32) {
     if (!s) {
         return 0;
@@ -597,7 +597,7 @@ i32 CGruntzMultiCommand::Serialize(CFileMemBase* s, SerialMode mode, LogicTypeId
     return 1;
 }
 
-RVA(0x00024710, 0x8b)
+RVA(0x000246a0, 0x8b)
 i32 CGruntzMultiCommand::Save(CFileMemBase* s) {
     if (!s) {
         return 0;
@@ -615,7 +615,7 @@ i32 CGruntzMultiCommand::Save(CFileMemBase* s) {
     return 1;
 }
 
-RVA(0x000247d0, 0x8b)
+RVA(0x00024760, 0x8b)
 i32 CGruntzMultiCommand::Load(CFileMemBase* s) {
     if (!s) {
         return 0;
@@ -633,7 +633,7 @@ i32 CGruntzMultiCommand::Load(CFileMemBase* s) {
     return 1;
 }
 
-RVA(0x00024890, 0x18d)
+RVA(0x00024820, 0x18d)
 i32 CGruntzCmdMgr::Serialize(
     CFileMemBase* stream,
     SerialMode mode,
@@ -698,7 +698,7 @@ i32 CGruntzCmdMgr::Serialize(
     return 1;
 }
 
-RVA(0x00024a90, 0x20)
+RVA(0x00024a20, 0x20)
 i32 CGruntzCmdMgr::CanSaveCommands(CFileMemBase* stream) {
     if (!stream) {
         return 0;
@@ -706,7 +706,7 @@ i32 CGruntzCmdMgr::CanSaveCommands(CFileMemBase* stream) {
     return g_gameReg->m_world != NULL;
 }
 
-RVA(0x00024ac0, 0x20)
+RVA(0x00024a50, 0x20)
 i32 CGruntzCmdMgr::CanLoadCommands(CFileMemBase* stream) {
     if (stream == NULL) {
         return 0;

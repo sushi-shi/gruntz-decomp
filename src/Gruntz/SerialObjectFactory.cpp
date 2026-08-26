@@ -79,7 +79,7 @@
 
 #include <string.h>
 
-RVA(0x0000d210, 0x65)
+RVA(0x0000d220, 0x65)
 i32 RestoreGameFromFile(CGruntzMgr* mgr, char* path) {
     if (mgr == NULL) {
         return 0;
@@ -100,7 +100,7 @@ i32 RestoreGameFromFile(CGruntzMgr* mgr, char* path) {
 }
 
 // @early-stop
-RVA(0x0000d2a0, 0x1984)
+RVA(0x0000d2b0, 0x1984)
 i32 __cdecl GameSerializationCallback(
     CDDrawSurfaceMgr* ctx,
     CFileMemBase* archive,
@@ -340,46 +340,46 @@ i32 __cdecl GameSerializationCallback(
     return g_gameReg->SerializeGameState(archive, mode, typeId, payloadWord.m_word) != 0;
 }
 
-RVA_COMPGEN(0x0000f6b0, 0x6, ?GetTypeTag@CDoNothing@@UAE?AW4LogicTypeId@@XZ)
-RVA_COMPGEN(0x0000f740, 0x1e, ??_GCDoNothing@@UAEPAXI@Z)
-RVA_COMPGEN(0x0000f770, 0x44, ??1CDoNothing@@UAE@XZ)
-RVA_COMPGEN(0x0000f7e0, 0x6, ?GetTypeTag@CDoNothingNormal@@UAE?AW4LogicTypeId@@XZ)
-RVA_COMPGEN(0x0000f870, 0x1e, ??_GCDoNothingNormal@@UAEPAXI@Z)
-RVA_COMPGEN(0x0000f8a0, 0x44, ??1CDoNothingNormal@@UAE@XZ)
-RVA_COMPGEN(0x0000fb70, 0x6, ?GetTypeTag@CBehindCandy@@UAE?AW4LogicTypeId@@XZ)
-RVA_COMPGEN(0x0000fc00, 0x1e, ??_GCBehindCandy@@UAEPAXI@Z)
-RVA_COMPGEN(0x0000fc30, 0x44, ??1CBehindCandy@@UAE@XZ)
-RVA_COMPGEN(0x0000fca0, 0x6, ?GetTypeTag@CEyeCandy@@UAE?AW4LogicTypeId@@XZ)
-RVA_COMPGEN(0x0000fd30, 0x1e, ??_GCEyeCandy@@UAEPAXI@Z)
-RVA_COMPGEN(0x0000fd60, 0x44, ??1CEyeCandy@@UAE@XZ)
+RVA_COMPGEN(0x0000f6c0, 0x6, ?GetTypeTag@CDoNothing@@UAE?AW4LogicTypeId@@XZ)
+RVA_COMPGEN(0x0000f750, 0x1e, ??_GCDoNothing@@UAEPAXI@Z)
+RVA_COMPGEN(0x0000f780, 0x44, ??1CDoNothing@@UAE@XZ)
+RVA_COMPGEN(0x0000f7f0, 0x6, ?GetTypeTag@CDoNothingNormal@@UAE?AW4LogicTypeId@@XZ)
+RVA_COMPGEN(0x0000f880, 0x1e, ??_GCDoNothingNormal@@UAEPAXI@Z)
+RVA_COMPGEN(0x0000f8b0, 0x44, ??1CDoNothingNormal@@UAE@XZ)
+RVA_COMPGEN(0x0000fb80, 0x6, ?GetTypeTag@CBehindCandy@@UAE?AW4LogicTypeId@@XZ)
+RVA_COMPGEN(0x0000fc10, 0x1e, ??_GCBehindCandy@@UAEPAXI@Z)
+RVA_COMPGEN(0x0000fc40, 0x44, ??1CBehindCandy@@UAE@XZ)
+RVA_COMPGEN(0x0000fcb0, 0x6, ?GetTypeTag@CEyeCandy@@UAE?AW4LogicTypeId@@XZ)
+RVA_COMPGEN(0x0000fd40, 0x1e, ??_GCEyeCandy@@UAEPAXI@Z)
+RVA_COMPGEN(0x0000fd70, 0x44, ??1CEyeCandy@@UAE@XZ)
 
-RVA_COMPGEN(0x00011160, 0x4b, ??0CTileTrigger@@QAE@XZ)
+RVA_COMPGEN(0x00011170, 0x4b, ??0CTileTrigger@@QAE@XZ)
 CTileTrigger::CTileTrigger() : CUserLogic(CUserLogic::INLINE_BASE) {}
 
-RVA_COMPGEN(0x00011ef0, 0x4b, ??0CGruntHealthSprite@@QAE@XZ)
+RVA_COMPGEN(0x00011f00, 0x4b, ??0CGruntHealthSprite@@QAE@XZ)
 CGruntHealthSprite::CGruntHealthSprite() : CUserLogic(CUserLogic::INLINE_BASE) {}
 
-RVA_COMPGEN(0x000126e0, 0x1fc, ??0CProjectile@@QAE@XZ)
+RVA_COMPGEN(0x000126f0, 0x1fc, ??0CProjectile@@QAE@XZ)
 CProjectile::CProjectile() : CMovingLogic(CMotionState::INLINE_BASE) {}
 
-RVA_COMPGEN(0x00013170, 0x7b, ??0CPathHazard@@QAE@XZ)
+RVA_COMPGEN(0x00013180, 0x7b, ??0CPathHazard@@QAE@XZ)
 CPathHazard::CPathHazard() : CUserLogic(CUserLogic::INLINE_BASE) {}
 
-RVA_COMPGEN(0x000133b0, 0x6, ?GetTypeTag@CUFO@@UAE?AW4LogicTypeId@@XZ)
-RVA_COMPGEN(0x000133d0, 0x1e, ??_GCUFO@@UAEPAXI@Z)
-RVA_COMPGEN(0x00013400, 0x44, ??1CUFO@@UAE@XZ)
+RVA_COMPGEN(0x000133c0, 0x6, ?GetTypeTag@CUFO@@UAE?AW4LogicTypeId@@XZ)
+RVA_COMPGEN(0x000133e0, 0x1e, ??_GCUFO@@UAEPAXI@Z)
+RVA_COMPGEN(0x00013410, 0x44, ??1CUFO@@UAE@XZ)
 
-RVA_COMPGEN(0x000136d0, 0x184, ??0CMotionState@@QAE@XZ)
+RVA_COMPGEN(0x000136e0, 0x184, ??0CMotionState@@QAE@XZ)
 CMotionState::CMotionState() {
     InitBounds();
 }
 
-RVA_COMPGEN(0x000138d0, 0x4b, ??0CUserLogic@@QAE@XZ)
+RVA_COMPGEN(0x000138e0, 0x4b, ??0CUserLogic@@QAE@XZ)
 CUserLogic::CUserLogic() {}
 
-RVA_COMPGEN(0x00013940, 0x1e1, ??0CMovingLogic@@QAE@XZ)
+RVA_COMPGEN(0x00013950, 0x1e1, ??0CMovingLogic@@QAE@XZ)
 CMovingLogic::CMovingLogic()
     : CUserLogic(CUserLogic::INLINE_BASE), m_motion(CMotionState::INLINE_BASE) {}
 
-RVA_COMPGEN(0x00013bd0, 0x44, ??1CMovingLogic@@UAE@XZ)
-RVA_COMPGEN(0x00013c40, 0x1e, ??_GCMovingLogic@@UAEPAXI@Z)
+RVA_COMPGEN(0x00013be0, 0x44, ??1CMovingLogic@@UAE@XZ)
+RVA_COMPGEN(0x00013c50, 0x1e, ??_GCMovingLogic@@UAEPAXI@Z)

@@ -10,18 +10,18 @@
 
 #include <string.h>
 
-RVA(0x0017d8f0, 0x1e)
+RVA(0x0017dbd0, 0x1e)
 CFaderMgr::CFaderMgr() {
     m_active = false;
     m_traceEnabled = false;
 }
 
-RVA(0x0017d910, 0x65)
+RVA(0x0017dbf0, 0x65)
 CFaderMgr::~CFaderMgr() {
     FreeAll();
 }
 
-RVA(0x0017d980, 0x1f)
+RVA(0x0017dc60, 0x1f)
 i32 CFaderMgr::SetDefaults(
     CDDSurface* primary,
     CDDSurface* secondary,
@@ -34,13 +34,13 @@ i32 CFaderMgr::SetDefaults(
     return 1;
 }
 
-RVA(0x0017d9a0, 0x11)
+RVA(0x0017dc80, 0x11)
 void CFaderMgr::FreeAll() {
     DeleteAll();
     m_active = false;
 }
 
-RVA(0x0017d9c0, 0x7a0)
+RVA(0x0017dca0, 0x7a0)
 CFader* CFaderMgr::Add(FaderKind nFaderType, CFaderConfig* pInit) {
     CFader* fader = NULL;
 
@@ -224,9 +224,9 @@ CFader* CFaderMgr::Add(FaderKind nFaderType, CFaderConfig* pInit) {
     return fader;
 }
 
-RVA_COMPGEN(0x0017e160, 0x8, ??1CShapeFaderConfig@@QAE@XZ)
+RVA_COMPGEN(0x0017e440, 0x8, ??1CShapeFaderConfig@@QAE@XZ)
 
-RVA(0x0017e170, 0x5b)
+RVA(0x0017e450, 0x5b)
 void CFaderMgr::Remove(CFader* pFader) {
     i32 i = 0;
     i32 count = m_arr.GetSize();
@@ -240,7 +240,7 @@ void CFaderMgr::Remove(CFader* pFader) {
     }
 }
 
-RVA(0x0017e1d0, 0x4d)
+RVA(0x0017e4b0, 0x4d)
 void CFaderMgr::DeleteAll() {
     i32 i = 0;
     i32 last = m_arr.m_nSize - 1;
@@ -263,20 +263,20 @@ void CFaderMgr::DeleteAll() {
 // @identity-TODO: placement beside Trace is the only evidence for the setting's name.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0017e220, 0xa)
+RVA(0x0017e500, 0xa)
 void CFaderMgr::SetTraceEnabled(b32 enabled) {
     m_traceEnabled = enabled;
 }
 
-RVA(0x0017e230, 0xc)
+RVA(0x0017e510, 0xc)
 void CFaderMgr::Trace(CString s) {
     static_cast<void>(s);
 }
 
-RVA_COMPGEN(0x0017e240, 0x51, ??1CFaderArray@@UAE@XZ)
+RVA_COMPGEN(0x0017e520, 0x51, ??1CFaderArray@@UAE@XZ)
 
-RVA(0x0017e2a0, 0x188)
-RVA_COMPGEN(0x0017e430, 0x1e, ??_GCFaderArray@@UAEPAXI@Z)
+RVA(0x0017e580, 0x188)
+RVA_COMPGEN(0x0017e710, 0x1e, ??_GCFaderArray@@UAEPAXI@Z)
 void CFaderArray::Serialize(CArchive& ar) {
     if (ar.IsStoring()) {
         ar.WriteCount(m_nSize);

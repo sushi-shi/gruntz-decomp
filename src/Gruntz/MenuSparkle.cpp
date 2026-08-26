@@ -15,17 +15,17 @@
 
 #include <stdlib.h>
 
-RVA_DYNINIT(0x000addc0, 0xa, CActRegPool<CMenuSparkle>::s_table)
-RVA_DYNINIT(0x000adde0, 0x15, CActRegPool<CMenuSparkle>::s_table)
-RVA_DYNINIT(0x000ade10, 0xe, CActRegPool<CMenuSparkle>::s_table)
-RVA_DYNINIT(0x000ade30, 0x1f, CActRegPool<CMenuSparkle>::s_table)
-template<> DATA(0x00246010)
+RVA_DYNINIT(0x000addb0, 0xa, CActRegPool<CMenuSparkle>::s_table)
+RVA_DYNINIT(0x000addd0, 0x15, CActRegPool<CMenuSparkle>::s_table)
+RVA_DYNINIT(0x000ade00, 0xe, CActRegPool<CMenuSparkle>::s_table)
+RVA_DYNINIT(0x000ade20, 0x1f, CActRegPool<CMenuSparkle>::s_table)
+template<> DATA(0x00246f68)
 CActReg CActRegPool<CMenuSparkle>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
-RVA_COMPGEN(0x00010180, 0x1e, ??_GCMenuSparkle@@UAEPAXI@Z)
-RVA_COMPGEN(0x000101b0, 0x44, ??1CMenuSparkle@@UAE@XZ)
+RVA_COMPGEN(0x00010190, 0x1e, ??_GCMenuSparkle@@UAEPAXI@Z)
+RVA_COMPGEN(0x000101c0, 0x44, ??1CMenuSparkle@@UAE@XZ)
 
-RVA(0x000adbe0, 0x178)
+RVA(0x000adbd0, 0x178)
 CMenuSparkle::CMenuSparkle(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetImageSetByName("MENU_SPARKLE");
@@ -36,7 +36,7 @@ CMenuSparkle::CMenuSparkle(CGameObject* obj)
 
 typedef i32 (CUserLogic::*CActHandler)();
 
-RVA(0x000ade60, 0x102)
+RVA(0x000ade50, 0x102)
 void CMenuSparkle::FireActivation(i32 coord) {
     CActHandler* e = CActRegPool<CMenuSparkle>::s_table.ResolveEntry(coord);
     if (*e != NULL) {
@@ -46,14 +46,14 @@ void CMenuSparkle::FireActivation(i32 coord) {
     }
 }
 
-RVA(0x000adfc0, 0x18d)
+RVA(0x000adfb0, 0x18d)
 void RegisterMenuSparkleActions() {
     ACT_NAME_ID(id, "A")
     *CActRegPool<CMenuSparkle>::s_table.ResolveEntry(id) =
         static_cast<CActHandler>(&CMenuSparkle::AdvanceAnim);
 }
 
-RVA(0x000ae1c0, 0xae)
+RVA(0x000ae1b0, 0xae)
 i32 CMenuSparkle::SerializeDispatch(
     CFileMemBase* arc,
     SerialMode mode,
@@ -84,7 +84,7 @@ i32 CMenuSparkle::SerializeDispatch(
 }
 
 // @early-stop
-RVA(0x000ae2a0, 0x8e)
+RVA(0x000ae290, 0x8e)
 i32 CMenuSparkle::AdvanceAnim() {
     u32 delta = g_frameDelta;
     if (delta >= m_logicRecord->m_sparkleDelay) {

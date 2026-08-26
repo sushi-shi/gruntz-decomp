@@ -16,11 +16,11 @@ public:
 
     i32 AdvanceAnim();
 
-    RVA(0x00012ba0, 0x6)
+    RVA(0x00012bb0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_TOOBSPIKEZ;
     }
-    RVA(0x00012bc0, 0x47)
+    RVA(0x00012bd0, 0x47)
     virtual i32
     SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object)
         OVERRIDE {

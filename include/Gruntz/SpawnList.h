@@ -11,7 +11,7 @@
 class CSpawnEntry {
 public:
     CSpawnEntry(CString name, i32 data);
-    RVA(0x0009a260, 0x1d)
+    RVA(0x0009a180, 0x1d)
     CString GetName() {
         return m_name;
     }

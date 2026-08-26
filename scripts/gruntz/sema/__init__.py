@@ -11,6 +11,8 @@
     gruntz sema gaps    [options]         unclaimed same-file .text gaps
     gruntz sema map     [sub ...]         retail address-space map
     gruntz sema match   <unit|rva|name>   objdiff scores for a unit / function
+    gruntz sema version-delta [options]   conservative executable-to-executable
+                                          address migration audit
 
 Every module is also a direct entry: `python3 -m gruntz.sema.xref 0x136180`.
 `gruntz sema -` is batch mode: newline-delimited view commands on stdin,
@@ -49,6 +51,8 @@ SUBCOMMANDS = {
     "gaps": "gruntz.sema.gaps",
     "map": "gruntz.sema.map",
     "match": "gruntz.sema.match",
+    "version-delta": "gruntz.sema.version_delta",
+    "version_delta": "gruntz.sema.version_delta",
 }
 
 

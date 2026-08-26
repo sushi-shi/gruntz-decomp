@@ -18,14 +18,14 @@ typedef enum AdvancedOptionsDlgId {
     IDC_DEFAULTS = 0x426,
 } AdvancedOptionsDlgId;
 
-RVA_DYNINIT(0x0000af30, 0xa, g_registryHelper)
-RVA_DYNINIT(0x0000af50, 0xb, g_registryHelper)
-RVA_DYNINIT(0x0000af70, 0xe, g_registryHelper)
-RVA_DYNINIT(0x0000af90, 0xa, g_registryHelper)
-DATA(0x002295d8)
+RVA_DYNINIT(0x0000af40, 0xa, g_registryHelper)
+RVA_DYNINIT(0x0000af60, 0xb, g_registryHelper)
+RVA_DYNINIT(0x0000af80, 0xe, g_registryHelper)
+RVA_DYNINIT(0x0000afa0, 0xa, g_registryHelper)
+DATA(0x0022a530)
 static Utils::RegistryHelper g_registryHelper;
 
-RVA(0x0000afb0, 0x108)
+RVA(0x0000afc0, 0x108)
 BOOL CALLBACK AdvancedOptionsDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
     switch (message) {
         case WM_INITDIALOG:
@@ -69,7 +69,7 @@ BOOL CALLBACK AdvancedOptionsDialogProc(HWND hWnd, UINT message, WPARAM wParam, 
     return false;
 }
 
-RVA(0x0000b110, 0x32)
+RVA(0x0000b120, 0x32)
 void SaveOption(
     HWND hWnd,
     Utils::RegistryHelper* pRegistryHelper,
@@ -81,7 +81,7 @@ void SaveOption(
     }
 }
 
-RVA(0x0000b160, 0x37)
+RVA(0x0000b170, 0x37)
 void SetDefaults(HWND hWnd) {
     CheckDlgButton(hWnd, IDC_DISABLE_VIDEO, 0);
     CheckDlgButton(hWnd, IDC_DISABLE_AUDIO, 0);
@@ -89,7 +89,7 @@ void SetDefaults(HWND hWnd) {
     CheckDlgButton(hWnd, IDC_DISABLE_MUSIC, 0);
 }
 
-RVA(0x0000b1b0, 0x90)
+RVA(0x0000b1c0, 0x90)
 void LoadOptions(HWND hWnd, Utils::RegistryHelper* pRegistryHelper) {
     if (pRegistryHelper) {
         CheckDlgButton(
@@ -108,7 +108,7 @@ void LoadOptions(HWND hWnd, Utils::RegistryHelper* pRegistryHelper) {
     }
 }
 
-RVA(0x0000b270, 0x75)
+RVA(0x0000b280, 0x75)
 void SaveOptions(HWND hWnd, Utils::RegistryHelper* pRegistryHelper) {
     if (pRegistryHelper) {
         SaveOption(hWnd, pRegistryHelper, "Disable Direct Video Access", IDC_DISABLE_VIDEO);

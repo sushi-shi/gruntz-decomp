@@ -20,37 +20,37 @@
 #define DDRAWMGR_FILE "C:\\Proj\\DDrawMgr\\DDRAWMGR.CPP"
 #define DDRAWMGR_H_FILE "C:\\Proj\\DDrawMgr\\ddrawmgr.h"
 
-DATA(0x002bed00)
+DATA(0x002bfc58)
 CDDrawDeviceManager* g_DirectDrawMgr = NULL;
 
-DATA(0x00283eb8)
+DATA(0x00284e10)
 b32 g_ddLogEnabled = false;
-DATA(0x00283ebc)
+DATA(0x00284e14)
 b32 g_ddMsgBoxEnabled = false;
-DATA(0x00283ec0)
+DATA(0x00284e18)
 b32 g_ddBeepEnabled = false;
-DATA(0x00283ec4)
+DATA(0x00284e1c)
 b32 g_ddThirdEnabled = false;
 
-DATA(0x00283edc)
+DATA(0x00284e34)
 i32 (*g_restoreHandler)() = NULL;
-DATA(0x00283ee0)
+DATA(0x00284e38)
 HINSTANCE g_resModule;
 
-DATA(0x00283ee8)
+DATA(0x00284e40)
 IDirectDraw2* g_DirectDraw = NULL;
-RVA_DYNINIT(0x00141c70, 0xa, g_modeArray)
-RVA_DYNINIT(0x00141c80, 0xa, g_modeArray)
-RVA_DYNINIT(0x00141c90, 0xe, g_modeArray)
-RVA_DYNINIT(0x00141ca0, 0xa, g_modeArray)
-DATA(0x00283ec8)
+RVA_DYNINIT(0x00141f50, 0xa, g_modeArray)
+RVA_DYNINIT(0x00141f60, 0xa, g_modeArray)
+RVA_DYNINIT(0x00141f70, 0xe, g_modeArray)
+RVA_DYNINIT(0x00141f80, 0xa, g_modeArray)
+DATA(0x00284e20)
 CPtrArray g_modeArray;
-DATA(0x00283ee4)
+DATA(0x00284e3c)
 GUID* g_ddCreateCtx = NULL;
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001413d0, 0x27)
+RVA(0x001416b0, 0x27)
 void SetDDrawReportModes(b32 log, b32 msgBox, b32 beep, b32 third) {
     g_ddLogEnabled = log;
     g_ddMsgBoxEnabled = msgBox;
@@ -58,7 +58,7 @@ void SetDDrawReportModes(b32 log, b32 msgBox, b32 beep, b32 third) {
     g_ddThirdEnabled = third;
 }
 
-RVA(0x00141400, 0x870)
+RVA(0x001416e0, 0x870)
 void CDDrawDeviceManager::ReportError(char* file, i32 line, i32 hr) {
     char szCode[64];
     char szMsg[256];
@@ -300,10 +300,10 @@ void CDDrawDeviceManager::ReportError(char* file, i32 line, i32 hr) {
     }
 }
 
-RVA(0x00141cb0, 0x1)
+RVA(0x00141f90, 0x1)
 void __cdecl DDrawLogLine(char*, ...) {}
 
-RVA(0x00141cc0, 0x84)
+RVA(0x00141fa0, 0x84)
 CDDrawDeviceManager::CDDrawDeviceManager() : m_surfaces(0xa), m_palettes(0xa), m_displayModes() {
     m_device = NULL;
     m_directDraw1 = NULL;
@@ -314,12 +314,12 @@ CDDrawDeviceManager::CDDrawDeviceManager() : m_surfaces(0xa), m_palettes(0xa), m
     m_lastError = DDRAWERR_NONE;
 }
 
-RVA(0x00141d50, 0x6f)
+RVA(0x00142030, 0x6f)
 CDDrawDeviceManager::~CDDrawDeviceManager() {
     Clear(1);
 }
 
-RVA(0x00141dc0, 0x224)
+RVA(0x001420a0, 0x224)
 i32 CDDrawDeviceManager::CreateDevice(
     HWND hwnd,
     GUID* driverGuid,
@@ -404,7 +404,7 @@ i32 CDDrawDeviceManager::CreateDevice(
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00141ff0, 0x6c)
+RVA(0x001422d0, 0x6c)
 i32 CDDrawDeviceManager::Init(
     void* factory,
     HWND hwnd,
@@ -427,7 +427,7 @@ i32 CDDrawDeviceManager::Init(
     return CreateDevice(hwnd, g_ddCreateCtx, width, height, bpp, coop);
 }
 
-RVA(0x00142060, 0x9d)
+RVA(0x00142340, 0x9d)
 void CDDrawDeviceManager::Clear(i32 restoreDisplayMode) {
     if (restoreDisplayMode && m_device) {
         m_device->RestoreDisplayMode();
@@ -450,12 +450,12 @@ void CDDrawDeviceManager::Clear(i32 restoreDisplayMode) {
     m_bankSwitchedCaps = 0;
 }
 
-RVA(0x00142100, 0x18)
+RVA(0x001423e0, 0x18)
 void CDDrawDeviceManager::RegisterSurface(CDDSurface* item) {
     item->m_pos = m_surfaces.AddTail(item);
 }
 
-RVA(0x00142120, 0x31)
+RVA(0x00142400, 0x31)
 void CDDrawDeviceManager::ClearSurfaces() {
     POSITION pos = m_surfaces.GetHeadPosition();
     while (pos) {
@@ -465,7 +465,7 @@ void CDDrawDeviceManager::ClearSurfaces() {
     m_surfaces.RemoveAll();
 }
 
-RVA(0x00142160, 0x24)
+RVA(0x00142440, 0x24)
 void CDDrawDeviceManager::RemoveSurface(CDDSurface* item) {
     m_surfaces.RemoveAt(item->m_pos);
     delete item;
@@ -474,12 +474,12 @@ void CDDrawDeviceManager::RemoveSurface(CDDSurface* item) {
 // @identity-TODO: owner and no-op behavior are proven; the method identity is not.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00142190, 0x1)
+RVA(0x00142470, 0x1)
 void CDDrawDeviceManager::NoOpSurfacePoolHook() {}
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001421a0, 0xbe)
+RVA(0x00142480, 0xbe)
 CDDSurface* CDDrawDeviceManager::CreateSurfaceFromDesc(const DDSURFACEDESC* desc) {
     CDDSurface* item = new CDDSurface;
     if (!item->CreateFromDesc(this, desc)) {
@@ -490,7 +490,7 @@ CDDSurface* CDDrawDeviceManager::CreateSurfaceFromDesc(const DDSURFACEDESC* desc
     return item;
 }
 
-RVA(0x00142260, 0xd2)
+RVA(0x00142540, 0xd2)
 CDDSurface* CDDrawDeviceManager::LoadSurfaceFromPid(
     PidHeader* hdr,
     FileImageFormat type,
@@ -507,12 +507,12 @@ CDDSurface* CDDrawDeviceManager::LoadSurfaceFromPid(
     return item;
 }
 
-RVA_COMPGEN(0x00142340, 0x1e, ??_GCFileImageSurface@@UAEPAXI@Z)
+RVA_COMPGEN(0x00142620, 0x1e, ??_GCFileImageSurface@@UAEPAXI@Z)
 
-RVA(0x00142360, 0x53)
+RVA(0x00142640, 0x53)
 CFileImageSurface::~CFileImageSurface() {}
 
-RVA(0x001423c0, 0xd2)
+RVA(0x001426a0, 0xd2)
 CDDSurface* CDDrawDeviceManager::CreateKeyedSurface(
     i32 width,
     i32 height,
@@ -531,7 +531,7 @@ CDDSurface* CDDrawDeviceManager::CreateKeyedSurface(
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001424a0, 0xbe)
+RVA(0x00142780, 0xbe)
 CDDSurface* CDDrawDeviceManager::CreateFileSurfaceFromDesc(const DDSURFACEDESC* desc) {
     CFileImageSurface* item = new CFileImageSurface;
     if (!item->CreateFromDesc(this, desc)) {
@@ -542,7 +542,7 @@ CDDSurface* CDDrawDeviceManager::CreateFileSurfaceFromDesc(const DDSURFACEDESC* 
     return item;
 }
 
-RVA(0x00142560, 0xc8)
+RVA(0x00142840, 0xc8)
 CDDSurface* CDDrawDeviceManager::LoadFileSurface(char* path, i32 caps, i32 colorKey) {
     CFileImageSurface* item = new CFileImageSurface;
     if (!item->LoadByExt(this, path, caps, colorKey)) {
@@ -555,7 +555,7 @@ CDDSurface* CDDrawDeviceManager::LoadFileSurface(char* path, i32 caps, i32 color
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00142630, 0xfe)
+RVA(0x00142910, 0xfe)
 i32 CDDrawDeviceManager::LoadNumberedSurfaces(
     CDDSurface** out,
     i32 start,
@@ -588,7 +588,7 @@ i32 CDDrawDeviceManager::LoadNumberedSurfaces(
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00142730, 0xc8)
+RVA(0x00142a10, 0xc8)
 CDDSurface* CDDrawDeviceManager::CreateOverlaySurface(i32 width, i32 height, i32 caps) {
     CDDrawOverlaySurface* item = new CDDrawOverlaySurface;
     if (!item->CreateOverlay(this, width, height, caps)) {
@@ -599,13 +599,13 @@ CDDSurface* CDDrawDeviceManager::CreateOverlaySurface(i32 width, i32 height, i32
     return item;
 }
 
-RVA_COMPGEN(0x00142800, 0x1e, ??_GCDDrawOverlaySurface@@UAEPAXI@Z)
-RVA(0x00142820, 0x53)
+RVA_COMPGEN(0x00142ae0, 0x1e, ??_GCDDrawOverlaySurface@@UAEPAXI@Z)
+RVA(0x00142b00, 0x53)
 CDDrawOverlaySurface::~CDDrawOverlaySurface() {}
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00142880, 0xbe)
+RVA(0x00142b60, 0xbe)
 CDDSurface* CDDrawDeviceManager::CreateOverlaySurfaceFromDesc(const DDSURFACEDESC* desc) {
     CDDrawOverlaySurface* item = new CDDrawOverlaySurface;
     if (!item->CreateFromDesc(this, desc)) {
@@ -618,7 +618,7 @@ CDDSurface* CDDrawDeviceManager::CreateOverlaySurfaceFromDesc(const DDSURFACEDES
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00142940, 0xd4)
+RVA(0x00142c20, 0xd4)
 CDDSurface*
 CDDrawDeviceManager::CreatePrimarySurface(i32 caps, i32 descFlags, i32 backBufferCount) {
     CDDrawPrimarySurface* item = new CDDrawPrimarySurface;
@@ -631,13 +631,13 @@ CDDrawDeviceManager::CreatePrimarySurface(i32 caps, i32 descFlags, i32 backBuffe
     return item;
 }
 
-RVA_COMPGEN(0x00142a20, 0x1e, ??_GCDDrawPrimarySurface@@UAEPAXI@Z)
-RVA(0x00142a40, 0x53)
+RVA_COMPGEN(0x00142d00, 0x1e, ??_GCDDrawPrimarySurface@@UAEPAXI@Z)
+RVA(0x00142d20, 0x53)
 CDDrawPrimarySurface::~CDDrawPrimarySurface() {}
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00142aa0, 0xca)
+RVA(0x00142d80, 0xca)
 CDDSurface* CDDrawDeviceManager::CreatePrimarySurfaceFromDesc(const DDSURFACEDESC* desc) {
     CDDrawPrimarySurface* item = new CDDrawPrimarySurface;
     if (!item->CreateFromDesc(this, desc)) {
@@ -649,7 +649,7 @@ CDDSurface* CDDrawDeviceManager::CreatePrimarySurfaceFromDesc(const DDSURFACEDES
     return item;
 }
 
-RVA(0x00142b70, 0xce)
+RVA(0x00142e50, 0xce)
 CDDSurface* CDDrawDeviceManager::Create24BitPrimarySurface(i32 backBufferCount) {
     CDDrawPrimarySurface* item = new CDDrawPrimarySurface;
     if (!item->CreatePrimary(
@@ -668,7 +668,7 @@ CDDSurface* CDDrawDeviceManager::Create24BitPrimarySurface(i32 backBufferCount) 
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00142c40, 0xd7)
+RVA(0x00142f20, 0xd7)
 CDDSurface* CDDrawDeviceManager::CreateZBufferSurface(
     i32 width,
     i32 height,
@@ -686,13 +686,13 @@ CDDSurface* CDDrawDeviceManager::CreateZBufferSurface(
     return item;
 }
 
-RVA_COMPGEN(0x00142d20, 0x1e, ??_GCDDrawZBufferSurface@@UAEPAXI@Z)
-RVA(0x00142d40, 0x53)
+RVA_COMPGEN(0x00143000, 0x1e, ??_GCDDrawZBufferSurface@@UAEPAXI@Z)
+RVA(0x00143020, 0x53)
 CDDrawZBufferSurface::~CDDrawZBufferSurface() {}
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00142da0, 0xbe)
+RVA(0x00143080, 0xbe)
 CDDSurface* CDDrawDeviceManager::CreateZBufferSurfaceFromDesc(const DDSURFACEDESC* desc) {
     CDDrawZBufferSurface* item = new CDDrawZBufferSurface;
     if (!item->CreateFromDesc(this, desc)) {
@@ -703,7 +703,7 @@ CDDSurface* CDDrawDeviceManager::CreateZBufferSurfaceFromDesc(const DDSURFACEDES
     return item;
 }
 
-RVA(0x00142e60, 0x27)
+RVA(0x00143140, 0x27)
 CDDSurface* CDDrawDeviceManager::CreateOffscreenSurface(
     i32 width,
     i32 height,
@@ -722,17 +722,17 @@ CDDSurface* CDDrawDeviceManager::CreateOffscreenSurface(
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00142e90, 0x1d)
+RVA(0x00143170, 0x1d)
 CDDSurface* CDDrawDeviceManager::LoadSystemMemorySurface(char* path, i32 caps, i32 colorKey) {
     return LoadFileSurface(path, caps | DDSCAPS_SYSTEMMEMORY | DDSCAPS_OFFSCREENPLAIN, colorKey);
 }
 
-RVA(0x00142eb0, 0x17)
+RVA(0x00143190, 0x17)
 void CDDrawDeviceManager::RegisterPalette(CDDPalette* item) {
     item->m_pos = m_palettes.AddTail(item);
 }
 
-RVA(0x00142ed0, 0x3d)
+RVA(0x001431b0, 0x3d)
 void CDDrawDeviceManager::ClearPalettes() {
     POSITION pos = m_palettes.GetHeadPosition();
     while (pos) {
@@ -745,7 +745,7 @@ void CDDrawDeviceManager::ClearPalettes() {
     m_palettes.RemoveAll();
 }
 
-RVA(0x00142f10, 0x2b)
+RVA(0x001431f0, 0x2b)
 void CDDrawDeviceManager::RemovePalette(CDDPalette* item) {
     m_palettes.RemoveAt(item->m_pos);
     if (item) {
@@ -754,7 +754,7 @@ void CDDrawDeviceManager::RemovePalette(CDDPalette* item) {
     }
 }
 
-RVA(0x00142f40, 0x7c)
+RVA(0x00143220, 0x7c)
 CDDPalette* CDDrawDeviceManager::LoadPaletteFromFile(char* path, i32 flags) {
     CDDPalette* item = new CDDPalette;
     if (!item->LoadFromFile(m_device, path, flags)) {
@@ -768,7 +768,7 @@ CDDPalette* CDDrawDeviceManager::LoadPaletteFromFile(char* path, i32 flags) {
     return item;
 }
 
-RVA(0x00142fc0, 0x7c)
+RVA(0x001432a0, 0x7c)
 CDDPalette* CDDrawDeviceManager::CreateRgbPalette(u8* rgb, i32 flags) {
     CDDPalette* item = new CDDPalette;
     if (!item->CreateRGB(m_device, rgb, flags)) {
@@ -782,7 +782,7 @@ CDDPalette* CDDrawDeviceManager::CreateRgbPalette(u8* rgb, i32 flags) {
     return item;
 }
 
-RVA(0x00143040, 0x7c)
+RVA(0x00143320, 0x7c)
 CDDPalette* CDDrawDeviceManager::CreatePaletteFromEntries(PALETTEENTRY* entries, i32 flags) {
     CDDPalette* item = new CDDPalette;
 
@@ -797,7 +797,7 @@ CDDPalette* CDDrawDeviceManager::CreatePaletteFromEntries(PALETTEENTRY* entries,
     return item;
 }
 
-RVA(0x001430c0, 0x81)
+RVA(0x001433a0, 0x81)
 CDDPalette* CDDrawDeviceManager::CreatePaletteFromTrailingData(void* data, u32 size, i32 flags) {
     CDDPalette* item = new CDDPalette;
     if (!item->CreateFromTrailing(m_device, data, size, flags)) {
@@ -813,7 +813,7 @@ CDDPalette* CDDrawDeviceManager::CreatePaletteFromTrailingData(void* data, u32 s
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00143150, 0xe9)
+RVA(0x00143430, 0xe9)
 CDDPalette* CDDrawDeviceManager::LoadTrailingRgbPalette(const char* path, i32 z) {
     CFile file;
     if (!file.Open(path, CFile::modeRead, NULL)) {
@@ -827,7 +827,7 @@ CDDPalette* CDDrawDeviceManager::LoadTrailingRgbPalette(const char* path, i32 z)
     return CreateRgbPalette(buf, z);
 }
 
-RVA(0x00143240, 0x143)
+RVA(0x00143520, 0x143)
 void CDDrawDeviceManager::EnumerateDisplayModes() {
     for (i32 i = 0; i < m_displayModes.GetSize(); i++) {
         delete static_cast<DDSURFACEDESC*>(m_displayModes.GetData()[i]);
@@ -864,7 +864,7 @@ void CDDrawDeviceManager::EnumerateDisplayModes() {
     }
 }
 
-RVA(0x00143390, 0x35)
+RVA(0x00143670, 0x35)
 i32 __stdcall DdEnumModesCallback(DDSURFACEDESC* mode, i32 unused) {
     DDSURFACEDESC* copy = new DDSURFACEDESC;
     memcpy(copy, mode, sizeof(DDSURFACEDESC));
@@ -872,7 +872,7 @@ i32 __stdcall DdEnumModesCallback(DDSURFACEDESC* mode, i32 unused) {
     return 1;
 }
 
-RVA(0x001433d0, 0x4f)
+RVA(0x001436b0, 0x4f)
 i32 CDDrawDeviceManager::ShouldSwapDisplayModes(DDSURFACEDESC* first, DDSURFACEDESC* second) {
     if (first->dwWidth > second->dwWidth) {
         return 1;
@@ -891,7 +891,7 @@ i32 CDDrawDeviceManager::ShouldSwapDisplayModes(DDSURFACEDESC* first, DDSURFACED
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00143420, 0x4b)
+RVA(0x00143700, 0x4b)
 DisplayResolution
 CDDrawDeviceManager::FindSmallestFittingResolution(u32 minWidth, u32 minHeight, i32 colorDepth) {
     i32 idx = FindFirstFittingResolutionIndex(minWidth, minHeight, colorDepth);
@@ -908,7 +908,7 @@ CDDrawDeviceManager::FindSmallestFittingResolution(u32 minWidth, u32 minHeight, 
     return resolution;
 }
 
-RVA(0x00143470, 0x47)
+RVA(0x00143750, 0x47)
 i32 CDDrawDeviceManager::FindFirstFittingResolutionIndex(
     u32 minWidth,
     u32 minHeight,
@@ -925,7 +925,7 @@ i32 CDDrawDeviceManager::FindFirstFittingResolutionIndex(
     return result;
 }
 
-RVA(0x001434c0, 0x45)
+RVA(0x001437a0, 0x45)
 i32 CDDrawDeviceManager::FindResolutionIndex(i32 width, i32 height, ColorDepth colorDepth) {
     for (i32 i = 0; i < m_displayModes.GetSize(); i++) {
         DDSURFACEDESC* mode = static_cast<DDSURFACEDESC*>(m_displayModes.GetData()[i]);
@@ -937,7 +937,7 @@ i32 CDDrawDeviceManager::FindResolutionIndex(i32 width, i32 height, ColorDepth c
     return -1;
 }
 
-RVA(0x00143510, 0x71)
+RVA(0x001437f0, 0x71)
 DisplayResolution
 CDDrawDeviceManager::FindNextResolution(i32 width, i32 height, ColorDepth colorDepth) {
     DisplayResolution resolution;
@@ -960,7 +960,7 @@ CDDrawDeviceManager::FindNextResolution(i32 width, i32 height, ColorDepth colorD
     return resolution;
 }
 
-RVA(0x00143590, 0x7e)
+RVA(0x00143870, 0x7e)
 DisplayResolution
 CDDrawDeviceManager::FindPreviousResolution(i32 width, i32 height, ColorDepth colorDepth) {
     DisplayResolution resolution;
@@ -985,14 +985,14 @@ CDDrawDeviceManager::FindPreviousResolution(i32 width, i32 height, ColorDepth co
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00143610, 0x1c)
+RVA(0x001438f0, 0x1c)
 DDSURFACEDESC* CDDrawDeviceManager::ResetSurfaceDesc() {
     memset(&m_surfaceDesc, 0, sizeof(m_surfaceDesc));
     m_surfaceDesc.dwSize = sizeof(m_surfaceDesc);
     return &m_surfaceDesc;
 }
 
-RVA(0x00143630, 0x10d)
+RVA(0x00143910, 0x10d)
 CDDSurface* CDDrawDeviceManager::WrapAttachedSurface(CDDSurface* srcSurface, i32 caps) {
     IDirectDrawSurface* attached = NULL;
     DDSCAPS want;
@@ -1014,7 +1014,7 @@ CDDSurface* CDDrawDeviceManager::WrapAttachedSurface(CDDSurface* srcSurface, i32
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00143740, 0x93)
+RVA(0x00143a20, 0x93)
 i32 CDDrawDeviceManager::GetDisplayMode(i32* pWidth, i32* pHeight, i32* pBpp) {
     DDSURFACEDESC desc;
     memset(&desc, 0, sizeof(desc));
@@ -1033,12 +1033,12 @@ i32 CDDrawDeviceManager::GetDisplayMode(i32* pWidth, i32* pHeight, i32* pBpp) {
     return 1;
 }
 
-RVA(0x001437e0, 0xa)
+RVA(0x00143ac0, 0xa)
 void SetSurfaceRestoreHandler(SurfaceRestoreFn handler) {
     g_restoreHandler = handler;
 }
 
-RVA(0x001437f0, 0x1b)
+RVA(0x00143ad0, 0x1b)
 i32 RestoreLostSurfaces() {
     if (g_restoreHandler) {
         return g_restoreHandler();
@@ -1049,7 +1049,7 @@ i32 RestoreLostSurfaces() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00143810, 0x2b)
+RVA(0x00143af0, 0x2b)
 i32 CDDrawDeviceManager::GetAvailableVidMem(u32 caps, DWORD* total, DWORD* free) {
     DDSCAPS ddsCaps;
     ddsCaps.dwCaps = caps;
@@ -1059,7 +1059,7 @@ i32 CDDrawDeviceManager::GetAvailableVidMem(u32 caps, DWORD* total, DWORD* free)
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00143840, 0x32)
+RVA(0x00143b20, 0x32)
 i32 CDDrawDeviceManager::GetFreeVidMem() {
     DDSCAPS caps;
     DWORD total;
@@ -1069,7 +1069,7 @@ i32 CDDrawDeviceManager::GetFreeVidMem() {
     return hr == 0 ? freeMem : 0;
 }
 
-RVA(0x00143880, 0x3b)
+RVA(0x00143b60, 0x3b)
 i32 __stdcall
 
 CreateDirectDrawVia(
@@ -1091,7 +1091,7 @@ CreateDirectDrawVia(
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001438c0, 0x31)
+RVA(0x00143ba0, 0x31)
 IDirectDrawSurface* CDDrawDeviceManager::GetGDISurface() {
     IDirectDrawSurface* surf = NULL;
     i32 hr = m_device->GetGDISurface(&surf);
@@ -1106,7 +1106,7 @@ IDirectDrawSurface* CDDrawDeviceManager::GetGDISurface() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00143900, 0x4d)
+RVA(0x00143be0, 0x4d)
 i32 CDDrawDeviceManager::SetDisplayPaletteFrom(CDDPalette* pal, i32 tag) {
 
     if (pal == NULL) {
@@ -1125,7 +1125,7 @@ i32 CDDrawDeviceManager::SetDisplayPaletteFrom(CDDPalette* pal, i32 tag) {
     return 1;
 }
 
-RVA(0x00143950, 0x56)
+RVA(0x00143c30, 0x56)
 i32 CDDrawDeviceManager::SetDisplayPaletteFromRgb(u8* buf, i32 z) {
     if (buf == NULL) {
         return 0;
@@ -1139,7 +1139,7 @@ i32 CDDrawDeviceManager::SetDisplayPaletteFromRgb(u8* buf, i32 z) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001439b0, 0x3f)
+RVA(0x00143c90, 0x3f)
 i32 CDDrawDeviceManager::SetDisplayPaletteDirect(PALETTEENTRY* entries, i32 tag) {
     if (entries == NULL) {
         return 0;
@@ -1155,7 +1155,7 @@ i32 CDDrawDeviceManager::SetDisplayPaletteDirect(PALETTEENTRY* entries, i32 tag)
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001439f0, 0x35)
+RVA(0x00143cd0, 0x35)
 i32 CDDrawDeviceManager::SetDisplayPaletteFromTrailingRgb(u8* buf, i32 size, i32 tag) {
     if (buf == NULL) {
         return 0;
@@ -1168,7 +1168,7 @@ i32 CDDrawDeviceManager::SetDisplayPaletteFromTrailingRgb(u8* buf, i32 size, i32
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00143a30, 0xe9)
+RVA(0x00143d10, 0xe9)
 i32 CDDrawDeviceManager::LoadDisplayPaletteFromFile(const char* path, i32 z) {
     CFile file;
     if (!file.Open(path, CFile::modeRead, NULL)) {
@@ -1182,7 +1182,7 @@ i32 CDDrawDeviceManager::LoadDisplayPaletteFromFile(const char* path, i32 z) {
     return SetDisplayPaletteFromRgb(buf, z);
 }
 
-RVA(0x00143b20, 0xfc)
+RVA(0x00143e00, 0xfc)
 i32 CDDrawDeviceManager::ComputeColorMasks() {
     DDSURFACEDESC desc;
     memset(&desc, 0, sizeof(desc));
@@ -1242,7 +1242,7 @@ i32 CDDrawDeviceManager::ComputeColorMasks() {
     return 1;
 }
 
-RVA(0x00143c20, 0x84)
+RVA(0x00143f00, 0x84)
 i32 CDDrawDeviceManager::ConfigureSurface(
     i32 width,
     i32 height,
@@ -1267,22 +1267,22 @@ i32 CDDrawDeviceManager::ConfigureSurface(
     return hr;
 }
 
-RVA(0x00143cb0, 0x6)
+RVA(0x00143f90, 0x6)
 DDSurfacePoolKind CDDrawOverlaySurface::GetPoolKind() {
     return POOLKIND_OVERLAY;
 }
 
-RVA(0x00143cc0, 0x6)
+RVA(0x00143fa0, 0x6)
 DDSurfacePoolKind CFileImageSurface::GetPoolKind() {
     return POOLKIND_FILEIMAGE;
 }
 
-RVA(0x00143cd0, 0x6)
+RVA(0x00143fb0, 0x6)
 DDSurfacePoolKind CDDrawPrimarySurface::GetPoolKind() {
     return POOLKIND_MODE;
 }
 
-RVA(0x00143ce0, 0x6)
+RVA(0x00143fc0, 0x6)
 DDSurfacePoolKind CDDrawZBufferSurface::GetPoolKind() {
     return POOLKIND_ZBUFFER;
 }

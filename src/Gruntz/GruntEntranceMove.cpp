@@ -51,89 +51,89 @@
 #include <stdlib.h>
 #include <string.h>
 
-DATA(0x0020e924)
+DATA(0x0020f8cc)
 static char s_GRUNTZ_ENTRANCEZ_RESSURECT[] = "GRUNTZ_ENTRANCEZ_RESSURECT";
-DATA(0x0020e944)
+DATA(0x0020f8ec)
 static char s_GRUNTZ_ENTRANCEZ_DROP[] = "GRUNTZ_ENTRANCEZ_DROP";
-DATA(0x0020e960)
+DATA(0x0020f908)
 static char s_GRUNTZ_ENTRANCEZ_THREE[] = "GRUNTZ_ENTRANCEZ_THREE";
-DATA(0x0020e97c)
+DATA(0x0020f924)
 static char s_GRUNTZ_ENTRANCEZ_TWO[] = "GRUNTZ_ENTRANCEZ_TWO";
-DATA(0x0020e9ac)
+DATA(0x0020f954)
 static char s_GRUNTZ_ENTRANCEZ_ONE[] = "GRUNTZ_ENTRANCEZ_ONE";
-DATA(0x0020e9c8)
+DATA(0x0020f970)
 static char s_WG_IDLE5[] = "GRUNTZ_WINGZGRUNT_IDLE5";
-DATA(0x0020e9e4)
+DATA(0x0020f98c)
 static char s_WG_IDLE4[] = "GRUNTZ_WINGZGRUNT_IDLE4";
-DATA(0x0020ea00)
+DATA(0x0020f9a8)
 static char s_WG_IDLE3[] = "GRUNTZ_WINGZGRUNT_IDLE3";
-DATA(0x0020ea1c)
+DATA(0x0020f9c4)
 static char s_WG_IDLE2[] = "GRUNTZ_WINGZGRUNT_IDLE2";
-DATA(0x0020ea38)
+DATA(0x0020f9e0)
 static char s_WG_IDLE1[] = "GRUNTZ_WINGZGRUNT_IDLE1";
-DATA(0x0020ea54)
+DATA(0x0020f9fc)
 static char s_WG_WALK[] = "GRUNTZ_WINGZGRUNT_WALK";
-DATA(0x0020ea70)
+DATA(0x0020fa18)
 static char s_SE_IDLE[] = "GRUNTZ_WINGZGRUNT_SOUTHEAST_IDLE";
-DATA(0x0020ea98)
+DATA(0x0020fa40)
 static char s_S_IDLE[] = "GRUNTZ_WINGZGRUNT_SOUTH_IDLE";
-DATA(0x0020eabc)
+DATA(0x0020fa64)
 static char s_SW_IDLE[] = "GRUNTZ_WINGZGRUNT_SOUTHWEST_IDLE";
-DATA(0x0020eae4)
+DATA(0x0020fa8c)
 static char s_E_IDLE[] = "GRUNTZ_WINGZGRUNT_EAST_IDLE";
-DATA(0x0020eb08)
+DATA(0x0020fab0)
 static char s_W_IDLE[] = "GRUNTZ_WINGZGRUNT_WEST_IDLE";
-DATA(0x0020eb2c)
+DATA(0x0020fad4)
 static char s_NE_IDLE[] = "GRUNTZ_WINGZGRUNT_NORTHEAST_IDLE";
-DATA(0x0020eb54)
+DATA(0x0020fafc)
 static char s_N_IDLE[] = "GRUNTZ_WINGZGRUNT_NORTH_IDLE";
-DATA(0x0020eb78)
+DATA(0x0020fb20)
 static char s_NW_IDLE[] = "GRUNTZ_WINGZGRUNT_NORTHWEST_IDLE";
-DATA(0x0020eba0)
+DATA(0x0020fb48)
 static char s_SE_WALK[] = "GRUNTZ_WINGZGRUNT_SOUTHEAST_WALK";
-DATA(0x0020ebc8)
+DATA(0x0020fb70)
 static char s_S_WALK[] = "GRUNTZ_WINGZGRUNT_SOUTH_WALK";
-DATA(0x0020ebec)
+DATA(0x0020fb94)
 static char s_SW_WALK[] = "GRUNTZ_WINGZGRUNT_SOUTHWEST_WALK";
-DATA(0x0020ec14)
+DATA(0x0020fbbc)
 static char s_E_WALK[] = "GRUNTZ_WINGZGRUNT_EAST_WALK";
-DATA(0x0020ec38)
+DATA(0x0020fbe0)
 static char s_W_WALK[] = "GRUNTZ_WINGZGRUNT_WEST_WALK";
-DATA(0x0020ec5c)
+DATA(0x0020fc04)
 static char s_NE_WALK[] = "GRUNTZ_WINGZGRUNT_NORTHEAST_WALK";
-DATA(0x0020ec84)
+DATA(0x0020fc2c)
 static char s_N_WALK[] = "GRUNTZ_WINGZGRUNT_NORTH_WALK";
-DATA(0x0020eca8)
+DATA(0x0020fc50)
 static char s_NW_WALK[] = "GRUNTZ_WINGZGRUNT_NORTHWEST_WALK";
-DATA(0x0020ecd0)
+DATA(0x0020fc78)
 static char s_WG_ITEM[] = "GRUNTZ_WINGZGRUNT_ITEM";
-DATA(0x0020ecec)
+DATA(0x0020fc94)
 static char s_SE_ITEM[] = "GRUNTZ_WINGZGRUNT_SOUTHEAST_ITEM";
-DATA(0x0020ed14)
+DATA(0x0020fcbc)
 static char s_S_ITEM[] = "GRUNTZ_WINGZGRUNT_SOUTH_ITEM";
-DATA(0x0020ed38)
+DATA(0x0020fce0)
 static char s_SW_ITEM[] = "GRUNTZ_WINGZGRUNT_SOUTHWEST_ITEM";
-DATA(0x0020ed60)
+DATA(0x0020fd08)
 static char s_E_ITEM[] = "GRUNTZ_WINGZGRUNT_EAST_ITEM";
-DATA(0x0020ed84)
+DATA(0x0020fd2c)
 static char s_W_ITEM[] = "GRUNTZ_WINGZGRUNT_WEST_ITEM";
-DATA(0x0020eda8)
+DATA(0x0020fd50)
 static char s_NE_ITEM[] = "GRUNTZ_WINGZGRUNT_NORTHEAST_ITEM";
-DATA(0x0020edd0)
+DATA(0x0020fd78)
 static char s_N_ITEM[] = "GRUNTZ_WINGZGRUNT_NORTH_ITEM";
-DATA(0x0020edf4)
+DATA(0x0020fd9c)
 static char s_NW_ITEM[] = "GRUNTZ_WINGZGRUNT_NORTHWEST_ITEM";
-DATA(0x0020ee1c)
+DATA(0x0020fdc4)
 static char s_GRUNTZ_DEATHZ_UNFREEZE[] = "GRUNTZ_DEATHZ_UNFREEZE";
-DATA(0x0020ee38)
+DATA(0x0020fde0)
 static char s_FreezeDelay[] = "FreezeDelay";
-DATA(0x0020ee48)
+DATA(0x0020fdf0)
 static char s_GRUNTZ_DEATHZ_SPARKLE[] = "GRUNTZ_DEATHZ_SPARKLE";
-DATA(0x0020ee64)
+DATA(0x0020fe0c)
 static char s_MovingDeathTime[] = "MovingDeathTime";
 
 // @early-stop
-RVA(0x00067850, 0x214)
+RVA(0x00067720, 0x214)
 i32 CGrunt::RunEntranceMove() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(cur, static_cast<u32>(g_engineFrameDelta))
     if (!((cur->m_finished != false && cur->m_frameTicksLeft == 0)
@@ -146,7 +146,7 @@ i32 CGrunt::RunEntranceMove() {
     ActNameConstructGrownSlots();
     const char* previousActNameText = *previousActName;
     bool previousActWasD;
-    previousActWasD = (strcmp(previousActNameText, DATA_COMPGEN(0x0020cca4, "D")) == 0);
+    previousActWasD = (strcmp(previousActNameText, DATA_COMPGEN(0x0020dc4c, "D")) == 0);
     if (previousActWasD) {
         if (m_poweredUp != false && m_neighborValid == false) {
             RESET_GRUNT_POWERED_STATE(this)
@@ -200,7 +200,7 @@ clearMove:
 }
 
 // @early-stop
-RVA(0x00067b00, 0x92)
+RVA(0x000679d0, 0x92)
 i32 CGrunt::GruntInRadius(i32 playerIndex, i32 unitIndex) {
     CGrunt* other = m_triggerMgr->m_units[playerIndex * TM_UNITS_PER_PLAYER + unitIndex];
     if (other != NULL && other->m_entranceCommitted != false && other->m_gruntKind != GRUNT_GHOST) {
@@ -224,7 +224,7 @@ static inline CAniElement* LookupAnimation(CMapStringToPtr& map, LPCTSTR name) {
     return result;
 }
 
-RVA(0x00067bd0, 0x2ef)
+RVA(0x00067aa0, 0x2ef)
 i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
     SET_ANIMATION_ACT("K");
 
@@ -316,7 +316,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
 }
 
 // @early-stop
-RVA(0x00067f80, 0x313)
+RVA(0x00067e50, 0x313)
 i32 CGrunt::LoadEntranceConfig() {
     if (m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta)) == 1) {
         CGruntzMgr* g = g_gameReg;
@@ -416,7 +416,7 @@ i32 CGrunt::LoadEntranceConfig() {
     return 0;
 }
 
-RVA(0x00068370, 0x14c)
+RVA(0x00068240, 0x14c)
 i32 CGrunt::RearmEntranceDrop() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(cur, static_cast<u32>(g_engineFrameDelta))
     if (IsAniCursorComplete(cur)) {
@@ -450,7 +450,7 @@ i32 CGrunt::RearmEntranceDrop() {
 }
 
 // @early-stop
-RVA(0x00068520, 0x2a2)
+RVA(0x000683f0, 0x2a2)
 i32 CGrunt::StartBombGruntRun() {
     FinishActiveAction();
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_healthSprite)
@@ -508,7 +508,7 @@ i32 CGrunt::StartBombGruntRun() {
 }
 
 // @early-stop
-RVA(0x00068880, 0x67c)
+RVA(0x00068750, 0x67c)
 i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
     if (enable != false) {
         m_wingzEnabled = true;
@@ -621,7 +621,7 @@ i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
     return 1;
 }
 
-RVA(0x000690a0, 0x1c5)
+RVA(0x00068f70, 0x1c5)
 i32 CGrunt::UpdateEntranceAnim() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(anim, static_cast<u32>(g_engineFrameDelta))
     if (!IsAniCursorComplete(anim)) {
@@ -674,7 +674,7 @@ i32 CGrunt::UpdateEntranceAnim() {
 }
 
 // @early-stop
-RVA(0x000692f0, 0x850)
+RVA(0x000691c0, 0x850)
 i32 CGrunt::StepArrivalCommit() {
     if (m_entranceCommitted == false) {
         return 0;
@@ -835,7 +835,7 @@ finalize:
 }
 
 // @early-stop
-RVA(0x00069d60, 0x1e1)
+RVA(0x00069c30, 0x1e1)
 i32 CGrunt::LoadFreezeSpellAssets() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(cur, static_cast<u32>(g_engineFrameDelta))
     if (IsAniCursorComplete(cur)) {
@@ -876,7 +876,7 @@ i32 CGrunt::LoadFreezeSpellAssets() {
     return 0;
 }
 
-RVA(0x00069fd0, 0x69)
+RVA(0x00069ea0, 0x69)
 i32 CGrunt::FinishEntranceMove() {
 
     ADVANCE_CURRENT_ANIMATION_CURSOR(cur, static_cast<u32>(g_engineFrameDelta))
@@ -891,7 +891,7 @@ i32 CGrunt::FinishEntranceMove() {
     return 0;
 }
 
-RVA(0x0006a060, 0x520)
+RVA(0x00069f30, 0x520)
 i32 CGrunt::LoadGruntMovingDeathConfig() {
     m_moveSpeed =
         16.0 / static_cast<double>(g_buteMgr.GetDwordDef("Grunt", s_MovingDeathTime, 0x3e8));
@@ -1057,7 +1057,7 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
 }
 
 // @early-stop
-RVA(0x0006a6d0, 0x936)
+RVA(0x0006a5a0, 0x936)
 i32 CGrunt::FinishActiveAction() {
     bool ne;
     ne = ANIMATION_ACT_DIFFERS("A");
@@ -1258,25 +1258,25 @@ retZero:
     return 0;
 }
 
-RVA(0x0006b260, 0x5)
+RVA(0x0006b130, 0x5)
 i32 CGrunt::StepAttackAction() {
 
     return StepAttackFire();
 }
 
-RVA(0x0006b270, 0x1b)
+RVA(0x0006b140, 0x1b)
 CObject* CAniElement::AtChecked(i32 i) const {
     return GetAniElementAt(this, i);
 }
 
-RVA(0x0006b2a0, 0x23)
+RVA(0x0006b170, 0x23)
 CAniElement* AnimationRegistry::FindAnimation(const char* key) {
     CAniElement* animation = NULL;
     MapLookup(m_animations, key, animation);
     return animation;
 }
 
-RVA(0x0006b2e0, 0x39)
+RVA(0x0006b1b0, 0x39)
 void CWapX::ApplyAnimation(CAniElement* animation, i32 advanceImmediately) {
     m_value = m_wwdObject->m_animationCursor.m_animation;
     CAniAdvanceCursor* anim = &m_wwdObject->m_animationCursor;
@@ -1286,7 +1286,7 @@ void CWapX::ApplyAnimation(CAniElement* animation, i32 advanceImmediately) {
     }
 }
 
-RVA(0x0006b330, 0x2a)
+RVA(0x0006b200, 0x2a)
 i32 CGameLevel::PointInBounds(const LevelCoordRect* r, i32 x, i32 y) {
     return PointInRect(r, x, y);
 }

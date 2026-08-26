@@ -19,21 +19,21 @@
 #include <stdio.h>
 #include <string.h>
 
-RVA(0x00154aa0, 0x20)
+RVA(0x00154d80, 0x20)
 i32 CDDrawWorkerRegistry::IsReady() {
     memset(&g_bltFx, 0, sizeof(g_bltFx));
     g_bltFx.dwSize = sizeof(DDBLTFX);
     return 1;
 }
 
-RVA(0x00154ac0, 0x12)
+RVA(0x00154da0, 0x12)
 void CDDrawWorkerRegistry::Unload() {
     MapTeardown();
     g_resourceInstallActive = false;
     g_surfaceColorKey = 0;
 }
 
-RVA(0x00154ae0, 0xfc)
+RVA(0x00154dc0, 0xfc)
 CImage* CDDrawWorkerRegistry::InsertFrameByKey(
     CRezArchiveEntry* rec,
     const char* key,
@@ -56,7 +56,7 @@ CImage* CDDrawWorkerRegistry::InsertFrameByKey(
     return static_cast<CDDrawWorker*>(worker)->InsertFrame(rec, index, mode);
 }
 
-RVA(0x00154be0, 0xfc)
+RVA(0x00154ec0, 0xfc)
 CImage* CDDrawWorkerRegistry::LoadFrameByKey(char* path, const char* key, i32 index, i32 keyed) {
     CObject* worker = NULL;
     m_workersByName.Lookup(key, worker);
@@ -73,7 +73,7 @@ CImage* CDDrawWorkerRegistry::LoadFrameByKey(char* path, const char* key, i32 in
     return static_cast<CDDrawWorker*>(worker)->LoadFrame(path, index, keyed);
 }
 
-RVA(0x00154ce0, 0x101)
+RVA(0x00154fc0, 0x101)
 CImage* CDDrawWorkerRegistry::CreateDescriptorFrameByKey(
     PidHeader* desc,
     FileImageFormat mode,
@@ -96,7 +96,7 @@ CImage* CDDrawWorkerRegistry::CreateDescriptorFrameByKey(
     return static_cast<CDDrawWorker*>(worker)->CreateDescriptorFrame(desc, mode, index, size);
 }
 
-RVA(0x00154df0, 0x101)
+RVA(0x001550d0, 0x101)
 CImage* CDDrawWorkerRegistry::CreateBlankFrameByKey(
     i32 width,
     i32 height,
@@ -119,13 +119,13 @@ CImage* CDDrawWorkerRegistry::CreateBlankFrameByKey(
     return static_cast<CDDrawWorker*>(worker)->CreateBlankFrame(width, height, index, keyed);
 }
 
-RVA(0x00154f00, 0x1b)
+RVA(0x001551e0, 0x1b)
 CImage*
 CDDrawWorkerRegistry::LoadFrameForWorker(char* path, CDDrawWorker* worker, i32 index, i32 keyed) {
     return worker->LoadFrame(path, index, keyed);
 }
 
-RVA(0x00154f20, 0x1b)
+RVA(0x00155200, 0x1b)
 CImage* CDDrawWorkerRegistry::InsertFrameForWorker(
     CRezArchiveEntry* rec,
     CDDrawWorker* worker,
@@ -135,7 +135,7 @@ CImage* CDDrawWorkerRegistry::InsertFrameForWorker(
     return worker->InsertFrame(rec, index, mode);
 }
 
-RVA(0x00154f40, 0x20)
+RVA(0x00155220, 0x20)
 CImage* CDDrawWorkerRegistry::CreateDescriptorFrameForWorker(
     PidHeader* desc,
     FileImageFormat mode,
@@ -146,7 +146,7 @@ CImage* CDDrawWorkerRegistry::CreateDescriptorFrameForWorker(
     return worker->CreateDescriptorFrame(desc, mode, index, size);
 }
 
-RVA(0x00154f60, 0x20)
+RVA(0x00155240, 0x20)
 CImage* CDDrawWorkerRegistry::CreateBlankFrameForWorker(
     i32 width,
     i32 height,
@@ -157,7 +157,7 @@ CImage* CDDrawWorkerRegistry::CreateBlankFrameForWorker(
     return worker->CreateBlankFrame(width, height, index, keyed);
 }
 
-RVA(0x00154f80, 0x1d5)
+RVA(0x00155260, 0x1d5)
 i32 CDDrawWorkerRegistry::InstallTree(CRezArchiveDir* dir, const char* sub, const char* prefix) {
     char* buf = new char[0x100];
     i32 count = 0;
@@ -199,7 +199,7 @@ i32 CDDrawWorkerRegistry::InstallTree(CRezArchiveDir* dir, const char* sub, cons
     return count;
 }
 
-RVA(0x00155160, 0x11e)
+RVA(0x00155440, 0x11e)
 i32 CDDrawWorkerRegistry::LoadNamespace(CRezArchiveDir* dir, const char* sub, const char* prefix) {
     char* buf = new char[0x100];
     i32 count = 0;
@@ -236,7 +236,7 @@ i32 CDDrawWorkerRegistry::LoadNamespace(CRezArchiveDir* dir, const char* sub, co
     return count;
 }
 
-RVA(0x00155280, 0x22)
+RVA(0x00155560, 0x22)
 void CDDrawWorkerRegistry::RemoveWorker(CDDrawWorker* worker) {
     if (worker != NULL) {
         m_workersByName.RemoveKey(worker->m_name);
@@ -244,7 +244,7 @@ void CDDrawWorkerRegistry::RemoveWorker(CDDrawWorker* worker) {
     }
 }
 
-RVA(0x001552b0, 0xa2)
+RVA(0x00155590, 0xa2)
 void CDDrawWorkerRegistry::MapTeardown() {
     CObject* val = NULL;
     POSITION pos = m_workersByName.GetStartPosition();
@@ -260,7 +260,7 @@ void CDDrawWorkerRegistry::MapTeardown() {
     m_workersByName.RemoveAll();
 }
 
-RVA(0x00155360, 0xf8)
+RVA(0x00155640, 0xf8)
 i32 CDDrawWorkerRegistry::RemoveWithPrefix(const char* prefix, const char* separator) {
     CString match(prefix);
     match += separator;
@@ -282,7 +282,7 @@ i32 CDDrawWorkerRegistry::RemoveWithPrefix(const char* prefix, const char* separ
     return n;
 }
 
-RVA(0x00155460, 0xe2)
+RVA(0x00155740, 0xe2)
 i32 CDDrawWorkerRegistry::SumSizesEqual(const char* str, i32 raw) {
     POSITION pos = m_workersByName.GetStartPosition();
     i32 total = 0;
@@ -302,7 +302,7 @@ i32 CDDrawWorkerRegistry::SumSizesEqual(const char* str, i32 raw) {
     return total;
 }
 
-RVA(0x00155550, 0xdc)
+RVA(0x00155830, 0xdc)
 i32 CDDrawWorkerRegistry::HasWithPrefix(const char* prefix) {
     i32 len = strlen(prefix);
     CString key;
@@ -317,7 +317,7 @@ i32 CDDrawWorkerRegistry::HasWithPrefix(const char* prefix) {
     return 0;
 }
 
-RVA(0x00155630, 0xc5)
+RVA(0x00155910, 0xc5)
 i32 CDDrawWorkerRegistry::AnyValueMatches(CImage* frame, char* outName, i32* outIndex) {
     if (frame == NULL) {
         return 0;
@@ -334,7 +334,7 @@ i32 CDDrawWorkerRegistry::AnyValueMatches(CImage* frame, char* outName, i32* out
     return 0;
 }
 
-RVA(0x00155700, 0x16)
+RVA(0x001559e0, 0x16)
 i32 CWapObj::IsLoaded() {
     if (m_ownerCtx != NULL && m_id != -1) {
         return 1;
@@ -342,12 +342,12 @@ i32 CWapObj::IsLoaded() {
     return 0;
 }
 
-RVA_COMPGEN(0x00155720, 0x1e, ??_GCWapObj@@UAEPAXI@Z)
+RVA_COMPGEN(0x00155a00, 0x1e, ??_GCWapObj@@UAEPAXI@Z)
 
-RVA(0x00155740, 0x1)
+RVA(0x00155a20, 0x1)
 void CWapObj::Unload() {}
 
-RVA(0x00155750, 0x16)
+RVA(0x00155a30, 0x16)
 i32 CDDrawWorker::IsLoaded() {
     if (m_ownerCtx != NULL && m_id != -1) {
         return 1;
@@ -355,19 +355,19 @@ i32 CDDrawWorker::IsLoaded() {
     return 0;
 }
 
-RVA(0x00155770, 0x6)
+RVA(0x00155a50, 0x6)
 LoadableClassId CDDrawWorker::GetClassId() {
     return CLASSID_WORKER;
 }
 
-RVA_COMPGEN(0x00155780, 0x1e, ??_GCDDrawWorker@@UAEPAXI@Z)
-RVA(0x001557a0, 0x68)
+RVA_COMPGEN(0x00155a60, 0x1e, ??_GCDDrawWorker@@UAEPAXI@Z)
+RVA(0x00155a80, 0x68)
 CDDrawWorker::~CDDrawWorker() {
 
     Unload();
 }
 
-RVA(0x00155810, 0x23)
+RVA(0x00155af0, 0x23)
 i32 CDDrawWorker::SetKey(const char* src) {
     strncpy(m_name, src, 0x3f);
     m_name[0x3f] = 0;

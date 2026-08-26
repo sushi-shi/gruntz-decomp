@@ -10,12 +10,12 @@
 
 class CExplosion : public CUserLogic, public CWapX {
 public:
-    RVA(0x00012e20, 0x47)
+    RVA(0x00012e30, 0x47)
     virtual i32
     SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object)
         OVERRIDE{
             SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE(ar, mode, typeId, object)
-        } RVA(0x00012e00, 0x6)
+        } RVA(0x00012e10, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_EXPLOSION;
     }

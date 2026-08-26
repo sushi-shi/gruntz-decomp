@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <zlib.h>
 
-RVA(0x001853b0, 0xa6)
+RVA(0x00185690, 0xa6)
 int WapCompress(
     unsigned char* dest,
     unsigned long* pDestLen,

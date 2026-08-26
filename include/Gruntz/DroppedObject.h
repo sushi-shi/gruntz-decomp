@@ -15,7 +15,7 @@ public:
     virtual i32 SerializeDispatch(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
 
     i32 AdvanceImpactAnimation();
-    RVA(0x00012560, 0x6)
+    RVA(0x00012570, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_DROPPEDOBJECT;
     }

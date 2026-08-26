@@ -33,14 +33,14 @@
 
 #include <stddef.h>
 
-RVA_DYNINIT(0x0003f1f0, 0xa, CActRegPool<CExitTrigger>::s_table)
-RVA_DYNINIT(0x0003f210, 0x15, CActRegPool<CExitTrigger>::s_table)
-RVA_DYNINIT(0x0003f240, 0xe, CActRegPool<CExitTrigger>::s_table)
-RVA_DYNINIT(0x0003f260, 0x1f, CActRegPool<CExitTrigger>::s_table)
-template<> DATA(0x002445c0)
+RVA_DYNINIT(0x0003f110, 0xa, CActRegPool<CExitTrigger>::s_table)
+RVA_DYNINIT(0x0003f130, 0x15, CActRegPool<CExitTrigger>::s_table)
+RVA_DYNINIT(0x0003f160, 0xe, CActRegPool<CExitTrigger>::s_table)
+RVA_DYNINIT(0x0003f180, 0x1f, CActRegPool<CExitTrigger>::s_table)
+template<> DATA(0x00245518)
 CActReg CActRegPool<CExitTrigger>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
-RVA(0x0003f290, 0x102)
+RVA(0x0003f1b0, 0x102)
 void CExitTrigger::FireActivation(i32 coord) {
     CActHandler* e = (CActRegPool<CExitTrigger>::s_table.ResolveEntry(coord));
     if ((*e) != NULL) {
@@ -49,14 +49,14 @@ void CExitTrigger::FireActivation(i32 coord) {
     }
 }
 
-RVA(0x0003f3f0, 0x18d)
+RVA(0x0003f310, 0x18d)
 void CExitTrigger::RegisterActs() {
     ACT_NAME_ID(id, "A")
     (*((CActRegPool<CExitTrigger>::s_table.ResolveEntry(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CExitTrigger::AdvanceAnim);
 }
 
-RVA(0x0003f5f0, 0x526)
+RVA(0x0003f510, 0x526)
 i32 CExitTrigger::AdvanceAnim() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
@@ -88,7 +88,7 @@ i32 CExitTrigger::AdvanceAnim() {
                 g_gameReg->m_chatLog->AddItem(
                     static_cast<const char*>(
                         loser->GetName() + " was conquered by " + winner->GetName()
-                            + DATA_COMPGEN(0x0020d168, "!")
+                            + DATA_COMPGEN(0x0020e110, "!")
                         ),
                         FONT_ITEM_FLAGS_NONE,
                         0x11

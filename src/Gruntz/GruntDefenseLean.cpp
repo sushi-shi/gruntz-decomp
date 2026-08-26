@@ -37,7 +37,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-RVA(0x000f8240, 0x5b9)
+RVA(0x000f8370, 0x5b9)
 i32 CGrunt::StepMagicWandGruntBehavior() {
     m_defenderPx = m_lastTilePx;
     bool eqI = ANIMATION_ACT_EQUALS("I");

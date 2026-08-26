@@ -12,7 +12,7 @@ public:
     CGruntStaminaSprite() {}
     CGruntStaminaSprite(CGameObject* obj);
 
-    RVA(0x00012020, 0x6)
+    RVA(0x00012030, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNTSTAMINASPRITE;
     }

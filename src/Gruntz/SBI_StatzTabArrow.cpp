@@ -37,7 +37,7 @@ static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
     return static_cast<CDDrawWorker*>(found);
 }
 
-RVA(0x000ea0f0, 0x5c)
+RVA(0x000ea220, 0x5c)
 void CSBI_StatzTabArrow::SetUnsampledDirection(StatusBarDock position, b32 animate) {
     if (position == STATUSBAR_DOCK_RIGHT) {
         if (animate == false) {
@@ -54,7 +54,7 @@ void CSBI_StatzTabArrow::SetUnsampledDirection(StatusBarDock position, b32 anima
     }
 }
 
-RVA(0x000ea170, 0x5c)
+RVA(0x000ea2a0, 0x5c)
 void CSBI_StatzTabArrow::SetSampledDirection(StatusBarDock position, b32 animate) {
     if (position == STATUSBAR_DOCK_RIGHT) {
         if (animate == false) {
@@ -72,7 +72,7 @@ void CSBI_StatzTabArrow::SetSampledDirection(StatusBarDock position, b32 animate
 }
 
 // @early-stop
-RVA(0x000ea1f0, 0x1fa)
+RVA(0x000ea320, 0x1fa)
 i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     CStatusBarMgr* owner,
     CDDrawSurfaceMgr* host,

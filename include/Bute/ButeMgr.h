@@ -89,7 +89,7 @@ public:
 
     bool Exists(const char* tag, const char* key);
 
-    RVA(0x000213c0, 0x14c)
+    RVA(0x000213d0, 0x14c)
     ~CButeMgr() {}
 
     CBSecStream* Tags() {

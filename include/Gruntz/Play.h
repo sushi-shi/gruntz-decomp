@@ -73,7 +73,7 @@ public:
     CPlay();
     virtual ~CPlay() OVERRIDE;
 
-    RVA(0x0008c910, 0x6)
+    RVA(0x0008c830, 0x6)
     virtual GameStateId Update() OVERRIDE {
         return GAMESTATE_PLAY;
     }
@@ -97,7 +97,7 @@ public:
     virtual i32 OnRButtonDown(i32 keyFlags, i32 x, i32 y) OVERRIDE;
     virtual i32 OnRButtonUp(i32 keyFlags, i32 x, i32 y) OVERRIDE;
     virtual i32 OnRButtonDblClk(i32 keyFlags, i32 x, i32 y) OVERRIDE;
-    RVA(0x0008c970, 0x1c)
+    RVA(0x0008c890, 0x1c)
     virtual i32 OnMouseMove(i32 keyFlags, i32 cursorX, i32 cursorY) OVERRIDE {
         m_cursorX = cursorX;
         m_cursorY = cursorY;
@@ -107,11 +107,11 @@ public:
     virtual i32 PauseGame() OVERRIDE;
     virtual i32 ResumeGame() OVERRIDE;
 
-    RVA(0x0008c930, 0x3)
+    RVA(0x0008c850, 0x3)
     virtual i32 UnusedPlayQuery() {
         return 0;
     }
-    RVA(0x0008c950, 0x3)
+    RVA(0x0008c870, 0x3)
     virtual i32 GetFrame() {
         return 0;
     }
@@ -129,7 +129,7 @@ public:
 
     virtual i32 DrawStateMessage();
 
-    RVA(0x000d0030, 0x1)
+    RVA(0x000d0060, 0x1)
     virtual void PostLoadImageBanks() {}
 
     virtual void PostSetup(HDC dc);

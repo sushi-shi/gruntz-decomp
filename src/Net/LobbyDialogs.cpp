@@ -21,22 +21,22 @@
 
 namespace NetLobby {
 
-    DATA(0x0024557c)
+    DATA(0x002464d4)
     HWND g_curDlg;
 
-    DATA(0x002487e0)
+    DATA(0x00249738)
     char g_sessionFlag;
-    DATA(0x002496ac)
+    DATA(0x0024a604)
     CMulti* g_curMulti;
 
-    RVA_DYNINIT(0x000bd7d0, 0xa, g_dropInPlayerName)
-    RVA_DYNINIT(0x000bd7f0, 0xa, g_dropInPlayerName)
-    RVA_DYNINIT(0x000bd810, 0xe, g_dropInPlayerName)
-    RVA_DYNINIT(0x000bd830, 0xa, g_dropInPlayerName)
-    DATA(0x00249618)
+    RVA_DYNINIT(0x000bd800, 0xa, g_dropInPlayerName)
+    RVA_DYNINIT(0x000bd820, 0xa, g_dropInPlayerName)
+    RVA_DYNINIT(0x000bd840, 0xe, g_dropInPlayerName)
+    RVA_DYNINIT(0x000bd860, 0xa, g_dropInPlayerName)
+    DATA(0x0024a570)
     CString g_dropInPlayerName;
 
-    RVA(0x000bd850, 0x141)
+    RVA(0x000bd880, 0x141)
     BOOL CALLBACK HostWaitDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         g_curDlg = hWnd;
         if (BlockScreenSaver(hWnd, msg, wParam, lParam)) {
@@ -77,7 +77,7 @@ namespace NetLobby {
         return false;
     }
 
-    RVA(0x000bda00, 0x3e)
+    RVA(0x000bda30, 0x3e)
     void InitializeHostWaitDialog(HWND hWnd, CMulti* ctx) {
         if (hWnd && ctx) {
             UpdateHostWaitDialog(hWnd, ctx);
@@ -86,10 +86,10 @@ namespace NetLobby {
         }
     }
 
-    RVA(0x000bda50, 0x1)
+    RVA(0x000bda80, 0x1)
     void UpdateHostWaitDialog(HWND, CMulti*) {}
 
-    RVA(0x000bda70, 0xda)
+    RVA(0x000bdaa0, 0xda)
     BOOL CALLBACK JoinWaitDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         g_curDlg = hWnd;
         if (BlockScreenSaver(hWnd, msg, wParam, lParam)) {
@@ -120,7 +120,7 @@ namespace NetLobby {
         return false;
     }
 
-    RVA(0x000bdb90, 0x3e)
+    RVA(0x000bdbc0, 0x3e)
     void InitializeJoinWaitDialog(HWND hWnd, CMulti* ctx) {
         if (hWnd && ctx) {
             UpdateJoinWaitDialog(hWnd, ctx);
@@ -129,12 +129,12 @@ namespace NetLobby {
         }
     }
 
-    RVA(0x000bdbe0, 0x1)
+    RVA(0x000bdc10, 0x1)
     void UpdateJoinWaitDialog(HWND, CMulti*) {}
 
     // @dead-code
     // Zero-ref: retail has no caller or address-taking reference.
-    RVA(0x000bdc00, 0x10c)
+    RVA(0x000bdc30, 0x10c)
     BOOL CALLBACK LobbyDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         g_curDlg = hWnd;
         if (BlockScreenSaver(hWnd, msg, wParam, lParam)) {
@@ -170,7 +170,7 @@ namespace NetLobby {
         return false;
     }
 
-    RVA(0x000bdd60, 0x3e)
+    RVA(0x000bdd90, 0x3e)
     void InitializeLobbyDialog(HWND hWnd, CMulti* ctx) {
         if (hWnd && ctx) {
             UpdateLobbyDialog(hWnd, ctx);
@@ -179,10 +179,10 @@ namespace NetLobby {
         }
     }
 
-    RVA(0x000bddb0, 0x1)
+    RVA(0x000bdde0, 0x1)
     void UpdateLobbyDialog(HWND, CMulti*) {}
 
-    RVA(0x000bddd0, 0x193)
+    RVA(0x000bde00, 0x193)
     BOOL CALLBACK SessionWaitDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         g_curDlg = hWnd;
         if (BlockScreenSaver(hWnd, msg, wParam, lParam)) {
@@ -244,7 +244,7 @@ namespace NetLobby {
         return false;
     }
 
-    RVA(0x000bdfe0, 0x3e)
+    RVA(0x000be010, 0x3e)
     void InitializeSessionWaitDialog(HWND hWnd, CMulti* ctx) {
         if (hWnd && ctx) {
             UpdateSessionWaitDialog(hWnd, ctx);
@@ -253,7 +253,7 @@ namespace NetLobby {
         }
     }
 
-    RVA(0x000be030, 0x49)
+    RVA(0x000be060, 0x49)
     void UpdateSessionWaitDialog(HWND hWnd, CMulti* ctx) {
         if (hWnd && ctx) {
             EnableWindow(GetDlgItem(hWnd, IDX(IDC_NET_RESTART)), ctx->m_isHost);
@@ -261,7 +261,7 @@ namespace NetLobby {
         }
     }
 
-    RVA(0x000be0a0, 0x1c7)
+    RVA(0x000be0d0, 0x1c7)
     BOOL CALLBACK NetGameDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         g_curDlg = hWnd;
         if (BlockScreenSaver(hWnd, msg, wParam, lParam)) {
@@ -325,7 +325,7 @@ namespace NetLobby {
         return false;
     }
 
-    RVA(0x000be2f0, 0xb9)
+    RVA(0x000be320, 0xb9)
     void InitializeDropWaitDialog(HWND hWnd, CMulti* ctx) {
         if (hWnd && ctx) {
             CString banner;
@@ -342,10 +342,10 @@ namespace NetLobby {
         }
     }
 
-    RVA(0x000be3e0, 0x1)
+    RVA(0x000be410, 0x1)
     void UpdateDropWaitDialog(HWND, CMulti*) {}
 
-    RVA(0x000be400, 0x6c)
+    RVA(0x000be430, 0x6c)
     void NetChatSubmit(HWND hWnd, CMulti* gate) {
         char buf[0x68];
         if (hWnd && gate) {
@@ -359,7 +359,7 @@ namespace NetLobby {
         }
     }
 
-    RVA(0x000be490, 0x84)
+    RVA(0x000be4c0, 0x84)
     void NetDlgSessionStop(HWND hWnd, CMulti* session) {
         if (hWnd && session) {
             g_sessionFlag = 0;
@@ -379,7 +379,7 @@ namespace NetLobby {
 
     // @dead-code
     // Zero-ref: retail has no caller or address-taking reference.
-    RVA(0x000be550, 0x193)
+    RVA(0x000be580, 0x193)
     BOOL CALLBACK DropInDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         g_curDlg = hWnd;
         if (BlockScreenSaver(hWnd, msg, wParam, lParam)) {
@@ -441,7 +441,7 @@ namespace NetLobby {
         return false;
     }
 
-    RVA(0x000be760, 0x82)
+    RVA(0x000be790, 0x82)
     void InitializeDropInDialog(HWND hWnd, CMulti* ctx) {
         if (hWnd && ctx) {
             char buf[0x80];
@@ -457,7 +457,7 @@ namespace NetLobby {
         }
     }
 
-    RVA(0x000be820, 0x49)
+    RVA(0x000be850, 0x49)
     void UpdateDropInDialog(HWND hWnd, CMulti* ctx) {
         if (hWnd && ctx) {
             EnableWindow(GetDlgItem(hWnd, IDX(IDC_NET_DROPIN_ACCEPT)), ctx->m_isHost);

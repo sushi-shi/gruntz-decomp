@@ -29,15 +29,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-DATA(0x00213a9c)
+DATA(0x00214a34)
 i32 g_savedMenuCmd = -1;
-DATA(0x0024c814)
+DATA(0x0024d76c)
 CImagePool* g_previewMgr;
-DATA(0x0024c864)
+DATA(0x0024d7bc)
 SaveSlot* g_slotState;
-DATA(0x0024c868)
+DATA(0x0024d7c0)
 CRezImage* g_previewImage;
-DATA(0x0024c86c)
+DATA(0x0024d7c4)
 CSaveGame* g_saveDlgSink = NULL;
 
 static const i32 SAVE_FILE_HEADER_BYTES = 0xa1c;
@@ -45,7 +45,7 @@ static const i32 SAVE_PREVIEW_BYTES = 0x3843a;
 static const i32 SAVE_PREVIEW_BITMAP_OFFSET = 0xe;
 static const u32 SAVE_PROGRESS_MAGIC = 0x42a;
 
-RVA(0x000e4b60, 0x158)
+RVA(0x000e4c90, 0x158)
 i32 CSaveGame::InitializeSaveDirectory(const char* saveDirectory) {
     if (saveDirectory == NULL) {
         return 0;
@@ -66,13 +66,13 @@ i32 CSaveGame::InitializeSaveDirectory(const char* saveDirectory) {
     return 1;
 }
 
-RVA(0x000e4d20, 0x12)
+RVA(0x000e4e50, 0x12)
 void CSaveGame::Reset() {
     Init();
     m_progressFilePath.Empty();
 }
 
-RVA(0x000e4d50, 0x2f)
+RVA(0x000e4e80, 0x2f)
 void CSaveGame::Init() {
     m_maxLevel = QUESTLEVEL_TRAINING_FIRST;
     for (i32 i = 0; i < SAVE_SLOT_COUNT; i++) {
@@ -83,7 +83,7 @@ void CSaveGame::Init() {
     }
 }
 
-RVA(0x000e4d90, 0xcc)
+RVA(0x000e4ec0, 0xcc)
 i32 CSaveGame::Load() {
     CFile file;
     if (!file.Open(m_progressFilePath, CFile::modeRead, NULL)) {
@@ -98,7 +98,7 @@ i32 CSaveGame::Load() {
     return 1;
 }
 
-RVA(0x000e4ea0, 0x18c)
+RVA(0x000e4fd0, 0x18c)
 i32 CSaveGame::Save(char* screenshotPath, i32 messageId) {
     CWaitCursorScope wait;
     CFile file;
@@ -135,7 +135,7 @@ i32 CSaveGame::Save(char* screenshotPath, i32 messageId) {
     return 1;
 }
 
-RVA(0x000e50a0, 0x3e)
+RVA(0x000e51d0, 0x3e)
 i32 CSaveGame::ComputeAll() {
     i32 sum = 0;
     for (i32 i = 0; i < SAVE_SLOT_COUNT; i++) {
@@ -150,7 +150,7 @@ i32 CSaveGame::ComputeAll() {
     return 1;
 }
 
-RVA(0x000e50f0, 0x2f)
+RVA(0x000e5220, 0x2f)
 i32 CSaveGame::Verify() {
     i32 sum = 0;
     for (i32 i = 0; i < SAVE_SLOT_COUNT; i++) {
@@ -160,7 +160,7 @@ i32 CSaveGame::Verify() {
     return m_header[2] == sum;
 }
 
-RVA(0x000e5130, 0x78)
+RVA(0x000e5260, 0x78)
 i32 CSaveGame::InitializeNamedSlot(SaveSlot* dst, const char* name, CGruntzMgr* reg) {
     if (dst == NULL) {
         return 0;
@@ -180,7 +180,7 @@ i32 CSaveGame::InitializeNamedSlot(SaveSlot* dst, const char* name, CGruntzMgr* 
     return 1;
 }
 
-RVA(0x000e51d0, 0x49)
+RVA(0x000e5300, 0x49)
 i32 CSaveGame::CopySlot(SaveSlot* dst, const SaveSlot* src) {
     if (dst == NULL) {
         return 0;
@@ -197,7 +197,7 @@ i32 CSaveGame::CopySlot(SaveSlot* dst, const SaveSlot* src) {
     return 1;
 }
 
-RVA(0x000e5240, 0x54)
+RVA(0x000e5370, 0x54)
 i32 CSaveGame::InitializeLevelSlot(SaveSlot* dst, i32 levelId, CGruntzMgr* mgr) {
     if (dst == NULL) {
         return 0;
@@ -215,7 +215,7 @@ i32 CSaveGame::InitializeLevelSlot(SaveSlot* dst, i32 levelId, CGruntzMgr* mgr) 
     return 1;
 }
 
-RVA(0x000e52c0, 0x99)
+RVA(0x000e53f0, 0x99)
 i32 CSaveGame::VerifySlot(SaveSlot* slot) {
     if (slot == NULL) {
         return 0;
@@ -247,7 +247,7 @@ i32 CSaveGame::VerifySlot(SaveSlot* slot) {
     return 1;
 }
 
-RVA(0x000e5390, 0x59)
+RVA(0x000e54c0, 0x59)
 i32 CSaveGame::Register(SaveSlot* slot) {
     if (slot == NULL) {
         return 0;
@@ -265,7 +265,7 @@ i32 CSaveGame::Register(SaveSlot* slot) {
     );
 }
 
-RVA(0x000e5410, 0x3d)
+RVA(0x000e5540, 0x3d)
 i32 CSaveGame::Encode(u8* buf) {
     if (buf == NULL) {
         return 0;
@@ -279,7 +279,7 @@ i32 CSaveGame::Encode(u8* buf) {
     return acc;
 }
 
-RVA(0x000e5460, 0x3f)
+RVA(0x000e5590, 0x3f)
 i32 CSaveGame::Decode(u8* buf) {
     if (buf == NULL) {
         return 0;
@@ -293,7 +293,7 @@ i32 CSaveGame::Decode(u8* buf) {
     return acc;
 }
 
-RVA(0x000e54b0, 0x1f)
+RVA(0x000e55e0, 0x1f)
 SaveSlot* CSaveGame::GetSlot(i32 i) {
     if (i < 0 || i >= SAVE_SLOT_COUNT) {
         return NULL;
@@ -301,7 +301,7 @@ SaveSlot* CSaveGame::GetSlot(i32 i) {
     return &m_slots[i];
 }
 
-RVA(0x000e54e0, 0x25)
+RVA(0x000e5610, 0x25)
 i32 CSaveGame::InitializeNamedSlotAt(i32 index, const char* name, CGruntzMgr* mgr) {
 
     return InitializeNamedSlot(GetSlot(index), name, mgr);
@@ -309,12 +309,12 @@ i32 CSaveGame::InitializeNamedSlotAt(i32 index, const char* name, CGruntzMgr* mg
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000e5520, 0x20)
+RVA(0x000e5650, 0x20)
 i32 CSaveGame::StoreSlot(i32 idx, const SaveSlot* src) {
     return CopySlot(GetSlot(idx), src);
 }
 
-RVA(0x000e5550, 0x9a)
+RVA(0x000e5680, 0x9a)
 i32 CSaveGame::CloseTempFile(SaveSlot* p) {
     if (p == NULL) {
         return 0;
@@ -328,7 +328,7 @@ i32 CSaveGame::CloseTempFile(SaveSlot* p) {
     return 1;
 }
 
-RVA(0x000e5620, 0x27)
+RVA(0x000e5750, 0x27)
 void CSaveGame::SetMaxLevel(QuestLevel v) {
     if ((v < QUESTLEVEL_CAMPAIGN_END
          && (static_cast<u32>(IDX(v)) > static_cast<u32>(IDX(m_maxLevel))
@@ -339,7 +339,7 @@ void CSaveGame::SetMaxLevel(QuestLevel v) {
     }
 }
 
-RVA(0x000e5660, 0x1e)
+RVA(0x000e5790, 0x1e)
 void CSaveGame::SetCurLevel(QuestLevel v) {
     if (v >= QUESTLEVEL_CAMPAIGN_END) {
         return;
@@ -353,25 +353,25 @@ void CSaveGame::SetCurLevel(QuestLevel v) {
     }
 }
 
-RVA(0x000e5690, 0xf)
+RVA(0x000e57c0, 0xf)
 i32 CSaveGame::CheckMagic() {
     i32 v = m_magic;
     return v == SAVE_PROGRESS_MAGIC;
 }
 
-RVA(0x000e56b0, 0x8)
+RVA(0x000e57e0, 0x8)
 void CSaveGame::SetMagic() {
     m_magic = SAVE_PROGRESS_MAGIC;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000e56d0, 0x16)
+RVA(0x000e5800, 0x16)
 i32 CSaveGame::TempFileExistsAt(i32 index) {
     return TempFileExists(GetSlot(index));
 }
 
-RVA(0x000e5700, 0x9e)
+RVA(0x000e5830, 0x9e)
 int TempFileExists(SaveSlot* p) {
     if (p != NULL && (p->m_type & SAVESLOT_PRESENT)) {
         CFile file;

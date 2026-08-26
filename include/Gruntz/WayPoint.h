@@ -10,7 +10,7 @@
 class CWayPoint : public CUserLogic, public CWapX {
 public:
 public:
-    RVA(0x00010220, 0x6)
+    RVA(0x00010230, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_WAYPOINT;
     }

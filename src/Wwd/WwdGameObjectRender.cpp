@@ -20,7 +20,7 @@
 #include <string.h>
 
 // @early-stop
-RVA(0x001660f0, 0xd1)
+RVA(0x001663d0, 0xd1)
 void CWwdDotObject::Render(CDDrawSurfacePair* dst) {
     if (m_clip.left == COORD_UNSET) {
         if (m_screenX < 0 || m_screenY < 0 || m_screenX >= dst->m_width
@@ -44,7 +44,7 @@ void CWwdDotObject::Render(CDDrawSurfacePair* dst) {
     m_dirty.m_armed = 0;
 }
 
-RVA(0x001661d0, 0xc2)
+RVA(0x001664b0, 0xc2)
 void CWwdDotObject::BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) {
 
     m_shadow = m_dirty;
@@ -55,7 +55,7 @@ void CWwdDotObject::BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) {
     }
 }
 
-RVA(0x001662a0, 0x1fa)
+RVA(0x00166580, 0x1fa)
 void CWwdDotObject::BltDirtyEx(
     CDrawSubWorker* dst,
     CDDrawSurfacePair* src,
@@ -85,7 +85,7 @@ void CWwdDotObject::BltDirtyEx(
     }
 }
 
-RVA(0x001664a0, 0x133)
+RVA(0x00166780, 0x133)
 void CWwdDotObject::BltDirtyRegions(
     CDDrawSurfacePair* dst,
     CDDrawSurfacePair* src,
@@ -125,14 +125,14 @@ void CWwdDotObject::BltDirtyRegions(
     }                                                                                              \
     m_children.RemoveAll()
 
-RVA(0x001665e0, 0x55)
+RVA(0x001668c0, 0x55)
 i32 CWwdGameObject::Setup(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTemplate) {
     CLEAR_WWD_GAME_OBJECT_CHILDREN;
     return CGameObject::Setup(x, y, sortKey, logicTemplate) != 0;
 }
 
 // @early-stop
-RVA(0x00166640, 0x13b)
+RVA(0x00166920, 0x13b)
 CWwdGameObject* CWwdGameObject::CreateObject(
     int id,
     int x,
@@ -170,7 +170,7 @@ static inline CLogicRecord* LookupLogicTemplate(CMapStringToOb& map, LPCTSTR nam
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00166780, 0x57)
+RVA(0x00166a60, 0x57)
 CWwdGameObject*
 CWwdGameObject::CreateNamed(int id, int x, int y, int sortKey, const char* name, int objectFlags) {
     CLogicRecord* logicTemplate =
@@ -183,7 +183,7 @@ CWwdGameObject::CreateNamed(int id, int x, int y, int sortKey, const char* name,
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001667e0, 0x2f)
+RVA(0x00166ac0, 0x2f)
 i32 CWwdGameObject::AddChild(CGameObject* child) {
     if (child == NULL) {
         return 0;
@@ -196,14 +196,14 @@ i32 CWwdGameObject::AddChild(CGameObject* child) {
     return 1;
 }
 
-RVA(0x00166810, 0x32)
+RVA(0x00166af0, 0x32)
 void CWwdGameObject::Clear() {
     CLEAR_WWD_GAME_OBJECT_CHILDREN;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00166850, 0x29)
+RVA(0x00166b30, 0x29)
 i32 CWwdGameObject::RemoveChild(CGameObject* child) {
     if (child == NULL) {
         return 0;
@@ -218,7 +218,7 @@ i32 CWwdGameObject::RemoveChild(CGameObject* child) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00166880, 0x29)
+RVA(0x00166b60, 0x29)
 i32 CWwdGameObject::WalkChildWorkers() {
     i32 count = 0;
     POSITION pos = m_children.GetHeadPosition();
@@ -230,21 +230,21 @@ i32 CWwdGameObject::WalkChildWorkers() {
     return count;
 }
 
-RVA(0x001668b0, 0x26)
+RVA(0x00166b90, 0x26)
 void CWwdGameObject::Render(CDDrawSurfacePair* ctx) {
     POSITION pos = m_children.GetHeadPosition();
     while (pos != NULL) {
         static_cast<CGameObject*>(m_children.GetNext(pos))->Render(ctx);
     }
 }
-RVA(0x001668e0, 0x2d)
+RVA(0x00166bc0, 0x2d)
 void CWwdGameObject::BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) {
     POSITION pos = m_children.GetHeadPosition();
     while (pos != NULL) {
         static_cast<CGameObject*>(m_children.GetNext(pos))->BltDirty(dst, src);
     }
 }
-RVA(0x00166910, 0x34)
+RVA(0x00166bf0, 0x34)
 void CWwdGameObject::BltDirtyEx(
     CDrawSubWorker* dst,
     CDDrawSurfacePair* src,
@@ -255,7 +255,7 @@ void CWwdGameObject::BltDirtyEx(
         static_cast<CGameObject*>(m_children.GetNext(pos))->BltDirtyEx(dst, src, restoreSrc);
     }
 }
-RVA(0x00166950, 0x34)
+RVA(0x00166c30, 0x34)
 void CWwdGameObject::BltDirtyRegions(
     CDDrawSurfacePair* dst,
     CDDrawSurfacePair* src,

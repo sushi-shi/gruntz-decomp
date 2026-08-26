@@ -9,46 +9,46 @@
 #include <stddef.h>
 
 // clang-format off
-DATA(0x0020c838)
+DATA(0x0020d7dc)
 char s_cheatWaWa[20] = "\x8a\x8d\x94\x7e\x94\x7e\x94\x7e\x94\x7e\x94\x7e\x94\x7e";
-DATA(0x0020c84c)
+DATA(0x0020d7f0)
 char s_cheatWildWacky[16] = "\x8a\x8d\x94\x86\x89\x81\x94\x7e\x80\x88\x96";
-DATA(0x0020c85c)
+DATA(0x0020d800)
 char s_cheatBuild[12] = "\x8a\x8d\x7f\x92\x86\x89\x81";
-DATA(0x0020c868)
+DATA(0x0020d80c)
 char s_cheatDevHeads[16] = "\x8a\x8d\x81\x82\x93\x85\x82\x7e\x81\x90";
-DATA(0x0020c878)
+DATA(0x0020d81c)
 char s_cheatMonolithBare[12] = "\x8a\x8c\x8b\x8c\x89\x86\x91\x85";
-DATA(0x0020c884)
+DATA(0x0020d828)
 char s_cheatMonolith[16] = "\x8a\x8d\x8a\x8c\x8b\x8c\x89\x86\x91\x85";
-DATA(0x0020c894)
+DATA(0x0020d838)
 char s_cheatLogo[8] = "\x8a\x8d\x89\x8c\x84\x8c";
-DATA(0x0020c89c)
+DATA(0x0020d840)
 char s_cheatLith[8] = "\x8a\x8d\x89\x86\x91\x85";
-DATA(0x0020c8a4)
+DATA(0x0020d848)
 char s_cheatChop[8] = "\x8a\x8d\x80\x85\x8c\x8d";
-DATA(0x0020c8ac)
+DATA(0x0020d850)
 char s_cheatScorpio[12] = "\x8a\x8d\x90\x80\x8c\x8f\x8d\x86\x8c";
-DATA(0x0020c8b8)
+DATA(0x0020d85c)
 char s_cheatGoble[12] = "\x8a\x8d\x84\x8c\x7f\x89\x82";
-DATA(0x0020c8c4)
+DATA(0x0020d868)
 char s_cheatLambertian[16] = "\x8a\x8d\x89\x7e\x8a\x7f\x82\x8f\x91\x86\x7e\x8b";
-DATA(0x0020c8d4)
+DATA(0x0020d878)
 char s_cheatLambert[12] = "\x8a\x8d\x89\x7e\x8a\x7f\x82\x8f\x91";
-DATA(0x0020c8e0)
+DATA(0x0020d884)
 char s_cheatHologram[16] = "\x8a\x8d\x85\x8c\x89\x8c\x84\x8f\x7e\x8a";
-DATA(0x0020c8f0)
+DATA(0x0020d894)
 char s_cheatStopwatch[16] = "\x8a\x8d\x90\x91\x8c\x8d\x94\x7e\x91\x80\x85";
-DATA(0x0020c900)
+DATA(0x0020d8a4)
 char s_cheatNoInfo[12] = "\x8a\x8d\x8b\x8c\x86\x8b\x83\x8c";
-DATA(0x0020c90c)
+DATA(0x0020d8b0)
 char s_cheatObjects[12] = "\x8a\x8d\x8c\x7f\x87\x82\x80\x91\x90";
-DATA(0x0020c918)
+DATA(0x0020d8bc)
 char s_cheatPos[8] = "\x8a\x8d\x8d\x8c\x90";
-DATA(0x0020c920)
+DATA(0x0020d8c4)
 char s_cheatFps[8] = "\x8a\x8d\x83\x8d\x90";
 
-RVA(0x00022ad0, 0x1f)
+RVA(0x00022a60, 0x1f)
 BOOL CCheatMgr::Init(HWND owner) {
     m_owner = owner;
     m_flag = false;
@@ -57,7 +57,7 @@ BOOL CCheatMgr::Init(HWND owner) {
     return true;
 }
 
-RVA(0x00022b00, 0xaf)
+RVA(0x00022a90, 0xaf)
 void CCheatMgr::Empty() {
     POSITION pos = m_map.GetStartPosition();
     CString key;
@@ -89,7 +89,7 @@ void CCheatMgr::Empty() {
 
 
 // @early-stop
-RVA(0x00022be0, 0x71)
+RVA(0x00022b70, 0x71)
 BOOL CCheatMgr::AddCheat(const char* code, i32 cmdId, i32 flag) {
     CheatEntry* existing = NULL;
     CheatEntry* hit = MapLookup(m_map, code, existing) ? existing : NULL;
@@ -106,7 +106,7 @@ BOOL CCheatMgr::AddCheat(const char* code, i32 cmdId, i32 flag) {
     return true;
 }
 
-RVA(0x00022c80, 0x173)
+RVA(0x00022c10, 0x173)
 void CCheatMgr::RegisterCheats() {
     AddCheat(s_cheatFps, IDX(CHEAT_FRAME_RATE_DISPLAY), 1);
     AddCheat(s_cheatPos, IDX(CHEAT_WORLD_POSITION_DISPLAY), 1);
@@ -138,7 +138,7 @@ void CCheatMgr::RegisterCheats() {
 
 
 // @early-stop
-RVA(0x00022e60, 0x1be)
+RVA(0x00022df0, 0x1be)
 void CCheatMgr::LoadCheatConfig() {
     CString defStr(static_cast<const char*>(""));
     CString group;
@@ -178,7 +178,7 @@ void CCheatMgr::LoadCheatConfig() {
 
 
 // @early-stop
-RVA(0x00023090, 0xfc)
+RVA(0x00023020, 0xfc)
 BOOL CCheatMgr::CheckCode(CString code) {
     code.MakeUpper();
     for (i32 i = 0; i < code.GetLength(); i++) {
@@ -203,7 +203,7 @@ BOOL CCheatMgr::CheckCode(CString code) {
     return true;
 }
 
-RVA(0x00085e60, 0x4a)
+RVA(0x00085d80, 0x4a)
 CCheatMgr::~CCheatMgr() {
     Empty();
 }

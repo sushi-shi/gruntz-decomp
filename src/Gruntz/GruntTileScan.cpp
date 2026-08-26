@@ -26,7 +26,7 @@ static inline Coord ScanCell(CGrunt* g) {
 }
 
 // @early-stop
-RVA(0x00032ce0, 0x448)
+RVA(0x00032c70, 0x448)
 i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
     if (g->m_stamina >= STAMINA_FULL) {
         if (g->CoordCount() != 0) {

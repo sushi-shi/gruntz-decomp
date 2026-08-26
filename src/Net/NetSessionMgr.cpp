@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-RVA(0x000bef80, 0x51)
+RVA(0x000befb0, 0x51)
 i32 CNetSession::Initialize(CGruntzMgr* mgr, CMulti* owner, CNetMgr* netMgr) {
     if (mgr == NULL) {
         return 0;
@@ -41,7 +41,7 @@ i32 CNetSession::Initialize(CGruntzMgr* mgr, CMulti* owner, CNetMgr* netMgr) {
 }
 
 // @early-stop
-RVA(0x000bf000, 0xd5)
+RVA(0x000bf030, 0xd5)
 void CNetSession::Shutdown() {
     m_mgr = NULL;
     m_owner = NULL;
@@ -83,14 +83,14 @@ void CNetSession::Shutdown() {
     }
 }
 
-RVA(0x000bf120, 0x11)
+RVA(0x000bf150, 0x11)
 void CNetCmdSlot::ClearDrainAcks() {
     for (i32 i = 0; i < NET_SLOT_COUNT; i++) {
         m_drainAckFlags[i] = 0;
     }
 }
 
-RVA(0x000bf150, 0x58)
+RVA(0x000bf180, 0x58)
 void CNetSession::ResetRound() {
     m_commandTick = 0;
     m_batchBuilt = false;
@@ -112,7 +112,7 @@ void CNetSession::ResetRound() {
 }
 
 // @early-stop
-RVA(0x000bf1d0, 0x2a4)
+RVA(0x000bf200, 0x2a4)
 void CNetSession::BuildGruntzCrcInfo() {
     char szLine[0x100];
     szLine[0] = ""[0];
@@ -225,14 +225,14 @@ void CNetSession::BuildGruntzCrcInfo() {
                 grunt->m_neighborScanEnabled,
                 rnd
             );
-            info += DATA_COMPGEN(0x002122ac, "\n");
+            info += DATA_COMPGEN(0x00213244, "\n");
             info += szLine;
         }
     }
     m_owner->ReportVersionMsg(const_cast<char*>(static_cast<const char*>(info)), 0);
 }
 
-RVA(0x000bf530, 0x3b)
+RVA(0x000bf560, 0x3b)
 GruntRec* AllocateGruntRecord(i32 clearRecord) {
     CPtrList& freeList = CPtrListPool<GruntRec>::s_freeList;
     if (freeList.GetCount()) {
@@ -245,12 +245,12 @@ GruntRec* AllocateGruntRecord(i32 clearRecord) {
     return new GruntRec;
 }
 
-RVA(0x000bf580, 0x10)
+RVA(0x000bf5b0, 0x10)
 void RecycleGruntRecord(GruntRec* record) {
     CPtrListPool<GruntRec>::s_freeList.AddTail(record);
 }
 
-RVA(0x000bf5a0, 0x110)
+RVA(0x000bf5d0, 0x110)
 i32 CNetSession::Poll(i32 elapsedMs) {
     for (i32 i = 0; i < 4; i++) {
         if (m_slots[i].m_state == NETSLOT_ACTIVE) {
@@ -284,7 +284,7 @@ i32 CNetSession::Poll(i32 elapsedMs) {
                 ->Receive(&senderId, &recipientId, DPRECEIVE_ALL, g_lobbyRecvBuf, &messageSize);
         if (status != 0) {
             CNetMgr::ReportError(
-                const_cast<char*>("c:\\proj\\incs\\netmgr.h"),
+                const_cast<char*>("d:\\proj\\incs\\netmgr.h"),
                 0x141,
                 status,
                 NULL
@@ -304,7 +304,7 @@ i32 CNetSession::Poll(i32 elapsedMs) {
     return received;
 }
 
-RVA(0x000bf700, 0x82)
+RVA(0x000bf730, 0x82)
 i32 CNetSession::Dispatch(i32 senderId, CNetPacketPrefix* message, i32 messageSize) {
     if (!message) {
         return 0;
@@ -331,7 +331,7 @@ i32 CNetSession::Dispatch(i32 senderId, CNetPacketPrefix* message, i32 messageSi
     return slot->ProcessPacket(senderId, wire.m_bytes, messageSize);
 }
 
-RVA(0x000bf7c0, 0x1b0)
+RVA(0x000bf7f0, 0x1b0)
 i32 CNetSession::DispatchSystemMessage(LPDPMSG_GENERIC message, i32 messageSize) {
     if (!message) {
         return 0;
@@ -364,7 +364,7 @@ i32 CNetSession::DispatchSystemMessage(LPDPMSG_GENERIC message, i32 messageSize)
 }
 
 // @early-stop
-RVA(0x000bf9e0, 0xfe)
+RVA(0x000bfa10, 0xfe)
 i32 CNetSession::SendTick() {
     if (m_batchBuilt == false && (m_commandTick + 1) % m_commandPeriod == 0) {
         i32 batchSequence = m_sequence + 2;
@@ -400,10 +400,10 @@ i32 CNetSession::SendTick() {
     return sentCount;
 }
 
-RVA(0x000bfb20, 0x1)
+RVA(0x000bfb50, 0x1)
 void NoopSync(CGruntzCommand*) {}
 
-RVA(0x000bfb40, 0xe2)
+RVA(0x000bfb70, 0xe2)
 i32 CNetSession::RelayDrainingRecords() {
     i32 count = 0;
     CNetCmdSlot* source = m_slots;
@@ -444,7 +444,7 @@ i32 CNetSession::RelayDrainingRecords() {
 }
 
 // @early-stop
-RVA(0x000bfc70, 0x9c)
+RVA(0x000bfca0, 0x9c)
 i32 CNetSession::SendGruntRecord(
     i32 sequence,
     GruntRec* record,
@@ -475,7 +475,7 @@ i32 CNetSession::SendGruntRecord(
     return result == 0;
 }
 
-RVA(0x000bfd40, 0x116)
+RVA(0x000bfd70, 0x116)
 i32 CNetSession::SendPendingRecords() {
     i32 count = 0;
     CNetCmdSlot* slot = m_slots;
@@ -523,7 +523,7 @@ i32 CNetSession::SendPendingRecords() {
 }
 
 // @early-stop
-RVA(0x000bfeb0, 0xfa)
+RVA(0x000bfee0, 0xfa)
 i32 CNetSession::SendRecord(CNetCmdSlot* slot, i32 sequence) {
     if (!slot) {
         return 0;
@@ -558,7 +558,7 @@ i32 CNetSession::SendRecord(CNetCmdSlot* slot, i32 sequence) {
     return status == 0;
 }
 
-RVA(0x000bfff0, 0x5d)
+RVA(0x000c0020, 0x5d)
 CNetCmdSlot* CNetSession::CreateSlot(i32 index, NetSlotState state) {
     if (index < 0 || index >= NET_SLOT_COUNT) {
         return NULL;
@@ -571,14 +571,14 @@ CNetCmdSlot* CNetSession::CreateSlot(i32 index, NetSlotState state) {
     return slot->Initialize(m_owner, &m_mgr->m_players[index], state) ? slot : NULL;
 }
 
-RVA(0x000c0070, 0x15)
+RVA(0x000c00a0, 0x15)
 void CNetSession::ResetLatencies() {
     for (i32 i = 0; i < 4; i++) {
         m_slots[i].m_latency = 0;
     }
 }
 
-RVA(0x000c00a0, 0x31)
+RVA(0x000c00d0, 0x31)
 CNetCmdSlot* CNetSession::FindSlotByPlayerId(i32 playerId) {
     for (i32 i = 0; i < 4; i++) {
         if (m_slots[i].m_player->m_networkPlayerId == playerId) {
@@ -588,7 +588,7 @@ CNetCmdSlot* CNetSession::FindSlotByPlayerId(i32 playerId) {
     return NULL;
 }
 
-RVA(0x000c00f0, 0xaf)
+RVA(0x000c0120, 0xaf)
 void CNetSession::ReconcileDrainingSlots() {
     i32 withFlag = 0;
     i32 withoutFlag = 0;
@@ -637,7 +637,7 @@ void CNetSession::ReconcileDrainingSlots() {
     }
 }
 
-RVA(0x000c01d0, 0x8c)
+RVA(0x000c0200, 0x8c)
 i32 CNetSession::AdvanceTick() {
     i32 nextTick = m_commandTick + 1;
     i32 nextSeq = m_sequence + 1;
@@ -663,7 +663,7 @@ i32 CNetSession::AdvanceTick() {
     return 1;
 }
 
-RVA(0x000c0290, 0x63)
+RVA(0x000c02c0, 0x63)
 i32 CNetSession::ReadyForSequence(i32 sequence) {
     for (i32 i = 0; i < 4; i++) {
         CNetCmdSlot* slot = &m_slots[i];
@@ -687,7 +687,7 @@ i32 CNetSession::ReadyForSequence(i32 sequence) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000c0320, 0x37)
+RVA(0x000c0350, 0x37)
 i32 CNetSession::AllPeerWindowsReached(i32 sequence) {
     for (i32 i = 0; i < 4; i++) {
         CNetCmdSlot* slot = &m_slots[i];
@@ -701,7 +701,7 @@ i32 CNetSession::AllPeerWindowsReached(i32 sequence) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000c0370, 0x28)
+RVA(0x000c03a0, 0x28)
 void CNetSession::RecordSequenceForAllSlots(i32 sequence) {
     CNetCmdSlot* slot = m_slots;
     for (i32 i = 4; i != 0; i--) {
@@ -714,7 +714,7 @@ void CNetSession::RecordSequenceForAllSlots(i32 sequence) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000c03b0, 0x28)
+RVA(0x000c03e0, 0x28)
 void CNetSession::RecordPeerWindowForAllSlots(i32 sequence) {
     CNetCmdSlot* slot = m_slots;
     for (i32 i = 4; i != 0; i--) {
@@ -725,17 +725,17 @@ void CNetSession::RecordPeerWindowForAllSlots(i32 sequence) {
     }
 }
 
-RVA(0x000c03f0, 0x29)
+RVA(0x000c0420, 0x29)
 void CNetSession::ScheduleCommand(CGruntzCommand* command, u8 tickOffset) {
     m_commandByTick[(m_commandTick + tickOffset) % 128] = command;
 }
 
-RVA(0x000c0430, 0x1f)
+RVA(0x000c0460, 0x1f)
 CGruntzCommand* CNetSession::GetCommandAtTick(i32 commandTick) {
     return m_commandByTick[(commandTick & 0xff) % 128];
 }
 
-RVA(0x000c0460, 0x2e)
+RVA(0x000c0490, 0x2e)
 CNetCmdSlot* CNetSession::FindLaggingSlot(u32 latencyThreshold) {
 
     for (i32 i = 0; i < 4; i++) {
@@ -748,7 +748,7 @@ CNetCmdSlot* CNetSession::FindLaggingSlot(u32 latencyThreshold) {
     return NULL;
 }
 
-RVA(0x000c04a0, 0x37)
+RVA(0x000c04d0, 0x37)
 i32 CNetSession::AllActiveLatenciesWithin(i32 latencyLimit) {
     for (i32 i = 0; i < 4; i++) {
         CNetCmdSlot* slot = &m_slots[i];
@@ -760,7 +760,7 @@ i32 CNetSession::AllActiveLatenciesWithin(i32 latencyLimit) {
     return 1;
 }
 
-RVA(0x000c04f0, 0x7c)
+RVA(0x000c0520, 0x7c)
 i32 CNetSession::VerifyChecksums() {
     i32 sequence = m_sequence - 2;
     GruntRec* expected = &m_commandRecords[sequence % 128];
@@ -779,7 +779,7 @@ i32 CNetSession::VerifyChecksums() {
 }
 
 // @early-stop
-RVA(0x000c0590, 0x21c)
+RVA(0x000c05c0, 0x21c)
 i32 CNetSession::ComputeChecksum() {
     i32 sum = 0;
     i32 idx = 0;

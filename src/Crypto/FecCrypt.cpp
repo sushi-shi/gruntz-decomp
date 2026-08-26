@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-RVA(0x0017b510, 0x55)
+RVA(0x0017b7f0, 0x55)
 i32 CFecFile::Init() {
     if (m_openGate) {
         return 0;
@@ -25,7 +25,7 @@ i32 CFecFile::Init() {
     return 1;
 }
 
-RVA(0x0017b570, 0x24)
+RVA(0x0017b850, 0x24)
 void CFecFile::Close() {
     if (!m_openGate) {
         return;
@@ -35,7 +35,7 @@ void CFecFile::Close() {
     m_openGate = false;
 }
 
-RVA(0x0017b5a0, 0x48)
+RVA(0x0017b880, 0x48)
 i32 CFecFile::OnFail() {
     if (m_openGate && (m_readOpen || m_writeOpen)) {
         m_stream.Close();
@@ -48,7 +48,7 @@ i32 CFecFile::OnFail() {
 }
 
 // @early-stop
-RVA(0x0017b5f0, 0x249)
+RVA(0x0017b8d0, 0x249)
 i32 CFecFile::ReadArchive(const char* name) {
     if (name == NULL) {
         return 0;
@@ -122,7 +122,7 @@ fail:
     return 0;
 }
 
-RVA(0x0017b840, 0x53)
+RVA(0x0017bb20, 0x53)
 i32 CFecFile::Lookup(u32 idx) {
     if (m_readOpen && m_openGate && idx <= static_cast<u32>(m_header.m_fileCount) && idx != 0) {
         const DWORD* slot = &m_index.GetData()[idx - 1];
@@ -135,7 +135,7 @@ i32 CFecFile::Lookup(u32 idx) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0017b8a0, 0xa2)
+RVA(0x0017bb80, 0xa2)
 i32 CFecFile::CreateArchive(const char* name) {
     if (name != NULL && m_writeOpen == false && m_openGate != false
         && m_stream.Open(name, CFile::modeCreate | CFile::modeReadWrite, NULL) != false) {
@@ -161,7 +161,7 @@ i32 CFecFile::CreateArchive(const char* name) {
 // @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0017b950, 0x380)
+RVA(0x0017bc30, 0x380)
 i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
     if (m_writeOpen == false || m_openGate == false) {
         return 0;
@@ -253,7 +253,7 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
 // @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0017bcd0, 0x28b)
+RVA(0x0017bfb0, 0x28b)
 i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
     if (m_readOpen == false || m_openGate == false) {
         return 0;
@@ -323,12 +323,12 @@ i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
     return 1;
 }
 
-RVA(0x0017bf60, 0x5)
+RVA(0x0017c240, 0x5)
 i32 CFecFile::Random() {
     return rand();
 }
 
-RVA(0x0017bf70, 0x65)
+RVA(0x0017c250, 0x65)
 void CFecFile::FecEncode(const char* src, char* dst) {
     for (unsigned short i = 0; i < strlen(src); i++) {
         if (i % 2 == 0) {
@@ -339,7 +339,7 @@ void CFecFile::FecEncode(const char* src, char* dst) {
     }
 }
 
-RVA(0x0017bfe0, 0x5d)
+RVA(0x0017c2c0, 0x5d)
 void CFecFile::FecDecode(const char* src, char* dst, u16 len) {
     for (unsigned short i = 0; i < len; i++) {
         if (i % 2 == 0) {

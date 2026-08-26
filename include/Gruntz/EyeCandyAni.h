@@ -13,7 +13,7 @@ public:
     CEyeCandyAni() {}
     CEyeCandyAni(CGameObject* obj);
 
-    RVA(0x0000ff00, 0x6)
+    RVA(0x0000ff10, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_EYECANDYANI;
     }

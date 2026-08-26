@@ -8,12 +8,12 @@
 #include <Rez/RezArchiveDir.h>
 #include <Rez/RezArchiveEntry.h>
 
-RVA(0x0013c230, 0xf)
+RVA(0x0013c500, 0x14)
 u32 CRezArchiveEntryHashNode::Hash() {
     return static_cast<CRezEntryNameHash*>(m_hash)->HashStr(m_archiveEntry->m_name);
 }
 
-RVA(0x0013c240, 0x29)
+RVA(0x0013c520, 0x29)
 u32 CRezEntryNameHash::HashStr(const char* text) {
     if (!text) {
         return 0;
@@ -26,7 +26,7 @@ u32 CRezEntryNameHash::HashStr(const char* text) {
     return length % m_bucketCount;
 }
 
-RVA(0x0013c270, 0xca)
+RVA(0x0013c550, 0xca)
 CRezArchiveEntry* CRezEntryNameHash::FindByName(const char* name, i32 caseInsensitive) {
     if (!name) {
         return NULL;
@@ -52,17 +52,17 @@ CRezArchiveEntry* CRezEntryNameHash::FindByName(const char* name, i32 caseInsens
     return NULL;
 }
 
-RVA(0x0013c340, 0xf)
+RVA(0x0013c620, 0xf)
 u32 CRezArchiveTypeHashNode::Hash() {
     return static_cast<CRezTypeTagHash*>(m_hash)->HashTypeTag(m_archiveType->m_typeTag);
 }
 
-RVA(0x0013c350, 0xd)
+RVA(0x0013c630, 0xd)
 u32 CRezTypeTagHash::HashTypeTag(u32 typeTag) {
     return typeTag % m_bucketCount;
 }
 
-RVA(0x0013c360, 0x47)
+RVA(0x0013c640, 0x47)
 CRezArchiveType* CRezTypeTagHash::FindTypeByTag(u32 typeTag) {
     CHashElement* node = Lookup(HashTypeTag(typeTag));
     while (node) {
@@ -74,12 +74,12 @@ CRezArchiveType* CRezTypeTagHash::FindTypeByTag(u32 typeTag) {
     return NULL;
 }
 
-RVA(0x0013c3b0, 0xf)
+RVA(0x0013c690, 0xf)
 u32 CRezArchiveDirHashNode::Hash() {
     return static_cast<CRezDirectoryNameHash*>(m_hash)->HashStr(m_archiveDirectory->m_name);
 }
 
-RVA(0x0013c3c0, 0x29)
+RVA(0x0013c6a0, 0x29)
 u32 CRezDirectoryNameHash::HashStr(const char* text) {
     if (!text) {
         return 0;
@@ -92,7 +92,7 @@ u32 CRezDirectoryNameHash::HashStr(const char* text) {
     return length % m_bucketCount;
 }
 
-RVA(0x0013c3f0, 0xca)
+RVA(0x0013c6d0, 0xca)
 CRezArchiveDir* CRezDirectoryNameHash::FindByName(const char* name, i32 caseInsensitive) {
     if (!name) {
         return NULL;
@@ -118,5 +118,5 @@ CRezArchiveDir* CRezDirectoryNameHash::FindByName(const char* name, i32 caseInse
     return NULL;
 }
 
-RVA(0x0013c4c0, 0x1)
+RVA(0x0013c7a0, 0x1)
 void CRezStorageList::UnusedListHook() {}

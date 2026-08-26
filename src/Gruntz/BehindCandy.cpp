@@ -8,7 +8,7 @@
 
 #include <stddef.h>
 
-RVA(0x0000fb90, 0x47)
+RVA(0x0000fba0, 0x47)
 i32 CBehindCandy::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,

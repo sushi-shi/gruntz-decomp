@@ -21,7 +21,7 @@
 #include <Io/FileMem.h>
 
 // @early-stop
-RVA(0x000e7980, 0x109)
+RVA(0x000e7ab0, 0x109)
 i32 CSBI_ImageSetAni::Init(
     CStatusBarMgr* owner,
     CDDrawSurfaceMgr* host,
@@ -94,12 +94,12 @@ fail:
     return 0;
 }
 
-RVA(0x000e7ae0, 0x8)
+RVA(0x000e7c10, 0x8)
 i32 CSBI_ImageSetAni::Refresh(i32) {
     return 1;
 }
 
-RVA(0x000e7b00, 0xe1)
+RVA(0x000e7c30, 0xe1)
 i32 CSBI_ImageSetAni::Render() {
     if (m_redrawFrames > 0) {
         CImage* cel = m_frameSet->GetAt(m_frameIndex);
@@ -145,7 +145,7 @@ i32 CSBI_ImageSetAni::Render() {
     return 1;
 }
 
-RVA(0x000e7c30, 0x7d)
+RVA(0x000e7d60, 0x7d)
 void CSBI_ImageSetAni::SetRange(i32 start, i32 end, i32 step, i32 loop, i32 interval) {
 
     if (start == -1) {
@@ -176,7 +176,7 @@ void CSBI_ImageSetAni::SetRange(i32 start, i32 end, i32 step, i32 loop, i32 inte
     m_lastTime = timeGetTime();
 }
 
-RVA(0x000e7cd0, 0xf8)
+RVA(0x000e7e00, 0xf8)
 i32 CSBI_ImageSetAni::SerializeFields(
     CFileMemBase* s,
     SerialMode mode,

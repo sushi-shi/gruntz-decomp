@@ -11,7 +11,7 @@
 #include <Rez/FrameClock.h>
 
 // @early-stop
-RVA(0x000476b0, 0x69)
+RVA(0x000475d0, 0x69)
 i32 CExplosion::Update() {
     if (m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta) == 1) {
         CWwdSpriteObject* t = m_object;

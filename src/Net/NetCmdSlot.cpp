@@ -23,27 +23,27 @@
 #include <stdlib.h>
 #include <string.h>
 
-DATA(0x00249858)
+DATA(0x0024a7b0)
 char g_lobbyRecvBuf[NET_RECEIVE_BUFFER_BYTES];
-DATA(0x0024a058)
+DATA(0x0024afb0)
 NetCmdSendMsg g_netCmdSendMsg;
-DATA(0x0024a8a8)
+DATA(0x0024b800)
 NetGruntRecMsg g_netGruntRecMsg;
 
-RVA_DYNINIT(0x000beef0, 0xa, s_freeList)
-RVA_DYNINIT(0x000bef10, 0xd, s_freeList)
-RVA_DYNINIT(0x000bef30, 0xe, s_freeList)
-RVA_DYNINIT(0x000bef50, 0x1f, s_freeList)
-template<> DATA(0x0024aca8)
+RVA_DYNINIT(0x000bef20, 0xa, s_freeList)
+RVA_DYNINIT(0x000bef40, 0xd, s_freeList)
+RVA_DYNINIT(0x000bef60, 0xe, s_freeList)
+RVA_DYNINIT(0x000bef80, 0x1f, s_freeList)
+template<> DATA(0x0024bc00)
 CPtrList CPtrListPool<GruntRec>::s_freeList(0xa);
 
-DATA(0x0024b6a0)
+DATA(0x0024c5f8)
 char g_sequenceScratch[0x10];
 
-DATA(0x0024b6b0)
+DATA(0x0024c608)
 char g_sequenceListBuffer[0x40];
 
-RVA(0x000c0b10, 0x72)
+RVA(0x000c0b40, 0x72)
 i32 CNetCmdSlot::Initialize(CMulti* owner, GruntzPlayer* player, NetSlotState state) {
     if (player == NULL) {
         return 0;
@@ -63,7 +63,7 @@ i32 CNetCmdSlot::Initialize(CMulti* owner, GruntzPlayer* player, NetSlotState st
     return 1;
 }
 
-RVA(0x000c0bb0, 0x47)
+RVA(0x000c0be0, 0x47)
 void CNetCmdSlot::ResetSlot() {
     m_state = NETSLOT_EMPTY;
     m_isDraining = false;
@@ -76,7 +76,7 @@ void CNetCmdSlot::ResetSlot() {
     ResetNetCmdSlotCommandWindow(this);
 }
 
-RVA(0x000c0c20, 0x3f)
+RVA(0x000c0c50, 0x3f)
 void CNetCmdSlot::ClearSyncState() {
     m_isDraining = false;
     m_drainSequence = 0;
@@ -86,7 +86,7 @@ void CNetCmdSlot::ClearSyncState() {
     ResetNetCmdSlotCommandWindow(this);
 }
 
-RVA(0x000c0c70, 0x20f)
+RVA(0x000c0ca0, 0x20f)
 i32 CNetCmdSlot::ProcessPacket(i32 playerId, char* packet, i32 packetSize) {
     if (packet == NULL) {
         return 0;
@@ -186,7 +186,7 @@ i32 CNetCmdSlot::ProcessPacket(i32 playerId, char* packet, i32 packetSize) {
 }
 
 // @early-stop
-RVA(0x000c0f10, 0x6e)
+RVA(0x000c0f40, 0x6e)
 void CNetCmdSlot::RecordReceivedSequence(i32 sequence) {
     if (m_contiguousSequence + 1 == sequence) {
         RemoveSequence(m_receivedAhead, m_contiguousSequence);
@@ -200,14 +200,14 @@ void CNetCmdSlot::RecordReceivedSequence(i32 sequence) {
     }
 }
 
-RVA(0x000c0fa0, 0x11)
+RVA(0x000c0fd0, 0x11)
 void CNetCmdSlot::RecordPeerWindowBase(i32 sequence) {
     if (sequence > m_peerWindowBase) {
         m_peerWindowBase = sequence;
     }
 }
 
-RVA(0x000c0fd0, 0x24)
+RVA(0x000c1000, 0x24)
 i32 CNetCmdSlot::ContainsSequence(i32* sequences, i32 sequence) {
     for (i32 i = 0; i < 3; i++) {
         if (sequence == sequences[i]) {
@@ -217,7 +217,7 @@ i32 CNetCmdSlot::ContainsSequence(i32* sequences, i32 sequence) {
     return 0;
 }
 
-RVA(0x000c1010, 0x32)
+RVA(0x000c1040, 0x32)
 void CNetCmdSlot::AddSequence(i32* sequences, i32 sequence) {
     if (ContainsSequence(sequences, sequence)) {
         return;
@@ -230,7 +230,7 @@ void CNetCmdSlot::AddSequence(i32* sequences, i32 sequence) {
     }
 }
 
-RVA(0x000c1060, 0x29)
+RVA(0x000c1090, 0x29)
 void CNetCmdSlot::RemoveSequence(i32* sequences, i32 sequence) {
     for (i32 i = 0; i < 3; i++) {
         if (sequence == sequences[i]) {
@@ -240,7 +240,7 @@ void CNetCmdSlot::RemoveSequence(i32* sequences, i32 sequence) {
     }
 }
 
-RVA(0x000c10a0, 0x12)
+RVA(0x000c10d0, 0x12)
 void CNetCmdSlot::ClearSequenceSet(i32* sequences) {
 
     for (i32 i = 0; i < 3; i++) {
@@ -251,7 +251,7 @@ void CNetCmdSlot::ClearSequenceSet(i32* sequences) {
 // @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000c10d0, 0x7c)
+RVA(0x000c1100, 0x7c)
 char* __stdcall SequenceSetToString(i32* sequences) {
     g_sequenceListBuffer[0] = 0;
     i32 remaining = 3;
@@ -265,14 +265,14 @@ char* __stdcall SequenceSetToString(i32* sequences) {
     return g_sequenceListBuffer;
 }
 
-RVA(0x000c1170, 0x26)
+RVA(0x000c11a0, 0x26)
 void CNetCmdSlot::AddRecord(GruntRec* record) {
     if (record != NULL && FindRecord(record->m_sequence) == NULL) {
         m_records.AddTail(record);
     }
 }
 
-RVA(0x000c11b0, 0x55)
+RVA(0x000c11e0, 0x55)
 void CNetCmdSlot::RemoveRecord(i32 sequence) {
     POSITION pos = m_records.GetHeadPosition();
     while (pos != NULL) {
@@ -291,7 +291,7 @@ void CNetCmdSlot::RemoveRecord(i32 sequence) {
     }
 }
 
-RVA(0x000c1230, 0x55)
+RVA(0x000c1260, 0x55)
 void CNetCmdSlot::GetRecordRange(i32* minimum, i32* maximum) {
     if (minimum == NULL) {
         return;
@@ -318,7 +318,7 @@ void CNetCmdSlot::GetRecordRange(i32* minimum, i32* maximum) {
     } while (pos != NULL);
 }
 
-RVA(0x000c12b0, 0x1f)
+RVA(0x000c12e0, 0x1f)
 GruntRec* CNetCmdSlot::FindRecord(i32 sequence) {
     POSITION pos = m_records.GetHeadPosition();
     while (pos != NULL) {
@@ -330,7 +330,7 @@ GruntRec* CNetCmdSlot::FindRecord(i32 sequence) {
     return NULL;
 }
 
-RVA(0x000c12e0, 0x2c)
+RVA(0x000c1310, 0x2c)
 void CNetCmdSlot::ClearRecords() {
     while (m_records.GetCount() != 0) {
         GruntRec* record = static_cast<GruntRec*>(m_records.RemoveHead());
@@ -340,7 +340,7 @@ void CNetCmdSlot::ClearRecords() {
     }
 }
 
-RVA(0x000c1320, 0x4a)
+RVA(0x000c1350, 0x4a)
 i32 CNetCmdSlot::DrainAcknowledged() {
     CMulti* owner = m_owner;
     if (owner == NULL) {
@@ -357,7 +357,7 @@ i32 CNetCmdSlot::DrainAcknowledged() {
     return 1;
 }
 
-RVA(0x000c1390, 0x15)
+RVA(0x000c13c0, 0x15)
 void CNetCmdSlot::BeginDrain() {
     if (m_isDraining == false) {
         m_isDraining = true;

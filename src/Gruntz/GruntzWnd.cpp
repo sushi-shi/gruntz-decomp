@@ -11,35 +11,35 @@
 #include <mmsystem.h>
 #include <stddef.h>
 
-RVA(0x00094640, 0x12)
+RVA(0x00094560, 0x12)
 CGruntzWnd::CGruntzWnd() {}
 
-RVA_COMPGEN(0x00094670, 0x1e, ??_GCGruntzWnd@@UAEPAXI@Z)
+RVA_COMPGEN(0x00094590, 0x1e, ??_GCGruntzWnd@@UAEPAXI@Z)
 
-RVA(0x000946a0, 0x5f)
+RVA(0x000945c0, 0x5f)
 CGruntzWnd::~CGruntzWnd() {
     Destroy();
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00094720, 0x18)
+RVA(0x00094640, 0x18)
 i32 CGruntzWnd::CreateAndShow(CREATESTRUCTA* params, CGameApp* owner) {
     return CGameWnd::CreateAndShow(params, owner) != 0;
 }
 
-RVA(0x00094750, 0x5)
+RVA(0x00094670, 0x5)
 void CGruntzWnd::Destroy() {
     CGameWnd::Destroy();
 }
 
-RVA(0x00094770, 0x5)
+RVA(0x00094690, 0x5)
 i32 CGruntzWnd::HandleWindowCommand(i32, i32, i32) {
     return 0;
 }
 
 // @early-stop
-RVA(0x00094790, 0xcd)
+RVA(0x000946b0, 0xcd)
 i32 CGruntzWnd::PreDispatchMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_ERASEBKGND:
@@ -82,7 +82,7 @@ i32 CGruntzWnd::PreDispatchMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
     return 0;
 }
 
-RVA(0x000948a0, 0x21)
+RVA(0x000947c0, 0x21)
 i32 CGruntzWnd::OnChar(WPARAM charCode, LPARAM keyData) {
     CGruntzMgr* mgr = GameMgr();
     if (!mgr) {
@@ -91,7 +91,7 @@ i32 CGruntzWnd::OnChar(WPARAM charCode, LPARAM keyData) {
     return mgr->ForwardCharToState(charCode, keyData);
 }
 
-RVA(0x000948e0, 0x21)
+RVA(0x00094800, 0x21)
 i32 CGruntzWnd::OnKeyDown(WPARAM virtualKey, LPARAM keyData) {
     CGruntzMgr* mgr = GameMgr();
     if (!mgr) {
@@ -100,7 +100,7 @@ i32 CGruntzWnd::OnKeyDown(WPARAM virtualKey, LPARAM keyData) {
     return mgr->ForwardKeyDownToState(virtualKey, keyData);
 }
 
-RVA(0x00094920, 0x21)
+RVA(0x00094840, 0x21)
 i32 CGruntzWnd::OnKeyUp(WPARAM virtualKey, LPARAM keyData) {
     CGruntzMgr* mgr = GameMgr();
     if (!mgr) {
@@ -109,7 +109,7 @@ i32 CGruntzWnd::OnKeyUp(WPARAM virtualKey, LPARAM keyData) {
     return mgr->ForwardKeyUpToState(virtualKey, keyData);
 }
 
-RVA(0x00094960, 0x26)
+RVA(0x00094880, 0x26)
 i32 CGruntzWnd::OnLButtonDown(WPARAM keyFlags, i32 x, i32 y) {
     CGruntzMgr* mgr = GameMgr();
     if (!mgr) {
@@ -118,7 +118,7 @@ i32 CGruntzWnd::OnLButtonDown(WPARAM keyFlags, i32 x, i32 y) {
     return mgr->ForwardLButtonDownToState(keyFlags, x, y);
 }
 
-RVA(0x000949a0, 0x26)
+RVA(0x000948c0, 0x26)
 i32 CGruntzWnd::OnLButtonUp(WPARAM keyFlags, i32 x, i32 y) {
     CGruntzMgr* mgr = GameMgr();
     if (!mgr) {
@@ -127,7 +127,7 @@ i32 CGruntzWnd::OnLButtonUp(WPARAM keyFlags, i32 x, i32 y) {
     return mgr->ForwardLButtonUpToState(keyFlags, x, y);
 }
 
-RVA(0x000949e0, 0x26)
+RVA(0x00094900, 0x26)
 i32 CGruntzWnd::OnMouseMove(WPARAM keyFlags, i32 x, i32 y) {
     CGruntzMgr* mgr = GameMgr();
     if (!mgr) {
@@ -136,7 +136,7 @@ i32 CGruntzWnd::OnMouseMove(WPARAM keyFlags, i32 x, i32 y) {
     return mgr->ForwardMouseMoveToState(keyFlags, x, y);
 }
 
-RVA(0x00094a20, 0x26)
+RVA(0x00094940, 0x26)
 i32 CGruntzWnd::OnRButtonDown(WPARAM keyFlags, i32 x, i32 y) {
     CGruntzMgr* mgr = GameMgr();
     if (!mgr) {
@@ -145,7 +145,7 @@ i32 CGruntzWnd::OnRButtonDown(WPARAM keyFlags, i32 x, i32 y) {
     return mgr->ForwardRButtonDownToState(keyFlags, x, y);
 }
 
-RVA(0x00094a60, 0x26)
+RVA(0x00094980, 0x26)
 i32 CGruntzWnd::OnRButtonUp(WPARAM keyFlags, i32 x, i32 y) {
     CGruntzMgr* mgr = GameMgr();
     if (!mgr) {
@@ -154,7 +154,7 @@ i32 CGruntzWnd::OnRButtonUp(WPARAM keyFlags, i32 x, i32 y) {
     return mgr->ForwardRButtonUpToState(keyFlags, x, y);
 }
 
-RVA(0x00094aa0, 0x26)
+RVA(0x000949c0, 0x26)
 i32 CGruntzWnd::OnLButtonDblClk(WPARAM keyFlags, i32 x, i32 y) {
     CGruntzMgr* mgr = GameMgr();
     if (!mgr) {
@@ -163,7 +163,7 @@ i32 CGruntzWnd::OnLButtonDblClk(WPARAM keyFlags, i32 x, i32 y) {
     return mgr->ForwardLButtonDblClkToState(keyFlags, x, y);
 }
 
-RVA(0x00094ae0, 0x26)
+RVA(0x00094a00, 0x26)
 i32 CGruntzWnd::OnRButtonDblClk(WPARAM keyFlags, i32 x, i32 y) {
     CGruntzMgr* mgr = GameMgr();
     if (!mgr) {
@@ -172,7 +172,7 @@ i32 CGruntzWnd::OnRButtonDblClk(WPARAM keyFlags, i32 x, i32 y) {
     return mgr->ForwardRButtonDblClkToState(keyFlags, x, y);
 }
 
-RVA(0x00094b20, 0x49)
+RVA(0x00094a40, 0x49)
 i32 CGruntzWnd::OnActivateApp(WPARAM wParam, LPARAM lParam) {
     CGruntzMgr* mgr = GameMgr();
     if (mgr) {
@@ -185,7 +185,7 @@ i32 CGruntzWnd::OnActivateApp(WPARAM wParam, LPARAM lParam) {
     return CGameWnd::OnActivateApp(wParam, lParam);
 }
 
-RVA(0x00094b90, 0x1b)
+RVA(0x00094ab0, 0x1b)
 i32 CGruntzWnd::OnClose() {
     CGruntzMgr* mgr = GameMgr();
     if (mgr) {
@@ -194,7 +194,7 @@ i32 CGruntzWnd::OnClose() {
     return CGameWnd::OnClose();
 }
 
-RVA(0x00094bc0, 0x31)
+RVA(0x00094ae0, 0x31)
 i32 CGruntzWnd::OnPaint() {
     CGruntzMgr* mgr = GameMgr();
     if (mgr && mgr->IsLobbyHostReady()) {
@@ -206,5 +206,5 @@ i32 CGruntzWnd::OnPaint() {
     return 0;
 }
 
-RVA_COMPGEN(0x00094c10, 0x16, ??1CGameWnd@@UAE@XZ)
-RVA_COMPGEN(0x00094d80, 0x2f, ??_GCGameWnd@@UAEPAXI@Z)
+RVA_COMPGEN(0x00094b30, 0x16, ??1CGameWnd@@UAE@XZ)
+RVA_COMPGEN(0x00094ca0, 0x2f, ??_GCGameWnd@@UAEPAXI@Z)

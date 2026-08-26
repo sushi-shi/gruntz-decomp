@@ -8,7 +8,7 @@
 
 class CTileSecretTrigger : public CTileTrigger {
 public:
-    RVA(0x000114f0, 0x6)
+    RVA(0x00011500, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_TILESECRETTRIGGER;
     }
@@ -18,7 +18,7 @@ public:
 
 class CGiantRock : public CTileTrigger {
 public:
-    RVA(0x000115b0, 0x6)
+    RVA(0x000115c0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GIANTROCK;
     }
@@ -28,7 +28,7 @@ public:
 
 class CCoveredPowerup : public CTileTrigger {
 public:
-    RVA(0x00011670, 0x6)
+    RVA(0x00011680, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_COVEREDPOWERUP;
     }

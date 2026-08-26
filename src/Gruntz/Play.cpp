@@ -184,36 +184,36 @@ static inline CDDrawWorker* LookupWorker(CDDrawSurfaceMgr* host, LPCTSTR name) {
     return static_cast<CDDrawWorker*>(ob);
 }
 
-DATA(0x002bf3bc)
+DATA(0x002c0314)
 u32 g_engineFrameDelta = 0;
-DATA(0x002bf3c0)
+DATA(0x002c0318)
 u32 g_soundCueTimeMs = 0;
 
-DATA(0x00212618)
+DATA(0x002135b0)
 i32 g_lastLevelNum = -1;
 
-DATA(0x0024c284)
+DATA(0x0024d1dc)
 i32 g_deactivateProfileMs;
-DATA(0x0024c288)
+DATA(0x0024d1e0)
 i32 g_flipProfileMs;
 
-DATA(0x00212f78)
+DATA(0x00213f10)
 char* g_colorNames[] =
     {"Color 0", "Color 1", "Color 2", "Color 3", "Color 4", "Color 5", "Color 6", "Color 7"};
-DATA(0x00212fc0)
+DATA(0x00213f58)
 char* g_difficultyNames[] = {"Easy", "Normal", "Hard"};
 
-DATA(0x0024c3f0)
+DATA(0x0024d348)
 b32 g_playerColorAvailable[TINT_COUNT];
 
-DATA(0x002455f0)
+DATA(0x00246548)
 b32 g_levelBias100 = false;
 
-DATA(0x0024c020)
+DATA(0x0024cf78)
 char g_customLevelText[0x200];
 
 // @early-stop
-RVA(0x000c7ec0, 0x5f5)
+RVA(0x000c7ef0, 0x5f5)
 i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     {
         if (mgr == NULL) {
@@ -314,7 +314,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
     }
 }
 
-RVA(0x000c8700, 0x1f4)
+RVA(0x000c8730, 0x1f4)
 void CPlay::ReleaseResources() {
     i32 i;
 
@@ -391,7 +391,7 @@ void CPlay::ReleaseResources() {
     CState::ReleaseResources();
 }
 
-RVA(0x000c8a10, 0x119)
+RVA(0x000c8a40, 0x119)
 i32 CPlay::EnterState(GameStateId previousState) {
     POINT pt;
     GetCursorPos(&pt);
@@ -432,7 +432,7 @@ i32 CPlay::EnterState(GameStateId previousState) {
     return 1;
 }
 
-RVA(0x000c8b80, 0x11b)
+RVA(0x000c8bb0, 0x11b)
 i32 CPlay::LeaveState(GameStateId nextState) {
     m_mgr->m_voiceManager->PauseAllVoices();
     m_savedClock = static_cast<i32>(g_frameTime);
@@ -459,7 +459,7 @@ i32 CPlay::LeaveState(GameStateId nextState) {
 }
 
 // @early-stop
-RVA(0x000c8cf0, 0xc14)
+RVA(0x000c8d20, 0xc14)
 i32 CPlay::Render() {
 
     m_drewThisFrame = false;
@@ -835,7 +835,7 @@ i32 CPlay::Render() {
     return 1;
 }
 
-RVA(0x000c9c20, 0x79)
+RVA(0x000c9c50, 0x79)
 void CPlay::UpdateWorldFrame() {
     TickStateMgrs();
     {
@@ -857,7 +857,7 @@ void CPlay::UpdateWorldFrame() {
 }
 
 // @early-stop
-RVA(0x000c9cc0, 0x12e)
+RVA(0x000c9cf0, 0x12e)
 i32 CPlay::UpdateWorldFixedSteps() {
     i32 delta = static_cast<i32>(g_frameDelta);
     i32 steps = static_cast<i32>((static_cast<u32>(delta) / FIXED_SUBSTEP_MS));
@@ -913,7 +913,7 @@ i32 CPlay::UpdateWorldFixedSteps() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000c9e40, 0x1d7)
+RVA(0x000c9e70, 0x1d7)
 i32 CPlay::ProfileInputFrame() {
     m_mgr->m_worldSounds->SetListenerPosition(
         m_world->m_level->m_mainPlane->m_scrollPixelX,
@@ -991,7 +991,7 @@ i32 CPlay::ProfileInputFrame() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000ca0a0, 0x101)
+RVA(0x000ca0d0, 0x101)
 i32 CPlay::ProfileDeltaFrame() {
     DWORD(WINAPI * tg)(void) = timeGetTime;
     i32 updates = 0;
@@ -1032,7 +1032,7 @@ i32 CPlay::ProfileDeltaFrame() {
 }
 
 // @early-stop
-RVA(0x000ca200, 0xe54)
+RVA(0x000ca230, 0xe54)
 i32 CPlay::LoadByMode(i32 level, i32) {
     CPlay* self = this;
     CGruntzMgr* gameReg;
@@ -1618,7 +1618,7 @@ fail0:
 #undef PTR
 
 // @early-stop
-RVA(0x000cb400, 0x58)
+RVA(0x000cb430, 0x58)
 void CPlay::OnExit() {
     ForwardReady();
     FreeListTeardown();
@@ -1632,7 +1632,7 @@ void CPlay::OnExit() {
     g_gameReg->m_tileGrid->Reset();
 }
 
-RVA(0x000cb480, 0x22c)
+RVA(0x000cb4b0, 0x22c)
 void CPlay::FreeListTeardown() {
     i32 i;
     i32 k;
@@ -1713,7 +1713,7 @@ void CPlay::FreeListTeardown() {
     m_cameraBookmarkIndex = -1;
 }
 
-RVA(0x000cb740, 0x8f)
+RVA(0x000cb770, 0x8f)
 void CPlay::ModeCleanup() {
     if (m_world) {
         {
@@ -1747,7 +1747,7 @@ void CPlay::ModeCleanup() {
     }
 }
 
-RVA(0x000cb800, 0x191)
+RVA(0x000cb830, 0x191)
 i32 CPlay::InputVirtual() {
     if (!CState::InputVirtual()) {
         return 0;
@@ -1805,7 +1805,7 @@ i32 CPlay::InputVirtual() {
 }
 
 // @early-stop
-RVA(0x000cba10, 0xb0)
+RVA(0x000cba40, 0xb0)
 i32 CPlay::RestoreDisplay() {
     if (IsActive() == 0) {
         return 0;
@@ -1838,7 +1838,7 @@ i32 CPlay::RestoreDisplay() {
     return 1;
 }
 
-RVA(0x000cbaf0, 0x16f)
+RVA(0x000cbb20, 0x16f)
 i32 CPlay::OnChar(i32 charCode, i32 keyData) {
     if (m_hudSuppressed != false) {
         return 1;
@@ -1895,7 +1895,7 @@ i32 CPlay::OnChar(i32 charCode, i32 keyData) {
 }
 
 // @early-stop
-RVA(0x000cbcc0, 0x17c0)
+RVA(0x000cbcf0, 0x17c0)
 i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     if (this->m_hudSuppressed != false) {
         return 1;
@@ -2702,7 +2702,7 @@ tail_default2:
 
 #undef CLEAR_TAB_HINT
 
-RVA(0x000cda70, 0x7a)
+RVA(0x000cdaa0, 0x7a)
 i32 CPlay::OnKeyUp(i32 key, i32 flags) {
     if (flags & 0x01000000) {
         if (key == VK_LEFT) {
@@ -2719,7 +2719,7 @@ i32 CPlay::OnKeyUp(i32 key, i32 flags) {
 }
 
 // @early-stop
-RVA(0x000cdb10, 0x80c)
+RVA(0x000cdb40, 0x80c)
 i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
     i32 xr;
     i32 sx;
@@ -2995,7 +2995,7 @@ ret1:
     return 1;
 }
 
-RVA(0x000ce530, 0xe3)
+RVA(0x000ce560, 0xe3)
 i32 CPlay::OnLButtonUp(i32 keyFlags, i32 x, i32 y) {
     if (m_hudSuppressed == false) {
         if (m_minimap != NULL && m_statusBar->m_position != STATUSBAR_HIDDEN
@@ -3021,7 +3021,7 @@ i32 CPlay::OnLButtonUp(i32 keyFlags, i32 x, i32 y) {
 }
 
 // @early-stop
-RVA(0x000ce660, 0x362)
+RVA(0x000ce690, 0x362)
 i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
     if (m_hudSuppressed != false || m_statusBar == NULL) {
         return 1;
@@ -3120,13 +3120,13 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
     return 1;
 }
 
-RVA(0x000ceab0, 0x17)
+RVA(0x000ceae0, 0x17)
 i32 CPlay::OnRButtonDblClk(i32 keyFlags, i32 x, i32 y) {
     return OnRButtonDown(keyFlags, x, y);
 }
 
 // @early-stop
-RVA(0x000ceae0, 0x268)
+RVA(0x000ceb10, 0x268)
 i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
     if (m_hudSuppressed != false) {
         return 1;
@@ -3202,7 +3202,7 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
     return 1;
 }
 
-RVA(0x000cedf0, 0xf)
+RVA(0x000cee20, 0xf)
 i32 CGameLevel::ActivateVisibleObjectsOnMainPlane() {
     if (m_mainPlane != NULL) {
         return m_mainPlane->ActivateVisibleObjects();
@@ -3210,7 +3210,7 @@ i32 CGameLevel::ActivateVisibleObjectsOnMainPlane() {
     return 0;
 }
 
-RVA(0x000cee10, 0xf)
+RVA(0x000cee40, 0xf)
 i32 CGameLevel::DeactivateDistantObjectsOnMainPlane() {
     if (m_mainPlane != NULL) {
         return m_mainPlane->DeactivateDistantObjects();
@@ -3218,7 +3218,7 @@ i32 CGameLevel::DeactivateDistantObjectsOnMainPlane() {
     return 0;
 }
 
-RVA(0x000cee30, 0x8)
+RVA(0x000cee60, 0x8)
 i32 CPlay::OnRButtonUp(i32, i32, i32) {
     return 1;
 }
@@ -3226,15 +3226,15 @@ i32 CPlay::OnRButtonUp(i32, i32, i32) {
 // @identity-TODO: owner and no-op behavior are proven; the method identity is not.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000cee50, 0x1)
+RVA(0x000cee80, 0x1)
 void CPlay::ResetRightClickState() {}
 
-RVA(0x000cee70, 0x5)
+RVA(0x000ceea0, 0x5)
 i32 CPlay::ForwardReady() {
     return IsActive();
 }
 
-RVA(0x000cee90, 0x49)
+RVA(0x000ceec0, 0x49)
 i32 CPlay::PauseGame() {
     FlushPendingOps();
     if (m_paused) {
@@ -3248,7 +3248,7 @@ i32 CPlay::PauseGame() {
     return 1;
 }
 
-RVA(0x000cef00, 0x39)
+RVA(0x000cef30, 0x39)
 i32 CPlay::ResumeGame() {
     m_statusBar->BuildGameTabPauseButton();
     g_frameTime = m_savedClock;
@@ -3259,7 +3259,7 @@ i32 CPlay::ResumeGame() {
     return 1;
 }
 
-RVA(0x000cef50, 0x46)
+RVA(0x000cef80, 0x46)
 i32 CPlay::QuitToMenu() {
 
     m_mgr->m_strWorldFile.Empty();
@@ -3272,7 +3272,7 @@ i32 CPlay::QuitToMenu() {
     return 1;
 }
 
-RVA(0x000cefc0, 0xa2)
+RVA(0x000ceff0, 0xa2)
 i32 CPlay::DrawWorldPresent() {
 
     {
@@ -3313,7 +3313,7 @@ i32 CPlay::DrawWorldPresent() {
 // @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000cf0a0, 0x567)
+RVA(0x000cf0d0, 0x567)
 void CPlay::DrawDebugStatsFull() {
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_SUPPRESS)) {
         return;
@@ -3355,7 +3355,7 @@ void CPlay::DrawDebugStatsFull() {
     }
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_ELAPSED_TIME)) {
         CString t = FormatElapsedTime(g_frameTime);
-        t += DATA_COMPGEN(0x00212754, " ");
+        t += DATA_COMPGEN(0x002136ec, " ");
         strcat(buf, t);
         t += " ";
     }
@@ -3427,7 +3427,7 @@ void CPlay::DrawDebugStatsFull() {
     surface->m_ddSurface->ReleaseDC(hdc);
 }
 
-RVA(0x000cf770, 0x35e)
+RVA(0x000cf7a0, 0x35e)
 void CPlay::DrawDebugStats() {
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_SUPPRESS)) {
         return;
@@ -3503,12 +3503,12 @@ void CPlay::DrawDebugStats() {
     surface->m_ddSurface->ReleaseDC(hdc);
 }
 
-RVA(0x000cfbb0, 0x8)
+RVA(0x000cfbe0, 0x8)
 void CPlay::TickStateMgrs() {
     m_mgr->TickStateMgrs();
 }
 
-RVA(0x000cfbd0, 0x8f)
+RVA(0x000cfc00, 0x8f)
 i32 CPlay::CompleteLevel() {
     QuestLevel level = CurrentQuestLevel();
     if (level == QUESTLEVEL_CAMPAIGN_LAST) {
@@ -3535,7 +3535,7 @@ i32 CPlay::CompleteLevel() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000cfc90, 0x1d1)
+RVA(0x000cfcc0, 0x1d1)
 void CPlay::DrawCustomLevelBanner() {
     if (m_mgr->m_strWorldFile.IsEmpty()) {
         return;
@@ -3577,7 +3577,7 @@ void CPlay::DrawCustomLevelBanner() {
     surface->m_ddSurface->ReleaseDC(hdc);
 }
 
-RVA(0x000cfef0, 0xbc)
+RVA(0x000cff20, 0xbc)
 i32 CPlay::DrawStateMessage() {
     Present(0x3c);
 
@@ -3604,7 +3604,7 @@ i32 CPlay::DrawStateMessage() {
     return 1;
 }
 
-RVA(0x000cffe0, 0x3c)
+RVA(0x000d0010, 0x3c)
 i32 CPlay::LoadImageBanks() {
     CPlay* self = this;
     if (!self->m_resourceArchive) {
@@ -3618,7 +3618,7 @@ i32 CPlay::LoadImageBanks() {
     return self->m_gameResources != NULL;
 }
 
-RVA(0x000d0050, 0x3a)
+RVA(0x000d0080, 0x3a)
 i32 CPlay::CountObjectsByCategory(i32 category) {
     CObList* container = &m_world->m_childGroup->m_list;
     if (container == NULL) {
@@ -3635,7 +3635,7 @@ i32 CPlay::CountObjectsByCategory(i32 category) {
     return count;
 }
 
-RVA(0x000d00a0, 0x5a)
+RVA(0x000d00d0, 0x5a)
 void CPlay::PostSetup(HDC dc) {
     RECT src = *(&m_world->m_level->m_viewportRect);
     RECT dst;
@@ -3655,7 +3655,7 @@ void CPlay::PostSetup(HDC dc) {
     }
 
 // @early-stop
-RVA(0x000d0120, 0x65c)
+RVA(0x000d0150, 0x65c)
 i32 CPlay::LoadCursorSprites(i32 cursorId, b32 targetValid) {
     ToolCursorId cursor = static_cast<ToolCursorId>(cursorId);
     if (this->m_cursorId == cursorId && targetValid == this->m_cursorTargetValid) {
@@ -3914,7 +3914,7 @@ i32 CPlay::LoadCursorSprites(i32 cursorId, b32 targetValid) {
     return 1;
 }
 
-RVA(0x000d0920, 0xfe)
+RVA(0x000d0950, 0xfe)
 i32 CPlay::LoadCursorAnimation(
     const char* spriteKey,
     i32 initialFrame,
@@ -3959,7 +3959,7 @@ i32 CPlay::LoadCursorAnimation(
     return 1;
 }
 
-RVA(0x000d0a60, 0x92)
+RVA(0x000d0a90, 0x92)
 i32 CPlay::AdvanceCursorAnimation(i32 elapsedMs) {
     if (m_cursorAnimationActive == false) {
         return 1;
@@ -3987,7 +3987,7 @@ i32 CPlay::AdvanceCursorAnimation(i32 elapsedMs) {
 }
 
 // @early-stop
-RVA(0x000d0b30, 0x200)
+RVA(0x000d0b60, 0x200)
 i32 CPlay::SaveUnderAndDrawCursor(CDDrawSurfacePair* pair) {
     i32 x = m_cursorX + m_cursorOffset.m_x;
     i32 y = m_cursorY + m_cursorOffset.m_y;
@@ -4066,7 +4066,7 @@ i32 CPlay::SaveUnderAndDrawCursor(CDDrawSurfacePair* pair) {
 }
 
 // @early-stop
-RVA(0x000d0db0, 0x347)
+RVA(0x000d0de0, 0x347)
 i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
 
     LevelCoordRect box;
@@ -4168,7 +4168,7 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
     return 1;
 }
 
-RVA(0x000d11e0, 0x9b)
+RVA(0x000d1210, 0x9b)
 i32 CPlay::RestoreCursorSaveUnder() {
     if (m_cursorSavedSurfaceValid[0] == 0) {
         m_cursorSavedSurfaceValid[0] = 1;
@@ -4206,11 +4206,11 @@ i32 CPlay::RestoreCursorSaveUnder() {
 }
 
 // @early-stop
-RVA(0x000d12b0, 0x2d5)
+RVA(0x000d12e0, 0x2d4)
 i32 CPlay::LoadScrollSpeedOptions() {
-    DATA(0x0024c274)
+    DATA(0x0024d1cc)
     static i32 s_minScrollSpeed = g_buteMgr.GetInt("Optionz", "MinScrollSpeed");
-    DATA(0x0024c270)
+    DATA(0x0024d1c8)
     static i32 s_scrollSpeedRange = g_buteMgr.GetInt("Optionz", "MaxScrollSpeed")
                                     - g_buteMgr.GetInt("Optionz", "MinScrollSpeed");
 
@@ -4315,7 +4315,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000d1650, 0x90)
+RVA(0x000d1680, 0x90)
 void CPlay::DrawMessageFrame(i32 index, b32 useFront) {
     CDDrawWorker* set = LookupWorker(m_world->m_imageRegistry->m_workersByName, "GAME_MESSAGEZ");
     if (set != NULL) {
@@ -4329,7 +4329,7 @@ void CPlay::DrawMessageFrame(i32 index, b32 useFront) {
     }
 }
 
-RVA(0x000d1710, 0x122)
+RVA(0x000d1740, 0x122)
 void CPlay::LoadSBITextEdges(i32 msgId) {
     CString s;
     s.LoadString(msgId);
@@ -4347,7 +4347,7 @@ void CPlay::LoadSBITextEdges(i32 msgId) {
     m_stepCountdown = 2;
 }
 
-RVA(0x000d1890, 0x1ba)
+RVA(0x000d18c0, 0x1ba)
 void CPlay::PlayCueAt(
     i32 cueId,
     i32 fontSel,
@@ -4391,7 +4391,7 @@ void CPlay::PlayCueAt(
     }
 }
 
-RVA(0x000d1ac0, 0x4f)
+RVA(0x000d1af0, 0x4f)
 void CPlay::StepScroll() {
     CGameLevel* v = m_world->m_level;
 
@@ -4407,14 +4407,14 @@ void CPlay::StepScroll() {
     m_cursorSnapSprite->m_screenY = y;
 }
 
-RVA(0x000d1b30, 0x20)
+RVA(0x000d1b60, 0x20)
 i32 CPlay::SetCursorFrame(i32 item) {
     LoadCursorSprites(item, false);
     m_cursorFrame = item;
     return 1;
 }
 
-RVA(0x000d1b60, 0xc90)
+RVA(0x000d1b90, 0xc90)
 i32 CPlay::ExecuteCommand(
     u8 playerIndex,
     char unitIndex,
@@ -4942,7 +4942,7 @@ static inline TileCollisionKind LookupTileTypeDirect(CGameLevel* level, i32 x, i
     return tc->GetCollisionAt(subX, subY);
 }
 
-RVA(0x000d2b20, 0x21f)
+RVA(0x000d2b50, 0x21f)
 b32 CPlay::PlaceStartGruntz() {
 
     CObList* list = &m_world->m_childGroup->m_list;
@@ -5013,7 +5013,7 @@ b32 CPlay::PlaceStartGruntz() {
 }
 
 // @early-stop
-RVA(0x000d2dd0, 0x1e40)
+RVA(0x000d2e00, 0x1e40)
 i32 CPlay::ValidateLevelTiles() {
     i32 validCount = 0;
     i32 counts[4];
@@ -5626,13 +5626,13 @@ i32 CPlay::ValidateLevelTiles() {
     return ok;
 }
 
-RVA(0x000d53a0, 0x19)
+RVA(0x000d53d0, 0x19)
 i32 CDDrawWorkerHost::GetTileHandle(i32 tileX, i32 tileY) {
     return m_tileHandles[m_tileRowOffsets[tileY] + tileX];
 }
 
 // @early-stop
-RVA(0x000d53d0, 0x466)
+RVA(0x000d5400, 0x466)
 i32 CPlay::ScanBuildTiles() {
     CObList* pl = &m_world->m_childGroup->m_list;
     if (pl == NULL) {
@@ -5758,7 +5758,7 @@ i32 CPlay::ScanBuildTiles() {
 }
 
 // @early-stop
-RVA(0x000d5960, 0x160)
+RVA(0x000d5990, 0x160)
 i32 CPlay::AddLevelGruntz() {
     CObList* chain = &m_world->m_childGroup->m_list;
     if (chain == NULL) {
@@ -5807,7 +5807,7 @@ i32 CPlay::AddLevelGruntz() {
 }
 
 // @early-stop
-RVA(0x000d5b20, 0xbb)
+RVA(0x000d5b50, 0xbb)
 i32 CPlay::PositionBridgeToggle(StatusBarDock mode, StatusBarDock) {
     CGruntzMgr* w = m_mgr;
     i32 ex = w->m_modeSize.cx;
@@ -5859,7 +5859,7 @@ done:
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000d5c10, 0x10d)
+RVA(0x000d5c40, 0x10d)
 i32 CState::DrawScreenTextImage(const char* name) {
     char buf[0x40];
     sprintf(buf, "\\SCREENZ\\%sTEXT", name);
@@ -5880,13 +5880,13 @@ i32 CState::DrawScreenTextImage(const char* name) {
     return 1;
 }
 
-RVA_COMPGEN(0x000d5d70, 0x16, ??1CWapObj@@UAE@XZ)
+RVA_COMPGEN(0x000d5da0, 0x16, ??1CWapObj@@UAE@XZ)
 
-RVA_COMPGEN(0x000d5e50, 0x1e, ??_GCImage@@UAEPAXI@Z)
+RVA_COMPGEN(0x000d5e80, 0x1e, ??_GCImage@@UAEPAXI@Z)
 
-RVA_COMPGEN(0x000d5e80, 0x5b, ??1CImage@@UAE@XZ)
+RVA_COMPGEN(0x000d5eb0, 0x5b, ??1CImage@@UAE@XZ)
 
-RVA(0x000d5f00, 0x69)
+RVA(0x000d5f30, 0x69)
 i32 CPlay::ResetGoals(i32 x, i32 y) {
     CGruntzMgr* w = m_mgr;
     CTriggerMgr* g = w->m_triggerMgr;
@@ -5900,7 +5900,7 @@ i32 CPlay::ResetGoals(i32 x, i32 y) {
     return 1;
 }
 
-RVA(0x000d5f90, 0xd7)
+RVA(0x000d5fc0, 0xd7)
 i32 CPlay::FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY) {
 
     i32 id = g_curPlayer;
@@ -5928,7 +5928,7 @@ i32 CPlay::FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY) {
 }
 
 // @early-stop
-RVA(0x000d60b0, 0x2cd)
+RVA(0x000d60e0, 0x2cd)
 i32 CPlay::ResetPlayState() {
     char sequenceName[0x40];
     if (m_mgr->m_musicEnabled != false && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
@@ -6031,7 +6031,7 @@ i32 CPlay::ResetPlayState() {
     return 1;
 }
 
-RVA(0x000d6440, 0xd3)
+RVA(0x000d6470, 0xd3)
 i32 CPlay::OpenLevelOverlay(b32 showQuitConfirmation) {
     if (m_levelOverlayOpen != false) {
         return 1;
@@ -6063,7 +6063,7 @@ i32 CPlay::OpenLevelOverlay(b32 showQuitConfirmation) {
     return 1;
 }
 
-RVA(0x000d6560, 0x45)
+RVA(0x000d6590, 0x45)
 i32 CPlay::CloseLevelOverlay(i32) {
     if (m_levelOverlayOpen != false) {
         CStatusBarMgr* worker = m_statusBar;
@@ -6078,7 +6078,7 @@ i32 CPlay::CloseLevelOverlay(i32) {
 
 // @early-stop
 
-RVA(0x000d65d0, 0x7cc)
+RVA(0x000d6600, 0x7cc)
 i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
     if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
         for (i32 id = IDX(GRUNT_BOOMERANG); id <= IDX(GRUNT_YOYO); id++) {
@@ -6374,7 +6374,7 @@ i32 CPlay::LoadWarlordSprites(CMulti* ctx, i32* loaded) {
     return 1;
 }
 
-RVA(0x000d6fa0, 0x1fa)
+RVA(0x000d6fd0, 0x1fa)
 i32 CPlay::EnterMode(GameStateId mode) {
     (g_gameReg)->CheckSavedMode();
     m_statusBar->Deactivate();
@@ -6450,7 +6450,7 @@ finish:
     return 1;
 }
 
-RVA(0x000d7220, 0x7b)
+RVA(0x000d7250, 0x7b)
 i32 CPlay::PostActionCue(i32 cueId) {
     if (m_paused) {
         return 0;
@@ -6469,7 +6469,7 @@ i32 CPlay::PostActionCue(i32 cueId) {
     return 1;
 }
 
-RVA(0x000d72c0, 0x128)
+RVA(0x000d72f0, 0x128)
 i32 CPlay::BuildHelpReveal(b32 final) {
     CDDrawSurfacePair* view = m_world->m_drawTarget->m_backPair;
     if (view == NULL) {
@@ -6518,7 +6518,7 @@ i32 CPlay::BuildHelpReveal(b32 final) {
     return 1;
 }
 
-RVA(0x000d7440, 0xad)
+RVA(0x000d7470, 0xad)
 i32 CPlay::LoadLoadingBarSprite() {
     CDDrawWorker* spr = LookupWorker(m_world->m_imageRegistry->m_workersByName, "GAME_LOADINGBAR");
     if (!spr) {
@@ -6535,7 +6535,7 @@ i32 CPlay::LoadLoadingBarSprite() {
     return 1;
 }
 
-RVA(0x000d7520, 0x3b9)
+RVA(0x000d7550, 0x3b9)
 i32 CPlay::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload) {
     if (ar == NULL) {
         return 0;
@@ -6608,7 +6608,7 @@ i32 CPlay::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId type
 }
 #undef SYNC_PAIR
 
-RVA(0x000d79d0, 0x537)
+RVA(0x000d7a00, 0x537)
 i32 CPlay::SavePlayState(CFileMemBase* s) {
     if (s == NULL) {
         return 0;
@@ -6742,7 +6742,7 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
 }
 
 // @early-stop
-RVA(0x000d8060, 0x6ce)
+RVA(0x000d8090, 0x6ce)
 i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
@@ -6953,7 +6953,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     return 1;
 }
 
-RVA(0x000d88f0, 0x44)
+RVA(0x000d8920, 0x44)
 void CPlay::RegionEnter() {
     if (m_savedMusicSequence == NULL) {
         CGruntzMgr* gameManager = m_mgr;
@@ -6965,7 +6965,7 @@ void CPlay::RegionEnter() {
     }
 }
 
-RVA(0x000d8960, 0x75)
+RVA(0x000d8990, 0x75)
 void CPlay::RegionLeave() {
     if (m_region0Gate == false && m_region1Gate == false && m_region2Gate == false
         && m_region3Gate == false && m_savedMusicSequence != NULL) {
@@ -6978,7 +6978,7 @@ void CPlay::RegionLeave() {
     }
 }
 
-RVA(0x000d8a00, 0x73)
+RVA(0x000d8a30, 0x73)
 i32 CPlay::SetTinyViewportCurse(b32 active) {
     if (active != false) {
         m_region0Gate = true;
@@ -6995,7 +6995,7 @@ i32 CPlay::SetTinyViewportCurse(b32 active) {
     return 1;
 }
 
-RVA(0x000d8aa0, 0x5f)
+RVA(0x000d8ad0, 0x5f)
 i32 CPlay::SetDarknessCurse(b32 active) {
     if (active != false) {
         m_region1Gate = true;
@@ -7010,7 +7010,7 @@ i32 CPlay::SetDarknessCurse(b32 active) {
     return 1;
 }
 
-RVA(0x000d8b20, 0x74)
+RVA(0x000d8b50, 0x74)
 i32 CPlay::SetMonitorCurse(b32 active) {
     if (active != false) {
         m_region2Gate = true;
@@ -7026,7 +7026,7 @@ i32 CPlay::SetMonitorCurse(b32 active) {
     return 1;
 }
 
-RVA(0x000d8bc0, 0x71)
+RVA(0x000d8bf0, 0x71)
 i32 CPlay::SetRandomMoveIconsCurse(b32 active) {
     if (active != false) {
         m_region3Gate = true;
@@ -7042,7 +7042,7 @@ i32 CPlay::SetRandomMoveIconsCurse(b32 active) {
     return 1;
 }
 
-RVA(0x000d8c60, 0xea)
+RVA(0x000d8c90, 0xea)
 i32 CPlay::ResetViewport() {
     CGruntzMgr* w = m_mgr;
     tagSIZE mode = w->GetModeSize();
@@ -7071,7 +7071,7 @@ i32 CPlay::ResetViewport() {
     return 1;
 }
 
-RVA(0x000d8d90, 0x1e)
+RVA(0x000d8dc0, 0x1e)
 i32 CPlay::StepViewportResize() {
     ViewportResizeMode mode = m_viewportResizeMode;
     if (mode == VIEW_RESIZE_IDLE) {
@@ -7083,7 +7083,7 @@ i32 CPlay::StepViewportResize() {
     return ExpandViewport(4);
 }
 
-RVA(0x000d8dc0, 0xce)
+RVA(0x000d8df0, 0xce)
 i32 CPlay::ShrinkViewport(i32 step) {
     CDDrawSurfaceMgr* world = m_world;
     b32 changed = false;
@@ -7113,7 +7113,7 @@ i32 CPlay::ShrinkViewport(i32 step) {
 }
 
 // @early-stop
-RVA(0x000d8ed0, 0x128)
+RVA(0x000d8f00, 0x128)
 i32 CPlay::ExpandViewport(i32 step) {
     b32 changed = false;
     CDDrawSurfaceMgr* world = m_world;
@@ -7165,7 +7165,7 @@ i32 CPlay::ExpandViewport(i32 step) {
     return 1;
 }
 
-RVA(0x000d9050, 0xc7)
+RVA(0x000d9080, 0xc7)
 i32 CPlay::NotifyVisibleEntities() {
     CDDrawSurfaceMgr* v = m_world;
     const LevelCoordRect& vp = v->m_level->m_viewportRect;
@@ -7197,7 +7197,7 @@ i32 CPlay::NotifyVisibleEntities() {
     return 1;
 }
 
-RVA(0x000d9160, 0xac)
+RVA(0x000d9190, 0xac)
 i32 CPlay::RegisterInputBindings() {
     m_mgr->m_gameWnd->PumpMessages(0x102, 0x40);
     m_mgr->m_gameWnd->PumpMessages(0x100, 0x40);
@@ -7211,7 +7211,7 @@ i32 CPlay::RegisterInputBindings() {
     return 1;
 }
 
-RVA(0x000d9240, 0x3c)
+RVA(0x000d9270, 0x3c)
 i32 CPlay::SetDefeatCountdown(b32 active, i32 durationMs) {
     if (active != false) {
 
@@ -7224,7 +7224,7 @@ i32 CPlay::SetDefeatCountdown(b32 active, i32 durationMs) {
 }
 
 // @early-stop
-RVA(0x000d9290, 0x2a7)
+RVA(0x000d92c0, 0x2a7)
 i32 CPlay::ScanShuffleQuads() {
     CDDrawSurfaceMgr* v = m_world;
 
@@ -7311,7 +7311,7 @@ i32 CPlay::ScanShuffleQuads() {
     return 1;
 }
 
-RVA(0x000d95f0, 0x830)
+RVA(0x000d9620, 0x830)
 i32 CPlay::DrawLevelInfoText() {
     CString s0;
     CString s1;
@@ -7539,7 +7539,7 @@ i32 CPlay::DrawLevelInfoText() {
 }
 
 // @early-stop
-RVA(0x000da030, 0x169)
+RVA(0x000da060, 0x169)
 i32 CPlay::ClearPlacedObjects() {
     for (i32 blockIdx = 0; blockIdx < 4; ++blockIdx) {
         i32 i = 0;
@@ -7604,18 +7604,18 @@ i32 CPlay::ClearPlacedObjects() {
     return -1;
 }
 
-RVA(0x000da200, 0x9b)
+RVA(0x000da230, 0x9b)
 i32 CPlay::GetAmbientId() {
     CGruntzMgr* gr = g_gameReg;
     if (gr->m_gameMode == GAMEMODE_QUESTZ && gr->m_isCustomLevel == false) {
         return (m_levelIndex + 1) % 2;
     }
-    DATA(0x0024c26c)
+    DATA(0x0024d1c4)
     static i32 s_ambientCoin = GetRandomNumber() % 2;
     return s_ambientCoin;
 }
 
-RVA(0x000da2d0, 0xa5)
+RVA(0x000da300, 0xa5)
 i32 CPlay::FlushPendingOps() {
     if (m_playerCommandPending != false) {
         return 0;
@@ -7645,7 +7645,7 @@ i32 CPlay::FlushPendingOps() {
     return changed;
 }
 
-RVA(0x000da3b0, 0x6e)
+RVA(0x000da3e0, 0x6e)
 i32 CPlay::CanQuickSave() {
     if (m_renderDisabled == false && m_inGame == false && m_levelOverlayOpen == false
         && m_defeatCountdownActive == false && m_statusBar->m_hlBusy == false
@@ -7657,7 +7657,7 @@ i32 CPlay::CanQuickSave() {
     return 0;
 }
 
-RVA(0x000da440, 0x60)
+RVA(0x000da470, 0x60)
 i32 CPlay::PostHudRect() {
     if (m_worldReady != false) {
         m_mgr->m_triggerMgr->HudRect(

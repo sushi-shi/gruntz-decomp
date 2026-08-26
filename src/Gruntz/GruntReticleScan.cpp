@@ -40,7 +40,7 @@
 #include <string.h>
 
 // @early-stop
-RVA(0x000ee800, 0x971)
+RVA(0x000ee930, 0x971)
 i32 CGrunt::StepDefenderBehavior() {
     i32 defTX = m_defenderPx.m_x >> TILE_SHIFT_PX;
     i32 defTY = m_defenderPx.m_y >> TILE_SHIFT_PX;

@@ -7,10 +7,10 @@
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
 
-RVA_COMPGEN(0x000121c0, 0x1e, ??_GCGruntWingzTimeSprite@@UAEPAXI@Z)
-RVA_COMPGEN(0x000121f0, 0x44, ??1CGruntWingzTimeSprite@@UAE@XZ)
+RVA_COMPGEN(0x000121d0, 0x1e, ??_GCGruntWingzTimeSprite@@UAEPAXI@Z)
+RVA_COMPGEN(0x00012200, 0x44, ??1CGruntWingzTimeSprite@@UAE@XZ)
 
-RVA(0x0007fcc0, 0xa0)
+RVA(0x0007fbe0, 0xa0)
 CGruntWingzTimeSprite::CGruntWingzTimeSprite(CGameObject* obj) : CGruntHealthSprite(obj) {
     SetImageFrameByName("GAME_GRUNTWINGZTIMESPRITE", 1);
     SET_ANIMATION_ACT("A");
@@ -20,7 +20,7 @@ CGruntWingzTimeSprite::CGruntWingzTimeSprite(CGameObject* obj) : CGruntHealthSpr
     m_yOffset = -0x26;
 }
 
-RVA(0x0007fd90, 0xd)
+RVA(0x0007fcb0, 0xd)
 i32 CGruntWingzTimeSprite::GetDisplayedValue(CGrunt* grunt) {
     return grunt->m_wingzTime;
 }

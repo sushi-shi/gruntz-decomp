@@ -13,7 +13,7 @@
 #include <stddef.h>
 
 // @early-stop
-RVA(0x00082430, 0x161)
+RVA(0x00082350, 0x161)
 i32 CGruntzMapMgr::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
@@ -70,7 +70,7 @@ i32 CGruntzMapMgr::SerializeDispatch(
     return CMapMgr::SerializeDispatch(ar, mode, typeId, payload) != 0;
 }
 
-RVA(0x00082600, 0x73)
+RVA(0x00082520, 0x73)
 TileCollisionKind CGameLevel::LookupTile(i32 x, i32 y) {
     CDDrawWorkerHost* mp;
     if (x < 0) {
@@ -99,7 +99,7 @@ TileCollisionKind CGameLevel::LookupTile(i32 x, i32 y) {
     return set->GetCollisionAt(0, 0);
 }
 
-RVA(0x00085480, 0x52)
+RVA(0x000853a0, 0x52)
 void CGruntzMapMgr::Reset() {
     for (i32 i = 0; i < m_arr.GetSize(); i++) {
         Coord* elem = static_cast<Coord*>(m_arr.GetData()[i]);
@@ -113,7 +113,7 @@ void CGruntzMapMgr::Reset() {
     CMapMgr::Reset();
 }
 
-RVA(0x00085d10, 0xa7)
+RVA(0x00085c30, 0xa7)
 CGruntzMapMgr::~CGruntzMapMgr() {
     for (i32 i = 0; i < m_arr.GetSize(); i++) {
         Coord* elem = static_cast<Coord*>(m_arr.GetAt(i));

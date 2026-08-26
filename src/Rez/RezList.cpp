@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 
-RVA(0x001851e0, 0x2a)
+RVA(0x001854c0, 0x2a)
 void CObjList::AddHead(CRezItmBase* node) {
     node->m_next = m_head;
     node->m_prev = NULL;
@@ -17,7 +17,7 @@ void CObjList::AddHead(CRezItmBase* node) {
     }
 }
 
-RVA(0x00185210, 0x2a)
+RVA(0x001854f0, 0x2a)
 void CRezList::AddTail(CRezItmBase* node) {
     node->m_next = NULL;
     node->m_prev = m_tail;
@@ -32,7 +32,7 @@ void CRezList::AddTail(CRezItmBase* node) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00185240, 0x48)
+RVA(0x00185520, 0x48)
 void CRezList::InsertAfter(CRezItmBase* pos, CRezItmBase* node) {
     if (pos == NULL) {
         AddHead(node);
@@ -49,7 +49,7 @@ void CRezList::InsertAfter(CRezItmBase* pos, CRezItmBase* node) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00185290, 0x48)
+RVA(0x00185570, 0x48)
 void CRezList::InsertBefore(CRezItmBase* pos, CRezItmBase* node) {
     if (pos == NULL) {
         AddTail(node);
@@ -64,7 +64,7 @@ void CRezList::InsertBefore(CRezItmBase* pos, CRezItmBase* node) {
     pos->m_prev = node;
 }
 
-RVA(0x001852e0, 0x35)
+RVA(0x001855c0, 0x35)
 void CObjList::Remove(CRezItmBase* node) {
     if (node->m_prev) {
         node->m_prev->m_next = node->m_next;

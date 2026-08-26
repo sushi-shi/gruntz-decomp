@@ -22,12 +22,12 @@
 
 #define CLEAR_VOICE_INDICATORS memset(m_indicators, 0, sizeof(m_indicators))
 
-RVA(0x00085df0, 0x4a)
+RVA(0x00085d10, 0x4a)
 CVoiceManager::~CVoiceManager() {
     Clear();
 }
 
-RVA(0x0011adc0, 0x44)
+RVA(0x0011afd0, 0x44)
 BOOL CVoiceManager::Init(CGruntzMgr* game) {
     if (game == NULL) {
         return false;
@@ -42,7 +42,7 @@ BOOL CVoiceManager::Init(CGruntzMgr* game) {
 }
 
 // @early-stop
-RVA(0x0011ae30, 0x95)
+RVA(0x0011b040, 0x95)
 void CVoiceManager::Clear() {
     for (i32 i = 0; i < m_voiceGroups.GetSize(); i++) {
         CSpawnList* group = static_cast<CSpawnList*>(m_voiceGroups[i]);
@@ -74,7 +74,7 @@ void CVoiceManager::Clear() {
     }
 }
 
-RVA(0x0011af00, 0x62)
+RVA(0x0011b110, 0x62)
 BOOL CVoiceManager::CreateVoiceIndicators() {
     ClearVoiceIndicatorSlots();
     i32 i = 0;
@@ -98,12 +98,12 @@ BOOL CVoiceManager::CreateVoiceIndicators() {
     return true;
 }
 
-RVA(0x0011af90, 0xb)
+RVA(0x0011b1a0, 0xb)
 void CVoiceManager::ClearVoiceIndicatorSlots() {
     CLEAR_VOICE_INDICATORS;
 }
 
-RVA(0x0011afb0, 0x321)
+RVA(0x0011b1c0, 0x321)
 BOOL CVoiceManager::PlayGruntVoiceCue(
     CGrunt* grunt,
     i32 cueId,
@@ -203,7 +203,7 @@ BOOL CVoiceManager::PlayGruntVoiceCue(
     return false;
 }
 
-RVA(0x0011b3b0, 0x338)
+RVA(0x0011b5c0, 0x338)
 i32 CVoiceManager::PlayVoice(
     CGrunt* sourceGrunt,
     i32 voiceGroup,
@@ -308,7 +308,7 @@ streamFailed:
     return 0;
 }
 
-RVA(0x0011b7c0, 0x304)
+RVA(0x0011b9d0, 0x304)
 i32 CVoiceManager::PlayVoice(
     i32 sourceObjectId,
     i32 voiceGroup,
@@ -408,7 +408,7 @@ streamFailed:
     return 0;
 }
 
-RVA(0x0011bba0, 0x280)
+RVA(0x0011bdb0, 0x280)
 i32 CVoiceManager::ResolveGruntVoiceGroup(CGrunt* grunt, i32 cueId) {
     if (grunt == NULL) {
         return 0;
@@ -497,12 +497,12 @@ i32 CVoiceManager::ResolveGruntVoiceGroup(CGrunt* grunt, i32 cueId) {
 // @identity-TODO: the one-argument overload shape is inferred from the adjacent picker.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0011bec0, 0x5)
+RVA(0x0011c0d0, 0x5)
 CRezArchiveEntry* CVoiceManager::SelectVoiceVariant(i32 voiceGroup) {
     return NULL;
 }
 
-RVA(0x0011bee0, 0x230)
+RVA(0x0011c0f0, 0x230)
 CRezArchiveEntry* CVoiceManager::SelectVoiceVariant(i32 voiceGroup, i32 variantIndex) {
     if (voiceGroup < 0) {
         return NULL;
@@ -578,7 +578,7 @@ CRezArchiveEntry* CVoiceManager::SelectVoiceVariant(i32 voiceGroup, i32 variantI
     );
 }
 
-RVA(0x0011c1a0, 0x46)
+RVA(0x0011c3b0, 0x46)
 BOOL CVoiceManager::BuildVoiceGroups() {
     m_voiceGroups.SetSize(0, -1);
     m_voiceGroups.SetAtGrow(0, NULL);
@@ -589,7 +589,7 @@ BOOL CVoiceManager::BuildVoiceGroups() {
 }
 
 // @early-stop
-RVA(0x0011c210, 0x29d)
+RVA(0x0011c420, 0x29d)
 CSpawnList* CVoiceManager::BuildVoiceGroup(i32 voiceGroup) {
     if (voiceGroup <= 0) {
         return NULL;
@@ -649,7 +649,7 @@ CSpawnList* CVoiceManager::BuildVoiceGroup(i32 voiceGroup) {
     return group;
 }
 
-RVA(0x0011c560, 0x91)
+RVA(0x0011c770, 0x91)
 void CSpawnList::AddVoiceSound(CString resourceName, i32 data) {
     CSpawnEntry* node = new CSpawnEntry(resourceName, data);
     if (node != NULL) {
@@ -657,7 +657,7 @@ void CSpawnList::AddVoiceSound(CString resourceName, i32 data) {
     }
 }
 
-RVA(0x0011c630, 0x6e)
+RVA(0x0011c840, 0x6e)
 CSpawnEntry::CSpawnEntry(CString name, i32 data) {
     m_name = name;
     m_flag = false;
@@ -666,7 +666,7 @@ CSpawnEntry::CSpawnEntry(CString name, i32 data) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0011c6c0, 0x27)
+RVA(0x0011c8d0, 0x27)
 i32 CVoiceManager::IsAnyVoicePlaying() {
     i32 i = 0;
     CGruntVoice** indicator = m_indicators;
@@ -680,7 +680,7 @@ i32 CVoiceManager::IsAnyVoicePlaying() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0011c700, 0x20)
+RVA(0x0011c910, 0x20)
 i32 CVoiceManager::IsVoiceSlotPlaying(i32 slotIndex) {
     CGruntVoice* indicator = m_indicators[slotIndex];
     if (indicator != NULL && indicator->m_priority != 0) {
@@ -689,7 +689,7 @@ i32 CVoiceManager::IsVoiceSlotPlaying(i32 slotIndex) {
     return 0;
 }
 
-RVA(0x0011c730, 0x5c)
+RVA(0x0011c940, 0x5c)
 void CVoiceManager::StopVoice(i32 sourceObjectId) {
     i32 firstSourceObjectId = m_indicators[0]->m_sourceObjectId;
     i32 secondSourceObjectId = m_indicators[1]->m_sourceObjectId;
@@ -710,7 +710,7 @@ void CVoiceManager::StopVoice(i32 sourceObjectId) {
     }
 }
 
-RVA(0x0011c7b0, 0x2d)
+RVA(0x0011c9c0, 0x2d)
 void CVoiceManager::PauseAllVoices() {
 
     for (i32 k = 0; k < 2; k++) {
@@ -725,7 +725,7 @@ void CVoiceManager::PauseAllVoices() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0011c7f0, 0x2b)
+RVA(0x0011ca00, 0x2b)
 void CVoiceManager::ResetVoiceSelections() {
     PauseAllVoices();
     for (i32 i = 0; i < m_voiceGroups.GetSize(); i++) {
@@ -736,7 +736,7 @@ void CVoiceManager::ResetVoiceSelections() {
     }
 }
 
-RVA(0x0011c830, 0x12)
+RVA(0x0011ca40, 0x12)
 BOOL CVoiceManager::IsVoiceEnabled() {
     return m_game->m_isVoiceEnabled != false;
 }

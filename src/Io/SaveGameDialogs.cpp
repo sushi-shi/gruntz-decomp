@@ -31,7 +31,7 @@
 static const i32 SAVE_PREVIEW_BYTES = 0x3843a;
 static const i32 SAVE_PREVIEW_BITMAP_OFFSET = 0xe;
 
-RVA(0x000e35f0, 0x77)
+RVA(0x000e3620, 0x77)
 BOOL CALLBACK SaveGameDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_COMMAND:
@@ -55,7 +55,7 @@ BOOL CALLBACK SaveGameDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
     }
 }
 
-RVA(0x000e3690, 0x2ec)
+RVA(0x000e36c0, 0x2ec)
 BOOL CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_PAINT: {
@@ -153,7 +153,7 @@ BOOL CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
     return false;
 }
 
-RVA(0x000e3a40, 0xb0)
+RVA(0x000e3a70, 0xb0)
 BOOL CALLBACK DeleteSaveDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_INITDIALOG:
@@ -182,7 +182,7 @@ BOOL CALLBACK DeleteSaveDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lP
     return false;
 }
 
-RVA(0x000e3b20, 0x86)
+RVA(0x000e3b50, 0x86)
 BOOL CALLBACK InfoLineDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_INITDIALOG:
@@ -208,7 +208,7 @@ BOOL CALLBACK InfoLineDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
     return false;
 }
 
-RVA(0x000e3be0, 0x52)
+RVA(0x000e3c10, 0x52)
 BOOL CALLBACK OkCancelDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_INITDIALOG:
@@ -227,7 +227,7 @@ BOOL CALLBACK OkCancelDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
     return false;
 }
 
-RVA(0x000e3c60, 0x1a3)
+RVA(0x000e3c90, 0x279)
 void FillSaveDialog(HWND hWnd, CSaveGame* sg) {
     if (hWnd == NULL || sg == NULL) {
         return;
@@ -314,7 +314,7 @@ void FillSaveDialog(HWND hWnd, CSaveGame* sg) {
     );
 }
 
-RVA(0x000e3e80, 0x86)
+RVA(0x000e3fb0, 0x86)
 void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6) {
     b32 flag;
     if (TempFileExists(item)) {
@@ -329,7 +329,7 @@ void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6
     EnableWindow(GetDlgItem(hWnd, id5), flag);
     EnableWindow(GetDlgItem(hWnd, id6), flag);
 }
-RVA(0x000e3f40, 0x478)
+RVA(0x000e4070, 0x478)
 i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
     i32 c;
     if (cmd == IDOK) {
@@ -543,7 +543,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
     return 0;
 }
 
-RVA(0x000e44e0, 0x2b2)
+RVA(0x000e4610, 0x2b2)
 void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
     char title[0x80];
     u8 readBuf[SAVE_PREVIEW_BYTES];
@@ -616,7 +616,7 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
     SetDlgItemTextA(hDlg, CTRL_SAVESLOT_PREVIEW_TITLE, title);
 }
 
-RVA(0x000e4850, 0x29)
+RVA(0x000e4980, 0x29)
 void SetSaveSlotDialogName(HWND hWnd, CSaveGame* gate, SaveSlot* item) {
     if (hWnd && gate && item) {
         SetDlgItemTextA(hWnd, CTRL_SAVESLOT_NAME, item->m_name);

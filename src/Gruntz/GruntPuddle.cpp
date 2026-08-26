@@ -5,7 +5,7 @@
 
 #include <Gruntz/GruntPuddle.h>
 
-RVA(0x0007d810, 0x25)
+RVA(0x0007d730, 0x25)
 void CGruntPuddle::SetBute(char* key) {
     SET_ANIMATION_ACT(key);
 }

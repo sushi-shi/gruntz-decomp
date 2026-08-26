@@ -31,7 +31,7 @@
 
 #include <ddraw.h>
 
-RVA(0x000f9780, 0x8c)
+RVA(0x000f98b0, 0x8c)
 i32 CSplashState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     if (CAssetRootStorage::s_value.GetLength() == 0) {
         return 0;
@@ -55,7 +55,7 @@ i32 CSplashState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prev
     return 1;
 }
 
-RVA(0x000f9840, 0x29)
+RVA(0x000f9970, 0x29)
 void CSplashState::ReleaseResources() {
     SoundCueRegistry* reg = m_world->m_soundRegistry;
     if (reg->m_soundStream != NULL) {
@@ -65,7 +65,7 @@ void CSplashState::ReleaseResources() {
     CState::ReleaseResources();
 }
 
-RVA(0x000f9880, 0x43)
+RVA(0x000f99b0, 0x43)
 i32 CSplashState::EnterState(GameStateId previousState) {
     int(WINAPI * sc)(BOOL) = ShowCursor;
     while (sc(0) >= 0) {
@@ -75,13 +75,13 @@ i32 CSplashState::EnterState(GameStateId previousState) {
     return 1;
 }
 
-RVA(0x000f98f0, 0x16)
+RVA(0x000f9a20, 0x16)
 i32 CSplashState::LeaveState(GameStateId nextState) {
     m_world->m_drawTarget->ClearAllPages(0);
     return 1;
 }
 
-RVA(0x000f9920, 0x108)
+RVA(0x000f9a50, 0x108)
 i32 CSplashState::Render() {
     IDirectDrawSurface* in = m_world->m_drawTarget->m_frontSurface->m_surface->m_ddSurface;
     if (!in || in->IsLost()) {
@@ -125,7 +125,7 @@ post:
     return 1;
 }
 
-RVA(0x000f9a80, 0x44)
+RVA(0x000f9bb0, 0x44)
 i32 CSplashState::InputVirtual() {
     if (m_world->m_drawTarget->PagesReady() == 0) {
         return 0;
@@ -141,7 +141,7 @@ i32 CSplashState::InputVirtual() {
     );
 }
 
-RVA(0x000f9af0, 0x3e)
+RVA(0x000f9c20, 0x3e)
 i32 CSplashState::RestoreDisplay() {
     if (IsActive() == 0) {
         return 0;
@@ -157,7 +157,7 @@ i32 CSplashState::RestoreDisplay() {
     );
 }
 
-RVA(0x000f9b40, 0x37)
+RVA(0x000f9c70, 0x37)
 i32 CSplashState::OnKeyDown(i32 code, i32) {
     if (code == VK_ESCAPE || code == VK_SPACE || code == VK_RETURN) {
         PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
@@ -165,7 +165,7 @@ i32 CSplashState::OnKeyDown(i32 code, i32) {
     return 1;
 }
 
-RVA(0x000f9b90, 0x24)
+RVA(0x000f9cc0, 0x24)
 i32 CSplashState::OnLButtonDown(i32, i32, i32) {
     PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
     return 1;

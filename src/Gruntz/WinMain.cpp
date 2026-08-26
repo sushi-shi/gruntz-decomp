@@ -21,10 +21,10 @@ typedef enum GruntzHotKey {
     VK_DOLLAR = 0x24,
 } GruntzHotKey;
 
-DATA(0x00251600)
+DATA(0x00252558)
 CGruntzApp* g_pApp;
 
-RVA(0x0011c860, 0x327)
+RVA(0x0011ca70, 0x327)
 i32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, i32 nShowCmd) {
     char szModulePath[0xFE];
 

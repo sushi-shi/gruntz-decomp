@@ -22,13 +22,13 @@
 
 #include <string.h>
 
-DATA(0x002bf6e0)
+DATA(0x002c0638)
 HINSTANCE g_hResModule = NULL;
 
-DATA(0x0021aabc)
+DATA(0x0021ba1c)
 char g_bmpHeaderTemplate[4] = "BM";
 
-RVA(0x00174e90, 0x1c)
+RVA(0x00175170, 0x1c)
 i32 CImagePool::Configure(HINSTANCE resourceModule, HWND sourceWindow, i32 reserved) {
     m_resourceModuleHandle = resourceModule;
     m_sourceHwnd = sourceWindow;
@@ -36,7 +36,7 @@ i32 CImagePool::Configure(HINSTANCE resourceModule, HWND sourceWindow, i32 reser
     return 1;
 }
 
-RVA(0x00174eb0, 0x1b)
+RVA(0x00175190, 0x1b)
 void CImagePool::Clear() {
     ClearSurfaces();
     ClearPalettes();
@@ -45,7 +45,7 @@ void CImagePool::Clear() {
     m_reserved08 = 0;
 }
 
-RVA(0x00174ed0, 0x5d)
+RVA(0x001751b0, 0x5d)
 void CImagePool::RemoveSurface(CRezImage* image) {
     if (!image) {
         return;
@@ -61,7 +61,7 @@ void CImagePool::RemoveSurface(CRezImage* image) {
     delete image;
 }
 
-RVA(0x00174f30, 0x30)
+RVA(0x00175210, 0x30)
 void CImagePool::RemovePalette(CImagePaletteNode* palette) {
     if (!palette) {
         return;
@@ -73,7 +73,7 @@ void CImagePool::RemovePalette(CImagePaletteNode* palette) {
     delete palette;
 }
 
-RVA(0x00174f60, 0x37)
+RVA(0x00175240, 0x37)
 void CImagePool::ClearSurfaces() {
     POSITION pos = m_surfaces.GetHeadPosition();
     while (pos) {
@@ -86,7 +86,7 @@ void CImagePool::ClearSurfaces() {
     m_surfaces.RemoveAll();
 }
 
-RVA(0x00174fa0, 0x3e)
+RVA(0x00175280, 0x3e)
 void CImagePool::ClearPalettes() {
     POSITION pos = m_palettes.GetHeadPosition();
     while (pos) {
@@ -102,7 +102,7 @@ void CImagePool::ClearPalettes() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00174fe0, 0xfe)
+RVA(0x001752c0, 0xfe)
 CRezImage* CImagePool::CreateSurface(i32 width, i32 height, ColorDepth bitDepth, i32 flags) {
     HDC hdc = GetDC(m_sourceHwnd);
     CRezImage* node = new CRezImage();
@@ -130,7 +130,7 @@ CRezImage* CImagePool::CreateSurface(i32 width, i32 height, ColorDepth bitDepth,
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001750e0, 0x103)
+RVA(0x001753c0, 0x103)
 CRezImage* CImagePool::CreateSurfaceFromPixels(
     u8* pixels,
     i32 width,
@@ -162,7 +162,7 @@ CRezImage* CImagePool::CreateSurfaceFromPixels(
     return node;
 }
 
-RVA(0x001751f0, 0xf9)
+RVA(0x001754d0, 0xf9)
 CRezImage* CImagePool::LoadSurfaceFromData(u8* data, RezDecodeKind format, i32 flags) {
     HDC hdc = GetDC(m_sourceHwnd);
     CRezImage* node = new CRezImage();
@@ -190,7 +190,7 @@ CRezImage* CImagePool::LoadSurfaceFromData(u8* data, RezDecodeKind format, i32 f
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001752f0, 0xfc)
+RVA(0x001755d0, 0xfc)
 CRezImage* CImagePool::LoadSurfaceFromResource(char* resourceName, i32 flags) {
     HDC hdc = GetDC(m_sourceHwnd);
     g_hResModule = m_resourceModuleHandle;
@@ -219,7 +219,7 @@ CRezImage* CImagePool::LoadSurfaceFromResource(char* resourceName, i32 flags) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001753f0, 0xf4)
+RVA(0x001756d0, 0xf4)
 CRezImage* CImagePool::ConvertSurface(CRezImage* source, CImagePaletteNode* palette) {
     HDC hdc = GetDC(m_sourceHwnd);
     CRezImage* node = new CRezImage();
@@ -247,7 +247,7 @@ CRezImage* CImagePool::ConvertSurface(CRezImage* source, CImagePaletteNode* pale
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001754f0, 0x7b)
+RVA(0x001757d0, 0x7b)
 CImagePaletteNode* CImagePool::CreatePaletteFromEntries(PALETTEENTRY* entries, i32 flags) {
     CImagePaletteNode* node = new CImagePaletteNode();
     if (node->CreateFromEntries(entries, flags) == 0) {
@@ -264,7 +264,7 @@ CImagePaletteNode* CImagePool::CreatePaletteFromEntries(PALETTEENTRY* entries, i
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00175570, 0x7b)
+RVA(0x00175850, 0x7b)
 CImagePaletteNode* CImagePool::CreatePaletteFromRgb(u8* rgb, i32 flags) {
     CImagePaletteNode* node = new CImagePaletteNode();
     if (node->CreateFromRgb(rgb, flags) == 0) {
@@ -281,7 +281,7 @@ CImagePaletteNode* CImagePool::CreatePaletteFromRgb(u8* rgb, i32 flags) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001755f0, 0x82)
+RVA(0x001758d0, 0x82)
 CImagePaletteNode* CImagePool::LoadPaletteFromFile(char* path, i32 flags) {
     g_hResModule = m_resourceModuleHandle;
     CImagePaletteNode* node = new CImagePaletteNode();
@@ -299,7 +299,7 @@ CImagePaletteNode* CImagePool::LoadPaletteFromFile(char* path, i32 flags) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00175680, 0x85)
+RVA(0x00175960, 0x85)
 CImagePaletteNode*
 CImagePool::LoadPaletteFromData(u8* data, u32 dataSize, RezDecodeKind format, i32 flags) {
     CImagePaletteNode* node = new CImagePaletteNode();
@@ -317,7 +317,7 @@ CImagePool::LoadPaletteFromData(u8* data, u32 dataSize, RezDecodeKind format, i3
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00175710, 0x69)
+RVA(0x001759f0, 0x69)
 i32 CImagePool::ResizeSurface(
     CRezImage* image,
     i32 width,
@@ -338,7 +338,7 @@ i32 CImagePool::ResizeSurface(
     return result;
 }
 
-RVA(0x00175780, 0x3f)
+RVA(0x00175a60, 0x3f)
 void CImagePool::SetImagePalette(CRezImage* image, CImagePaletteNode* palette, i32 scalar) {
     if (image->m_paletteNode && image->m_paletteScalar) {
         RemovePalette(image->m_paletteNode);
@@ -347,7 +347,7 @@ void CImagePool::SetImagePalette(CRezImage* image, CImagePaletteNode* palette, i
     image->SetPalette(palette, scalar);
 }
 
-RVA(0x001757c0, 0x16f)
+RVA(0x00175aa0, 0x16f)
 i32 CRezImage::DecodeBmpHeader(HDC dc, i32 width, i32 height, ColorDepth bitcount, i32 ctrl) {
     m_reserved434 = 0;
     m_width = width;
@@ -393,7 +393,7 @@ i32 CRezImage::DecodeBmpHeader(HDC dc, i32 width, i32 height, ColorDepth bitcoun
 }
 
 // @early-stop
-RVA(0x00175930, 0xc6)
+RVA(0x00175c10, 0xc6)
 i32 CRezImage::DecodeBlit(u8* src, HDC dc, i32 width, i32 height, ColorDepth bitcount, i32 ctrl) {
     if (!DecodeBmpHeader(dc, width, height, bitcount, ctrl)) {
         return 0;
@@ -410,7 +410,7 @@ i32 CRezImage::DecodeBlit(u8* src, HDC dc, i32 width, i32 height, ColorDepth bit
     return 1;
 }
 
-RVA(0x00175a00, 0x90)
+RVA(0x00175ce0, 0x90)
 i32 CRezImage::DispatchDecode(u8* buf, RezDecodeKind kind, HDC dc, i32 ctrl) {
     switch (kind) {
         case DECODE_PCX: {
@@ -437,7 +437,7 @@ i32 CRezImage::DispatchDecode(u8* buf, RezDecodeKind kind, HDC dc, i32 ctrl) {
     return 0;
 }
 
-RVA(0x00175a90, 0xee)
+RVA(0x00175d70, 0xee)
 i32 CRezImage::LoadFromRez(char* name, HDC dc, i32 ctrl) {
     char* ext = strrchr(name, '.');
 
@@ -454,7 +454,7 @@ i32 CRezImage::LoadFromRez(char* name, HDC dc, i32 ctrl) {
     return LoadDefault(name, dc, ctrl);
 }
 
-RVA(0x00175b80, 0x105)
+RVA(0x00175e60, 0x105)
 i32 CRezImage::Convert8To16(HDC dc, CRezImage* src, CImagePaletteNode* pal) {
     if (pal == NULL) {
         return 0;
@@ -491,7 +491,7 @@ i32 CRezImage::Convert8To16(HDC dc, CRezImage* src, CImagePaletteNode* pal) {
     return 1;
 }
 
-RVA(0x00175c90, 0x45)
+RVA(0x00175f70, 0x45)
 void CRezImage::Free() {
     if (m_dibSection) {
         DeleteObject(m_dibSection);
@@ -505,7 +505,7 @@ void CRezImage::Free() {
     m_paletteNode = NULL;
 }
 
-RVA(0x00175ce0, 0x6b)
+RVA(0x00175fc0, 0x6b)
 i32 CRezImage::EnsureSize(HDC dc, i32 w, i32 h, ColorDepth bitCount, i32 flag) {
     if (m_dibSection && m_pixels && m_rowOffsets && m_width == w && m_height == h) {
         return 1;
@@ -516,7 +516,7 @@ i32 CRezImage::EnsureSize(HDC dc, i32 w, i32 h, ColorDepth bitCount, i32 flag) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00175d50, 0xad)
+RVA(0x00176030, 0xad)
 void CRezImage::Fill(i32 value) {
     if (m_rowPad == 0) {
         i32 fill = value & PIXEL_BYTE_MASK;
@@ -535,7 +535,7 @@ void CRezImage::Fill(i32 value) {
 }
 
 // @early-stop
-RVA(0x00175e00, 0x3d)
+RVA(0x001760e0, 0x3d)
 i32 CRezImage::DecodeBmpData(void* buf, HDC dc, i32 ctrl) {
     BITMAPINFOHEADER* ih = static_cast<BITMAPINFOHEADER*>(buf);
     i32 width = ih->biWidth;
@@ -551,7 +551,7 @@ i32 CRezImage::DecodeBmpData(void* buf, HDC dc, i32 ctrl) {
     return r;
 }
 
-RVA(0x00175e40, 0x1b3)
+RVA(0x00176120, 0x1b3)
 i32 CRezImage::LoadBmp(char* name, HDC dc, i32 ctrl) {
     CFile file;
     BITMAPFILEHEADER fh;
@@ -583,7 +583,7 @@ i32 CRezImage::LoadBmp(char* name, HDC dc, i32 ctrl) {
 }
 
 // @early-stop
-RVA(0x00176000, 0x18f)
+RVA(0x001762e0, 0x18f)
 i32 CRezImage::DecodePcxData(void* buf, HDC dc, i32 ctrl) {
     PcxHeader* hdr = static_cast<PcxHeader*>(buf);
     i32 width = hdr->m_xMax - hdr->m_xMin + 1;
@@ -646,7 +646,7 @@ i32 CRezImage::DecodePcxData(void* buf, HDC dc, i32 ctrl) {
     return 1;
 }
 
-RVA(0x00176190, 0x126)
+RVA(0x00176470, 0x126)
 i32 CRezImage::LoadPcx(char* name, HDC dc, i32 ctrl) {
     CFile file;
 
@@ -669,7 +669,7 @@ i32 CRezImage::LoadPcx(char* name, HDC dc, i32 ctrl) {
     return result;
 }
 
-RVA(0x001762c0, 0x42)
+RVA(0x001765a0, 0x42)
 i32 CRezImage::DecodeRidData(void* buf, HDC dc, i32 ctrl) {
     RecordBytes<PidHeader> p;
     p.m_bytes = static_cast<u8*>(buf);
@@ -686,7 +686,7 @@ i32 CRezImage::DecodeRidData(void* buf, HDC dc, i32 ctrl) {
     return ok;
 }
 
-RVA(0x00176310, 0x126)
+RVA(0x001765f0, 0x126)
 i32 CRezImage::LoadRid(char* name, HDC dc, i32 ctrl) {
     CFile file;
 
@@ -709,7 +709,7 @@ i32 CRezImage::LoadRid(char* name, HDC dc, i32 ctrl) {
     return result;
 }
 
-RVA(0x00176440, 0x25d)
+RVA(0x00176720, 0x25d)
 i32 CRezImage::DecodePidData(void* buf, HDC dc, i32 ctrl) {
     RecordBytes<PidHeader> p;
     p.m_bytes = static_cast<u8*>(buf);
@@ -790,7 +790,7 @@ i32 CRezImage::DecodePidData(void* buf, HDC dc, i32 ctrl) {
     return 1;
 }
 
-RVA(0x001766a0, 0x126)
+RVA(0x00176980, 0x126)
 i32 CRezImage::LoadPid(char* name, HDC dc, i32 ctrl) {
     CFile file;
 
@@ -813,7 +813,7 @@ i32 CRezImage::LoadPid(char* name, HDC dc, i32 ctrl) {
     return result;
 }
 
-RVA(0x001767d0, 0x64)
+RVA(0x00176ab0, 0x64)
 i32 CRezImage::LoadDefault(char* name, HDC dc, i32 ctrl) {
     HINSTANCE hModule = g_hResModule;
     if (!hModule) {
@@ -836,7 +836,7 @@ i32 CRezImage::LoadDefault(char* name, HDC dc, i32 ctrl) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00176840, 0x11f)
+RVA(0x00176b20, 0x11f)
 void CRezImage::FlipVertical() {
     if (m_height <= 1) {
         return;
@@ -869,7 +869,7 @@ void CRezImage::FlipVertical() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00176960, 0x168)
+RVA(0x00176c40, 0x168)
 i32 CRezImage::PasteFrom(CRezImage* src, i32 x, i32 y) {
     i32 h = src->m_height;
     i32 w = src->m_width;
@@ -913,7 +913,7 @@ i32 CRezImage::PasteFrom(CRezImage* src, i32 x, i32 y) {
     return h;
 }
 
-RVA(0x00176ad0, 0x17)
+RVA(0x00176db0, 0x17)
 void CRezImage::SetPalette(CImagePaletteNode* paletteNode, i32 scalar) {
 
     m_paletteNode = paletteNode;
@@ -923,7 +923,7 @@ void CRezImage::SetPalette(CImagePaletteNode* paletteNode, i32 scalar) {
 // @identity-TODO: owner, four-argument ABI, and failure result are proven; the operation is not.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00176af0, 0x5)
+RVA(0x00176dd0, 0x5)
 i32 CRezImage::SaveByType(
     const char* filename,
     FileImageFormat type,
@@ -935,7 +935,7 @@ i32 CRezImage::SaveByType(
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00176b00, 0x2c)
+RVA(0x00176de0, 0x2c)
 i32 CRezImage::Save(const char* filename, CImagePaletteNode* paletteObj) {
     switch (m_bitCount) {
         case BPP_PALETTED_8:
@@ -949,7 +949,7 @@ i32 CRezImage::Save(const char* filename, CImagePaletteNode* paletteObj) {
 }
 
 // @early-stop
-RVA(0x00176b30, 0x1e5)
+RVA(0x00176e10, 0x1e5)
 i32 CRezImage::SaveBmp(const char* filename, CImagePaletteNode* paletteObj) {
     if (paletteObj == NULL) {
         paletteObj = m_paletteNode;
@@ -1000,7 +1000,7 @@ i32 CRezImage::SaveBmp(const char* filename, CImagePaletteNode* paletteObj) {
     return 1;
 }
 
-RVA(0x00176d20, 0x71)
+RVA(0x00177000, 0x71)
 void CRezImage::FillRect(CRezFillRect* r, i32 color) {
     i32 width = r->right - r->left;
     for (i32 y = r->top; y <= r->bottom; ++y) {
@@ -1011,7 +1011,7 @@ void CRezImage::FillRect(CRezFillRect* r, i32 color) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00176da0, 0x4b)
+RVA(0x00177080, 0x4b)
 void CRezImage::FillRectAt(i32 dx, i32 dy, CRezFillRect* src, i32 color) {
     CRezFillRect r;
     r.left = dx;
@@ -1021,7 +1021,7 @@ void CRezImage::FillRectAt(i32 dx, i32 dy, CRezFillRect* src, i32 color) {
     FillRect(&r, color);
 }
 
-RVA(0x00176df0, 0x71)
+RVA(0x001770d0, 0x71)
 i32 CImagePaletteNode::CreateFromEntries(PALETTEENTRY* entries, i32 flags) {
     m_flags = flags;
     m_logicalPalette.palNumEntries = 0x100;
@@ -1038,7 +1038,7 @@ i32 CImagePaletteNode::CreateFromEntries(PALETTEENTRY* entries, i32 flags) {
     return m_palette != NULL;
 }
 
-RVA(0x00176e70, 0x4e)
+RVA(0x00177150, 0x4e)
 i32 CImagePaletteNode::CreateFromRgb(u8* rgb, i32 flags) {
     PALETTEENTRY pal[PALETTE_ENTRY_COUNT];
     u8* s = rgb;
@@ -1053,7 +1053,7 @@ i32 CImagePaletteNode::CreateFromRgb(u8* rgb, i32 flags) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00176ec0, 0x64)
+RVA(0x001771a0, 0x64)
 i32 CImagePaletteNode::CreateFromBgrx(u8* bgrx, i32 flags) {
     PALETTEENTRY pal[PALETTE_ENTRY_COUNT];
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
@@ -1067,7 +1067,7 @@ i32 CImagePaletteNode::CreateFromBgrx(u8* bgrx, i32 flags) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00176f30, 0x51)
+RVA(0x00177210, 0x51)
 i32 CImagePaletteNode::CreateFromBgr(u8* bgr, i32 flags) {
     PALETTEENTRY pal[PALETTE_ENTRY_COUNT];
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
@@ -1079,7 +1079,7 @@ i32 CImagePaletteNode::CreateFromBgr(u8* bgr, i32 flags) {
     return CreateFromEntries(pal, flags);
 }
 
-RVA(0x00176f90, 0xa4)
+RVA(0x00177270, 0xa4)
 i32 CImagePaletteNode::LoadFromFile(char* path, i32 flags) {
     char* ext = strrchr(path, '.');
 
@@ -1094,7 +1094,7 @@ i32 CImagePaletteNode::LoadFromFile(char* path, i32 flags) {
     return LoadFromResource(path, flags);
 }
 
-RVA(0x00177040, 0x23)
+RVA(0x00177320, 0x23)
 i32 CImagePaletteNode::LoadFromData(u8* data, u32 dataSize, RezDecodeKind format, i32 flags) {
     if (format == DECODE_PCX) {
         return CreateFromTrailingRgb(data, dataSize, flags);
@@ -1102,7 +1102,7 @@ i32 CImagePaletteNode::LoadFromData(u8* data, u32 dataSize, RezDecodeKind format
     return 0;
 }
 
-RVA(0x00177070, 0x22)
+RVA(0x00177350, 0x22)
 void CImagePaletteNode::Destroy() {
     if (m_palette) {
         DeleteObject(m_palette);
@@ -1111,7 +1111,7 @@ void CImagePaletteNode::Destroy() {
     m_flags = 0;
 }
 
-RVA(0x001770a0, 0x3a)
+RVA(0x00177380, 0x3a)
 i32 DisplayUsesPalette() {
     HDC ic = CreateICA("DISPLAY", NULL, NULL, NULL);
     if (ic) {
@@ -1122,7 +1122,7 @@ i32 DisplayUsesPalette() {
     return 0;
 }
 
-RVA(0x001770e0, 0x7c)
+RVA(0x001773c0, 0x7c)
 void CImagePaletteNode::ReserveSystemColors() {
     ResetSystemPalette();
     HDC dc = CreateDCA("DISPLAY", NULL, NULL, NULL);
@@ -1142,7 +1142,7 @@ void CImagePaletteNode::ReserveSystemColors() {
     DeleteDC(dc);
 }
 
-RVA(0x00177160, 0x81)
+RVA(0x00177440, 0x81)
 void ResetSystemPalette() {
 
     LogPal256 lp;
@@ -1164,7 +1164,7 @@ void ResetSystemPalette() {
     ReleaseDC(NULL, hdc);
 }
 
-RVA(0x001771f0, 0xe2)
+RVA(0x001774d0, 0xe2)
 i32 CImagePaletteNode::LoadPalFile(char* path, i32 flags) {
     CFile file;
     u8 rgb[PALETTE_RGB_BYTE_COUNT];
@@ -1179,7 +1179,7 @@ i32 CImagePaletteNode::LoadPalFile(char* path, i32 flags) {
     return CreateFromRgb(rgb, flags);
 }
 
-RVA(0x001772e0, 0x117)
+RVA(0x001775c0, 0x117)
 i32 CImagePaletteNode::LoadPcxFile(char* path, i32 flags) {
     CFile file;
     u8 rgb[PALETTE_RGB_BYTE_COUNT];
@@ -1199,7 +1199,7 @@ i32 CImagePaletteNode::LoadPcxFile(char* path, i32 flags) {
     return CreateFromEntries(rgbq, flags);
 }
 
-RVA(0x00177400, 0x76)
+RVA(0x001776e0, 0x76)
 i32 CImagePaletteNode::CreateFromTrailingRgb(u8* data, u32 dataSize, i32 flags) {
     PALETTEENTRY pal[PALETTE_ENTRY_COUNT];
     if (dataSize < PALETTE_RGB_BYTE_COUNT) {

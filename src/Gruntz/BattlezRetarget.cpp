@@ -53,7 +53,7 @@
 #include <string.h>
 
 // @early-stop
-RVA(0x000358a0, 0x2d6)
+RVA(0x00035830, 0x2d6)
 i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
     GruntzPlayer* recA = NULL;
     CBattlezMapConfig* cfgB = NULL;

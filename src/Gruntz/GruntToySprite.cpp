@@ -23,16 +23,16 @@
 
 #include <stddef.h>
 
-RVA_DYNINIT(0x0007f520, 0xa, CActRegPool<CGruntToySprite>::s_table)
-RVA_DYNINIT(0x0007f540, 0x15, CActRegPool<CGruntToySprite>::s_table)
-RVA_DYNINIT(0x0007f570, 0xe, CActRegPool<CGruntToySprite>::s_table)
-RVA_DYNINIT(0x0007f590, 0x1f, CActRegPool<CGruntToySprite>::s_table)
-template<> DATA(0x00244d58)
+RVA_DYNINIT(0x0007f440, 0xa, CActRegPool<CGruntToySprite>::s_table)
+RVA_DYNINIT(0x0007f460, 0x15, CActRegPool<CGruntToySprite>::s_table)
+RVA_DYNINIT(0x0007f490, 0xe, CActRegPool<CGruntToySprite>::s_table)
+RVA_DYNINIT(0x0007f4b0, 0x1f, CActRegPool<CGruntToySprite>::s_table)
+template<> DATA(0x00245cb0)
 CActReg CActRegPool<CGruntToySprite>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
-RVA_COMPGEN(0x00012280, 0x1e, ??_GCGruntToySprite@@UAEPAXI@Z)
-RVA_COMPGEN(0x000122b0, 0x44, ??1CGruntToySprite@@UAE@XZ)
+RVA_COMPGEN(0x00012290, 0x1e, ??_GCGruntToySprite@@UAEPAXI@Z)
+RVA_COMPGEN(0x000122c0, 0x44, ??1CGruntToySprite@@UAE@XZ)
 
-RVA(0x0007f350, 0x16a)
+RVA(0x0007f270, 0x16a)
 CGruntToySprite::CGruntToySprite(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetImageFrameByName("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", 0);
@@ -43,21 +43,21 @@ CGruntToySprite::CGruntToySprite(CGameObject* obj)
     m_lastLayer = PICKUP_NONE;
 }
 
-RVA(0x0007f5c0, 0x102)
+RVA(0x0007f4e0, 0x102)
 void CGruntToySprite::FireActivation(i32 id) {
     if ((*((CActRegPool<CGruntToySprite>::s_table.ResolveEntry(id)))) != NULL) {
         (this->*(*((CActRegPool<CGruntToySprite>::s_table.ResolveEntry(id)))))();
     }
 }
 
-RVA(0x0007f720, 0x18d)
+RVA(0x0007f640, 0x18d)
 void CGruntToySprite::RegisterActs() {
     ACT_NAME_ID(id, "A")
     (*((CActRegPool<CGruntToySprite>::s_table.ResolveEntry(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CGruntToySprite::Update);
 }
 
-RVA(0x0007f920, 0x21)
+RVA(0x0007f840, 0x21)
 i32 CGruntToySprite::BindToGrunt(i32 playerIndex, i32 unitIndex) {
     m_gruntIdentity.m_playerIndex = playerIndex;
     m_gruntIdentity.m_unitIndex = unitIndex;
@@ -65,7 +65,7 @@ i32 CGruntToySprite::BindToGrunt(i32 playerIndex, i32 unitIndex) {
     return 1;
 }
 
-RVA(0x0007f960, 0x85)
+RVA(0x0007f880, 0x85)
 i32 CGruntToySprite::Update() {
     CGrunt* e =
         g_gameReg->m_triggerMgr->m_units
@@ -90,7 +90,7 @@ i32 CGruntToySprite::Update() {
     return 0;
 }
 
-RVA(0x0007fa20, 0x89)
+RVA(0x0007f940, 0x89)
 i32 CGruntToySprite::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,

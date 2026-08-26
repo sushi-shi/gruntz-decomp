@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <string.h>
 
-DATA(0x00213df8)
+DATA(0x00214d58)
 unsigned char g_routerSysEx[12] = {
     0xf0,
     0x00,
@@ -27,54 +27,54 @@ unsigned char g_routerSysEx[12] = {
     0xf7,
 };
 
-DATA(0x0024da80)
+DATA(0x0024e9d8)
 u16 g_sfDeviceIndex = 0;
-DATA(0x0024da84)
+DATA(0x0024e9dc)
 DWORD g_sfCandidateSampleBytes = 0;
-DATA(0x0024da88)
+DATA(0x0024e9e0)
 i32 g_sfManagerResult = 0;
-DATA(0x0024da90)
+DATA(0x0024e9e8)
 char g_sfTraceBuffer[0x3c];
-DATA(0x0024dacc)
+DATA(0x0024ea24)
 CSFMIDILocation g_sfMidiLocation;
-DATA(0x0024dad0)
+DATA(0x0024ea28)
 CSFBufferObject g_sfBufferObject;
-DATA(0x0024dae0)
+DATA(0x0024ea38)
 char g_sfMusic4[GRUNTZ_PATH_BUFFER_SIZE];
-DATA(0x0024dbe0)
+DATA(0x0024eb38)
 DWORD g_staticSampleBytes = 0;
-DATA(0x0024dc28)
+DATA(0x0024eb80)
 char g_sfLocal4[GRUNTZ_PATH_BUFFER_SIZE];
-DATA(0x0024dd28)
+DATA(0x0024ec80)
 u16 g_sfDeviceId = 0;
-DATA(0x0024dd30)
+DATA(0x0024ec88)
 char g_sfMusic[GRUNTZ_PATH_BUFFER_SIZE];
-DATA(0x0024de30)
+DATA(0x0024ed88)
 char g_sfLocal[GRUNTZ_PATH_BUFFER_SIZE];
-DATA(0x0024df30)
+DATA(0x0024ee88)
 CSFCapsObject g_sfCaps;
-DATA(0x0024df98)
+DATA(0x0024eef0)
 u16 g_sfOpenAttemptsRemaining = 0;
-DATA(0x0024df9c)
+DATA(0x0024eef4)
 DWORD g_sfRouterId = 0;
-DATA(0x0024dfa0)
+DATA(0x0024eef8)
 char g_sfDir[GRUNTZ_PATH_BUFFER_SIZE];
-DATA(0x0024e0a0)
+DATA(0x0024eff8)
 DWORD g_sfVer = 0;
-DATA(0x0024e0a4)
+DATA(0x0024effc)
 u16 g_sfDeviceCount = 0;
-DATA(0x0024e0a8)
+DATA(0x0024f000)
 HMODULE g_sfDll = NULL;
-DATA(0x0024e0ac)
+DATA(0x0024f004)
 SfManagerFactory* g_sfManagerFactory = NULL;
-DATA(0x0024e0b0)
+DATA(0x0024f008)
 SFMANL101API* g_sfDevice = NULL;
-DATA(0x0024e0b8)
+DATA(0x0024f010)
 b32 g_sfReady = false;
-DATA(0x0024e0c0)
+DATA(0x0024f018)
 u8 g_sfDeviceRatings[344] = {0};
 
-RVA(0x000f8970, 0x3b4)
+RVA(0x000f8aa0, 0x3b4)
 i32 SFManager_SelectBestDevice() {
     g_sfDll = LoadLibraryA("SFMAN32.DLL");
     if (g_sfDll == NULL) {

@@ -52,7 +52,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-RVA(0x00034c70, 0x133)
+RVA(0x00034c00, 0x133)
 i32 CBattlezMapConfig::CheckQueuedSpawnTile(CGrunt* unit) {
     if (unit->CoordCount() != 0) {
         return 1;

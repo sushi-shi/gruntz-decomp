@@ -121,7 +121,7 @@ struct CButeValue {
     inline CButeValue* CopyValue(CButeValue* other);
 };
 
-RVA(0x00172040, 0x120)
+RVA(0x00172320, 0x120)
 inline CButeValue* CButeValue::CopyValue(CButeValue* other) {
     switch (type) {
         case BUTE_INT:

@@ -69,11 +69,11 @@
         (g)->m_coordList.RemoveAll();                                                              \
     }
 
-DATA(0x0022b7ec)
+DATA(0x0022c744)
 i32 g_battlezRoutePassableMask;
 
 // @early-stop
-RVA(0x00031610, 0x501)
+RVA(0x000315a0, 0x501)
 i32 CBattlezMapConfig::Step(CGrunt* g) {
     if (g->CoordCount() == 0) {
         if (g->m_defenderState == AISTATE_ATTACK) {
@@ -243,7 +243,7 @@ L_clear: {
 #undef MOVE_RECYCLE
 
 // @early-stop
-RVA(0x00031c70, 0x1d)
+RVA(0x00031c00, 0x1d)
 Coord CGrunt::GetTilePos() {
     Coord out;
     CWwdSpriteObject* h = m_object;
@@ -253,7 +253,7 @@ Coord CGrunt::GetTilePos() {
 }
 
 // @early-stop
-RVA(0x00031ca0, 0x2f2)
+RVA(0x00031c30, 0x2f2)
 i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
     if (unit->ArrivalCell().m_x != -1 && unit->ArrivalCell().m_y != -1) {
         CGrunt* target =
@@ -323,7 +323,7 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
 }
 
 // @early-stop
-RVA(0x00032060, 0x7bd)
+RVA(0x00031ff0, 0x7bd)
 i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
     if (unit->m_defenderState == AISTATE_RETURN) {
         return 1;

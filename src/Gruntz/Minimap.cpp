@@ -60,7 +60,7 @@ static inline u16 Pack(i32 r, i32 g, i32 b) {
     );
 }
 
-RVA(0x000a32c0, 0x72)
+RVA(0x000a32b0, 0x72)
 i32 CMinimap::Init(CGruntzMgr* gameMgr, i32 refreshIntervalMs) {
     if (gameMgr == NULL) {
         return 0;
@@ -86,7 +86,7 @@ i32 CMinimap::Init(CGruntzMgr* gameMgr, i32 refreshIntervalMs) {
     return 1;
 }
 
-RVA(0x000a3360, 0x29)
+RVA(0x000a3350, 0x29)
 void CMinimap::Reset() {
     FreeSurface();
     m_gameMgr = NULL;
@@ -99,7 +99,7 @@ void CMinimap::Reset() {
     m_refreshRemaining = 0;
 }
 
-RVA(0x000a33a0, 0x23)
+RVA(0x000a3390, 0x23)
 void CMinimap::FreeSurface() {
     if (m_world != NULL && m_surface != NULL) {
         m_world->m_deviceManager->RemoveSurface(m_surface);
@@ -107,7 +107,7 @@ void CMinimap::FreeSurface() {
     }
 }
 
-RVA(0x000a33e0, 0x55)
+RVA(0x000a33d0, 0x55)
 i32 CMinimap::AllocSurface() {
     if (m_mapMgr == NULL) {
         return 0;
@@ -129,7 +129,7 @@ i32 CMinimap::AllocSurface() {
     return 1;
 }
 
-RVA(0x000a3460, 0x2f3)
+RVA(0x000a3450, 0x2f3)
 i32 CMinimap::Refresh(i32 elapsedMs, b32 forceRefresh) {
     if (forceRefresh == false) {
 
@@ -237,7 +237,7 @@ i32 CMinimap::Refresh(i32 elapsedMs, b32 forceRefresh) {
     return 1;
 }
 
-RVA(0x000a3820, 0x18e)
+RVA(0x000a3810, 0x18e)
 i32 CMinimap::Draw(CDDrawSurfacePair* target, RECT* bounds) {
     if (m_surface == NULL) {
         return 0;
@@ -301,7 +301,7 @@ i32 CMinimap::Draw(CDDrawSurfacePair* target, RECT* bounds) {
 // @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000a3a20, 0xe2)
+RVA(0x000a3a10, 0xe2)
 void CMinimap::DrawBorderRaw(RECT* rect, char* pixels, i32 color) {
     i32 width = rect->right - rect->left + 1;
 
@@ -334,7 +334,7 @@ void CMinimap::DrawBorderRaw(RECT* rect, char* pixels, i32 color) {
     }
 }
 
-RVA(0x000a3b50, 0xfa)
+RVA(0x000a3b40, 0xfa)
 void CMinimap::DrawBorder(RECT* rect, CDDrawSurfacePair* target, i32 color) {
     CDDSurface* surface = target->m_surface;
     char* pixels = static_cast<char*>(surface->Lock(NULL));
@@ -369,7 +369,7 @@ void CMinimap::DrawBorder(RECT* rect, CDDrawSurfacePair* target, i32 color) {
     surface->m_ddSurface->Unlock(NULL);
 }
 
-RVA(0x000a3c90, 0xe8)
+RVA(0x000a3c80, 0xe8)
 i32 CMinimap::SetAreaPalette(LevelArea area) {
     if (area > AREA_LAST) {
         return 0;
@@ -422,7 +422,7 @@ i32 CMinimap::SetAreaPalette(LevelArea area) {
 }
 
 // @early-stop
-RVA(0x000a3dc0, 0x85f)
+RVA(0x000a3db0, 0x85f)
 i32 CMinimap::BuildRockyRoadzPalette() {
     u16* buf = m_tileColors;
     i32 i;
@@ -533,7 +533,7 @@ i32 CMinimap::BuildRockyRoadzPalette() {
     return 1;
 }
 
-RVA(0x000a4840, 0x32)
+RVA(0x000a4830, 0x32)
 void CMinimap::FillSpan(u32 x1, u32 x2, u16 color) {
     if (x1 > x2) {
         return;
@@ -544,7 +544,7 @@ void CMinimap::FillSpan(u32 x1, u32 x2, u16 color) {
 }
 
 // @early-stop
-RVA(0x000a4890, 0x852)
+RVA(0x000a4880, 0x852)
 i32 CMinimap::BuildGruntziclezPalette() {
     u16* buf = m_tileColors;
     i32 i;
@@ -654,7 +654,7 @@ i32 CMinimap::BuildGruntziclezPalette() {
     return 1;
 }
 // @early-stop
-RVA(0x000a5310, 0x855)
+RVA(0x000a5300, 0x855)
 i32 CMinimap::BuildTropiczPalette() {
     u16* buf = m_tileColors;
     i32 i;
@@ -765,7 +765,7 @@ i32 CMinimap::BuildTropiczPalette() {
     return 1;
 }
 // @early-stop
-RVA(0x000a5d90, 0x825)
+RVA(0x000a5d80, 0x825)
 i32 CMinimap::BuildHighOnSweetzPalette() {
     u16* buf = m_tileColors;
     i32 i;
@@ -875,7 +875,7 @@ i32 CMinimap::BuildHighOnSweetzPalette() {
     return 1;
 }
 // @early-stop
-RVA(0x000a67d0, 0x864)
+RVA(0x000a67c0, 0x864)
 i32 CMinimap::BuildHighRollerzPalette() {
     u16* buf = m_tileColors;
     i32 i;
@@ -985,7 +985,7 @@ i32 CMinimap::BuildHighRollerzPalette() {
     return 1;
 }
 // @early-stop
-RVA(0x000a7260, 0x8c0)
+RVA(0x000a7250, 0x8c0)
 i32 CMinimap::BuildHoneyPalette() {
     u16* buf = m_tileColors;
     i32 i;
@@ -1100,7 +1100,7 @@ i32 CMinimap::BuildHoneyPalette() {
     return 1;
 }
 // @early-stop
-RVA(0x000a7d50, 0x94f)
+RVA(0x000a7d40, 0x94f)
 i32 CMinimap::BuildMiniatureMasterzPalette() {
     u16* buf = m_tileColors;
     i32 i;
@@ -1221,7 +1221,7 @@ i32 CMinimap::BuildMiniatureMasterzPalette() {
     return 1;
 }
 // @early-stop
-RVA(0x000a8900, 0x926)
+RVA(0x000a88f0, 0x926)
 i32 CMinimap::BuildSpacePalette() {
     u16* buf = m_tileColors;
     i32 i;
@@ -1341,7 +1341,7 @@ i32 CMinimap::BuildSpacePalette() {
     return 1;
 }
 
-RVA(0x000a9480, 0x5c)
+RVA(0x000a9470, 0x5c)
 i32 CMinimap::BeginMinimapPan(i32, i32 cursorX, i32 cursorY) {
     i32 cell[2];
     if (!ScreenPointToCell(cursorX, cursorY, cell, MINIMAP_SNAP_MARGIN_PX)) {
@@ -1359,7 +1359,7 @@ i32 CMinimap::BeginMinimapPan(i32, i32 cursorX, i32 cursorY) {
     return 1;
 }
 
-RVA(0x000a9500, 0x16)
+RVA(0x000a94f0, 0x16)
 i32 CMinimap::EndMinimapPan(i32, i32, i32) {
     if (m_panActive != false) {
         m_panActive = false;
@@ -1370,12 +1370,12 @@ i32 CMinimap::EndMinimapPan(i32, i32, i32) {
 // @identity-TODO: the minimap-handler ABI and false result are proven; the event identity is not.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000a9530, 0x5)
+RVA(0x000a9520, 0x5)
 i32 CMinimap::IgnoreMinimapEvent(i32, i32, i32) {
     return 0;
 }
 
-RVA(0x000a9550, 0x5b)
+RVA(0x000a9540, 0x5b)
 i32 CMinimap::IssueMinimapCommand(i32, i32 cursorX, i32 cursorY) {
     i32 cell[2];
     if (!ScreenPointToCell(cursorX, cursorY, cell, MINIMAP_SNAP_MARGIN_PX)) {
@@ -1393,7 +1393,7 @@ i32 CMinimap::IssueMinimapCommand(i32, i32 cursorX, i32 cursorY) {
     return 1;
 }
 
-RVA(0x000a95d0, 0x69)
+RVA(0x000a95c0, 0x69)
 i32 CMinimap::ContinueMinimapPan(i32, i32 cursorX, i32 cursorY) {
     if (m_panActive == false) {
         return 0;
@@ -1412,7 +1412,7 @@ i32 CMinimap::ContinueMinimapPan(i32, i32 cursorX, i32 cursorY) {
     return 1;
 }
 
-RVA(0x000a9660, 0xca)
+RVA(0x000a9650, 0xca)
 i32 CMinimap::ScreenPointToCell(i32 cursorX, i32 cursorY, i32* outCell, i32 snapMargin) {
     if (cursorX < m_boundsRect.left || cursorX > m_boundsRect.right || cursorY < m_boundsRect.top
         || cursorY > m_boundsRect.bottom) {

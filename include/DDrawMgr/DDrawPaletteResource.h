@@ -25,13 +25,13 @@ struct CDDrawPaletteResource : public CWapObj {
     virtual ~CDDrawPaletteResource() OVERRIDE {
         Unload();
     }
-    RVA(0x00165d90, 0xb)
+    RVA(0x00166070, 0xb)
     virtual i32 IsLoaded() OVERRIDE {
         return m_palette != NULL;
     }
 
     virtual void Unload() OVERRIDE;
-    RVA(0x00165da0, 0x6)
+    RVA(0x00166080, 0x6)
     virtual LoadableClassId GetClassId() OVERRIDE {
         return CLASSID_PALETTE_RESOURCE;
     }

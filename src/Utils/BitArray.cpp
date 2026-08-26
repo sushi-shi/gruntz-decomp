@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-RVA(0x00193640, 0x40)
+RVA(0x00193920, 0x40)
 zBitVec* zBitVec::SetBit(u32 idx) {
     if (EnsureSize(idx + 1)) {
         u32* p;
@@ -23,7 +23,7 @@ zBitVec* zBitVec::SetBit(u32 idx) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00193680, 0x5e)
+RVA(0x00193960, 0x5e)
 zBitVec* zBitVec::Or(zBitVec* o) {
     if (static_cast<u32>(o->m_capacity) > static_cast<u32>(m_capacity)) {
         if (!EnsureSize(o->m_capacity)) {
@@ -40,7 +40,7 @@ zBitVec* zBitVec::Or(zBitVec* o) {
 }
 
 #pragma function(memcpy)
-RVA(0x001936e0, 0xd3)
+RVA(0x001939c0, 0xd3)
 i32 zBitVec::EnsureSize(i32 nbits) {
     u32 ndwords = ((nbits & BITARRAY_BIT_MASK) != 0 ? 1 : 0)
                   + (static_cast<u32>(nbits) >> BITARRAY_WORD_SHIFT);

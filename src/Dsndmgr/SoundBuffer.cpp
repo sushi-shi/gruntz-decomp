@@ -38,12 +38,12 @@ typedef enum DSoundDx5Magic {
     DSBUFFERDESC_SIZE = 0x14,
 } DSoundDx5Magic;
 
-DATA(0x00253ab8)
+DATA(0x00254a10)
 i32 g_volumeTable[VOLUME_PCT_MAX + 1];
 
 #pragma optimize("", off)
 
-RVA(0x001350b0, 0x5d)
+RVA(0x001352c0, 0x5d)
 i32 SoundDevice::VolumeToAttenuation(i32 volumePct) {
     if (volumePct == VOLUME_PCT_MAX) {
         return 0;
@@ -57,7 +57,7 @@ i32 SoundDevice::VolumeToAttenuation(i32 volumePct) {
     return static_cast<i32>((-(ratio * c_volumePercentScale)));
 }
 
-RVA(0x00135110, 0x8e)
+RVA(0x00135320, 0x8e)
 i32 ConvertVolumeToPercent(i32 attenuation) {
     if (attenuation == 0) {
         return VOLUME_PCT_MAX;
@@ -79,14 +79,14 @@ i32 ConvertVolumeToPercent(i32 attenuation) {
 
 #pragma optimize("", on)
 
-RVA(0x001351a0, 0x23)
+RVA(0x001353b0, 0x23)
 void SoundDevice::BuildVolumeTable() {
     for (i32 i = 0; i <= VOLUME_PCT_MAX; i++) {
         g_volumeTable[i] = VolumeToAttenuation(i);
     }
 }
 
-RVA(0x001351d0, 0x109)
+RVA(0x001353e0, 0x109)
 SoundBuffer::SoundBuffer(IDirectSoundBuffer* buffer, SoundDevice* owner) {
 
     m_buffer = buffer;
@@ -136,12 +136,12 @@ SoundBuffer::SoundBuffer(IDirectSoundBuffer* buffer, SoundDevice* owner) {
     }
 }
 
-RVA_COMPGEN(0x001352e0, 0x1e, ??_GSoundBuffer@@UAEPAXI@Z)
+RVA_COMPGEN(0x001354f0, 0x1e, ??_GSoundBuffer@@UAEPAXI@Z)
 
-RVA(0x00135300, 0x7)
+RVA(0x00135510, 0x7)
 SoundBuffer::~SoundBuffer() {}
 
-RVA(0x00135310, 0x2a)
+RVA(0x00135520, 0x2a)
 i32 SoundBuffer::Restore() {
     b32 hr = m_buffer->Restore() != 0;
     if (hr) {
@@ -151,7 +151,7 @@ i32 SoundBuffer::Restore() {
     return 1;
 }
 
-RVA(0x00135340, 0x37)
+RVA(0x00135550, 0x37)
 i32 SoundBuffer::ReacquireBuffer() {
     if (m_owner->m_initialized == false) {
         return 0;
@@ -164,7 +164,7 @@ i32 SoundBuffer::ReacquireBuffer() {
     return m_owner->ReacquireViaCallback();
 }
 
-RVA(0x00135380, 0x66)
+RVA(0x00135590, 0x66)
 i32 SoundBuffer::StopAndRewind() {
     if (m_owner->m_initialized == false) {
         return 0;
@@ -181,7 +181,7 @@ i32 SoundBuffer::StopAndRewind() {
     return 1;
 }
 
-RVA(0x001353f0, 0x4b)
+RVA(0x00135600, 0x4b)
 i32 SoundBuffer::IsPlaying() {
     if (m_owner->m_initialized == false) {
         return 0;
@@ -198,7 +198,7 @@ i32 SoundBuffer::IsPlaying() {
     return 0;
 }
 
-RVA(0x00135440, 0x4d)
+RVA(0x00135650, 0x4d)
 i32 SoundBuffer::IsLooping() {
     if (m_owner->m_initialized == false) {
         return 0;
@@ -217,7 +217,7 @@ i32 SoundBuffer::IsLooping() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00135490, 0x73)
+RVA(0x001356a0, 0x73)
 i32 SoundBuffer::IsInHardware() {
     if (m_owner->m_initialized == false) {
         return 0;
@@ -236,7 +236,7 @@ i32 SoundBuffer::IsInHardware() {
     return 0;
 }
 
-RVA(0x00135510, 0x25)
+RVA(0x00135720, 0x25)
 void SoundBuffer::SetLooping(b32 enabled) {
     if (m_owner->m_initialized == false) {
         return;
@@ -250,7 +250,7 @@ void SoundBuffer::SetLooping(b32 enabled) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00135540, 0x1a)
+RVA(0x00135750, 0x1a)
 i32 SoundBuffer::IsLoopingEnabled() {
     if (m_owner->m_initialized == false) {
         return 0;
@@ -261,7 +261,7 @@ i32 SoundBuffer::IsLoopingEnabled() {
     return 0;
 }
 
-RVA(0x00135560, 0x58)
+RVA(0x00135770, 0x58)
 i32 SoundBuffer::SetVolume(i32 attenuation) {
     if (m_owner->m_initialized == false) {
         return 0;
@@ -277,7 +277,7 @@ i32 SoundBuffer::SetVolume(i32 attenuation) {
     return 1;
 }
 
-RVA(0x001355c0, 0x23)
+RVA(0x001357d0, 0x23)
 i32 SoundBuffer::SetVolumePercent(i32 volumePct) {
     if (m_owner->m_initialized == false) {
         return 0;
@@ -285,7 +285,7 @@ i32 SoundBuffer::SetVolumePercent(i32 volumePct) {
     return SetVolume(g_volumeTable[volumePct]);
 }
 
-RVA(0x001355f0, 0x42)
+RVA(0x00135800, 0x42)
 i32 SoundBuffer::GetVolume() {
     if (m_owner->m_initialized == false) {
         return 0;
@@ -299,7 +299,7 @@ i32 SoundBuffer::GetVolume() {
     return attenuation;
 }
 
-RVA(0x00135640, 0x1c)
+RVA(0x00135850, 0x1c)
 i32 SoundBuffer::GetVolumePercent() {
     if (m_owner->m_initialized == false) {
         return 0;
@@ -307,7 +307,7 @@ i32 SoundBuffer::GetVolumePercent() {
     return ConvertVolumeToPercent(GetVolume());
 }
 
-RVA(0x00135660, 0xe0)
+RVA(0x00135870, 0xe0)
 i32 SoundBuffer::RampVolumeTo(i32 targetVolumePct, i32 durationMs, b32 stopAndRewind) {
     SoundDevice* owner = m_owner;
     if (owner->m_initialized == false) {
@@ -335,7 +335,7 @@ i32 SoundBuffer::RampVolumeTo(i32 targetVolumePct, i32 durationMs, b32 stopAndRe
     return 1;
 }
 
-RVA(0x00135740, 0x55)
+RVA(0x00135950, 0x55)
 i32 SoundBuffer::SetPan(i32 pan) {
     if (m_owner->m_initialized == false) {
         return 0;
@@ -351,7 +351,7 @@ i32 SoundBuffer::SetPan(i32 pan) {
     return 1;
 }
 
-RVA(0x001357a0, 0x42)
+RVA(0x001359b0, 0x42)
 i32 SoundBuffer::SetPanPercent(i32 panPct) {
     if (m_owner->m_initialized == false) {
         return 0;
@@ -362,7 +362,7 @@ i32 SoundBuffer::SetPanPercent(i32 panPct) {
     return SetPan(g_volumeTable[VOLUME_PCT_MAX + panPct]);
 }
 
-RVA(0x001357f0, 0x42)
+RVA(0x00135a00, 0x42)
 i32 SoundBuffer::GetPan() {
     if (m_owner->m_initialized == false) {
         return 0;
@@ -378,7 +378,7 @@ i32 SoundBuffer::GetPan() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00135840, 0x3b)
+RVA(0x00135a50, 0x3b)
 i32 SoundBuffer::GetPanPercent() {
     if (m_owner->m_initialized == false) {
         return 0;
@@ -393,7 +393,7 @@ i32 SoundBuffer::GetPanPercent() {
     return ConvertVolumeToPercent(pan) - VOLUME_PCT_MAX;
 }
 
-RVA(0x00135880, 0x60)
+RVA(0x00135a90, 0x60)
 i32 SoundBuffer::SetFrequency(u32 frequency) {
     if (m_owner->m_initialized == false) {
         return 0;
@@ -412,7 +412,7 @@ i32 SoundBuffer::SetFrequency(u32 frequency) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001358e0, 0x11)
+RVA(0x00135af0, 0x11)
 u32 SoundBuffer::GetFrequency() {
     if (m_owner->m_initialized == false) {
         return 0;
@@ -422,7 +422,7 @@ u32 SoundBuffer::GetFrequency() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00135900, 0x11)
+RVA(0x00135b10, 0x11)
 u32 SoundBuffer::GetBaseFrequency() {
     if (m_owner->m_initialized == false) {
         return 0;
@@ -430,7 +430,7 @@ u32 SoundBuffer::GetBaseFrequency() {
     return m_baseFrequency;
 }
 
-RVA(0x00135920, 0x80)
+RVA(0x00135b30, 0x80)
 i32 SoundBuffer::SetFrequencyOffsetPercent(i32 percentOffset) {
     if (m_owner->m_initialized == false) {
         return 0;
@@ -449,12 +449,12 @@ i32 SoundBuffer::SetFrequencyOffsetPercent(i32 percentOffset) {
     return result;
 }
 
-RVA(0x001359a0, 0x18)
+RVA(0x00135bb0, 0x18)
 void SoundBuffer::UpdateDuration() {
     m_durationMs = m_sampleCount * MILLIS_PER_SECOND / m_sampleRate;
 }
 
-RVA(0x001359c0, 0x54)
+RVA(0x00135bd0, 0x54)
 i32 SoundBuffer::Unlock(u8* audioPtr1, u32 audioBytes1, u8* audioPtr2, u32 audioBytes2) {
     if (m_owner->m_initialized == false) {
         return 0;
@@ -467,7 +467,7 @@ i32 SoundBuffer::Unlock(u8* audioPtr1, u32 audioBytes1, u8* audioPtr2, u32 audio
     return 1;
 }
 
-RVA(0x00135a20, 0x4a)
+RVA(0x00135c30, 0x4a)
 i32 SoundBuffer::GetCurrentPosition(DWORD* playCursor, DWORD* writeCursor) {
     if (m_owner->m_initialized == false) {
         return 0;
@@ -480,7 +480,7 @@ i32 SoundBuffer::GetCurrentPosition(DWORD* playCursor, DWORD* writeCursor) {
     return 1;
 }
 
-RVA(0x00135a70, 0x45)
+RVA(0x00135c80, 0x45)
 i32 SoundBuffer::SetCurrentPosition(u32 position) {
     if (m_owner->m_initialized == false) {
         return 0;
@@ -493,7 +493,7 @@ i32 SoundBuffer::SetCurrentPosition(u32 position) {
     return 1;
 }
 
-RVA(0x00135ac0, 0x4f)
+RVA(0x00135cd0, 0x4f)
 i32 SoundBuffer::GetFormat(WaveFormatX* outFormat, u32 formatBytes, DWORD* writtenBytes) {
     if (m_owner->m_initialized == false) {
         return 0;
@@ -506,7 +506,7 @@ i32 SoundBuffer::GetFormat(WaveFormatX* outFormat, u32 formatBytes, DWORD* writt
     return 1;
 }
 
-RVA(0x00135b10, 0x6b)
+RVA(0x00135d20, 0x6b)
 SoundSample::SoundSample(IDirectSoundBuffer* buffer, SoundDevice* owner)
     : SoundBufferInstance(buffer, owner) {
 
@@ -514,16 +514,16 @@ SoundSample::SoundSample(IDirectSoundBuffer* buffer, SoundDevice* owner)
     m_reusable = true;
 }
 
-RVA_COMPGEN(0x00135b80, 0x1e, ??_GSoundSample@@UAEPAXI@Z)
+RVA_COMPGEN(0x00135d90, 0x1e, ??_GSoundSample@@UAEPAXI@Z)
 
-RVA(0x00135bb0, 0x63)
+RVA(0x00135dc0, 0x63)
 SoundSample::~SoundSample() {
     while (m_instances.m_head != NULL) {
         DestroyInstance(static_cast<SoundBufferNode*>(m_instances.m_head)->m_buffer);
     }
 }
 
-RVA(0x00135c20, 0xf6)
+RVA(0x00135e30, 0xf6)
 SoundBuffer* SoundSample::CreateInstance(b32 reusable) {
     if (m_owner->m_initialized == false) {
         return NULL;
@@ -543,7 +543,7 @@ SoundBuffer* SoundSample::CreateInstance(b32 reusable) {
     return instance;
 }
 
-RVA(0x00135d20, 0x47)
+RVA(0x00135f30, 0x47)
 void SoundSample::DestroyInstance(SoundBuffer* instance) {
     if (m_owner->m_initialized == false) {
         return;
@@ -559,7 +559,7 @@ void SoundSample::DestroyInstance(SoundBuffer* instance) {
     }
 }
 
-RVA(0x00135d70, 0x92)
+RVA(0x00135f80, 0x92)
 SoundBuffer* SoundSample::AcquireInstance() {
     if (!m_owner->m_initialized) {
         return NULL;
@@ -599,7 +599,7 @@ SoundBuffer* SoundSample::AcquireInstance() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00135e10, 0x124)
+RVA(0x00136020, 0x124)
 i32 SoundBuffer::LoadFromFile(FILE* file, u32 bytes, i32 offset) {
     if (m_owner->m_initialized == false) {
         return 0;
@@ -647,7 +647,7 @@ i32 SoundBuffer::LoadFromFile(FILE* file, u32 bytes, i32 offset) {
     return 1;
 }
 
-RVA(0x00135f40, 0x169)
+RVA(0x00136150, 0x169)
 i32 SoundBuffer::LockConvert(u8* sourceAudio, u32 lockBytes, b32 convert16To8) {
     if (m_owner->m_initialized == false) {
         return 0;
@@ -719,7 +719,7 @@ i32 SoundBuffer::LockConvert(u8* sourceAudio, u32 lockBytes, b32 convert16To8) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001360b0, 0x1e)
+RVA(0x001362c0, 0x1e)
 i32 SoundSample::Play() {
     if (m_owner->m_initialized == false) {
         return 0;
@@ -731,7 +731,7 @@ i32 SoundSample::Play() {
     return item->Play();
 }
 
-RVA(0x001360d0, 0x7e)
+RVA(0x001362e0, 0x7e)
 i32 SoundSample::AcquireAndPlay(i32 volumePct, i32 panPct, i32 frequencyOffsetPct, b32 looping) {
     if (!m_owner->m_initialized) {
         return 0;
@@ -757,7 +757,7 @@ i32 SoundSample::AcquireAndPlay(i32 volumePct, i32 panPct, i32 frequencyOffsetPc
     return ok;
 }
 
-RVA(0x00136150, 0x22)
+RVA(0x00136360, 0x22)
 void SoundSample::StopAllInstances() {
     if (m_owner->m_initialized == false) {
         return;
@@ -768,7 +768,7 @@ void SoundSample::StopAllInstances() {
     }
 }
 
-RVA(0x00136180, 0x86)
+RVA(0x00136390, 0x86)
 SoundBufferInstance::SoundBufferInstance(
     IDirectSoundBuffer* buffer,
     SoundDevice* owner,
@@ -786,9 +786,9 @@ SoundBufferInstance::SoundBufferInstance(
     UpdateDuration();
 }
 
-RVA_COMPGEN(0x00136210, 0x1e, ??_GSoundBufferInstance@@UAEPAXI@Z)
+RVA_COMPGEN(0x00136420, 0x1e, ??_GSoundBufferInstance@@UAEPAXI@Z)
 
-RVA(0x00136230, 0x2d)
+RVA(0x00136440, 0x2d)
 SoundBufferInstance::SoundBufferInstance(IDirectSoundBuffer* buffer, SoundDevice* owner)
     : SoundBuffer(buffer, owner) {
 
@@ -797,10 +797,10 @@ SoundBufferInstance::SoundBufferInstance(IDirectSoundBuffer* buffer, SoundDevice
     m_reusable = true;
 }
 
-RVA(0x00136260, 0xb)
+RVA(0x00136470, 0xb)
 SoundBufferInstance::~SoundBufferInstance() {}
 
-RVA(0x00136270, 0x8b)
+RVA(0x00136480, 0x8b)
 i32 SoundBuffer::Play() {
     if (m_owner->m_initialized == false) {
         return 0;
@@ -824,7 +824,7 @@ i32 SoundBuffer::Play() {
     return 1;
 }
 
-RVA(0x00136300, 0x6f)
+RVA(0x00136510, 0x6f)
 i32 SoundBuffer::ApplyAndPlay(i32 volumePct, i32 panPct, i32 frequencyOffsetPct, b32 looping) {
     if (m_owner->m_initialized == false) {
         return 0;
@@ -846,7 +846,7 @@ i32 SoundBuffer::ApplyAndPlay(i32 volumePct, i32 panPct, i32 frequencyOffsetPct,
     return ok;
 }
 
-RVA(0x00136370, 0xcc)
+RVA(0x00136580, 0xcc)
 i32 SoundBuffer::Lock(
     u32 offset,
     u32 bytes,
@@ -898,7 +898,7 @@ i32 SoundBuffer::Lock(
     return 1;
 }
 
-RVA(0x00136440, 0x74)
+RVA(0x00136650, 0x74)
 SoundDevice::SoundDevice() {
 
     m_initialized = false;
@@ -910,9 +910,9 @@ SoundDevice::SoundDevice() {
     m_force8Bit = false;
 }
 
-RVA_COMPGEN(0x001364c0, 0x1e, ??_GSoundDevice@@UAEPAXI@Z)
+RVA_COMPGEN(0x001366d0, 0x1e, ??_GSoundDevice@@UAEPAXI@Z)
 
-RVA(0x00136500, 0x43)
+RVA(0x00136710, 0x43)
 SoundDevice::~SoundDevice() {
 
     if (m_initialized) {
@@ -920,7 +920,7 @@ SoundDevice::~SoundDevice() {
     }
 }
 
-RVA(0x00136550, 0x8c)
+RVA(0x00136760, 0x8c)
 i32 SoundDevice::Initialize(HWND hwnd, u32 cooperativeLevel, u32 bufferFlags) {
     b32 createFailed = DirectSoundCreate(NULL, &m_device, NULL) != 0;
     if (createFailed) {
@@ -939,7 +939,7 @@ i32 SoundDevice::Initialize(HWND hwnd, u32 cooperativeLevel, u32 bufferFlags) {
     return 1;
 }
 
-RVA(0x001365e0, 0xf)
+RVA(0x001367f0, 0xf)
 i32 SoundDevice::ReacquireViaCallback() {
     if (m_reacquireProc != NULL) {
         return (this->*m_reacquireProc)();
@@ -949,7 +949,7 @@ i32 SoundDevice::ReacquireViaCallback() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001365f0, 0x57)
+RVA(0x00136800, 0x57)
 i32 SoundDevice::SetCooperativeLevel(HWND hwnd, u32 cooperativeLevel) {
     if (m_initialized == false) {
         return 0;
@@ -965,7 +965,7 @@ i32 SoundDevice::SetCooperativeLevel(HWND hwnd, u32 cooperativeLevel) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00136650, 0x37)
+RVA(0x00136860, 0x37)
 i32 SoundDevice::Compact() {
     if (m_initialized == false) {
         return 0;
@@ -978,7 +978,7 @@ i32 SoundDevice::Compact() {
     return 1;
 }
 
-RVA(0x00136690, 0x58)
+RVA(0x001368a0, 0x58)
 void SoundDevice::Shutdown() {
     if (m_initialized) {
         SoundSample* node = ElementFromLink<SoundSample>(m_samples.m_head);
@@ -994,7 +994,7 @@ void SoundDevice::Shutdown() {
     m_initialized = false;
 }
 
-RVA(0x001366f0, 0x168)
+RVA(0x00136900, 0x168)
 SoundSample* SoundDevice::CreateSample(WaveFormatX* format, u32 bytes, u32 flags) {
     WaveFormatX bufferFormat;
     IDirectSoundBuffer* directSoundBuffer;
@@ -1053,7 +1053,7 @@ done:
     return result;
 }
 
-RVA(0x00136860, 0xa9)
+RVA(0x00136a70, 0xa9)
 SoundSample* SoundDevice::LoadSampleFile(char* path, u32 flags, u32 loadOptions) {
     if (m_initialized == false) {
         return NULL;
@@ -1077,7 +1077,7 @@ SoundSample* SoundDevice::LoadSampleFile(char* path, u32 flags, u32 loadOptions)
     return sample;
 }
 
-RVA(0x00136910, 0x119)
+RVA(0x00136b20, 0x119)
 SoundSample* SoundDevice::LoadSample(RiffWaveHeader* riff, u32 flags, u32 loadOptions) {
     if (m_initialized == false) {
         return NULL;
@@ -1123,7 +1123,7 @@ SoundSample* SoundDevice::LoadSample(RiffWaveHeader* riff, u32 flags, u32 loadOp
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00136a30, 0x76)
+RVA(0x00136c40, 0x76)
 SoundSample* SoundDevice::LoadSampleResource(const char* name, u32 flags, u32 loadOptions) {
     if (m_initialized == false) {
         return NULL;
@@ -1146,7 +1146,7 @@ SoundSample* SoundDevice::LoadSampleResource(const char* name, u32 flags, u32 lo
     return LoadSample(data, flags, loadOptions);
 }
 
-RVA(0x00136ab0, 0x41)
+RVA(0x00136cc0, 0x41)
 i32 SoundDevice::ValidateRestore(SoundBuffer* buffer, WaveFormatX* format, u32 formatBytes) {
     if (m_initialized == false) {
         return 0;
@@ -1165,7 +1165,7 @@ i32 SoundDevice::ValidateRestore(SoundBuffer* buffer, WaveFormatX* format, u32 f
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00136b00, 0xc2)
+RVA(0x00136d10, 0xc2)
 i32 SoundDevice::ReloadFile(SoundBuffer* buffer, char* path, u32 loadOptions) {
     if (m_initialized == false) {
         return 0;
@@ -1192,7 +1192,7 @@ i32 SoundDevice::ReloadFile(SoundBuffer* buffer, char* path, u32 loadOptions) {
     return result;
 }
 
-RVA(0x00136bd0, 0x110)
+RVA(0x00136de0, 0x110)
 i32 SoundDevice::ReloadRiff(SoundBuffer* buffer, RiffWaveHeader* riff, u32 loadOptions) {
     if (m_initialized == false) {
         return 0;
@@ -1236,7 +1236,7 @@ i32 SoundDevice::ReloadRiff(SoundBuffer* buffer, RiffWaveHeader* riff, u32 loadO
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00136ce0, 0x92)
+RVA(0x00136ef0, 0x92)
 i32 SoundDevice::ReloadResource(SoundBuffer* buffer, const char* name, u32 loadOptions) {
     if (m_initialized == false) {
         return 0;
@@ -1262,7 +1262,7 @@ i32 SoundDevice::ReloadResource(SoundBuffer* buffer, const char* name, u32 loadO
     return ReloadRiff(buffer, data, loadOptions);
 }
 
-RVA(0x00136d80, 0x56)
+RVA(0x00136f90, 0x56)
 void SoundDevice::DestroyBuffer(SoundBuffer* buffer) {
     if (m_initialized) {
 
@@ -1278,7 +1278,7 @@ void SoundDevice::DestroyBuffer(SoundBuffer* buffer) {
     }
 }
 
-RVA(0x00136de0, 0x3c)
+RVA(0x00136ff0, 0x3c)
 void SoundDevice::StopAllBuffers() {
     if (m_initialized) {
         SoundSample* node = ElementFromLink<SoundSample>(m_samples.m_head);
@@ -1290,7 +1290,7 @@ void SoundDevice::StopAllBuffers() {
     }
 }
 
-RVA(0x00136e20, 0xa8)
+RVA(0x00137030, 0xa8)
 i32 SoundDevice::TickVolumeRamps(i32 timestampMs) {
     if (m_initialized == false) {
         return 0;
@@ -1322,7 +1322,7 @@ i32 SoundDevice::TickVolumeRamps(i32 timestampMs) {
     return 1;
 }
 
-RVA(0x00136ed0, 0x72)
+RVA(0x001370e0, 0x72)
 i32 SoundDevice::ClearVolumeRamps() {
     if (m_initialized == false) {
         return 0;
@@ -1350,12 +1350,12 @@ i32 SoundDevice::ClearVolumeRamps() {
 // distinguishes the original owner/signature of this false-return leaf.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00136f50, 0x3)
+RVA(0x00137160, 0x3)
 i32 SoundDeviceReturnFalse() {
     return 0;
 }
 
-RVA(0x00136f60, 0x74)
+RVA(0x00137170, 0x74)
 void SoundTaskList::RemoveMatching(SoundBuffer* buffer, u32 tag) {
     SoundTask* task = ElementFromLink<SoundTask>(m_head);
     while (task) {
@@ -1377,7 +1377,7 @@ void SoundTaskList::RemoveMatching(SoundBuffer* buffer, u32 tag) {
     }
 }
 
-RVA(0x00136fe0, 0x7b)
+RVA(0x001371f0, 0x7b)
 SoundVolumeRamp::SoundVolumeRamp(
     i32 targetVolumePct,
     i32 initialVolumePct,
@@ -1393,7 +1393,7 @@ SoundVolumeRamp::SoundVolumeRamp(
     m_rampStartTime = (startTime == -1) ? timeGetTime() : startTime;
 }
 
-RVA(0x00137060, 0x6b)
+RVA(0x00137270, 0x6b)
 i32 SoundVolumeRamp::Tick(i32 timestampMs) {
     b32 done = false;
     timestampMs -= m_rampStartTime;
@@ -1414,7 +1414,7 @@ i32 SoundVolumeRamp::Tick(i32 timestampMs) {
     return done == false;
 }
 
-RVA(0x001370d0, 0x38)
+RVA(0x001372e0, 0x38)
 i32 SoundVolumeRamp::Stop() {
     if (m_buffer->IsPlaying() != 0) {
         if (m_stopAndRewind != false) {
@@ -1426,7 +1426,7 @@ i32 SoundVolumeRamp::Stop() {
     return 1;
 }
 
-RVA(0x00137110, 0x8d)
+RVA(0x00137320, 0x8d)
 i32 ParseWaveChunks(
     RiffWaveHeader* riff,
     WaveFormatX** outFormat,
@@ -1469,7 +1469,7 @@ i32 ParseWaveChunks(
     return 0;
 }
 
-RVA(0x001371a0, 0x5a)
+RVA(0x001373b0, 0x5a)
 i32 SoundDevice::SetPrimaryFormat(WaveFormatX* format) {
     if (m_initialized == false) {
         return 0;
@@ -1485,7 +1485,7 @@ i32 SoundDevice::SetPrimaryFormat(WaveFormatX* format) {
     return 1;
 }
 
-RVA(0x00137200, 0x53)
+RVA(0x00137410, 0x53)
 i32 SoundDevice::StartPrimaryBuffer() {
     if (m_initialized == false) {
         return 0;
@@ -1501,7 +1501,7 @@ i32 SoundDevice::StartPrimaryBuffer() {
     return 1;
 }
 
-RVA(0x00137260, 0x95)
+RVA(0x00137470, 0x95)
 i32 SoundDevice::CreatePrimaryBuffer() {
     if (m_initialized == false) {
         return 0;
@@ -1526,7 +1526,7 @@ i32 SoundDevice::CreatePrimaryBuffer() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00137300, 0x23)
+RVA(0x00137510, 0x23)
 IDirectSoundBuffer* SoundDevice::GetPrimary() {
     if (m_initialized == false) {
         return NULL;

@@ -25,7 +25,7 @@ public:
         m_mode = 0;
     }
 
-    RVA(0x000c5280, 0x49)
+    RVA(0x000c52b0, 0x49)
     ~CKeyedList() {
         Clear();
     }

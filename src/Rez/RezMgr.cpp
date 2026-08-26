@@ -12,27 +12,27 @@
 
 typedef CGameMgr CGameMgrBase;
 
-DATA(0x00245580)
+DATA(0x002464d8)
 i32 g_lastNow = 0;
-DATA(0x00245584)
+DATA(0x002464dc)
 u32 g_frameDelta = 0;
 
-DATA(0x00245588)
+DATA(0x002464e0)
 u32 g_frameTime = 0;
-DATA(0x0024558c)
+DATA(0x002464e4)
 i32 g_frameTicks = 0;
-DATA(0x00245590)
+DATA(0x002464e8)
 i32 g_period50CountdownMs = 0;
-DATA(0x00245598)
+DATA(0x002464f0)
 i32 g_period200CountdownMs = 0;
-DATA(0x0024559c)
+DATA(0x002464f4)
 i32 g_period400CountdownMs = 0;
-DATA(0x002455a0)
+DATA(0x002464f8)
 i32 g_period500CountdownMs = 0;
-DATA(0x00245594)
+DATA(0x002464ec)
 i32 g_period100CountdownMs = 0;
 
-RVA(0x0008b740, 0x12d)
+RVA(0x0008b660, 0x12d)
 i32 CGruntzMgr::PerFrameTick() {
     if (m_curState == NULL) {
         return 0;

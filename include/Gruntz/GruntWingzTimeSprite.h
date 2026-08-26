@@ -12,7 +12,7 @@ public:
     CGruntWingzTimeSprite() {}
     CGruntWingzTimeSprite(CGameObject* obj);
 
-    RVA(0x000121a0, 0x6)
+    RVA(0x000121b0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNTWINGZTIMESPRITE;
     }

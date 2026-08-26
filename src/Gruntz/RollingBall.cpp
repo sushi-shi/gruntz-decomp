@@ -36,11 +36,11 @@
 #include <math.h>
 #include <string.h>
 
-RVA_DYNINIT(0x000afd40, 0xa, CActRegPool<CRollingBall>::s_table)
-RVA_DYNINIT(0x000afd60, 0x15, CActRegPool<CRollingBall>::s_table)
-RVA_DYNINIT(0x000afd90, 0xe, CActRegPool<CRollingBall>::s_table)
-RVA_DYNINIT(0x000afdb0, 0x1f, CActRegPool<CRollingBall>::s_table)
-template<> DATA(0x002461b0)
+RVA_DYNINIT(0x000afd30, 0xa, CActRegPool<CRollingBall>::s_table)
+RVA_DYNINIT(0x000afd50, 0x15, CActRegPool<CRollingBall>::s_table)
+RVA_DYNINIT(0x000afd80, 0xe, CActRegPool<CRollingBall>::s_table)
+RVA_DYNINIT(0x000afda0, 0x1f, CActRegPool<CRollingBall>::s_table)
+template<> DATA(0x00247108)
 CActReg CActRegPool<CRollingBall>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 DATA(0x001ea3e8)
@@ -50,10 +50,10 @@ static __inline i32 VtblResolve(CTileImageSet* imageSet) {
     return IDX(imageSet->GetCollisionAt(0, 0));
 }
 
-RVA_COMPGEN(0x00012f50, 0x1e, ??_GCRollingBall@@UAEPAXI@Z)
-RVA_COMPGEN(0x00012f80, 0x44, ??1CRollingBall@@UAE@XZ)
+RVA_COMPGEN(0x00012f60, 0x1e, ??_GCRollingBall@@UAEPAXI@Z)
+RVA_COMPGEN(0x00012f90, 0x44, ??1CRollingBall@@UAE@XZ)
 
-RVA(0x000af820, 0x40d)
+RVA(0x000af810, 0x40d)
 CRollingBall::CRollingBall(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj), m_explodeStart(0), m_explodeWindow(0) {
     SwitchAnimationByName("GAME_CYCLE100", 0);
@@ -106,7 +106,7 @@ CRollingBall::CRollingBall(CGameObject* obj)
     m_moveDelta = 0.0;
 }
 
-RVA(0x000afde0, 0x102)
+RVA(0x000afdd0, 0x102)
 void CRollingBall::FireActivation(i32 id) {
     CActHandler* e = (CActRegPool<CRollingBall>::s_table.ResolveEntry(id));
     if ((*e) != NULL) {
@@ -114,14 +114,14 @@ void CRollingBall::FireActivation(i32 id) {
     }
 }
 
-RVA(0x000aff40, 0x18d)
+RVA(0x000aff30, 0x18d)
 void CRollingBall::RegisterActs() {
     ACT_NAME_ID(id, "A")
     (*((CActRegPool<CRollingBall>::s_table.ResolveEntry(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CRollingBall::Update);
 }
 
-RVA(0x000b0140, 0xba8)
+RVA(0x000b0130, 0xba8)
 i32 CRollingBall::Update() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
 
@@ -559,7 +559,7 @@ i32 CRollingBall::Update() {
     return 0;
 }
 
-RVA(0x000b0fe0, 0x1ab)
+RVA(0x000b0fd0, 0x1ab)
 i32 CRollingBall::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,

@@ -11,7 +11,7 @@
 class CStaticHazard : public CUserLogic, public CWapX {
 public:
 public:
-    RVA(0x00012ae0, 0x6)
+    RVA(0x00012af0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_STATICHAZARD;
     }

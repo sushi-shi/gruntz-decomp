@@ -20,7 +20,7 @@ static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
     return static_cast<CDDrawWorker*>(found);
 }
 
-RVA(0x0009c650, 0x372)
+RVA(0x0009c570, 0x372)
 i32 CTimer::Deserialize(CFileMemBase* s) {
     if (s == NULL) {
         return 0;
@@ -137,7 +137,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     return 1;
 }
 
-RVA(0x0009cab0, 0x23)
+RVA(0x0009c9d0, 0x23)
 CLogicRecord* CLogicRecordRegistry::FindTemplate(const char* key) {
     CObject* found = NULL;
     ASSERT(key != NULL);

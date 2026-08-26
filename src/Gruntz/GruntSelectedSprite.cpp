@@ -20,16 +20,16 @@
 
 #include <stddef.h>
 
-RVA_DYNINIT(0x0007e5c0, 0xa, CActRegPool<CGruntSelectedSprite>::s_table)
-RVA_DYNINIT(0x0007e5e0, 0x15, CActRegPool<CGruntSelectedSprite>::s_table)
-RVA_DYNINIT(0x0007e610, 0xe, CActRegPool<CGruntSelectedSprite>::s_table)
-RVA_DYNINIT(0x0007e630, 0x1f, CActRegPool<CGruntSelectedSprite>::s_table)
-template<> DATA(0x00244da8)
+RVA_DYNINIT(0x0007e4e0, 0xa, CActRegPool<CGruntSelectedSprite>::s_table)
+RVA_DYNINIT(0x0007e500, 0x15, CActRegPool<CGruntSelectedSprite>::s_table)
+RVA_DYNINIT(0x0007e530, 0xe, CActRegPool<CGruntSelectedSprite>::s_table)
+RVA_DYNINIT(0x0007e550, 0x1f, CActRegPool<CGruntSelectedSprite>::s_table)
+template<> DATA(0x00245d00)
 CActReg CActRegPool<CGruntSelectedSprite>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
-RVA_COMPGEN(0x00011e50, 0x1e, ??_GCGruntSelectedSprite@@UAEPAXI@Z)
-RVA_COMPGEN(0x00011e80, 0x44, ??1CGruntSelectedSprite@@UAE@XZ)
+RVA_COMPGEN(0x00011e60, 0x1e, ??_GCGruntSelectedSprite@@UAEPAXI@Z)
+RVA_COMPGEN(0x00011e90, 0x44, ??1CGruntSelectedSprite@@UAE@XZ)
 
-RVA(0x0007e3e0, 0x178)
+RVA(0x0007e300, 0x178)
 CGruntSelectedSprite::CGruntSelectedSprite(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetImageSetByName("GAME_GRUNTSELECTEDSPRITE");
@@ -39,21 +39,21 @@ CGruntSelectedSprite::CGruntSelectedSprite(CGameObject* obj)
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_SELECTED)
 }
 
-RVA(0x0007e660, 0x102)
+RVA(0x0007e580, 0x102)
 void CGruntSelectedSprite::FireActivation(i32 id) {
     if ((*((CActRegPool<CGruntSelectedSprite>::s_table.ResolveEntry(id)))) != NULL) {
         (this->*(*((CActRegPool<CGruntSelectedSprite>::s_table.ResolveEntry(id)))))();
     }
 }
 
-RVA(0x0007e7c0, 0x18d)
+RVA(0x0007e6e0, 0x18d)
 void CGruntSelectedSprite::RegisterActs() {
     ACT_NAME_ID(id, "A")
     (*((CActRegPool<CGruntSelectedSprite>::s_table.ResolveEntry(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CGruntSelectedSprite::Update);
 }
 
-RVA(0x0007e9c0, 0x16)
+RVA(0x0007e8e0, 0x16)
 i32 CGruntSelectedSprite::BindToGrunt(i32 playerIndex, i32 unitIndex) {
     m_gruntIdentity.m_playerIndex = playerIndex;
     m_gruntIdentity.m_unitIndex = unitIndex;
@@ -61,7 +61,7 @@ i32 CGruntSelectedSprite::BindToGrunt(i32 playerIndex, i32 unitIndex) {
 }
 
 // @early-stop
-RVA(0x0007e9f0, 0x5f)
+RVA(0x0007e910, 0x5f)
 i32 CGruntSelectedSprite::Update() {
     CGruntzMgr* reg = g_gameReg;
     CGrunt* e =
@@ -75,7 +75,7 @@ i32 CGruntSelectedSprite::Update() {
     return 0;
 }
 
-RVA(0x0007ea70, 0x6f)
+RVA(0x0007e990, 0x6f)
 i32 CGruntSelectedSprite::SerializeDispatch(
     CFileMemBase* arc,
     SerialMode mode,

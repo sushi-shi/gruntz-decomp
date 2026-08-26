@@ -19,11 +19,11 @@
 
 #include <stdio.h>
 
-DATA(0x00251614)
+DATA(0x0025256c)
 i32 g_buildNumber;
 
 // @early-stop
-RVA(0x000f9ea0, 0x21d)
+RVA(0x000f9fd0, 0x21d)
 i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     m_mgr = mgr;
     m_resourceArchive = mgr->m_resourceArchive;

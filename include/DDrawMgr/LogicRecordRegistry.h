@@ -15,7 +15,7 @@ public:
     CLogicRecordRegistry(CDDrawSurfaceMgr* owner) : CWapObj(owner, 0, 0, CWapObj::NO_SEED) {}
     virtual ~CLogicRecordRegistry() OVERRIDE;
 
-    RVA(0x001576d0, 0x16)
+    RVA(0x001579b0, 0x16)
     virtual i32 IsLoaded() OVERRIDE {
         if (m_ownerCtx == NULL) {
             goto fail;
@@ -28,13 +28,13 @@ public:
         return 0;
     }
 
-    RVA(0x00157790, 0x6)
+    RVA(0x00157a70, 0x6)
     virtual i32 IsReady() OVERRIDE {
         return 1;
     }
 
     virtual void Unload() OVERRIDE;
-    RVA(0x001576f0, 0x6)
+    RVA(0x001579d0, 0x6)
     virtual LoadableClassId GetClassId() OVERRIDE {
         return CLASSID_LOGICRECORDREGISTRY;
     }

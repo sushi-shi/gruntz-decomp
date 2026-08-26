@@ -13,7 +13,7 @@
 
 #include <stdio.h>
 
-RVA(0x000e2250, 0x26)
+RVA(0x000e2280, 0x26)
 i32 CSpriteRefTable::Init(CShadeTableCache* cache, CDDrawSurfaceMgr* holder) {
     if (!cache) {
         return 0;
@@ -24,7 +24,7 @@ i32 CSpriteRefTable::Init(CShadeTableCache* cache, CDDrawSurfaceMgr* holder) {
     return 1;
 }
 
-RVA(0x000e2290, 0x2a)
+RVA(0x000e22c0, 0x2a)
 void CSpriteRefTable::Reset() {
     Clear();
     m_factory = NULL;
@@ -36,7 +36,7 @@ void CSpriteRefTable::Reset() {
     }
 }
 
-RVA(0x000e22d0, 0x6e)
+RVA(0x000e2300, 0x6e)
 void CSpriteRefTable::Clear() {
     if (m_factory) {
         for (i32 i = 0; i < 0x11; i++) {
@@ -59,7 +59,7 @@ void CSpriteRefTable::Clear() {
     }
 }
 
-RVA(0x000e2360, 0x15)
+RVA(0x000e2390, 0x15)
 CSpriteRef* CSpriteRefTable::GetTool(i32 colorId) {
     if (static_cast<u32>(colorId) >= TINT_COUNT) {
         return NULL;
@@ -67,7 +67,7 @@ CSpriteRef* CSpriteRefTable::GetTool(i32 colorId) {
     return m_toolRefs[colorId];
 }
 
-RVA(0x000e2390, 0x15)
+RVA(0x000e23c0, 0x15)
 CSpriteRef* CSpriteRefTable::GetToy(i32 colorId) {
     if (static_cast<u32>(colorId) >= TINT_COUNT) {
         return NULL;
@@ -75,7 +75,7 @@ CSpriteRef* CSpriteRefTable::GetToy(i32 colorId) {
     return m_toyRefs[colorId];
 }
 
-RVA(0x000e23c0, 0x2d)
+RVA(0x000e23f0, 0x2d)
 CShadeTable* CSpriteRefTable::GetSel(i32 i, i32 bAlt) {
     if (static_cast<u32>(i) >= 0x11) {
         return NULL;
@@ -87,7 +87,7 @@ CShadeTable* CSpriteRefTable::GetSel(i32 i, i32 bAlt) {
     return node->m_alphaKey;
 }
 
-RVA(0x000e2400, 0x39e)
+RVA(0x000e2430, 0x39e)
 i32 CSpriteRefTable::BuildToolToyColorTable(CRezArchive* src) {
     if (!src) {
         return 0;
@@ -279,7 +279,7 @@ static inline CDDrawPaletteResource* LookupWorker(CMapStringToOb& map, LPCTSTR n
     return static_cast<CDDrawPaletteResource*>(found);
 }
 
-RVA(0x000e2890, 0xb6)
+RVA(0x000e28c0, 0xb6)
 CSpriteRef* CSpriteRefTable::Add(char* szName, ColorTint kind) {
     CDDrawPaletteResource* rec =
         LookupWorker(m_spriteMgrHolder->m_paletteRegistry->m_palettesByName, szName);
@@ -306,7 +306,7 @@ CSpriteRef* CSpriteRefTable::Add(char* szName, ColorTint kind) {
     return node;
 }
 
-RVA(0x000e2980, 0x2cd)
+RVA(0x000e29b0, 0x2cd)
 i32 CSpriteRefTable::LoadToolToyPalettes(CRezArchive* src) {
 
     if (src && LoadGruntzPalette(src, "BLACKTOOL") && LoadGruntzPalette(src, "BLACKTOY")
@@ -331,7 +331,7 @@ i32 CSpriteRefTable::LoadToolToyPalettes(CRezArchive* src) {
     return 0;
 }
 
-RVA(0x000e2d10, 0xa1)
+RVA(0x000e2d40, 0xa1)
 i32 CSpriteRefTable::LoadGruntzPalette(CRezArchive* src, const char* name) {
     if (!src) {
         return 0;

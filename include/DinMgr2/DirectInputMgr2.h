@@ -155,7 +155,7 @@ public:
 
     virtual i32 Create(IDirectInputA* di, const GUID* deviceGuid, HWND hwnd);
     virtual void ReleaseDevices();
-    RVA(0x001332b0, 0xb)
+    RVA(0x001334c0, 0xb)
     virtual i32 IsValid() {
         return m_device2 != NULL;
     }
@@ -200,7 +200,7 @@ public:
     virtual i32 Create(IDirectInputA* di, const GUID* guid, HWND hwnd) OVERRIDE;
     virtual void ReleaseDevices() OVERRIDE;
 
-    RVA(0x00133410, 0x3)
+    RVA(0x00133620, 0x3)
     virtual i32 Poll() {
         return 0;
     }

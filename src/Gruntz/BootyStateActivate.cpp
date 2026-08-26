@@ -169,7 +169,7 @@ static const double kGlitterShrinkRate = 0.002;
 DATA(0x001e93c8)
 static const double kGlitterStartRadius = 350.0;
 
-DATA(0x0020b838)
+DATA(0x0020c838)
 RECT g_levelMsgRectsA[8] = {
     {105, 106, 190, 155},
     {26, 149, 182, 199},
@@ -181,7 +181,7 @@ RECT g_levelMsgRectsA[8] = {
     {59, 400, 180, 449}
 };
 
-DATA(0x0020b8f8)
+DATA(0x0020c8f8)
 RECT g_levelMsgRectsB[8] = {
     {245, 92, 417, 162},
     {245, 135, 417, 205},
@@ -193,11 +193,11 @@ RECT g_levelMsgRectsB[8] = {
     {245, 392, 417, 462}
 };
 
-RVA_DYNINIT(0x00018720, 0xa, g_levelMsgStrings)
-RVA_DYNINIT(0x00018740, 0x79, g_levelMsgStrings)
-RVA_DYNINIT(0x000187e0, 0xe, g_levelMsgStrings)
-RVA_DYNINIT(0x00018800, 0x14, g_levelMsgStrings)
-DATA(0x00229ef8)
+RVA_DYNINIT(0x00018730, 0xa, g_levelMsgStrings)
+RVA_DYNINIT(0x00018750, 0x79, g_levelMsgStrings)
+RVA_DYNINIT(0x000187f0, 0xe, g_levelMsgStrings)
+RVA_DYNINIT(0x00018810, 0x14, g_levelMsgStrings)
+DATA(0x0022ae50)
 CString g_levelMsgStrings[8] = {
     "Time:",
     "Survivorz:",
@@ -209,14 +209,14 @@ CString g_levelMsgStrings[8] = {
     "Secretz:",
 };
 
-DATA(0x00229f30)
+DATA(0x0022ae88)
 SecretMsgRow g_secretMsgRows[25];
 
-DATA(0x0022af10)
+DATA(0x0022be68)
 b32 g_bootyCheatBuilt = false;
 
 // @early-stop
-RVA(0x00018830, 0x380)
+RVA(0x00018840, 0x380)
 i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
 
     if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
@@ -322,7 +322,7 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
 }
 
 // @early-stop
-RVA(0x00018c90, 0x72)
+RVA(0x00018ca0, 0x72)
 void CBootyState::ReleaseResources() {
     SoundStream* r = m_world->m_soundRegistry->m_soundStream;
     if (r) {
@@ -336,7 +336,7 @@ void CBootyState::ReleaseResources() {
 }
 
 // @early-stop
-RVA(0x00018d30, 0xcd)
+RVA(0x00018d40, 0xcd)
 i32 CBootyState::EnterState(GameStateId previousState) {
     while (ShowCursor(false) >= 0)
         ;
@@ -365,7 +365,7 @@ static inline SoundCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
     return found;
 }
 
-RVA(0x00018e40, 0x81)
+RVA(0x00018e50, 0x81)
 i32 CBootyState::LeaveState(GameStateId nextState) {
     SoundCue* found = LookupCue(m_world->m_soundRegistry->m_cues, "BOOTY_LOOP");
     if (found && found->m_sound->IsPlaying()) {
@@ -377,7 +377,7 @@ i32 CBootyState::LeaveState(GameStateId nextState) {
     return 1;
 }
 
-RVA(0x00018f00, 0x4fb)
+RVA(0x00018f10, 0x4fb)
 i32 CBootyState::ShowSecretBonusMessage() {
     if (m_secretBannerOnce != false && (g_gameReg->m_gameStats)->IsCampaignPerfect()) {
         CString s;
@@ -459,7 +459,7 @@ i32 CBootyState::ShowSecretBonusMessage() {
     }
 }
 
-RVA(0x00019540, 0x12a)
+RVA(0x00019550, 0x12a)
 i32 CBootyState::BuildWarpStoneGlitterAnimation() {
     CWwdSpriteObject** slot = m_trailSprites;
     m_letterIdx = (g_gameReg->m_gameStats->m_levelNumber - 1) % 4;
@@ -504,7 +504,7 @@ i32 CBootyState::BuildWarpStoneGlitterAnimation() {
 }
 
 // @early-stop
-RVA(0x000196c0, 0x1d3)
+RVA(0x000196d0, 0x1d3)
 i32 CBootyState::StepGlitterAnim() {
     if (m_initGate) {
         for (i32 i = 0; i <= m_letterIdx; i++) {
@@ -557,7 +557,7 @@ i32 CBootyState::StepGlitterAnim() {
 }
 
 // @early-stop
-RVA(0x00019920, 0x1f0)
+RVA(0x00019930, 0x1f0)
 i32 CBootyState::BuildGruntSprintAnimation() {
     CShadeTable* h = g_gameReg->m_spriteFactory->GetSel(0, 0);
     if (!h) {
@@ -623,7 +623,7 @@ i32 CBootyState::BuildGruntSprintAnimation() {
 }
 
 // @early-stop
-RVA(0x00019b90, 0xf8)
+RVA(0x00019ba0, 0xf8)
 void CBootyState::MoveLettersByDir() {
     if (m_initGate) {
         CWwdSpriteObject** q = m_sprintSprites;
@@ -685,7 +685,7 @@ void CBootyState::MoveLettersByDir() {
          ? g_gameReg->m_gameStats->getter()                                                        \
          : g_gameReg->m_gameStats->field)
 
-DATA(0x0020b8b8)
+DATA(0x0020c8b8)
 Coord g_levelMsgIconPos[8] = {
     {0xea, 0x80},
     {0xec, 0xae},
@@ -698,7 +698,7 @@ Coord g_levelMsgIconPos[8] = {
 };
 
 // @early-stop
-RVA(0x00019cd0, 0x200)
+RVA(0x00019ce0, 0x200)
 void CBootyState::GenMenuRandPos(GruntDirection sel, i32* outX, i32* outY) {
     if (!outX || !outY) {
         return;
@@ -767,7 +767,7 @@ void CBootyState::GenMenuRandPos(GruntDirection sel, i32* outX, i32* outY) {
 }
 
 // @early-stop
-RVA(0x00019f50, 0xb2)
+RVA(0x00019f60, 0xb2)
 i32 CGruntzMgr::RandRange(i32 lo, i32 hi) {
     i32 span = hi - lo + 1;
     if (span == 0) {
@@ -780,7 +780,7 @@ i32 CGruntzMgr::RandRange(i32 lo, i32 hi) {
 }
 
 // @early-stop
-RVA(0x0001a040, 0x55e)
+RVA(0x0001a050, 0x55e)
 i32 CBootyState::LoadGruntEffectSprites() {
     CShadeTable* handleA = g_gameReg->m_spriteFactory->GetSel(0, 0);
     if (handleA == NULL) {
@@ -1018,7 +1018,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
 }
 
 // @early-stop
-RVA(0x0001a700, 0x6b6)
+RVA(0x0001a710, 0x6b6)
 i32 CBootyState::LevelMsgHudDriver() {
     if (m_initGate != false) {
 
@@ -1152,7 +1152,7 @@ i32 CBootyState::LevelMsgHudDriver() {
     return 0;
 }
 
-RVA(0x0001af70, 0x3e0)
+RVA(0x0001af80, 0x3e0)
 void CBootyState::FormatHudText(CString* buf, BootyStatRow sel) {
     switch (sel) {
         case BOOTYSTAT_TIME: {
@@ -1225,7 +1225,7 @@ void CBootyState::FormatHudText(CString* buf, BootyStatRow sel) {
 }
 
 // @early-stop
-RVA(0x0001b450, 0x1ac)
+RVA(0x0001b460, 0x1ac)
 i32 CBootyState::BuildBootyWalkingGruntz() {
     if (g_gameReg->m_gameStats->m_isCustomLevel != false) {
         return 1;
@@ -1267,8 +1267,8 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
         if (m_visSprites[i] == NULL) {
             return 0;
         }
-        RVA_DYNINIT(0x0001b670, 0xa, buf)
-        DATA(0x0022af0c)
+        RVA_DYNINIT(0x0001b680, 0xa, buf)
+        DATA(0x0022be64)
         static CString buf;
         const char* prefix = (i < (g_gameReg->m_gameStats->m_levelNumber - 1) % 4 + 1)
                                  ? "GAME_INGAMEICONZ_"
@@ -1283,7 +1283,7 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
 }
 
 // @early-stop
-RVA(0x0001b690, 0x7e0)
+RVA(0x0001b6a0, 0x7e0)
 i32 CBootyState::UpdateBootyWalkingGruntz() {
     CGameStats* gameStats = g_gameReg->m_gameStats;
     if (gameStats->m_isCustomLevel != false) {
@@ -1464,7 +1464,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
     return 0;
 }
 
-RVA(0x0001c070, 0x59)
+RVA(0x0001c080, 0x59)
 i32 CBootyState::BuildBootyPerfectAnimation() {
     CWwdSpriteObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
         0,
@@ -1483,7 +1483,7 @@ i32 CBootyState::BuildBootyPerfectAnimation() {
     return 1;
 }
 
-RVA(0x0001c0f0, 0xd5)
+RVA(0x0001c100, 0xd5)
 i32 CBootyState::CheckPerfectBonus() {
     if (!g_gameReg->m_gameStats->IsCurrentLevelPerfect(-1)) {
         return 1;
@@ -1511,7 +1511,7 @@ i32 CBootyState::CheckPerfectBonus() {
 }
 
 // @early-stop
-RVA(0x0001c210, 0x540)
+RVA(0x0001c220, 0x540)
 i32 CBootyState::Render() {
     IDirectDrawSurface* frameSurf = m_world->m_drawTarget->m_frontSurface->m_surface->m_ddSurface;
     if (frameSurf == NULL || frameSurf->IsLost() != 0) {
@@ -1651,7 +1651,7 @@ i32 CBootyState::Render() {
     return 1;
 }
 
-RVA(0x0001c8a0, 0xec)
+RVA(0x0001c8b0, 0xec)
 i32 CBootyState::InputVirtual() {
     if (CState::InputVirtual() == 0) {
         return 0;
@@ -1689,7 +1689,7 @@ i32 CBootyState::InputVirtual() {
 }
 
 // @early-stop
-RVA(0x0001c9d0, 0x351)
+RVA(0x0001c9e0, 0x351)
 void CBootyState::ShowLevelCompleteMessage() {
     for (i32 i = 0; i < 8; i++) {
         if (m_templateFlags[i]) {
@@ -1750,12 +1750,12 @@ void CBootyState::ShowLevelCompleteMessage() {
     }
 }
 
-RVA(0x0001ce10, 0xc)
+RVA(0x0001ce20, 0xc)
 i32 CBootyState::RestoreDisplay() {
     return IsActive() != 0;
 }
 
-RVA(0x0001ce30, 0x1d)
+RVA(0x0001ce40, 0x1d)
 i32 CBootyState::OnPaint() {
     if (IsActive() == 0) {
         return 0;
@@ -1764,7 +1764,7 @@ i32 CBootyState::OnPaint() {
 }
 
 // @early-stop
-RVA(0x0001ce60, 0x460)
+RVA(0x0001ce70, 0x460)
 i32 CBootyState::BuildBootyGruntIdleAnimation() {
     BootySeqPhase state = m_activation;
     if (state != BOOTYSEQ_PERFECT_BONUS && state != BOOTYSEQ_DONE) {
@@ -1878,23 +1878,23 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
     return 1;
 }
 
-RVA(0x0001d3e0, 0x8)
+RVA(0x0001d3f0, 0x8)
 i32 CBootyState::OnLButtonDown(i32, i32, i32) {
     return BuildBootyGruntIdleAnimation();
 }
 
-RVA(0x0001d400, 0x8)
+RVA(0x0001d410, 0x8)
 i32 CBootyState::OnRButtonDown(i32, i32, i32) {
     return BuildBootyGruntIdleAnimation();
 }
 
-RVA(0x0001d420, 0x8)
+RVA(0x0001d430, 0x8)
 i32 CBootyState::OnKeyDown(i32, i32) {
     return BuildBootyGruntIdleAnimation();
 }
 
 // @early-stop
-RVA(0x0001d440, 0xd7d)
+RVA(0x0001d450, 0xd7d)
 i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
         return 0;
@@ -2336,7 +2336,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
     return 1;
 }
 
-RVA(0x0001e520, 0x3e)
+RVA(0x0001e530, 0x3e)
 void CMultiBootyState::ReleaseResources() {
 
     SoundCueRegistry* reg = m_world->m_soundRegistry;
@@ -2349,7 +2349,7 @@ void CMultiBootyState::ReleaseResources() {
     CState::ReleaseResources();
 }
 
-RVA(0x0001e570, 0xb4)
+RVA(0x0001e580, 0xb4)
 i32 CMultiBootyState::EnterState(GameStateId previousState) {
     i32 ok = LoadTitlePage("multi", 0, 0, 0, 0, true);
     if (!ok) {
@@ -2371,7 +2371,7 @@ i32 CMultiBootyState::EnterState(GameStateId previousState) {
     return 1;
 }
 
-RVA(0x0001e660, 0x81)
+RVA(0x0001e670, 0x81)
 i32 CMultiBootyState::LeaveState(GameStateId nextState) {
     SoundCue* found = LookupCue(m_world->m_soundRegistry->m_cues, "BOOTY_LOOP");
     if (found && found->m_sound->IsPlaying()) {
@@ -2383,7 +2383,7 @@ i32 CMultiBootyState::LeaveState(GameStateId nextState) {
     return 1;
 }
 
-RVA(0x0001e720, 0x400)
+RVA(0x0001e730, 0x400)
 void CMultiBootyState::BuildPowerupIconKeys(CString* reg, i32 key) {
     *reg = "GAME_INGAMEICONZ_";
     switch (static_cast<PickupType>(key)) {
@@ -2525,11 +2525,11 @@ void CMultiBootyState::BuildPowerupIconKeys(CString* reg, i32 key) {
     }
 }
 
-RVA_DYNINIT(0x00082970, 0xa, g_areaNames)
-RVA_DYNINIT(0x00082990, 0x79, g_areaNames)
-RVA_DYNINIT(0x00082a30, 0xe, g_areaNames)
-RVA_DYNINIT(0x00082a50, 0x14, g_areaNames)
-DATA(0x002454e8)
+RVA_DYNINIT(0x00082890, 0xa, g_areaNames)
+RVA_DYNINIT(0x000828b0, 0x79, g_areaNames)
+RVA_DYNINIT(0x00082950, 0xe, g_areaNames)
+RVA_DYNINIT(0x00082970, 0x14, g_areaNames)
+DATA(0x00246440)
 CString g_areaNames[8] = {
     "Rocky Roadz",
     "Gruntziclez",
@@ -2541,97 +2541,97 @@ CString g_areaNames[8] = {
     "Gruntz in Space",
 };
 
-RVA_DYNINIT(0x00082a80, 0xa, g_gruntzWinApp)
-RVA_DYNINIT(0x00082aa0, 0x10, g_gruntzWinApp)
-RVA_DYNINIT(0x00082ac0, 0xe, g_gruntzWinApp)
-RVA_DYNINIT(0x00082ae0, 0xa, g_gruntzWinApp)
-DATA(0x002451a8)
+RVA_DYNINIT(0x000829a0, 0xa, g_gruntzWinApp)
+RVA_DYNINIT(0x000829c0, 0x10, g_gruntzWinApp)
+RVA_DYNINIT(0x000829e0, 0xe, g_gruntzWinApp)
+RVA_DYNINIT(0x00082a00, 0xa, g_gruntzWinApp)
+DATA(0x00246100)
 CWinApp g_gruntzWinApp("Gruntz");
 
-DATA(0x00245270)
+DATA(0x002461c8)
 GruntDeathType g_areaPitDeath;
 
-RVA_DYNINIT(0x00082b00, 0xa, g_buteMgr)
-RVA_DYNINIT(0x00082b20, 0xa, g_buteMgr)
-RVA_DYNINIT(0x00082b40, 0xe, g_buteMgr)
-RVA_DYNINIT(0x00082b60, 0xa, g_buteMgr)
-DATA(0x002453d8)
+RVA_DYNINIT(0x00082a20, 0xa, g_buteMgr)
+RVA_DYNINIT(0x00082a40, 0xa, g_buteMgr)
+RVA_DYNINIT(0x00082a60, 0xe, g_buteMgr)
+RVA_DYNINIT(0x00082a80, 0xa, g_buteMgr)
+DATA(0x00246330)
 CButeMgr g_buteMgr;
 
-DATA(0x00245508)
+DATA(0x00246460)
 i32 g_panMinX;
-DATA(0x0024550c)
+DATA(0x00246464)
 i32 g_panMaxX;
 
-RVA_DYNINIT(0x00082b80, 0xa, g_brickText1)
-RVA_DYNINIT(0x00082ba0, 0xa, g_brickText1)
-RVA_DYNINIT(0x00082bc0, 0xe, g_brickText1)
-RVA_DYNINIT(0x00082be0, 0xa, g_brickText1)
-DATA(0x00245524)
+RVA_DYNINIT(0x00082aa0, 0xa, g_brickText1)
+RVA_DYNINIT(0x00082ac0, 0xa, g_brickText1)
+RVA_DYNINIT(0x00082ae0, 0xe, g_brickText1)
+RVA_DYNINIT(0x00082b00, 0xa, g_brickText1)
+DATA(0x0024647c)
 CString g_brickText1;
 
-RVA_DYNINIT(0x00082c00, 0xa, g_brickText2)
-RVA_DYNINIT(0x00082c20, 0xa, g_brickText2)
-RVA_DYNINIT(0x00082c40, 0xe, g_brickText2)
-RVA_DYNINIT(0x00082c60, 0xa, g_brickText2)
-DATA(0x00245528)
+RVA_DYNINIT(0x00082b20, 0xa, g_brickText2)
+RVA_DYNINIT(0x00082b40, 0xa, g_brickText2)
+RVA_DYNINIT(0x00082b60, 0xe, g_brickText2)
+RVA_DYNINIT(0x00082b80, 0xa, g_brickText2)
+DATA(0x00246480)
 CString g_brickText2;
 
-RVA_DYNINIT(0x00082c80, 0xa, g_brickText3)
-RVA_DYNINIT(0x00082ca0, 0xa, g_brickText3)
-RVA_DYNINIT(0x00082cc0, 0xe, g_brickText3)
-RVA_DYNINIT(0x00082ce0, 0xa, g_brickText3)
-DATA(0x0024552c)
+RVA_DYNINIT(0x00082ba0, 0xa, g_brickText3)
+RVA_DYNINIT(0x00082bc0, 0xa, g_brickText3)
+RVA_DYNINIT(0x00082be0, 0xe, g_brickText3)
+RVA_DYNINIT(0x00082c00, 0xa, g_brickText3)
+DATA(0x00246484)
 CString g_brickText3;
 
-RVA_DYNINIT(0x00082d00, 0xa, g_brickText4)
-RVA_DYNINIT(0x00082d20, 0xa, g_brickText4)
-RVA_DYNINIT(0x00082d40, 0xe, g_brickText4)
-RVA_DYNINIT(0x00082d60, 0xa, g_brickText4)
-DATA(0x00245530)
+RVA_DYNINIT(0x00082c20, 0xa, g_brickText4)
+RVA_DYNINIT(0x00082c40, 0xa, g_brickText4)
+RVA_DYNINIT(0x00082c60, 0xe, g_brickText4)
+RVA_DYNINIT(0x00082c80, 0xa, g_brickText4)
+DATA(0x00246488)
 CString g_brickText4;
 
-RVA_DYNINIT(0x00082d80, 0xa, g_brickText5)
-RVA_DYNINIT(0x00082da0, 0xa, g_brickText5)
-RVA_DYNINIT(0x00082dc0, 0xe, g_brickText5)
-RVA_DYNINIT(0x00082de0, 0xa, g_brickText5)
-DATA(0x00245514)
+RVA_DYNINIT(0x00082ca0, 0xa, g_brickText5)
+RVA_DYNINIT(0x00082cc0, 0xa, g_brickText5)
+RVA_DYNINIT(0x00082ce0, 0xe, g_brickText5)
+RVA_DYNINIT(0x00082d00, 0xa, g_brickText5)
+DATA(0x0024646c)
 CString g_brickText5;
 
-RVA_DYNINIT(0x00082e00, 0xa, g_brickText6)
-RVA_DYNINIT(0x00082e20, 0xa, g_brickText6)
-RVA_DYNINIT(0x00082e40, 0xe, g_brickText6)
-RVA_DYNINIT(0x00082e60, 0xa, g_brickText6)
-DATA(0x00245518)
+RVA_DYNINIT(0x00082d20, 0xa, g_brickText6)
+RVA_DYNINIT(0x00082d40, 0xa, g_brickText6)
+RVA_DYNINIT(0x00082d60, 0xe, g_brickText6)
+RVA_DYNINIT(0x00082d80, 0xa, g_brickText6)
+DATA(0x00246470)
 CString g_brickText6;
 
-RVA_DYNINIT(0x00082e80, 0xa, g_brickText7)
-RVA_DYNINIT(0x00082ea0, 0xa, g_brickText7)
-RVA_DYNINIT(0x00082ec0, 0xe, g_brickText7)
-RVA_DYNINIT(0x00082ee0, 0xa, g_brickText7)
-DATA(0x0024551c)
+RVA_DYNINIT(0x00082da0, 0xa, g_brickText7)
+RVA_DYNINIT(0x00082dc0, 0xa, g_brickText7)
+RVA_DYNINIT(0x00082de0, 0xe, g_brickText7)
+RVA_DYNINIT(0x00082e00, 0xa, g_brickText7)
+DATA(0x00246474)
 CString g_brickText7;
 
-RVA_DYNINIT(0x00082f00, 0xa, g_brickText8)
-RVA_DYNINIT(0x00082f20, 0xa, g_brickText8)
-RVA_DYNINIT(0x00082f40, 0xe, g_brickText8)
-RVA_DYNINIT(0x00082f60, 0xa, g_brickText8)
-DATA(0x00245520)
+RVA_DYNINIT(0x00082e20, 0xa, g_brickText8)
+RVA_DYNINIT(0x00082e40, 0xa, g_brickText8)
+RVA_DYNINIT(0x00082e60, 0xe, g_brickText8)
+RVA_DYNINIT(0x00082e80, 0xa, g_brickText8)
+DATA(0x00246478)
 CString g_brickText8;
 
-DATA(0x00245534)
+DATA(0x0024648c)
 i32 g_attractStateCount = 0;
-DATA(0x0024553c)
+DATA(0x00246494)
 GruntDeathType g_areaHazardDeath = DEATH_DROP;
 
-RVA_DYNINIT(0x00082f80, 0xa, g_coordPool)
-RVA_DYNINIT(0x00082fa0, 0x17, g_coordPool)
-RVA_DYNINIT(0x00082fd0, 0xe, g_coordPool)
-RVA_DYNINIT(0x00082ff0, 0x2f, g_coordPool)
-DATA(0x00245540)
+RVA_DYNINIT(0x00082ea0, 0xa, g_coordPool)
+RVA_DYNINIT(0x00082ec0, 0x17, g_coordPool)
+RVA_DYNINIT(0x00082ef0, 0xe, g_coordPool)
+RVA_DYNINIT(0x00082f10, 0x2f, g_coordPool)
+DATA(0x00246498)
 FreeNodePool g_coordPool;
 
-RVA(0x0001ec20, 0xa0)
+RVA(0x0001ec30, 0xa0)
 CString CMultiBootyState::GetWarlordName(i32 id) {
     switch (static_cast<WarlordOwner>(id)) {
         case WARLORDZ_KING:
@@ -2647,7 +2647,7 @@ CString CMultiBootyState::GetWarlordName(i32 id) {
     }
 }
 
-RVA(0x0001ecf0, 0x2a)
+RVA(0x0001ed00, 0x2a)
 i32 CMultiBootyState::QueryGruntSlots() {
     i32 i = 0;
     while (i < 4) {
@@ -2670,7 +2670,7 @@ static __inline i32 sumRun(i32* p, i32 n) {
 }
 
 // @early-stop
-RVA(0x0001ed30, 0x5ac)
+RVA(0x0001ed40, 0x5ac)
 void CMultiBootyState::DrawBattleStats() {
     CString s;
     RECT rc;
@@ -2815,7 +2815,7 @@ void CMultiBootyState::DrawBattleStats() {
     DrawTextToOverlaySurface(m_world, &s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
 }
 
-RVA(0x0001f480, 0x1e9)
+RVA(0x0001f490, 0x1e9)
 i32 CMultiBootyState::Render() {
     IDirectDrawSurface* frameSurf = m_world->m_drawTarget->m_frontSurface->m_surface->m_ddSurface;
     if (frameSurf == NULL || frameSurf->IsLost() != 0) {
@@ -2848,7 +2848,7 @@ i32 CMultiBootyState::Render() {
     return 1;
 }
 
-RVA(0x0001f6f0, 0x10b)
+RVA(0x0001f700, 0x10b)
 i32 CMultiBootyState::InputVirtual() {
     if (!CState::InputVirtual()) {
         return 0;
@@ -2894,12 +2894,12 @@ i32 CMultiBootyState::InputVirtual() {
     return 1;
 }
 
-RVA(0x0001f850, 0xc)
+RVA(0x0001f860, 0xc)
 i32 CMultiBootyState::RestoreDisplay() {
     return IsActive() != 0;
 }
 
-RVA(0x0001f870, 0x1d)
+RVA(0x0001f880, 0x1d)
 i32 CMultiBootyState::OnPaint() {
     if (IsActive() == 0) {
         return 0;
@@ -2907,7 +2907,7 @@ i32 CMultiBootyState::OnPaint() {
     return CState::OnPaint() != 0;
 }
 
-RVA(0x0001f8a0, 0x30)
+RVA(0x0001f8b0, 0x30)
 i32 CMultiBootyState::PostCommandIfKey() {
     if (m_sequenceState == BOOTYSEQ_PERFECT_BONUS) {
         PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
@@ -2915,22 +2915,22 @@ i32 CMultiBootyState::PostCommandIfKey() {
     return 1;
 }
 
-RVA(0x0001f8e0, 0x8)
+RVA(0x0001f8f0, 0x8)
 i32 CMultiBootyState::OnLButtonDown(i32, i32, i32) {
     return PostCommandIfKey();
 }
 
-RVA(0x0001f900, 0x8)
+RVA(0x0001f910, 0x8)
 i32 CMultiBootyState::OnRButtonDown(i32, i32, i32) {
     return PostCommandIfKey();
 }
 
-RVA(0x0001f920, 0x8)
+RVA(0x0001f930, 0x8)
 i32 CMultiBootyState::OnKeyDown(i32, i32) {
     return PostCommandIfKey();
 }
 
-RVA(0x0001f940, 0x4c)
+RVA(0x0001f950, 0x4c)
 i32 SoundCue::PlayIfElapsed(
     i32 volumePercent,
     i32 panPercent,
@@ -2940,14 +2940,14 @@ i32 SoundCue::PlayIfElapsed(
     return PlaySoundCueIfElapsed(this, volumePercent, panPercent, frequencyOffsetPercent, looping);
 }
 
-RVA_COMPGEN(0x0008d410, 0x1e, ??_GCBootyState@@UAEPAXI@Z)
-RVA(0x0008d440, 0x55)
+RVA_COMPGEN(0x0008d330, 0x1e, ??_GCBootyState@@UAEPAXI@Z)
+RVA(0x0008d360, 0x55)
 CBootyState::~CBootyState() {
     ReleaseResources();
 }
 
-RVA_COMPGEN(0x0008d4e0, 0x1e, ??_GCMultiBootyState@@UAEPAXI@Z)
-RVA(0x0008d510, 0x55)
+RVA_COMPGEN(0x0008d400, 0x1e, ??_GCMultiBootyState@@UAEPAXI@Z)
+RVA(0x0008d430, 0x55)
 CMultiBootyState::~CMultiBootyState() {
     ReleaseResources();
 }

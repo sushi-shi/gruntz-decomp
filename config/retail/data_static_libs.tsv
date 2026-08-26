@@ -23,14 +23,14 @@ rva	size	name	unit	note
 0x1eb6c4	0x4	??_7_AFX_CTL3D_STATE@@6B@		MFC/CRT (statically linked; not reconstructed)
 0x1eb6c8	0x8	?messageMap@CCmdTarget@@1UAFX_MSGMAP@@B	library_data	root AFX_MSGMAP {pBase=0, lpEntries=0x1eb6d0}
 0x1eb6d0	0x18	?_messageEntries@CCmdTarget@@0PBUAFX_MSGMAP_ENTRY@@B	library_data	CCmdTarget sentinel entry (NAFXCW cmdtarg.obj)
-0x1eb7d4	0x58	??_7CCmdTarget@@6B@		MFC/CRT (statically linked; not reconstructed)
-0x1eb834	0x10	??_7CCmdUI@@6B@		MFC/CRT (statically linked; not reconstructed)
-0x1eba34	0x7c	??_7CDC@@6B@		MFC/CRT (statically linked; not reconstructed)
-0x1ebab4	0x7c	??_7CClientDC@@6B@		MFC/CRT (statically linked; not reconstructed)
-0x1ebb34	0x7c	??_7CWindowDC@@6B@		MFC/CRT (statically linked; not reconstructed)
-0x1ebbb4	0x7c	??_7CPaintDC@@6B@		MFC/CRT (statically linked; not reconstructed)
-0x1ebc34	0x14	??_7CPen@@6B@		MFC/CRT (statically linked; not reconstructed)
-0x1ebc4c	0x1c	??_7CResourceException@@6B@		MFC/CRT (statically linked; not reconstructed)
+0x1eb7d4	0x40	??_7CCmdTarget@@6B@		MFC/CRT (statically linked; not reconstructed)
+0x1eb814	0x10	??_7CCmdUI@@6B@		MFC/CRT (statically linked; not reconstructed)
+0x1eba14	0x7c	??_7CDC@@6B@		MFC/CRT (statically linked; not reconstructed)
+0x1eba94	0x7c	??_7CClientDC@@6B@		MFC/CRT (statically linked; not reconstructed)
+0x1ebb14	0x7c	??_7CWindowDC@@6B@		MFC/CRT (statically linked; not reconstructed)
+0x1ebb94	0x7c	??_7CPaintDC@@6B@		MFC/CRT (statically linked; not reconstructed)
+0x1ebc14	0x14	??_7CPen@@6B@		MFC/CRT (statically linked; not reconstructed)
+0x1ebc2c	0x1c	??_7CResourceException@@6B@		MFC/CRT (statically linked; not reconstructed)
 0x1ebc6c	0x1c	??_7CUserException@@6B@		MFC/CRT (statically linked; not reconstructed)
 0x1ebd64	0xc0	??_7CStatic@@6B@		MFC/CRT (statically linked; not reconstructed)
 0x1ebe34	0xc4	??_7CButton@@6B@		MFC/CRT (statically linked; not reconstructed)
@@ -115,29 +115,29 @@ rva	size	name	unit	note
 0x1f0964	0x70	??_7CMemFile@@6B@		MFC/CRT (statically linked; not reconstructed)
 0x1f09ec	0x14	??_7CStringArray@@6B@		MFC/CRT (statically linked; not reconstructed)
 0x1f0ad4	0x4	??_7fstream@@6B@		MFC/CRT (statically linked; not reconstructed)
-0x2156f8	0x18	?classCMapStringToOb@CMapStringToOb@@2UCRuntimeClass@@A	library_data	NAFXCW map_so.obj CRuntimeClass record; exact archive relocation witnesses
-0x215ac0	0x18	?classCDWordArray@CDWordArray@@2UCRuntimeClass@@A	library_data	NAFXCW array_d.obj CRuntimeClass record; exact archive relocation witnesses
-0x215d30	0x18	?classCByteArray@CByteArray@@2UCRuntimeClass@@A	library_data	NAFXCW array_b.obj CRuntimeClass record; exact archive relocation witnesses
-0x215de0	0x18	?classCObArray@CObArray@@2UCRuntimeClass@@A	library_data	NAFXCW array_o.obj CRuntimeClass record; exact archive relocation witnesses
-0x215e10	0x18	?classCObList@CObList@@2UCRuntimeClass@@A	library_data	NAFXCW list_o.obj CRuntimeClass record; exact archive relocation witnesses
-0x215e40	0x18	?classCStringList@CStringList@@2UCRuntimeClass@@A	library_data	NAFXCW list_s.obj CRuntimeClass record; exact archive relocation witnesses
-0x216100	0x4	??_7CrtDataPtr_216100@@6B@		CRT/zlib .data fn-ptr slot (first=__fpmath)
-0x216104	0x4	??_7CrtDataPtr_216104@@6B@		CRT thread .data table (stamped by GetCurrentThreadId/TlsSetValue; slot=ret-stub 0x51f510)
-0x216108	0x4	??_7CrtDataPtr_216108@@6B@		CRT thread .data table (stamped by __endthreadex; slot=ret-stub 0x51f510)
-0x216120	0x4	??_7CrtDataPtr_216120@@6B@		CRT/zlib .data fn-ptr slot (first=__exit)
-0x216450	0x4	??_7CrtDataPtr_216450@@6B@		CRT/zlib .data fn-ptr slot (first=__CxxUnhandledExceptionFilter)
-0x216464	0x4	??_7CrtDataPtr_216464@@6B@		CRT SEH funclet table (slot 0x524df0 uses __except_handler3)
-0x216528	0x4	??_7CrtDataPtr_216528@@6B@		CRT/zlib .data fn-ptr slot (first=__fptrap)
-0x21652c	0x4	??_7CrtDataPtr_21652c@@6B@		CRT/zlib .data fn-ptr slot (first=__fptrap)
-0x216530	0x4	??_7CrtDataPtr_216530@@6B@		CRT/zlib .data fn-ptr slot (first=__fptrap)
-0x216534	0x4	??_7CrtDataPtr_216534@@6B@		CRT/zlib .data fn-ptr slot (first=__fptrap)
-0x216538	0x4	??_7CrtDataPtr_216538@@6B@		CRT/zlib .data fn-ptr slot (first=__fptrap)
-0x21653c	0x4	??_7CrtDataPtr_21653c@@6B@		CRT/zlib .data fn-ptr slot (first=__fptrap)
-0x216558	0x4	??_7CrtDataPtr_216558@@6B@		CRT locale table (stamped by __setlocale_set_cat; slot in __expandlocale 0x5273f0)
-0x21ac88	0x4	?x_maxbit@ios@@0JA	library_data	iostream ios::bitalloc bit pool head (LIBCIMT _ios.obj .data +0; retail init 0x8000)
-0x21ac8c	0x4	?x_curindex@ios@@0HA	library_data	iostream ios::xalloc index (LIBCIMT _ios.obj .data +4; retail init -1)
-0x2256a0	0x18	?classCStringArray@CStringArray@@2UCRuntimeClass@@A	library_data	NAFXCW array_s.obj CRuntimeClass record; exact archive relocation witnesses
-0x2257fe	0x100	??_7CrtDataPtr_2257fe@@6B@		CRT/zlib .data fn-ptr slot (first=sub_18e514)
-0x2bf3c8	0x18	?x_lockc@ios@@0U_CRT_CRITICAL_SECTION@@A	library_data	iostream class lock (LIBCIMT _ios.obj .bss +0; pushed to mtlock/mtunlock by ios::xalloc/bitalloc/ctor/dtor)
-0x2bf3e0	0x20	?x_statebuf@ios@@0PAJA	library_data	iostream ios::x_statebuf[8] (LIBCIMT _ios.obj .bss +0x18)
-0x2bf400	0x4	?fLockcInit@ios@@0HA	library_data	iostream x_lockc init refcount (LIBCIMT _ios.obj .bss +0x38; inc/test in every ios ctor at 0x169c42) - supersedes the phantom g_helperRefCount claim
+0x216658	0x18	?classCMapStringToOb@CMapStringToOb@@2UCRuntimeClass@@A	library_data	NAFXCW map_so.obj CRuntimeClass record; exact archive relocation witnesses
+0x216a20	0x18	?classCDWordArray@CDWordArray@@2UCRuntimeClass@@A	library_data	NAFXCW array_d.obj CRuntimeClass record; exact archive relocation witnesses
+0x216c90	0x18	?classCByteArray@CByteArray@@2UCRuntimeClass@@A	library_data	NAFXCW array_b.obj CRuntimeClass record; exact archive relocation witnesses
+0x216d40	0x18	?classCObArray@CObArray@@2UCRuntimeClass@@A	library_data	NAFXCW array_o.obj CRuntimeClass record; exact archive relocation witnesses
+0x216d70	0x18	?classCObList@CObList@@2UCRuntimeClass@@A	library_data	NAFXCW list_o.obj CRuntimeClass record; exact archive relocation witnesses
+0x216da0	0x18	?classCStringList@CStringList@@2UCRuntimeClass@@A	library_data	NAFXCW list_s.obj CRuntimeClass record; exact archive relocation witnesses
+0x217060	0x4	??_7CrtDataPtr_217060@@6B@		CRT/zlib .data fn-ptr slot (first=__fpmath)
+0x217064	0x4	??_7CrtDataPtr_217064@@6B@		CRT thread .data table (stamped by GetCurrentThreadId/TlsSetValue; slot=ret-stub 0x51f720)
+0x217068	0x4	??_7CrtDataPtr_217068@@6B@		CRT thread .data table (stamped by __endthreadex; slot=ret-stub 0x51f720)
+0x217080	0x4	??_7CrtDataPtr_217080@@6B@		CRT/zlib .data fn-ptr slot (first=__exit)
+0x2173b0	0x4	??_7CrtDataPtr_2173b0@@6B@		CRT/zlib .data fn-ptr slot (first=__CxxUnhandledExceptionFilter)
+0x2173c4	0x4	??_7CrtDataPtr_2173c4@@6B@		CRT SEH funclet table (slot 0x525000 uses __except_handler3)
+0x217488	0x4	??_7CrtDataPtr_217488@@6B@		CRT/zlib .data fn-ptr slot (first=__fptrap)
+0x21748c	0x4	??_7CrtDataPtr_21748c@@6B@		CRT/zlib .data fn-ptr slot (first=__fptrap)
+0x217490	0x4	??_7CrtDataPtr_217490@@6B@		CRT/zlib .data fn-ptr slot (first=__fptrap)
+0x217494	0x4	??_7CrtDataPtr_217494@@6B@		CRT/zlib .data fn-ptr slot (first=__fptrap)
+0x217498	0x4	??_7CrtDataPtr_217498@@6B@		CRT/zlib .data fn-ptr slot (first=__fptrap)
+0x21749c	0x4	??_7CrtDataPtr_21749c@@6B@		CRT/zlib .data fn-ptr slot (first=__fptrap)
+0x2174b8	0x4	??_7CrtDataPtr_2174b8@@6B@		CRT locale table (stamped by __setlocale_set_cat; slot in __expandlocale 0x527600)
+0x21bbe8	0x4	?x_maxbit@ios@@0JA	library_data	iostream ios::bitalloc bit pool head (LIBCIMT _ios.obj .data +0; retail init 0x8000)
+0x21bbec	0x4	?x_curindex@ios@@0HA	library_data	iostream ios::xalloc index (LIBCIMT _ios.obj .data +4; retail init -1)
+0x226600	0x18	?classCStringArray@CStringArray@@2UCRuntimeClass@@A	library_data	NAFXCW array_s.obj CRuntimeClass record; exact archive relocation witnesses
+0x22675e	0x100	??_7CrtDataPtr_22675e@@6B@		CRT/zlib .data fn-ptr slot (first=sub_18e514)
+0x2c0320	0x18	?x_lockc@ios@@0U_CRT_CRITICAL_SECTION@@A	library_data	iostream class lock (LIBCIMT _ios.obj .bss +0; pushed to mtlock/mtunlock by ios::xalloc/bitalloc/ctor/dtor)
+0x2c0338	0x20	?x_statebuf@ios@@0PAJA	library_data	iostream ios::x_statebuf[8] (LIBCIMT _ios.obj .bss +0x18)
+0x2c0358	0x4	?fLockcInit@ios@@0HA	library_data	iostream x_lockc init refcount (LIBCIMT _ios.obj .bss +0x38; inc/test in every ios ctor at 0x169c42) - supersedes the phantom g_helperRefCount claim

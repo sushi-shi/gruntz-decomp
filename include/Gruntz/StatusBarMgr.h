@@ -76,7 +76,7 @@ struct SbiClockPair {
 };
 
 struct CSbiHlRow {
-    RVA(0x000c86d0, 0x11)
+    RVA(0x000c8700, 0x11)
     CSbiHlRow() {
         m_state = IDX(HLROW_OFF);
         m_value = 0;
@@ -132,7 +132,7 @@ public:
     CStatusBarMgr();
     i32 BuildSideTabs();
 
-    RVA(0x000c8980, 0x64)
+    RVA(0x000c89b0, 0x64)
     ~CStatusBarMgr() {
         Teardown();
     }

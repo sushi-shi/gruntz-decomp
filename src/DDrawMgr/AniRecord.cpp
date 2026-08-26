@@ -23,10 +23,10 @@
 
 #include <string.h>
 
-DATA(0x002bf3c4)
+DATA(0x002c031c)
 i32 g_aniParsedNameLen = 0;
 
-RVA(0x00168c60, 0xa0)
+RVA(0x00168f40, 0xa0)
 i32 CAniRecordView::Parse(SoundCueRegistry* ctx, const i16* src) {
     const i16* p = src;
     m_flags = static_cast<u16>(*p++);
@@ -54,7 +54,7 @@ i32 CAniRecordView::Parse(SoundCueRegistry* ctx, const i16* src) {
 }
 
 // @early-stop
-RVA(0x00168d00, 0x14c)
+RVA(0x00168fe0, 0x14c)
 void CAniRecordView::ResolveIndices(SoundCueRegistry* owner, const char* str) {
     if (owner == NULL || str == NULL) {
         return;
@@ -90,7 +90,7 @@ void CAniRecordView::ResolveIndices(SoundCueRegistry* owner, const char* str) {
     }
 }
 
-RVA(0x00168e50, 0x1e)
+RVA(0x00169130, 0x1e)
 i32 CAniRecordView::GetDurationMs() {
     i32 duration = m_duration;
     i32 durationMs = ANI_FRAME_QUANTUM_MS;
@@ -104,9 +104,9 @@ i32 CAniRecordView::GetDurationMs() {
     return durationMs;
 }
 
-RVA_COMPGEN(0x00168e70, 0x27, ?GetAt@CStringArray@@QBE?AVCString@@H@Z)
+RVA_COMPGEN(0x00169150, 0x27, ?GetAt@CStringArray@@QBE?AVCString@@H@Z)
 
-RVA(0x00168ea0, 0x40)
+RVA(0x00169180, 0x40)
 i32 CDDrawPaletteResource::LoadPaletteFromFile(char* path, i32 flag) {
     CDDPalette* buf =
         OwnerMgr()->m_deviceManager->LoadPaletteFromFile(path, DDPCAPS_8BIT | DDPCAPS_ALLOW256);
@@ -121,7 +121,7 @@ i32 CDDrawPaletteResource::LoadPaletteFromFile(char* path, i32 flag) {
     return 1;
 }
 
-RVA(0x00168ee0, 0x40)
+RVA(0x001691c0, 0x40)
 i32 CDDrawPaletteResource::CreatePaletteFromRgb(u8* data, i32 flag) {
     CDDPalette* buf =
         OwnerMgr()->m_deviceManager->CreateRgbPalette(data, DDPCAPS_8BIT | DDPCAPS_ALLOW256);
@@ -136,7 +136,7 @@ i32 CDDrawPaletteResource::CreatePaletteFromRgb(u8* data, i32 flag) {
     return 1;
 }
 
-RVA(0x00168f20, 0x40)
+RVA(0x00169200, 0x40)
 i32 CDDrawPaletteResource::CreatePaletteFromEntries(PALETTEENTRY* entries, i32 flag) {
     CDDPalette* buf = OwnerMgr()->m_deviceManager->CreatePaletteFromEntries(
         entries,
@@ -153,7 +153,7 @@ i32 CDDrawPaletteResource::CreatePaletteFromEntries(PALETTEENTRY* entries, i32 f
     return 1;
 }
 
-RVA(0x00168f60, 0x45)
+RVA(0x00169240, 0x45)
 i32 CDDrawPaletteResource::CreatePaletteFromTrailingData(void* data, i32 size, i32 flag) {
     CDDPalette* buf = OwnerMgr()->m_deviceManager->CreatePaletteFromTrailingData(
         data,
@@ -171,7 +171,7 @@ i32 CDDrawPaletteResource::CreatePaletteFromTrailingData(void* data, i32 size, i
     return 1;
 }
 
-RVA(0x00168fb0, 0x1f)
+RVA(0x00169290, 0x1f)
 void CDDrawPaletteResource::Unload() {
     CDDPalette* buf = m_palette;
     if (buf != NULL) {
@@ -180,7 +180,7 @@ void CDDrawPaletteResource::Unload() {
     }
 }
 
-RVA(0x00168fd0, 0x24)
+RVA(0x001692b0, 0x24)
 i32 CDDrawPaletteResource::ApplyToFrontSurface() {
     CDDrawFrontSurface* sd = OwnerMgr()->m_drawTarget->m_frontSurface;
     if (sd->m_bpp != BPP_PALETTED_8) {

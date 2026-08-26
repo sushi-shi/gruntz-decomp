@@ -8,7 +8,7 @@
 #include <Ints.h>
 #include <Io/FileStream.h>
 
-RVA(0x00177480, 0x169)
+RVA(0x00177760, 0x169)
 i32 CImagePaletteNode::LoadBmpFile(char* path, i32 flags) {
     CFile f;
     if (f.Open(path, 0, NULL) == false) {
@@ -38,7 +38,7 @@ i32 CImagePaletteNode::LoadBmpFile(char* path, i32 flags) {
     return CreateFromEntries(out.m_entries, flags);
 }
 
-RVA(0x001775f0, 0x62)
+RVA(0x001778d0, 0x62)
 i32 CImagePaletteNode::LoadFromResource(char* resourceName, i32 flags) {
     HINSTANCE mod = g_hResModule;
     if (!mod) {

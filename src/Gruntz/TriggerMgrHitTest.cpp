@@ -14,7 +14,7 @@
 #include <stddef.h>
 
 // @early-stop
-RVA(0x0006f2f0, 0x5227)
+RVA(0x0006f1c0, 0x5227)
 GruntDirectionCell __stdcall TmDeflectStep(
     CGrunt* g,
     i32 goalX,
@@ -2183,7 +2183,7 @@ GruntDirectionCell __stdcall TmDeflectStep(
 }
 
 // @early-stop
-RVA(0x00075af0, 0x111)
+RVA(0x000759c0, 0x111)
 CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outPlayerIndex, i32* outUnitIndex, i32 exact) {
     i32 ix = x >> TILE_SHIFT_PX;
     i32 iy = y >> TILE_SHIFT_PX;
@@ -2230,7 +2230,7 @@ CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outPlayerIndex, i32* outUnit
 }
 
 // @early-stop
-RVA(0x00075c60, 0x1ba)
+RVA(0x00075b30, 0x1ba)
 CGrunt* CTriggerMgr::FindGruntAt(
     i32 px,
     i32 py,

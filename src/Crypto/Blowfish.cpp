@@ -10,13 +10,13 @@
 #include <memory.h>
 #include <string.h>
 
-DATA(0x0021aeb0)
+DATA(0x0021be10)
 u32 g_bfP[18] = BF_PI_P_INIT;
-DATA(0x0021aef8)
+DATA(0x0021be58)
 u32 g_bfS[4][256] = BF_PI_S_INIT;
-DATA(0x0021bef8)
+DATA(0x0021ce58)
 u32 g_bfInitP[18] = BF_PI_P_INIT;
-DATA(0x0021bf40)
+DATA(0x0021cea0)
 u32 g_bfInitS[4][256] = BF_PI_S_INIT;
 
 #define BF_ENC(LL, R, P)                                                                           \
@@ -25,12 +25,12 @@ u32 g_bfInitS[4][256] = BF_PI_S_INIT;
      (((g_bfS[0][(R) >> 24] + g_bfS[1][((R) >> 16) & 0xff]) ^ g_bfS[2][((R) >> 8) & 0xff])         \
       + g_bfS[3][(R) & 0xff]))
 
-RVA(0x0016f6c0, 0x12)
+RVA(0x0016f9a0, 0x12)
 void CButeTail::InitKey(const char* key) {
     InitializeBlowfish(key, 4);
 }
 
-RVA(0x0016f6e0, 0x76)
+RVA(0x0016f9c0, 0x76)
 void CButeTail::Encode(istream* src, ostream* dst) {
     i32 last = 0;
     while (!src->eof()) {
@@ -45,7 +45,7 @@ void CButeTail::Encode(istream* src, ostream* dst) {
     dst->put(static_cast<unsigned char>(last));
 }
 
-RVA(0x0016f760, 0x82)
+RVA(0x0016fa40, 0x82)
 void CButeTail::Decode(istream* in, ostream* out) {
 
     BlowfishBlock blk[2];
@@ -68,7 +68,7 @@ void CButeTail::Decode(istream* in, ostream* out) {
     }
 }
 
-RVA(0x0016f7f0, 0x47b)
+RVA(0x0016fad0, 0x47b)
 void Blowfish_encipher(u32* xl, u32* xr) {
     u32 l = *xl;
     u32 r = *xr;
@@ -96,7 +96,7 @@ void Blowfish_encipher(u32* xl, u32* xr) {
     *xl = r;
 }
 
-RVA(0x0016fc70, 0x48e)
+RVA(0x0016ff50, 0x48e)
 void Blowfish_decipher(u32* xl, u32* xr) {
     u32 l = *xl;
     u32 r = *xr;
@@ -124,7 +124,7 @@ void Blowfish_decipher(u32* xl, u32* xr) {
     *xr = l;
 }
 
-RVA(0x00170100, 0x104)
+RVA(0x001703e0, 0x104)
 i16 InitializeBlowfish(const char* key, i16 keybytes) {
     i16 i, j;
     u32 data, datal, datar;

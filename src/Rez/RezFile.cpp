@@ -9,43 +9,43 @@
 
 #include <stdio.h>
 
-DATA(0x0021a0a4)
+DATA(0x0021b004)
 char s_rPlusB[] = "r+b";
-DATA(0x0021a0a8)
+DATA(0x0021b008)
 char s_wPlusB[] = "w+b";
 
-DATA(0x0021a0a0)
+DATA(0x0021b000)
 char g_wildcard[] = "*.*";
 
-RVA(0x0013c4d0, 0x1)
+RVA(0x0013c7b0, 0x1)
 void CRezList::UnusedListHook() {}
 
-RVA(0x0013c4e0, 0x12)
+RVA(0x0013c7c0, 0x12)
 CRezItmBase::CRezItmBase(CRezArchive* parent) {
 
     m_parent = parent;
 }
 
-RVA_COMPGEN(0x0013c500, 0x1e, ??_GCRezItmBase@@UAEPAXI@Z)
+RVA_COMPGEN(0x0013c7e0, 0x1e, ??_GCRezItmBase@@UAEPAXI@Z)
 
-RVA(0x0013c520, 0xe)
+RVA(0x0013c800, 0xe)
 CRezItmBase::~CRezItmBase() {
     m_parent = NULL;
 }
 
-RVA(0x0013c530, 0x1)
+RVA(0x0013c810, 0x1)
 void CRezItmBase::Noop() {}
 
-RVA(0x0013c540, 0x28)
+RVA(0x0013c820, 0x28)
 CRezItm::CRezItm(CRezArchive* parent) : CRezItmBase(parent) {
     m_fp = NULL;
     m_readBuf = NULL;
     m_pos = -1;
 }
 
-RVA_COMPGEN(0x0013c570, 0x1e, ??_GCRezItm@@UAEPAXI@Z)
+RVA_COMPGEN(0x0013c850, 0x1e, ??_GCRezItm@@UAEPAXI@Z)
 
-RVA(0x0013c590, 0x66)
+RVA(0x0013c870, 0x66)
 CRezItm::~CRezItm() {
     if (m_fp != NULL) {
         Close();
@@ -55,7 +55,7 @@ CRezItm::~CRezItm() {
     }
 }
 
-RVA(0x0013c600, 0xbd)
+RVA(0x0013c8e0, 0xbd)
 i32 CRezItm::Read(i32 off, i32 base, u32 count, void* buf) {
     if (count <= 0) {
         return 0;
@@ -85,7 +85,7 @@ i32 CRezItm::Read(i32 off, i32 base, u32 count, void* buf) {
     return got;
 }
 
-RVA(0x0013c6c0, 0x97)
+RVA(0x0013c9a0, 0x97)
 i32 CRezItm::Write(i32 base, i32 off, u32 count, void* buf) {
     m_pos = -1;
     if (count <= 0) {
@@ -110,7 +110,7 @@ i32 CRezItm::Write(i32 base, i32 off, u32 count, void* buf) {
     return put;
 }
 
-RVA(0x0013c760, 0xc1)
+RVA(0x0013ca40, 0xc1)
 i32 CRezItm::Open(char* filename, b32 readonly, b32 write) {
     for (;;) {
         if (write) {
@@ -147,7 +147,7 @@ i32 CRezItm::Open(char* filename, b32 readonly, b32 write) {
 }
 
 // @early-stop
-RVA(0x0013c830, 0x63)
+RVA(0x0013cb10, 0x63)
 i32 CRezItm::Close() {
     if (m_fp != NULL) {
         b32 ok;
@@ -173,7 +173,7 @@ i32 CRezItm::Close() {
     return 0;
 }
 
-RVA(0x0013c8a0, 0x45)
+RVA(0x0013cb80, 0x45)
 i32 CRezItm::Flush() {
     m_pos = -1;
     if (m_fp) {
@@ -193,7 +193,7 @@ i32 CRezItm::Flush() {
     return 0;
 }
 
-RVA(0x0013c8f0, 0x41)
+RVA(0x0013cbd0, 0x41)
 i32 CRezItm::Check() {
     m_pos = -1;
     if (!m_fp) {
@@ -205,7 +205,7 @@ i32 CRezItm::Check() {
     return Open(m_readBuf, m_readonly, false) != 0;
 }
 
-RVA(0x0013c940, 0x46)
+RVA(0x0013cc20, 0x46)
 CRezDir::CRezDir(CRezArchive* parent, i32 maxOpen) : CRezItmBase(parent) {
     m_openCount = 0;
     m_write = 0;
@@ -213,9 +213,9 @@ CRezDir::CRezDir(CRezArchive* parent, i32 maxOpen) : CRezItmBase(parent) {
     m_readonly = true;
 }
 
-RVA_COMPGEN(0x0013c990, 0x1e, ??_GCRezDir@@UAEPAXI@Z)
+RVA_COMPGEN(0x0013cc70, 0x1e, ??_GCRezDir@@UAEPAXI@Z)
 
-RVA(0x0013c9b0, 0x7f)
+RVA(0x0013cc90, 0x7f)
 CRezDir::~CRezDir() {
 
     while (m_openList.m_head != NULL) {
@@ -226,23 +226,23 @@ CRezDir::~CRezDir() {
     }
 }
 
-RVA(0x0013ca40, 0x5)
+RVA(0x0013cd20, 0x5)
 i32 CRezDir::Read(i32 off, i32 base, u32 count, void* buf) {
     return 0;
 }
-RVA(0x0013ca50, 0x5)
+RVA(0x0013cd30, 0x5)
 i32 CRezDir::Write(i32 base, i32 off, u32 count, void* buf) {
     return 0;
 }
 
-RVA(0x0013ca60, 0x16)
+RVA(0x0013cd40, 0x16)
 i32 CRezDir::Open(char* name, b32 readonly, b32 write) {
     m_readonly = readonly;
     m_write = write;
     return 1;
 }
 
-RVA(0x0013ca80, 0x1d)
+RVA(0x0013cd60, 0x1d)
 i32 CRezDir::Close() {
 
     while (m_openList.m_head != NULL) {
@@ -251,16 +251,16 @@ i32 CRezDir::Close() {
     return 1;
 }
 
-RVA(0x0013caa0, 0x6)
+RVA(0x0013cd80, 0x6)
 i32 CRezDir::Flush() {
     return 1;
 }
-RVA(0x0013cab0, 0x6)
+RVA(0x0013cd90, 0x6)
 i32 CRezDir::Check() {
     return 1;
 }
 
-RVA(0x0013cac0, 0x9b)
+RVA(0x0013cda0, 0x9b)
 CRezFile::CRezFile(CRezArchive* parent, char* nameSrc, CRezDir* dir) : CRezItmBase(parent) {
     m_dir = dir;
     m_handle = NULL;
@@ -272,9 +272,9 @@ CRezFile::CRezFile(CRezArchive* parent, char* nameSrc, CRezDir* dir) : CRezItmBa
     m_dir->m_closedList.AddHead(this);
 }
 
-RVA_COMPGEN(0x0013cb60, 0x1e, ??_GCRezFile@@UAEPAXI@Z)
+RVA_COMPGEN(0x0013ce40, 0x1e, ??_GCRezFile@@UAEPAXI@Z)
 
-RVA(0x0013cb80, 0x72)
+RVA(0x0013ce60, 0x72)
 CRezFile::~CRezFile() {
     if (m_handle) {
         CloseFile();
@@ -285,7 +285,7 @@ CRezFile::~CRezFile() {
     m_dir->m_closedList.Remove(this);
 }
 
-RVA(0x0013cc00, 0x9f)
+RVA(0x0013cee0, 0x9f)
 i32 CRezFile::Read(i32 a, i32 pos, u32 count, void* buf) {
     static_cast<void>(a);
     if (count <= 0) {
@@ -309,7 +309,7 @@ i32 CRezFile::Read(i32 a, i32 pos, u32 count, void* buf) {
     return got;
 }
 
-RVA(0x0013cca0, 0x9f)
+RVA(0x0013cf80, 0x9f)
 i32 CRezFile::Write(i32 a, i32 pos, u32 count, void* buf) {
     static_cast<void>(a);
     if (count <= 0) {
@@ -333,16 +333,16 @@ i32 CRezFile::Write(i32 a, i32 pos, u32 count, void* buf) {
     return put;
 }
 
-RVA(0x0013cd40, 0x5)
+RVA(0x0013d020, 0x5)
 i32 CRezFile::Open(char* name, b32 readonly, b32 write) {
     return 0;
 }
-RVA(0x0013cd50, 0x3)
+RVA(0x0013d030, 0x3)
 i32 CRezFile::Close() {
     return 0;
 }
 
-RVA(0x0013cd60, 0x49)
+RVA(0x0013d040, 0x49)
 i32 CRezFile::Flush() {
     if (m_handle != NULL) {
         b32 ok = (fflush(m_handle) == 0);
@@ -357,12 +357,12 @@ i32 CRezFile::Flush() {
     return 1;
 }
 
-RVA(0x0013cdb0, 0x3)
+RVA(0x0013d090, 0x3)
 i32 CRezFile::Check() {
     return 0;
 }
 
-RVA(0x0013cdc0, 0xad)
+RVA(0x0013d0a0, 0xad)
 i32 CRezFile::OpenFile() {
     if (m_handle != NULL) {
         return 1;
@@ -401,7 +401,7 @@ i32 CRezFile::OpenFile() {
     return 1;
 }
 
-RVA(0x0013ce70, 0x7c)
+RVA(0x0013d150, 0x7c)
 i32 CRezFile::CloseFile() {
     if (m_handle == NULL) {
         return 1;
@@ -420,5 +420,5 @@ i32 CRezFile::CloseFile() {
     return ok;
 }
 
-RVA(0x0013cef0, 0x1)
+RVA(0x0013d1d0, 0x1)
 void CRezFile::Noop() {}

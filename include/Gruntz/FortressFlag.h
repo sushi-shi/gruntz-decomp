@@ -18,7 +18,7 @@ public:
     virtual void FireActivation(i32 id) OVERRIDE;
     i32 AdvanceAnim();
 
-    RVA(0x00010e40, 0x6)
+    RVA(0x00010e50, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_FORTRESSFLAG;
     }

@@ -32,7 +32,7 @@
 #include <string.h>
 
 // @early-stop
-RVA(0x000e8a70, 0x18c)
+RVA(0x000e8ba0, 0x18c)
 i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     CStatusBarMgr* owner,
     CDDrawSurfaceMgr* host,
@@ -107,19 +107,19 @@ fail:
     return 0;
 }
 
-RVA(0x000e8c70, 0xc)
+RVA(0x000e8da0, 0xc)
 void CSBI_GruntMachine::Reset() {
     m_leftFrame = NULL;
     m_rightFrame = NULL;
     m_config = NULL;
 }
 
-RVA(0x000e8c90, 0x8)
+RVA(0x000e8dc0, 0x8)
 i32 CSBI_GruntMachine::Refresh(i32) {
     return 1;
 }
 
-RVA(0x000e8cb0, 0xc4)
+RVA(0x000e8de0, 0xc4)
 i32 CSBI_GruntMachine::Render() {
     if (m_redrawFrames > 0) {
         i32 idx = m_leftFrameIndex;
@@ -148,7 +148,7 @@ i32 CSBI_GruntMachine::Render() {
     return 1;
 }
 
-RVA(0x000e8dc0, 0x22)
+RVA(0x000e8ef0, 0x22)
 void CSBI_GruntMachine::SetFrames(i32 leftFrameIndex, i32 rightFrameIndex) {
     if (leftFrameIndex != -1) {
         m_leftFrameIndex = leftFrameIndex;
@@ -161,7 +161,7 @@ void CSBI_GruntMachine::SetFrames(i32 leftFrameIndex, i32 rightFrameIndex) {
 
 // Each LOAD group scopes its own `idx`: cl 5.0 then overlays that home onto the
 // `reg` spill, which is dead once the first group has hoisted it into ESI.
-RVA(0x000e8e00, 0x41a)
+RVA(0x000e8f30, 0x41a)
 i32 CSBI_GruntMachine::SerializeFields(
     CFileMemBase* s,
     SerialMode mode,

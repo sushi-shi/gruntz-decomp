@@ -106,127 +106,127 @@ const double g_slopeNegTwo = -2.0;
 
 i32 g_movingSeed;
 
-DATA(0x0020d424)
+DATA(0x0020e3cc)
 static char s_d48_BREAK[] = "_BREAK";
-DATA(0x0020d42c)
+DATA(0x0020e3d4)
 static char s_d48_SOUTHEAST[] = "_SOUTHEAST";
-DATA(0x0020d43c)
+DATA(0x0020e3e4)
 static char s_d48_SOUTH[] = "_SOUTH";
-DATA(0x0020d444)
+DATA(0x0020e3ec)
 static char s_d48_SOUTHWEST[] = "_SOUTHWEST";
-DATA(0x0020d454)
+DATA(0x0020e3fc)
 static char s_d48_EAST[] = "_EAST";
-DATA(0x0020d45c)
+DATA(0x0020e404)
 static char s_d48_WEST[] = "_WEST";
-DATA(0x0020d464)
+DATA(0x0020e40c)
 static char s_d48_NORTHEAST[] = "_NORTHEAST";
-DATA(0x0020d474)
+DATA(0x0020e41c)
 static char s_d48_NORTH[] = "_NORTH";
-DATA(0x0020d47c)
+DATA(0x0020e424)
 static char s_d48_NORTHWEST[] = "_NORTHWEST";
-DATA(0x0020d48c)
+DATA(0x0020e434)
 static char s_d48_SOUTHEAST_ITEM[] = "_SOUTHEAST_ITEM";
-DATA(0x0020d4a0)
+DATA(0x0020e448)
 static char s_d48_SOUTH_ITEM[] = "_SOUTH_ITEM";
-DATA(0x0020d4b0)
+DATA(0x0020e458)
 static char s_d48_SOUTHWEST_ITEM[] = "_SOUTHWEST_ITEM";
-DATA(0x0020d4c4)
+DATA(0x0020e46c)
 static char s_d48_EAST_ITEM[] = "_EAST_ITEM";
-DATA(0x0020d4d4)
+DATA(0x0020e47c)
 static char s_d48_WEST_ITEM[] = "_WEST_ITEM";
-DATA(0x0020d4e4)
+DATA(0x0020e48c)
 static char s_d48_NORTHEAST_ITEM[] = "_NORTHEAST_ITEM";
-DATA(0x0020d4f8)
+DATA(0x0020e4a0)
 static char s_d48_NORTH_ITEM[] = "_NORTH_ITEM";
-DATA(0x0020d508)
+DATA(0x0020e4b0)
 static char s_d48_NORTHWEST_ITEM[] = "_NORTHWEST_ITEM";
-DATA(0x0020d51c)
+DATA(0x0020e4c4)
 static char s_d48_SOUTHEAST_IDLE[] = "_SOUTHEAST_IDLE";
-DATA(0x0020d530)
+DATA(0x0020e4d8)
 static char s_d48_SOUTH_IDLE[] = "_SOUTH_IDLE";
-DATA(0x0020d540)
+DATA(0x0020e4e8)
 static char s_d48_SOUTHWEST_IDLE[] = "_SOUTHWEST_IDLE";
-DATA(0x0020d554)
+DATA(0x0020e4fc)
 static char s_d48_EAST_IDLE[] = "_EAST_IDLE";
-DATA(0x0020d564)
+DATA(0x0020e50c)
 static char s_d48_WEST_IDLE[] = "_WEST_IDLE";
-DATA(0x0020d574)
+DATA(0x0020e51c)
 static char s_d48_NORTHEAST_IDLE[] = "_NORTHEAST_IDLE";
-DATA(0x0020d588)
+DATA(0x0020e530)
 static char s_d48_NORTH_IDLE[] = "_NORTH_IDLE";
-DATA(0x0020d598)
+DATA(0x0020e540)
 static char s_d48_NORTHWEST_IDLE[] = "_NORTHWEST_IDLE";
-DATA(0x0020d5ac)
+DATA(0x0020e554)
 static char s_d48_SOUTHEAST_ATTACK[] = "_SOUTHEAST_ATTACK";
-DATA(0x0020d5c4)
+DATA(0x0020e56c)
 static char s_d48_SOUTH_ATTACK[] = "_SOUTH_ATTACK";
-DATA(0x0020d5d4)
+DATA(0x0020e57c)
 static char s_d48_SOUTHWEST_ATTACK[] = "_SOUTHWEST_ATTACK";
-DATA(0x0020d5ec)
+DATA(0x0020e594)
 static char s_d48_EAST_ATTACK[] = "_EAST_ATTACK";
-DATA(0x0020d5fc)
+DATA(0x0020e5a4)
 static char s_d48_WEST_ATTACK[] = "_WEST_ATTACK";
-DATA(0x0020d60c)
+DATA(0x0020e5b4)
 static char s_d48_NORTHEAST_ATTACK[] = "_NORTHEAST_ATTACK";
-DATA(0x0020d624)
+DATA(0x0020e5cc)
 static char s_d48_NORTH_ATTACK[] = "_NORTH_ATTACK";
-DATA(0x0020d634)
+DATA(0x0020e5dc)
 static char s_d48_NORTHWEST_ATTACK[] = "_NORTHWEST_ATTACK";
-DATA(0x0020d64c)
+DATA(0x0020e5f4)
 static char s_d48_SOUTHEAST_STRUCK[] = "_SOUTHEAST_STRUCK";
-DATA(0x0020d664)
+DATA(0x0020e60c)
 static char s_d48_SOUTH_STRUCK[] = "_SOUTH_STRUCK";
-DATA(0x0020d674)
+DATA(0x0020e61c)
 static char s_d48_SOUTHWEST_STRUCK[] = "_SOUTHWEST_STRUCK";
-DATA(0x0020d68c)
+DATA(0x0020e634)
 static char s_d48_EAST_STRUCK[] = "_EAST_STRUCK";
-DATA(0x0020d69c)
+DATA(0x0020e644)
 static char s_d48_WEST_STRUCK[] = "_WEST_STRUCK";
-DATA(0x0020d6ac)
+DATA(0x0020e654)
 static char s_d48_NORTHEAST_STRUCK[] = "_NORTHEAST_STRUCK";
-DATA(0x0020d6c4)
+DATA(0x0020e66c)
 static char s_d48_NORTH_STRUCK[] = "_NORTH_STRUCK";
-DATA(0x0020d6d4)
+DATA(0x0020e67c)
 static char s_d48_NORTHWEST_STRUCK[] = "_NORTHWEST_STRUCK";
-DATA(0x0020d6ec)
+DATA(0x0020e694)
 static char s_d48_SOUTHEAST_WALK[] = "_SOUTHEAST_WALK";
-DATA(0x0020d700)
+DATA(0x0020e6a8)
 static char s_d48_SOUTH_WALK[] = "_SOUTH_WALK";
-DATA(0x0020d710)
+DATA(0x0020e6b8)
 static char s_d48_SOUTHWEST_WALK[] = "_SOUTHWEST_WALK";
-DATA(0x0020d724)
+DATA(0x0020e6cc)
 static char s_d48_EAST_WALK[] = "_EAST_WALK";
-DATA(0x0020d734)
+DATA(0x0020e6dc)
 static char s_d48_WEST_WALK[] = "_WEST_WALK";
-DATA(0x0020d744)
+DATA(0x0020e6ec)
 static char s_d48_NORTHEAST_WALK[] = "_NORTHEAST_WALK";
-DATA(0x0020d758)
+DATA(0x0020e700)
 static char s_d48_NORTH_WALK[] = "_NORTH_WALK";
-DATA(0x0020d768)
+DATA(0x0020e710)
 static char s_d48_NORTHWEST_WALK[] = "_NORTHWEST_WALK";
-DATA(0x0020d77c)
+DATA(0x0020e724)
 static char s_pose_TOYBREAK[] = "_TOY-BREAK";
-DATA(0x0020d78c)
+DATA(0x0020e734)
 static char s_pose_TOY2[] = "_TOY2";
-DATA(0x0020d794)
+DATA(0x0020e73c)
 static char s_pose_TOY1[] = "_TOY1";
-DATA(0x0020d79c)
+DATA(0x0020e744)
 static char s_pose_ITEM2[] = "_ITEM2";
-DATA(0x0020d7a4)
+DATA(0x0020e74c)
 static char s_pose_ITEM[] = "_ITEM";
-DATA(0x0020d7ac)
+DATA(0x0020e754)
 static char s_pose_IDLE5[] = "_IDLE5";
-DATA(0x0020d7b4)
+DATA(0x0020e75c)
 static char s_pose_STRUCK2[] = "_STRUCK2";
-DATA(0x0020d7c0)
+DATA(0x0020e768)
 static char s_pose_STRUCK1[] = "_STRUCK1";
-DATA(0x0020d7cc)
+DATA(0x0020e774)
 static char s_pose_ATTACKIDLE[] = "_ATTACK-IDLE";
-DATA(0x0020d7dc)
+DATA(0x0020e784)
 static char s_pose_ATTACK2[] = "_ATTACK2";
-DATA(0x0020d7e8)
+DATA(0x0020e790)
 static char s_pose_ATTACK1[] = "_ATTACK1";
-DATA(0x002455b0)
+DATA(0x00246508)
 b32 g_traitorMode;
 
 static inline CAniElement* FindAnimElement(CMapStringToPtr& map, LPCTSTR key) {
@@ -241,20 +241,20 @@ static inline CAniElement* FindAnimElement(CMapStringToPtr& map, LPCTSTR key) {
          "GRUNTZ_" + m_animSetName + (sfx)                                                         \
      ))
 
-RVA_COMPGEN(0x0000f2c0, 0x1e, ??_GCGrunt@@UAEPAXI@Z)
-RVA(0x0000f2f0, 0xc8)
+RVA_COMPGEN(0x0000f2d0, 0x1e, ??_GCGrunt@@UAEPAXI@Z)
+RVA(0x0000f300, 0xc8)
 CGrunt::~CGrunt() {
     OnObjectRemoved();
 }
 
-RVA(0x0000f400, 0x1b)
+RVA(0x0000f410, 0x1b)
 CGruntCellRec::CGruntCellRec() {}
 
-RVA(0x0000f430, 0x10)
+RVA(0x0000f440, 0x10)
 CGruntCellRec::~CGruntCellRec() {}
 
 // @early-stop
-RVA(0x00047a10, 0x770)
+RVA(0x00047930, 0x770)
 CGrunt::CGrunt(CGameObject* owner)
     : CMovingLogic(owner, CMovingLogic::GRUNT_SCALE),
       CWapX(owner),
@@ -450,7 +450,7 @@ CGrunt::CGrunt(CGameObject* owner)
     m_blockedVoicePending = true;
 }
 
-RVA(0x00048360, 0x7e)
+RVA(0x00048280, 0x7e)
 void CGrunt::OnObjectRemoved() {
     if (CoordCount() != 0) {
 
@@ -480,7 +480,7 @@ void CGrunt::OnObjectRemoved() {
     }
 }
 
-RVA(0x00048400, 0x47)
+RVA(0x00048320, 0x47)
 void CGrunt::ReadConfigFromButeMgr() {
     m_reserved18c = 0;
     m_reserved418 = 0;
@@ -496,7 +496,7 @@ void CGrunt::ReadConfigFromButeMgr() {
     }
 }
 
-RVA(0x00048470, 0x131b)
+RVA(0x00048390, 0x131b)
 void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
     if (kind == 0) {
         m_cells[0].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_NORTHWEST_WALK;
@@ -566,7 +566,7 @@ void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
     SET_DRAW_FILL_SPLIT(m_object, h, fillCmd, sel);
 }
 
-RVA(0x00049c60, 0x8d1)
+RVA(0x00049b80, 0x8d1)
 void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
     if (kind == 0) {
         LOAD_POSE(m_poseWalk, "_WALK");
@@ -614,7 +614,7 @@ void CGrunt::LoadAnimNameTable(i32 kind, i32 toyOnly) {
 // @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0004a780, 0x1ec)
+RVA(0x0004a6a0, 0x1ec)
 GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
     if (other == NULL) {
         return &g_gruntMoveDirCenter;
@@ -692,7 +692,7 @@ GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0004a9f0, 0x1aa)
+RVA(0x0004a910, 0x1aa)
 i32 CGrunt::IntersectsTileObjectAxes() {
     CGrunt* tgt = m_triggerMgr->FindAtPixel(m_object->m_screenX, m_object->m_screenY);
     if (tgt == NULL) {
@@ -737,7 +737,7 @@ i32 CGrunt::IntersectsTileObjectAxes() {
 }
 
 // @early-stop
-RVA(0x0004ac10, 0x402)
+RVA(0x0004ab30, 0x402)
 void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
     static_cast<void>(unused);
     if (SameCellTag(&m_entranceCell, &facing)) {
@@ -821,7 +821,7 @@ store:
 }
 
 // @early-stop
-RVA(0x0004b130, 0xc8)
+RVA(0x0004b050, 0xc8)
 i32 CGrunt::CommitArrival() {
     if (m_arrived != false) {
         return 1;
@@ -847,7 +847,7 @@ i32 CGrunt::CommitArrival() {
     return 1;
 }
 
-RVA(0x0004b240, 0xaa)
+RVA(0x0004b160, 0xaa)
 void CGrunt::ClearAllSprites() {
     if (m_selectedSprite) {
         m_selectedSprite->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
@@ -878,7 +878,7 @@ void CGrunt::ClearAllSprites() {
     m_arrived = false;
 }
 
-RVA(0x0004b320, 0x34)
+RVA(0x0004b240, 0x34)
 i32 CGrunt::TileSwitch(
     i32 col,
     i32 row,
@@ -900,7 +900,7 @@ i32 CGrunt::TileSwitch(
     );
 }
 
-RVA(0x0004b370, 0xb30)
+RVA(0x0004b290, 0xaf4)
 i32 CGrunt::StepArrivalDrop(
     i32 pxX,
     i32 pxY,
@@ -1254,7 +1254,7 @@ reProbe:
     return arrivalPhase != 0;
 }
 
-RVA(0x0004c170, 0xbe7)
+RVA(0x0004c040, 0xbe7)
 i32 CGrunt::StepGruntMovement() {
     i32 coordX, coordY;
     i32 gtX, gtY;
@@ -1731,7 +1731,7 @@ label_ret1:
     return 1;
 }
 
-RVA(0x0004d060, 0x98)
+RVA(0x0004cf30, 0x98)
 void CGrunt::SetEntrancePos(i32 clearArrivalState, i32 recycleRoute) {
     m_reserved210 = 0;
     m_entrancePx = m_lastTilePx;
@@ -1745,7 +1745,7 @@ void CGrunt::SetEntrancePos(i32 clearArrivalState, i32 recycleRoute) {
 }
 
 // @early-stop
-RVA(0x0004d130, 0xb5)
+RVA(0x0004d000, 0xb5)
 i32 CGrunt::CreateHealthSprite() {
     if (m_healthSprite || m_health <= 0) {
         return 0;
@@ -1772,7 +1772,7 @@ i32 CGrunt::CreateHealthSprite() {
 }
 
 // @early-stop
-RVA(0x0004d220, 0x9c)
+RVA(0x0004d0f0, 0x9c)
 i32 CGrunt::CreateToySprite() {
     if (m_toySprite) {
         return 0;
@@ -1798,7 +1798,7 @@ i32 CGrunt::CreateToySprite() {
 }
 
 // @early-stop
-RVA(0x0004d2f0, 0xb4)
+RVA(0x0004d1c0, 0xb4)
 i32 CGrunt::CreateStaminaSprite() {
     if (m_staminaSprite || m_stamina == STAMINA_FULL) {
         return 0;
@@ -1825,7 +1825,7 @@ i32 CGrunt::CreateStaminaSprite() {
 }
 
 // @early-stop
-RVA(0x0004d3e0, 0xf5)
+RVA(0x0004d2b0, 0xf5)
 i32 CGrunt::CreateToyTimeSprite() {
     if (m_toyTimeSprite || m_toyTime == 0) {
         return 0;
@@ -1855,7 +1855,7 @@ i32 CGrunt::CreateToyTimeSprite() {
 }
 
 // @early-stop
-RVA(0x0004d520, 0xe3)
+RVA(0x0004d3f0, 0xe3)
 i32 CGrunt::CreateWingzTimeSprite() {
     if (m_wingzTimeSprite || m_wingzEnabled == false || m_wingzTime == 0) {
         return 0;
@@ -1884,7 +1884,7 @@ i32 CGrunt::CreateWingzTimeSprite() {
 }
 
 // @early-stop
-RVA(0x0004d650, 0xa1)
+RVA(0x0004d520, 0xa1)
 i32 CGrunt::CreatePowerupSprite(i32 powerupId) {
     if (m_powerupSprite) {
         return 0;
@@ -1911,7 +1911,7 @@ i32 CGrunt::CreatePowerupSprite(i32 powerupId) {
 }
 
 // @early-stop
-RVA(0x0004d730, 0x96)
+RVA(0x0004d600, 0x96)
 i32 CGrunt::CreateSelectedSprite() {
     if (m_selectedSprite) {
         return 0;
@@ -1937,7 +1937,7 @@ i32 CGrunt::CreateSelectedSprite() {
     return 1;
 }
 
-RVA(0x0004d800, 0x440)
+RVA(0x0004d6d0, 0x440)
 i32 CGrunt::Place(
     class CTriggerMgr* board,
     i32 playerIndex,
@@ -2075,7 +2075,7 @@ i32 CGrunt::Place(
 }
 
 // @early-stop
-RVA(0x0004dd50, 0x2400)
+RVA(0x0004dc20, 0x2400)
 i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defer) {
     char eq;
     if (kind == PICKUP_INVALID) {

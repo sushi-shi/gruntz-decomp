@@ -35,7 +35,7 @@ public:
     CPathHazard(CUserLogic::EInlineBase) {}
     CPathHazard(CGameObject* obj);
 
-    RVA(0x00013210, 0x6)
+    RVA(0x00013220, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_PATHHAZARD;
     }
@@ -47,7 +47,7 @@ public:
 
     virtual i32 BeginLeg();
 
-    RVA(0x00013230, 0x8)
+    RVA(0x00013240, 0x8)
     virtual i32 HitTest(i32 playerIndex, i32 unitIndex) {
         return 1;
     }

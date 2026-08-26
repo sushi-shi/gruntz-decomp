@@ -43,7 +43,7 @@ public:
         const char* key,
         i32 fillScale
     ) OVERRIDE;
-    RVA(0x00104c80, 0x1f)
+    RVA(0x00104db0, 0x1f)
     virtual void Reset() OVERRIDE {
         if (m_gooSrc != NULL) {
             m_host->m_deviceManager->RemoveSurface(m_gooSrc);

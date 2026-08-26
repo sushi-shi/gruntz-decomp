@@ -33,59 +33,59 @@
 
 #include <stddef.h>
 
-RVA_DYNINIT(0x00046580, 0x5, s_gruntDirNorth)
-RVA_DYNINIT(0x000465a0, 0x1a, s_gruntDirNorth)
-RVA_DYNINIT(0x000465d0, 0x5, s_gruntDirNorthEast)
-RVA_DYNINIT(0x000465f0, 0x1a, s_gruntDirNorthEast)
-RVA_DYNINIT(0x00046620, 0x5, s_gruntDirEast)
-RVA_DYNINIT(0x00046640, 0x1f, s_gruntDirEast)
-RVA_DYNINIT(0x00046670, 0x5, s_gruntDirSouthEast)
-RVA_DYNINIT(0x00046690, 0x1a, s_gruntDirSouthEast)
-RVA_DYNINIT(0x000466c0, 0x5, s_gruntDirSouth)
-RVA_DYNINIT(0x000466e0, 0x1f, s_gruntDirSouth)
-RVA_DYNINIT(0x00046710, 0x5, s_gruntDirSouthWest)
-RVA_DYNINIT(0x00046730, 0x1f, s_gruntDirSouthWest)
-RVA_DYNINIT(0x00046760, 0x5, s_gruntDirWest)
-RVA_DYNINIT(0x00046780, 0x1f, s_gruntDirWest)
-RVA_DYNINIT(0x000467b0, 0x5, s_gruntDirNorthWest)
-RVA_DYNINIT(0x000467d0, 0x17, s_gruntDirNorthWest)
-RVA_DYNINIT(0x00046800, 0x5, s_gruntDirCenter)
-RVA_DYNINIT(0x00046820, 0x1a, s_gruntDirCenter)
+RVA_DYNINIT(0x000464a0, 0x5, s_gruntDirNorth)
+RVA_DYNINIT(0x000464c0, 0x1a, s_gruntDirNorth)
+RVA_DYNINIT(0x000464f0, 0x5, s_gruntDirNorthEast)
+RVA_DYNINIT(0x00046510, 0x1a, s_gruntDirNorthEast)
+RVA_DYNINIT(0x00046540, 0x5, s_gruntDirEast)
+RVA_DYNINIT(0x00046560, 0x1f, s_gruntDirEast)
+RVA_DYNINIT(0x00046590, 0x5, s_gruntDirSouthEast)
+RVA_DYNINIT(0x000465b0, 0x1a, s_gruntDirSouthEast)
+RVA_DYNINIT(0x000465e0, 0x5, s_gruntDirSouth)
+RVA_DYNINIT(0x00046600, 0x1f, s_gruntDirSouth)
+RVA_DYNINIT(0x00046630, 0x5, s_gruntDirSouthWest)
+RVA_DYNINIT(0x00046650, 0x1f, s_gruntDirSouthWest)
+RVA_DYNINIT(0x00046680, 0x5, s_gruntDirWest)
+RVA_DYNINIT(0x000466a0, 0x1f, s_gruntDirWest)
+RVA_DYNINIT(0x000466d0, 0x5, s_gruntDirNorthWest)
+RVA_DYNINIT(0x000466f0, 0x17, s_gruntDirNorthWest)
+RVA_DYNINIT(0x00046720, 0x5, s_gruntDirCenter)
+RVA_DYNINIT(0x00046740, 0x1a, s_gruntDirCenter)
 
-RVA_DYNINIT(0x00045fe0, 0xa, CActRegPool<CFortressFlag>::s_table)
-RVA_DYNINIT(0x00046000, 0x15, CActRegPool<CFortressFlag>::s_table)
-RVA_DYNINIT(0x00046030, 0xe, CActRegPool<CFortressFlag>::s_table)
-RVA_DYNINIT(0x00046050, 0x1f, CActRegPool<CFortressFlag>::s_table)
-template<> DATA(0x00244638)
+RVA_DYNINIT(0x00045f00, 0xa, CActRegPool<CFortressFlag>::s_table)
+RVA_DYNINIT(0x00045f20, 0x15, CActRegPool<CFortressFlag>::s_table)
+RVA_DYNINIT(0x00045f50, 0xe, CActRegPool<CFortressFlag>::s_table)
+RVA_DYNINIT(0x00045f70, 0x1f, CActRegPool<CFortressFlag>::s_table)
+template<> DATA(0x00245590)
 CActReg CActRegPool<CFortressFlag>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
-RVA_DYNINIT(0x00046c90, 0xa, CActRegPool<CParticlez>::s_table)
-RVA_DYNINIT(0x00046cb0, 0x15, CActRegPool<CParticlez>::s_table)
-RVA_DYNINIT(0x00046ce0, 0xe, CActRegPool<CParticlez>::s_table)
-RVA_DYNINIT(0x00046d00, 0x1f, CActRegPool<CParticlez>::s_table)
-template<> DATA(0x00244870)
+RVA_DYNINIT(0x00046bb0, 0xa, CActRegPool<CParticlez>::s_table)
+RVA_DYNINIT(0x00046bd0, 0x15, CActRegPool<CParticlez>::s_table)
+RVA_DYNINIT(0x00046c00, 0xe, CActRegPool<CParticlez>::s_table)
+RVA_DYNINIT(0x00046c20, 0x1f, CActRegPool<CParticlez>::s_table)
+template<> DATA(0x002457c8)
 CActReg CActRegPool<CParticlez>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
-RVA_DYNINIT(0x000472b0, 0xa, CActRegPool<CExplosion>::s_table)
-RVA_DYNINIT(0x000472d0, 0x15, CActRegPool<CExplosion>::s_table)
-RVA_DYNINIT(0x00047300, 0xe, CActRegPool<CExplosion>::s_table)
-RVA_DYNINIT(0x00047320, 0x1f, CActRegPool<CExplosion>::s_table)
-template<> DATA(0x002447f8)
+RVA_DYNINIT(0x000471d0, 0xa, CActRegPool<CExplosion>::s_table)
+RVA_DYNINIT(0x000471f0, 0x15, CActRegPool<CExplosion>::s_table)
+RVA_DYNINIT(0x00047220, 0xe, CActRegPool<CExplosion>::s_table)
+RVA_DYNINIT(0x00047240, 0x1f, CActRegPool<CExplosion>::s_table)
+template<> DATA(0x00245750)
 CActReg CActRegPool<CExplosion>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 static inline CActHandler* PartLookup(i32 coord) {
     return (CActRegPool<CParticlez>::s_table.ResolveEntry(coord));
 }
 
-RVA_COMPGEN(0x00010e60, 0x1e, ??_GCFortressFlag@@UAEPAXI@Z)
-RVA_COMPGEN(0x00010e90, 0x44, ??1CFortressFlag@@UAE@XZ)
+RVA_COMPGEN(0x00010e70, 0x1e, ??_GCFortressFlag@@UAEPAXI@Z)
+RVA_COMPGEN(0x00010ea0, 0x44, ??1CFortressFlag@@UAE@XZ)
 
-RVA_COMPGEN(0x00012d60, 0x1e, ??_GCParticlez@@UAEPAXI@Z)
-RVA_COMPGEN(0x00012d90, 0x44, ??1CParticlez@@UAE@XZ)
+RVA_COMPGEN(0x00012d70, 0x1e, ??_GCParticlez@@UAEPAXI@Z)
+RVA_COMPGEN(0x00012da0, 0x44, ??1CParticlez@@UAE@XZ)
 
-RVA_COMPGEN(0x00012e90, 0x1e, ??_GCExplosion@@UAEPAXI@Z)
-RVA_COMPGEN(0x00012ec0, 0x44, ??1CExplosion@@UAE@XZ)
+RVA_COMPGEN(0x00012ea0, 0x1e, ??_GCExplosion@@UAEPAXI@Z)
+RVA_COMPGEN(0x00012ed0, 0x44, ??1CExplosion@@UAE@XZ)
 
 // @early-stop
-RVA(0x00045d30, 0x220)
+RVA(0x00045c50, 0x220)
 CFortressFlag::CFortressFlag(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     CWwdSpriteObject* o = m_object;
@@ -117,7 +117,7 @@ CFortressFlag::CFortressFlag(CGameObject* obj)
     SET_DRAW_FILL(spr, SHADE_PAL_16, sel);
 }
 
-RVA(0x00046080, 0x102)
+RVA(0x00045fa0, 0x102)
 void CFortressFlag::FireActivation(i32 coord) {
     CActHandler* e = (CActRegPool<CFortressFlag>::s_table.ResolveEntry(coord));
     if ((*e) != NULL) {
@@ -126,20 +126,20 @@ void CFortressFlag::FireActivation(i32 coord) {
     }
 }
 
-RVA(0x000461e0, 0x18d)
+RVA(0x00046100, 0x18d)
 void CFortressFlag::RegisterActs() {
     ACT_NAME_ID(id, "A")
     (*((CActRegPool<CFortressFlag>::s_table.ResolveEntry(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CFortressFlag::AdvanceAnim);
 }
 
-RVA(0x000463e0, 0x17)
+RVA(0x00046300, 0x17)
 i32 CFortressFlag::AdvanceAnim() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     return 0;
 }
 
-RVA(0x00046410, 0x92)
+RVA(0x00046330, 0x92)
 i32 CFortressFlag::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
@@ -157,7 +157,7 @@ i32 CFortressFlag::SerializeDispatch(
     return 1;
 }
 
-template<> RVA(0x000464e0, 0x74)
+template<> RVA(0x00046400, 0x74)
 CActHandler* zDArray<CActHandler>::Resolve(i32 id) {
     char* r;
     m_grown = 0;
@@ -180,7 +180,7 @@ CActHandler* zDArray<CActHandler>::Resolve(i32 id) {
     return band.m_slot;
 }
 
-RVA(0x00046850, 0xf1)
+RVA(0x00046770, 0xf1)
 i32 DispatchParticlezLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {
@@ -218,7 +218,7 @@ i32 DispatchParticlezLogic(CGameObject* owner) {
     return 1;
 }
 
-RVA(0x00046990, 0xf1)
+RVA(0x000468b0, 0xf1)
 i32 DispatchExplosionLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {
@@ -257,7 +257,7 @@ i32 DispatchExplosionLogic(CGameObject* owner) {
 }
 
 // @early-stop
-RVA(0x00046ad0, 0x15e)
+RVA(0x000469f0, 0x15e)
 CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SET_ANIMATION_ACT("A");
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
@@ -266,7 +266,7 @@ CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     m_object->m_dirty.m_armed = 0;
 }
 
-RVA(0x00046d30, 0x102)
+RVA(0x00046c50, 0x102)
 void CParticlez::FireActivation(i32 coord) {
     CActHandler* e = PartLookup(coord);
     if ((*e) != NULL) {
@@ -275,13 +275,13 @@ void CParticlez::FireActivation(i32 coord) {
     }
 }
 
-RVA(0x00046e90, 0x18d)
+RVA(0x00046db0, 0x18d)
 void CParticlez::RegisterActs() {
     ACT_NAME_ID(id, "A")
     (*((PartLookup(id)))) = static_cast<i32 (CUserLogic::*)()>(&CParticlez::Update);
 }
 
-RVA(0x00047090, 0x39)
+RVA(0x00046fb0, 0x39)
 i32 CParticlez::Update() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     CWwdSpriteObject* o = m_wwdObject;
@@ -292,7 +292,7 @@ i32 CParticlez::Update() {
 }
 
 // @early-stop
-RVA(0x000470e0, 0x16b)
+RVA(0x00047000, 0x16b)
 CExplosion::CExplosion(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetImageSetByName("GAME_EXPLOSION");
     SET_ANIMATION_ACT("A");
@@ -302,7 +302,7 @@ CExplosion::CExplosion(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     m_object->m_dirty.m_armed = 0;
 }
 
-RVA(0x00047350, 0x102)
+RVA(0x00047270, 0x102)
 void CExplosion::FireActivation(i32 id) {
     CActHandler* e = (CActRegPool<CExplosion>::s_table.ResolveEntry(id));
     if ((*e) != NULL) {
@@ -311,7 +311,7 @@ void CExplosion::FireActivation(i32 id) {
     }
 }
 
-RVA(0x000474b0, 0x18d)
+RVA(0x000473d0, 0x18d)
 void RegisterExplosionActions() {
     ACT_NAME_ID(id, "A")
     *CActRegPool<CExplosion>::s_table.ResolveEntry(id) =

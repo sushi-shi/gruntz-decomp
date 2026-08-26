@@ -11,7 +11,7 @@
 
 class CTileTriggerTransition : public CUserLogic, public CWapX {
 public:
-    RVA(0x00011750, 0x47)
+    RVA(0x00011760, 0x47)
     virtual i32
     SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object)
         OVERRIDE {
@@ -22,7 +22,7 @@ public:
     CTileTriggerTransition() {}
     CTileTriggerTransition(CGameObject* obj);
 
-    RVA(0x00011730, 0x6)
+    RVA(0x00011740, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_TILETRIGGERTRANSITION;
     }

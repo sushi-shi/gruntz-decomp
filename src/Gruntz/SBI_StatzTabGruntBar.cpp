@@ -17,7 +17,7 @@
 #include <Ints.h>
 #include <Rez/FrameClock.h>
 
-RVA(0x000ea470, 0x24)
+RVA(0x000ea5a0, 0x24)
 void CSBI_StatzTabGruntBar::Reset() {
     m_statusGlyphLatched = NULL;
     m_abilityGlyphLatched = NULL;
@@ -32,7 +32,7 @@ void CSBI_StatzTabGruntBar::Reset() {
     m_timerGlyph = NULL;
 }
 
-RVA(0x000ea4b0, 0x1c)
+RVA(0x000ea5e0, 0x1c)
 i32 CSBI_StatzTabGruntBar::Refresh(i32 deltaMs) {
     if (Update()) {
         RequestRedraw();
@@ -40,7 +40,7 @@ i32 CSBI_StatzTabGruntBar::Refresh(i32 deltaMs) {
     return 1;
 }
 
-RVA(0x000ea4e0, 0x172)
+RVA(0x000ea610, 0x172)
 i32 CSBI_StatzTabGruntBar::Render() {
     CDDrawSurfacePair* ctx = g_gameReg->m_world->m_drawTarget->m_backPair;
     if (m_redrawFrames > 0) {
@@ -120,7 +120,7 @@ i32 CSBI_StatzTabGruntBar::Render() {
 }
 
 // @early-stop
-RVA(0x000ea6c0, 0x237)
+RVA(0x000ea7f0, 0x237)
 i32 CSBI_StatzTabGruntBar::Update() {
     i32 dirty = 0;
     i32 playerIndex = m_playerIndex;
@@ -241,8 +241,8 @@ i32 CSBI_StatzTabGruntBar::Update() {
     return dirty;
 }
 
-RVA_COMPGEN(0x00104ad0, 0x1e, ??_GCSBI_StatzTabGruntBar@@UAEPAXI@Z)
-RVA(0x00104b00, 0x55)
+RVA_COMPGEN(0x00104c00, 0x1e, ??_GCSBI_StatzTabGruntBar@@UAEPAXI@Z)
+RVA(0x00104c30, 0x55)
 CSBI_StatzTabGruntBar::~CSBI_StatzTabGruntBar() {
     Reset();
 }

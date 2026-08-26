@@ -5,7 +5,7 @@
 #include <ctype.h>
 #include <iostream.h>
 
-RVA(0x00193080, 0xb5)
+RVA(0x00193360, 0xb5)
 ostream& operator<<(ostream& accum, const zBitVec& bits) {
     if (accum.opfx()) {
         long saved = accum.flags();
@@ -27,7 +27,7 @@ ostream& operator<<(ostream& accum, const zBitVec& bits) {
     return accum;
 }
 
-RVA(0x00193140, 0x1fa)
+RVA(0x00193420, 0x1fa)
 istream& operator>>(istream& accum, zBitVec& bits) {
     if (accum.ipfx(0)) {
         i32 bit;

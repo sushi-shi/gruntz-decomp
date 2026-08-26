@@ -14,7 +14,7 @@
 #include <Wwd/WwdGridShell.h>
 #include <Wwd/WwdSpatialMgr.h>
 
-RVA(0x00167130, 0x83)
+RVA(0x00167410, 0x83)
 i32 CGameLevel::ApplyMove(CGameObject* target, i32 destX, i32 destY, i32 moveFlags) {
     i32 result = 0;
     i32 prevX = target->m_screenX;
@@ -48,7 +48,7 @@ i32 CGameLevel::ApplyMove(CGameObject* target, i32 destX, i32 destY, i32 moveFla
     return result;
 }
 
-RVA(0x001671c0, 0x97)
+RVA(0x001674a0, 0x97)
 i32 CGameLevel::MoveAxisAligned(CGameObject* t, i32 x, i32 y, i32 flags) {
     i32 result = 0;
     i32 curX = t->m_screenX;
@@ -69,7 +69,7 @@ i32 CGameLevel::MoveAxisAligned(CGameObject* t, i32 x, i32 y, i32 flags) {
 }
 
 // @early-stop
-RVA(0x00167260, 0x1ef)
+RVA(0x00167540, 0x1ef)
 i32 CGameLevel::MoveStepXHi(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
     i32 xEnd = x + t->m_extent.right;
     i32 yHi = t->m_extent.bottom + y;
@@ -152,7 +152,7 @@ i32 CGameLevel::MoveStepXHi(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
 }
 
 // @early-stop
-RVA(0x00167450, 0x1ef)
+RVA(0x00167730, 0x1ef)
 i32 CGameLevel::MoveStepXLo(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
     i32 xEnd = x + t->m_extent.left;
     i32 yHi = t->m_extent.bottom + y;
@@ -235,7 +235,7 @@ i32 CGameLevel::MoveStepXLo(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
 }
 
 // @early-stop
-RVA(0x00167640, 0x1eb)
+RVA(0x00167920, 0x1eb)
 i32 CGameLevel::MoveStepYHi(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
     i32 colHi = t->m_extent.right + x;
     i32 fixedY = y + t->m_extent.bottom;
@@ -318,7 +318,7 @@ i32 CGameLevel::MoveStepYHi(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
 }
 
 // @early-stop
-RVA(0x00167830, 0x1eb)
+RVA(0x00167b10, 0x1eb)
 i32 CGameLevel::MoveStepYLo(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
     i32 colHi = t->m_extent.right + x;
     i32 fixedY = y + t->m_extent.top;
@@ -402,7 +402,7 @@ i32 CGameLevel::MoveStepYLo(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00167a20, 0x11b)
+RVA(0x00167d00, 0x11b)
 i32 CGameLevel::ResolveRightX(CGameObject* t, i32 x, i32 y) {
     i32 sx = t->m_screenX;
     i32 limit = sx + t->m_extent.right;
@@ -418,7 +418,7 @@ i32 CGameLevel::ResolveRightX(CGameObject* t, i32 x, i32 y) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00167b40, 0x11b)
+RVA(0x00167e20, 0x11b)
 i32 CGameLevel::ResolveLeftX(CGameObject* t, i32 x, i32 y) {
     i32 limit = t->m_screenX;
     limit += t->m_extent.left;
@@ -434,7 +434,7 @@ i32 CGameLevel::ResolveLeftX(CGameObject* t, i32 x, i32 y) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00167c60, 0x11b)
+RVA(0x00167f40, 0x11b)
 i32 CGameLevel::ResolveBottomY(CGameObject* t, i32 x, i32 y) {
     i32 sy = t->m_screenY;
     i32 limit = sy + t->m_extent.bottom;
@@ -450,7 +450,7 @@ i32 CGameLevel::ResolveBottomY(CGameObject* t, i32 x, i32 y) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00167d80, 0x11b)
+RVA(0x00168060, 0x11b)
 i32 CGameLevel::ResolveTopY(CGameObject* t, i32 x, i32 y) {
     i32 sy = t->m_screenY;
     i32 e = t->m_extent.top;
@@ -465,7 +465,7 @@ i32 CGameLevel::ResolveTopY(CGameObject* t, i32 x, i32 y) {
     return t->m_screenY;
 }
 
-RVA(0x00167ea0, 0x1b9)
+RVA(0x00168180, 0x1b9)
 i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
     if (!(t->m_flags & IDX(WWD_GAME_OBJECT_FLAG_COLLIDE_WITH_OBJECTS))) {
         return 0;
@@ -514,17 +514,17 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
     return 0;
 }
 
-RVA(0x00168060, 0x18)
+RVA(0x00168340, 0x18)
 void CWwdGridShell::OnFound(WwdRegion* r) {
     CGameObject* obj = r->m_object;
     obj->OwnerMgr()->m_childGroup->InsertSorted(obj, 1);
 }
 
-RVA(0x00168080, 0x1f6)
-RVA_COMPGEN(0x00168280, 0x1e, ??_GCWwdGridShell@@UAEPAXI@Z)
-RVA_COMPGEN(0x001682a0, 0x46, ??1CWwdGridShell@@UAE@XZ)
-RVA_COMPGEN(0x00168bf0, 0x1e, ??_GCWwdGrid@@UAEPAXI@Z)
-RVA_COMPGEN(0x00168c10, 0x46, ??1CWwdGrid@@UAE@XZ)
+RVA(0x00168360, 0x1f6)
+RVA_COMPGEN(0x00168560, 0x1e, ??_GCWwdGridShell@@UAEPAXI@Z)
+RVA_COMPGEN(0x00168580, 0x46, ??1CWwdGridShell@@UAE@XZ)
+RVA_COMPGEN(0x00168ed0, 0x1e, ??_GCWwdGrid@@UAEPAXI@Z)
+RVA_COMPGEN(0x00168ef0, 0x46, ??1CWwdGrid@@UAE@XZ)
 
 i32 CWwdSpatialMgr::Init(
     CDDrawChildGroup* owner,

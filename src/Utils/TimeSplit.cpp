@@ -4,7 +4,7 @@
 
 #include <Utils/MillisPer.h>
 
-RVA(0x00119210, 0x66)
+RVA(0x00119420, 0x66)
 void SplitMillisToHMS(unsigned n, unsigned* hh, unsigned* mm, unsigned* ss) {
     unsigned q1 = n / MILLIS_PER_HOUR;
     *hh = q1;
@@ -17,7 +17,7 @@ void SplitMillisToHMS(unsigned n, unsigned* hh, unsigned* mm, unsigned* ss) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001192a0, 0x1d)
+RVA(0x001194b0, 0x1d)
 void TerminateString(char* text, i32 limit) {
     i32 i = 0;
     while (i < limit && *text != 0) {
@@ -27,7 +27,7 @@ void TerminateString(char* text, i32 limit) {
     *text = 0;
 }
 
-RVA(0x001192d0, 0x39)
+RVA(0x001194e0, 0x39)
 i32 BlockScreenSaver(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     if (msg == WM_SYSCOMMAND) {
         i32 sc = wParam & 0xfff0;

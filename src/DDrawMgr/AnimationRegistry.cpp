@@ -14,17 +14,17 @@
 #include <stdio.h>
 #include <string.h>
 
-RVA(0x00152640, 0x6)
+RVA(0x00152920, 0x6)
 i32 AnimationRegistry::IsReady() {
     return 1;
 }
-RVA(0x00152650, 0x5)
+RVA(0x00152930, 0x5)
 void AnimationRegistry::Unload() {
     ClearAnimations();
 }
 
 // @early-stop
-RVA(0x00152660, 0xb2)
+RVA(0x00152940, 0xb2)
 void AnimationRegistry::RemoveAnimation(CAniElement* target) {
     if (target == NULL) {
         return;
@@ -42,7 +42,7 @@ void AnimationRegistry::RemoveAnimation(CAniElement* target) {
     }
 }
 
-RVA(0x00152720, 0xa2)
+RVA(0x00152a00, 0xa2)
 void AnimationRegistry::ClearAnimations() {
     POSITION pos = m_animations.GetStartPosition();
     CString key;
@@ -58,7 +58,7 @@ void AnimationRegistry::ClearAnimations() {
     m_animations.RemoveAll();
 }
 
-RVA(0x001527d0, 0xf8)
+RVA(0x00152ab0, 0xf8)
 i32 AnimationRegistry::RemoveWithPrefix(const char* prefix, const char* separator) {
     CString match(prefix);
     match += separator;
@@ -82,7 +82,7 @@ i32 AnimationRegistry::RemoveWithPrefix(const char* prefix, const char* separato
 
 #define REGISTER_ANIMATION(animation, key) m_animations[key] = animation
 
-RVA(0x001528d0, 0xdd)
+RVA(0x00152bb0, 0xdd)
 CAniElement* AnimationRegistry::LoadAnimationFromSource(const char* key, CRezArchiveEntry* source) {
     CAniElement* animation = new CAniElement;
     if (animation == NULL) {
@@ -99,7 +99,7 @@ CAniElement* AnimationRegistry::LoadAnimationFromSource(const char* key, CRezArc
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001529b0, 0xdd)
+RVA(0x00152c90, 0xdd)
 CAniElement* AnimationRegistry::LoadAnimationFromFile(const char* key, const char* path) {
     CAniElement* animation = new CAniElement;
     if (animation == NULL) {
@@ -116,7 +116,7 @@ CAniElement* AnimationRegistry::LoadAnimationFromFile(const char* key, const cha
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00152a90, 0x17)
+RVA(0x00152d70, 0x17)
 CAniElement* AnimationRegistry::LoadNamedAnimation(CRezArchiveEntry* source) {
     if (source == NULL) {
         return NULL;
@@ -126,12 +126,12 @@ CAniElement* AnimationRegistry::LoadNamedAnimation(CRezArchiveEntry* source) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00152ab0, 0x16)
+RVA(0x00152d90, 0x16)
 void AnimationRegistry::AddAnimation(CAniElement* animation, const char* key) {
     REGISTER_ANIMATION(animation, key);
 }
 
-RVA(0x00152ad0, 0x17f)
+RVA(0x00152db0, 0x17f)
 i32 AnimationRegistry::LoadFromTree(
     CRezArchiveDir* tree,
     const char* prefix,
@@ -178,7 +178,7 @@ i32 AnimationRegistry::LoadFromTree(
     return loadedCount;
 }
 
-RVA(0x00152c50, 0xdc)
+RVA(0x00152f30, 0xdc)
 i32 AnimationRegistry::HasWithPrefix(const char* prefix) {
     i32 prefixLength = strlen(prefix);
     CString key;
@@ -193,7 +193,7 @@ i32 AnimationRegistry::HasWithPrefix(const char* prefix) {
     return 0;
 }
 
-RVA(0x00152d30, 0xd4)
+RVA(0x00153010, 0xd4)
 CString AnimationRegistry::FindAnimationKey(CAniElement* target) {
     CString key;
     if (target == NULL) {
@@ -211,8 +211,8 @@ CString AnimationRegistry::FindAnimationKey(CAniElement* target) {
     return key;
 }
 
-RVA_COMPGEN(0x00152e10, 0x1e, ??_GCAniElement@@UAEPAXI@Z)
-RVA(0x00152e30, 0x53)
+RVA_COMPGEN(0x001530f0, 0x1e, ??_GCAniElement@@UAEPAXI@Z)
+RVA(0x00153110, 0x53)
 CAniElement::~CAniElement() {
     DeleteAll();
 }

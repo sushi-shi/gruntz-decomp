@@ -79,11 +79,11 @@
 #include <stddef.h>
 #include <string.h>
 
-DATA(0x00244c54)
+DATA(0x00245bac)
 i32 g_curPlayer = 0;
 
 // @early-stop
-RVA(0x000fdc00, 0x5c2)
+RVA(0x000fdd30, 0x5c2)
 i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
     m_world = world;
     m_restorePosition = STATUSBAR_DOCK_RIGHT;
@@ -153,7 +153,7 @@ i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
     return 1;
 }
 
-RVA(0x000fe350, 0x6d)
+RVA(0x000fe480, 0x6d)
 void CStatusBarMgr::Teardown() {
     (static_cast<Utils::RegistryHelper*>(g_gameReg->m_settings))
         ->SetValueDword("StatusBar Position", IDX(m_position));
@@ -170,7 +170,7 @@ void CStatusBarMgr::Teardown() {
     m_rewardQueue.SetSize(0, -1);
 }
 
-RVA(0x000fe3e0, 0x55)
+RVA(0x000fe510, 0x55)
 i32 CStatusBarMgr::SetState(StatusBarDock state) {
     if (m_hlBusy != false) {
         return 1;
@@ -193,7 +193,7 @@ i32 CStatusBarMgr::SetState(StatusBarDock state) {
     return 1;
 }
 
-RVA(0x000fe460, 0x83)
+RVA(0x000fe590, 0x83)
 i32 CStatusBarMgr::DockStatusBarLeft() {
     if (m_hlBusy == false && m_position != STATUSBAR_DOCK_LEFT) {
         ResetWidgets(true);
@@ -209,7 +209,7 @@ i32 CStatusBarMgr::DockStatusBarLeft() {
     return 1;
 }
 
-RVA(0x000fe520, 0xa9)
+RVA(0x000fe650, 0xa9)
 i32 CStatusBarMgr::DockStatusBarRight() {
     if (m_hlBusy != false) {
         return 1;
@@ -231,7 +231,7 @@ i32 CStatusBarMgr::DockStatusBarRight() {
     return 1;
 }
 
-RVA(0x000fe600, 0x49)
+RVA(0x000fe730, 0x49)
 i32 CStatusBarMgr::HideRect() {
     if (m_hlBusy == false && m_position != STATUSBAR_HIDDEN) {
         ResetWidgets(true);
@@ -242,7 +242,7 @@ i32 CStatusBarMgr::HideRect() {
     return 1;
 }
 
-RVA(0x000fe670, 0x2b)
+RVA(0x000fe7a0, 0x2b)
 i32 CStatusBarMgr::RestoreStatusBar() {
     if (m_hlBusy != false) {
         return 1;
@@ -257,7 +257,7 @@ i32 CStatusBarMgr::RestoreStatusBar() {
 }
 
 // @early-stop
-RVA(0x000fe6b0, 0x145)
+RVA(0x000fe7e0, 0x145)
 i32 CStatusBarMgr::LoadMainStatusBarSprite() {
     if (m_position != STATUSBAR_HIDDEN) {
         if (m_redrawFrames > 0) {
@@ -370,7 +370,7 @@ static __inline void HiPost(i32 cmdId) {
 }
 
 // @early-stop
-RVA(0x000fe860, 0x2d)
+RVA(0x000fe990, 0x2d)
 i32 CStatusBarMgr::SetSpritePos(i32 x, i32 y) {
     if (m_barSprite == NULL) {
         return 0;
@@ -382,7 +382,7 @@ i32 CStatusBarMgr::SetSpritePos(i32 x, i32 y) {
     return 1;
 }
 
-RVA(0x000fe8a0, 0x4e)
+RVA(0x000fe9d0, 0x4e)
 i32 CStatusBarMgr::HitTestLayer(i32 x, i32 y) {
     CWwdSpriteObject* r = m_barSprite;
     CImage* L = r->m_frameImage;
@@ -397,7 +397,7 @@ i32 CStatusBarMgr::HitTestLayer(i32 x, i32 y) {
 }
 
 // @early-stop
-RVA(0x000fe910, 0xc30)
+RVA(0x000fea40, 0xc30)
 i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
     CStatusBarItem* w = HitTestRects(x, y);
     if (w == NULL) {
@@ -688,7 +688,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
 }
 
 // @early-stop
-RVA(0x000ff850, 0x121)
+RVA(0x000ff980, 0x121)
 i32 CStatusBarMgr::HandleDoubleClick(i32 keyFlags, i32 x, i32 y) {
     CStatusBarItem* r = HitTestRects(x, y);
     if (r == NULL) {
@@ -724,12 +724,12 @@ i32 CStatusBarMgr::HandleDoubleClick(i32 keyFlags, i32 x, i32 y) {
     return UpdateStatusBarTabHighlight(keyFlags, x, y);
 }
 
-RVA(0x000ff9d0, 0x8)
+RVA(0x000ffb00, 0x8)
 i32 CStatusBarMgr::OnPointerRelease(i32, i32, i32) {
     return 1;
 }
 
-RVA(0x000ff9f0, 0xe4)
+RVA(0x000ffb20, 0xe4)
 i32 CStatusBarMgr::HandlePointerDrag(i32 keyFlags, i32 x, i32 y) {
     CStatusBarItem* r = HitTestRects(x, y);
     if (r == NULL) {
@@ -767,7 +767,7 @@ i32 CStatusBarMgr::HandlePointerDrag(i32 keyFlags, i32 x, i32 y) {
 }
 
 // @early-stop
-RVA(0x000ffb20, 0x13a)
+RVA(0x000ffc50, 0x13a)
 i32 CStatusBarMgr::UpdateStatusBar(i32 deltaMs) {
     if (g_gameReg->m_soundEnabled != false) {
         if (m_destructWarningState != DESTRUCT_WARNING_INACTIVE
@@ -827,7 +827,7 @@ i32 CStatusBarMgr::UpdateStatusBar(i32 deltaMs) {
     return 1;
 }
 
-RVA(0x000ffcb0, 0xe2)
+RVA(0x000ffde0, 0xe2)
 CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
     POSITION n = m_tabLists[0].GetHeadPosition();
     while (n) {
@@ -872,7 +872,7 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
     return NULL;
 }
 
-RVA(0x000ffde0, 0x5b1)
+RVA(0x000fff10, 0x5b1)
 i32 CStatusBarMgr::BuildStatusBarTabs() {
     if (m_tabsBuilt != false) {
         return 1;
@@ -1043,41 +1043,41 @@ static __inline i32 WapRand(i32 range) {
     return GetRandomNumber() % range + 1;
 }
 
-RVA(0x00100510, 0x6)
+RVA(0x00100640, 0x6)
 i32 CStatusBarItem::Render() {
     return 1;
 }
 
-RVA(0x00100530, 0x5)
+RVA(0x00100660, 0x5)
 i32 CStatusBarItem::OnPointerMove(i32, i32, i32) {
     return 0;
 }
-RVA(0x00100550, 0x5)
+RVA(0x00100680, 0x5)
 i32 CStatusBarItem::OnDoubleClick(i32, i32, i32) {
     return 0;
 }
-RVA(0x00100570, 0x5)
+RVA(0x001006a0, 0x5)
 i32 CStatusBarItem::UnusedPointerAction(i32, i32, i32) {
     return 0;
 }
-RVA(0x00100590, 0x5)
+RVA(0x001006c0, 0x5)
 i32 CStatusBarItem::OnPointerDrag(i32, i32, i32) {
     return 0;
 }
 
-RVA(0x001005b0, 0x8)
+RVA(0x001006e0, 0x8)
 void CStatusBarItem::RequestRedraw() {
     m_redrawFrames = 2;
 }
 
-RVA(0x00100600, 0x8)
+RVA(0x00100730, 0x8)
 i32 CStatusBarItem::Refresh(i32) {
     return 1;
 }
 
-RVA_COMPGEN(0x00100620, 0x24, ??_GCStatusBarItem@@UAEPAXI@Z)
+RVA_COMPGEN(0x00100750, 0x24, ??_GCStatusBarItem@@UAEPAXI@Z)
 
-RVA(0x00100660, 0x50)
+RVA(0x00100790, 0x50)
 i32 CStatusBarItem::Setup(
     CStatusBarMgr* owner,
     CDDrawSurfaceMgr* host,
@@ -1098,14 +1098,14 @@ i32 CStatusBarItem::Setup(
     return 1;
 }
 
-RVA_COMPGEN(0x001006d0, 0x1e, ??_GCSBI_RectOnly@@UAEPAXI@Z)
-RVA_COMPGEN(0x00100700, 0x55, ??1CSBI_RectOnly@@UAE@XZ)
-RVA_COMPGEN(0x00100780, 0xb, ??1CStatusBarItem@@UAE@XZ)
-RVA_COMPGEN(0x001007a0, 0x1e, ??_GCSBI_MenuItem@@UAEPAXI@Z)
-RVA_COMPGEN(0x001007d0, 0x7f, ??1CSBI_MenuItem@@UAE@XZ)
-RVA_COMPGEN(0x00100870, 0x6a, ??1CSBI_Image@@UAE@XZ)
-RVA_COMPGEN(0x00100900, 0x1e, ??_GCSBI_Image@@UAEPAXI@Z)
-RVA(0x00100930, 0x16c)
+RVA_COMPGEN(0x00100800, 0x1e, ??_GCSBI_RectOnly@@UAEPAXI@Z)
+RVA_COMPGEN(0x00100830, 0x55, ??1CSBI_RectOnly@@UAE@XZ)
+RVA_COMPGEN(0x001008b0, 0xb, ??1CStatusBarItem@@UAE@XZ)
+RVA_COMPGEN(0x001008d0, 0x1e, ??_GCSBI_MenuItem@@UAEPAXI@Z)
+RVA_COMPGEN(0x00100900, 0x7f, ??1CSBI_MenuItem@@UAE@XZ)
+RVA_COMPGEN(0x001009a0, 0x6a, ??1CSBI_Image@@UAE@XZ)
+RVA_COMPGEN(0x00100a30, 0x1e, ??_GCSBI_Image@@UAEPAXI@Z)
+RVA(0x00100a60, 0x16c)
 void CStatusBarMgr::ResetWidgets(b32 keepHost) {
     for (i32 t = 0; t < 8; t++) {
         POSITION n = m_tabLists[t].GetHeadPosition();
@@ -1158,7 +1158,7 @@ void CStatusBarMgr::ResetWidgets(b32 keepHost) {
     m_tabsBuilt = false;
 }
 
-RVA(0x00100b00, 0x150)
+RVA(0x00100c30, 0x150)
 void CStatusBarMgr::ClearTabGroup() {
     if (m_activeTab == TAB_NONE) {
         return;
@@ -1211,7 +1211,7 @@ void CStatusBarMgr::ClearTabGroup() {
     }
 }
 
-RVA(0x00100cb0, 0x8b)
+RVA(0x00100de0, 0x8b)
 i32 CStatusBarMgr::Deactivate() {
     if (m_position == STATUSBAR_HIDDEN) {
 
@@ -1244,7 +1244,7 @@ i32 CStatusBarMgr::Deactivate() {
     return 1;
 }
 
-RVA(0x00100d70, 0x548)
+RVA(0x00100ea0, 0x548)
 i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
     if (m_statzTabButton == NULL || m_resourceTabButton == NULL || m_gruntzTabButton == NULL
         || m_multiTabButton == NULL || m_gameTabButton == NULL) {
@@ -1397,7 +1397,7 @@ i32 CStatusBarMgr::SetTabState(SbiCommandId cmd, SbiMenuItemState state) {
     return 1;
 }
 
-RVA(0x00101420, 0x110)
+RVA(0x00101550, 0x110)
 i32 CStatusBarMgr::ClearTabSprites(StatusBarTab idx) {
     if (idx == TAB_ALL || idx == TAB_CONTROLS) {
         if (m_statzTabButton) {
@@ -1454,7 +1454,7 @@ i32 CStatusBarMgr::ClearTabSprites(StatusBarTab idx) {
 }
 
 // @early-stop
-RVA(0x00101580, 0x806)
+RVA(0x001016b0, 0x806)
 i32 CStatusBarMgr::BuildGameMenu() {
     CDDrawSurfaceMgr* code = m_world;
     i32 bx = m_barRect.left;
@@ -1653,11 +1653,11 @@ i32 CStatusBarMgr::BuildGameMenu() {
     return 1;
 }
 
-RVA_COMPGEN(0x00101fd0, 0x1e, ??_GCSBI_ImageSet@@UAEPAXI@Z)
+RVA_COMPGEN(0x00102100, 0x1e, ??_GCSBI_ImageSet@@UAEPAXI@Z)
 
-RVA_COMPGEN(0x00102000, 0x7f, ??1CSBI_ImageSet@@UAE@XZ)
+RVA_COMPGEN(0x00102130, 0x7f, ??1CSBI_ImageSet@@UAE@XZ)
 
-RVA(0x001020a0, 0xae)
+RVA(0x001021d0, 0xae)
 i32 CStatusBarMgr::SetTab(GameTabContent tab, b32 forceReload) {
     if (tab == m_itemKind && forceReload == false) {
         return 1;
@@ -1684,7 +1684,7 @@ i32 CStatusBarMgr::SetTab(GameTabContent tab, b32 forceReload) {
     return 1;
 }
 
-RVA(0x00102180, 0x5f)
+RVA(0x001022b0, 0x5f)
 void CStatusBarMgr::BuildGameTabResumeButton(b32 show) {
     if (m_position == STATUSBAR_HIDDEN) {
         RestoreStatusBar();
@@ -1700,7 +1700,7 @@ void CStatusBarMgr::BuildGameTabResumeButton(b32 show) {
     m_chatBoxDisabled = true;
 }
 
-RVA(0x00102200, 0x37)
+RVA(0x00102330, 0x37)
 void CStatusBarMgr::BuildGameTabPauseButton() {
     if (m_gameResumePauseButton) {
         m_gameResumePauseButton->ResolveFrame("GAME_STATUSBAR_TABZ_GAMETAB_PAUSE", 1);
@@ -1711,7 +1711,7 @@ void CStatusBarMgr::BuildGameTabPauseButton() {
 }
 
 // @early-stop
-RVA(0x00102250, 0x1de4)
+RVA(0x00102380, 0x1de4)
 i32 CStatusBarMgr::LoadTabSprites() {
     CDDrawSurfaceMgr* code = m_world;
     i32 bx = m_barRect.left;
@@ -2451,23 +2451,23 @@ i32 CStatusBarMgr::LoadTabSprites() {
     return 1;
 }
 
-RVA_COMPGEN(0x001047c0, 0x1e, ??_GCSBI_ImageSetAni@@UAEPAXI@Z)
-RVA_COMPGEN(0x001047f0, 0x94, ??1CSBI_ImageSetAni@@UAE@XZ)
+RVA_COMPGEN(0x001048f0, 0x1e, ??_GCSBI_ImageSetAni@@UAEPAXI@Z)
+RVA_COMPGEN(0x00104920, 0x94, ??1CSBI_ImageSetAni@@UAE@XZ)
 
-RVA_COMPGEN(0x001048c0, 0x1e, ??_GCSBI_StatzTabArrow@@UAEPAXI@Z)
-RVA(0x001048f0, 0xa9)
+RVA_COMPGEN(0x001049f0, 0x1e, ??_GCSBI_StatzTabArrow@@UAEPAXI@Z)
+RVA(0x00104a20, 0xa9)
 CSBI_StatzTabArrow::~CSBI_StatzTabArrow() {
     Reset();
 }
 
-RVA_COMPGEN(0x00104cb0, 0x1e, ??_GCSBI_GruntMachine@@UAEPAXI@Z)
+RVA_COMPGEN(0x00104de0, 0x1e, ??_GCSBI_GruntMachine@@UAEPAXI@Z)
 
-RVA(0x00104ce0, 0x55)
+RVA(0x00104e10, 0x55)
 CSBI_GruntMachine::~CSBI_GruntMachine() {
     Reset();
 }
 
-RVA(0x00104d60, 0x48)
+RVA(0x00104e90, 0x48)
 i32 CStatusBarMgr::TryActivate() {
 
     if (m_position == STATUSBAR_HIDDEN) {
@@ -2481,7 +2481,7 @@ i32 CStatusBarMgr::TryActivate() {
     return 1;
 }
 
-RVA(0x00104dd0, 0x6b)
+RVA(0x00104f00, 0x6b)
 i32 CStatusBarMgr::Activate() {
     if (m_barSprite != NULL) {
         return 0;
@@ -2505,7 +2505,7 @@ i32 CStatusBarMgr::Activate() {
     return m_barSprite != NULL;
 }
 
-RVA(0x00104e60, 0xed)
+RVA(0x00104f90, 0xed)
 i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 idx, StatusSampleMode mode) {
     if (m_statFlags[idx] == mode) {
         return 1;
@@ -2547,7 +2547,7 @@ i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 idx, StatusSampleMode mode) {
     return 1;
 }
 
-RVA(0x00104f90, 0xa8)
+RVA(0x001050c0, 0xa8)
 i32 CStatusBarMgr::ClearStat(i32 idx) {
     CSBI_SideTab* r = m_hitRects[idx];
     if (r != NULL) {
@@ -2580,7 +2580,7 @@ i32 CStatusBarMgr::ClearStat(i32 idx) {
     return 1;
 }
 
-RVA(0x00105070, 0x10e)
+RVA(0x001051a0, 0x10e)
 i32 CStatusBarMgr::BuildSideTabs() {
     i32 i = 0;
     for (i32 strid = 0xd9; strid < 0x1e7; strid += 0x12) {
@@ -2619,7 +2619,7 @@ i32 CStatusBarMgr::BuildSideTabs() {
     return 1;
 }
 
-RVA(0x00105280, 0x61)
+RVA(0x001053b0, 0x61)
 i32 CStatusBarMgr::HitTest(i32 x, i32 y) {
     if (m_chatBoxDisabled == false) {
         for (i32 i = 0; i < STATUSBAR_GRUNT_SLOT_COUNT; i++) {
@@ -2636,7 +2636,7 @@ i32 CStatusBarMgr::HitTest(i32 x, i32 y) {
 }
 
 // @early-stop
-RVA(0x00105310, 0x11a)
+RVA(0x00105440, 0x11a)
 void CStatusBarMgr::UpdateGruntOvenStatusBar() {
 
     CSBI_ImageSet** slot = m_slotNotify;
@@ -2684,7 +2684,7 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
     } while (--n != 0);
 }
 
-RVA(0x00105480, 0x7d)
+RVA(0x001055b0, 0x7d)
 void CStatusBarMgr::TickGruntWell() {
     b32 changed = false;
     i32 g = m_gruntWellLevel;
@@ -2716,7 +2716,7 @@ noChange:;
     }
 }
 
-RVA(0x00105520, 0x21)
+RVA(0x00105650, 0x21)
 void CStatusBarMgr::ResetSlots() {
     for (i32 i = 0; i < 5; i++) {
         ArmSlot(i);
@@ -2724,7 +2724,7 @@ void CStatusBarMgr::ResetSlots() {
     m_activeSlot = -1;
 }
 
-RVA(0x00105560, 0x33)
+RVA(0x00105690, 0x33)
 void CStatusBarMgr::ArmSlot(i32 idx) {
     m_slots[idx].m_state = SLOT_ARMED;
     m_slots[idx].m_value = 1;
@@ -2733,7 +2733,7 @@ void CStatusBarMgr::ArmSlot(i32 idx) {
     }
 }
 
-RVA(0x001055b0, 0x109)
+RVA(0x001056e0, 0x109)
 i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
     CSbiSlot* sp = &m_slots[idx];
     if (sp->m_state != SLOT_ARMED) {
@@ -2776,7 +2776,7 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
     return 1;
 }
 
-RVA(0x00105710, 0x23)
+RVA(0x00105840, 0x23)
 i32 CStatusBarMgr::AnySlotActive() {
     for (i32 i = 0; i < 5; i++) {
         if (LoadGooCookingSprite(i)) {
@@ -2786,7 +2786,7 @@ i32 CStatusBarMgr::AnySlotActive() {
     return 0;
 }
 
-RVA(0x00105750, 0x1f)
+RVA(0x00105880, 0x1f)
 void CStatusBarMgr::AdvanceGruntWell(i32 delta) {
     i32 v = m_gruntWellLevel + delta;
     if (v >= GRUNT_WELL_FULL) {
@@ -2797,7 +2797,7 @@ void CStatusBarMgr::AdvanceGruntWell(i32 delta) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00105780, 0x1f)
+RVA(0x001058b0, 0x1f)
 void CStatusBarMgr::DrainGruntWell(i32 delta) {
     m_gruntWellTargetLevel =
         m_gruntWellLevel - delta > GRUNT_WELL_EMPTY ? m_gruntWellLevel - delta : GRUNT_WELL_EMPTY;
@@ -2805,19 +2805,19 @@ void CStatusBarMgr::DrainGruntWell(i32 delta) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001057b0, 0xd)
+RVA(0x001058e0, 0xd)
 void CStatusBarMgr::SetGruntWellTarget(i32 value) {
     m_gruntWellTargetLevel = value;
 }
 
-RVA(0x001057d0, 0x13)
+RVA(0x00105900, 0x13)
 void CStatusBarMgr::SetGruntWell(i32 value) {
     m_gruntWellTargetLevel = value;
     m_gruntWellLevel = value;
 }
 
 // @early-stop
-RVA(0x00105800, 0x9e)
+RVA(0x00105930, 0x9e)
 i32 CStatusBarMgr::PlaceCursorTarget(i32 unitIndex, i32 activateCamera) {
     i32 playerIndex = g_curPlayer;
     if (g_gameReg->m_triggerMgr->ResetCell(playerIndex, unitIndex, 0, 0) != 0) {
@@ -2842,7 +2842,7 @@ i32 CStatusBarMgr::PlaceCursorTarget(i32 unitIndex, i32 activateCamera) {
     return 0;
 }
 
-RVA(0x001058d0, 0x34)
+RVA(0x00105a00, 0x34)
 void CStatusBarMgr::UpdateStatusSystems() {
     UpdateGruntOvenStatusBar();
     TickGruntWell();
@@ -2853,7 +2853,7 @@ void CStatusBarMgr::UpdateStatusSystems() {
     UpdateDestructWarningAnimation();
 }
 
-RVA(0x00105920, 0x47)
+RVA(0x00105a50, 0x47)
 void CStatusBarMgr::Reset() {
     ResetSlots();
     m_gruntWellTargetLevel = GRUNT_WELL_EMPTY;
@@ -2865,7 +2865,7 @@ void CStatusBarMgr::Reset() {
     m_destructWarningState = DESTRUCT_WARNING_INACTIVE;
 }
 
-RVA(0x00105990, 0x3b4)
+RVA(0x00105ac0, 0x3b4)
 void CStatusBarMgr::UpdateRezConveyorStatusBar() {
     for (i32 i = 0; i < 3; i++) {
         i64* clock = &m_conveyorSlots[i].m_last;
@@ -2979,7 +2979,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
     }
 }
 
-RVA(0x00105e40, 0x63c)
+RVA(0x00105f70, 0x63c)
 void CStatusBarMgr::LoadRezMachineConfig() {
     CSbiHlRow* rightMachine = &m_rightMachine;
     CSbiHlRow* leftMachine = &m_leftMachine;
@@ -3181,7 +3181,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
     }
 }
 
-RVA(0x00106610, 0x3b)
+RVA(0x00106740, 0x3b)
 void CStatusBarMgr::ResetConveyorBelts() {
     for (i32 i = 0; i < 3; i++) {
         m_conveyorSlots[i].m_state = IDX(HLROW_OFF);
@@ -3192,7 +3192,7 @@ void CStatusBarMgr::ResetConveyorBelts() {
     }
 }
 
-RVA(0x00106660, 0x68)
+RVA(0x00106790, 0x68)
 void CStatusBarMgr::UpdateRezMachineSnoozeStatusBar() {
     SetLeftRezMachineAnimation(
         1,
@@ -3207,7 +3207,7 @@ void CStatusBarMgr::UpdateRezMachineSnoozeStatusBar() {
     m_rezTick = 0;
 }
 
-RVA(0x001066f0, 0x3b)
+RVA(0x00106820, 0x3b)
 void CStatusBarMgr::SetLeftRezMachineAnimation(
     i32 initialFrame,
     SbiMachineState state,
@@ -3220,7 +3220,7 @@ void CStatusBarMgr::SetLeftRezMachineAnimation(
     clock[0] = g_frameTime;
 }
 
-RVA(0x00106740, 0x3b)
+RVA(0x00106870, 0x3b)
 void CStatusBarMgr::SetRightRezMachineAnimation(
     i32 initialFrame,
     SbiMachineState state,
@@ -3233,7 +3233,7 @@ void CStatusBarMgr::SetRightRezMachineAnimation(
     clock[0] = g_frameTime;
 }
 
-RVA(0x00106790, 0x62)
+RVA(0x001068c0, 0x62)
 void CStatusBarMgr::CommitSlot(b32 active) {
     if (active) {
         ArmSlot(m_activeSlot);
@@ -3247,7 +3247,7 @@ void CStatusBarMgr::CommitSlot(b32 active) {
     }
 }
 
-RVA(0x00106820, 0xa8)
+RVA(0x00106950, 0xa8)
 void CStatusBarMgr::EnterHlRow(i32 shift, i32 key) {
     if (m_pendingHlRow == STATUS_HL_ROW_NONE) {
         return;
@@ -3277,7 +3277,7 @@ void CStatusBarMgr::EnterHlRow(i32 shift, i32 key) {
     m_pendingHlRow = STATUS_HL_ROW_NONE;
 }
 
-RVA(0x00106900, 0x8d)
+RVA(0x00106a30, 0x8d)
 void CStatusBarMgr::InitTabRects() {
     for (i32 i = 0; i < 4; i++) {
         StatusBarHighlightRow row = static_cast<StatusBarHighlightRow>(i);
@@ -3294,7 +3294,7 @@ void CStatusBarMgr::InitTabRects() {
     m_pendingHlRow = STATUS_HL_ROW_NONE;
 }
 
-RVA(0x001069c0, 0x2e)
+RVA(0x00106af0, 0x2e)
 void CStatusBarMgr::ClearHlCell(i32 group, StatusBarHighlightRow row) {
     i32 idx = IDX(row) + group * 4;
     m_resourceSlots[idx].m_state = IDX(HLROW_OFF);
@@ -3302,7 +3302,7 @@ void CStatusBarMgr::ClearHlCell(i32 group, StatusBarHighlightRow row) {
     NotifyAllSlots();
 }
 
-RVA(0x00106a00, 0xbf)
+RVA(0x00106b30, 0xbf)
 void CStatusBarMgr::NotifyAllSlots() {
     if (m_resourceMainBackground) {
         m_resourceMainBackground->RequestRedraw();
@@ -3343,7 +3343,7 @@ void CStatusBarMgr::NotifyAllSlots() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00106af0, 0x37)
+RVA(0x00106c20, 0x37)
 i32 CStatusBarMgr::SetHlCellByTier(i32 handle, i32 group) {
     PickupType item = static_cast<PickupType>(handle);
     i32 row;
@@ -3355,7 +3355,7 @@ i32 CStatusBarMgr::SetHlCellByTier(i32 handle, i32 group) {
     return SetHlCell(row, handle, group);
 }
 
-RVA(0x00106b40, 0x44)
+RVA(0x00106c70, 0x44)
 i32 CStatusBarMgr::SetHlCell(i32 row, i32 handle, i32 group) {
     i32 idx = group + row * 4;
     if (m_resourceSlots[idx].m_state != IDX(HLROW_OFF)) {
@@ -3368,7 +3368,7 @@ i32 CStatusBarMgr::SetHlCell(i32 row, i32 handle, i32 group) {
 }
 
 // @early-stop
-RVA(0x00106bb0, 0x7d8)
+RVA(0x00106ce0, 0x7d8)
 void CStatusBarMgr::LoadChipMachineConfig() {
     i32 rectFlag = 0;
     i32 refreshFlag = 0;
@@ -3570,7 +3570,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
 }
 
 // @early-stop
-RVA(0x00107590, 0xc4)
+RVA(0x001076c0, 0xc4)
 i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 item, i32 x, i32 y) {
     m_fallingItem = item;
     m_fallActive = FALLING_ITEM_DESCENDING;
@@ -3601,7 +3601,7 @@ i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 item, i32 x, i32 y) {
     return 1;
 }
 
-RVA(0x001076a0, 0x1f3)
+RVA(0x001077d0, 0x1f3)
 void CStatusBarMgr::UpdateChipGrinderStatusBar() {
 
     if (m_fallActive == FALLING_ITEM_INACTIVE) {
@@ -3671,7 +3671,7 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
     }
 }
 
-RVA(0x00107920, 0xb7)
+RVA(0x00107a50, 0xb7)
 i32 CStatusBarMgr::DropFallingItemAt(i32 screenX, i32 screenY, i32 itemFrame) {
     if (m_pendingHlRow == STATUS_HL_ROW_NONE) {
         return 0;
@@ -3701,7 +3701,7 @@ i32 CStatusBarMgr::DropFallingItemAt(i32 screenX, i32 screenY, i32 itemFrame) {
     return 1;
 }
 
-RVA(0x00107a10, 0x62)
+RVA(0x00107b40, 0x62)
 i32 CStatusBarMgr::UpdateRezMachineWakeStatusBar() {
     if (m_rezActive == false) {
         if (m_machineItem == 0) {
@@ -3719,7 +3719,7 @@ i32 CStatusBarMgr::UpdateRezMachineWakeStatusBar() {
     return 1;
 }
 
-RVA(0x00107aa0, 0x23)
+RVA(0x00107bd0, 0x23)
 void CStatusBarMgr::ToggleStat(i32 idx) {
     if (m_statFlags[idx] != STATUS_SAMPLE_NONE) {
         ClearStat(idx);
@@ -3728,7 +3728,7 @@ void CStatusBarMgr::ToggleStat(i32 idx) {
     }
 }
 
-RVA(0x00107ae0, 0x1aa)
+RVA(0x00107c10, 0x1aa)
 void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     BuildGameTabPauseButton();
     if (m_position == STATUSBAR_HIDDEN) {
@@ -3778,7 +3778,7 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     TryActivate();
 }
 // @early-stop
-RVA(0x00107d00, 0x591)
+RVA(0x00107e30, 0x591)
 i32 CStatusBarMgr::StartChipMachineCycle() {
     PickupType result;
     if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
@@ -3899,7 +3899,7 @@ i32 CStatusBarMgr::StartChipMachineCycle() {
 }
 
 // @early-stop
-RVA(0x00108410, 0x8e)
+RVA(0x00108540, 0x8e)
 i32 CStatusBarMgr::QueuePickupReward(i32 pickupValue, i32 score) {
     CoordPoolNode* head = g_coordPool.m_freeHead;
     Coord* node = NULL;
@@ -3942,7 +3942,7 @@ static inline void SyncClockPair(CFileMemBase* s, SerialMode mode, i64* pair) {
 }
 
 // @early-stop
-RVA(0x001084d0, 0x96c)
+RVA(0x00108600, 0x96c)
 i32 CStatusBarMgr::SerializeDispatch(
     CFileMemBase* s,
     SerialMode mode,
@@ -4126,7 +4126,7 @@ i32 CStatusBarMgr::SerializeDispatch(
     return 1;
 }
 
-RVA(0x001090a0, 0x38f)
+RVA(0x001091d0, 0x38f)
 i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     if (s == NULL) {
         return 0;
@@ -4220,7 +4220,7 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
 }
 
 // @early-stop
-RVA(0x00109520, 0x44c)
+RVA(0x00109650, 0x44c)
 i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     if (s == NULL) {
         return 0;
@@ -4341,7 +4341,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     return 1;
 }
 
-RVA(0x00109a90, 0x25)
+RVA(0x00109bc0, 0x25)
 i32 CStatusBarMgr::FindReadySlot() {
     for (i32 i = 0; i < 5; i++) {
         if (m_slots[i].m_state == SLOT_READY) {
@@ -4352,7 +4352,7 @@ i32 CStatusBarMgr::FindReadySlot() {
     return 0;
 }
 
-RVA(0x00109ad0, 0xa9)
+RVA(0x00109c00, 0xa9)
 i32 CStatusBarMgr::StartWarpStoneFly(i32 srcX, i32 srcY, WarpStoneFragment fragment) {
     if (m_retabNotify) {
         return 0;
@@ -4365,7 +4365,7 @@ i32 CStatusBarMgr::StartWarpStoneFly(i32 srcX, i32 srcY, WarpStoneFragment fragm
     return o->Init(this, srcX, srcY, fragment);
 }
 
-RVA(0x00109bb0, 0xb)
+RVA(0x00109ce0, 0xb)
 CWarpStoneFly::CWarpStoneFly() {
     m_sprite = NULL;
     m_owner = NULL;
@@ -4378,7 +4378,7 @@ static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
 }
 
 // @early-stop
-RVA(0x00109bd0, 0x1b5)
+RVA(0x00109d00, 0x1b5)
 i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragment fragment) {
     m_owner = owner;
 
@@ -4452,7 +4452,7 @@ i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragm
     return 1;
 }
 
-RVA(0x00109e00, 0x245)
+RVA(0x00109f30, 0x245)
 i32 CWarpStoneFly::SerializeDispatch(
     CFileMemBase* arc,
     SerialMode mode,
@@ -4523,7 +4523,7 @@ i32 CWarpStoneFly::SerializeDispatch(
 }
 
 // @early-stop
-RVA(0x0010a0f0, 0x184)
+RVA(0x0010a220, 0x184)
 i32 CWarpStoneFly::Tick(u32 dt) {
     i32 cellY = static_cast<i32>(m_currentY);
     i32 cellX = static_cast<i32>(m_currentX);
@@ -4572,7 +4572,7 @@ i32 CWarpStoneFly::Tick(u32 dt) {
     return 1;
 }
 
-RVA(0x0010a2f0, 0x35)
+RVA(0x0010a420, 0x35)
 i32 CWarpStoneFly::Draw() {
     m_sprite->RenderFrame(
         g_gameReg->m_world->m_drawTarget->m_backPair,
@@ -4584,7 +4584,7 @@ i32 CWarpStoneFly::Draw() {
 }
 
 // @early-stop
-RVA(0x0010a340, 0xbcb)
+RVA(0x0010a470, 0xbcb)
 i32 CStatusBarMgr::BuildTabzDialog() {
     if (m_levelOverlayActive == false) {
         return 1;
@@ -4901,7 +4901,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     return 1;
 }
 
-RVA(0x0010b210, 0xc5)
+RVA(0x0010b340, 0xc5)
 void CStatusBarMgr::ExitMode() {
     if (m_levelOverlayActive == false) {
         return;
@@ -4935,7 +4935,7 @@ void CStatusBarMgr::ExitMode() {
     Deactivate();
 }
 
-RVA(0x0010b320, 0x167)
+RVA(0x0010b450, 0x167)
 void CStatusBarMgr::UpdateDestructWarningAnimation() {
 
     switch (m_destructWarningState) {
@@ -4982,7 +4982,7 @@ void CStatusBarMgr::UpdateDestructWarningAnimation() {
     }
 }
 
-RVA(0x0010b4f0, 0xaa)
+RVA(0x0010b620, 0xaa)
 void CStatusBarMgr::AdvanceTab(i32 reverse) {
     if (m_hlBusy != false) {
         return;
@@ -5012,7 +5012,7 @@ void CStatusBarMgr::AdvanceTab(i32 reverse) {
     Deactivate();
 }
 
-RVA(0x0010b5d0, 0xdd)
+RVA(0x0010b700, 0xdd)
 i32 CStatusBarMgr::SelectToolResource(StatusBarHighlightRow row) {
     i32 rowIndex = IDX(row);
     if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_playerCommandPending == false
@@ -5047,7 +5047,7 @@ i32 CStatusBarMgr::SelectToolResource(StatusBarHighlightRow row) {
     return 0;
 }
 
-RVA(0x0010b6f0, 0xdd)
+RVA(0x0010b820, 0xdd)
 i32 CStatusBarMgr::SelectToyResource(StatusBarHighlightRow row) {
     i32 rowIndex = IDX(row);
     if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_playerCommandPending == false
@@ -5082,7 +5082,7 @@ i32 CStatusBarMgr::SelectToyResource(StatusBarHighlightRow row) {
     return 0;
 }
 
-RVA(0x0010b810, 0xdd)
+RVA(0x0010b940, 0xdd)
 i32 CStatusBarMgr::SelectBrickResource(StatusBarHighlightRow row) {
     i32 rowIndex = IDX(row);
     if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_playerCommandPending == false
@@ -5117,7 +5117,7 @@ i32 CStatusBarMgr::SelectBrickResource(StatusBarHighlightRow row) {
     return 0;
 }
 
-RVA(0x0010b930, 0x1a7)
+RVA(0x0010ba60, 0x1a7)
 i32 CStatusBarMgr::ActivateSlot(i32 idx) {
 
     if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_playerCommandPending != false) {
@@ -5196,13 +5196,13 @@ notActivated:
     return 0;
 }
 
-RVA(0x0010bb50, 0x24)
+RVA(0x0010bc80, 0x24)
 void CStatusBarMgr::ReportTab(i32 tab) {
     UpdateFallingItemStatusBar(tab, 0x4f, 0x1b3);
     EnterHlRow(1, tab);
 }
 
-RVA(0x0010bb90, 0x3f)
+RVA(0x0010bcc0, 0x3f)
 void CStatusBarMgr::LockDestructButton(i32 resetWarningAnimation) {
     m_destructButtonLocked = true;
     if (resetWarningAnimation && m_destructButtonFrame != DESTRUCT_FRAME_DISABLED) {
@@ -5214,7 +5214,7 @@ void CStatusBarMgr::LockDestructButton(i32 resetWarningAnimation) {
     }
 }
 
-RVA(0x0010bbe0, 0x34)
+RVA(0x0010bd10, 0x34)
 i32 CStatusBarMgr::GetActiveValue() {
     if (m_rezActive == false) {
         return m_machineItem;

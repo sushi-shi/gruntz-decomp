@@ -22,16 +22,16 @@
 
 #include <stddef.h>
 
-RVA_DYNINIT(0x0007ff80, 0xa, CActRegPool<CGruntPowerupSprite>::s_table)
-RVA_DYNINIT(0x0007ffa0, 0x15, CActRegPool<CGruntPowerupSprite>::s_table)
-RVA_DYNINIT(0x0007ffd0, 0xe, CActRegPool<CGruntPowerupSprite>::s_table)
-RVA_DYNINIT(0x0007fff0, 0x1f, CActRegPool<CGruntPowerupSprite>::s_table)
-template<> DATA(0x00244d30)
+RVA_DYNINIT(0x0007fea0, 0xa, CActRegPool<CGruntPowerupSprite>::s_table)
+RVA_DYNINIT(0x0007fec0, 0x15, CActRegPool<CGruntPowerupSprite>::s_table)
+RVA_DYNINIT(0x0007fef0, 0xe, CActRegPool<CGruntPowerupSprite>::s_table)
+RVA_DYNINIT(0x0007ff10, 0x1f, CActRegPool<CGruntPowerupSprite>::s_table)
+template<> DATA(0x00245c88)
 CActReg CActRegPool<CGruntPowerupSprite>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
-RVA_COMPGEN(0x00012340, 0x1e, ??_GCGruntPowerupSprite@@UAEPAXI@Z)
-RVA_COMPGEN(0x00012370, 0x44, ??1CGruntPowerupSprite@@UAE@XZ)
+RVA_COMPGEN(0x00012350, 0x1e, ??_GCGruntPowerupSprite@@UAEPAXI@Z)
+RVA_COMPGEN(0x00012380, 0x44, ??1CGruntPowerupSprite@@UAE@XZ)
 
-RVA(0x0007fdb0, 0x166)
+RVA(0x0007fcd0, 0x166)
 CGruntPowerupSprite::CGruntPowerupSprite(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetImageSetByName("GAME_LIGHTING_POWERUP");
@@ -41,21 +41,21 @@ CGruntPowerupSprite::CGruntPowerupSprite(CGameObject* obj)
     Hide();
 }
 
-RVA(0x00080020, 0x102)
+RVA(0x0007ff40, 0x102)
 void CGruntPowerupSprite::FireActivation(i32 id) {
     if ((*((CActRegPool<CGruntPowerupSprite>::s_table.ResolveEntry(id)))) != NULL) {
         (this->*(*((CActRegPool<CGruntPowerupSprite>::s_table.ResolveEntry(id)))))();
     }
 }
 
-RVA(0x00080180, 0x18d)
+RVA(0x000800a0, 0x18d)
 void CGruntPowerupSprite::RegisterActs() {
     ACT_NAME_ID(id, "A")
     (*((CActRegPool<CGruntPowerupSprite>::s_table.ResolveEntry(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CGruntPowerupSprite::Update);
 }
 
-RVA(0x00080380, 0x6c)
+RVA(0x000802a0, 0x6c)
 i32 CGruntPowerupSprite::BindToGrunt(i32 playerIndex, i32 unitIndex, i32 powerupId) {
     m_gruntIdentity.m_playerIndex = playerIndex;
     m_gruntIdentity.m_unitIndex = unitIndex;
@@ -68,7 +68,7 @@ i32 CGruntPowerupSprite::BindToGrunt(i32 playerIndex, i32 unitIndex, i32 powerup
     return 1;
 }
 
-RVA(0x00080410, 0x51)
+RVA(0x00080330, 0x51)
 i32 CGruntPowerupSprite::Update() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     CGrunt* e =
@@ -81,7 +81,7 @@ i32 CGruntPowerupSprite::Update() {
     return 0;
 }
 
-RVA(0x00080490, 0xbe)
+RVA(0x000803b0, 0xbe)
 i32 CGruntPowerupSprite::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,

@@ -10,7 +10,7 @@
 
 #include <stddef.h>
 
-RVA(0x0000f6d0, 0x47)
+RVA(0x0000f6e0, 0x47)
 i32 CDoNothing::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
@@ -18,7 +18,7 @@ i32 CDoNothing::SerializeDispatch(
     CGameObject* object
 ){SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE(ar, mode, typeId, object)}
 
-RVA(0x0000f800, 0x47)
+RVA(0x0000f810, 0x47)
 i32 CDoNothingNormal::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,

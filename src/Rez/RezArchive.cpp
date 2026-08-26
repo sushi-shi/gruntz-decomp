@@ -68,7 +68,7 @@ static inline i32 ReadPackedI32(const char* bytes) {
     return value;
 }
 
-RVA(0x001396f0, 0x1a)
+RVA(0x00139900, 0x1a)
 CRezArchiveEntry::CRezArchiveEntry() {
 
     m_storage = NULL;
@@ -78,7 +78,7 @@ CRezArchiveEntry::CRezArchiveEntry() {
 }
 
 // @early-stop
-RVA(0x00139710, 0x8d)
+RVA(0x00139920, 0x8d)
 void CRezArchiveEntry::Initialize(
     CRezArchiveDir* directory,
     const char* name,
@@ -115,7 +115,7 @@ void CRezArchiveEntry::Initialize(
     m_nameNode.m_archiveEntry = this;
 }
 
-RVA(0x001397a0, 0x57)
+RVA(0x001399b0, 0x57)
 void CRezArchiveEntry::Reset() {
     if (m_name) {
         delete[] m_name;
@@ -142,17 +142,17 @@ void CRezArchiveEntry::Reset() {
     m_nameNode.m_archiveEntry = NULL;
 }
 
-RVA(0x00139800, 0x6)
+RVA(0x00139a10, 0x6)
 GZ_ENUM_RETURN(RezTypeTag, u32) CRezArchiveEntry::GetTypeTag() {
     return static_cast<RezTypeTag>(m_type->m_typeTag);
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00139810, 0x140)
+RVA(0x00139a20, 0x140)
 char* CRezArchiveEntry::GetDirectoryPath(char* destination, i32 size) {
     if (m_directory->m_parent == NULL) {
-        strcpy(destination, DATA_COMPGEN(0x0020cff0, "\\"));
+        strcpy(destination, DATA_COMPGEN(0x0020df98, "\\"));
     } else {
         char* scratch = new char[size];
         strcpy(destination, "");
@@ -175,12 +175,12 @@ char* CRezArchiveEntry::GetDirectoryPath(char* destination, i32 size) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00139950, 0x6)
+RVA(0x00139b60, 0x6)
 char* CRezArchiveEntry::GetDirectoryName() {
     return m_directory->m_name;
 }
 
-RVA(0x00139960, 0x6b)
+RVA(0x00139b70, 0x6b)
 char* CRezArchiveEntry::LoadData() {
     if (m_directory->m_preloadedData != NULL) {
         return m_directory->m_preloadedData + (m_dataOffset - m_directory->m_minDataOffset);
@@ -202,7 +202,7 @@ char* CRezArchiveEntry::LoadData() {
     return m_loadedData;
 }
 
-RVA(0x001399d0, 0x21)
+RVA(0x00139be0, 0x21)
 i32 CRezArchiveEntry::ReleaseData() {
     if (m_loadedData != NULL) {
         delete[] m_loadedData;
@@ -213,7 +213,7 @@ i32 CRezArchiveEntry::ReleaseData() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00139a00, 0x1b)
+RVA(0x00139c10, 0x1b)
 i32 CRezArchiveEntry::IsDataLoaded() {
     if (m_directory->m_preloadedData != NULL) {
         return 1;
@@ -223,12 +223,12 @@ i32 CRezArchiveEntry::IsDataLoaded() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00139a20, 0x13)
+RVA(0x00139c30, 0x13)
 i32 CRezArchiveEntry::ReadAll(void* destination) {
     return ReadAt(destination, 0, m_size);
 }
 
-RVA(0x00139a40, 0x95)
+RVA(0x00139c50, 0x95)
 i32 CRezArchiveEntry::ReadAt(void* destination, i32 position, u32 byteCount) {
     CRezArchiveDir* directory = m_directory;
     if (directory->m_preloadedData != NULL) {
@@ -247,14 +247,14 @@ i32 CRezArchiveEntry::ReadAt(void* destination, i32 position, u32 byteCount) {
            == static_cast<i32>(byteCount);
 }
 
-RVA(0x00139ae0, 0xf)
+RVA(0x00139cf0, 0xf)
 i32 CRezArchiveEntry::SetPos(i32 position) {
     m_cursor = position;
     return 1;
 }
 
 // @early-stop
-RVA(0x00139af0, 0xcc)
+RVA(0x00139d00, 0xcc)
 i32 CRezArchiveEntry::Read(void* destination, u32 byteCount, i32 seekPosition) {
     if (seekPosition != -1) {
         SetPos(seekPosition);
@@ -294,14 +294,14 @@ i32 CRezArchiveEntry::Read(void* destination, u32 byteCount, i32 seekPosition) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00139bc0, 0xc)
+RVA(0x00139dd0, 0xc)
 i32 CRezArchiveEntry::AtEnd() {
     return static_cast<u32>(m_cursor) >= m_size;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00139bd0, 0x15)
+RVA(0x00139de0, 0x15)
 char CRezArchiveEntry::ReadChar() {
     char value;
     Read(&value, 1, -1);
@@ -309,7 +309,7 @@ char CRezArchiveEntry::ReadChar() {
 }
 
 // @early-stop
-RVA(0x00139bf0, 0x71)
+RVA(0x00139e00, 0x71)
 CRezArchiveType::CRezArchiveType(
     i32 typeTag,
     CRezArchiveDir* directory,
@@ -322,7 +322,7 @@ CRezArchiveType::CRezArchiveType(
     m_typeTag = typeTag;
 }
 
-RVA(0x00139c80, 0x6c)
+RVA(0x00139e90, 0x6c)
 CRezArchiveType::CRezArchiveType(
     i32 typeTag,
     CRezArchiveDir* directory,
@@ -334,7 +334,7 @@ CRezArchiveType::CRezArchiveType(
     m_directory = directory;
 }
 
-RVA(0x00139cf0, 0xd7)
+RVA(0x00139f00, 0xd7)
 CRezArchiveType::~CRezArchiveType() {
     if (m_directory->m_archive->m_useIdIndex != false) {
         CHashElement* node = m_idIndex.First();
@@ -356,7 +356,7 @@ CRezArchiveType::~CRezArchiveType() {
     SetArchiveType(m_typeNode, NULL);
 }
 
-RVA(0x00139de0, 0xd4)
+RVA(0x00139ff0, 0xd4)
 CRezArchiveDir::CRezArchiveDir(
     CRezArchive* archive,
     CRezArchiveDir* parent,
@@ -383,7 +383,7 @@ CRezArchiveDir::CRezArchiveDir(
     SetArchiveDirectory(m_nameNode, this);
 }
 
-RVA(0x00139ee0, 0x11e)
+RVA(0x0013a0f0, 0x11e)
 CRezArchiveDir::~CRezArchiveDir() {
 
     CHashElement* node;
@@ -419,7 +419,7 @@ CRezArchiveDir::~CRezArchiveDir() {
     m_nameNode.m_archiveDirectory = NULL;
 }
 
-RVA(0x0013a000, 0x37)
+RVA(0x0013a210, 0x37)
 CRezArchiveEntry* CRezArchiveDir::FindEntry(const char* name, RezTypeTag typeTag) {
     CRezArchiveType* type = m_types.FindTypeByTag(IDX(typeTag));
     if (!type) {
@@ -428,7 +428,7 @@ CRezArchiveEntry* CRezArchiveDir::FindEntry(const char* name, RezTypeTag typeTag
     return type->m_nameIndex.FindByName(name, m_archive->m_caseSensitive == false);
 }
 
-RVA(0x0013a040, 0xa2)
+RVA(0x0013a250, 0xa2)
 CRezArchiveEntry* CRezArchiveDir::FindEntryByFilename(const char* filename) {
     char directoryPath[260];
     char resourceName[260];
@@ -449,7 +449,7 @@ CRezArchiveEntry* CRezArchiveDir::FindEntryByFilename(const char* filename) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0013a0f0, 0x99)
+RVA(0x0013a300, 0x99)
 i32 CRezArchiveDir::PreloadData(b32 recursive) {
     if (m_preloadedData != NULL) {
         return 1;
@@ -479,7 +479,7 @@ i32 CRezArchiveDir::PreloadData(b32 recursive) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0013a190, 0x94)
+RVA(0x0013a3a0, 0x94)
 i32 CRezArchiveDir::ReleaseEntryData(b32 recursive) {
     if (m_preloadedData != NULL) {
         delete[] m_preloadedData;
@@ -505,7 +505,7 @@ i32 CRezArchiveDir::ReleaseEntryData(b32 recursive) {
     return 1;
 }
 
-RVA(0x0013a230, 0x29)
+RVA(0x0013a440, 0x29)
 CRezArchiveDir* CRezArchiveDir::FindSubdirectory(const char* name) {
     if (!name) {
         return NULL;
@@ -513,7 +513,7 @@ CRezArchiveDir* CRezArchiveDir::FindSubdirectory(const char* name) {
     return m_subdirectories.FindByName(name, m_archive->m_caseSensitive == false);
 }
 
-RVA(0x0013a260, 0x11)
+RVA(0x0013a470, 0x11)
 CRezArchiveDir* CRezArchiveDir::FirstSubdirectory() {
     CHashElement* node = m_subdirectories.First();
     if (!node) {
@@ -522,7 +522,7 @@ CRezArchiveDir* CRezArchiveDir::FirstSubdirectory() {
     return node->m_archiveDirectory;
 }
 
-RVA(0x0013a280, 0x19)
+RVA(0x0013a490, 0x19)
 CRezArchiveDir* CRezArchiveDir::NextSubdirectory(CRezArchiveDir* directory) {
     CHashElement* node = directory->m_nameNode.Next();
     if (!node) {
@@ -533,12 +533,12 @@ CRezArchiveDir* CRezArchiveDir::NextSubdirectory(CRezArchiveDir* directory) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0013a2a0, 0x10)
+RVA(0x0013a4b0, 0x10)
 CRezArchiveType* CRezArchiveDir::FindType(u32 typeTag) {
     return m_types.FindTypeByTag(typeTag);
 }
 
-RVA(0x0013a2b0, 0x11)
+RVA(0x0013a4c0, 0x11)
 CRezArchiveType* CRezArchiveDir::FirstType() {
     CHashElement* node = m_types.First();
     if (!node) {
@@ -547,7 +547,7 @@ CRezArchiveType* CRezArchiveDir::FirstType() {
     return node->m_archiveType;
 }
 
-RVA(0x0013a2d0, 0x19)
+RVA(0x0013a4e0, 0x19)
 CRezArchiveType* CRezArchiveDir::NextType(CRezArchiveType* type) {
     CHashElement* node = type->m_typeNode.Next();
     if (!node) {
@@ -556,7 +556,7 @@ CRezArchiveType* CRezArchiveDir::NextType(CRezArchiveType* type) {
     return node->m_archiveType;
 }
 
-RVA(0x0013a2f0, 0x19)
+RVA(0x0013a500, 0x19)
 CRezArchiveEntry* CRezArchiveDir::FirstEntry(CRezArchiveType* type) {
     CHashElement* node = type->m_nameIndex.First();
     if (!node) {
@@ -565,7 +565,7 @@ CRezArchiveEntry* CRezArchiveDir::FirstEntry(CRezArchiveType* type) {
     return node->m_archiveEntry;
 }
 
-RVA(0x0013a310, 0x19)
+RVA(0x0013a520, 0x19)
 CRezArchiveEntry* CRezArchiveDir::NextEntry(CRezArchiveEntry* entry) {
     CHashElement* node = entry->m_nameNode.Next();
     if (!node) {
@@ -574,7 +574,7 @@ CRezArchiveEntry* CRezArchiveDir::NextEntry(CRezArchiveEntry* entry) {
     return node->m_archiveEntry;
 }
 
-RVA(0x0013a330, 0xce)
+RVA(0x0013a540, 0xce)
 CRezArchiveDir* CRezArchiveDir::CreateSubdirectory(const char* name) {
 
     if (m_subdirectories.FindByName(name, m_archive->m_caseSensitive == false) != NULL) {
@@ -604,7 +604,7 @@ CRezArchiveDir* CRezArchiveDir::CreateSubdirectory(const char* name) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0013a400, 0xa9)
+RVA(0x0013a610, 0xa9)
 CRezArchiveEntry*
 CRezArchiveDir::CreateNamedEntry(void* resourceId, const char* name, i32 typeTag) {
     CRezArchiveType* type = FindOrCreateType(typeTag);
@@ -636,7 +636,7 @@ CRezArchiveDir::CreateNamedEntry(void* resourceId, const char* name, i32 typeTag
     return entry;
 }
 
-RVA(0x0013a4b0, 0x75)
+RVA(0x0013a6c0, 0x75)
 CRezArchiveEntry* CRezArchiveDir::CreateEntry(
     u32 resourceId,
     const char* name,
@@ -670,7 +670,7 @@ CRezArchiveEntry* CRezArchiveDir::CreateEntry(
     return entry;
 }
 
-RVA(0x0013a530, 0x47)
+RVA(0x0013a740, 0x47)
 i32 CRezArchiveDir::RemoveEntry(CRezArchiveType* type, CRezArchiveEntry* entry) {
     m_totalDataSize -= entry->m_size;
     type->m_nameIndex.Remove(&entry->m_nameNode);
@@ -680,7 +680,7 @@ i32 CRezArchiveDir::RemoveEntry(CRezArchiveType* type, CRezArchiveEntry* entry) 
     return 1;
 }
 
-RVA(0x0013a580, 0xb2)
+RVA(0x0013a790, 0xb2)
 i32 CRezArchiveDir::ReadDirectoryTree(
     CRezItmBase* storage,
     i32 bodyOffset,
@@ -724,7 +724,7 @@ GZ_ENUM_BEGIN(RezDirectoryRecordKind)
     REZ_DIRECTORY_RECORD_SUBDIRECTORY = 1
 GZ_ENUM_END(RezDirectoryRecordKind)
 
-RVA(0x0013a640, 0x2f7)
+RVA(0x0013a850, 0x2f7)
 i32 CRezArchiveDir::ReadDirectoryBody(
     CRezItmBase* storage,
     i32 bodyOffset,
@@ -854,7 +854,7 @@ i32 CRezArchiveDir::ReadDirectoryBody(
     return 1;
 }
 
-RVA(0x0013a940, 0xc2)
+RVA(0x0013ab50, 0xc2)
 CRezArchiveType* CRezArchiveDir::FindOrCreateType(i32 typeTag) {
 
     CRezArchiveType* type = m_types.FindTypeByTag(static_cast<u32>(typeTag));
@@ -892,7 +892,7 @@ GZ_ENUM_CONST_BEGIN(RezArchiveDefaults)
     REZ_ARCHIVE_DEFAULT_ENTRIES_PER_POOL_BLOCK = 100
 GZ_ENUM_CONST_END(RezArchiveDefaults)
 
-RVA(0x0013aa10, 0xdc)
+RVA(0x0013ac20, 0xe2)
 CRezArchive::CRezArchive() : m_freeEntries(1) {
     m_isOpen = false;
     m_primaryStorage = NULL;
@@ -925,7 +925,7 @@ CRezArchive::CRezArchive() : m_freeEntries(1) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0013ab00, 0xac)
+RVA(0x0013ad20, 0xac)
 CRezArchive::CRezArchive(char* path, b32 readOnly, b32 createNew) : m_freeEntries(1) {
     {
         CRezArchive defaults;
@@ -933,7 +933,7 @@ CRezArchive::CRezArchive(char* path, b32 readOnly, b32 createNew) : m_freeEntrie
     Open(path, readOnly, createNew);
 }
 
-RVA(0x0013abc0, 0x13f)
+RVA(0x0013ade0, 0x13f)
 CRezArchive::~CRezArchive() {
 
     if (m_isOpen) {
@@ -987,7 +987,7 @@ CRezArchive::~CRezArchive() {
 }
 
 // @early-stop
-RVA(0x0013ad00, 0x3b8)
+RVA(0x0013af20, 0x3fa)
 i32 CRezArchive::Open(char* path, b32 readOnly, b32 createNew) {
     m_readOnly = readOnly;
     if (readOnly == false) {
@@ -1103,7 +1103,7 @@ i32 CRezArchive::Open(char* path, b32 readOnly, b32 createNew) {
 }
 
 // @early-stop
-RVA(0x0013b0c0, 0x238)
+RVA(0x0013b320, 0x238)
 i32 CRezArchive::MergeArchive(char* path, b32 replaceExisting) {
     if (m_readOnly == false) {
         return 0;
@@ -1173,7 +1173,7 @@ i32 CRezArchive::MergeArchive(char* path, b32 replaceExisting) {
     return 1;
 }
 
-RVA(0x0013b300, 0x545)
+RVA(0x0013b560, 0x545)
 i32 CRezArchive::ImportDirectoryTree(
     CRezItmBase* storage,
     CRezArchiveDir* directory,
@@ -1271,7 +1271,7 @@ i32 CRezArchive::ImportDirectoryTree(
     return 1;
 }
 
-RVA(0x0013b850, 0xa8)
+RVA(0x0013bab0, 0xa8)
 i32 CRezArchive::Close(i32 unusedFinal) {
     static_cast<void>(unusedFinal);
     i32 result = m_primaryStorage->Close();
@@ -1298,12 +1298,12 @@ i32 CRezArchive::Close(i32 unusedFinal) {
     return result;
 }
 
-RVA(0x0013b900, 0x4)
+RVA(0x0013bb60, 0x4)
 CRezArchiveDir* CRezArchive::GetRootDirectory() {
     return m_rootDirectory;
 }
 
-RVA(0x0013b910, 0x58)
+RVA(0x0013bb70, 0x58)
 RezTypeTag CRezArchive::PackTag(const char* typeName) {
     if (!typeName) {
         return REZ_TAG_NONE;
@@ -1327,7 +1327,7 @@ RezTypeTag CRezArchive::PackTag(const char* typeName) {
     return static_cast<RezTypeTag>(packedTag.m_value);
 }
 
-RVA(0x0013b970, 0x72)
+RVA(0x0013bbd0, 0x72)
 void CRezArchive::UnpackTag(RezTypeTag tag, char* destination) {
     if (!destination) {
         return;
@@ -1360,25 +1360,25 @@ void CRezArchive::UnpackTag(RezTypeTag tag, char* destination) {
     destination[length] = 0;
 }
 
-RVA(0x0013b9f0, 0x5)
+RVA(0x0013bc50, 0x5)
 i32 CRezArchive::UnusedArchiveQuery(i32 unused) {
     static_cast<void>(unused);
     return 0;
 }
 
-RVA(0x0013ba00, 0x3)
+RVA(0x0013bc60, 0x3)
 void CRezArchive::UnusedArchiveAction(i32 unused) {
     static_cast<void>(unused);
 }
 
-RVA(0x0013ba10, 0x3)
+RVA(0x0013bc70, 0x3)
 i32 CRezArchive::RetryStorageOperation() {
     return 0;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0013ba20, 0x27)
+RVA(0x0013bc80, 0x27)
 i32 CRezArchive::CheckStorages() {
     b32 allStoragesValid = true;
     for (CRezItmBase* storage = m_storages.m_head; storage != NULL; storage = storage->m_next) {
@@ -1391,7 +1391,7 @@ i32 CRezArchive::CheckStorages() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0013ba50, 0x1f)
+RVA(0x0013bcb0, 0x1f)
 void CRezArchive::SetBucketCounts(
     i32 resourceNameBuckets,
     i32 resourceIdBuckets,
@@ -1404,7 +1404,7 @@ void CRezArchive::SetBucketCounts(
     m_typeBucketCount = typeBuckets;
 }
 
-RVA(0x0013ba70, 0x10)
+RVA(0x0013bcd0, 0x10)
 i32 CRezArchive::MakeTimestamp() {
     time_t timestamp;
     return static_cast<i32>(time(&timestamp));
@@ -1412,7 +1412,7 @@ i32 CRezArchive::MakeTimestamp() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0013ba80, 0x57)
+RVA(0x0013bce0, 0x57)
 void CRezArchive::SetPathDelimiters(char* delimiters) {
     if (m_pathDelimiters != NULL) {
         delete[] m_pathDelimiters;
@@ -1421,7 +1421,7 @@ void CRezArchive::SetPathDelimiters(char* delimiters) {
     strcpy(m_pathDelimiters, delimiters);
 }
 
-RVA(0x0013bae0, 0x1b9)
+RVA(0x0013bd40, 0x1d7)
 CRezArchiveDir* CRezArchiveDir::FindDirectoryByPath(const char* path) {
     char component[0x40];
     if (static_cast<i32>(strlen(path)) > 1) {
@@ -1455,7 +1455,7 @@ CRezArchiveDir* CRezArchiveDir::FindDirectoryByPath(const char* path) {
     return subdirectory->FindDirectoryByPath(path + componentLength);
 }
 
-RVA(0x0013bca0, 0x19c)
+RVA(0x0013bf20, 0x1ac)
 CRezArchiveEntry* CRezArchiveDir::FindEntryByPath(const char* qualifiedPath) {
     char directoryPath[0x100];
     char resourceName[0x20];
@@ -1490,7 +1490,7 @@ CRezArchiveEntry* CRezArchiveDir::FindEntryByPath(const char* qualifiedPath) {
     return directory->FindEntryByFilename(resourceName);
 }
 
-RVA(0x0013be40, 0x1ac)
+RVA(0x0013c0d0, 0x1bc)
 CRezArchiveEntry* CRezArchiveDir::FindEntryByPath(const char* qualifiedPath, RezTypeTag typeTag) {
     char directoryPath[0x100];
     char resourceName[0x20];
@@ -1525,26 +1525,26 @@ CRezArchiveEntry* CRezArchiveDir::FindEntryByPath(const char* qualifiedPath, Rez
     return directory->FindEntry(resourceName, typeTag);
 }
 
-RVA(0x0013bff0, 0x19)
+RVA(0x0013c290, 0x19)
 CRezArchiveEntry* CRezArchive::FindEntryByPath(const char* path, RezTypeTag typeTag) {
     return GetRootDirectory()->FindEntryByPath(path, typeTag);
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0013c010, 0x14)
+RVA(0x0013c2b0, 0x14)
 CRezArchiveEntry* CRezArchive::FindEntryByPath(const char* path) {
     return GetRootDirectory()->FindEntryByPath(path);
 }
 
-RVA(0x0013c030, 0x14)
+RVA(0x0013c2d0, 0x14)
 CRezArchiveDir* CRezArchive::FindDirectoryByPath(const char* path) {
     return GetRootDirectory()->FindDirectoryByPath(path);
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0013c050, 0x28)
+RVA(0x0013c2f0, 0x28)
 i32 CRezArchive::Reload() {
     if (m_isOpen == false) {
         return 0;
@@ -1553,7 +1553,7 @@ i32 CRezArchive::Reload() {
     return Open(m_archivePath, true, false);
 }
 
-RVA(0x0013c080, 0x3c)
+RVA(0x0013c320, 0x3c)
 i32 CRezArchive::IsDirectoryPath(char* path) {
     struct _stat fileInfo;
     if (_stat(path, &fileInfo) != 0) {
@@ -1563,7 +1563,7 @@ i32 CRezArchive::IsDirectoryPath(char* path) {
 }
 
 // @early-stop
-RVA(0x0013c0c0, 0x14b)
+RVA(0x0013c360, 0x14b)
 CRezArchiveEntry* CRezArchive::AcquireEntry() {
     CRezArchiveEntry* entry = NULL;
     CHashElement* node = m_freeEntries.First();
@@ -1596,7 +1596,7 @@ CRezArchiveEntry* CRezArchive::AcquireEntry() {
     return entry;
 }
 
-RVA(0x0013c210, 0x1a)
+RVA(0x0013c4b0, 0x1a)
 void CRezArchive::ReleaseEntry(CRezArchiveEntry* entry) {
     if (entry) {
         m_freeEntries.Insert(&entry->m_nameNode);

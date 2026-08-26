@@ -16,7 +16,7 @@ class CDDrawSurfaceMgr;
 struct WwdDirtyRect {
     WwdDirtyRect();
 
-    RVA(0x0015b290, 0x10)
+    RVA(0x0015b570, 0x10)
     ~WwdDirtyRect() {}
 
     enum ENoSeed {
@@ -47,7 +47,7 @@ struct WwdDirtyRect {
 class CResolveNode : public CWapObj {
 public:
     virtual i32 IsLoaded() OVERRIDE;
-    RVA(0x00154a80, 0x13)
+    RVA(0x00154d60, 0x13)
     virtual void Unload() OVERRIDE {
         m_screenX = COORD_UNSET;
         m_dirty.Reset();

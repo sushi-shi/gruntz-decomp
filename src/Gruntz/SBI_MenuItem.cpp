@@ -46,7 +46,7 @@ static inline SoundCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
 }
 
 // @early-stop
-RVA(0x000e80e0, 0x8c)
+RVA(0x000e8210, 0x8c)
 i32 CSBI_MenuItem::SetupImage(
     CStatusBarMgr* owner,
     CDDrawSurfaceMgr* host,
@@ -77,17 +77,17 @@ i32 CSBI_MenuItem::SetupImage(
     return 0;
 }
 
-RVA(0x000e81a0, 0x8)
+RVA(0x000e82d0, 0x8)
 void CSBI_MenuItem::Reset() {
     SetFrame(NULL);
 }
 
-RVA(0x000e81c0, 0x8)
+RVA(0x000e82f0, 0x8)
 i32 CSBI_MenuItem::Refresh(i32) {
     return 1;
 }
 
-RVA(0x000e81e0, 0x8b)
+RVA(0x000e8310, 0x8b)
 i32 CSBI_MenuItem::ResolveFrame(const char* key, i32 frameIndex) {
     if (key == NULL) {
         return 0;
@@ -107,7 +107,7 @@ i32 CSBI_MenuItem::ResolveFrame(const char* key, i32 frameIndex) {
     return m_frame != NULL;
 }
 
-RVA(0x000e82a0, 0x45)
+RVA(0x000e83d0, 0x45)
 i32 CSBI_MenuItem::Render() {
     if (m_redrawFrames > 0) {
         m_redrawFrames--;
@@ -121,7 +121,7 @@ i32 CSBI_MenuItem::Render() {
     return 1;
 }
 
-RVA(0x000e8310, 0x112)
+RVA(0x000e8440, 0x112)
 i32 CSBI_MenuItem::SetState(SbiMenuItemState state, i32 playHighlightSound) {
     if (m_state == state || m_record == NULL) {
         return 0;
@@ -162,7 +162,7 @@ i32 CSBI_MenuItem::SetState(SbiMenuItemState state, i32 playHighlightSound) {
     return 1;
 }
 
-RVA(0x000e8480, 0x4a)
+RVA(0x000e85b0, 0x4a)
 i32 CSBI_MenuItem::ProbeState(SbiMenuItemState state) {
     if (state == MENUITEM_NORMAL || m_record == NULL) {
         return 0;
@@ -176,7 +176,7 @@ i32 CSBI_MenuItem::ProbeState(SbiMenuItemState state) {
     return 1;
 }
 
-RVA(0x000e84f0, 0x16)
+RVA(0x000e8620, 0x16)
 i32 CSBI_MenuItem::Blit() {
     if (m_state != MENUITEM_HIGHLIGHT) {
         return 1;
@@ -184,7 +184,7 @@ i32 CSBI_MenuItem::Blit() {
     return SetState(MENUITEM_NORMAL, 1);
 }
 
-RVA(0x000e8520, 0x152)
+RVA(0x000e8650, 0x152)
 i32 CSBI_MenuItem::SerializeFields(
     CFileMemBase* ar,
     SerialMode mode,
@@ -225,10 +225,10 @@ i32 CSBI_MenuItem::SerializeFields(
     return CSBI_Image::SerializeFields(ar, mode, typeId, payload) != 0;
 }
 
-RVA(0x0010bfa0, 0x1)
+RVA(0x0010c0d0, 0x1)
 void CStatusBarItem::Reset() {}
 
-RVA(0x0010bfc0, 0xe8)
+RVA(0x0010c0f0, 0xe8)
 i32 CStatusBarItem::SerializeFields(
     CFileMemBase* ar,
     SerialMode mode,

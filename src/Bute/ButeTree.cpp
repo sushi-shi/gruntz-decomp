@@ -7,7 +7,7 @@
 #include <stddef.h>
 #include <string.h>
 
-RVA(0x00193340, 0x61)
+RVA(0x00193620, 0x61)
 void zPTree::Walk(
     void(__cdecl* fn)(char* key, void* value, void* ctx),
     void* ctx,
@@ -33,7 +33,7 @@ void zPTree::Walk(
     }
 }
 
-RVA(0x001933b0, 0x28f)
+RVA(0x00193690, 0x28f)
 void* zPTree::FindOrInsert(const char* key, void* value) {
     i32 path[32];
     i32* p = path;

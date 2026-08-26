@@ -18,17 +18,17 @@
 # (data_denominator MFC_LO/MFC_HI/LIB_RDATA_HI/RTTI_LO/RTTI_HI); the .bss
 # boundary is .data's raw size.
 lo	hi	band	note
-0x001000	0x007950	ilt-thunks	incremental-link E9 jmp table + 0xCC reserve
-0x007950	0x007c60	crt-head	nine .CRT$XC initializer cells + the ??_H vector-ctor helper
-0x007c60	0x132ce0	cmdline	command-line objects: game + engine TUs interleaved
-0x132ce0	0x193a98	pulled-libs	library-pull region: engine .LIBs, vendored zlib, archived game units
-0x193a98	0x1d7d00	static-libs	CRT/MFC/iostream members incl. the .text$AFX_* groups
-0x1d7d00	0x1e3c2f	eh-band	packed /GX funclet band
-0x1e3c2f	0x1e626b	pad	0xCC linker fill to .text's virtual end
+0x001000	0x007955	ilt-thunks	incremental-link E9 jmp table + 0xCC reserve
+0x007955	0x007c70	crt-head	nine .CRT$XC initializer cells + the ??_H vector-ctor helper
+0x007c70	0x132ef0	cmdline	command-line objects: game + engine TUs interleaved
+0x132ef0	0x193d78	pulled-libs	library-pull region: engine .LIBs, vendored zlib, archived game units
+0x193d78	0x1d8010	static-libs	CRT/MFC/iostream members incl. the .text$AFX_* groups
+0x1d8010	0x1e3f7f	eh-band	packed /GX funclet band
+0x1e3f7f	0x1e65c1	pad	0xCC linker fill to .text's virtual end
 0x1e7000	0x1eb068	game-rdata	game/engine .rdata contributions
 0x1eb068	0x1ee5a4	mfc-rdata	MFC contribution group
 0x1ee5a4	0x1f1f20	lib-rdata	remaining CRT/library .rdata
 0x1f1f20	0x1f7ad0	rtti-rdata	/GR RTTI record region
-0x1f7ad0	0x208000	pooled-rdata	EH tables, string/FP pools, game .rdata tail
-0x208000	0x229400	data-init	initialized .data
-0x229400	0x2c27ac	bss	loader zero fill (.data virtual tail)
+0x1f7ad0	0x208200	pooled-rdata	EH tables, string/FP pools, game .rdata tail
+0x209000	0x22a400	data-init	initialized .data
+0x22a400	0x2c370c	bss	loader zero fill (.data virtual tail)

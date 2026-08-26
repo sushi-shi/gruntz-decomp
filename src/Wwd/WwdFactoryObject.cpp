@@ -37,7 +37,7 @@
 
 #include <string.h>
 
-RVA(0x0015b340, 0x2b)
+RVA(0x0015b620, 0x2b)
 i32 CLogicRecord::Consume(i32 amount) {
     i32 remaining = m_timeDelay;
     if (remaining == 0) {
@@ -51,7 +51,7 @@ i32 CLogicRecord::Consume(i32 amount) {
     return 1;
 }
 
-RVA(0x0015b370, 0x1d)
+RVA(0x0015b650, 0x1d)
 i32 CGameObject::IsLoaded() {
     if (m_logicRecord == NULL) {
         return 0;
@@ -62,7 +62,7 @@ i32 CGameObject::IsLoaded() {
     return 0;
 }
 
-RVA(0x0015b390, 0x128)
+RVA(0x0015b670, 0x128)
 CGameObject::CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags)
     : CResolveNode(owner, id, objectFlags, CResolveNode::INLINE_SEED),
       m_region(WwdRegion::INLINE_SEED),
@@ -70,11 +70,11 @@ CGameObject::CGameObject(CDDrawSurfaceMgr* owner, i32 id, i32 objectFlags)
     AttachToOwner(owner, id);
 }
 
-RVA_COMPGEN(0x0015b4c0, 0x1e, ??_GCGameObject@@UAEPAXI@Z)
+RVA_COMPGEN(0x0015b7a0, 0x1e, ??_GCGameObject@@UAEPAXI@Z)
 
-RVA_COMPGEN(0x0015b4f0, 0xde, ??1CGameObject@@UAE@XZ)
+RVA_COMPGEN(0x0015b7d0, 0xde, ??1CGameObject@@UAE@XZ)
 
-RVA(0x0015b650, 0x4d)
+RVA(0x0015b930, 0x4d)
 void CGameObject::Notify(CGameObject* p) {
     if (m_flags & IDX(WWD_GAME_OBJECT_FLAG_DAMAGE_HEALTH_DIRECTLY)) {
         m_health -= p->m_damage;
@@ -90,16 +90,16 @@ void CGameObject::Notify(CGameObject* p) {
     }
 }
 
-RVA(0x0015b6a0, 0xb)
+RVA(0x0015b980, 0xb)
 i32 CAniAdvanceCursor::IsLoaded() {
     return m_boundObject != NULL;
 }
 
-RVA_COMPGEN(0x0015b6b0, 0x1e, ??_GCAniAdvanceCursor@@UAEPAXI@Z)
+RVA_COMPGEN(0x0015b990, 0x1e, ??_GCAniAdvanceCursor@@UAEPAXI@Z)
 
-RVA_COMPGEN(0x0015b6d0, 0x5b, ??1CAniAdvanceCursor@@UAE@XZ)
+RVA_COMPGEN(0x0015b9b0, 0x5b, ??1CAniAdvanceCursor@@UAE@XZ)
 
-RVA(0x0015b730, 0x2b)
+RVA(0x0015ba10, 0x2b)
 CAniAdvanceCursor::CAniAdvanceCursor(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
     : CWapObj(owner, id, flags, CWapObj::NO_SEED) {
     m_boundObject = NULL;
@@ -107,30 +107,30 @@ CAniAdvanceCursor::CAniAdvanceCursor(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
     m_element = NULL;
 }
 
-RVA(0x0015b760, 0x6)
+RVA(0x0015ba40, 0x6)
 LoadableClassId CWwdSpriteObject::GetClassId() {
     return CLASSID_WWD_SPRITE_OBJECT;
 }
 
-RVA_COMPGEN(0x0015b770, 0x1e, ??_GCWwdSpriteObject@@UAEPAXI@Z)
+RVA_COMPGEN(0x0015ba50, 0x1e, ??_GCWwdSpriteObject@@UAEPAXI@Z)
 
-RVA_COMPGEN(0x0015b790, 0x1a6, ??1CWwdSpriteObject@@UAE@XZ)
+RVA_COMPGEN(0x0015ba70, 0x1a6, ??1CWwdSpriteObject@@UAE@XZ)
 
-RVA(0x0015b940, 0x38)
+RVA(0x0015bc20, 0x38)
 i32 CWwdSpriteObject::Setup(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTemplate) {
     m_soundCue = NULL;
     m_animationCursor.BindSprite(this);
     return CGameObject::Setup(x, y, sortKey, logicTemplate);
 }
 
-RVA(0x0015ba20, 0x1c)
+RVA(0x0015bd00, 0x1c)
 void CWwdSpriteObject::Render(CDDrawSurfacePair* pair) {
     if (m_frameImage) {
         m_frameImage->RenderImage(this, pair);
     }
 }
 
-RVA(0x0015ba40, 0x1d)
+RVA(0x0015bd20, 0x1d)
 i32 CWwdDeferredObject::IsLoaded() {
     if (m_logicRecord == NULL) {
         return 0;
@@ -141,56 +141,56 @@ i32 CWwdDeferredObject::IsLoaded() {
     return 0;
 }
 
-RVA(0x0015ba60, 0x6)
+RVA(0x0015bd40, 0x6)
 LoadableClassId CWwdDeferredObject::GetClassId() {
     return CLASSID_WWD_DEFERRED_OBJECT;
 }
 
-RVA(0x0015ba70, 0x3)
+RVA(0x0015bd50, 0x3)
 void CWwdDeferredObject::Render(CDDrawSurfacePair*) {}
 
-RVA(0x0015ba80, 0x3)
+RVA(0x0015bd60, 0x3)
 void CWwdDeferredObject::BltDirty(CDDrawSurfacePair*, CDDrawSurfacePair*) {}
 
-RVA(0x0015ba90, 0x3)
+RVA(0x0015bd70, 0x3)
 void CWwdDeferredObject::BltDirtyEx(CDrawSubWorker*, CDDrawSurfacePair*, CDDrawSurfacePair*) {}
 
-RVA(0x0015baa0, 0x3)
+RVA(0x0015bd80, 0x3)
 void CWwdDeferredObject::BltDirtyRegions(
     CDDrawSurfacePair*,
     CDDrawSurfacePair*,
     CDDrawSurfacePair*
 ) {}
 
-RVA_COMPGEN(0x0015bab0, 0x1e, ??_GCWwdDeferredObject@@UAEPAXI@Z)
-RVA(0x0015bad0, 0x153)
+RVA_COMPGEN(0x0015bd90, 0x1e, ??_GCWwdDeferredObject@@UAEPAXI@Z)
+RVA(0x0015bdb0, 0x153)
 CWwdDeferredObject::~CWwdDeferredObject() {
     Unload();
 }
 
-RVA(0x0015bc30, 0x16)
+RVA(0x0015bf10, 0x16)
 i32 CWwdDeferredObject::SetupDeferred(i32 sortKey, CLogicRecord* logicTemplate) {
     return CGameObject::Setup(0, 0, sortKey, logicTemplate);
 }
 
-RVA(0x0015bcd0, 0xb)
+RVA(0x0015bfb0, 0xb)
 i32 CWwdGameObject::IsLoaded() {
     return m_logicRecord != NULL;
 }
 
-RVA(0x0015bce0, 0x6)
+RVA(0x0015bfc0, 0x6)
 LoadableClassId CWwdGameObject::GetClassId() {
     return CLASSID_WWD_CONTAINER_OBJECT;
 }
 
-RVA_COMPGEN(0x0015bcf0, 0x1e, ??_GCWwdGameObject@@UAEPAXI@Z)
+RVA_COMPGEN(0x0015bfd0, 0x1e, ??_GCWwdGameObject@@UAEPAXI@Z)
 // @early-stop
-RVA(0x0015bd10, 0x1ef)
+RVA(0x0015bff0, 0x1ef)
 CWwdGameObject::~CWwdGameObject() {
     Unload();
 }
 
-RVA(0x0015bfb0, 0x4a)
+RVA(0x0015c290, 0x4a)
 i32 CDDrawChildGroup::RectsOverlap(CDDrawRect* a, CDDrawRect* b) {
     if (a->left > b->right) {
         return 0;
@@ -204,7 +204,7 @@ i32 CDDrawChildGroup::RectsOverlap(CDDrawRect* a, CDDrawRect* b) {
     return a->bottom >= b->top;
 }
 
-RVA(0x0015c000, 0x1d)
+RVA(0x0015c2e0, 0x1d)
 i32 CWwdDotObject::IsLoaded() {
     if (m_logicRecord == NULL) {
         return 0;
@@ -215,35 +215,35 @@ i32 CWwdDotObject::IsLoaded() {
     return 0;
 }
 
-RVA(0x0015c020, 0x6)
+RVA(0x0015c300, 0x6)
 LoadableClassId CWwdDotObject::GetClassId() {
     return CLASSID_WWD_DOT_OBJECT;
 }
 
-RVA(0x0015c030, 0x7)
+RVA(0x0015c310, 0x7)
 u8 CWwdDotObject::GetDotColor() {
     return m_dotColor;
 }
 
-RVA(0x0015c040, 0xd)
+RVA(0x0015c320, 0xd)
 void CWwdDotObject::SetDotColor(u8 dotColor) {
     m_dotColor = dotColor;
 }
 
-RVA_COMPGEN(0x0015c050, 0x1e, ??_GCWwdDotObject@@UAEPAXI@Z)
-RVA(0x0015c070, 0x159)
+RVA_COMPGEN(0x0015c330, 0x1e, ??_GCWwdDotObject@@UAEPAXI@Z)
+RVA(0x0015c350, 0x159)
 CWwdDotObject::~CWwdDotObject() {
     Unload();
 }
 
-RVA(0x0015c1d0, 0x26)
+RVA(0x0015c4b0, 0x26)
 i32 CWwdDotObject::SetupDot(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTemplate, i32 dotColor) {
     m_dotColor = static_cast<u8>(dotColor);
     return CGameObject::Setup(x, y, sortKey, logicTemplate);
 }
 
 // @early-stop
-RVA(0x0015c290, 0x2f)
+RVA(0x0015c570, 0x2f)
 void CAniAdvanceCursor::BindSprite(CWwdSpriteObject* src) {
     m_boundObject = src;
     m_finished = true;
@@ -253,14 +253,14 @@ void CAniAdvanceCursor::BindSprite(CWwdSpriteObject* src) {
     m_useElapsedTime = true;
 }
 
-RVA(0x0015c2c0, 0xc)
+RVA(0x0015c5a0, 0xc)
 void CAniAdvanceCursor::Unload() {
     m_boundObject = NULL;
     m_animation = NULL;
     m_element = NULL;
 }
 
-RVA(0x0015c2d0, 0x45)
+RVA(0x0015c5b0, 0x45)
 void CAniAdvanceCursor::SetAnimation(CAniElement* src) {
     CAniRecordView* e;
     i32 v;
@@ -286,7 +286,7 @@ void CAniAdvanceCursor::SetAnimation(CAniElement* src) {
     }
 }
 
-RVA(0x0015c320, 0x40)
+RVA(0x0015c600, 0x40)
 
 void CAniAdvanceCursor::RestartAnimation(i32 resetElapsedTime) {
     CAniElement* src = m_animation;
@@ -312,7 +312,7 @@ void CAniAdvanceCursor::RestartAnimation(i32 resetElapsedTime) {
 }
 
 // @early-stop
-RVA(0x0015c360, 0x59c)
+RVA(0x0015c640, 0x59c)
 i32 CAniAdvanceCursor::Advance(u32 elapsed) {
     if (m_animation == NULL) {
         return -1;
@@ -696,7 +696,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
     return m_pendingDraw;
 }
 
-RVA(0x0015c900, 0x5c)
+RVA(0x0015cbe0, 0x5c)
 i32 CAniAdvanceCursor::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
@@ -731,12 +731,12 @@ i32 CAniAdvanceCursor::SerializeDispatch(
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0015c960, 0xe)
+RVA(0x0015cc40, 0xe)
 i32 CAniAdvanceCursor::CanSerialize(CFileMemBase* ar) {
     return ar != NULL;
 }
 
-RVA(0x0015c970, 0xfe)
+RVA(0x0015cc50, 0xfe)
 i32 CAniAdvanceCursor::Serialize(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
@@ -776,7 +776,7 @@ static inline CAniRecordView* RecordAt(CAniElement* anim, i32 index) {
 }
 
 // @early-stop
-RVA(0x0015ca70, 0x15b)
+RVA(0x0015cd50, 0x15b)
 i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
@@ -816,22 +816,22 @@ i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0015cbd0, 0xe)
+RVA(0x0015ceb0, 0xe)
 i32 CAniAdvanceCursor::CanDeserialize(CFileMemBase* ar) {
     return ar != NULL;
 }
 
-RVA(0x0015cbe0, 0x46)
+RVA(0x0015cec0, 0x46)
 i32 CAniRecordView::Rng2Next() {
     return GetRandomNumber();
 }
 
-RVA(0x0015cc30, 0x1e)
+RVA(0x0015cf10, 0x1e)
 CImage* CDDrawWorker::GetFrame(i32 n) {
     return GetAt(n);
 }
 
-RVA(0x0015cc50, 0x38)
+RVA(0x0015cf30, 0x38)
 void CWwdSpriteObject::ClampToFirstFrame() {
     CDDrawWorker* seq = m_imageSet;
     if (seq != NULL) {
@@ -842,7 +842,7 @@ void CWwdSpriteObject::ClampToFirstFrame() {
     }
 }
 
-RVA(0x0015cc90, 0x38)
+RVA(0x0015cf70, 0x38)
 void CWwdSpriteObject::ClampToLastFrame() {
     CDDrawWorker* seq = m_imageSet;
     if (seq != NULL) {

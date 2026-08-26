@@ -10,7 +10,7 @@
 class CRainCloud : public CPathHazard {
 public:
     virtual i32 SerializeDispatch(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
-    RVA(0x000132f0, 0x6)
+    RVA(0x00013300, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_RAINCLOUD;
     }

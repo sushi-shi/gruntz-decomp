@@ -24,10 +24,10 @@
 
 #include <stddef.h>
 
-RVA_COMPGEN(0x00010700, 0x1e, ??_GCGruntCreationPoint@@UAEPAXI@Z)
-RVA_COMPGEN(0x00010730, 0x44, ??1CGruntCreationPoint@@UAE@XZ)
+RVA_COMPGEN(0x00010710, 0x1e, ??_GCGruntCreationPoint@@UAEPAXI@Z)
+RVA_COMPGEN(0x00010740, 0x44, ??1CGruntCreationPoint@@UAE@XZ)
 
-RVA(0x0003e520, 0x1fd)
+RVA(0x0003e440, 0x1fd)
 CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
@@ -59,14 +59,14 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj)
     SET_ANIMATION_ACT("A");
 }
 
-RVA_DYNINIT(0x0003e8c0, 0xa, CActRegPool<CGruntCreationPoint>::s_table)
-RVA_DYNINIT(0x0003e8e0, 0x15, CActRegPool<CGruntCreationPoint>::s_table)
-RVA_DYNINIT(0x0003e910, 0xe, CActRegPool<CGruntCreationPoint>::s_table)
-RVA_DYNINIT(0x0003e930, 0x1f, CActRegPool<CGruntCreationPoint>::s_table)
-template<> DATA(0x00244700)
+RVA_DYNINIT(0x0003e7e0, 0xa, CActRegPool<CGruntCreationPoint>::s_table)
+RVA_DYNINIT(0x0003e800, 0x15, CActRegPool<CGruntCreationPoint>::s_table)
+RVA_DYNINIT(0x0003e830, 0xe, CActRegPool<CGruntCreationPoint>::s_table)
+RVA_DYNINIT(0x0003e850, 0x1f, CActRegPool<CGruntCreationPoint>::s_table)
+template<> DATA(0x00245658)
 CActReg CActRegPool<CGruntCreationPoint>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
-RVA(0x0003e7a0, 0xd7)
+RVA(0x0003e6c0, 0xd7)
 i32 CGruntCreationPoint::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
@@ -95,7 +95,7 @@ i32 CGruntCreationPoint::SerializeDispatch(
     return 1;
 }
 
-RVA(0x0003e960, 0x102)
+RVA(0x0003e880, 0x102)
 void CGruntCreationPoint::FireActivation(i32 coord) {
     CActHandler* e = (CActRegPool<CGruntCreationPoint>::s_table.ResolveEntry(coord));
     if (*e != NULL) {
@@ -104,14 +104,14 @@ void CGruntCreationPoint::FireActivation(i32 coord) {
     }
 }
 
-RVA(0x0003eac0, 0x18d)
+RVA(0x0003e9e0, 0x18d)
 void CGruntCreationPoint::RegisterActs() {
     ACT_NAME_ID(id, "A")
     *(CActRegPool<CGruntCreationPoint>::s_table.ResolveEntry(id)) =
         static_cast<i32 (CUserLogic::*)()>(&CGruntCreationPoint::AdvanceAnim);
 }
 
-RVA(0x0003ecc0, 0x17)
+RVA(0x0003ebe0, 0x17)
 i32 CGruntCreationPoint::AdvanceAnim() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     return 0;

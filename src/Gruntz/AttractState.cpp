@@ -30,7 +30,7 @@
 #include <ddraw.h>
 #include <stddef.h>
 
-RVA(0x00013fb0, 0xd5)
+RVA(0x00013fc0, 0xd5)
 i32 CAttract::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
 
     if (CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId) == 0) {
@@ -72,7 +72,7 @@ i32 CAttract::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStat
     return 1;
 }
 
-RVA(0x000140d0, 0x33)
+RVA(0x000140e0, 0x33)
 void CAttract::ReleaseResources() {
     SoundCueRegistry* reg = menuRoot()->m_soundRegistry;
     if (reg->m_soundStream) {
@@ -84,7 +84,7 @@ void CAttract::ReleaseResources() {
 }
 
 // @early-stop
-RVA(0x00014120, 0x1a9)
+RVA(0x00014130, 0x1a9)
 i32 CAttract::EnterState(GameStateId previousState) {
 
     if (ShowCursor(false) >= 0) {
@@ -99,7 +99,7 @@ i32 CAttract::EnterState(GameStateId previousState) {
     page->BlitPage(page->m_backPair);
 
     i32 r = GetRandomNumber();
-    const char* pick = (r % 2) ? DATA_COMPGEN(0x0020b5bc, "2") : "";
+    const char* pick = (r % 2) ? DATA_COMPGEN(0x0020c5bc, "2") : "";
 
     char buf[0x40];
     wsprintfA(buf, "ATTRACT_TITLE%s", pick);
@@ -123,7 +123,7 @@ i32 CAttract::EnterState(GameStateId previousState) {
     return 1;
 }
 
-RVA(0x00014340, 0x71)
+RVA(0x00014350, 0x71)
 i32 CAttract::LeaveState(GameStateId nextState) {
     if (m_titleCue == NULL) {
         return 1;
@@ -141,7 +141,7 @@ i32 CAttract::LeaveState(GameStateId nextState) {
     return 1;
 }
 
-RVA(0x000143e0, 0xfb)
+RVA(0x000143f0, 0xfb)
 i32 CAttract::Render() {
     IDirectDrawSurface* busy = menuRoot()->m_drawTarget->m_frontSurface->m_surface->m_ddSurface;
     if (busy == NULL || busy->IsLost() != 0) {
@@ -175,7 +175,7 @@ i32 CAttract::Render() {
     return 1;
 }
 
-RVA(0x00014520, 0xc3)
+RVA(0x00014530, 0xc3)
 i32 CAttract::InputVirtual() {
 
     if (menuRoot()->m_drawTarget->PagesReady() == 0) {
@@ -192,7 +192,7 @@ i32 CAttract::InputVirtual() {
     return LoadAndPresentTitlePage(s, 0, 0, 1, 0);
 }
 
-RVA(0x00014630, 0xbd)
+RVA(0x00014640, 0xbd)
 i32 CAttract::RestoreDisplay() {
     if (IsActive() == 0) {
         return 0;
@@ -208,7 +208,7 @@ i32 CAttract::RestoreDisplay() {
     return LoadAndPresentTitlePage(s, 0, 0, 1, 0);
 }
 
-RVA(0x00014720, 0x37)
+RVA(0x00014730, 0x37)
 i32 CAttract::OnKeyDown(i32 code, i32 unused) {
     if (code == VK_SPACE || code == VK_RETURN || code == VK_ESCAPE) {
         PostMessageA(owner()->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
@@ -216,14 +216,14 @@ i32 CAttract::OnKeyDown(i32 code, i32 unused) {
     return 1;
 }
 
-RVA(0x00014770, 0x24)
+RVA(0x00014780, 0x24)
 i32 CAttract::OnLButtonDown(i32, i32, i32) {
     PostMessageA(owner()->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
     return 1;
 }
 
 // @early-stop
-RVA(0x000147b0, 0x6a)
+RVA(0x000147c0, 0x6a)
 i32 CAttract::OnPaint() {
     if (!IsActive()) {
         return 0;
@@ -244,8 +244,8 @@ i32 CAttract::OnPaint() {
     return 1;
 }
 
-RVA_COMPGEN(0x0008cd60, 0x1e, ??_GCAttract@@UAEPAXI@Z)
-RVA(0x0008cd90, 0x55)
+RVA_COMPGEN(0x0008cc80, 0x1e, ??_GCAttract@@UAEPAXI@Z)
+RVA(0x0008ccb0, 0x55)
 CAttract::~CAttract() {
     ReleaseResources();
 }

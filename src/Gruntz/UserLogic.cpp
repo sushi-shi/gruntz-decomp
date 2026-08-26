@@ -19,7 +19,7 @@
 
 #include <string.h>
 
-RVA(0x00008a40, 0xc8)
+RVA(0x00008a50, 0xc8)
 void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {
     if (!obj->OwnerMgr()->m_logicRegistry->FindTemplate("LogicHit")) {
         obj->OwnerMgr()->m_logicRegistry->RegisterLogicType(DispatchLogicHit, "LogicHit", 2);
@@ -32,13 +32,13 @@ void CUserLogic::BuildLogicTypeTable(CGameObject* obj) {
     }
 }
 
-RVA(0x00008b50, 0x3)
+RVA(0x00008b60, 0x3)
 void CUserLogic::StepBehavior(char* animationActName) {}
 
-RVA(0x00008b70, 0x3)
+RVA(0x00008b80, 0x3)
 void CUserLogic::FireActivation(i32) {}
 
-RVA(0x00008b90, 0x40)
+RVA(0x00008ba0, 0x40)
 void CUserLogic::FinalizeStep(char*) {
     if (m_deferredCallback == NULL) {
         return;
@@ -53,7 +53,7 @@ void CUserLogic::FinalizeStep(char*) {
 }
 
 // @early-stop
-RVA(0x00008c00, 0x152)
+RVA(0x00008c10, 0x152)
 i32 CWapX::SerializeAnimationState(
     CFileMemBase* archive,
     SerialMode mode,

@@ -67,20 +67,20 @@
 DATA(0x001e96ec)
 const float g_diffScale = 0.01f;
 
-DATA(0x0020ccc0)
+DATA(0x0020dc68)
 i32 g_battlezRouteBlockedMask = 0x98f;
-DATA(0x0022b6dc)
+DATA(0x0022c634)
 b32 g_stepRun;
-DATA(0x0022b730)
+DATA(0x0022c688)
 i32 g_stepCol;
-DATA(0x0022b734)
+DATA(0x0022c68c)
 i32 g_stepRow;
-DATA(0x0022b738)
+DATA(0x0022c690)
 i32 g_diffTier;
 
-RVA_DYNINIT(0x0002d7c0, 0x5, s_gruntDirSpare)
-RVA_DYNINIT(0x0002d7e0, 0x20, s_gruntDirSpare)
-DATA(0x0022b73c)
+RVA_DYNINIT(0x0002d750, 0x5, s_gruntDirSpare)
+RVA_DYNINIT(0x0002d770, 0x20, s_gruntDirSpare)
+DATA(0x0022c694)
 static GruntDirectionCell s_gruntDirSpare[3];
 
 static inline CGameObject* ListGetFirst(CDDrawChildGroup* list) {
@@ -99,7 +99,7 @@ static inline CGameObject* ListGetNext(CDDrawChildGroup* list) {
 }
 
 // @early-stop
-RVA(0x00024dc0, 0x158)
+RVA(0x00024d50, 0x158)
 CBattlezMapConfig::CBattlezMapConfig()
     : m_routeClockLo(0), m_routeClockHi(0), m_routeWindowLo(0), m_routeWindowHi(0) {
     m_playerIndex = 0;
@@ -138,13 +138,13 @@ CBattlezMapConfig::CBattlezMapConfig()
     m_gruntRatio = 0x19;
 }
 
-RVA(0x00024f80, 0x7d)
+RVA(0x00024f10, 0x7d)
 CBattlezMapConfig::~CBattlezMapConfig() {
     FreeArrays();
 }
 
 // @early-stop
-RVA(0x00025020, 0x984)
+RVA(0x00024fb0, 0x984)
 i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDifficulty difficulty) {
 
     m_gruntCreationTime = 0;
@@ -314,7 +314,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
     return 1;
 }
 
-RVA(0x00025c20, 0x55)
+RVA(0x00025bb0, 0x55)
 i32 CBattlezMapConfig::StepAllRowSpawns() {
     if (g_gameReg->m_players[m_playerIndex].m_humanControlled == false
         && g_gameReg->m_players[m_playerIndex].m_active != false) {
@@ -325,7 +325,7 @@ i32 CBattlezMapConfig::StepAllRowSpawns() {
     return 1;
 }
 
-RVA(0x00025ca0, 0xbf)
+RVA(0x00025c30, 0xbf)
 void CBattlezMapConfig::FreeArrays() {
     i32 i;
     for (i = 0; i < m_candArray.GetSize(); i++) {
@@ -351,7 +351,7 @@ void CBattlezMapConfig::FreeArrays() {
 }
 
 // @early-stop
-RVA(0x00025d90, 0x580)
+RVA(0x00025d20, 0x580)
 i32 CBattlezMapConfig::StepBoard() {
     if (m_active == false) {
         return 1;
@@ -508,7 +508,7 @@ i32 CBattlezMapConfig::StepBoard() {
 }
 
 // @early-stop
-RVA(0x00026470, 0x29d)
+RVA(0x00026400, 0x29d)
 i32 CBattlezMapConfig::StepRowSpawn(b32 allowReserved) {
     i32 occupied = 0;
     CGrunt** units = &m_triggerMgr->m_units[m_playerIndex * TM_UNITS_PER_PLAYER];
@@ -635,7 +635,7 @@ i32 CBattlezMapConfig::StepRowSpawn(b32 allowReserved) {
 }
 
 // @early-stop
-RVA(0x000267c0, 0x2850)
+RVA(0x00026750, 0x2850)
 i32 CBattlezMapConfig::StepRowUnits() {
     m_roundRobinTick++;
     CGrunt* unit;
@@ -1582,13 +1582,13 @@ secondColumnProbeHit: {
 }
 }
 
-RVA(0x00029a30, 0x10)
+RVA(0x000299c0, 0x10)
 void*& CGruntCoordList::NextData(POSITION& pos) {
 
     return CPtrList::GetNext(pos);
 }
 
-RVA(0x00029a50, 0x15)
+RVA(0x000299e0, 0x15)
 void CUserLogic::GetScreenPos(Coord* out) {
     CWwdSpriteObject* o = m_object;
     i32 y = o->m_screenY;
@@ -1597,12 +1597,12 @@ void CUserLogic::GetScreenPos(Coord* out) {
     out->m_y = y;
 }
 
-RVA(0x00029a80, 0x29)
+RVA(0x00029a10, 0x29)
 i32 CGrunt::IsAtSavedScreenPos() {
     return IsGruntAtSavedScreenPos(this);
 }
 
-RVA(0x00029af0, 0x3b)
+RVA(0x00029a80, 0x3b)
 void CBattlezMapConfig::RerouteIdleUnit(
     CGrunt* unit,
     i32 col,
@@ -1621,7 +1621,7 @@ void CBattlezMapConfig::RerouteIdleUnit(
 }
 
 // @early-stop
-RVA(0x00029b40, 0x813)
+RVA(0x00029ad0, 0x813)
 i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
     CPtrList* coordList = &unit->m_coordList;
     if (unit->CoordCount() == 0) {
@@ -1904,7 +1904,7 @@ returnZero:
     return 0;
 }
 
-RVA(0x0002a570, 0x4c6)
+RVA(0x0002a500, 0x4c6)
 i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
     CPtrList* coordList = &unit->m_coordList;
     if (coordList->GetCount() == 0) {
@@ -2067,7 +2067,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
 }
 
 // @early-stop
-RVA(0x0002ab80, 0x15e)
+RVA(0x0002ab10, 0x15e)
 CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 halfH) {
     RECT rect;
     rect.left = cx - halfW;
@@ -2123,7 +2123,7 @@ CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 hal
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0002ad40, 0x71)
+RVA(0x0002acd0, 0x71)
 CGrunt* CBattlezMapConfig::PickRandomIdleUnit(i32) {
     i32 band = rand() % 4;
     if (band == m_playerIndex) {
@@ -2141,13 +2141,13 @@ CGrunt* CBattlezMapConfig::PickRandomIdleUnit(i32) {
     return NULL;
 }
 
-RVA(0x0002ade0, 0x7)
+RVA(0x0002ad70, 0x7)
 void CBattlezMapConfig::Clear() {
     m_active = false;
 }
 
 // @early-stop
-RVA(0x0002ae00, 0x42e)
+RVA(0x0002ad90, 0x42e)
 i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
     if (other->m_entranceCommitted == false) {
         return 0;
@@ -2255,7 +2255,7 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
 }
 
 // @early-stop
-RVA(0x0002b340, 0xaa)
+RVA(0x0002b2d0, 0xaa)
 void CMapMgr::Clip(const RECT* src) {
     RECT a, b;
     i32 w = m_width;
@@ -2281,7 +2281,7 @@ void CMapMgr::Clip(const RECT* src) {
     m_gridW = dst->right - dst->left;
     m_gridH = dst->bottom - dst->top;
 }
-RVA(0x0002b420, 0x419)
+RVA(0x0002b3b0, 0x419)
 i32 CBattlezMapConfig::Serialize(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
@@ -2371,7 +2371,7 @@ i32 CBattlezMapConfig::Serialize(CFileMemBase* ar) {
 }
 
 // @early-stop
-RVA(0x0002b950, 0x513)
+RVA(0x0002b8e0, 0x513)
 i32 CBattlezMapConfig::Deserialize(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
@@ -2498,7 +2498,7 @@ i32 CBattlezMapConfig::Deserialize(CFileMemBase* ar) {
     return 1;
 }
 
-RVA(0x0002bfc0, 0x8a)
+RVA(0x0002bf50, 0x8a)
 i32 CBattlezMapConfig::SerializeState(CFileMemBase* arArg, SerialMode modeArg, LogicTypeId, i32) {
     CFileMemBase* ar = arArg;
     SerialMode mode = modeArg;
@@ -2529,12 +2529,12 @@ i32 CBattlezMapConfig::SerializeState(CFileMemBase* arArg, SerialMode modeArg, L
     return 1;
 }
 
-RVA(0x0002c080, 0x8)
+RVA(0x0002c010, 0x8)
 i32 CBattlezMapConfig::AcceptAlways(CGrunt*) {
     return 1;
 }
 
-RVA(0x0002c0a0, 0x78)
+RVA(0x0002c030, 0x78)
 i32 CBattlezMapConfig::EnterDefenderMode(CGrunt* unit, i32 value) {
     if (unit->m_defenderState == AISTATE_RETURN) {
         return 1;
@@ -2555,7 +2555,7 @@ i32 CBattlezMapConfig::EnterDefenderMode(CGrunt* unit, i32 value) {
 }
 
 // @early-stop
-RVA(0x0002c140, 0x420)
+RVA(0x0002c0d0, 0x420)
 i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
     if (unit->m_gruntKind != GRUNT_NORMAL) {
         return 0;
@@ -2739,13 +2739,13 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
 // the original symbol name or whether this was a member.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0002c670, 0x8)
+RVA(0x0002c600, 0x8)
 i32 __stdcall BattlezMapConfigAcceptAlwaysArg(i32) {
     return 1;
 }
 
 // @early-stop
-RVA(0x0002c690, 0xdb4)
+RVA(0x0002c620, 0xdb4)
 i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     CPtrList* coordList = &g->m_coordList;
     if (RepathAroundBlockedTiles(g)) {
@@ -3141,7 +3141,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
 
 #undef ARR_RECYCLE
 
-RVA(0x0002d800, 0x605)
+RVA(0x0002d790, 0x605)
 void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 requireUnoccupied) {
     while (g_stepRun != false) {
 
@@ -3354,7 +3354,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
     }
 }
 
-RVA(0x0002dfa0, 0x325)
+RVA(0x0002df30, 0x325)
 i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requireUnoccupied) {
     g_stepRun = true;
 
@@ -3456,7 +3456,7 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
 }
 
 // @early-stop
-RVA(0x0002e3a0, 0x7e1)
+RVA(0x0002e330, 0x7e1)
 i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
 
     i32 bottom;
@@ -3659,13 +3659,13 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
     return 0;
 }
 
-RVA(0x0002ed90, 0x5)
+RVA(0x0002ed20, 0x5)
 i32 CBattlezMapConfig::PathToNearbyUnit(CGrunt*) {
     return 0;
 }
 
 // @early-stop
-RVA(0x0002edb0, 0x6b4)
+RVA(0x0002ed40, 0x6b4)
 i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, i32 ay) {
     if (unit->CoordCount() == 0) {
         return 0;
@@ -3825,7 +3825,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
 }
 
 // @early-stop
-RVA(0x0002f620, 0x871)
+RVA(0x0002f5b0, 0x871)
 i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     if (unit->m_entranceCommitted == false) {
         return 0;
@@ -4119,7 +4119,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
 }
 
 // @early-stop
-RVA(0x000300c0, 0x190)
+RVA(0x00030050, 0x190)
 i32 CBattlezMapConfig::RouteUnitTo(
     CGrunt* unit,
     i32 goalCol,
@@ -4183,7 +4183,7 @@ i32 CBattlezMapConfig::RouteUnitTo(
 // @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000302c0, 0x1ec)
+RVA(0x00030250, 0x1ec)
 i32 CBattlezMapConfig::RouteUnitToGoal(
     CGrunt* unit,
     Coord goal,
@@ -4268,7 +4268,7 @@ fail:
     return 0;
 }
 
-RVA(0x00030530, 0x56)
+RVA(0x000304c0, 0x56)
 i32 CBattlezMapConfig::PathCrossesMarkedTile(CGrunt* unit) {
     if (unit->CoordCount() == 0) {
         return 0;
@@ -4292,7 +4292,7 @@ i32 CBattlezMapConfig::PathCrossesMarkedTile(CGrunt* unit) {
 }
 
 // @early-stop
-RVA(0x000305b0, 0x121)
+RVA(0x00030540, 0x121)
 i32 CBattlezMapConfig::IsCoordOccupied(CGrunt* selfUnit, i32 qx, i32 qy) {
     i32 i = 0;
     CGrunt** units = m_triggerMgr->m_units + m_playerIndex * TM_UNITS_PER_PLAYER;
@@ -4342,7 +4342,7 @@ i32 CBattlezMapConfig::IsCoordOccupied(CGrunt* selfUnit, i32 qx, i32 qy) {
 }
 
 // @early-stop
-RVA(0x00030730, 0x1da)
+RVA(0x000306c0, 0x1da)
 i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
     if (m_active == false) {
         return 0;
@@ -4413,7 +4413,7 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
 }
 
 // @early-stop
-RVA(0x00030990, 0x11b)
+RVA(0x00030920, 0x11b)
 i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
     i32 occupied = 0;
     CGrunt** units = &m_triggerMgr->m_units[m_playerIndex * TM_UNITS_PER_PLAYER];
@@ -4470,13 +4470,13 @@ i32 CBattlezMapConfig::TrySeedSpawnAt(i32 ax, i32 ay) {
 // distinguish a static callback from a six-argument member.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00030b00, 0x8)
+RVA(0x00030a90, 0x8)
 i32 __stdcall BattlezMapConfigAcceptAlwaysSixArgs(i32, i32, i32, i32, i32, i32) {
     return 1;
 }
 
 // @early-stop
-RVA(0x00030b20, 0x328)
+RVA(0x00030ab0, 0x328)
 i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
     CGameObject* lvl = unit->m_object;
     i32 goalX = lvl->m_screenX >> TILE_SHIFT_PX;
@@ -4596,7 +4596,7 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
 }
 
 // @early-stop
-RVA(0x00030f20, 0x16d)
+RVA(0x00030eb0, 0x16d)
 Coord* CBattlezMapConfig::PickSpawnCoord(Coord* o, CGrunt* unit, i32 kind) {
     if (kind < 0 || kind >= 4) {
         CGameObject* lvl = unit->m_object;
@@ -4644,7 +4644,7 @@ Coord* CBattlezMapConfig::PickSpawnCoord(Coord* o, CGrunt* unit, i32 kind) {
     return o;
 }
 
-RVA(0x000310f0, 0x8d)
+RVA(0x00031080, 0x8d)
 char* _zdvec::IndexToPtr(i32 i) {
     char* r;
     m_grown = 0;
@@ -4669,12 +4669,12 @@ char* _zdvec::IndexToPtr(i32 i) {
     return r;
 }
 
-RVA(0x000311b0, 0x14)
+RVA(0x00031140, 0x14)
 void FreeNodePool::Push(void* p) {
     PushFreeNode(this, p);
 }
 
-RVA(0x000311e0, 0x4c)
+RVA(0x00031170, 0x4c)
 void CDDrawWorkerHost::SnapToTileCenter(Coord* out, i32 x, i32 y) {
     Coord result;
     i32 sx = m_shiftX;
@@ -4688,7 +4688,7 @@ void CDDrawWorkerHost::SnapToTileCenter(Coord* out, i32 x, i32 y) {
     *out = result;
 }
 
-RVA(0x00031250, 0x33)
+RVA(0x000311e0, 0x33)
 CGameObject* CDDrawChildGroup::Drain() {
     for (;;) {
         if (m_scanCursor == NULL) {
@@ -4701,7 +4701,7 @@ CGameObject* CDDrawChildGroup::Drain() {
     }
 }
 
-RVA(0x000312a0, 0x74)
+RVA(0x00031230, 0x74)
 char* _zvec::IndexToPtr(i32 idx) {
     char* r;
     m_grown = 0;

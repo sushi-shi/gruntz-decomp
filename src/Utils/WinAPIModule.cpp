@@ -13,7 +13,7 @@ typedef BOOL(WINAPI* PFNMODULEWALK)(HANDLE hSnapshot, MODULEENTRY32* lpme);
 namespace Utils {
     namespace WinAPI {
 
-        RVA(0x00118f60, 0x134)
+        RVA(0x00119170, 0x134)
         i32 LegacyFindModule(DWORD th32ProcessID, DWORD moduleID, void* outBuf, DWORD bufSize) {
             b32 found = false;
             HANDLE snap = NULL;

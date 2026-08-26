@@ -46,7 +46,7 @@ public:
 
     i32 RemoveActionEvent(CTileActionEvent* evt);
 
-    RVA(0x000c8640, 0x70)
+    RVA(0x000c8670, 0x70)
     ~CTileTriggerContainer() {
         Shutdown();
     }

@@ -15,7 +15,7 @@ public:
     CExitTrigger() {}
     CExitTrigger(CGameObject* obj);
 
-    RVA(0x00010870, 0x6)
+    RVA(0x00010880, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_EXITTRIGGER;
     }

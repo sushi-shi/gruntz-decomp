@@ -37,7 +37,7 @@
 #include <string.h>
 
 // @early-stop
-RVA(0x000f7d90, 0x171)
+RVA(0x000f7ec0, 0x171)
 i32 CGrunt::StepToyerBehavior() {
     m_defenderPx = m_lastTilePx;
     if (m_vehiclePickupType == PICKUP_NONE) {

@@ -11,7 +11,7 @@
 #include <ddraw.h>
 #include <string.h>
 
-RVA(0x00148840, 0x47)
+RVA(0x00148b20, 0x47)
 i32 CFileImageSurface::LoadKeyed(
     CDDrawDeviceManager* manager,
     i32 width,
@@ -31,7 +31,7 @@ i32 CFileImageSurface::LoadKeyed(
     return 1;
 }
 
-RVA(0x00148890, 0xad)
+RVA(0x00148b70, 0xad)
 i32 CFileImageSurface::ResolveEx(
     CDDrawDeviceManager* manager,
     void* data,
@@ -85,7 +85,7 @@ i32 CFileImageSurface::ResolveEx(
     return 1;
 }
 
-RVA(0x00148940, 0x102)
+RVA(0x00148c20, 0x102)
 i32 CFileImageSurface::LoadByExt(
     CDDrawDeviceManager* manager,
     char* path,
@@ -117,7 +117,7 @@ i32 CFileImageSurface::LoadByExt(
     return 1;
 }
 
-RVA(0x00148a50, 0x6b)
+RVA(0x00148d30, 0x6b)
 i32 CDDrawOverlaySurface::CreateOverlay(
     CDDrawDeviceManager* manager,
     i32 width,
@@ -136,7 +136,7 @@ i32 CDDrawOverlaySurface::CreateOverlay(
     return CDDSurface::CreateFromDesc(manager, &desc) != 0;
 }
 
-RVA(0x00148ac0, 0x2b)
+RVA(0x00148da0, 0x2b)
 i32 CDDrawOverlaySurface::UpdateOverlay(
     RECT* srcRect,
     CDDSurface* dest,
@@ -147,7 +147,7 @@ i32 CDDrawOverlaySurface::UpdateOverlay(
     return m_ddSurface->UpdateOverlay(srcRect, dest->m_ddSurface, destRect, flags, fx);
 }
 
-RVA(0x00148af0, 0x58)
+RVA(0x00148dd0, 0x58)
 i32 CDDrawPrimarySurface::CreatePrimary(
     CDDrawDeviceManager* manager,
     i32 caps,
@@ -166,7 +166,7 @@ i32 CDDrawPrimarySurface::CreatePrimary(
     return 1;
 }
 
-RVA(0x00148b50, 0x2c)
+RVA(0x00148e30, 0x2c)
 i32 CDDrawPrimarySurface::CreateFromDesc(CDDrawDeviceManager* manager, const DDSURFACEDESC* desc) {
     if (CDDSurface::CreateFromDesc(manager, desc) == 0) {
         return 0;
@@ -175,7 +175,7 @@ i32 CDDrawPrimarySurface::CreateFromDesc(CDDrawDeviceManager* manager, const DDS
     return 1;
 }
 
-RVA(0x00148b80, 0xb5)
+RVA(0x00148e60, 0xb5)
 i32 CDDrawPrimarySurface::InstallColorFormat() {
     u32 mask = m_rMask;
     i32 bitCount = 0;
@@ -227,7 +227,7 @@ i32 CDDrawPrimarySurface::InstallColorFormat() {
     return 1;
 }
 
-RVA(0x00148c40, 0x75)
+RVA(0x00148f20, 0x75)
 i32 CDDrawZBufferSurface::CreateZBuffer(
     CDDrawDeviceManager* manager,
     i32 width,
@@ -249,7 +249,7 @@ i32 CDDrawZBufferSurface::CreateZBuffer(
     return CDDSurface::CreateFromDesc(manager, &desc) != 0;
 }
 
-RVA(0x00148cc0, 0x18)
+RVA(0x00148fa0, 0x18)
 i32 CDDrawZBufferSurface::CreateFromDesc(CDDrawDeviceManager* manager, const DDSURFACEDESC* desc) {
     return CDDSurface::CreateFromDesc(manager, desc) != 0;
 }

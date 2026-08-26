@@ -46,15 +46,15 @@ static inline CAniElement* LookupAnimation(CMapStringToPtr& map, LPCTSTR name) {
     return found;
 }
 
-RVA_DYNINIT(0x000fbb50, 0xa, CActRegPool<CStaticHazard>::s_table)
-RVA_DYNINIT(0x000fbb70, 0x15, CActRegPool<CStaticHazard>::s_table)
-RVA_DYNINIT(0x000fbba0, 0xe, CActRegPool<CStaticHazard>::s_table)
-RVA_DYNINIT(0x000fbbc0, 0x1f, CActRegPool<CStaticHazard>::s_table)
-template<> DATA(0x0024e3d0)
+RVA_DYNINIT(0x000fbc80, 0xa, CActRegPool<CStaticHazard>::s_table)
+RVA_DYNINIT(0x000fbca0, 0x15, CActRegPool<CStaticHazard>::s_table)
+RVA_DYNINIT(0x000fbcd0, 0xe, CActRegPool<CStaticHazard>::s_table)
+RVA_DYNINIT(0x000fbcf0, 0x1f, CActRegPool<CStaticHazard>::s_table)
+template<> DATA(0x0024f328)
 CActReg CActRegPool<CStaticHazard>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
-RVA_COMPGEN(0x00012b00, 0x1e, ??_GCStaticHazard@@UAEPAXI@Z)
-RVA_COMPGEN(0x00012b30, 0x44, ??1CStaticHazard@@UAE@XZ)
+RVA_COMPGEN(0x00012b10, 0x1e, ??_GCStaticHazard@@UAEPAXI@Z)
+RVA_COMPGEN(0x00012b40, 0x44, ??1CStaticHazard@@UAE@XZ)
 
 struct CString;
 
@@ -66,7 +66,7 @@ inline void DispatchUnhandledLogicEvent(CUserLogic* sub) {
     DispatchLogicEvent(sub);
 }
 
-RVA(0x000fb660, 0xf1)
+RVA(0x000fb790, 0xf1)
 i32 DispatchStaticHazardLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (static_cast<u32>(record->EventCode())) {
@@ -106,7 +106,7 @@ i32 DispatchStaticHazardLogic(CGameObject* owner) {
 }
 
 // @early-stop
-RVA(0x000fb7a0, 0x2f0)
+RVA(0x000fb8d0, 0x2f0)
 CStaticHazard::CStaticHazard(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
 
@@ -152,7 +152,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj)
     }
 }
 
-RVA(0x000fbbf0, 0x102)
+RVA(0x000fbd20, 0x102)
 void CStaticHazard::FireActivation(i32 coord) {
     CActHandler* e = HaznLookup(coord);
     if ((*e) != NULL) {
@@ -161,7 +161,7 @@ void CStaticHazard::FireActivation(i32 coord) {
     }
 }
 
-RVA(0x000fbd50, 0x2ac)
+RVA(0x000fbe80, 0x2ac)
 void CStaticHazard::RegisterActs() {
     ACT_NAME_ID_CALL_REPORT(id, "A")
     (*CActRegPool<CStaticHazard>::s_table.ResolveEntryCallReport(id)) =
@@ -172,7 +172,7 @@ void CStaticHazard::RegisterActs() {
         static_cast<CActHandler>(&CStaticHazard::UpdateActiveState);
 }
 
-RVA(0x000fc0b0, 0xb2)
+RVA(0x000fc1e0, 0xb2)
 i32 CStaticHazard::UpdateIdleState() {
     CGruntzMgr* reg = g_gameReg;
     if (reg->m_isEasyMode != false && reg->m_gameMode == GAMEMODE_QUESTZ) {
@@ -195,7 +195,7 @@ i32 CStaticHazard::UpdateIdleState() {
 }
 
 // @early-stop
-RVA(0x000fc1a0, 0x33b)
+RVA(0x000fc2d0, 0x33b)
 i32 CStaticHazard::UpdateActiveState() {
     u32 phase = (g_frameTime - m_pulseEpoch) - static_cast<u32>(m_object->m_points);
     u32 rem = phase % static_cast<u32>((m_idleWindow + m_activeWindow));
@@ -288,7 +288,7 @@ i32 CStaticHazard::UpdateActiveState() {
     return 0;
 }
 
-RVA(0x000fc5b0, 0xf5)
+RVA(0x000fc6e0, 0xf5)
 i32 CStaticHazard::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,

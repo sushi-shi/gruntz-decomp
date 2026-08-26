@@ -11,7 +11,7 @@
 
 class CFileMemBase {
 public:
-    RVA(0x00157850, 0x54)
+    RVA(0x00157b30, 0x54)
     CFileMemBase() {
         m_option = 0;
         m_mode = 0;
@@ -21,7 +21,7 @@ public:
         Close();
     }
     virtual i32 SetName(const char* name, i32 mode, i32 option);
-    RVA(0x00157910, 0x5)
+    RVA(0x00157bf0, 0x5)
     virtual void Close() {
         Reset();
     }
@@ -50,11 +50,11 @@ public:
     virtual ~CFileMem() OVERRIDE {
         Close();
     }
-    RVA(0x00157a70, 0x5)
+    RVA(0x00157d50, 0x5)
     virtual void Close() OVERRIDE {
         Reset();
     }
-    RVA(0x00157a50, 0x16)
+    RVA(0x00157d30, 0x16)
     virtual void Reset() OVERRIDE {
         m_length = 0;
         m_offset = 0;

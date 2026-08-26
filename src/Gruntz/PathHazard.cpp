@@ -40,20 +40,20 @@
 #include <math.h>
 #include <stddef.h>
 
-RVA_DYNINIT(0x000b3ac0, 0xa, CActRegPool<CPathHazard>::s_table)
-RVA_DYNINIT(0x000b3ae0, 0x15, CActRegPool<CPathHazard>::s_table)
-RVA_DYNINIT(0x000b3b10, 0xe, CActRegPool<CPathHazard>::s_table)
-RVA_DYNINIT(0x000b3b30, 0x1f, CActRegPool<CPathHazard>::s_table)
-template<> DATA(0x00246250)
+RVA_DYNINIT(0x000b3ab0, 0xa, CActRegPool<CPathHazard>::s_table)
+RVA_DYNINIT(0x000b3ad0, 0x15, CActRegPool<CPathHazard>::s_table)
+RVA_DYNINIT(0x000b3b00, 0xe, CActRegPool<CPathHazard>::s_table)
+RVA_DYNINIT(0x000b3b20, 0x1f, CActRegPool<CPathHazard>::s_table)
+template<> DATA(0x002471a8)
 CActReg CActRegPool<CPathHazard>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
-RVA_COMPGEN(0x00013250, 0x1e, ??_GCPathHazard@@UAEPAXI@Z)
-RVA_COMPGEN(0x00013280, 0x44, ??1CPathHazard@@UAE@XZ)
+RVA_COMPGEN(0x00013260, 0x1e, ??_GCPathHazard@@UAEPAXI@Z)
+RVA_COMPGEN(0x00013290, 0x44, ??1CPathHazard@@UAE@XZ)
 
-RVA_COMPGEN(0x00013310, 0x1e, ??_GCRainCloud@@UAEPAXI@Z)
-RVA_COMPGEN(0x00013340, 0x44, ??1CRainCloud@@UAE@XZ)
+RVA_COMPGEN(0x00013320, 0x1e, ??_GCRainCloud@@UAEPAXI@Z)
+RVA_COMPGEN(0x00013350, 0x44, ??1CRainCloud@@UAE@XZ)
 
 // @early-stop
-RVA(0x000b35a0, 0x401)
+RVA(0x000b3590, 0x401)
 CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
 
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
@@ -117,7 +117,7 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     }
 }
 
-RVA(0x000b3b60, 0x102)
+RVA(0x000b3b50, 0x102)
 void CPathHazard::FireActivation(i32 id) {
     CActHandler* e = (CActRegPool<CPathHazard>::s_table.ResolveEntry(id));
     if ((*e) != NULL) {
@@ -125,7 +125,7 @@ void CPathHazard::FireActivation(i32 id) {
     }
 }
 
-RVA(0x000b3cc0, 0x2ac)
+RVA(0x000b3cb0, 0x2ac)
 void RegisterPathHazardActions() {
     ACT_NAME_ID_CALL_REPORT(id, "A")
     *CActRegPool<CPathHazard>::s_table.ResolveEntryCallReport(id) =
@@ -137,7 +137,7 @@ void RegisterPathHazardActions() {
 }
 
 // @early-stop
-RVA(0x000b4020, 0x26c)
+RVA(0x000b4010, 0x26c)
 i32 CPathHazard::Tick() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
 
@@ -221,13 +221,13 @@ i32 CPathHazard::Tick() {
     return 0;
 }
 
-RVA(0x000b4330, 0x8)
+RVA(0x000b4320, 0x8)
 i32 CUFO::Tick() {
     CPathHazard::Tick();
     return 0;
 }
 
-RVA(0x000b4350, 0x7e)
+RVA(0x000b4340, 0x7e)
 i32 CRainCloud::Tick() {
     if (m_strikeArmed != false) {
         i32 idx = 5;
@@ -246,7 +246,7 @@ i32 CRainCloud::Tick() {
     return 0;
 }
 
-RVA(0x000b43f0, 0x1c7)
+RVA(0x000b43e0, 0x1c7)
 i32 CPathHazard::SiblingTick() {
     if (m_strikeArmed != false) {
         i32 sel = 5;
@@ -309,7 +309,7 @@ i32 CPathHazard::SiblingTick() {
     return 0;
 }
 
-RVA(0x000b4640, 0x104)
+RVA(0x000b4630, 0x104)
 i32 CRainCloud::HitTest(i32 playerIndex, i32 unitIndex) {
     m_strikeArmed = true;
     m_strike.m_window =
@@ -342,7 +342,7 @@ i32 CRainCloud::HitTest(i32 playerIndex, i32 unitIndex) {
     return 1;
 }
 
-RVA(0x000b47a0, 0x27)
+RVA(0x000b4790, 0x27)
 i32 CPathHazard::Arrive() {
     i32 next = m_wpIndex + 1;
     m_wpIndex = next;
@@ -352,7 +352,7 @@ i32 CPathHazard::Arrive() {
     return 1;
 }
 
-RVA(0x000b47e0, 0x170)
+RVA(0x000b47d0, 0x170)
 i32 CPathHazard::BeginLeg() {
     CWwdSpriteObject* obj = m_object;
     i32 idx = m_wpIndex;
@@ -391,7 +391,7 @@ i32 CPathHazard::BeginLeg() {
     return 1;
 }
 
-RVA(0x000b49b0, 0xa8)
+RVA(0x000b49a0, 0xa8)
 CRainCloud::CRainCloud(CGameObject* obj) : CPathHazard(obj) {
     CWwdSpriteObject* o = m_object;
     CShadeTable* n = g_gameReg->m_lightFxMgr->m_tables[5];
@@ -400,7 +400,7 @@ CRainCloud::CRainCloud(CGameObject* obj) : CPathHazard(obj) {
     SET_OBJECT_AREA(1)
 }
 
-RVA(0x000b4a90, 0x145)
+RVA(0x000b4a80, 0x145)
 CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
     i32 sx = m_object->m_screenX;
     i32 sy = m_object->m_screenY;
@@ -428,7 +428,7 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
     CLEAR_OBJECT_AREA
 }
 
-RVA(0x000b4c40, 0x4b)
+RVA(0x000b4c30, 0x4b)
 i32 CUFO::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
@@ -447,7 +447,7 @@ i32 CUFO::SerializeDispatch(
     return 1;
 }
 
-RVA(0x000b4cb0, 0x56)
+RVA(0x000b4ca0, 0x56)
 i32 CRainCloud::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
@@ -477,7 +477,7 @@ static inline void SerQuadPair(CFileMemBase* ar, SerialMode mode, CHazardTimer* 
     }
 }
 
-RVA(0x000b4d30, 0x287)
+RVA(0x000b4d20, 0x287)
 i32 CPathHazard::SerializeDispatch(
     CFileMemBase* stream,
     SerialMode mode,
@@ -538,12 +538,12 @@ i32 CPathHazard::SerializeDispatch(
     return 1;
 }
 
-RVA(0x000b5070, 0x5)
+RVA(0x000b5060, 0x5)
 i32 CPathHazard::ForwardTick() {
     return Tick();
 }
 
-RVA(0x000b5080, 0x5)
+RVA(0x000b5070, 0x5)
 i32 CPathHazard::ForwardSiblingTick() {
     return SiblingTick();
 }

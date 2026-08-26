@@ -31,7 +31,7 @@
 #include <Wap32/TileGeometry.h>
 #include <Wwd/WwdFile.h>
 
-RVA(0x00075e90, 0x1400)
+RVA(0x00075d60, 0x1400)
 i32 CTriggerMgr::LoadTileArrivalFx(
     i32 playerIndex,
     i32 unitIndex,

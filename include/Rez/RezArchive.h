@@ -15,7 +15,7 @@ class CRezItmBase;
 
 struct CRezStorageList : public CObjList {
     virtual void UnusedListHook() OVERRIDE;
-    RVA(0x0013aaf0, 0x7)
+    RVA(0x0013ad10, 0x7)
     ~CRezStorageList() {}
     u32 m_storageCount;
 };
@@ -27,7 +27,7 @@ struct CRezEntryPoolBlock : public IntrusiveLink {
 };
 
 struct CRezEntryPoolBlockList : public IntrusiveList {
-    RVA(0x0013abb0, 0x1)
+    RVA(0x0013add0, 0x1)
     ~CRezEntryPoolBlockList() {}
 };
 

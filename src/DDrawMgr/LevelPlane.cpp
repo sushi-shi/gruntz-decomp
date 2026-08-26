@@ -44,7 +44,7 @@ static inline CDDrawWorker* LookupWorker(CDDrawSurfaceMgr* host, LPCTSTR name) {
     return static_cast<CDDrawWorker*>(found);
 }
 
-RVA(0x001615a0, 0x9a)
+RVA(0x00161880, 0x9a)
 CDDrawWorkerHost::CDDrawWorkerHost(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
     : CWapObj(owner, id, flags, CWapObj::NO_SEED) {
 
@@ -59,7 +59,7 @@ CDDrawWorkerHost::CDDrawWorkerHost(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
 }
 
 // @early-stop
-RVA(0x00161640, 0x3a2)
+RVA(0x00161920, 0x3a2)
 i32 CDDrawWorkerHost::Read(
     const WwdPlaneHeader* pd,
     const char* blockBase,
@@ -169,7 +169,7 @@ i32 CDDrawWorkerHost::Read(
 }
 
 // @early-stop
-RVA(0x001619f0, 0x1f7)
+RVA(0x00161cd0, 0x1f7)
 i32 CDDrawWorkerHost::InitGeometry(
     i32 tileColumns,
     i32 tileRows,
@@ -227,7 +227,7 @@ i32 CDDrawWorkerHost::InitGeometry(
     return 1;
 }
 
-RVA(0x00161bf0, 0x5e)
+RVA(0x00161ed0, 0x5e)
 void CDDrawWorkerHost::Unload() {
     if (m_spatialMgr != NULL) {
         m_spatialMgr->PruneCount();
@@ -246,13 +246,13 @@ void CDDrawWorkerHost::Unload() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00161c50, 0x3f)
+RVA(0x00161f30, 0x3f)
 void CDDrawWorkerHost::SetImageSetByName(char index, const char* key) {
     m_imageSets.SetAtGrow(index, LookupWorker(OwnerMgr()->m_imageRegistry->m_workersByName, key));
 }
 
 // @early-stop
-RVA(0x00161c90, 0x1e4)
+RVA(0x00161f70, 0x1e4)
 void CDDrawWorkerHost::UpdatePlaneViewRect() {
     CDDrawWorkerHost* p = this;
     WwdPlaneFlags flags = static_cast<WwdPlaneFlags>(p->m_flags);
@@ -341,13 +341,13 @@ void CDDrawWorkerHost::UpdatePlaneViewRect() {
     }
 }
 
-RVA(0x00161e80, 0x79)
+RVA(0x00162160, 0x79)
 void CDDrawWorkerHost::SetViewportRect(LevelCoordRect* coords) {
     APPLY_WORKER_HOST_BOUNDS(coords);
 }
 
 // @early-stop
-RVA(0x00161f00, 0x75)
+RVA(0x001621e0, 0x75)
 void CDDrawWorkerHost::SetTileSize(i32 tileWidthPx, i32 tileHeightPx) {
     m_planePixelWidth = m_tileColumns * tileWidthPx;
     m_tileHeightPx = tileHeightPx;
@@ -369,14 +369,14 @@ void CDDrawWorkerHost::SetTileSize(i32 tileWidthPx, i32 tileHeightPx) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00161f80, 0x14)
+RVA(0x00162260, 0x14)
 void CDDrawWorkerHost::SetTileSizeFromImage(CImage* image) {
     SET_TILE_SIZE_FROM_IMAGE(image);
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00161fa0, 0x6c)
+RVA(0x00162280, 0x6c)
 void CDDrawWorkerHost::SetTileSizeFromImageSet(CDDrawWorker* set) {
     for (i32 i = 0; i < set->m_items.GetSize(); i++) {
         if (set->GetAt(i) != NULL) {
@@ -405,7 +405,7 @@ void CDDrawWorkerHost::SetTileSizeFromImageSet(CDDrawWorker* set) {
     } while (0)
 
 // @early-stop
-RVA(0x00162010, 0x8bd)
+RVA(0x001622f0, 0x8bd)
 void CDDrawWorkerHost::Draw(CDDrawSurfacePair* ctx) {
     if ((m_flags & IDX(WWD_PLANE_FLAG_NO_DRAW)) != 0) {
         return;
@@ -521,7 +521,7 @@ static inline u16 PackPalEntry16(u8 r, u8 g, u8 b) {
     );
 }
 
-RVA(0x001628d0, 0x12)
+RVA(0x00162bb0, 0x12)
 i32 CDDrawWorkerHost::Prune() {
     if (m_spatialMgr == NULL) {
         return 0;
@@ -530,7 +530,7 @@ i32 CDDrawWorkerHost::Prune() {
 }
 
 // @early-stop
-RVA(0x001628f0, 0x1fc)
+RVA(0x00162bd0, 0x1fc)
 i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
     if (base == NULL) {
         return 0;
@@ -608,7 +608,7 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
 }
 
 // @early-stop
-RVA(0x00162af0, 0x806)
+RVA(0x00162dd0, 0x806)
 
 i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
     if (src == NULL) {
@@ -818,7 +818,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
     return static_cast<i32>((strCursor - src->m_strings)) + 0x11c;
 }
 
-RVA(0x00163300, 0x70)
+RVA(0x001635e0, 0x70)
 i32 CDDrawWorkerHost::ActivateVisibleObjects() {
     CWwdSpatialMgr* scroll = m_spatialMgr;
     if (scroll == NULL) {
@@ -843,7 +843,7 @@ i32 CDDrawWorkerHost::ActivateVisibleObjects() {
     return scroll->ActivateAt(x, y);
 }
 
-RVA(0x00163370, 0x70)
+RVA(0x00163650, 0x70)
 i32 CDDrawWorkerHost::DeactivateDistantObjects() {
     CWwdSpatialMgr* scroll = m_spatialMgr;
     if (scroll == NULL) {
@@ -868,7 +868,7 @@ i32 CDDrawWorkerHost::DeactivateDistantObjects() {
     return scroll->DeactivateOutside(x, y);
 }
 
-RVA(0x001633e0, 0x12)
+RVA(0x001636c0, 0x12)
 i32 CDDrawWorkerHost::ActivateKeepActiveObjects() {
     if (m_spatialMgr == NULL) {
         return 0;
@@ -878,7 +878,7 @@ i32 CDDrawWorkerHost::ActivateKeepActiveObjects() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00163400, 0x12)
+RVA(0x001636e0, 0x12)
 i32 CDDrawWorkerHost::FlushAllObjects() {
     if (m_spatialMgr == NULL) {
         return 0;
@@ -886,7 +886,7 @@ i32 CDDrawWorkerHost::FlushAllObjects() {
     return m_spatialMgr->FlushAll();
 }
 
-RVA(0x00163420, 0xf0)
+RVA(0x00163700, 0xf0)
 void CDDrawWorkerHost::UpdateActiveRegionSizes() {
     if (m_spatialMgr == NULL) {
         return;
@@ -936,7 +936,7 @@ void CDDrawWorkerHost::UpdateActiveRegionSizes() {
 }
 
 // @early-stop
-RVA(0x00163510, 0x156)
+RVA(0x001637f0, 0x156)
 i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
     if (IsLoaded() == 0) {
         return 0;
@@ -988,7 +988,7 @@ i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
     return result;
 }
 
-RVA(0x00163670, 0x95)
+RVA(0x00163950, 0x95)
 void CDDrawWorkerHost::ResolveColorKey() {
     ColorDepth format = OwnerMgr()->m_drawTarget->m_frontSurface->m_bpp;
     if (format == BPP_PALETTED_8) {
@@ -1019,7 +1019,7 @@ void CDDrawWorkerHost::ResolveColorKey() {
     m_fillFx.dwFillColor = packed;
 }
 
-RVA(0x00163710, 0x60)
+RVA(0x001639f0, 0x60)
 i32 CDDrawWorkerHost::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId, i32) {
     if (!ar) {
         return 0;
@@ -1049,12 +1049,12 @@ i32 CDDrawWorkerHost::SerializeDispatch(CFileMemBase* ar, SerialMode mode, Logic
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00163770, 0xe)
+RVA(0x00163a50, 0xe)
 i32 CDDrawWorkerHost::CanSave(CFileMemBase* s) {
     return s != NULL;
 }
 
-RVA(0x00163780, 0x134)
+RVA(0x00163a60, 0x134)
 i32 CDDrawWorkerHost::Save(CFileMemBase* s) {
     if (s == NULL) {
         return 0;
@@ -1082,7 +1082,7 @@ i32 CDDrawWorkerHost::Save(CFileMemBase* s) {
     return 1;
 }
 
-RVA(0x001638c0, 0x140)
+RVA(0x00163ba0, 0x140)
 i32 CDDrawWorkerHost::Load(CFileMemBase* s) {
     if (s == NULL) {
         return 0;
@@ -1114,10 +1114,10 @@ i32 CDDrawWorkerHost::Load(CFileMemBase* s) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00163a00, 0xe)
+RVA(0x00163ce0, 0xe)
 i32 CDDrawWorkerHost::CanLoad(CFileMemBase* s) {
     return s != NULL;
 }
 
-RVA_COMPGEN(0x00163a10, 0x7, ??1CWwdGridIter@@UAE@XZ)
-RVA_COMPGEN(0x00163a40, 0x41, ??1CWwdSpatialMgr@@QAE@XZ)
+RVA_COMPGEN(0x00163cf0, 0x7, ??1CWwdGridIter@@UAE@XZ)
+RVA_COMPGEN(0x00163d20, 0x41, ??1CWwdSpatialMgr@@QAE@XZ)

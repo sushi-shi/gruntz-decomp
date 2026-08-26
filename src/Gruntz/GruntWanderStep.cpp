@@ -40,7 +40,7 @@
 #include <string.h>
 
 // @early-stop
-RVA(0x000ed9f0, 0x900)
+RVA(0x000edb20, 0x900)
 i32 CGrunt::StepHitAndRunnerBehavior() {
     m_defenderPx = m_lastTilePx;
 

@@ -2213,6 +2213,23 @@ class SemaPipeControls(unittest.TestCase):
         self.assertEqual(rc, 0)
 
 
+class VersionDeltaControls(unittest.TestCase):
+    """The version audit may nominate rel32-only candidates, but must not
+    silently forgive an ordinary opcode or immediate difference."""
+
+    def test_matching_call_and_jcc_displacements_are_candidates(self):
+        from gruntz.sema.version_delta import _rel32_equivalent
+        old = bytes.fromhex("55 e8 01 02 03 04 0f 85 05 06 07 08 c3")
+        new = bytes.fromhex("55 e8 01 12 13 14 0f 85 05 16 17 18 c3")
+        self.assertTrue(_rel32_equivalent(old, new))
+
+    def test_non_rel32_difference_is_rejected(self):
+        from gruntz.sema.version_delta import _rel32_equivalent
+        old = bytes.fromhex("b8 01 00 00 00 c3")
+        new = bytes.fromhex("b8 02 00 00 00 c3")
+        self.assertFalse(_rel32_equivalent(old, new))
+
+
 class SemaMapControls(unittest.TestCase):
     """`sema map at <unmapped>` printed 'no admitted row covers this address'
     and exited 0, against sema's own rc convention (1 = answered-NO)."""
@@ -2336,8 +2353,19 @@ class SemaGapControls(unittest.TestCase):
         class FakePe:
             image_base = 0x400000
 
+            def section(self, name):
+                return {
+                    ".text": {"va": 0x10000, "vsize": 0x20000, "rsize": 0x20000},
+                    ".data": {"va": 0x30000, "vsize": 0x1000, "rsize": 0x1000},
+                }[name]
+
             def read(self, rva, size):
-                if rva == gaps.XC_START:
+                if rva == 0x10000 and size == 0x20000:
+                    call = (b"\x68" + struct.pack("<I", 0x430008)
+                            + b"\x68" + struct.pack("<I", 0x430000)
+                            + b"\xe8\0\0\0\0")
+                    return call + bytes(size - len(call))
+                if rva == 0x30000:
                     slots = [0x410000, 0x420000]
                     return struct.pack("<2I", *slots) + bytes(size - 8)
                 if rva == 0x10000:
@@ -2346,6 +2374,7 @@ class SemaGapControls(unittest.TestCase):
                     return b"\xc3\x90\x90\x90\x90"
                 return None
 
+        self.assertEqual(gaps._xc_bounds(FakePe()), (0x30000, 0x30008))
         self.assertEqual(
             gaps._dyninit_roles(FakePe()),
             {0x10000: "dyninit-thunk", 0x10100: "dyninit-body", 0x20000: "dyninit-body"},

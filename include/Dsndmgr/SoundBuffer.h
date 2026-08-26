@@ -19,12 +19,12 @@ struct SoundBufferNode : public IntrusiveLink {
 };
 
 struct SoundSampleList : public IntrusiveList {
-    RVA(0x001364e0, 0x1)
+    RVA(0x001366f0, 0x1)
     ~SoundSampleList() {}
 };
 
 struct SoundBufferInstanceList : public IntrusiveList {
-    RVA(0x00135ba0, 0x1)
+    RVA(0x00135db0, 0x1)
     ~SoundBufferInstanceList() {}
 };
 

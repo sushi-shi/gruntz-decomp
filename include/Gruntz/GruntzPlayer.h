@@ -16,7 +16,7 @@ struct PlayerLatency {
         m_avg = 0;
         m_count = 0;
     }
-    RVA(0x000832e0, 0x1)
+    RVA(0x00083200, 0x1)
     ~PlayerLatency() {}
 
     void Clear() {
@@ -31,7 +31,7 @@ struct PlayerLatency {
 class GruntzPlayer {
 public:
     GruntzPlayer();
-    RVA(0x00083260, 0x57)
+    RVA(0x00083180, 0x57)
     ~GruntzPlayer() {
         Clear();
     }
@@ -42,7 +42,7 @@ public:
 
     i32 TrySetColor(ColorTint color);
     i32 ClearRoundState();
-    RVA(0x0001f450, 0x20)
+    RVA(0x0001f460, 0x20)
     CString GetName() {
         return m_name;
     }

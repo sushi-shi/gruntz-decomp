@@ -30,13 +30,6 @@ CHANNEL_MACRO = {
     "src_dyninit": "RVA_DYNINIT",
 }
 
-# Bounds read from retail _cinit's push/push/call _initterm sequence. The table
-# is the authoritative census described by
-# docs/patterns/crt-xc-table-is-the-static-initializer-census.md.
-XC_START = 0x00208000
-XC_END = 0x002098A0
-
-
 def _file(site: str) -> str:
     return site.rsplit(":", 1)[0]
 
@@ -113,9 +106,50 @@ def _kind(payload: bytes, prev) -> str:
     return "substantive"
 
 
+def _xc_bounds(pe) -> tuple[int, int]:
+    """Derive the XC initializer table from cinit-style call sites.
+
+    VC5 spells each invocation as ``push end; push begin; call _initterm``.
+    XC is the largest such table, and every non-null cell points into .text.
+    Both checks make the result portable across retail revisions.
+    """
+    text = pe.section(".text")
+    data = pe.section(".data")
+    payload = pe.read(text["va"], text["vsize"])
+    if payload is None:
+        raise ValueError("cannot read retail .text while locating .CRT$XC")
+    data_lo = data["va"]
+    data_hi = data["va"] + max(data["vsize"], data["rsize"])
+    text_va_lo = pe.image_base + text["va"]
+    text_va_hi = text_va_lo + text["vsize"]
+    candidates = []
+    for offset in range(len(payload) - 14):
+        if not (payload[offset] == 0x68
+                and payload[offset + 5] == 0x68
+                and payload[offset + 10] == 0xE8):
+            continue
+        end_va = struct.unpack_from("<I", payload, offset + 1)[0]
+        start_va = struct.unpack_from("<I", payload, offset + 6)[0]
+        start, end = start_va - pe.image_base, end_va - pe.image_base
+        if not (data_lo <= start < end <= data_hi and (end - start) % 4 == 0):
+            continue
+        table = pe.read(start, end - start)
+        if table is None:
+            continue
+        cells = struct.unpack(f"<{len(table) // 4}I", table)
+        nonzero = [value for value in cells if value]
+        if nonzero and all(text_va_lo <= value < text_va_hi for value in nonzero):
+            candidates.append((end - start, start, end))
+    if not candidates:
+        raise ValueError("cannot derive .CRT$XC bounds from retail _cinit")
+    _size, start, end = max(candidates)
+    return start, end
+
+
 def _dyninit_roles(pe) -> dict[int, str]:
     """Return the XC entry thunks and their real generated bodies by address."""
-    table = pe.read(XC_START, XC_END - XC_START)
+    start, end = _xc_bounds(pe)
+    table = pe.read(start, end - start)
     if table is None:
         return {}
     roles = {}

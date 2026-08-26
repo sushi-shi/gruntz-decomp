@@ -24,11 +24,11 @@
 
 #include <stddef.h>
 
-RVA_COMPGEN(0x00010890, 0x1e, ??_GCExitTrigger@@UAEPAXI@Z)
-RVA_COMPGEN(0x000108c0, 0x44, ??1CExitTrigger@@UAE@XZ)
+RVA_COMPGEN(0x000108a0, 0x1e, ??_GCExitTrigger@@UAEPAXI@Z)
+RVA_COMPGEN(0x000108d0, 0x44, ??1CExitTrigger@@UAE@XZ)
 
 // @early-stop
-RVA(0x0003ecf0, 0x292)
+RVA(0x0003ec10, 0x292)
 CExitTrigger::CExitTrigger(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
@@ -73,7 +73,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj)
 }
 
 // @early-stop
-RVA(0x0003f040, 0x147)
+RVA(0x0003ef60, 0x147)
 i32 CExitTrigger::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,

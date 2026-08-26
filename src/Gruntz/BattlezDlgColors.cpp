@@ -40,7 +40,7 @@ const AFX_MSGMAP_ENTRY CBattlezDlgColors::_messageEntries[] = {
     {0, 0, 0, 0, AfxSig_end, 0},
 };
 
-RVA(0x00017930, 0x3a)
+RVA(0x00017940, 0x3a)
 CBattlezDlgColors::CBattlezDlgColors(
     CGruntzMgr* gameManager,
     i32 slotIndex,
@@ -53,9 +53,9 @@ CBattlezDlgColors::CBattlezDlgColors(
     m_pickedColor = TINT_ORANGE;
     m_networked = networked;
 }
-RVA_COMPGEN(0x00017980, 0x1e, ??_GCBattlezDlgColors@@UAEPAXI@Z)
+RVA_COMPGEN(0x00017990, 0x1e, ??_GCBattlezDlgColors@@UAEPAXI@Z)
 
-RVA(0x000179b0, 0xcb)
+RVA(0x000179c0, 0xcb)
 void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
     if (pDX->m_bSaveAndValidate) {
         CWnd* colorList = GetDlgItem(CTRL_COLOR_LIST);
@@ -88,18 +88,18 @@ void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
     }
 }
 
-RVA(0x00017ac0, 0x6)
+RVA(0x00017ad0, 0x6)
 const AFX_MSGMAP* CBattlezDlgColors::GetMessageMap() const {
     return &messageMap;
 }
 
-RVA(0x00017ae0, 0x20)
+RVA(0x00017af0, 0x20)
 void CBattlezDlgColors::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {
     lpmis->itemWidth = 0xc8;
     lpmis->itemHeight = 0x1e;
     CWnd::OnMeasureItem(nIDCtl, lpmis);
 }
-RVA(0x00017b10, 0x1b8)
+RVA(0x00017b20, 0x1b8)
 void CBattlezDlgColors::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
     CWnd* colorList = GetDlgItem(CTRL_COLOR_LIST);
     if (nIDCtl == CTRL_COLOR_LIST) {
@@ -167,11 +167,11 @@ void CBattlezDlgColors::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
     CWnd::OnDrawItem(nIDCtl, lpdis);
 }
 
-RVA(0x00017d40, 0x8)
+RVA(0x00017d50, 0x8)
 void CBattlezDlg::OnOkCommand() {
     OnOK();
 }
 
-RVA(0x00018030, 0x56)
+RVA(0x00018040, 0x56)
 CBattlezDlgCustom::CBattlezDlgCustom(CWnd* pParent) : CDialog(0xc3, pParent) {}
-RVA_COMPGEN(0x000180b0, 0x1e, ??_GCBattlezDlgCustom@@UAEPAXI@Z)
+RVA_COMPGEN(0x000180c0, 0x1e, ??_GCBattlezDlgCustom@@UAEPAXI@Z)

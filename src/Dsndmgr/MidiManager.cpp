@@ -13,15 +13,15 @@
 DATA(0x001ee8ec)
 const char g_singleDot[] = ".";
 
-DATA(0x00253c5c)
+DATA(0x00254bb4)
 HMDIDRIVER g_ailMidiDriver = NULL;
-DATA(0x00253c60)
+DATA(0x00254bb8)
 i32 g_midiSequenceCounter = 0;
-DATA(0x00253c64)
+DATA(0x00254bbc)
 
 HINSTANCE g_midiResourceModule = NULL;
 
-RVA(0x00138490, 0x5e)
+RVA(0x001386a0, 0x5e)
 i32 MidiManager::Initialize(HINSTANCE instanceHandle, HWND ownerWindow, b32 disableMidi) {
     m_instanceHandle = instanceHandle;
     m_ownerWindow = ownerWindow;
@@ -39,7 +39,7 @@ i32 MidiManager::Initialize(HINSTANCE instanceHandle, HWND ownerWindow, b32 disa
     return 1;
 }
 
-RVA(0x001384f0, 0x3b)
+RVA(0x00138700, 0x3b)
 void MidiManager::Shutdown() {
     ClearSequences();
     if (m_currentSequence != NULL) {
@@ -52,7 +52,7 @@ void MidiManager::Shutdown() {
     AIL_shutdown();
 }
 
-RVA(0x00138530, 0xa2)
+RVA(0x00138740, 0xa2)
 void MidiManager::ClearSequences() {
     if (m_currentSequence != NULL) {
         m_currentSequence->End();
@@ -72,7 +72,7 @@ void MidiManager::ClearSequences() {
     m_currentSequence = NULL;
 }
 
-RVA(0x001385e0, 0x85)
+RVA(0x001387f0, 0x85)
 MidiSequence* MidiManager::LoadFile(const char* path, const char* name) {
     if (m_midiAvailable == false) {
         return NULL;
@@ -88,7 +88,7 @@ MidiSequence* MidiManager::LoadFile(const char* path, const char* name) {
     return sequence;
 }
 
-RVA(0x00138670, 0x8a)
+RVA(0x00138880, 0x8a)
 MidiSequence* MidiManager::LoadBuffer(const void* data, u32 dataBytes, const char* name) {
     if (m_midiAvailable == false) {
         return NULL;
@@ -104,7 +104,7 @@ MidiSequence* MidiManager::LoadBuffer(const void* data, u32 dataBytes, const cha
     return sequence;
 }
 
-RVA(0x00138700, 0x2d)
+RVA(0x00138910, 0x2d)
 void MidiManager::RegisterSequence(MidiSequence* sequence) {
     if (sequence == NULL) {
         return;
@@ -118,7 +118,7 @@ void MidiManager::RegisterSequence(MidiSequence* sequence) {
     }
 }
 
-RVA(0x00138730, 0x41)
+RVA(0x00138940, 0x41)
 MidiSequence* MidiManager::FindSequence(const char* name) {
     if (m_ownerWindow == NULL) {
         return NULL;
@@ -136,7 +136,7 @@ MidiSequence* MidiManager::FindSequence(const char* name) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00138780, 0x5b)
+RVA(0x00138990, 0x5b)
 i32 MidiManager::LoadAndPlayFile(const char* path, b32 looping, const char* name) {
     if (m_midiAvailable == false) {
         return 0;
@@ -155,7 +155,7 @@ i32 MidiManager::LoadAndPlayFile(const char* path, b32 looping, const char* name
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001387e0, 0x60)
+RVA(0x001389f0, 0x60)
 i32 MidiManager::LoadAndPlayBuffer(const void* data, u32 dataBytes, b32 looping, const char* name) {
     if (m_midiAvailable == false) {
         return 0;
@@ -172,7 +172,7 @@ i32 MidiManager::LoadAndPlayBuffer(const void* data, u32 dataBytes, b32 looping,
     return 1;
 }
 
-RVA(0x00138840, 0x56)
+RVA(0x00138a50, 0x56)
 i32 MidiManager::PlaySequence(const char* name, b32 looping) {
     if (m_midiAvailable == false) {
         return 0;
@@ -189,7 +189,7 @@ i32 MidiManager::PlaySequence(const char* name, b32 looping) {
     return 1;
 }
 
-RVA(0x001388a0, 0x18)
+RVA(0x00138ab0, 0x18)
 void MidiManager::EndAndClearCurrent() {
     if (m_currentSequence != NULL) {
         m_currentSequence->End();
@@ -197,7 +197,7 @@ void MidiManager::EndAndClearCurrent() {
     }
 }
 
-RVA(0x001388c0, 0x2a)
+RVA(0x00138ad0, 0x2a)
 i32 MidiManager::RestartCurrent(b32 looping) {
     if (m_currentSequence == NULL) {
         return 0;
@@ -206,7 +206,7 @@ i32 MidiManager::RestartCurrent(b32 looping) {
     return m_currentSequence->Play(m_ownerWindow, looping);
 }
 
-RVA(0x001388f0, 0xf)
+RVA(0x00138b00, 0xf)
 i32 MidiManager::PauseCurrent() {
     if (m_currentSequence == NULL) {
         return 0;
@@ -214,7 +214,7 @@ i32 MidiManager::PauseCurrent() {
     return m_currentSequence->Pause();
 }
 
-RVA(0x00138900, 0x19)
+RVA(0x00138b10, 0x19)
 i32 MidiManager::ResumeCurrent(i32 resumeAll) {
     if (m_currentSequence == NULL) {
         return 0;
@@ -222,7 +222,7 @@ i32 MidiManager::ResumeCurrent(i32 resumeAll) {
     return m_currentSequence->Resume(resumeAll);
 }
 
-RVA(0x00138920, 0xf)
+RVA(0x00138b30, 0xf)
 i32 MidiManager::EndCurrent() {
     if (m_currentSequence == NULL) {
         return 0;
@@ -232,7 +232,7 @@ i32 MidiManager::EndCurrent() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00138930, 0xf)
+RVA(0x00138b40, 0xf)
 i32 MidiManager::RestartCurrentIfIdle() {
     if (m_currentSequence == NULL) {
         return 0;
@@ -240,10 +240,10 @@ i32 MidiManager::RestartCurrentIfIdle() {
     return m_currentSequence->RestartIfIdle();
 }
 
-RVA(0x00138940, 0x3)
+RVA(0x00138b50, 0x3)
 void __stdcall IgnoreMciNotification(WPARAM notifyCode, LPARAM deviceId) {}
 
-RVA(0x00138950, 0x70)
+RVA(0x00138b60, 0x70)
 i32 MidiManager::SetMasterVolume(i32 volumePct) {
     if (g_ailMidiDriver == NULL) {
         return 0;
@@ -260,7 +260,7 @@ i32 MidiManager::SetMasterVolume(i32 volumePct) {
     return 1;
 }
 
-RVA(0x001389c0, 0x47)
+RVA(0x00138bd0, 0x47)
 i32 MidiManager::GetMasterVolume() {
     if (g_ailMidiDriver == NULL) {
         return VOLUME_PCT_MAX;
@@ -268,23 +268,23 @@ i32 MidiManager::GetMasterVolume() {
     return MidiVolumeToPercent(AIL_XMIDI_master_volume(g_ailMidiDriver));
 }
 
-RVA(0x00138a10, 0xb)
+RVA(0x00138c20, 0xb)
 i32 MidiSequence::IsLoaded() {
     return m_sequenceHandle != NULL;
 }
 
-RVA(0x00138a20, 0x6)
+RVA(0x00138c30, 0x6)
 i32 MidiSequence::IsMidiSequence() {
     return 1;
 }
 
-RVA_COMPGEN(0x00138a30, 0x1e, ??_GMidiSequence@@UAEPAXI@Z)
-RVA(0x00138a50, 0x46)
+RVA_COMPGEN(0x00138c40, 0x1e, ??_GMidiSequence@@UAEPAXI@Z)
+RVA(0x00138c60, 0x46)
 MidiSequence::~MidiSequence() {
     Unload();
 }
 
-RVA(0x00138aa0, 0x175)
+RVA(0x00138cb0, 0x175)
 i32 MidiSequence::LoadFile(const char* path, const char* name) {
     if (strstr(path, g_singleDot) == NULL) {
         return LoadResource(path, name);
@@ -307,7 +307,7 @@ i32 MidiSequence::LoadFile(const char* path, const char* name) {
     return LoadBuffer(m_ownedData, length, name);
 }
 
-RVA(0x00138c20, 0x122)
+RVA(0x00138e30, 0x122)
 i32 MidiSequence::LoadBuffer(const void* data, u32 dataBytes, const char* name) {
     if (data == NULL) {
         return 0;
@@ -346,7 +346,7 @@ i32 MidiSequence::LoadBuffer(const void* data, u32 dataBytes, const char* name) 
     return 1;
 }
 
-RVA(0x00138d50, 0x74)
+RVA(0x00138f60, 0x74)
 i32 MidiSequence::LoadResource(const char* resourceName, const char* name) {
     HRSRC resourceInfo = FindResourceA(g_midiResourceModule, resourceName, "MIDI");
     if (resourceInfo == NULL) {
@@ -364,7 +364,7 @@ i32 MidiSequence::LoadResource(const char* resourceName, const char* name) {
     return LoadBuffer(data, dataBytes, name);
 }
 
-RVA(0x00138dd0, 0x36)
+RVA(0x00138fe0, 0x36)
 void MidiSequence::Unload() {
     End();
     if (m_sequenceHandle != NULL) {
@@ -377,7 +377,7 @@ void MidiSequence::Unload() {
     }
 }
 
-RVA(0x00138e10, 0x4a)
+RVA(0x00139020, 0x4a)
 i32 MidiSequence::Play(HWND ownerWindow, b32 looping) {
     if (IsLoaded() == 0) {
         return 0;
@@ -392,7 +392,7 @@ i32 MidiSequence::Play(HWND ownerWindow, b32 looping) {
     return 1;
 }
 
-RVA(0x00138e60, 0x26)
+RVA(0x00139070, 0x26)
 i32 MidiSequence::End() {
     if (IsLoaded() == 0) {
         return 0;
@@ -402,7 +402,7 @@ i32 MidiSequence::End() {
     return 1;
 }
 
-RVA(0x00138e90, 0x3a)
+RVA(0x001390a0, 0x3a)
 i32 MidiSequence::Pause() {
     if (IsLoaded() == 0) {
         return 0;
@@ -417,7 +417,7 @@ i32 MidiSequence::Pause() {
     return 1;
 }
 
-RVA(0x00138ed0, 0x4f)
+RVA(0x001390e0, 0x4f)
 i32 MidiSequence::Resume(i32 resumeAll) {
     if (IsLoaded() == 0) {
         return 0;
@@ -437,7 +437,7 @@ i32 MidiSequence::Resume(i32 resumeAll) {
     return 1;
 }
 
-RVA(0x00138f20, 0x3a)
+RVA(0x00139130, 0x3a)
 i32 MidiSequence::RestartIfIdle() {
     if (!IsLoaded()) {
         return 0;
@@ -450,7 +450,7 @@ i32 MidiSequence::RestartIfIdle() {
     return 1;
 }
 
-RVA(0x00138f60, 0x2d)
+RVA(0x00139170, 0x2d)
 i32 MidiSequence::IsPlaying() {
     if (IsLoaded() == 0) {
         return 0;
@@ -464,7 +464,7 @@ i32 MidiSequence::IsPlaying() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00138f90, 0x32)
+RVA(0x001391a0, 0x32)
 i32 MidiSequence::SetTempoPercent(i32 tempoPct, i32 durationMs) {
     if (IsLoaded() == 0) {
         return 0;
@@ -474,7 +474,7 @@ i32 MidiSequence::SetTempoPercent(i32 tempoPct, i32 durationMs) {
     return 1;
 }
 
-RVA(0x00138fd0, 0x5e)
+RVA(0x001391e0, 0x5e)
 i32 MidiSequence::SetVolumePercent(i32 volumePct, i32 durationMs) {
     if (IsLoaded() == 0) {
         return 0;
@@ -492,7 +492,7 @@ i32 MidiSequence::SetVolumePercent(i32 volumePct, i32 durationMs) {
     return 1;
 }
 
-RVA(0x00139030, 0x4c)
+RVA(0x00139240, 0x4c)
 i32 MidiSequence::SetLooping(b32 looping) {
     if (IsLoaded() == 0) {
         return 0;

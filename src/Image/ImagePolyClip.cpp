@@ -29,37 +29,37 @@ const float g_wallHalf = 0.5f;
 DATA(0x001efb24)
 const float g_negativePi = -3.1415927f;
 
-DATA(0x002856f0)
+DATA(0x00286648)
 i32 g_warpU = 0;
-DATA(0x002856f4)
+DATA(0x0028664c)
 i32 g_warpV = 0;
-DATA(0x002856f8)
+DATA(0x00286650)
 ClipVtx g_rasterEdgeR[4096];
-DATA(0x002a16f8)
+DATA(0x002a2650)
 
 i16* g_warpTexBase = NULL;
-DATA(0x002a16fc)
+DATA(0x002a2654)
 i32 g_warpUStep = 0;
-DATA(0x002a1700)
+DATA(0x002a2658)
 i32 g_warpVStep = 0;
-DATA(0x002a1708)
+DATA(0x002a2660)
 ClipVtx g_rasterOddClipPassBuffer[100];
-DATA(0x002a21f8)
+DATA(0x002a3150)
 ClipVtx g_rasterEvenClipPassBuffer[100];
-DATA(0x002a2ce8)
+DATA(0x002a3c40)
 u8* g_rasterDestRow = NULL;
-DATA(0x002a2cf0)
+DATA(0x002a3c48)
 ClipVtx g_rasterEdgeL[4096];
-DATA(0x002becf0)
+DATA(0x002bfc48)
 i32 g_warpUMask = 0;
-DATA(0x002becf4)
+DATA(0x002bfc4c)
 i16* g_rasterDestPtr = NULL;
-DATA(0x002becf8)
+DATA(0x002bfc50)
 i32 g_rasterVtxCount = 0;
-DATA(0x002becfc)
+DATA(0x002bfc54)
 i16 g_warpColorkey = 0;
 
-RVA(0x00145e00, 0x26)
+RVA(0x001460e0, 0x26)
 i32 WarpIsPow2(i32 x) {
     i32 c = 0;
     i32 i = 0x20;
@@ -75,7 +75,7 @@ i32 WarpIsPow2(i32 x) {
 // @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00145e30, 0x125)
+RVA(0x00146110, 0x125)
 i32 PolyIsConvexCW(ClipVtx* verts, i32 count) {
     PolygonWinding sign = POLYGON_WINDING_UNSET;
     PolygonWinding dir = POLYGON_WINDING_UNSET;
@@ -111,7 +111,7 @@ i32 PolyIsConvexCW(ClipVtx* verts, i32 count) {
     return dir == POLYGON_WINDING_CLOCKWISE;
 }
 
-RVA(0x00145f60, 0x242)
+RVA(0x00146240, 0x242)
 void ImageRotateBlit(
     i32 destX,
     i32 destY,
@@ -184,7 +184,7 @@ void ImageRotateBlit(
 }
 
 // @early-stop
-RVA(0x001461b0, 0x399)
+RVA(0x00146490, 0x399)
 i32 ImagePolyClipRect(
     ClipVtx* poly,
     i32 n,
@@ -292,7 +292,7 @@ i32 ImagePolyClipRect(
 }
 
 // @early-stop
-RVA(0x00146550, 0x4ca)
+RVA(0x00146830, 0x4ca)
 i32 RotateRasterize(
     ClipVtx* verts,
     i32 n,
@@ -454,7 +454,7 @@ static inline i16* Span16(u8* row) {
     return p.m_swords;
 }
 
-RVA(0x00146a20, 0x5b7)
+RVA(0x00146d00, 0x5b7)
 i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mode, i32 colorkey) {
     i32 minY = 0x1001;
     i32 maxY = -1;
@@ -698,7 +698,7 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
 }
 
 // @early-stop
-RVA(0x00146fe0, 0x1e2)
+RVA(0x001472c0, 0x1e2)
 i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
     i32 minYi = 0x1001;
     i32 maxYi = -1;
@@ -790,7 +790,7 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
 }
 
 // @early-stop
-RVA(0x001471d0, 0x1b4)
+RVA(0x001474b0, 0x1b4)
 i32 ProjectWallQuad(
     CDDSurface* surface,
     i32 x0,

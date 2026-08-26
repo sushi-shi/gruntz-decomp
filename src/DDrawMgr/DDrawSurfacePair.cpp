@@ -40,7 +40,7 @@
 #include <stdio.h>
 #include <string.h>
 
-RVA(0x00163bc0, 0x2c)
+RVA(0x00163ea0, 0x2c)
 void CDDrawWorkerList::Unload() {
     POSITION pos = m_workers.GetHeadPosition();
     while (pos) {
@@ -52,7 +52,7 @@ void CDDrawWorkerList::Unload() {
     m_workers.RemoveAll();
 }
 
-RVA(0x00163bf0, 0x6d)
+RVA(0x00163ed0, 0x6d)
 void CDDrawWorkerList::RenderAndPruneWorkers(
     CDDrawSurfacePair* backBuffer,
     CDDrawSurfacePair* overlay
@@ -77,7 +77,7 @@ void CDDrawWorkerList::RenderAndPruneWorkers(
     }
 }
 
-RVA(0x00163c60, 0x2c)
+RVA(0x00163f40, 0x2c)
 void CDDrawWorkerList::ClearWorkers() {
     POSITION pos = m_workers.GetHeadPosition();
     while (pos) {
@@ -90,7 +90,7 @@ void CDDrawWorkerList::ClearWorkers() {
 }
 
 // @early-stop
-RVA(0x00163c90, 0x116)
+RVA(0x00163f70, 0x116)
 i32 CDDrawSurfacePair::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
     m_flags = flags;
     if (w <= 0 || h <= 0) {
@@ -146,7 +146,7 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
     return 1;
 }
 
-RVA(0x00163db0, 0x64)
+RVA(0x00164090, 0x64)
 i32 CDDrawSurfacePair::InitFromSurface(CDDSurface* src) {
 
     if (src == NULL) {
@@ -171,7 +171,7 @@ i32 CDDrawSurfacePair::InitFromSurface(CDDSurface* src) {
     return 1;
 }
 
-RVA(0x00163e20, 0x2d)
+RVA(0x00164100, 0x2d)
 void CDDrawSurfacePair::Unload() {
     if (m_surface != NULL && m_ownsSurface != false) {
         CDDrawDeviceManager* manager = OwnerMgr()->m_deviceManager;
@@ -181,7 +181,7 @@ void CDDrawSurfacePair::Unload() {
     m_width = 0;
 }
 
-RVA(0x00163e50, 0x8b)
+RVA(0x00164130, 0x8b)
 i32 CDDrawSurfacePair::LoadImage(CRezArchiveEntry* src) {
     BEGIN_FILE_IMAGE_PARSE(src, type, buf)
     i32 r = m_surface->Resolve(OwnerMgr()->m_deviceManager, buf, type, src->m_size, 0);
@@ -189,12 +189,12 @@ i32 CDDrawSurfacePair::LoadImage(CRezArchiveEntry* src) {
     return r;
 }
 
-RVA(0x00163ee0, 0x19)
+RVA(0x001641c0, 0x19)
 i32 CDDrawSurfacePair::ResolveImageName(char* name) {
     return m_surface->MakeImageKey(OwnerMgr()->m_deviceManager, name, 0);
 }
 
-RVA(0x00163f00, 0x40)
+RVA(0x001641e0, 0x40)
 i32 CDDrawSurfacePair::RestoreIfLost() {
     if (m_surface == NULL) {
         return 1;
@@ -212,7 +212,7 @@ i32 CDDrawSurfacePair::RestoreIfLost() {
 }
 
 // @early-stop
-RVA(0x00163f40, 0x23e)
+RVA(0x00164220, 0x23e)
 void CDDrawSurfacePair::DrawBox(RECT* rect, i32 color) {
 
     if (rect->left < 0 || rect->left >= m_width) {
@@ -283,7 +283,7 @@ void CDDrawSurfacePair::DrawBox(RECT* rect, i32 color) {
 }
 
 // @early-stop
-RVA(0x00164180, 0xcd)
+RVA(0x00164460, 0xcd)
 void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
     if (x - 4 < 0) {
         return;
@@ -329,7 +329,7 @@ void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
     m_surface->m_ddSurface->Unlock(NULL);
 }
 
-RVA(0x00164250, 0x12b)
+RVA(0x00164530, 0x12b)
 i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, ColorDepth bpp) {
     if (m_width != w || m_height != h || m_bpp != bpp) {
         i32 sysmem;
@@ -379,7 +379,7 @@ i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, ColorDepth bpp) {
     return 1;
 }
 
-RVA(0x00164380, 0x98)
+RVA(0x00164660, 0x98)
 void CDDrawSurfacePair::DrawCount(RECT* rc, i32 n) {
     char buf[0x20];
     sprintf(buf, "%i", n);
@@ -398,7 +398,7 @@ void CDDrawSurfacePair::DrawCount(RECT* rc, i32 n) {
     w->m_ddSurface->ReleaseDC(hdc);
 }
 
-RVA(0x00164420, 0x79)
+RVA(0x00164700, 0x79)
 void CDDrawSurfacePair::DrawLabel(RECT* rc, char* text) {
     CDDSurface* w = m_surface;
     if (!w) {
@@ -416,7 +416,7 @@ void CDDrawSurfacePair::DrawLabel(RECT* rc, char* text) {
 }
 
 // @early-stop
-RVA(0x001644a0, 0x1b0)
+RVA(0x00164780, 0x1b0)
 i32 CDDrawFrontSurface::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
     CDDrawSurfaceMgr* surfaceManager = OwnerMgr();
     m_width = w;
@@ -502,10 +502,10 @@ i32 CDDrawFrontSurface::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
     return 0;
 }
 
-RVA(0x00164650, 0x3)
+RVA(0x00164930, 0x3)
 void CDDrawSurfacePair::BlitDirtyRect(CDDrawSurfacePair* other, i32* pos, i32* size) {}
 
-RVA(0x00164660, 0x46)
+RVA(0x00164940, 0x46)
 i32 CDrawSubWorker::Probe() {
     CDDSurface* s = m_surface;
     if (s != NULL) {
@@ -523,7 +523,7 @@ i32 CDrawSubWorker::Probe() {
     return 1;
 }
 
-RVA(0x001646b0, 0xde)
+RVA(0x00164990, 0xde)
 i32 CDDrawFrontSurface::SetGeom(i32 w, i32 h, ColorDepth bpp) {
     if (m_width == w && m_height == h && m_bpp == bpp) {
         return 1;
@@ -563,7 +563,7 @@ i32 CDDrawFrontSurface::SetGeom(i32 w, i32 h, ColorDepth bpp) {
 }
 
 // @early-stop
-RVA(0x00164790, 0x41)
+RVA(0x00164a70, 0x41)
 i32 CResolveNode::SetPosition(i32 x, i32 y) {
     m_screenX = x;
     m_plotDX = 0;
@@ -579,7 +579,7 @@ i32 CResolveNode::SetPosition(i32 x, i32 y) {
     return 1;
 }
 
-RVA(0x001647e0, 0x48)
+RVA(0x00164ac0, 0x48)
 i32 CResolveNode::Init(
     CDDrawSurfaceMgr* owner,
     i32 id,
@@ -600,7 +600,7 @@ i32 CResolveNode::Init(
 }
 
 // @early-stop
-RVA(0x00164830, 0xec)
+RVA(0x00164b10, 0xec)
 i32 CLogicRecord::SerializeDispatch(
     CFileMemBase* archive,
     SerialMode mode,
@@ -651,7 +651,7 @@ i32 CLogicRecord::SerializeDispatch(
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00164920, 0x35)
+RVA(0x00164c00, 0x35)
 i32 CLogicRecord::CacheTargetId(void* context) {
     if (context == NULL) {
         return 0;
@@ -663,7 +663,7 @@ i32 CLogicRecord::CacheTargetId(void* context) {
     return 1;
 }
 
-RVA(0x00164960, 0x41a)
+RVA(0x00164c40, 0x41a)
 i32 CLogicRecord::Save(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
@@ -742,7 +742,7 @@ i32 CLogicRecord::Save(CFileMemBase* ar) {
     return 1;
 }
 
-RVA(0x00164d80, 0x421)
+RVA(0x00165060, 0x421)
 i32 CLogicRecord::Load(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
@@ -824,7 +824,7 @@ i32 CLogicRecord::Load(CFileMemBase* ar) {
 // @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001651b0, 0x5d)
+RVA(0x00165490, 0x5d)
 i32 CLogicRecord::ResolveTarget(void* context) {
     if (context == NULL) {
         return 0;
@@ -841,7 +841,7 @@ i32 CLogicRecord::ResolveTarget(void* context) {
     return 1;
 }
 
-RVA(0x00165210, 0xa2)
+RVA(0x001654f0, 0xa2)
 void CLogicRecordRegistry::Unload() {
     CObject* value = NULL;
     POSITION pos = m_templatesByName.GetStartPosition();
@@ -857,7 +857,7 @@ void CLogicRecordRegistry::Unload() {
     m_templatesByName.RemoveAll();
 }
 
-RVA(0x001652c0, 0x92)
+RVA(0x001655a0, 0x92)
 CLogicRecord* CLogicRecordRegistry::RegisterLogicType(
     LogicRecordDispatchFn dispatch,
     const char* key,
@@ -876,7 +876,7 @@ CLogicRecord* CLogicRecordRegistry::RegisterLogicType(
     return record;
 }
 
-RVA(0x00165360, 0xf1)
+RVA(0x00165640, 0xf1)
 CString CLogicRecordRegistry::FindLogicTypeKey(CLogicRecord* record) {
     CObject* value = NULL;
     POSITION pos = m_templatesByName.GetStartPosition();
@@ -907,7 +907,7 @@ CString CLogicRecordRegistry::FindLogicTypeKey(CLogicRecord* record) {
     m_records.SetSize(0, -1)
 
 // @early-stop
-RVA(0x00165460, 0x156)
+RVA(0x00165740, 0x156)
 i32 CAniElement::Build(SoundCueRegistry* ctx, CAniSource* src, i32 flags) {
     m_flags = flags;
     m_scale = 1.0f;
@@ -950,7 +950,7 @@ fail:
     return 0;
 }
 
-RVA(0x001655c0, 0x53)
+RVA(0x001658a0, 0x53)
 i32 CAniElement::Configure(SoundCueRegistry* ctx, CRezArchiveEntry* entry, i32 flags) {
     if (entry->GetTypeTag() != REZ_TAG_ANI) {
         return 0;
@@ -966,7 +966,7 @@ i32 CAniElement::Configure(SoundCueRegistry* ctx, CRezArchiveEntry* entry, i32 f
     return r;
 }
 
-RVA(0x00165620, 0x101)
+RVA(0x00165900, 0x101)
 i32 CAniElement::LoadFile(SoundCueRegistry* ctx, const char* filename, i32 unused) {
     CFile fr;
     if (fr.Open(filename, CFile::modeRead, NULL) == false) {
@@ -984,16 +984,16 @@ i32 CAniElement::LoadFile(SoundCueRegistry* ctx, const char* filename, i32 unuse
     return r;
 }
 
-RVA(0x00165730, 0x4c)
+RVA(0x00165a10, 0x4c)
 void CAniElement::DeleteAll() {
     i32 i;
     DELETE_ANI_ELEMENT_CONTENTS(i);
 }
 
-RVA_COMPGEN(0x00165780, 0x1e, ??_GCAniRecordView@@UAEPAXI@Z)
-RVA_COMPGEN(0x001657a0, 0x66, ??1CAniRecordView@@UAE@XZ)
+RVA_COMPGEN(0x00165a60, 0x1e, ??_GCAniRecordView@@UAEPAXI@Z)
+RVA_COMPGEN(0x00165a80, 0x66, ??1CAniRecordView@@UAE@XZ)
 
-RVA(0x00165810, 0xa9)
+RVA(0x00165af0, 0xa9)
 void CDDrawPaletteRegistry::Unload() {
     CObject* val = NULL;
     POSITION pos = m_palettesByName.GetStartPosition();
@@ -1010,7 +1010,7 @@ void CDDrawPaletteRegistry::Unload() {
     m_activePalette = NULL;
 }
 
-RVA(0x001658c0, 0xcc)
+RVA(0x00165ba0, 0xcc)
 CDDrawPaletteResource*
 CDDrawPaletteRegistry::LoadPaletteFromSource(CRezArchiveEntry* src, const char* key, i32 flags) {
     RecordBytes<char> source;
@@ -1038,7 +1038,7 @@ CDDrawPaletteRegistry::LoadPaletteFromSource(CRezArchiveEntry* src, const char* 
     return w;
 }
 
-RVA(0x00165990, 0x77)
+RVA(0x00165c70, 0x77)
 CDDrawPaletteResource*
 CDDrawPaletteRegistry::CreatePaletteFromRgb(u8* data, const char* key, i32 flags) {
     CDDrawPaletteResource* w = new CDDrawPaletteResource(m_palettesByName.GetCount(), m_ownerCtx);
@@ -1052,7 +1052,7 @@ CDDrawPaletteRegistry::CreatePaletteFromRgb(u8* data, const char* key, i32 flags
     return w;
 }
 
-RVA(0x00165a10, 0x77)
+RVA(0x00165cf0, 0x77)
 CDDrawPaletteResource*
 CDDrawPaletteRegistry::LoadPaletteFromFile(char* path, const char* key, i32 flags) {
     CDDrawPaletteResource* w = new CDDrawPaletteResource(m_palettesByName.GetCount(), m_ownerCtx);
@@ -1066,7 +1066,7 @@ CDDrawPaletteRegistry::LoadPaletteFromFile(char* path, const char* key, i32 flag
     return w;
 }
 
-RVA(0x00165a90, 0xf4)
+RVA(0x00165d70, 0xf4)
 CDDrawPaletteResource*
 CDDrawPaletteRegistry::LoadPaletteFromTrailingData(CRezArchiveEntry* src, i32 key, i32 flags) {
     if (src->GetTypeTag() != IMGTAG_XCP) {
@@ -1100,7 +1100,7 @@ CDDrawPaletteRegistry::LoadPaletteFromTrailingData(CRezArchiveEntry* src, i32 ke
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00165b90, 0xa9)
+RVA(0x00165e70, 0xa9)
 void CDDrawPaletteRegistry::ClearPalettes() {
     CObject* val = NULL;
     POSITION pos = m_palettesByName.GetStartPosition();
@@ -1119,7 +1119,7 @@ void CDDrawPaletteRegistry::ClearPalettes() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00165c40, 0xe7)
+RVA(0x00165f20, 0xe7)
 i32 CDDrawPaletteRegistry::RemovePalette(CObject* obj) {
     CDDrawPaletteResource* w = static_cast<CDDrawPaletteResource*>(obj);
     if (m_activePalette == w) {
@@ -1149,7 +1149,7 @@ static inline CDDrawPaletteResource* LookupRecord(CMapStringToOb& map, LPCTSTR n
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00165d30, 0x5f)
+RVA(0x00166010, 0x5f)
 i32 CDDrawPaletteRegistry::RemovePaletteByName(const char* key) {
     CDDrawPaletteResource* w = LookupRecord(m_palettesByName, key);
     if (w == NULL) {
@@ -1163,10 +1163,10 @@ i32 CDDrawPaletteRegistry::RemovePaletteByName(const char* key) {
     return 1;
 }
 
-RVA_COMPGEN(0x00165db0, 0x1e, ??_GCDDrawPaletteResource@@UAEPAXI@Z)
-RVA_COMPGEN(0x00165dd0, 0x5b, ??1CDDrawPaletteResource@@UAE@XZ)
+RVA_COMPGEN(0x00166090, 0x1e, ??_GCDDrawPaletteResource@@UAEPAXI@Z)
+RVA_COMPGEN(0x001660b0, 0x5b, ??1CDDrawPaletteResource@@UAE@XZ)
 
-RVA(0x00165e30, 0x27)
+RVA(0x00166110, 0x27)
 i32 CFileMemBase::SetName(const char* name, i32 mode, i32 option) {
     m_name = name;
     m_mode = mode;
@@ -1174,7 +1174,7 @@ i32 CFileMemBase::SetName(const char* name, i32 mode, i32 option) {
     return 1;
 }
 
-RVA(0x00165e60, 0x82)
+RVA(0x00166140, 0x82)
 i32 CFileMem::Open() {
     if (m_name.GetLength() == 0) {
         return 0;
@@ -1199,14 +1199,14 @@ i32 CFileMem::Open() {
     return 1;
 }
 
-RVA(0x00165ef0, 0xf)
+RVA(0x001661d0, 0xf)
 i32 CFileMem::Ready() {
     CFile* io = &m_file;
     io->Close();
     return 1;
 }
 
-RVA(0x00165f00, 0x48)
+RVA(0x001661e0, 0x48)
 i32 CFileMem::Read(void* buf, i32 n) {
     if (buf == NULL) {
         return 0;
@@ -1222,7 +1222,7 @@ i32 CFileMem::Read(void* buf, i32 n) {
     return 1;
 }
 
-RVA(0x00165f50, 0x45)
+RVA(0x00166230, 0x45)
 i32 CFileMem::Write(const void* buf, i32 n) {
     if (buf == NULL) {
         return 0;
@@ -1237,7 +1237,7 @@ i32 CFileMem::Write(const void* buf, i32 n) {
     return 1;
 }
 
-RVA(0x00165fa0, 0x93)
+RVA(0x00166280, 0x93)
 void CDDrawPixelWorker::RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) {
     {
 
@@ -1270,7 +1270,7 @@ static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
     return static_cast<CDDrawWorker*>(found);
 }
 
-RVA(0x00166040, 0x66)
+RVA(0x00166320, 0x66)
 i32 CDDrawFrameWorker::ResolveFrame(const char* workerName, i32 frameIndex) {
     CDDrawWorker* p = LookupWorker(OwnerMgr()->m_imageRegistry->m_workersByName, workerName);
     CImage* v = p != NULL ? p->GetAt(frameIndex) : NULL;
@@ -1278,7 +1278,7 @@ i32 CDDrawFrameWorker::ResolveFrame(const char* workerName, i32 frameIndex) {
     return v != NULL;
 }
 
-RVA(0x001660b0, 0x33)
+RVA(0x00166390, 0x33)
 void CDDrawFrameWorker::RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) {
     m_frame->RenderImage(this, backBuffer);
     if (overlay->m_surface != NULL

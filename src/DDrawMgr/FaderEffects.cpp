@@ -48,14 +48,14 @@ const float g_sineOne = 1.0f;
 DATA(0x001f0888)
 const double g_faderPowK = 2.0;
 
-RVA(0x0017f530, 0x19)
+RVA(0x0017f810, 0x19)
 CFaderFlat::CFaderFlat() {
     m_rowStates = NULL;
 }
 
-RVA_COMPGEN(0x0017f550, 0x1e, ??_GCFaderFlat@@UAEPAXI@Z)
+RVA_COMPGEN(0x0017f830, 0x1e, ??_GCFaderFlat@@UAEPAXI@Z)
 
-RVA(0x0017f570, 0x61)
+RVA(0x0017f850, 0x61)
 CFaderFlat::~CFaderFlat() {
     if (m_rowStates) {
         delete[] m_rowStates;
@@ -63,7 +63,7 @@ CFaderFlat::~CFaderFlat() {
     }
 }
 
-RVA(0x0017f5e0, 0x7d)
+RVA(0x0017f8c0, 0x7d)
 i32 CFaderFlat::ApplyInit(CFaderConfig* desc) {
     CFlatFaderConfig* s = static_cast<CFlatFaderConfig*>(desc);
     if (s->m_targetSurface == NULL) {
@@ -88,7 +88,7 @@ i32 CFaderFlat::ApplyInit(CFaderConfig* desc) {
 }
 
 // @early-stop
-RVA(0x0017f660, 0x2e6)
+RVA(0x0017f940, 0x2e6)
 void CFaderFlat::RenderFrame(i32 frame) {
     u16* srcBits = static_cast<u16*>(m_srcSurface->Lock(NULL));
     u16* dstBits = static_cast<u16*>(m_dstSurface->Lock(NULL));
@@ -157,7 +157,7 @@ void CFaderFlat::RenderFrame(i32 frame) {
     m_dstSurface->m_ddSurface->Unlock(NULL);
 }
 
-RVA(0x0017f950, 0x24)
+RVA(0x0017fc30, 0x24)
 i32 CFaderFlat::GetFrameCount() {
     i32 n = m_srcSurface->m_height;
     return n + (m_durationPercent * n) / 100;
@@ -166,30 +166,30 @@ i32 CFaderFlat::GetFrameCount() {
 // @identity-TODO: owner and no-op behavior are proven; the method identity is not.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0017f980, 0x1)
+RVA(0x0017fc60, 0x1)
 void CFaderFlat::PrepareFrame() {}
 
 // @identity-TODO: owner and no-op behavior are proven; the method identity is not.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0017f990, 0x1)
+RVA(0x0017fc70, 0x1)
 void CFaderFlat::FinishFrame() {}
 
-RVA(0x0017f9a0, 0x24)
+RVA(0x0017fc80, 0x24)
 CFaderRadial::CFaderRadial() {
     m_maxRadius = 0;
     m_unusedZero = 0;
     m_cells = NULL;
     m_unusedOne = 1;
 }
-RVA_COMPGEN(0x0017f9d0, 0x1e, ??_GCFaderRadial@@UAEPAXI@Z)
+RVA_COMPGEN(0x0017fcb0, 0x1e, ??_GCFaderRadial@@UAEPAXI@Z)
 
-RVA(0x0017f9f0, 0x4f)
+RVA(0x0017fcd0, 0x4f)
 CFaderRadial::~CFaderRadial() {
     FreeBuffer();
 }
 
-RVA(0x0017fa40, 0x1f3)
+RVA(0x0017fd20, 0x1f3)
 i32 CFaderRadial::ApplyInit(CFaderConfig* desc) {
     CRadialFaderConfig* cfg = static_cast<CRadialFaderConfig*>(desc);
     if (cfg->m_targetSurface == NULL) {
@@ -246,7 +246,7 @@ i32 CFaderRadial::ApplyInit(CFaderConfig* desc) {
     return 1;
 }
 
-RVA(0x0017fc40, 0x11)
+RVA(0x0017ff20, 0x11)
 void CFaderRadial::FreeBuffer() {
     if (m_cells) {
         delete[] m_cells;
@@ -254,7 +254,7 @@ void CFaderRadial::FreeBuffer() {
 }
 
 // @early-stop
-RVA(0x0017fc60, 0x136)
+RVA(0x0017ff40, 0x136)
 void CFaderRadial::RenderFrame(i32 frame) {
     u8* scratch = new u8[m_dstSurface->m_width];
     m_dstSurface->Clear(0);
@@ -280,23 +280,23 @@ void CFaderRadial::RenderFrame(i32 frame) {
     m_dstSurface->m_ddSurface->Unlock(NULL);
     delete[] scratch;
 }
-RVA(0x0017fda0, 0x8)
+RVA(0x00180080, 0x8)
 i32 CFaderRadial::GetFrameCount() {
     return m_maxRadius;
 }
 
-RVA(0x0017fdb0, 0x1a)
+RVA(0x00180090, 0x1a)
 CFaderSine::CFaderSine() {
     m_width = 0;
     m_height = 0;
 }
 
-RVA_COMPGEN(0x0017fdd0, 0x1e, ??_GCFaderSine@@UAEPAXI@Z)
-RVA(0x0017fdf0, 0xb)
+RVA_COMPGEN(0x001800b0, 0x1e, ??_GCFaderSine@@UAEPAXI@Z)
+RVA(0x001800d0, 0xb)
 CFaderSine::~CFaderSine() {}
 
 // @early-stop
-RVA(0x0017fe00, 0x12d)
+RVA(0x001800e0, 0x12d)
 i32 CFaderSine::ApplyInit(CFaderConfig* desc) {
     CSineFaderConfig* cfg = static_cast<CSineFaderConfig*>(desc);
     i32 w;
@@ -343,7 +343,7 @@ fail:
 }
 
 // @early-stop
-RVA(0x0017ff30, 0x4c2)
+RVA(0x00180210, 0x4c2)
 void CFaderSine::RenderFrame(i32 frame) {
     if (frame == 0) {
         return;
@@ -470,24 +470,24 @@ void CFaderSine::RenderFrame(i32 frame) {
     }
 }
 
-RVA(0x00180400, 0xa)
+RVA(0x001806e0, 0xa)
 i32 CFaderSine::GetFrameCount() {
     return m_fadeRowCount + m_height;
 }
 
-RVA(0x00180410, 0x19)
+RVA(0x001806f0, 0x19)
 CFaderLight::CFaderLight() {
     m_overlay = NULL;
 }
 
-RVA_COMPGEN(0x00180430, 0x1e, ??_GCFaderLight@@UAEPAXI@Z)
-RVA(0x00180450, 0x4f)
+RVA_COMPGEN(0x00180710, 0x1e, ??_GCFaderLight@@UAEPAXI@Z)
+RVA(0x00180730, 0x4f)
 CFaderLight::~CFaderLight() {
     ReleaseBuffers();
 }
 
 // @early-stop
-RVA(0x001804a0, 0x182)
+RVA(0x00180780, 0x182)
 i32 CFaderLight::ApplyInit(CFaderConfig* desc) {
     CLightFaderConfig* d = static_cast<CLightFaderConfig*>(desc);
     m_previousFrame = 0;
@@ -560,14 +560,14 @@ i32 CFaderLight::ApplyInit(CFaderConfig* desc) {
     return 1;
 }
 
-RVA(0x00180630, 0x1)
+RVA(0x00180910, 0x1)
 void CFaderLight::ReleaseBuffers() {}
 
 #define FADER_MAX0(v) ((v) < 0 ? 0 : (v))
 #define FADER_CLAMPW(v, w) (FADER_MAX0(v) < (w) ? FADER_MAX0(v) : (w))
 
 // @early-stop
-RVA(0x00180640, 0x96c)
+RVA(0x00180920, 0x96c)
 void CFaderLight::RenderFrame(i32 frame) {
     i32 delta = frame - m_previousFrame;
     if (m_targetSurface != NULL) {
@@ -832,7 +832,7 @@ void CFaderLight::RenderFrame(i32 frame) {
 }
 
 // @early-stop
-RVA(0x00180fb0, 0x534)
+RVA(0x00181290, 0x534)
 
 void CFaderLight::Render(i32 row0, i32 radiusSq, i32 radius, u8* lut, u8* srcBits, u8* dstBits) {
     if (m_spanCount <= 0) {
@@ -979,7 +979,7 @@ void CFaderLight::Render(i32 row0, i32 radiusSq, i32 radius, u8* lut, u8* srcBit
     }
 }
 
-RVA(0x001814f0, 0x16d)
+RVA(0x001817d0, 0x16d)
 i32 CFaderLight::GetFrameCount() {
     double pLeft = pow(static_cast<double>(m_centerX), g_faderPowK);
     double pTop = pow(static_cast<double>(m_centerY), g_faderPowK);
@@ -995,7 +995,7 @@ i32 CFaderLight::GetFrameCount() {
     return r;
 }
 
-RVA(0x00181660, 0x40)
+RVA(0x00181940, 0x40)
 void CFaderLight::BeginFade() {
     if (m_spanCount > 0 && m_clearMode != false) {
         CDDSurface* h =
@@ -1005,7 +1005,7 @@ void CFaderLight::BeginFade() {
     }
 }
 
-RVA(0x001816a0, 0x1c)
+RVA(0x00181980, 0x1c)
 void CFaderLight::EndFade() {
     if (m_overlay) {
         m_deviceManager->RemoveSurface(m_overlay);
@@ -1013,7 +1013,7 @@ void CFaderLight::EndFade() {
     }
 }
 
-RVA(0x001816c0, 0x32)
+RVA(0x001819a0, 0x32)
 CFaderShape::CFaderShape() {
     m_warpTable = NULL;
     m_targetRowOffsets = NULL;
@@ -1024,8 +1024,8 @@ CFaderShape::CFaderShape() {
     m_previousFrame = 0;
 }
 
-RVA_COMPGEN(0x00181700, 0x1e, ??_GCFaderShape@@UAEPAXI@Z)
-RVA(0x00181720, 0xb3)
+RVA_COMPGEN(0x001819e0, 0x1e, ??_GCFaderShape@@UAEPAXI@Z)
+RVA(0x00181a00, 0xb3)
 CFaderShape::~CFaderShape() {
     if (m_warpTable) {
         delete[] m_warpTable;
@@ -1048,7 +1048,7 @@ CFaderShape::~CFaderShape() {
 }
 
 // @early-stop
-RVA(0x001817e0, 0x315)
+RVA(0x00181ac0, 0x315)
 i32 CFaderShape::ApplyInit(CFaderConfig* desc) {
     CShapeFaderConfig* pInit = static_cast<CShapeFaderConfig*>(desc);
     i32 i;
@@ -1186,7 +1186,7 @@ i32 CFaderShape::ApplyInit(CFaderConfig* desc) {
 }
 
 // @early-stop
-RVA(0x00181b00, 0x34f)
+RVA(0x00181de0, 0x34f)
 void CFaderShape::RenderFrame(i32 frame) {
     m_dstBase = static_cast<u8*>(m_targetSurface->Lock(NULL));
     u8* gather = static_cast<u8*>(m_sourceSurface->Lock(NULL));
@@ -1299,7 +1299,7 @@ void CFaderShape::RenderFrame(i32 frame) {
     }
 }
 
-RVA(0x00181e50, 0x7b9)
+RVA(0x00182130, 0x7b9)
 
 void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
     i32 stride = m_halfWidth * 2;
@@ -1519,7 +1519,7 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
 }
 
 // @early-stop
-RVA(0x00182610, 0x2eb)
+RVA(0x001828f0, 0x2eb)
 
 void CFaderShape::RenderTile(i32 col, i32 stripWidth) {
     if (stripWidth <= 0) {
@@ -1599,7 +1599,7 @@ void CFaderShape::RenderTile(i32 col, i32 stripWidth) {
     }
 }
 
-RVA(0x00182900, 0x35)
+RVA(0x00182be0, 0x35)
 i32 CFaderShape::GetFrameCount() {
     GZ_ENUM_STORAGE(FaderMode, u32) mode = m_mode;
     if (mode == FADER_SWEEP_FORWARD || mode == FADER_SWEEP_REVERSE) {

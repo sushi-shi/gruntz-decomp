@@ -53,42 +53,42 @@
 
 #include <string.h>
 
-RVA_DYNINIT(0x0010d820, 0xa, CActRegPool<CWarpStonePad>::s_table)
-RVA_DYNINIT(0x0010d840, 0x15, CActRegPool<CWarpStonePad>::s_table)
-RVA_DYNINIT(0x0010d870, 0xe, CActRegPool<CWarpStonePad>::s_table)
-RVA_DYNINIT(0x0010d890, 0x1f, CActRegPool<CWarpStonePad>::s_table)
-template<> DATA(0x0024e6a0)
+RVA_DYNINIT(0x0010d950, 0xa, CActRegPool<CWarpStonePad>::s_table)
+RVA_DYNINIT(0x0010d970, 0x15, CActRegPool<CWarpStonePad>::s_table)
+RVA_DYNINIT(0x0010d9a0, 0xe, CActRegPool<CWarpStonePad>::s_table)
+RVA_DYNINIT(0x0010d9c0, 0x1f, CActRegPool<CWarpStonePad>::s_table)
+template<> DATA(0x0024f5f8)
 CActReg CActRegPool<CWarpStonePad>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
-RVA_DYNINIT(0x0010de00, 0xa, CActRegPool<CTileTriggerSwitch>::s_table)
-RVA_DYNINIT(0x0010de20, 0x15, CActRegPool<CTileTriggerSwitch>::s_table)
-RVA_DYNINIT(0x0010de50, 0xe, CActRegPool<CTileTriggerSwitch>::s_table)
-RVA_DYNINIT(0x0010de70, 0x1f, CActRegPool<CTileTriggerSwitch>::s_table)
-template<> DATA(0x0024e798)
+RVA_DYNINIT(0x0010df30, 0xa, CActRegPool<CTileTriggerSwitch>::s_table)
+RVA_DYNINIT(0x0010df50, 0x15, CActRegPool<CTileTriggerSwitch>::s_table)
+RVA_DYNINIT(0x0010df80, 0xe, CActRegPool<CTileTriggerSwitch>::s_table)
+RVA_DYNINIT(0x0010dfa0, 0x1f, CActRegPool<CTileTriggerSwitch>::s_table)
+template<> DATA(0x0024f6f0)
 CActReg CActRegPool<CTileTriggerSwitch>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
-RVA_DYNINIT(0x0010e400, 0xa, CActRegPool<CTileTrigger>::s_table)
-RVA_DYNINIT(0x0010e420, 0x15, CActRegPool<CTileTrigger>::s_table)
-RVA_DYNINIT(0x0010e450, 0xe, CActRegPool<CTileTrigger>::s_table)
-RVA_DYNINIT(0x0010e470, 0x1f, CActRegPool<CTileTrigger>::s_table)
-template<> DATA(0x0024e810)
+RVA_DYNINIT(0x0010e530, 0xa, CActRegPool<CTileTrigger>::s_table)
+RVA_DYNINIT(0x0010e550, 0x15, CActRegPool<CTileTrigger>::s_table)
+RVA_DYNINIT(0x0010e580, 0xe, CActRegPool<CTileTrigger>::s_table)
+RVA_DYNINIT(0x0010e5a0, 0x1f, CActRegPool<CTileTrigger>::s_table)
+template<> DATA(0x0024f768)
 CActReg CActRegPool<CTileTrigger>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
-RVA_DYNINIT(0x0010e9e0, 0xa, CActRegPool<CBrickz>::s_table)
-RVA_DYNINIT(0x0010ea00, 0x15, CActRegPool<CBrickz>::s_table)
-RVA_DYNINIT(0x0010ea30, 0xe, CActRegPool<CBrickz>::s_table)
-RVA_DYNINIT(0x0010ea50, 0x1f, CActRegPool<CBrickz>::s_table)
-template<> DATA(0x0024e7c0)
+RVA_DYNINIT(0x0010eb10, 0xa, CActRegPool<CBrickz>::s_table)
+RVA_DYNINIT(0x0010eb30, 0x15, CActRegPool<CBrickz>::s_table)
+RVA_DYNINIT(0x0010eb60, 0xe, CActRegPool<CBrickz>::s_table)
+RVA_DYNINIT(0x0010eb80, 0x1f, CActRegPool<CBrickz>::s_table)
+template<> DATA(0x0024f718)
 CActReg CActRegPool<CBrickz>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
-RVA_DYNINIT(0x0010f140, 0xa, CActRegPool<CCheckpointTrigger>::s_table)
-RVA_DYNINIT(0x0010f160, 0x15, CActRegPool<CCheckpointTrigger>::s_table)
-RVA_DYNINIT(0x0010f190, 0xe, CActRegPool<CCheckpointTrigger>::s_table)
-RVA_DYNINIT(0x0010f1b0, 0x1f, CActRegPool<CCheckpointTrigger>::s_table)
-template<> DATA(0x0024e7e8)
+RVA_DYNINIT(0x0010f270, 0xa, CActRegPool<CCheckpointTrigger>::s_table)
+RVA_DYNINIT(0x0010f290, 0x15, CActRegPool<CCheckpointTrigger>::s_table)
+RVA_DYNINIT(0x0010f2c0, 0xe, CActRegPool<CCheckpointTrigger>::s_table)
+RVA_DYNINIT(0x0010f2e0, 0x1f, CActRegPool<CCheckpointTrigger>::s_table)
+template<> DATA(0x0024f740)
 CActReg CActRegPool<CCheckpointTrigger>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
-RVA_DYNINIT(0x0010fc70, 0xa, CActRegPool<CTileTriggerTransition>::s_table)
-RVA_DYNINIT(0x0010fc90, 0x15, CActRegPool<CTileTriggerTransition>::s_table)
-RVA_DYNINIT(0x0010fcc0, 0xe, CActRegPool<CTileTriggerTransition>::s_table)
-RVA_DYNINIT(0x0010fce0, 0x1f, CActRegPool<CTileTriggerTransition>::s_table)
-template<> DATA(0x0024e720)
+RVA_DYNINIT(0x0010fda0, 0xa, CActRegPool<CTileTriggerTransition>::s_table)
+RVA_DYNINIT(0x0010fdc0, 0x15, CActRegPool<CTileTriggerTransition>::s_table)
+RVA_DYNINIT(0x0010fdf0, 0xe, CActRegPool<CTileTriggerTransition>::s_table)
+RVA_DYNINIT(0x0010fe10, 0x1f, CActRegPool<CTileTriggerTransition>::s_table)
+template<> DATA(0x0024f678)
 CActReg CActRegPool<CTileTriggerTransition>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 #define TILE_LOGIC_RECORD_DISPATCH(LEAF)                                                           \
@@ -127,54 +127,54 @@ CActReg CActRegPool<CTileTriggerTransition>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
     }                                                                                              \
     return 1;
 
-RVA_COMPGEN(0x00010f90, 0x1e, ??_GCWarpStonePad@@UAEPAXI@Z)
-RVA_COMPGEN(0x00010fc0, 0x44, ??1CWarpStonePad@@UAE@XZ)
+RVA_COMPGEN(0x00010fa0, 0x1e, ??_GCWarpStonePad@@UAEPAXI@Z)
+RVA_COMPGEN(0x00010fd0, 0x44, ??1CWarpStonePad@@UAE@XZ)
 
-RVA_COMPGEN(0x000110c0, 0x1e, ??_GCTileTriggerSwitch@@UAEPAXI@Z)
-RVA_COMPGEN(0x000110f0, 0x44, ??1CTileTriggerSwitch@@UAE@XZ)
+RVA_COMPGEN(0x000110d0, 0x1e, ??_GCTileTriggerSwitch@@UAEPAXI@Z)
+RVA_COMPGEN(0x00011100, 0x44, ??1CTileTriggerSwitch@@UAE@XZ)
 
-RVA_COMPGEN(0x00011260, 0x1e, ??_GCTileTrigger@@UAEPAXI@Z)
-RVA_COMPGEN(0x00011290, 0x44, ??1CTileTrigger@@UAE@XZ)
+RVA_COMPGEN(0x00011270, 0x1e, ??_GCTileTrigger@@UAEPAXI@Z)
+RVA_COMPGEN(0x000112a0, 0x44, ??1CTileTrigger@@UAE@XZ)
 
-RVA_COMPGEN(0x00011390, 0x1e, ??_GCBrickz@@UAEPAXI@Z)
-RVA_COMPGEN(0x000113c0, 0x44, ??1CBrickz@@UAE@XZ)
+RVA_COMPGEN(0x000113a0, 0x1e, ??_GCBrickz@@UAEPAXI@Z)
+RVA_COMPGEN(0x000113d0, 0x44, ??1CBrickz@@UAE@XZ)
 
-RVA_COMPGEN(0x00011450, 0x1e, ??_GCCheckpointTrigger@@UAEPAXI@Z)
-RVA_COMPGEN(0x00011480, 0x44, ??1CCheckpointTrigger@@UAE@XZ)
+RVA_COMPGEN(0x00011460, 0x1e, ??_GCCheckpointTrigger@@UAEPAXI@Z)
+RVA_COMPGEN(0x00011490, 0x44, ??1CCheckpointTrigger@@UAE@XZ)
 
-RVA_COMPGEN(0x00011510, 0x1e, ??_GCTileSecretTrigger@@UAEPAXI@Z)
-RVA_COMPGEN(0x00011540, 0x44, ??1CTileSecretTrigger@@UAE@XZ)
+RVA_COMPGEN(0x00011520, 0x1e, ??_GCTileSecretTrigger@@UAEPAXI@Z)
+RVA_COMPGEN(0x00011550, 0x44, ??1CTileSecretTrigger@@UAE@XZ)
 
-RVA_COMPGEN(0x000115d0, 0x1e, ??_GCGiantRock@@UAEPAXI@Z)
-RVA_COMPGEN(0x00011600, 0x44, ??1CGiantRock@@UAE@XZ)
+RVA_COMPGEN(0x000115e0, 0x1e, ??_GCGiantRock@@UAEPAXI@Z)
+RVA_COMPGEN(0x00011610, 0x44, ??1CGiantRock@@UAE@XZ)
 
-RVA_COMPGEN(0x00011690, 0x1e, ??_GCCoveredPowerup@@UAEPAXI@Z)
-RVA_COMPGEN(0x000116c0, 0x44, ??1CCoveredPowerup@@UAE@XZ)
+RVA_COMPGEN(0x000116a0, 0x1e, ??_GCCoveredPowerup@@UAEPAXI@Z)
+RVA_COMPGEN(0x000116d0, 0x44, ??1CCoveredPowerup@@UAE@XZ)
 
-RVA_COMPGEN(0x000117c0, 0x1e, ??_GCTileTriggerTransition@@UAEPAXI@Z)
-RVA_COMPGEN(0x000117f0, 0x44, ??1CTileTriggerTransition@@UAE@XZ)
+RVA_COMPGEN(0x000117d0, 0x1e, ??_GCTileTriggerTransition@@UAEPAXI@Z)
+RVA_COMPGEN(0x00011800, 0x44, ??1CTileTriggerTransition@@UAE@XZ)
 
-RVA(0x0010cb10, 0xf1)
+RVA(0x0010cc40, 0xf1)
 i32 DispatchTileTriggerLogic(CGameObject* obj){TILE_LOGIC_RECORD_DISPATCH(CTileTrigger)}
 
-RVA(0x0010cc50, 0xf1)
+RVA(0x0010cd80, 0xf1)
 i32 DispatchTileTriggerSwitchLogic(CGameObject* obj){TILE_LOGIC_RECORD_DISPATCH(CTileTriggerSwitch)}
 
-RVA(0x0010cd90, 0xf1)
+RVA(0x0010cec0, 0xf1)
 i32 DispatchTileSecretTriggerLogic(CGameObject* obj){TILE_LOGIC_RECORD_DISPATCH(CTileSecretTrigger)}
 
-RVA(0x0010ced0, 0xf1)
+RVA(0x0010d000, 0xf1)
 i32 DispatchGiantRockLogic(CGameObject* obj){TILE_LOGIC_RECORD_DISPATCH(CGiantRock)}
 
-RVA(0x0010d010, 0xf1)
+RVA(0x0010d140, 0xf1)
 i32 DispatchCoveredPowerupLogic(CGameObject* obj){TILE_LOGIC_RECORD_DISPATCH(CCoveredPowerup)}
 
-RVA(0x0010d150, 0xf1)
+RVA(0x0010d280, 0xf1)
 i32 DispatchTileTriggerTransitionLogic(CGameObject* obj){
     TILE_LOGIC_RECORD_DISPATCH(CTileTriggerTransition)
 }
 
-RVA(0x0010d290, 0xf4)
+RVA(0x0010d3c0, 0xf4)
 i32 DispatchCheckpointTriggerLogic(CGameObject* obj) {
     CLogicRecord* record = obj->m_logicRecord;
     switch (record->LogicEvent()) {
@@ -212,13 +212,13 @@ i32 DispatchCheckpointTriggerLogic(CGameObject* obj) {
     return 1;
 }
 
-RVA(0x0010d3d0, 0xf1)
+RVA(0x0010d500, 0xf1)
 i32 DispatchBrickzLogic(CGameObject* obj){TILE_LOGIC_RECORD_DISPATCH(CBrickz)}
 
-RVA(0x0010d510, 0xf1)
+RVA(0x0010d640, 0xf1)
 i32 DispatchWarpStonePadLogic(CGameObject* obj){TILE_LOGIC_RECORD_DISPATCH(CWarpStonePad)}
 
-RVA(0x0010d650, 0x16c)
+RVA(0x0010d780, 0x16c)
 CWarpStonePad::CWarpStonePad(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
@@ -230,7 +230,7 @@ CWarpStonePad::CWarpStonePad(CGameObject* obj)
     SET_ANIMATION_ACT("A");
 }
 
-RVA(0x0010d8c0, 0x102)
+RVA(0x0010d9f0, 0x102)
 void CWarpStonePad::FireActivation(i32 coord) {
     CActHandler* e = (CActRegPool<CWarpStonePad>::s_table.ResolveEntry(coord));
     if ((*e) != NULL) {
@@ -239,19 +239,19 @@ void CWarpStonePad::FireActivation(i32 coord) {
     }
 }
 
-RVA(0x0010da20, 0x18d)
+RVA(0x0010db50, 0x18d)
 void CWarpStonePad::RegisterActs() {
     ACT_NAME_ID(id, "A")
     (*((CActRegPool<CWarpStonePad>::s_table.ResolveEntry(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CWarpStonePad::AdvanceAnim);
 }
 
-RVA(0x0010dc20, 0x3)
+RVA(0x0010dd50, 0x3)
 i32 CWarpStonePad::AdvanceAnim() {
     return 0;
 }
 
-RVA(0x0010dc40, 0x154)
+RVA(0x0010dd70, 0x154)
 CTileTriggerSwitch::CTileTriggerSwitch(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SET_ANIMATION_ACT("A");
@@ -261,7 +261,7 @@ CTileTriggerSwitch::CTileTriggerSwitch(CGameObject* obj)
     Hide();
 }
 
-RVA(0x0010dea0, 0x102)
+RVA(0x0010dfd0, 0x102)
 void CTileTriggerSwitch::FireActivation(i32 coord) {
     CActHandler* e = (CActRegPool<CTileTriggerSwitch>::s_table.ResolveEntry(coord));
     if ((*e) != NULL) {
@@ -270,20 +270,20 @@ void CTileTriggerSwitch::FireActivation(i32 coord) {
     }
 }
 
-RVA(0x0010e000, 0x18d)
+RVA(0x0010e130, 0x18d)
 void CTileTriggerSwitch::RegisterActs() {
     ACT_NAME_ID(id, "A")
     (*((CActRegPool<CTileTriggerSwitch>::s_table.ResolveEntry(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CTileTriggerSwitch::AdvanceAnim);
 }
 
-RVA(0x0010e200, 0x3)
+RVA(0x0010e330, 0x3)
 i32 CTileTriggerSwitch::AdvanceAnim() {
     return 0;
 }
 
 // @early-stop
-RVA(0x0010e220, 0x17d)
+RVA(0x0010e350, 0x17d)
 CTileTrigger::CTileTrigger(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SET_ANIMATION_ACT("A");
@@ -298,7 +298,7 @@ CTileTrigger::CTileTrigger(CGameObject* obj)
     m_object->m_id = (tileX << 8) + tileY;
 }
 
-RVA(0x0010e4a0, 0x102)
+RVA(0x0010e5d0, 0x102)
 void CTileTrigger::FireActivation(i32 coord) {
     CActHandler* e = (CActRegPool<CTileTrigger>::s_table.ResolveEntry(coord));
     if ((*e) != NULL) {
@@ -307,7 +307,7 @@ void CTileTrigger::FireActivation(i32 coord) {
     }
 }
 
-RVA(0x0010e600, 0x18d)
+RVA(0x0010e730, 0x18d)
 void CTileTrigger::RegisterActs() {
     ACT_NAME_ID(id, "A")
     (*((CActRegPool<CTileTrigger>::s_table.ResolveEntry(id)))) =
@@ -315,7 +315,7 @@ void CTileTrigger::RegisterActs() {
 }
 
 // @early-stop
-RVA(0x0010e800, 0x17d)
+RVA(0x0010e930, 0x17d)
 CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SET_ANIMATION_ACT("A");
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
@@ -329,7 +329,7 @@ CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), C
     m_object->m_id = (tileX << 8) + tileY;
 }
 
-RVA(0x0010ea80, 0x102)
+RVA(0x0010ebb0, 0x102)
 void CBrickz::FireActivation(i32 coord) {
     CActHandler* e = (CActRegPool<CBrickz>::s_table.ResolveEntry(coord));
     if ((*e) != NULL) {
@@ -338,25 +338,25 @@ void CBrickz::FireActivation(i32 coord) {
     }
 }
 
-RVA(0x0010ebe0, 0x18d)
+RVA(0x0010ed10, 0x18d)
 void CBrickz::RegisterActs() {
     ACT_NAME_ID(id, "A")
     (*((CActRegPool<CBrickz>::s_table.ResolveEntry(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CBrickz::Trigger);
 }
 
-RVA(0x0010ede0, 0x3)
+RVA(0x0010ef10, 0x3)
 i32 CBrickz::Trigger() {
     return 0;
 }
 
-RVA(0x0010ee00, 0x3)
+RVA(0x0010ef30, 0x3)
 i32 CTileTrigger::AdvanceAnim() {
     return 0;
 }
 
 // @early-stop
-RVA(0x0010ee20, 0x27d)
+RVA(0x0010ef50, 0x27d)
 CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SET_ANIMATION_ACT("A");
@@ -407,7 +407,7 @@ CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj)
     }
 }
 
-RVA(0x0010f1e0, 0x102)
+RVA(0x0010f310, 0x102)
 void CCheckpointTrigger::FireActivation(i32 coord) {
     CActHandler* e = (CActRegPool<CCheckpointTrigger>::s_table.ResolveEntry(coord));
     if ((*e) != NULL) {
@@ -416,7 +416,7 @@ void CCheckpointTrigger::FireActivation(i32 coord) {
     }
 }
 
-RVA(0x0010f340, 0x2ac)
+RVA(0x0010f470, 0x2ac)
 void CCheckpointTrigger::RegisterActs() {
     ACT_NAME_ID_CALL_REPORT(id, "A")
     (*((CActRegPool<CCheckpointTrigger>::s_table.ResolveEntryCallReport(id)))) =
@@ -427,7 +427,7 @@ void CCheckpointTrigger::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CCheckpointTrigger::AdvanceCheckpointAnimation);
 }
 
-RVA(0x0010f6a0, 0x235)
+RVA(0x0010f7d0, 0x235)
 i32 CCheckpointTrigger::Act() {
     CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
 
@@ -531,13 +531,13 @@ i32 CCheckpointTrigger::Act() {
     return 0;
 }
 
-RVA(0x0010f970, 0x17)
+RVA(0x0010faa0, 0x17)
 i32 CCheckpointTrigger::AdvanceCheckpointAnimation() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     return 0;
 }
 
-RVA(0x0010f9a0, 0x8f)
+RVA(0x0010fad0, 0x8f)
 i32 CCheckpointTrigger::SerializeDispatch(
     CFileMemBase* arc,
     SerialMode mode,
@@ -558,14 +558,14 @@ i32 CCheckpointTrigger::SerializeDispatch(
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_FROM(arc, sa, mode, typeId, object)
 }
 
-RVA(0x0010fa60, 0x19)
+RVA(0x0010fb90, 0x19)
 CTileSecretTrigger::CTileSecretTrigger(CGameObject* obj) : CTileTrigger(obj) {}
-RVA(0x0010fa90, 0x19)
+RVA(0x0010fbc0, 0x19)
 CGiantRock::CGiantRock(CGameObject* obj) : CTileTrigger(obj) {}
-RVA(0x0010fac0, 0x19)
+RVA(0x0010fbf0, 0x19)
 CCoveredPowerup::CCoveredPowerup(CGameObject* obj) : CTileTrigger(obj) {}
 
-RVA(0x0010faf0, 0x128)
+RVA(0x0010fc20, 0x128)
 CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_SMALL_ACTIVE_REGION));
@@ -574,7 +574,7 @@ CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj)
     SET_SORT_KEY_IF_CHANGED(o, 0)
 }
 
-RVA(0x0010fd10, 0x102)
+RVA(0x0010fe40, 0x102)
 void CTileTriggerTransition::FireActivation(i32 coord) {
     CActHandler* e = (CActRegPool<CTileTriggerTransition>::s_table.ResolveEntry(coord));
     if ((*e) != NULL) {
@@ -583,14 +583,14 @@ void CTileTriggerTransition::FireActivation(i32 coord) {
     }
 }
 
-RVA(0x0010fe70, 0x18d)
+RVA(0x0010ffa0, 0x18d)
 void CTileTriggerTransition::RegisterActs() {
     ACT_NAME_ID(id, "A")
     (*((CActRegPool<CTileTriggerTransition>::s_table.ResolveEntry(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CTileTriggerTransition::TransitionAct);
 }
 
-RVA(0x00110070, 0x71)
+RVA(0x001101a0, 0x71)
 i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
     if (SwitchAnimationByName(geom, 0) == 0) {
         return 0;
@@ -600,7 +600,7 @@ i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
     return 1;
 }
 
-RVA(0x00110110, 0x39)
+RVA(0x00110240, 0x39)
 i32 CTileTriggerTransition::TransitionAct() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     MARK_OBJECT_COMPLETE_IF(IsAniCursorComplete(&m_wwdObject->m_animationCursor))

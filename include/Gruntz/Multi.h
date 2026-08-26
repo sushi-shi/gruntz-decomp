@@ -99,16 +99,16 @@ public:
     }
 
     CString GameName();
-    RVA(0x000b7ad0, 0x23)
+    RVA(0x000b7ac0, 0x23)
     CString PlayerName() {
         return m_playerName;
     }
 
-    RVA(0x000b6090, 0x23)
+    RVA(0x000b6080, 0x23)
     CString BuiltInLevelName() {
         return m_builtInLevelName;
     }
-    RVA(0x000b60d0, 0x23)
+    RVA(0x000b60c0, 0x23)
     CString CustomLevelName() {
         return m_customLevelName;
     }

@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 
-RVA(0x000379a0, 0x3d)
+RVA(0x000378c0, 0x3d)
 void CKeyedList::Clear() {
 
     POSITION pos = m_list.GetHeadPosition();
@@ -16,14 +16,14 @@ void CKeyedList::Clear() {
     m_mode = 0;
 }
 
-RVA(0x000379f0, 0x57)
+RVA(0x00037910, 0x57)
 CKeyedNode::~CKeyedNode() {
     m_key.Empty();
     m_commandDelay = 0;
     m_resendInterval = 0;
 }
 
-RVA(0x00037a70, 0x9a)
+RVA(0x00037990, 0x9a)
 CKeyedNode* CKeyedList::AddNode(const char* key, i32 commandDelay, i32 resendInterval) {
     CKeyedNode* node = new CKeyedNode;
     node->m_key = key;

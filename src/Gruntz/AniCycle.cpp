@@ -11,17 +11,17 @@
 
 #include <stddef.h>
 
-RVA_DYNINIT(0x000aaee0, 0xa, CActRegPool<CAniCycle>::s_table)
-RVA_DYNINIT(0x000aaf00, 0x15, CActRegPool<CAniCycle>::s_table)
-RVA_DYNINIT(0x000aaf30, 0xe, CActRegPool<CAniCycle>::s_table)
-RVA_DYNINIT(0x000aaf50, 0x1f, CActRegPool<CAniCycle>::s_table)
-template<> DATA(0x00246088)
+RVA_DYNINIT(0x000aaed0, 0xa, CActRegPool<CAniCycle>::s_table)
+RVA_DYNINIT(0x000aaef0, 0x15, CActRegPool<CAniCycle>::s_table)
+RVA_DYNINIT(0x000aaf20, 0xe, CActRegPool<CAniCycle>::s_table)
+RVA_DYNINIT(0x000aaf40, 0x1f, CActRegPool<CAniCycle>::s_table)
+template<> DATA(0x00246fe0)
 CActReg CActRegPool<CAniCycle>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
-RVA_COMPGEN(0x0000f4e0, 0x1e, ??_GCAniCycle@@UAEPAXI@Z)
-RVA_COMPGEN(0x0000f510, 0x44, ??1CAniCycle@@UAE@XZ)
+RVA_COMPGEN(0x0000f4f0, 0x1e, ??_GCAniCycle@@UAEPAXI@Z)
+RVA_COMPGEN(0x0000f520, 0x44, ??1CAniCycle@@UAE@XZ)
 
-RVA(0x000aad20, 0x15c)
+RVA(0x000aad10, 0x15c)
 CAniCycle::CAniCycle(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION));
     if (m_wwdObject->m_animationCursor.m_animation == NULL) {
@@ -30,7 +30,7 @@ CAniCycle::CAniCycle(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
     SET_ANIMATION_ACT("A");
 }
 
-RVA(0x000aaf80, 0x102)
+RVA(0x000aaf70, 0x102)
 void CAniCycle::FireActivation(i32 id) {
     CActHandler* e = (CActRegPool<CAniCycle>::s_table.ResolveEntry(id));
     if ((*e) != NULL) {
@@ -38,14 +38,14 @@ void CAniCycle::FireActivation(i32 id) {
     }
 }
 
-RVA(0x000ab0e0, 0x18d)
+RVA(0x000ab0d0, 0x18d)
 void CAniCycle::RegisterActs() {
     ACT_NAME_ID(id, "A")
     (*((CActRegPool<CAniCycle>::s_table.ResolveEntry(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CAniCycle::AdvanceAnim);
 }
 
-RVA(0x000ab2e0, 0x17)
+RVA(0x000ab2d0, 0x17)
 i32 CAniCycle::AdvanceAnim() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     return 0;

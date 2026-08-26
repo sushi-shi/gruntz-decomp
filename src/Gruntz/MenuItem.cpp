@@ -24,7 +24,7 @@ static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
     return static_cast<CDDrawWorker*>(foundObject);
 }
 
-RVA(0x00185460, 0xa9)
+RVA(0x00185740, 0xa9)
 i32 CMenuItem::Init(
     CMenuPage* page,
     const char* name,
@@ -61,12 +61,12 @@ i32 CMenuItem::Init(
     }
     return 1;
 }
-RVA(0x00185510, 0x5)
+RVA(0x001857f0, 0x5)
 void CMenuItem::Cleanup() {
     Reset();
 }
 
-RVA(0x00185520, 0x2c)
+RVA(0x00185800, 0x2c)
 i32 CMenuItem::GetFrameWidth() {
     CDDrawWorker* animation = static_cast<CDDrawWorker*>(m_animation);
     if (!animation) {
@@ -78,7 +78,7 @@ i32 CMenuItem::GetFrameWidth() {
     }
     return frame->m_width;
 }
-RVA(0x00185550, 0x2c)
+RVA(0x00185830, 0x2c)
 i32 CMenuItem::GetFrameHeight() {
     CDDrawWorker* animation = static_cast<CDDrawWorker*>(m_animation);
     if (!animation) {
@@ -90,7 +90,7 @@ i32 CMenuItem::GetFrameHeight() {
     }
     return frame->m_height;
 }
-RVA(0x00185580, 0x4a)
+RVA(0x00185860, 0x4a)
 i32 CMenuItem::PostCommands() {
     i32 commandId = m_commandId;
     if (!commandId) {
@@ -106,17 +106,17 @@ i32 CMenuItem::PostCommands() {
     return 1;
 }
 
-RVA(0x001855d0, 0x6)
+RVA(0x001858b0, 0x6)
 i32 CMenuItem::OnPageActivated() {
     return 1;
 }
 
-RVA(0x001855e0, 0x8)
+RVA(0x001858c0, 0x8)
 i32 CMenuItem::Update(u32) {
     return 1;
 }
 
-RVA(0x001855f0, 0x94)
+RVA(0x001858d0, 0x94)
 i32 CMenuItem::DrawAt(CDDrawSurfacePair* target, i32 centerX, i32 centerY) {
     CDDrawWorker* animation = static_cast<CDDrawWorker*>(m_animation);
     if (!animation) {
@@ -139,7 +139,7 @@ i32 CMenuItem::DrawAt(CDDrawSurfacePair* target, i32 centerX, i32 centerY) {
     m_hitBottom = centerY + frame->m_anchorY;
     return 1;
 }
-RVA(0x00185690, 0x25)
+RVA(0x00185970, 0x25)
 i32 CMenuItem::Select(i32 playFocusSound) {
     if (playFocusSound) {
         m_menuTree->PlayFocusSound();
@@ -147,20 +147,20 @@ i32 CMenuItem::Select(i32 playFocusSound) {
     SetState(MENUSTATE_SELECTED);
     return 1;
 }
-RVA(0x001856c0, 0xd)
+RVA(0x001859a0, 0xd)
 i32 CMenuItem::Deselect() {
     SetState(MENUSTATE_NORMAL);
     return 1;
 }
 
-RVA(0x001856d0, 0x25)
+RVA(0x001859b0, 0x25)
 i32 CMenuItem::Activate() {
     m_menuTree->PlayActivationSound();
     PostCommands();
     m_menuTree->SetActivePageByKey(m_targetPageKey);
     return 1;
 }
-RVA(0x00185700, 0x4b)
+RVA(0x001859e0, 0x4b)
 i32 CMenuItem::HitTest(i32 screenX, i32 screenY) {
     if (m_hitLeft == UNINIT_FILL) {
         return 0;
@@ -177,7 +177,7 @@ i32 CMenuItem::HitTest(i32 screenX, i32 screenY) {
     return screenY <= m_hitBottom;
 }
 
-RVA(0x00185750, 0x123)
+RVA(0x00185a30, 0x123)
 i32 CAnimatedMenuItem::Init(
     CMenuPage* page,
     const char* name,
@@ -209,7 +209,7 @@ i32 CAnimatedMenuItem::Init(
 
     return 1;
 }
-RVA(0x00185880, 0xe)
+RVA(0x00185b60, 0xe)
 i32 CAnimatedMenuItem::GetFrameWidth() {
     CImage* frame = GetCurrentFrame();
     if (!frame) {
@@ -218,7 +218,7 @@ i32 CAnimatedMenuItem::GetFrameWidth() {
     return frame->m_width;
 }
 
-RVA(0x00185890, 0xe)
+RVA(0x00185b70, 0xe)
 i32 CAnimatedMenuItem::GetFrameHeight() {
     CImage* frame = GetCurrentFrame();
     if (!frame) {
@@ -227,7 +227,7 @@ i32 CAnimatedMenuItem::GetFrameHeight() {
     return frame->m_height;
 }
 
-RVA(0x001858a0, 0x2b)
+RVA(0x00185b80, 0x2b)
 i32 CAnimatedMenuItem::Update(u32 deltaMs) {
     if (deltaMs >= static_cast<u32>(m_frameTimerMs)) {
         m_frameTimerMs = m_framePeriodMs;
@@ -238,7 +238,7 @@ i32 CAnimatedMenuItem::Update(u32 deltaMs) {
     return 1;
 }
 
-RVA(0x001858d0, 0x72)
+RVA(0x00185bb0, 0x72)
 i32 CAnimatedMenuItem::DrawAt(CDDrawSurfacePair* target, i32 centerX, i32 centerY) {
 
     if (m_fixedCenterX != UNINIT_FILL) {
@@ -256,7 +256,7 @@ i32 CAnimatedMenuItem::DrawAt(CDDrawSurfacePair* target, i32 centerX, i32 center
     m_hitBottom = centerY + frame->m_anchorY;
     return 1;
 }
-RVA(0x00185950, 0x1b)
+RVA(0x00185c30, 0x1b)
 CDDrawWorker* CAnimatedMenuItem::GetStateAnimation() {
     switch (m_state) {
         case MENUSTATE_NORMAL:
@@ -269,7 +269,7 @@ CDDrawWorker* CAnimatedMenuItem::GetStateAnimation() {
     return NULL;
 }
 
-RVA(0x00185970, 0x4d)
+RVA(0x00185c50, 0x4d)
 CImage* CAnimatedMenuItem::GetCurrentFrame() {
     CDDrawWorker* animation = GetStateAnimation();
     if (!animation) {
@@ -283,7 +283,7 @@ CImage* CAnimatedMenuItem::GetCurrentFrame() {
     }
     return frame;
 }
-RVA(0x001859c0, 0x4e)
+RVA(0x00185ca0, 0x4e)
 i32 CAnimatedMenuItem::AdvanceFrame() {
     if (!GetCurrentFrame()) {
         return 0;

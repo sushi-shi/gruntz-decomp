@@ -43,7 +43,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-DATA(0x002bf674)
+DATA(0x002c05cc)
 b32 g_logicTypesRegistered;
 
 static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
@@ -52,7 +52,7 @@ static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
     return static_cast<CDDrawWorker*>(result);
 }
 
-RVA(0x001504d0, 0x6c)
+RVA(0x001507b0, 0x6c)
 void CWwdSpriteObject::SetImageFrameByName(const char* name, i32 frame) {
     CDDrawWorker* spr = LookupWorker(OwnerMgr()->m_imageRegistry->m_workersByName, name);
     m_imageSet = spr;
@@ -63,7 +63,7 @@ void CWwdSpriteObject::SetImageFrameByName(const char* name, i32 frame) {
     }
 }
 
-RVA(0x00150540, 0x65)
+RVA(0x00150820, 0x65)
 void CWwdSpriteObject::SetImageSetByName(const char* name) {
     CDDrawWorker* spr = LookupWorker(OwnerMgr()->m_imageRegistry->m_workersByName, name);
     m_imageSet = spr;
@@ -80,7 +80,7 @@ static inline CAniElement* LookupAnimation(CMapStringToPtr& map, LPCTSTR name) {
     return result;
 }
 
-RVA(0x001505b0, 0x5e)
+RVA(0x00150890, 0x5e)
 i32 CWwdSpriteObject::SetAnimationByName(const char* name, i32 advanceImmediately) {
     CAniElement* animation = LookupAnimation(OwnerMgr()->m_animRegistry->m_animations, name);
     if (!animation) {
@@ -96,7 +96,7 @@ static inline SoundCue* LookupSoundCue(CMapStringToPtr& map, LPCTSTR name) {
     return result;
 }
 
-RVA(0x00150610, 0x41)
+RVA(0x001508f0, 0x41)
 i32 CWwdSpriteObject::SetSoundCueByName(const char* name) {
     SoundCue* cue = LookupSoundCue(OwnerMgr()->m_soundRegistry->m_cues, name);
     if (cue == NULL) {
@@ -106,7 +106,7 @@ i32 CWwdSpriteObject::SetSoundCueByName(const char* name) {
     return 1;
 }
 
-RVA(0x00150660, 0x49)
+RVA(0x00150940, 0x49)
 void CWwdSpriteObject::BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) {
 
     m_shadow = m_dirty;
@@ -117,7 +117,7 @@ void CWwdSpriteObject::BltDirty(CDDrawSurfacePair* dst, CDDrawSurfacePair* src) 
     }
 }
 
-RVA(0x001506b0, 0x1ec)
+RVA(0x00150990, 0x1ec)
 void CWwdSpriteObject::BltDirtyEx(
     CDrawSubWorker* dst,
     CDDrawSurfacePair* src,
@@ -146,7 +146,7 @@ void CWwdSpriteObject::BltDirtyEx(
     }
 }
 
-RVA(0x001508a0, 0x117)
+RVA(0x00150b80, 0x117)
 void CWwdSpriteObject::BltDirtyRegions(
     CDDrawSurfacePair* dst,
     CDDrawSurfacePair* src,
@@ -177,7 +177,7 @@ void CWwdSpriteObject::BltDirtyRegions(
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001509c0, 0xab)
+RVA(0x00150ca0, 0xab)
 i32 CWwdSpriteObject::IntersectsViewport() {
     if (m_frameImage == NULL) {
         return 0;
@@ -218,7 +218,7 @@ i32 CWwdSpriteObject::IntersectsViewport() {
     }
 }
 
-RVA(0x00150a70, 0x89)
+RVA(0x00150d50, 0x89)
 i32 CWwdSpriteObject::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
@@ -246,7 +246,7 @@ i32 CWwdSpriteObject::SerializeDispatch(
     return CGameObject::SerializeDispatch(ar, mode, typeId, object) != 0;
 }
 
-RVA(0x00150b00, 0x12b)
+RVA(0x00150de0, 0x12b)
 i32 CWwdSpriteObject::WriteSpriteState(CFileMemBase* stream) {
     CFileMemBase* ar = stream;
     if (ar == NULL) {
@@ -275,7 +275,7 @@ i32 CWwdSpriteObject::WriteSpriteState(CFileMemBase* stream) {
     return 1;
 }
 
-RVA(0x00150c30, 0x130)
+RVA(0x00150f10, 0x130)
 i32 CWwdSpriteObject::ReadSpriteState(CFileMemBase* stream) {
     CFileMemBase* ar = stream;
     if (ar == NULL) {
@@ -317,7 +317,7 @@ i32 CWwdSpriteObject::ReadSpriteState(CFileMemBase* stream) {
 }
 
 // @early-stop
-RVA(0x00150d60, 0x14d)
+RVA(0x00151040, 0x14d)
 i32 CGameObject::Setup(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTemplate) {
     CResolveNode::SetPosition(x, y);
     m_screenX = x;
@@ -372,7 +372,7 @@ i32 CGameObject::Setup(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTemplate) {
     return 1;
 }
 
-RVA(0x00150eb0, 0x98)
+RVA(0x00151190, 0x98)
 i32 CGameObject::EnsureHitLogic(CLogicRecord* logicTemplate) {
     if (logicTemplate == NULL) {
         return 0;
@@ -395,12 +395,12 @@ static inline CLogicRecord* LookupLogicTemplate(CMapStringToOb& map, LPCTSTR nam
     return static_cast<CLogicRecord*>(result);
 }
 
-RVA(0x00150f50, 0x35)
+RVA(0x00151230, 0x35)
 void CGameObject::AddLogicHit(char* key) {
     EnsureHitLogic(LookupLogicTemplate(OwnerMgr()->m_logicRegistry->m_templatesByName, key));
 }
 
-RVA(0x00150f90, 0x98)
+RVA(0x00151270, 0x98)
 i32 CGameObject::EnsureAttackLogic(CLogicRecord* logicTemplate) {
     if (logicTemplate == NULL) {
         return 0;
@@ -417,12 +417,12 @@ i32 CGameObject::EnsureAttackLogic(CLogicRecord* logicTemplate) {
     return m_attackLogic->Init(logicTemplate->m_dispatch, 0);
 }
 
-RVA(0x00151030, 0x35)
+RVA(0x00151310, 0x35)
 void CGameObject::AddLogicAttack(char* key) {
     EnsureAttackLogic(LookupLogicTemplate(OwnerMgr()->m_logicRegistry->m_templatesByName, key));
 }
 
-RVA(0x00151070, 0x98)
+RVA(0x00151350, 0x98)
 i32 CGameObject::EnsureBumpLogic(CLogicRecord* logicTemplate) {
     if (logicTemplate == NULL) {
         return 0;
@@ -439,13 +439,13 @@ i32 CGameObject::EnsureBumpLogic(CLogicRecord* logicTemplate) {
     return m_collisionLogic->Init(logicTemplate->m_dispatch, 0);
 }
 
-RVA(0x00151110, 0x35)
+RVA(0x001513f0, 0x35)
 void CGameObject::AddLogicBump(char* key) {
     EnsureBumpLogic(LookupLogicTemplate(OwnerMgr()->m_logicRegistry->m_templatesByName, key));
 }
 
 // @early-stop
-RVA(0x00151150, 0x190)
+RVA(0x00151430, 0x190)
 i32 CGameObject::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
@@ -556,7 +556,7 @@ fail:
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001512e0, 0x35)
+RVA(0x001515c0, 0x35)
 i32 CGameObject::PrepareSave(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
@@ -568,7 +568,7 @@ i32 CGameObject::PrepareSave(CFileMemBase* ar) {
     return 1;
 }
 
-RVA(0x00151320, 0x454)
+RVA(0x00151600, 0x454)
 i32 CGameObject::Serialize(CFileMemBase* arParam) {
     CFileMemBase* ar = arParam;
     if (ar == NULL) {
@@ -647,7 +647,7 @@ i32 CGameObject::Serialize(CFileMemBase* arParam) {
     return 1;
 }
 
-RVA(0x00151780, 0x40d)
+RVA(0x00151a60, 0x40d)
 i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     CFileMemBase* ar = arParam;
     if (ar == NULL) {
@@ -745,7 +745,7 @@ static inline BOOL LookupLinkedObject(CMapPtrToPtr& map, i32 id, CWwdGameObject*
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00151b90, 0x70)
+RVA(0x00151e70, 0x70)
 i32 CGameObject::ResolveLinkedObject(b32 gate) {
     if (gate == false) {
         return 0;
@@ -768,7 +768,7 @@ i32 CGameObject::ResolveLinkedObject(b32 gate) {
     return 1;
 }
 
-RVA(0x00151c00, 0x118)
+RVA(0x00151ee0, 0x118)
 i32 CGameObject::WriteSnapshot(CFileMemBase* dst, LogicTypeId unused) {
     CFileMemBase* ar = dst;
     if (ar == NULL) {
@@ -817,7 +817,7 @@ i32 CGameObject::WriteSnapshot(CFileMemBase* dst, LogicTypeId unused) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00151d20, 0x3a)
+RVA(0x00152000, 0x3a)
 i32 CGameObject::NotifyForEventCode(i32 eventCode) {
     CLogicRecord* record = m_logicRecord;
     if (!record) {
@@ -832,19 +832,19 @@ i32 CGameObject::NotifyForEventCode(i32 eventCode) {
     return 1;
 }
 
-RVA(0x00151d60, 0xb)
+RVA(0x00152040, 0xb)
 i32 CLogicRecord::IsLoaded() {
     return m_dispatch != NULL;
 }
 
-RVA(0x00151d70, 0x6)
+RVA(0x00152050, 0x6)
 LoadableClassId CLogicRecord::GetClassId() {
     return CLASSID_LOGICRECORD;
 }
 
-RVA_COMPGEN(0x00151d80, 0x1e, ??_GCLogicRecord@@UAEPAXI@Z)
+RVA_COMPGEN(0x00152060, 0x1e, ??_GCLogicRecord@@UAEPAXI@Z)
 
-RVA(0x00151da0, 0x80)
+RVA(0x00152080, 0x80)
 CLogicRecord::~CLogicRecord() {
     m_dispatch = NULL;
     if (m_payload) {
@@ -859,7 +859,7 @@ CLogicRecord::~CLogicRecord() {
     m_target = NULL;
 }
 
-RVA(0x00151e20, 0x46)
+RVA(0x00152100, 0x46)
 i32 CLogicRecord::Init(LogicRecordDispatchFn dispatch, i32 flags) {
     if (dispatch == NULL) {
         return 0;
@@ -880,7 +880,7 @@ i32 CLogicRecord::Init(LogicRecordDispatchFn dispatch, i32 flags) {
     return 1;
 }
 
-RVA(0x00151e70, 0x3b)
+RVA(0x00152150, 0x3b)
 void CLogicRecord::Unload() {
     m_dispatch = NULL;
     if (m_payload) {
@@ -895,7 +895,7 @@ void CLogicRecord::Unload() {
     m_target = NULL;
 }
 
-RVA(0x00151eb0, 0x43)
+RVA(0x00152190, 0x43)
 void CDDrawWorker::Unload() {
     for (i32 i = 0; i < m_items.GetSize(); i++) {
         CImage* el = static_cast<CImage*>(m_items.GetAt(i));
@@ -918,7 +918,7 @@ void CDDrawWorker::Unload() {
         m_maxIndex = index;                                                                        \
     }
 
-RVA(0x00151f00, 0xa4)
+RVA(0x001521e0, 0xa4)
 CImage* CDDrawWorker::InsertFrame(CRezArchiveEntry* src, i32 n, i32 mode) {
     if (n < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(n)) != NULL) {
         return NULL;
@@ -935,7 +935,7 @@ CImage* CDDrawWorker::InsertFrame(CRezArchiveEntry* src, i32 n, i32 mode) {
     return worker;
 }
 
-RVA(0x00151fb0, 0xa4)
+RVA(0x00152290, 0xa4)
 CImage* CDDrawWorker::LoadFrame(char* path, i32 index, i32 keyed) {
     if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != NULL) {
         return NULL;
@@ -954,7 +954,7 @@ CImage* CDDrawWorker::LoadFrame(char* path, i32 index, i32 keyed) {
     return nf;
 }
 
-RVA(0x00152060, 0xab)
+RVA(0x00152340, 0xab)
 CImage*
 CDDrawWorker::CreateDescriptorFrame(PidHeader* desc, FileImageFormat mode, i32 index, u32 size) {
     if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != NULL) {
@@ -974,7 +974,7 @@ CDDrawWorker::CreateDescriptorFrame(PidHeader* desc, FileImageFormat mode, i32 i
     return nf;
 }
 
-RVA(0x00152110, 0xa9)
+RVA(0x001523f0, 0xa9)
 CImage* CDDrawWorker::CreateBlankFrame(i32 width, i32 height, i32 index, i32 keyed) {
     if (index < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(index)) != NULL) {
         return NULL;
@@ -995,10 +995,10 @@ CImage* CDDrawWorker::CreateBlankFrame(i32 width, i32 height, i32 index, i32 key
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001521c0, 0x2b)
+RVA(0x001524a0, 0x2b)
 void CDDrawWorker::AddFrameAt(CObject* elem, i32 index){ADD_FRAME_AT(elem, index)}
 
-RVA(0x001521f0, 0xbc)
+RVA(0x001524d0, 0xbc)
 i32 CDDrawWorker::BuildFramesFromArchive(CRezArchiveDir* tab) {
     i32 count = 0;
     CRezArchiveType* sym = tab->FirstType();
@@ -1029,7 +1029,7 @@ i32 CDDrawWorker::BuildFramesFromArchive(CRezArchiveDir* tab) {
     return count;
 }
 
-RVA(0x001522b0, 0xf7)
+RVA(0x00152590, 0xf7)
 i32 CDDrawWorker::ValidateFramesFromArchive(CRezArchiveDir* tab) {
 
     i32 matched = 0;
@@ -1073,7 +1073,7 @@ i32 CDDrawWorker::ValidateFramesFromArchive(CRezArchiveDir* tab) {
     return (matched >= liveFrames) ? matched : -1;
 }
 
-RVA(0x001523b0, 0x3b)
+RVA(0x00152690, 0x3b)
 i32 CDDrawWorker::ReloadFrame(CRezArchiveEntry* rec, i32 n, i32 flag) {
     CImage* el = GetAt(n);
     if (el == NULL) {
@@ -1082,7 +1082,7 @@ i32 CDDrawWorker::ReloadFrame(CRezArchiveEntry* rec, i32 n, i32 flag) {
     return el->Reload(rec, flag) != 0;
 }
 
-RVA(0x001523f0, 0x82)
+RVA(0x001526d0, 0x82)
 i32 CDDrawWorker::GetMemoryUsage(i32 raw) {
     i32 sum = 0;
     for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
@@ -1107,7 +1107,7 @@ i32 CDDrawWorker::GetMemoryUsage(i32 raw) {
     return sum;
 }
 
-RVA(0x00152480, 0x4e)
+RVA(0x00152760, 0x4e)
 i32 CDDrawWorker::SetAllTypes(ShadeMode type) {
     i32 count = 0;
     for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
@@ -1120,7 +1120,7 @@ i32 CDDrawWorker::SetAllTypes(ShadeMode type) {
     return count;
 }
 
-RVA(0x001524d0, 0x41)
+RVA(0x001527b0, 0x41)
 i32 CDDrawWorker::SetAllLightLevels(i32 value) {
     i32 count = 0;
     for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
@@ -1133,7 +1133,7 @@ i32 CDDrawWorker::SetAllLightLevels(i32 value) {
     return count;
 }
 
-RVA(0x00152520, 0x4b)
+RVA(0x00152800, 0x4b)
 i32 CDDrawWorker::SetAllFormats(CShadeTable* format) {
     if (!format) {
         return 0;
@@ -1151,7 +1151,7 @@ i32 CDDrawWorker::SetAllFormats(CShadeTable* format) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00152570, 0x24)
+RVA(0x00152850, 0x24)
 ShadeMode CDDrawWorker::GetFirstFrameState() {
     CImage* frame = static_cast<CImage*>(m_items.GetAt(m_minIndex));
     if (frame == NULL) {
@@ -1166,7 +1166,7 @@ ShadeMode CDDrawWorker::GetFirstFrameState() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001525a0, 0x1f)
+RVA(0x00152880, 0x1f)
 i32 CDDrawWorker::GetFirstFrameLightLevel() {
     CImage* frame = static_cast<CImage*>(m_items.GetAt(m_minIndex));
     if (frame == NULL) {
@@ -1179,7 +1179,7 @@ i32 CDDrawWorker::GetFirstFrameLightLevel() {
     return fmt->m_light;
 }
 
-RVA(0x001525c0, 0x76)
+RVA(0x001528a0, 0x76)
 i32 CDDrawWorker::FindFrame(CImage* frame, char* outName, i32* outIndex) {
     if (frame) {
         for (i32 i = 0; i < m_items.GetSize(); i++) {

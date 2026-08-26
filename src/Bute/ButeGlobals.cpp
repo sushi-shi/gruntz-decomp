@@ -40,21 +40,21 @@ inline CTypeCollRuntime::~CTypeCollRuntime() {
     }
 }
 
-RVA_DYNINIT(0x0016e720, 0xa, g_typeColl)
-RVA_DYNINIT(0x0016e730, 0x51, g_typeColl)
-RVA_DYNINIT(0x0016e790, 0xe, g_typeColl)
-RVA_DYNINIT(0x0016e7a0, 0x48, g_typeColl)
-DATA(0x002bf650)
+RVA_DYNINIT(0x0016ea00, 0xa, g_typeColl)
+RVA_DYNINIT(0x0016ea10, 0x51, g_typeColl)
+RVA_DYNINIT(0x0016ea70, 0xe, g_typeColl)
+RVA_DYNINIT(0x0016ea80, 0x48, g_typeColl)
+DATA(0x002c05a8)
 CTypeCollRuntime g_typeColl;
 
-RVA_DYNINIT(0x0016e690, 0xa, g_buteTree)
-RVA_DYNINIT(0x0016e6a0, 0x26, g_buteTree)
-RVA_DYNINIT(0x0016e6d0, 0xe, g_buteTree)
-RVA_DYNINIT(0x0016e6e0, 0x3e, g_buteTree)
-DATA(0x002bf620)
+RVA_DYNINIT(0x0016e970, 0xa, g_buteTree)
+RVA_DYNINIT(0x0016e980, 0x26, g_buteTree)
+RVA_DYNINIT(0x0016e9b0, 0xe, g_buteTree)
+RVA_DYNINIT(0x0016e9c0, 0x3e, g_buteTree)
+DATA(0x002c0578)
 CButeTree g_buteTree(&ButeTreeNopFree, 0);
 
-RVA(0x0016e7f0, 0x1cf)
+RVA(0x0016ead0, 0x1cf)
 i32 CUserLogic::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
@@ -106,8 +106,8 @@ i32 CUserLogic::SerializeDispatch(
     return 1;
 }
 
-RVA_COMPGEN(0x0016e9c0, 0x45, ??_GCButeTree@@UAEPAXI@Z)
-RVA(0x0016ea10, 0x1)
+RVA_COMPGEN(0x0016eca0, 0x45, ??_GCButeTree@@UAEPAXI@Z)
+RVA(0x0016ecf0, 0x1)
 void ButeTreeNopFree(void*) {}
 
-RVA_COMPGEN(0x0016ea20, 0x51, ??_GCTypeCollRuntime@@UAEPAXI@Z)
+RVA_COMPGEN(0x0016ed00, 0x51, ??_GCTypeCollRuntime@@UAEPAXI@Z)

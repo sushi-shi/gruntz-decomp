@@ -40,17 +40,17 @@ static inline CAniElement* LookupAnimation(CMapStringToPtr& map, LPCTSTR name) {
     return result;
 }
 
-RVA_DYNINIT(0x0009d120, 0xa, CActRegPool<CLightFx>::s_table)
-RVA_DYNINIT(0x0009d140, 0x15, CActRegPool<CLightFx>::s_table)
-RVA_DYNINIT(0x0009d170, 0xe, CActRegPool<CLightFx>::s_table)
-RVA_DYNINIT(0x0009d190, 0x1f, CActRegPool<CLightFx>::s_table)
-template<> DATA(0x00245ad0)
+RVA_DYNINIT(0x0009d040, 0xa, CActRegPool<CLightFx>::s_table)
+RVA_DYNINIT(0x0009d060, 0x15, CActRegPool<CLightFx>::s_table)
+RVA_DYNINIT(0x0009d090, 0xe, CActRegPool<CLightFx>::s_table)
+RVA_DYNINIT(0x0009d0b0, 0x1f, CActRegPool<CLightFx>::s_table)
+template<> DATA(0x00246a28)
 CActReg CActRegPool<CLightFx>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
-RVA_COMPGEN(0x00012400, 0x1e, ??_GCLightFx@@UAEPAXI@Z)
-RVA_COMPGEN(0x00012430, 0x44, ??1CLightFx@@UAE@XZ)
+RVA_COMPGEN(0x00012410, 0x1e, ??_GCLightFx@@UAEPAXI@Z)
+RVA_COMPGEN(0x00012440, 0x44, ??1CLightFx@@UAE@XZ)
 
-RVA(0x0009cdc0, 0xf1)
+RVA(0x0009cce0, 0xf1)
 i32 DispatchLightFxLogic(CGameObject* obj) {
     CLogicRecord* record = obj->m_logicRecord;
     switch (record->LogicEvent()) {
@@ -90,12 +90,12 @@ i32 DispatchLightFxLogic(CGameObject* obj) {
 }
 
 // @early-stop
-RVA(0x0009cf00, 0x1a5)
+RVA(0x0009ce20, 0x1a5)
 CLightFx::CLightFx(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_shadeTableIndex = 2;
     m_deleteWhenComplete = true;
 }
-RVA(0x0009d1c0, 0x102)
+RVA(0x0009d0e0, 0x102)
 void CLightFx::FireActivation(i32 id) {
     CActHandler* e = (CActRegPool<CLightFx>::s_table.ResolveEntry(id));
     if ((*e) != NULL) {
@@ -103,7 +103,7 @@ void CLightFx::FireActivation(i32 id) {
     }
 }
 
-RVA(0x0009d320, 0x18d)
+RVA(0x0009d240, 0x18d)
 void CLightFx::RegisterActs() {
     ACT_NAME_ID(id, "A")
     (*((CActRegPool<CLightFx>::s_table.ResolveEntry(id)))) =
@@ -111,7 +111,7 @@ void CLightFx::RegisterActs() {
 }
 
 // @early-stop
-RVA(0x0009d520, 0xfd)
+RVA(0x0009d440, 0xfd)
 void CLightFx::Activate(
     const char* imageSetName,
     const char* animationName,
@@ -147,7 +147,7 @@ void CLightFx::Activate(
     }
 }
 
-RVA(0x0009d660, 0xc8)
+RVA(0x0009d580, 0xc8)
 i32 CLightFx::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
@@ -174,13 +174,13 @@ i32 CLightFx::SerializeDispatch(
     return 1;
 }
 
-RVA(0x0009d770, 0x25)
+RVA(0x0009d690, 0x25)
 i32 CLightFx::RebindNode() {
     SET_ANIMATION_ACT("A");
     return 0;
 }
 
-RVA(0x0009d7b0, 0x40)
+RVA(0x0009d6d0, 0x40)
 i32 CLightFx::AdvanceAnim() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     MARK_OBJECT_COMPLETE_IF(

@@ -149,7 +149,7 @@
 
 // @early-stop
 
-RVA(0x000862f0, 0x4369)
+RVA(0x00086210, 0x4369)
 i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
     switch (nID) {
         case CMD_NEW_GAME:

@@ -16,7 +16,7 @@
 #include <new>
 #include <stddef.h>
 
-RVA(0x001832d0, 0x20)
+RVA(0x001835b0, 0x20)
 CString CMenuPage::GetPageKey() {
     return m_pageKey;
 }
@@ -33,7 +33,7 @@ static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
     m_headerAnimation = animation;                                                                 \
     return animation != NULL
 
-RVA(0x001832f0, 0xa5)
+RVA(0x001835d0, 0xa5)
 i32 CMenuPage::Configure(
     CMenuTree* menuTree,
     const char* pageKey,
@@ -57,7 +57,7 @@ i32 CMenuPage::Configure(
     RESOLVE_MENU_HEADER_ANIMATION(headerAnimationKey, headerAnimation);
 }
 
-RVA(0x001833a0, 0x1a)
+RVA(0x00183680, 0x1a)
 void CMenuPage::Reset() {
     ClearItems();
     m_world = NULL;
@@ -67,7 +67,7 @@ void CMenuPage::Reset() {
     m_flags = MENU_PAGE_FLAGS_NONE;
 }
 
-RVA(0x001833c0, 0x2b)
+RVA(0x001836a0, 0x2b)
 void CMenuPage::ClearItems() {
     POSITION position = m_items.GetHeadPosition();
     while (position) {
@@ -81,12 +81,12 @@ void CMenuPage::ClearItems() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001833f0, 0x38)
+RVA(0x001836d0, 0x38)
 i32 CMenuPage::ResolveHeaderAnimation(const char* animationKey) {
     RESOLVE_MENU_HEADER_ANIMATION(animationKey, headerAnimation);
 }
 
-RVA(0x00183430, 0x24)
+RVA(0x00183710, 0x24)
 i32 CMenuPage::AppendItem(CMenuItem* item) {
     if (!item) {
         return 0;
@@ -95,7 +95,7 @@ i32 CMenuPage::AppendItem(CMenuItem* item) {
     return 1;
 }
 
-RVA(0x00183460, 0x13d)
+RVA(0x00183740, 0x13d)
 CMenuItem* CMenuPage::AddItem(
     const char* name,
     const char* animationKey,
@@ -114,7 +114,7 @@ CMenuItem* CMenuPage::AddItem(
     return AppendItem(item) ? item : NULL;
 }
 
-RVA(0x001835a0, 0x14b)
+RVA(0x00183880, 0x14b)
 CMenuItem* CMenuPage::AddItem(
     const char* name,
     const char* animationKey,
@@ -138,7 +138,7 @@ CMenuItem* CMenuPage::AddItem(
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001836f0, 0x160)
+RVA(0x001839d0, 0x160)
 CAnimatedMenuItem* CMenuPage::AddAnimatedItem(
     const char* name,
     const char* animationKey,
@@ -160,7 +160,7 @@ CAnimatedMenuItem* CMenuPage::AddAnimatedItem(
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00183850, 0x13b)
+RVA(0x00183b30, 0x13b)
 CAnimatedMenuItem* CMenuPage::AddAnimatedItem(
     const char* name,
     const char* animationKey,
@@ -183,7 +183,7 @@ CAnimatedMenuItem* CMenuPage::AddAnimatedItem(
     item->SetSecondaryCommandId(secondaryCommandId);
     return AppendItem(item) ? item : NULL;
 }
-RVA(0x00183990, 0x38)
+RVA(0x00183c70, 0x38)
 i32 CMenuPage::PrepareForActivation() {
     if (m_focusedItem) {
         m_focusedItem->Deselect();
@@ -199,7 +199,7 @@ i32 CMenuPage::PrepareForActivation() {
     return 1;
 }
 
-RVA(0x001839d0, 0xff)
+RVA(0x00183cb0, 0xff)
 i32 CMenuPage::FocusInitialItem() {
     if (!m_initialFocusItemName.IsEmpty()) {
         POSITION position = m_items.GetHeadPosition();
@@ -233,7 +233,7 @@ i32 CMenuPage::FocusInitialItem() {
     return 0;
 }
 
-RVA(0x00183ad0, 0x57)
+RVA(0x00183db0, 0x57)
 i32 CMenuPage::SetFocusedItem(CMenuItem* item, i32 playFocusSound) {
     if (!item) {
         return 0;
@@ -252,7 +252,7 @@ i32 CMenuPage::SetFocusedItem(CMenuItem* item, i32 playFocusSound) {
     return item->Select(playFocusSound) != 0;
 }
 
-RVA(0x00183b30, 0x2c)
+RVA(0x00183e10, 0x2c)
 i32 CMenuPage::UpdateItems(u32 deltaMs) {
     POSITION position = m_items.GetHeadPosition();
     while (position) {
@@ -264,7 +264,7 @@ i32 CMenuPage::UpdateItems(u32 deltaMs) {
     return 1;
 }
 
-RVA(0x00183b60, 0xe8)
+RVA(0x00183e40, 0xe8)
 i32 CMenuPage::Draw(CDDrawSurfacePair* target) {
     if (HAS(m_flags, MENU_PAGE_MULTI_COLUMN)) {
         return DrawMultiColumn(target);
@@ -300,7 +300,7 @@ i32 CMenuPage::Draw(CDDrawSurfacePair* target) {
     return 1;
 }
 
-RVA(0x00183c50, 0xbc)
+RVA(0x00183f30, 0xbc)
 i32 CMenuPage::MoveFocusUpSequential() {
     if (!m_focusedItem) {
         return 0;
@@ -359,7 +359,7 @@ i32 CMenuPage::MoveFocusUpSequential() {
     return SetFocusedItem(candidateItem, 1) != 0;
 }
 
-RVA(0x00183d10, 0xbc)
+RVA(0x00183ff0, 0xbc)
 i32 CMenuPage::MoveFocusDownSequential() {
     if (!m_focusedItem) {
         return 0;
@@ -418,7 +418,7 @@ i32 CMenuPage::MoveFocusDownSequential() {
     return SetFocusedItem(candidateItem, 1) != 0;
 }
 
-RVA(0x00183dd0, 0x16)
+RVA(0x001840b0, 0x16)
 i32 CMenuPage::ActivateFocusedItem() {
     if (!m_focusedItem) {
         return 0;
@@ -426,7 +426,7 @@ i32 CMenuPage::ActivateFocusedItem() {
     return m_focusedItem->Activate() != 0;
 }
 
-RVA(0x00183df0, 0x3d)
+RVA(0x001840d0, 0x3d)
 i32 CMenuPage::ReturnToParentPage(i32 playActivationSound) {
     if (m_parentPageKey.GetLength() == 0) {
         return 0;
@@ -440,7 +440,7 @@ i32 CMenuPage::ReturnToParentPage(i32 playActivationSound) {
     return 1;
 }
 
-RVA(0x00183e30, 0x1f)
+RVA(0x00184110, 0x1f)
 i32 CMenuPage::CanWrap() {
     MenuPageFlags pageFlags = m_flags;
     if (HAS(pageFlags, MENU_PAGE_DISABLE_WRAP)) {
@@ -456,7 +456,7 @@ i32 CMenuPage::CanWrap() {
     return 0;
 }
 
-RVA(0x00183e50, 0x11c)
+RVA(0x00184130, 0x11c)
 i32 CMenuPage::DrawMultiColumn(CDDrawSurfacePair* target) {
     i32 left = m_bounds.left;
     i32 right = m_bounds.right;
@@ -499,7 +499,7 @@ i32 CMenuPage::DrawMultiColumn(CDDrawSurfacePair* target) {
     return 1;
 }
 
-RVA(0x00183f70, 0x74)
+RVA(0x00184250, 0x74)
 i32 CMenuPage::MoveFocusRightColumn() {
     CMenuItem* currentItem = m_focusedItem;
     if (!currentItem) {
@@ -538,7 +538,7 @@ i32 CMenuPage::MoveFocusRightColumn() {
     return SetFocusedItem(candidateItem, 1) != 0;
 }
 
-RVA(0x00183ff0, 0x75)
+RVA(0x001842d0, 0x75)
 i32 CMenuPage::MoveFocusLeftColumn() {
     CMenuItem* currentItem = m_focusedItem;
     if (!currentItem) {
@@ -577,7 +577,7 @@ i32 CMenuPage::MoveFocusLeftColumn() {
     return SetFocusedItem(candidateItem, 1) != 0;
 }
 
-RVA(0x00184070, 0x30)
+RVA(0x00184350, 0x30)
 i32 CMenuPage::FocusItemAt(i32 screenX, i32 screenY) {
     CMenuItem* hitItem = HitTest(screenX, screenY);
     if (!hitItem) {
@@ -586,7 +586,7 @@ i32 CMenuPage::FocusItemAt(i32 screenX, i32 screenY) {
     return SetFocusedItem(hitItem, 1) != 0;
 }
 
-RVA(0x001840a0, 0x57)
+RVA(0x00184380, 0x57)
 i32 CMenuPage::ClickAt(i32 screenX, i32 screenY) {
     CMenuItem* hitItem = HitTest(screenX, screenY);
     if (!hitItem) {
@@ -602,7 +602,7 @@ i32 CMenuPage::ClickAt(i32 screenX, i32 screenY) {
     return 1;
 }
 
-RVA(0x00184100, 0x4a)
+RVA(0x001843e0, 0x4a)
 CMenuItem* CMenuPage::HitTest(i32 screenX, i32 screenY) {
     POSITION position = m_items.GetHeadPosition();
     while (position) {
@@ -616,7 +616,7 @@ CMenuItem* CMenuPage::HitTest(i32 screenX, i32 screenY) {
     return NULL;
 }
 
-RVA(0x00184150, 0xe0)
+RVA(0x00184430, 0xe0)
 CMenuItem* CMenuPage::FindItemByName(const char* name) {
     if (!name) {
         return NULL;
@@ -635,7 +635,7 @@ CMenuItem* CMenuPage::FindItemByName(const char* name) {
     return NULL;
 }
 
-RVA(0x00184230, 0xd2)
+RVA(0x00184510, 0xd2)
 i32 CMenuPage::MoveFocusLeft() {
     if (!m_focusedItem) {
         return 0;
@@ -654,7 +654,7 @@ i32 CMenuPage::MoveFocusLeft() {
     return MoveFocusLeftColumn();
 }
 
-RVA(0x00184310, 0xd2)
+RVA(0x001845f0, 0xd2)
 i32 CMenuPage::MoveFocusRight() {
     if (!m_focusedItem) {
         return 0;
@@ -673,7 +673,7 @@ i32 CMenuPage::MoveFocusRight() {
     return MoveFocusRightColumn();
 }
 
-RVA(0x001843f0, 0xd2)
+RVA(0x001846d0, 0xd2)
 i32 CMenuPage::MoveFocusUp() {
     if (!m_focusedItem) {
         return 0;
@@ -692,7 +692,7 @@ i32 CMenuPage::MoveFocusUp() {
     return MoveFocusUpSequential();
 }
 
-RVA(0x001844d0, 0xd2)
+RVA(0x001847b0, 0xd2)
 i32 CMenuPage::MoveFocusDown() {
     if (!m_focusedItem) {
         return 0;
@@ -711,8 +711,8 @@ i32 CMenuPage::MoveFocusDown() {
     return MoveFocusDownSequential();
 }
 
-RVA_COMPGEN(0x00184670, 0x1e, ??_GCMenuItem@@UAEPAXI@Z)
-RVA_COMPGEN(0x00184690, 0x91, ??1CMenuItem@@UAE@XZ)
-RVA_COMPGEN(0x00184730, 0x41, ?Reset@CMenuItem@@UAEXXZ)
-RVA_COMPGEN(0x001847c0, 0x1e, ??_GCAnimatedMenuItem@@UAEPAXI@Z)
-RVA_COMPGEN(0x001847e0, 0xa6, ??1CAnimatedMenuItem@@UAE@XZ)
+RVA_COMPGEN(0x00184950, 0x1e, ??_GCMenuItem@@UAEPAXI@Z)
+RVA_COMPGEN(0x00184970, 0x91, ??1CMenuItem@@UAE@XZ)
+RVA_COMPGEN(0x00184a10, 0x41, ?Reset@CMenuItem@@UAEXXZ)
+RVA_COMPGEN(0x00184aa0, 0x1e, ??_GCAnimatedMenuItem@@UAEPAXI@Z)
+RVA_COMPGEN(0x00184ac0, 0xa6, ??1CAnimatedMenuItem@@UAE@XZ)

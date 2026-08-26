@@ -29,7 +29,7 @@ struct CRezList : public CObjList {
     CRezList() {}
     virtual void UnusedListHook() OVERRIDE;
 
-    RVA(0x0013ca30, 0x7)
+    RVA(0x0013cd10, 0x7)
     ~CRezList() {}
     void AddTail(CRezItmBase* node);
 

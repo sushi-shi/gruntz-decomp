@@ -7,7 +7,7 @@
 
 #include <stddef.h>
 
-RVA(0x000382c0, 0x52)
+RVA(0x000381e0, 0x52)
 i32 CInputState::Init(DirectInputMgr2* manager, InputDeviceSel selection) {
     if (manager == NULL) {
         return 0;
@@ -25,7 +25,7 @@ i32 CInputState::Init(DirectInputMgr2* manager, InputDeviceSel selection) {
     return 1;
 }
 
-RVA(0x00038340, 0x46)
+RVA(0x00038260, 0x46)
 void CInputState::ConfigureGameplayKeys() {
     if (m_keyboard) {
         m_keyboard->m_keyBindings[IDX(INPUT_BINDING_BUTTON0)] = VK_SHIFT;
@@ -36,7 +36,7 @@ void CInputState::ConfigureGameplayKeys() {
     }
 }
 
-RVA(0x000383b0, 0x1c0)
+RVA(0x000382d0, 0x1c0)
 i32 CInputState::SelectDevices(DirectInputMgr2* manager, InputDeviceSel selection) {
     if (manager == NULL) {
         return 0;
@@ -122,7 +122,7 @@ i32 CInputState::SelectDevices(DirectInputMgr2* manager, InputDeviceSel selectio
     return 1;
 }
 
-RVA(0x000385e0, 0x9f)
+RVA(0x00038500, 0x9f)
 i32 CInputState::Update() {
     CInputDevBase* dev = m_primaryDevice;
     CInputDeviceGroup* group = m_deviceGroup;
@@ -152,7 +152,7 @@ i32 CInputState::Update() {
     return 1;
 }
 
-RVA(0x000386b0, 0x5d)
+RVA(0x000385d0, 0x5d)
 i32 CInputState::ResetInputState() {
     CInputDevBase* d = m_primaryDevice;
     if (d) {
@@ -177,7 +177,7 @@ i32 CInputState::ResetInputState() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00038730, 0x2e)
+RVA(0x00038650, 0x2e)
 u8 CInputState::GetDirectionBits() {
     u32 k = m_heldButtons;
     u8 r = 0;
@@ -198,7 +198,7 @@ u8 CInputState::GetDirectionBits() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00038770, 0x40)
+RVA(0x00038690, 0x40)
 i32 CInputState::SetDirectionBits(i32 flags) {
     m_heldButtons = 0;
     m_pressedButtons = 0;

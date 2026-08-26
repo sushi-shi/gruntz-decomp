@@ -13,7 +13,7 @@
 #include <string.h>
 #include <tlhelp32.h>
 
-RVA(0x00118930, 0x15)
+RVA(0x00118b40, 0x15)
 void SetActiveAndFocus(HWND hWnd) {
     SetActiveWindow(hWnd);
     SetFocus(hWnd);
@@ -21,7 +21,7 @@ void SetActiveAndFocus(HWND hWnd) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00118960, 0x20)
+RVA(0x00118b70, 0x20)
 void SetTopmostStyle(HWND hWnd) {
     LONG s = GetWindowLongA(hWnd, GWL_EXSTYLE);
     if (s) {
@@ -31,7 +31,7 @@ void SetTopmostStyle(HWND hWnd) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00118990, 0x20)
+RVA(0x00118ba0, 0x20)
 void ClearTopmostStyle(HWND hWnd) {
     LONG s = GetWindowLongA(hWnd, GWL_EXSTYLE);
     if (s) {
@@ -39,7 +39,7 @@ void ClearTopmostStyle(HWND hWnd) {
     }
 }
 
-RVA(0x001189c0, 0x45)
+RVA(0x00118bd0, 0x45)
 i32 FileExists(const char* szPath) {
     OFSTRUCT of;
 
@@ -54,7 +54,7 @@ i32 FileExists(const char* szPath) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00118a30, 0xda)
+RVA(0x00118c40, 0xda)
 int HeapCheckDump(int walkOnBad) {
     _HEAPINFO hinfo;
     char buf[80];
@@ -84,7 +84,7 @@ int HeapCheckDump(int walkOnBad) {
     return status;
 }
 
-RVA(0x00118b50, 0x80)
+RVA(0x00118d60, 0x80)
 void ReportHeapStatus(i32 status) {
     switch (status) {
         case _HEAPBADBEGIN:
@@ -110,7 +110,7 @@ void ReportHeapStatus(i32 status) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00118bf0, 0xb4)
+RVA(0x00118e00, 0xb4)
 int HeapStats() {
     _HEAPINFO hinfo;
     char buf[128];
@@ -141,7 +141,7 @@ int HeapStats() {
 typedef HANDLE(WINAPI* PFN_CreateSnapshot)(u32 dwFlags, u32 th32ProcessID);
 typedef i32(WINAPI* PFN_Process32)(HANDLE hSnapshot, PROCESSENTRY32* pe);
 
-RVA(0x00118ce0, 0x1f5)
+RVA(0x00118ef0, 0x1f5)
 i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
     if (name == NULL || *name == 0) {
         return 0;

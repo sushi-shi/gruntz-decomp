@@ -242,7 +242,7 @@ public:
         m_groupFlag = true;
         g_curPlayer = 0;
     }
-    RVA(0x00085c50, 0x83)
+    RVA(0x00085b70, 0x83)
     ~CTriggerMgr() {
         Cleanup();
     }

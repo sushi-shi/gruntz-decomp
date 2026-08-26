@@ -87,7 +87,7 @@ public:
     }
 };
 
-RVA(0x000d5da0, 0x6)
+RVA(0x000d5dd0, 0x6)
 inline i32 CWapObj::IsReady() {
     return 1;
 }

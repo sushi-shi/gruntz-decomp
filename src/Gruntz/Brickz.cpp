@@ -8,7 +8,7 @@
 #include <stdlib.h>
 
 // @early-stop
-RVA(0x00081e10, 0x1a7)
+RVA(0x00081d30, 0x1a7)
 i32 CMapMgr::FindPathWithEndpointOverrides(
     i32 startX,
     i32 startY,
@@ -67,7 +67,7 @@ i32 CMapMgr::FindPathWithEndpointOverrides(
 }
 
 // @early-stop
-RVA(0x00082030, 0x1a1)
+RVA(0x00081f50, 0x1a1)
 i32 CMapMgr::UpdateDiagonals(CGruntzMgr* unused) {
     BrickzCell* cell = m_cellPool;
     if (m_dirty != false) {
@@ -128,7 +128,7 @@ i32 CMapMgr::UpdateDiagonals(CGruntzMgr* unused) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00082250, 0x17c)
+RVA(0x00082170, 0x17c)
 i32 CMapMgr::LineIsClear(i32 x0, i32 y0, i32 x1, i32 y1) {
     if (x0 == x1 && y0 == y1) {
         return 1;
@@ -177,7 +177,7 @@ i32 CMapMgr::LineIsClear(i32 x0, i32 y0, i32 x1, i32 y1) {
     return 1;
 }
 
-RVA(0x000853f0, 0x46)
+RVA(0x00085310, 0x46)
 i32 CMapMgr::IsCellClear(i32 x, i32 y) {
     return CellFlagsAt(x, y) == 0;
 }

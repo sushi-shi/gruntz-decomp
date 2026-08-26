@@ -33,90 +33,90 @@ public:
     virtual i32 LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId);
 
     virtual void ReleaseResources();
-    RVA(0x0008c490, 0x4)
+    RVA(0x0008c3b0, 0x4)
     virtual i32 IsActive() {
         return m_ready;
     }
-    RVA(0x0008c4b0, 0x6)
+    RVA(0x0008c3d0, 0x6)
     virtual GameStateId Update() {
         return GAMESTATE_BASE;
     }
-    RVA(0x0008c4d0, 0x6)
+    RVA(0x0008c3f0, 0x6)
     virtual i32 Render() {
         return 1;
     }
-    RVA(0x0008c4f0, 0x3)
+    RVA(0x0008c410, 0x3)
     virtual i32 RestoreDisplay() {
         return 0;
     }
     virtual i32 OnPaint();
 
     virtual i32 InputVirtual();
-    RVA(0x0008c510, 0x8)
+    RVA(0x0008c430, 0x8)
     virtual i32 EnterState(GameStateId previousState) {
         return 1;
     }
     virtual i32 LeaveState(GameStateId nextState);
 
-    RVA(0x0008c550, 0x5)
+    RVA(0x0008c470, 0x5)
     virtual i32 OnChar(i32 charCode, i32 keyData) {
         return 0;
     }
-    RVA(0x0008c570, 0x5)
+    RVA(0x0008c490, 0x5)
     virtual i32 OnKeyDown(i32 virtualKey, i32 keyData) {
         return 0;
     }
-    RVA(0x0008c590, 0x5)
+    RVA(0x0008c4b0, 0x5)
     virtual i32 OnKeyUp(i32 virtualKey, i32 keyData) {
         return 0;
     }
-    RVA(0x0008c5b0, 0x5)
+    RVA(0x0008c4d0, 0x5)
     virtual i32 OnLButtonDown(i32 keyFlags, i32 x, i32 y) {
         return 0;
     }
-    RVA(0x0008c5d0, 0x5)
+    RVA(0x0008c4f0, 0x5)
     virtual i32 OnLButtonUp(i32 keyFlags, i32 x, i32 y) {
         return 0;
     }
-    RVA(0x0008c5f0, 0x5)
+    RVA(0x0008c510, 0x5)
     virtual i32 OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
         return 0;
     }
-    RVA(0x0008c610, 0x5)
+    RVA(0x0008c530, 0x5)
     virtual i32 OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
         return 0;
     }
-    RVA(0x0008c630, 0x5)
+    RVA(0x0008c550, 0x5)
     virtual i32 OnRButtonUp(i32 keyFlags, i32 x, i32 y) {
         return 0;
     }
-    RVA(0x0008c650, 0x5)
+    RVA(0x0008c570, 0x5)
     virtual i32 OnRButtonDblClk(i32 keyFlags, i32 x, i32 y) {
         return 0;
     }
 
-    RVA(0x0008c670, 0x5)
+    RVA(0x0008c590, 0x5)
     virtual i32 OnMouseMove(i32 keyFlags, i32 x, i32 y) {
         return 0;
     }
 
-    RVA(0x0008c690, 0x3)
+    RVA(0x0008c5b0, 0x3)
     virtual i32 CompleteLevel() {
         return 0;
     }
 
-    RVA(0x0008c6b0, 0x3)
+    RVA(0x0008c5d0, 0x3)
     virtual i32 UnusedStateAction() {
         return 0;
     }
 
     virtual i32 DrawStateText(i32 x, i32 y, char* str, i32 color, i32 bkMode);
 
-    RVA(0x0008c6d0, 0x6)
+    RVA(0x0008c5f0, 0x6)
     virtual i32 PauseGame() {
         return 1;
     }
-    RVA(0x0008c6f0, 0x6)
+    RVA(0x0008c610, 0x6)
     virtual i32 ResumeGame() {
         return 1;
     }

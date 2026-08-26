@@ -68,7 +68,7 @@ public:
         i32 scheduleSlot
     );
 
-    RVA(0x00085bd0, 0x56)
+    RVA(0x00085af0, 0x56)
     ~CGruntzCmdMgr() {
         Shutdown();
     }

@@ -8,7 +8,7 @@
 
 #include <stddef.h>
 
-RVA(0x0000fcc0, 0x47)
+RVA(0x0000fcd0, 0x47)
 i32 CEyeCandy::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,

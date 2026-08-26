@@ -24,7 +24,7 @@
 #include <string.h>
 
 // @early-stop
-RVA(0x000e6020, 0x288)
+RVA(0x000e6150, 0x288)
 i32 CSBI_WellGoo::Setup(
     CStatusBarMgr* owner,
     CDDrawSurfaceMgr* host,
@@ -130,12 +130,12 @@ fail:
     return 0;
 }
 
-RVA(0x000e6360, 0x8)
+RVA(0x000e6490, 0x8)
 i32 CSBI_WellGoo::Refresh(i32) {
     return 1;
 }
 
-RVA(0x000e6380, 0xf9)
+RVA(0x000e64b0, 0xf9)
 i32 CSBI_WellGoo::Render() {
     if (m_redrawFrames <= 0) {
         return 1;
@@ -167,7 +167,7 @@ i32 CSBI_WellGoo::Render() {
 }
 
 // @early-stop
-RVA(0x000e64c0, 0x3e7)
+RVA(0x000e65f0, 0x3e7)
 i32 CSBI_WellGoo::SerializeFields(
     CFileMemBase* arc,
     SerialMode mode,
@@ -293,8 +293,8 @@ i32 CSBI_WellGoo::SerializeFields(
     return 1;
 }
 
-RVA_COMPGEN(0x00104b80, 0x1e, ??_GCSBI_WellGoo@@UAEPAXI@Z)
-RVA(0x00104bb0, 0x94)
+RVA_COMPGEN(0x00104cb0, 0x1e, ??_GCSBI_WellGoo@@UAEPAXI@Z)
+RVA(0x00104ce0, 0x94)
 CSBI_WellGoo::~CSBI_WellGoo() {
     if (m_gooSrc != NULL) {
         m_host->m_deviceManager->RemoveSurface(m_gooSrc);

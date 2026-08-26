@@ -52,34 +52,34 @@
 
 #include <string.h>
 
-RVA_DYNINIT(0x000977e0, 0xa, CActRegPool<CInGameIcon>::s_table)
-RVA_DYNINIT(0x00097800, 0x15, CActRegPool<CInGameIcon>::s_table)
-RVA_DYNINIT(0x00097830, 0xe, CActRegPool<CInGameIcon>::s_table)
-RVA_DYNINIT(0x00097850, 0x1f, CActRegPool<CInGameIcon>::s_table)
-template<> DATA(0x002458b0)
+RVA_DYNINIT(0x00097700, 0xa, CActRegPool<CInGameIcon>::s_table)
+RVA_DYNINIT(0x00097720, 0x15, CActRegPool<CInGameIcon>::s_table)
+RVA_DYNINIT(0x00097750, 0xe, CActRegPool<CInGameIcon>::s_table)
+RVA_DYNINIT(0x00097770, 0x1f, CActRegPool<CInGameIcon>::s_table)
+template<> DATA(0x00246808)
 CActReg CActRegPool<CInGameIcon>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
-RVA_DYNINIT(0x00097d40, 0xa, CActRegPool<CToyPeek>::s_table)
-RVA_DYNINIT(0x00097d60, 0x15, CActRegPool<CToyPeek>::s_table)
-RVA_DYNINIT(0x00097d90, 0xe, CActRegPool<CToyPeek>::s_table)
-RVA_DYNINIT(0x00097db0, 0x1f, CActRegPool<CToyPeek>::s_table)
-template<> DATA(0x00245928)
+RVA_DYNINIT(0x00097c60, 0xa, CActRegPool<CToyPeek>::s_table)
+RVA_DYNINIT(0x00097c80, 0x15, CActRegPool<CToyPeek>::s_table)
+RVA_DYNINIT(0x00097cb0, 0xe, CActRegPool<CToyPeek>::s_table)
+RVA_DYNINIT(0x00097cd0, 0x1f, CActRegPool<CToyPeek>::s_table)
+template<> DATA(0x00246880)
 CActReg CActRegPool<CToyPeek>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
-RVA_DYNINIT(0x000993c0, 0xa, CActRegPool<CInGameText>::s_table)
-RVA_DYNINIT(0x000993e0, 0x15, CActRegPool<CInGameText>::s_table)
-RVA_DYNINIT(0x00099410, 0xe, CActRegPool<CInGameText>::s_table)
-RVA_DYNINIT(0x00099430, 0x1f, CActRegPool<CInGameText>::s_table)
-template<> DATA(0x00245950)
+RVA_DYNINIT(0x000992e0, 0xa, CActRegPool<CInGameText>::s_table)
+RVA_DYNINIT(0x00099300, 0x15, CActRegPool<CInGameText>::s_table)
+RVA_DYNINIT(0x00099330, 0xe, CActRegPool<CInGameText>::s_table)
+RVA_DYNINIT(0x00099350, 0x1f, CActRegPool<CInGameText>::s_table)
+template<> DATA(0x002468a8)
 CActReg CActRegPool<CInGameText>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
-RVA_COMPGEN(0x00011c10, 0x1e, ??_GCToyPeek@@UAEPAXI@Z)
+RVA_COMPGEN(0x00011c20, 0x1e, ??_GCToyPeek@@UAEPAXI@Z)
 
-RVA_COMPGEN(0x00011c40, 0x44, ??1CToyPeek@@UAE@XZ)
+RVA_COMPGEN(0x00011c50, 0x44, ??1CToyPeek@@UAE@XZ)
 
-RVA_COMPGEN(0x00011cd0, 0x1e, ??_GCInGameIcon@@UAEPAXI@Z)
-RVA_COMPGEN(0x00011d00, 0x44, ??1CInGameIcon@@UAE@XZ)
+RVA_COMPGEN(0x00011ce0, 0x1e, ??_GCInGameIcon@@UAEPAXI@Z)
+RVA_COMPGEN(0x00011d10, 0x44, ??1CInGameIcon@@UAE@XZ)
 
-RVA_COMPGEN(0x00011d90, 0x1e, ??_GCInGameText@@UAEPAXI@Z)
-RVA_COMPGEN(0x00011dc0, 0x44, ??1CInGameText@@UAE@XZ)
+RVA_COMPGEN(0x00011da0, 0x1e, ??_GCInGameText@@UAEPAXI@Z)
+RVA_COMPGEN(0x00011dd0, 0x44, ??1CInGameText@@UAE@XZ)
 
 static inline SoundCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
     SoundCue* found = NULL;
@@ -105,7 +105,7 @@ static inline CWwdSpriteObject* LookupSerialRef(CMapPtrToPtr& byId, i32 id) {
 }
 
 // @early-stop
-RVA(0x00095b10, 0x15f0)
+RVA(0x00095a30, 0x15f0)
 CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
 
     m_driftPos.m_lo = 0;
@@ -417,7 +417,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     m_object->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
 }
 
-RVA(0x00097680, 0x110)
+RVA(0x000975a0, 0x110)
 i32 CInGameIcon::HandleInput() {
     CWwdSpriteObject* obj = m_object;
     PickupType cmd = static_cast<PickupType>(obj->m_smarts);
@@ -473,14 +473,14 @@ i32 CInGameIcon::HandleInput() {
     return 1;
 }
 
-RVA(0x00097880, 0x102)
+RVA(0x000977a0, 0x102)
 void CInGameIcon::FireActivation(i32 id) {
     if (*CActRegPool<CInGameIcon>::s_table.ResolveEntry(id) != NULL) {
         (this->*(*CActRegPool<CInGameIcon>::s_table.ResolveEntry(id)))();
     }
 }
 
-RVA(0x000979e0, 0x2ac)
+RVA(0x00097900, 0x2ac)
 void RegisterIconActions() {
     ACT_NAME_ID_CALL_REPORT(idxA, "A")
     CActHandler* dslotA = CActRegPool<CInGameIcon>::s_table.ResolveEntryCallReport(idxA);
@@ -491,14 +491,14 @@ void RegisterIconActions() {
     *dslotB = static_cast<CActHandler>(&CInGameIcon::Reposition);
 }
 
-RVA(0x00097de0, 0x102)
+RVA(0x00097d00, 0x102)
 void CToyPeek::FireActivation(i32 id) {
     if (*CActRegPool<CToyPeek>::s_table.ResolveEntry(id) != NULL) {
         (this->*(*CActRegPool<CToyPeek>::s_table.ResolveEntry(id)))();
     }
 }
 
-RVA(0x00097f40, 0x18d)
+RVA(0x00097e60, 0x18d)
 void RegisterIconState() {
     ACT_NAME_ID(idx, "A")
     CActHandler* dslot = CActRegPool<CToyPeek>::s_table.ResolveEntry(idx);
@@ -506,7 +506,7 @@ void RegisterIconState() {
 }
 
 // @early-stop
-RVA(0x00098140, 0x18e)
+RVA(0x00098060, 0x18e)
 CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_startClock.m_v = 0;
     m_countdown.m_v = 0;
@@ -519,7 +519,7 @@ CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
     SET_ANIMATION_ACT("A");
 }
 
-RVA(0x00098340, 0x71)
+RVA(0x00098260, 0x71)
 i32 CInGameIcon::RefreshCell() {
     CWwdSpriteObject* obj = m_object;
     i32 tileX = obj->m_screenX >> TILE_SHIFT_PX;
@@ -544,7 +544,7 @@ i32 CInGameIcon::RefreshCell() {
     return 0;
 }
 
-RVA(0x000983e0, 0x98)
+RVA(0x00098300, 0x98)
 i32 CToyPeek::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
@@ -558,7 +558,7 @@ i32 CToyPeek::SerializeDispatch(
 }
 
 // @early-stop
-RVA(0x000984b0, 0x186)
+RVA(0x000983d0, 0x186)
 i32 CInGameIcon::PeekCycle() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     CWwdSpriteObject* obj = m_object;
@@ -612,7 +612,7 @@ static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
 }
 
 // @early-stop
-RVA(0x000986b0, 0x30c)
+RVA(0x000985d0, 0x30c)
 
 i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
     CWwdSpriteObject* obj;
@@ -728,7 +728,7 @@ fail:
 }
 
 // @early-stop
-RVA(0x00098a90, 0x18d)
+RVA(0x000989b0, 0x18d)
 i32 CInGameIcon::Reposition() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     i64 delta = static_cast<i64>(g_frameTime) - m_driftPos.m_v;
@@ -787,7 +787,7 @@ i32 CInGameIcon::Reposition() {
 }
 
 // @early-stop
-RVA(0x00098c90, 0x382)
+RVA(0x00098bb0, 0x382)
 i32 CInGameIcon::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
@@ -918,7 +918,7 @@ i32 CInGameIcon::SerializeDispatch(
 }
 
 // @early-stop
-RVA(0x00099110, 0x215)
+RVA(0x00099030, 0x215)
 CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
@@ -950,7 +950,7 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     m_cachedUnitIndex = -1;
 }
 
-RVA(0x00099460, 0x102)
+RVA(0x00099380, 0x102)
 void CInGameText::FireActivation(i32 idx) {
     if (*CActRegPool<CInGameText>::s_table.ResolveEntry(idx) != NULL) {
         CActHandler fn = *CActRegPool<CInGameText>::s_table.ResolveEntry(idx);
@@ -958,7 +958,7 @@ void CInGameText::FireActivation(i32 idx) {
     }
 }
 
-RVA(0x000995c0, 0x18d)
+RVA(0x000994e0, 0x18d)
 void RegisterTextLogic() {
     ACT_NAME_ID(idx, "A")
     CActHandler* dslot = CActRegPool<CInGameText>::s_table.ResolveEntry(idx);
@@ -966,7 +966,7 @@ void RegisterTextLogic() {
 }
 
 // @early-stop
-RVA(0x000997c0, 0x1e7)
+RVA(0x000996e0, 0x1e7)
 i32 CInGameText::Update() {
     m_wwdObject->m_animationCursor.Advance(static_cast<i32>(g_engineFrameDelta));
 
@@ -1028,7 +1028,7 @@ i32 CInGameText::Update() {
     return 0;
 }
 
-RVA(0x00099a30, 0xaa)
+RVA(0x00099950, 0xaa)
 i32 CInGameText::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
@@ -1052,7 +1052,7 @@ i32 CInGameText::SerializeDispatch(
     return 1;
 }
 
-RVA(0x00099b10, 0x36)
+RVA(0x00099a30, 0x36)
 void CInGameIcon::SetupSprite(const char* category) {
     SoundCue* found = NULL;
     if (category != NULL) {

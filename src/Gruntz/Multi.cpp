@@ -75,10 +75,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-DATA(0x00245550)
+DATA(0x002464a8)
 i32 g_cfgWord;
 
-DATA(0x002455fc)
+DATA(0x00246554)
 i32 g_battlezTurnPlayerIndex = 0;
 
 GZ_ENUM_CONST_BEGIN(NetSentinels)
@@ -91,76 +91,76 @@ GZ_ENUM_CONST_BEGIN(NetPlayerDefaults)
     NET_DEFAULT_MAX_GRUNTZ = 15
 GZ_ENUM_CONST_END(NetPlayerDefaults)
 
-DATA(0x00211d88)
+DATA(0x00212d20)
 i32 g_dropPlayerId = NET_PLAYER_ID_NONE;
-DATA(0x00211d8c)
+DATA(0x00212d24)
 
 i32 g_serviceId = NET_SERVICE_NONE;
-DATA(0x00211ec4)
+DATA(0x00212e5c)
 char s_GameKey[] = "GAME_KEY";
-DATA(0x00246378)
+DATA(0x002472d0)
 CNetOptionsStatePacket g_optionsClosedPacket;
-DATA(0x00246fd8)
+DATA(0x00247f30)
 CNetOptionsStatePacket g_optionsOpenedPacket;
-DATA(0x00248ce0)
+DATA(0x00249c38)
 HWND g_netMessageEditHwnd = NULL;
-DATA(0x00248ce4)
+DATA(0x00249c3c)
 b32 g_playerRosterChanged;
-DATA(0x00248ce8)
+DATA(0x00249c40)
 i32 g_roundStartTimeMs;
-DATA(0x00248d04)
+DATA(0x00249c5c)
 b32 g_pauseDialogOpen;
-DATA(0x00248d08)
+DATA(0x00249c60)
 b32 g_optionsDialogOpen;
-DATA(0x00248d0c)
+DATA(0x00249c64)
 b32 g_frameSkipToggle;
-DATA(0x00248d10)
+DATA(0x00249c68)
 b32 g_dropDialogOpen;
-DATA(0x00248d14)
+DATA(0x00249c6c)
 u32 g_ackThrottleDeadline;
 
-DATA(0x00248cec)
+DATA(0x00249c44)
 i32 g_playersInOptionsCount = 0;
 
-RVA_DYNINIT(0x000b5360, 0xa, g_sessionName)
-RVA_DYNINIT(0x000b5380, 0xa, g_sessionName)
-RVA_DYNINIT(0x000b53a0, 0xe, g_sessionName)
-RVA_DYNINIT(0x000b53c0, 0xa, g_sessionName)
-DATA(0x002473d8)
+RVA_DYNINIT(0x000b5350, 0xa, g_sessionName)
+RVA_DYNINIT(0x000b5370, 0xa, g_sessionName)
+RVA_DYNINIT(0x000b5390, 0xe, g_sessionName)
+RVA_DYNINIT(0x000b53b0, 0xa, g_sessionName)
+DATA(0x00248330)
 CString g_sessionName;
 
-DATA(0x002473e0)
+DATA(0x00248338)
 CNetChatPacket g_netChatPacket;
 
-DATA(0x00248d00)
+DATA(0x00249c58)
 HWND g_sessionListHwnd;
 
-DATA(0x00248cf0)
+DATA(0x00249c48)
 b32 g_hostServicesMode;
 
-DATA(0x00248cf4)
+DATA(0x00249c4c)
 CNetMgr* g_netMgr;
-DATA(0x00248cf8)
+DATA(0x00249c50)
 CMulti* g_connectRptMgr;
 
-RVA_COMPGEN(0x00085460, 0x8, ??_FCPtrList@@QAEXXZ)
+RVA_COMPGEN(0x00085380, 0x8, ??_FCPtrList@@QAEXXZ)
 
-RVA(0x0008d270, 0x124)
+RVA(0x0008d190, 0x124)
 CMulti::~CMulti() {
     CMulti::ReleaseResources();
 }
 
-RVA_DYNINIT(0x000b53e0, 0xa, g_gruntzLogFile)
-RVA_DYNINIT(0x000b5400, 0xa, g_gruntzLogFile)
-RVA_DYNINIT(0x000b5420, 0xe, g_gruntzLogFile)
-RVA_DYNINIT(0x000b5440, 0xa, g_gruntzLogFile)
-DATA(0x00246778)
+RVA_DYNINIT(0x000b53d0, 0xa, g_gruntzLogFile)
+RVA_DYNINIT(0x000b53f0, 0xa, g_gruntzLogFile)
+RVA_DYNINIT(0x000b5410, 0xe, g_gruntzLogFile)
+RVA_DYNINIT(0x000b5430, 0xa, g_gruntzLogFile)
+DATA(0x002476d0)
 CFile g_gruntzLogFile;
-DATA(0x002467d8)
+DATA(0x00247730)
 char g_recvBuffer[NET_RECEIVE_BUFFER_BYTES];
 
 // @early-stop
-RVA(0x000b5460, 0x914)
+RVA(0x000b5450, 0x914)
 i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
 
     g_gameReg->m_gameMode = GAMEMODE_MULTIPLAYER;
@@ -339,13 +339,13 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     return 1;
 }
 
-RVA_COMPGEN(0x000b5fd0, 0x1e, ??_GCNetMgr@@UAEPAXI@Z)
-RVA(0x000b6000, 0x6d)
+RVA_COMPGEN(0x000b5fc0, 0x1e, ??_GCNetMgr@@UAEPAXI@Z)
+RVA(0x000b5ff0, 0x6d)
 CNetMgr::~CNetMgr() {
     Destroy();
 }
 
-RVA(0x000b6110, 0xc7)
+RVA(0x000b6100, 0xc7)
 void CMulti::ReleaseResources() {
     if (m_netMgr && m_localPlayer && m_session && m_connected) {
         BroadcastValueMessage(NETMSG_WAIT_DIALOG_REPLY, IDX(IDC_NET_RESUME), DPSEND_GUARANTEED);
@@ -373,22 +373,22 @@ void CMulti::ReleaseResources() {
     CPlay::ReleaseResources();
 }
 
-RVA(0x000b6220, 0x54)
+RVA(0x000b6210, 0x54)
 CNetSession::~CNetSession() {
     Shutdown();
 }
 
-RVA(0x000b62a0, 0x4a)
+RVA(0x000b6290, 0x4a)
 CNetCmdSlot::~CNetCmdSlot() {
     ResetSlot();
 }
 
-RVA(0x000b6310, 0x5)
+RVA(0x000b6300, 0x5)
 void CMulti::OnExit() {
     CPlay::OnExit();
 }
 
-RVA(0x000b6330, 0x89)
+RVA(0x000b6320, 0x89)
 i32 CMulti::EnterState(GameStateId previousState) {
     if (CPlay::EnterState(previousState) == GAMESTATE_NONE) {
         return 0;
@@ -409,7 +409,7 @@ i32 CMulti::EnterState(GameStateId previousState) {
     return 1;
 }
 
-RVA(0x000b63f0, 0x11b)
+RVA(0x000b63e0, 0x11b)
 i32 CMulti::LeaveState(GameStateId nextState) {
     m_mgr->m_voiceManager->PauseAllVoices();
     m_savedClock = static_cast<i32>(g_frameTime);
@@ -435,12 +435,12 @@ i32 CMulti::LeaveState(GameStateId nextState) {
     return 1;
 }
 
-RVA(0x000b6560, 0x5)
+RVA(0x000b6550, 0x5)
 i32 CMulti::CompleteLevel() {
     return CPlay::CompleteLevel();
 }
 
-RVA(0x000b6580, 0x1eb)
+RVA(0x000b6570, 0x1eb)
 i32 CMulti::LoadByMode(i32 mode, i32 unused) {
     g_battlezTurnPlayerIndex = 0;
     GruntzPlayer* host = Mgr()->FindPlayerByNetworkId(m_localPlayerId);
@@ -503,7 +503,7 @@ i32 CMulti::LoadByMode(i32 mode, i32 unused) {
     return 1;
 }
 
-RVA(0x000b67f0, 0x74)
+RVA(0x000b67e0, 0x74)
 i32 CMulti::Connect(i32 mode) {
     m_connected = false;
     m_allPlayersReady = false;
@@ -522,7 +522,7 @@ i32 CMulti::Connect(i32 mode) {
 }
 
 // @early-stop
-RVA(0x000b6890, 0x21b)
+RVA(0x000b6880, 0x21b)
 i32 CMulti::Render() {
     m_drewThisFrame = false;
     HandleDragMove(0, m_cursorX, m_cursorY);
@@ -604,7 +604,7 @@ i32 CMulti::Render() {
 }
 
 // @early-stop
-RVA(0x000b6b40, 0x29e)
+RVA(0x000b6b30, 0x29e)
 i32 CMulti::AdvanceGameFrame() {
     b32 ready = FrameSyncWait();
     if (m_roundComplete == false && Mgr()->m_frameGate != false && ready == false) {
@@ -691,7 +691,7 @@ i32 CMulti::AdvanceGameFrame() {
 }
 
 // @early-stop
-RVA(0x000b6e90, 0x34d)
+RVA(0x000b6e80, 0x34d)
 void CMulti::RenderGameFrame() {
     if (m_roundComplete == false && Mgr()->m_frameGate != false) {
         RestoreCursorSaveUnder();
@@ -791,7 +791,7 @@ void CMulti::RenderGameFrame() {
 }
 
 // @early-stop
-RVA(0x000b72c0, 0x30b)
+RVA(0x000b72b0, 0x30b)
 i32 CMulti::StartTitle() {
     Mgr()->m_lobbyResult = 0;
     m_lobbyLaunch = true;
@@ -854,22 +854,22 @@ i32 CMulti::StartTitle() {
     return 1;
 }
 
-RVA(0x000b76a0, 0x4)
+RVA(0x000b7690, 0x4)
 char* CNetSessionListNode::SessionName() {
     return m_sessionDesc.lpszSessionNameA;
 }
 
-RVA(0x000b76c0, 0x4f)
+RVA(0x000b76b0, 0x4f)
 void CMulti::SetGameName(CString s) {
     m_gameName = s;
 }
 
-RVA(0x000b7730, 0x4f)
+RVA(0x000b7720, 0x4f)
 void CMulti::SetPlayerName(CString s) {
     m_playerName = s;
 }
 
-RVA(0x000b77a0, 0xb5)
+RVA(0x000b7790, 0xb5)
 i32 CMulti::Open() {
     if (!Network()) {
         return 0;
@@ -900,10 +900,10 @@ i32 CMulti::Open() {
 // @identity-TODO: adjacency to Open is the only evidence for the method's name.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000b7890, 0x1)
+RVA(0x000b7880, 0x1)
 void CMulti::Close() {}
 
-RVA(0x000b78b0, 0x17f)
+RVA(0x000b78a0, 0x17f)
 CNetProviderNode* CMulti::SelectNetworkProvider() {
     if (Network()->EnumServiceProviders(false) != 0) {
         ReportNetError(0);
@@ -946,12 +946,12 @@ CNetProviderNode* CMulti::SelectNetworkProvider() {
     return Network()->m_selectedProvider;
 }
 
-RVA(0x000b7a90, 0x23)
+RVA(0x000b7a80, 0x23)
 CString CMulti::GameName() {
     return m_gameName;
 }
 
-RVA(0x000b7b10, 0x27c)
+RVA(0x000b7b00, 0x27c)
 BOOL CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
 
     char nameBuf[0xa];
@@ -1037,7 +1037,7 @@ ret_false:
     return false;
 }
 
-RVA(0x000b7e30, 0x63)
+RVA(0x000b7e20, 0x63)
 void CMulti::ReportVersionMsg(char* msg, i32 code) {
     char buf[512];
     if (msg && *msg && Mgr()) {
@@ -1050,7 +1050,7 @@ void CMulti::ReportVersionMsg(char* msg, i32 code) {
     }
 }
 
-RVA(0x000b7ec0, 0x7d)
+RVA(0x000b7eb0, 0x7d)
 void CMulti::ReportStatusId(u32 strId, i32 level) {
     char buf[0x12a];
     if (Mgr() && Mgr()->m_owner->m_hInstance) {
@@ -1061,7 +1061,7 @@ void CMulti::ReportStatusId(u32 strId, i32 level) {
     }
 }
 
-RVA(0x000b7f60, 0x52)
+RVA(0x000b7f50, 0x52)
 void CMulti::ReportNetError(i32 level) {
     char buf[512];
     if (Mgr() && g_code != (DPERR_USERCANCEL & 0xffff)) {
@@ -1070,7 +1070,7 @@ void CMulti::ReportNetError(i32 level) {
     }
 }
 
-RVA(0x000b7fe0, 0x2f)
+RVA(0x000b7fd0, 0x2f)
 i32 CMulti::JoinSession() {
     if (RunErrorDialog("MULTI_JOIN", MultiJoinDlgProc, 0) == 0) {
         return 0;
@@ -1079,7 +1079,7 @@ i32 CMulti::JoinSession() {
     return 1;
 }
 
-RVA(0x000b8020, 0x22f)
+RVA(0x000b8010, 0x22f)
 BOOL CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     NetLobby::g_curDlg = hDlg;
     if (BlockScreenSaver(hDlg, msg, wParam, lParam) != 0) {
@@ -1163,7 +1163,7 @@ ret_true:
     return true;
 }
 
-RVA(0x000b82e0, 0x230)
+RVA(0x000b82d0, 0x230)
 i32 CMulti::DetectConnectionConfig() {
     m_gameClosed = false;
     CNetProviderNode* provider = Network()->m_selectedProvider;
@@ -1217,7 +1217,7 @@ i32 CMulti::DetectConnectionConfig() {
     return 1;
 }
 
-RVA(0x000b85a0, 0xd2)
+RVA(0x000b8590, 0xd2)
 void CMulti::ApplyCmdDelayDefaults() {
     Utils::RegistryHelper* reg = g_gameReg->m_settings;
 
@@ -1229,7 +1229,7 @@ void CMulti::ApplyCmdDelayDefaults() {
     reg->SetValueDword(const_cast<char*>(static_cast<const char*>(resendName)), m_resendInterval);
 }
 
-RVA(0x000b86c0, 0x206)
+RVA(0x000b86b0, 0x206)
 i32 CMulti::ShowMultiStartDlg() {
     CMultiStartDlg dlg(m_mgr, NULL);
     i32 r = m_mgr->ExitModalUI(&dlg, false);
@@ -1276,10 +1276,10 @@ i32 CMulti::ShowMultiStartDlg() {
     return 1;
 }
 
-RVA_COMPGEN(0x000b8960, 0x59, ??1CMultiStartDlg@@UAE@XZ)
+RVA_COMPGEN(0x000b8950, 0x59, ??1CMultiStartDlg@@UAE@XZ)
 
 // @early-stop
-RVA(0x000b89e0, 0xc8)
+RVA(0x000b89d0, 0xc8)
 void FillSessionList(HWND hList, CNetMgr* manager) {
     char buf[256];
     if (!hList) {
@@ -1324,11 +1324,11 @@ void FillSessionList(HWND hList, CNetMgr* manager) {
     }
 }
 
-RVA(0x000b8af0, 0x1)
+RVA(0x000b8ae0, 0x1)
 void RefreshSessionSelection(HWND hDlg, HWND hList) {}
 
 // @early-stop
-RVA(0x000b8b10, 0x175)
+RVA(0x000b8b00, 0x175)
 CNetSessionListNode* CMulti::CreateHostSessionAndPlayer() {
     char buf[0x100];
     buf[0] = ""[0];
@@ -1360,7 +1360,7 @@ CNetSessionListNode* CMulti::CreateHostSessionAndPlayer() {
 }
 
 // @early-stop
-RVA(0x000b8cf0, 0x23b)
+RVA(0x000b8ce0, 0x23b)
 i32 CMulti::OnJoinConfirm(HWND hDlg) {
     if (hDlg == NULL) {
         return 0;
@@ -1416,7 +1416,7 @@ i32 CMulti::OnJoinConfirm(HWND hDlg) {
     return 1;
 }
 
-RVA(0x000b8fc0, 0x151)
+RVA(0x000b8fb0, 0x151)
 i32 CMulti::VerifyCustomLevel(CNetSessionListNode* session, CNetPlayerNode* localPlayer) {
     if (session == NULL) {
         goto notVerified;
@@ -1459,7 +1459,7 @@ notVerified:
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000b9180, 0x4a)
+RVA(0x000b9170, 0x4a)
 i32 CMulti::PollSessionGated(i32 sessionGate, i32 pollGate) {
     if (sessionGate == 0) {
         return 0;
@@ -1474,14 +1474,14 @@ i32 CMulti::PollSessionGated(i32 sessionGate, i32 pollGate) {
     return m_allPlayersReady != false;
 }
 
-RVA(0x000b91f0, 0x31)
+RVA(0x000b91e0, 0x31)
 i32 CMulti::BroadcastValuePacket(CNetValuePacket* packet, i32 flags) {
     packet->m_flags |= NET_PACKET_APPLICATION;
     i32 hr = Network()->BroadcastFrom(LocalPlayer(), flags, packet, sizeof(*packet));
     return hr == 0;
 }
 
-RVA(0x000b9240, 0x38)
+RVA(0x000b9230, 0x38)
 void CMulti::BroadcastPlayerIdMessage(NetMsgId id, i32 flag) {
     CNetValuePacket pkt;
     pkt.m_flags |= NET_PACKET_APPLICATION;
@@ -1490,7 +1490,7 @@ void CMulti::BroadcastPlayerIdMessage(NetMsgId id, i32 flag) {
     BroadcastValuePacket(&pkt, flag);
 }
 
-RVA(0x000b9290, 0x32)
+RVA(0x000b9280, 0x32)
 void CMulti::BroadcastValueMessage(NetMsgId id, u32 value, i32 flag) {
     CNetValuePacket pkt;
     pkt.m_flags |= NET_PACKET_APPLICATION;
@@ -1499,7 +1499,7 @@ void CMulti::BroadcastValueMessage(NetMsgId id, u32 value, i32 flag) {
     BroadcastValuePacket(&pkt, flag);
 }
 
-RVA(0x000b92e0, 0x34)
+RVA(0x000b92d0, 0x34)
 i32 CMulti::BroadcastPacket(void* packet, i32 packetSize, i32 flags) {
     if (packet == NULL) {
         return 0;
@@ -1508,7 +1508,7 @@ i32 CMulti::BroadcastPacket(void* packet, i32 packetSize, i32 flags) {
     return hr == 0;
 }
 
-RVA(0x000b9330, 0x41)
+RVA(0x000b9320, 0x41)
 i32 CMulti::SendValuePacketTo(CNetPlayerNode* recipient, CNetValuePacket* packet, i32 flags) {
     if (recipient == NULL) {
         return 0;
@@ -1518,7 +1518,7 @@ i32 CMulti::SendValuePacketTo(CNetPlayerNode* recipient, CNetValuePacket* packet
     return hr == 0;
 }
 
-RVA(0x000b93a0, 0x47)
+RVA(0x000b9390, 0x47)
 i32 CMulti::SendPlayerIdMessageTo(CNetPlayerNode* recipient, NetMsgId messageId, i32 flags) {
     if (recipient == NULL) {
         return 0;
@@ -1530,7 +1530,7 @@ i32 CMulti::SendPlayerIdMessageTo(CNetPlayerNode* recipient, NetMsgId messageId,
     return SendValuePacketTo(recipient, &pkt, flags);
 }
 
-RVA(0x000b9410, 0x51)
+RVA(0x000b9400, 0x51)
 i32 CMulti::SendPlayerIdMessageToId(i32 recipientId, NetMsgId messageId, i32 flags) {
     CNetValuePacket pkt;
     pkt.m_flags |= NET_PACKET_APPLICATION;
@@ -1542,7 +1542,7 @@ i32 CMulti::SendPlayerIdMessageToId(i32 recipientId, NetMsgId messageId, i32 fla
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000b9490, 0x42)
+RVA(0x000b9480, 0x42)
 i32 CMulti::SendValueMessageTo(CNetPlayerNode* recipient, i32 messageId, u32 value, i32 flags) {
     if (recipient == NULL) {
         return 0;
@@ -1554,7 +1554,7 @@ i32 CMulti::SendValueMessageTo(CNetPlayerNode* recipient, i32 messageId, u32 val
     return SendValuePacketTo(recipient, &pkt, flags);
 }
 
-RVA(0x000b9500, 0x46)
+RVA(0x000b94f0, 0x46)
 i32 CMulti::SendPacketTo(CNetPlayerNode* recipient, void* packet, i32 packetSize, i32 flags) {
     if (recipient == NULL) {
         return 0;
@@ -1566,7 +1566,7 @@ i32 CMulti::SendPacketTo(CNetPlayerNode* recipient, void* packet, i32 packetSize
     return hr == 0;
 }
 
-RVA(0x000b9570, 0x53)
+RVA(0x000b9560, 0x53)
 i32 CMulti::SendValueMessageToId(i32 recipientId, NetMsgId messageId, i32 value, i32 flags) {
     CNetValuePacket pkt;
     pkt.m_flags |= NET_PACKET_APPLICATION;
@@ -1577,7 +1577,7 @@ i32 CMulti::SendValueMessageToId(i32 recipientId, NetMsgId messageId, i32 value,
 }
 
 // @early-stop
-RVA(0x000b95f0, 0x10f)
+RVA(0x000b95e0, 0x10f)
 i32 CMulti::PollSession() {
     if (LocalPlayer() == NULL) {
         return 0;
@@ -1615,7 +1615,7 @@ i32 CMulti::PollSession() {
         hr = directPlay->Receive(&sender, &recipient, DPRECEIVE_ALL, g_recvBuffer, &messageSize);
 
         if (hr) {
-            CNetMgr::ReportError("c:\\proj\\incs\\netmgr.h", 0x141, hr, NULL);
+            CNetMgr::ReportError("d:\\proj\\incs\\netmgr.h", 0x141, hr, NULL);
         } else {
             count--;
             if (sender != LocalPlayer()->m_playerId) {
@@ -1628,7 +1628,7 @@ i32 CMulti::PollSession() {
 }
 
 // @early-stop
-RVA(0x000b9750, 0x810)
+RVA(0x000b9740, 0x810)
 i32 CMulti::DispatchRecvMsg(i32 senderId, char* packet, i32 packetSize) {
 
     CNetWireMsg wire;
@@ -1979,12 +1979,12 @@ i32 CMulti::DispatchRecvMsg(i32 senderId, char* packet, i32 packetSize) {
     return 1;
 }
 
-RVA(0x000ba170, 0x20)
+RVA(0x000ba160, 0x20)
 CString CNetPlayerNode::ShortName() {
     return m_shortName;
 }
 
-RVA(0x000ba1a0, 0x1a0)
+RVA(0x000ba190, 0x1a0)
 i32 CMulti::HandleSystemMessage(LPDPMSG_GENERIC message, i32 unusedMessageSize) {
     if (message == NULL) {
         return 0;
@@ -2018,7 +2018,7 @@ i32 CMulti::HandleSystemMessage(LPDPMSG_GENERIC message, i32 unusedMessageSize) 
     }
 }
 
-RVA(0x000ba3b0, 0x17f)
+RVA(0x000ba3a0, 0x17f)
 i32 CMulti::OnPlayerLeft(i32 playerId) {
     CNetPlayerNode* player = Network()->GetPlayerNodeData(playerId);
     if (player == LocalPlayer()) {
@@ -2057,7 +2057,7 @@ i32 CMulti::OnPlayerLeft(i32 playerId) {
     return 1;
 }
 
-RVA(0x000ba590, 0x63)
+RVA(0x000ba580, 0x63)
 void CMulti::ApplyPlayerDrop(i32 playerId) {
     if (m_allPlayersReady == false) {
         RecordPlayerReady(NULL, playerId);
@@ -2075,7 +2075,7 @@ void CMulti::ApplyPlayerDrop(i32 playerId) {
     ResetPlayerCommands(playerId);
 }
 
-RVA(0x000ba620, 0x14a)
+RVA(0x000ba610, 0x14a)
 i32 CMulti::HandlePlayerCreated(LPDPMSG_CREATEPLAYERORGROUP message) {
     if (message == NULL) {
         return 0;
@@ -2130,7 +2130,7 @@ i32 CMulti::HandlePlayerCreated(LPDPMSG_CREATEPLAYERORGROUP message) {
     return 1;
 }
 
-RVA(0x000ba7d0, 0x2e)
+RVA(0x000ba7c0, 0x2e)
 i32 CMulti::ResolveLocalPlayer() {
     if (Network() == NULL) {
         return 0;
@@ -2139,7 +2139,7 @@ i32 CMulti::ResolveLocalPlayer() {
     return LocalPlayer() != NULL;
 }
 
-RVA(0x000ba810, 0x11c)
+RVA(0x000ba800, 0x11c)
 i32 CMulti::BroadcastPlayerTable(CNetPlayerNode* recipient) {
     CNetPlayerTablePacket packet;
     memset(&packet, 0, sizeof(packet));
@@ -2178,7 +2178,7 @@ i32 CMulti::BroadcastPlayerTable(CNetPlayerNode* recipient) {
     return 1;
 }
 
-RVA(0x000ba980, 0xca)
+RVA(0x000ba970, 0xca)
 i32 CMulti::ApplyPlayerTable(CNetPlayerTablePacket* packet) {
     if (packet == NULL) {
         return 0;
@@ -2210,7 +2210,7 @@ i32 CMulti::ApplyPlayerTable(CNetPlayerTablePacket* packet) {
     return 1;
 }
 
-RVA(0x000baa90, 0x20)
+RVA(0x000baa80, 0x20)
 i32 CMulti::RegisterLocalPlayer(
     const char* name,
     ColorTint color,
@@ -2220,7 +2220,7 @@ i32 CMulti::RegisterLocalPlayer(
     return RegisterPlayer(name, color, true, BZDIFF_EASY, preferredPlayerIndex, networkPlayerId);
 }
 
-RVA(0x000baac0, 0x12e)
+RVA(0x000baab0, 0x12e)
 i32 CMulti::RegisterPlayer(
     const char* name,
     ColorTint color,
@@ -2269,7 +2269,7 @@ i32 CMulti::RegisterPlayer(
     return 1;
 }
 
-RVA(0x000bac40, 0x38)
+RVA(0x000bac30, 0x38)
 i32 CMulti::RegisterPlayerFromPacket(CNetPlayerRegistrationPacket* packet) {
     if (packet->m_active != false) {
         RegisterPlayer(
@@ -2284,7 +2284,7 @@ i32 CMulti::RegisterPlayerFromPacket(CNetPlayerRegistrationPacket* packet) {
     return 1;
 }
 
-RVA(0x000bac90, 0x46)
+RVA(0x000bac80, 0x46)
 i32 CMulti::DeactivatePlayer(i32 slotIndex) {
     GruntzPlayer* player = &NetGameMgr()->m_players[slotIndex];
     if (player == NULL) {
@@ -2298,7 +2298,7 @@ i32 CMulti::DeactivatePlayer(i32 slotIndex) {
     return 1;
 }
 
-RVA(0x000bad00, 0x2d)
+RVA(0x000bacf0, 0x2d)
 i32 CMulti::RequestMultiplayerPause() {
     if (m_connected == false) {
         return 0;
@@ -2308,7 +2308,7 @@ i32 CMulti::RequestMultiplayerPause() {
     return 1;
 }
 
-RVA(0x000bad40, 0x6c)
+RVA(0x000bad30, 0x6c)
 void CMulti::ShowMultiplayerPauseDialog() {
     if (g_pauseDialogOpen) {
         return;
@@ -2327,7 +2327,7 @@ void CMulti::ShowMultiplayerPauseDialog() {
     }
 }
 
-RVA(0x000badd0, 0x43)
+RVA(0x000badc0, 0x43)
 void CMulti::ShowMultiplayerOptionsDialog() {
     if (g_optionsDialogOpen) {
         return;
@@ -2340,7 +2340,7 @@ void CMulti::ShowMultiplayerOptionsDialog() {
     g_netMessageEditHwnd = NULL;
 }
 
-RVA(0x000bae40, 0x84)
+RVA(0x000bae30, 0x84)
 void CMulti::OnOutOfSync() {
     if (m_outOfSync) {
         return;
@@ -2369,7 +2369,7 @@ void CMulti::OnOutOfSync() {
     }
 }
 
-RVA(0x000baf00, 0xb2)
+RVA(0x000baef0, 0xb2)
 i32 CMulti::BroadcastPlayerUpdate(GruntzPlayer* player) {
     CNetPlayerUpdatePacket packet;
     memset(&packet, 0, sizeof(packet));
@@ -2395,7 +2395,7 @@ i32 CMulti::BroadcastPlayerUpdate(GruntzPlayer* player) {
     return BroadcastPacket(&packet, sizeof(packet), DPSEND_GUARANTEED);
 }
 
-RVA(0x000baff0, 0x88)
+RVA(0x000bafe0, 0x88)
 i32 CMulti::ApplyPlayerUpdate(CNetPlayerUpdatePacket* packet) {
     if (packet == NULL) {
         return 0;
@@ -2424,7 +2424,7 @@ i32 CMulti::ApplyPlayerUpdate(CNetPlayerUpdatePacket* packet) {
     return 1;
 }
 
-RVA(0x000bb0b0, 0x44)
+RVA(0x000bb0a0, 0x44)
 i32 CMulti::AnnounceOptionsOpened() {
     g_optionsOpenedPacket.m_messageId = NETMSG_OPTIONS_OPENED;
     g_optionsOpenedPacket.m_flags |= NET_PACKET_APPLICATION;
@@ -2438,7 +2438,7 @@ i32 CMulti::AnnounceOptionsOpened() {
     return 1;
 }
 
-RVA(0x000bb120, 0x44)
+RVA(0x000bb110, 0x44)
 i32 CMulti::AnnounceOptionsClosed() {
     g_optionsClosedPacket.m_messageId = NETMSG_OPTIONS_CLOSED;
     g_optionsClosedPacket.m_flags |= NET_PACKET_APPLICATION;
@@ -2452,7 +2452,7 @@ i32 CMulti::AnnounceOptionsClosed() {
     return 1;
 }
 
-RVA(0x000bb190, 0x1c5)
+RVA(0x000bb180, 0x1c5)
 i32 CMulti::BroadcastChatLine(char* text, i32 prefixPlayerName, i32 echoLocally, HWND edit) {
     if (text == NULL) {
         return 0;
@@ -2514,7 +2514,7 @@ i32 CMulti::BroadcastChatLine(char* text, i32 prefixPlayerName, i32 echoLocally,
     return 1;
 }
 
-RVA(0x000bb3e0, 0xe5)
+RVA(0x000bb3d0, 0xe5)
 void CMulti::AppendEditLine(HWND edit, char* str) {
     if (!edit || !str || !str[0]) {
         return;
@@ -2538,7 +2538,7 @@ void CMulti::AppendEditLine(HWND edit, char* str) {
 }
 
 // @early-stop
-RVA(0x000bb510, 0x9d)
+RVA(0x000bb500, 0x9d)
 i32 CMulti::DropLobbyPlayer(i32 slotIndex) {
     if (slotIndex < 0 || slotIndex >= 4) {
         return 0;
@@ -2571,7 +2571,7 @@ i32 CMulti::DropLobbyPlayer(i32 slotIndex) {
     return 1;
 }
 
-RVA(0x000bb5e0, 0xd9)
+RVA(0x000bb5d0, 0xd9)
 void CMulti::RecordPlayerReady(CNetPlayerNode* unusedPlayer, i32 playerId) {
     if (m_allPlayersReady != false) {
         return;
@@ -2625,7 +2625,7 @@ void CMulti::RecordPlayerReady(CNetPlayerNode* unusedPlayer, i32 playerId) {
     m_allPlayersReady = true;
 }
 
-RVA(0x000bb700, 0x265)
+RVA(0x000bb6f0, 0x265)
 i32 CMulti::WaitForOtherPlayers() {
     CDWordArray* votes = &m_readyPlayerIds;
     votes->SetSize(0, -1);
@@ -2710,7 +2710,7 @@ ready:
     return 1;
 }
 
-RVA(0x000bba10, 0x1fb)
+RVA(0x000bba00, 0x1fb)
 i32 CMulti::Poll(i32 token) {
     if (m_isHost == false) {
         BroadcastValueMessage(STAT_LEVEL_CHECKSUM, token, DPSEND_GUARANTEED);
@@ -2795,7 +2795,7 @@ i32 CMulti::Poll(i32 token) {
 }
 
 // @early-stop
-RVA(0x000bbc90, 0x1b8)
+RVA(0x000bbc80, 0x1b8)
 i32 CMulti::CreateSession() {
     CNetSessionListNode* rec = g_netMgr->m_selectedSession;
     if (rec == NULL) {
@@ -2842,7 +2842,7 @@ i32 CMulti::CreateSession() {
     return 1;
 }
 
-RVA(0x000bbec0, 0x81)
+RVA(0x000bbeb0, 0x81)
 CNetCmdSlot::CNetCmdSlot() {
     m_state = NETSLOT_EMPTY;
     m_isDraining = false;
@@ -2856,7 +2856,7 @@ CNetCmdSlot::CNetCmdSlot() {
 }
 
 // @early-stop
-RVA(0x000bbf80, 0xb7)
+RVA(0x000bbf70, 0xb7)
 void CNetSession::InitializeFields() {
     m_mgr = NULL;
     m_owner = NULL;
@@ -2891,7 +2891,7 @@ void CNetSession::InitializeFields() {
     }
 }
 
-RVA(0x000bc070, 0x73)
+RVA(0x000bc060, 0x73)
 u32 CMulti::FrameSyncWait() {
     u32 now = timeGetTime();
     u32 ret = 0;
@@ -2908,7 +2908,7 @@ u32 CMulti::FrameSyncWait() {
     return ret;
 }
 
-RVA(0x000bc110, 0xf6)
+RVA(0x000bc100, 0xf6)
 void CMulti::ShowDropPlayerDialog() {
     if (g_dropDialogOpen) {
         return;
@@ -2949,7 +2949,7 @@ void CMulti::ShowDropPlayerDialog() {
     }
 }
 
-RVA(0x000bc250, 0x55)
+RVA(0x000bc240, 0x55)
 i32 CMulti::RunErrorDialog(char* tmpl, DLGPROC handler, i32 lparam) {
     if (!Mgr()) {
         return 2;
@@ -2961,7 +2961,7 @@ i32 CMulti::RunErrorDialog(char* tmpl, DLGPROC handler, i32 lparam) {
     return r;
 }
 
-RVA(0x000bc2d0, 0xd2)
+RVA(0x000bc2c0, 0xd2)
 void CMulti::CheckDropTimeout() {
     if (m_session->FindLaggingSlot(0x1388) == NULL) {
         return;
@@ -2980,12 +2980,12 @@ void CMulti::CheckDropTimeout() {
     ShowDropPlayerDialog();
 }
 
-RVA(0x000bc3f0, 0x1e)
+RVA(0x000bc3e0, 0x1e)
 CString CNetCmdSlot::GetPlayerName() {
     return m_player->GetName();
 }
 
-RVA(0x000bc420, 0x2b)
+RVA(0x000bc410, 0x2b)
 void CMulti::SendLobbyKeepAlive() {
     if (m_netMgr && m_localPlayer && m_connected) {
         BroadcastPlayerIdMessage(NETMSG_KEEP_ALIVE, DPSEND_GUARANTEED);
@@ -2993,7 +2993,7 @@ void CMulti::SendLobbyKeepAlive() {
 }
 
 // @early-stop
-RVA(0x000bc460, 0x24e)
+RVA(0x000bc450, 0x24e)
 i32 CMulti::SetupTcpIpConfig() {
     m_providerConfigPrefix = "TcpIp";
     m_gameClosed = false;
@@ -3036,7 +3036,7 @@ i32 CMulti::SetupTcpIpConfig() {
 }
 
 // @early-stop
-RVA(0x000bc750, 0x151)
+RVA(0x000bc740, 0x151)
 i32 CMulti::CreateLocalPlayer() {
     {
         m_localPlayer = static_cast<CNetPlayerNode*>(Network()->CreatePlayer(
@@ -3078,7 +3078,7 @@ i32 CMulti::CreateLocalPlayer() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000bc910, 0xf6)
+RVA(0x000bc900, 0xf6)
 i32 CMulti::CreateHostPlayer(
     void* hostToken,
     const char* name,
@@ -3109,7 +3109,7 @@ i32 CMulti::CreateHostPlayer(
     return RegisterLocalPlayer(name, color, -1, m_localPlayerId) != 0;
 }
 
-RVA(0x000bca50, 0x155)
+RVA(0x000bca40, 0x189)
 i32 CMulti::WaitForConnect() {
     if (Network() == NULL) {
         return 0;
@@ -3158,7 +3158,7 @@ i32 CMulti::WaitForConnect() {
     return 1;
 }
 
-RVA(0x000bcc10, 0x8e)
+RVA(0x000bcc40, 0x8e)
 i32 CMulti::AutoTuneCmdDelay() {
     if (m_customLevelVerificationPending != false) {
         return 1;
@@ -3185,7 +3185,7 @@ i32 CMulti::AutoTuneCmdDelay() {
     return SendGameConfig(NULL);
 }
 
-RVA(0x000bccd0, 0x141)
+RVA(0x000bcd00, 0x141)
 i32 CMulti::SendGameConfig(CNetPlayerNode* recipient) {
     CNetGameConfigPacket blob;
     memset(&blob, 0, sizeof(blob));
@@ -3211,7 +3211,7 @@ i32 CMulti::SendGameConfig(CNetPlayerNode* recipient) {
     return 1;
 }
 
-RVA(0x000bce80, 0x77)
+RVA(0x000bceb0, 0x77)
 i32 CMulti::ApplyGameConfig(CNetGameConfigPacket* config) {
     if (config == NULL) {
         return 0;
@@ -3228,7 +3228,7 @@ i32 CMulti::ApplyGameConfig(CNetGameConfigPacket* config) {
 }
 
 // @early-stop
-RVA(0x000bcf20, 0xaf)
+RVA(0x000bcf50, 0xaf)
 i32 CMulti::ResetPlayerCommands(i32 playerId) {
     if (m_connected == false) {
         return 0;
@@ -3255,13 +3255,13 @@ i32 CMulti::ResetPlayerCommands(i32 playerId) {
     return 1;
 }
 
-RVA(0x000bd000, 0x19)
+RVA(0x000bd030, 0x19)
 void CMulti::ReportMaxAckLatency() {
     u32 latency = GetMaxAckLatency();
     BroadcastValueMessage(STAT_ACK_LATENCY_REPORT, latency, 0);
 }
 
-RVA(0x000bd030, 0x5d)
+RVA(0x000bd060, 0x5d)
 u32 CMulti::GetMaxAckLatency() {
     u32 max = 0;
 
@@ -3285,7 +3285,7 @@ u32 CMulti::GetMaxAckLatency() {
     return max;
 }
 
-RVA(0x000bd0b0, 0x9a)
+RVA(0x000bd0e0, 0x9a)
 void CMulti::HandleVersionCheck(CNetVersionPacket* packet) {
     if (packet == NULL) {
         return;
@@ -3318,7 +3318,7 @@ void CMulti::HandleVersionCheck(CNetVersionPacket* packet) {
 }
 
 // @early-stop
-RVA(0x000bd180, 0x66)
+RVA(0x000bd1b0, 0x66)
 void CMulti::SendVersionCheck(CNetPlayerNode* recipient) {
     CNetVersionPacket packet;
     memset(&packet, 0, sizeof(packet));
@@ -3333,7 +3333,7 @@ void CMulti::SendVersionCheck(CNetPlayerNode* recipient) {
     SendPacketTo(recipient, &packet, sizeof(packet), DPSEND_GUARANTEED);
 }
 
-RVA(0x000bd210, 0x14d)
+RVA(0x000bd240, 0x14d)
 i32 CMulti::OnChar(i32 charCode, i32 keyData) {
     if (m_chatBox && m_chatBox->m_inputActive) {
         if (m_connected) {
@@ -3353,7 +3353,7 @@ i32 CMulti::OnChar(i32 charCode, i32 keyData) {
     }
     return CPlay::OnChar(charCode, keyData);
 }
-RVA(0x000bd3c0, 0x9)
+RVA(0x000bd3f0, 0x9)
 void CMulti::TickStateMgrs() {
     m_mgr->TickStateMgrs();
 }

@@ -18,7 +18,7 @@
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00115220, 0xa4)
+RVA(0x00115350, 0xa4)
 i32 DrawGlyphString(
     CDDrawSurfaceMgr* ctx,
     i32 x,
@@ -51,7 +51,7 @@ i32 DrawGlyphString(
     return 1;
 }
 
-RVA(0x00115300, 0xf5)
+RVA(0x00115430, 0xf5)
 i32 LayerBlitFrame(
     CDDrawSurfaceMgr* surfaceMgr,
     CImage* src,
@@ -100,7 +100,7 @@ i32 LayerBlitFrame(
     return 1;
 }
 
-RVA(0x00115440, 0x45)
+RVA(0x00115570, 0x45)
 i32 DrawTextToFrontSurface(
     CDDrawSurfaceMgr* surfaceMgr,
     CString* text,
@@ -131,7 +131,7 @@ i32 DrawTextToFrontSurface(
     );
 }
 
-RVA(0x001154b0, 0x45)
+RVA(0x001155e0, 0x45)
 i32 DrawTextToOverlaySurface(
     CDDrawSurfaceMgr* surfaceMgr,
     CString* text,
@@ -161,7 +161,7 @@ i32 DrawTextToOverlaySurface(
         flag
     );
 }
-RVA(0x00115520, 0x45)
+RVA(0x00115650, 0x45)
 i32 DrawTextToBackSurface(
     CDDrawSurfaceMgr* surfaceMgr,
     CString* text,

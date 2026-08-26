@@ -22,7 +22,7 @@ public:
 
     i32 ApplyColor(i32 owner);
 
-    RVA(0x00007f80, 0x6)
+    RVA(0x00007f90, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_ACTIONAREA;
     }

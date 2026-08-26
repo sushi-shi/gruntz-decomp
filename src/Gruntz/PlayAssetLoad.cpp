@@ -120,7 +120,7 @@ class CImage;
         }                                                                                          \
     } while (0)
 
-RVA(0x000db600, 0x8f)
+RVA(0x000db630, 0x8f)
 i32 CPlay::LoadActionTileSprites(i32 force) {
     CPlay* self = this;
     if (!self->m_world) {
@@ -146,7 +146,7 @@ i32 CPlay::LoadActionTileSprites(i32 force) {
     return 1;
 }
 
-RVA(0x000db6c0, 0x70)
+RVA(0x000db6f0, 0x70)
 i32 CPlay::LoadLevelSounds(i32 force) {
     CPlay* self = this;
     if (!self->m_world) {
@@ -170,7 +170,7 @@ i32 CPlay::LoadLevelSounds(i32 force) {
     return 1;
 }
 
-RVA(0x000db750, 0x70)
+RVA(0x000db780, 0x70)
 i32 CPlay::LoadLevelAnims(i32 force) {
     if (m_world == NULL) {
         return 0;
@@ -189,7 +189,7 @@ i32 CPlay::LoadLevelAnims(i32 force) {
     return 1;
 }
 
-RVA(0x000db7e0, 0x84)
+RVA(0x000db810, 0x84)
 i32 CPlay::LoadLevelImages(i32 force) {
     CPlay* self = this;
     if (!self->m_world) {
@@ -214,7 +214,7 @@ i32 CPlay::LoadLevelImages(i32 force) {
     return 1;
 }
 
-RVA(0x000db8a0, 0x67)
+RVA(0x000db8d0, 0x67)
 i32 CPlay::LoadGameImages(i32 force) {
     CPlay* self = this;
     if (!self->m_world) {
@@ -235,7 +235,7 @@ i32 CPlay::LoadGameImages(i32 force) {
     return 1;
 }
 
-RVA(0x000db930, 0x53)
+RVA(0x000db960, 0x53)
 i32 CPlay::LoadGameSounds(i32 force) {
     CPlay* self = this;
     if (!self->m_world) {
@@ -254,7 +254,7 @@ i32 CPlay::LoadGameSounds(i32 force) {
     return 1;
 }
 
-RVA(0x000db9b0, 0x53)
+RVA(0x000db9e0, 0x53)
 i32 CPlay::LoadGameAnims(i32 force) {
     CPlay* self = this;
     if (!self->m_world) {
@@ -272,7 +272,7 @@ i32 CPlay::LoadGameAnims(i32 force) {
     return 1;
 }
 
-RVA(0x000dba30, 0x1ca)
+RVA(0x000dba60, 0x1ca)
 i32 CPlay::BuildMusicCategoryTable(i32) {
     m_mgr->m_midi->ClearSequences();
 
@@ -335,7 +335,7 @@ i32 CPlay::BuildMusicCategoryTable(i32) {
     return 1;
 }
 
-RVA(0x000dbc80, 0x309)
+RVA(0x000dbcb0, 0x309)
 i32 CPlay::BuildWorldLevelPath(i32 unused) {
     m_world->m_level->ReleaseChildren();
     if (m_mgr->m_strWorldFile.GetLength() != 0) {
@@ -393,7 +393,7 @@ static inline void LookupCue(CMapStringToPtr& cues, const char* name, SoundCue*&
 }
 
 // @early-stop
-RVA(0x000dc060, 0x51b)
+RVA(0x000dc090, 0x51b)
 i32 CPlay::SetEffectSpriteDurations() {
     SoundCue* d;
     LookupCue(m_world->m_soundRegistry->m_cues, "GAME_PYRAMIDMOVE", d);
@@ -527,7 +527,7 @@ i32 CPlay::SetEffectSpriteDurations() {
     return 1;
 }
 
-RVA(0x000dc6d0, 0x2e0)
+RVA(0x000dc700, 0x2e0)
 i32 CPlay::BuildGruntTypeNameTable(
     PickupType typeIdx,
     i32 mode,
@@ -646,7 +646,7 @@ i32 CPlay::BuildGruntTypeNameTable(
     return BuildAssetNamespacePrefixes(name, mode, lightGate, finishGate);
 }
 
-RVA(0x000dca70, 0x4a4)
+RVA(0x000dcaa0, 0x4a4)
 i32 CState::BuildAssetNamespacePrefixes(
     const CString& name,
     i32 mode,
@@ -718,7 +718,7 @@ done:
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000dd050, 0x24b)
+RVA(0x000dd080, 0x24b)
 i32 CPlay::BuildGruntNamespaceList(CMulti* finishGate) {
     CString s;
     s = "NORMALGRUNT";
@@ -752,7 +752,7 @@ i32 CPlay::BuildGruntNamespaceList(CMulti* finishGate) {
     return 1;
 }
 
-RVA(0x000dd340, 0x189)
+RVA(0x000dd370, 0x189)
 i32 CPlay::BuildWarlordNameTable(CMulti* finishGate) {
     for (i32 id = IDX(GRUNT_BOOMERANG); id <= IDX(GRUNT_YOYO); id++) {
         if (!BuildGruntTypeNameTable(static_cast<PickupType>(id), 0, 0, NULL)) {
@@ -780,7 +780,7 @@ i32 CPlay::BuildWarlordNameTable(CMulti* finishGate) {
     return 1;
 }
 
-RVA(0x000dd540, 0x241)
+RVA(0x000dd570, 0x241)
 i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
     CPlay* self = this;
     if (!self->m_world) {
@@ -868,7 +868,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
     return 1;
 }
 
-RVA(0x000dd830, 0x1e3)
+RVA(0x000dd860, 0x1e3)
 i32 CPlay::LoadGruntSoundNamespaces(CMulti* notify) {
     CPlay* self = this;
     if (!self->m_world) {
@@ -946,7 +946,7 @@ i32 CPlay::LoadGruntSoundNamespaces(CMulti* notify) {
     return 1;
 }
 
-RVA(0x000ddaa0, 0x228)
+RVA(0x000ddad0, 0x228)
 i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
     CPlay* self = this;
     if (!self->m_world) {

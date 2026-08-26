@@ -11,7 +11,7 @@
 #include <Gruntz/SpriteRefTable.h>
 #include <Io/GameSave.h>
 
-RVA(0x000e2df0, 0x3f0)
+RVA(0x000e2e20, 0x3f0)
 i32 CSpriteRef::Build(CShadeTableCache* cache, CShadeTable* shade, ColorTint kind) {
     m_cache = cache;
     m_alphaKey = shade;
@@ -227,7 +227,7 @@ i32 CSpriteRef::Build(CShadeTableCache* cache, CShadeTable* shade, ColorTint kin
     return 1;
 }
 
-RVA(0x000e32e0, 0x25)
+RVA(0x000e3310, 0x25)
 void CSpriteRef::Free() {
     CShadeTableCache* cache = m_cache;
     if (cache && m_alphaKey) {

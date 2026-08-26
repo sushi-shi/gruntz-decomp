@@ -22,16 +22,16 @@
 
 #include <stddef.h>
 
-RVA_DYNINIT(0x0007ecd0, 0xa, CActRegPool<CGruntHealthSprite>::s_table)
-RVA_DYNINIT(0x0007ecf0, 0x15, CActRegPool<CGruntHealthSprite>::s_table)
-RVA_DYNINIT(0x0007ed20, 0xe, CActRegPool<CGruntHealthSprite>::s_table)
-RVA_DYNINIT(0x0007ed40, 0x1f, CActRegPool<CGruntHealthSprite>::s_table)
-template<> DATA(0x00244d80)
+RVA_DYNINIT(0x0007ebf0, 0xa, CActRegPool<CGruntHealthSprite>::s_table)
+RVA_DYNINIT(0x0007ec10, 0x15, CActRegPool<CGruntHealthSprite>::s_table)
+RVA_DYNINIT(0x0007ec40, 0xe, CActRegPool<CGruntHealthSprite>::s_table)
+RVA_DYNINIT(0x0007ec60, 0x1f, CActRegPool<CGruntHealthSprite>::s_table)
+template<> DATA(0x00245cd8)
 CActReg CActRegPool<CGruntHealthSprite>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
-RVA_COMPGEN(0x00011f80, 0x1e, ??_GCGruntHealthSprite@@UAEPAXI@Z)
-RVA_COMPGEN(0x00011fb0, 0x44, ??1CGruntHealthSprite@@UAE@XZ)
+RVA_COMPGEN(0x00011f90, 0x1e, ??_GCGruntHealthSprite@@UAEPAXI@Z)
+RVA_COMPGEN(0x00011fc0, 0x44, ??1CGruntHealthSprite@@UAE@XZ)
 
-RVA(0x0007eb00, 0x170)
+RVA(0x0007ea20, 0x170)
 CGruntHealthSprite::CGruntHealthSprite(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetImageFrameByName("GAME_GRUNTHEALTHSPRITE", 1);
@@ -42,21 +42,21 @@ CGruntHealthSprite::CGruntHealthSprite(CGameObject* obj)
     m_yOffset = -0x19;
 }
 
-RVA(0x0007ed70, 0x102)
+RVA(0x0007ec90, 0x102)
 void CGruntHealthSprite::FireActivation(i32 id) {
     if ((*((CActRegPool<CGruntHealthSprite>::s_table.ResolveEntry(id)))) != NULL) {
         (this->*(*((CActRegPool<CGruntHealthSprite>::s_table.ResolveEntry(id)))))();
     }
 }
 
-RVA(0x0007eed0, 0x18d)
+RVA(0x0007edf0, 0x18d)
 void CGruntHealthSprite::RegisterActs() {
     ACT_NAME_ID(id, "A")
     (*((CActRegPool<CGruntHealthSprite>::s_table.ResolveEntry(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CGruntHealthSprite::HealthUpdate);
 }
 
-RVA(0x0007f0d0, 0x6e)
+RVA(0x0007eff0, 0x6e)
 i32 CGruntHealthSprite::BindToGrunt(i32 playerIndex, i32 unitIndex, i32 displayedValue) {
     m_gruntIdentity.m_playerIndex = playerIndex;
     m_gruntIdentity.m_unitIndex = unitIndex;
@@ -72,12 +72,12 @@ i32 CGruntHealthSprite::BindToGrunt(i32 playerIndex, i32 unitIndex, i32 displaye
     return 1;
 }
 
-RVA(0x0007f160, 0xd)
+RVA(0x0007f080, 0xd)
 i32 CGruntHealthSprite::GetDisplayedValue(CGrunt* g) {
     return g->m_health;
 }
 
-RVA(0x0007f180, 0xb4)
+RVA(0x0007f0a0, 0xb4)
 i32 CGruntHealthSprite::HealthUpdate() {
 
     CGrunt* e = FindGruntByIdentity(g_gameReg, m_gruntIdentity);
@@ -101,7 +101,7 @@ i32 CGruntHealthSprite::HealthUpdate() {
     return 0;
 }
 
-RVA(0x0007f270, 0xa3)
+RVA(0x0007f190, 0xa3)
 i32 CGruntHealthSprite::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,

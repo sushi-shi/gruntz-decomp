@@ -194,13 +194,43 @@
         '';
       };
 
-      # gruntz-exe - the decomp target.
-      # EN retail v1.0, 2,511,872 bytes
-      gruntz-exe = pkgs.fetchurl {
+      # Gruntz executables. Keep both retail revisions named: this branch's
+      # active decomp target is v1.01, while v1.00 remains available as the
+      # address-migration control.
+      # EN retail v1.00, 2,511,872 bytes.
+      gruntz-exe-v100 = pkgs.fetchurl {
         name = "GRUNTZ.EXE";
         url = "https://archive.org/download/gruntz-pc/Gruntz.iso/GAME%2FGRUNTZ.EXE";
         sha256 = "sha256-cHPCU2EGrkzKMuPoLbIQAfMZZ4shTE6uLGicVJAoCLM=";
       };
+
+      # GooRoo v1.01 full-file update archive. It is an ordinary ZIP despite
+      # the .exe suffix, and contains the complete replacement executable (not
+      # a binary patch stream).
+      gruntz-update-v101 = pkgs.fetchurl {
+        name = "Gruntz101.exe";
+        url = "https://gooroosgruntz.info/ZIPped/Gruntz101.exe";
+        hash = "sha256-Ns9MyEM9QdQqRFD+eBz0D5cpkcT5HKrapE3o39kk45w=";
+      };
+      # Historical RTPatch 4.11 apply artifact. This is retained for static
+      # research and preservation only; it is not a comparison target.
+      gruntz-rtpatch-v101 = pkgs.fetchurl {
+        name = "Grnt_101.zip";
+        url = "https://www.ladyofthecake.com/gruntz/Grnt_101.zip";
+        hash = "sha256-84fRSmy2NZsB5zM0EGmcmGN+VG6N7BLev2b3fSlucLE=";
+      };
+      gruntz-exe-v101 = pkgs.runCommand "GRUNTZ.EXE-v1.01" {
+        src = gruntz-update-v101;
+        nativeBuildInputs = [ pkgs.unzip ];
+      } ''
+        unzip -p "$src" Gruntz.exe > "$out"
+        test "$(stat -c %s "$out")" -eq 2512896
+        echo "ef636e84cd547efe3e835811aefa6cd20964dadb9c2b427aa13860e52b2228d4  $out" \
+          | sha256sum -c -
+      '';
+
+      # The active target for this branch.
+      gruntz-exe = gruntz-exe-v101;
 
       # Runtime DLLs - proprietary libs the rebuilt EXE LOADS to run.
 
@@ -375,6 +405,10 @@
           # worktree-aware, which is exactly right for the worker pool.
           export GRUNTZ_DIR="$(git rev-parse --show-toplevel 2>/dev/null || echo "$PWD")"
           export GRUNTZ_EXE="${gruntz-exe}"
+          export GRUNTZ_EXE_V100="${gruntz-exe-v100}"
+          export GRUNTZ_EXE_V101="${gruntz-exe-v101}"
+          export GRUNTZ_UPDATE_V101="${gruntz-update-v101}"
+          export GRUNTZ_RTPATCH_V101="${gruntz-rtpatch-v101}"
           export GRUNTZ_CLANG="${pkgs.llvmPackages.clang-unwrapped}/bin/clang"
           export LIBCLANG_PATH="${pkgs.llvmPackages.libclang.lib}/lib"   # clang.cindex finds libclang.so (permuter AST)
           # scripts/ is THE package root: on PYTHONPATH so `python -m gruntz` and
@@ -420,6 +454,13 @@
           echo "[gruntz] cli        : 'gruntz <cmd>' (init/build/clangd/format/status/labels/structs/ghidra-refresh/todo)" >&2
           echo "[gruntz] shell      : ONE shell - 'nix develop' (== '.#build'); everything (analysis + build/init) is here" >&2
           ${nvimShimHook}
+          # Ninja names the retail input by a stable worktree-local path. Keep
+          # it in lockstep with the flake-selected target before init/configure.
+          mkdir -p "$GRUNTZ_DIR/build/exe"
+          if ! cmp -s "$GRUNTZ_EXE" "$GRUNTZ_DIR/build/exe/GRUNTZ.EXE"; then
+            install -m 0444 "$GRUNTZ_EXE" "$GRUNTZ_DIR/build/exe/GRUNTZ.EXE"
+            echo "[gruntz] target copy: refreshed build/exe/GRUNTZ.EXE" >&2
+          fi
           # `gruntz init` is idempotent and Ghidra-free; run it on startup.
           # Set GRUNTZ_SKIP_INIT=1 when even the cheap configure/toolchain check is unwanted.
           if [ -n "$GRUNTZ_SKIP_INIT" ]; then
@@ -461,8 +502,9 @@
 
     in {
       packages.${system} = {
-        inherit vostok-delinker objdiff objdiff-cli gruntz-exe gruntz-toolchain
-          gruntz-mss32 gruntz-smackw32 gruntz-runtime;
+        inherit vostok-delinker objdiff objdiff-cli gruntz-exe gruntz-exe-v100
+          gruntz-exe-v101 gruntz-update-v101 gruntz-rtpatch-v101
+          gruntz-toolchain gruntz-mss32 gruntz-smackw32 gruntz-runtime;
         default = vostok-delinker;
       };
 

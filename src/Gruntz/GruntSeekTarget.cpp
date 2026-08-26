@@ -40,7 +40,7 @@
 #include <string.h>
 
 // @early-stop
-RVA(0x000f71c0, 0x721)
+RVA(0x000f72f0, 0x721)
 i32 CGrunt::StepToolThiefBehavior() {
     COPY_CURRENT_GRUNT_LAST_TILE_TO_DEFENDER
     if (this->CoordCount() != 0

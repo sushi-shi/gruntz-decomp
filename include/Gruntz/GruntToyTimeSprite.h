@@ -12,7 +12,7 @@ public:
     CGruntToyTimeSprite() {}
     CGruntToyTimeSprite(CGameObject* obj);
 
-    RVA(0x000120e0, 0x6)
+    RVA(0x000120f0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNTTOYTIMESPRITE;
     }

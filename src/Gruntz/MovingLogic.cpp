@@ -27,7 +27,7 @@ DATA(0x001f0508)
 const double g_motionNegTwo = -2.0;
 
 // @early-stop
-RVA(0x0016ea90, 0x234)
+RVA(0x0016ed70, 0x234)
 void CMovingLogic::AdvanceMotion() {
 
     m_previousScreenPosition.m_x = static_cast<i32>(Motion()->m_position.x);
@@ -148,7 +148,7 @@ void CMovingLogic::AdvanceMotion() {
     } while (0)
 
 // @early-stop
-RVA(0x0016ecd0, 0x6e6)
+RVA(0x0016efb0, 0x6e6)
 void CMotionState::Step(double dt) {
     m_previousPosition.x = m_position.x;
     m_previousPosition.y = m_position.y;
@@ -190,7 +190,7 @@ void CMotionState::Step(double dt) {
     );
 }
 
-RVA(0x0016f3c0, 0x61)
+RVA(0x0016f6a0, 0x61)
 double CMotionState::ArrivalVelX(double target) {
     if (m_acceleration.x == 0.0) {
         return m_velocity.x;
@@ -204,7 +204,7 @@ double CMotionState::ArrivalVelX(double target) {
     return (m_velocity.x > 0.0) ? r : -r;
 }
 
-RVA(0x0016f430, 0x61)
+RVA(0x0016f710, 0x61)
 double CMotionState::ArrivalVelY(double target) {
     if (m_acceleration.y == 0.0) {
         return m_velocity.y;
@@ -218,7 +218,7 @@ double CMotionState::ArrivalVelY(double target) {
     return (m_velocity.y > 0.0) ? r : -r;
 }
 
-RVA(0x0016f4a0, 0x1da)
+RVA(0x0016f780, 0x1da)
 i32 CMovingLogic::SerializeDispatch(
     CFileMemBase* arc,
     SerialMode mode,

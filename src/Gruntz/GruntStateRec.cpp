@@ -13,7 +13,7 @@
 
 #include <string.h>
 
-RVA(0x000ea990, 0xa72)
+RVA(0x000eaac0, 0xa72)
 i32 CSBI_StatzTabGruntBar::SerializeFields(
     CFileMemBase* s,
     SerialMode mode,

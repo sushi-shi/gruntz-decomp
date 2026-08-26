@@ -11,22 +11,22 @@
 #include <string.h>
 #include <time.h>
 
-DATA(0x0024ebf8)
+DATA(0x0024fb50)
 char g_infoScratch[0x100] = {0};
-DATA(0x0024ecf8)
+DATA(0x0024fc50)
 char g_infoMaster[0x800] = {0};
 
-RVA(0x001182f0, 0xc)
+RVA(0x00118500, 0xc)
 i32 CGameInfo::HasSupportedVersion() {
     return m_body.m_version == 1;
 }
 
-RVA(0x00118310, 0xc)
+RVA(0x00118520, 0xc)
 i32 ValidateGameTime(CGameInfoTime* t) {
     return t != NULL;
 }
 
-RVA(0x00118330, 0x57)
+RVA(0x00118540, 0x57)
 i32 BuildGameDate(CGameInfoTime* out) {
     if (out == NULL) {
         return 0;
@@ -43,7 +43,7 @@ i32 BuildGameDate(CGameInfoTime* out) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001183b0, 0x211)
+RVA(0x001185c0, 0x211)
 i32 CGameInfo::FormatGameInfoString() {
     char* name = m_body.m_name;
     if (name == NULL) {

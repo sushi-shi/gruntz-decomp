@@ -42,25 +42,25 @@
 DATA(0x001ea3e0)
 const double g_slimeSpeedNum = 32.0;
 
-RVA_DYNINIT(0x000b28a0, 0xa, CActRegPool<CKitchenSlime>::s_table)
-RVA_DYNINIT(0x000b28c0, 0x15, CActRegPool<CKitchenSlime>::s_table)
-RVA_DYNINIT(0x000b28f0, 0xe, CActRegPool<CKitchenSlime>::s_table)
-RVA_DYNINIT(0x000b2910, 0x1f, CActRegPool<CKitchenSlime>::s_table)
-template<> DATA(0x00246228)
+RVA_DYNINIT(0x000b2890, 0xa, CActRegPool<CKitchenSlime>::s_table)
+RVA_DYNINIT(0x000b28b0, 0x15, CActRegPool<CKitchenSlime>::s_table)
+RVA_DYNINIT(0x000b28e0, 0xe, CActRegPool<CKitchenSlime>::s_table)
+RVA_DYNINIT(0x000b2900, 0x1f, CActRegPool<CKitchenSlime>::s_table)
+template<> DATA(0x00247180)
 CActReg CActRegPool<CKitchenSlime>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
-DATA(0x0021aea8)
+DATA(0x0021be08)
 i32 g_typeCounter = ACT_ID_FIRST;
 
 static inline CActHandler* KSlimeLookup(i32 coord) {
     return (CActRegPool<CKitchenSlime>::s_table.ResolveEntry(coord));
 }
 
-RVA_COMPGEN(0x000130d0, 0x1e, ??_GCKitchenSlime@@UAEPAXI@Z)
-RVA_COMPGEN(0x00013100, 0x44, ??1CKitchenSlime@@UAE@XZ)
+RVA_COMPGEN(0x000130e0, 0x1e, ??_GCKitchenSlime@@UAEPAXI@Z)
+RVA_COMPGEN(0x00013110, 0x44, ??1CKitchenSlime@@UAE@XZ)
 
 // @early-stop
-RVA(0x000b23a0, 0x3f8)
+RVA(0x000b2390, 0x3f8)
 CKitchenSlime::CKitchenSlime(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
@@ -121,7 +121,7 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj)
     CLEAR_OBJECT_AREA
 }
 
-RVA(0x000b2940, 0x102)
+RVA(0x000b2930, 0x102)
 void CKitchenSlime::FireActivation(i32 coord) {
     CActHandler* e = KSlimeLookup(coord);
     if ((*e) != NULL) {
@@ -130,7 +130,7 @@ void CKitchenSlime::FireActivation(i32 coord) {
     }
 }
 
-RVA(0x000b2aa0, 0x18d)
+RVA(0x000b2a90, 0x18d)
 void CKitchenSlime::RegisterType() {
     ACT_NAME_ID(id, "A")
 
@@ -138,7 +138,7 @@ void CKitchenSlime::RegisterType() {
 }
 
 // @early-stop
-RVA(0x000b2ca0, 0x29c)
+RVA(0x000b2c90, 0x29c)
 i32 CKitchenSlime::Tick() {
     m_wwdObject->m_animationCursor.Advance(static_cast<i32>(g_engineFrameDelta));
 
@@ -221,7 +221,7 @@ i32 CKitchenSlime::Tick() {
     return 0;
 }
 
-RVA(0x000b2ff0, 0x11b)
+RVA(0x000b2fe0, 0x11b)
 i32 CKitchenSlime::SerializeDispatch(
     CFileMemBase* stream,
     SerialMode mode,
@@ -253,7 +253,7 @@ i32 CKitchenSlime::SerializeDispatch(
 }
 
 // @early-stop
-RVA(0x000b3160, 0x35c)
+RVA(0x000b3150, 0x35c)
 i32 CKitchenSlime::LoadSprites() {
     i32 savedDir = Level()->m_smarts;
 

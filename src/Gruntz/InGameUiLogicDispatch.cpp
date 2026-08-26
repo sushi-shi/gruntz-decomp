@@ -8,7 +8,7 @@
 #include <Gruntz/ToyPeek.h>
 #include <Wwd/LogicRecordEvent.h>
 
-RVA(0x00095750, 0xf4)
+RVA(0x00095670, 0xf4)
 i32 DispatchInGameIconLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {
@@ -46,7 +46,7 @@ i32 DispatchInGameIconLogic(CGameObject* owner) {
     return 1;
 }
 
-RVA(0x00095890, 0xf1)
+RVA(0x000957b0, 0xf1)
 i32 DispatchInGameTextLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {
@@ -84,7 +84,7 @@ i32 DispatchInGameTextLogic(CGameObject* owner) {
     return 1;
 }
 
-RVA(0x000959d0, 0xf1)
+RVA(0x000958f0, 0xf1)
 i32 DispatchToyPeekLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {

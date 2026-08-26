@@ -15,42 +15,42 @@
 #include <stdlib.h>
 #include <string.h>
 
-RVA_DYNINIT(0x0009fb20, 0x5, s_gruntDirNorth)
-RVA_DYNINIT(0x0009fb40, 0x1a, s_gruntDirNorth)
-RVA_DYNINIT(0x0009fb70, 0x5, s_gruntDirNorthEast)
-RVA_DYNINIT(0x0009fb90, 0x1a, s_gruntDirNorthEast)
-RVA_DYNINIT(0x0009fbc0, 0x5, s_gruntDirEast)
-RVA_DYNINIT(0x0009fbe0, 0x1f, s_gruntDirEast)
-RVA_DYNINIT(0x0009fc10, 0x5, s_gruntDirSouthEast)
-RVA_DYNINIT(0x0009fc30, 0x1a, s_gruntDirSouthEast)
-RVA_DYNINIT(0x0009fc60, 0x5, s_gruntDirSouth)
-RVA_DYNINIT(0x0009fc80, 0x1f, s_gruntDirSouth)
-RVA_DYNINIT(0x0009fcb0, 0x5, s_gruntDirSouthWest)
-RVA_DYNINIT(0x0009fcd0, 0x1f, s_gruntDirSouthWest)
-RVA_DYNINIT(0x0009fd00, 0x5, s_gruntDirWest)
-RVA_DYNINIT(0x0009fd20, 0x1f, s_gruntDirWest)
-RVA_DYNINIT(0x0009fd50, 0x5, s_gruntDirNorthWest)
-RVA_DYNINIT(0x0009fd70, 0x17, s_gruntDirNorthWest)
-RVA_DYNINIT(0x0009fda0, 0x5, s_gruntDirCenter)
-RVA_DYNINIT(0x0009fdc0, 0x1a, s_gruntDirCenter)
+RVA_DYNINIT(0x0009fb40, 0x5, s_gruntDirNorth)
+RVA_DYNINIT(0x0009fb60, 0x1a, s_gruntDirNorth)
+RVA_DYNINIT(0x0009fb90, 0x5, s_gruntDirNorthEast)
+RVA_DYNINIT(0x0009fbb0, 0x1a, s_gruntDirNorthEast)
+RVA_DYNINIT(0x0009fbe0, 0x5, s_gruntDirEast)
+RVA_DYNINIT(0x0009fc00, 0x1f, s_gruntDirEast)
+RVA_DYNINIT(0x0009fc30, 0x5, s_gruntDirSouthEast)
+RVA_DYNINIT(0x0009fc50, 0x1a, s_gruntDirSouthEast)
+RVA_DYNINIT(0x0009fc80, 0x5, s_gruntDirSouth)
+RVA_DYNINIT(0x0009fca0, 0x1f, s_gruntDirSouth)
+RVA_DYNINIT(0x0009fcd0, 0x5, s_gruntDirSouthWest)
+RVA_DYNINIT(0x0009fcf0, 0x1f, s_gruntDirSouthWest)
+RVA_DYNINIT(0x0009fd20, 0x5, s_gruntDirWest)
+RVA_DYNINIT(0x0009fd40, 0x1f, s_gruntDirWest)
+RVA_DYNINIT(0x0009fd70, 0x5, s_gruntDirNorthWest)
+RVA_DYNINIT(0x0009fd90, 0x17, s_gruntDirNorthWest)
+RVA_DYNINIT(0x0009fdc0, 0x5, s_gruntDirCenter)
+RVA_DYNINIT(0x0009fde0, 0x1a, s_gruntDirCenter)
 
 #define RESET_MAP_ARRAY_STORAGE                                                                    \
     m_storage = NULL;                                                                              \
     m_freeList = NULL;                                                                             \
     m_count = 0
 
-RVA(0x0009e700, 0xd)
+RVA(0x0009e720, 0xd)
 CBrickzNodePool::CBrickzNodePool() {
     RESET_MAP_ARRAY_STORAGE;
 }
 
-RVA(0x0009e720, 0x5)
+RVA(0x0009e740, 0x5)
 CBrickzNodePool::~CBrickzNodePool() {
     Free();
 }
 
 // @early-stop
-RVA(0x0009e740, 0x76)
+RVA(0x0009e760, 0x76)
 i32 CBrickzNodePool::Allocate(u32 count) {
     m_storage = new BrickzNode[count];
     if (m_storage == NULL) {
@@ -77,7 +77,7 @@ i32 CBrickzNodePool::Allocate(u32 count) {
     return 1;
 }
 
-RVA(0x0009e7e0, 0x29)
+RVA(0x0009e800, 0x29)
 void CBrickzNodePool::Free() {
     if (m_storage) {
         delete[] m_storage;
@@ -85,18 +85,18 @@ void CBrickzNodePool::Free() {
     RESET_MAP_ARRAY_STORAGE;
 }
 
-RVA(0x0009e820, 0xd)
+RVA(0x0009e840, 0xd)
 CBrickzCellNodePool::CBrickzCellNodePool() {
     RESET_MAP_ARRAY_STORAGE;
 }
 
-RVA(0x0009e840, 0x5)
+RVA(0x0009e860, 0x5)
 CBrickzCellNodePool::~CBrickzCellNodePool() {
     Free();
 }
 
 // @early-stop
-RVA(0x0009e860, 0x7a)
+RVA(0x0009e880, 0x7a)
 i32 CBrickzCellNodePool::Allocate(u32 count) {
     m_storage = new BrickzCellNode[count];
     if (m_storage == NULL) {
@@ -124,7 +124,7 @@ i32 CBrickzCellNodePool::Allocate(u32 count) {
     return 1;
 }
 
-RVA(0x0009e900, 0x28)
+RVA(0x0009e920, 0x28)
 void CBrickzCellNodePool::Free() {
     if (m_storage) {
         delete[] m_storage;
@@ -132,7 +132,7 @@ void CBrickzCellNodePool::Free() {
     RESET_MAP_ARRAY_STORAGE;
 }
 
-RVA(0x0009e940, 0x73)
+RVA(0x0009e960, 0x73)
 CMapMgr::CMapMgr() {
     m_cellPool = NULL;
     m_rows = NULL;
@@ -146,13 +146,13 @@ CMapMgr::CMapMgr() {
     m_dirty = true;
 }
 
-RVA(0x0009e9e0, 0x5d)
+RVA(0x0009ea00, 0x5d)
 CMapMgr::~CMapMgr() {
     Reset();
 }
 
 // @early-stop
-RVA(0x0009ea60, 0x168)
+RVA(0x0009ea80, 0x168)
 i32 CMapMgr::AllocGrid(i32 width, i32 height, void (*callback)()) {
     i32 count = height * width;
     m_width = width;
@@ -201,7 +201,7 @@ i32 CMapMgr::AllocGrid(i32 width, i32 height, void (*callback)()) {
     return 1;
 }
 
-RVA(0x0009ec30, 0x4b)
+RVA(0x0009ec50, 0x4b)
 void CMapMgr::Reset() {
     if (m_cellPool) {
         delete[] m_cellPool;
@@ -222,7 +222,7 @@ void CMapMgr::Reset() {
 }
 
 // @early-stop
-RVA(0x0009eca0, 0x2bd)
+RVA(0x0009ecc0, 0x2bd)
 i32 CMapMgr::FindPath(
     i32 startX,
     i32 startY,
@@ -346,7 +346,7 @@ reached:
     return 1;
 }
 
-RVA(0x0009f010, 0x2a1)
+RVA(0x0009f030, 0x2a1)
 i32 CMapMgr::ExpandNeighbor(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diagonal) {
     i32 ng = node->m_gCost + cost;
     i32 ncol = node->m_col + dx;
@@ -462,7 +462,7 @@ relax:
     return 1;
 }
 
-RVA(0x0009f370, 0x8a)
+RVA(0x0009f390, 0x8a)
 i32 CMapMgr::InsertOpenNode(BrickzNode* node) {
     BrickzNode* cur = m_openList;
     node->m_openPrev = NULL;
@@ -496,7 +496,7 @@ i32 CMapMgr::InsertOpenNode(BrickzNode* node) {
     return 1;
 }
 
-RVA(0x0009f430, 0x2a)
+RVA(0x0009f450, 0x2a)
 BrickzNode* CMapMgr::PopBestOpenNode() {
     BrickzNode* head = m_openList;
     if (head != NULL) {
@@ -514,7 +514,7 @@ BrickzNode* CMapMgr::PopBestOpenNode() {
 }
 
 // @early-stop
-RVA(0x0009f470, 0x62)
+RVA(0x0009f490, 0x62)
 void CMapMgr::LinkClosedNode(BrickzNode* node) {
     BrickzCellNode** head = &m_rows[node->m_row][node->m_col].m_head;
     BrickzCellNode* slot = m_cellNodePool.m_freeList;
@@ -540,7 +540,7 @@ void CMapMgr::LinkClosedNode(BrickzNode* node) {
     }
 }
 
-RVA(0x0009f500, 0x24)
+RVA(0x0009f520, 0x24)
 BrickzNode* CMapMgr::FindOpenNode(i32 col, i32 row) {
     BrickzNode* p = m_openList;
     if (p == NULL) {
@@ -557,7 +557,7 @@ BrickzNode* CMapMgr::FindOpenNode(i32 col, i32 row) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0009f540, 0x40)
+RVA(0x0009f560, 0x40)
 BrickzNode* CMapMgr::FindClosedNode(i32 col, i32 row) {
     BrickzCellNode* n = m_rows[row][col].m_head;
     while (n != NULL) {
@@ -570,7 +570,7 @@ BrickzNode* CMapMgr::FindClosedNode(i32 col, i32 row) {
     return NULL;
 }
 
-RVA(0x0009f590, 0x2f)
+RVA(0x0009f5b0, 0x2f)
 void CMapMgr::RecycleOpenNodes() {
     BrickzNode* p = m_openList;
     if (p != NULL) {
@@ -587,7 +587,7 @@ void CMapMgr::RecycleOpenNodes() {
 }
 
 // @early-stop
-RVA(0x0009f5d0, 0x81)
+RVA(0x0009f5f0, 0x81)
 void CMapMgr::RecycleClosedNodes() {
     BrickzCell* cell = m_cellPool;
     for (u32 i = 0; i < m_height * m_width; i++) {
@@ -611,7 +611,7 @@ void CMapMgr::RecycleClosedNodes() {
     }
 }
 
-RVA(0x0009f690, 0x5d)
+RVA(0x0009f6b0, 0x5d)
 void CMapMgr::UnlinkOpenNode(BrickzNode* node) {
     if (node->m_openPrev != NULL && node->m_openNext != NULL) {
         node->m_openPrev->m_openNext = node->m_openNext;
@@ -630,7 +630,7 @@ void CMapMgr::UnlinkOpenNode(BrickzNode* node) {
     node->m_openNext = NULL;
 }
 
-RVA(0x0009f710, 0xa7)
+RVA(0x0009f730, 0xa7)
 void CMapMgr::UnlinkClosedNode(BrickzNode* node, i32 recycleSearchNode) {
     BrickzCellNode** head = &m_rows[node->m_row][node->m_col].m_head;
     BrickzCellNode* slot = node->m_cellLink;
@@ -664,7 +664,7 @@ void CMapMgr::UnlinkClosedNode(BrickzNode* node, i32 recycleSearchNode) {
     }
 }
 
-RVA(0x0009f7f0, 0x3b)
+RVA(0x0009f810, 0x3b)
 i32 CMapMgr::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload) {
     if (ar == NULL) {
         return 0;
@@ -684,7 +684,7 @@ i32 CMapMgr::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId ty
     return 1;
 }
 
-RVA(0x0009f840, 0x110)
+RVA(0x0009f860, 0x110)
 i32 CMapMgr::Save(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
@@ -709,7 +709,7 @@ i32 CMapMgr::Save(CFileMemBase* ar) {
     return 1;
 }
 
-RVA(0x0009f9a0, 0x12e)
+RVA(0x0009f9c0, 0x12e)
 i32 CMapMgr::Load(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
@@ -735,7 +735,7 @@ i32 CMapMgr::Load(CFileMemBase* ar) {
     return 1;
 }
 
-RVA_DYNINIT(0x0009fdf0, 0x5, g_versionRect)
-RVA_DYNINIT(0x0009fe10, 0x29, g_versionRect)
-DATA(0x00245cc8)
+RVA_DYNINIT(0x0009fe10, 0x5, g_versionRect)
+RVA_DYNINIT(0x0009fe30, 0x29, g_versionRect)
+DATA(0x00246c20)
 CRect g_versionRect(5, 453, 635, 478);

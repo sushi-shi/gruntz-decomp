@@ -11,8 +11,8 @@
 #include <Wap32/Object.h>
 #include <Wwd/LogicRecordEvent.h>
 
-RVA_COMPGEN(0x00163a20, 0x1e, ??_GCWwdGridIter@@UAEPAXI@Z)
-RVA(0x001682f0, 0x4a)
+RVA_COMPGEN(0x00163d00, 0x1e, ??_GCWwdGridIter@@UAEPAXI@Z)
+RVA(0x001685d0, 0x4a)
 void CWwdSpatialMgr::FreeGrids() {
     if (m_defaultRegionGrid) {
         delete m_defaultRegionGrid;
@@ -30,7 +30,7 @@ void CWwdSpatialMgr::FreeGrids() {
 }
 
 // @early-stop
-RVA(0x00168340, 0xe1)
+RVA(0x00168620, 0xe1)
 i32 CWwdSpatialMgr::ActivateAt(i32 centerX, i32 centerY) {
     if (m_activeCenterX == centerX && m_activeCenterY == centerY) {
         return 0;
@@ -60,7 +60,7 @@ i32 CWwdSpatialMgr::ActivateAt(i32 centerX, i32 centerY) {
     return n0 + n1 + n2;
 }
 
-RVA(0x00168430, 0x2e)
+RVA(0x00168710, 0x2e)
 i32 CWwdSpatialMgr::ActivateKeepActiveObjects() {
     i32 n = ActivateKeepActiveFromGrid(m_defaultRegionGrid);
     n += ActivateKeepActiveFromGrid(m_largeRegionGrid);
@@ -68,7 +68,7 @@ i32 CWwdSpatialMgr::ActivateKeepActiveObjects() {
     return n;
 }
 
-RVA(0x00168460, 0x95)
+RVA(0x00168740, 0x95)
 i32 CWwdSpatialMgr::ActivateKeepActiveFromGrid(CWwdGrid* grid) {
     i32 count = 0;
     CWwdGridIter it;
@@ -88,7 +88,7 @@ i32 CWwdSpatialMgr::ActivateKeepActiveFromGrid(CWwdGrid* grid) {
 }
 
 // @early-stop
-RVA(0x00168500, 0x3af)
+RVA(0x001687e0, 0x3af)
 i32 CWwdSpatialMgr::DeactivateOutside(i32 centerX, i32 centerY) {
     i32 count = 0;
     i32 lo0x = centerX - m_defaultRegionHalfWidth;
@@ -239,7 +239,7 @@ i32 CWwdSpatialMgr::DeactivateOutside(i32 centerX, i32 centerY) {
     return count;
 }
 
-RVA(0x001688b0, 0x40)
+RVA(0x00168b90, 0x40)
 i32 CWwdSpatialMgr::PruneCount() {
     i32 n = 0;
     if (m_defaultRegionGrid) {
@@ -257,7 +257,7 @@ i32 CWwdSpatialMgr::PruneCount() {
     return n;
 }
 
-RVA(0x001688f0, 0x6d)
+RVA(0x00168bd0, 0x6d)
 void CWwdSpatialMgr::ParkObject(CWwdGameObject* obj) {
     WwdGameObjectFlags flags = static_cast<WwdGameObjectFlags>(obj->m_flags);
     if (HAS(flags, WWD_GAME_OBJECT_FLAG_LARGE_ACTIVE_REGION)) {
@@ -272,7 +272,7 @@ void CWwdSpatialMgr::ParkObject(CWwdGameObject* obj) {
     }
 }
 
-RVA(0x00168960, 0x2e)
+RVA(0x00168c40, 0x2e)
 i32 CWwdSpatialMgr::FlushAll() {
     i32 n = FlushGrid(m_defaultRegionGrid);
     n += FlushGrid(m_largeRegionGrid);
@@ -280,7 +280,7 @@ i32 CWwdSpatialMgr::FlushAll() {
     return n;
 }
 
-RVA(0x00168990, 0x85)
+RVA(0x00168c70, 0x85)
 i32 CWwdSpatialMgr::FlushGrid(CWwdGrid* grid) {
     i32 count = 0;
     CWwdGridIter it;
@@ -295,7 +295,7 @@ i32 CWwdSpatialMgr::FlushGrid(CWwdGrid* grid) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00168a20, 0x46)
+RVA(0x00168d00, 0x46)
 i32 CWwdSpatialMgr::ForEach(void(__cdecl* cb)(CGameObject*)) {
     if (cb == NULL) {
         return 0;
@@ -306,7 +306,7 @@ i32 CWwdSpatialMgr::ForEach(void(__cdecl* cb)(CGameObject*)) {
     return n;
 }
 
-RVA(0x00168a70, 0x73)
+RVA(0x00168d50, 0x73)
 i32 CWwdSpatialMgr::ForEachGrid(CWwdGrid* grid, void(__cdecl* cb)(CGameObject*)) {
     i32 count = 0;
     CWwdGridIter it;
@@ -319,7 +319,7 @@ i32 CWwdSpatialMgr::ForEachGrid(CWwdGrid* grid, void(__cdecl* cb)(CGameObject*))
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00168af0, 0x6d)
+RVA(0x00168dd0, 0x6d)
 CGameObject* CWwdSpatialMgr::GetFirstObject() {
     m_iterationGrid = m_defaultRegionGrid;
     WwdRegion* n = m_iter.Start(m_defaultRegionGrid, 0);
@@ -342,7 +342,7 @@ CGameObject* CWwdSpatialMgr::GetFirstObject() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00168b60, 0x85)
+RVA(0x00168e40, 0x85)
 CGameObject* CWwdSpatialMgr::GetNextObject() {
     if (m_iterationGrid == NULL) {
         return NULL;

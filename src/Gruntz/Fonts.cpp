@@ -5,40 +5,40 @@
 #include <Font/Font.h>
 #include <Gruntz/GruntDirStatics.h>
 
-RVA_DYNINIT(0x00115710, 0xa, g_tinyFont)
-RVA_DYNINIT(0x00115730, 0xa, g_tinyFont)
-RVA_DYNINIT(0x00115750, 0xe, g_tinyFont)
-RVA_DYNINIT(0x00115770, 0xa, g_tinyFont)
-DATA(0x0024ea58)
+RVA_DYNINIT(0x00115840, 0xa, g_tinyFont)
+RVA_DYNINIT(0x00115860, 0xa, g_tinyFont)
+RVA_DYNINIT(0x00115880, 0xe, g_tinyFont)
+RVA_DYNINIT(0x001158a0, 0xa, g_tinyFont)
+DATA(0x0024f9b0)
 Font g_tinyFont;
-RVA_DYNINIT(0x00115590, 0xa, g_largeFont)
-RVA_DYNINIT(0x001155b0, 0xa, g_largeFont)
-RVA_DYNINIT(0x001155d0, 0xe, g_largeFont)
-RVA_DYNINIT(0x001155f0, 0xa, g_largeFont)
-DATA(0x0024eac0)
+RVA_DYNINIT(0x001156c0, 0xa, g_largeFont)
+RVA_DYNINIT(0x001156e0, 0xa, g_largeFont)
+RVA_DYNINIT(0x00115700, 0xe, g_largeFont)
+RVA_DYNINIT(0x00115720, 0xa, g_largeFont)
+DATA(0x0024fa18)
 Font g_largeFont;
-RVA_DYNINIT(0x00115790, 0xa, g_textObj)
-RVA_DYNINIT(0x001157b0, 0xa, g_textObj)
-RVA_DYNINIT(0x001157d0, 0xe, g_textObj)
-RVA_DYNINIT(0x001157f0, 0xa, g_textObj)
-DATA(0x0024ead8)
+RVA_DYNINIT(0x001158c0, 0xa, g_textObj)
+RVA_DYNINIT(0x001158e0, 0xa, g_textObj)
+RVA_DYNINIT(0x00115900, 0xe, g_textObj)
+RVA_DYNINIT(0x00115920, 0xa, g_textObj)
+DATA(0x0024fa30)
 FontRenderer g_textObj;
-RVA_DYNINIT(0x00115610, 0xa, g_mediumFont)
-RVA_DYNINIT(0x00115630, 0xa, g_mediumFont)
-RVA_DYNINIT(0x00115650, 0xe, g_mediumFont)
-RVA_DYNINIT(0x00115670, 0xa, g_mediumFont)
-DATA(0x0024eae8)
+RVA_DYNINIT(0x00115740, 0xa, g_mediumFont)
+RVA_DYNINIT(0x00115760, 0xa, g_mediumFont)
+RVA_DYNINIT(0x00115780, 0xe, g_mediumFont)
+RVA_DYNINIT(0x001157a0, 0xa, g_mediumFont)
+DATA(0x0024fa40)
 Font g_mediumFont;
-RVA_DYNINIT(0x00115690, 0xa, g_smallFont)
-RVA_DYNINIT(0x001156b0, 0xa, g_smallFont)
-RVA_DYNINIT(0x001156d0, 0xe, g_smallFont)
-RVA_DYNINIT(0x001156f0, 0xa, g_smallFont)
-DATA(0x0024eb00)
+RVA_DYNINIT(0x001157c0, 0xa, g_smallFont)
+RVA_DYNINIT(0x001157e0, 0xa, g_smallFont)
+RVA_DYNINIT(0x00115800, 0xe, g_smallFont)
+RVA_DYNINIT(0x00115820, 0xa, g_smallFont)
+DATA(0x0024fa58)
 Font g_smallFont;
-DATA(0x0024eb14)
+DATA(0x0024fa6c)
 b32 g_loadedFlag = false;
 
-RVA(0x00115810, 0xa3)
+RVA(0x00115940, 0xa3)
 i32 InitializeFonts() {
 
     if (!g_loadedFlag) {
@@ -60,7 +60,7 @@ i32 InitializeFonts() {
     return 1;
 }
 
-RVA(0x001158f0, 0x2e)
+RVA(0x00115a20, 0x2e)
 i32 FreeFontsMemory() {
     g_largeFont.FreeMemory();
     g_mediumFont.FreeMemory();

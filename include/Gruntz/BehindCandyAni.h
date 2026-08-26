@@ -19,11 +19,11 @@ public:
     static void RegisterActs();
     i32 AdvanceAnim();
 
-    RVA(0x00010030, 0x6)
+    RVA(0x00010040, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_BEHINDCANDYANI;
     }
-    RVA(0x00010050, 0x47)
+    RVA(0x00010060, 0x47)
     virtual i32
     SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object)
         OVERRIDE {

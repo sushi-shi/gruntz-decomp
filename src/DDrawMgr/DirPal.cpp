@@ -16,7 +16,7 @@
 
 #define DIRPAL_FILE "C:\\Proj\\DDrawMgr\\DIRPAL.CPP"
 
-RVA(0x00147390, 0x78)
+RVA(0x00147670, 0x78)
 i32 CDDPalette::Create(IDirectDraw2* dd, PALETTEENTRY* entries, u32 flags) {
     m_entries = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
 
@@ -32,7 +32,7 @@ i32 CDDPalette::Create(IDirectDraw2* dd, PALETTEENTRY* entries, u32 flags) {
     return 0;
 }
 
-RVA(0x00147410, 0xbc)
+RVA(0x001476f0, 0xbc)
 i32 CDDPalette::LoadFromFile(IDirectDraw2* dd, char* filename, u32 flags) {
     char* ext = strrchr(filename, '.');
     if (ext && _strcmpi(ext, ".BMP") == 0) {
@@ -45,7 +45,7 @@ i32 CDDPalette::LoadFromFile(IDirectDraw2* dd, char* filename, u32 flags) {
     return LoadDefault(dd, filename, flags);
 }
 
-RVA(0x001474d0, 0x60)
+RVA(0x001477b0, 0x60)
 i32 CDDPalette::CreateRGB(IDirectDraw2* dd, u8* rgb, u32 flags) {
     PALETTEENTRY entries[PALETTE_ENTRY_COUNT];
 
@@ -54,7 +54,7 @@ i32 CDDPalette::CreateRGB(IDirectDraw2* dd, u8* rgb, u32 flags) {
     return Create(dd, entries, flags);
 }
 
-RVA(0x00147530, 0x54)
+RVA(0x00147810, 0x54)
 void CDDPalette::Destroy() {
     m_pos = NULL;
     m_reserved = 0;
@@ -76,7 +76,7 @@ void CDDPalette::Destroy() {
     m_active = false;
 }
 
-RVA(0x00147590, 0x17e)
+RVA(0x00147870, 0x17e)
 i32 CDDPalette::LoadBmp(IDirectDraw2* dd, char* filename, u32 flags) {
     BITMAPFILEHEADER hdr;
     PALETTEENTRY pe[PALETTE_ENTRY_COUNT];
@@ -104,7 +104,7 @@ i32 CDDPalette::LoadBmp(IDirectDraw2* dd, char* filename, u32 flags) {
     return Create(dd, pe, flags);
 }
 
-RVA(0x00147710, 0x122)
+RVA(0x001479f0, 0x122)
 i32 CDDPalette::LoadPcx(IDirectDraw2* dd, char* filename, u32 flags) {
     PALETTEENTRY pe[PALETTE_ENTRY_COUNT];
     u8 rgb[PALETTE_RGB_BYTE_COUNT];
@@ -121,7 +121,7 @@ i32 CDDPalette::LoadPcx(IDirectDraw2* dd, char* filename, u32 flags) {
     return Create(dd, pe, flags);
 }
 
-RVA(0x00147840, 0x7e)
+RVA(0x00147b20, 0x7e)
 i32 CDDPalette::CreateFromTrailing(IDirectDraw2* dd, void* data, u32 size, u32 flags) {
     if (size < PALETTE_RGB_BYTE_COUNT) {
         return 0;
@@ -133,7 +133,7 @@ i32 CDDPalette::CreateFromTrailing(IDirectDraw2* dd, void* data, u32 size, u32 f
     return Create(dd, entries, flags);
 }
 
-RVA(0x001478c0, 0x112)
+RVA(0x00147ba0, 0x112)
 i32 CDDPalette::LoadPal(IDirectDraw2* dd, char* filename, u32 flags) {
     PALETTEENTRY pe[PALETTE_ENTRY_COUNT];
     u8 rgb[PALETTE_RGB_BYTE_COUNT];
@@ -149,7 +149,7 @@ i32 CDDPalette::LoadPal(IDirectDraw2* dd, char* filename, u32 flags) {
     return Create(dd, pe, flags);
 }
 
-RVA(0x001479e0, 0xbb)
+RVA(0x00147cc0, 0xbb)
 i32 CDDPalette::LoadDefault(IDirectDraw2* dd, char* filename, u32 flags) {
     PALETTEENTRY pal[PALETTE_ENTRY_COUNT];
     HRSRC hr = FindResourceA(g_resModule, filename, "PALETTE");
@@ -168,7 +168,7 @@ i32 CDDPalette::LoadDefault(IDirectDraw2* dd, char* filename, u32 flags) {
     return Create(dd, pal, flags);
 }
 
-RVA(0x00147aa0, 0x6a)
+RVA(0x00147d80, 0x6a)
 i32 CDDPalette::SetAndNotify(u32 start, u32 count, PALETTEENTRY* data, i32 unused) {
 
     for (u32 i = start; i < start + count; i++) {
@@ -183,7 +183,7 @@ i32 CDDPalette::SetAndNotify(u32 start, u32 count, PALETTEENTRY* data, i32 unuse
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00147b10, 0x8b)
+RVA(0x00147df0, 0x8b)
 i32 CDDPalette::SetEntriesQuad(i32 start, i32 count, RGBQUAD* quads, i32 unused) {
     PALETTEENTRY* buf = new PALETTEENTRY[count];
     if (buf == NULL) {
@@ -203,7 +203,7 @@ i32 CDDPalette::SetEntriesQuad(i32 start, i32 count, RGBQUAD* quads, i32 unused)
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00147ba0, 0x82)
+RVA(0x00147e80, 0x82)
 i32 CDDPalette::SetEntriesRGB(i32 start, i32 count, u8* rgb, i32 unused) {
     PALETTEENTRY* buf = new PALETTEENTRY[count];
     if (buf == NULL) {
@@ -218,7 +218,7 @@ i32 CDDPalette::SetEntriesRGB(i32 start, i32 count, u8* rgb, i32 unused) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00147c30, 0x4d)
+RVA(0x00147f10, 0x4d)
 void CDDPalette::GetEntries() {
     if (m_readbackEntries == NULL) {
         m_readbackEntries = new PALETTEENTRY[PALETTE_ENTRY_COUNT];
@@ -234,7 +234,7 @@ void CDDPalette::GetEntries() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00147c80, 0x4d)
+RVA(0x00147f60, 0x4d)
 void CDDPalette::Apply(i32 unused) {
     PALETTEENTRY* readback = m_readbackEntries;
     if (readback == NULL) {
@@ -251,7 +251,7 @@ void CDDPalette::Apply(i32 unused) {
     m_palette->SetEntries(0, 0, PALETTE_ENTRY_COUNT, readback);
 }
 
-RVA(0x00147cd0, 0x78)
+RVA(0x00147fb0, 0x78)
 i32 CDDPalette::SetRange(i32 start, i32 count, u8 r, u8 g, u8 b, u32 flags) {
     for (i32 i = start; i < start + count; i++) {
         m_entries[i].peRed = r;
@@ -267,7 +267,7 @@ i32 CDDPalette::SetRange(i32 start, i32 count, u8 r, u8 g, u8 b, u32 flags) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00147d50, 0x1d2)
+RVA(0x00148030, 0x1d2)
 void CDDPalette::FadeRange(i32 start, i32 count, i32 r, i32 g, i32 b, i32 durationMs) {
     i32 hr = m_palette->GetEntries(0, 0, PALETTE_ENTRY_COUNT, m_entries);
     if (hr != 0) {
@@ -305,7 +305,7 @@ void CDDPalette::FadeRange(i32 start, i32 count, i32 r, i32 g, i32 b, i32 durati
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00147f30, 0xbe)
+RVA(0x00148210, 0xbe)
 void CDDPalette::StartFadeToColor(i32 start, i32 count, char r, char g, char b, i32 durationMs) {
     if (m_active) {
         Flush();
@@ -335,7 +335,7 @@ void CDDPalette::StartFadeToColor(i32 start, i32 count, char r, char g, char b, 
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00147ff0, 0xa9)
+RVA(0x001482d0, 0xa9)
 void CDDPalette::StartFadeToPalette(i32 start, i32 count, PALETTEENTRY* target, i32 durationMs) {
     if (m_active) {
         Flush();
@@ -360,7 +360,7 @@ void CDDPalette::StartFadeToPalette(i32 start, i32 count, PALETTEENTRY* target, 
     Tick();
 }
 
-RVA(0x001480a0, 0x1a7)
+RVA(0x00148380, 0x1a7)
 i32 CDDPalette::Tick() {
     if (m_active == false) {
         return 0;
@@ -453,7 +453,7 @@ i32 CDDPalette::Tick() {
     return 1;
 }
 
-RVA(0x00148250, 0x61)
+RVA(0x00148530, 0x61)
 void CDDPalette::Flush() {
     if (m_active == false) {
         return;
@@ -472,7 +472,7 @@ void CDDPalette::Flush() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001482c0, 0x11f)
+RVA(0x001485a0, 0x11f)
 void CDDPalette::BlendRange(i32 pct, i32 start, i32 count, u8 r, u8 g, u8 b) {
     i32 end = start + count;
     if (start < end) {
@@ -495,7 +495,7 @@ void CDDPalette::BlendRange(i32 pct, i32 start, i32 count, u8 r, u8 g, u8 b) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001483e0, 0x1c9)
+RVA(0x001486c0, 0x1c9)
 void CDDPalette::FadeToPalette(i32 start, i32 count, PALETTEENTRY* target, i32 durationMs) {
     i32 hr = m_palette->GetEntries(0, 0, PALETTE_ENTRY_COUNT, m_entries);
     if (hr != 0) {
@@ -529,7 +529,7 @@ void CDDPalette::FadeToPalette(i32 start, i32 count, PALETTEENTRY* target, i32 d
     delete[] snapshot;
 }
 
-RVA(0x001485b0, 0x162)
+RVA(0x00148890, 0x162)
 i32 CDDPalette::CaptureSystemPalette() {
     HDC hdc = CreateDCA("DISPLAY", NULL, NULL, NULL);
     if (hdc) {
@@ -572,7 +572,7 @@ i32 CDDPalette::CaptureSystemPalette() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00148720, 0x9f)
+RVA(0x00148a00, 0x9f)
 i32 BlackoutSystemPalette() {
     HDC hdc = GetDC(NULL);
     if (hdc != NULL) {
@@ -601,7 +601,7 @@ i32 BlackoutSystemPalette() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001487c0, 0x77)
+RVA(0x00148aa0, 0x77)
 void CDDPalette::DumpEntries() {
     PALETTEENTRY entries[PALETTE_ENTRY_COUNT];
     i32 hr = m_palette->GetEntries(0, 0, PALETTE_ENTRY_COUNT, entries);

@@ -44,12 +44,12 @@ const double g_spotRateNum = 3.1415927;
 DATA(0x001ea3f8)
 const double g_spotRateMul = -1.0;
 
-RVA_COMPGEN(0x00013010, 0x1e, ??_GCSpotLight@@UAEPAXI@Z)
+RVA_COMPGEN(0x00013020, 0x1e, ??_GCSpotLight@@UAEPAXI@Z)
 
-RVA_COMPGEN(0x00013040, 0x44, ??1CSpotLight@@UAE@XZ)
+RVA_COMPGEN(0x00013050, 0x44, ??1CSpotLight@@UAE@XZ)
 
 // @early-stop
-RVA(0x000b1200, 0x2cb)
+RVA(0x000b11f0, 0x2cb)
 CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_previousAnimationActId = m_logicRecord->m_eventCode;
     m_logicRecord->m_eventCode = ActFindId("A");
@@ -106,14 +106,14 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     }
 }
 
-RVA_DYNINIT(0x000b1590, 0xa, CActRegPool<CSpotLight>::s_table)
-RVA_DYNINIT(0x000b15b0, 0x15, CActRegPool<CSpotLight>::s_table)
-RVA_DYNINIT(0x000b15e0, 0xe, CActRegPool<CSpotLight>::s_table)
-RVA_DYNINIT(0x000b1600, 0x1f, CActRegPool<CSpotLight>::s_table)
-template<> DATA(0x00246188)
+RVA_DYNINIT(0x000b1580, 0xa, CActRegPool<CSpotLight>::s_table)
+RVA_DYNINIT(0x000b15a0, 0x15, CActRegPool<CSpotLight>::s_table)
+RVA_DYNINIT(0x000b15d0, 0xe, CActRegPool<CSpotLight>::s_table)
+RVA_DYNINIT(0x000b15f0, 0x1f, CActRegPool<CSpotLight>::s_table)
+template<> DATA(0x002470e0)
 CActReg CActRegPool<CSpotLight>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
-RVA(0x000b1630, 0x102)
+RVA(0x000b1620, 0x102)
 void CSpotLight::FireActivation(i32 id) {
     CActHandler* e = (CActRegPool<CSpotLight>::s_table.ResolveEntry(id));
     if ((*e) != NULL) {
@@ -121,7 +121,7 @@ void CSpotLight::FireActivation(i32 id) {
     }
 }
 
-RVA(0x000b1790, 0x2ac)
+RVA(0x000b1780, 0x2ac)
 void RegisterSpotLightActions() {
     ACT_NAME_ID_CALL_REPORT(id, "A")
     *CActRegPool<CSpotLight>::s_table.ResolveEntryCallReport(id) =
@@ -133,7 +133,7 @@ void RegisterSpotLightActions() {
 }
 
 // @early-stop
-RVA(0x000b1af0, 0x318)
+RVA(0x000b1ae0, 0x318)
 i32 CSpotLight::Tick() {
     if (g_gameReg->m_isEasyMode == false || g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
         CGrunt* tgt = g_gameReg->m_triggerMgr->FindGruntAt(
@@ -203,7 +203,7 @@ i32 CSpotLight::Tick() {
     return 0;
 }
 
-RVA(0x000b1ee0, 0x11d)
+RVA(0x000b1ed0, 0x11d)
 int CSpotLight::Update() {
     if (m_object->m_score == 1) {
         double c = cos(m_angle);
@@ -232,7 +232,7 @@ int CSpotLight::Update() {
 }
 
 // @early-stop
-RVA(0x000b2050, 0x295)
+RVA(0x000b2040, 0x295)
 i32 CSpotLight::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,

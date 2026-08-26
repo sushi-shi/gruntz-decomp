@@ -8,13 +8,13 @@
 #include <Gruntz/UserLogic.h>
 
 class CTileTriggerSwitch : public CUserLogic, public CWapX {
-    RVA(0x00011030, 0x6)
+    RVA(0x00011040, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_TILETRIGGERSWITCH;
     }
 
 public:
-    RVA(0x00011050, 0x47)
+    RVA(0x00011060, 0x47)
     virtual i32
     SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object)
         OVERRIDE {

@@ -43,7 +43,7 @@ public:
     virtual void Reset();
     virtual i32 GetFrameHeight();
     virtual i32 GetFrameWidth();
-    RVA(0x00184650, 0xa)
+    RVA(0x00184930, 0xa)
     virtual void SetState(MenuItemState state) {
         m_state = state;
     }
@@ -56,28 +56,28 @@ public:
     virtual i32 Select(i32 playFocusSound);
     virtual i32 Deselect();
     virtual i32 Activate();
-    RVA(0x00184660, 0x3)
+    RVA(0x00184940, 0x3)
     virtual i32 UsesStateAnimations() {
         return 0;
     }
 
-    RVA(0x001845b0, 0x20)
+    RVA(0x00184890, 0x20)
     CString GetItemName() {
         return m_itemName;
     }
-    RVA(0x001845d0, 0x20)
+    RVA(0x001848b0, 0x20)
     CString GetLeftItemName() {
         return m_leftItemName;
     }
-    RVA(0x001845f0, 0x20)
+    RVA(0x001848d0, 0x20)
     CString GetRightItemName() {
         return m_rightItemName;
     }
-    RVA(0x00184610, 0x20)
+    RVA(0x001848f0, 0x20)
     CString GetUpItemName() {
         return m_upItemName;
     }
-    RVA(0x00184630, 0x20)
+    RVA(0x00184910, 0x20)
     CString GetDownItemName() {
         return m_downItemName;
     }

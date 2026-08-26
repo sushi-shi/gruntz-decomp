@@ -66,20 +66,20 @@
 #include <stdlib.h>
 #include <string.h>
 
-DATA(0x0020e194)
+DATA(0x0020f13c)
 static char s_ToyTime[] = "ToyTime";
-DATA(0x0020e1c8)
+DATA(0x0020f170)
 static char s_GRUNTZ_BIGWHEELGRUNT[] = "GRUNTZ_BIGWHEELGRUNT_BIGWHEELGRUNTLOOP";
-DATA(0x0020e1f8)
+DATA(0x0020f1a0)
 static char s_GRUNTZ_GOKARTGRUNT[] = "GRUNTZ_GOKARTGRUNT_GOKARTGRUNTLOOP";
-DATA(0x0020e224)
+DATA(0x0020f1cc)
 static char s_GRUNTZ_EXITZ_THREE[] = "GRUNTZ_EXITZ_THREE";
-DATA(0x0020e23c)
+DATA(0x0020f1e4)
 static char s_GRUNTZ_EXITZ_TWO[] = "GRUNTZ_EXITZ_TWO";
-DATA(0x0020e250)
+DATA(0x0020f1f8)
 static char s_GRUNTZ_EXITZ_ONE[] = "GRUNTZ_EXITZ_ONE";
 
-RVA(0x000616e0, 0xa8)
+RVA(0x000615b0, 0xa8)
 i32 CGrunt::ResetGeometry() {
     SwitchAnimation(m_poseAttackIdle);
 
@@ -97,7 +97,7 @@ i32 CGrunt::ResetGeometry() {
     return 0;
 }
 
-RVA(0x000617c0, 0x127)
+RVA(0x00061690, 0x127)
 i32 CGrunt::UpdateGruntStatus() {
     if (m_poweredUp == false) {
         ResetEntranceAnimation(1, 0, 0);
@@ -139,7 +139,7 @@ i32 CGrunt::UpdateGruntStatus() {
 }
 
 // @early-stop
-RVA(0x00061940, 0x200)
+RVA(0x00061810, 0x200)
 i32 CGrunt::StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIndex) {
     if (m_entranceReason >= PICKUP_TOYZ_FIRST) {
         return 0;
@@ -211,7 +211,7 @@ i32 CGrunt::StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIn
 }
 
 // @early-stop
-RVA(0x00061bc0, 0xb2)
+RVA(0x00061a90, 0xb2)
 i32 CGrunt::StartRangedAttackAnimation() {
     SET_ANIMATION_ACT("F");
 
@@ -232,7 +232,7 @@ i32 CGrunt::StartRangedAttackAnimation() {
 }
 
 // @early-stop
-RVA(0x00061cb0, 0x380)
+RVA(0x00061b80, 0x380)
 i32 CGrunt::StepAttackFire() {
     i32 advanced = m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     i32 flag = 0;
@@ -380,7 +380,7 @@ i32 CGrunt::StepAttackFire() {
 }
 
 // @early-stop
-RVA(0x00062110, 0x5bc)
+RVA(0x00061fe0, 0x5bc)
 i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     if (commit != 0) {
         StopVehicleLoopSound();
@@ -536,7 +536,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     return 0;
 }
 
-RVA(0x00062840, 0x25d)
+RVA(0x00062710, 0x25d)
 i32 CGrunt::UpdateToyUseAnimation() {
     b32 ready = m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta));
     CAniAdvanceCursor* sub = &m_wwdObject->m_animationCursor;
@@ -590,14 +590,14 @@ i32 CGrunt::UpdateToyUseAnimation() {
     return 0;
 }
 
-RVA(0x00062b40, 0x11)
+RVA(0x00062a10, 0x11)
 i32 CGrunt::RecordFrameTick() {
     m_recordedFrameTick = g_frameTicks;
     return 1;
 }
 
 // @early-stop
-RVA(0x00062b70, 0x205)
+RVA(0x00062a40, 0x205)
 i32 CGrunt::RectSegProbe(RECT* p, POINT* e1, POINT* e2) {
     i32 e1y = e1->y;
     i32 e2y = e2->y;
@@ -650,7 +650,7 @@ i32 CGrunt::RectSegProbe(RECT* p, POINT* e1, POINT* e2) {
 }
 
 // @early-stop
-RVA(0x00062e10, 0x4a0)
+RVA(0x00062ce0, 0x4a0)
 void CGrunt::ResetEntranceAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32 playVoiceCue) {
     m_resetApplied = false;
 
@@ -777,7 +777,7 @@ latch:
 }
 
 // @early-stop
-RVA(0x000633e0, 0x2f1)
+RVA(0x000632b0, 0x2f1)
 i32 CGrunt::ResolveEntranceArrival() {
     if (m_entranceActive != false && GRUNT_AT_SAVED_SCREEN_POS(this)) {
         CGruntzMgr* g = g_gameReg;
@@ -860,7 +860,7 @@ tail:
 }
 
 // @early-stop
-RVA(0x000637a0, 0x2f8)
+RVA(0x00063670, 0x2f8)
 i32 CGrunt::StepEntranceReinit() {
     bool eq;
     eq = ANIMATION_ACT_EQUALS("D");
@@ -928,7 +928,7 @@ i32 CGrunt::StepEntranceReinit() {
 }
 
 // @early-stop
-RVA(0x00063b60, 0x1cf)
+RVA(0x00063a30, 0x1cf)
 i32 CGrunt::StepArrivalReroll() {
     m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta));
     i64 diff = static_cast<i64>(g_frameTime) - m_arrivalVoiceClock.m_v;
@@ -983,7 +983,7 @@ i32 CGrunt::StepArrivalReroll() {
     return 0;
 }
 
-RVA(0x00063db0, 0x32f)
+RVA(0x00063c80, 0x32f)
 i32 CGrunt::LoadVehicleGruntAnimations() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(sub, static_cast<u32>(g_engineFrameDelta))
     if (IsAniCursorComplete(sub)) {
@@ -1065,7 +1065,7 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
     return 0;
 }
 
-RVA(0x000641b0, 0x2c1)
+RVA(0x00064080, 0x2c1)
 i32 CGrunt::BuildGruntExitAnimation() {
     if (m_deathAnimStarted != false) {
         return 0;
@@ -1138,7 +1138,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
 }
 
 // @early-stop
-RVA(0x00064540, 0x11c)
+RVA(0x00064410, 0x11c)
 i32 CGrunt::StepWarpExit() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(sub, g_engineFrameDelta)
     if (IsAniCursorComplete(sub)) {
@@ -1160,7 +1160,7 @@ i32 CGrunt::StepWarpExit() {
 }
 
 // @early-stop
-RVA(0x000646b0, 0x9c8)
+RVA(0x00064580, 0x9c8)
 i32 CGrunt::StepCombatReaction(
     PickupType attackKind,
     i32 struckPose,
@@ -1377,7 +1377,7 @@ tail:
     return 0;
 }
 
-RVA(0x00065300, 0x148)
+RVA(0x000651d0, 0x148)
 i32 CGrunt::FinishStruckAnimation() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(sub, static_cast<u32>(g_engineFrameDelta))
     if (!IsAniCursorComplete(sub)) {
@@ -1411,7 +1411,7 @@ i32 CGrunt::FinishStruckAnimation() {
     return 0;
 }
 
-RVA(0x000654b0, 0x130)
+RVA(0x00065380, 0x130)
 i32 CGrunt::FinishKnockbackAnimation() {
 
     ADVANCE_CURRENT_ANIMATION_CURSOR(sub, static_cast<u32>(g_engineFrameDelta))
@@ -1445,7 +1445,7 @@ i32 CGrunt::FinishKnockbackAnimation() {
 }
 
 // @early-stop
-RVA(0x00065630, 0x34b)
+RVA(0x00065500, 0x34b)
 i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
     bool eq = ANIMATION_ACT_EQUALS("I");
     if (eq) {
@@ -1534,7 +1534,7 @@ i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
 }
 
 // @early-stop
-RVA(0x00065a60, 0x159)
+RVA(0x00065930, 0x159)
 i32 CGrunt::LoadWandGruntItemConfig() {
     i32 advanced = m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     if (advanced > 0) {
@@ -1582,7 +1582,7 @@ i32 CGrunt::LoadWandGruntItemConfig() {
 }
 
 // @early-stop
-RVA(0x00065c20, 0x1d5)
+RVA(0x00065af0, 0x1d5)
 i32 CGrunt::FinishToobMoveAnimation() {
     i32 advanced = m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta));
     if (advanced > 0) {

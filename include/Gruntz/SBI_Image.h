@@ -66,7 +66,7 @@ public:
     CImage* m_frame;
 };
 
-RVA(0x00101fa0, 0x1b)
+RVA(0x001020d0, 0x1b)
 inline CSBI_RectOnly::CSBI_RectOnly() {
     m_kind = SBI_KIND_RECT_ONLY;
 }

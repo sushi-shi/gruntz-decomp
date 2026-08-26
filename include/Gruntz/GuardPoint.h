@@ -10,7 +10,7 @@
 class CGuardPoint : public CUserLogic, public CWapX {
 public:
 public:
-    RVA(0x00010350, 0x6)
+    RVA(0x00010360, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GUARDPOINT;
     }

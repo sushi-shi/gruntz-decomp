@@ -11,7 +11,7 @@ public:
         afxCurrentWinApp->BeginWaitCursor();
     }
 
-    RVA(0x00018430, 0xd)
+    RVA(0x00018440, 0xd)
     ~CWaitCursorScope() {
         afxCurrentWinApp->EndWaitCursor();
     }

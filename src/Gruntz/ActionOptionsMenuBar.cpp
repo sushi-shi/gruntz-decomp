@@ -27,7 +27,7 @@ static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
     return static_cast<CDDrawWorker*>(found);
 }
 
-RVA(0x00009090, 0x32)
+RVA(0x000090a0, 0x32)
 CActionOptionsMenuBar::CActionOptionsMenuBar() {
     m_frame = NULL;
     m_normChipSprite = NULL;
@@ -39,7 +39,7 @@ CActionOptionsMenuBar::CActionOptionsMenuBar() {
     m_loaded = false;
 }
 
-RVA(0x000090e0, 0x100)
+RVA(0x000090f0, 0x100)
 i32 CActionOptionsMenuBar::LoadAssets() {
     m_active = false;
     CDDrawWorker* spr = LookupWorker(
@@ -82,7 +82,7 @@ i32 CActionOptionsMenuBar::LoadAssets() {
     return 1;
 }
 
-RVA(0x00009220, 0x8f)
+RVA(0x00009230, 0x8f)
 i32 CActionOptionsMenuBar::Init(
     ActionOptionButtonState primaryState,
     ActionOptionButtonState secondaryState,
@@ -122,12 +122,12 @@ i32 CActionOptionsMenuBar::Init(
     return 1;
 }
 
-RVA(0x000092e0, 0x8)
+RVA(0x000092f0, 0x8)
 void CActionOptionsMenuBar::Clear() {
     m_loaded = false;
 }
 
-RVA(0x00009300, 0x14)
+RVA(0x00009310, 0x14)
 i32 CActionOptionsMenuBar::RefreshIfActive(i32 unusedDeltaMs) {
     if (m_active) {
         Refresh();
@@ -135,7 +135,7 @@ i32 CActionOptionsMenuBar::RefreshIfActive(i32 unusedDeltaMs) {
     return 1;
 }
 
-RVA(0x00009330, 0x140)
+RVA(0x00009340, 0x140)
 i32 CActionOptionsMenuBar::Refresh() {
     CGrunt* grunt =
         g_gameReg->m_triggerMgr->m_units[m_unitIndex + m_playerIndex * TM_UNITS_PER_PLAYER];
@@ -187,7 +187,7 @@ i32 CActionOptionsMenuBar::Refresh() {
     return 1;
 }
 
-RVA(0x000094c0, 0x131)
+RVA(0x000094d0, 0x131)
 i32 CActionOptionsMenuBar::Render() {
     if (!m_active) {
         return 1;
@@ -212,7 +212,7 @@ i32 CActionOptionsMenuBar::Render() {
     return 1;
 }
 
-RVA(0x00009650, 0xcf)
+RVA(0x00009660, 0xcf)
 i32 CActionOptionsMenuBar::HitClick(i32 mx, i32 my) {
     if (!m_active) {
         return 1;
@@ -258,7 +258,7 @@ i32 CActionOptionsMenuBar::HitClick(i32 mx, i32 my) {
     return 1;
 }
 
-RVA(0x00009760, 0x6c)
+RVA(0x00009770, 0x6c)
 ActionOptionHit CActionOptionsMenuBar::HitHover(i32 mx, i32 my) {
     if (!m_active) {
         return ACTIONOPTION_HIT_NONE;
@@ -280,13 +280,13 @@ ActionOptionHit CActionOptionsMenuBar::HitHover(i32 mx, i32 my) {
     return ACTIONOPTION_HIT_NONE;
 }
 
-RVA(0x000097f0, 0x8)
+RVA(0x00009800, 0x8)
 void CActionOptionsMenuBar::Deactivate() {
     m_active = false;
 }
 
 // @early-stop
-RVA(0x00009810, 0x2df)
+RVA(0x00009820, 0x2df)
 i32 CActionOptionsMenuBar::Serialize(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
@@ -369,7 +369,7 @@ i32 CActionOptionsMenuBar::Serialize(CFileMemBase* ar) {
     return 1;
 }
 
-RVA(0x00009bb0, 0x367)
+RVA(0x00009bc0, 0x367)
 i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     if (s == NULL) {
         return 0;
@@ -457,7 +457,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     return 1;
 }
 
-RVA(0x0000a000, 0xac)
+RVA(0x0000a010, 0xac)
 void CDDrawWorkerHost::WorldToViewport(LONG* px, LONG* py) {
     if (m_flags & 0x4) {
         if (*px < 0) {

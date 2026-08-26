@@ -40,7 +40,7 @@
 #include <string.h>
 
 // @early-stop
-RVA(0x000f0db0, 0x48)
+RVA(0x000f0ee0, 0x48)
 
 i32 CellTargetable(i32 tileX, i32 tileY) {
     CPtrList& list = g_gameReg->m_triggerMgr->m_baseList;
@@ -61,7 +61,7 @@ i32 CellTargetable(i32 tileX, i32 tileY) {
     return 0;
 }
 
-RVA(0x000f0e20, 0x928)
+RVA(0x000f0f50, 0x928)
 i32 CGrunt::StepGooSuckerBehavior() {
     bool eqI = ANIMATION_ACT_EQUALS("I");
     if (eqI) {

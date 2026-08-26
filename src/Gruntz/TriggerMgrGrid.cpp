@@ -48,7 +48,7 @@
 
 #include <stddef.h>
 
-RVA(0x0006b640, 0x2f)
+RVA(0x0006b510, 0x2f)
 i32 CTriggerMgr::SetLevel(CDDrawSurfaceMgr* lvl) {
     if (lvl == NULL) {
         return 0;
@@ -60,7 +60,7 @@ i32 CTriggerMgr::SetLevel(CDDrawSurfaceMgr* lvl) {
     return 1;
 }
 
-RVA(0x0006b680, 0x39)
+RVA(0x0006b550, 0x39)
 void CTriggerMgr::Cleanup() {
     CActionOptionsMenuBar* ov = m_overlay;
     if (ov != NULL) {
@@ -73,7 +73,7 @@ void CTriggerMgr::Cleanup() {
 }
 
 // @early-stop
-RVA(0x0006b6d0, 0x434)
+RVA(0x0006b5a0, 0x434)
 i32 CTriggerMgr::PlaceObject(
     i32 playerIndex,
     i32 x,
@@ -275,7 +275,7 @@ fail:
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0006bc20, 0x6f)
+RVA(0x0006baf0, 0x6f)
 i32 CTriggerMgr::StartUnitDeathForObject(
     CGrunt* unit,
     i32 playerSelector,
@@ -300,7 +300,7 @@ i32 CTriggerMgr::StartUnitDeathForObject(
     return 0;
 }
 
-RVA(0x0006bcb0, 0x6a)
+RVA(0x0006bb80, 0x6a)
 i32 CTriggerMgr::StartUnitDeath(
     i32 playerIndex,
     i32 unitIndex,
@@ -324,7 +324,7 @@ i32 CTriggerMgr::StartUnitDeath(
     return 1;
 }
 
-RVA(0x0006bd40, 0xb3)
+RVA(0x0006bc10, 0xb3)
 i32 CTriggerMgr::RemovePlayerUnitsImmediately(i32 playerSelector) {
     i32 firstPlayerIndex, lastPlayerIndex;
     if (playerSelector == TM_ALL_PLAYERS) {
@@ -354,7 +354,7 @@ i32 CTriggerMgr::RemovePlayerUnitsImmediately(i32 playerSelector) {
 }
 
 // @early-stop
-RVA(0x0006be30, 0x47)
+RVA(0x0006bd00, 0x47)
 CGrunt* CTriggerMgr::ScreenToCell(
     i32 sx,
     i32 sy,
@@ -370,7 +370,7 @@ CGrunt* CTriggerMgr::ScreenToCell(
 }
 
 // @early-stop
-RVA(0x0006bea0, 0xe2)
+RVA(0x0006bd70, 0xe2)
 CGrunt* CTriggerMgr::CellHitTest(
     i32 px,
     i32 py,
@@ -416,7 +416,7 @@ CGrunt* CTriggerMgr::CellHitTest(
     return NULL;
 }
 
-RVA(0x0006bfd0, 0x106)
+RVA(0x0006bea0, 0x106)
 i32 CTriggerMgr::ResetCell(i32 playerIndex, i32 unitIndex, i32 force, i32 keep) {
     i32 idx = playerIndex * TM_UNITS_PER_PLAYER + unitIndex;
     CGrunt* cell = m_units[idx];
@@ -456,7 +456,7 @@ i32 CTriggerMgr::ResetCell(i32 playerIndex, i32 unitIndex, i32 force, i32 keep) 
 }
 
 // @early-stop
-RVA(0x0006c130, 0xe38)
+RVA(0x0006c000, 0xe38)
 i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 
     CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState);
@@ -881,7 +881,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
 }
 
 // @early-stop
-RVA(0x0006d300, 0x5db)
+RVA(0x0006d1d0, 0x5db)
 i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState);
     CGameLevel* view = m_world->m_level;
@@ -1067,7 +1067,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     return 0;
 }
 
-RVA(0x0006da60, 0x27)
+RVA(0x0006d930, 0x27)
 void CTriggerMgr::EnqueueGuardBegin(i32 playerIndex, i32 unitIndex) {
     g_gameReg->m_commandMgr->EnqueueSingle(
         true,
@@ -1081,7 +1081,7 @@ void CTriggerMgr::EnqueueGuardBegin(i32 playerIndex, i32 unitIndex) {
     );
 }
 
-RVA(0x0006daa0, 0x27)
+RVA(0x0006d970, 0x27)
 void CTriggerMgr::EnqueueGuardEnd(i32 playerIndex, i32 unitIndex) {
     g_gameReg->m_commandMgr->EnqueueSingle(
         true,
@@ -1096,7 +1096,7 @@ void CTriggerMgr::EnqueueGuardEnd(i32 playerIndex, i32 unitIndex) {
 }
 
 // @early-stop
-RVA(0x0006dae0, 0x4f9)
+RVA(0x0006d9b0, 0x4f5)
 i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY) {
     CGrunt* cell = m_units[playerIndex * TM_UNITS_PER_PLAYER + unitIndex];
     if (cell == NULL || cell->m_entranceCommitted == false) {
@@ -1240,7 +1240,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
 }
 
 // @early-stop
-RVA(0x0006e120, 0x552)
+RVA(0x0006dff0, 0x552)
 i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY) {
     i32 bx;
     i32 by;
@@ -1389,13 +1389,13 @@ bad:
     return -1;
 }
 
-RVA(0x0006e7e0, 0x5)
+RVA(0x0006e6b0, 0x5)
 CGrunt* CTriggerMgr::FindAtPixel(i32 x, i32 y) {
     return NULL;
 }
 
 // @early-stop
-RVA(0x0006e800, 0x189)
+RVA(0x0006e6d0, 0x189)
 i32 CTriggerMgr::ClearCell(
     i32 playerIndex,
     i32 unitIndex,
@@ -1448,7 +1448,7 @@ i32 CTriggerMgr::ClearCell(
 }
 
 // @early-stop
-RVA(0x0006ea00, 0x125)
+RVA(0x0006e8d0, 0x125)
 void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
 
     CGrunt* cell = FindGruntAt(x, y, span.m_span, &span.m_outPlayerIndex, &y, NULL);

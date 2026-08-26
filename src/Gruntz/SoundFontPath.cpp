@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 
-RVA(0x000f8e20, 0x56)
+RVA(0x000f8f50, 0x56)
 void CloseSoundFontDevice() {
     if (g_sfReady != false && g_sfDevice != NULL && g_sfDeviceCount != 0) {
         SfDeviceInitKeys();
@@ -23,12 +23,12 @@ void CloseSoundFontDevice() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000f8ea0, 0x6)
+RVA(0x000f8fd0, 0x6)
 i32 SoundFontDeviceReady() {
     return g_sfReady;
 }
 
-RVA(0x000f8ec0, 0x50)
+RVA(0x000f8ff0, 0x50)
 i32 SfDeviceInitKeys() {
     if (g_sfReady == false) {
         return 0;
@@ -48,7 +48,7 @@ i32 SfDeviceInitKeys() {
 }
 
 // @early-stop
-RVA(0x000f8f30, 0x160)
+RVA(0x000f9060, 0x160)
 i32 BuildSoundFontPath(char drive) {
     if (g_sfReady == false) {
         return 0;
@@ -85,7 +85,7 @@ i32 BuildSoundFontPath(char drive) {
     return res == 0;
 }
 
-RVA(0x000f90f0, 0x45)
+RVA(0x000f9220, 0x45)
 i32 SoundFontFileExists(char* szPath) {
     OFSTRUCT of;
 

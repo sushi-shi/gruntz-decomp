@@ -27,7 +27,7 @@
 
 #include <string.h>
 
-RVA(0x00155840, 0x41)
+RVA(0x00155b20, 0x41)
 CDDrawSurfaceMgr::CDDrawSurfaceMgr() {
     m_drawTarget = NULL;
     m_childGroup = NULL;
@@ -47,13 +47,13 @@ CDDrawSurfaceMgr::CDDrawSurfaceMgr() {
     g_engineFrameDelta = 0;
 }
 
-RVA_COMPGEN(0x00155890, 0x1e, ??_GCDDrawSurfaceMgr@@UAEPAXI@Z)
-RVA(0x001558b0, 0x46)
+RVA_COMPGEN(0x00155b70, 0x1e, ??_GCDDrawSurfaceMgr@@UAEPAXI@Z)
+RVA(0x00155b90, 0x46)
 CDDrawSurfaceMgr::~CDDrawSurfaceMgr() {
     Cleanup();
 }
 
-RVA(0x00155900, 0x519)
+RVA(0x00155be0, 0x519)
 i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags) {
     m_hWnd = hWnd;
     m_flags = flags;
@@ -150,7 +150,7 @@ i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags) {
     return 1;
 }
 
-RVA(0x00155e20, 0xd1)
+RVA(0x00156100, 0xd1)
 void CDDrawSurfaceMgr::Cleanup() {
     if (m_level) {
         delete m_level;
@@ -199,7 +199,7 @@ void CDDrawSurfaceMgr::Cleanup() {
     m_callback = NULL;
 }
 
-RVA(0x00155f00, 0x41)
+RVA(0x001561e0, 0x41)
 i32 CDDrawSurfaceMgr::IsReady() {
     CDDrawSubMgrPages* first = m_drawTarget;
 
@@ -229,12 +229,12 @@ fail:
     return 0;
 }
 
-RVA(0x00155f50, 0x10)
+RVA(0x00156230, 0x10)
 void CDDrawSurfaceMgr::SetRestoreHandler(SurfaceRestoreFn handler) {
     SetSurfaceRestoreHandler(handler);
 }
 
-RVA(0x00155f60, 0x56)
+RVA(0x00156240, 0x56)
 i32 CDDrawSurfaceMgr::SetDimensions(i32 x, i32 y, ColorDepth bpp) {
     CDDrawFrontSurface* child = m_drawTarget->m_frontSurface;
 
@@ -254,7 +254,7 @@ i32 CDDrawSurfaceMgr::SetDimensions(i32 x, i32 y, ColorDepth bpp) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00155fc0, 0x2e)
+RVA(0x001562a0, 0x2e)
 void CDDrawSurfaceMgr::FreeContext() {
     if (m_soundRegistry != NULL) {
 
@@ -271,7 +271,7 @@ void CDDrawSurfaceMgr::FreeContext() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00155ff0, 0x22)
+RVA(0x001562d0, 0x22)
 i32 CDDrawSurfaceMgr::EnsureSoundInitialized() {
     if (m_soundStream != NULL && m_soundStream->m_initialized == false) {
         return m_soundStream->InitializeDevice(m_hWnd, 1);
@@ -279,7 +279,7 @@ i32 CDDrawSurfaceMgr::EnsureSoundInitialized() {
     return 1;
 }
 
-RVA(0x00156020, 0x505)
+RVA(0x00156300, 0x505)
 i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, LogicTypeId typeId) {
     if (path == NULL) {
         return 0;
@@ -348,7 +348,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, L
 }
 
 // @early-stop
-RVA(0x00156530, 0x557)
+RVA(0x00156810, 0x557)
 i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, LogicTypeId typeId) {
     if (name == NULL) {
         return 0;
@@ -408,7 +408,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, LogicTypeId ty
     return 1;
 }
 
-RVA(0x00156a90, 0x3a)
+RVA(0x00156d70, 0x3a)
 i32 CDDrawSurfaceMgr::DispatchSerializationCallback(
     CFileMemBase* ar,
     SerialMode mode,
@@ -426,7 +426,7 @@ i32 CDDrawSurfaceMgr::DispatchSerializationCallback(
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00156ad0, 0x1d2)
+RVA(0x00156db0, 0x1d2)
 i32 __stdcall
 LoadRecordFile(const char* name, CSnapshotHeader* hdrOut, void* buf, u32 len, i32 unused) {
     if (name == NULL) {
@@ -448,7 +448,7 @@ LoadRecordFile(const char* name, CSnapshotHeader* hdrOut, void* buf, u32 len, i3
     return 1;
 }
 
-RVA_COMPGEN(0x001578b0, 0x51, ??1CFileMemBase@@UAE@XZ)
-RVA_COMPGEN(0x00157960, 0x1e, ??_GCFileMemBase@@UAEPAXI@Z)
-RVA_COMPGEN(0x00157980, 0x74, ??1CFileMem@@UAE@XZ)
-RVA_COMPGEN(0x00157a20, 0x1e, ??_GCFileMem@@UAEPAXI@Z)
+RVA_COMPGEN(0x00157b90, 0x51, ??1CFileMemBase@@UAE@XZ)
+RVA_COMPGEN(0x00157c40, 0x1e, ??_GCFileMemBase@@UAEPAXI@Z)
+RVA_COMPGEN(0x00157c60, 0x74, ??1CFileMem@@UAE@XZ)
+RVA_COMPGEN(0x00157d00, 0x1e, ??_GCFileMem@@UAEPAXI@Z)

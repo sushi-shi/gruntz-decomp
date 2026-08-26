@@ -14,7 +14,7 @@
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00114f50, 0x3e)
+RVA(0x00115080, 0x3e)
 i32 SaveBackBufferShot(
     Utils::RegistryHelper* bute,
     CGruntzMgr* owner,
@@ -34,7 +34,7 @@ i32 SaveBackBufferShot(
     return SaveScreenshot(leaf, bute, owner, width, height, name, saveFlag);
 }
 
-RVA(0x00114fa0, 0x3e)
+RVA(0x001150d0, 0x3e)
 i32 SaveOverlayBufferShot(
     Utils::RegistryHelper* bute,
     CGruntzMgr* owner,

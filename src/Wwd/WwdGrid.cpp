@@ -9,7 +9,7 @@
 #include <math.h>
 
 // @early-stop
-RVA(0x001915c0, 0x15d)
+RVA(0x001918a0, 0x15d)
 i32 CWwdGrid::Setup(RECT rect, i32 cellW, i32 cellH) {
     m_count = 0;
     m_bounds.m_rect = rect;
@@ -40,11 +40,11 @@ i32 CWwdGrid::Setup(RECT rect, i32 cellW, i32 cellH) {
     m_allocated = true;
     return 1;
 }
-RVA_COMPGEN(0x00191720, 0x50, ??_EBucketHead@@QAEPAXI@Z)
+RVA_COMPGEN(0x00191a00, 0x50, ??_EBucketHead@@QAEPAXI@Z)
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00191770, 0x8d)
+RVA(0x00191a50, 0x8d)
 i32 CWwdGrid::Setup(RECT rect) {
     i32 cellW;
     if (rect.right > rect.left) {
@@ -61,7 +61,7 @@ i32 CWwdGrid::Setup(RECT rect) {
     return Setup(rect, cellW, cellH);
 }
 
-RVA(0x00191800, 0x39)
+RVA(0x00191ae0, 0x39)
 void CWwdGrid::FreeBuckets() {
     if (m_allocated) {
 
@@ -70,7 +70,7 @@ void CWwdGrid::FreeBuckets() {
     }
 }
 
-RVA(0x00191840, 0x48)
+RVA(0x00191b20, 0x48)
 i32 CWwdGrid::Add(WwdRegion* r) {
     i32 col = (r->m_y - m_bounds.m_minY) >> m_shiftX;
     i32 row = (r->m_x - m_bounds.m_minX) >> m_shiftY;
@@ -81,7 +81,7 @@ i32 CWwdGrid::Add(WwdRegion* r) {
     return 1;
 }
 
-RVA(0x00191890, 0x24)
+RVA(0x00191b70, 0x24)
 void CWwdGrid::Remove(WwdRegion* r) {
     r->m_bucket->Unlink(r);
     r->m_bucket = NULL;
@@ -89,7 +89,7 @@ void CWwdGrid::Remove(WwdRegion* r) {
 }
 
 // @early-stop
-RVA(0x001918c0, 0x1a2)
+RVA(0x00191ba0, 0x1a2)
 
 i32 CWwdGrid::Query(WwdRect q, i32 doRemove) {
     i32 fired = 0;
@@ -155,7 +155,7 @@ i32 CWwdGrid::Query(WwdRect q, i32 doRemove) {
     return fired;
 }
 
-RVA(0x00191a70, 0x57)
+RVA(0x00191d50, 0x57)
 i32 CWwdGrid::Clear() {
     i32 nonEmpty = 0;
     for (i32 i = 0; i < m_cellCount; ++i) {
@@ -171,7 +171,7 @@ i32 CWwdGrid::Clear() {
     return nonEmpty;
 }
 
-RVA(0x00191ad0, 0x34)
+RVA(0x00191db0, 0x34)
 WwdRegion* CWwdGridIter::Start(CWwdGrid* grid, i32 remove) {
 
     WwdRect full = grid->m_bounds;
@@ -179,7 +179,7 @@ WwdRegion* CWwdGridIter::Start(CWwdGrid* grid, i32 remove) {
 }
 
 // @early-stop
-RVA(0x00191b10, 0x111)
+RVA(0x00191df0, 0x111)
 WwdRegion* CWwdGridIter::Init(CWwdGrid* grid, WwdRect rect, i32 remove) {
     m_grid = grid;
     m_rect = rect;
@@ -222,7 +222,7 @@ WwdRegion* CWwdGridIter::Init(CWwdGrid* grid, WwdRect rect, i32 remove) {
 }
 
 // @early-stop
-RVA(0x00191c30, 0xcc)
+RVA(0x00191f10, 0xcc)
 WwdRegion* CWwdGridIter::GetNext() {
     for (;;) {
         m_cur = m_next;
@@ -258,6 +258,6 @@ WwdRegion* CWwdGridIter::GetNext() {
     }
 }
 
-RVA_COMPGEN(0x00191d00, 0x10, ??0BucketHead@@QAE@XZ)
-RVA(0x00191d10, 0x1)
+RVA_COMPGEN(0x00191fe0, 0x10, ??0BucketHead@@QAE@XZ)
+RVA(0x00191ff0, 0x1)
 BucketHead::~BucketHead() {}

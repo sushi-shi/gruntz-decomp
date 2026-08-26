@@ -26,22 +26,22 @@
 #include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
 
-RVA_DYNINIT(0x00008040, 0xa, CActRegPool<CActionArea>::s_table)
-RVA_DYNINIT(0x00008060, 0x15, CActRegPool<CActionArea>::s_table)
-RVA_DYNINIT(0x00008090, 0xe, CActRegPool<CActionArea>::s_table)
-RVA_DYNINIT(0x000080b0, 0x1f, CActRegPool<CActionArea>::s_table)
-template<> DATA(0x00229388)
+RVA_DYNINIT(0x00008050, 0xa, CActRegPool<CActionArea>::s_table)
+RVA_DYNINIT(0x00008070, 0x15, CActRegPool<CActionArea>::s_table)
+RVA_DYNINIT(0x000080a0, 0xe, CActRegPool<CActionArea>::s_table)
+RVA_DYNINIT(0x000080c0, 0x1f, CActRegPool<CActionArea>::s_table)
+template<> DATA(0x0022a2e0)
 CActReg CActRegPool<CActionArea>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 static inline CActHandler* R3Lookup(i32 coord) {
     return (CActRegPool<CActionArea>::s_table.ResolveEntry(coord));
 }
 
-RVA(0x00007c60, 0xf1)
+RVA(0x00007c70, 0xf1)
 i32 DispatchActionAreaLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CActionArea)}
 
 // @early-stop
-RVA(0x00007da0, 0x17e)
+RVA(0x00007db0, 0x17e)
 CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_timestamp = 0;
     m_duration = 0;
@@ -54,10 +54,10 @@ CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     Hide();
 }
 
-RVA_COMPGEN(0x00007fa0, 0x1e, ??_GCActionArea@@UAEPAXI@Z)
-RVA_COMPGEN(0x00007fd0, 0x44, ??1CActionArea@@UAE@XZ)
+RVA_COMPGEN(0x00007fb0, 0x1e, ??_GCActionArea@@UAEPAXI@Z)
+RVA_COMPGEN(0x00007fe0, 0x44, ??1CActionArea@@UAE@XZ)
 
-RVA(0x000080e0, 0x102)
+RVA(0x000080f0, 0x102)
 void CActionArea::FireActivation(i32 coord) {
     CActHandler* e = R3Lookup(coord);
     if ((*e) != NULL) {
@@ -66,14 +66,14 @@ void CActionArea::FireActivation(i32 coord) {
     }
 }
 
-RVA(0x00008240, 0x18d)
+RVA(0x00008250, 0x18d)
 void CProjActObj::RegisterType() {
     ACT_NAME_ID(id, "A")
 
     *R3Lookup(id) = static_cast<CActHandler>(&CActionArea::Tick);
 }
 
-RVA(0x00008440, 0xfe)
+RVA(0x00008450, 0xfe)
 i32 CActionArea::Tick() {
     i64* ts = &m_timestamp;
     i32* phase = &m_phase;
@@ -98,7 +98,7 @@ i32 CActionArea::Tick() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00008580, 0x5e)
+RVA(0x00008590, 0x5e)
 i32 CActionArea::ApplyColor(i32 owner) {
     switch (static_cast<ActionAreaOwner>(owner)) {
         case ACTION_AREA_BLUE_OWNER: {
@@ -122,7 +122,7 @@ i32 CActionArea::ApplyColor(i32 owner) {
     return 1;
 }
 
-RVA(0x00008600, 0xcd)
+RVA(0x00008610, 0xcd)
 i32 CActionArea::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
@@ -145,8 +145,8 @@ i32 CActionArea::SerializeDispatch(
     return 1;
 }
 
-RVA_COMPGEN(0x000087b0, 0x7, ??1CUserBase@@UAE@XZ)
-RVA_COMPGEN(0x00008810, 0x20, ??_GCUserBase@@UAEPAXI@Z)
+RVA_COMPGEN(0x000087c0, 0x7, ??1CUserBase@@UAE@XZ)
+RVA_COMPGEN(0x00008820, 0x20, ??_GCUserBase@@UAEPAXI@Z)
 
-RVA_COMPGEN(0x00008860, 0x44, ??1CUserLogic@@UAE@XZ)
-RVA_COMPGEN(0x00008a10, 0x1e, ??_GCUserLogic@@UAEPAXI@Z)
+RVA_COMPGEN(0x00008870, 0x44, ??1CUserLogic@@UAE@XZ)
+RVA_COMPGEN(0x00008a20, 0x1e, ??_GCUserLogic@@UAEPAXI@Z)

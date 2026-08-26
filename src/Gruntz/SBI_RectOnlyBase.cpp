@@ -5,7 +5,7 @@
 #include <Gruntz/SBI_Image.h>
 #include <Ints.h>
 
-RVA(0x000e86e0, 0x53)
+RVA(0x000e8810, 0x53)
 i32 CSBI_RectOnly::Setup(
     CStatusBarMgr* owner,
     CDDrawSurfaceMgr* host,
@@ -27,9 +27,9 @@ i32 CSBI_RectOnly::Setup(
     return 1;
 }
 
-RVA(0x000e8760, 0x1)
+RVA(0x000e8890, 0x1)
 void CSBI_RectOnly::Reset() {}
-RVA(0x000e8780, 0x8)
+RVA(0x000e88b0, 0x8)
 i32 CSBI_RectOnly::Refresh(i32) {
     return 1;
 }

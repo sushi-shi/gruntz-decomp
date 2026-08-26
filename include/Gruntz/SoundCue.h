@@ -14,7 +14,7 @@ struct RiffWaveHeader;
 
 struct SoundCue : public CWapObj {
 
-    RVA(0x00158650, 0xb)
+    RVA(0x00158930, 0xb)
     virtual i32 IsLoaded() OVERRIDE {
         return m_sound != NULL;
     }

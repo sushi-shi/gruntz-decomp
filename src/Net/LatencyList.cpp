@@ -9,7 +9,7 @@
 
 #include <stddef.h>
 
-RVA(0x00037b40, 0xb3)
+RVA(0x00037a60, 0xb3)
 i32 CLatencyList::PopulateIpxOptions() {
     if (!AddNode("Automatic", 0, 0)) {
         return 0;
@@ -35,7 +35,7 @@ i32 CLatencyList::PopulateIpxOptions() {
     return AddNode("Last Resort", 24, 10) != NULL;
 }
 
-RVA(0x00037c30, 0xb3)
+RVA(0x00037b50, 0xb3)
 i32 CLatencyList::PopulateTcpIpOptions() {
     if (!AddNode("Automatic", 0, 0)) {
         return 0;
@@ -61,7 +61,7 @@ i32 CLatencyList::PopulateTcpIpOptions() {
     return AddNode("Last Resort", 24, 30) != NULL;
 }
 
-RVA(0x00037d20, 0xb3)
+RVA(0x00037c40, 0xb3)
 i32 CLatencyList::PopulateModemOptions() {
     if (!AddNode("Automatic", 0, 0)) {
         return 0;
@@ -86,7 +86,7 @@ i32 CLatencyList::PopulateModemOptions() {
     }
     return AddNode("Last Resort", 24, 30) != NULL;
 }
-RVA(0x00037e10, 0xb3)
+RVA(0x00037d30, 0xb3)
 i32 CLatencyList::PopulateSerialOptions() {
     if (!AddNode("Automatic", 0, 0)) {
         return 0;
@@ -112,7 +112,7 @@ i32 CLatencyList::PopulateSerialOptions() {
     return AddNode("Last Resort", 24, 30) != NULL;
 }
 
-RVA(0x00037f00, 0xb3)
+RVA(0x00037e20, 0xb3)
 i32 CLatencyList::PopulateGenericOptions() {
     if (!AddNode("Automatic", 0, 0)) {
         return 0;
@@ -138,7 +138,7 @@ i32 CLatencyList::PopulateGenericOptions() {
     return AddNode("Last Resort", 24, 30) != NULL;
 }
 
-RVA(0x00037ff0, 0xe7)
+RVA(0x00037f10, 0xe7)
 i32 CLatencyList::FillCombo(HWND hDlg, i32 ctrlId) {
     if (m_list.GetCount() <= 0) {
         return 0;
@@ -170,12 +170,12 @@ i32 CLatencyList::FillCombo(HWND hDlg, i32 ctrlId) {
     return 0;
 }
 
-RVA(0x00038120, 0x1d)
+RVA(0x00038040, 0x1d)
 CString CKeyedNode::GetName() {
     return m_key;
 }
 
-RVA(0x00038150, 0x91)
+RVA(0x00038070, 0x91)
 i32 CLatencyList::SelectItem(HWND hDlg, i32 id, i32 lo, i32 hi) {
     HWND list = GetDlgItem(hDlg, id);
     if (!list) {
@@ -203,7 +203,7 @@ i32 CLatencyList::SelectItem(HWND hDlg, i32 id, i32 lo, i32 hi) {
     return 0;
 }
 
-RVA(0x00038220, 0x73)
+RVA(0x00038140, 0x73)
 i32 CLatencyList::GetSelItemData(HWND hDlg, i32 id, i32* outLo, i32* outHi) {
     HWND list = GetDlgItem(hDlg, id);
     if (!list) {

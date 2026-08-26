@@ -19,7 +19,7 @@ GZ_ENUM_END(ObjectDropScope)
 class CObjectDropper : public CUserLogic, public CWapX {
 public:
 public:
-    RVA(0x000124a0, 0x6)
+    RVA(0x000124b0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_OBJECTDROPPER;
     }

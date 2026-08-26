@@ -120,7 +120,7 @@ public:
     virtual i32 IsLoaded() OVERRIDE;
 
     virtual void Unload() OVERRIDE;
-    RVA(0x001611b0, 0x6)
+    RVA(0x00161490, 0x6)
     virtual LoadableClassId GetClassId() OVERRIDE {
         return CLASSID_GAMELEVEL;
     }

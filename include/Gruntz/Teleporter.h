@@ -35,7 +35,7 @@ public:
 
     i32 Update();
 
-    RVA(0x00010d80, 0x6)
+    RVA(0x00010d90, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_TELEPORTER;
     }

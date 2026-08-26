@@ -22,7 +22,7 @@ struct WarlordTimer {
 class CWarlord : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeDispatch(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
-    RVA(0x000107a0, 0x6)
+    RVA(0x000107b0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_WARLORD;
     }

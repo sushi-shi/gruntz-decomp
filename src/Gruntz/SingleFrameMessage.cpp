@@ -13,14 +13,14 @@
 #include <Gruntz/WwdGameReg.h>
 #include <Wap32/ZVec.h>
 
-RVA_DYNINIT(0x000ab510, 0xa, CActRegPool<CSingleFrameMessage>::s_table)
-RVA_DYNINIT(0x000ab530, 0x15, CActRegPool<CSingleFrameMessage>::s_table)
-RVA_DYNINIT(0x000ab560, 0xe, CActRegPool<CSingleFrameMessage>::s_table)
-RVA_DYNINIT(0x000ab580, 0x1f, CActRegPool<CSingleFrameMessage>::s_table)
-template<> DATA(0x00245ef0)
+RVA_DYNINIT(0x000ab500, 0xa, CActRegPool<CSingleFrameMessage>::s_table)
+RVA_DYNINIT(0x000ab520, 0x15, CActRegPool<CSingleFrameMessage>::s_table)
+RVA_DYNINIT(0x000ab550, 0xe, CActRegPool<CSingleFrameMessage>::s_table)
+RVA_DYNINIT(0x000ab570, 0x1f, CActRegPool<CSingleFrameMessage>::s_table)
+template<> DATA(0x00246e48)
 CActReg CActRegPool<CSingleFrameMessage>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
-RVA(0x0000f5a0, 0x47)
+RVA(0x0000f5b0, 0x47)
 i32 CSingleFrameMessage::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
@@ -30,11 +30,11 @@ i32 CSingleFrameMessage::SerializeDispatch(
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE(ar, mode, typeId, object)
 }
 
-RVA_COMPGEN(0x0000f610, 0x1e, ??_GCSingleFrameMessage@@UAEPAXI@Z)
-RVA_COMPGEN(0x0000f640, 0x44, ??1CSingleFrameMessage@@UAE@XZ)
+RVA_COMPGEN(0x0000f620, 0x1e, ??_GCSingleFrameMessage@@UAEPAXI@Z)
+RVA_COMPGEN(0x0000f650, 0x44, ??1CSingleFrameMessage@@UAE@XZ)
 
 // @early-stop
-RVA(0x000ab310, 0x18d)
+RVA(0x000ab300, 0x18d)
 CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     RECT r;
@@ -50,7 +50,7 @@ CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj)
     m_object->m_screenY = centerY;
 }
 
-RVA(0x000ab5b0, 0x102)
+RVA(0x000ab5a0, 0x102)
 void CSingleFrameMessage::FireActivation(i32 id) {
     CActHandler* e = (CActRegPool<CSingleFrameMessage>::s_table.ResolveEntry(id));
     if ((*e) != NULL) {
@@ -60,14 +60,14 @@ void CSingleFrameMessage::FireActivation(i32 id) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000ab710, 0x18d)
+RVA(0x000ab700, 0x18d)
 void CSingleFrameMessage::RegisterActs() {
     ACT_NAME_ID(id, "A")
     (*((CActRegPool<CSingleFrameMessage>::s_table.ResolveEntry(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CSingleFrameMessage::AdvanceAnim);
 }
 
-RVA(0x000ab910, 0x12)
+RVA(0x000ab900, 0x12)
 i32 CSingleFrameMessage::AdvanceAnim() {
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     return 0;

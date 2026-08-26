@@ -17,7 +17,7 @@
 #include <Ints.h>
 #include <Io/FileMem.h>
 
-RVA(0x000eb6b0, 0x67)
+RVA(0x000eb7e0, 0x67)
 i32 CSBI_WarlordHead::SetupImage(
     CStatusBarMgr* owner,
     CDDrawSurfaceMgr* host,
@@ -35,7 +35,7 @@ i32 CSBI_WarlordHead::SetupImage(
     return 1;
 }
 
-RVA(0x000eb740, 0xb3)
+RVA(0x000eb870, 0xb3)
 i32 CSBI_WarlordHead::ShowFrames(ShadeMode show, CShadeTable* palDescr) {
     if (m_frameSet == NULL) {
         return 0;
@@ -65,7 +65,7 @@ i32 CSBI_WarlordHead::ShowFrames(ShadeMode show, CShadeTable* palDescr) {
     return 1;
 }
 
-RVA(0x000eb830, 0x31)
+RVA(0x000eb960, 0x31)
 i32 CSBI_WarlordHead::SetState(i32 dir) {
     if (dir == 0 || dir == 1) {
         m_direction = dir;
@@ -78,7 +78,7 @@ i32 CSBI_WarlordHead::SetState(i32 dir) {
 }
 
 // @early-stop
-RVA(0x000eb880, 0xbd)
+RVA(0x000eb9b0, 0xbd)
 i32 CSBI_WarlordHead::Render() {
     if (m_redrawFrames > 0) {
         m_redrawFrames--;
@@ -106,7 +106,7 @@ i32 CSBI_WarlordHead::Render() {
     return 1;
 }
 
-RVA(0x000eb970, 0x72)
+RVA(0x000ebaa0, 0x72)
 i32 CSBI_WarlordHead::SerializeFields(
     CFileMemBase* s,
     SerialMode mode,
@@ -130,8 +130,8 @@ i32 CSBI_WarlordHead::SerializeFields(
     return CSBI_ImageSet::SerializeFields(s, mode, typeId, payload) != 0;
 }
 
-RVA_COMPGEN(0x001049d0, 0x1e, ??_GCSBI_WarlordHead@@UAEPAXI@Z)
-RVA(0x00104a00, 0x94)
+RVA_COMPGEN(0x00104b00, 0x1e, ??_GCSBI_WarlordHead@@UAEPAXI@Z)
+RVA(0x00104b30, 0x94)
 CSBI_WarlordHead::~CSBI_WarlordHead() {
     Reset();
 }

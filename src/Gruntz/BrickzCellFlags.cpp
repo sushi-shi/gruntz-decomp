@@ -15,7 +15,7 @@
 #include <limits.h>
 
 // @early-stop
-RVA(0x00077790, 0x4f0)
+RVA(0x00077660, 0x4f0)
 void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 tileId) {
 
     BrickzCell* cell = &m_rows[y][x];
@@ -279,12 +279,12 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 tileId) {
     }
 }
 
-RVA(0x00077dc0, 0x1d)
+RVA(0x00077c90, 0x1d)
 void CDDrawWorkerHost::SetCell(i32 x, i32 y, i32 id) {
     SET_WORKER_HOST_CELL(this, x, y, id);
 }
 
-RVA(0x00077df0, 0x13d)
+RVA(0x00077cc0, 0x13d)
 CGrunt* CTriggerMgr::FindNearestEnemy(CGrunt* w) {
     CGrunt* best = NULL;
     i32 bestDist = INT_MAX;

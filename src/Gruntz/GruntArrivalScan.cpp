@@ -38,7 +38,7 @@
 
 // @early-stop
 
-RVA(0x000ec670, 0x298)
+RVA(0x000ec7a0, 0x298)
 i32 CGrunt::StepBomberBehavior() {
     CGrunt* occ = m_triggerMgr->FindNearestEnemy(this);
     m_defenderPx = m_lastTilePx;

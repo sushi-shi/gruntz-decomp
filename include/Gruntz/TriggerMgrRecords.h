@@ -20,7 +20,7 @@ class CGruntPuddle;
 class CGrunt;
 struct Coord;
 
-RVA(0x00075a90, 0x27)
+RVA(0x00075960, 0x27)
 inline i32 TmFlagsAllow(i32 a, i32 b, i32 c) {
     i32 m = b & a;
     if (m & BRICKZ_CELL_OCCUPIED) {

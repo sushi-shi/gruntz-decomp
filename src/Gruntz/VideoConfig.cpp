@@ -31,48 +31,48 @@ typedef enum VideoConfigDlgId {
     IDC_RESCAPTION = 0x52d,
 } VideoConfigDlgId;
 
-DATA(0x0020ccc4)
+DATA(0x0020dc6c)
 Resolution g_videoResolutionMode = RES_640X480;
 
-DATA(0x0022bd64)
+DATA(0x0022ccbc)
 b32 g_unusedMusicEnabledSnapshot = false;
-DATA(0x0022bd68)
+DATA(0x0022ccc0)
 i32 g_savedScrollSpeed = 0;
-DATA(0x0022bd6c)
+DATA(0x0022ccc4)
 i32 g_savedSoundVolume = 0;
-DATA(0x0022bd70)
+DATA(0x0022ccc8)
 b32 g_savedEasyMode = false;
-DATA(0x0022bd84)
+DATA(0x0022ccdc)
 b32 g_savedSoundEnabled = false;
-DATA(0x0022bdc4)
+DATA(0x0022cd1c)
 i32 g_savedVoiceVolume = 0;
-DATA(0x0022bdc8)
+DATA(0x0022cd20)
 Resolution g_savedResolutionMode = RES_UNSET;
-DATA(0x0022bdcc)
+DATA(0x0022cd24)
 i32 g_savedMidiVolume = 0;
-DATA(0x0022bdd0)
+DATA(0x0022cd28)
 b32 g_savedMusicEnabled = false;
-DATA(0x0022bdd4)
+DATA(0x0022cd2c)
 b32 g_savedVoiceEnabled = false;
 
-DATA(0x0022bdd8)
+DATA(0x0022cd30)
 HWND g_optHwndMusic = NULL;
-DATA(0x0022bddc)
+DATA(0x0022cd34)
 HWND g_optHwndVoice = NULL;
-DATA(0x0022bde0)
+DATA(0x0022cd38)
 HWND g_optHwndSpeech = NULL;
-DATA(0x0022bde4)
+DATA(0x0022cd3c)
 HWND g_optHwndEasy = NULL;
-DATA(0x0022bde8)
+DATA(0x0022cd40)
 HWND g_optHwndResSlider = NULL;
-DATA(0x0022bdec)
+DATA(0x0022cd44)
 HWND g_optHwndMidiVolume = NULL;
-DATA(0x0022bdf0)
+DATA(0x0022cd48)
 HWND g_optHwndSoundVolume = NULL;
-DATA(0x0022bdf4)
+DATA(0x0022cd4c)
 HWND g_optHwndVoiceVolume = NULL;
 
-RVA(0x000363a0, 0x41)
+RVA(0x00036330, 0x41)
 Resolution GetResolutionCode() {
     i32 w = g_gameReg->m_savedModeSize.cx;
     i32 h = g_gameReg->m_savedModeSize.cy;
@@ -85,7 +85,7 @@ Resolution GetResolutionCode() {
     return RES_640X480;
 }
 
-RVA(0x00036410, 0x366)
+RVA(0x000363a0, 0x366)
 BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     NetLobby::g_curDlg = hDlg;
 
@@ -211,7 +211,7 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
     return false;
 }
 
-RVA(0x00036860, 0x16f)
+RVA(0x000367f0, 0x16f)
 void LoadGameOptionsToDialog(HWND hDlg) {
     if (g_gameReg == NULL) {
         return;
@@ -240,7 +240,7 @@ void LoadGameOptionsToDialog(HWND hDlg) {
 }
 
 // @early-stop
-RVA(0x00036a30, 0x14e)
+RVA(0x000369c0, 0x14e)
 void ReadMenuOptionsDialog(HWND hDlg) {
     if (g_gameReg == NULL) {
         return;
@@ -279,7 +279,7 @@ void ReadMenuOptionsDialog(HWND hDlg) {
 }
 
 // @early-stop
-RVA(0x00036be0, 0xd3)
+RVA(0x00036b70, 0xd3)
 void ApplyGameOptions() {
     if (g_gameReg == NULL) {
         return;
@@ -302,7 +302,7 @@ void ApplyGameOptions() {
     g_gameReg->m_scrollSpeed = g_savedScrollSpeed;
 }
 
-RVA(0x00036d00, 0x40)
+RVA(0x00036c90, 0x40)
 void OnToggleMusicOption(HWND hWnd) {
     if (g_gameReg) {
         i32 state = IsDlgButtonChecked(hWnd, 0x46d);
@@ -311,7 +311,7 @@ void OnToggleMusicOption(HWND hWnd) {
     }
 }
 
-RVA(0x00036d50, 0x3c)
+RVA(0x00036ce0, 0x3c)
 void OnToggleVoiceOption(HWND hWnd) {
     if (g_gameReg) {
         i32 checked = IsDlgButtonChecked(hWnd, 0x475);
@@ -320,7 +320,7 @@ void OnToggleVoiceOption(HWND hWnd) {
     }
 }
 
-RVA(0x00036da0, 0x40)
+RVA(0x00036d30, 0x40)
 void OnToggleSpeechOption(HWND hWnd) {
     if (g_gameReg) {
         i32 state = IsDlgButtonChecked(hWnd, 0x471);
@@ -329,10 +329,10 @@ void OnToggleSpeechOption(HWND hWnd) {
     }
 }
 
-RVA(0x00036df0, 0x1)
+RVA(0x00036d80, 0x1)
 void OnToggleCk5Option(HWND__*) {}
 
-RVA(0x00036e10, 0x26)
+RVA(0x00036da0, 0x26)
 void OnToggleEasyModeOption(HWND hWnd) {
     if (g_gameReg) {
         g_gameReg->m_isEasyMode = IsDlgButtonChecked(hWnd, 0x455);
@@ -341,7 +341,7 @@ void OnToggleEasyModeOption(HWND hWnd) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00036e50, 0x43)
+RVA(0x00036de0, 0x43)
 void SetDialogScrollPosition(HWND hDlg, i32 id, i32 pos) {
     HWND h = GetDlgItem(hDlg, id);
     if (h) {
@@ -353,7 +353,7 @@ void SetDialogScrollPosition(HWND hDlg, i32 id, i32 pos) {
     }
 }
 
-RVA(0x00036ec0, 0x41)
+RVA(0x00036e50, 0x41)
 i32 GetDialogScrollPosition(HWND hDlg, i32 id) {
     HWND h = GetDlgItem(hDlg, id);
     if (!h) {
@@ -366,7 +366,7 @@ i32 GetDialogScrollPosition(HWND hDlg, i32 id) {
     return si.nPos;
 }
 
-RVA(0x00036f30, 0x114)
+RVA(0x00036ec0, 0xea)
 void LoadVideoResolutionConfig(HWND hDlg, i32 nIDCombo, Resolution nSel) {
     if (hDlg) {
         HWND hCombo = GetDlgItem(hDlg, nIDCombo);
@@ -397,7 +397,7 @@ void LoadVideoResolutionConfig(HWND hDlg, i32 nIDCombo, Resolution nSel) {
     }
 }
 
-RVA(0x000370a0, 0xf1)
+RVA(0x00036ff0, 0xc3)
 void SaveVideoResolutionConfig(HWND hDlg, HWND hCombo, i32, i32) {
     CWnd* pCtrl = CWnd::FromHandle(static_cast<HWND__*>(hCombo));
     if (pCtrl) {
@@ -423,7 +423,7 @@ void SaveVideoResolutionConfig(HWND hDlg, HWND hCombo, i32, i32) {
     }
 }
 
-RVA(0x000371e0, 0x5b)
+RVA(0x00037100, 0x5b)
 void ConfigureDialogScrollBar(HWND hDlg, i32 id, i32 pos, i32 max) {
     HWND h = GetDlgItem(hDlg, id);
     if (h) {
@@ -439,7 +439,7 @@ void ConfigureDialogScrollBar(HWND hDlg, i32 id, i32 pos, i32 max) {
 }
 
 // @early-stop
-RVA(0x00037260, 0x220)
+RVA(0x00037180, 0x220)
 void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
     if (!hCtrl) {
         return;

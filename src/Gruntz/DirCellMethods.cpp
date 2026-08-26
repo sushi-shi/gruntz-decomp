@@ -39,7 +39,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-DATA(0x0020d008)
+DATA(0x0020dfb0)
 CTriRecord g_directionClockwiseTable[9] = {
     {0, 1, DIR_NORTH},
     {0, 2, DIR_NORTHEAST},
@@ -51,7 +51,7 @@ CTriRecord g_directionClockwiseTable[9] = {
     {2, 0, DIR_SOUTHWEST},
     {2, 1, DIR_SOUTH},
 };
-DATA(0x0020d078)
+DATA(0x0020e020)
 CTriRecord g_directionCounterclockwiseTable[9] = {
     {1, 0, DIR_WEST},
     {0, 0, DIR_NORTHWEST},
@@ -64,31 +64,31 @@ CTriRecord g_directionCounterclockwiseTable[9] = {
     {1, 2, DIR_EAST},
 };
 
-DATA(0x0022c450)
+DATA(0x0022d3a8)
 i32 g_buteEditLen;
-DATA(0x0022c458)
+DATA(0x0022d3b0)
 char g_buteEditBuf[0x10000];
 
-DATA(0x0023f790)
+DATA(0x002406e8)
 char g_dwRectsEditBuf[0x4000];
-DATA(0x00243790)
+DATA(0x002446e8)
 i32 g_dwRectsEditLen;
 
-RVA(0x0003c7f0, 0x18)
+RVA(0x0003c710, 0x18)
 bool SameCellTag(const GruntDirectionCell* a, const GruntDirectionCell* b) {
     return a->direction == b->direction;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0003c820, 0x18)
+RVA(0x0003c740, 0x18)
 bool DifferentCellTag(const GruntDirectionCell* a, const GruntDirectionCell* b) {
     return a->direction != b->direction;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0003c850, 0x38)
+RVA(0x0003c770, 0x38)
 void GruntDirectionCell::RotateClockwise(i32 steps) {
     if (steps > 0) {
         do {
@@ -102,7 +102,7 @@ void GruntDirectionCell::RotateClockwise(i32 steps) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0003c8a0, 0x38)
+RVA(0x0003c7c0, 0x38)
 void GruntDirectionCell::RotateCounterclockwise(i32 steps) {
     if (steps > 0) {
         do {
@@ -114,7 +114,7 @@ void GruntDirectionCell::RotateCounterclockwise(i32 steps) {
     }
 }
 
-RVA(0x0003c8f0, 0x76)
+RVA(0x0003c810, 0x76)
 i32 CTriRecord::Serialize(
     CFileMemBase* ar,
     SerialMode mode,
@@ -138,7 +138,7 @@ i32 CTriRecord::Serialize(
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0003c990, 0x1bc)
+RVA(0x0003c8b0, 0x1bc)
 BOOL CALLBACK ButeAttributezDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     static_cast<void>(lParam);
 
@@ -177,11 +177,11 @@ BOOL CALLBACK ButeAttributezDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM l
     return false;
 }
 
-RVA_COMPGEN(0x0003cbc0, 0x14, ??_Difstream@@QAEXXZ)
-RVA_COMPGEN(0x0003cbf0, 0x14, ??_Dofstream@@QAEXXZ)
+RVA_COMPGEN(0x0003cae0, 0x14, ??_Difstream@@QAEXXZ)
+RVA_COMPGEN(0x0003cb10, 0x14, ??_Dofstream@@QAEXXZ)
 
 // @early-stop
-RVA(0x0003cc20, 0x14e)
+RVA(0x0003cb40, 0x14e)
 bool CButeMgr::Parse(CString filename, int streamBase) {
 
     ifstream* s = new ifstream(filename, ios::in | ios::nocreate);
@@ -211,7 +211,7 @@ bool CButeMgr::Parse(CString filename, int streamBase) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0003cdd0, 0x19f)
+RVA(0x0003ccf0, 0x19f)
 BOOL CALLBACK EditDwRectsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     static_cast<void>(lParam);
     switch (msg) {
@@ -248,7 +248,7 @@ BOOL CALLBACK EditDwRectsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
     return false;
 }
 
-RVA(0x0003d2b0, 0xf1)
+RVA(0x0003d1d0, 0xf1)
 i32 DispatchGruntStartingPointLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {
@@ -286,7 +286,7 @@ i32 DispatchGruntStartingPointLogic(CGameObject* owner) {
     return 1;
 }
 
-RVA(0x0003d3f0, 0xf1)
+RVA(0x0003d310, 0xf1)
 i32 DispatchExitTriggerLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {
@@ -324,7 +324,7 @@ i32 DispatchExitTriggerLogic(CGameObject* owner) {
     return 1;
 }
 
-RVA(0x0003d530, 0xf1)
+RVA(0x0003d450, 0xf1)
 i32 DispatchGruntCreationPointLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {
@@ -362,7 +362,7 @@ i32 DispatchGruntCreationPointLogic(CGameObject* owner) {
     return 1;
 }
 
-RVA(0x0003d670, 0xf1)
+RVA(0x0003d590, 0xf1)
 i32 DispatchWormholeLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {
@@ -400,7 +400,7 @@ i32 DispatchWormholeLogic(CGameObject* owner) {
     return 1;
 }
 
-RVA(0x0003d7b0, 0xf1)
+RVA(0x0003d6d0, 0xf1)
 i32 DispatchGruntPuddleLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {
@@ -438,7 +438,7 @@ i32 DispatchGruntPuddleLogic(CGameObject* owner) {
     return 1;
 }
 
-RVA(0x0003d8f0, 0xf1)
+RVA(0x0003d810, 0xf1)
 i32 DispatchTeleporterLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {
@@ -476,7 +476,7 @@ i32 DispatchTeleporterLogic(CGameObject* owner) {
     return 1;
 }
 
-RVA(0x0003da30, 0xf1)
+RVA(0x0003d950, 0xf1)
 i32 DispatchSecretTeleporterTriggerLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {
@@ -514,7 +514,7 @@ i32 DispatchSecretTeleporterTriggerLogic(CGameObject* owner) {
     return 1;
 }
 
-RVA(0x0003db70, 0xf4)
+RVA(0x0003da90, 0xf4)
 i32 DispatchWarlordLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {
@@ -552,7 +552,7 @@ i32 DispatchWarlordLogic(CGameObject* owner) {
     return 1;
 }
 
-RVA(0x0003dcb0, 0xf1)
+RVA(0x0003dbd0, 0xf1)
 i32 DispatchFortressFlagLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {
@@ -590,7 +590,7 @@ i32 DispatchFortressFlagLogic(CGameObject* owner) {
     return 1;
 }
 
-RVA(0x0003ddf0, 0xf1)
+RVA(0x0003dd10, 0xf1)
 i32 DispatchSecretLevelTriggerLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {

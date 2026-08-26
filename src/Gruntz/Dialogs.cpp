@@ -73,39 +73,39 @@ const AFX_MSGMAP_ENTRY CBattlezDlg::_messageEntries[] = {
                     CBattlezDlg::OnMaxGruntzSelection3
                 ){0, 0, 0, 0, AfxSig_end, 0},
 };
-DATA(0x00229c50)
+DATA(0x0022aba8)
 i32 g_battlezLastColors[4];
-DATA(0x00229cf0)
+DATA(0x0022ac48)
 i32 g_battlezLastDifficulties[4];
-DATA(0x00229d00)
+DATA(0x0022ac58)
 i32 g_battlezLastMaxGruntz[4];
 
-DATA(0x00229d10)
+DATA(0x0022ac68)
 WNDPROC g_savedDlgWndProc;
-DATA(0x00229d14)
+DATA(0x0022ac6c)
 b32 g_battlezResetOptions;
 
-RVA(0x00014b10, 0x5)
+RVA(0x00014b20, 0x5)
 long CBattlezDlg::OnPaint() {
     return Default();
 }
 
-RVA(0x00014b30, 0x64)
+RVA(0x00014b40, 0x64)
 CBattlezDlg::CBattlezDlg(CGruntzMgr* gameManager, CWnd* pParent) : CDialog(0xc0, pParent) {
     m_gameManager = gameManager;
     m_customNameFlag = false;
 }
 
-RVA_COMPGEN(0x00014bc0, 0x3, ?Serialize@CObject@@UAEXAAVCArchive@@@Z)
-RVA_COMPGEN(0x00014be0, 0x1, ?AssertValid@CObject@@UBEXXZ)
-RVA_COMPGEN(0x00014c00, 0x3, ?Dump@CObject@@UBEXAAVCDumpContext@@@Z)
-RVA_COMPGEN(0x00014c20, 0xd, ?BeginModalState@CWnd@@UAEXXZ)
-RVA_COMPGEN(0x00014c40, 0xd, ?EndModalState@CWnd@@UAEXXZ)
-RVA_COMPGEN(0x00014c60, 0x1e, ??_GCBattlezDlg@@UAEPAXI@Z)
-RVA_COMPGEN(0x00014c90, 0x47, ??1CBattlezDlg@@UAE@XZ)
+RVA_COMPGEN(0x00014bd0, 0x3, ?Serialize@CObject@@UAEXAAVCArchive@@@Z)
+RVA_COMPGEN(0x00014bf0, 0x1, ?AssertValid@CObject@@UBEXXZ)
+RVA_COMPGEN(0x00014c10, 0x3, ?Dump@CObject@@UBEXAAVCDumpContext@@@Z)
+RVA_COMPGEN(0x00014c30, 0xd, ?BeginModalState@CWnd@@UAEXXZ)
+RVA_COMPGEN(0x00014c50, 0xd, ?EndModalState@CWnd@@UAEXXZ)
+RVA_COMPGEN(0x00014c70, 0x1e, ??_GCBattlezDlg@@UAEPAXI@Z)
+RVA_COMPGEN(0x00014ca0, 0x47, ??1CBattlezDlg@@UAE@XZ)
 
 // @early-stop
-RVA(0x00014d00, 0xa68)
+RVA(0x00014d10, 0xa68)
 void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
     Utils::RegistryHelper* reg = g_gameReg->m_settings;
     char key[0x100];
@@ -366,7 +366,7 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
     PaintPlayerColorControls();
 }
 
-RVA(0x00015a10, 0x70)
+RVA(0x00015a20, 0x70)
 i32 CALLBACK BattlezMapComboEditProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     if (msg == WM_SETTEXT) {
 
@@ -379,12 +379,12 @@ i32 CALLBACK BattlezMapComboEditProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM 
     return CallWindowProcA(g_savedDlgWndProc, hWnd, msg, wParam, lParam);
 }
 
-RVA(0x00015aa0, 0x6)
+RVA(0x00015ab0, 0x6)
 const AFX_MSGMAP* CBattlezDlg::GetMessageMap() const {
     return &messageMap;
 }
 
-RVA(0x00015ac0, 0x60)
+RVA(0x00015ad0, 0x60)
 CWnd* CBattlezDlg::GetPlayerTypeControl(i32 slot) {
     CWnd* result = NULL;
     switch (static_cast<PlayerSlot>(slot)) {
@@ -404,7 +404,7 @@ CWnd* CBattlezDlg::GetPlayerTypeControl(i32 slot) {
     return result;
 }
 
-RVA(0x00015b40, 0x60)
+RVA(0x00015b50, 0x60)
 CWnd* CBattlezDlg::GetPlayerNameControl(i32 slot) {
     CWnd* result = NULL;
     switch (static_cast<PlayerSlot>(slot)) {
@@ -424,7 +424,7 @@ CWnd* CBattlezDlg::GetPlayerNameControl(i32 slot) {
     return result;
 }
 
-RVA(0x00015bc0, 0x60)
+RVA(0x00015bd0, 0x60)
 CWnd* CBattlezDlg::GetMaxGruntzControl(i32 slot) {
     CWnd* result = NULL;
     switch (static_cast<PlayerSlot>(slot)) {
@@ -444,7 +444,7 @@ CWnd* CBattlezDlg::GetMaxGruntzControl(i32 slot) {
     return result;
 }
 
-RVA(0x00015c40, 0x60)
+RVA(0x00015c50, 0x60)
 CWnd* CBattlezDlg::GetPlayerColorControl(i32 slot) {
     CWnd* result = NULL;
     switch (static_cast<PlayerSlot>(slot)) {
@@ -464,36 +464,36 @@ CWnd* CBattlezDlg::GetPlayerColorControl(i32 slot) {
     return result;
 }
 
-RVA(0x00015cc0, 0x23)
+RVA(0x00015cd0, 0x23)
 i32 CBattlezDlg::SetPlayerTypeSelection(i32 slot, i32 selection) {
     CWnd* control = GetPlayerTypeControl(slot);
     return control->SendMessageA(CB_SETCURSEL, selection, 0);
 }
 
-RVA(0x00015d00, 0x20)
+RVA(0x00015d10, 0x20)
 i32 CBattlezDlg::GetPlayerTypeSelection(i32 slot) {
     CWnd* control = GetPlayerTypeControl(slot);
     return control->SendMessageA(CB_GETCURSEL, 0, 0);
 }
 
-RVA(0x00015d30, 0x21)
+RVA(0x00015d40, 0x21)
 i32 CBattlezDlg::GetMaxGruntzSelection(i32 slot) {
     CWnd* control = GetMaxGruntzControl(slot);
     return control->SendMessageA(CB_GETCURSEL, 0, 0) + 1;
 }
 
-RVA(0x00015d70, 0x24)
+RVA(0x00015d80, 0x24)
 i32 CBattlezDlg::SetMaxGruntzSelection(i32 slot, i32 count) {
     CWnd* control = GetMaxGruntzControl(slot);
     return control->SendMessageA(CB_SETCURSEL, count - 1, 0);
 }
 
-RVA(0x00015db0, 0x19)
+RVA(0x00015dc0, 0x19)
 void CBattlezDlg::SetPlayerName(i32 slot, const char* name) {
     CWnd* control = GetPlayerNameControl(slot);
     control->SetWindowTextA(name);
 }
-RVA(0x00015de0, 0x5f)
+RVA(0x00015df0, 0x5f)
 void CBattlezDlg::OnPlayerTypeSelection0() {
     UpdatePlayerSlotEnabled(0);
     OnPlayerOptionsChanged();
@@ -504,7 +504,7 @@ void CBattlezDlg::OnPlayerTypeSelection0() {
     }
 }
 
-RVA(0x00015e60, 0x5f)
+RVA(0x00015e70, 0x5f)
 void CBattlezDlg::OnPlayerTypeSelection1() {
     UpdatePlayerSlotEnabled(1);
     OnPlayerOptionsChanged();
@@ -515,7 +515,7 @@ void CBattlezDlg::OnPlayerTypeSelection1() {
     }
 }
 
-RVA(0x00015ee0, 0x5f)
+RVA(0x00015ef0, 0x5f)
 void CBattlezDlg::OnPlayerTypeSelection2() {
     UpdatePlayerSlotEnabled(2);
     OnPlayerOptionsChanged();
@@ -526,7 +526,7 @@ void CBattlezDlg::OnPlayerTypeSelection2() {
     }
 }
 
-RVA(0x00015f60, 0x5f)
+RVA(0x00015f70, 0x5f)
 void CBattlezDlg::OnPlayerTypeSelection3() {
     UpdatePlayerSlotEnabled(3);
     OnPlayerOptionsChanged();
@@ -537,7 +537,7 @@ void CBattlezDlg::OnPlayerTypeSelection3() {
     }
 }
 
-RVA(0x00015fe0, 0xbe)
+RVA(0x00015ff0, 0xbe)
 void CBattlezDlg::UpdatePlayerSlotEnabled(i32 slot) {
     CWnd* typeControl = GetPlayerTypeControl(slot);
     CWnd* nameControl = GetPlayerNameControl(slot);
@@ -560,13 +560,13 @@ void CBattlezDlg::UpdatePlayerSlotEnabled(i32 slot) {
     maxGruntzControl->EnableWindow(false);
 }
 
-RVA(0x000160d0, 0xb)
+RVA(0x000160e0, 0xb)
 i32 CBattlezDlg::OnInitDialog() {
     CDialog::OnInitDialog();
     return 1;
 }
 
-RVA(0x000160f0, 0x245)
+RVA(0x00016100, 0x245)
 void CBattlezDlg::PaintPlayerColorControls() {
     CPaintDC dc(this);
     for (i32 i = 0; i < 4; i++) {
@@ -598,20 +598,20 @@ void CBattlezDlg::PaintPlayerColorControls() {
     }
 }
 
-RVA_COMPGEN(0x000163e0, 0x20, ??_GCObject@@UAEPAXI@Z)
-RVA_COMPGEN(0x00016410, 0x7, ??1CObject@@UAE@XZ)
-RVA_COMPGEN(0x00016430, 0x1e, ??_GCGdiObject@@UAEPAXI@Z)
-RVA_COMPGEN(0x00016460, 0x46, ??1CGdiObject@@UAE@XZ)
+RVA_COMPGEN(0x000163f0, 0x20, ??_GCObject@@UAEPAXI@Z)
+RVA_COMPGEN(0x00016420, 0x7, ??1CObject@@UAE@XZ)
+RVA_COMPGEN(0x00016440, 0x1e, ??_GCGdiObject@@UAEPAXI@Z)
+RVA_COMPGEN(0x00016470, 0x46, ??1CGdiObject@@UAE@XZ)
 
-RVA_COMPGEN(0x000164d0, 0x1e, ??_GCBrush@@UAEPAXI@Z)
-RVA_COMPGEN(0x00016500, 0x46, ??1CBrush@@UAE@XZ)
+RVA_COMPGEN(0x000164e0, 0x1e, ??_GCBrush@@UAEPAXI@Z)
+RVA_COMPGEN(0x00016510, 0x46, ??1CBrush@@UAE@XZ)
 
-RVA(0x00016570, 0x12)
+RVA(0x00016580, 0x12)
 void CBattlezDlg::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {
     CWnd::OnMeasureItem(nIDCtl, lpmis);
 }
 
-RVA(0x000165a0, 0x5c0)
+RVA(0x000165b0, 0x5c0)
 void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
     COLORREF color;
     b32 shouldDraw = false;
@@ -871,7 +871,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
     CWnd::OnDrawItem(nIDCtl, lpdis);
 }
 
-RVA(0x00016cd0, 0x98)
+RVA(0x00016ce0, 0x98)
 void CBattlezDlg::OnPlayerColor0() {
     CBattlezDlgColors dlg(m_gameManager, 0, 0, NULL);
     if (dlg.DoModal() == 1) {
@@ -881,9 +881,9 @@ void CBattlezDlg::OnPlayerColor0() {
         }
     }
 }
-RVA_COMPGEN(0x00016da0, 0x5, ??1CBattlezDlgColors@@UAE@XZ)
+RVA_COMPGEN(0x00016db0, 0x5, ??1CBattlezDlgColors@@UAE@XZ)
 
-RVA(0x00016dc0, 0x97)
+RVA(0x00016dd0, 0x97)
 void CBattlezDlg::OnPlayerColor1() {
     CBattlezDlgColors dlg(m_gameManager, 1, 0, NULL);
     if (dlg.DoModal() == 1) {
@@ -894,7 +894,7 @@ void CBattlezDlg::OnPlayerColor1() {
     }
 }
 
-RVA(0x00016e90, 0x98)
+RVA(0x00016ea0, 0x98)
 void CBattlezDlg::OnPlayerColor2() {
     CBattlezDlgColors dlg(m_gameManager, 2, 0, NULL);
     if (dlg.DoModal() == 1) {
@@ -905,7 +905,7 @@ void CBattlezDlg::OnPlayerColor2() {
     }
 }
 
-RVA(0x00016f60, 0x98)
+RVA(0x00016f70, 0x98)
 void CBattlezDlg::OnPlayerColor3() {
     CBattlezDlgColors dlg(m_gameManager, 3, 0, NULL);
     if (dlg.DoModal() == 1) {
@@ -916,7 +916,7 @@ void CBattlezDlg::OnPlayerColor3() {
     }
 }
 
-RVA(0x00017030, 0xc1)
+RVA(0x00017040, 0xc1)
 void CBattlezDlg::ShowCustomDlg() {
     CBattlezDlgCustom dlg(NULL);
     if (dlg.DoModal() == 1) {
@@ -932,9 +932,9 @@ void CBattlezDlg::ShowCustomDlg() {
         }
     }
 }
-RVA_COMPGEN(0x00017140, 0x47, ??1CBattlezDlgCustom@@UAE@XZ)
+RVA_COMPGEN(0x00017150, 0x47, ??1CBattlezDlgCustom@@UAE@XZ)
 
-RVA(0x000171b0, 0xca)
+RVA(0x000171c0, 0xca)
 void CBattlezDlg::OnWorldSelectionChange() {
     CWnd* combo = GetDlgItem(0x4ff);
     if (combo == NULL) {
@@ -956,24 +956,24 @@ void CBattlezDlg::OnWorldSelectionChange() {
     }
 }
 
-RVA(0x000172c0, 0x8)
+RVA(0x000172d0, 0x8)
 void CBattlezDlg::OnPlayerNameKillFocus0() {
     ReadPlayerName(0);
 }
-RVA(0x000172e0, 0x8)
+RVA(0x000172f0, 0x8)
 void CBattlezDlg::OnPlayerNameKillFocus1() {
     ReadPlayerName(1);
 }
-RVA(0x00017300, 0x8)
+RVA(0x00017310, 0x8)
 void CBattlezDlg::OnPlayerNameKillFocus2() {
     ReadPlayerName(2);
 }
-RVA(0x00017320, 0x8)
+RVA(0x00017330, 0x8)
 void CBattlezDlg::OnPlayerNameKillFocus3() {
     ReadPlayerName(3);
 }
 
-RVA(0x00017340, 0x73)
+RVA(0x00017350, 0x73)
 void CBattlezDlg::ReadPlayerName(i32 slot) {
     CString name;
     GetPlayerNameControl(slot)->GetWindowText(name);
@@ -982,7 +982,7 @@ void CBattlezDlg::ReadPlayerName(i32 slot) {
     }
 }
 
-RVA(0x000173e0, 0x1)
+RVA(0x000173f0, 0x1)
 void CBattlezDlg::OnPlayerOptionsChanged() {}
 
 // @identity-TODO BattlezNoOp - Dialogs.cpp ownership follows from the adjacent
@@ -990,75 +990,75 @@ void CBattlezDlg::OnPlayerOptionsChanged() {}
 // operand survives to prove whether the original external symbol was a member.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00017400, 0x1)
+RVA(0x00017410, 0x1)
 void BattlezNoOp() {}
 
 // @identity-TODO BattlezNoOpArg - same evidence as BattlezNoOp. `ret 4` proves
 // one callee-popped dword, but not the original semantic name or receiver type.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00017420, 0x3)
+RVA(0x00017430, 0x3)
 void __stdcall BattlezNoOpArg(i32) {}
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00017440, 0x3)
+RVA(0x00017450, 0x3)
 i32 CBattlezDlg::UnusedMsgHandler() {
     return 0;
 }
 
-RVA(0x00017460, 0x22)
+RVA(0x00017470, 0x22)
 i32 CBattlezDlg::SetPlayerColor(i32 slot, ColorTint color) {
     m_gameManager->m_players[slot].m_color = color;
     return 1;
 }
 
-RVA(0x000174a0, 0x5)
+RVA(0x000174b0, 0x5)
 void CBattlezDlg::OnOK() {
     CDialog::OnOK();
 }
 
-RVA(0x000174c0, 0x8)
+RVA(0x000174d0, 0x8)
 void CBattlezDlg::OnPlayerNameChange0() {
     HandlePlayerNameChange(0);
 }
-RVA(0x000174e0, 0x8)
+RVA(0x000174f0, 0x8)
 void CBattlezDlg::OnPlayerNameChange1() {
     HandlePlayerNameChange(1);
 }
-RVA(0x00017500, 0x8)
+RVA(0x00017510, 0x8)
 void CBattlezDlg::OnPlayerNameChange2() {
     HandlePlayerNameChange(2);
 }
-RVA(0x00017520, 0x8)
+RVA(0x00017530, 0x8)
 void CBattlezDlg::OnPlayerNameChange3() {
     HandlePlayerNameChange(3);
 }
-RVA(0x00017540, 0x3)
+RVA(0x00017550, 0x3)
 void CBattlezDlg::HandlePlayerNameChange(i32) {}
 
-RVA(0x00017560, 0x28)
+RVA(0x00017570, 0x28)
 i32 CBattlezDlg::OnMaxGruntzSelection0() {
     CWnd* control = GetMaxGruntzControl(0);
     i32 count = control->SendMessageA(CB_GETCURSEL, 0, 0) + 1;
     g_gameReg->m_players[0].m_maxGruntz = count;
     return count;
 }
-RVA(0x000175a0, 0x28)
+RVA(0x000175b0, 0x28)
 i32 CBattlezDlg::OnMaxGruntzSelection1() {
     CWnd* control = GetMaxGruntzControl(1);
     i32 count = control->SendMessageA(CB_GETCURSEL, 0, 0) + 1;
     g_gameReg->m_players[1].m_maxGruntz = count;
     return count;
 }
-RVA(0x000175e0, 0x28)
+RVA(0x000175f0, 0x28)
 i32 CBattlezDlg::OnMaxGruntzSelection2() {
     CWnd* control = GetMaxGruntzControl(2);
     i32 count = control->SendMessageA(CB_GETCURSEL, 0, 0) + 1;
     g_gameReg->m_players[2].m_maxGruntz = count;
     return count;
 }
-RVA(0x00017620, 0x28)
+RVA(0x00017630, 0x28)
 i32 CBattlezDlg::OnMaxGruntzSelection3() {
     CWnd* control = GetMaxGruntzControl(3);
     i32 count = control->SendMessageA(CB_GETCURSEL, 0, 0) + 1;

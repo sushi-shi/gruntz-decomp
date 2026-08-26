@@ -13,11 +13,11 @@ public:
     CBrickz() {}
     CBrickz(CGameObject* obj);
 
-    RVA(0x00011300, 0x6)
+    RVA(0x00011310, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_BRICKZ;
     }
-    RVA(0x00011320, 0x47)
+    RVA(0x00011330, 0x47)
     virtual i32
     SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object)
         OVERRIDE {

@@ -31,7 +31,7 @@ public:
         const char* targetPageKey,
         GZ_ENUM_PARAM(MenuItemFlags, i32) flags
     ) OVERRIDE;
-    RVA(0x00184890, 0x1a)
+    RVA(0x00184b70, 0x1a)
     virtual void Reset() OVERRIDE {
         m_framePeriodMs = 0x64;
         m_normalAnimation = NULL;
@@ -42,7 +42,7 @@ public:
     }
     virtual i32 GetFrameHeight() OVERRIDE;
     virtual i32 GetFrameWidth() OVERRIDE;
-    RVA(0x00184780, 0x17)
+    RVA(0x00184a60, 0x17)
     virtual void SetState(MenuItemState state) OVERRIDE {
         i32 framePeriodMs = m_framePeriodMs;
         m_state = state;
@@ -51,11 +51,11 @@ public:
     }
     virtual i32 Update(u32 deltaMs) OVERRIDE;
     virtual i32 DrawAt(CDDrawSurfacePair* target, i32 centerX, i32 centerY) OVERRIDE;
-    RVA(0x001847b0, 0x6)
+    RVA(0x00184a90, 0x6)
     virtual i32 UsesStateAnimations() OVERRIDE {
         return 1;
     }
-    RVA(0x001847a0, 0xa)
+    RVA(0x00184a80, 0xa)
     virtual void SetFramePeriod(i32 framePeriodMs);
 
     CDDrawWorker* GetStateAnimation();

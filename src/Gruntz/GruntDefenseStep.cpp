@@ -38,7 +38,7 @@
 #include <string.h>
 
 // @early-stop
-RVA(0x000f2b20, 0x6e1)
+RVA(0x000f2c50, 0x6e1)
 i32 CGrunt::StepScrollGruntBehavior() {
     m_defenderPx = m_lastTilePx;
     CGrunt* occ;

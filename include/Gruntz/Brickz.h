@@ -65,7 +65,7 @@ struct BrickzCell {
     BrickzCellNode* m_head;
 };
 
-RVA(0x00075a40, 0x34)
+RVA(0x00075910, 0x34)
 inline i32 CMapMgr::CellFlagsAt(i32 x, i32 y) {
     if (static_cast<u32>(x) < m_width && static_cast<u32>(y) < m_height) {
         return m_rows[y][x].m_flags;

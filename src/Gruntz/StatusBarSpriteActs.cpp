@@ -19,17 +19,17 @@
 
 #include <stddef.h>
 
-RVA_DYNINIT(0x0010c410, 0xa, CActRegPool<CStatusBarSprite>::s_table)
-RVA_DYNINIT(0x0010c430, 0x15, CActRegPool<CStatusBarSprite>::s_table)
-RVA_DYNINIT(0x0010c460, 0xe, CActRegPool<CStatusBarSprite>::s_table)
-RVA_DYNINIT(0x0010c480, 0x1f, CActRegPool<CStatusBarSprite>::s_table)
-template<> DATA(0x0024e670)
+RVA_DYNINIT(0x0010c540, 0xa, CActRegPool<CStatusBarSprite>::s_table)
+RVA_DYNINIT(0x0010c560, 0x15, CActRegPool<CStatusBarSprite>::s_table)
+RVA_DYNINIT(0x0010c590, 0xe, CActRegPool<CStatusBarSprite>::s_table)
+RVA_DYNINIT(0x0010c5b0, 0x1f, CActRegPool<CStatusBarSprite>::s_table)
+template<> DATA(0x0024f5c8)
 CActReg CActRegPool<CStatusBarSprite>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
-RVA_COMPGEN(0x00011b50, 0x1e, ??_GCStatusBarSprite@@UAEPAXI@Z)
-RVA_COMPGEN(0x00011b80, 0x44, ??1CStatusBarSprite@@UAE@XZ)
+RVA_COMPGEN(0x00011b60, 0x1e, ??_GCStatusBarSprite@@UAEPAXI@Z)
+RVA_COMPGEN(0x00011b90, 0x44, ??1CStatusBarSprite@@UAE@XZ)
 
-RVA(0x0010c0f0, 0xf1)
+RVA(0x0010c220, 0xf1)
 i32 DispatchStatusBarSpriteLogic(CGameObject* obj) {
     CLogicRecord* record = obj->m_logicRecord;
     switch (record->LogicEvent()) {
@@ -67,7 +67,7 @@ i32 DispatchStatusBarSpriteLogic(CGameObject* obj) {
     return 1;
 }
 
-RVA(0x0010c230, 0x178)
+RVA(0x0010c360, 0x178)
 CStatusBarSprite::CStatusBarSprite(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetImageSetByName("GAME_STATUSBARSPRITE");
@@ -77,7 +77,7 @@ CStatusBarSprite::CStatusBarSprite(CGameObject* obj)
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_OVERLAY)
 }
 
-RVA(0x0010c4b0, 0x102)
+RVA(0x0010c5e0, 0x102)
 void CStatusBarSprite::FireActivation(i32 coord) {
     CActHandler* e = (CActRegPool<CStatusBarSprite>::s_table.ResolveEntry(coord));
     if ((*e) != NULL) {
@@ -86,14 +86,14 @@ void CStatusBarSprite::FireActivation(i32 coord) {
     }
 }
 
-RVA(0x0010c610, 0x18d)
+RVA(0x0010c740, 0x18d)
 void CStatusBarSprite::RegisterActs() {
     ACT_NAME_ID(id, "A")
     (*((CActRegPool<CStatusBarSprite>::s_table.ResolveEntry(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CStatusBarSprite::AdvanceAnim);
 }
 
-RVA(0x0010c810, 0x17)
+RVA(0x0010c940, 0x17)
 i32 CStatusBarSprite::AdvanceAnim() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     return 0;

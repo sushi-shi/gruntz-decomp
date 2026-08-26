@@ -21,7 +21,7 @@
 #define HSV_MIN(a, b) ((a) < (b) ? (a) : (b))
 #define INTERPOLATE(start, end, amount) ((start) * (g_one - (amount)) + (end) * (amount))
 
-DATA(0x002bf224)
+DATA(0x002c017c)
 PALETTEENTRY* g_pal = NULL;
 
 DATA(0x001efb40)
@@ -56,25 +56,25 @@ inline CShadeTableArray::~CShadeTableArray() {
     }
 }
 
-RVA(0x0014de30, 0x1a)
+RVA(0x0014e110, 0x1a)
 CShadeTableCache::CShadeTableCache() {
     m_initialized = false;
 }
 
-RVA(0x0014de50, 0x6b)
+RVA(0x0014e130, 0x6b)
 CShadeTableCache::~CShadeTableCache() {
     if (m_initialized) {
         FreeNodes();
     }
 }
 
-RVA(0x0014dec0, 0xc)
+RVA(0x0014e1a0, 0xc)
 i32 CShadeTableCache::Init() {
     m_initialized = true;
     return 1;
 }
 
-RVA(0x0014ded0, 0x64)
+RVA(0x0014e1b0, 0x64)
 void CShadeTableCache::FreeNodes() {
     for (i32 i = 0; i < m_arr.m_nSize; i++) {
         m_arr.m_pData[i]->Free();
@@ -93,7 +93,7 @@ void CShadeTableCache::FreeNodes() {
 }
 
 // @early-stop
-RVA(0x0014df40, 0x5f4)
+RVA(0x0014e220, 0x5f4)
 CShadeTable* CShadeTableCache::FlashTable(
     PALETTEENTRY* pal,
     i32 darkRampSteps,
@@ -238,7 +238,7 @@ CShadeTable* CShadeTableCache::FlashTable(
 // @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0014e540, 0x2ea)
+RVA(0x0014e820, 0x2ea)
 CShadeTable*
 CShadeTableCache::HsvShiftTable(PALETTEENTRY* pal, i32 steps, i32 pct, i32 gamma, i32 baseArg) {
     CShadeTable* t = new CShadeTable;
@@ -285,7 +285,7 @@ CShadeTableCache::HsvShiftTable(PALETTEENTRY* pal, i32 steps, i32 pct, i32 gamma
 }
 
 // @early-stop
-RVA(0x0014e830, 0x1b9)
+RVA(0x0014eb10, 0x1b9)
 CShadeTable* CShadeTableCache::HueRampTable(PALETTEENTRY* pal, i32 steps, i32 packedColor) {
     CShadeTable* t = new CShadeTable;
     if (!t) {
@@ -324,7 +324,7 @@ CShadeTable* CShadeTableCache::HueRampTable(PALETTEENTRY* pal, i32 steps, i32 pa
 // @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0014e9f0, 0x208)
+RVA(0x0014ecd0, 0x208)
 CShadeTable* CShadeTableCache::GammaTable(PALETTEENTRY* pal, i32 wRow, i32 wCol) {
     CShadeTable* t = new CShadeTable;
     if (!t) {
@@ -354,7 +354,7 @@ CShadeTable* CShadeTableCache::GammaTable(PALETTEENTRY* pal, i32 wRow, i32 wCol)
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0014ec00, 0x10f)
+RVA(0x0014eee0, 0x10f)
 CShadeTable* CShadeTableCache::LumaSortTable(PALETTEENTRY* pal) {
     CShadeTable* t = new CShadeTable;
     if (!t) {
@@ -385,7 +385,7 @@ CShadeTable* CShadeTableCache::LumaSortTable(PALETTEENTRY* pal) {
     return t;
 }
 
-RVA(0x0014ed10, 0xcc)
+RVA(0x0014eff0, 0xcc)
 i32 __cdecl CShadeTableCache::CompareLuma(const void* a, const void* b) {
     u8 ia = *static_cast<const u8*>(a);
     u8 ib = *static_cast<const u8*>(b);
@@ -410,7 +410,7 @@ i32 __cdecl CShadeTableCache::CompareLuma(const void* a, const void* b) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0014ede0, 0x10f)
+RVA(0x0014f0c0, 0x10f)
 CShadeTable* CShadeTableCache::HueSortTable(PALETTEENTRY* pal) {
     CShadeTable* t = new CShadeTable;
     if (!t) {
@@ -442,7 +442,7 @@ CShadeTable* CShadeTableCache::HueSortTable(PALETTEENTRY* pal) {
 }
 
 // @early-stop
-RVA(0x0014eef0, 0x183)
+RVA(0x0014f1d0, 0x183)
 CShadeTable* CShadeTableCache::GreyTable() {
     CShadeTable* t = new CShadeTable;
     if (!t) {
@@ -482,7 +482,7 @@ CShadeTable* CShadeTableCache::GreyTable() {
 }
 
 // @early-stop
-RVA(0x0014f080, 0x283)
+RVA(0x0014f360, 0x283)
 CShadeTable* CShadeTableCache::AddTable(float scale) {
     CShadeTable* t = new CShadeTable;
     if (!t) {
@@ -536,7 +536,7 @@ CShadeTable* CShadeTableCache::AddTable(float scale) {
     return t;
 }
 
-RVA(0x0014f310, 0x297)
+RVA(0x0014f5f0, 0x297)
 CShadeTable* CShadeTableCache::SubTable(i32 color) {
     CShadeTable* t = new CShadeTable;
     if (!t) {
@@ -583,7 +583,7 @@ CShadeTable* CShadeTableCache::SubTable(i32 color) {
     return t;
 }
 
-RVA(0x0014f5b0, 0x10a)
+RVA(0x0014f890, 0x10a)
 CShadeTable* CShadeTableCache::AlphaTable(PALETTEENTRY* pal) {
     CShadeTable* t = new CShadeTable;
     if (!t) {
@@ -613,7 +613,7 @@ CShadeTable* CShadeTableCache::AlphaTable(PALETTEENTRY* pal) {
     return t;
 }
 
-RVA(0x0014f6c0, 0x1e1)
+RVA(0x0014f9a0, 0x1e1)
 CShadeTable* CShadeTableCache::AddFromArray(CString name) {
     CShadeTable* t = new CShadeTable;
     i32 oldSize = m_arr.m_nSize;
@@ -669,7 +669,7 @@ CShadeTable* CShadeTableCache::AddFromArray(CString name) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0014f8b0, 0x1b0)
+RVA(0x0014fb90, 0x1b0)
 CShadeTable* CShadeTableCache::AddFromBuffer(u8* data, i32 size) {
     CShadeTable* t = new CShadeTable;
     i32 oldSize = m_arr.m_nSize;
@@ -723,7 +723,7 @@ CShadeTable* CShadeTableCache::AddFromBuffer(u8* data, i32 size) {
     return t;
 }
 
-RVA(0x0014fa60, 0xd7)
+RVA(0x0014fd40, 0xd7)
 i32 __cdecl CShadeTableCache::CompareHue(const void* a, const void* b) {
     u8 ia = *static_cast<const u8*>(a);
     u8 ib = *static_cast<const u8*>(b);
@@ -741,7 +741,7 @@ i32 __cdecl CShadeTableCache::CompareHue(const void* a, const void* b) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0014fb40, 0x3e)
+RVA(0x0014fe20, 0x3e)
 CShadeTable* CShadeTableCache::FindByKey(i32 key) {
     for (i32 i = 0; i < m_arr.GetSize(); i++) {
         if (m_arr[i]->m_key == key) {
@@ -751,7 +751,7 @@ CShadeTable* CShadeTableCache::FindByKey(i32 key) {
     return NULL;
 }
 
-RVA(0x0014fb80, 0x68)
+RVA(0x0014fe60, 0x68)
 void CShadeTableCache::FindRemove(CShadeTable* key) {
     i32 n = m_arr.m_nSize;
     for (i32 i = 0; i < n; i++) {
@@ -774,7 +774,7 @@ void CShadeTableCache::FindRemove(CShadeTable* key) {
     }
 }
 
-RVA(0x0014fbf0, 0xcb)
+RVA(0x0014fed0, 0xcb)
 i32 __cdecl CShadeTableCache::FindNearestColor(PALETTEENTRY* pal, u8 r, u8 g, u8 b) {
     i32 gg = g;
     i32 bb = b;
@@ -797,7 +797,7 @@ i32 __cdecl CShadeTableCache::FindNearestColor(PALETTEENTRY* pal, u8 r, u8 g, u8
     return best;
 }
 
-RVA(0x0014fcc0, 0x16d)
+RVA(0x0014ffa0, 0x16d)
 ColorHSV RgbToHsv(u32 color) {
     ColorHSV hsv;
     float v =
@@ -831,9 +831,9 @@ ColorHSV RgbToHsv(u32 color) {
     return hsv;
 }
 
-RVA_COMPGEN(0x0014fe30, 0x51, ??1CShadeTableArray@@UAE@XZ)
+RVA_COMPGEN(0x00150110, 0x51, ??1CShadeTableArray@@UAE@XZ)
 
-RVA(0x0014fe90, 0x188)
+RVA(0x00150170, 0x188)
 void CShadeTableArray::Serialize(CArchive& arc) {
     if (arc.IsStoring()) {
         arc.WriteCount(m_nSize);
@@ -885,8 +885,8 @@ void CShadeTableArray::Serialize(CArchive& arc) {
     SerializeElements<CShadeTable*>(arc, m_pData, m_nSize);
 }
 
-RVA_COMPGEN(0x00150020, 0x1e, ??_GCShadeTableArray@@UAEPAXI@Z)
-RVA(0x00150040, 0x136)
+RVA_COMPGEN(0x00150300, 0x1e, ??_GCShadeTableArray@@UAEPAXI@Z)
+RVA(0x00150320, 0x136)
 void CShadeTableArray::SetSizeGrow(i32 nNewSize, i32 nGrowBy) {
     if (nGrowBy != -1) {
         m_nGrowBy = nGrowBy;

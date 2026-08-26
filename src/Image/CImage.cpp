@@ -26,14 +26,14 @@
 #include <ddraw.h>
 #include <stdio.h>
 
-DATA(0x002bf318)
+DATA(0x002c0270)
 DDBLTFX g_bltFx = {0};
-DATA(0x002bf37c)
+DATA(0x002c02d4)
 b32 g_resourceInstallActive = false;
-DATA(0x002bf380)
+DATA(0x002c02d8)
 i32 g_surfaceColorKey = 0;
 
-RVA(0x00152e90, 0x8b)
+RVA(0x00153170, 0x8b)
 i32 CImage::Create(char* path, i32 keyed) {
     i32 colorKey = (keyed != 0) ? g_surfaceColorKey : -1;
     i32 surfaceCaps = 0;
@@ -60,7 +60,7 @@ i32 CImage::Create(char* path, i32 keyed) {
     return 1;
 }
 
-RVA(0x00152f20, 0x86)
+RVA(0x00153200, 0x86)
 i32 CImage::Resolve(CRezArchiveEntry* src, i32 keyed) {
     BEGIN_FILE_IMAGE_PARSE(src, index, resolved)
 
@@ -77,7 +77,7 @@ i32 CImage::Resolve(CRezArchiveEntry* src, i32 keyed) {
     return result;
 }
 
-RVA(0x00152fb0, 0x123)
+RVA(0x00153290, 0x123)
 i32 CImage::LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 keyed) {
     if (mode != FMT_BMP && mode != FMT_PCX && mode != FMT_RID && mode != FMT_PID) {
         return 0;
@@ -129,7 +129,7 @@ i32 CImage::LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 ke
     return 1;
 }
 
-RVA(0x001530e0, 0x92)
+RVA(0x001533c0, 0x92)
 i32 CImage::CreateBlankSurface(i32 width, i32 height, i32 keyed) {
     i32 colorKey = (keyed != 0) ? g_surfaceColorKey : -1;
     i32 surfaceCaps = 0;
@@ -158,7 +158,7 @@ i32 CImage::CreateBlankSurface(i32 width, i32 height, i32 keyed) {
     return 1;
 }
 
-RVA(0x00153180, 0xda)
+RVA(0x00153460, 0xda)
 i32 CImage::BuildShadeBlitter(PidHeader* desc, u32 size) {
     CDDrawShadeBlit* owned = new CDDrawShadeBlit();
     m_owned = owned;
@@ -182,7 +182,7 @@ i32 CImage::BuildShadeBlitter(PidHeader* desc, u32 size) {
     return 1;
 }
 
-RVA(0x00153260, 0x41)
+RVA(0x00153540, 0x41)
 void CImage::Unload() {
     m_width = 0;
     m_height = 0;
@@ -198,7 +198,7 @@ void CImage::Unload() {
     }
 }
 
-RVA(0x001532b0, 0x80)
+RVA(0x00153590, 0x80)
 i32 CImage::CopyFrom(CImage* other) {
     if (other == NULL) {
         return 0;
@@ -225,7 +225,7 @@ i32 CImage::CopyFrom(CImage* other) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00153330, 0x36)
+RVA(0x00153610, 0x36)
 i32 CImage::SetOrigin(PidHeader* desc, FileImageFormat mode) {
     if (mode == FMT_PID || mode == FMT_RID) {
         i32 oy = desc->offsetY;
@@ -239,14 +239,14 @@ i32 CImage::SetOrigin(PidHeader* desc, FileImageFormat mode) {
     return 1;
 }
 
-RVA(0x00153370, 0xf)
+RVA(0x00153650, 0xf)
 void CImage::FlipVertical(void*) {
     if (m_surface) {
         m_surface->FlipVertical();
     }
 }
 
-RVA(0x00153380, 0xeb)
+RVA(0x00153660, 0xeb)
 i32 CImage::Reload(CRezArchiveEntry* src, i32 keyed) {
 
     CDDSurface* surf = m_surface;
@@ -280,7 +280,7 @@ i32 CImage::Reload(CRezArchiveEntry* src, i32 keyed) {
 }
 
 // @early-stop
-RVA(0x00153470, 0x31a)
+RVA(0x00153750, 0x31a)
 void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
     SpriteStateFlags mode = info->m_stateFlags;
     if (HAS(mode, SPRITE_STATE_HIDDEN)) {
@@ -410,10 +410,10 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
 }
 
 // @early-stop
-RVA(0x00153790, 0x6a)
+RVA(0x00153a70, 0x6a)
 void CImage::RenderFrame(CDDrawSurfacePair* target, i32 x, i32 y, i32 flags) {
-    RVA_DYNINIT(0x00153800, 0x10, clip)
-    DATA(0x002bf2a0)
+    RVA_DYNINIT(0x00153ae0, 0x10, clip)
+    DATA(0x002c01f8)
     static CResolveNode clip;
     if (clip.Init(m_ownerCtx, 0, x, y, flags, 0)) {
         this->RenderImage(&clip, target);
@@ -421,7 +421,7 @@ void CImage::RenderFrame(CDDrawSurfacePair* target, i32 x, i32 y, i32 flags) {
 }
 
 // @early-stop
-RVA(0x00153810, 0x95)
+RVA(0x00153af0, 0x95)
 void CImage::RenderFrameClipped(
     CDDrawSurfacePair* target,
     i32 x,
@@ -429,8 +429,8 @@ void CImage::RenderFrameClipped(
     RECT* clipRect,
     i32 flags
 ) {
-    RVA_DYNINIT(0x001538b0, 0x10, clip)
-    DATA(0x002bf228)
+    RVA_DYNINIT(0x00153b90, 0x10, clip)
+    DATA(0x002c0180)
     static CResolveNode clip;
     if (clip.Init(m_ownerCtx, 0, x, y, flags, 0)) {
         if (clipRect != NULL) {
@@ -441,7 +441,7 @@ void CImage::RenderFrameClipped(
 }
 
 // @early-stop
-RVA(0x001538c0, 0x257)
+RVA(0x00153ba0, 0x257)
 void CImage::BlitNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - m_originX - info->m_plotDX - m_anchorX;
     LONG y = info->m_screenY - m_originY - info->m_plotDY - m_anchorY;
@@ -471,7 +471,7 @@ void CImage::BlitNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
 }
 
 // @early-stop
-RVA(0x00153b20, 0x270)
+RVA(0x00153e00, 0x270)
 void CImage::BlitFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - info->m_plotDX - m_anchorX - m_originX;
     LONG y = m_originY - m_anchorY + info->m_plotDY + info->m_screenY;
@@ -501,7 +501,7 @@ void CImage::BlitFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
 }
 
 // @early-stop
-RVA(0x00153d90, 0x259)
+RVA(0x00154070, 0x259)
 void CImage::BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_plotDX - m_anchorX + m_originX + info->m_screenX;
     LONG y = info->m_screenY - m_originY - m_anchorY - info->m_plotDY;
@@ -531,7 +531,7 @@ void CImage::BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
 }
 
 // @early-stop
-RVA(0x00153ff0, 0x280)
+RVA(0x001542d0, 0x280)
 void CImage::BlitShadeFlipHV(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - m_anchorX + m_originX + info->m_plotDX;
     LONG y = info->m_screenY - m_anchorY + m_originY + info->m_plotDY;
@@ -559,7 +559,7 @@ void CImage::BlitShadeFlipHV(CResolveNode* info, CDDrawSurfacePair* dst) {
     info->m_dirty.m_armed = 0;
 }
 
-RVA(0x00154270, 0x257)
+RVA(0x00154550, 0x257)
 void CImage::BlitShadeNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - m_originX - m_anchorX - info->m_plotDX;
     LONG y = info->m_screenY - m_originY - m_anchorY - info->m_plotDY;
@@ -587,7 +587,7 @@ void CImage::BlitShadeNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
 }
 
 // @early-stop
-RVA(0x001544d0, 0x275)
+RVA(0x001547b0, 0x275)
 void CImage::BlitShadeFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenX - m_anchorX - info->m_plotDX - m_originX;
     LONG y = m_originY + info->m_plotDY + info->m_screenY - m_anchorY;
@@ -615,7 +615,7 @@ void CImage::BlitShadeFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
 }
 
 // @early-stop
-RVA(0x00154750, 0x275)
+RVA(0x00154a30, 0x275)
 void CImage::BlitShadeFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_plotDX + m_originX + info->m_screenX - m_anchorX;
     LONG y = info->m_screenY - m_originY - info->m_plotDY - m_anchorY;

@@ -13,11 +13,11 @@ public:
     CVoiceTrigger();
     CVoiceTrigger(CGameObject* obj);
 
-    RVA(0x00013550, 0x6)
+    RVA(0x00013560, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_VOICETRIGGER;
     }
-    RVA(0x000134e0, 0x47)
+    RVA(0x000134f0, 0x47)
     virtual i32
     SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object)
         OVERRIDE {

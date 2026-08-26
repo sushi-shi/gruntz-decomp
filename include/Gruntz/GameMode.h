@@ -48,7 +48,7 @@ public:
     virtual i32 OnMouseMove(i32, i32, i32) OVERRIDE;
 
     virtual ~CMenuState() OVERRIDE;
-    RVA(0x0008ce10, 0x6)
+    RVA(0x0008cd30, 0x6)
     virtual GameStateId Update() OVERRIDE {
         return GAMESTATE_MENU;
     }
@@ -90,7 +90,7 @@ public:
 
     virtual ~CCreditsState() OVERRIDE;
     virtual void ReleaseResources() OVERRIDE;
-    RVA(0x0008d590, 0x6)
+    RVA(0x0008d4b0, 0x6)
     virtual GameStateId Update() OVERRIDE {
         return GAMESTATE_CREDITS;
     }
@@ -166,7 +166,7 @@ public:
 
     virtual ~CBootyState() OVERRIDE;
     virtual void ReleaseResources() OVERRIDE;
-    RVA(0x0008d3f0, 0x6)
+    RVA(0x0008d310, 0x6)
     virtual GameStateId Update() OVERRIDE {
         return GAMESTATE_BOOTY;
     }
@@ -266,7 +266,7 @@ public:
 
     virtual ~CMultiBootyState() OVERRIDE;
     virtual void ReleaseResources() OVERRIDE;
-    RVA(0x0008d4c0, 0x6)
+    RVA(0x0008d3e0, 0x6)
     virtual GameStateId Update() OVERRIDE {
         return GAMESTATE_MULTIBOOTY;
     }

@@ -108,88 +108,88 @@
 #include <string.h>
 #include <time.h>
 
-DATA(0x00211054)
+DATA(0x00211ffc)
 static char s_dataPath[] = "%c:\\DATA\\%s";
 
-DATA(0x00211044)
+DATA(0x00211fec)
 static char s_fecName[] = "Gruntz.FEC";
 
-DATA(0x00211034)
+DATA(0x00211fdc)
 static char s_fecLoName[] = "GruntzLo.FEC";
 
-DATA(0x00211024)
+DATA(0x00211fcc)
 static char s_moviezPath[] = "%c:\\MOVIEZ\\%s";
 
-DATA(0x002452d8)
+DATA(0x00246230)
 char g_msgScratch[256];
 
-DATA(0x002451a4)
+DATA(0x002460fc)
 i32 g_debugGruntRow;
-DATA(0x00245268)
+DATA(0x002461c0)
 i32 g_debugGruntToy;
-DATA(0x0024526c)
+DATA(0x002461c4)
 i32 g_debugGruntPlayer;
-DATA(0x002452a8)
+DATA(0x00246200)
 i32 g_debugGruntRadius;
-DATA(0x002452d0)
+DATA(0x00246228)
 i32 g_debugGruntTool;
-DATA(0x002452d4)
+DATA(0x0024622c)
 i32 g_debugGruntColor;
-DATA(0x00245538)
+DATA(0x00246490)
 i32 g_debugGruntColumn;
-DATA(0x00245558)
+DATA(0x002464b0)
 i32 g_debugGruntMoveLeft;
-DATA(0x0024555c)
+DATA(0x002464b4)
 i32 g_debugGruntMoveTop;
-DATA(0x00245560)
+DATA(0x002464b8)
 i32 g_debugGruntMoveRight;
-DATA(0x00245564)
+DATA(0x002464bc)
 i32 g_debugGruntMoveBottom;
-DATA(0x00245568)
+DATA(0x002464c0)
 i32 g_debugGruntAiType;
 
-DATA(0x002455e8)
+DATA(0x00246540)
 b32 g_monologoShown;
 
-DATA(0x0024556c)
+DATA(0x002464c4)
 CGruntzMgr* g_gameReg = NULL;
 
-DATA(0x002455a4)
+DATA(0x002464fc)
 u32 g_gruntDestruction;
-DATA(0x002455a8)
+DATA(0x00246500)
 u32 g_gruntCreation;
-DATA(0x002455ac)
+DATA(0x00246504)
 u32 g_gooPuddlez;
-DATA(0x002455f8)
+DATA(0x00246550)
 u32 g_explosionz;
-DATA(0x00245600)
+DATA(0x00246558)
 u32 g_resolutionChanged;
-DATA(0x002455f4)
+DATA(0x0024654c)
 DebugDisplayFlags g_debugDisplayFlags;
 
-DATA(0x00245570)
+DATA(0x002464c8)
 DirectInputMgr2* g_inputMgr = NULL;
-DATA(0x00245578)
+DATA(0x002464d0)
 CInputState* g_gameplayInput = NULL;
 
-DATA(0x0020fa70)
+DATA(0x00210a18)
 i32 g_localVersion = 1;
-DATA(0x0020fa74)
+DATA(0x00210a1c)
 i32 g_remoteVersion = 1;
-DATA(0x0020fa78)
+DATA(0x00210a20)
 i32 g_unreferencedGruntzMgrValues[16] = {1, 2, -1, 3, -1, 4, -1, 5, -1, 6, -1, 7, -1, 8, 9, 10};
-DATA(0x0020fab8)
+DATA(0x00210a60)
 NetGuid g_dplayAppGuid = {
     {0xf41cf640, 0x91b2, 0x11d1, {0x8d, 0xfc, 0x00, 0x60, 0x97, 0x9f, 0xa8, 0x1e}}
 };
-DATA(0x0020fac8)
+DATA(0x00210a70)
 b32 g_pendingFrame = true;
-DATA(0x00212610)
+DATA(0x002135a8)
 i32 g_warpX = -1;
-DATA(0x00212614)
+DATA(0x002135ac)
 i32 g_warpY = -1;
 
-RVA(0x00083030, 0x1b6)
+RVA(0x00082f50, 0x1b6)
 CGruntzMgr::CGruntzMgr() {
     m_curState = NULL;
     m_world = NULL;
@@ -248,7 +248,7 @@ CGruntzMgr::CGruntzMgr() {
     m_computerPlayerCount = 3;
 }
 
-RVA(0x00083300, 0x17)
+RVA(0x00083220, 0x17)
 i32 CGruntzMgr::IsActive() {
     if (m_world) {
         if (m_curState) {
@@ -258,28 +258,28 @@ i32 CGruntzMgr::IsActive() {
     return 0;
 }
 
-RVA_COMPGEN(0x00083330, 0x1e, ??_GCGruntzMgr@@UAEPAXI@Z)
+RVA_COMPGEN(0x00083250, 0x1e, ??_GCGruntzMgr@@UAEPAXI@Z)
 
-RVA(0x00083360, 0xb2)
+RVA(0x00083280, 0xb2)
 CGruntzMgr::~CGruntzMgr() {
     Close();
 }
 
-RVA_COMPGEN(0x00085540, 0xb, ??1CGameMgr@@UAE@XZ)
+RVA_COMPGEN(0x00085460, 0xb, ??1CGameMgr@@UAE@XZ)
 
-RVA(0x00085560, 0xb)
+RVA(0x00085480, 0xb)
 i32 CGameMgr::IsActive() {
     return m_gameWnd != NULL;
 }
 
-RVA(0x00085580, 0x5)
+RVA(0x000854a0, 0x5)
 i32 CGameMgr::HandleCommand(i32, GruntzCommandId, i32) {
     return 0;
 }
 
-RVA_COMPGEN(0x000855a0, 0x24, ??_GCGameMgr@@UAEPAXI@Z)
+RVA_COMPGEN(0x000854c0, 0x24, ??_GCGameMgr@@UAEPAXI@Z)
 
-RVA(0x000855e0, 0x448)
+RVA(0x00085500, 0x448)
 void CGruntzMgr::Close() {
     if (m_world) {
         m_world->SetRestoreHandler(NULL);
@@ -437,15 +437,15 @@ void CGruntzMgr::Close() {
     g_gameReg = NULL;
 }
 
-RVA_COMPGEN(0x00085b50, 0x56, ??1CSaveGame@@QAE@XZ)
+RVA_COMPGEN(0x00085a70, 0x56, ??1CSaveGame@@QAE@XZ)
 
-RVA_COMPGEN(0x00085ed0, 0x4a, ??1CWorldSoundSet@@QAE@XZ)
+RVA_COMPGEN(0x00085df0, 0x4a, ??1CWorldSoundSet@@QAE@XZ)
 
-RVA_COMPGEN(0x00085fc0, 0x57, ??1DirectInputMgr2@@QAE@XZ)
+RVA_COMPGEN(0x00085ee0, 0x57, ??1DirectInputMgr2@@QAE@XZ)
 
-RVA_COMPGEN(0x00086040, 0x49, ??1MidiManager@@QAE@XZ)
+RVA_COMPGEN(0x00085f60, 0x49, ??1MidiManager@@QAE@XZ)
 
-RVA(0x000860b0, 0xe8)
+RVA(0x00085fd0, 0xe8)
 void CGruntzMgr::CommitSinglePlayerProgress() {
     if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
         return;
@@ -475,7 +475,7 @@ void CGruntzMgr::CommitSinglePlayerProgress() {
     m_gameStats->m_isCustomLevel = false;
 }
 
-RVA(0x000861e0, 0xc5)
+RVA(0x00086100, 0xc5)
 void CGruntzMgr::FinalizeLevelAndShowResults() {
     CState* currentState = m_curState;
     if (m_gameMode == GAMEMODE_QUESTZ) {
@@ -501,7 +501,7 @@ void CGruntzMgr::FinalizeLevelAndShowResults() {
     TransitionState(GAMESTATE_MULTIBOOTY, 1, false, 0);
 }
 
-RVA(0x0008b8c0, 0x76)
+RVA(0x0008b7e0, 0x76)
 i32 PumpIdleFrame() {
     if (g_pendingFrame == false) {
         return 0;
@@ -530,7 +530,7 @@ i32 PumpIdleFrame() {
 }
 
 // @early-stop
-RVA(0x0008b960, 0x808)
+RVA(0x0008b880, 0x808)
 i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, b32 keepCurrent, i32 unused) {
     static_cast<void>(unused);
     TRACE("TransitionState %d\n", stateId);
@@ -621,56 +621,56 @@ i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, b32 keepCurren
     }
 }
 
-RVA_COMPGEN(0x0008c3d0, 0x1e, ??_GCRgn@@UAEPAXI@Z)
+RVA_COMPGEN(0x0008c2f0, 0x1e, ??_GCRgn@@UAEPAXI@Z)
 
-RVA_COMPGEN(0x0008c470, 0xb, ??1CState@@UAE@XZ)
+RVA_COMPGEN(0x0008c390, 0xb, ??1CState@@UAE@XZ)
 
-RVA(0x0008c530, 0x8)
+RVA(0x0008c450, 0x8)
 i32 CState::LeaveState(GameStateId nextState) {
     return 1;
 }
 
-RVA_COMPGEN(0x0008c710, 0x24, ??_GCState@@UAEPAXI@Z)
+RVA_COMPGEN(0x0008c630, 0x24, ??_GCState@@UAEPAXI@Z)
 
-RVA_COMPGEN(0x0008c750, 0xa9, ??0CState@@QAE@XZ)
+RVA_COMPGEN(0x0008c670, 0xa9, ??0CState@@QAE@XZ)
 
-RVA_COMPGEN(0x0008c830, 0xaf, ??1CPlay@@UAE@XZ)
+RVA_COMPGEN(0x0008c750, 0xaf, ??1CPlay@@UAE@XZ)
 
-RVA_COMPGEN(0x0008c9a0, 0x1e, ??_GCPlay@@UAEPAXI@Z)
+RVA_COMPGEN(0x0008c8c0, 0x1e, ??_GCPlay@@UAEPAXI@Z)
 
-RVA_COMPGEN(0x0008c9d0, 0x2bd, ??0CPlay@@QAE@XZ)
+RVA_COMPGEN(0x0008c8f0, 0x2bd, ??0CPlay@@QAE@XZ)
 
-RVA_COMPGEN(0x0008ce30, 0x1e, ??_GCMenuState@@UAEPAXI@Z)
+RVA_COMPGEN(0x0008cd50, 0x1e, ??_GCMenuState@@UAEPAXI@Z)
 
-RVA_COMPGEN(0x0008cf00, 0x1e, ??_GCHelpState@@UAEPAXI@Z)
+RVA_COMPGEN(0x0008ce20, 0x1e, ??_GCHelpState@@UAEPAXI@Z)
 
-RVA_COMPGEN(0x0008cfd0, 0x1e, ??_GCSplashState@@UAEPAXI@Z)
+RVA_COMPGEN(0x0008cef0, 0x1e, ??_GCSplashState@@UAEPAXI@Z)
 
-RVA_COMPGEN(0x0008d0a0, 0x1e, ??_GCDemo@@UAEPAXI@Z)
+RVA_COMPGEN(0x0008cfc0, 0x1e, ??_GCDemo@@UAEPAXI@Z)
 
-RVA(0x0008d0d0, 0xc4)
+RVA(0x0008cff0, 0xc4)
 CDemo::~CDemo() {
     CDemo::ReleaseResources();
 }
 
-RVA(0x0008d1e0, 0x6)
+RVA(0x0008d100, 0x6)
 GameStateId CMulti::Update() {
     return GAMESTATE_MULTI;
 }
 
-RVA(0x0008d200, 0x3)
+RVA(0x0008d120, 0x3)
 i32 CMulti::UnusedPlayQuery() {
     return 0;
 }
 
-RVA(0x0008d220, 0xa)
+RVA(0x0008d140, 0xa)
 i32 CMulti::GetFrame() {
     return m_session->m_commandTick;
 }
 
-RVA_COMPGEN(0x0008d240, 0x1e, ??_GCMulti@@UAEPAXI@Z)
+RVA_COMPGEN(0x0008d160, 0x1e, ??_GCMulti@@UAEPAXI@Z)
 
-RVA(0x0008d6a0, 0xaf)
+RVA(0x0008d5c0, 0xaf)
 i32 CGruntzMgr::SwitchToNextState() {
     if (IsActive() == 0) {
         return 0;
@@ -702,7 +702,7 @@ i32 CGruntzMgr::SwitchToNextState() {
 }
 
 // @early-stop
-RVA(0x0008d780, 0x95)
+RVA(0x0008d6a0, 0x95)
 i32 CGruntzMgr::PassClickToPlayState(i32 areaArg, b32 forceTransition, i32 unused) {
     b32 inPlay = false;
     if (m_curState->Update() == GAMESTATE_PLAY) {
@@ -723,7 +723,7 @@ i32 CGruntzMgr::PassClickToPlayState(i32 areaArg, b32 forceTransition, i32 unuse
     return TransitionState(GAMESTATE_PLAY, areaArg, false, 0);
 }
 
-RVA(0x0008d850, 0x83)
+RVA(0x0008d770, 0x83)
 i32 CGruntzMgr::GoToNextLevel() {
     if (m_curState->Update() != GAMESTATE_PLAY) {
         return 0;
@@ -745,7 +745,7 @@ i32 CGruntzMgr::GoToNextLevel() {
     return 0;
 }
 
-RVA(0x0008d910, 0x82)
+RVA(0x0008d830, 0x82)
 i32 CGruntzMgr::GoToPrevLevel() {
     if (m_curState->Update() != GAMESTATE_PLAY) {
         return 0;
@@ -767,7 +767,7 @@ i32 CGruntzMgr::GoToPrevLevel() {
     return 0;
 }
 
-RVA(0x0008d9d0, 0x1e)
+RVA(0x0008d8f0, 0x1e)
 i32 CGruntzMgr::ForwardCharToState(i32 charCode, i32 keyData) {
     if (m_curState) {
         return m_curState->OnChar(charCode, keyData);
@@ -775,7 +775,7 @@ i32 CGruntzMgr::ForwardCharToState(i32 charCode, i32 keyData) {
     return 0;
 }
 
-RVA(0x0008da00, 0x1e)
+RVA(0x0008d920, 0x1e)
 i32 CGruntzMgr::ForwardKeyDownToState(i32 virtualKey, i32 keyData) {
     if (m_curState) {
         return m_curState->OnKeyDown(virtualKey, keyData);
@@ -783,7 +783,7 @@ i32 CGruntzMgr::ForwardKeyDownToState(i32 virtualKey, i32 keyData) {
     return 0;
 }
 
-RVA(0x0008da30, 0x1e)
+RVA(0x0008d950, 0x1e)
 i32 CGruntzMgr::ForwardKeyUpToState(i32 virtualKey, i32 keyData) {
     if (m_curState) {
         return m_curState->OnKeyUp(virtualKey, keyData);
@@ -791,7 +791,7 @@ i32 CGruntzMgr::ForwardKeyUpToState(i32 virtualKey, i32 keyData) {
     return 0;
 }
 
-RVA(0x0008da60, 0x23)
+RVA(0x0008d980, 0x23)
 i32 CGruntzMgr::ForwardLButtonDownToState(i32 keyFlags, i32 x, i32 y) {
     if (m_curState) {
         return m_curState->OnLButtonDown(keyFlags, x, y);
@@ -799,7 +799,7 @@ i32 CGruntzMgr::ForwardLButtonDownToState(i32 keyFlags, i32 x, i32 y) {
     return 0;
 }
 
-RVA(0x0008daa0, 0x23)
+RVA(0x0008d9c0, 0x23)
 i32 CGruntzMgr::ForwardLButtonUpToState(i32 keyFlags, i32 x, i32 y) {
     if (m_curState) {
         return m_curState->OnLButtonUp(keyFlags, x, y);
@@ -807,7 +807,7 @@ i32 CGruntzMgr::ForwardLButtonUpToState(i32 keyFlags, i32 x, i32 y) {
     return 0;
 }
 
-RVA(0x0008dae0, 0x23)
+RVA(0x0008da00, 0x23)
 i32 CGruntzMgr::ForwardLButtonDblClkToState(i32 keyFlags, i32 x, i32 y) {
     if (m_curState) {
         return m_curState->OnLButtonDblClk(keyFlags, x, y);
@@ -815,7 +815,7 @@ i32 CGruntzMgr::ForwardLButtonDblClkToState(i32 keyFlags, i32 x, i32 y) {
     return 0;
 }
 
-RVA(0x0008db20, 0x23)
+RVA(0x0008da40, 0x23)
 i32 CGruntzMgr::ForwardRButtonDownToState(i32 keyFlags, i32 x, i32 y) {
     if (m_curState) {
         return m_curState->OnRButtonDown(keyFlags, x, y);
@@ -823,7 +823,7 @@ i32 CGruntzMgr::ForwardRButtonDownToState(i32 keyFlags, i32 x, i32 y) {
     return 0;
 }
 
-RVA(0x0008db60, 0x23)
+RVA(0x0008da80, 0x23)
 i32 CGruntzMgr::ForwardRButtonUpToState(i32 keyFlags, i32 x, i32 y) {
     if (m_curState) {
         return m_curState->OnRButtonUp(keyFlags, x, y);
@@ -831,7 +831,7 @@ i32 CGruntzMgr::ForwardRButtonUpToState(i32 keyFlags, i32 x, i32 y) {
     return 0;
 }
 
-RVA(0x0008dba0, 0x23)
+RVA(0x0008dac0, 0x23)
 i32 CGruntzMgr::ForwardRButtonDblClkToState(i32 keyFlags, i32 x, i32 y) {
     if (m_curState) {
         return m_curState->OnRButtonDblClk(keyFlags, x, y);
@@ -839,7 +839,7 @@ i32 CGruntzMgr::ForwardRButtonDblClkToState(i32 keyFlags, i32 x, i32 y) {
     return 0;
 }
 
-RVA(0x0008dbe0, 0x23)
+RVA(0x0008db00, 0x23)
 i32 CGruntzMgr::ForwardMouseMoveToState(i32 keyFlags, i32 x, i32 y) {
     if (m_curState) {
         return m_curState->OnMouseMove(keyFlags, x, y);
@@ -849,7 +849,7 @@ i32 CGruntzMgr::ForwardMouseMoveToState(i32 keyFlags, i32 x, i32 y) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0008dc20, 0x2b)
+RVA(0x0008db40, 0x2b)
 void CGruntzMgr::XorLiveObjectFlags(i32 mask) {
     CObList* list = &m_world->m_childGroup->m_list;
     if (list == NULL) {
@@ -864,7 +864,7 @@ void CGruntzMgr::XorLiveObjectFlags(i32 mask) {
     }
 }
 
-RVA(0x0008dc60, 0x19)
+RVA(0x0008db80, 0x19)
 void CGruntzMgr::ReportError(WPARAM wParam, LPARAM lParam) {
     CGameApp* pApp = m_owner;
     if (pApp) {
@@ -874,7 +874,7 @@ void CGruntzMgr::ReportError(WPARAM wParam, LPARAM lParam) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0008dc90, 0xb1)
+RVA(0x0008dbb0, 0xb1)
 void CGruntzMgr::RegisterLevelAssetKeys() {
     CDDrawSurfaceMgr* w = m_world;
     if (w == NULL) {
@@ -897,12 +897,12 @@ void CGruntzMgr::RegisterLevelAssetKeys() {
     w->m_soundRegistry->SumAudioBytes("LEVEL");
 }
 
-RVA(0x0008dd80, 0x31)
+RVA(0x0008dca0, 0x31)
 i32 CDDrawDeviceManager::GetCapsChecked() {
     i32 hr = m_device->GetCaps(&m_driverCaps, &m_helCaps);
     if (hr != 0) {
         CDDrawDeviceManager::ReportError(
-            const_cast<char*>("c:\\proj\\incs\\ddrawmgr.h"),
+            const_cast<char*>("d:\\proj\\incs\\ddrawmgr.h"),
             0x135,
             hr
         );
@@ -912,7 +912,7 @@ i32 CDDrawDeviceManager::GetCapsChecked() {
 
 #define IS_STANDARD_VIDEO_MODE (m_modeSize.cx == SCREEN_W_PX && m_modeSize.cy == SCREEN_H_PX)
 
-RVA(0x0008ddd0, 0x7e)
+RVA(0x0008dcf0, 0x7e)
 i32 CGruntzMgr::RestoreVideoMode(b32 save) {
     if (IS_STANDARD_VIDEO_MODE) {
         if (save) {
@@ -927,7 +927,7 @@ i32 CGruntzMgr::RestoreVideoMode(b32 save) {
     return 1;
 }
 
-RVA(0x0008de70, 0x61)
+RVA(0x0008dd90, 0x61)
 i32 CGruntzMgr::CheckSavedMode() {
 
     if ((m_modeSize.cx == m_savedModeSize.cx && m_modeSize.cy == m_savedModeSize.cy)
@@ -938,7 +938,7 @@ i32 CGruntzMgr::CheckSavedMode() {
     return 0;
 }
 
-RVA(0x0008df00, 0x238)
+RVA(0x0008de20, 0x238)
 i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, b32 saveMode) {
     if (w == m_modeSize.cx && h == m_modeSize.cy) {
         return 1;
@@ -1017,7 +1017,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, b32 saveMode) {
     return 1;
 }
 
-RVA(0x0008e1d0, 0xa5)
+RVA(0x0008e0f0, 0xa5)
 i32 CGruntzMgr::TryNextResolution() {
     if (m_curState->Update() != GAMESTATE_PLAY && m_curState->Update() != GAMESTATE_MULTI) {
         return 1;
@@ -1040,7 +1040,7 @@ i32 CGruntzMgr::TryNextResolution() {
     return 0;
 }
 
-RVA(0x0008e2b0, 0xb1)
+RVA(0x0008e1d0, 0xb1)
 i32 CGruntzMgr::TryPreviousResolution() {
     if (m_curState->Update() != GAMESTATE_PLAY && m_curState->Update() != GAMESTATE_MULTI) {
         return 1;
@@ -1063,7 +1063,7 @@ i32 CGruntzMgr::TryPreviousResolution() {
     return 0;
 }
 
-RVA(0x0008e3a0, 0x94)
+RVA(0x0008e2c0, 0x94)
 RECT* CGruntzMgr::GetRect(RECT* out) {
     RECT local;
     SetRect(&local, 0, 0, 0x27f, 0x1df);
@@ -1078,7 +1078,7 @@ RECT* CGruntzMgr::GetRect(RECT* out) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0008e470, 0x50)
+RVA(0x0008e390, 0x50)
 i32 CGruntzMgr::HandleDebugPosition() {
     i32 r = 0;
     if (m_curState->Update() == GAMESTATE_PLAY) {
@@ -1091,7 +1091,7 @@ i32 CGruntzMgr::HandleDebugPosition() {
     return r != 0;
 }
 
-RVA(0x0008e4e0, 0x172)
+RVA(0x0008e400, 0x172)
 BOOL CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     char szValue[64];
 
@@ -1134,7 +1134,7 @@ BOOL CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) 
     return false;
 }
 
-RVA(0x0008e6c0, 0x85)
+RVA(0x0008e5e0, 0x85)
 void CGruntzMgr::OnCheckpointReached() {
     if (m_isCheckpointPrompts == false) {
         return;
@@ -1147,7 +1147,7 @@ void CGruntzMgr::OnCheckpointReached() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0008e780, 0x2a)
+RVA(0x0008e6a0, 0x2a)
 i32 CGruntzMgr::DebugJumpLevel() {
     i32 level = RunModalDialog("DEBUG_JUMPLEVEL", JumpLevelDialogProc, true);
     if (level > 0) {
@@ -1156,7 +1156,7 @@ i32 CGruntzMgr::DebugJumpLevel() {
     return 0;
 }
 
-RVA(0x0008e7c0, 0x86)
+RVA(0x0008e6e0, 0x86)
 BOOL CALLBACK JumpLevelDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_INITDIALOG:
@@ -1178,7 +1178,7 @@ BOOL CALLBACK JumpLevelDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0008e880, 0x27)
+RVA(0x0008e7a0, 0x27)
 i32 CGruntzMgr::RegisterSetSkillDebugCmd() {
     if (m_curState->Update() == GAMESTATE_PLAY) {
         RunModalDialog("DEBUG_SETSKILL", SetSkillLevelDialogProc, true);
@@ -1186,7 +1186,7 @@ i32 CGruntzMgr::RegisterSetSkillDebugCmd() {
     return 0;
 }
 
-RVA(0x0008e8c0, 0x86)
+RVA(0x0008e7e0, 0x86)
 BOOL CALLBACK SetSkillLevelDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_INITDIALOG:
@@ -1206,7 +1206,7 @@ BOOL CALLBACK SetSkillLevelDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM
     return false;
 }
 
-RVA(0x0008e980, 0x11e)
+RVA(0x0008e8a0, 0x11e)
 i32 CGruntzMgr::FinishLevel(b32 pauseGame, b32 pauseMusic) {
     if (m_curState && m_curState->Update() == GAMESTATE_MULTI) {
 
@@ -1266,7 +1266,7 @@ i32 CGruntzMgr::FinishLevel(b32 pauseGame, b32 pauseMusic) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0008eaf0, 0x10b)
+RVA(0x0008ea10, 0x10b)
 i32 CGruntzMgr::WarpCheat() {
     char key[64];
     sprintf(key, "Level %i Warp X", g_gameReg->m_curState->m_levelIndex);
@@ -1292,7 +1292,7 @@ i32 CGruntzMgr::WarpCheat() {
     return 0;
 }
 
-RVA(0x0008ec50, 0x33)
+RVA(0x0008eb70, 0x33)
 i32 CGruntzMgr::CheckPlayState() {
     if (m_curState == NULL) {
         return 0;
@@ -1303,7 +1303,7 @@ i32 CGruntzMgr::CheckPlayState() {
     return m_curState->Update() == GAMESTATE_MULTI;
 }
 
-RVA(0x0008eca0, 0x164)
+RVA(0x0008ebc0, 0x164)
 i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
     if (m_lobbyProbed) {
         return m_lobbyResult;
@@ -1319,7 +1319,7 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
 
     i32 hr = DirectPlayLobbyCreate(NULL, &m_lobby, NULL, NULL, 0);
     if (hr) {
-        CNetMgr::ReportError("C:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x120d, hr, m_gameWnd->m_hwnd);
+        CNetMgr::ReportError("D:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x120d, hr, m_gameWnd->m_hwnd);
         return 0;
     }
     if (!m_lobby) {
@@ -1337,7 +1337,7 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
     DWORD dwSize = 0;
     hr = m_lobby->GetConnectionSettings(0, NULL, &dwSize);
     if (hr != 0 && hr != static_cast<i32>(DPERR_BUFFERTOOSMALL)) {
-        CNetMgr::ReportError("C:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x1221, hr, m_gameWnd->m_hwnd);
+        CNetMgr::ReportError("D:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x1221, hr, m_gameWnd->m_hwnd);
         m_lobby->Release();
         m_lobby = NULL;
         return 0;
@@ -1354,7 +1354,7 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
 
     hr = m_lobby->GetConnectionSettings(0, m_connSettings, &dwSize);
     if (hr) {
-        CNetMgr::ReportError("C:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x1232, hr, m_gameWnd->m_hwnd);
+        CNetMgr::ReportError("D:\\Proj\\Gruntz\\GruntzMgr.cpp", 0x1232, hr, m_gameWnd->m_hwnd);
         m_lobby->Release();
         m_lobby = NULL;
         return 0;
@@ -1366,7 +1366,7 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0008ee70, 0x7c)
+RVA(0x0008ed90, 0x7c)
 i32 CGruntzMgr::ShowMessageBox(const char* text, u32 type) {
     if (m_world) {
         m_world->m_drawTarget->BlitPage(m_world->m_drawTarget->m_backPair);
@@ -1385,7 +1385,7 @@ i32 CGruntzMgr::ShowMessageBox(const char* text, u32 type) {
     return result;
 }
 
-RVA(0x0008ef10, 0x9e)
+RVA(0x0008ee30, 0x9e)
 void CGruntzMgr::EnterModalUI(const char* msg) {
     CGameApp* app = m_owner;
     if (app == NULL) {
@@ -1419,7 +1419,7 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
 // @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0008efe0, 0x54)
+RVA(0x0008ef00, 0x54)
 i32 CGruntzMgr::ToggleObjectLayer() {
     if (IsActive() && m_world) {
         CGameLevel* view = m_world->m_level;
@@ -1444,7 +1444,7 @@ i32 CGruntzMgr::ToggleObjectLayer() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0008f060, 0x35)
+RVA(0x0008ef80, 0x35)
 i32 CGruntzMgr::ToggleHeightLayer() {
     if (IsActive() && m_world) {
         CGameLevel* view = m_world->m_level;
@@ -1461,7 +1461,7 @@ i32 CGruntzMgr::ToggleHeightLayer() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0008f0b0, 0x46)
+RVA(0x0008efd0, 0x46)
 i32 CGruntzMgr::ToggleBaseLayer() {
     if (IsActive() && m_world) {
         CGameLevel* view = m_world->m_level;
@@ -1478,7 +1478,7 @@ i32 CGruntzMgr::ToggleBaseLayer() {
     return 0;
 }
 
-RVA(0x0008f120, 0x170)
+RVA(0x0008f040, 0x170)
 i32 CGruntzMgr::LaunchWebBrowser(char* url) {
     LONG len = 0x104;
     char cmd[0x104];
@@ -1525,7 +1525,7 @@ i32 CGruntzMgr::LaunchWebBrowser(char* url) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0008f2f0, 0x1b)
+RVA(0x0008f210, 0x1b)
 i32 CGruntzMgr::PollUnlessIdle() {
     if (m_curState->Update() != GAMESTATE_MENU) {
         CheckPlayState();
@@ -1536,12 +1536,12 @@ i32 CGruntzMgr::PollUnlessIdle() {
 // @identity-TODO: owner, ABI, and false result are proven; the command identity is not.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0008f320, 0x3)
+RVA(0x0008f240, 0x3)
 i32 CGruntzMgr::RejectWorldFileCommand() {
     return 0;
 }
 
-RVA(0x0008f340, 0xf6)
+RVA(0x0008f260, 0xf6)
 i32 CGruntzMgr::CaptureWorldFile() {
     GameStateId st = m_curState->Update();
     if (st != GAMESTATE_MENU && st != GAMESTATE_ATTRACT && st != GAMESTATE_PLAY
@@ -1561,7 +1561,7 @@ i32 CGruntzMgr::CaptureWorldFile() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0008f480, 0x49)
+RVA(0x0008f3a0, 0x49)
 i32 CGruntzMgr::ClearWorldFile() {
     GameStateId mode = m_curState->Update();
     if (mode == GAMESTATE_MENU || mode == GAMESTATE_ATTRACT || mode == GAMESTATE_PLAY) {
@@ -1572,7 +1572,7 @@ i32 CGruntzMgr::ClearWorldFile() {
     return 0;
 }
 
-RVA(0x0008f4f0, 0x26)
+RVA(0x0008f410, 0x26)
 void CGruntzMgr::ResetClockGlobals() {
     g_resolutionChanged = false;
     g_traitorMode = false;
@@ -1590,7 +1590,7 @@ static inline SoundCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
 }
 
 // @early-stop
-RVA(0x0008f530, 0xbd)
+RVA(0x0008f450, 0xbd)
 void CGruntzMgr::DelayedQuit() {
     if (m_delayedQuitPending != false) {
         return;
@@ -1616,7 +1616,7 @@ void CGruntzMgr::DelayedQuit() {
     }
 }
 
-RVA(0x0008f620, 0x51)
+RVA(0x0008f540, 0x51)
 void CGruntzMgr::RefreshGameClock() {
     if (m_curState && m_curState->Update() == GAMESTATE_MULTI) {
         return;
@@ -1633,7 +1633,7 @@ void CGruntzMgr::RefreshGameClock() {
     g_frameDelta = g_gameAppFrameDeltaMs;
 }
 
-RVA(0x0008f6a0, 0x7d)
+RVA(0x0008f5c0, 0x7d)
 void CGruntzMgr::HandleAppActivation(b32 active, i32 unused) {
     if (IsActive() == 0) {
         return;
@@ -1664,7 +1664,7 @@ void CGruntzMgr::HandleAppActivation(b32 active, i32 unused) {
     m_midi->PauseCurrent();
 }
 
-RVA(0x0008f740, 0x46)
+RVA(0x0008f660, 0x46)
 void CGruntzMgr::StopAudioPlayback() {
     if (m_world) {
         SoundCueRegistry* soundRegistry = m_world->m_soundRegistry;
@@ -1681,7 +1681,7 @@ void CGruntzMgr::StopAudioPlayback() {
     }
 }
 
-RVA(0x0008f7b0, 0x2b)
+RVA(0x0008f6d0, 0x2b)
 void CGruntzMgr::SetGameClock(i32 now, i32 delta, i32 abs) {
     g_lastNow = now;
     g_frameDelta = delta;
@@ -1691,7 +1691,7 @@ void CGruntzMgr::SetGameClock(i32 now, i32 delta, i32 abs) {
 }
 
 // @early-stop
-RVA(0x0008f7f0, 0x131)
+RVA(0x0008f710, 0x131)
 void CGruntzMgr::RecomputeViewScale() {
     if (m_world == NULL) {
         return;
@@ -1729,7 +1729,7 @@ void CGruntzMgr::RecomputeViewScale() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0008f980, 0x21)
+RVA(0x0008f8a0, 0x21)
 i32 CGruntzMgr::IsStandardMode() {
     if (IS_STANDARD_VIDEO_MODE) {
         return 1;
@@ -1737,7 +1737,7 @@ i32 CGruntzMgr::IsStandardMode() {
     return 0;
 }
 
-RVA(0x0008f9c0, 0x1d)
+RVA(0x0008f8e0, 0x1d)
 i32 CGruntzMgr::AppendChatMessage(char* msg) {
     CFontConfig* log = m_chatLog;
     if (log == NULL) {
@@ -1746,7 +1746,7 @@ i32 CGruntzMgr::AppendChatMessage(char* msg) {
     return log->AddItem(msg, FONT_ITEM_FLAGS_NONE, 0x11);
 }
 
-RVA(0x0008f9f0, 0x3e)
+RVA(0x0008f910, 0x3e)
 i32 CGruntzMgr::ShowToggleMessage(char* itemName, i32 on) {
     if (on) {
         sprintf(g_msgScratch, "%s is ON", itemName);
@@ -1756,7 +1756,7 @@ i32 CGruntzMgr::ShowToggleMessage(char* itemName, i32 on) {
     return AppendChatMessage(g_msgScratch);
 }
 
-RVA(0x0008fa40, 0x16)
+RVA(0x0008f960, 0x16)
 i32 CGruntzMgr::IsInPlayState() {
     if (m_curState == NULL) {
         return 0;
@@ -1764,7 +1764,7 @@ i32 CGruntzMgr::IsInPlayState() {
     return CheckPlayState() != 0;
 }
 
-RVA(0x0008fa70, 0x2c)
+RVA(0x0008f990, 0x2c)
 char CGruntzMgr::GetGruntzDriveLetter() {
     if (m_driveLetterProbed) {
         return m_driveLetter;
@@ -1774,7 +1774,7 @@ char CGruntzMgr::GetGruntzDriveLetter() {
     return m_driveLetter;
 }
 
-RVA(0x0008fab0, 0x318)
+RVA(0x0008f9d0, 0x318)
 i32 CGruntzMgr::PlayMovieEntry(i32 entryId) {
     if (entryId < IDX(MOVIE_ENTRY_FIRST) || entryId > IDX(MOVIE_ENTRY_LAST)) {
         return 0;
@@ -1816,7 +1816,7 @@ i32 CGruntzMgr::PlayMovieEntry(i32 entryId) {
     return 1;
 }
 
-RVA(0x0008fea0, 0x6d)
+RVA(0x0008fdc0, 0x6d)
 CFecFile::CFecFile() {
     m_openGate = false;
     m_readOpen = false;
@@ -1825,7 +1825,7 @@ CFecFile::CFecFile() {
     srand(time(NULL));
 }
 
-RVA(0x0008ff30, 0x20c)
+RVA(0x0008fe50, 0x20c)
 CString CGruntzMgr::BuildMoviePath(MovieId movie) {
     CString name;
 
@@ -1893,17 +1893,17 @@ CString CGruntzMgr::BuildMoviePath(MovieId movie) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000901d0, 0x16)
+RVA(0x000900f0, 0x16)
 i32 CGruntzMgr::IsMoviePathValid() {
     return FileExists(const_cast<char*>(static_cast<const char*>(m_strMoviePath))) != 0;
 }
 
-RVA(0x00090200, 0x8)
+RVA(0x00090120, 0x8)
 i32 CGruntzMgr::PlayLogoMovie() {
     return PlayMovieEntry(IDX(MOVIE_ENTRY_LOGO));
 }
 
-RVA(0x00090220, 0x2f)
+RVA(0x00090140, 0x2f)
 void CGruntzMgr::Post(i32 code) {
     if (code > 0 && code <= IDX(QUESTLEVEL_POST_LAST)) {
         i32 v = (code == IDX(QUESTLEVEL_RESTART)) ? IDX(QUESTLEVEL_FIRST) : code;
@@ -1911,7 +1911,7 @@ void CGruntzMgr::Post(i32 code) {
     }
 }
 
-RVA(0x00090260, 0x13e)
+RVA(0x00090180, 0x13e)
 i32 CGruntzMgr::RunModalDialog(const char* tmpl, DLGPROC dlgProc, b32 notify) {
     if (tmpl == NULL) {
         return 0;
@@ -1970,7 +1970,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, DLGPROC dlgProc, b32 notify) {
     return result;
 }
 
-RVA(0x000903f0, 0x10c)
+RVA(0x00090310, 0x10c)
 i32 CGruntzMgr::ExitModalUI(CDialog* dlg, b32 notify) {
     if (m_voiceManager) {
         m_voiceManager->PauseAllVoices();
@@ -2019,7 +2019,7 @@ i32 CGruntzMgr::ExitModalUI(CDialog* dlg, b32 notify) {
     return result;
 }
 
-RVA(0x00090550, 0x1e6)
+RVA(0x00090470, 0x1e6)
 i32 __stdcall LaunchPortalExe(char* outPath) {
     DWORD bufSize;
     char regBuf[0x100];
@@ -2052,7 +2052,7 @@ i32 __stdcall LaunchPortalExe(char* outPath) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000907c0, 0x77)
+RVA(0x000906e0, 0x77)
 i32 CGruntzMgr::LaunchPortal(i32 quitAfter) {
     char path[256];
     path[0] = 0;
@@ -2071,7 +2071,7 @@ i32 CGruntzMgr::LaunchPortal(i32 quitAfter) {
     return 1;
 }
 
-RVA(0x00090860, 0xd3)
+RVA(0x00090780, 0xd3)
 i32 CGruntzMgr::LaunchProcessInDir(char* exe, char* dir) {
     char cmdline[256];
     STARTUPINFOA si;
@@ -2094,7 +2094,7 @@ i32 CGruntzMgr::LaunchProcessInDir(char* exe, char* dir) {
     return CreateProcessA(NULL, cmdline, NULL, NULL, false, 0, NULL, dir, &si, &pi);
 }
 
-RVA(0x00090980, 0x18)
+RVA(0x000908a0, 0x18)
 CState* CGruntzMgr::TopState() {
     CPtrArray* st = &m_stateStack;
     if (st->GetSize() <= 0) {
@@ -2103,7 +2103,7 @@ CState* CGruntzMgr::TopState() {
     return static_cast<CState*>(st->GetAt(st->GetSize() - 1));
 }
 
-RVA(0x000909b0, 0x1b)
+RVA(0x000908d0, 0x1b)
 void CGruntzMgr::PushState(CState* s) {
     if (!s) {
         return;
@@ -2112,7 +2112,7 @@ void CGruntzMgr::PushState(CState* s) {
     st->SetAtGrow(st->GetSize(), s);
 }
 
-RVA(0x000909e0, 0x46)
+RVA(0x00090900, 0x46)
 i32 CGruntzMgr::PopTopIfMatches(CState* s) {
     if (!s) {
         return 0;
@@ -2126,7 +2126,7 @@ i32 CGruntzMgr::PopTopIfMatches(CState* s) {
     return top == s;
 }
 
-RVA(0x00090a50, 0x40)
+RVA(0x00090970, 0x40)
 void CGruntzMgr::ClearStateStack() {
     for (i32 i = 0; i < m_stateStack.GetSize(); i++) {
         CState* s = static_cast<CState*>(m_stateStack.GetAt(i));
@@ -2137,12 +2137,12 @@ void CGruntzMgr::ClearStateStack() {
     m_stateStack.SetSize(0, -1);
 }
 
-RVA(0x00090aa0, 0x10)
+RVA(0x000909c0, 0x10)
 i32 CGruntzMgr::CheckMovieFileExists() {
     return FileExists(const_cast<char*>(static_cast<const char*>(m_strMoviePath)));
 }
 
-RVA(0x00090ac0, 0x1cc)
+RVA(0x000909e0, 0x1cc)
 void CGruntzMgr::ReportWorldStatus(WorldInitReportTag tag) {
     if (m_world == NULL) {
         ReportError(IDX(IDS_INITIALIZE_GAME), IDX(tag));
@@ -2197,7 +2197,7 @@ void CGruntzMgr::ReportWorldStatus(WorldInitReportTag tag) {
     }
 }
 
-RVA(0x00090d10, 0x18e)
+RVA(0x00090c30, 0x18e)
 i32 CGruntzMgr::LoadMonologoSprite() {
     if (m_curState == NULL) {
         return 0;
@@ -2267,7 +2267,7 @@ i32 CGruntzMgr::LoadMonologoSprite() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00090f10, 0x151)
+RVA(0x00090e30, 0x151)
 i32 CGruntzMgr::CheatRevealTreasures() {
     if (m_curState == NULL) {
         return 0;
@@ -2303,7 +2303,7 @@ i32 CGruntzMgr::CheatRevealTreasures() {
     return 1;
 }
 
-RVA(0x000910d0, 0x75)
+RVA(0x00090ff0, 0x75)
 i32 CGruntzMgr::SetGruntColor(CDDrawWorker* sink, const char* key, i32 idx) {
     if (sink && key) {
         CObject* out = NULL;
@@ -2323,7 +2323,7 @@ i32 CGruntzMgr::SetGruntColor(CDDrawWorker* sink, const char* key, i32 idx) {
     return 0;
 }
 
-RVA(0x00091170, 0xad)
+RVA(0x00091090, 0xad)
 i32 CGruntzMgr::SetColorDepth(ColorDepth depth) {
     if (depth != BPP_PALETTED_8 && depth != BPP_RGB_16 && depth != BPP_RGB_24) {
         return 0;
@@ -2354,7 +2354,7 @@ i32 CGruntzMgr::SetColorDepth(ColorDepth depth) {
 // @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00091250, 0x100)
+RVA(0x00091170, 0x100)
 void CGruntzMgr::CheatSkeletonToggle() {
     if (m_curState && m_curState->Update() == GAMESTATE_PLAY && m_world) {
 
@@ -2404,7 +2404,7 @@ void CGruntzMgr::CheatSkeletonToggle() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00091390, 0x11d)
+RVA(0x000912b0, 0x11d)
 void CGruntzMgr::CheatEclipseToggle() {
     if (m_curState && m_curState->Update() == GAMESTATE_PLAY && m_world) {
 
@@ -2451,7 +2451,7 @@ void CGruntzMgr::CheatEclipseToggle() {
     }
 }
 
-RVA(0x00091500, 0x42)
+RVA(0x00091420, 0x42)
 i32 CGruntzMgr::IsLobbyHostReady() {
     if (m_curState == NULL) {
         return 0;
@@ -2472,24 +2472,24 @@ i32 CGruntzMgr::IsLobbyHostReady() {
 // @identity-TODO: placement by the music controls is the only evidence for the hook's name.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00091570, 0x1)
+RVA(0x00091490, 0x1)
 void CGruntzMgr::OnMusicMuteBegin() {}
 
 // @identity-TODO: placement by the music controls is the only evidence for the hook's name.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00091590, 0x1)
+RVA(0x000914b0, 0x1)
 void CGruntzMgr::OnMusicMuteEnd() {}
 
 // @identity-TODO: placement by the music controls is the only evidence for the hook's name.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000915b0, 0x3)
+RVA(0x000914d0, 0x3)
 void CGruntzMgr::OnMusicFadeStep(i32 value) {}
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000915d0, 0x3f)
+RVA(0x000914f0, 0x3f)
 void CGruntzMgr::MuteMusicIfActive(i32 durationMs) {
     if (m_midi == NULL) {
         return;
@@ -2515,7 +2515,7 @@ void CGruntzMgr::MuteMusicIfActive(i32 durationMs) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00091620, 0x3f)
+RVA(0x00091540, 0x3f)
 void CGruntzMgr::RestoreMusicVolumeIfActive(i32 durationMs) {
     if (m_midi == NULL) {
         return;
@@ -2539,7 +2539,7 @@ void CGruntzMgr::RestoreMusicVolumeIfActive(i32 durationMs) {
     }
 }
 
-RVA(0x00091670, 0x2ac)
+RVA(0x00091590, 0x2ac)
 i32 CGruntzMgr::MakeRezPath() {
     char cwd[GRUNTZ_PATH_BUFFER_SIZE];
     if (!GetCurrentDirectoryA(GRUNTZ_PATH_BUFFER_MAX_CHARS, cwd)) {
@@ -2597,7 +2597,7 @@ i32 CGruntzMgr::MakeRezPath() {
     return 1;
 }
 
-RVA(0x000919d0, 0x30)
+RVA(0x000918f0, 0x30)
 void CGruntzMgr::SetSoundVolume(i32 v) {
     m_soundVolume = v;
     if (m_world && m_world->m_soundRegistry) {
@@ -2609,7 +2609,7 @@ void CGruntzMgr::SetSoundVolume(i32 v) {
     }
 }
 
-RVA(0x00091a10, 0x17)
+RVA(0x00091930, 0x17)
 i32 CGruntzMgr::SetVoiceVolume(i32 v) {
     m_voiceVolume = v;
     CVoiceManager* timer = m_voiceManager;
@@ -2620,7 +2620,7 @@ i32 CGruntzMgr::SetVoiceVolume(i32 v) {
 }
 
 // @early-stop
-RVA(0x00091a40, 0x2f9)
+RVA(0x00091960, 0x2f9)
 i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
     if (m_world == NULL) {
         return 0;
@@ -2721,12 +2721,12 @@ i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
 // @identity-TODO: placement after LoadWorldMode is the only evidence for the hook's name.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00091e00, 0x3)
+RVA(0x00091d20, 0x3)
 void CGruntzMgr::OnWorldModeLoaded(ColorDepth mode) {}
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00091e20, 0x17d)
+RVA(0x00091d40, 0x17d)
 i32 CGruntzMgr::ResetWorldState() {
     CState* st = m_curState;
     if (st == NULL) {
@@ -2771,14 +2771,14 @@ i32 CGruntzMgr::ResetWorldState() {
     return 1;
 }
 
-RVA(0x00092000, 0x16)
+RVA(0x00091f20, 0x16)
 void CGruntzMgr::PauseMusicIfEnabled() {
     if (m_midi && m_musicEnabled) {
         m_midi->PauseCurrent();
     }
 }
 
-RVA(0x00092030, 0x18)
+RVA(0x00091f50, 0x18)
 void CGruntzMgr::ResumeMusicIfEnabled() {
     if (m_midi && m_musicEnabled) {
         m_midi->ResumeCurrent(0);
@@ -2787,7 +2787,7 @@ void CGruntzMgr::ResumeMusicIfEnabled() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00092060, 0x3c)
+RVA(0x00091f80, 0x3c)
 i32 CGruntzMgr::SetAssetRoot(char* path) {
     if (path == NULL) {
         return 0;
@@ -2797,7 +2797,7 @@ i32 CGruntzMgr::SetAssetRoot(char* path) {
     return 1;
 }
 
-RVA(0x000920b0, 0x1c)
+RVA(0x00091fd0, 0x1c)
 i32 CGruntzMgr::TickStateMgrs() {
     g_inputMgr->PollAll();
     g_gameplayInput->Update();
@@ -2808,7 +2808,7 @@ i32 CGruntzMgr::TickStateMgrs() {
 // Zero-ref: retail has no caller or address-taking reference.
 // @identity-TODO: the slot range and posted command ID are proven, but retail
 // has no command handler or resource label that identifies the operation.
-RVA(0x000920e0, 0x32)
+RVA(0x00092000, 0x32)
 i32 CGruntzMgr::PostSlotCommandB1(i32 slot) {
     if (slot < 0 || slot >= 4) {
         return 0;
@@ -2821,7 +2821,7 @@ i32 CGruntzMgr::PostSlotCommandB1(i32 slot) {
 // Zero-ref: retail has no caller or address-taking reference.
 // @identity-TODO: the slot range and posted command ID are proven, but retail
 // has no command handler or resource label that identifies the operation.
-RVA(0x00092130, 0x32)
+RVA(0x00092050, 0x32)
 i32 CGruntzMgr::PostSlotCommandB6(i32 slot) {
     if (slot < 0 || slot >= 4) {
         return 0;
@@ -2832,7 +2832,7 @@ i32 CGruntzMgr::PostSlotCommandB6(i32 slot) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00092180, 0x98)
+RVA(0x000920a0, 0x98)
 i32 CGruntzMgr::ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, ScanCb cb, i32 user) {
     if (cb == NULL) {
         return 0;
@@ -2860,7 +2860,7 @@ i32 CGruntzMgr::ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, ScanCb c
 // @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00092250, 0xba)
+RVA(0x00092170, 0xba)
 i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, RECT* rect, i32 mask, ScanCb cb, i32 user) {
     if (cb == NULL) {
         return 0;
@@ -2895,7 +2895,7 @@ i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, RECT* rect, i32 mask, Scan
     return count;
 }
 
-RVA(0x00092340, 0x49)
+RVA(0x00092260, 0x49)
 void CGruntzMgr::SetSoundEnabled(b32 enabled) {
     if (enabled == m_soundEnabled) {
         return;
@@ -2918,7 +2918,7 @@ void CGruntzMgr::SetSoundEnabled(b32 enabled) {
     }
 }
 
-RVA(0x000923b0, 0x47)
+RVA(0x000922d0, 0x47)
 void CGruntzMgr::SetMusicEnabled(b32 enabled) {
     if (enabled == m_musicEnabled) {
         return;
@@ -2944,7 +2944,7 @@ void CGruntzMgr::SetMusicEnabled(b32 enabled) {
     midi->PauseCurrent();
 }
 
-RVA(0x00092420, 0xa4)
+RVA(0x00092340, 0xa4)
 i32 CGruntzMgr::LoadSaveMessageSprite() {
     if (m_cheatMgr->m_cheatsUsed != false) {
         CString name;
@@ -2956,13 +2956,13 @@ i32 CGruntzMgr::LoadSaveMessageSprite() {
     return 1;
 }
 
-RVA(0x00092500, 0x17)
+RVA(0x00092420, 0x17)
 i32 CGruntzMgr::RunLoadGameDialog() {
     RunModalDialog("GAME_LOAD", GruntzLoadGameDlgProc, false);
     return 1;
 }
 
-RVA(0x00092530, 0x17c)
+RVA(0x00092450, 0x17c)
 i32 CGruntzMgr::Quicksave() {
     if (m_saveGame == NULL) {
         return 0;
@@ -2996,7 +2996,7 @@ i32 CGruntzMgr::Quicksave() {
     return 1;
 }
 
-RVA(0x00092710, 0x77)
+RVA(0x00092630, 0x77)
 i32 CGruntzMgr::Quickload() {
     if (m_saveGame == NULL) {
         return 0;
@@ -3016,7 +3016,7 @@ i32 CGruntzMgr::Quickload() {
     return RunLoadGameDialog();
 }
 
-RVA(0x000927b0, 0xc4)
+RVA(0x000926d0, 0xc4)
 i32 CGruntzMgr::FillSaveInfo(SaveSlot* dst, const char* snapshot) {
     if (dst == NULL) {
         return 0;
@@ -3038,7 +3038,7 @@ i32 CGruntzMgr::FillSaveInfo(SaveSlot* dst, const char* snapshot) {
     return 1;
 }
 
-RVA(0x00092900, 0x6e)
+RVA(0x00092820, 0x6e)
 CState* CGruntzMgr::FindStateById(GameStateId id) {
     if (m_curState && m_curState->Update() == id) {
         return m_curState;
@@ -3053,12 +3053,12 @@ CState* CGruntzMgr::FindStateById(GameStateId id) {
     return NULL;
 }
 
-RVA(0x00092990, 0x8)
+RVA(0x000928b0, 0x8)
 CPlay* CGruntzMgr::PickPlayOrPausedState() {
     return static_cast<CPlay*>(FindStateById(GAMESTATE_PLAY));
 }
 
-RVA(0x000929b0, 0x19)
+RVA(0x000928d0, 0x19)
 CState* CGruntzMgr::PickPausedThenPlayState() {
     CState* s = FindStateById(GAMESTATE_MULTI);
     if (s) {
@@ -3069,7 +3069,7 @@ CState* CGruntzMgr::PickPausedThenPlayState() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000929e0, 0x32)
+RVA(0x00092900, 0x32)
 i32 CGruntzMgr::RunDebugGruntTypeDialog() {
     i32 ran = 0;
     if (m_curState->Update() == GAMESTATE_PLAY) {
@@ -3078,7 +3078,7 @@ i32 CGruntzMgr::RunDebugGruntTypeDialog() {
     return ran != 0;
 }
 
-RVA(0x00092a30, 0x52)
+RVA(0x00092950, 0x52)
 BOOL CALLBACK PsycheDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_INITDIALOG:
@@ -3097,7 +3097,7 @@ BOOL CALLBACK PsycheDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam
     return false;
 }
 
-RVA(0x00092ab0, 0x20d)
+RVA(0x000929d0, 0x20d)
 BOOL CALLBACK DebugGruntTypeDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_INITDIALOG:
@@ -3142,7 +3142,7 @@ BOOL CALLBACK DebugGruntTypeDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARA
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00092d50, 0x3c)
+RVA(0x00092c70, 0x3c)
 i32 CGruntzMgr::SetInactivePlayerName(i32 slot, i32, i32, i32, i32, const CString& val, i32) {
     if (CheckPlayState()) {
         if (m_players[slot].m_active == false) {
@@ -3154,7 +3154,7 @@ i32 CGruntzMgr::SetInactivePlayerName(i32 slot, i32, i32, i32, i32, const CStrin
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00092da0, 0x3a)
+RVA(0x00092cc0, 0x3a)
 i32 CGruntzMgr::ResetPlayerSlot(i32 slot) {
     if (static_cast<u32>(slot) >= 4) {
         return 0;
@@ -3172,7 +3172,7 @@ i32 CGruntzMgr::ResetPlayerSlot(i32 slot) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00092df0, 0x24)
+RVA(0x00092d10, 0x24)
 void CGruntzMgr::ResetAllPlayerSlots() {
     GruntzPlayer* player = &m_players[0];
     for (i32 remaining = 4; remaining != 0; remaining--) {
@@ -3183,7 +3183,7 @@ void CGruntzMgr::ResetAllPlayerSlots() {
     }
 }
 
-RVA(0x00092e30, 0x39)
+RVA(0x00092d50, 0x39)
 i32 CGruntzMgr::CountActivePlayers(b32 includeComputerPlayers) {
     i32 count = 0;
     for (i32 i = 0; i < 4; i++) {
@@ -3196,7 +3196,7 @@ i32 CGruntzMgr::CountActivePlayers(b32 includeComputerPlayers) {
     return count;
 }
 
-RVA(0x00092e80, 0x25)
+RVA(0x00092da0, 0x25)
 GruntzPlayer* CGruntzMgr::FindPlayerByNetworkId(i32 networkPlayerId) {
 
     for (i32 i = 0; i < 4; i++) {
@@ -3208,7 +3208,7 @@ GruntzPlayer* CGruntzMgr::FindPlayerByNetworkId(i32 networkPlayerId) {
     return NULL;
 }
 
-RVA(0x00092ec0, 0x24)
+RVA(0x00092de0, 0x24)
 void CGruntzMgr::DeactivateAllPlayers() {
 
     for (i32 i = 0; i < 4; i++) {
@@ -3220,7 +3220,7 @@ void CGruntzMgr::DeactivateAllPlayers() {
     }
 }
 
-RVA(0x00092f00, 0x1ef)
+RVA(0x00092e20, 0x1ef)
 i32 CGruntzMgr::OpenBattlezSetup() {
     CBattlezDlg dlg(this, NULL);
     GameStateId st = m_curState->Update();
@@ -3247,7 +3247,7 @@ i32 CGruntzMgr::OpenBattlezSetup() {
 }
 
 // @early-stop
-RVA(0x00093170, 0x1e3)
+RVA(0x00093090, 0x1e3)
 i32 CGruntzMgr::InitializeBattlezPlayers() {
     i32 matched = 0;
     CString s;
@@ -3301,7 +3301,7 @@ i32 CGruntzMgr::InitializeBattlezPlayers() {
     return 1;
 }
 
-RVA(0x000933e0, 0x5e)
+RVA(0x00093300, 0x5e)
 i32 CGruntzMgr::AdvanceComputerPlayerTurns() {
     i32 cursor = (g_battlezTurnPlayerIndex + 1) & 3;
     g_battlezTurnPlayerIndex = cursor;
@@ -3315,7 +3315,7 @@ i32 CGruntzMgr::AdvanceComputerPlayerTurns() {
     return 1;
 }
 
-RVA(0x00093460, 0x15c)
+RVA(0x00093380, 0x15c)
 i32 CGruntzMgr::SerializeGameState(
     CFileMemBase* ar,
     SerialMode mode,
@@ -3369,7 +3369,7 @@ i32 CGruntzMgr::SerializeGameState(
     return m_gameStats->Serialize(ar, mode, typeId, payload) != 0;
 }
 
-RVA(0x00093620, 0x254)
+RVA(0x00093540, 0x254)
 i32 CGruntzMgr::SaveState(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
@@ -3417,7 +3417,7 @@ i32 CGruntzMgr::SaveState(CFileMemBase* ar) {
     return 1;
 }
 
-RVA(0x00093920, 0x22f)
+RVA(0x00093840, 0x22f)
 i32 CGruntzMgr::LoadState(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
@@ -3464,7 +3464,7 @@ i32 CGruntzMgr::LoadState(CFileMemBase* ar) {
     return 1;
 }
 
-RVA(0x00093be0, 0x107)
+RVA(0x00093b00, 0x107)
 i32 CGruntzMgr::IsBattlezMapFile(CString path) {
     CFile file;
     char hdr[0x5f4];

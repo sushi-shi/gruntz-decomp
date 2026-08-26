@@ -87,20 +87,20 @@ inline CImage::~CImage() {
     Unload();
 }
 
-RVA(0x000d5dc0, 0xb)
+RVA(0x000d5df0, 0xb)
 inline i32 CImage::IsLoaded() {
     return m_width > 0;
 }
 
-RVA(0x000d5de0, 0x6)
+RVA(0x000d5e10, 0x6)
 inline LoadableClassId CImage::GetClassId() {
     return CLASSID_IMAGE;
 }
 
-RVA(0x000d5e00, 0x3)
+RVA(0x000d5e30, 0x3)
 inline void CImage::FlipHorizontal(void*) {}
 
-RVA(0x000d5e20, 0x1b)
+RVA(0x000d5e50, 0x1b)
 inline void CImage::FlipBoth(void* unused) {
     FlipVertical(unused);
     FlipHorizontal(unused);

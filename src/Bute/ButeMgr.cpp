@@ -17,7 +17,7 @@
 #include <stdlib.h>
 #include <strstrea.h>
 
-DATA(0x0021cf40)
+DATA(0x0021dea0)
 i16 g_charClass[256] = {
     49, 48, 48, 48, 48, 48, 48, 48, 48, 15, 12, 48, 48, 13, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
     48, 48, 48, 48, 48, 48, 48, 48, 14, 43, 17, 37, 46, 45, 16, 42, 18, 19, 20, 21, 35, 22, 23, 24,
@@ -31,7 +31,7 @@ i16 g_charClass[256] = {
     48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
     48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 0
 };
-DATA(0x0021d140)
+DATA(0x0021e0a0)
 i16 g_transTable[97][49][3] = {
     {{5, 6, 0}, {5, 6, 0},  {5, 6, 0}, {5, 6, 0}, {1, 41, 0}, {3, 16, 0}, {5, 6, 0},
      {5, 6, 0}, {5, 6, 0},  {5, 6, 0}, {1, 0, 0}, {5, 6, 0},  {5, 6, 0},  {5, 6, 0},
@@ -714,49 +714,49 @@ i16 g_transTable[97][49][3] = {
      {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}},
 };
 
-DATA(0x002bf678)
+DATA(0x002c05d0)
 static i16 g_tokenLen;
 
-DATA(0x002240a8)
+DATA(0x00225008)
 static char s_fmtBadSymbol[] = "ButeMgr (%d):  Bad symbol encountered.";
-DATA(0x002240d0)
+DATA(0x00225030)
 static char s_fmtFormatError[] =
     "ButeMgr (%d):  A formatting error in the attribute file was encountered";
-DATA(0x00224118)
+DATA(0x00225078)
 static char s_fmtInvalidToken[] = "ButeMgr (%d):  Invalid token encountered.";
-DATA(0x00224144)
+DATA(0x002250a4)
 static char s_fmtRect2[] = "[%lf, %lf]";
-DATA(0x00224150)
+DATA(0x002250b0)
 static char s_strLt[] = "<";
-DATA(0x00224154)
+DATA(0x002250b4)
 static char s_strGt[] = ">";
-DATA(0x00224158)
+DATA(0x002250b8)
 static char s_fmtRect3[] = "<%lf, %lf, %lf>";
-DATA(0x00224168)
+DATA(0x002250c8)
 static char s_fmtPoint2[] = "(%d, %d)";
-DATA(0x00224174)
+DATA(0x002250d4)
 static char s_strOpen[] = "(";
-DATA(0x00224178)
+DATA(0x002250d8)
 static char s_strComma[] = ", ";
-DATA(0x0022417c)
+DATA(0x002250dc)
 static char s_strClose[] = ")";
-DATA(0x00224180)
+DATA(0x002250e0)
 static char s_fmtPoint4[] = "(%d, %d, %d, %d)";
-DATA(0x00224194)
+DATA(0x002250f4)
 static char s_strFloatSuffix[] = "f";
-DATA(0x00224198)
+DATA(0x002250f8)
 static char s_strFloat[] = "(FLOAT)";
-DATA(0x002241a0)
+DATA(0x00225100)
 static char s_strDword[] = "(DWORD)";
-DATA(0x002241a8)
+DATA(0x00225108)
 static char s_fmtDupSymbol[] = "ButeMgr:  duplicate symbol encountered - %s";
-DATA(0x002241d4)
+DATA(0x00225134)
 static char s_fmtDupTag[] = "ButeMgr:  duplicate tag encountered - %s";
-DATA(0x00224204)
+DATA(0x00225164)
 static char s_fmtTypeMismatch[] = "ButeMgr:  Type mismatch - [%s]:%s";
-DATA(0x00224228)
+DATA(0x00225188)
 static char s_fmtInvalidTag[] = "ButeMgr:  Invalid tag specified - [%s]";
-DATA(0x00224250)
+DATA(0x002251b0)
 static char s_fmtNotFound[] = "ButeMgr:  Symbol not found - [%s]:%s";
 
 DATA(0x001f0520)
@@ -764,7 +764,7 @@ static const float s_floatErr = FLT_MIN;
 DATA(0x001f0528)
 static const double s_doubleErr = DBL_MIN;
 
-RVA(0x00170210, 0x118)
+RVA(0x001704f0, 0x118)
 CButeMgr::CButeMgr() {
     m_streamBase = 0;
     m_errCallback = NULL;
@@ -778,7 +778,7 @@ CButeMgr::CButeMgr() {
     m_tagName.Empty();
 }
 
-RVA(0x00170330, 0x34)
+RVA(0x00170610, 0x34)
 void CButeMgr::Init() {
     m_pos = 0;
     m_lineNo = 0;
@@ -788,15 +788,15 @@ void CButeMgr::Init() {
     m_attributeName = "";
 }
 
-RVA(0x00170370, 0x1)
+RVA(0x00170650, 0x1)
 void CButeMgr::Term() {}
 
-RVA(0x00170380, 0xa)
+RVA(0x00170660, 0xa)
 void CButeMgr::SetErrCallback(ErrCallback cb) {
     m_errCallback = cb;
 }
 
-RVA(0x00170390, 0x50)
+RVA(0x00170670, 0x50)
 void CButeMgr::NextChar() {
     i32 delta = m_stream->get() - m_streamBase;
     if (m_stream->eof()) {
@@ -815,28 +815,28 @@ void CButeMgr::NextChar() {
     m_pos += delta;
 }
 
-RVA(0x001703e0, 0x15)
+RVA(0x001706c0, 0x15)
 i16 CButeMgr::CharClass(char c) {
     return static_cast<i16>((g_charClass[static_cast<u8>(c)] - 1));
 }
 
-RVA(0x00170400, 0x2f)
+RVA(0x001706e0, 0x2f)
 GZ_ENUM_RETURN(ButeLexAction, i16) CButeMgr::GetLexAction(i16 state, char c) {
     return g_transTable[state][CharClass(c)][LEXSLOT_ACTION];
 }
 
-RVA(0x00170430, 0x2f)
+RVA(0x00170710, 0x2f)
 i16 CButeMgr::GetTransitionTarget(i16 state, char c) {
     return g_transTable[state][CharClass(c)][LEXSLOT_TARGET];
 }
 
-RVA(0x00170460, 0x58)
+RVA(0x00170740, 0x58)
 void CButeMgr::AcceptTransition(i16 state, char c) {
     m_tokType = g_transTable[state][CharClass(c)][LEXSLOT_TARGET];
     m_lexState = g_transTable[state][CharClass(c)][LEXSLOT_STATE];
 }
 
-RVA(0x001704c0, 0x200)
+RVA(0x001707a0, 0x200)
 bool CButeMgr::Parse() {
     const i16 kLexStartState = 0x11;
     i16 kind = kLexStartState;
@@ -902,7 +902,7 @@ bool CButeMgr::Parse() {
     }
 }
 
-RVA(0x001706c0, 0x4b)
+RVA(0x001709a0, 0x4b)
 void CButeMgr::ReportError(const char* fmt, ...) {
     va_list args;
     va_start(args, fmt);
@@ -917,7 +917,7 @@ void CButeMgr::ReportError(const char* fmt, ...) {
     va_end(args);
 }
 
-RVA(0x00170710, 0x3b)
+RVA(0x001709f0, 0x3b)
 bool CButeMgr::ScanToken(ButeToken expectType) {
     if (!Parse()) {
         return false;
@@ -931,7 +931,7 @@ bool CButeMgr::ScanToken(ButeToken expectType) {
 }
 
 // @early-stop
-RVA(0x00170750, 0xa10)
+RVA(0x00170a30, 0xa10)
 bool ButeMgr::ParseAttributeFile() {
     i32 a, b, c, d;
     i32 px, py;
@@ -1111,7 +1111,7 @@ bool ButeMgr::ParseAttributeFile() {
     return true;
 }
 
-RVA(0x00171160, 0x45)
+RVA(0x00171440, 0x45)
 bool CButeMgr::SkipToTag() {
     for (;;) {
         if (!(static_cast<ButeMgr*>(this))->ParseAttributeFile()) {
@@ -1129,7 +1129,7 @@ bool CButeMgr::SkipToTag() {
     }
 }
 
-RVA(0x001711b0, 0xf5)
+RVA(0x00171490, 0xf5)
 bool CButeMgr::ParseTagLine() {
     if (!ScanToken(BUTETOK_NAME)) {
         return false;
@@ -1154,7 +1154,7 @@ bool CButeMgr::ParseTagLine() {
 }
 
 // @early-stop
-RVA(0x001712b0, 0x228)
+RVA(0x00171590, 0x228)
 void ButeGroup_Apply(char* key, void* valuePtr, void* ctx) {
     ostream& output = *static_cast<ostream*>(ctx);
     CButeValue* value = static_cast<CButeValue*>(valuePtr);
@@ -1220,7 +1220,7 @@ void ButeGroup_Apply(char* key, void* valuePtr, void* ctx) {
     }
 }
 
-RVA(0x001714e0, 0x66)
+RVA(0x001717c0, 0x66)
 void ButeTag_Apply(char* key, void* value, void* ctx) {
     ostream& output = *static_cast<ostream*>(ctx);
     output << endl;
@@ -1229,10 +1229,10 @@ void ButeTag_Apply(char* key, void* value, void* ctx) {
     static_cast<CButeNode*>(value)->Walk(&ButeGroup_Apply, ctx, NULL);
 }
 
-RVA_COMPGEN(0x00171550, 0x11, ??6ostream@@QAEAAV0@P6AAAV0@AAV0@@Z@Z)
-RVA_COMPGEN(0x00171570, 0x9, ?flush@@YAAAVostream@@AAV1@@Z)
+RVA_COMPGEN(0x00171830, 0x11, ??6ostream@@QAEAAV0@P6AAAV0@AAV0@@Z@Z)
+RVA_COMPGEN(0x00171850, 0x9, ?flush@@YAAAVostream@@AAV1@@Z)
 
-RVA(0x00171580, 0xba)
+RVA(0x00171860, 0xba)
 bool CButeMgr::ParseGroup() {
     NextChar();
     if (!Parse()) {
@@ -1276,7 +1276,7 @@ bool CButeMgr::ParseGroup() {
 // @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00171640, 0x3f2)
+RVA(0x00171920, 0x3f2)
 bool CButeMgr::Save() {
     Init();
     if (m_filename.IsEmpty()) {
@@ -1329,9 +1329,9 @@ bool CButeMgr::Save() {
     return true;
 }
 
-RVA_COMPGEN(0x00171a40, 0x14, ??_Dstrstream@@QAEXXZ)
+RVA_COMPGEN(0x00171d20, 0x14, ??_Dstrstream@@QAEXXZ)
 
-RVA(0x00171a60, 0x34)
+RVA(0x00171d40, 0x34)
 bool CButeMgr::Exists(const char* tag, const char* key) {
     CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
     if (grp) {
@@ -1345,7 +1345,7 @@ bool CButeMgr::Exists(const char* tag, const char* key) {
     return false;
 }
 
-RVA(0x00171aa0, 0x50)
+RVA(0x00171d80, 0x50)
 i32 CButeMgr::GetIntDef(const char* tag, const char* key, i32 def) {
     CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
     if (grp) {
@@ -1360,7 +1360,7 @@ i32 CButeMgr::GetIntDef(const char* tag, const char* key, i32 def) {
     return def;
 }
 
-RVA(0x00171af0, 0x86)
+RVA(0x00171dd0, 0x86)
 i32 CButeMgr::GetInt(const char* tag, const char* key) {
     CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
     if (grp) {
@@ -1379,7 +1379,7 @@ i32 CButeMgr::GetInt(const char* tag, const char* key) {
     return COORD_UNSET;
 }
 
-RVA(0x00171b80, 0x478)
+RVA(0x00171e60, 0x478)
 void CButeMgr::SetInt(const char* tag, const char* key, i32 val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tags.Find(tag));
     if (grp) {
@@ -1418,11 +1418,11 @@ void CButeMgr::SetInt(const char* tag, const char* key, i32 val) {
     newAddedTag->FindOrInsert(key, new CButeValue(BUTE_INT, val));
 }
 
-RVA_COMPGEN(0x00172000, 0x31, ??0CButeValue@@QAE@W4ButeType@@H@Z)
+RVA_COMPGEN(0x001722e0, 0x31, ??0CButeValue@@QAE@W4ButeType@@H@Z)
 
-RVA_COMPGEN(0x00172160, 0x80, ??1CButeValue@@QAE@XZ)
+RVA_COMPGEN(0x00172440, 0x80, ??1CButeValue@@QAE@XZ)
 
-RVA(0x001721e0, 0x5a)
+RVA(0x001724c0, 0x5a)
 DWORD CButeMgr::GetDwordDef(const char* tag, const char* key, DWORD def) {
     CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
     if (grp) {
@@ -1438,7 +1438,7 @@ DWORD CButeMgr::GetDwordDef(const char* tag, const char* key, DWORD def) {
     return def;
 }
 
-RVA(0x00172240, 0x7d)
+RVA(0x00172520, 0x7d)
 DWORD CButeMgr::GetDword(const char* tag, const char* key) {
     CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
     if (grp) {
@@ -1458,7 +1458,7 @@ DWORD CButeMgr::GetDword(const char* tag, const char* key) {
     return 0;
 }
 
-RVA(0x001722c0, 0x3bc)
+RVA(0x001725a0, 0x3bc)
 void CButeMgr::SetDword(const char* tag, const char* key, DWORD val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tags.Find(tag));
     if (grp) {
@@ -1497,11 +1497,11 @@ void CButeMgr::SetDword(const char* tag, const char* key, DWORD val) {
     newAddedTag->FindOrInsert(key, new CButeValue(BUTE_DWORD, val));
 }
 
-RVA_COMPGEN(0x00172680, 0x31, ??0CButeValue@@QAE@W4ButeType@@K@Z)
+RVA_COMPGEN(0x00172960, 0x31, ??0CButeValue@@QAE@W4ButeType@@K@Z)
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001726c0, 0x6b)
+RVA(0x001729a0, 0x6b)
 float CButeMgr::GetFloatDef(const char* tag, const char* key, float def) {
     CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
     if (grp) {
@@ -1519,7 +1519,7 @@ float CButeMgr::GetFloatDef(const char* tag, const char* key, float def) {
     return def;
 }
 
-RVA(0x00172730, 0x9a)
+RVA(0x00172a10, 0x9a)
 float CButeMgr::GetFloat(const char* tag, const char* key) {
     CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
     if (grp) {
@@ -1541,7 +1541,7 @@ float CButeMgr::GetFloat(const char* tag, const char* key) {
     return s_floatErr;
 }
 
-RVA(0x001727d0, 0x3c0)
+RVA(0x00172ab0, 0x3c0)
 void CButeMgr::SetFloat(const char* tag, const char* key, float val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tags.Find(tag));
     if (grp) {
@@ -1580,11 +1580,11 @@ void CButeMgr::SetFloat(const char* tag, const char* key, float val) {
     newAddedTag->FindOrInsert(key, new CButeValue(BUTE_FLOAT, val));
 }
 
-RVA_COMPGEN(0x00172b90, 0x31, ??0CButeValue@@QAE@W4ButeType@@M@Z)
+RVA_COMPGEN(0x00172e70, 0x31, ??0CButeValue@@QAE@W4ButeType@@M@Z)
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00172bd0, 0x6c)
+RVA(0x00172eb0, 0x6c)
 double CButeMgr::GetDoubleDef(const char* tag, const char* key, double def) {
     CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
     if (grp) {
@@ -1602,7 +1602,7 @@ double CButeMgr::GetDoubleDef(const char* tag, const char* key, double def) {
     return def;
 }
 
-RVA(0x00172c40, 0x9b)
+RVA(0x00172f20, 0x9b)
 double CButeMgr::GetDouble(const char* tag, const char* key) {
     CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
     if (grp) {
@@ -1624,7 +1624,7 @@ double CButeMgr::GetDouble(const char* tag, const char* key) {
     return s_doubleErr;
 }
 
-RVA(0x00172ce0, 0x454)
+RVA(0x00172fc0, 0x454)
 void CButeMgr::SetDouble(const char* tag, const char* key, double val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tags.Find(tag));
     if (grp) {
@@ -1663,9 +1663,9 @@ void CButeMgr::SetDouble(const char* tag, const char* key, double val) {
     newAddedTag->FindOrInsert(key, new CButeValue(BUTE_DOUBLE, val));
 }
 
-RVA_COMPGEN(0x00173140, 0x38, ??0CButeValue@@QAE@W4ButeType@@N@Z)
+RVA_COMPGEN(0x00173420, 0x38, ??0CButeValue@@QAE@W4ButeType@@N@Z)
 
-RVA(0x00173180, 0x4e)
+RVA(0x00173460, 0x4e)
 CString* CButeMgr::GetStringDef(const char* tag, const char* key, CString* def) {
     CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
     if (grp) {
@@ -1681,11 +1681,11 @@ CString* CButeMgr::GetStringDef(const char* tag, const char* key, CString* def) 
 }
 
 // @early-stop
-RVA(0x001731d0, 0xb6)
+RVA(0x001734b0, 0xb6)
 
 CString* CButeMgr::GetString(const char* tag, const char* key) {
-    RVA_DYNINIT(0x00173290, 0xa, s_empty)
-    DATA(0x002bf698)
+    RVA_DYNINIT(0x00173570, 0xa, s_empty)
+    DATA(0x002c05f0)
     static CString s_empty("");
 
     CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
@@ -1706,7 +1706,7 @@ CString* CButeMgr::GetString(const char* tag, const char* key) {
     return &s_empty;
 }
 
-RVA(0x001732a0, 0x3fc)
+RVA(0x00173580, 0x3fc)
 void CButeMgr::SetString(const char* tag, const char* key, const CString& val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tags.Find(tag));
     if (grp) {
@@ -1745,12 +1745,12 @@ void CButeMgr::SetString(const char* tag, const char* key, const CString& val) {
     newAddedTag->FindOrInsert(key, new CButeValue(BUTE_STRING, val));
 }
 
-RVA_COMPGEN(0x001736a0, 0x5f, ??0CButeValue@@QAE@W4ButeType@@ABVCString@@@Z)
-RVA_COMPGEN(0x00173700, 0x1e, ??_GCString@@QAEPAXI@Z)
+RVA_COMPGEN(0x00173980, 0x5f, ??0CButeValue@@QAE@W4ButeType@@ABVCString@@@Z)
+RVA_COMPGEN(0x001739e0, 0x1e, ??_GCString@@QAEPAXI@Z)
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00173720, 0x4e)
+RVA(0x00173a00, 0x4e)
 ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key, ButeIntRect* def) {
     CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
     if (grp) {
@@ -1766,10 +1766,10 @@ ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key, ButeIntRect* de
 }
 
 // @early-stop
-RVA(0x00173770, 0xc6)
+RVA(0x00173a50, 0xc6)
 ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key) {
-    DATA(0x002bf6d0)
-    RVA_DYNINIT(0x00173840, 0x1, s_default)
+    DATA(0x002c0628)
+    RVA_DYNINIT(0x00173b20, 0x1, s_default)
     static ButeIntRect s_default;
 
     CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
@@ -1789,7 +1789,7 @@ ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key) {
     return &s_default;
 }
 
-RVA(0x00173850, 0x404)
+RVA(0x00173b30, 0x404)
 void CButeMgr::SetRect(const char* tag, const char* key, ButeIntRect* val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tags.Find(tag));
     if (grp) {
@@ -1828,11 +1828,11 @@ void CButeMgr::SetRect(const char* tag, const char* key, ButeIntRect* val) {
     newAddedTag->FindOrInsert(key, new CButeValue(BUTE_RECT, val));
 }
 
-RVA_COMPGEN(0x00173c60, 0x49, ??0CButeValue@@QAE@W4ButeType@@PAUButeIntRect@@@Z)
+RVA_COMPGEN(0x00173f40, 0x49, ??0CButeValue@@QAE@W4ButeType@@PAUButeIntRect@@@Z)
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00173cb0, 0x4e)
+RVA(0x00173f90, 0x4e)
 ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key, ButeIntPoint* def) {
     CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
     if (grp) {
@@ -1848,10 +1848,10 @@ ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key, ButeIntPoint*
 }
 
 // @early-stop
-RVA(0x00173d00, 0xbb)
+RVA(0x00173fe0, 0xbb)
 ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key) {
-    DATA(0x002bf690)
-    RVA_DYNINIT(0x00173dc0, 0x1, s_default)
+    DATA(0x002c05e8)
+    RVA_DYNINIT(0x001740a0, 0x1, s_default)
     static ButeIntPoint s_default;
 
     CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
@@ -1871,7 +1871,7 @@ ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key) {
     return &s_default;
 }
 
-RVA(0x00173dd0, 0x3d8)
+RVA(0x001740b0, 0x3d8)
 void CButeMgr::SetPoint(const char* tag, const char* key, ButeIntPoint* val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tags.Find(tag));
     if (grp) {
@@ -1909,11 +1909,11 @@ void CButeMgr::SetPoint(const char* tag, const char* key, ButeIntPoint* val) {
     CButeNode* newAddedTag = static_cast<CButeNode*>(m_addedTags.Insert(tag, new CButeNode(2)));
     newAddedTag->FindOrInsert(key, new CButeValue(BUTE_POINT, val));
 }
-RVA_COMPGEN(0x001741b0, 0x39, ??0CButeValue@@QAE@W4ButeType@@PAUButeIntPoint@@@Z)
+RVA_COMPGEN(0x00174490, 0x39, ??0CButeValue@@QAE@W4ButeType@@PAUButeIntPoint@@@Z)
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001741f0, 0x4e)
+RVA(0x001744d0, 0x4e)
 ButeDoubleVector* CButeMgr::GetVector(const char* tag, const char* key, ButeDoubleVector* def) {
     CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
     if (grp) {
@@ -1929,10 +1929,10 @@ ButeDoubleVector* CButeMgr::GetVector(const char* tag, const char* key, ButeDoub
 }
 
 // @early-stop
-RVA(0x00174240, 0xe3)
+RVA(0x00174520, 0xe3)
 ButeDoubleVector* CButeMgr::GetVector(const char* tag, const char* key) {
-    DATA(0x002bf6a0)
-    RVA_DYNINIT(0x00174330, 0x1, s_default)
+    DATA(0x002c05f8)
+    RVA_DYNINIT(0x00174610, 0x1, s_default)
     static ButeDoubleVector s_default;
 
     CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
@@ -1952,7 +1952,7 @@ ButeDoubleVector* CButeMgr::GetVector(const char* tag, const char* key) {
     return &s_default;
 }
 
-RVA(0x00174340, 0x3e8)
+RVA(0x00174620, 0x3e8)
 void CButeMgr::SetVector(const char* tag, const char* key, ButeDoubleVector* val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tags.Find(tag));
     if (grp) {
@@ -1990,11 +1990,11 @@ void CButeMgr::SetVector(const char* tag, const char* key, ButeDoubleVector* val
     CButeNode* newAddedTag = static_cast<CButeNode*>(m_addedTags.Insert(tag, new CButeNode(2)));
     newAddedTag->FindOrInsert(key, new CButeValue(BUTE_VECTOR, val));
 }
-RVA_COMPGEN(0x00174730, 0x3c, ??0CButeValue@@QAE@W4ButeType@@PAUButeDoubleVector@@@Z)
+RVA_COMPGEN(0x00174a10, 0x3c, ??0CButeValue@@QAE@W4ButeType@@PAUButeDoubleVector@@@Z)
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00174770, 0x4e)
+RVA(0x00174a50, 0x4e)
 ButeDoubleRange* CButeMgr::GetRange(const char* tag, const char* key, ButeDoubleRange* def) {
     CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
     if (grp) {
@@ -2010,10 +2010,10 @@ ButeDoubleRange* CButeMgr::GetRange(const char* tag, const char* key, ButeDouble
 }
 
 // @early-stop
-RVA(0x001747c0, 0xcf)
+RVA(0x00174aa0, 0xcf)
 ButeDoubleRange* CButeMgr::GetRange(const char* tag, const char* key) {
-    DATA(0x002bf6c0)
-    RVA_DYNINIT(0x00174890, 0x1, s_default)
+    DATA(0x002c0618)
+    RVA_DYNINIT(0x00174b70, 0x1, s_default)
     static ButeDoubleRange s_default;
 
     CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
@@ -2033,7 +2033,7 @@ ButeDoubleRange* CButeMgr::GetRange(const char* tag, const char* key) {
     return &s_default;
 }
 
-RVA(0x001748a0, 0x404)
+RVA(0x00174b80, 0x404)
 void CButeMgr::SetRange(const char* tag, const char* key, ButeDoubleRange* val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tags.Find(tag));
     if (grp) {
@@ -2072,24 +2072,24 @@ void CButeMgr::SetRange(const char* tag, const char* key, ButeDoubleRange* val) 
     newAddedTag->FindOrInsert(key, new CButeValue(BUTE_RANGE, val));
 }
 
-RVA_COMPGEN(0x00174cb0, 0x49, ??0CButeValue@@QAE@W4ButeType@@PAUButeDoubleRange@@@Z)
+RVA_COMPGEN(0x00174f90, 0x49, ??0CButeValue@@QAE@W4ButeType@@PAUButeDoubleRange@@@Z)
 
-RVA(0x00174d00, 0x25)
+RVA(0x00174fe0, 0x25)
 CButeNode::CButeNode(i32 kind) : zPTree(&ButeValueTeardown, kind) {}
 
-RVA_COMPGEN(0x00174d30, 0x1e, ??_GCBSecStream@@UAEPAXI@Z)
+RVA_COMPGEN(0x00175010, 0x1e, ??_GCBSecStream@@UAEPAXI@Z)
 
-RVA_COMPGEN(0x00174d50, 0x1e, ??_GCButeNode@@UAEPAXI@Z)
+RVA_COMPGEN(0x00175030, 0x1e, ??_GCButeNode@@UAEPAXI@Z)
 
-RVA(0x00174d70, 0x70)
+RVA(0x00175050, 0x70)
 CButeNode::~CButeNode() {}
 
-RVA(0x00174de0, 0x9)
+RVA(0x001750c0, 0x9)
 void ButeStoreFreeAdapter(void* p) {
     (static_cast<CButeNode*>(p))->CButeNode::~CButeNode();
 }
 
-RVA(0x00174df0, 0x7c)
+RVA(0x001750d0, 0x7c)
 void __cdecl ButeValueTeardown(void* pValue) {
     CButeValue* v = static_cast<CButeValue*>(pValue);
     switch (v->type) {

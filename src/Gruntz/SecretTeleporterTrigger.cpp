@@ -28,43 +28,43 @@
 
 #include <stddef.h>
 
-RVA_DYNINIT(0x0003cfe0, 0x5, s_gruntDirNorth)
-RVA_DYNINIT(0x0003d000, 0x1a, s_gruntDirNorth)
-RVA_DYNINIT(0x0003d030, 0x5, s_gruntDirNorthEast)
-RVA_DYNINIT(0x0003d050, 0x1a, s_gruntDirNorthEast)
-RVA_DYNINIT(0x0003d080, 0x5, s_gruntDirEast)
-RVA_DYNINIT(0x0003d0a0, 0x1f, s_gruntDirEast)
-RVA_DYNINIT(0x0003d0d0, 0x5, s_gruntDirSouthEast)
-RVA_DYNINIT(0x0003d0f0, 0x1a, s_gruntDirSouthEast)
-RVA_DYNINIT(0x0003d120, 0x5, s_gruntDirSouth)
-RVA_DYNINIT(0x0003d140, 0x1f, s_gruntDirSouth)
-RVA_DYNINIT(0x0003d170, 0x5, s_gruntDirSouthWest)
-RVA_DYNINIT(0x0003d190, 0x1f, s_gruntDirSouthWest)
-RVA_DYNINIT(0x0003d1c0, 0x5, s_gruntDirWest)
-RVA_DYNINIT(0x0003d1e0, 0x1f, s_gruntDirWest)
-RVA_DYNINIT(0x0003d210, 0x5, s_gruntDirNorthWest)
-RVA_DYNINIT(0x0003d230, 0x17, s_gruntDirNorthWest)
-RVA_DYNINIT(0x0003d260, 0x5, s_gruntDirCenter)
-RVA_DYNINIT(0x0003d280, 0x1a, s_gruntDirCenter)
+RVA_DYNINIT(0x0003cf00, 0x5, s_gruntDirNorth)
+RVA_DYNINIT(0x0003cf20, 0x1a, s_gruntDirNorth)
+RVA_DYNINIT(0x0003cf50, 0x5, s_gruntDirNorthEast)
+RVA_DYNINIT(0x0003cf70, 0x1a, s_gruntDirNorthEast)
+RVA_DYNINIT(0x0003cfa0, 0x5, s_gruntDirEast)
+RVA_DYNINIT(0x0003cfc0, 0x1f, s_gruntDirEast)
+RVA_DYNINIT(0x0003cff0, 0x5, s_gruntDirSouthEast)
+RVA_DYNINIT(0x0003d010, 0x1a, s_gruntDirSouthEast)
+RVA_DYNINIT(0x0003d040, 0x5, s_gruntDirSouth)
+RVA_DYNINIT(0x0003d060, 0x1f, s_gruntDirSouth)
+RVA_DYNINIT(0x0003d090, 0x5, s_gruntDirSouthWest)
+RVA_DYNINIT(0x0003d0b0, 0x1f, s_gruntDirSouthWest)
+RVA_DYNINIT(0x0003d0e0, 0x5, s_gruntDirWest)
+RVA_DYNINIT(0x0003d100, 0x1f, s_gruntDirWest)
+RVA_DYNINIT(0x0003d130, 0x5, s_gruntDirNorthWest)
+RVA_DYNINIT(0x0003d150, 0x17, s_gruntDirNorthWest)
+RVA_DYNINIT(0x0003d180, 0x5, s_gruntDirCenter)
+RVA_DYNINIT(0x0003d1a0, 0x1a, s_gruntDirCenter)
 
-RVA_DYNINIT(0x000420b0, 0xa, CActRegPool<CSecretTeleporterTrigger>::s_table)
-RVA_DYNINIT(0x000420d0, 0x15, CActRegPool<CSecretTeleporterTrigger>::s_table)
-RVA_DYNINIT(0x00042100, 0xe, CActRegPool<CSecretTeleporterTrigger>::s_table)
-RVA_DYNINIT(0x00042120, 0x1f, CActRegPool<CSecretTeleporterTrigger>::s_table)
-template<> DATA(0x00244688)
+RVA_DYNINIT(0x00041fd0, 0xa, CActRegPool<CSecretTeleporterTrigger>::s_table)
+RVA_DYNINIT(0x00041ff0, 0x15, CActRegPool<CSecretTeleporterTrigger>::s_table)
+RVA_DYNINIT(0x00042020, 0xe, CActRegPool<CSecretTeleporterTrigger>::s_table)
+RVA_DYNINIT(0x00042040, 0x1f, CActRegPool<CSecretTeleporterTrigger>::s_table)
+template<> DATA(0x002455e0)
 CActReg CActRegPool<CSecretTeleporterTrigger>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
-RVA_DYNINIT(0x000426c0, 0xa, CActRegPool<CSecretLevelTrigger>::s_table)
-RVA_DYNINIT(0x000426e0, 0x15, CActRegPool<CSecretLevelTrigger>::s_table)
-RVA_DYNINIT(0x00042710, 0xe, CActRegPool<CSecretLevelTrigger>::s_table)
-RVA_DYNINIT(0x00042730, 0x1f, CActRegPool<CSecretLevelTrigger>::s_table)
-template<> DATA(0x00244598)
+RVA_DYNINIT(0x000425e0, 0xa, CActRegPool<CSecretLevelTrigger>::s_table)
+RVA_DYNINIT(0x00042600, 0x15, CActRegPool<CSecretLevelTrigger>::s_table)
+RVA_DYNINIT(0x00042630, 0xe, CActRegPool<CSecretLevelTrigger>::s_table)
+RVA_DYNINIT(0x00042650, 0x1f, CActRegPool<CSecretLevelTrigger>::s_table)
+template<> DATA(0x002454f0)
 CActReg CActRegPool<CSecretLevelTrigger>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 static inline CActHandler* ActLookup(i32 coord) {
     return (CActRegPool<CSecretTeleporterTrigger>::s_table.ResolveEntry(coord));
 }
 
-RVA(0x00010a10, 0x47)
+RVA(0x00010a20, 0x47)
 i32 CSecretTeleporterTrigger::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
@@ -74,13 +74,13 @@ i32 CSecretTeleporterTrigger::SerializeDispatch(
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE(ar, mode, typeId, object)
 }
 
-RVA_COMPGEN(0x00010a80, 0x1e, ??_GCSecretTeleporterTrigger@@UAEPAXI@Z)
-RVA_COMPGEN(0x00010ab0, 0x44, ??1CSecretTeleporterTrigger@@UAE@XZ)
+RVA_COMPGEN(0x00010a90, 0x1e, ??_GCSecretTeleporterTrigger@@UAEPAXI@Z)
+RVA_COMPGEN(0x00010ac0, 0x44, ??1CSecretTeleporterTrigger@@UAE@XZ)
 
-RVA(0x00010b20, 0x4b)
+RVA(0x00010b30, 0x4b)
 CSecretLevelTrigger::CSecretLevelTrigger() : CUserLogic(CUserLogic::INLINE_BASE) {}
 
-RVA(0x00010bb0, 0x47)
+RVA(0x00010bc0, 0x47)
 i32 CSecretLevelTrigger::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
@@ -90,11 +90,11 @@ i32 CSecretLevelTrigger::SerializeDispatch(
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE(ar, mode, typeId, object)
 }
 
-RVA_COMPGEN(0x00010c20, 0x1e, ??_GCSecretLevelTrigger@@UAEPAXI@Z)
-RVA_COMPGEN(0x00010c50, 0x44, ??1CSecretLevelTrigger@@UAE@XZ)
+RVA_COMPGEN(0x00010c30, 0x1e, ??_GCSecretLevelTrigger@@UAEPAXI@Z)
+RVA_COMPGEN(0x00010c60, 0x44, ??1CSecretLevelTrigger@@UAE@XZ)
 
 // @early-stop
-RVA(0x00041e90, 0x1ac)
+RVA(0x00041db0, 0x1ac)
 CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
 
@@ -111,7 +111,7 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj)
     }
 }
 
-RVA(0x00042150, 0x102)
+RVA(0x00042070, 0x102)
 void CSecretTeleporterTrigger::FireActivation(i32 coord) {
     CActHandler* e = ActLookup(coord);
     if ((*e) != NULL) {
@@ -120,7 +120,7 @@ void CSecretTeleporterTrigger::FireActivation(i32 coord) {
     }
 }
 
-RVA(0x000422b0, 0x18d)
+RVA(0x000421d0, 0x18d)
 void CSecretTeleporterTrigger::RegisterActs() {
     ACT_NAME_ID(id, "A")
     (*((ActLookup(id)))) =
@@ -128,7 +128,7 @@ void CSecretTeleporterTrigger::RegisterActs() {
 }
 
 // @early-stop
-RVA(0x000424b0, 0x1a0)
+RVA(0x000423d0, 0x1a0)
 CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ && g_gameReg->m_isCustomLevel == false) {
@@ -143,7 +143,7 @@ CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj)
     }
 }
 
-RVA(0x00042760, 0x102)
+RVA(0x00042680, 0x102)
 void CSecretLevelTrigger::FireActivation(i32 coord) {
     CActHandler* e = (CActRegPool<CSecretLevelTrigger>::s_table.ResolveEntry(coord));
     if ((*e) != NULL) {
@@ -152,14 +152,14 @@ void CSecretLevelTrigger::FireActivation(i32 coord) {
     }
 }
 
-RVA(0x000428c0, 0x18d)
+RVA(0x000427e0, 0x18d)
 void CSecretLevelTrigger::RegisterActs() {
     ACT_NAME_ID(id, "A")
     (*((CActRegPool<CSecretLevelTrigger>::s_table.ResolveEntry(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CSecretLevelTrigger::Tick);
 }
 
-RVA(0x00042ac0, 0x90)
+RVA(0x000429e0, 0x90)
 i32 CSecretLevelTrigger::Tick() {
     i32 playerIndex, unitIndex;
     CWwdSpriteObject* spr = m_object;
@@ -185,7 +185,7 @@ i32 CSecretLevelTrigger::Tick() {
     return 0;
 }
 
-RVA(0x00042b80, 0x153)
+RVA(0x00042aa0, 0x153)
 i32 CSecretTeleporterTrigger::SpawnTeleporter() {
     i32 playerIndex, unitIndex;
     CWwdSpriteObject* o = m_object;

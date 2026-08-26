@@ -28,7 +28,7 @@
         id = (idv);                                                                                \
     } while (0)
 
-RVA(0x00065e80, 0x14a0)
+RVA(0x00065d50, 0x14a0)
 i32 CGrunt::LoadPickupSprites(
     PickupType type,
     i32 forced,

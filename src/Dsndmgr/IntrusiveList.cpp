@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 
-RVA(0x001390e0, 0x25)
+RVA(0x001392f0, 0x25)
 void IntrusiveList::InsertHead(IntrusiveLink* node) {
     node->m_next = m_head;
     node->m_prev = NULL;
@@ -16,7 +16,7 @@ void IntrusiveList::InsertHead(IntrusiveLink* node) {
     m_head = node;
 }
 
-RVA(0x00139110, 0x27)
+RVA(0x00139320, 0x27)
 void IntrusiveList::InsertTail(IntrusiveLink* node) {
     node->m_next = NULL;
     node->m_prev = m_tail;
@@ -30,7 +30,7 @@ void IntrusiveList::InsertTail(IntrusiveLink* node) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00139140, 0x41)
+RVA(0x00139350, 0x41)
 void IntrusiveList::InsertAfter(IntrusiveLink* after, IntrusiveLink* node) {
     if (after == NULL) {
         InsertHead(node);
@@ -47,7 +47,7 @@ void IntrusiveList::InsertAfter(IntrusiveLink* after, IntrusiveLink* node) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00139190, 0x44)
+RVA(0x001393a0, 0x44)
 void IntrusiveList::InsertBefore(IntrusiveLink* before, IntrusiveLink* node) {
     if (before == NULL) {
         InsertTail(node);
@@ -62,7 +62,7 @@ void IntrusiveList::InsertBefore(IntrusiveLink* before, IntrusiveLink* node) {
     before->m_prev = node;
 }
 
-RVA(0x001391e0, 0x30)
+RVA(0x001393f0, 0x30)
 void IntrusiveList::Unlink(IntrusiveLink* node) {
     if (node->m_prev) {
         node->m_prev->m_next = node->m_next;

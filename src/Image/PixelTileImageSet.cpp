@@ -5,7 +5,7 @@
 #include <Gruntz/ImageSets.h>
 #include <Ints.h>
 
-RVA(0x00166e00, 0x60)
+RVA(0x00166d30, 0x60)
 i32 CPixelTileImageSet::ScanRunLeft(i32 x, i32 y, i32* outX, i32* outValue) {
     i32 off = (y << m_heightLog2) + x;
     i32 target = (m_pixels)[off];
@@ -21,7 +21,7 @@ i32 CPixelTileImageSet::ScanRunLeft(i32 x, i32 y, i32* outX, i32* outValue) {
     return 0;
 }
 
-RVA(0x00166e60, 0x48)
+RVA(0x00166d90, 0x48)
 i32 CPixelTileImageSet::ScanRunLeftForValue(i32 x, i32 y, i32 value, i32* outX) {
     i32 off = (y << m_heightLog2) + x;
     while (x > 0) {

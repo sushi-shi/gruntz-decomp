@@ -29,7 +29,7 @@
 #undef s32
 #undef s64
 
-RVA(0x0017c040, 0x25d)
+RVA(0x0017c320, 0x25d)
 i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
     if (m_initialized != false) {
         return 0;
@@ -124,7 +124,7 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0017c2a0, 0x14e)
+RVA(0x0017c580, 0x14e)
 int CMoviePlayer::CreateVideoWindow(DDModeInfo* mode, u32 coopFlags) {
     CString cls(AfxRegisterWndClass(CS_HREDRAW | CS_VREDRAW, NULL, NULL, NULL));
     if (m_videoWnd != NULL) {
@@ -151,7 +151,7 @@ int CMoviePlayer::CreateVideoWindow(DDModeInfo* mode, u32 coopFlags) {
     return Init(m_videoWnd->GetSafeHwnd(), mode, coopFlags);
 }
 
-RVA(0x0017c3f0, 0x120)
+RVA(0x0017c6d0, 0x120)
 i32 CMoviePlayer::InitMode(
     HWND wnd,
     IDirectDraw2* dd2,
@@ -199,7 +199,7 @@ i32 CMoviePlayer::InitMode(
     return 1;
 }
 
-RVA(0x0017c510, 0x5e)
+RVA(0x0017c7f0, 0x5e)
 void CMoviePlayer::Teardown() {
     if (!m_initialized) {
         return;
@@ -217,7 +217,7 @@ void CMoviePlayer::Teardown() {
     ShowCursor(true);
 }
 
-RVA(0x0017c570, 0xc0)
+RVA(0x0017c850, 0xc0)
 i32 CMoviePlayer::OpenLo(
     const char* src,
     MovieLayout mode,
@@ -260,7 +260,7 @@ i32 CMoviePlayer::OpenLo(
     return r;
 }
 
-RVA(0x0017c630, 0xc0)
+RVA(0x0017c910, 0xc0)
 i32 CMoviePlayer::OpenHi(
     i32 srcHandle,
     MovieLayout mode,
@@ -306,7 +306,7 @@ i32 CMoviePlayer::OpenHi(
     return r;
 }
 
-RVA(0x0017c6f0, 0x9c)
+RVA(0x0017c9d0, 0x9c)
 i32 CMoviePlayer::Open(
     const char* path,
     i32 entryId,
@@ -337,7 +337,7 @@ i32 CMoviePlayer::Open(
     return 1;
 }
 
-RVA(0x0017c790, 0x14a)
+RVA(0x0017ca70, 0x14a)
 MoviePlaybackResult CMoviePlayer::Pump(MoviePumpFlags pumpFlags, i32 count) {
     if (!m_initialized || count < -1 || count == 0) {
         return MOVIE_RESULT_ERROR;
@@ -384,7 +384,7 @@ MoviePlaybackResult CMoviePlayer::Pump(MoviePumpFlags pumpFlags, i32 count) {
     }
 }
 
-RVA(0x0017c8e0, 0xca)
+RVA(0x0017cbc0, 0xca)
 i32 CMoviePlayer::Advance(IDirectDrawSurface* target, i32 loops) {
     if (!target || !m_initialized || loops < -1 || loops == 0) {
         return 0;
@@ -413,7 +413,7 @@ i32 CMoviePlayer::Advance(IDirectDrawSurface* target, i32 loops) {
     return result;
 }
 
-RVA(0x0017c9b0, 0x5b)
+RVA(0x0017cc90, 0x5b)
 i32 CMoviePlayer::CloseSmacker() {
     if (!m_streamOpen) {
         return 0;
@@ -432,7 +432,7 @@ i32 CMoviePlayer::CloseSmacker() {
     return 1;
 }
 
-RVA(0x0017ca10, 0x49)
+RVA(0x0017ccf0, 0x49)
 void CMoviePlayer::UploadPalette() {
     u8* src = m_smackHandle->Palette;
     u8* p = &m_palEntries[0].peGreen;
@@ -447,7 +447,7 @@ void CMoviePlayer::UploadPalette() {
     m_palette->SetEntries(0, 0, PALETTE_ENTRY_COUNT, m_palEntries);
 }
 
-RVA(0x0017ca60, 0x35)
+RVA(0x0017cd40, 0x35)
 void CMoviePlayer::ResetPalette() {
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         m_palEntries[i].peRed = 0;
@@ -457,7 +457,7 @@ void CMoviePlayer::ResetPalette() {
     m_palette->SetEntries(0, 0, PALETTE_ENTRY_COUNT, m_palEntries);
 }
 
-RVA(0x0017caa0, 0x13b)
+RVA(0x0017cd80, 0x13b)
 i32 CMoviePlayer::Frame() {
     if (m_smackHandle->NewPalette && m_bpp == BPP_PALETTED_8) {
         UploadPalette();
@@ -504,7 +504,7 @@ afterLock:
     return 1;
 }
 
-RVA(0x0017cbe0, 0x97)
+RVA(0x0017cec0, 0x97)
 i32 CMoviePlayer::CheckGrid() {
     memset(&m_srcDesc, 0, sizeof(m_srcDesc));
     m_srcDesc.dwSize = sizeof(m_srcDesc);
@@ -526,7 +526,7 @@ i32 CMoviePlayer::CheckGrid() {
     return 1;
 }
 
-RVA(0x0017cc80, 0x109)
+RVA(0x0017cf60, 0x109)
 void CMoviePlayer::HandleError() {
     if (m_srcSurf) {
         m_srcSurf->Release();
@@ -577,7 +577,7 @@ void CMoviePlayer::HandleError() {
     }
 }
 
-RVA(0x0017cd90, 0x58)
+RVA(0x0017d070, 0x58)
 void CMoviePlayer::Snapshot(HWND hWnd) {
     HDC hdc = GetDC(hWnd);
     GetSystemPaletteEntries(hdc, 0, PALETTE_ENTRY_COUNT, m_palEntries);
@@ -590,7 +590,7 @@ void CMoviePlayer::Snapshot(HWND hWnd) {
     ReleaseDC(hWnd, hdc);
 }
 
-RVA(0x0017cdf0, 0x1c6)
+RVA(0x0017d0d0, 0x1c6)
 i32 CMoviePlayer::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
     RECT dst, src;
     if (m_destRect) {
@@ -658,7 +658,7 @@ i32 CMoviePlayer::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
 }
 
 // @early-stop
-RVA(0x0017cfc0, 0x2f0)
+RVA(0x0017d2a0, 0x2f0)
 i32 CMoviePlayer::Configure(MovieLayout mode, MovieOpenFlags openFlags, POINT* origin, RECT* rect) {
     if (origin) {
         if (origin->x > m_screenWidth) {
@@ -777,7 +777,7 @@ i32 CMoviePlayer::Configure(MovieLayout mode, MovieOpenFlags openFlags, POINT* o
     return 1;
 }
 
-RVA(0x0017d2b0, 0xe4)
+RVA(0x0017d590, 0xe4)
 i32 CMoviePlayer::SelectSmackBufferFormat16() {
     i32 r = 0;
     i32 g = 0;
@@ -827,7 +827,7 @@ i32 CMoviePlayer::SelectSmackBufferFormat16() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0017d3a0, 0x259)
+RVA(0x0017d680, 0x259)
 i32 CMoviePlayer::AddToPlaylist(
     const char* src,
     i32 openArg,
@@ -869,7 +869,7 @@ i32 CMoviePlayer::AddToPlaylist(
     return 1;
 }
 
-RVA(0x0017d600, 0xad)
+RVA(0x0017d8e0, 0xad)
 i32 CMoviePlayer::RemoveAt(i32 idx) {
     if (!m_initialized) {
         return 0;
@@ -897,7 +897,7 @@ i32 CMoviePlayer::RemoveAt(i32 idx) {
     return 1;
 }
 
-RVA(0x0017d6b0, 0x70)
+RVA(0x0017d990, 0x70)
 i32 CMoviePlayer::FreeAll() {
     if (!m_initialized) {
         return 0;
@@ -915,7 +915,7 @@ i32 CMoviePlayer::FreeAll() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0017d720, 0x188)
+RVA(0x0017da00, 0x188)
 MoviePlaybackResult CMoviePlayer::PlayList(i32 loops) {
     if (!m_initialized || loops < -1 || loops == 0) {
         return MOVIE_RESULT_ERROR;

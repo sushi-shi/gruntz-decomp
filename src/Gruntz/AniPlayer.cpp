@@ -21,7 +21,7 @@
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000e5ad0, 0x84)
+RVA(0x000e5c00, 0x84)
 i32 CAniPlayer::Start(
     CStatusBarMgr* owner,
     CDDrawSurfaceMgr* host,
@@ -48,7 +48,7 @@ i32 CAniPlayer::Start(
 // @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000e5b90, 0x51)
+RVA(0x000e5cc0, 0x51)
 i32 CAniPlayer::TickToggle(i32 unused) {
     if (static_cast<__int64>(g_frameTime) - m_start64 >= m_window64) {
         m_frameIndex = (m_frameIndex == m_frameStart) ? m_frameEnd : m_frameStart;
@@ -63,7 +63,7 @@ i32 CAniPlayer::TickToggle(i32 unused) {
 // @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000e5c10, 0x54)
+RVA(0x000e5d40, 0x54)
 i32 CAniPlayer::RenderCel() {
     CDDrawWorker* tbl = m_frameSet;
     CImage* cel = tbl->GetAt(m_frameIndex);
@@ -77,7 +77,7 @@ i32 CAniPlayer::RenderCel() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000e5c90, 0x87)
+RVA(0x000e5dc0, 0x87)
 i32 CAniPlayer::Serialize(CFileMemBase* arc, SerialMode mode, LogicTypeId typeId, i32 payload) {
     if (arc == NULL) {
         return 0;

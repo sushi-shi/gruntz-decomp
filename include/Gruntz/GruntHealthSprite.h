@@ -15,7 +15,7 @@ class CGruntHealthSprite : public CUserLogic, public CWapX {
 public:
 public:
     virtual i32 SerializeDispatch(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
-    RVA(0x00011f60, 0x6)
+    RVA(0x00011f70, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNTHEALTHSPRITE;
     }

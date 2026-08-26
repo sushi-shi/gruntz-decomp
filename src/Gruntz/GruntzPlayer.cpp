@@ -136,7 +136,7 @@ class CImage;
     m_optionsPresenceCounted = false;                                                              \
     m_latency.Clear()
 
-RVA(0x000da790, 0xb0)
+RVA(0x000da7c0, 0xb0)
 GruntzPlayer::GruntzPlayer() {
     m_playerIndex = -1;
     m_networkPlayerId = -2;
@@ -154,7 +154,7 @@ GruntzPlayer::GruntzPlayer() {
     m_latency.Clear();
 }
 
-RVA(0x000da870, 0xb8)
+RVA(0x000da8a0, 0xb8)
 i32 GruntzPlayer::SeedForSlot(i32 index) {
     m_playerIndex = index;
     m_networkPlayerId = -2;
@@ -175,12 +175,12 @@ i32 GruntzPlayer::SeedForSlot(i32 index) {
     return 1;
 }
 
-RVA(0x000da960, 0x5b)
+RVA(0x000da990, 0x5b)
 void GruntzPlayer::Clear() {
     CLEAR_GRUNTZ_PLAYER;
 }
 
-RVA(0x000da9e0, 0x60)
+RVA(0x000daa10, 0x60)
 i32 GruntzPlayer::Reset() {
     CLEAR_GRUNTZ_PLAYER;
     return 1;
@@ -188,7 +188,7 @@ i32 GruntzPlayer::Reset() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000daa60, 0x24)
+RVA(0x000daa90, 0x24)
 i32 GruntzPlayer::ClearRoundState() {
     m_active = true;
     m_ready = false;
@@ -200,7 +200,7 @@ i32 GruntzPlayer::ClearRoundState() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000daaa0, 0xd3)
+RVA(0x000daad0, 0xd3)
 i32 FillColorCombo(HWND hDlg, i32 nID, i32 curSel) {
     if (hDlg == NULL) {
         return 0;
@@ -227,7 +227,7 @@ i32 FillColorCombo(HWND hDlg, i32 nID, i32 curSel) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000dabc0, 0xd3)
+RVA(0x000dabf0, 0xd3)
 i32 FillDifficultyCombo(HWND hDlg, i32 nID, i32 curSel) {
     if (hDlg == NULL) {
         return 0;
@@ -252,7 +252,7 @@ i32 FillDifficultyCombo(HWND hDlg, i32 nID, i32 curSel) {
     return 1;
 }
 
-RVA(0x000dace0, 0x239)
+RVA(0x000dad10, 0x239)
 i32 GruntzPlayer::Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload) {
     char tmp[SERIAL_NAME_LEN];
 
@@ -301,14 +301,14 @@ i32 GruntzPlayer::Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeI
            != 0;
 }
 
-RVA(0x000dafb0, 0x71)
+RVA(0x000dafe0, 0x71)
 CString GruntzPlayer::GetDefaultName(i32) {
 
     CString name("Player");
     return name;
 }
 
-RVA(0x000db050, 0x90)
+RVA(0x000db080, 0x90)
 CString GetColorName(i32 colorIdx, b32 upper) {
     CString s;
     s = g_colorNames[colorIdx];
@@ -318,7 +318,7 @@ CString GetColorName(i32 colorIdx, b32 upper) {
     return s;
 }
 
-RVA(0x000db110, 0x90)
+RVA(0x000db140, 0x90)
 CString GetDifficultyName(i32 diffIdx, b32 upper) {
     CString s;
     s = g_difficultyNames[diffIdx];
@@ -328,14 +328,14 @@ CString GetDifficultyName(i32 diffIdx, b32 upper) {
     return s;
 }
 
-RVA(0x000db1d0, 0x14)
+RVA(0x000db200, 0x14)
 void ResetPlayerColorAvailability() {
     for (i32 i = 0; i < TINT_COUNT; i++) {
         g_playerColorAvailable[i] = true;
     }
 }
 
-RVA(0x000db200, 0x51)
+RVA(0x000db230, 0x51)
 i32 GruntzPlayer::TrySetColor(ColorTint color) {
     if (m_color == color) {
         return 1;
@@ -349,7 +349,7 @@ i32 GruntzPlayer::TrySetColor(ColorTint color) {
     return 0;
 }
 
-RVA(0x000db280, 0x1b)
+RVA(0x000db2b0, 0x1b)
 ColorTint FindAvailablePlayerColor() {
     for (i32 i = 0; i < TINT_COUNT; i++) {
         if (g_playerColorAvailable[i] != false) {
@@ -359,19 +359,19 @@ ColorTint FindAvailablePlayerColor() {
     return TINT_ORANGE;
 }
 
-RVA(0x000db2b0, 0x10)
+RVA(0x000db2e0, 0x10)
 void SetPlayerColorAvailable(ColorTint color, b32 available) {
     g_playerColorAvailable[IDX(color)] = available;
 }
 
-RVA(0x000db2d0, 0xc)
+RVA(0x000db300, 0xc)
 i32 IsPlayerColorAvailable(ColorTint color) {
     return g_playerColorAvailable[IDX(color)];
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000db2f0, 0x2b)
+RVA(0x000db320, 0x2b)
 i32 GruntzPlayer::Deactivate() {
     if (m_active == false) {
         return 0;

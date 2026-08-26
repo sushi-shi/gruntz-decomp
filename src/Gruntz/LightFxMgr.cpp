@@ -12,7 +12,7 @@
 
 struct CShadeTable;
 
-RVA(0x0009dad0, 0x14a)
+RVA(0x0009d9f0, 0x14a)
 i32 CLightFxMgr::Init(CGruntzMgr* gameMgr, CGruntzMgr* owner) {
     if (!gameMgr) {
         return 0;
@@ -73,7 +73,7 @@ i32 CLightFxMgr::Init(CGruntzMgr* gameMgr, CGruntzMgr* owner) {
     return 1;
 }
 
-RVA(0x0009dc80, 0x1d)
+RVA(0x0009dba0, 0x1d)
 void CLightFxMgr::Reset() {
     m_gameMgr = NULL;
     m_world = NULL;
@@ -82,7 +82,7 @@ void CLightFxMgr::Reset() {
     memset(m_tables, 0, sizeof(m_tables));
 }
 
-RVA(0x0009dcb0, 0x41)
+RVA(0x0009dbd0, 0x41)
 i32 CLightFxMgr::ApplyShadeTable(CDDrawWorker* imageSet, i32 tableIndex, ShadeMode mode) {
     if (!imageSet) {
         return 0;

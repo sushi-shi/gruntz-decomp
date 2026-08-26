@@ -25,7 +25,7 @@ static inline i32 RandRange(CGruntzMgr* mgr, i32 lo, i32 hi) {
     return mgr->Rand() % range + lo;
 }
 
-RVA(0x000ebd30, 0x21)
+RVA(0x000ebe60, 0x21)
 void Cmd_ResetScroll() {
     g_scrollClock = 0;
     g_scrollTimer = 0;
@@ -33,7 +33,7 @@ void Cmd_ResetScroll() {
     g_scrollPace.m_period = 0;
 }
 // @early-stop
-RVA(0x000ebd70, 0x366)
+RVA(0x000ebea0, 0x366)
 void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
     CDDrawWorkerHost* v = pm->m_world->m_level->m_mainPlane;
     i32 scrollX = v->m_scrollPixelX;
@@ -112,7 +112,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
     pm->m_viewBounds.bottom = o->m_level->m_mainPlane->m_planeViewRect.bottom + 0x60;
 }
 
-RVA(0x000ec1c0, 0x43)
+RVA(0x000ec2f0, 0x43)
 void Cmd_ApplyScrollParams(i32 durationMs, i32 jitterX, i32 jitterY, i32 panMinX, i32 panMaxX) {
     i32 t = durationMs + g_frameTime;
     if (g_scrollClock <= static_cast<u32>(t)) {
@@ -123,33 +123,33 @@ void Cmd_ApplyScrollParams(i32 durationMs, i32 jitterX, i32 jitterY, i32 panMinX
     g_panMinX = panMinX;
     g_panMaxX = panMaxX;
 }
-DATA(0x002452a4)
+DATA(0x002461fc)
 i32 g_jitterX;
 
-DATA(0x002452cc)
+DATA(0x00246224)
 i32 g_jitterY;
 
-DATA(0x0024c27c)
+DATA(0x0024d1d4)
 CDDrawWorkerHost* g_backView;
 
-RVA_DYNINIT(0x000ebd00, 0x17, g_scrollPace)
-DATA(0x0024cfb0)
+RVA_DYNINIT(0x000ebe30, 0x17, g_scrollPace)
+DATA(0x0024df08)
 ScrollPace g_scrollPace;
 
-DATA(0x0024cfc0)
+DATA(0x0024df18)
 u32 g_scrollClock;
 
-DATA(0x0024cfc4)
+DATA(0x0024df1c)
 u32 g_scrollTimer;
 
-DATA(0x0024cfc8)
+DATA(0x0024df20)
 i32 g_serializedScrollReservedFirst;
 
-DATA(0x0024cfcc)
+DATA(0x0024df24)
 i32 g_serializedScrollReservedSecond;
 
-DATA(0x0024cfd0)
+DATA(0x0024df28)
 i32 g_lastScrollX;
 
-DATA(0x0024cfd4)
+DATA(0x0024df2c)
 i32 g_lastScrollY;

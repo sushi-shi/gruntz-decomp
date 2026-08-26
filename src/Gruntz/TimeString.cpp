@@ -6,7 +6,7 @@
 
 #include <stdio.h>
 
-RVA(0x001190f0, 0xda)
+RVA(0x00119300, 0xda)
 CString FormatElapsedTime(u32 ms) {
     u32 hours = ms / MILLIS_PER_HOUR;
     ms = ms - hours * MILLIS_PER_HOUR;

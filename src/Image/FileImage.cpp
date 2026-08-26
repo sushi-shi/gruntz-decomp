@@ -17,21 +17,21 @@
 #include <ddraw.h>
 #include <string.h>
 
-DATA(0x00283ef0)
+DATA(0x00284e48)
 PALETTEENTRY g_paletteRampBuf[0x100];
-DATA(0x002842f0)
+DATA(0x00285248)
 static PALETTEENTRY s_palBmp[0x100];
-DATA(0x002846f0)
+DATA(0x00285648)
 static PALETTEENTRY s_palPcx[0x100];
-DATA(0x00284af0)
+DATA(0x00285a48)
 PALETTEENTRY g_grayRamp[0x100];
-DATA(0x00284ef0)
+DATA(0x00285e48)
 static PALETTEENTRY s_palPidData[0x100];
-DATA(0x002852f0)
+DATA(0x00286248)
 static PALETTEENTRY s_palPcxData[0x100];
 
 // @early-stop
-RVA(0x00143cf0, 0x16b)
+RVA(0x00143fd0, 0x16b)
 i32 CDDSurface::CreateFromBmpData(
     CDDrawDeviceManager* manager,
     BmpFileImage* image,
@@ -91,7 +91,7 @@ i32 CDDSurface::CreateFromBmpData(
     return 1;
 }
 
-RVA(0x00143e60, 0x15b)
+RVA(0x00144140, 0x15b)
 i32 CDDSurface::CreateFromBmpFile(CDDrawDeviceManager* manager, const char* path, i32 surfaceCaps) {
     CFile file;
     if (!file.Open(path, 0, NULL)) {
@@ -120,7 +120,7 @@ static inline i32 HasPalette(CDDrawDeviceManager* manager) {
     return manager->m_hasPalette;
 }
 
-RVA(0x00143fc0, 0x142)
+RVA(0x001442a0, 0x142)
 i32 CDDSurface::DecodeBmp(CDDrawDeviceManager* manager, BmpFileImage* image, u32 dataSize) {
     BITMAPINFOHEADER* ih = &image->info.bmiHeader;
     i32 width = ih->biWidth;
@@ -168,7 +168,7 @@ i32 CDDSurface::DecodeBmp(CDDrawDeviceManager* manager, BmpFileImage* image, u32
     return 0;
 }
 
-RVA(0x00144110, 0x156)
+RVA(0x001443f0, 0x156)
 i32 CDDSurface::LoadBmp(CDDrawDeviceManager* manager, char* path) {
     CFile file;
 
@@ -198,7 +198,7 @@ i32 CDDSurface::LoadBmp(CDDrawDeviceManager* manager, char* path) {
     return result;
 }
 
-RVA(0x00144270, 0xd2)
+RVA(0x00144550, 0xd2)
 i32 CDDSurface::Load(CDDrawDeviceManager* manager, char* resourceName, i32 surfaceCaps) {
     HRSRC hr = FindResourceA(g_resModule, resourceName, RT_BITMAP);
     if (!hr) {
@@ -234,7 +234,7 @@ i32 CDDSurface::Load(CDDrawDeviceManager* manager, char* resourceName, i32 surfa
     return 1;
 }
 
-RVA(0x00144350, 0x5f)
+RVA(0x00144630, 0x5f)
 i32 CDDSurface::SaveDispatch(char* path, CFileImagePal* pal, i32 flag) {
     switch (m_bitDepth) {
         case BPP_RGB_24:
@@ -248,7 +248,7 @@ i32 CDDSurface::SaveDispatch(char* path, CFileImagePal* pal, i32 flag) {
     }
 }
 
-RVA(0x001443b0, 0x284)
+RVA(0x00144690, 0x284)
 i32 CDDSurface::SaveBmp(const char* path, CFileImagePal* pal, i32 mode) {
     if (this->IsValid() == 0) {
         return 0;
@@ -330,7 +330,7 @@ i32 CDDSurface::SaveBmp(const char* path, CFileImagePal* pal, i32 mode) {
 }
 
 // @early-stop
-RVA(0x00144640, 0x2be)
+RVA(0x00144920, 0x2be)
 i32 CDDSurface::SaveRle16(char* path, CFileImagePal* pal, i32 flag) {
     if (this->IsValid() == 0) {
         return 0;
@@ -414,7 +414,7 @@ i32 CDDSurface::SaveRle16(char* path, CFileImagePal* pal, i32 flag) {
     return 1;
 }
 
-RVA(0x00144900, 0x227)
+RVA(0x00144be0, 0x227)
 i32 CDDSurface::SaveTga(const char* path, CFileImagePal* pal, i32 mode) {
     static_cast<void>(pal);
     if (this->IsValid() == 0) {
@@ -484,7 +484,7 @@ i32 CDDSurface::SaveTga(const char* path, CFileImagePal* pal, i32 mode) {
 }
 
 // @early-stop
-RVA(0x00144b30, 0x250)
+RVA(0x00144e10, 0x250)
 i32 CDDSurface::CreateFromPcxData(
     CDDrawDeviceManager* manager,
     PcxHeader* image,
@@ -587,7 +587,7 @@ i32 CDDSurface::CreateFromPcxData(
     return 1;
 }
 
-RVA(0x00144d80, 0x15b)
+RVA(0x00145060, 0x15b)
 i32 CDDSurface::CreateFromPcxFile(CDDrawDeviceManager* manager, const char* path, i32 surfaceCaps) {
     CFile file;
     if (!file.Open(path, 0, NULL)) {
@@ -611,7 +611,7 @@ i32 CDDSurface::CreateFromPcxFile(CDDrawDeviceManager* manager, const char* path
     return result;
 }
 
-RVA(0x00144ee0, 0x225)
+RVA(0x001451c0, 0x225)
 i32 CDDSurface::DecodePcx(CDDrawDeviceManager* manager, PcxHeader* image, u32 dataSize) {
     if (image != NULL) {
         i32 width = image->m_xMax - image->m_xMin + 1;
@@ -693,7 +693,7 @@ i32 CDDSurface::DecodePcx(CDDrawDeviceManager* manager, PcxHeader* image, u32 da
     return 0;
 }
 
-RVA(0x00145110, 0x156)
+RVA(0x001453f0, 0x156)
 i32 CDDSurface::LoadPcx(CDDrawDeviceManager* manager, char* path) {
     CFile file;
 
@@ -724,7 +724,7 @@ i32 CDDSurface::LoadPcx(CDDrawDeviceManager* manager, char* path) {
 
 #pragma optimize("", off)
 
-RVA(0x00145270, 0x17a)
+RVA(0x00145550, 0x17a)
 i32 CDDSurface::DecodeByteRun1Plane(u8* dstBuf, u8* src, i32 width, i32 height) {
     u8* sp;
     i32 y;
@@ -780,7 +780,7 @@ i32 CDDSurface::DecodeByteRun1Plane(u8* dstBuf, u8* src, i32 width, i32 height) 
     return 1;
 }
 
-RVA(0x001453f0, 0x3ac)
+RVA(0x001456d0, 0x3ac)
 i32 CDDSurface::DecodeByteRun3Planes(u8* dstBuf, u8* src, i32 width, i32 height) {
     u8* sp;
     i32 y;
@@ -905,7 +905,7 @@ i32 CDDSurface::DecodeByteRun3Planes(u8* dstBuf, u8* src, i32 width, i32 height)
 #pragma optimize("", on)
 
 // @early-stop
-RVA(0x001457a0, 0x22c)
+RVA(0x00145a80, 0x22c)
 i32 CDDSurface::DecodePcxData(
     CDDrawDeviceManager* manager,
     PidHeader* image,
@@ -997,7 +997,7 @@ i32 CDDSurface::DecodePcxData(
     return 1;
 }
 
-RVA(0x001459d0, 0x135)
+RVA(0x00145cb0, 0x135)
 i32 CDDSurface::DecodePcxEx(
     CDDrawDeviceManager* manager,
     char* path,
@@ -1028,7 +1028,7 @@ i32 CDDSurface::DecodePcxEx(
 }
 
 // @early-stop
-RVA(0x00145b10, 0x1b5)
+RVA(0x00145df0, 0x1b5)
 i32 CDDSurface::DecodePid(
     CDDrawDeviceManager* manager,
     PidHeader* image,
@@ -1104,7 +1104,7 @@ i32 CDDSurface::DecodePid(
     return 0;
 }
 
-RVA(0x00145cd0, 0x130)
+RVA(0x00145fb0, 0x130)
 i32 CDDSurface::LoadPid(CDDrawDeviceManager* manager, char* path, u32 colorKey) {
     CFile file;
 

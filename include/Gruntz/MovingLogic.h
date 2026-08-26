@@ -25,12 +25,12 @@ public:
     };
 
     virtual i32 SerializeDispatch(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
-    RVA(0x00013bb0, 0x4)
+    RVA(0x00013bc0, 0x4)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_NONE;
     }
 
-    RVA(0x00013c70, 0x47)
+    RVA(0x00013c80, 0x47)
     virtual void FinalizeStep(char*) OVERRIDE {
         if (m_deferredCallback != NULL) {
             if (m_gatedCallback != NULL && m_logicRecord->EventCode() == m_gatedCallbackCode) {

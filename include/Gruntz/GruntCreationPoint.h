@@ -11,7 +11,7 @@
 class CGruntCreationPoint : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeDispatch(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
-    RVA(0x000106e0, 0x6)
+    RVA(0x000106f0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNTCREATIONPOINT;
     }

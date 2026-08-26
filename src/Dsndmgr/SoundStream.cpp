@@ -16,16 +16,16 @@
 
 #define DSNDMGSR_FILE "C:\\Proj\\Dsndmgr\\DSndMgSR.cpp"
 
-DATA(0x00253c4c)
+DATA(0x00254ba4)
 b32 g_dsoundDebugLog;
-DATA(0x00253c50)
+DATA(0x00254ba8)
 b32 g_dsoundErrorDialogs;
-DATA(0x00253c54)
+DATA(0x00254bac)
 b32 g_dsoundErrorBeeps;
-DATA(0x00253c58)
+DATA(0x00254bb0)
 b32 g_dsoundFormatErrors;
 
-RVA(0x00137340, 0x33)
+RVA(0x00137550, 0x33)
 i32 StreamFeeder::SeedWindow(CRezArchiveEntry* source, u32 offset, u32 bytes) {
     if (source == NULL) {
         return 0;
@@ -39,7 +39,7 @@ i32 StreamFeeder::SeedWindow(CRezArchiveEntry* source, u32 offset, u32 bytes) {
     return 1;
 }
 
-RVA(0x00137380, 0x10e)
+RVA(0x00137590, 0x10e)
 i32 StreamVoiceFeeder::Feed(
     u8* dst1,
     u32 bytes1,
@@ -85,17 +85,17 @@ i32 StreamVoiceFeeder::Feed(
     return 1;
 }
 
-RVA(0x00137490, 0x14)
+RVA(0x001376a0, 0x14)
 i32 StreamVoiceFeeder::ResetSource() {
     m_sourceOffset = m_windowStart;
     m_windowEnd = m_windowStart + m_windowLength;
     return 1;
 }
 
-RVA(0x001374b0, 0x1)
+RVA(0x001376c0, 0x1)
 void StreamVoiceFeeder::OnReset() {}
 
-RVA(0x001374c0, 0x5d)
+RVA(0x001376d0, 0x5d)
 i32 StreamVoice::SetSource(CRezArchiveEntry* source) {
     if (source == NULL) {
         return 0;
@@ -112,7 +112,7 @@ i32 StreamVoice::SetSource(CRezArchiveEntry* source) {
     return 1;
 }
 
-RVA(0x00137520, 0x6e)
+RVA(0x00137730, 0x6e)
 i32 StreamVoice::Configure(i32 volumePct, i32 panPct, i32 frequencyOffsetPct, b32 looping) {
     if (m_owner->m_initialized == false) {
         return 0;
@@ -135,12 +135,12 @@ i32 StreamVoice::Configure(i32 volumePct, i32 panPct, i32 frequencyOffsetPct, b3
     return ok;
 }
 
-RVA(0x00137590, 0x18)
+RVA(0x001377a0, 0x18)
 u32 StreamVoice::GetDurationMs() {
     return m_feeder.m_windowLength * MILLIS_PER_SECOND / m_sampleRate;
 }
 
-RVA(0x001375b0, 0x77)
+RVA(0x001377c0, 0x77)
 StreamVoice::StreamVoice(
     IDirectSoundBuffer* buffer,
     SoundStream* owner,
@@ -154,29 +154,29 @@ StreamVoice::StreamVoice(
     m_wasPlaying = false;
 }
 
-RVA_COMPGEN(0x00137630, 0x1e, ??_GStreamVoice@@UAEPAXI@Z)
+RVA_COMPGEN(0x00137840, 0x1e, ??_GStreamVoice@@UAEPAXI@Z)
 
-RVA(0x00137650, 0x64)
+RVA(0x00137860, 0x64)
 StreamVoice::~StreamVoice() {
     m_feeder.Reset(0);
 }
 
-RVA_COMPGEN(0x001376c0, 0x5, ??1StreamVoiceFeeder@@QAE@XZ)
+RVA_COMPGEN(0x001378d0, 0x5, ??1StreamVoiceFeeder@@QAE@XZ)
 
-RVA(0x001376d0, 0x20)
+RVA(0x001378e0, 0x20)
 SoundStream::SoundStream() {}
 
-RVA_COMPGEN(0x001376f0, 0x1e, ??_GSoundStream@@UAEPAXI@Z)
+RVA_COMPGEN(0x00137900, 0x1e, ??_GSoundStream@@UAEPAXI@Z)
 
-RVA(0x00137710, 0xb)
+RVA(0x00137920, 0xb)
 SoundStream::~SoundStream() {}
 
-RVA(0x00137720, 0x14)
+RVA(0x00137930, 0x14)
 i32 SoundStream::InitializeDevice(HWND hwnd, i32 cooperativeLevel) {
     return SoundDevice::Initialize(hwnd, cooperativeLevel, 0);
 }
 
-RVA(0x00137740, 0x3e)
+RVA(0x00137950, 0x3e)
 void SoundStream::ShutdownStreams() {
     for (StreamVoice* voice = ElementFromLink<StreamVoice>(m_voices.m_head); voice != NULL;
          voice = ElementFromLink<StreamVoice>(m_voices.m_head)) {
@@ -185,7 +185,7 @@ void SoundStream::ShutdownStreams() {
     Shutdown();
 }
 
-RVA(0x00137780, 0x171)
+RVA(0x00137990, 0x171)
 StreamVoice* SoundStream::CreateStreamVoice(
     WaveFormatX* format,
     u32 bufferBytes,
@@ -236,7 +236,7 @@ StreamVoice* SoundStream::CreateStreamVoice(
 }
 
 // @early-stop
-RVA(0x00137900, 0xc6)
+RVA(0x00137b10, 0xc6)
 StreamVoice* SoundStream::OpenStream(
     CRezArchiveEntry* source,
     i32 bufferBytes,
@@ -273,7 +273,7 @@ StreamVoice* SoundStream::OpenStream(
     return voice;
 }
 
-RVA(0x001379d0, 0x5f)
+RVA(0x00137be0, 0x5f)
 void SoundStream::DestroyVoice(StreamVoice* voice) {
     if (m_initialized) {
         voice->m_feeder.Reset(0);
@@ -290,7 +290,7 @@ void SoundStream::DestroyVoice(StreamVoice* voice) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00137a30, 0x4b)
+RVA(0x00137c40, 0x4b)
 StreamVoice* SoundStream::PlayStream(
     CRezArchiveEntry* source,
     i32 bufferBytes,
@@ -308,7 +308,7 @@ StreamVoice* SoundStream::PlayStream(
     return NULL;
 }
 
-RVA(0x00137a80, 0x3d)
+RVA(0x00137c90, 0x3d)
 void SoundStream::StopAllStreams() {
     StreamVoice* node = ElementFromLink<StreamVoice>(m_voices.m_head);
     while (node != NULL) {
@@ -318,7 +318,7 @@ void SoundStream::StopAllStreams() {
     StopAllBuffers();
 }
 
-RVA(0x00137ac0, 0xa2)
+RVA(0x00137cd0, 0xa2)
 i32 SoundStream::TickStreams(i32 timestampMs) {
     if (timestampMs == -1) {
         timestampMs = static_cast<i32>(timeGetTime());
@@ -346,7 +346,7 @@ i32 SoundStream::TickStreams(i32 timestampMs) {
     return 1;
 }
 
-RVA(0x00137b70, 0x159)
+RVA(0x00137d80, 0x159)
 i32 SoundStream::ParseWave(
     CRezArchiveEntry* source,
     WaveFormatX* outFormat,
@@ -402,7 +402,7 @@ i32 SoundStream::ParseWave(
     return 0;
 }
 
-RVA(0x00137cd0, 0x1a)
+RVA(0x00137ee0, 0x1a)
 StreamFeeder::StreamFeeder() {
 
     m_buffer = NULL;
@@ -412,7 +412,7 @@ StreamFeeder::StreamFeeder() {
     m_lastTickMs = 0;
 }
 
-RVA(0x00137cf0, 0x20)
+RVA(0x00137f00, 0x20)
 StreamFeeder::~StreamFeeder() {
     if (m_initialized != false) {
         Reset(1);
@@ -421,7 +421,7 @@ StreamFeeder::~StreamFeeder() {
 }
 
 // @early-stop
-RVA(0x00137d10, 0xab)
+RVA(0x00137f20, 0xab)
 i32 StreamFeeder::Initialize(
     SoundDevice* owner,
     WaveFormatX* format,
@@ -463,7 +463,7 @@ i32 StreamFeeder::Initialize(
     return 1;
 }
 
-RVA(0x00137dc0, 0x43)
+RVA(0x00137fd0, 0x43)
 void StreamFeeder::Reset(i32 destroyBuffer) {
     if (m_initialized != false) {
         if (m_playing != false) {
@@ -479,15 +479,15 @@ void StreamFeeder::Reset(i32 destroyBuffer) {
     }
 }
 
-RVA(0x00137e10, 0x6)
+RVA(0x00138020, 0x6)
 i32 StreamFeeder::ResetSource() {
     return 1;
 }
 
-RVA(0x00137e20, 0x1)
+RVA(0x00138030, 0x1)
 void StreamFeeder::OnReset() {}
 
-RVA(0x00137e30, 0x98)
+RVA(0x00138040, 0x98)
 i32 StreamFeeder::Tick(i32 timestampMs) {
     if (!m_playing) {
         return 1;
@@ -517,7 +517,7 @@ i32 StreamFeeder::Tick(i32 timestampMs) {
     return FillBuffer(m_writeCursor, consumedBytes) != 0;
 }
 
-RVA(0x00137ed0, 0x30)
+RVA(0x001380e0, 0x30)
 i32 StreamFeeder::Resume() {
     if (m_playing != false) {
         return 1;
@@ -530,7 +530,7 @@ i32 StreamFeeder::Resume() {
     return result;
 }
 
-RVA(0x00137f00, 0x26)
+RVA(0x00138110, 0x26)
 i32 StreamFeeder::Pause() {
     if (m_playing == false) {
         return 1;
@@ -542,7 +542,7 @@ i32 StreamFeeder::Pause() {
     return result;
 }
 
-RVA(0x00137f30, 0x197)
+RVA(0x00138140, 0x197)
 i32 StreamFeeder::FillBuffer(u32 writePos, u32 bytes) {
     u8* audioPtr1;
     DWORD audioBytes1;
@@ -588,7 +588,7 @@ i32 StreamFeeder::FillBuffer(u32 writePos, u32 bytes) {
     return 1;
 }
 
-RVA(0x001380d0, 0x4e)
+RVA(0x001382e0, 0x4e)
 i32 StreamFeeder::PrimeBuffer(i32 timestampMs) {
     i32 currentTimeMs = (timestampMs == -1) ? static_cast<i32>(timeGetTime()) : timestampMs;
     m_lastTickMs = currentTimeMs;
@@ -602,7 +602,7 @@ i32 StreamFeeder::PrimeBuffer(i32 timestampMs) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00138120, 0x27)
+RVA(0x00138330, 0x27)
 void ConfigureSoundErrorReporting(
     b32 debugLog,
     b32 errorDialogs,
@@ -615,7 +615,7 @@ void ConfigureSoundErrorReporting(
     g_dsoundFormatErrors = formatErrors;
 }
 
-RVA(0x00138150, 0x33b)
+RVA(0x00138360, 0x33b)
 void SoundBuffer::ReportError(char* file, i32 line, i32 hr) {
     char szCode[64];
     char szMsg[256];

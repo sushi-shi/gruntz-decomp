@@ -15,7 +15,7 @@ inline void DispatchUnhandledLogicEvent(CUserLogic* sub) {
     DispatchLogicEvent(sub);
 }
 
-RVA(0x000de8a0, 0xf4)
+RVA(0x000de8d0, 0xf4)
 i32 DispatchProjectileLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (static_cast<u32>(record->EventCode())) {
@@ -54,7 +54,7 @@ i32 DispatchProjectileLogic(CGameObject* owner) {
     return 1;
 }
 
-RVA(0x000de9e0, 0xf4)
+RVA(0x000dea10, 0xf4)
 i32 DispatchBoomerangLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (static_cast<u32>(record->EventCode())) {
@@ -93,7 +93,7 @@ i32 DispatchBoomerangLogic(CGameObject* owner) {
     return 1;
 }
 
-RVA(0x000deb20, 0xf1)
+RVA(0x000deb50, 0xf1)
 i32 DispatchTimeBombLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (static_cast<u32>(record->EventCode())) {

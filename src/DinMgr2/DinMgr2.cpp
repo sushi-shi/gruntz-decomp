@@ -19,16 +19,16 @@ GZ_ENUM_CONST_END(DinInputConstants)
 #define DINMGR2_FILE "C:\\Proj\\DinMgr2\\DinMgr2.cpp"
 #define INPUTDEVICE_FILE "C:\\Proj\\DinMgr2\\InputDevice.cpp"
 
-DATA(0x00253aa4)
+DATA(0x002549fc)
 b32 g_dinputLogEnabled;
-DATA(0x00253aa8)
+DATA(0x00254a00)
 b32 g_dinputMsgBoxEnabled;
-DATA(0x00253aac)
+DATA(0x00254a04)
 b32 g_dinputBeepEnabled;
-DATA(0x00253ab0)
+DATA(0x00254a08)
 b32 g_dinputThirdEnabled;
 
-RVA(0x00132ce0, 0xae)
+RVA(0x00132ef0, 0xae)
 i32 DirectInputMgr2::Create(HWND owner, HINSTANCE hinst, u32 flags) {
     if (owner == NULL) {
         return 0;
@@ -62,7 +62,7 @@ i32 DirectInputMgr2::Create(HWND owner, HINSTANCE hinst, u32 flags) {
     return 1;
 }
 
-RVA(0x00132d90, 0x82)
+RVA(0x00132fa0, 0x82)
 void DirectInputMgr2::Shutdown() {
     if (m_directInput == NULL) {
         return;
@@ -90,7 +90,7 @@ void DirectInputMgr2::Shutdown() {
     m_directInput = NULL;
 }
 
-RVA(0x00132e20, 0xb1)
+RVA(0x00133030, 0xb1)
 i32 DirectInputMgr2::InitializeKeyboard(u32 flags) {
     IDirectInputA* di = m_directInput;
     if (di == NULL) {
@@ -108,7 +108,7 @@ i32 DirectInputMgr2::InitializeKeyboard(u32 flags) {
     return 1;
 }
 
-RVA(0x00132ee0, 0x9a)
+RVA(0x001330f0, 0x9a)
 i32 DirectInputMgr2::InitializeMouse(u32 flags) {
     IDirectInputA* di = m_directInput;
     if (di == NULL) {
@@ -126,7 +126,7 @@ i32 DirectInputMgr2::InitializeMouse(u32 flags) {
     return 1;
 }
 
-RVA(0x00132f80, 0x3d)
+RVA(0x00133190, 0x3d)
 i32 DirectInputMgr2::EnumerateJoysticks(u32) {
     IDirectInputA* di = m_directInput;
     if (di == NULL) {
@@ -142,7 +142,7 @@ i32 DirectInputMgr2::EnumerateJoysticks(u32) {
     return 1;
 }
 
-RVA(0x00132fc0, 0xb8)
+RVA(0x001331d0, 0xb8)
 i32 __stdcall DinEnumJoystickCallback(LPCDIDEVICEINSTANCEA instance, void* ref) {
     if (instance == NULL) {
         return 1;
@@ -166,7 +166,7 @@ i32 __stdcall DinEnumJoystickCallback(LPCDIDEVICEINSTANCEA instance, void* ref) 
     return 1;
 }
 
-RVA(0x00133080, 0x4a)
+RVA(0x00133290, 0x4a)
 i32 DirectInputMgr2::PollAll() {
     b32 failed = false;
     if (m_keyboard != NULL && m_keyboard->Poll() == 0) {
@@ -181,7 +181,7 @@ i32 DirectInputMgr2::PollAll() {
     return failed == false;
 }
 
-RVA(0x001330d0, 0x3a)
+RVA(0x001332e0, 0x3a)
 i32 DirectInputMgr2::PollJoysticks() {
     b32 failed = false;
     i32 n = m_joysticks.GetSize();
@@ -194,7 +194,7 @@ i32 DirectInputMgr2::PollJoysticks() {
     return failed == false;
 }
 
-RVA(0x00133110, 0x4a)
+RVA(0x00133320, 0x4a)
 i32 DirectInputMgr2::ReadAll() {
     b32 failed = false;
     if (m_keyboard != NULL && m_keyboard->Poll() == 0) {
@@ -209,7 +209,7 @@ i32 DirectInputMgr2::ReadAll() {
     return failed == false;
 }
 
-RVA(0x00133160, 0x3a)
+RVA(0x00133370, 0x3a)
 i32 DirectInputMgr2::ResetJoystickStates() {
     b32 failed = false;
     i32 n = m_joysticks.GetSize();
@@ -222,7 +222,7 @@ i32 DirectInputMgr2::ResetJoystickStates() {
     return failed == false;
 }
 
-RVA(0x001331a0, 0x37)
+RVA(0x001333b0, 0x37)
 void DirectInputMgr2::FreeDeviceGroups() {
     POSITION pos = m_deviceGroups.GetHeadPosition();
     while (pos != NULL) {
@@ -235,7 +235,7 @@ void DirectInputMgr2::FreeDeviceGroups() {
     m_deviceGroups.RemoveAll();
 }
 
-RVA(0x001331e0, 0x7c)
+RVA(0x001333f0, 0x7c)
 CInputDeviceGroup* DirectInputMgr2::CreateDeviceGroup(CInputDevBase** devices, i32 n, i32 unused) {
     if (devices == NULL) {
         return NULL;
@@ -252,7 +252,7 @@ CInputDeviceGroup* DirectInputMgr2::CreateDeviceGroup(CInputDevBase** devices, i
     return group;
 }
 
-RVA(0x00133260, 0x4a)
+RVA(0x00133470, 0x4a)
 CInputDeviceGroup* DirectInputMgr2::CreateDeviceGroup(
     CInputDevBase* dev0,
     CInputDevBase* dev1,
@@ -272,7 +272,7 @@ CInputDeviceGroup* DirectInputMgr2::CreateDeviceGroup(
     return CreateDeviceGroup(buf, 6, unused);
 }
 
-RVA(0x001332c0, 0x1e)
+RVA(0x001334d0, 0x1e)
 i32 CInputDevBase::ResetState() {
     m_buttonLatch = -1;
     m_pressedButtons = 0;
@@ -280,34 +280,34 @@ i32 CInputDevBase::ResetState() {
     return 1;
 }
 
-RVA_COMPGEN(0x001332e0, 0x1e, ??_GCKeyboardDevice@@UAEPAXI@Z)
+RVA_COMPGEN(0x001334f0, 0x1e, ??_GCKeyboardDevice@@UAEPAXI@Z)
 
-RVA(0x00133300, 0x6a)
+RVA(0x00133510, 0x6a)
 CKeyboardDevice::~CKeyboardDevice() {
     ReleaseDevices();
 }
 
-RVA_COMPGEN(0x00133370, 0xb, ??1CInputDevRoot@@UAE@XZ)
-RVA_COMPGEN(0x00133380, 0x24, ??_GCInputDevRoot@@UAEPAXI@Z)
+RVA_COMPGEN(0x00133580, 0xb, ??1CInputDevRoot@@UAE@XZ)
+RVA_COMPGEN(0x00133590, 0x24, ??_GCInputDevRoot@@UAEPAXI@Z)
 
-RVA_COMPGEN(0x001333b0, 0x55, ??1CInputDevBase@@UAE@XZ)
-RVA_COMPGEN(0x00133420, 0x1e, ??_GCInputDevBase@@UAEPAXI@Z)
-RVA_COMPGEN(0x00133440, 0x1e, ??_GCJoystickDevice@@UAEPAXI@Z)
+RVA_COMPGEN(0x001335c0, 0x55, ??1CInputDevBase@@UAE@XZ)
+RVA_COMPGEN(0x00133630, 0x1e, ??_GCInputDevBase@@UAEPAXI@Z)
+RVA_COMPGEN(0x00133650, 0x1e, ??_GCJoystickDevice@@UAEPAXI@Z)
 
-RVA(0x00133460, 0x6a)
+RVA(0x00133670, 0x6a)
 CJoystickDevice::~CJoystickDevice() {
     ReleaseDevices();
 }
-RVA_COMPGEN(0x001334d0, 0x1e, ??_GCMouseDevice@@UAEPAXI@Z)
+RVA_COMPGEN(0x001336e0, 0x1e, ??_GCMouseDevice@@UAEPAXI@Z)
 
-RVA(0x001334f0, 0x6a)
+RVA(0x00133700, 0x6a)
 CMouseDevice::~CMouseDevice() {
     ReleaseDevices();
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00133560, 0x27)
+RVA(0x00133770, 0x27)
 void SetDInputReportModes(b32 log, b32 msgBox, b32 beep, b32 third) {
     g_dinputLogEnabled = log;
     g_dinputMsgBoxEnabled = msgBox;
@@ -315,7 +315,7 @@ void SetDInputReportModes(b32 log, b32 msgBox, b32 beep, b32 third) {
     g_dinputThirdEnabled = third;
 }
 
-RVA(0x00133590, 0x5be)
+RVA(0x001337a0, 0x5be)
 void DirectInputMgr2::GetErrorString(char* file, i32 line, i32 hr) {
     char szCode[64];
     char szMsg[256];
@@ -431,7 +431,7 @@ void DirectInputMgr2::GetErrorString(char* file, i32 line, i32 hr) {
     }
 }
 
-RVA(0x00133b50, 0x97)
+RVA(0x00133d60, 0x97)
 i32 CKeyboardDevice::CreateDevice(IDirectInputA* di, const GUID* guid, HWND owner, u32 flags) {
     if (di == NULL) {
         return 0;
@@ -460,7 +460,7 @@ i32 CKeyboardDevice::CreateDevice(IDirectInputA* di, const GUID* guid, HWND owne
     return 1;
 }
 
-RVA(0x00133bf0, 0x33)
+RVA(0x00133e00, 0x33)
 void CKeyboardDevice::ReleaseDevices() {
     if (m_stateBuffer != NULL) {
         RecordBytes<DeviceState> state;
@@ -472,7 +472,7 @@ void CKeyboardDevice::ReleaseDevices() {
     CInputDevBase::ReleaseDevices();
 }
 
-RVA(0x00133c30, 0xc9)
+RVA(0x00133e40, 0xc9)
 void CKeyboardDevice::ConfigureDefaultBindings() {
     m_keyBindings.Clear();
     if (HAS(static_cast<DirectInputCreateFlags>(m_createFlags), DIN_CREATE_ASYNC_KEYBOARD)) {
@@ -499,7 +499,7 @@ void CKeyboardDevice::ConfigureDefaultBindings() {
     }
 }
 
-RVA(0x00133d00, 0x55e)
+RVA(0x00133f10, 0x55e)
 i32 CKeyboardDevice::Poll() {
     m_pressedButtons = 0;
     m_heldButtons = 0;
@@ -722,7 +722,7 @@ i32 CKeyboardDevice::Poll() {
     return 1;
 }
 
-RVA(0x00134260, 0x43)
+RVA(0x00134470, 0x43)
 i32 CInputDevBase::Create(IDirectInputA* di, const GUID* guid, HWND hwnd) {
     if (di == NULL) {
         return 0;
@@ -737,12 +737,12 @@ i32 CInputDevBase::Create(IDirectInputA* di, const GUID* guid, HWND hwnd) {
     return 1;
 }
 
-RVA(0x001342b0, 0x5)
+RVA(0x001344c0, 0x5)
 void CInputDevBase::ReleaseDevices() {
     CInputDevRoot::ReleaseDevices();
 }
 
-RVA(0x001342c0, 0x95)
+RVA(0x001344d0, 0x95)
 i32 CMouseDevice::CreateDevice(IDirectInputA* di, const GUID* guid, HWND owner, u32 flags) {
     if (di == NULL) {
         return 0;
@@ -769,7 +769,7 @@ i32 CMouseDevice::CreateDevice(IDirectInputA* di, const GUID* guid, HWND owner, 
     }
     return IsReady() != 0;
 }
-RVA(0x00134360, 0x33)
+RVA(0x00134570, 0x33)
 void CMouseDevice::ReleaseDevices() {
     if (m_stateBuffer) {
         RecordBytes<DeviceState> state;
@@ -781,7 +781,7 @@ void CMouseDevice::ReleaseDevices() {
     CInputDevBase::ReleaseDevices();
 }
 
-RVA(0x001343a0, 0xb)
+RVA(0x001345b0, 0xb)
 i32 CMouseDevice::IsReady() {
     return m_device2 != NULL;
 }
@@ -799,7 +799,7 @@ i32 CMouseDevice::IsReady() {
         }                                                                                          \
     } while (0)
 
-RVA(0x001343b0, 0x27e)
+RVA(0x001345c0, 0x27e)
 i32 CMouseDevice::Poll() {
     m_pressedButtons = 0;
     m_heldButtons = 0;
@@ -846,7 +846,7 @@ i32 CMouseDevice::Poll() {
     return 1;
 }
 
-RVA(0x00134630, 0x98)
+RVA(0x00134840, 0x98)
 i32 CJoystickDevice::CreateDevice(IDirectInputA* di, const GUID* guid, HWND owner, u32 flags) {
     if (di == NULL) {
         return 0;
@@ -873,7 +873,7 @@ i32 CJoystickDevice::CreateDevice(IDirectInputA* di, const GUID* guid, HWND owne
     }
     return ConfigureAxes() != 0;
 }
-RVA(0x001346d0, 0x33)
+RVA(0x001348e0, 0x33)
 void CJoystickDevice::ReleaseDevices() {
     if (m_stateBuffer) {
         RecordBytes<DeviceState> state;
@@ -885,7 +885,7 @@ void CJoystickDevice::ReleaseDevices() {
     CInputDevBase::ReleaseDevices();
 }
 
-RVA(0x00134710, 0xb2)
+RVA(0x00134920, 0xb2)
 i32 CJoystickDevice::ConfigureAxes() {
     if (m_device2 == NULL) {
         return 0;
@@ -912,7 +912,7 @@ i32 CJoystickDevice::ConfigureAxes() {
            != 0;
 }
 
-RVA(0x001347d0, 0x40a)
+RVA(0x001349e0, 0x40a)
 i32 CJoystickDevice::Poll() {
     m_pressedButtons = 0;
     m_heldButtons = 0;
@@ -986,7 +986,7 @@ i32 CJoystickDevice::Poll() {
     return 1;
 }
 
-RVA(0x00134be0, 0x7e)
+RVA(0x00134df0, 0x7e)
 i32 CFixedPtrArray32::FillFrom(CInputDevBase** src, i32 n, i32 unused) {
     if (!src) {
         return 0;
@@ -1009,7 +1009,7 @@ i32 CFixedPtrArray32::FillFrom(CInputDevBase** src, i32 n, i32 unused) {
     return 1;
 }
 
-RVA(0x00134c60, 0x14)
+RVA(0x00134e70, 0x14)
 void CFixedPtrArray32::Clear() {
     for (i32 j = 0; j < 32; j++) {
         m_items[j] = NULL;
@@ -1017,7 +1017,7 @@ void CFixedPtrArray32::Clear() {
     m_count = 0;
 }
 
-RVA(0x00134c80, 0x24)
+RVA(0x00134e90, 0x24)
 i32 CFixedPtrArray32::Add(CInputDevBase* item) {
     if (m_count >= 32) {
         return 0;

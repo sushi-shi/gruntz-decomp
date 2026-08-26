@@ -26,36 +26,36 @@
 
 #include <ddraw.h>
 
-DATA(0x002111b0)
+DATA(0x00212158)
 
 char g_titleBuf[] = "HELP";
 
-RVA(0x0008cee0, 0x6)
+RVA(0x0008ce00, 0x6)
 GameStateId CHelpState::Update() {
     return GAMESTATE_HELP;
 }
 
-RVA(0x0008cf30, 0x55)
+RVA(0x0008ce50, 0x55)
 CHelpState::~CHelpState() {
     CHelpState::ReleaseResources();
 }
 
-RVA(0x0008cfb0, 0x6)
+RVA(0x0008ced0, 0x6)
 GameStateId CSplashState::Update() {
     return GAMESTATE_SPLASH;
 }
 
-RVA(0x0008d000, 0x55)
+RVA(0x0008cf20, 0x55)
 CSplashState::~CSplashState() {
     CSplashState::ReleaseResources();
 }
 
-RVA(0x0008d080, 0x6)
+RVA(0x0008cfa0, 0x6)
 GameStateId CDemo::Update() {
     return GAMESTATE_DEMO;
 }
 
-RVA(0x00095090, 0x6e)
+RVA(0x00094fb0, 0x6e)
 i32 CHelpState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
 
     if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
@@ -71,12 +71,12 @@ i32 CHelpState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     return 1;
 }
 
-RVA(0x00095120, 0x5)
+RVA(0x00095040, 0x5)
 void CHelpState::ReleaseResources() {
     CState::ReleaseResources();
 }
 
-RVA(0x00095140, 0x6e)
+RVA(0x00095060, 0x6e)
 i32 CHelpState::EnterState(GameStateId previousState) {
     m_mgr->RestoreVideoMode(false);
 
@@ -91,12 +91,12 @@ i32 CHelpState::EnterState(GameStateId previousState) {
     return 1;
 }
 
-RVA(0x000951d0, 0x8)
+RVA(0x000950f0, 0x8)
 i32 CHelpState::LeaveState(GameStateId nextState) {
     return 1;
 }
 
-RVA(0x000951f0, 0xeb)
+RVA(0x00095110, 0xeb)
 i32 CHelpState::Render() {
     IDirectDrawSurface* busy = m_world->m_drawTarget->m_frontSurface->m_surface->m_ddSurface;
     if (busy == NULL || busy->IsLost() != 0) {
@@ -125,7 +125,7 @@ i32 CHelpState::Render() {
     return 1;
 }
 
-RVA(0x00095320, 0x56)
+RVA(0x00095240, 0x56)
 i32 CHelpState::InputVirtual() {
     if (m_world->m_drawTarget->PagesReady() == 0) {
         return 0;
@@ -138,7 +138,7 @@ i32 CHelpState::InputVirtual() {
     return r;
 }
 
-RVA(0x000953a0, 0x3c)
+RVA(0x000952c0, 0x3c)
 i32 CHelpState::RestoreDisplay() {
     if (IsActive() == 0) {
         return 0;
@@ -148,7 +148,7 @@ i32 CHelpState::RestoreDisplay() {
     return LoadAndPresentTitlePage(g_titleBuf, 0, 0, 1, 0);
 }
 
-RVA(0x000953f0, 0x37)
+RVA(0x00095310, 0x37)
 i32 CHelpState::OnKeyDown(i32 code, i32 unused) {
     if (code == VK_ESCAPE || code == VK_SPACE || code == VK_RETURN) {
         PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_NEXT_STATE), 0);
@@ -156,7 +156,7 @@ i32 CHelpState::OnKeyDown(i32 code, i32 unused) {
     return 1;
 }
 
-RVA(0x00095440, 0x24)
+RVA(0x00095360, 0x24)
 i32 CHelpState::OnLButtonDown(i32, i32, i32) {
     PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_NEXT_STATE), 0);
     return 1;

@@ -11,7 +11,7 @@
 #include <Gruntz/UserLogic.h>
 #include <Wwd/LogicRecordEvent.h>
 
-RVA(0x00011880, 0x47)
+RVA(0x00011890, 0x47)
 i32 CCursorSnapSprite::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
@@ -21,10 +21,10 @@ i32 CCursorSnapSprite::SerializeDispatch(
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE(ar, mode, typeId, object)
 }
 
-RVA_COMPGEN(0x000118f0, 0x1e, ??_GCCursorSnapSprite@@UAEPAXI@Z)
-RVA_COMPGEN(0x00011920, 0x44, ??1CCursorSnapSprite@@UAE@XZ)
+RVA_COMPGEN(0x00011900, 0x1e, ??_GCCursorSnapSprite@@UAEPAXI@Z)
+RVA_COMPGEN(0x00011930, 0x44, ??1CCursorSnapSprite@@UAE@XZ)
 
-RVA(0x0003a200, 0xf1)
+RVA(0x0003a120, 0xf1)
 i32 DispatchCursorSnapSpriteLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {
@@ -62,7 +62,7 @@ i32 DispatchCursorSnapSpriteLogic(CGameObject* owner) {
     return 1;
 }
 
-RVA(0x0003a340, 0x16e)
+RVA(0x0003a260, 0x16e)
 CCursorSnapSprite::CCursorSnapSprite(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetImageSetByName("GAME_CURSORSNAPSPRITE");
@@ -72,7 +72,7 @@ CCursorSnapSprite::CCursorSnapSprite(CGameObject* obj)
     Hide();
 }
 
-RVA(0x0003a5b0, 0x102)
+RVA(0x0003a4d0, 0x102)
 void CCursorSnapSprite::FireActivation(i32 id) {
     CActHandler* e = (CActRegPool<CCursorSnapSprite>::s_table.ResolveEntry(id));
     if ((*e) != NULL) {

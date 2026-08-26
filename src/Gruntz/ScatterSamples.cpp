@@ -6,7 +6,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-RVA(0x00182940, 0x13c)
+RVA(0x00182c20, 0x13c)
 void ScatterSamples(i32* out, i32 start, i32 end, i32 count) {
     if (start > end) {
         return;
@@ -70,7 +70,7 @@ have_prime:
     delete[] used;
 }
 
-RVA(0x00182a80, 0x2e)
+RVA(0x00182d60, 0x2e)
 i32 IsPrime(i32 n) {
     i32 d = 2;
     if (d >= n) {

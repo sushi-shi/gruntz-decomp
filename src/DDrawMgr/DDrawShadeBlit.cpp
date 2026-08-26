@@ -17,22 +17,22 @@
 #include <ddraw.h>
 #include <string.h>
 
-DATA(0x002bed08)
+DATA(0x002bfc60)
 u8 g_scratch[1280];
 
-DATA(0x002bf208)
+DATA(0x002c0160)
 CShadeTable* g_dstBySrcShadeTable = NULL;
-DATA(0x002bf20c)
+DATA(0x002c0164)
 CShadeTable* g_dstByLevelShadeTable = NULL;
-DATA(0x002bf210)
+DATA(0x002c0168)
 CShadeTable* g_srcByLevelShadeTable = NULL;
-DATA(0x002bf214)
+DATA(0x002c016c)
 CShadeTable* g_lerpLevelShadeTable = NULL;
-DATA(0x002bf218)
+DATA(0x002c0170)
 CShadeTable* g_greyShadeTable = NULL;
-DATA(0x002bf21c)
+DATA(0x002c0174)
 CShadeTable* g_dstBySrc16ShadeTable = NULL;
-DATA(0x002bf220)
+DATA(0x002c0178)
 CShadeTable* g_palette16ShadeTable = NULL;
 
 static inline void Store16(u8* p, u16 v) {
@@ -46,7 +46,7 @@ static inline u16 Load16(const u8* p) {
     return *c.m_words;
 }
 
-RVA(0x00148ce0, 0x2f)
+RVA(0x00148fc0, 0x2f)
 CDDrawShadeBlit::CDDrawShadeBlit() {
     m_rleData = NULL;
     m_rleLen = 0;
@@ -60,7 +60,7 @@ CDDrawShadeBlit::CDDrawShadeBlit() {
     m_colorKey = -1;
 }
 
-RVA(0x00148d10, 0x25)
+RVA(0x00148ff0, 0x25)
 void CDDrawShadeBlit::Teardown() {
     if (m_rleData) {
         delete[] m_rleData;
@@ -71,7 +71,7 @@ void CDDrawShadeBlit::Teardown() {
 }
 
 // @early-stop
-RVA(0x00148d40, 0x202)
+RVA(0x00149020, 0x202)
 i32 CDDrawShadeBlit::BuildRle(
     u8* pixels,
     i32 width,
@@ -152,7 +152,7 @@ i32 CDDrawShadeBlit::BuildRle(
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00148f50, 0x61)
+RVA(0x00149230, 0x61)
 i32 CDDrawShadeBlit::BuildFromSurface(CDDSurface* surf, i32 keyVal, PALETTEENTRY* palette) {
     if (surf == NULL) {
         return 0;
@@ -169,7 +169,7 @@ i32 CDDrawShadeBlit::BuildFromSurface(CDDSurface* surf, i32 keyVal, PALETTEENTRY
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00148fc0, 0x104)
+RVA(0x001492a0, 0x104)
 i32 CDDrawShadeBlit::LoadFromFile(CString name, ColorDepth fmt) {
     CFile file;
     if (!file.Open(name, CFile::modeRead | CFile::typeBinary, NULL)) {
@@ -184,7 +184,7 @@ i32 CDDrawShadeBlit::LoadFromFile(CString name, ColorDepth fmt) {
     return r;
 }
 
-RVA(0x001490d0, 0x173)
+RVA(0x001493b0, 0x173)
 i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, GZ_ENUM_PARAM(ColorDepth, u8) fmt) {
     PidFlags flags = src->flags;
 
@@ -256,7 +256,7 @@ i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, GZ_ENUM_PARAM(ColorDepth, u
     return 1;
 }
 
-RVA(0x00149250, 0x158)
+RVA(0x00149530, 0x158)
 i32 CDDrawShadeBlit::WritePidFile(CString path, PidWriteHeader header) {
     if (m_srcBpp != PIXEL8_BYTES_PER_PIXEL) {
         return 0;
@@ -285,7 +285,7 @@ i32 CDDrawShadeBlit::WritePidFile(CString path, PidWriteHeader header) {
 // Preserved compiler bug: direct member writes leave header.flags uninitialized.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001493b0, 0xfd)
+RVA(0x00149690, 0xfd)
 
 i32 CDDrawShadeBlit::SavePid(CString path, i32 offsetX, i32 offsetY) {
     if (m_srcBpp != PIXEL8_BYTES_PER_PIXEL) {
@@ -315,7 +315,7 @@ i32 CDDrawShadeBlit::SavePid(CString path, i32 offsetX, i32 offsetY) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001494b0, 0x11a)
+RVA(0x00149790, 0x11a)
 i32 CDDrawShadeBlit::Decompress(u8* dest) {
     if (m_srcBpp != PIXEL8_BYTES_PER_PIXEL) {
         return 0;
@@ -348,7 +348,7 @@ i32 CDDrawShadeBlit::Decompress(u8* dest) {
 }
 
 // @early-stop
-RVA(0x001495d0, 0x1a6)
+RVA(0x001498b0, 0x1a6)
 u8* CDDrawShadeBlit::EncodeRle16(const u8* src) {
     u16 table[256];
     {
@@ -428,7 +428,7 @@ u8* CDDrawShadeBlit::EncodeRle16(const u8* src) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00149780, 0x69)
+RVA(0x00149a60, 0x69)
 i32 CDDrawShadeBlit::BlitAt(CDDSurface* dstSurf, i32 x, i32 y, i32 sel, i32 vflip) {
     ShadeRect clip;
     ShadeRect dst;
@@ -443,7 +443,7 @@ i32 CDDrawShadeBlit::BlitAt(CDDSurface* dstSurf, i32 x, i32 y, i32 sel, i32 vfli
     return Blit(&dst, dstSurf, &clip, sel, vflip);
 }
 
-RVA(0x001497f0, 0x154)
+RVA(0x00149ad0, 0x154)
 i32 CDDrawShadeBlit::Blit(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 sel, i32 vflip) {
     if (clip->left < 0 || clip->right > m_width - 1 || clip->top < 0
         || clip->bottom > m_height - 1) {
@@ -512,7 +512,7 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 
     return 1;
 }
 
-RVA(0x00149950, 0x3a1)
+RVA(0x00149c30, 0x3a1)
 void CDDrawShadeBlit::BlitCopyForward(
     ShadeRect* dst,
     CDDSurface* surf,
@@ -651,7 +651,7 @@ void CDDrawShadeBlit::BlitCopyForward(
     surf->m_ddSurface->Unlock(NULL);
 }
 
-RVA(0x00149d00, 0x4f8)
+RVA(0x00149fe0, 0x4f8)
 void CDDrawShadeBlit::BlitCopyMirrored(
     ShadeRect* dst,
     CDDSurface* surf,
@@ -848,7 +848,7 @@ void CDDrawShadeBlit::BlitCopyMirrored(
     surf->m_ddSurface->Unlock(NULL);
 }
 
-RVA(0x0014a200, 0x1570)
+RVA(0x0014a4e0, 0x1570)
 void CDDrawShadeBlit::BlitShadedForward(
     ShadeRect* dst,
     CDDSurface* src,
@@ -1502,7 +1502,7 @@ void CDDrawShadeBlit::BlitShadedForward(
     src->m_ddSurface->Unlock(NULL);
 }
 
-RVA(0x0014b770, 0x1280)
+RVA(0x0014ba50, 0x1280)
 void CDDrawShadeBlit::BlitShadedMirrored(
     ShadeRect* dst,
     CDDSurface* surf,
@@ -2054,7 +2054,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
     surf->m_ddSurface->Unlock(NULL);
 }
 
-RVA(0x0014c9f0, 0x5d0)
+RVA(0x0014ccd0, 0x5d0)
 void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
     switch (m_drawType) {
         case SHADE_DST_BY_SRC: {
@@ -2218,7 +2218,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
     }
 }
 
-RVA(0x0014cfc0, 0x620)
+RVA(0x0014d2a0, 0x620)
 void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
     u8* base = m_palDescr ? m_palDescr->m_data : src;
     switch (m_drawType) {
@@ -2381,7 +2381,7 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
     }
 }
 
-RVA(0x0014d5e0, 0x370)
+RVA(0x0014d8c0, 0x370)
 void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDelta) {
     switch (m_drawType) {
         case SHADE_DST_BY_SRC: {
@@ -2483,7 +2483,7 @@ void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDe
     }
 }
 
-RVA(0x0014d950, 0x3a0)
+RVA(0x0014dc30, 0x3a0)
 void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta) {
     switch (m_drawType) {
         case SHADE_DST_BY_SRC: {
@@ -2582,7 +2582,7 @@ void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta
     }
 }
 
-RVA(0x0014dcf0, 0xa0)
+RVA(0x0014dfd0, 0xa0)
 void SetShadeDescr(CShadeTable* v, ShadeMode mode) {
     switch (mode) {
         case SHADE_DST_BY_SRC:
@@ -2612,7 +2612,7 @@ void SetShadeDescr(CShadeTable* v, ShadeMode mode) {
     }
 }
 
-RVA(0x0014dd90, 0xa0)
+RVA(0x0014e070, 0xa0)
 void CDDrawShadeBlit::Select(ShadeMode mode, CShadeTable* descr) {
     m_drawType = mode;
     if (descr == NULL) {

@@ -61,13 +61,13 @@
 #include <limits.h>
 #include <stdlib.h>
 
-DATA(0x00244ca4)
+DATA(0x00245bfc)
 i32 g_groupSentinel;
 
 // @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00077f80, 0xab)
+RVA(0x00077e50, 0xab)
 CGrunt* CTriggerMgr::FindNearestUnitForPlayer(CGrunt* g) {
     i32 tx = g->m_lastTilePx.m_x >> TILE_SHIFT_PX;
     i32 playerIndex = g->m_playerIndex;
@@ -95,7 +95,7 @@ CGrunt* CTriggerMgr::FindNearestUnitForPlayer(CGrunt* g) {
 }
 
 // @early-stop
-RVA(0x00078060, 0x18d)
+RVA(0x00077f30, 0x18d)
 void CTriggerMgr::HudRect(RECT r, b32 selectionReset) {
     CGameLevel* view = m_world->m_level;
     const RECT* vp = &view->m_mainPlane->m_planeViewRect;
@@ -136,7 +136,7 @@ void CTriggerMgr::HudRect(RECT r, b32 selectionReset) {
 }
 
 // @early-stop
-RVA(0x00078260, 0x165)
+RVA(0x00078130, 0x165)
 i32 CTriggerMgr::RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelection) {
     if (fromSelection != 0) {
         CPtrList* list = m_selLists;
@@ -198,7 +198,7 @@ i32 CTriggerMgr::RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelect
     return 0;
 }
 
-RVA(0x00078430, 0x7f)
+RVA(0x00078300, 0x7f)
 void CTriggerMgr::ResetAll() {
     POSITION pos = m_recList.GetHeadPosition();
     while (pos != NULL) {
@@ -221,7 +221,7 @@ void CTriggerMgr::ResetAll() {
     }
 }
 
-RVA(0x000784d0, 0x3a)
+RVA(0x000783a0, 0x3a)
 i32 CTriggerMgr::RecordListHas(i32 playerIndex, i32 unitIndex) {
     POSITION pos = m_recList.GetHeadPosition();
     while (pos != NULL) {
@@ -233,7 +233,7 @@ i32 CTriggerMgr::RecordListHas(i32 playerIndex, i32 unitIndex) {
     return 0;
 }
 
-RVA(0x00078520, 0x106)
+RVA(0x000783f0, 0x106)
 void CTriggerMgr::EnqueueSelectedMove(b32 isLocalCommand, i32 targetX, i32 targetY) {
     if (m_groupFlag == false) {
         return;
@@ -276,7 +276,7 @@ void CTriggerMgr::EnqueueSelectedMove(b32 isLocalCommand, i32 targetX, i32 targe
     }
 }
 
-RVA(0x00078680, 0x189)
+RVA(0x00078550, 0x189)
 void CTriggerMgr::EnqueueSelectedToolUse(
     b32 isLocalCommand,
     i32 targetX,
@@ -350,7 +350,7 @@ void CTriggerMgr::EnqueueSelectedToolUse(
     }
 }
 
-RVA(0x00078880, 0x3c)
+RVA(0x00078750, 0x3c)
 void CTriggerMgr::ClearRecords() {
     POSITION pos = m_recList.GetHeadPosition();
     if (pos != NULL) {
@@ -363,7 +363,7 @@ void CTriggerMgr::ClearRecords() {
     m_recList.RemoveAll();
 }
 
-RVA(0x000788d0, 0x64)
+RVA(0x000787a0, 0x64)
 i32 CTriggerMgr::ScrollToActiveRecord() {
     CGameObject* src =
         m_units[m_cameraTargetIdentity.m_x * TM_UNITS_PER_PLAYER + m_cameraTargetIdentity.m_y]
@@ -375,7 +375,7 @@ i32 CTriggerMgr::ScrollToActiveRecord() {
     return 1;
 }
 
-RVA(0x00078960, 0x9b)
+RVA(0x00078830, 0x9b)
 i32 CTriggerMgr::LoadCameraSprite() {
     if (m_goal != NULL) {
         return 0;
@@ -411,7 +411,7 @@ i32 CTriggerMgr::LoadCameraSprite() {
     return 1;
 }
 
-RVA(0x00078a30, 0x10)
+RVA(0x00078900, 0x10)
 void CTriggerMgr::CloseActionOptionsMenu() {
     CActionOptionsMenuBar* ov = m_overlay;
     if (ov) {
@@ -430,7 +430,7 @@ static inline u16 PackRgb16(i32 r, i32 g, i32 b) {
 }
 
 // @early-stop
-RVA(0x00078a50, 0x8a0)
+RVA(0x00078920, 0x8a0)
 i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
 
     CGrunt* cell;
@@ -716,7 +716,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
 }
 
 // @early-stop
-RVA(0x00079520, 0x2e3)
+RVA(0x000793f0, 0x2e3)
 i32 CTriggerMgr::HandleTargetSelection(
     i32 targetX,
     i32 targetY,
@@ -879,7 +879,7 @@ reportError:
     return 0;
 }
 
-RVA(0x000798d0, 0x1b6)
+RVA(0x000797a0, 0x1b6)
 i32 CTriggerMgr::OpenActionOptionsMenu(
     i32 selectedWorldX,
     i32 selectedWorldY,
@@ -934,7 +934,7 @@ i32 CTriggerMgr::OpenActionOptionsMenu(
     return 1;
 }
 
-RVA(0x00079b00, 0x15)
+RVA(0x000799d0, 0x15)
 i32 CTriggerMgr::RenderActionOptionsMenu() {
     CActionOptionsMenuBar* ov = m_overlay;
     if (ov) {
@@ -943,7 +943,7 @@ i32 CTriggerMgr::RenderActionOptionsMenu() {
     return 1;
 }
 
-RVA(0x00079b30, 0x3e)
+RVA(0x00079a00, 0x3e)
 i32 CTriggerMgr::ByteTableHas(WarpStoneFragment fragment) {
 
     i32 n = m_byteArr.GetSize();
@@ -955,7 +955,7 @@ i32 CTriggerMgr::ByteTableHas(WarpStoneFragment fragment) {
     return 0;
 }
 
-RVA(0x00079b80, 0x194)
+RVA(0x00079a50, 0x194)
 void CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     if (m_groupInitialized != false || g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
         return;
@@ -994,7 +994,7 @@ void CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     m_groupInitialized = true;
 }
 
-RVA(0x00079d90, 0xc5)
+RVA(0x00079c60, 0xc5)
 void CTriggerMgr::ResetSpawnState() {
     if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
         return;
@@ -1026,7 +1026,7 @@ void CTriggerMgr::ResetSpawnState() {
     this->LoadFinishLevelSprite(FINISH_REASON_WARPSTONE_RESET);
 }
 
-RVA(0x00079ea0, 0xc2)
+RVA(0x00079d70, 0xc2)
 i32 CTriggerMgr::SpawnTileFx(i32 x, i32 y, i32 anchorIndex) {
     if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
         return 0;
@@ -1056,7 +1056,7 @@ i32 CTriggerMgr::SpawnTileFx(i32 x, i32 y, i32 anchorIndex) {
 }
 
 // @early-stop
-RVA(0x00079fb0, 0x169)
+RVA(0x00079e80, 0x169)
 void CTriggerMgr::UnregisterUnit(i32 playerIndex, i32 unitIndex, i32 exitedLevel) {
     i32 idx = playerIndex * TM_UNITS_PER_PLAYER + unitIndex;
     CGrunt* cell = m_units[idx];
@@ -1107,7 +1107,7 @@ void CTriggerMgr::UnregisterUnit(i32 playerIndex, i32 unitIndex, i32 exitedLevel
     cell->m_cellRemovalNotified = true;
 }
 
-RVA(0x0007a180, 0x86)
+RVA(0x0007a050, 0x86)
 i32 CTriggerMgr::SpawnPuddle(
     i32 x,
     i32 y,
@@ -1131,7 +1131,7 @@ i32 CTriggerMgr::SpawnPuddle(
     return PlacePuddle(sprite, animatePlacement);
 }
 
-RVA(0x0007a240, 0x143)
+RVA(0x0007a110, 0x143)
 i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, b32 animatePlacement) {
     CGruntPuddle* puddle = static_cast<CGruntPuddle*>(sprite->m_logicRecord->m_userLogic);
     i32 gaugePoints = sprite->m_points;
@@ -1181,7 +1181,7 @@ i32 CTriggerMgr::PlacePuddle(CGameObject* sprite, b32 animatePlacement) {
     return 1;
 }
 
-RVA(0x0007a3f0, 0xd7)
+RVA(0x0007a2c0, 0xd7)
 i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 col, PickupType kind, i32 moveKind) {
     CDDrawChildGroup* fac = m_world->m_childGroup;
     i32 tx = x >> TILE_SHIFT_PX;
@@ -1214,7 +1214,7 @@ i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 col, PickupType kind, i32 move
     return 1;
 }
 
-RVA(0x0007a510, 0x9e)
+RVA(0x0007a3e0, 0x9e)
 i32 CTriggerMgr::StartPlayerDefeatSequence(i32 playerSelector) {
     i32 firstPlayerIndex, lastPlayerIndex;
     if (playerSelector == TM_ALL_PLAYERS) {
@@ -1251,7 +1251,7 @@ i32 CTriggerMgr::StartPlayerDefeatSequence(i32 playerSelector) {
     return 1;
 }
 
-RVA(0x0007a5e0, 0x121)
+RVA(0x0007a4b0, 0x121)
 i32 CTriggerMgr::Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId, i32) {
     if (ar == NULL) {
         return 0;
@@ -1276,7 +1276,7 @@ i32 CTriggerMgr::Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId, i32) 
 }
 
 // @early-stop
-RVA(0x0007a760, 0x373)
+RVA(0x0007a630, 0x373)
 i32 CTriggerMgr::ScanGroup(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
@@ -1382,7 +1382,7 @@ fail:
 }
 
 // @early-stop
-RVA(0x0007abc0, 0x4b6)
+RVA(0x0007aa90, 0x4b6)
 i32 CTriggerMgr::Load(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
@@ -1569,7 +1569,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
 }
 
 // @early-stop
-RVA(0x0007b1b0, 0x12b)
+RVA(0x0007b080, 0x12b)
 i32 CTriggerMgr::HandleActionOptionsPointer(i32 x, i32 y) {
     CActionOptionsMenuBar* ov = m_overlay;
     m_pendingFxKind = 0;
@@ -1623,7 +1623,7 @@ i32 CTriggerMgr::HandleActionOptionsPointer(i32 x, i32 y) {
     return 1;
 }
 
-RVA(0x0007b330, 0xc6)
+RVA(0x0007b200, 0xc6)
 
 i32 CTriggerMgr::LoadExplosionSprites(i32 x, i32 y, i32 id, i32 kind) {
     CDDrawChildGroup* fac = m_world->m_childGroup;
@@ -1644,7 +1644,7 @@ i32 CTriggerMgr::LoadExplosionSprites(i32 x, i32 y, i32 id, i32 kind) {
 }
 
 // @early-stop
-RVA(0x0007b440, 0x3f0)
+RVA(0x0007b310, 0x3f0)
 i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
     ApplyGruntAreaEffect(cx, cy, r, GRUNT_AREA_EFFECT_EXPLODE, flag);
 
@@ -1775,7 +1775,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
 }
 
 // @early-stop
-RVA(0x0007b930, 0x3e0)
+RVA(0x0007b800, 0x3e0)
 i32 CTriggerMgr::ApplyGruntAreaEffect(
     i32 x,
     i32 y,
@@ -1927,7 +1927,7 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
     return 1;
 }
 
-RVA(0x0007be10, 0x34)
+RVA(0x0007bce0, 0x34)
 void CTriggerMgr::StopPendingFx() {
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
     if (m_pendingFxKind == 0 && world->m_cursorTargetValid == false) {
@@ -1938,7 +1938,7 @@ void CTriggerMgr::StopPendingFx() {
 }
 
 // @early-stop
-RVA(0x0007be60, 0x21e)
+RVA(0x0007bd30, 0x21e)
 i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
     RECT rect;
     i32 hx = cx >> TILE_SHIFT_PX;
@@ -2040,7 +2040,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
 }
 
 // @early-stop
-RVA(0x0007c110, 0x166)
+RVA(0x0007bfe0, 0x166)
 i32 CTriggerMgr::SpawnGrunt(
     i32 srcPlayerIndex,
     i32 srcUnitIndex,
@@ -2103,7 +2103,7 @@ i32 CTriggerMgr::SpawnGrunt(
     return 1;
 }
 
-RVA(0x0007c2e0, 0xb5)
+RVA(0x0007c1b0, 0xb5)
 i32 CTriggerMgr::CycleMoveIcons(i32 skipPlayerIndex, b32 enable) {
     i32 playerIndex = 0;
     CGrunt** playerUnits = m_units;
@@ -2135,7 +2135,7 @@ i32 CTriggerMgr::CycleMoveIcons(i32 skipPlayerIndex, b32 enable) {
 }
 
 // @early-stop
-RVA(0x0007c3d0, 0x1d0)
+RVA(0x0007c2a0, 0x210)
 void CTriggerMgr::LoadFinishLevelSprite(FinishLevelReason state) {
     switch (state) {
         case FINISH_REASON_WARPSTONE_EXIT:
@@ -2196,7 +2196,7 @@ Lab_56b:
     m_finishReasonFrame = state;
 }
 
-RVA(0x0007c620, 0x500)
+RVA(0x0007c540, 0x500)
 i32 CTriggerMgr::SpawnPowerupIcon(
     PickupType type,
     i32 x,
@@ -2401,7 +2401,7 @@ i32 CTriggerMgr::SpawnPowerupIcon(
 }
 
 // @early-stop
-RVA(0x0007cc60, 0xa7)
+RVA(0x0007cb80, 0xa7)
 i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
     POSITION pos = m_selLists[idx].GetHeadPosition();
     if (pos != NULL) {
@@ -2434,7 +2434,7 @@ i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
     return 1;
 }
 
-RVA(0x0007cd40, 0x18f)
+RVA(0x0007cc60, 0x18f)
 i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
     ResetAll();
     CActionOptionsMenuBar* ov = m_overlay;
@@ -2498,7 +2498,7 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
 }
 
 // @early-stop
-RVA(0x0007cf40, 0x12e)
+RVA(0x0007ce60, 0x12e)
 i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
     POSITION pos = m_recList.GetHeadPosition();
     if (pos == NULL) {
@@ -2558,7 +2558,7 @@ i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
     return 1;
 }
 
-RVA(0x0007d0c0, 0x57)
+RVA(0x0007cfe0, 0x57)
 void CTriggerMgr::ClearSelections() {
     CPtrList* list = m_selLists;
     i32 k = 10;
@@ -2581,7 +2581,7 @@ void CTriggerMgr::ClearSelections() {
     m_selSentinel = -1;
 }
 
-RVA(0x0007d140, 0x61)
+RVA(0x0007d060, 0x61)
 i32 CTriggerMgr::StartPlayerVictorySequence(i32 playerIndex) {
     CGrunt** units = &m_units[playerIndex * TM_UNITS_PER_PLAYER];
     i32 unitsRemaining = TM_UNITS_PER_PLAYER;
@@ -2600,7 +2600,7 @@ i32 CTriggerMgr::StartPlayerVictorySequence(i32 playerIndex) {
     return 1;
 }
 
-RVA(0x0007d1d0, 0x9d)
+RVA(0x0007d0f0, 0x9d)
 i32 CTriggerMgr::NearestOtherPlayerUnitDistSq(i32 skipPlayerIndex, i32 px, i32 py) {
     i32 tx = px >> TILE_SHIFT_PX;
     i32 ty = py >> TILE_SHIFT_PX;
@@ -2632,7 +2632,7 @@ i32 CTriggerMgr::NearestOtherPlayerUnitDistSq(i32 skipPlayerIndex, i32 px, i32 p
     return best;
 }
 
-RVA(0x0007d2a0, 0x64)
+RVA(0x0007d1c0, 0x64)
 i32 CTriggerMgr::SelectionListFind(i32 playerIndex, i32 unitIndex) {
     if (playerIndex != g_curPlayer) {
         return 0;
@@ -2655,7 +2655,7 @@ i32 CTriggerMgr::SelectionListFind(i32 playerIndex, i32 unitIndex) {
 }
 
 // @early-stop
-RVA(0x0007d330, 0xd3)
+RVA(0x0007d250, 0xd3)
 void CTriggerMgr::DestroyAllAnims() {
     CGrunt** cell = m_units;
     i32 r = 4;
@@ -2712,7 +2712,7 @@ void CTriggerMgr::DestroyAllAnims() {
     }
 }
 
-RVA(0x0007d450, 0x112)
+RVA(0x0007d370, 0x112)
 i32 CTriggerMgr::ToggleToolTargeting() {
     if (m_pendingFxKind != 0) {
         m_pendingFxKind = 0;
@@ -2754,7 +2754,7 @@ i32 CTriggerMgr::ToggleToolTargeting() {
     return 1;
 }
 
-RVA(0x0007d5c0, 0xdc)
+RVA(0x0007d4e0, 0xdc)
 i32 CTriggerMgr::ToggleToyTargeting() {
     if (m_pendingFxKind != 0) {
         m_pendingFxKind = 0;
@@ -2796,7 +2796,7 @@ i32 CTriggerMgr::ToggleToyTargeting() {
     return 1;
 }
 
-RVA(0x0007d6e0, 0xea)
+RVA(0x0007d600, 0xea)
 i32 CTriggerMgr::EnqueueGroupCells() {
     if (m_groupFlag == false) {
         return 0;

@@ -25,28 +25,28 @@
 
 #include <new>
 
-RVA_DYNINIT(0x00115c30, 0x5, s_gruntDirNorth)
-RVA_DYNINIT(0x00115c50, 0x1a, s_gruntDirNorth)
-RVA_DYNINIT(0x00115c80, 0x5, s_gruntDirNorthEast)
-RVA_DYNINIT(0x00115ca0, 0x1a, s_gruntDirNorthEast)
-RVA_DYNINIT(0x00115cd0, 0x5, s_gruntDirEast)
-RVA_DYNINIT(0x00115cf0, 0x1f, s_gruntDirEast)
-RVA_DYNINIT(0x00115d20, 0x5, s_gruntDirSouthEast)
-RVA_DYNINIT(0x00115d40, 0x1a, s_gruntDirSouthEast)
-RVA_DYNINIT(0x00115d70, 0x5, s_gruntDirSouth)
-RVA_DYNINIT(0x00115d90, 0x1f, s_gruntDirSouth)
-RVA_DYNINIT(0x00115dc0, 0x5, s_gruntDirSouthWest)
-RVA_DYNINIT(0x00115de0, 0x1f, s_gruntDirSouthWest)
-RVA_DYNINIT(0x00115e10, 0x5, s_gruntDirWest)
-RVA_DYNINIT(0x00115e30, 0x1f, s_gruntDirWest)
-RVA_DYNINIT(0x00115e60, 0x5, s_gruntDirNorthWest)
-RVA_DYNINIT(0x00115e80, 0x17, s_gruntDirNorthWest)
-RVA_DYNINIT(0x00115eb0, 0x5, s_gruntDirCenter)
-RVA_DYNINIT(0x00115ed0, 0x1a, s_gruntDirCenter)
+RVA_DYNINIT(0x00115e40, 0x5, s_gruntDirNorth)
+RVA_DYNINIT(0x00115e60, 0x1a, s_gruntDirNorth)
+RVA_DYNINIT(0x00115e90, 0x5, s_gruntDirNorthEast)
+RVA_DYNINIT(0x00115eb0, 0x1a, s_gruntDirNorthEast)
+RVA_DYNINIT(0x00115ee0, 0x5, s_gruntDirEast)
+RVA_DYNINIT(0x00115f00, 0x1f, s_gruntDirEast)
+RVA_DYNINIT(0x00115f30, 0x5, s_gruntDirSouthEast)
+RVA_DYNINIT(0x00115f50, 0x1a, s_gruntDirSouthEast)
+RVA_DYNINIT(0x00115f80, 0x5, s_gruntDirSouth)
+RVA_DYNINIT(0x00115fa0, 0x1f, s_gruntDirSouth)
+RVA_DYNINIT(0x00115fd0, 0x5, s_gruntDirSouthWest)
+RVA_DYNINIT(0x00115ff0, 0x1f, s_gruntDirSouthWest)
+RVA_DYNINIT(0x00116020, 0x5, s_gruntDirWest)
+RVA_DYNINIT(0x00116040, 0x1f, s_gruntDirWest)
+RVA_DYNINIT(0x00116070, 0x5, s_gruntDirNorthWest)
+RVA_DYNINIT(0x00116090, 0x17, s_gruntDirNorthWest)
+RVA_DYNINIT(0x001160c0, 0x5, s_gruntDirCenter)
+RVA_DYNINIT(0x001160e0, 0x1a, s_gruntDirCenter)
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00115b60, 0x97)
+RVA(0x00115c90, 0xa7)
 i32 DrawPageDebugText(
     CDDrawSurfaceMgr* mgr,
     const CString* text,
@@ -84,7 +84,7 @@ i32 DrawPageDebugText(
     return 1;
 }
 
-RVA(0x00115f00, 0x13)
+RVA(0x00116110, 0x13)
 i32 CTileTriggerContainer::Initialize() {
     if (m_initialized != false) {
         return 0;
@@ -93,7 +93,7 @@ i32 CTileTriggerContainer::Initialize() {
     return 1;
 }
 
-RVA(0x00115f30, 0x18)
+RVA(0x00116140, 0x18)
 void CTileTriggerContainer::Shutdown() {
     if (m_initialized != false) {
         RemoveAll();
@@ -101,7 +101,7 @@ void CTileTriggerContainer::Shutdown() {
     }
 }
 
-RVA(0x00115f60, 0x300)
+RVA(0x00116170, 0x300)
 CTileTriggerSwitchLogic* CTileTriggerContainer::AddSwitchLogic(
     TrigLogicId logicType,
     i32 tileX,
@@ -175,7 +175,7 @@ CTileTriggerSwitchLogic* CTileTriggerContainer::AddSwitchLogic(
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00116320, 0x66)
+RVA(0x00116530, 0x66)
 i32 CTileTriggerContainer::RemoveSwitchLogic(i32 cellKey, TrigLogicId logicType) {
     POSITION pos = m_switchLogics.GetHeadPosition();
     while (pos != NULL) {
@@ -192,7 +192,7 @@ i32 CTileTriggerContainer::RemoveSwitchLogic(i32 cellKey, TrigLogicId logicType)
     return 0;
 }
 
-RVA(0x001163b0, 0xb2)
+RVA(0x001165c0, 0xb2)
 CTileTriggerLogic* CTileTriggerContainer::AddLogicDefaults(
     TileCollisionKind tileType,
     TrigLogicId logicType,
@@ -226,7 +226,7 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogicDefaults(
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001164a0, 0x116)
+RVA(0x001166b0, 0x116)
 void CTileTriggerContainer::AddLogicFromRecord(
     TileCollisionKind tileType,
     TrigLogicId logicType,
@@ -314,7 +314,7 @@ __inline i32 CTileTriggerLogic::Setup(
 }
 
 // @early-stop
-RVA(0x00116610, 0x350)
+RVA(0x00116820, 0x350)
 CTileTriggerLogic* CTileTriggerContainer::AddLogic(
     TileCollisionKind tileType,
     TrigLogicId logicType,
@@ -389,7 +389,7 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogic(
     return obj;
 }
 
-RVA(0x00116a40, 0xf5)
+RVA(0x00116c50, 0xf5)
 CTileActionEvent* CTileTriggerContainer::AddActionEvent(
     BrickTileId actionCode,
     i32 tileX,
@@ -420,7 +420,7 @@ CTileActionEvent* CTileTriggerContainer::AddActionEvent(
     return NULL;
 }
 
-RVA(0x00116b80, 0x120)
+RVA(0x00116d90, 0x120)
 CTileActionEvent* CTileTriggerContainer::AddSwitchActionEvent(
     BrickTileId actionCode,
     i32 tileX,
@@ -468,7 +468,7 @@ CTileActionEvent* CTileTriggerContainer::AddSwitchActionEvent(
     return NULL;
 }
 
-RVA(0x00116cf0, 0x111)
+RVA(0x00116f00, 0x111)
 CGiantRockLogic* CTileTriggerContainer::AddGiantRockLogic(
     i32 tileX,
     i32 tileY,
@@ -507,7 +507,7 @@ CGiantRockLogic* CTileTriggerContainer::AddGiantRockLogic(
     return NULL;
 }
 
-RVA(0x00116e60, 0x59)
+RVA(0x00117070, 0x59)
 i32 CTileTriggerContainer::RemoveIdleLogic(CTileTriggerLogic* logic) {
     POSITION pos = m_idleLogics.GetHeadPosition();
     while (pos != NULL) {
@@ -523,7 +523,7 @@ i32 CTileTriggerContainer::RemoveIdleLogic(CTileTriggerLogic* logic) {
     return 0;
 }
 
-RVA(0x00116ee0, 0x2f)
+RVA(0x001170f0, 0x2f)
 CTileTriggerSwitchLogic*
 CTileTriggerContainer::FindSwitchLogic(i32 cellKey, TrigLogicId logicType) {
     POSITION pos = m_switchLogics.GetHeadPosition();
@@ -539,7 +539,7 @@ CTileTriggerContainer::FindSwitchLogic(i32 cellKey, TrigLogicId logicType) {
     return NULL;
 }
 
-RVA(0x00116f20, 0x51)
+RVA(0x00117130, 0x51)
 CTileTriggerLogic* CTileTriggerContainer::FindLogic(i32 cellKey, TrigLogicId logicType) {
     POSITION pos = m_idleLogics.GetHeadPosition();
     while (pos != NULL) {
@@ -568,7 +568,7 @@ CTileTriggerLogic* CTileTriggerContainer::FindLogic(i32 cellKey, TrigLogicId log
     return NULL;
 }
 
-RVA(0x00116fa0, 0xc7)
+RVA(0x001171b0, 0xc7)
 void CTileTriggerContainer::RemoveAll() {
     POSITION pos = m_idleLogics.GetHeadPosition();
     while (pos != NULL) {
@@ -598,7 +598,7 @@ void CTileTriggerContainer::RemoveAll() {
     m_latchedLeaf = NULL;
 }
 
-RVA(0x001170b0, 0x72)
+RVA(0x001172c0, 0x72)
 i32 CTileTriggerContainer::UpdateTimedLogics(i32 unusedFrameDelta) {
     POSITION pos = m_timedLogics.GetHeadPosition();
     while (pos != NULL) {
@@ -616,7 +616,7 @@ i32 CTileTriggerContainer::UpdateTimedLogics(i32 unusedFrameDelta) {
     return 1;
 }
 
-RVA(0x00117150, 0x53)
+RVA(0x00117360, 0x53)
 i32 CTileTriggerContainer::ActivateTimedLogic(CTileTriggerLogic* logic) {
     POSITION pos = m_idleLogics.GetHeadPosition();
     while (pos != NULL) {
@@ -632,7 +632,7 @@ i32 CTileTriggerContainer::ActivateTimedLogic(CTileTriggerLogic* logic) {
     return 0;
 }
 
-RVA(0x001171d0, 0x20)
+RVA(0x001173e0, 0x20)
 CTileActionEvent* CTileTriggerContainer::FindActionByCellKey(i32 cellKey) {
     POSITION pos = m_actionEvents.GetHeadPosition();
     while (pos != NULL) {
@@ -644,7 +644,7 @@ CTileActionEvent* CTileTriggerContainer::FindActionByCellKey(i32 cellKey) {
     return NULL;
 }
 
-RVA(0x00117200, 0x53)
+RVA(0x00117410, 0x53)
 i32 CTileTriggerContainer::RemoveActionEvent(CTileActionEvent* event) {
     POSITION pos = m_actionEvents.GetHeadPosition();
     while (pos != NULL) {
@@ -659,7 +659,7 @@ i32 CTileTriggerContainer::RemoveActionEvent(CTileActionEvent* event) {
     return 0;
 }
 
-RVA(0x00117280, 0x2ec)
+RVA(0x00117490, 0x2ec)
 i32 CTileTriggerContainer::Serialize(
     CFileMemBase* archive,
     SerialMode mode,
@@ -770,7 +770,7 @@ i32 CTileTriggerContainer::Serialize(
     return 1;
 }
 
-RVA(0x00117630, 0xa4)
+RVA(0x00117840, 0xa4)
 i32 CTileTriggerContainer::SerializeSwitchLogic(
     CFileMemBase* archive,
     SerialMode mode,
@@ -833,7 +833,7 @@ i32 CTileTriggerContainer::SerializeSwitchLogic(
     return 1;
 }
 
-RVA(0x00117710, 0xc0)
+RVA(0x00117920, 0xc0)
 i32 CTileTriggerContainer::SerializeTriggerLogic(
     CFileMemBase* archive,
     SerialMode mode,
@@ -886,7 +886,7 @@ i32 CTileTriggerContainer::SerializeTriggerLogic(
 }
 
 // @early-stop
-RVA(0x00117800, 0x4d6)
+RVA(0x00117a10, 0x4d6)
 void* CTileTriggerContainer::DeserializeLogic(
     CFileMemBase* reader,
     SerialMode mode,
@@ -1062,7 +1062,7 @@ void* CTileTriggerContainer::DeserializeLogic(
     }
 }
 
-RVA(0x00117e20, 0x36)
+RVA(0x00118030, 0x36)
 i32 CTileTriggerContainer::SaveInitialized(CFileMemBase* archive) {
     if (archive == NULL) {
         return 0;
@@ -1074,7 +1074,7 @@ i32 CTileTriggerContainer::SaveInitialized(CFileMemBase* archive) {
     return 1;
 }
 
-RVA(0x00117e70, 0x36)
+RVA(0x00118080, 0x36)
 i32 CTileTriggerContainer::LoadInitialized(CFileMemBase* archive) {
     if (archive == NULL) {
         return 0;
@@ -1086,7 +1086,7 @@ i32 CTileTriggerContainer::LoadInitialized(CFileMemBase* archive) {
     return 1;
 }
 
-RVA(0x00117ec0, 0x7f)
+RVA(0x001180d0, 0x7f)
 CGiantRockLogic* CTileTriggerContainer::ScanNeighborhood(i32 tileX, i32 tileY) {
     for (i32 scanX = tileX - 1; scanX < tileX + 2; scanX++) {
         for (i32 scanY = tileY - 1; scanY < tileY + 2; scanY++) {
@@ -1103,7 +1103,7 @@ CGiantRockLogic* CTileTriggerContainer::ScanNeighborhood(i32 tileX, i32 tileY) {
 }
 
 // @early-stop
-RVA(0x00117f60, 0xa1)
+RVA(0x00118170, 0xa1)
 i32 CTileTriggerContainer::SetCell(i32 tileX, i32 tileY, i32 playerSlot) {
     i32 key = (tileX << 8) + tileY;
     CTileActionEvent* elem = FindActionByCellKey(key);

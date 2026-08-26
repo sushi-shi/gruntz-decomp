@@ -39,7 +39,7 @@
 #include <string.h>
 
 // @early-stop
-RVA(0x000f60f0, 0xb30)
+RVA(0x000f6220, 0xb30)
 i32 CGrunt::StepTimeBomberBehavior() {
     m_neighborScanEnabled = false;
     bool isFlag = ANIMATION_ACT_EQUALS("F");

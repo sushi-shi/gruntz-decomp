@@ -27,11 +27,11 @@ public:
         g_activeGameWnd = NULL;
     }
 
-    RVA(0x00094c40, 0x5)
+    RVA(0x00094b60, 0x5)
     virtual i32 PreDispatchMessage(UINT, WPARAM, LPARAM) {
         return 0;
     }
-    RVA(0x00094c60, 0x5)
+    RVA(0x00094b80, 0x5)
     virtual i32 HandleWindowCommand(i32, i32, i32) {
         return 0;
     }
@@ -43,7 +43,7 @@ public:
     virtual i32 OnPaint();
     virtual i32 OnChar(WPARAM charCode, LPARAM keyData);
     virtual i32 OnKeyDown(WPARAM virtualKey, LPARAM keyData);
-    RVA(0x00094c80, 0x5)
+    RVA(0x00094ba0, 0x5)
     virtual i32 OnKeyUp(WPARAM virtualKey, LPARAM keyData) {
         return 0;
     }
@@ -51,31 +51,31 @@ public:
     virtual i32 OnActivateApp(WPARAM wParam, LPARAM lParam);
 
     virtual i32 QuitMessageLoop();
-    RVA(0x00094ca0, 0x5)
+    RVA(0x00094bc0, 0x5)
     virtual i32 OnLButtonDown(WPARAM keyFlags, i32 x, i32 y) {
         return 0;
     }
-    RVA(0x00094cc0, 0x5)
+    RVA(0x00094be0, 0x5)
     virtual i32 OnRButtonDown(WPARAM keyFlags, i32 x, i32 y) {
         return 0;
     }
-    RVA(0x00094ce0, 0x5)
+    RVA(0x00094c00, 0x5)
     virtual i32 OnLButtonUp(WPARAM keyFlags, i32 x, i32 y) {
         return 0;
     }
-    RVA(0x00094d00, 0x5)
+    RVA(0x00094c20, 0x5)
     virtual i32 OnRButtonUp(WPARAM keyFlags, i32 x, i32 y) {
         return 0;
     }
-    RVA(0x00094d20, 0x5)
+    RVA(0x00094c40, 0x5)
     virtual i32 OnMouseMove(WPARAM keyFlags, i32 x, i32 y) {
         return 0;
     }
-    RVA(0x00094d40, 0x5)
+    RVA(0x00094c60, 0x5)
     virtual i32 OnLButtonDblClk(WPARAM keyFlags, i32 x, i32 y) {
         return 0;
     }
-    RVA(0x00094d60, 0x5)
+    RVA(0x00094c80, 0x5)
     virtual i32 OnRButtonDblClk(WPARAM keyFlags, i32 x, i32 y) {
         return 0;
     }
@@ -172,7 +172,7 @@ public:
         i32 windowWidth,
         i32 windowHeight
     );
-    RVA(0x00080d20, 0x24)
+    RVA(0x00080c40, 0x24)
     virtual i32 InitDefault(HINSTANCE hInstance, char* szName) {
         return Init(
             hInstance,
@@ -186,7 +186,7 @@ public:
     }
     virtual void CloseResources();
 
-    RVA(0x00080d60, 0x18)
+    RVA(0x00080c80, 0x18)
     virtual i32 HasWindowAndManager() {
         return m_gameWnd != NULL && m_gameMgr != NULL;
     }
@@ -195,12 +195,12 @@ public:
     virtual void OnIdle();
     virtual void FreeGameManager();
 
-    RVA(0x00080d90, 0x5)
+    RVA(0x00080cb0, 0x5)
     virtual i32 HandleCommand(i32, GruntzCommandId, i32) {
         return 0;
     }
     virtual BOOL InitializeAccelerators(LPCSTR lpTable);
-    RVA(0x00080db0, 0x1)
+    RVA(0x00080cd0, 0x1)
     virtual void ShowError() {}
     virtual CGameWnd* InitializeGameWindow();
     virtual CGameMgr* InitializeGameManager();

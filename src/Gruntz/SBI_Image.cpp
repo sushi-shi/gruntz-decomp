@@ -24,7 +24,7 @@
 
 #include <string.h>
 
-RVA(0x000e6c80, 0xc3)
+RVA(0x000e6db0, 0xc3)
 i32 CSBI_Image::SetupImage(
     CStatusBarMgr* owner,
     CDDrawSurfaceMgr* host,
@@ -60,17 +60,17 @@ i32 CSBI_Image::SetupImage(
     return 0;
 }
 
-RVA(0x000e6d90, 0x8)
+RVA(0x000e6ec0, 0x8)
 void CSBI_Image::Reset() {
     SetFrame(NULL);
 }
 
-RVA(0x000e6db0, 0x8)
+RVA(0x000e6ee0, 0x8)
 i32 CSBI_Image::Refresh(i32) {
     return 1;
 }
 
-RVA(0x000e6dd0, 0x45)
+RVA(0x000e6f00, 0x45)
 i32 CSBI_Image::Render() {
     if (m_redrawFrames > 0) {
         m_redrawFrames--;
@@ -85,7 +85,7 @@ i32 CSBI_Image::Render() {
 }
 
 // @early-stop
-RVA(0x000e6e40, 0x17c)
+RVA(0x000e6f70, 0x17c)
 i32 CSBI_Image::SerializeFields(
     CFileMemBase* ar,
     SerialMode mode,

@@ -83,78 +83,78 @@
 #include <stdlib.h>
 #include <string.h>
 
-RVA_DYNINIT(0x00058f60, 0x5, s_gruntDirNorth)
-RVA_DYNINIT(0x00058f80, 0x1a, s_gruntDirNorth)
-RVA_DYNINIT(0x00058fb0, 0x5, s_gruntDirNorthEast)
-RVA_DYNINIT(0x00058fd0, 0x1a, s_gruntDirNorthEast)
-RVA_DYNINIT(0x00059000, 0x5, s_gruntDirEast)
-RVA_DYNINIT(0x00059020, 0x1f, s_gruntDirEast)
-RVA_DYNINIT(0x00059050, 0x5, s_gruntDirSouthEast)
-RVA_DYNINIT(0x00059070, 0x1a, s_gruntDirSouthEast)
-RVA_DYNINIT(0x000590a0, 0x5, s_gruntDirSouth)
-RVA_DYNINIT(0x000590c0, 0x1f, s_gruntDirSouth)
-RVA_DYNINIT(0x000590f0, 0x5, s_gruntDirSouthWest)
-RVA_DYNINIT(0x00059110, 0x1f, s_gruntDirSouthWest)
-RVA_DYNINIT(0x00059140, 0x5, s_gruntDirWest)
-RVA_DYNINIT(0x00059160, 0x1f, s_gruntDirWest)
-RVA_DYNINIT(0x00059190, 0x5, s_gruntDirNorthWest)
-RVA_DYNINIT(0x000591b0, 0x17, s_gruntDirNorthWest)
-RVA_DYNINIT(0x000591e0, 0x5, s_gruntDirCenter)
-RVA_DYNINIT(0x00059200, 0x1a, s_gruntDirCenter)
+RVA_DYNINIT(0x00058e30, 0x5, s_gruntDirNorth)
+RVA_DYNINIT(0x00058e50, 0x1a, s_gruntDirNorth)
+RVA_DYNINIT(0x00058e80, 0x5, s_gruntDirNorthEast)
+RVA_DYNINIT(0x00058ea0, 0x1a, s_gruntDirNorthEast)
+RVA_DYNINIT(0x00058ed0, 0x5, s_gruntDirEast)
+RVA_DYNINIT(0x00058ef0, 0x1f, s_gruntDirEast)
+RVA_DYNINIT(0x00058f20, 0x5, s_gruntDirSouthEast)
+RVA_DYNINIT(0x00058f40, 0x1a, s_gruntDirSouthEast)
+RVA_DYNINIT(0x00058f70, 0x5, s_gruntDirSouth)
+RVA_DYNINIT(0x00058f90, 0x1f, s_gruntDirSouth)
+RVA_DYNINIT(0x00058fc0, 0x5, s_gruntDirSouthWest)
+RVA_DYNINIT(0x00058fe0, 0x1f, s_gruntDirSouthWest)
+RVA_DYNINIT(0x00059010, 0x5, s_gruntDirWest)
+RVA_DYNINIT(0x00059030, 0x1f, s_gruntDirWest)
+RVA_DYNINIT(0x00059060, 0x5, s_gruntDirNorthWest)
+RVA_DYNINIT(0x00059080, 0x17, s_gruntDirNorthWest)
+RVA_DYNINIT(0x000590b0, 0x5, s_gruntDirCenter)
+RVA_DYNINIT(0x000590d0, 0x1a, s_gruntDirCenter)
 
-DATA(0x0020dc64)
+DATA(0x0020ec0c)
 static char s_RollingBallzTime[] = "RollingBallzTime";
-DATA(0x0020dc78)
+DATA(0x0020ec20)
 static char s_RollingBallzSpeed[] = "RollingBallzSpeed";
-DATA(0x0020dcac)
+DATA(0x0020ec54)
 static char s_TeleportRadius[] = "TeleportRadius";
-DATA(0x0020dcc0)
+DATA(0x0020ec68)
 static char s_ToyzRadius[] = "ToyzRadius";
-DATA(0x0020dcd0)
+DATA(0x0020ec78)
 static char s_RessurectionRadius[] = "RessurectionRadius";
-DATA(0x0020dce8)
+DATA(0x0020ec90)
 static char s_HealthRadius[] = "HealthRadius";
-DATA(0x0020dcf8)
+DATA(0x0020eca0)
 static char s_FreezeRadius[] = "FreezeRadius";
-DATA(0x0020dd30)
+DATA(0x0020ecd8)
 static char s_GAME_ATTACK[] = "GAME_ATTACK";
-DATA(0x0020dd40)
+DATA(0x0020ece8)
 static char s__LOSEITEM[] = "_LOSEITEM";
-DATA(0x0020dd4c)
+DATA(0x0020ecf4)
 static char s_knockKey[] = "KnockBackTimePerTile";
-DATA(0x0020dd68)
+DATA(0x0020ed10)
 static char s_IMPACTWM3[] = "GRUNTZ_NORMALGRUNT_IMPACTWM3";
-DATA(0x0020dd8c)
+DATA(0x0020ed34)
 static char s_IMPACTMM2[] = "GRUNTZ_NORMALGRUNT_IMPACTMM2";
-DATA(0x0020ddb0)
+DATA(0x0020ed58)
 static char s_IMPACTWM2[] = "GRUNTZ_NORMALGRUNT_IMPACTWM2";
-DATA(0x0020ddd4)
+DATA(0x0020ed7c)
 static char s_BLOCKBODY1[] = "GRUNTZ_NORMALGRUNT_BLOCKBODY1";
-DATA(0x0020ddf8)
+DATA(0x0020eda0)
 static char s_IMPACTWM1[] = "GRUNTZ_NORMALGRUNT_IMPACTWM1";
-DATA(0x0020de1c)
+DATA(0x0020edc4)
 static char s_IMPACTMM1[] = "GRUNTZ_NORMALGRUNT_IMPACTMM1";
-DATA(0x0020de40)
+DATA(0x0020ede8)
 static char s_BLOCKBODY2[] = "GRUNTZ_NORMALGRUNT_BLOCKBODY2";
-DATA(0x0020de64)
+DATA(0x0020ee0c)
 static char s_TOOBZ[] = "GRUNTZ_TOOBGRUNT_TOOBZGRUNTUI1B";
-DATA(0x0020de8c)
+DATA(0x0020ee34)
 static char s_SPRING1[] = "GRUNTZ_SPRINGGRUNT_SPRINGGRUNTS1S1";
-DATA(0x0020deb8)
+DATA(0x0020ee60)
 static char s_SPRING2[] = "GRUNTZ_SPRINGGRUNT_SPRINGGRUNTS2S1";
-DATA(0x0020dee4)
+DATA(0x0020ee8c)
 static char s_BLOCKMETAL1[] = "GRUNTZ_NORMALGRUNT_BLOCKMETAL1";
-DATA(0x0020df0c)
+DATA(0x0020eeb4)
 static char s_IMPACTMM4[] = "GRUNTZ_NORMALGRUNT_IMPACTMM4";
-DATA(0x0020df54)
+DATA(0x0020eefc)
 static char s_DEATHTOUCHHIT[] = "GAME_DEATHTOUCHHIT";
-DATA(0x0020df6c)
+DATA(0x0020ef14)
 static char s_CONVERSIONHIT[] = "GAME_CONVERSIONHIT";
-DATA(0x0020dfac)
+DATA(0x0020ef54)
 static char s_AccelerateFlash[] = "AccelerateFlash";
-DATA(0x0020dfc0)
+DATA(0x0020ef68)
 static char s_SafeFlashTime[] = "SafeFlashTime";
-DATA(0x0020dfd0)
+DATA(0x0020ef78)
 static char s_FadeTransparency[] = "FadeTransparency";
 
 DATA(0x001e9788)
@@ -185,48 +185,48 @@ const u8 g_hitTable[23][23] = {
     {5, 100, 30, 20, 40, 25, 5, 10, 15, 50, 5, 40, 5, 30, 25, 20, 50, 100, 10, 0, 100, 100, 10},
 };
 
-RVA_DYNINIT(0x0005b8c0, 0x5, g_gruntDirEast)
-RVA_DYNINIT(0x0005b8e0, 0x1f, g_gruntDirEast)
-DATA(0x00244aa0)
+RVA_DYNINIT(0x0005b790, 0x5, g_gruntDirEast)
+RVA_DYNINIT(0x0005b7b0, 0x1f, g_gruntDirEast)
+DATA(0x002459f8)
 GruntDirectionCell g_gruntDirEast = GruntDirectionCell(1, 2, DIR_EAST);
-RVA_DYNINIT(0x0005b820, 0x5, g_gruntDirNorth)
-RVA_DYNINIT(0x0005b840, 0x1a, g_gruntDirNorth)
-DATA(0x00244ab0)
+RVA_DYNINIT(0x0005b6f0, 0x5, g_gruntDirNorth)
+RVA_DYNINIT(0x0005b710, 0x1a, g_gruntDirNorth)
+DATA(0x00245a08)
 GruntDirectionCell g_gruntDirNorth = GruntDirectionCell(0, 1, DIR_NORTH);
-RVA_DYNINIT(0x0005b960, 0x5, g_gruntDirSouth)
-RVA_DYNINIT(0x0005b980, 0x1f, g_gruntDirSouth)
-DATA(0x00244ac0)
+RVA_DYNINIT(0x0005b830, 0x5, g_gruntDirSouth)
+RVA_DYNINIT(0x0005b850, 0x1f, g_gruntDirSouth)
+DATA(0x00245a18)
 GruntDirectionCell g_gruntDirSouth = GruntDirectionCell(2, 1, DIR_SOUTH);
-RVA_DYNINIT(0x0005ba00, 0x5, g_gruntDirWest)
-RVA_DYNINIT(0x0005ba20, 0x1f, g_gruntDirWest)
-DATA(0x00244ad0)
+RVA_DYNINIT(0x0005b8d0, 0x5, g_gruntDirWest)
+RVA_DYNINIT(0x0005b8f0, 0x1f, g_gruntDirWest)
+DATA(0x00245a28)
 GruntDirectionCell g_gruntDirWest = GruntDirectionCell(1, 0, DIR_WEST);
-RVA_DYNINIT(0x0005b870, 0x5, g_gruntDirNorthEast)
-RVA_DYNINIT(0x0005b890, 0x1a, g_gruntDirNorthEast)
-DATA(0x00244ae0)
+RVA_DYNINIT(0x0005b740, 0x5, g_gruntDirNorthEast)
+RVA_DYNINIT(0x0005b760, 0x1a, g_gruntDirNorthEast)
+DATA(0x00245a38)
 GruntDirectionCell g_gruntDirNorthEast = GruntDirectionCell(0, 2, DIR_NORTHEAST);
-RVA_DYNINIT(0x0005ba50, 0x5, g_gruntDirNorthWest)
-RVA_DYNINIT(0x0005ba70, 0x17, g_gruntDirNorthWest)
-DATA(0x00244b18)
+RVA_DYNINIT(0x0005b920, 0x5, g_gruntDirNorthWest)
+RVA_DYNINIT(0x0005b940, 0x17, g_gruntDirNorthWest)
+DATA(0x00245a70)
 GruntDirectionCell g_gruntDirNorthWest = GruntDirectionCell(0, 0, DIR_NORTHWEST);
-RVA_DYNINIT(0x0005b910, 0x5, g_gruntDirSouthEast)
-RVA_DYNINIT(0x0005b930, 0x1a, g_gruntDirSouthEast)
-DATA(0x00244b28)
+RVA_DYNINIT(0x0005b7e0, 0x5, g_gruntDirSouthEast)
+RVA_DYNINIT(0x0005b800, 0x1a, g_gruntDirSouthEast)
+DATA(0x00245a80)
 GruntDirectionCell g_gruntDirSouthEast = GruntDirectionCell(2, 2, DIR_SOUTHEAST);
-RVA_DYNINIT(0x0005baa0, 0x5, g_gruntDirCenter)
-RVA_DYNINIT(0x0005bac0, 0x1a, g_gruntDirCenter)
-DATA(0x00244b38)
+RVA_DYNINIT(0x0005b970, 0x5, g_gruntDirCenter)
+RVA_DYNINIT(0x0005b990, 0x1a, g_gruntDirCenter)
+DATA(0x00245a90)
 GruntDirectionCell g_gruntDirCenter = GruntDirectionCell(1, 1, DIR_CENTER);
-RVA_DYNINIT(0x0005b9b0, 0x5, g_gruntDirSouthWest)
-RVA_DYNINIT(0x0005b9d0, 0x1f, g_gruntDirSouthWest)
-DATA(0x00244b48)
+RVA_DYNINIT(0x0005b880, 0x5, g_gruntDirSouthWest)
+RVA_DYNINIT(0x0005b8a0, 0x1f, g_gruntDirSouthWest)
+DATA(0x00245aa0)
 GruntDirectionCell g_gruntDirSouthWest = GruntDirectionCell(2, 0, DIR_SOUTHWEST);
 
-RVA_DYNINIT(0x0005bc30, 0xa, CActRegPool<CGrunt>::s_table)
-RVA_DYNINIT(0x0005bc50, 0x15, CActRegPool<CGrunt>::s_table)
-RVA_DYNINIT(0x0005bc80, 0xe, CActRegPool<CGrunt>::s_table)
-RVA_DYNINIT(0x0005bca0, 0x1f, CActRegPool<CGrunt>::s_table)
-template<> DATA(0x00244af0)
+RVA_DYNINIT(0x0005bb00, 0xa, CActRegPool<CGrunt>::s_table)
+RVA_DYNINIT(0x0005bb20, 0x15, CActRegPool<CGrunt>::s_table)
+RVA_DYNINIT(0x0005bb50, 0xe, CActRegPool<CGrunt>::s_table)
+RVA_DYNINIT(0x0005bb70, 0x1f, CActRegPool<CGrunt>::s_table)
+template<> DATA(0x00245a48)
 CActReg CActRegPool<CGrunt>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 #define LK(key)                                                                                    \
@@ -244,7 +244,7 @@ CActReg CActRegPool<CGrunt>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
     } while (0)
 
 // @early-stop
-RVA(0x00056f80, 0xb0)
+RVA(0x00056e50, 0xb0)
 i32* CGrunt::EntranceTileOffset(i32* out) {
     i32 x = m_lastTilePx.m_x;
     i32 y = m_lastTilePx.m_y;
@@ -320,7 +320,7 @@ i32* CGrunt::EntranceTileOffset(i32* out) {
         g_coordPool.m_freeHead = node;                                                             \
     }
 
-RVA(0x00057060, 0x72)
+RVA(0x00056f30, 0x72)
 void CGrunt::ComputeFacing(double dt) {
     CWwdSpriteObject* h = m_object;
     double dx = static_cast<double>(m_lastTilePx.m_x) - static_cast<double>(h->m_screenX);
@@ -389,7 +389,7 @@ void CGrunt::ComputeFacing(double dt) {
         BIND_ACT_644AF0_TYPED(id, handler);                                                        \
     }
 
-RVA(0x00057100, 0x590)
+RVA(0x00056fd0, 0x590)
 i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
     SpellzEffect idx = static_cast<SpellzEffect>(forced);
     if (forced == 0) {
@@ -598,7 +598,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
     }
 }
 
-RVA(0x00057800, 0x64)
+RVA(0x000576d0, 0x64)
 void CGrunt::SelectMoveIcon(i32 moveIconId) {
     if (IDX(m_moveIcon) == moveIconId) {
         return;
@@ -613,7 +613,7 @@ void CGrunt::SelectMoveIcon(i32 moveIconId) {
     SET_DRAW_FILL(h, SHADE_PAL_16, sel);
 }
 
-RVA(0x00057890, 0x19c)
+RVA(0x00057760, 0x19c)
 i32 CGrunt::BuildGruntLoseItemAnimation() {
     FinishActiveAction();
     PickupType reason = m_entranceReason;
@@ -645,7 +645,7 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
     return 1;
 }
 
-RVA(0x00057aa0, 0x9b)
+RVA(0x00057970, 0x9b)
 i32 CGrunt::TryPowerupAtTile() {
     PickupType reason = m_entranceReason;
     if (reason <= PICKUP_NONE || reason >= PICKUP_TOYZ_FIRST) {
@@ -673,7 +673,7 @@ i32 CGrunt::TryPowerupAtTile() {
     return 1;
 }
 
-RVA(0x00057b70, 0x77)
+RVA(0x00057a40, 0x77)
 void CGrunt::EnsureVehicleLoopSound(const char* key) {
     SoundBuffer*& sound = m_vehicleLoopSound;
     if (sound != NULL) {
@@ -698,7 +698,7 @@ void CGrunt::EnsureVehicleLoopSound(const char* key) {
     sound->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, true);
 }
 
-RVA(0x00057c10, 0x1e)
+RVA(0x00057ae0, 0x1e)
 void CGrunt::StopVehicleLoopSound() {
     SoundBuffer* sound = m_vehicleLoopSound;
     if (sound) {
@@ -707,7 +707,7 @@ void CGrunt::StopVehicleLoopSound() {
     }
 }
 
-RVA(0x00057c40, 0x71)
+RVA(0x00057b10, 0x71)
 void CGrunt::EnsurePowerupLoopSound(const char* key) {
     SoundBuffer*& sound = m_powerupLoopSound;
     if (sound != NULL) {
@@ -728,7 +728,7 @@ void CGrunt::EnsurePowerupLoopSound(const char* key) {
     sound->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, true);
 }
 
-RVA(0x00057ce0, 0x1e)
+RVA(0x00057bb0, 0x1e)
 void CGrunt::StopPowerupLoopSound() {
     SoundBuffer* sound = m_powerupLoopSound;
     if (sound) {
@@ -739,7 +739,7 @@ void CGrunt::StopPowerupLoopSound() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00057d10, 0x4e)
+RVA(0x00057be0, 0x4e)
 void CGrunt::ReapplyLoopSoundParams() {
     if (g_gameReg->m_soundEnabled == false) {
         return;
@@ -754,13 +754,13 @@ void CGrunt::ReapplyLoopSoundParams() {
     }
 }
 
-RVA(0x00057d80, 0x11)
+RVA(0x00057c50, 0x11)
 void CGrunt::DestroyAnims() {
     STOP_GRUNT_LOOP_SOUNDS;
 }
 
 // @early-stop
-RVA(0x00057db0, 0x8f8)
+RVA(0x00057c80, 0x8f8)
 i32 CGrunt::PathScan() {
     CMapMgr* grid = g_gameReg->m_tileGrid;
 
@@ -1011,7 +1011,7 @@ i32 CGrunt::PathScan() {
 }
 
 // @early-stop
-RVA(0x000588f0, 0x1ea)
+RVA(0x000587c0, 0x1ea)
 void CGrunt::OnStruck(b32 wasHit) {
     m_struckTimerLo = 0xfa0;
     m_struckTimerHi = 0;
@@ -1074,12 +1074,12 @@ void CGrunt::OnStruck(b32 wasHit) {
     }
 }
 
-RVA(0x00058b60, 0x2d)
+RVA(0x00058a30, 0x2d)
 void CWwdSpriteObject::SetAnimation(CAniElement* animation, i32 advanceImmediately){
     SET_ANIMATION_AND_MAYBE_ADVANCE(this, animation, advanceImmediately)
 }
 
-RVA(0x00058bc0, 0xa1)
+RVA(0x00058a90, 0xa1)
 i32 CMotionState::SetParams(
     double posX,
     double posY,
@@ -1107,19 +1107,19 @@ i32 CMotionState::SetParams(
     return 1;
 }
 
-RVA(0x00058ca0, 0x19)
+RVA(0x00058b70, 0x19)
 void CMotionState::SetZ(double z) {
     m_maxStep.x = z;
     m_maxStep.y = z;
     m_maxStep.z = z;
 }
 
-RVA(0x00058cd0, 0x195)
+RVA(0x00058ba0, 0x195)
 CUserLogic::CUserLogic(CGameObject* obj) {
     USERLOGIC_ATTACH_TO_OBJECT(obj);
 }
 
-RVA(0x00058ee0, 0x5c)
+RVA(0x00058db0, 0x5c)
 i32 CPairRecord::Serialize(
     CFileMemBase* ar,
     SerialMode mode,
@@ -1140,7 +1140,7 @@ i32 CPairRecord::Serialize(
 }
 
 // @early-stop
-RVA(0x00059230, 0x450)
+RVA(0x00059100, 0x450)
 i32 CGrunt::HandleCombatContact(
     i32 otherPxX,
     i32 otherPxY,
@@ -1232,7 +1232,7 @@ i32 CGrunt::HandleCombatContact(
                 recF = g_typeColl.Elem(keyF);
             }
             ActNameConstructGrownSlots();
-            bool neF = (strcmp(*CTypeCollRuntime::NameOf(recF), DATA_COMPGEN(0x0020d2e8, "F")) != 0);
+            bool neF = (strcmp(*CTypeCollRuntime::NameOf(recF), DATA_COMPGEN(0x0020e290, "F")) != 0);
             if (neF) {
                 i32 keyO = m_logicRecord->m_eventCode;
                 g_typeColl.m_grown = 0;
@@ -1260,7 +1260,7 @@ i32 CGrunt::HandleCombatContact(
     return 1;
 }
 
-RVA(0x000597a0, 0x13c0)
+RVA(0x00059670, 0x13c0)
 i32 CGrunt::LoadGruntCombatAnimations(
     PickupType attackKind,
     i32 struckPose,
@@ -1748,7 +1748,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
 }
 
 // @early-stop
-RVA(0x0005b050, 0x40b)
+RVA(0x0005af20, 0x40b)
 i32 CGrunt::CommitNeighbor(
     i32 targetPlayerIndex,
     i32 targetUnitIndex,
@@ -1860,7 +1860,7 @@ i32 CGrunt::CommitNeighbor(
 }
 
 // @early-stop
-RVA(0x0005b570, 0x12b)
+RVA(0x0005b440, 0x12b)
 i32 CGrunt::BeginAttack(i32 targetPxX, i32 targetPxY) {
     if (m_entranceCommitted != false) {
 
@@ -1887,7 +1887,7 @@ i32 CGrunt::BeginAttack(i32 targetPxX, i32 targetPxY) {
     return 0;
 }
 
-RVA(0x0005b6f0, 0xb5)
+RVA(0x0005b5c0, 0xb5)
 CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
     if (m_neighborPlayerIndex == -1) {
         return NULL;
@@ -1922,14 +1922,14 @@ CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
     return NULL;
 }
 
-RVA(0x0005b7e0, 0x23)
+RVA(0x0005b6b0, 0x23)
 CObject* SoundCueRegistry::Lookup(const char* key) {
     CObject* value = NULL;
     MapLookup(m_cues, key, value);
     return value;
 }
 
-RVA(0x0005baf0, 0xf4)
+RVA(0x0005b9c0, 0xf4)
 i32 DispatchGruntLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;
     switch (record->LogicEvent()) {
@@ -1967,7 +1967,7 @@ i32 DispatchGruntLogic(CGameObject* owner) {
     return 1;
 }
 
-RVA(0x0005bcd0, 0x102)
+RVA(0x0005bba0, 0x102)
 void CGrunt::FireActivation(i32 id) {
     CActHandler* e = CActRegPool<CGrunt>::s_table.ResolveEntry(id);
     if (*e != NULL) {
@@ -1976,7 +1976,7 @@ void CGrunt::FireActivation(i32 id) {
 }
 
 // @early-stop
-RVA(0x0005be30, 0x9e5)
+RVA(0x0005bd00, 0x9e5)
 void RegisterGruntActions() {
     REGISTER_KEY_644AF0("A", &CGrunt::ResolveEntranceArrival);
     REGISTER_KEY_644AF0("B", &CGrunt::StepWarpExit);
@@ -1999,7 +1999,7 @@ void RegisterGruntActions() {
     REGISTER_KEY_644AF0_DERIVED("S", &CGrunt::FinishEntranceMove);
 }
 
-RVA(0x0005caa0, 0x5e4)
+RVA(0x0005c970, 0x5e4)
 void CGrunt::Activate() {
     double diag = sqrt(2.0);
 
@@ -2102,7 +2102,7 @@ DATA(0x001e9a68)
 const double s_fpZero = 0.0;
 
 // @early-stop
-RVA(0x0005d210, 0x1554)
+RVA(0x0005d0e0, 0x1554)
 void CGrunt::StepBehavior(char*) {
     if (static_cast<i64>(g_frameTime) - m_struckClock64 >= m_struckTimer64) {
         m_struckCount = 0;
@@ -2783,7 +2783,7 @@ kindDispatch:
 }
 
 // @early-stop
-RVA(0x0005ecd0, 0x4f3)
+RVA(0x0005eba0, 0x4f3)
 void CGrunt::FinalizeStep(char* name) {
     CUserLogic::FinalizeStep(name);
     AdvanceMotion();
@@ -2896,7 +2896,7 @@ void CGrunt::FinalizeStep(char* name) {
 }
 
 // @early-stop
-RVA(0x0005f310, 0xb5e)
+RVA(0x0005f1e0, 0xb5e)
 void CGrunt::AdvanceMotion() {
     if (m_arrivalState != AI_BATTLEZ_PATH) {
         bool eq;

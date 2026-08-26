@@ -2,20 +2,20 @@
 # strict data containment cannot infer - e.g. a one-past-the-end loop bound
 # spelled as the array's end. Retail evidence; consumed by the delinker.
 function_rva	target_rva	site_rva	owner	addend	occurrences	provenance
-0x00024190	0x001e9628	0x000241eb	?g_unitIndexBitTable@@3PBGB	0x20	1	retail loop bound equals DATA-sized array end
-0x00143fc0	0x002846f0	0x00144082	_s_palBmp$S	0x400	1	one-past s_palBmp loop bound (base obj fileimage.obj: sym=_s_palBmp$S stored=+0x400)
-0x00144ee0	0x00284af1	0x00144fc2	_s_palPcx$S	0x401	1	one-past s_palPcx byte-cursor loop bound (base obj fileimage.obj: sym=_s_palPcx$S stored=+0x401)
-0x001884c0	0x002bf8e7	0x0018852b	_length_code$S	0xffffffff	1	cl spells the 1-based loop as array-1 (base obj trees.obj: sym=_length_code stored=-1); containment cannot name one-before-start
-0x001884c0	0x002c0158	0x00188696	_static_dtree$S	0x78	1	one-past-the-end loop bound equals the next datum's start (base obj trees.obj: sym=_static_dtree stored=+0x78)
-0x00189b90	0x002252a8	0x00189c6b	_extra_dbits$S	0x78	1	one-past-the-end loop bound equals the next datum's start (base obj trees.obj: sym=_extra_dbits stored=+0x78)
-0x0014b770	0x002bed06	*	?g_scratch@@3PAEA	0xfffffffe	7	before-start scan pointer g_scratch-2 (base obj ddrawshadeblit.obj stored=-0x2)
-0x0014b770	0x002bed07	*	?g_scratch@@3PAEA	0xffffffff	6	before-start scan pointer g_scratch-1 (base obj stored=-0x1)
-0x0014cfc0	0x002bed06	*	?g_scratch@@3PAEA	0xfffffffe	3	before-start scan pointer g_scratch-2
-0x0014cfc0	0x002bed07	*	?g_scratch@@3PAEA	0xffffffff	2	before-start scan pointer g_scratch-1
-0x0014d950	0x002bed06	*	?g_scratch@@3PAEA	0xfffffffe	2	before-start scan pointer g_scratch-2
-0x0014d950	0x002bed07	*	?g_scratch@@3PAEA	0xffffffff	2	before-start scan pointer g_scratch-1
-0x0003bb50	0x0022c00c	0x0003bbf5	?g_mapNameBuf@@3PADA	0xfffffffc	1	before-start pointer g_mapNameBuf-4 (base obj customworlddialog.obj stored=-0x4)
-0x0013f740	0x00253c9e	*	?g_clut@@3PAGA	0xfffffffe	2	before-start pointer g_clut-2 (base obj ddsurface.obj stored=-0x2)
-0x0001a700	0x0020b978	0x0001ad6e	?g_levelMsgRectsB@@3PAUtagRECT@@A	0x80	1	one-past-the-end loop bound equals the RECT[8] array end (base obj bootystateactivate.obj stored=+0x80)
-0x0001a040	0x0020b984	0x0001a57d	?g_levelMsgRectsB@@3PAUtagRECT@@A	0x8c	1	one-past-the-end &rects[8].bottom loop bound (base obj bootystateactivate.obj stored=+0x8c)
-0x000db280	0x0024c434	0x000db292	?g_playerColorAvailable@@3PAHA	0x44	1	one-past-the-end loop bound equals the int[17] array end (base obj gruntzplayer.obj stored=+0x44)
+0x00024120	0x001e9628	0x0002417b	?g_unitIndexBitTable@@3PBGB	0x20	1	retail loop bound equals DATA-sized array end
+0x001442a0	0x00285648	0x00144362	_s_palBmp$S	0x400	1	one-past s_palBmp loop bound (base obj fileimage.obj: sym=_s_palBmp$S stored=+0x400)
+0x001451c0	0x00285a49	0x001452a2	_s_palPcx$S	0x401	1	one-past s_palPcx byte-cursor loop bound (base obj fileimage.obj: sym=_s_palPcx$S stored=+0x401)
+0x001887a0	0x002c083f	0x0018880b	_length_code$S	0xffffffff	1	cl spells the 1-based loop as array-1 (base obj trees.obj: sym=_length_code stored=-1); containment cannot name one-before-start
+0x001887a0	0x002c10b0	0x00188976	_static_dtree$S	0x78	1	one-past-the-end loop bound equals the next datum's start (base obj trees.obj: sym=_static_dtree stored=+0x78)
+0x00189e70	0x00226208	0x00189f4b	_extra_dbits$S	0x78	1	one-past-the-end loop bound equals the next datum's start (base obj trees.obj: sym=_extra_dbits stored=+0x78)
+0x0014ba50	0x002bfc5e	*	?g_scratch@@3PAEA	0xfffffffe	7	before-start scan pointer g_scratch-2 (base obj ddrawshadeblit.obj stored=-0x2)
+0x0014ba50	0x002bfc5f	*	?g_scratch@@3PAEA	0xffffffff	6	before-start scan pointer g_scratch-1 (base obj stored=-0x1)
+0x0014d2a0	0x002bfc5e	*	?g_scratch@@3PAEA	0xfffffffe	3	before-start scan pointer g_scratch-2
+0x0014d2a0	0x002bfc5f	*	?g_scratch@@3PAEA	0xffffffff	2	before-start scan pointer g_scratch-1
+0x0014dc30	0x002bfc5e	*	?g_scratch@@3PAEA	0xfffffffe	2	before-start scan pointer g_scratch-2
+0x0014dc30	0x002bfc5f	*	?g_scratch@@3PAEA	0xffffffff	2	before-start scan pointer g_scratch-1
+0x0003ba70	0x0022cf64	0x0003bb15	?g_mapNameBuf@@3PADA	0xfffffffc	1	before-start pointer g_mapNameBuf-4 (base obj customworlddialog.obj stored=-0x4)
+0x0013fa20	0x00254bf6	*	?g_clut@@3PAGA	0xfffffffe	2	before-start pointer g_clut-2 (base obj ddsurface.obj stored=-0x2)
+0x0001a710	0x0020c978	0x0001ad7e	?g_levelMsgRectsB@@3PAUtagRECT@@A	0x80	1	one-past-the-end loop bound equals the RECT[8] array end (base obj bootystateactivate.obj stored=+0x80)
+0x0001a050	0x0020c984	0x0001a58d	?g_levelMsgRectsB@@3PAUtagRECT@@A	0x8c	1	one-past-the-end &rects[8].bottom loop bound (base obj bootystateactivate.obj stored=+0x8c)
+0x000db2b0	0x0024d38c	0x000db2c2	?g_playerColorAvailable@@3PAHA	0x44	1	one-past-the-end loop bound equals the int[17] array end (base obj gruntzplayer.obj stored=+0x44)

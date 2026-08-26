@@ -8,7 +8,7 @@
 #include <Gruntz/String.h>
 #include <MsgParam.h>
 
-RVA(0x000387c0, 0xd4)
+RVA(0x000386e0, 0xd4)
 CString CInputConfig::LoadInputDeviceConfig(i32 uppercase) {
     CString name("None");
     switch (m_deviceId) {
@@ -36,7 +36,7 @@ CString CInputConfig::LoadInputDeviceConfig(i32 uppercase) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000388e0, 0x112)
+RVA(0x00038800, 0x112)
 i32 PopulateInputDeviceCombo(HWND hDlg, i32 ctrlId, i32 selIndex) {
     if (!hDlg) {
         return 0;

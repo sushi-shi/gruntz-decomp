@@ -40,38 +40,38 @@
 #include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
 
-RVA_DYNINIT(0x0003ffb0, 0xa, CActRegPool<CWormhole>::s_table)
-RVA_DYNINIT(0x0003ffd0, 0x15, CActRegPool<CWormhole>::s_table)
-RVA_DYNINIT(0x00040000, 0xe, CActRegPool<CWormhole>::s_table)
-RVA_DYNINIT(0x00040020, 0x1f, CActRegPool<CWormhole>::s_table)
-template<> DATA(0x00244660)
+RVA_DYNINIT(0x0003fed0, 0xa, CActRegPool<CWormhole>::s_table)
+RVA_DYNINIT(0x0003fef0, 0x15, CActRegPool<CWormhole>::s_table)
+RVA_DYNINIT(0x0003ff20, 0xe, CActRegPool<CWormhole>::s_table)
+RVA_DYNINIT(0x0003ff40, 0x1f, CActRegPool<CWormhole>::s_table)
+template<> DATA(0x002455b8)
 CActReg CActRegPool<CWormhole>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
-RVA_DYNINIT(0x000406b0, 0xa, CActRegPool<CGruntPuddle>::s_table)
-RVA_DYNINIT(0x000406d0, 0x15, CActRegPool<CGruntPuddle>::s_table)
-RVA_DYNINIT(0x00040700, 0xe, CActRegPool<CGruntPuddle>::s_table)
-RVA_DYNINIT(0x00040720, 0x1f, CActRegPool<CGruntPuddle>::s_table)
-template<> DATA(0x002445e8)
+RVA_DYNINIT(0x000405d0, 0xa, CActRegPool<CGruntPuddle>::s_table)
+RVA_DYNINIT(0x000405f0, 0x15, CActRegPool<CGruntPuddle>::s_table)
+RVA_DYNINIT(0x00040620, 0xe, CActRegPool<CGruntPuddle>::s_table)
+RVA_DYNINIT(0x00040640, 0x1f, CActRegPool<CGruntPuddle>::s_table)
+template<> DATA(0x00245540)
 CActReg CActRegPool<CGruntPuddle>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
-RVA_DYNINIT(0x00041480, 0xa, CActRegPool<CTeleporter>::s_table)
-RVA_DYNINIT(0x000414a0, 0x15, CActRegPool<CTeleporter>::s_table)
-RVA_DYNINIT(0x000414d0, 0xe, CActRegPool<CTeleporter>::s_table)
-RVA_DYNINIT(0x000414f0, 0x1f, CActRegPool<CTeleporter>::s_table)
-template<> DATA(0x002446b0)
+RVA_DYNINIT(0x000413a0, 0xa, CActRegPool<CTeleporter>::s_table)
+RVA_DYNINIT(0x000413c0, 0x15, CActRegPool<CTeleporter>::s_table)
+RVA_DYNINIT(0x000413f0, 0xe, CActRegPool<CTeleporter>::s_table)
+RVA_DYNINIT(0x00041410, 0x1f, CActRegPool<CTeleporter>::s_table)
+template<> DATA(0x00245608)
 CActReg CActRegPool<CTeleporter>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
-DATA(0x0020c1c0)
+DATA(0x0020d1c0)
 char g_puddleSpriteKey[] = "GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE2";
 
-RVA_COMPGEN(0x00010950, 0x1e, ??_GCWormhole@@UAEPAXI@Z)
-RVA_COMPGEN(0x00010980, 0x44, ??1CWormhole@@UAE@XZ)
+RVA_COMPGEN(0x00010960, 0x1e, ??_GCWormhole@@UAEPAXI@Z)
+RVA_COMPGEN(0x00010990, 0x44, ??1CWormhole@@UAE@XZ)
 
-RVA_COMPGEN(0x00010ce0, 0x1e, ??_GCGruntPuddle@@UAEPAXI@Z)
-RVA_COMPGEN(0x00010d10, 0x44, ??1CGruntPuddle@@UAE@XZ)
+RVA_COMPGEN(0x00010cf0, 0x1e, ??_GCGruntPuddle@@UAEPAXI@Z)
+RVA_COMPGEN(0x00010d20, 0x44, ??1CGruntPuddle@@UAE@XZ)
 
-RVA_COMPGEN(0x00010da0, 0x1e, ??_GCTeleporter@@UAEPAXI@Z)
-RVA_COMPGEN(0x00010dd0, 0x44, ??1CTeleporter@@UAE@XZ)
+RVA_COMPGEN(0x00010db0, 0x1e, ??_GCTeleporter@@UAEPAXI@Z)
+RVA_COMPGEN(0x00010de0, 0x44, ??1CTeleporter@@UAE@XZ)
 
-RVA(0x0003fc70, 0x1db)
+RVA(0x0003fb90, 0x1db)
 CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
     SetImageSetByName("GAME_WORMHOLE");
@@ -91,7 +91,7 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
     SET_DRAW_FILL(s, SHADE_DST_BY_SRC_16, color);
 }
 
-RVA(0x0003fed0, 0xa9)
+RVA(0x0003fdf0, 0xa9)
 i32 CWormhole::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
@@ -117,7 +117,7 @@ i32 CWormhole::SerializeDispatch(
     return 1;
 }
 
-RVA(0x00040050, 0x102)
+RVA(0x0003ff70, 0x102)
 void CWormhole::FireActivation(i32 idx) {
     if (*CActRegPool<CWormhole>::s_table.ResolveEntry(idx) != NULL) {
         CActHandler fn = *CActRegPool<CWormhole>::s_table.ResolveEntry(idx);
@@ -125,14 +125,14 @@ void CWormhole::FireActivation(i32 idx) {
     }
 }
 
-RVA(0x000401b0, 0x18d)
+RVA(0x000400d0, 0x18d)
 void RegisterWormholeLogic() {
     ACT_NAME_ID(idx, "A")
     CActHandler* dslot = CActRegPool<CWormhole>::s_table.ResolveEntry(idx);
     *dslot = static_cast<CActHandler>(&CWormhole::SpawnPartners);
 }
 
-RVA(0x000403b0, 0xa5)
+RVA(0x000402d0, 0xa5)
 i32 CWormhole::SpawnPartners() {
 
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
@@ -170,7 +170,7 @@ i32 CWormhole::SpawnPartners() {
     return 0;
 }
 
-RVA(0x00040490, 0x1ab)
+RVA(0x000403b0, 0x1ab)
 CGruntPuddle::CGruntPuddle(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
@@ -185,7 +185,7 @@ CGruntPuddle::CGruntPuddle(CGameObject* obj)
     m_placed = false;
 }
 
-RVA(0x00040750, 0x102)
+RVA(0x00040670, 0x102)
 void CGruntPuddle::FireActivation(i32 id) {
     CActHandler* e = (CActRegPool<CGruntPuddle>::s_table.ResolveEntry(id));
     if ((*e) != NULL) {
@@ -194,7 +194,7 @@ void CGruntPuddle::FireActivation(i32 id) {
     }
 }
 
-RVA(0x000408b0, 0x2ac)
+RVA(0x000407d0, 0x2ac)
 void RegisterLogic() {
     ACT_NAME_ID_CALL_REPORT(id, "A")
     *CActRegPool<CGruntPuddle>::s_table.ResolveEntryCallReport(id) =
@@ -205,12 +205,12 @@ void RegisterLogic() {
         static_cast<CActHandler>(&CGruntPuddle::Remove);
 }
 
-RVA(0x00040c10, 0x3)
+RVA(0x00040b30, 0x3)
 i32 CGruntPuddle::Idle() {
     return 0;
 }
 
-RVA(0x00040c30, 0xb3)
+RVA(0x00040b50, 0xb3)
 i32 CGruntPuddle::Place(i32 playerIndex, i32 moveIcon, b32 animatePlacement, i32 gaugePoints) {
     CWwdSpriteObject* o = m_object;
     m_tileX = o->m_screenX >> TILE_SHIFT_PX;
@@ -231,7 +231,7 @@ i32 CGruntPuddle::Place(i32 playerIndex, i32 moveIcon, b32 animatePlacement, i32
     return 1;
 }
 
-RVA(0x00040d20, 0xe3)
+RVA(0x00040c40, 0xe3)
 i32 CGruntPuddle::Remove() {
     if (m_placed != false) {
         CGruntzMgr* reg = g_gameReg;
@@ -266,7 +266,7 @@ i32 CGruntPuddle::Remove() {
     return 0;
 }
 
-RVA(0x00040e50, 0x170)
+RVA(0x00040d70, 0x170)
 i32 CGruntPuddle::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
@@ -307,7 +307,7 @@ i32 CGruntPuddle::SerializeDispatch(
 }
 
 // @early-stop
-RVA(0x00041020, 0x170)
+RVA(0x00040f40, 0x170)
 CTeleporter::CTeleporter(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_armClock = 0;
     m_interval = 0;
@@ -319,7 +319,7 @@ CTeleporter::CTeleporter(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     ReapplyConfig();
 }
 
-RVA(0x000411f0, 0xa0)
+RVA(0x00041110, 0xa0)
 void CTeleporter::LoadColors() {
     TeleporterKind kind = static_cast<TeleporterKind>(m_object->m_smarts);
 
@@ -345,7 +345,7 @@ void CTeleporter::LoadColors() {
     SET_DRAW_FILL(s, SHADE_DST_BY_SRC_16, colorEntry);
 }
 
-RVA(0x000412c0, 0x63)
+RVA(0x000411e0, 0x63)
 i32 CTeleporter::ReapplyConfig() {
     SetImageSetByName("GAME_WORMHOLE");
     SwitchAnimationByName("GAME_TELEPORTEROPEN", 0);
@@ -356,7 +356,7 @@ i32 CTeleporter::ReapplyConfig() {
     return 1;
 }
 
-RVA(0x00041350, 0xee)
+RVA(0x00041270, 0xee)
 i32 CTeleporter::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
@@ -390,7 +390,7 @@ i32 CTeleporter::SerializeDispatch(
     return 1;
 }
 
-RVA(0x00041520, 0x102)
+RVA(0x00041440, 0x102)
 void CTeleporter::FireActivation(i32 coord) {
     CActHandler* e = (CActRegPool<CTeleporter>::s_table.ResolveEntry(coord));
     if ((*e) != NULL) {
@@ -399,7 +399,7 @@ void CTeleporter::FireActivation(i32 coord) {
     }
 }
 
-RVA(0x00041680, 0x2ac)
+RVA(0x000415a0, 0x2ac)
 void CTeleporter_RegisterActs() {
     ACT_NAME_ID_CALL_REPORT(id, "A")
     *CActRegPool<CTeleporter>::s_table.ResolveEntryCallReport(id) =
@@ -410,7 +410,7 @@ void CTeleporter_RegisterActs() {
         static_cast<CActHandler>(&CTeleporter::Update);
 }
 
-RVA(0x000419e0, 0x81)
+RVA(0x00041900, 0x81)
 i32 CTeleporter::Begin() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(cur, g_engineFrameDelta)
     if (cur->m_finished == false) {
@@ -427,7 +427,7 @@ i32 CTeleporter::Begin() {
     return 0;
 }
 
-RVA(0x00041aa0, 0x312)
+RVA(0x000419c0, 0x312)
 i32 CTeleporter::Update() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     CWwdSpriteObject* a = m_wwdObject;

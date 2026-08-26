@@ -7,7 +7,7 @@
 #include <Gruntz/StatusBarMgr.h>
 #include <Ints.h>
 
-RVA(0x0010bc30, 0x78)
+RVA(0x0010bd60, 0x78)
 void CStatusBarMgr::StartDestructWarning(i32 countdownMs) {
     CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
     m_destructWarningState = DESTRUCT_WARNING_FORWARD;

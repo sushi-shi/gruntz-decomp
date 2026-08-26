@@ -27,7 +27,7 @@ public:
     ) OVERRIDE;
     virtual void ShowError() OVERRIDE;
 
-    RVA(0x00080aa0, 0x5)
+    RVA(0x000809c0, 0x5)
     virtual i32 HandleCommand(i32 notifyCode, GruntzCommandId cmdId, i32 lParam) OVERRIDE {
         return 0;
     }

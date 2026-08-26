@@ -36,7 +36,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-RVA(0x000f26f0, 0x106)
+RVA(0x000f2820, 0x106)
 i32 CGrunt::StepPostGuardBehavior() {
     switch (m_defenderState) {
         case AISTATE_SEEK:

@@ -18,19 +18,19 @@ typedef enum GruntzAppResId {
     IDC_ERROR_TEXT = 0x40d,
 } GruntzAppResId;
 
-DATA(0x00244ea0)
+DATA(0x00245df8)
 char g_errorText[0x100] = {0};
 
-RVA(0x00080850, 0x12)
+RVA(0x00080770, 0x12)
 CGruntzApp::CGruntzApp() {}
 
-RVA_COMPGEN(0x00080880, 0x1e, ??_GCGruntzApp@@UAEPAXI@Z)
-RVA(0x000808b0, 0x60)
+RVA_COMPGEN(0x000807a0, 0x1e, ??_GCGruntzApp@@UAEPAXI@Z)
+RVA(0x000807d0, 0x60)
 CGruntzApp::~CGruntzApp() {
     CGruntzApp::CloseResources();
 }
 
-RVA(0x00080930, 0x31)
+RVA(0x00080850, 0x31)
 i32 CGruntzApp::Init(
     HINSTANCE hInstance,
     char* szWindowName,
@@ -52,22 +52,22 @@ i32 CGruntzApp::Init(
            != 0;
 }
 
-RVA(0x00080980, 0x5)
+RVA(0x000808a0, 0x5)
 void CGruntzApp::CloseResources() {
     CGameApp::CloseResources();
 }
 
-RVA(0x000809a0, 0x57)
+RVA(0x000808c0, 0x57)
 CGameWnd* CGruntzApp::InitializeGameWindow() {
     CGruntzWnd* p = new CGruntzWnd;
     return p;
 }
-RVA(0x00080a20, 0x5a)
+RVA(0x00080940, 0x5a)
 CGameMgr* CGruntzApp::InitializeGameManager() {
     return new CGruntzMgr;
 }
 
-RVA(0x00080ac0, 0xf3)
+RVA(0x000809e0, 0xf3)
 void CGruntzApp::ShowError() {
 
     i32 id = m_errorCode;
@@ -95,13 +95,13 @@ void CGruntzApp::ShowError() {
     DialogBoxParamA(m_hInstance, "ERROR", NULL, CGruntzApp::ErrorDialogProc, 0);
 }
 
-RVA(0x00080c00, 0x48)
+RVA(0x00080b20, 0x48)
 void CGruntzApp::ShowMessage(const char* msg, HWND hParent) {
     strcpy(g_errorText, msg);
     DialogBoxParamA(m_hInstance, "MESSAGE", hParent, CGruntzApp::ErrorDialogProc, 0);
 }
 
-RVA(0x00080c70, 0x55)
+RVA(0x00080b90, 0x55)
 BOOL CALLBACK CGruntzApp::ErrorDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
     NetLobby::g_curDlg = hWnd;
 
@@ -121,5 +121,5 @@ BOOL CALLBACK CGruntzApp::ErrorDialogProc(HWND hWnd, UINT message, WPARAM wParam
     return false;
 }
 
-RVA_COMPGEN(0x00080cf0, 0x12, ??1CGameApp@@UAE@XZ)
-RVA_COMPGEN(0x00080dd0, 0x32, ??_GCGameApp@@UAEPAXI@Z)
+RVA_COMPGEN(0x00080c10, 0x12, ??1CGameApp@@UAE@XZ)
+RVA_COMPGEN(0x00080cf0, 0x32, ??_GCGameApp@@UAEPAXI@Z)

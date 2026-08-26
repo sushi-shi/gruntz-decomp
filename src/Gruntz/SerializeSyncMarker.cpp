@@ -8,9 +8,9 @@
 #include <Gruntz/SerialCounter.h>
 #include <Io/FileMem.h>
 
-DATA(0x00229a50)
+DATA(0x0022a9a8)
 char g_syncErrMsgBuf[0x80];
-DATA(0x00229ad0)
+DATA(0x0022aa28)
 i32 g_serialCounter;
 
 GZ_ENUM_CONST_BEGIN(SerialSyncMarker)
@@ -19,7 +19,7 @@ GZ_ENUM_CONST_END(SerialSyncMarker)
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00013610, 0x8c)
+RVA(0x00013620, 0x8c)
 i32 SerializeSyncMarker(CFileMemBase* arc, i32 mode, const char* name, i32 line) {
     SerialMode serialMode = static_cast<SerialMode>(mode);
     if (serialMode == SERIAL_SAVE) {

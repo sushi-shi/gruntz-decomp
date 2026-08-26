@@ -34,19 +34,19 @@ inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
     return static_cast<CDDrawWorker*>(ob);
 }
 
-RVA(0x000204e0, 0x19)
+RVA(0x000204f0, 0x19)
 i32 CChatBoxOwner::Attach(CDDrawSurfaceMgr* world, CFontConfig* host) {
     m_world = world;
     m_fontConfig = host;
     return m_attached = true;
 }
 
-RVA(0x00020510, 0x8)
+RVA(0x00020520, 0x8)
 void CChatBoxOwner::Deactivate() {
     m_attached = false;
 }
 
-RVA(0x00020530, 0x61)
+RVA(0x00020540, 0x61)
 void CChatBoxOwner::Configure(ChatBoxLayout mode) {
     m_mode = mode;
 
@@ -63,7 +63,7 @@ void CChatBoxOwner::Configure(ChatBoxLayout mode) {
 }
 
 // @early-stop
-RVA(0x000205c0, 0x741)
+RVA(0x000205d0, 0x741)
 void CChatBoxOwner::HandleTextInputKey(i32 charCode, i32 keyData) {
     if (m_fontConfig->HandleInputChar(charCode, keyData) == 0) {
         return;
@@ -173,13 +173,13 @@ void CChatBoxOwner::HandleTextInputKey(i32 charCode, i32 keyData) {
     m_inputActive = false;
 }
 
-RVA(0x00020ef0, 0x20)
+RVA(0x00020f00, 0x20)
 CString CFontConfig::GetInputText() {
     return m_inputText;
 }
 
 // @early-stop
-RVA(0x00020f40, 0x188)
+RVA(0x00020f50, 0x188)
 i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
     CChatBoxOwner* self = this;
     if (!self->m_inputActive) {
@@ -241,7 +241,7 @@ static __inline tagSIZE ModeSize() {
     return g_gameReg->m_modeSize;
 }
 
-RVA(0x00021140, 0xda)
+RVA(0x00021150, 0xda)
 i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
     if (m_inputActive) {
         if (m_mode == CHATBOX_WITH_HIDDEN_STATUSBAR) {
@@ -264,18 +264,18 @@ i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
 // address-taker, or operand survives to recover the original semantic identity.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00021260, 0x8)
+RVA(0x00021270, 0x8)
 i32 __stdcall ChatBoxOwnerReturnTrue(i32) {
     return 1;
 }
 
-RVA(0x000212a0, 0x21)
+RVA(0x000212b0, 0x21)
 void zPTree::ResetCopy() {
     Reset();
 }
 
-RVA_COMPGEN(0x000212e0, 0x1e, ??_GzPTree@@UAEPAXI@Z)
+RVA_COMPGEN(0x000212f0, 0x1e, ??_GzPTree@@UAEPAXI@Z)
 
-RVA_COMPGEN(0x00021310, 0x70, ??1zPTree@@UAE@XZ)
-RVA_COMPGEN(0x00021570, 0x70, ??1CBSecStream@@UAE@XZ)
-RVA_COMPGEN(0x00021600, 0x8, ??_EzPTree@@W7AEPAXI@Z)
+RVA_COMPGEN(0x00021320, 0x70, ??1zPTree@@UAE@XZ)
+RVA_COMPGEN(0x00021580, 0x70, ??1CBSecStream@@UAE@XZ)
+RVA_COMPGEN(0x00021610, 0x8, ??_EzPTree@@W7AEPAXI@Z)

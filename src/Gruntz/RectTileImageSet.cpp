@@ -3,7 +3,7 @@
 #include <Gruntz/ImageSetInline.h>
 
 // @early-stop
-RVA(0x00166990, 0x4c)
+RVA(0x00167060, 0x4c)
 i32 CRectTileImageSet::Parse(WwdTileImageRecord* record) {
     READ_TILE_IMAGE_DIMENSIONS(record, p)
     m_outsideValue = *p++;
@@ -15,7 +15,7 @@ i32 CRectTileImageSet::Parse(WwdTileImageRecord* record) {
     return 1;
 }
 
-RVA(0x001669e0, 0x5e)
+RVA(0x001670b0, 0x5e)
 i32 CRectTileImageSet::ScanRunLeft(i32 x, i32 y, i32* outX, i32* outValue) {
     if (y < m_top || y > m_bottom || x < m_left) {
         return 0;
@@ -33,7 +33,7 @@ i32 CRectTileImageSet::ScanRunLeft(i32 x, i32 y, i32* outX, i32* outValue) {
     return 1;
 }
 
-RVA(0x00166a40, 0x62)
+RVA(0x00167110, 0x62)
 i32 CRectTileImageSet::ScanRunLeftForValue(i32 x, i32 y, i32 value, i32* outX) {
     if (y < m_top || y > m_bottom || x < m_left) {
         return 0;
@@ -55,7 +55,7 @@ i32 CRectTileImageSet::ScanRunLeftForValue(i32 x, i32 y, i32 value, i32* outX) {
     return 1;
 }
 
-RVA(0x00166ab0, 0x62)
+RVA(0x00167180, 0x62)
 i32 CRectTileImageSet::ScanRight(i32 x, i32 y, i32* outX, i32* outValue) {
     if (y < m_top || y > m_bottom || x > m_right) {
         return 0;
@@ -73,7 +73,7 @@ i32 CRectTileImageSet::ScanRight(i32 x, i32 y, i32* outX, i32* outValue) {
     return 1;
 }
 
-RVA(0x00166b20, 0x66)
+RVA(0x001671f0, 0x66)
 i32 CRectTileImageSet::ScanRightForValue(i32 x, i32 y, i32 value, i32* outX) {
     if (y < m_top || y > m_bottom || x > m_right) {
         return 0;
@@ -95,7 +95,7 @@ i32 CRectTileImageSet::ScanRightForValue(i32 x, i32 y, i32 value, i32* outX) {
     return 1;
 }
 
-RVA(0x00166b90, 0x5e)
+RVA(0x00167260, 0x5e)
 i32 CRectTileImageSet::ScanUp(i32 x, i32 y, i32* outY, i32* outValue) {
     if (x < m_left || x > m_right || y < m_top) {
         return 0;
@@ -113,7 +113,7 @@ i32 CRectTileImageSet::ScanUp(i32 x, i32 y, i32* outY, i32* outValue) {
     return 1;
 }
 
-RVA(0x00166bf0, 0x62)
+RVA(0x001672c0, 0x62)
 i32 CRectTileImageSet::ScanUpForValue(i32 x, i32 y, i32 value, i32* outY) {
     if (x < m_left || x > m_right || y < m_top) {
         return 0;
@@ -135,7 +135,7 @@ i32 CRectTileImageSet::ScanUpForValue(i32 x, i32 y, i32 value, i32* outY) {
     return 1;
 }
 
-RVA(0x00166c60, 0x62)
+RVA(0x00167330, 0x62)
 i32 CRectTileImageSet::ScanDown(i32 x, i32 y, i32* outY, i32* outValue) {
     if (x < m_left || x > m_right || y > m_bottom) {
         return 0;
@@ -153,7 +153,7 @@ i32 CRectTileImageSet::ScanDown(i32 x, i32 y, i32* outY, i32* outValue) {
     return 1;
 }
 
-RVA(0x00166cd0, 0x66)
+RVA(0x001673a0, 0x66)
 i32 CRectTileImageSet::ScanDownForValue(i32 x, i32 y, i32 value, i32* outY) {
     if (x < m_left || x > m_right || y > m_bottom) {
         return 0;

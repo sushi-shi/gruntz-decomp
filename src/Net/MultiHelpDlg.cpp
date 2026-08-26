@@ -31,16 +31,16 @@ const AFX_MSGMAP_ENTRY CMultiHelpDlg::_messageEntries[] = {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000beb60, 0x1e)
+RVA(0x000beb90, 0x1e)
 CMultiHelpDlg::CMultiHelpDlg(CWnd* pParent) : CDialog(0xcb, pParent) {}
 
-RVA_COMPGEN(0x000beb90, 0x1e, ??_GCMultiHelpDlg@@UAEPAXI@Z)
-RVA_COMPGEN(0x000bebc0, 0x5, ??1CMultiHelpDlg@@UAE@XZ)
+RVA_COMPGEN(0x000bebc0, 0x1e, ??_GCMultiHelpDlg@@UAEPAXI@Z)
+RVA_COMPGEN(0x000bebf0, 0x5, ??1CMultiHelpDlg@@UAE@XZ)
 
-RVA(0x000bebe0, 0x3)
+RVA(0x000bec10, 0x3)
 void CMultiHelpDlg::DoDataExchange(CDataExchange*) {}
 
-RVA(0x000bec00, 0x6)
+RVA(0x000bec30, 0x6)
 const AFX_MSGMAP* CMultiHelpDlg::GetMessageMap() const {
     return &messageMap;
 }

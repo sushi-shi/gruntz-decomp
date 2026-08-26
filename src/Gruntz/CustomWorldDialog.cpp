@@ -26,42 +26,42 @@
 #include <stdlib.h>
 #include <string.h>
 
-DATA(0x0022c010)
+DATA(0x0022cf68)
 char g_mapNameBuf[0x200] = {0};
-RVA_DYNINIT(0x0003ac10, 0xa, g_pathStr)
-RVA_DYNINIT(0x0003ac30, 0xa, g_pathStr)
-RVA_DYNINIT(0x0003ac50, 0xe, g_pathStr)
-RVA_DYNINIT(0x0003ac70, 0xa, g_pathStr)
-DATA(0x0022c25c)
+RVA_DYNINIT(0x0003ab30, 0xa, g_pathStr)
+RVA_DYNINIT(0x0003ab50, 0xa, g_pathStr)
+RVA_DYNINIT(0x0003ab70, 0xe, g_pathStr)
+RVA_DYNINIT(0x0003ab90, 0xa, g_pathStr)
+DATA(0x0022d1b4)
 CString g_pathStr;
-RVA_DYNINIT(0x0003ad10, 0xa, g_levelStr)
-RVA_DYNINIT(0x0003ad30, 0xa, g_levelStr)
-RVA_DYNINIT(0x0003ad50, 0xe, g_levelStr)
-RVA_DYNINIT(0x0003ad70, 0xa, g_levelStr)
-DATA(0x0022c260)
+RVA_DYNINIT(0x0003ac30, 0xa, g_levelStr)
+RVA_DYNINIT(0x0003ac50, 0xa, g_levelStr)
+RVA_DYNINIT(0x0003ac70, 0xe, g_levelStr)
+RVA_DYNINIT(0x0003ac90, 0xa, g_levelStr)
+DATA(0x0022d1b8)
 CString g_levelStr;
-RVA_DYNINIT(0x0003ac90, 0xa, g_selectedCustomWorldName)
-RVA_DYNINIT(0x0003acb0, 0xa, g_selectedCustomWorldName)
-RVA_DYNINIT(0x0003acd0, 0xe, g_selectedCustomWorldName)
-RVA_DYNINIT(0x0003acf0, 0xa, g_selectedCustomWorldName)
-DATA(0x0022c264)
+RVA_DYNINIT(0x0003abb0, 0xa, g_selectedCustomWorldName)
+RVA_DYNINIT(0x0003abd0, 0xa, g_selectedCustomWorldName)
+RVA_DYNINIT(0x0003abf0, 0xe, g_selectedCustomWorldName)
+RVA_DYNINIT(0x0003ac10, 0xa, g_selectedCustomWorldName)
+DATA(0x0022d1bc)
 CString g_selectedCustomWorldName;
-DATA(0x0022c268)
+DATA(0x0022d1c0)
 CDDrawSurfaceMgr* g_customWorldSurfaceMgr = NULL;
-DATA(0x0022c26c)
+DATA(0x0022d1c4)
 HWND g_customWorldParent = NULL;
-DATA(0x0022c270)
+DATA(0x0022d1c8)
 HINSTANCE g_customWorldInst = NULL;
-DATA(0x0022c274)
+DATA(0x0022d1cc)
 HWND g_customLevelList = NULL;
 
-DATA(0x0020cf90)
+DATA(0x0020df38)
 char g_dotDot[] = "..";
-DATA(0x0020cf94)
+DATA(0x0020df3c)
 char g_customGlob[] = "*.WWD";
 
 // @early-stop
-RVA(0x0003ad90, 0x97)
+RVA(0x0003acb0, 0x97)
 CString RunCustomWorldDialog(HWND parent, CString* outSource) {
     g_pathStr.Empty();
     HWND v = parent;
@@ -84,7 +84,7 @@ CString RunCustomWorldDialog(HWND parent, CString* outSource) {
     return g_pathStr;
 }
 
-RVA(0x0003ae60, 0xec)
+RVA(0x0003ad80, 0xec)
 BOOL CALLBACK CustomWorldDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     NetLobby::g_curDlg = hDlg;
     switch (msg) {
@@ -125,7 +125,7 @@ BOOL CALLBACK CustomWorldDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
     return false;
 }
 
-RVA(0x0003af90, 0x194)
+RVA(0x0003aeb0, 0x194)
 i32 FillCustomLevelList(HWND hWnd) {
     HWND lb = GetDlgItem(hWnd, CTRL_CUSTOM_WORLD_LIST);
     if (!lb) {
@@ -161,7 +161,7 @@ i32 FillCustomLevelList(HWND hWnd) {
     return 1;
 }
 
-RVA(0x0003b1a0, 0x118)
+RVA(0x0003b0c0, 0x118)
 i32 FillLevelInfoDialog(HWND hDlg) {
     if (!GetDlgItem(hDlg, 0x3fc)) {
         return 0;
@@ -191,7 +191,7 @@ i32 FillLevelInfoDialog(HWND hDlg) {
     return 1;
 }
 
-RVA(0x0003b310, 0x10d)
+RVA(0x0003b230, 0x10d)
 i32 LoadCustomWorldSelection(HWND hWnd) {
     char itemText[256];
     char dirBuf[256];
@@ -223,7 +223,7 @@ i32 LoadCustomWorldSelection(HWND hWnd) {
     return 1;
 }
 
-RVA(0x0003b470, 0x13a)
+RVA(0x0003b390, 0x13a)
 i32 WwdFile::ValidateMainBlock(CString name) {
     char header[0x100];
 
@@ -248,7 +248,7 @@ i32 WwdFile::ValidateMainBlock(CString name) {
     return atoi(p);
 }
 
-RVA(0x0003b600, 0x15f)
+RVA(0x0003b520, 0x15f)
 BOOL CALLBACK CustomWorldInfoDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_INITDIALOG: {
@@ -287,7 +287,7 @@ BOOL CALLBACK CustomWorldInfoDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM 
     return false;
 }
 
-RVA(0x0003b7c0, 0x12c)
+RVA(0x0003b6e0, 0x12c)
 i32 LoadCustomWorldInfo(HWND hDlg) {
     char szLevel[0x100];
     char szDir[0x100];
@@ -329,7 +329,7 @@ i32 LoadCustomWorldInfo(HWND hDlg) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0003b940, 0x19d)
+RVA(0x0003b860, 0x19d)
 CString BuildCustomWwdPath(CString name) {
     if (name.GetLength() == 0) {
         return name;
@@ -353,7 +353,7 @@ CString BuildCustomWwdPath(CString name) {
 }
 
 // @early-stop
-RVA(0x0003bb50, 0x128)
+RVA(0x0003ba70, 0x128)
 CString WwdFile::GetMapBaseName(CString path) {
     CString result = path;
     i32 len = path.GetLength();

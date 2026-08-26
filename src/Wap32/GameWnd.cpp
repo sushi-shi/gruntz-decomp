@@ -5,16 +5,16 @@
 #include <Gruntz/GruntzCommandId.h>
 #include <Wap32/Wap32.h>
 
-DATA(0x00253c68)
+DATA(0x00254bc0)
 CGameWnd* g_activeGameWnd;
 
-RVA(0x0013cf00, 0x11)
+RVA(0x0013d1e0, 0x11)
 CGameWnd::CGameWnd() {
     m_hwnd = NULL;
     m_closeGuard = false;
 }
 
-RVA(0x0013cf20, 0x8f)
+RVA(0x0013d200, 0x8f)
 i32 CGameWnd::CreateAndShow(CREATESTRUCTA* pParams, CGameApp* pOwner) {
     if (!pParams) {
         return 0;
@@ -52,7 +52,7 @@ i32 CGameWnd::CreateAndShow(CREATESTRUCTA* pParams, CGameApp* pOwner) {
     return 1;
 }
 
-RVA(0x0013cfb0, 0x39)
+RVA(0x0013d290, 0x39)
 void CGameWnd::Destroy() {
     if (m_hwnd) {
         if (IsWindow(m_hwnd)) {
@@ -64,7 +64,7 @@ void CGameWnd::Destroy() {
     g_activeGameWnd = NULL;
 }
 
-RVA(0x0013cff0, 0x3a0)
+RVA(0x0013d2d0, 0x3a0)
 LRESULT CALLBACK CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     CGameWnd* pWnd = g_activeGameWnd;
     if (!pWnd) {
@@ -209,12 +209,12 @@ LRESULT CALLBACK CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, L
     return DefWindowProcA(hwnd, uMsg, wParam, lParam);
 }
 
-RVA(0x0013d390, 0x5)
+RVA(0x0013d670, 0x5)
 i32 CGameWnd::OnCreate(LPARAM) {
     return 0;
 }
 
-RVA(0x0013d3a0, 0x6a)
+RVA(0x0013d680, 0x6a)
 i32 CGameWnd::OnCommand(WPARAM wParam, LPARAM lParam) {
     i32 notifyCode = static_cast<i32>(HIWORD(wParam));
     i32 cmdId = static_cast<i32>(LOWORD(wParam));
@@ -230,43 +230,43 @@ i32 CGameWnd::OnCommand(WPARAM wParam, LPARAM lParam) {
            != 0;
 }
 
-RVA(0x0013d410, 0x5)
+RVA(0x0013d6f0, 0x5)
 i32 CGameWnd::OnMove(i32, i32) {
     return 0;
 }
 
-RVA(0x0013d420, 0x5)
+RVA(0x0013d700, 0x5)
 i32 CGameWnd::OnSize(WPARAM, i32, i32) {
     return 0;
 }
 
-RVA(0x0013d430, 0x3)
+RVA(0x0013d710, 0x3)
 i32 CGameWnd::OnPaint() {
     return 0;
 }
 
-RVA(0x0013d440, 0x5)
+RVA(0x0013d720, 0x5)
 i32 CGameWnd::OnChar(WPARAM, LPARAM) {
     return 0;
 }
 
-RVA(0x0013d450, 0x5)
+RVA(0x0013d730, 0x5)
 i32 CGameWnd::OnKeyDown(WPARAM, LPARAM) {
     return 0;
 }
 
-RVA(0x0013d460, 0x5)
+RVA(0x0013d740, 0x5)
 i32 CGameWnd::OnSysKeyDown(WPARAM, LPARAM) {
     return 0;
 }
 
-RVA(0x0013d470, 0x12)
+RVA(0x0013d750, 0x12)
 i32 CGameWnd::OnActivateApp(WPARAM wParam, LPARAM) {
     m_owner->m_appActive = wParam;
     return 0;
 }
 
-RVA(0x0013d490, 0x29)
+RVA(0x0013d770, 0x29)
 i32 CGameWnd::QuitMessageLoop() {
     m_owner->FreeGameManager();
     if (m_owner->m_errorReported) {
@@ -276,7 +276,7 @@ i32 CGameWnd::QuitMessageLoop() {
     return 0;
 }
 
-RVA(0x0013d4c0, 0x1e)
+RVA(0x0013d7a0, 0x1e)
 i32 CGameWnd::OnClose() {
     if (!m_closeGuard) {
         m_closeGuard = true;
@@ -285,7 +285,7 @@ i32 CGameWnd::OnClose() {
     return 1;
 }
 
-RVA(0x0013d4e0, 0x43)
+RVA(0x0013d7c0, 0x43)
 void CGameWnd::PumpMessages(u32 filterMsg, i32 count) {
     MSG msg;
     for (i32 i = 0; i < count; ++i) {
@@ -297,7 +297,7 @@ void CGameWnd::PumpMessages(u32 filterMsg, i32 count) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0013d530, 0x55)
+RVA(0x0013d810, 0x55)
 void CGameWnd::PumpMessagesRange(u32 filterMin, u32 filterMax, i32 count) {
     MSG msg;
     for (i32 i = 0; i < count; ++i) {

@@ -54,13 +54,13 @@
 #include <stdio.h>
 #include <string.h>
 
-DATA(0x00245574)
+DATA(0x002464cc)
 CFixedPtrArray32* g_actorList = NULL;
-DATA(0x00251608)
+DATA(0x00252560)
 i32 g_versionMajor = 0;
-DATA(0x0025160c)
+DATA(0x00252564)
 i32 g_versionMid = 0;
-DATA(0x00251610)
+DATA(0x00252568)
 i32 g_versionMinor = 0;
 
 static inline SoundCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
@@ -69,12 +69,12 @@ static inline SoundCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
     return foundCue;
 }
 
-RVA(0x0008ce60, 0x55)
+RVA(0x0008cd80, 0x55)
 CMenuState::~CMenuState() {
     ReleaseResources();
 }
 
-RVA(0x0009fe50, 0x343)
+RVA(0x0009fe70, 0x343)
 i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     if (prevStateId == 0) {
         return 0;
@@ -154,12 +154,12 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     return 1;
 }
 
-RVA(0x000a0280, 0x2b)
+RVA(0x000a02a0, 0x2b)
 void CMenuTree::InitializeMembers() {
     INITIALIZE_MENU_TREE_MEMBERS;
 }
 
-RVA(0x000a02c0, 0x7d)
+RVA(0x000a02e0, 0x7d)
 void CMenuState::ReleaseResources() {
 
     m_world->m_imageRegistry->RemoveWithPrefix("MENU", "_");
@@ -181,12 +181,12 @@ void CMenuState::ReleaseResources() {
     CState::ReleaseResources();
 }
 
-RVA(0x000a0360, 0x64)
+RVA(0x000a0380, 0x64)
 CMenuTree::~CMenuTree() {
     Reset();
 }
 
-RVA(0x000a03f0, 0x14b)
+RVA(0x000a0410, 0x14b)
 i32 CMenuState::EnterState(GameStateId previousState) {
     char stateName[0x20];
     char titleName[0x20];
@@ -238,7 +238,7 @@ i32 CMenuState::EnterState(GameStateId previousState) {
     return 1;
 }
 
-RVA(0x000a05a0, 0x74)
+RVA(0x000a05c0, 0x74)
 void CMenuState::StartMusic() {
     if (m_menuMusicCue == NULL) {
         return;
@@ -257,7 +257,7 @@ void CMenuState::StartMusic() {
     }
 }
 
-RVA(0x000a0640, 0x6a)
+RVA(0x000a0660, 0x6a)
 void CMenuState::StopMusicChain() {
     if (m_menuMusicCue == NULL) {
         return;
@@ -275,7 +275,7 @@ void CMenuState::StopMusicChain() {
     } while (m_menuMusicCue->m_sound->IsPlaying());
 }
 
-RVA(0x000a06d0, 0x5f)
+RVA(0x000a06f0, 0x5f)
 i32 CMenuState::LeaveState(GameStateId) {
     m_world->m_drawTarget->TransExit();
     m_world->m_drawTarget->m_frontSurface->m_surface->Flip(NULL);
@@ -286,7 +286,7 @@ i32 CMenuState::LeaveState(GameStateId) {
     return 1;
 }
 
-RVA(0x000a0750, 0x1d0)
+RVA(0x000a0770, 0x1d0)
 i32 CMenuState::Render() {
     CFixedPtrArray32* L = g_actorList;
 
@@ -344,7 +344,7 @@ tail:
     return 1;
 }
 
-RVA(0x000a09a0, 0x6a)
+RVA(0x000a09c0, 0x6a)
 i32 CMenuState::InputVirtual() {
     if (CState::InputVirtual() == 0) {
         return 0;
@@ -367,7 +367,7 @@ i32 CMenuState::InputVirtual() {
     return 1;
 }
 
-RVA(0x000a0a30, 0x110)
+RVA(0x000a0a50, 0x110)
 i32 CMenuState::RestoreDisplay() {
     char stateName[0x20];
     char titleName[0x20];
@@ -413,7 +413,7 @@ i32 CMenuState::RestoreDisplay() {
     return 1;
 }
 
-RVA(0x000a0b90, 0xc7)
+RVA(0x000a0bb0, 0xc7)
 i32 CMenuState::OnKeyDown(i32 key, i32 unused) {
     if (key == VK_DOWN) {
         m_menuTree->MoveFocusDownFollowingLinks();
@@ -434,14 +434,14 @@ i32 CMenuState::OnKeyDown(i32 key, i32 unused) {
     return 1;
 }
 
-RVA(0x000a0ca0, 0x21)
+RVA(0x000a0cc0, 0x21)
 i32 CMenuState::OnLButtonDown(i32 unused, i32 x, i32 y) {
     if (m_menuTree) {
         m_menuTree->ClickAt(x, y);
     }
     return 1;
 }
-RVA(0x000a0ce0, 0x21)
+RVA(0x000a0d00, 0x21)
 i32 CMenuState::OnLButtonDblClk(i32 unused, i32 x, i32 y) {
     if (m_menuTree) {
         m_menuTree->ClickAt(x, y);
@@ -449,12 +449,12 @@ i32 CMenuState::OnLButtonDblClk(i32 unused, i32 x, i32 y) {
     return 1;
 }
 
-RVA(0x000a0d20, 0x8)
+RVA(0x000a0d40, 0x8)
 i32 CMenuState::OnMouseMove(i32, i32, i32) {
     return 1;
 }
 
-RVA(0x000a0d40, 0x24)
+RVA(0x000a0d60, 0x24)
 i32 CMenuState::OnPaint() {
     i32 r = IsActive();
     if (r == 0) {
@@ -468,7 +468,7 @@ i32 CMenuState::OnPaint() {
     return RestoreDisplay();
 }
 
-RVA(0x000a0d80, 0xd7)
+RVA(0x000a0da0, 0xb2)
 void CMenuState::BuildVersionString(CRect r) {
     CString str;
     if (g_versionMid == 0) {

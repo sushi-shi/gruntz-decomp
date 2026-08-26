@@ -58,7 +58,7 @@
         }                                                                                          \
     } while (0)
 
-RVA(0x000555e0, 0x12f8)
+RVA(0x000554b0, 0x12f8)
 i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;

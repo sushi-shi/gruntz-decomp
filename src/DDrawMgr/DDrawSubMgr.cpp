@@ -54,14 +54,14 @@
 DATA(0x001eff2c)
 const float c_volumePercentUnitScale = 0.009999999776482582f;
 
-RVA(0x00156cb0, 0x20)
+RVA(0x00156f90, 0x20)
 CWapObj::CWapObj(CDDrawSurfaceMgr* owner, i32 id, i32 flags) {
     m_id = id;
     m_flags = flags;
     m_ownerCtx = owner;
 }
 
-RVA(0x00156cd0, 0x16)
+RVA(0x00156fb0, 0x16)
 i32 CDDrawPaletteRegistry::IsLoaded() {
     if (m_ownerCtx == NULL) {
         goto fail;
@@ -74,23 +74,23 @@ fail:
     return 0;
 }
 
-RVA(0x00156cf0, 0x6)
+RVA(0x00156fd0, 0x6)
 LoadableClassId CDDrawPaletteRegistry::GetClassId() {
     return CLASSID_PALETTE_REGISTRY;
 }
 
-RVA_COMPGEN(0x00156d00, 0x1e, ??_GCDDrawPaletteRegistry@@UAEPAXI@Z)
-RVA(0x00156d20, 0x82)
+RVA_COMPGEN(0x00156fe0, 0x1e, ??_GCDDrawPaletteRegistry@@UAEPAXI@Z)
+RVA(0x00157000, 0x82)
 CDDrawPaletteRegistry::~CDDrawPaletteRegistry() {
     Unload();
 }
 
-RVA(0x00156db0, 0x6)
+RVA(0x00157090, 0x6)
 i32 CDDrawPaletteRegistry::IsReady() {
     return 1;
 }
 
-RVA(0x00156dc0, 0x16)
+RVA(0x001570a0, 0x16)
 i32 CDDrawWorkerRegistry::IsLoaded() {
     if (m_ownerCtx != NULL && m_id != -1) {
         return 1;
@@ -98,18 +98,18 @@ i32 CDDrawWorkerRegistry::IsLoaded() {
     return 0;
 }
 
-RVA(0x00156de0, 0x6)
+RVA(0x001570c0, 0x6)
 LoadableClassId CDDrawWorkerRegistry::GetClassId() {
     return CLASSID_WORKERREGISTRY;
 }
 
-RVA_COMPGEN(0x00156df0, 0x1e, ??_GCDDrawWorkerRegistry@@UAEPAXI@Z)
-RVA(0x00156e10, 0x68)
+RVA_COMPGEN(0x001570d0, 0x1e, ??_GCDDrawWorkerRegistry@@UAEPAXI@Z)
+RVA(0x001570f0, 0x68)
 CDDrawWorkerRegistry::~CDDrawWorkerRegistry() {
     Unload();
 }
 
-RVA(0x00156e80, 0x38)
+RVA(0x00157160, 0x38)
 i32 CDDrawWorkerRegistry::ProbeWorkerKey(CRezArchive* parser, const char* key) {
     CRezArchiveDir* result = parser->GetRootDirectory()->FindSubdirectory(key);
 
@@ -120,7 +120,7 @@ i32 CDDrawWorkerRegistry::ProbeWorkerKey(CRezArchive* parser, const char* key) {
 }
 
 // @early-stop
-RVA(0x00156ec0, 0x40)
+RVA(0x001571a0, 0x40)
 void CDDrawWorkerRegistry::RemoveByKey(const char* key) {
     CObject* val = NULL;
     m_workersByName.Lookup(key, val);
@@ -131,7 +131,7 @@ void CDDrawWorkerRegistry::RemoveByKey(const char* key) {
     }
 }
 
-RVA(0x00156f00, 0x16)
+RVA(0x001571e0, 0x16)
 i32 CDDrawWorkerList::IsLoaded() {
     if (m_ownerCtx == NULL) {
         goto fail;
@@ -144,23 +144,23 @@ fail:
     return 0;
 }
 
-RVA(0x00156f20, 0x6)
+RVA(0x00157200, 0x6)
 LoadableClassId CDDrawWorkerList::GetClassId() {
     return CLASSID_WORKERLIST;
 }
 
-RVA_COMPGEN(0x00156f30, 0x1e, ??_GCDDrawWorkerList@@UAEPAXI@Z)
-RVA(0x00156f50, 0x68)
+RVA_COMPGEN(0x00157210, 0x1e, ??_GCDDrawWorkerList@@UAEPAXI@Z)
+RVA(0x00157230, 0x68)
 CDDrawWorkerList::~CDDrawWorkerList() {
     Unload();
 }
 
-RVA(0x00156fc0, 0x6)
+RVA(0x001572a0, 0x6)
 i32 CDDrawWorkerList::IsReady() {
     return 1;
 }
 
-RVA(0x00156fd0, 0x8b)
+RVA(0x001572b0, 0x8b)
 CDDrawPixelWorker* CDDrawWorkerList::CreatePixelWorker(i32 x, i32 y, i32 pixelValue) {
     CDDrawPixelWorker* w = new CDDrawPixelWorker(OwnerMgr());
     if (w->PlacePixel(x, y, pixelValue) == 0) {
@@ -173,7 +173,7 @@ CDDrawPixelWorker* CDDrawWorkerList::CreatePixelWorker(i32 x, i32 y, i32 pixelVa
     return w;
 }
 
-RVA(0x00157060, 0x16)
+RVA(0x00157340, 0x16)
 i32 CDDrawPixelWorker::IsLoaded() {
     if (m_ownerCtx != NULL && m_id != -1) {
         return 1;
@@ -185,30 +185,30 @@ i32 CDDrawPixelWorker::IsLoaded() {
     m_refCount = 2;                                                                                \
     return CResolveNode::SetPosition(x, y)
 
-RVA(0x00157080, 0x19)
+RVA(0x00157360, 0x19)
 i32 CDDrawPlacedWorker::SetPosition(i32 x, i32 y) {
     SET_RESOLVE_POSITION_REFERENCED(x, y);
 }
 
-RVA(0x001570a0, 0x6)
+RVA(0x00157380, 0x6)
 LoadableClassId CDDrawPixelWorker::GetClassId() {
     return CLASSID_PIXEL_WORKER;
 }
 
-RVA_COMPGEN(0x001570b0, 0x1e, ??_GCDDrawPixelWorker@@UAEPAXI@Z)
-RVA(0x001570d0, 0x39)
+RVA_COMPGEN(0x00157390, 0x1e, ??_GCDDrawPixelWorker@@UAEPAXI@Z)
+RVA(0x001573b0, 0x39)
 CDDrawPixelWorker::~CDDrawPixelWorker() {
     m_pixelValue = 0;
     m_dirty.Reset();
 }
 
-RVA(0x00157110, 0x20)
+RVA(0x001573f0, 0x20)
 i32 CDDrawPixelWorker::PlacePixel(i32 x, i32 y, i32 pixelValue) {
     m_pixelValue = static_cast<char>(pixelValue);
     SET_RESOLVE_POSITION_REFERENCED(x, y);
 }
 
-RVA(0x00157130, 0x17)
+RVA(0x00157410, 0x17)
 void CDDrawPixelWorker::Unload() {
 
     i32 v = COORD_UNSET;
@@ -218,7 +218,7 @@ void CDDrawPixelWorker::Unload() {
     m_dirty.m_armed = -1;
 }
 
-RVA(0x00157150, 0xa5)
+RVA(0x00157430, 0xa5)
 CDDrawFrameWorker* CDDrawWorkerList::CreateFrameWorker(
     i32 x,
     i32 y,
@@ -241,43 +241,43 @@ CDDrawFrameWorker* CDDrawWorkerList::CreateFrameWorker(
     return w;
 }
 
-RVA(0x00157200, 0xb)
+RVA(0x001574e0, 0xb)
 i32 CDDrawPlacedWorker::IsLoaded() {
     return m_contentValue != 0;
 }
 
-RVA(0x00157210, 0x6)
+RVA(0x001574f0, 0x6)
 LoadableClassId CDDrawPlacedWorker::GetClassId() {
     return CLASSID_PLACED_WORKER;
 }
 
-RVA_COMPGEN(0x00157220, 0x1e, ??_GCDDrawFrameWorker@@UAEPAXI@Z)
-RVA(0x00157240, 0x3c)
+RVA_COMPGEN(0x00157500, 0x1e, ??_GCDDrawFrameWorker@@UAEPAXI@Z)
+RVA(0x00157520, 0x3c)
 CDDrawFrameWorker::~CDDrawFrameWorker() {
     m_contentValue = 0;
     m_dirty.Reset();
 }
 
-RVA(0x00157280, 0x30)
+RVA(0x00157560, 0x30)
 i32 CDDrawFrameWorker::PlaceFrame(i32 x, i32 y, const char* workerName, i32 frameIndex) {
     ResolveFrame(workerName, frameIndex);
     SET_RESOLVE_POSITION_REFERENCED(x, y);
 }
 
-RVA(0x001572b0, 0x38)
+RVA(0x00157590, 0x38)
 i32 CDDrawFrameWorker::PlaceFrame(i32 x, i32 y, CDDrawWorker* source, i32 frameIndex) {
     CImage* frame = source->GetAt(frameIndex);
     m_frame = frame;
     SET_RESOLVE_POSITION_REFERENCED(x, y);
 }
 
-RVA(0x001572f0, 0x20)
+RVA(0x001575d0, 0x20)
 i32 CDDrawFrameWorker::PlaceFrame(i32 x, i32 y, CImage* frame) {
     m_frame = frame;
     SET_RESOLVE_POSITION_REFERENCED(x, y);
 }
 
-RVA(0x00157310, 0x1a)
+RVA(0x001575f0, 0x1a)
 void CDDrawPlacedWorker::Unload() {
 
     i32 v = COORD_UNSET;
@@ -287,7 +287,7 @@ void CDDrawPlacedWorker::Unload() {
     m_dirty.m_armed = -1;
 }
 
-RVA(0x00157330, 0xa5)
+RVA(0x00157610, 0xa5)
 CDDrawFrameWorker* CDDrawWorkerList::CreateFrameWorker(
     i32 x,
     i32 y,
@@ -310,7 +310,7 @@ CDDrawFrameWorker* CDDrawWorkerList::CreateFrameWorker(
     return w;
 }
 
-RVA(0x001573e0, 0xa0)
+RVA(0x001576c0, 0xa0)
 CDDrawFrameWorker* CDDrawWorkerList::CreateFrameWorker(i32 x, i32 y, CImage* frame, i32 addHead) {
     CDDrawFrameWorker* w = new CDDrawFrameWorker(OwnerMgr());
     if (w->PlaceFrame(x, y, frame) == 0) {
@@ -327,7 +327,7 @@ CDDrawFrameWorker* CDDrawWorkerList::CreateFrameWorker(i32 x, i32 y, CImage* fra
     return w;
 }
 
-RVA(0x00157480, 0x1e)
+RVA(0x00157760, 0x1e)
 i32 CDDrawSubMgrPages::IsLoaded() {
     if (m_backPair == NULL) {
         goto fail;
@@ -343,22 +343,22 @@ fail:
     return 0;
 }
 
-RVA_COMPGEN(0x001574b0, 0x1e, ??_GCDDrawSubMgrPages@@UAEPAXI@Z)
+RVA_COMPGEN(0x00157790, 0x1e, ??_GCDDrawSubMgrPages@@UAEPAXI@Z)
 
-RVA(0x001574d0, 0x5b)
+RVA(0x001577b0, 0x5b)
 CDDrawSubMgrPages::~CDDrawSubMgrPages() {
     Unload();
 }
 
-RVA_COMPGEN(0x00157550, 0x1e, ??_GSoundCueRegistry@@UAEPAXI@Z)
+RVA_COMPGEN(0x00157830, 0x1e, ??_GSoundCueRegistry@@UAEPAXI@Z)
 
-RVA(0x00157570, 0x68)
+RVA(0x00157850, 0x68)
 SoundCueRegistry::~SoundCueRegistry() {
 
     Unload();
 }
 
-RVA(0x001575e0, 0x16)
+RVA(0x001578c0, 0x16)
 i32 CDDrawChildGroup::IsLoaded() {
     if (m_ownerCtx == NULL || m_id == -1) {
         return 0;
@@ -366,30 +366,30 @@ i32 CDDrawChildGroup::IsLoaded() {
     return 1;
 }
 
-RVA(0x00157600, 0x6)
+RVA(0x001578e0, 0x6)
 LoadableClassId CDDrawChildGroup::GetClassId() {
     return CLASSID_CHILDGROUP;
 }
 
-RVA_COMPGEN(0x00157610, 0x1e, ??_GCDDrawChildGroup@@UAEPAXI@Z)
-RVA(0x00157630, 0x82)
+RVA_COMPGEN(0x001578f0, 0x1e, ??_GCDDrawChildGroup@@UAEPAXI@Z)
+RVA(0x00157910, 0x82)
 CDDrawChildGroup::~CDDrawChildGroup() {
     Unload();
 }
 
-RVA(0x001576c0, 0x6)
+RVA(0x001579a0, 0x6)
 i32 CDDrawChildGroup::IsReady() {
     return 1;
 }
 
-RVA_COMPGEN(0x00157700, 0x1e, ??_GCLogicRecordRegistry@@UAEPAXI@Z)
+RVA_COMPGEN(0x001579e0, 0x1e, ??_GCLogicRecordRegistry@@UAEPAXI@Z)
 
-RVA(0x00157720, 0x68)
+RVA(0x00157a00, 0x68)
 CLogicRecordRegistry::~CLogicRecordRegistry() {
     Unload();
 }
 
-RVA(0x001577a0, 0x16)
+RVA(0x00157a80, 0x16)
 i32 AnimationRegistry::IsLoaded() {
     if (m_ownerCtx == NULL) {
         goto fail;
@@ -402,46 +402,46 @@ fail:
     return 0;
 }
 
-RVA_COMPGEN(0x001577c0, 0x1e, ??_GAnimationRegistry@@UAEPAXI@Z)
+RVA_COMPGEN(0x00157aa0, 0x1e, ??_GAnimationRegistry@@UAEPAXI@Z)
 
-RVA(0x001577e0, 0x68)
+RVA(0x00157ac0, 0x68)
 AnimationRegistry::~AnimationRegistry() {
     Unload();
 }
 
-RVA(0x00157920, 0x20)
+RVA(0x00157c00, 0x20)
 CString CFileMemBase::GetName() {
     return m_name;
 }
 
-RVA(0x00157940, 0x4)
+RVA(0x00157c20, 0x4)
 i32 CFileMemBase::WantRead() {
     return m_mode;
 }
 
-RVA(0x00157950, 0xb)
+RVA(0x00157c30, 0xb)
 i32 CFileMemBase::WantCreate() {
     return m_mode == 0;
 }
 
-RVA(0x00157a00, 0x4)
+RVA(0x00157ce0, 0x4)
 i32 CFileMem::GetLength() {
     return m_length;
 }
 
-RVA(0x00157a10, 0x4)
+RVA(0x00157cf0, 0x4)
 i32 CFileMem::GetOffset() {
     return m_offset;
 }
 
-RVA(0x00157a40, 0x10)
+RVA(0x00157d20, 0x10)
 void CFileMemBase::Reset() {
     m_option = 0;
     m_mode = 0;
     m_name.Empty();
 }
 
-RVA(0x00157a80, 0x51)
+RVA(0x00157d60, 0x51)
 i32 SoundCueRegistry::BindSoundStream(b32 allowUnavailable) {
     CDDrawSurfaceMgr* mgr = OwnerMgr();
     if (mgr == NULL) {
@@ -466,14 +466,14 @@ i32 SoundCueRegistry::BindSoundStream(b32 allowUnavailable) {
     return 1;
 }
 
-RVA(0x00157ae0, 0x11)
+RVA(0x00157dc0, 0x11)
 void SoundCueRegistry::Unload() {
     ClearCues();
     m_soundStream = NULL;
 }
 
 // @early-stop
-RVA(0x00157b00, 0xb2)
+RVA(0x00157de0, 0xb2)
 void SoundCueRegistry::RemoveCue(SoundCue* cue) {
     if (cue == NULL) {
         return;
@@ -491,7 +491,7 @@ void SoundCueRegistry::RemoveCue(SoundCue* cue) {
     }
 }
 
-RVA(0x00157bc0, 0xa2)
+RVA(0x00157ea0, 0xa2)
 void SoundCueRegistry::ClearCues() {
     POSITION pos = m_cues.GetStartPosition();
     CString key;
@@ -507,7 +507,7 @@ void SoundCueRegistry::ClearCues() {
     m_cues.RemoveAll();
 }
 
-RVA(0x00157c70, 0xf8)
+RVA(0x00157f50, 0xf8)
 i32 SoundCueRegistry::RemoveWithPrefix(const char* prefix, const char* separator) {
     CString match(prefix);
     match += separator;
@@ -533,7 +533,7 @@ i32 SoundCueRegistry::RemoveWithPrefix(const char* prefix, const char* separator
     m_cues[key] = cue;                                                                             \
     cue->m_replayDelayMs = m_defaultReplayDelayMs
 
-RVA(0x00157d70, 0x90)
+RVA(0x00158050, 0x90)
 SoundCue* SoundCueRegistry::LoadCueFromSource(const char* key, CRezArchiveEntry* source) {
     if (m_silentMode != false) {
         return NULL;
@@ -552,7 +552,7 @@ SoundCue* SoundCueRegistry::LoadCueFromSource(const char* key, CRezArchiveEntry*
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00157e00, 0x90)
+RVA(0x001580e0, 0x90)
 SoundCue* SoundCueRegistry::LoadCueFromFile(const char* key, char* path) {
     if (m_silentMode != false) {
         return NULL;
@@ -571,7 +571,7 @@ SoundCue* SoundCueRegistry::LoadCueFromFile(const char* key, char* path) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00157e90, 0x23)
+RVA(0x00158170, 0x23)
 SoundCue* SoundCueRegistry::LoadNamedCue(CRezArchiveEntry* source) {
     if (m_silentMode != false) {
         return NULL;
@@ -584,12 +584,12 @@ SoundCue* SoundCueRegistry::LoadNamedCue(CRezArchiveEntry* source) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00157ec0, 0x20)
+RVA(0x001581a0, 0x20)
 void SoundCueRegistry::AddCue(SoundCue* cue, const char* key) {
     ADD_SOUND_CUE_ENTRY(cue, key);
 }
 
-RVA(0x00157ee0, 0x1c6)
+RVA(0x001581c0, 0x1c6)
 i32 SoundCueRegistry::LoadFromTree(
     CRezArchiveDir* tree,
     const char* prefix,
@@ -643,7 +643,7 @@ i32 SoundCueRegistry::LoadFromTree(
     return count;
 }
 
-RVA(0x001580b0, 0xf6)
+RVA(0x00158390, 0xf6)
 i32 SoundCueRegistry::SumAudioBytes(const char* prefix) {
     if (m_silentMode != false) {
         return 0;
@@ -667,7 +667,7 @@ i32 SoundCueRegistry::SumAudioBytes(const char* prefix) {
 }
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001581b0, 0x5b)
+RVA(0x00158490, 0x5b)
 i32 SoundCueRegistry::PlaySpatializedCue(
     const char* key,
     i32 sourceX,
@@ -685,7 +685,7 @@ i32 SoundCueRegistry::PlaySpatializedCue(
     return 0;
 }
 
-RVA(0x00158210, 0xaa)
+RVA(0x001584f0, 0xaa)
 SoundCue* SoundCueRegistry::GetFirstCue() {
     if (m_silentMode != false) {
         return NULL;
@@ -702,7 +702,7 @@ SoundCue* SoundCueRegistry::GetFirstCue() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001582c0, 0xf6)
+RVA(0x001585a0, 0xf6)
 SoundCue* SoundCueRegistry::GetNextCueAfter(SoundCue* target) {
     if (target == NULL) {
         return NULL;
@@ -730,7 +730,7 @@ SoundCue* SoundCueRegistry::GetNextCueAfter(SoundCue* target) {
     return NULL;
 }
 
-RVA(0x001583c0, 0xdc)
+RVA(0x001586a0, 0xdc)
 i32 SoundCueRegistry::HasWithPrefix(const char* prefix) {
     i32 prefixLength = strlen(prefix);
     CString key;
@@ -747,7 +747,7 @@ i32 SoundCueRegistry::HasWithPrefix(const char* prefix) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001584a0, 0x43)
+RVA(0x00158780, 0x43)
 i32 SoundCueRegistry::ConfigurePrimaryFromFirstCue(i32 startPrimary) {
     if (m_soundStream == NULL) {
         return 0;
@@ -763,7 +763,7 @@ i32 SoundCueRegistry::ConfigurePrimaryFromFirstCue(i32 startPrimary) {
     return ConfigurePrimaryFromCue(cue, startPrimary) != 0;
 }
 
-RVA(0x001584f0, 0x80)
+RVA(0x001587d0, 0x80)
 i32 SoundCueRegistry::ConfigurePrimaryFromCue(SoundCue* cue, i32 startPrimary) {
     if (cue == NULL) {
         return 0;
@@ -787,7 +787,7 @@ i32 SoundCueRegistry::ConfigurePrimaryFromCue(SoundCue* cue, i32 startPrimary) {
     return 1;
 }
 
-RVA(0x00158570, 0xd4)
+RVA(0x00158850, 0xd4)
 CString SoundCueRegistry::FindCueKey(SoundCue* target) {
     CString key;
     if (target == NULL) {
@@ -805,15 +805,15 @@ CString SoundCueRegistry::FindCueKey(SoundCue* target) {
     return key;
 }
 
-RVA_COMPGEN(0x00158660, 0x1e, ??_GSoundCue@@UAEPAXI@Z)
-RVA(0x00158680, 0x5b)
+RVA_COMPGEN(0x00158940, 0x1e, ??_GSoundCue@@UAEPAXI@Z)
+RVA(0x00158960, 0x5b)
 SoundCue::~SoundCue() {
     Unload();
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001586e0, 0x34)
+RVA(0x001589c0, 0x34)
 i32 SoundCue::LoadFromWave(RiffWaveHeader* riff) {
     SoundDevice* dev = OwnerMgr()->m_soundStream;
     if (!dev) {
@@ -823,7 +823,7 @@ i32 SoundCue::LoadFromWave(RiffWaveHeader* riff) {
     return m_sound != NULL;
 }
 
-RVA(0x00158720, 0x34)
+RVA(0x00158a00, 0x34)
 i32 SoundCue::LoadFromFile(char* path) {
     SoundDevice* dev = OwnerMgr()->m_soundStream;
     if (!dev) {
@@ -833,7 +833,7 @@ i32 SoundCue::LoadFromFile(char* path) {
     return m_sound != NULL;
 }
 
-RVA(0x00158760, 0x59)
+RVA(0x00158a40, 0x59)
 i32 SoundCue::LoadFromSource(CRezArchiveEntry* source) {
     char* blob = source->LoadData();
     if (blob == NULL) {
@@ -853,7 +853,7 @@ i32 SoundCue::LoadFromSource(CRezArchiveEntry* source) {
     return ok;
 }
 
-RVA(0x001587c0, 0x23)
+RVA(0x00158aa0, 0x23)
 void SoundCue::Unload() {
     if (m_sound != NULL) {
         SoundDevice* dev = OwnerMgr()->m_soundStream;
@@ -864,7 +864,7 @@ void SoundCue::Unload() {
     }
 }
 
-RVA(0x001587f0, 0xf1)
+RVA(0x00158ad0, 0xf1)
 i32 SoundCue::PlaySpatialized(i32 sourceX, i32 listenerX, i32 maxPanOffsetPx, i32 fullPanOffsetPx) {
     if (g_soundEnabled == false) {
         return 0;

@@ -26,65 +26,65 @@
 #undef isdigit
 #pragma function(memcpy)
 
-DATA(0x002bf428)
+DATA(0x002c0380)
 void* g_retAddrBreadcrumb;
 
 // Interior fields of one CActReg; do not define overlapping globals.
 
-DATA(0x0021ad28)
+DATA(0x0021bc88)
 i32 g_defaultProjActSize = 32;
 
-DATA(0x0021adf4)
+DATA(0x0021bd54)
 char s_out_of_memory[] = "out of memory";
 
-RVA_DYNINIT(0x0016d6f0, 0x5, g_zBitSetErrorSlot)
-RVA_DYNINIT(0x0016d700, 0x10, g_zBitSetErrorSlot)
-DATA(0x002bf408)
+RVA_DYNINIT(0x0016d9d0, 0x5, g_zBitSetErrorSlot)
+RVA_DYNINIT(0x0016d9e0, 0x10, g_zBitSetErrorSlot)
+DATA(0x002c0360)
 CVariantSlot g_zBitSetErrorSlot("zBitSet: ");
 
-DATA(0x002bf420)
+DATA(0x002c0378)
 void(__cdecl* g_tmErrorCallback)(char* buf, i32 v);
 
-RVA_DYNINIT(0x0016d9a0, 0x5, g_globalErrorSlot)
-RVA_DYNINIT(0x0016d9b0, 0x10, g_globalErrorSlot)
-DATA(0x002bf430)
+RVA_DYNINIT(0x0016dc80, 0x5, g_globalErrorSlot)
+RVA_DYNINIT(0x0016dc90, 0x10, g_globalErrorSlot)
+DATA(0x002c0388)
 CVariantSlot g_globalErrorSlot("Global Error: ");
 
-DATA(0x002bf448)
+DATA(0x002c03a0)
 char* g_errDataInvalid;
-DATA(0x002bf44c)
+DATA(0x002c03a4)
 char* g_errOverflow;
-DATA(0x002bf450)
+DATA(0x002c03a8)
 char* g_errOutOfRange;
-DATA(0x002bf454)
+DATA(0x002c03ac)
 char* g_errNullArg;
-DATA(0x002bf458)
+DATA(0x002c03b0)
 char* g_errExists;
-DATA(0x002bf45c)
+DATA(0x002c03b4)
 char* g_errBadArg;
-DATA(0x002bf460)
+DATA(0x002c03b8)
 char* g_errNoFile;
-DATA(0x002bf464)
+DATA(0x002c03bc)
 char* g_errOutOfMem;
 
-RVA_DYNINIT(0x0016de10, 0x5, g_dynamicArrayErrorSlot)
-RVA_DYNINIT(0x0016de20, 0x10, g_dynamicArrayErrorSlot)
-DATA(0x002bf468)
+RVA_DYNINIT(0x0016e0f0, 0x5, g_dynamicArrayErrorSlot)
+RVA_DYNINIT(0x0016e100, 0x10, g_dynamicArrayErrorSlot)
+DATA(0x002c03c0)
 CVariantSlot g_dynamicArrayErrorSlot("Dynamic Array: ");
 
-RVA_DYNINIT(0x0016dfd0, 0x5, g_rezArchiveErrorSlot)
-RVA_DYNINIT(0x0016dfe0, 0x10, g_rezArchiveErrorSlot)
-DATA(0x002bf480)
+RVA_DYNINIT(0x0016e2b0, 0x5, g_rezArchiveErrorSlot)
+RVA_DYNINIT(0x0016e2c0, 0x10, g_rezArchiveErrorSlot)
+DATA(0x002c03d8)
 CVariantSlot g_rezArchiveErrorSlot("zSymTab: ");
 
-RVA_DYNINIT(0x0016e180, 0x5, g_variantOverrides)
-RVA_DYNINIT(0x0016e190, 0x1, g_variantOverrides)
-DATA(0x002bf498)
+RVA_DYNINIT(0x0016e460, 0x5, g_variantOverrides)
+RVA_DYNINIT(0x0016e470, 0x1, g_variantOverrides)
+DATA(0x002c03f0)
 TypeKeyRec g_variantOverrides[32];
-DATA(0x002bf618)
+DATA(0x002c0570)
 i32 g_variantOverrideCount;
 
-RVA(0x0016cdd0, 0x22f)
+RVA(0x0016d0b0, 0x22f)
 ostream& WriteCurve(ostream& accum, const CMotionState& c) {
     accum << c.m_time;
     accum << c.m_deltaTime;
@@ -119,7 +119,7 @@ ostream& WriteCurve(ostream& accum, const CMotionState& c) {
     return accum;
 }
 
-RVA(0x0016d000, 0x189)
+RVA(0x0016d2e0, 0x189)
 istream& ReadCurve(istream& accum, CMotionState& c) {
     accum >> c.m_time;
     accum >> c.m_deltaTime;
@@ -155,7 +155,7 @@ istream& ReadCurve(istream& accum, CMotionState& c) {
 }
 
 // @early-stop
-RVA(0x0016d190, 0x101)
+RVA(0x0016d470, 0x101)
 void* zPTree::Find(const char* key) {
     if (key == NULL) {
         char* msg = g_errNullArg;
@@ -197,16 +197,16 @@ void* zPTree::Find(const char* key) {
     return NULL;
 }
 
-RVA(0x0016d2a0, 0x26)
+RVA(0x0016d580, 0x26)
 zBitVec::~zBitVec() {
     if (static_cast<u32>(m_capacity) > 0x20) {
         free(m_words);
     }
 }
 
-RVA_COMPGEN(0x0016d2d0, 0x1e, ??_GzBitVec@@UAEPAXI@Z)
+RVA_COMPGEN(0x0016d5b0, 0x1e, ??_GzBitVec@@UAEPAXI@Z)
 // @early-stop
-RVA(0x0016d2f0, 0xac)
+RVA(0x0016d5d0, 0xac)
 zBitVec& zBitVec::operator=(const zBitVec& that) {
     if (this != &that) {
         if (m_capacity != that.m_capacity) {
@@ -235,7 +235,7 @@ zBitVec& zBitVec::operator=(const zBitVec& that) {
 }
 
 // @early-stop
-RVA(0x0016d3a0, 0x344)
+RVA(0x0016d680, 0x344)
 zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&g_zBitSetErrorSlot) {
     i32 maxv = 0;
     const char* start;
@@ -372,7 +372,7 @@ badchar: {
 }
 }
 
-RVA(0x0016d710, 0x76)
+RVA(0x0016d9f0, 0x76)
 zBitVec::zBitVec() : zErrHandling(&g_zBitSetErrorSlot) {
     if (!SetSize(g_defaultProjActSize)) {
         char* msg = g_errOutOfMem;
@@ -383,7 +383,7 @@ zBitVec::zBitVec() : zErrHandling(&g_zBitSetErrorSlot) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0016d790, 0xb1)
+RVA(0x0016da70, 0xb1)
 zBitVec::zBitVec(i32 idx, i32 sizehint) : zErrHandling(&g_zBitSetErrorSlot) {
     u32 n = static_cast<u32>(sizehint);
     if (n == 0) {
@@ -403,7 +403,7 @@ zBitVec::zBitVec(i32 idx, i32 sizehint) : zErrHandling(&g_zBitSetErrorSlot) {
     }
 }
 
-RVA(0x0016d850, 0x11e)
+RVA(0x0016db30, 0x11e)
 
 void CVariantSlot::Set(zErrHandling* key, char* name, i32 value) {
     if (m_typeTag == VARIANT_SLOT_DIRECT_VALUE) {
@@ -441,7 +441,7 @@ void CVariantSlot::Set(zErrHandling* key, char* name, i32 value) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0016d970, 0x17)
+RVA(0x0016dc50, 0x17)
 CVariantSlot* CVariantSlot::EnsureTmErrorCallback() {
     if (g_tmErrorCallback == NULL) {
         g_tmErrorCallback = TmErrorHandler;
@@ -449,7 +449,7 @@ CVariantSlot* CVariantSlot::EnsureTmErrorCallback() {
     return this;
 }
 
-RVA(0x0016d990, 0x3)
+RVA(0x0016dc70, 0x3)
 __declspec(naked) void* GetRetAddr() {
     __asm {
         pop  eax
@@ -458,8 +458,8 @@ __declspec(naked) void* GetRetAddr() {
     }
 }
 
-RVA(0x0016d9c0, 0x75)
-RVA_COMPGEN(0x0016da40, 0x1e, ??_GzErrHandling@@UAEPAXI@Z)
+RVA(0x0016dca0, 0x75)
+RVA_COMPGEN(0x0016dd20, 0x1e, ??_GzErrHandling@@UAEPAXI@Z)
 zErrHandling::zErrHandling(CVariantSlot* errSink)
 
     : m_errSink(errSink ? errSink : &g_globalErrorSlot) {
@@ -476,14 +476,14 @@ zErrHandling::zErrHandling(CVariantSlot* errSink)
     }
 }
 
-RVA(0x0016da60, 0x12)
+RVA(0x0016dd40, 0x12)
 zErrHandling::~zErrHandling() {
 
     m_errSink->Add(this, NULL);
 }
 
 // @early-stop
-RVA(0x0016da80, 0x10b)
+RVA(0x0016dd60, 0x10b)
 void* _zvec::GrowTo(i32 idx, i32 at) {
     char* p;
     if (idx < m_lo) {
@@ -522,7 +522,7 @@ void* _zvec::GrowTo(i32 idx, i32 at) {
 }
 
 // @early-stop
-RVA(0x0016db90, 0x206)
+RVA(0x0016de70, 0x206)
 void* zPTree::Insert(const char* key, void* value) {
     if (m_lookupPending == false) {
         g_retAddrBreadcrumb = GetCallerRetAddr();
@@ -624,17 +624,17 @@ void* zPTree::Insert(const char* key, void* value) {
     return value;
 }
 
-RVA(0x0016dda0, 0x3c)
+RVA(0x0016e080, 0x3c)
 _zdvec::_zdvec(i32 stride, i32 lo, i32 hi, void* scratch) : _zvec(stride, lo, hi, scratch) {
     m_alloc = m_base;
     m_grown = m_hi - m_lo + 1;
 }
 
-RVA_COMPGEN(0x0016dde0, 0x1e, ??_G_zdvec@@UAEPAXI@Z)
+RVA_COMPGEN(0x0016e0c0, 0x1e, ??_G_zdvec@@UAEPAXI@Z)
 
-RVA_COMPGEN(0x0016de00, 0x5, ??1_zdvec@@UAE@XZ)
+RVA_COMPGEN(0x0016e0e0, 0x5, ??1_zdvec@@UAE@XZ)
 
-RVA(0x0016de30, 0xe7)
+RVA(0x0016e110, 0xe7)
 _zvec::_zvec(i32 stride, i32 lo, i32 hi, void* scratch)
     : zErrHandling(&g_dynamicArrayErrorSlot),
       m_lo(lo),
@@ -664,9 +664,9 @@ _zvec::_zvec(i32 stride, i32 lo, i32 hi, void* scratch)
     m_errSink->Set(this, const_cast<char*>(s_out_of_memory), 0xc);
 }
 
-RVA_COMPGEN(0x0016df20, 0x1e, ??_G_zvec@@UAEPAXI@Z)
+RVA_COMPGEN(0x0016e200, 0x1e, ??_G_zvec@@UAEPAXI@Z)
 
-RVA(0x0016df40, 0x22)
+RVA(0x0016e220, 0x22)
 _zvec::~_zvec() {
     char* p = m_base;
     if (p) {
@@ -674,16 +674,16 @@ _zvec::~_zvec() {
     }
 }
 
-RVA(0x0016df70, 0x22)
+RVA(0x0016e250, 0x22)
 zPtrColl::zPtrColl(i32 n, void(__cdecl* teardown)(void*))
 
     : m_teardown(teardown), m_kind(static_cast<i16>(n)), m_nodeCount(0) {}
 
-RVA_COMPGEN(0x0016dfa0, 0x1e, ??_GzPtrColl@@UAEPAXI@Z)
-RVA(0x0016dfc0, 0x7)
+RVA_COMPGEN(0x0016e280, 0x1e, ??_GzPtrColl@@UAEPAXI@Z)
+RVA(0x0016e2a0, 0x7)
 zPtrColl::~zPtrColl() {}
 
-RVA(0x0016dff0, 0x73)
+RVA(0x0016e2d0, 0x73)
 zPTree::zPTree(void(__cdecl* teardown)(void*), i32 n)
 
     : zErrHandling(&g_rezArchiveErrorSlot),
@@ -691,7 +691,7 @@ zPTree::zPTree(void(__cdecl* teardown)(void*), i32 n)
       m_root(NULL),
       m_lookupPending(false) {}
 
-RVA(0x0016e070, 0x7b)
+RVA(0x0016e350, 0x7b)
 void zPTree::ClearRecursive(CButeTreeNode* node) {
     CButeTreeNode* n = node;
     if (n == NULL) {
@@ -714,7 +714,7 @@ void zPTree::ClearRecursive(CButeTreeNode* node) {
     delete n;
 }
 
-RVA(0x0016e0f0, 0x4)
+RVA(0x0016e3d0, 0x4)
 __declspec(naked) void* GetCallerRetAddr() {
     __asm {
         mov eax, [ebp + 4]
@@ -722,7 +722,7 @@ __declspec(naked) void* GetCallerRetAddr() {
     }
 }
 
-RVA(0x0016e100, 0x7f)
+RVA(0x0016e3e0, 0x7f)
 i32 zBitVec::SetSize(i32 nbits) {
     u32 n = static_cast<u32>(nbits);
     if (n > 0x20) {
@@ -742,7 +742,7 @@ i32 zBitVec::SetSize(i32 nbits) {
     return 1;
 }
 
-RVA(0x0016e1a0, 0x23)
+RVA(0x0016e480, 0x23)
 CVariantSlot::CVariantSlot(char* label) {
     m_typeTag = VARIANT_SLOT_CALLBACK;
     m_reserved10 = 2;
@@ -752,7 +752,7 @@ CVariantSlot::CVariantSlot(char* label) {
     m_label = label;
 }
 
-RVA(0x0016e1d0, 0x4b)
+RVA(0x0016e4b0, 0x4b)
 i32 CVariantSlot::Find(i32 key) {
 
     i32 lo = 0;
@@ -775,7 +775,7 @@ i32 CVariantSlot::Find(i32 key) {
     return -1;
 }
 
-RVA(0x0016e220, 0x139)
+RVA(0x0016e500, 0x139)
 void TmErrorHandler(char* prefix, i32 errNum) {
     char tmp[10];
     char* np = &tmp[9];
@@ -841,7 +841,7 @@ void TmErrorHandler(char* prefix, i32 errNum) {
 }
 
 // @early-stop
-RVA(0x0016e360, 0x11a)
+RVA(0x0016e640, 0x11a)
 VariantCallback CVariantSlot::Add(zErrHandling* key, VariantCallback val) {
     int count = g_variantOverrideCount;
     if (val != NULL && count >= 0x20) {
@@ -889,7 +889,7 @@ VariantCallback CVariantSlot::Add(zErrHandling* key, VariantCallback val) {
     return old;
 }
 
-RVA(0x0016e480, 0x3e)
+RVA(0x0016e760, 0x3e)
 i32 FirstDiffBit(const char* a, const char* b) {
     i32 n = 0;
     while (*a == *b) {
@@ -906,17 +906,17 @@ i32 FirstDiffBit(const char* a, const char* b) {
     return c + n;
 }
 
-RVA(0x0016e4c0, 0xf)
+RVA(0x0016e7a0, 0xf)
 i32 DispatchLogicHit(CGameObject* obj) {
     return obj->m_logicRecord->m_userLogic->AdvanceAnimation();
 }
 
-RVA(0x0016e4d0, 0xf)
+RVA(0x0016e7b0, 0xf)
 i32 DispatchLogicAttack(CGameObject* obj) {
     return obj->m_logicRecord->m_userLogic->StepAttackFire();
 }
 
-RVA(0x0016e4e0, 0xf)
+RVA(0x0016e7c0, 0xf)
 i32 DispatchLogicBump(CGameObject* obj) {
     return obj->m_logicRecord->m_userLogic->RecordFrameTick();
 }
@@ -946,7 +946,7 @@ static inline void FreeNodes() {
     }
 }
 
-RVA(0x0016e4f0, 0x19b)
+RVA(0x0016e7d0, 0x19b)
 i32 DispatchLogicEvent(CUserLogic* ar) {
     CString* entry = TypeResolve(ar->m_logicRecord->EventCode());
     FreeNodes();

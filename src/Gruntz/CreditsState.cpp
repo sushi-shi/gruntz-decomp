@@ -47,7 +47,7 @@
 #include <stdio.h>
 #include <string.h>
 
-DATA(0x0022bf74)
+DATA(0x0022cecc)
 b32 g_clipRegionEnabled;
 
 DATA(0x001e96f0)
@@ -60,7 +60,7 @@ static const double kMsToSeconds = 0.001;
 DATA(0x001e9708)
 static const double kStepScale = 1000.0;
 
-RVA(0x00038d20, 0x176)
+RVA(0x00038c40, 0x176)
 i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
 
     if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
@@ -118,7 +118,7 @@ i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 pre
     return r;
 }
 
-RVA(0x00038f00, 0x87)
+RVA(0x00038e20, 0x87)
 void CCreditsState::ReleaseResources() {
     if (m_world) {
         SoundCueRegistry* reg = m_world->m_soundRegistry;
@@ -140,10 +140,10 @@ void CCreditsState::ReleaseResources() {
     CState::ReleaseResources();
 }
 
-RVA_COMPGEN(0x00038fc0, 0xa5, ??1CMoviePlayer@@QAE@XZ)
-RVA_COMPGEN(0x000390a0, 0x5d, ??1CFecFile@@QAE@XZ)
+RVA_COMPGEN(0x00038ee0, 0xa5, ??1CMoviePlayer@@QAE@XZ)
+RVA_COMPGEN(0x00038fc0, 0x5d, ??1CFecFile@@QAE@XZ)
 
-RVA(0x00039120, 0x2c)
+RVA(0x00039040, 0x2c)
 i32 CCreditsState::EnterState(GameStateId previousState) {
     if (ShowCursor(false) >= 0) {
         do {
@@ -152,7 +152,7 @@ i32 CCreditsState::EnterState(GameStateId previousState) {
     return InitAttractTitle() != 0;
 }
 
-RVA(0x00039160, 0x46)
+RVA(0x00039080, 0x46)
 i32 CCreditsState::LeaveState(GameStateId nextState) {
     owner()->m_midi->EndCurrent();
     owner()->m_midi->ClearSequences();
@@ -161,7 +161,7 @@ i32 CCreditsState::LeaveState(GameStateId nextState) {
     return 1;
 }
 
-RVA(0x000391d0, 0x17c)
+RVA(0x000390f0, 0x17c)
 i32 CCreditsState::Render() {
     IDirectDrawSurface* in = m_world->m_drawTarget->m_frontSurface->m_surface->m_ddSurface;
     if (!in || in->IsLost()) {
@@ -218,7 +218,7 @@ i32 CCreditsState::Render() {
     return 1;
 }
 
-RVA(0x000393b0, 0x3a)
+RVA(0x000392d0, 0x3a)
 i32 CCreditsState::InputVirtual() {
 
     if (m_world->m_drawTarget->PagesReady() == 0) {
@@ -232,7 +232,7 @@ i32 CCreditsState::InputVirtual() {
     return 1;
 }
 
-RVA(0x00039400, 0x2f)
+RVA(0x00039320, 0x2f)
 i32 CCreditsState::RestoreDisplay() {
     if (IsActive() == 0) {
         return 0;
@@ -244,7 +244,7 @@ i32 CCreditsState::RestoreDisplay() {
     return InitAttractTitle();
 }
 
-RVA(0x00039440, 0x46)
+RVA(0x00039360, 0x46)
 i32 CCreditsState::OnKeyDown(i32 code, i32 unused) {
     if (code == VK_ESCAPE || code == VK_SPACE || code == VK_RETURN) {
         if (m_previousStateId == GAMESTATE_MENU) {
@@ -256,7 +256,7 @@ i32 CCreditsState::OnKeyDown(i32 code, i32 unused) {
     return 1;
 }
 
-RVA(0x000394b0, 0x86)
+RVA(0x000393d0, 0x86)
 i32 CCreditsState::OnLButtonDown(i32 unused, i32 x, i32 y) {
     POINT pt = {x, y};
     RECT rc = {0, 0, 0x64, 0x64};
@@ -272,7 +272,7 @@ i32 CCreditsState::OnLButtonDown(i32 unused, i32 x, i32 y) {
     return 1;
 }
 
-RVA(0x00039570, 0x122)
+RVA(0x00039490, 0x122)
 i32 CCreditsState::InitAttractTitle() {
     if (m_videoPlaying != false) {
         (static_cast<CDDrawSubMgrPages*>(m_world->m_drawTarget))->PresentBackPage();
@@ -306,7 +306,7 @@ i32 CCreditsState::InitAttractTitle() {
 }
 
 // @early-stop
-RVA(0x000396f0, 0x2b8)
+RVA(0x00039610, 0x2b8)
 i32 CCreditsState::DrawScrollingCredits() {
     if (m_world == NULL) {
         return 0;
@@ -371,7 +371,7 @@ i32 CCreditsState::DrawScrollingCredits() {
 }
 
 // @early-stop
-RVA(0x00039a60, 0x179)
+RVA(0x00039980, 0x179)
 i32 CCreditsState::SetupTitle() {
 
     CRezArchiveEntry* sect = StateResources()->FindEntry("CREDITZ", REZ_TAG_TXT);
@@ -407,13 +407,13 @@ i32 CCreditsState::SetupTitle() {
     return 1;
 }
 
-RVA(0x00039c40, 0x10)
+RVA(0x00039b60, 0x10)
 i32 CCreditsState::FinishState() {
     m_videoPlaying = false;
     return 1;
 }
 
-RVA(0x00039c60, 0x7a)
+RVA(0x00039b80, 0x7a)
 i32 CCreditsState::StepVideo() {
     if (!m_videoPlaying) {
         return 1;
@@ -434,7 +434,7 @@ i32 CCreditsState::StepVideo() {
     return ret;
 }
 
-RVA(0x00039d00, 0x8c)
+RVA(0x00039c20, 0x8c)
 i32 CCreditsState::FlashColor() {
     i32 color = 0xffffff;
     if (m_fxEnabled) {
@@ -452,7 +452,7 @@ i32 CCreditsState::FlashColor() {
     return color;
 }
 
-RVA(0x00039dc0, 0x10b)
+RVA(0x00039ce0, 0x10b)
 void CCreditsState::LoadCreditzAssets() {
     b32 rising = (m_fxEnabled == false);
     m_fxEnabled = rising;
@@ -486,14 +486,14 @@ void CCreditsState::LoadCreditzAssets() {
     }
 }
 
-RVA(0x0003a1d0, 0x1d)
+RVA(0x0003a0f0, 0x1d)
 void CDDrawSurfacePair::BltSelf(CDDrawSurfacePair* src) {
     BLT_SURFACE_PAIR_SELF(this, src);
 }
 
-RVA_COMPGEN(0x0008c400, 0x46, ??1CRgn@@UAE@XZ)
-RVA_COMPGEN(0x0008d5b0, 0x1e, ??_GCCreditsState@@UAEPAXI@Z)
-RVA(0x0008d5e0, 0x8b)
+RVA_COMPGEN(0x0008c320, 0x46, ??1CRgn@@UAE@XZ)
+RVA_COMPGEN(0x0008d4d0, 0x1e, ??_GCCreditsState@@UAEPAXI@Z)
+RVA(0x0008d500, 0x8b)
 CCreditsState::~CCreditsState() {
     ReleaseResources();
 }

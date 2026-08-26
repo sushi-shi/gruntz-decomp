@@ -8,7 +8,7 @@
 
 #include <string.h>
 
-RVA(0x00056da0, 0xc7)
+RVA(0x00056c70, 0xc7)
 i32 CGruntCellRec::SerializeStrings(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
@@ -29,7 +29,7 @@ i32 CGruntCellRec::SerializeStrings(CFileMemBase* ar) {
     return 1;
 }
 
-RVA(0x00056eb0, 0x94)
+RVA(0x00056d80, 0x94)
 i32 CGruntCellRec::DeserializeStrings(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;

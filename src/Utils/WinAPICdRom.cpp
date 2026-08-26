@@ -8,16 +8,16 @@
 
 #include <stdio.h>
 
-DATA(0x0022b25c)
+DATA(0x0022c1b4)
 char g_cdDriveLetter;
 
-RVA(0x0001fd50, 0xf)
+RVA(0x0001fd60, 0xf)
 i32 IsGruntzCDInAnyDrive() {
     char letter = GetGruntzDriveLetter();
     return letter != 0;
 }
 
-RVA(0x0001fd70, 0x45)
+RVA(0x0001fd80, 0x45)
 i32 FileExistsCopy(char* szPath) {
     OFSTRUCT of;
 
@@ -32,7 +32,7 @@ i32 FileExistsCopy(char* szPath) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0001fde0, 0x189)
+RVA(0x0001fdf0, 0x189)
 char CheckCdRomRegistry() {
     DWORD valueSize;
     char value[32];
@@ -74,7 +74,7 @@ char CheckCdRomRegistry() {
     return letter;
 }
 
-RVA(0x0001ffe0, 0x192)
+RVA(0x0001fff0, 0x192)
 char GetGruntzDriveLetter() {
     if (g_cdDriveLetter == 0) {
         DWORD valueSize;
@@ -120,4 +120,4 @@ char GetGruntzDriveLetter() {
     return g_cdDriveLetter;
 }
 
-RVA_COMPGEN(0x000201f0, 0x5, ??1RegistryHelper@Utils@@QAE@XZ)
+RVA_COMPGEN(0x00020200, 0x5, ??1RegistryHelper@Utils@@QAE@XZ)

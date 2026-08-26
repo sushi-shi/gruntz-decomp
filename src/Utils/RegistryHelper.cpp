@@ -8,7 +8,7 @@
 
 namespace Utils {
 
-    RVA(0x00139210, 0x11c)
+    RVA(0x00139420, 0x11c)
     i32 RegistryHelper::Open(
         char* vendorName,
         char* productName,
@@ -26,7 +26,7 @@ namespace Utils {
 
         m_baseKey = rootKey;
 
-        char defaultSoftwareSubkey[] = DATA_COMPGEN(0x0021a064, "Software");
+        char defaultSoftwareSubkey[] = DATA_COMPGEN(0x0021afc4, "Software");
 
         if (GetRegistryKey(
                 rootKey,
@@ -45,7 +45,7 @@ namespace Utils {
         return 0;
     }
 
-    RVA(0x00139330, 0x3d)
+    RVA(0x00139540, 0x3d)
     void RegistryHelper::Close() {
         if (m_open) {
             m_open = false;
@@ -59,7 +59,7 @@ namespace Utils {
         }
     }
 
-    RVA(0x00139370, 0x37)
+    RVA(0x00139580, 0x37)
     i32 RegistryHelper::InitializeLastKey(char* valueSubkeyName) {
         if (!m_open) {
             return 0;
@@ -73,7 +73,7 @@ namespace Utils {
         return GetRegistryKey(m_versionKey, valueSubkeyName, &m_valueKey) != 0;
     }
 
-    RVA(0x001393b0, 0x58)
+    RVA(0x001395c0, 0x58)
     i32 RegistryHelper::SetValueString(const char* szValueName, const char* szValue) {
         if (!m_open) {
             return 0;
@@ -98,7 +98,7 @@ namespace Utils {
 
     // @dead-code
     // Zero-ref: retail has no caller or address-taking reference.
-    RVA(0x00139410, 0x45)
+    RVA(0x00139620, 0x45)
     i32 RegistryHelper::SetValueBinary(char* szValueName, void* pData, u32 dataSize) {
         if (!m_open) {
             return 0;
@@ -113,7 +113,7 @@ namespace Utils {
                == 0;
     }
 
-    RVA(0x00139460, 0x33)
+    RVA(0x00139670, 0x33)
     i32 RegistryHelper::SetValueDword(char* szValueName, DWORD value) {
         if (!m_open) {
             return 0;
@@ -133,7 +133,7 @@ namespace Utils {
                == 0;
     }
 
-    RVA(0x001394a0, 0x97)
+    RVA(0x001396b0, 0x97)
     char* RegistryHelper::GetValueString(
         char* szValueName,
         char* szValueBuffer,
@@ -169,7 +169,7 @@ namespace Utils {
 
     // @dead-code
     // Zero-ref: retail has no caller or address-taking reference.
-    RVA(0x00139540, 0x8a)
+    RVA(0x00139750, 0x8a)
     void* RegistryHelper::GetValueBinary(
         char* szValueName,
         void* pBuffer,
@@ -203,7 +203,7 @@ namespace Utils {
         return NULL;
     }
 
-    RVA(0x001395d0, 0x50)
+    RVA(0x001397e0, 0x50)
     DWORD RegistryHelper::GetValueDword(char* szValueName, DWORD valueDefault) {
         DWORD dwType;
         DWORD dwData;
@@ -230,7 +230,7 @@ namespace Utils {
 
     // @dead-code
     // Zero-ref: retail has no caller or address-taking reference.
-    RVA(0x00139620, 0x28)
+    RVA(0x00139830, 0x28)
     i32 RegistryHelper::DeleteValue(char* szValueName) {
         if (!m_open) {
             return 0;
@@ -241,7 +241,7 @@ namespace Utils {
         return RegDeleteValueA(m_valueKey, szValueName) == 0;
     }
 
-    RVA(0x00139650, 0x32)
+    RVA(0x00139860, 0x32)
     i32 RegistryHelper::GetRegistryKey(HKEY parentKey, char* subkeyName, PHKEY resultKey) {
         DWORD dwDisposition;
         return RegCreateKeyExA(

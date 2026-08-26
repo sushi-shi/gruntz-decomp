@@ -37,7 +37,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-RVA(0x000f1c70, 0x620)
+RVA(0x000f1da0, 0x620)
 i32 CGrunt::StepObjectGuardBehavior() {
     m_arrivalFlags |= 0x40000;
     CGrunt* occ = m_triggerMgr->FindNearestEnemy(this);

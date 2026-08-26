@@ -3,7 +3,7 @@
 #include <Net/LatencyList.h>
 #include <Net/NetConnectionType.h>
 
-RVA(0x00037910, 0x70)
+RVA(0x00037830, 0x70)
 i32 CLatencyList::Dispatch(i32 mode) {
     m_mode = mode;
     NetConnectionType connectionType = static_cast<NetConnectionType>(mode);

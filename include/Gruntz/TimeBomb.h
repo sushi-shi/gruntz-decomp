@@ -11,7 +11,7 @@
 class CTimeBomb : public CUserLogic, public CWapX {
 public:
     virtual i32 SerializeDispatch(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
-    RVA(0x00012a20, 0x6)
+    RVA(0x00012a30, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_TIMEBOMB;
     }

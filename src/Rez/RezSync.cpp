@@ -67,33 +67,33 @@ GZ_ENUM_CONST_BEGIN(GruntzGameTiming)
     GRUNTZ_PERIODIC_TIMER_MS = 33
 GZ_ENUM_CONST_END(GruntzGameTiming)
 
-DATA(0x002455b4)
+DATA(0x0024650c)
 b32 g_disableAudio = false;
-DATA(0x002455bc)
+DATA(0x00246514)
 b32 g_disableSound = false;
-DATA(0x002455c0)
+DATA(0x00246518)
 b32 g_disableMusic = false;
-DATA(0x002455c4)
+DATA(0x0024651c)
 b32 g_disableFades = false;
-DATA(0x002455c8)
+DATA(0x00246520)
 b32 g_disableJoystick = false;
-DATA(0x002455cc)
+DATA(0x00246524)
 b32 g_disableSoundFonts = false;
-DATA(0x002455d0)
+DATA(0x00246528)
 b32 g_disableDirectVideo = false;
-DATA(0x002455d4)
+DATA(0x0024652c)
 b32 g_disableHqMovie = false;
-DATA(0x002455d8)
+DATA(0x00246530)
 b32 g_enableTriple = false;
-DATA(0x002455dc)
+DATA(0x00246534)
 b32 g_enableHiColor = false;
-DATA(0x002455e0)
+DATA(0x00246538)
 b32 g_enableTrueColor = false;
-DATA(0x002455e4)
+DATA(0x0024653c)
 b32 g_enableEmulation = false;
 
 // @early-stop
-RVA(0x00083450, 0x192d)
+RVA(0x00083370, 0x192d)
 i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
     CoordPoolNode* pool = new CoordPoolNode[0x4e20];
@@ -637,7 +637,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     return 1;
 }
 
-RVA(0x00085500, 0x23)
+RVA(0x00085420, 0x23)
 CString CGruntzMgr::GetRezPath() {
     return m_strRezPath;
 }

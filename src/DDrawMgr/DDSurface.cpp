@@ -27,29 +27,29 @@
 
 #define DIRSURF_FILE "C:\\Proj\\DDrawMgr\\DIRSURF.CPP"
 
-RVA_DYNINIT(0x0013e060, 0xa, g_imageCache)
-RVA_DYNINIT(0x0013e070, 0xa, g_imageCache)
-RVA_DYNINIT(0x0013e080, 0xe, g_imageCache)
-RVA_DYNINIT(0x0013e090, 0xa, g_imageCache)
-DATA(0x00253c88)
+RVA_DYNINIT(0x0013e340, 0xa, g_imageCache)
+RVA_DYNINIT(0x0013e350, 0xa, g_imageCache)
+RVA_DYNINIT(0x0013e360, 0xe, g_imageCache)
+RVA_DYNINIT(0x0013e370, 0xa, g_imageCache)
+DATA(0x00254be0)
 CPtrArray g_imageCache;
-DATA(0x00253ca0)
+DATA(0x00254bf8)
 u16 g_clut[CLUT_ENTRY_COUNT];
 
-DATA(0x00283ca0)
+DATA(0x00284bf8)
 u16 g_lut16[256] = {0};
-DATA(0x00283ea0)
+DATA(0x00284df8)
 i32 g_rUp;
-DATA(0x00283ea4)
+DATA(0x00284dfc)
 i32 g_gUp;
-DATA(0x00283ea8)
+DATA(0x00284e00)
 i32 g_bUp;
 
-DATA(0x00283eac)
+DATA(0x00284e04)
 i32 g_rDown;
-DATA(0x00283eb0)
+DATA(0x00284e08)
 i32 g_gDown;
-DATA(0x00283eb4)
+DATA(0x00284e0c)
 i32 g_bDown;
 
 static inline u16* Row16(u8* locked, i32 row, i32 pitch) {
@@ -72,7 +72,7 @@ static inline void ClutStore16(u32 byteOffset, u16 v) {
     *ClutAtByteOffset(byteOffset) = v;
 }
 
-RVA(0x0013e0a0, 0x27)
+RVA(0x0013e380, 0x27)
 i32 CDDSurface::CreateFromDesc(CDDrawDeviceManager* manager, const DDSURFACEDESC* desc) {
     if (desc != NULL) {
         memcpy(m_descWords, desc, sizeof(DDSURFACEDESC));
@@ -80,7 +80,7 @@ i32 CDDSurface::CreateFromDesc(CDDrawDeviceManager* manager, const DDSURFACEDESC
     return BlitIntoDesc(manager);
 }
 
-RVA(0x0013e0d0, 0x66)
+RVA(0x0013e3b0, 0x66)
 i32 CDDSurface::BlitSurf(
     CDDrawDeviceManager* manager,
     i32 width,
@@ -105,7 +105,7 @@ i32 CDDSurface::BlitSurf(
     return this->BlitIntoDesc(manager);
 }
 
-RVA(0x0013e140, 0x1a0)
+RVA(0x0013e420, 0x1a0)
 i32 CDDSurface::Refresh(IDirectDrawSurface* surface) {
     m_ddSurface = surface;
     i32 i;
@@ -169,7 +169,7 @@ i32 CDDSurface::Refresh(IDirectDrawSurface* surface) {
     return 1;
 }
 
-RVA(0x0013e2e0, 0x1f0)
+RVA(0x0013e5c0, 0x1f0)
 i32 CDDSurface::BlitIntoDesc(CDDrawDeviceManager* manager) {
     if (manager->m_device == NULL) {
         return 0;
@@ -247,7 +247,7 @@ i32 CDDSurface::BlitIntoDesc(CDDrawDeviceManager* manager) {
     return 1;
 }
 
-RVA(0x0013e4d0, 0x7e)
+RVA(0x0013e7b0, 0x7e)
 void CDDSurface::FreeSurfaces() {
 
     for (u32 i = 0; i < static_cast<u32>(m_elements.GetSize()); i++) {
@@ -270,7 +270,7 @@ void CDDSurface::FreeSurfaces() {
     this->m_restoreCallback = NULL;
 }
 
-RVA(0x0013e550, 0x71)
+RVA(0x0013e830, 0x71)
 i32 CDDSurface::Resolve(
     CDDrawDeviceManager* manager,
     void* data,
@@ -303,7 +303,7 @@ i32 CDDSurface::Resolve(
     return 1;
 }
 
-RVA(0x0013e5d0, 0xb1)
+RVA(0x0013e8b0, 0xb1)
 i32 CDDSurface::MakeImageKey(CDDrawDeviceManager* manager, char* path, u32 colorKey) {
     char* ext = strrchr(path, '.');
     if (ext && _strcmpi(ext, ".BMP") == 0) {
@@ -322,7 +322,7 @@ i32 CDDSurface::MakeImageKey(CDDrawDeviceManager* manager, char* path, u32 color
     return 1;
 }
 
-RVA(0x0013e690, 0x35)
+RVA(0x0013e970, 0x35)
 i32 CDDSurface::SetPalette(CDDPalette* palette, i32 unused) {
     i32 hr = m_ddSurface->SetPalette(palette->m_palette);
     if (hr == 0) {
@@ -332,7 +332,7 @@ i32 CDDSurface::SetPalette(CDDPalette* palette, i32 unused) {
     return 0;
 }
 
-RVA(0x0013e6d0, 0x88)
+RVA(0x0013e9b0, 0x88)
 void* CDDSurface::Lock(RECT* rect) {
     i32 hr = m_ddSurface->Lock(rect, &m_apiDesc, 1, NULL);
     if (hr == 0) {
@@ -353,7 +353,7 @@ void* CDDSurface::Lock(RECT* rect) {
     return NULL;
 }
 
-RVA(0x0013e760, 0x63)
+RVA(0x0013ea40, 0x63)
 i32 CDDSurface::Fill(u32 color) {
     BltFxWords fx;
     i32* p = fx.m_words;
@@ -373,7 +373,7 @@ i32 CDDSurface::Fill(u32 color) {
     return hr == 0;
 }
 
-RVA(0x0013e7d0, 0x73)
+RVA(0x0013eab0, 0x73)
 i32 CDDSurface::Restore(RECT* dstRect, i32 fillColor) {
     if (dstRect == NULL) {
         return 0;
@@ -389,7 +389,7 @@ i32 CDDSurface::Restore(RECT* dstRect, i32 fillColor) {
     return hr == 0;
 }
 
-RVA(0x0013e850, 0x93)
+RVA(0x0013eb30, 0x93)
 i32 CDDSurface::Flip(CDDSurface* target) {
     IDirectDrawSurface* tsurf = NULL;
     if (target != NULL) {
@@ -416,7 +416,7 @@ i32 CDDSurface::Flip(CDDSurface* target) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0013e8f0, 0xb0)
+RVA(0x0013ebd0, 0xb0)
 void CDDSurface::ReloadImageCache() {
     u32 i = 0;
     if (static_cast<u32>(m_elements.GetSize()) > 0) {
@@ -445,7 +445,7 @@ void CDDSurface::ReloadImageCache() {
     g_imageCache.SetSize(0, -1);
 }
 
-RVA(0x0013e9a0, 0xcc)
+RVA(0x0013ec80, 0xcc)
 HRESULT __stdcall EnumSurfacesCallback(IDirectDrawSurface* surf, DDSURFACEDESC* desc, void* ctx) {
     IDirectDrawSurface* payload = NULL;
     HRESULT hr = surf->QueryInterface(IID_IDirectDrawSurface3, PtrOut(&payload));
@@ -463,7 +463,7 @@ HRESULT __stdcall EnumSurfacesCallback(IDirectDrawSurface* surf, DDSURFACEDESC* 
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0013ea70, 0x21)
+RVA(0x0013ed50, 0x21)
 CDDSurface* CDDSurface::GetElementAt(i32 i) {
     if (i >= 0 && i < m_elements.GetSize()) {
         return static_cast<CDDSurface*>(m_elements.GetAt(i));
@@ -471,7 +471,7 @@ CDDSurface* CDDSurface::GetElementAt(i32 i) {
     return NULL;
 }
 
-RVA(0x0013eaa0, 0x39)
+RVA(0x0013ed80, 0x39)
 i32 CDDSurface::SetColorKey(u32 flags, DDCOLORKEY* key) {
     i32 hr = m_ddSurface->SetColorKey(flags, key);
     if (hr != 0) {
@@ -483,7 +483,7 @@ i32 CDDSurface::SetColorKey(u32 flags, DDCOLORKEY* key) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0013eae0, 0x24)
+RVA(0x0013edc0, 0x24)
 i32 CDDSurface::SetColorKeyVal(u32 flags, u32 key) {
     DDCOLORKEY ck;
     ck.dwColorSpaceLowValue = key;
@@ -492,7 +492,7 @@ i32 CDDSurface::SetColorKeyVal(u32 flags, u32 key) {
 }
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0013eb10, 0x28)
+RVA(0x0013edf0, 0x28)
 i32 CDDSurface::SetColorKeyRange(u32 flags, u32 lo, u32 hi) {
     DDCOLORKEY ck;
     ck.dwColorSpaceLowValue = lo;
@@ -500,7 +500,7 @@ i32 CDDSurface::SetColorKeyRange(u32 flags, u32 lo, u32 hi) {
     return SetColorKey(flags, &ck);
 }
 
-RVA(0x0013eb40, 0x3c)
+RVA(0x0013ee20, 0x3c)
 void CDDSurface::FillPalette(u32 key) {
     DDCOLORKEY ck;
     ck.dwColorSpaceLowValue = key;
@@ -515,7 +515,7 @@ void CDDSurface::FillPalette(u32 key) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0013eb80, 0x21)
+RVA(0x0013ee60, 0x21)
 i32 CDDSurface::SetDestColorKey(u32 key) {
     DDCOLORKEY ck;
     ck.dwColorSpaceLowValue = key;
@@ -523,7 +523,7 @@ i32 CDDSurface::SetDestColorKey(u32 key) {
     return SetColorKey(DDCKEY_DESTBLT, &ck);
 }
 
-RVA(0x0013ebb0, 0x126)
+RVA(0x0013ee90, 0x126)
 void CDDSurface::FlipVertical() {
     if (m_height <= 1) {
         return;
@@ -589,7 +589,7 @@ void CDDSurface::FlipVertical() {
     delete[] tmp;
 }
 
-RVA(0x0013ece0, 0xc7)
+RVA(0x0013efc0, 0xc7)
 i32 CDDSurface::BlitDirect(u8* src, RasterRowOrder rowOrder) {
     u8* locked = static_cast<u8*>(Lock(NULL));
     if (locked == NULL) {
@@ -620,7 +620,7 @@ i32 CDDSurface::BlitDirect(u8* src, RasterRowOrder rowOrder) {
     return 1;
 }
 
-RVA(0x0013edb0, 0x78)
+RVA(0x0013f090, 0x78)
 void CDDSurface::Clear(i32 white) {
 
     BltFxWords fx;
@@ -643,13 +643,13 @@ void CDDSurface::Clear(i32 white) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0013ee30, 0x29)
+RVA(0x0013f110, 0x29)
 void CDDSurface::WaitFlip() {
     while (m_ddSurface->GetFlipStatus(DDGFS_ISFLIPDONE) == DDERR_WASSTILLDRAWING) {
     }
 }
 
-RVA(0x0013ee60, 0x8d)
+RVA(0x0013f140, 0x8d)
 i32 CDDSurface::Blt(CDDSurface* src) {
     LPRECT srcRect = &src->m_fullRect;
     LPRECT dstRect = &m_fullRect;
@@ -667,7 +667,7 @@ i32 CDDSurface::Blt(CDDSurface* src) {
     return hr;
 }
 
-RVA(0x0013eef0, 0x98)
+RVA(0x0013f1d0, 0x98)
 i32 CDDSurface::BltEx(RECT* dstRect, CDDSurface* src, RECT* srcRect, u32 flags, DDBLTFX* fx) {
     i32 hr;
     if (src != NULL) {
@@ -688,7 +688,7 @@ i32 CDDSurface::BltEx(RECT* dstRect, CDDSurface* src, RECT* srcRect, u32 flags, 
     return hr;
 }
 
-RVA(0x0013ef90, 0x8b)
+RVA(0x0013f270, 0x8b)
 i32 CDDSurface::BltFast(u32 x, u32 y, CDDSurface* src, RECT* srcRect, u32 trans) {
     i32 hr = m_ddSurface->BltFast(x, y, src->m_ddSurface, srcRect, trans);
     if (hr == static_cast<i32>(DDERR_SURFACELOST)) {
@@ -707,7 +707,7 @@ i32 CDDSurface::BltFast(u32 x, u32 y, CDDSurface* src, RECT* srcRect, u32 trans)
 // @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0013f020, 0x43f)
+RVA(0x0013f300, 0x43f)
 i32 CDDSurface::ShadeBlt(
     struct tagRECT* dstRect,
     CDDSurface* src,
@@ -870,7 +870,7 @@ reject:
     return 0;
 }
 
-RVA(0x0013f460, 0x2da)
+RVA(0x0013f740, 0x2da)
 i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
     if (pct > CLUT_BLEND_PERCENT_MAX) {
         return 0;
@@ -971,7 +971,7 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
     return 1;
 }
 
-RVA(0x0013f740, 0x1c8)
+RVA(0x0013fa20, 0x1c8)
 void BuildColorChannelTables() {
     if (PIXEL_FORMAT_IS_RGB555) {
         i32 bShift = g_bUp;
@@ -1041,7 +1041,7 @@ void BuildColorChannelTables() {
     }
 }
 
-RVA(0x0013f910, 0x4a)
+RVA(0x0013fbf0, 0x4a)
 i32 CDDSurface::SaveFile(char* buf, FileImageFormat type, CFileImagePal* pal, i32 flag) {
     if (this->IsValid() == 0) {
         return 0;
@@ -1060,7 +1060,7 @@ i32 CDDSurface::SaveFile(char* buf, FileImageFormat type, CFileImagePal* pal, i3
     }
 }
 
-RVA(0x0013f960, 0x22)
+RVA(0x0013fc40, 0x22)
 i32 CDDSurface::RestoreLost() {
     if (m_restoreCallback != NULL) {
         if (m_restoreCallback(this) != 0) {
@@ -1073,7 +1073,7 @@ i32 CDDSurface::RestoreLost() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0013f990, 0xc4)
+RVA(0x0013fc70, 0xc4)
 void CDDSurface::Tile(CDDSurface* src, b32 useColorKey) {
     i32 dwTrans = DDBLTFAST_WAIT + DDBLTFAST_SRCCOLORKEY * (useColorKey != false);
     for (i32 y = 0; y < m_height; y += src->m_height) {
@@ -1100,7 +1100,7 @@ void CDDSurface::Tile(CDDSurface* src, b32 useColorKey) {
     }
 }
 
-RVA(0x0013fa60, 0x40)
+RVA(0x0013fd40, 0x40)
 i32 CDDSurface::GetColorKey() {
     DDCOLORKEY key;
     i32 hr = m_ddSurface->GetColorKey(8, &key);
@@ -1113,7 +1113,7 @@ i32 CDDSurface::GetColorKey() {
     return -1;
 }
 
-RVA(0x0013faa0, 0x108)
+RVA(0x0013fd80, 0x108)
 i32 CDDSurface::Blit(u8* src, ColorDepth bitcount, PALETTEENTRY* palette, RasterRowOrder rowOrder) {
     ColorDepth dest = this->m_bitDepth;
     if (static_cast<ColorDepth>(dest == BPP_UNSET) == bitcount) {
@@ -1149,7 +1149,7 @@ i32 CDDSurface::Blit(u8* src, ColorDepth bitcount, PALETTEENTRY* palette, Raster
 }
 
 // @early-stop
-RVA(0x0013fbb0, 0x126)
+RVA(0x0013fe90, 0x126)
 i32 CDDSurface::Blit168(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
     if (pal == NULL) {
         return 0;
@@ -1184,7 +1184,7 @@ i32 CDDSurface::Blit168(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
 }
 
 // @early-stop
-RVA(0x0013fce0, 0x17f)
+RVA(0x0013ffc0, 0x17f)
 i32 CDDSurface::Blit1624(u8* srcv, RasterRowOrder rowOrder) {
     u8* locked = static_cast<u8*>(Lock(NULL));
     if (locked == NULL) {
@@ -1225,7 +1225,7 @@ i32 CDDSurface::Blit1624(u8* srcv, RasterRowOrder rowOrder) {
     return 1;
 }
 
-RVA(0x0013fe60, 0x11e)
+RVA(0x00140140, 0x11e)
 i32 CDDSurface::Blit248(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
     if (pal == NULL) {
         return 0;
@@ -1259,7 +1259,7 @@ i32 CDDSurface::Blit248(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
     return 1;
 }
 
-RVA(0x0013ff80, 0x184)
+RVA(0x00140260, 0x184)
 i32 CDDSurface::Blit2416(u8* srcv, RasterRowOrder rowOrder) {
     u8* locked = static_cast<u8*>(Lock(NULL));
     if (locked == NULL) {
@@ -1299,7 +1299,7 @@ i32 CDDSurface::Blit2416(u8* srcv, RasterRowOrder rowOrder) {
     return 1;
 }
 
-RVA(0x00140110, 0x30b)
+RVA(0x001403f0, 0x30b)
 i32 CDDSurface::Blit824(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
     if (pal == NULL) {
         return 0;
@@ -1375,7 +1375,7 @@ i32 CDDSurface::Blit824(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
     return 1;
 }
 
-RVA(0x00140420, 0x34f)
+RVA(0x00140700, 0x34f)
 i32 CDDSurface::Blit816(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
     if (pal == NULL) {
         return 0;
@@ -1458,7 +1458,7 @@ i32 CDDSurface::Blit816(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00140770, 0x326)
+RVA(0x00140a50, 0x326)
 void CDDSurface::DumpSurfaceInfo(i32 detailed) {
     i32 i;
     i32* p = m_descWords;
@@ -1615,7 +1615,7 @@ void CDDSurface::DumpSurfaceInfo(i32 detailed) {
 
 #pragma optimize("", off)
 
-RVA(0x00140aa0, 0x1a3)
+RVA(0x00140d80, 0x1a3)
 i32 CDDSurface::DecodeRun8(u8* src) {
     u8* sp;
     i32 hold;
@@ -1677,7 +1677,7 @@ i32 CDDSurface::DecodeRun8(u8* src) {
     return 1;
 }
 
-RVA(0x00140c50, 0x3e2)
+RVA(0x00140f30, 0x3e2)
 i32 CDDSurface::DecodeRun24(u8* src) {
     u8* inp;
     i32 rest;
@@ -1804,7 +1804,7 @@ i32 CDDSurface::DecodeRun24(u8* src) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00141040, 0x36)
+RVA(0x00141320, 0x36)
 i32 CDDSurface::RotateBlit(
     CDDSurface* src,
     i32* pivot,
@@ -1821,7 +1821,7 @@ i32 CDDSurface::RotateBlit(
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00141080, 0x174)
+RVA(0x00141360, 0x174)
 i32 CDDSurface::StretchBlit(CDDSurface* src, RECT* srcRect, RECT* dstRect, i32 mode, i32 colorkey) {
     RECT sr;
     ClipVtx v[4];
@@ -1858,7 +1858,7 @@ i32 CDDSurface::StretchBlit(CDDSurface* src, RECT* srcRect, RECT* dstRect, i32 m
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00141200, 0x39)
+RVA(0x001414e0, 0x39)
 i32 CDDSurface::ScaleBlit(
     CDDSurface* src,
     i32* pivot,
@@ -1875,7 +1875,7 @@ i32 CDDSurface::ScaleBlit(
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00141240, 0x39)
+RVA(0x00141520, 0x39)
 i32 CDDSurface::RotateScaleBlit(
     CDDSurface* src,
     i32* pivot,
@@ -1890,12 +1890,12 @@ i32 CDDSurface::RotateScaleBlit(
     return 1;
 }
 
-RVA(0x00141280, 0x4a)
+RVA(0x00141560, 0x4a)
 void CDDSurface::DecodeThunk(i32 x0, i32 y0, i32 x1, i32 y1, i32 halfWidth, i16 color, RECT clip) {
     ProjectWallQuad(this, x0, y0, x1, y1, halfWidth, color, clip);
 }
 
-RVA(0x001412d0, 0x24)
+RVA(0x001415b0, 0x24)
 i32 CDDSurface::IsValid() {
     if (m_ddSurface != NULL && m_fullRect.right > 0 && m_fullRect.bottom > 0) {
         return 1;
@@ -1903,30 +1903,30 @@ i32 CDDSurface::IsValid() {
     return 0;
 }
 
-RVA(0x00141300, 0x3)
+RVA(0x001415e0, 0x3)
 DDSurfacePoolKind CDDSurface::GetPoolKind() {
     return POOLKIND_PLAIN;
 }
 
-RVA(0x00141310, 0x4)
+RVA(0x001415f0, 0x4)
 i32 CDDSurface::GetWidth() {
     return m_width;
 }
 
-RVA(0x00141320, 0x4)
+RVA(0x00141600, 0x4)
 i32 CDDSurface::GetHeight() {
     return m_height;
 }
 
-RVA_COMPGEN(0x00141330, 0x1e, ??_GCDDSurface@@UAEPAXI@Z)
-RVA_COMPGEN(0x00141350, 0x53, ??1CDDSurface@@UAE@XZ)
+RVA_COMPGEN(0x00141610, 0x1e, ??_GCDDSurface@@UAEPAXI@Z)
+RVA_COMPGEN(0x00141630, 0x53, ??1CDDSurface@@UAE@XZ)
 
-RVA(0x001413b0, 0xf)
+RVA(0x00141690, 0xf)
 void CDDSurface::UnlockThunk() {
     m_ddSurface->Unlock(NULL);
 }
 
-RVA(0x001413c0, 0xb)
+RVA(0x001416a0, 0xb)
 i32 CDDSurface::Scale(i32 n) {
     return m_pitch * n;
 }

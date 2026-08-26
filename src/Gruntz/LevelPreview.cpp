@@ -32,12 +32,12 @@
 #include <ddraw.h>
 #include <stdio.h>
 
-DATA(0x0024c69c)
+DATA(0x0024d5f4)
 b32 g_previewCancelQuits = false;
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000de030, 0xc2)
+RVA(0x000de060, 0xc2)
 
 i32 CPreviewState::Enter(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
 
@@ -65,7 +65,7 @@ i32 CPreviewState::Enter(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000de140, 0x33)
+RVA(0x000de170, 0x33)
 void CPreviewState::ResetPreview() {
     SoundCueRegistry* reg = m_world->m_soundRegistry;
     if (reg->m_soundStream != NULL) {
@@ -77,7 +77,7 @@ void CPreviewState::ResetPreview() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000de190, 0x35)
+RVA(0x000de1c0, 0x35)
 i32 CPreviewState::NextScreenCmd(i32 unused) {
     while (ShowCursor(false) >= 0) {
     }
@@ -89,14 +89,14 @@ i32 CPreviewState::NextScreenCmd(i32 unused) {
 // @identity-TODO: owner, ABI, and true result are proven; the command identity is not.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000de1e0, 0x8)
+RVA(0x000de210, 0x8)
 i32 CPreviewState::AcceptPreviewCommand(i32 unused) {
     return 1;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000de200, 0x85)
+RVA(0x000de230, 0x85)
 i32 CPreviewState::Tick() {
     IDirectDrawSurface* surf = m_world->m_drawTarget->m_frontSurface->m_surface->m_ddSurface;
     if (surf == NULL || surf->IsLost() != 0) {
@@ -116,7 +116,7 @@ i32 CPreviewState::Tick() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000de2c0, 0x5c)
+RVA(0x000de2f0, 0x5c)
 i32 CPreviewState::Refade() {
     if (m_world->m_drawTarget->PagesReady() == 0) {
         return 0;
@@ -131,7 +131,7 @@ i32 CPreviewState::Refade() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000de340, 0x56)
+RVA(0x000de370, 0x56)
 i32 CPreviewState::RefadeVirtual() {
     if (IsActive() == 0) {
         return 0;
@@ -146,7 +146,7 @@ i32 CPreviewState::RefadeVirtual() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000de3c0, 0x2d)
+RVA(0x000de3f0, 0x2d)
 i32 CPreviewState::OnKey(i32 key, i32 unused) {
     if (key == VK_ESCAPE) {
         Cancel();
@@ -159,13 +159,13 @@ i32 CPreviewState::OnKey(i32 key, i32 unused) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000de400, 0xd)
+RVA(0x000de430, 0xd)
 i32 CPreviewState::OnLButtonDown(i32, i32, i32) {
     LoadLevelPreviewScreen();
     return 1;
 }
 
-RVA(0x000de420, 0x115)
+RVA(0x000de450, 0x115)
 void CPreviewState::LoadLevelPreviewScreen() {
     char buf[64];
     i32 idx = m_previewIndex;
@@ -202,7 +202,7 @@ void CPreviewState::LoadLevelPreviewScreen() {
     }
 }
 
-RVA(0x000de590, 0x2e)
+RVA(0x000de5c0, 0x2e)
 void CPreviewState::Cancel() {
     if (g_previewCancelQuits) {
         m_mgr->DelayedQuit();

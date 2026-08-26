@@ -49,7 +49,7 @@ public:
 
     virtual i32 IsLoaded() OVERRIDE;
 
-    RVA(0x0015b5d0, 0x7c)
+    RVA(0x0015b8b0, 0x7c)
     virtual void Unload() OVERRIDE {
         if (m_logicRecord) {
             delete m_logicRecord;
@@ -225,7 +225,7 @@ public:
         Unload();
     }
 
-    RVA(0x0015b980, 0x96)
+    RVA(0x0015bc60, 0x96)
     virtual void Unload() OVERRIDE {
         m_reserved18c = -1;
         m_frameIndex = -1;
@@ -275,7 +275,7 @@ public:
     virtual ~CWwdGameObject() OVERRIDE;
     virtual i32 IsLoaded() OVERRIDE;
 
-    RVA(0x0015bf00, 0xa1)
+    RVA(0x0015c1e0, 0xa1)
     virtual void Unload() OVERRIDE {
         Clear();
         m_reserved1f8 = 0;
@@ -318,7 +318,7 @@ public:
     virtual ~CWwdDeferredObject() OVERRIDE;
     virtual i32 IsLoaded() OVERRIDE;
 
-    RVA(0x0015bc50, 0x7c)
+    RVA(0x0015bf30, 0x7c)
     virtual void Unload() OVERRIDE {
         CGameObject::Unload();
     }
@@ -343,7 +343,7 @@ public:
     virtual ~CWwdDotObject() OVERRIDE;
     virtual i32 IsLoaded() OVERRIDE;
 
-    RVA(0x0015c200, 0x82)
+    RVA(0x0015c4e0, 0x82)
     virtual void Unload() OVERRIDE {
         m_dotColor = 0;
         CGameObject::Unload();

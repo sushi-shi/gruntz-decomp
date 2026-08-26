@@ -24,7 +24,7 @@
 #include <stddef.h>
 
 // @early-stop
-RVA(0x0006eb80, 0x5ef)
+RVA(0x0006ea50, 0x5ef)
 i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
     if (g_gameReg->m_soundEnabled) {
 

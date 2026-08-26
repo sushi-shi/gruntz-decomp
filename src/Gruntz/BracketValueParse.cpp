@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 
-RVA(0x000f9160, 0xd2)
+RVA(0x000f9290, 0xd2)
 i32 ExtractBracketValue(char* out, char* src, char* key) {
     char marker[256];
     sprintf(marker, "[%s:", key);
@@ -17,7 +17,7 @@ i32 ExtractBracketValue(char* out, char* src, char* key) {
     if (strlen(p) < 2) {
         return 0;
     }
-    char* end = strstr(p, DATA_COMPGEN(0x00213eec, "]"));
+    char* end = strstr(p, DATA_COMPGEN(0x00214e4c, "]"));
     if (!end) {
         return 0;
     }

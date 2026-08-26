@@ -7,7 +7,7 @@
 
 #define INPUTDEVICE_FILE "C:\\Proj\\DinMgr2\\InputDevice.cpp"
 
-RVA(0x00134cb0, 0x94)
+RVA(0x00134ec0, 0x94)
 i32 CInputDevRoot::Create(IDirectInputA* di, const GUID* deviceGuid, HWND hwnd) {
     if (di == NULL) {
         return 0;
@@ -34,7 +34,7 @@ i32 CInputDevRoot::Create(IDirectInputA* di, const GUID* deviceGuid, HWND hwnd) 
     return m_device2 != NULL;
 }
 
-RVA(0x00134d50, 0x3b)
+RVA(0x00134f60, 0x3b)
 void CInputDevRoot::ReleaseDevices() {
     if (m_device2 != NULL) {
         Unacquire();
@@ -49,7 +49,7 @@ void CInputDevRoot::ReleaseDevices() {
     m_stateBuffer = NULL;
 }
 
-RVA(0x00134d90, 0x60)
+RVA(0x00134fa0, 0x60)
 DeviceState* CInputDevRoot::ReadState() {
     if (m_stateBuffer == NULL) {
         return NULL;
@@ -69,7 +69,7 @@ DeviceState* CInputDevRoot::ReadState() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00134df0, 0x33)
+RVA(0x00135000, 0x33)
 DIDEVICEINSTANCEA* CInputDevRoot::GetDeviceInfo() {
     m_deviceInfo.dwSize = sizeof(m_deviceInfo);
     i32 hr = m_device2->GetDeviceInfo(&m_deviceInfo);
@@ -82,7 +82,7 @@ DIDEVICEINSTANCEA* CInputDevRoot::GetDeviceInfo() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00134e30, 0x36)
+RVA(0x00135040, 0x36)
 DIDEVCAPS* CInputDevRoot::GetCapabilities() {
     // Preserved bug: the DIDEVICEINSTANCEA size makes this DIDEVCAPS query fail.
     m_caps.dwSize = 0x244;
@@ -96,7 +96,7 @@ DIDEVCAPS* CInputDevRoot::GetCapabilities() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00134e70, 0x3f)
+RVA(0x00135080, 0x3f)
 DIPROPHEADER* CInputDevRoot::GetProperty(REFGUID rguid) {
     m_prop.dwSize = 0x244;
     i32 hr = m_device2->GetProperty(rguid, &m_prop);
@@ -107,7 +107,7 @@ DIPROPHEADER* CInputDevRoot::GetProperty(REFGUID rguid) {
     return &m_prop;
 }
 
-RVA(0x00134eb0, 0x3b)
+RVA(0x001350c0, 0x3b)
 i32 CInputDevRoot::SetDataFormat(LPCDIDATAFORMAT fmt) {
     if (fmt == NULL) {
         return 0;
@@ -120,7 +120,7 @@ i32 CInputDevRoot::SetDataFormat(LPCDIDATAFORMAT fmt) {
     return 1;
 }
 
-RVA(0x00134ef0, 0x3c)
+RVA(0x00135100, 0x3c)
 i32 CInputDevRoot::SetCooperativeLevel(u32 flags) {
     i32 hr = m_device2->SetCooperativeLevel(m_hwnd, flags);
     if (hr != 0) {
@@ -130,7 +130,7 @@ i32 CInputDevRoot::SetCooperativeLevel(u32 flags) {
     return 1;
 }
 
-RVA(0x00134f30, 0x40)
+RVA(0x00135140, 0x40)
 i32 CInputDevRoot::SetProperty(REFGUID rguid, LPCDIPROPHEADER prop) {
     if (prop == NULL) {
         return 0;
@@ -143,7 +143,7 @@ i32 CInputDevRoot::SetProperty(REFGUID rguid, LPCDIPROPHEADER prop) {
     return 1;
 }
 
-RVA(0x00134f70, 0x40)
+RVA(0x00135180, 0x40)
 i32 CInputDevRoot::SetPropertyDword(REFGUID rguid, u32 dwObj, u32 dwHow, u32 dwData) {
     DIPROPDWORD prop;
     prop.diph.dwObj = dwObj;
@@ -154,7 +154,7 @@ i32 CInputDevRoot::SetPropertyDword(REFGUID rguid, u32 dwObj, u32 dwHow, u32 dwD
     return SetProperty(rguid, &prop.diph);
 }
 
-RVA(0x00134fb0, 0x29)
+RVA(0x001351c0, 0x29)
 i32 CInputDevRoot::Acquire() {
     i32 hr = m_device2->Acquire();
     if (hr != 0) {
@@ -164,7 +164,7 @@ i32 CInputDevRoot::Acquire() {
     return 1;
 }
 
-RVA(0x00134fe0, 0x13)
+RVA(0x001351f0, 0x13)
 i32 CInputDevRoot::Unacquire() {
     i32 hr = m_device2->Unacquire();
     return hr == 0;
@@ -172,7 +172,7 @@ i32 CInputDevRoot::Unacquire() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00135000, 0x3b)
+RVA(0x00135210, 0x3b)
 i32 CInputDevRoot::Escape(LPDIEFFESCAPE data) {
     if (data == NULL) {
         return 0;
@@ -185,7 +185,7 @@ i32 CInputDevRoot::Escape(LPDIEFFESCAPE data) {
     return 1;
 }
 
-RVA(0x00135040, 0x65)
+RVA(0x00135250, 0x65)
 i32 CInputDevRoot::PollDevice() {
     i32 hr = m_device2->Poll();
     if (hr == 0) {

@@ -31,27 +31,27 @@
 #include <stdio.h>
 #include <string.h>
 
-RVA_DYNINIT(0x000c1690, 0xa, g_defaultPlayerNames)
-RVA_DYNINIT(0x000c16b0, 0x3d, g_defaultPlayerNames)
-RVA_DYNINIT(0x000c1700, 0xe, g_defaultPlayerNames)
-RVA_DYNINIT(0x000c1720, 0x14, g_defaultPlayerNames)
-DATA(0x0024bdb0)
+RVA_DYNINIT(0x000c16c0, 0xa, g_defaultPlayerNames)
+RVA_DYNINIT(0x000c16e0, 0x3d, g_defaultPlayerNames)
+RVA_DYNINIT(0x000c1730, 0xe, g_defaultPlayerNames)
+RVA_DYNINIT(0x000c1750, 0x14, g_defaultPlayerNames)
+DATA(0x0024cd08)
 CString g_defaultPlayerNames[4] = {"Beefy", "Zed", "Serra", "Jebediah"};
 
-DATA(0x0024bdc0)
+DATA(0x0024cd18)
 WNDPROC g_savedMultiWndProc = NULL;
 
-DATA(0x0024bd5c)
+DATA(0x0024ccb4)
 CMulti* g_multiState;
 
-DATA(0x0024bdc4)
+DATA(0x0024cd1c)
 b32 g_watchdogBusy;
-DATA(0x0024bdc8)
+DATA(0x0024cd20)
 i32 g_netStatsTick;
-DATA(0x0024bdcc)
+DATA(0x0024cd24)
 i32 g_latencyDisplayTick;
 
-DATA(0x0021243c)
+DATA(0x002133d4)
 char s_UsingCmdDelay[] = "Using CmdDelay of %d and ResendDelay of %d.";
 
 enum {
@@ -100,7 +100,7 @@ const AFX_MSGMAP_ENTRY CMultiStartDlg::_messageEntries[] = {
 };
 // clang-format on
 
-RVA(0x000c1750, 0x88)
+RVA(0x000c1780, 0x88)
 CMultiStartDlg::CMultiStartDlg(CGruntzMgr* gameManager, CWnd* pParent)
     : CDialog(0xc5, pParent), m_reserved74(0xa) {
     m_gameManager = gameManager;
@@ -109,9 +109,9 @@ CMultiStartDlg::CMultiStartDlg(CGruntzMgr* gameManager, CWnd* pParent)
     g_multiState = static_cast<CMulti*>(g_gameReg->m_curState);
 }
 
-RVA_COMPGEN(0x000c1810, 0x1e, ??_GCMultiStartDlg@@UAEPAXI@Z)
+RVA_COMPGEN(0x000c1840, 0x1e, ??_GCMultiStartDlg@@UAEPAXI@Z)
 
-RVA(0x000c1840, 0x16e)
+RVA(0x000c1870, 0x16e)
 i32 CMultiStartDlg::InitializeWorldCombo() {
     CWnd* combo = GetDlgItem(IDX(IDC_MULTI_WORLD));
     if (combo == NULL) {
@@ -147,7 +147,7 @@ i32 CMultiStartDlg::InitializeWorldCombo() {
     return 1;
 }
 
-RVA(0x000c1a10, 0x70)
+RVA(0x000c1a40, 0x70)
 LRESULT CALLBACK MultiMapComboEditProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     if (msg == WM_SETTEXT) {
         if (strcmp("", reinterpret_cast<LPCTSTR>(lParam)) == 0) {
@@ -158,7 +158,7 @@ LRESULT CALLBACK MultiMapComboEditProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 }
 
 // @early-stop
-RVA(0x000c1aa0, 0x2f8)
+RVA(0x000c1ad0, 0x2f8)
 i32 CMultiStartDlg::RefreshWorldControls() {
     if (g_multiState->m_isHost != false) {
         CWnd* worldCombo = GetDlgItem(IDX(IDC_MULTI_WORLD));
@@ -218,7 +218,7 @@ i32 CMultiStartDlg::RefreshWorldControls() {
     return 1;
 }
 
-RVA(0x000c1e60, 0x115)
+RVA(0x000c1e90, 0x115)
 i32 CMultiStartDlg::BuildLatencyOptions() {
     m_latencyOptions = new CLatencyList(0xa);
     CMulti* multi = g_multiState;
@@ -249,7 +249,7 @@ i32 CMultiStartDlg::BuildLatencyOptions() {
 }
 
 // @early-stop
-RVA(0x000c1fd0, 0x99)
+RVA(0x000c2000, 0x99)
 i32 CMultiStartDlg::RefreshLatencyControl() {
     CWnd* latencyCombo = GetDlgItem(IDX(IDC_MULTI_LATENCY));
     if (latencyCombo == NULL) {
@@ -278,7 +278,7 @@ i32 CMultiStartDlg::RefreshLatencyControl() {
 }
 
 // @early-stop
-RVA(0x000c20a0, 0x45a)
+RVA(0x000c20d0, 0x45a)
 void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
     Utils::RegistryHelper* reg = static_cast<Utils::RegistryHelper*>(g_gameReg->m_settings);
     if (pDX->m_bSaveAndValidate == false) {
@@ -392,12 +392,12 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
     PaintPlayerColorControls();
 }
 
-RVA(0x000c2620, 0x6)
+RVA(0x000c2650, 0x6)
 const AFX_MSGMAP* CMultiStartDlg::GetMessageMap() const {
     return &messageMap;
 }
 
-RVA(0x000c2640, 0x60)
+RVA(0x000c2670, 0x60)
 CWnd* CMultiStartDlg::GetPlayerTypeControl(i32 slot) {
     CWnd* result = NULL;
     switch (static_cast<PlayerSlot>(slot)) {
@@ -417,7 +417,7 @@ CWnd* CMultiStartDlg::GetPlayerTypeControl(i32 slot) {
     return result;
 }
 
-RVA(0x000c26c0, 0x60)
+RVA(0x000c26f0, 0x60)
 CWnd* CMultiStartDlg::GetReadyControl(i32 slot) {
     CWnd* result = NULL;
     switch (static_cast<PlayerSlot>(slot)) {
@@ -437,7 +437,7 @@ CWnd* CMultiStartDlg::GetReadyControl(i32 slot) {
     return result;
 }
 
-RVA(0x000c2740, 0x60)
+RVA(0x000c2770, 0x60)
 CWnd* CMultiStartDlg::GetPlayerNameControl(i32 slot) {
     CWnd* result = NULL;
     switch (static_cast<PlayerSlot>(slot)) {
@@ -457,7 +457,7 @@ CWnd* CMultiStartDlg::GetPlayerNameControl(i32 slot) {
     return result;
 }
 
-RVA(0x000c27c0, 0x60)
+RVA(0x000c27f0, 0x60)
 CWnd* CMultiStartDlg::GetMaxGruntzControl(i32 slot) {
     CWnd* result = NULL;
     switch (static_cast<PlayerSlot>(slot)) {
@@ -477,7 +477,7 @@ CWnd* CMultiStartDlg::GetMaxGruntzControl(i32 slot) {
     return result;
 }
 
-RVA(0x000c2840, 0x60)
+RVA(0x000c2870, 0x60)
 CWnd* CMultiStartDlg::GetPlayerColorControl(i32 slot) {
     CWnd* result = NULL;
     switch (static_cast<PlayerSlot>(slot)) {
@@ -499,7 +499,7 @@ CWnd* CMultiStartDlg::GetPlayerColorControl(i32 slot) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000c28c0, 0x27)
+RVA(0x000c28f0, 0x27)
 void CMultiStartDlg::SetPlayerTypeSelection(i32 slot, i32 selection) {
     CWnd* control = GetPlayerTypeControl(slot);
     if (control != NULL) {
@@ -509,7 +509,7 @@ void CMultiStartDlg::SetPlayerTypeSelection(i32 slot, i32 selection) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000c2900, 0x2a)
+RVA(0x000c2930, 0x2a)
 i32 CMultiStartDlg::GetPlayerTypeSelection(i32 slot) {
     CWnd* control = GetPlayerTypeControl(slot);
     if (control == NULL) {
@@ -520,7 +520,7 @@ i32 CMultiStartDlg::GetPlayerTypeSelection(i32 slot) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000c2940, 0x2b)
+RVA(0x000c2970, 0x2b)
 i32 CMultiStartDlg::GetMaxGruntzSelection(i32 slot) {
     CWnd* control = GetMaxGruntzControl(slot);
     if (control == NULL) {
@@ -529,7 +529,7 @@ i32 CMultiStartDlg::GetMaxGruntzSelection(i32 slot) {
     return control->SendMessageA(CB_GETCURSEL, 0, 0) + 1;
 }
 
-RVA(0x000c2980, 0x28)
+RVA(0x000c29b0, 0x28)
 void CMultiStartDlg::SetMaxGruntzSelection(i32 slot, i32 count) {
     CWnd* control = GetMaxGruntzControl(slot);
     if (control) {
@@ -539,7 +539,7 @@ void CMultiStartDlg::SetMaxGruntzSelection(i32 slot, i32 count) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000c29c0, 0x1d)
+RVA(0x000c29f0, 0x1d)
 void CMultiStartDlg::SetPlayerName(i32 slot, const char* name) {
     CWnd* control = GetPlayerNameControl(slot);
     if (control != NULL) {
@@ -547,31 +547,31 @@ void CMultiStartDlg::SetPlayerName(i32 slot, const char* name) {
     }
 }
 
-RVA(0x000c29f0, 0x13)
+RVA(0x000c2a20, 0x13)
 void CMultiStartDlg::OnPlayerTypeSelection0() {
     ApplyPlayerTypeSelection(0);
     BroadcastPlayerSlotChanges();
 }
 
-RVA(0x000c2a20, 0x13)
+RVA(0x000c2a50, 0x13)
 void CMultiStartDlg::OnPlayerTypeSelection1() {
     ApplyPlayerTypeSelection(1);
     BroadcastPlayerSlotChanges();
 }
 
-RVA(0x000c2a50, 0x13)
+RVA(0x000c2a80, 0x13)
 void CMultiStartDlg::OnPlayerTypeSelection2() {
     ApplyPlayerTypeSelection(2);
     BroadcastPlayerSlotChanges();
 }
 
-RVA(0x000c2a80, 0x13)
+RVA(0x000c2ab0, 0x13)
 void CMultiStartDlg::OnPlayerTypeSelection3() {
     ApplyPlayerTypeSelection(3);
     BroadcastPlayerSlotChanges();
 }
 
-RVA(0x000c2ab0, 0x161)
+RVA(0x000c2ae0, 0x161)
 void CMultiStartDlg::ApplyPlayerTypeSelection(i32 slot) {
     CWnd* typeControl = GetPlayerTypeControl(slot);
     CWnd* nameControl = GetPlayerNameControl(slot);
@@ -617,7 +617,7 @@ void CMultiStartDlg::ApplyPlayerTypeSelection(i32 slot) {
     }
 }
 
-RVA(0x000c2c80, 0x1a)
+RVA(0x000c2cb0, 0x1a)
 void CMultiStartDlg::OnTimer(u32 nIDEvent) {
     switch (nIDEvent) {
         case MULTI_START_WATCHDOG_TIMER:
@@ -627,14 +627,14 @@ void CMultiStartDlg::OnTimer(u32 nIDEvent) {
     Default();
 }
 
-RVA(0x000c2cb0, 0x1f)
+RVA(0x000c2ce0, 0x1f)
 i32 CMultiStartDlg::OnInitDialog() {
     CDialog::OnInitDialog();
     SetTimer(MULTI_START_WATCHDOG_TIMER, 0x32, NULL);
     return 1;
 }
 
-RVA(0x000c2ce0, 0xf3)
+RVA(0x000c2d10, 0xf3)
 void CMultiStartDlg::AppendChatLine(char* line) {
     CWnd* item = GetDlgItem(IDX(IDC_MULTI_CHAT_LOG));
     HWND edit;
@@ -664,7 +664,7 @@ void CMultiStartDlg::AppendChatLine(char* line) {
     ::SendMessageA(edit, EM_LINESCROLL, 0, 0x270f);
 }
 
-RVA(0x000c2e20, 0x21d)
+RVA(0x000c2e50, 0x21d)
 i32 CMultiStartDlg::PaintPlayerColorControls() {
     CPaintDC dc(this);
     for (i32 i = 0; i < 4; i++) {
@@ -693,12 +693,12 @@ i32 CMultiStartDlg::PaintPlayerColorControls() {
     return 1;
 }
 
-RVA(0x000c30d0, 0x12)
+RVA(0x000c3100, 0x12)
 void CMultiStartDlg::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {
     CWnd::OnMeasureItem(nIDCtl, lpmis);
 }
 
-RVA(0x000c3100, 0x5c0)
+RVA(0x000c3130, 0x5c0)
 void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
     COLORREF color;
     b32 shouldDraw = false;
@@ -958,7 +958,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
     CWnd::OnDrawItem(nIDCtl, lpdis);
 }
 
-RVA(0x000c3830, 0xd1)
+RVA(0x000c3860, 0xd1)
 void CMultiStartDlg::OnPlayerColor0() {
     CMulti* multi = g_multiState;
     if ((multi->m_isHost == false || m_gameManager->m_players[0].m_humanControlled != false)
@@ -975,7 +975,7 @@ void CMultiStartDlg::OnPlayerColor0() {
     }
 }
 
-RVA(0x000c3950, 0xd1)
+RVA(0x000c3980, 0xd1)
 void CMultiStartDlg::OnPlayerColor1() {
     CMulti* multi = g_multiState;
     if ((multi->m_isHost == false || m_gameManager->m_players[1].m_humanControlled != false)
@@ -992,7 +992,7 @@ void CMultiStartDlg::OnPlayerColor1() {
     }
 }
 
-RVA(0x000c3a70, 0xd1)
+RVA(0x000c3aa0, 0xd1)
 void CMultiStartDlg::OnPlayerColor2() {
     CMulti* multi = g_multiState;
     if ((multi->m_isHost == false || m_gameManager->m_players[2].m_humanControlled != false)
@@ -1009,7 +1009,7 @@ void CMultiStartDlg::OnPlayerColor2() {
     }
 }
 
-RVA(0x000c3b90, 0xd1)
+RVA(0x000c3bc0, 0xd1)
 void CMultiStartDlg::OnPlayerColor3() {
     CMulti* multi = g_multiState;
     if ((multi->m_isHost == false || m_gameManager->m_players[3].m_humanControlled != false)
@@ -1026,7 +1026,7 @@ void CMultiStartDlg::OnPlayerColor3() {
     }
 }
 
-RVA(0x000c3cb0, 0x128)
+RVA(0x000c3ce0, 0x128)
 void CMultiStartDlg::OnCustomWorld() {
     if (g_multiState->m_isHost == false) {
         return;
@@ -1050,7 +1050,7 @@ void CMultiStartDlg::OnCustomWorld() {
     }
 }
 
-RVA(0x000c3e30, 0xfe)
+RVA(0x000c3e60, 0xfe)
 void CMultiStartDlg::CommitWorldSelection() {
     if (g_multiState->m_isHost != false) {
         CWnd* worldCombo = GetDlgItem(IDX(IDC_MULTI_WORLD));
@@ -1071,7 +1071,7 @@ void CMultiStartDlg::CommitWorldSelection() {
     }
 }
 
-RVA(0x000c3f70, 0xfb)
+RVA(0x000c3fa0, 0xfb)
 void CMultiStartDlg::OnChatSend() {
     CWnd* input = GetDlgItem(IDX(IDC_MULTI_CHAT_INPUT));
     if (input == NULL) {
@@ -1090,7 +1090,7 @@ void CMultiStartDlg::OnChatSend() {
     }
 }
 
-RVA(0x000c40b0, 0x42)
+RVA(0x000c40e0, 0x42)
 void CMultiStartDlg::BroadcastPlayerSlotChanges() {
     CMulti* multi = g_multiState;
     if (multi->m_isHost != false) {
@@ -1103,7 +1103,7 @@ void CMultiStartDlg::BroadcastPlayerSlotChanges() {
     }
 }
 
-RVA(0x000c4120, 0xc2)
+RVA(0x000c4150, 0xc2)
 i32 CMultiStartDlg::EnableChatControls() {
     CWnd* control = GetDlgItem(IDCANCEL);
     control->EnableWindow(true);
@@ -1121,7 +1121,7 @@ i32 CMultiStartDlg::EnableChatControls() {
 }
 
 // @early-stop
-RVA(0x000c4230, 0x38e)
+RVA(0x000c4260, 0x38e)
 i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
     CWnd::GetFocus();
     b32 allLivePlayersReady = true;
@@ -1221,7 +1221,7 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
 }
 
 // @early-stop
-RVA(0x000c46b0, 0x384)
+RVA(0x000c46e0, 0x384)
 void CMultiStartDlg::Watchdog() {
     if (g_watchdogBusy != false) {
         return;
@@ -1347,7 +1347,7 @@ void CMultiStartDlg::Watchdog() {
     g_watchdogBusy = false;
 }
 
-RVA(0x000c4b30, 0x1f)
+RVA(0x000c4b60, 0x1f)
 i32 CMultiStartDlg::GetLocalPlayerSlotIndex() {
     GruntzPlayer* slot = m_gameManager->FindPlayerByNetworkId(g_multiState->m_localPlayerId);
     if (slot == NULL) {
@@ -1356,7 +1356,7 @@ i32 CMultiStartDlg::GetLocalPlayerSlotIndex() {
     return slot->m_playerIndex;
 }
 
-RVA(0x000c4b60, 0x77)
+RVA(0x000c4b90, 0x77)
 i32 CMultiStartDlg::SetPlayerColor(i32 slot, ColorTint color) {
     GruntzPlayer* player = &m_gameManager->m_players[slot];
     if (g_multiState->m_isHost != false) {
@@ -1372,7 +1372,7 @@ i32 CMultiStartDlg::SetPlayerColor(i32 slot, ColorTint color) {
     return 1;
 }
 
-RVA(0x000c4c00, 0x190)
+RVA(0x000c4c30, 0x190)
 void CMultiStartDlg::OnOK() {
     if (g_multiState->m_isHost == false) {
         return;
@@ -1411,68 +1411,68 @@ void CMultiStartDlg::OnOK() {
     }
 }
 
-RVA(0x000c4e00, 0x7)
+RVA(0x000c4e30, 0x7)
 i32 CMulti::GetCommandDelay() {
     return m_commandDelay;
 }
 
-RVA(0x000c4e20, 0x7)
+RVA(0x000c4e50, 0x7)
 i32 CMulti::GetResendDelay() {
     return m_resendInterval;
 }
 
-RVA(0x000c4e40, 0x8)
+RVA(0x000c4e70, 0x8)
 void CMultiStartDlg::OnPlayerNameChange0() {
     HandlePlayerNameChange(0);
 }
 
-RVA(0x000c4e60, 0x8)
+RVA(0x000c4e90, 0x8)
 void CMultiStartDlg::OnPlayerNameChange1() {
     HandlePlayerNameChange(1);
 }
 
-RVA(0x000c4e80, 0x8)
+RVA(0x000c4eb0, 0x8)
 void CMultiStartDlg::OnPlayerNameChange2() {
     HandlePlayerNameChange(2);
 }
 
-RVA(0x000c4ea0, 0x8)
+RVA(0x000c4ed0, 0x8)
 void CMultiStartDlg::OnPlayerNameChange3() {
     HandlePlayerNameChange(3);
 }
 
-RVA(0x000c4ec0, 0x3)
+RVA(0x000c4ef0, 0x3)
 void CMultiStartDlg::HandlePlayerNameChange(i32 slot) {}
 
-RVA(0x000c4ee0, 0x33)
+RVA(0x000c4f10, 0x33)
 void CMultiStartDlg::OnMaxGruntzSelection0() {
     CWnd* combo = GetMaxGruntzControl(0);
     g_gameReg->m_players[0].m_maxGruntz = combo->SendMessageA(CB_GETCURSEL, 0, 0) + 1;
     BroadcastPlayerSlotChanges();
 }
 
-RVA(0x000c4f30, 0x33)
+RVA(0x000c4f60, 0x33)
 void CMultiStartDlg::OnMaxGruntzSelection1() {
     CWnd* combo = GetMaxGruntzControl(1);
     g_gameReg->m_players[1].m_maxGruntz = combo->SendMessageA(CB_GETCURSEL, 0, 0) + 1;
     BroadcastPlayerSlotChanges();
 }
 
-RVA(0x000c4f80, 0x33)
+RVA(0x000c4fb0, 0x33)
 void CMultiStartDlg::OnMaxGruntzSelection2() {
     CWnd* combo = GetMaxGruntzControl(2);
     g_gameReg->m_players[2].m_maxGruntz = combo->SendMessageA(CB_GETCURSEL, 0, 0) + 1;
     BroadcastPlayerSlotChanges();
 }
 
-RVA(0x000c4fd0, 0x33)
+RVA(0x000c5000, 0x33)
 void CMultiStartDlg::OnMaxGruntzSelection3() {
     CWnd* combo = GetMaxGruntzControl(3);
     g_gameReg->m_players[3].m_maxGruntz = combo->SendMessageA(CB_GETCURSEL, 0, 0) + 1;
     BroadcastPlayerSlotChanges();
 }
 
-RVA(0x000c5020, 0x95)
+RVA(0x000c5050, 0x95)
 void CMultiStartDlg::CommitLatencySelection() {
     if (g_multiState->m_isHost == false) {
         return;
@@ -1491,7 +1491,7 @@ void CMultiStartDlg::CommitLatencySelection() {
     }
 }
 
-RVA(0x000c50f0, 0x9b)
+RVA(0x000c5120, 0x9b)
 void CMultiStartDlg::CommitReadySelection(i32 slotIndex) {
     CWnd* readyControl = GetReadyControl(slotIndex);
     if (!readyControl) {
@@ -1518,27 +1518,27 @@ void CMultiStartDlg::CommitReadySelection(i32 slotIndex) {
     }
 }
 
-RVA(0x000c51c0, 0x8)
+RVA(0x000c51f0, 0x8)
 void CMultiStartDlg::OnReadyToggle0() {
     CommitReadySelection(0);
 }
 
-RVA(0x000c51e0, 0x8)
+RVA(0x000c5210, 0x8)
 void CMultiStartDlg::OnReadyToggle1() {
     CommitReadySelection(1);
 }
 
-RVA(0x000c5200, 0x8)
+RVA(0x000c5230, 0x8)
 void CMultiStartDlg::OnReadyToggle2() {
     CommitReadySelection(2);
 }
 
-RVA(0x000c5220, 0x8)
+RVA(0x000c5250, 0x8)
 void CMultiStartDlg::OnReadyToggle3() {
     CommitReadySelection(3);
 }
 
-RVA(0x000c5240, 0x2c)
+RVA(0x000c5270, 0x2c)
 i32 CMultiStartDlg::DestroyWindow() {
     CKeyedList* latencyOptions = m_latencyOptions;
     if (latencyOptions) {
@@ -1548,7 +1548,7 @@ i32 CMultiStartDlg::DestroyWindow() {
     return CWnd::DestroyWindow();
 }
 
-RVA(0x000c52f0, 0x43)
+RVA(0x000c5320, 0x43)
 void CMultiStartDlg::EchoLatencySettings() {
     char message[128];
     wsprintfA(

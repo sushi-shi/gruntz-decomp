@@ -188,7 +188,7 @@ public:
     virtual i32
     SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object)
         OVERRIDE;
-    RVA(0x0000f2a0, 0x6)
+    RVA(0x0000f2b0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNT;
     }
@@ -206,7 +206,7 @@ public:
 
     i32 IsAtSavedScreenPos();
 
-    RVA(0x000759e0, 0x18)
+    RVA(0x000758b0, 0x18)
     Coord EntrancePx() {
         return m_entrancePx;
     }

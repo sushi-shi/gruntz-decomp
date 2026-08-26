@@ -7,7 +7,7 @@
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00118040, 0xb6)
+RVA(0x00118250, 0xb6)
 i32 CGameInfo::SetNames(char* name, char* name2, i32 unused) {
     if (name == NULL) {
         return 0;
@@ -41,7 +41,7 @@ fail:
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00118130, 0x44)
+RVA(0x00118340, 0x44)
 i32 CGameInfo::CopyBody(char* body) {
     if (body != NULL) {
         i32 len = static_cast<i32>(strlen(body + 0x10));
@@ -56,14 +56,14 @@ i32 CGameInfo::CopyBody(char* body) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001181a0, 0x14)
+RVA(0x001183b0, 0x14)
 void CGameInfo::ClearTime() {
     memset(&m_body.m_time, 0, sizeof(m_body.m_time));
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001181d0, 0x70)
+RVA(0x001183e0, 0x70)
 i32 CGameInfo::UpdateBestScore(i32 score, i32 timeMs, i32 gameType) {
     if (score == 0) {
         return 0;
@@ -90,7 +90,7 @@ i32 CGameInfo::UpdateBestScore(i32 score, i32 timeMs, i32 gameType) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00118260, 0x63)
+RVA(0x00118470, 0x63)
 i32 CGameInfo::CopyIfLarger(CGameInfoTime* src, i32 type) {
     if (src == NULL) {
         return 0;

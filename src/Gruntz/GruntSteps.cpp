@@ -52,45 +52,45 @@
 #include <stdlib.h>
 #include <string.h>
 
-RVA_DYNINIT(0x00047760, 0x1a, g_gruntMoveDirNorth)
-DATA(0x002448d8)
+RVA_DYNINIT(0x00047680, 0x1a, g_gruntMoveDirNorth)
+DATA(0x00245830)
 GruntDirectionCell g_gruntMoveDirNorth = GruntDirectionCell(0, 1, DIR_NORTH);
-RVA_DYNINIT(0x00047790, 0x5, g_gruntMoveDirNorthEast)
-RVA_DYNINIT(0x000477b0, 0x1a, g_gruntMoveDirNorthEast)
-DATA(0x00244908)
+RVA_DYNINIT(0x000476b0, 0x5, g_gruntMoveDirNorthEast)
+RVA_DYNINIT(0x000476d0, 0x1a, g_gruntMoveDirNorthEast)
+DATA(0x00245860)
 GruntDirectionCell g_gruntMoveDirNorthEast = GruntDirectionCell(0, 2, DIR_NORTHEAST);
-RVA_DYNINIT(0x000477e0, 0x5, g_gruntMoveDirEast)
-RVA_DYNINIT(0x00047800, 0x1f, g_gruntMoveDirEast)
-DATA(0x002448c8)
+RVA_DYNINIT(0x00047700, 0x5, g_gruntMoveDirEast)
+RVA_DYNINIT(0x00047720, 0x1f, g_gruntMoveDirEast)
+DATA(0x00245820)
 GruntDirectionCell g_gruntMoveDirEast = GruntDirectionCell(1, 2, DIR_EAST);
-RVA_DYNINIT(0x00047830, 0x5, g_gruntMoveDirSouthEast)
-RVA_DYNINIT(0x00047850, 0x1a, g_gruntMoveDirSouthEast)
-DATA(0x00244928)
+RVA_DYNINIT(0x00047750, 0x5, g_gruntMoveDirSouthEast)
+RVA_DYNINIT(0x00047770, 0x1a, g_gruntMoveDirSouthEast)
+DATA(0x00245880)
 GruntDirectionCell g_gruntMoveDirSouthEast = GruntDirectionCell(2, 2, DIR_SOUTHEAST);
-RVA_DYNINIT(0x000479c0, 0x5, g_gruntMoveDirCenter)
-RVA_DYNINIT(0x000479e0, 0x1a, g_gruntMoveDirCenter)
-DATA(0x00244938)
+RVA_DYNINIT(0x000478e0, 0x5, g_gruntMoveDirCenter)
+RVA_DYNINIT(0x00047900, 0x1a, g_gruntMoveDirCenter)
+DATA(0x00245890)
 GruntDirectionCell g_gruntMoveDirCenter = GruntDirectionCell(1, 1, DIR_CENTER);
-RVA_DYNINIT(0x00047880, 0x5, g_gruntMoveDirSouth)
-RVA_DYNINIT(0x000478a0, 0x1f, g_gruntMoveDirSouth)
-DATA(0x002448e8)
+RVA_DYNINIT(0x000477a0, 0x5, g_gruntMoveDirSouth)
+RVA_DYNINIT(0x000477c0, 0x1f, g_gruntMoveDirSouth)
+DATA(0x00245840)
 GruntDirectionCell g_gruntMoveDirSouth = GruntDirectionCell(2, 1, DIR_SOUTH);
-RVA_DYNINIT(0x000478d0, 0x5, g_gruntMoveDirSouthWest)
-RVA_DYNINIT(0x000478f0, 0x1f, g_gruntMoveDirSouthWest)
-DATA(0x00244948)
+RVA_DYNINIT(0x000477f0, 0x5, g_gruntMoveDirSouthWest)
+RVA_DYNINIT(0x00047810, 0x1f, g_gruntMoveDirSouthWest)
+DATA(0x002458a0)
 GruntDirectionCell g_gruntMoveDirSouthWest = GruntDirectionCell(2, 0, DIR_SOUTHWEST);
-RVA_DYNINIT(0x00047920, 0x5, g_gruntMoveDirWest)
-RVA_DYNINIT(0x00047940, 0x1f, g_gruntMoveDirWest)
-DATA(0x002448f8)
+RVA_DYNINIT(0x00047840, 0x5, g_gruntMoveDirWest)
+RVA_DYNINIT(0x00047860, 0x1f, g_gruntMoveDirWest)
+DATA(0x00245850)
 GruntDirectionCell g_gruntMoveDirWest = GruntDirectionCell(1, 0, DIR_WEST);
-RVA_DYNINIT(0x00047970, 0x5, g_gruntMoveDirNorthWest)
-RVA_DYNINIT(0x00047990, 0x17, g_gruntMoveDirNorthWest)
-DATA(0x00244918)
+RVA_DYNINIT(0x00047890, 0x5, g_gruntMoveDirNorthWest)
+RVA_DYNINIT(0x000478b0, 0x17, g_gruntMoveDirNorthWest)
+DATA(0x00245870)
 GruntDirectionCell g_gruntMoveDirNorthWest = GruntDirectionCell(0, 0, DIR_NORTHWEST);
 
 static char s_EntranceSafeTime[] = "EntranceSafeTime";
 
-DATA(0x0020dbf8)
+DATA(0x0020eba0)
 static char s_ToyTiles[] = "ToyTiles";
 
 static inline i32 TileFlags(const char* rec) {
@@ -245,7 +245,7 @@ static __inline void SerializeClockPair(CFileMemBase* ar, SerialMode mode, i64* 
     }
 }
 
-RVA(0x00050ca0, 0x2b)
+RVA(0x00050b70, 0x2b)
 i32 CGrunt::LoadTypeTableClearMove(PickupType typeId) {
 
     i32 r = LoadGruntTypeTable(typeId, 0, 0, 0);
@@ -255,7 +255,7 @@ i32 CGrunt::LoadTypeTableClearMove(PickupType typeId) {
 }
 
 // @early-stop
-RVA(0x00050ce0, 0x3c4)
+RVA(0x00050bb0, 0x3c4)
 i32 CGrunt::LoadVehicleGruntSprites(PickupType kind) {
     m_vehiclePickupType = kind;
     m_entrancePickup = PICKUP_INVALID;
@@ -336,7 +336,7 @@ i32 CGrunt::LoadVehicleGruntSprites(PickupType kind) {
     }
     return 1;
 }
-RVA(0x000511b0, 0x246)
+RVA(0x00051080, 0x246)
 void CGrunt::FaceTowardPixel(i32 x, i32 y) {
     CWwdSpriteObject* h = m_object;
     i32 dy = y - h->m_screenY;
@@ -386,7 +386,7 @@ void CGrunt::FaceTowardPixel(i32 x, i32 y) {
     }
 }
 
-RVA(0x000514a0, 0x26)
+RVA(0x00051370, 0x26)
 i32 CGrunt::CanShowStamina() {
     if (m_combatActive == false && m_stamina >= STAMINA_FULL && m_entranceActive == false) {
         return 1;
@@ -394,13 +394,13 @@ i32 CGrunt::CanShowStamina() {
     return 0;
 }
 
-RVA(0x000514e0, 0x1e)
+RVA(0x000513b0, 0x1e)
 void CGrunt::FaceTowardTile(i32 tileX, i32 tileY) {
     FaceTowardPixel(tileX * 0x20 + 0x10, tileY * 0x20 + 0x10);
 }
 
 // @early-stop
-RVA(0x00051510, 0x20f)
+RVA(0x000513e0, 0x20f)
 i32 CGrunt::IsDropReady(i32 clearArrivalState) {
     {
         CGruntzMapMgr* board = g_gameReg->m_tileGrid;
@@ -479,7 +479,7 @@ i32 CGrunt::IsDropReady(i32 clearArrivalState) {
     return 1;
 }
 
-RVA(0x000517b0, 0x7d)
+RVA(0x00051680, 0x7d)
 void CGrunt::SnapToLastTile(i32 clearArrivalState) {
     m_object->m_screenX = m_lastTilePx.m_x;
     m_object->m_screenY = m_lastTilePx.m_y;
@@ -493,7 +493,7 @@ void CGrunt::SnapToLastTile(i32 clearArrivalState) {
     }
 }
 
-RVA(0x00051850, 0x165)
+RVA(0x00051720, 0x165)
 i32 CGrunt::RectContains(i32 x, i32 y) {
     i32 dx = LastTilePx().m_x >> TILE_SHIFT_PX;
     i32 dy = LastTilePx().m_y >> TILE_SHIFT_PX;
@@ -533,7 +533,7 @@ i32 CGrunt::RectContains(i32 x, i32 y) {
     return 0;
 }
 
-RVA(0x00051a20, 0x17d)
+RVA(0x000518f0, 0x17d)
 i32 CGrunt::VehicleContactContains(i32 x, i32 y) {
     i32 dx = LastTilePx().m_x >> TILE_SHIFT_PX;
     i32 dy = LastTilePx().m_y >> TILE_SHIFT_PX;
@@ -576,7 +576,7 @@ i32 CGrunt::VehicleContactContains(i32 x, i32 y) {
 }
 
 // @early-stop
-RVA(0x00051c00, 0xd20)
+RVA(0x00051ad0, 0xd20)
 i32 CGrunt::StepCompassMove() {
     CGruntzMapMgr* board = g_gameReg->m_tileGrid;
     i32 x = m_lastTilePx.m_x;
@@ -889,7 +889,7 @@ commit:
 }
 
 // @early-stop
-RVA(0x00052c70, 0x1e0)
+RVA(0x00052b40, 0x1e0)
 i32 CGrunt::ClaimSwitchTile() {
     Coord tile = m_lastTilePx;
     i32 nextX;
@@ -958,7 +958,7 @@ i32 CGrunt::ClaimSwitchTile() {
     return 1;
 }
 
-RVA(0x00052ed0, 0x42)
+RVA(0x00052da0, 0x42)
 i32 CGrunt::SetArrivalTarget(
     i32 targetPlayerIndex,
     i32 targetUnitIndex,
@@ -976,7 +976,7 @@ i32 CGrunt::SetArrivalTarget(
 }
 
 // @early-stop
-RVA(0x00052f40, 0x4b)
+RVA(0x00052e10, 0x4b)
 void CGrunt::ConsiderArrival(i32 clearArrivalState) {
     CWwdSpriteObject* h = m_object;
     Coord tile = m_lastTilePx;
@@ -992,7 +992,7 @@ void CGrunt::ConsiderArrival(i32 clearArrivalState) {
 }
 
 // @early-stop
-RVA(0x00052fb0, 0x96e)
+RVA(0x00052e80, 0x96e)
 i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spawnWormhole) {
     if (m_entranceCommitted == false) {
         return 1;
@@ -1197,7 +1197,7 @@ applyTail:
     return 1;
 }
 
-RVA(0x00053b80, 0x340)
+RVA(0x00053a50, 0x340)
 i32 CGrunt::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
@@ -1248,7 +1248,7 @@ i32 CGrunt::SerializeDispatch(
     return 1;
 }
 
-RVA(0x00053f90, 0x11d0)
+RVA(0x00053e60, 0x11d0)
 i32 CGrunt::Save(CFileMemBase* ar) {
     if (!ar) {
         return 0;

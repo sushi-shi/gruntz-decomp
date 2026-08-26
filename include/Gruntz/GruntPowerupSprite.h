@@ -12,7 +12,7 @@ class CGruntPowerupSprite : public CUserLogic, public CWapX {
 public:
 public:
     virtual i32 SerializeDispatch(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
-    RVA(0x00012320, 0x6)
+    RVA(0x00012330, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_GRUNTPOWERUPSPRITE;
     }

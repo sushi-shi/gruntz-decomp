@@ -20,7 +20,7 @@ public:
     virtual ~CAttract() OVERRIDE;
     virtual void ReleaseResources() OVERRIDE;
 
-    RVA(0x0008cd40, 0x6)
+    RVA(0x0008cc60, 0x6)
     virtual GameStateId Update() OVERRIDE {
         return GAMESTATE_ATTRACT;
     }

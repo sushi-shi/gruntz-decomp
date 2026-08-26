@@ -12,27 +12,27 @@
 #include <stdlib.h>
 #include <string.h>
 
-DATA(0x002bf84c)
+DATA(0x002c07a4)
 char* g_monoBuffer = NULL;
-DATA(0x002bf850)
+DATA(0x002c07a8)
 CRangeSet g_debugChannels = {0};
-DATA(0x002bf8d4)
+DATA(0x002c082c)
 i32 g_monoRow = 0;
-DATA(0x002bf8d8)
+DATA(0x002c0830)
 i32 g_monoCol = 0;
-DATA(0x002bf8dc)
+DATA(0x002c0834)
 DebugPrintMode g_debugPrintMode = DEBUG_PRINT_DISABLED;
-DATA(0x002bf8e0)
+DATA(0x002c0838)
 FILE* g_debugLogFile = NULL;
 
-RVA_DYNINIT(0x00184b60, 0xa, g_debugConfig)
-RVA_DYNINIT(0x00184b70, 0xa, g_debugConfig)
-RVA_DYNINIT(0x00184b80, 0xe, g_debugConfig)
-RVA_DYNINIT(0x00184b90, 0xa, g_debugConfig)
-DATA(0x002bf848)
+RVA_DYNINIT(0x00184e40, 0xa, g_debugConfig)
+RVA_DYNINIT(0x00184e50, 0xa, g_debugConfig)
+RVA_DYNINIT(0x00184e60, 0xe, g_debugConfig)
+RVA_DYNINIT(0x00184e70, 0xa, g_debugConfig)
+DATA(0x002c07a0)
 CDebugConfig g_debugConfig;
 
-RVA(0x00184ba0, 0x33)
+RVA(0x00184e80, 0x33)
 bool CRangeSet::Contains(u32 value) {
     for (u32 i = 0; i < m_count; i++) {
         if (value >= m_pairs[i].lo && value <= m_pairs[i].hi) {
@@ -42,7 +42,7 @@ bool CRangeSet::Contains(u32 value) {
     return false;
 }
 
-RVA(0x00184be0, 0x24)
+RVA(0x00184ec0, 0x24)
 void CRangeSet::AddRange(u32 lo, u32 hi) {
     if (m_count + 1 < 16) {
         m_pairs[m_count].lo = lo;
@@ -51,7 +51,7 @@ void CRangeSet::AddRange(u32 lo, u32 hi) {
     }
 }
 
-RVA(0x00184c10, 0x136)
+RVA(0x00184ef0, 0x136)
 void CRangeSet::AddFromString(char* str) {
     char buf[0x100];
     while (*str != 0) {
@@ -103,7 +103,7 @@ void CRangeSet::AddFromString(char* str) {
 // @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00184d50, 0x5f)
+RVA(0x00185030, 0x5f)
 void MonoNewline() {
     g_monoCol = 0;
     if (++g_monoRow == DEBUG_MONO_ROW_COUNT) {
@@ -132,7 +132,7 @@ void MonoNewline() {
 // @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00184db0, 0x28)
+RVA(0x00185090, 0x28)
 void MonoClear() {
     i32 i = 0;
     do {
@@ -149,15 +149,15 @@ void MonoClear() {
 // @identity-TODO: the OutputDebugStringA forwarding behavior is proven; the name is inferred.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00184de0, 0xc)
+RVA(0x001850c0, 0xc)
 void DebugOutputString(char* line) {
     OutputDebugStringA(line);
 }
 
-RVA(0x00184df0, 0x1)
+RVA(0x001850d0, 0x1)
 void DiscardDebugOutput(char* line) {}
 
-RVA(0x00184e00, 0x55)
+RVA(0x001850e0, 0x55)
 void RezAssertFail(char* fmt, ...) {
     char buf[256];
     if (g_debugPrintMode != DEBUG_PRINT_DISCARD && g_debugPrintMode != DEBUG_PRINT_DISABLED
@@ -171,7 +171,7 @@ void RezAssertFail(char* fmt, ...) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00184e60, 0x6d)
+RVA(0x00185140, 0x6d)
 void RezDebugPrintfXY(i32 x, i32 y, char* fmt, ...) {
     char buf[256];
     if (g_debugPrintMode != DEBUG_PRINT_DISCARD && g_debugPrintMode != DEBUG_PRINT_DISABLED
@@ -186,7 +186,7 @@ void RezDebugPrintfXY(i32 x, i32 y, char* fmt, ...) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00184ed0, 0x5b)
+RVA(0x001851b0, 0x5b)
 void RezDebugPrintfCh(i32 channel, char* fmt, ...) {
     char buf[256];
     if (g_debugPrintMode != DEBUG_PRINT_DISCARD && g_debugPrintMode != DEBUG_PRINT_DISABLED
@@ -200,7 +200,7 @@ void RezDebugPrintfCh(i32 channel, char* fmt, ...) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00184f30, 0x73)
+RVA(0x00185210, 0x73)
 void RezDebugPrintfChXY(i32 channel, i32 x, i32 y, char* fmt, ...) {
     char buf[256];
     if (g_debugPrintMode != DEBUG_PRINT_DISCARD && g_debugPrintMode != DEBUG_PRINT_DISABLED
@@ -213,26 +213,26 @@ void RezDebugPrintfChXY(i32 channel, i32 x, i32 y, char* fmt, ...) {
     }
 }
 
-RVA(0x00184fb0, 0x15)
+RVA(0x00185290, 0x15)
 void DebugSetCursorXY(i32 x, i32 y) {
     DebugSetCursor(0, x, y);
 }
 
-RVA(0x00184fd0, 0x1)
+RVA(0x001852b0, 0x1)
 void DebugSetCursor(i32 channel, i32 x, i32 y) {}
 
 // @identity-TODO: the default-channel wrapper relationship is proven; the names are inferred.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00184fe0, 0xb)
+RVA(0x001852c0, 0xb)
 void DebugClear() {
     DebugClearChannel(0);
 }
 
-RVA(0x00184ff0, 0x1)
+RVA(0x001852d0, 0x1)
 void DebugClearChannel(i32 channel) {}
 
-RVA(0x00185000, 0x1a6)
+RVA(0x001852e0, 0x1a6)
 CDebugConfig::CDebugConfig() {
     char buf[256];
     g_debugChannels.m_count = 0;
@@ -273,7 +273,7 @@ CDebugConfig::CDebugConfig() {
     g_debugPrintMode = DEBUG_PRINT_MONO;
 }
 
-RVA(0x001851b0, 0x23)
+RVA(0x00185490, 0x23)
 CDebugConfig::~CDebugConfig() {
     if (g_debugPrintMode == DEBUG_PRINT_FILE
         || (IDX(g_debugPrintMode) > IDX(DEBUG_PRINT_STDOUT)

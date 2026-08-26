@@ -39,7 +39,7 @@
 
 #include <string.h>
 
-RVA(0x00110430, 0x1c)
+RVA(0x00110560, 0x1c)
 CTileTriggerSwitchLogic::CTileTriggerSwitchLogic() {
 
     for (i32 i = 0; i < 24; i++) {
@@ -48,7 +48,7 @@ CTileTriggerSwitchLogic::CTileTriggerSwitchLogic() {
     m_initGate = false;
 }
 
-RVA(0x00110460, 0x64)
+RVA(0x00110590, 0x64)
 i32 CTileTriggerSwitchLogic::BuildSmall(
     CTileTriggerContainer* owner,
     TrigLogicId typeId,
@@ -70,7 +70,7 @@ i32 CTileTriggerSwitchLogic::BuildSmall(
     return Setup(owner, typeId, tileX, tileY, cellKey, linkGate, damageParam, checkpointType);
 }
 
-RVA(0x001104f0, 0x56)
+RVA(0x00110620, 0x56)
 i32 CTileTriggerSwitchLogic::Setup(
     CTileTriggerContainer* owner,
     TrigLogicId typeId,
@@ -97,7 +97,7 @@ i32 CTileTriggerSwitchLogic::Setup(
     return 1;
 }
 
-RVA(0x00110570, 0xfb)
+RVA(0x001106a0, 0xfb)
 i32 CTileTriggerSwitchLogic::SwitchDown() {
     i32 tileY = m_tileY;
     CGruntzMgr* reg = g_gameReg;
@@ -135,7 +135,7 @@ i32 CTileTriggerSwitchLogic::SwitchDown() {
     return 1;
 }
 
-RVA(0x001106b0, 0xf4)
+RVA(0x001107e0, 0xf4)
 i32 CTileTriggerSwitchLogic::SwitchUp() {
     i32 tileY = m_tileY;
     CGruntzMgr* reg = g_gameReg;
@@ -173,7 +173,7 @@ i32 CTileTriggerSwitchLogic::SwitchUp() {
     return 1;
 }
 
-RVA(0x001107f0, 0x1c)
+RVA(0x00110920, 0x1c)
 CTileTriggerLogic::CTileTriggerLogic() {
 
     for (i32 i = 0; i < 24; i++) {
@@ -182,7 +182,7 @@ CTileTriggerLogic::CTileTriggerLogic() {
     m_initGate = false;
 }
 
-RVA(0x00110820, 0x23)
+RVA(0x00110950, 0x23)
 i32 CTileTriggerLogic::FindIndexByKey(i32 key) {
     for (i32 i = 0; i < 24; i++) {
         if (m_linkKeys[i] == key) {
@@ -238,7 +238,7 @@ static __inline char* PbStr(const CString& s) {
     return const_cast<char*>(static_cast<const char*>(s));
 }
 
-RVA(0x00110860, 0x2e6)
+RVA(0x00110990, 0x2e6)
 void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
     i32 px, py;
     CGruntzMgr* gameMgr;
@@ -334,7 +334,7 @@ done:
 }
 
 // @early-stop
-RVA(0x00110c10, 0xeee)
+RVA(0x00110d40, 0xeee)
 i32 CTileTriggerLogic::Tick() {
     CDDrawSurfaceMgr* world = g_gameReg->m_world;
     CTileTriggerTransition* trans = NULL;
@@ -703,7 +703,7 @@ i32 CTileTriggerLogic::Tick() {
     return 1;
 }
 
-RVA(0x00111ec0, 0x37)
+RVA(0x00111ff0, 0x37)
 void CGruntzMgr::SetCellHeight(i32 x, i32 y, i32 value) {
     CDDrawWorkerHost* grid = m_world->m_level->m_mainPlane;
     i32 idx = grid->m_tileRowOffsets[y] + x;
@@ -712,10 +712,10 @@ void CGruntzMgr::SetCellHeight(i32 x, i32 y, i32 value) {
     m_tileGrid->ComputeCellFlags(x, y, value);
 }
 
-RVA(0x00111f10, 0x12)
+RVA(0x00112040, 0x12)
 CTileMultiTriggerSwitchLogic::CTileMultiTriggerSwitchLogic() {}
 
-RVA(0x00111f40, 0xc4)
+RVA(0x00112070, 0xc4)
 i32 CTileTriggerSwitchLogic::AreMultiSwitchLinksActive() {
     if (m_linkGate == false) {
         return 0;
@@ -756,11 +756,11 @@ i32 CTileTriggerSwitchLogic::AreMultiSwitchLinksActive() {
     return 0;
 }
 
-RVA(0x00112050, 0x12)
+RVA(0x00112180, 0x12)
 CTileExclusiveTriggerSwitchLogic::CTileExclusiveTriggerSwitchLogic() {}
 
 // @early-stop
-RVA(0x00112080, 0x138)
+RVA(0x001121b0, 0x138)
 i32 CTileExclusiveTriggerSwitchLogic::SwitchDown() {
 
     b32 done = false;
@@ -803,16 +803,16 @@ i32 CTileExclusiveTriggerSwitchLogic::SwitchDown() {
     return 1;
 }
 
-RVA(0x00112210, 0x12)
+RVA(0x00112340, 0x12)
 CGiantRockLogic::CGiantRockLogic() {}
 
-RVA(0x00112240, 0x12)
+RVA(0x00112370, 0x12)
 CCoveredPowerupLogic::CCoveredPowerupLogic() {}
 
-RVA(0x00112270, 0x12)
+RVA(0x001123a0, 0x12)
 CTileTimeTriggerLogic::CTileTimeTriggerLogic() {}
 
-RVA(0x001122a0, 0x241)
+RVA(0x001123d0, 0x241)
 i32 CGiantRockLogic::BuildRockBreakInGameText() {
 
     CDDrawSurfaceMgr* gameMgr = g_gameReg->m_world;
@@ -900,7 +900,7 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
 }
 
 // @early-stop
-RVA(0x00112590, 0x166)
+RVA(0x001126c0, 0x166)
 i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
     i32 tok = m_tileToken;
     if (tok != 0) {
@@ -962,41 +962,41 @@ i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
     return 1;
 }
 
-RVA(0x00112760, 0x12)
+RVA(0x00112890, 0x12)
 CTileSecretTriggerLogic::CTileSecretTriggerLogic() {}
 
-RVA(0x00112790, 0x12)
+RVA(0x001128c0, 0x12)
 CTileSecretTriggerSwitchLogic::CTileSecretTriggerSwitchLogic() {}
 
-RVA(0x001127c0, 0x12)
+RVA(0x001128f0, 0x12)
 CTileTimeTriggerSwitchLogic::CTileTimeTriggerSwitchLogic() {}
 
-RVA(0x001127f0, 0x12)
+RVA(0x00112920, 0x12)
 CCheckpointTriggerSwitchLogic::CCheckpointTriggerSwitchLogic() {}
 
-RVA(0x00112820, 0xc)
+RVA(0x00112950, 0xc)
 i32 CTileSecretTriggerSwitchLogic::SwitchDown() {
     return CTileTriggerSwitchLogic::SwitchDown() != 0;
 }
 
-RVA(0x00112840, 0xc)
+RVA(0x00112970, 0xc)
 i32 CTileTimeTriggerSwitchLogic::SwitchDown() {
     return CTileTriggerSwitchLogic::SwitchDown() != 0;
 }
 
-RVA(0x00112860, 0xc)
+RVA(0x00112990, 0xc)
 i32 CTileTimeTriggerSwitchLogic::SwitchUp() {
     return CTileTriggerSwitchLogic::SwitchUp() != 0;
 }
 
-RVA(0x00112880, 0x12)
+RVA(0x001129b0, 0x12)
 void CTileTriggerLogic::RecordMove() {
     m_startClock = g_frameTime;
     m_owner->ActivateTimedLogic(this);
 }
 
 // @early-stop
-RVA(0x001128b0, 0x88)
+RVA(0x001129e0, 0x88)
 i32 CTileSecretTriggerLogic::Tick() {
     i32 oldTok = m_tileToken;
     if (oldTok == 0) {
@@ -1016,7 +1016,7 @@ i32 CTileSecretTriggerLogic::Tick() {
 }
 
 // @early-stop
-RVA(0x00112970, 0xad)
+RVA(0x00112aa0, 0xad)
 i32 CTileTriggerLogic::Classify(i32 unusedFrameDelta) {
     u32 elapsed = g_frameTime - m_startClock;
     if (elapsed <= m_leadInSpan) {
@@ -1064,7 +1064,7 @@ ret1:
     return 1;
 }
 
-RVA(0x00112a50, 0xdd)
+RVA(0x00112b80, 0xdd)
 
 i32 CCheckpointTriggerSwitchLogic::BuildSmall(
     CTileTriggerContainer* owner,
@@ -1113,7 +1113,7 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
 }
 
 // @early-stop
-RVA(0x00112b70, 0x5a)
+RVA(0x00112ca0, 0x5a)
 i32 CCheckpointTriggerSwitchLogic::SwitchDown() {
     i32 tileY = m_tileY;
     CGruntzMgr* reg = g_gameReg;
@@ -1128,7 +1128,7 @@ i32 CCheckpointTriggerSwitchLogic::SwitchDown() {
 }
 
 // @early-stop
-RVA(0x00112bf0, 0x5e)
+RVA(0x00112d20, 0x5e)
 i32 CCheckpointTriggerSwitchLogic::SwitchUp() {
     i32 tileY = m_tileY;
     CGruntzMgr* reg = g_gameReg;
@@ -1142,7 +1142,7 @@ i32 CCheckpointTriggerSwitchLogic::SwitchUp() {
     return 1;
 }
 
-RVA(0x00112c70, 0xc4)
+RVA(0x00112da0, 0xc4)
 i32 CTileTriggerSwitchLogic::AreCheckpointSwitchLinksActive() {
     if (m_linkGate == false) {
         return 0;
@@ -1183,13 +1183,13 @@ i32 CTileTriggerSwitchLogic::AreCheckpointSwitchLinksActive() {
     return 0;
 }
 
-RVA(0x00112d80, 0xa)
+RVA(0x00112eb0, 0xa)
 CTileActionEvent::CTileActionEvent() {
     m_live = false;
 }
 
 // @early-stop
-RVA(0x00112da0, 0x100)
+RVA(0x00112ed0, 0x100)
 i32 CTileActionEvent::SetActionCode(BrickTileId code) {
     m_actionCode = code;
     if (m_playerFlags[g_curPlayer] == 0
@@ -1245,7 +1245,7 @@ i32 CTileActionEvent::SetActionCode(BrickTileId code) {
 }
 
 // @early-stop
-RVA(0x00112ee0, 0x42b)
+RVA(0x00113010, 0x42b)
 i32 CTileActionEvent::BreakTopBrick(CGrunt* grunt) {
     BrickTileId newCode = m_actionCode;
     i32 effect = 0;
@@ -1443,7 +1443,7 @@ i32 CTileActionEvent::BreakTopBrick(CGrunt* grunt) {
 }
 
 // @early-stop
-RVA(0x00113420, 0x358)
+RVA(0x00113550, 0x358)
 i32 CTileActionEvent::MorphByTool(PickupType toolId, PlayerSlot playerSlot) {
     if (toolId == PICKUP_BROWNBRICK) {
         switch (m_actionCode) {
@@ -1604,7 +1604,7 @@ i32 CTileActionEvent::MorphByTool(PickupType toolId, PlayerSlot playerSlot) {
     goto commit;
 }
 
-RVA(0x00113860, 0x3b)
+RVA(0x00113990, 0x3b)
 i32 CTileTriggerSwitchLogic::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
@@ -1629,7 +1629,7 @@ i32 CTileTriggerSwitchLogic::SerializeDispatch(
     return 1;
 }
 
-RVA(0x001138b0, 0xb4)
+RVA(0x001139e0, 0xb4)
 i32 CTileTriggerSwitchLogic::SaveState(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
@@ -1654,7 +1654,7 @@ i32 CTileTriggerSwitchLogic::SaveState(CFileMemBase* ar) {
     return 1;
 }
 
-RVA(0x001139a0, 0xb4)
+RVA(0x00113ad0, 0xb4)
 i32 CTileTriggerSwitchLogic::LoadState(CFileMemBase* s) {
     if (s == NULL) {
         return 0;
@@ -1678,7 +1678,7 @@ i32 CTileTriggerSwitchLogic::LoadState(CFileMemBase* s) {
     return 1;
 }
 
-RVA(0x00113a90, 0x3b)
+RVA(0x00113bc0, 0x3b)
 i32 CTileTriggerLogic::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
@@ -1703,7 +1703,7 @@ i32 CTileTriggerLogic::SerializeDispatch(
     return 1;
 }
 
-RVA(0x00113ae0, 0xe8)
+RVA(0x00113c10, 0xe8)
 i32 CTileTriggerLogic::Serialize(CFileMemBase* s) {
     if (s == NULL) {
         return 0;
@@ -1731,7 +1731,7 @@ i32 CTileTriggerLogic::Serialize(CFileMemBase* s) {
     return 1;
 }
 
-RVA(0x00113c10, 0xe8)
+RVA(0x00113d40, 0xe8)
 i32 CTileTriggerLogic::Deserialize(CFileMemBase* s) {
     if (s == NULL) {
         return 0;
@@ -1759,7 +1759,7 @@ i32 CTileTriggerLogic::Deserialize(CFileMemBase* s) {
     return 1;
 }
 
-RVA(0x00113d40, 0x6f)
+RVA(0x00113e70, 0x6f)
 i32 CGiantRockLogic::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
@@ -1787,7 +1787,7 @@ i32 CGiantRockLogic::SerializeDispatch(
     return 1;
 }
 
-RVA(0x00113dd0, 0x7b)
+RVA(0x00113f00, 0x7b)
 i32 CGiantRockLogic::SerializeMatrix(CFileMemBase* s) {
     if (s == NULL) {
         return 0;
@@ -1806,7 +1806,7 @@ i32 CGiantRockLogic::SerializeMatrix(CFileMemBase* s) {
     return 1;
 }
 
-RVA(0x00113e70, 0x7b)
+RVA(0x00113fa0, 0x7b)
 i32 CGiantRockLogic::DeserializeMatrix(CFileMemBase* s) {
     if (s == NULL) {
         return 0;
@@ -1825,7 +1825,7 @@ i32 CGiantRockLogic::DeserializeMatrix(CFileMemBase* s) {
     return 1;
 }
 
-RVA(0x00113f10, 0x3b)
+RVA(0x00114040, 0x3b)
 i32 CTileActionEvent::Serialize(
     CFileMemBase* ar,
     SerialMode mode,
@@ -1850,7 +1850,7 @@ i32 CTileActionEvent::Serialize(
     return 1;
 }
 
-RVA(0x00113f60, 0xa2)
+RVA(0x00114090, 0xa2)
 i32 CTileActionEvent::SerializeFields(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
@@ -1870,7 +1870,7 @@ i32 CTileActionEvent::SerializeFields(CFileMemBase* ar) {
     return 1;
 }
 
-RVA(0x00114040, 0xa2)
+RVA(0x00114170, 0xa2)
 i32 CTileActionEvent::DeserializeFields(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;
@@ -1890,7 +1890,7 @@ i32 CTileActionEvent::DeserializeFields(CFileMemBase* ar) {
     return 1;
 }
 
-RVA(0x00114120, 0x70)
+RVA(0x00114250, 0x70)
 i32 SoundCueRegistry::PlayCueIfElapsed(const char* key) {
     if (m_silentMode != false) {
         return 0;

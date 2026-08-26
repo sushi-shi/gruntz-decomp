@@ -39,7 +39,7 @@
 #include <string.h>
 
 // @early-stop
-RVA(0x000ef6b0, 0x61d)
+RVA(0x000ef7e0, 0x61d)
 i32 CGrunt::StepDumbChaserBehavior() {
     m_defenderPx = m_lastTilePx;
     CGrunt* g = m_triggerMgr->FindNearestEnemy(this);

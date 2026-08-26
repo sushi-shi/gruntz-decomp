@@ -24,14 +24,14 @@
 DATA(0x001f07bc)
 static const float kMsToSeconds = 0.001f;
 
-RVA(0x0017e450, 0x23)
+RVA(0x0017e730, 0x23)
 CFader::CFader() {
     m_table = NULL;
     m_ownsTable = true;
 }
 
-RVA_COMPGEN(0x0017e480, 0x1e, ??_GCFader@@UAEPAXI@Z)
-RVA(0x0017e4a0, 0x69)
+RVA_COMPGEN(0x0017e760, 0x1e, ??_GCFader@@UAEPAXI@Z)
+RVA(0x0017e780, 0x69)
 CFader::~CFader() {
     if (m_table && m_ownsTable) {
         m_cache.FindRemove(m_table);
@@ -39,7 +39,7 @@ CFader::~CFader() {
     }
 }
 
-RVA(0x0017e510, 0x23)
+RVA(0x0017e7f0, 0x23)
 void CFader::Wait(i32 delay) {
     DWORD target = GetTickCount() + delay;
     while (GetTickCount() < target) {
@@ -49,7 +49,7 @@ void CFader::Wait(i32 delay) {
 // @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0017e540, 0xd8)
+RVA(0x0017e820, 0xd8)
 void CFader::RunFadeStepped(i32 step, i32 lead, i32 vsync) {
     i32 count = GetFrameCount();
     if (count < 1) {
@@ -81,7 +81,7 @@ void CFader::RunFadeStepped(i32 step, i32 lead, i32 vsync) {
 }
 
 // @early-stop
-RVA(0x0017e620, 0x13b)
+RVA(0x0017e900, 0x13b)
 void CFader::RunFade(u32 dur, i32 lead, i32 vsync) {
     i32 frame = 0;
     i32 prev = 0;
@@ -122,29 +122,29 @@ void CFader::RunFade(u32 dur, i32 lead, i32 vsync) {
     EndFade();
 }
 
-RVA(0x0017e760, 0x11)
+RVA(0x0017ea40, 0x11)
 void CFader::SetDefaultSurfaces(CDDSurface* primary, CDDSurface* secondary) {
     m_primarySurface = primary;
     m_secondarySurface = secondary;
 }
 
-RVA(0x0017e780, 0xa)
+RVA(0x0017ea60, 0xa)
 void CFader::SetDeviceManager(CDDrawDeviceManager* manager) {
     m_deviceManager = manager;
 }
 
-RVA(0x0017e790, 0x1)
+RVA(0x0017ea70, 0x1)
 void CFader::BeginFade() {}
 
-RVA(0x0017e7a0, 0x1)
+RVA(0x0017ea80, 0x1)
 void CFader::EndFade() {}
 
-RVA(0x0017e7b0, 0x9)
+RVA(0x0017ea90, 0x9)
 CFaderConfig::CFaderConfig() {
     m_kind = FADER_CONFIG_UNTAGGED;
 }
 
-RVA(0x0017e7c0, 0x7a)
+RVA(0x0017eaa0, 0x7a)
 CShapeFaderConfig::CShapeFaderConfig() {
     m_kind = FADER_CONFIG_SHAPE;
     m_targetSurface = NULL;
@@ -159,7 +159,7 @@ CShapeFaderConfig::CShapeFaderConfig() {
     m_palette = NULL;
 }
 
-RVA(0x0017e840, 0x37)
+RVA(0x0017eb20, 0x37)
 CLightFaderConfig::CLightFaderConfig() {
     m_centerX = SCREEN_HALF_W_PX;
     m_kind = FADER_CONFIG_LIGHT;
@@ -171,7 +171,7 @@ CLightFaderConfig::CLightFaderConfig() {
     m_shadeTable = NULL;
 }
 
-RVA(0x0017e880, 0x28)
+RVA(0x0017eb60, 0x28)
 CSineFaderConfig::CSineFaderConfig() {
     m_kind = FADER_CONFIG_SINE;
     m_targetSurface = NULL;
@@ -180,7 +180,7 @@ CSineFaderConfig::CSineFaderConfig() {
     m_intensityPercent = 0xf;
 }
 
-RVA(0x0017e8b0, 0x27)
+RVA(0x0017eb90, 0x27)
 CRadialFaderConfig::CRadialFaderConfig() {
     m_kind = FADER_CONFIG_RADIAL;
     m_targetSurface = NULL;
@@ -190,7 +190,7 @@ CRadialFaderConfig::CRadialFaderConfig() {
     m_unusedOption = 1;
 }
 
-RVA(0x0017e8e0, 0x27)
+RVA(0x0017ebc0, 0x27)
 CFlatFaderConfig::CFlatFaderConfig() {
     m_kind = FADER_CONFIG_FLAT;
     m_targetSurface = NULL;
@@ -200,7 +200,7 @@ CFlatFaderConfig::CFlatFaderConfig() {
     m_durationPercent = 0x19;
 }
 
-RVA(0x0017e910, 0x29)
+RVA(0x0017ebf0, 0x29)
 CMeshFaderConfig::CMeshFaderConfig() {
     m_kind = FADER_CONFIG_MESH;
     m_targetSurface = NULL;
@@ -212,14 +212,14 @@ CMeshFaderConfig::CMeshFaderConfig() {
     m_rows = 0;
 }
 
-RVA(0x0017e940, 0x27)
+RVA(0x0017ec20, 0x27)
 CFaderMesh::CFaderMesh() {}
 
-RVA_COMPGEN(0x0017e970, 0x1e, ??_GCFaderMesh@@UAEPAXI@Z)
-RVA(0x0017e990, 0x6b)
+RVA_COMPGEN(0x0017ec50, 0x1e, ??_GCFaderMesh@@UAEPAXI@Z)
+RVA(0x0017ec70, 0x6b)
 CFaderMesh::~CFaderMesh() {}
 
-RVA(0x0017ea00, 0x4fc)
+RVA(0x0017ece0, 0x4fc)
 i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
 
     CMeshFaderConfig* cfg = static_cast<CMeshFaderConfig*>(descOpaque);
@@ -374,7 +374,7 @@ i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
 }
 
 // @early-stop
-RVA(0x0017ef00, 0x21c)
+RVA(0x0017f1e0, 0x21c)
 void CFaderMesh::RenderFrame(i32 frame) {
     if (m_primeSurface != NULL) {
         m_dstSurface->Blt(m_primeSurface);
@@ -432,10 +432,10 @@ void CFaderMesh::RenderFrame(i32 frame) {
     m_flipTarget->Flip(NULL);
 }
 
-RVA(0x0017f120, 0x6)
+RVA(0x0017f400, 0x6)
 i32 CFaderMesh::GetFrameCount() {
     return 0x1f4;
 }
 
-RVA_COMPGEN(0x0017f310, 0x1e, ??_GCRezBufferObject@@UAEPAXI@Z)
-RVA_COMPGEN(0x0017f330, 0x51, ??1CRezBufferObject@@UAE@XZ)
+RVA_COMPGEN(0x0017f5f0, 0x1e, ??_GCRezBufferObject@@UAEPAXI@Z)
+RVA_COMPGEN(0x0017f610, 0x51, ??1CRezBufferObject@@UAE@XZ)

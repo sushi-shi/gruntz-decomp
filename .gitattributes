@@ -1,1 +1,3 @@
 config/match_baseline.tsv whitespace=-blank-at-eol
+config/retail/data.tsv whitespace=-blank-at-eol
+config/retail/functions.tsv whitespace=-blank-at-eol

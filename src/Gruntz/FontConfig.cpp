@@ -12,16 +12,16 @@
 
 #include <string.h>
 
-DATA(0x0020c7a8)
+DATA(0x0020d7a8)
 i32 g_lastDrawTextFormat = DT_SINGLELINE;
-DATA(0x0022b434)
+DATA(0x0022c38c)
 i32 g_chatTextWidth = 0;
-DATA(0x0022b438)
+DATA(0x0022c390)
 i32 g_caretBlinkMs = 0;
-DATA(0x0022b43c)
+DATA(0x0022c394)
 b32 g_caretBlinkOn = false;
 
-RVA(0x000218e0, 0x1ff)
+RVA(0x000218f0, 0x157)
 i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold) {
     m_lowScrollThreshold = lowScrollThreshold;
     m_highScrollThreshold = highScrollThreshold;
@@ -116,7 +116,7 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
     return 1;
 }
 
-RVA(0x00021b60, 0x4d)
+RVA(0x00021ab0, 0x4d)
 void CFontConfig::Reset() {
     FreeNodes();
     m_inputText.Empty();
@@ -134,7 +134,7 @@ void CFontConfig::Reset() {
     }
 }
 
-RVA(0x00021bd0, 0x45)
+RVA(0x00021b20, 0x45)
 void CFontConfig::FreeNodes() {
     POSITION pos = m_list.GetHeadPosition();
     while (pos) {
@@ -148,9 +148,9 @@ void CFontConfig::FreeNodes() {
     m_inputActive = false;
 }
 
-RVA_COMPGEN(0x00021c40, 0x8, ??1FontItem@@QAE@XZ)
+RVA_COMPGEN(0x00021b90, 0x8, ??1FontItem@@QAE@XZ)
 
-RVA(0x00021c60, 0xde)
+RVA(0x00021bb0, 0xde)
 i32 CFontConfig::AddItem(const char* str, GZ_ENUM_PARAM(FontItemFlags, i32) flags, i32 payload) {
     if (!str) {
         return 0;
@@ -180,7 +180,7 @@ i32 CFontConfig::AddItem(const char* str, GZ_ENUM_PARAM(FontItemFlags, i32) flag
     return 1;
 }
 
-RVA(0x00021d80, 0x79)
+RVA(0x00021cd0, 0x79)
 void CFontConfig::Scroll(i32 delta) {
     if (m_inputActive) {
         m_inputScrollTotal += delta;
@@ -218,7 +218,7 @@ void CFontConfig::Scroll(i32 delta) {
 }
 
 // @early-stop
-RVA(0x00021e20, 0x95)
+RVA(0x00021d70, 0x95)
 
 i32 CFontConfig::HandleInputChar(i32 charCode, i32 keyData) {
     static_cast<void>(keyData);
@@ -257,7 +257,7 @@ i32 CFontConfig::HandleInputChar(i32 charCode, i32 keyData) {
     return 0;
 }
 
-RVA(0x00021ef0, 0x17)
+RVA(0x00021e40, 0x17)
 void CFontConfig::EndInput() {
     if (m_inputActive != false) {
         m_inputActive = false;
@@ -266,7 +266,7 @@ void CFontConfig::EndInput() {
 }
 
 // @early-stop
-RVA(0x00021f20, 0x162)
+RVA(0x00021e70, 0x162)
 i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
     if (hdc == NULL) {
         return 0;
@@ -296,10 +296,10 @@ i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
     return 1;
 }
 
-RVA_COMPGEN(0x000220f0, 0x46, ??1CPen@@UAE@XZ)
+RVA_COMPGEN(0x00022040, 0x46, ??1CPen@@UAE@XZ)
 
 // @early-stop
-RVA(0x00022160, 0x18e)
+RVA(0x000220b0, 0x18e)
 i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
     if (hdc == NULL) {
         return 0;
@@ -385,7 +385,7 @@ typedef enum TextColorRef {
 } TextColorRef;
 
 // @early-stop
-RVA(0x00022360, 0x338)
+RVA(0x000222b0, 0x338)
 i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
     if (hdc == NULL) {
         return 0;
@@ -509,7 +509,7 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00022770, 0x7d)
+RVA(0x000226c0, 0x7d)
 i32 CFontConfig::DrawWithFont(const char* text, HDC hdc, RECT* rect, UINT format) {
     if (hdc == NULL) {
         return 0;
@@ -532,7 +532,7 @@ i32 CFontConfig::DrawWithFont(const char* text, HDC hdc, RECT* rect, UINT format
 }
 
 // @early-stop
-RVA(0x00022810, 0x22a)
+RVA(0x00022760, 0x258)
 i32 CFontConfig::Draw3DText(
     const CString* strSrc,
     HDC hdc,
@@ -595,7 +595,7 @@ i32 CFontConfig::Draw3DText(
     return 1;
 }
 
-RVA(0x00085f40, 0x56)
+RVA(0x00085e60, 0x56)
 CFontConfig::~CFontConfig() {
     Reset();
 }

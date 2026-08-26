@@ -57,7 +57,7 @@ public:
     class CStatusBarMgr* m_owner;
 };
 
-RVA(0x001005d0, 0x17)
+RVA(0x00100700, 0x17)
 inline CStatusBarItem::CStatusBarItem() {
     m_enabled = false;
     m_kind = SBI_KIND_BASE;

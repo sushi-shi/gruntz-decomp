@@ -8,12 +8,12 @@
 #include <Gruntz/UserLogic.h>
 
 class CWarpStonePad : public CUserLogic, public CWapX {
-    RVA(0x00010f20, 0x47)
+    RVA(0x00010f30, 0x47)
     virtual i32
     SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object)
         OVERRIDE{SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE(ar, mode, typeId, object)}
 
-    RVA(0x00010f00, 0x6)
+    RVA(0x00010f10, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_WARPSTONEPAD;
     }

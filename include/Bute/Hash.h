@@ -73,7 +73,7 @@ public:
 
     CRezEntryIdHash(i32 bucketCount) : CHashBase(bucketCount) {}
 
-    RVA(0x00139c70, 0x5)
+    RVA(0x00139e80, 0x5)
     ~CRezEntryIdHash() {
         RemoveAll();
     }
@@ -82,7 +82,7 @@ public:
 class CRezDirectoryNameHash : public CHashBase {
 public:
     CRezDirectoryNameHash(i32 bucketCount) : CHashBase(bucketCount) {}
-    RVA(0x00139ec0, 0x5)
+    RVA(0x0013a0d0, 0x5)
     ~CRezDirectoryNameHash() {
         RemoveAll();
     }
@@ -94,7 +94,7 @@ public:
 class CRezEntryNameHash : public CHashBase {
 public:
     CRezEntryNameHash(i32 bucketCount) : CHashBase(bucketCount) {}
-    RVA(0x00139dd0, 0x5)
+    RVA(0x00139fe0, 0x5)
     ~CRezEntryNameHash() {
         RemoveAll();
     }
@@ -106,7 +106,7 @@ public:
 class CRezTypeTagHash : public CHashBase {
 public:
     CRezTypeTagHash(i32 bucketCount) : CHashBase(bucketCount) {}
-    RVA(0x00139ed0, 0x5)
+    RVA(0x0013a0e0, 0x5)
     ~CRezTypeTagHash() {
         RemoveAll();
     }

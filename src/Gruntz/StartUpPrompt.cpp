@@ -13,13 +13,13 @@
 
 #include <string.h>
 
-DATA(0x00251618)
+DATA(0x00252570)
 HINSTANCE g_appResHandle;
 
-DATA(0x002455ec)
+DATA(0x00246544)
 b32 g_cdPromptResult = false;
 
-RVA(0x0001f9b0, 0x2d2)
+RVA(0x0001f9c0, 0x2d2)
 int StartUpPrompt(HWND hWnd) {
     if (IsGruntzCDInAnyDrive()) {
         g_cdPromptResult = false;

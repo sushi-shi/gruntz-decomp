@@ -22,7 +22,7 @@ public:
         m_defaultReplayDelayMs = 0;
     }
 
-    RVA(0x00157530, 0x17)
+    RVA(0x00157810, 0x17)
     virtual i32 IsLoaded() OVERRIDE {
 
         if (m_soundStream == NULL && m_silentMode == false) {

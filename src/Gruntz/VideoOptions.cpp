@@ -9,7 +9,7 @@
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x000377e0, 0x6a)
+RVA(0x00037700, 0x6a)
 BOOL CALLBACK VideoOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_INITDIALOG:
@@ -30,7 +30,7 @@ BOOL CALLBACK VideoOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
     return false;
 }
 
-RVA(0x00037870, 0x3c)
+RVA(0x00037790, 0x3c)
 void DialogInit(HWND hDlg) {
     if (g_gameReg == NULL) {
         return;
@@ -40,7 +40,7 @@ void DialogInit(HWND hDlg) {
 }
 
 // @early-stop
-RVA(0x000378c0, 0x40)
+RVA(0x000377e0, 0x40)
 void SaveVideoCheckboxes(HWND hDlg) {
     if (g_gameReg == NULL) {
         return;

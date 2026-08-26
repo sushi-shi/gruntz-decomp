@@ -39,7 +39,7 @@
 #include <string.h>
 
 // @early-stop
-RVA(0x000f42f0, 0x15c0)
+RVA(0x000f4420, 0x15c0)
 i32 CGrunt::StepSmartChaserBehavior() {
     i32 playerIndex = m_playerIndex;
     COPY_LAST_TILE_TO_DEFENDER

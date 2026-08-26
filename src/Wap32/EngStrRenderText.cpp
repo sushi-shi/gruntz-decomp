@@ -7,7 +7,7 @@
 #include <Ints.h>
 #include <Wap32/EngStr.h>
 
-RVA(0x00115930, 0x18f)
+RVA(0x00115a60, 0x18f)
 i32 EngStr_RenderText(
     void* self,
     CString* text,
@@ -62,4 +62,4 @@ i32 EngStr_RenderText(
     return 1;
 }
 
-RVA_COMPGEN(0x00115b30, 0x15, ??0CRect@@QAE@ABUtagRECT@@@Z)
+RVA_COMPGEN(0x00115c60, 0x15, ??0CRect@@QAE@ABUtagRECT@@@Z)

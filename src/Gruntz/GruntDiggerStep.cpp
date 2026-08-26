@@ -38,7 +38,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-RVA(0x000f36a0, 0x78e)
+RVA(0x000f37d0, 0x78e)
 i32 CGrunt::StepDiggerBehavior() {
     bool isI = ANIMATION_ACT_EQUALS("I");
     if (isI) {

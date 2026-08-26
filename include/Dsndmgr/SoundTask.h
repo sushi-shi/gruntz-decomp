@@ -24,12 +24,12 @@ struct SoundTask : public IntrusiveLink {
     SoundTask(u32 tag, SoundBuffer* buffer, b32 stopAndRewind)
         : m_tag(tag), m_buffer(buffer), m_stopAndRewind(stopAndRewind) {}
 
-    RVA(0x00137330, 0x7)
+    RVA(0x00137540, 0x7)
     ~SoundTask() {}
 };
 
 struct SoundTaskList : public IntrusiveList {
-    RVA(0x001364f0, 0x1)
+    RVA(0x00136700, 0x1)
     ~SoundTaskList() {}
 
     void RemoveMatching(SoundBuffer* buffer, u32 tag);

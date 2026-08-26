@@ -4,9 +4,9 @@
 
 #include <Mfc.h>
 
-RVA_DYNINIT(0x000f96f0, 0xa, s_value)
-RVA_DYNINIT(0x000f9710, 0xa, s_value)
-RVA_DYNINIT(0x000f9730, 0xe, s_value)
-RVA_DYNINIT(0x000f9750, 0x1f, s_value)
-template<> DATA(0x0024e25c)
+RVA_DYNINIT(0x000f9820, 0xa, s_value)
+RVA_DYNINIT(0x000f9840, 0xa, s_value)
+RVA_DYNINIT(0x000f9860, 0xe, s_value)
+RVA_DYNINIT(0x000f9880, 0x1f, s_value)
+template<> DATA(0x0024f1b4)
 CString CStringStaticPool<CAssetRootTag>::s_value;

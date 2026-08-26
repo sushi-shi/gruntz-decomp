@@ -8,7 +8,7 @@
 
 #include <string.h>
 
-RVA(0x000f9280, 0xe4)
+RVA(0x000f93b0, 0xe4)
 i32 MakeButeSectionKey(char* dst, const char* section, const char* key) {
     if (!key) {
         return 0;

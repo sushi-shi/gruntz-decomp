@@ -51,23 +51,23 @@ const double g_objDropDiv = 32.0;
 DATA(0x001eaa00)
 const double g_dropFallBias = -0.5;
 
-RVA_DYNINIT(0x000c5ee0, 0xa, CActRegPool<CObjectDropper>::s_table)
-RVA_DYNINIT(0x000c5f00, 0x15, CActRegPool<CObjectDropper>::s_table)
-RVA_DYNINIT(0x000c5f30, 0xe, CActRegPool<CObjectDropper>::s_table)
-RVA_DYNINIT(0x000c5f50, 0x1f, CActRegPool<CObjectDropper>::s_table)
-template<> DATA(0x0024be90)
+RVA_DYNINIT(0x000c5f10, 0xa, CActRegPool<CObjectDropper>::s_table)
+RVA_DYNINIT(0x000c5f30, 0x15, CActRegPool<CObjectDropper>::s_table)
+RVA_DYNINIT(0x000c5f60, 0xe, CActRegPool<CObjectDropper>::s_table)
+RVA_DYNINIT(0x000c5f80, 0x1f, CActRegPool<CObjectDropper>::s_table)
+template<> DATA(0x0024cde8)
 CActReg CActRegPool<CObjectDropper>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
-RVA_DYNINIT(0x000c6b30, 0xa, CActRegPool<CDroppedObject>::s_table)
-RVA_DYNINIT(0x000c6b50, 0x15, CActRegPool<CDroppedObject>::s_table)
-RVA_DYNINIT(0x000c6b80, 0xe, CActRegPool<CDroppedObject>::s_table)
-RVA_DYNINIT(0x000c6ba0, 0x1f, CActRegPool<CDroppedObject>::s_table)
-template<> DATA(0x0024bed8)
+RVA_DYNINIT(0x000c6b60, 0xa, CActRegPool<CDroppedObject>::s_table)
+RVA_DYNINIT(0x000c6b80, 0x15, CActRegPool<CDroppedObject>::s_table)
+RVA_DYNINIT(0x000c6bb0, 0xe, CActRegPool<CDroppedObject>::s_table)
+RVA_DYNINIT(0x000c6bd0, 0x1f, CActRegPool<CDroppedObject>::s_table)
+template<> DATA(0x0024ce30)
 CActReg CActRegPool<CDroppedObject>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
-RVA_DYNINIT(0x000c76b0, 0xa, CActRegPool<CDroppedObjectShadow>::s_table)
-RVA_DYNINIT(0x000c76d0, 0x15, CActRegPool<CDroppedObjectShadow>::s_table)
-RVA_DYNINIT(0x000c7700, 0xe, CActRegPool<CDroppedObjectShadow>::s_table)
-RVA_DYNINIT(0x000c7720, 0x1f, CActRegPool<CDroppedObjectShadow>::s_table)
-template<> DATA(0x0024bf00)
+RVA_DYNINIT(0x000c76e0, 0xa, CActRegPool<CDroppedObjectShadow>::s_table)
+RVA_DYNINIT(0x000c7700, 0x15, CActRegPool<CDroppedObjectShadow>::s_table)
+RVA_DYNINIT(0x000c7730, 0xe, CActRegPool<CDroppedObjectShadow>::s_table)
+RVA_DYNINIT(0x000c7750, 0x1f, CActRegPool<CDroppedObjectShadow>::s_table)
+template<> DATA(0x0024ce58)
 CActReg CActRegPool<CDroppedObjectShadow>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 struct CString;
@@ -76,16 +76,16 @@ static inline CActHandler* DropLookup(i32 coord) {
     return (CActRegPool<CDroppedObject>::s_table.ResolveEntry(coord));
 }
 
-RVA_COMPGEN(0x000124c0, 0x1e, ??_GCObjectDropper@@UAEPAXI@Z)
-RVA_COMPGEN(0x000124f0, 0x44, ??1CObjectDropper@@UAE@XZ)
+RVA_COMPGEN(0x000124d0, 0x1e, ??_GCObjectDropper@@UAEPAXI@Z)
+RVA_COMPGEN(0x00012500, 0x44, ??1CObjectDropper@@UAE@XZ)
 
-RVA_COMPGEN(0x00012580, 0x1e, ??_GCDroppedObject@@UAEPAXI@Z)
-RVA_COMPGEN(0x000125b0, 0x44, ??1CDroppedObject@@UAE@XZ)
+RVA_COMPGEN(0x00012590, 0x1e, ??_GCDroppedObject@@UAEPAXI@Z)
+RVA_COMPGEN(0x000125c0, 0x44, ??1CDroppedObject@@UAE@XZ)
 
-RVA_COMPGEN(0x00012640, 0x1e, ??_GCDroppedObjectShadow@@UAEPAXI@Z)
-RVA_COMPGEN(0x00012670, 0x44, ??1CDroppedObjectShadow@@UAE@XZ)
+RVA_COMPGEN(0x00012650, 0x1e, ??_GCDroppedObjectShadow@@UAEPAXI@Z)
+RVA_COMPGEN(0x00012680, 0x44, ??1CDroppedObjectShadow@@UAE@XZ)
 
-RVA(0x000c5630, 0xf4)
+RVA(0x000c5660, 0xf4)
 i32 DispatchObjectDropperLogic(CGameObject* obj) {
     CLogicRecord* record = obj->m_logicRecord;
     switch (record->LogicEvent()) {
@@ -123,7 +123,7 @@ i32 DispatchObjectDropperLogic(CGameObject* obj) {
     return 1;
 }
 
-RVA(0x000c5770, 0xf1)
+RVA(0x000c57a0, 0xf1)
 i32 DispatchDroppedObjectLogic(CGameObject* obj) {
     CLogicRecord* record = obj->m_logicRecord;
     switch (record->LogicEvent()) {
@@ -161,7 +161,7 @@ i32 DispatchDroppedObjectLogic(CGameObject* obj) {
     return 1;
 }
 
-RVA(0x000c58b0, 0xf1)
+RVA(0x000c58e0, 0xf1)
 i32 DispatchDroppedObjectShadowLogic(CGameObject* obj) {
     CLogicRecord* record = obj->m_logicRecord;
     switch (record->LogicEvent()) {
@@ -200,7 +200,7 @@ i32 DispatchDroppedObjectShadowLogic(CGameObject* obj) {
 }
 
 // @early-stop
-RVA(0x000c59f0, 0x3e3)
+RVA(0x000c5a20, 0x3e3)
 CObjectDropper::CObjectDropper(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_lastDropTime = 0;
@@ -252,21 +252,21 @@ CObjectDropper::CObjectDropper(CGameObject* obj)
     SET_OBJECT_AREA(1)
 }
 
-RVA(0x000c5f80, 0x102)
+RVA(0x000c5fb0, 0x102)
 void CObjectDropper::FireActivation(i32 actId) {
     if ((*((CActRegPool<CObjectDropper>::s_table.ResolveEntry(actId)))) != NULL) {
         (this->*((*((CActRegPool<CObjectDropper>::s_table.ResolveEntry(actId))))))();
     }
 }
 
-RVA(0x000c60e0, 0x18d)
+RVA(0x000c6110, 0x18d)
 void CObjectDropper::RegisterActs() {
     ACT_NAME_ID(id, "A")
     (*((CActRegPool<CObjectDropper>::s_table.ResolveEntry(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CObjectDropper::Update);
 }
 
-RVA(0x000c62e0, 0x2dd)
+RVA(0x000c6310, 0x2dd)
 i32 CObjectDropper::Update() {
     if (static_cast<i64>(g_frameTime) - m_lastDropTime >= m_dropInterval) {
         if (g_gameReg->m_isEasyMode == false || g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
@@ -362,7 +362,7 @@ i32 CObjectDropper::Update() {
     return 0;
 }
 
-RVA(0x000c6680, 0x1b4)
+RVA(0x000c66b0, 0x1b4)
 i32 CObjectDropper::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
@@ -405,7 +405,7 @@ i32 CObjectDropper::SerializeDispatch(
 }
 
 // @early-stop
-RVA(0x000c68b0, 0x1f5)
+RVA(0x000c68e0, 0x1f5)
 CDroppedObject::CDroppedObject(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SET_ANIMATION_ACT("A");
@@ -425,7 +425,7 @@ CDroppedObject::CDroppedObject(CGameObject* obj)
         / static_cast<double>(g_buteMgr.GetDwordDef("Hazardz", "DroppedObjectTimePerTile", 0x3e8));
 }
 
-RVA(0x000c6bd0, 0x102)
+RVA(0x000c6c00, 0x102)
 void CDroppedObject::FireActivation(i32 coord) {
     CActHandler* e = DropLookup(coord);
     if ((*e) != NULL) {
@@ -434,7 +434,7 @@ void CDroppedObject::FireActivation(i32 coord) {
     }
 }
 
-RVA(0x000c6d30, 0x2ac)
+RVA(0x000c6d60, 0x2ac)
 void CDroppedObject::RegisterActs() {
     ACT_NAME_ID_CALL_REPORT(id, "A")
     *(CActRegPool<CDroppedObject>::s_table.ResolveEntryCallReport(id)) =
@@ -446,7 +446,7 @@ void CDroppedObject::RegisterActs() {
         static_cast<i32 (CUserLogic::*)()>(&CDroppedObject::AdvanceImpactAnimation);
 }
 
-RVA(0x000c7090, 0x230)
+RVA(0x000c70c0, 0x230)
 i32 CDroppedObject::AdvanceFall() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     m_fallY = static_cast<double>(g_frameDelta) * m_timePerTile + m_fallY;
@@ -520,14 +520,14 @@ i32 CDroppedObject::AdvanceFall() {
     return 0;
 }
 
-RVA(0x000c7350, 0x39)
+RVA(0x000c7380, 0x39)
 i32 CDroppedObject::AdvanceAnimation() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     MARK_OBJECT_COMPLETE_IF(IsAniCursorComplete(&m_wwdObject->m_animationCursor))
     return 0;
 }
 
-RVA(0x000c73a0, 0xb5)
+RVA(0x000c73d0, 0xb5)
 i32 CDroppedObject::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
@@ -550,7 +550,7 @@ i32 CDroppedObject::SerializeDispatch(
     return 1;
 }
 
-RVA(0x000c7490, 0x1a6)
+RVA(0x000c74c0, 0x1a6)
 CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SET_ANIMATION_ACT("A");
@@ -564,14 +564,14 @@ CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj)
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR_BEHIND)
 }
 
-RVA(0x000c7750, 0x102)
+RVA(0x000c7780, 0x102)
 void CDroppedObjectShadow::FireActivation(i32 coord) {
     if ((*((CActRegPool<CDroppedObjectShadow>::s_table.ResolveEntry(coord)))) != NULL) {
         (this->*((*((CActRegPool<CDroppedObjectShadow>::s_table.ResolveEntry(coord))))))();
     }
 }
 
-RVA(0x000c78b0, 0x18d)
+RVA(0x000c78e0, 0x18d)
 void CDroppedObjectShadow::RegisterActs() {
     ACT_NAME_ID(id, "A")
     (*((CActRegPool<CDroppedObjectShadow>::s_table.ResolveEntry(id)))) =
@@ -579,7 +579,7 @@ void CDroppedObjectShadow::RegisterActs() {
 }
 
 // @early-stop
-RVA(0x000c7ab0, 0x67)
+RVA(0x000c7ae0, 0x67)
 i32 CDroppedObjectShadow::Advance() {
     if (m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta) == WWDDRAW_EFFECT_FRAME) {
         CWwdSpriteObject* o = m_object;
@@ -596,7 +596,7 @@ i32 CDroppedObjectShadow::Advance() {
     return 0;
 }
 
-RVA(0x000c7b40, 0x76)
+RVA(0x000c7b70, 0x76)
 i32 CDroppedObjectShadow::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
@@ -612,7 +612,7 @@ i32 CDroppedObjectShadow::SerializeDispatch(
     return 1;
 }
 
-RVA(0x000c7be0, 0x5)
+RVA(0x000c7c10, 0x5)
 i32 CDroppedObject::AdvanceImpactAnimation() {
     return AdvanceAnimation();
 }

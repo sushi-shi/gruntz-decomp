@@ -51,7 +51,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-RVA(0x000343f0, 0x47)
+RVA(0x00034380, 0x47)
 void CGrunt::RecycleCoords() {
     if (CoordCount() == 0) {
         return;
@@ -71,7 +71,7 @@ void CGrunt::RecycleCoords() {
 }
 
 // @early-stop
-RVA(0x00034460, 0x3fc)
+RVA(0x000343f0, 0x3fc)
 i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
     if (unit == NULL) {
         return 0;
@@ -183,7 +183,7 @@ fail:
     return 0;
 }
 
-RVA(0x00034960, 0x24)
+RVA(0x000348f0, 0x24)
 void zErrHandling::Report(char* message, i32 code) {
     g_retAddrBreadcrumb = GetRetAddr();
     m_errSink->Set(this, message, code);

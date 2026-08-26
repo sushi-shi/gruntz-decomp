@@ -39,7 +39,7 @@
 #include <string.h>
 
 // @early-stop
-RVA(0x000f0130, 0x7c0)
+RVA(0x000f0260, 0x7c0)
 i32 CGrunt::StepGauntletGruntBehavior() {
     char* name = *g_typeColl.GetNameRecord(m_logicRecord->m_eventCode);
     bool eqI = (strcmp(name, "I") == 0);

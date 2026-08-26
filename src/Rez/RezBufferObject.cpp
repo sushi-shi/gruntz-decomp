@@ -20,7 +20,7 @@ static inline void ConstructRezElems(RezElem40* p, i32 n) {
     }
 }
 
-RVA(0x0017f130, 0x1ce)
+RVA(0x0017f410, 0x1ce)
 void CRezBufferObject::Serialize(CArchive& ar) {
     if (ar.IsStoring()) {
         ar.WriteCount(m_nSize);
@@ -79,13 +79,13 @@ void CRezBufferObject::Serialize(CArchive& ar) {
         ar.Read(data, cnt * sizeof(RezElem40));
     }
 }
-RVA(0x0017f300, 0x3)
+RVA(0x0017f5e0, 0x3)
 RezElem40* __fastcall InitRezElem(RezElem40* p) {
     return p;
 }
 
 // @early-stop
-RVA(0x0017f390, 0x164)
+RVA(0x0017f670, 0x164)
 void CRezBufferObject::SetSize(i32 nNewSize, i32 nGrowBy) {
     if (nGrowBy != -1) {
         m_nGrowBy = nGrowBy;
@@ -132,7 +132,7 @@ void CRezBufferObject::SetSize(i32 nNewSize, i32 nGrowBy) {
         m_nMaxSize = nNewMax;
     }
 }
-RVA(0x0017f500, 0x23)
+RVA(0x0017f7e0, 0x23)
 void __stdcall ZeroRecords(void* dst, int count) {
     memset(dst, 0, count * 0x28);
 }

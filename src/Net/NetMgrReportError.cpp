@@ -9,26 +9,26 @@
 #include <stdio.h>
 #include <string.h>
 
-DATA(0x002bf6e8)
+DATA(0x002c0640)
 b32 g_logEnabled = false;
-DATA(0x002bf6ec)
+DATA(0x002c0644)
 b32 g_msgBoxEnabled = false;
-DATA(0x002bf6f0)
+DATA(0x002c0648)
 b32 g_beepEnabled = false;
-DATA(0x002bf6f4)
+DATA(0x002c064c)
 b32 g_debugOutputEnabled = false;
-DATA(0x002bf6f8)
+DATA(0x002c0650)
 HRESULT g_hr = 0;
-DATA(0x002bf6fc)
+DATA(0x002c0654)
 i32 g_code = 0;
-DATA(0x002bf700)
+DATA(0x002c0658)
 char g_szCode[0x40];
-DATA(0x002bf740)
+DATA(0x002c0698)
 char g_szMsg[0x100];
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00177670, 0x27)
+RVA(0x00177950, 0x27)
 void CNetMgr::SetReportMode(b32 log, b32 msgBox, b32 beep, b32 debugOutput) {
     g_logEnabled = log;
     g_msgBoxEnabled = msgBox;
@@ -41,7 +41,7 @@ inline static void SetError(const char* szCode, const char* szDesc) {
     strcpy(g_szMsg, szDesc);
 }
 
-RVA(0x001776a0, 0xa01)
+RVA(0x00177980, 0xa01)
 void CNetMgr::ReportError(const char* file, i32 line, HRESULT hr, HWND hWnd) {
     char szLine[512];
 

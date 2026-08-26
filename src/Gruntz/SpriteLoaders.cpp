@@ -37,7 +37,7 @@ static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
     m_frameSecOnes = NULL;                                                                         \
     m_active = false
 
-RVA(0x0009bab0, 0x35)
+RVA(0x0009b9d0, 0x35)
 CTimer::CTimer() {
     m_baseTime.m_lo = 0;
     m_accum.m_lo = 0;
@@ -51,7 +51,7 @@ CTimer::CTimer() {
     m_running = false;
 }
 
-RVA(0x0009bb00, 0x119)
+RVA(0x0009ba20, 0x119)
 i32 CTimer::LoadTimerSprite(i32 originX, i32 originY) {
     CDDrawWorker* spr =
         LookupWorker(g_gameReg->m_world->m_imageRegistry->m_workersByName, "GAME_TIMER");
@@ -88,13 +88,13 @@ i32 CTimer::LoadTimerSprite(i32 originX, i32 originY) {
     return 1;
 }
 
-RVA(0x0009bc70, 0x18)
+RVA(0x0009bb90, 0x18)
 void CTimer::Reset() {
     RESET_TIMER_SPRITES;
 }
 
 // @early-stop
-RVA(0x0009bca0, 0x25d)
+RVA(0x0009bbc0, 0x25d)
 i32 CTimer::Tick(i32 elapsedMs) {
     static_cast<void>(elapsedMs);
     if (!m_running) {
@@ -184,7 +184,7 @@ i32 CTimer::Tick(i32 elapsedMs) {
     return 1;
 }
 
-RVA(0x0009bfa0, 0xb4)
+RVA(0x0009bec0, 0xb4)
 i32 CTimer::Draw(CDDrawSurfacePair* target, b32 forceVisible) {
     if (!m_running) {
         return 1;
@@ -211,7 +211,7 @@ i32 CTimer::Draw(CDDrawSurfacePair* target, b32 forceVisible) {
     return 1;
 }
 
-RVA(0x0009c090, 0x37)
+RVA(0x0009bfb0, 0x37)
 void CTimer::SetTime(i32 minutes, i32 seconds) {
     u32 clampedMinutes = static_cast<u32>(minutes);
     if (clampedMinutes > 0x63) {
@@ -224,7 +224,7 @@ void CTimer::SetTime(i32 minutes, i32 seconds) {
     m_currentMs = static_cast<i32>((clampedMinutes * 60 + clampedSeconds) * MILLIS_PER_SECOND);
 }
 
-RVA(0x0009c0e0, 0xa3)
+RVA(0x0009c000, 0xa3)
 void CTimer::AddTime(i32 minutes, i32 seconds) {
     if (!m_running) {
         return;
@@ -253,7 +253,7 @@ void CTimer::AddTime(i32 minutes, i32 seconds) {
 }
 
 // @early-stop
-RVA(0x0009c1c0, 0xdb)
+RVA(0x0009c0e0, 0xdb)
 i32 CTimer::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload) {
     if (ar == NULL) {
         return 0;
@@ -281,7 +281,7 @@ i32 CTimer::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typ
     return 1;
 }
 
-RVA(0x0009c2e0, 0x2b6)
+RVA(0x0009c200, 0x2b6)
 i32 CTimer::Serialize(CFileMemBase* ar) {
     if (ar == NULL) {
         return 0;

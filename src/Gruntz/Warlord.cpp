@@ -41,30 +41,30 @@
 #include <new>
 #include <stdlib.h>
 
-DATA(0x0020d218)
+DATA(0x0020e1c0)
 static char s__PANIC[] = "_PANIC";
-DATA(0x0020d220)
+DATA(0x0020e1c8)
 static char s__MOVING[] = "_MOVING";
-DATA(0x0020d234)
+DATA(0x0020e1dc)
 static char s__JOY[] = "_JOY";
-DATA(0x0020d23c)
+DATA(0x0020e1e4)
 static char s__BATTLECRY3[] = "_BATTLECRY3";
-DATA(0x0020d24c)
+DATA(0x0020e1f4)
 static char s__BATTLECRY2[] = "_BATTLECRY2";
-DATA(0x0020d25c)
+DATA(0x0020e204)
 static char s__BATTLECRY1[] = "_BATTLECRY1";
-DATA(0x0020d2d8)
+DATA(0x0020e280)
 static char s_WARLORDZ_KING[] = "WARLORDZ_KING";
-DATA(0x0020d36c)
+DATA(0x0020e314)
 static char s__IDLE[] = "_IDLE";
-DATA(0x0020d374)
+DATA(0x0020e31c)
 static char s__BATTLECRY[] = "_BATTLECRY";
 
-RVA_DYNINIT(0x000445a0, 0xa, CActRegPool<CWarlord>::s_table)
-RVA_DYNINIT(0x000445c0, 0x15, CActRegPool<CWarlord>::s_table)
-RVA_DYNINIT(0x000445f0, 0xe, CActRegPool<CWarlord>::s_table)
-RVA_DYNINIT(0x00044610, 0x1f, CActRegPool<CWarlord>::s_table)
-template<> DATA(0x00244610)
+RVA_DYNINIT(0x000444c0, 0xa, CActRegPool<CWarlord>::s_table)
+RVA_DYNINIT(0x000444e0, 0x15, CActRegPool<CWarlord>::s_table)
+RVA_DYNINIT(0x00044510, 0xe, CActRegPool<CWarlord>::s_table)
+RVA_DYNINIT(0x00044530, 0x1f, CActRegPool<CWarlord>::s_table)
+template<> DATA(0x00245568)
 CActReg CActRegPool<CWarlord>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 #define REGISTER_NAME(key)                                                                         \
@@ -96,8 +96,8 @@ CActReg CActRegPool<CWarlord>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
         *CActRegPool<CWarlord>::s_table.Resolve(id_) = static_cast<CActHandler>(handler);          \
     } while (0)
 
-RVA_COMPGEN(0x000107c0, 0x1e, ??_GCWarlord@@UAEPAXI@Z)
-RVA_COMPGEN(0x000107f0, 0x55, ??1CWarlord@@UAE@XZ)
+RVA_COMPGEN(0x000107d0, 0x1e, ??_GCWarlord@@UAEPAXI@Z)
+RVA_COMPGEN(0x00010800, 0x55, ??1CWarlord@@UAE@XZ)
 
 typedef enum WarlordBattleTag {
     WARLORD_TAG_KING = 0x442,
@@ -113,7 +113,7 @@ static inline CAniElement* LookupAnim(CMapStringToPtr& map, LPCTSTR name) {
 }
 
 // @early-stop
-RVA(0x00042d40, 0x750)
+RVA(0x00042c60, 0x750)
 CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SNAP_OBJECT_TO_TILE_CENTER(m_object)
 
@@ -210,7 +210,7 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
 }
 
 // @early-stop
-RVA(0x00043670, 0xc20)
+RVA(0x00043590, 0xc20)
 i32 CWarlord::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
@@ -549,7 +549,7 @@ fail:
     return 0;
 }
 
-RVA(0x00044640, 0x102)
+RVA(0x00044560, 0x102)
 void CWarlord::FireActivation(i32 key) {
 
     if (*CActRegPool<CWarlord>::s_table.ResolveEntry(key) != NULL) {
@@ -558,7 +558,7 @@ void CWarlord::FireActivation(i32 key) {
     }
 }
 
-RVA(0x000447a0, 0x333)
+RVA(0x000446c0, 0x333)
 void RegisterWarlordActions() {
     REGISTER_ACTION("A", &CWarlord::FinishIdleAnimation);
     REGISTER_ACTION("B", &CWarlord::UpdateMovingState);
@@ -572,7 +572,7 @@ void RegisterWarlordActions() {
 #undef REGISTER_ACTION_TYPED
 #undef REGISTER_NAME
 
-RVA(0x00044bb0, 0x38)
+RVA(0x00044ad0, 0x38)
 i32 CWarlord::FinishIdleAnimation() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(sub, g_engineFrameDelta)
     if (IsAniCursorComplete(sub)) {
@@ -581,7 +581,7 @@ i32 CWarlord::FinishIdleAnimation() {
     return 0;
 }
 
-RVA(0x00044c00, 0xc6)
+RVA(0x00044b20, 0xc6)
 i32 CWarlord::UpdateMovingState() {
     if (m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta) != 1) {
         return 0;
@@ -608,7 +608,7 @@ i32 CWarlord::UpdateMovingState() {
     return 0;
 }
 
-RVA(0x00044d10, 0x106)
+RVA(0x00044c30, 0x106)
 i32 CWarlord::UpdatePanicState() {
     if (m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta) != 1) {
         return 0;
@@ -637,7 +637,7 @@ i32 CWarlord::UpdatePanicState() {
     return 0;
 }
 
-RVA(0x00044e70, 0x87)
+RVA(0x00044d90, 0x87)
 i32 CWarlord::FinishJoyAnimation() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(sub, g_engineFrameDelta)
     if (IsAniCursorComplete(sub)) {
@@ -653,7 +653,7 @@ i32 CWarlord::FinishJoyAnimation() {
     return 0;
 }
 
-RVA(0x00044f30, 0x38)
+RVA(0x00044e50, 0x38)
 i32 CWarlord::FinishBattlecryAnimation() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(sub, g_engineFrameDelta)
     if (IsAniCursorComplete(sub)) {
@@ -662,7 +662,7 @@ i32 CWarlord::FinishBattlecryAnimation() {
     return 0;
 }
 
-RVA(0x00044f80, 0x127)
+RVA(0x00044ea0, 0x127)
 i32 CWarlord::BuildFortSplashParticles() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(sub, g_engineFrameDelta)
     if (IsAniCursorComplete(sub)) {
@@ -701,7 +701,7 @@ i32 CWarlord::BuildFortSplashParticles() {
     return 0;
 }
 
-RVA(0x00045100, 0x112)
+RVA(0x00045020, 0x112)
 i32 CWarlord::ResolveMovingAnimation() {
     if (m_deathStarted != false) {
         return 0;
@@ -719,7 +719,7 @@ i32 CWarlord::ResolveMovingAnimation() {
 }
 
 // @early-stop
-RVA(0x00045270, 0x2a8)
+RVA(0x00045190, 0x2a8)
 i32 CWarlord::NotifyFortUnderAttack() {
 
     if (m_deathStarted == false) {
@@ -733,8 +733,8 @@ i32 CWarlord::NotifyFortUnderAttack() {
                 if (static_cast<i64>(g_frameTime) - m_notifyTimer.m_start >= m_notifyTimer.m_window
                     && g_gameReg->m_triggerMgr->m_pendingFx == this) {
                     g_gameReg->m_voiceManager->PlayVoice(m_object->m_objectId, 0x440, -1, -1, -1);
-                    RVA_DYNINIT(0x000455d0, 0xa, s_alert)
-                    DATA(0x002446fc)
+                    RVA_DYNINIT(0x000454f0, 0xa, s_alert)
+                    DATA(0x00245654)
                     static CString s_alert("ALERT - Your Fort is under attack!");
                     g_gameReg->m_chatLog->AddItem(
                         static_cast<LPCTSTR>(
@@ -762,7 +762,7 @@ i32 CWarlord::NotifyFortUnderAttack() {
     return 0;
 }
 
-RVA(0x000455f0, 0x15b)
+RVA(0x00045510, 0x15b)
 i32 CWarlord::ResolveDeathAnimation() {
     if (m_deathStarted != false) {
         return 0;
@@ -789,7 +789,7 @@ i32 CWarlord::ResolveDeathAnimation() {
     return 1;
 }
 
-RVA(0x000457b0, 0x14c)
+RVA(0x000456d0, 0x14c)
 i32 CWarlord::ResolveJoyAnimation() {
     if (m_deathStarted != false) {
         return 0;
@@ -816,7 +816,7 @@ i32 CWarlord::ResolveJoyAnimation() {
     return 1;
 }
 
-RVA(0x00045960, 0x181)
+RVA(0x00045880, 0x181)
 i32 CWarlord::ResolveIdleAnimation() {
     if (m_deathStarted != false) {
         return 0;
@@ -849,7 +849,7 @@ i32 CWarlord::ResolveIdleAnimation() {
     return 1;
 }
 
-RVA(0x00045b60, 0x161)
+RVA(0x00045a80, 0x161)
 i32 CWarlord::ResolveBattlecryAnimation() {
     if (m_deathStarted != false) {
         return 0;

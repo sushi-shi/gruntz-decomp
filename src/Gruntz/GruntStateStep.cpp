@@ -36,7 +36,7 @@
         (g)->m_coordList.RemoveAll();                                                              \
     }
 
-RVA(0x00033520, 0xbc3)
+RVA(0x000334b0, 0xbc3)
 i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
     GruntAiState state = g->m_defenderState;
     if (state == AISTATE_RETURN) {

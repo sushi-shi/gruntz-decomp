@@ -8,7 +8,7 @@
 #include <Rez/FrameClock.h>
 
 // @early-stop
-RVA(0x000612a0, 0x23c)
+RVA(0x00061170, 0x23c)
 i32 CGrunt::UpdateDeathAnimation() {
     if (m_deathType == DEATH_DROP) {
         return 0;
@@ -77,7 +77,7 @@ i32 CGrunt::UpdateDeathAnimation() {
 }
 
 // @early-stop
-RVA(0x00061570, 0x11d)
+RVA(0x00061440, 0x11d)
 i32 CGrunt::UpdateDecayFade() {
     i64 now = static_cast<i64>(g_frameTime);
     if (now - m_idleTimer >= m_idleWindow) {

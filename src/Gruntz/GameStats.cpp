@@ -15,19 +15,19 @@
 DATA(0x001eab40)
 const float g_zeroF = 0.0f;
 
-RVA(0x000fc9c0, 0x17)
+RVA(0x000fcaf0, 0x17)
 i32 CGameStats::ResetWithLevelRecords(QuestLevelStats* levelRecords) {
     Reset();
     m_levelRecords = levelRecords;
     return 1;
 }
 
-RVA(0x000fc9f0, 0x5)
+RVA(0x000fcb20, 0x5)
 CGameStats::~CGameStats() {
     Reset();
 }
 
-RVA(0x000fca10, 0x8a)
+RVA(0x000fcb40, 0x8a)
 void CGameStats::Reset() {
     m_levelNumber = 0;
     m_isCustomLevel = false;
@@ -66,7 +66,7 @@ void CGameStats::Reset() {
     }
 }
 
-RVA(0x000fcad0, 0x53)
+RVA(0x000fcc00, 0x53)
 void CGameStats::SetLevelNumber(i32 levelNumber) {
     m_levelNumber = levelNumber;
     if (levelNumber > 0x24) {
@@ -83,7 +83,7 @@ void CGameStats::SetLevelNumber(i32 levelNumber) {
     m_currentAreaComplete = areaComplete;
 }
 
-RVA(0x000fcb50, 0x2b)
+RVA(0x000fcc80, 0x2b)
 void CGameStats::RecordFlagCapture(i32 capturingPlayerIndex, i32 flagOwnerPlayerIndex) {
     if (capturingPlayerIndex >= 0 && capturingPlayerIndex <= BZ_PLAYER_COUNT
         && flagOwnerPlayerIndex >= 0 && flagOwnerPlayerIndex <= BZ_PLAYER_COUNT) {
@@ -91,14 +91,14 @@ void CGameStats::RecordFlagCapture(i32 capturingPlayerIndex, i32 flagOwnerPlayer
     }
 }
 
-RVA(0x000fcb90, 0x12)
+RVA(0x000fccc0, 0x12)
 void CGameStats::ClearFlagCaptures() {
     for (i32 i = 0; i < BZ_PLAYER_COUNT * BZ_PLAYER_COUNT; i++) {
         (&m_flagCapturesByPlayer[0][0])[i] = 0;
     }
 }
 
-RVA(0x000fcbc0, 0x3a)
+RVA(0x000fccf0, 0x3a)
 i32 CGameStats::CountAllFlagCaptures(i32 validatedPlayerIndex) {
     if (validatedPlayerIndex < 0 || validatedPlayerIndex > BZ_PLAYER_COUNT) {
         return 0;
@@ -113,7 +113,7 @@ i32 CGameStats::CountAllFlagCaptures(i32 validatedPlayerIndex) {
     return sum;
 }
 
-RVA(0x000fcc10, 0x2f)
+RVA(0x000fcd40, 0x2f)
 i32 CGameStats::GetFlagCapture(i32 capturingPlayerIndex, i32 flagOwnerPlayerIndex) {
     if (capturingPlayerIndex >= 0 && capturingPlayerIndex <= BZ_PLAYER_COUNT
         && flagOwnerPlayerIndex >= 0 && flagOwnerPlayerIndex <= BZ_PLAYER_COUNT) {
@@ -122,7 +122,7 @@ i32 CGameStats::GetFlagCapture(i32 capturingPlayerIndex, i32 flagOwnerPlayerInde
     return 0;
 }
 
-RVA(0x000fcc50, 0x2a)
+RVA(0x000fcd80, 0x2a)
 void CGameStats::RecordKill(i32 killerPlayerIndex, i32 victimPlayerIndex) {
     if (killerPlayerIndex >= 0 && killerPlayerIndex <= BZ_PLAYER_COUNT && victimPlayerIndex >= 0
         && victimPlayerIndex <= BZ_PLAYER_COUNT && killerPlayerIndex != victimPlayerIndex) {
@@ -130,14 +130,14 @@ void CGameStats::RecordKill(i32 killerPlayerIndex, i32 victimPlayerIndex) {
     }
 }
 
-RVA(0x000fcc90, 0xf)
+RVA(0x000fcdc0, 0xf)
 void CGameStats::ClearKills() {
     for (i32 i = 0; i < BZ_PLAYER_COUNT * BZ_PLAYER_COUNT; i++) {
         (&m_killsByPlayer[0][0])[i] = 0;
     }
 }
 
-RVA(0x000fccb0, 0x21)
+RVA(0x000fcde0, 0x21)
 i32 CGameStats::CountKillsForPlayer(i32 playerIndex) {
     i32 sum = 0;
     i32* kills = m_killsByPlayer[playerIndex];
@@ -147,7 +147,7 @@ i32 CGameStats::CountKillsForPlayer(i32 playerIndex) {
     return sum;
 }
 
-RVA(0x000fccf0, 0x57)
+RVA(0x000fce20, 0x57)
 i32 CGameStats::IsCampaignPerfect() {
     i32 levelIndex = 0;
     QuestLevelStats* levelStats = m_levelRecords;
@@ -177,7 +177,7 @@ i32 CGameStats::IsCampaignPerfect() {
     return 1;
 }
 
-RVA(0x000fcd70, 0x61)
+RVA(0x000fcea0, 0x61)
 i32 CGameStats::IsCurrentLevelPerfect(i32 unused) {
     if (m_warpLetterFound == false) {
         return 0;
@@ -197,7 +197,7 @@ i32 CGameStats::IsCurrentLevelPerfect(i32 unused) {
     return m_coinsAvailable <= m_coinsCollected;
 }
 
-RVA(0x000fce00, 0x56)
+RVA(0x000fcf30, 0x56)
 float CGameStats::CurrentAreaCoinRatio() {
     float availableCoins = g_zeroF;
     float collectedCoins = g_zeroF;
@@ -212,7 +212,7 @@ float CGameStats::CurrentAreaCoinRatio() {
     return collectedCoins / availableCoins;
 }
 
-RVA(0x000fce80, 0x32)
+RVA(0x000fcfb0, 0x32)
 i32 CGameStats::CurrentAreaHasAllWarpLetters() {
     i32 areaFirstIndex = (m_levelNumber - 1) / 4 * 4;
     for (i32 i = 0; i < 4; i++) {
@@ -223,7 +223,7 @@ i32 CGameStats::CurrentAreaHasAllWarpLetters() {
     return 1;
 }
 
-RVA(0x000fced0, 0x31)
+RVA(0x000fd000, 0x31)
 i32 CGameStats::CurrentAreaHasWarpLetter(i32 letterIndex) {
     i32 levelIndex = letterIndex + (m_levelNumber - 1) / 4 * 4;
     if (levelIndex == m_levelNumber - 1) {
@@ -233,7 +233,7 @@ i32 CGameStats::CurrentAreaHasWarpLetter(i32 letterIndex) {
     return levelStats->m_warpLetterFound;
 }
 
-RVA(0x000fcf20, 0x37)
+RVA(0x000fd050, 0x37)
 i32 CGameStats::SumToyzCollectedForCurrentArea() {
     i32 sum = 0;
     i32 areaFirstIndex = (m_levelNumber - 1) / 4 * 4;
@@ -243,7 +243,7 @@ i32 CGameStats::SumToyzCollectedForCurrentArea() {
     return sum;
 }
 
-RVA(0x000fcf70, 0x37)
+RVA(0x000fd0a0, 0x37)
 i32 CGameStats::SumToyzAvailableForCurrentArea() {
     i32 sum = 0;
     i32 areaFirstIndex = (m_levelNumber - 1) / 4 * 4;
@@ -253,7 +253,7 @@ i32 CGameStats::SumToyzAvailableForCurrentArea() {
     return sum;
 }
 
-RVA(0x000fcfc0, 0x37)
+RVA(0x000fd0f0, 0x37)
 i32 CGameStats::SumToolzCollectedForCurrentArea() {
     i32 sum = 0;
     i32 areaFirstIndex = (m_levelNumber - 1) / 4 * 4;
@@ -263,7 +263,7 @@ i32 CGameStats::SumToolzCollectedForCurrentArea() {
     return sum;
 }
 
-RVA(0x000fd010, 0x37)
+RVA(0x000fd140, 0x37)
 i32 CGameStats::SumToolzAvailableForCurrentArea() {
     i32 sum = 0;
     i32 areaFirstIndex = (m_levelNumber - 1) / 4 * 4;
@@ -273,7 +273,7 @@ i32 CGameStats::SumToolzAvailableForCurrentArea() {
     return sum;
 }
 
-RVA(0x000fd060, 0x37)
+RVA(0x000fd190, 0x37)
 i32 CGameStats::SumPowerupzCollectedForCurrentArea() {
     i32 sum = 0;
     i32 areaFirstIndex = (m_levelNumber - 1) / 4 * 4;
@@ -283,7 +283,7 @@ i32 CGameStats::SumPowerupzCollectedForCurrentArea() {
     return sum;
 }
 
-RVA(0x000fd0b0, 0x37)
+RVA(0x000fd1e0, 0x37)
 i32 CGameStats::SumPowerupzAvailableForCurrentArea() {
     i32 sum = 0;
     i32 areaFirstIndex = (m_levelNumber - 1) / 4 * 4;
@@ -293,7 +293,7 @@ i32 CGameStats::SumPowerupzAvailableForCurrentArea() {
     return sum;
 }
 
-RVA(0x000fd100, 0x37)
+RVA(0x000fd230, 0x37)
 i32 CGameStats::SumSecretsFoundForCurrentArea() {
     i32 sum = 0;
     i32 areaFirstIndex = (m_levelNumber - 1) / 4 * 4;
@@ -303,7 +303,7 @@ i32 CGameStats::SumSecretsFoundForCurrentArea() {
     return sum;
 }
 
-RVA(0x000fd150, 0x37)
+RVA(0x000fd280, 0x37)
 i32 CGameStats::SumSecretsAvailableForCurrentArea() {
     i32 sum = 0;
     i32 areaFirstIndex = (m_levelNumber - 1) / 4 * 4;
@@ -313,7 +313,7 @@ i32 CGameStats::SumSecretsAvailableForCurrentArea() {
     return sum;
 }
 
-RVA(0x000fd1a0, 0x37)
+RVA(0x000fd2d0, 0x37)
 i32 CGameStats::SumCoinsCollectedForCurrentArea() {
     i32 sum = 0;
     i32 areaFirstIndex = (m_levelNumber - 1) / 4 * 4;
@@ -323,7 +323,7 @@ i32 CGameStats::SumCoinsCollectedForCurrentArea() {
     return sum;
 }
 
-RVA(0x000fd1f0, 0x37)
+RVA(0x000fd320, 0x37)
 i32 CGameStats::SumCoinsAvailableForCurrentArea() {
     i32 sum = 0;
     i32 areaFirstIndex = (m_levelNumber - 1) / 4 * 4;
@@ -333,7 +333,7 @@ i32 CGameStats::SumCoinsAvailableForCurrentArea() {
     return sum;
 }
 
-RVA(0x000fd240, 0x37)
+RVA(0x000fd370, 0x37)
 i32 CGameStats::SumGruntzLostForCurrentArea() {
     i32 sum = 0;
     i32 areaFirstIndex = (m_levelNumber - 1) / 4 * 4;
@@ -343,7 +343,7 @@ i32 CGameStats::SumGruntzLostForCurrentArea() {
     return sum;
 }
 
-RVA(0x000fd290, 0x37)
+RVA(0x000fd3c0, 0x37)
 i32 CGameStats::SumGruntzExitedForCurrentArea() {
     i32 sum = 0;
     i32 areaFirstIndex = (m_levelNumber - 1) / 4 * 4;
@@ -353,7 +353,7 @@ i32 CGameStats::SumGruntzExitedForCurrentArea() {
     return sum;
 }
 
-RVA(0x000fd2e0, 0x37)
+RVA(0x000fd410, 0x37)
 i32 CGameStats::SumElapsedTimeForCurrentArea() {
     i32 sum = 0;
     i32 areaFirstIndex = (m_levelNumber - 1) / 4 * 4;
@@ -363,7 +363,7 @@ i32 CGameStats::SumElapsedTimeForCurrentArea() {
     return sum;
 }
 
-RVA(0x000fd330, 0x84)
+RVA(0x000fd460, 0x84)
 void CGameStats::UpdateLevelRecord(i32 levelNumber, b32 writeAvailableCounts) {
     QuestLevelStats* levelStats = &m_levelRecords[levelNumber - 1];
     if (writeAvailableCounts == false) {
@@ -388,7 +388,7 @@ void CGameStats::UpdateLevelRecord(i32 levelNumber, b32 writeAvailableCounts) {
 }
 
 // @early-stop
-RVA(0x000fd3f0, 0x425)
+RVA(0x000fd520, 0x425)
 i32 CGameStats::Serialize(CFileMemBase* s, SerialMode mode, LogicTypeId typeId, i32 payload) {
     i32* p;
     i32 i;

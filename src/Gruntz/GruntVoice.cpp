@@ -39,36 +39,36 @@
 #include <Wap32/ZVec.h>
 #include <Wwd/LogicRecordEvent.h>
 
-RVA_DYNINIT(0x00119350, 0x5, s_gruntDirNorth)
-RVA_DYNINIT(0x00119370, 0x1a, s_gruntDirNorth)
-RVA_DYNINIT(0x001193a0, 0x5, s_gruntDirNorthEast)
-RVA_DYNINIT(0x001193c0, 0x1a, s_gruntDirNorthEast)
-RVA_DYNINIT(0x001193f0, 0x5, s_gruntDirEast)
-RVA_DYNINIT(0x00119410, 0x1f, s_gruntDirEast)
-RVA_DYNINIT(0x00119440, 0x5, s_gruntDirSouthEast)
-RVA_DYNINIT(0x00119460, 0x1a, s_gruntDirSouthEast)
-RVA_DYNINIT(0x00119490, 0x5, s_gruntDirSouth)
-RVA_DYNINIT(0x001194b0, 0x1f, s_gruntDirSouth)
-RVA_DYNINIT(0x001194e0, 0x5, s_gruntDirSouthWest)
-RVA_DYNINIT(0x00119500, 0x1f, s_gruntDirSouthWest)
-RVA_DYNINIT(0x00119530, 0x5, s_gruntDirWest)
-RVA_DYNINIT(0x00119550, 0x1f, s_gruntDirWest)
-RVA_DYNINIT(0x00119580, 0x5, s_gruntDirNorthWest)
-RVA_DYNINIT(0x001195a0, 0x17, s_gruntDirNorthWest)
-RVA_DYNINIT(0x001195d0, 0x5, s_gruntDirCenter)
-RVA_DYNINIT(0x001195f0, 0x1a, s_gruntDirCenter)
+RVA_DYNINIT(0x00119560, 0x5, s_gruntDirNorth)
+RVA_DYNINIT(0x00119580, 0x1a, s_gruntDirNorth)
+RVA_DYNINIT(0x001195b0, 0x5, s_gruntDirNorthEast)
+RVA_DYNINIT(0x001195d0, 0x1a, s_gruntDirNorthEast)
+RVA_DYNINIT(0x00119600, 0x5, s_gruntDirEast)
+RVA_DYNINIT(0x00119620, 0x1f, s_gruntDirEast)
+RVA_DYNINIT(0x00119650, 0x5, s_gruntDirSouthEast)
+RVA_DYNINIT(0x00119670, 0x1a, s_gruntDirSouthEast)
+RVA_DYNINIT(0x001196a0, 0x5, s_gruntDirSouth)
+RVA_DYNINIT(0x001196c0, 0x1f, s_gruntDirSouth)
+RVA_DYNINIT(0x001196f0, 0x5, s_gruntDirSouthWest)
+RVA_DYNINIT(0x00119710, 0x1f, s_gruntDirSouthWest)
+RVA_DYNINIT(0x00119740, 0x5, s_gruntDirWest)
+RVA_DYNINIT(0x00119760, 0x1f, s_gruntDirWest)
+RVA_DYNINIT(0x00119790, 0x5, s_gruntDirNorthWest)
+RVA_DYNINIT(0x001197b0, 0x17, s_gruntDirNorthWest)
+RVA_DYNINIT(0x001197e0, 0x5, s_gruntDirCenter)
+RVA_DYNINIT(0x00119800, 0x1a, s_gruntDirCenter)
 
-RVA_DYNINIT(0x00119da0, 0xa, CActRegPool<CGruntVoice>::s_table)
-RVA_DYNINIT(0x00119dc0, 0x15, CActRegPool<CGruntVoice>::s_table)
-RVA_DYNINIT(0x00119df0, 0xe, CActRegPool<CGruntVoice>::s_table)
-RVA_DYNINIT(0x00119e10, 0x1f, CActRegPool<CGruntVoice>::s_table)
-template<> DATA(0x002514d8)
+RVA_DYNINIT(0x00119fb0, 0xa, CActRegPool<CGruntVoice>::s_table)
+RVA_DYNINIT(0x00119fd0, 0x15, CActRegPool<CGruntVoice>::s_table)
+RVA_DYNINIT(0x0011a000, 0xe, CActRegPool<CGruntVoice>::s_table)
+RVA_DYNINIT(0x0011a020, 0x1f, CActRegPool<CGruntVoice>::s_table)
+template<> DATA(0x00252430)
 CActReg CActRegPool<CGruntVoice>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
-RVA_DYNINIT(0x0011a300, 0xa, CActRegPool<CVoiceTrigger>::s_table)
-RVA_DYNINIT(0x0011a320, 0x15, CActRegPool<CVoiceTrigger>::s_table)
-RVA_DYNINIT(0x0011a350, 0xe, CActRegPool<CVoiceTrigger>::s_table)
-RVA_DYNINIT(0x0011a370, 0x1f, CActRegPool<CVoiceTrigger>::s_table)
-template<> DATA(0x00251500)
+RVA_DYNINIT(0x0011a510, 0xa, CActRegPool<CVoiceTrigger>::s_table)
+RVA_DYNINIT(0x0011a530, 0x15, CActRegPool<CVoiceTrigger>::s_table)
+RVA_DYNINIT(0x0011a560, 0xe, CActRegPool<CVoiceTrigger>::s_table)
+RVA_DYNINIT(0x0011a580, 0x1f, CActRegPool<CVoiceTrigger>::s_table)
+template<> DATA(0x00252458)
 CActReg CActRegPool<CVoiceTrigger>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 struct CString;
@@ -77,20 +77,20 @@ static inline CActHandler* VActLookup(i32 coord) {
     return (CActRegPool<CGruntVoice>::s_table.ResolveEntry(coord));
 }
 
-RVA(0x00013470, 0x4b)
+RVA(0x00013480, 0x4b)
 CVoiceTrigger::CVoiceTrigger() : CUserLogic(CUserLogic::INLINE_BASE) {}
 
-RVA_COMPGEN(0x00013570, 0x1e, ??_GCVoiceTrigger@@UAEPAXI@Z)
-RVA_COMPGEN(0x000135a0, 0x44, ??1CVoiceTrigger@@UAE@XZ)
+RVA_COMPGEN(0x00013580, 0x1e, ??_GCVoiceTrigger@@UAEPAXI@Z)
+RVA_COMPGEN(0x000135b0, 0x44, ??1CVoiceTrigger@@UAE@XZ)
 
-RVA(0x00119320, 0x15)
+RVA(0x00119530, 0x15)
 void ButeParseErrorSink(const char* msg) {
     if (g_gameReg) {
         g_gameReg->EnterModalUI(msg);
     }
 }
 
-RVA(0x00119620, 0xf1)
+RVA(0x00119830, 0xf1)
 i32 DispatchGruntVoiceLogic(CGameObject* obj) {
     CLogicRecord* record = obj->m_logicRecord;
     switch (record->LogicEvent()) {
@@ -128,7 +128,7 @@ i32 DispatchGruntVoiceLogic(CGameObject* obj) {
     return 1;
 }
 
-RVA(0x00119760, 0xf1)
+RVA(0x00119970, 0xf1)
 i32 DispatchVoiceTriggerLogic(CGameObject* obj) {
     CLogicRecord* record = obj->m_logicRecord;
     switch (record->LogicEvent()) {
@@ -167,7 +167,7 @@ i32 DispatchVoiceTriggerLogic(CGameObject* obj) {
 }
 
 // @early-stop
-RVA(0x001198a0, 0x195)
+RVA(0x00119ab0, 0x195)
 CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_startStamp.m_v = 0;
     m_duration.m_v = 0;
@@ -185,11 +185,11 @@ CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     m_positionMode = VOICE_INDICATOR_AT_LOGIC_OBJECT;
 }
 
-RVA_COMPGEN(0x00119ab0, 0x1e, ??_GCGruntVoice@@UAEPAXI@Z)
-RVA_COMPGEN(0x00119ae0, 0x44, ??1CGruntVoice@@UAE@XZ)
+RVA_COMPGEN(0x00119cc0, 0x1e, ??_GCGruntVoice@@UAEPAXI@Z)
+RVA_COMPGEN(0x00119cf0, 0x44, ??1CGruntVoice@@UAE@XZ)
 
 // @early-stop
-RVA(0x00119b50, 0x1ce)
+RVA(0x00119d60, 0x1ce)
 CVoiceTrigger::CVoiceTrigger(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
@@ -203,7 +203,7 @@ CVoiceTrigger::CVoiceTrigger(CGameObject* obj)
         m_object->m_screenY + (m_object->m_extent.bottom << TILE_SHIFT_PX) + 7;
 }
 
-RVA(0x00119e40, 0x102)
+RVA(0x0011a050, 0x102)
 void CGruntVoice::FireActivation(i32 actionId) {
     CActHandler* e = VActLookup(actionId);
     if ((*e) != NULL) {
@@ -212,7 +212,7 @@ void CGruntVoice::FireActivation(i32 actionId) {
     }
 }
 
-RVA(0x00119fa0, 0x2ac)
+RVA(0x0011a1b0, 0x2ac)
 void RegisterGruntVoiceActions() {
     ACT_NAME_ID_CALL_REPORT(id, "A")
     *CActRegPool<CGruntVoice>::s_table.ResolveEntryCallReport(id) =
@@ -223,7 +223,7 @@ void RegisterGruntVoiceActions() {
         static_cast<CActHandler>(&CGruntVoice::UpdateIndicator);
 }
 
-RVA(0x0011a3a0, 0x102)
+RVA(0x0011a5b0, 0x102)
 void CVoiceTrigger::FireActivation(i32 actionId) {
     CActHandler* e = (CActRegPool<CVoiceTrigger>::s_table.ResolveEntry(actionId));
     if ((*e) != NULL) {
@@ -232,14 +232,14 @@ void CVoiceTrigger::FireActivation(i32 actionId) {
     }
 }
 
-RVA(0x0011a500, 0x18d)
+RVA(0x0011a710, 0x18d)
 void CVoiceTrigger::RegisterActs() {
     ACT_NAME_ID(id, "A")
     *(CActRegPool<CVoiceTrigger>::s_table.ResolveEntry(id)) =
         static_cast<i32 (CUserLogic::*)()>(&CVoiceTrigger::Tick);
 }
 
-RVA(0x0011a700, 0xae)
+RVA(0x0011a910, 0xae)
 i32 CVoiceTrigger::Tick() {
     i32 playerIndex, unitIndex;
     CGrunt* hit = g_gameReg->m_triggerMgr->FindGruntAt(
@@ -265,7 +265,7 @@ i32 CVoiceTrigger::Tick() {
 }
 
 // @early-stop
-RVA(0x0011a7e0, 0x6e)
+RVA(0x0011a9f0, 0x6e)
 
 i32 CGruntVoice::BeginPlayback(
     i32 sourceObjectId,
@@ -287,7 +287,7 @@ i32 CGruntVoice::BeginPlayback(
     return 1;
 }
 
-RVA(0x0011a870, 0x38)
+RVA(0x0011aa80, 0x38)
 void CGruntVoice::ResetPlayback() {
     m_stream = NULL;
     SET_ANIMATION_ACT("A");
@@ -295,13 +295,13 @@ void CGruntVoice::ResetPlayback() {
     m_sourceObjectId = 0;
 }
 
-RVA(0x0011a8c0, 0xf)
+RVA(0x0011aad0, 0xf)
 i32 CGruntVoice::HideIndicator() {
     m_object->m_stateFlags |= SPRITE_STATE_HIDDEN;
     return 0;
 }
 
-RVA(0x0011a8e0, 0x198)
+RVA(0x0011aaf0, 0x198)
 i32 CGruntVoice::UpdateIndicator() {
     if (m_stream == NULL || static_cast<i64>(g_frameTime) - m_startStamp.m_v >= m_duration.m_v) {
         m_stream = NULL;

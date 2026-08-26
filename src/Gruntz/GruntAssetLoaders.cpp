@@ -30,31 +30,31 @@
 #include <new>
 #include <string.h>
 
-DATA(0x0020dfe4)
+DATA(0x0020ef8c)
 static char s_EXITZ_DRAIN[] = "GRUNTZ_EXITZ_DRAIN";
-DATA(0x0020dffc)
+DATA(0x0020efa4)
 static char s_DEATHZ_EXPLODE[] = "GRUNTZ_DEATHZ_EXPLODE";
-DATA(0x0020e018)
+DATA(0x0020efc0)
 static char s_DEATHZ_KAROKE[] = "GRUNTZ_DEATHZ_KAROKE";
-DATA(0x0020e04c)
+DATA(0x0020eff4)
 static char s_DEATHZ_ELECTROCUTE[] = "GRUNTZ_DEATHZ_ELECTROCUTE";
-DATA(0x0020e06c)
+DATA(0x0020f014)
 static char s_DEATHZ_QUICKFALL2[] = "GRUNTZ_DEATHZ_QUICKFALL2";
-DATA(0x0020e08c)
+DATA(0x0020f034)
 static char s_DEATHZ_FALL2[] = "GRUNTZ_DEATHZ_FALL2";
-DATA(0x0020e0a4)
+DATA(0x0020f04c)
 static char s_DEATHZ_FALL[] = "GRUNTZ_DEATHZ_FALL";
-DATA(0x0020e0bc)
+DATA(0x0020f064)
 static char s_DEATHZ_QUICKFALL[] = "GRUNTZ_DEATHZ_QUICKFALL";
-DATA(0x0020e0d8)
+DATA(0x0020f080)
 static char s_DEATHZ_BURN[] = "GRUNTZ_DEATHZ_BURN";
-DATA(0x0020e10c)
+DATA(0x0020f0b4)
 static char s_DEATHZ_SHATTER[] = "GRUNTZ_DEATHZ_SHATTER";
-DATA(0x0020e128)
+DATA(0x0020f0d0)
 static char s_DEATHZ_HOLE[] = "GRUNTZ_DEATHZ_HOLE";
-DATA(0x0020e140)
+DATA(0x0020f0e8)
 static char s_DEATHZ_SINK[] = "GRUNTZ_DEATHZ_SINK";
-DATA(0x0020e158)
+DATA(0x0020f100)
 static char s_DEATHZ_SQUASH[] = "GRUNTZ_DEATHZ_SQUASH";
 static const char s_NORMALGRUNT_DEATH[] = "GRUNTZ_NORMALGRUNT_DEATH";
 
@@ -85,7 +85,7 @@ static inline CAniElement* LookupAnim(CMapStringToPtr& map, LPCTSTR name) {
 }
 
 // @early-stop
-RVA(0x00060150, 0xdd0)
+RVA(0x00060020, 0xdd0)
 i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerIndex) {
     if (m_deathAnimStarted != false) {
         return 0;
@@ -112,7 +112,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
     }
     m_triggerMgr->RemoveCellRecord(m_playerIndex, m_unitIndex, 1);
 
-    SET_ANIMATION_ACT(DATA_COMPGEN(0x0020cc90, "C"));
+    SET_ANIMATION_ACT(DATA_COMPGEN(0x0020dc38, "C"));
 
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION));
     {

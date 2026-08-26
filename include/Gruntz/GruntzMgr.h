@@ -91,7 +91,7 @@ public:
 
     void XorLiveObjectFlags(i32 mask);
 
-    RVA(0x00075ad0, 0x4)
+    RVA(0x000759a0, 0x4)
     CGruntzMapMgr* GetTileGrid() {
         return m_tileGrid;
     }
@@ -182,7 +182,7 @@ public:
 
     void StopAudioPlayback();
     void DeactivateAllPlayers();
-    RVA(0x000928c0, 0x23)
+    RVA(0x000927e0, 0x23)
     CString GetWorldFileName() {
         return m_strWorldFile;
     }
@@ -278,7 +278,7 @@ public:
         return m_modeSize;
     }
 
-    RVA(0x00020f20, 0x4)
+    RVA(0x00020f30, 0x4)
     CCheatMgr* CheatMgr() {
         return m_cheatMgr;
     }

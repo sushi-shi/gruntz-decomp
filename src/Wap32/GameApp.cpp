@@ -9,17 +9,17 @@
 #include <stdio.h>
 #include <string.h>
 
-DATA(0x00253c6c)
+DATA(0x00254bc4)
 i32 g_gameAppInstanceCount = 0;
-DATA(0x00253c70)
+DATA(0x00254bc8)
 i32 g_gameAppNowMs = 0;
-DATA(0x00253c74)
+DATA(0x00254bcc)
 i32 g_gameAppFrameDeltaMs = 0;
-DATA(0x00253c78)
+DATA(0x00254bd0)
 i32 g_framePacingEpochMs = 0;
-DATA(0x00253c7c)
+DATA(0x00254bd4)
 i32 g_gameAppTimerRemainingMs = 0;
-DATA(0x00253c80)
+DATA(0x00254bd8)
 i32 g_gameAppTimerPeriodMs = 0;
 
 #define FREE_GAME_MANAGER                                                                          \
@@ -32,7 +32,7 @@ i32 g_gameAppTimerPeriodMs = 0;
     m_gameWnd = NULL;                                                                              \
     m_owner = NULL
 
-RVA(0x0013d590, 0x3c)
+RVA(0x0013d870, 0x3c)
 CGameApp::CGameApp() {
     m_gameWnd = NULL;
     m_gameMgr = NULL;
@@ -45,7 +45,7 @@ CGameApp::CGameApp() {
     g_gameAppInstanceCount++;
 }
 
-RVA(0x0013d5d0, 0x1d3)
+RVA(0x0013d8b0, 0x1d3)
 i32 CGameApp::InitInstance(
     GameInfo* pGameInfo,
     WNDCLASSA* pWndClass,
@@ -132,7 +132,7 @@ Fail:
     return 0;
 }
 
-RVA(0x0013d7b0, 0x105)
+RVA(0x0013da90, 0x105)
 i32 CGameApp::Init(
     HINSTANCE hInstance,
     char* szWindowName,
@@ -167,7 +167,7 @@ i32 CGameApp::Init(
     return InitInstance(&gi, NULL, NULL);
 }
 
-RVA(0x0013d8c0, 0x42)
+RVA(0x0013dba0, 0x42)
 void CGameApp::CloseResources() {
     if (m_hAccel) {
         DestroyAcceleratorTable(m_hAccel);
@@ -180,7 +180,7 @@ void CGameApp::CloseResources() {
     }
 }
 
-RVA(0x0013d910, 0x9f)
+RVA(0x0013dbf0, 0x9f)
 i32 CGameApp::RunMessageLoop() {
     MSG msg;
 
@@ -206,7 +206,7 @@ i32 CGameApp::RunMessageLoop() {
     }
 }
 
-RVA(0x0013d9b0, 0xa0)
+RVA(0x0013dc90, 0xa0)
 void CGameApp::InitializeDefaultWindowClass() {
 
     memset(&m_wc, 0, sizeof(m_wc));
@@ -229,7 +229,7 @@ void CGameApp::InitializeDefaultWindowClass() {
 }
 
 // @early-stop
-RVA(0x0013da50, 0x10b)
+RVA(0x0013dd30, 0x10b)
 void CGameApp::InitializeDefaultCreateStruct() {
 
     memset(&m_createStruct, 0, sizeof(m_createStruct));
@@ -284,17 +284,17 @@ void CGameApp::InitializeDefaultCreateStruct() {
     m_createStruct.dwExStyle = exStyle;
 }
 
-RVA(0x0013db60, 0x57)
+RVA(0x0013de40, 0x57)
 CGameWnd* CGameApp::InitializeGameWindow() {
     return new CGameWnd;
 }
 
-RVA(0x0013dbc0, 0x57)
+RVA(0x0013dea0, 0x57)
 CGameMgr* CGameApp::InitializeGameManager() {
     return new CGameMgr;
 }
 
-RVA(0x0013dc20, 0x49)
+RVA(0x0013df00, 0x49)
 BOOL CGameApp::InitializeAccelerators(LPCSTR lpTable) {
     if (lpTable && *lpTable) {
         if (m_hAccel) {
@@ -307,17 +307,17 @@ BOOL CGameApp::InitializeAccelerators(LPCSTR lpTable) {
     return false;
 }
 
-RVA(0x0013dc70, 0x1d)
+RVA(0x0013df50, 0x1d)
 void CGameApp::OnIdle() {
     if (m_appActive && m_running) {
         m_gameMgr->PerFrameTick();
     }
 }
 
-RVA(0x0013dc90, 0x19)
+RVA(0x0013df70, 0x19)
 void CGameApp::FreeGameManager(){FREE_GAME_MANAGER}
 
-RVA(0x0013dcb0, 0x57)
+RVA(0x0013df90, 0x57)
 void CGameApp::ReportError(WPARAM wParam, LPARAM lParam) {
     if (m_errorReported != false) {
         return;
@@ -332,7 +332,7 @@ void CGameApp::ReportError(WPARAM wParam, LPARAM lParam) {
     m_errorDetail = lParam;
 }
 
-RVA(0x0013dd10, 0x35)
+RVA(0x0013dff0, 0x35)
 CGameMgr::CGameMgr() {
     m_soundEnabled = true;
     m_musicEnabled = true;
@@ -343,7 +343,7 @@ CGameMgr::CGameMgr() {
     ResetFrameTiming();
 }
 
-RVA(0x0013dd50, 0x54)
+RVA(0x0013e030, 0x54)
 i32 CGameMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     if (!pGameWnd) {
         return 0;
@@ -362,12 +362,12 @@ i32 CGameMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     return 1;
 }
 
-RVA(0x0013ddb0, 0x9)
+RVA(0x0013e090, 0x9)
 void CGameMgr::Close() {
     CLEAR_GAME_MANAGER_WINDOW;
 }
 
-RVA(0x0013ddc0, 0xaa)
+RVA(0x0013e0a0, 0xaa)
 i32 CGameMgr::PerFrameTick() {
 
     DWORD(WINAPI * pTGT)(void) = timeGetTime;
@@ -404,7 +404,7 @@ i32 CGameMgr::PerFrameTick() {
     return 1;
 }
 
-RVA(0x0013de70, 0x26)
+RVA(0x0013e150, 0x26)
 void CGameMgr::ResetFpsSampleWindow(i32 reset) {
     m_fpsSampleFrameCount = 0;
     m_fpsSampleStartMs = timeGetTime();
@@ -413,14 +413,14 @@ void CGameMgr::ResetFpsSampleWindow(i32 reset) {
     }
 }
 
-RVA(0x0013dea0, 0x18)
+RVA(0x0013e180, 0x18)
 void CGameMgr::ResetFrameTiming() {
     g_gameAppNowMs = timeGetTime();
     g_gameAppFrameDeltaMs = 0;
     g_framePacingEpochMs = 0;
 }
 
-RVA(0x0013dec0, 0x20)
+RVA(0x0013e1a0, 0x20)
 void CGameMgr::SpinWaitForMs(i32 ms) {
     DWORD(WINAPI * fn)(void) = timeGetTime;
     u32 now = fn();
@@ -432,7 +432,7 @@ void CGameMgr::SpinWaitForMs(i32 ms) {
     }
 }
 
-RVA(0x0013dee0, 0x1b)
+RVA(0x0013e1c0, 0x1b)
 void CGameMgr::SetFrameRate(i32 fps) {
     m_targetFps = fps;
     if (fps > 0) {
@@ -442,7 +442,7 @@ void CGameMgr::SetFrameRate(i32 fps) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0013df00, 0x25)
+RVA(0x0013e1e0, 0x25)
 i32 CGameMgr::TrySetFrameRate(i32 fps) {
     if (m_targetFps > 0) {
         SetFrameRate(0);
@@ -454,7 +454,7 @@ i32 CGameMgr::TrySetFrameRate(i32 fps) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0013df30, 0xaf)
+RVA(0x0013e210, 0xaf)
 void WaitKeyEdge(int vk, int timeoutMs) {
     if (timeoutMs == 0) {
         SHORT(WINAPI * gaks)(int) = GetAsyncKeyState;

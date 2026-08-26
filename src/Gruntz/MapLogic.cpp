@@ -8,7 +8,7 @@
 #include <Gruntz/SerialArchive.h>
 #include <Io/FileMem.h>
 
-RVA(0x000ec230, 0x11c)
+RVA(0x000ec360, 0x11c)
 i32 SerializeScrollState(CFileMemBase* ar, SerialMode mode, LogicTypeId, i32) {
     if (ar == NULL) {
         return 0;

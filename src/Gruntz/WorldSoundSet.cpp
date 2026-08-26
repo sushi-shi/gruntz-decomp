@@ -22,10 +22,10 @@
 #include <math.h>
 #include <new>
 
-DATA(0x0022990c)
+DATA(0x0022a864)
 i32 g_posSoundReq;
 
-RVA(0x0000b5e0, 0x29)
+RVA(0x0000b5f0, 0x29)
 i32 CWorldSoundSet::Init(SoundCueRegistry* cueRegistry, i32 masterVolume) {
     if (cueRegistry == NULL) {
         return 0;
@@ -38,7 +38,7 @@ i32 CWorldSoundSet::Init(SoundCueRegistry* cueRegistry, i32 masterVolume) {
     return 1;
 }
 
-RVA(0x0000b620, 0x26)
+RVA(0x0000b630, 0x26)
 void CWorldSoundSet::Deactivate() {
     if (m_cueRegistry != NULL && m_cueRegistry->m_soundStream != NULL) {
         m_cueRegistry->m_soundStream->ClearVolumeRamps();
@@ -47,7 +47,7 @@ void CWorldSoundSet::Deactivate() {
     m_cueRegistry = NULL;
 }
 
-RVA(0x0000b660, 0x2b)
+RVA(0x0000b670, 0x2b)
 void CWorldSoundSet::Teardown() {
     POSITION pos = m_list.GetHeadPosition();
     while (pos != NULL) {
@@ -61,7 +61,7 @@ void CWorldSoundSet::Teardown() {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0000b6a0, 0x83)
+RVA(0x0000b6b0, 0x83)
 CAmbientSound* CWorldSoundSet::CreateAmbientFromKey(
     const char* key,
     i32 volumeLevel,
@@ -82,11 +82,11 @@ CAmbientSound* CWorldSoundSet::CreateAmbientFromKey(
     return obj;
 }
 
-RVA_COMPGEN(0x0000b760, 0x1e, ??_GCAmbientSound@@UAEPAXI@Z)
+RVA_COMPGEN(0x0000b770, 0x1e, ??_GCAmbientSound@@UAEPAXI@Z)
 
-RVA_COMPGEN(0x0000b790, 0xf, ??1CAmbientSound@@UAE@XZ)
+RVA_COMPGEN(0x0000b7a0, 0xf, ??1CAmbientSound@@UAE@XZ)
 
-RVA(0x0000b7b0, 0x80)
+RVA(0x0000b7c0, 0x80)
 CAmbientSound* CWorldSoundSet::CreateAmbientFromSound(
     SoundBuffer* sound,
     i32 volumeLevel,
@@ -108,7 +108,7 @@ CAmbientSound* CWorldSoundSet::CreateAmbientFromSound(
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0000b850, 0x83)
+RVA(0x0000b860, 0x83)
 CAmbientPosSound* CWorldSoundSet::CreatePositionedFromKey(
     const char* key,
     i32 volumeLevel,
@@ -129,11 +129,11 @@ CAmbientPosSound* CWorldSoundSet::CreatePositionedFromKey(
     return obj;
 }
 
-RVA_COMPGEN(0x0000b910, 0x1e, ??_GCAmbientPosSound@@UAEPAXI@Z)
+RVA_COMPGEN(0x0000b920, 0x1e, ??_GCAmbientPosSound@@UAEPAXI@Z)
 
-RVA_COMPGEN(0x0000b940, 0xf, ??1CAmbientPosSound@@UAE@XZ)
+RVA_COMPGEN(0x0000b950, 0xf, ??1CAmbientPosSound@@UAE@XZ)
 
-RVA(0x0000b960, 0x80)
+RVA(0x0000b970, 0x80)
 CAmbientPosSound* CWorldSoundSet::CreatePositionedFromSound(
     SoundBuffer* sound,
     i32 volumeLevel,
@@ -155,7 +155,7 @@ CAmbientPosSound* CWorldSoundSet::CreatePositionedFromSound(
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0000ba00, 0xc6)
+RVA(0x0000ba10, 0xc6)
 CRandomAmbientSound* CWorldSoundSet::CreateRandomFromKey(
     const char* key,
     i32 volumeLevel,
@@ -187,10 +187,10 @@ CRandomAmbientSound* CWorldSoundSet::CreateRandomFromKey(
     return obj;
 }
 
-RVA_COMPGEN(0x0000bb10, 0x1e, ??_GCRandomAmbientSound@@UAEPAXI@Z)
-RVA_COMPGEN(0x0000bb40, 0xf, ??1CRandomAmbientSound@@UAE@XZ)
+RVA_COMPGEN(0x0000bb20, 0x1e, ??_GCRandomAmbientSound@@UAEPAXI@Z)
+RVA_COMPGEN(0x0000bb50, 0xf, ??1CRandomAmbientSound@@UAE@XZ)
 
-RVA(0x0000bb60, 0x9b)
+RVA(0x0000bb70, 0x9b)
 CRandomAmbientSound* CWorldSoundSet::CreateRandomFromSound(
     SoundBuffer* sound,
     i32 volumeLevel,
@@ -215,7 +215,7 @@ CRandomAmbientSound* CWorldSoundSet::CreateRandomFromSound(
     return obj;
 }
 
-RVA(0x0000bc30, 0x3a)
+RVA(0x0000bc40, 0x3a)
 void CWorldSoundSet::SetMasterVolume(i32 masterVolume) {
     m_masterVolume = masterVolume;
     if (m_cueRegistry->m_soundStream != NULL) {
@@ -230,7 +230,7 @@ void CWorldSoundSet::SetMasterVolume(i32 masterVolume) {
     }
 }
 
-RVA(0x0000bc80, 0x44)
+RVA(0x0000bc90, 0x44)
 void CWorldSoundSet::Stop() {
     if (m_cueRegistry != NULL && m_cueRegistry->m_soundStream != NULL) {
         m_cueRegistry->m_soundStream->ClearVolumeRamps();
@@ -245,7 +245,7 @@ void CWorldSoundSet::Stop() {
     }
 }
 
-RVA(0x0000bcf0, 0x43)
+RVA(0x0000bd00, 0x43)
 void CWorldSoundSet::Resume() {
     POSITION pos = m_list.GetHeadPosition();
     while (pos != NULL) {
@@ -259,7 +259,7 @@ void CWorldSoundSet::Resume() {
     TickSoundVolumeRamps(m_cueRegistry);
 }
 
-RVA(0x0000bd60, 0x4b)
+RVA(0x0000bd70, 0x4b)
 void CWorldSoundSet::SetListenerPosition(i32 x, i32 y) {
     m_listenerX = x;
     m_listenerY = y;
@@ -274,7 +274,7 @@ void CWorldSoundSet::SetListenerPosition(i32 x, i32 y) {
     TickSoundVolumeRamps(m_cueRegistry);
 }
 
-RVA(0x0000bdd0, 0x53)
+RVA(0x0000bde0, 0x53)
 i32 CAmbientSound::InitFromKey(
     SoundCueRegistry* cueRegistry,
     const char* key,
@@ -291,7 +291,7 @@ i32 CAmbientSound::InitFromKey(
     return InitFromSound(cue->m_sound, volumeLevel, masterVolume, region, volumeScale);
 }
 
-RVA(0x0000be50, 0x8f)
+RVA(0x0000be60, 0x8f)
 i32 CAmbientSound::InitFromSound(
     SoundBuffer* sound,
     i32 volumeLevel,
@@ -322,7 +322,7 @@ i32 CAmbientSound::InitFromSound(
     return 1;
 }
 
-RVA(0x0000bf10, 0x72)
+RVA(0x0000bf20, 0x72)
 void CAmbientSound::ApplyMasterVolume(i32 masterVolume) {
     if (m_masterVolume == masterVolume) {
         return;
@@ -335,7 +335,7 @@ void CAmbientSound::ApplyMasterVolume(i32 masterVolume) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x0000bfb0, 0xa9)
+RVA(0x0000bfc0, 0xa9)
 void CAmbientSound::StartPlayback() {
     SoundBuffer* sound = m_sound;
     i32 pos = m_volumeLevel;
@@ -359,7 +359,7 @@ void CAmbientSound::StartPlayback() {
     m_isPlaying = true;
 }
 
-RVA(0x0000c090, 0x118)
+RVA(0x0000c0a0, 0x118)
 void CAmbientSound::Update(i32 x, i32 y, b32 immediate) {
     i32 inRange;
     if (m_primaryRegion.left == COORD_UNSET) {
@@ -430,7 +430,7 @@ void CAmbientSound::Update(i32 x, i32 y, b32 immediate) {
     }
 }
 
-RVA(0x0000c200, 0x7e)
+RVA(0x0000c210, 0x7e)
 i32 CAmbientSound::SetVolumeLevel(i32 volumeLevel, i32 rampMs, b32 stopAndRewind) {
     m_volumeLevel = volumeLevel;
     i32 v = ScaleVolume(volumeLevel);
@@ -441,7 +441,7 @@ i32 CAmbientSound::SetVolumeLevel(i32 volumeLevel, i32 rampMs, b32 stopAndRewind
 }
 
 // @early-stop
-RVA(0x0000c2a0, 0x19e)
+RVA(0x0000c2b0, 0x19e)
 void CAmbientSound::FadePlayback(b32 startPlaying, i32 volumeLevel, i32 rampMs) {
     if (m_sound == NULL) {
         return;
@@ -513,7 +513,7 @@ void CAmbientSound::FadePlayback(b32 startPlaying, i32 volumeLevel, i32 rampMs) 
     m_isPlaying = false;
 }
 
-RVA(0x0000c4b0, 0x53)
+RVA(0x0000c4c0, 0x53)
 i32 CAmbientPosSound::InitFromKey(
     SoundCueRegistry* cueRegistry,
     const char* key,
@@ -530,7 +530,7 @@ i32 CAmbientPosSound::InitFromKey(
     return InitFromSound(cue->m_sound, volumeLevel, masterVolume, position, volumeScale);
 }
 
-RVA(0x0000c530, 0x51)
+RVA(0x0000c540, 0x51)
 i32 CAmbientPosSound::InitFromSound(
     SoundBuffer* sound,
     i32 volumeLevel,
@@ -554,7 +554,7 @@ i32 CAmbientPosSound::InitFromSound(
     return 1;
 }
 
-RVA(0x0000c5b0, 0x1df)
+RVA(0x0000c5c0, 0x1df)
 void CAmbientPosSound::Update(i32 x, i32 y, b32 immediate) {
     i32 dx = abs(m_position.x - x);
     i32 dy = abs(m_position.y - y);
@@ -614,13 +614,13 @@ void CAmbientPosSound::Update(i32 x, i32 y, b32 immediate) {
     m_isPlaying = true;
 }
 
-RVA(0x0000c810, 0x18)
+RVA(0x0000c820, 0x18)
 i32 DispatchGlobalAmbientSoundLogic(CGameObject* obj) {
     g_posSoundReq = 1;
     return DispatchAmbientSoundLogic(obj);
 }
 
-RVA(0x0000c840, 0x13d)
+RVA(0x0000c850, 0x13d)
 i32 DispatchAmbientSoundLogic(CGameObject* obj) {
     CLogicRecord* record = obj->m_logicRecord;
     CWwdSpriteObject* sprite = static_cast<CWwdSpriteObject*>(obj);
@@ -669,13 +669,13 @@ i32 DispatchAmbientSoundLogic(CGameObject* obj) {
     return 1;
 }
 
-RVA(0x0000c9d0, 0x18)
+RVA(0x0000c9e0, 0x18)
 i32 DispatchAmbientPosSoundLogic(CGameObject* obj) {
     g_posSoundReq = 2;
     return DispatchSpotAmbientSoundLogic(obj);
 }
 
-RVA(0x0000ca00, 0xf0)
+RVA(0x0000ca10, 0xf0)
 i32 DispatchSpotAmbientSoundLogic(CGameObject* obj) {
     CLogicRecord* record = obj->m_logicRecord;
     CWwdSpriteObject* sprite = static_cast<CWwdSpriteObject*>(obj);
@@ -739,7 +739,7 @@ static inline i32 RandRange(CGruntzMgr* mgr, i32 lo, i32 hi) {
 }
 
 // @early-stop
-RVA(0x0000cb30, 0x168)
+RVA(0x0000cb40, 0x168)
 void CRandomAmbientSound::Update(i32 x, i32 y, b32 immediate) {
 
     i32 firstBoxLeft = m_primaryRegion.left;
@@ -799,13 +799,13 @@ void CRandomAmbientSound::Update(i32 x, i32 y, b32 immediate) {
     }
 }
 
-RVA(0x0000cd00, 0x46)
+RVA(0x0000cd10, 0x46)
 i32 CGruntzMgr::Rand() {
     i32 seed;
     return GetRandomNumber();
 }
 
-RVA(0x0000cd70, 0xe5)
+RVA(0x0000cd80, 0xe5)
 void CRandomAmbientSound::InitCycleTiming(
     i32 playDurationMin,
     i32 playDurationMax,

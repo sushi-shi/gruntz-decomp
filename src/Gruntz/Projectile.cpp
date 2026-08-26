@@ -76,31 +76,31 @@ const double g_movingLogicMax = 2147483646.0;
 DATA(0x001f04e8)
 const u32 g_defaultZ = 24;
 
-RVA_DYNINIT(0x000df900, 0xa, CActRegPool<CProjectile>::s_table)
-RVA_DYNINIT(0x000df920, 0x15, CActRegPool<CProjectile>::s_table)
-RVA_DYNINIT(0x000df950, 0xe, CActRegPool<CProjectile>::s_table)
-RVA_DYNINIT(0x000df970, 0x1f, CActRegPool<CProjectile>::s_table)
-template<> DATA(0x0024c758)
+RVA_DYNINIT(0x000df930, 0xa, CActRegPool<CProjectile>::s_table)
+RVA_DYNINIT(0x000df950, 0x15, CActRegPool<CProjectile>::s_table)
+RVA_DYNINIT(0x000df980, 0xe, CActRegPool<CProjectile>::s_table)
+RVA_DYNINIT(0x000df9a0, 0x1f, CActRegPool<CProjectile>::s_table)
+template<> DATA(0x0024d6b0)
 CActReg CActRegPool<CProjectile>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
-RVA_DYNINIT(0x000e1790, 0xa, CActRegPool<CTimeBomb>::s_table)
-RVA_DYNINIT(0x000e17b0, 0x15, CActRegPool<CTimeBomb>::s_table)
-RVA_DYNINIT(0x000e17e0, 0xe, CActRegPool<CTimeBomb>::s_table)
-RVA_DYNINIT(0x000e1800, 0x1f, CActRegPool<CTimeBomb>::s_table)
-template<> DATA(0x0024c780)
+RVA_DYNINIT(0x000e17c0, 0xa, CActRegPool<CTimeBomb>::s_table)
+RVA_DYNINIT(0x000e17e0, 0x15, CActRegPool<CTimeBomb>::s_table)
+RVA_DYNINIT(0x000e1810, 0xe, CActRegPool<CTimeBomb>::s_table)
+RVA_DYNINIT(0x000e1830, 0x1f, CActRegPool<CTimeBomb>::s_table)
+template<> DATA(0x0024d6d8)
 CActReg CActRegPool<CTimeBomb>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 // @interleaver ??_G/??1 COMDATs - retail's kept copies sit in serialobjectfactory.obj's
 // contribution (first obj on the link line realizing these vtables; docs/link-text-layout.md).
-RVA_COMPGEN(0x00012980, 0x1e, ??_GCProjectile@@UAEPAXI@Z)
-RVA_COMPGEN(0x000129d0, 0x1e, ??_GCBoomerang@@UAEPAXI@Z)
-RVA_COMPGEN(0x00012a00, 0x5, ??1CBoomerang@@UAE@XZ)
-RVA_COMPGEN(0x00012a40, 0x1e, ??_GCTimeBomb@@UAEPAXI@Z)
-RVA_COMPGEN(0x00012a70, 0x44, ??1CTimeBomb@@UAE@XZ)
+RVA_COMPGEN(0x00012990, 0x1e, ??_GCProjectile@@UAEPAXI@Z)
+RVA_COMPGEN(0x000129e0, 0x1e, ??_GCBoomerang@@UAEPAXI@Z)
+RVA_COMPGEN(0x00012a10, 0x5, ??1CBoomerang@@UAE@XZ)
+RVA_COMPGEN(0x00012a50, 0x1e, ??_GCTimeBomb@@UAEPAXI@Z)
+RVA_COMPGEN(0x00012a80, 0x44, ??1CTimeBomb@@UAE@XZ)
 
-RVA_COMPGEN(0x00058ba0, 0x1, ??1CMotionState@@QAE@XZ)
+RVA_COMPGEN(0x00058a70, 0x1, ??1CMotionState@@QAE@XZ)
 
 // @early-stop
-RVA(0x000dec60, 0x255)
+RVA(0x000dec90, 0x255)
 CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner), CWapX(owner) {
     SET_OBJECT_FLAGS_AND_HIDE_INLINE(0x2000002)
     CWwdSpriteObject* o = m_object;
@@ -110,7 +110,7 @@ CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner), CWapX(owner)
     m_shadow = NULL;
 }
 
-RVA(0x000def60, 0xbc)
+RVA(0x000def90, 0xbc)
 CProjectile::~CProjectile() {
     if (m_sound != NULL) {
         m_sound->StopAndRewind();
@@ -144,7 +144,7 @@ static inline CWwdSpriteObject* LookupSerialRef(CMapPtrToPtr& byId, i32 id) {
 }
 
 // @early-stop
-RVA(0x000df050, 0x6ed)
+RVA(0x000df080, 0x6ed)
 i32 CProjectile::LoadProjectileSprites(
     PickupType kind,
     i32 sourcePlayerIndex,
@@ -217,7 +217,7 @@ i32 CProjectile::LoadProjectileSprites(
 
     m_frames[0] = LookupAnim(
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
-        key + DATA_COMPGEN(0x00213658, "1")
+        key + DATA_COMPGEN(0x002145f0, "1")
         );
     if (m_frames[0] == NULL) {
         return 0;
@@ -293,7 +293,7 @@ static inline CActHandler* ProjActLookup(i32 coord) {
     return (CActRegPool<CProjectile>::s_table.ResolveEntry(coord));
 }
 
-RVA(0x000df9a0, 0x102)
+RVA(0x000df9d0, 0x102)
 void CProjectile::FireActivation(i32 coord) {
     CActHandler* e = ProjActLookup(coord);
     if ((*e) != NULL) {
@@ -301,7 +301,7 @@ void CProjectile::FireActivation(i32 coord) {
     }
 }
 
-RVA(0x000dfb00, 0x18d)
+RVA(0x000dfb30, 0x18d)
 void CProjectile::RegisterType() {
     ACT_NAME_ID(id, "A")
     *ProjActLookup(id) =
@@ -309,7 +309,7 @@ void CProjectile::RegisterType() {
 }
 
 // @early-stop
-RVA(0x000dfd00, 0x70c)
+RVA(0x000dfd30, 0x70c)
 void CProjectile::AdvanceMotion() {
     if (m_arrived != false) {
         return;
@@ -513,7 +513,7 @@ animate:
     SwitchAnimation(sprite);
 }
 
-RVA(0x000e05e0, 0x4e)
+RVA(0x000e0610, 0x4e)
 i32 CProjectile::AdvanceAnimationAndDeleteWhenComplete() {
     m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
 
@@ -525,14 +525,14 @@ i32 CProjectile::AdvanceAnimationAndDeleteWhenComplete() {
     return 0;
 }
 
-RVA(0x000e0650, 0x2b)
+RVA(0x000e0680, 0x2b)
 CBoomerang::CBoomerang(CGameObject* owner) : CProjectile(owner) {
 
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
 }
 
 // @early-stop
-RVA(0x000e0690, 0x1a9)
+RVA(0x000e06c0, 0x1a9)
 i32 CBoomerang::LoadProjectileSprites(
     PickupType kind,
     i32 sourcePlayerIndex,
@@ -587,7 +587,7 @@ i32 CBoomerang::LoadProjectileSprites(
 }
 
 // @early-stop
-RVA(0x000e08b0, 0x1de)
+RVA(0x000e08e0, 0x1de)
 void CBoomerang::AdvanceMotion() {
     if (m_launched == false && m_phase > g_boomerangHalfTurnRadians) {
         m_object->m_screenX = m_targetPxX;
@@ -624,7 +624,7 @@ void CBoomerang::AdvanceMotion() {
     }
 }
 
-RVA(0x000e0b10, 0x1bd)
+RVA(0x000e0b40, 0x1bd)
 void CProjectile::ScanTargets(i32 impact) {
     i32 playerIndex = 0;
     RECT box;
@@ -707,7 +707,7 @@ void CProjectile::ScanTargets(i32 impact) {
 }
 
 // @early-stop
-RVA(0x000e0d40, 0x6c2)
+RVA(0x000e0d70, 0x6c2)
 i32 CProjectile::SerializeDispatch(
     CFileMemBase* s,
     SerialMode mode,
@@ -868,7 +868,7 @@ i32 CProjectile::SerializeDispatch(
     return 1;
 }
 
-RVA(0x000e15d0, 0x155)
+RVA(0x000e1600, 0x155)
 i32 CBoomerang::SerializeDispatch(
     CFileMemBase* ar,
     SerialMode mode,
@@ -907,7 +907,7 @@ static inline CActHandler* TBombLookup(i32 coord) {
     return (CActRegPool<CTimeBomb>::s_table.ResolveEntry(coord));
 }
 
-RVA(0x000e1830, 0x102)
+RVA(0x000e1860, 0x102)
 void CTimeBomb::FireActivation(i32 coord) {
     CActHandler* e = TBombLookup(coord);
     if ((*e) != NULL) {
@@ -916,7 +916,7 @@ void CTimeBomb::FireActivation(i32 coord) {
     }
 }
 
-RVA(0x000e1990, 0x18d)
+RVA(0x000e19c0, 0x18d)
 void CTimeBomb::RegisterActs() {
     ACT_NAME_ID(id, "A")
     *(TBombLookup(id)) = static_cast<CActHandler>(&CTimeBomb::UpdateCountdown);
@@ -924,7 +924,7 @@ void CTimeBomb::RegisterActs() {
 
 // @early-stop
 
-RVA(0x000e1b90, 0x23d)
+RVA(0x000e1bc0, 0x23d)
 CTimeBomb::CTimeBomb(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj), m_startTime(0), m_duration(0) {
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
@@ -975,7 +975,7 @@ static inline void TBombGridClear(CGameObject* obj) {
 }
 
 // @early-stop
-RVA(0x000e1e60, 0x1ac)
+RVA(0x000e1e90, 0x1ac)
 i32 CTimeBomb::UpdateCountdown() {
     i32 cell = TBombGridCell(m_object);
     if ((cell & BRICKZ_BLOCKED_MASK) || (cell & IDX(CELL_FLAG_SPECIAL))) {
@@ -1005,7 +1005,7 @@ i32 CTimeBomb::UpdateCountdown() {
     return 0;
 }
 
-RVA(0x000e2080, 0xc1)
+RVA(0x000e20b0, 0xc1)
 i32 CTimeBomb::SerializeDispatch(
     CFileMemBase* arc,
     SerialMode mode,
@@ -1028,7 +1028,7 @@ i32 CTimeBomb::SerializeDispatch(
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_FROM(arc, sa, mode, typeId, object)
 }
 
-RVA(0x000e2190, 0x83)
+RVA(0x000e21c0, 0x83)
 i32 CProjectile::LaunchSound(const char* key) {
     CGruntzMgr* gameMgr;
     CDDrawSurfaceMgr* world;

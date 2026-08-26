@@ -51,7 +51,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-RVA(0x000350d0, 0xfa)
+RVA(0x00035060, 0xfa)
 i32 CBattlezMapConfig::RepathToFreeCell(CGrunt* unit) {
     if (static_cast<u32>(unit->m_dwell) > static_cast<u32>(m_repathBudget)) {
         CGruntPuddle* best = NULL;
@@ -86,7 +86,7 @@ i32 CBattlezMapConfig::RepathToFreeCell(CGrunt* unit) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00035210, 0x4f)
+RVA(0x000351a0, 0x4f)
 i32 CBattlezMapConfig::ProbeUnoccupiedAt(i32 x, i32 y) {
     CPtrList& lst = m_ctx->m_triggerMgr->m_baseList;
     POSITION pos = lst.GetHeadPosition();
