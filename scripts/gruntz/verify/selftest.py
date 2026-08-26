@@ -1097,7 +1097,7 @@ class InlineModelGapArgumentControls(unittest.TestCase):
         self.assertNotIn("spec JSON missing", err)
 
     @staticmethod
-    def _repeated_site_gap(defined):
+    def _repeated_site_gap(symbol_state):
         import contextlib
         import io
         from types import SimpleNamespace
@@ -1115,7 +1115,9 @@ class InlineModelGapArgumentControls(unittest.TestCase):
                 self.path = path
 
             def iter_symbols(self):
-                return [(0, 0, 1 if defined else 0)]
+                if symbol_state == "absent":
+                    return []
+                return [(0, 0, 1 if symbol_state == "defined" else 0)]
 
             def sym_name(self, _index):
                 return callee
@@ -1142,19 +1144,28 @@ class InlineModelGapArgumentControls(unittest.TestCase):
                     raise AssertionError("gap_from_rva failed")
         return out.getvalue()
 
-    def test_a_fewer_call_delta_to_an_undefined_callee_is_tail_sharing(self):
-        """The real DeactivateOutside shape: an undefined external cannot be
-        expanded, so target 4/base 2 means duplicated retail call sites."""
-        text = self._repeated_site_gap(defined=False)
-        self.assertIn("NOT A CANDIDATE: UNDEFINED external", text)
-        self.assertIn("tail-merged in base", text)
-        self.assertNotIn("base EXPANDS where retail calls", text)
+    def test_an_undefined_symbol_does_not_prove_tail_sharing(self):
+        """NEGATIVE control: a declined header inline can remain undefined,
+        so the symbol table alone cannot turn a call delta into tail sharing."""
+        text = self._repeated_site_gap("undefined")
+        self.assertIn("AMBIGUOUS: UNDEFINED external", text)
+        self.assertNotIn("NOT A CANDIDATE", text)
+        self.assertNotIn("tail-merged in base", text)
+
+    def test_an_absent_symbol_allows_a_fully_expanded_header_inline(self):
+        """Integration control for CGruntzMgr::Run's pcount/out_waiting shape:
+        base can expand every local site and therefore have no symbol row."""
+        text = self._repeated_site_gap("absent")
+        self.assertIn("symbol absent from the base obj", text)
+        self.assertIn("consistent with full", text)
+        self.assertNotIn("NOT A CANDIDATE", text)
 
     def test_a_fewer_call_delta_to_a_defined_comdat_can_be_expansion(self):
         """Negative control: keep the old diagnosis for an inline-visible
         definition emitted by the caller's own object."""
-        text = self._repeated_site_gap(defined=True)
-        self.assertIn("base EXPANDS where retail calls", text)
+        text = self._repeated_site_gap("defined")
+        self.assertIn("INLINE-VISIBLE", text)
+        self.assertIn("Expansion is possible", text)
         self.assertNotIn("tail-merged in base", text)
 
 

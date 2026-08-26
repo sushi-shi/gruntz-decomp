@@ -28,9 +28,9 @@ USAGE
     gruntz walls inline-model --selftest
     gruntz walls inline-model --spec sites.json [--json]
     gruntz walls inline-model --gap sites.json  [--json]
-    gruntz walls inline-model --gap 0x08b960    # the address form: the
-                                      # call-set delta + each site's /Ob1
-                                      # candidacy, derived, no cb needed
+    gruntz walls inline-model --gap 0x08b960    # the address form: call-set
+                                      # delta + base-obj symbol evidence;
+                                      # undefined/absent remains ambiguous
     gruntz walls inline-model --measure-cb h.cpp --fn CALLEE \\
         --caller CALLER --sites N     # titrate cb with the real cl 5.0
                                       # (harness: --gen-harness)
@@ -387,7 +387,7 @@ def _load_spec(path: Path):
 
 
 def gap_from_rva(token: str) -> int:
-    """`--gap <rva>`: name the call-set delta and screen each site's CANDIDACY.
+    """`--gap <rva>`: name the call-set delta and report candidacy evidence.
 
     CLAUDE.md points every inline/call-set wall at this verb, but the only form
     it had took a spec JSON of front-end `cb` estimates - numbers nobody has for
@@ -398,12 +398,13 @@ def gap_from_rva(token: str) -> int:
 
       1. WHICH callees differ, from the same normalized pair `walls diagnose`
          reads;
-      2. whether each one is an inline CANDIDATE in this TU, from our own base
-         obj's symbol table.  `/O2` implies `/Ob1`, so an unmarked, out-of-line
-         callee is never expanded at any budget: if the symbol is UNDEFINED in
-         the obj that calls it, growing the caller cannot help and the fix is
-         to make the definition inline-visible.  Only a callee the TU already
-         emitted as its own COMDAT is a live candidate that the budget declined.
+      2. what our own base obj's symbol table proves. A locally defined COMDAT
+         positively proves inline visibility. An UNDEFINED symbol does not
+         prove the opposite: a header inline may expand at one site and leave
+         an external reference at a declined or nested site. An absent symbol
+         is likewise consistent with every local site expanding. `/O2` still
+         implies `/Ob1`; source declarations, an `/Ob0` census, or ordered
+         call-site topology must settle the ambiguous cases.
 
     The `cb` arithmetic still needs `cb`, and this refuses to invent one:
     measure it with `--measure-cb` and pass a spec.  A guessed budget deficit
@@ -437,6 +438,7 @@ def gap_from_rva(token: str) -> int:
         calls[tag] = Counter(n for n, _a in _call_targets(rel, asm, b.name))
 
     obj = Obj(base_p)
+    symbols = {obj.sym_name(i) for i, _v, _sn in obj.iter_symbols()}
     defined = {obj.sym_name(i) for i, _v, sn in obj.iter_symbols() if sn > 0}
 
     print(f"[budget-gap] {b.name}  [{b.unit}]  rva 0x{b.rva:06x}")
@@ -452,31 +454,44 @@ def gap_from_rva(token: str) -> int:
         print(f"  {n}\n      target {tn}, base {bn}   ({side})")
         if bn > tn:
             if n in defined:
-                print("      CANDIDATE: this TU emits its own COMDAT for it, so"
-                      " it is inline-visible and the\n"
-                      "                 budget declined the site. Measure its "
-                      "cb (`--measure-cb`) and\n"
-                      "                 pass a spec to quantify the deficit.")
+                print("      INLINE-VISIBLE: this TU emits its own COMDAT. "
+                      "Candidacy is proved;\n"
+                      "                      inspect site order, then measure "
+                      "cb (`--measure-cb`) if\n"
+                      "                      the delta is a declined expansion.")
+            elif n in symbols:
+                print("      AMBIGUOUS: UNDEFINED external in this obj. It may "
+                      "be an ordinary out-of-line\n"
+                      "                 function OR a visible header inline "
+                      "with another declined/nested\n"
+                      "                 reference. Inspect the declaration, "
+                      "/Ob0 census, and site topology.")
             else:
-                print("      NOT A CANDIDATE: UNDEFINED external in this obj -"
-                      " out of line, and /O2\n"
-                      "                       implies /Ob1, so no budget "
-                      "expands it. Growing the caller\n"
-                      "                       cannot help; make the definition "
-                      "inline-visible first.")
+                print("      AMBIGUOUS: no base symbol-table row. The call-set "
+                      "delta alone cannot\n"
+                      "                 distinguish a missing site from an "
+                      "inline expansion; inspect source\n"
+                      "                 visibility and ordered site topology.")
         else:
             if n in defined:
-                print("      base EXPANDS where retail calls - the budget lever "
-                      "runs the wrong way here;\n"
-                      "                 the question is why our definition is a "
-                      "candidate and retail's was not.")
+                print("      INLINE-VISIBLE: this TU emits its own COMDAT, and "
+                      "base has fewer calls.\n"
+                      "                      Expansion is possible, but compare "
+                      "site topology before\n"
+                      "                      attributing the delta to budget.")
+            elif n in symbols:
+                print("      AMBIGUOUS: UNDEFINED external in this obj does not "
+                      "rule out a header-inline\n"
+                      "                 expansion. It also does not rule out "
+                      "tail sharing. Inspect the\n"
+                      "                 declaration, /Ob0 census, and ordered "
+                      "site topology.")
             else:
-                print("      NOT A CANDIDATE: UNDEFINED external in this obj -"
-                      " base cannot have expanded it.\n"
-                      "                       The target has duplicated call "
-                      "sites that C2 tail-merged in base;\n"
-                      "                       reconstruct the caller's block "
-                      "layout, not an inline budget.")
+                print("      AMBIGUOUS: symbol absent from the base obj. This is "
+                      "consistent with full\n"
+                      "                 expansion OR with no corresponding "
+                      "source site; compare the local\n"
+                      "                 expansion and tail-sharing topology.")
     return 0
 
 

@@ -47,16 +47,19 @@
   then regalloc/scheduling (same calls and skeleton: instruction selection,
   lifetime, or allocation).
 - Per class, the proven levers:
-  * inline/call-set: `gruntz walls inline-model --gap <rva>` FIRST screens
-    /Ob1 CANDIDACY, which decides whether the budget question applies at
-    all: `/O2` implies `/Ob1`, so a callee that is an UNDEFINED external in
-    our own base obj cannot be expanded at ANY budget, and a call-set delta
-    naming one is a DUPLICATED CALL SITE - a tail merge - not a starved
-    inline (PlaceObjectFull 0x78a50: `LoadCursorSprites` target 14 / base
-    15, not a candidate; the fix was the caller's block layout, 86.41 ->
-    90.84). Only for a callee this TU emits a COMDAT for does the budget
-    arithmetic mean anything, and there `--measure-cb` titrates it with the
-    real compiler. The verb refuses to invent `cb`: a guessed deficit
+  * inline/call-set: `gruntz walls inline-model --gap <rva>` FIRST names the
+    differing callees and reports the base object's symbol evidence. `/O2`
+    implies `/Ob1`, so an unmarked function cannot expand; however, an
+    UNDEFINED or absent COFF symbol does NOT prove the body was unavailable.
+    Header inlines can expand at one site while a nested or declined site
+    remains external, and delinking can also erase the provider distinction.
+    A locally defined COMDAT positively proves inline visibility; otherwise
+    inspect the source declaration, `/Ob0` census, nested helper boundary, and
+    ordered call-site topology before choosing budget versus duplicated-site
+    work. PlaceObjectFull 0x78a50's `LoadCursorSprites` delta was proved to be
+    a tail merge by its caller block layout, not by the undefined symbol.
+    After candidacy is independently established, `--measure-cb` titrates it
+    with the real compiler. The verb refuses to invent `cb`: a guessed deficit
     printed as model output is indistinguishable from a measured one.
   * front-end TU-state: the cl 5.0 IL tap (capture `/d1il`, feed `/d2il`;
     recipe and normalization in the tu-state-probe pattern's quantified

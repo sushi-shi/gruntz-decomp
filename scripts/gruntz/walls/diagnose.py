@@ -244,8 +244,8 @@ def diagnose(token: str, show_asm: bool = False) -> int:
             else:
                 print(f"    base calls, target expanded/lacks:  {n}")
         print(f"  lever: gruntz walls inline-model --gap 0x{b.rva:06x} "
-              f"(/Ob1 candidacy per site; an UNDEFINED callee is not a "
-              f"candidate at any budget)")
+              f"(defined COMDAT proves /Ob1 visibility; undefined/absent "
+              f"symbols remain ambiguous)")
     elif wall == "cfg":
         print(f"  class: CFG - branch/return skeleton differs "
               f"(base {bbr}/{bret}, target {tbr}/{tret}); a structural "

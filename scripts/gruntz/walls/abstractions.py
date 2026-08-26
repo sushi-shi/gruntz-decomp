@@ -62,7 +62,7 @@ LEVEL_ORDER = {
 NEXT_ACTION = {
     "identity": "adjudicate ordered referents and repair the owner/alias claim",
     "object": "adjudicate the named aggregate/type lead against its instruction neighbourhood",
-    "call": "run inline-model --gap; distinguish /Ob1 candidacy from a duplicated call site",
+    "call": "run inline-model --gap; combine COMDAT, source, /Ob0, and site-topology evidence",
     "textual": "Cartesian-test authentic inline, macro, and open-code origins before local spelling",
     "algorithm": "reconstruct the first CFG delta: arm, loop, return, or tail-sharing shape",
     "expression": "run semdiff, then test source origin before schedule/regalloc permutations",

@@ -1,9 +1,9 @@
-# An INLINE/CALL-SET class with an UNDEFINED callee is a duplicated CALL SITE, not a budget
+# An undefined COFF symbol does not settle inline candidacy
 tags: cpp:inline cpp:call | asm:call asm:jmp | topic:codegen-idiom topic:tooling
 symptoms: `walls diagnose` says INLINE/CALL-SET with a REPEATED-SITE DELTA, one
 side calls the same callee N+1 times, inline-model, /Ob1, budget deficit,
 finish-the-caller, `spec JSON missing`
-confidence: 10/10 (derived, not estimated - the obj's own symbol table)
+confidence: 10/10 (controlled source A/B plus base-object code and symbols)
 
 `gruntz walls diagnose` reports `INLINE/CALL-SET` whenever the two sides' call
 multisets differ, and CLAUDE.md points that class at
@@ -16,41 +16,61 @@ only one of them is an inline decision:
    late **tail-merge / cross-jump** decision, where two arms end in an identical
    suffix on one side and not the other. Nothing about inlining is involved.
 
-`REPEATED-SITE DELTA: target 14, base 15` is shape (2) far more often than (1),
-and reading it as (1) sends you into budget arithmetic that cannot move it.
+The call counts alone do not distinguish these shapes. Reading either one off
+the symbol table sends the campaign toward a source lever the evidence did not
+select.
 
-## The screen is exact and takes no measurement
+## What the symbol table proves—and what it does not
 
 `/O2` implies `/Ob1`: cl 5.0 never auto-inlines an unmarked function at any
-definition position. So a callee that is an **UNDEFINED external in the obj that
-calls it** is not an inline candidate at ANY budget - there is no body in the
-TU to expand. Only a callee this TU already emitted as **its own COMDAT** is a
-live candidate the budget declined.
+definition position. A callee emitted as a **defined COMDAT** in the caller's
+object therefore positively proves that an inline body was visible.
+
+The inverse is false. An **UNDEFINED** row can be left by another declined or
+nested call to an otherwise visible header inline. A callee can also be absent
+from the symbol table because every local site expanded. Retail delinking adds
+another reason not to invert the test: selected library and header-inline bodies
+are deliberately represented as externals. See
+[retail-obj-externals-prove-mfc-inlines-were-off.md](retail-obj-externals-prove-mfc-inlines-were-off.md).
 
     gruntz walls inline-model --gap <rva>
 
-names the delta from the same normalized pair `diagnose` reads and screens each
-site against our own base obj's symbol table:
+names the delta from the same normalized pair `diagnose` reads and reports this
+one-way symbol evidence. Undefined and absent rows are deliberately
+**AMBIGUOUS**; settle them from the source declaration, an `/Ob0` census, the
+nested helper boundary, and ordered call-site topology.
 
-    [budget-gap] ?PlaceObjectFull@CTriggerMgr@@QAEHHH@Z  [triggermgr]  rva 0x078a50
-      ?LoadCursorSprites@CPlay@@QAEHHH@Z
-          target 14, base 15   (base calls MORE)
-          NOT A CANDIDATE: UNDEFINED external in this obj - out of line, and /O2
-                           implies /Ob1, so no budget expands it.
+## The falsifying integration case
 
-    [budget-gap] ?TransitionState@CGruntzMgr@@QAEHW4GameStateId@@HHH@Z  [gruntzmgr]
-      ??0ClockInterval@CPlay@@QAE@XZ
-          target 0, base 7   (base calls MORE)
-          CANDIDATE: this TU emits its own COMDAT for it ...
+`CGruntzMgr::Run` 0x83450 constructs an encrypted Bute stream. The natural
+source abstraction is:
 
-Two rows, two different answers, neither of which needs a `cb` estimate.
+```cpp
+g_buteMgr.m_stream = new istrstream(decoded, snk->pcount());
+```
+
+MSVC's `ostrstream::pcount()` inline calls
+`streambuf::out_waiting()`. In our current TU both levels expand, so the base
+object has **no `out_waiting` symbol row** and emits two `istrstream`
+constructor sites after expanding `out_waiting`'s conditional. Retail expands
+`pcount()` but declines its nested `out_waiting()` call, emitting one external
+call and one constructor. The direct-expression and `pcount()` source A/B are
+currently byte-identical on our side, proving that absence from the base symbol
+table cannot mean “not a candidate.”
+
+This also explains why a nested-site model matters: the outer accessor can be
+accepted while the callee inside it is declined. Do not replace the authentic
+accessor with its low-level expansion just because current C2 recursively
+inlines both.
 
 ## What to do with shape (2)
 
 Find which two arms retail shares and we duplicate (or the reverse), and read
 the ONE instruction that makes the tails differ - the merger is exact, so a
 single mismatched instruction in the suffix is enough for it to decline.
-`CTriggerMgr::PlaceObjectFull` 0x78a50: retail shares the vehicle preview's two
+`CTriggerMgr::PlaceObjectFull` 0x78a50 is still shape (2), but the proof is its
+code rather than its undefined `LoadCursorSprites` symbol. Retail shares the
+vehicle preview's two
 `LoadCursorSprites`, both arms ending `push <arg>` and jumping to a common
 `mov ebp,<world>; mov ecx,ebp; call`. Ours materialises `world` in EBP inside
 the true arm BEFORE its call and loads the receiver straight into ECX in the

@@ -7,10 +7,11 @@
     gruntz walls diagnose <fn>    classify one wall from the normalized pair:
                                   referent -> inline/call-set -> cfg -> regalloc
     gruntz walls inline-model     the cl 5.0 inline-budget model. `--gap <rva>`
-                                  names the call-set delta and screens each
-                                  site's /Ob1 candidacy from our own base obj -
-                                  an UNDEFINED callee is not a candidate at any
-                                  budget, so finishing the caller cannot help.
+                                  names the call-set delta and reports the base
+                                  obj's candidacy evidence. A defined COMDAT
+                                  proves inline visibility; an undefined or
+                                  absent symbol is ambiguous and needs source,
+                                  /Ob0, or call-site-topology evidence.
                                   `--gap <spec.json>` quantifies the deficit
                                   once cb is known; --measure-cb titrates cb
                                   with the real compiler
