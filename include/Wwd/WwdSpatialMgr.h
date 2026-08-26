@@ -5,6 +5,7 @@
 
 #include <Gruntz/WwdGridIter.h>
 #include <Ints.h>
+#include <Wwd/WwdGameObjectFlags.h>
 
 class CDDrawChildGroup;
 class CWwdGrid;
@@ -45,6 +46,13 @@ struct CWwdSpatialMgr {
     i32 ActivateAt(i32 centerX, i32 centerY);
     i32 ActivateKeepActiveObjects();
     i32 ActivateKeepActiveFromGrid(CWwdGrid* grid);
+    i32 DeactivateRegionObject(
+        CWwdGrid* grid,
+        POSITION pos,
+        CWwdGameObject* obj,
+        WwdRegion* region,
+        WwdGameObjectFlags flags
+    );
     i32 DeactivateOutside(i32 centerX, i32 centerY);
     i32 PruneCount();
     void ParkObject(CWwdGameObject* obj);

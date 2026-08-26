@@ -11,6 +11,37 @@
 #include <Wap32/Object.h>
 #include <Wwd/LogicRecordEvent.h>
 
+inline i32 CWwdSpatialMgr::DeactivateRegionObject(
+    CWwdGrid* grid,
+    POSITION pos,
+    CWwdGameObject* obj,
+    WwdRegion* region,
+    WwdGameObjectFlags flags
+) {
+    if (HAS(flags, WWD_GAME_OBJECT_FLAG_DELETE_ON_DEACTIVATE)) {
+        if (HAS(flags, WWD_GAME_OBJECT_FLAG_DISPATCH_OBJECT_REMOVED)) {
+            CLogicRecord* record = obj->m_logicRecord;
+            record->SetLogicEvent(ACT_OBJECT_REMOVED);
+            record->m_dispatch(obj);
+        }
+        m_activeGroup->RemoveAll(pos, obj);
+        delete obj;
+    } else {
+        if (HAS(flags, WWD_GAME_OBJECT_FLAG_DISPATCH_LEAVE_ACTIVE_REGION)) {
+            CLogicRecord* record = obj->m_logicRecord;
+            i32 saved = record->EventCode();
+            record->SetLogicEvent(ACT_LEAVE_ACTIVE_REGION);
+            record->m_dispatch(obj);
+            if (record->LogicEvent() == ACT_LEAVE_ACTIVE_REGION) {
+                record->SetEventCode(saved);
+            }
+        }
+        m_activeGroup->RemoveByPosition(pos, region->m_object);
+        grid->Add(region);
+    }
+    return 1;
+}
+
 RVA_COMPGEN(0x00163a20, 0x1e, ??_GCWwdGridIter@@UAEPAXI@Z)
 RVA(0x001682f0, 0x4a)
 void CWwdSpatialMgr::FreeGrids() {
@@ -92,9 +123,10 @@ RVA(0x00168500, 0x3af)
 i32 CWwdSpatialMgr::DeactivateOutside(i32 centerX, i32 centerY) {
     i32 count = 0;
     i32 lo0x = centerX - m_defaultRegionHalfWidth;
-    i32 hi0x = m_defaultRegionHalfWidth + centerX;
     i32 lo0y = centerY - m_defaultRegionHalfHeight;
+    i32 hi0x = m_defaultRegionHalfWidth + centerX;
     i32 hi0y = m_defaultRegionHalfHeight + centerY;
+    CWwdGrid* grid;
     i32 lo1x = centerX - m_largeRegionHalfWidth;
     i32 lo1y = centerY - m_largeRegionHalfHeight;
     i32 hi1x = centerX + m_largeRegionHalfWidth;
@@ -152,85 +184,25 @@ i32 CWwdSpatialMgr::DeactivateOutside(i32 centerX, i32 centerY) {
             WwdGameObjectFlags flags = static_cast<WwdGameObjectFlags>(obj->m_flags);
             i32 result;
             if (HAS(flags, WWD_GAME_OBJECT_FLAG_LARGE_ACTIVE_REGION)) {
-                CWwdGrid* grid = m_largeRegionGrid;
+                grid = m_largeRegionGrid;
                 if (x >= lo1x && y >= lo1y && x <= hi1x && y <= hi1y) {
                     result = 0;
-                } else if (HAS(flags, WWD_GAME_OBJECT_FLAG_DELETE_ON_DEACTIVATE)) {
-                    if (HAS(flags, WWD_GAME_OBJECT_FLAG_DISPATCH_OBJECT_REMOVED)) {
-                        CLogicRecord* record = obj->m_logicRecord;
-                        record->SetLogicEvent(ACT_OBJECT_REMOVED);
-                        record->m_dispatch(obj);
-                    }
-                    m_activeGroup->RemoveAll(cur, obj);
-                    delete obj;
-                    result = 1;
                 } else {
-                    if (HAS(flags, WWD_GAME_OBJECT_FLAG_DISPATCH_LEAVE_ACTIVE_REGION)) {
-                        CLogicRecord* record = obj->m_logicRecord;
-                        i32 saved = record->EventCode();
-                        record->SetLogicEvent(ACT_LEAVE_ACTIVE_REGION);
-                        record->m_dispatch(obj);
-                        if (record->LogicEvent() == ACT_LEAVE_ACTIVE_REGION) {
-                            record->SetEventCode(saved);
-                        }
-                    }
-                    m_activeGroup->RemoveByPosition(cur, r->m_object);
-                    grid->Add(r);
-                    result = 1;
+                    result = DeactivateRegionObject(grid, cur, obj, r, flags);
                 }
             } else if (HAS(flags, WWD_GAME_OBJECT_FLAG_SMALL_ACTIVE_REGION)) {
-                CWwdGrid* grid = m_smallRegionGrid;
+                grid = m_smallRegionGrid;
                 if (x >= lo2x && y >= lo2y && x <= hi2x && y <= hi2y) {
                     result = 0;
-                } else if (HAS(flags, WWD_GAME_OBJECT_FLAG_DELETE_ON_DEACTIVATE)) {
-                    if (HAS(flags, WWD_GAME_OBJECT_FLAG_DISPATCH_OBJECT_REMOVED)) {
-                        CLogicRecord* record = obj->m_logicRecord;
-                        record->SetLogicEvent(ACT_OBJECT_REMOVED);
-                        record->m_dispatch(obj);
-                    }
-                    m_activeGroup->RemoveAll(cur, obj);
-                    delete obj;
-                    result = 1;
                 } else {
-                    if (HAS(flags, WWD_GAME_OBJECT_FLAG_DISPATCH_LEAVE_ACTIVE_REGION)) {
-                        CLogicRecord* record = obj->m_logicRecord;
-                        i32 saved = record->EventCode();
-                        record->SetLogicEvent(ACT_LEAVE_ACTIVE_REGION);
-                        record->m_dispatch(obj);
-                        if (record->LogicEvent() == ACT_LEAVE_ACTIVE_REGION) {
-                            record->SetEventCode(saved);
-                        }
-                    }
-                    m_activeGroup->RemoveByPosition(cur, r->m_object);
-                    grid->Add(r);
-                    result = 1;
+                    result = DeactivateRegionObject(grid, cur, obj, r, flags);
                 }
             } else {
-                CWwdGrid* grid = m_defaultRegionGrid;
+                grid = m_defaultRegionGrid;
                 if (x >= lo0x && y >= lo0y && x <= hi0x && y <= hi0y) {
                     result = 0;
-                } else if (HAS(flags, WWD_GAME_OBJECT_FLAG_DELETE_ON_DEACTIVATE)) {
-                    if (HAS(flags, WWD_GAME_OBJECT_FLAG_DISPATCH_OBJECT_REMOVED)) {
-                        CLogicRecord* record = obj->m_logicRecord;
-                        record->SetLogicEvent(ACT_OBJECT_REMOVED);
-                        record->m_dispatch(obj);
-                    }
-                    m_activeGroup->RemoveAll(cur, obj);
-                    delete obj;
-                    result = 1;
                 } else {
-                    if (HAS(flags, WWD_GAME_OBJECT_FLAG_DISPATCH_LEAVE_ACTIVE_REGION)) {
-                        CLogicRecord* record = obj->m_logicRecord;
-                        i32 saved = record->EventCode();
-                        record->SetLogicEvent(ACT_LEAVE_ACTIVE_REGION);
-                        record->m_dispatch(obj);
-                        if (record->LogicEvent() == ACT_LEAVE_ACTIVE_REGION) {
-                            record->SetEventCode(saved);
-                        }
-                    }
-                    m_activeGroup->RemoveByPosition(cur, r->m_object);
-                    grid->Add(r);
-                    result = 1;
+                    result = DeactivateRegionObject(grid, cur, obj, r, flags);
                 }
             }
             count += result;
