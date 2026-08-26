@@ -24,6 +24,7 @@
 #include <Image/CImage.h>
 #include <Image/ImageSet.h>
 #include <Io/FileMem.h>
+#include <MakeRect.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/WapObj.h>
 #include <Wwd/WwdSpatialMgr.h>
@@ -410,8 +411,6 @@ void CDDrawWorkerHost::Draw(CDDrawSurfacePair* ctx) {
     if ((m_flags & IDX(WWD_PLANE_FLAG_NO_DRAW)) != 0) {
         return;
     }
-    CDDSurface* surf = ctx->m_surface;
-
     i32 colL = m_planeViewRect.left >> m_shiftX;
     i32 leftW = ((colL + 1) << m_shiftX) - m_planeViewRect.left;
     i32 rowT = m_planeViewRect.top >> m_shiftY;
@@ -420,21 +419,21 @@ void CDDrawWorkerHost::Draw(CDDrawSurfacePair* ctx) {
     i32 rightW = m_planeViewRect.right - (colR << m_shiftX) + 1;
     i32 rowB = m_planeViewRect.bottom >> m_shiftY;
     i32 botH = m_planeViewRect.bottom - (rowB << m_shiftY) + 1;
-    i32 nCols = colR - colL - 1;
-    i32 nRows = rowB - rowT - 1;
-
-    RECT topSrc = {0, m_tileHeightPx - topH, m_tileWidthPx, m_tileHeightPx};
-    RECT leftSrc = {m_tileWidthPx - leftW, 0, m_tileWidthPx, m_tileHeightPx};
+    RECT topSrc = MakeRect(0, m_tileHeightPx - topH, m_tileWidthPx, m_tileHeightPx);
+    RECT leftSrc = MakeRect(m_tileWidthPx - leftW, 0, m_tileWidthPx, m_tileHeightPx);
     RECT rightSrc = {0, 0, rightW, m_tileHeightPx};
     RECT corner;
     RECT dr;
+    CDDSurface* surf = ctx->m_surface;
+    i32 nCols = colR - colL - 1;
+    i32 nRows = rowB - rowT - 1;
 
     i32 x, y, col, row, i;
     i32 rowBase;
 
     y = m_viewportRect.top;
-    x = m_viewportRect.left;
     rowBase = m_tileRowOffsets[rowT];
+    x = m_viewportRect.left;
     corner.left = m_tileWidthPx - leftW;
     corner.top = m_tileHeightPx - topH;
     corner.right = m_tileWidthPx;
