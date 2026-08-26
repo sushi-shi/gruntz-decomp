@@ -138,6 +138,9 @@ def base_flags(msvc_inc: Path, dx_inc: Path,
         # `&Temporary()` is MSVC C4238, a nonstandard extension the retail
         # sources use; clang errors on it by default.
         "-Wno-address-of-temporary",
+        # VC5 accepts SDK HRESULT macros such as DIERR_INSUFFICIENTPRIVS as
+        # signed switch labels even when their `long` literal is unsigned.
+        "-Wno-c++11-narrowing",
         # MFC's headers only parse under MSVC's lazy template semantics.
         "-fdelayed-template-parsing",
         "/imsvc", str(dx_low),

@@ -136,6 +136,13 @@ annotation — no positional join) plus the clang AST for `extern` declarations
 IR drops, and every emitted name is authorized against the unit's own base
 object: a name cl did not emit is DROPPED and reported, never claimed.
 
+The extraction front end reads the VC5 source dialect, not modern C++
+portability policy. Its shared clang flags demote two constructs VC5 accepts
+but clang otherwise rejects: taking the address of a temporary and using a
+signed `switch` with an unsigned `0x80000000`-range SDK HRESULT case macro.
+The latter keeps `case DDERR_*`/`DIERR_*`/`DSERR_*` source intact instead of
+requiring a cast around every label.
+
 `gruntz model` is the one join. Claims (from `src/`) and provider tables (from
 `config/retail/`) are resolved against the base censuses by channel precedence:
 

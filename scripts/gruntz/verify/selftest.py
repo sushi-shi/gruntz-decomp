@@ -16,6 +16,7 @@ tree is unbuilt).
 from __future__ import annotations
 
 import os
+import shutil
 import struct
 import sys
 import tempfile
@@ -3926,6 +3927,29 @@ class ToolDriverEnvironmentControls(unittest.TestCase):
 
     def _no_path(self):
         return mock.patch("shutil.which", lambda _p: None)
+
+    def test_clang_ir_accepts_vc5_unsigned_long_case_label(self):
+        """Exercise the extraction parser, not merely the flag list.
+
+        VC5 accepts DirectX SDK constants such as 0x80040200L in a signed-int
+        switch. Clang treats that conversion as a hard C++11 narrowing error
+        unless the shared compatibility flag reaches emit_ir().
+        """
+        from gruntz.tool import clang
+
+        if not shutil.which(os.environ.get("GRUNTZ_CLANG") or "clang"):
+            self.skipTest("clang unavailable")
+        with tempfile.TemporaryDirectory() as td:
+            src = Path(td) / "case_probe.cpp"
+            src.write_text(
+                "int probe(int value) {\n"
+                "    switch (value) { case 0x80040200L: return 1; }\n"
+                "    return 0;\n"
+                "}\n"
+            )
+            ir = clang.emit_ir(str(src), clang.MS_FLAGS)
+        self.assertIsNotNone(ir)
+        self.assertIn("probe", ir)
 
     def test_missing_msvc_dir_is_a_toolerror(self):
         from gruntz.tool import ToolError, wine

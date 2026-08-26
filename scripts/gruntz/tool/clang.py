@@ -27,9 +27,10 @@ COMPDB = BUILD / "clangd/compile_commands.json"
 
 TARGET = "i686-pc-windows-msvc"
 MSC_COMPAT = "1100"
-# `&Temporary()` (MSVC C4238, used by the retail sources) is a hard error in
-# clang; demote it so the probes can read a TU that uses it.
-MS_WARN = ["-Wno-address-of-temporary"]
+# Two VC5-accepted constructs are hard errors in clang: `&Temporary()`
+# (MSVC C4238) and a signed switch whose SDK case macro is an unsigned
+# 0x80000000-range `long`. Demote both so the probes read the same dialect.
+MS_WARN = ["-Wno-address-of-temporary", "-Wno-c++11-narrowing"]
 MS_FLAGS = [f"--target={TARGET}", f"-fms-compatibility-version={MSC_COMPAT}",
             "-fms-extensions", *MS_WARN]
 

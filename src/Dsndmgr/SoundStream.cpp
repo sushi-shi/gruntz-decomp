@@ -635,47 +635,47 @@ void SoundBuffer::ReportError(char* file, i32 line, i32 hr) {
     strcpy(szLine, "");
 
     switch (hr) {
-        case static_cast<i32>(0x80004001):
+        case DSERR_UNSUPPORTED:
             strcpy(szCode, "DSERR_UNSUPPORTED");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(0x80004005):
+        case DSERR_GENERIC:
             strcpy(szCode, "DSERR_GENERIC");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(0x80040110):
+        case DSERR_NOAGGREGATION:
             strcpy(szCode, "DSERR_NOAGGREGATION");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(0x8007000e):
+        case DSERR_OUTOFMEMORY:
             strcpy(szCode, "DSERR_OUTOFMEMORY");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(0x80070057):
+        case DSERR_INVALIDPARAM:
             strcpy(szCode, "DSERR_INVALIDPARAM");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(0x8878000a):
+        case DSERR_ALLOCATED:
             strcpy(szCode, "DSERR_ALLOCATED");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(0x8878001e):
+        case DSERR_CONTROLUNAVAIL:
             strcpy(szCode, "DSERR_CONTROLUNAVAIL");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(0x88780032):
+        case DSERR_INVALIDCALL:
             strcpy(szCode, "DSERR_INVALIDCALL");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(0x88780046):
+        case DSERR_PRIOLEVELNEEDED:
             strcpy(szCode, "DSERR_PRIOLEVELNEEDED");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(0x88780064):
+        case DSERR_BADFORMAT:
             strcpy(szCode, "DSERR_BADFORMAT");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(0x88780078):
+        case DSERR_NODRIVER:
             strcpy(szCode, "DSERR_NODRIVER");
             strcpy(szMsg, "No message");
             break;
@@ -683,7 +683,7 @@ void SoundBuffer::ReportError(char* file, i32 line, i32 hr) {
             strcpy(szCode, "DSERR_BUFFERLOST");
             strcpy(szMsg, "No message");
             break;
-        case static_cast<i32>(0x887800a0):
+        case DSERR_OTHERAPPHASPRIO:
             strcpy(szCode, "DSERR_OTHERAPPHASPRIO");
             strcpy(szMsg, "No message");
             break;
