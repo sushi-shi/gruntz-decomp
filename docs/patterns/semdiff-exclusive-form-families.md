@@ -1,4 +1,4 @@
-# Five instruction-form families explain most semdiff store/imm exclusives
+# Six instruction-form families explain most semdiff store/imm exclusives
 
 tags: cpp:member cpp:struct cpp:pointer | asm:mov asm:and asm:lea | topic:method topic:tooling topic:scoring-artifact
 symptoms: `walls semdiff` prints a store or imm key on ONE side of a paired
@@ -49,6 +49,16 @@ BEFORE reading an exclusive as a missing statement:
    `add reg,-N` vs `lea/sub` spellings of the same subtraction - the I4a
    lifetime reading (wall-reasons-allocation.md). Park unless the whole
    function's census says otherwise.
+
+6. **Boolean normalization vs raw DWORD storage.** A source-side
+   `value ? true : false` or `value != 0` emits `test` / `setne` / zero-extension,
+   while a direct assignment to a four-byte `BOOL`-like destination stores the
+   returned DWORD unchanged. `CGruntzMgr::Run` exposed the complete signature:
+   base-only `setne` plus `imm 0xff` immediately after the "Disable High Quality
+   Movie" registry read, while retail stores EAX directly like the adjacent
+   settings. Removing the invented normalization eliminated both exclusive keys
+   and raised 87.9545 to 88.6466. This is a source distinction, not a harmless
+   form family: preserve raw storage when the retail dataflow does.
 
 What survived as REAL after the families: a register-dataflow index bug
 (AdvanceAnim recoloring by the LOSER's m_players entry - invisible to every

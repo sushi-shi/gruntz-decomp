@@ -39,9 +39,15 @@ regimes are measured in
 [goto-fail-shares-one-exit-block.md](goto-fail-shares-one-exit-block.md): the collapse above
 is the TOTAL regime, entered because the trailing arm makes every guard reach one shared
 `return`. `goto fail;` + a trailing `fail:` label is the PARTIAL regime and shares only the
-sites that say `goto` - which is what retail's guarded functions are. Re-attack `CGruntzMgr::Run`
-with the goto spelling (25 sites keeping their inline copies, the trailing arm shared) before
-treating this as a wall.
+sites that say `goto`.
+
+**UPDATE 2026-08-26 - the proposed `Run` retry is falsified.** A controlled A/B
+put only the pool-allocation failure on `goto poolAllocationFailed`, with an
+outer scope avoiding jumps across initialized locals and all other 25 errors
+left inline. cl 5.0 emitted the same 0x192f-byte body and 87.9545 score as the
+inline baseline: the goto neither moved the first failure arm nor changed the
+exit-sharing regime. Do not retry that spelling on `Run`; the retail far target
+still needs a different source-level cause.
 
 related: [goto-fail-shares-one-exit-block.md](goto-fail-shares-one-exit-block.md) (the lever),
 [allocate-check-then-body-is-the-then-block.md](allocate-check-then-body-is-the-then-block.md),

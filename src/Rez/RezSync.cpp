@@ -138,7 +138,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_savedModeSize.cy = SCREEN_H_PX;
     m_numRuns = m_settings->GetValueDword("Num Runs", 0);
     m_numMovies = m_settings->GetValueDword("Num Movies", 0);
-    g_disableHqMovie = m_settings->GetValueDword("Disable High Quality Movie", 0) ? true : false;
+    g_disableHqMovie = m_settings->GetValueDword("Disable High Quality Movie", 0);
     g_disableAudio = m_settings->GetValueDword("Disable Audio", 0);
     g_disableSound = m_settings->GetValueDword("Disable Sound", 0);
     g_disableMusic = m_settings->GetValueDword("Disable Music", 0);
