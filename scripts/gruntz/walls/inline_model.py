@@ -465,10 +465,18 @@ def gap_from_rva(token: str) -> int:
                       "                       cannot help; make the definition "
                       "inline-visible first.")
         else:
-            print("      base EXPANDS where retail calls - the budget lever "
-                  "runs the wrong way here;\n"
-                  "                 the question is why our definition is a "
-                  "candidate and retail's was not.")
+            if n in defined:
+                print("      base EXPANDS where retail calls - the budget lever "
+                      "runs the wrong way here;\n"
+                      "                 the question is why our definition is a "
+                      "candidate and retail's was not.")
+            else:
+                print("      NOT A CANDIDATE: UNDEFINED external in this obj -"
+                      " base cannot have expanded it.\n"
+                      "                       The target has duplicated call "
+                      "sites that C2 tail-merged in base;\n"
+                      "                       reconstruct the caller's block "
+                      "layout, not an inline budget.")
     return 0
 
 

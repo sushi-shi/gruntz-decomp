@@ -1096,6 +1096,67 @@ class InlineModelGapArgumentControls(unittest.TestCase):
         err = self._err(["--gap", "0xdeadbee"])
         self.assertNotIn("spec JSON missing", err)
 
+    @staticmethod
+    def _repeated_site_gap(defined):
+        import contextlib
+        import io
+        from types import SimpleNamespace
+
+        from gruntz.delink import coffx
+        from gruntz.walls import diagnose as D
+        from gruntz.walls import inline_model
+
+        caller = "?DeactivateOutside@CWwdSpatialMgr@@QAEHHH@Z"
+        callee = "?RemoveAll@CDDrawChildGroup@@QAEXPAU__POSITION@@PAUCGameObject@@@Z"
+        binding = SimpleNamespace(unit="u", name=caller, rva=0x168500)
+
+        class FakeObj:
+            def __init__(self, path):
+                self.path = path
+
+            def iter_symbols(self):
+                return [(0, 0, 1 if defined else 0)]
+
+            def sym_name(self, _index):
+                return callee
+
+        with tempfile.TemporaryDirectory() as td:
+            norm = Path(td)
+            (norm / "base").mkdir()
+            (norm / "target").mkdir()
+            (norm / "base/u.obj").touch()
+            (norm / "target/u.c.obj").touch()
+            with mock.patch.object(D, "NORM", norm), \
+                 mock.patch.object(D, "_locate", return_value=(binding, "")), \
+                 mock.patch.object(D, "_find_function", side_effect=[
+                     (b"base", {}, 4), (b"target", {}, 4)]), \
+                 mock.patch.object(D, "_jump_table_bytes", return_value=set()), \
+                 mock.patch.object(D, "_skeleton", side_effect=[
+                     (b"base", 2, 0, 0, 1, ""),
+                     (b"target", 4, 0, 0, 1, "")]), \
+                 mock.patch.object(D, "_call_targets", side_effect=[
+                     [(callee, 0)] * 2, [(callee, 0)] * 4]), \
+                 mock.patch.object(coffx, "Obj", FakeObj), \
+                 contextlib.redirect_stdout(io.StringIO()) as out:
+                if inline_model.gap_from_rva("0x168500") != 0:
+                    raise AssertionError("gap_from_rva failed")
+        return out.getvalue()
+
+    def test_a_fewer_call_delta_to_an_undefined_callee_is_tail_sharing(self):
+        """The real DeactivateOutside shape: an undefined external cannot be
+        expanded, so target 4/base 2 means duplicated retail call sites."""
+        text = self._repeated_site_gap(defined=False)
+        self.assertIn("NOT A CANDIDATE: UNDEFINED external", text)
+        self.assertIn("tail-merged in base", text)
+        self.assertNotIn("base EXPANDS where retail calls", text)
+
+    def test_a_fewer_call_delta_to_a_defined_comdat_can_be_expansion(self):
+        """Negative control: keep the old diagnosis for an inline-visible
+        definition emitted by the caller's own object."""
+        text = self._repeated_site_gap(defined=True)
+        self.assertIn("base EXPANDS where retail calls", text)
+        self.assertNotIn("tail-merged in base", text)
+
 
 class ReviewCountClaimControls(unittest.TestCase):
     """`walls recheck` re-measures the COUNT certifications a review states.  A
