@@ -521,7 +521,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             ostrstream* snk = new ostrstream(decoded, eszLen, 2);
             g_buteMgr.m_crypt.Decode(rdr, snk);
 
-            g_buteMgr.m_stream = new istrstream(decoded, snk->rdbuf()->out_waiting());
+            g_buteMgr.m_stream = new istrstream(decoded, snk->pcount());
             delete rdr;
             delete snk;
             stream->ReleaseData();
