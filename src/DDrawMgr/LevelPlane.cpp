@@ -431,8 +431,8 @@ void CDDrawWorkerHost::Draw(CDDrawSurfacePair* ctx) {
     i32 x, y, col, row, i;
     i32 rowBase;
 
-    y = m_viewportRect.top;
     rowBase = m_tileRowOffsets[rowT];
+    y = m_viewportRect.top;
     x = m_viewportRect.left;
     corner.left = m_tileWidthPx - leftW;
     corner.top = m_tileHeightPx - topH;
