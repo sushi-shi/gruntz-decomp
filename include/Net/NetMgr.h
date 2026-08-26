@@ -12,6 +12,7 @@
 #include <Gruntz/String.h>
 #include <Ints.h>
 #include <Net/NetMsgId.h>
+#include <Net/NetPacketLayout.h>
 #include <Net/NetSlotState.h>
 #include <Rez/RezMgr.h>
 #include <Utils/RegistryHelper.h>
@@ -192,13 +193,14 @@ struct GruntRec {
     unsigned char m_entryCount;
     char m_pad09[3];
     i32 m_payloadLength;
-    char m_payload[0x410 - 0x10];
+    char m_payload[NET_COMMAND_RECORD_PAYLOAD_BYTES];
 };
 
 class CGruntzCommand;
 struct CNetPacketPrefix;
 struct CNetMsg;
 struct CNetGameConfigPacket;
+struct CNetChatPacket;
 
 union CNetWireMsg {
     char* m_bytes;
@@ -213,6 +215,7 @@ union CNetWireMsg {
     CNetVersionPacket* m_versionCheck;
     CNetCmdHdr* m_cmdHdr;
     CNetGameConfigPacket* m_gameConfig;
+    CNetChatPacket* m_chat;
 };
 
 GruntRec* AllocateGruntRecord(i32 clear);
@@ -341,7 +344,7 @@ struct CNetPacketPrefix {
 
 class CFontConfig;
 
-extern char g_recvBuffer[];
+extern char g_recvBuffer[NET_RECEIVE_BUFFER_BYTES];
 
 extern CNetOptionsStatePacket g_optionsOpenedPacket;
 extern CNetOptionsStatePacket g_optionsClosedPacket;

@@ -4,6 +4,7 @@
 #include <rva.h>
 
 #include <Ints.h>
+#include <Net/NetPacketLayout.h>
 
 class CGruntzCommand;
 
@@ -14,7 +15,7 @@ struct NetCmdSendMsg {
     i32 m_windowBase;
     i32 m_checksum;
     u8 m_entryCount;
-    u8 m_payload[0x3f2];
+    u8 m_payload[NET_COMMAND_WIRE_BUFFER_BYTES - 3 * sizeof(i32) - 2 * sizeof(u8)];
 };
 #pragma pack(pop)
 
@@ -26,11 +27,11 @@ struct NetGruntRecMsg {
     i32 m_windowBase;
     i32 m_checksum;
     u8 m_entryCount;
-    u8 m_payload[0x3f1];
+    u8 m_payload[NET_COMMAND_WIRE_BUFFER_BYTES - 3 * sizeof(i32) - 3 * sizeof(u8)];
 };
 #pragma pack(pop)
 
-extern char g_lobbyRecvBuf[0x800];
+extern char g_lobbyRecvBuf[NET_RECEIVE_BUFFER_BYTES];
 extern NetCmdSendMsg g_netCmdSendMsg;
 extern NetGruntRecMsg g_netGruntRecMsg;
 

@@ -273,10 +273,10 @@ i32 CNetSession::Poll(i32 elapsedMs) {
     }
 
     DPID senderId = 0;
-    DWORD messageSize = 0x800;
+    DWORD messageSize = sizeof(g_lobbyRecvBuf);
     i32 received = 0;
     while (status == 0 && availableCount > 0 && m_owner->m_pollAbort == false) {
-        messageSize = 0x800;
+        messageSize = sizeof(g_lobbyRecvBuf);
         IDirectPlay4A* directPlay = m_netMgr->m_directPlay;
         DPID recipientId = m_localPlayer->m_playerId;
         status =
@@ -384,13 +384,15 @@ i32 CNetSession::SendTick() {
 
                 RecordBytes<GruntRec> recordBytes;
                 recordBytes.m_rec = record;
-                payload += command->EncodePacket(payload, recordBytes.m_chars - payload + 0x410);
+                payload +=
+                    command->EncodePacket(payload, recordBytes.m_chars - payload + sizeof(*record));
             }
         }
         m_owner->WriteTag("[end]\n");
         RecordBytes<GruntRec> recordBytes;
         recordBytes.m_rec = record;
-        record->m_payloadLength = static_cast<i32>((payload - recordBytes.m_chars - 0x10));
+        record->m_payloadLength =
+            static_cast<i32>(payload - recordBytes.m_chars - offsetof(GruntRec, m_payload));
         m_batchBuilt = true;
     }
     i32 sentCount = SendPendingRecords();

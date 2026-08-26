@@ -24,7 +24,6 @@ struct CNetMsg {
     char m_pad1[3];
     NetMsgId m_messageId;
     i32 m_value;
-    char m_payload[4];
 };
 
 #endif // GRUNTZ_NET_NETPACKETS_H

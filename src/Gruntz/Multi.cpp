@@ -157,7 +157,7 @@ RVA_DYNINIT(0x000b5440, 0xa, g_gruntzLogFile)
 DATA(0x00246778)
 CFile g_gruntzLogFile;
 DATA(0x002467d8)
-char g_recvBuffer[0x800];
+char g_recvBuffer[NET_RECEIVE_BUFFER_BYTES];
 
 // @early-stop
 RVA(0x000b5460, 0x914)
@@ -1608,7 +1608,7 @@ i32 CMulti::PollSession() {
             break;
         }
 
-        DWORD messageSize = 0x800;
+        DWORD messageSize = sizeof(g_recvBuffer);
         DPID recipient = LocalPlayer()->m_playerId;
         IDirectPlay4A* directPlay = Network()->m_directPlay;
 
@@ -1707,7 +1707,7 @@ i32 CMulti::DispatchRecvMsg(i32 senderId, char* packet, i32 packetSize) {
         }
 
         case NETMSG_CHAT_LINE: {
-            char* text = msg->m_payload;
+            char* text = wire.m_chat->m_text;
             if (g_netMessageEditHwnd != NULL) {
                 AppendEditLine(g_netMessageEditHwnd, text);
                 break;

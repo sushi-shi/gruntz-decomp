@@ -24,7 +24,7 @@
 #include <string.h>
 
 DATA(0x00249858)
-char g_lobbyRecvBuf[0x800];
+char g_lobbyRecvBuf[NET_RECEIVE_BUFFER_BYTES];
 DATA(0x0024a058)
 NetCmdSendMsg g_netCmdSendMsg;
 DATA(0x0024a8a8)
