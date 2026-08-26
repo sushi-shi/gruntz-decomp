@@ -7,6 +7,12 @@ scripts/create-wine-prefix.py (provisioning) and `gruntz play` (the loop)
 write/refresh <target>/play.sh from here, so the flake, the prefix and the
 runner cannot drift apart.
 
+The command gamescope supervises is a shell wrapper rather than Wine directly.
+Wine leaves prefix services such as winedevice.exe running after the game has
+exited; gamescopereaper adopts those processes and otherwise waits for them
+forever.  The wrapper stops this dedicated game prefix's wineserver on every
+exit path, allowing gamescope to finish normally too.
+
 Import-light on purpose: create-wine-prefix.py imports this standalone,
 so nothing from the gruntz package may be pulled in here.
 """
@@ -35,10 +41,22 @@ set -euo pipefail
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 exe="${1:-GRUNTZ.EXE}"
 echo "[play] $exe md5=$(md5sum "$here/game/$exe" | cut -c1-12)"
+game_cmd=(bash -c '
+cleanup() {
+    wineserver -k >/dev/null 2>&1 || true
+}
+trap cleanup EXIT
+trap "exit 129" HUP
+trap "exit 130" INT
+trap "exit 143" TERM
+wine "$1"
+status=$?
+exit "$status"
+' gruntz-play "$exe")
 cmd=(env WINEPREFIX="$here/prefix3"
      WINEDLLOVERRIDES="mscoree,mshtml=" WINEDEBUG="${WINEDEBUG:-fixme-all}"
      gamescope -W "${PLAY_W:-2560}" -H "${PLAY_H:-1440}" -w 640 -h 480
-     -S integer -F nearest --force-windows-fullscreen -f -- wine "$exe")
+     -S integer -F nearest --force-windows-fullscreen -f -- "${game_cmd[@]}")
 cd "$here/game"
 if command -v gamescope >/dev/null 2>&1; then
     exec "${cmd[@]}"
