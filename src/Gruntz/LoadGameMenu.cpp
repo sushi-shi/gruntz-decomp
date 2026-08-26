@@ -61,13 +61,13 @@ void FillGameInfoDialog(HWND hWnd, CSaveGame* sg) {
 
 RVA(0x0009e2d0, 0x84)
 void LabelGameInfoSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6) {
-    i32 flag;
+    b32 flag;
     if (TempFileExists(item)) {
         SetDlgItemTextA(hWnd, id3, item->m_name);
-        flag = 1;
+        flag = true;
     } else {
         SetDlgItemTextA(hWnd, id3, "(Empty)");
-        flag = 0;
+        flag = false;
     }
     EnableWindow(GetDlgItem(hWnd, id3), flag);
     EnableWindow(GetDlgItem(hWnd, id4), flag);
@@ -115,7 +115,7 @@ i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg) {
         g_slotState = dlg->GetSlot(idx);
         if (g_slotState) {
             EnableWindow(hwnd, false);
-            g_gameReg->RunModalDialog("GAME_INFO", LevelPreviewDlgProc, 0);
+            g_gameReg->RunModalDialog("GAME_INFO", LevelPreviewDlgProc, false);
             EnableWindow(hwnd, true);
         }
         return 0;
@@ -157,7 +157,7 @@ i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg) {
         g_slotState = dlg->GetSlot(idx);
         if (g_slotState) {
             EnableWindow(hwnd, false);
-            i32 r = g_gameReg->RunModalDialog("GAME_DELETE", DeleteSaveDialogProc, 0);
+            i32 r = g_gameReg->RunModalDialog("GAME_DELETE", DeleteSaveDialogProc, false);
             EnableWindow(hwnd, true);
             if (r) {
                 FillGameInfoDialog(hwnd, dlg);

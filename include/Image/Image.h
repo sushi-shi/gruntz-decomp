@@ -91,7 +91,7 @@ public:
     i32 m_stride;
     i32 m_rowPad;
     POSITION m_listPosition;
-    i32 m_transparent;
+    b32 m_transparent;
     i32 m_paletteScalar;
     CImagePaletteNode* m_paletteNode;
 };

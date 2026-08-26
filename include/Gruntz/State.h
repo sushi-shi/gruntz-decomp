@@ -132,7 +132,7 @@ public:
         i32 unused2,
         i32 unused3,
         i32 unused4,
-        i32 useOverlay
+        b32 useOverlay
     );
 
     i32 DrawScreenTextImage(const char* name);
@@ -151,7 +151,7 @@ public:
         i32 unused4
     );
 
-    i32 RetireScene(i32 pct, i32 dur, i32 lead, i32 useOverlay);
+    i32 RetireScene(i32 pct, i32 dur, i32 lead, b32 useOverlay);
 
     i32 FadeLightToBlack(i32 centerX, i32 centerY, i32 durationMs, i32 leadMs);
     i32 FadeLightToBackBuffer(i32 centerX, i32 centerY, i32 durationMs, i32 leadMs);
@@ -201,8 +201,8 @@ public:
     CRezArchiveDir* m_gruntResources;
     CRezArchiveDir* m_gameResources;
     i32 m_reserved38;
-    i32 m_ready;
-    i32 m_notifyLatch;
+    b32 m_ready;
+    b32 m_notifyLatch;
 
     i32 m_reserved44;
     i32 m_reserved48;
@@ -232,7 +232,7 @@ inline CState::CState() {
     m_ownedSurface0 = NULL;
     m_ownedSurface1 = NULL;
     m_reserved38 = 0;
-    m_ready = 0;
+    m_ready = false;
     m_versionString[0] = 0;
     m_previousStateId = GAMESTATE_NONE;
     m_cursorSavedSurfaces[0] = NULL;

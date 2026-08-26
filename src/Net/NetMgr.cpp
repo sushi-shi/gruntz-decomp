@@ -18,7 +18,7 @@
 #include <string.h>
 
 DATA(0x002bf840)
-i32 g_validateProviders = 0;
+b32 g_validateProviders = false;
 
 // clang-format off
 DATA(0x00224d58)
@@ -154,7 +154,7 @@ void CNetMgr::Destroy() {
 }
 
 RVA(0x00178280, 0x43)
-i32 CNetMgr::EnumServiceProviders(i32 validateProviders) {
+i32 CNetMgr::EnumServiceProviders(b32 validateProviders) {
     ClearProviders();
 
     g_validateProviders = validateProviders;
@@ -179,7 +179,7 @@ static BOOL __stdcall NetEnumProviderCallback(
         return false;
     }
 
-    if (g_validateProviders == 0) {
+    if (g_validateProviders == false) {
         IDirectPlay* dp = NULL;
         i32 hr = DirectPlayCreate(providerGuid, &dp, NULL);
         if (hr != 0) {

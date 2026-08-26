@@ -178,7 +178,7 @@ public:
 
     i32 PostActionCue(i32 cueId);
 
-    void DrawMessageFrame(i32 index, i32 useFront);
+    void DrawMessageFrame(i32 index, b32 useFront);
 
     void LoadSBITextEdges(i32 msgId);
     i32 BuildGruntNamespaceList(CMulti* finishGate);
@@ -186,10 +186,10 @@ public:
     i32 StepViewportResize();
     i32 GetAmbientId();
     void StepScroll();
-    i32 SetDarknessCurse(i32 active);
-    i32 SetTinyViewportCurse(i32 active);
-    i32 SetMonitorCurse(i32 active);
-    i32 SetRandomMoveIconsCurse(i32 active);
+    i32 SetDarknessCurse(b32 active);
+    i32 SetTinyViewportCurse(b32 active);
+    i32 SetMonitorCurse(b32 active);
+    i32 SetRandomMoveIconsCurse(b32 active);
 
     i32 ShrinkViewport(i32 step);
     i32 ExpandViewport(i32 step);
@@ -208,9 +208,9 @@ public:
     i32 LoadCursorAnimation(
         const char* spriteKey,
         i32 initialFrame,
-        i32 animate,
+        b32 animate,
         i32 frameDelayMs,
-        i32 tintForPlayer
+        b32 tintForPlayer
     );
     i32 AdvanceCursorAnimation(i32 elapsedMs);
     i32 ResetGoals(i32, i32);
@@ -220,7 +220,7 @@ public:
     b32 PlaceStartGruntz();
     i32 ValidateLevelTiles();
 
-    i32 BuildHelpReveal(i32 final);
+    i32 BuildHelpReveal(b32 final);
     i32 RegisterInputBindings();
 
     i32 LoadLevelAnims(i32 force);
@@ -251,13 +251,13 @@ public:
     i32 ClearPlacedObjects();
     i32 FlushPendingOps();
 
-    i32 SetDefeatCountdown(i32 active, i32 durationMs);
+    i32 SetDefeatCountdown(b32 active, i32 durationMs);
     i32 CanQuickSave();
     i32 PostHudRect();
 
     i32 DrawWorldPresent();
 
-    i32 OpenLevelOverlay(i32 showQuitConfirmation);
+    i32 OpenLevelOverlay(b32 showQuitConfirmation);
 
     i32 LoadActionTileSprites(i32 force);
     i32 LoadLevelSounds(i32 force);
@@ -340,7 +340,7 @@ public:
     CPtrArray m_placedObjectCells[4];
     CTimer* m_levelTimer;
     ClockInterval m_cueTiming;
-    i32 m_cueToggle;
+    b32 m_cueToggle;
     i32 m_lastCueId;
     CString m_cueText;
     b32 m_drewThisFrame;
@@ -354,10 +354,10 @@ public:
     ClockInterval m_region1Timing;
     ClockInterval m_region2Timing;
     ClockInterval m_region3Timing;
-    i32 m_region0Gate;
-    i32 m_region1Gate;
-    i32 m_region2Gate;
-    i32 m_region3Gate;
+    b32 m_region0Gate;
+    b32 m_region1Gate;
+    b32 m_region2Gate;
+    b32 m_region3Gate;
     ViewportResizeMode m_viewportResizeMode;
     b32 m_hudSuppressed;
 
@@ -382,7 +382,7 @@ public:
     b32 m_cursorAnimationActive;
     b32 m_renderDisabled;
     b32 m_playerCommandPending;
-    i32 m_winLoseBanner;
+    b32 m_winLoseBanner;
     b32 m_inGame;
     b32 m_levelOverlayOpen;
     b32 m_paused;
@@ -395,7 +395,7 @@ public:
     i32 m_reserved51c;
 
     i32 SaveUnderAndDrawCursor(CDDrawSurfacePair* pair);
-    i32 LoadCursorSprites(i32 cursorId, i32 targetValid);
+    i32 LoadCursorSprites(i32 cursorId, b32 targetValid);
     i32 LoadScrollSpeedOptions();
     i32 BuildGruntTypeNameTable(PickupType typeIdx, i32 mode, i32 lightGate, CMulti* finishGate);
 
@@ -404,36 +404,36 @@ public:
 };
 
 ColorTint FindAvailablePlayerColor();
-void SetPlayerColorAvailable(ColorTint color, i32 available);
+void SetPlayerColorAvailable(ColorTint color, b32 available);
 i32 IsPlayerColorAvailable(ColorTint color);
 void ResetPlayerColorAvailability();
 
 extern GruntDeathType g_areaPitDeath;
 
-extern i32 g_playActive;
+extern b32 g_playActive;
 extern i32 g_deactivateProfileMs;
 extern i32 g_flipProfileMs;
-extern i32 g_playerColorAvailable[TINT_COUNT];
+extern b32 g_playerColorAvailable[TINT_COUNT];
 
 extern i32 g_lastLevelNum;
 extern GruntDeathType g_areaHazardDeath;
-extern i32 g_levelBias100;
+extern b32 g_levelBias100;
 extern char* g_colorNames[];
 extern char* g_difficultyNames[];
 
 void Cmd_ApplyScrollParams(i32 durationMs, i32 jitterX, i32 jitterY, i32 panMinX, i32 panMaxX);
-CString GetColorName(i32 colorIdx, i32 upper);
-CString GetDifficultyName(i32 diffIdx, i32 upper);
+CString GetColorName(i32 colorIdx, b32 upper);
+CString GetDifficultyName(i32 diffIdx, b32 upper);
 
 i32 LayerBlitFrame(
     CDDrawSurfaceMgr* surfaceMgr,
     CImage* src,
     i32 x,
     i32 y,
-    i32 useFront,
-    i32 useColorKey
+    b32 useFront,
+    b32 useColorKey
 );
-void UpdateMgrScroll(CGruntzMgr* pm, CStatusBarMgr* bar, i32 snapFlag);
+void UpdateMgrScroll(CGruntzMgr* pm, CStatusBarMgr* bar, b32 snapFlag);
 i32 DrawTextToOverlaySurface(
     CDDrawSurfaceMgr* surfaceMgr,
     CString* text,

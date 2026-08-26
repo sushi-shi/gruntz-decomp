@@ -52,7 +52,7 @@ public:
     u32 m_heldButtons;
     u32 m_pressedButtons;
     u32 m_heldButtonsSnapshot;
-    i32 m_suppressed;
+    b32 m_suppressed;
 };
 
 inline CInputState::CInputState() {

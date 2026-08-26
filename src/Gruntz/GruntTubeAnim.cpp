@@ -21,12 +21,12 @@
 
 // @early-stop
 RVA(0x00050a50, 0x1c5)
-i32 CGrunt::SetupTubeAnim(i32 isWater) {
+i32 CGrunt::SetupTubeAnim(b32 isWater) {
     m_reachRect = CRect(-1, -1, 1, 1);
     m_reachExclusionRect = CRect(0, 0, 0, 0);
     m_coordToggle = isWater;
 
-    if (isWater != 0) {
+    if (isWater != false) {
         m_animSetName = "TOOBWATERGRUNT";
     } else {
         m_animSetName = "TOOBGRUNT";

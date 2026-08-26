@@ -68,7 +68,7 @@ public:
 
     ~CRezArchiveDir();
 
-    i32 PreloadData(i32 recursive);
+    i32 PreloadData(b32 recursive);
 
     CRezArchiveDir* CreateSubdirectory(const char* name);
 
@@ -76,9 +76,9 @@ public:
 
     CRezArchiveEntry* CreateNamedEntry(void* resourceId, const char* name, i32 typeTag);
 
-    i32 ReadDirectoryTree(CRezItmBase* storage, i32 bodyOffset, i32 bodySize, i32 replaceExisting);
+    i32 ReadDirectoryTree(CRezItmBase* storage, i32 bodyOffset, i32 bodySize, b32 replaceExisting);
 
-    i32 ReadDirectoryBody(CRezItmBase* storage, i32 bodyOffset, i32 bodySize, i32 replaceExisting);
+    i32 ReadDirectoryBody(CRezItmBase* storage, i32 bodyOffset, i32 bodySize, b32 replaceExisting);
 
     CRezArchiveEntry*
     CreateEntry(u32 resourceId, const char* name, CRezArchiveType* type, CRezItmBase* storage);
@@ -97,7 +97,7 @@ public:
 
     CRezArchiveEntry* FindEntryByPath(const char* path);
 
-    i32 ReleaseEntryData(i32 recursive);
+    i32 ReleaseEntryData(b32 recursive);
 
     CRezArchiveDir* FirstSubdirectory();
     CRezArchiveDir* NextSubdirectory(CRezArchiveDir* directory);

@@ -6,14 +6,14 @@
 
 RVA(0x00150180, 0xd)
 CShadeTable::CShadeTable() {
-    m_alloc = 0;
+    m_alloc = false;
     m_size = 0;
     m_data = NULL;
 }
 
 RVA(0x00150190, 0xb)
 void CShadeTable::Reset() {
-    if (m_alloc != 0) {
+    if (m_alloc != false) {
         Free();
     }
 }
@@ -28,7 +28,7 @@ i32 CShadeTable::Set(u32 size, i32 id) {
     if (!m_data) {
         return 0;
     }
-    m_alloc = 1;
+    m_alloc = true;
     m_key = id;
     return 1;
 }
@@ -40,7 +40,7 @@ i32 CShadeTable::ReadFrom(CFile* file, i32 id) {
         return 0;
     }
     file->Read(m_data, m_size);
-    m_alloc = 1;
+    m_alloc = true;
     m_key = id;
     return 1;
 }
@@ -70,14 +70,14 @@ i32 CShadeTable::LoadFromMem(u8* buf, u32 len, i32 id) {
 
 RVA(0x001503c0, 0x2e)
 void CShadeTable::Free() {
-    if (m_alloc != 0) {
+    if (m_alloc != false) {
         if (m_data) {
             delete[] m_data;
             m_data = NULL;
         }
         m_size = 0;
     }
-    m_alloc = 0;
+    m_alloc = false;
 }
 
 // @dead-code

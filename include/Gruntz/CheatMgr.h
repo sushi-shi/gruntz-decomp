@@ -16,9 +16,9 @@ class CCheatMgr {
 public:
     CCheatMgr() {
         m_owner = NULL;
-        m_flag = 0;
+        m_flag = false;
         m_pendingCodeLength = 0;
-        m_cheatsUsed = 0;
+        m_cheatsUsed = false;
     }
 
     BOOL Init(HWND owner);
@@ -34,7 +34,7 @@ public:
     u8 m_flag;
     char m_pendingCode[0x120 - 0x21];
     i32 m_pendingCodeLength;
-    i32 m_cheatsUsed;
+    b32 m_cheatsUsed;
 };
 
 #endif // GRUNTZ_GRUNTZ_CHEATMGR_H

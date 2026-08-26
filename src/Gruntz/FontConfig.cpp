@@ -19,7 +19,7 @@ i32 g_chatTextWidth = 0;
 DATA(0x0022b438)
 i32 g_caretBlinkMs = 0;
 DATA(0x0022b43c)
-i32 g_caretBlinkOn = 0;
+b32 g_caretBlinkOn = false;
 
 RVA(0x000218e0, 0x1ff)
 i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold) {
@@ -27,7 +27,7 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
     m_highScrollThreshold = highScrollThreshold;
     m_scrollOffset = 0;
     m_inputScrollTotal = 0;
-    m_inputActive = 0;
+    m_inputActive = false;
 
     m_arialFont = CreateFontA(0xc, 8, 0, 0, FW_BOLD, 0, 0, 0, DEFAULT_CHARSET, 0, 0, 0, 0, "ARIAL");
     if (!m_arialFont) {
@@ -145,7 +145,7 @@ void CFontConfig::FreeNodes() {
     }
     m_list.RemoveAll();
     m_inputText.Empty();
-    m_inputActive = 0;
+    m_inputActive = false;
 }
 
 RVA_COMPGEN(0x00021c40, 0x8, ??1FontItem@@QAE@XZ)
@@ -225,8 +225,8 @@ i32 CFontConfig::HandleInputChar(i32 charCode, i32 keyData) {
     static_cast<void>(keyData);
     m_inputScrollTotal = 0;
     if (charCode == '\r') {
-        if (m_inputActive == 0) {
-            m_inputActive = 1;
+        if (m_inputActive == false) {
+            m_inputActive = true;
             m_scrollOffset = 0;
             m_inputScrollTotal = 0;
             m_inputText = static_cast<const char*>("");
@@ -234,11 +234,11 @@ i32 CFontConfig::HandleInputChar(i32 charCode, i32 keyData) {
             if (m_inputText.GetLength() == 0) {
                 return 0;
             }
-            m_inputActive = 0;
+            m_inputActive = false;
             return 1;
         }
     }
-    if (m_inputActive == 0) {
+    if (m_inputActive == false) {
         return 0;
     }
     if (charCode == '\b') {
@@ -260,8 +260,8 @@ i32 CFontConfig::HandleInputChar(i32 charCode, i32 keyData) {
 
 RVA(0x00021ef0, 0x17)
 void CFontConfig::EndInput() {
-    if (m_inputActive != 0) {
-        m_inputActive = 0;
+    if (m_inputActive != false) {
+        m_inputActive = false;
         m_inputText.Empty();
     }
 }
@@ -320,9 +320,9 @@ i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
     g_caretBlinkMs = t;
     if (t == 0) {
         g_caretBlinkMs = 0xc8;
-        g_caretBlinkOn ^= 1;
+        g_caretBlinkOn = !g_caretBlinkOn;
     }
-    if (g_caretBlinkOn != 0 && text.GetLength() == 0) {
+    if (g_caretBlinkOn != false && text.GetLength() == 0) {
         MeasureLabel(hdc, rect);
         return 1;
     }

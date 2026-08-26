@@ -30,7 +30,7 @@ public:
     CAmbientSound() {
         m_sound = NULL;
         m_volumeLevel = 0x64;
-        m_isPlaying = 0;
+        m_isPlaying = false;
         m_listNode = NULL;
     }
 
@@ -57,11 +57,11 @@ public:
         return volume;
     }
 
-    i32 SetVolumeLevel(i32 volumeLevel, i32 rampMs, i32 stopAndRewind);
+    i32 SetVolumeLevel(i32 volumeLevel, i32 rampMs, b32 stopAndRewind);
 
-    virtual void Update(i32 x, i32 y, i32 immediate);
+    virtual void Update(i32 x, i32 y, b32 immediate);
 
-    void FadePlayback(i32 startPlaying, i32 volumeLevel, i32 rampMs);
+    void FadePlayback(b32 startPlaying, i32 volumeLevel, i32 rampMs);
 
     void StartPlayback();
 
@@ -87,7 +87,7 @@ public:
     i32 m_volumeLevel;
     i32 m_masterVolume;
     i32 m_volumeScale;
-    i32 m_isPlaying;
+    b32 m_isPlaying;
     RECT m_primaryRegion;
     RECT m_secondaryRegion;
     i32 m_panPercent;
@@ -99,7 +99,7 @@ public:
     CAmbientPosSound() {}
 
     virtual ~CAmbientPosSound() OVERRIDE {}
-    virtual void Update(i32 x, i32 y, i32 immediate) OVERRIDE;
+    virtual void Update(i32 x, i32 y, b32 immediate) OVERRIDE;
 
     i32 InitFromKey(
         SoundCueRegistry* cueRegistry,

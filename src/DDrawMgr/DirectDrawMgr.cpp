@@ -24,13 +24,13 @@ DATA(0x002bed00)
 CDDrawDeviceManager* g_DirectDrawMgr = NULL;
 
 DATA(0x00283eb8)
-i32 g_ddLogEnabled = 0;
+b32 g_ddLogEnabled = false;
 DATA(0x00283ebc)
-i32 g_ddMsgBoxEnabled = 0;
+b32 g_ddMsgBoxEnabled = false;
 DATA(0x00283ec0)
-i32 g_ddBeepEnabled = 0;
+b32 g_ddBeepEnabled = false;
 DATA(0x00283ec4)
-i32 g_ddThirdEnabled = 0;
+b32 g_ddThirdEnabled = false;
 
 DATA(0x00283edc)
 i32 (*g_restoreHandler)() = NULL;
@@ -51,7 +51,7 @@ GUID* g_ddCreateCtx = NULL;
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001413d0, 0x27)
-void SetDDrawReportModes(i32 log, i32 msgBox, i32 beep, i32 third) {
+void SetDDrawReportModes(b32 log, b32 msgBox, b32 beep, b32 third) {
     g_ddLogEnabled = log;
     g_ddMsgBoxEnabled = msgBox;
     g_ddBeepEnabled = beep;
@@ -309,7 +309,7 @@ CDDrawDeviceManager::CDDrawDeviceManager() : m_surfaces(0xa), m_palettes(0xa), m
     m_directDraw1 = NULL;
     m_bankSwitchedCaps = 0;
     m_displayColorDepth = BPP_UNSET;
-    m_hasPalette = 0;
+    m_hasPalette = false;
     m_paletteTag = 0;
     m_lastError = DDRAWERR_NONE;
 }
@@ -328,7 +328,7 @@ i32 CDDrawDeviceManager::CreateDevice(
     ColorDepth bpp,
     u32 coopFlags
 ) {
-    m_hasPalette = 0;
+    m_hasPalette = false;
     m_paletteTag = 0;
     IDirectDraw2* dd = g_DirectDraw;
     if (dd != NULL) {
@@ -1120,7 +1120,7 @@ i32 CDDrawDeviceManager::SetDisplayPaletteFrom(CDDPalette* pal, i32 tag) {
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         *dst++ = *src++;
     }
-    m_hasPalette = 1;
+    m_hasPalette = true;
     m_paletteTag = tag;
     return 1;
 }
@@ -1132,7 +1132,7 @@ i32 CDDrawDeviceManager::SetDisplayPaletteFromRgb(u8* buf, i32 z) {
     }
     const u8* src = buf;
     COPY_RGB_PALETTE(m_palette, src, i, PALETTE_ENTRY_COUNT)
-    m_hasPalette = 1;
+    m_hasPalette = true;
     m_paletteTag = z;
     return 1;
 }
@@ -1148,7 +1148,7 @@ i32 CDDrawDeviceManager::SetDisplayPaletteDirect(PALETTEENTRY* entries, i32 tag)
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         m_palette[i] = *src++;
     }
-    m_hasPalette = 1;
+    m_hasPalette = true;
     m_paletteTag = tag;
     return 1;
 }

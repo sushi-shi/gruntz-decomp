@@ -25,7 +25,7 @@ public:
     RVA(0x00157530, 0x17)
     virtual i32 IsLoaded() OVERRIDE {
 
-        if (m_soundStream == NULL && m_silentMode == 0) {
+        if (m_soundStream == NULL && m_silentMode == false) {
             return 0;
         }
         return 1;
@@ -42,11 +42,11 @@ public:
     }
 
     void PlayCue(const char* key) {
-        if (m_silentMode == 0) {
+        if (m_silentMode == false) {
             SoundCue* found = NULL;
             MapLookup(m_cues, key, found);
             if (found != NULL) {
-                found->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
+                found->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
             }
         }
     }
@@ -80,12 +80,12 @@ public:
 
     i32 PlaySpatializedCue(const char* key, i32 sourceX, i32 maxPanOffsetPx, i32 fullPanOffsetPx);
 
-    i32 BindSoundStream(i32 allowUnavailable);
+    i32 BindSoundStream(b32 allowUnavailable);
 
     CMapStringToPtr m_cues;
     SoundStream* m_soundStream;
 
-    i32 m_silentMode;
+    b32 m_silentMode;
     i32 m_defaultReplayDelayMs;
 };
 

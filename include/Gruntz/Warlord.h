@@ -64,7 +64,7 @@ public:
 
     WarlordTimer m_cooldownTimer;
     WarlordTimer m_notifyTimer;
-    i32 m_deathStarted;
+    b32 m_deathStarted;
 
     i32 m_ownerTag;
 };

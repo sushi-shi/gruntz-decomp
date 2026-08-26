@@ -91,13 +91,13 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     m_wp[12].y = (m_object->m_logicRecord->m_userRect2.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
 
     i32 i = 1;
-    i32 found = 0;
+    b32 found = false;
     while (i < 13) {
-        if (found != 0) {
+        if (found != false) {
             break;
         }
         if (m_wp[i].x == TILE_HALF_PX && m_wp[i].y == TILE_HALF_PX) {
-            found = 1;
+            found = true;
         } else {
             i++;
         }
@@ -151,7 +151,7 @@ i32 CPathHazard::Tick() {
     rect.bottom = obj->m_frameImage->m_anchorY + obj->m_screenY - 7;
 
     CGruntzMgr* reg = g_gameReg;
-    if (reg->m_isEasyMode == 0 || reg->m_gameMode != GAMEMODE_QUESTZ) {
+    if (reg->m_isEasyMode == false || reg->m_gameMode != GAMEMODE_QUESTZ) {
         i32 playerIndex, unitIndex;
         CGrunt* ent = reg->m_triggerMgr->FindGruntAt(
             obj->m_screenX,
@@ -275,7 +275,7 @@ i32 CPathHazard::SiblingTick() {
     rect.bottom = obj->m_frameImage->m_anchorY + obj->m_screenY - 7;
 
     CGruntzMgr* reg = g_gameReg;
-    if (reg->m_isEasyMode != 0 && reg->m_gameMode == GAMEMODE_QUESTZ) {
+    if (reg->m_isEasyMode != false && reg->m_gameMode == GAMEMODE_QUESTZ) {
 
     } else {
         i32 playerIndex, unitIndex;
@@ -322,19 +322,19 @@ i32 CRainCloud::HitTest(i32 playerIndex, i32 unitIndex) {
     CGruntzMgr* reg = g_gameReg;
     if (CGameLevel::PointInRect(&reg->m_viewBounds, obj->m_screenX, obj->m_screenY)) {
         SoundCueRegistry* registry = reg->m_world->m_soundRegistry;
-        if (registry->m_silentMode == 0) {
+        if (registry->m_silentMode == false) {
             SoundCue* found = NULL;
             MapLookup(registry->m_cues, "LEVEL_CLOUDHAZARDKILL", found);
             SoundCue* cue = found;
             if (cue != NULL) {
-                i32 soundEnabled = g_soundEnabled;
+                b32 soundEnabled = g_soundEnabled;
                 i32 volumePercent = g_soundVolumePercent;
-                if (soundEnabled != 0) {
+                if (soundEnabled != false) {
                     u32 cueTimeMs = g_soundCueTimeMs;
                     if (static_cast<u32>((cueTimeMs - cue->m_lastPlayTimeMs))
                         >= cue->m_replayDelayMs) {
                         cue->m_lastPlayTimeMs = cueTimeMs;
-                        cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
+                        cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
                     }
                 }
             }

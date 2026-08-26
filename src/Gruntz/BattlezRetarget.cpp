@@ -111,7 +111,7 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
         unit->m_arrivalCell = *none.Set(-1, -1);
         return 1;
     }
-    if (recA->m_humanControlled == 0 && cfgB->m_active == 0) {
+    if (recA->m_humanControlled == false && cfgB->m_active == false) {
         RECYCLE_GRUNT_COORDS(unit)
         Coord none;
         unit->m_arrivalCell = *none.Set(-1, -1);

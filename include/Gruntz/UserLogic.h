@@ -25,7 +25,7 @@ class CDDrawWorker;
 
 class CImage;
 
-extern i32 g_logicTypesRegistered;
+extern b32 g_logicTypesRegistered;
 
 class CFileMemBase;
 
@@ -233,7 +233,7 @@ inline void CUserLogic::GetScreenTile(Coord* out) {
 inline void CUserLogic::RegisterLogicTypesOnce() {
     if (!g_logicTypesRegistered) {
         BuildLogicTypeTable(m_logicObject);
-        g_logicTypesRegistered = 1;
+        g_logicTypesRegistered = true;
     }
 }
 

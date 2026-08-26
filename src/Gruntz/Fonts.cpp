@@ -36,7 +36,7 @@ RVA_DYNINIT(0x001156f0, 0xa, g_smallFont)
 DATA(0x0024eb00)
 Font g_smallFont;
 DATA(0x0024eb14)
-i32 g_loadedFlag = 0;
+b32 g_loadedFlag = false;
 
 RVA(0x00115810, 0xa3)
 i32 InitializeFonts() {
@@ -55,7 +55,7 @@ i32 InitializeFonts() {
             return 0;
         }
 
-        g_loadedFlag = 1;
+        g_loadedFlag = true;
     }
     return 1;
 }

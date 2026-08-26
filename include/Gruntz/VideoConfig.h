@@ -6,16 +6,16 @@
 #include <Gruntz/Resolution.h>
 #include <Ints.h>
 
-extern i32 g_unusedMusicEnabledSnapshot;
+extern b32 g_unusedMusicEnabledSnapshot;
 extern i32 g_savedScrollSpeed;
 extern i32 g_savedSoundVolume;
-extern i32 g_savedEasyMode;
-extern i32 g_savedSoundEnabled;
+extern b32 g_savedEasyMode;
+extern b32 g_savedSoundEnabled;
 extern i32 g_savedVoiceVolume;
 extern Resolution g_savedResolutionMode;
 extern i32 g_savedMidiVolume;
-extern i32 g_savedMusicEnabled;
-extern i32 g_savedVoiceEnabled;
+extern b32 g_savedMusicEnabled;
+extern b32 g_savedVoiceEnabled;
 
 void LoadGameOptionsToDialog(HWND hDlg);
 void ReadMenuOptionsDialog(HWND hDlg);

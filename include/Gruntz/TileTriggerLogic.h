@@ -72,7 +72,7 @@ class CTileTriggerLogic {
 public:
     CTileTriggerLogic();
     ~CTileTriggerLogic() {
-        m_initGate = 0;
+        m_initGate = false;
     }
 
     virtual i32 Tick();
@@ -122,7 +122,7 @@ public:
     i32 m_cellKey;
     i32 m_reserved14;
     i32 m_reserved18;
-    i32 m_initGate;
+    b32 m_initGate;
 
     CTileTriggerContainer* m_owner;
     u32 m_startClock;
@@ -130,7 +130,7 @@ public:
     u32 m_leadInSpan;
     u32 m_dutyOffSpan;
     i32 m_tileToken;
-    i32 m_dutyOn;
+    b32 m_dutyOn;
     i32 m_linkKeys[24];
 };
 

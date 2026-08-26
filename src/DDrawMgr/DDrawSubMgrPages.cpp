@@ -245,17 +245,17 @@ RVA(0x00158dc0, 0x7d)
 i32 CDDrawSubMgrPages::PresentBackPage() {
     CDDrawFrontSurface* front = m_frontSurface;
     CDDrawSurfacePair* back = m_backPair;
-    i32 ok;
+    b32 ok;
     if (front == NULL) {
-        ok = 0;
+        ok = false;
     } else {
         CDDSurface* s10 = front->m_surface;
         if (s10 == NULL) {
-            ok = 0;
+            ok = false;
         } else {
             CDDSurface* s14 = back->m_surface;
             if (s14 == NULL) {
-                ok = 0;
+                ok = false;
             } else {
                 i32 hr = s14->Blt(s10);
                 ok = (hr == 0);

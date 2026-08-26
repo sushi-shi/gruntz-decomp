@@ -118,7 +118,7 @@ public:
     i32 m_blockedMask;
     i32 m_passableMask;
     i32 m_diagonalMask;
-    i32 m_dirty;
+    b32 m_dirty;
 
     RECT m_bounds;
     i32 m_gridW;

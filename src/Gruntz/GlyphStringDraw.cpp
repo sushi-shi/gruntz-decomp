@@ -57,8 +57,8 @@ i32 LayerBlitFrame(
     CImage* src,
     i32 x,
     i32 y,
-    i32 useFront,
-    i32 useColorKey
+    b32 useFront,
+    b32 useColorKey
 ) {
     if (!surfaceMgr) {
         return 0;

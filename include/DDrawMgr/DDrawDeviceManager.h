@@ -169,7 +169,7 @@ public:
     ColorDepth m_displayColorDepth;
 
     PALETTEENTRY m_palette[PALETTE_ENTRY_COUNT];
-    i32 m_hasPalette;
+    b32 m_hasPalette;
     i32 m_paletteTag;
     DDrawDeviceError m_lastError;
 };

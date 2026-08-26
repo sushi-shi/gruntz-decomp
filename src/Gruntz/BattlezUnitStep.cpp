@@ -336,10 +336,10 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
         }
         band = band % 4;
         GruntzPlayer* slot = &m_ctx->m_players[band];
-        if (slot->m_clearedRound != 0) {
+        if (slot->m_clearedRound != false) {
             return 1;
         }
-        if (slot->m_active == 0) {
+        if (slot->m_active == false) {
             return 1;
         }
         unit->m_targetTeam = band;
@@ -347,7 +347,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
         unit->m_defenderPx = *noPx.Set(-1, -1);
     } else {
         GruntzPlayer* slot = &m_ctx->m_players[band];
-        if (slot->m_clearedRound != 0 || slot->m_active == 0) {
+        if (slot->m_clearedRound != false || slot->m_active == false) {
 
             if (unit->CoordCount() != 0) {
                 RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)

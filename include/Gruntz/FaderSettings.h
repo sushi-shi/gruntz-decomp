@@ -3,6 +3,6 @@
 
 #include <Ints.h>
 
-extern i32 g_disableFades;
+extern b32 g_disableFades;
 
 #endif // GRUNTZ_GRUNTZ_FADERSETTINGS_H

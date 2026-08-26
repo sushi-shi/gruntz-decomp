@@ -41,11 +41,11 @@ public:
     }
     virtual i32 SerializeDispatch(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
 
-    i32 m_armed;
+    b32 m_armed;
 
     i64 m_armClock;
     i64 m_interval;
-    i32 m_tickHandled;
+    b32 m_tickHandled;
     char m_pad6c[0x70 - 0x6c];
 };
 

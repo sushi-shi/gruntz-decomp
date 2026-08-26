@@ -83,7 +83,7 @@ i32 g_battlezLastMaxGruntz[4];
 DATA(0x00229d10)
 WNDPROC g_savedDlgWndProc;
 DATA(0x00229d14)
-i32 g_battlezResetOptions;
+b32 g_battlezResetOptions;
 
 RVA(0x00014b10, 0x5)
 long CBattlezDlg::OnPaint() {
@@ -93,7 +93,7 @@ long CBattlezDlg::OnPaint() {
 RVA(0x00014b30, 0x64)
 CBattlezDlg::CBattlezDlg(CGruntzMgr* gameManager, CWnd* pParent) : CDialog(0xc0, pParent) {
     m_gameManager = gameManager;
-    m_customNameFlag = 0;
+    m_customNameFlag = false;
 }
 
 RVA_COMPGEN(0x00014bc0, 0x3, ?Serialize@CObject@@UAEXAAVCArchive@@@Z)
@@ -197,7 +197,7 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
         SetPlayerTypeSelection(2, 2);
         SetPlayerTypeSelection(3, 2);
 
-        if (g_battlezResetOptions != 0) {
+        if (g_battlezResetOptions != false) {
             m_gameManager->m_players[1].m_difficulty = BZDIFF_NORMAL;
             m_gameManager->m_players[2].m_difficulty = BZDIFF_NORMAL;
             m_gameManager->m_players[3].m_difficulty = BZDIFF_NORMAL;
@@ -222,13 +222,13 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
         SetMaxGruntzSelection(2, defaultMax);
         SetMaxGruntzSelection(3, defaultMax);
         for (i = 0; i < 4; i++) {
-            if (g_battlezResetOptions == 0) {
+            if (g_battlezResetOptions == false) {
                 SetMaxGruntzSelection(i, g_battlezLastMaxGruntz[i]);
                 m_gameManager->m_players[i].m_maxGruntz = g_battlezLastMaxGruntz[i];
             }
             GruntzPlayer* slot = &m_gameManager->m_players[i];
             if (slot != NULL) {
-                slot->m_active = 1;
+                slot->m_active = true;
             }
         }
         for (i = 0; i < 4; i++) {
@@ -315,7 +315,7 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
                     GetMaxGruntzControl(i)->EnableWindow(true);
                 }
             }
-            m_customNameFlag = 0;
+            m_customNameFlag = false;
         }
     } else {
         CWnd* comboChild = GetDlgItem(0x4ff)->GetWindow(GW_CHILD);
@@ -338,23 +338,23 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             i32 selection =
                 static_cast<i32>(GetPlayerTypeControl(i)->SendMessageA(CB_GETCURSEL, 0, 0));
             if (selection != 0) {
-                m_gameManager->m_players[i].m_active = 1;
+                m_gameManager->m_players[i].m_active = true;
                 m_gameManager->m_players[i].m_difficulty =
                     static_cast<BattlezDifficulty>(selection - 1);
             } else {
-                m_gameManager->m_players[i].m_active = 0;
+                m_gameManager->m_players[i].m_active = false;
                 m_gameManager->m_players[i].m_difficulty = BZDIFF_NORMAL;
             }
         }
-        if (g_battlezResetOptions != 0) {
-            g_battlezResetOptions = 0;
+        if (g_battlezResetOptions != false) {
+            g_battlezResetOptions = false;
         }
         g_buteMgr.GetDwordDef("Battlez", "DefaultMaxGruntz", 8);
         for (i = 0; i < 4; i++) {
             sprintf(key, "LastMaxGruntz%d", i);
             reg->SetValueDword(key, GetMaxGruntzSelection(i));
             sprintf(key, "LastDiff%d", i);
-            if (m_gameManager->m_players[i].m_active != 0) {
+            if (m_gameManager->m_players[i].m_active != false) {
                 reg->SetValueDword(key, IDX(m_gameManager->m_players[i].m_difficulty));
             } else {
                 reg->SetValueDword(key, -1);
@@ -551,13 +551,13 @@ void CBattlezDlg::UpdatePlayerSlotEnabled(i32 slot) {
     if (::SendMessageA(typeControl->m_hWnd, CB_GETCURSEL, 0, 0) != 0) {
         nameControl->EnableWindow(true);
         colorControl->EnableWindow(true);
-        player->m_active = 1;
+        player->m_active = true;
         maxGruntzControl->EnableWindow(true);
         return;
     }
     nameControl->EnableWindow(false);
     colorControl->EnableWindow(false);
-    player->m_active = 0;
+    player->m_active = false;
     maxGruntzControl->EnableWindow(false);
 }
 
@@ -617,7 +617,7 @@ void CBattlezDlg::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {
 RVA(0x000165a0, 0x5c0)
 void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
     COLORREF color;
-    i32 shouldDraw = 0;
+    b32 shouldDraw = false;
     switch (nIDCtl) {
         case CTRL_PLAYER_COLOR0:
             if (GetPlayerColorControl(0)->IsWindowEnabled()) {
@@ -678,7 +678,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             } else {
                 color = 0xc8c8c8;
             }
-            shouldDraw = 1;
+            shouldDraw = true;
             break;
         case CTRL_PLAYER_COLOR1:
             if (GetPlayerColorControl(1)->IsWindowEnabled()) {
@@ -739,7 +739,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             } else {
                 color = 0xc8c8c8;
             }
-            shouldDraw = 1;
+            shouldDraw = true;
             break;
         case CTRL_PLAYER_COLOR2:
             if (GetPlayerColorControl(2)->IsWindowEnabled()) {
@@ -800,7 +800,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             } else {
                 color = 0xc8c8c8;
             }
-            shouldDraw = 1;
+            shouldDraw = true;
             break;
         case CTRL_PLAYER_COLOR3:
             if (GetPlayerColorControl(3)->IsWindowEnabled()) {
@@ -861,7 +861,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             } else {
                 color = 0xc8c8c8;
             }
-            shouldDraw = 1;
+            shouldDraw = true;
             break;
     }
     if (shouldDraw) {
@@ -931,7 +931,7 @@ void CBattlezDlg::ShowCustomDlg() {
                 return;
             }
             child->SetWindowTextA(dlg.m_customName);
-            m_customNameFlag = 1;
+            m_customNameFlag = true;
         }
     }
 }
@@ -954,7 +954,7 @@ void CBattlezDlg::OnWorldSelectionChange() {
         CWnd* child = CWnd::FromHandle(::GetWindow(owner, GW_CHILD));
         if (child != NULL) {
             child->SetWindowTextA(worldName);
-            m_customNameFlag = 0;
+            m_customNameFlag = false;
         }
     }
 }

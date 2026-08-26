@@ -60,13 +60,13 @@ public:
     CDDrawSurfaceMgr* m_spriteMgrHolder;
     CSpriteRef* m_toolRefs[TINT_COUNT];
     CSpriteRef* m_toyRefs[TINT_COUNT];
-    i32 m_built;
+    b32 m_built;
 };
 
 inline CSpriteRefTable::CSpriteRefTable() {
     m_factory = NULL;
     m_spriteMgrHolder = NULL;
-    m_built = 0;
+    m_built = false;
     for (i32 i = 0; i < TINT_COUNT; ++i) {
         m_toolRefs[i] = NULL;
         m_toyRefs[i] = NULL;

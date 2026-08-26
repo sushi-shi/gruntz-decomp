@@ -181,8 +181,8 @@ CGruntPuddle::CGruntPuddle(CGameObject* obj)
     SET_ANIMATION_ACT("A");
     Hide();
     SNAP_OBJECT_TO_TILE_CENTER(m_object)
-    m_pending = 1;
-    m_placed = 0;
+    m_pending = true;
+    m_placed = false;
 }
 
 RVA(0x00040750, 0x102)
@@ -211,7 +211,7 @@ i32 CGruntPuddle::Idle() {
 }
 
 RVA(0x00040c30, 0xb3)
-i32 CGruntPuddle::Place(i32 playerIndex, i32 moveIcon, i32 animatePlacement, i32 gaugePoints) {
+i32 CGruntPuddle::Place(i32 playerIndex, i32 moveIcon, b32 animatePlacement, i32 gaugePoints) {
     CWwdSpriteObject* o = m_object;
     m_tileX = o->m_screenX >> TILE_SHIFT_PX;
     m_tileY = o->m_screenY >> TILE_SHIFT_PX;
@@ -223,9 +223,9 @@ i32 CGruntPuddle::Place(i32 playerIndex, i32 moveIcon, i32 animatePlacement, i32
     SET_DRAW_FILL(sprite, SHADE_PAL_16, shade);
     m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
     SET_ANIMATION_ACT("B");
-    if (animatePlacement == 0) {
-        m_placed = 1;
-        m_pending = 0;
+    if (animatePlacement == false) {
+        m_placed = true;
+        m_pending = false;
         SwitchAnimationByName(g_puddleSpriteKey, 0);
     }
     return 1;
@@ -233,7 +233,7 @@ i32 CGruntPuddle::Place(i32 playerIndex, i32 moveIcon, i32 animatePlacement, i32
 
 RVA(0x00040d20, 0xe3)
 i32 CGruntPuddle::Remove() {
-    if (m_placed != 0) {
+    if (m_placed != false) {
         CGruntzMgr* reg = g_gameReg;
         i32 ty = m_tileY;
         CMapMgr* grid = reg->m_tileGrid;
@@ -255,10 +255,10 @@ i32 CGruntPuddle::Remove() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     CWwdSpriteObject* o = m_wwdObject;
     if (IsAniCursorComplete(&o->m_animationCursor)) {
-        if (m_placed == 0) {
+        if (m_placed == false) {
             SwitchAnimationByName(g_puddleSpriteKey, 0);
-            m_placed = 1;
-            m_pending = 0;
+            m_placed = true;
+            m_pending = false;
         } else {
             o->m_stateFlags |= SPRITE_STATE_HIDDEN;
         }
@@ -350,8 +350,8 @@ i32 CTeleporter::ReapplyConfig() {
     SetImageSetByName("GAME_WORMHOLE");
     SwitchAnimationByName("GAME_TELEPORTEROPEN", 0);
     SET_ANIMATION_ACT("A");
-    m_armed = 1;
-    m_tickHandled = 0;
+    m_armed = true;
+    m_tickHandled = false;
     m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
     return 1;
 }
@@ -413,7 +413,7 @@ void CTeleporter_RegisterActs() {
 RVA(0x000419e0, 0x81)
 i32 CTeleporter::Begin() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(cur, g_engineFrameDelta)
-    if (cur->m_finished == 0) {
+    if (cur->m_finished == false) {
         return 0;
     }
     if (cur->m_frameTicksLeft != 0) {
@@ -441,17 +441,17 @@ i32 CTeleporter::Update() {
     }
 
     CGruntzMgr* mgr;
-    if (m_tickHandled == 0) {
+    if (m_tickHandled == false) {
         CWwdSpriteObject* o = m_object;
         mgr = g_gameReg;
         i32 y = o->m_screenY;
         i32 x = o->m_screenX;
         if (CGameLevel::PointInRect(&mgr->m_viewBounds, x, y)) {
-            (static_cast<CTriggerMgr*>(mgr->m_triggerMgr))->m_teleportWanted = 1;
+            (static_cast<CTriggerMgr*>(mgr->m_triggerMgr))->m_teleportWanted = true;
         }
     }
     mgr = g_gameReg;
-    if (m_armed == 0) {
+    if (m_armed == false) {
         return 0;
     }
 
@@ -461,7 +461,7 @@ i32 CTeleporter::Update() {
         if (delta >= m_interval) {
             SwitchAnimationByName("GAME_TELEPORTERCLOSE", 0);
             m_object->m_logicRecord->m_speed = 0;
-            m_tickHandled = 1;
+            m_tickHandled = true;
             return 0;
         }
     }
@@ -475,7 +475,7 @@ i32 CTeleporter::Update() {
     }
 
     if (static_cast<TeleporterKind>(m_object->m_smarts) == TELEPORTER_SECRET) {
-        found->TryTeleportToCell(m_object->m_speedX, m_object->m_speedY, 1, 1);
+        found->TryTeleportToCell(m_object->m_speedX, m_object->m_speedY, true, true);
         g_gameReg->m_gameStats->m_secretsFound++;
         SwitchAnimationByName("GAME_TELEPORTERCLOSE", 0);
         CWwdSpriteObject* s = m_object;
@@ -507,12 +507,12 @@ i32 CTeleporter::Update() {
         spawned->m_speedX = m_object->m_screenX;
         spawned->m_speedY = m_object->m_screenY;
         spawned->m_smarts = m_object->m_health;
-        found->TryTeleportToCell(m_object->m_speedX, m_object->m_speedY, 0, 0);
+        found->TryTeleportToCell(m_object->m_speedX, m_object->m_speedY, false, false);
         SwitchAnimationByName("GAME_TELEPORTERCLOSE", 0);
     }
 
-    m_armed = 0;
-    m_tickHandled = 1;
+    m_armed = false;
+    m_tickHandled = true;
     mgr = g_gameReg;
     CGrunt* current;
     if ((static_cast<CTriggerMgr*>(mgr->m_triggerMgr))->m_recList.GetCount() != 1) {

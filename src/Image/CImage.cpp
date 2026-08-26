@@ -29,7 +29,7 @@
 DATA(0x002bf318)
 DDBLTFX g_bltFx = {0};
 DATA(0x002bf37c)
-i32 g_resourceInstallActive = 0;
+b32 g_resourceInstallActive = false;
 DATA(0x002bf380)
 i32 g_surfaceColorKey = 0;
 
@@ -37,7 +37,7 @@ RVA(0x00152e90, 0x8b)
 i32 CImage::Create(char* path, i32 keyed) {
     i32 colorKey = (keyed != 0) ? g_surfaceColorKey : -1;
     i32 surfaceCaps = 0;
-    if (g_resourceInstallActive != 0) {
+    if (g_resourceInstallActive != false) {
         surfaceCaps = DDSCAPS_SYSTEMMEMORY;
     }
     CDDSurface* item = m_ownerCtx->m_deviceManager->LoadFileSurface(path, surfaceCaps, colorKey);
@@ -50,7 +50,7 @@ i32 CImage::Create(char* path, i32 keyed) {
     m_height = item->m_height;
     m_anchorX = m_width >> 1;
     m_anchorY = m_height >> 1;
-    if (item->m_hasColorKey != 0) {
+    if (item->m_hasColorKey != false) {
         m_bltFastFlags = DDBLTFAST_WAIT | DDBLTFAST_SRCCOLORKEY;
     } else {
         m_bltFastFlags = DDBLTFAST_WAIT;
@@ -105,7 +105,7 @@ i32 CImage::LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 ke
         m_originY = 0;
     }
     i32 surfaceCaps = 0;
-    if (g_resourceInstallActive != 0) {
+    if (g_resourceInstallActive != false) {
         surfaceCaps = DDSCAPS_SYSTEMMEMORY;
     }
 
@@ -121,7 +121,7 @@ i32 CImage::LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 ke
     m_height = h;
     m_anchorX = w >> 1;
     m_anchorY = h >> 1;
-    if (item->m_hasColorKey != 0) {
+    if (item->m_hasColorKey != false) {
         m_bltFastFlags = DDBLTFAST_WAIT | DDBLTFAST_SRCCOLORKEY;
         return 1;
     }
@@ -133,7 +133,7 @@ RVA(0x001530e0, 0x92)
 i32 CImage::CreateBlankSurface(i32 width, i32 height, i32 keyed) {
     i32 colorKey = (keyed != 0) ? g_surfaceColorKey : -1;
     i32 surfaceCaps = 0;
-    if (g_resourceInstallActive != 0) {
+    if (g_resourceInstallActive != false) {
         surfaceCaps = DDSCAPS_SYSTEMMEMORY;
     }
     CDDSurface* item = m_ownerCtx->m_deviceManager
@@ -148,7 +148,7 @@ i32 CImage::CreateBlankSurface(i32 width, i32 height, i32 keyed) {
     m_height = h;
     m_anchorX = w >> 1;
     m_anchorY = h >> 1;
-    if (item->m_hasColorKey != 0) {
+    if (item->m_hasColorKey != false) {
         m_bltFastFlags = DDBLTFAST_WAIT | DDBLTFAST_SRCCOLORKEY;
     } else {
         m_bltFastFlags = DDBLTFAST_WAIT;

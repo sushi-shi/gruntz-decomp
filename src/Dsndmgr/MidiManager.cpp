@@ -22,18 +22,18 @@ DATA(0x00253c64)
 HINSTANCE g_midiResourceModule = NULL;
 
 RVA(0x00138490, 0x5e)
-i32 MidiManager::Initialize(HINSTANCE instanceHandle, HWND ownerWindow, i32 disableMidi) {
+i32 MidiManager::Initialize(HINSTANCE instanceHandle, HWND ownerWindow, b32 disableMidi) {
     m_instanceHandle = instanceHandle;
     m_ownerWindow = ownerWindow;
     m_currentSequence = NULL;
-    m_midiAvailable = 1;
+    m_midiAvailable = true;
     g_midiResourceModule = instanceHandle;
-    if (disableMidi != 0) {
-        m_midiAvailable = 0;
+    if (disableMidi != false) {
+        m_midiAvailable = false;
     } else {
         AIL_startup();
         if (AIL_midiOutOpen(&g_ailMidiDriver, NULL, -1) != 0 || g_ailMidiDriver == NULL) {
-            m_midiAvailable = 0;
+            m_midiAvailable = false;
         }
     }
     return 1;
@@ -74,7 +74,7 @@ void MidiManager::ClearSequences() {
 
 RVA(0x001385e0, 0x85)
 MidiSequence* MidiManager::LoadFile(const char* path, const char* name) {
-    if (m_midiAvailable == 0) {
+    if (m_midiAvailable == false) {
         return NULL;
     }
     MidiSequence* sequence = new MidiSequence();
@@ -90,7 +90,7 @@ MidiSequence* MidiManager::LoadFile(const char* path, const char* name) {
 
 RVA(0x00138670, 0x8a)
 MidiSequence* MidiManager::LoadBuffer(const void* data, u32 dataBytes, const char* name) {
-    if (m_midiAvailable == 0) {
+    if (m_midiAvailable == false) {
         return NULL;
     }
     MidiSequence* sequence = new MidiSequence();
@@ -109,7 +109,7 @@ void MidiManager::RegisterSequence(MidiSequence* sequence) {
     if (sequence == NULL) {
         return;
     }
-    if (m_midiAvailable == 0) {
+    if (m_midiAvailable == false) {
         return;
     }
     m_sequences[sequence->m_name] = static_cast<CObject*>(sequence);
@@ -137,8 +137,8 @@ MidiSequence* MidiManager::FindSequence(const char* name) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00138780, 0x5b)
-i32 MidiManager::LoadAndPlayFile(const char* path, i32 looping, const char* name) {
-    if (m_midiAvailable == 0) {
+i32 MidiManager::LoadAndPlayFile(const char* path, b32 looping, const char* name) {
+    if (m_midiAvailable == false) {
         return 0;
     }
     MidiSequence* sequence = LoadFile(path, name);
@@ -156,8 +156,8 @@ i32 MidiManager::LoadAndPlayFile(const char* path, i32 looping, const char* name
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001387e0, 0x60)
-i32 MidiManager::LoadAndPlayBuffer(const void* data, u32 dataBytes, i32 looping, const char* name) {
-    if (m_midiAvailable == 0) {
+i32 MidiManager::LoadAndPlayBuffer(const void* data, u32 dataBytes, b32 looping, const char* name) {
+    if (m_midiAvailable == false) {
         return 0;
     }
     MidiSequence* sequence = LoadBuffer(data, dataBytes, name);
@@ -173,8 +173,8 @@ i32 MidiManager::LoadAndPlayBuffer(const void* data, u32 dataBytes, i32 looping,
 }
 
 RVA(0x00138840, 0x56)
-i32 MidiManager::PlaySequence(const char* name, i32 looping) {
-    if (m_midiAvailable == 0) {
+i32 MidiManager::PlaySequence(const char* name, b32 looping) {
+    if (m_midiAvailable == false) {
         return 0;
     }
     MidiSequence* sequence = FindSequence(name);
@@ -198,7 +198,7 @@ void MidiManager::EndAndClearCurrent() {
 }
 
 RVA(0x001388c0, 0x2a)
-i32 MidiManager::RestartCurrent(i32 looping) {
+i32 MidiManager::RestartCurrent(b32 looping) {
     if (m_currentSequence == NULL) {
         return 0;
     }
@@ -319,7 +319,7 @@ i32 MidiSequence::LoadBuffer(const void* data, u32 dataBytes, const char* name) 
         return 0;
     }
     ++g_midiSequenceCounter;
-    m_looping = 0;
+    m_looping = false;
     m_tempoPct = 100;
     m_volumePct = VOLUME_PCT_MAX;
     if (name != NULL) {
@@ -378,14 +378,14 @@ void MidiSequence::Unload() {
 }
 
 RVA(0x00138e10, 0x4a)
-i32 MidiSequence::Play(HWND ownerWindow, i32 looping) {
+i32 MidiSequence::Play(HWND ownerWindow, b32 looping) {
     if (IsLoaded() == 0) {
         return 0;
     }
     m_ownerWindow = ownerWindow;
     m_looping = looping;
     AIL_start_sequence(m_sequenceHandle);
-    if (looping != 0) {
+    if (looping != false) {
         AIL_set_sequence_loop_count(m_sequenceHandle, 0);
     }
     m_pauseDepth = 0;
@@ -493,13 +493,13 @@ i32 MidiSequence::SetVolumePercent(i32 volumePct, i32 durationMs) {
 }
 
 RVA(0x00139030, 0x4c)
-i32 MidiSequence::SetLooping(i32 looping) {
+i32 MidiSequence::SetLooping(b32 looping) {
     if (IsLoaded() == 0) {
         return 0;
     }
     if (m_looping != looping) {
         m_looping = looping;
-        if (looping != 0) {
+        if (looping != false) {
             AIL_set_sequence_loop_count(m_sequenceHandle, 0);
         } else {
             AIL_set_sequence_loop_count(m_sequenceHandle, 1);

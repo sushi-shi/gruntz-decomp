@@ -38,8 +38,8 @@ CGameApp::CGameApp() {
     m_gameMgr = NULL;
     m_hAccel = NULL;
     m_hInstance = NULL;
-    m_appActive = 0;
-    m_errorReported = 0;
+    m_appActive = false;
+    m_errorReported = false;
     m_errorCode = 0;
     m_errorDetail = 0;
     g_gameAppInstanceCount++;
@@ -63,8 +63,8 @@ i32 CGameApp::InitInstance(
         goto Fail;
     }
 
-    m_running = 1;
-    m_errorReported = 0;
+    m_running = true;
+    m_errorReported = false;
     m_errorCode = 0;
     m_errorDetail = 0;
     m_gameInfo = *pGameInfo;
@@ -319,25 +319,25 @@ void CGameApp::FreeGameManager(){FREE_GAME_MANAGER}
 
 RVA(0x0013dcb0, 0x57)
 void CGameApp::ReportError(WPARAM wParam, LPARAM lParam) {
-    if (m_errorReported != 0) {
+    if (m_errorReported != false) {
         return;
     }
     CGameWnd* wnd = m_gameWnd;
-    m_errorReported = 1;
-    if (wnd != NULL && wnd->m_closeGuard == 0) {
+    m_errorReported = true;
+    if (wnd != NULL && wnd->m_closeGuard == false) {
         PostMessageA(wnd->m_hwnd, WM_CLOSE, 0, 0);
     }
-    m_running = 0;
+    m_running = false;
     m_errorCode = wParam;
     m_errorDetail = lParam;
 }
 
 RVA(0x0013dd10, 0x35)
 CGameMgr::CGameMgr() {
-    m_soundEnabled = 1;
-    m_musicEnabled = 1;
+    m_soundEnabled = true;
+    m_musicEnabled = true;
     CLEAR_GAME_MANAGER_WINDOW;
-    m_frameGate = 0;
+    m_frameGate = false;
     m_targetFps = 0;
     ResetFpsSampleWindow(1);
     ResetFrameTiming();

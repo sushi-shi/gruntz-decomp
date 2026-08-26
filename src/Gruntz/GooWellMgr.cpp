@@ -34,7 +34,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
                 if (out && out->m_sound) {
                     m_rollingballLoop = static_cast<SoundBuffer*>(out->m_sound->AcquireInstance());
                     if (m_rollingballLoop) {
-                        m_rollingballLoop->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
+                        m_rollingballLoop->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, true);
                     }
                 }
             }
@@ -49,7 +49,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
                 if (out && out->m_sound) {
                     m_teleportLoop = static_cast<SoundBuffer*>(out->m_sound->AcquireInstance());
                     if (m_teleportLoop) {
-                        m_teleportLoop->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
+                        m_teleportLoop->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, true);
                     }
                 }
             }
@@ -58,8 +58,8 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
             m_teleportLoop = NULL;
         }
     }
-    m_rollingballWanted = 0;
-    m_teleportWanted = 0;
+    m_rollingballWanted = false;
+    m_teleportWanted = false;
 
     i32 count = 0;
     GruntzPlayer* pslot = NULL;
@@ -70,11 +70,12 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
         }
     }
     if (count <= 1 && m_phase == FINISH_STATE_DEFEAT
-        && (static_cast<CPlay*>(g_gameReg->m_curState))->m_statusBar->m_levelOverlayActive == 0
-        && (static_cast<CPlay*>(g_gameReg->m_curState))->m_statusBar->m_quitConfirmationActive == 0
+        && (static_cast<CPlay*>(g_gameReg->m_curState))->m_statusBar->m_levelOverlayActive == false
+        && (static_cast<CPlay*>(g_gameReg->m_curState))->m_statusBar->m_quitConfirmationActive
+               == false
         && m_pendingFx == NULL) {
         if (static_cast<i64>(g_frameTime) - m_timerBase >= m_timerWindow) {
-            (static_cast<CPlay*>(g_gameReg->m_curState))->OpenLevelOverlay(0);
+            (static_cast<CPlay*>(g_gameReg->m_curState))->OpenLevelOverlay(false);
         }
     }
 
@@ -91,7 +92,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
 
                 (static_cast<CMulti*>(g_gameReg->m_curState))->m_roundComplete = true;
             }
-            (static_cast<CPlay*>(g_gameReg->m_curState))->OpenLevelOverlay(0);
+            (static_cast<CPlay*>(g_gameReg->m_curState))->OpenLevelOverlay(false);
             m_countdownActive = false;
             return 0;
         }
@@ -105,7 +106,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
         if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ && m_pendingFx != NULL) {
             goto done;
         }
-        (static_cast<CPlay*>(g_gameReg->m_curState))->OpenLevelOverlay(0);
+        (static_cast<CPlay*>(g_gameReg->m_curState))->OpenLevelOverlay(false);
         m_countdownActive = false;
         return 0;
     }
@@ -124,7 +125,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
                         }
                         GruntzPlayer* slot = &g_gameReg->m_players[i];
                         if (slot && slot->m_joined && !slot->m_doneFlag && !slot->m_clearedRound) {
-                            slot->m_clearedRound = 1;
+                            slot->m_clearedRound = true;
                             CGameObject* out = NULL;
                             if (MapLookupById(
                                     g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
@@ -172,7 +173,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
             m_overlay->RefreshIfActive(deltaMs);
         }
         if (g_gameReg->m_gameMode == GAMEMODE_BATTLEZ) {
-            if (obj->m_winLoseBanner != 0 && m_unitCountByPlayer[g_curPlayer] == 0) {
+            if (obj->m_winLoseBanner != false && m_unitCountByPlayer[g_curPlayer] == 0) {
                 LoadFinishLevelSprite(FINISH_REASON_TIME_EXPIRED);
                 return 0;
             }
@@ -181,7 +182,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
             if (m_unitCountByPlayer[g_curPlayer] != 0) {
                 goto done;
             }
-            if (obj->m_winLoseBanner != 0) {
+            if (obj->m_winLoseBanner != false) {
                 LoadFinishLevelSprite(FINISH_REASON_TIME_EXPIRED);
             } else {
                 LoadFinishLevelSprite(FINISH_REASON_NO_GRUNTZ_REMAIN);

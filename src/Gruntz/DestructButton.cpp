@@ -15,6 +15,6 @@ void CStatusBarMgr::StartDestructWarning(i32 countdownMs) {
     m_destructWarningClock.m_interval =
         static_cast<u32>(g_buteMgr.GetDwordDef("StatusBar", "DestructButtonWarningDelay", 0x32));
     m_destructWarningClock.m_last = static_cast<u32>(g_frameTime);
-    play->SetDefeatCountdown(1, countdownMs);
+    play->SetDefeatCountdown(true, countdownMs);
     LockDestructButton(0);
 }

@@ -43,11 +43,11 @@ RVA(0x000ef6b0, 0x61d)
 i32 CGrunt::StepDumbChaserBehavior() {
     m_defenderPx = m_lastTilePx;
     CGrunt* g = m_triggerMgr->FindNearestEnemy(this);
-    i32 hitGate = 0;
+    b32 hitGate = false;
     if (g != NULL) {
         CGameObject* gp = g->m_object;
         if (GRUNT_OBJECT_AT_SAVED_SCREEN_POS(gp, g) && RectContains(gp->m_screenX, gp->m_screenY)) {
-            hitGate = 1;
+            hitGate = true;
         }
     }
 
@@ -61,7 +61,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                 if (FindGridNeighbor(1) != NULL) {
                     return 1;
                 }
-                if (hitGate != 0 && g == NULL) {
+                if (hitGate != false && g == NULL) {
                     return 1;
                 }
                 if (m_poweredUp == false) {
@@ -73,7 +73,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                 RESET_GRUNT_POWERED_STATE(this)
                 return 1;
             }
-            if (hitGate != 0) {
+            if (hitGate != false) {
                 return 1;
             }
             if (m_poweredUp == false) {
@@ -93,7 +93,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
         case AISTATE_SEEK: {
 
             if (g != NULL) {
-                if (hitGate != 0 && m_stamina >= STAMINA_FULL) {
+                if (hitGate != false && m_stamina >= STAMINA_FULL) {
                     CGameObject* gp = g->m_object;
                     if (GRUNT_OBJECT_AT_SAVED_SCREEN_POS(gp, g)
                         && RectContains(gp->m_screenX, gp->m_screenY)) {

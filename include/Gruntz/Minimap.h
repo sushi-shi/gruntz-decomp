@@ -39,7 +39,7 @@ public:
 
     i32 AllocSurface();
 
-    i32 Refresh(i32 elapsedMs, i32 forceRefresh);
+    i32 Refresh(i32 elapsedMs, b32 forceRefresh);
 
     i32 Draw(CDDrawSurfacePair* target, RECT* bounds);
 

@@ -26,7 +26,7 @@ public:
     u32 m_pulseEpoch;
     i32 m_activeWindow;
     i32 m_idleWindow;
-    i32 m_fired;
+    b32 m_fired;
     i32 m_tileCol;
     i32 m_tileRow;
 };

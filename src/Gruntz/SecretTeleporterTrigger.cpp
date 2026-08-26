@@ -98,7 +98,7 @@ RVA(0x00041e90, 0x1ac)
 CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
 
-    if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+    if (g_gameReg->m_isEasyMode != false && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     } else {
         SNAP_OBJECT_TO_TILE_CENTER(m_object)
@@ -131,7 +131,7 @@ void CSecretTeleporterTrigger::RegisterActs() {
 RVA(0x000424b0, 0x1a0)
 CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ && g_gameReg->m_isCustomLevel == 0) {
+    if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ && g_gameReg->m_isCustomLevel == false) {
         SNAP_OBJECT_TO_TILE_CENTER(m_object)
         CWwdSpriteObject* o = m_object;
         SET_SORT_KEY_IF_CHANGED(o, 0)
@@ -167,15 +167,15 @@ i32 CSecretLevelTrigger::Tick() {
                       ->HitTestCell(spr->m_screenX, spr->m_screenY, &playerIndex, &unitIndex, 1);
     if (hit) {
         spr = m_object;
-        i32 ok = 1;
+        b32 ok = true;
         i32 lvl = spr->m_powerup;
         i32 lyr = spr->m_damage;
 
         if (lvl != IDX(PICKUP_NONE) && IDX(hit->m_entranceReason) != lvl) {
-            ok = 0;
+            ok = false;
         }
         if (lyr != IDX(PICKUP_NONE) && IDX(hit->m_vehiclePickupType) != lyr) {
-            ok = 0;
+            ok = false;
         }
         if (ok) {
             g_gameReg->m_triggerMgr->StartUnitDeath(playerIndex, unitIndex, DEATH_DRAIN, -1);

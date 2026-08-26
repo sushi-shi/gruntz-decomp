@@ -238,12 +238,12 @@ CObjectDropper::CObjectDropper(CGameObject* obj)
     }
 
     i32 time = g_buteMgr.GetDwordDef("Hazardz", "ObjectDropperTimePerTile", 1000);
-    m_scrollMode = 0;
+    m_scrollMode = OBJECT_DROP_ALL_PLAYERS;
     m_lastDropPlayerIndex = -1;
     m_lastDropUnitIndex = -1;
     m_speed = g_objDropDiv / static_cast<double>(static_cast<u32>(time));
     if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-        m_scrollMode = 1;
+        m_scrollMode = OBJECT_DROP_PLAYER_ZERO_ONLY;
     }
     CShadeTable* sel = g_gameReg->m_lightFxMgr->m_tables[5];
     SET_DRAW_FILL(m_object, SHADE_DST_BY_SRC_16, sel);
@@ -269,7 +269,7 @@ void CObjectDropper::RegisterActs() {
 RVA(0x000c62e0, 0x2dd)
 i32 CObjectDropper::Update() {
     if (static_cast<i64>(g_frameTime) - m_lastDropTime >= m_dropInterval) {
-        if (g_gameReg->m_isEasyMode == 0 || g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
+        if (g_gameReg->m_isEasyMode == false || g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
             CWwdSpriteObject* o = m_object;
             RECT box;
             box.left = o->m_screenX - o->m_frameImage->m_anchorX + 7;
@@ -288,7 +288,7 @@ i32 CObjectDropper::Update() {
             );
             if (found != NULL) {
                 if (m_lastDropPlayerIndex != playerIndex || m_lastDropUnitIndex != unitIndex) {
-                    if (m_scrollMode == 0 || playerIndex == 0) {
+                    if (m_scrollMode == OBJECT_DROP_ALL_PLAYERS || playerIndex == 0) {
                         CGameObject* fo = found->m_object;
                         i32 fx = fo->m_screenX;
                         i32 fy = fo->m_screenY;

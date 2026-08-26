@@ -120,7 +120,7 @@ i32 CDDSurface::Refresh(IDirectDrawSurface* surface) {
     }
 
     ColorDepth bits = m_srcBitDepth;
-    m_hasColorKey = 0;
+    m_hasColorKey = false;
     m_bitDepth = bits;
 
     switch (bits) {
@@ -200,7 +200,7 @@ i32 CDDSurface::BlitIntoDesc(CDDrawDeviceManager* manager) {
     }
 
     ColorDepth bits = m_srcBitDepth;
-    m_hasColorKey = 0;
+    m_hasColorKey = false;
     m_bitDepth = bits;
     switch (bits) {
         case BPP_PALETTED_8:
@@ -506,9 +506,9 @@ void CDDSurface::FillPalette(u32 key) {
     ck.dwColorSpaceLowValue = key;
     ck.dwColorSpaceHighValue = key;
     if (static_cast<i32>(key) != -1) {
-        this->m_hasColorKey = 1;
+        this->m_hasColorKey = true;
     } else {
-        this->m_hasColorKey = 0;
+        this->m_hasColorKey = false;
     }
     this->SetColorKey(DDCKEY_SRCBLT, &ck);
 }
@@ -1074,8 +1074,8 @@ i32 CDDSurface::RestoreLost() {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013f990, 0xc4)
-void CDDSurface::Tile(CDDSurface* src, i32 useColorKey) {
-    i32 dwTrans = DDBLTFAST_WAIT + DDBLTFAST_SRCCOLORKEY * (useColorKey != 0);
+void CDDSurface::Tile(CDDSurface* src, b32 useColorKey) {
+    i32 dwTrans = DDBLTFAST_WAIT + DDBLTFAST_SRCCOLORKEY * (useColorKey != false);
     for (i32 y = 0; y < m_height; y += src->m_height) {
         for (i32 x = 0; x < m_width; x += src->m_width) {
             RECT rect;

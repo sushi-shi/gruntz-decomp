@@ -27,7 +27,7 @@ public:
 
     i32 UpdateCountdown();
 
-    i32 m_fastPhase;
+    b32 m_fastPhase;
     union {
         struct {
             i64 m_startTime;

@@ -69,7 +69,7 @@ public:
     virtual i32 RetryStorageOperation();
 
     CRezArchive();
-    CRezArchive(char* path, i32 readOnly, i32 createNew);
+    CRezArchive(char* path, b32 readOnly, b32 createNew);
 
     ~CRezArchive();
 
@@ -77,15 +77,15 @@ public:
 
     CRezArchiveDir* GetRootDirectory();
 
-    i32 Open(char* path, i32 readOnly, i32 createNew);
+    i32 Open(char* path, b32 readOnly, b32 createNew);
 
-    i32 MergeArchive(char* path, i32 replaceExisting);
+    i32 MergeArchive(char* path, b32 replaceExisting);
 
     i32 ImportDirectoryTree(
         CRezItmBase* storage,
         CRezArchiveDir* directory,
         char* path,
-        i32 replaceExisting
+        b32 replaceExisting
     );
 
     i32 IsDirectoryPath(char* path);
@@ -117,8 +117,8 @@ public:
     void ReleaseEntry(CRezArchiveEntry* entry);
 
     char* m_pathDelimiters;
-    i32 m_isDataContiguous;
-    i32 m_isOpen;
+    b32 m_isDataContiguous;
+    b32 m_isOpen;
     CRezStorageList m_storages;
     CRezItmBase* m_primaryStorage;
     i32 m_reserved24;
@@ -128,10 +128,10 @@ public:
     i32 m_rootDirectorySize;
     i32 m_rootDirectoryTime;
     i32 m_nextWritePos;
-    i32 m_readOnly;
+    b32 m_readOnly;
     CRezArchiveDir* m_rootDirectory;
     i32 m_archiveTime;
-    i32 m_isNewArchive;
+    b32 m_isNewArchive;
     RezArchiveVersion m_version;
 
     u32 m_largestKeyArrayLength;
@@ -139,8 +139,8 @@ public:
     u32 m_largestResourceNameSize;
     u32 m_largestCommentSize;
     char* m_archivePath;
-    i32 m_caseSensitive;
-    i32 m_useIdIndex;
+    b32 m_caseSensitive;
+    b32 m_useIdIndex;
     i32 m_resourceNameBucketCount;
     i32 m_resourceIdBucketCount;
     i32 m_subdirectoryBucketCount;

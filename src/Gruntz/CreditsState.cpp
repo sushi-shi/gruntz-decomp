@@ -48,7 +48,7 @@
 #include <string.h>
 
 DATA(0x0022bf74)
-i32 g_clipRegionEnabled;
+b32 g_clipRegionEnabled;
 
 DATA(0x001e96f0)
 static const double kScrollRate = 0.025;
@@ -72,7 +72,7 @@ i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 pre
     m_flashColor = 0;
     m_flashTimer = 0;
     m_fadeCountdown = 0;
-    m_fxEnabled = 0;
+    m_fxEnabled = false;
     m_stateResources = m_resourceArchive->FindDirectoryByPath("STATEZ_CREDITZ");
     if (!m_stateResources) {
         return 0;
@@ -114,7 +114,7 @@ i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 pre
     SetupTitle();
     m_reserved20c = 2;
     i32 r = FinishState();
-    m_musicStarted = 0;
+    m_musicStarted = false;
     return r;
 }
 
@@ -191,7 +191,7 @@ i32 CCreditsState::Render() {
                 } else {
                     PostMessageA(owner()->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_ATTRACT), 0);
                 }
-                owner()->m_owner->m_running = 0;
+                owner()->m_owner->m_running = false;
                 break;
             }
         }
@@ -205,8 +205,8 @@ i32 CCreditsState::Render() {
     v4->m_backPair->BltSelf(v4->m_overlayPair);
 
     if (!m_musicStarted && owner()->m_musicEnabled) {
-        owner()->m_midi->PlaySequence("CREDITZ", 1);
-        m_musicStarted = 1;
+        owner()->m_midi->PlaySequence("CREDITZ", true);
+        m_musicStarted = true;
     }
 
     if (m_fxEnabled) {
@@ -274,7 +274,7 @@ i32 CCreditsState::OnLButtonDown(i32 unused, i32 x, i32 y) {
 
 RVA(0x00039570, 0x122)
 i32 CCreditsState::InitAttractTitle() {
-    if (m_videoPlaying != 0) {
+    if (m_videoPlaying != false) {
         (static_cast<CDDrawSubMgrPages*>(m_world->m_drawTarget))->PresentBackPage();
         (static_cast<CDDrawSubMgrPages*>(m_world->m_drawTarget))->TransTitle();
         (static_cast<CDDrawSubMgrPages*>(m_world->m_drawTarget))->ClearAllPages(0);
@@ -292,7 +292,7 @@ i32 CCreditsState::InitAttractTitle() {
     if (state == NULL) {
         return 0;
     }
-    i32 faded = LoadTitlePage(titleName, 0, 0, 1, 0, 0);
+    i32 faded = LoadTitlePage(titleName, 0, 0, 1, 0, false);
     if (faded == 0) {
         m_stateResources = saved;
         return 0;
@@ -301,7 +301,7 @@ i32 CCreditsState::InitAttractTitle() {
     CDDSurface* tgt = m_world->m_drawTarget->m_backPair->m_surface;
     tgt->ShadeRect(g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32), NULL);
     (static_cast<CDDrawSubMgrPages*>(m_world->m_drawTarget))->TransTitle();
-    RetireScene(0x50, 0x3e8, 0, 1);
+    RetireScene(0x50, 0x3e8, 0, true);
     return 1;
 }
 
@@ -319,7 +319,7 @@ i32 CCreditsState::DrawScrollingCredits() {
     } else {
         m_scrollReseedTimer -= g_frameDelta;
     }
-    if (m_fxEnabled != 0) {
+    if (m_fxEnabled != false) {
         if (g_frameDelta >= m_flashTimer) {
             m_flashTimer = 0;
         } else {
@@ -348,20 +348,20 @@ i32 CCreditsState::DrawScrollingCredits() {
     prov->m_ddSurface->GetDC(&hdc);
     if (hdc != NULL) {
         i32 oldBk = SetBkMode(hdc, TRANSPARENT);
-        if (g_clipRegionEnabled != 0) {
+        if (g_clipRegionEnabled != false) {
             SelectClipRgn(hdc, m_clipRegion);
         }
         i32 oldColor = SetTextColor(hdc, FlashColor());
         DrawTextA(hdc, m_caption, -1, &m_drawRect, 0x50);
         SetTextColor(hdc, oldColor);
-        if (m_fxEnabled != 0 && m_fadeCountdown != 0) {
+        if (m_fxEnabled != false && m_fadeCountdown != 0) {
             CString s("Now is the time at Monolith when we dance");
             RECT r = {0, 0, SCREEN_W_PX, SCREEN_H_PX};
             i32 oldColor2 = SetTextColor(hdc, 0xffffff);
             DrawTextA(hdc, s, -1, &r, 0x75);
             SetTextColor(hdc, oldColor2);
         }
-        if (g_clipRegionEnabled != 0) {
+        if (g_clipRegionEnabled != false) {
             SelectClipRgn(hdc, NULL);
         }
         SetBkMode(hdc, oldBk);
@@ -409,7 +409,7 @@ i32 CCreditsState::SetupTitle() {
 
 RVA(0x00039c40, 0x10)
 i32 CCreditsState::FinishState() {
-    m_videoPlaying = 0;
+    m_videoPlaying = false;
     return 1;
 }
 
@@ -454,7 +454,7 @@ i32 CCreditsState::FlashColor() {
 
 RVA(0x00039dc0, 0x10b)
 void CCreditsState::LoadCreditzAssets() {
-    i32 rising = (m_fxEnabled == 0);
+    b32 rising = (m_fxEnabled == false);
     m_fxEnabled = rising;
     if (rising) {
         m_flashTimer = 0;
@@ -466,7 +466,7 @@ void CCreditsState::LoadCreditzAssets() {
         MidiSequence* monolithSequence = m_mgr->m_midi->FindSequence("MONOLITH");
         if (monolithSequence != NULL) {
             g_gameReg->m_midi->m_currentSequence = monolithSequence;
-            g_gameReg->m_midi->RestartCurrent(0);
+            g_gameReg->m_midi->RestartCurrent(false);
         }
     } else {
         m_fadeCountdown = 0;

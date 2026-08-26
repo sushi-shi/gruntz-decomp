@@ -102,10 +102,10 @@ i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
     }
     m_activeSlot = -1;
     m_pendingHlRow = STATUS_HL_ROW_NONE;
-    m_rezActive = 0;
+    m_rezActive = false;
     m_rezTick = 0;
-    m_levelOverlayActive = 0;
-    m_quitConfirmationActive = 0;
+    m_levelOverlayActive = false;
+    m_quitConfirmationActive = false;
     m_battlezPct[0] = g_buteMgr.GetInt("Multiplayer", "ToolzPercent");
     m_battlezPct[1] = m_battlezPct[0] + g_buteMgr.GetInt("Multiplayer", "ToyzPercent");
     m_battlezPct[2] = m_battlezPct[1] + g_buteMgr.GetInt("Multiplayer", "BrickzPercent");
@@ -157,7 +157,7 @@ RVA(0x000fe350, 0x6d)
 void CStatusBarMgr::Teardown() {
     (static_cast<Utils::RegistryHelper*>(g_gameReg->m_settings))
         ->SetValueDword("StatusBar Position", IDX(m_position));
-    ResetWidgets(0);
+    ResetWidgets(false);
     for (i32 i = 0; i < m_rewardQueue.GetSize(); i++) {
         Coord* p = static_cast<Coord*>(m_rewardQueue.GetData()[i]);
         if (p) {
@@ -172,7 +172,7 @@ void CStatusBarMgr::Teardown() {
 
 RVA(0x000fe3e0, 0x55)
 i32 CStatusBarMgr::SetState(StatusBarDock state) {
-    if (m_hlBusy != 0) {
+    if (m_hlBusy != false) {
         return 1;
     }
     StatusBarDock old = m_position;
@@ -195,8 +195,8 @@ i32 CStatusBarMgr::SetState(StatusBarDock state) {
 
 RVA(0x000fe460, 0x83)
 i32 CStatusBarMgr::DockStatusBarLeft() {
-    if (m_hlBusy == 0 && m_position != STATUSBAR_DOCK_LEFT) {
-        ResetWidgets(1);
+    if (m_hlBusy == false && m_position != STATUSBAR_DOCK_LEFT) {
+        ResetWidgets(true);
         SetRect(&m_barRect, 0, 0, 0xa0, SCREEN_H_PX);
         SetState(STATUSBAR_DOCK_LEFT);
         (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
@@ -211,13 +211,13 @@ i32 CStatusBarMgr::DockStatusBarLeft() {
 
 RVA(0x000fe520, 0xa9)
 i32 CStatusBarMgr::DockStatusBarRight() {
-    if (m_hlBusy != 0) {
+    if (m_hlBusy != false) {
         return 1;
     }
     if (m_position == STATUSBAR_DOCK_RIGHT) {
         return 1;
     }
-    ResetWidgets(1);
+    ResetWidgets(true);
 
     tagSIZE screenSize = g_gameReg->m_modeSize;
     SetRect(&m_barRect, screenSize.cx - 0xa0, 0, screenSize.cx, SCREEN_H_PX);
@@ -233,8 +233,8 @@ i32 CStatusBarMgr::DockStatusBarRight() {
 
 RVA(0x000fe600, 0x49)
 i32 CStatusBarMgr::HideRect() {
-    if (m_hlBusy == 0 && m_position != STATUSBAR_HIDDEN) {
-        ResetWidgets(1);
+    if (m_hlBusy == false && m_position != STATUSBAR_HIDDEN) {
+        ResetWidgets(true);
         SetRect(&m_barRect, -1, -1, -1, -1);
         SetState(STATUSBAR_HIDDEN);
         (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
@@ -244,7 +244,7 @@ i32 CStatusBarMgr::HideRect() {
 
 RVA(0x000fe670, 0x2b)
 i32 CStatusBarMgr::RestoreStatusBar() {
-    if (m_hlBusy != 0) {
+    if (m_hlBusy != false) {
         return 1;
     }
     if (m_position != STATUSBAR_HIDDEN) {
@@ -326,39 +326,39 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
 
 static __inline void HiCueFind() {
     SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-    if (registry->m_silentMode == 0) {
+    if (registry->m_silentMode == false) {
         CObject* obj = registry->Lookup("GAME_TABHIGHLIGHT1");
         if (obj) {
-            static_cast<SoundCue*>(obj)->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
+            static_cast<SoundCue*>(obj)->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
         }
     }
 }
 
 static __inline void HiCueLookup() {
     SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-    if (registry->m_silentMode == 0) {
+    if (registry->m_silentMode == false) {
         SoundCue* out = NULL;
         MapLookup(registry->m_cues, "GAME_TABHIGHLIGHT1", out);
         if (out) {
-            out->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
+            out->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
         }
     }
 }
 
 static __inline void HiCueTimed() {
     SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-    if (registry->m_silentMode == 0) {
+    if (registry->m_silentMode == false) {
         SoundCue* found = NULL;
         MapLookup(registry->m_cues, "GAME_TABHIGHLIGHT1", found);
         if (found) {
-            i32 soundEnabled = g_soundEnabled;
+            b32 soundEnabled = g_soundEnabled;
             i32 volumePercent = g_soundVolumePercent;
-            if (soundEnabled != 0) {
+            if (soundEnabled != false) {
                 SoundCue* p = found;
                 if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                     >= static_cast<u32>(p->m_replayDelayMs)) {
                     p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                    p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
+                    p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
                 }
             }
         }
@@ -407,10 +407,10 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
     SbiCommandId cmd = w->m_cmd;
     switch (w->m_tab) {
         case TAB_CONTROLS:
-            if (m_chatBoxDisabled != 0) {
+            if (m_chatBoxDisabled != false) {
                 break;
             }
-            if (g_gameReg->m_triggerMgr->m_groupFlag == 0) {
+            if (g_gameReg->m_triggerMgr->m_groupFlag == false) {
                 break;
             }
             switch (cmd) {
@@ -439,7 +439,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
             }
 
         case TAB_GAME:
-            if (m_levelOverlayActive != 0) {
+            if (m_levelOverlayActive != false) {
                 break;
             }
             switch (cmd) {
@@ -465,25 +465,25 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                     return 1;
                 case SBICMD_QUIT:
                     HiCueLookup();
-                    if (g_gameReg->m_frameGate != 0) {
-                        i32 gate = g_gameReg->m_frameGate ^ 1;
+                    if (g_gameReg->m_frameGate != false) {
+                        b32 gate = !g_gameReg->m_frameGate;
                         g_gameReg->m_frameGate = gate;
-                        g_gameReg->FinishLevel(gate, 1);
+                        g_gameReg->FinishLevel(gate, true);
                     }
-                    (static_cast<CPlay*>(g_gameReg->m_curState))->OpenLevelOverlay(1);
+                    (static_cast<CPlay*>(g_gameReg->m_curState))->OpenLevelOverlay(true);
                     return 1;
                 case SBICMD_GAME_TAB:
                     HiCueLookup();
-                    SetTab(GAME_TAB_MENU, 0);
+                    SetTab(GAME_TAB_MENU, false);
                     return 1;
                 case SBICMD_DESTRUCT:
                     if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
                         break;
                     }
-                    if (m_destructButtonLocked != 0) {
+                    if (m_destructButtonLocked != false) {
                         break;
                     }
-                    if (m_chatBoxDisabled != 0) {
+                    if (m_chatBoxDisabled != false) {
                         break;
                     }
                     HiCueLookup();
@@ -499,7 +499,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                                 0x32
                             );
                             clock->m_last = static_cast<u32>(g_frameTime);
-                            sm->SetDefeatCountdown(1, 0xbb7);
+                            sm->SetDefeatCountdown(true, 0xbb7);
                         } else {
                             CSBI_ImageSet* destructButtonImage = m_destructButtonImage;
                             m_destructWarningState = DESTRUCT_WARNING_INACTIVE;
@@ -507,7 +507,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                             if (destructButtonImage) {
                                 destructButtonImage->Notify(1);
                             }
-                            sm->SetDefeatCountdown(0, 0xbb7);
+                            sm->SetDefeatCountdown(false, 0xbb7);
                         }
                     }
                     return 1;
@@ -517,10 +517,10 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
             break;
 
         case TAB_STATZ:
-            if (m_chatBoxDisabled != 0) {
+            if (m_chatBoxDisabled != false) {
                 break;
             }
-            if (g_gameReg->m_triggerMgr->m_groupFlag == 0) {
+            if (g_gameReg->m_triggerMgr->m_groupFlag == false) {
                 break;
             }
             switch (cmd) {
@@ -565,10 +565,10 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
             }
 
         case TAB_MULTIPLAYER:
-            if (m_chatBoxDisabled != 0) {
+            if (m_chatBoxDisabled != false) {
                 break;
             }
-            if (g_gameReg->m_triggerMgr->m_groupFlag == 0) {
+            if (g_gameReg->m_triggerMgr->m_groupFlag == false) {
                 break;
             }
             if (cmd < SBICMD_MULTIPLAYER_HEAD_FIRST || cmd > SBICMD_MULTIPLAYER_HEAD_LAST) {
@@ -576,16 +576,16 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
             }
             HiCueLookup();
             m_tabCycle = IDX(cmd) - IDX(SBICMD_MULTIPLAYER_HEAD_FIRST);
-            ResetWidgets(0);
+            ResetWidgets(false);
             TryActivate();
             Deactivate();
             return 1;
 
         case TAB_GRUNTZ:
-            if (m_chatBoxDisabled != 0) {
+            if (m_chatBoxDisabled != false) {
                 break;
             }
-            if (g_gameReg->m_triggerMgr->m_groupFlag == 0) {
+            if (g_gameReg->m_triggerMgr->m_groupFlag == false) {
                 break;
             }
             if (cmd < SBICMD_GRUNT_SLOT_FIRST || cmd > SBICMD_GRUNT_SLOT_LAST) {
@@ -595,10 +595,10 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
             return 1;
 
         case TAB_RESOURCE:
-            if (m_chatBoxDisabled != 0) {
+            if (m_chatBoxDisabled != false) {
                 break;
             }
-            if (g_gameReg->m_triggerMgr->m_groupFlag == 0) {
+            if (g_gameReg->m_triggerMgr->m_groupFlag == false) {
                 break;
             }
             switch (cmd) {
@@ -696,22 +696,23 @@ i32 CStatusBarMgr::HandleDoubleClick(i32 keyFlags, i32 x, i32 y) {
     }
     r->OnDoubleClick(keyFlags, x, y);
     SbiCommandId cmd = r->m_cmd;
-    if (r->m_tab == TAB_STATZ && m_chatBoxDisabled == 0 && g_gameReg->m_triggerMgr->m_groupFlag != 0
-        && cmd >= SBICMD_CURSOR_TARGET_FIRST && cmd <= SBICMD_CURSOR_TARGET_LAST) {
+    if (r->m_tab == TAB_STATZ && m_chatBoxDisabled == false
+        && g_gameReg->m_triggerMgr->m_groupFlag != false && cmd >= SBICMD_CURSOR_TARGET_FIRST
+        && cmd <= SBICMD_CURSOR_TARGET_LAST) {
         SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-        if (registry->m_silentMode == 0) {
+        if (registry->m_silentMode == false) {
             SoundCue* found = NULL;
             CMapStringToPtr* map = &registry->m_cues;
             MapLookup(*map, "GAME_TABHIGHLIGHT1", found);
             if (found) {
-                i32 soundEnabled = g_soundEnabled;
+                b32 soundEnabled = g_soundEnabled;
                 i32 volumePercent = g_soundVolumePercent;
-                if (soundEnabled != 0) {
+                if (soundEnabled != false) {
                     SoundCue* p = found;
                     if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                         >= static_cast<u32>(p->m_replayDelayMs)) {
                         p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                        p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
+                        p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
                     }
                 }
             }
@@ -741,7 +742,7 @@ i32 CStatusBarMgr::HandlePointerDrag(i32 keyFlags, i32 x, i32 y) {
         return 1;
     }
     SbiCommandId cmd = r->m_cmd;
-    if (m_chatBoxDisabled == 0) {
+    if (m_chatBoxDisabled == false) {
         if (cmd >= SBICMD_TAB_FIRST && cmd <= SBICMD_TAB_LAST) {
             SetTabState(cmd, MENUITEM_HIGHLIGHT);
         } else {
@@ -768,8 +769,9 @@ i32 CStatusBarMgr::HandlePointerDrag(i32 keyFlags, i32 x, i32 y) {
 // @early-stop
 RVA(0x000ffb20, 0x13a)
 i32 CStatusBarMgr::UpdateStatusBar(i32 deltaMs) {
-    if (g_gameReg->m_soundEnabled != 0) {
-        if (m_destructWarningState != DESTRUCT_WARNING_INACTIVE && m_destructButtonLocked == 0) {
+    if (g_gameReg->m_soundEnabled != false) {
+        if (m_destructWarningState != DESTRUCT_WARNING_INACTIVE
+            && m_destructButtonLocked == false) {
             if (m_destructWarningSound == NULL) {
 
                 SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
@@ -782,7 +784,7 @@ i32 CStatusBarMgr::UpdateStatusBar(i32 deltaMs) {
                         SoundBuffer* voice = sample->AcquireInstance();
                         m_destructWarningSound = voice;
                         if (voice) {
-                            voice->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
+                            voice->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, true);
                         }
                     }
                 }
@@ -831,7 +833,7 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
     while (n) {
         CStatusBarItem* r = static_cast<CStatusBarItem*>(m_tabLists[0].GetNext(n));
         if (r) {
-            i32 hit = r->m_enabled;
+            b32 hit = r->m_enabled;
             if (hit) {
                 hit = CGameLevel::PointInRect(&r->m_rect, x, y);
             }
@@ -845,7 +847,7 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
     while (n) {
         CStatusBarItem* r = static_cast<CStatusBarItem*>(tab.GetNext(n));
         if (r) {
-            i32 hit = r->m_enabled;
+            b32 hit = r->m_enabled;
             if (hit) {
                 hit = CGameLevel::PointInRect(&r->m_rect, x, y);
             }
@@ -858,7 +860,7 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
     while (n) {
         CStatusBarItem* r = static_cast<CStatusBarItem*>(m_tabLists[6].GetNext(n));
         if (r) {
-            i32 hit = r->m_enabled;
+            b32 hit = r->m_enabled;
             if (hit) {
                 hit = CGameLevel::PointInRect(&r->m_rect, x, y);
             }
@@ -872,7 +874,7 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
 
 RVA(0x000ffde0, 0x5b1)
 i32 CStatusBarMgr::BuildStatusBarTabs() {
-    if (m_tabsBuilt != 0) {
+    if (m_tabsBuilt != false) {
         return 1;
     }
     if (m_world == NULL) {
@@ -1030,7 +1032,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     if (BuildTabzDialog() == 0) {
         return 0;
     }
-    m_tabsBuilt = 1;
+    m_tabsBuilt = true;
     return 1;
 }
 
@@ -1104,7 +1106,7 @@ RVA_COMPGEN(0x001007d0, 0x7f, ??1CSBI_MenuItem@@UAE@XZ)
 RVA_COMPGEN(0x00100870, 0x6a, ??1CSBI_Image@@UAE@XZ)
 RVA_COMPGEN(0x00100900, 0x1e, ??_GCSBI_Image@@UAEPAXI@Z)
 RVA(0x00100930, 0x16c)
-void CStatusBarMgr::ResetWidgets(i32 keepHost) {
+void CStatusBarMgr::ResetWidgets(b32 keepHost) {
     for (i32 t = 0; t < 8; t++) {
         POSITION n = m_tabLists[t].GetHeadPosition();
         while (n) {
@@ -1153,7 +1155,7 @@ void CStatusBarMgr::ResetWidgets(i32 keepHost) {
     m_machineDisplay = NULL;
     m_gruntWellBackground = NULL;
     m_gruntWellGoo = NULL;
-    m_tabsBuilt = 0;
+    m_tabsBuilt = false;
 }
 
 RVA(0x00100b00, 0x150)
@@ -1460,7 +1462,7 @@ i32 CStatusBarMgr::BuildGameMenu() {
 
     if (m_itemKind != GAME_TAB_MISSION_STATUS) {
 
-        if (m_chatBoxDisabled != 0 && g_gameReg->m_frameGate != 0) {
+        if (m_chatBoxDisabled != false && g_gameReg->m_frameGate != false) {
             CSBI_MenuItem* resume = new CSBI_MenuItem;
             if (!resume->SetupImage(
                     this,
@@ -1656,8 +1658,8 @@ RVA_COMPGEN(0x00101fd0, 0x1e, ??_GCSBI_ImageSet@@UAEPAXI@Z)
 RVA_COMPGEN(0x00102000, 0x7f, ??1CSBI_ImageSet@@UAE@XZ)
 
 RVA(0x001020a0, 0xae)
-i32 CStatusBarMgr::SetTab(GameTabContent tab, i32 flag) {
-    if (tab == m_itemKind && flag == 0) {
+i32 CStatusBarMgr::SetTab(GameTabContent tab, b32 forceReload) {
+    if (tab == m_itemKind && forceReload == false) {
         return 1;
     }
     POSITION n = m_tabLists[5].GetHeadPosition();
@@ -1683,7 +1685,7 @@ i32 CStatusBarMgr::SetTab(GameTabContent tab, i32 flag) {
 }
 
 RVA(0x00102180, 0x5f)
-void CStatusBarMgr::BuildGameTabResumeButton(i32 show) {
+void CStatusBarMgr::BuildGameTabResumeButton(b32 show) {
     if (m_position == STATUSBAR_HIDDEN) {
         RestoreStatusBar();
     }
@@ -1695,7 +1697,7 @@ void CStatusBarMgr::BuildGameTabResumeButton(i32 show) {
         Deactivate();
         m_gameResumePauseButton->RequestRedraw();
     }
-    m_chatBoxDisabled = 1;
+    m_chatBoxDisabled = true;
 }
 
 RVA(0x00102200, 0x37)
@@ -1705,7 +1707,7 @@ void CStatusBarMgr::BuildGameTabPauseButton() {
         Deactivate();
         m_gameResumePauseButton->RequestRedraw();
     }
-    m_chatBoxDisabled = 0;
+    m_chatBoxDisabled = false;
 }
 
 // @early-stop
@@ -2222,7 +2224,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 do {
                     GruntzPlayer* p = &g_gameReg->m_players[pi];
                     CShadeTable* sel;
-                    if (p->m_joined != 0 && p->m_doneFlag == 0) {
+                    if (p->m_joined != false && p->m_doneFlag == false) {
                         sel = g_gameReg->m_spriteFactory->GetSel(IDX(p->m_color), 0);
                         if (pi == m_tabCycle) {
                             (*slot)->SetState(1);
@@ -2314,9 +2316,9 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     m_statObj[i] = arrow;
                     AddTabItem(1, arrow);
                     if (m_statFlags[i] != STATUS_SAMPLE_NONE) {
-                        arrow->SetSampledDirection(m_position, 0);
+                        arrow->SetSampledDirection(m_position, false);
                     } else {
-                        arrow->SetUnsampledDirection(m_position, 0);
+                        arrow->SetUnsampledDirection(m_position, false);
                     }
                     bar = new CSBI_StatzTabGruntBar;
                     if (!bar->BuildMultiplayerTabStatusBar(
@@ -2520,21 +2522,21 @@ i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 idx, StatusSampleMode mode) {
         r->SetEnabled(1);
         if (m_activeTab == TAB_STATZ) {
 
-            m_statObj[idx]->SetSampledDirection(m_position, 1);
+            m_statObj[idx]->SetSampledDirection(m_position, true);
             SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-            if (registry->m_silentMode == 0) {
+            if (registry->m_silentMode == false) {
                 SoundCue* found = NULL;
                 CMapStringToPtr* map = &registry->m_cues;
                 MapLookup(*map, "GAME_STATZTABTOGGLE", found);
                 if (found) {
-                    i32 soundEnabled = g_soundEnabled;
+                    b32 soundEnabled = g_soundEnabled;
                     i32 volumePercent = g_soundVolumePercent;
-                    if (soundEnabled != 0) {
+                    if (soundEnabled != false) {
                         SoundCue* p = found;
                         if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                             >= static_cast<u32>(p->m_replayDelayMs)) {
                             p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                            p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
+                            p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
                         }
                     }
                 }
@@ -2553,21 +2555,21 @@ i32 CStatusBarMgr::ClearStat(i32 idx) {
         r->SetEnabled(0);
         if (m_activeTab == TAB_STATZ) {
 
-            m_statObj[idx]->SetUnsampledDirection(m_position, 1);
+            m_statObj[idx]->SetUnsampledDirection(m_position, true);
             SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-            if (registry->m_silentMode == 0) {
+            if (registry->m_silentMode == false) {
                 SoundCue* found = NULL;
                 CMapStringToPtr* map = &registry->m_cues;
                 MapLookup(*map, "GAME_STATZTABTOGGLE", found);
                 if (found) {
-                    i32 soundEnabled = g_soundEnabled;
+                    b32 soundEnabled = g_soundEnabled;
                     i32 volumePercent = g_soundVolumePercent;
-                    if (soundEnabled != 0) {
+                    if (soundEnabled != false) {
                         SoundCue* p = found;
                         if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                             >= static_cast<u32>(p->m_replayDelayMs)) {
                             p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                            p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
+                            p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
                         }
                     }
                 }
@@ -2594,7 +2596,7 @@ i32 CStatusBarMgr::BuildSideTabs() {
         rc.bottom = strid;
         CSBI_SideTab* newobj = new CSBI_SideTab;
 
-        i32 ok = newobj->BuildStatzTabStatusBar(
+        b32 ok = newobj->BuildStatzTabStatusBar(
             this,
             g_gameReg->m_world,
             static_cast<SbiCommandId>(IDX(SBICMD_SIDE_TAB_FIRST) + i),
@@ -2606,7 +2608,7 @@ i32 CStatusBarMgr::BuildSideTabs() {
             m_statFlags[i],
             m_position == STATUSBAR_DOCK_RIGHT
         );
-        if (ok == 0) {
+        if (ok == false) {
             delete newobj;
             return 0;
         }
@@ -2619,11 +2621,11 @@ i32 CStatusBarMgr::BuildSideTabs() {
 
 RVA(0x00105280, 0x61)
 i32 CStatusBarMgr::HitTest(i32 x, i32 y) {
-    if (m_chatBoxDisabled == 0) {
+    if (m_chatBoxDisabled == false) {
         for (i32 i = 0; i < STATUSBAR_GRUNT_SLOT_COUNT; i++) {
             if (m_hitRects[i] && m_hitRects[i]->m_enabled) {
                 CSBI_SideTab* p = m_hitRects[i];
-                i32 hit = p->m_enabled ? CGameLevel::PointInRect(&p->m_rect, x, y) : 0;
+                b32 hit = p->m_enabled ? CGameLevel::PointInRect(&p->m_rect, x, y) : false;
                 if (hit) {
                     return i;
                 }
@@ -2651,19 +2653,19 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
                 tab->m_state = SLOT_READY;
                 frame = 0x1a;
                 SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-                if (registry->m_silentMode == 0) {
+                if (registry->m_silentMode == false) {
                     SoundCue* found = NULL;
                     CMapStringToPtr* map = &registry->m_cues;
                     MapLookup(*map, "GAME_COOKINGCOMPLETE", found);
                     if (found) {
-                        i32 soundEnabled = g_soundEnabled;
+                        b32 soundEnabled = g_soundEnabled;
                         i32 volumePercent = g_soundVolumePercent;
-                        if (soundEnabled != 0) {
+                        if (soundEnabled != false) {
                             SoundCue* p = found;
                             if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                                 >= static_cast<u32>(p->m_replayDelayMs)) {
                                 p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                                p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
+                                p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
                             }
                         }
                     }
@@ -2684,7 +2686,7 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
 
 RVA(0x00105480, 0x7d)
 void CStatusBarMgr::TickGruntWell() {
-    i32 changed = 0;
+    b32 changed = false;
     i32 g = m_gruntWellLevel;
     i32 t = m_gruntWellTargetLevel;
     if (g < t) {
@@ -2695,11 +2697,11 @@ void CStatusBarMgr::TickGruntWell() {
         g--;
     }
     m_gruntWellLevel = g;
-    changed = 1;
+    changed = true;
 noChange:;
     if (m_gruntWellLevel == GRUNT_WELL_FULL) {
         if (AnySlotActive()) {
-            changed = 1;
+            changed = true;
             SetGruntWell(GRUNT_WELL_EMPTY);
         }
     }
@@ -2737,7 +2739,7 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
     if (sp->m_state != SLOT_ARMED) {
         return 0;
     }
-    if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ && m_hlBusy == 0) {
+    if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ && m_hlBusy == false) {
         if (m_position == STATUSBAR_HIDDEN) {
             RestoreStatusBar();
         }
@@ -2753,19 +2755,19 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
     clock[0] = g_frameTime;
     if (m_activeTab == TAB_GRUNTZ && m_position != STATUSBAR_HIDDEN) {
         SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-        if (registry->m_silentMode == 0) {
+        if (registry->m_silentMode == false) {
             SoundCue* found = NULL;
             CMapStringToPtr* map = &registry->m_cues;
             MapLookup(*map, "GAME_GOOCOOKING1", found);
             if (found) {
-                i32 soundEnabled = g_soundEnabled;
+                b32 soundEnabled = g_soundEnabled;
                 i32 volumePercent = g_soundVolumePercent;
-                if (soundEnabled != 0) {
+                if (soundEnabled != false) {
                     SoundCue* p = found;
                     if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                         >= static_cast<u32>(p->m_replayDelayMs)) {
                         p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                        p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
+                        p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
                     }
                 }
             }
@@ -2830,7 +2832,7 @@ i32 CStatusBarMgr::PlaceCursorTarget(i32 unitIndex, i32 activateCamera) {
                 if (obj->RecordListHas(playerIndex, unitIndex)) {
                     obj->m_cameraTargetIdentity.m_x = playerIndex;
                     obj->m_cameraTargetIdentity.m_y = unitIndex;
-                    obj->m_armed = 1;
+                    obj->m_armed = true;
                     obj->LoadCameraSprite();
                 }
             }
@@ -2926,18 +2928,18 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                 if (static_cast<i64>(g_frameTime) - clock[0] >= clock[1]) {
                     if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
                         SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-                        if (registry->m_silentMode == 0) {
+                        if (registry->m_silentMode == false) {
                             SoundCue* found = NULL;
                             MapLookup(registry->m_cues, "GAME_REZBELTRETURN", found);
                             if (found) {
-                                i32 soundEnabled = g_soundEnabled;
+                                b32 soundEnabled = g_soundEnabled;
                                 i32 volumePercent = g_soundVolumePercent;
-                                if (soundEnabled != 0) {
+                                if (soundEnabled != false) {
                                     SoundCue* p = found;
                                     if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                                         >= static_cast<u32>(p->m_replayDelayMs)) {
                                         p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                                        p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
+                                        p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
                                     }
                                 }
                             }
@@ -2950,18 +2952,18 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                 if (static_cast<i64>(g_frameTime) - clock[0] >= clock[1]) {
                     if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
                         SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-                        if (registry->m_silentMode == 0) {
+                        if (registry->m_silentMode == false) {
                             SoundCue* found = NULL;
                             MapLookup(registry->m_cues, "GAME_REZBELTBACKUP", found);
                             if (found) {
-                                i32 soundEnabled = g_soundEnabled;
+                                b32 soundEnabled = g_soundEnabled;
                                 i32 volumePercent = g_soundVolumePercent;
-                                if (soundEnabled != 0) {
+                                if (soundEnabled != false) {
                                     SoundCue* p = found;
                                     if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                                         >= static_cast<u32>(p->m_replayDelayMs)) {
                                         p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                                        p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
+                                        p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
                                     }
                                 }
                             }
@@ -3049,18 +3051,18 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                     belt[0] = static_cast<u32>(g_frameTime);
                     if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
                         SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-                        if (registry->m_silentMode == 0) {
+                        if (registry->m_silentMode == false) {
                             SoundCue* found = NULL;
                             MapLookup(registry->m_cues, "GAME_REZMACHINE", found);
                             if (found) {
-                                i32 soundEnabled = g_soundEnabled;
+                                b32 soundEnabled = g_soundEnabled;
                                 i32 volumePercent = g_soundVolumePercent;
-                                if (soundEnabled != 0) {
+                                if (soundEnabled != false) {
                                     SoundCue* p = found;
                                     if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                                         >= static_cast<u32>(p->m_replayDelayMs)) {
                                         p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                                        p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
+                                        p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
                                     }
                                 }
                             }
@@ -3091,7 +3093,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
         case MACHINE_LEVER:
             if (static_cast<i64>(g_frameTime) - leftMachine->m_last >= leftMachine->m_interval) {
                 if (++leftMachine->m_counter == MACHINE_LEVER_RELEASE_FRAME) {
-                    i32 found = 0;
+                    b32 found = false;
                     i32 r = 3;
                     i32 col;
                     PickupType which = static_cast<PickupType>(m_machineItem);
@@ -3100,12 +3102,12 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                     } else {
                         col = (which >= PICKUP_TOYZ_FIRST) ? 1 : 0;
                     }
-                    while (found == 0) {
+                    while (found == false) {
                         if (r < 0) {
                             break;
                         }
                         if (m_resourceSlots[col * 4 + r].m_state == IDX(HLROW_OFF)) {
-                            found = 1;
+                            found = true;
                         } else {
                             r--;
                         }
@@ -3115,18 +3117,18 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                         m_conveyorSlots[col].m_counter = 0x13;
                         if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
                             SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-                            if (registry->m_silentMode == 0) {
+                            if (registry->m_silentMode == false) {
                                 SoundCue* fnd = NULL;
                                 MapLookup(registry->m_cues, "GAME_REZBELTRETRACT", fnd);
                                 if (fnd) {
-                                    i32 soundEnabled = g_soundEnabled;
+                                    b32 soundEnabled = g_soundEnabled;
                                     i32 volumePercent = g_soundVolumePercent;
-                                    if (soundEnabled != 0) {
+                                    if (soundEnabled != false) {
                                         SoundCue* p = fnd;
                                         if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                                             >= static_cast<u32>(p->m_replayDelayMs)) {
                                             p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                                            p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
+                                            p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
                                         }
                                     }
                                 }
@@ -3137,18 +3139,18 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                         m_conveyorSlots[col].m_counter = 0xa;
                         if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
                             SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-                            if (registry->m_silentMode == 0) {
+                            if (registry->m_silentMode == false) {
                                 SoundCue* fnd = NULL;
                                 MapLookup(registry->m_cues, "GAME_REZBELTDROP", fnd);
                                 if (fnd) {
-                                    i32 soundEnabled = g_soundEnabled;
+                                    b32 soundEnabled = g_soundEnabled;
                                     i32 volumePercent = g_soundVolumePercent;
-                                    if (soundEnabled != 0) {
+                                    if (soundEnabled != false) {
                                         SoundCue* p = fnd;
                                         if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                                             >= static_cast<u32>(p->m_replayDelayMs)) {
                                             p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                                            p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
+                                            p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
                                         }
                                     }
                                 }
@@ -3201,7 +3203,7 @@ void CStatusBarMgr::UpdateRezMachineSnoozeStatusBar() {
     if (m_machineDisplay) {
         m_machineDisplay->SetFrames(m_leftMachine.m_counter, m_rightMachine.m_counter);
     }
-    m_rezActive = 0;
+    m_rezActive = false;
     m_rezTick = 0;
 }
 
@@ -3232,7 +3234,7 @@ void CStatusBarMgr::SetRightRezMachineAnimation(
 }
 
 RVA(0x00106790, 0x62)
-void CStatusBarMgr::CommitSlot(i32 active) {
+void CStatusBarMgr::CommitSlot(b32 active) {
     if (active) {
         ArmSlot(m_activeSlot);
         m_activeSlot = -1;
@@ -3407,19 +3409,19 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                 m_machinePhase = BELT_FALLING;
                 if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
                     SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-                    if (registry->m_silentMode == 0) {
+                    if (registry->m_silentMode == false) {
                         SoundCue* found = NULL;
                         CMapStringToPtr* map = &registry->m_cues;
                         MapLookup(*map, "GAME_CHIPFALLOUT", found);
                         if (found) {
-                            i32 soundEnabled = g_soundEnabled;
+                            b32 soundEnabled = g_soundEnabled;
                             i32 volumePercent = g_soundVolumePercent;
-                            if (soundEnabled != 0) {
+                            if (soundEnabled != false) {
                                 SoundCue* p = found;
                                 if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                                     >= static_cast<u32>(p->m_replayDelayMs)) {
                                     p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                                    p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
+                                    p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
                                 }
                             }
                         }
@@ -3443,19 +3445,19 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                 rectFlag = 1;
                 if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
                     SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-                    if (registry->m_silentMode == 0) {
+                    if (registry->m_silentMode == false) {
                         SoundCue* found = NULL;
                         CMapStringToPtr* map = &registry->m_cues;
                         MapLookup(*map, "GAME_CHIPLAND", found);
                         if (found) {
-                            i32 soundEnabled = g_soundEnabled;
+                            b32 soundEnabled = g_soundEnabled;
                             i32 volumePercent = g_soundVolumePercent;
-                            if (soundEnabled != 0) {
+                            if (soundEnabled != false) {
                                 SoundCue* p = found;
                                 if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                                     >= static_cast<u32>(p->m_replayDelayMs)) {
                                     p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                                    p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
+                                    p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
                                 }
                             }
                         }
@@ -3523,19 +3525,19 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             if (m_machineItemRect.top >= row * 0x20 + 0x13e) {
                 if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
                     SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-                    if (registry->m_silentMode == 0) {
+                    if (registry->m_silentMode == false) {
                         SoundCue* found = NULL;
                         CMapStringToPtr* map = &registry->m_cues;
                         MapLookup(*map, "GAME_CHIPLAND", found);
                         if (found) {
-                            i32 soundEnabled = g_soundEnabled;
+                            b32 soundEnabled = g_soundEnabled;
                             i32 volumePercent = g_soundVolumePercent;
-                            if (soundEnabled != 0) {
+                            if (soundEnabled != false) {
                                 SoundCue* p = found;
                                 if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                                     >= static_cast<u32>(p->m_replayDelayMs)) {
                                     p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                                    p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
+                                    p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
                                 }
                             }
                         }
@@ -3618,19 +3620,19 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
             if (m_fallActive != FALLING_ITEM_GRINDING) {
                 if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
                     SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-                    if (registry->m_silentMode == 0) {
+                    if (registry->m_silentMode == false) {
                         SoundCue* found = NULL;
                         CMapStringToPtr* map = &registry->m_cues;
                         MapLookup(*map, "GAME_REZGRINDING", found);
                         if (found) {
-                            i32 soundEnabled = g_soundEnabled;
+                            b32 soundEnabled = g_soundEnabled;
                             i32 volumePercent = g_soundVolumePercent;
-                            if (soundEnabled != 0) {
+                            if (soundEnabled != false) {
                                 SoundCue* p = found;
                                 if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                                     >= static_cast<u32>(p->m_replayDelayMs)) {
                                     p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                                    p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
+                                    p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
                                 }
                             }
                         }
@@ -3701,7 +3703,7 @@ i32 CStatusBarMgr::DropFallingItemAt(i32 screenX, i32 screenY, i32 itemFrame) {
 
 RVA(0x00107a10, 0x62)
 i32 CStatusBarMgr::UpdateRezMachineWakeStatusBar() {
-    if (m_rezActive == 0) {
+    if (m_rezActive == false) {
         if (m_machineItem == 0) {
             return 0;
         }
@@ -3710,7 +3712,7 @@ i32 CStatusBarMgr::UpdateRezMachineWakeStatusBar() {
             MACHINE_WAKING,
             g_buteMgr.GetDwordDef("StatusBar", "LeftMachineWakingDelay", 100)
         );
-        m_rezActive = 1;
+        m_rezActive = true;
     } else {
         m_rezTick++;
     }
@@ -3736,7 +3738,7 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
         ClearTabGroup();
         m_activeTab = TAB_GAME;
     }
-    SetTab(GAME_TAB_MENU, 1);
+    SetTab(GAME_TAB_MENU, true);
     memset(m_statFlags, 0, sizeof(m_statFlags));
     Reset();
 
@@ -3765,14 +3767,14 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     i64* clock = &m_reserved2b0.m_last;
     clock[0] = 0;
     clock[1] = 0;
-    m_hlBusy = 0;
+    m_hlBusy = false;
     if (m_retabNotify) {
         ::operator delete(m_retabNotify);
         m_retabNotify = NULL;
     }
     ExitMode();
-    m_observerTabAvailable = 0;
-    m_destructButtonLocked = 0;
+    m_observerTabAvailable = false;
+    m_destructButtonLocked = false;
     TryActivate();
 }
 // @early-stop
@@ -3888,7 +3890,7 @@ i32 CStatusBarMgr::StartChipMachineCycle() {
     }
     NotifyAllSlots();
     i32 c = m_rezTick;
-    m_rezActive = 0;
+    m_rezActive = false;
     if (c > 0) {
         m_rezTick = c - 1;
         UpdateRezMachineWakeStatusBar();
@@ -4228,7 +4230,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
         return 0;
     }
     m_destructWarningSound = NULL;
-    ResetWidgets(0);
+    ResetWidgets(false);
 
     s->Read(this, 4);
     s->Read(&m_restorePosition, sizeof(m_restorePosition));
@@ -4430,17 +4432,17 @@ i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragm
     m_yDirection = static_cast<double>(dyv) / dist;
 
     SoundCueRegistry* h = g_gameReg->m_world->m_soundRegistry;
-    if (h->m_silentMode == 0) {
+    if (h->m_silentMode == false) {
         SoundCue* found = NULL;
         MapLookup(h->m_cues, "GAME_WARPSTONEFLY", found);
         if (found) {
             SoundCue* fly = found;
-            i32 soundEnabled = g_soundEnabled;
+            b32 soundEnabled = g_soundEnabled;
             i32 volumePercent = g_soundVolumePercent;
-            if (soundEnabled != 0
+            if (soundEnabled != false
                 && g_soundCueTimeMs - fly->m_lastPlayTimeMs >= fly->m_replayDelayMs) {
                 fly->m_lastPlayTimeMs = g_soundCueTimeMs;
-                fly->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
+                fly->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
             }
         }
     }
@@ -4529,9 +4531,9 @@ i32 CWarpStoneFly::Tick(u32 dt) {
         i32 mode = m_arrivalMode;
         CByteArray* arr = &g_gameReg->m_triggerMgr->m_byteArr;
         arr->SetAtGrow(arr->GetSize(), static_cast<BYTE>(mode));
-        m_owner->m_hlBusy = 0;
+        m_owner->m_hlBusy = false;
         if (m_owner->m_position != STATUSBAR_HIDDEN && m_owner->m_activeTab == TAB_GAME) {
-            m_owner->ResetWidgets(0);
+            m_owner->ResetWidgets(false);
             m_owner->TryActivate();
         }
         CStatusBarMgr* owner = m_owner;
@@ -4584,7 +4586,7 @@ i32 CWarpStoneFly::Draw() {
 // @early-stop
 RVA(0x0010a340, 0xbcb)
 i32 CStatusBarMgr::BuildTabzDialog() {
-    if (m_levelOverlayActive == 0) {
+    if (m_levelOverlayActive == false) {
         return 1;
     }
 
@@ -4599,7 +4601,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         cy = dst.top + (dst.bottom - dst.top) / 2;
     }
 
-    if (m_quitConfirmationActive != 0) {
+    if (m_quitConfirmationActive != false) {
         cx -= 0x5e;
         cy -= 0x3c;
 
@@ -4836,8 +4838,8 @@ i32 CStatusBarMgr::BuildTabzDialog() {
 
     i32 count = 0;
     for (i32 i = 0; i < 4; i++) {
-        if (g_gameReg->m_players[i].m_joined != 0 && g_gameReg->m_players[i].m_doneFlag == 0
-            && g_gameReg->m_players[i].m_clearedRound == 0) {
+        if (g_gameReg->m_players[i].m_joined != false && g_gameReg->m_players[i].m_doneFlag == false
+            && g_gameReg->m_players[i].m_clearedRound == false) {
             count++;
         }
     }
@@ -4859,7 +4861,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         }
         AddTabItem(6, observe);
         m_endPrimaryButton = observe;
-        m_observerTabAvailable = 1;
+        m_observerTabAvailable = true;
 
         CSBI_MenuItem* statz = new CSBI_MenuItem;
         if (!statz->SetupImage(
@@ -4878,7 +4880,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
         AddTabItem(6, statz);
         m_endSecondaryButton = statz;
     } else {
-        m_observerTabAvailable = 0;
+        m_observerTabAvailable = false;
         CSBI_MenuItem* statz = new CSBI_MenuItem;
         if (!statz->SetupImage(
                 this,
@@ -4901,7 +4903,7 @@ i32 CStatusBarMgr::BuildTabzDialog() {
 
 RVA(0x0010b210, 0xc5)
 void CStatusBarMgr::ExitMode() {
-    if (m_levelOverlayActive == 0) {
+    if (m_levelOverlayActive == false) {
         return;
     }
     POSITION n = m_tabLists[6].GetHeadPosition();
@@ -4910,26 +4912,26 @@ void CStatusBarMgr::ExitMode() {
         delete cur;
     }
     m_tabLists[6].RemoveAll();
-    i32 wasQuitConfirmation = m_quitConfirmationActive;
+    b32 wasQuitConfirmation = m_quitConfirmationActive;
     m_endPrimaryButton = NULL;
     m_endSecondaryButton = NULL;
     m_confirmYesButton = NULL;
     m_confirmNoButton = NULL;
-    m_hlBusy = 0;
-    if (wasQuitConfirmation == 0 && g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
+    m_hlBusy = false;
+    if (wasQuitConfirmation == false && g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
         if (m_position == STATUSBAR_HIDDEN) {
             RestoreStatusBar();
         }
         if (m_activeTab != TAB_GAME) {
             SetTabState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
         }
-        SetTab(GAME_TAB_MENU, 1);
+        SetTab(GAME_TAB_MENU, true);
         Deactivate();
     } else {
-        m_chatBoxDisabled = 0;
+        m_chatBoxDisabled = false;
     }
-    m_levelOverlayActive = 0;
-    m_quitConfirmationActive = 0;
+    m_levelOverlayActive = false;
+    m_quitConfirmationActive = false;
     Deactivate();
 }
 
@@ -4982,7 +4984,7 @@ void CStatusBarMgr::UpdateDestructWarningAnimation() {
 
 RVA(0x0010b4f0, 0xaa)
 void CStatusBarMgr::AdvanceTab(i32 reverse) {
-    if (m_hlBusy != 0) {
+    if (m_hlBusy != false) {
         return;
     }
     if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
@@ -5005,7 +5007,7 @@ void CStatusBarMgr::AdvanceTab(i32 reverse) {
             m_tabCycle = 0;
         }
     }
-    ResetWidgets(0);
+    ResetWidgets(false);
     TryActivate();
     Deactivate();
 }
@@ -5019,19 +5021,19 @@ i32 CStatusBarMgr::SelectToolResource(StatusBarHighlightRow row) {
         i32* slot = &m_resourceSlots[rowIndex].m_value;
         if ((static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(handle)) {
             SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-            if (registry->m_silentMode == 0) {
+            if (registry->m_silentMode == false) {
                 SoundCue* found = NULL;
                 CMapStringToPtr* map = &registry->m_cues;
                 MapLookup(*map, "GAME_TABHIGHLIGHT1", found);
                 if (found) {
-                    i32 soundEnabled = g_soundEnabled;
+                    b32 soundEnabled = g_soundEnabled;
                     i32 volumePercent = g_soundVolumePercent;
-                    if (soundEnabled != 0) {
+                    if (soundEnabled != false) {
                         SoundCue* p = found;
                         if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                             >= static_cast<u32>(p->m_replayDelayMs)) {
                             p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                            p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
+                            p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
                         }
                     }
                 }
@@ -5054,19 +5056,19 @@ i32 CStatusBarMgr::SelectToyResource(StatusBarHighlightRow row) {
         i32* slot = &m_resourceSlots[rowIndex + 4].m_value;
         if ((static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(handle)) {
             SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-            if (registry->m_silentMode == 0) {
+            if (registry->m_silentMode == false) {
                 SoundCue* found = NULL;
                 CMapStringToPtr* map = &registry->m_cues;
                 MapLookup(*map, "GAME_TABHIGHLIGHT1", found);
                 if (found) {
-                    i32 soundEnabled = g_soundEnabled;
+                    b32 soundEnabled = g_soundEnabled;
                     i32 volumePercent = g_soundVolumePercent;
-                    if (soundEnabled != 0) {
+                    if (soundEnabled != false) {
                         SoundCue* p = found;
                         if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                             >= static_cast<u32>(p->m_replayDelayMs)) {
                             p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                            p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
+                            p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
                         }
                     }
                 }
@@ -5089,19 +5091,19 @@ i32 CStatusBarMgr::SelectBrickResource(StatusBarHighlightRow row) {
         i32* slot = &m_resourceSlots[rowIndex + 8].m_value;
         if ((static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(handle)) {
             SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-            if (registry->m_silentMode == 0) {
+            if (registry->m_silentMode == false) {
                 SoundCue* found = NULL;
                 CMapStringToPtr* map = &registry->m_cues;
                 MapLookup(*map, "GAME_TABHIGHLIGHT1", found);
                 if (found) {
-                    i32 soundEnabled = g_soundEnabled;
+                    b32 soundEnabled = g_soundEnabled;
                     i32 volumePercent = g_soundVolumePercent;
-                    if (soundEnabled != 0) {
+                    if (soundEnabled != false) {
                         SoundCue* p = found;
                         if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                             >= static_cast<u32>(p->m_replayDelayMs)) {
                             p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                            p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
+                            p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
                         }
                     }
                 }
@@ -5135,19 +5137,19 @@ i32 CStatusBarMgr::ActivateSlot(i32 idx) {
             goto notActivated;
         }
         SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-        if (registry->m_silentMode == 0) {
+        if (registry->m_silentMode == false) {
             SoundCue* found = NULL;
             CMapStringToPtr* map = &registry->m_cues;
             MapLookup(*map, "GAME_TABHIGHLIGHT1", found);
             if (found) {
-                i32 soundEnabled = g_soundEnabled;
+                b32 soundEnabled = g_soundEnabled;
                 i32 volumePercent = g_soundVolumePercent;
-                if (soundEnabled != 0) {
+                if (soundEnabled != false) {
                     SoundCue* p = found;
                     if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                         >= static_cast<u32>(p->m_replayDelayMs)) {
                         p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                        p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
+                        p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
                     }
                 }
             }
@@ -5165,19 +5167,19 @@ i32 CStatusBarMgr::ActivateSlot(i32 idx) {
         }
         if ((static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(0x66)) {
             SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-            if (registry->m_silentMode == 0) {
+            if (registry->m_silentMode == false) {
                 SoundCue* found = NULL;
                 CMapStringToPtr* map = &registry->m_cues;
                 MapLookup(*map, "GAME_TABHIGHLIGHT1", found);
                 if (found) {
-                    i32 soundEnabled = g_soundEnabled;
+                    b32 soundEnabled = g_soundEnabled;
                     i32 volumePercent = g_soundVolumePercent;
-                    if (soundEnabled != 0) {
+                    if (soundEnabled != false) {
                         SoundCue* p = found;
                         if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                             >= static_cast<u32>(p->m_replayDelayMs)) {
                             p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                            p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
+                            p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
                         }
                     }
                 }
@@ -5202,7 +5204,7 @@ void CStatusBarMgr::ReportTab(i32 tab) {
 
 RVA(0x0010bb90, 0x3f)
 void CStatusBarMgr::LockDestructButton(i32 resetWarningAnimation) {
-    m_destructButtonLocked = 1;
+    m_destructButtonLocked = true;
     if (resetWarningAnimation && m_destructButtonFrame != DESTRUCT_FRAME_DISABLED) {
         m_destructWarningState = DESTRUCT_WARNING_INACTIVE;
         m_destructButtonFrame = DESTRUCT_FRAME_IDLE;
@@ -5214,7 +5216,7 @@ void CStatusBarMgr::LockDestructButton(i32 resetWarningAnimation) {
 
 RVA(0x0010bbe0, 0x34)
 i32 CStatusBarMgr::GetActiveValue() {
-    if (m_rezActive == 0) {
+    if (m_rezActive == false) {
         return m_machineItem;
     }
     if (m_rewardQueue.GetSize() > 0 && m_rewardQueue.GetSize() > m_rezTick) {

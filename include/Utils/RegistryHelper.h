@@ -10,7 +10,7 @@ namespace Utils {
     class RegistryHelper {
     public:
         RegistryHelper() {
-            m_open = 0;
+            m_open = false;
         }
         ~RegistryHelper() {
             Close();
@@ -46,7 +46,7 @@ namespace Utils {
         void Close();
         i32 GetRegistryKey(HKEY parentKey, char* subkeyName, PHKEY resultKey);
 
-        i32 m_open;
+        b32 m_open;
         HKEY m_baseKey;
         HKEY m_softwareKey;
         HKEY m_vendorKey;

@@ -110,7 +110,7 @@ SoundBuffer::SoundBuffer(IDirectSoundBuffer* buffer, SoundDevice* owner) {
     }
 
     if ((m_caps & DSBCAPS_CTRLFREQUENCY) == DSBCAPS_CTRLFREQUENCY) {
-        i32 hr = buffer->GetFrequency(&m_baseFrequency) != 0;
+        b32 hr = buffer->GetFrequency(&m_baseFrequency) != 0;
         if (hr) {
             ReportError(DSNDMGR_FILE, 0x58, hr);
         }
@@ -118,7 +118,7 @@ SoundBuffer::SoundBuffer(IDirectSoundBuffer* buffer, SoundDevice* owner) {
     m_frequency = m_baseFrequency;
 
     if ((m_caps & DSBCAPS_CTRLPAN) == DSBCAPS_CTRLPAN) {
-        i32 hr = buffer->GetPan(&m_pan) != 0;
+        b32 hr = buffer->GetPan(&m_pan) != 0;
         if (hr) {
             ReportError(DSNDMGR_FILE, 0x60, hr);
         }
@@ -127,7 +127,7 @@ SoundBuffer::SoundBuffer(IDirectSoundBuffer* buffer, SoundDevice* owner) {
     }
 
     if ((m_caps & DSBCAPS_CTRLVOLUME) == DSBCAPS_CTRLVOLUME) {
-        i32 hr = buffer->GetVolume(&m_volume) != 0;
+        b32 hr = buffer->GetVolume(&m_volume) != 0;
         if (hr) {
             ReportError(DSNDMGR_FILE, 0x68, hr);
         }
@@ -143,7 +143,7 @@ SoundBuffer::~SoundBuffer() {}
 
 RVA(0x00135310, 0x2a)
 i32 SoundBuffer::Restore() {
-    i32 hr = m_buffer->Restore() != 0;
+    b32 hr = m_buffer->Restore() != 0;
     if (hr) {
         ReportError(DSNDMGR_FILE, 0x7b, hr);
         return 0;
@@ -153,7 +153,7 @@ i32 SoundBuffer::Restore() {
 
 RVA(0x00135340, 0x37)
 i32 SoundBuffer::ReacquireBuffer() {
-    if (m_owner->m_initialized == 0) {
+    if (m_owner->m_initialized == false) {
         return 0;
     }
     if (m_reacquireCb != NULL) {
@@ -166,10 +166,10 @@ i32 SoundBuffer::ReacquireBuffer() {
 
 RVA(0x00135380, 0x66)
 i32 SoundBuffer::StopAndRewind() {
-    if (m_owner->m_initialized == 0) {
+    if (m_owner->m_initialized == false) {
         return 0;
     }
-    i32 hr = m_buffer->Stop() != 0;
+    b32 hr = m_buffer->Stop() != 0;
     if (hr) {
         ReportError(DSNDMGR_FILE, 0x99, hr);
         return 0;
@@ -183,11 +183,11 @@ i32 SoundBuffer::StopAndRewind() {
 
 RVA(0x001353f0, 0x4b)
 i32 SoundBuffer::IsPlaying() {
-    if (m_owner->m_initialized == 0) {
+    if (m_owner->m_initialized == false) {
         return 0;
     }
     DWORD status;
-    i32 hr = m_buffer->GetStatus(&status) != 0;
+    b32 hr = m_buffer->GetStatus(&status) != 0;
     if (hr) {
         ReportError(DSNDMGR_FILE, 0xac, hr);
         return 0;
@@ -200,11 +200,11 @@ i32 SoundBuffer::IsPlaying() {
 
 RVA(0x00135440, 0x4d)
 i32 SoundBuffer::IsLooping() {
-    if (m_owner->m_initialized == 0) {
+    if (m_owner->m_initialized == false) {
         return 0;
     }
     DWORD status;
-    i32 hr = m_buffer->GetStatus(&status) != 0;
+    b32 hr = m_buffer->GetStatus(&status) != 0;
     if (hr) {
         ReportError(DSNDMGR_FILE, 0xbb, hr);
         return 0;
@@ -219,13 +219,13 @@ i32 SoundBuffer::IsLooping() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00135490, 0x73)
 i32 SoundBuffer::IsInHardware() {
-    if (m_owner->m_initialized == 0) {
+    if (m_owner->m_initialized == false) {
         return 0;
     }
     DSBCAPS caps;
     memset(&caps, 0, sizeof(caps));
     caps.dwSize = sizeof(DSBCAPS);
-    i32 hr = m_buffer->GetCaps(&caps) != 0;
+    b32 hr = m_buffer->GetCaps(&caps) != 0;
     if (hr) {
         ReportError(DSNDMGR_FILE, 0xcc, hr);
         return 0;
@@ -237,8 +237,8 @@ i32 SoundBuffer::IsInHardware() {
 }
 
 RVA(0x00135510, 0x25)
-void SoundBuffer::SetLooping(i32 enabled) {
-    if (m_owner->m_initialized == 0) {
+void SoundBuffer::SetLooping(b32 enabled) {
+    if (m_owner->m_initialized == false) {
         return;
     }
     if (enabled) {
@@ -252,7 +252,7 @@ void SoundBuffer::SetLooping(i32 enabled) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00135540, 0x1a)
 i32 SoundBuffer::IsLoopingEnabled() {
-    if (m_owner->m_initialized == 0) {
+    if (m_owner->m_initialized == false) {
         return 0;
     }
     if ((m_playFlags & 1) == 1) {
@@ -263,13 +263,13 @@ i32 SoundBuffer::IsLoopingEnabled() {
 
 RVA(0x00135560, 0x58)
 i32 SoundBuffer::SetVolume(i32 attenuation) {
-    if (m_owner->m_initialized == 0) {
+    if (m_owner->m_initialized == false) {
         return 0;
     }
     if ((m_caps & DSBCAPS_CTRLVOLUME) != DSBCAPS_CTRLVOLUME) {
         return 0;
     }
-    i32 hr = m_buffer->SetVolume(attenuation) != 0;
+    b32 hr = m_buffer->SetVolume(attenuation) != 0;
     if (hr) {
         ReportError(DSNDMGR_FILE, 0xf6, hr);
         return 0;
@@ -279,7 +279,7 @@ i32 SoundBuffer::SetVolume(i32 attenuation) {
 
 RVA(0x001355c0, 0x23)
 i32 SoundBuffer::SetVolumePercent(i32 volumePct) {
-    if (m_owner->m_initialized == 0) {
+    if (m_owner->m_initialized == false) {
         return 0;
     }
     return SetVolume(g_volumeTable[volumePct]);
@@ -287,11 +287,11 @@ i32 SoundBuffer::SetVolumePercent(i32 volumePct) {
 
 RVA(0x001355f0, 0x42)
 i32 SoundBuffer::GetVolume() {
-    if (m_owner->m_initialized == 0) {
+    if (m_owner->m_initialized == false) {
         return 0;
     }
     long attenuation;
-    i32 hr = m_buffer->GetVolume(&attenuation) != 0;
+    b32 hr = m_buffer->GetVolume(&attenuation) != 0;
     if (hr) {
         ReportError(DSNDMGR_FILE, 0x10e, hr);
         return 0;
@@ -301,16 +301,16 @@ i32 SoundBuffer::GetVolume() {
 
 RVA(0x00135640, 0x1c)
 i32 SoundBuffer::GetVolumePercent() {
-    if (m_owner->m_initialized == 0) {
+    if (m_owner->m_initialized == false) {
         return 0;
     }
     return ConvertVolumeToPercent(GetVolume());
 }
 
 RVA(0x00135660, 0xe0)
-i32 SoundBuffer::RampVolumeTo(i32 targetVolumePct, i32 durationMs, i32 stopAndRewind) {
+i32 SoundBuffer::RampVolumeTo(i32 targetVolumePct, i32 durationMs, b32 stopAndRewind) {
     SoundDevice* owner = m_owner;
-    if (owner->m_initialized == 0) {
+    if (owner->m_initialized == false) {
         return 0;
     }
     owner->m_volumeRamps.RemoveMatching(this, SOUND_TASK_TAG_VOLUME_RAMP);
@@ -337,13 +337,13 @@ i32 SoundBuffer::RampVolumeTo(i32 targetVolumePct, i32 durationMs, i32 stopAndRe
 
 RVA(0x00135740, 0x55)
 i32 SoundBuffer::SetPan(i32 pan) {
-    if (m_owner->m_initialized == 0) {
+    if (m_owner->m_initialized == false) {
         return 0;
     }
     if ((m_caps & DSBCAPS_CTRLPAN) != DSBCAPS_CTRLPAN) {
         return 0;
     }
-    i32 hr = m_buffer->SetPan(pan) != 0;
+    b32 hr = m_buffer->SetPan(pan) != 0;
     if (hr) {
         ReportError(DSNDMGR_FILE, 0x141, hr);
         return 0;
@@ -353,7 +353,7 @@ i32 SoundBuffer::SetPan(i32 pan) {
 
 RVA(0x001357a0, 0x42)
 i32 SoundBuffer::SetPanPercent(i32 panPct) {
-    if (m_owner->m_initialized == 0) {
+    if (m_owner->m_initialized == false) {
         return 0;
     }
     if (panPct >= 0) {
@@ -364,11 +364,11 @@ i32 SoundBuffer::SetPanPercent(i32 panPct) {
 
 RVA(0x001357f0, 0x42)
 i32 SoundBuffer::GetPan() {
-    if (m_owner->m_initialized == 0) {
+    if (m_owner->m_initialized == false) {
         return 0;
     }
     long pan;
-    i32 hr = m_buffer->GetPan(&pan) != 0;
+    b32 hr = m_buffer->GetPan(&pan) != 0;
     if (hr) {
         ReportError(DSNDMGR_FILE, 0x15e, hr);
         return 0;
@@ -380,7 +380,7 @@ i32 SoundBuffer::GetPan() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00135840, 0x3b)
 i32 SoundBuffer::GetPanPercent() {
-    if (m_owner->m_initialized == 0) {
+    if (m_owner->m_initialized == false) {
         return 0;
     }
     i32 pan = GetPan();
@@ -395,7 +395,7 @@ i32 SoundBuffer::GetPanPercent() {
 
 RVA(0x00135880, 0x60)
 i32 SoundBuffer::SetFrequency(u32 frequency) {
-    if (m_owner->m_initialized == 0) {
+    if (m_owner->m_initialized == false) {
         return 0;
     }
     if ((m_caps & DSBCAPS_CTRLFREQUENCY) != DSBCAPS_CTRLFREQUENCY) {
@@ -414,7 +414,7 @@ i32 SoundBuffer::SetFrequency(u32 frequency) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001358e0, 0x11)
 u32 SoundBuffer::GetFrequency() {
-    if (m_owner->m_initialized == 0) {
+    if (m_owner->m_initialized == false) {
         return 0;
     }
     return m_frequency;
@@ -424,7 +424,7 @@ u32 SoundBuffer::GetFrequency() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00135900, 0x11)
 u32 SoundBuffer::GetBaseFrequency() {
-    if (m_owner->m_initialized == 0) {
+    if (m_owner->m_initialized == false) {
         return 0;
     }
     return m_baseFrequency;
@@ -432,7 +432,7 @@ u32 SoundBuffer::GetBaseFrequency() {
 
 RVA(0x00135920, 0x80)
 i32 SoundBuffer::SetFrequencyOffsetPercent(i32 percentOffset) {
-    if (m_owner->m_initialized == 0) {
+    if (m_owner->m_initialized == false) {
         return 0;
     }
     i32 frequency =
@@ -456,10 +456,10 @@ void SoundBuffer::UpdateDuration() {
 
 RVA(0x001359c0, 0x54)
 i32 SoundBuffer::Unlock(u8* audioPtr1, u32 audioBytes1, u8* audioPtr2, u32 audioBytes2) {
-    if (m_owner->m_initialized == 0) {
+    if (m_owner->m_initialized == false) {
         return 0;
     }
-    i32 hr = m_buffer->Unlock(audioPtr1, audioBytes1, audioPtr2, audioBytes2) != 0;
+    b32 hr = m_buffer->Unlock(audioPtr1, audioBytes1, audioPtr2, audioBytes2) != 0;
     if (hr) {
         ReportError(DSNDMGR_FILE, 0x1bb, hr);
         return 0;
@@ -469,10 +469,10 @@ i32 SoundBuffer::Unlock(u8* audioPtr1, u32 audioBytes1, u8* audioPtr2, u32 audio
 
 RVA(0x00135a20, 0x4a)
 i32 SoundBuffer::GetCurrentPosition(DWORD* playCursor, DWORD* writeCursor) {
-    if (m_owner->m_initialized == 0) {
+    if (m_owner->m_initialized == false) {
         return 0;
     }
-    i32 hr = m_buffer->GetCurrentPosition(playCursor, writeCursor) != 0;
+    b32 hr = m_buffer->GetCurrentPosition(playCursor, writeCursor) != 0;
     if (hr) {
         ReportError(DSNDMGR_FILE, 0x1c8, hr);
         return 0;
@@ -482,10 +482,10 @@ i32 SoundBuffer::GetCurrentPosition(DWORD* playCursor, DWORD* writeCursor) {
 
 RVA(0x00135a70, 0x45)
 i32 SoundBuffer::SetCurrentPosition(u32 position) {
-    if (m_owner->m_initialized == 0) {
+    if (m_owner->m_initialized == false) {
         return 0;
     }
-    i32 hr = m_buffer->SetCurrentPosition(position) != 0;
+    b32 hr = m_buffer->SetCurrentPosition(position) != 0;
     if (hr) {
         ReportError(DSNDMGR_FILE, 0x1d5, hr);
         return 0;
@@ -495,10 +495,10 @@ i32 SoundBuffer::SetCurrentPosition(u32 position) {
 
 RVA(0x00135ac0, 0x4f)
 i32 SoundBuffer::GetFormat(WaveFormatX* outFormat, u32 formatBytes, DWORD* writtenBytes) {
-    if (m_owner->m_initialized == 0) {
+    if (m_owner->m_initialized == false) {
         return 0;
     }
-    i32 hr = m_buffer->GetFormat(WaveFormatSdk(outFormat), formatBytes, writtenBytes) != 0;
+    b32 hr = m_buffer->GetFormat(WaveFormatSdk(outFormat), formatBytes, writtenBytes) != 0;
     if (hr) {
         ReportError(DSNDMGR_FILE, 0x1e2, hr);
         return 0;
@@ -511,7 +511,7 @@ SoundSample::SoundSample(IDirectSoundBuffer* buffer, SoundDevice* owner)
     : SoundBufferInstance(buffer, owner) {
 
     ((&m_instances))->InsertHead(&m_instanceNode);
-    m_reusable = 1;
+    m_reusable = true;
 }
 
 RVA_COMPGEN(0x00135b80, 0x1e, ??_GSoundSample@@UAEPAXI@Z)
@@ -524,8 +524,8 @@ SoundSample::~SoundSample() {
 }
 
 RVA(0x00135c20, 0xf6)
-SoundBuffer* SoundSample::CreateInstance(i32 reusable) {
-    if (m_owner->m_initialized == 0) {
+SoundBuffer* SoundSample::CreateInstance(b32 reusable) {
+    if (m_owner->m_initialized == false) {
         return NULL;
     }
     SoundBufferInstance* instance = new SoundBufferInstance(m_buffer, m_owner, this);
@@ -533,7 +533,7 @@ SoundBuffer* SoundSample::CreateInstance(i32 reusable) {
         return NULL;
     }
     IDirectSound* device = m_owner->m_device;
-    i32 hr = device->DuplicateSoundBuffer(m_buffer, &instance->m_buffer) != 0;
+    b32 hr = device->DuplicateSoundBuffer(m_buffer, &instance->m_buffer) != 0;
     if (hr) {
         ReportError(DSNDMGR_FILE, 0x217, hr);
         return NULL;
@@ -545,7 +545,7 @@ SoundBuffer* SoundSample::CreateInstance(i32 reusable) {
 
 RVA(0x00135d20, 0x47)
 void SoundSample::DestroyInstance(SoundBuffer* instance) {
-    if (m_owner->m_initialized == 0) {
+    if (m_owner->m_initialized == false) {
         return;
     }
     if (instance != this) {
@@ -588,7 +588,7 @@ SoundBuffer* SoundSample::AcquireInstance() {
         instance->SetFrequency(m_baseFrequency);
     }
     if (!instance) {
-        instance = CreateInstance(1);
+        instance = CreateInstance(true);
     }
     if (instance) {
         m_instances.Unlink(&instance->m_instanceNode);
@@ -601,7 +601,7 @@ SoundBuffer* SoundSample::AcquireInstance() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00135e10, 0x124)
 i32 SoundBuffer::LoadFromFile(FILE* file, u32 bytes, i32 offset) {
-    if (m_owner->m_initialized == 0) {
+    if (m_owner->m_initialized == false) {
         return 0;
     }
     if (offset != -1) {
@@ -648,8 +648,8 @@ i32 SoundBuffer::LoadFromFile(FILE* file, u32 bytes, i32 offset) {
 }
 
 RVA(0x00135f40, 0x169)
-i32 SoundBuffer::LockConvert(u8* sourceAudio, u32 lockBytes, u32 convert16To8) {
-    if (m_owner->m_initialized == 0) {
+i32 SoundBuffer::LockConvert(u8* sourceAudio, u32 lockBytes, b32 convert16To8) {
+    if (m_owner->m_initialized == false) {
         return 0;
     }
 
@@ -672,7 +672,7 @@ i32 SoundBuffer::LockConvert(u8* sourceAudio, u32 lockBytes, u32 convert16To8) {
         return 0;
     }
 
-    if (convert16To8 == 0) {
+    if (convert16To8 == false) {
 
         if (audioBytes1 > 0) {
             memcpy(audioPtr1, sourceAudio, audioBytes1);
@@ -721,7 +721,7 @@ i32 SoundBuffer::LockConvert(u8* sourceAudio, u32 lockBytes, u32 convert16To8) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001360b0, 0x1e)
 i32 SoundSample::Play() {
-    if (m_owner->m_initialized == 0) {
+    if (m_owner->m_initialized == false) {
         return 0;
     }
     SoundBuffer* item = AcquireInstance();
@@ -732,7 +732,7 @@ i32 SoundSample::Play() {
 }
 
 RVA(0x001360d0, 0x7e)
-i32 SoundSample::AcquireAndPlay(i32 volumePct, i32 panPct, i32 frequencyOffsetPct, i32 looping) {
+i32 SoundSample::AcquireAndPlay(i32 volumePct, i32 panPct, i32 frequencyOffsetPct, b32 looping) {
     if (!m_owner->m_initialized) {
         return 0;
     }
@@ -740,26 +740,26 @@ i32 SoundSample::AcquireAndPlay(i32 volumePct, i32 panPct, i32 frequencyOffsetPc
     if (!instance) {
         return 0;
     }
-    i32 ok = 1;
+    b32 ok = true;
     if (!instance->SetVolumePercent(volumePct)) {
-        ok = 0;
+        ok = false;
     }
     if (!instance->SetPanPercent(panPct)) {
-        ok = 0;
+        ok = false;
     }
     if (!instance->SetFrequencyOffsetPercent(frequencyOffsetPct)) {
-        ok = 0;
+        ok = false;
     }
     instance->SetLooping(looping);
     if (!instance->Play()) {
-        ok = 0;
+        ok = false;
     }
     return ok;
 }
 
 RVA(0x00136150, 0x22)
 void SoundSample::StopAllInstances() {
-    if (m_owner->m_initialized == 0) {
+    if (m_owner->m_initialized == false) {
         return;
     }
     for (SoundBufferNode* node = static_cast<SoundBufferNode*>(m_instances.m_head); node != NULL;
@@ -777,7 +777,7 @@ SoundBufferInstance::SoundBufferInstance(
     : SoundBuffer(buffer, owner) {
     m_instanceNode.m_buffer = this;
     m_restoreSource = original;
-    m_reusable = 1;
+    m_reusable = true;
     m_sampleCount = original->m_sampleCount;
     m_reacquireCb = original->m_reacquireCb;
     m_reacquireArg = original->m_reacquireArg;
@@ -794,7 +794,7 @@ SoundBufferInstance::SoundBufferInstance(IDirectSoundBuffer* buffer, SoundDevice
 
     m_instanceNode.m_buffer = this;
     m_restoreSource = this;
-    m_reusable = 1;
+    m_reusable = true;
 }
 
 RVA(0x00136260, 0xb)
@@ -802,15 +802,15 @@ SoundBufferInstance::~SoundBufferInstance() {}
 
 RVA(0x00136270, 0x8b)
 i32 SoundBuffer::Play() {
-    if (m_owner->m_initialized == 0) {
+    if (m_owner->m_initialized == false) {
         return 0;
     }
-    i32 hr = m_buffer->Play(0, 0, m_playFlags) != 0;
-    if (hr != 0) {
+    b32 hr = m_buffer->Play(0, 0, m_playFlags) != 0;
+    if (hr != false) {
         if (hr == DSERR_BUFFERLOST) {
             if (m_restoreSource->ReacquireBuffer() != 0) {
-                i32 hr2 = m_buffer->Play(0, 0, m_playFlags) != 0;
-                if (hr2 == 0) {
+                b32 hr2 = m_buffer->Play(0, 0, m_playFlags) != 0;
+                if (hr2 == false) {
                     return 1;
                 }
                 ReportError(DSNDMGR_FILE, 0x34c, hr2);
@@ -825,23 +825,23 @@ i32 SoundBuffer::Play() {
 }
 
 RVA(0x00136300, 0x6f)
-i32 SoundBuffer::ApplyAndPlay(i32 volumePct, i32 panPct, i32 frequencyOffsetPct, i32 looping) {
-    if (m_owner->m_initialized == 0) {
+i32 SoundBuffer::ApplyAndPlay(i32 volumePct, i32 panPct, i32 frequencyOffsetPct, b32 looping) {
+    if (m_owner->m_initialized == false) {
         return 0;
     }
-    i32 ok = 1;
+    b32 ok = true;
     if (SetVolumePercent(volumePct) == 0) {
-        ok = 0;
+        ok = false;
     }
     if (SetPanPercent(panPct) == 0) {
-        ok = 0;
+        ok = false;
     }
     if (SetFrequencyOffsetPercent(frequencyOffsetPct) == 0) {
-        ok = 0;
+        ok = false;
     }
     SetLooping(looping);
     if (Play() == 0) {
-        ok = 0;
+        ok = false;
     }
     return ok;
 }
@@ -856,7 +856,7 @@ i32 SoundBuffer::Lock(
     DWORD* audioBytes2,
     u32 flags
 ) {
-    if (m_owner->m_initialized == 0) {
+    if (m_owner->m_initialized == false) {
         return 0;
     }
     i32 hr = m_buffer->Lock(
@@ -901,13 +901,13 @@ i32 SoundBuffer::Lock(
 RVA(0x00136440, 0x74)
 SoundDevice::SoundDevice() {
 
-    m_initialized = 0;
+    m_initialized = false;
     BuildVolumeTable();
     m_reacquireProc = NULL;
     m_primaryBuffer = NULL;
     m_cooperativeLevel = 0;
     m_bufferFlags = 0;
-    m_force8Bit = 0;
+    m_force8Bit = false;
 }
 
 RVA_COMPGEN(0x001364c0, 0x1e, ??_GSoundDevice@@UAEPAXI@Z)
@@ -922,11 +922,11 @@ SoundDevice::~SoundDevice() {
 
 RVA(0x00136550, 0x8c)
 i32 SoundDevice::Initialize(HWND hwnd, u32 cooperativeLevel, u32 bufferFlags) {
-    i32 createFailed = DirectSoundCreate(NULL, &m_device, NULL) != 0;
+    b32 createFailed = DirectSoundCreate(NULL, &m_device, NULL) != 0;
     if (createFailed) {
         return 0;
     }
-    i32 hr = m_device->SetCooperativeLevel(hwnd, cooperativeLevel) != 0;
+    b32 hr = m_device->SetCooperativeLevel(hwnd, cooperativeLevel) != 0;
     if (hr) {
         SoundBuffer::ReportError(DSNDMGR_FILE, 0x3b0, hr);
         m_device->Release();
@@ -935,7 +935,7 @@ i32 SoundDevice::Initialize(HWND hwnd, u32 cooperativeLevel, u32 bufferFlags) {
     m_cooperativeLevel = cooperativeLevel;
     m_bufferFlags = bufferFlags;
     m_lastRampTickMs = 0;
-    m_initialized = 1;
+    m_initialized = true;
     return 1;
 }
 
@@ -951,10 +951,10 @@ i32 SoundDevice::ReacquireViaCallback() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001365f0, 0x57)
 i32 SoundDevice::SetCooperativeLevel(HWND hwnd, u32 cooperativeLevel) {
-    if (m_initialized == 0) {
+    if (m_initialized == false) {
         return 0;
     }
-    i32 hr = m_device->SetCooperativeLevel(hwnd, cooperativeLevel) != 0;
+    b32 hr = m_device->SetCooperativeLevel(hwnd, cooperativeLevel) != 0;
     if (hr) {
         SoundBuffer::ReportError(DSNDMGR_FILE, 0x3cf, hr);
         return 0;
@@ -967,10 +967,10 @@ i32 SoundDevice::SetCooperativeLevel(HWND hwnd, u32 cooperativeLevel) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00136650, 0x37)
 i32 SoundDevice::Compact() {
-    if (m_initialized == 0) {
+    if (m_initialized == false) {
         return 0;
     }
-    i32 hr = m_device->Compact() != 0;
+    b32 hr = m_device->Compact() != 0;
     if (hr) {
         SoundBuffer::ReportError(DSNDMGR_FILE, 0x3dc, hr);
         return 0;
@@ -991,7 +991,7 @@ void SoundDevice::Shutdown() {
         }
         m_device->Release();
     }
-    m_initialized = 0;
+    m_initialized = false;
 }
 
 RVA(0x001366f0, 0x168)
@@ -1002,7 +1002,7 @@ SoundSample* SoundDevice::CreateSample(WaveFormatX* format, u32 bytes, u32 flags
     i32 hr;
     SoundSample* result;
 
-    if (m_initialized == 0) {
+    if (m_initialized == false) {
         result = NULL;
         goto done;
     }
@@ -1055,7 +1055,7 @@ done:
 
 RVA(0x00136860, 0xa9)
 SoundSample* SoundDevice::LoadSampleFile(char* path, u32 flags, u32 loadOptions) {
-    if (m_initialized == 0) {
+    if (m_initialized == false) {
         return NULL;
     }
     FILE* file = fopen(path, "rb");
@@ -1079,7 +1079,7 @@ SoundSample* SoundDevice::LoadSampleFile(char* path, u32 flags, u32 loadOptions)
 
 RVA(0x00136910, 0x119)
 SoundSample* SoundDevice::LoadSample(RiffWaveHeader* riff, u32 flags, u32 loadOptions) {
-    if (m_initialized == 0) {
+    if (m_initialized == false) {
         return NULL;
     }
     if (riff == NULL) {
@@ -1096,12 +1096,12 @@ SoundSample* SoundDevice::LoadSample(RiffWaveHeader* riff, u32 flags, u32 loadOp
         return NULL;
     }
 
-    i32 convert16To8 = 0;
-    if (m_force8Bit != 0 || (loadOptions & 1) == 1) {
-        convert16To8 = 1;
+    b32 convert16To8 = false;
+    if (m_force8Bit != false || (loadOptions & 1) == 1) {
+        convert16To8 = true;
     }
     if (format->wBitsPerSample != sizeof(i16) * 8 || format->wFormatTag != WAVE_FORMAT_PCM) {
-        convert16To8 = 0;
+        convert16To8 = false;
     }
     if (convert16To8) {
         dataBytes >>= 1;
@@ -1125,7 +1125,7 @@ SoundSample* SoundDevice::LoadSample(RiffWaveHeader* riff, u32 flags, u32 loadOp
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00136a30, 0x76)
 SoundSample* SoundDevice::LoadSampleResource(const char* name, u32 flags, u32 loadOptions) {
-    if (m_initialized == 0) {
+    if (m_initialized == false) {
         return NULL;
     }
 
@@ -1148,7 +1148,7 @@ SoundSample* SoundDevice::LoadSampleResource(const char* name, u32 flags, u32 lo
 
 RVA(0x00136ab0, 0x41)
 i32 SoundDevice::ValidateRestore(SoundBuffer* buffer, WaveFormatX* format, u32 formatBytes) {
-    if (m_initialized == 0) {
+    if (m_initialized == false) {
         return 0;
     }
     if (formatBytes == 0) {
@@ -1167,7 +1167,7 @@ i32 SoundDevice::ValidateRestore(SoundBuffer* buffer, WaveFormatX* format, u32 f
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00136b00, 0xc2)
 i32 SoundDevice::ReloadFile(SoundBuffer* buffer, char* path, u32 loadOptions) {
-    if (m_initialized == 0) {
+    if (m_initialized == false) {
         return 0;
     }
     if (buffer->IsLooping() == 0) {
@@ -1194,7 +1194,7 @@ i32 SoundDevice::ReloadFile(SoundBuffer* buffer, char* path, u32 loadOptions) {
 
 RVA(0x00136bd0, 0x110)
 i32 SoundDevice::ReloadRiff(SoundBuffer* buffer, RiffWaveHeader* riff, u32 loadOptions) {
-    if (m_initialized == 0) {
+    if (m_initialized == false) {
         return 0;
     }
     if (riff == NULL) {
@@ -1214,12 +1214,12 @@ i32 SoundDevice::ReloadRiff(SoundBuffer* buffer, RiffWaveHeader* riff, u32 loadO
         return 0;
     }
 
-    i32 convert16To8 = 0;
-    if (m_force8Bit != 0 || (loadOptions & 1) == 1) {
-        convert16To8 = 1;
+    b32 convert16To8 = false;
+    if (m_force8Bit != false || (loadOptions & 1) == 1) {
+        convert16To8 = true;
     }
     if (format->wBitsPerSample != sizeof(i16) * 8 || format->wFormatTag != WAVE_FORMAT_PCM) {
-        convert16To8 = 0;
+        convert16To8 = false;
     }
     if (convert16To8) {
         dataBytes >>= 1;
@@ -1238,7 +1238,7 @@ i32 SoundDevice::ReloadRiff(SoundBuffer* buffer, RiffWaveHeader* riff, u32 loadO
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00136ce0, 0x92)
 i32 SoundDevice::ReloadResource(SoundBuffer* buffer, const char* name, u32 loadOptions) {
-    if (m_initialized == 0) {
+    if (m_initialized == false) {
         return 0;
     }
     if (buffer->IsLooping() == 0) {
@@ -1292,7 +1292,7 @@ void SoundDevice::StopAllBuffers() {
 
 RVA(0x00136e20, 0xa8)
 i32 SoundDevice::TickVolumeRamps(i32 timestampMs) {
-    if (m_initialized == 0) {
+    if (m_initialized == false) {
         return 0;
     }
     IntrusiveLink* head = m_volumeRamps.m_head;
@@ -1324,7 +1324,7 @@ i32 SoundDevice::TickVolumeRamps(i32 timestampMs) {
 
 RVA(0x00136ed0, 0x72)
 i32 SoundDevice::ClearVolumeRamps() {
-    if (m_initialized == 0) {
+    if (m_initialized == false) {
         return 0;
     }
     SoundTask* node = ElementFromLink<SoundTask>(m_volumeRamps.m_head);
@@ -1383,7 +1383,7 @@ SoundVolumeRamp::SoundVolumeRamp(
     i32 initialVolumePct,
     i32 durationMs,
     SoundBuffer* buffer,
-    i32 stopAndRewind,
+    b32 stopAndRewind,
     i32 startTime
 )
     : SoundTask(SOUND_TASK_TAG_VOLUME_RAMP, buffer, stopAndRewind) {
@@ -1395,29 +1395,29 @@ SoundVolumeRamp::SoundVolumeRamp(
 
 RVA(0x00137060, 0x6b)
 i32 SoundVolumeRamp::Tick(i32 timestampMs) {
-    i32 done = 0;
+    b32 done = false;
     timestampMs -= m_rampStartTime;
     if (static_cast<u32>(timestampMs) >= static_cast<u32>(m_rampDurationMs)) {
         timestampMs = m_rampDurationMs;
-        done = 1;
+        done = true;
     }
     if (m_buffer->IsPlaying() == 0) {
-        done = 1;
+        done = true;
     } else {
         i32 volumePct = (m_targetVolumePct - m_initialVolumePct) * timestampMs / m_rampDurationMs
                         + m_initialVolumePct;
         m_buffer->SetVolumePercent(volumePct);
     }
-    if (done && m_stopAndRewind != 0) {
+    if (done && m_stopAndRewind != false) {
         m_buffer->StopAndRewind();
     }
-    return done == 0;
+    return done == false;
 }
 
 RVA(0x001370d0, 0x38)
 i32 SoundVolumeRamp::Stop() {
     if (m_buffer->IsPlaying() != 0) {
-        if (m_stopAndRewind != 0) {
+        if (m_stopAndRewind != false) {
             m_buffer->StopAndRewind();
             return 1;
         }
@@ -1471,13 +1471,13 @@ i32 ParseWaveChunks(
 
 RVA(0x001371a0, 0x5a)
 i32 SoundDevice::SetPrimaryFormat(WaveFormatX* format) {
-    if (m_initialized == 0) {
+    if (m_initialized == false) {
         return 0;
     }
     if (CreatePrimaryBuffer() == 0) {
         return 0;
     }
-    i32 hr = m_primaryBuffer->SetFormat(WaveFormatSdk(format)) != 0;
+    b32 hr = m_primaryBuffer->SetFormat(WaveFormatSdk(format)) != 0;
     if (hr) {
         SoundBuffer::ReportError(DSNDMGR_FILE, 0x678, hr);
         return 0;
@@ -1487,13 +1487,13 @@ i32 SoundDevice::SetPrimaryFormat(WaveFormatX* format) {
 
 RVA(0x00137200, 0x53)
 i32 SoundDevice::StartPrimaryBuffer() {
-    if (m_initialized == 0) {
+    if (m_initialized == false) {
         return 0;
     }
     if (CreatePrimaryBuffer() == 0) {
         return 0;
     }
-    i32 hr = m_primaryBuffer->Play(0, 0, DSBPLAY_LOOPING) != 0;
+    b32 hr = m_primaryBuffer->Play(0, 0, DSBPLAY_LOOPING) != 0;
     if (hr) {
         SoundBuffer::ReportError(DSNDMGR_FILE, 0x68b, hr);
         return 0;
@@ -1503,7 +1503,7 @@ i32 SoundDevice::StartPrimaryBuffer() {
 
 RVA(0x00137260, 0x95)
 i32 SoundDevice::CreatePrimaryBuffer() {
-    if (m_initialized == 0) {
+    if (m_initialized == false) {
         return 0;
     }
 
@@ -1515,7 +1515,7 @@ i32 SoundDevice::CreatePrimaryBuffer() {
         memset(&desc, 0, sizeof(desc));
         desc.dwSize = sizeof(DSBUFFERDESC);
         desc.dwFlags = m_bufferFlags | DSBCAPS_PRIMARYBUFFER;
-        i32 hr = m_device->CreateSoundBuffer(&desc, &m_primaryBuffer, NULL) != 0;
+        b32 hr = m_device->CreateSoundBuffer(&desc, &m_primaryBuffer, NULL) != 0;
         if (hr) {
             SoundBuffer::ReportError(DSNDMGR_FILE, 0x6ab, hr);
             return 0;
@@ -1528,7 +1528,7 @@ i32 SoundDevice::CreatePrimaryBuffer() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00137300, 0x23)
 IDirectSoundBuffer* SoundDevice::GetPrimary() {
-    if (m_initialized == 0) {
+    if (m_initialized == false) {
         return NULL;
     }
     if (CreatePrimaryBuffer() == 0) {

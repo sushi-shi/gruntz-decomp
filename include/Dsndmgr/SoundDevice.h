@@ -54,14 +54,14 @@ public:
     IDirectSound* m_device;
 
     char m_reserved[0x78 - 0x18];
-    i32 m_initialized;
+    b32 m_initialized;
     i32 m_lastRampTickMs;
 
     i32 (SoundDevice::*m_reacquireProc)();
     IDirectSoundBuffer* m_primaryBuffer;
     i32 m_cooperativeLevel;
     u32 m_bufferFlags;
-    i32 m_force8Bit;
+    b32 m_force8Bit;
 };
 
 #endif // DSNDMGR_SOUNDDEVICE_H

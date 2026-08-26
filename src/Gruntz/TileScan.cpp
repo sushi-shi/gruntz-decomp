@@ -18,9 +18,9 @@ i32 CBattlezMapConfig::RerouteSwitchSeeker(CGrunt* grunt) {
     i32 targetUnavailable = 0;
     if (targetTeamIndex != -1) {
         GruntzPlayer* targetPlayer = &m_ctx->m_players[targetTeamIndex];
-        if (targetPlayer->m_clearedRound != 0) {
+        if (targetPlayer->m_clearedRound != false) {
             targetUnavailable = 1;
-        } else if (targetPlayer->m_active == 0) {
+        } else if (targetPlayer->m_active == false) {
             targetUnavailable = 1;
         }
     }

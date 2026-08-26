@@ -442,24 +442,24 @@ void CFileMemBase::Reset() {
 }
 
 RVA(0x00157a80, 0x51)
-i32 SoundCueRegistry::BindSoundStream(i32 allowUnavailable) {
+i32 SoundCueRegistry::BindSoundStream(b32 allowUnavailable) {
     CDDrawSurfaceMgr* mgr = OwnerMgr();
     if (mgr == NULL) {
         return 0;
     }
     SoundStream* stream = mgr->m_soundStream;
-    if (allowUnavailable == 0) {
+    if (allowUnavailable == false) {
         if (stream == NULL) {
             return 0;
         }
-        if (stream->m_initialized == 0) {
+        if (stream->m_initialized == false) {
             return 0;
         }
     }
     if (stream == NULL) {
-        m_silentMode = 1;
+        m_silentMode = true;
     } else {
-        m_silentMode = 0;
+        m_silentMode = false;
     }
     m_soundStream = stream;
     g_soundVolumePercent = VOLUME_PCT_MAX;
@@ -535,7 +535,7 @@ i32 SoundCueRegistry::RemoveWithPrefix(const char* prefix, const char* separator
 
 RVA(0x00157d70, 0x90)
 SoundCue* SoundCueRegistry::LoadCueFromSource(const char* key, CRezArchiveEntry* source) {
-    if (m_silentMode != 0) {
+    if (m_silentMode != false) {
         return NULL;
     }
     SoundCue* cue = new SoundCue(CueCount(), m_ownerCtx);
@@ -554,7 +554,7 @@ SoundCue* SoundCueRegistry::LoadCueFromSource(const char* key, CRezArchiveEntry*
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00157e00, 0x90)
 SoundCue* SoundCueRegistry::LoadCueFromFile(const char* key, char* path) {
-    if (m_silentMode != 0) {
+    if (m_silentMode != false) {
         return NULL;
     }
     SoundCue* cue = new SoundCue(CueCount(), m_ownerCtx);
@@ -573,7 +573,7 @@ SoundCue* SoundCueRegistry::LoadCueFromFile(const char* key, char* path) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00157e90, 0x23)
 SoundCue* SoundCueRegistry::LoadNamedCue(CRezArchiveEntry* source) {
-    if (m_silentMode != 0) {
+    if (m_silentMode != false) {
         return NULL;
     }
     if (source == NULL) {
@@ -595,7 +595,7 @@ i32 SoundCueRegistry::LoadFromTree(
     const char* prefix,
     const char* separator
 ) {
-    if (m_silentMode != 0) {
+    if (m_silentMode != false) {
         return 0;
     }
     i32 count = 0;
@@ -645,7 +645,7 @@ i32 SoundCueRegistry::LoadFromTree(
 
 RVA(0x001580b0, 0xf6)
 i32 SoundCueRegistry::SumAudioBytes(const char* prefix) {
-    if (m_silentMode != 0) {
+    if (m_silentMode != false) {
         return 0;
     }
     POSITION pos = m_cues.GetStartPosition();
@@ -675,7 +675,7 @@ i32 SoundCueRegistry::PlaySpatializedCue(
     i32 fullPanOffsetPx
 ) {
     CGameLevel* level = OwnerMgr()->m_level;
-    if (level != NULL && level->m_mainPlane != NULL && m_silentMode == 0) {
+    if (level != NULL && level->m_mainPlane != NULL && m_silentMode == false) {
         SoundCue* cue = NULL;
         MapLookup(m_cues, key, cue);
         if (cue != NULL) {
@@ -687,7 +687,7 @@ i32 SoundCueRegistry::PlaySpatializedCue(
 
 RVA(0x00158210, 0xaa)
 SoundCue* SoundCueRegistry::GetFirstCue() {
-    if (m_silentMode != 0) {
+    if (m_silentMode != false) {
         return NULL;
     }
     POSITION pos = m_cues.GetStartPosition();
@@ -707,7 +707,7 @@ SoundCue* SoundCueRegistry::GetNextCueAfter(SoundCue* target) {
     if (target == NULL) {
         return NULL;
     }
-    if (m_silentMode != 0) {
+    if (m_silentMode != false) {
         return NULL;
     }
     POSITION pos = m_cues.GetStartPosition();
@@ -840,9 +840,9 @@ i32 SoundCue::LoadFromSource(CRezArchiveEntry* source) {
         return 0;
     }
     SoundDevice* dev = OwnerMgr()->m_soundStream;
-    i32 ok;
+    b32 ok;
     if (dev == NULL) {
-        ok = 0;
+        ok = false;
     } else {
         RecordBytes<RiffWaveHeader> riff;
         riff.m_chars = blob;
@@ -866,7 +866,7 @@ void SoundCue::Unload() {
 
 RVA(0x001587f0, 0xf1)
 i32 SoundCue::PlaySpatialized(i32 sourceX, i32 listenerX, i32 maxPanOffsetPx, i32 fullPanOffsetPx) {
-    if (g_soundEnabled == 0) {
+    if (g_soundEnabled == false) {
         return 0;
     }
     if (listenerX <= 0) {
@@ -900,5 +900,5 @@ i32 SoundCue::PlaySpatialized(i32 sourceX, i32 listenerX, i32 maxPanOffsetPx, i3
         volumePercent =
             static_cast<i32>(volumePercent * (g_soundVolumePercent * c_volumePercentUnitScale));
     }
-    return m_sound->AcquireAndPlay(volumePercent, panPercent, 0, 0);
+    return m_sound->AcquireAndPlay(volumePercent, panPercent, 0, false);
 }

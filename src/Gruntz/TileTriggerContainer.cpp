@@ -52,7 +52,7 @@ i32 DrawPageDebugText(
     const CString* text,
     RECT* dst,
     i32 fontFlag,
-    i32 useFrontPage,
+    b32 useFrontPage,
     i32 r,
     i32 g,
     i32 b
@@ -61,7 +61,7 @@ i32 DrawPageDebugText(
         return 0;
     }
     CDrawSubWorker* page;
-    if (useFrontPage != 0) {
+    if (useFrontPage != false) {
         page = mgr->m_drawTarget->m_frontSurface;
         if (page == NULL) {
             return 0;
@@ -86,18 +86,18 @@ i32 DrawPageDebugText(
 
 RVA(0x00115f00, 0x13)
 i32 CTileTriggerContainer::Initialize() {
-    if (m_initialized != 0) {
+    if (m_initialized != false) {
         return 0;
     }
-    m_initialized = 1;
+    m_initialized = true;
     return 1;
 }
 
 RVA(0x00115f30, 0x18)
 void CTileTriggerContainer::Shutdown() {
-    if (m_initialized != 0) {
+    if (m_initialized != false) {
         RemoveAll();
-        m_initialized = 0;
+        m_initialized = false;
     }
 }
 
@@ -114,7 +114,7 @@ CTileTriggerSwitchLogic* CTileTriggerContainer::AddSwitchLogic(
     RECT clip,
     RECT switchRectA,
     RECT switchRectB,
-    i32 isMatch,
+    b32 isMatch,
     i32 damageParam,
     i32 checkpointType
 ) {
@@ -263,7 +263,7 @@ __inline i32 CTileTriggerLogic::Build(
     i32 leadInSpan,
     i32 dutyOffSpan
 ) {
-    if (m_initGate != 0) {
+    if (m_initGate != false) {
         return 0;
     }
     memcpy(m_linkKeys, rects, sizeof(m_linkKeys));
@@ -291,7 +291,7 @@ __inline i32 CTileTriggerLogic::Setup(
     i32 leadInSpan,
     i32 dutyOffSpan
 ) {
-    if (m_initGate != 0) {
+    if (m_initGate != false) {
         return 0;
     }
     m_tileY = tileY;
@@ -299,11 +299,11 @@ __inline i32 CTileTriggerLogic::Setup(
     m_owner = owner;
     m_typeTag = typeTag;
     m_cellKey = cellKey;
-    m_initGate = 1;
+    m_initGate = true;
     m_tileToken = tileToken;
     m_startClock = g_frameTime;
     m_leadInSpan = leadInSpan;
-    m_dutyOn = 0;
+    m_dutyOn = false;
     m_dutyOnSpan = dutyOnSpan;
     m_dutyOffSpan = dutyOffSpan;
     if (typeTag != TRIGID_COVERED_POWERUP_26 && dutyOffSpan == 0) {
@@ -401,7 +401,7 @@ CTileActionEvent* CTileTriggerContainer::AddActionEvent(
     if (event == NULL) {
         return NULL;
     }
-    if (event->m_live == 0) {
+    if (event->m_live == false) {
         event->m_tileX = tileX;
         event->m_tileY = tileY;
         event->m_cellKey = cellKey;
@@ -410,7 +410,7 @@ CTileActionEvent* CTileTriggerContainer::AddActionEvent(
         event->m_playerFlags[3] = playerFlags.bottom;
         event->m_actionCode = actionCode;
         event->m_owner = this;
-        event->m_live = 1;
+        event->m_live = true;
         event->m_playerFlags[2] = playerFlags.right;
         event->SetActionCode(actionCode);
         m_actionEvents.AddTail(event);
@@ -449,14 +449,14 @@ CTileActionEvent* CTileTriggerContainer::AddSwitchActionEvent(
             d = 1;
             break;
     }
-    if (event->m_live == 0) {
+    if (event->m_live == false) {
         event->m_tileX = tileX;
         event->m_tileY = tileY;
         event->m_cellKey = cellKey;
         event->m_playerFlags[2] = b;
         event->m_actionCode = actionCode;
         event->m_owner = this;
-        event->m_live = 1;
+        event->m_live = true;
         event->m_playerFlags[0] = d;
         event->m_playerFlags[1] = c;
         event->m_playerFlags[3] = a;
@@ -482,7 +482,7 @@ CGiantRockLogic* CTileTriggerContainer::AddGiantRockLogic(
     if (e == NULL) {
         return NULL;
     }
-    if (e->m_initGate == 0) {
+    if (e->m_initGate == false) {
         memcpy(e->m_matrix, block9, sizeof(e->m_matrix));
         e->m_powerupType = static_cast<PickupType>(powerupType);
         e->m_textId = textId;
@@ -491,8 +491,8 @@ CGiantRockLogic* CTileTriggerContainer::AddGiantRockLogic(
         e->m_tileY = tileY;
         e->m_cellKey = cellKey;
         e->m_owner = this;
-        e->m_initGate = 1;
-        e->m_dutyOn = 0;
+        e->m_initGate = true;
+        e->m_dutyOn = false;
         e->m_startClock = g_frameTime;
         e->m_dutyOnSpan = 0;
         e->m_tileToken = 0;
@@ -625,7 +625,7 @@ i32 CTileTriggerContainer::ActivateTimedLogic(CTileTriggerLogic* logic) {
         if (elem == logic) {
             m_idleLogics.RemoveAt(cur);
             m_timedLogics.AddTail(elem);
-            elem->m_dutyOn = 0;
+            elem->m_dutyOn = false;
             return 1;
         }
     }

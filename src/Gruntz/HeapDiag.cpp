@@ -150,9 +150,9 @@ i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut) {
         *pHandleOut = NULL;
     }
 
-    i32 isFullPath = 0;
+    b32 isFullPath = false;
     if (strstr(name, "\\") != NULL) {
-        isFullPath = 1;
+        isFullPath = true;
     }
 
     HMODULE hK32 = GetModuleHandleA("KERNEL32.DLL");

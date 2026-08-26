@@ -36,11 +36,11 @@ namespace Utils {
             && GetRegistryKey(m_softwareKey, vendorName, &m_vendorKey)
             && GetRegistryKey(m_vendorKey, productName, &m_productKey)
             && GetRegistryKey(m_productKey, versionName, &m_versionKey)) {
-            m_open = 1;
+            m_open = true;
             if (InitializeLastKey(valueSubkeyName)) {
                 return 1;
             }
-            m_open = 0;
+            m_open = false;
         }
         return 0;
     }
@@ -48,7 +48,7 @@ namespace Utils {
     RVA(0x00139330, 0x3d)
     void RegistryHelper::Close() {
         if (m_open) {
-            m_open = 0;
+            m_open = false;
             RegCloseKey(m_softwareKey);
             RegCloseKey(m_vendorKey);
             RegCloseKey(m_productKey);

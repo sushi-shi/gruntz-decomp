@@ -17,13 +17,13 @@
 #define DSNDMGSR_FILE "C:\\Proj\\Dsndmgr\\DSndMgSR.cpp"
 
 DATA(0x00253c4c)
-i32 g_dsoundDebugLog;
+b32 g_dsoundDebugLog;
 DATA(0x00253c50)
-i32 g_dsoundErrorDialogs;
+b32 g_dsoundErrorDialogs;
 DATA(0x00253c54)
-i32 g_dsoundErrorBeeps;
+b32 g_dsoundErrorBeeps;
 DATA(0x00253c58)
-i32 g_dsoundFormatErrors;
+b32 g_dsoundFormatErrors;
 
 RVA(0x00137340, 0x33)
 i32 StreamFeeder::SeedWindow(CRezArchiveEntry* source, u32 offset, u32 bytes) {
@@ -55,7 +55,7 @@ i32 StreamVoiceFeeder::Feed(
         }
         *filled1 = m_source->Read(dst1, requestedBytes, m_sourceOffset);
         m_sourceOffset += *filled1;
-        while (*filled1 < bytes1 && m_looping != 0) {
+        while (*filled1 < bytes1 && m_looping != false) {
             m_sourceOffset = m_windowStart;
             requestedBytes = bytes1;
             if (m_windowStart + bytes1 > m_windowEnd) {
@@ -72,7 +72,7 @@ i32 StreamVoiceFeeder::Feed(
         }
         *filled2 = m_source->Read(dst2, requestedBytes, m_sourceOffset);
         m_sourceOffset += *filled2;
-        while (*filled2 < bytes2 && m_looping != 0) {
+        while (*filled2 < bytes2 && m_looping != false) {
             m_sourceOffset = m_windowStart;
             requestedBytes = bytes2;
             if (m_windowStart + bytes2 > m_windowEnd) {
@@ -113,24 +113,24 @@ i32 StreamVoice::SetSource(CRezArchiveEntry* source) {
 }
 
 RVA(0x00137520, 0x6e)
-i32 StreamVoice::Configure(i32 volumePct, i32 panPct, i32 frequencyOffsetPct, i32 looping) {
-    if (m_owner->m_initialized == 0) {
+i32 StreamVoice::Configure(i32 volumePct, i32 panPct, i32 frequencyOffsetPct, b32 looping) {
+    if (m_owner->m_initialized == false) {
         return 0;
     }
 
-    i32 ok = 1;
+    b32 ok = true;
     if (SetVolumePercent(volumePct) == 0) {
-        ok = 0;
+        ok = false;
     }
     if (SetPanPercent(panPct) == 0) {
-        ok = 0;
+        ok = false;
     }
     if (SetFrequencyOffsetPercent(frequencyOffsetPct) == 0) {
-        ok = 0;
+        ok = false;
     }
     m_feeder.m_looping = looping;
     if (m_feeder.Resume() == 0) {
-        ok = 0;
+        ok = false;
     }
     return ok;
 }
@@ -151,7 +151,7 @@ StreamVoice::StreamVoice(
 
     m_reprimeWhenIdle = reprimeWhenIdle;
     m_destroyWhenIdle = destroyWhenIdle;
-    m_wasPlaying = 0;
+    m_wasPlaying = false;
 }
 
 RVA_COMPGEN(0x00137630, 0x1e, ??_GStreamVoice@@UAEPAXI@Z)
@@ -193,7 +193,7 @@ StreamVoice* SoundStream::CreateStreamVoice(
     i32 reprimeWhenIdle,
     i32 destroyWhenIdle
 ) {
-    if (m_initialized == 0) {
+    if (m_initialized == false) {
         return NULL;
     }
     if (bufferBytes == 0) {
@@ -217,8 +217,8 @@ StreamVoice* SoundStream::CreateStreamVoice(
     bufferDesc.dwSize = 0x14;
     bufferDesc.dwBufferBytes = bufferBytes;
 
-    i32 hr = m_device->CreateSoundBuffer(&bufferDesc, &directSoundBuffer, NULL) != 0;
-    if (hr != 0) {
+    b32 hr = m_device->CreateSoundBuffer(&bufferDesc, &directSoundBuffer, NULL) != 0;
+    if (hr != false) {
         SoundBuffer::ReportError(DSNDMGSR_FILE, 0xe8, hr);
         return NULL;
     }
@@ -263,7 +263,7 @@ StreamVoice* SoundStream::OpenStream(
     feeder->m_windowStart = dataOffset;
     feeder->m_windowLength = dataBytes;
     feeder->m_source = source;
-    feeder->m_looping = 0;
+    feeder->m_looping = false;
     feeder->m_sourceOffset = 0;
 
     if (feeder->Initialize(this, &format, bufferBytes, refillThresholdBytes, voice, -1) == 0) {
@@ -328,12 +328,12 @@ i32 SoundStream::TickStreams(i32 timestampMs) {
     while (voice) {
         StreamVoice* next = ElementFromLink<StreamVoice>(voice->m_link.m_next);
         voice->m_feeder.Tick(timestampMs);
-        i32 isPlaying = voice->m_feeder.m_buffer->IsPlaying();
-        if (isPlaying == 0 && voice->m_wasPlaying != 0) {
-            if (voice->m_reprimeWhenIdle != 0) {
+        b32 isPlaying = voice->m_feeder.m_buffer->IsPlaying();
+        if (isPlaying == false && voice->m_wasPlaying != false) {
+            if (voice->m_reprimeWhenIdle != false) {
                 voice->m_feeder.PrimeBuffer(-1);
             }
-            if (voice->m_destroyWhenIdle != 0) {
+            if (voice->m_destroyWhenIdle != false) {
                 DestroyVoice(voice);
                 voice = NULL;
             }
@@ -406,15 +406,15 @@ RVA(0x00137cd0, 0x1a)
 StreamFeeder::StreamFeeder() {
 
     m_buffer = NULL;
-    m_initialized = 0;
+    m_initialized = false;
     m_writeCursor = 0;
-    m_playing = 0;
+    m_playing = false;
     m_lastTickMs = 0;
 }
 
 RVA(0x00137cf0, 0x20)
 StreamFeeder::~StreamFeeder() {
-    if (m_initialized != 0) {
+    if (m_initialized != false) {
         Reset(1);
     }
     m_buffer = NULL;
@@ -433,7 +433,7 @@ i32 StreamFeeder::Initialize(
     m_refillThresholdBytes = refillThresholdBytes;
     m_owner = owner;
     m_bufferBytes = bufferBytes;
-    m_playing = 0;
+    m_playing = false;
     if (format->wBitsPerSample > 8) {
         m_silenceByte = 0;
     } else {
@@ -451,7 +451,7 @@ i32 StreamFeeder::Initialize(
     if (m_buffer == NULL) {
         return 0;
     }
-    m_initialized = 1;
+    m_initialized = true;
     if (ResetSource() == 0) {
         Reset(1);
         return 0;
@@ -465,8 +465,8 @@ i32 StreamFeeder::Initialize(
 
 RVA(0x00137dc0, 0x43)
 void StreamFeeder::Reset(i32 destroyBuffer) {
-    if (m_initialized != 0) {
-        if (m_playing != 0) {
+    if (m_initialized != false) {
+        if (m_playing != false) {
             Pause();
         }
         OnReset();
@@ -475,7 +475,7 @@ void StreamFeeder::Reset(i32 destroyBuffer) {
             m_owner->DestroyBuffer(m_buffer);
         }
         m_buffer = NULL;
-        m_initialized = 0;
+        m_initialized = false;
     }
 }
 
@@ -519,25 +519,25 @@ i32 StreamFeeder::Tick(i32 timestampMs) {
 
 RVA(0x00137ed0, 0x30)
 i32 StreamFeeder::Resume() {
-    if (m_playing != 0) {
+    if (m_playing != false) {
         return 1;
     }
-    m_buffer->SetLooping(1);
+    m_buffer->SetLooping(true);
     i32 result = m_buffer->Play();
     if (result != 0) {
-        m_playing = 1;
+        m_playing = true;
     }
     return result;
 }
 
 RVA(0x00137f00, 0x26)
 i32 StreamFeeder::Pause() {
-    if (m_playing == 0) {
+    if (m_playing == false) {
         return 1;
     }
     i32 result = m_buffer->StopAndRewind();
     if (result != 0) {
-        m_playing = 0;
+        m_playing = false;
     }
     return result;
 }
@@ -604,10 +604,10 @@ i32 StreamFeeder::PrimeBuffer(i32 timestampMs) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00138120, 0x27)
 void ConfigureSoundErrorReporting(
-    i32 debugLog,
-    i32 errorDialogs,
-    i32 errorBeeps,
-    i32 formatErrors
+    b32 debugLog,
+    b32 errorDialogs,
+    b32 errorBeeps,
+    b32 formatErrors
 ) {
     g_dsoundDebugLog = debugLog;
     g_dsoundErrorDialogs = errorDialogs;

@@ -175,7 +175,7 @@ void CStaticHazard::RegisterActs() {
 RVA(0x000fc0b0, 0xb2)
 i32 CStaticHazard::UpdateIdleState() {
     CGruntzMgr* reg = g_gameReg;
-    if (reg->m_isEasyMode != 0 && reg->m_gameMode == GAMEMODE_QUESTZ) {
+    if (reg->m_isEasyMode != false && reg->m_gameMode == GAMEMODE_QUESTZ) {
         return 0;
     }
     u32 phase = g_frameTime - m_pulseEpoch;
@@ -188,7 +188,7 @@ i32 CStaticHazard::UpdateIdleState() {
     if (phase % span > static_cast<u32>(m_activeWindow)) {
         return 0;
     }
-    m_fired = 1;
+    m_fired = true;
     SwitchAnimationByName("LEVEL_STATICHAZARDGO", 0);
     {APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)} SET_ANIMATION_ACT("B");
     return 0;
@@ -201,7 +201,7 @@ i32 CStaticHazard::UpdateActiveState() {
     u32 rem = phase % static_cast<u32>((m_idleWindow + m_activeWindow));
     if (rem > static_cast<u32>(m_activeWindow)) {
 
-        if (m_fired != 0) {
+        if (m_fired != false) {
 
             if (m_object->m_damage == 0) {
 
@@ -210,7 +210,7 @@ i32 CStaticHazard::UpdateActiveState() {
                     APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)
                 } CWwdSpriteObject* o = m_object;
                 SET_SORT_KEY_IF_CHANGED(o, 0)
-                m_fired = 0;
+                m_fired = false;
                 return 0;
             }
 
@@ -229,13 +229,13 @@ i32 CStaticHazard::UpdateActiveState() {
             }
             return 0;
         }
-    } else if (m_fired == 0 && m_object->m_damage == 0) {
+    } else if (m_fired == false && m_object->m_damage == 0) {
 
         SwitchAnimationByName("LEVEL_STATICHAZARDGO", 0);
         {APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)} CWwdSpriteObject* o =
             m_object;
         SET_SORT_KEY_IF_CHANGED(o, 0)
-        m_fired = 1;
+        m_fired = true;
         return 0;
     }
 

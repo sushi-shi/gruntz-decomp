@@ -17,12 +17,12 @@ DATA(0x00251618)
 HINSTANCE g_appResHandle;
 
 DATA(0x002455ec)
-i32 g_cdPromptResult = 0;
+b32 g_cdPromptResult = false;
 
 RVA(0x0001f9b0, 0x2d2)
 int StartUpPrompt(HWND hWnd) {
     if (IsGruntzCDInAnyDrive()) {
-        g_cdPromptResult = 0;
+        g_cdPromptResult = false;
         return 1;
     }
 
@@ -39,7 +39,7 @@ int StartUpPrompt(HWND hWnd) {
     char szCaption[62];
 
     if (!FileExists(const_cast<char*>(static_cast<const char*>(strPath)))) {
-        g_cdPromptResult = 0;
+        g_cdPromptResult = false;
         for (;;) {
             strcpy(szText, "Please insert the game CD-ROM into the drive.");
             if (!LoadStringA(g_appResHandle, 0x8003, szCaption, 0x3e)) {
@@ -68,7 +68,7 @@ int StartUpPrompt(HWND hWnd) {
         strcpy(szCaption, "Gruntz");
     }
     if (MessageBoxA(hWnd, szText, szCaption, 0x34) == IDYES) {
-        g_cdPromptResult = 1;
+        g_cdPromptResult = true;
         return 1;
     }
     return 0;

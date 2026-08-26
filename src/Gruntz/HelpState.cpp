@@ -78,16 +78,16 @@ void CHelpState::ReleaseResources() {
 
 RVA(0x00095140, 0x6e)
 i32 CHelpState::EnterState(GameStateId previousState) {
-    m_mgr->RestoreVideoMode(0);
+    m_mgr->RestoreVideoMode(false);
 
     if (m_world->m_drawTarget->HasOverlay() == 0
         && m_world->m_drawTarget->CreateOverlay(0, 0x30000) == 0) {
         return 0;
     }
-    if (LoadTitlePage(g_titleBuf, 0, 0, 0, 0, 1) == 0) {
+    if (LoadTitlePage(g_titleBuf, 0, 0, 0, 0, true) == 0) {
         return 0;
     }
-    RetireScene(0x50, 0x3e8, 0, 1);
+    RetireScene(0x50, 0x3e8, 0, true);
     return 1;
 }
 
@@ -118,7 +118,7 @@ i32 CHelpState::Render() {
     for (i = 0; i < n; i++) {
         if (g_actorList->m_items[i]->m_pressedButtons & IDX(INPUT_BUTTON_MASK)) {
             PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_NEXT_STATE), 0);
-            m_mgr->m_owner->m_running = 0;
+            m_mgr->m_owner->m_running = false;
             return 1;
         }
     }

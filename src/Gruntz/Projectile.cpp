@@ -171,38 +171,38 @@ i32 CProjectile::LoadProjectileSprites(
         case PICKUP_ROCK:
             key = "GRUNTZ_ROCKGRUNT_PROJECTILE";
             m_timePerTile = g_buteMgr.GetDwordDef("Projectile", "RockProjectileTimePerTile", 0xbb8);
-            m_isArcing = 1;
+            m_isArcing = true;
             break;
         case PICKUP_GUNHAT:
             key = "GRUNTZ_GUNHATGRUNT_PROJECTILE";
             m_timePerTile =
                 g_buteMgr.GetDwordDef("Projectile", "GunhatProjectileTimePerTile", 0xbb8);
-            m_isArcing = 1;
+            m_isArcing = true;
             break;
         case PICKUP_BOOMERANG:
             key = "GRUNTZ_BOOMERANGGRUNT_PROJECTILE";
             m_timePerTile =
                 g_buteMgr.GetDwordDef("Projectile", "BoomerangProjectileTimePerTile", 0xbb8);
-            m_isArcing = 0;
+            m_isArcing = false;
             break;
         case PICKUP_NERFGUN:
             key = "GRUNTZ_NERFGUNGRUNT_PROJECTILE";
             m_timePerTile =
                 g_buteMgr.GetDwordDef("Projectile", "NerfGunProjectileTimePerTile", 0xbb8);
-            m_isArcing = 1;
+            m_isArcing = true;
             break;
         case PICKUP_WELDER:
             key = "GRUNTZ_WELDERGRUNT_PROJECTILE";
             m_timePerTile =
                 g_buteMgr.GetDwordDef("Projectile", "WelderProjectileTimePerTile", 0xbb8);
-            m_isArcing = 1;
+            m_isArcing = true;
             break;
         case PICKUP_WINGZ: {
             key = "GRUNTZ_WINGZGRUNT_PROJECTILE";
             m_timePerTile =
                 g_buteMgr.GetDwordDef("Projectile", "WingzProjectileTimePerTile", 0xbb8);
             LaunchSound("GRUNTZ_WINGZGRUNT_WINGZGRUNTLOOP");
-            m_isArcing = 0;
+            m_isArcing = false;
             i32 ddx = abs((m_targetPxX >> TILE_SHIFT_PX) - (m_object->m_screenX >> TILE_SHIFT_PX));
             i32 ddy = abs((m_targetPxY >> TILE_SHIFT_PX) - (m_object->m_screenY >> TILE_SHIFT_PX));
             count = ddx;
@@ -281,7 +281,7 @@ i32 CProjectile::LoadProjectileSprites(
                 static_cast<const char*>(key + "_SHADOW"),
                 static_cast<const char*>(key + "1"),
                 5,
-                1
+                true
             );
     }
 
@@ -360,7 +360,7 @@ void CProjectile::AdvanceMotion() {
         m_curY = yRes;
         i32 offX = 0;
         i32 offY = 0;
-        if (m_isArcing != 0) {
+        if (m_isArcing != false) {
             double dx = fabs(static_cast<double>(m_targetPxX) - m_posX);
             double dy = fabs(static_cast<double>(m_targetPxY) - m_posY);
             double dist = sqrt(dx * dx + dy * dy);
@@ -582,22 +582,22 @@ i32 CBoomerang::LoadProjectileSprites(
             RECYCLE_GRUNT_COORDS_EXPANDED(g)
         }
     }
-    m_launched = 0;
+    m_launched = false;
     return 1;
 }
 
 // @early-stop
 RVA(0x000e08b0, 0x1de)
 void CBoomerang::AdvanceMotion() {
-    if (m_launched == 0 && m_phase > g_boomerangHalfTurnRadians) {
+    if (m_launched == false && m_phase > g_boomerangHalfTurnRadians) {
         m_object->m_screenX = m_targetPxX;
         m_object->m_screenY = m_targetPxY;
         if (m_shadow != NULL) {
             m_shadow->m_screenX = m_targetPxX;
             m_shadow->m_screenY = m_targetPxY;
         }
-        m_launched = 1;
-    } else if (m_phase > g_boomerangFullTurnRadians && m_launched != 0) {
+        m_launched = true;
+    } else if (m_phase > g_boomerangFullTurnRadians && m_launched != false) {
         ScanTargets(1);
         if (m_shadow != NULL) {
             m_shadow->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
@@ -937,12 +937,12 @@ CTimeBomb::CTimeBomb(CGameObject* obj)
         m_wwdObject->SetAnimationByName("GAME_TIMEBOMBFAST", 0);
         m_duration = static_cast<u32>(m_object->m_damage);
         m_startTime = static_cast<u32>(g_frameTime);
-        m_fastPhase = 1;
+        m_fastPhase = true;
     } else {
         m_wwdObject->SetAnimationByName("GAME_TIMEBOMBSLOW", 0);
         m_duration = g_buteMgr.GetDwordDef("Projectile", "TimeBombSlowTime", 0xfa0);
         m_startTime = static_cast<u32>(g_frameTime);
-        m_fastPhase = 0;
+        m_fastPhase = false;
     }
     i32 cx = m_object->m_screenX >> TILE_SHIFT_PX;
     i32 cy = m_object->m_screenY >> TILE_SHIFT_PX;
@@ -986,11 +986,11 @@ i32 CTimeBomb::UpdateCountdown() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
 
     if (static_cast<i64>(g_frameTime) - m_startTime >= m_duration) {
-        if (m_fastPhase == 0) {
+        if (m_fastPhase == false) {
             SwitchAnimationByName("GAME_TIMEBOMBFAST", 0);
             m_duration = g_buteMgr.GetDwordDef("Projectile", "TimeBombFastTime", 0x3e8);
             m_startTime = g_frameTime;
-            m_fastPhase = 1;
+            m_fastPhase = true;
         } else {
             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             TBombGridClear(m_object);
@@ -1037,7 +1037,7 @@ i32 CProjectile::LaunchSound(const char* key) {
         goto fail;
     }
     gameMgr = g_gameReg;
-    if (gameMgr->m_soundEnabled == 0) {
+    if (gameMgr->m_soundEnabled == false) {
         goto fail;
     }
     world = gameMgr->m_world;
@@ -1052,7 +1052,7 @@ i32 CProjectile::LaunchSound(const char* key) {
 
     m_sound = static_cast<SoundBuffer*>(cue->m_sound->AcquireInstance());
     if (m_sound != NULL) {
-        m_sound->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
+        m_sound->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, true);
         return 1;
     }
 fail:

@@ -310,28 +310,28 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
             SetupSprite("GAME_POWERUP");
             glitter = ICON_GLITTER_POWERUP_RED;
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETW") == 0) {
-            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+            if (g_gameReg->m_isEasyMode != false && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 return;
             }
             m_object->m_smarts = IDX(PICKUP_W);
             SetupSprite("GAME_POWERUP");
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETA") == 0) {
-            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+            if (g_gameReg->m_isEasyMode != false && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 return;
             }
             m_object->m_smarts = IDX(PICKUP_A);
             SetupSprite("GAME_POWERUP");
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETR") == 0) {
-            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+            if (g_gameReg->m_isEasyMode != false && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 return;
             }
             m_object->m_smarts = IDX(PICKUP_R);
             SetupSprite("GAME_POWERUP");
         } else if (strcmp(name, "GAME_INGAMEICONZ_SECRETP") == 0) {
-            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+            if (g_gameReg->m_isEasyMode != false && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                 return;
             }
@@ -625,11 +625,11 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
     CLogicRecord* logicRecord;
     PickupType cmd;
     PickupType toyboxPickup;
-    i32 matchActive;
-    i32 flag;
+    b32 matchActive;
+    b32 flag;
     i32 sub;
     i32 idx;
-    i32 ok;
+    b32 ok;
     PickupType pickup;
     CGruntzMgr* reg = g_gameReg;
     if (reg->m_gameMode == GAMEMODE_QUESTZ && playerIndex != g_curPlayer
@@ -641,31 +641,31 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
     if (pickup == PICKUP_TOYBOX) {
 
         toyboxPickup = static_cast<PickupType>(obj->m_points);
-        matchActive = 0;
-        flag = 1;
+        matchActive = false;
+        flag = true;
         if (obj->m_score == playerIndex) {
-            matchActive = 1;
-            flag = 0;
+            matchActive = true;
+            flag = false;
         }
         sub = obj->m_faceDirection;
         idx = playerIndex * TM_UNITS_PER_PLAYER + unitIndex;
         cell = reg->m_triggerMgr->m_units[idx];
         if (cell == NULL || cell->m_entranceCommitted == false) {
-            ok = 0;
+            ok = false;
         } else if (matchActive) {
             ok = cell->LoadPickupSprites(toyboxPickup, flag, 0, sub, 0);
         } else {
             ok = cell->LoadGruntTypeTable(toyboxPickup, flag, sub, 0);
         }
         reg = g_gameReg;
-        if (ok == 0) {
+        if (ok == false) {
             goto fail;
         }
         if (m_cue != NULL) {
             o = m_object;
             if (CGameLevel::PointInRect(&reg->m_viewBounds, o->m_screenX, o->m_screenY)) {
 
-                m_cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
+                m_cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
                 reg = g_gameReg;
             }
         }
@@ -680,12 +680,12 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
     idx = playerIndex * TM_UNITS_PER_PLAYER + unitIndex;
     cell = reg->m_triggerMgr->m_units[idx];
     if (cell == NULL || cell->m_entranceCommitted == false) {
-        ok = 0;
+        ok = false;
     } else {
         ok = cell->LoadPickupSprites(cmd, 0, 0, sub, 1);
     }
     reg = g_gameReg;
-    if (ok != 0) {
+    if (ok != false) {
         if (cmd == PICKUP_WARPSTONE) {
             placed = reg->m_triggerMgr->m_units[idx];
             if (placed != NULL) {
@@ -697,7 +697,7 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
             o = m_object;
             if (CGameLevel::PointInRect(&reg->m_viewBounds, o->m_screenX, o->m_screenY)) {
 
-                m_cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
+                m_cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
                 reg = g_gameReg;
             }
         }
@@ -932,12 +932,12 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     InGameTextVisibility vis = static_cast<InGameTextVisibility>(m_object->m_health);
     if (vis == INGAME_TEXT_EASY_ONLY) {
 
-        if (g_gameReg->m_isEasyMode == 0 || g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
+        if (g_gameReg->m_isEasyMode == false || g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             return;
         }
     } else if (vis == INGAME_TEXT_NORMAL_ONLY) {
-        if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+        if (g_gameReg->m_isEasyMode != false && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             return;
         }
@@ -1010,10 +1010,10 @@ i32 CInGameText::Update() {
         CGruntzMgr* reg = g_gameReg;
         if (CGameLevel::PointInRect(&reg->m_viewBounds, x, y)) {
             SoundCueRegistry* set = reg->m_world->m_soundRegistry;
-            if (set->m_silentMode == 0) {
+            if (set->m_silentMode == false) {
                 SoundCue* res = LookupCue(set->m_cues, "GAME_HELPBOOK");
                 if (res != NULL) {
-                    PlaySoundCueIfElapsed(res, g_soundVolumePercent, 0, 0, 0);
+                    PlaySoundCueIfElapsed(res, g_soundVolumePercent, 0, 0, false);
                 }
             }
         }

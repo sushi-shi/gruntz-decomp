@@ -70,7 +70,7 @@ const float g_diffScale = 0.01f;
 DATA(0x0020ccc0)
 i32 g_battlezRouteBlockedMask = 0x98f;
 DATA(0x0022b6dc)
-i32 g_stepRun;
+b32 g_stepRun;
 DATA(0x0022b730)
 i32 g_stepCol;
 DATA(0x0022b734)
@@ -159,7 +159,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
     m_board = mgr->m_tileGrid;
     m_play = static_cast<CPlay*>(mgr->m_curState);
     m_cellQuery = m_play->m_tileTriggers;
-    m_active = 1;
+    m_active = true;
 
     m_gruntCreationTime = g_buteMgr.GetDwordDef("Battlez", "GruntCreationTime", 10000);
     m_resourceCreationTime = g_buteMgr.GetDwordDef("Battlez", "ResourceCreationTime", 10000);
@@ -316,10 +316,10 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
 
 RVA(0x00025c20, 0x55)
 i32 CBattlezMapConfig::StepAllRowSpawns() {
-    if (g_gameReg->m_players[m_playerIndex].m_humanControlled == 0
-        && g_gameReg->m_players[m_playerIndex].m_active != 0) {
+    if (g_gameReg->m_players[m_playerIndex].m_humanControlled == false
+        && g_gameReg->m_players[m_playerIndex].m_active != false) {
         for (i32 i = 0; i < m_candArray.GetSize(); i++) {
-            this->StepRowSpawn(0);
+            this->StepRowSpawn(false);
         }
     }
     return 1;
@@ -353,14 +353,14 @@ void CBattlezMapConfig::FreeArrays() {
 // @early-stop
 RVA(0x00025d90, 0x580)
 i32 CBattlezMapConfig::StepBoard() {
-    if (m_active == 0) {
+    if (m_active == false) {
         return 1;
     }
     if (m_ctx->m_triggerMgr == NULL) {
         return 0;
     }
     if (m_spawnTimer - m_spawnLastFire > m_gruntCreationTime) {
-        StepRowSpawn(1);
+        StepRowSpawn(true);
         m_spawnLastFire = m_spawnTimer;
     }
 
@@ -509,7 +509,7 @@ i32 CBattlezMapConfig::StepBoard() {
 
 // @early-stop
 RVA(0x00026470, 0x29d)
-i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
+i32 CBattlezMapConfig::StepRowSpawn(b32 allowReserved) {
     i32 occupied = 0;
     CGrunt** units = &m_triggerMgr->m_units[m_playerIndex * TM_UNITS_PER_PLAYER];
     for (i32 unitsRemaining = TM_UNITS_PER_PLAYER; unitsRemaining != 0; unitsRemaining--) {
@@ -531,19 +531,19 @@ i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
     BrickzCell tileRec;
     for (;;) {
         cand = cands[i];
-        i32 usable = 1;
+        b32 usable = true;
         if (cand != NULL) {
 
             const i32* tilePtr = &m_board->m_rowInts[cand->m_y][cand->m_x * 7];
             memcpy(&tileRec, tilePtr, sizeof(tileRec));
-            usable = 1;
+            usable = true;
             if (tileRec.m_flags & BRICKZ_CELL_OCCUPIED) {
 
                 if (tileRec.m_occupantIdBytes[1] == m_playerIndex) {
-                    usable = 0;
+                    usable = false;
                 }
-                if (allowReserved == 0) {
-                    usable = 0;
+                if (allowReserved == false) {
+                    usable = false;
                 }
             }
             if (usable) {
@@ -560,7 +560,7 @@ i32 CBattlezMapConfig::StepRowSpawn(i32 allowReserved) {
     m_ctx->m_world->m_level->m_mainPlane
         ->SnapToTileCenter(&screen, cand->m_x << TILE_SHIFT_PX, cand->m_y << TILE_SHIFT_PX);
     i32 cell;
-    if (allowReserved != 0) {
+    if (allowReserved != false) {
         cell = m_ctx->m_triggerMgr->PlaceObject(
             m_playerIndex,
             screen.m_x,
@@ -1500,14 +1500,14 @@ spellHit: {
 }
 
 flagsArm: {
-    i32 ok = 1;
+    b32 ok = true;
     if (cell & 8) {
         PickupType er = unit->m_entranceReason;
         PickupType held = ArrivalPickupOf(unit, er);
         if (held != PICKUP_TOOB) {
             PickupType held2 = ArrivalPickupOf(unit, er);
             if (held2 != PICKUP_WINGZ) {
-                ok = 0;
+                ok = false;
             }
         }
     }
@@ -1517,11 +1517,11 @@ flagsArm: {
         if (held != PICKUP_TOOB) {
             PickupType held2 = ArrivalPickupOf(unit, er);
             if (held2 != PICKUP_WINGZ) {
-                ok = 0;
+                ok = false;
             }
         }
     }
-    if (ok == 0) {
+    if (ok == false) {
         return 1;
     }
     {
@@ -1873,7 +1873,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         POSITION opos = m_triggerMgr->m_baseList.GetHeadPosition();
         while (opos != NULL) {
             CGruntPuddle* cand = static_cast<CGruntPuddle*>(m_triggerMgr->m_baseList.GetNext(opos));
-            if (cand->m_pending == 0) {
+            if (cand->m_pending == false) {
                 i32 ox = cand->m_tileX;
                 i32 oy = cand->m_tileY;
                 if ((static_cast<CGrunt*>(unit))->RectContains(ox * 0x20 + 0x10, oy * 0x20 + 0x10)
@@ -2143,7 +2143,7 @@ CGrunt* CBattlezMapConfig::PickRandomIdleUnit(i32) {
 
 RVA(0x0002ade0, 0x7)
 void CBattlezMapConfig::Clear() {
-    m_active = 0;
+    m_active = false;
 }
 
 // @early-stop
@@ -3073,14 +3073,14 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         if (t == PICKUP_TIMEBOMB || t == PICKUP_BOMB) {
             return 1;
         }
-        i32 flag = 1;
+        b32 flag = true;
         if (t == PICKUP_BRICK && (maskFlags & IDX(CELL_FLAG_GAUNTLET_BRICK))) {
-            flag = 0;
+            flag = false;
         }
         if (t == PICKUP_SPY && (maskFlags & IDX(CELL_FLAG_GAUNTLET_BRICK))) {
-            flag = 0;
+            flag = false;
         }
-        if (flag == 0) {
+        if (flag == false) {
             return 1;
         }
         EnterDefenderMode(g, 5);
@@ -3104,7 +3104,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         }
     }
 
-    PathToNearestCandidate(g, 0, 0, 0);
+    PathToNearestCandidate(g, false, 0, 0);
     if (PathCrossesMarkedTile(g) != 0) {
         return 1;
     }
@@ -3143,7 +3143,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
 
 RVA(0x0002d800, 0x605)
 void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 requireUnoccupied) {
-    while (g_stepRun != 0) {
+    while (g_stepRun != false) {
 
         i32 word = m_board->m_rows[row][col].m_flags;
         if (word & IDX(CELL_FLAG_HIDDEN_POWERUP)) {
@@ -3161,7 +3161,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
                 )
                 != 0) {
                 CoordNode* head = MfcNodeFromPosition<CoordNode>(list.GetHeadPosition());
-                g_stepRun = 0;
+                g_stepRun = false;
                 g_stepCol = col;
                 g_stepRow = row;
                 if (head != NULL) {
@@ -3195,7 +3195,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
                         )
                         != 0) {
                         CoordNode* head = MfcNodeFromPosition<CoordNode>(list2.GetHeadPosition());
-                        g_stepRun = 0;
+                        g_stepRun = false;
                         g_stepCol = col;
                         g_stepRow = row;
                         if (head != NULL) {
@@ -3244,7 +3244,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
                         if (list3.GetCount() != 0) {
                             CoordNode* head =
                                 MfcNodeFromPosition<CoordNode>(list3.GetHeadPosition());
-                            g_stepRun = 0;
+                            g_stepRun = false;
                             g_stepCol = col;
                             g_stepRow = row;
                             if (head != NULL) {
@@ -3356,7 +3356,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
 
 RVA(0x0002dfa0, 0x325)
 i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requireUnoccupied) {
-    g_stepRun = 1;
+    g_stepRun = true;
 
     i32 bottom;
     i32 right;
@@ -3402,12 +3402,12 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
         board->m_gridH = aDst->bottom - aDst->top;
     }
     ClaimTilesAround(unit, col, row, requireUnoccupied);
-    if (g_stepRun == 0) {
+    if (g_stepRun == false) {
         Coord saved = unit->EntrancePx();
         i32 col = saved.m_x >> TILE_SHIFT_PX;
         i32 row = saved.m_y >> TILE_SHIFT_PX;
         u32 tile0 = m_board->CellFlagsAt(col, row);
-        i32 flag = (tile0 >> 2) & 1;
+        b32 flag = ((tile0 >> 2) & 1) != 0;
         if (unit->CoordCount() != 0) {
             Coord* c = (unit->CoordTail())->m_coord;
             i32 cx = c->m_x;
@@ -3415,11 +3415,11 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
             i32 tile1 = m_board->CellFlagsAt(cx, cy);
             if (tile1 & 4) {
                 saved = *c;
-                flag = 1;
+                flag = true;
             }
         }
         unit->TileSwitch(g_stepCol, g_stepRow, 0, 0x9c3, 1, 0);
-        if (flag != 0) {
+        if (flag != false) {
             unit->m_entrancePx = saved;
         }
     }
@@ -3666,13 +3666,13 @@ i32 CBattlezMapConfig::PathToNearbyUnit(CGrunt*) {
 
 // @early-stop
 RVA(0x0002edb0, 0x6b4)
-i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, i32 ay) {
+i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, i32 ay) {
     if (unit->CoordCount() == 0) {
         return 0;
     }
     Coord target;
-    i32 found = 0;
-    if (useArg == 0) {
+    b32 found = false;
+    if (useArg == false) {
 
         CoordNode* n = unit->CoordHead();
         while (n != NULL) {
@@ -3683,18 +3683,18 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
                 BrickzCell* row = m_board->m_rows[c->m_y];
                 if (row[c->m_x].m_flags & 4) {
                     target = *c;
-                    found = 1;
+                    found = true;
                     break;
                 }
             }
         }
 
-        if (found != 0) {
+        if (found != false) {
             if (unit->m_defenderState == AISTATE_RETURN) {
                 return 1;
             }
         }
-        if (found != 0) {
+        if (found != false) {
             if (IsCoordOccupied(unit, target.m_x, target.m_y) != 0) {
 
                 if (unit->CoordCount() != 0) {
@@ -3704,7 +3704,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
                 return 1;
             }
         }
-        if (found != 0 && PathCrossesMarkedTile(unit) != 0) {
+        if (found != false && PathCrossesMarkedTile(unit) != 0) {
 
             if (unit->CoordCount() != 0) {
                 CoordNode* p = unit->CoordHead();
@@ -3719,9 +3719,9 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, i32 useArg, i32 ax, 
     } else {
         target.m_x = ax;
         target.m_y = ay;
-        found = 1;
+        found = true;
     }
-    if (found == 0) {
+    if (found == false) {
         return 0;
     }
     if (IsCoordOccupied(unit, target.m_x, target.m_y) != 0) {
@@ -4344,7 +4344,7 @@ i32 CBattlezMapConfig::IsCoordOccupied(CGrunt* selfUnit, i32 qx, i32 qy) {
 // @early-stop
 RVA(0x00030730, 0x1da)
 i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
-    if (m_active == 0) {
+    if (m_active == false) {
         return 0;
     }
     if (cellX == m_playerIndex) {
@@ -4367,22 +4367,22 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
         if (u == NULL) {
             continue;
         }
-        i32 ok = 1;
+        b32 ok = true;
         if (u->m_battleState == BZTASK_ASSIGNED_TARGET) {
             i32 ux = u->m_arrivalCell.m_x;
             i32 uy = u->m_arrivalCell.m_y;
             if (ux == cellX && uy == cellY) {
-                ok = 0;
+                ok = false;
             }
         }
         if (u->m_battleState == BZTASK_ASSIGNED_TARGET) {
             i32 ux = u->m_arrivalCell.m_x;
             i32 uy = u->m_arrivalCell.m_y;
             if (!(ux == cellX && uy == cellY) && (rand() % 3) != 0) {
-                ok = 0;
+                ok = false;
             }
         }
-        if (ok == 0) {
+        if (ok == false) {
             continue;
         }
         CGameObject* lvl = u->m_object;
@@ -4396,10 +4396,10 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
             dy = abs(dy);
 
             if (dx * dx + dy * dy <= 0x19) {
-                ok = 0;
+                ok = false;
             }
         }
-        if (ok == 0) {
+        if (ok == false) {
             continue;
         }
         u->m_arrivalCell.m_x = cellX;
@@ -4590,7 +4590,7 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
             }
         }
     } else {
-        PathToNearestCandidate(unit, 1, bestX, bestY);
+        PathToNearestCandidate(unit, true, bestX, bestY);
     }
     return 0;
 }
@@ -4618,17 +4618,17 @@ Coord* CBattlezMapConfig::PickSpawnCoord(Coord* o, CGrunt* unit, i32 kind) {
             CTriggerMgr* grid = m_triggerMgr;
             i32 cell = m_playerIndex;
             Coord cand = *arr[r];
-            i32 ok = 1;
+            b32 ok = true;
             for (i32 j = 0; j < TM_UNITS_PER_PLAYER; j++) {
                 CGrunt* u = grid->m_units[cell * TM_UNITS_PER_PLAYER + j];
                 if (u != NULL && u->CoordCount() != 0) {
                     Coord node = *(u->CoordTail()->m_coord);
                     if (node.m_x == cand.m_x && node.m_y == cand.m_y) {
-                        ok = 0;
+                        ok = false;
                     }
                 }
             }
-            if (ok != 0) {
+            if (ok != false) {
                 *o = cand;
                 return o;
             }

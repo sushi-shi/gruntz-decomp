@@ -74,7 +74,7 @@ public:
 
     class CGruntzMgr* m_gameManager;
     char m_pad60[8];
-    i32 m_customNameFlag;
+    b32 m_customNameFlag;
     CString m_worldName;
 
     CWnd* GetPlayerTypeControl(i32 slot);
@@ -308,7 +308,7 @@ private:
 
 extern CString g_defaultPlayerNames[4];
 
-extern i32 g_watchdogBusy;
+extern b32 g_watchdogBusy;
 extern i32 g_netStatsTick;
 extern i32 g_latencyDisplayTick;
 

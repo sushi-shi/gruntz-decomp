@@ -25,7 +25,7 @@ public:
     virtual i32 LoadFile(const char* path, const char* name);
     virtual void Unload();
     virtual i32 IsLoaded();
-    virtual i32 Play(HWND ownerWindow, i32 looping);
+    virtual i32 Play(HWND ownerWindow, b32 looping);
     virtual i32 Pause();
     virtual i32 Resume(i32 resumeAll);
     virtual i32 End();
@@ -37,7 +37,7 @@ public:
     MidiSequence() {
         m_name[0] = 0;
         m_pauseDepth = 0;
-        m_looping = 0;
+        m_looping = false;
         m_ownerWindow = NULL;
         m_tempoPct = 0x64;
         m_volumePct = 0x64;
@@ -49,11 +49,11 @@ public:
 
     i32 SetTempoPercent(i32 tempoPct, i32 durationMs);
     i32 SetVolumePercent(i32 volumePct, i32 durationMs);
-    i32 SetLooping(i32 looping);
+    i32 SetLooping(b32 looping);
 
     char m_name[0x40];
     i32 m_pauseDepth;
-    i32 m_looping;
+    b32 m_looping;
     HWND m_ownerWindow;
     i32 m_volumePct;
     i32 m_tempoPct;
@@ -72,7 +72,7 @@ public:
         Shutdown();
     }
 
-    i32 Initialize(HINSTANCE instanceHandle, HWND ownerWindow, i32 disableMidi);
+    i32 Initialize(HINSTANCE instanceHandle, HWND ownerWindow, b32 disableMidi);
     void Shutdown();
     void ClearSequences();
 
@@ -82,11 +82,11 @@ public:
     MidiSequence* LoadBuffer(const void* data, u32 dataBytes, const char* name);
     void RegisterSequence(MidiSequence* sequence);
     MidiSequence* FindSequence(const char* name);
-    i32 LoadAndPlayFile(const char* path, i32 looping, const char* name);
-    i32 LoadAndPlayBuffer(const void* data, u32 dataBytes, i32 looping, const char* name);
-    i32 PlaySequence(const char* name, i32 looping);
+    i32 LoadAndPlayFile(const char* path, b32 looping, const char* name);
+    i32 LoadAndPlayBuffer(const void* data, u32 dataBytes, b32 looping, const char* name);
+    i32 PlaySequence(const char* name, b32 looping);
     void EndAndClearCurrent();
-    i32 RestartCurrent(i32 looping);
+    i32 RestartCurrent(b32 looping);
     i32 PauseCurrent();
     i32 ResumeCurrent(i32 resumeAll);
     i32 EndCurrent();
@@ -96,7 +96,7 @@ public:
     MidiSequence* m_currentSequence;
     HWND m_ownerWindow;
     HINSTANCE m_instanceHandle;
-    i32 m_midiAvailable;
+    b32 m_midiAvailable;
 };
 
 #endif // GRUNTZ_DSNDMGR_MIDIMANAGER_H

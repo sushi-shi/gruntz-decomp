@@ -136,7 +136,7 @@ static char s_MovingDeathTime[] = "MovingDeathTime";
 RVA(0x00067850, 0x214)
 i32 CGrunt::RunEntranceMove() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(cur, static_cast<u32>(g_engineFrameDelta))
-    if (!((cur->m_finished != 0 && cur->m_frameTicksLeft == 0)
+    if (!((cur->m_finished != false && cur->m_frameTicksLeft == 0)
           || m_entrancePickup == PICKUP_NONE)) {
         return 0;
     }
@@ -409,7 +409,7 @@ i32 CGrunt::LoadEntranceConfig() {
     }
 
     CAniAdvanceCursor* cur = &m_wwdObject->m_animationCursor;
-    if (cur->m_finished == 0 || cur->m_frameTicksLeft != 0) {
+    if (cur->m_finished == false || cur->m_frameTicksLeft != 0) {
         return 0;
     }
     ResetEntranceAnimation(1, 0, 0);
@@ -509,8 +509,8 @@ i32 CGrunt::StartBombGruntRun() {
 
 // @early-stop
 RVA(0x00068880, 0x67c)
-i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
-    if (enable != 0) {
+i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
+    if (enable != false) {
         m_wingzEnabled = true;
         m_wingzDurationLo =
             static_cast<i32>((static_cast<double>(m_wingzTime) * g_wingzScale - g_wingzBias));
@@ -748,7 +748,7 @@ i32 CGrunt::StepArrivalCommit() {
         i32 redo = 1;
         if (PIXEL_PAIR_NOT_AT_POSITION(px, py, m_lastTilePx.m_x, m_lastTilePx.m_y)) {
             if (IsDropReady(1)) {
-                m_coordToggle = (m_coordToggle == 0);
+                m_coordToggle = (m_coordToggle == false);
                 redo = 0;
             }
         }
@@ -1123,7 +1123,7 @@ i32 CGrunt::FinishActiveAction() {
         i32 redo = 1;
         if (PIXEL_PAIR_NOT_AT_POSITION(px, py, m_lastTilePx.m_x, m_lastTilePx.m_y)
             && IsDropReady(1)) {
-            m_coordToggle = (m_coordToggle == 0);
+            m_coordToggle = (m_coordToggle == false);
             redo = 0;
         }
         SnapToLastTile(1);

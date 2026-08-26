@@ -37,7 +37,7 @@ i32 CWwdGrid::Setup(RECT rect, i32 cellW, i32 cellH) {
     if (arr == NULL) {
         return 0;
     }
-    m_allocated = 1;
+    m_allocated = true;
     return 1;
 }
 RVA_COMPGEN(0x00191720, 0x50, ??_EBucketHead@@QAEPAXI@Z)
@@ -66,7 +66,7 @@ void CWwdGrid::FreeBuckets() {
     if (m_allocated) {
 
         delete[] m_buckets;
-        m_allocated = 0;
+        m_allocated = false;
     }
 }
 

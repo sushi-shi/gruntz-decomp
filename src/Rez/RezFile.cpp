@@ -111,7 +111,7 @@ i32 CRezItm::Write(i32 base, i32 off, u32 count, void* buf) {
 }
 
 RVA(0x0013c760, 0xc1)
-i32 CRezItm::Open(char* filename, i32 readonly, i32 write) {
+i32 CRezItm::Open(char* filename, b32 readonly, b32 write) {
     for (;;) {
         if (write) {
             if (readonly) {
@@ -150,12 +150,12 @@ i32 CRezItm::Open(char* filename, i32 readonly, i32 write) {
 RVA(0x0013c830, 0x63)
 i32 CRezItm::Close() {
     if (m_fp != NULL) {
-        i32 ok;
+        b32 ok;
         do {
             if (fclose(m_fp) == 0) {
-                ok = 1;
+                ok = true;
             } else {
-                ok = 0;
+                ok = false;
                 if (m_parent->RetryStorageOperation() == 0) {
                     return 0;
                 }
@@ -177,12 +177,12 @@ RVA(0x0013c8a0, 0x45)
 i32 CRezItm::Flush() {
     m_pos = -1;
     if (m_fp) {
-        i32 found;
+        b32 found;
         do {
             if (fflush(m_fp) == 0) {
-                found = 1;
+                found = true;
             } else {
-                found = 0;
+                found = false;
                 if (m_parent->RetryStorageOperation() == 0) {
                     return 0;
                 }
@@ -202,7 +202,7 @@ i32 CRezItm::Check() {
     if (ftell(m_fp) != -1) {
         return 1;
     }
-    return Open(m_readBuf, m_readonly, 0) != 0;
+    return Open(m_readBuf, m_readonly, false) != 0;
 }
 
 RVA(0x0013c940, 0x46)
@@ -210,7 +210,7 @@ CRezDir::CRezDir(CRezArchive* parent, i32 maxOpen) : CRezItmBase(parent) {
     m_openCount = 0;
     m_write = 0;
     m_maxOpen = maxOpen;
-    m_readonly = 1;
+    m_readonly = true;
 }
 
 RVA_COMPGEN(0x0013c990, 0x1e, ??_GCRezDir@@UAEPAXI@Z)
@@ -236,7 +236,7 @@ i32 CRezDir::Write(i32 base, i32 off, u32 count, void* buf) {
 }
 
 RVA(0x0013ca60, 0x16)
-i32 CRezDir::Open(char* name, i32 readonly, i32 write) {
+i32 CRezDir::Open(char* name, b32 readonly, b32 write) {
     m_readonly = readonly;
     m_write = write;
     return 1;
@@ -334,7 +334,7 @@ i32 CRezFile::Write(i32 a, i32 pos, u32 count, void* buf) {
 }
 
 RVA(0x0013cd40, 0x5)
-i32 CRezFile::Open(char* name, i32 readonly, i32 write) {
+i32 CRezFile::Open(char* name, b32 readonly, b32 write) {
     return 0;
 }
 RVA(0x0013cd50, 0x3)
@@ -345,7 +345,7 @@ i32 CRezFile::Close() {
 RVA(0x0013cd60, 0x49)
 i32 CRezFile::Flush() {
     if (m_handle != NULL) {
-        i32 ok = (fflush(m_handle) == 0);
+        b32 ok = (fflush(m_handle) == 0);
         while (!ok) {
             if (m_dir->m_parent->RetryStorageOperation() == 0) {
                 return 0;
@@ -406,7 +406,7 @@ i32 CRezFile::CloseFile() {
     if (m_handle == NULL) {
         return 1;
     }
-    i32 ok = (fclose(m_handle) == 0);
+    b32 ok = (fclose(m_handle) == 0);
     while (!ok) {
         if (m_dir->m_parent->RetryStorageOperation() == 0) {
             return 0;

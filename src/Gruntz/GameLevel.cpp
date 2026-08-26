@@ -508,7 +508,7 @@ i32 CGameLevel::RemovePlane(i32 index) {
     if (p == NULL) {
         return 0;
     }
-    i32 wasMain = HAS(static_cast<WwdPlaneFlags>(p->m_flags), WWD_PLANE_FLAG_MAIN);
+    b32 wasMain = HAS(static_cast<WwdPlaneFlags>(p->m_flags), WWD_PLANE_FLAG_MAIN);
     delete p;
     m_planes.RemoveAt(index, 1);
     if (wasMain) {
@@ -638,7 +638,7 @@ i32 CGameLevel::MoveToward(CGameObject* target, i32 destX, i32 destY, i32 moveFl
         return DispatchMove(target, destX, destY, moveFlags);
     }
 
-    i32 ok = 1;
+    b32 ok = true;
     i32 stepX = limX;
     i32 goalX = destX;
     if (sx > destX) {
@@ -673,15 +673,15 @@ i32 CGameLevel::MoveToward(CGameObject* target, i32 destX, i32 destY, i32 moveFl
         i32 flags = DispatchMove(target, nx, ny, moveFlags);
 
         if (t->m_moveMode != kind) {
-            ok = 0;
+            ok = false;
         } else if ((flags & IDX(MOVE_RESULT_TILE_COLLISION)) != 0) {
-            ok = 0;
+            ok = false;
         } else if (t->m_screenX == goalX && t->m_screenY == destY) {
-            ok = 0;
+            ok = false;
         } else if ((flags & IDX(MOVE_RESULT_NO_POSITION_CHANGE)) != 0) {
-            ok = 0;
+            ok = false;
         }
-    } while (ok != 0);
+    } while (ok != false);
     return ok;
 }
 
@@ -1787,13 +1787,13 @@ void CGameLevel::MainPlaneNotify() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00160ef0, 0x42)
 i32 CGameLevel::ValidateAllPlanes(char* errOut) {
-    i32 ok = 1;
+    b32 ok = true;
     if (errOut != NULL) {
         *errOut = 0;
     }
     for (i32 i = 0; i < m_planes.GetSize(); i++) {
         if ((static_cast<CDDrawWorkerHost*>(m_planes[i]))->ValidateTiles(errOut) == 0) {
-            ok = 0;
+            ok = false;
         }
     }
     return ok;

@@ -82,7 +82,7 @@ void CGruntzCmdMgr::Shutdown() {
 
 RVA(0x00023a10, 0xe7)
 i32 CGruntzCmdMgr::ExecuteScheduledCommands(i32 scheduleSlot) {
-    i32 isMultiplayer = (m_manager->m_curState->Update() == GAMESTATE_MULTI);
+    b32 isMultiplayer = (m_manager->m_curState->Update() == GAMESTATE_MULTI);
     CState* state = m_manager->m_curState;
     CGruntzCommand* commandsByPlayer[4];
     commandsByPlayer[0] = NULL;
@@ -157,7 +157,7 @@ void CGruntzCmdMgr::ClearCommands() {
 
 RVA(0x00023c30, 0x47)
 void CGruntzCmdMgr::EnqueueSingle(
-    i32 isLocalCommand,
+    b32 isLocalCommand,
     char playerIndex,
     char unitIndex,
     char commandKind,
@@ -181,7 +181,7 @@ void CGruntzCmdMgr::EnqueueSingle(
 
 RVA(0x00023ca0, 0x47)
 void CGruntzCmdMgr::EnqueueMulti(
-    i32 isLocalCommand,
+    b32 isLocalCommand,
     char playerIndex,
     u8 unitCount,
     u8* unitIndices,
@@ -204,7 +204,7 @@ void CGruntzCmdMgr::EnqueueMulti(
 }
 
 RVA(0x00023d10, 0x5a)
-void CGruntzCmdMgr::EnqueueCommand(i32 isLocalCommand, CGruntzCommand* command) {
+void CGruntzCmdMgr::EnqueueCommand(b32 isLocalCommand, CGruntzCommand* command) {
     if (!command) {
         return;
     }
@@ -221,7 +221,7 @@ void CGruntzCmdMgr::EnqueueCommand(i32 isLocalCommand, CGruntzCommand* command) 
 
 RVA(0x00023d90, 0x64)
 void CGruntzCmdMgr::EnqueuePlaceGruntAtScreenPoint(
-    i32 isLocalCommand,
+    b32 isLocalCommand,
     i32 playerIndex,
     i32 screenX,
     i32 screenY,
@@ -417,7 +417,7 @@ i32 CGruntzMultiCommand::Execute(CState* state) {
     if (!p) {
         return 0;
     }
-    i32 ok = 1;
+    b32 ok = true;
     for (i32 i = 0; i < 16; i++) {
         if (g_unitIndexBitTable[i] & m_unitMask) {
             if (!p->ExecuteCommand(
@@ -429,7 +429,7 @@ i32 CGruntzMultiCommand::Execute(CState* state) {
                     0,
                     m_scheduleSlot
                 )) {
-                ok = 0;
+                ok = false;
             }
         }
     }

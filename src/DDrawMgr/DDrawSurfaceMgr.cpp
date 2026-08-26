@@ -141,7 +141,7 @@ i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags) {
         delete m_soundStream;
         m_soundStream = NULL;
     }
-    if (!m_soundRegistry->BindSoundStream(1)) {
+    if (!m_soundRegistry->BindSoundStream(true)) {
         if (m_lastError == WORLDERR_NONE) {
             m_lastError = WORLDERR_SOUND_REGISTRY;
         }
@@ -273,7 +273,7 @@ void CDDrawSurfaceMgr::FreeContext() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00155ff0, 0x22)
 i32 CDDrawSurfaceMgr::EnsureSoundInitialized() {
-    if (m_soundStream != NULL && m_soundStream->m_initialized == 0) {
+    if (m_soundStream != NULL && m_soundStream->m_initialized == false) {
         return m_soundStream->InitializeDevice(m_hWnd, 1);
     }
     return 1;

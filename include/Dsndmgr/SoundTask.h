@@ -20,9 +20,9 @@ struct SoundTask {
     IntrusiveLink m_link;
     u32 m_tag;
     SoundBuffer* m_buffer;
-    i32 m_stopAndRewind;
+    b32 m_stopAndRewind;
 
-    SoundTask(u32 tag, SoundBuffer* buffer, i32 stopAndRewind)
+    SoundTask(u32 tag, SoundBuffer* buffer, b32 stopAndRewind)
         : m_tag(tag), m_buffer(buffer), m_stopAndRewind(stopAndRewind) {}
 
     RVA(0x00137330, 0x7)

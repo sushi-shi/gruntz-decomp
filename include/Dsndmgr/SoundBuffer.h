@@ -39,14 +39,14 @@ public:
     i32 IsPlaying();
     i32 IsLooping();
     i32 IsInHardware();
-    void SetLooping(i32 enabled);
+    void SetLooping(b32 enabled);
     i32 IsLoopingEnabled();
     i32 SetVolume(i32 attenuation);
     i32 SetVolumePercent(i32 volumePct);
     i32 GetVolume();
     i32 GetVolumePercent();
     i32 GetPanPercent();
-    i32 RampVolumeTo(i32 targetVolumePct, i32 durationMs, i32 stopAndRewind);
+    i32 RampVolumeTo(i32 targetVolumePct, i32 durationMs, b32 stopAndRewind);
     i32 SetPan(i32 pan);
     i32 SetPanPercent(i32 panPct);
     i32 GetPan();
@@ -61,9 +61,9 @@ public:
     i32 SetCurrentPosition(u32 position);
     i32 GetFormat(WaveFormatX* outFormat, u32 formatBytes, unsigned long* writtenBytes);
     i32 LoadFromFile(FILE* file, u32 bytes, i32 offset);
-    i32 LockConvert(u8* sourceAudio, u32 lockBytes, u32 convert16To8);
+    i32 LockConvert(u8* sourceAudio, u32 lockBytes, b32 convert16To8);
     i32 Play();
-    i32 ApplyAndPlay(i32 volumePct, i32 panPct, i32 frequencyOffsetPct, i32 looping);
+    i32 ApplyAndPlay(i32 volumePct, i32 panPct, i32 frequencyOffsetPct, b32 looping);
     i32 Lock(
         u32 offset,
         u32 bytes,
@@ -94,7 +94,7 @@ public:
     u32 m_sampleRate;
     u32 m_caps;
     SoundBufferNode m_instanceNode;
-    i32 m_reusable;
+    b32 m_reusable;
     SoundBuffer* m_restoreSource;
 };
 
@@ -111,13 +111,13 @@ public:
     SoundSample(IDirectSoundBuffer* buffer, SoundDevice* owner);
     virtual ~SoundSample() OVERRIDE;
 
-    SoundBuffer* CreateInstance(i32 reusable);
+    SoundBuffer* CreateInstance(b32 reusable);
     void DestroyInstance(SoundBuffer* instance);
     void StopAllInstances();
 
     SoundBuffer* AcquireInstance();
     i32 Play();
-    i32 AcquireAndPlay(i32 volumePct, i32 panPct, i32 frequencyOffsetPct, i32 looping);
+    i32 AcquireAndPlay(i32 volumePct, i32 panPct, i32 frequencyOffsetPct, b32 looping);
 
     SoundBufferInstanceList m_instances;
 };

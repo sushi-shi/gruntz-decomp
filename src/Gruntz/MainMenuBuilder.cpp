@@ -200,7 +200,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         s_SINGLEPLAYER,
         MENU_ITEM_FLAGS_NONE
     );
-    if (g_cdPromptResult != 0) {
+    if (g_cdPromptResult != false) {
         item->SetState(MENUSTATE_DISABLED);
     }
     page->AddItem(
@@ -212,7 +212,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
     );
     page->AddItem("OPTIONZ", s_MENU_MAINMENU_OPTIONZ, 0x80e2, NULL, MENU_ITEM_FLAGS_NONE);
     item = page->AddItem(s_MOVIEZ, s_MENU_MAINMENU_MOVIEZ, 0, s_MOVIEZ, MENU_ITEM_FLAGS_NONE);
-    if (g_cdPromptResult != 0) {
+    if (g_cdPromptResult != false) {
         item->SetState(MENUSTATE_DISABLED);
     }
     page->AddItem(g_titleBuf, s_MENU_MAINMENU_HELP, 0x8035, NULL, MENU_ITEM_FLAGS_NONE);
@@ -262,7 +262,7 @@ i32 BuildMainMenuTree(CMenuTree* menuTree, i32) {
         return 0;
     }
     item = page->AddItem(s_HOST, s_MENU_MULTIPLAYER_HOST, 0x80d3, NULL, MENU_ITEM_FLAGS_NONE);
-    if (g_cdPromptResult != 0) {
+    if (g_cdPromptResult != false) {
         item->SetState(MENUSTATE_DISABLED);
     }
     page->AddItem(s_JOIN, s_MENU_MULTIPLAYER_JOIN, 0x80d2, NULL, MENU_ITEM_FLAGS_NONE);

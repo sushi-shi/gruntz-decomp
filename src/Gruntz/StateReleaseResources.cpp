@@ -28,5 +28,5 @@ void CState::ReleaseResources() {
             m_ownedSurface1 = NULL;
         }
     }
-    m_ready = 0;
+    m_ready = false;
 }

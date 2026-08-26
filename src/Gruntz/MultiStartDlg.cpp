@@ -45,7 +45,7 @@ DATA(0x0024bd5c)
 CMulti* g_multiState;
 
 DATA(0x0024bdc4)
-i32 g_watchdogBusy;
+b32 g_watchdogBusy;
 DATA(0x0024bdc8)
 i32 g_netStatsTick;
 DATA(0x0024bdcc)
@@ -180,7 +180,7 @@ i32 CMultiStartDlg::RefreshWorldControls() {
             return 0;
         }
         i32 localSlot = GetLocalPlayerSlotIndex();
-        i32 canEditWorld = (m_gameManager->m_players[localSlot].m_ready == 0);
+        b32 canEditWorld = (m_gameManager->m_players[localSlot].m_ready == false);
         worldCombo->EnableWindow(canEditWorld);
         customWorldButton->EnableWindow(canEditWorld);
         echoLatencyButton->EnableWindow(false);
@@ -246,7 +246,7 @@ i32 CMultiStartDlg::BuildLatencyOptions() {
     HWND dialogHwnd = GetSafeHwnd();
     m_latencyOptions->FillCombo(dialogHwnd, IDX(IDC_MULTI_LATENCY));
     m_latencyOptions->SelectItem(dialogHwnd, IDX(IDC_MULTI_LATENCY), 0, 0);
-    g_multiState->m_autoCommandDelay = 1;
+    g_multiState->m_autoCommandDelay = true;
     return 1;
 }
 
@@ -260,7 +260,7 @@ i32 CMultiStartDlg::RefreshLatencyControl() {
     CMulti* multi = g_multiState;
     if (multi->m_isHost) {
         i32 localSlot = GetLocalPlayerSlotIndex();
-        latencyCombo->EnableWindow(m_gameManager->m_players[localSlot].m_ready == 0);
+        latencyCombo->EnableWindow(m_gameManager->m_players[localSlot].m_ready == false);
     } else {
         latencyCombo->EnableWindow(false);
     }
@@ -591,33 +591,33 @@ void CMultiStartDlg::ApplyPlayerTypeSelection(i32 slot) {
         if (player->m_humanControlled && player->m_active) {
             g_multiState->DropLobbyPlayer(player->m_playerIndex);
         } else if (!player->m_humanControlled && player->m_active) {
-            SetPlayerColorAvailable(player->m_color, 1);
+            SetPlayerColorAvailable(player->m_color, true);
         }
-        player->m_active = 0;
-        player->m_ready = 0;
+        player->m_active = false;
+        player->m_ready = false;
         nameControl->EnableWindow(false);
         colorControl->EnableWindow(false);
     } else {
         if (static_cast<MultiplayerPlayerKind>(sendMessage(typeControl->m_hWnd, CB_GETCURSEL, 0, 0))
             != MULTI_PLAYER_HUMAN) {
-            if (player->m_humanControlled != 0) {
-                if (player->m_active != 0) {
+            if (player->m_humanControlled != false) {
+                if (player->m_active != false) {
                     g_multiState->DropLobbyPlayer(player->m_playerIndex);
                 }
                 ColorTint freeColor = FindAvailablePlayerColor();
                 player->m_color = freeColor;
-                SetPlayerColorAvailable(freeColor, 0);
-            } else if (player->m_active == 0) {
+                SetPlayerColorAvailable(freeColor, false);
+            } else if (player->m_active == false) {
                 ColorTint freeColor = FindAvailablePlayerColor();
                 player->m_color = freeColor;
-                SetPlayerColorAvailable(freeColor, 0);
+                SetPlayerColorAvailable(freeColor, false);
             }
-            player->m_ready = 1;
-            player->m_humanControlled = 0;
+            player->m_ready = true;
+            player->m_humanControlled = false;
             player->m_difficulty = static_cast<BattlezDifficulty>(
                 static_cast<i32>(sendMessage(typeControl->m_hWnd, CB_GETCURSEL, 0, 0)) - 1
             );
-            player->m_active = 1;
+            player->m_active = true;
             player->m_name = g_defaultPlayerNames[slot];
         }
         nameControl->EnableWindow(true);
@@ -711,7 +711,7 @@ void CMultiStartDlg::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {
 RVA(0x000c3100, 0x5c0)
 void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
     COLORREF color;
-    i32 shouldDraw = 0;
+    b32 shouldDraw = false;
     switch (nIDCtl) {
         case CTRL_PLAYER_COLOR0:
             if (GetPlayerColorControl(0)->IsWindowEnabled()) {
@@ -772,7 +772,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             } else {
                 color = 0xc8c8c8;
             }
-            shouldDraw = 1;
+            shouldDraw = true;
             break;
         case CTRL_PLAYER_COLOR1:
             if (GetPlayerColorControl(1)->IsWindowEnabled()) {
@@ -833,7 +833,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             } else {
                 color = 0xc8c8c8;
             }
-            shouldDraw = 1;
+            shouldDraw = true;
             break;
         case CTRL_PLAYER_COLOR2:
             if (GetPlayerColorControl(2)->IsWindowEnabled()) {
@@ -894,7 +894,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             } else {
                 color = 0xc8c8c8;
             }
-            shouldDraw = 1;
+            shouldDraw = true;
             break;
         case CTRL_PLAYER_COLOR3:
             if (GetPlayerColorControl(3)->IsWindowEnabled()) {
@@ -955,7 +955,7 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             } else {
                 color = 0xc8c8c8;
             }
-            shouldDraw = 1;
+            shouldDraw = true;
             break;
     }
     if (shouldDraw) {
@@ -971,8 +971,8 @@ void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
 RVA(0x000c3830, 0xd1)
 void CMultiStartDlg::OnPlayerColor0() {
     CMulti* multi = g_multiState;
-    if ((multi->m_isHost == false || m_gameManager->m_players[0].m_humanControlled != 0)
-        && (m_gameManager->m_players[0].m_ready != 0
+    if ((multi->m_isHost == false || m_gameManager->m_players[0].m_humanControlled != false)
+        && (m_gameManager->m_players[0].m_ready != false
             || m_gameManager->m_players[0].m_networkPlayerId != multi->m_localPlayerId)) {
         return;
     }
@@ -988,8 +988,8 @@ void CMultiStartDlg::OnPlayerColor0() {
 RVA(0x000c3950, 0xd1)
 void CMultiStartDlg::OnPlayerColor1() {
     CMulti* multi = g_multiState;
-    if ((multi->m_isHost == false || m_gameManager->m_players[1].m_humanControlled != 0)
-        && (m_gameManager->m_players[1].m_ready != 0
+    if ((multi->m_isHost == false || m_gameManager->m_players[1].m_humanControlled != false)
+        && (m_gameManager->m_players[1].m_ready != false
             || m_gameManager->m_players[1].m_networkPlayerId != multi->m_localPlayerId)) {
         return;
     }
@@ -1005,8 +1005,8 @@ void CMultiStartDlg::OnPlayerColor1() {
 RVA(0x000c3a70, 0xd1)
 void CMultiStartDlg::OnPlayerColor2() {
     CMulti* multi = g_multiState;
-    if ((multi->m_isHost == false || m_gameManager->m_players[2].m_humanControlled != 0)
-        && (m_gameManager->m_players[2].m_ready != 0
+    if ((multi->m_isHost == false || m_gameManager->m_players[2].m_humanControlled != false)
+        && (m_gameManager->m_players[2].m_ready != false
             || m_gameManager->m_players[2].m_networkPlayerId != multi->m_localPlayerId)) {
         return;
     }
@@ -1022,8 +1022,8 @@ void CMultiStartDlg::OnPlayerColor2() {
 RVA(0x000c3b90, 0xd1)
 void CMultiStartDlg::OnPlayerColor3() {
     CMulti* multi = g_multiState;
-    if ((multi->m_isHost == false || m_gameManager->m_players[3].m_humanControlled != 0)
-        && (m_gameManager->m_players[3].m_ready != 0
+    if ((multi->m_isHost == false || m_gameManager->m_players[3].m_humanControlled != false)
+        && (m_gameManager->m_players[3].m_ready != false
             || m_gameManager->m_players[3].m_networkPlayerId != multi->m_localPlayerId)) {
         return;
     }
@@ -1134,27 +1134,27 @@ i32 CMultiStartDlg::EnableChatControls() {
 RVA(0x000c4230, 0x38e)
 i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
     CWnd::FromHandle(::GetFocus());
-    i32 allLivePlayersReady = 1;
-    i32 hasRemoteHumanPlayer = 0;
+    b32 allLivePlayersReady = true;
+    b32 hasRemoteHumanPlayer = false;
     i32 localSlotIndex = this->GetLocalPlayerSlotIndex();
-    i32 localReadyFlag =
-        g_multiState->m_isHost ? m_gameManager->m_players[localSlotIndex].m_ready : 1;
+    b32 localReadyFlag =
+        g_multiState->m_isHost ? m_gameManager->m_players[localSlotIndex].m_ready : true;
     for (i32 slotIndex = 0; slotIndex < 4; slotIndex++) {
         GruntzPlayer* player = &g_gameReg->m_players[slotIndex];
         if (player) {
             if (player->m_networkPlayerId != g_multiState->m_localPlayerId
                 && player->m_humanControlled && player->m_active) {
-                hasRemoteHumanPlayer = 1;
+                hasRemoteHumanPlayer = true;
             }
             CWnd* nameControl = GetPlayerNameControl(slotIndex);
-            if ((g_multiState->m_isHost && player->m_humanControlled == 0)
+            if ((g_multiState->m_isHost && player->m_humanControlled == false)
                 || player->m_networkPlayerId == g_multiState->m_localPlayerId) {
                 nameControl->EnableWindow(true);
             } else {
                 nameControl->EnableWindow(false);
             }
             CWnd* typeControl = GetPlayerTypeControl(slotIndex);
-            if (g_multiState->m_isHost && localReadyFlag == 0
+            if (g_multiState->m_isHost && localReadyFlag == false
                 && player->m_networkPlayerId != g_multiState->m_localPlayerId) {
                 typeControl->EnableWindow(true);
             } else {
@@ -1166,10 +1166,10 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
             } else {
                 readyControl->EnableWindow(false);
             }
-            if (player->m_ready == 0) {
+            if (player->m_ready == false) {
                 if (player->m_active) {
                     ::SendMessageA(readyControl->m_hWnd, BM_SETCHECK, 0, 0);
-                    allLivePlayersReady = 0;
+                    allLivePlayersReady = false;
                 } else {
                     ::SendMessageA(readyControl->m_hWnd, BM_SETCHECK, 0, 0);
                 }
@@ -1180,14 +1180,14 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
             }
             CWnd* maxGruntzControl = GetMaxGruntzControl(slotIndex);
             maxGruntzControl->EnableWindow(
-                g_multiState->m_isHost && player->m_active && localReadyFlag == 0
+                g_multiState->m_isHost && player->m_active && localReadyFlag == false
             );
             SetMaxGruntzSelection(slotIndex, player->m_active ? player->m_maxGruntz : 0);
             if (force == 0) {
                 if (this->GetLocalPlayerSlotIndex() == slotIndex) {
                     continue;
                 }
-                if (g_multiState->m_isHost && player->m_humanControlled == 0) {
+                if (g_multiState->m_isHost && player->m_humanControlled == false) {
                     continue;
                 }
             }
@@ -1233,10 +1233,10 @@ i32 CMultiStartDlg::RefreshPlayerControls(i32 force) {
 // @early-stop
 RVA(0x000c46b0, 0x384)
 void CMultiStartDlg::Watchdog() {
-    if (g_watchdogBusy != 0) {
+    if (g_watchdogBusy != false) {
         return;
     }
-    g_watchdogBusy = 1;
+    g_watchdogBusy = true;
     CNetSessionListNode* session = g_multiState->m_netMgr->m_selectedSession;
     if (session == NULL) {
         return;
@@ -1257,12 +1257,12 @@ void CMultiStartDlg::Watchdog() {
         EnableWindow(true);
         if (verificationResult != 0) {
             EndDialog(1);
-            g_watchdogBusy = 0;
+            g_watchdogBusy = false;
             return;
         }
     } else {
         g_multiState->PollSession();
-        if (g_multiState->m_autoCommandDelay != 0) {
+        if (g_multiState->m_autoCommandDelay != false) {
             g_multiState->AutoTuneCmdDelay();
         }
     }
@@ -1294,7 +1294,7 @@ void CMultiStartDlg::Watchdog() {
                     latencyUnitControl = GetDlgItem(CTRL_PLAYER_LATENCY_UNIT3);
                     break;
             }
-            if (player->m_active != 0 && player->m_humanControlled != 0) {
+            if (player->m_active != false && player->m_humanControlled != false) {
                 char latencyText[0x20];
                 wsprintfA(latencyText, "%d", player->m_latency.m_avg);
                 latencyValueControl->SetWindowTextA(latencyText);
@@ -1313,13 +1313,13 @@ void CMultiStartDlg::Watchdog() {
     if (g_multiState->m_sessionTerminated != false) {
         ::KillTimer(m_hWnd, 1);
         g_multiState->ReportVersionMsg("The game session has been terminated.", 0);
-        g_watchdogBusy = 0;
+        g_watchdogBusy = false;
         return;
     }
     if (g_multiState->m_colorSelectionRejected != false) {
         g_multiState->m_colorSelectionRejected = false;
         g_multiState->ReportVersionMsg("Someone has already selected that color.", 0);
-        g_watchdogBusy = 0;
+        g_watchdogBusy = false;
         return;
     }
     char* errorMessage;
@@ -1336,12 +1336,12 @@ void CMultiStartDlg::Watchdog() {
         ::KillTimer(m_hWnd, 1);
         errorMessage = "This version is not the same as the host computer's version of the game.";
     } else {
-        if (g_playerRosterChanged != 0) {
+        if (g_playerRosterChanged != false) {
             RefreshPlayerControls(1);
             EnableChatControls();
             RefreshWorldControls();
             RefreshLatencyControl();
-            g_playerRosterChanged = 0;
+            g_playerRosterChanged = false;
         }
         if (g_multiState->m_connectAccepted != false) {
             EnableChatControls();
@@ -1349,12 +1349,12 @@ void CMultiStartDlg::Watchdog() {
             RefreshLatencyControl();
             g_multiState->m_connectAccepted = false;
         }
-        g_watchdogBusy = 0;
+        g_watchdogBusy = false;
         return;
     }
     g_multiState->ReportVersionMsg(errorMessage, 0);
     EndDialog(0);
-    g_watchdogBusy = 0;
+    g_watchdogBusy = false;
 }
 
 RVA(0x000c4b30, 0x1f)
@@ -1370,13 +1370,13 @@ RVA(0x000c4b60, 0x77)
 i32 CMultiStartDlg::SetPlayerColor(i32 slot, ColorTint color) {
     GruntzPlayer* player = &m_gameManager->m_players[slot];
     if (g_multiState->m_isHost != false) {
-        i32 available = IsPlayerColorAvailable(color);
-        if (available == 0) {
+        b32 available = IsPlayerColorAvailable(color);
+        if (available == false) {
             g_multiState->ReportVersionMsg("Someone has already selected that color.", available);
             return 0;
         }
-        SetPlayerColorAvailable(player->m_color, 1);
-        SetPlayerColorAvailable(color, 0);
+        SetPlayerColorAvailable(player->m_color, true);
+        SetPlayerColorAvailable(color, false);
     }
     player->m_color = color;
     return 1;
@@ -1396,13 +1396,13 @@ void CMultiStartDlg::OnOK() {
     g_multiState->BroadcastPlayerIdMessage(NETMSG_VERIFY_CUSTOM_LEVEL, DPSEND_GUARANTEED);
     i32 customLevel = g_multiState->m_usesCustomLevel;
     i32 verificationToken = g_gameReg->ResolveLevelChecksum(
-        0,
-        0,
+        false,
+        false,
         customLevel,
         0,
         customLevel != 0 ? g_multiState->CustomLevelName() : g_multiState->BuiltInLevelName()
     );
-    g_multiState->m_levelVerifyResult = 0;
+    g_multiState->m_levelVerifyResult = false;
     if (g_multiState->Poll(verificationToken) == 0) {
         g_multiState->m_customLevelVerificationPending = false;
         EnableWindow(false);
@@ -1410,7 +1410,7 @@ void CMultiStartDlg::OnOK() {
             "Unable to verify custom level with other players. The game will not start."
         );
         EnableWindow(true);
-    } else if (g_multiState->m_levelVerifyResult != 0) {
+    } else if (g_multiState->m_levelVerifyResult != false) {
         g_multiState->m_customLevelVerificationPending = true;
         CDialog::OnOK();
     } else {
@@ -1494,10 +1494,10 @@ void CMultiStartDlg::CommitLatencySelection() {
     if (commandDelay != 0 || resendInterval != 0) {
         g_multiState->m_commandDelay = commandDelay;
         g_multiState->m_resendInterval = resendInterval;
-        g_multiState->m_autoCommandDelay = 0;
+        g_multiState->m_autoCommandDelay = false;
         g_multiState->SendGameConfig(NULL);
     } else {
-        g_multiState->m_autoCommandDelay = 1;
+        g_multiState->m_autoCommandDelay = true;
     }
 }
 
@@ -1513,9 +1513,9 @@ void CMultiStartDlg::CommitReadySelection(i32 slotIndex) {
         return;
     }
     if (checked) {
-        player->m_ready = 1;
+        player->m_ready = true;
     } else {
-        player->m_ready = 0;
+        player->m_ready = false;
     }
     if (g_multiState->m_isHost) {
         g_multiState->BroadcastPlayerTable(NULL);

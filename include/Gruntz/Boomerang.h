@@ -34,7 +34,7 @@ public:
     double m_dirX, m_dirY;
     double m_originX, m_originY;
     double m_phase;
-    i32 m_launched;
+    b32 m_launched;
 };
 
 extern const double g_boomerangMidpointScale;

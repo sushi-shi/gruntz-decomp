@@ -21,7 +21,7 @@ class CFontConfig {
 public:
     CFontConfig() {
         m_reserved34 = 0;
-        m_inputActive = 0;
+        m_inputActive = false;
         m_arialFont = NULL;
         m_trainingFont = NULL;
     }
@@ -63,7 +63,7 @@ public:
     u32 m_lowScrollThreshold;
     u32 m_highScrollThreshold;
     i32 m_inputScrollTotal;
-    i32 m_inputActive;
+    b32 m_inputActive;
     i32 m_reserved34; // set 1 with chat origin; never read
     HFONT m_arialFont;
     HFONT m_trainingFont;
@@ -72,7 +72,7 @@ public:
 
 extern i32 g_chatTextWidth;
 extern i32 g_caretBlinkMs;
-extern i32 g_caretBlinkOn;
+extern b32 g_caretBlinkOn;
 extern i32 g_lastDrawTextFormat;
 
 struct FontItem {

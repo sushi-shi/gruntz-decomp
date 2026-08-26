@@ -45,7 +45,7 @@ CTileTriggerSwitchLogic::CTileTriggerSwitchLogic() {
     for (i32 i = 0; i < 24; i++) {
         m_block[i] = 0;
     }
-    m_initGate = 0;
+    m_initGate = false;
 }
 
 RVA(0x00110460, 0x64)
@@ -56,11 +56,11 @@ i32 CTileTriggerSwitchLogic::BuildSmall(
     i32 tileY,
     i32 cellKey,
     const RECT* rect,
-    i32 linkGate,
+    b32 linkGate,
     i32 damageParam,
     i32 checkpointType
 ) {
-    if (m_initGate != 0) {
+    if (m_initGate != false) {
         return 0;
     }
     if (typeId == TRIGID_EXCLUSIVE_SWITCH_4 && rect[0].left == 0) {
@@ -77,7 +77,7 @@ i32 CTileTriggerSwitchLogic::Setup(
     i32 tileX,
     i32 tileY,
     i32 cellKey,
-    i32 linkGate,
+    b32 linkGate,
     i32 damageParam,
     i32 checkpointType
 ) {
@@ -93,7 +93,7 @@ i32 CTileTriggerSwitchLogic::Setup(
     m_checkpointType = checkpointType;
     m_reserved1c = 0;
     m_linkGate = linkGate;
-    m_initGate = 1;
+    m_initGate = true;
     return 1;
 }
 
@@ -112,26 +112,26 @@ i32 CTileTriggerSwitchLogic::SwitchDown() {
     i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
     if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, px, py)) {
         SoundCueRegistry* h = g_gameReg->m_world->m_soundRegistry;
-        if (h->m_silentMode == 0) {
+        if (h->m_silentMode == false) {
             SoundCue* found = NULL;
             MapLookup(h->m_cues, "GAME_SWITCHDOWN", found);
             SoundCue* spr = found;
             if (spr) {
-                i32 soundEnabled = g_soundEnabled;
+                b32 soundEnabled = g_soundEnabled;
                 i32 volumePercent = g_soundVolumePercent;
-                if (soundEnabled != 0) {
+                if (soundEnabled != false) {
                     u32 cueTimeMs = g_soundCueTimeMs;
                     u32 elapsedMs = cueTimeMs - static_cast<u32>(spr->m_lastPlayTimeMs);
                     u32 replayDelayMs = static_cast<u32>(spr->m_replayDelayMs);
                     if (elapsedMs >= replayDelayMs) {
                         spr->m_lastPlayTimeMs = cueTimeMs;
-                        spr->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
+                        spr->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
                     }
                 }
             }
         }
     }
-    m_linkGate = 1;
+    m_linkGate = true;
     return 1;
 }
 
@@ -150,26 +150,26 @@ i32 CTileTriggerSwitchLogic::SwitchUp() {
     i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
     if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, px, py)) {
         SoundCueRegistry* h = g_gameReg->m_world->m_soundRegistry;
-        if (h->m_silentMode == 0) {
+        if (h->m_silentMode == false) {
             SoundCue* found = NULL;
             MapLookup(h->m_cues, "GAME_SWITCHUP", found);
             SoundCue* spr = found;
             if (spr) {
-                i32 soundEnabled = g_soundEnabled;
+                b32 soundEnabled = g_soundEnabled;
                 i32 volumePercent = g_soundVolumePercent;
-                if (soundEnabled != 0) {
+                if (soundEnabled != false) {
                     u32 cueTimeMs = g_soundCueTimeMs;
                     u32 elapsedMs = cueTimeMs - static_cast<u32>(spr->m_lastPlayTimeMs);
                     u32 replayDelayMs = static_cast<u32>(spr->m_replayDelayMs);
                     if (elapsedMs >= replayDelayMs) {
                         spr->m_lastPlayTimeMs = cueTimeMs;
-                        spr->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
+                        spr->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
                     }
                 }
             }
         }
     }
-    m_linkGate = 0;
+    m_linkGate = false;
     return 1;
 }
 
@@ -179,7 +179,7 @@ CTileTriggerLogic::CTileTriggerLogic() {
     for (i32 i = 0; i < 24; i++) {
         m_linkKeys[i] = 0;
     }
-    m_initGate = 0;
+    m_initGate = false;
 }
 
 RVA(0x00110820, 0x23)
@@ -268,10 +268,10 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             gameMgr = g_gameReg;
             if (CGameLevel::PointInRect(&gameMgr->m_viewBounds, px, py)) {
                 registry = gameMgr->m_world->m_soundRegistry;
-                if (registry->m_silentMode == 0) {
+                if (registry->m_silentMode == false) {
                     SoundCue* cue = static_cast<SoundCue*>(registry->Lookup("GAME_PYRAMIDMOVE"));
                     if (cue) {
-                        cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
+                        cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
                     }
                 }
             }
@@ -283,11 +283,11 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             gameMgr = g_gameReg;
             if (CGameLevel::PointInRect(&gameMgr->m_viewBounds, px, py)) {
                 registry = gameMgr->m_world->m_soundRegistry;
-                if (registry->m_silentMode == 0) {
+                if (registry->m_silentMode == false) {
                     SoundCue* cue =
                         static_cast<SoundCue*>(registry->Lookup("LEVEL_WATERBRIDGEMOVE"));
                     if (cue) {
-                        cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
+                        cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
                     }
                 }
             }
@@ -717,24 +717,24 @@ CTileMultiTriggerSwitchLogic::CTileMultiTriggerSwitchLogic() {}
 
 RVA(0x00111f40, 0xc4)
 i32 CTileTriggerSwitchLogic::AreMultiSwitchLinksActive() {
-    if (m_linkGate == 0) {
+    if (m_linkGate == false) {
         return 0;
     }
 
     POSITION pos = m_owner->m_idleLogics.GetHeadPosition();
-    i32 found = 0;
+    b32 found = false;
 
     CTileTriggerLogic* child;
     while (pos != NULL) {
-        if (found != 0) {
+        if (found != false) {
             break;
         }
         child = static_cast<CTileTriggerLogic*>(m_owner->m_idleLogics.GetNext(pos));
         if (child != NULL && child->FindIndexByKey(m_cellKey) != 0) {
-            found = 1;
+            found = true;
         }
     }
-    if (found == 0) {
+    if (found == false) {
         g_gameReg->ReportError(IDX(TRIGERR_LINK_BROKEN), IDX(TRIGSITE_LINKSB_NO_OWNER));
         return 0;
     }
@@ -749,7 +749,7 @@ i32 CTileTriggerSwitchLogic::AreMultiSwitchLinksActive() {
             g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_LINKSB_KEY_MISS));
             return 0;
         }
-        if (c->m_linkGate == 0) {
+        if (c->m_linkGate == false) {
             return 0;
         }
     }
@@ -763,11 +763,11 @@ CTileExclusiveTriggerSwitchLogic::CTileExclusiveTriggerSwitchLogic() {}
 RVA(0x00112080, 0x138)
 i32 CTileExclusiveTriggerSwitchLogic::SwitchDown() {
 
-    i32 done = 0;
+    b32 done = false;
     i32 counter = 0;
     CTileTriggerSwitchLogic::SwitchDown();
     i32 i = 0;
-    while (done == 0) {
+    while (done == false) {
         if (i >= 0x18) {
             return 1;
         }
@@ -777,9 +777,9 @@ i32 CTileExclusiveTriggerSwitchLogic::SwitchDown() {
             g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_BCAST_KEY_MISS));
             return 0;
         }
-        if (m_cellKey != node->m_cellKey && node->m_linkGate != 0) {
+        if (m_cellKey != node->m_cellKey && node->m_linkGate != false) {
             node->SwitchUp();
-            i32 any = 0;
+            b32 any = false;
             POSITION pos = m_owner->m_idleLogics.GetHeadPosition();
             while (pos != NULL) {
                 CTileTriggerLogic* o =
@@ -787,17 +787,17 @@ i32 CTileExclusiveTriggerSwitchLogic::SwitchDown() {
                 if (o != NULL && o->FindIndexByKey(node->m_cellKey)) {
                     o->Tick();
                     counter++;
-                    any = 1;
+                    any = true;
                 }
             }
-            if (any == 0) {
+            if (any == false) {
                 g_gameReg->ReportError(IDX(TRIGERR_LINK_BROKEN), IDX(TRIGSITE_BCAST_NO_CLAIM));
                 return 0;
             }
         }
         i++;
         if (m_block[i] == 0) {
-            done = 1;
+            done = true;
         }
     }
     return 1;
@@ -880,18 +880,18 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
         return 0;
     }
     SoundCueRegistry* sreg = g_gameReg->m_world->m_soundRegistry;
-    if (sreg->m_silentMode == 0) {
+    if (sreg->m_silentMode == false) {
         SoundCue* found = NULL;
         MapLookup(sreg->m_cues, "LEVEL_ROCKBREAK", found);
         SoundCue* out = found;
         if (out != NULL) {
             i32 volumePercent = g_soundVolumePercent;
-            if (g_soundEnabled != 0) {
+            if (g_soundEnabled != false) {
                 i32 cueTimeMs = g_soundCueTimeMs;
                 if (static_cast<u32>((cueTimeMs - out->m_lastPlayTimeMs))
                     >= static_cast<u32>(out->m_replayDelayMs)) {
                     out->m_lastPlayTimeMs = cueTimeMs;
-                    out->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
+                    out->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
                 }
             }
         }
@@ -1032,7 +1032,7 @@ i32 CTileTriggerLogic::Classify(i32 unusedFrameDelta) {
             }
             if (m_typeTag != TRIGID_TIME_TRIGGER_23) {
 
-                if (m_dutyOn == 1) {
+                if (m_dutyOn == true) {
                     Tick();
                 }
                 return -1;
@@ -1040,21 +1040,21 @@ i32 CTileTriggerLogic::Classify(i32 unusedFrameDelta) {
         }
         u32 rem = elapsed % period;
         if (rem < m_dutyOnSpan) {
-            if (m_dutyOn != 0) {
+            if (m_dutyOn != false) {
                 goto ret1;
             }
             Tick();
-            m_dutyOn = 1;
+            m_dutyOn = true;
             if (m_typeTag != TRIGID_TILE_TRIGGER_24) {
                 goto ret1;
             }
             return 0;
         }
-        if (m_dutyOn != 1) {
+        if (m_dutyOn != true) {
             goto ret1;
         }
         Tick();
-        m_dutyOn = 0;
+        m_dutyOn = false;
 
         if (m_typeTag != TRIGID_TIME_TRIGGER_23) {
             return -1;
@@ -1073,20 +1073,20 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
     i32 tileY,
     i32 cellKey,
     const RECT* rect,
-    i32 linkGate,
+    b32 linkGate,
     i32 damageParam,
     i32 checkpointType
 ) {
-    i32 ok;
-    if (m_initGate != 0) {
-        ok = 0;
+    b32 ok;
+    if (m_initGate != false) {
+        ok = false;
     } else if (typeId == TRIGID_EXCLUSIVE_SWITCH_4 && rect[0].left == 0) {
-        ok = 0;
+        ok = false;
     } else {
         memcpy(m_block, rect, sizeof(m_block));
         ok = Setup(owner, typeId, tileX, tileY, cellKey, linkGate, damageParam, checkpointType);
     }
-    if (ok == 0) {
+    if (ok == false) {
         return 0;
     }
     i32 px = (tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
@@ -1123,7 +1123,7 @@ i32 CCheckpointTriggerSwitchLogic::SwitchDown() {
     CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
     SET_WORKER_HOST_CELL(layer2, tileX, tileY, v);
     reg->m_tileGrid->ComputeCellFlags(tileX, tileY, v);
-    m_linkGate = 1;
+    m_linkGate = true;
     return 1;
 }
 
@@ -1138,30 +1138,30 @@ i32 CCheckpointTriggerSwitchLogic::SwitchUp() {
     CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
     SET_WORKER_HOST_CELL(layer2, tileX, tileY, v);
     reg->m_tileGrid->ComputeCellFlags(tileX, tileY, v);
-    m_linkGate = 0;
+    m_linkGate = false;
     return 1;
 }
 
 RVA(0x00112c70, 0xc4)
 i32 CTileTriggerSwitchLogic::AreCheckpointSwitchLinksActive() {
-    if (m_linkGate == 0) {
+    if (m_linkGate == false) {
         return 0;
     }
 
     POSITION pos = m_owner->m_idleLogics.GetHeadPosition();
-    i32 found = 0;
+    b32 found = false;
 
     CTileTriggerLogic* child;
     while (pos != NULL) {
-        if (found != 0) {
+        if (found != false) {
             break;
         }
         child = static_cast<CTileTriggerLogic*>(m_owner->m_idleLogics.GetNext(pos));
         if (child != NULL && child->FindIndexByKey(m_cellKey) != 0) {
-            found = 1;
+            found = true;
         }
     }
-    if (found == 0) {
+    if (found == false) {
         g_gameReg->ReportError(IDX(TRIGERR_LINK_BROKEN), IDX(TRIGSITE_LINKS_NO_OWNER));
         return 0;
     }
@@ -1176,7 +1176,7 @@ i32 CTileTriggerSwitchLogic::AreCheckpointSwitchLinksActive() {
             g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_LINKS_KEY_MISS));
             return 0;
         }
-        if (c->m_linkGate == 0) {
+        if (c->m_linkGate == false) {
             return 0;
         }
     }
@@ -1185,7 +1185,7 @@ i32 CTileTriggerSwitchLogic::AreCheckpointSwitchLinksActive() {
 
 RVA(0x00112d80, 0xa)
 CTileActionEvent::CTileActionEvent() {
-    m_live = 0;
+    m_live = false;
 }
 
 // @early-stop
@@ -1368,12 +1368,12 @@ i32 CTileActionEvent::BreakTopBrick(CGrunt* grunt) {
             i32 px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
             i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
             if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, px, py)
-                && g_gameReg->m_world->m_soundRegistry->m_silentMode == 0) {
+                && g_gameReg->m_world->m_soundRegistry->m_silentMode == false) {
                 SoundCue* snd = static_cast<SoundCue*>(
                     g_gameReg->m_world->m_soundRegistry->Lookup("GRUNTZ_NORMALGRUNT_IMPACTMM3")
                 );
                 if (snd != NULL) {
-                    snd->PlayIfElapsed(static_cast<i32>(g_soundVolumePercent), 0, 0, 0);
+                    snd->PlayIfElapsed(static_cast<i32>(g_soundVolumePercent), 0, 0, false);
                 }
             }
             i32 slot = grunt->m_playerIndex;
@@ -1892,7 +1892,7 @@ i32 CTileActionEvent::DeserializeFields(CFileMemBase* ar) {
 
 RVA(0x00114120, 0x70)
 i32 SoundCueRegistry::PlayCueIfElapsed(const char* key) {
-    if (m_silentMode != 0) {
+    if (m_silentMode != false) {
         return 0;
     }
     SoundCue* found = NULL;
@@ -1900,9 +1900,9 @@ i32 SoundCueRegistry::PlayCueIfElapsed(const char* key) {
     if (found == NULL) {
         return 0;
     }
-    i32 soundEnabled = g_soundEnabled;
+    b32 soundEnabled = g_soundEnabled;
     i32 volumePercent = g_soundVolumePercent;
-    if (soundEnabled == 0) {
+    if (soundEnabled == false) {
         return 0;
     }
     SoundCue* cue = found;
@@ -1910,7 +1910,7 @@ i32 SoundCueRegistry::PlayCueIfElapsed(const char* key) {
     if (g_soundCueTimeMs - static_cast<u32>(cue->m_lastPlayTimeMs)
         >= static_cast<u32>(cue->m_replayDelayMs)) {
         cue->m_lastPlayTimeMs = g_soundCueTimeMs;
-        return cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
+        return cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
     }
     return 0;
 }

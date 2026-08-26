@@ -237,8 +237,8 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                         if (cue == WWDDRAW_NO_ANIMATION) {
                             puddle->m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
                             puddle->SetBute("B");
-                            puddle->m_placed = 1;
-                            puddle->m_pending = 0;
+                            puddle->m_placed = true;
+                            puddle->m_pending = false;
                             puddle->m_value = puddle->m_wwdObject->m_animationCursor.m_animation;
                             puddle->m_wwdObject->SetAnimationByName(g_puddleSpriteKey, 0);
                             return 1;
@@ -276,7 +276,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             );
                             light->m_logicRecord->m_dispatch(light);
                             static_cast<CLightFx*>(light->m_logicRecord->m_userLogic)
-                                ->Activate("GAME_LIGHTING_HIDDENITEM", "GAME_HIDDENITEM", 2, 1);
+                                ->Activate("GAME_LIGHTING_HIDDENITEM", "GAME_HIDDENITEM", 2, true);
                         }
 
                         AddrWord<char> objectKey;
@@ -323,7 +323,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                                 "GAME_LIGHTING_HIDDENITEM",
                                                 "GAME_HIDDENITEM",
                                                 2,
-                                                1
+                                                true
                                             );
                                         CWwdSpriteObject* peek =
                                             m_world->m_childGroup->CreateSprite(
@@ -356,7 +356,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             );
                             light->m_logicRecord->m_dispatch(light);
                             static_cast<CLightFx*>(light->m_logicRecord->m_userLogic)
-                                ->Activate("GAME_LIGHTING_HIDDENITEM", "GAME_HIDDENITEM", 2, 1);
+                                ->Activate("GAME_LIGHTING_HIDDENITEM", "GAME_HIDDENITEM", 2, true);
                         }
 
                         objectKey.m_word = 0;
@@ -402,7 +402,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                                 "GAME_LIGHTING_HIDDENITEM",
                                                 "GAME_HIDDENITEM",
                                                 2,
-                                                1
+                                                true
                                             );
                                         CWwdSpriteObject* peek =
                                             m_world->m_childGroup->CreateSprite(
@@ -439,7 +439,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             );
                             light->m_logicRecord->m_dispatch(light);
                             static_cast<CLightFx*>(light->m_logicRecord->m_userLogic)
-                                ->Activate("GAME_LIGHTING_HIDDENITEM", "GAME_HIDDENITEM", 2, 1);
+                                ->Activate("GAME_LIGHTING_HIDDENITEM", "GAME_HIDDENITEM", 2, true);
                         }
 
                         AddrWord<char> objectKey;
@@ -486,7 +486,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                                 "GAME_LIGHTING_HIDDENITEM",
                                                 "GAME_HIDDENITEM",
                                                 2,
-                                                1
+                                                true
                                             );
                                         CWwdSpriteObject* peek =
                                             m_world->m_childGroup->CreateSprite(
@@ -519,7 +519,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             );
                             light->m_logicRecord->m_dispatch(light);
                             static_cast<CLightFx*>(light->m_logicRecord->m_userLogic)
-                                ->Activate("GAME_LIGHTING_HIDDENITEM", "GAME_HIDDENITEM", 2, 1);
+                                ->Activate("GAME_LIGHTING_HIDDENITEM", "GAME_HIDDENITEM", 2, true);
                         }
 
                         objectKey.m_word = 0;
@@ -565,7 +565,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                                 "GAME_LIGHTING_HIDDENITEM",
                                                 "GAME_HIDDENITEM",
                                                 2,
-                                                1
+                                                true
                                             );
                                         CWwdSpriteObject* peek =
                                             m_world->m_childGroup->CreateSprite(
@@ -625,7 +625,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 unit->m_brickPickupType = PICKUP_BROWNBRICK;
                 unit->m_entrancePickup = PICKUP_INVALID;
                 unit->m_pendingTriggerPx.m_y = py;
-                unit->m_pendingTrigger = 1;
+                unit->m_pendingTrigger = true;
                 return 1;
             }
             if (cellType == TILEKIND_GAUNTLET_BRICK_A || cellType == TILEKIND_GAUNTLET_BRICK_B) {
@@ -641,7 +641,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                 if (cellType == TILEKIND_GAUNTLET_BRICK_A) {
                     unit->m_pendingTriggerPx.m_x = px;
                     unit->m_pendingTriggerPx.m_y = py;
-                    unit->m_pendingTrigger = 1;
+                    unit->m_pendingTrigger = true;
                 }
                 return 1;
             }

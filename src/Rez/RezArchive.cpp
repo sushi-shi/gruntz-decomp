@@ -336,7 +336,7 @@ CRezArchiveType::CRezArchiveType(
 
 RVA(0x00139cf0, 0xd7)
 CRezArchiveType::~CRezArchiveType() {
-    if (m_directory->m_archive->m_useIdIndex != 0) {
+    if (m_directory->m_archive->m_useIdIndex != false) {
         CHashElement* node = m_idIndex.First();
         while (node) {
             CHashElement* current = node;
@@ -425,7 +425,7 @@ CRezArchiveEntry* CRezArchiveDir::FindEntry(const char* name, RezTypeTag typeTag
     if (!type) {
         return NULL;
     }
-    return type->m_nameIndex.FindByName(name, m_archive->m_caseSensitive == 0);
+    return type->m_nameIndex.FindByName(name, m_archive->m_caseSensitive == false);
 }
 
 RVA(0x0013a040, 0xa2)
@@ -450,13 +450,13 @@ CRezArchiveEntry* CRezArchiveDir::FindEntryByFilename(const char* filename) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013a0f0, 0x99)
-i32 CRezArchiveDir::PreloadData(i32 recursive) {
+i32 CRezArchiveDir::PreloadData(b32 recursive) {
     if (m_preloadedData != NULL) {
         return 1;
     }
 
     CRezArchive* archive = m_archive;
-    if (archive->m_isDataContiguous == 0 || archive->m_storages.m_storageCount > 1) {
+    if (archive->m_isDataContiguous == false || archive->m_storages.m_storageCount > 1) {
         RezAssertFail("CRezDir::Load Failed! (File is not sorted!)\n");
         return 0;
     }
@@ -468,10 +468,10 @@ i32 CRezArchiveDir::PreloadData(i32 recursive) {
         }
     }
 
-    if (recursive != 0) {
+    if (recursive != false) {
         for (CHashElement* node = m_subdirectories.First(); node != NULL; node = node->Next()) {
 
-            node->m_archiveDirectory->PreloadData(1);
+            node->m_archiveDirectory->PreloadData(true);
         }
     }
     return 1;
@@ -480,7 +480,7 @@ i32 CRezArchiveDir::PreloadData(i32 recursive) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013a190, 0x94)
-i32 CRezArchiveDir::ReleaseEntryData(i32 recursive) {
+i32 CRezArchiveDir::ReleaseEntryData(b32 recursive) {
     if (m_preloadedData != NULL) {
         ::operator delete(m_preloadedData);
         m_preloadedData = NULL;
@@ -498,7 +498,7 @@ i32 CRezArchiveDir::ReleaseEntryData(i32 recursive) {
     if (recursive) {
         CHashElement* node = m_subdirectories.First();
         while (node) {
-            node->m_archiveDirectory->ReleaseEntryData(1);
+            node->m_archiveDirectory->ReleaseEntryData(true);
             node = node->Next();
         }
     }
@@ -510,7 +510,7 @@ CRezArchiveDir* CRezArchiveDir::FindSubdirectory(const char* name) {
     if (!name) {
         return NULL;
     }
-    return m_subdirectories.FindByName(name, m_archive->m_caseSensitive == 0);
+    return m_subdirectories.FindByName(name, m_archive->m_caseSensitive == false);
 }
 
 RVA(0x0013a260, 0x11)
@@ -577,7 +577,7 @@ CRezArchiveEntry* CRezArchiveDir::NextEntry(CRezArchiveEntry* entry) {
 RVA(0x0013a330, 0xce)
 CRezArchiveDir* CRezArchiveDir::CreateSubdirectory(const char* name) {
 
-    if (m_subdirectories.FindByName(name, m_archive->m_caseSensitive == 0) != NULL) {
+    if (m_subdirectories.FindByName(name, m_archive->m_caseSensitive == false) != NULL) {
         return NULL;
     }
     CRezArchiveDir* child = new CRezArchiveDir(
@@ -608,7 +608,7 @@ RVA(0x0013a400, 0xa9)
 CRezArchiveEntry*
 CRezArchiveDir::CreateNamedEntry(void* resourceId, const char* name, i32 typeTag) {
     CRezArchiveType* type = FindOrCreateType(typeTag);
-    if (type->m_nameIndex.FindByName(name, m_archive->m_caseSensitive == 0) != NULL) {
+    if (type->m_nameIndex.FindByName(name, m_archive->m_caseSensitive == false) != NULL) {
         return NULL;
     }
     CRezArchiveEntry* entry = m_archive->AcquireEntry();
@@ -676,7 +676,7 @@ i32 CRezArchiveDir::RemoveEntry(CRezArchiveType* type, CRezArchiveEntry* entry) 
     type->m_nameIndex.Remove(&entry->m_nameNode);
     entry->Reset();
     m_archive->ReleaseEntry(entry);
-    m_archive->m_isDataContiguous = 0;
+    m_archive->m_isDataContiguous = false;
     return 1;
 }
 
@@ -685,9 +685,9 @@ i32 CRezArchiveDir::ReadDirectoryTree(
     CRezItmBase* storage,
     i32 bodyOffset,
     i32 bodySize,
-    i32 replaceExisting
+    b32 replaceExisting
 ) {
-    i32 success = 1;
+    b32 success = true;
     if (static_cast<u32>(bodySize) <= 0) {
         return success;
     }
@@ -708,13 +708,13 @@ i32 CRezArchiveDir::ReadDirectoryTree(
                         replaceExisting
                     )
                     == 0) {
-                    success = 0;
+                    success = false;
                 }
             }
             node = node->Next();
         }
     } else {
-        success = 0;
+        success = false;
     }
     return success;
 }
@@ -729,7 +729,7 @@ i32 CRezArchiveDir::ReadDirectoryBody(
     CRezItmBase* storage,
     i32 bodyOffset,
     i32 bodySize,
-    i32 replaceExisting
+    b32 replaceExisting
 ) {
     m_totalDataSize = 0;
     m_minDataOffset = -1;
@@ -759,7 +759,7 @@ i32 CRezArchiveDir::ReadDirectoryBody(
             cursor += strlen(name) + 1;
             CRezDirectoryNameHash* subdirectories = &m_subdirectories;
             CRezArchiveDir* existing =
-                subdirectories->FindByName(name, m_archive->m_caseSensitive == 0);
+                subdirectories->FindByName(name, m_archive->m_caseSensitive == false);
             if (existing == NULL) {
                 CRezArchiveDir* directory = new CRezArchiveDir(
                     m_archive,
@@ -798,7 +798,7 @@ i32 CRezArchiveDir::ReadDirectoryBody(
             i32 skipEntry = 0;
             CRezArchiveEntry* found = type->m_nameIndex.FindByName(name, 1);
             if (found) {
-                if (replaceExisting != 0) {
+                if (replaceExisting != false) {
                     RemoveEntry(type, found);
                 } else {
                     skipEntry = 1;
@@ -859,7 +859,7 @@ CRezArchiveType* CRezArchiveDir::FindOrCreateType(i32 typeTag) {
 
     CRezArchiveType* type = m_types.FindTypeByTag(static_cast<u32>(typeTag));
     if (!type) {
-        if (m_archive->m_useIdIndex != 0) {
+        if (m_archive->m_useIdIndex != false) {
             type = new CRezArchiveType(
                 typeTag,
                 this,
@@ -894,7 +894,7 @@ GZ_ENUM_CONST_END(RezArchiveDefaults)
 
 RVA(0x0013aa10, 0xdc)
 CRezArchive::CRezArchive() : m_freeEntries(1) {
-    m_isOpen = 0;
+    m_isOpen = false;
     m_primaryStorage = NULL;
     m_storages.m_storageCount = 0;
     m_rootDirectoryOffset = 0;
@@ -909,14 +909,14 @@ CRezArchive::CRezArchive() : m_freeEntries(1) {
     m_largestCommentSize = 0;
     m_archivePath = NULL;
     m_pathDelimiters = NULL;
-    m_caseSensitive = 0;
-    m_useIdIndex = 0;
+    m_caseSensitive = false;
+    m_useIdIndex = false;
     m_resourceNameBucketCount = REZ_ARCHIVE_DEFAULT_RESOURCE_NAME_BUCKET_COUNT;
     m_resourceIdBucketCount = REZ_ARCHIVE_DEFAULT_RESOURCE_ID_BUCKET_COUNT;
     m_reserved24 = 1;
     m_nextGeneratedResourceId = REZ_ARCHIVE_FIRST_GENERATED_RESOURCE_ID;
-    m_readOnly = 1;
-    m_isDataContiguous = 1;
+    m_readOnly = true;
+    m_isDataContiguous = true;
     m_maxOpenFiles = REZ_ARCHIVE_DEFAULT_MAX_OPEN_FILES;
     m_subdirectoryBucketCount = REZ_ARCHIVE_DEFAULT_SUBDIRECTORY_BUCKET_COUNT;
     m_typeBucketCount = REZ_ARCHIVE_DEFAULT_TYPE_BUCKET_COUNT;
@@ -926,7 +926,7 @@ CRezArchive::CRezArchive() : m_freeEntries(1) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013ab00, 0xac)
-CRezArchive::CRezArchive(char* path, i32 readOnly, i32 createNew) : m_freeEntries(1) {
+CRezArchive::CRezArchive(char* path, b32 readOnly, b32 createNew) : m_freeEntries(1) {
     {
         CRezArchive defaults;
     }
@@ -959,13 +959,13 @@ CRezArchive::~CRezArchive() {
         m_pathDelimiters = NULL;
     }
     CRezEntryPoolBlock* block = FirstEntryPoolBlock(m_entryPoolBlocks);
-    m_isOpen = 0;
+    m_isOpen = false;
     m_primaryStorage = NULL;
     m_rootDirectoryOffset = 0;
     m_rootDirectorySize = 0;
     m_rootDirectoryTime = 0;
     m_nextWritePos = 0;
-    m_readOnly = 1;
+    m_readOnly = true;
     m_rootDirectory = NULL;
     m_archiveTime = 0;
     m_isNewArchive = false;
@@ -974,7 +974,7 @@ CRezArchive::~CRezArchive() {
     m_largestDirectoryNameSize = 0;
     m_largestResourceNameSize = 0;
     m_largestCommentSize = 0;
-    m_isDataContiguous = 1;
+    m_isDataContiguous = true;
     m_archivePath = NULL;
     if (block) {
         do {
@@ -988,9 +988,9 @@ CRezArchive::~CRezArchive() {
 
 // @early-stop
 RVA(0x0013ad00, 0x3b8)
-i32 CRezArchive::Open(char* path, i32 readOnly, i32 createNew) {
+i32 CRezArchive::Open(char* path, b32 readOnly, b32 createNew) {
     m_readOnly = readOnly;
-    if (readOnly == 0) {
+    if (readOnly == false) {
         return 0;
     }
     if (m_archivePath) {
@@ -1001,7 +1001,7 @@ i32 CRezArchive::Open(char* path, i32 readOnly, i32 createNew) {
     strcpy(archivePath, path);
     if (IsDirectoryPath(path) != 0) {
 
-        if (m_readOnly == 0) {
+        if (m_readOnly == false) {
             return 0;
         }
         CRezItmBase* storage = new CRezDir(this, m_maxOpenFiles);
@@ -1016,7 +1016,7 @@ i32 CRezArchive::Open(char* path, i32 readOnly, i32 createNew) {
         if (storage->Open(path, readOnly, createNew) == 0) {
             return 0;
         }
-        m_isOpen = 1;
+        m_isOpen = true;
         CRezArchiveDir* rootDirectory = new CRezArchiveDir(
             this,
             NULL,
@@ -1028,7 +1028,7 @@ i32 CRezArchive::Open(char* path, i32 readOnly, i32 createNew) {
             m_typeBucketCount
         );
         m_rootDirectory = rootDirectory;
-        ImportDirectoryTree(storage, rootDirectory, m_archivePath, 0);
+        ImportDirectoryTree(storage, rootDirectory, m_archivePath, false);
         return 1;
     }
 
@@ -1044,8 +1044,8 @@ i32 CRezArchive::Open(char* path, i32 readOnly, i32 createNew) {
     if (storage->Open(path, readOnly, createNew) == 0) {
         return 0;
     }
-    m_isOpen = 1;
-    if (createNew != 0) {
+    m_isOpen = true;
+    if (createNew != false) {
         m_nextWritePos = sizeof(RezArchiveHeader);
         m_isNewArchive = true;
         CRezArchiveDir* rootDirectory = new CRezArchiveDir(
@@ -1098,17 +1098,17 @@ i32 CRezArchive::Open(char* path, i32 readOnly, i32 createNew) {
         m_typeBucketCount
     );
     m_rootDirectory = rootDirectory;
-    rootDirectory->ReadDirectoryTree(storage, m_rootDirectoryOffset, m_rootDirectorySize, 0);
+    rootDirectory->ReadDirectoryTree(storage, m_rootDirectoryOffset, m_rootDirectorySize, false);
     return 1;
 }
 
 // @early-stop
 RVA(0x0013b0c0, 0x238)
-i32 CRezArchive::MergeArchive(char* path, i32 replaceExisting) {
-    if (m_readOnly == 0) {
+i32 CRezArchive::MergeArchive(char* path, b32 replaceExisting) {
+    if (m_readOnly == false) {
         return 0;
     }
-    m_isDataContiguous = 0;
+    m_isDataContiguous = false;
     if (m_archivePath) {
         delete[] m_archivePath;
     }
@@ -1125,10 +1125,10 @@ i32 CRezArchive::MergeArchive(char* path, i32 replaceExisting) {
         }
         m_storages.AddHead(storage);
         m_storages.m_storageCount++;
-        if (storage->Open(path, 1, 0) == 0) {
+        if (storage->Open(path, true, false) == 0) {
             return 0;
         }
-        m_isOpen = 1;
+        m_isOpen = true;
         ImportDirectoryTree(storage, m_rootDirectory, m_archivePath, replaceExisting);
         return 1;
     }
@@ -1141,7 +1141,7 @@ i32 CRezArchive::MergeArchive(char* path, i32 replaceExisting) {
     }
     m_storages.AddHead(storage);
     m_storages.m_storageCount++;
-    if (storage->Open(path, 1, 0) == 0) {
+    if (storage->Open(path, true, false) == 0) {
         return 0;
     }
 
@@ -1178,7 +1178,7 @@ i32 CRezArchive::ImportDirectoryTree(
     CRezItmBase* storage,
     CRezArchiveDir* directory,
     char* path,
-    i32 replaceExisting
+    b32 replaceExisting
 ) {
     char pattern[REZ_SCAN_PATH_MAX];
     strcpy(pattern, path);
@@ -1201,7 +1201,7 @@ i32 CRezArchive::ImportDirectoryTree(
 
             char subdirectoryName[REZ_SCAN_PATH_MAX];
             strcpy(subdirectoryName, fileData.name);
-            if (m_caseSensitive == 0) {
+            if (m_caseSensitive == false) {
                 _strupr(subdirectoryName);
             }
             char childPath[REZ_SCAN_PATH_MAX];
@@ -1255,7 +1255,7 @@ i32 CRezArchive::ImportDirectoryTree(
         CRezArchiveEntry* entry;
         if (existing == NULL) {
             entry = directory->CreateEntry(static_cast<u32>(resourceId), resourceName, type, NULL);
-        } else if (replaceExisting != 0) {
+        } else if (replaceExisting != false) {
             directory->RemoveEntry(type, existing);
             entry = directory->CreateEntry(static_cast<u32>(resourceId), resourceName, type, NULL);
         } else {
@@ -1294,7 +1294,7 @@ i32 CRezArchive::Close(i32 unusedFinal) {
         delete[] m_archivePath;
         m_archivePath = NULL;
     }
-    m_isOpen = 0;
+    m_isOpen = false;
     return result;
 }
 
@@ -1380,10 +1380,10 @@ i32 CRezArchive::RetryStorageOperation() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013ba20, 0x27)
 i32 CRezArchive::CheckStorages() {
-    i32 allStoragesValid = 1;
+    b32 allStoragesValid = true;
     for (CRezItmBase* storage = m_storages.m_head; storage != NULL; storage = storage->m_next) {
         if (storage->Check() == 0) {
-            allStoragesValid = 0;
+            allStoragesValid = false;
         }
     }
     return allStoragesValid;
@@ -1546,11 +1546,11 @@ CRezArchiveDir* CRezArchive::FindDirectoryByPath(const char* path) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013c050, 0x28)
 i32 CRezArchive::Reload() {
-    if (m_isOpen == 0) {
+    if (m_isOpen == false) {
         return 0;
     }
     Close(0);
-    return Open(m_archivePath, 1, 0);
+    return Open(m_archivePath, true, false);
 }
 
 RVA(0x0013c080, 0x3c)

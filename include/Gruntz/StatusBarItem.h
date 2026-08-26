@@ -46,7 +46,7 @@ public:
         m_enabled = on;
     }
 
-    i32 m_enabled;
+    b32 m_enabled;
     StatusBarItemKind m_kind;
     SbiCommandId m_cmd;
     StatusBarTab m_tab;
@@ -59,7 +59,7 @@ public:
 
 RVA(0x001005d0, 0x17)
 inline CStatusBarItem::CStatusBarItem() {
-    m_enabled = 0;
+    m_enabled = false;
     m_kind = SBI_KIND_BASE;
     m_host = NULL;
     m_redrawFrames = 0;

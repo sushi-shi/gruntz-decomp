@@ -70,7 +70,7 @@ SfManagerFactory* g_sfManagerFactory = NULL;
 DATA(0x0024e0b0)
 SFMANL101API* g_sfDevice = NULL;
 DATA(0x0024e0b8)
-i32 g_sfReady = 0;
+b32 g_sfReady = false;
 DATA(0x0024e0c0)
 u8 g_sfDeviceRatings[344] = {0};
 
@@ -172,6 +172,6 @@ i32 SFManager_SelectBestDevice() {
     g_routerSysEx[8] = static_cast<unsigned char>(((v >> 8) & 0x7f));
     g_routerSysEx[9] = static_cast<unsigned char>(((v >> 0x10) & 0x7f));
     g_routerSysEx[10] = static_cast<unsigned char>(((v >> 0x18) & 0x7f));
-    g_sfReady = 1;
+    g_sfReady = true;
     return 1;
 }

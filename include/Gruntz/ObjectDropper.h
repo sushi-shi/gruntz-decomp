@@ -3,12 +3,18 @@
 
 #include <rva.h>
 
+#include <Enums.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/UserLogic.h>
 
 class CFileMemBase;
+
+GZ_ENUM_BEGIN(ObjectDropScope)
+    OBJECT_DROP_ALL_PLAYERS = 0,
+    OBJECT_DROP_PLAYER_ZERO_ONLY = 1
+GZ_ENUM_END(ObjectDropScope)
 
 class CObjectDropper : public CUserLogic, public CWapX {
 public:
@@ -37,7 +43,7 @@ public:
     i32 m_travelDy;
     i32 m_lastDropPlayerIndex;
     i32 m_lastDropUnitIndex;
-    i32 m_scrollMode;
+    ObjectDropScope m_scrollMode;
     char m_pad84[0x88 - 0x84];
     union {
         struct {

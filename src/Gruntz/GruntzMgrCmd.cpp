@@ -40,7 +40,7 @@
 #include <string.h>
 
 #define PLAYCUE(TAG)                                                                               \
-    if (m_world->m_soundRegistry->m_silentMode == 0) {                                             \
+    if (m_world->m_soundRegistry->m_silentMode == false) {                                         \
         SoundCue* _c = static_cast<SoundCue*>(m_world->m_soundRegistry->Lookup(TAG));              \
         if (_c)                                                                                    \
             _c->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);                                      \
@@ -48,7 +48,7 @@
 #define PLAYCUE_MAP(TAG, VAR)                                                                      \
     {                                                                                              \
         SoundCueRegistry* _reg = m_world->m_soundRegistry;                                         \
-        if (_reg->m_silentMode == 0) {                                                             \
+        if (_reg->m_silentMode == false) {                                                         \
             VAR = 0;                                                                               \
             MapLookup(_reg->m_cues, TAG, VAR);                                                     \
             if (VAR)                                                                               \
@@ -155,27 +155,27 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
         case CMD_NEW_GAME:
         case CMD_NEW_GAME_ALT:
             m_gameMode = GAMEMODE_QUESTZ;
-            if (!PassClickToPlayState(1, 0, 1)) {
+            if (!PassClickToPlayState(1, false, 1)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x41e);
             }
             return 1;
         case CMD_LOAD_WORLD:
             m_gameMode = GAMEMODE_QUESTZ;
             m_strWorldFile.Empty();
-            if (!PassClickToPlayState(lParam, 0, 1)) {
+            if (!PassClickToPlayState(lParam, false, 1)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x41f);
             }
             return 1;
         case CMD_CONTINUE_AT_MAX_LEVEL:
             m_gameMode = GAMEMODE_QUESTZ;
             m_strWorldFile.Empty();
-            if (!PassClickToPlayState(IDX(m_saveGame->m_maxLevel), 0, 1)) {
+            if (!PassClickToPlayState(IDX(m_saveGame->m_maxLevel), false, 1)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x41f);
             }
             return 1;
         case CMD_START_BATTLEZ_GAME:
             m_gameMode = GAMEMODE_BATTLEZ;
-            if (!PassClickToPlayState(1, 0, 1)) {
+            if (!PassClickToPlayState(1, false, 1)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x420);
             }
             return 1;
@@ -190,20 +190,20 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                 SoundCue* _c;
                 switch (static_cast<GruntzCommandId>(IDX(nID) & 0xffff)) {
                     case CHEAT_PROGRAMMING_GOD: {
-                        if (m_world->m_soundRegistry->m_silentMode == 0) {
+                        if (m_world->m_soundRegistry->m_silentMode == false) {
                             SoundCue* _c = static_cast<SoundCue*>(
                                 (static_cast<SoundCueRegistry*>(m_world->m_soundRegistry))
                                     ->Lookup("GAME_MINORCHEAT")
                             );
                             if (_c) {
-                                _c->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
+                                _c->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
                             }
                         }
                         AppendChatMessage("Brian L. Goble is a programming God...");
                         return 1;
                     }
                     case CHEAT_TRAITOR_MODE:
-                        g_traitorMode ^= 1;
+                        g_traitorMode = !g_traitorMode;
                         PLAYCUE("GAME_MINORCHEAT");
                         ShowToggleMessage("Traitor Mode", g_traitorMode);
                         return 1;
@@ -270,12 +270,12 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                             return 1;
                         }
                         if (g_monologoShown) {
-                            m_midi->PlaySequence("MONOLITH", 1);
+                            m_midi->PlaySequence("MONOLITH", true);
                             return 1;
                         }
                         char sequenceName[128];
                         wsprintfA(sequenceName, "AMBIENT%d", playState->GetAmbientId());
-                        m_midi->PlaySequence(sequenceName, 1);
+                        m_midi->PlaySequence(sequenceName, true);
                         return 1;
                     }
                     case CHEAT_NO_OP:
@@ -382,7 +382,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         _t->m_unusedStamp.m_hi = 0;
                         _t->m_accum.m_lo = 0;
                         _t->m_accum.m_hi = 0;
-                        _t->m_running = 0;
+                        _t->m_running = false;
                         _t->m_currentMs = 0;
                         PLAYCUE("GAME_MAJORCHEAT");
                         AppendChatMessage("Ah, who needed that stupid timer anyway?");
@@ -420,7 +420,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         if (!PickPlayOrPausedState()) {
                             return 0;
                         }
-                        m_triggerMgr->CycleMoveIcons(-1, 1);
+                        m_triggerMgr->CycleMoveIcons(-1, true);
                         PLAYCUE("GAME_MAJORCHEAT");
                         AppendChatMessage("How about a little color in your Gruntz?");
                         return 1;
@@ -429,7 +429,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         if (!_g) {
                             return 0;
                         }
-                        _g->SetMonitorCurse(1);
+                        _g->SetMonitorCurse(true);
                         PLAYCUE("GAME_MAJORCHEAT");
                         AppendChatMessage("Whoah... you should get this monitor fixed.");
                         return 1;
@@ -439,7 +439,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         if (!_g) {
                             return 0;
                         }
-                        _g->SetDarknessCurse(1);
+                        _g->SetDarknessCurse(true);
                         PLAYCUE("GAME_MAJORCHEAT");
                         AppendChatMessage("Is is dark in here?");
                         return 1;
@@ -449,7 +449,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         if (!_g) {
                             return 0;
                         }
-                        _g->SetTinyViewportCurse(1);
+                        _g->SetTinyViewportCurse(true);
                         PLAYCUE("GAME_MAJORCHEAT");
                         AppendChatMessage("Awww... isn't this little window cute?");
                         return 1;
@@ -471,13 +471,13 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         PLAYCUE("GAME_MINORCHEAT");
                         return 1;
                     case CHEAT_WAWA:
-                        if (m_world->m_soundRegistry->m_silentMode == 0) {
+                        if (m_world->m_soundRegistry->m_silentMode == false) {
                             SoundCue* _c = static_cast<SoundCue*>(
                                 (static_cast<SoundCueRegistry*>(m_world->m_soundRegistry))
                                     ->Lookup("GAME_WAWA")
                             );
                             if (_c) {
-                                _c->PlayIfElapsed(0x64, 0, 0, 0);
+                                _c->PlayIfElapsed(0x64, 0, 0, false);
                             }
                         }
                         AppendChatMessage("WA WA WA WA WA WA!");
@@ -500,7 +500,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                     }
 
                     case CHEAT_GOO_PUDDLEZ:
-                        g_gooPuddlez ^= 1;
+                        g_gooPuddlez = !g_gooPuddlez;
                         PLAYCUE("GAME_MAJORCHEAT");
                         ShowToggleMessage("Goo puddlez", g_gooPuddlez);
                         return 1;
@@ -519,12 +519,12 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         return 1;
                     }
                     case CHEAT_GRUNT_CREATION:
-                        g_gruntCreation ^= 1;
+                        g_gruntCreation = !g_gruntCreation;
                         PLAYCUE("GAME_MAJORCHEAT");
                         ShowToggleMessage("Grunt creation", g_gruntCreation);
                         return 1;
                     case CHEAT_GRUNT_DESTRUCTION:
-                        g_gruntDestruction ^= 1;
+                        g_gruntDestruction = !g_gruntDestruction;
                         PLAYCUE("GAME_MAJORCHEAT");
                         ShowToggleMessage("Grunt destruction", g_gruntDestruction);
                         return 1;
@@ -542,11 +542,11 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         return 1;
                     case CHEAT_PSYCHE:
 
-                        RunModalDialog("PSYCHE", PsycheDialogProc, 0);
+                        RunModalDialog("PSYCHE", PsycheDialogProc, false);
                         return 1;
                     case CHEAT_CLEAR_CHEATS:
                         PLAYCUE("GAME_MAJORCHEAT");
-                        m_cheatMgr->m_cheatsUsed = 0;
+                        m_cheatMgr->m_cheatsUsed = false;
                         AppendChatMessage("Cheatz cleared");
                         return 1;
                     case CHEAT_WARP_TROPICZ:
@@ -580,13 +580,13 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         m_saveGame->SetCurLevel(QUESTLEVEL_AREA7_STAGE4);
                         return 1;
                     case CHEAT_EXPLOSIONZ: {
-                        g_explosionz ^= 1;
+                        g_explosionz = !g_explosionz;
                         SoundCueRegistry* _reg = m_world->m_soundRegistry;
-                        if (_reg->m_silentMode == 0) {
+                        if (_reg->m_silentMode == false) {
                             _c = NULL;
                             MapLookup(_reg->m_cues, "GAME_MAJORCHEAT", _c);
                             if (_c) {
-                                PlaySoundCueIfElapsed(_c, g_soundVolumePercent, 0, 0, 0);
+                                PlaySoundCueIfElapsed(_c, g_soundVolumePercent, 0, 0, false);
                             }
                         }
                         ShowToggleMessage("Explosionz", g_explosionz);
@@ -604,37 +604,37 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             if (!(si->m_flags & 1)) {
                 return 1;
             }
-            m_loadingSaveGame = 1;
+            m_loadingSaveGame = true;
             CString tmp(si->m_levelName);
             m_strWorldFile = tmp;
             static_cast<void>(notifyCode);
             if (tmp.GetLength()) {
                 if (si->m_isBattlez) {
                     if (si->m_isCustom) {
-                        m_isBuiltInBattlezLevel = 0;
-                        m_isCustomLevel = 1;
+                        m_isBuiltInBattlezLevel = false;
+                        m_isCustomLevel = true;
                         m_gameMode = GAMEMODE_BATTLEZ;
                     } else {
-                        m_isBuiltInBattlezLevel = 1;
-                        m_isCustomLevel = 0;
+                        m_isBuiltInBattlezLevel = true;
+                        m_isCustomLevel = false;
                         m_gameMode = GAMEMODE_BATTLEZ;
                     }
                 } else {
                     m_gameMode = GAMEMODE_QUESTZ;
-                    m_isCustomLevel = 1;
+                    m_isCustomLevel = true;
                 }
             } else {
                 m_gameMode = GAMEMODE_QUESTZ;
-                m_isCustomLevel = 0;
+                m_isCustomLevel = false;
             }
-            if (!PassClickToPlayState(si->m_levelId, 0, 1)) {
+            if (!PassClickToPlayState(si->m_levelId, false, 1)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x421);
             }
             if (!RestoreGameFromFile(this, si->m_serial)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x465);
             }
             CheckSavedMode();
-            m_loadingSaveGame = 0;
+            m_loadingSaveGame = false;
             return 1;
         }
         case CMD_NO_OP80_8:
@@ -830,32 +830,32 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             return 1;
         case CMD_MULTI_JOIN:
             m_gameMode = GAMEMODE_MULTIPLAYER;
-            g_hostServicesMode = 0;
-            if (!TransitionState(GAMESTATE_MULTI, 1, 0, 0)
-                && !TransitionState(GAMESTATE_ATTRACT, 1, 0, 0)) {
+            g_hostServicesMode = false;
+            if (!TransitionState(GAMESTATE_MULTI, 1, false, 0)
+                && !TransitionState(GAMESTATE_ATTRACT, 1, false, 0)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x424);
             }
             return 1;
         case CMD_MULTI_HOST:
             m_gameMode = GAMEMODE_MULTIPLAYER;
-            g_hostServicesMode = 1;
-            if (!TransitionState(GAMESTATE_MULTI, 1, 0, 0)
-                && !TransitionState(GAMESTATE_ATTRACT, 1, 0, 0)) {
+            g_hostServicesMode = true;
+            if (!TransitionState(GAMESTATE_MULTI, 1, false, 0)
+                && !TransitionState(GAMESTATE_ATTRACT, 1, false, 0)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x425);
             }
             return 1;
         case CMD_MAIN_MENU:
-            if (!TransitionState(GAMESTATE_MENU, 1, 0, 0)) {
+            if (!TransitionState(GAMESTATE_MENU, 1, false, 0)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x426);
             }
             return 1;
         case CMD_SHOW_CREDITS:
-            if (!TransitionState(GAMESTATE_CREDITS_OVER_CURRENT, 1, 1, 0)) {
+            if (!TransitionState(GAMESTATE_CREDITS_OVER_CURRENT, 1, true, 0)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x427);
             }
             return 1;
         case CMD_SHOW_BOOTY:
-            if (!TransitionState(GAMESTATE_BOOTY_OVER_CURRENT, 1, 1, lParam)) {
+            if (!TransitionState(GAMESTATE_BOOTY_OVER_CURRENT, 1, true, lParam)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x428);
             }
             return 1;
@@ -865,30 +865,30 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             }
             return 1;
         case CMD_SHOW_HELP:
-            if (!TransitionState(GAMESTATE_CREDITS, 1, 0, 0)
-                && !TransitionState(GAMESTATE_MENU, 1, 0, 0)) {
+            if (!TransitionState(GAMESTATE_CREDITS, 1, false, 0)
+                && !TransitionState(GAMESTATE_MENU, 1, false, 0)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x42a);
             }
             return 1;
         case CMD_ATTRACT:
-            if (!TransitionState(GAMESTATE_ATTRACT, 1, 0, 0)) {
+            if (!TransitionState(GAMESTATE_ATTRACT, 1, false, 0)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x42b);
             }
             return 1;
         case CMD_RETURN_TO_ATTRACT:
-            if (!TransitionState(GAMESTATE_ATTRACT, 1, 0, 0)) {
+            if (!TransitionState(GAMESTATE_ATTRACT, 1, false, 0)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x42c);
                 return 1;
             }
             PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
             return 1;
         case CMD_SHOW_STATE0:
-            if (!TransitionState(GAMESTATE_SPLASH, 1, 0, 0)) {
+            if (!TransitionState(GAMESTATE_SPLASH, 1, false, 0)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x42d);
             }
             return 1;
         case CMD_SHOW_STATE07:
-            if (!TransitionState(GAMESTATE_DEMO, 1, 0, 0)) {
+            if (!TransitionState(GAMESTATE_DEMO, 1, false, 0)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x42e);
             }
             return 1;
@@ -909,17 +909,17 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         return 1;
                     }
                 }
-                m_frameGate ^= 1;
-                i32 f = m_frameGate;
-                FinishLevel(f, 1);
+                m_frameGate = !m_frameGate;
+                b32 f = m_frameGate;
+                FinishLevel(f, true);
             }
             return 1;
         }
         case CMD_FINISH_LEVEL: {
             if (m_curState->Update() == GAMESTATE_PLAY || m_curState->Update() == GAMESTATE_MULTI) {
-                m_frameGate ^= 1;
-                i32 f = m_frameGate;
-                FinishLevel(f, 0);
+                m_frameGate = !m_frameGate;
+                b32 f = m_frameGate;
+                FinishLevel(f, false);
             }
             return 1;
         }
@@ -932,7 +932,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             }
             return 1;
         case CMD_LOBBY_RESET:
-            m_lobbyProbed = 0;
+            m_lobbyProbed = false;
             PostMessageA(m_gameWnd->m_hwnd, WM_COMMAND, 0x8025, 0);
             return 1;
         case CMD_EXIT_TO_ATTRACT:
@@ -942,7 +942,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             if (m_curState->CompleteLevel()) {
                 return 1;
             }
-            if (!TransitionState(GAMESTATE_ATTRACT, 1, 0, 0)) {
+            if (!TransitionState(GAMESTATE_ATTRACT, 1, false, 0)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x430);
                 return 1;
             }
@@ -966,8 +966,8 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             }
             // fall through
         case CMD_RETURN_TO_MENU:
-            m_curState->m_notifyLatch = 1;
-            if (!TransitionState(GAMESTATE_MENU, 1, 0, 0)) {
+            m_curState->m_notifyLatch = true;
+            if (!TransitionState(GAMESTATE_MENU, 1, false, 0)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x432);
             }
             return 1;
@@ -985,7 +985,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                 || m_curState->Update() == GAMESTATE_MULTI) {
                 return 1;
             }
-            if (!TransitionState(GAMESTATE_HELP, 1, 1, 0)) {
+            if (!TransitionState(GAMESTATE_HELP, 1, true, 0)) {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x433);
             }
             return 1;
@@ -1000,7 +1000,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                 mus = NULL;
             }
 
-            RunModalDialog("CONFIG_SETTINGS", GameOptionsDlgProc, 0);
+            RunModalDialog("CONFIG_SETTINGS", GameOptionsDlgProc, false);
             if (mus) {
                 mus->StartMusic();
             }
@@ -1010,9 +1010,9 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             if (m_frameGate) {
                 return 1;
             }
-            m_musicEnabled ^= 1;
-            i32 enabled = m_musicEnabled;
-            i32 isPlayState = CheckPlayState();
+            m_musicEnabled = !m_musicEnabled;
+            b32 enabled = m_musicEnabled;
+            b32 isPlayState = CheckPlayState();
             if (!isPlayState) {
                 if (m_curState->Update() != GAMESTATE_CREDITS_OVER_CURRENT
                     && m_curState->Update() != GAMESTATE_MENU) {
@@ -1020,7 +1020,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                 }
             }
             if (enabled) {
-                m_midi->RestartCurrent(1);
+                m_midi->RestartCurrent(true);
             } else {
                 m_midi->PauseCurrent();
             }
@@ -1033,10 +1033,10 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                     soundStream->StopAllStreams();
                 }
             }
-            m_soundEnabled ^= 1;
+            m_soundEnabled = !m_soundEnabled;
             g_soundEnabled = m_soundEnabled;
-            i32 soundEnabled = m_soundEnabled;
-            if (soundEnabled != 0) {
+            b32 soundEnabled = m_soundEnabled;
+            if (soundEnabled != false) {
                 m_worldSounds->Resume();
             } else {
                 m_worldSounds->Stop();
@@ -1047,7 +1047,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             if (!IsInPlayState()) {
                 return 1;
             }
-            RestoreVideoMode(0);
+            RestoreVideoMode(false);
             return 1;
         case CMD_NEXT_RESOLUTION:
             if (!IsInPlayState()) {
@@ -1077,7 +1077,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             if (!_g) {
                 return 1;
             }
-            if (!PassClickToPlayState(m_curState->m_levelIndex, 0, 1)) {
+            if (!PassClickToPlayState(m_curState->m_levelIndex, false, 1)) {
                 ReportError(IDX(IDS_CHANGE_LEVEL), 0x434);
             }
             return 1;

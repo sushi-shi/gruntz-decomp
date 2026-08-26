@@ -20,7 +20,7 @@ struct CGameObject;
 class CTileTriggerContainer {
 public:
     CTileTriggerContainer() {
-        m_initialized = 0;
+        m_initialized = false;
     }
 
     i32 SerializeSwitchLogic(
@@ -121,7 +121,7 @@ public:
         RECT clip,
         RECT switchRectA,
         RECT switchRectB,
-        i32 isMatch,
+        b32 isMatch,
         i32 damageParam,
         i32 checkpointType
     );
@@ -144,7 +144,7 @@ public:
     CPtrList m_timedLogics;
     CPtrList m_actionEvents;
     CTileTriggerLogic* m_latchedLeaf;
-    i32 m_initialized;
+    b32 m_initialized;
 };
 
 #endif // SRC_GRUNTZ_TILETRIGGERCONTAINER_H

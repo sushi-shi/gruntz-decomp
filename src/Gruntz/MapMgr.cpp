@@ -143,7 +143,7 @@ CMapMgr::CMapMgr() {
     m_edgeMask = 0;
     m_diagonalMask = 0;
     m_blockedMask = -1;
-    m_dirty = 1;
+    m_dirty = true;
 }
 
 RVA(0x0009e9e0, 0x5d)

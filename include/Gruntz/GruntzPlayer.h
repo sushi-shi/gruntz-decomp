@@ -56,16 +56,16 @@ public:
 
     i32 m_warlordObjectId;
     BattlezDifficulty m_difficulty;
-    i32 m_humanControlled;
+    b32 m_humanControlled;
 
     i32 m_networkPlayerId;
-    i32 m_ready;
-    i32 m_active;
-    i32 m_clearedRound;
-    i32 m_joined;
-    i32 m_doneFlag;
+    b32 m_ready;
+    b32 m_active;
+    b32 m_clearedRound;
+    b32 m_joined;
+    b32 m_doneFlag;
 
-    i32 m_optionsPresenceCounted;
+    b32 m_optionsPresenceCounted;
     char m_pad034[0x38 - 0x34];
 
     CBattlezMapConfig m_battlezConfig;

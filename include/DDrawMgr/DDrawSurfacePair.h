@@ -33,7 +33,7 @@ public:
     CDDrawSurfacePair(CDDrawSurfaceMgr* mgr, i32 kind, i32 flags)
         : CDrawSubWorker(INLINE_CTOR, mgr, kind, flags) {
         m_surface = NULL;
-        m_ownsSurface = 1;
+        m_ownsSurface = true;
     }
 
     virtual void Unload() OVERRIDE;
@@ -55,7 +55,7 @@ public:
 
     void BlitDirtyRect(CDDrawSurfacePair* other, i32* pos, i32* size);
 
-    i32 m_ownsSurface;
+    b32 m_ownsSurface;
 };
 
 inline void CDrawSubWorker::BlitDirtyRect(CDDrawSurfacePair* other, i32* pos, i32* size) {

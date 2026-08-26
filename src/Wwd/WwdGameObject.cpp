@@ -44,7 +44,7 @@
 #include <string.h>
 
 DATA(0x002bf674)
-i32 g_logicTypesRegistered;
+b32 g_logicTypesRegistered;
 
 static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
     CObject* result = NULL;
@@ -259,11 +259,11 @@ i32 CWwdSpriteObject::WriteSpriteState(CFileMemBase* stream) {
     }
     ar->Write(&m_reserved18c, sizeof(m_reserved18c));
     ar->Write(&m_frameIndex, sizeof(m_frameIndex));
-    i32 flag = 0;
+    b32 hasFrameImage = false;
     if (m_frameImage != NULL) {
-        flag = 1;
+        hasFrameImage = true;
     }
-    ar->Write(&flag, sizeof(flag));
+    ar->Write(&hasFrameImage, sizeof(hasFrameImage));
 
     char tmp[0x100];
     memset(tmp, 0, SERIAL_NAME_LEN);
@@ -288,8 +288,8 @@ i32 CWwdSpriteObject::ReadSpriteState(CFileMemBase* stream) {
     }
     ar->Read(&m_reserved18c, sizeof(m_reserved18c));
     ar->Read(&m_frameIndex, sizeof(m_frameIndex));
-    i32 flag;
-    ar->Read(&flag, sizeof(flag));
+    b32 hasFrameImage;
+    ar->Read(&hasFrameImage, sizeof(hasFrameImage));
     m_imageSet = NULL;
 
     char name[0x100];
@@ -302,7 +302,7 @@ i32 CWwdSpriteObject::ReadSpriteState(CFileMemBase* stream) {
         mgr->m_imageRegistry->m_workersByName.Lookup(name, foundOb);
         found = static_cast<CDDrawWorker*>(foundOb);
         m_imageSet = found;
-        if (found != NULL && flag == 1) {
+        if (found != NULL && hasFrameImage == true) {
             i32 idx = m_frameIndex;
             CImage* frame = found->GetAt(idx);
             m_frameImage = frame;
@@ -751,8 +751,8 @@ static inline BOOL LookupLinkedObject(CMapPtrToPtr& map, i32 id, CWwdGameObject*
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00151b90, 0x70)
-i32 CGameObject::ResolveLinkedObject(i32 gate) {
-    if (gate == 0) {
+i32 CGameObject::ResolveLinkedObject(b32 gate) {
+    if (gate == false) {
         return 0;
     }
     CWwdGameObject* found;

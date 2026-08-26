@@ -395,14 +395,14 @@ CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj)
     m_state[13] = m_object->m_clip.top;
     m_state[14] = m_object->m_clip.right;
 
-    i32 found = 0;
+    b32 found = false;
     m_firstEmpty = 0;
-    while (found == 0 && m_firstEmpty < 15) {
+    while (found == false && m_firstEmpty < 15) {
 
         if (m_state[m_firstEmpty] != 0) {
             m_firstEmpty++;
         } else {
-            found = 1;
+            found = true;
         }
     }
 }
@@ -442,7 +442,7 @@ i32 CCheckpointTrigger::Act() {
             g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), 0x44c);
             return 0;
         }
-        if (child->m_linkGate == 0) {
+        if (child->m_linkGate == false) {
             return 0;
         }
     }
@@ -453,7 +453,7 @@ i32 CCheckpointTrigger::Act() {
     if (play->m_levelTimer != NULL) {
         i32 minutes = m_object->m_score;
         i32 seconds = m_object->m_points;
-        if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+        if (g_gameReg->m_isEasyMode != false && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
             seconds += seconds;
             minutes += minutes;
             if (seconds > 0x3b) {
@@ -466,7 +466,7 @@ i32 CCheckpointTrigger::Act() {
 
     CObject* cue = m_wwdObject->OwnerMgr()->m_soundRegistry->Lookup("GAME_FLAGRISE");
     if (cue != NULL) {
-        static_cast<SoundCue*>(cue)->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
+        static_cast<SoundCue*>(cue)->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
     }
     g_gameReg->OnCheckpointReached();
 

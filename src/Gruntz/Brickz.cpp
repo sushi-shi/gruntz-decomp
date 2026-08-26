@@ -70,7 +70,7 @@ i32 CMapMgr::FindPathWithEndpointOverrides(
 RVA(0x00082030, 0x1a1)
 i32 CMapMgr::UpdateDiagonals(CGruntzMgr* unused) {
     BrickzCell* cell = m_cellPool;
-    if (m_dirty != 0) {
+    if (m_dirty != false) {
         for (u32 r = 0; r < m_height; r++) {
             for (u32 c = 0; c < m_width; c++) {
                 if ((cell->m_flags & 0x100) != 0) {
@@ -121,7 +121,7 @@ i32 CMapMgr::UpdateDiagonals(CGruntzMgr* unused) {
                 cell++;
             }
         }
-        m_dirty = 0;
+        m_dirty = false;
     }
     return 1;
 }

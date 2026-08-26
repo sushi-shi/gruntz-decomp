@@ -6,6 +6,6 @@
 
 extern HINSTANCE g_appResHandle;
 
-extern i32 g_cdPromptResult;
+extern b32 g_cdPromptResult;
 
 #endif // GRUNTZ_GRUNTZ_STARTUPPROMPT_H

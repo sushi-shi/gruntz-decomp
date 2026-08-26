@@ -113,7 +113,7 @@ public:
     i32 Blt(CDDSurface* src);
     i32 BltEx(RECT* dstRect, CDDSurface* src, RECT* srcRect, u32 flags, DDBLTFX* fx);
     i32 BltFast(u32 x, u32 y, CDDSurface* src, RECT* srcRect, u32 trans);
-    void Tile(CDDSurface* src, i32 useColorKey);
+    void Tile(CDDSurface* src, b32 useColorKey);
     void DumpSurfaceInfo(i32 detailed);
     i32 ShadeBlt(struct tagRECT* dstRect, CDDSurface* src, struct tagRECT* srcRect, i32 shade);
     i32 GetColorKey();
@@ -267,7 +267,7 @@ public:
     i32 m_pixelsPerRow;
 
     i32(__cdecl* m_restoreCallback)(CDDSurface*);
-    i32 m_hasColorKey;
+    b32 m_hasColorKey;
 };
 
 inline u8 CDDSurface::GetPixel(i32 x, i32 y) {

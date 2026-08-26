@@ -213,7 +213,7 @@ DATA(0x00229f30)
 SecretMsgRow g_secretMsgRows[25];
 
 DATA(0x0022af10)
-i32 g_bootyCheatBuilt = 0;
+b32 g_bootyCheatBuilt = false;
 
 // @early-stop
 RVA(0x00018830, 0x380)
@@ -223,7 +223,7 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
         return 0;
     }
 
-    if (g_bootyCheatBuilt == 0) {
+    if (g_bootyCheatBuilt == false) {
         CString bootyCheatz("BootyCheatz");
         CString empty("");
         CString grp;
@@ -247,10 +247,10 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
             p += 0xa0;
             cur.m_addr = p;
         } while (cur.m_word < last.m_word);
-        g_bootyCheatBuilt = 1;
+        g_bootyCheatBuilt = true;
     }
 
-    m_mgr->RestoreVideoMode(0);
+    m_mgr->RestoreVideoMode(false);
 
     m_stateResources = m_resourceArchive->FindDirectoryByPath("STATEZ_BOOTY");
     if (!m_stateResources) {
@@ -296,7 +296,7 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
 
     m_mgr->m_gameWnd->PumpMessages(0x100, 0x40);
 
-    m_secretHudHandled = 0;
+    m_secretHudHandled = false;
 
     if (!BuildWarpStoneGlitterAnimation()) {
         return 0;
@@ -340,20 +340,20 @@ RVA(0x00018d30, 0xcd)
 i32 CBootyState::EnterState(GameStateId previousState) {
     while (ShowCursor(false) >= 0)
         ;
-    if (!LoadTitlePage("bg", 0, 0, 0, 0, 1)) {
+    if (!LoadTitlePage("bg", 0, 0, 0, 0, true)) {
         return 0;
     }
     m_world->m_drawTarget->TransExit();
-    RetireScene(0x50, 0x3e8, 0, 1);
+    RetireScene(0x50, 0x3e8, 0, true);
 
     CGruntzMgr* reg = g_gameReg;
     SoundCueRegistry* set = reg->m_world->m_soundRegistry;
     i32 token = reg->m_soundVolume;
-    if (set->m_silentMode == 0) {
+    if (set->m_silentMode == false) {
         SoundCue* found = NULL;
         MapLookup(set->m_cues, "BOOTY_LOOP", found);
         if (found != NULL) {
-            PlaySoundCueIfElapsed(found, token, 0, 0, 1);
+            PlaySoundCueIfElapsed(found, token, 0, 0, true);
         }
     }
     return 1;
@@ -369,7 +369,7 @@ RVA(0x00018e40, 0x81)
 i32 CBootyState::LeaveState(GameStateId nextState) {
     SoundCue* found = LookupCue(m_world->m_soundRegistry->m_cues, "BOOTY_LOOP");
     if (found && found->m_sound->IsPlaying()) {
-        found->m_sound->RampVolumeTo(0, 0x1f4, 1);
+        found->m_sound->RampVolumeTo(0, 0x1f4, true);
         while (found->m_sound->IsPlaying()) {
             TickSoundVolumeRamps(m_world->m_soundRegistry);
         }
@@ -379,9 +379,9 @@ i32 CBootyState::LeaveState(GameStateId nextState) {
 
 RVA(0x00018f00, 0x4fb)
 i32 CBootyState::ShowSecretBonusMessage() {
-    if (m_secretBannerOnce != 0 && (g_gameReg->m_gameStats)->IsCampaignPerfect()) {
+    if (m_secretBannerOnce != false && (g_gameReg->m_gameStats)->IsCampaignPerfect()) {
         CString s;
-        if (!LoadTitlePage("multi", 0, 0, 0, 0, 1)) {
+        if (!LoadTitlePage("multi", 0, 0, 0, 0, true)) {
             return 0;
         }
         RECT rA, rB, rTitle;
@@ -408,7 +408,7 @@ i32 CBootyState::ShowSecretBonusMessage() {
             (count >= 0x64) ? SECRET_BONUS_TIER_THREE
                             : ((count >= 0x32) ? SECRET_BONUS_TIER_TWO : SECRET_BONUS_TIER_ONE);
 
-        if (!LoadTitlePage("multi", 0, 0, 0, 0, 1)) {
+        if (!LoadTitlePage("multi", 0, 0, 0, 0, true)) {
             return 0;
         }
         CString title;
@@ -681,7 +681,7 @@ void CBootyState::MoveLettersByDir() {
 }
 
 #define STAT(getter, field)                                                                        \
-    ((m_initOnce != 0 && g_gameReg->m_gameStats->m_currentAreaComplete != 0)                       \
+    ((m_initOnce != false && g_gameReg->m_gameStats->m_currentAreaComplete != false)               \
          ? g_gameReg->m_gameStats->getter()                                                        \
          : g_gameReg->m_gameStats->field)
 
@@ -1020,7 +1020,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
 // @early-stop
 RVA(0x0001a700, 0x6b6)
 i32 CBootyState::LevelMsgHudDriver() {
-    if (m_initGate != 0) {
+    if (m_initGate != false) {
 
         if (m_slot == BOOTY_EXPLOSION_COUNT) {
 
@@ -1058,11 +1058,11 @@ i32 CBootyState::LevelMsgHudDriver() {
                 if (shown == 0) {
 
                     SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-                    if (registry->m_silentMode == 0) {
+                    if (registry->m_silentMode == false) {
                         SoundCue* cue = NULL;
                         MapLookup(registry->m_cues, "GAME_EXPLOSION1", cue);
                         if (cue != NULL) {
-                            cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
+                            cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
                         }
                     }
                     shown = 1;
@@ -1127,18 +1127,18 @@ i32 CBootyState::LevelMsgHudDriver() {
             m_gokart[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
             m_slot++;
             SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-            if (registry->m_silentMode == 0) {
+            if (registry->m_silentMode == false) {
                 SoundCue* found = NULL;
                 MapLookup(registry->m_cues, "GAME_EXPLOSION1", found);
                 SoundCue* cue = found;
                 if (cue != NULL) {
-                    i32 soundEnabled = g_soundEnabled;
+                    b32 soundEnabled = g_soundEnabled;
                     i32 volumePercent = g_soundVolumePercent;
-                    if (soundEnabled != 0
+                    if (soundEnabled != false
                         && static_cast<u32>((g_soundCueTimeMs - cue->m_lastPlayTimeMs))
                                >= static_cast<u32>(cue->m_replayDelayMs)) {
                         cue->m_lastPlayTimeMs = g_soundCueTimeMs;
-                        cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
+                        cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
                     }
                 }
             }
@@ -1227,7 +1227,7 @@ void CBootyState::FormatHudText(CString* buf, BootyStatRow sel) {
 // @early-stop
 RVA(0x0001b450, 0x1ac)
 i32 CBootyState::BuildBootyWalkingGruntz() {
-    if (g_gameReg->m_gameStats->m_isCustomLevel != 0) {
+    if (g_gameReg->m_gameStats->m_isCustomLevel != false) {
         return 1;
     }
     if (g_gameReg->m_gameStats->m_levelNumber > IDX(QUESTLEVEL_LAST)) {
@@ -1286,7 +1286,7 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
 RVA(0x0001b690, 0x7e0)
 i32 CBootyState::UpdateBootyWalkingGruntz() {
     CGameStats* gameStats = g_gameReg->m_gameStats;
-    if (gameStats->m_isCustomLevel != 0) {
+    if (gameStats->m_isCustomLevel != false) {
         return 1;
     }
     i32 levelNumber = gameStats->m_levelNumber;
@@ -1297,7 +1297,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
         return 1;
     }
 
-    if (m_initGate != 0) {
+    if (m_initGate != false) {
 
         if (levelNumber < 0x24) {
             for (i32 i = 0; i < WARPLETTER_COUNT; i++) {
@@ -1351,21 +1351,21 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
         m_animSprites[0]->m_screenY = 0x1f4;
     }
 
-    if (m_soundStarted == 0 && m_animSprites[m_stepIndex]->m_screenY <= 0x195) {
+    if (m_soundStarted == false && m_animSprites[m_stepIndex]->m_screenY <= 0x195) {
         if ((g_gameReg->m_gameStats)->CurrentAreaHasWarpLetter(m_stepIndex) == 0) {
-            m_soundStarted = 1;
+            m_soundStarted = true;
             SoundCueRegistry* ss = g_gameReg->m_world->m_soundRegistry;
-            if (ss->m_silentMode == 0) {
+            if (ss->m_silentMode == false) {
                 SoundCue* res = NULL;
                 MapLookup(ss->m_cues, "GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D", res);
                 if (res != NULL) {
-                    res->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
+                    res->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
                 }
             }
         }
     }
 
-    if (m_soundStarted != 0) {
+    if (m_soundStarted != false) {
         SoundCueRegistry* ss = g_gameReg->m_world->m_soundRegistry;
         SoundCue* res = NULL;
         MapLookup(ss->m_cues, "GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D", res);
@@ -1379,7 +1379,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
         }
     }
 
-    if (m_walkStarted == 0 && m_animSprites[m_stepIndex]->m_screenY <= 0xdc) {
+    if (m_walkStarted == false && m_animSprites[m_stepIndex]->m_screenY <= 0xdc) {
         {
             CString letter;
             switch (static_cast<WarpLetter>(m_stepIndex)) {
@@ -1400,11 +1400,11 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
             if (sel != NULL) {
                 if ((g_gameReg->m_gameStats)->CurrentAreaHasWarpLetter(m_stepIndex) != 0) {
                     SoundCueRegistry* ss = g_gameReg->m_world->m_soundRegistry;
-                    if (ss->m_silentMode == 0) {
+                    if (ss->m_silentMode == false) {
                         SoundCue* res = NULL;
                         MapLookup(ss->m_cues, "GAME_FLAGRISE", res);
                         if (res != NULL) {
-                            PlaySoundCueIfElapsed(res, g_soundVolumePercent, 0, 0, 0);
+                            PlaySoundCueIfElapsed(res, g_soundVolumePercent, 0, 0, false);
                         }
                     }
                     m_animSprites[m_stepIndex]->SetImageSetByName("GRUNTZ_PICKUPS");
@@ -1416,7 +1416,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     m_visSprites[m_stepIndex]->m_stateFlags |= SPRITE_STATE_HIDDEN;
                     g_gameReg->m_voiceManager
                         ->PlayVoice(NULL, 0x3bf, GetRandomNumber() % 0x11, 1, -1, -1);
-                    m_walkStarted = 1;
+                    m_walkStarted = true;
                 } else {
                     m_animSprites[m_stepIndex]->SetImageSetByName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
                     m_animSprites[m_stepIndex]->SetAnimationByName("GRUNTZ_NORMALGRUNT_IDLE4", 0);
@@ -1435,13 +1435,13 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                         m_animSprites[m_stepIndex]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
                         m_animSprites[m_stepIndex]->m_screenX = g_idleSpriteIds[m_stepIndex];
                         m_animSprites[m_stepIndex]->m_screenY = 0x1f4;
-                        m_soundStarted = 0;
-                        m_walkStarted = 0;
+                        m_soundStarted = false;
+                        m_walkStarted = false;
                     }
                 }
             }
         }
-    } else if (m_walkStarted != 0) {
+    } else if (m_walkStarted != false) {
 
         CWwdSpriteObject* spr = m_animSprites[m_stepIndex];
         if (IsAniCursorComplete(&spr->m_animationCursor)) {
@@ -1454,8 +1454,8 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                 m_animSprites[m_stepIndex]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
                 m_animSprites[m_stepIndex]->m_screenX = g_idleSpriteIds[m_stepIndex];
                 m_animSprites[m_stepIndex]->m_screenY = 0x1f4;
-                m_walkStarted = 0;
-                m_soundStarted = 0;
+                m_walkStarted = false;
+                m_soundStarted = false;
             }
         }
     } else {
@@ -1494,11 +1494,11 @@ i32 CBootyState::CheckPerfectBonus() {
         CDDrawSurfaceMgr* host = g_gameReg->m_world;
         i32 item = g_gameReg->m_soundVolume;
         SoundCueRegistry* m28 = host->m_soundRegistry;
-        if (m28->m_silentMode == 0) {
+        if (m28->m_silentMode == false) {
             SoundCue* found = NULL;
             MapLookup(m28->m_cues, "BOOTY_PERFECT", found);
             if (found) {
-                PlaySoundCueIfElapsed(found, item, 0, 0, 0);
+                PlaySoundCueIfElapsed(found, item, 0, 0, false);
             }
         }
     }
@@ -1540,11 +1540,11 @@ i32 CBootyState::Render() {
         case BOOTYSEQ_WARP_CUE: {
             m_activation = BOOTYSEQ_GLITTER;
             SoundCueRegistry* set = g_gameReg->m_world->m_soundRegistry;
-            if (set->m_silentMode == 0) {
+            if (set->m_silentMode == false) {
                 SoundCue* cue = NULL;
                 MapLookup(set->m_cues, "BOOTY_WARP", cue);
                 if (cue != NULL) {
-                    cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
+                    cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
                 }
             }
         }
@@ -1556,22 +1556,22 @@ i32 CBootyState::Render() {
             }
             m_activation = BOOTYSEQ_LETTERS;
             SoundCueRegistry* set = g_gameReg->m_world->m_soundRegistry;
-            if (set->m_silentMode == 0) {
+            if (set->m_silentMode == false) {
                 SoundCue* cue = NULL;
                 MapLookup(set->m_cues, "BOOTY_BOOM", cue);
                 if (cue != NULL) {
-                    cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
+                    cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
                 }
             }
-            if (m_initOnce != 0 && g_gameReg->m_gameStats->m_currentAreaComplete != 0
-                && g_levelBias100 == 0) {
+            if (m_initOnce != false && g_gameReg->m_gameStats->m_currentAreaComplete != false
+                && g_levelBias100 == false) {
                 RECT rc;
                 rc.left = 0;
                 rc.top = 0x24;
                 rc.right = 0x1ea;
                 rc.bottom = 0x64;
                 CString s("World Completed!");
-                m_levelCompleteGate = 1;
+                m_levelCompleteGate = true;
                 DrawTextToOverlaySurface(m_world, &s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
             } else {
                 RECT rc;
@@ -1580,7 +1580,7 @@ i32 CBootyState::Render() {
                 rc.right = 0x1ea;
                 rc.bottom = 0x64;
                 CString s("Level Completed!");
-                m_levelCompleteGate = 1;
+                m_levelCompleteGate = true;
                 DrawTextToOverlaySurface(m_world, &s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
             }
         }
@@ -1603,20 +1603,20 @@ i32 CBootyState::Render() {
             LevelMsgHudDriver();
             UpdateBootyWalkingGruntz();
             CheckPerfectBonus();
-            if (m_secretHudHandled == 0 && g_gameReg->m_gameStats->m_isCustomLevel == 0) {
+            if (m_secretHudHandled == false && g_gameReg->m_gameStats->m_isCustomLevel == false) {
                 CString s;
                 RECT rc;
                 CGameStats* gameStats = g_gameReg->m_gameStats;
                 if (gameStats->m_levelNumber > IDX(QUESTLEVEL_LAST)) {
 
-                    if (gameStats->m_currentAreaComplete != 0) {
+                    if (gameStats->m_currentAreaComplete != false) {
                         s = "You have completed training! Now, grab the pebble from my hand.";
                     } else {
                         s = "You are closer to achieving mastery! Keep training!";
                     }
                     SetRect(&rc, 0x194, 0xaa, 0x263, SCREEN_H_PX);
                 } else {
-                    if (gameStats->m_currentAreaComplete != 0) {
+                    if (gameStats->m_currentAreaComplete != false) {
                         if (gameStats->CurrentAreaHasAllWarpLetters()) {
                             s.Format(
                                 "WARP letterz recovered! Prepare to receive your cheat codez!"
@@ -1624,18 +1624,18 @@ i32 CBootyState::Render() {
                         } else {
                             s = "WARP letterz not recovered! No cheatz for you.";
                         }
-                    } else if (gameStats->m_warpLetterFound != 0) {
+                    } else if (gameStats->m_warpLetterFound != false) {
                         s = "Keep finding those WARP letterz!";
                     } else {
                         s = "Collect all four WARP letterz to receive secret bonus!";
                     }
                     SetRect(&rc, 0x194, 0xe6, 0x263, SCREEN_H_PX);
                 }
-                m_secretGate = 1;
+                m_secretGate = true;
                 DrawTextToOverlaySurface(m_world, &s, &rc, 0x6e, 1, 0xff, 0xff, 0, 1);
-                m_secretHudHandled = 1;
-            } else if (g_gameReg->m_gameStats->m_isCustomLevel != 0) {
-                m_secretHudHandled = 1;
+                m_secretHudHandled = true;
+            } else if (g_gameReg->m_gameStats->m_isCustomLevel != false) {
+                m_secretHudHandled = true;
             }
             break;
         }
@@ -1676,7 +1676,7 @@ i32 CBootyState::InputVirtual() {
         return 0;
     }
     if (m_activation != BOOTYSEQ_DONE) {
-        if (LoadTitlePage("bg", 0, 0, 0, 0, 1) == 0) {
+        if (LoadTitlePage("bg", 0, 0, 0, 0, true) == 0) {
             return 0;
         }
         ShowLevelCompleteMessage();
@@ -1684,7 +1684,7 @@ i32 CBootyState::InputVirtual() {
         ShowSecretBonusMessage();
     }
     m_world->m_drawTarget->TransExit();
-    RetireScene(0x50, 0x3e8, 0, 1);
+    RetireScene(0x50, 0x3e8, 0, true);
     return 1;
 }
 
@@ -1708,7 +1708,7 @@ void CBootyState::ShowLevelCompleteMessage() {
     }
 
     if (m_levelCompleteGate) {
-        if (g_gameReg->m_gameStats->m_currentAreaComplete != 0) {
+        if (g_gameReg->m_gameStats->m_currentAreaComplete != false) {
             RECT r = {0, 0x24, 0x1ea, 0x64};
             CString s("World Completed!");
             DrawTextToOverlaySurface(m_world, &s, &r, 0x82, 1, 0xff, 0xff, 0, 1);
@@ -1719,26 +1719,26 @@ void CBootyState::ShowLevelCompleteMessage() {
         }
     }
 
-    if (g_gameReg->m_gameStats->m_isCustomLevel == 0 && m_secretGate != 0) {
+    if (g_gameReg->m_gameStats->m_isCustomLevel == false && m_secretGate != false) {
         CString s;
         RECT r;
         CGameStats* gameStats = g_gameReg->m_gameStats;
         if (gameStats->m_levelNumber > IDX(QUESTLEVEL_LAST)) {
-            if (gameStats->m_currentAreaComplete != 0) {
+            if (gameStats->m_currentAreaComplete != false) {
                 s = "You have completed training! Now, grab the pebble from my hand.";
             } else {
                 s = "You are closer to achieving mastery! Keep training!";
             }
             SetRect(&r, 0x194, 0xaa, 0x263, SCREEN_H_PX);
         } else {
-            if (gameStats->m_currentAreaComplete != 0) {
+            if (gameStats->m_currentAreaComplete != false) {
                 if ((gameStats)->CurrentAreaHasAllWarpLetters()) {
                     s.Format("WARP letterz recovered! Prepare to receive your cheat codez!");
                 } else {
                     s = "WARP letterz not recovered! No cheatz for you.";
                 }
             } else {
-                if (gameStats->m_warpLetterFound != 0) {
+                if (gameStats->m_warpLetterFound != false) {
                     s = "Keep finding those WARP letterz!";
                 } else {
                     s = "Collect all four WARP letterz to receive secret bonus!";
@@ -1768,22 +1768,22 @@ RVA(0x0001ce60, 0x460)
 i32 CBootyState::BuildBootyGruntIdleAnimation() {
     BootySeqPhase state = m_activation;
     if (state != BOOTYSEQ_PERFECT_BONUS && state != BOOTYSEQ_DONE) {
-        m_initGate = 1;
+        m_initGate = true;
         return 1;
     }
     CGameStats* gameStats = g_gameReg->m_gameStats;
-    if (gameStats->m_isCustomLevel != 0) {
+    if (gameStats->m_isCustomLevel != false) {
         PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
     } else {
-        if (m_initOnce == 0) {
-            if (gameStats->m_currentAreaComplete != 0) {
-                m_initOnce = 1;
+        if (m_initOnce == false) {
+            if (gameStats->m_currentAreaComplete != false) {
+                m_initOnce = true;
                 SoundCueRegistry* ss = g_gameReg->m_world->m_soundRegistry;
-                if (ss->m_silentMode == 0) {
+                if (ss->m_silentMode == false) {
                     SoundCue* res = NULL;
                     MapLookup(ss->m_cues, "GRUNTZ_WANDGRUNT_WANDZGRUNTI3A", res);
                     if (res != NULL) {
-                        res->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
+                        res->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
                     }
                 }
                 if (g_gameReg->m_gameStats->m_levelNumber < 0x24) {
@@ -1823,42 +1823,42 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
                     (*ap)->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
                     ap++;
                 }
-                if (!LoadTitlePage("bg", 0, 0, 0, 0, 1)) {
+                if (!LoadTitlePage("bg", 0, 0, 0, 0, true)) {
                     return 0;
                 }
                 ShowLevelCompleteMessage();
                 m_world->m_drawTarget->TransExit();
                 m_world->m_childGroup->RenderChildren(m_world->m_drawTarget->m_backPair);
                 m_world->m_drawTarget->TransTitle();
-                RetireScene(0x50, 0x3e8, 0, 1);
-                if (!LoadTitlePage("bg", 0, 0, 0, 0, 1)) {
+                RetireScene(0x50, 0x3e8, 0, true);
+                if (!LoadTitlePage("bg", 0, 0, 0, 0, true)) {
                     return 0;
                 }
                 ShowLevelCompleteMessage();
                 return 1;
             }
         }
-        if (m_initOnce != 0 && gameStats->m_currentAreaComplete != 0
+        if (m_initOnce != false && gameStats->m_currentAreaComplete != false
             && gameStats->m_levelNumber < IDX(QUESTLEVEL_LAST) && state == BOOTYSEQ_PERFECT_BONUS) {
             if ((gameStats)->CurrentAreaHasAllWarpLetters()) {
                 if (!ShowSecretBonusMessage()) {
                     return 0;
                 }
                 m_world->m_drawTarget->TransExit();
-                RetireScene(0x50, 0x3e8, 0, 1);
+                RetireScene(0x50, 0x3e8, 0, true);
                 m_activation = BOOTYSEQ_SECRET_PENDING;
                 return 1;
             }
         }
 
         if (m_activation == BOOTYSEQ_SECRET_PENDING && (g_gameReg->m_gameStats)->IsCampaignPerfect()
-            && m_secretBannerOnce == 0) {
-            m_secretBannerOnce = 1;
+            && m_secretBannerOnce == false) {
+            m_secretBannerOnce = true;
             if (!ShowSecretBonusMessage()) {
                 return 0;
             }
             m_world->m_drawTarget->TransExit();
-            RetireScene(0x50, 0x3e8, 0, 1);
+            RetireScene(0x50, 0x3e8, 0, true);
             return 1;
         }
 
@@ -1872,7 +1872,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
             PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_SHOW_HELP), 0);
         } else {
 
-            g_gameReg->PassClickToPlayState((nextLevelStats->m_levelNumber % 0x28) + 1, 0, 1);
+            g_gameReg->PassClickToPlayState((nextLevelStats->m_levelNumber % 0x28) + 1, false, 1);
         }
     }
     return 1;
@@ -1899,7 +1899,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
     if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
         return 0;
     }
-    m_mgr->RestoreVideoMode(0);
+    m_mgr->RestoreVideoMode(false);
     m_stateResources = m_resourceArchive->FindDirectoryByPath("STATEZ_BOOTY");
     if (!m_stateResources) {
         return 0;
@@ -1937,7 +1937,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
 
     m_reserved1b4 = 0;
     for (i32 i = 0; i < 4; i++) {
-        if (g_gameReg->m_players[i].m_joined == 0) {
+        if (g_gameReg->m_players[i].m_joined == false) {
             continue;
         }
         CShadeTable* tint =
@@ -2222,7 +2222,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         m_tabSprites[t]->m_screenY = g_bootyTabPos[t].m_y;
         {
 
-            i32 frame = (pl->m_joined != 0) ? 1 : 2;
+            i32 frame = (pl->m_joined != false) ? 1 : 2;
             CWwdSpriteObject* o = m_tabSprites[t];
             CDDrawWorker* set = o->m_imageSet;
             if (set != NULL) {
@@ -2351,21 +2351,21 @@ void CMultiBootyState::ReleaseResources() {
 
 RVA(0x0001e570, 0xb4)
 i32 CMultiBootyState::EnterState(GameStateId previousState) {
-    i32 ok = LoadTitlePage("multi", 0, 0, 0, 0, 1);
+    i32 ok = LoadTitlePage("multi", 0, 0, 0, 0, true);
     if (!ok) {
         return ok;
     }
     m_world->m_drawTarget->TransExit();
-    RetireScene(0x50, 0x3e8, 0, 1);
+    RetireScene(0x50, 0x3e8, 0, true);
 
     CDDrawSurfaceMgr* host = g_gameReg->m_world;
     i32 item = g_gameReg->m_soundVolume;
     SoundCueRegistry* m28 = host->m_soundRegistry;
-    if (m28->m_silentMode == 0) {
+    if (m28->m_silentMode == false) {
         SoundCue* found = NULL;
         MapLookup(m28->m_cues, "BOOTY_LOOP", found);
         if (found) {
-            PlaySoundCueIfElapsed(found, item, 0, 0, 1);
+            PlaySoundCueIfElapsed(found, item, 0, 0, true);
         }
     }
     return 1;
@@ -2375,7 +2375,7 @@ RVA(0x0001e660, 0x81)
 i32 CMultiBootyState::LeaveState(GameStateId nextState) {
     SoundCue* found = LookupCue(m_world->m_soundRegistry->m_cues, "BOOTY_LOOP");
     if (found && found->m_sound->IsPlaying()) {
-        found->m_sound->RampVolumeTo(0, 0x1f4, 1);
+        found->m_sound->RampVolumeTo(0, 0x1f4, true);
         while (found->m_sound->IsPlaying()) {
             TickSoundVolumeRamps(m_world->m_soundRegistry);
         }
@@ -2652,7 +2652,7 @@ i32 CMultiBootyState::QueryGruntSlots() {
     i32 i = 0;
     while (i < 4) {
         GruntzPlayer* p = &g_gameReg->m_players[i];
-        if (p->m_joined != 0 && p->m_clearedRound == 0) {
+        if (p->m_joined != false && p->m_clearedRound == false) {
             return p->m_playerIndex;
         }
         i++;
@@ -2679,7 +2679,7 @@ void CMultiBootyState::DrawBattleStats() {
     i32 c;
 
     for (i = 0; i < 4; i++) {
-        if (g_gameReg->m_players[i].m_joined != 0) {
+        if (g_gameReg->m_players[i].m_joined != false) {
             s.Format("%d", sumRun(&g_gameReg->m_gameStats->m_miscPickupsByPlayer[i * 4], 4));
             copyRect(&rc, &g_col1Rects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
@@ -2736,7 +2736,7 @@ void CMultiBootyState::DrawBattleStats() {
     }
 
     for (i = 0; i < 4; i++) {
-        if (g_gameReg->m_players[i].m_joined != 0) {
+        if (g_gameReg->m_players[i].m_joined != false) {
             i32 color;
             switch (g_gameReg->m_players[i].m_color) {
                 case TINT_ORANGE:
@@ -2884,13 +2884,13 @@ i32 CMultiBootyState::InputVirtual() {
         return 0;
     }
 
-    if (!LoadTitlePage("multi", 0, 0, 0, 0, 1)) {
+    if (!LoadTitlePage("multi", 0, 0, 0, 0, true)) {
         return 0;
     }
 
     DrawBattleStats();
     m_world->m_drawTarget->TransExit();
-    RetireScene(0x50, 0x3e8, 0, 1);
+    RetireScene(0x50, 0x3e8, 0, true);
     return 1;
 }
 
@@ -2935,7 +2935,7 @@ i32 SoundCue::PlayIfElapsed(
     i32 volumePercent,
     i32 panPercent,
     i32 frequencyOffsetPercent,
-    i32 looping
+    b32 looping
 ) {
     return PlaySoundCueIfElapsed(this, volumePercent, panPercent, frequencyOffsetPercent, looping);
 }

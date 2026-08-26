@@ -54,7 +54,7 @@ i32 CTriggerMgr::SetLevel(CDDrawSurfaceMgr* lvl) {
         return 0;
     }
     m_world = lvl;
-    m_armed = 0;
+    m_armed = false;
     m_pendingFx = NULL;
     m_countdownActive = true;
     return 1;
@@ -214,7 +214,7 @@ i32 CTriggerMgr::PlaceObject(
         }
 
         if (m_unitCountByPlayer[playerIndex] < game->m_players[playerIndex].m_maxGruntz) {
-            if (game->m_players[playerIndex].m_active != 0
+            if (game->m_players[playerIndex].m_active != false
                 || (playerIndex != g_curPlayer
                     && kindId == IDX(game->m_players[g_curPlayer].m_color))) {
                 kindId = IDX(game->m_players[playerIndex].m_color);
@@ -257,7 +257,7 @@ i32 CTriggerMgr::PlaceObject(
                 }
             } else {
                 if (onSpecialTile != 0) {
-                    logic->SetupTubeAnim(1);
+                    logic->SetupTubeAnim(true);
                 }
                 WireTileSwitchLogic(logic, x, y);
             }
@@ -580,11 +580,11 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 g_gameReg->m_gameStats->m_secretsFound++;
                 {
                     SoundCueRegistry* set = m_world->m_soundRegistry;
-                    if (set->m_silentMode == 0) {
+                    if (set->m_silentMode == false) {
                         SoundCue* found = NULL;
                         MapLookup(set->m_cues, "GAME_SECRETSWITCH", found);
                         if (found != NULL) {
-                            found->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
+                            found->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
                         }
                     }
                 }
@@ -966,10 +966,10 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
             obj->SwitchUp();
 
             POSITION pos = state->m_tileTriggers->m_idleLogics.GetHeadPosition();
-            i32 found = 0;
-            i32 stop = 0;
+            b32 found = false;
+            b32 stop = false;
             while (pos != NULL) {
-                if (stop != 0) {
+                if (stop != false) {
                     break;
                 }
                 CTileTriggerLogic* child = static_cast<CTileTriggerLogic*>(
@@ -977,12 +977,12 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
                 );
                 if (child->FindIndexByKey(obj->m_cellKey) != 0) {
                     if (child->Tick() == 0) {
-                        stop = 1;
+                        stop = true;
                     }
-                    found = 1;
+                    found = true;
                 }
             }
-            if (found == 0) {
+            if (found == false) {
                 CString msg;
                 msg.Format("No trigger logic found for switch at: x=%d, y=%d", sx, sy);
                 g_gameReg->EnterModalUI(msg);
@@ -1003,12 +1003,12 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
                 g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_APPLY_SWITCH_38));
                 return 0;
             }
-            i32 found = 0;
+            b32 found = false;
             if (obj->AreMultiSwitchLinksActive() != 0) {
                 POSITION pos = state->m_tileTriggers->m_idleLogics.GetHeadPosition();
-                i32 stop = 0;
+                b32 stop = false;
                 while (pos != NULL) {
-                    if (stop != 0) {
+                    if (stop != false) {
                         break;
                     }
                     CTileTriggerLogic* child = static_cast<CTileTriggerLogic*>(
@@ -1016,12 +1016,12 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
                     );
                     if (child->FindIndexByKey(obj->m_cellKey) != 0) {
                         if (child->Tick() == 0) {
-                            stop = 1;
+                            stop = true;
                         }
-                        found = 1;
+                        found = true;
                     }
                 }
-                if (found == 0) {
+                if (found == false) {
                     CString msg;
                     msg.Format("No trigger logic found for switch at: x=%d, y=%d", sx, sy);
                     g_gameReg->EnterModalUI(msg);
@@ -1070,7 +1070,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
 RVA(0x0006da60, 0x27)
 void CTriggerMgr::EnqueueGuardBegin(i32 playerIndex, i32 unitIndex) {
     g_gameReg->m_commandMgr->EnqueueSingle(
-        1,
+        true,
         playerIndex,
         unitIndex,
         static_cast<char>(IDX(PLAYERCMD_GUARD_BEGIN)),
@@ -1084,7 +1084,7 @@ void CTriggerMgr::EnqueueGuardBegin(i32 playerIndex, i32 unitIndex) {
 RVA(0x0006daa0, 0x27)
 void CTriggerMgr::EnqueueGuardEnd(i32 playerIndex, i32 unitIndex) {
     g_gameReg->m_commandMgr->EnqueueSingle(
-        1,
+        true,
         playerIndex,
         unitIndex,
         static_cast<char>(IDX(PLAYERCMD_GUARD_END)),
@@ -1156,7 +1156,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
     i32 hitUnitIndex;
     CGrunt* hit = CellHitTest(worldX, worldY, &hitPlayerIndex, &hitUnitIndex, TM_ALL_PLAYERS);
     if (hit != NULL) {
-        if (hit->m_playerIndex == cell->m_playerIndex && g_traitorMode == 0) {
+        if (hit->m_playerIndex == cell->m_playerIndex && g_traitorMode == false) {
             return 0;
         }
         return cell->CommitNeighbor(hitPlayerIndex, hitUnitIndex, bx, by) != 0;
@@ -1187,12 +1187,12 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
             POSITION pos = m_baseList.GetHeadPosition();
             while (pos != NULL) {
                 CGruntPuddle* cand = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
-                if (cand->m_pending == 0 && cand->m_tileX == argTileX
+                if (cand->m_pending == false && cand->m_tileX == argTileX
                     && cand->m_tileY == argTileY) {
                     cell->RunMoveConfig(argTileX, argTileY);
                     cand->m_value = cand->m_wwdObject->m_animationCursor.m_animation;
                     cand->m_wwdObject->SetAnimationByName("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE3", 0);
-                    cand->m_pending = 1;
+                    cand->m_pending = true;
                     return 1;
                 }
             }
@@ -1270,7 +1270,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
     }
 
     if (cellTileX == argTileX && cellTileY == argTileY && cell->m_vehiclePickupType != PICKUP_SCROLL
-        && g_traitorMode == 0) {
+        && g_traitorMode == false) {
         return 0;
     }
     by = (worldY & ~TILE_MASK_PX) + TILE_HALF_PX;
@@ -1408,13 +1408,13 @@ i32 CTriggerMgr::ClearCell(
     if (cell == NULL || cell->m_entranceCommitted == false) {
         return 0;
     }
-    if (cell->m_tileClaimed != 0) {
+    if (cell->m_tileClaimed != false) {
         cell->m_arrivalRerollLo = 0;
         cell->m_arrivalRerollWindowLo = 0;
         cell->m_arrivalRerollHi = 0;
         cell->m_arrivalRerollWindowHi = 0;
         cell->m_arrivalFlags &= 0xe7fbfbfd;
-        cell->m_tileClaimed = 0;
+        cell->m_tileClaimed = false;
         cell->m_arrivalState = AI_NONE;
         cell->SetEntrancePos(1, 1);
     }
@@ -1471,9 +1471,9 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
     CTimer* sub = world->m_levelTimer;
     sub->m_unusedStamp.m_v = 0;
     sub->m_accum.m_v = 0;
-    sub->m_running = 0;
+    sub->m_running = false;
     sub->m_currentMs = 0;
-    world->SetDefeatCountdown(0, 0xbb7);
+    world->SetDefeatCountdown(false, 0xbb7);
     world->m_statusBar->LockDestructButton(1);
     this->StartPlayerVictorySequence(g_curPlayer);
 }

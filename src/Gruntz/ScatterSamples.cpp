@@ -39,7 +39,7 @@ have_prime:
     i32 r;
     i32 step;
     for (i32 s = 1; s < prime - 1; s++) {
-        i32 ok = 1;
+        b32 ok = true;
         for (k = 0; k < prime; k++) {
             used[k] = 0;
         }
@@ -47,12 +47,12 @@ have_prime:
         for (k = 0; k < prime - 1; k++) {
             r = (s * r) % prime;
             if (used[r - 1] != 0) {
-                ok = 0;
+                ok = false;
                 break;
             }
             used[r - 1] = 1;
         }
-        if (ok != 0) {
+        if (ok != false) {
             step = s;
             break;
         }

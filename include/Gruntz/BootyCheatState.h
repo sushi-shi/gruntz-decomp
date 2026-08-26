@@ -3,5 +3,5 @@
 
 #include <rva.h>
 
-extern i32 g_bootyCheatBuilt;
+extern b32 g_bootyCheatBuilt;
 #endif // GRUNTZ_GRUNTZ_BOOTYCHEATSTATE_H

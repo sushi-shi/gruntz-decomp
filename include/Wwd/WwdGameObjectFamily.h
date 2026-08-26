@@ -93,7 +93,7 @@ public:
     i32 Serialize(CFileMemBase* ar);
     i32 WriteSnapshot(CFileMemBase* dst, LogicTypeId unused);
     i32 SerializeObjectState(CFileMemBase* ar);
-    i32 ResolveLinkedObject(i32 gate);
+    i32 ResolveLinkedObject(b32 gate);
 
     i32 EnsureHitLogic(CLogicRecord* logicTemplate);
     i32 EnsureAttackLogic(CLogicRecord* logicTemplate);

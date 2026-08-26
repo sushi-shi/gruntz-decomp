@@ -56,9 +56,9 @@ public:
     void FecEncode(const char* src, char* dst);
     void FecDecode(const char* src, char* dst, u16 len);
 
-    i32 m_openGate;
-    i32 m_readOpen;
-    i32 m_writeOpen;
+    b32 m_openGate;
+    b32 m_readOpen;
+    b32 m_writeOpen;
     FecArchiveHeader m_header;
     FecEntry m_entry;
 

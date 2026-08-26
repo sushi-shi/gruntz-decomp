@@ -19,7 +19,7 @@ class CLightFaderConfig : public CFaderConfig {
 public:
     CLightFaderConfig();
     class CDDPalette* m_palette;
-    i32 m_clearMode;
+    b32 m_clearMode;
     i32 m_spanCount;
     i32 m_centerX;
     i32 m_centerY;
@@ -29,7 +29,7 @@ public:
 class CSineFaderConfig : public CFaderConfig {
 public:
     CSineFaderConfig();
-    i32 m_clearToBlack;
+    b32 m_clearToBlack;
     i32 m_intensityPercent;
 };
 
@@ -54,7 +54,7 @@ public:
     CMeshFaderConfig();
     class CDDSurface* m_primeSource;
     class CDDSurface* m_flipTarget;
-    i32 m_reverseOrder;
+    b32 m_reverseOrder;
     i32 m_unusedOption;
     i32 m_cols;
     i32 m_rows;

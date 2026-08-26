@@ -134,7 +134,7 @@ struct CNetPlayerTablePacket {
 
 struct CNetCmdSlot {
     NetSlotState m_state;
-    i32 m_isDraining;
+    b32 m_isDraining;
 
     i32 m_drainSequence;
     GruntzPlayer* m_player;
@@ -227,7 +227,7 @@ struct CNetSession {
     CNetPlayerNode* m_localPlayer;
 
     i32 m_commandTick;
-    i32 m_batchBuilt;
+    b32 m_batchBuilt;
     i32 m_sequence;
     i32 m_commandPeriod;
     CNetCmdSlot m_slots[NET_SLOT_COUNT];
@@ -356,7 +356,7 @@ struct CNetChatPacket {
 
 extern CNetChatPacket g_netChatPacket;
 
-extern i32 g_playerRosterChanged;
+extern b32 g_playerRosterChanged;
 extern i32 g_playersInOptionsCount;
 
 struct CNetProviderNode;
@@ -434,7 +434,7 @@ public:
     void PopulatePlayerList(HWND hList);
 
     i32 InitializeFromProvider(CNetProviderNode* provider, GUID appGuid);
-    i32 EnumServiceProviders(i32 validateProviders);
+    i32 EnumServiceProviders(b32 validateProviders);
     CNetProviderNode* AddProvider(GUID* providerGuid, const char* providerName);
     CNetSessionListNode*
     CreateSession(i32 maxPlayers, char* sessionName, i32 applicationData, const char* password);
@@ -475,6 +475,6 @@ static BOOL __stdcall NetEnumProviderCallback(
     LPVOID context
 );
 
-extern i32 g_validateProviders;
+extern b32 g_validateProviders;
 
 #endif // NET_NETMGR_H

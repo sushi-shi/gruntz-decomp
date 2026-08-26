@@ -155,7 +155,7 @@ public:
     void ToggleStat(i32 idx);
     void SetLeftRezMachineAnimation(i32 initialFrame, SbiMachineState state, i32 frameDelayMs);
     void SetRightRezMachineAnimation(i32 initialFrame, SbiMachineState state, i32 frameDelayMs);
-    void CommitSlot(i32 active);
+    void CommitSlot(b32 active);
     void ClearHlCell(i32 group, StatusBarHighlightRow row);
     i32 SetHlCell(i32 row, i32 handle, i32 group);
     i32 SetHlCellByTier(i32 handle, i32 group);
@@ -170,7 +170,7 @@ public:
     i32 LoadMainStatusBarSprite();
     i32 UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y);
     i32 UpdateStatusBar(i32 deltaMs);
-    void BuildGameTabResumeButton(i32);
+    void BuildGameTabResumeButton(b32 show);
     void BuildGameTabPauseButton();
 
     i32 LoadGooCookingSprite(i32);
@@ -202,7 +202,7 @@ public:
     i32 SelectToolResource(StatusBarHighlightRow row);
     i32 SelectToyResource(StatusBarHighlightRow row);
     i32 SelectBrickResource(StatusBarHighlightRow row);
-    i32 SetTab(GameTabContent tab, i32 flag);
+    i32 SetTab(GameTabContent tab, b32 forceReload);
     i32 ClearTabSprites(StatusBarTab idx);
     i32 HitTest(i32 x, i32 y);
     i32 Serialize(CFileMemBase* s);
@@ -226,7 +226,7 @@ public:
     i32 OnPointerRelease(i32 keyFlags, i32 x, i32 y);
     i32 HandlePointerDrag(i32 keyFlags, i32 x, i32 y);
     CStatusBarItem* HitTestRects(i32 x, i32 y);
-    void ResetWidgets(i32 keepLists);
+    void ResetWidgets(b32 keepLists);
     void ClearTabGroup();
     void AddTabItem(i32 tab, CStatusBarItem* item) {
         m_tabLists[tab].AddTail(item);
@@ -309,8 +309,8 @@ public:
     CSBI_GruntMachine* m_machineDisplay;
     i32 m_reserved34c;
     i32 m_reserved350;
-    i32 m_chatBoxDisabled;
-    i32 m_tabsBuilt;
+    b32 m_chatBoxDisabled;
+    b32 m_tabsBuilt;
     i32 m_activeSlot;
     StatusBarHighlightRow m_pendingHlRow;
     CStatusBarItem* m_resourceMainBackground;
@@ -332,22 +332,22 @@ public:
     RECT m_fallingItemRect;
     RECT m_machineItemRect;
     i32 m_machineItemTargetX;
-    i32 m_rezActive;
+    b32 m_rezActive;
     i32 m_rezTick;
 
     CPtrArray m_rewardQueue;
     i32 m_reserved544;
 
-    i32 m_hlBusy;
+    b32 m_hlBusy;
     CWarpStoneFly* m_retabNotify;
-    i32 m_levelOverlayActive;
-    i32 m_quitConfirmationActive;
+    b32 m_levelOverlayActive;
+    b32 m_quitConfirmationActive;
     DestructWarningState m_destructWarningState;
     DestructButtonFrame m_destructButtonFrame;
     SbiClockPair m_destructWarningClock;
     CSBI_ImageSet* m_destructButtonImage;
-    i32 m_destructButtonLocked;
-    i32 m_observerTabAvailable;
+    b32 m_destructButtonLocked;
+    b32 m_observerTabAvailable;
     i32 m_battlezPct[38];
     i32 m_barFrameGate;
     SoundBuffer* m_destructWarningSound;
@@ -377,10 +377,10 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_world = NULL;
     m_redrawFrames = 0;
     m_activeTab = TAB_NONE;
-    m_chatBoxDisabled = 0;
-    m_tabsBuilt = 0;
-    m_levelOverlayActive = 0;
-    m_quitConfirmationActive = 0;
+    m_chatBoxDisabled = false;
+    m_tabsBuilt = false;
+    m_levelOverlayActive = false;
+    m_quitConfirmationActive = false;
     m_barFrameGate = 0x1e0;
     m_tabCycle = 0;
     memset(m_statFlags, 0, sizeof(m_statFlags));
@@ -403,9 +403,9 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_gruntWellTargetLevel = GRUNT_WELL_EMPTY;
     m_gruntWellLevel = GRUNT_WELL_EMPTY;
     m_reserved544 = 1;
-    m_hlBusy = 0;
+    m_hlBusy = false;
     m_retabNotify = NULL;
-    m_destructButtonLocked = 0;
+    m_destructButtonLocked = false;
 }
 
 #endif // GRUNTZ_SBI_RECTONLY_H

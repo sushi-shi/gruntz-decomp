@@ -191,13 +191,13 @@ void CAreaMgr::Reset() {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0009a0d0, 0x133)
-CSpawnEntry* CSpawnList::FindEntry(CString name, i32 useHash) {
+CSpawnEntry* CSpawnList::FindEntry(CString name, b32 useHash) {
     for (POSITION n = m_list.GetHeadPosition(); n != NULL;) {
         CSpawnEntry* e = NextEntry(n);
         if (e == NULL) {
             continue;
         }
-        if (useHash != 0) {
+        if (useHash != false) {
             CString nm = e->GetName();
             if (strncmp(nm, name, nm.GetLength()) == 0) {
                 return e;
@@ -240,7 +240,7 @@ void CSpawnList::ClearFlags() {
     do {
         CSpawnEntry* e = NextEntry(p);
         if (e != NULL) {
-            e->m_flag = 0;
+            e->m_flag = false;
         }
     } while (p != NULL);
 }
@@ -293,7 +293,7 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* surfaceMgr, CRezArchive
         if (strncmp(static_cast<LPCTSTR>(key), "OBJECTZ_", 8) == 0) {
             CSpawnEntry* spawnEntry = m_spawnEntryList.FindByName(key);
             if (spawnEntry != NULL) {
-                spawnEntry->m_flag = 1;
+                spawnEntry->m_flag = true;
             } else {
                 toRemove.AddTail(workerObject);
             }
@@ -316,9 +316,9 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* surfaceMgr, CRezArchive
         spawnEntry = spawnList->NextEntry(spawnList->m_cursor);
     }
     while (spawnEntry != NULL) {
-        if (spawnEntry->m_flag == 0) {
+        if (spawnEntry->m_flag == false) {
             char resourcePath[0x80];
-            g_resourceInstallActive = 1;
+            g_resourceInstallActive = true;
             sprintf(resourcePath, "IMAGEZ_%s", static_cast<LPCTSTR>(spawnEntry->GetTail()));
             CRezArchiveDir* resourceTree = src->FindDirectoryByPath(resourcePath);
             if (resourceTree == NULL) {
@@ -330,8 +330,8 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* surfaceMgr, CRezArchive
                 "_"
             );
             TRACE("%s\n", static_cast<LPCTSTR>(spawnEntry->GetName()));
-            g_resourceInstallActive = 0;
-            spawnEntry->m_flag = 1;
+            g_resourceInstallActive = false;
+            spawnEntry->m_flag = true;
         }
         if (spawnList->m_cursor == NULL) {
             spawnEntry = NULL;
@@ -377,7 +377,7 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* surfaceMgr, CRezArchive
         if (strncmp(static_cast<LPCTSTR>(key), "OBJECTZ_", 8) == 0) {
             CSpawnEntry* spawnEntry = m_spawnEntryList.FindByName(key);
             if (spawnEntry != NULL) {
-                spawnEntry->m_flag = 1;
+                spawnEntry->m_flag = true;
             } else {
                 toRemove.AddTail(cue);
             }
@@ -400,7 +400,7 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* surfaceMgr, CRezArchive
         spawnEntry = spawnList->NextEntry(spawnList->m_cursor);
     }
     while (spawnEntry != NULL) {
-        if (spawnEntry->m_flag == 0) {
+        if (spawnEntry->m_flag == false) {
             char resourcePath[0x80];
             sprintf(resourcePath, "SOUNDZ_%s", static_cast<LPCTSTR>(spawnEntry->GetTail()));
             CRezArchiveDir* resourceTree = src->FindDirectoryByPath(resourcePath);
@@ -413,7 +413,7 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* surfaceMgr, CRezArchive
                 "_"
             );
             TRACE("%s\n", static_cast<LPCTSTR>(spawnEntry->GetName()));
-            spawnEntry->m_flag = 1;
+            spawnEntry->m_flag = true;
         }
         if (spawnList->m_cursor == NULL) {
             spawnEntry = NULL;
@@ -445,7 +445,7 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* surfaceMgr, CRezArchiveD
         if (strncmp(static_cast<LPCTSTR>(key), "OBJECTZ_", 8) == 0) {
             CSpawnEntry* spawnEntry = m_spawnEntryList.FindByName(key);
             if (spawnEntry != NULL) {
-                spawnEntry->m_flag = 1;
+                spawnEntry->m_flag = true;
             } else {
                 toRemove.AddTail(animation);
             }
@@ -468,7 +468,7 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* surfaceMgr, CRezArchiveD
         spawnEntry = spawnList->NextEntry(spawnList->m_cursor);
     }
     while (spawnEntry != NULL) {
-        if (spawnEntry->m_flag == 0) {
+        if (spawnEntry->m_flag == false) {
             char resourcePath[0x80];
             sprintf(resourcePath, "ANIZ_%s", static_cast<LPCTSTR>(spawnEntry->GetTail()));
             CRezArchiveDir* resourceTree = src->FindDirectoryByPath(resourcePath);
@@ -481,7 +481,7 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* surfaceMgr, CRezArchiveD
                 "_"
             );
             TRACE("%s\n", static_cast<LPCTSTR>(spawnEntry->GetName()));
-            spawnEntry->m_flag = 1;
+            spawnEntry->m_flag = true;
         }
         if (spawnList->m_cursor == NULL) {
             spawnEntry = NULL;

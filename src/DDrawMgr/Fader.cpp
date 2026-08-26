@@ -27,7 +27,7 @@ static const float kMsToSeconds = 0.001f;
 RVA(0x0017e450, 0x23)
 CFader::CFader() {
     m_table = NULL;
-    m_ownsTable = 1;
+    m_ownsTable = true;
 }
 
 RVA_COMPGEN(0x0017e480, 0x1e, ??_GCFader@@UAEPAXI@Z)
@@ -152,8 +152,8 @@ CShapeFaderConfig::CShapeFaderConfig() {
     m_warpSourceSurface = NULL;
     m_halfWidth = 0x32;
     m_mode = FADER_SWEEP_FORWARD;
-    m_stripCopy = 1;
-    m_useLut = 0;
+    m_stripCopy = true;
+    m_useLut = false;
     m_shadeTable = NULL;
     m_shadeTablePath = "";
     m_palette = NULL;
@@ -165,7 +165,7 @@ CLightFaderConfig::CLightFaderConfig() {
     m_kind = FADER_CONFIG_LIGHT;
     m_sourceSurface = NULL;
     m_targetSurface = NULL;
-    m_clearMode = 1;
+    m_clearMode = true;
     m_spanCount = 0;
     m_centerY = SCREEN_HALF_H_PX;
     m_shadeTable = NULL;
@@ -176,7 +176,7 @@ CSineFaderConfig::CSineFaderConfig() {
     m_kind = FADER_CONFIG_SINE;
     m_targetSurface = NULL;
     m_sourceSurface = NULL;
-    m_clearToBlack = 1;
+    m_clearToBlack = true;
     m_intensityPercent = 0xf;
 }
 
@@ -206,7 +206,7 @@ CMeshFaderConfig::CMeshFaderConfig() {
     m_targetSurface = NULL;
     m_sourceSurface = NULL;
     m_flipTarget = NULL;
-    m_reverseOrder = 0;
+    m_reverseOrder = false;
     m_unusedOption = 0;
     m_cols = 0;
     m_rows = 0;
@@ -422,7 +422,7 @@ void CFaderMesh::RenderFrame(i32 frame) {
         m_dstSurface->BltEx(
             &dstRect,
             m_sourceSurface,
-            m_reverseOrder != 0 ? &srcRect : &boundRect,
+            m_reverseOrder != false ? &srcRect : &boundRect,
             DDBLT_WAIT,
             NULL
         );

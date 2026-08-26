@@ -257,9 +257,9 @@ public:
 
     i32 LoadVehicleGruntAnimations();
 
-    i32 SetupTubeAnim(i32 isWater);
+    i32 SetupTubeAnim(b32 isWater);
 
-    i32 LoadWingzGruntSprites(i32 enable);
+    i32 LoadWingzGruntSprites(b32 enable);
 
     i32 LoadGruntAbilityTuning(i32 forced);
 
@@ -336,7 +336,7 @@ public:
     b32 m_entranceStamped;
     b32 m_bombRunActive;
     b32 m_arrivalActive;
-    i32 m_coordToggle;
+    b32 m_coordToggle;
     b32 m_wingzEnabled;
     b32 m_freezeDelayDone;
     b32 m_freezeUnfrozen;
@@ -488,7 +488,7 @@ public:
     double m_movePosY;
     i32 m_reserved418;
     u32 m_timePerTile;
-    i32 m_tileClaimed;
+    b32 m_tileClaimed;
     SoundBuffer* m_vehicleLoopSound;
     SoundBuffer* m_powerupLoopSound;
     i32 m_reserved42c;
@@ -499,10 +499,10 @@ public:
     CString m_frameSetName;
     CString m_deathFrameSetName;
     i32 m_arrivalPhase;
-    i32 m_pendingTrigger;
+    b32 m_pendingTrigger;
     Coord m_pendingTriggerPx;
-    i32 m_lowStaminaCued;
-    i32 m_arrivalNotified;
+    b32 m_lowStaminaCued;
+    b32 m_arrivalNotified;
 
     CGruntCellRec m_cells[9];
 
@@ -785,14 +785,14 @@ public:
 
     void FaceTowardPixel(i32 x, i32 y);
     void SetFacing(i32 unused, GruntDirectionCell facing);
-    void OnStruck(i32 wasHit);
+    void OnStruck(b32 wasHit);
     i32 StepPostGuardBehavior();
     i32 RearmEntranceDrop();
 
     i32 HandleCombatContact(
         i32 otherPxX,
         i32 otherPxY,
-        i32 isAttacker,
+        b32 isAttacker,
         i32 otherPlayerIndex,
         i32 otherUnitIndex
     );
@@ -819,7 +819,7 @@ public:
         i32 extraPassableMask
     );
     i32 StepGruntMovement();
-    i32 TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spawnWormhole);
+    i32 TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spawnWormhole);
 
     i32 FinishActiveAction();
 

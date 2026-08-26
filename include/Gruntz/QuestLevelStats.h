@@ -4,8 +4,8 @@
 #include <Ints.h>
 
 struct QuestLevelStats {
-    i32 m_completed;
-    i32 m_isEasyMode;
+    b32 m_completed;
+    b32 m_isEasyMode;
     i32 m_elapsedTimeMs;
     i32 m_toyzCollected;
     i32 m_toolzCollected;
@@ -14,7 +14,7 @@ struct QuestLevelStats {
     i32 m_powerupzCollected;
     i32 m_secretsFound;
     i32 m_coinsCollected;
-    i32 m_warpLetterFound;
+    b32 m_warpLetterFound;
     i32 m_toyzAvailable;
     i32 m_toolzAvailable;
     i32 m_powerupzAvailable;

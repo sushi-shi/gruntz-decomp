@@ -69,7 +69,7 @@ i32 CGrunt::LoadPickupSprites(
             return 0;
         }
     }
-    if (m_coordToggle != 0) {
+    if (m_coordToggle != false) {
         return 0;
     }
     if (m_wingzEnabled != false) {

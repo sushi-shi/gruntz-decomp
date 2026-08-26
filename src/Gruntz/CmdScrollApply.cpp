@@ -34,7 +34,7 @@ void Cmd_ResetScroll() {
 }
 // @early-stop
 RVA(0x000ebd70, 0x366)
-void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, i32 snapFlag) {
+void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
     CDDrawWorkerHost* v = pm->m_world->m_level->m_mainPlane;
     i32 scrollX = v->m_scrollPixelX;
     i32 scrollY = v->m_scrollPixelY;

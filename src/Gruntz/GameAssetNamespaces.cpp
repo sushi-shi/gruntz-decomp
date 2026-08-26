@@ -50,9 +50,9 @@ i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
         if (img == NULL) {
             return 0;
         }
-        g_resourceInstallActive = 1;
+        g_resourceInstallActive = true;
         m_world->m_imageRegistry->InstallTree(img, "GAME", "_");
-        g_resourceInstallActive = 0;
+        g_resourceInstallActive = false;
     }
     if (m_world->m_soundRegistry->HasWithPrefix("GAME") == 0) {
         CRezArchiveDir* snd = m_resourceArchive->FindDirectoryByPath("GAME_SOUNDZ");
@@ -86,6 +86,6 @@ i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
             return 0;
         }
     }
-    m_ready = 1;
+    m_ready = true;
     return 1;
 }

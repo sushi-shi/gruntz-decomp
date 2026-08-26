@@ -46,13 +46,13 @@ public:
     i32 SumGruntzExitedForCurrentArea();
     i32 SumElapsedTimeForCurrentArea();
     i32 CurrentAreaHasWarpLetter(i32 letterIndex);
-    void UpdateLevelRecord(i32 levelNumber, i32 writeAvailableCounts);
+    void UpdateLevelRecord(i32 levelNumber, b32 writeAvailableCounts);
     i32 Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
 
     QuestLevelStats* m_levelRecords;
     i32 m_levelNumber;
-    i32 m_isCustomLevel;
-    i32 m_currentAreaComplete;
+    b32 m_isCustomLevel;
+    b32 m_currentAreaComplete;
 
     i32 m_elapsedTimeMs;
     i32 m_toyzCollected;
@@ -67,7 +67,7 @@ public:
     i32 m_powerupzAvailable;
     i32 m_secretsAvailable;
     i32 m_coinsAvailable;
-    i32 m_warpLetterFound;
+    b32 m_warpLetterFound;
     i32 m_gruntzByPlayer[BZ_PLAYER_COUNT];
     i32 m_killsByPlayer[BZ_PLAYER_COUNT][BZ_PLAYER_COUNT];
     i32 m_flagCapturesByPlayer[BZ_PLAYER_COUNT][BZ_PLAYER_COUNT];

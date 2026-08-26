@@ -15,13 +15,13 @@ i32 CFecFile::Init() {
     if (m_openGate) {
         return 0;
     }
-    m_readOpen = 0;
-    m_writeOpen = 0;
+    m_readOpen = false;
+    m_writeOpen = false;
     m_index.SetSize(0, -1);
     memset(&m_header, 0, sizeof(m_header));
     memset(&m_entry, 0, sizeof(m_entry));
     m_nextIndex = 0;
-    m_openGate = 1;
+    m_openGate = true;
     return 1;
 }
 
@@ -32,15 +32,15 @@ void CFecFile::Close() {
     }
     OnFail();
     m_index.SetSize(0, -1);
-    m_openGate = 0;
+    m_openGate = false;
 }
 
 RVA(0x0017b5a0, 0x48)
 i32 CFecFile::OnFail() {
     if (m_openGate && (m_readOpen || m_writeOpen)) {
         m_stream.Close();
-        m_readOpen = 0;
-        m_writeOpen = 0;
+        m_readOpen = false;
+        m_writeOpen = false;
         m_nextIndex = 0;
         return 1;
     }
@@ -53,16 +53,16 @@ i32 CFecFile::ReadArchive(const char* name) {
     if (name == NULL) {
         return 0;
     }
-    if (m_readOpen != 0) {
+    if (m_readOpen != false) {
         return 0;
     }
-    if (m_openGate == 0) {
+    if (m_openGate == false) {
         return 0;
     }
     if (m_stream.Open(name, 0, NULL) == false) {
         return 0;
     }
-    m_readOpen = 1;
+    m_readOpen = true;
 
     char magic[FEC_MAGIC_SIZE];
     if (m_stream.Read(magic, sizeof(magic)) != sizeof(magic)) {
@@ -137,9 +137,9 @@ i32 CFecFile::Lookup(u32 idx) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0017b8a0, 0xa2)
 i32 CFecFile::CreateArchive(const char* name) {
-    if (name != NULL && m_writeOpen == 0 && m_openGate != 0
+    if (name != NULL && m_writeOpen == false && m_openGate != false
         && m_stream.Open(name, CFile::modeCreate | CFile::modeReadWrite, NULL) != false) {
-        m_writeOpen = 1;
+        m_writeOpen = true;
 
         char magic[FEC_MAGIC_SIZE];
         magic[0] = 'F';
@@ -163,7 +163,7 @@ i32 CFecFile::CreateArchive(const char* name) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0017b950, 0x380)
 i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
-    if (m_writeOpen == 0 || m_openGate == 0) {
+    if (m_writeOpen == false || m_openGate == false) {
         return 0;
     }
 
@@ -217,8 +217,8 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
 
     memset(m_copyBuf, 0, sizeof(m_copyBuf));
     u32 copied = 0;
-    i32 done = 0;
-    while (done == 0) {
+    b32 done = false;
+    while (done == false) {
         if (pProgress != NULL) {
             MSG msg;
             if (PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE)) {
@@ -240,7 +240,7 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
         m_stream.Write(m_copyBuf, chunk);
         copied += chunk;
         if (copied == static_cast<u32>(m_entry.m_payloadLen)) {
-            done = 1;
+            done = true;
         }
     }
 
@@ -255,7 +255,7 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0017bcd0, 0x28b)
 i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
-    if (m_readOpen == 0 || m_openGate == 0) {
+    if (m_readOpen == false || m_openGate == false) {
         return 0;
     }
     if (m_header.m_versionMajor == 1 && m_header.m_versionMinor == 0) {
@@ -290,8 +290,8 @@ i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
             return 0;
         }
         u32 copied = 0;
-        i32 done = 0;
-        while (done == 0) {
+        b32 done = false;
+        while (done == false) {
             if (pProgress != NULL) {
                 MSG msg;
                 if (PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE)) {
@@ -312,7 +312,7 @@ i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
             file.Write(m_copyBuf, chunk);
             copied += chunk;
             if (copied == static_cast<u32>(m_entry.m_payloadLen)) {
-                done = 1;
+                done = true;
             }
         }
         file.Flush();

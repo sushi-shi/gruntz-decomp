@@ -39,7 +39,7 @@ public:
     i32 m_stepDirX;
     i32 m_stepDirY;
     Coord m_target;
-    i32 m_explodeLatch;
+    b32 m_explodeLatch;
     i32 m_fallLatch;
 
     i64 m_explodeStart;

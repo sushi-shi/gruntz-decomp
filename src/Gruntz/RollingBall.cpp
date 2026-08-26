@@ -92,13 +92,14 @@ CRollingBall::CRollingBall(CGameObject* obj)
         time = g_buteMgr.GetDwordDef("Hazardz", "RollingBallTimePerTile", 1000);
     }
     CGruntzMgr* reg = g_gameReg;
-    if (0 != reg->m_isEasyMode && reg->m_gameMode == GAMEMODE_QUESTZ && m_object->m_smarts != 1) {
+    if (false != reg->m_isEasyMode && reg->m_gameMode == GAMEMODE_QUESTZ
+        && m_object->m_smarts != 1) {
         time += 1000;
     }
     m_explodeWindow = static_cast<u32>(m_object->m_points);
     m_explodeStart = static_cast<u32>(g_frameTime);
     m_target.Set(snapX, snapY);
-    m_explodeLatch = 0;
+    m_explodeLatch = false;
     m_fallLatch = 0;
     m_moveSpeed = g_slimeSpeedNum / static_cast<double>(static_cast<u32>(time));
     CLEAR_OBJECT_AREA
@@ -129,7 +130,7 @@ i32 CRollingBall::Update() {
         anim->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
         return 0;
     }
-    if (m_explodeLatch != 0) {
+    if (m_explodeLatch != false) {
         return 0;
     }
 
@@ -145,7 +146,7 @@ i32 CRollingBall::Update() {
             if (static_cast<u32>(cx) < map->m_width && static_cast<u32>(cy) < map->m_height) {
                 map->m_rowInts[cy][cx * 7] &= 0xefffffff;
             }
-            m_explodeLatch = 1;
+            m_explodeLatch = true;
         }
     }
 
@@ -154,7 +155,7 @@ i32 CRollingBall::Update() {
         i32 sx = lg->m_screenX;
         i32 sy = lg->m_screenY;
         if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, sx, sy)) {
-            g_gameReg->m_triggerMgr->m_rollingballWanted = 1;
+            g_gameReg->m_triggerMgr->m_rollingballWanted = true;
         }
         CWwdSpriteObject* lg2 = m_object;
         i32 playerIndex;
@@ -266,7 +267,7 @@ i32 CRollingBall::Update() {
                     SetImageSetByName(fall);
                     SwitchAnimationByName(explosion, 0);
                     if (act != IDX(TILEKIND_DEATH)) {
-                        m_explodeLatch = 1;
+                        m_explodeLatch = true;
                         return 0;
                     }
                     DWORD perTile =
@@ -338,7 +339,7 @@ i32 CRollingBall::Update() {
                             m_target.m_y -= 0x10;
                             break;
                         default:
-                            m_explodeLatch = 1;
+                            m_explodeLatch = true;
                             return 0;
                     }
                     break;
@@ -367,7 +368,7 @@ i32 CRollingBall::Update() {
                             fx->SetAnimationByName("GAME_WATER", 0);
                         }
                     }
-                    m_explodeLatch = 1;
+                    m_explodeLatch = true;
                     return 0;
                 }
 
@@ -384,14 +385,14 @@ i32 CRollingBall::Update() {
                             SwitchAnimationByName("LEVEL_ROLLINGBALLSINKHOLE", 0);
                             break;
                     }
-                    m_explodeLatch = 1;
+                    m_explodeLatch = true;
                     return 0;
                 }
 
                 default: {
                     SetImageSetByName("LEVEL_ROLLINGBALL_EXPLOSION");
                     SwitchAnimationByName("LEVEL_ROLLINGBALLEXPLOSION", 0);
-                    m_explodeLatch = 1;
+                    m_explodeLatch = true;
                     return 0;
                 }
             }

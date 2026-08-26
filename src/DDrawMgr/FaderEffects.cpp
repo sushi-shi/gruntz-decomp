@@ -208,10 +208,10 @@ i32 CFaderRadial::ApplyInit(CFaderConfig* desc) {
 
         CDDPalette* pal = cfg->m_palette;
         m_table = m_cache.HueRampTable(pal->m_entries, 0x10, 0);
-        m_ownsTable = 1;
+        m_ownsTable = true;
     } else {
         m_table = cfg->m_shadeTable;
-        m_ownsTable = 0;
+        m_ownsTable = false;
     }
     if (m_table == NULL) {
         return 0;
@@ -318,7 +318,7 @@ i32 CFaderSine::ApplyInit(CFaderConfig* desc) {
         goto fail;
     }
     if (!m_restoreSurface) {
-        m_clearToBlack = 1;
+        m_clearToBlack = true;
     }
     m_width = m_targetSurface->m_width;
     w = m_targetSurface->m_height;
@@ -367,7 +367,7 @@ void CFaderSine::RenderFrame(i32 frame) {
                             * m_width / step
                         )
                         - m_appliedCounts[row];
-            if (m_clearToBlack != 0) {
+            if (m_clearToBlack != false) {
 
                 i32 n = 0;
                 double want = delta * step;
@@ -444,7 +444,7 @@ void CFaderSine::RenderFrame(i32 frame) {
     while (y < frame) {
         i32 done = m_fadeRowCount - y + m_height - 1;
         if (done >= 0 && done < m_height) {
-            if (m_clearToBlack != 0) {
+            if (m_clearToBlack != false) {
                 u8* clrRow = m_targetBits + m_targetSurface->m_pitch * done;
                 i32 span = bpp * m_width;
                 if (span > 0) {
@@ -514,7 +514,7 @@ i32 CFaderLight::ApplyInit(CFaderConfig* desc) {
     if (m_targetSurface == NULL) {
         return 0;
     }
-    if (m_restoreSurface == NULL && m_clearMode == 0) {
+    if (m_restoreSurface == NULL && m_clearMode == false) {
         return 0;
     }
     RECT rect;
@@ -530,7 +530,7 @@ i32 CFaderLight::ApplyInit(CFaderConfig* desc) {
     if (PtInRect(&rect, pt) == false) {
         return 0;
     }
-    if (m_clearMode != 0) {
+    if (m_clearMode != false) {
         i32 i = 0;
         if (m_height > 0) {
             do {
@@ -552,7 +552,7 @@ i32 CFaderLight::ApplyInit(CFaderConfig* desc) {
     if (m_spanCount > 0) {
         if (d->m_shadeTable == NULL) {
             m_table = m_cache.HueRampTable(m_palette->m_entries, m_spanCount, 0);
-            m_ownsTable = 1;
+            m_ownsTable = true;
             return 1;
         }
         m_table = d->m_shadeTable;
@@ -581,7 +581,7 @@ void CFaderLight::RenderFrame(i32 frame) {
     if (m_table != NULL) {
         lut = m_table->m_data;
     }
-    if (m_clearMode != 0) {
+    if (m_clearMode != false) {
         u8* ovlBits = NULL;
         if (m_overlay != NULL) {
             ovlBits = static_cast<u8*>(m_overlay->Lock(NULL));
@@ -997,7 +997,7 @@ i32 CFaderLight::GetFrameCount() {
 
 RVA(0x00181660, 0x40)
 void CFaderLight::BeginFade() {
-    if (m_spanCount > 0 && m_clearMode != 0) {
+    if (m_spanCount > 0 && m_clearMode != false) {
         CDDSurface* h =
             m_deviceManager->CreateOffscreenSurface(m_width, m_height, BPP_UNSET, 0, -1);
         m_overlay = h;
@@ -1135,17 +1135,17 @@ i32 CFaderShape::ApplyInit(CFaderConfig* desc) {
 
     m_useLut = pInit->m_useLut;
     if (m_targetSurface->m_bitDepth != BPP_PALETTED_8) {
-        m_useLut = 0;
+        m_useLut = false;
     }
 
-    if (m_useLut != 0) {
+    if (m_useLut != false) {
         if (pInit->m_shadeTable) {
-            m_ownsTable = 0;
+            m_ownsTable = false;
             m_table = pInit->m_shadeTable;
         } else if (_access(pInit->m_shadeTablePath, 0) == 0) {
             m_table = m_cache.AddFromArray(pInit->m_shadeTablePath);
             if (m_table == NULL) {
-                m_useLut = 0;
+                m_useLut = false;
             }
         } else {
             CDDPalette* pal = pInit->m_palette;
@@ -1199,10 +1199,10 @@ void CFaderShape::RenderFrame(i32 frame) {
     i32 stride = m_halfWidth * 2;
     i32 arc = static_cast<i32>(static_cast<double>(m_halfWidth) * 3.14159);
     u32 seam = 0;
-    if (m_mode == FADER_SPLIT_FROM_CENTER && m_stripCopy != 0) {
+    if (m_mode == FADER_SPLIT_FROM_CENTER && m_stripCopy != false) {
         seam = m_targetWidth / 2;
     }
-    if (m_stripCopy == 0 && frame == 0) {
+    if (m_stripCopy == false && frame == 0) {
         i32 targetPitch = m_targetSurface->m_pitch;
         i32 sourcePitch = m_sourceSurface->m_pitch;
         i32 n = (targetPitch < sourcePitch) ? targetPitch : sourcePitch;
@@ -1218,7 +1218,7 @@ void CFaderShape::RenderFrame(i32 frame) {
             row++;
         }
     }
-    if (m_stripCopy != 0) {
+    if (m_stripCopy != false) {
         if (seam + frame <= static_cast<u32>(m_targetWidth - arc - m_halfWidth)) {
             switch (m_mode) {
                 case FADER_SWEEP_FORWARD:
@@ -1256,7 +1256,7 @@ void CFaderShape::RenderFrame(i32 frame) {
             }
         }
     }
-    if (m_stripCopy == 0) {
+    if (m_stripCopy == false) {
         if (seam + frame > static_cast<u32>(arc - m_halfWidth)) {
             switch (m_mode) {
                 case FADER_SWEEP_FORWARD:
@@ -1310,22 +1310,22 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
     i32 bpp = m_targetSurface->m_bytesPerPixel;
 
     i32 colBase;
-    if ((m_mode == FADER_SWEEP_FORWARD && m_stripCopy != 0)
-        || (m_mode == FADER_SWEEP_REVERSE && m_stripCopy == 0)) {
+    if ((m_mode == FADER_SWEEP_FORWARD && m_stripCopy != false)
+        || (m_mode == FADER_SWEEP_REVERSE && m_stripCopy == false)) {
         u32 arcSpan = arc - m_halfWidth;
         i32 tail = m_targetWidth - col - stride;
         colBase = stride - static_cast<i32>(static_cast<double>(stride) / arcSpan * tail);
     } else {
         colBase = col;
     }
-    if ((m_mode == FADER_SWEEP_FORWARD && m_stripCopy == 0)
-        || (m_mode == FADER_SWEEP_REVERSE && m_stripCopy != 0)) {
+    if ((m_mode == FADER_SWEEP_FORWARD && m_stripCopy == false)
+        || (m_mode == FADER_SWEEP_REVERSE && m_stripCopy != false)) {
         u32 arcSpan = arc - m_halfWidth;
         colBase = static_cast<i32>(static_cast<double>(stride) / arcSpan * col);
     }
 
-    if ((m_mode == FADER_SWEEP_FORWARD && m_stripCopy != 0)
-        || (m_mode == FADER_SWEEP_REVERSE && m_stripCopy == 0)) {
+    if ((m_mode == FADER_SWEEP_FORWARD && m_stripCopy != false)
+        || (m_mode == FADER_SWEEP_REVERSE && m_stripCopy == false)) {
         i32 row = 0;
         if (m_targetHeight > 0) {
             i32 base = bpp * col;
@@ -1333,7 +1333,7 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                 u8* dstLine = m_targetRowOffsets[row] + base + m_dstBase;
                 u8* gsrc = m_warpRowOffsets[row] + base + m_gatherBase;
                 u8* ssrc = m_sourceRowOffsets[row] + base + m_straightBase;
-                if (m_useLut != 0) {
+                if (m_useLut != false) {
                     u8* lut = m_table->m_data;
                     i32 i = 0;
                     if (colBase > 0) {
@@ -1404,7 +1404,7 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                 while (n-- > 0) {
                     *dp++ = *sp++;
                 }
-                if (m_stripCopy != 0) {
+                if (m_stripCopy != false) {
                     i32 c2 = bpp * stripWidth;
                     dstLine -= c2;
                     u8* s2 = (col - stripWidth) * bpp + m_sourceRowOffsets[row] + m_straightBase;
@@ -1419,8 +1419,8 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                 row++;
             } while (row < m_targetHeight);
         }
-    } else if (((m_mode == FADER_SWEEP_FORWARD && m_stripCopy == 0)
-                || (m_mode == FADER_SWEEP_REVERSE && m_stripCopy != 0))
+    } else if (((m_mode == FADER_SWEEP_FORWARD && m_stripCopy == false)
+                || (m_mode == FADER_SWEEP_REVERSE && m_stripCopy != false))
                && m_targetHeight > 0) {
         i32 row = 0;
         i32 base = bpp * col;
@@ -1428,7 +1428,7 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
             u8* dstLine = m_targetRowOffsets[row] + base + m_dstBase;
             u8* gsrc = m_warpRowOffsets[row] + base + m_gatherBase;
             u8* ssrc = m_sourceRowOffsets[row] + base + m_straightBase;
-            if (m_useLut != 0) {
+            if (m_useLut != false) {
                 u8* lut = m_table->m_data;
                 i32 i = 0;
                 if (colBase > 0) {
@@ -1501,7 +1501,7 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
             while (n-- > 0) {
                 *dp++ = *sp++;
             }
-            if (m_stripCopy != 0) {
+            if (m_stripCopy != false) {
                 i32 c2 = bpp * stripWidth;
                 u8* s2 = (col + stride) * bpp + m_sourceRowOffsets[row] + m_straightBase;
                 dstLine += cnt;

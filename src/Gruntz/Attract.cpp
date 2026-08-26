@@ -35,10 +35,10 @@
 #include <string.h>
 
 DATA(0x0024e360)
-i32 g_skipNextScreenEffect = 0;
+b32 g_skipNextScreenEffect = false;
 
 DATA(0x0024e35c)
-i32 g_playActive;
+b32 g_playActive;
 
 // @early-stop
 RVA(0x000fa1f0, 0xc6)
@@ -48,7 +48,7 @@ i32 CState::LoadTitlePage(
     i32 unused2,
     i32 unused3,
     i32 unused4,
-    i32 useOverlay
+    b32 useOverlay
 ) {
     static_cast<void>(unused1);
     static_cast<void>(unused2);
@@ -72,12 +72,12 @@ i32 CState::LoadTitlePage(
     }
 
     DDrawPageKind mode = DDRAW_PAGE_BACK;
-    if (useOverlay != 0) {
+    if (useOverlay != false) {
         mode = DDRAW_PAGE_OVERLAY;
     }
 
     if (menuRoot()->m_drawTarget->LoadPageImage(page, mode) == 0) {
-        if (useOverlay != 0) {
+        if (useOverlay != false) {
             if (menuRoot()->m_drawTarget->LoadPageImage(page, DDRAW_PAGE_BACK) == 0) {
                 return 0;
             }
@@ -130,7 +130,7 @@ i32 CState::LoadAndPresentTitlePage(
     if (!m_stateResources) {
         return 0;
     }
-    if (LoadTitlePage(titleName, unused1, unused2, unused3, unused4, 0) == 0) {
+    if (LoadTitlePage(titleName, unused1, unused2, unused3, unused4, false) == 0) {
         return 0;
     }
     return PresentTitlePage(titleName, unused1, unused2, unused3, unused4) != 0;
@@ -153,7 +153,7 @@ i32 CState::FadeLightToBlack(i32 centerX, i32 centerY, i32 durationMs, i32 leadM
     }
 
     CLightFaderConfig t;
-    t.m_clearMode = 1;
+    t.m_clearMode = true;
     t.m_centerX = centerX;
     t.m_centerY = centerY;
     t.m_targetSurface = surface;
@@ -164,7 +164,7 @@ i32 CState::FadeLightToBlack(i32 centerX, i32 centerY, i32 durationMs, i32 leadM
     }
 
     m_mgr->PauseMusicIfEnabled();
-    if (g_disableFades != 0) {
+    if (g_disableFades != false) {
         ActiveWait(durationMs);
         m_world->m_drawTarget->m_frontSurface->m_surface->Fill(0);
     } else {
@@ -198,7 +198,7 @@ i32 CState::FadeLightToBackBuffer(i32 centerX, i32 centerY, i32 durationMs, i32 
 
     CLightFaderConfig t;
     t.m_centerX = centerX;
-    t.m_clearMode = 0;
+    t.m_clearMode = false;
     t.m_centerY = centerY;
     t.m_targetSurface = targetSurface;
     t.m_sourceSurface = sourceSurface;
@@ -208,7 +208,7 @@ i32 CState::FadeLightToBackBuffer(i32 centerX, i32 centerY, i32 durationMs, i32 
     }
 
     m_mgr->PauseMusicIfEnabled();
-    if (g_disableFades != 0) {
+    if (g_disableFades != false) {
         ActiveWait(durationMs);
         m_world->m_drawTarget->m_frontSurface->m_surface->Blt(sourceSurface);
     } else {
@@ -262,7 +262,7 @@ i32 CState::FadeSineToBackBuffer(i32 intensityPercent, i32 durationMs, i32 leadM
     }
 
     CSineFaderConfig t;
-    t.m_clearToBlack = 0;
+    t.m_clearToBlack = false;
     t.m_intensityPercent = intensityPercent;
     t.m_targetSurface = targetSurface;
     t.m_sourceSurface = sourceSurface;
@@ -272,7 +272,7 @@ i32 CState::FadeSineToBackBuffer(i32 intensityPercent, i32 durationMs, i32 leadM
     }
 
     m_mgr->PauseMusicIfEnabled();
-    if (g_disableFades != 0) {
+    if (g_disableFades != false) {
         ActiveWait(durationMs);
         m_world->m_drawTarget->m_frontSurface->m_surface->Blt(sourceSurface);
     } else {
@@ -285,7 +285,7 @@ i32 CState::FadeSineToBackBuffer(i32 intensityPercent, i32 durationMs, i32 leadM
 
 // @early-stop
 RVA(0x000fa8f0, 0x118)
-i32 CState::RetireScene(i32 pct, i32 dur, i32 lead, i32 useOverlay) {
+i32 CState::RetireScene(i32 pct, i32 dur, i32 lead, b32 useOverlay) {
     CFaderMgr* mgr = m_faderMgr;
     if (mgr == NULL) {
         return 0;
@@ -298,7 +298,7 @@ i32 CState::RetireScene(i32 pct, i32 dur, i32 lead, i32 useOverlay) {
         return 0;
     }
     CDDrawSurfacePair* sourcePair;
-    if (useOverlay != 0 && m_world->m_drawTarget->HasOverlay() != 0) {
+    if (useOverlay != false && m_world->m_drawTarget->HasOverlay() != 0) {
         sourcePair = m_world->m_drawTarget->m_overlayPair;
     } else {
         sourcePair = m_world->m_drawTarget->m_backPair;
@@ -309,7 +309,7 @@ i32 CState::RetireScene(i32 pct, i32 dur, i32 lead, i32 useOverlay) {
     }
 
     CSineFaderConfig t;
-    t.m_clearToBlack = 0;
+    t.m_clearToBlack = false;
     t.m_intensityPercent = pct;
     t.m_targetSurface = targetSurface;
     t.m_sourceSurface = sourceSurface;
@@ -318,7 +318,7 @@ i32 CState::RetireScene(i32 pct, i32 dur, i32 lead, i32 useOverlay) {
         return 0;
     }
 
-    if (g_disableFades != 0) {
+    if (g_disableFades != false) {
         ActiveWait(dur);
         m_world->m_drawTarget->m_frontSurface->m_surface->Blt(sourceSurface);
     } else {
@@ -345,7 +345,7 @@ i32 CState::FadeSineToBlack(i32 intensityPercent, i32 durationMs, i32 leadMs) {
     }
 
     CSineFaderConfig t;
-    t.m_clearToBlack = 1;
+    t.m_clearToBlack = true;
     t.m_intensityPercent = intensityPercent;
     t.m_targetSurface = surface;
     t.m_sourceSurface = NULL;
@@ -355,7 +355,7 @@ i32 CState::FadeSineToBlack(i32 intensityPercent, i32 durationMs, i32 leadMs) {
     }
 
     m_mgr->PauseMusicIfEnabled();
-    if (g_disableFades != 0) {
+    if (g_disableFades != false) {
         ActiveWait(durationMs);
         m_world->m_drawTarget->m_frontSurface->m_surface->Fill(0);
     } else {
@@ -421,7 +421,7 @@ i32 CState::InputVirtual() {
     if (m_world->m_drawTarget->PagesReady() == 0) {
         return 0;
     }
-    if (g_playActive == 0) {
+    if (g_playActive == false) {
         CString text;
         RECT rect;
         text.LoadString(0x81a9);
@@ -434,7 +434,7 @@ i32 CState::InputVirtual() {
     }
     while (ShowCursor(false) >= 0)
         ;
-    g_playActive = 0;
+    g_playActive = false;
     CRezArchiveDir* path = m_resourceArchive->FindDirectoryByPath("GAME_IMAGEZ");
     if (path == NULL) {
         return 0;
@@ -450,8 +450,8 @@ i32 CState::InputVirtual() {
 
 RVA(0x000faec0, 0x67)
 void CState::Present(i32 pct) {
-    if (g_skipNextScreenEffect != 0) {
-        g_skipNextScreenEffect = 0;
+    if (g_skipNextScreenEffect != false) {
+        g_skipNextScreenEffect = false;
         return;
     }
     m_world->m_drawTarget->BlitPage(m_world->m_drawTarget->m_backPair);
@@ -464,9 +464,9 @@ void CState::Present(i32 pct) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000faf50, 0x31)
 i32 CState::ShadeScreen(i32 pct) {
-    i32 v = g_skipNextScreenEffect;
-    if (v != 0) {
-        g_skipNextScreenEffect = 0;
+    b32 v = g_skipNextScreenEffect;
+    if (v != false) {
+        g_skipNextScreenEffect = false;
         return v;
     }
     return m_world->m_drawTarget->m_backPair->m_surface->ShadeRect(pct, NULL);

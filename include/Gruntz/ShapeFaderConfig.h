@@ -15,8 +15,8 @@ public:
     class CDDSurface* m_warpSourceSurface;
     i32 m_halfWidth;
     GZ_ENUM_STORAGE(FaderMode, u32) m_mode;
-    i32 m_stripCopy;
-    i32 m_useLut;
+    b32 m_stripCopy;
+    b32 m_useLut;
     class CShadeTable* m_shadeTable;
     CString m_shadeTablePath;
     class CDDPalette* m_palette;

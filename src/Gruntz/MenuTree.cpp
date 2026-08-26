@@ -296,15 +296,15 @@ static __inline i32 PlayMenuCue(SoundCueRegistry* soundRegistry, const char* cue
         MapLookup(soundRegistry->m_cues, cueKey, foundCue);
         SoundCue* cue = foundCue;
         if (cue != NULL) {
-            i32 soundEnabled = g_soundEnabled;
+            b32 soundEnabled = g_soundEnabled;
             i32 volumePercent = g_soundVolumePercent;
-            if (soundEnabled != 0) {
+            if (soundEnabled != false) {
                 i32 cueTimeMs = g_soundCueTimeMs;
                 u32 elapsedMs =
                     static_cast<u32>(cueTimeMs) - static_cast<u32>(cue->m_lastPlayTimeMs);
                 if (elapsedMs >= static_cast<u32>(cue->m_replayDelayMs)) {
                     cue->m_lastPlayTimeMs = cueTimeMs;
-                    return cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
+                    return cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
                 }
             }
         }

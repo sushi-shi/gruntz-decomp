@@ -112,7 +112,7 @@ class CImage;
 #define CLEAR_TAB_HINT(sndHost)                                                                    \
     do {                                                                                           \
         SoundCueRegistry* _s = (sndHost);                                                          \
-        if (_s->m_silentMode == 0) {                                                               \
+        if (_s->m_silentMode == false) {                                                           \
             SoundCue* found = NULL;                                                                \
             MapLookup(_s->m_cues, "GAME_TABHIGHLIGHT1", found);                                    \
             if (found != NULL)                                                                     \
@@ -136,7 +136,7 @@ i32 CPlay::LoadActionTileSprites(i32 force) {
         ->RemoveWithPrefix("ACTION", "");
     (static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
         ->RemoveWithPrefix("BACK", "");
-    g_resourceInstallActive = 0;
+    g_resourceInstallActive = false;
 
     CRezArchiveDir* tiles = (self->m_levelResources)->FindDirectoryByPath("TILEZ");
     if (!tiles) {
@@ -203,14 +203,14 @@ i32 CPlay::LoadLevelImages(i32 force) {
 
     (static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
         ->RemoveWithPrefix("LEVEL", "_");
-    g_resourceInstallActive = 0;
+    g_resourceInstallActive = false;
 
     CRezArchiveDir* images = (self->m_levelResources)->FindDirectoryByPath("IMAGEZ");
     if (!images) {
         return 0;
     }
     self->m_world->m_imageRegistry->InstallTree(images, "LEVEL", "_");
-    g_resourceInstallActive = 0;
+    g_resourceInstallActive = false;
     return 1;
 }
 
@@ -225,13 +225,13 @@ i32 CPlay::LoadGameImages(i32 force) {
         return 1;
     }
 
-    g_resourceInstallActive = 1;
+    g_resourceInstallActive = true;
     CRezArchiveDir* images = (self->m_gameResources)->FindDirectoryByPath("IMAGEZ");
     if (!images) {
         return 0;
     }
     self->m_world->m_imageRegistry->InstallTree(images, "GAME", "_");
-    g_resourceInstallActive = 0;
+    g_resourceInstallActive = false;
     return 1;
 }
 
@@ -339,7 +339,7 @@ RVA(0x000dbc80, 0x309)
 i32 CPlay::BuildWorldLevelPath(i32 unused) {
     m_world->m_level->ReleaseChildren();
     if (m_mgr->m_strWorldFile.GetLength() != 0) {
-        if (m_mgr->m_isBuiltInBattlezLevel != 0) {
+        if (m_mgr->m_isBuiltInBattlezLevel != false) {
             CString key = "BATTLEZ_" + m_mgr->GetWorldFileName();
             CRezArchiveEntry* node = m_gameResources->FindEntryByPath(key, REZ_TAG_WWD);
             if (node == NULL) {
@@ -348,7 +348,7 @@ i32 CPlay::BuildWorldLevelPath(i32 unused) {
             if (m_world->m_level->LoadFromSource(node) == 0) {
                 return 0;
             }
-        } else if (m_mgr->m_isBuiltInMultiplayerLevel != 0) {
+        } else if (m_mgr->m_isBuiltInMultiplayerLevel != false) {
             CString key = "MULTI_" + m_mgr->GetWorldFileName();
             CRezArchiveEntry* node = m_gameResources->FindEntryByPath(key, REZ_TAG_WWD);
             if (node == NULL) {
@@ -365,7 +365,7 @@ i32 CPlay::BuildWorldLevelPath(i32 unused) {
     } else {
         CString key;
         i32 sel = m_levelIndex;
-        if (g_levelBias100 != 0) {
+        if (g_levelBias100 != false) {
             sel += 0x64;
         }
         if (sel > 0x24 && sel <= 0x28) {
@@ -666,14 +666,14 @@ i32 CState::BuildAssetNamespacePrefixes(
                 CopyRect(&r2, &r);
                 DrawTextToFrontSurface(g_gameReg->m_world, &cs, &r2, 0x82, 1, 0xff, 0xff, 0, 1);
             }
-            g_resourceInstallActive = 1;
+            g_resourceInstallActive = true;
             CRezArchiveDir* tree = m_gruntResources->FindDirectoryByPath("IMAGEZ_" + name);
             if (tree == NULL) {
                 result = 0;
                 goto done;
             }
             m_world->m_imageRegistry->InstallTree(tree, "GRUNTZ_" + name, "_");
-            g_resourceInstallActive = 0;
+            g_resourceInstallActive = false;
             if (finishGate != NULL) {
                 finishGate->SendLobbyKeepAlive();
             }
@@ -786,7 +786,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
     if (!self->m_world) {
         return 0;
     }
-    g_resourceInstallActive = 1;
+    g_resourceInstallActive = true;
     if (!(static_cast<CDDrawWorkerRegistry*>(self->m_world->m_imageRegistry))
              ->HasWithPrefix("GRUNTZ_NORMALGRUNT")) {
         CRezArchiveDir* s = (self->m_gruntResources)->FindDirectoryByPath("IMAGEZ_NORMALGRUNT");
@@ -864,7 +864,7 @@ i32 CPlay::BuildSpriteImageKeyTable(CMulti* notify) {
             notify->SendLobbyKeepAlive();
         }
     }
-    g_resourceInstallActive = 0;
+    g_resourceInstallActive = false;
     return 1;
 }
 

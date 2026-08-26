@@ -64,7 +64,7 @@ i32 CExitTrigger::AdvanceAnim() {
         CTriggerMgr::HitSpanArg span;
         span.m_span = &trig->m_area;
         g_gameReg->m_triggerMgr->HitTestApply(trig->m_screenX, trig->m_screenY, span);
-    } else if (m_resolved != 0) {
+    } else if (m_resolved != false) {
         i32 hitPlayerIndex;
         i32 hitUnitIndex;
         CWwdSpriteObject* obj = m_object;
@@ -81,7 +81,7 @@ i32 CExitTrigger::AdvanceAnim() {
             if (hitPlayerIndex == owningPlayer) {
                 goto done;
             }
-            m_resolved = 0;
+            m_resolved = false;
             GruntzPlayer* loser = &g_gameReg->m_players[owningPlayer];
             GruntzPlayer* winner = &g_gameReg->m_players[hitPlayerIndex];
             if (loser != NULL) {
@@ -93,7 +93,7 @@ i32 CExitTrigger::AdvanceAnim() {
                         FONT_ITEM_FLAGS_NONE,
                         0x11
                 );
-                loser->m_clearedRound = 1;
+                loser->m_clearedRound = true;
             }
             g_gameReg->m_gameStats->RecordFlagCapture(hitPlayerIndex, owningPlayer);
             g_gameReg->m_triggerMgr->StartPlayerDefeatSequence(owningPlayer);
@@ -159,7 +159,7 @@ i32 CExitTrigger::AdvanceAnim() {
                 g_gameReg->m_triggerMgr->LoadFinishLevelSprite(FINISH_REASON_BATTLEZ_DEFEAT);
             } else {
                 GruntzPlayer* board = &g_gameReg->m_players[owningPlayer];
-                if (board != NULL && board->m_humanControlled == 0) {
+                if (board != NULL && board->m_humanControlled == false) {
                     board->m_battlezConfig.Clear();
                 }
             }
@@ -170,17 +170,17 @@ i32 CExitTrigger::AdvanceAnim() {
                 goto done;
             }
             GruntzPlayer* slot = &g_gameReg->m_players[lostPlayer];
-            if (slot->m_joined == 0) {
+            if (slot->m_joined == false) {
                 goto done;
             }
-            if (slot->m_clearedRound != 0) {
+            if (slot->m_clearedRound != false) {
                 goto done;
             }
-            if (slot->m_doneFlag == 0) {
+            if (slot->m_doneFlag == false) {
                 goto done;
             }
-            slot->m_clearedRound = 1;
-            m_resolved = 0;
+            slot->m_clearedRound = true;
+            m_resolved = false;
             if (m_warlordLogic != NULL) {
                 m_warlordLogic->ResolveDeathAnimation();
                 m_warlordLogic = NULL;

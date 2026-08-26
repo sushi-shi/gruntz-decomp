@@ -10,12 +10,12 @@ struct CNetGameConfigPacket {
     GZ_ENUM_STORAGE(NetPacketFlags, u8) m_flags;
     char m_pad1[3];
     NetMsgId m_messageId;
-    i32 m_usesCustomLevel;
+    b32 m_usesCustomLevel;
     char m_builtInLevelName[0x80];
     char m_customLevelName[0x80];
     i32 m_commandDelay;
     i32 m_resendInterval;
-    i32 m_autoCommandDelay;
+    b32 m_autoCommandDelay;
     i32 m_rngSeed;
 };
 

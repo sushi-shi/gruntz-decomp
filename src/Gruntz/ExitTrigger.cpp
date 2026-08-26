@@ -40,8 +40,8 @@ CExitTrigger::CExitTrigger(CGameObject* obj)
     SwitchAnimationByName("GAME_CYCLE100", 0);
     m_warlordLogic = NULL;
     GruntzPlayer* slot = &g_gameReg->m_players[m_object->m_smarts];
-    if (slot->m_active == 0) {
-        m_resolved = 0;
+    if (slot->m_active == false) {
+        m_resolved = false;
         return;
     }
     i32 focusX = m_object->m_screenX;
@@ -69,7 +69,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj)
             slot2->m_warlordObjectId = e->m_objectId;
         }
     }
-    m_resolved = 1;
+    m_resolved = true;
 }
 
 // @early-stop

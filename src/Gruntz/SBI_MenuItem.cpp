@@ -138,17 +138,17 @@ i32 CSBI_MenuItem::SetState(SbiMenuItemState state, i32 playHighlightSound) {
     } else if (state == MENUITEM_HIGHLIGHT && playHighlightSound) {
 
         SoundCueRegistry* mh = g_gameReg->m_world->m_soundRegistry;
-        if (mh->m_silentMode == 0) {
+        if (mh->m_silentMode == false) {
             SoundCue* found = LookupCue(mh->m_cues, "GAME_TABHIGHLIGHT2");
             if (found) {
-                i32 soundEnabled = g_soundEnabled;
+                b32 soundEnabled = g_soundEnabled;
                 i32 volumePercent = g_soundVolumePercent;
-                if (soundEnabled != 0) {
+                if (soundEnabled != false) {
                     SoundCue* p = found;
                     if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
                         >= static_cast<u32>(p->m_replayDelayMs)) {
                         p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                        p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
+                        p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
                     }
                 }
             }

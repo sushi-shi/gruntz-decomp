@@ -29,7 +29,7 @@ struct SoundCue : public CWapObj {
     i32 LoadFromFile(char* path);
     i32 LoadFromSource(CRezArchiveEntry* source);
 
-    i32 PlayIfElapsed(i32 volumePercent, i32 panPercent, i32 frequencyOffsetPercent, i32 looping);
+    i32 PlayIfElapsed(i32 volumePercent, i32 panPercent, i32 frequencyOffsetPercent, b32 looping);
 
     i32 PlaySpatialized(i32 sourceX, i32 listenerX, i32 maxPanOffsetPx, i32 fullPanOffsetPx);
 

@@ -86,7 +86,7 @@ public:
     SoundCueRegistry* m_cueRegistry;
     i32 m_masterVolume;
     CPtrList m_list;
-    i32 m_enabled;
+    b32 m_enabled;
 
     i32 m_listenerX;
     i32 m_listenerY;

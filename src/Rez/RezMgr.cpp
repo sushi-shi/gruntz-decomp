@@ -86,7 +86,7 @@ i32 CGruntzMgr::PerFrameTick() {
         g_frameTicks++;
     }
 
-    if (m_renderGate != 0) {
+    if (m_renderGate != false) {
         return 0;
     }
 

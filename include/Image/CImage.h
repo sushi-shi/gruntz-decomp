@@ -27,7 +27,7 @@ typedef struct tagRECT BlitRect;
 
 struct PidHeader;
 
-extern i32 g_resourceInstallActive;
+extern b32 g_resourceInstallActive;
 extern i32 g_surfaceColorKey;
 
 class CResolveNode;

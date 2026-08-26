@@ -83,7 +83,7 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
         return 0;
     }
-    m_mgr->RestoreVideoMode(0);
+    m_mgr->RestoreVideoMode(false);
     m_stateResources = m_resourceArchive->FindDirectoryByPath("STATEZ_MENU");
     if (m_stateResources == NULL) {
         return 0;
@@ -94,9 +94,9 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
         if (imageSymbols == NULL) {
             return 0;
         }
-        g_resourceInstallActive = 1;
+        g_resourceInstallActive = true;
         m_world->m_imageRegistry->InstallTree(imageSymbols, "MENU", "_");
-        g_resourceInstallActive = 0;
+        g_resourceInstallActive = false;
     }
 
     if (!m_world->m_soundRegistry->HasWithPrefix("MENU")) {
@@ -203,7 +203,7 @@ i32 CMenuState::EnterState(GameStateId previousState) {
             return 0;
         }
 
-        i32 faded = LoadTitlePage(titleName, 0, 0, 1, 0, 0);
+        i32 faded = LoadTitlePage(titleName, 0, 0, 1, 0, false);
         if (faded == 0) {
             m_stateResources = (saved);
             return 0;
@@ -228,7 +228,7 @@ i32 CMenuState::EnterState(GameStateId previousState) {
         menuRoot()->m_drawTarget->TransExit();
     }
 
-    RetireScene(0x50, 0x3e8, 0, 1);
+    RetireScene(0x50, 0x3e8, 0, true);
 
     if (ShowCursor(true) < 0) {
         do {
@@ -243,15 +243,15 @@ void CMenuState::StartMusic() {
     if (m_menuMusicCue == NULL) {
         return;
     }
-    if (g_gameReg->m_soundEnabled == 0) {
+    if (g_gameReg->m_soundEnabled == false) {
         return;
     }
-    i32 saved = g_soundEnabled;
+    b32 saved = g_soundEnabled;
     if (!saved) {
-        g_soundEnabled = 1;
+        g_soundEnabled = true;
     }
     i32 item = g_gameReg->m_soundVolume;
-    PlaySoundCueIfElapsed(m_menuMusicCue, item, 0, 0, 1);
+    PlaySoundCueIfElapsed(m_menuMusicCue, item, 0, 0, true);
     if (!saved) {
         g_soundEnabled = saved;
     }
@@ -266,7 +266,7 @@ void CMenuState::StopMusicChain() {
     if (!mus->m_sound->IsPlaying()) {
         return;
     }
-    m_menuMusicCue->m_sound->RampVolumeTo(0, 0x1f4, 1);
+    m_menuMusicCue->m_sound->RampVolumeTo(0, 0x1f4, true);
     if (!m_menuMusicCue->m_sound->IsPlaying()) {
         return;
     }
@@ -372,8 +372,8 @@ i32 CMenuState::RestoreDisplay() {
     char stateName[0x20];
     char titleName[0x20];
 
-    i32 gate = IsActive();
-    if (gate == 0) {
+    b32 gate = IsActive();
+    if (gate == false) {
         return gate;
     }
 
@@ -390,7 +390,7 @@ i32 CMenuState::RestoreDisplay() {
         return 0;
     }
 
-    i32 faded = LoadTitlePage(titleName, 0, 0, 1, 0, 0);
+    i32 faded = LoadTitlePage(titleName, 0, 0, 1, 0, false);
     if (faded == 0) {
         m_stateResources = (saved);
         return 0;
@@ -404,7 +404,7 @@ i32 CMenuState::RestoreDisplay() {
     );
     menuRoot()->m_drawTarget->TransTitle();
 
-    RetireScene(0x50, 0x3e8, 0, 1);
+    RetireScene(0x50, 0x3e8, 0, true);
 
     if (ShowCursor(true) < 0) {
         do {

@@ -69,8 +69,8 @@ public:
     CAniRecordView* m_element;
     i32 m_index;
     u32 m_frameTicksLeft;
-    i32 m_useElapsedTime;
-    i32 m_finished;
+    b32 m_useElapsedTime;
+    b32 m_finished;
     i32 m_consumeDraw;
     i32 m_pendingDraw;
     i32 m_curDraw;

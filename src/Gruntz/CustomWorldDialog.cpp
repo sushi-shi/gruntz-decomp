@@ -72,7 +72,7 @@ CString RunCustomWorldDialog(HWND parent, CString* outSource) {
     g_customWorldSurfaceMgr = g_gameReg->m_world;
 
     g_customWorldInst = g_gameReg->m_owner->m_hInstance;
-    if (g_gameReg->RunModalDialog("CUSTOM_WORLD", CustomWorldDlgProc, 0) == 0) {
+    if (g_gameReg->RunModalDialog("CUSTOM_WORLD", CustomWorldDlgProc, false) == 0) {
         g_pathStr.Empty();
     }
     g_customWorldSurfaceMgr = NULL;
@@ -139,7 +139,7 @@ i32 FillCustomLevelList(HWND hWnd) {
     strcpy(pattern, g_customGlob);
     _finddata_t fd;
     i32 h = _findfirst(pattern, &fd);
-    i32 found = (h != -1);
+    b32 found = (h != -1);
     CWaitCursorScope wait;
     while (found) {
         char disp[256];
@@ -154,7 +154,7 @@ i32 FillCustomLevelList(HWND hWnd) {
             SendMessageA(lb, LB_ADDSTRING, 0, name.m_lparam);
         }
         if (_findnext(h, &fd) == -1) {
-            found = 0;
+            found = false;
         }
     }
     _chdir(g_dotDot);

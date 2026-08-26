@@ -31,7 +31,7 @@
 
 RVA(0x0017c040, 0x25d)
 i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
-    if (m_initialized != 0) {
+    if (m_initialized != false) {
         return 0;
     }
     if (window == NULL) {
@@ -47,7 +47,7 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
         info.bpp = BPP_PALETTED_8;
     }
 
-    m_borrowedDisplayResources = 0;
+    m_borrowedDisplayResources = false;
     if (DirectDrawCreate(NULL, &m_directDraw, NULL) != 0) {
         return 0;
     }
@@ -115,9 +115,9 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
     m_screenHeight = info.height;
     m_bpp = info.bpp;
     m_window = window;
-    m_streamOpen = 0;
+    m_streamOpen = false;
     ShowCursor(false);
-    m_initialized = 1;
+    m_initialized = true;
     FreeAll();
     return 1;
 }
@@ -163,7 +163,7 @@ i32 CMoviePlayer::InitMode(
         return 0;
     }
     m_directDraw2 = dd2;
-    m_borrowedDisplayResources = 1;
+    m_borrowedDisplayResources = true;
     m_primary = primary;
     Snapshot(wnd);
     ColorDepth bpp = static_cast<ColorDepth>(desc.ddpfPixelFormat.dwRGBBitCount);
@@ -189,12 +189,12 @@ i32 CMoviePlayer::InitMode(
     m_screenHeight = desc.dwHeight;
     m_bpp = bpp;
     m_window = wnd;
-    m_streamOpen = 0;
+    m_streamOpen = false;
     m_srcSurf = NULL;
     m_srcSurfRaw = NULL;
     m_directSound = dsound;
     ShowCursor(false);
-    m_initialized = 1;
+    m_initialized = true;
     FreeAll();
     return 1;
 }
@@ -207,7 +207,7 @@ void CMoviePlayer::Teardown() {
     CloseSmacker();
     FreeAll();
     m_window = NULL;
-    m_initialized = 0;
+    m_initialized = false;
     HandleError();
     if (m_videoWnd) {
         m_videoWnd->DestroyWindow();
@@ -237,14 +237,14 @@ i32 CMoviePlayer::OpenLo(
         m_interlaced = IDX(openFlags);
         smackOpenFlags = SMACKYINTERLACE;
     } else {
-        m_interlaced = 0;
+        m_interlaced = false;
     }
     smackOpenFlags |= SMACKTRACKS;
     m_smackHandle = SmackOpen(src, smackOpenFlags, SMACKAUTOEXTRA);
     if (!m_smackHandle) {
         return 0;
     }
-    m_streamOpen = 1;
+    m_streamOpen = true;
     i32 r = Configure(mode, openFlags, origin, rect);
     if (!r) {
         if (m_srcSurf) {
@@ -280,7 +280,7 @@ i32 CMoviePlayer::OpenHi(
         smackOpenFlags = SMACKYINTERLACE;
         m_interlaced = IDX(openFlags);
     } else {
-        m_interlaced = 0;
+        m_interlaced = false;
     }
     smackOpenFlags |= SMACKFILEHANDLE | SMACKTRACKS;
 
@@ -290,7 +290,7 @@ i32 CMoviePlayer::OpenHi(
     if (!m_smackHandle) {
         return 0;
     }
-    m_streamOpen = 1;
+    m_streamOpen = true;
     i32 r = Configure(mode, openFlags, origin, rect);
     if (!r) {
         if (m_srcSurf) {
@@ -315,7 +315,7 @@ i32 CMoviePlayer::Open(
     POINT* origin,
     RECT* rect
 ) {
-    if (m_initialized == 0) {
+    if (m_initialized == false) {
         return 0;
     }
     if (!m_decodeStore.Init()) {
@@ -428,7 +428,7 @@ i32 CMoviePlayer::CloseSmacker() {
         ::operator delete(m_rezBuffer);
         m_rezBuffer = NULL;
     }
-    m_streamOpen = 0;
+    m_streamOpen = false;
     return 1;
 }
 
@@ -552,7 +552,7 @@ void CMoviePlayer::HandleError() {
             m_primary->Blt(NULL, NULL, NULL, DDBLT_WAIT | DDBLT_COLORFILL, &fx);
         }
     }
-    if (m_borrowedDisplayResources == 0) {
+    if (m_borrowedDisplayResources == false) {
         if (m_palette) {
             m_palette->Release();
             m_palette = NULL;
@@ -769,7 +769,7 @@ i32 CMoviePlayer::Configure(MovieLayout mode, MovieOpenFlags openFlags, POINT* o
             return 0;
     }
 
-    if (m_forceSingleRow != 0) {
+    if (m_forceSingleRow != false) {
         m_tilesDown = 1;
     }
     m_frameDecoded = false;

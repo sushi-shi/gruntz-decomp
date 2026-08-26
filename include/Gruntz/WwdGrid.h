@@ -20,7 +20,7 @@ struct BucketHead : IntrusiveList {
 class CWwdGrid : public CObject {
 public:
     CWwdGrid() {
-        m_allocated = 0;
+        m_allocated = false;
     }
     virtual ~CWwdGrid() OVERRIDE {
         FreeBuckets();
@@ -36,7 +36,7 @@ public:
     i32 Query(WwdRect q, i32 doRemove);
     i32 Clear();
 
-    i32 m_allocated;
+    b32 m_allocated;
     i32 m_count;
     i32 m_cols;
     i32 m_rows;

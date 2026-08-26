@@ -143,7 +143,7 @@ i32 CKitchenSlime::Tick() {
     m_wwdObject->m_animationCursor.Advance(static_cast<i32>(g_engineFrameDelta));
 
     CGruntzMgr* reg = g_gameReg;
-    if (reg->m_isEasyMode == 0 || reg->m_gameMode != GAMEMODE_QUESTZ) {
+    if (reg->m_isEasyMode == false || reg->m_gameMode != GAMEMODE_QUESTZ) {
         CGameObject* lvl = Level();
         i32 playerIndex, unitIndex;
         CGrunt* ent = static_cast<CGrunt*>(reg->m_triggerMgr->FindGruntAt(
@@ -258,9 +258,9 @@ i32 CKitchenSlime::LoadSprites() {
     i32 savedDir = Level()->m_smarts;
 
     Coord tile;
-    i32 found = 0;
+    b32 found = false;
     i32 i = 0;
-    while (found == 0) {
+    while (found == false) {
         CGameObject* lvl = Level();
         i32 sw = lvl->m_smarts;
         switch (static_cast<CardinalDir>(sw)) {
@@ -302,7 +302,7 @@ i32 CKitchenSlime::LoadSprites() {
         if (tile.m_y >= lvl->m_extent.top && tile.m_x <= lvl->m_extent.right
             && tile.m_y <= lvl->m_extent.bottom && tile.m_x >= lvl->m_extent.left
             && !(tileFlags & BRICKZ_BLOCKED_MASK) && !(tileFlags & IDX(CELL_FLAG_SPECIAL))) {
-            found = 1;
+            found = true;
         } else {
             if (++i > 4) {
                 return 0;
@@ -324,7 +324,7 @@ i32 CKitchenSlime::LoadSprites() {
 
     m_posX = 0;
     m_posY = 0;
-    i32 changed = (Level()->m_smarts != savedDir);
+    b32 changed = (Level()->m_smarts != savedDir);
     switch (static_cast<CardinalDir>(Level()->m_smarts)) {
         case CARDINAL_NORTH:
             m_dirX = 0.0;
@@ -373,7 +373,7 @@ i32 CKitchenSlime::LoadSprites() {
     m_tilePosition = tile;
     m_speed = g_slimeSpeedNum / static_cast<double>(time);
 
-    if (changed != 0) {
+    if (changed != false) {
         CWwdSpriteObject* player = Anim();
         CDDrawWorker* spr = player->m_imageSet;
         if (spr != NULL) {

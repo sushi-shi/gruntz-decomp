@@ -30,8 +30,8 @@ CGameStats::~CGameStats() {
 RVA(0x000fca10, 0x8a)
 void CGameStats::Reset() {
     m_levelNumber = 0;
-    m_isCustomLevel = 0;
-    m_currentAreaComplete = 0;
+    m_isCustomLevel = false;
+    m_currentAreaComplete = false;
     m_elapsedTimeMs = 0;
     m_toyzCollected = 0;
     m_toolzCollected = 0;
@@ -40,7 +40,7 @@ void CGameStats::Reset() {
     m_powerupzCollected = 0;
     m_secretsFound = 0;
     m_coinsCollected = 0;
-    m_warpLetterFound = 0;
+    m_warpLetterFound = false;
     m_toolzAvailable = 0;
     m_toyzAvailable = 0;
     m_powerupzAvailable = 0;
@@ -70,14 +70,14 @@ RVA(0x000fcad0, 0x53)
 void CGameStats::SetLevelNumber(i32 levelNumber) {
     m_levelNumber = levelNumber;
     if (levelNumber > 0x24) {
-        m_currentAreaComplete = 0;
+        m_currentAreaComplete = false;
         return;
     }
     i32 areaFirstIndex = (levelNumber - 1) / 4 * 4;
-    i32 areaComplete = 1;
+    b32 areaComplete = true;
     for (i32 i = areaFirstIndex; i < areaFirstIndex + 4; i++) {
-        if (m_levelRecords[i].m_completed == 0) {
-            areaComplete = 0;
+        if (m_levelRecords[i].m_completed == false) {
+            areaComplete = false;
         }
     }
     m_currentAreaComplete = areaComplete;
@@ -152,10 +152,10 @@ i32 CGameStats::IsCampaignPerfect() {
     i32 levelIndex = 0;
     QuestLevelStats* levelStats = m_levelRecords;
     for (; levelIndex < 0x20; levelIndex++, levelStats++) {
-        if (levelStats->m_completed == 0) {
+        if (levelStats->m_completed == false) {
             return 0;
         }
-        if (levelStats->m_warpLetterFound == 0) {
+        if (levelStats->m_warpLetterFound == false) {
             return 0;
         }
         if (levelStats->m_toolzCollected < levelStats->m_toolzAvailable) {
@@ -179,7 +179,7 @@ i32 CGameStats::IsCampaignPerfect() {
 
 RVA(0x000fcd70, 0x61)
 i32 CGameStats::IsCurrentLevelPerfect(i32 unused) {
-    if (m_warpLetterFound == 0) {
+    if (m_warpLetterFound == false) {
         return 0;
     }
     if (m_toyzAvailable > m_toyzCollected) {
@@ -216,7 +216,7 @@ RVA(0x000fce80, 0x32)
 i32 CGameStats::CurrentAreaHasAllWarpLetters() {
     i32 areaFirstIndex = (m_levelNumber - 1) / 4 * 4;
     for (i32 i = 0; i < 4; i++) {
-        if (m_levelRecords[areaFirstIndex + i].m_warpLetterFound == 0) {
+        if (m_levelRecords[areaFirstIndex + i].m_warpLetterFound == false) {
             return 0;
         }
     }
@@ -364,10 +364,10 @@ i32 CGameStats::SumElapsedTimeForCurrentArea() {
 }
 
 RVA(0x000fd330, 0x84)
-void CGameStats::UpdateLevelRecord(i32 levelNumber, i32 writeAvailableCounts) {
+void CGameStats::UpdateLevelRecord(i32 levelNumber, b32 writeAvailableCounts) {
     QuestLevelStats* levelStats = &m_levelRecords[levelNumber - 1];
-    if (writeAvailableCounts == 0) {
-        levelStats->m_completed = 1;
+    if (writeAvailableCounts == false) {
+        levelStats->m_completed = true;
         levelStats->m_elapsedTimeMs = m_elapsedTimeMs;
         levelStats->m_toyzCollected = m_toyzCollected;
         levelStats->m_toolzCollected = m_toolzCollected;

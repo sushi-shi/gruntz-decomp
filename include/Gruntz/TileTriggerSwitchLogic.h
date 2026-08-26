@@ -19,7 +19,7 @@ public:
         i32 tileX,
         i32 tileY,
         i32 cellKey,
-        i32 linkGate,
+        b32 linkGate,
         i32 damageParam,
         i32 checkpointType
     );
@@ -31,7 +31,7 @@ public:
         i32 tileY,
         i32 cellKey,
         const RECT* rect,
-        i32 linkGate,
+        b32 linkGate,
         i32 damageParam,
         i32 checkpointType
     );
@@ -41,7 +41,7 @@ public:
     CTileTriggerSwitchLogic();
 
     ~CTileTriggerSwitchLogic() {
-        m_initGate = 0;
+        m_initGate = false;
     }
 
     i32 AreMultiSwitchLinksActive();
@@ -57,10 +57,10 @@ public:
     i32 m_tileX;
     i32 m_tileY;
     i32 m_cellKey;
-    i32 m_linkGate;
+    b32 m_linkGate;
     i32 m_damageParam;
     i32 m_reserved1c;
-    i32 m_initGate;
+    b32 m_initGate;
 
     CTileTriggerContainer* m_owner;
     i32 m_checkpointType;
@@ -109,7 +109,7 @@ public:
         i32 tileY,
         i32 cellKey,
         const RECT* rect,
-        i32 linkGate,
+        b32 linkGate,
         i32 damageParam,
         i32 checkpointType
     ) OVERRIDE;

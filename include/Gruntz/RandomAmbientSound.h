@@ -14,7 +14,7 @@ class CRandomAmbientSound : public CAmbientSound {
 public:
     CRandomAmbientSound() {}
 
-    virtual void Update(i32 x, i32 y, i32 immediate) OVERRIDE;
+    virtual void Update(i32 x, i32 y, b32 immediate) OVERRIDE;
 
     virtual ~CRandomAmbientSound() OVERRIDE {}
 
@@ -30,7 +30,7 @@ public:
     i32 m_silenceDurationMin;
     i32 m_silenceDurationMax;
     i32 m_countdownMs;
-    i32 m_playPhase;
+    b32 m_playPhase;
 };
 
 #endif // GRUNTZ_CRANDOMAMBIENTSOUND_H

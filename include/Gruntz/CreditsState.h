@@ -3,6 +3,6 @@
 
 #include <Ints.h>
 
-extern i32 g_clipRegionEnabled;
+extern b32 g_clipRegionEnabled;
 
 #endif // GRUNTZ_GRUNTZ_CREDITSSTATE_H

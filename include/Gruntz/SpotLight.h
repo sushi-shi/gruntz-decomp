@@ -37,7 +37,7 @@ public:
 
     i32 m_targetPlayerIndex;
     i32 m_targetUnitIndex;
-    i32 m_storyMode;
+    b32 m_storyMode;
 };
 
 #endif // GRUNTZ_CSPOTLIGHT_H

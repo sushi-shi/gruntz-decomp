@@ -22,7 +22,7 @@ public:
 
     virtual i32 Write(i32 a, i32 pos, u32 count, void* buf) OVERRIDE;
 
-    virtual i32 Open(char* name, i32 readonly, i32 write) OVERRIDE;
+    virtual i32 Open(char* name, b32 readonly, b32 write) OVERRIDE;
     virtual i32 Close() OVERRIDE;
 
     virtual i32 Flush() OVERRIDE;

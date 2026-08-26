@@ -22,7 +22,7 @@ struct SoundVolumeRamp : public SoundTask {
         i32 initialVolumePct,
         i32 durationMs,
         SoundBuffer* buffer,
-        i32 stopAndRewind,
+        b32 stopAndRewind,
         i32 startTime
     );
 };

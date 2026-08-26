@@ -17,7 +17,7 @@ RVA(0x00179700, 0x10)
 Font::Font() {
     m_surfaces = NULL;
     m_glyphs = NULL;
-    m_ready = 0;
+    m_ready = false;
     m_count = 0;
 }
 
@@ -48,7 +48,7 @@ i32 Font::AllocateMemory(i32 count) {
     }
 
     m_maxHeight = 0;
-    m_ready = 1;
+    m_ready = true;
     return 1;
 }
 
@@ -68,7 +68,7 @@ void Font::FreeMemory() {
             m_glyphs = NULL;
         }
         m_count = 0;
-        m_ready = 0;
+        m_ready = false;
     }
 }
 

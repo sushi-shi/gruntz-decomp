@@ -15,7 +15,7 @@ namespace Utils {
 
         RVA(0x00118f60, 0x134)
         i32 LegacyFindModule(DWORD th32ProcessID, DWORD moduleID, void* outBuf, DWORD bufSize) {
-            i32 found = 0;
+            b32 found = false;
             HANDLE snap = NULL;
             MODULEENTRY32 me32 = {0};
 
@@ -55,7 +55,7 @@ namespace Utils {
                 do {
                     if (me32.th32ModuleID == moduleID) {
                         memcpy(outBuf, &me32, bufSize);
-                        found = 1;
+                        found = true;
                     }
                 } while (!found && pModuleNext(snap, &me32));
             }

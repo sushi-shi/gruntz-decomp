@@ -71,11 +71,11 @@ void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
         CWnd* colorList = GetDlgItem(CTRL_COLOR_LIST);
         sendMessage = ::SendMessageA;
         for (i32 i = 0; i < 0x11; i++) {
-            i32 available = 1;
+            b32 available = true;
             GruntzPlayer* player = m_gameManager->m_players;
             for (i32 j = 0; j < 4; j++) {
-                if (player->m_active != 0 && IDX(player->m_color) == i) {
-                    available = 0;
+                if (player->m_active != false && IDX(player->m_color) == i) {
+                    available = false;
                 }
                 player++;
             }

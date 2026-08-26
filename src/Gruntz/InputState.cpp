@@ -15,7 +15,7 @@ i32 CInputState::Init(DirectInputMgr2* manager, InputDeviceSel selection) {
     m_pressedButtons = 0;
     m_heldButtons = 0;
     m_heldButtonsSnapshot = 0;
-    m_suppressed = 0;
+    m_suppressed = false;
     if (!SelectDevices(manager, selection)) {
         return 0;
     }
@@ -143,8 +143,8 @@ i32 CInputState::Update() {
             m_pressedButtons |= mouse->m_pressedButtons;
         }
     }
-    i32 suppress = m_suppressed;
-    if (suppress != 0) {
+    b32 suppress = m_suppressed;
+    if (suppress != false) {
         m_heldButtons = 0;
         m_pressedButtons = 0;
     }

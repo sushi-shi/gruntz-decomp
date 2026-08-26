@@ -993,7 +993,7 @@ void CGrunt::ConsiderArrival(i32 clearArrivalState) {
 
 // @early-stop
 RVA(0x00052fb0, 0x96e)
-i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spawnWormhole) {
+i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spawnWormhole) {
     if (m_entranceCommitted == false) {
         return 1;
     }
@@ -1104,7 +1104,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, i32 useSecretColor, i32 spaw
                     i32 redo = 1;
                     if (PIXEL_PAIR_NOT_AT_POSITION(px, py, savedX, savedY)) {
                         if (IsDropReady(1)) {
-                            m_coordToggle = (m_coordToggle == 0);
+                            m_coordToggle = (m_coordToggle == false);
                             redo = 0;
                         }
                     }
@@ -1148,7 +1148,7 @@ idleReseed:
 applyTail:
 
     if (m_wingzEnabled != false) {
-        LoadWingzGruntSprites(0);
+        LoadWingzGruntSprites(false);
     }
     if (m_poweredUp != false && m_neighborValid == false) {
         RESET_GRUNT_POWERED_STATE(this)
@@ -1175,7 +1175,7 @@ applyTail:
             m_defenderState = AISTATE_SEEK;
             m_routePassableMask = 0;
         }
-        if (spawnWormhole != 0) {
+        if (spawnWormhole != false) {
             CWwdSpriteObject* spawned = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
                 spawnPx,
@@ -1185,7 +1185,7 @@ applyTail:
                 WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
             );
             if (spawned != NULL) {
-                if (useSecretColor != 0) {
+                if (useSecretColor != false) {
                     spawned->m_smarts = g_buteMgr.GetIntDef("Wormhole", "SecretColor", 1);
                 } else {
                     spawned->m_smarts = g_buteMgr.GetIntDef("Wormhole", "EntranceColor", 3);

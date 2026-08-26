@@ -142,7 +142,7 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
             return 0;
         }
     }
-    m_ownsSurface = 1;
+    m_ownsSurface = true;
     return 1;
 }
 
@@ -167,13 +167,13 @@ i32 CDDrawSurfacePair::InitFromSurface(CDDSurface* src) {
     m_srcRect.bottom = h;
     m_id = 0x63;
     m_surface = src;
-    m_ownsSurface = 0;
+    m_ownsSurface = false;
     return 1;
 }
 
 RVA(0x00163e20, 0x2d)
 void CDDrawSurfacePair::Unload() {
-    if (m_surface != NULL && m_ownsSurface != 0) {
+    if (m_surface != NULL && m_ownsSurface != false) {
         CDDrawDeviceManager* manager = OwnerMgr()->m_deviceManager;
         manager->RemoveSurface(m_surface);
         m_surface = NULL;

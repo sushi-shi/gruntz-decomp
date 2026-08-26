@@ -187,7 +187,7 @@ BOOL CVoiceManager::PlayGruntVoiceCue(
     StreamVoice* stream = m_streamVoices[slotIndex];
     i32 volume = m_voiceVolume;
     stream->m_feeder.Pause();
-    if (stream->SetSource(source) != 0 && stream->Configure(volume, 0, 0, 0) != 0) {
+    if (stream->SetSource(source) != 0 && stream->Configure(volume, 0, 0, false) != 0) {
         CGruntVoice* indicator = m_indicators[slotIndex];
         if (indicator->BeginPlayback(
                 grunt->m_object->m_objectId,
@@ -290,7 +290,7 @@ i32 CVoiceManager::PlayVoice(
     if (stream->SetSource(source) == 0) {
         goto streamFailed;
     }
-    if (stream->Configure(volume, 0, 0, 0) == 0) {
+    if (stream->Configure(volume, 0, 0, false) == 0) {
         goto streamFailed;
     }
     if (m_indicators[slotIndex]->BeginPlayback(
@@ -390,7 +390,7 @@ i32 CVoiceManager::PlayVoice(
     if (stream->SetSource(source) == 0) {
         goto streamFailed;
     }
-    if (stream->Configure(volume, 0, 0, 0) == 0) {
+    if (stream->Configure(volume, 0, 0, false) == 0) {
         goto streamFailed;
     }
     if (m_indicators[slotIndex]->BeginPlayback(
@@ -457,7 +457,7 @@ i32 CVoiceManager::ResolveGruntVoiceGroup(CGrunt* grunt, i32 cueId) {
         case IDX(PICKUP_TIMEBOMB):
             return VOICE_CUES_PER_BAND * 28 + cueId;
         case IDX(PICKUP_TOOB):
-            if (grunt->m_coordToggle != 0) {
+            if (grunt->m_coordToggle != false) {
                 return VOICE_CUES_PER_BAND * 30 + cueId;
             }
             return VOICE_CUES_PER_BAND * 29 + cueId;
@@ -660,7 +660,7 @@ void CSpawnList::AddVoiceSound(CString resourceName, i32 data) {
 RVA(0x0011c630, 0x6e)
 CSpawnEntry::CSpawnEntry(CString name, i32 data) {
     m_name = name;
-    m_flag = 0;
+    m_flag = false;
     m_data = data;
 }
 
@@ -738,5 +738,5 @@ void CVoiceManager::ResetVoiceSelections() {
 
 RVA(0x0011c830, 0x12)
 BOOL CVoiceManager::IsVoiceEnabled() {
-    return m_game->m_isVoiceEnabled != 0;
+    return m_game->m_isVoiceEnabled != false;
 }

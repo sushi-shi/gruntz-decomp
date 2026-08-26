@@ -90,7 +90,7 @@ public:
 
     HWND m_hwnd;
     CGameApp* m_owner;
-    i32 m_closeGuard;
+    b32 m_closeGuard;
 };
 
 class CGameMgr;
@@ -117,9 +117,9 @@ public:
 
     CGameWnd* m_gameWnd;
     CGameApp* m_owner;
-    i32 m_frameGate;
-    i32 m_soundEnabled;
-    i32 m_musicEnabled;
+    b32 m_frameGate;
+    b32 m_soundEnabled;
+    b32 m_musicEnabled;
     i32 m_fps;
 
     i32 m_targetFps;
@@ -216,9 +216,9 @@ public:
     GameInfo m_gameInfo;
     WNDCLASSA m_wc;
     CREATESTRUCTA m_createStruct;
-    i32 m_appActive;
-    i32 m_running;
-    i32 m_errorReported;
+    b32 m_appActive;
+    b32 m_running;
+    b32 m_errorReported;
     i32 m_errorCode;
     i32 m_errorDetail;
 };

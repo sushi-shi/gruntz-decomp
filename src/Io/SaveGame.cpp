@@ -171,8 +171,8 @@ i32 CSaveGame::InitializeNamedSlot(SaveSlot* dst, const char* name, CGruntzMgr* 
     dst->m_type = SAVESLOT_PRESENT;
     dst->m_levelId = (static_cast<CPlay*>(reg->m_curState))->m_levelIndex;
     dst->m_count = 0;
-    dst->m_active = 1;
-    if (reg->m_cheatMgr->m_cheatsUsed != 0) {
+    dst->m_active = true;
+    if (reg->m_cheatMgr->m_cheatsUsed != false) {
         dst->m_type = SAVESLOT_PRESENT | SAVESLOT_CHEATS_USED;
     }
     strncpy(dst->m_name, name, sizeof(dst->m_name));
@@ -208,7 +208,7 @@ i32 CSaveGame::InitializeLevelSlot(SaveSlot* dst, i32 levelId, CGruntzMgr* mgr) 
     dst->m_type = SAVESLOT_PRESENT;
     dst->m_levelId = levelId;
     dst->m_count = 0;
-    if (mgr->m_cheatMgr->m_cheatsUsed != 0) {
+    if (mgr->m_cheatMgr->m_cheatsUsed != false) {
         dst->m_type = SAVESLOT_PRESENT | SAVESLOT_CHEATS_USED;
     }
     dst->m_checksum = Register(dst);
@@ -220,11 +220,11 @@ i32 CSaveGame::VerifySlot(SaveSlot* slot) {
     if (slot == NULL) {
         return 0;
     }
-    i32 isBattlez = slot->m_isBattlez;
-    i32 isCustom = slot->m_isCustom;
-    const char* name = (isBattlez == 0 && isCustom == 0) ? "" : slot->m_levelName;
+    b32 isBattlez = slot->m_isBattlez;
+    b32 isCustom = slot->m_isCustom;
+    const char* name = (isBattlez == false && isCustom == false) ? "" : slot->m_levelName;
     i32 r = g_gameReg->ResolveLevelChecksum(
-        isBattlez == 0,
+        isBattlez == false,
         isBattlez,
         isCustom,
         slot->m_levelId,
@@ -252,12 +252,17 @@ i32 CSaveGame::Register(SaveSlot* slot) {
     if (slot == NULL) {
         return 0;
     }
-    i32 isBattlez = slot->m_isBattlez;
-    i32 isCustom = slot->m_isCustom;
-    const char* name = (isBattlez == 0 && isCustom == 0) ? "" : slot->m_levelName;
+    b32 isBattlez = slot->m_isBattlez;
+    b32 isCustom = slot->m_isCustom;
+    const char* name = (isBattlez == false && isCustom == false) ? "" : slot->m_levelName;
 
-    return g_gameReg
-        ->ResolveLevelChecksum(isBattlez == 0, isBattlez, isCustom, slot->m_levelId, CString(name));
+    return g_gameReg->ResolveLevelChecksum(
+        isBattlez == false,
+        isBattlez,
+        isCustom,
+        slot->m_levelId,
+        CString(name)
+    );
 }
 
 RVA(0x000e5410, 0x3d)

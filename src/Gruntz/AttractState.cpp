@@ -42,7 +42,7 @@ i32 CAttract::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStat
         } while (ShowCursor(false) >= 0);
     }
 
-    owner()->RestoreVideoMode(0);
+    owner()->RestoreVideoMode(false);
 
     CRezArchiveDir* state = ResourceArchive()->FindDirectoryByPath("STATEZ_ATTRACT");
     m_stateResources = (state);
@@ -109,7 +109,7 @@ i32 CAttract::EnterState(GameStateId previousState) {
     m_titleCue = found;
     if (found != NULL && m_titleCueEnabled != false) {
         if (g_soundEnabled) {
-            m_titleCue->m_sound->ApplyAndPlay(0x64, 0, 0, 0);
+            m_titleCue->m_sound->ApplyAndPlay(0x64, 0, 0, false);
         }
         m_titleCountdownMs = m_titleCue->m_sound->m_durationMs + 0x2710;
     } else {
@@ -131,7 +131,7 @@ i32 CAttract::LeaveState(GameStateId nextState) {
     if (!m_titleCue->m_sound->IsPlaying()) {
         return 1;
     }
-    m_titleCue->m_sound->RampVolumeTo(0, 0x1f4, 1);
+    m_titleCue->m_sound->RampVolumeTo(0, 0x1f4, true);
     if (!m_titleCue->m_sound->IsPlaying()) {
         return 1;
     }

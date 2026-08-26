@@ -11,7 +11,7 @@ CGameWnd* g_activeGameWnd;
 RVA(0x0013cf00, 0x11)
 CGameWnd::CGameWnd() {
     m_hwnd = NULL;
-    m_closeGuard = 0;
+    m_closeGuard = false;
 }
 
 RVA(0x0013cf20, 0x8f)
@@ -28,7 +28,7 @@ i32 CGameWnd::CreateAndShow(CREATESTRUCTA* pParams, CGameApp* pOwner) {
 
     m_owner = pOwner;
     g_activeGameWnd = this;
-    m_closeGuard = 0;
+    m_closeGuard = false;
 
     m_hwnd = CreateWindowExA(
         pParams->dwExStyle,
@@ -279,7 +279,7 @@ i32 CGameWnd::QuitMessageLoop() {
 RVA(0x0013d4c0, 0x1e)
 i32 CGameWnd::OnClose() {
     if (!m_closeGuard) {
-        m_closeGuard = 1;
+        m_closeGuard = true;
         DestroyWindow(m_hwnd);
     }
     return 1;

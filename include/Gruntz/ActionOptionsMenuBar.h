@@ -53,9 +53,9 @@ public:
     ActionOptionButtonState m_buttonState[2];
     CImage* m_buttonFrame[2];
     PickupType m_buttonIcon[2];
-    i32 m_active;
+    b32 m_active;
     CDDrawWorker* m_normChipSprite;
     CDDrawWorker* m_highChipSprite;
     CDDrawWorker* m_greyChipSprite;
-    i32 m_loaded;
+    b32 m_loaded;
 };

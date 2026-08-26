@@ -35,7 +35,7 @@ static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
     m_frameColon = NULL;                                                                           \
     m_frameSecTens = NULL;                                                                         \
     m_frameSecOnes = NULL;                                                                         \
-    m_active = 0
+    m_active = false
 
 RVA(0x0009bab0, 0x35)
 CTimer::CTimer() {
@@ -48,7 +48,7 @@ CTimer::CTimer() {
     m_startStamp.m_hi = 0;
     m_unusedStamp.m_hi = 0;
     RESET_TIMER_SPRITES;
-    m_running = 0;
+    m_running = false;
 }
 
 RVA(0x0009bb00, 0x119)
@@ -83,8 +83,8 @@ i32 CTimer::LoadTimerSprite(i32 originX, i32 originY) {
 
     m_baseX = originX;
     m_baseY = originY;
-    m_active = 1;
-    m_running = 0;
+    m_active = true;
+    m_running = false;
     return 1;
 }
 
@@ -111,10 +111,10 @@ i32 CTimer::Tick(i32 elapsedMs) {
         m_unusedStamp.m_hi = 0;
         m_accum.m_lo = 0;
         m_accum.m_hi = 0;
-        m_running = 0;
+        m_running = false;
         m_currentMs = 0;
         CPlay* ls = static_cast<CPlay*>(g_gameReg->m_curState);
-        ls->m_winLoseBanner = 1;
+        ls->m_winLoseBanner = true;
         ls->m_cueTiming.m_interval.m_lo = 0x1f4;
         ls->m_cueTiming.m_interval.m_hi = 0;
         ls->m_cueTiming.m_start.m_lo = g_frameTime;
@@ -122,7 +122,7 @@ i32 CTimer::Tick(i32 elapsedMs) {
         g_gameReg->m_triggerMgr->StartPlayerDefeatSequence(g_curPlayer);
         GruntzPlayer* slot = &g_gameReg->m_players[g_curPlayer];
         if (slot != NULL) {
-            slot->m_clearedRound = 1;
+            slot->m_clearedRound = true;
         }
         i32 key = g_gameReg->m_players[0].m_warlordObjectId;
         if (key != 0) {
@@ -185,11 +185,11 @@ i32 CTimer::Tick(i32 elapsedMs) {
 }
 
 RVA(0x0009bfa0, 0xb4)
-i32 CTimer::Draw(CDDrawSurfacePair* target, i32 forceVisible) {
+i32 CTimer::Draw(CDDrawSurfacePair* target, b32 forceVisible) {
     if (!m_running) {
         return 1;
     }
-    if (forceVisible == 0 && static_cast<u32>(m_currentMs) < 0x2710
+    if (forceVisible == false && static_cast<u32>(m_currentMs) < 0x2710
         && static_cast<u32>(g_period500CountdownMs) >= 0xfa) {
         return 1;
     }

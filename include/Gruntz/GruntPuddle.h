@@ -29,7 +29,7 @@ public:
     CGruntPuddle(CGameObject* obj);
 
     i32 Idle();
-    i32 Place(i32 playerIndex, i32 moveIcon, i32 animatePlacement, i32 gaugePoints);
+    i32 Place(i32 playerIndex, i32 moveIcon, b32 animatePlacement, i32 gaugePoints);
     i32 Remove();
     void SetBute(char* key);
 
@@ -37,9 +37,9 @@ public:
 
     i32 m_tileX;
     i32 m_tileY;
-    i32 m_pending;
+    b32 m_pending;
 
-    i32 m_placed;
+    b32 m_placed;
     i32 m_gaugePoints;
     i32 m_playerIndex;
 

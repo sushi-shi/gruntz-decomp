@@ -39,7 +39,7 @@
 DATA(0x0021ab14)
 i32 g_wwdObjIdCounter = 1;
 DATA(0x0021ab20)
-i32 g_soundEnabled = 1;
+b32 g_soundEnabled = true;
 DATA(0x0021ab24)
 i32 g_soundVolumePercent = 100;
 

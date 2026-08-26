@@ -38,7 +38,7 @@ public:
     CDDSurface* m_primeSurface;
     CDDSurface* m_flipTarget;
     i32 m_unusedOption;
-    i32 m_reverseOrder;
+    b32 m_reverseOrder;
     i32 m_cols;
     i32 m_rows;
     CRezBufferObject m_meshBuf;
@@ -63,7 +63,7 @@ public:
 
     CDDSurface* m_targetSurface;
     CDDSurface* m_restoreSurface;
-    i32 m_clearToBlack;
+    b32 m_clearToBlack;
 
     u8* m_targetBits;
     u8* m_restoreBits;
@@ -116,7 +116,7 @@ public:
 
     CDDSurface* m_overlay;
     CDDPalette* m_palette;
-    i32 m_clearMode;
+    b32 m_clearMode;
     i32 m_centerX;
     i32 m_centerY;
 
@@ -171,9 +171,9 @@ public:
     i32* m_sourceRowOffsets;
     i32* m_warpRowOffsets;
     GZ_ENUM_STORAGE(FaderMode, u32) m_mode;
-    i32 m_stripCopy;
+    b32 m_stripCopy;
     i32 m_halfWidth;
-    i32 m_useLut;
+    b32 m_useLut;
     i32 m_targetWidth;
     i32 m_targetHeight;
     i32 m_sourceWidth;

@@ -68,29 +68,29 @@ GZ_ENUM_CONST_BEGIN(GruntzGameTiming)
 GZ_ENUM_CONST_END(GruntzGameTiming)
 
 DATA(0x002455b4)
-i32 g_disableAudio = 0;
+b32 g_disableAudio = false;
 DATA(0x002455bc)
-i32 g_disableSound = 0;
+b32 g_disableSound = false;
 DATA(0x002455c0)
-i32 g_disableMusic = 0;
+b32 g_disableMusic = false;
 DATA(0x002455c4)
-i32 g_disableFades = 0;
+b32 g_disableFades = false;
 DATA(0x002455c8)
-i32 g_disableJoystick = 0;
+b32 g_disableJoystick = false;
 DATA(0x002455cc)
-i32 g_disableSoundFonts = 0;
+b32 g_disableSoundFonts = false;
 DATA(0x002455d0)
-i32 g_disableDirectVideo = 0;
+b32 g_disableDirectVideo = false;
 DATA(0x002455d4)
-i32 g_disableHqMovie = 0;
+b32 g_disableHqMovie = false;
 DATA(0x002455d8)
-i32 g_enableTriple = 0;
+b32 g_enableTriple = false;
 DATA(0x002455dc)
-i32 g_enableHiColor = 0;
+b32 g_enableHiColor = false;
 DATA(0x002455e0)
-i32 g_enableTrueColor = 0;
+b32 g_enableTrueColor = false;
 DATA(0x002455e4)
-i32 g_enableEmulation = 0;
+b32 g_enableEmulation = false;
 
 // @early-stop
 RVA(0x00083450, 0x192d)
@@ -138,7 +138,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_savedModeSize.cy = SCREEN_H_PX;
     m_numRuns = m_settings->GetValueDword("Num Runs", 0);
     m_numMovies = m_settings->GetValueDword("Num Movies", 0);
-    g_disableHqMovie = m_settings->GetValueDword("Disable High Quality Movie", 0) ? 1 : 0;
+    g_disableHqMovie = m_settings->GetValueDword("Disable High Quality Movie", 0) ? true : false;
     g_disableAudio = m_settings->GetValueDword("Disable Audio", 0);
     g_disableSound = m_settings->GetValueDword("Disable Sound", 0);
     g_disableMusic = m_settings->GetValueDword("Disable Music", 0);
@@ -151,7 +151,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     g_enableTrueColor = m_settings->GetValueDword("Enable TrueColor", 0);
     g_enableEmulation = m_settings->GetValueDword("Enable Emulation", 0);
     m_isCheckpointPrompts = m_settings->GetValueDword("Checkpoint Prompts", 1);
-    g_enableHiColor = 1;
+    g_enableHiColor = true;
     g_debugGruntPlayer = 0;
     g_debugGruntTool = 0;
     g_debugGruntToy = 0;
@@ -194,13 +194,13 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
     m_scrollSpeed = scrollSpeed;
     m_numRuns = m_numRuns + 1;
-    if (g_disableDirectVideo != 0) {
-        g_disableFades = 1;
-        g_enableEmulation = 1;
+    if (g_disableDirectVideo != false) {
+        g_disableFades = true;
+        g_enableEmulation = true;
     }
-    m_modalBusy = 0;
-    m_renderGate = 0;
-    m_driveLetterProbed = 0;
+    m_modalBusy = false;
+    m_renderGate = false;
+    m_driveLetterProbed = false;
     m_driveLetter = 0;
     GetGruntzDriveLetter();
 
@@ -306,20 +306,23 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     {
         CString resourcePath = GetRezPath();
 
-        i32 parsed =
-            m_resourceArchive->Open(const_cast<char*>(static_cast<const char*>(resourcePath)), 1, 0)
-            != 0;
+        i32 parsed = m_resourceArchive->Open(
+                         const_cast<char*>(static_cast<const char*>(resourcePath)),
+                         true,
+                         false
+                     )
+                     != 0;
         if (!parsed) {
             ReportError(IDX(IDS_LOAD_RESOURCE_FILE), 0x409);
             return 0;
         }
     }
-    if (!m_resourceArchive->MergeArchive(const_cast<char*>("GRUNTZ.VRZ"), 0)) {
+    if (!m_resourceArchive->MergeArchive(const_cast<char*>("GRUNTZ.VRZ"), false)) {
         ReportError(IDX(IDS_LOAD_VOICE_RESOURCE_FILE), 0x460);
         return 0;
     }
-    m_resourceArchive->MergeArchive(const_cast<char*>("GRUNTZ.ZZZ"), 1);
-    m_resourceArchive->MergeArchive(const_cast<char*>("GRUNTZ.XXX"), 1);
+    m_resourceArchive->MergeArchive(const_cast<char*>("GRUNTZ.ZZZ"), true);
+    m_resourceArchive->MergeArchive(const_cast<char*>("GRUNTZ.XXX"), true);
     SetColorDepth(m_colorDepth);
 
     m_faderMgr = new CFaderMgr;
@@ -332,7 +335,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x40b);
         return 0;
     }
-    if (g_disableAudio == 0 && g_disableSoundFonts == 0) {
+    if (g_disableAudio == false && g_disableSoundFonts == false) {
         if (SFManager_SelectBestDevice()) {
             if (!BuildSoundFontPath(GetGruntzDriveLetter())) {
                 CloseSoundFontDevice();
@@ -342,14 +345,14 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
     m_midi = new MidiManager;
     g_ailMidiDriver = NULL;
-    if (!m_midi->Initialize(m_owner->m_hInstance, m_gameWnd->m_hwnd, 0)) {
+    if (!m_midi->Initialize(m_owner->m_hInstance, m_gameWnd->m_hwnd, false)) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x40c);
         return 0;
     }
-    if (g_disableAudio == 0 && g_disableMusic == 0) {
+    if (g_disableAudio == false && g_disableMusic == false) {
         m_midi->SetMasterVolume(musicVolume);
     } else {
-        m_midi->m_midiAvailable = 0;
+        m_midi->m_midiAvailable = false;
     }
 
     if (m_worldSounds) {
@@ -362,14 +365,14 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
     {
-        i32 f = m_worldSounds->m_enabled;
+        b32 f = m_worldSounds->m_enabled;
         if (vMusic != 0) {
-            if (f == 0) {
-                m_worldSounds->m_enabled = 1;
+            if (f == false) {
+                m_worldSounds->m_enabled = true;
                 m_worldSounds->Resume();
             }
-        } else if (f != 0) {
-            m_worldSounds->m_enabled = 0;
+        } else if (f != false) {
+            m_worldSounds->m_enabled = false;
             m_worldSounds->Stop();
         }
     }
@@ -618,10 +621,10 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             g_attractStateCount++;
             title.Format("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);
         }
-        if (TransitionState(mode, 1, 0, 0)) {
+        if (TransitionState(mode, 1, false, 0)) {
             g_frameDelta = 0;
         } else if (mode == GAMESTATE_MULTI) {
-            if (TransitionState(GAMESTATE_ATTRACT, 1, 0, 0)) {
+            if (TransitionState(GAMESTATE_ATTRACT, 1, false, 0)) {
                 g_frameDelta = 0;
             } else {
                 ReportError(IDX(IDS_SET_GAME_STATE), 0x41c);

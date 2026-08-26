@@ -26,7 +26,7 @@ public:
     i32 AdvanceAnim();
 
     CWarlord* m_warlordLogic;
-    i32 m_resolved;
+    b32 m_resolved;
 };
 
 #endif // GRUNTZ_CEXITTRIGGER_H

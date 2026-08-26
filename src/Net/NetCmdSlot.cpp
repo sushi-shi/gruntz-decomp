@@ -52,7 +52,7 @@ i32 CNetCmdSlot::Initialize(CMulti* owner, GruntzPlayer* player, NetSlotState st
         return 0;
     }
     m_state = state;
-    m_isDraining = 0;
+    m_isDraining = false;
     m_drainSequence = 0;
     m_player = player;
     m_latency = 0;
@@ -66,7 +66,7 @@ i32 CNetCmdSlot::Initialize(CMulti* owner, GruntzPlayer* player, NetSlotState st
 RVA(0x000c0bb0, 0x47)
 void CNetCmdSlot::ResetSlot() {
     m_state = NETSLOT_EMPTY;
-    m_isDraining = 0;
+    m_isDraining = false;
     m_drainSequence = 0;
     m_player = NULL;
     m_latency = 0;
@@ -78,7 +78,7 @@ void CNetCmdSlot::ResetSlot() {
 
 RVA(0x000c0c20, 0x3f)
 void CNetCmdSlot::ClearSyncState() {
-    m_isDraining = 0;
+    m_isDraining = false;
     m_drainSequence = 0;
     m_latency = 0;
     m_contiguousSequence = 0;
@@ -92,7 +92,7 @@ i32 CNetCmdSlot::ProcessPacket(i32 playerId, char* packet, i32 packetSize) {
         return 0;
     }
     u8 opcode = static_cast<u8>(*packet);
-    i32 isDrainPacket = opcode & 1;
+    b32 isDrainPacket = (opcode & 1) != 0;
     char* packetStart = packet;
     packet++;
     if (m_state != NETSLOT_ACTIVE) {
@@ -101,13 +101,13 @@ i32 CNetCmdSlot::ProcessPacket(i32 playerId, char* packet, i32 packetSize) {
     if (opcode & 0x80) {
         return m_owner->DispatchRecvMsg(m_player->m_networkPlayerId, packetStart, packetSize);
     }
-    if (isDrainPacket == 0) {
-        if (m_isDraining != 0) {
+    if (isDrainPacket == false) {
+        if (m_isDraining != false) {
             return 1;
         }
     }
     if (isDrainPacket) {
-        if (m_isDraining == 0) {
+        if (m_isDraining == false) {
             return 1;
         }
     }
@@ -128,7 +128,7 @@ i32 CNetCmdSlot::ProcessPacket(i32 playerId, char* packet, i32 packetSize) {
     char* cursor = packet + 13;
     remaining -= 13;
 
-    if (m_isDraining != 0 && isDrainPacket) {
+    if (m_isDraining != false && isDrainPacket) {
         CNetCmdSlot* slot = m_owner->m_session->FindSlotByPlayerId(playerId);
         if (slot == NULL) {
             return 0;
@@ -180,7 +180,7 @@ i32 CNetCmdSlot::ProcessPacket(i32 playerId, char* packet, i32 packetSize) {
         command->m_submitFlags = COMMAND_SUBMIT_SCHEDULED;
         remaining -= consumed;
         cursor += consumed;
-        m_owner->m_mgr->m_commandMgr->EnqueueCommand(0, command);
+        m_owner->m_mgr->m_commandMgr->EnqueueCommand(false, command);
     }
     return 1;
 }
@@ -349,7 +349,7 @@ i32 CNetCmdSlot::DrainAcknowledged() {
     CNetSession* session = owner->m_session;
     for (i32 i = 0; i < 4; i++) {
         CNetCmdSlot* slot = &session->m_slots[i];
-        if (slot != NULL && slot->m_state == NETSLOT_ACTIVE && slot->m_isDraining == 0
+        if (slot != NULL && slot->m_state == NETSLOT_ACTIVE && slot->m_isDraining == false
             && m_drainAckFlags[i] == 0) {
             return 0;
         }
@@ -359,8 +359,8 @@ i32 CNetCmdSlot::DrainAcknowledged() {
 
 RVA(0x000c1390, 0x15)
 void CNetCmdSlot::BeginDrain() {
-    if (m_isDraining == 0) {
-        m_isDraining = 1;
+    if (m_isDraining == false) {
+        m_isDraining = true;
         m_drainSequence = m_contiguousSequence;
     }
 }

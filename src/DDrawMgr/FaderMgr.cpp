@@ -264,7 +264,7 @@ void CFaderMgr::DeleteAll() {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0017e220, 0xa)
-void CFaderMgr::SetTraceEnabled(i32 enabled) {
+void CFaderMgr::SetTraceEnabled(b32 enabled) {
     m_traceEnabled = enabled;
 }
 

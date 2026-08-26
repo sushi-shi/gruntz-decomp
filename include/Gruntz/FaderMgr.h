@@ -122,7 +122,7 @@ public:
     void Remove(CFader* pFader);
     void DeleteAll();
 
-    void SetTraceEnabled(i32 enabled);
+    void SetTraceEnabled(b32 enabled);
     void Trace(CString s);
 
     class CDDSurface* m_primarySurface;

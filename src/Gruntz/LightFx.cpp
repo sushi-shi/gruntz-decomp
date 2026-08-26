@@ -116,7 +116,7 @@ void CLightFx::Activate(
     const char* imageSetName,
     const char* animationName,
     i32 shadeTableIndex,
-    i32 deleteWhenComplete
+    b32 deleteWhenComplete
 ) {
     CDDrawWorker* imageSet = LookupWorker(
         m_ownerLogicRecord->m_ownerCtx->m_imageRegistry->m_workersByName,

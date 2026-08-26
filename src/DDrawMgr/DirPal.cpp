@@ -73,7 +73,7 @@ void CDDPalette::Destroy() {
         delete[] m_sourcePalette;
         m_sourcePalette = NULL;
     }
-    m_active = 0;
+    m_active = false;
 }
 
 RVA(0x00147590, 0x17e)
@@ -329,7 +329,7 @@ void CDDPalette::StartFadeToColor(i32 start, i32 count, char r, char g, char b, 
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         m_sourcePalette[i] = m_entries[i];
     }
-    m_active = 1;
+    m_active = true;
     Tick();
 }
 
@@ -356,13 +356,13 @@ void CDDPalette::StartFadeToPalette(i32 start, i32 count, PALETTEENTRY* target, 
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         m_sourcePalette[i] = m_entries[i];
     }
-    m_active = 1;
+    m_active = true;
     Tick();
 }
 
 RVA(0x001480a0, 0x1a7)
 i32 CDDPalette::Tick() {
-    if (m_active == 0) {
+    if (m_active == false) {
         return 0;
     }
     u32 dt = timeGetTime() - m_startTimeMs;
@@ -455,11 +455,11 @@ i32 CDDPalette::Tick() {
 
 RVA(0x00148250, 0x61)
 void CDDPalette::Flush() {
-    if (m_active == 0) {
+    if (m_active == false) {
         return;
     }
     PALETTEENTRY* v = m_targetPalette;
-    m_active = 0;
+    m_active = false;
     if (v != NULL) {
         SetAndNotify(m_firstColorIndex, m_colorCount, v, 0);
         m_targetPalette = NULL;

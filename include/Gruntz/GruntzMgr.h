@@ -111,10 +111,10 @@ public:
     virtual i32 PerFrameTick() OVERRIDE;
 
     void RefreshGameClock();
-    void HandleAppActivation(i32 active, i32 unused);
+    void HandleAppActivation(b32 active, i32 unused);
     i32 CheckPlayState();
-    i32 RestoreVideoMode(i32 save);
-    i32 SetVideoMode(i32 w, i32 h, i32 flag);
+    i32 RestoreVideoMode(b32 save);
+    i32 SetVideoMode(i32 w, i32 h, b32 saveMode);
 
     i32 TryNextResolution();
     i32 TryPreviousResolution();
@@ -189,15 +189,15 @@ public:
     i32 AdvanceComputerPlayerTurns();
     i32 InitializeBattlezPlayers();
     void SetCellHeight(i32 x, i32 y, i32 value);
-    i32 PassClickToPlayState(i32 areaArg, i32 forceTransition, i32 unused);
+    i32 PassClickToPlayState(i32 areaArg, b32 forceTransition, i32 unused);
     i32 SwitchToNextState();
 
-    i32 TransitionState(GameStateId stateId, i32 areaArg, i32 keepCurrent, i32 unused);
+    i32 TransitionState(GameStateId stateId, i32 areaArg, b32 keepCurrent, i32 unused);
 
     void EnterModalUI(const char* msg);
 
-    i32 ExitModalUI(class CDialog* dlg, i32 notify);
-    i32 FinishLevel(i32 pauseGame, i32 pauseMusic);
+    i32 ExitModalUI(class CDialog* dlg, b32 notify);
+    i32 FinishLevel(b32 pauseGame, b32 pauseMusic);
     i32 FillSaveInfo(SaveSlot* dst, const char* snapshot);
     i32 SaveState(CFileMemBase* ar);
     i32 LoadState(CFileMemBase* ar);
@@ -205,9 +205,9 @@ public:
     RECT* GetRect(RECT* out);
 
     i32 ResolveLevelChecksum(
-        i32 useDirectLevelReference,
-        i32 isBattlez,
-        i32 isCustom,
+        b32 useDirectLevelReference,
+        b32 isBattlez,
+        b32 isCustom,
         i32 levelId,
         CString levelName
     );
@@ -225,7 +225,7 @@ public:
     void SetGameClock(i32 now, i32 delta, i32 abs);
     void ResetClockGlobals();
     i32 TickStateMgrs();
-    void SetSoundEnabled(i32 enabled);
+    void SetSoundEnabled(b32 enabled);
     i32 CheckSavedMode();
     i32 IsLobbyHostReady();
     void OnMusicMuteBegin();
@@ -236,11 +236,11 @@ public:
     CPlay* PickPlayOrPausedState();
     CState* PickPausedThenPlayState();
 
-    i32 RunModalDialog(const char* tmpl, DLGPROC dlgProc, i32 flag);
+    i32 RunModalDialog(const char* tmpl, DLGPROC dlgProc, b32 notify);
 
     virtual i32 HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) OVERRIDE;
 
-    void SetMusicEnabled(i32 enabled);
+    void SetMusicEnabled(b32 enabled);
     i32 RunLoadGameDialog();
     i32 Quicksave();
 
@@ -256,7 +256,7 @@ public:
         const CString& val,
         i32 unusedG
     );
-    i32 CountActivePlayers(i32 includeComputerPlayers);
+    i32 CountActivePlayers(b32 includeComputerPlayers);
 
     GruntzPlayer* FindPlayerByNetworkId(i32 networkPlayerId);
     i32 ResetPlayerSlot(i32 slot);
@@ -324,14 +324,14 @@ public:
     tagSIZE m_modeSize;
     tagSIZE m_savedModeSize;
     i32 m_lobbyResult;
-    i32 m_lobbyProbed;
-    i32 m_delayedQuitPending;
+    b32 m_lobbyProbed;
+    b32 m_delayedQuitPending;
     i32 m_reserveda8;
-    i32 m_modalBusy;
-    i32 m_renderGate;
+    b32 m_modalBusy;
+    b32 m_renderGate;
 
     i32 m_reservedb4;
-    i32 m_isCheckpointPrompts;
+    b32 m_isCheckpointPrompts;
     SaveSlot* m_saveInfoRec;
     struct IDirectPlayLobby* m_lobby;
 
@@ -340,22 +340,22 @@ public:
     i32 m_reservedcc;
     char m_driveLetter;
     char m_padD1[3];
-    i32 m_driveLetterProbed;
+    b32 m_driveLetterProbed;
     CPtrArray m_stateStack;
 
     CString m_strRezPath;
 
     CString m_strMoviePath;
-    i32 m_inGameDir;
-    i32 m_haveRez;
-    i32 m_haveMoviez;
-    i32 m_isVoiceEnabled;
-    i32 m_isAmbientEnabled;
-    i32 m_isInterlaced;
-    i32 m_isHighDetail;
-    i32 m_isEffectsEnabled;
-    i32 m_loadingSaveGame;
-    i32 m_isEasyMode;
+    b32 m_inGameDir;
+    b32 m_haveRez;
+    b32 m_haveMoviez;
+    b32 m_isVoiceEnabled;
+    b32 m_isAmbientEnabled;
+    b32 m_isInterlaced;
+    b32 m_isHighDetail;
+    b32 m_isEffectsEnabled;
+    b32 m_loadingSaveGame;
+    b32 m_isEasyMode;
 
     i32 m_soundVolume;
 
@@ -363,9 +363,9 @@ public:
 
     i32 m_scrollSpeed;
 
-    i32 m_isBuiltInBattlezLevel;
-    i32 m_isBuiltInMultiplayerLevel;
-    i32 m_isCustomLevel;
+    b32 m_isBuiltInBattlezLevel;
+    b32 m_isBuiltInMultiplayerLevel;
+    b32 m_isCustomLevel;
     GameModeId m_gameMode;
     i32 m_computerPlayerCount;
     RECT m_viewBounds;
@@ -377,7 +377,7 @@ extern i32 g_roundStartTimeMs;
 
 i32 PumpIdleFrame();
 
-extern i32 g_monologoShown;
+extern b32 g_monologoShown;
 
 extern char g_msgScratch[256];
 

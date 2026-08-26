@@ -74,7 +74,7 @@ public:
         m_flashColor = 0;
         m_flashTimer = 0;
         m_fadeCountdown = 0;
-        m_fxEnabled = 0;
+        m_fxEnabled = false;
         m_scrollReseedTimer = 0;
         m_scrollAccum = 0;
         m_scrollStep = 0;
@@ -82,8 +82,8 @@ public:
         m_drawRect.SetRect(0, 0, 0x280, 0x1e0);
         m_reserved20c = 1;
         m_videoHandle = NULL;
-        m_videoPlaying = 0;
-        m_musicStarted = 0;
+        m_videoPlaying = false;
+        m_musicStarted = false;
     }
 
     virtual i32 LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) OVERRIDE;
@@ -110,11 +110,11 @@ public:
 
     void LoadCreditzAssets();
 
-    i32 m_musicStarted;
+    b32 m_musicStarted;
     i32 m_flashColor;
     i32 m_flashTimer;
     i32 m_fadeCountdown;
-    i32 m_fxEnabled;
+    b32 m_fxEnabled;
 
     CRect m_scrollRect;
     CRect m_drawRect;
@@ -124,7 +124,7 @@ public:
 
     double m_scrollAccum;
     double m_scrollStep;
-    i32 m_videoPlaying;
+    b32 m_videoPlaying;
     i32 m_reserved20c; // 1 in init, 2 in credits; never read
     CMoviePlayer* m_videoHandle;
 
@@ -142,17 +142,17 @@ public:
         m_frameIntervalLo = 0;
         m_frameStampHi = 0;
         m_frameIntervalHi = 0;
-        m_secretHudHandled = 0;
+        m_secretHudHandled = false;
         m_activation = BOOTYSEQ_WARP_CUE;
         m_slot = 0;
         m_stepIndex = 0;
-        m_walkStarted = 0;
-        m_soundStarted = 0;
-        m_initGate = 0;
-        m_secretGate = 0;
-        m_levelCompleteGate = 0;
-        m_initOnce = 0;
-        m_secretBannerOnce = 0;
+        m_walkStarted = false;
+        m_soundStarted = false;
+        m_initGate = false;
+        m_secretGate = false;
+        m_levelCompleteGate = false;
+        m_initOnce = false;
+        m_secretBannerOnce = false;
         for (i32 t = 0; t < 4; t++) {
             m_trailSprites[t] = NULL;
         }
@@ -201,8 +201,8 @@ public:
 
     void GenMenuRandPos(GruntDirection sel, i32* outX, i32* outY);
 
-    i32 m_initGate;
-    i32 m_secretHudHandled;
+    b32 m_initGate;
+    b32 m_secretHudHandled;
     BootySeqPhase m_activation;
 
     union {
@@ -219,8 +219,8 @@ public:
             i32 m_frameIntervalHi;
         };
     };
-    i32 m_initOnce;
-    i32 m_secretBannerOnce;
+    b32 m_initOnce;
+    b32 m_secretBannerOnce;
 
     i32 m_letterIdx;
     i32 m_radius;
@@ -230,7 +230,7 @@ public:
     CWwdSpriteObject* m_trailSprites[4];
 
     CWwdSpriteObject* m_cursorLetter;
-    i32 m_levelCompleteGate;
+    b32 m_levelCompleteGate;
 
     CWwdSpriteObject* m_sprintSprites[8];
 
@@ -244,9 +244,9 @@ public:
     CWwdSpriteObject* m_visSprites[4];
     CWwdSpriteObject* m_animSprites[WARPLETTER_COUNT];
     i32 m_stepIndex;
-    i32 m_walkStarted;
-    i32 m_soundStarted;
-    i32 m_secretGate;
+    b32 m_walkStarted;
+    b32 m_soundStarted;
+    b32 m_secretGate;
 
     CWwdSpriteObject* m_bootyPerfectSprite;
 

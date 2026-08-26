@@ -50,7 +50,7 @@ i32 CDDSurface::CreateFromBmpData(
     if (displayBitDepth != sourceBitDepth) {
         convert = 1;
     }
-    if (convert && displayBitDepth == BPP_PALETTED_8 && manager->m_hasPalette == 0) {
+    if (convert && displayBitDepth == BPP_PALETTED_8 && manager->m_hasPalette == false) {
         return 0;
     }
 
@@ -65,7 +65,7 @@ i32 CDDSurface::CreateFromBmpData(
         }
         pal = g_paletteRampBuf;
     } else if (convert && displayBitDepth == BPP_PALETTED_8) {
-        if (manager->m_hasPalette != 0) {
+        if (manager->m_hasPalette != false) {
             pal = manager->m_palette;
         } else {
             pal = NULL;
@@ -145,7 +145,7 @@ i32 CDDSurface::DecodeBmp(CDDrawDeviceManager* manager, BmpFileImage* image, u32
                 }
                 palette = s_palBmp;
             } else if (remap && palBpp == BPP_PALETTED_8) {
-                if (manager->m_hasPalette != 0) {
+                if (manager->m_hasPalette != false) {
                     palette = manager->m_palette;
                 } else {
                     palette = NULL;
@@ -512,7 +512,7 @@ i32 CDDSurface::CreateFromPcxData(
     if (displayBitDepth != sourceBitDepth) {
         convert = 1;
     }
-    if (convert && displayBitDepth == BPP_PALETTED_8 && manager->m_hasPalette == 0) {
+    if (convert && displayBitDepth == BPP_PALETTED_8 && manager->m_hasPalette == false) {
         return 0;
     }
 
@@ -525,7 +525,7 @@ i32 CDDSurface::CreateFromPcxData(
         COPY_RGB_PALETTE(g_grayRamp, p, i, 0x100)
         palette = g_grayRamp;
     } else if (convert && displayBitDepth == BPP_PALETTED_8) {
-        if (manager->m_hasPalette != 0) {
+        if (manager->m_hasPalette != false) {
             palette = manager->m_palette;
         } else {
             palette = NULL;
@@ -625,19 +625,19 @@ i32 CDDSurface::DecodePcx(CDDrawDeviceManager* manager, PcxHeader* image, u32 da
             bitcount = BPP_RGB_24;
         }
         if (bitcount != BPP_UNSET && m_width == width && m_height == height) {
-            i32 remap = 0;
+            b32 remap = false;
             ColorDepth palBpp = manager->m_displayColorDepth;
             if (palBpp != bitcount) {
-                remap = 1;
+                remap = true;
             }
-            if (!remap || palBpp != BPP_PALETTED_8 || manager->m_hasPalette != 0) {
+            if (!remap || palBpp != BPP_PALETTED_8 || manager->m_hasPalette != false) {
                 PALETTEENTRY* palette = NULL;
                 if (remap && bitcount == BPP_PALETTED_8) {
                     u8* src = image->m_pixels + dataSize - 0x380;
                     COPY_RGB_PALETTE_DO(s_palPcx, src, i, 0x100)
                     palette = s_palPcx;
                 } else if (remap && palBpp == BPP_PALETTED_8) {
-                    if (manager->m_hasPalette != 0) {
+                    if (manager->m_hasPalette != false) {
                         palette = manager->m_palette;
                     } else {
                         palette = NULL;
@@ -645,7 +645,7 @@ i32 CDDSurface::DecodePcx(CDDrawDeviceManager* manager, PcxHeader* image, u32 da
                 }
 
                 u8* pixels = image->m_pixels;
-                i32 ok;
+                b32 ok;
                 u8* decoded = NULL;
                 if (!remap) {
                     if (bitcount == BPP_PALETTED_8) {
@@ -957,7 +957,7 @@ i32 CDDSurface::DecodePcxData(
         if (remap && palette == NULL) {
             return 0;
         }
-        if (remap && displayBitDepth == BPP_PALETTED_8 && manager->m_hasPalette == 0) {
+        if (remap && displayBitDepth == BPP_PALETTED_8 && manager->m_hasPalette == false) {
             return 0;
         }
     }
@@ -1047,8 +1047,8 @@ i32 CDDSurface::DecodePid(
     if (!(width & 3) && m_width == width && m_height == height) {
         PALETTEENTRY* palette = NULL;
         i32 remap = 0;
-        i32 hasPalette = manager->m_hasPalette;
-        if (hasPalette != 0) {
+        b32 hasPalette = manager->m_hasPalette;
+        if (hasPalette != false) {
             palette = manager->m_palette;
         }
         ColorDepth displayBitDepth = manager->m_displayColorDepth;
@@ -1067,7 +1067,7 @@ i32 CDDSurface::DecodePid(
             COPY_RGB_PALETTE_DO(s_palPidData, src, i, 0x100)
             palette = s_palPidData;
         } else if ((remap && palette == NULL)
-                   || (remap && displayBitDepth == BPP_PALETTED_8 && hasPalette == 0)) {
+                   || (remap && displayBitDepth == BPP_PALETTED_8 && hasPalette == false)) {
             return 0;
         }
 

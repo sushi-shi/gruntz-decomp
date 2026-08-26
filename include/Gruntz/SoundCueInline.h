@@ -11,9 +11,9 @@ inline i32 PlaySoundCueIfElapsed(
     i32 volumePercent,
     i32 panPercent,
     i32 frequencyOffsetPercent,
-    i32 looping
+    b32 looping
 ) {
-    if (g_soundEnabled == 0) {
+    if (g_soundEnabled == false) {
         return 0;
     }
     if (g_soundCueTimeMs - static_cast<u32>(cue->m_lastPlayTimeMs)

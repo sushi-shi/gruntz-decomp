@@ -50,7 +50,7 @@ public:
         m_netMgr = NULL;
         m_savedEffectsEnabled = true;
         m_usesCustomLevel = false;
-        m_autoCommandDelay = 1;
+        m_autoCommandDelay = true;
     }
     virtual ~CMulti() OVERRIDE;
 
@@ -199,7 +199,7 @@ public:
     i32 RegisterPlayer(
         const char* name,
         ColorTint color,
-        i32 humanControlled,
+        b32 humanControlled,
         BattlezDifficulty difficulty,
         i32 preferredPlayerIndex,
         i32 networkPlayerId
@@ -234,7 +234,7 @@ public:
     b32 m_customLevelVerificationPending;
     b32 m_allPlayersReady;
     b32 m_removedByHost;
-    i32 m_levelVerifyResult;
+    b32 m_levelVerifyResult;
     b32 m_verifyDone;
     i32 m_levelChecksumReceived[4];
     i32 m_levelChecksums[4];
@@ -274,7 +274,7 @@ public:
     i32 m_reserved5e8;
     i32 m_reserved5ec;
     i32 m_playerLatencyMs[4];
-    i32 m_autoCommandDelay;
+    b32 m_autoCommandDelay;
 
     CDWordArray m_readyPlayerIds;
 
@@ -287,7 +287,7 @@ extern i32 g_battlezTurnPlayerIndex;
 
 extern CNetMgr* g_netMgr;
 
-extern i32 g_hostServicesMode;
+extern b32 g_hostServicesMode;
 
 extern HWND g_sessionListHwnd;
 

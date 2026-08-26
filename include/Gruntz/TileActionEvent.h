@@ -19,7 +19,7 @@ public:
     CTileActionEvent();
 
     ~CTileActionEvent() {
-        m_live = 0;
+        m_live = false;
     }
 
     i32 SetActionCode(BrickTileId code);
@@ -38,7 +38,7 @@ public:
     i32 m_tileX;
     i32 m_tileY;
     i32 m_cellKey;
-    i32 m_live;
+    b32 m_live;
 
     CTileTriggerContainer* m_owner;
     i32 m_playerFlags[4];

@@ -20,7 +20,7 @@ i32 CSpriteRefTable::Init(CShadeTableCache* cache, CDDrawSurfaceMgr* holder) {
     }
     m_factory = cache;
     m_spriteMgrHolder = holder;
-    m_built = 0;
+    m_built = false;
     return 1;
 }
 
@@ -29,7 +29,7 @@ void CSpriteRefTable::Reset() {
     Clear();
     m_factory = NULL;
     m_spriteMgrHolder = NULL;
-    m_built = 0;
+    m_built = false;
     for (i32 i = 0; i < 0x11; i++) {
         m_toolRefs[i] = NULL;
         m_toyRefs[i] = NULL;
@@ -55,7 +55,7 @@ void CSpriteRefTable::Clear() {
             m_toolRefs[j] = NULL;
             m_toyRefs[j] = NULL;
         }
-        m_built = 0;
+        m_built = false;
     }
 }
 
@@ -92,7 +92,7 @@ i32 CSpriteRefTable::BuildToolToyColorTable(CRezArchive* src) {
     if (!src) {
         return 0;
     }
-    if (m_built != 0) {
+    if (m_built != false) {
         return 1;
     }
     if (!LoadToolToyPalettes(src)) {
@@ -269,7 +269,7 @@ i32 CSpriteRefTable::BuildToolToyColorTable(CRezArchive* src) {
         return 0;
     }
     m_toyRefs[6] = r;
-    m_built = 1;
+    m_built = true;
     return 1;
 }
 

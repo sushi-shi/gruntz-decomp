@@ -29,7 +29,7 @@ i32 CDDrawWorkerRegistry::IsReady() {
 RVA(0x00154ac0, 0x12)
 void CDDrawWorkerRegistry::Unload() {
     MapTeardown();
-    g_resourceInstallActive = 0;
+    g_resourceInstallActive = false;
     g_surfaceColorKey = 0;
 }
 

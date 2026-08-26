@@ -53,9 +53,9 @@ public:
     IntrusiveList m_voices;
 };
 
-extern i32 g_dsoundDebugLog;
-extern i32 g_dsoundErrorDialogs;
-extern i32 g_dsoundErrorBeeps;
-extern i32 g_dsoundFormatErrors;
+extern b32 g_dsoundDebugLog;
+extern b32 g_dsoundErrorDialogs;
+extern b32 g_dsoundErrorBeeps;
+extern b32 g_dsoundFormatErrors;
 
 #endif // DSNDMGR_SOUNDSTREAM_H

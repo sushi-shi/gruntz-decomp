@@ -21,13 +21,13 @@ struct StreamFeeder {
     u32 m_writeCursor;
     u32 m_bufferBytes;
     u32 m_refillThresholdBytes;
-    u32 m_initialized;
-    u32 m_playing;
+    b32 m_initialized;
+    b32 m_playing;
     u32 m_silenceBytes;
     u8 m_silenceByte;
     u32 m_lastTickMs;
     CRezArchiveEntry* m_source;
-    u32 m_looping;
+    b32 m_looping;
     u32 m_sourceOffset;
     u32 m_windowStart;
     u32 m_windowLength;

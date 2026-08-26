@@ -32,7 +32,7 @@ i32 CWorldSoundSet::Init(SoundCueRegistry* cueRegistry, i32 masterVolume) {
     }
     m_cueRegistry = cueRegistry;
     m_masterVolume = masterVolume;
-    m_enabled = 1;
+    m_enabled = true;
     m_listenerX = 0;
     m_listenerY = 0;
     return 1;
@@ -240,7 +240,7 @@ void CWorldSoundSet::Stop() {
         CAmbientSound* sound = static_cast<CAmbientSound*>(m_list.GetNext(pos));
         if (sound != NULL && sound->m_sound != NULL) {
             sound->m_sound->StopAndRewind();
-            sound->m_isPlaying = 0;
+            sound->m_isPlaying = false;
         }
     }
 }
@@ -251,8 +251,8 @@ void CWorldSoundSet::Resume() {
     while (pos != NULL) {
         CAmbientSound* sound = static_cast<CAmbientSound*>(m_list.GetNext(pos));
         if (sound != NULL) {
-            sound->m_isPlaying = 0;
-            sound->Update(m_listenerX, m_listenerY, 1);
+            sound->m_isPlaying = false;
+            sound->Update(m_listenerX, m_listenerY, true);
         }
     }
 
@@ -267,7 +267,7 @@ void CWorldSoundSet::SetListenerPosition(i32 x, i32 y) {
     while (pos != NULL) {
         CAmbientSound* sound = static_cast<CAmbientSound*>(m_list.GetNext(pos));
         if (sound != NULL) {
-            sound->Update(x, y, 0);
+            sound->Update(x, y, false);
         }
     }
 
@@ -307,7 +307,7 @@ i32 CAmbientSound::InitFromSound(
     m_masterVolume = masterVolume;
     m_volumeScale = volumeScale;
     m_panPercent = 0;
-    m_isPlaying = 0;
+    m_isPlaying = false;
     RECT* p = &m_primaryRegion;
     if (region != NULL) {
         *p = *region;
@@ -342,29 +342,29 @@ void CAmbientSound::StartPlayback() {
     if (sound == NULL) {
         return;
     }
-    if (m_isPlaying != 0) {
+    if (m_isPlaying != false) {
         return;
     }
-    if (g_gameReg->m_soundEnabled == 0) {
+    if (g_gameReg->m_soundEnabled == false) {
         return;
     }
-    if (g_gameReg->m_worldSounds->m_enabled == 0) {
+    if (g_gameReg->m_worldSounds->m_enabled == false) {
         return;
     }
-    m_sound->ApplyAndPlay(1, m_panPercent, 0, 1);
+    m_sound->ApplyAndPlay(1, m_panPercent, 0, true);
     m_volumeLevel = pos;
     i32 v = ScaleVolume(pos);
     m_sound->SetVolumePercent(v);
     m_volumeLevel = pos;
-    m_isPlaying = 1;
+    m_isPlaying = true;
 }
 
 RVA(0x0000c090, 0x118)
-void CAmbientSound::Update(i32 x, i32 y, i32 immediate) {
+void CAmbientSound::Update(i32 x, i32 y, b32 immediate) {
     i32 inRange;
     if (m_primaryRegion.left == COORD_UNSET) {
 
-        if (m_isPlaying != 0) {
+        if (m_isPlaying != false) {
             return;
         }
         SoundBuffer* sound = m_sound;
@@ -375,16 +375,16 @@ void CAmbientSound::Update(i32 x, i32 y, i32 immediate) {
         if (lvl == 0) {
             return;
         }
-        if (g_gameReg->m_soundEnabled == 0) {
+        if (g_gameReg->m_soundEnabled == false) {
             return;
         }
-        if (g_gameReg->m_worldSounds->m_enabled == 0) {
+        if (g_gameReg->m_worldSounds->m_enabled == false) {
             return;
         }
-        sound->ApplyAndPlay(1, m_panPercent, 0, 1);
-        SetVolumeLevel(0x64, 0, 0);
+        sound->ApplyAndPlay(1, m_panPercent, 0, true);
+        SetVolumeLevel(0x64, 0, false);
         m_volumeLevel = 0x64;
-        m_isPlaying = 1;
+        m_isPlaying = true;
         return;
     }
 
@@ -399,39 +399,39 @@ void CAmbientSound::Update(i32 x, i32 y, i32 immediate) {
         inRange = 0;
     }
 
-    if (m_isPlaying == 0) {
+    if (m_isPlaying == false) {
 
         if (inRange == 0) {
             return;
         }
-        if (g_gameReg->m_soundEnabled == 0) {
+        if (g_gameReg->m_soundEnabled == false) {
             return;
         }
-        if (g_gameReg->m_worldSounds->m_enabled == 0) {
+        if (g_gameReg->m_worldSounds->m_enabled == false) {
             return;
         }
-        if (immediate != 0) {
+        if (immediate != false) {
             if (m_sound == NULL) {
                 return;
             }
-            m_sound->ApplyAndPlay(1, m_panPercent, 0, 1);
-            SetVolumeLevel(0x64, 0, 0);
+            m_sound->ApplyAndPlay(1, m_panPercent, 0, true);
+            SetVolumeLevel(0x64, 0, false);
             m_volumeLevel = 0x64;
-            m_isPlaying = 1;
+            m_isPlaying = true;
         } else {
-            FadePlayback(1, 0x64, 0x3e8);
+            FadePlayback(true, 0x64, 0x3e8);
         }
     } else {
 
         if (inRange != 0) {
             return;
         }
-        FadePlayback(0, 0, 0x3e8);
+        FadePlayback(false, 0, 0x3e8);
     }
 }
 
 RVA(0x0000c200, 0x7e)
-i32 CAmbientSound::SetVolumeLevel(i32 volumeLevel, i32 rampMs, i32 stopAndRewind) {
+i32 CAmbientSound::SetVolumeLevel(i32 volumeLevel, i32 rampMs, b32 stopAndRewind) {
     m_volumeLevel = volumeLevel;
     i32 v = ScaleVolume(volumeLevel);
     if (rampMs == 0) {
@@ -442,23 +442,23 @@ i32 CAmbientSound::SetVolumeLevel(i32 volumeLevel, i32 rampMs, i32 stopAndRewind
 
 // @early-stop
 RVA(0x0000c2a0, 0x19e)
-void CAmbientSound::FadePlayback(i32 startPlaying, i32 volumeLevel, i32 rampMs) {
+void CAmbientSound::FadePlayback(b32 startPlaying, i32 volumeLevel, i32 rampMs) {
     if (m_sound == NULL) {
         return;
     }
-    if (startPlaying != 0) {
+    if (startPlaying != false) {
 
-        if (m_isPlaying != 0) {
+        if (m_isPlaying != false) {
             return;
         }
-        if (g_gameReg->m_soundEnabled == 0) {
+        if (g_gameReg->m_soundEnabled == false) {
             return;
         }
-        if (g_gameReg->m_worldSounds->m_enabled == 0) {
+        if (g_gameReg->m_worldSounds->m_enabled == false) {
             return;
         }
         if (rampMs == 0) {
-            m_sound->ApplyAndPlay(1, m_panPercent, 0, 1);
+            m_sound->ApplyAndPlay(1, m_panPercent, 0, true);
             i32 t = m_masterVolume;
             m_volumeLevel = volumeLevel;
             if (t > 5) {
@@ -475,11 +475,11 @@ void CAmbientSound::FadePlayback(i32 startPlaying, i32 volumeLevel, i32 rampMs) 
             }
             m_sound->SetVolumePercent(v);
             m_volumeLevel = volumeLevel;
-            m_isPlaying = 1;
+            m_isPlaying = true;
             return;
         }
 
-        m_sound->ApplyAndPlay(1, m_panPercent, 0, 1);
+        m_sound->ApplyAndPlay(1, m_panPercent, 0, true);
         i32 t = m_masterVolume;
         m_volumeLevel = volumeLevel;
         if (t > 5) {
@@ -494,23 +494,23 @@ void CAmbientSound::FadePlayback(i32 startPlaying, i32 volumeLevel, i32 rampMs) 
         } else if (v > 0x64) {
             v = 0x64;
         }
-        m_sound->RampVolumeTo(v, rampMs, 0);
+        m_sound->RampVolumeTo(v, rampMs, false);
         m_volumeLevel = volumeLevel;
-        m_isPlaying = 1;
+        m_isPlaying = true;
         return;
     }
 
-    if (m_isPlaying == 0) {
+    if (m_isPlaying == false) {
         return;
     }
     if (rampMs == 0) {
         m_sound->StopAndRewind();
-        m_isPlaying = 0;
+        m_isPlaying = false;
         return;
     }
     m_volumeLevel = 0;
-    m_sound->RampVolumeTo(0, rampMs, 1);
-    m_isPlaying = 0;
+    m_sound->RampVolumeTo(0, rampMs, true);
+    m_isPlaying = false;
 }
 
 RVA(0x0000c4b0, 0x53)
@@ -549,20 +549,20 @@ i32 CAmbientPosSound::InitFromSound(
     m_masterVolume = masterVolume;
     m_panPercent = 0;
     m_volumeScale = volumeScale;
-    m_isPlaying = 0;
+    m_isPlaying = false;
     m_position = *position;
     return 1;
 }
 
 RVA(0x0000c5b0, 0x1df)
-void CAmbientPosSound::Update(i32 x, i32 y, i32 immediate) {
+void CAmbientPosSound::Update(i32 x, i32 y, b32 immediate) {
     i32 dx = abs(m_position.x - x);
     i32 dy = abs(m_position.y - y);
     i32 dist2 = dx * dx + dy * dy;
     if (dx > 0x280 || dy > 0x280) {
-        if (m_sound != NULL && m_isPlaying != 0) {
+        if (m_sound != NULL && m_isPlaying != false) {
             m_sound->StopAndRewind();
-            m_isPlaying = 0;
+            m_isPlaying = false;
         }
         return;
     }
@@ -592,26 +592,26 @@ void CAmbientPosSound::Update(i32 x, i32 y, i32 immediate) {
     m_panPercent = pan;
     m_sound->SetPanPercent(pan);
 
-    if (m_isPlaying != 0) {
+    if (m_isPlaying != false) {
         return;
     }
     if (m_sound == NULL) {
         return;
     }
-    if (g_gameReg->m_soundEnabled == 0) {
+    if (g_gameReg->m_soundEnabled == false) {
         return;
     }
-    if (g_gameReg->m_worldSounds->m_enabled == 0) {
+    if (g_gameReg->m_worldSounds->m_enabled == false) {
         return;
     }
-    m_sound->ApplyAndPlay(1, m_panPercent, 0, 1);
+    m_sound->ApplyAndPlay(1, m_panPercent, 0, true);
     {
         m_volumeLevel = vol;
         i32 v = ScaleVolume(vol);
         m_sound->SetVolumePercent(v);
     }
     m_volumeLevel = vol;
-    m_isPlaying = 1;
+    m_isPlaying = true;
 }
 
 RVA(0x0000c810, 0x18)
@@ -692,7 +692,7 @@ i32 DispatchSpotAmbientSoundLogic(CGameObject* obj) {
         CWorldSoundSet* set = g_gameReg->m_worldSounds;
         if (sound->m_sound != NULL) {
             sound->m_sound->StopAndRewind();
-            sound->m_isPlaying = 0;
+            sound->m_isPlaying = false;
         }
         if (sound->m_listNode != NULL) {
             set->m_list.RemoveAt(sound->m_listNode);
@@ -740,7 +740,7 @@ static inline i32 RandRange(CGruntzMgr* mgr, i32 lo, i32 hi) {
 
 // @early-stop
 RVA(0x0000cb30, 0x168)
-void CRandomAmbientSound::Update(i32 x, i32 y, i32 immediate) {
+void CRandomAmbientSound::Update(i32 x, i32 y, b32 immediate) {
 
     i32 firstBoxLeft = m_primaryRegion.left;
     i32 inBox = 0;
@@ -758,15 +758,15 @@ void CRandomAmbientSound::Update(i32 x, i32 y, i32 immediate) {
     }
 
     if (inBox == 0) {
-        if (m_isPlaying != 0 && m_sound != NULL) {
-            SetVolumeLevel(0, 0x3e8, 1);
-            m_isPlaying = 0;
+        if (m_isPlaying != false && m_sound != NULL) {
+            SetVolumeLevel(0, 0x3e8, true);
+            m_isPlaying = false;
         }
-        m_playPhase = 0;
+        m_playPhase = false;
         return;
     }
 
-    if (immediate != 0 && m_playPhase != 0 && m_isPlaying != 0) {
+    if (immediate != false && m_playPhase != false && m_isPlaying != false) {
         return;
     }
 
@@ -779,15 +779,15 @@ void CRandomAmbientSound::Update(i32 x, i32 y, i32 immediate) {
         return;
     }
 
-    m_playPhase ^= 1;
-    if (m_playPhase != 0) {
+    m_playPhase = !m_playPhase;
+    if (m_playPhase != false) {
         i32 r = RandRange(g_gameReg, m_playDurationMin, m_playDurationMax);
         m_countdownMs = r;
         i32 half = static_cast<u32>(r) >> 1;
         if (half > 0x3e8) {
             half = 0x3e8;
         }
-        FadePlayback(1, 0x64, half);
+        FadePlayback(true, 0x64, half);
     } else {
         i32 r = RandRange(g_gameReg, m_silenceDurationMin, m_silenceDurationMax);
         m_countdownMs = r;
@@ -795,7 +795,7 @@ void CRandomAmbientSound::Update(i32 x, i32 y, i32 immediate) {
         if (half > 0x3e8) {
             half = 0x3e8;
         }
-        FadePlayback(0, 0x64, half);
+        FadePlayback(false, 0x64, half);
     }
 }
 
@@ -822,16 +822,16 @@ void CRandomAmbientSound::InitCycleTiming(
         random = GetRandomNumber();
         if (random & 1) {
             i32 countdown = playDurationMin;
-            m_playPhase = 1;
+            m_playPhase = true;
             m_countdownMs = countdown;
         } else {
             i32 countdown = playDurationMax;
-            m_playPhase = 1;
+            m_playPhase = true;
             m_countdownMs = countdown;
         }
         return;
     }
     random = GetRandomNumber();
-    m_playPhase = 1;
+    m_playPhase = true;
     m_countdownMs = playDurationMin + random % span;
 }

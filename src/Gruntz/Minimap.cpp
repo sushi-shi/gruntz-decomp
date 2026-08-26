@@ -130,8 +130,8 @@ i32 CMinimap::AllocSurface() {
 }
 
 RVA(0x000a3460, 0x2f3)
-i32 CMinimap::Refresh(i32 elapsedMs, i32 forceRefresh) {
-    if (forceRefresh == 0) {
+i32 CMinimap::Refresh(i32 elapsedMs, b32 forceRefresh) {
+    if (forceRefresh == false) {
 
         if (static_cast<u32>(elapsedMs) >= static_cast<u32>(m_refreshRemaining)) {
             m_refreshRemaining = 0;

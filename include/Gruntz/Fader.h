@@ -33,7 +33,7 @@ public:
     CDDSurface* m_secondarySurface;
 
     class CDDrawDeviceManager* m_deviceManager;
-    i32 m_ownsTable;
+    b32 m_ownsTable;
     i32 m_measuredFps;
 };
 

@@ -24,12 +24,12 @@ struct StreamVoice : public SoundSample {
     virtual ~StreamVoice() OVERRIDE;
 
     i32 SetSource(CRezArchiveEntry* source);
-    i32 Configure(i32 volumePct, i32 panPct, i32 frequencyOffsetPct, i32 looping);
+    i32 Configure(i32 volumePct, i32 panPct, i32 frequencyOffsetPct, b32 looping);
     u32 GetDurationMs();
 
-    i32 m_reprimeWhenIdle;
-    i32 m_destroyWhenIdle;
-    i32 m_wasPlaying;
+    b32 m_reprimeWhenIdle;
+    b32 m_destroyWhenIdle;
+    b32 m_wasPlaying;
 
     StreamVoiceFeeder m_feeder;
 };

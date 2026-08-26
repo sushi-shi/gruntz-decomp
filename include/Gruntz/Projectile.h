@@ -60,7 +60,7 @@ public:
     double m_roundX;
     double m_roundY;
     i32 m_curX, m_curY;
-    i32 m_isArcing;
+    b32 m_isArcing;
     b32 m_arrived;
 
     enum {

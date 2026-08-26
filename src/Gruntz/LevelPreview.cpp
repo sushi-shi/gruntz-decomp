@@ -33,7 +33,7 @@
 #include <stdio.h>
 
 DATA(0x0024c69c)
-i32 g_previewCancelQuits = 0;
+b32 g_previewCancelQuits = false;
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
@@ -50,7 +50,7 @@ i32 CPreviewState::Enter(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     if (m_stateResources == NULL) {
         return 0;
     }
-    if (g_disableAudio == 0 && g_disableSound == 0) {
+    if (g_disableAudio == false && g_disableSound == false) {
         CRezArchiveDir* set = StateResources()->FindSubdirectory("SOUNDZ");
         if (set != NULL) {
             m_world->m_soundRegistry
@@ -124,8 +124,8 @@ i32 CPreviewState::Refade() {
     while (ShowCursor(false) >= 0) {
     }
     i32 r =
-        LoadTitlePage(const_cast<char*>(static_cast<const char*>(m_previewName)), 0, 0, 0, 0, 1);
-    RetireScene(0x50, 0x3e8, 0, 1);
+        LoadTitlePage(const_cast<char*>(static_cast<const char*>(m_previewName)), 0, 0, 0, 0, true);
+    RetireScene(0x50, 0x3e8, 0, true);
     return r;
 }
 
@@ -139,8 +139,8 @@ i32 CPreviewState::RefadeVirtual() {
     while (ShowCursor(false) >= 0) {
     }
     i32 r =
-        LoadTitlePage(const_cast<char*>(static_cast<const char*>(m_previewName)), 0, 0, 0, 0, 1);
-    RetireScene(0x50, 0x3e8, 0, 1);
+        LoadTitlePage(const_cast<char*>(static_cast<const char*>(m_previewName)), 0, 0, 0, 0, true);
+    RetireScene(0x50, 0x3e8, 0, true);
     return r;
 }
 
@@ -174,27 +174,27 @@ void CPreviewState::LoadLevelPreviewScreen() {
     m_previewName = buf;
     sprintf(buf, "\\SCREENZ\\%s", static_cast<const char*>(m_previewName));
     StateResources()->FindEntryByPath(buf, IMGTAG_XCP);
-    i32 failed = 0;
-    if (LoadTitlePage(const_cast<char*>(static_cast<const char*>(m_previewName)), 0, 0, 0, 0, 1)
+    b32 failed = false;
+    if (LoadTitlePage(const_cast<char*>(static_cast<const char*>(m_previewName)), 0, 0, 0, 0, true)
         == 0) {
-        failed = 1;
+        failed = true;
     } else {
         SoundCueRegistry* h = m_world->m_soundRegistry;
-        if (h->m_silentMode == 0) {
+        if (h->m_silentMode == false) {
             SoundCue* found = NULL;
             MapLookup(h->m_cues, "GAME_TELEPORTEROPEN", found);
             SoundCue* p = found;
             if (p != NULL) {
                 i32 volumePercent = g_soundVolumePercent;
-                if (g_soundEnabled != 0
+                if (g_soundEnabled != false
                     && static_cast<u32>((g_soundCueTimeMs - p->m_lastPlayTimeMs))
                            >= static_cast<u32>(p->m_replayDelayMs)) {
                     p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                    p->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
+                    p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
                 }
             }
         }
-        RetireScene(0x50, 0x3e8, 0, 1);
+        RetireScene(0x50, 0x3e8, 0, true);
     }
     m_previewCountdownMs = 60000;
     if (failed) {

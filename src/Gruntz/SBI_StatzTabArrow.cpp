@@ -38,15 +38,15 @@ static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
 }
 
 RVA(0x000ea0f0, 0x5c)
-void CSBI_StatzTabArrow::SetUnsampledDirection(StatusBarDock position, i32 animate) {
+void CSBI_StatzTabArrow::SetUnsampledDirection(StatusBarDock position, b32 animate) {
     if (position == STATUSBAR_DOCK_RIGHT) {
-        if (animate == 0) {
+        if (animate == false) {
             SetRange(4, -1, 0, 0, -1);
         } else {
             SetRange(-1, -1, 1, 0, -1);
         }
     } else {
-        if (animate == 0) {
+        if (animate == false) {
             SetRange(1, -1, 0, 0, -1);
         } else {
             SetRange(-1, -1, -1, 0, -1);
@@ -55,15 +55,15 @@ void CSBI_StatzTabArrow::SetUnsampledDirection(StatusBarDock position, i32 anima
 }
 
 RVA(0x000ea170, 0x5c)
-void CSBI_StatzTabArrow::SetSampledDirection(StatusBarDock position, i32 animate) {
+void CSBI_StatzTabArrow::SetSampledDirection(StatusBarDock position, b32 animate) {
     if (position == STATUSBAR_DOCK_RIGHT) {
-        if (animate == 0) {
+        if (animate == false) {
             SetRange(1, -1, 0, 0, -1);
         } else {
             SetRange(-1, -1, -1, 0, -1);
         }
     } else {
-        if (animate == 0) {
+        if (animate == false) {
             SetRange(4, -1, 0, 0, -1);
         } else {
             SetRange(-1, -1, 1, 0, -1);

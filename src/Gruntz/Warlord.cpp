@@ -205,7 +205,7 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
 
     m_notifyTimer.m_start = 0;
     m_notifyTimer.m_window = 0;
-    m_deathStarted = 0;
+    m_deathStarted = false;
     ResolveMovingAnimation();
 }
 
@@ -703,7 +703,7 @@ i32 CWarlord::BuildFortSplashParticles() {
 
 RVA(0x00045100, 0x112)
 i32 CWarlord::ResolveMovingAnimation() {
-    if (m_deathStarted != 0) {
+    if (m_deathStarted != false) {
         return 0;
     }
 
@@ -722,7 +722,7 @@ i32 CWarlord::ResolveMovingAnimation() {
 RVA(0x00045270, 0x2a8)
 i32 CWarlord::NotifyFortUnderAttack() {
 
-    if (m_deathStarted == 0) {
+    if (m_deathStarted == false) {
         bool alreadyPanicking = ANIMATION_ACT_EQUALS("D");
         if (!alreadyPanicking) {
             if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
@@ -764,10 +764,10 @@ i32 CWarlord::NotifyFortUnderAttack() {
 
 RVA(0x000455f0, 0x15b)
 i32 CWarlord::ResolveDeathAnimation() {
-    if (m_deathStarted != 0) {
+    if (m_deathStarted != false) {
         return 0;
     }
-    m_deathStarted = 1;
+    m_deathStarted = true;
 
     CGruntzMgr* g = g_gameReg;
     if (g->m_gameMode == GAMEMODE_QUESTZ) {
@@ -791,7 +791,7 @@ i32 CWarlord::ResolveDeathAnimation() {
 
 RVA(0x000457b0, 0x14c)
 i32 CWarlord::ResolveJoyAnimation() {
-    if (m_deathStarted != 0) {
+    if (m_deathStarted != false) {
         return 0;
     }
 
@@ -818,7 +818,7 @@ i32 CWarlord::ResolveJoyAnimation() {
 
 RVA(0x00045960, 0x181)
 i32 CWarlord::ResolveIdleAnimation() {
-    if (m_deathStarted != 0) {
+    if (m_deathStarted != false) {
         return 0;
     }
 
@@ -851,7 +851,7 @@ i32 CWarlord::ResolveIdleAnimation() {
 
 RVA(0x00045b60, 0x161)
 i32 CWarlord::ResolveBattlecryAnimation() {
-    if (m_deathStarted != 0) {
+    if (m_deathStarted != false) {
         return 0;
     }
 

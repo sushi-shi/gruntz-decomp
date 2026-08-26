@@ -31,7 +31,7 @@ public:
         const char* imageSetName,
         const char* animationName,
         i32 shadeTableIndex,
-        i32 deleteWhenComplete
+        b32 deleteWhenComplete
     );
 
     i32 RebindNode();

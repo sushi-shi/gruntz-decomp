@@ -51,9 +51,9 @@ char s_cheatFps[8] = "\x8a\x8d\x83\x8d\x90";
 RVA(0x00022ad0, 0x1f)
 BOOL CCheatMgr::Init(HWND owner) {
     m_owner = owner;
-    m_flag = 0;
+    m_flag = false;
     m_pendingCodeLength = 0;
-    m_cheatsUsed = 0;
+    m_cheatsUsed = false;
     return true;
 }
 
@@ -72,9 +72,9 @@ void CCheatMgr::Empty() {
     }
     m_map.RemoveAll();
     m_owner = NULL;
-    m_flag = 0;
+    m_flag = false;
     m_pendingCodeLength = 0;
-    m_cheatsUsed = 0;
+    m_cheatsUsed = false;
 }
 
 
@@ -195,9 +195,9 @@ BOOL CCheatMgr::CheckCode(CString code) {
     if (found->commandId > 0) {
         PostMessageA(m_owner, WM_COMMAND, found->commandId, 0);
         if ((found->flag & 1) == 0) {
-            m_cheatsUsed = 1;
+            m_cheatsUsed = true;
         }
-        m_flag = 0;
+        m_flag = false;
         m_pendingCodeLength = 0;
     }
     return true;

@@ -59,7 +59,7 @@ i32 CBattlezMapConfig::RepathToFreeCell(CGrunt* unit) {
         POSITION pos = m_triggerMgr->m_baseList.GetHeadPosition();
         while (pos != NULL) {
             CGruntPuddle* cand = static_cast<CGruntPuddle*>(m_triggerMgr->m_baseList.GetNext(pos));
-            if (cand->m_pending == 0) {
+            if (cand->m_pending == false) {
                 CGameObject* lvl = unit->m_object;
                 i32 lx = lvl->m_screenX >> TILE_SHIFT_PX;
                 i32 ly = lvl->m_screenY >> TILE_SHIFT_PX;
@@ -92,7 +92,7 @@ i32 CBattlezMapConfig::ProbeUnoccupiedAt(i32 x, i32 y) {
     POSITION pos = lst.GetHeadPosition();
     while (pos != NULL) {
         CGruntPuddle* cand = static_cast<CGruntPuddle*>(lst.GetNext(pos));
-        if (cand != NULL && cand->m_tileX == x && cand->m_tileY == y && cand->m_pending == 0) {
+        if (cand != NULL && cand->m_tileX == x && cand->m_tileY == y && cand->m_pending == false) {
             return 1;
         }
     }

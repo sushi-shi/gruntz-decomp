@@ -20,7 +20,7 @@ GZ_ENUM_CONST_BEGIN(FlashShadeRampDefaults)
 GZ_ENUM_CONST_END(FlashShadeRampDefaults)
 
 struct CShadeTable {
-    i32 m_alloc;
+    b32 m_alloc;
     i32 m_size;
 
     union {
@@ -94,7 +94,7 @@ public:
 
     static i32 __cdecl FindNearestColor(PALETTEENTRY* pal, u8 r, u8 g, u8 b);
 
-    i32 m_initialized;
+    b32 m_initialized;
     CShadeTableArray m_arr;
 };
 

@@ -100,9 +100,9 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     CLEAR_OBJECT_AREA
     m_targetPlayerIndex = -1;
     m_targetUnitIndex = -1;
-    m_storyMode = 0;
+    m_storyMode = false;
     if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-        m_storyMode = 1;
+        m_storyMode = true;
     }
 }
 
@@ -135,7 +135,7 @@ void RegisterSpotLightActions() {
 // @early-stop
 RVA(0x000b1af0, 0x318)
 i32 CSpotLight::Tick() {
-    if (g_gameReg->m_isEasyMode == 0 || g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
+    if (g_gameReg->m_isEasyMode == false || g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
         CGrunt* tgt = g_gameReg->m_triggerMgr->FindGruntAt(
             m_object->m_screenX,
             m_object->m_screenY,
@@ -145,7 +145,7 @@ i32 CSpotLight::Tick() {
             NULL
         );
         if (tgt != NULL && tgt->m_gruntKind != GRUNT_INVULNERABLE
-            && !(m_storyMode != 0 && m_targetPlayerIndex != 0)) {
+            && !(m_storyMode != false && m_targetPlayerIndex != 0)) {
             m_previousAnimationActId = m_logicRecord->m_eventCode;
             m_logicRecord->m_eventCode = ActFindId("B");
             m_object->m_screenX = tgt->m_object->m_screenX;
@@ -157,18 +157,18 @@ i32 CSpotLight::Tick() {
                 CString name;
                 name.Format("LEVEL_UFOHAZARDLASER%d", laser);
                 SoundCueRegistry* obj = g_gameReg->m_world->m_soundRegistry;
-                if (obj->m_silentMode == 0) {
+                if (obj->m_silentMode == false) {
                     SoundCue* found = obj->FindCue(name);
                     SoundCue* cue = found;
                     if (cue != NULL) {
-                        i32 soundEnabled = g_soundEnabled;
+                        b32 soundEnabled = g_soundEnabled;
                         i32 volumePercent = g_soundVolumePercent;
-                        if (soundEnabled != 0) {
+                        if (soundEnabled != false) {
                             u32 cueTimeMs = g_soundCueTimeMs;
                             if (cueTimeMs - cue->m_lastPlayTimeMs
                                 >= static_cast<u32>(cue->m_replayDelayMs)) {
                                 cue->m_lastPlayTimeMs = cueTimeMs;
-                                cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
+                                cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
                             }
                         }
                     }

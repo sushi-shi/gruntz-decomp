@@ -20,13 +20,13 @@ GZ_ENUM_CONST_END(DinInputConstants)
 #define INPUTDEVICE_FILE "C:\\Proj\\DinMgr2\\InputDevice.cpp"
 
 DATA(0x00253aa4)
-i32 g_dinputLogEnabled;
+b32 g_dinputLogEnabled;
 DATA(0x00253aa8)
-i32 g_dinputMsgBoxEnabled;
+b32 g_dinputMsgBoxEnabled;
 DATA(0x00253aac)
-i32 g_dinputBeepEnabled;
+b32 g_dinputBeepEnabled;
 DATA(0x00253ab0)
-i32 g_dinputThirdEnabled;
+b32 g_dinputThirdEnabled;
 
 RVA(0x00132ce0, 0xae)
 i32 DirectInputMgr2::Create(HWND owner, HINSTANCE hinst, u32 flags) {
@@ -168,58 +168,58 @@ i32 __stdcall DinEnumJoystickCallback(LPCDIDEVICEINSTANCEA instance, void* ref) 
 
 RVA(0x00133080, 0x4a)
 i32 DirectInputMgr2::PollAll() {
-    i32 failed = 0;
+    b32 failed = false;
     if (m_keyboard != NULL && m_keyboard->Poll() == 0) {
-        failed = 1;
+        failed = true;
     }
     if (m_mouse != NULL && m_mouse->Poll() == 0) {
-        failed = 1;
+        failed = true;
     }
     if (PollJoysticks() == 0) {
-        failed = 1;
+        failed = true;
     }
-    return failed == 0;
+    return failed == false;
 }
 
 RVA(0x001330d0, 0x3a)
 i32 DirectInputMgr2::PollJoysticks() {
-    i32 failed = 0;
+    b32 failed = false;
     i32 n = m_joysticks.GetSize();
     for (i32 i = 0; i < n; i++) {
         CInputDevBase* d = static_cast<CInputDevBase*>(m_joysticks.GetAt(i));
         if (d != NULL && d->Poll() == 0) {
-            failed = 1;
+            failed = true;
         }
     }
-    return failed == 0;
+    return failed == false;
 }
 
 RVA(0x00133110, 0x4a)
 i32 DirectInputMgr2::ReadAll() {
-    i32 failed = 0;
+    b32 failed = false;
     if (m_keyboard != NULL && m_keyboard->Poll() == 0) {
-        failed = 1;
+        failed = true;
     }
     if (m_mouse != NULL && m_mouse->Poll() == 0) {
-        failed = 1;
+        failed = true;
     }
     if (ResetJoystickStates() == 0) {
-        failed = 1;
+        failed = true;
     }
-    return failed == 0;
+    return failed == false;
 }
 
 RVA(0x00133160, 0x3a)
 i32 DirectInputMgr2::ResetJoystickStates() {
-    i32 failed = 0;
+    b32 failed = false;
     i32 n = m_joysticks.GetSize();
     for (i32 i = 0; i < n; i++) {
         CInputDevBase* d = static_cast<CInputDevBase*>(m_joysticks.GetAt(i));
         if (d != NULL && d->ResetState() == 0) {
-            failed = 1;
+            failed = true;
         }
     }
-    return failed == 0;
+    return failed == false;
 }
 
 RVA(0x001331a0, 0x37)
@@ -308,7 +308,7 @@ CMouseDevice::~CMouseDevice() {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00133560, 0x27)
-void SetDInputReportModes(i32 log, i32 msgBox, i32 beep, i32 third) {
+void SetDInputReportModes(b32 log, b32 msgBox, b32 beep, b32 third) {
     g_dinputLogEnabled = log;
     g_dinputMsgBoxEnabled = msgBox;
     g_dinputBeepEnabled = beep;

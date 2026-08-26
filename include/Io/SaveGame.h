@@ -35,7 +35,7 @@ struct SaveSlot {
     };
     i32 m_levelId;
     i32 m_count;
-    i32 m_active;
+    b32 m_active;
     i32 m_checksum;
     union {
         char m_name[0x20];
@@ -47,8 +47,8 @@ struct SaveSlot {
         char m_serial[0x40];
     };
     char m_levelName[0x83];
-    i32 m_isCustom;
-    i32 m_isBattlez;
+    b32 m_isCustom;
+    b32 m_isBattlez;
 };
 
 class CSaveGame {

@@ -17,17 +17,17 @@
 RVA(0x00093d40, 0x473)
 
 i32 CGruntzMgr::ResolveLevelChecksum(
-    i32 useDirectLevelReference,
-    i32 isBattlez,
-    i32 isCustom,
+    b32 useDirectLevelReference,
+    b32 isBattlez,
+    b32 isCustom,
     i32 levelId,
     CString levelName
 ) {
-    if (isCustom != 0) {
+    if (isCustom != false) {
         WwdHeader buf;
         CFile file;
         CString path;
-        if (useDirectLevelReference == 0 && isBattlez == 0) {
+        if (useDirectLevelReference == false && isBattlez == false) {
             path = "custom\\" + levelName;
         } else {
             path = levelName;
@@ -44,8 +44,8 @@ i32 CGruntzMgr::ResolveLevelChecksum(
         return 0;
     }
 
-    if (useDirectLevelReference == 0) {
-        if (isBattlez != 0) {
+    if (useDirectLevelReference == false) {
+        if (isBattlez != false) {
             WwdHeader buf;
             CRezArchiveDir* node = m_resourceArchive->FindDirectoryByPath("GAME_BATTLEZ");
             if (node == NULL) {

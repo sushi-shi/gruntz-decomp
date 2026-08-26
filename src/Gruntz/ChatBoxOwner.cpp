@@ -125,7 +125,7 @@ void CChatBoxOwner::HandleTextInputKey(i32 charCode, i32 keyData) {
                 if (parsed) {
                     CString group = "";
                     CString code;
-                    i32 enabled = 0;
+                    b32 enabled = false;
                     i32 count = bute.GetIntDef("Cheatz", "NumCheatz", 0);
                     for (i32 i = 1; i <= count; i++) {
                         group.Format("Cheat%i", i);
@@ -170,7 +170,7 @@ void CChatBoxOwner::HandleTextInputKey(i32 charCode, i32 keyData) {
         }
     }
     m_fontConfig->EndInput();
-    m_inputActive = 0;
+    m_inputActive = false;
 }
 
 RVA(0x00020ef0, 0x20)

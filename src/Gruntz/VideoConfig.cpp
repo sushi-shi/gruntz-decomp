@@ -35,15 +35,15 @@ DATA(0x0020ccc4)
 Resolution g_videoResolutionMode = RES_640X480;
 
 DATA(0x0022bd64)
-i32 g_unusedMusicEnabledSnapshot = 0;
+b32 g_unusedMusicEnabledSnapshot = false;
 DATA(0x0022bd68)
 i32 g_savedScrollSpeed = 0;
 DATA(0x0022bd6c)
 i32 g_savedSoundVolume = 0;
 DATA(0x0022bd70)
-i32 g_savedEasyMode = 0;
+b32 g_savedEasyMode = false;
 DATA(0x0022bd84)
-i32 g_savedSoundEnabled = 0;
+b32 g_savedSoundEnabled = false;
 DATA(0x0022bdc4)
 i32 g_savedVoiceVolume = 0;
 DATA(0x0022bdc8)
@@ -51,9 +51,9 @@ Resolution g_savedResolutionMode = RES_UNSET;
 DATA(0x0022bdcc)
 i32 g_savedMidiVolume = 0;
 DATA(0x0022bdd0)
-i32 g_savedMusicEnabled = 0;
+b32 g_savedMusicEnabled = false;
 DATA(0x0022bdd4)
-i32 g_savedVoiceEnabled = 0;
+b32 g_savedVoiceEnabled = false;
 
 DATA(0x0022bdd8)
 HWND g_optHwndMusic = NULL;
@@ -184,7 +184,7 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                 if (g_gameReg->m_curState->Update() == GAMESTATE_MULTI) {
                     (static_cast<CMulti*>(g_gameReg->m_curState))->AnnounceOptionsOpened();
                 } else {
-                    EnableWindow(g_optHwndEasy, g_cdPromptResult == 0);
+                    EnableWindow(g_optHwndEasy, g_cdPromptResult == false);
                 }
             }
             if (g_disableAudio) {
@@ -201,7 +201,7 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                 EnableWindow(g_optHwndVoice, false);
                 EnableWindow(g_optHwndVoiceVolume, false);
             }
-            if (g_disableMusic != 0 || g_gameReg->m_midi->m_midiAvailable == 0) {
+            if (g_disableMusic != false || g_gameReg->m_midi->m_midiAvailable == false) {
                 EnableWindow(g_optHwndSpeech, false);
                 EnableWindow(g_optHwndMidiVolume, false);
             }
@@ -250,8 +250,8 @@ void ReadMenuOptionsDialog(HWND hDlg) {
     if (resIndex >= IDX(RES_UNSET) && resIndex <= 100) {
         g_videoResolutionMode = static_cast<Resolution>(resIndex);
     }
-    if (g_disableAudio == 0) {
-        if (g_disableSound == 0) {
+    if (g_disableAudio == false) {
+        if (g_disableSound == false) {
             g_gameReg->SetSoundEnabled(IsDlgButtonChecked(hDlg, 0x46d));
             i32 mv = GetDialogScrollPosition(hDlg, 0x470);
             if (mv >= 0 && mv <= 100) {
@@ -263,7 +263,8 @@ void ReadMenuOptionsDialog(HWND hDlg) {
                 g_gameReg->SetVoiceVolume(sv);
             }
         }
-        if (g_disableAudio == 0 && g_disableMusic == 0 && g_gameReg->m_midi->m_midiAvailable != 0) {
+        if (g_disableAudio == false && g_disableMusic == false
+            && g_gameReg->m_midi->m_midiAvailable != false) {
             g_gameReg->SetMusicEnabled(IsDlgButtonChecked(hDlg, 0x471));
             i32 pv = GetDialogScrollPosition(hDlg, 0x472);
             if (pv >= 0 && pv <= 100) {
@@ -285,14 +286,15 @@ void ApplyGameOptions() {
     }
     g_gameReg->m_isEasyMode = g_savedEasyMode;
     g_videoResolutionMode = g_savedResolutionMode;
-    if (g_disableAudio == 0) {
-        if (g_disableSound == 0) {
+    if (g_disableAudio == false) {
+        if (g_disableSound == false) {
             g_gameReg->SetSoundEnabled(g_savedSoundEnabled);
             g_gameReg->SetSoundVolume(g_savedSoundVolume);
             g_gameReg->m_isVoiceEnabled = g_savedVoiceEnabled;
             g_gameReg->SetVoiceVolume(g_savedVoiceVolume);
         }
-        if (g_disableAudio == 0 && g_disableMusic == 0 && g_gameReg->m_midi->m_midiAvailable != 0) {
+        if (g_disableAudio == false && g_disableMusic == false
+            && g_gameReg->m_midi->m_midiAvailable != false) {
             g_gameReg->SetMusicEnabled(g_savedMusicEnabled);
             g_gameReg->m_midi->SetMasterVolume(g_savedMidiVolume);
         }
@@ -509,7 +511,7 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
             return;
         }
         cue->m_lastPlayTimeMs = g_soundCueTimeMs;
-        cue->m_sound->AcquireAndPlay(newpos, 0, 0, 0);
+        cue->m_sound->AcquireAndPlay(newpos, 0, 0, false);
         return;
     }
     if (hCtrl == GetDlgItem(hDlg, 0x470)) {
@@ -527,7 +529,7 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         if (!cue) {
             return;
         }
-        i32 soundEnabled = g_soundEnabled;
+        b32 soundEnabled = g_soundEnabled;
         i32 volumePercent = g_soundVolumePercent;
         if (!soundEnabled) {
             return;
@@ -537,7 +539,7 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
             return;
         }
         cue->m_lastPlayTimeMs = g_soundCueTimeMs;
-        cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
+        cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
         return;
     }
 }

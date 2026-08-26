@@ -18,7 +18,7 @@ public:
     i32 LoadTimerSprite(i32 originX, i32 originY);
     void Reset();
     i32 Tick(i32 elapsedMs);
-    i32 Draw(CDDrawSurfacePair* target, i32 forceVisible);
+    i32 Draw(CDDrawSurfacePair* target, b32 forceVisible);
     void SetTime(i32 minutes, i32 seconds);
     void AddTime(i32 minutes, i32 seconds);
     i32 SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
@@ -28,7 +28,7 @@ public:
     i32 m_baseX;
     i32 m_baseY;
     CDDrawWorker* m_sprite;
-    i32 m_active;
+    b32 m_active;
 
     CImage* m_frameMinTens;
     CImage* m_frameMinOnes;
@@ -41,7 +41,7 @@ public:
     Clock64 m_accum;
     Clock64 m_startStamp;
     Clock64 m_unusedStamp; // only 0/-1 sentinel writes; never read
-    i32 m_running;
+    b32 m_running;
     i32 m_currentMs;
 };
 

@@ -124,7 +124,7 @@ i32 CGrunt::UpdateGruntStatus() {
             }
         }
     } else if (m_stamina > STAMINA_HALF) {
-        if (m_lowStaminaCued == 0) {
+        if (m_lowStaminaCued == false) {
             CGruntzMgr* g = g_gameReg;
             i32 y = m_object->m_screenY;
             i32 x = m_object->m_screenX;
@@ -132,7 +132,7 @@ i32 CGrunt::UpdateGruntStatus() {
             if (CGameLevel::PointInRect(&vr, x, y)) {
                 g->m_voiceManager->PlayGruntVoiceCue(this, 2, -1, -1, -1);
             }
-            m_lowStaminaCued = 1;
+            m_lowStaminaCued = true;
         }
     }
     return 0;
@@ -351,7 +351,7 @@ i32 CGrunt::StepAttackFire() {
         m_attackDowntimeHi = 0;
         m_attackClockLo = static_cast<i32>(g_frameTime);
         m_attackClockHi = 0;
-        m_lowStaminaCued = 0;
+        m_lowStaminaCued = false;
         m_stamina = 0;
         if (m_healthSprite != NULL) {
             CreateStaminaSprite();
@@ -360,7 +360,7 @@ i32 CGrunt::StepAttackFire() {
     }
 
     CAniAdvanceCursor* cur = &m_wwdObject->m_animationCursor;
-    if ((cur->m_finished == 0 || cur->m_frameTicksLeft != 0) && flag == 0) {
+    if ((cur->m_finished == false || cur->m_frameTicksLeft != 0) && flag == 0) {
         return 0;
     }
     if (m_entranceReason == GRUNT_BOOMERANG) {
@@ -538,7 +538,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
 
 RVA(0x00062840, 0x25d)
 i32 CGrunt::UpdateToyUseAnimation() {
-    i32 ready = m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta));
+    b32 ready = m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta));
     CAniAdvanceCursor* sub = &m_wwdObject->m_animationCursor;
     if (IsAniCursorComplete(sub)) {
         if (m_arrived != false) {
@@ -566,7 +566,7 @@ i32 CGrunt::UpdateToyUseAnimation() {
     }
 
     i64 diff = static_cast<i64>(g_frameTime) - m_toyClock;
-    if (diff >= m_toyDuration && m_entranceStamped == false && ready == 1) {
+    if (diff >= m_toyDuration && m_entranceStamped == false && ready == true) {
         HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
         SwitchAnimation(AT(m_poseToy, GRUNT_TOY_BREAK));
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
@@ -584,7 +584,7 @@ i32 CGrunt::UpdateToyUseAnimation() {
         return 0;
     }
     StopVehicleLoopSound();
-    if (ready == 1) {
+    if (ready == true) {
         UpdateArrival(0, 0);
     }
     return 0;
@@ -676,7 +676,7 @@ void CGrunt::ResetEntranceAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32
             i32 idx = GetRandom(1, count);
             if (playVoiceCue != 0) {
                 g_gameReg->Rand();
-                i32 focused = (m_playerIndex == g_curPlayer);
+                b32 focused = (m_playerIndex == g_curPlayer);
                 if (focused && idx > 0x5a) {
                     CGruntzMgr* g = g_gameReg;
                     if (CGameLevel::PointInBounds(
@@ -790,28 +790,29 @@ i32 CGrunt::ResolveEntranceArrival() {
         }
     }
 
-    i32 ready = m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta));
+    b32 ready = m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta));
 
     if (static_cast<i64>(g_frameTime) - m_idleTimer >= m_idleWindow) {
         CGruntzMgr* g = g_gameReg;
         GameModeId mode = g->m_gameMode;
         if (mode != GAMEMODE_QUESTZ) {
             GruntzPlayer* slot = &g->m_players[m_playerIndex];
-            if (slot != NULL && slot->m_humanControlled != 0) {
-                if (m_tileClaimed == 0 && m_arrivalNotified == 0 && mode == GAMEMODE_MULTIPLAYER
-                    && g_curPlayer == m_playerIndex && m_arrived == false) {
+            if (slot != NULL && slot->m_humanControlled != false) {
+                if (m_tileClaimed == false && m_arrivalNotified == false
+                    && mode == GAMEMODE_MULTIPLAYER && g_curPlayer == m_playerIndex
+                    && m_arrived == false) {
                     m_triggerMgr->EnqueueGuardBegin(m_playerIndex, m_unitIndex);
-                    m_arrivalNotified = 1;
+                    m_arrivalNotified = true;
                     goto tail;
                 }
                 if (mode != GAMEMODE_MULTIPLAYER && g_curPlayer == m_playerIndex
-                    && m_arrived == false && m_tileClaimed != 1) {
+                    && m_arrived == false && m_tileClaimed != true) {
                     m_arrivalRerollLo = 0;
                     m_arrivalRerollWindowLo = 0;
                     m_arrivalRerollHi = 0;
                     m_arrivalRerollWindowHi = 0;
                     m_defenderPx = m_lastTilePx;
-                    m_tileClaimed = 1;
+                    m_tileClaimed = true;
                     PickupType kind = m_entranceReason;
 
                     switch (kind) {
@@ -852,7 +853,7 @@ tail:
         }
         return 0;
     }
-    if (static_cast<i64>(g_frameTime) - m_idleAnchor >= m_idleDelay && ready == 1) {
+    if (static_cast<i64>(g_frameTime) - m_idleAnchor >= m_idleDelay && ready == true) {
         ResetEntranceAnimation(0, 1, 1);
     }
     return 0;
@@ -1264,7 +1265,7 @@ i32 CGrunt::StepCombatReaction(
                     i32 flag = 1;
                     if (PIXEL_PAIR_NOT_AT_POSITION(hx, hy, m_lastTilePx.m_x, m_lastTilePx.m_y)) {
                         if (IsDropReady(1)) {
-                            m_coordToggle = (m_coordToggle == 0) ? 1 : 0;
+                            m_coordToggle = (m_coordToggle == false) ? 1 : 0;
                             flag = 0;
                         }
                     }
@@ -1483,7 +1484,7 @@ i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
     } else if (m_entranceReason == PICKUP_TOOB) {
         m_entranceActive = true;
         SET_ANIMATION_ACT("N");
-        m_coordToggle = (m_coordToggle == 0);
+        m_coordToggle = (m_coordToggle == false);
     } else if (m_entranceReason == PICKUP_WAND) {
         i32 base;
         if (rand() % 0x64 < 0x50) {
@@ -1549,7 +1550,7 @@ i32 CGrunt::LoadWandGruntItemConfig() {
             m_attackDowntimeHi = 0;
             m_attackClockLo = g_frameTime;
             m_attackClockHi = 0;
-            m_lowStaminaCued = 0;
+            m_lowStaminaCued = false;
             m_stamina = 0;
             if (m_healthSprite != NULL) {
                 CreateStaminaSprite();

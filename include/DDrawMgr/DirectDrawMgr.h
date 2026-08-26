@@ -28,7 +28,7 @@ public:
         m_reserved = 0;
         m_entries = NULL;
         m_readbackEntries = NULL;
-        m_active = 0;
+        m_active = false;
         m_sourcePalette = NULL;
         m_targetPalette = NULL;
         m_firstColorIndex = 0;
@@ -82,7 +82,7 @@ public:
     i32 m_lastElapsedMs;
     i32 m_firstColorIndex;
     i32 m_colorCount;
-    i32 m_active;
+    b32 m_active;
 };
 
 struct DDModeInfo {

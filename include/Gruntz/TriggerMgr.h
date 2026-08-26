@@ -103,9 +103,9 @@ public:
     i32 RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelection);
 
     i32
-    SpawnPuddle(i32 x, i32 y, i32 playerIndex, i32 moveIcon, i32 animatePlacement, i32 gaugePoints);
+    SpawnPuddle(i32 x, i32 y, i32 playerIndex, i32 moveIcon, b32 animatePlacement, i32 gaugePoints);
 
-    i32 PlacePuddle(CGameObject* sprite, i32 animatePlacement);
+    i32 PlacePuddle(CGameObject* sprite, b32 animatePlacement);
 
     i32 PlaceObject(
         i32 playerIndex,
@@ -145,8 +145,8 @@ public:
     CGrunt*
     FindGruntAt(i32 px, i32 py, RECT* span, i32* outPlayerIndex, i32* outUnitIndex, RECT* src);
 
-    void EnqueueSelectedMove(i32 isLocalCommand, i32 targetX, i32 targetY);
-    void EnqueueSelectedToolUse(i32 isLocalCommand, i32 targetX, i32 targetY, i32 targetIsGrunt);
+    void EnqueueSelectedMove(b32 isLocalCommand, i32 targetX, i32 targetY);
+    void EnqueueSelectedToolUse(b32 isLocalCommand, i32 targetX, i32 targetY, b32 targetIsGrunt);
 
     i32 PlaceObjectFull(i32 x, i32 y);
 
@@ -177,7 +177,7 @@ public:
 
     void ResetSpawnState();
 
-    i32 CycleMoveIcons(i32 skipPlayerIndex, i32 enable);
+    i32 CycleMoveIcons(i32 skipPlayerIndex, b32 enable);
 
     i32 RebuildSelectionList(i32 idx);
 
@@ -188,7 +188,7 @@ public:
 
     i32 EnqueueGroupCells();
 
-    void HudRect(RECT r, i32 flag);
+    void HudRect(RECT r, b32 selectionReset);
 
     i32 UpdateFrame(i32 deltaMs);
 
@@ -237,9 +237,9 @@ public:
         m_selSentinel = -1;
         m_rollingballLoop = NULL;
         m_teleportLoop = NULL;
-        m_rollingballWanted = 0;
-        m_teleportWanted = 0;
-        m_groupFlag = 1;
+        m_rollingballWanted = false;
+        m_teleportWanted = false;
+        m_groupFlag = true;
         g_curPlayer = 0;
     }
     RVA(0x00085c50, 0x83)
@@ -274,7 +274,7 @@ public:
 
     CDDrawSurfaceMgr* m_world;
 
-    i32 m_armed;
+    b32 m_armed;
     Coord m_cameraTargetIdentity;
     CWwdSpriteObject* m_goal;
 
@@ -334,9 +334,9 @@ public:
 
     SoundBuffer* m_rollingballLoop;
     SoundBuffer* m_teleportLoop;
-    i32 m_rollingballWanted;
-    i32 m_teleportWanted;
-    i32 m_groupFlag;
+    b32 m_rollingballWanted;
+    b32 m_teleportWanted;
+    b32 m_groupFlag;
 };
 
 extern i32 g_groupSentinel;

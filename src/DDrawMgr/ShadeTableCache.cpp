@@ -57,7 +57,7 @@ inline CShadeTableArray::~CShadeTableArray() {
 
 RVA(0x0014de30, 0x1a)
 CShadeTableCache::CShadeTableCache() {
-    m_initialized = 0;
+    m_initialized = false;
 }
 
 RVA(0x0014de50, 0x6b)
@@ -69,7 +69,7 @@ CShadeTableCache::~CShadeTableCache() {
 
 RVA(0x0014dec0, 0xc)
 i32 CShadeTableCache::Init() {
-    m_initialized = 1;
+    m_initialized = true;
     return 1;
 }
 

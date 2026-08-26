@@ -63,8 +63,8 @@ public:
 
     virtual ~CSBI_StatzTabArrow() OVERRIDE;
 
-    void SetUnsampledDirection(StatusBarDock position, i32 animate);
-    void SetSampledDirection(StatusBarDock position, i32 animate);
+    void SetUnsampledDirection(StatusBarDock position, b32 animate);
+    void SetSampledDirection(StatusBarDock position, b32 animate);
 };
 
 #endif // GRUNTZ_SBI_IMAGESETANI_H

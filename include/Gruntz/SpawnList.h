@@ -18,7 +18,7 @@ public:
     CString GetTail();
 
     CString m_name;
-    i32 m_flag;
+    b32 m_flag;
     i32 m_data;
 };
 
@@ -37,7 +37,7 @@ public:
     ~CSpawnList();
     void ClearFlags();
     void DeleteAllEntries();
-    CSpawnEntry* FindEntry(CString name, i32 useHash);
+    CSpawnEntry* FindEntry(CString name, b32 useHash);
     CSpawnEntry* FindByName(const CString& name);
     void AddVoiceSound(CString resourceName, i32 data);
 

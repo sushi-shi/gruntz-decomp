@@ -13,7 +13,7 @@ struct CImagePaletteNode {
     LOGPALETTE m_logicalPalette;
     char m_padEntries[0x408 - (4 + 4 + 4)];
     i32 m_flags;
-    i32 m_reservedSystemColors;
+    b32 m_reservedSystemColors;
     POSITION m_listPosition;
 
     CImagePaletteNode() {

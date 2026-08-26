@@ -31,7 +31,7 @@ public:
     void ClearCommands();
 
     void EnqueueSingle(
-        i32 isLocalCommand,
+        b32 isLocalCommand,
         char playerIndex,
         char unitIndex,
         char commandKind,
@@ -42,7 +42,7 @@ public:
     );
 
     void EnqueueMulti(
-        i32 isLocalCommand,
+        b32 isLocalCommand,
         char playerIndex,
         u8 unitCount,
         u8* unitIndices,
@@ -52,7 +52,7 @@ public:
         char scheduleSlot
     );
 
-    void EnqueueCommand(i32 isLocalCommand, CGruntzCommand* command);
+    void EnqueueCommand(b32 isLocalCommand, CGruntzCommand* command);
 
     i32 Serialize(CFileMemBase* stream, SerialMode mode, LogicTypeId typeId, i32 payload);
 
@@ -61,7 +61,7 @@ public:
     i32 CanLoadCommands(CFileMemBase* stream);
 
     void EnqueuePlaceGruntAtScreenPoint(
-        i32 isLocalCommand,
+        b32 isLocalCommand,
         i32 playerIndex,
         i32 screenX,
         i32 screenY,

@@ -69,7 +69,7 @@ class CMoviePlayer {
 public:
     CMoviePlayer() {
         m_window = NULL;
-        m_initialized = 0;
+        m_initialized = false;
         m_smackHandle = NULL;
         m_directDraw2 = NULL;
         m_directDraw = NULL;
@@ -77,7 +77,7 @@ public:
         m_primaryRaw = NULL;
         m_srcSurf = NULL;
         m_srcSurfRaw = NULL;
-        m_borrowedDisplayResources = 0;
+        m_borrowedDisplayResources = false;
         m_palette = NULL;
         m_frameDecoded = false;
         m_blitMode = MOVIE_TILE;
@@ -86,7 +86,7 @@ public:
         m_destRect = NULL;
         m_originX = 0;
         m_originY = 0;
-        m_forceSingleRow = 0;
+        m_forceSingleRow = false;
         m_smackBufMode = 0;
         m_videoWnd = NULL;
         m_directSound = NULL;
@@ -147,9 +147,9 @@ public:
     i32 Frame();
 
     HWND m_window;
-    i32 m_initialized;
-    i32 m_streamOpen;
-    i32 m_borrowedDisplayResources;
+    b32 m_initialized;
+    b32 m_streamOpen;
+    b32 m_borrowedDisplayResources;
 
     SmackTag* m_smackHandle;
     IDirectDraw2* m_directDraw2;
@@ -169,7 +169,7 @@ public:
     PALETTEENTRY m_palEntries[0x100];
     struct IDirectSound* m_directSound;
 
-    i32 m_frameDecoded;
+    b32 m_frameDecoded;
     u32 m_smackBufMode;
 
     MovieLayout m_blitMode;
@@ -186,8 +186,8 @@ public:
         u8* m_rezBuffer;
     };
     union {
-        i32 m_forceSingleRow;
-        i32 m_interlaced;
+        b32 m_forceSingleRow;
+        b32 m_interlaced;
     };
     CWnd* m_videoWnd;
     CFecFile m_decodeStore;

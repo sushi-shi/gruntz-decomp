@@ -9,15 +9,15 @@ void ButeParseErrorSink(const char* msg);
 
 extern i32 g_attractStateCount;
 
-extern i32 g_disableAudio;
-extern i32 g_disableSound;
-extern i32 g_disableMusic;
-extern i32 g_disableJoystick;
-extern i32 g_disableSoundFonts;
-extern i32 g_disableDirectVideo;
-extern i32 g_disableHqMovie;
-extern i32 g_enableTriple;
-extern i32 g_enableHiColor;
-extern i32 g_enableTrueColor;
-extern i32 g_enableEmulation;
+extern b32 g_disableAudio;
+extern b32 g_disableSound;
+extern b32 g_disableMusic;
+extern b32 g_disableJoystick;
+extern b32 g_disableSoundFonts;
+extern b32 g_disableDirectVideo;
+extern b32 g_disableHqMovie;
+extern b32 g_enableTriple;
+extern b32 g_enableHiColor;
+extern b32 g_enableTrueColor;
+extern b32 g_enableEmulation;
 #endif // GRUNTZ_REZ_REZSYNC_H_H

@@ -33,7 +33,7 @@ i32 CGrunt::UpdateDeathAnimation() {
         }
     }
     CAniAdvanceCursor* sub = &m_wwdObject->m_animationCursor;
-    if (sub->m_finished == 0) {
+    if (sub->m_finished == false) {
         return 0;
     }
     if (sub->m_frameTicksLeft != 0) {

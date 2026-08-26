@@ -407,12 +407,12 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
 
     SoundCueRegistry* slot =
         (static_cast<CDDrawSurfaceMgr*>(m_ownerLogicRecord->m_ownerCtx))->m_soundRegistry;
-    if (slot->m_silentMode == 0) {
+    if (slot->m_silentMode == false) {
         SoundCue* sout = NULL;
         MapLookup(slot->m_cues, s_GAME_ATTACK, sout);
         if (sout != NULL) {
 
-            sout->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
+            sout->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
         }
     }
 
@@ -428,7 +428,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
             spr->m_logicRecord->m_dispatch(spr);
             (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
-                ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 9, 1);
+                ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 9, true);
             return m_triggerMgr->ApplyGruntAreaEffect(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
@@ -448,7 +448,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
             spr->m_logicRecord->m_dispatch(spr);
             (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
-                ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 2, 1);
+                ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 2, true);
             return m_triggerMgr->ApplyGruntAreaEffect(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
@@ -468,7 +468,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
             spr->m_logicRecord->m_dispatch(spr);
             (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
-                ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 8, 1);
+                ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 8, true);
             return m_triggerMgr->LoadGruntResurrectTuning(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
@@ -486,7 +486,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
             spr->m_logicRecord->m_dispatch(spr);
             (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
-                ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 7, 1);
+                ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 7, true);
             return m_triggerMgr->ApplyGruntAreaEffect(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
@@ -506,7 +506,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
             spr->m_logicRecord->m_dispatch(spr);
             (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
-                ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 3, 1);
+                ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 3, true);
             return m_triggerMgr->ApplyGruntAreaEffect(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
@@ -526,7 +526,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
             spr->m_logicRecord->m_dispatch(spr);
             (static_cast<CLightFx*>(spr->m_logicRecord->m_userLogic))
-                ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 1, 1);
+                ->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 1, true);
 
             CWwdSpriteObject* n = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
@@ -679,7 +679,7 @@ void CGrunt::EnsureVehicleLoopSound(const char* key) {
     if (sound != NULL) {
         return;
     }
-    if (g_gameReg->m_soundEnabled == 0) {
+    if (g_gameReg->m_soundEnabled == false) {
         return;
     }
     CDDrawSurfaceMgr* world = g_gameReg->m_world;
@@ -695,7 +695,7 @@ void CGrunt::EnsureVehicleLoopSound(const char* key) {
     if (sound == NULL) {
         return;
     }
-    sound->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
+    sound->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, true);
 }
 
 RVA(0x00057c10, 0x1e)
@@ -725,7 +725,7 @@ void CGrunt::EnsurePowerupLoopSound(const char* key) {
     if (sound == NULL) {
         return;
     }
-    sound->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
+    sound->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, true);
 }
 
 RVA(0x00057ce0, 0x1e)
@@ -741,16 +741,16 @@ void CGrunt::StopPowerupLoopSound() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00057d10, 0x4e)
 void CGrunt::ReapplyLoopSoundParams() {
-    if (g_gameReg->m_soundEnabled == 0) {
+    if (g_gameReg->m_soundEnabled == false) {
         return;
     }
     SoundBuffer* vehicleSound = m_vehicleLoopSound;
     if (vehicleSound != NULL) {
-        vehicleSound->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
+        vehicleSound->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, true);
     }
     SoundBuffer* powerupSound = m_powerupLoopSound;
     if (powerupSound != NULL) {
-        powerupSound->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, 1);
+        powerupSound->ApplyAndPlay(g_gameReg->m_soundVolume, 0, 0, true);
     }
 }
 
@@ -1012,14 +1012,14 @@ i32 CGrunt::PathScan() {
 
 // @early-stop
 RVA(0x000588f0, 0x1ea)
-void CGrunt::OnStruck(i32 wasHit) {
+void CGrunt::OnStruck(b32 wasHit) {
     m_struckTimerLo = 0xfa0;
     m_struckTimerHi = 0;
     m_struckClockLo = static_cast<i32>(g_frameTime);
     m_struckClockHi = 0;
     i32 c = ++m_struckCount;
 
-    if (wasHit == 0) {
+    if (wasHit == false) {
         if (m_gruntKind == GRUNT_GHOST) {
             return;
         }
@@ -1144,11 +1144,11 @@ RVA(0x00059230, 0x450)
 i32 CGrunt::HandleCombatContact(
     i32 otherPxX,
     i32 otherPxY,
-    i32 isAttacker,
+    b32 isAttacker,
     i32 otherPlayerIndex,
     i32 otherUnitIndex
 ) {
-    if (isAttacker == 0) {
+    if (isAttacker == false) {
         switch (m_arrivalState) {
             case AI_NONE:
                 break;
@@ -1292,10 +1292,10 @@ i32 CGrunt::LoadGruntCombatAnimations(
 
             SoundCueRegistry* registry =
                 (static_cast<CDDrawSurfaceMgr*>(m_ownerLogicRecord->m_ownerCtx))->m_soundRegistry;
-            if (registry->m_silentMode == 0) {
+            if (registry->m_silentMode == false) {
                 SoundCue* cue = static_cast<SoundCue*>(registry->Lookup(s_CONVERSIONHIT));
                 if (cue != NULL) {
-                    cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
+                    cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
                 }
             }
             return 0;
@@ -1303,7 +1303,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     }
 
     i32 hit = AT(AT(g_hitTable, this->m_entranceReason), attackKind);
-    if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_QUESTZ
+    if (g_gameReg->m_isEasyMode != false && g_gameReg->m_gameMode == GAMEMODE_QUESTZ
         && this->m_playerIndex == g_curPlayer) {
         i32 t = hit / 2;
         hit = t + t % 5;
@@ -1379,7 +1379,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
             }
             goto L_cue;
         }
-        if (this->m_entranceReason == PICKUP_TOOB && this->m_coordToggle != 0) {
+        if (this->m_entranceReason == PICKUP_TOOB && this->m_coordToggle != false) {
             LK(s_TOOBZ);
             goto L_cue;
         }
@@ -1498,14 +1498,14 @@ i32 CGrunt::LoadGruntCombatAnimations(
     L_cue:
 
         if (cue != NULL) {
-            i32 soundEnabled = g_soundEnabled;
+            b32 soundEnabled = g_soundEnabled;
             i32 volumePercent = g_soundVolumePercent;
-            if (soundEnabled != 0) {
+            if (soundEnabled != false) {
                 i32 cueTimeMs = g_soundCueTimeMs;
                 if (static_cast<u32>((cueTimeMs - cue->m_lastPlayTimeMs))
                     >= static_cast<u32>(cue->m_replayDelayMs)) {
                     cue->m_lastPlayTimeMs = cueTimeMs;
-                    cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, 0);
+                    cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
                 }
             }
         }
@@ -1755,7 +1755,7 @@ i32 CGrunt::CommitNeighbor(
     i32 targetPxX,
     i32 targetPxY
 ) {
-    if (targetPlayerIndex == m_playerIndex && g_traitorMode == 0) {
+    if (targetPlayerIndex == m_playerIndex && g_traitorMode == false) {
         return 0;
     }
     PickupType reason = m_entranceReason;
@@ -1819,7 +1819,7 @@ i32 CGrunt::CommitNeighbor(
             i32 redo = 1;
             if (PIXEL_PAIR_NOT_AT_POSITION(px, py, lastX, lastY)) {
                 if (IsDropReady(1)) {
-                    m_coordToggle = (m_coordToggle == 0);
+                    m_coordToggle = (m_coordToggle == false);
                     redo = 0;
                 }
             }
@@ -1838,7 +1838,7 @@ i32 CGrunt::CommitNeighbor(
     m_poweredUp = true;
     nb->CreateHealthSprite();
     ArmGruntCombatTimeout(nb);
-    HandleCombatContact(targetPxX, targetPxY, 1, targetPlayerIndex, targetUnitIndex);
+    HandleCombatContact(targetPxX, targetPxY, true, targetPlayerIndex, targetUnitIndex);
     m_neighborPlayerIndex = targetPlayerIndex;
     m_neighborUnitIndex = targetUnitIndex;
     m_attackTargetPx.m_x = targetPxX;
@@ -1851,7 +1851,7 @@ i32 CGrunt::CommitNeighbor(
     nb->HandleCombatContact(
         m_object->m_screenX,
         m_object->m_screenY,
-        0,
+        false,
         m_playerIndex,
         m_unitIndex
     );
@@ -2077,7 +2077,7 @@ void CGrunt::Activate() {
     m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
     m_passableMask = 0;
     m_deathAnimStarted = false;
-    m_tileClaimed = 0;
+    m_tileClaimed = false;
 }
 
 #undef REGISTER_KEY_644AF0
@@ -2234,23 +2234,23 @@ void CGrunt::StepBehavior(char*) {
         if (onWingzTile != 0) {
             if (flags & 0xd02) {
                 if (m_wingzEnabled == false) {
-                    LoadWingzGruntSprites(1);
+                    LoadWingzGruntSprites(true);
                     return;
                 }
             } else if (m_wingzEnabled != false) {
-                LoadWingzGruntSprites(0);
+                LoadWingzGruntSprites(false);
                 return;
             }
         } else if (onMoveTile != 0) {
             if (flags & 0x100) {
-                if (m_coordToggle == 0) {
+                if (m_coordToggle == false) {
                     RunMoveConfig(
                         m_lastTilePx.m_x >> TILE_SHIFT_PX,
                         m_lastTilePx.m_y >> TILE_SHIFT_PX
                     );
                     return;
                 }
-            } else if (m_coordToggle != 0) {
+            } else if (m_coordToggle != false) {
                 RunMoveConfig(m_lastTilePx.m_x >> TILE_SHIFT_PX, m_lastTilePx.m_y >> TILE_SHIFT_PX);
                 return;
             }
@@ -2297,7 +2297,7 @@ void CGrunt::StepBehavior(char*) {
                 kind = ts->GetCollisionAt(0, 0);
             }
 
-            i32 gate = 1;
+            b32 gate = true;
             GruntDeathType hazard;
             switch (kind) {
                 case TILEKIND_REVEALED_POWERUP:
@@ -2310,7 +2310,7 @@ void CGrunt::StepBehavior(char*) {
                     break;
                 case TILEKIND_SPIKES:
                     hazard = static_cast<GruntDeathType>(cx);
-                    gate = 0;
+                    gate = false;
                     break;
                 default: {
                     CMapMgr* bd = g_gameReg->m_tileGrid;
@@ -2326,7 +2326,7 @@ void CGrunt::StepBehavior(char*) {
                     } else {
                         hazard = DEATH_EXPLODE;
                         if ((flags & 0x80) != 0 || (flags & BRICKZ_BLOCKED_MASK) == 0) {
-                            gate = 0;
+                            gate = false;
                         }
                     }
                     break;
@@ -2337,7 +2337,7 @@ void CGrunt::StepBehavior(char*) {
                     hazard = g_areaPitDeath;
                     break;
             }
-            if (gate != 0) {
+            if (gate != false) {
                 m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, hazard, -1);
                 return;
             }
@@ -2375,7 +2375,7 @@ void CGrunt::StepBehavior(char*) {
                 CGruntzMgr* reg3 = g_gameReg;
                 i32 hp;
 
-                if (reg3->m_isEasyMode != 0 && reg3->m_gameMode == GAMEMODE_QUESTZ) {
+                if (reg3->m_isEasyMode != false && reg3->m_gameMode == GAMEMODE_QUESTZ) {
                     i32 bite = m_health - 5;
                     hp = (bite < 0) ? 0 : bite;
                 } else {
@@ -2602,7 +2602,7 @@ afterArrival:
         if (static_cast<u32>((left2 < 0 ? 0 : static_cast<u32>(left2))) == 0) {
             ConsiderArrival(1);
             m_wingzTime = 0;
-            LoadWingzGruntSprites(0);
+            LoadWingzGruntSprites(false);
             BuildGruntLoseItemAnimation();
         }
     }
@@ -2771,14 +2771,14 @@ kindDispatch:
         }
     }
 
-    if (m_pendingTrigger != 0 && m_stamina >= STAMINA_FULL) {
+    if (m_pendingTrigger != false && m_stamina >= STAMINA_FULL) {
         m_triggerMgr->UseEquippedToolAt(
             m_playerIndex,
             m_unitIndex,
             m_pendingTriggerPx.m_x,
             m_pendingTriggerPx.m_y
         );
-        m_pendingTrigger = 0;
+        m_pendingTrigger = false;
     }
 }
 

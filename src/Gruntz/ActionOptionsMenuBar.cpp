@@ -36,12 +36,12 @@ CActionOptionsMenuBar::CActionOptionsMenuBar() {
     memset(m_buttonFrame, 0, sizeof(m_buttonFrame));
     memset(m_buttonIcon, 0, sizeof(m_buttonIcon));
     memset(m_buttonState, 0, sizeof(m_buttonState));
-    m_loaded = 0;
+    m_loaded = false;
 }
 
 RVA(0x000090e0, 0x100)
 i32 CActionOptionsMenuBar::LoadAssets() {
-    m_active = 0;
+    m_active = false;
     CDDrawWorker* spr = LookupWorker(
         g_gameReg->m_world->m_imageRegistry->m_workersByName,
         "GAME_ACTIONOPTIONZMENUBAR"
@@ -78,7 +78,7 @@ i32 CActionOptionsMenuBar::LoadAssets() {
         return 0;
     }
 
-    m_loaded = 1;
+    m_loaded = true;
     return 1;
 }
 
@@ -118,13 +118,13 @@ i32 CActionOptionsMenuBar::Init(
     if (Refresh() == 0) {
         return 0;
     }
-    m_active = 1;
+    m_active = true;
     return 1;
 }
 
 RVA(0x000092e0, 0x8)
 void CActionOptionsMenuBar::Clear() {
-    m_loaded = 0;
+    m_loaded = false;
 }
 
 RVA(0x00009300, 0x14)
@@ -282,7 +282,7 @@ ActionOptionHit CActionOptionsMenuBar::HitHover(i32 mx, i32 my) {
 
 RVA(0x000097f0, 0x8)
 void CActionOptionsMenuBar::Deactivate() {
-    m_active = 0;
+    m_active = false;
 }
 
 // @early-stop

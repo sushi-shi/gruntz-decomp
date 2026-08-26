@@ -22,7 +22,7 @@ public:
     virtual ~CRezItmBase();
     virtual i32 Read(i32 off, i32 base, u32 count, void* buf) = 0;
     virtual i32 Write(i32 base, i32 off, u32 count, void* buf) = 0;
-    virtual i32 Open(char* name, i32 readonly, i32 write) = 0;
+    virtual i32 Open(char* name, b32 readonly, b32 write) = 0;
     virtual i32 Close() = 0;
     virtual i32 Flush() = 0;
     virtual i32 Check() = 0;
@@ -41,7 +41,7 @@ public:
 
     virtual i32 Write(i32 base, i32 off, u32 count, void* buf) OVERRIDE;
 
-    virtual i32 Open(char* filename, i32 readonly, i32 write) OVERRIDE;
+    virtual i32 Open(char* filename, b32 readonly, b32 write) OVERRIDE;
 
     virtual i32 Close() OVERRIDE;
 
@@ -51,7 +51,7 @@ public:
 
     FILE* m_fp;
     char* m_readBuf;
-    i32 m_readonly;
+    b32 m_readonly;
     i32 m_reserved1c;
     i32 m_pos;
 };
@@ -63,7 +63,7 @@ public:
 
     virtual i32 Read(i32 off, i32 base, u32 count, void* buf) OVERRIDE;
     virtual i32 Write(i32 base, i32 off, u32 count, void* buf) OVERRIDE;
-    virtual i32 Open(char* name, i32 readonly, i32 write) OVERRIDE;
+    virtual i32 Open(char* name, b32 readonly, b32 write) OVERRIDE;
     virtual i32 Close() OVERRIDE;
     virtual i32 Flush() OVERRIDE;
     virtual i32 Check() OVERRIDE;
@@ -72,7 +72,7 @@ public:
     CRezList m_closedList;
     i32 m_openCount;
     i32 m_maxOpen;
-    i32 m_readonly;
+    b32 m_readonly;
     i32 m_write;
 };
 

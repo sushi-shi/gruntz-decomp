@@ -113,7 +113,7 @@ class CImage;
 #define CLEAR_TAB_HINT(sndHost)                                                                    \
     do {                                                                                           \
         SoundCueRegistry* _s = (sndHost);                                                          \
-        if (_s->m_silentMode == 0) {                                                               \
+        if (_s->m_silentMode == false) {                                                           \
             SoundCue* found = NULL;                                                                \
             MapLookup(_s->m_cues, "GAME_TABHIGHLIGHT1", found);                                    \
             if (found != NULL)                                                                     \
@@ -124,33 +124,33 @@ class CImage;
 #define CLEAR_GRUNTZ_PLAYER                                                                        \
     m_playerIndex = -1;                                                                            \
     m_networkPlayerId = -2;                                                                        \
-    m_active = 0;                                                                                  \
-    m_humanControlled = 1;                                                                         \
+    m_active = false;                                                                              \
+    m_humanControlled = true;                                                                      \
     m_name = "";                                                                                   \
     m_color = TINT_ORANGE;                                                                         \
     m_difficulty = BZDIFF_EASY;                                                                    \
     m_focusX = 0;                                                                                  \
     m_focusY = 0;                                                                                  \
     m_maxGruntz = 0xf;                                                                             \
-    m_doneFlag = 0;                                                                                \
-    m_optionsPresenceCounted = 0;                                                                  \
+    m_doneFlag = false;                                                                            \
+    m_optionsPresenceCounted = false;                                                              \
     m_latency.Clear()
 
 RVA(0x000da790, 0xb0)
 GruntzPlayer::GruntzPlayer() {
     m_playerIndex = -1;
     m_networkPlayerId = -2;
-    m_active = 0;
-    m_joined = 0;
-    m_humanControlled = 1;
+    m_active = false;
+    m_joined = false;
+    m_humanControlled = true;
     m_name = "";
     m_color = TINT_ORANGE;
     m_difficulty = BZDIFF_EASY;
     m_focusX = 0;
     m_focusY = 0;
     m_maxGruntz = 0xf;
-    m_doneFlag = 0;
-    m_optionsPresenceCounted = 0;
+    m_doneFlag = false;
+    m_optionsPresenceCounted = false;
     m_latency.Clear();
 }
 
@@ -158,9 +158,9 @@ RVA(0x000da870, 0xb8)
 i32 GruntzPlayer::SeedForSlot(i32 index) {
     m_playerIndex = index;
     m_networkPlayerId = -2;
-    m_active = 0;
-    m_joined = 0;
-    m_humanControlled = 1;
+    m_active = false;
+    m_joined = false;
+    m_humanControlled = true;
     m_name = "";
 
     m_color = static_cast<ColorTint>(index);
@@ -168,8 +168,8 @@ i32 GruntzPlayer::SeedForSlot(i32 index) {
     m_focusX = 0;
     m_focusY = 0;
     m_maxGruntz = 0xf;
-    m_doneFlag = 0;
-    m_optionsPresenceCounted = 0;
+    m_doneFlag = false;
+    m_optionsPresenceCounted = false;
     m_name = GetDefaultName(0);
     m_latency.Clear();
     return 1;
@@ -190,10 +190,10 @@ i32 GruntzPlayer::Reset() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000daa60, 0x24)
 i32 GruntzPlayer::ClearRoundState() {
-    m_active = 1;
-    m_ready = 0;
-    m_doneFlag = 0;
-    m_optionsPresenceCounted = 0;
+    m_active = true;
+    m_ready = false;
+    m_doneFlag = false;
+    m_optionsPresenceCounted = false;
     m_latency.Clear();
     return 1;
 }
@@ -216,7 +216,7 @@ i32 FillColorCombo(HWND hDlg, i32 nID, i32 curSel) {
             cb,
             CB_ADDSTRING,
             0,
-            reinterpret_cast<LPARAM>(static_cast<const char*>(GetColorName(i, 0)))
+            reinterpret_cast<LPARAM>(static_cast<const char*>(GetColorName(i, false)))
         );
     }
     if (curSel >= 0) {
@@ -243,7 +243,7 @@ i32 FillDifficultyCombo(HWND hDlg, i32 nID, i32 curSel) {
             cb,
             CB_ADDSTRING,
             0,
-            reinterpret_cast<LPARAM>(static_cast<const char*>(GetDifficultyName(i, 0)))
+            reinterpret_cast<LPARAM>(static_cast<const char*>(GetDifficultyName(i, false)))
         );
     }
     if (curSel >= 0) {
@@ -309,7 +309,7 @@ CString GruntzPlayer::GetDefaultName(i32) {
 }
 
 RVA(0x000db050, 0x90)
-CString GetColorName(i32 colorIdx, i32 upper) {
+CString GetColorName(i32 colorIdx, b32 upper) {
     CString s;
     s = g_colorNames[colorIdx];
     if (upper) {
@@ -319,7 +319,7 @@ CString GetColorName(i32 colorIdx, i32 upper) {
 }
 
 RVA(0x000db110, 0x90)
-CString GetDifficultyName(i32 diffIdx, i32 upper) {
+CString GetDifficultyName(i32 diffIdx, b32 upper) {
     CString s;
     s = g_difficultyNames[diffIdx];
     if (upper) {
@@ -341,8 +341,8 @@ i32 GruntzPlayer::TrySetColor(ColorTint color) {
         return 1;
     }
     if (IsPlayerColorAvailable(color)) {
-        SetPlayerColorAvailable(m_color, 1);
-        SetPlayerColorAvailable(color, 0);
+        SetPlayerColorAvailable(m_color, true);
+        SetPlayerColorAvailable(color, false);
         m_color = color;
         return 1;
     }
@@ -360,7 +360,7 @@ ColorTint FindAvailablePlayerColor() {
 }
 
 RVA(0x000db2b0, 0x10)
-void SetPlayerColorAvailable(ColorTint color, i32 available) {
+void SetPlayerColorAvailable(ColorTint color, b32 available) {
     g_playerColorAvailable[IDX(color)] = available;
 }
 
@@ -373,12 +373,12 @@ i32 IsPlayerColorAvailable(ColorTint color) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000db2f0, 0x2b)
 i32 GruntzPlayer::Deactivate() {
-    if (m_active == 0) {
+    if (m_active == false) {
         return 0;
     }
-    if (m_humanControlled == 0) {
+    if (m_humanControlled == false) {
         (static_cast<CBattlezMapConfig*>(&m_battlezConfig))->Clear();
     }
-    m_active = 0;
+    m_active = false;
     return 1;
 }

@@ -227,7 +227,7 @@ static char s_pose_ATTACK2[] = "_ATTACK2";
 DATA(0x0020d7e8)
 static char s_pose_ATTACK1[] = "_ATTACK1";
 DATA(0x002455b0)
-i32 g_traitorMode;
+b32 g_traitorMode;
 
 static inline CAniElement* FindAnimElement(CMapStringToPtr& map, LPCTSTR key) {
     CAniElement* out = NULL;
@@ -363,7 +363,7 @@ CGrunt::CGrunt(CGameObject* owner)
     m_combatActive = false;
     m_neighborValid = false;
     m_arrivalActive = false;
-    m_coordToggle = 0;
+    m_coordToggle = false;
     m_wingzEnabled = false;
     m_vehicleLoopSound = NULL;
     m_powerupLoopSound = NULL;
@@ -436,7 +436,7 @@ CGrunt::CGrunt(CGameObject* owner)
     m_arrivalRerollWindowHi = 0;
     m_unusedBattleCell.m_x = -1;
     m_unusedBattleCell.m_y = -1;
-    m_arrivalNotified = 0;
+    m_arrivalNotified = false;
     m_defenderState = AISTATE_SEEK;
     m_battleState = BZTASK_UNASSIGNED;
     {
@@ -827,12 +827,12 @@ i32 CGrunt::CommitArrival() {
         return 1;
     }
 
-    if (m_tileClaimed != 0 && g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
+    if (m_tileClaimed != false && g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
         m_triggerMgr->EnqueueGuardEnd(m_playerIndex, m_unitIndex);
-    } else if (m_tileClaimed != 0) {
+    } else if (m_tileClaimed != false) {
         m_arrivalReroll64 = 0;
         m_arrivalRerollWindow64 = 0;
-        m_tileClaimed = 0;
+        m_tileClaimed = false;
         m_arrivalState = AI_NONE;
         m_arrivalFlags &= 0xe7fbfbfd;
         SetEntrancePos(1, 1);
@@ -923,7 +923,7 @@ i32 CGrunt::StepArrivalDrop(
     i32 sx, sy;
     bool eq;
 
-    m_pendingTrigger = 0;
+    m_pendingTrigger = false;
     eq = ANIMATION_ACT_DIFFERS("D");
     if (!eq && pxX == m_entrancePx.m_x && pxY == m_entrancePx.m_y) {
         goto commitPhase;
@@ -1696,11 +1696,11 @@ label_4cb4b:
     m_arrivalPending = true;
     if (reason12) {
         if (flagHead & 0x100) {
-            if (m_coordToggle != 0) {
+            if (m_coordToggle != false) {
                 goto label_ret1;
             }
         } else {
-            if (m_coordToggle == 0) {
+            if (m_coordToggle == false) {
                 goto label_ret1;
             }
         }
@@ -1714,7 +1714,7 @@ label_4cb4b:
         if (m_wingzEnabled != false) {
             goto label_ret1;
         }
-        LoadWingzGruntSprites(1);
+        LoadWingzGruntSprites(true);
         return 1;
     }
     if (reason0e) {
@@ -2000,18 +2000,18 @@ i32 CGrunt::Place(
     m_daFlag = 1;
     m_arrivalPhase = 0;
     m_toolConfigured = true;
-    m_tileClaimed = 0;
+    m_tileClaimed = false;
     m_neighborScanEnabled = true;
     m_tileMoveCommitted = false;
     m_entranceArmed = false;
     m_entranceDropActive = false;
     m_deathType = DEATH_NONE;
-    m_pendingTrigger = 0;
+    m_pendingTrigger = false;
     m_cellRemovalNotified = false;
     m_killerPlayerIndex = -1;
     m_passableMask = 0;
     m_savedMoveIcon = -1;
-    m_lowStaminaCued = 0;
+    m_lowStaminaCued = false;
     m_targetTeam = -1;
     LoadVehicleGruntSprites(static_cast<PickupType>(vehicleKind));
     LoadGruntTypeTable(typeKind, 1, 0, 0);
@@ -2125,7 +2125,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
         }
     }
-    if (m_coordToggle != 0) {
+    if (m_coordToggle != false) {
         goto fail;
     }
     if (kind != PICKUP_WINGZ) {
@@ -2529,7 +2529,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_animSetName = "TOOBGRUNT";
             i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
-            m_coordToggle = 0;
+            m_coordToggle = false;
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             if (m_arrivalState == AI_NONE) {
                 m_arrivalFlags = ARRIVAL_FLAGS_PLAYER;
@@ -3019,7 +3019,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         case PICKUP_MEGAPHONE: {
             CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
             CStatusBarMgr* sb = play->m_statusBar;
-            if (sb->m_hlBusy == 0) {
+            if (sb->m_hlBusy == false) {
                 if (sb->m_position == STATUSBAR_HIDDEN) {
                     sb->RestoreStatusBar();
                 }
@@ -3032,35 +3032,35 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             return 1;
         }
         case PICKUP_RANDOMCOLORZ: {
-            m_triggerMgr->CycleMoveIcons(m_playerIndex, 1);
+            m_triggerMgr->CycleMoveIcons(m_playerIndex, true);
             return 1;
         }
         case PICKUP_SCREENSHAKE: {
             if (m_playerIndex == g_curPlayer) {
                 return 1;
             }
-            (static_cast<CPlay*>(g_gameReg->m_curState))->SetMonitorCurse(1);
+            (static_cast<CPlay*>(g_gameReg->m_curState))->SetMonitorCurse(true);
             return 1;
         }
         case PICKUP_BLACKSCREEN: {
             if (m_playerIndex == g_curPlayer) {
                 return 1;
             }
-            (static_cast<CPlay*>(g_gameReg->m_curState))->SetDarknessCurse(1);
+            (static_cast<CPlay*>(g_gameReg->m_curState))->SetDarknessCurse(true);
             return 1;
         }
         case PICKUP_MINICAM: {
             if (m_playerIndex == g_curPlayer) {
                 return 1;
             }
-            (static_cast<CPlay*>(g_gameReg->m_curState))->SetTinyViewportCurse(1);
+            (static_cast<CPlay*>(g_gameReg->m_curState))->SetTinyViewportCurse(true);
             return 1;
         }
         case PICKUP_W:
         case PICKUP_A:
         case PICKUP_R:
         case PICKUP_P: {
-            g_gameReg->m_gameStats->m_warpLetterFound = 1;
+            g_gameReg->m_gameStats->m_warpLetterFound = true;
             return 1;
         }
         case PICKUP_HELPBOX: {
@@ -3078,7 +3078,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             i32 mins = g_buteMgr.GetIntDef("Powerupz", "StopwatchMinutes", 1);
             i32 secs = g_buteMgr.GetIntDef("Powerupz", "StopwatchSeconds", 0);
-            if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+            if (g_gameReg->m_isEasyMode != false && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 secs += secs;
                 mins += mins;
                 if (secs > 0x3b) {

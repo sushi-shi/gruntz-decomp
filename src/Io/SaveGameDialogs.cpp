@@ -316,13 +316,13 @@ void FillSaveDialog(HWND hWnd, CSaveGame* sg) {
 
 RVA(0x000e3e80, 0x86)
 void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6) {
-    i32 flag;
+    b32 flag;
     if (TempFileExists(item)) {
         SetDlgItemTextA(hWnd, id3, item->m_name);
-        flag = 1;
+        flag = true;
     } else {
         SetDlgItemTextA(hWnd, id3, "(Empty)");
-        flag = 0;
+        flag = false;
     }
     EnableWindow(GetDlgItem(hWnd, id3), true);
     EnableWindow(GetDlgItem(hWnd, id4), true);
@@ -415,7 +415,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
             return 0;
         }
         EnableWindow(hDlg, false);
-        g_gameReg->RunModalDialog("GAME_INFO", LevelPreviewDlgProc, 0);
+        g_gameReg->RunModalDialog("GAME_INFO", LevelPreviewDlgProc, false);
         EnableWindow(hDlg, true);
         return 0;
     }
@@ -459,7 +459,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
             return 0;
         }
         EnableWindow(hDlg, false);
-        i32 ok = g_gameReg->RunModalDialog("GAME_DELETE", DeleteSaveDialogProc, 0);
+        i32 ok = g_gameReg->RunModalDialog("GAME_DELETE", DeleteSaveDialogProc, false);
         EnableWindow(hDlg, true);
         if (ok == 0) {
             return 0;
@@ -525,7 +525,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
             g_slotState = obj->GetSlot(slot);
             if (g_slotState != NULL) {
                 EnableWindow(hDlg, false);
-                i32 ok = g_gameReg->RunModalDialog("GAME_OVERWRITE", InfoLineDialogProc, 0);
+                i32 ok = g_gameReg->RunModalDialog("GAME_OVERWRITE", InfoLineDialogProc, false);
                 EnableWindow(hDlg, true);
                 if (ok == 0) {
                     return 1;
@@ -558,7 +558,7 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
         return;
     }
 
-    if (lev->m_isCustom == 0 && lev->m_isBattlez == 0) {
+    if (lev->m_isCustom == false && lev->m_isBattlez == false) {
 
         i32 n = lev->m_levelId;
         wsprintfA(
@@ -571,7 +571,7 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
                 ? static_cast<const char*>(CString("Training"))
                 : static_cast<const char*>(g_areaNames[(n - 1) / 4])
         );
-    } else if (lev->m_isBattlez != 0 && lev->m_isCustom == 0) {
+    } else if (lev->m_isBattlez != false && lev->m_isCustom == false) {
 
         wsprintfA(title, "Battlez: %s", lev->m_levelName);
     } else {

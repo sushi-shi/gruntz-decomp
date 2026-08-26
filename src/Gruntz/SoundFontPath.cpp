@@ -12,12 +12,12 @@
 
 RVA(0x000f8e20, 0x56)
 void CloseSoundFontDevice() {
-    if (g_sfReady != 0 && g_sfDevice != NULL && g_sfDeviceCount != 0) {
+    if (g_sfReady != false && g_sfDevice != NULL && g_sfDeviceCount != 0) {
         SfDeviceInitKeys();
         g_sfDevice->SF_Close(g_sfDeviceId);
         FreeLibrary(g_sfDll);
         g_sfDll = NULL;
-        g_sfReady = 0;
+        g_sfReady = false;
     }
 }
 
@@ -30,7 +30,7 @@ i32 SoundFontDeviceReady() {
 
 RVA(0x000f8ec0, 0x50)
 i32 SfDeviceInitKeys() {
-    if (g_sfReady == 0) {
+    if (g_sfReady == false) {
         return 0;
     }
     g_sfMidiLocation.m_PresetIndex = 0;
@@ -50,7 +50,7 @@ i32 SfDeviceInitKeys() {
 // @early-stop
 RVA(0x000f8f30, 0x160)
 i32 BuildSoundFontPath(char drive) {
-    if (g_sfReady == 0) {
+    if (g_sfReady == false) {
         return 0;
     }
 

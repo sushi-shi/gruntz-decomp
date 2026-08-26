@@ -54,7 +54,7 @@ public:
     );
 
     i32 RouteUnitToGoal(CGrunt* unit, Coord goal, i32 blockedMask, i32 passableMask);
-    i32 StepRowSpawn(i32 allowReserved);
+    i32 StepRowSpawn(b32 allowReserved);
     i32 CanPlaySpecialAnim(CGrunt*);
     i32 StepBoard();
     i32 ChooseIdleBehavior(CGrunt*);
@@ -71,7 +71,7 @@ public:
     i32 ValidateUnitPath(CGrunt*);
 
     void ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 requireUnoccupied);
-    i32 PathToNearestCandidate(CGrunt*, i32, i32, i32);
+    i32 PathToNearestCandidate(CGrunt*, b32, i32, i32);
     i32 PathToNearestGoal(CGrunt*, i32, i32);
     CGrunt* PickRandomIdleUnit(i32);
     i32 AcceptAlways(CGrunt*);
@@ -96,7 +96,7 @@ public:
 
     i32 RerouteSwitchSeeker(CGrunt* grunt);
 
-    i32 m_active;
+    b32 m_active;
     CGruntzMgr* m_ctx;
     CTriggerMgr* m_triggerMgr;
     CMapMgr* m_board;
@@ -218,7 +218,7 @@ public:
 };
 
 extern const float g_diffScale;
-extern i32 g_stepRun;
+extern b32 g_stepRun;
 extern i32 g_battlezRouteBlockedMask;
 extern i32 g_stepCol;
 extern i32 g_stepRow;

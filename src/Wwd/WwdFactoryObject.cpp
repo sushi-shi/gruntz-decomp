@@ -246,11 +246,11 @@ i32 CWwdDotObject::SetupDot(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTempla
 RVA(0x0015c290, 0x2f)
 void CAniAdvanceCursor::BindSprite(CWwdSpriteObject* src) {
     m_boundObject = src;
-    m_finished = 1;
+    m_finished = true;
     m_animation = NULL;
     m_scale = 1.0f;
     m_consumeDraw = src->OwnerMgr()->m_flags & 0x40;
-    m_useElapsedTime = 1;
+    m_useElapsedTime = true;
 }
 
 RVA(0x0015c2c0, 0xc)
@@ -276,7 +276,7 @@ void CAniAdvanceCursor::SetAnimation(CAniElement* src) {
     }
     m_element = e;
     m_frameTicksLeft = 0;
-    m_finished = 0;
+    m_finished = false;
     v = e->m_drawValue;
     m_pendingDraw = v;
     m_curDraw = v;
@@ -301,7 +301,7 @@ void CAniAdvanceCursor::RestartAnimation(i32 resetElapsedTime) {
         e = NULL;
     }
     m_element = e;
-    m_finished = 0;
+    m_finished = false;
     i32 v = e->m_drawValue;
     m_scale = 1.0f;
     m_pendingDraw = v;
@@ -319,7 +319,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
     }
 
     if (m_frameTicksLeft > 0) {
-        if (m_useElapsedTime != 0) {
+        if (m_useElapsedTime != false) {
             if (elapsed >= m_frameTicksLeft) {
                 m_frameTicksLeft = 0;
                 m_curDraw = m_pendingDraw;
@@ -335,7 +335,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         m_curDraw = m_pendingDraw;
     }
 
-    if (m_finished == 0) {
+    if (m_finished == false) {
         CWwdSpriteObject* ctx = m_boundObject;
         CAniRecordView* d = m_element;
 
@@ -470,12 +470,12 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         }
 
         CWwdSpriteObject* c = m_boundObject;
-        i32 shouldPlayCue = 1;
+        b32 shouldPlayCue = true;
         if (HAS(static_cast<WwdGameObjectFlags>(c->m_flags),
                 WWD_GAME_OBJECT_FLAG_CULL_SOUND_WHEN_NOT_DRAWN)
             || HAS(m_element->m_flags, ANI_RECORD_FLAG_CULL_CUE_WHEN_NOT_DRAWN)) {
             if (c->m_dirty.m_armed == -1) {
-                shouldPlayCue = 0;
+                shouldPlayCue = false;
             }
         }
         if (shouldPlayCue) {
@@ -499,7 +499,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                     soundCue = dd->m_cues[dd->Rng2Next() % dd->m_cueCount];
                 }
                 if (soundCue != NULL) {
-                    soundCue->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);
+                    soundCue->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
                 }
             }
         }
@@ -520,13 +520,13 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         CAniRecordView* nd;
         switch (static_cast<WwdAnimLoopMode>(modeWord & 0xffff)) {
             case WWDLOOP_FINISH:
-                m_finished = 1;
+                m_finished = true;
                 break;
             case WWDLOOP_RESET_ANIMATION: {
                 if (m_animation != NULL) {
                     m_index = 0;
                     m_element = static_cast<CAniRecordView*>(m_animation->AtChecked(0));
-                    m_finished = 0;
+                    m_finished = false;
                     m_scale = 1.0f;
                     m_curDraw = m_pendingDraw = m_element->m_drawValue;
                 }
@@ -540,7 +540,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                     m_element = static_cast<CAniRecordView*>(m_animation->AtChecked(0));
                 }
                 if (m_element != NULL) {
-                    m_finished = 0;
+                    m_finished = false;
                     m_frameTicksLeft = 0;
                     m_curDraw = m_pendingDraw;
                     m_pendingDraw = m_element->m_drawValue;
@@ -805,7 +805,7 @@ i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
             m_element = RecordAt(w, 0);
         }
         if (m_element != NULL) {
-            m_finished = 0;
+            m_finished = false;
             m_frameTicksLeft = 0;
             m_curDraw = m_pendingDraw;
             m_pendingDraw = m_element->m_drawValue;
