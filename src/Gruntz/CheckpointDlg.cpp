@@ -42,7 +42,7 @@ void CCheckpointDlg::DoDataExchange(CDataExchange* pDX) {
     if (pDX->m_bSaveAndValidate == false) {
         NetLobby::g_curDlg = GetSafeHwnd();
         CWnd* item = GetDlgItem(0x53a);
-        ::SendMessageA(item->m_hWnd, BM_SETCHECK, 0, 0);
+        item->SendMessageA(BM_SETCHECK, 0, 0);
     }
 }
 
@@ -54,7 +54,7 @@ const AFX_MSGMAP* CCheckpointDlg::GetMessageMap() const {
 RVA(0x00023590, 0x31)
 void CCheckpointDlg::OnToggleCheckpointPrompts() {
     CWnd* c = GetDlgItem(0x53a);
-    i32 checked = ::SendMessageA(c->m_hWnd, BM_GETCHECK, 0, 0);
+    i32 checked = c->SendMessageA(BM_GETCHECK, 0, 0);
     CGruntzMgr* reg = g_gameReg;
     reg->m_isCheckpointPrompts = checked == 0;
 }

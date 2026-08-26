@@ -57,19 +57,16 @@ RVA_COMPGEN(0x00017980, 0x1e, ??_GCBattlezDlgColors@@UAEPAXI@Z)
 
 RVA(0x000179b0, 0xcb)
 void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
-    LRESULT(WINAPI * sendMessage)(HWND, UINT, WPARAM, LPARAM);
     if (pDX->m_bSaveAndValidate) {
         CWnd* colorList = GetDlgItem(CTRL_COLOR_LIST);
-        sendMessage = ::SendMessageA;
-        long selection = sendMessage(colorList->m_hWnd, LB_GETCURSEL, 0, 0);
-        long color = sendMessage(colorList->m_hWnd, LB_GETITEMDATA, selection, 0);
+        long selection = colorList->SendMessageA(LB_GETCURSEL, 0, 0);
+        long color = colorList->SendMessageA(LB_GETITEMDATA, selection, 0);
         m_pickedColor = static_cast<ColorTint>(color);
         if (color >= TINT_COUNT) {
             m_pickedColor = TINT_WHITE;
         }
     } else {
         CWnd* colorList = GetDlgItem(CTRL_COLOR_LIST);
-        sendMessage = ::SendMessageA;
         for (i32 i = 0; i < 0x11; i++) {
             b32 available = true;
             GruntzPlayer* player = m_gameManager->m_players;
@@ -83,11 +80,11 @@ void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
 
                 MsgParam name;
                 name.m_str = "Color";
-                long itemIndex = sendMessage(colorList->m_hWnd, LB_ADDSTRING, 0, name.m_lparam);
-                sendMessage(colorList->m_hWnd, LB_SETITEMDATA, itemIndex, i);
+                long itemIndex = colorList->SendMessageA(LB_ADDSTRING, 0, name.m_lparam);
+                colorList->SendMessageA(LB_SETITEMDATA, itemIndex, i);
             }
         }
-        sendMessage(colorList->m_hWnd, LB_SETCURSEL, 0, 0);
+        colorList->SendMessageA(LB_SETCURSEL, 0, 0);
     }
 }
 
@@ -109,9 +106,7 @@ void CBattlezDlgColors::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
         CDC dc;
         dc.Attach(lpdis->hDC);
         COLORREF color;
-        switch (static_cast<ColorTint>(
-            ::SendMessageA(colorList->m_hWnd, LB_GETITEMDATA, lpdis->itemID, 0)
-        )) {
+        switch (static_cast<ColorTint>(colorList->SendMessageA(LB_GETITEMDATA, lpdis->itemID, 0))) {
             case TINT_DKBLUE:
                 color = 0x800000;
                 break;
