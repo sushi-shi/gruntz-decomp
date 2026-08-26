@@ -55,6 +55,32 @@ transposed. Rewriting the run in the header's declaration order
 
 emits 8, 0, c, 18, 4, 14 - retail's order, **100.00% EXACT**, no other change.
 
+`CDDrawWorkerHost::SetTileSize` 0x00161f00 is the lifetime form of the same
+mistake. The reconstruction had copied retail's emitted stores back into source:
+plane width, tile height, rectangle bottom, tile width, the other rectangle
+edges, then plane height. That made the width parameter's first source use the
+commutative extent product, so C2 loaded `m_tileColumns` first and formed the
+product in EDX before the callee-save pushes. The natural object order is:
+
+    m_tileWidthPx = tileWidthPx;
+    m_tileHeightPx = tileHeightPx;
+    m_tileRect.left = 0;
+    m_tileRect.top = 0;
+    m_tileRect.right = tileWidthPx;
+    m_tileRect.bottom = tileHeightPx;
+    m_planePixelWidth = m_tileColumns * tileWidthPx;
+    m_planePixelHeight = m_tileRows * tileHeightPx;
+
+That input still emits retail's non-source store order, but now loads
+`tileWidthPx` first and carries the product in EDI exactly as retail does. With
+the sibling-proven reused halving-loop variable, the function moved **88.38 ->
+100.00 EXACT**. Ten controlled orders produced nine compiler states: tile-width
+first alone reached 89.05, rectangle-first reached 99.59, and only the natural
+tile/rectangle/extent grouping was exact. Six product-local spellings, seven
+inline product helpers, and 64 mixed TU-state forests were flat. Thus a
+first-load/register difference can be the upstream symptom even when the final
+member-store run already agrees.
+
 ## The stronger form: the run is one OBJECT, so write one assignment
 
 Declaration order is the remedy when the run really is N independent members.
@@ -90,7 +116,7 @@ costs 5 points. Convert a run to an object copy only where the object is real.
 
 ## Use
 
-On an all-counts-equal store-run residue, ask in this order:
+On an all-counts-equal store-run or its first-load/register residue, ask in this order:
 
 1. are the permuted offsets the fields of one embedded object? write the copy;
 2. otherwise try the members' declaration order.

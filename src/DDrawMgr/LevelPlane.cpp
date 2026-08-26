@@ -347,24 +347,27 @@ void CDDrawWorkerHost::SetViewportRect(LevelCoordRect* coords) {
     APPLY_WORKER_HOST_BOUNDS(coords);
 }
 
-// @early-stop
 RVA(0x00161f00, 0x75)
 void CDDrawWorkerHost::SetTileSize(i32 tileWidthPx, i32 tileHeightPx) {
-    m_planePixelWidth = m_tileColumns * tileWidthPx;
-    m_tileHeightPx = tileHeightPx;
-    m_tileRect.bottom = tileHeightPx;
     m_tileWidthPx = tileWidthPx;
+    m_tileHeightPx = tileHeightPx;
     m_tileRect.left = 0;
     m_tileRect.top = 0;
     m_tileRect.right = tileWidthPx;
+    m_tileRect.bottom = tileHeightPx;
+    m_planePixelWidth = m_tileColumns * tileWidthPx;
     m_planePixelHeight = m_tileRows * tileHeightPx;
     m_shiftX = 0;
-    for (i32 t = tileWidthPx; t > 1; t >>= 1) {
-        m_shiftX++;
+    i32 v = tileWidthPx;
+    while (v > 1) {
+        v >>= 1;
+        m_shiftX = m_shiftX + 1;
     }
     m_shiftY = 0;
-    for (i32 u = tileWidthPx; u > 1; u >>= 1) {
-        m_shiftY++;
+    v = tileWidthPx;
+    while (v > 1) {
+        v >>= 1;
+        m_shiftY = m_shiftY + 1;
     }
 }
 
