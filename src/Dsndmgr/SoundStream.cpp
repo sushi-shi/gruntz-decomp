@@ -227,7 +227,7 @@ StreamVoice* SoundStream::CreateStreamVoice(
     }
 
     StreamVoice* voice = new StreamVoice(directSoundBuffer, this, reprimeWhenIdle, destroyWhenIdle);
-    m_voices.InsertHead(voice ? &voice->m_link : NULL);
+    m_voices.InsertHead(voice);
     voice->m_baseSampleRate = format->nAvgBytesPerSec;
     voice->m_sampleRate = format->nAvgBytesPerSec;
     voice->m_sampleCount = bufferBytes;
@@ -281,7 +281,7 @@ void SoundStream::DestroyVoice(StreamVoice* voice) {
         m_volumeRamps.RemoveMatching(voice, SOUND_TASK_TAG_ALL);
         voice->m_buffer->Release();
         voice->m_buffer = NULL;
-        m_voices.Unlink(voice ? &voice->m_link : NULL);
+        m_voices.Unlink(voice);
         if (voice) {
             delete voice;
         }
@@ -313,7 +313,7 @@ void SoundStream::StopAllStreams() {
     StreamVoice* node = ElementFromLink<StreamVoice>(m_voices.m_head);
     while (node != NULL) {
         node->m_feeder.Pause();
-        node = ElementFromLink<StreamVoice>(node->m_link.m_next);
+        node = ElementFromLink<StreamVoice>(node->m_next);
     }
     StopAllBuffers();
 }
@@ -326,7 +326,7 @@ i32 SoundStream::TickStreams(i32 timestampMs) {
     IntrusiveLink* head = m_voices.m_head;
     StreamVoice* voice = ElementFromLink<StreamVoice>(head);
     while (voice) {
-        StreamVoice* next = ElementFromLink<StreamVoice>(voice->m_link.m_next);
+        StreamVoice* next = ElementFromLink<StreamVoice>(voice->m_next);
         voice->m_feeder.Tick(timestampMs);
         b32 isPlaying = voice->m_feeder.m_buffer->IsPlaying();
         if (isPlaying == false && voice->m_wasPlaying != false) {

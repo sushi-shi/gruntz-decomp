@@ -13,11 +13,10 @@ GZ_ENUM_CONST_END(SoundTaskTag)
 
 class SoundBuffer;
 
-struct SoundTask {
+struct SoundTask : public IntrusiveLink {
     virtual i32 Tick(i32 timestampMs) = 0;
     virtual i32 Stop() = 0;
 
-    IntrusiveLink m_link;
     u32 m_tag;
     SoundBuffer* m_buffer;
     b32 m_stopAndRewind;

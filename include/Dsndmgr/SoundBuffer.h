@@ -28,7 +28,7 @@ struct SoundBufferInstanceList : public IntrusiveList {
     ~SoundBufferInstanceList() {}
 };
 
-class SoundBuffer {
+class SoundBuffer : public IntrusiveLink {
 public:
     SoundBuffer(IDirectSoundBuffer* buffer, SoundDevice* owner);
     virtual ~SoundBuffer();
@@ -76,7 +76,6 @@ public:
 
     static void ReportError(char* file, i32 line, i32 hr);
 
-    IntrusiveLink m_link;
     IDirectSoundBuffer* m_buffer;
     SoundDevice* m_owner;
     u32 m_playFlags;

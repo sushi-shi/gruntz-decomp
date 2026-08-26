@@ -10,9 +10,8 @@ struct IntrusiveLink {
     IntrusiveLink* m_prev;
 };
 
-// Language-forced container-of adjustment at the intrusive-list boundary.
 template<class T> inline T* ElementFromLink(IntrusiveLink* link) {
-    return link ? reinterpret_cast<T*>((reinterpret_cast<char*>(link) - 4)) : NULL;
+    return link ? static_cast<T*>(link) : NULL;
 }
 
 struct IntrusiveList {

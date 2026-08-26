@@ -13,7 +13,7 @@
 RVA(0x001848b0, 0x47)
 CHashElement* CHashElement::Next() {
 
-    CHashElement* next = CHashBase::FromLink(m_link.m_next);
+    CHashElement* next = CHashBase::FromLink(m_next);
     if (next == NULL) {
         u32 bucketIndex = m_bucketIndex + 1;
         CHashBase* hash = m_hash;
@@ -37,7 +37,7 @@ CHashElement* CHashElement::Next() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00184900, 0x43)
 CHashElement* CHashElement::Prev() {
-    CHashElement* previous = CHashBase::FromLink(m_link.m_prev);
+    CHashElement* previous = CHashBase::FromLink(m_prev);
     if (previous == NULL) {
 
         if (m_bucketIndex > 0) {
@@ -85,13 +85,13 @@ void CHashBase::Insert(CHashElement* node) {
     node->m_hash = this;
     u32 bucketIndex = node->Hash();
     node->m_bucketIndex = bucketIndex;
-    IntrusiveLink* link = node ? &node->m_link : NULL;
+    IntrusiveLink* link = node;
     m_buckets[bucketIndex].m_chain.InsertHead(link);
 }
 
 RVA(0x00184ab0, 0x25)
 void CHashBase::Remove(CHashElement* entry) {
-    IntrusiveLink* node = entry ? &entry->m_link : NULL;
+    IntrusiveLink* node = entry;
     m_buckets[entry->m_bucketIndex].m_chain.Unlink(node);
 }
 

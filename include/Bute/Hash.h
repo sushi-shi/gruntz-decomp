@@ -25,7 +25,7 @@ struct CHashSlot {
     IntrusiveList m_chain;
 };
 
-class CHashElement {
+class CHashElement : public IntrusiveLink {
 public:
     virtual u32 Hash();
 
@@ -33,7 +33,6 @@ public:
 
     CHashElement* Prev();
 
-    IntrusiveLink m_link;
     CHashBase* m_hash;
     u32 m_bucketIndex;
     union {

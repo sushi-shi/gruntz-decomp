@@ -38,7 +38,7 @@ CRezArchiveEntry* CRezEntryNameHash::FindByName(const char* name, i32 caseInsens
             if (_strcmpi(entryName, name) == 0) {
                 return node->m_archiveEntry;
             }
-            node = FromLink(node->m_link.m_next);
+            node = FromLink(node->m_next);
         }
         return NULL;
     }
@@ -47,7 +47,7 @@ CRezArchiveEntry* CRezEntryNameHash::FindByName(const char* name, i32 caseInsens
         if (strcmp(entryName, name) == 0) {
             return node->m_archiveEntry;
         }
-        node = FromLink(node->m_link.m_next);
+        node = FromLink(node->m_next);
     }
     return NULL;
 }
@@ -69,7 +69,7 @@ CRezArchiveType* CRezTypeTagHash::FindTypeByTag(u32 typeTag) {
         if (static_cast<u32>(node->m_archiveType->m_typeTag) == typeTag) {
             return node->m_archiveType;
         }
-        node = FromLink(node->m_link.m_next);
+        node = FromLink(node->m_next);
     }
     return NULL;
 }
@@ -104,7 +104,7 @@ CRezArchiveDir* CRezDirectoryNameHash::FindByName(const char* name, i32 caseInse
             if (_strcmpi(directoryName, name) == 0) {
                 return node->m_archiveDirectory;
             }
-            node = FromLink(node->m_link.m_next);
+            node = FromLink(node->m_next);
         }
         return NULL;
     }
@@ -113,7 +113,7 @@ CRezArchiveDir* CRezDirectoryNameHash::FindByName(const char* name, i32 caseInse
         if (strcmp(directoryName, name) == 0) {
             return node->m_archiveDirectory;
         }
-        node = FromLink(node->m_link.m_next);
+        node = FromLink(node->m_next);
     }
     return NULL;
 }
