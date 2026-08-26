@@ -270,10 +270,10 @@ verified entry it is cross-linked, not restated.
   `fstp`…). `double` vs `float` literals matter: `1.0` (8-byte `.rdata` const)
   vs `1.0f` (4-byte) select different `fld` operands. int↔float conversions go
   **through memory** (`fild`/`fistp` with a stack temp), not a register move.
-- **String/const pooling.** String and numeric constants land in `.rdata`. For
-  zlib we [VERIFIED] that `/GF` pooling has **no effect** (no duplicate literals
-  to fold — see `zlib-matching.md`); for engine TUs with repeated literals,
-  `/GF`-style folding *could* matter — verify per TU before assuming.
+- **String/const pooling.** At `/O2`, VC5's implied `/Gf` puts string literals in
+  writable `.data` COMDATs and folds equal contents; `/GF` moves those COMDATs
+  to read-only `.rdata`. Retail uses the writable form, so `/GF` is proven off.
+  FP constants separately use per-TU `.rdata` pools. See `string-pooling.md`.
 - **Inlining (`/O2` is aggressive).** A `call` you expected but **don't** see ⇒
   the callee was inlined ⇒ mark that source function `inline` (or define it in the
   header). Conversely a base-ctor `call` you *do* see means the base ctor is

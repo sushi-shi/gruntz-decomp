@@ -54,7 +54,7 @@ against the FID/cross-game results in `docs/libraries-and-funcid.md`.)
   function that exercises them is matched.
 
 ## Locked global flag set (iteration 2): `cl /c /O2 /MT`
-The remaining unconstrained flags (`/Gy`, `/GF`, `/Zp`) are now **pinned** by matching
+The remaining unconstrained flags (`/Gy`, `/GF`, `/Zp`) are now **bounded** by matching
 the struct-/static-table-heavy zlib TUs (trees, inftrees, deflate, infblock, infcodes,
 inffast, infutil, zutil) against GRUNTZ.EXE. **42 zlib functions are byte-exact** at
 `cl /c /O2 /MT` (the same flags adler32 needs — no extra flags required). Evidence
@@ -69,14 +69,16 @@ All 42 are identical. (objdiff's *exact* `matched_code` is lower for some — e.
 identical**, which is what the flag lock requires. `fuzzy_match_percent` is ~99-100% for
 all, confirming this.)
 
-- **`/Zp` (struct member packing) — PINNED to the VC5 default `/Zp8` by deflate.c.**
+- **`/Zp` (struct member packing) — packing below 4 excluded by deflate.c.**
   deflate.c is `deflate_state`-struct-heavy. Compiling deflate.c at `/O2 /MT` with
-  `/Zp1`, `/Zp4`, `/Zp8`, `/Zp16`, and *default* (no `/Zp`): `/Zp4`/`/Zp8`/`/Zp16`/default
-  all emit **identical** `.text`; only `/Zp1` differs (`.text` 4880 -> 4848 bytes).
+  `/Zp1`, `/Zp2`, `/Zp4`, `/Zp8`, `/Zp16`, and *default* (no `/Zp`):
+  `/Zp4`/`/Zp8`/`/Zp16`/default all emit **identical** `.text`; `/Zp1` and `/Zp2`
+  both differ.
   Verified against the target: `_fill_window` target-vs-default = **0 byte diffs**,
   target-vs-`/Zp1` = **30 byte diffs**; `_deflate_slow` target-vs-`/Zp1` = **87 byte
   diffs**. So the binary was built with packing >= 4 (member alignment unchanged); the
-  VC5 default `/Zp8` satisfies this. `/Zp1` (byte-packed) does NOT match. -> keep default.
+  VC5 default `/Zp8` satisfies this. `/Zp1` and `/Zp2` do NOT match; the exact
+  bytes cannot distinguish `/Zp4`, `/Zp8`, or `/Zp16`. -> keep default.
 - **`/Gy` (function-level linking / COMDAT) — effectively ON (forced by `/O2`).**
   At `/O2` every function is emitted in its own COMDAT `.text` section (deflate.obj has
   17, inftrees.obj 6, etc.), and `/Gy-` does not change the output (`/O2` forces COMDAT
@@ -92,8 +94,9 @@ all, confirming this.)
   built with `/GF` -> leave off. (See `string-pooling.md` for the full pooling semantics.)
 
 **Conclusion: the global compile flags are `cl /c /O2 /MT` (cdecl). No `/Gy`, `/GF`, or
-`/Zp` override is needed — `/O2` already forces COMDAT, default packing is `/Zp8`, and
-`/GF` has no effect.** The build's `CL_FLAGS = ["/nologo","/c","/O2","/MT"]`
+`/Zp` override is needed — `/O2` already forces COMDAT, default packing is compatible,
+and `/GF` is proven off by retail's writable literal COMDATs.** The build's
+`CL_FLAGS = ["/nologo","/c","/O2","/MT"]`
 (`scripts/gruntz/core/cc_wrap.py`) is correct and unchanged.
 
 Artifacts: `build/zlib-cal/` (per-flag `.obj` + extracted `code_*.bin` + disasms +
@@ -103,8 +106,9 @@ base `build/delink/base/seg_0018.cpp.obj` = `cl /O2 /MT adler32.c`).
 
 ## Status
 **COMPLETE — every zlib TU is 100% (matched_code 100, all functions exact).**
-Global flags locked at `cl /c /O2 /MT`; `/Zp`=default(`/Zp8`) pinned by deflate.c,
-`/Gy` forced-on by `/O2` (confirmed by COMDAT layout), `/GF` unconstrained (no effect).
+Global flags locked at `cl /c /O2 /MT`; deflate excludes `/Zp1` and `/Zp2` while
+`/Zp4`/`/Zp8`/`/Zp16` remain indistinguishable, `/Gy` is forced on by `/O2`
+(confirmed by COMDAT layout), and `/GF` is proven off.
 
 The last three functions (`_inflate`, `_inflate_blocks`, `_inflate_codes` — the big
 `switch(state->mode)` state machines) were byte-exact all along but mis-measured:

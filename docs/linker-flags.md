@@ -4,9 +4,11 @@ This is the flag reference for **reproducing the whole-binary link** of
 `GRUNTZ.EXE` (matching `.text` function order, section/header layout, image base)
 — a **DEFERRED** phase, distinct from the per-function matching loop that the rest
 of these docs are about. **You do not need any of this to byte-match an individual
-function.** Per-function matching is governed by the compile flags only (locked
-`/O2 /MT /Gd`); the link phase is what eventually lines up *addresses* and the PE
-layout once enough functions exist to relink.
+function.** Per-function matching is governed by the TU compile profiles; the
+link phase is what eventually lines up *addresses* and the PE layout once enough
+functions exist to relink. The full compile-side audit, including flags that are
+only bounded rather than literally recovered, is in
+[`docs/compiler-flags.md`](compiler-flags.md).
 
 Toolchain: MSVC 5.0 SP3, **LINK 5.10.7303** (PE `MajorLinker 5 / MinorLinker 10`;
 see `docs/libraries-and-funcid.md` § Toolchain and `docs/toolchain-vc50-sp3.md`).
@@ -19,42 +21,27 @@ calibrated.
 
 ---
 
-## Compile flags (the per-function lock — reconciled, here for completeness)
+## Compile flags (summary only)
 
-These are settled and govern the per-function loop; repeated here only so the link
-phase doesn't second-guess them. Authority: `docs/zlib-matching.md`.
+The effective profiles are `/O2 /MT /Gd`, plus synchronous `/GX` and `/GR` on
+the evidence-backed C++/RTTI TUs. `/O2` supplies the measured `/Ob1 /Og /Oi /Ot
+/Oy /Gf` behavior. `/GF`, `/G6`, `/Op`, `/Oa`, `/Ow`, `/EHa`, `/QIfdiv`, `/Ge`,
+`/Gh`, `/Gr`, `/Gz`, `/Zp1`, and `/Zp2` are excluded by exact-witness A/Bs.
 
-- **`/O2`** [VERIFIED] — optimization level (`== /Ox`); proven by the zlib
-  byte-match (frameless prologue, register allocation). Not `/O1`/`/Os`/`/Od`.
-- **`/MT`** [VERIFIED] — **static multithreaded** CRT (`LIBCMT.LIB`), **NOT**
-  `/MD` (there is no `msvcrt.dll` import; static MFC `…42s` requires the static MT
-  CRT — `docs/libraries-and-funcid.md` § 1.1).
-- **`/Gd` = `__cdecl`** [VERIFIED] — the default calling convention for free
-  functions (zlib `_name` cdecl); members are `__thiscall` (the 5 matched ctors
-  are `??0…@@QAE@XZ`). Do not globally override the convention.
-- `/Zp` = default (`/Zp8`) [VERIFIED, pinned by deflate.c], `/Gy` forced on by
-  `/O2` [VERIFIED]. `/Gf` (string pooling) implied by `/O2` — passing it is a
-  byte-neutral no-op [VERIFIED]; `/GF` would move the pooled literal COMDATs from
-  writable `.data` to `.rdata` — retail's literals are in writable `.data`, so
-  `/GF` is OFF [VERIFIED]. See `zlib-matching.md` and `string-pooling.md`.
-- **`/G<n>` (processor target) — unconstrained except `/G6` is EXCLUDED** [VERIFIED
-  on `directinputmgr2`, 2026-08-05]. `/G3`, `/G4`, `/G5`, `/GB` and the default all
-  emit that unit **byte-identically** (115/140 fns exact, mean 99.28); only `/G6`
-  (Pentium Pro) differs and it *regresses* to 97/140, so retail was not built with
-  it. Useful corollary: because the 386 target (no dual pipeline) matches the
-  Pentium target byte-for-byte here, MSVC 5.0's instruction ORDER in these blocks is
-  not produced by a processor-targeted pairing scheduler — do not attribute an
-  instruction-transposition residue to one. Same sweep: `/Ob1`, `/Ot`, `/Gy-`, `/Gf`
-  are codegen-identical; `/Ob0`, `/Oy-`, `/Oi-`, `/Os`, `/Og-`, `/O1` all regress.
-- `/Zi` or `/Z7` (PDB / debug info) [HEURISTIC] — **no codegen change**; affects
-  only the debug stream, so it neither helps nor hurts byte-matching. (We synth our
-  own PDB; see `synth_pdb`.)
-- `/DNDEBUG` [HEURISTIC, VERIFY] — strips `assert()`. **Do not assume** retail
-  built with it: this is a release build but ships leftover debug/profiler
-  overlay strings, so check whether `assert` `__FILE__`/line strings are actually
-  present (`docs/strings-analysis.md`) **before** deciding to define `NDEBUG`.
-  See the "assertions" item in `matching-patterns.md` § "Common mismatch
-  checklist".
+Two old “pinned” claims need the narrower wording from the audit:
+
+- deflate proves packing **at least 4**; `/Zp4`, `/Zp8`, `/Zp16`, and default
+  are byte-identical. Default `/Zp8` is correct because no override is needed,
+  not because the literal spelling is recoverable;
+- `/G3`, `/G4`, `/G5`, `/GB`, and default are indistinguishable across a broad
+  C/C++ panel. Only `/G6` is excluded.
+
+Warning, dependency, debug-info, Release-definition, and PCH switches require a
+separate literal-command-line classification. In particular, VC5 `/YX` and
+`/Yc`/`/Yu` boundaries can alter register scheduling in an otherwise unchanged
+exact function; they are not assumed byte-neutral. See
+[`compiler-flags.md`](compiler-flags.md) and
+[`patterns/pch-boundary-is-a-tu-state-input.md`](patterns/pch-boundary-is-a-tu-state-input.md).
 
 ---
 

@@ -95,8 +95,9 @@ flags  = "c"
 Every profile is **recovered from the retail bytes, not chosen**:
 
 - `/O2` already forces function-level COMDAT packaging (no `/Gy` needed);
-  default struct packing is `/Zp8`, which matches; `/GF` has no observable
-  effect on these TUs. Calibrated against the zlib TUs — see
+  deflate excludes packing below 4 while default `/Zp8` matches; `/GF` is off
+  because retail literals use writable `.data` COMDATs. Calibrated against the
+  exact witness panels — see [`docs/compiler-flags.md`](compiler-flags.md) and
   [`docs/zlib-matching.md`](zlib-matching.md).
 - `/GR` is on for the Gruntz project only: retail's Gruntz vtables carry a
   Complete Object Locator at `[-4]`, the engine libs' do not.
@@ -108,7 +109,7 @@ Every profile is **recovered from the retail bytes, not chosen**:
 
 Per-unit rationale (why a TU exists, was split, or absorbed another) lives in
 [`docs/tu-partition-brief.md`](tu-partition-brief.md); the compile-flag evidence
-in [`docs/linker-flags.md`](linker-flags.md).
+is in [`docs/compiler-flags.md`](compiler-flags.md).
 
 ## The `cl` rule (the wine compiler bridge)
 
