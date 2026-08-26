@@ -226,7 +226,7 @@ multistartdlg	64	58
 namerecord	5	5
 netcmdslot	18	14
 netlobbydialogs	20	20
-netmgr	54	49
+netmgr	54	50
 netmgrerror	2	2
 netsession	1	1
 netsessionmgr	31	24
@@ -3263,7 +3263,7 @@ netmgr	??1CNetSessionListNode@@UAE@XZ	100.0000	100.0000	2	971bf16da78d	0x1793b0	
 netmgr	??_GCNetPlayerNode@@UAEPAXI@Z	100.0000	100.0000	1	cpp:e9985928bb89	0x179400	100.0000	
 netmgr	??_GCNetProviderNode@@UAEPAXI@Z	100.0000	100.0000	1	cpp:e9985928bb89	0x179320	100.0000	
 netmgr	??_GCNetSessionListNode@@UAEPAXI@Z	100.0000	100.0000	1	cpp:e9985928bb89	0x179390	100.0000	
-netmgr	?AddPlayer@CNetMgr@@QAEPAVCNetPlayerNode@@KPBD0K@Z	88.1651	88.1651	3	412621f90582	0x178b30	88.1651	
+netmgr	?AddPlayer@CNetMgr@@QAEPAVCNetPlayerNode@@KPBD0K@Z	100.0000	100.0000	4	e77b89adce06	0x178b30	100.0000	
 netmgr	?AddProvider@CNetMgr@@QAEPAUCNetProviderNode@@PAU_GUID@@PBD@Z	100.0000	100.0000	4	de49c4632e0f	0x178360	100.0000	
 netmgr	?AddSessionListing@CNetMgr@@QAEPAVCNetSessionListNode@@PBUDPSESSIONDESC2@@@Z	95.9091	95.9091	4	60d53d277bdb	0x1786d0	95.9091	
 netmgr	?BroadcastFrom@CNetMgr@@QAEHPAVCNetPlayerNode@@KPAXK@Z	100.0000	100.0000	3	11e5408565c2	0x179090	100.0000	
