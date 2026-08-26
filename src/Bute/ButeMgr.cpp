@@ -1153,7 +1153,6 @@ bool CButeMgr::ParseTagLine() {
     return ScanToken(BUTETOK_TAG_CLOSE) ? true : false;
 }
 
-// @early-stop
 RVA(0x00171590, 0x228)
 void ButeGroup_Apply(char* key, void* valuePtr, void* ctx) {
     ostream& output = *static_cast<ostream*>(ctx);
@@ -1181,16 +1180,20 @@ void ButeGroup_Apply(char* key, void* valuePtr, void* ctx) {
 
         case BUTE_STRING: {
             CString& text = *value->payload.m_string;
-            output << static_cast<unsigned char>('"') << static_cast<const char*>(text)
-                   << static_cast<unsigned char>('"');
+            ostream& stringOutput = output << static_cast<unsigned char>('"')
+                                           << static_cast<const char*>(text);
+            stringOutput << static_cast<unsigned char>('"');
             break;
         }
 
         case BUTE_RECT: {
+            ostream& rectOutput = output << static_cast<unsigned char>('(');
             ButeIntRect* ref = value->payload.m_rect;
-            output << static_cast<unsigned char>('(') << static_cast<long>(ref->a) << s_strComma
-                   << static_cast<long>(ref->b) << s_strComma << static_cast<long>(ref->c)
-                   << s_strComma << static_cast<long>(ref->d) << static_cast<unsigned char>(')');
+            ostream& rectTail = rectOutput << static_cast<long>(ref->a) << s_strComma
+                                           << static_cast<long>(ref->b) << s_strComma
+                                           << static_cast<long>(ref->c) << s_strComma
+                                           << static_cast<long>(ref->d);
+            rectTail << static_cast<unsigned char>(')');
             break;
         }
 

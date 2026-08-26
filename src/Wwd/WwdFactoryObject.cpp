@@ -190,18 +190,11 @@ CWwdGameObject::~CWwdGameObject() {
     Unload();
 }
 
+#include <Wwd/WwdRectOverlapInline.h>
+
 RVA(0x0015c290, 0x4a)
 i32 CDDrawChildGroup::RectsOverlap(CDDrawRect* a, CDDrawRect* b) {
-    if (a->left > b->right) {
-        return 0;
-    }
-    if (a->right < b->left) {
-        return 0;
-    }
-    if (a->top > b->bottom) {
-        return 0;
-    }
-    return a->bottom >= b->top;
+    return CDDrawRectsOverlap(a, b);
 }
 
 RVA(0x0015c2e0, 0x1d)

@@ -58,12 +58,11 @@ static inline u16* Row16(u8* locked, i32 row, i32 pitch) {
     return p.m_words;
 }
 
-static inline u16 PackPalEntry16(u8 r, u8 g, u8 b) {
-    return static_cast<u16>(
-        ((static_cast<u8>(r >> g_rDown) << g_rUp)
-         | ((static_cast<u8>(g >> g_gDown) << g_gUp) | static_cast<u8>(b >> g_bDown)))
-    );
-}
+#define PACK_PIXEL16(r, g, b)                                                                      \
+    static_cast<u16>(                                                                              \
+        ((static_cast<u8>((r) >> g_rDown) << g_rUp)                                                \
+         | ((static_cast<u8>((g) >> g_gDown) << g_gUp) | static_cast<u8>((b) >> g_bDown)))         \
+    )
 
 static inline u16 Clut16(u32 byteOffset) {
     return *ClutAtByteOffset(byteOffset);
@@ -1156,7 +1155,7 @@ i32 CDDSurface::Blit168(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
     }
 
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
-        g_lut16[i] = PackPalEntry16(pal[i].peRed, pal[i].peGreen, pal[i].peBlue);
+        g_lut16[i] = PACK_PIXEL16(pal[i].peRed, pal[i].peGreen, pal[i].peBlue);
     }
     u8* locked = static_cast<u8*>(Lock(NULL));
     if (locked == NULL) {
@@ -1183,7 +1182,6 @@ i32 CDDSurface::Blit168(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
     return 1;
 }
 
-// @early-stop
 RVA(0x0013ffc0, 0x17f)
 i32 CDDSurface::Blit1624(u8* srcv, RasterRowOrder rowOrder) {
     u8* locked = static_cast<u8*>(Lock(NULL));
@@ -1197,12 +1195,7 @@ i32 CDDSurface::Blit1624(u8* srcv, RasterRowOrder rowOrder) {
                 u8 b = *srcv++;
                 u8 g = *srcv++;
                 u8 r = *srcv++;
-                u16 v =
-                    static_cast<u16>((static_cast<u8>((static_cast<u8>(g) >> g_gDown)) << g_gUp));
-                v = static_cast<u16>(
-                    (v | (static_cast<u8>((static_cast<u8>(r) >> g_rDown)) << g_rUp))
-                );
-                *dst++ = static_cast<u16>((v | static_cast<u8>((static_cast<u8>(b) >> g_bDown))));
+                *dst++ = PACK_PIXEL16(r, g, b);
             }
         }
     } else {
@@ -1212,12 +1205,7 @@ i32 CDDSurface::Blit1624(u8* srcv, RasterRowOrder rowOrder) {
                 u8 r = *srcv++;
                 u8 g = *srcv++;
                 u8 b = *srcv++;
-                u16 v =
-                    static_cast<u16>((static_cast<u8>((static_cast<u8>(r) >> g_rDown)) << g_rUp));
-                v = static_cast<u16>(
-                    (v | (static_cast<u8>((static_cast<u8>(g) >> g_gDown)) << g_gUp))
-                );
-                *dst++ = static_cast<u16>((v | static_cast<u8>((static_cast<u8>(b) >> g_bDown))));
+                *dst++ = PACK_PIXEL16(r, g, b);
             }
         }
     }

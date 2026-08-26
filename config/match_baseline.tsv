@@ -2,9 +2,7 @@
 #   units rows:     unit  n_functions  matched   (matched = at 100% fuzzy now;
 #                    the README's per-module 'exact' uses objdiff's byte-exact count)
 #   function rows:  unit  function  best_pct  cur_pct  tries  src_hash  rva  hist_pct  state
-#   rva      = retail RVA (stable identity within the pinned target): a
-#              target-version migration resets best_pct/hist_pct before banking;
-#              a vanished row whose rva is still
+#   rva      = retail RVA (stable identity): a vanished row whose rva is still
 #              occupied is a rename, not a loss - so signature edits don't regress.
 #              It is ALSO what gates best_pct: the rva identifies the BODY, and a
 #              best measures a body, not a name (see verify.classify.rebound()).
@@ -62,7 +60,7 @@ brickz	4	2
 brickzcellflags	3	1
 brickzload	1	0
 buteglobals	4	4
-butemgr	68	50
+butemgr	68	51
 butetail	3	3
 butetree	2	1
 bzkinddispatch	1	1
@@ -89,7 +87,7 @@ ddrawsurfacemgr	22	20
 ddrawsurfacepair	54	44
 ddrawworkerhost	5	5
 ddrawworkerregistry	26	26
-ddsurface	57	50
+ddsurface	57	51
 debugprintf	17	15
 debugtiming	2	2
 deflate	17	17
@@ -204,7 +202,7 @@ inputdeviceconfig	2	2
 keyedlist	3	3
 kitchenslime	9	6
 latencylist	9	8
-levelplane	28	18
+levelplane	28	16
 levelpreview	11	11
 levelrezpath	3	2
 leveltime	1	1
@@ -228,7 +226,7 @@ multistartdlg	64	58
 namerecord	5	5
 netcmdslot	18	14
 netlobbydialogs	20	20
-netmgr	54	49
+netmgr	54	50
 netmgrerror	2	2
 netsession	1	1
 netsessionmgr	31	25
@@ -318,8 +316,8 @@ wwdfactoryobject	56	52
 wwdgameobject	47	42
 wwdgameobjectrender	15	12
 wwdgrid	13	9
-wwdobjmgr	54	47
-wwdspatialmgr	14	12
+wwdobjmgr	54	48
+wwdspatialmgr	14	13
 zdarrayderived	3	3
 zutil	2	2
 # [functions]	unit	function	best_pct	cur_pct	tries	src_hash	rva	hist_pct	state
@@ -689,7 +687,7 @@ butemgr	??_GCBSecStream@@UAEPAXI@Z	100.0000	100.0000	1	cpp:94519691f73c	0x175010
 butemgr	??_GCButeNode@@UAEPAXI@Z	100.0000	100.0000	1	cpp:94519691f73c	0x175030	100.0000	
 butemgr	??_GCString@@QAEPAXI@Z	100.0000	100.0000	1	cpp:94519691f73c	0x1739e0	100.0000	
 butemgr	?AcceptTransition@CButeMgr@@QAEXFD@Z	100.0000	100.0000	2	38f3ac07635c	0x170740	100.0000	
-butemgr	?ButeGroup_Apply@@YAXPADPAX1@Z	87.7283	87.7283	3	c4a88fc0a61b	0x171590	87.7283	
+butemgr	?ButeGroup_Apply@@YAXPADPAX1@Z	100.0000	100.0000	4	fb0c040ff1b3	0x171590	100.0000	
 butemgr	?ButeStoreFreeAdapter@@YAXPAX@Z	100.0000	100.0000	1	56cd9230df23	0x1750c0	100.0000	
 butemgr	?ButeTag_Apply@@YAXPADPAX1@Z	100.0000	100.0000	4	0ae444a3be05	0x1717c0	100.0000	
 butemgr	?ButeValueTeardown@@YAXPAX@Z	100.0000	100.0000	5	ebb081bbfcdc	0x1750d0	100.0000	
@@ -1167,8 +1165,8 @@ ddrawworkerregistry	?Unload@CDDrawWorkerRegistry@@UAEXXZ	100.0000	100.0000	2	9a8
 ddrawworkerregistry	?Unload@CWapObj@@UAEXXZ	100.0000	100.0000	2	8bf54a276ab5	0x155a20	100.0000	
 ddsurface	??1CDDSurface@@UAE@XZ	100.0000	100.0000	1	cpp:c5b3ad4be81c	0x141630	100.0000	
 ddsurface	??_GCDDSurface@@UAEPAXI@Z	100.0000	100.0000	1	cpp:c5b3ad4be81c	0x141610	100.0000	
-ddsurface	?Blit1624@CDDSurface@@QAEHPAEW4RasterRowOrder@@@Z	95.1484	95.1484	7	74ff8de635a0	0x13ffc0	95.1484	
-ddsurface	?Blit168@CDDSurface@@QAEHPAEPAUtagPALETTEENTRY@@W4RasterRowOrder@@@Z	99.9557	99.9557	6	bece085112a2	0x13fe90	99.9557	
+ddsurface	?Blit1624@CDDSurface@@QAEHPAEW4RasterRowOrder@@@Z	100.0000	100.0000	8	3b05c1be9bc5	0x13ffc0	100.0000	
+ddsurface	?Blit168@CDDSurface@@QAEHPAEPAUtagPALETTEENTRY@@W4RasterRowOrder@@@Z	99.9557	99.9557	7	1b1fa804a2a4	0x13fe90	99.9557	
 ddsurface	?Blit2416@CDDSurface@@QAEHPAEW4RasterRowOrder@@@Z	100.0000	100.0000	4	71f2639e08c5	0x140260	100.0000	
 ddsurface	?Blit248@CDDSurface@@QAEHPAEPAUtagPALETTEENTRY@@W4RasterRowOrder@@@Z	100.0000	100.0000	6	9bc2dc331da1	0x140140	100.0000	
 ddsurface	?Blit816@CDDSurface@@QAEHPAEPAUtagPALETTEENTRY@@W4RasterRowOrder@@@Z	72.9074	72.9074	5	7e036e8f2229	0x140700	72.9074	
@@ -1216,8 +1214,8 @@ ddsurface	?SetColorKeyRange@CDDSurface@@QAEHIII@Z	100.0000	100.0000	1	b7668948ad
 ddsurface	?SetColorKeyVal@CDDSurface@@QAEHII@Z	100.0000	100.0000	1	418ce2c17e8d	0x13edc0	100.0000	
 ddsurface	?SetDestColorKey@CDDSurface@@QAEHI@Z	100.0000	100.0000	1	3058774ae1d7	0x13ee60	100.0000	
 ddsurface	?SetPalette@CDDSurface@@QAEHPAUCDDPalette@@H@Z	100.0000	100.0000	2	7c85037f280d	0x13e970	100.0000	
-ddsurface	?ShadeBlt@CDDSurface@@QAEHPAUtagRECT@@PAV1@0H@Z	71.1034	71.1034	13	faa650899c2b	0x13f300	71.1034	
-ddsurface	?ShadeRect@CDDSurface@@QAEHHPAUtagRECT@@@Z	77.3955	77.3955	7	52d1c7c40b08	0x13f740	77.3955	
+ddsurface	?ShadeBlt@CDDSurface@@QAEHPAUtagRECT@@PAV1@0H@Z	72.4232	72.4232	13	faa650899c2b	0x13f300	72.4232	
+ddsurface	?ShadeRect@CDDSurface@@QAEHHPAUtagRECT@@@Z	82.1455	82.1455	7	52d1c7c40b08	0x13f740	82.1455	
 ddsurface	?StretchBlit@CDDSurface@@QAEHPAV1@PAUtagRECT@@1HH@Z	100.0000	100.0000	1	e6919eb7da93	0x141360	100.0000	
 ddsurface	?Tile@CDDSurface@@QAEXPAV1@H@Z	100.0000	100.0000	4	3b5e3f9ab6bb	0x13fc70	100.0000	
 ddsurface	?UnlockThunk@CDDSurface@@QAEXXZ	100.0000	100.0000	2	105fbc1335b9	0x141690	100.0000	
@@ -2804,11 +2802,11 @@ levelplane	?ActivateKeepActiveObjects@CDDrawWorkerHost@@QAEHXZ	100.0000	100.0000
 levelplane	?ActivateVisibleObjects@CDDrawWorkerHost@@QAEHXZ	99.9286	99.9286	3	9813b6fd4e79	0x1635e0	99.9286	
 levelplane	?CanLoad@CDDrawWorkerHost@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	1	5d78f950c5d3	0x163ce0	100.0000	
 levelplane	?CanSave@CDDrawWorkerHost@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	1	d60ed0bef287	0x163a50	100.0000	
-levelplane	?DeactivateDistantObjects@CDDrawWorkerHost@@QAEHXZ	100.0000	100.0000	3	b29a6908501e	0x163650	100.0000	
+levelplane	?DeactivateDistantObjects@CDDrawWorkerHost@@QAEHXZ	100.0000	99.9286	3	b29a6908501e	0x163650	100.0000	
 levelplane	?Draw@CDDrawWorkerHost@@QAEXPAVCDDrawSurfacePair@@@Z	84.5369	84.5369	4	868b12b70f01	0x1622f0	84.5369	
 levelplane	?FlushAllObjects@CDDrawWorkerHost@@QAEHXZ	100.0000	100.0000	2	fe6b1479ce9f	0x1636e0	100.0000	
 levelplane	?InitGeometry@CDDrawWorkerHost@@UAEHHHHHHHPAUtagRECT@@PAD@Z	97.7143	97.7143	5	82e67788483b	0x161cd0	97.7143	
-levelplane	?Load@CDDrawWorkerHost@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	3	40224140f367	0x163ba0	100.0000	
+levelplane	?Load@CDDrawWorkerHost@@QAEHPAVCFileMemBase@@@Z	100.0000	99.9841	3	40224140f367	0x163ba0	100.0000	
 levelplane	?Prune@CDDrawWorkerHost@@QAEHXZ	100.0000	100.0000	2	3da5d8fb5dc3	0x162bb0	100.0000	
 levelplane	?Read@CDDrawWorkerHost@@UAEHPBUWwdPlaneHeader@@PBDPAUtagRECT@@@Z	97.3555	97.3555	7	1f0b0389a386	0x161920	97.3555	
 levelplane	?ReadPlaneObjects@CDDrawWorkerHost@@QAEHPBUPlaneObjectRecord@@@Z	95.0877	95.0877	6	cccbcfc8e36f	0x162dd0	95.0877	
@@ -3263,7 +3261,7 @@ netmgr	??1CNetSessionListNode@@UAE@XZ	100.0000	100.0000	2	971bf16da78d	0x179690	
 netmgr	??_GCNetPlayerNode@@UAEPAXI@Z	100.0000	100.0000	1	cpp:c5cebfef0f38	0x1796e0	100.0000	
 netmgr	??_GCNetProviderNode@@UAEPAXI@Z	100.0000	100.0000	1	cpp:c5cebfef0f38	0x179600	100.0000	
 netmgr	??_GCNetSessionListNode@@UAEPAXI@Z	100.0000	100.0000	1	cpp:c5cebfef0f38	0x179670	100.0000	
-netmgr	?AddPlayer@CNetMgr@@QAEPAVCNetPlayerNode@@KPBD0K@Z	88.1651	88.1651	3	412621f90582	0x178e10	88.1651	
+netmgr	?AddPlayer@CNetMgr@@QAEPAVCNetPlayerNode@@KPBD0K@Z	100.0000	100.0000	4	e77b89adce06	0x178e10	100.0000	
 netmgr	?AddProvider@CNetMgr@@QAEPAUCNetProviderNode@@PAU_GUID@@PBD@Z	100.0000	100.0000	4	de49c4632e0f	0x178640	100.0000	
 netmgr	?AddSessionListing@CNetMgr@@QAEPAVCNetSessionListNode@@PBUDPSESSIONDESC2@@@Z	95.9091	95.9091	4	60d53d277bdb	0x1789b0	95.9091	
 netmgr	?BroadcastFrom@CNetMgr@@QAEHPAVCNetPlayerNode@@KPAXK@Z	100.0000	100.0000	3	11e5408565c2	0x179370	100.0000	
@@ -4585,7 +4583,7 @@ wwdfactoryobject	?IsLoaded@CWwdDeferredObject@@UAEHXZ	100.0000	100.0000	3	02a1f3
 wwdfactoryobject	?IsLoaded@CWwdDotObject@@UAEHXZ	100.0000	100.0000	3	2f349110d3a3	0x15c2e0	100.0000	
 wwdfactoryobject	?IsLoaded@CWwdGameObject@@UAEHXZ	100.0000	100.0000	2	930a1eb18903	0x15bfb0	100.0000	
 wwdfactoryobject	?Notify@CGameObject@@QAEXPAU1@@Z	100.0000	100.0000	4	cfccfd75cad3	0x15b930	100.0000	
-wwdfactoryobject	?RectsOverlap@CDDrawChildGroup@@QAEHPAUCDDrawRect@@0@Z	100.0000	100.0000	1	6af30d971a2c	0x15c290	100.0000	
+wwdfactoryobject	?RectsOverlap@CDDrawChildGroup@@QAEHPAUCDDrawRect@@0@Z	100.0000	100.0000	2	5c19af57d26f	0x15c290	100.0000	
 wwdfactoryobject	?Render@CWwdDeferredObject@@UAEXPAVCDDrawSurfacePair@@@Z	100.0000	100.0000	2	24cbe0b343c4	0x15bd50	100.0000	
 wwdfactoryobject	?Render@CWwdSpriteObject@@UAEXPAVCDDrawSurfacePair@@@Z	100.0000	100.0000	2	24a7e913f68e	0x15bd00	100.0000	
 wwdfactoryobject	?RestartAnimation@CAniAdvanceCursor@@QAEXH@Z	100.0000	100.0000	3	3c9477632755	0x15c600	100.0000	
@@ -4689,7 +4687,7 @@ wwdobjmgr	?AttachSprite@CDDrawChildGroup@@QAEHPAVCWwdGameObject@@HHHPBDH@Z	100.0
 wwdobjmgr	?BltDirtyChildRegions@CDDrawChildGroup@@UAEXPAVCDDrawSurfacePair@@00@Z	100.0000	100.0000	1	a8ed2dd69a4c	0x15a020	100.0000	
 wwdobjmgr	?BltDirtyChildren@CDDrawChildGroup@@UAEXPAVCDDrawSurfacePair@@0@Z	100.0000	100.0000	1	3849464bc47c	0x159fa0	100.0000	
 wwdobjmgr	?BltDirtyChildrenEx@CDDrawChildGroup@@UAEXPAVCDrawSubWorker@@PAVCDDrawSurfacePair@@1@Z	100.0000	100.0000	2	7d7e27b9fdcb	0x159fd0	100.0000	
-wwdobjmgr	?BoxesOverlap@CDDrawChildGroup@@QAEHPAUCGameObject@@0@Z	85.1494	85.1494	1	0517e5b24c5b	0x15a410	85.1494	
+wwdobjmgr	?BoxesOverlap@CDDrawChildGroup@@QAEHPAUCGameObject@@0@Z	100.0000	100.0000	2	6b8c543ab11a	0x15a410	100.0000	
 wwdobjmgr	?CheckSortOrder@CDDrawChildGroup@@QAEHXZ	100.0000	100.0000	2	749621ce4ae1	0x15aa60	100.0000	
 wwdobjmgr	?ClearChildren@CDDrawChildGroup@@QAEXXZ	100.0000	100.0000	1	3658e3585089	0x15a1d0	100.0000	
 wwdobjmgr	?CollideBroadcast@CDDrawChildGroup@@UAEXXZ	94.4643	94.4643	4	4c37c4663d4c	0x15a1e0	94.4643	
@@ -4736,7 +4734,7 @@ wwdspatialmgr	??_GCWwdGridIter@@UAEPAXI@Z	100.0000	100.0000	1	cpp:e6ceff7d0665	0
 wwdspatialmgr	?ActivateAt@CWwdSpatialMgr@@QAEHHH@Z	93.8523	93.8523	7	ad7d25f28ac1	0x168620	93.8523	
 wwdspatialmgr	?ActivateKeepActiveFromGrid@CWwdSpatialMgr@@QAEHPAVCWwdGrid@@@Z	100.0000	100.0000	4	7530319421ea	0x168740	100.0000	
 wwdspatialmgr	?ActivateKeepActiveObjects@CWwdSpatialMgr@@QAEHXZ	100.0000	100.0000	2	7ca861e4b12c	0x168710	100.0000	
-wwdspatialmgr	?DeactivateOutside@CWwdSpatialMgr@@QAEHHH@Z	86.8795	86.8795	6	1ec34e98ce03	0x1687e0	86.8795	
+wwdspatialmgr	?DeactivateOutside@CWwdSpatialMgr@@QAEHHH@Z	100.0000	100.0000	7	e777711fe464	0x1687e0	100.0000	
 wwdspatialmgr	?FlushAll@CWwdSpatialMgr@@QAEHXZ	100.0000	100.0000	2	5b1851c1be44	0x168c40	100.0000	
 wwdspatialmgr	?FlushGrid@CWwdSpatialMgr@@QAEHPAVCWwdGrid@@@Z	100.0000	100.0000	3	48559645b844	0x168c70	100.0000	
 wwdspatialmgr	?ForEach@CWwdSpatialMgr@@QAEHP6AXPAUCGameObject@@@Z@Z	100.0000	100.0000	2	afc30000dc69	0x168d00	100.0000	

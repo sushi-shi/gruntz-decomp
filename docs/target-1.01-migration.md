@@ -103,6 +103,44 @@ MAX, fast and normal verification tiers. Its initial 1.01 matching baseline is
 is the remaining source-reconstruction objective, not an address-migration
 failure.
 
+## Cross-version score audit
+
+The two target-specific match ledgers can still be joined by unit and mangled
+function identity. RVAs must not be used as the join key, and a score difference
+alone is not source evidence: first compare `src_hash` and each target's
+historical MAX.
+
+The 2026-08-26 audit found no function whose 1.01 historical MAX was 100 while
+its 1.00 historical MAX remained below 100. The only two functions currently
+exact on 1.01 but not current-exact on 1.00 had the same source hash, and 1.00
+had already reached 100 historically:
+
+| function | 1.00 current / historical MAX | 1.01 current / historical MAX |
+|---|---:|---:|
+| `CDDrawWorkerHost::Load` | 99.9841 / 100 | 100 / 100 |
+| `CNetSession::ReadyForSequence` | 89.5349 / 100 | 100 / 100 |
+
+Those rows expose target- or TU-state-dependent current codegen, not missing
+1.00 source structure. The reverse comparison was immediately productive.
+Five post-branch source reconstructions were current-exact on 1.00 and stale on
+1.01; applying the same humane source form with the 1.01 address annotations
+made all five 1.01 bodies exact:
+
+| function | 1.01 before | 1.01 after | 1.00 source evidence |
+|---|---:|---:|---|
+| `ButeGroup_Apply` | 87.7283 | 100 | `e0da5a006` |
+| `CDDSurface::Blit1624` | 95.1484 | 100 | `4f1fa0686` |
+| `CNetMgr::AddPlayer` | 88.1651 | 100 | `608221d3f` |
+| `CDDrawChildGroup::BoxesOverlap` | 85.1494 | 100 | `59f590e83` |
+| `CWwdSpatialMgr::DeactivateOutside` | 86.8795 | 100 | `a7dec134c`, `65634858c` |
+
+This is the safe cross-version workflow: join identities, prefer a changed
+source hash that is exact on the sibling target, verify that the executable
+body is unchanged or structurally compatible, transplant source without its
+RVA labels, then require a normal strict build against the destination target.
+Same-hash score asymmetries are still useful, but only as compiler-state clues;
+there is no different source spelling to copy from them.
+
 ## Conservative migration audit (historical)
 
 The following commands produced the pre-rewrite audit from the 1.00 census:

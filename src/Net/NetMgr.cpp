@@ -622,31 +622,28 @@ BOOL __stdcall NetEnumPlayerCallback(
 
 
 
-// @early-stop
 RVA(0x00178e10, 0x140)
 CNetPlayerNode*
 CNetMgr::AddPlayer(DPID playerId, const char* shortName, const char* longName, DWORD flags) {
     CNetPlayerNode* node = new CNetPlayerNode();
 
-    if (node->Initialize(playerId, shortName, longName, flags) != 0) {
-        i32 hr = m_directPlay->SetPlayerData(node->m_playerId, &node, 4, DPSET_LOCAL);
-        if (hr != 0) {
+    if (node->Initialize(playerId, shortName, longName, flags) == 0) {
+        delete node;
+        return NULL;
+    }
 
-
-
-            ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x36c, hr, NULL);
-        } else {
-            __POSITION* pos =
-                static_cast<__POSITION*>(m_players.AddTail(static_cast<CObject*>(node)));
-
-
-            if (pos == NULL) {
-                delete node;
-                return NULL;
-            }
-            node->m_listPosition = pos;
-            return node;
+    i32 hr = m_directPlay->SetPlayerData(node->m_playerId, &node, 4, DPSET_LOCAL);
+    if (hr != 0) {
+        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x36c, hr, NULL);
+    } else {
+        __POSITION* pos =
+            static_cast<__POSITION*>(m_players.AddTail(static_cast<CObject*>(node)));
+        if (pos == NULL) {
+            delete node;
+            return NULL;
         }
+        node->m_listPosition = pos;
+        return node;
     }
     delete node;
     return NULL;
