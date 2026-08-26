@@ -39,6 +39,11 @@ def _casts():
     return casts.gate_findings()
 
 
+def _compiler_artifacts():
+    from gruntz.verify import compiler_artifacts
+    return compiler_artifacts.gate_findings()
+
+
 def _enum_domains():
     from gruntz.verify import enum_domains
     fatal, _warn, _decl = enum_domains.audit()
@@ -146,6 +151,7 @@ TIERS: dict[str, list[tuple[str, object]]] = {
         ("board", _board),
         ("vtable-bans", _bans),
         ("casts", _casts),
+        ("compiler-artifacts", _compiler_artifacts),
         ("enum-domains", _enum_domains),
         ("label-style", _label_style),
         ("include-order", _include_order),

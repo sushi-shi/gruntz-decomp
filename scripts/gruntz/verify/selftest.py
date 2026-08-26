@@ -20,6 +20,7 @@ import struct
 import sys
 import tempfile
 import unittest
+from collections import Counter
 from pathlib import Path
 from unittest import mock
 
@@ -81,6 +82,39 @@ class BansControls(unittest.TestCase):
         hits = self._scan("// the old struct CFooVtbl idiom is banned\n"
                           "class CFoo { virtual void Render(); };\n")
         self.assertEqual(hits, [])
+
+
+class CompilerArtifactControls(unittest.TestCase):
+    def _scan(self, text):
+        from gruntz.verify import compiler_artifacts as ca
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / "Probe.cpp"
+            path.write_text(text)
+            return ca.source_findings(
+                [path], placement_allow=Counter(), dtor_allow=Counter(),
+                low_level_allow=Counter()
+            )
+
+    def test_allocator_calls_and_realizers_fail(self):
+        findings = self._scan(
+            "void* F(unsigned n) { return ::operator new(n); }\n"
+            "CThing* RealizeCThing() { return new CThing(); }\n"
+        )
+        self.assertTrue(any("compiler allocation call" in row for row in findings))
+        self.assertTrue(any("forced-emission helper" in row for row in findings))
+
+    def test_comments_and_normal_new_expressions_pass(self):
+        findings = self._scan(
+            "// ::operator delete(p); CThing* RealizeCThing() {}\n"
+            "CThing* F() { return new CThing(); }\n"
+        )
+        self.assertEqual(findings, [])
+
+    def test_base_only_realizer_is_fatal(self):
+        from gruntz.verify import compiler_artifacts as ca
+        rows = [("probe", "?RealizeCThing@@YAPAVCThing@@XZ"),
+                ("probe", "??_GCThing@@UAEPAXI@Z")]
+        self.assertEqual(len(ca.base_only_suspicious(rows)), 1)
 
 
 class CastControls(unittest.TestCase):

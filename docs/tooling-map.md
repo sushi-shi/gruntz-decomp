@@ -41,6 +41,7 @@ all read).
 | `gruntz verify bank` | `gruntz.verify.verbs` | MANUAL: update `config/match_baseline.tsv` + the README score block |
 | `gruntz verify fingerprints` | `gruntz.verify.fingerprints` | refresh the per-function source-fingerprint cache |
 | `gruntz verify selftest` | `gruntz.verify.selftest` | the NEGATIVE controls: feed every gate a known violation, assert it fails |
+| `gruntz verify compiler-artifacts` | `gruntz.verify.compiler_artifacts` | reject explicit allocation/deallocation calls, forced-emission helpers, and unreviewed raw-storage or low-level lifetime seams; `--base-only` prints derived unpaired COFF definitions |
 | `gruntz verify constants` | `gruntz.verify.constants` | AST-backed bare numeric census; `--gate` fails on proven pointer/bool/enum spellings and writes the derived TSV under `build/gen/` |
 
 `gruntz verify <gate>` runs one gate directly. The tiers
@@ -48,9 +49,9 @@ all read).
 
 | tier | gates |
 | :-- | :-- |
-| **fast** — text/ledger, no build artifacts | `board` `vtable-bans` `casts` `enum-domains` `label-style` `include-order` |
-| **normal** — model/layout joins | `unique-names` `library-overlap` `tu-order` `data-tu-order` `dead-code` `undefined-closure` `review-claims` |
-| **full** — binary evidence | `vtables` `alloc-size` `assert-relocs` `data-relocs` `caller-callee` `data-access` `data-coverage` |
+| **fast** — text/ledger, plus the current base-object artifact census | `board` `vtable-bans` `casts` `compiler-artifacts` `enum-domains` `label-style` `include-order` |
+| **normal** — model/layout joins | `unique-names` `library-overlap` `tu-order` `data-tu-order` `dead-code` `undefined-closure` `review-claims` `data-relocs` `data-access` `data-coverage` |
+| **full** — binary evidence | `vtables` `alloc-size` `assert-relocs` `caller-callee` |
 | **link** — the candidate image | `link-tier` (link defects + section census + reloc-masked image diff) |
 
 `fast,normal` is the default and is what the graph's `verify_check` edge runs;

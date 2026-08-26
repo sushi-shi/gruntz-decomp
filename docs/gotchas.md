@@ -253,9 +253,10 @@ Each recurred and banked exact/near-exact matches. Grep-able signatures:
 - The one-shot cast CONVERTERS that drove those to 0 are gone; the ledger that keeps
   them at 0 is `gruntz verify casts`.
 - Live gates run every `gruntz build` (fail the build): the `fast` tier (`board`,
-  `vtable-bans`, `casts`, `enum-domains`, `label-style`, `include-order`) and the
+  `vtable-bans`, `casts`, `compiler-artifacts`, `enum-domains`, `label-style`, `include-order`) and the
   `normal` tier (`unique-names`, `library-overlap`, `tu-order`, `data-tu-order`,
-  `dead-code`, `undefined-closure`, `review-claims`), after the MAX gate. The vtable tier moved to
+  `dead-code`, `undefined-closure`, `review-claims`, `data-relocs`, `data-access`,
+  `data-coverage`), after the MAX gate. The vtable tier moved to
   `gruntz verify check --tier full`, and `gruntz verify selftest` is the
   negative-control harness. **Caveat:** a cleanliness
   regex can silently rot vs actual naming — a green `0` is a claim to re-verify against a fresh

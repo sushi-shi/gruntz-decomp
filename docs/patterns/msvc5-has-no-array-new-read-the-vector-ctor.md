@@ -37,9 +37,9 @@ and *no* array cookie (MSVC 5.0 only needs the count back at `delete[]` time, i.
 
 > **Retail allocating exactly `n * sizeof(T)` bytes with no `??0T` loop after the
 > `call ??2` proves the source did NOT write `new T[n]`** — it wrote a raw byte
-> allocation. If the class has a real `??0T` in the image (ours does: `RezElem40::RezElem40`
-> at `0x0017f300`) and the allocation site never calls it, the elements are constructed
-> somewhere else — e.g. MFC's `ConstructElements<TYPE>` placement-new loop.
+> allocation. If a proven class has a real `??0T` and the allocation site never calls it,
+> the elements are constructed somewhere else — e.g. MFC's
+> `ConstructElements<TYPE>` placement-new loop.
 
 That is exactly MFC's `CArray<TYPE,ARG_TYPE>::SetSize`, whose real source line is
 `m_pData = (TYPE*) new BYTE[nNewSize * sizeof(TYPE)];`. `CRezBufferObject` is a
@@ -47,13 +47,20 @@ hand-written clone of it (same four members, same `/8` clamp-to-`[4,1024]` growt
 heuristic, same `ConstructElements` body), so read the whole family off MFC's source
 rather than re-deriving each branch.
 
-## The placement-construction null check survives in the inlined loop
+## A constructor-shaped identity helper does not prove a constructor
 
-An inlined element-construction helper may retain the placement construction's null
-check even when the element initializer itself is an identity function. The signature
-is a loop body shaped as `test element,element; je next; mov ecx,element; call init`,
-where the candidate lacks only the four-byte `test`/`je` pair and its calls, returns,
-relocations, and remaining CFG already agree.
+`0x0017f300` is the three-byte `mov eax,ecx; ret` shape of an empty thiscall
+constructor, and its only caller walks 0x28-byte elements. That shape is insufficient
+to type it as `RezElem40::RezElem40()`. Declaring that constructor adds an eleventh call
+to `CFaderMesh::ApplyInit`; retail has ten. The existing stack `RezElem40 elem;` is the
+negative control: retail performs no default-constructor call there. `RezElem40`
+therefore remains POD and the exact callable is conservatively modeled as the
+constructor-shaped `InitRezElem` identity helper.
+
+The caller still proves a per-element null check. Its signature is
+`test element,element; je next; mov ecx,element; call init`, where the candidate
+lacks only the four-byte `test`/`je` pair and its calls, returns, relocations, and
+remaining CFG already agree.
 
 Model that check at the semantic seam, around the per-element initializer, rather than
 adding a function-wide probe or changing the allocation arm:

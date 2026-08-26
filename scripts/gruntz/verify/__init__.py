@@ -59,6 +59,7 @@ _SUBS = ("status", "check", "bank", "fingerprints", "selftest")
 #: question, they do not return findings.
 _GATES = {"board": "gruntz.verify.board", "bans": "gruntz.verify.bans",
           "casts": "gruntz.verify.casts",
+          "compiler-artifacts": "gruntz.verify.compiler_artifacts",
           "constants": "gruntz.verify.constants",
           "enum-domains": "gruntz.verify.enum_domains",
           "label-style": "gruntz.verify.label_style",
