@@ -867,26 +867,27 @@ void CRezImage::FlipVertical() {
     delete[] scratch;
 }
 
-// @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00176960, 0x168)
 i32 CRezImage::PasteFrom(CRezImage* src, i32 x, i32 y) {
     i32 h = src->m_height;
     i32 w = src->m_width;
+    i32 dstW = m_width;
+    i32 dstH = m_height;
     if (x < 0) {
         w += x;
         x = 0;
     }
-    if (w + x - 1 >= m_width) {
-        w = m_width - x;
+    if (w + x - 1 >= dstW) {
+        w = dstW - x;
     }
     if (y < 0) {
         h += y;
         y = 0;
     }
-    if (h + y - 1 >= m_height) {
-        h = m_height - y;
+    if (h + y - 1 >= dstH) {
+        h = dstH - y;
     }
 
     if (src->m_transparent) {
@@ -902,13 +903,12 @@ i32 CRezImage::PasteFrom(CRezImage* src, i32 x, i32 y) {
                 d++;
             }
         }
-        return h;
-    }
-
-    for (i32 row = 0; row < h; row++) {
-        u8* s = src->m_pixels + src->m_rowOffsets[row];
-        u8* d = m_pixels + m_rowOffsets[y + row] + x;
-        memcpy(d, s, w);
+    } else {
+        for (i32 row = 0; row < h; row++) {
+            u8* s = src->m_pixels + src->m_rowOffsets[row];
+            u8* d = m_pixels + m_rowOffsets[y + row] + x;
+            memcpy(d, s, w);
+        }
     }
     return h;
 }

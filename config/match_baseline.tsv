@@ -184,7 +184,7 @@ hazardlogicdispatch	6	6
 heapdiag	8	8
 helpstate	14	14
 imagepolyclip	8	1
-imagepool	55	48
+imagepool	55	49
 imageset1	1	0
 imageset2	9	8
 imageset3	2	2
@@ -313,7 +313,7 @@ worldsoundset	36	33
 wormhole	26	23
 wormholeacts	3	2
 wwdfactoryobject	56	52
-wwdgameobject	47	41
+wwdgameobject	47	43
 wwdgameobjectrender	15	12
 wwdgrid	13	9
 wwdobjmgr	54	47
@@ -2670,7 +2670,7 @@ imagepool	?LoadPid@CRezImage@@QAEHPADPAUHDC__@@H@Z	100.0000	100.0000	4	279b6c0e4
 imagepool	?LoadRid@CRezImage@@QAEHPADPAUHDC__@@H@Z	100.0000	100.0000	4	a8c5a4c6f4de	0x176310	100.0000	
 imagepool	?LoadSurfaceFromData@CImagePool@@QAEPAVCRezImage@@PAEW4RezDecodeKind@@H@Z	100.0000	100.0000	7	9107b7e89606	0x1751f0	100.0000	
 imagepool	?LoadSurfaceFromResource@CImagePool@@QAEPAVCRezImage@@PADH@Z	100.0000	100.0000	5	b95a248198c8	0x1752f0	100.0000	
-imagepool	?PasteFrom@CRezImage@@QAEHPAV1@HH@Z	84.6911	84.6911	1	39fb6983ed83	0x176960	84.6911	
+imagepool	?PasteFrom@CRezImage@@QAEHPAV1@HH@Z	100.0000	100.0000	2	e0470e40868c	0x176960	100.0000	
 imagepool	?RemovePalette@CImagePool@@QAEXPAUCImagePaletteNode@@@Z	100.0000	100.0000	3	4cc057ef8b63	0x174f30	100.0000	
 imagepool	?RemoveSurface@CImagePool@@QAEXPAVCRezImage@@@Z	100.0000	100.0000	4	8fb8ff68b5c2	0x174ed0	100.0000	
 imagepool	?ReserveSystemColors@CImagePaletteNode@@QAEXXZ	100.0000	100.0000	3	bbd3e6651d92	0x1770e0	100.0000	
@@ -4622,10 +4622,10 @@ wwdgameobject	?FindFrame@CDDrawWorker@@QAEHPAVCImage@@PADPAH@Z	100.0000	100.0000
 wwdgameobject	?GetClassId@CLogicRecord@@UAE?AW4LoadableClassId@@XZ	100.0000	100.0000	2	931dc626b214	0x151d70	100.0000	
 wwdgameobject	?GetFirstFrameLightLevel@CDDrawWorker@@QAEHXZ	100.0000	100.0000	1	5972d9d114bc	0x1525a0	100.0000	
 wwdgameobject	?GetFirstFrameState@CDDrawWorker@@QAE?AW4ShadeMode@@XZ	100.0000	100.0000	1	745733ab1059	0x152570	100.0000	
-wwdgameobject	?GetMemoryUsage@CDDrawWorker@@QAEHH@Z	100.0000	99.9623	1	e44283363edf	0x1523f0	100.0000	
+wwdgameobject	?GetMemoryUsage@CDDrawWorker@@QAEHH@Z	100.0000	100.0000	1	e44283363edf	0x1523f0	100.0000	
 wwdgameobject	?Init@CLogicRecord@@UAEHP6AHPAUCGameObject@@@ZH@Z	100.0000	100.0000	3	bc55ebb4881b	0x151e20	100.0000	
 wwdgameobject	?InsertFrame@CDDrawWorker@@UAEPAVCImage@@PAUCRezArchiveEntry@@HH@Z	100.0000	100.0000	5	1adf3700514a	0x151f00	100.0000	
-wwdgameobject	?IntersectsViewport@CWwdSpriteObject@@QAEHXZ	83.0659	83.0659	3	9dee6f2e7f6c	0x1509c0	83.0659	
+wwdgameobject	?IntersectsViewport@CWwdSpriteObject@@QAEHXZ	100.0000	100.0000	4	c3dacb0f0cdc	0x1509c0	100.0000	
 wwdgameobject	?IsLoaded@CLogicRecord@@UAEHXZ	100.0000	100.0000	2	04d1df79a5d8	0x151d60	100.0000	
 wwdgameobject	?LoadFrame@CDDrawWorker@@UAEPAVCImage@@PADHH@Z	100.0000	100.0000	3	d0d9063ea2ff	0x151fb0	100.0000	
 wwdgameobject	?NotifyForEventCode@CGameObject@@QAEHH@Z	100.0000	100.0000	4	60671b3e5456	0x151d20	100.0000	

@@ -175,7 +175,6 @@ void CWwdSpriteObject::BltDirtyRegions(
     }
 }
 
-// @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001509c0, 0xab)
@@ -183,14 +182,10 @@ i32 CWwdSpriteObject::IntersectsViewport() {
     if (m_frameImage == NULL) {
         return 0;
     }
-    i32 sx = m_screenX;
-    i32 ax = m_frameImage->m_anchorX;
-    i32 right = sx + ax;
-    i32 left = sx - ax;
-    i32 sy = m_screenY;
-    i32 ay = m_frameImage->m_anchorY;
-    i32 top = sy - ay;
-    i32 bottom = sy + ay;
+    i32 left = m_screenX - m_frameImage->m_anchorX;
+    i32 right = m_screenX + m_frameImage->m_anchorX;
+    i32 top = m_screenY - m_frameImage->m_anchorY;
+    i32 bottom = m_screenY + m_frameImage->m_anchorY;
     if (HAS(static_cast<WwdGameObjectFlags>(m_flags), WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
 
         RECT* r = &OwnerMgr()->m_level->m_mainPlane->m_planeViewRect;

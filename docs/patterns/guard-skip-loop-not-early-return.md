@@ -114,3 +114,39 @@ Retail holding an inline epilogue anywhere in the neighbourhood means the return
 count already agrees and only the placement differs, which is
 [identical-return-epilogue-tailmerge](identical-return-epilogue-tailmerge.md)'s
 wall.
+
+## One source return can still produce two machine epilogues — and recolour the whole function
+
+`CRezImage::PasteFrom` 0x176960 is the composition control.  It has two mutually
+exclusive copy loops and returns the clipped height.  The early-return spelling
+
+```cpp
+if (src->m_transparent) {
+    // transparent copy
+    return h;
+}
+// opaque copy
+return h;
+```
+
+already had retail's two `ret` instructions, so return COUNT alone did not expose the
+source mistake.  Writing the two loops as sibling `if/else` arms with one trailing
+`return h` kept two machine epilogues but changed the value lifetimes and homes across
+both arms, moving **84.69 -> 92.67** and making both copy loops instruction-identical to
+retail.  The remaining eight-byte clipping prelude required two ordinary locals:
+
+```cpp
+i32 dstW = m_width;
+i32 dstH = m_height;
+```
+
+used by the horizontal and vertical clamps.  That local pair on the early-return base
+was a misleading descent (**79.55**, 358 bytes); on the correct single-return `if/else`
+base it produced retail's 360-byte object and **100.00 exact**.  Reversing only the two
+destination declarations missed by one instruction at 99.90.
+
+This is the explicit composed-search rule for this pattern: when the body has mutually
+exclusive arms that return the same value, test one source return even if the retail
+`ret` count already agrees.  Then re-test authentic locals whose isolated form moved a
+retail feature but spilled or overgrew the baseline; branch structure can completely
+change whether C2 homes those values.
