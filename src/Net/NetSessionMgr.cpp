@@ -2,11 +2,13 @@
 
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntPickupInline.h>
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzCommand.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Multi.h>
 #include <Gruntz/PickupType.h>
+#include <Gruntz/ScanGridMacros.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Ints.h>
 #include <Net/CmdPool.h>
@@ -114,9 +116,7 @@ void CNetSession::ResetRound() {
 // @early-stop
 RVA(0x000bf1d0, 0x2a4)
 void CNetSession::BuildGruntzCrcInfo() {
-    char szLine[0x100];
-    szLine[0] = ""[0];
-    memset(szLine + 1, 0, sizeof(szLine) - 1);
+    char szLine[0x100] = "";
 
     CString info("crc info for all gruntz:\n------------------------\n");
 
@@ -130,78 +130,10 @@ void CNetSession::BuildGruntzCrcInfo() {
             i32 rnd = rand();
             PickupType type = grunt->m_entranceReason;
             i32 wp;
-            switch (type) {
-                case PICKUP_BOMB:
-                    wp = 2;
-                    break;
-                case PICKUP_WELDER:
-                    wp = 3;
-                    break;
-                case PICKUP_SWORD:
-                    wp = 4;
-                    break;
-                case PICKUP_GUNHAT:
-                    wp = 5;
-                    break;
-                case PICKUP_CLUB:
-                    wp = 6;
-                    break;
-                case PICKUP_ROCK:
-                    wp = 7;
-                    break;
-                case PICKUP_SHOVEL:
-                    wp = 8;
-                    break;
-                case PICKUP_BOOMERANG:
-                    wp = 9;
-                    break;
-                case PICKUP_SPRING:
-                    wp = 0xa;
-                    break;
-                case PICKUP_GAUNTLETZ:
-                    wp = 0xb;
-                    break;
-                case PICKUP_WINGZ:
-                    wp = 0xc;
-                    break;
-                case PICKUP_SPY:
-                    wp = 0xd;
-                    break;
-                case PICKUP_BRICK:
-                    wp = 0xe;
-                    break;
-                case PICKUP_GRAVITYBOOTZ:
-                    wp = 0xf;
-                    break;
-                case PICKUP_SHIELD:
-                    wp = 0x10;
-                    break;
-                case PICKUP_GOOBER:
-                    wp = 0x11;
-                    break;
-                case PICKUP_TOOB:
-                    wp = 0x12;
-                    break;
-                case PICKUP_GLOVEZ:
-                    wp = 0x13;
-                    break;
-                case PICKUP_TIMEBOMB:
-                    wp = 0x14;
-                    break;
-                case PICKUP_NERFGUN:
-                    wp = 0x15;
-                    break;
-                case PICKUP_WAND:
-                    wp = 0x16;
-                    break;
-                default:
-                    wp = 0x17;
-                    break;
-            }
-            PickupType tool = type;
-            if (type > PICKUP_EQUIPPABLE_LAST) {
-                tool = grunt->m_toolId;
-            }
+            PRIO(wp, type);
+            b32 da = grunt->m_daFlag;
+            PickupType toy = grunt->m_vehiclePickupType;
+            PickupType tool = ArrivalPickupOf(grunt, type);
             wsprintfA(
                 szLine,
                 "[p=%d][g=%d][health=%d][x=%d][y=%d][dir=%d][stm=%d][ttl=%d][tool=%d]"
@@ -215,8 +147,8 @@ void CNetSession::BuildGruntzCrcInfo() {
                 grunt->m_stamina,
                 grunt->m_toyTime,
                 tool,
-                grunt->m_vehiclePickupType,
-                grunt->m_daFlag,
+                toy,
+                da,
                 wp,
                 grunt->m_poweredUp,
                 grunt->m_neighborValid,

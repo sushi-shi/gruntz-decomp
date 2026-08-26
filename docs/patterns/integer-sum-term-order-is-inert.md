@@ -26,5 +26,9 @@ a differing accumulation order is NOT evidence of a differing source order, so
 do not read member identities off it. `CNetSession::BuildGruntzCrcInfo` 0xbf1d0
 proves the identities instead, because its `wsprintfA` argument list is
 positional: `[health=%d]` is fed `[esi+0x3ec]` on BOTH sides. What DOES move
-the sum order there is register pressure - retail keeps a dead 8-byte
-`Coord` copy in the frame that our body folds away.
+the sum order there is register pressure. An older reading attributed retail's
+extra eight frame bytes to a dead `Coord` copy; the actual slots hold the live
+inner-loop counter and strength-reduced roster offset. Naming the `da` and
+`toy` varargs payloads before the final pickup selection creates the pressure
+that homes those loop values; see
+`named-varargs-locals-displace-loop-state.md`.
