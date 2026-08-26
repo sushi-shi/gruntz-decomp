@@ -77,12 +77,6 @@ static inline CActHandler* VActLookup(i32 coord) {
     return (CActRegPool<CGruntVoice>::s_table.ResolveEntry(coord));
 }
 
-RVA_COMPGEN(0x00013400, 0x44, ??1CUFO@@UAE@XZ)
-void RealizeUfoDtor(CUFO* p);
-void RealizeUfoDtor(CUFO* p) {
-    p->CUFO::~CUFO();
-}
-
 RVA(0x00013470, 0x4b)
 CVoiceTrigger::CVoiceTrigger() : CUserLogic(CUserLogic::INLINE_BASE) {}
 

@@ -31,8 +31,6 @@ public:
     virtual i32 OnLButtonDblClk(WPARAM keyFlags, i32 x, i32 y) OVERRIDE;
     virtual i32 OnRButtonDblClk(WPARAM keyFlags, i32 x, i32 y) OVERRIDE;
 
-    i32 UnusedWindowQuery();
-
     CGruntzMgr* GameMgr() {
         return static_cast<CGruntzMgr*>(m_owner->m_gameMgr);
     }

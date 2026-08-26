@@ -340,6 +340,19 @@ i32 __cdecl GameSerializationCallback(
     return g_gameReg->SerializeGameState(archive, mode, typeId, payloadWord.m_word) != 0;
 }
 
+RVA_COMPGEN(0x0000f6b0, 0x6, ?GetTypeTag@CDoNothing@@UAE?AW4LogicTypeId@@XZ)
+RVA_COMPGEN(0x0000f740, 0x1e, ??_GCDoNothing@@UAEPAXI@Z)
+RVA_COMPGEN(0x0000f770, 0x44, ??1CDoNothing@@UAE@XZ)
+RVA_COMPGEN(0x0000f7e0, 0x6, ?GetTypeTag@CDoNothingNormal@@UAE?AW4LogicTypeId@@XZ)
+RVA_COMPGEN(0x0000f870, 0x1e, ??_GCDoNothingNormal@@UAEPAXI@Z)
+RVA_COMPGEN(0x0000f8a0, 0x44, ??1CDoNothingNormal@@UAE@XZ)
+RVA_COMPGEN(0x0000fb70, 0x6, ?GetTypeTag@CBehindCandy@@UAE?AW4LogicTypeId@@XZ)
+RVA_COMPGEN(0x0000fc00, 0x1e, ??_GCBehindCandy@@UAEPAXI@Z)
+RVA_COMPGEN(0x0000fc30, 0x44, ??1CBehindCandy@@UAE@XZ)
+RVA_COMPGEN(0x0000fca0, 0x6, ?GetTypeTag@CEyeCandy@@UAE?AW4LogicTypeId@@XZ)
+RVA_COMPGEN(0x0000fd30, 0x1e, ??_GCEyeCandy@@UAEPAXI@Z)
+RVA_COMPGEN(0x0000fd60, 0x44, ??1CEyeCandy@@UAE@XZ)
+
 RVA_COMPGEN(0x00011160, 0x4b, ??0CTileTrigger@@QAE@XZ)
 CTileTrigger::CTileTrigger() : CUserLogic(CUserLogic::INLINE_BASE) {}
 
@@ -351,6 +364,10 @@ CProjectile::CProjectile() : CMovingLogic(CMotionState::INLINE_BASE) {}
 
 RVA_COMPGEN(0x00013170, 0x7b, ??0CPathHazard@@QAE@XZ)
 CPathHazard::CPathHazard() : CUserLogic(CUserLogic::INLINE_BASE) {}
+
+RVA_COMPGEN(0x000133b0, 0x6, ?GetTypeTag@CUFO@@UAE?AW4LogicTypeId@@XZ)
+RVA_COMPGEN(0x000133d0, 0x1e, ??_GCUFO@@UAEPAXI@Z)
+RVA_COMPGEN(0x00013400, 0x44, ??1CUFO@@UAE@XZ)
 
 RVA_COMPGEN(0x000136d0, 0x184, ??0CMotionState@@QAE@XZ)
 CMotionState::CMotionState() {

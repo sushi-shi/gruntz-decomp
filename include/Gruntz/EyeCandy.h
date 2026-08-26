@@ -13,7 +13,6 @@ public:
     CEyeCandy() : CUserLogic(CUserLogic::INLINE_BASE) {}
     CEyeCandy(CGameObject* obj);
 
-    RVA(0x0000fca0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_EYECANDY;
     }

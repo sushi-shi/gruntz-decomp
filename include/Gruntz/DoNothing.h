@@ -13,7 +13,6 @@ public:
     CDoNothing() : CUserLogic(CUserLogic::INLINE_BASE) {}
     CDoNothing(CGameObject* obj);
 
-    RVA(0x0000f6b0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE {
         return LOGIC_DONOTHING;
     }

@@ -206,9 +206,5 @@ i32 CGruntzWnd::OnPaint() {
     return 0;
 }
 
-i32 CGruntzWnd::UnusedWindowQuery() {
-    return 0;
-}
-
 RVA_COMPGEN(0x00094c10, 0x16, ??1CGameWnd@@UAE@XZ)
 RVA_COMPGEN(0x00094d80, 0x2f, ??_GCGameWnd@@UAEPAXI@Z)
