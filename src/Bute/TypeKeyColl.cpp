@@ -211,7 +211,7 @@ zBitVec& zBitVec::operator=(const zBitVec& that) {
     if (this != &that) {
         if (m_capacity != that.m_capacity) {
             if (static_cast<u32>(m_capacity) > 0x20) {
-                ::operator delete(m_words);
+                delete[] m_words;
             }
             if (static_cast<u32>(that.m_capacity) > 0x20) {
                 m_words = static_cast<u32*>(
@@ -708,10 +708,11 @@ void zPTree::ClearRecursive(CButeTreeNode* node) {
     }
     delete[] n->m_key;
     if (m_kind & 2) {
+        // The callback destroys the type-erased value; the tree still owns its storage.
         m_teardown(n->m_value);
         ::operator delete(n->m_value);
     }
-    ::operator delete(n);
+    delete n;
 }
 
 RVA(0x0016e0f0, 0x4)

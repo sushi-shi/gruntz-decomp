@@ -93,12 +93,6 @@ struct CUniformTileImageSet : public CTileImageSet {
     CUniformTileImageSet() {
         m_width = 0;
     }
-    void* operator new(size_t n) {
-        return ::operator new(n);
-    }
-    void operator delete(void* p) {
-        ::operator delete(p);
-    }
 
     i32 m_collisionValue;
 };
@@ -134,12 +128,6 @@ struct CRectTileImageSet : public CTileImageSet {
     virtual i32 ScanDownForValue(i32 x, i32 y, i32 value, i32* outY);
     CRectTileImageSet() {
         m_width = 0;
-    }
-    void* operator new(size_t n) {
-        return ::operator new(n);
-    }
-    void operator delete(void* p) {
-        ::operator delete(p);
     }
 
     i32 m_outsideValue;
@@ -178,12 +166,6 @@ struct CPixelTileImageSet : public CTileImageSet {
     CPixelTileImageSet() {
         m_width = 0;
         m_pixels = NULL;
-    }
-    void* operator new(size_t n) {
-        return ::operator new(n);
-    }
-    void operator delete(void* p) {
-        ::operator delete(p);
     }
 
     i32 m_heightLog2;

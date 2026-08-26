@@ -32,10 +32,6 @@ public:
     CDDrawWorkerHost(CDDrawSurfaceMgr* owner, i32 id, i32 flags);
     virtual ~CDDrawWorkerHost() OVERRIDE;
 
-    void* operator new(size_t n) {
-        return ::operator new(n);
-    }
-
     virtual i32 IsLoaded() OVERRIDE;
 
     virtual void Unload() OVERRIDE;

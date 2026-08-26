@@ -65,10 +65,6 @@ class CDDrawSurfaceMgr : public CObject {
 public:
     CDDrawSurfaceMgr();
 
-    void* operator new(size_t n) {
-        return ::operator new(n);
-    }
-
     virtual ~CDDrawSurfaceMgr() OVERRIDE;
     virtual i32 IsReady();
 

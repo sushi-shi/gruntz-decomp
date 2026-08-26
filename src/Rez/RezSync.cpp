@@ -298,8 +298,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
 
     if (m_resourceArchive) {
-        m_resourceArchive->CRezArchive::~CRezArchive();
-        ::operator delete(m_resourceArchive);
+        delete m_resourceArchive;
         m_resourceArchive = NULL;
     }
     m_resourceArchive = new CRezArchive;
@@ -431,7 +430,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     if (!m_lightFxMgr->Init(this, NULL)) {
         if (m_lightFxMgr) {
             m_lightFxMgr->Reset();
-            ::operator delete(m_lightFxMgr);
+            delete m_lightFxMgr;
             m_lightFxMgr = NULL;
         }
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x411);
@@ -461,7 +460,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             dead->m_joystick = NULL;
             dead->m_deviceGroup = NULL;
             dead->m_deviceSelection = INPUTDEV_NONE;
-            ::operator delete(dead);
+            delete dead;
             g_gameplayInput = NULL;
         }
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x413);
@@ -488,7 +487,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     if (!m_spriteFactory->Init(m_shadeCache, m_world)) {
         if (m_spriteFactory) {
             m_spriteFactory->Reset();
-            ::operator delete(m_spriteFactory);
+            delete m_spriteFactory;
             m_spriteFactory = NULL;
         }
 

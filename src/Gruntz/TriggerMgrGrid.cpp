@@ -65,7 +65,7 @@ void CTriggerMgr::Cleanup() {
     CActionOptionsMenuBar* ov = m_overlay;
     if (ov != NULL) {
         ov->Clear();
-        operator delete(ov);
+        delete ov;
         m_overlay = NULL;
     }
     ClearRecords();

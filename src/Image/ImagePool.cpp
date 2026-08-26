@@ -58,7 +58,7 @@ void CImagePool::RemoveSurface(CRezImage* image) {
         m_surfaces.RemoveAt(image->m_listPosition);
     }
     image->Free();
-    ::operator delete(image);
+    delete image;
 }
 
 RVA(0x00174f30, 0x30)
@@ -70,7 +70,7 @@ void CImagePool::RemovePalette(CImagePaletteNode* palette) {
         m_palettes.RemoveAt(palette->m_listPosition);
     }
     palette->Destroy();
-    ::operator delete(palette);
+    delete palette;
 }
 
 RVA(0x00174f60, 0x37)
@@ -80,7 +80,7 @@ void CImagePool::ClearSurfaces() {
         CRezImage* item = static_cast<CRezImage*>(m_surfaces.GetNext(pos));
         if (item) {
             item->Free();
-            ::operator delete(item);
+            delete item;
         }
     }
     m_surfaces.RemoveAll();
@@ -93,7 +93,7 @@ void CImagePool::ClearPalettes() {
         CImagePaletteNode* item = static_cast<CImagePaletteNode*>(m_palettes.GetNext(pos));
         if (item) {
             item->Destroy();
-            ::operator delete(item);
+            delete item;
         }
     }
     m_palettes.RemoveAll();
@@ -114,7 +114,7 @@ CRezImage* CImagePool::CreateSurface(i32 width, i32 height, ColorDepth bitDepth,
         ReleaseDC(m_sourceHwnd, hdc);
         if (node) {
             node->Free();
-            ::operator delete(node);
+            delete node;
         }
         return NULL;
     }
@@ -148,7 +148,7 @@ CRezImage* CImagePool::CreateSurfaceFromPixels(
         ReleaseDC(m_sourceHwnd, hdc);
         if (node) {
             node->Free();
-            ::operator delete(node);
+            delete node;
         }
         return NULL;
     }
@@ -174,7 +174,7 @@ CRezImage* CImagePool::LoadSurfaceFromData(u8* data, RezDecodeKind format, i32 f
         ReleaseDC(m_sourceHwnd, hdc);
         if (node) {
             node->Free();
-            ::operator delete(node);
+            delete node;
         }
         return NULL;
     }
@@ -203,7 +203,7 @@ CRezImage* CImagePool::LoadSurfaceFromResource(char* resourceName, i32 flags) {
         ReleaseDC(m_sourceHwnd, hdc);
         if (node) {
             node->Free();
-            ::operator delete(node);
+            delete node;
         }
         return NULL;
     }
@@ -231,7 +231,7 @@ CRezImage* CImagePool::ConvertSurface(CRezImage* source, CImagePaletteNode* pale
         ReleaseDC(m_sourceHwnd, hdc);
         if (node) {
             node->Free();
-            ::operator delete(node);
+            delete node;
         }
         return NULL;
     }
@@ -253,7 +253,7 @@ CImagePaletteNode* CImagePool::CreatePaletteFromEntries(PALETTEENTRY* entries, i
     if (node->CreateFromEntries(entries, flags) == 0) {
         if (node) {
             node->Destroy();
-            ::operator delete(node);
+            delete node;
         }
         return NULL;
     }
@@ -270,7 +270,7 @@ CImagePaletteNode* CImagePool::CreatePaletteFromRgb(u8* rgb, i32 flags) {
     if (node->CreateFromRgb(rgb, flags) == 0) {
         if (node) {
             node->Destroy();
-            ::operator delete(node);
+            delete node;
         }
         return NULL;
     }
@@ -288,7 +288,7 @@ CImagePaletteNode* CImagePool::LoadPaletteFromFile(char* path, i32 flags) {
     if (node->LoadFromFile(path, flags) == 0) {
         if (node) {
             node->Destroy();
-            ::operator delete(node);
+            delete node;
         }
         return NULL;
     }
@@ -306,7 +306,7 @@ CImagePool::LoadPaletteFromData(u8* data, u32 dataSize, RezDecodeKind format, i3
     if (node->LoadFromData(data, dataSize, format, flags) == 0) {
         if (node) {
             node->Destroy();
-            ::operator delete(node);
+            delete node;
         }
         return NULL;
     }

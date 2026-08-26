@@ -229,7 +229,7 @@ void DirectInputMgr2::FreeDeviceGroups() {
         CInputDeviceGroup* group = static_cast<CInputDeviceGroup*>(m_deviceGroups.GetNext(pos));
         if (group != NULL) {
             group->Clear();
-            operator delete(group);
+            delete group;
         }
     }
     m_deviceGroups.RemoveAll();
@@ -244,7 +244,7 @@ CInputDeviceGroup* DirectInputMgr2::CreateDeviceGroup(CInputDevBase** devices, i
     if (group->FillFrom(devices, n, unused) == 0) {
         if (group != NULL) {
             group->Clear();
-            operator delete(group);
+            delete group;
         }
         return NULL;
     }

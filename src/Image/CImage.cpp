@@ -193,7 +193,7 @@ void CImage::Unload() {
     CDDrawShadeBlit* owned = m_owned;
     if (owned != NULL) {
         owned->Teardown();
-        ::operator delete(owned);
+        delete owned;
         m_owned = NULL;
     }
 }

@@ -330,7 +330,7 @@ void CGruntzMgr::Close() {
     }
     if (m_spriteFactory) {
         m_spriteFactory->Reset();
-        operator delete(m_spriteFactory);
+        delete m_spriteFactory;
         m_spriteFactory = NULL;
     }
     if (m_triggerMgr) {
@@ -359,7 +359,7 @@ void CGruntzMgr::Close() {
         v->m_joystick = NULL;
         v->m_deviceGroup = NULL;
         v->m_deviceSelection = INPUTDEV_NONE;
-        operator delete(v);
+        delete v;
         g_gameplayInput = NULL;
     }
     if (g_inputMgr) {
@@ -384,14 +384,11 @@ void CGruntzMgr::Close() {
         m_faderMgr = NULL;
     }
     if (m_chatLog) {
-
-        m_chatLog->~CFontConfig();
-        operator delete(m_chatLog);
+        delete m_chatLog;
         m_chatLog = NULL;
     }
     if (m_voiceManager) {
-        m_voiceManager->~CVoiceManager();
-        operator delete(m_voiceManager);
+        delete m_voiceManager;
         m_voiceManager = NULL;
     }
     if (m_world) {
@@ -422,7 +419,7 @@ void CGruntzMgr::Close() {
     }
     if (m_lightFxMgr) {
         m_lightFxMgr->Reset();
-        operator delete(m_lightFxMgr);
+        delete m_lightFxMgr;
         m_lightFxMgr = NULL;
     }
     CloseSoundFontDevice();

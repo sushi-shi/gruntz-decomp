@@ -1051,11 +1051,11 @@ CNetPlayerNode::~CNetPlayerNode() {
     m_playerId = 0;
     m_listPosition = NULL;
     if (m_ownedBufferA) {
-        ::operator delete(m_ownedBufferA);
+        delete[] m_ownedBufferA;
     }
     m_ownedBufferA = NULL;
     if (m_ownedBufferB) {
-        ::operator delete(m_ownedBufferB);
+        delete[] m_ownedBufferB;
     }
     m_ownedBufferB = NULL;
 }

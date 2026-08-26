@@ -213,8 +213,7 @@ void CFontConfig::Scroll(i32 delta) {
         }
     }
     item->name.Empty();
-    item->FontItem::~FontItem();
-    ::operator delete(item);
+    delete item;
     m_scrollOffset = 0;
 }
 

@@ -405,7 +405,7 @@ CRezArchiveDir::~CRezArchiveDir() {
         delete[] m_name;
     }
     if (m_preloadedData) {
-        ::operator delete(m_preloadedData);
+        delete[] m_preloadedData;
     }
     m_name = NULL;
     m_time = 0;
@@ -482,7 +482,7 @@ i32 CRezArchiveDir::PreloadData(b32 recursive) {
 RVA(0x0013a190, 0x94)
 i32 CRezArchiveDir::ReleaseEntryData(b32 recursive) {
     if (m_preloadedData != NULL) {
-        ::operator delete(m_preloadedData);
+        delete[] m_preloadedData;
         m_preloadedData = NULL;
     } else {
         CRezArchiveType* type = FirstType();
@@ -846,7 +846,7 @@ i32 CRezArchiveDir::ReadDirectoryBody(
                 }
             }
             if (keys) {
-                ::operator delete(keys);
+                delete[] keys;
             }
         }
     }
@@ -980,7 +980,7 @@ CRezArchive::~CRezArchive() {
         do {
             delete[] block->m_entries;
             m_entryPoolBlocks.Unlink(block);
-            ::operator delete(block);
+            delete block;
             block = FirstEntryPoolBlock(m_entryPoolBlocks);
         } while (block);
     }
@@ -1578,7 +1578,7 @@ CRezArchiveEntry* CRezArchive::AcquireEntry() {
         CRezArchiveEntry* entries = new CRezArchiveEntry[m_entriesPerPoolBlock];
         block->m_entries = entries;
         if (entries == NULL) {
-            ::operator delete(block);
+            delete block;
             return NULL;
         }
         for (i32 index = 0; static_cast<u32>(index) < static_cast<u32>(m_entriesPerPoolBlock);

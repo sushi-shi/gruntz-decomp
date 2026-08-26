@@ -3769,7 +3769,7 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     clock[1] = 0;
     m_hlBusy = false;
     if (m_retabNotify) {
-        ::operator delete(m_retabNotify);
+        delete m_retabNotify;
         m_retabNotify = NULL;
     }
     ExitMode();
@@ -4538,7 +4538,7 @@ i32 CWarpStoneFly::Tick(u32 dt) {
         }
         CStatusBarMgr* owner = m_owner;
         if (owner->m_retabNotify != NULL) {
-            ::operator delete(owner->m_retabNotify);
+            delete owner->m_retabNotify;
             owner->m_retabNotify = NULL;
         }
         return 1;

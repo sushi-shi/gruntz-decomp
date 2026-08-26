@@ -80,7 +80,7 @@ void CShadeTableCache::FreeNodes() {
         CShadeTable* t = m_arr.m_pData[i];
         if (t) {
             t->Reset();
-            ::operator delete(t);
+            delete t;
         }
     }
     if (m_arr.m_pData) {
@@ -453,7 +453,7 @@ CShadeTable* CShadeTableCache::GreyTable() {
     }
     if (!t->Set(PIXEL16_VALUE_COUNT * sizeof(u16), 0)) {
         t->Reset();
-        ::operator delete(t);
+        delete t;
         return NULL;
     }
 
@@ -493,7 +493,7 @@ CShadeTable* CShadeTableCache::AddTable(float scale) {
     }
     if (!t->Set(PIXEL16_VALUE_COUNT * sizeof(u16), 0)) {
         t->Reset();
-        ::operator delete(t);
+        delete t;
         return NULL;
     }
 
@@ -547,7 +547,7 @@ CShadeTable* CShadeTableCache::SubTable(i32 color) {
     }
     if (!t->Set(PIXEL16_VALUE_COUNT * sizeof(u16), 0)) {
         t->Reset();
-        ::operator delete(t);
+        delete t;
         return NULL;
     }
 
@@ -594,7 +594,7 @@ CShadeTable* CShadeTableCache::AlphaTable(PALETTEENTRY* pal) {
     }
     if (!t->Set(PALETTE_ENTRY_COUNT * 2, 0)) {
         t->Reset();
-        ::operator delete(t);
+        delete t;
         return NULL;
     }
 
@@ -763,7 +763,7 @@ void CShadeTableCache::FindRemove(CShadeTable* key) {
             CShadeTable* t = m_arr.m_pData[i];
             if (t) {
                 t->Reset();
-                ::operator delete(t);
+                delete t;
             }
             i32 cnt = m_arr.m_nSize - i - 1;
             CShadeTable** dst = &m_arr.m_pData[i];

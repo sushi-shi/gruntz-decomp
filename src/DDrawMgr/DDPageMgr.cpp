@@ -424,9 +424,9 @@ i32 CMoviePlayer::CloseSmacker() {
     }
     SmackClose(m_smackHandle);
     m_smackHandle = NULL;
-    if (m_rezBuffer) {
-        ::operator delete(m_rezBuffer);
-        m_rezBuffer = NULL;
+    if (m_destRect) {
+        delete m_destRect;
+        m_destRect = NULL;
     }
     m_streamOpen = false;
     return 1;

@@ -1540,10 +1540,9 @@ void CMultiStartDlg::OnReadyToggle3() {
 
 RVA(0x000c5240, 0x2c)
 i32 CMultiStartDlg::DestroyWindow() {
-    CLatencyList* latencyOptions = m_latencyOptions;
+    CKeyedList* latencyOptions = m_latencyOptions;
     if (latencyOptions) {
-        latencyOptions->CKeyedList::~CKeyedList();
-        ::operator delete(latencyOptions);
+        delete latencyOptions;
         m_latencyOptions = NULL;
     }
     return CWnd::DestroyWindow();

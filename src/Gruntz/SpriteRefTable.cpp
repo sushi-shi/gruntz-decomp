@@ -43,12 +43,12 @@ void CSpriteRefTable::Clear() {
             CSpriteRef* a = GetTool(i);
             if (a) {
                 a->Free();
-                ::operator delete(a);
+                delete a;
             }
             CSpriteRef* b = GetToy(i);
             if (b) {
                 b->Free();
-                ::operator delete(b);
+                delete b;
             }
         }
         for (i32 j = 0; j < 0x11; j++) {
@@ -299,7 +299,7 @@ CSpriteRef* CSpriteRefTable::Add(char* szName, ColorTint kind) {
     if (node->Build(m_factory, alpha, kind) == 0) {
         if (node) {
             node->Free();
-            ::operator delete(node);
+            delete node;
         }
         return NULL;
     }

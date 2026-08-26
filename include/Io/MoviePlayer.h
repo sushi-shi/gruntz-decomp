@@ -181,10 +181,7 @@ public:
     i32 m_tilesDown;
     i32 m_originX;
     i32 m_originY;
-    union {
-        RECT* m_destRect;
-        u8* m_rezBuffer;
-    };
+    RECT* m_destRect;
     union {
         b32 m_forceSingleRow;
         b32 m_interlaced;

@@ -78,7 +78,7 @@ void CNetSession::Shutdown() {
     while (freeList.GetCount() != 0) {
         GruntRec* p = static_cast<GruntRec*>(freeList.RemoveTail());
         if (p) {
-            ::operator delete(p);
+            delete p;
         }
     }
 }

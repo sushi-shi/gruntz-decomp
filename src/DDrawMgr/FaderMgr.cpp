@@ -253,7 +253,7 @@ void CFaderMgr::DeleteAll() {
         } while (i <= last);
     }
     if (m_arr.m_pData) {
-        operator delete(m_arr.m_pData);
+        delete[] m_arr.m_pData;
         m_arr.m_pData = NULL;
     }
     m_arr.m_nMaxSize = 0;

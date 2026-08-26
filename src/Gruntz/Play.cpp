@@ -249,7 +249,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
                 return 0;
             }
             dead->Deactivate();
-            ::operator delete(dead);
+            delete dead;
             m_chatBox = NULL;
             return 0;
         }
@@ -321,7 +321,7 @@ void CPlay::ReleaseResources() {
     CMinimap* minimap = m_minimap;
     if (minimap) {
         minimap->Reset();
-        ::operator delete(minimap);
+        delete minimap;
         m_minimap = NULL;
     }
     OnExit();
@@ -345,7 +345,7 @@ void CPlay::ReleaseResources() {
     CChatBoxOwner* hit = m_chatBox;
     if (hit) {
         hit->Deactivate();
-        ::operator delete(hit);
+        delete hit;
         m_chatBox = NULL;
     }
     if (m_tileTriggers) {
@@ -355,7 +355,7 @@ void CPlay::ReleaseResources() {
     CTimer* fm = m_levelTimer;
     if (fm) {
         fm->Reset();
-        ::operator delete(fm);
+        delete fm;
         m_levelTimer = NULL;
     }
     for (i = 0; i < StartMarkerCount(); i++) {
@@ -1511,7 +1511,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                     CTimer* spr = self->m_levelTimer;
                     if (spr != NULL) {
                         spr->Reset();
-                        ::operator delete(spr);
+                        delete spr;
                         self->m_levelTimer = NULL;
                     }
                 }

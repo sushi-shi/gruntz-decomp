@@ -286,7 +286,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
             return 0;
         }
         io->Deactivate();
-        ::operator delete(io);
+        delete io;
         m_chatBox = NULL;
         return 0;
     }
@@ -365,7 +365,7 @@ void CMulti::ReleaseResources() {
     CMinimap* minimap = m_minimap;
     if (minimap) {
         minimap->Reset();
-        ::operator delete(minimap);
+        delete minimap;
         m_minimap = NULL;
     }
     Mgr()->m_isEffectsEnabled = m_savedEffectsEnabled;

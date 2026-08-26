@@ -892,7 +892,7 @@ i32 CTriggerMgr::OpenActionOptionsMenu(
             CActionOptionsMenuBar* o2 = m_overlay;
             if (o2 != NULL) {
                 o2->Clear();
-                operator delete(o2);
+                delete o2;
                 m_overlay = NULL;
             }
             g_gameReg->ReportError(IDX(IDS_INITIALIZE_GAME), 0x3ff);
@@ -1005,7 +1005,7 @@ void CTriggerMgr::ResetSpawnState() {
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
     CStatusBarMgr* st = world->m_statusBar;
     if (st->m_retabNotify != NULL) {
-        operator delete(st->m_retabNotify);
+        delete st->m_retabNotify;
         st->m_retabNotify = NULL;
     }
     world->m_statusBar->m_hlBusy = false;
@@ -1541,7 +1541,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
     CActionOptionsMenuBar* old = m_overlay;
     if (old != NULL) {
         old->Clear();
-        ::operator delete(old);
+        delete old;
         m_overlay = NULL;
     }
     b32 hasOverlay;

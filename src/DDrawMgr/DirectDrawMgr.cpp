@@ -739,7 +739,7 @@ void CDDrawDeviceManager::ClearPalettes() {
         CDDPalette* item = static_cast<CDDPalette*>(m_palettes.GetNext(pos));
         if (item) {
             item->Destroy();
-            ::operator delete(item);
+            delete item;
         }
     }
     m_palettes.RemoveAll();
@@ -750,7 +750,7 @@ void CDDrawDeviceManager::RemovePalette(CDDPalette* item) {
     m_palettes.RemoveAt(item->m_pos);
     if (item) {
         item->Destroy();
-        ::operator delete(item);
+        delete item;
     }
 }
 
@@ -760,7 +760,7 @@ CDDPalette* CDDrawDeviceManager::LoadPaletteFromFile(char* path, i32 flags) {
     if (!item->LoadFromFile(m_device, path, flags)) {
         if (item) {
             item->Destroy();
-            ::operator delete(item);
+            delete item;
         }
         return NULL;
     }
@@ -774,7 +774,7 @@ CDDPalette* CDDrawDeviceManager::CreateRgbPalette(u8* rgb, i32 flags) {
     if (!item->CreateRGB(m_device, rgb, flags)) {
         if (item) {
             item->Destroy();
-            ::operator delete(item);
+            delete item;
         }
         return NULL;
     }
@@ -789,7 +789,7 @@ CDDPalette* CDDrawDeviceManager::CreatePaletteFromEntries(PALETTEENTRY* entries,
     if (!item->Create(m_device, entries, flags)) {
         if (item) {
             item->Destroy();
-            ::operator delete(item);
+            delete item;
         }
         return NULL;
     }
@@ -803,7 +803,7 @@ CDDPalette* CDDrawDeviceManager::CreatePaletteFromTrailingData(void* data, u32 s
     if (!item->CreateFromTrailing(m_device, data, size, flags)) {
         if (item) {
             item->Destroy();
-            ::operator delete(item);
+            delete item;
         }
         return NULL;
     }
