@@ -19,6 +19,7 @@
 
 #define HSV_MAX(a, b) ((a) > (b) ? (a) : (b))
 #define HSV_MIN(a, b) ((a) < (b) ? (a) : (b))
+#define INTERPOLATE(start, end, amount) ((start) * (g_one - (amount)) + (end) * (amount))
 
 DATA(0x002bf224)
 PALETTEENTRY* g_pal = NULL;
@@ -201,37 +202,33 @@ CShadeTable* CShadeTableCache::FlashTable(
         for (i32 k = darkRampSteps; k < total; k++) {
             float uu =
                 static_cast<float>((k - darkRampSteps)) / static_cast<float>(brightRampSteps);
-            float inv = g_one - uu;
-            u8 rn = static_cast<u8>(
-                (static_cast<float>(pal[i].peRed) * inv
-                 + static_cast<float>(pal[i].peRed) * static_cast<float>(endPct) * g_percentScale
-                       * uu)
-                        < g_255
-                    ? static_cast<float>(pal[i].peRed) * inv
-                          + static_cast<float>(pal[i].peRed) * static_cast<float>(endPct)
-                                * g_percentScale * uu
-                    : g_255
-            );
-            u8 gn = static_cast<u8>(
-                (static_cast<float>(pal[i].peGreen) * inv
-                 + static_cast<float>(pal[i].peGreen) * static_cast<float>(endPct) * g_percentScale
-                       * uu)
-                        < g_255
-                    ? static_cast<float>(pal[i].peGreen) * inv
-                          + static_cast<float>(pal[i].peGreen) * static_cast<float>(endPct)
-                                * g_percentScale * uu
-                    : g_255
-            );
-            u8 bn = static_cast<u8>(
-                (static_cast<float>(pal[i].peBlue) * inv
-                 + static_cast<float>(pal[i].peBlue) * static_cast<float>(endPct) * g_percentScale
-                       * uu)
-                        < g_255
-                    ? static_cast<float>(pal[i].peBlue) * inv
-                          + static_cast<float>(pal[i].peBlue) * static_cast<float>(endPct)
-                                * g_percentScale * uu
-                    : g_255
-            );
+            u8 rn = static_cast<u8>(HSV_MIN(
+                INTERPOLATE(
+                    static_cast<float>(pal[i].peRed),
+                    (static_cast<float>(endPct) * static_cast<float>(pal[i].peRed))
+                        * g_percentScale,
+                    uu
+                ),
+                g_255
+            ));
+            u8 gn = static_cast<u8>(HSV_MIN(
+                INTERPOLATE(
+                    static_cast<float>(pal[i].peGreen),
+                    (static_cast<float>(endPct) * static_cast<float>(pal[i].peGreen))
+                        * g_percentScale,
+                    uu
+                ),
+                g_255
+            ));
+            u8 bn = static_cast<u8>(HSV_MIN(
+                INTERPOLATE(
+                    static_cast<float>(pal[i].peBlue),
+                    (static_cast<float>(endPct) * static_cast<float>(pal[i].peBlue))
+                        * g_percentScale,
+                    uu
+                ),
+                g_255
+            ));
             ramp[k] = static_cast<u8>(FindNearestColor(pal, rn, gn, bn));
         }
     }

@@ -10,11 +10,11 @@ of a **`u8` local** at MSVC 5.0 /O2:
 - the STORE is byte-wide because the declared type is one byte;
 - the slot is still **4-byte aligned and 4-byte spaced** (cl5 does not pack
   scalar locals), so three such locals cost **12 bytes of frame**, not 3;
-- the RELOAD at the call site is a plain DWORD `mov` — cl5 does **not** emit
-  `movzx` when promoting such a local to an `int` argument, so the top three
-  bytes of the pushed argument are whatever the slot held before. That is
-  harmless only because the callee re-masks, and **the callee's `& 0xff` is the
-  corroborating evidence** that this is what the original source did.
+- the RELOAD at the call site is a plain DWORD `mov` because the VC5 ABI gives
+  even a `u8` formal a dword stack slot. The top three bytes are whatever the
+  slot held before. That is harmless because the callee re-masks, and **the
+  callee's `& 0xff` plus its byte-parameter signature are the corroborating
+  evidence** that this is what the original source did.
 
 ## How to use it
 
@@ -28,7 +28,8 @@ frame toward retail's.
 three byte stores at `[esp+0x28]/[esp+0x24]/[esp+0x20]` feeding
 `FindNearestColor(pal,r,g,b)` (which opens `and ebx,0xff`). Typing r/g/b as `u8`
 made the frame exact. `CShadeTableCache::FlashTable` 0x14df40 - same shape after
-two `__ftol` calls, `sub esp,0x24 -> 0x30` against retail's `0x34`, 53.36 -> 54.85.
+two `__ftol` calls: three `u8` locals plus the byte-parameter callee recover
+retail's exact `sub esp,0x34` frame and remove caller-side `and 0xff` promotions.
 
 Counter-case: the same retype on `HsvShiftTable` 0x14e540 *lost* a point, and its
 frame is still 0x28 against retail's 0x44. Do not apply this blind - only where

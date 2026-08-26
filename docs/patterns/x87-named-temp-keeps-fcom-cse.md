@@ -24,4 +24,5 @@ can be stale — this exact pair was recorded as identical and was not
 x87 verdict; see [[our-guesses-cite-themselves-as-evidence]].
 
 **Related:** [[cse-partial-term-looks-like-a-constant]],
+[`macro-origin-changes-vc5-x87-cse.md`](macro-origin-changes-vc5-x87-cse.md),
 [[struct-return-rvo-idioms]] (adjudicate per site).

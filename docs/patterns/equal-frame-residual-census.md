@@ -197,11 +197,15 @@ claim. Now normalized to `?unnamed`.
 **9. A referent COUNT difference on a symbol both sides name.** Retail reads
 `g_gameReg` twice back-to-back where cl keeps one copy
 (`CTriggerMgr::LoadGruntResurrectTuning` 0x7be60: `mov ecx,ds:g_gameReg; mov
-edx,ds:g_gameReg`), and retail reads `g_percentScale` five times inside the k-loop where
-cl hoists it (`CShadeTableCache::FlashTable` 0x14df40). That is CSE and
-rematerialization, not identity: **both sides NAME the symbol.** The test now
-compares symbol SETS over the whole stream, so only a symbol the other side
-never names anywhere is reported.
+edx,ds:g_gameReg`), and one `CShadeTableCache::FlashTable` spelling lets cl
+reuse a single `g_percentScale` value where retail reads it six times. That is
+CSE and rematerialization, not identity: **both sides NAME the symbol.** It is
+still source-reachable evidence, however: a general interpolation macro
+restores all six reads while a superficially attractive association folds them.
+See
+[`macro-origin-changes-vc5-x87-cse.md`](macro-origin-changes-vc5-x87-cse.md).
+The test compares symbol SETS over the whole stream, so only a symbol the other
+side never names anywhere is reported.
 
 **10. The forced zero displacement.** `[ebp+0x0]` addresses what `[ecx]`
 addresses — EBP as a ModRM base cannot encode without a displacement byte, and
