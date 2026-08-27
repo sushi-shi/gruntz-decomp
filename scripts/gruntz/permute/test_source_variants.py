@@ -12,6 +12,7 @@ from gruntz.permute.generate_ast_variants import (
     AstEdit,
     AstMutation,
     candidate_payloads,
+    clang_args,
     configure_libclang,
     crossed_candidate_payloads,
     declaration_hoist_edits,
@@ -119,6 +120,20 @@ class BatchSourceVariantTests(unittest.TestCase):
 
 
 class AstVariantTests(unittest.TestCase):
+    def test_clang_args_accept_msvc_address_of_temporary(self):
+        configure_libclang()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "src/unit.cpp"
+            source.parent.mkdir(parents=True)
+            source.write_text("struct Value {}; void Use(Value*); void F() { Use(&Value()); }\n")
+            tu = ci.Index.create().parse(str(source), args=clang_args(root, source))
+            errors = [
+                str(diagnostic) for diagnostic in tu.diagnostics
+                if diagnostic.severity >= ci.Diagnostic.Error
+            ]
+            self.assertEqual(errors, [])
+
     def test_declaration_hoist_after_same_line_open_brace_is_valid_cpp(self):
         blob = (
             b"#define RVA(rva, size)\n"

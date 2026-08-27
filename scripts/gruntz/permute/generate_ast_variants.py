@@ -132,7 +132,7 @@ def clang_args(root: Path, source: Path) -> list[str]:
             break
     out = [
         "-x", "c++", "-std=c++14", "-fms-compatibility", "-ferror-limit=0",
-        "-Wno-writable-strings", "-fwritable-strings",
+        "-Wno-writable-strings", "-Wno-address-of-temporary", "-fwritable-strings",
         "-I", str(root / "include"),
     ]
     vendor = root / "vendor"

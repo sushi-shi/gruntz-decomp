@@ -64,8 +64,8 @@ retail); see
 ## Cost of adopting it
 
 `&Temporary()` is a hard error in clang (`-Waddress-of-temporary`), and the build's
-annotation reader, the record-layout dumper and the clangd DB are all clang. The
-three flag sites (`gruntz.tool.clang`, `the retired Ghidra metadata generator`,
+annotation reader, source-variant parser and the clangd DB are all clang. The
+three flag sites (`gruntz.tool.clang`, `gruntz.permute.generate_ast_variants`,
 `gruntz.graph.compdb`) now pass `-Wno-address-of-temporary`. That is byte-neutral -
 clang never produces object code here.
 
