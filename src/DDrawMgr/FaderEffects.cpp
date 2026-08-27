@@ -1265,95 +1265,96 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                 row++;
             } while (row < m_targetHeight);
         }
-    } else if (((m_mode == FADER_SWEEP_FORWARD && m_stripCopy == false)
-                || (m_mode == FADER_SWEEP_REVERSE && m_stripCopy != false))
-               && m_targetHeight > 0) {
+    } else if ((m_mode == FADER_SWEEP_FORWARD && m_stripCopy == false)
+               || (m_mode == FADER_SWEEP_REVERSE && m_stripCopy != false)) {
         i32 row = 0;
-        i32 base = bpp * col;
-        do {
-            u8* dstLine = m_targetRowOffsets[row] + base + m_dstBase;
-            u8* gsrc = m_warpRowOffsets[row] + base + m_gatherBase;
-            u8* ssrc = m_sourceRowOffsets[row] + base + m_straightBase;
-            if (m_useLut != false) {
-                u8* lut = m_table->m_data;
-                i32 i = 0;
-                if (colBase > 0) {
-                    do {
-                        m_lineBuf[i] =
-                            lut[static_cast<u32>(m_shadeRamp[i])
-                                + static_cast<u32>(gsrc[m_warpTable[i]]) * 0x40];
-                        i++;
-                    } while (i < colBase);
-                }
-                for (i32 t = colBase; t < stride; t++) {
-                    m_lineBuf[t] = ssrc[t];
-                }
-            } else {
-                if (bpp == PIXEL8_BYTES_PER_PIXEL) {
+        if (m_targetHeight > 0) {
+            i32 base = bpp * col;
+            do {
+                u8* dstLine = m_targetRowOffsets[row] + base + m_dstBase;
+                u8* gsrc = m_warpRowOffsets[row] + base + m_gatherBase;
+                u8* ssrc = m_sourceRowOffsets[row] + base + m_straightBase;
+                if (m_useLut != false) {
+                    u8* lut = m_table->m_data;
                     i32 i = 0;
                     if (colBase > 0) {
                         do {
-                            m_lineBuf[i] = gsrc[m_warpTable[i]];
+                            m_lineBuf[i] =
+                                lut[static_cast<u32>(m_shadeRamp[i])
+                                    + static_cast<u32>(gsrc[m_warpTable[i]]) * 0x40];
                             i++;
                         } while (i < colBase);
                     }
                     for (i32 t = colBase; t < stride; t++) {
                         m_lineBuf[t] = ssrc[t];
                     }
-                } else if (bpp == PIXEL16_BYTES_PER_PIXEL) {
-                    i32 i = 0;
-                    if (colBase > 0) {
-                        do {
-                            m_lineBuf[i * 2] = gsrc[m_warpTable[i] * 2];
-                            m_lineBuf[i * 2 + 1] = gsrc[m_warpTable[i] * 2 + 1];
-                            i++;
-                        } while (i < colBase);
-                    }
-                    for (i32 t = colBase; t < stride; t++) {
-                        m_lineBuf[t * 2] = ssrc[t * 2];
-                        m_lineBuf[t * 2 + 1] = ssrc[t * 2 + 1];
-                    }
-                } else if (bpp == PIXEL24_BYTES_PER_PIXEL) {
-                    i32 k = 0;
-                    if (colBase > 0) {
-                        i32 d = 0;
-                        do {
-                            m_lineBuf[d] = gsrc[m_warpTable[k] * 3];
-                            m_lineBuf[d + 1] = gsrc[m_warpTable[k] * 3 + 1];
-                            m_lineBuf[d + 2] = gsrc[m_warpTable[k] * 3 + 2];
-                            k++;
-                            d += 3;
-                        } while (k < colBase);
-                    }
-                    if (colBase < stride) {
-                        i32 d = colBase * 3;
-                        i32 c = stride - colBase;
-                        u8* sp = ssrc + d;
-                        do {
-                            m_lineBuf[d] = sp[0];
-                            m_lineBuf[d + 1] = sp[1];
-                            m_lineBuf[d + 2] = sp[2];
-                            sp += 3;
-                            d += 3;
-                            c--;
-                        } while (c != 0);
+                } else {
+                    if (bpp == PIXEL8_BYTES_PER_PIXEL) {
+                        i32 i = 0;
+                        if (colBase > 0) {
+                            do {
+                                m_lineBuf[i] = gsrc[m_warpTable[i]];
+                                i++;
+                            } while (i < colBase);
+                        }
+                        for (i32 t = colBase; t < stride; t++) {
+                            m_lineBuf[t] = ssrc[t];
+                        }
+                    } else if (bpp == PIXEL16_BYTES_PER_PIXEL) {
+                        i32 i = 0;
+                        if (colBase > 0) {
+                            do {
+                                m_lineBuf[i * 2] = gsrc[m_warpTable[i] * 2];
+                                m_lineBuf[i * 2 + 1] = gsrc[m_warpTable[i] * 2 + 1];
+                                i++;
+                            } while (i < colBase);
+                        }
+                        for (i32 t = colBase; t < stride; t++) {
+                            m_lineBuf[t * 2] = ssrc[t * 2];
+                            m_lineBuf[t * 2 + 1] = ssrc[t * 2 + 1];
+                        }
+                    } else if (bpp == PIXEL24_BYTES_PER_PIXEL) {
+                        i32 k = 0;
+                        if (colBase > 0) {
+                            i32 d = 0;
+                            do {
+                                m_lineBuf[d] = gsrc[m_warpTable[k] * 3];
+                                m_lineBuf[d + 1] = gsrc[m_warpTable[k] * 3 + 1];
+                                m_lineBuf[d + 2] = gsrc[m_warpTable[k] * 3 + 2];
+                                k++;
+                                d += 3;
+                            } while (k < colBase);
+                        }
+                        if (colBase < stride) {
+                            i32 d = colBase * 3;
+                            i32 c = stride - colBase;
+                            u8* sp = ssrc + d;
+                            do {
+                                m_lineBuf[d] = sp[0];
+                                m_lineBuf[d + 1] = sp[1];
+                                m_lineBuf[d + 2] = sp[2];
+                                sp += 3;
+                                d += 3;
+                                c--;
+                            } while (c != 0);
+                        }
                     }
                 }
-            }
-            i32 cnt = bpp * stride;
-            CopyBytes(dstLine, m_lineBuf, cnt);
-            if (m_stripCopy != false) {
-                i32 c2 = bpp * stripWidth;
-                u8* s2 = (col + stride) * bpp + m_sourceRowOffsets[row] + m_straightBase;
-                dstLine += cnt;
-                CopyBytes(dstLine, s2, c2);
-            } else {
-                if (bpp * stripWidth > 0) {
-                    memset(dstLine - bpp * stripWidth, 0, bpp * stripWidth);
+                i32 cnt = bpp * stride;
+                CopyBytes(dstLine, m_lineBuf, cnt);
+                if (m_stripCopy != false) {
+                    i32 c2 = bpp * stripWidth;
+                    u8* s2 = (col + stride) * bpp + m_sourceRowOffsets[row] + m_straightBase;
+                    dstLine += cnt;
+                    CopyBytes(dstLine, s2, c2);
+                } else {
+                    if (bpp * stripWidth > 0) {
+                        memset(dstLine - bpp * stripWidth, 0, bpp * stripWidth);
+                    }
                 }
-            }
-            row++;
-        } while (row < m_targetHeight);
+                row++;
+            } while (row < m_targetHeight);
+        }
     }
 }
 

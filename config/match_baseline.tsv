@@ -1652,7 +1652,7 @@ fadereffects	?RenderFrame@CFaderRadial@@UAEXH@Z	99.7222	99.7222	3	b31d25567930	0
 fadereffects	?RenderFrame@CFaderShape@@UAEXH@Z	99.6626	99.6626	9	9d2ba3b2447c	0x181b00	99.9080	
 fadereffects	?RenderFrame@CFaderSine@@UAEXH@Z	94.6626	94.6626	7	e21d4d7b60b4	0x17ff30	94.6626	
 fadereffects	?RenderTile@CFaderShape@@QAEXHH@Z	100.0000	100.0000	4	2d045e1be471	0x182610	100.0000	
-fadereffects	?RenderWarpTile@CFaderShape@@QAEXHH@Z	88.3306	88.3306	5	fa1f0167fb19	0x181e50	88.3306	
+fadereffects	?RenderWarpTile@CFaderShape@@QAEXHH@Z	88.9125	88.9125	6	1c7e953e9ac0	0x181e50	88.9125	
 fadermgr	??0CFaderMgr@@QAE@XZ	100.0000	100.0000	3	248c552f0c07	0x17d8f0	100.0000	
 fadermgr	??1CFaderArray@@UAE@XZ	100.0000	100.0000	1	cpp:9ac6b7adcf3b	0x17e240	100.0000	
 fadermgr	??1CFaderMgr@@QAE@XZ	100.0000	100.0000	1	b7d521a26e4e	0x17d910	100.0000	
@@ -3974,7 +3974,7 @@ shadetablecache	?AlphaTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEEN
 shadetablecache	?CompareHue@CShadeTableCache@@SAHPBX0@Z	100.0000	100.0000	1	9f72f177963a	0x14fa60	100.0000	
 shadetablecache	?CompareLuma@CShadeTableCache@@SAHPBX0@Z	100.0000	99.8095	1	558d08e60d43	0x14ed10	100.0000	
 shadetablecache	?FindByKey@CShadeTableCache@@QAEPAUCShadeTable@@H@Z	100.0000	100.0000	3	79d23dc82899	0x14fb40	100.0000	
-shadetablecache	?FindNearestColor@CShadeTableCache@@SAHPAUtagPALETTEENTRY@@EEE@Z	100.0000	100.0000	3	ea9479e032f3	0x14fbf0	100.0000	
+shadetablecache	?FindNearestColor@CShadeTableCache@@SAHPAUtagPALETTEENTRY@@EEE@Z	100.0000	100.0000	4	bdb82730b3a9	0x14fbf0	100.0000	
 shadetablecache	?FindRemove@CShadeTableCache@@QAEXPAUCShadeTable@@@Z	100.0000	100.0000	2	f2b81d636295	0x14fb80	100.0000	
 shadetablecache	?FlashTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEENTRY@@HHHH@Z	99.2032	99.2032	9	2be4fe8e0a1d	0x14df40	99.2032	
 shadetablecache	?FreeNodes@CShadeTableCache@@QAEXXZ	100.0000	100.0000	2	87697ba6ad81	0x14ded0	100.0000	
