@@ -27,7 +27,7 @@ equivalents, when you need the evidence itself:
   referent comparison over that normalized pair
 - `gruntz sema disasm <rva> --blocks` — annotated retail-only basic-block view;
   pairwise `--diff` and `--branches` flags are not implemented
-- `python -m gruntz.audit.assert_relocs <rva>` — the actual referent set, unmasked
+- `gruntz verify assert-relocs <rva>` — the actual referent set, unmasked
 
 ## The four classes, in routing order
 
@@ -126,7 +126,7 @@ model before permuting. Reading rule: `zero-register-compare-is-against-zero.md`
 Objdiff reloc scoring is strict (target name/address, pointed-to data, DIR32
 addends all participate), and the masked diff by construction cannot show a
 wrong callee. If `--diff` returns rc 0 while the score sits below 100, the
-divergence is referent identity: audit with `assert_relocs`, fix the labeling /
+divergence is referent identity: audit with `gruntz verify assert-relocs`, fix the labeling /
 identity model, and do not grind permute on it.
 
 ## What does NOT transfer from HoMM3
@@ -145,7 +145,8 @@ its mechanics. Do not use here without re-proving on cl 5.0:
 - `/Ob2` semantics and the S=14 save-gate cliff (cl 5.0 is `/Ob1`, no cliff).
 
 A lever proven here goes in `docs/patterns/` + `INDEX.md` with the A/B evidence.
-A bounded wall goes in `wall-break.md`: before/after historical MAX, retail
-evidence, retained lever, negative controls, remaining mismatch class. Walls get
-BROKEN, not documented — the ledger entry comes after the search stalls, not
-instead of it.
+A reproducibly bounded residue remains visible through the derived inventory,
+the current report/MAX ledger, and its valid `@early-stop` marker. Do not create
+or revive a hand-kept wall ledger. Walls get broken, not hidden: bound a residue
+only after the classified search stalls, and keep reusable mechanisms in the
+pattern index rather than in reconstruction-history comments.

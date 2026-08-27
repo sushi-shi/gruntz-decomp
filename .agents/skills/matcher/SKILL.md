@@ -24,8 +24,9 @@ temporary score. The objective is per-function historical MAX fuzzy = 100%.
 
 ## Choose work by historical MAX
 
-- Work the lowest `hist_pct` rows first, excluding only functions already
-  bounded by reproducible evidence in `wall-break.md`.
+- Work the lowest `hist_pct` rows first from `gruntz walls inventory`. A
+  reproducibly bounded `@early-stop` remains in that derived queue; there is no
+  hand-kept exclusion ledger.
 - `hist_pct` is the campaign objective. Current fuzzy, current exact count, and
   aggregate fuzzy are navigation signals, not acceptance gates.
 - `best_pct` belongs to the current per-function source fingerprint. A source
@@ -144,9 +145,10 @@ it does not list as cl 5.0-proven must be re-proved here before use.
 - If unchanged function source reaches exact under a disposable TU state, bank
   MAX while exact, remove the perturbation, rebuild, and retain the historical
   proof.
-- Stop grinding once controlled evidence bounds a residue. Record it in
-  `wall-break.md` with the before/after historical MAX, retained lever, negative
-  controls, and remaining mismatch class. Keep history out of C++ comments.
+- Stop grinding once controlled evidence bounds a residue. Keep the state in
+  the derived report/MAX ledger and use `@early-stop` only when the body is
+  complete; record reusable mechanisms in `docs/patterns/`, not in a hand-kept
+  wall ledger or reconstruction-history C++ comments.
 
 `@early-stop` is permitted only for a complete reconstruction with a reproducible
 bounded residue. It never excuses missing logic, wrong referents, or an unresolved
