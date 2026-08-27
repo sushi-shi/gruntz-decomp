@@ -1177,17 +1177,19 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
         colBase = static_cast<i32>(static_cast<double>(stride) / arcSpan * col);
     }
 
+    u8* lut;
+    i32 base;
     if ((m_mode == FADER_SWEEP_FORWARD && m_stripCopy != false)
         || (m_mode == FADER_SWEEP_REVERSE && m_stripCopy == false)) {
         i32 row = 0;
         if (m_targetHeight > 0) {
-            i32 base = bpp * col;
+            base = bpp * col;
             do {
                 u8* dstLine = m_targetRowOffsets[row] + base + m_dstBase;
                 u8* gsrc = m_warpRowOffsets[row] + base + m_gatherBase;
                 u8* ssrc = m_sourceRowOffsets[row] + base + m_straightBase;
                 if (m_useLut != false) {
-                    u8* lut = m_table->m_data;
+                    lut = m_table->m_data;
                     i32 i = 0;
                     if (colBase > 0) {
                         do {
@@ -1269,13 +1271,13 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                || (m_mode == FADER_SWEEP_REVERSE && m_stripCopy != false)) {
         i32 row = 0;
         if (m_targetHeight > 0) {
-            i32 base = bpp * col;
+            base = bpp * col;
             do {
                 u8* dstLine = m_targetRowOffsets[row] + base + m_dstBase;
                 u8* gsrc = m_warpRowOffsets[row] + base + m_gatherBase;
                 u8* ssrc = m_sourceRowOffsets[row] + base + m_straightBase;
                 if (m_useLut != false) {
-                    u8* lut = m_table->m_data;
+                    lut = m_table->m_data;
                     i32 i = 0;
                     if (colBase > 0) {
                         do {
