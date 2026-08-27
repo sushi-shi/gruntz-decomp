@@ -259,19 +259,21 @@ CShadeTableCache::HsvShiftTable(PALETTEENTRY* pal, i32 steps, i32 pct, i32 gamma
     CShadeTableArray& arr = m_arr;
     i32 idx = arr.m_nSize;
     arr.SetSizeGrow(idx + 1, -1);
-    arr.m_pData[idx] = t;
+    arr[idx] = t;
     u8* data = t->m_data;
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         for (i32 j = 0; j < steps; j++) {
-            float luma = static_cast<float>(pal[i].peRed) * g_lumaR
-                         + static_cast<float>(pal[i].peGreen) * g_lumaG
-                         + static_cast<float>(pal[i].peBlue) * g_lumaB;
+            i32 green = pal[i].peGreen;
+            i32 red = pal[i].peRed;
+            i32 blue = pal[i].peBlue;
+            float luma = static_cast<float>(red) * g_lumaR + static_cast<float>(green) * g_lumaG
+                         + static_cast<float>(blue) * g_lumaB;
             i32 lumaByte = static_cast<i32>(luma) & PIXEL_BYTE_MASK;
             float x = g_one / (static_cast<float>(lumaByte) * g_inv255 - g_negone);
             float factor =
                 static_cast<float>(pow(static_cast<double>(x), static_cast<double>(gamma)));
             float scale = static_cast<float>(j) / static_cast<float>(steps)
-                              * (factor * static_cast<float>((pct - 100)) * g_percentScale)
+                              * ((static_cast<float>((pct - 100)) * factor) * g_percentScale)
                           - g_negone;
             u8 rn = static_cast<u8>(HSV_MIN(
                 static_cast<float>(((baseArg & PIXEL_BYTE_MASK) + pal[i].peRed)) * scale,

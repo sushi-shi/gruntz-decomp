@@ -27,6 +27,13 @@ Ten corollaries, all steerable or diagnostically bounded by source lifetime/posi
   retail before their siblings. In `LevelPreviewDlgProc`, declaring `dx`/`dy` before
   `w`/`h` changed only the ready-list order of the rectangle/point loads and closed the
   remaining exact-size residue.
+- **An integer carrier's declaration order can steer a later x87 expression even when the
+  emitted field-load order is different.** In `CShadeTableCache::HsvShiftTable`, declaring
+  the widened palette channels `green`, `red`, `blue` while retaining the authored RGB luma
+  expression makes VC5 emit retail's red/green/blue loads and complete x87 luma schedule.
+  RGB declaration order emits a different G/R/B schedule; the other four permutations are
+  much lower islands. Separate and merged declarations are byte-identical, so the entity
+  order—not the statement punctuation—is the lever.
 - **A saved global followed by a conditionally changed current value is a post-write
   reread, not two locals initialized together.** Retail's `load current; copy saved; test
   saved`, followed by a possible global store and a later test of `current`, comes from
@@ -120,3 +127,12 @@ split multiply/divide, an in-place post-allocation shift, and an inline scaling 
 byte-inert at the decisive boundary. Only the deliberately over-live final-offset control moves
 the calculation before `Lock`; its wrong frame and register set bound the remaining gap as the
 compiler's choice of call-crossing value, not missing row-loop logic.
+
+`CShadeTableCache::HsvShiftTable` @0x14e540 supplies the x87 integer-carrier form. A complete
+six-permutation declaration matrix plus split/merged and declaration-then-assignment controls
+found seven compiler islands. Only G/R/B declaration order emits the target luma block and raises
+the function from 96.1560% to 99.5413% in the authoritative full build; RGB and every assignment-after-declaration form remain at
+96.1560%, while the other initializer orders fall to 84.91-84.98%. The retained function has the
+target call/branch/return/referent topology and differs by one surplus two-byte `fxch st(2)` in the
+later scale product. Nine product associations, nine lifetime boundaries, and 256 depth-1/2
+structural variants did not remove it, bounding that final instruction as a separate x87 wall.

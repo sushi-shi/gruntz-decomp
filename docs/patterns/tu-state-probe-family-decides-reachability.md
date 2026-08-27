@@ -85,6 +85,23 @@ A uniform sweep of one kind steps the counter in a fixed stride and can only vis
 residue class — that is WHY flat single-family sweeps stay flat. Mixing kinds is what
 changes the stride.
 
+## A real semantic enum partition can retain the reached state
+
+The handle stride is not limited to disposable probes. `CShadeTableCache::HsvShiftTable`
+provides a source-backed control: one six-value constant enum conflated flash-ramp defaults
+with per-channel clamp constants, while two enums express the actual domains. On the same
+function body, the one-enum state scored 87.3716%, the two-domain state scored 95.6422%,
+and adding a third enum selected an 86.98% island. Removing the enum also reached the high
+island, but destroys the named-domain model and is therefore not a valid retained spelling.
+Moving the declaration and renaming identifiers were flat controls; the extra enum's measured
+`+2` handle stride is the causal lever.
+
+This is a permanent source change only when the partition is independently semantic. A public
+header changes every including TU's handle sequence, so run a full build and preserve their
+historical MAX values; do not relocate a genuinely shared domain or invent an unused enum to
+protect current scores. In this case the split is ramp defaults versus channel clamps, and the
+later G/R/B carrier reconstruction raises Hsv further to 99.5413% in the full build.
+
 State-reachability is PER-TU, and the tap sorts a TU in ~8 minutes before any
 sweep is spent on it: run the five-kind probe panel through the causation leg
 (`causation.py <tu> <profile> "<probe>"`) and count .text diff bytes. Zero
