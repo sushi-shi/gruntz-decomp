@@ -4,8 +4,10 @@ An unchanged function can alternate between two code states as unrelated declara
 change the translation unit. This is not random register allocation and it is not an
 accumulated "compiler mood" from compiling earlier functions. On the pinned VC5 SP3
 compiler, `CGameLevel::ProbeHeadSoft` proves a **511-symbol-handle periodic input to
-`/Og`**. `CFaderShape::RenderTile` is the counter-example: it remains byte-identical
-through a broad campaign because its optimizer decisions do not consume that phase.
+`/Og`**. `CFaderShape::RenderTile` was the counter-example during the state campaign: it
+remained byte-identical because its then-current optimized graph did not consume that
+phase. A later authentic inline-helper reconstruction changed that graph and closed the
+function exactly; declaration-state probes alone still cannot reach it.
 
 The practical distinction is therefore conditional:
 
@@ -124,11 +126,12 @@ captures, leaves baseline/exact unchanged. A separate 101-bucket expression tabl
 0x0040aa4f was likewise inert under 97/89/83/79 divisor controls. The measured period is
 511; which internal structure carries it remains open.
 
-## Why some functions stay stable
+## Why some functions stay stable until their structure changes
 
-`CFaderShape::RenderTile` 0x00182610 is a direct counter-example. Its remaining six bytes
-are two frame homes in the opposite order (`rowBytes` and spilled `rowSrcA`). Across the
-baseline plus 128 deterministic mixed declaration forests:
+At the campaign baseline, `CFaderShape::RenderTile` 0x00182610 was a direct
+counter-example. Its remaining six bytes were two frame homes in the opposite order
+(`rowBytes` and spilled `rowSrcA`). Across the baseline plus 128 deterministic mixed
+declaration forests:
 
 * all 129 compiles emit one normalized target state;
 * the target stays 747 bytes with the same 32 branches and one return;
@@ -160,17 +163,28 @@ and live-range interference. Consequently, declarations elsewhere in the TU cann
 `rowBytes` and `rowSrcA` unless they first change `RenderTile`'s optimized graph; the 129
 campaign states do not.
 
-A patched-back-end control confirms ownership. At VA 0x00436875, changing the equal-size
+A patched-back-end control confirmed ownership of that baseline residue. At VA
+0x00436875, changing the equal-size
 descriptor frequency stop from `jge` to `jle` reverses that local ordering policy. Through
 `/B2`, unchanged `RenderTile` changes from 747 bytes / hash `e7b93ee4b9f7c019` to 752
 bytes / hash `83ae40bf73433abb`, with its frame homes broadly recolored. This is deliberately
 not a source fix; it proves that the reset, function-local frame-coloring chain owns the
 residue.
 
+The structural route subsequently succeeded. Two caller-local forward byte-copy loops
+were repetitions of one TU-local inline `CopyBytes(u8*, const u8*, i32)` operation. The
+inline form changes the function's optimized operand/lifetime graph and emits the retail
+747-byte body exactly. Direct CRT `memcpy` emits `rep movsd`/`rep movsb` and falls to
+93.0085%; a cursor-owning macro falls to 97.12%. Thus the 129-state result was not a claim
+that no source fix existed: it proved only that declaration state could not alter the old
+graph and correctly routed the work to structural reconstruction. See
+[`../patterns/scalar-byte-copy-is-an-inline-helper.md`](../patterns/scalar-byte-copy-is-an-inline-helper.md).
+
 That is why a campaign that finds one island must say so and route the next search to
 structure. The broad `REGALLOC/SCHEDULING` label hides two different causes here:
 `ProbeHeadSoft` is an earlier `/Og` expression-order choice with TU-global phase input;
-`RenderTile` is a later, reset-per-function frame-coloring choice with no such input.
+the old `RenderTile` graph was a later, reset-per-function frame-coloring choice with no
+such input, and only a real source boundary changed that graph.
 
 ## Reverse-use rule
 

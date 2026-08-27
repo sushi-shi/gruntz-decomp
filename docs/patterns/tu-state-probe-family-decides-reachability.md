@@ -116,4 +116,6 @@ The stronger 2026-08-18 control is a 129-state `CFaderShape::RenderTile` campaig
 all states keep the same six-byte frame-home swap, while `ProbeHeadSoft` crosses
 repeatable boundaries exactly 511 handles apart. A one-island campaign is therefore a
 positive routing result: stop state permutation and search structure. The compiler RE
-and pass-disable evidence are in the 511-handle relevation linked above.
+and pass-disable evidence are in the 511-handle relevation linked above. That routing was
+later validated: a TU-local inline scalar-copy helper changed RenderTile's optimized graph
+and closed it exactly, while declaration-state forests could not move the old graph.
