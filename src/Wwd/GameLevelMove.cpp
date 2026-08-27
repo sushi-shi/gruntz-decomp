@@ -71,65 +71,30 @@ i32 CGameLevel::MoveAxisAligned(CGameObject* t, i32 x, i32 y, i32 flags) {
 // @early-stop
 RVA(0x00167260, 0x1ef)
 i32 CGameLevel::MoveStepXHi(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
+    i32 state = 0;
     i32 xEnd = x + t->m_extent.right;
     i32 yHi = t->m_extent.bottom + y;
     i32 yLo = t->m_extent.top + y;
-    i32 state = 0;
     while (yLo <= yHi) {
         TileCollisionKind result;
-        {
-            i32 cx = xEnd;
-            if (cx < 0) {
-                cx = 0;
-            } else {
-                CDDrawWorkerHost* pc = m_mainPlane;
-                if (cx >= pc->m_planePixelWidth) {
-                    cx = pc->m_planePixelWidth - 1;
-                }
-            }
-            i32 cy = yLo;
-            if (cy < 0) {
-                cy = 0;
-            } else {
-                CDDrawWorkerHost* pc = m_mainPlane;
-                if (cy >= pc->m_planePixelHeight) {
-                    cy = pc->m_planePixelHeight - 1;
-                }
-            }
-            CDDrawWorkerHost* pl = m_mainPlane;
-            i32 qx = cx >> pl->m_shiftX;
-            i32 qy = cy >> pl->m_shiftY;
-            i32 col = qx;
-            i32 subX = cx - (qx << pl->m_shiftX);
-            i32 idx = pl->m_tileRowOffsets[qy] + col;
-            i32 subY = cy - (qy << pl->m_shiftY);
-            i32 tile = pl->m_tileHandles[idx];
-            if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
-                result = TILEKIND_PASSABLE;
-            } else {
-                CTileImageSet* set =
-                    static_cast<CTileImageSet*>(m_imageSets[tile & WWD_TILE_IMAGE_SET_INDEX_MASK]);
-                result = set->GetCollisionAt(subX, subY);
-            }
-        }
+        PROBE_TILE(this, xEnd, yLo, result);
         if (result == TILEKIND_GROUND
             && (t->m_flags & IDX(WWD_GAME_OBJECT_FLAG_GROUND_IS_PASSABLE))) {
             result = TILEKIND_PASSABLE;
         }
         if (result == TILEKIND_SOLID || result == TILEKIND_GROUND) {
             i32 lo = t->m_screenX + t->m_extent.right;
-            i32 j = xEnd - 1;
+            x = xEnd - 1;
             state |= IDX(MOVE_RESULT_AXIS_BLOCKED | MOVE_RESULT_TILE_RIGHT);
-            for (; j > lo; j--) {
-                if (AxisProbe(j, yLo) == TILEKIND_PASSABLE) {
-                    j -= t->m_extent.right;
+            for (; x > lo; x--) {
+                if (AxisProbe(x, yLo) == TILEKIND_PASSABLE) {
+                    x -= t->m_extent.right;
                     goto have_x;
                 }
             }
-            j = t->m_screenX;
+            x = t->m_screenX;
         have_x:
-            x = j;
-            if (j == t->m_screenX) {
+            if (x == t->m_screenX) {
                 *px = t->m_screenX;
                 return state;
             }
@@ -154,65 +119,30 @@ i32 CGameLevel::MoveStepXHi(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
 // @early-stop
 RVA(0x00167450, 0x1ef)
 i32 CGameLevel::MoveStepXLo(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
+    i32 state = 0;
     i32 xEnd = x + t->m_extent.left;
     i32 yHi = t->m_extent.bottom + y;
     i32 yLo = t->m_extent.top + y;
-    i32 state = 0;
     while (yLo <= yHi) {
         TileCollisionKind result;
-        {
-            i32 cx = xEnd;
-            if (cx < 0) {
-                cx = 0;
-            } else {
-                CDDrawWorkerHost* pc = m_mainPlane;
-                if (cx >= pc->m_planePixelWidth) {
-                    cx = pc->m_planePixelWidth - 1;
-                }
-            }
-            i32 cy = yLo;
-            if (cy < 0) {
-                cy = 0;
-            } else {
-                CDDrawWorkerHost* pc = m_mainPlane;
-                if (cy >= pc->m_planePixelHeight) {
-                    cy = pc->m_planePixelHeight - 1;
-                }
-            }
-            CDDrawWorkerHost* pl = m_mainPlane;
-            i32 qx = cx >> pl->m_shiftX;
-            i32 qy = cy >> pl->m_shiftY;
-            i32 col = qx;
-            i32 subX = cx - (qx << pl->m_shiftX);
-            i32 idx = pl->m_tileRowOffsets[qy] + col;
-            i32 subY = cy - (qy << pl->m_shiftY);
-            i32 tile = pl->m_tileHandles[idx];
-            if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
-                result = TILEKIND_PASSABLE;
-            } else {
-                CTileImageSet* set =
-                    static_cast<CTileImageSet*>(m_imageSets[tile & WWD_TILE_IMAGE_SET_INDEX_MASK]);
-                result = set->GetCollisionAt(subX, subY);
-            }
-        }
+        PROBE_TILE(this, xEnd, yLo, result);
         if (result == TILEKIND_GROUND
             && (t->m_flags & IDX(WWD_GAME_OBJECT_FLAG_GROUND_IS_PASSABLE))) {
             result = TILEKIND_PASSABLE;
         }
         if (result == TILEKIND_SOLID || result == TILEKIND_GROUND) {
             i32 lo = t->m_screenX + t->m_extent.left;
-            i32 j = xEnd + 1;
+            x = xEnd + 1;
             state |= IDX(MOVE_RESULT_AXIS_BLOCKED | MOVE_RESULT_TILE_LEFT);
-            for (; j < lo; j++) {
-                if (AxisProbe(j, yLo) == TILEKIND_PASSABLE) {
-                    j -= t->m_extent.left;
+            for (; x < lo; x++) {
+                if (AxisProbe(x, yLo) == TILEKIND_PASSABLE) {
+                    x -= t->m_extent.left;
                     goto have_x;
                 }
             }
-            j = t->m_screenX;
+            x = t->m_screenX;
         have_x:
-            x = j;
-            if (j == t->m_screenX) {
+            if (x == t->m_screenX) {
                 *px = t->m_screenX;
                 return state;
             }
@@ -243,41 +173,7 @@ i32 CGameLevel::MoveStepYHi(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
     i32 state = 0;
     while (col <= colHi) {
         TileCollisionKind result;
-        {
-            i32 cx = col;
-            if (cx < 0) {
-                cx = 0;
-            } else {
-                CDDrawWorkerHost* pc = m_mainPlane;
-                if (cx >= pc->m_planePixelWidth) {
-                    cx = pc->m_planePixelWidth - 1;
-                }
-            }
-            i32 cy = fixedY;
-            if (cy < 0) {
-                cy = 0;
-            } else {
-                CDDrawWorkerHost* pc = m_mainPlane;
-                if (cy >= pc->m_planePixelHeight) {
-                    cy = pc->m_planePixelHeight - 1;
-                }
-            }
-            CDDrawWorkerHost* pl = m_mainPlane;
-            i32 qx = cx >> pl->m_shiftX;
-            i32 qy = cy >> pl->m_shiftY;
-            i32 c = qx;
-            i32 subX = cx - (qx << pl->m_shiftX);
-            i32 idx = pl->m_tileRowOffsets[qy] + c;
-            i32 subY = cy - (qy << pl->m_shiftY);
-            i32 tile = pl->m_tileHandles[idx];
-            if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
-                result = TILEKIND_PASSABLE;
-            } else {
-                CTileImageSet* set =
-                    static_cast<CTileImageSet*>(m_imageSets[tile & WWD_TILE_IMAGE_SET_INDEX_MASK]);
-                result = set->GetCollisionAt(subX, subY);
-            }
-        }
+        PROBE_TILE(this, col, fixedY, result);
         if (result == TILEKIND_GROUND
             && (t->m_flags & IDX(WWD_GAME_OBJECT_FLAG_GROUND_IS_PASSABLE))) {
             result = TILEKIND_PASSABLE;
@@ -326,41 +222,7 @@ i32 CGameLevel::MoveStepYLo(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
     i32 state = 0;
     while (col <= colHi) {
         TileCollisionKind result;
-        {
-            i32 cx = col;
-            if (cx < 0) {
-                cx = 0;
-            } else {
-                CDDrawWorkerHost* pc = m_mainPlane;
-                if (cx >= pc->m_planePixelWidth) {
-                    cx = pc->m_planePixelWidth - 1;
-                }
-            }
-            i32 cy = fixedY;
-            if (cy < 0) {
-                cy = 0;
-            } else {
-                CDDrawWorkerHost* pc = m_mainPlane;
-                if (cy >= pc->m_planePixelHeight) {
-                    cy = pc->m_planePixelHeight - 1;
-                }
-            }
-            CDDrawWorkerHost* pl = m_mainPlane;
-            i32 qx = cx >> pl->m_shiftX;
-            i32 qy = cy >> pl->m_shiftY;
-            i32 c = qx;
-            i32 subX = cx - (qx << pl->m_shiftX);
-            i32 idx = pl->m_tileRowOffsets[qy] + c;
-            i32 subY = cy - (qy << pl->m_shiftY);
-            i32 tile = pl->m_tileHandles[idx];
-            if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
-                result = TILEKIND_PASSABLE;
-            } else {
-                CTileImageSet* set =
-                    static_cast<CTileImageSet*>(m_imageSets[tile & WWD_TILE_IMAGE_SET_INDEX_MASK]);
-                result = set->GetCollisionAt(subX, subY);
-            }
-        }
+        PROBE_TILE(this, col, fixedY, result);
         if (result == TILEKIND_GROUND
             && (t->m_flags & IDX(WWD_GAME_OBJECT_FLAG_GROUND_IS_PASSABLE))) {
             result = TILEKIND_PASSABLE;
