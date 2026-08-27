@@ -45,6 +45,32 @@ For the initial descent the polarity is reversed: retail first forms
 `&node->m_child[1]`, then replaces it with `&node->m_child[0]` when `dir` is
 zero.
 
+`zPTree::Insert` 0x16db90 has a separate initial self-link discriminator.  Its
+retail block selects one of the two child addresses through explicit arms and
+then performs one common store:
+
+```cpp
+CButeTreeNode** selfLink;
+if (dir) {
+    selfLink = &node->m_child[1];
+} else {
+    selfLink = &node->m_child[0];
+}
+*selfLink = node;
+```
+
+Starting from `node->m_child` and conditionally incrementing the pointer folds
+away the arm-closing jump and leaves the function at 89.9948%.  Assigning the
+slot in both arms reproduces retail's selected-address/common-store block and
+moves it to 93.0619%.  Directly assigning `node` to each child preserves the
+branch count but duplicates the store in this TU and reaches only 90.0722%.
+The 12-way real-local lifetime matrix, eight inline-helper bodies, six guarded
+loop forms crossed with both self-link shapes, and 64 mixed-kind TU-state
+forests did not alter those source-shape islands.  The retained 93.0619% state
+is still open: retail keeps `dir` in EAX and `node` in ESI, which adds a cold
+no-loop trampoline; the base keeps `dir` in ESI and `node` in ECX and falls
+directly into the splice.
+
 After calls, returns, branches, and all 10 ordered relocations agreed, a
 128-trial parser-visible TU-state campaign found exactly one compiler island at
 78.736170%.  That is the stopping signature: preserve the structural source,

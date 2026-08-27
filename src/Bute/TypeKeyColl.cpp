@@ -564,12 +564,15 @@ void* zPTree::Insert(const char* key, void* value) {
     }
     strcpy(keybuf, key);
 
-    i32 dir = key[critbit >> PTREE_BYTE_BIT_SHIFT] & (1 << (critbit & PTREE_BYTE_BIT_MASK));
-    CButeTreeNode** child = node->m_child;
+    i32 dir = (1 << (critbit & PTREE_BYTE_BIT_MASK))
+              & static_cast<i32>(static_cast<signed char>(key[critbit >> PTREE_BYTE_BIT_SHIFT]));
+    CButeTreeNode** selfLink;
     if (dir) {
-        ++child;
+        selfLink = &node->m_child[1];
+    } else {
+        selfLink = &node->m_child[0];
     }
-    *child = node;
+    *selfLink = node;
 
     CButeTreeNode* cursor = m_descentCursor;
     i32 d2 = dir;
