@@ -1228,15 +1228,15 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                     } else if (bpp == PIXEL24_BYTES_PER_PIXEL) {
                         if (colBase > 0) {
                             i32 d = 0;
-                            u8* sp = ssrc + 2;
+                            u8* sp = ssrc;
                             i32 c = colBase;
                             do {
-                                m_lineBuf[d] = sp[-2];
-                                m_lineBuf[d + 1] = sp[-1];
-                                m_lineBuf[d + 2] = *sp;
+                                m_lineBuf[d] = sp[0];
+                                m_lineBuf[d + 1] = sp[1];
+                                m_lineBuf[d + 2] = sp[2];
+                                sp += 3;
                                 d += 3;
                                 c--;
-                                sp += 3;
                             } while (c != 0);
                         }
                         if (colBase < stride) {
@@ -1328,14 +1328,14 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                     if (colBase < stride) {
                         i32 d = colBase * 3;
                         i32 c = stride - colBase;
-                        u8* sp = ssrc + 2 + d;
+                        u8* sp = ssrc + d;
                         do {
-                            m_lineBuf[d] = sp[-2];
-                            m_lineBuf[d + 1] = sp[-1];
-                            m_lineBuf[d + 2] = *sp;
+                            m_lineBuf[d] = sp[0];
+                            m_lineBuf[d + 1] = sp[1];
+                            m_lineBuf[d + 2] = sp[2];
+                            sp += 3;
                             d += 3;
                             c--;
-                            sp += 3;
                         } while (c != 0);
                     }
                 }
