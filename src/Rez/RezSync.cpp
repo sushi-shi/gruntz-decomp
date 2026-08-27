@@ -96,23 +96,10 @@ b32 g_enableEmulation = false;
 RVA(0x00083450, 0x192d)
 i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
-    CoordPoolNode* pool = new CoordPoolNode[0x4e20];
-    g_coordPool.m_block = pool;
-    if (!pool) {
+    if (!g_coordPool.Init(0x4e20, 4)) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x404);
         return 0;
     }
-    g_coordPool.m_count = 0x4e20;
-    CoordPoolNode* p = pool;
-    u32 i = 0;
-    do {
-        p->m_next = p + 1;
-        p = p->m_next;
-        ++i;
-    } while (i < static_cast<u32>(g_coordPool.m_count) - 1);
-    p->m_next = NULL;
-    g_coordPool.m_freeHead = pool;
-    g_coordPool.m_linkOffset = 4;
 
     if (!CGameMgr::Run(pGameWnd, szCmdLine)) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x462);

@@ -51,12 +51,20 @@ g_buteMgr.m_stream = new istrstream(decoded, snk->pcount());
 
 MSVC's `ostrstream::pcount()` inline calls
 `streambuf::out_waiting()`. In our current TU both levels expand, so the base
-object has **no `out_waiting` symbol row** and emits two `istrstream`
-constructor sites after expanding `out_waiting`'s conditional. Retail expands
-`pcount()` but declines its nested `out_waiting()` call, emitting one external
-call and one constructor. The direct-expression and `pcount()` source A/B are
-currently byte-identical on our side, proving that absence from the base symbol
-table cannot mean “not a candidate.”
+object has **no `out_waiting` symbol row**. With the constructor argument written
+directly as `output->pcount()`, expansion of `out_waiting`'s conditional also
+duplicates the destination `istrstream` constructor; the whole `Run` then has
+three constructor sites against retail's two. Naming the accessor result first,
+`i32 decodedLength = output->pcount()`, restores the two constructor sites and
+moves `Run` 88.65 -> 88.77, while the nested call remains expanded. Retail expands
+`pcount()` but declines only its nested `out_waiting()` call. The call-set delta is
+therefore a distinct later budget decision, not evidence that the accessor or its
+destination construction should be hand-expanded.
+
+Charged inline-helper and repeated real-call controls independently confirmed the
+budget reading: small additions left `out_waiting` expanded, while enough preceding
+inline cost made cl 5.0 emit the call. Those probes are evidence only and must not
+remain in source; the retained lever must be authentic missing caller work.
 
 This also explains why a nested-site model matters: the outer accessor can be
 accepted while the callee inside it is declined. Do not replace the authentic

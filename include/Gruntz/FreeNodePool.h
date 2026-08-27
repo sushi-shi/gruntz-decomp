@@ -27,6 +27,26 @@ public:
         m_linkOffset = 0;
     }
 
+    bool Init(i32 count, i32 linkOffset) {
+        m_block = new CoordPoolNode[count];
+        if (m_block == NULL) {
+            return false;
+        }
+
+        m_count = count;
+        CoordPoolNode* node = m_block;
+        u32 i = 0;
+        do {
+            node->m_next = node + 1;
+            node = node->m_next;
+            ++i;
+        } while (i < static_cast<u32>(m_count) - 1);
+        node->m_next = NULL;
+        m_freeHead = m_block;
+        m_linkOffset = linkOffset;
+        return true;
+    }
+
     void Push(void* p);
 
     CoordPoolNode* NodeOf(void* payload) {

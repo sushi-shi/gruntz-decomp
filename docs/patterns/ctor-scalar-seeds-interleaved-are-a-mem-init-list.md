@@ -1,7 +1,7 @@
 # Ctor scalar stores INTERLEAVED with member ctors = a member-initializer list
 
 **Tags:** `cpp:ctor` `cpp:vtable` | `asm:mov` `asm:call` | `topic:codegen-idiom`
-**Confidence:** 9/10
+**Confidence:** 10/10
 
 ## Symptom
 
@@ -95,3 +95,13 @@ A second lever showed up in the same function: retail also INLINES the base ctor
 Reproduce that by defining `inline CBase::CBase() {...}` in the derived class's .cpp,
 keeping the RVA-bound out-of-line copy in the base's own TU - the arrangement
 GruntzMgr.cpp already uses for `~CPlay` and MoviePlayer.cpp for `~CFecFile`.
+
+`CGruntzMgr::Run` (0x83450) supplies an independent aggregate control while it
+inlines `CTriggerMgr::CTriggerMgr`. Retail zeros three consecutive 16-byte timer
+bands at `+0x290`, `+0x2b0`, and `+0x2c0` before the `CPtrList[10]` vector
+constructor at `+0x2d0`, each in the non-layout order `+0,+8,+4,+0xc`. Body
+assignments cannot precede that later member constructor. Modeling all three bands
+as `CueTimer` members with the same inline default constructor reproduces the full
+store order and moves `Run` 89.76 -> 91.20. Deleting the stores was a false control:
+it rose only to 90.41 while leaving all twelve retail stores target-only. The
+aggregate is therefore selected by emission order and byte presence, not score.

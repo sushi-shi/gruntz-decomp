@@ -41,6 +41,8 @@ class CGruntPuddle;
 struct CueTimer {
     i64 m_base;
     i64 m_window;
+
+    CueTimer() : m_base(0), m_window(0) {}
 };
 
 class CTriggerMgr {
@@ -227,13 +229,7 @@ public:
         m_world = NULL;
         m_goal = NULL;
         m_overlay = NULL;
-        m_timerBase = 0;
-        m_timerWindow = 0;
         m_countdownActive = true;
-        m_gooTimerBase = 0;
-        m_gooInterval = 0;
-        m_resourceTimerBase = 0;
-        m_resourceInterval = 0;
         m_selSentinel = -1;
         m_rollingballLoop = NULL;
         m_teleportLoop = NULL;
@@ -291,43 +287,15 @@ public:
     FinishLevelState m_phase;
     char _pad28c[0x4];
 
-    union {
-        CueTimer m_cueTimer;
-        struct {
-            i64 m_timerBase;
-            i64 m_timerWindow;
-        };
-    };
+    CueTimer m_cueTimer;
 
     CWarlord* m_pendingFx;
     b32 m_countdownActive;
     i32 m_pendingFxKind;
     char _pad2ac[0x4];
 
-    union {
-        i64 m_gooTimerBase;
-        struct {
-            i32 m_gooTimerBaseLo, m_gooTimerBaseHi;
-        };
-    };
-    union {
-        i64 m_gooInterval;
-        struct {
-            i32 m_gooIntervalLo, m_gooIntervalHi;
-        };
-    };
-    union {
-        i64 m_resourceTimerBase;
-        struct {
-            i32 m_resourceTimerBaseLo, m_resourceTimerBaseHi;
-        };
-    };
-    union {
-        i64 m_resourceInterval;
-        struct {
-            i32 m_resourceIntervalLo, m_resourceIntervalHi;
-        };
-    };
+    CueTimer m_gooTimer;
+    CueTimer m_resourceTimer;
     CPtrList m_selLists[10];
     i32 m_selSentinel;
     FinishLevelReason m_finishReasonFrame;

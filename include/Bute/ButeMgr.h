@@ -158,7 +158,8 @@ inline bool CButeMgr::Parse(CRezArchiveEntry* stream, const char* key) {
     char* decoded = new char[length];
     ostrstream* output = new ostrstream(decoded, length, 2);
     m_crypt.Decode(input, output);
-    m_stream = new istrstream(decoded, output->pcount());
+    i32 decodedLength = output->pcount();
+    m_stream = new istrstream(decoded, decodedLength);
     delete input;
     delete output;
     stream->ReleaseData();
