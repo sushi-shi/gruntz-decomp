@@ -46,6 +46,9 @@ public:
 
 class CFaderSine : public CFader {
 public:
+    i32 AccumulateSampleCount(i32 row, i32 delta, float step);
+    i32 AdvanceSampleCursor(i32 row);
+
     i32 GetRandomNumber() {
         static long holdrand = timeGetTime();
         return (((holdrand = holdrand * 214013L + 2531011L) >> 16) & 0x7fff);

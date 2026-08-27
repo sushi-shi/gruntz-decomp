@@ -48,6 +48,29 @@ const float g_sineOne = 1.0f;
 DATA(0x001f0888)
 const double g_faderPowK = 2.0;
 
+inline i32 CFaderSine::AccumulateSampleCount(i32 row, i32 delta, float step) {
+    i32 count = 0;
+    double wanted = delta * step;
+    i32 whole = static_cast<i32>(wanted);
+    if (whole < wanted) {
+        m_fractionalCounts[row] += wanted - whole;
+    }
+    if (m_fractionalCounts[row] >= g_sineOne) {
+        count = static_cast<i32>(m_fractionalCounts[row]);
+        m_fractionalCounts[row] -= count;
+    }
+    count += whole;
+    return count;
+}
+
+inline i32 CFaderSine::AdvanceSampleCursor(i32 row) {
+    ++m_sampleCursors[row];
+    if (m_sampleCursors[row] > m_width) {
+        m_sampleCursors[row] = 0;
+    }
+    return m_sampleOrder[m_sampleCursors[row]];
+}
+
 RVA(0x0017f530, 0x19)
 CFaderFlat::CFaderFlat() {
     m_rowStates = NULL;
@@ -369,24 +392,9 @@ void CFaderSine::RenderFrame(i32 frame) {
                         - m_appliedCounts[row];
             if (m_clearToBlack != false) {
 
-                i32 n = 0;
-                double want = delta * step;
-                i32 whole = static_cast<i32>(want);
-                if (whole < want) {
-                    m_fractionalCounts[row] =
-                        static_cast<float>(want - whole) + m_fractionalCounts[row];
-                }
-                if (m_fractionalCounts[row] >= g_sineOne) {
-                    n = static_cast<i32>(m_fractionalCounts[row]);
-                    m_fractionalCounts[row] = m_fractionalCounts[row] - n;
-                }
-                n += whole;
+                i32 n = AccumulateSampleCount(row, delta, step);
                 while (n > 0) {
-                    ++m_sampleCursors[row];
-                    if (m_sampleCursors[row] > m_width) {
-                        m_sampleCursors[row] = 0;
-                    }
-                    i32 pick = m_sampleOrder[m_sampleCursors[row]];
+                    i32 pick = AdvanceSampleCursor(row);
                     if (bpp > 0) {
                         memset(targetRow + pick * bpp, 0, bpp);
                     }
@@ -402,25 +410,10 @@ void CFaderSine::RenderFrame(i32 frame) {
                     n--;
                 }
             } else {
-                i32 n = 0;
                 u8* restoreRow = m_restoreBits + m_restoreSurface->m_pitch * row;
-                double want = delta * step;
-                i32 whole = static_cast<i32>(want);
-                if (whole < want) {
-                    m_fractionalCounts[row] =
-                        static_cast<float>(want - whole) + m_fractionalCounts[row];
-                }
-                if (m_fractionalCounts[row] >= g_sineOne) {
-                    n = static_cast<i32>(m_fractionalCounts[row]);
-                    m_fractionalCounts[row] = m_fractionalCounts[row] - n;
-                }
-                n += whole;
+                i32 n = AccumulateSampleCount(row, delta, step);
                 while (n > 0) {
-                    ++m_sampleCursors[row];
-                    if (m_sampleCursors[row] > m_width) {
-                        m_sampleCursors[row] = 0;
-                    }
-                    i32 pick = m_sampleOrder[m_sampleCursors[row]];
+                    i32 pick = AdvanceSampleCursor(row);
                     for (i32 j = 0; j < bpp; j++) {
                         targetRow[pick * bpp + j] = restoreRow[pick * bpp + j];
                     }
@@ -447,8 +440,8 @@ void CFaderSine::RenderFrame(i32 frame) {
             if (m_clearToBlack != false) {
                 u8* clrRow = m_targetBits + m_targetSurface->m_pitch * done;
                 i32 span = bpp * m_width;
-                if (span > 0) {
-                    memset(clrRow, 0, span);
+                while (span-- > 0) {
+                    *clrRow++ = 0;
                 }
             } else {
                 u8* restore = m_restoreBits + m_restoreSurface->m_pitch * done;

@@ -104,7 +104,7 @@ engstrrendertext	2	2
 exittrigger	5	3
 eyecandy	1	1
 fader	25	20
-fadereffects	39	28
+fadereffects	39	27
 fadermgr	13	13
 feccrypt	11	8
 fileimage	19	13
@@ -1642,17 +1642,17 @@ fadereffects	?GetFrameCount@CFaderFlat@@UAEHXZ	100.0000	100.0000	2	cca05cc11730	
 fadereffects	?GetFrameCount@CFaderLight@@UAEHXZ	100.0000	100.0000	3	e2396c5b13f9	0x1814f0	100.0000	
 fadereffects	?GetFrameCount@CFaderRadial@@UAEHXZ	100.0000	100.0000	1	681a3ab7e243	0x17fda0	100.0000	
 fadereffects	?GetFrameCount@CFaderShape@@UAEHXZ	100.0000	100.0000	2	709d45785e33	0x182900	100.0000	
-fadereffects	?GetFrameCount@CFaderSine@@UAEHXZ	100.0000	100.0000	2	2c7080e3990f	0x180400	100.0000	
+fadereffects	?GetFrameCount@CFaderSine@@UAEHXZ	100.0000	99.5000	2	2c7080e3990f	0x180400	100.0000	
 fadereffects	?PrepareFrame@CFaderFlat@@QAEXXZ	100.0000	100.0000	1	6e2d2e824b3a	0x17f980	100.0000	
 fadereffects	?ReleaseBuffers@CFaderLight@@QAEXXZ	100.0000	100.0000	3	a3436fa98633	0x180630	100.0000	
 fadereffects	?Render@CFaderLight@@QAEXHHHPAE00@Z	98.8538	98.8538	2	233c00c7898a	0x180fb0	98.8538	
 fadereffects	?RenderFrame@CFaderFlat@@UAEXH@Z	90.7854	90.7854	5	aecc68365e7a	0x17f660	90.7854	
 fadereffects	?RenderFrame@CFaderLight@@UAEXH@Z	89.1603	89.1603	5	52cdf452b8ce	0x180640	89.5019	
 fadereffects	?RenderFrame@CFaderRadial@@UAEXH@Z	99.7222	99.7222	3	b31d25567930	0x17fc60	99.7222	
-fadereffects	?RenderFrame@CFaderShape@@UAEXH@Z	99.6626	99.6626	8	128499f99085	0x181b00	99.9080	
-fadereffects	?RenderFrame@CFaderSine@@UAEXH@Z	88.8875	88.8875	5	da5e5bddb716	0x17ff30	88.8875	
+fadereffects	?RenderFrame@CFaderShape@@UAEXH@Z	99.9080	99.9080	8	128499f99085	0x181b00	99.9080	
+fadereffects	?RenderFrame@CFaderSine@@UAEXH@Z	92.4279	92.4279	6	076c4857366c	0x17ff30	92.4279	
 fadereffects	?RenderTile@CFaderShape@@QAEXHH@Z	99.9831	99.9831	3	07d8ead528e9	0x182610	99.9831	
-fadereffects	?RenderWarpTile@CFaderShape@@QAEXHH@Z	78.7115	78.7115	3	82868cf9c3c1	0x181e50	79.7423	
+fadereffects	?RenderWarpTile@CFaderShape@@QAEXHH@Z	79.7423	79.7423	3	82868cf9c3c1	0x181e50	79.7423	
 fadermgr	??0CFaderMgr@@QAE@XZ	100.0000	100.0000	3	248c552f0c07	0x17d8f0	100.0000	
 fadermgr	??1CFaderArray@@UAE@XZ	100.0000	100.0000	1	cpp:9ac6b7adcf3b	0x17e240	100.0000	
 fadermgr	??1CFaderMgr@@QAE@XZ	100.0000	100.0000	1	b7d521a26e4e	0x17d910	100.0000	
