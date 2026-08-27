@@ -930,12 +930,16 @@ bool CButeMgr::ScanToken(ButeToken expectType) {
     return true;
 }
 
-// @early-stop
 RVA(0x00170750, 0xa10)
 bool ButeMgr::ParseAttributeFile() {
     i32 a, b, c, d;
     i32 px, py;
     double x, y, z;
+    double doubleValue;
+    float floatValue;
+    i32 intValue;
+    DWORD dwordValue;
+    char** endptr = NULL;
     bool bDup = false;
 
     m_attributeName = m_token;
@@ -960,69 +964,68 @@ bool ButeMgr::ParseAttributeFile() {
 
     switch (m_tokType) {
         case BUTETOK_INT:
-        case BUTETOK_INT_SIGNED: {
-            i32 v = atoi(m_token);
+        case BUTETOK_INT_SIGNED:
+            intValue = atoi(m_token);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_currentTag->Insert(m_attributeName, new CButeValue(BUTE_INT, v));
+                    m_currentTag->Insert(m_attributeName, new CButeValue(BUTE_INT, intValue));
                 }
             } else {
-                (*m_pText) << static_cast<int>(GetInt(m_tagName, m_attributeName));
+                intValue = GetInt(m_tagName, m_attributeName);
+                (*m_pText) << static_cast<int>(intValue);
             }
             break;
-        }
-        case BUTETOK_KEYWORD_DWORD: {
+        case BUTETOK_KEYWORD_DWORD:
             if (!ScanToken(BUTETOK_INT)) {
                 return false;
             }
-            DWORD v = strtoul(m_token, NULL, 10);
+            dwordValue = strtoul(m_token, endptr, 10);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_currentTag->Insert(m_attributeName, new CButeValue(BUTE_DWORD, v));
+                    m_currentTag->Insert(m_attributeName, new CButeValue(BUTE_DWORD, dwordValue));
                 }
             } else {
-                (*m_pText) << s_strDword
-                           << static_cast<unsigned long>(GetDword(m_tagName, m_attributeName));
+                dwordValue = GetDword(m_tagName, m_attributeName);
+                (*m_pText) << s_strDword << static_cast<unsigned long>(dwordValue);
             }
             break;
-        }
-        case BUTETOK_KEYWORD_FLOAT: {
+        case BUTETOK_KEYWORD_FLOAT:
             if (!ScanToken(BUTETOK_DOUBLE)) {
                 return false;
             }
-            float v = static_cast<float>(atof(m_token));
+            floatValue = static_cast<float>(atof(m_token));
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_currentTag->Insert(m_attributeName, new CButeValue(BUTE_FLOAT, v));
+                    m_currentTag->Insert(m_attributeName, new CButeValue(BUTE_FLOAT, floatValue));
                 }
             } else {
-                ((*m_pText) << s_strFloat) << GetFloat(m_tagName, m_attributeName);
+                floatValue = GetFloat(m_tagName, m_attributeName);
+                ((*m_pText) << s_strFloat) << floatValue;
             }
             break;
-        }
-        case BUTETOK_FLOAT_SUFFIX: {
-            float v = static_cast<float>(atof(m_token));
+        case BUTETOK_FLOAT_SUFFIX:
+            floatValue = static_cast<float>(atof(m_token));
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_currentTag->Insert(m_attributeName, new CButeValue(BUTE_FLOAT, v));
+                    m_currentTag->Insert(m_attributeName, new CButeValue(BUTE_FLOAT, floatValue));
                 }
             } else {
-                (*m_pText) << GetFloat(m_tagName, m_attributeName) << s_strFloatSuffix;
+                floatValue = GetFloat(m_tagName, m_attributeName);
+                (*m_pText) << floatValue << s_strFloatSuffix;
             }
             break;
-        }
-        case BUTETOK_DOUBLE: {
-            double v = atof(m_token);
+        case BUTETOK_DOUBLE:
+            doubleValue = atof(m_token);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_currentTag->Insert(m_attributeName, new CButeValue(BUTE_DOUBLE, v));
+                    m_currentTag->Insert(m_attributeName, new CButeValue(BUTE_DOUBLE, doubleValue));
                 }
             } else {
-                (*m_pText) << GetDouble(m_tagName, m_attributeName);
+                doubleValue = GetDouble(m_tagName, m_attributeName);
+                (*m_pText) << doubleValue;
             }
             break;
-        }
-        case BUTETOK_RECT: {
+        case BUTETOK_RECT:
             sscanf(m_token, s_fmtPoint4, &a, &b, &c, &d);
             if (!m_writeMode) {
                 if (!bDup) {
@@ -1032,14 +1035,13 @@ bool ButeMgr::ParseAttributeFile() {
                     );
                 }
             } else {
-                ButeIntRect* r = GetRect(m_tagName, m_attributeName);
-                (*m_pText) << s_strOpen << static_cast<long>(r->a) << s_strComma
-                           << static_cast<long>(r->b) << s_strComma << static_cast<long>(r->c)
-                           << s_strComma << static_cast<long>(r->d) << s_strClose;
+                ButeIntRect r = *GetRect(m_tagName, m_attributeName);
+                (*m_pText) << s_strOpen << static_cast<long>(r.a) << s_strComma
+                           << static_cast<long>(r.b) << s_strComma << static_cast<long>(r.c)
+                           << s_strComma << static_cast<long>(r.d) << s_strClose;
             }
             break;
-        }
-        case BUTETOK_POINT: {
+        case BUTETOK_POINT:
             sscanf(m_token, s_fmtPoint2, &px, &py);
             if (!m_writeMode) {
                 if (!bDup) {
@@ -1049,13 +1051,12 @@ bool ButeMgr::ParseAttributeFile() {
                     );
                 }
             } else {
-                ButeIntPoint* r = GetPoint(m_tagName, m_attributeName);
-                (*m_pText) << s_strOpen << static_cast<long>(r->a) << s_strComma
-                           << static_cast<long>(r->b) << s_strClose;
+                ButeIntPoint pt = *GetPoint(m_tagName, m_attributeName);
+                (*m_pText) << s_strOpen << static_cast<long>(pt.a) << s_strComma
+                           << static_cast<long>(pt.b) << s_strClose;
             }
             break;
-        }
-        case BUTETOK_VECTOR: {
+        case BUTETOK_VECTOR:
             sscanf(m_token, s_fmtRect3, &x, &y, &z);
             if (!m_writeMode) {
                 if (!bDup) {
@@ -1069,8 +1070,7 @@ bool ButeMgr::ParseAttributeFile() {
                 (*m_pText) << s_strLt << v.x << s_strComma << v.y << s_strComma << v.z << s_strGt;
             }
             break;
-        }
-        case BUTETOK_RANGE: {
+        case BUTETOK_RANGE:
             sscanf(m_token, s_fmtRect2, &x, &y);
             if (!m_writeMode) {
                 if (!bDup) {
@@ -1080,12 +1080,11 @@ bool ButeMgr::ParseAttributeFile() {
                     );
                 }
             } else {
-                ButeDoubleRange* r = GetRange(m_tagName, m_attributeName);
-                (*m_pText) << "[" << r->x << s_strComma << r->y << "]";
+                ButeDoubleRange range = *GetRange(m_tagName, m_attributeName);
+                (*m_pText) << "[" << range.x << s_strComma << range.y << "]";
             }
             break;
-        }
-        case BUTETOK_STRING: {
+        case BUTETOK_STRING:
             if (!m_writeMode) {
                 if (!bDup) {
                     m_currentTag->Insert(
@@ -1095,11 +1094,11 @@ bool ButeMgr::ParseAttributeFile() {
                 }
             } else {
                 CString tmp(*GetString(m_tagName, m_attributeName));
-                (*m_pText) << static_cast<unsigned char>('"') << tmp.GetBuffer(0)
-                           << static_cast<unsigned char>('"');
+                ostream& output = (*m_pText) << static_cast<unsigned char>('"');
+                ostream& stringOutput = output << tmp.GetBuffer(0);
+                stringOutput << static_cast<unsigned char>('"');
             }
             break;
-        }
         default:
             ReportError(s_fmtInvalidToken, m_lineNo);
             return false;
