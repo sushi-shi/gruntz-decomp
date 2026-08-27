@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import unittest
+from unittest.mock import patch
 
 from gruntz.walls import abstractions
 
@@ -33,6 +34,22 @@ int G() { return 2; }
             "inline", ["aggregate-read:under@+0x20"], {"promote": False}, False)
         self.assertEqual(level, "object")
         self.assertEqual(evidence, ["aggregate-read:under@+0x20"])
+
+    def test_argument_copy_shape_does_not_route_as_an_object_lead(self):
+        from gruntz.walls import aggregate_copies, aggdecl, aggscan, valuetemp
+
+        arg_row = (88.65, "rezsync", "Run", 0x83450, 0x108,
+                   ["SEP"], ["ARG"])
+        empty_decl = ([], [], {}, 1, 0, 0)
+        with patch.object(aggdecl, "scan", side_effect=[
+                ([], [arg_row], {}, 1, 1, 0), empty_decl]), \
+             patch.object(aggregate_copies, "scan", return_value=[]), \
+             patch.object(valuetemp, "scan", return_value=([], [], [], [], [])), \
+             patch.object(aggscan, "sweep", return_value={
+                 "ours": [], "both": [], "retail": []}), \
+             patch.object(aggscan, "perfunction", return_value={}):
+            leads = abstractions.aggregate_leads()
+        self.assertNotIn(("rezsync", "Run"), leads)
 
     def test_historical_max_remains_primary_queue_order(self):
         low_expression = {"hist_max": 70.0, "level": "expression",

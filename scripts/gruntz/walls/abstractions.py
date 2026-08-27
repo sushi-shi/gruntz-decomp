@@ -239,6 +239,12 @@ def aggregate_leads(todo: bool = False) -> dict[tuple[str, str], list[str]]:
             todo=todo, reads=reads)
         for direction, rows in (("over", over), ("under", under)):
             for _pct, unit, sym, _rva, disp, base, retail in rows:
+                copy_side = base if direction == "over" else retail
+                # aggdecl deliberately reports ARG and WALK so its standalone
+                # output can explain why a copy-shaped pair is not an object.
+                # They are calibrated negatives, not abstraction-level leads.
+                if not reads and not (set(copy_side) - {"ARG", "WALK"}):
+                    continue
                 out[(unit, sym)].append(
                     f"{label}:{direction}@+0x{disp:x} base={','.join(base)} "
                     f"retail={','.join(retail)}")
