@@ -20,6 +20,7 @@
 #define HSV_MAX(a, b) ((a) > (b) ? (a) : (b))
 #define HSV_MIN(a, b) ((a) < (b) ? (a) : (b))
 #define INTERPOLATE(start, end, amount) ((start) * (g_one - (amount)) + (end) * (amount))
+#define SQUARE(value) ((value) * (value))
 
 static inline u16 PackPixel16(u8 red, u8 green, u8 blue) {
     u16 value = static_cast<u8>(blue >> g_bDown);
@@ -789,19 +790,10 @@ void CShadeTableCache::FindRemove(CShadeTable* key) {
 
 RVA(0x0014fbf0, 0xcb)
 i32 __cdecl CShadeTableCache::FindNearestColor(PALETTEENTRY* pal, u8 r, u8 g, u8 b) {
-    i32 gg = g;
-    i32 bb = b;
     i32 best = 0;
-    i32 rr = r;
-    i32 dg = gg - pal->peGreen;
-    i32 db = bb - pal->peBlue;
-    i32 dr = rr - pal->peRed;
-    i32 bestDist = dg * dg + db * db + dr * dr;
+    i32 bestDist = SQUARE(r - pal->peRed) + SQUARE(g - pal->peGreen) + SQUARE(b - pal->peBlue);
     for (i32 i = 1; i < PALETTE_ENTRY_COUNT; i++) {
-        i32 dr2 = rr - pal[i].peRed;
-        i32 dg2 = gg - pal[i].peGreen;
-        i32 db2 = bb - pal[i].peBlue;
-        i32 d = dr2 * dr2 + dg2 * dg2 + db2 * db2;
+        i32 d = SQUARE(r - pal[i].peRed) + SQUARE(g - pal[i].peGreen) + SQUARE(b - pal[i].peBlue);
         if (d < bestDist) {
             bestDist = d;
             best = i;

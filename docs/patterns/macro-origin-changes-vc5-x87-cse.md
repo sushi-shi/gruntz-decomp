@@ -98,5 +98,6 @@ could plausibly have written.
 
 ## Related
 
+- [`integer-square-macro-preserves-expression-origin.md`](integer-square-macro-preserves-expression-origin.md)
 - [`x87-named-temp-keeps-fcom-cse.md`](x87-named-temp-keeps-fcom-cse.md)
 - [`equal-frame-residual-census.md`](equal-frame-residual-census.md)
