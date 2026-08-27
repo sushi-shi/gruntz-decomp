@@ -800,29 +800,30 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015a650, 0x12c)
 void CDDrawChildGroup::DrawObjectCounts() {
+    i32 w, h;
     if (!(m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_SORT_KEY))) {
         return;
     }
     POSITION pos = m_list.GetHeadPosition();
-    CDDrawSurfacePair* drawHost = OwnerMgr()->m_drawTarget->m_backPair;
     CDDrawWorkerHost* view = OwnerMgr()->m_level->m_mainPlane;
+    CDDrawSurfacePair* drawHost = OwnerMgr()->m_drawTarget->m_backPair;
     if (pos == NULL) {
         return;
     }
     do {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
-        i32 ox = obj->m_screenX;
         i32 oy = obj->m_screenY;
+        i32 ox = obj->m_screenX;
         RECT box;
         SetRect(&box, ox - 0x20, oy - 8, ox + 0x20, oy + 8);
         RECT rc;
-        rc.right = box.right;
-        rc.bottom = box.bottom;
         i32 wl = box.left;
         i32 wt = box.top;
+        rc.right = box.right;
+        rc.bottom = box.bottom;
         WwdPlaneFlags fl = static_cast<WwdPlaneFlags>(view->m_flags);
         if (HAS(fl, WWD_PLANE_FLAG_WRAP_X)) {
-            i32 w = view->m_planePixelWidth;
+            w = view->m_planePixelWidth;
             if (box.left < 0) {
                 wl = box.left + w;
             } else if (box.left >= w) {
@@ -834,7 +835,7 @@ void CDDrawChildGroup::DrawObjectCounts() {
             }
         }
         if (HAS(fl, WWD_PLANE_FLAG_WRAP_Y)) {
-            i32 h = view->m_planePixelHeight;
+            h = view->m_planePixelHeight;
             if (box.top < 0) {
                 wt = box.top + h;
             } else if (box.top >= h) {
