@@ -1152,6 +1152,101 @@ void CFaderShape::RenderFrame(i32 frame) {
     }
 }
 
+#define COPY_STRAIGHT8(src, first, last)                                                           \
+    do {                                                                                           \
+        warpIndex = (first);                                                                       \
+        if (warpIndex < (last)) {                                                                  \
+            do {                                                                                   \
+                m_lineBuf[warpIndex] = (src)[warpIndex];                                           \
+                warpIndex++;                                                                       \
+            } while (warpIndex < (last));                                                          \
+        }                                                                                          \
+    } while (0)
+
+#define COPY_WARP8(src, first, last)                                                               \
+    do {                                                                                           \
+        warpIndex = (first);                                                                       \
+        if (warpIndex < (last)) {                                                                  \
+            do {                                                                                   \
+                m_lineBuf[warpIndex] = (src)[m_warpTable[warpIndex]];                              \
+                warpIndex++;                                                                       \
+            } while (warpIndex < (last));                                                          \
+        }                                                                                          \
+    } while (0)
+
+#define COPY_STRAIGHT16(src, first, last)                                                          \
+    do {                                                                                           \
+        warpIndex = (first);                                                                       \
+        if (warpIndex < (last)) {                                                                  \
+            do {                                                                                   \
+                m_lineBuf[warpIndex * 2] = (src)[warpIndex * 2];                                   \
+                m_lineBuf[warpIndex * 2 + 1] = (src)[warpIndex * 2 + 1];                           \
+                warpIndex++;                                                                       \
+            } while (warpIndex < (last));                                                          \
+        }                                                                                          \
+    } while (0)
+
+#define COPY_WARP16(src, first, last)                                                              \
+    do {                                                                                           \
+        warpIndex = (first);                                                                       \
+        if (warpIndex < (last)) {                                                                  \
+            do {                                                                                   \
+                m_lineBuf[warpIndex * 2] = (src)[m_warpTable[warpIndex] * 2];                      \
+                m_lineBuf[warpIndex * 2 + 1] = (src)[m_warpTable[warpIndex] * 2 + 1];              \
+                warpIndex++;                                                                       \
+            } while (warpIndex < (last));                                                          \
+        }                                                                                          \
+    } while (0)
+
+#define COPY_STRAIGHT24(src, first, last)                                                          \
+    do {                                                                                           \
+        i32 copyOffset = (first) * 3;                                                              \
+        u8* copySource = (src) + copyOffset;                                                       \
+        i32 copyCount = (last) - (first);                                                          \
+        if (copyCount > 0) {                                                                       \
+            do {                                                                                   \
+                m_lineBuf[copyOffset] = copySource[0];                                             \
+                m_lineBuf[copyOffset + 1] = copySource[1];                                         \
+                m_lineBuf[copyOffset + 2] = copySource[2];                                         \
+                copySource += 3;                                                                   \
+                copyOffset += 3;                                                                   \
+                copyCount--;                                                                       \
+            } while (copyCount != 0);                                                              \
+        }                                                                                          \
+    } while (0)
+
+#define COPY_WARP24(src, first, last)                                                              \
+    do {                                                                                           \
+        warpIndex = (first);                                                                       \
+        if (warpIndex < (last)) {                                                                  \
+            warpOffset = warpIndex * 3;                                                            \
+            do {                                                                                   \
+                m_lineBuf[warpOffset] = (src)[m_warpTable[warpIndex] * 3];                         \
+                m_lineBuf[warpOffset + 1] = (src)[m_warpTable[warpIndex] * 3 + 1];                 \
+                m_lineBuf[warpOffset + 2] = (src)[m_warpTable[warpIndex] * 3 + 2];                 \
+                warpIndex++;                                                                       \
+                warpOffset += 3;                                                                   \
+            } while (warpIndex < (last));                                                          \
+        }                                                                                          \
+    } while (0)
+
+#define COPY_PIXEL_OP_INNER(op, depth) COPY_##op##depth
+#define COPY_PIXEL_OP(op, depth) COPY_PIXEL_OP_INNER(op, depth)
+
+#define COPY_WARP_SEGMENTS(firstOp, firstSrc, secondOp, secondSrc, split, end)                     \
+    do {                                                                                           \
+        if (bpp == PIXEL8_BYTES_PER_PIXEL) {                                                       \
+            COPY_PIXEL_OP(firstOp, 8)(firstSrc, 0, split);                                         \
+            COPY_PIXEL_OP(secondOp, 8)(secondSrc, split, end);                                     \
+        } else if (bpp == PIXEL16_BYTES_PER_PIXEL) {                                               \
+            COPY_PIXEL_OP(firstOp, 16)(firstSrc, 0, split);                                        \
+            COPY_PIXEL_OP(secondOp, 16)(secondSrc, split, end);                                    \
+        } else if (bpp == PIXEL24_BYTES_PER_PIXEL) {                                               \
+            COPY_PIXEL_OP(firstOp, 24)(firstSrc, 0, split);                                        \
+            COPY_PIXEL_OP(secondOp, 24)(secondSrc, split, end);                                    \
+        }                                                                                          \
+    } while (0)
+
 RVA(0x00181e50, 0x7b9)
 
 void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
@@ -1163,9 +1258,10 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
     i32 bpp = m_targetSurface->m_bytesPerPixel;
 
     i32 colBase;
+    u32 arcSpan;
     if ((m_mode == FADER_SWEEP_FORWARD && m_stripCopy != false)
         || (m_mode == FADER_SWEEP_REVERSE && m_stripCopy == false)) {
-        u32 arcSpan = arc - m_halfWidth;
+        arcSpan = arc - m_halfWidth;
         i32 tail = m_targetWidth - col - stride;
         colBase = stride - static_cast<i32>(static_cast<double>(stride) / arcSpan * tail);
     } else {
@@ -1173,12 +1269,12 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
     }
     if ((m_mode == FADER_SWEEP_FORWARD && m_stripCopy == false)
         || (m_mode == FADER_SWEEP_REVERSE && m_stripCopy != false)) {
-        u32 arcSpan = arc - m_halfWidth;
+        arcSpan = arc - m_halfWidth;
         colBase = static_cast<i32>(static_cast<double>(stride) / arcSpan * col);
     }
-
-    u8* lut;
     i32 base;
+    i32 warpIndex;
+    i32 warpOffset;
     if ((m_mode == FADER_SWEEP_FORWARD && m_stripCopy != false)
         || (m_mode == FADER_SWEEP_REVERSE && m_stripCopy == false)) {
         i32 row = 0;
@@ -1189,7 +1285,7 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                 u8* gsrc = m_warpRowOffsets[row] + base + m_gatherBase;
                 u8* ssrc = m_sourceRowOffsets[row] + base + m_straightBase;
                 if (m_useLut != false) {
-                    lut = m_table->m_data;
+                    u8* lut = m_table->m_data;
                     i32 i = 0;
                     if (colBase > 0) {
                         do {
@@ -1203,54 +1299,7 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                                 + static_cast<u32>(gsrc[m_warpTable[t]]) * 0x40];
                     }
                 } else {
-                    if (bpp == PIXEL8_BYTES_PER_PIXEL) {
-                        i32 i = 0;
-                        if (colBase > 0) {
-                            do {
-                                m_lineBuf[i] = ssrc[i];
-                                i++;
-                            } while (i < colBase);
-                        }
-                        for (i32 t = colBase; t < stride; t++) {
-                            m_lineBuf[t] = gsrc[m_warpTable[t]];
-                        }
-                    } else if (bpp == PIXEL16_BYTES_PER_PIXEL) {
-                        i32 i = 0;
-                        if (colBase > 0) {
-                            do {
-                                m_lineBuf[i * 2] = ssrc[i * 2];
-                                m_lineBuf[i * 2 + 1] = ssrc[i * 2 + 1];
-                                i++;
-                            } while (i < colBase);
-                        }
-                        for (i32 t = colBase; t < stride; t++) {
-                            m_lineBuf[t * 2] = gsrc[m_warpTable[t] * 2];
-                            m_lineBuf[t * 2 + 1] = gsrc[m_warpTable[t] * 2 + 1];
-                        }
-                    } else if (bpp == PIXEL24_BYTES_PER_PIXEL) {
-                        if (colBase > 0) {
-                            i32 d = 0;
-                            u8* sp = ssrc;
-                            i32 c = colBase;
-                            do {
-                                m_lineBuf[d] = sp[0];
-                                m_lineBuf[d + 1] = sp[1];
-                                m_lineBuf[d + 2] = sp[2];
-                                sp += 3;
-                                d += 3;
-                                c--;
-                            } while (c != 0);
-                        }
-                        if (colBase < stride) {
-                            i32 d = colBase * 3;
-                            for (i32 t = colBase; t < stride; t++) {
-                                m_lineBuf[d] = gsrc[m_warpTable[t] * 3];
-                                m_lineBuf[d + 1] = gsrc[m_warpTable[t] * 3 + 1];
-                                m_lineBuf[d + 2] = gsrc[m_warpTable[t] * 3 + 2];
-                                d += 3;
-                            }
-                        }
-                    }
+                    COPY_WARP_SEGMENTS(STRAIGHT, ssrc, WARP, gsrc, colBase, stride);
                 }
                 i32 cnt = bpp * stride;
                 CopyBytes(dstLine, m_lineBuf, cnt);
@@ -1277,7 +1326,7 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                 u8* gsrc = m_warpRowOffsets[row] + base + m_gatherBase;
                 u8* ssrc = m_sourceRowOffsets[row] + base + m_straightBase;
                 if (m_useLut != false) {
-                    lut = m_table->m_data;
+                    u8* lut = m_table->m_data;
                     i32 i = 0;
                     if (colBase > 0) {
                         do {
@@ -1291,56 +1340,7 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                         m_lineBuf[t] = ssrc[t];
                     }
                 } else {
-                    if (bpp == PIXEL8_BYTES_PER_PIXEL) {
-                        i32 i = 0;
-                        if (colBase > 0) {
-                            do {
-                                m_lineBuf[i] = gsrc[m_warpTable[i]];
-                                i++;
-                            } while (i < colBase);
-                        }
-                        for (i32 t = colBase; t < stride; t++) {
-                            m_lineBuf[t] = ssrc[t];
-                        }
-                    } else if (bpp == PIXEL16_BYTES_PER_PIXEL) {
-                        i32 i = 0;
-                        if (colBase > 0) {
-                            do {
-                                m_lineBuf[i * 2] = gsrc[m_warpTable[i] * 2];
-                                m_lineBuf[i * 2 + 1] = gsrc[m_warpTable[i] * 2 + 1];
-                                i++;
-                            } while (i < colBase);
-                        }
-                        for (i32 t = colBase; t < stride; t++) {
-                            m_lineBuf[t * 2] = ssrc[t * 2];
-                            m_lineBuf[t * 2 + 1] = ssrc[t * 2 + 1];
-                        }
-                    } else if (bpp == PIXEL24_BYTES_PER_PIXEL) {
-                        i32 k = 0;
-                        if (colBase > 0) {
-                            i32 d = 0;
-                            do {
-                                m_lineBuf[d] = gsrc[m_warpTable[k] * 3];
-                                m_lineBuf[d + 1] = gsrc[m_warpTable[k] * 3 + 1];
-                                m_lineBuf[d + 2] = gsrc[m_warpTable[k] * 3 + 2];
-                                k++;
-                                d += 3;
-                            } while (k < colBase);
-                        }
-                        if (colBase < stride) {
-                            i32 d = colBase * 3;
-                            i32 c = stride - colBase;
-                            u8* sp = ssrc + d;
-                            do {
-                                m_lineBuf[d] = sp[0];
-                                m_lineBuf[d + 1] = sp[1];
-                                m_lineBuf[d + 2] = sp[2];
-                                sp += 3;
-                                d += 3;
-                                c--;
-                            } while (c != 0);
-                        }
-                    }
+                    COPY_WARP_SEGMENTS(WARP, gsrc, STRAIGHT, ssrc, colBase, stride);
                 }
                 i32 cnt = bpp * stride;
                 CopyBytes(dstLine, m_lineBuf, cnt);
@@ -1359,6 +1359,16 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
         }
     }
 }
+
+#undef COPY_STRAIGHT8
+#undef COPY_WARP8
+#undef COPY_STRAIGHT16
+#undef COPY_WARP16
+#undef COPY_STRAIGHT24
+#undef COPY_WARP24
+#undef COPY_WARP_SEGMENTS
+#undef COPY_PIXEL_OP
+#undef COPY_PIXEL_OP_INNER
 
 // @early-stop
 RVA(0x00182610, 0x2eb)

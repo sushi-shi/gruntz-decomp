@@ -63,6 +63,18 @@ were byte-flat; cross-arm destination pointers fell to 88.944890%; and shared
 copy counts were flat or slightly worse. The lever is the identity shared by
 the mirrored source roles, not declaration height by itself.
 
+## Scope correction after the row-dispatch reconstruction
+
+This result is conditional on the direct-expansion source shape. Recovering the
+higher row-dispatch macro later moved `RenderWarpTile` to 91.286870%, removed
+the 83-versus-82 branch mismatch, and made retail's two 22-instruction prefixes
+symmetric while the frame returned to `0x20` and arm-local LUT pointers scored
+slightly better. Therefore an exact frame on a lower-abstraction base is not
+proof that its local identity is original. Preserve the A/B as a valid VC5
+lever, but re-test it whenever a higher semantic boundary changes the function's
+front-end state. See
+[`row-dispatch-macro-controls-mirrored-loop-cfg.md`](row-dispatch-macro-controls-mirrored-loop-cfg.md).
+
 ## Reverse-use rule
 
 1. Require mutually exclusive arms whose locals have the same semantic role
