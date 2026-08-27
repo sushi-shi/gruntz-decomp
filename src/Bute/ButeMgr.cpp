@@ -936,10 +936,10 @@ bool ButeMgr::ParseAttributeFile() {
     i32 a, b, c, d;
     i32 px, py;
     double x, y, z;
+    bool bDup = false;
 
     m_attributeName = m_token;
 
-    bool bDup = false;
     if (!m_writeMode) {
         if (m_currentTag->Find(m_attributeName)) {
             ReportError(s_fmtDupSymbol, m_attributeName.GetBuffer(0));
@@ -951,8 +951,8 @@ bool ButeMgr::ParseAttributeFile() {
         return false;
     }
     if (m_writeMode) {
-        (*m_pText) << static_cast<unsigned char>(0x20);
         m_captureText = 0;
+        (*m_pText) << static_cast<unsigned char>(0x20);
     }
     if (!Parse()) {
         return false;
