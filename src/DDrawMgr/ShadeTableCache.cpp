@@ -21,6 +21,13 @@
 #define HSV_MIN(a, b) ((a) < (b) ? (a) : (b))
 #define INTERPOLATE(start, end, amount) ((start) * (g_one - (amount)) + (end) * (amount))
 
+static inline u16 PackPixel16(u8 red, u8 green, u8 blue) {
+    u16 value = static_cast<u8>(blue >> g_bDown);
+    value |= static_cast<u16>(static_cast<u8>(red >> g_rDown) << g_rUp);
+    value |= static_cast<u16>(static_cast<u8>(green >> g_gDown) << g_gUp);
+    return value;
+}
+
 DATA(0x002bf224)
 PALETTEENTRY* g_pal = NULL;
 
@@ -553,32 +560,36 @@ CShadeTable* CShadeTableCache::SubTable(i32 color) {
     arr.SetSizeGrow(idx + 1, -1);
     arr.m_pData[idx] = t;
     u16* out = Pix16(t->m_data);
+    i32 subb = 0;
+    i32 subg = 0;
+    i32 subr = 0;
     u32 rgb = static_cast<u32>(color);
     i32 cb = GetBValue(rgb);
     i32 cg = GetGValue(rgb);
     i32 cr = GetRValue(rgb);
 
-    for (i32 fill = 0; fill < PIXEL_NIBBLE_VALUE_COUNT; fill++) {
-        i32 subr = cr * fill / PIXEL_NIBBLE_MASK;
-        i32 subg = cg * fill / PIXEL_NIBBLE_MASK;
-        i32 subb = cb * fill / PIXEL_NIBBLE_MASK;
-        i32 level = PIXEL_NIBBLE_MASK - fill;
+    for (i32 level = PIXEL_NIBBLE_MASK; level > -1; level--) {
         for (i32 r = 0; r < PIXEL_NIBBLE_VALUE_COUNT; r++) {
-            u8 rn = static_cast<u8>(((r * level / PIXEL_NIBBLE_MASK) << PIXEL_NIBBLE_BITS) + subr);
+            u8 rn = static_cast<u8>(
+                ((r * level / PIXEL_NIBBLE_MASK) << PIXEL_NIBBLE_BITS) + subr / PIXEL_NIBBLE_MASK
+            );
             for (i32 g = 0; g < PIXEL_NIBBLE_VALUE_COUNT; g++) {
-                u8 gn =
-                    static_cast<u8>(((g * level / PIXEL_NIBBLE_MASK) << PIXEL_NIBBLE_BITS) + subg);
+                u8 gn = static_cast<u8>(
+                    ((g * level / PIXEL_NIBBLE_MASK) << PIXEL_NIBBLE_BITS)
+                    + subg / PIXEL_NIBBLE_MASK
+                );
                 for (i32 b = 0; b < PIXEL_NIBBLE_VALUE_COUNT; b++) {
                     u8 bn = static_cast<u8>(
-                        ((b * level / PIXEL_NIBBLE_MASK) << PIXEL_NIBBLE_BITS) + subb
+                        ((b * level / PIXEL_NIBBLE_MASK) << PIXEL_NIBBLE_BITS)
+                        + subb / PIXEL_NIBBLE_MASK
                     );
-                    u16 v = static_cast<u8>(bn >> g_bDown);
-                    v |= static_cast<u16>(static_cast<u8>(rn >> g_rDown) << g_rUp);
-                    v |= static_cast<u16>(static_cast<u8>(gn >> g_gDown) << g_gUp);
-                    *out++ = v;
+                    *out++ = PackPixel16(rn, gn, bn);
                 }
             }
         }
+        subr += cr;
+        subg += cg;
+        subb += cb;
     }
     return t;
 }
