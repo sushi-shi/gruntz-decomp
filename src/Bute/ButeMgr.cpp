@@ -1161,25 +1161,25 @@ void ButeGroup_Apply(char* key, void* valuePtr, void* ctx) {
     output << "\r\n" << key << " = ";
     switch (value->type) {
         case BUTE_INT:
-            output << *value->payload.m_int;
+            output << *static_cast<i32*>(value->pValue);
             break;
 
         case BUTE_DWORD:
-            output << s_strDword << *value->payload.m_dword;
+            output << s_strDword << *static_cast<DWORD*>(value->pValue);
             break;
 
         case BUTE_FLOAT: {
-            float scalar = *value->payload.m_float;
+            float scalar = *static_cast<float*>(value->pValue);
             output << s_strFloat << scalar;
             break;
         }
 
         case BUTE_DOUBLE:
-            output << *value->payload.m_double;
+            output << *static_cast<double*>(value->pValue);
             break;
 
         case BUTE_STRING: {
-            CString& text = *value->payload.m_string;
+            CString& text = *static_cast<CString*>(value->pValue);
             ostream& stringOutput = output << static_cast<unsigned char>('"')
                                            << static_cast<const char*>(text);
             stringOutput << static_cast<unsigned char>('"');
@@ -1188,7 +1188,7 @@ void ButeGroup_Apply(char* key, void* valuePtr, void* ctx) {
 
         case BUTE_RECT: {
             ostream& rectOutput = output << static_cast<unsigned char>('(');
-            ButeIntRect* ref = value->payload.m_rect;
+            ButeIntRect* ref = static_cast<ButeIntRect*>(value->pValue);
             ostream& rectTail = rectOutput << static_cast<long>(ref->a) << s_strComma
                                            << static_cast<long>(ref->b) << s_strComma
                                            << static_cast<long>(ref->c) << s_strComma
@@ -1198,14 +1198,14 @@ void ButeGroup_Apply(char* key, void* valuePtr, void* ctx) {
         }
 
         case BUTE_POINT: {
-            ButeIntPoint* ref = value->payload.m_point;
+            ButeIntPoint* ref = static_cast<ButeIntPoint*>(value->pValue);
             output << s_strOpen << static_cast<long>(ref->a) << s_strComma
                    << static_cast<long>(ref->b) << s_strClose;
             break;
         }
 
         case BUTE_VECTOR: {
-            ButeDoubleVector* ref = value->payload.m_vector;
+            ButeDoubleVector* ref = static_cast<ButeDoubleVector*>(value->pValue);
             double x = ref->x;
             double y = ref->y;
             double z = ref->z;
@@ -1214,7 +1214,7 @@ void ButeGroup_Apply(char* key, void* valuePtr, void* ctx) {
         }
 
         case BUTE_RANGE: {
-            ButeDoubleRange* ref = value->payload.m_range;
+            ButeDoubleRange* ref = static_cast<ButeDoubleRange*>(value->pValue);
             double x = ref->x;
             double y = ref->y;
             output << "[" << x << s_strComma << y << "]";
@@ -1355,7 +1355,7 @@ i32 CButeMgr::GetIntDef(const char* tag, const char* key, i32 def) {
         CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
         if (rec) {
             if (rec->type == BUTE_INT) {
-                return *rec->payload.m_int;
+                return *static_cast<i32*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
         }
@@ -1370,7 +1370,7 @@ i32 CButeMgr::GetInt(const char* tag, const char* key) {
         CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
         if (rec) {
             if (rec->type == BUTE_INT) {
-                return *rec->payload.m_int;
+                return *static_cast<i32*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
             return COORD_UNSET;
@@ -1433,7 +1433,7 @@ DWORD CButeMgr::GetDwordDef(const char* tag, const char* key, DWORD def) {
         if (rec) {
             switch (rec->type) {
                 case BUTE_DWORD:
-                    return *rec->payload.m_dword;
+                    return *static_cast<DWORD*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
         }
@@ -1449,7 +1449,7 @@ DWORD CButeMgr::GetDword(const char* tag, const char* key) {
         if (rec) {
             switch (rec->type) {
                 case BUTE_DWORD:
-                    return *rec->payload.m_dword;
+                    return *static_cast<DWORD*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
             return 0;
@@ -1512,9 +1512,9 @@ float CButeMgr::GetFloatDef(const char* tag, const char* key, float def) {
         if (rec) {
             switch (rec->type) {
                 case BUTE_INT:
-                    return static_cast<float>(*rec->payload.m_int);
+                    return static_cast<float>(*static_cast<i32*>(rec->pValue));
                 case BUTE_FLOAT:
-                    return *rec->payload.m_float;
+                    return *static_cast<float*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
         }
@@ -1530,9 +1530,9 @@ float CButeMgr::GetFloat(const char* tag, const char* key) {
         if (rec) {
             switch (rec->type) {
                 case BUTE_INT:
-                    return static_cast<float>(*rec->payload.m_int);
+                    return static_cast<float>(*static_cast<i32*>(rec->pValue));
                 case BUTE_FLOAT:
-                    return *rec->payload.m_float;
+                    return *static_cast<float*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
             return s_floatErr;
@@ -1595,9 +1595,9 @@ double CButeMgr::GetDoubleDef(const char* tag, const char* key, double def) {
         if (rec) {
             switch (rec->type) {
                 case BUTE_INT:
-                    return static_cast<double>(*rec->payload.m_int);
+                    return static_cast<double>(*static_cast<i32*>(rec->pValue));
                 case BUTE_DOUBLE:
-                    return *rec->payload.m_double;
+                    return *static_cast<double*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
         }
@@ -1613,9 +1613,9 @@ double CButeMgr::GetDouble(const char* tag, const char* key) {
         if (rec) {
             switch (rec->type) {
                 case BUTE_INT:
-                    return static_cast<double>(*rec->payload.m_int);
+                    return static_cast<double>(*static_cast<i32*>(rec->pValue));
                 case BUTE_DOUBLE:
-                    return *rec->payload.m_double;
+                    return *static_cast<double*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
             return s_doubleErr;
@@ -1675,7 +1675,7 @@ CString* CButeMgr::GetStringDef(const char* tag, const char* key, CString* def) 
         CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
         if (rec) {
             if (rec->type == BUTE_STRING) {
-                return rec->payload.m_string;
+                return static_cast<CString*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
         }
@@ -1696,7 +1696,7 @@ CString* CButeMgr::GetString(const char* tag, const char* key) {
         CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
         if (rec) {
             if (rec->type == BUTE_STRING) {
-                return rec->payload.m_string;
+                return static_cast<CString*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
         } else {
@@ -1760,7 +1760,7 @@ ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key, ButeIntRect* de
         CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
         if (rec) {
             if (rec->type == BUTE_RECT) {
-                return rec->payload.m_rect;
+                return static_cast<ButeIntRect*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
         }
@@ -1780,7 +1780,7 @@ ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key) {
         CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
         if (rec) {
             if (rec->type == BUTE_RECT) {
-                return rec->payload.m_rect;
+                return static_cast<ButeIntRect*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
             return &s_default;
@@ -1842,7 +1842,7 @@ ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key, ButeIntPoint*
         CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
         if (rec) {
             if (rec->type == BUTE_POINT) {
-                return rec->payload.m_point;
+                return static_cast<ButeIntPoint*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
         }
@@ -1862,7 +1862,7 @@ ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key) {
         CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
         if (rec) {
             if (rec->type == BUTE_POINT) {
-                return rec->payload.m_point;
+                return static_cast<ButeIntPoint*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
             return &s_default;
@@ -1923,7 +1923,7 @@ ButeDoubleVector* CButeMgr::GetVector(const char* tag, const char* key, ButeDoub
         CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
         if (rec) {
             if (rec->type == BUTE_VECTOR) {
-                return rec->payload.m_vector;
+                return static_cast<ButeDoubleVector*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
         }
@@ -1943,7 +1943,7 @@ ButeDoubleVector* CButeMgr::GetVector(const char* tag, const char* key) {
         CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
         if (rec) {
             if (rec->type == BUTE_VECTOR) {
-                return rec->payload.m_vector;
+                return static_cast<ButeDoubleVector*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
             return &s_default;
@@ -2004,7 +2004,7 @@ ButeDoubleRange* CButeMgr::GetRange(const char* tag, const char* key, ButeDouble
         CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
         if (rec) {
             if (rec->type == BUTE_RANGE) {
-                return rec->payload.m_range;
+                return static_cast<ButeDoubleRange*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
         }
@@ -2024,7 +2024,7 @@ ButeDoubleRange* CButeMgr::GetRange(const char* tag, const char* key) {
         CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
         if (rec) {
             if (rec->type == BUTE_RANGE) {
-                return rec->payload.m_range;
+                return static_cast<ButeDoubleRange*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
             return &s_default;
@@ -2097,31 +2097,31 @@ void __cdecl ButeValueTeardown(void* pValue) {
     CButeValue* v = static_cast<CButeValue*>(pValue);
     switch (v->type) {
         case BUTE_INT:
-            delete v->payload.m_int;
+            delete static_cast<i32*>(v->pValue);
             break;
         case BUTE_DWORD:
-            delete v->payload.m_dword;
+            delete static_cast<DWORD*>(v->pValue);
             break;
         case BUTE_DOUBLE:
-            delete v->payload.m_double;
+            delete static_cast<double*>(v->pValue);
             break;
         case BUTE_FLOAT:
-            delete v->payload.m_float;
+            delete static_cast<float*>(v->pValue);
             break;
         case BUTE_STRING:
-            delete v->payload.m_string;
+            delete static_cast<CString*>(v->pValue);
             break;
         case BUTE_RECT:
-            delete v->payload.m_rect;
+            delete static_cast<ButeIntRect*>(v->pValue);
             break;
         case BUTE_POINT:
-            delete v->payload.m_point;
+            delete static_cast<ButeIntPoint*>(v->pValue);
             break;
         case BUTE_VECTOR:
-            delete v->payload.m_vector;
+            delete static_cast<ButeDoubleVector*>(v->pValue);
             break;
         case BUTE_RANGE:
-            delete v->payload.m_range;
+            delete static_cast<ButeDoubleRange*>(v->pValue);
             break;
     }
 }

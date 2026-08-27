@@ -63,7 +63,11 @@ callback contexts, surface locks); an allocator seam; and a genuine
 byte-cursor-to-record boundary, where callers walk a packed buffer with a `char*`
 advanced by a variable stride - `CGameLevel::ReadImageSet` keeps `void*` and
 casts once, while `CTileImageSet::Parse` and all three overrides take
-`WwdTileImageRecord*`, taking four casts to one.
+`WwdTileImageRecord*`, taking four casts to one. A tag-selected heterogeneous
+owner is another real boundary: `CButeValue` stores nine unrelated allocated
+types in one `void*`, and its adjacent `ButeType` selects every access and
+deletion. See
+[`typed-union-member-access-is-c1-visible`](typed-union-member-access-is-c1-visible.md).
 
 ## Related
 

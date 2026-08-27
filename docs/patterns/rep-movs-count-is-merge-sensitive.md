@@ -15,7 +15,7 @@ legitimate `CopyValue` call sites. Each expands the `BUTE_VECTOR` arm to the
 same 24-byte whole-object copy. The candidate retains two `rep movsd` blocks;
 retail shares one switch body between both sites and therefore contains one.
 The function simultaneously differs in inline call-set and repeated-prefix
-topology (35/33 calls and 48/41 branches), so the 2-versus-1 count is a CFG
+topology (36/33 calls and 50/41 branches), so the 2-versus-1 count is a CFG
 merge consequence, not an invented object.
 
 ## Why SetString's two bodies do not merge in the current build
@@ -30,18 +30,19 @@ C2 from sharing the two switch bodies.  The duplicated string-assignment arm
 and the second `rep movsd` therefore disappear together when the suffixes are
 identical; neither names another authored copy.
 
-The same source fingerprint has a banked 81.7868 state whose constructor/new
-census already matched retail.  Its current 77.0314 state additionally declines
-one later `CButeValue(CString)` expansion, so that repeated-site delta is a
-current inline-state dip, not evidence for a missing insertion arm.
+Replacing the invented typed payload union with the retail-selected direct
+`void*` member recovered the banked 81.7868 state and made the other eight
+`Set<Type>` functions exact. Its constructor/new census matches retail. The
+remaining repeated-site delta is therefore not evidence for a missing insertion
+arm; it is the nested deleting-destructor cutoff described above.
 
 Controlled source-shaped negatives were byte-identical at 77.0314: explicit
 shared `goto` exits for the two hit paths, an `else` around the second miss,
 an inner lexical scope for the first lookup, one use of the real `Tags()`
-accessor, and per-arm `return` rather than `break` in `~CButeValue`.  None moves
-the generated deleting-destructor cutoff.  Keep the typed payload union and
-both temporary expressions; weakening the type or collapsing the authored
-sites would only transcribe the compiler fold.
+accessor, and per-arm `return` rather than `break` in `~CButeValue`. None moves
+the generated deleting-destructor cutoff. Keep the direct heterogeneous payload
+member and both temporary expressions; collapsing the authored sites would only
+transcribe the compiler fold.
 
 Safe reverse use:
 

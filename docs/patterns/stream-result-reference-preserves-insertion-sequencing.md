@@ -16,7 +16,7 @@ statement boundary and the insertion result:
 
 ```cpp
 ostream& body = output << static_cast<unsigned char>('(');
-ButeIntRect* rect = value->payload.m_rect;
+ButeIntRect* rect = static_cast<ButeIntRect*>(value->pValue);
 ostream& tail = body << rect->a << comma << rect->b << comma << rect->c << comma << rect->d;
 tail << static_cast<unsigned char>(')');
 ```

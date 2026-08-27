@@ -60,60 +60,48 @@ struct ButeDoubleRange {
     double x, y;
 };
 
-union ButeValuePayload {
-    i32* m_int;
-    DWORD* m_dword;
-    double* m_double;
-    float* m_float;
-    CString* m_string;
-    ButeIntRect* m_rect;
-    ButeIntPoint* m_point;
-    ButeDoubleVector* m_vector;
-    ButeDoubleRange* m_range;
-};
-
 struct CButeValue {
     ButeType type;
-    ButeValuePayload payload;
+    void* pValue;
 
     CButeValue() {}
 
     CButeValue(ButeType t, ButeIntPoint* src) {
         type = t;
-        payload.m_point = new ButeIntPoint(*src);
+        pValue = new ButeIntPoint(*src);
     }
 
     CButeValue(ButeType t, i32 v) {
         type = t;
-        payload.m_int = new i32(v);
+        pValue = new i32(v);
     }
     CButeValue(ButeType t, unsigned long v) {
         type = t;
-        payload.m_dword = new unsigned long(v);
+        pValue = new unsigned long(v);
     }
     CButeValue(ButeType t, float v) {
         type = t;
-        payload.m_float = new float(v);
+        pValue = new float(v);
     }
     CButeValue(ButeType t, double v) {
         type = t;
-        payload.m_double = new double(v);
+        pValue = new double(v);
     }
     CButeValue(ButeType t, const CString& s) {
         type = t;
-        payload.m_string = new CString(s);
+        pValue = new CString(s);
     }
     CButeValue(ButeType t, ButeIntRect* src) {
         type = t;
-        payload.m_rect = new ButeIntRect(*src);
+        pValue = new ButeIntRect(*src);
     }
     CButeValue(ButeType t, ButeDoubleVector* src) {
         type = t;
-        payload.m_vector = new ButeDoubleVector(*src);
+        pValue = new ButeDoubleVector(*src);
     }
     CButeValue(ButeType t, ButeDoubleRange* src) {
         type = t;
-        payload.m_range = new ButeDoubleRange(*src);
+        pValue = new ButeDoubleRange(*src);
     }
 
     inline ~CButeValue();
@@ -125,31 +113,32 @@ RVA(0x00172040, 0x120)
 inline CButeValue* CButeValue::CopyValue(CButeValue* other) {
     switch (type) {
         case BUTE_INT:
-            *payload.m_int = *other->payload.m_int;
+            *static_cast<i32*>(pValue) = *static_cast<i32*>(other->pValue);
             return this;
         case BUTE_DWORD:
-            *payload.m_dword = *other->payload.m_dword;
+            *static_cast<DWORD*>(pValue) = *static_cast<DWORD*>(other->pValue);
             return this;
         case BUTE_DOUBLE:
-            *payload.m_double = *other->payload.m_double;
+            *static_cast<double*>(pValue) = *static_cast<double*>(other->pValue);
             return this;
         case BUTE_FLOAT:
-            *payload.m_float = *other->payload.m_float;
+            *static_cast<float*>(pValue) = *static_cast<float*>(other->pValue);
             return this;
         case BUTE_STRING:
-            *payload.m_string = *other->payload.m_string;
+            *static_cast<CString*>(pValue) = *static_cast<CString*>(other->pValue);
             return this;
         case BUTE_RECT:
-            *payload.m_rect = *other->payload.m_rect;
+            *static_cast<ButeIntRect*>(pValue) = *static_cast<ButeIntRect*>(other->pValue);
             return this;
         case BUTE_POINT:
-            *payload.m_point = *other->payload.m_point;
+            *static_cast<ButeIntPoint*>(pValue) = *static_cast<ButeIntPoint*>(other->pValue);
             return this;
         case BUTE_VECTOR:
-            *payload.m_vector = *other->payload.m_vector;
+            *static_cast<ButeDoubleVector*>(pValue) =
+                *static_cast<ButeDoubleVector*>(other->pValue);
             return this;
         case BUTE_RANGE:
-            *payload.m_range = *other->payload.m_range;
+            *static_cast<ButeDoubleRange*>(pValue) = *static_cast<ButeDoubleRange*>(other->pValue);
             return this;
     }
     return this;
@@ -158,31 +147,31 @@ inline CButeValue* CButeValue::CopyValue(CButeValue* other) {
 inline CButeValue::~CButeValue() {
     switch (type) {
         case BUTE_INT:
-            delete payload.m_int;
+            delete static_cast<i32*>(pValue);
             break;
         case BUTE_DWORD:
-            delete payload.m_dword;
+            delete static_cast<DWORD*>(pValue);
             break;
         case BUTE_DOUBLE:
-            delete payload.m_double;
+            delete static_cast<double*>(pValue);
             break;
         case BUTE_FLOAT:
-            delete payload.m_float;
+            delete static_cast<float*>(pValue);
             break;
         case BUTE_STRING:
-            delete payload.m_string;
+            delete static_cast<CString*>(pValue);
             break;
         case BUTE_RECT:
-            delete payload.m_rect;
+            delete static_cast<ButeIntRect*>(pValue);
             break;
         case BUTE_POINT:
-            delete payload.m_point;
+            delete static_cast<ButeIntPoint*>(pValue);
             break;
         case BUTE_VECTOR:
-            delete payload.m_vector;
+            delete static_cast<ButeDoubleVector*>(pValue);
             break;
         case BUTE_RANGE:
-            delete payload.m_range;
+            delete static_cast<ButeDoubleRange*>(pValue);
             break;
     }
 }
