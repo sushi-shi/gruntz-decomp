@@ -178,8 +178,8 @@ void* zPTree::Find(const char* key) {
         if (key[b >> PTREE_BYTE_BIT_SHIFT] & (1 << (b & PTREE_BYTE_BIT_MASK))) {
             ++slot;
         }
-        CButeTreeNode* child = *slot;
-        m_candidateLeaf = child;
+        m_candidateLeaf = *slot;
+        CButeTreeNode* child = m_candidateLeaf;
         if (child == NULL) {
             return NULL;
         }
