@@ -568,7 +568,12 @@ i32 CDDrawFrontSurface::SetGeom(i32 w, i32 h, ColorDepth bpp) {
     return 0;
 }
 
-// @early-stop
+static inline void ResetResolveDrawFill(CResolveNode* node) {
+    node->m_drawFillArg = NULL;
+    node->m_drawFillCmd = SHADE_COPY;
+    node->m_drawActive = false;
+}
+
 RVA(0x00164790, 0x41)
 i32 CResolveNode::SetPosition(i32 x, i32 y) {
     m_screenX = x;
@@ -576,11 +581,9 @@ i32 CResolveNode::SetPosition(i32 x, i32 y) {
     m_plotDY = 0;
     m_stateFlags = SPRITE_STATE_NONE;
     m_flashCountdown = 0;
-    m_drawFillArg = NULL;
-    m_drawActive = false;
     m_screenY = y;
     m_flashInterval = 0x32;
-    m_drawFillCmd = SHADE_COPY;
+    ResetResolveDrawFill(this);
     m_level = OwnerMgr()->m_level;
     return 1;
 }
@@ -597,9 +600,7 @@ i32 CResolveNode::Init(
     m_ownerCtx = owner;
     m_id = id;
     m_flags = flags;
-    m_drawFillArg = NULL;
-    m_drawActive = false;
-    m_drawFillCmd = SHADE_COPY;
+    ResetResolveDrawFill(this);
     SetPosition(resolveX, resolveY);
     m_stateFlags = stateFlags;
     return 1;

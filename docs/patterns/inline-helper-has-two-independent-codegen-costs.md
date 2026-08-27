@@ -30,6 +30,38 @@ returns. `gruntz walls diagnose 0x166d70` classified the first divergence at +0x
 REGALLOC/SCHEDULING. The score nevertheless moved from exact to 70.3051%. A
 token-preserving `READ_TILE_IMAGE_DIMENSIONS(record, p)` macro restored exact.
 
+The inverse direction is equally useful. `CResolveNode::SetPosition` had the exact
+18-instruction semantic multiset but its flat draw-state assignments let C2 reuse the
+integer `1` for both `SHADE_COPY` and the return value (90.5556%, 0x3d bytes). A complete
+264-shape statement/lifetime Cartesian search produced 40 compiler islands but stopped
+at 95.3333%; typed spellings of the two constants were one flat island. The missing
+boundary was the repeated draw reset:
+
+```cpp
+static inline void ResetResolveDrawFill(CResolveNode* node) {
+    node->m_drawFillArg = NULL;
+    node->m_drawFillCmd = SHADE_COPY;
+    node->m_drawActive = false;
+}
+```
+
+Called after `m_screenY` and `m_flashInterval`, the inlined body makes VC5 hoist its two
+zero stores into the earlier zero run while keeping the nonzero command store at the
+call boundary. That is retail's exact schedule and takes SetPosition to 100%. Calling
+the same helper before those two assignments gives the right 0x41-byte register
+allocation but puts the command store three statements early (93.2222%); a command-only
+setter is byte-flat with the 90.5556% base. Two internal orders reached exact, and the
+retained `arg, command, active` order follows the members' physical order. The exact
+sibling `CResolveNode::Init` contains the same three-field reset and remains exact after
+sharing the helper, independently supporting the operation rather than a one-site
+schedule trick.
+
+This case also controls mechanism B below. Defining the same body as a class member kept
+SetPosition exact but introduced nine fresh MAX regressions across header consumers. A
+TU-local free inline shared by SetPosition and Init kept both exact and restored the full
+build to zero fresh regressions. The narrow definition is therefore source ownership,
+not an inert declaration probe.
+
 ## Mechanism B: the declaration changes later TU state
 
 Even if every helper call expands acceptably, adding the declaration can recolor
@@ -74,8 +106,10 @@ confirming the declaration-state mechanism above.
 After a real-inline A/B, compare two populations:
 
 1. If only converted callers move and `walls diagnose` reports equal calls and CFG,
-   treat the helper boundary as a caller regalloc lever. Try authentic parameter/return
-   shapes; if none reaches retail, retain a token-preserving macro.
+   treat the helper boundary as a caller regalloc lever. Also inspect mixed zero/nonzero
+   stores: VC5 can hoist the zero subset while pinning the nonzero store to the inline
+   boundary. Try authentic parameter/return shapes; if none reaches retail, retain a
+   token-preserving macro.
 2. If unedited later functions move, treat the helper declaration or definition boundary
    as TU state. First move a free helper to the narrowest real owner header. If a class
    declaration is still required and the gate remains red, use a narrow free helper or
