@@ -244,6 +244,30 @@ Raw dead statements and parser-state noise do not substitute for those sites.
 worse: HandleUnitContact 85.93 → 77.41, RouteToNearbyPickup 80.54 → 61.72.
 Reverted. The blocker there is the callers' inline content, not the device.
 
+### Worked example: `CFaderLight::RenderFrame` needs the repeated helper, not its mass
+
+`CFaderLight::RenderFrame` (0x180640) contains two copies of the same circle-span
+calculation and two sites for the much larger `CFaderLight::Render`. Retail
+expands the first `Render` site, calls the second, and emits the standalone
+`Render` COMDAT. Merely marking `Render` inline made cl expand both sites: the
+COMDAT disappeared, the caller fell to 38.72%, and it emitted 14 `__ftol` calls
+against retail's eight.
+
+The missing caller candidates were the two span calculations themselves. An
+ordinary inline `ComputeSpan(row, radiusSq, edgeOffset, right, left)` restores
+their shared semantic level and charges the real front-end budget. With both
+sites written as calls, cl expands `ComputeSpan` twice, expands the first
+`Render`, declines the second, and emits the out-of-line `Render` copy. The
+result has retail's exact 15-call, 67-branch, one-return topology and its exact
+three-item ordered referent sequence; `RenderFrame` moved from 89.50 historical
+MAX to 90.74 current while `Render` remains 97.93.
+
+This is also a negative control for hand-expanded source mass: the large
+transcribed `Render` body and the two transcribed span bodies did not reproduce
+the retail boundary. A smaller nested `ClampX` helper was not a substitute: it
+changed the caller to 69 branches against retail's 67 and dropped it to 87.29.
+Only the repeated semantic operation is a credible candidate boundary.
+
 ## Quantified PARK: `CGruntzMgr::TransitionState` 0x8b960
 
 Worked 2026-08-21 with `walls inline-model`, and the first case where the model

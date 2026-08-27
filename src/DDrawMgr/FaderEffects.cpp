@@ -559,6 +559,17 @@ void CFaderLight::ReleaseBuffers() {}
 #define FADER_MAX0(v) ((v) < 0 ? 0 : (v))
 #define FADER_CLAMPW(v, w) (FADER_MAX0(v) < (w) ? FADER_MAX0(v) : (w))
 
+inline void CFaderLight::ComputeSpan(i32 row, i32 radiusSq, i32 edgeOffset, i32& right, i32& left) {
+    i32 dy = row - m_centerY;
+    i32 dx = -static_cast<i32>(sqrt(static_cast<double>(radiusSq - dy * dy)));
+    right = FADER_CLAMPW(m_centerX - dx, m_width);
+    i32 x = dx + m_centerX + edgeOffset;
+    left = (x < 0) ? 0 : x;
+    if (left >= m_width) {
+        left = m_width;
+    }
+}
+
 // @early-stop
 RVA(0x00180640, 0x96c)
 void CFaderLight::RenderFrame(i32 frame) {
@@ -575,7 +586,7 @@ void CFaderLight::RenderFrame(i32 frame) {
         lut = m_table->m_data;
     }
     if (m_clearMode != false) {
-        u8* ovlBits = NULL;
+        u8* ovlBits;
         if (m_overlay != NULL) {
             ovlBits = static_cast<u8*>(m_overlay->Lock(NULL));
         }
@@ -592,15 +603,9 @@ void CFaderLight::RenderFrame(i32 frame) {
                 break;
             }
             if (row >= m_centerY - r + 1 && row <= r + m_centerY - 1) {
-                i32 dyv = row - m_centerY;
-
-                i32 hv = -static_cast<i32>(sqrt(static_cast<double>((rr - dyv * dyv))));
-                i32 right = FADER_CLAMPW(m_centerX - hv, m_width);
-                i32 lv = hv + m_centerX + 1;
-                i32 left = (lv < 0) ? 0 : lv;
-                if (left >= m_width) {
-                    left = m_width;
-                }
+                i32 right;
+                i32 left;
+                ComputeSpan(row, rr, 1, right, left);
                 i32 oldStart = m_spanStarts[row];
                 u8* clrL = m_targetBits + m_targetSurface->m_pitch * row + oldStart * bpp;
                 i32 n1 = (left - oldStart) * bpp;
@@ -614,149 +619,7 @@ void CFaderLight::RenderFrame(i32 frame) {
                     memset(clrR, 0, n2);
                 }
                 u8* bits = m_targetBits;
-                if (m_spanCount > 0) {
-                    i32 cy = m_centerY;
-                    i32 dy = row - cy;
-                    i32 dy2 = dy * dy;
-                    i32 xcur =
-                        m_centerX - static_cast<i32>(sqrt(static_cast<double>((rr - dy2)))) + 1;
-                    i32 dist = static_cast<i32>(
-                        sqrt(static_cast<double>(((xcur - m_centerX) * (xcur - m_centerX) + dy2)))
-                    );
-                    i32 srcpitch = m_targetSurface->m_pitch;
-                    i32 srcCol = row * srcpitch;
-                    u8* rowLsrc = bits + xcur + srcCol;
-                    i32 dstpitch = m_restoreSurface->m_pitch;
-                    i32 dstCol = row * dstpitch;
-                    u8* rowLdst = ovlBits + xcur + dstCol;
-                    u8* rowRsrc = (bits - xcur) + srcCol + 2 * m_centerX;
-                    u8* rowRdst = (ovlBits - xcur) + dstCol + 2 * m_centerX;
-                    i32 mid = m_height / 2;
-                    i32 mirSrc;
-                    i32 mirDst;
-                    if (cy >= mid && row <= cy) {
-                        i32 mirRow = 2 * (cy - row);
-                        if (mirRow + row < m_height) {
-
-                            mirSrc = mirRow * srcpitch;
-                            mirDst = mirRow * dstpitch;
-                            while (dist >= r - m_spanCount) {
-                                if (xcur > m_centerX) {
-                                    break;
-                                }
-                                i32 cl = dist - r + m_spanCount;
-                                if (xcur >= 0) {
-                                    i32 p = *rowLdst;
-                                    *rowLsrc = *(lut + p * m_spanCount + cl);
-                                    i32 q = *(rowLdst + mirDst);
-                                    *(rowLsrc + mirSrc) = *(lut + q * m_spanCount + cl);
-                                }
-                                rowLsrc++;
-                                rowLdst++;
-                                if (2 * m_centerX - xcur < m_width) {
-                                    i32 p = *rowRdst;
-                                    *rowRsrc = *(lut + p * m_spanCount + cl);
-                                    i32 q = *(rowRdst + mirDst);
-                                    *(rowRsrc + mirSrc) = *(lut + q * m_spanCount + cl);
-                                }
-                                rowRsrc--;
-                                rowRdst--;
-                                xcur++;
-                                dist = static_cast<i32>(sqrt(
-                                    static_cast<double>(
-                                        ((xcur - m_centerX) * (xcur - m_centerX) + dy2)
-                                    )
-                                ));
-                            }
-                        } else {
-                            while (dist >= r - m_spanCount) {
-                                if (xcur > m_centerX) {
-                                    break;
-                                }
-                                i32 cl = dist - r + m_spanCount;
-                                if (xcur >= 0) {
-                                    i32 p = *rowLdst;
-                                    *rowLsrc = *(lut + p * m_spanCount + cl);
-                                }
-                                rowLsrc++;
-                                rowLdst++;
-                                if (2 * m_centerX - xcur < m_width) {
-                                    i32 p = *rowRdst;
-                                    *rowRsrc = *(lut + p * m_spanCount + cl);
-                                }
-                                rowRsrc--;
-                                rowRdst--;
-                                xcur++;
-                                dist = static_cast<i32>(sqrt(
-                                    static_cast<double>(
-                                        ((xcur - m_centerX) * (xcur - m_centerX) + dy2)
-                                    )
-                                ));
-                            }
-                        }
-                    } else if (cy < mid && row >= cy) {
-                        i32 mirRow = 2 * dy;
-                        if (row - mirRow >= 0) {
-
-                            mirSrc = mirRow * srcpitch;
-                            mirDst = mirRow * dstpitch;
-                            while (dist >= r - m_spanCount) {
-                                if (xcur > m_centerX) {
-                                    break;
-                                }
-                                i32 cl = dist - r + m_spanCount;
-                                if (xcur >= 0) {
-                                    i32 p = *rowLdst;
-                                    *rowLsrc = *(lut + p * m_spanCount + cl);
-                                    i32 q = *(rowLdst - mirDst);
-                                    *(rowLsrc - mirSrc) = *(lut + q * m_spanCount + cl);
-                                }
-                                rowLsrc++;
-                                rowLdst++;
-                                if (2 * m_centerX - xcur < m_width) {
-                                    i32 p = *rowRdst;
-                                    *rowRsrc = *(lut + p * m_spanCount + cl);
-                                    i32 q = *(rowRdst - mirDst);
-                                    *(rowRsrc - mirSrc) = *(lut + q * m_spanCount + cl);
-                                }
-                                rowRsrc--;
-                                rowRdst--;
-                                xcur++;
-                                dist = static_cast<i32>(sqrt(
-                                    static_cast<double>(
-                                        ((xcur - m_centerX) * (xcur - m_centerX) + dy2)
-                                    )
-                                ));
-                            }
-                        } else {
-
-                            while (dist >= r - m_spanCount) {
-                                if (xcur > m_centerX) {
-                                    break;
-                                }
-                                i32 cl = dist - r + m_spanCount;
-                                if (xcur >= 0) {
-                                    i32 p = *rowLdst;
-                                    *rowLsrc = *(lut + p * m_spanCount + cl);
-                                }
-                                rowLsrc++;
-                                rowLdst++;
-                                if (2 * m_centerX - xcur < m_width) {
-                                    i32 p = *rowRdst;
-                                    *rowRsrc = *(lut + p * m_spanCount + cl);
-                                }
-                                rowRsrc--;
-                                rowRdst--;
-                                xcur++;
-                                dist = static_cast<i32>(sqrt(
-                                    static_cast<double>(
-                                        ((xcur - m_centerX) * (xcur - m_centerX) + dy2)
-                                    )
-                                ));
-                            }
-                        }
-                    }
-                }
+                Render(row, rr, r, lut, bits, ovlBits);
                 m_spanStarts[row] = left;
                 m_spanEnds[row] = right;
             } else {
@@ -784,14 +647,9 @@ void CFaderLight::RenderFrame(i32 frame) {
                 break;
             }
             if (row > m_centerY - frame && row < frame + m_centerY) {
-                i32 dyv = row - m_centerY;
-                i32 hv = -static_cast<i32>(sqrt(static_cast<double>((fr2 - dyv * dyv))));
-                i32 right = FADER_CLAMPW(m_centerX - hv, m_width);
-                i32 lv = hv + m_centerX - 1;
-                i32 left = (lv < 0) ? 0 : lv;
-                if (left >= m_width) {
-                    left = m_width;
-                }
+                i32 right;
+                i32 left;
+                ComputeSpan(row, fr2, -1, right, left);
                 i32 n1 = (m_spanStarts[row] - left) * bpp;
                 u8* src = m_restoreBits + m_restoreSurface->m_pitch * row + left * bpp;
                 u8* dst = m_targetBits + m_targetSurface->m_pitch * row + left * bpp;
@@ -827,7 +685,8 @@ void CFaderLight::RenderFrame(i32 frame) {
 // @early-stop
 RVA(0x00180fb0, 0x534)
 
-void CFaderLight::Render(i32 row0, i32 radiusSq, i32 radius, u8* lut, u8* srcBits, u8* dstBits) {
+inline void
+CFaderLight::Render(i32 row0, i32 radiusSq, i32 radius, u8* lut, u8* srcBits, u8* dstBits) {
     if (m_spanCount <= 0) {
         return;
     }

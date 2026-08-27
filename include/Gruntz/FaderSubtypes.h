@@ -112,7 +112,8 @@ public:
     i32 ApplyInit(CFaderConfig* src);
     void ReleaseBuffers();
 
-    void Render(i32 row0, i32 radiusSq, i32 radius, u8* lut, u8* srcBits, u8* dstBits);
+    inline void ComputeSpan(i32 row, i32 radiusSq, i32 edgeOffset, i32& right, i32& left);
+    inline void Render(i32 row0, i32 radiusSq, i32 radius, u8* lut, u8* srcBits, u8* dstBits);
 
     CDDSurface* m_targetSurface;
     CDDSurface* m_restoreSurface;
