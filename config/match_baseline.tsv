@@ -60,7 +60,7 @@ brickz	4	2
 brickzcellflags	3	1
 brickzload	1	0
 buteglobals	4	4
-butemgr	68	58
+butemgr	68	59
 butetail	3	3
 butetree	2	1
 bzkinddispatch	1	1
@@ -270,7 +270,7 @@ simpleanimation	7	6
 singleanimation	7	7
 singleframemessage	7	6
 soundfontpath	5	4
-soundstream	36	34
+soundstream	36	35
 soundvoicelist	5	5
 splashstate	9	9
 spotlight	8	4
@@ -718,7 +718,7 @@ butemgr	?GetVector@CButeMgr@@QAEPAUButeDoubleVector@@PBD0PAU2@@Z	100.0000	100.00
 butemgr	?Init@CButeMgr@@QAEXXZ	100.0000	100.0000	3	286432ed36fc	0x170330	100.0000	
 butemgr	?NextChar@CButeMgr@@QAEXXZ	100.0000	100.0000	2	987533c8bcb0	0x170390	100.0000	
 butemgr	?Parse@CButeMgr@@QAE_NXZ	100.0000	99.6644	3	c7a2a6a12e07	0x1704c0	100.0000	
-butemgr	?ParseAttributeFile@ButeMgr@@QAE_NXZ	90.0364	90.0364	9	3fa4128db91c	0x170750	90.0364	
+butemgr	?ParseAttributeFile@ButeMgr@@QAE_NXZ	100.0000	100.0000	10	d56b372afe0e	0x170750	100.0000	
 butemgr	?ParseGroup@CButeMgr@@QAE_NXZ	100.0000	100.0000	4	0bca5e2463e8	0x171580	100.0000	
 butemgr	?ParseTagLine@CButeMgr@@QAE_NXZ	100.0000	100.0000	2	36533e3dbeb7	0x1711b0	100.0000	
 butemgr	?ReportError@CButeMgr@@QAAXPBDZZ	100.0000	100.0000	1	9e4b72ca60f9	0x1706c0	100.0000	
@@ -3421,7 +3421,7 @@ play	?LoadImageBanks@CPlay@@UAEHXZ	100.0000	100.0000	3	2563e34ef5ec	0xcffe0	100.
 play	?LoadLoadingBarSprite@CPlay@@QAEHXZ	100.0000	100.0000	4	b77b0361e6e0	0xd7440	100.0000	
 play	?LoadPlayState@CPlay@@QAEHPAVCFileMemBase@@@Z	97.1069	97.1069	14	505b4ed67e3b	0xd8060	97.1069	
 play	?LoadSBITextEdges@CPlay@@QAEXH@Z	100.0000	100.0000	3	f4affd8a5feb	0xd1710	100.0000	
-play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	98.7500	98.6250	6	defe5376e720	0xd12b0	98.7500	
+play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	98.7500	98.7500	6	defe5376e720	0xd12b0	98.7500	
 play	?LoadWarlordSprites@CPlay@@QAEHPAVCMulti@@PAH@Z	99.4069	99.4069	8	8abf47048539	0xd65d0	99.4069	
 play	?ModeCleanup@CPlay@@UAEXXZ	100.0000	100.0000	6	6717287f91d7	0xcb740	100.0000	
 play	?NotifyVisibleEntities@CPlay@@QAEHXZ	100.0000	100.0000	6	8fee4bb21cf8	0xd9050	100.0000	
@@ -3450,7 +3450,7 @@ play	?RegionEnter@CPlay@@QAEXXZ	100.0000	100.0000	3	8d5c4c1ebcab	0xd88f0	100.000
 play	?RegionLeave@CPlay@@QAEXXZ	100.0000	100.0000	4	a613be6d96c0	0xd8960	100.0000	
 play	?RegisterInputBindings@CPlay@@QAEHXZ	100.0000	100.0000	1	993b54aa05a0	0xd9160	100.0000	
 play	?ReleaseResources@CPlay@@UAEXXZ	100.0000	100.0000	7	d5538422c383	0xc8700	100.0000	
-play	?Render@CPlay@@UAEHXZ	96.4002	96.3980	29	d83ecf7d7e0d	0xc8cf0	96.4002	
+play	?Render@CPlay@@UAEHXZ	96.4002	96.4002	29	d83ecf7d7e0d	0xc8cf0	96.4002	
 play	?ResetGoals@CPlay@@QAEHHH@Z	100.0000	100.0000	5	f47e3242a828	0xd5f00	100.0000	
 play	?ResetPlayState@CPlay@@QAEHXZ	96.5300	96.5300	11	a0ae9cc676d4	0xd60b0	96.6250	
 play	?ResetRightClickState@CPlay@@QAEXXZ	100.0000	100.0000	1	6d119bff1a05	0xcee50	100.0000	
@@ -4031,11 +4031,11 @@ soundstream	?DestroyVoice@SoundStream@@QAEXPAUStreamVoice@@@Z	100.0000	100.0000	
 soundstream	?Feed@StreamVoiceFeeder@@UAEHPAEIPAI0I1@Z	100.0000	100.0000	4	2aaed115fc9f	0x137380	100.0000	
 soundstream	?FillBuffer@StreamFeeder@@QAEHII@Z	100.0000	100.0000	5	edf9f5c5a31f	0x137f30	100.0000	
 soundstream	?GetDurationMs@StreamVoice@@QAEIXZ	100.0000	100.0000	3	a8cb7c05701d	0x137590	100.0000	
-soundstream	?Initialize@StreamFeeder@@QAEHPAVSoundDevice@@PAUWaveFormatX@@IIPAVSoundBuffer@@H@Z	96.1587	96.1587	4	8dcd0732e680	0x137d10	96.1587	
+soundstream	?Initialize@StreamFeeder@@QAEHPAVSoundDevice@@PAUWaveFormatX@@IIPAVSoundBuffer@@H@Z	100.0000	100.0000	5	fc54ad57e355	0x137d10	100.0000	
 soundstream	?InitializeDevice@SoundStream@@QAEHPAUHWND__@@H@Z	100.0000	100.0000	3	82a9ce1e3790	0x137720	100.0000	
 soundstream	?OnReset@StreamFeeder@@UAEXXZ	100.0000	100.0000	2	0dd29eeb7b53	0x137e20	100.0000	
 soundstream	?OnReset@StreamVoiceFeeder@@UAEXXZ	100.0000	100.0000	2	3566461919f9	0x1374b0	100.0000	
-soundstream	?OpenStream@SoundStream@@QAEPAUStreamVoice@@PAUCRezArchiveEntry@@HHHHH@Z	90.2747	90.2747	6	92ccecc7989a	0x137900	90.2747	
+soundstream	?OpenStream@SoundStream@@QAEPAUStreamVoice@@PAUCRezArchiveEntry@@HHHHH@Z	92.9121	92.9121	7	84e3a92ce2e8	0x137900	92.9121	
 soundstream	?ParseWave@SoundStream@@QAEHPAUCRezArchiveEntry@@PAUWaveFormatX@@PAI2@Z	100.0000	100.0000	4	4f68e304d7ab	0x137b70	100.0000	
 soundstream	?Pause@StreamFeeder@@QAEHXZ	100.0000	100.0000	3	83020e469417	0x137f00	100.0000	
 soundstream	?PlayStream@SoundStream@@QAEPAUStreamVoice@@PAUCRezArchiveEntry@@HHH@Z	100.0000	100.0000	4	a7bfb1af154d	0x137a30	100.0000	
@@ -4406,7 +4406,7 @@ typekeycoll	?FirstDiffBit@@YAHPBD0@Z	100.0000	100.0000	1	4a157b5880de	0x16e480	1
 typekeycoll	?GetCallerRetAddr@@YAPAXXZ	100.0000	100.0000	1	9f81347cf374	0x16e0f0	100.0000	
 typekeycoll	?GetRetAddr@@YAPAXXZ	100.0000	100.0000	1	535250c8cddd	0x16d990	100.0000	
 typekeycoll	?GrowTo@_zvec@@QAEPAXHH@Z	91.8584	91.8584	4	218bfd33108e	0x16da80	91.8584	
-typekeycoll	?Insert@zPTree@@QAEPAXPBDPAX@Z	93.0619	93.0619	5	5d23e68320d7	0x16db90	93.0619	
+typekeycoll	?Insert@zPTree@@QAEPAXPBDPAX@Z	93.0619	93.0619	6	77017eaa1945	0x16db90	93.0619	
 typekeycoll	?ReadCurve@@YAAAVistream@@AAV1@AAVCMotionState@@@Z	100.0000	100.0000	1	de48118cbde0	0x16d000	100.0000	
 typekeycoll	?Set@CVariantSlot@@QAEXPAVzErrHandling@@PADH@Z	100.0000	100.0000	3	b5b911a63e39	0x16d850	100.0000	
 typekeycoll	?SetSize@zBitVec@@QAEHH@Z	100.0000	100.0000	1	3c82c9c689ba	0x16e100	100.0000	

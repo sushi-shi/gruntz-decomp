@@ -260,11 +260,7 @@ StreamVoice* SoundStream::OpenStream(
         return NULL;
     }
     StreamFeeder* feeder = &voice->m_feeder;
-    feeder->m_windowStart = dataOffset;
-    feeder->m_windowLength = dataBytes;
-    feeder->m_source = source;
-    feeder->m_looping = false;
-    feeder->m_sourceOffset = 0;
+    feeder->ConfigureWindow(source, dataOffset, dataBytes);
 
     if (feeder->Initialize(this, &format, bufferBytes, refillThresholdBytes, voice, -1) == 0) {
         DestroyVoice(voice);
@@ -420,7 +416,6 @@ StreamFeeder::~StreamFeeder() {
     m_buffer = NULL;
 }
 
-// @early-stop
 RVA(0x00137d10, 0xab)
 i32 StreamFeeder::Initialize(
     SoundDevice* owner,
@@ -430,9 +425,9 @@ i32 StreamFeeder::Initialize(
     SoundBuffer* buffer,
     i32 initialTickMs
 ) {
-    m_refillThresholdBytes = refillThresholdBytes;
     m_owner = owner;
     m_bufferBytes = bufferBytes;
+    m_refillThresholdBytes = refillThresholdBytes;
     m_playing = false;
     if (format->wBitsPerSample > 8) {
         m_silenceByte = 0;
