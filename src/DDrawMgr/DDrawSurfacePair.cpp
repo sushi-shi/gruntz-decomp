@@ -233,24 +233,30 @@ void CDDrawSurfacePair::DrawBox(RECT* rect, i32 color) {
     }
 
     u8 c = static_cast<u8>(color);
-    i32 w = rect->right - rect->left + 1;
+    i32 left = rect->left;
+    i32 w = rect->right - left + 1;
 
+    CDDSurface* surface = m_surface;
     if (m_bpp == BPP_RGB_16) {
-        i32 offTop = m_surface->m_pitch * rect->top + m_surface->m_bytesPerPixel * rect->left;
+        i32 offTop = surface->m_pitch * rect->top + surface->m_bytesPerPixel * left;
         i32 n = 2 * w;
         if (n > 0) {
             memset(base + offTop, color, n);
         }
-        i32 offBot = m_surface->m_pitch * rect->bottom + m_surface->m_bytesPerPixel * rect->left;
+        CDDSurface* bottomSurface = m_surface;
+        i32 offBot =
+            bottomSurface->m_pitch * rect->bottom + bottomSurface->m_bytesPerPixel * rect->left;
         if (n > 0) {
             memset(base + offBot, color, n);
         }
     } else {
-        i32 offTop = m_surface->m_pitch * rect->top + m_surface->m_bytesPerPixel * rect->left;
+        i32 offTop = surface->m_pitch * rect->top + surface->m_bytesPerPixel * left;
         if (w > 0) {
             memset(base + offTop, color, w);
         }
-        i32 offBot = m_surface->m_pitch * rect->bottom + m_surface->m_bytesPerPixel * rect->left;
+        CDDSurface* bottomSurface = m_surface;
+        i32 offBot =
+            bottomSurface->m_pitch * rect->bottom + bottomSurface->m_bytesPerPixel * rect->left;
         if (w > 0) {
             memset(base + offBot, color, w);
         }
