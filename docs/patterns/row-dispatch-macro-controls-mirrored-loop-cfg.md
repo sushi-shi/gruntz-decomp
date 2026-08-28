@@ -62,4 +62,9 @@ still produces a measurably different compiler state.
 
 This mechanism does not settle frame allocation. The 91.286870% state has a
 `0x20` frame against retail's `0x24`; its remaining unsigned x87 conversion and
-slot-order residue is a separate regalloc/front-end ownership question.
+slot-order residue is separate from the macro-selected CFG. A subsequent
+32-island campaign and 128 target-adjacent mixed-kind states found only the
+91.286870 baseline and a 91.021070 alternative, neither with retail's frame or
+`fidiv` fold. Signed-divisor, inline-scale, declaration-ownership, assignment-
+order, and named-double controls likewise failed or were byte-flat. This bounds
+the remaining conversion/slot residue without weakening the macro evidence.

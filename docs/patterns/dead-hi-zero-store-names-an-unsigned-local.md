@@ -33,3 +33,21 @@ everything including the hoist (measured, 9-cell matrix identical).
 CFaderShape::RenderWarpTile 0x181e50 60.52 -> 79.74 (with the natural
 per-statement loop respellings the fixed coloring then permits). The residual
 fidiv-vs-fild-qword fold is not spelling-reachable.
+
+## Revalidation on the recovered row-macro graph
+
+The later complete row-dispatch macro raised the same function to 91.286870
+without changing this unsigned-conversion residue. On that improved graph, a
+signed `arcSpan` again removed the dead high-zero store, shrank the frame from
+`0x20` to `0x1c`, hoisted `m_mode`, and fell to 89.71. Full-result and
+floating-scale inline helpers, function-scope ownership for the integer
+multiplier, and both assignment orders were byte-identical. A named `double`
+accumulator was not the missing entity: it added `fxch`/`fstp` and fell to
+89.77.
+
+A 32-island campaign followed by 128 target-adjacent mixed-kind handle states
+found exactly two normalized compiler states, 91.286870 and 91.021070. Neither
+changed `fild qword`/`fdivp` into retail's `fidiv dword`, nor expanded the
+`0x20` frame to retail's `0x24`. The dead high store remains positive evidence
+for the unsigned local; the signed fold is bounded C2 residue, not permission
+to remodel the type.
