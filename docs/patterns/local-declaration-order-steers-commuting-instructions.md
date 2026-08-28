@@ -1,6 +1,6 @@
 # Local declaration order steers the schedule of commuting instructions
 
-**Tags:** cpp:local cpp:decl | asm:sub | topic:codegen-idiom topic:scheduling
+**Tags:** cpp:local cpp:decl cpp:sibling | asm:sub asm:mov asm:rep | topic:codegen-idiom topic:scheduling
 
 ## Symptom
 
@@ -56,10 +56,38 @@ u32 onClock;
 The final spelling keeps every semantic name correct and restores the retail
 `sub onClock; sub carry` schedule.
 
+## Scalar placement around aggregate initialization is the longer-range form
+
+The same lever can begin much earlier than the visible residue.  In
+`CDDSurface::SaveRle16` 0x00144640, the reconstruction declared `height` after
+zeroing `BITMAPINFO` and `width` after zeroing the following file-header record.
+Retail loaded height before the first `rep stos` and width later, so transcribing
+that emitted order did not reveal the mistake.  The exact sibling
+`CDDSurface::SaveTga` proves the authored order instead: `width` lies between the
+two record initializations and `height` follows the second.
+
+Putting the scalars in that sibling-proven order changed the whole allocation
+texture while preserving the algorithm: 217 instructions became retail's 216,
+the first divergence moved from +0x28 to +0xcc, and fuzzy rose **91.8957 ->
+97.9000**.  Moving the independent `bfSize` assignment after the bitmap
+plane/bit-count stores then made the prefix byte-identical through +0x105 and
+raised it to **98.4360** in the disposable-object scorer (98.47 in the normalized
+compare).
+
+The boundary was measured rather than guessed.  Forty-seven atomic AST variants,
+all 299 compatible declaration-hoist combinations through depth three, and a
+30-state mixed handle-stride panel produced no higher state.  The remaining
+residue is only a symmetric ESI/EDI coloring of `Lock()`'s result and the two
+loops.  Thus the source-backed gain is the placement of real locals and stores;
+the final register rename is not a reason to add another fake local.
+
 ## Reverse-use heuristic
 
 When a semantic rename leaves an otherwise identical function with only a pair
 of commuting instructions swapped, compare the declaration order of the two
-source values before adding temporaries or distorting the expression. Confirm
-the candidate against the baseline and retail, because this is a scheduling
-lever, not evidence that declaration order carries runtime meaning.
+source values before adding temporaries or distorting the expression.  When the
+first divergence brackets inlined aggregate initialization (`rep stos`, record
+copy, or constructor expansion), use an exact sibling to recover which scalar
+was declared on each side of that boundary; emitted load order is scheduler
+output. Confirm the candidate against the baseline and retail, because this is
+a scheduling lever, not evidence that declaration order carries runtime meaning.

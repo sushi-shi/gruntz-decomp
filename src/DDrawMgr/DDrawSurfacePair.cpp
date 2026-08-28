@@ -421,7 +421,6 @@ void CDDrawSurfacePair::DrawLabel(RECT* rc, char* text) {
     w->m_ddSurface->ReleaseDC(hdc);
 }
 
-// @early-stop
 RVA(0x001644a0, 0x1b0)
 i32 CDDrawFrontSurface::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
     CDDrawSurfaceMgr* surfaceManager = OwnerMgr();
@@ -480,6 +479,13 @@ i32 CDDrawFrontSurface::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
                     CDDrawSurfaceMgr* m = OwnerMgr();
                     if (m->m_lastError == WORLDERR_NONE) {
                         m->m_lastError = WORLDERR_DDRAW_COLOR_MASKS;
+                    }
+                    return 0;
+                }
+                default: {
+                    CDDrawSurfaceMgr* m = OwnerMgr();
+                    if (m->m_lastError == WORLDERR_NONE) {
+                        m->m_lastError = WORLDERR_CREATE_DEVICE;
                     }
                     return 0;
                 }

@@ -904,7 +904,6 @@ CFaderShape::~CFaderShape() {
     }
 }
 
-// @early-stop
 RVA(0x001817e0, 0x315)
 i32 CFaderShape::ApplyInit(CFaderConfig* desc) {
     CShapeFaderConfig* pInit = static_cast<CShapeFaderConfig*>(desc);

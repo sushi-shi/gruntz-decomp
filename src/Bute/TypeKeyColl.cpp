@@ -482,7 +482,6 @@ zErrHandling::~zErrHandling() {
     m_errSink->Add(this, NULL);
 }
 
-// @early-stop
 RVA(0x0016da80, 0x10b)
 void* _zvec::GrowTo(i32 idx, i32 at) {
     char* p;

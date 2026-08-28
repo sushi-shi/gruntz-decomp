@@ -329,7 +329,6 @@ i32 CDDSurface::SaveBmp(const char* path, CFileImagePal* pal, i32 mode) {
     return 1;
 }
 
-// @early-stop
 RVA(0x00144640, 0x2be)
 i32 CDDSurface::SaveRle16(char* path, CFileImagePal* pal, i32 flag) {
     if (this->IsValid() == 0) {
@@ -347,19 +346,19 @@ i32 CDDSurface::SaveRle16(char* path, CFileImagePal* pal, i32 flag) {
 
     BITMAPINFO bi;
     memset(&bi, 0, sizeof(bi));
-    i32 height = this->m_height;
+    i32 width = this->m_width;
     BmpFileHeaderStamp bfh;
     memset(&bfh, 0, sizeof(bfh));
     bi.bmiHeader.biCompression = 0;
     bi.bmiHeader.biSizeImage = 0;
-    i32 width = this->m_width;
+    i32 height = this->m_height;
     strcpy(bfh.m_bytes, g_bmpHeaderTemplate);
     bi.bmiHeader.biHeight = height;
     bi.bmiHeader.biSize = sizeof(bi.bmiHeader);
     bi.bmiHeader.biWidth = width;
-    bfh.m_hdr.bfSize = height * width * 3 + 0x3a;
     bi.bmiHeader.biPlanes = 1;
     bi.bmiHeader.biBitCount = IDX(BPP_RGB_24);
+    bfh.m_hdr.bfSize = height * width * 3 + 0x3a;
     bfh.m_hdr.bfOffBits = 0x3a;
 
     u8* line = new u8[3 * width];
@@ -391,10 +390,12 @@ i32 CDDSurface::SaveRle16(char* path, CFileImagePal* pal, i32 flag) {
     file.Write(&bfh.m_hdr, sizeof(bfh.m_hdr));
     file.Write(&bi, sizeof(bi));
 
-    for (i32 row = this->m_height - 1; row >= 0; row--) {
+    i32 row = this->m_height;
+    while (--row >= 0) {
         u8* src = locked + row * this->m_pitch;
+        i32 x = 0;
         u8* dst = line;
-        for (i32 x = 0; x < this->m_width; x++) {
+        while (x < this->m_width) {
             Pix16Ptr sp;
             sp.m_bytes = src;
             u16 px = *sp.m_words;
@@ -405,6 +406,7 @@ i32 CDDSurface::SaveRle16(char* path, CFileImagePal* pal, i32 flag) {
             *dst++ = b;
             *dst++ = g;
             *dst++ = r;
+            x++;
         }
         file.Write(line, 3 * this->m_width);
     }
