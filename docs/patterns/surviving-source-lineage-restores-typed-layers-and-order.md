@@ -4,7 +4,7 @@ tags: cpp:inheritance cpp:inline cpp:member cpp:local cpp:loop | asm:lea asm:mov
 symptoms: a reconstructed subsystem has correct broad behavior but repeated near-exact
 register/schedule walls, generic base pointers where consumers always recover one owner
 type, payload unions at a common trailing offset, or hand-expanded one-field stores
-confidence: 10/10 (eleven clean exact closures, one audited unchanged-source state closure,
+confidence: 10/10 (twelve clean exact closures, one audited unchanged-source state closure,
 exact controls, revision-history audit, and retail negative controls)
 variants: inline-expansion-boundary-pins-a-neighbour.md, ctor-body-first-statement-is-an-inline-member.md
 
@@ -36,6 +36,7 @@ relocations. Applied that way, it closed these Gruntz functions:
 | `MonoNewline` 0x184d50 | `unsigned short*` mono buffer and element-indexed scrolling/clear loops | 98.5714 -> **100.000** |
 | `MonoClear` 0x184db0 | same typed buffer and ordinary element-indexed `for` loop | 99.0000 -> **100.000** |
 | `CRezImage::DecodePcxData` 0x176000 | 1996 DIB decoder's function-scope local census, reverse RLE fill, and direct plane indexing | 97.6772 -> 99.9240 -> **MAX 100.000** |
+| `CRezImage::DecodePidData` 0x176440 | unsigned eight-word header census, named transparency value, direct run-byte rereads, and manual literal loop | 81.4772 -> **100.000** |
 
 The exact controls are strong: all three typed hash lookups stayed exact, both hash-owning
 destructors stayed exact, and `rezarchive` reached 115/115 exact functions.
@@ -128,6 +129,16 @@ Use the corpus only in its positive direction:
   while exact and the generated probe was removed. This corrects the older cursor-order
   interpretation: a higher transcription can be a local maximum that authentic source
   composition escapes.
+* The same 1996 file's `CDib::InitPid` invalidated a hash-scoped bounded review of
+  `CRezImage::DecodePidData`. The old body had already recovered retail's sequential
+  header cursor and exact call/branch/return/relocation counts, then exhausted direct-byte,
+  post-increment, payload-alias, final-advance, byte-token, and 33-state controls around
+  that transcription. The surviving body supplied the missing composition: eight named
+  unsigned header words, a named transparent index, repeated reads of the packed run byte,
+  the natural row-transition guard, and a manual literal-run copy loop with the original
+  function-scope census. Together they moved 81.4772% directly to 100.0000% exact. A
+  same-CFG REGALLOC diagnosis bounds one source state, not the source family; a full
+  surviving composition must invalidate and reopen that review through its new hash.
 * Branch-specific derived storage pointer types and direct member assignments in
   `Open`/`MergeArchive` compiled byte-flat in isolation. They remain good structural
   evidence, not credit for a score change.

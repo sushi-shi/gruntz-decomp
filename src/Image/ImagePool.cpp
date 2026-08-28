@@ -715,19 +715,16 @@ i32 CRezImage::LoadRid(char* name, HDC dc, i32 ctrl) {
 
 RVA(0x00176440, 0x25d)
 i32 CRezImage::DecodePidData(void* buf, HDC dc, i32 ctrl) {
-    RecordBytes<PidHeader> p;
-    p.m_bytes = static_cast<u8*>(buf);
-    p.m_bytes += sizeof(u32);
-    PidFlags flags = static_cast<PidFlags>(*p.m_dwords);
-    p.m_bytes += sizeof(u32);
-    i32 width = *p.m_dwords;
-    p.m_bytes += sizeof(u32);
-    i32 height = *p.m_dwords;
-    p.m_bytes += sizeof(u32);
-    p.m_bytes += 2 * sizeof(u32);
-    u32 fill = *p.m_dwords;
-    p.m_bytes += sizeof(u32);
-    p.m_bytes += sizeof(u32);
+    PidHeader* header = static_cast<PidHeader*>(buf);
+    u32* dword = &header->formatTag;
+    u32 formatTag = *dword++;
+    PidFlags flags = static_cast<PidFlags>(*dword++);
+    u32 width = *dword++;
+    u32 height = *dword++;
+    u32 offsetX = *dword++;
+    u32 offsetY = *dword++;
+    u32 fill = *dword++;
+    u32 reserved = *dword++;
 
     if (!DecodeBmpHeader(dc, width, height, BPP_PALETTED_8, ctrl)) {
         return 0;
@@ -736,56 +733,68 @@ i32 CRezImage::DecodePidData(void* buf, HDC dc, i32 ctrl) {
         m_transparent = false;
     }
 
+    u8* packed = static_cast<u8*>(static_cast<void*>(dword));
+
+    i32 transparentIndex;
     if (HAS(flags, PID_FILL_IS_WORD)) {
-        fill &= PIXEL16_VALUE_MASK;
+        transparentIndex = fill & PIXEL16_VALUE_MASK;
     } else {
-        fill = 0;
+        transparentIndex = 0;
     }
 
     if (HAS(flags, PID_GRAMMAR_SKIPRUN)) {
         m_transparent = true;
-        u8* dstRow = m_pixels + m_rowOffsets[0];
         i32 x = 0;
         i32 y = 0;
-        i32 i = 0;
+        u32 offset = 0;
+        u8* dst = m_pixels + m_rowOffsets[y];
+
         while (y < m_height) {
-            i32 c = p.m_bytes[i];
-            if (c & 0x80) {
-                i32 count = c - 0x80;
-                memset(dstRow + x, static_cast<u8>(fill), count);
-                x += (p.m_bytes[i] & 0xff) - 0x80;
-                i++;
+            if (packed[offset] & 0x80) {
+                memset(dst + x, transparentIndex, packed[offset] - 0x80);
+                x += packed[offset] - 0x80;
+                offset++;
             } else {
-                i32 count = c;
-                memcpy(dstRow + x, &p.m_bytes[i + 1], count);
-                x += p.m_bytes[i];
-                i += p.m_bytes[i] + 1;
+                memcpy(dst + x, packed + offset + 1, packed[offset]);
+                x += packed[offset];
+                offset += packed[offset] + 1;
             }
+
             if (x >= m_width) {
                 y++;
                 x = 0;
-                if (y >= m_height) {
-                    break;
+                if (y < m_height) {
+                    dst = m_pixels + m_rowOffsets[y];
                 }
-                dstRow = m_pixels + m_rowOffsets[y];
             }
         }
     } else {
-        for (i32 y = 0; static_cast<u32>(y) < static_cast<u32>(height); y++) {
-            u8* dst = m_pixels + m_rowOffsets[y];
-            i32 n = width;
+        i32 i;
+        i32 j;
+        i32 n;
+        u32 y;
+        u8 value;
+        u8* src = packed;
+        u8* dst;
+
+        for (y = 0; y < height; y++) {
+            dst = m_pixels + m_rowOffsets[y];
+            n = width;
+
             while (n > 0) {
-                u8 c = *p.m_bytes++;
-                if ((c & BYTE_RUN_CONTROL_MASK) == BYTE_RUN_MARKER) {
-                    i32 count = c & BYTE_RUN_LENGTH_MASK;
-                    u8 v = *p.m_bytes++;
-                    if (count > 0) {
-                        memset(dst, v, count);
-                        dst += count;
+                value = *src++;
+
+                if ((value & BYTE_RUN_CONTROL_MASK) == BYTE_RUN_MARKER) {
+                    i = value & BYTE_RUN_LENGTH_MASK;
+                    value = *src++;
+
+                    for (j = 0; j < i; j++) {
+                        *dst++ = value;
                     }
-                    n -= count;
+
+                    n -= i;
                 } else {
-                    *dst++ = c;
+                    *dst++ = value;
                     n--;
                 }
             }

@@ -40,6 +40,13 @@ add    ebx,0x8
 STEERABLE. `ParseWaveChunks` 0x137110 67.05 -> 100.00 EXACT (its chunk loop reads
 id and size then steps `+= 4` twice, which is why two `add eax,4` sit adjacent);
 `CRezImage::DecodeRidData` 0x1762c0 74.30 -> 100.00 EXACT (adds 8/4/0x14);
-`CRezImage::DecodePidData` 0x176440 76.18 -> 81.48 (adds 4/4/0xc/8). The pixel
-walk must continue from the SAME cursor - a `u8* src = p.m_bytes;` copy costs a
-`mov` retail does not have (5.3 points on DecodePidData).
+`CRezImage::DecodePidData` 0x176440 first moved 76.18 -> 81.48 (adds
+4/4/0xc/8). The pixel walk must continue from the SAME cursor - a `u8* src =
+p.m_bytes;` copy costs a `mov` retail does not have (5.3 points on the old
+transcription). The public tree's 1996 `CDib::InitPid` later proves why the
+cursor exists: the authored source names all eight `DWORD` header values while
+post-incrementing one `DWORD*`, including values C2 deletes. Restoring that
+complete header census together with the sibling decoder's run-loop body moves
+81.48 -> 100.00 EXACT. The sequential cursor inference was correct; treating
+its first partial reconstruction as a bounded whole-function source model was
+not.

@@ -236,6 +236,14 @@
     the prior higher-scoring green/blue cursor interpretation: an emitted
     address sequence can reveal IL order without proving the named locals, and
     a surviving abstraction can be the base that escapes that local maximum.
+    The adjacent `CDib::InitPid` then moved `CRezImage::DecodePidData` from
+    81.4772 to 100 exact by composing its eight named unsigned header reads,
+    transparent-index local, direct packed-byte rereads, row guard, and manual
+    literal loop. This invalidated a current hash-scoped `bounded/regalloc`
+    review whose cursor variants and 33-state campaign had been exhaustive only
+    for the hand transcription. A same-CFG diagnosis and a wide local matrix do
+    not bound an untested surviving source family; apply the authentic complete
+    body and let its new source hash reopen the review.
   * exhaust a lineage-shaped branch as a bounded composition, not a spelling
     vote. For `CButeMgr::SetString`, one through five assignment-in-condition
     restorations were byte-flat, the sixth crossed to a lower C1 island, and
