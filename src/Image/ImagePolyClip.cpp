@@ -89,11 +89,12 @@ i32 PolyIsConvexCW(ClipVtx* verts, i32 count) {
         float y1 = v1->y;
         float x2 = v2->x;
         float y2 = v2->y;
-        float dx1 = x1 - x0;
-        float dy1 = y1 - y0;
-        float dx2 = x2 - x0;
-        float dy2 = y2 - y0;
-        float cross = dx1 * dy2 - dx2 * dy1;
+        float dy2, dx2, dy1, dx1;
+        dx1 = x1 - x0;
+        dy1 = y1 - y0;
+        dx2 = x2 - x0;
+        dy2 = y2 - y0;
+        float cross = (-dy1) * dx2 + dx1 * dy2;
         if (cross != g_rasterZero) {
             if (cross > g_rasterZero) {
                 sign = POLYGON_WINDING_COUNTERCLOCKWISE;
@@ -102,7 +103,7 @@ i32 PolyIsConvexCW(ClipVtx* verts, i32 count) {
             }
         }
         if (sign != POLYGON_WINDING_UNSET) {
-            if (dir != sign && dir != POLYGON_WINDING_UNSET) {
+            if (sign != dir && dir != POLYGON_WINDING_UNSET) {
                 return 0;
             }
             dir = sign;
