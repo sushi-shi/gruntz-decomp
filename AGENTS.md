@@ -254,6 +254,12 @@
     accessor family. On that humane base, target-adjacent C1 forest trial 1 banked
     audited MAX 100 for the unchanged source and the probe was removed. Preserve
     the semantic layer and separate revision/type skew from it before ranking.
+    Finally, `CDib::Invert` moved `CRezImage::FlipVertical` from 79.7879 to 100
+    exact with its three unsigned offsets, shared forward index, cached width/
+    height, and ordinary incrementing loops. This invalidated a bounded review
+    based on roughly 750 local Cartesian cells and 65 TU-state probes. Breadth
+    inside one hand-transcribed IV family is not evidence against a surviving
+    body at a different abstraction level.
   * exhaust a lineage-shaped branch as a bounded composition, not a spelling
     vote. For `CButeMgr::SetString`, one through five assignment-in-condition
     restorations were byte-flat, the sixth crossed to a lower C1 island, and

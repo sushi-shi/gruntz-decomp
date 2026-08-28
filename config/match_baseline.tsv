@@ -184,7 +184,7 @@ hazardlogicdispatch	6	6
 heapdiag	8	8
 helpstate	14	14
 imagepolyclip	8	1
-imagepool	55	49
+imagepool	55	50
 imageset1	1	0
 imageset2	9	8
 imageset3	2	2
@@ -2654,7 +2654,7 @@ imagepool	?EnsureSize@CRezImage@@QAEHPAUHDC__@@HHW4ColorDepth@@H@Z	100.0000	100.
 imagepool	?Fill@CRezImage@@QAEXH@Z	100.0000	99.9677	2	2284fdaa66d5	0x175d50	100.0000	
 imagepool	?FillRect@CRezImage@@QAEXPAUCRezFillRect@@H@Z	100.0000	100.0000	1	8a12f27ec459	0x176d20	100.0000	
 imagepool	?FillRectAt@CRezImage@@QAEXHHPAUCRezFillRect@@H@Z	100.0000	100.0000	1	c28ac783e527	0x176da0	100.0000	
-imagepool	?FlipVertical@CRezImage@@QAEXXZ	79.7879	79.7879	4	b5a51e9caa03	0x176840	79.7879	
+imagepool	?FlipVertical@CRezImage@@QAEXXZ	100.0000	100.0000	5	7b8ee5010c8d	0x176840	100.0000	
 imagepool	?Free@CRezImage@@QAEXXZ	100.0000	100.0000	1	871a9f6334ab	0x175c90	100.0000	
 imagepool	?LoadBmp@CRezImage@@QAEHPADPAUHDC__@@H@Z	100.0000	100.0000	2	b73042ce3273	0x175e40	100.0000	
 imagepool	?LoadDefault@CRezImage@@QAEHPADPAUHDC__@@H@Z	100.0000	100.0000	2	b788e9500b67	0x1767d0	100.0000	

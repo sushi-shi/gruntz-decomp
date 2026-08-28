@@ -850,32 +850,42 @@ i32 CRezImage::LoadDefault(char* name, HDC dc, i32 ctrl) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00176840, 0x11f)
 void CRezImage::FlipVertical() {
-    if (m_height <= 1) {
+    if (GetHeight() <= 1) {
         return;
     }
-    u8* scratch = new u8[m_width];
+
+    u8* scratch = new u8[GetWidth()];
+    ASSERT(scratch);
     if (scratch == NULL) {
         return;
     }
-    i32 wid = m_width;
-    i32 bottom = m_height;
-    i32 pairs = bottom / 2;
-    i32 x;
-    for (i32 i = 0; i < pairs; i++, bottom--) {
-        i32 topOff = i * wid;
-        for (x = wid; x > 0; x--) {
-            i32 column = wid - x;
-            scratch[column] = m_pixels[topOff + column];
+
+    u32 k;
+    u32 source;
+    u32 destination;
+
+    i32 j;
+    i32 width = GetWidth();
+    i32 height = GetHeight();
+
+    for (i32 i = 0; i < height / 2; i++) {
+        k = i * width;
+        for (j = 0; j < width; j++) {
+            scratch[j] = m_pixels[k++];
         }
 
-        i32 botOff = (m_height - i - 1) * wid;
-        for (x = 0; x < wid; x++) {
-            m_pixels[(m_height - bottom) * wid + x] = m_pixels[botOff + x];
+        source = (height - 1 - i) * width;
+        destination = i * width;
+        for (j = 0; j < width; j++) {
+            m_pixels[destination++] = m_pixels[source++];
         }
-        for (x = wid; x > 0; x--) {
-            m_pixels[botOff++] = scratch[wid - x];
+
+        destination = (height - 1 - i) * width;
+        for (j = 0; j < width; j++) {
+            m_pixels[destination++] = scratch[j];
         }
     }
+
     delete[] scratch;
 }
 

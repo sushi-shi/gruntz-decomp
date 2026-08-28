@@ -87,12 +87,18 @@ pass made `found` the lookup's own sink and deleted the era source's pointer
 copy, so the escaped sink is reloaded at every use
 ([inlined-member-this-copy-survives-the-escaped-out-param](inlined-member-this-copy-survives-the-escaped-out-param.md)).
 
-Classified as deliberate and left alone: `CRezImage::FlipVertical`,
-`CSBI_ImageSet::SetupImage`, `CWwdSpriteObject::BltDirtyEx`,
+Classified as deliberate and left alone: `CSBI_ImageSet::SetupImage`,
+`CWwdSpriteObject::BltDirtyEx`,
 `UpdateChipGrinderStatusBar`, `CMinimap::Draw`,
 `ConvertRowDoubleFwd`, `CTileSecretTriggerLogic::Tick`,
 `FontRenderer::DrawGlyphRun` (its commit message even prints the 71.74 -> 68.10
 it accepted and why).
+
+**2026-08-28 correction:** `CRezImage::FlipVertical` was removed from that list.
+Its accepted 79.79 IV transcription was not an adjudicated structural endpoint:
+the surviving 1996 `CDib::Invert` body closes it exactly. A deliberate local
+trade remains reopenable when a positive source oracle supplies a different
+semantic family.
 
 **CORRECTION to the first sweep's discipline note.** It listed
 `CBattlezMapConfig::StepRowUnits` (88.22 -> 84.89) as a deliberate trade. It

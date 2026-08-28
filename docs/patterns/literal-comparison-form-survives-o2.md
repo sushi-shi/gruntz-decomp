@@ -85,6 +85,11 @@ first. `CRezImage::FlipVertical` @0x176840, 41.61 -> **47.36** with `i32 wid = m
 above the three byte loops. (The converse - retail comparing where we down-count - means
 the index is still live, e.g. because the row addresses are computed from it.)
 
+That isolated result remains a valid lowering observation, but it is not the final
+`FlipVertical` reconstruction: the surviving 1996 `CDib::Invert` local census and three
+ordinary forward loops move the function from the later 79.79 local maximum to 100.00
+EXACT.
+
 ## And: `test x,x / jbe` is an UNSIGNED `> 0`, not `!= 0`
 
 `CF` is always clear after `test`, so `jbe` and `je` are behaviourally the same branch here

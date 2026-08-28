@@ -66,7 +66,7 @@ found three different causes, one of which is not a colour question at all:
 |---|---|---|---|---|
 | `CMinimap::Draw` 0xa3820 | 76.38 @162 | **70.12** @158 | 0x14/**0x14** | callee-saved re-colour (below) |
 | `CBoomerang::AdvanceMotion` 0xe08b0 | 86.25 @128 | **71.52** @138 | 0x28/0x20 | x87 spill temps - **no GPR is involved**, see x87-spill-slots-are-compiler-temps.md |
-| `CRezImage::FlipVertical` 0x176840 | 71.07 @89 | **79.79** after IV reconstruction | 0x18/**0x18** | one-past bottom/shared down-counter recovered; remaining register colour |
+| `CRezImage::FlipVertical` 0x176840 | 71.07 @89 | **100.00** from surviving source | retail exact | the IV/colour reading was a hand-transcription local maximum |
 
 So: before spending a lever on "the colour", check whether the general-purpose
 registers already pair with retail. In `AdvanceMotion` they do, in every state
@@ -99,16 +99,17 @@ parameter; we enregister `minY`). **Retail spends its callee-saved registers on
 the long-lived receiver/parameter and homes the derived local; our cl does the
 reverse.** That is the detection signature, and no source lever found moves it.
 
-### FlipVertical was an IV reconstruction, then became this pattern
+### Correction: FlipVertical never belonged to the colour tail
 
-The old 71.07 source lacked retail's independent decreasing-bottom state. The
-recovered one-past `bottom = m_height` counter plus shared down-counter copy
-index raises it to 79.79 and gives both sides the `0x18` frame, two calls, ten
-branches, one return and two relocations. It now belongs to the register-colour
-tail of this pattern: base uses EDI for `this` and EBP for scratch; retail uses
-EBX for `this` and EBP for scratch. Cached-height, pointer-row, CRT `memcpy`, MFC
-`CopyElements`, declaration/update and TU-state controls do not reproduce that
-colour without destroying the proven induction states.
+The old 71.07 source lacked retail's independent induction texture, and the
+one-past-bottom/shared-down-counter transcription raised it to 79.79 with exact
+call/branch/return/relocation counts. That did not prove the source family. The
+public tree's 1996 `CDib::Invert` uses three unsigned offsets, one shared forward
+index, cached width/height, and three ordinary incrementing loops; adapting that
+body makes `CRezImage::FlipVertical` 100.00 EXACT. Roughly 750 variants and 65
+TU-state probes had exhausted spellings around the transcription, not the
+surviving semantic model. Remove this row from the folded-local/register-colour
+evidence set.
 
 ## What DOES convert
 

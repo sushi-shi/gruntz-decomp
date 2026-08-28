@@ -4,7 +4,7 @@ tags: cpp:inheritance cpp:inline cpp:member cpp:local cpp:loop | asm:lea asm:mov
 symptoms: a reconstructed subsystem has correct broad behavior but repeated near-exact
 register/schedule walls, generic base pointers where consumers always recover one owner
 type, payload unions at a common trailing offset, or hand-expanded one-field stores
-confidence: 10/10 (twelve clean exact closures, two audited unchanged-source state closures,
+confidence: 10/10 (thirteen clean exact closures, two audited unchanged-source state closures,
 exact controls, revision-history audit, and retail negative controls)
 variants: inline-expansion-boundary-pins-a-neighbour.md, ctor-body-first-statement-is-an-inline-member.md
 
@@ -38,6 +38,7 @@ relocations. Applied that way, it closed these Gruntz functions:
 | `CRezImage::DecodePcxData` 0x176000 | 1996 DIB decoder's function-scope local census, reverse RLE fill, and direct plane indexing | 97.6772 -> 99.9240 -> **MAX 100.000** |
 | `CRezImage::DecodePidData` 0x176440 | unsigned eight-word header census, named transparency value, direct run-byte rereads, and manual literal loop | 81.4772 -> **100.000** |
 | `CRezImage::DecodeBlit` 0x175930 | complete `IsStrideless`/size/height/index/width accessor layer and advancing the incoming pixel pointer | 95.3194 -> 99.9722 -> **MAX 100.000** |
+| `CRezImage::FlipVertical` 0x176840 | three unsigned offsets, shared forward index, cached dimensions, and ordinary copy loops from `CDib::Invert` | 79.7879 -> **100.000** |
 
 The exact controls are strong: all three typed hash lookups stayed exact, both hash-owning
 destructors stayed exact, and `rezarchive` reached 115/115 exact functions.
@@ -154,6 +155,15 @@ Use the corpus only in its positive direction:
   forest trial 1 then reached audited 100.0000 for that unchanged function hash; MAX was
   banked and the probe removed. Mine and compose the semantic layer as a family—one
   individually flat helper does not falsify it.
+* The same-era `CDib::Invert` body closed `CRezImage::FlipVertical` from 79.7879 to
+  100.0000 exact in one composition. The old transcription had been raised from 41.61
+  through cached width, a one-past bottom counter, shared decreasing copy index, and three
+  hand-shaped loops, then declared bounded after roughly 750 copy/outer/declaration/
+  update cells and 65 TU-state probes. The surviving body instead uses three unsigned
+  offsets, one shared forward `j`, cached width and height, and three ordinary incrementing
+  loops. This falsifies the final "IV reconstructed; remaining colour" doctrine in the
+  older folded-local review: the exhaustive search was broad only inside the wrong source
+  family.
 * Branch-specific derived storage pointer types and direct member assignments in
   `Open`/`MergeArchive` compiled byte-flat in isolation. They remain good structural
   evidence, not credit for a score change.
