@@ -15,13 +15,13 @@ the sub-object type a real destructor whose ONLY job is the vptr restore; declar
 as a value member; let the compiler schedule it.
 
 ```cpp
-struct CObjList {                 // the embedded sub-object at +0x10
-    void* m_vtbl;                 // its own vtable ptr
-    /* ... */
-    ~CObjList() { m_vtbl = &CObjList_purecall_vftbl; }  // restore to abstract base
+class CVirtBaseList {             // the real embedded base-list object
+    virtual void VirtualFoo() = 0;
+    CVirtBaseListItem* m_pFirst;
+    CVirtBaseListItem* m_pLast;
 };
 class CRezArchive {
-    CObjList m_list;              // +0x10
+    CBaseRezFileList m_lstRezFiles; // +0x10; implicit dtor restores the base vptr
     CParserHash m_hash;           // +0x80 (also a destructible member: ~ => RemoveAll)
     ~CRezArchive();                // body does the manual teardown; members auto-destruct
 };

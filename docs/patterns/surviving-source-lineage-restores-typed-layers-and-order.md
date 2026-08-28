@@ -24,7 +24,7 @@ as a complete source layer with controlled adaptations, it closed these Gruntz f
 
 | retail function | surviving source fact | before -> after |
 |---|---|---:|
-| `CRezItm::Close` 0x13c830 | function-scope `ok`/`check` locals and one shared cleanup tail | 93.0769 -> **100.000** |
+| `CRezFile::Close` 0x13c830 | function-scope `ok`/`check` locals and one shared cleanup tail | 93.0769 -> **100.000** |
 | `CRezArchiveEntry::Read` 0x139af0 | reuse `byteCount` and `m_cursor` directly through the three storage arms | 94.6739 -> **100.000** |
 | `CRezArchiveType` ctor 0x139bf0 | typed member setter plus authored body assignment order | 99.3548 -> **100.000** |
 | `CRezArchiveEntry::Initialize` 0x139710 | typed one-field `SetRezItm` boundary | 96.2963 -> **100.000** |
@@ -44,6 +44,18 @@ as a complete source layer with controlled adaptations, it closed these Gruntz f
 
 The exact controls are strong: all three typed hash lookups stayed exact, both hash-owning
 destructors stayed exact, and `rezarchive` reached 115/115 exact functions.
+
+The same audit restored the complete storage hierarchy:
+`CVirtBaseListItem`/`CVirtBaseList`, typed `CBaseRezFileList` and
+`CRezFileSingleFileList`, then `CBaseRezFile`, `CRezFile`,
+`CRezFileDirectoryEmulation`, and `CRezFileSingleFile`. Those are
+layout-identical replacements for the inferred flattened list/file classes,
+but they restore the real inheritance, typed accessors, method names, const
+input boundary, and member ownership. Every non-EH function in the `rezfile`
+and `rezlist` units remained exact after the complete replacement. The
+surviving ninth virtual `GetFileName` was not imported: Gruntz retail has
+eight-slot vtables for all four storage classes, so the later API would be a
+real ABI change rather than a harmless declaration cleanup.
 
 The useful corpus is broader than `libs/`. Shogo and Blood2 contain byte-identical
 `NetStart_FillServiceList` implementations. They independently preserve a cursor local,

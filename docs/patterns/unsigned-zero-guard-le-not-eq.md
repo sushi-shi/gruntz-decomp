@@ -28,7 +28,7 @@ test edi,edi
 ja   <body>        ; unsigned (u32); `== 0` source gives `jne` here
 ```
 Steerable: change `== 0` → `<= 0` on the unsigned guard (matching-neutral; pure
-opcode flip, body untouched). Closed CRezItm::Read (0x13c600) 99.07%→99.77% and
-CRezItm::Write (0x13c6c0) 98.77%→99.69% (both then at the reloc-masked plateau —
+opcode flip, body untouched). Closed CRezFile::Read (0x13c600) 99.07%→99.77% and
+CRezFile::Write (0x13c6c0) 98.77%→99.69% (both then at the reloc-masked plateau —
 only the delinker's bare CRT-wrapper names remain). Note the prior `if(count>0){body}`
 wrap was rejected for cascading (99.3%→83.4%); the `<= 0` early-return form does not.

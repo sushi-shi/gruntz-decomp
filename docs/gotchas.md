@@ -61,9 +61,10 @@ Hard-won traps that cost real time. Grouped by area. The deeper codegen idioms l
 A **header** edit is not a `.cpp` edit with a bigger blast radius — it is a different kind of
 change, and a search harness must treat it differently.
 
-- **The cone is TRANSITIVE, not direct.** `include/Bute/ObjListBase.h` has exactly two direct
-  includers, yet adding one empty inline `~CObjListBase() {}` moved five functions in units
-  that include it only transitively (`Rez/RezList.h` → `Rez/RezMgr.h` → `Net/NetCmdSlot.cpp`).
+- **The cone is TRANSITIVE, not direct.** The former inferred list-base header had exactly two
+  direct includers, yet adding one empty inline destructor moved five functions in units
+  that included it only transitively (the current authentic owner is
+  `include/Lith/VirtList.h`, reached through `Rez/RezFile.h`).
   **Not one moved unit includes the header directly.** Measured A/B (dtor OFF → ON), reproduced
   independently:
 
@@ -86,8 +87,9 @@ change, and a search harness must treat it differently.
   (`_s_FreezeRadius$S33024` → `$S32890`) — a general property of header edits, not one header's quirk.
 
 - **Therefore, for a header axis the objective is TREE-WIDE, not per-symbol** — plus the reloc
-  audit. Here the target became byte-exact (`~CRezList` = retail's 7-byte
-  `mov [ecx],??_7CObjListBase@@6B@ / ret`) while the tree lost one exact elsewhere. A searcher
+  audit. Here the target became byte-exact (the implicit
+  `~CRezFileSingleFileList` restores `??_7CVirtBaseList@@6B@`) while the tree lost one exact
+  elsewhere. A searcher
   optimizing only the target symbol takes that for the wrong reason; one optimizing only
   tree-exact rejects a change that fixed **4 link-breaking reloc defects**. `%` is structurally
   blind to relocs, so `assert_relocs` has to be part of the objective.
@@ -117,7 +119,7 @@ change, and a search harness must treat it differently.
   header change the first build differs from the second on identical source (7 functions moving)
   and concluded a searcher must build to a fixed point before scoring. **Not reproducible.**
   Measured on a clean tree: three consecutive builds on unchanged source moved **0** functions,
-  and two consecutive builds *after* a real header edit (removing the `~CObjListBase` dtor) also
+  and two consecutive builds *after* a real list-base header edit also
   moved **0**. The non-convergence was a downstream symptom of the `build/objdiff/base/`
   corruption above, in the same lane's own harness. **Do not double-build before scoring** — one
   `gruntz build` is authoritative.

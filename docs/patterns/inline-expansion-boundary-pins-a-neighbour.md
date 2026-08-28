@@ -1,4 +1,4 @@
-# The inline-expansion boundary is a general scheduling lever, not a ctor-only one - and it belongs in the .cpp, not in a shared header
+# The inline-expansion boundary is a general scheduling lever, not a ctor-only one
 
 tags: cpp:inline cpp:member cpp:ctor cpp:dtor | asm:mov asm:pop | topic:codegen-idiom topic:scheduling
 symptoms: a function at 97-99.6% whose whole residue is ONE adjacent transposition -
@@ -19,7 +19,7 @@ diagnose` REGALLOC/SCHEDULING with identical multisets:
 
 | function | residue before | spelling that closed it | after |
 |---|---|---|---|
-| `CRezArchive::Close` 0x13b850 | `mov esi,[edi+0x14]` (loop-head `m_storages.m_head`) hoisted over `mov [edi+0x20],ebp` (`m_primaryStorage = NULL`) | loop head reads `FirstStorage(m_storages)` | 99.5493 -> **100.000** |
+| `CRezArchive::Close` 0x13b850 | `mov esi,[edi+0x14]` (loop-head first-storage read) hoisted over `mov [edi+0x20],ebp` (`m_primaryStorage = NULL`) | loop head reads the authentic inline `m_lstRezFiles.GetFirst()` | 99.5493 -> **100.000** |
 | `CRezArchiveType::~CRezArchiveType` 0x139cf0 | `mov ecx,ebx` (the member dtor's receiver) hoisted over BOTH trailing body stores; retail puts it BETWEEN them | second store written `SetArchiveType(m_typeNode, NULL)` | 98.3099 -> **100.000** |
 | `CRezArchiveDir::CRezArchiveDir` 0x139de0 | `pop esi` one slot early, before the `m_parent` store instead of after | LAST body statement written `SetArchiveDirectory(m_nameNode, this)` | 97.3333 -> **100.000** |
 | `DispatchDoNothingNormalLogic` 0xa9e00 | inlined `new CDoNothingNormal(owner)`: `mov eax,[esi+0x38]` hoisted over the leaf vptr stamp | ctor body `SetObjectFlags(1)` instead of `m_wwdObject->m_flags \|= 1` | 99.6129 -> **100.000** |
@@ -29,36 +29,24 @@ So the rule is: **the boundary pins whichever neighbour was free to float** - a 
 setup, a spilled-register restore, an epilogue pop, a vptr stamp. Wrap the statement that
 should come SECOND and the free instruction lands just before it instead of earlier.
 
-## Put the boundary in the .cpp - a shared-header member costs 8 fresh regressions
+## Source ownership outranks minimizing the TU-state cone
 
-The first spelling of `CRezArchive::Close`'s lever was a new member `CObjList::GetHead()`
-in `include/Rez/RezList.h`. It closed the function, and it also moved every one of the 43
-TUs that include that header: `verify check` went from clean to **8 fresh regressions**
-(`CPlay::StepScroll` 100 -> 88.03, `CNetSession::Verify` 100 -> 89.53, four
-`CDDrawShadeBlit` rows, `CPlay::LoadScrollSpeedOptions`, `CNetSession::Checksum`) - the
-declaration-count window of
-[`declaration-count-window-steers-regalloc.md`](declaration-count-window-steers-regalloc.md),
-and a class-with-an-inline-member is the +11 handle stride of
-[`tu-state-probe-family-decides-reachability.md`](tu-state-probe-family-decides-reachability.md).
+The first reconstruction of `CRezArchive::Close` used an inferred list type. Adding a
+header member closed the function but rotated eight unrelated current scores; replacing
+it with a file-local inline helper kept `Close` exact without those rotations. That A/B
+correctly demonstrated the declaration-state cone, but its old conclusion that the
+boundary therefore belonged in the `.cpp` was false.
 
-Replacing it with a **file-local `static inline`** in the one `.cpp`
+The surviving LithTech family later proved the real owner: `CVirtBaseList` plus the typed
+`CBaseRezFileList::GetFirst()` header inline. Restoring that complete hierarchy, deleting
+the file-local substitute, and using the authentic member kept `CRezArchive::Close` exact;
+every non-EH function in the `rezfile` and `rezlist` units was exact as well. Current-score
+rotations elsewhere are expected C1 movement and are not a reason to misplace a real
+abstraction.
 
-```cpp
-static inline CRezItmBase* FirstStorage(CObjList& list) {
-    return list.m_head;
-}
-```
-
-gave the SAME 100.000 and **zero** fresh regressions. Attribution control: none of
-`Play.cpp`, `NetSessionMgr.cpp`, `DDrawShadeBlit.cpp` includes `DoNothingNormal.h`, all
-three include `Rez/RezList.h` transitively, and the other two edits in that build were
-`.cpp`-local.
-
-What matters is only that the access sits inside an expansion. A free function taking the
-containing object by reference works exactly like a member; `RezArchive.cpp` carries
-`FirstEntryPoolBlock(IntrusiveList&)` and `ReadPackedI32(const char*)` in that style.
-Prefer the narrowest home that still expands: `.cpp`-local first, the owner's header only
-when several TUs genuinely need it (that is the CWapX case, which has 40-75 sites each).
+The corrected rule is: put a proven boundary in its authentic class/header owner. With no
+source evidence, a narrow file-local helper remains useful as a disposable attribution
+A/B, but it is not a source-model conclusion and must not displace an attested member.
 
 `DecodeBmp` supplied the direct attribution control. A bounded exact-span run gave
 99.614040% for both the direct member read and an identical helper declared but unused;
@@ -100,7 +88,7 @@ spelling reaches it.
 ## The expansion must CONTAIN a memory access - a store through the enclosing `this` is not one
 
 Every closing example above moves a *read through a passed-by-reference object* inside the
-expansion (`FirstStorage(m_storages)` puts the `[edi+0x14]` load there; the list's address is
+expansion (`m_lstRezFiles.GetFirst()` puts the `[edi+0x14]` load there; the list's address is
 already live in the caller). A helper whose whole body is a store to the object the caller
 is ALREADY holding in a register adds no access to pin: cl folds it before scheduling and
 emits the same bytes.

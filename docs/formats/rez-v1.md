@@ -9,7 +9,8 @@ retail `GRUNTZ.EXE`'s own reader disassembled with `gruntz sema disasm`. The
 reconstruction under `src/Rez/` is **not** an authority here. The container
 reader is now modeled as `CRezArchive`, `CRezArchiveDir`, `CRezArchiveType`, and
 `CRezArchiveEntry` in `RezArchive.cpp`; `RezFile.cpp` separately models the
-storage-driver layer (`CRezItm` / `CRezDir` / `CRezFile` wrapping `FILE*`), and
+storage-driver layer (`CRezFile` / `CRezFileDirectoryEmulation` /
+`CRezFileSingleFile` wrapping `FILE*`), and
 `Lith/BaseHash.cpp` and `Rez/RezHash.cpp` supply the base and typed hash collections used
 by the archive model.
 
@@ -206,7 +207,7 @@ What the flag does gate is a **bulk preload**:
 * `CRezArchiveDir::PreloadData` @0x13a0f0 allocates `sum(size)` and reads
   `[min(pos), min(pos) + sum(size))` into it in one call — but only after
   checking `archive->m_isDataContiguous != 0` **and**
-  `archive->m_storages.m_storageCount <= 1`. Otherwise
+  `archive->m_nNumRezFiles <= 1`. Otherwise
   it prints `CRezDir::Load Failed! (File is not sorted!)` and returns 0.
 * Once that block exists, `CRezArchiveEntry::Read` @0x139a40 serves resource bytes from
   `blob + (item.pos - dir.min_pos)` and never touches the file.
@@ -240,7 +241,7 @@ anything that does call `Load` (the level editor, `RezComp`, a later Monolith
 title). `gruntz-rez` lays out contiguously and earns the flag rather than
 asserting it.
 
-`m_storages.m_storageCount <= 1` is the second half of the same idea: the archive
+`m_nNumRezFiles <= 1` is the second half of the same idea: the archive
 increments a counter per opened archive (@0x13ae0c, @0x13aefe, @0x13b13e) and
 the second `Open` overload @0x13b0c0 sets `m_isDataContiguous = 0` on its very first
 statement, because a merged multi-file view has no single file to slurp a
@@ -334,8 +335,8 @@ Sizes are ground truth from `push <n>; call operator new`:
 | `CRezArchiveDir` | 0x4c | 0x13ae27, 0x13af1f, 0x13b037, 0x13a73a |
 | `CRezArchiveType` | 0x30 | 0x13a961 |
 | `CRezArchiveEntry` | 0x3c | pooled 100 at a time, 0x13c133 |
-| `CRezItm` (file driver, = `src/Rez/RezFile.cpp`) | 0x24 | 0x13ae90 |
-| `CRezDir` (file driver, = `src/Rez/RezFile.cpp`) | 0x38 | 0x13ad9f |
+| `CRezFile` (archive file driver, = `src/Rez/RezFile.cpp`) | 0x24 | 0x13ae90 |
+| `CRezFileDirectoryEmulation` (directory driver) | 0x38 | 0x13ad9f |
 
 ### `CRezArchive` — 0x94
 
@@ -344,12 +345,12 @@ Sizes are ground truth from `push <n>; call operator new`:
 | 0x00 | vptr (0x5ef750) | P | ctor @0x13aa10 |
 | 0x08 | **`m_isDataContiguous`** | P | header buf+0xa7 `and ecx,0xff` @0x13afe3; tested @0x13a108; forced to 0 by `MergeArchive` @0x13b0f2; ctor default 1 |
 | 0x0c | `m_isOpen` | I | set to 1 on both successful Open paths |
-| 0x10 | `m_storages` (vptr 0x5ef75c, head/tail at 0x14/0x18) | P | `lea ecx,[archive+0x10]` + AddHead @0x1851e0 per opened driver |
-| 0x1c | `m_storages.m_storageCount` | P | ctor 0; incremented per Open @0x13ae0c/@0x13aefe/@0x13b13e; `<= 1` gate in `PreloadData` |
+| 0x10 | `m_lstRezFiles` (`CBaseRezFileList`; vptr 0x5ef75c, first/last at 0x14/0x18) | P | `lea ecx,[archive+0x10]` + `Insert`/`InsertFirst` @0x1851e0 per opened driver |
+| 0x1c | `m_nNumRezFiles` | P | ctor 0; incremented per Open @0x13ae0c/@0x13aefe/@0x13b13e; `<= 1` gate in `PreloadData` |
 | 0x20 | `m_primaryStorage` | P | `mov [archive+0x20],esi` @0x13adf3; `PreloadData` calls its `Read` slot |
 | 0x24 | `m_reserved24` = 1 | ? | ctor only; deliberately left unknown in source |
 | 0x28 | `m_nextGeneratedResourceId` = 2 000 000 000 | P | post-incremented for imported filenames without a leading numeric ID @0x13b6e3 |
-| 0x2c | `m_maxOpenFiles` = 3 | P | passed as `maxOpen` to the file-driver `CRezDir` ctor |
+| 0x2c | `m_maxOpenFiles` = 3 | P | passed to the `CRezFileDirectoryEmulation` ctor |
 | 0x30 | `m_rootDirectoryOffset` | P | header buf+0x83 |
 | 0x34 | `m_rootDirectorySize` | P | header buf+0x87 |
 | 0x38 | `m_rootDirectoryTime` | P | header buf+0x8b; handed to the root directory ctor @0x13b062 |

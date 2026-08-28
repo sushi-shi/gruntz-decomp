@@ -47,10 +47,6 @@ static inline CRezEntryPoolBlock* FirstEntryPoolBlock(CLTBaseList& list) {
     return static_cast<CRezEntryPoolBlock*>(list.GetFirst());
 }
 
-static inline CRezItmBase* FirstStorage(CObjList& list) {
-    return list.m_head;
-}
-
 static const i32 REZ_SCAN_PATH_MAX = 0x308;
 
 // Byte-forced view of packed serialized storage.
@@ -81,7 +77,7 @@ void CRezArchiveEntry::Initialize(
     i32 time,
     i32 keyCount,
     void* keys,
-    CRezItmBase* storage
+    CBaseRezFile* storage
 ) {
     static_cast<void>(resourceId);
     static_cast<void>(comment);
@@ -457,7 +453,7 @@ i32 CRezArchiveDir::PreloadData(b32 recursive) {
     }
 
     CRezArchive* archive = m_archive;
-    if (archive->m_isDataContiguous == false || archive->m_storages.m_storageCount > 1) {
+    if (archive->m_isDataContiguous == false || archive->m_nNumRezFiles > 1) {
         RezAssertFail("CRezDir::Load Failed! (File is not sorted!)\n");
         return 0;
     }
@@ -642,7 +638,7 @@ CRezArchiveEntry* CRezArchiveDir::CreateEntry(
     u32 resourceId,
     const char* name,
     CRezArchiveType* type,
-    CRezItmBase* storage
+    CBaseRezFile* storage
 ) {
     CRezArchiveEntry* entry = m_archive->AcquireEntry();
     if (entry == NULL) {
@@ -683,7 +679,7 @@ i32 CRezArchiveDir::RemoveEntry(CRezArchiveType* type, CRezArchiveEntry* entry) 
 
 RVA(0x0013a580, 0xb2)
 i32 CRezArchiveDir::ReadDirectoryTree(
-    CRezItmBase* storage,
+    CBaseRezFile* storage,
     i32 bodyOffset,
     i32 bodySize,
     b32 replaceExisting
@@ -727,7 +723,7 @@ GZ_ENUM_END(RezDirectoryRecordKind)
 
 RVA(0x0013a640, 0x2f7)
 i32 CRezArchiveDir::ReadDirectoryBody(
-    CRezItmBase* storage,
+    CBaseRezFile* storage,
     i32 bodyOffset,
     i32 bodySize,
     b32 replaceExisting
@@ -897,7 +893,7 @@ RVA(0x0013aa10, 0xdc)
 CRezArchive::CRezArchive() : m_hashRezItmFreeList(1) {
     m_isOpen = false;
     m_primaryStorage = NULL;
-    m_storages.m_storageCount = 0;
+    m_nNumRezFiles = 0;
     m_rootDirectoryOffset = 0;
     m_nextWritePos = 0;
     m_rootDirectory = NULL;
@@ -940,10 +936,10 @@ CRezArchive::~CRezArchive() {
     if (m_isOpen) {
         Close(0);
     }
-    CRezItmBase* storage;
-    for (storage = m_storages.m_head; storage != NULL; storage = m_storages.m_head) {
-        m_storages.Remove(storage);
-        m_storages.m_storageCount--;
+    CBaseRezFile* storage;
+    for (storage = m_lstRezFiles.GetFirst(); storage != NULL; storage = m_lstRezFiles.GetFirst()) {
+        m_lstRezFiles.Delete(storage);
+        m_nNumRezFiles--;
         delete storage;
     }
     CRezArchiveDir* rootDirectory = m_rootDirectory;
@@ -1003,15 +999,15 @@ i32 CRezArchive::Open(char* path, b32 readOnly, b32 createNew) {
         if (m_readOnly == false) {
             return 0;
         }
-        CRezDir* storage = new CRezDir(this, m_maxOpenFiles);
+        CRezFileDirectoryEmulation* storage = new CRezFileDirectoryEmulation(this, m_maxOpenFiles);
         if (storage == NULL) {
             delete[] m_archivePath;
             m_archivePath = NULL;
             return 0;
         }
         m_primaryStorage = storage;
-        m_storages.AddHead(storage);
-        m_storages.m_storageCount++;
+        m_lstRezFiles.Insert(storage);
+        m_nNumRezFiles++;
         if (storage->Open(path, readOnly, createNew) == 0) {
             return 0;
         }
@@ -1030,15 +1026,15 @@ i32 CRezArchive::Open(char* path, b32 readOnly, b32 createNew) {
         return 1;
     }
 
-    CRezItm* storage = new CRezItm(this);
+    CRezFile* storage = new CRezFile(this);
     if (storage == NULL) {
         delete[] m_archivePath;
         m_archivePath = NULL;
         return 0;
     }
     m_primaryStorage = storage;
-    m_storages.AddHead(storage);
-    m_storages.m_storageCount++;
+    m_lstRezFiles.Insert(storage);
+    m_nNumRezFiles++;
     if (storage->Open(path, readOnly, createNew) == 0) {
         return 0;
     }
@@ -1113,14 +1109,14 @@ i32 CRezArchive::MergeArchive(char* path, b32 replaceExisting) {
     strcpy(m_archivePath, path);
 
     if (IsDirectoryPath(path)) {
-        CRezDir* storage = new CRezDir(this, m_maxOpenFiles);
+        CRezFileDirectoryEmulation* storage = new CRezFileDirectoryEmulation(this, m_maxOpenFiles);
         if (storage == NULL) {
             delete[] m_archivePath;
             m_archivePath = NULL;
             return 0;
         }
-        m_storages.AddHead(storage);
-        m_storages.m_storageCount++;
+        m_lstRezFiles.Insert(storage);
+        m_nNumRezFiles++;
         if (storage->Open(path, readOnly, createNew) == 0) {
             return 0;
         }
@@ -1129,14 +1125,14 @@ i32 CRezArchive::MergeArchive(char* path, b32 replaceExisting) {
         return 1;
     }
 
-    CRezItm* storage = new CRezItm(this);
+    CRezFile* storage = new CRezFile(this);
     if (storage == NULL) {
         delete[] m_archivePath;
         m_archivePath = NULL;
         return 0;
     }
-    m_storages.AddHead(storage);
-    m_storages.m_storageCount++;
+    m_lstRezFiles.Insert(storage);
+    m_nNumRezFiles++;
     if (storage->Open(path, readOnly, createNew) == 0) {
         return 0;
     }
@@ -1166,7 +1162,7 @@ i32 CRezArchive::MergeArchive(char* path, b32 replaceExisting) {
 
 RVA(0x0013b300, 0x545)
 i32 CRezArchive::ImportDirectoryTree(
-    CRezItmBase* storage,
+    CBaseRezFile* storage,
     CRezArchiveDir* directory,
     char* path,
     b32 replaceExisting
@@ -1255,7 +1251,11 @@ i32 CRezArchive::ImportDirectoryTree(
         if (entry != NULL) {
             entry->m_time = static_cast<i32>(fileData.time_write);
             entry->m_size = static_cast<u32>(fileData.size);
-            entry->m_storage = new CRezFile(this, filePath, static_cast<CRezDir*>(storage));
+            entry->m_storage = new CRezFileSingleFile(
+                this,
+                filePath,
+                static_cast<CRezFileDirectoryEmulation*>(storage)
+            );
         }
     } while (_findnext(searchHandle, &fileData) == 0);
     _findclose(searchHandle);
@@ -1266,15 +1266,15 @@ RVA(0x0013b850, 0xa8)
 i32 CRezArchive::Close(i32 unusedFinal) {
     static_cast<void>(unusedFinal);
     i32 result = m_primaryStorage->Close();
-    m_storages.Remove(m_primaryStorage);
-    m_storages.m_storageCount--;
+    m_lstRezFiles.Delete(m_primaryStorage);
+    m_nNumRezFiles--;
     delete m_primaryStorage;
     m_primaryStorage = NULL;
-    CRezItmBase* storage;
-    for (storage = FirstStorage(m_storages); storage != NULL; storage = FirstStorage(m_storages)) {
+    CBaseRezFile* storage;
+    for (storage = m_lstRezFiles.GetFirst(); storage != NULL; storage = m_lstRezFiles.GetFirst()) {
         storage->Close();
-        m_storages.Remove(storage);
-        m_storages.m_storageCount--;
+        m_lstRezFiles.Delete(storage);
+        m_nNumRezFiles--;
         delete storage;
     }
     if (m_rootDirectory) {
@@ -1372,8 +1372,9 @@ i32 CRezArchive::RetryStorageOperation() {
 RVA(0x0013ba20, 0x27)
 i32 CRezArchive::CheckStorages() {
     b32 allStoragesValid = true;
-    for (CRezItmBase* storage = m_storages.m_head; storage != NULL; storage = storage->m_next) {
-        if (storage->Check() == 0) {
+    for (CBaseRezFile* storage = m_lstRezFiles.GetFirst(); storage != NULL;
+         storage = storage->Next()) {
+        if (storage->VerifyFileOpen() == 0) {
             allStoragesValid = false;
         }
     }

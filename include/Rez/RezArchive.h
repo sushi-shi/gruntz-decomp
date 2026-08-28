@@ -3,22 +3,13 @@
 
 #include <rva.h>
 
-#include <Bute/ObjListBase.h>
 #include <Enums.h>
 #include <Ints.h>
 #include <Rez/RezArchiveDir.h>
+#include <Rez/RezFile.h>
 #include <Rez/RezHash.h>
 #include <Rez/RezList.h>
 #include <Rez/RezTypeTag.h>
-
-class CRezItmBase;
-
-struct CRezStorageList : public CObjList {
-    virtual void UnusedListHook() OVERRIDE;
-    RVA(0x0013aaf0, 0x7)
-    ~CRezStorageList() {}
-    u32 m_storageCount;
-};
 
 struct CRezArchiveEntry;
 
@@ -82,7 +73,7 @@ public:
     i32 MergeArchive(char* path, b32 replaceExisting);
 
     i32 ImportDirectoryTree(
-        CRezItmBase* storage,
+        CBaseRezFile* storage,
         CRezArchiveDir* directory,
         char* path,
         b32 replaceExisting
@@ -119,8 +110,9 @@ public:
     char* m_pathDelimiters;
     b32 m_isDataContiguous;
     b32 m_isOpen;
-    CRezStorageList m_storages;
-    CRezItmBase* m_primaryStorage;
+    CBaseRezFileList m_lstRezFiles;
+    u32 m_nNumRezFiles;
+    CBaseRezFile* m_primaryStorage;
     i32 m_reserved24;
     i32 m_nextGeneratedResourceId;
     i32 m_maxOpenFiles;

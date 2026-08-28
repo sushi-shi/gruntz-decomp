@@ -102,7 +102,7 @@ Walked through the mechanism, byte by byte (library band, so pull order):
                                           ??_GCAnimatedMenuItem / ??1CAnimatedMenuItem / Reset
     0x1848b0-0x184b5d  RezColl.obj       CBaseHash* - a real, separate TU
     0x184ba0-0x1851d3  DebugPrintf.obj   CRangeSet + CDebugConfig - real TU
-    0x1851e0-0x185315  RezList.obj       CObjList/CRezList - real TU
+    0x1851e0-0x185315  RezList.obj       CVirtBaseList - real TU
     0x1853b0-0x185456  WapCompress.obj real TU
     0x185460-0x185a0e  MenuItem.obj      the real MenuItem.cpp: Init, Cleanup,
                                           GetFrameWidth ... AdvanceFrame, ascending

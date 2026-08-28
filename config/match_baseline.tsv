@@ -184,7 +184,7 @@ hazardlogicdispatch	6	6
 heapdiag	8	8
 helpstate	14	14
 imagepolyclip	8	1
-imagepool	55	54
+imagepool	55	52
 imageset1	1	0
 imageset2	9	8
 imageset3	2	2
@@ -232,7 +232,7 @@ netsession	1	1
 netsessionmgr	31	25
 palettebmp	2	2
 pathhazard	24	22
-play	105	78
+play	105	79
 playassetload	17	16
 projectile	28	20
 registryhelper	11	11
@@ -918,17 +918,17 @@ ddrawshadeblit	?Blit@CDDrawShadeBlit@@QAEHPAUtagRECT@@PAVCDDSurface@@0HH@Z	100.0
 ddrawshadeblit	?BlitAt@CDDrawShadeBlit@@QAEHPAVCDDSurface@@HHHH@Z	100.0000	100.0000	1	6b55637df03f	0x149780	100.0000	
 ddrawshadeblit	?BlitCopyForward@CDDrawShadeBlit@@QAEXPAUtagRECT@@PAVCDDSurface@@0H@Z	77.8187	77.8187	5	d9e579235f74	0x149950	77.8187	
 ddrawshadeblit	?BlitCopyMirrored@CDDrawShadeBlit@@QAEXPAUtagRECT@@PAVCDDSurface@@0H@Z	79.4828	79.4828	5	9b3f35ee1e40	0x149d00	79.4828	
-ddrawshadeblit	?BlitShadedForward@CDDrawShadeBlit@@QAEXPAUtagRECT@@PAVCDDSurface@@0H@Z	72.9743	71.7310	8	b2756c39c979	0x14a200	73.9902	
-ddrawshadeblit	?BlitShadedMirrored@CDDrawShadeBlit@@QAEXPAUtagRECT@@PAVCDDSurface@@0H@Z	77.4272	77.2309	10	c8c4d3873cce	0x14b770	77.6386	
+ddrawshadeblit	?BlitShadedForward@CDDrawShadeBlit@@QAEXPAUtagRECT@@PAVCDDSurface@@0H@Z	72.9743	72.1700	8	b2756c39c979	0x14a200	73.9902	
+ddrawshadeblit	?BlitShadedMirrored@CDDrawShadeBlit@@QAEXPAUtagRECT@@PAVCDDSurface@@0H@Z	77.4272	76.4962	10	c8c4d3873cce	0x14b770	77.6386	
 ddrawshadeblit	?Build@CDDrawShadeBlit@@QAEHPAUPidHeader@@HE@Z	80.6119	80.6119	3	8f6d3824da2e	0x1490d0	80.6119	
 ddrawshadeblit	?BuildFromSurface@CDDrawShadeBlit@@QAEHPAVCDDSurface@@HPAUtagPALETTEENTRY@@@Z	100.0000	100.0000	5	8f6ece99c45a	0x148f50	100.0000	
 ddrawshadeblit	?BuildRle@CDDrawShadeBlit@@QAEHPAEHHHHPAUtagPALETTEENTRY@@@Z	98.5786	98.5786	6	a321eecca2f1	0x148d40	98.5786	
 ddrawshadeblit	?ConvertRow@CDDrawShadeBlit@@QAEXPAE0H@Z	80.9755	79.9021	6	21c3ac3ab30b	0x14c9f0	82.0527	
-ddrawshadeblit	?ConvertRowDouble@CDDrawShadeBlit@@QAEXPAE0HH@Z	72.9116	71.4390	4	5f1e7d7dbab6	0x14d950	73.5610	
-ddrawshadeblit	?ConvertRowDoubleFwd@CDDrawShadeBlit@@QAEXPAE0HH@Z	71.8430	68.1635	6	6911c1c9c7cf	0x14d5e0	74.5449	
+ddrawshadeblit	?ConvertRowDouble@CDDrawShadeBlit@@QAEXPAE0HH@Z	72.9116	69.5031	4	5f1e7d7dbab6	0x14d950	73.5610	
+ddrawshadeblit	?ConvertRowDoubleFwd@CDDrawShadeBlit@@QAEXPAE0HH@Z	71.8430	68.0032	6	6911c1c9c7cf	0x14d5e0	74.5449	
 ddrawshadeblit	?ConvertRowFlip@CDDrawShadeBlit@@QAEXPAE0H@Z	76.3381	76.3381	9	d907f09ab9c0	0x14cfc0	76.3381	
 ddrawshadeblit	?Decompress@CDDrawShadeBlit@@QAEHPAE@Z	100.0000	100.0000	4	dc6e7e3f0d9b	0x1494b0	100.0000	
-ddrawshadeblit	?EncodeRle16@CDDrawShadeBlit@@QAEPAEPBE@Z	97.8231	96.8708	6	096db95d69f2	0x1495d0	97.8231	
+ddrawshadeblit	?EncodeRle16@CDDrawShadeBlit@@QAEPAEPBE@Z	97.8231	97.8231	6	096db95d69f2	0x1495d0	97.8231	
 ddrawshadeblit	?LoadFromFile@CDDrawShadeBlit@@QAEHVCString@@W4ColorDepth@@@Z	100.0000	100.0000	3	4015a56baaf9	0x148fc0	100.0000	
 ddrawshadeblit	?SavePid@CDDrawShadeBlit@@QAEHVCString@@HH@Z	100.0000	100.0000	4	40a08f13bd76	0x1493b0	100.0000	
 ddrawshadeblit	?Select@CDDrawShadeBlit@@QAEXW4ShadeMode@@PAUCShadeTable@@@Z	100.0000	100.0000	2	e153d6e89b34	0x14dd90	100.0000	
@@ -1542,7 +1542,7 @@ directsoundmgr	?SoundDeviceReturnFalse@@YAHXZ	100.0000	100.0000	1	57aced79821b	0
 directsoundmgr	?StartPrimaryBuffer@SoundDevice@@QAEHXZ	100.0000	100.0000	3	37cf7dfce487	0x137200	100.0000	
 directsoundmgr	?Stop@SoundVolumeRamp@@UAEHXZ	100.0000	100.0000	3	b3f4cb32eea5	0x1370d0	100.0000	
 directsoundmgr	?StopAllBuffers@SoundDevice@@QAEXXZ	100.0000	100.0000	4	5d0c67ee1643	0x136de0	100.0000	
-directsoundmgr	?StopAllInstances@SoundSample@@QAEXXZ	100.0000	100.0000	4	c70d0359798c	0x136150	100.0000	
+directsoundmgr	?StopAllInstances@SoundSample@@QAEXXZ	100.0000	100.0000	5	477ae491cbea	0x136150	100.0000	
 directsoundmgr	?StopAndRewind@SoundBuffer@@QAEHXZ	100.0000	100.0000	3	f830e229249b	0x135380	100.0000	
 directsoundmgr	?Tick@SoundVolumeRamp@@UAEHH@Z	100.0000	100.0000	5	782defc5e4f0	0x137060	100.0000	
 directsoundmgr	?TickVolumeRamps@SoundDevice@@QAEHH@Z	100.0000	100.0000	6	b7017e19aeb3	0x136e20	100.0000	
@@ -2589,7 +2589,7 @@ hash	?HashFunc@CRezItmHashByName@@MAEIXZ	100.0000	100.0000	4	9d82f3615d8d	0x13c2
 hash	?HashFunc@CRezItmHashTableByName@@IAEIPBD@Z	100.0000	100.0000	4	2c54fb6a876e	0x13c240	100.0000	
 hash	?HashFunc@CRezTypeHash@@MAEIXZ	100.0000	100.0000	4	8f923a40ce07	0x13c340	100.0000	
 hash	?HashFunc@CRezTypeHashTable@@IAEII@Z	100.0000	100.0000	4	9c00970519d6	0x13c350	100.0000	
-hash	?UnusedListHook@CRezStorageList@@UAEXXZ	100.0000	100.0000	2	76d5f83b47ce	0x13c4c0	100.0000	
+hash	?VirtualFoo@CBaseRezFileList@@UAEXXZ	100.0000	100.0000	3	d9899eddb9bf	0x13c4c0	100.0000	
 hazardlogicdispatch	?DispatchKitchenSlimeLogic@@YAHPAUCGameObject@@@Z	100.0000	100.0000	3	1be06d811ac2	0xaf320	100.0000	
 hazardlogicdispatch	?DispatchPathHazardLogic@@YAHPAUCGameObject@@@Z	100.0000	100.0000	3	fb7001229525	0xaf460	100.0000	
 hazardlogicdispatch	?DispatchRainCloudLogic@@YAHPAUCGameObject@@@Z	100.0000	100.0000	3	940694bacf14	0xaf5a0	100.0000	
@@ -2641,7 +2641,7 @@ imagepool	?CreatePaletteFromEntries@CImagePool@@QAEPAUCImagePaletteNode@@PAUtagP
 imagepool	?CreatePaletteFromRgb@CImagePool@@QAEPAUCImagePaletteNode@@PAEH@Z	100.0000	100.0000	5	a6b6916333ec	0x175570	100.0000	
 imagepool	?CreateSurface@CImagePool@@QAEPAVCRezImage@@HHW4ColorDepth@@H@Z	100.0000	100.0000	6	34667b51307a	0x174fe0	100.0000	
 imagepool	?CreateSurfaceFromPixels@CImagePool@@QAEPAVCRezImage@@PAEHHW4ColorDepth@@H@Z	100.0000	100.0000	7	825fdf7465c6	0x1750e0	100.0000	
-imagepool	?DecodeBlit@CRezImage@@QAEHPAEPAUHDC__@@HHW4ColorDepth@@H@Z	100.0000	100.0000	4	15ab17bc9eec	0x175930	100.0000	
+imagepool	?DecodeBlit@CRezImage@@QAEHPAEPAUHDC__@@HHW4ColorDepth@@H@Z	100.0000	99.9722	4	15ab17bc9eec	0x175930	100.0000	
 imagepool	?DecodeBmpData@CRezImage@@QAEHPAXPAUHDC__@@H@Z	100.0000	100.0000	4	904a233396de	0x175e00	100.0000	
 imagepool	?DecodeBmpHeader@CRezImage@@QAEHPAUHDC__@@HHW4ColorDepth@@H@Z	100.0000	100.0000	2	4544d76396ba	0x1757c0	100.0000	
 imagepool	?DecodePcxData@CRezImage@@QAEHPAXPAUHDC__@@H@Z	100.0000	100.0000	7	43db181664ea	0x176000	100.0000	
@@ -2651,7 +2651,7 @@ imagepool	?Destroy@CImagePaletteNode@@QAEXXZ	100.0000	100.0000	2	1a15f3d54acb	0x
 imagepool	?DispatchDecode@CRezImage@@QAEHPAEW4RezDecodeKind@@PAUHDC__@@H@Z	100.0000	100.0000	3	e0bc7042a868	0x175a00	100.0000	
 imagepool	?DisplayUsesPalette@@YAHXZ	100.0000	100.0000	2	0c6820bceb7f	0x1770a0	100.0000	
 imagepool	?EnsureSize@CRezImage@@QAEHPAUHDC__@@HHW4ColorDepth@@H@Z	100.0000	100.0000	1	3354fc240078	0x175ce0	100.0000	
-imagepool	?Fill@CRezImage@@QAEXH@Z	100.0000	100.0000	2	2284fdaa66d5	0x175d50	100.0000	
+imagepool	?Fill@CRezImage@@QAEXH@Z	100.0000	99.9677	2	2284fdaa66d5	0x175d50	100.0000	
 imagepool	?FillRect@CRezImage@@QAEXPAUCRezFillRect@@H@Z	100.0000	100.0000	1	8a12f27ec459	0x176d20	100.0000	
 imagepool	?FillRectAt@CRezImage@@QAEXHHPAUCRezFillRect@@H@Z	100.0000	100.0000	1	c28ac783e527	0x176da0	100.0000	
 imagepool	?FlipVertical@CRezImage@@QAEXXZ	100.0000	100.0000	5	7b8ee5010c8d	0x176840	100.0000	
@@ -3320,7 +3320,7 @@ netsessionmgr	?AllPeerWindowsReached@CNetSession@@QAEHH@Z	100.0000	100.0000	3	10
 netsessionmgr	?AllocateGruntRecord@@YAPAUGruntRec@@H@Z	100.0000	100.0000	3	e7e02eaa4041	0xbf530	100.0000	
 netsessionmgr	?BuildGruntzCrcInfo@CNetSession@@QAEXXZ	99.9198	99.9198	6	a9ef81b35ba0	0xbf1d0	99.9198	
 netsessionmgr	?ClearDrainAcks@CNetCmdSlot@@QAEXXZ	100.0000	100.0000	2	50349de7eeaf	0xbf120	100.0000	
-netsessionmgr	?ComputeChecksum@CNetSession@@QAEHXZ	95.7568	95.6757	8	6089bc70ed3d	0xc0590	95.7568	
+netsessionmgr	?ComputeChecksum@CNetSession@@QAEHXZ	95.7568	95.6824	8	6089bc70ed3d	0xc0590	95.7568	
 netsessionmgr	?CreateSlot@CNetSession@@QAEPAUCNetCmdSlot@@HW4NetSlotState@@@Z	100.0000	100.0000	4	0c6c081354c8	0xbfff0	100.0000	
 netsessionmgr	?Dispatch@CNetSession@@QAEHHPAUCNetPacketPrefix@@H@Z	100.0000	100.0000	3	c79e57b7eee5	0xbf700	100.0000	
 netsessionmgr	?DispatchSystemMessage@CNetSession@@QAEHPAUDPMSG_GENERIC@@H@Z	100.0000	100.0000	3	bf34d97947f2	0xbf7c0	100.0000	
@@ -3430,7 +3430,7 @@ play	?OnExit@CPlay@@UAEXXZ	94.7917	94.7917	3	e850cc1d6444	0xcb400	94.7917
 play	?OnKeyDown@CPlay@@UAEHHH@Z	90.5624	90.5624	22	6fba2d6e73e2	0xcbcc0	90.9441	
 play	?OnKeyUp@CPlay@@UAEHHH@Z	100.0000	100.0000	1	baee31c307a3	0xcda70	100.0000	
 play	?OnLButtonDblClk@CPlay@@UAEHHHH@Z	98.6481	96.1533	16	3c53d7c604c7	0xce660	98.6481	
-play	?OnLButtonDown@CPlay@@UAEHHHH@Z	89.4993	89.4993	22	c9676c1fb532	0xcdb10	90.1826	
+play	?OnLButtonDown@CPlay@@UAEHHHH@Z	89.4993	88.9868	22	c9676c1fb532	0xcdb10	90.1826	
 play	?OnLButtonUp@CPlay@@UAEHHHH@Z	100.0000	100.0000	7	7cf544c93867	0xce530	100.0000	
 play	?OnRButtonDblClk@CPlay@@UAEHHHH@Z	100.0000	100.0000	2	0decb6895e82	0xceab0	100.0000	
 play	?OnRButtonDown@CPlay@@UAEHHHH@Z	89.9850	89.9850	11	c4d2c9de5924	0xceae0	89.9850	
@@ -3450,7 +3450,7 @@ play	?RegionEnter@CPlay@@QAEXXZ	100.0000	100.0000	3	8d5c4c1ebcab	0xd88f0	100.000
 play	?RegionLeave@CPlay@@QAEXXZ	100.0000	100.0000	4	a613be6d96c0	0xd8960	100.0000	
 play	?RegisterInputBindings@CPlay@@QAEHXZ	100.0000	100.0000	1	993b54aa05a0	0xd9160	100.0000	
 play	?ReleaseResources@CPlay@@UAEXXZ	100.0000	100.0000	7	d5538422c383	0xc8700	100.0000	
-play	?Render@CPlay@@UAEHXZ	96.4002	96.3980	29	d83ecf7d7e0d	0xc8cf0	96.4002	
+play	?Render@CPlay@@UAEHXZ	96.4002	96.4002	29	d83ecf7d7e0d	0xc8cf0	96.4002	
 play	?ResetGoals@CPlay@@QAEHHH@Z	100.0000	100.0000	5	f47e3242a828	0xd5f00	100.0000	
 play	?ResetPlayState@CPlay@@QAEHXZ	96.5300	96.5300	11	a0ae9cc676d4	0xd60b0	96.6250	
 play	?ResetRightClickState@CPlay@@QAEXXZ	100.0000	100.0000	1	6d119bff1a05	0xcee50	100.0000	
@@ -3470,7 +3470,7 @@ play	?SetMonitorCurse@CPlay@@QAEHH@Z	100.0000	100.0000	3	44fd7327540f	0xd8b20	10
 play	?SetRandomMoveIconsCurse@CPlay@@QAEHH@Z	100.0000	100.0000	4	986184e0abaa	0xd8bc0	100.0000	
 play	?SetTinyViewportCurse@CPlay@@QAEHH@Z	100.0000	100.0000	4	32df431a843e	0xd8a00	100.0000	
 play	?ShrinkViewport@CPlay@@QAEHH@Z	100.0000	100.0000	5	62e91de0a30d	0xd8dc0	100.0000	
-play	?StepScroll@CPlay@@QAEXXZ	100.0000	78.2069	3	2b4771ca921b	0xd1ac0	100.0000	
+play	?StepScroll@CPlay@@QAEXXZ	100.0000	100.0000	3	2b4771ca921b	0xd1ac0	100.0000	
 play	?StepViewportResize@CPlay@@QAEHXZ	100.0000	100.0000	2	46184550033e	0xd8d90	100.0000	
 play	?TickStateMgrs@CPlay@@UAEXXZ	100.0000	100.0000	2	383793d19014	0xcfbb0	100.0000	
 play	?UpdateWorldFixedSteps@CPlay@@UAEHXZ	99.3137	99.3137	7	f87ae1c9219a	0xc9cc0	99.3137	
@@ -3532,26 +3532,26 @@ registryhelper	?Set@CRegMgr@@QAEHPBDK@Z	100.0000	100.0000	2	1b2841f8b979	0x13946
 registryhelper	?Set@CRegMgr@@QAEHPBDPAXH@Z	100.0000	100.0000	2	1b2841f8b979	0x139410	100.0000	
 registryhelper	?SetSubKey@CRegMgr@@QAEHPBD@Z	100.0000	100.0000	3	41b6927d5fc0	0x139370	100.0000	
 registryhelper	?Term@CRegMgr@@QAEXXZ	100.0000	100.0000	4	e96a733ea09f	0x139330	100.0000	
-rezarchive	??0CRezArchive@@QAE@PADHH@Z	100.0000	100.0000	7	7d2971569342	0x13ab00	100.0000	
-rezarchive	??0CRezArchive@@QAE@XZ	100.0000	100.0000	7	7d2971569342	0x13aa10	100.0000	
+rezarchive	??0CRezArchive@@QAE@PADHH@Z	100.0000	100.0000	8	0dff781cdaaf	0x13ab00	100.0000	
+rezarchive	??0CRezArchive@@QAE@XZ	100.0000	100.0000	8	0dff781cdaaf	0x13aa10	100.0000	
 rezarchive	??0CRezArchiveDir@@QAE@PAVCRezArchive@@PAV0@PBDHHHHH@Z	100.0000	100.0000	5	dfcbbc46fbec	0x139de0	100.0000	
 rezarchive	??0CRezArchiveEntry@@QAE@XZ	100.0000	100.0000	4	c9fa180e8b3d	0x1396f0	100.0000	
 rezarchive	??0CRezArchiveType@@QAE@HPAVCRezArchiveDir@@H@Z	100.0000	100.0000	4	ec4c8e363f43	0x139c80	100.0000	
 rezarchive	??0CRezArchiveType@@QAE@HPAVCRezArchiveDir@@HH@Z	100.0000	100.0000	4	ec4c8e363f43	0x139bf0	100.0000	
-rezarchive	??1CRezArchive@@QAE@XZ	100.0000	100.0000	6	6e09e9bae9ef	0x13abc0	100.0000	
+rezarchive	??1CRezArchive@@QAE@XZ	100.0000	100.0000	7	ff075a965df6	0x13abc0	100.0000	
 rezarchive	??1CRezArchiveDir@@QAE@XZ	100.0000	100.0000	5	26fcf5ecc8c3	0x139ee0	100.0000	
 rezarchive	??1CRezArchiveType@@QAE@XZ	100.0000	100.0000	6	769f8402d432	0x139cf0	100.0000	
 rezarchive	??1CRezDirHashTable@@QAE@XZ	100.0000	100.0000	1	cpp:c31a1659255e	0x139ec0	100.0000	
 rezarchive	??1CRezEntryPoolBlockList@@QAE@XZ	100.0000	100.0000	1	cpp:c31a1659255e	0x13abb0	100.0000	
 rezarchive	??1CRezItmHashTableByID@@QAE@XZ	100.0000	100.0000	1	cpp:c31a1659255e	0x139c70	100.0000	
 rezarchive	??1CRezItmHashTableByName@@QAE@XZ	100.0000	100.0000	1	cpp:c31a1659255e	0x139dd0	100.0000	
-rezarchive	??1CRezStorageList@@QAE@XZ	100.0000	100.0000	1	cpp:c31a1659255e	0x13aaf0	100.0000	
+rezarchive	??1CRezStorageList@@QAE@XZ	100.0000	100.0000	1	cpp:c31a1659255e	0x13aaf0	100.0000	absent
 rezarchive	??1CRezTypeHashTable@@QAE@XZ	100.0000	100.0000	1	cpp:c31a1659255e	0x139ed0	100.0000	
 rezarchive	?AcquireEntry@CRezArchive@@QAEPAUCRezArchiveEntry@@XZ	100.0000	100.0000	7	0ef7a1ec9c1e	0x13c0c0	100.0000	
 rezarchive	?AtEnd@CRezArchiveEntry@@QAEHXZ	100.0000	100.0000	2	348c3dc01936	0x139bc0	100.0000	
-rezarchive	?CheckStorages@CRezArchive@@QAEHXZ	100.0000	100.0000	3	e23515b2fdf3	0x13ba20	100.0000	
-rezarchive	?Close@CRezArchive@@QAEHH@Z	100.0000	100.0000	4	c8c07a6ff6e6	0x13b850	100.0000	
-rezarchive	?CreateEntry@CRezArchiveDir@@QAEPAUCRezArchiveEntry@@IPBDPAVCRezArchiveType@@PAVCRezItmBase@@@Z	100.0000	100.0000	4	382387cc2500	0x13a4b0	100.0000	
+rezarchive	?CheckStorages@CRezArchive@@QAEHXZ	100.0000	100.0000	4	cff33d14397c	0x13ba20	100.0000	
+rezarchive	?Close@CRezArchive@@QAEHH@Z	100.0000	100.0000	5	2e82ef3f68f2	0x13b850	100.0000	
+rezarchive	?CreateEntry@CRezArchiveDir@@QAEPAUCRezArchiveEntry@@IPBDPAVCRezArchiveType@@PAVCBaseRezFile@@@Z	100.0000	100.0000	5	268d0e803b60	0x13a4b0	100.0000	
 rezarchive	?CreateNamedEntry@CRezArchiveDir@@QAEPAUCRezArchiveEntry@@PAXPBDH@Z	100.0000	100.0000	7	0f1df46057e4	0x13a400	100.0000	
 rezarchive	?CreateSubdirectory@CRezArchiveDir@@QAEPAV1@PBD@Z	100.0000	100.0000	5	9a760b11490b	0x13a330	100.0000	
 rezarchive	?FindDirectoryByPath@CRezArchive@@QAEPAVCRezArchiveDir@@PBD@Z	100.0000	100.0000	3	4312f814a118	0x13c030	100.0000	
@@ -3572,25 +3572,25 @@ rezarchive	?GetDirectoryName@CRezArchiveEntry@@QAEPADXZ	100.0000	100.0000	2	3dc2
 rezarchive	?GetDirectoryPath@CRezArchiveEntry@@QAEPADPADH@Z	100.0000	100.0000	2	007ddfd78b1c	0x139810	100.0000	
 rezarchive	?GetRootDirectory@CRezArchive@@QAEPAVCRezArchiveDir@@XZ	100.0000	100.0000	2	730740b6b157	0x13b900	100.0000	
 rezarchive	?GetTypeTag@CRezArchiveEntry@@QAEIXZ	100.0000	100.0000	3	1f720ba39469	0x139800	100.0000	
-rezarchive	?ImportDirectoryTree@CRezArchive@@QAEHPAVCRezItmBase@@PAVCRezArchiveDir@@PADH@Z	100.0000	100.0000	7	49d04a8feb5e	0x13b300	100.0000	
-rezarchive	?Initialize@CRezArchiveEntry@@QAEXPAVCRezArchiveDir@@PBDPAXPAVCRezArchiveType@@2HHHH2PAVCRezItmBase@@@Z	100.0000	100.0000	4	e6ed906ac910	0x139710	100.0000	
+rezarchive	?ImportDirectoryTree@CRezArchive@@QAEHPAVCBaseRezFile@@PAVCRezArchiveDir@@PADH@Z	100.0000	100.0000	8	801a51dfdb92	0x13b300	100.0000	
+rezarchive	?Initialize@CRezArchiveEntry@@QAEXPAVCRezArchiveDir@@PBDPAXPAVCRezArchiveType@@2HHHH2PAVCBaseRezFile@@@Z	100.0000	100.0000	5	66e7f07a15f4	0x139710	100.0000	
 rezarchive	?IsDataLoaded@CRezArchiveEntry@@QAEHXZ	100.0000	100.0000	2	3f308eb832c2	0x139a00	100.0000	
 rezarchive	?IsDirectoryPath@CRezArchive@@QAEHPAD@Z	100.0000	100.0000	2	2023744e7bc7	0x13c080	100.0000	
 rezarchive	?LoadData@CRezArchiveEntry@@QAEPADXZ	100.0000	100.0000	3	849f99c74d9c	0x139960	100.0000	
 rezarchive	?MakeTimestamp@CRezArchive@@QAEHXZ	100.0000	100.0000	2	15b0ee7aa753	0x13ba70	100.0000	
-rezarchive	?MergeArchive@CRezArchive@@QAEHPADH@Z	100.0000	100.0000	5	490aac504a43	0x13b0c0	100.0000	
+rezarchive	?MergeArchive@CRezArchive@@QAEHPADH@Z	100.0000	100.0000	6	ee5dcb282054	0x13b0c0	100.0000	
 rezarchive	?NextEntry@CRezArchiveDir@@QAEPAUCRezArchiveEntry@@PAU2@@Z	100.0000	100.0000	6	493ceee57ebc	0x13a310	100.0000	
 rezarchive	?NextSubdirectory@CRezArchiveDir@@QAEPAV1@PAV1@@Z	100.0000	100.0000	6	c82e0a3cb0a5	0x13a280	100.0000	
 rezarchive	?NextType@CRezArchiveDir@@QAEPAVCRezArchiveType@@PAV2@@Z	100.0000	100.0000	6	33fc354d0388	0x13a2d0	100.0000	
-rezarchive	?Open@CRezArchive@@QAEHPADHH@Z	100.0000	100.0000	9	60d833d3c789	0x13ad00	100.0000	
+rezarchive	?Open@CRezArchive@@QAEHPADHH@Z	100.0000	100.0000	10	654a169d0400	0x13ad00	100.0000	
 rezarchive	?PackTag@CRezArchive@@QAE?AW4RezTypeTag@@PBD@Z	100.0000	100.0000	2	f6195faead22	0x13b910	100.0000	
-rezarchive	?PreloadData@CRezArchiveDir@@QAEHH@Z	100.0000	100.0000	5	2a3ccf54b20b	0x13a0f0	100.0000	
+rezarchive	?PreloadData@CRezArchiveDir@@QAEHH@Z	100.0000	100.0000	6	381314452320	0x13a0f0	100.0000	
 rezarchive	?Read@CRezArchiveEntry@@QAEHPAXIH@Z	100.0000	100.0000	4	195be51d088f	0x139af0	100.0000	
 rezarchive	?ReadAll@CRezArchiveEntry@@QAEHPAX@Z	100.0000	100.0000	2	c438695148b7	0x139a20	100.0000	
 rezarchive	?ReadAt@CRezArchiveEntry@@QAEHPAXHI@Z	100.0000	100.0000	2	c4defd17f169	0x139a40	100.0000	
 rezarchive	?ReadChar@CRezArchiveEntry@@QAEDXZ	100.0000	100.0000	2	eecafc07e3c3	0x139bd0	100.0000	
-rezarchive	?ReadDirectoryBody@CRezArchiveDir@@QAEHPAVCRezItmBase@@HHH@Z	100.0000	100.0000	9	af9ff1654952	0x13a640	100.0000	
-rezarchive	?ReadDirectoryTree@CRezArchiveDir@@QAEHPAVCRezItmBase@@HHH@Z	100.0000	100.0000	6	e591c7a37c4e	0x13a580	100.0000	
+rezarchive	?ReadDirectoryBody@CRezArchiveDir@@QAEHPAVCBaseRezFile@@HHH@Z	100.0000	100.0000	10	d2310d09c406	0x13a640	100.0000	
+rezarchive	?ReadDirectoryTree@CRezArchiveDir@@QAEHPAVCBaseRezFile@@HHH@Z	100.0000	100.0000	7	b10cca180490	0x13a580	100.0000	
 rezarchive	?ReleaseData@CRezArchiveEntry@@QAEHXZ	100.0000	100.0000	2	363c172ba8d4	0x1399d0	100.0000	
 rezarchive	?ReleaseEntry@CRezArchive@@QAEXPAUCRezArchiveEntry@@@Z	100.0000	100.0000	4	60a5f605005d	0x13c210	100.0000	
 rezarchive	?ReleaseEntryData@CRezArchiveDir@@QAEHH@Z	100.0000	100.0000	7	eac774be193c	0x13a190	100.0000	
@@ -3619,49 +3619,49 @@ rezcoll	?GetFirst@CBaseHash@@QAEPAVCBaseHashItem@@XZ	100.0000	100.0000	3	42dd7c6
 rezcoll	?GetFirstInBin@CBaseHash@@IAEPAVCBaseHashItem@@I@Z	99.0000	99.0000	3	f5716c10bf81	0x184b40	100.0000	
 rezcoll	?GetLast@CBaseHash@@QAEPAVCBaseHashItem@@XZ	99.4737	99.4737	5	95d2e18b8bee	0x184b10	100.0000	
 rezcoll	?Insert@CBaseHash@@QAEXPAVCBaseHashItem@@@Z	99.5455	99.5455	7	110fcdeab8f4	0x184a70	100.0000	
-rezcoll	?Next@CBaseHashItem@@QAEPAV1@XZ	99.6970	99.6970	4	ed814ba1288a	0x1848b0	100.0000	
-rezcoll	?Prev@CBaseHashItem@@QAEPAV1@XZ	100.0000	100.0000	5	66c042dcc1ad	0x184900	100.0000	
-rezfile	??0CRezDir@@QAE@PAVCRezArchive@@H@Z	100.0000	100.0000	5	ed84886b00e3	0x13c940	100.0000	
-rezfile	??0CRezFile@@QAE@PAVCRezArchive@@PADPAVCRezDir@@@Z	100.0000	100.0000	3	f61055fc1eda	0x13cac0	100.0000	
-rezfile	??0CRezItm@@QAE@PAVCRezArchive@@@Z	100.0000	100.0000	3	8f7a1a64458c	0x13c540	100.0000	
-rezfile	??0CRezItmBase@@QAE@PAVCRezArchive@@@Z	100.0000	100.0000	3	f1f5914dd463	0x13c4e0	100.0000	
-rezfile	??1CRezDir@@UAE@XZ	100.0000	100.0000	1	51c16c0f1427	0x13c9b0	100.0000	
-rezfile	??1CRezFile@@UAE@XZ	100.0000	100.0000	1	2857274abab1	0x13cb80	100.0000	
-rezfile	??1CRezItm@@UAE@XZ	100.0000	100.0000	1	ebd1c1804bfe	0x13c590	100.0000	
-rezfile	??1CRezItmBase@@UAE@XZ	100.0000	100.0000	1	02fd00ba5099	0x13c520	100.0000	
-rezfile	??1CRezList@@QAE@XZ	100.0000	100.0000	1	cpp:12d4935582e8	0x13ca30	100.0000	
-rezfile	??_GCRezDir@@UAEPAXI@Z	100.0000	100.0000	1	cpp:12d4935582e8	0x13c990	100.0000	
-rezfile	??_GCRezFile@@UAEPAXI@Z	100.0000	100.0000	1	cpp:12d4935582e8	0x13cb60	100.0000	
-rezfile	??_GCRezItm@@UAEPAXI@Z	100.0000	100.0000	1	cpp:12d4935582e8	0x13c570	100.0000	
-rezfile	??_GCRezItmBase@@UAEPAXI@Z	100.0000	100.0000	1	cpp:12d4935582e8	0x13c500	100.0000	
-rezfile	?Check@CRezDir@@UAEHXZ	100.0000	100.0000	1	1c58359bca25	0x13cab0	100.0000	
-rezfile	?Check@CRezFile@@UAEHXZ	100.0000	100.0000	1	2f91a7bc1944	0x13cdb0	100.0000	
-rezfile	?Check@CRezItm@@UAEHXZ	100.0000	100.0000	2	0e5a4b007ff7	0x13c8f0	100.0000	
-rezfile	?Close@CRezDir@@UAEHXZ	100.0000	100.0000	1	5e33ea83ba6b	0x13ca80	100.0000	
-rezfile	?Close@CRezFile@@UAEHXZ	100.0000	100.0000	1	780311a3ad5d	0x13cd50	100.0000	
-rezfile	?Close@CRezItm@@UAEHXZ	100.0000	100.0000	4	7ed041b65fff	0x13c830	100.0000	
-rezfile	?CloseFile@CRezFile@@QAEHXZ	100.0000	100.0000	3	cccddb1c30de	0x13ce70	100.0000	
-rezfile	?Flush@CRezDir@@UAEHXZ	100.0000	100.0000	1	5b9e049f22fc	0x13caa0	100.0000	
-rezfile	?Flush@CRezFile@@UAEHXZ	100.0000	100.0000	3	59175865b9e0	0x13cd60	100.0000	
-rezfile	?Flush@CRezItm@@UAEHXZ	100.0000	100.0000	3	e5778d97f98a	0x13c8a0	100.0000	
-rezfile	?Noop@CRezFile@@UAEXXZ	100.0000	100.0000	1	d66762e87040	0x13cef0	100.0000	
-rezfile	?Noop@CRezItmBase@@UAEXXZ	100.0000	100.0000	1	89f24270a950	0x13c530	100.0000	
-rezfile	?Open@CRezDir@@UAEHPADHH@Z	100.0000	100.0000	2	2cb6cdb5a18e	0x13ca60	100.0000	
-rezfile	?Open@CRezFile@@UAEHPADHH@Z	100.0000	100.0000	2	aa96fc766651	0x13cd40	100.0000	
-rezfile	?Open@CRezItm@@UAEHPADHH@Z	100.0000	100.0000	3	07dd8d70e496	0x13c760	100.0000	
-rezfile	?OpenFile@CRezFile@@QAEHXZ	100.0000	100.0000	2	235c3f3f1afd	0x13cdc0	100.0000	
-rezfile	?Read@CRezDir@@UAEHHHIPAX@Z	100.0000	100.0000	1	b77fbef00ebe	0x13ca40	100.0000	
-rezfile	?Read@CRezFile@@UAEHHHIPAX@Z	100.0000	100.0000	2	f45590a668d3	0x13cc00	100.0000	
-rezfile	?Read@CRezItm@@UAEHHHIPAX@Z	100.0000	100.0000	2	bdc67a19c31c	0x13c600	100.0000	
-rezfile	?UnusedListHook@CRezList@@UAEXXZ	100.0000	100.0000	1	e915f84209b9	0x13c4d0	100.0000	
-rezfile	?Write@CRezDir@@UAEHHHIPAX@Z	100.0000	100.0000	1	25c187cec43d	0x13ca50	100.0000	
-rezfile	?Write@CRezFile@@UAEHHHIPAX@Z	100.0000	100.0000	2	7c3bbe6a4315	0x13cca0	100.0000	
-rezfile	?Write@CRezItm@@UAEHHHIPAX@Z	100.0000	100.0000	2	4d8d3ada6258	0x13c6c0	100.0000	
-rezlist	?AddHead@CObjList@@QAEXPAVCRezItmBase@@@Z	100.0000	100.0000	1	4129662ec7e8	0x1851e0	100.0000	
-rezlist	?AddTail@CRezList@@QAEXPAVCRezItmBase@@@Z	100.0000	100.0000	1	2b9415b30fda	0x185210	100.0000	
-rezlist	?InsertAfter@CRezList@@QAEXPAVCRezItmBase@@0@Z	100.0000	100.0000	1	04f110dae60d	0x185240	100.0000	
-rezlist	?InsertBefore@CRezList@@QAEXPAVCRezItmBase@@0@Z	100.0000	100.0000	1	2a2010470415	0x185290	100.0000	
-rezlist	?Remove@CObjList@@QAEXPAVCRezItmBase@@@Z	100.0000	100.0000	2	108458590919	0x1852e0	100.0000	
+rezcoll	?Next@CBaseHashItem@@QAEPAV1@XZ	99.6970	99.6970	5	52c5d36c945d	0x1848b0	100.0000	
+rezcoll	?Prev@CBaseHashItem@@QAEPAV1@XZ	100.0000	100.0000	6	f329f283ad92	0x184900	100.0000	
+rezfile	??0CBaseRezFile@@QAE@PAVCRezArchive@@@Z	100.0000	100.0000	4	be0b9eeebde4	0x13c4e0	100.0000	
+rezfile	??0CRezFile@@QAE@PAVCRezArchive@@@Z	100.0000	100.0000	4	4127ce0a092c	0x13c540	100.0000	
+rezfile	??0CRezFileDirectoryEmulation@@QAE@PAVCRezArchive@@H@Z	100.0000	100.0000	6	d827e7656ed5	0x13c940	100.0000	
+rezfile	??0CRezFileSingleFile@@QAE@PAVCRezArchive@@PBDPAVCRezFileDirectoryEmulation@@@Z	100.0000	100.0000	4	5c66917913d6	0x13cac0	100.0000	
+rezfile	??1CBaseRezFile@@UAE@XZ	100.0000	100.0000	2	63a98984a022	0x13c520	100.0000	
+rezfile	??1CRezFile@@UAE@XZ	100.0000	100.0000	1	f4c54fbdfa0d	0x13c590	100.0000	
+rezfile	??1CRezFileDirectoryEmulation@@UAE@XZ	100.0000	100.0000	2	d179d368fe75	0x13c9b0	100.0000	
+rezfile	??1CRezFileSingleFile@@UAE@XZ	100.0000	100.0000	2	c02022ecf5c5	0x13cb80	100.0000	
+rezfile	??1CRezList@@QAE@XZ	100.0000	100.0000	1	cpp:12d4935582e8	0x13ca30	100.0000	absent
+rezfile	??_GCBaseRezFile@@UAEPAXI@Z	100.0000	100.0000	1	cpp:12d4935582e8	0x13c500	100.0000	
+rezfile	??_GCRezFile@@UAEPAXI@Z	100.0000	100.0000	1	cpp:55b8d720896a	0x13c570	100.0000	
+rezfile	??_GCRezFileDirectoryEmulation@@UAEPAXI@Z	100.0000	100.0000	1	cpp:12d4935582e8	0x13c990	100.0000	
+rezfile	??_GCRezFileSingleFile@@UAEPAXI@Z	100.0000	100.0000	1	cpp:12d4935582e8	0x13cb60	100.0000	
+rezfile	?Close@CRezFile@@UAEHXZ	100.0000	100.0000	1	4cdb463b90e5	0x13c830	100.0000	
+rezfile	?Close@CRezFileDirectoryEmulation@@UAEHXZ	100.0000	100.0000	2	2f8e51234e23	0x13ca80	100.0000	
+rezfile	?Close@CRezFileSingleFile@@UAEHXZ	100.0000	100.0000	2	880a35909269	0x13cd50	100.0000	
+rezfile	?Flush@CRezFile@@UAEHXZ	100.0000	100.0000	1	e9a521f1bdf0	0x13c8a0	100.0000	
+rezfile	?Flush@CRezFileDirectoryEmulation@@UAEHXZ	100.0000	100.0000	2	9018d797b86e	0x13caa0	100.0000	
+rezfile	?Flush@CRezFileSingleFile@@UAEHXZ	100.0000	100.0000	4	21d93d2cd93e	0x13cd60	100.0000	
+rezfile	?Open@CRezFile@@UAEHPBDHH@Z	100.0000	100.0000	4	b353e2ffd27c	0x13c760	100.0000	
+rezfile	?Open@CRezFileDirectoryEmulation@@UAEHPBDHH@Z	100.0000	100.0000	3	6960e9522999	0x13ca60	100.0000	
+rezfile	?Open@CRezFileSingleFile@@UAEHPBDHH@Z	100.0000	100.0000	3	8fba19c6164f	0x13cd40	100.0000	
+rezfile	?Read@CRezFile@@UAEIIIIPAX@Z	100.0000	100.0000	3	59e7315b30ed	0x13c600	100.0000	
+rezfile	?Read@CRezFileDirectoryEmulation@@UAEIIIIPAX@Z	100.0000	100.0000	2	eba64dcdb5af	0x13ca40	100.0000	
+rezfile	?Read@CRezFileSingleFile@@UAEIIIIPAX@Z	100.0000	100.0000	3	2eb48429a660	0x13cc00	100.0000	
+rezfile	?ReallyClose@CRezFileSingleFile@@AAEHXZ	100.0000	100.0000	4	b05ba429fc73	0x13ce70	100.0000	
+rezfile	?ReallyOpen@CRezFileSingleFile@@AAEHXZ	100.0000	100.0000	3	07baa2b5a54a	0x13cdc0	100.0000	
+rezfile	?VerifyFileOpen@CRezFile@@UAEHXZ	100.0000	100.0000	3	3febaa42acf4	0x13c8f0	100.0000	
+rezfile	?VerifyFileOpen@CRezFileDirectoryEmulation@@UAEHXZ	100.0000	100.0000	2	adb86978c218	0x13cab0	100.0000	
+rezfile	?VerifyFileOpen@CRezFileSingleFile@@UAEHXZ	100.0000	100.0000	2	1961b326fe4b	0x13cdb0	100.0000	
+rezfile	?VirtualFoo@CBaseRezFile@@UAEXXZ	100.0000	100.0000	2	75823f0c8d1e	0x13c530	100.0000	
+rezfile	?VirtualFoo@CRezFileSingleFile@@UAEXXZ	100.0000	100.0000	2	087c86cf4cb7	0x13cef0	100.0000	
+rezfile	?VirtualFoo@CRezFileSingleFileList@@UAEXXZ	100.0000	100.0000	2	6a78a942726c	0x13c4d0	100.0000	
+rezfile	?Write@CRezFile@@UAEIIIIPAX@Z	100.0000	100.0000	3	fa0dc3c91178	0x13c6c0	100.0000	
+rezfile	?Write@CRezFileDirectoryEmulation@@UAEIIIIPAX@Z	100.0000	100.0000	2	a05b50588f39	0x13ca50	100.0000	
+rezfile	?Write@CRezFileSingleFile@@UAEIIIIPAX@Z	100.0000	100.0000	3	2cb2ae6a2b05	0x13cca0	100.0000	
+rezlist	?Delete@CVirtBaseList@@QAEXPAVCVirtBaseListItem@@@Z	100.0000	100.0000	3	1155d2556df8	0x1852e0	100.0000	
+rezlist	?InsertAfter@CVirtBaseList@@QAEXPAVCVirtBaseListItem@@0@Z	100.0000	100.0000	2	16617ade1e1c	0x185240	100.0000	
+rezlist	?InsertBefore@CVirtBaseList@@QAEXPAVCVirtBaseListItem@@0@Z	100.0000	100.0000	2	bbbfc0f5467a	0x185290	100.0000	
+rezlist	?InsertFirst@CVirtBaseList@@QAEXPAVCVirtBaseListItem@@@Z	100.0000	100.0000	2	c1751434ac22	0x1851e0	100.0000	
+rezlist	?InsertLast@CVirtBaseList@@QAEXPAVCVirtBaseListItem@@@Z	100.0000	100.0000	2	ece09ce92af8	0x185210	100.0000	
 rezmgr	?PerFrameTick@CGruntzMgr@@UAEHXZ	100.0000	100.0000	6	fc44eebe446e	0x8b740	100.0000	
 rezsync	?GetRezPath@CGruntzMgr@@QAE?AVCString@@XZ	100.0000	100.0000	1	6c4e5160b9ee	0x85500	100.0000	
 rezsync	?Run@CGruntzMgr@@UAEHPAVCGameWnd@@PAD@Z	91.6646	91.6646	65	a585327ef61b	0x83450	91.6646	
@@ -3796,7 +3796,7 @@ sbi_rectonly	?InitTabRects@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	2	be6bc86ebdd
 sbi_rectonly	?LoadBattlezItemConfig@CStatusBarMgr@@QAEHPAVCDDrawSurfaceMgr@@@Z	99.1300	99.1300	6	1edfe9d919ee	0xfdc00	99.1300	
 sbi_rectonly	?LoadChipMachineConfig@CStatusBarMgr@@QAEXXZ	97.9735	97.9735	18	5b5505faee7f	0x106bb0	97.9735	
 sbi_rectonly	?LoadGooCookingSprite@CStatusBarMgr@@QAEHH@Z	100.0000	100.0000	11	dbec1d8cdea6	0x1055b0	100.0000	
-sbi_rectonly	?LoadMainStatusBarSprite@CStatusBarMgr@@QAEHXZ	99.8246	99.6140	3	576a4cce0ccb	0xfe6b0	99.8246	
+sbi_rectonly	?LoadMainStatusBarSprite@CStatusBarMgr@@QAEHXZ	99.8246	99.8246	3	576a4cce0ccb	0xfe6b0	99.8246	
 sbi_rectonly	?LoadMultiplayerBattlezConfig@CStatusBarMgr@@QAEXH@Z	100.0000	100.0000	8	569c7f308aae	0x107ae0	100.0000	
 sbi_rectonly	?LoadRezMachineConfig@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	16	6af5c51f9019	0x105e40	100.0000	
 sbi_rectonly	?LoadStatzTabToggleSprite@CStatusBarMgr@@QAEHHW4StatusSampleMode@@@Z	100.0000	100.0000	12	3a7635ed9b29	0x104e60	100.0000	

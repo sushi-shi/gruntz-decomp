@@ -113,4 +113,4 @@ CRezArchiveDir* CRezDirHashTable::Find(const char* name, i32 ignoreCase) {
 }
 
 RVA(0x0013c4c0, 0x1)
-void CRezStorageList::UnusedListHook() {}
+void CBaseRezFileList::VirtualFoo() {}

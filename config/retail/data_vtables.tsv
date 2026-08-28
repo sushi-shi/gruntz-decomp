@@ -155,13 +155,13 @@ rva	size	name	kind	note
 0x1ef744	0x4	??_7CRezTypeHash@@6B@	primary	surviving-lineage
 0x1ef748	0x4	??_7CRezDirHash@@6B@	primary	surviving-lineage
 0x1ef750	0xc	??_7CRezArchive@@6B@	primary	
-0x1ef75c	0x4	??_7CRezStorageList@@6B@	primary	
-0x1ef760	0x4	??_7CObjListBase@@6B@	primary	
-0x1ef768	0x20	??_7CRezItmBase@@6B@	primary	
-0x1ef788	0x20	??_7CRezItm@@6B@	primary	
-0x1ef7a8	0x20	??_7CRezDir@@6B@	primary	
-0x1ef7c8	0x4	??_7CRezList@@6B@	primary	
-0x1ef7d0	0x20	??_7CRezFile@@6B@	primary	
+0x1ef75c	0x4	??_7CBaseRezFileList@@6B@	primary	surviving-lineage
+0x1ef760	0x4	??_7CVirtBaseList@@6B@	primary	surviving-lineage
+0x1ef768	0x20	??_7CBaseRezFile@@6B@	primary	surviving-lineage
+0x1ef788	0x20	??_7CRezFile@@6B@	primary	surviving-lineage
+0x1ef7a8	0x20	??_7CRezFileDirectoryEmulation@@6B@	primary	surviving-lineage
+0x1ef7c8	0x4	??_7CRezFileSingleFileList@@6B@	primary	surviving-lineage
+0x1ef7d0	0x20	??_7CRezFileSingleFile@@6B@	primary	surviving-lineage
 0x1ef7f0	0x24	??_7CDDSurface@@6B@	primary	
 0x1efa58	0x30	??_7CFileImageSurface@@6B@	primary	
 0x1efa88	0x2c	??_7CDDrawOverlaySurface@@6B@	primary	

@@ -13,7 +13,7 @@
 class CRezArchiveDir;
 class CRezArchiveType;
 
-class CRezItmBase;
+class CBaseRezFile;
 
 struct CRezArchiveEntry {
 
@@ -45,7 +45,7 @@ struct CRezArchiveEntry {
         i32 time,
         i32 keyCount,
         void* keys,
-        CRezItmBase* storage
+        CBaseRezFile* storage
     );
     void Reset();
     i32 SetPos(i32 position);
@@ -67,7 +67,7 @@ struct CRezArchiveEntry {
     i32 m_cursor;
 
     CRezItmHashByName m_heName;
-    CRezItmBase* m_storage;
+    CBaseRezFile* m_storage;
     char* m_loadedData;
 };
 

@@ -1280,7 +1280,7 @@ flags = "cpp-rtti"
 
 [[unit]]
 unit = "rezlist"
-source = "src/Rez/RezList.cpp"
+source = "src/Lith/VirtList.cpp"
 flags = "cpp"
 
 [[unit]]

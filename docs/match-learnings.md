@@ -107,15 +107,16 @@ Low-detail/front-end-class gate global `@0x6455d4`.
 entropy): builds m_pathA "Gruntz.REZ" / m_pathB FEC, `GetGruntzDriveLetter`@0x8fa70,
 `ReportError`@0x8dc60. **Manager ctor @0x83030 DEFERRED** (store-order-entropy carcass).
 
-**RezMgr container node classes (THREE distinct layouts, do NOT merge):**
-- `CRezItmBase` (16 B, ctor @0x13c4e0): vtbl@+0 (0x5ef768), parent@+0xc.
-- `CRezItm : CRezItmBase` (0x24 B, ctor @0x13c540): vtbl@+0 (0x5ef788), +0x10=0, +0x14=0,
-  +0x20=-1. **BYTE-EXACT 99.23%.**
-- `CRezDir : CRezItmBase` (0x38 B, ctor @0x13c940): vtbl@+0 (0x5ef7a8), embedded
-  child-collection two-vtbl @+0x10/+0x1c (0x5ef7c8), head@+0x14/tail@+0x18=0,
-  +0x20/+0x24/+0x28/+0x34=0, +0x2c=RezMgr back-ptr (arg2), +0x30=1. ctor PLATEAU 78.45%
-  (store-schedule entropy; do NOT model the collection as a member-with-ctor — that emitted
-  an out-of-line ctor + EH frame → 15%).
+**RezMgr storage classes (surviving-source identities, do not flatten):**
+- `CBaseRezFile : CVirtBaseListItem` (16 B, ctor @0x13c4e0): vtbl@+0
+  (0x5ef768), list links at +4/+8, manager at +0xc.
+- `CRezFile : CBaseRezFile` (0x24 B, ctor @0x13c540): vtbl@+0 (0x5ef788),
+  `FILE*`/name at +0x10/+0x14 and last-seek position -1 at +0x20.
+- `CRezFileDirectoryEmulation : CBaseRezFile` (0x38 B, ctor @0x13c940):
+  vtbl@+0 (0x5ef7a8), two embedded `CRezFileSingleFileList` members at
+  +0x10/+0x1c, followed by open-count/max/read-only/create-new fields.
+  Restoring the complete `CVirtBaseList` and typed-list layer kept every
+  non-EH function in the `rezfile` and `rezlist` units exact.
 - **Load's node** (@0x13a0f0, BYTE-EXACT 99.57%): +0x10 payload SIZE, +0x18 archive-source
   ptr, +0x48 loaded-buffer/already-loaded gate, +0x38 child collection. **OpenSub's node**
   (@0x13b0c0, DEFERRED): +0x1c child COUNT, +0x10 list-append, +0x40 gate, +0x64 name-buf,

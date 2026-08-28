@@ -276,14 +276,13 @@ Seam fns:
    TU (contains zlib `_uncompress`!). Probable sub-objs (weak, resolution not
    required here):
    - `0x1848b0-0x184b5d` rezcoll+rezarchive+hash woven
-     (`CRezItmHashByName`/`CRezStorageList`/`CBaseHash`) — one small
+     (`CRezItmHashByName`/`CBaseRezFileList`/`CBaseHash`) — one small
      archive/hash utility obj;
    - `0x184b70-0x1851d3` debugprintf+rangeset woven (`RezDebugInit`,
      `RezDebugPrintf*`, `CDebugConfig::InitFromEnv` + `CRangeSet` — the debug
      config parses range strings, same file); 1-frag debugprintf init run
      @`0x184b60` at its head;
-   - `0x1851e0-0x1852d8` rezlist (`CRezList`);
-   - `0x1852e0` rezarchive (`?Remove@CObjList` — 1 fn, possibly COMDAT);
+   - `0x1851e0-0x185315` rezlist (`CVirtBaseList`);
    - `0x185320` zlib `uncompr.c` (library obj, vendor zlib-1.0.4);
    - `0x1853b0` `WapCompress` (the engine wrapper — own obj or a rez-file tail).
 3. **MenuItem.cpp** `[0x185460 .. 0x185a0e]` — `CMenuItem` out-of-line
@@ -677,10 +676,11 @@ image+fileimageblit+fileimagerundecode+lutshaderect+fileimageloadbyext
   frags, no private cells, no EH sites, no weave -> cannot bind to A or prove
   its own obj. Left split (conservative partial).
 * **C (rez file = ONE TU).** DECISIVE shared private cells: the "r+b"/"w+b"
-  fopen-mode literals 0x21a0a4/0x21a0a8 are referenced ONLY by Open@CRezItm
-  (0x13c760, rezmgr) + Open@CRezFile (0x13cdc0, rezfile). Text A-B-A:
-  CloseAllOpen@CRezFileMgr (0x13ca80) inside the rezmgr run, ??1CRezDir13cb80
-  (0x13cb80) inside the rezfile neighborhood. EH sites (CRezItm/CRezDir dtors,
+  fopen-mode literals 0x21a0a4/0x21a0a8 are referenced ONLY by `CRezFile::Open`
+  (0x13c760) + `CRezFileSingleFile::ReallyOpen` (0x13cdc0). Text A-B-A:
+  `CRezFileDirectoryEmulation::Close` (0x13ca80) inside the run and
+  `CRezFileSingleFile::~CRezFileSingleFile` (0x13cb80) inside the following
+  neighborhood. EH sites (`CRezFile`/`CRezFileDirectoryEmulation` dtors,
   CRezParseNode ctor) -> /GX; rezfile's base profile flips.
 * **D/E (GameWnd vs GameApp = TWO TUs).** Two clean class blocks, no weave
   across 0x13d590; GameWindowProc@CGameApp (0x13cff0) is the static WNDPROC
@@ -1036,7 +1036,7 @@ sub-structure is now resolved (was "weak, resolution not required"):
    - DebugPrintf.cpp `[0x184b70..0x1851d3]` - its OWN obj, positively proven: own
      init frag i1493 @0x184b60 (ctor-attributed -> RezDebugInit) + own PRIVATE
      initialized-.data band 0x224eb4..0x224f0c (AddFromString + InitFromEnv);
-   - RezList.cpp `[0x1851e0..0x185315]` (CRezList + CObjList::Remove);
+   - VirtList.cpp `[0x1851e0..0x185315]` (`CVirtBaseList`);
    - vendor zlib uncompr.obj @0x185320 (references zlib's shared 0x224f14 with the
      deflate/inflate band);
    - WapCompress.cpp @0x1853b0 (the engine wrapper; its 0x224f14 ref is use of
