@@ -27,7 +27,7 @@ u32 g_bfInitS[4][256] = BF_PI_S_INIT;
 
 RVA(0x0016f6c0, 0x12)
 void CCryptMgr::SetKey(const char* key) {
-    InitializeBlowfish(key, 4);
+    InitializeBlowfish(key, sizeof(key));
 }
 
 RVA(0x0016f6e0, 0x76)
