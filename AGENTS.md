@@ -105,7 +105,12 @@
   a residue irreducible:
   * recover exact parameter and local storage widths across the complete call
     family; in particular, distinguish `u8` from `bool` and do not insert bool
-    normalization when dirty upper bytes or the callee ABI support a byte;
+    normalization when dirty upper bytes or the callee ABI support a byte.
+    Recover cv/ref and overload boundaries across the family too: a const
+    source-facing wrapper, by-value argument, const-reference result, or
+    receiver-qualified overload can be folded completely while still deciding
+    the caller's temporaries and evaluation order. The emitted implementation
+    ABI alone does not disprove such an inline adapter;
   * test the authentic local census and lifetimes: distinct old/new/result
     locals, deliberate parameter or local reuse, overwrite versus a new result,
     declaration and first-use order, removal of unjustified cached member
@@ -118,13 +123,23 @@
     helpers/macros, accessors, constructors, by-value min/max or selectors, and
     same-TU candidates all change statement count, pseudo-register lifetime,
     EH state, and the inliner candidate set even when their arithmetic is
-    equivalent. Assignment order inside an expanded helper can also recolor
-    caller locals and move the first divergence to before the expansion; after
-    every helper-order A/B compare from the function's first real divergence,
-    and use semantic/member-layout order before transcribing emitted stores;
+    equivalent. This includes one-field setters/getters and const forwarding
+    wrappers whose entire machine body disappears. Assignment order inside an
+    expanded helper can also recolor caller locals and move the first
+    divergence to before the expansion; after every helper-order A/B compare
+    from the function's first real divergence, and use semantic/member-layout
+    order before transcribing emitted stores. Do not replace an attested helper
+    call with its arithmetic merely because the expansion is obvious: the call
+    boundary can create the retail FP or integer temporary homes;
   * test source statement grouping and evaluation order: ternary versus split
     `if`, one expression versus sequenced assignments, constructor/member-init
-    order, stores before ownership changes, and independent operand order;
+    order, stores before ownership changes, independent operand order, and one
+    reused result local passed through successive setters versus direct member
+    assignments. An explicit state flag plus one shared exit tail is a distinct
+    source shape from duplicated early-return arms even when both implement the
+    same logic. For symmetric arms, reproduce equal-value store order in BOTH
+    arms: changing only one can prevent VC5's cross-jumper from merging the
+    common tail;
   * test loop and exit spelling, including post-decrement/count-down loops,
     `while (1)` plus `break`, separate `continue` paths, `goto` into a shared
     guard or exit, and duplicated symmetric arms whose textual statement order
@@ -134,7 +149,27 @@
     statement orders;
   * when equal operations appear in a different order, consider repeated
     inline-helper calls or source-line groups rather than assuming a scheduler
-    permutation; statement count can also move unrelated inline-budget edges.
+    permutation; statement count can also move unrelated inline-budget edges;
+  * preserve semantic identity as well as layout. Two same-shaped help tables,
+    fields, accessors, or folded overloads are not interchangeable merely
+    because the masked bytes agree. Ordered relocations, addends, consumers,
+    and source ownership decide whether they are the same entity;
+  * when an older source oracle and retail assign an operation to different
+    layers, inspect the caller/callee pair before rejecting the oracle. A later
+    revision can move work from an inner handler to its outer dispatcher, or
+    replace one field/accessor while retaining the surrounding source shape.
+    Keep the shared positive structure and take the moved operation from retail;
+    absence in the older body is never negative evidence for retail.
+  The first bounded HoMM3 pass closed functions through four independent facts:
+  a helper boundary plus its store order, the original local census/lifetimes,
+  a post-decrement loop statement, and a byte parameter propagated across its
+  call boundary. The follow-up closures added an explicit exit-state carrier
+  and shared tail, const forwarding/accessor boundaries, separate FP/result
+  temporaries, and source-visible setter/min-max statements. One authentic
+  abstraction restoration deliberately moved a 99.987% local maximum down to
+  95.88% before composition reached 100%; this is direct evidence for applying
+  EXPLORATORY DESCENT and the INLINE/MACRO PRIOR together, not treating the
+  first score dip as rejection.
   These are hypotheses, not imported ground truth. SH4/Dreamcast instruction
   order, an absent call, VC6 register choices, STL internals, EH lowering, and
   `/Ob2` budget behavior do not transfer directly to x86 VC5. Revision-skewed
