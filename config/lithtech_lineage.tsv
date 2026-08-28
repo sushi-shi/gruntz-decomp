@@ -2,12 +2,12 @@
 # Every mechanically plausible candidate is classified here; pending rows form the work queue.
 # Entity-specific rows refine a file-level * candidate. Every retained divergence is recorded only here.
 id	wave	source_commit	source_blob	source_path	source_symbol	gruntz_symbol	rva	module	relation	decision	reason	retail_evidence	landed_commit
-src-libs-lith-basehash-cpp	1	845119c	683c0b4955c9dbebcebe1dd0f22deb1ad468f115	libs/lith/basehash.cpp	*			Rez	direct-family	pending			
-hash-prev-authored-loop	1	845119c	683c0b4955c9dbebcebe1dd0f22deb1ad468f115	libs/lith/basehash.cpp	CBaseHashItem::Prev	CHashElement::Prev	0x184900	Rez	direct-family	pending			
-src-libs-lith-basehash-h	1	845119c	328afa00f72faca52ffdd24539b46c4424530843	libs/lith/basehash.h	*			Rez	direct-family	pending			
-hash-authentic-family	1	845119c	328afa00f72faca52ffdd24539b46c4424530843	libs/lith/basehash.h	CBaseHash and CBaseHashItem	CHashBase and CHashElement		Rez	direct-family	pending			
-src-libs-lith-baselist-cpp	1	845119c	f1a519e0d6518f3a1839077bd10c47c0c71274cc	libs/lith/baselist.cpp	*			Rez	direct-family	pending			
-src-libs-lith-baselist-h	1	845119c	98cf2befd99aa1b57fa2b9f436b88908aee96e67	libs/lith/baselist.h	*			Rez	direct-family	pending			
+src-libs-lith-basehash-cpp	1	845119c	683c0b4955c9dbebcebe1dd0f22deb1ad468f115	libs/lith/basehash.cpp	*			Rez	direct-family	take			c8a670137
+hash-prev-authored-loop	1	845119c	683c0b4955c9dbebcebe1dd0f22deb1ad468f115	libs/lith/basehash.cpp	CBaseHashItem::Prev	CBaseHashItem::Prev	0x184900	Rez	direct-family	take			c8a670137
+src-libs-lith-basehash-h	1	845119c	328afa00f72faca52ffdd24539b46c4424530843	libs/lith/basehash.h	*			Rez	direct-family	take			c8a670137
+hash-authentic-family	1	845119c	328afa00f72faca52ffdd24539b46c4424530843	libs/lith/basehash.h	CBaseHash and CBaseHashItem	CBaseHash and CBaseHashItem		Rez	direct-family	take			c8a670137
+src-libs-lith-baselist-cpp	1	845119c	f1a519e0d6518f3a1839077bd10c47c0c71274cc	libs/lith/baselist.cpp	*			Rez,Dsndmgr,Wwd	direct-family	take			c8a670137
+src-libs-lith-baselist-h	1	845119c	98cf2befd99aa1b57fa2b9f436b88908aee96e67	libs/lith/baselist.h	*			Rez,Dsndmgr,Wwd	direct-family	take			c8a670137
 src-libs-lith-baselistcounter-cpp	1	845119c	11b080e3914086e102527629949b49ffb859a29d	libs/lith/baselistcounter.cpp	*			Rez	direct-family	pending			
 src-libs-lith-baselistcounter-h	1	845119c	816a19db50e2704dbe9ec4f6623b42b2b2da4fb2	libs/lith/baselistcounter.h	*			Rez	direct-family	pending			
 src-libs-lith-dprintf-cpp	1	845119c	9987e17248054c320f427e18caebd3711af4042e	libs/lith/dprintf.cpp	*			Rez	direct-family	pending			
@@ -29,6 +29,10 @@ src-libs-lith-virtlist-h	1	845119c	d975e65038e8e092c0622434a4a4452dd13cf8f0	libs
 src-libs-rezmgr-rezfile-cpp	1	845119c	436d9aa58cfad0d11e1666dd7b79199ac96e28c0	libs/rezmgr/rezfile.cpp	*			Rez	direct-family	pending			
 src-libs-rezmgr-rezfile-h	1	845119c	5311516ba337b9b2599524b182c58c5e148efdc3	libs/rezmgr/rezfile.h	*			Rez	direct-family	pending			
 src-libs-rezmgr-rezhash-cpp	1	845119c	671dc4fa253c5e3b6802844a025fffdb1513c779	libs/rezmgr/rezhash.cpp	*			Rez	direct-family	pending			
+rezhash-name-family	1	845119c	671dc4fa253c5e3b6802844a025fffdb1513c779	libs/rezmgr/rezhash.cpp	CRezItmHashByName and CRezItmHashTableByName	CRezItmHashByName and CRezItmHashTableByName		Rez	direct-family	take			c8a670137
+rezhash-name-node-null-guard	1	845119c	671dc4fa253c5e3b6802844a025fffdb1513c779	libs/rezmgr/rezhash.cpp	CRezItmHashByName::HashFunc	CRezItmHashByName::HashFunc	0x13c230	Rez	same-lineage-revision	take-adapted		authentic typed parent/accessor composition retained; retail's exact 0xf-byte body directly dereferences the item and has no surviving-source null branch	c8a670137
+rezhash-type-family	1	845119c	671dc4fa253c5e3b6802844a025fffdb1513c779	libs/rezmgr/rezhash.cpp	CRezTypeHash and CRezTypeHashTable	CRezTypeHash and CRezTypeHashTable		Rez	direct-family	take			c8a670137
+rezhash-directory-family	1	845119c	671dc4fa253c5e3b6802844a025fffdb1513c779	libs/rezmgr/rezhash.cpp	CRezDirHash and CRezDirHashTable	CRezDirHash and CRezDirHashTable		Rez	direct-family	take			c8a670137
 src-libs-rezmgr-rezhash-h	1	845119c	ffd8b4322d8defc4c3c77dfae0979a1f3657155d	libs/rezmgr/rezhash.h	*			Rez	direct-family	pending			
 src-libs-rezmgr-rezmgr-cpp	1	845119c	8dc8f00a3959e072d72c52147e6d329481f41112	libs/rezmgr/rezmgr.cpp	*			Rez	direct-family	pending			
 rez-read-cursor-guard	1	845119c	8dc8f00a3959e072d72c52147e6d329481f41112	libs/rezmgr/rezmgr.cpp	CRezItm::Read	CRezArchiveEntry::Read	0x139af0	Rez	same-lineage-revision	take-adapted		surviving local census and shared storage arms retained; source cursor-past-end early return is absent from retail CFG	fb6b188e1
