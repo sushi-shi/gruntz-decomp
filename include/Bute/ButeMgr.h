@@ -61,7 +61,7 @@ public:
 
     CButeMgr();
 
-    void Init();
+    void Reset();
 
     void Term();
 
@@ -163,7 +163,7 @@ inline bool CButeMgr::Parse(CRezArchiveEntry* stream, const char* key) {
     delete output;
     stream->ReleaseData();
 
-    Init();
+    Reset();
     m_tags.Reset();
     m_modifiedTags.Reset();
     m_addedTags.Reset();

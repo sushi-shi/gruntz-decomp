@@ -107,6 +107,21 @@ Use the corpus only in its positive direction:
   and mangled claims support `char`, so the width was not imported.
 * Bute's boolean state fields are useful layout-compatible type evidence, but changing
   them did not move `Save`; a correct type correction is not automatically a wall lever.
+* The imported Bute implementation also resolves an inferred semantic name. Gruntz's
+  0x170330 body is the surviving `Reset` operation (position, line/count state, failure
+  state, tag name, and attribute name), whereas the later source's `Init` only calls
+  `Term`; rename the body and its callers accordingly. The sibling stream-facing
+  `Parse(istream&)` boundary is a useful negative control rather than an import. Factoring
+  Gruntz's archive tail through it leaves `rezsync` byte-identical, but the same header is
+  expanded inside `CChatBoxOwner::HandleTextInputKey`: cl 5.0 declines the new nested
+  helper, removes the retail-owned `zPTree::Reset` COMDAT, and changes the call set from
+  retail's expanded `Reset`/tree-reset/`ParseGroup` sequence to one `Parse(istream&)`
+  call. An in-class body, the surviving declaration order, and direct versus accessor
+  tree resets do not cross that boundary. Copying the later helper's literal `Reset`
+  before stream assignment also forces a second member store after the opaque call,
+  grows `CGruntzMgr::Run` by twelve bytes and two relocations, and drops 91.6618 ->
+  91.5421; retail has no such post-`Reset` store. Keep the proven semantic identity, but
+  do not import a later abstraction merely because one caller happens to compile flat.
 * The surviving `Save` declares its 4096-byte transfer buffer at function scope before
   the input stream. Gruntz retains that humane scope correction byte-flat. The later
   implementation's optional output filename, `is_open` guard, zero-length promotion,

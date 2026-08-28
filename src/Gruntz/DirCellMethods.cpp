@@ -190,7 +190,7 @@ bool CButeMgr::Parse(CString filename, int streamBase) {
         return false;
     }
 
-    Init();
+    Reset();
     m_streamBase = streamBase;
     m_filename = filename;
 

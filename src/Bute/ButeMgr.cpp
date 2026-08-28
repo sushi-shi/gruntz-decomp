@@ -779,7 +779,7 @@ CButeMgr::CButeMgr() {
 }
 
 RVA(0x00170330, 0x34)
-void CButeMgr::Init() {
+void CButeMgr::Reset() {
     m_pos = 0;
     m_lineNo = 0;
     m_countLine = true;
@@ -1280,7 +1280,7 @@ bool CButeMgr::ParseGroup() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00171640, 0x3f2)
 bool CButeMgr::Save() {
-    Init();
+    Reset();
     if (m_filename.IsEmpty()) {
         return false;
     }
