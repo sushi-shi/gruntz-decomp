@@ -63,6 +63,7 @@ static inline u16* Row16(u8* locked, i32 row, i32 pitch) {
         ((static_cast<u8>((r) >> g_rDown) << g_rUp)                                                \
          | ((static_cast<u8>((g) >> g_gDown) << g_gUp) | static_cast<u8>((b) >> g_bDown)))         \
     )
+#define SQUARE(value) ((value) * (value))
 
 static inline u16 Clut16(u32 byteOffset) {
     return *ClutAtByteOffset(byteOffset);
@@ -1300,25 +1301,19 @@ i32 CDDSurface::Blit824(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
         for (i32 row = this->m_height - 1; row >= 0; row--) {
             u8* dst = locked + row * this->m_pitch;
             for (i32 col = 0; col < this->m_width; col++) {
-                u8 s0 = *srcv++;
-                u8 s1 = *srcv++;
-                u8 s2 = *srcv++;
+                u8 blue = *srcv++;
+                u8 green = *srcv++;
+                u8 red = *srcv++;
                 i32 best = 0;
-                i32 d1 = s1 - pal[0].peGreen;
-                i32 d2 = s0 - pal[0].peBlue;
-                i32 d0 = s2 - pal[0].peRed;
-                i32 bestd = d1 * d1 + d2 * d2 + d0 * d0;
+                i32 bestd = SQUARE(red - pal->peRed) + SQUARE(green - pal->peGreen)
+                            + SQUARE(blue - pal->peBlue);
                 for (i32 k = 1; k < PALETTE_ENTRY_COUNT; k++) {
-                    i32 e0 = s2 - pal[k].peRed;
-                    i32 d = e0 * e0;
-                    i32 e1 = s1 - pal[k].peGreen;
-                    d += e1 * e1;
-                    i32 e2 = s0 - pal[k].peBlue;
-                    d += e2 * e2;
+                    i32 d = SQUARE(red - pal[k].peRed) + SQUARE(green - pal[k].peGreen)
+                            + SQUARE(blue - pal[k].peBlue);
                     if (d < bestd) {
-                        best = k;
                         bestd = d;
-                        if (d == 0) {
+                        best = k;
+                        if (bestd == 0) {
                             break;
                         }
                     }
@@ -1331,25 +1326,19 @@ i32 CDDSurface::Blit824(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
         for (i32 row = 0; row < this->m_height; row++) {
             u8* dst = locked + row * this->m_pitch;
             for (i32 col = 0; col < this->m_width; col++) {
-                u8 s0 = *srcv++;
-                u8 s1 = *srcv++;
-                u8 s2 = *srcv++;
+                u8 blue = *srcv++;
+                u8 green = *srcv++;
+                u8 red = *srcv++;
                 i32 best = 0;
-                i32 d1 = s1 - pal[0].peGreen;
-                i32 d2 = s0 - pal[0].peBlue;
-                i32 d0 = s2 - pal[0].peRed;
-                i32 bestd = d1 * d1 + d2 * d2 + d0 * d0;
+                i32 bestd = SQUARE(red - pal->peRed) + SQUARE(green - pal->peGreen)
+                            + SQUARE(blue - pal->peBlue);
                 for (i32 k = 1; k < PALETTE_ENTRY_COUNT; k++) {
-                    i32 e0 = s2 - pal[k].peRed;
-                    i32 d = e0 * e0;
-                    i32 e1 = s1 - pal[k].peGreen;
-                    d += e1 * e1;
-                    i32 e2 = s0 - pal[k].peBlue;
-                    d += e2 * e2;
+                    i32 d = SQUARE(red - pal[k].peRed) + SQUARE(green - pal[k].peGreen)
+                            + SQUARE(blue - pal[k].peBlue);
                     if (d < bestd) {
-                        best = k;
                         bestd = d;
-                        if (d == 0) {
+                        best = k;
+                        if (bestd == 0) {
                             break;
                         }
                     }
@@ -1384,21 +1373,15 @@ i32 CDDSurface::Blit816(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
                 u8 green = static_cast<u8>((static_cast<u8>((px >> g_gUp)) << g_gDown));
                 u8 blue = static_cast<u8>((static_cast<u8>(px) << g_bDown));
                 i32 best = 0;
-                i32 d1 = green - pal[0].peGreen;
-                i32 d2 = blue - pal[0].peBlue;
-                i32 d0 = red - pal[0].peRed;
-                i32 bestd = d1 * d1 + d2 * d2 + d0 * d0;
+                i32 bestd = SQUARE(red - pal->peRed) + SQUARE(green - pal->peGreen)
+                            + SQUARE(blue - pal->peBlue);
                 for (i32 k = 1; k < PALETTE_ENTRY_COUNT; k++) {
-                    i32 e0 = red - pal[k].peRed;
-                    i32 d = e0 * e0;
-                    i32 e1 = green - pal[k].peGreen;
-                    d += e1 * e1;
-                    i32 e2 = blue - pal[k].peBlue;
-                    d += e2 * e2;
+                    i32 d = SQUARE(red - pal[k].peRed) + SQUARE(green - pal[k].peGreen)
+                            + SQUARE(blue - pal[k].peBlue);
                     if (d < bestd) {
-                        best = k;
                         bestd = d;
-                        if (d == 0) {
+                        best = k;
+                        if (bestd == 0) {
                             break;
                         }
                     }
@@ -1416,21 +1399,15 @@ i32 CDDSurface::Blit816(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
                 u8 green = static_cast<u8>((static_cast<u8>((px >> g_gUp)) << g_gDown));
                 u8 blue = static_cast<u8>((static_cast<u8>(px) << g_bDown));
                 i32 best = 0;
-                i32 d1 = green - pal[0].peGreen;
-                i32 d2 = blue - pal[0].peBlue;
-                i32 d0 = red - pal[0].peRed;
-                i32 bestd = d1 * d1 + d2 * d2 + d0 * d0;
+                i32 bestd = SQUARE(red - pal->peRed) + SQUARE(green - pal->peGreen)
+                            + SQUARE(blue - pal->peBlue);
                 for (i32 k = 1; k < PALETTE_ENTRY_COUNT; k++) {
-                    i32 e0 = red - pal[k].peRed;
-                    i32 d = e0 * e0;
-                    i32 e1 = green - pal[k].peGreen;
-                    d += e1 * e1;
-                    i32 e2 = blue - pal[k].peBlue;
-                    d += e2 * e2;
+                    i32 d = SQUARE(red - pal[k].peRed) + SQUARE(green - pal[k].peGreen)
+                            + SQUARE(blue - pal[k].peBlue);
                     if (d < bestd) {
-                        best = k;
                         bestd = d;
-                        if (d == 0) {
+                        best = k;
+                        if (bestd == 0) {
                             break;
                         }
                     }

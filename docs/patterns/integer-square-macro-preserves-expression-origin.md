@@ -58,6 +58,31 @@ Five macro controls—local `SQR`, local semantic name, top-level `SQR`, top-lev
 identifier and definition position are therefore irrelevant here; the
 preprocessor expansion boundary is the measured cause.
 
+## Cross-function validation
+
+The same transcription defect recurred in both palette-conversion loops in
+`CDDSurface::Blit824` 0x140110 and `CDDSurface::Blit816` 0x140420. Replacing
+their named per-channel delta carriers with the already-proven `SQUARE` macro
+gave two independent positive controls:
+
+| function | expanded carriers | direct `SQUARE` expressions | structural result |
+|---|---:|---:|---|
+| `Blit824` | 69.8301% | 70.7683% | 271 -> retail 265 instructions became exact 265/265; mnemonic multisets became exact |
+| `Blit816` | 72.91% | 91.80% | the residual collapsed to two excess `mov`s, 278 vs 276 instructions |
+
+Both rows retain exact calls, branch/return skeletons, immediates,
+displacements, stores, and ordered referents. Reordering the equal-semantic
+winner assignments to match the exact `FindNearestColor` source family
+(`bestDist = d; best = i`) then moved them to 71.06% and 92.36% without changing
+those structural counts.
+
+A 64-island mixed declaration forest on the structurally corrected `Blit824`
+emitted one identical 70.7683% object. A full nearest-color inline helper and a
+source-consuming `u8*&` inline helper were also byte-flat for that function.
+Those controls leave the larger search boundary undecided, but they strengthen
+the narrow conclusion: the squared operation itself came from macro-expanded
+expressions, and the remaining residue is a separate allocation/lifetime wall.
+
 ## Reverse-use rule
 
 Use this only after `walls diagnose` proves an exact call set and CFG and a mixed
