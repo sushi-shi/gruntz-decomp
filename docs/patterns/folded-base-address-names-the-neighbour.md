@@ -38,6 +38,14 @@ next buffer's base and all six `Decode*` functions report it.
 `?BuildSoundFontPath@@YAHD@Z` is the other direction: `g_sfDir[len - 1]` against
 `g_sfDir` at 0x24dfa0 resolves to 0x24df9f, inside `g_sfRouterId` (0x24df9c, 4 B).
 
+Two later `fileimage` closures demonstrate why the oracle must be exact-site and keep
+the base symbol's large addend. `CDDSurface::CreateFromPcxData` relocates its byte cursor
+limit as `g_grayRamp + 0x401`, which resolves to `s_palPidData + 1`;
+`CDDSurface::DecodePcxData` analogously emits `s_palPcxData + 0x401`, resolving to
+`g_warpU + 1`. The loop writes the named palette in each case. Recording those source
+COFF referents in `config/retail/reloc_referents.tsv` makes both otherwise-identical
+functions exact without renaming either neighbour or changing source.
+
 `SoundDevice::BuildVolumeTable` supplied the stronger negative control. Its
 `i <= 100` loop relocates the terminal compare as `g_volumeTable + 0x190`.
 An unsupported census fence at that address caused the delinker to invent a

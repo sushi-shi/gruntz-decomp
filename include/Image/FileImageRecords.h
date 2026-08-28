@@ -38,6 +38,12 @@ struct BmpFileImage {
 
 #pragma pack(push, 1)
 
+struct PcxRgb {
+    u8 m_red;
+    u8 m_green;
+    u8 m_blue;
+};
+
 struct PcxHeader {
     u8 m_magic;
     u8 m_version;
@@ -47,11 +53,16 @@ struct PcxHeader {
     i16 m_yMin;
     i16 m_xMax;
     i16 m_yMax;
-    char m_pad0c[0x41 - 0x0c];
+    i16 m_xDpi;
+    i16 m_yDpi;
+    PcxRgb m_palette[16];
+    u8 m_reserved;
     GZ_ENUM_STORAGE(PcxPlaneCount, i8) m_planes;
-    char m_pad42[0x80 - 0x42];
-
-    u8 m_pixels[1];
+    i16 m_bytesPerLine;
+    i16 m_paletteInfo;
+    i16 m_xScreenSize;
+    i16 m_yScreenSize;
+    u8 m_filler[54];
 };
 #pragma pack(pop)
 

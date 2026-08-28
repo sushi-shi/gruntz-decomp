@@ -57,6 +57,18 @@ struct DisplayResolution;
 
 class CDDrawDeviceManager {
 public:
+    b32 HasPalette() const {
+        return m_hasPalette;
+    }
+
+    PALETTEENTRY* GetPaletteEntries() {
+        return m_palette;
+    }
+
+    ColorDepth GetDisplayColorDepth() const {
+        return m_displayColorDepth;
+    }
+
     i32
     CreateDevice(HWND hwnd, GUID* driverGuid, i32 width, i32 height, ColorDepth bpp, u32 coopFlags);
 

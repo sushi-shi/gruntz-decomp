@@ -42,4 +42,12 @@ extern HINSTANCE g_resModule;
         index++;                                                                                   \
     } while (index < count);
 
+#define COPY_BGRX_PALETTE(entries, colors, index, count)                                           \
+    for (i32 index = 0; index < count; index++) {                                                  \
+        entries[index].peRed = colors[index].rgbRed;                                               \
+        entries[index].peGreen = colors[index].rgbGreen;                                           \
+        entries[index].peBlue = colors[index].rgbBlue;                                             \
+        entries[index].peFlags = 0;                                                                \
+    }
+
 #endif // GRUNTZ_DDRAWMGR_DIRPAL_H

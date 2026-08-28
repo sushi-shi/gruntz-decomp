@@ -584,7 +584,8 @@ i32 CRezImage::LoadBmp(char* name, HDC dc, i32 ctrl) {
 // @early-stop
 RVA(0x00176000, 0x18f)
 i32 CRezImage::DecodePcxData(void* buf, HDC dc, i32 ctrl) {
-    PcxHeader* hdr = static_cast<PcxHeader*>(buf);
+    u8* pStart = static_cast<u8*>(buf);
+    PcxHeader* hdr = static_cast<PcxHeader*>(static_cast<void*>(pStart));
     i32 width = hdr->m_xMax - hdr->m_xMin + 1;
     i32 height = hdr->m_yMax - hdr->m_yMin + 1;
     if (hdr->m_bitsPerPixel != PCX_BITS_PER_PLANE_8) {
@@ -600,7 +601,8 @@ i32 CRezImage::DecodePcxData(void* buf, HDC dc, i32 ctrl) {
         return 0;
     }
 
-    u8* packed = hdr->m_pixels;
+    u32 offset = sizeof(PcxHeader);
+    u8* packed = &pStart[offset];
 
     i32 i;
     i32 j;

@@ -4,7 +4,7 @@ tags: cpp:inheritance cpp:inline cpp:member cpp:local cpp:loop | asm:lea asm:mov
 symptoms: a reconstructed subsystem has correct broad behavior but repeated near-exact
 register/schedule walls, generic base pointers where consumers always recover one owner
 type, payload unions at a common trailing offset, or hand-expanded one-field stores
-confidence: 10/10 (fourteen clean exact closures, two audited unchanged-source state closures,
+confidence: 10/10 (seventeen clean exact closures, four audited unchanged-source state closures,
 exact controls, revision-history audit, and retail negative controls)
 variants: inline-expansion-boundary-pins-a-neighbour.md, ctor-body-first-statement-is-an-inline-member.md
 
@@ -40,6 +40,7 @@ relocations. Applied that way, it closed these Gruntz functions:
 | `CRezImage::DecodeBlit` 0x175930 | complete `IsStrideless`/size/height/index/width accessor layer and advancing the incoming pixel pointer | 95.3194 -> 99.9722 -> **MAX 100.000** |
 | `CRezImage::FlipVertical` 0x176840 | three unsigned offsets, shared forward index, cached dimensions, and ordinary copy loops from `CDib::Invert` | 79.7879 -> **100.000** |
 | `CRezImage::SaveBmp` 0x176b30 | two-stage palette fallback, validity/data/palette accessors, symbolic file sizing/open flags, and named row index | 98.9855 -> **100.000** |
+| `CDDSurface::CreateFromPcxData` 0x144b30 | complete 128-byte PCX header plus `pStart`, typed header, offset, and packed-byte cursor | 99.9766 -> **100.000** |
 
 The exact controls are strong: all three typed hash lookups stayed exact, both hash-owning
 destructors stayed exact, and `rezarchive` reached 115/115 exact functions.
@@ -132,6 +133,21 @@ Use the corpus only in its positive direction:
   while exact and the generated probe was removed. This corrects the older cursor-order
   interpretation: a higher transcription can be a local maximum that authentic source
   composition escapes.
+* The same `DIB_PCXHDR` declaration proves that the header ends at byte 0x80. It has
+  explicit DPI, 16-color palette, reserved, row-stride, palette-kind, screen-size, and
+  filler fields; it does not own a one-byte pseudo-flexible pixel member. Restoring that
+  complete record and deriving packed bytes from `sizeof(PcxHeader)` removed the union/
+  trailing-member fiction across both image families. In `CDDSurface::CreateFromPcxData`,
+  composing the surviving `pStart`, typed-header, `DWORD offset`, and `pPacked` statements
+  made the instructions and ordered relocations identical. The final reported hundredth
+  was only the independently proved one-past `g_grayRamp + 0x401` attribution described
+  by the folded-neighbour pattern. In the normal build, `CRezImage::DecodePcxData` and
+  `CDDSurface::DecodePcx` retain the direct surviving statement layer at 99.9240 and
+  99.8775 respectively, with only their opening coordinate-load order differing. A
+  64-trial target-adjacent forest reached audited exact at trial 1 for BOTH corrected
+  source hashes; each MAX was banked while exact and the generated declaration was
+  removed. Reintroducing a fake payload member merely to recover the normal-build state
+  would hide the class-model defect and is unnecessary.
 * The same 1996 file's `CDib::InitPid` invalidated a hash-scoped bounded review of
   `CRezImage::DecodePidData`. The old body had already recovered retail's sequential
   header cursor and exact call/branch/return/relocation counts, then exhausted direct-byte,
@@ -142,6 +158,16 @@ Use the corpus only in its positive direction:
   function-scope census. Together they moved 81.4772% directly to 100.0000% exact. A
   same-CFG REGALLOC diagnosis bounds one source state, not the source family; a full
   surviving composition must invalidate and reopen that review through its new hash.
+* The `CDDSurface` PID/BMP siblings also preserve useful bases without immediately
+  closing their C2 residues. `CDib::InitPid` replaces two record-punning unions with one
+  advancing `DWORD*`, eight named header values, and `pPacked`; the manager's palette and
+  display-depth reads remain typed accessors. Sixty-four target-adjacent state trials all
+  emitted the same 96.1019% island. `CDib::InitBmp` supplies `pData`, `pStart`, and a typed
+  `BITMAPINFOHEADER*`; the adjacent palette helper family supplies the BGRX-to-entry copy
+  boundary. That source stays at 99.8786%. Sixty-four state trials were flat, and a
+  512-shape depth-1..3 Cartesian/M-frontier campaign found only two compiler islands,
+  both at 99.8786%. These are bounded scheduling residues on sourced bases, not evidence
+  for restoring the unions or flattening the helper layer.
 * The adjacent raw-byte `CDib::Init` body proves that the strideless test, buffer size,
   height, row index, and width remain inline accessor calls and that the incoming pixel
   pointer itself advances in the padded-row loop. Applying the literal signed `/ 8`
