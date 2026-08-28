@@ -145,7 +145,7 @@ BOOL CVoiceManager::PlayGruntVoiceCue(
             return false;
         }
     }
-    CRezArchiveEntry* source = SelectVoiceVariant(voiceGroup, variantIndex);
+    CRezItm* source = SelectVoiceVariant(voiceGroup, variantIndex);
     if (source == NULL || m_world->m_soundStream == NULL) {
         return false;
     }
@@ -242,7 +242,7 @@ i32 CVoiceManager::PlayVoice(
     if (unpositioned == 0 && sourceGrunt != NULL) {
         sourceObjectId = sourceGrunt->m_object->m_objectId;
     }
-    CRezArchiveEntry* source = SelectVoiceVariant(voiceGroup, variantIndex);
+    CRezItm* source = SelectVoiceVariant(voiceGroup, variantIndex);
     if (source == NULL) {
         return 0;
     }
@@ -342,7 +342,7 @@ i32 CVoiceManager::PlayVoice(
             return 0;
         }
     }
-    CRezArchiveEntry* source = SelectVoiceVariant(voiceGroup, variantIndex);
+    CRezItm* source = SelectVoiceVariant(voiceGroup, variantIndex);
     if (source == NULL) {
         return 0;
     }
@@ -498,12 +498,12 @@ i32 CVoiceManager::ResolveGruntVoiceGroup(CGrunt* grunt, i32 cueId) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0011bec0, 0x5)
-CRezArchiveEntry* CVoiceManager::SelectVoiceVariant(i32 voiceGroup) {
+CRezItm* CVoiceManager::SelectVoiceVariant(i32 voiceGroup) {
     return NULL;
 }
 
 RVA(0x0011bee0, 0x230)
-CRezArchiveEntry* CVoiceManager::SelectVoiceVariant(i32 voiceGroup, i32 variantIndex) {
+CRezItm* CVoiceManager::SelectVoiceVariant(i32 voiceGroup, i32 variantIndex) {
     if (voiceGroup < 0) {
         return NULL;
     }
@@ -572,7 +572,7 @@ CRezArchiveEntry* CVoiceManager::SelectVoiceVariant(i32 voiceGroup, i32 variantI
     if (variant == NULL) {
         return NULL;
     }
-    return m_game->m_resourceArchive->FindEntryByPath(
+    return m_game->m_resourceArchive->GetRezFromPath(
         static_cast<LPCTSTR>(variant->GetName()),
         REZ_TAG_WAV
     );
@@ -628,7 +628,7 @@ CSpawnList* CVoiceManager::BuildVoiceGroup(i32 voiceGroup) {
                     static_cast<LPCTSTR>(soundName)
                 );
             }
-            CRezArchiveEntry* source = m_game->m_resourceArchive->FindEntryByPath(
+            CRezItm* source = m_game->m_resourceArchive->GetRezFromPath(
                 static_cast<LPCTSTR>(resourceName),
                 REZ_TAG_WAV
             );

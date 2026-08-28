@@ -168,10 +168,10 @@ a `reloc-alias` *guess* at HIGH confidence sitting over the anchored `??_M` row 
 the delinker spelled it a name no object emits. Swapping the two confidences let every
 `delete[]` site and its funclet co-name. **+13 funclets and +13 ordinary functions.**
 
-**A near miss worth keeping:** `CRezArchiveType`/`CRezArchiveDir` declared class-level `operator
+**A near miss worth keeping:** `CRezTyp`/`CRezDir` declared class-level `operator
 new`/`operator delete` that merely forwarded to the globals. Retail's funclet calls the
 **global** `??3@YAXPAX@Z`; a forwarder *cannot* produce that, because cl emits
-`??3CRezArchiveDir@@SAXPAX@Z` and makes the funclet call that instead. The funclet target
+`??3CRezDir@@SAXPAX@Z` and makes the funclet call that instead. The funclet target
 discriminates a forwarder from a direct call — a distinction invisible in the forwarding
 function's own bytes.
 

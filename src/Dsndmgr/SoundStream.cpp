@@ -26,7 +26,7 @@ DATA(0x00253c58)
 b32 g_dsoundFormatErrors;
 
 RVA(0x00137340, 0x33)
-i32 StreamFeeder::SeedWindow(CRezArchiveEntry* source, u32 offset, u32 bytes) {
+i32 StreamFeeder::SeedWindow(CRezItm* source, u32 offset, u32 bytes) {
     if (source == NULL) {
         return 0;
     }
@@ -96,7 +96,7 @@ RVA(0x001374b0, 0x1)
 void StreamVoiceFeeder::OnReset() {}
 
 RVA(0x001374c0, 0x5d)
-i32 StreamVoice::SetSource(CRezArchiveEntry* source) {
+i32 StreamVoice::SetSource(CRezItm* source) {
     if (source == NULL) {
         return 0;
     }
@@ -238,7 +238,7 @@ StreamVoice* SoundStream::CreateStreamVoice(
 // @early-stop
 RVA(0x00137900, 0xc6)
 StreamVoice* SoundStream::OpenStream(
-    CRezArchiveEntry* source,
+    CRezItm* source,
     i32 bufferBytes,
     i32 refillThresholdBytes,
     i32 dsFlags,
@@ -287,12 +287,8 @@ void SoundStream::DestroyVoice(StreamVoice* voice) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00137a30, 0x4b)
-StreamVoice* SoundStream::PlayStream(
-    CRezArchiveEntry* source,
-    i32 bufferBytes,
-    i32 refillThresholdBytes,
-    i32 dsFlags
-) {
+StreamVoice*
+SoundStream::PlayStream(CRezItm* source, i32 bufferBytes, i32 refillThresholdBytes, i32 dsFlags) {
     StreamVoice* voice = OpenStream(source, bufferBytes, refillThresholdBytes, dsFlags, 0, 1);
     if (voice == NULL) {
         return NULL;
@@ -344,14 +340,14 @@ i32 SoundStream::TickStreams(i32 timestampMs) {
 
 RVA(0x00137b70, 0x159)
 i32 SoundStream::ParseWave(
-    CRezArchiveEntry* source,
+    CRezItm* source,
     WaveFormatX* outFormat,
     u32* outDataOffset,
     u32* outDataBytes
 ) {
     i32 foundFormat = 0;
     i32 foundData = 0;
-    source->SetPos(0);
+    source->Seek(0);
 
     u32 riffTag;
     u32 chunkId;
@@ -366,33 +362,33 @@ i32 SoundStream::ParseWave(
         return 0;
     }
 
-    u32 riffEnd = source->m_cursor + chunkSize - 4;
-    if (riffEnd > source->m_size) {
-        riffEnd = source->m_size;
+    u32 riffEnd = source->GetSeekPos() + chunkSize - 4;
+    if (riffEnd > source->GetSize()) {
+        riffEnd = source->GetSize();
     }
-    while (source->m_cursor < riffEnd) {
+    while (source->GetSeekPos() < riffEnd) {
         source->Read(&chunkId, 4, -1);
         source->Read(&chunkSize, 4, -1);
         if (chunkId == mmioFOURCC('f', 'm', 't', ' ')) {
-            i32 nextChunk = source->m_cursor + chunkSize;
+            i32 nextChunk = source->GetSeekPos() + chunkSize;
 
             u32 formatBytes = 0x12;
             if (chunkSize < formatBytes) {
                 formatBytes = chunkSize;
             }
             source->Read(outFormat, static_cast<i32>(formatBytes), -1);
-            source->SetPos(nextChunk);
+            source->Seek(nextChunk);
             foundFormat = 1;
         } else if (chunkId == mmioFOURCC('d', 'a', 't', 'a')) {
-            *outDataOffset = source->m_cursor;
+            *outDataOffset = source->GetSeekPos();
             *outDataBytes = chunkSize;
             foundData = 1;
         }
         if (foundFormat && foundData) {
             return 1;
         }
-        if ((source->m_cursor & 1) == 1) {
-            source->SetPos(source->m_cursor + 1);
+        if ((source->GetSeekPos() & 1) == 1) {
+            source->Seek(source->GetSeekPos() + 1);
         }
     }
     return 0;

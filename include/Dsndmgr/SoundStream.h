@@ -24,7 +24,7 @@ public:
     );
 
     StreamVoice* OpenStream(
-        CRezArchiveEntry* src,
+        CRezItm* src,
         i32 bufferBytes,
         i32 refillThresholdBytes,
         i32 dsFlags,
@@ -32,7 +32,7 @@ public:
         i32 destroyWhenIdle
     );
     StreamVoice*
-    PlayStream(CRezArchiveEntry* source, i32 bufferBytes, i32 refillThresholdBytes, i32 dsFlags);
+    PlayStream(CRezItm* source, i32 bufferBytes, i32 refillThresholdBytes, i32 dsFlags);
 
     void DestroyVoice(StreamVoice* voice);
 
@@ -43,12 +43,7 @@ public:
     i32 InitializeDevice(HWND hwnd, i32 cooperativeLevel);
 
     i32 TickStreams(i32 timestampMs);
-    i32 ParseWave(
-        CRezArchiveEntry* source,
-        WaveFormatX* outFormat,
-        u32* outDataOffset,
-        u32* outDataBytes
-    );
+    i32 ParseWave(CRezItm* source, WaveFormatX* outFormat, u32* outDataOffset, u32* outDataBytes);
 
     CLTBaseList m_voices;
 };

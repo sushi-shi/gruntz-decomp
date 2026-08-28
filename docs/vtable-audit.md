@@ -90,7 +90,7 @@ the *success* of the campaign (real `virtual` + `VTBL()`/`OVERRIDE`, `cl` emits
 `??_7`): `CAmbientSound` (this pass), `CRandomAmbientSound`, `CSpotLight`, `CState`,
 `CDoNothing`/`CDoNothingNormal`, `CUserBase`/`CUserLogic`, `GruntObjEntry`,
 `CVtblSlot9`, the DinMgr2 device-config chain, `StreamFeeder`/`SoundVolumeRamp`/
-`MidiSequence`, `CRezArchive`, `CBaseRezFile`, the CDDraw worker family, etc.
+`MidiSequence`, `CRezMgr`, `CBaseRezFile`, the CDDraw worker family, etc.
 
 ## Category 2 — faithful external / COM `__stdcall` + engine `__thiscall`-PMF dispatch views (keep)
 

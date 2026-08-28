@@ -287,7 +287,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         delete m_resourceArchive;
         m_resourceArchive = NULL;
     }
-    m_resourceArchive = new CRezArchive;
+    m_resourceArchive = new CRezMgr;
     {
         CString resourcePath = GetRezPath();
 
@@ -302,12 +302,12 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             return 0;
         }
     }
-    if (!m_resourceArchive->MergeArchive(const_cast<char*>("GRUNTZ.VRZ"), false)) {
+    if (!m_resourceArchive->OpenAdditional(const_cast<char*>("GRUNTZ.VRZ"), false)) {
         ReportError(IDX(IDS_LOAD_VOICE_RESOURCE_FILE), 0x460);
         return 0;
     }
-    m_resourceArchive->MergeArchive(const_cast<char*>("GRUNTZ.ZZZ"), true);
-    m_resourceArchive->MergeArchive(const_cast<char*>("GRUNTZ.XXX"), true);
+    m_resourceArchive->OpenAdditional(const_cast<char*>("GRUNTZ.ZZZ"), true);
+    m_resourceArchive->OpenAdditional(const_cast<char*>("GRUNTZ.XXX"), true);
     SetColorDepth(m_colorDepth);
 
     m_faderMgr = new CFaderMgr;
@@ -473,8 +473,8 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
 
     {
-        CRezArchiveEntry* stream =
-            g_gameReg->m_resourceArchive->FindEntryByPath("GAME_ATTRIBUTEZ", REZ_TAG_TXT);
+        CRezItm* stream =
+            g_gameReg->m_resourceArchive->GetRezFromPath("GAME_ATTRIBUTEZ", REZ_TAG_TXT);
         TRACE("%s\n", static_cast<LPCTSTR>(CString("parsing ") + "GAME_ATTRIBUTEZ"));
         g_buteMgr.SetErrCallback(&ButeParseErrorSink);
         if (!g_buteMgr.Parse(stream, "1212C")) {
@@ -516,11 +516,11 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_isHighDetail = vHigh1;
     m_isEffectsEnabled = vHigh2;
     if (!m_world->m_soundRegistry->HasWithPrefix("GAME")) {
-        CRezArchiveDir* sz = m_resourceArchive->FindDirectoryByPath("GAME_SOUNDZ");
+        CRezDir* sz = m_resourceArchive->GetDirFromPath("GAME_SOUNDZ");
         if (!sz) {
             return 0;
         }
-        m_world->m_soundRegistry->LoadFromTree(static_cast<CRezArchiveDir*>(sz), "GAME", "_");
+        m_world->m_soundRegistry->LoadFromTree(static_cast<CRezDir*>(sz), "GAME", "_");
     }
     {
         SoundCue* movieCue = m_world->m_soundRegistry->FindCue("GAME_MOVIE");
@@ -541,11 +541,11 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
 
     {
-        CRezArchiveDir* attract = m_resourceArchive->FindDirectoryByPath("STATEZ_ATTRACT");
+        CRezDir* attract = m_resourceArchive->GetDirFromPath("STATEZ_ATTRACT");
         g_attractStateCount = 0;
         CString title;
         title.Format("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);
-        while (attract->FindEntryByPath(static_cast<const char*>(title), IMGTAG_XCP)) {
+        while (attract->GetRezFromPath(static_cast<const char*>(title), IMGTAG_XCP)) {
             g_attractStateCount++;
             title.Format("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);
         }

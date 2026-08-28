@@ -86,7 +86,7 @@ And a bound the byte scan CANNOT be given, which is why every differing row is r
 off a decoded stream: **the two sides are not byte-symmetric**. Our base object has
 every `call rel32` displacement zeroed by its relocation, while the delinked target
 resolves a SELF-call internally and leaves a real negative displacement - four `ff`
-bytes that decode as `call DWORD PTR [edi+0xe8]`. `CRezArchiveDir`'s destructor is
+bytes that decode as `call DWORD PTR [edi+0xe8]`. `CRezDir`'s destructor is
 byte-identical to retail at 100.00 and still produced a retail-only slot 58 that way.
 The re-read discards 23 of the byte scan's 28 rows, including every one of the 22 that
 looked like a slot one side never uses.

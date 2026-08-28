@@ -63,7 +63,7 @@ i32 CHelpState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     }
     while (ShowCursor(false) >= 0)
         ;
-    m_stateResources = m_resourceArchive->FindDirectoryByPath("STATEZ_HELP");
+    m_stateResources = m_resourceArchive->GetDirFromPath("STATEZ_HELP");
     if (!m_stateResources) {
         return 0;
     }

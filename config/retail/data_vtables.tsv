@@ -154,7 +154,7 @@ rva	size	name	kind	note
 0x1ef740	0x4	??_7CRezItmHashByName@@6B@	primary	surviving-lineage
 0x1ef744	0x4	??_7CRezTypeHash@@6B@	primary	surviving-lineage
 0x1ef748	0x4	??_7CRezDirHash@@6B@	primary	surviving-lineage
-0x1ef750	0xc	??_7CRezArchive@@6B@	primary	
+0x1ef750	0xc	??_7CRezMgr@@6B@	primary	surviving-lineage
 0x1ef75c	0x4	??_7CBaseRezFileList@@6B@	primary	surviving-lineage
 0x1ef760	0x4	??_7CVirtBaseList@@6B@	primary	surviving-lineage
 0x1ef768	0x20	??_7CBaseRezFile@@6B@	primary	surviving-lineage

@@ -273,7 +273,7 @@ Concrete, in the order they pay:
 - **`2498ab87e` (93 functions, 381 points)** is a bless over a **333-commit** window.
   The bank cannot localise inside a window; only a build sweep can, and this lane
   spent its build budget elsewhere. Named as a window, not blamed on a commit.
-- **`?Open@CRezArchive@@QAEHPAXHH@Z`** (`rezarchive`, 952 B) is peak 78.15 → **0.00**
+- **`?Open@CRezMgr@@QAEHPAXHH@Z`** (`rezarchive`, 952 B) is peak 78.15 → **0.00**
   with a genuine control-flow divergence (35 vs 40 basic blocks). Real, large, open,
   unexplained. A 0.00 on a written body is worth someone's attention.
 - One function's fall predates any bless that recorded it.

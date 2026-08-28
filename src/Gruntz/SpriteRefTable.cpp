@@ -88,7 +88,7 @@ CShadeTable* CSpriteRefTable::GetSel(i32 i, i32 bAlt) {
 }
 
 RVA(0x000e2400, 0x39e)
-i32 CSpriteRefTable::BuildToolToyColorTable(CRezArchive* src) {
+i32 CSpriteRefTable::BuildToolToyColorTable(CRezMgr* src) {
     if (!src) {
         return 0;
     }
@@ -307,7 +307,7 @@ CSpriteRef* CSpriteRefTable::Add(char* szName, ColorTint kind) {
 }
 
 RVA(0x000e2980, 0x2cd)
-i32 CSpriteRefTable::LoadToolToyPalettes(CRezArchive* src) {
+i32 CSpriteRefTable::LoadToolToyPalettes(CRezMgr* src) {
 
     if (src && LoadGruntzPalette(src, "BLACKTOOL") && LoadGruntzPalette(src, "BLACKTOY")
         && LoadGruntzPalette(src, "DKBLUETOOL") && LoadGruntzPalette(src, "DKBLUETOY")
@@ -332,7 +332,7 @@ i32 CSpriteRefTable::LoadToolToyPalettes(CRezArchive* src) {
 }
 
 RVA(0x000e2d10, 0xa1)
-i32 CSpriteRefTable::LoadGruntzPalette(CRezArchive* src, const char* name) {
+i32 CSpriteRefTable::LoadGruntzPalette(CRezMgr* src, const char* name) {
     if (!src) {
         return 0;
     }
@@ -343,7 +343,7 @@ i32 CSpriteRefTable::LoadGruntzPalette(CRezArchive* src, const char* name) {
 
     char buf[0x40];
     sprintf(buf, "GRUNTZ_PALETTEZ_%s", name);
-    CRezArchiveEntry* pal = (src)->FindEntryByPath(buf, REZ_TAG_PAL);
+    CRezItm* pal = (src)->GetRezFromPath(buf, REZ_TAG_PAL);
     if (!pal) {
         return 0;
     }

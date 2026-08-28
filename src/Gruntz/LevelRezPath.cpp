@@ -47,44 +47,44 @@ i32 CGruntzMgr::ResolveLevelChecksum(
     if (useDirectLevelReference == false) {
         if (isBattlez != false) {
             WwdHeader buf;
-            CRezArchiveDir* node = m_resourceArchive->FindDirectoryByPath("GAME_BATTLEZ");
+            CRezDir* node = m_resourceArchive->GetDirFromPath("GAME_BATTLEZ");
             if (node == NULL) {
                 return 0;
             }
-            CRezArchiveEntry* sub = node->FindEntry(levelName, REZ_TAG_WWD);
+            CRezItm* sub = node->GetRez(levelName, REZ_TAG_WWD);
             if (sub == NULL) {
                 return 0;
             }
-            char* parsed = sub->LoadData();
+            char* parsed = sub->Load();
             if (parsed == NULL) {
                 return 0;
             }
             memcpy(&buf, parsed, 0x5f4);
-            sub->ReleaseData();
+            sub->UnLoad();
             return buf.checksum;
         } else {
             WwdHeader buf;
-            CRezArchiveDir* node = m_resourceArchive->FindDirectoryByPath("GAME_MULTI");
+            CRezDir* node = m_resourceArchive->GetDirFromPath("GAME_MULTI");
             if (node == NULL) {
                 return 0;
             }
-            CRezArchiveEntry* sub = node->FindEntry(levelName, REZ_TAG_WWD);
+            CRezItm* sub = node->GetRez(levelName, REZ_TAG_WWD);
             if (sub == NULL) {
                 return 0;
             }
-            char* parsed = sub->LoadData();
+            char* parsed = sub->Load();
             if (parsed == NULL) {
                 return 0;
             }
             memcpy(&buf, parsed, 0x5f4);
-            sub->ReleaseData();
+            sub->UnLoad();
             return buf.checksum;
         }
     } else {
         WwdHeader buf;
         char scratch[32];
         sprintf(scratch, "AREA%i_WORLDZ", ((levelId - 1) % 0x24) / 4 + 1);
-        CRezArchiveDir* node = m_resourceArchive->FindDirectoryByPath(scratch);
+        CRezDir* node = m_resourceArchive->GetDirFromPath(scratch);
         if (node == NULL) {
             return 0;
         }
@@ -93,16 +93,16 @@ i32 CGruntzMgr::ResolveLevelChecksum(
         } else {
             sprintf(scratch, "LEVEL%i", levelId);
         }
-        CRezArchiveEntry* sub = node->FindEntry(scratch, REZ_TAG_WWD);
+        CRezItm* sub = node->GetRez(scratch, REZ_TAG_WWD);
         if (sub == NULL) {
             return 0;
         }
-        char* parsed = sub->LoadData();
+        char* parsed = sub->Load();
         if (parsed == NULL) {
             return 0;
         }
         memcpy(&buf, parsed, 0x5f4);
-        sub->ReleaseData();
+        sub->UnLoad();
         return buf.checksum;
     }
 }

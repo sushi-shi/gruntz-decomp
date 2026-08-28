@@ -21,14 +21,12 @@ public:
     virtual void Unload() OVERRIDE;
 
     virtual LoadableClassId GetClassId() OVERRIDE;
-    virtual CDDrawPaletteResource*
-    LoadPaletteFromSource(CRezArchiveEntry* src, const char* key, i32 flags);
+    virtual CDDrawPaletteResource* LoadPaletteFromSource(CRezItm* src, const char* key, i32 flags);
 
     virtual CDDrawPaletteResource* CreatePaletteFromRgb(u8* data, const char* key, i32 flags);
     virtual CDDrawPaletteResource* LoadPaletteFromFile(char* path, const char* key, i32 flags);
 
-    virtual CDDrawPaletteResource*
-    LoadPaletteFromTrailingData(CRezArchiveEntry* src, i32 key, i32 flags);
+    virtual CDDrawPaletteResource* LoadPaletteFromTrailingData(CRezItm* src, i32 key, i32 flags);
     virtual ~CDDrawPaletteRegistry() OVERRIDE;
 
     CMapStringToOb m_palettesByName;

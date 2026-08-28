@@ -200,7 +200,7 @@ takes the run inside it, `imageSetsCount` times. Every shipped level's table is
 ### Image-set registry keys
 
 The names are keys into `CDDrawWorkerRegistry::m_workersByName`, and the keys are built
-by `CDDrawWorkerRegistry::InstallTree` @0x154f80: it walks a `CRezArchiveDir`
+by `CDDrawWorkerRegistry::InstallTree` @0x154f80: it walks a `CRezDir`
 directory tree and joins each level with a separator onto a root prefix. The
 three roots are **hardcoded in `CPlay`**, not read from the WWD header:
 

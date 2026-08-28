@@ -110,8 +110,8 @@ CDDrawWorkerRegistry::~CDDrawWorkerRegistry() {
 }
 
 RVA(0x00156e80, 0x38)
-i32 CDDrawWorkerRegistry::ProbeWorkerKey(CRezArchive* parser, const char* key) {
-    CRezArchiveDir* result = parser->GetRootDirectory()->FindSubdirectory(key);
+i32 CDDrawWorkerRegistry::ProbeWorkerKey(CRezMgr* parser, const char* key) {
+    CRezDir* result = parser->GetRootDir()->GetDir(key);
 
     if (result != NULL) {
         return InstallTree(result, "", "_");
@@ -534,7 +534,7 @@ i32 SoundCueRegistry::RemoveWithPrefix(const char* prefix, const char* separator
     cue->m_replayDelayMs = m_defaultReplayDelayMs
 
 RVA(0x00157d70, 0x90)
-SoundCue* SoundCueRegistry::LoadCueFromSource(const char* key, CRezArchiveEntry* source) {
+SoundCue* SoundCueRegistry::LoadCueFromSource(const char* key, CRezItm* source) {
     if (m_silentMode != false) {
         return NULL;
     }
@@ -572,14 +572,14 @@ SoundCue* SoundCueRegistry::LoadCueFromFile(const char* key, char* path) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00157e90, 0x23)
-SoundCue* SoundCueRegistry::LoadNamedCue(CRezArchiveEntry* source) {
+SoundCue* SoundCueRegistry::LoadNamedCue(CRezItm* source) {
     if (m_silentMode != false) {
         return NULL;
     }
     if (source == NULL) {
         return NULL;
     }
-    return LoadCueFromSource(source->m_name, source);
+    return LoadCueFromSource(source->GetName(), source);
 }
 
 // @dead-code
@@ -590,11 +590,7 @@ void SoundCueRegistry::AddCue(SoundCue* cue, const char* key) {
 }
 
 RVA(0x00157ee0, 0x1c6)
-i32 SoundCueRegistry::LoadFromTree(
-    CRezArchiveDir* tree,
-    const char* prefix,
-    const char* separator
-) {
+i32 SoundCueRegistry::LoadFromTree(CRezDir* tree, const char* prefix, const char* separator) {
     if (m_silentMode != false) {
         return 0;
     }
@@ -604,27 +600,27 @@ i32 SoundCueRegistry::LoadFromTree(
         return 0;
     }
     cueKey[0] = 0;
-    CRezArchiveDir* node = static_cast<CRezArchiveDir*>(tree->FirstSubdirectory());
+    CRezDir* node = static_cast<CRezDir*>(tree->GetFirstSubDir());
     while (node != NULL) {
         if (prefix != NULL && *prefix != 0) {
-            sprintf(cueKey, "%s%s%s", prefix, separator, node->m_name);
+            sprintf(cueKey, "%s%s%s", prefix, separator, node->GetDirName());
         } else {
-            strcpy(cueKey, node->m_name);
+            strcpy(cueKey, node->GetDirName());
         }
         count += LoadFromTree(node, cueKey, separator);
-        node = static_cast<CRezArchiveDir*>(tree->NextSubdirectory(node));
+        node = static_cast<CRezDir*>(tree->GetNextSubDir(node));
     }
 
-    CRezArchiveType* file = tree->FirstType();
+    CRezTyp* file = tree->GetFirstType();
     if (file != NULL) {
         do {
-            CRezArchiveEntry* source = tree->FirstEntry(file);
+            CRezItm* source = tree->GetFirstItem(file);
             while (source != NULL) {
-                if (source->GetTypeTag() == REZ_TAG_WAV) {
+                if (source->GetType() == REZ_TAG_WAV) {
                     if (prefix != NULL && *prefix != 0) {
-                        sprintf(cueKey, "%s%s%s", prefix, separator, source->m_name);
+                        sprintf(cueKey, "%s%s%s", prefix, separator, source->GetName());
                     } else {
-                        strcpy(cueKey, source->m_name);
+                        strcpy(cueKey, source->GetName());
                     }
                     SoundCue* cue = NULL;
                     MapLookup(m_cues, cueKey, cue);
@@ -634,9 +630,9 @@ i32 SoundCueRegistry::LoadFromTree(
                         }
                     }
                 }
-                source = tree->NextEntry(source);
+                source = tree->GetNextItem(source);
             }
-            file = tree->NextType(file);
+            file = tree->GetNextType(file);
         } while (file != NULL);
     }
     delete[] cueKey;
@@ -834,8 +830,8 @@ i32 SoundCue::LoadFromFile(char* path) {
 }
 
 RVA(0x00158760, 0x59)
-i32 SoundCue::LoadFromSource(CRezArchiveEntry* source) {
-    char* blob = source->LoadData();
+i32 SoundCue::LoadFromSource(CRezItm* source) {
+    char* blob = source->Load();
     if (blob == NULL) {
         return 0;
     }
@@ -849,7 +845,7 @@ i32 SoundCue::LoadFromSource(CRezArchiveEntry* source) {
         m_sound = dev->LoadSample(riff.m_rec, 0x100ea, 0);
         ok = m_sound != NULL;
     }
-    source->ReleaseData();
+    source->UnLoad();
     return ok;
 }
 

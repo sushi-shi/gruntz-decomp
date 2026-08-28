@@ -253,7 +253,7 @@ i32 CMulti::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
         return 0;
     }
     PostLoadImageBanks();
-    m_stateResources = m_resourceArchive->FindDirectoryByPath("STATEZ_MULTI");
+    m_stateResources = m_resourceArchive->GetDirFromPath("STATEZ_MULTI");
     if (m_stateResources == NULL) {
         return 0;
     }
@@ -798,8 +798,8 @@ i32 CMulti::StartTitle() {
     if (!m_netMgr) {
         return 0;
     }
-    CRezArchiveDir* saved = m_stateResources;
-    CRezArchiveDir* st = m_resourceArchive->FindDirectoryByPath("STATEZ_ATTRACT");
+    CRezDir* saved = m_stateResources;
+    CRezDir* st = m_resourceArchive->GetDirFromPath("STATEZ_ATTRACT");
     m_stateResources = st;
     if (!st) {
         return 0;

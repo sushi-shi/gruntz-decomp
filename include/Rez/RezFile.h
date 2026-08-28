@@ -9,7 +9,7 @@
 #include <Ints.h>
 #include <Lith/VirtList.h>
 
-class CRezArchive;
+class CRezMgr;
 class CBaseRezFile;
 class CRezFileSingleFile;
 
@@ -31,7 +31,7 @@ public:
 
 class CBaseRezFile : public CVirtBaseListItem {
 public:
-    CBaseRezFile(CRezArchive* rezMgr);
+    CBaseRezFile(CRezMgr* rezMgr);
     virtual ~CBaseRezFile();
 
     virtual u32 Read(u32 itemPos, u32 itemOffset, u32 size, void* data) = 0;
@@ -48,12 +48,12 @@ public:
     virtual void VirtualFoo() OVERRIDE;
 
 protected:
-    CRezArchive* m_pRezMgr;
+    CRezMgr* m_pRezMgr;
 };
 
 class CRezFile : public CBaseRezFile {
 public:
-    CRezFile(CRezArchive* rezMgr);
+    CRezFile(CRezMgr* rezMgr);
     virtual ~CRezFile() OVERRIDE;
 
     virtual u32 Read(u32 itemPos, u32 itemOffset, u32 size, void* data) OVERRIDE;
@@ -73,7 +73,7 @@ private:
 
 class CRezFileDirectoryEmulation : public CBaseRezFile {
 public:
-    CRezFileDirectoryEmulation(CRezArchive* rezMgr, i32 maxOpenFiles);
+    CRezFileDirectoryEmulation(CRezMgr* rezMgr, i32 maxOpenFiles);
     virtual ~CRezFileDirectoryEmulation() OVERRIDE;
 
     virtual u32 Read(u32 itemPos, u32 itemOffset, u32 size, void* data) OVERRIDE;
@@ -97,7 +97,7 @@ private:
 class CRezFileSingleFile : public CBaseRezFile {
 public:
     CRezFileSingleFile(
-        CRezArchive* rezMgr,
+        CRezMgr* rezMgr,
         const char* fileName,
         CRezFileDirectoryEmulation* dirEmulation
     );

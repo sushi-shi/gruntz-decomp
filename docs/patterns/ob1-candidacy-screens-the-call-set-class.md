@@ -84,7 +84,7 @@ inlines both.
 
 ## The shared-header state cost is not contrary source evidence
 
-`CButeMgr::Parse(CRezArchiveEntry*, const char*)` is a header inline, so changing
+`CButeMgr::Parse(CRezItm*, const char*)` is a header inline, so changing
 the expression tree is visible to TUs that merely parse that header, not only to
 the two callers that expand it. The full-build A/B found exactly two fresh MAX
 dips from the direct form: `CSBI_Image::Render` 100 -> 92.0357 and

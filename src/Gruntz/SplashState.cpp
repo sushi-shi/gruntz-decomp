@@ -43,14 +43,14 @@ i32 CSplashState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prev
     SetCursor(NULL);
     m_mgr->RestoreVideoMode(false);
 
-    m_stateResources = m_resourceArchive->FindDirectoryByPath("STATEZ_SPLASH");
+    m_stateResources = m_resourceArchive->GetDirFromPath("STATEZ_SPLASH");
     if (!m_stateResources) {
         return 0;
     }
 
-    CRezArchiveDir* soundz = StateResources()->FindSubdirectory("SOUNDZ");
+    CRezDir* soundz = StateResources()->GetDir("SOUNDZ");
     if (soundz) {
-        m_world->m_soundRegistry->LoadFromTree(static_cast<CRezArchiveDir*>(soundz), "", "_");
+        m_world->m_soundRegistry->LoadFromTree(static_cast<CRezDir*>(soundz), "", "_");
     }
     return 1;
 }

@@ -72,14 +72,14 @@ i32 CDemoSetup::SetupDemoActors() {
     return 1;
 }
 
-class CRezArchiveEntry;
+class CRezItm;
 
 RVA(0x0003c0e0, 0xfb)
 i32 CDemo::BuildWorldLevelPath(i32 unused) {
     m_world->m_level->ReleaseChildren();
     CString key;
     key.Format("WORLDZ\\LEVEL%i", 1);
-    CRezArchiveEntry* node = m_levelResources->FindEntryByPath(key, REZ_TAG_WWD);
+    CRezItm* node = m_levelResources->GetRezFromPath(key, REZ_TAG_WWD);
     if (node == NULL) {
         return 0;
     }

@@ -262,7 +262,7 @@ RVA_COMPGEN(0x0009a4a0, 0x5, ??1CSpawnEntry@@QAE@XZ)
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0009a4c0, 0x3e)
-i32 CAreaMgr::LoadObjectResources(CDDrawSurfaceMgr* surfaceMgr, CRezArchiveDir* src) {
+i32 CAreaMgr::LoadObjectResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* src) {
     if (surfaceMgr == NULL) {
         return 0;
     }
@@ -273,7 +273,7 @@ i32 CAreaMgr::LoadObjectResources(CDDrawSurfaceMgr* surfaceMgr, CRezArchiveDir* 
 }
 
 RVA(0x0009a510, 0x275)
-i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* surfaceMgr, CRezArchiveDir* src) {
+i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* src) {
     if (surfaceMgr == NULL) {
         return 0;
     }
@@ -320,7 +320,7 @@ i32 CAreaMgr::LoadObjectImageResources(CDDrawSurfaceMgr* surfaceMgr, CRezArchive
             char resourcePath[0x80];
             g_resourceInstallActive = true;
             sprintf(resourcePath, "IMAGEZ_%s", static_cast<LPCTSTR>(spawnEntry->GetTail()));
-            CRezArchiveDir* resourceTree = src->FindDirectoryByPath(resourcePath);
+            CRezDir* resourceTree = src->GetDirFromPath(resourcePath);
             if (resourceTree == NULL) {
                 return 0;
             }
@@ -357,7 +357,7 @@ CString CSpawnEntry::GetTail() {
 }
 
 RVA(0x0009a910, 0x261)
-i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* surfaceMgr, CRezArchiveDir* src) {
+i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* src) {
     if (surfaceMgr == NULL) {
         return 0;
     }
@@ -403,7 +403,7 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* surfaceMgr, CRezArchive
         if (spawnEntry->m_flag == false) {
             char resourcePath[0x80];
             sprintf(resourcePath, "SOUNDZ_%s", static_cast<LPCTSTR>(spawnEntry->GetTail()));
-            CRezArchiveDir* resourceTree = src->FindDirectoryByPath(resourcePath);
+            CRezDir* resourceTree = src->GetDirFromPath(resourcePath);
             if (resourceTree == NULL) {
                 return 0;
             }
@@ -425,7 +425,7 @@ i32 CAreaMgr::LoadObjectSoundResources(CDDrawSurfaceMgr* surfaceMgr, CRezArchive
 }
 
 RVA(0x0009ac20, 0x261)
-i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* surfaceMgr, CRezArchiveDir* src) {
+i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* surfaceMgr, CRezDir* src) {
     if (surfaceMgr == NULL) {
         return 0;
     }
@@ -471,7 +471,7 @@ i32 CAreaMgr::LoadObjectAnimResources(CDDrawSurfaceMgr* surfaceMgr, CRezArchiveD
         if (spawnEntry->m_flag == false) {
             char resourcePath[0x80];
             sprintf(resourcePath, "ANIZ_%s", static_cast<LPCTSTR>(spawnEntry->GetTail()));
-            CRezArchiveDir* resourceTree = src->FindDirectoryByPath(resourcePath);
+            CRezDir* resourceTree = src->GetDirFromPath(resourcePath);
             if (resourceTree == NULL) {
                 return 0;
             }

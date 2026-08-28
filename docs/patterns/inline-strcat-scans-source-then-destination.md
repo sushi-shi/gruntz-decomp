@@ -48,7 +48,7 @@ mov  edi,[<addr>]                ; src loaded AFTER
 lea  edx,[esp+ecx+0x554]         ; the tell: an indexed lea onto dst
 ```
 
-STEERABLE, and it cascades: `CRezArchive::ImportDirectoryTree` 0x13b300 had five append
+STEERABLE, and it cascades: `CRezMgr::ReadEmulationDirectory` 0x13b300 had five append
 sites, and switching all five to `strcat` took the masked diff from 241 differing
 rows to 60 and also settled the frame-layout order of two buffers that the hand
 spelling had swapped (79.76 -> 95.08 on its own; 99.67 with the rest of the

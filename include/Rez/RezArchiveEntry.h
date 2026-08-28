@@ -10,35 +10,62 @@
 
 #include <stddef.h>
 
-class CRezArchiveDir;
-class CRezArchiveType;
+class CRezDir;
+class CRezTyp;
 
 class CBaseRezFile;
 
-struct CRezArchiveEntry {
-
+struct CRezItm {
+public:
     char* GetName() {
-        return m_name;
+        return m_sName;
     }
 
-    GZ_ENUM_RETURN(RezTypeTag, u32) GetTypeTag();
+    GZ_ENUM_RETURN(RezTypeTag, u32) GetType();
     u32 GetSize() {
-        return m_size;
+        return m_nSize;
     }
-    char* LoadData();
-    i32 ReleaseData();
+    u32 GetSeekPos() {
+        return m_nCurPos;
+    }
+    char* Load();
+    i32 UnLoad();
 
-    char* GetDirectoryName();
+    char* GetDir();
 
-    char* GetDirectoryPath(char* destination, i32 size);
+    char* GetPath(char* destination, i32 size);
+    i32 Seek(u32 position);
+    i32 Get(u8* destination, u32 position, u32 byteCount);
+    i32 Get(u8* destination);
+    i32 Get(void* destination, u32 position, u32 byteCount) {
+        i32 result = Get(static_cast<u8*>(destination), position, byteCount);
+        return result;
+    }
+    i32 Get(void* destination) {
+        i32 result = Get(static_cast<u8*>(destination));
+        return result;
+    }
+    u32 Read(u8* destination, u32 byteCount, u32 seekPosition = 0xffffffffu);
+    u32 Read(void* destination, u32 byteCount, u32 seekPosition = 0xffffffffu) {
+        u32 result = Read(static_cast<u8*>(destination), byteCount, seekPosition);
+        return result;
+    }
+    char GetChar();
+    i32 IsLoaded();
+    i32 EndOfRes();
 
-    CRezArchiveEntry();
+private:
+    friend class CRezTyp;
+    friend class CRezDir;
+    friend class CRezMgr;
 
-    void Initialize(
-        CRezArchiveDir* directory,
+    CRezItm();
+
+    void InitRezItm(
+        CRezDir* directory,
         const char* name,
         void* resourceId,
-        CRezArchiveType* type,
+        CRezTyp* type,
         void* comment,
         i32 size,
         i32 dataOffset,
@@ -47,33 +74,26 @@ struct CRezArchiveEntry {
         void* keys,
         CBaseRezFile* storage
     );
-    void Reset();
-    i32 SetPos(i32 position);
-    i32 ReadAt(void* destination, i32 position, u32 byteCount);
-    i32 ReadAll(void* destination);
-    i32 Read(void* destination, u32 byteCount, i32 seekPosition);
-    char ReadChar();
-    i32 IsDataLoaded();
-    i32 AtEnd();
+    void TermRezItm();
 
-    char* m_name;
-    CRezArchiveType* m_type;
-    i32 m_time;
+    char* m_sName;
+    CRezTyp* m_pType;
+    i32 m_nTime;
 
-    u32 m_size;
-    CRezArchiveDir* m_directory;
+    u32 m_nSize;
+    CRezDir* m_pParentDir;
 
-    i32 m_dataOffset;
-    i32 m_cursor;
+    i32 m_nFilePos;
+    i32 m_nCurPos;
 
     CRezItmHashByName m_heName;
-    CBaseRezFile* m_storage;
-    char* m_loadedData;
+    CBaseRezFile* m_pRezFile;
+    char* m_pData;
 };
 
 #define BEGIN_FILE_IMAGE_PARSE(source, format, bytes)                                              \
     FileImageFormat format;                                                                        \
-    switch (static_cast<u32>(source->GetTypeTag())) {                                              \
+    switch (static_cast<u32>(source->GetType())) {                                                 \
         case IMGTAG_PMB:                                                                           \
             format = FMT_BMP;                                                                      \
             break;                                                                                 \
@@ -89,7 +109,7 @@ struct CRezArchiveEntry {
         default:                                                                                   \
             return 0;                                                                              \
     }                                                                                              \
-    char* bytes = source->LoadData();                                                              \
+    char* bytes = source->Load();                                                                  \
     if (bytes == NULL) {                                                                           \
         return 0;                                                                                  \
     }

@@ -182,10 +182,10 @@ void CDDrawSurfacePair::Unload() {
 }
 
 RVA(0x00163e50, 0x8b)
-i32 CDDrawSurfacePair::LoadImage(CRezArchiveEntry* src) {
+i32 CDDrawSurfacePair::LoadImage(CRezItm* src) {
     BEGIN_FILE_IMAGE_PARSE(src, type, buf)
-    i32 r = m_surface->Resolve(OwnerMgr()->m_deviceManager, buf, type, src->m_size, 0);
-    src->ReleaseData();
+    i32 r = m_surface->Resolve(OwnerMgr()->m_deviceManager, buf, type, src->GetSize(), 0);
+    src->UnLoad();
     return r;
 }
 
@@ -964,18 +964,18 @@ fail:
 }
 
 RVA(0x001655c0, 0x53)
-i32 CAniElement::Configure(SoundCueRegistry* ctx, CRezArchiveEntry* entry, i32 flags) {
-    if (entry->GetTypeTag() != REZ_TAG_ANI) {
+i32 CAniElement::Configure(SoundCueRegistry* ctx, CRezItm* entry, i32 flags) {
+    if (entry->GetType() != REZ_TAG_ANI) {
         return 0;
     }
     m_flags = flags;
     RecordBytes<CAniSource> src;
-    src.m_chars = entry->LoadData();
+    src.m_chars = entry->Load();
     if (src.m_chars == NULL) {
         return 0;
     }
     i32 r = Build(ctx, src.m_rec, 0);
-    entry->ReleaseData();
+    entry->UnLoad();
     return r;
 }
 
@@ -1025,27 +1025,27 @@ void CDDrawPaletteRegistry::Unload() {
 
 RVA(0x001658c0, 0xcc)
 CDDrawPaletteResource*
-CDDrawPaletteRegistry::LoadPaletteFromSource(CRezArchiveEntry* src, const char* key, i32 flags) {
+CDDrawPaletteRegistry::LoadPaletteFromSource(CRezItm* src, const char* key, i32 flags) {
     RecordBytes<char> source;
-    source.m_chars = src->LoadData();
+    source.m_chars = src->Load();
     u8* data = source.m_bytes;
     if (data == NULL) {
         return NULL;
     }
     CDDrawPaletteResource* w = new CDDrawPaletteResource(m_palettesByName.GetCount(), m_ownerCtx);
     if (w->CreatePaletteFromRgb(data, flags) == 0) {
-        src->ReleaseData();
+        src->UnLoad();
         if (w != NULL) {
             delete w;
         }
         return NULL;
     }
-    src->ReleaseData();
+    src->UnLoad();
     char buf[0x50];
     if (key != NULL) {
         strcpy(buf, key);
     } else {
-        strcpy(buf, src->m_name);
+        strcpy(buf, src->GetName());
     }
     m_palettesByName[buf] = static_cast<CObject*>(w);
     return w;
@@ -1081,16 +1081,16 @@ CDDrawPaletteRegistry::LoadPaletteFromFile(char* path, const char* key, i32 flag
 
 RVA(0x00165a90, 0xf4)
 CDDrawPaletteResource*
-CDDrawPaletteRegistry::LoadPaletteFromTrailingData(CRezArchiveEntry* src, i32 key, i32 flags) {
-    if (src->GetTypeTag() != IMGTAG_XCP) {
+CDDrawPaletteRegistry::LoadPaletteFromTrailingData(CRezItm* src, i32 key, i32 flags) {
+    if (src->GetType() != IMGTAG_XCP) {
         return NULL;
     }
-    char* data = src->LoadData();
+    char* data = src->Load();
     if (data == NULL) {
         return NULL;
     }
 
-    i32 length = static_cast<i32>(src->m_size);
+    i32 length = static_cast<i32>(src->GetSize());
     CDDrawPaletteResource* w = new CDDrawPaletteResource(m_palettesByName.GetCount(), m_ownerCtx);
     if (w->CreatePaletteFromTrailingData(data, length, flags) == 0) {
         if (w != NULL) {
@@ -1105,7 +1105,7 @@ CDDrawPaletteRegistry::LoadPaletteFromTrailingData(CRezArchiveEntry* src, i32 ke
     if (keyArg.m_addr != NULL) {
         strcpy(buf, keyArg.m_addr);
     } else {
-        strcpy(buf, src->m_name);
+        strcpy(buf, src->GetName());
     }
     m_palettesByName[buf] = static_cast<CObject*>(w);
     return w;

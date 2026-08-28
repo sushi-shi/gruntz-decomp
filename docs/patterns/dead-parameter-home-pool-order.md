@@ -32,7 +32,7 @@ plus two sweeps on real functions settles what is reachable from source.
 * **The order of the operands that feed the guard.** `Hit(g, x + y)` and `Hit(g, y + x)`
   emit the same two loads in the same order.
 * **The `Format` argument order.** Reversing it does not move the temp.
-* **Local NAMES, under /O2.** Renaming `dir` -> `zdir` in `CRezArchive::ImportDirectoryTree` left
+* **Local NAMES, under /O2.** Renaming `dir` -> `zdir` in `CRezMgr::ReadEmulationDirectory` left
   the frame byte-identical. (Contrast `od-local-slot-ordering.md`: the name-hash rule is
   a `/Od` rule and does not apply here.)
 * **Declaration ORDER of address-taken ARRAYS.** All 40 permutations of the five
@@ -79,8 +79,8 @@ neither is proof of a missing statement or inline body.
 
 **So: before filing a slot difference as pool order, rule out the reachable axes above -
 above all the FRAME SIZE.** In the two other functions opened on this lane the "spill
-pool" reading was a misdiagnosis: `CRezArchiveDir::ReadDirectoryBody` 0x13a640 was a 4-byte record
+pool" reading was a misdiagnosis: `CRezDir::ReadDirBlock` 0x13a640 was a 4-byte record
 cursor plus a cached collection pointer (76.18 -> **100.00 EXACT**) and
-`CRezArchive::ImportDirectoryTree` 0x13b300 was wrong buffer SIZES, one missing buffer and
+`CRezMgr::ReadEmulationDirectory` 0x13b300 was wrong buffer SIZES, one missing buffer and
 `strcpy`-for-`strcat` (79.76 -> 99.67). Genuine pool order is the residue of last
 resort, and when it is genuine it is a permuter job.

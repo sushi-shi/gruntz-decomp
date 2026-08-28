@@ -6,9 +6,9 @@
 #include <Ints.h>
 #include <Lith/BaseHash.h>
 
-class CRezArchiveType;
-class CRezArchiveDir;
-struct CRezArchiveEntry;
+class CRezTyp;
+class CRezDir;
+struct CRezItm;
 
 class CRezItmHashTableByName;
 
@@ -18,15 +18,15 @@ public:
         m_pRezItm = NULL;
     }
 
-    CRezItmHashByName(CRezArchiveEntry* rezItm) : CBaseHashItem() {
+    CRezItmHashByName(CRezItm* rezItm) : CBaseHashItem() {
         m_pRezItm = rezItm;
     }
 
-    void SetRezItm(CRezArchiveEntry* rezItm) {
+    void SetRezItm(CRezItm* rezItm) {
         m_pRezItm = rezItm;
     }
 
-    CRezArchiveEntry* GetRezItm() {
+    CRezItm* GetRezItm() {
         return m_pRezItm;
     }
 
@@ -54,7 +54,7 @@ protected:
 private:
     friend class CRezItmHashTableByName;
 
-    CRezArchiveEntry* m_pRezItm;
+    CRezItm* m_pRezItm;
 };
 
 class CRezItmHashTableByName : public CBaseHash {
@@ -62,7 +62,7 @@ public:
     CRezItmHashTableByName(u32 numBins) : CBaseHash(numBins) {}
     CRezItmHashTableByName() : CBaseHash(1) {}
 
-    CRezArchiveEntry* Find(const char* name, i32 ignoreCase = 1);
+    CRezItm* Find(const char* name, i32 ignoreCase = 1);
 
     void Insert(CRezItmHashByName* item) {
         CBaseHash::Insert(item);
@@ -102,15 +102,15 @@ public:
         m_pRezItm = NULL;
     }
 
-    CRezItmHashByID(CRezArchiveEntry* rezItm) : CBaseHashItem() {
+    CRezItmHashByID(CRezItm* rezItm) : CBaseHashItem() {
         m_pRezItm = rezItm;
     }
 
-    void SetRezItm(CRezArchiveEntry* rezItm) {
+    void SetRezItm(CRezItm* rezItm) {
         m_pRezItm = rezItm;
     }
 
-    CRezArchiveEntry* GetRezItm() {
+    CRezItm* GetRezItm() {
         return m_pRezItm;
     }
 
@@ -138,7 +138,7 @@ protected:
 private:
     friend class CRezItmHashTableByID;
 
-    CRezArchiveEntry* m_pRezItm;
+    CRezItm* m_pRezItm;
 };
 
 class CRezItmHashTableByID : public CBaseHash {
@@ -182,15 +182,15 @@ public:
         m_pRezTyp = NULL;
     }
 
-    CRezTypeHash(CRezArchiveType* rezTyp) : CBaseHashItem() {
+    CRezTypeHash(CRezTyp* rezTyp) : CBaseHashItem() {
         m_pRezTyp = rezTyp;
     }
 
-    void SetRezTyp(CRezArchiveType* rezTyp) {
+    void SetRezTyp(CRezTyp* rezTyp) {
         m_pRezTyp = rezTyp;
     }
 
-    CRezArchiveType* GetRezTyp() {
+    CRezTyp* GetRezTyp() {
         return m_pRezTyp;
     }
 
@@ -218,14 +218,14 @@ protected:
 private:
     friend class CRezTypeHashTable;
 
-    CRezArchiveType* m_pRezTyp;
+    CRezTyp* m_pRezTyp;
 };
 
 class CRezTypeHashTable : public CBaseHash {
 public:
     CRezTypeHashTable(u32 numBins) : CBaseHash(numBins) {}
 
-    CRezArchiveType* Find(u32 type);
+    CRezTyp* Find(u32 type);
 
     void Insert(CRezTypeHash* item) {
         CBaseHash::Insert(item);
@@ -265,15 +265,15 @@ public:
         m_pRezDir = NULL;
     }
 
-    CRezDirHash(CRezArchiveDir* rezDir) : CBaseHashItem() {
+    CRezDirHash(CRezDir* rezDir) : CBaseHashItem() {
         m_pRezDir = rezDir;
     }
 
-    void SetRezDir(CRezArchiveDir* rezDir) {
+    void SetRezDir(CRezDir* rezDir) {
         m_pRezDir = rezDir;
     }
 
-    CRezArchiveDir* GetRezDir() {
+    CRezDir* GetRezDir() {
         return m_pRezDir;
     }
 
@@ -301,14 +301,14 @@ protected:
 private:
     friend class CRezDirHashTable;
 
-    CRezArchiveDir* m_pRezDir;
+    CRezDir* m_pRezDir;
 };
 
 class CRezDirHashTable : public CBaseHash {
 public:
     CRezDirHashTable(u32 numBins) : CBaseHash(numBins) {}
 
-    CRezArchiveDir* Find(const char* name, i32 ignoreCase = 1);
+    CRezDir* Find(const char* name, i32 ignoreCase = 1);
 
     void Insert(CRezDirHash* item) {
         CBaseHash::Insert(item);

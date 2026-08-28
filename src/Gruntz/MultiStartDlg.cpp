@@ -117,13 +117,13 @@ i32 CMultiStartDlg::InitializeWorldCombo() {
     if (combo == NULL) {
         return 0;
     }
-    CRezArchiveDir* worlds = m_gameManager->m_resourceArchive->FindDirectoryByPath("GAME_MULTI");
+    CRezDir* worlds = m_gameManager->m_resourceArchive->GetDirFromPath("GAME_MULTI");
     if (worlds == NULL) {
         return 0;
     }
-    CRezArchiveEntry* entry = worlds->FirstEntry(worlds->FirstType());
+    CRezItm* entry = worlds->GetFirstItem(worlds->GetFirstType());
     while (entry != NULL) {
-        CString name(entry->m_name);
+        CString name(entry->GetName());
         name.MakeUpper();
         MsgParam text;
         combo->SendMessageA(
@@ -131,7 +131,7 @@ i32 CMultiStartDlg::InitializeWorldCombo() {
             0,
             (text.m_str = static_cast<LPCTSTR>(name), text.m_lparam)
         );
-        entry = worlds->NextEntry(entry);
+        entry = worlds->GetNextItem(entry);
     }
     CWnd* reloadedCombo = GetDlgItem(IDX(IDC_MULTI_WORLD));
     CWnd* editControl = reloadedCombo->GetWindow(GW_CHILD);

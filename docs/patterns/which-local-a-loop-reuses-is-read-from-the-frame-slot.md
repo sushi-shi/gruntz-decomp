@@ -34,8 +34,8 @@ src->Read(&chunkSize, 4, -1);
 src->Read(&chunkId, 4, -1);
 if (riffTag != mmioFOURCC('R','I','F','F')) { return 0; }
 if (chunkId != mmioFOURCC('W','A','V','E')) { return 0; }
-u32 end = src->m_cursor + chunkSize - 4;
-while (src->m_cursor < end) {
+u32 end = src->m_nCurPos + chunkSize - 4;
+while (src->m_nCurPos < end) {
     src->Read(&chunkId, 4, -1);     // same slot as the form tag
     src->Read(&chunkSize, 4, -1);   // same slot as the RIFF size
     ...

@@ -881,7 +881,7 @@ void CDDrawWorker::Unload() {
     }
 
 RVA(0x00151f00, 0xa4)
-CImage* CDDrawWorker::InsertFrame(CRezArchiveEntry* src, i32 n, i32 mode) {
+CImage* CDDrawWorker::InsertFrame(CRezItm* src, i32 n, i32 mode) {
     if (n < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(n)) != NULL) {
         return NULL;
     }
@@ -961,13 +961,13 @@ RVA(0x001521c0, 0x2b)
 void CDDrawWorker::AddFrameAt(CObject* elem, i32 index){ADD_FRAME_AT(elem, index)}
 
 RVA(0x001521f0, 0xbc)
-i32 CDDrawWorker::BuildFramesFromArchive(CRezArchiveDir* tab) {
+i32 CDDrawWorker::BuildFramesFromArchive(CRezDir* tab) {
     i32 count = 0;
-    CRezArchiveType* sym = tab->FirstType();
+    CRezTyp* sym = tab->GetFirstType();
     while (sym != NULL) {
-        CRezArchiveEntry* val = tab->FirstEntry(sym);
+        CRezItm* val = tab->GetFirstItem(sym);
         while (val != NULL) {
-            char* p = val->m_name;
+            char* p = val->GetName();
             while (*p != 0) {
                 if (*p >= '0' && *p <= '9') {
                     break;
@@ -978,12 +978,12 @@ i32 CDDrawWorker::BuildFramesFromArchive(CRezArchiveDir* tab) {
             if (InsertFrame(val, fi, 1) != NULL) {
                 count++;
             }
-            val = tab->NextEntry(val);
+            val = tab->GetNextItem(val);
             if ((OwnerMgr()->m_flags & 0x100) && count > 0) {
                 val = NULL;
             }
         }
-        sym = tab->NextType(sym);
+        sym = tab->GetNextType(sym);
         if ((OwnerMgr()->m_flags & 0x100) && count > 0) {
             sym = NULL;
         }
@@ -992,7 +992,7 @@ i32 CDDrawWorker::BuildFramesFromArchive(CRezArchiveDir* tab) {
 }
 
 RVA(0x001522b0, 0xf7)
-i32 CDDrawWorker::ValidateFramesFromArchive(CRezArchiveDir* tab) {
+i32 CDDrawWorker::ValidateFramesFromArchive(CRezDir* tab) {
 
     i32 matched = 0;
     i32 liveFrames = 0;
@@ -1008,14 +1008,14 @@ i32 CDDrawWorker::ValidateFramesFromArchive(CRezArchiveDir* tab) {
             liveFrames++;
         }
     }
-    CRezArchiveType* sym = tab->FirstType();
+    CRezTyp* sym = tab->GetFirstType();
     while (sym != NULL) {
-        CRezArchiveEntry* val = tab->FirstEntry(sym);
+        CRezItm* val = tab->GetFirstItem(sym);
         while (val != NULL) {
             GZ_ENUM_RETURN(RezTypeTag, u32)
-            tag = (static_cast<CRezArchiveEntry*>(val))->GetTypeTag();
+            tag = (static_cast<CRezItm*>(val))->GetType();
             if (tag == IMGTAG_XCP || tag == IMGTAG_PMB || tag == IMGTAG_DIR || tag == IMGTAG_DIP) {
-                char* p = val->m_name;
+                char* p = val->GetName();
                 while (*p != 0) {
                     if (*p >= '0' && *p <= '9') {
                         break;
@@ -1023,20 +1023,20 @@ i32 CDDrawWorker::ValidateFramesFromArchive(CRezArchiveDir* tab) {
                     p++;
                 }
                 i32 fi = atoi(p);
-                if (0 == ReloadFrame(static_cast<CRezArchiveEntry*>(val), fi, 1)) {
+                if (0 == ReloadFrame(static_cast<CRezItm*>(val), fi, 1)) {
                     return -1;
                 }
                 matched++;
             }
-            val = tab->NextEntry(val);
+            val = tab->GetNextItem(val);
         }
-        sym = tab->NextType(sym);
+        sym = tab->GetNextType(sym);
     }
     return (matched >= liveFrames) ? matched : -1;
 }
 
 RVA(0x001523b0, 0x3b)
-i32 CDDrawWorker::ReloadFrame(CRezArchiveEntry* rec, i32 n, i32 flag) {
+i32 CDDrawWorker::ReloadFrame(CRezItm* rec, i32 n, i32 flag) {
     CImage* el = GetAt(n);
     if (el == NULL) {
         return 0;

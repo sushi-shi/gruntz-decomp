@@ -26,7 +26,7 @@ u32 CRezItmHashTableByName::HashFunc(const char* text) {
 }
 
 RVA(0x0013c270, 0xca)
-CRezArchiveEntry* CRezItmHashTableByName::Find(const char* name, i32 ignoreCase) {
+CRezItm* CRezItmHashTableByName::Find(const char* name, i32 ignoreCase) {
     if (name == NULL) {
         return NULL;
     }
@@ -60,7 +60,7 @@ u32 CRezTypeHashTable::HashFunc(u32 type) {
 }
 
 RVA(0x0013c360, 0x47)
-CRezArchiveType* CRezTypeHashTable::Find(u32 type) {
+CRezTyp* CRezTypeHashTable::Find(u32 type) {
     CRezTypeHash* item = GetFirstInBin(HashFunc(type));
     while (item != NULL) {
         if (static_cast<u32>(item->GetRezTyp()->GetType()) == type) {
@@ -89,7 +89,7 @@ u32 CRezDirHashTable::HashFunc(const char* text) {
 }
 
 RVA(0x0013c3f0, 0xca)
-CRezArchiveDir* CRezDirHashTable::Find(const char* name, i32 ignoreCase) {
+CRezDir* CRezDirHashTable::Find(const char* name, i32 ignoreCase) {
     if (name == NULL) {
         return NULL;
     }

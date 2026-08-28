@@ -1147,7 +1147,7 @@ i32 CGrunt::StepWarpExit() {
             i32 lvl = st->m_levelIndex + 0x64;
             CString s;
             s.Format("WORLDZ\\LEVEL%i", lvl);
-            if (st->m_levelResources->FindEntryByPath(static_cast<LPCTSTR>(s), REZ_TAG_WWD)) {
+            if (st->m_levelResources->GetRezFromPath(static_cast<LPCTSTR>(s), REZ_TAG_WWD)) {
                 PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_LOAD_WORLD), lvl);
             }
         }

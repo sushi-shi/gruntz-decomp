@@ -252,15 +252,15 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
 
     m_mgr->RestoreVideoMode(false);
 
-    m_stateResources = m_resourceArchive->FindDirectoryByPath("STATEZ_BOOTY");
+    m_stateResources = m_resourceArchive->GetDirFromPath("STATEZ_BOOTY");
     if (!m_stateResources) {
         return 0;
     }
-    m_gameResources = m_resourceArchive->FindDirectoryByPath("GAME");
+    m_gameResources = m_resourceArchive->GetDirFromPath("GAME");
     if (!m_gameResources) {
         return 0;
     }
-    m_gruntResources = m_resourceArchive->FindDirectoryByPath("GRUNTZ");
+    m_gruntResources = m_resourceArchive->GetDirFromPath("GRUNTZ");
     if (!m_gruntResources) {
         return 0;
     }
@@ -268,20 +268,20 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
     m_world->m_childGroup->ClearChildren();
 
     {
-        CRezArchiveDir* soundz = StateResources()->FindSubdirectory("SOUNDZ");
+        CRezDir* soundz = StateResources()->GetDir("SOUNDZ");
         if (!soundz) {
             return 0;
         }
-        m_world->m_soundRegistry->LoadFromTree(static_cast<CRezArchiveDir*>(soundz), "BOOTY", "_");
+        m_world->m_soundRegistry->LoadFromTree(static_cast<CRezDir*>(soundz), "BOOTY", "_");
 
-        CRezArchiveDir* wand = m_gruntResources->FindDirectoryByPath("SOUNDZ_WANDGRUNT");
+        CRezDir* wand = m_gruntResources->GetDirFromPath("SOUNDZ_WANDGRUNT");
         if (!wand) {
             return 0;
         }
         m_world->m_soundRegistry
-            ->LoadFromTree(static_cast<CRezArchiveDir*>(wand), "GRUNTZ_WANDGRUNT", "_");
+            ->LoadFromTree(static_cast<CRezDir*>(wand), "GRUNTZ_WANDGRUNT", "_");
 
-        CRezArchiveDir* imagez = StateResources()->FindSubdirectory("IMAGEZ");
+        CRezDir* imagez = StateResources()->GetDir("IMAGEZ");
         if (!imagez) {
             return 0;
         }
@@ -788,7 +788,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
     }
     CShadeTable* handleB = g_gameReg->m_spriteFactory->GetSel(0, 1);
 
-    CRezArchiveDir* img = m_gruntResources->FindDirectoryByPath("IMAGEZ_GOKARTGRUNT");
+    CRezDir* img = m_gruntResources->GetDirFromPath("IMAGEZ_GOKARTGRUNT");
     if (img == NULL) {
         return 0;
     }
@@ -1661,14 +1661,14 @@ i32 CBootyState::InputVirtual() {
     while (r >= 0) {
         r = sc(0);
     }
-    CRezArchiveDir* booty = StateResources()->FindDirectoryByPath("IMAGEZ");
+    CRezDir* booty = StateResources()->GetDirFromPath("IMAGEZ");
     if (booty == NULL) {
         return 0;
     }
     if (m_world->m_imageRegistry->LoadNamespace(booty, "BOOTY", "_") == -1) {
         return 0;
     }
-    CRezArchiveDir* gruntz = m_gruntResources->FindDirectoryByPath("IMAGEZ");
+    CRezDir* gruntz = m_gruntResources->GetDirFromPath("IMAGEZ");
     if (gruntz == NULL) {
         return 0;
     }
@@ -1900,33 +1900,33 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         return 0;
     }
     m_mgr->RestoreVideoMode(false);
-    m_stateResources = m_resourceArchive->FindDirectoryByPath("STATEZ_BOOTY");
+    m_stateResources = m_resourceArchive->GetDirFromPath("STATEZ_BOOTY");
     if (!m_stateResources) {
         return 0;
     }
-    m_gameResources = m_resourceArchive->FindDirectoryByPath("GAME");
+    m_gameResources = m_resourceArchive->GetDirFromPath("GAME");
     if (!m_gameResources) {
         return 0;
     }
-    m_gruntResources = m_resourceArchive->FindDirectoryByPath("GRUNTZ");
+    m_gruntResources = m_resourceArchive->GetDirFromPath("GRUNTZ");
     if (!m_gruntResources) {
         return 0;
     }
     {
         char area[128];
         sprintf(area, "AREA%i", (g_gameReg->m_gameStats->m_levelNumber - 1) % 0x24 / 4 + 1);
-        m_levelResources = m_resourceArchive->FindDirectoryByPath(area);
+        m_levelResources = m_resourceArchive->GetDirFromPath(area);
     }
     if (!m_levelResources) {
         return 0;
     }
     m_world->m_childGroup->ClearChildren();
     {
-        CRezArchiveDir* soundz = m_stateResources->FindSubdirectory("SOUNDZ");
+        CRezDir* soundz = m_stateResources->GetDir("SOUNDZ");
         if (!soundz) {
             return 0;
         }
-        m_world->m_soundRegistry->LoadFromTree(static_cast<CRezArchiveDir*>(soundz), "BOOTY", "_");
+        m_world->m_soundRegistry->LoadFromTree(static_cast<CRezDir*>(soundz), "BOOTY", "_");
     }
     {
         int(WINAPI * sc)(BOOL) = ShowCursor;
@@ -2857,7 +2857,7 @@ i32 CMultiBootyState::InputVirtual() {
     while (ShowCursor(false) >= 0)
         ;
 
-    CRezArchiveDir* tree = StateResources()->FindDirectoryByPath("IMAGEZ");
+    CRezDir* tree = StateResources()->GetDirFromPath("IMAGEZ");
     if (!tree) {
         return 0;
     }
@@ -2866,7 +2866,7 @@ i32 CMultiBootyState::InputVirtual() {
         return 0;
     }
 
-    tree = m_gruntResources->FindDirectoryByPath("IMAGEZ");
+    tree = m_gruntResources->GetDirFromPath("IMAGEZ");
     if (!tree) {
         return 0;
     }
@@ -2875,7 +2875,7 @@ i32 CMultiBootyState::InputVirtual() {
         return 0;
     }
 
-    tree = m_levelResources->FindDirectoryByPath("IMAGEZ");
+    tree = m_levelResources->GetDirFromPath("IMAGEZ");
     if (!tree) {
         return 0;
     }

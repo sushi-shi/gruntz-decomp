@@ -109,7 +109,7 @@ i32 CGameLevel::LoadFileWithCoords(const char* path, LevelCoordRect* coords) {
 }
 
 RVA(0x0015ceb0, 0xb8)
-i32 CGameLevel::LoadSourceWithCoords(CRezArchiveEntry* src, LevelCoordRect* coords) {
+i32 CGameLevel::LoadSourceWithCoords(CRezItm* src, LevelCoordRect* coords) {
     m_viewportRect = *coords;
     SetSpatialDefaults();
     if (LoadFromSource(src) == 0) {
@@ -319,18 +319,18 @@ i32 CGameLevel::LoadFromFile(const char* path) {
 }
 
 RVA(0x0015d630, 0x41)
-i32 CGameLevel::LoadFromSource(CRezArchiveEntry* source) {
-    char* handle = source->LoadData();
+i32 CGameLevel::LoadFromSource(CRezItm* source) {
+    char* handle = source->Load();
     if (handle == NULL) {
         return 0;
     }
 
     // Byte-forced view of packed WWD storage.
     if (LoadWwd(reinterpret_cast<WwdHeader*>(handle)) == 0) {
-        source->ReleaseData();
+        source->UnLoad();
         return 0;
     }
-    source->ReleaseData();
+    source->UnLoad();
     return 1;
 }
 

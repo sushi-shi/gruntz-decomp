@@ -83,7 +83,7 @@ i32 AnimationRegistry::RemoveWithPrefix(const char* prefix, const char* separato
 #define REGISTER_ANIMATION(animation, key) m_animations[key] = animation
 
 RVA(0x001528d0, 0xdd)
-CAniElement* AnimationRegistry::LoadAnimationFromSource(const char* key, CRezArchiveEntry* source) {
+CAniElement* AnimationRegistry::LoadAnimationFromSource(const char* key, CRezItm* source) {
     CAniElement* animation = new CAniElement;
     if (animation == NULL) {
         return NULL;
@@ -117,11 +117,11 @@ CAniElement* AnimationRegistry::LoadAnimationFromFile(const char* key, const cha
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00152a90, 0x17)
-CAniElement* AnimationRegistry::LoadNamedAnimation(CRezArchiveEntry* source) {
+CAniElement* AnimationRegistry::LoadNamedAnimation(CRezItm* source) {
     if (source == NULL) {
         return NULL;
     }
-    return LoadAnimationFromSource(source->m_name, source);
+    return LoadAnimationFromSource(source->GetName(), source);
 }
 
 // @dead-code
@@ -132,46 +132,42 @@ void AnimationRegistry::AddAnimation(CAniElement* animation, const char* key) {
 }
 
 RVA(0x00152ad0, 0x17f)
-i32 AnimationRegistry::LoadFromTree(
-    CRezArchiveDir* tree,
-    const char* prefix,
-    const char* separator
-) {
+i32 AnimationRegistry::LoadFromTree(CRezDir* tree, const char* prefix, const char* separator) {
     i32 loadedCount = 0;
     char* keyBuffer = new char[0x100];
     if (keyBuffer == NULL) {
         return 0;
     }
     keyBuffer[0] = 0;
-    CRezArchiveDir* node = static_cast<CRezArchiveDir*>(tree->FirstSubdirectory());
+    CRezDir* node = static_cast<CRezDir*>(tree->GetFirstSubDir());
     while (node != NULL) {
         if (prefix != NULL && *prefix != 0) {
-            sprintf(keyBuffer, "%s%s%s", prefix, separator, node->m_name);
+            sprintf(keyBuffer, "%s%s%s", prefix, separator, node->GetDirName());
         } else {
-            strcpy(keyBuffer, node->m_name);
+            strcpy(keyBuffer, node->GetDirName());
         }
         loadedCount += LoadFromTree(node, keyBuffer, separator);
-        node = static_cast<CRezArchiveDir*>(tree->NextSubdirectory(node));
+        node = static_cast<CRezDir*>(tree->GetNextSubDir(node));
     }
-    CRezArchiveType* group = tree->FirstType();
+    CRezTyp* group = tree->GetFirstType();
     if (group != NULL) {
         do {
 
-            CRezArchiveEntry* source = tree->FirstEntry(group);
+            CRezItm* source = tree->GetFirstItem(group);
             while (source != NULL) {
-                if (source->GetTypeTag() == REZ_TAG_ANI) {
+                if (source->GetType() == REZ_TAG_ANI) {
                     if (prefix != NULL && *prefix != 0) {
-                        sprintf(keyBuffer, "%s%s%s", prefix, separator, source->m_name);
+                        sprintf(keyBuffer, "%s%s%s", prefix, separator, source->GetName());
                     } else {
-                        strcpy(keyBuffer, source->m_name);
+                        strcpy(keyBuffer, source->GetName());
                     }
                     if (LoadAnimationFromSource(keyBuffer, source) != NULL) {
                         ++loadedCount;
                     }
                 }
-                source = tree->NextEntry(source);
+                source = tree->GetNextItem(source);
             }
-            group = tree->NextType(group);
+            group = tree->GetNextType(group);
         } while (group != NULL);
     }
     delete[] keyBuffer;

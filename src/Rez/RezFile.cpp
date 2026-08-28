@@ -19,7 +19,7 @@ RVA(0x0013c4d0, 0x1)
 void CRezFileSingleFileList::VirtualFoo() {}
 
 RVA(0x0013c4e0, 0x12)
-CBaseRezFile::CBaseRezFile(CRezArchive* rezMgr) {
+CBaseRezFile::CBaseRezFile(CRezMgr* rezMgr) {
     m_pRezMgr = rezMgr;
 }
 
@@ -34,7 +34,7 @@ RVA(0x0013c530, 0x1)
 void CBaseRezFile::VirtualFoo() {}
 
 RVA(0x0013c540, 0x28)
-CRezFile::CRezFile(CRezArchive* rezMgr) : CBaseRezFile(rezMgr) {
+CRezFile::CRezFile(CRezMgr* rezMgr) : CBaseRezFile(rezMgr) {
     m_pFile = NULL;
     m_sFileName = NULL;
     m_nLastSeekPos = 0xffffffff;
@@ -62,7 +62,7 @@ u32 CRezFile::Read(u32 itemPos, u32 itemOffset, u32 size, void* data) {
 
     if (m_nLastSeekPos != seekPos) {
         while (fseek(m_pFile, seekPos, 0) != 0) {
-            if (m_pRezMgr->RetryStorageOperation() == 0) {
+            if (m_pRezMgr->DiskError() == 0) {
                 m_nLastSeekPos = 0xffffffff;
                 return 0;
             }
@@ -71,7 +71,7 @@ u32 CRezFile::Read(u32 itemPos, u32 itemOffset, u32 size, void* data) {
 
     u32 got = fread(data, 1, size, m_pFile);
     while (got != size) {
-        if (m_pRezMgr->RetryStorageOperation() == 0) {
+        if (m_pRezMgr->DiskError() == 0) {
             m_nLastSeekPos = 0xffffffff;
             return 0;
         }
@@ -90,14 +90,14 @@ u32 CRezFile::Write(u32 itemPos, u32 itemOffset, u32 size, void* data) {
     }
 
     while (fseek(m_pFile, itemPos + itemOffset, 0) != 0) {
-        if (m_pRezMgr->RetryStorageOperation() == 0) {
+        if (m_pRezMgr->DiskError() == 0) {
             return 0;
         }
     }
 
     u32 put = fwrite(data, 1, size, m_pFile);
     while (put != size) {
-        if (m_pRezMgr->RetryStorageOperation() == 0) {
+        if (m_pRezMgr->DiskError() == 0) {
             return 0;
         }
         put = fwrite(data, 1, size, m_pFile);
@@ -121,7 +121,7 @@ i32 CRezFile::Open(const char* fileName, b32 readOnly, b32 createNew) {
         if (m_pFile != NULL) {
             break;
         }
-        if (m_pRezMgr->RetryStorageOperation() == 0) {
+        if (m_pRezMgr->DiskError() == 0) {
             return 0;
         }
         if (m_pFile != NULL) {
@@ -152,7 +152,7 @@ i32 CRezFile::Close() {
                 ok = true;
             } else {
                 ok = false;
-                if (m_pRezMgr->RetryStorageOperation() == 0) {
+                if (m_pRezMgr->DiskError() == 0) {
                     return 0;
                 }
             }
@@ -180,7 +180,7 @@ i32 CRezFile::Flush() {
                 found = true;
             } else {
                 found = false;
-                if (m_pRezMgr->RetryStorageOperation() == 0) {
+                if (m_pRezMgr->DiskError() == 0) {
                     return 0;
                 }
             }
@@ -203,7 +203,7 @@ i32 CRezFile::VerifyFileOpen() {
 }
 
 RVA(0x0013c940, 0x46)
-CRezFileDirectoryEmulation::CRezFileDirectoryEmulation(CRezArchive* rezMgr, i32 maxOpenFiles)
+CRezFileDirectoryEmulation::CRezFileDirectoryEmulation(CRezMgr* rezMgr, i32 maxOpenFiles)
     : CBaseRezFile(rezMgr) {
     m_nNumOpenFiles = 0;
     m_nMaxOpenFiles = maxOpenFiles;
@@ -260,7 +260,7 @@ i32 CRezFileDirectoryEmulation::VerifyFileOpen() {
 
 RVA(0x0013cac0, 0x9b)
 CRezFileSingleFile::CRezFileSingleFile(
-    CRezArchive* rezMgr,
+    CRezMgr* rezMgr,
     const char* fileName,
     CRezFileDirectoryEmulation* dirEmulation
 )
@@ -297,13 +297,13 @@ u32 CRezFileSingleFile::Read(u32 itemPos, u32 itemOffset, u32 size, void* data) 
         ReallyOpen();
     }
     while (fseek(m_pFile, itemOffset, 0) != 0) {
-        if (m_pDirEmulation->m_pRezMgr->RetryStorageOperation() == 0) {
+        if (m_pDirEmulation->m_pRezMgr->DiskError() == 0) {
             return 0;
         }
     }
     u32 got = fread(data, 1, size, m_pFile);
     while (got != size) {
-        if (m_pDirEmulation->m_pRezMgr->RetryStorageOperation() == 0) {
+        if (m_pDirEmulation->m_pRezMgr->DiskError() == 0) {
             return 0;
         }
         got = fread(data, 1, size, m_pFile);
@@ -321,13 +321,13 @@ u32 CRezFileSingleFile::Write(u32 itemPos, u32 itemOffset, u32 size, void* data)
         ReallyOpen();
     }
     while (fseek(m_pFile, itemOffset, 0) != 0) {
-        if (m_pDirEmulation->m_pRezMgr->RetryStorageOperation() == 0) {
+        if (m_pDirEmulation->m_pRezMgr->DiskError() == 0) {
             return 0;
         }
     }
     u32 put = fwrite(data, 1, size, m_pFile);
     while (put != size) {
-        if (m_pDirEmulation->m_pRezMgr->RetryStorageOperation() == 0) {
+        if (m_pDirEmulation->m_pRezMgr->DiskError() == 0) {
             return 0;
         }
         put = fwrite(data, 1, size, m_pFile);
@@ -349,7 +349,7 @@ i32 CRezFileSingleFile::Flush() {
     if (m_pFile != NULL) {
         b32 ok = (fflush(m_pFile) == 0);
         while (!ok) {
-            if (m_pDirEmulation->m_pRezMgr->RetryStorageOperation() == 0) {
+            if (m_pDirEmulation->m_pRezMgr->DiskError() == 0) {
                 return 0;
             }
             ok = (fflush(m_pFile) == 0);
@@ -390,7 +390,7 @@ i32 CRezFileSingleFile::ReallyOpen() {
         if (m_pFile != NULL) {
             break;
         }
-        if (m_pDirEmulation->m_pRezMgr->RetryStorageOperation() == 0) {
+        if (m_pDirEmulation->m_pRezMgr->DiskError() == 0) {
             return 0;
         }
         if (m_pFile != NULL) {
@@ -410,7 +410,7 @@ i32 CRezFileSingleFile::ReallyClose() {
     }
     b32 ok = (fclose(m_pFile) == 0);
     while (!ok) {
-        if (m_pDirEmulation->m_pRezMgr->RetryStorageOperation() == 0) {
+        if (m_pDirEmulation->m_pRezMgr->DiskError() == 0) {
             return 0;
         }
         ok = (fclose(m_pFile) == 0);

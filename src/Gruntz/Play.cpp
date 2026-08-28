@@ -1036,8 +1036,8 @@ RVA(0x000ca200, 0xe54)
 i32 CPlay::LoadByMode(i32 level, i32) {
     CPlay* self = this;
     CGruntzMgr* gameReg;
-    CRezArchiveDir* bank;
-    CRezArchiveDir* prevTiles;
+    CRezDir* bank;
+    CRezDir* prevTiles;
     i32 reload = 0;
     i32 diff = 0;
 
@@ -1131,24 +1131,24 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
     CGruntzMgr* mgr = self->m_mgr;
     if (mgr->m_strWorldFile.GetLength() != 0) {
-        CRezArchiveEntry* ins;
+        CRezItm* ins;
         char* desc;
         char* p;
         char c;
         if (mgr->m_isBuiltInBattlezLevel != false) {
 
-            bank = mgr->m_resourceArchive->FindDirectoryByPath("GAME_BATTLEZ");
+            bank = mgr->m_resourceArchive->GetDirFromPath("GAME_BATTLEZ");
             if (bank == NULL) {
                 goto fail0;
             }
-            ins = bank->FindEntry(
+            ins = bank->GetRez(
                 static_cast<const char*>(self->m_mgr->GetWorldFileName()),
                 REZ_TAG_WWD
             );
             if (ins == NULL) {
                 return 0;
             }
-            desc = ins->LoadData();
+            desc = ins->Load();
             if (desc == NULL) {
                 goto fail0;
             }
@@ -1163,21 +1163,21 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                 break;
             }
             level = atoi(p);
-            ins->ReleaseData();
+            ins->UnLoad();
         } else if (mgr->m_isBuiltInMultiplayerLevel != false) {
 
-            bank = mgr->m_resourceArchive->FindDirectoryByPath("GAME_MULTI");
+            bank = mgr->m_resourceArchive->GetDirFromPath("GAME_MULTI");
             if (bank == NULL) {
                 goto fail0;
             }
-            ins = bank->FindEntry(
+            ins = bank->GetRez(
                 static_cast<const char*>(self->m_mgr->GetWorldFileName()),
                 REZ_TAG_WWD
             );
             if (ins == NULL) {
                 return 0;
             }
-            desc = ins->LoadData();
+            desc = ins->Load();
             if (desc == NULL) {
                 goto fail0;
             }
@@ -1192,7 +1192,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                 break;
             }
             level = atoi(p);
-            ins->ReleaseData();
+            ins->UnLoad();
         } else {
 
             level = WwdFile::ValidateMainBlock(self->m_mgr->GetWorldFileName());
@@ -1206,7 +1206,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
 
     sprintf(nameBuf, "AREA%i", IDX(self->m_levelType));
-    bank = self->m_resourceArchive->FindDirectoryByPath(nameBuf);
+    bank = self->m_resourceArchive->GetDirFromPath(nameBuf);
     self->m_levelResources = bank;
     if (bank == NULL) {
         goto fail0;
@@ -1755,7 +1755,7 @@ i32 CPlay::InputVirtual() {
     while (ShowCursor(false) >= 0)
         ;
 
-    CRezArchiveDir* h = m_levelResources->FindDirectoryByPath("TILEZ");
+    CRezDir* h = m_levelResources->GetDirFromPath("TILEZ");
     if (!h) {
         return 0;
     }
@@ -1763,7 +1763,7 @@ i32 CPlay::InputVirtual() {
         return 0;
     }
 
-    h = m_levelResources->FindDirectoryByPath("IMAGEZ");
+    h = m_levelResources->GetDirFromPath("IMAGEZ");
     if (!h) {
         return 0;
     }
@@ -1771,7 +1771,7 @@ i32 CPlay::InputVirtual() {
         return 0;
     }
 
-    h = m_gruntResources->FindDirectoryByPath("IMAGEZ");
+    h = m_gruntResources->GetDirFromPath("IMAGEZ");
     if (!h) {
         return 0;
     }
@@ -3610,11 +3610,11 @@ i32 CPlay::LoadImageBanks() {
     if (!self->m_resourceArchive) {
         return 0;
     }
-    self->m_gruntResources = self->m_resourceArchive->FindDirectoryByPath("GRUNTZ");
+    self->m_gruntResources = self->m_resourceArchive->GetDirFromPath("GRUNTZ");
     if (!self->m_gruntResources) {
         return 0;
     }
-    self->m_gameResources = self->m_resourceArchive->FindDirectoryByPath("GAME");
+    self->m_gameResources = self->m_resourceArchive->GetDirFromPath("GAME");
     return self->m_gameResources != NULL;
 }
 
@@ -5863,7 +5863,7 @@ RVA(0x000d5c10, 0x10d)
 i32 CState::DrawScreenTextImage(const char* name) {
     char buf[0x40];
     sprintf(buf, "\\SCREENZ\\%sTEXT", name);
-    CRezArchiveEntry* src = StateResources()->FindEntryByPath(buf, IMGTAG_DIP);
+    CRezItm* src = StateResources()->GetRezFromPath(buf, IMGTAG_DIP);
     if (src == NULL) {
         return 0;
     }

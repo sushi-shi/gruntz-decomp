@@ -9,7 +9,7 @@
 #include <stddef.h>
 
 class SoundSample;
-struct CRezArchiveEntry;
+struct CRezItm;
 struct RiffWaveHeader;
 
 struct SoundCue : public CWapObj {
@@ -27,7 +27,7 @@ struct SoundCue : public CWapObj {
 
     i32 LoadFromWave(RiffWaveHeader* riff);
     i32 LoadFromFile(char* path);
-    i32 LoadFromSource(CRezArchiveEntry* source);
+    i32 LoadFromSource(CRezItm* source);
 
     i32 PlayIfElapsed(i32 volumePercent, i32 panPercent, i32 frequencyOffsetPercent, b32 looping);
 

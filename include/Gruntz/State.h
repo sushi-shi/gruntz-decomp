@@ -11,11 +11,11 @@
 #include <Ints.h>
 
 class CDDrawSurfaceMgr;
-class CRezArchive;
+class CRezMgr;
 class CDDSurface;
-class CRezArchiveDir;
+class CRezDir;
 
-class CRezArchiveDir;
+class CRezDir;
 class CFileMemBase;
 class CGruntzMgr;
 class CFaderMgr;
@@ -163,8 +163,8 @@ public:
     CDDrawSurfaceMgr* menuRoot() {
         return m_world;
     }
-    CRezArchive* ResourceArchive() {
-        return static_cast<CRezArchive*>(m_resourceArchive);
+    CRezMgr* ResourceArchive() {
+        return static_cast<CRezMgr*>(m_resourceArchive);
     }
     CGruntzMgr* owner() {
         return m_mgr;
@@ -178,7 +178,7 @@ public:
 
     CGruntzMgr* m_mgr;
 
-    CRezArchive* m_resourceArchive;
+    CRezMgr* m_resourceArchive;
 
     CDDrawSurfaceMgr* m_world;
     CFaderMgr* m_faderMgr;
@@ -191,15 +191,15 @@ public:
 
     GameStateId m_previousStateId;
 
-    CRezArchiveDir* m_levelResources;
+    CRezDir* m_levelResources;
 
-    CRezArchiveDir* m_stateResources;
+    CRezDir* m_stateResources;
 
-    CRezArchiveDir* StateResources() {
+    CRezDir* StateResources() {
         return m_stateResources;
     }
-    CRezArchiveDir* m_gruntResources;
-    CRezArchiveDir* m_gameResources;
+    CRezDir* m_gruntResources;
+    CRezDir* m_gameResources;
     i32 m_reserved38;
     b32 m_ready;
     b32 m_notifyLatch;

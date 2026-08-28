@@ -31,6 +31,6 @@ call ??3@YAXPAX@Z
 add  esp,0x4
 mov  [esi+0x38],0x0
 ```
-STEERABLE. `CRezArchiveEntry::LoadData` 99.79 -> **100.00 EXACT**. The reverse case
+STEERABLE. `CRezItm::Load` 99.79 -> **100.00 EXACT**. The reverse case
 exists too, so treat it as a two-way lever rather than "always use `delete`" —
-`CRezArchiveEntry::ReleaseData` in the same TU stays 100% with `::operator delete`.
+`CRezItm::UnLoad` in the same TU stays 100% with `::operator delete`.

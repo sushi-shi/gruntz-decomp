@@ -661,15 +661,15 @@ image+fileimageblit+fileimagerundecode+lutshaderect+fileimageloadbyext
 (->G/H/I + the 0x148840 pocket), ddrawptrcollections' 34 in-band fns (->H).
 
 * **A (archive file = ONE TU).** Multi-scale text A-B-A: the
-  `CRezArchiveEntry` run 0x139800-0x139bbc sits inside the archive entry/directory
-  head (Initialize@0x139710 .. CRezArchiveDir ctor@0x139de0), with the
-  `CRezArchiveType` ctors between; the `CRezArchiveDir::Find*` trio 0x13bae0-0x13bfec
-  sits INSIDE the CRezArchive run (SetPathDelimiters@0x13ba80 .. FindEntryByPath@0x13bff0).
-  Private-cell order: PreloadData@CRezArchiveDir(0x13a0f0)'s cell 0x21a070 <
-  ImportDirectoryTree@CRezArchive's 0x21a0a0 < the rez obj's 0x21a0a4 - the two
+  `CRezItm` run 0x139800-0x139bbc sits inside the archive entry/directory
+  head (Initialize@0x139710 .. CRezDir ctor@0x139de0), with the
+  `CRezTyp` ctors between; the `CRezDir::Find*` trio 0x13bae0-0x13bfec
+  sits INSIDE the CRezMgr run (SetPathDelimiters@0x13ba80 .. FindEntryByPath@0x13bff0).
+  Private-cell order: PreloadData@CRezDir(0x13a0f0)'s cell 0x21a070 <
+  ImportDirectoryTree@CRezMgr's 0x21a0a0 < the rez obj's 0x21a0a4 - the two
   formerly storage-manager-attributed strays (0x13a0f0, 0x13c080 - both text-contained)
   carry cells inside the archive band, so they belong to this object. EH sites
-  throughout (`CRezArchiveEntry`/`CRezArchiveDir`/`CRezArchive` ctors+dtors,
+  throughout (`CRezItm`/`CRezDir`/`CRezMgr` ctors+dtors,
   ReadDirectoryBody, AcquireEntry) -> /GX; the cremusreadstream base profile was a
   seam artifact.
 * **B (hash pocket).** One contiguous CRezEntryIdHash/CRezDirectoryNameHash block directly after A; no

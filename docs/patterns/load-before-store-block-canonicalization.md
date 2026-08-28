@@ -25,7 +25,7 @@ code, so both source orders collapse to one output.
 
 ## Measured non-fixes
 
-On `CRezArchive::Close` 0x13b850 (99.55%, the sole residue), nine spellings all
+On `CRezMgr::Close` 0x13b850 (99.55%, the sole residue), nine spellings all
 produced byte-identical output:
 
 - `for (p = head; p; p = head)` / `while ((p = head) != 0)` / `for(;;){ p = head; if(!p) break; }`

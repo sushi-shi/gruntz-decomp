@@ -31,7 +31,7 @@ Three shapes, all measured 2026-08-08:
 
 | retail | our source | fix |
 |---|---|---|
-| state 0 at the member's `call`, ours stores 2 | `m_hash.Construct(1);` in the body | `: m_hash(1)` mem-init (`CRezArchive` 76.68 -> **100.00**) |
+| state 0 at the member's `call`, ours stores 2 | `m_hash.Construct(1);` in the body | `: m_hash(1)` mem-init (`CRezMgr` 76.68 -> **100.00**) |
 | first/last zeroed BEFORE the vptr stamp | assigning the links in the containing ctor body | the ctor belongs to the member's real `CVirtBaseList` base, whose own ctor initializes `m_pFirst`/`m_pLast` |
 | an extra state, then three field stores | `m_gameObject = owner; ...` in the body | the fields belong to a real base - `: CMovingLogic(owner), CWapX(owner)` (`CProjectile` 86.23 -> **99.78**) |
 

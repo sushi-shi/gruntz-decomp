@@ -60,7 +60,7 @@ funclets destroy `this+0x4` through 0x1364e0 and `this+0xc` through 0x1364f0;
 1-byte COMDATs, so three classes — while `CLTBaseList::InsertFirst` 0x1390e0 /
 `CLTBaseList::Delete` 0x1391e0
 exist in exactly ONE copy each, shared by SoundBuffer, SoundDevice,
-SoundStream, CRezArchive, CBaseHash and CWwdGrid, which puts the operations on a
+SoundStream, CRezMgr, CBaseHash and CWwdGrid, which puts the operations on a
 common base and the destructor on the typed wrapper. Splitting the type and
 pinning the three dtors took all four `directsoundmgr` groups to
 `unwind-identical`.

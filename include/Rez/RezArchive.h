@@ -11,16 +11,7 @@
 #include <Rez/RezList.h>
 #include <Rez/RezTypeTag.h>
 
-struct CRezArchiveEntry;
-
-struct CRezEntryPoolBlock : public CBaseListItem {
-    CRezArchiveEntry* m_entries;
-};
-
-struct CRezEntryPoolBlockList : public CLTBaseList {
-    RVA(0x0013abb0, 0x1)
-    ~CRezEntryPoolBlockList() {}
-};
+struct CRezItm;
 
 #pragma pack(push, 1)
 GZ_ENUM_CONST_BEGIN(RezArchiveMagic)
@@ -37,109 +28,127 @@ struct RezArchiveHeader {
     u8 m_firstBannerLineFeed;
     char m_bannerBlock2[0x7e - 0x40];
     u8 m_dosEndMarker;
-    RezArchiveVersion m_version;
-    i32 m_rootDirectoryOffset;
-    i32 m_rootDirectorySize;
-    i32 m_rootDirectoryTime;
-    i32 m_nextWritePos;
-    i32 m_archiveTime;
-    u32 m_largestKeyArrayLength;
-    u32 m_largestDirectoryNameSize;
-    u32 m_largestResourceNameSize;
-    u32 m_largestCommentSize;
-    u8 m_isDataContiguous;
+    RezArchiveVersion m_nFileFormatVersion;
+    i32 m_nRootDirPos;
+    i32 m_nRootDirSize;
+    i32 m_nRootDirTime;
+    i32 m_nNextWritePos;
+    i32 m_nLastTimeModified;
+    u32 m_nLargestKeyAry;
+    u32 m_nLargestDirNameSize;
+    u32 m_nLargestRezNameSize;
+    u32 m_nLargestCommentSize;
+    u8 m_bIsSorted;
 };
 
 #pragma pack(pop)
 
-class CRezArchive {
+class CRezMgr {
 public:
-    virtual i32 UnusedArchiveQuery(i32 unused);
-    virtual void UnusedArchiveAction(i32 unused);
+    virtual void* Alloc(u32 numBytes);
+    virtual void Free(void* ptr);
+    virtual i32 DiskError();
 
-    virtual i32 RetryStorageOperation();
+    CRezMgr();
+    CRezMgr(const char* fileName, b32 readOnly, b32 createNew);
 
-    CRezArchive();
-    CRezArchive(char* path, b32 readOnly, b32 createNew);
+    ~CRezMgr();
 
-    ~CRezArchive();
+    i32 Close(b32 compact);
 
-    i32 Close(i32 unusedFinal);
+    CRezDir* GetRootDir();
 
-    CRezArchiveDir* GetRootDirectory();
+    i32 Open(const char* fileName, b32 readOnly, b32 createNew);
 
-    i32 Open(char* path, b32 readOnly, b32 createNew);
+    i32 OpenAdditional(const char* fileName, b32 overwriteItems);
 
-    i32 MergeArchive(char* path, b32 replaceExisting);
+    RezTypeTag StrToType(const char* typeName);
 
-    i32 ImportDirectoryTree(
-        CBaseRezFile* storage,
-        CRezArchiveDir* directory,
+    void TypeToStr(RezTypeTag type, char* destination);
+
+    i32 Reset();
+
+    i32 VerifyFileOpen();
+
+    void SetDirSeparators(const char* separators);
+
+    void SetHashTableBins(
+        u32 byNameNumHashBins,
+        u32 byIdNumHashBins,
+        u32 dirNumHashBins,
+        u32 typeNumHashBins
+    );
+
+    CRezItm* GetRezFromDosPath(const char* path);
+    CRezItm* GetRezFromPath(const char* path, RezTypeTag type);
+    CRezDir* GetDirFromPath(const char* path);
+
+private:
+    friend class CRezDir;
+    friend class CRezTyp;
+    friend struct CRezItm;
+
+    struct CRezItmChunk : public CBaseListItem {
+        CRezItmChunk* Next() {
+            return static_cast<CRezItmChunk*>(CBaseListItem::Next());
+        }
+
+        CRezItm* m_pRezItmAry;
+    };
+
+    struct CRezItmChunkList : public CLTBaseList {
+        RVA(0x0013abb0, 0x1)
+        ~CRezItmChunkList() {}
+
+        CRezItmChunk* GetFirst() {
+            return static_cast<CRezItmChunk*>(CLTBaseList::GetFirst());
+        }
+    };
+
+    i32 ReadEmulationDirectory(
+        CRezFileDirectoryEmulation* rezFileEmulation,
+        CRezDir* directory,
         char* path,
-        b32 replaceExisting
+        b32 overwriteItems
     );
+    i32 IsDirectory(const char* fileName);
+    CRezItm* AllocateRezItm();
+    void DeAllocateRezItm(CRezItm* item);
+    i32 GetCurTime();
 
-    i32 IsDirectoryPath(char* path);
-
-    RezTypeTag PackTag(const char* typeName);
-
-    void UnpackTag(RezTypeTag tag, char* destination);
-
-    i32 Reload();
-
-    CRezArchiveEntry* AcquireEntry();
-
-    i32 MakeTimestamp();
-
-    i32 CheckStorages();
-
-    void SetPathDelimiters(char* delimiters);
-
-    void SetBucketCounts(
-        i32 resourceNameBuckets,
-        i32 resourceIdBuckets,
-        i32 subdirectoryBuckets,
-        i32 typeBuckets
-    );
-
-    CRezArchiveEntry* FindEntryByPath(const char* path);
-    CRezArchiveEntry* FindEntryByPath(const char* path, RezTypeTag typeTag);
-    CRezArchiveDir* FindDirectoryByPath(const char* path);
-    void ReleaseEntry(CRezArchiveEntry* entry);
-
-    char* m_pathDelimiters;
-    b32 m_isDataContiguous;
-    b32 m_isOpen;
+    char* m_sDirSeparators;
+    b32 m_bIsSorted;
+    b32 m_bFileOpened;
     CBaseRezFileList m_lstRezFiles;
     u32 m_nNumRezFiles;
-    CBaseRezFile* m_primaryStorage;
-    i32 m_reserved24;
-    i32 m_nextGeneratedResourceId;
-    i32 m_maxOpenFiles;
-    i32 m_rootDirectoryOffset;
-    i32 m_rootDirectorySize;
-    i32 m_rootDirectoryTime;
-    i32 m_nextWritePos;
-    b32 m_readOnly;
-    CRezArchiveDir* m_rootDirectory;
-    i32 m_archiveTime;
-    b32 m_isNewArchive;
-    RezArchiveVersion m_version;
+    CBaseRezFile* m_pPrimaryRezFile;
+    b32 m_bRenumberIDCollisions;
+    u32 m_nNextIDNumToUse;
+    i32 m_nMaxOpenFilesInEmulatedDir;
+    u32 m_nRootDirPos;
+    u32 m_nRootDirSize;
+    i32 m_nRootDirTime;
+    i32 m_nNextWritePos;
+    b32 m_bReadOnly;
+    CRezDir* m_pRootDir;
+    i32 m_nLastTimeModified;
+    b32 m_bMustReWriteDirs;
+    RezArchiveVersion m_nFileFormatVersion;
 
-    u32 m_largestKeyArrayLength;
-    u32 m_largestDirectoryNameSize;
-    u32 m_largestResourceNameSize;
-    u32 m_largestCommentSize;
-    char* m_archivePath;
-    b32 m_caseSensitive;
-    b32 m_useIdIndex;
-    i32 m_resourceNameBucketCount;
-    i32 m_resourceIdBucketCount;
-    i32 m_subdirectoryBucketCount;
-    i32 m_typeBucketCount;
+    u32 m_nLargestKeyAry;
+    u32 m_nLargestDirNameSize;
+    u32 m_nLargestRezNameSize;
+    u32 m_nLargestCommentSize;
+    char* m_sFileName;
+    b32 m_bLowerCaseUsed;
+    b32 m_bItemByIDUsed;
+    u32 m_nByNameNumHashBins;
+    u32 m_nByIDNumHashBins;
+    u32 m_nDirNumHashBins;
+    u32 m_nTypNumHashBins;
     CRezItmHashTableByName m_hashRezItmFreeList;
-    CRezEntryPoolBlockList m_entryPoolBlocks;
-    i32 m_entriesPerPoolBlock;
+    CRezItmChunkList m_lstRezItmChunks;
+    u32 m_nRezItmChunkSize;
 };
 
 #endif // REZ_REZARCHIVE_H

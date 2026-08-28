@@ -14,7 +14,7 @@
 
 class CDDSurface;
 class CDDrawSurfaceMgr;
-struct CRezArchiveEntry;
+struct CRezItm;
 
 GZ_ENUM_FLAGS_BEGIN(DDrawSurfacePairFlags, i32)
     SURFACEPAIR_SYSTEM_MEMORY = 0x10000,
@@ -42,7 +42,7 @@ public:
     virtual i32 SetGeom(i32 w, i32 h, ColorDepth bpp) OVERRIDE;
     virtual i32 InitFromSurface(CDDSurface* src);
     virtual i32 Create(i32 w, i32 h, ColorDepth bpp, i32 flags);
-    virtual i32 LoadImage(CRezArchiveEntry* src);
+    virtual i32 LoadImage(CRezItm* src);
     virtual i32 ResolveImageName(char* name);
 
     virtual ~CDDrawSurfacePair() OVERRIDE;

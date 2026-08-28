@@ -5,6 +5,6 @@
 
 #include <Ints.h>
 
-class CRezArchiveDir;
+class CRezDir;
 
 #endif // GRUNTZ_GRUNTZ_CBANKMGR_H

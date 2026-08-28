@@ -631,7 +631,7 @@
  },
  {
   "file": "src/Bute/Hash.cpp",
-  "name": "?FindTypeByTag@CRezTypeTagHash@@QAEPAVCRezArchiveType@@I@Z",
+  "name": "?FindTypeByTag@CRezTypeTagHash@@QAEPAVCRezTyp@@I@Z",
   "rva": 1295200,
   "demo_rva": 1286672,
   "retail_dist": 296214,

@@ -1782,11 +1782,11 @@ i32 CGruntzMgr::PlayMovieEntry(i32 entryId) {
     IDirectDraw2* dd2 = m_world->m_deviceManager->m_device;
 
     if (m_world->m_soundRegistry->HasWithPrefix("GAME") == 0) {
-        CRezArchiveDir* snd = m_resourceArchive->FindDirectoryByPath("GAME_SOUNDZ");
+        CRezDir* snd = m_resourceArchive->GetDirFromPath("GAME_SOUNDZ");
         if (snd == NULL) {
             return 0;
         }
-        m_world->m_soundRegistry->LoadFromTree(static_cast<CRezArchiveDir*>(snd), "GAME", "_");
+        m_world->m_soundRegistry->LoadFromTree(static_cast<CRezDir*>(snd), "GAME", "_");
     }
     if (front == NULL || dd2 == NULL) {
         return 0;
@@ -2629,7 +2629,7 @@ i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
         m_worldSounds = NULL;
     }
 
-    CRezArchive* surf = m_resourceArchive;
+    CRezMgr* surf = m_resourceArchive;
     if (surf) {
         delete surf;
     }
@@ -2661,13 +2661,13 @@ i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
         return 0;
     }
 
-    CRezArchive* old = m_resourceArchive;
+    CRezMgr* old = m_resourceArchive;
     if (old) {
         delete old;
         m_resourceArchive = NULL;
     }
 
-    m_resourceArchive = new CRezArchive;
+    m_resourceArchive = new CRezMgr;
 
     bool parseFailed = m_resourceArchive->Open(
                            const_cast<char*>(static_cast<const char*>(GetRezPath())),

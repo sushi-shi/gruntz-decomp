@@ -84,13 +84,13 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
         return 0;
     }
     m_mgr->RestoreVideoMode(false);
-    m_stateResources = m_resourceArchive->FindDirectoryByPath("STATEZ_MENU");
+    m_stateResources = m_resourceArchive->GetDirFromPath("STATEZ_MENU");
     if (m_stateResources == NULL) {
         return 0;
     }
 
     if (!m_world->m_imageRegistry->HasWithPrefix("MENU")) {
-        CRezArchiveDir* imageSymbols = StateResources()->FindDirectoryByPath("IMAGEZ");
+        CRezDir* imageSymbols = StateResources()->GetDirFromPath("IMAGEZ");
         if (imageSymbols == NULL) {
             return 0;
         }
@@ -100,12 +100,11 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     }
 
     if (!m_world->m_soundRegistry->HasWithPrefix("MENU")) {
-        CRezArchiveDir* soundSymbols = StateResources()->FindDirectoryByPath("SOUNDZ");
+        CRezDir* soundSymbols = StateResources()->GetDirFromPath("SOUNDZ");
         if (soundSymbols == NULL) {
             return 0;
         }
-        m_world->m_soundRegistry
-            ->LoadFromTree(static_cast<CRezArchiveDir*>(soundSymbols), "MENU", "_");
+        m_world->m_soundRegistry->LoadFromTree(static_cast<CRezDir*>(soundSymbols), "MENU", "_");
     }
 
     if (!m_world->m_drawTarget->HasOverlay()) {
@@ -196,8 +195,8 @@ i32 CMenuState::EnterState(GameStateId previousState) {
         sprintf(stateName, "STATEZ_ATTRACT");
         sprintf(titleName, "TITLE%d", idx);
 
-        CRezArchiveDir* saved = StateResources();
-        CRezArchiveDir* state = ResourceArchive()->FindDirectoryByPath(stateName);
+        CRezDir* saved = StateResources();
+        CRezDir* state = ResourceArchive()->GetDirFromPath(stateName);
         m_stateResources = (state);
         if (state == NULL) {
             return 0;
@@ -349,7 +348,7 @@ i32 CMenuState::InputVirtual() {
     if (CState::InputVirtual() == 0) {
         return 0;
     }
-    CRezArchiveDir* tree = StateResources()->FindDirectoryByPath("IMAGEZ");
+    CRezDir* tree = StateResources()->GetDirFromPath("IMAGEZ");
     if (tree == NULL) {
         return 0;
     }
@@ -383,8 +382,8 @@ i32 CMenuState::RestoreDisplay() {
     sprintf(stateName, "STATEZ_ATTRACT");
     sprintf(titleName, "TITLE%d", idx);
 
-    CRezArchiveDir* saved = StateResources();
-    CRezArchiveDir* state = ResourceArchive()->FindDirectoryByPath(stateName);
+    CRezDir* saved = StateResources();
+    CRezDir* state = ResourceArchive()->GetDirFromPath(stateName);
     m_stateResources = (state);
     if (state == NULL) {
         return 0;

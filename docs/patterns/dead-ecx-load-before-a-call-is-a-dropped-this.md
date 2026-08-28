@@ -17,7 +17,7 @@ nothing consumes before the call **is** a receiver.
 void __stdcall UnpackTag(RezTypeTag tag, char* dst);
 
 // RIGHT - same bytes, and the caller now emits the ECX load
-class CRezArchive { void UnpackTag(RezTypeTag tag, char* dst); };
+class CRezMgr { void UnpackTag(RezTypeTag tag, char* dst); };
 ```
 ```asm
 ; retail caller                       ; ours
@@ -38,7 +38,7 @@ is dead but is not a LOAD is also not a receiver: `and ecx,0x3` is arithmetic
 that landed in ECX (`?FileExists@@YAHPBD@Z`). Read the ECX source to name the
 class - a `[reg+N]` member load names the field, `mov ecx,ebp` after a
 prologue `mov ebp,ecx` names the caller's own `this`, and a spilled-`this` frame
-slot is identified by the sibling call that used it (`CRezArchive::PackTag` takes
+slot is identified by the sibling call that used it (`CRezMgr::StrToType` takes
 `mov ecx,[esp+0x14]`, then `add esp,4` shifts the same slot to `[esp+0x10]`).
 
 **SWEEP IT WITH `gruntz walls thisscan --retail`, not the paired form.** Our
@@ -51,8 +51,8 @@ for the calibration and the measured noise floor.
 
 Evidence, four instances, no callee's bytes moved in any of them:
 `CMultiStartDlg::CommitLatencySelection` 92.08 -> 100.00 EXACT
-(`CLatencyList::GetSelItemData`), `CRezArchive::ImportDirectoryTree` 99.67 -> 100.00
-EXACT (`CRezArchive::UnpackTag`), `CGameLevel::LoadWwd` 95.53 -> 96.24
+(`CLatencyList::GetSelItemData`), `CRezMgr::ReadEmulationDirectory` 99.67 -> 100.00
+EXACT (`CRezMgr::TypeToStr`), `CGameLevel::LoadWwd` 95.53 -> 96.24
 (`CGameLevel::InflateMainBlock`), and `CBattlezMapConfig::RerouteIdleUnit` 0x029af0 -
 which the PAIRED screen structurally could not reach. It sat at 100.00 EXACT as
 `void __stdcall TileSwitch(CGrunt*, i32, i32, i32, i32, i32)`; retail's sole

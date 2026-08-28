@@ -46,15 +46,14 @@ i32 CPreviewState::Enter(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     }
     while (ShowCursor(false) >= 0) {
     }
-    m_stateResources = m_resourceArchive->FindDirectoryByPath("STATEZ_PREVIEW");
+    m_stateResources = m_resourceArchive->GetDirFromPath("STATEZ_PREVIEW");
     if (m_stateResources == NULL) {
         return 0;
     }
     if (g_disableAudio == false && g_disableSound == false) {
-        CRezArchiveDir* set = StateResources()->FindSubdirectory("SOUNDZ");
+        CRezDir* set = StateResources()->GetDir("SOUNDZ");
         if (set != NULL) {
-            m_world->m_soundRegistry
-                ->LoadFromTree(static_cast<CRezArchiveDir*>(set), "PREVIEW", "_");
+            m_world->m_soundRegistry->LoadFromTree(static_cast<CRezDir*>(set), "PREVIEW", "_");
         }
     }
     m_previewName = "PREVIEW0";
@@ -173,7 +172,7 @@ void CPreviewState::LoadLevelPreviewScreen() {
     sprintf(buf, "PREVIEW%i", idx);
     m_previewName = buf;
     sprintf(buf, "\\SCREENZ\\%s", static_cast<const char*>(m_previewName));
-    StateResources()->FindEntryByPath(buf, IMGTAG_XCP);
+    StateResources()->GetRezFromPath(buf, IMGTAG_XCP);
     b32 failed = false;
     if (LoadTitlePage(const_cast<char*>(static_cast<const char*>(m_previewName)), 0, 0, 0, 0, true)
         == 0) {

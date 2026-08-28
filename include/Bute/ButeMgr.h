@@ -53,7 +53,7 @@ public:
     bool Parse();
 
     bool Parse(CString filename, int streamBase);
-    bool Parse(CRezArchiveEntry* stream, const char* key);
+    bool Parse(CRezItm* stream, const char* key);
 
     bool Save();
 
@@ -145,13 +145,13 @@ public:
     bool ParseAttributeFile();
 };
 
-inline bool CButeMgr::Parse(CRezArchiveEntry* stream, const char* key) {
+inline bool CButeMgr::Parse(CRezItm* stream, const char* key) {
     if (stream == NULL) {
         return false;
     }
 
     m_encrypted = 1;
-    char* encoded = stream->LoadData();
+    char* encoded = stream->Load();
     i32 length = stream->GetSize();
     istrstream* input = new istrstream(encoded, length);
     m_crypt.InitKey(key);
@@ -161,7 +161,7 @@ inline bool CButeMgr::Parse(CRezArchiveEntry* stream, const char* key) {
     m_stream = new istrstream(decoded, output->pcount());
     delete input;
     delete output;
-    stream->ReleaseData();
+    stream->UnLoad();
 
     Reset();
     m_tags.Reset();

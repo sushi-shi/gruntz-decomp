@@ -66,7 +66,7 @@ i32 CState::LoadTitlePage(
 
     char buf[0x40];
     sprintf(buf, "\\SCREENZ\\%s", titleName);
-    CRezArchiveEntry* page = StateResources()->FindEntryByPath(buf, IMGTAG_XCP);
+    CRezItm* page = StateResources()->GetRezFromPath(buf, IMGTAG_XCP);
     if (page == NULL) {
         return 0;
     }
@@ -382,7 +382,7 @@ i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 unused3, i32 unused4) 
     }
     char buf[64];
     sprintf(buf, "\\SCREENZ\\%s", name);
-    CRezArchiveEntry* sym = StateResources()->FindEntryByPath(buf, IMGTAG_XCP);
+    CRezItm* sym = StateResources()->GetRezFromPath(buf, IMGTAG_XCP);
     if (sym == NULL) {
         return 0;
     }
@@ -435,7 +435,7 @@ i32 CState::InputVirtual() {
     while (ShowCursor(false) >= 0)
         ;
     g_playActive = false;
-    CRezArchiveDir* path = m_resourceArchive->FindDirectoryByPath("GAME_IMAGEZ");
+    CRezDir* path = m_resourceArchive->GetDirFromPath("GAME_IMAGEZ");
     if (path == NULL) {
         return 0;
     }

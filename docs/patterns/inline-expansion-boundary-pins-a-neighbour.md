@@ -19,9 +19,9 @@ diagnose` REGALLOC/SCHEDULING with identical multisets:
 
 | function | residue before | spelling that closed it | after |
 |---|---|---|---|
-| `CRezArchive::Close` 0x13b850 | `mov esi,[edi+0x14]` (loop-head first-storage read) hoisted over `mov [edi+0x20],ebp` (`m_primaryStorage = NULL`) | loop head reads the authentic inline `m_lstRezFiles.GetFirst()` | 99.5493 -> **100.000** |
-| `CRezArchiveType::~CRezArchiveType` 0x139cf0 | `mov ecx,ebx` (the member dtor's receiver) hoisted over BOTH trailing body stores; retail puts it BETWEEN them | second store written `SetArchiveType(m_typeNode, NULL)` | 98.3099 -> **100.000** |
-| `CRezArchiveDir::CRezArchiveDir` 0x139de0 | `pop esi` one slot early, before the `m_parent` store instead of after | LAST body statement written `SetArchiveDirectory(m_nameNode, this)` | 97.3333 -> **100.000** |
+| `CRezMgr::Close` 0x13b850 | `mov esi,[edi+0x14]` (loop-head first-storage read) hoisted over `mov [edi+0x20],ebp` (`m_pPrimaryRezFile = NULL`) | loop head reads the authentic inline `m_lstRezFiles.GetFirst()` | 99.5493 -> **100.000** |
+| `CRezTyp::~CRezTyp` 0x139cf0 | `mov ecx,ebx` (the member dtor's receiver) hoisted over BOTH trailing body stores; retail puts it BETWEEN them | second store written `SetArchiveType(m_typeNode, NULL)` | 98.3099 -> **100.000** |
+| `CRezDir::CRezDir` 0x139de0 | `pop esi` one slot early, before the `m_parent` store instead of after | LAST body statement written `SetArchiveDirectory(m_nameNode, this)` | 97.3333 -> **100.000** |
 | `DispatchDoNothingNormalLogic` 0xa9e00 | inlined `new CDoNothingNormal(owner)`: `mov eax,[esi+0x38]` hoisted over the leaf vptr stamp | ctor body `SetObjectFlags(1)` instead of `m_wwdObject->m_flags \|= 1` | 99.6129 -> **100.000** |
 | `CDDSurface::DecodeBmp` 0x143fc0 | two entry values spill and restore through the opposite registers after a palette guard | guard reads `HasPalette(pal)` instead of `pal->m_hasPalette` | 99.79 -> **100.000** |
 
@@ -31,7 +31,7 @@ should come SECOND and the free instruction lands just before it instead of earl
 
 ## Source ownership outranks minimizing the TU-state cone
 
-The first reconstruction of `CRezArchive::Close` used an inferred list type. Adding a
+The first reconstruction of `CRezMgr::Close` used an inferred list type. Adding a
 header member closed the function but rotated eight unrelated current scores; replacing
 it with a file-local inline helper kept `Close` exact without those rotations. That A/B
 correctly demonstrated the declaration-state cone, but its old conclusion that the
@@ -39,7 +39,7 @@ boundary therefore belonged in the `.cpp` was false.
 
 The surviving LithTech family later proved the real owner: `CVirtBaseList` plus the typed
 `CBaseRezFileList::GetFirst()` header inline. Restoring that complete hierarchy, deleting
-the file-local substitute, and using the authentic member kept `CRezArchive::Close` exact;
+the file-local substitute, and using the authentic member kept `CRezMgr::Close` exact;
 every non-EH function in the `rezfile` and `rezlist` units was exact as well. Current-score
 rotations elsewhere are expected C1 movement and are not a reason to misplace a real
 abstraction.
@@ -59,10 +59,10 @@ per-site lever.
 
 ## A first-step dip can be the right base
 
-* `CRezArchiveType::CRezArchiveType(i32,CRezArchiveDir*,i32,i32)` 0x139bf0: routing its FIRST body statement
+* `CRezTyp::CRezTyp(i32,CRezDir*,i32,i32)` 0x139bf0: routing its FIRST body statement
   through `SetArchiveType` first took it 99.3548 -> **95.6452**. That was not a
   falsification. The surviving LithTech RezMgr source later supplied the missing authored
-  statement order — `m_typeTag`, the typed member setter, then `m_directory` — and the
+  statement order — `m_nType`, the typed member setter, then `m_pParentDir` — and the
   composition reached **100.000**. The old higher form was a local maximum. This is a
   direct controlled example of EXPLORATORY DESCENT: retain an authentic abstraction as a
   disposable base and compose the next independently evidenced source fact before ranking

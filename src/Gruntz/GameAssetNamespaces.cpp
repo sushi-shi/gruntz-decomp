@@ -40,13 +40,13 @@ i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
     sprintf(m_versionString, "Alpha Version, Build %i, Monolith Productions Inc.", g_buildNumber);
     char area[32];
     sprintf(area, "AREA%i", IDX(m_levelType));
-    CRezArchiveDir* node = m_resourceArchive->FindDirectoryByPath(area);
+    CRezDir* node = m_resourceArchive->GetDirFromPath(area);
     m_levelResources = node;
     if (node == NULL) {
         return 0;
     }
     if (m_world->m_imageRegistry->HasWithPrefix("GAME") == 0) {
-        CRezArchiveDir* img = m_resourceArchive->FindDirectoryByPath("GAME_IMAGEZ");
+        CRezDir* img = m_resourceArchive->GetDirFromPath("GAME_IMAGEZ");
         if (img == NULL) {
             return 0;
         }
@@ -55,18 +55,18 @@ i32 CState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateI
         g_resourceInstallActive = false;
     }
     if (m_world->m_soundRegistry->HasWithPrefix("GAME") == 0) {
-        CRezArchiveDir* snd = m_resourceArchive->FindDirectoryByPath("GAME_SOUNDZ");
+        CRezDir* snd = m_resourceArchive->GetDirFromPath("GAME_SOUNDZ");
         if (snd == NULL) {
             return 0;
         }
-        m_world->m_soundRegistry->LoadFromTree(static_cast<CRezArchiveDir*>(snd), "GAME", "_");
+        m_world->m_soundRegistry->LoadFromTree(static_cast<CRezDir*>(snd), "GAME", "_");
     }
     if (m_world->m_animRegistry->HasWithPrefix("GAME") == 0) {
-        CRezArchiveDir* aniz = m_resourceArchive->FindDirectoryByPath("GAME_ANIZ");
+        CRezDir* aniz = m_resourceArchive->GetDirFromPath("GAME_ANIZ");
         if (aniz == NULL) {
             return 0;
         }
-        m_world->m_animRegistry->LoadFromTree(static_cast<CRezArchiveDir*>(aniz), "GAME", "_");
+        m_world->m_animRegistry->LoadFromTree(static_cast<CRezDir*>(aniz), "GAME", "_");
     }
 
     if (m_mgr->m_spriteFactory->BuildToolToyColorTable(m_mgr->m_resourceArchive) == 0) {

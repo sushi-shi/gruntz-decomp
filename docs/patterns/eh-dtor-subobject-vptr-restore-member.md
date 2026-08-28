@@ -20,12 +20,12 @@ class CVirtBaseList {             // the real embedded base-list object
     CVirtBaseListItem* m_pFirst;
     CVirtBaseListItem* m_pLast;
 };
-class CRezArchive {
+class CRezMgr {
     CBaseRezFileList m_lstRezFiles; // +0x10; implicit dtor restores the base vptr
     CParserHash m_hash;           // +0x80 (also a destructible member: ~ => RemoveAll)
-    ~CRezArchive();                // body does the manual teardown; members auto-destruct
+    ~CRezMgr();                // body does the manual teardown; members auto-destruct
 };
-// ~CRezArchive body ends WITHOUT the RemoveAll / vptr re-stamp — those are the
+// ~CRezMgr body ends WITHOUT the RemoveAll / vptr re-stamp — those are the
 // m_hash and m_list member destructors, run in reverse decl order under the frame.
 ```
 ```asm
@@ -36,7 +36,7 @@ call RemoveAll             ; m_hash member dtor
 mov  [esi+0x10],<0x5ef760> ; m_list member dtor: vptr restore  <-- the trailing store
 ; epilogue (fs:0 restore)
 ```
-Steerable: recovered ~CRezArchive 79.7%→98.0% (the residual is the EH state-index /
+Steerable: recovered ~CRezMgr 79.7%→98.0% (the residual is the EH state-index /
 vptr-restamp-position wall + reloc naming). The companion destructible member
 (CParserHash : CHashBase with `~ => RemoveAll`) is a thin local subclass so the
 shared CHashBase value member in sibling TUs stays trivially-destructible (a bare

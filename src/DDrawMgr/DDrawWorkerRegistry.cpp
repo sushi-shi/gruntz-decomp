@@ -34,12 +34,7 @@ void CDDrawWorkerRegistry::Unload() {
 }
 
 RVA(0x00154ae0, 0xfc)
-CImage* CDDrawWorkerRegistry::InsertFrameByKey(
-    CRezArchiveEntry* rec,
-    const char* key,
-    i32 index,
-    i32 mode
-) {
+CImage* CDDrawWorkerRegistry::InsertFrameByKey(CRezItm* rec, const char* key, i32 index, i32 mode) {
     CObject* worker = NULL;
     m_workersByName.Lookup(key, worker);
     if (worker == NULL) {
@@ -127,7 +122,7 @@ CDDrawWorkerRegistry::LoadFrameForWorker(char* path, CDDrawWorker* worker, i32 i
 
 RVA(0x00154f20, 0x1b)
 CImage* CDDrawWorkerRegistry::InsertFrameForWorker(
-    CRezArchiveEntry* rec,
+    CRezItm* rec,
     CDDrawWorker* worker,
     i32 index,
     i32 mode
@@ -158,22 +153,22 @@ CImage* CDDrawWorkerRegistry::CreateBlankFrameForWorker(
 }
 
 RVA(0x00154f80, 0x1d5)
-i32 CDDrawWorkerRegistry::InstallTree(CRezArchiveDir* dir, const char* sub, const char* prefix) {
+i32 CDDrawWorkerRegistry::InstallTree(CRezDir* dir, const char* sub, const char* prefix) {
     char* buf = new char[0x100];
     i32 count = 0;
     if (buf == NULL) {
         return count;
     }
     buf[0] = 0;
-    CRezArchiveDir* e = dir->FirstSubdirectory();
+    CRezDir* e = dir->GetFirstSubDir();
     while (e != NULL) {
         if (sub != NULL && *sub != 0) {
-            sprintf(buf, "%s%s%s", sub, prefix, e->m_name);
+            sprintf(buf, "%s%s%s", sub, prefix, e->GetDirName());
         } else {
-            strcpy(buf, e->m_name);
+            strcpy(buf, e->GetDirName());
         }
         count += InstallTree(e, buf, prefix);
-        e = dir->NextSubdirectory(e);
+        e = dir->GetNextSubDir(e);
     }
     if (sub != NULL && *sub != 0) {
         CObject* w = NULL;
@@ -200,15 +195,15 @@ i32 CDDrawWorkerRegistry::InstallTree(CRezArchiveDir* dir, const char* sub, cons
 }
 
 RVA(0x00155160, 0x11e)
-i32 CDDrawWorkerRegistry::LoadNamespace(CRezArchiveDir* dir, const char* sub, const char* prefix) {
+i32 CDDrawWorkerRegistry::LoadNamespace(CRezDir* dir, const char* sub, const char* prefix) {
     char* buf = new char[0x100];
     i32 count = 0;
-    CRezArchiveDir* e = dir->FirstSubdirectory();
+    CRezDir* e = dir->GetFirstSubDir();
     while (e != NULL) {
         if (sub != NULL && *sub != 0) {
-            sprintf(buf, "%s%s%s", sub, prefix, e->m_name);
+            sprintf(buf, "%s%s%s", sub, prefix, e->GetDirName());
         } else {
-            strcpy(buf, e->m_name);
+            strcpy(buf, e->GetDirName());
         }
         i32 r = LoadNamespace(e, buf, prefix);
         if (r < 0) {
@@ -216,7 +211,7 @@ i32 CDDrawWorkerRegistry::LoadNamespace(CRezArchiveDir* dir, const char* sub, co
             return -1;
         }
         count += r;
-        e = dir->NextSubdirectory(e);
+        e = dir->GetNextSubDir(e);
     }
     if (sub != NULL && *sub != 0) {
         CObject* out = NULL;

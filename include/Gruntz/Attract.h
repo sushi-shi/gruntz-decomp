@@ -8,7 +8,7 @@
 #include <Gruntz/State.h>
 #include <Ints.h>
 
-class CRezArchive;
+class CRezMgr;
 struct SoundCue;
 
 class CGruntzMgr;

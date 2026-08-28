@@ -44,18 +44,18 @@ i32 CAttract::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStat
 
     owner()->RestoreVideoMode(false);
 
-    CRezArchiveDir* state = ResourceArchive()->FindDirectoryByPath("STATEZ_ATTRACT");
+    CRezDir* state = ResourceArchive()->GetDirFromPath("STATEZ_ATTRACT");
     m_stateResources = (state);
     if (state == NULL) {
         return 0;
     }
 
-    CRezArchiveDir* sound = state->FindSubdirectory("SOUNDZ");
+    CRezDir* sound = state->GetDir("SOUNDZ");
     if (sound == NULL) {
         return 0;
     }
 
-    menuRoot()->m_soundRegistry->LoadFromTree(static_cast<CRezArchiveDir*>(sound), "ATTRACT", "_");
+    menuRoot()->m_soundRegistry->LoadFromTree(static_cast<CRezDir*>(sound), "ATTRACT", "_");
 
     if (ShowCursor(false) >= 0) {
         do {

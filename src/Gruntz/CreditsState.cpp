@@ -73,34 +73,34 @@ i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 pre
     m_flashTimer = 0;
     m_fadeCountdown = 0;
     m_fxEnabled = false;
-    m_stateResources = m_resourceArchive->FindDirectoryByPath("STATEZ_CREDITZ");
+    m_stateResources = m_resourceArchive->GetDirFromPath("STATEZ_CREDITZ");
     if (!m_stateResources) {
         return 0;
     }
 
-    CRezArchiveDir* sounds = StateResources()->FindSubdirectory("SOUNDZ");
+    CRezDir* sounds = StateResources()->GetDir("SOUNDZ");
     if (!sounds) {
         return 0;
     }
-    m_world->m_soundRegistry->LoadFromTree(static_cast<CRezArchiveDir*>(sounds), "CREDITZ", "_");
+    m_world->m_soundRegistry->LoadFromTree(static_cast<CRezDir*>(sounds), "CREDITZ", "_");
 
-    CRezArchiveDir* midiTable = StateResources()->FindDirectoryByPath("MIDIZ");
+    CRezDir* midiTable = StateResources()->GetDirFromPath("MIDIZ");
     if (midiTable) {
-        CRezArchiveEntry* creditsEntry = midiTable->FindEntry("PLAY", REZ_TAG_XMI);
+        CRezItm* creditsEntry = midiTable->GetRez("PLAY", REZ_TAG_XMI);
         if (creditsEntry) {
-            char* creditsData = creditsEntry->LoadData();
+            char* creditsData = creditsEntry->Load();
             if (creditsData) {
-                m_mgr->m_midi->LoadBuffer(creditsData, creditsEntry->m_size, "CREDITZ");
+                m_mgr->m_midi->LoadBuffer(creditsData, creditsEntry->GetSize(), "CREDITZ");
             }
         }
     }
 
     if (midiTable) {
-        CRezArchiveEntry* monolithEntry = midiTable->FindEntry("MONOLITH", REZ_TAG_XMI);
+        CRezItm* monolithEntry = midiTable->GetRez("MONOLITH", REZ_TAG_XMI);
         if (monolithEntry) {
-            char* monolithData = monolithEntry->LoadData();
+            char* monolithData = monolithEntry->Load();
             if (monolithData) {
-                m_mgr->m_midi->LoadBuffer(monolithData, monolithEntry->m_size, "MONOLITH");
+                m_mgr->m_midi->LoadBuffer(monolithData, monolithEntry->GetSize(), "MONOLITH");
             }
         }
     }
@@ -156,7 +156,7 @@ RVA(0x00039160, 0x46)
 i32 CCreditsState::LeaveState(GameStateId nextState) {
     owner()->m_midi->EndCurrent();
     owner()->m_midi->ClearSequences();
-    m_stateResources = ResourceArchive()->FindDirectoryByPath("STATEZ_ATTRACT");
+    m_stateResources = ResourceArchive()->GetDirFromPath("STATEZ_ATTRACT");
     LoadAndPresentTitlePage("TITLE", 0, 0, 1, 0);
     return 1;
 }
@@ -286,8 +286,8 @@ i32 CCreditsState::InitAttractTitle() {
     i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
     sprintf(stateName, "STATEZ_ATTRACT");
     sprintf(titleName, "TITLE%d", idx);
-    CRezArchiveDir* saved = m_stateResources;
-    CRezArchiveDir* state = m_resourceArchive->FindDirectoryByPath(stateName);
+    CRezDir* saved = m_stateResources;
+    CRezDir* state = m_resourceArchive->GetDirFromPath(stateName);
     m_stateResources = state;
     if (state == NULL) {
         return 0;
@@ -374,13 +374,13 @@ i32 CCreditsState::DrawScrollingCredits() {
 RVA(0x00039a60, 0x179)
 i32 CCreditsState::SetupTitle() {
 
-    CRezArchiveEntry* sect = StateResources()->FindEntry("CREDITZ", REZ_TAG_TXT);
+    CRezItm* sect = StateResources()->GetRez("CREDITZ", REZ_TAG_TXT);
     if (sect) {
-        char* src = sect->LoadData();
+        char* src = sect->Load();
         if (!src) {
             return 0;
         }
-        i32 len = sect->m_size;
+        i32 len = sect->GetSize();
         char* buf = new char[len + 1];
         if (!buf) {
             return 0;
@@ -388,7 +388,7 @@ i32 CCreditsState::SetupTitle() {
         memcpy(buf, src, len);
         buf[len] = 0;
         m_caption = buf;
-        sect->ReleaseData();
+        sect->UnLoad();
         delete[] buf;
     }
     m_clipRegion.Attach(CreateRectRgn(0x32, 0, 0x24e, SCREEN_H_PX));

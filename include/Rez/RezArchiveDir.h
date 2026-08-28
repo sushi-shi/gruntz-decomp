@@ -10,45 +10,73 @@
 
 #include <stddef.h>
 
-class CRezArchive;
+class CRezMgr;
 
-class CRezArchiveDir;
+class CRezDir;
 
-class CRezArchiveType {
+class CRezTyp {
 public:
     i32 GetType() {
-        return m_typeTag;
+        return m_nType;
     }
 
-    CRezArchiveType(
+private:
+    friend class CRezItm;
+    friend class CRezDir;
+    friend class CRezMgr;
+
+    CRezTyp(
         i32 typeTag,
-        CRezArchiveDir* directory,
+        CRezDir* directory,
         i32 resourceIdBucketCount,
         i32 resourceNameBucketCount
     );
-    CRezArchiveType(i32 typeTag, CRezArchiveDir* directory, i32 resourceNameBucketCount);
+    CRezTyp(i32 typeTag, CRezDir* directory, i32 resourceNameBucketCount);
 
-    ~CRezArchiveType();
+    ~CRezTyp();
 
-    i32 m_typeTag;
+    i32 m_nType;
     CRezTypeHash m_heType;
     CRezItmHashTableByID m_haID;
     CRezItmHashTableByName m_haName;
-    CRezArchiveDir* m_directory;
+    CRezDir* m_pParentDir;
 };
 
-struct CRezArchiveEntry;
+struct CRezItm;
 class CBaseRezFile;
 
-class CRezArchiveDir {
+class CRezDir {
 public:
     char* GetDirName() {
-        return m_name;
+        return m_sDirName;
     }
 
-    CRezArchiveDir(
-        CRezArchive* archive,
-        CRezArchiveDir* parent,
+    i32 Load(b32 loadAllSubDirs);
+    i32 UnLoad(b32 unloadAllSubDirs);
+    CRezItm* GetRez(const char* name, RezTypeTag type);
+    CRezItm* GetRezFromDosName(const char* filename);
+    CRezItm* GetRezFromPath(const char* path, RezTypeTag type);
+    CRezItm* GetRezFromDosPath(const char* path);
+    CRezDir* GetDir(const char* name);
+    CRezDir* GetDirFromPath(const char* path);
+    CRezDir* GetFirstSubDir();
+    CRezDir* GetNextSubDir(CRezDir* directory);
+    CRezTyp* GetRezTyp(u32 type);
+    CRezTyp* GetFirstType();
+    CRezTyp* GetNextType(CRezTyp* type);
+    CRezItm* GetFirstItem(CRezTyp* type);
+    CRezItm* GetNextItem(CRezItm* item);
+    CRezDir* CreateDir(const char* name);
+    CRezItm* CreateRez(void* id, const char* name, i32 type);
+
+private:
+    friend struct CRezItm;
+    friend class CRezTyp;
+    friend class CRezMgr;
+
+    CRezDir(
+        CRezMgr* archive,
+        CRezDir* parent,
         const char* name,
         i32 bodyOffset,
         i32 bodySize,
@@ -57,64 +85,35 @@ public:
         i32 typeBucketCount
     );
 
-    ~CRezArchiveDir();
+    ~CRezDir();
 
-    i32 PreloadData(b32 recursive);
+    CRezTyp* GetOrMakeTyp(i32 type);
 
-    CRezArchiveDir* CreateSubdirectory(const char* name);
+    i32 ReadAllDirs(CBaseRezFile* rezFile, i32 pos, i32 size, b32 overwriteItems);
 
-    CRezArchiveType* FindOrCreateType(i32 typeTag);
+    i32 ReadDirBlock(CBaseRezFile* rezFile, i32 pos, i32 size, b32 overwriteItems);
 
-    CRezArchiveEntry* CreateNamedEntry(void* resourceId, const char* name, i32 typeTag);
+    CRezItm* CreateRezInternal(u32 id, const char* name, CRezTyp* type, CBaseRezFile* rezFile);
 
-    i32 ReadDirectoryTree(CBaseRezFile* storage, i32 bodyOffset, i32 bodySize, b32 replaceExisting);
+    i32 RemoveRezInternal(CRezTyp* type, CRezItm* item);
 
-    i32 ReadDirectoryBody(CBaseRezFile* storage, i32 bodyOffset, i32 bodySize, b32 replaceExisting);
+    char* m_sDirName;
 
-    CRezArchiveEntry*
-    CreateEntry(u32 resourceId, const char* name, CRezArchiveType* type, CBaseRezFile* storage);
+    i32 m_nDirPos;
+    i32 m_nDirSize;
+    i32 m_nItemsPos;
 
-    i32 RemoveEntry(CRezArchiveType* type, CRezArchiveEntry* entry);
+    u32 m_nItemsSize;
 
-    CRezArchiveDir* FindSubdirectory(const char* name);
+    i32 m_nLastTimeModified;
+    CRezMgr* m_pRezMgr;
 
-    CRezArchiveDir* FindDirectoryByPath(const char* path);
-
-    CRezArchiveEntry* FindEntryByPath(const char* path, RezTypeTag typeTag);
-
-    CRezArchiveEntry* FindEntry(const char* name, RezTypeTag typeTag);
-
-    CRezArchiveEntry* FindEntryByFilename(const char* filename);
-
-    CRezArchiveEntry* FindEntryByPath(const char* path);
-
-    i32 ReleaseEntryData(b32 recursive);
-
-    CRezArchiveDir* FirstSubdirectory();
-    CRezArchiveDir* NextSubdirectory(CRezArchiveDir* directory);
-    CRezArchiveType* FindType(u32 typeTag);
-    CRezArchiveType* FirstType();
-    CRezArchiveType* NextType(CRezArchiveType* type);
-    CRezArchiveEntry* FirstEntry(CRezArchiveType* type);
-    CRezArchiveEntry* NextEntry(CRezArchiveEntry* entry);
-
-    char* m_name;
-
-    i32 m_bodyOffset;
-    i32 m_bodySize;
-    i32 m_minDataOffset;
-
-    u32 m_totalDataSize;
-
-    i32 m_time;
-    CRezArchive* m_archive;
-
-    CRezArchiveDir* m_parent;
+    CRezDir* m_pParentDir;
 
     CRezDirHash m_heDir;
     CRezDirHashTable m_haDir;
     CRezTypeHashTable m_haTypes;
-    char* m_preloadedData;
+    char* m_pMemBlock;
 };
 
 #endif // REZ_REZARCHIVEDIR_H

@@ -60,7 +60,7 @@ class CVoiceManager;
 class CGameLevel;
 class CLightFxMgr;
 
-class CRezArchive;
+class CRezMgr;
 class CRegMgr;
 class CFontConfig;
 class CTriggerMgr;
@@ -284,7 +284,7 @@ public:
     CState* m_curState;
     CDDrawSurfaceMgr* m_world;
 
-    CRezArchive* m_resourceArchive;
+    CRezMgr* m_resourceArchive;
 
     CRegMgr* m_settings;
 

@@ -36,9 +36,9 @@ class that already existed:
 | `ScanlinePalette` | `Convert8To16(…, void* pal)` param | `CImagePaletteNode` (`char m_pad0[8]` + `PALETTEENTRY[256]` IS `HPALETTE` + `LOGPALETTE::palPalEntry` at +8) |
 | `SbzDeviceList` | `CreateDeviceGroup(CInputDevBase**, ...)` return | `CFixedPtrArray32` (same three fields, same offsets) |
 | `CRandomAmbientWorld` | `CWorldSoundSet(void* world)` param | `SoundCueRegistry` (`CWapObj` is the 0x10 pad) |
-| `MpSymItem` | `CRezArchiveDir::FirstType/FirstEntry/NextEntry` returns | a one-field view of `CRezArchiveEntry` |
+| `MpSymItem` | `CRezDir::GetFirstType/FirstEntry/NextEntry` returns | a one-field view of `CRezItm` |
 
-The `CRezArchiveDir` case is the clearest: thirteen navigation accessors returned
+The `CRezDir` case is the clearest: thirteen navigation accessors returned
 `void*` while `CHashElement`'s union already named all three real types, and
 every caller cast straight back. Typing the accessors removed **79** `void*`
 sites and ~50 casts, and all thirteen stayed byte-exact.

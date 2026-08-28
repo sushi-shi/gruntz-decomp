@@ -26,14 +26,14 @@ struct StreamFeeder {
     u32 m_silenceBytes;
     u8 m_silenceByte;
     u32 m_lastTickMs;
-    CRezArchiveEntry* m_source;
+    CRezItm* m_source;
     b32 m_looping;
     u32 m_sourceOffset;
     u32 m_windowStart;
     u32 m_windowLength;
     u32 m_windowEnd;
 
-    inline void ConfigureWindow(CRezArchiveEntry* source, u32 offset, u32 bytes) {
+    inline void ConfigureWindow(CRezItm* source, u32 offset, u32 bytes) {
         m_source = source;
         m_looping = false;
         m_sourceOffset = 0;
@@ -41,7 +41,7 @@ struct StreamFeeder {
         m_windowLength = bytes;
     }
 
-    i32 SeedWindow(CRezArchiveEntry* source, u32 offset, u32 bytes);
+    i32 SeedWindow(CRezItm* source, u32 offset, u32 bytes);
     StreamFeeder();
 
     ~StreamFeeder();

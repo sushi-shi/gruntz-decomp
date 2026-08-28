@@ -25,14 +25,14 @@ as a complete source layer with controlled adaptations, it closed these Gruntz f
 | retail function | surviving source fact | before -> after |
 |---|---|---:|
 | `CRezFile::Close` 0x13c830 | function-scope `ok`/`check` locals and one shared cleanup tail | 93.0769 -> **100.000** |
-| `CRezArchiveEntry::Read` 0x139af0 | reuse `byteCount` and `m_cursor` directly through the three storage arms | 94.6739 -> **100.000** |
-| `CRezArchiveType` ctor 0x139bf0 | typed member setter plus authored body assignment order | 99.3548 -> **100.000** |
-| `CRezArchiveEntry::Initialize` 0x139710 | typed one-field `SetRezItm` boundary | 96.2963 -> **100.000** |
-| `CRezArchive::AcquireEntry` 0x13c0c0 | original local census and typed table `Delete` wrapper | 98.2174 -> **100.000** |
+| `CRezItm::Read` 0x139af0 | reuse `byteCount` and `m_nCurPos` directly through the three storage arms | 94.6739 -> **100.000** |
+| `CRezTyp` ctor 0x139bf0 | typed member setter plus authored body assignment order | 99.3548 -> **100.000** |
+| `CRezItm::InitRezItm` 0x139710 | typed one-field `SetRezItm` boundary | 96.2963 -> **100.000** |
+| `CRezMgr::AllocateRezItm` 0x13c0c0 | original local census and typed table `Delete` wrapper | 98.2174 -> **100.000** |
 | `CBaseHash::GetLast` 0x184b10 | original decrementing `do` loop | 99.4737 -> **100.000** |
 | `CBaseHash::Insert` 0x184a70 | real base/derived hash-item layout and implicit intrusive-base conversion | 99.5455 -> **100.000** |
-| `CRezArchive::MergeArchive` 0x13b0c0 | typed hash hierarchy at its consumers | 98.2888 -> **100.000** |
-| `CRezArchive::Open` 0x13ad00 | hierarchy first, then original header-to-member statement order | 98.4567 -> 98.7437 -> **100.000** |
+| `CRezMgr::OpenAdditional` 0x13b0c0 | typed hash hierarchy at its consumers | 98.2888 -> **100.000** |
+| `CRezMgr::Open` 0x13ad00 | hierarchy first, then original header-to-member statement order | 98.4567 -> 98.7437 -> **100.000** |
 | `MonoNewline` 0x184d50 | `unsigned short*` mono buffer and element-indexed scrolling/clear loops | 98.5714 -> **100.000** |
 | `MonoClear` 0x184db0 | same typed buffer and ordinary element-indexed `for` loop | 99.0000 -> **100.000** |
 | `CRezImage::DecodePcxData` 0x176000 | 1996 DIB decoder's function-scope local census, reverse RLE fill, and direct plane indexing | 97.6772 -> 99.9240 -> **MAX 100.000** |
@@ -70,9 +70,9 @@ The earlier reconstructed `CHashElement` put the owner payloads in a union:
 
 ```cpp
 union {
-    CRezArchiveEntry* m_archiveEntry;
-    CRezArchiveType* m_archiveType;
-    CRezArchiveDir* m_archiveDirectory;
+    CRezItm* m_archiveEntry;
+    CRezTyp* m_archiveType;
+    CRezDir* m_archiveDirectory;
 };
 ```
 
@@ -113,15 +113,15 @@ Do not transcribe C2's store order. In `Open`, retail's scheduled member stores 
 interleaved, but the source prior gives the authored sequence:
 
 ```cpp
-m_nextWritePos = header.m_nextWritePos;
-m_rootDirectoryOffset = header.m_rootDirectoryOffset;
-m_rootDirectorySize = header.m_rootDirectorySize;
-m_rootDirectoryTime = header.m_rootDirectoryTime;
-m_archiveTime = header.m_archiveTime;
-m_version = header.m_version;
+m_nNextWritePos = header.m_nNextWritePos;
+m_nRootDirPos = header.m_nRootDirPos;
+m_nRootDirSize = header.m_nRootDirSize;
+m_nRootDirTime = header.m_nRootDirTime;
+m_nLastTimeModified = header.m_nLastTimeModified;
+m_nFileFormatVersion = header.m_nFileFormatVersion;
 ```
 
-Moving only `m_version` from the front of the reconstructed block to this position closed
+Moving only `m_nFileFormatVersion` from the front of the reconstructed block to this position closed
 the final 1.2563%. The reusable lever is the source statement order, not the emitted store
 order; VC5 uses the former to build the IL and schedules the latter.
 
@@ -130,7 +130,7 @@ order; VC5 uses the former to build the IL and schedules the latter.
 The pinned source is a presumptive source oracle, not merely a bag of optional
 clues. Start with the complete source layer and accept it unless Gruntz retail
 provides a specific contradiction. A first-step score descent remains a valid
-composition base; `CRezArchive::Open` and the DIB family demonstrate why ranking
+composition base; `CRezMgr::Open` and the DIB family demonstrate why ranking
 one sourced fact in isolation traps the search in a local maximum.
 
 [The canonical lineage ledger](../../config/lithtech_lineage.tsv) is the only

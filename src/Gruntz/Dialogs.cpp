@@ -131,16 +131,14 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
         comboChild->SetWindowTextA("");
 
         CWnd* combo = GetDlgItem(0x4ff);
-        CRezArchiveDir* worlds =
-            m_gameManager->m_resourceArchive->FindDirectoryByPath("GAME_BATTLEZ");
+        CRezDir* worlds = m_gameManager->m_resourceArchive->GetDirFromPath("GAME_BATTLEZ");
         if (worlds == NULL) {
             return;
         }
-        CRezArchiveEntry* entry =
-            static_cast<CRezArchiveEntry*>(worlds->FirstEntry(worlds->FirstType()));
+        CRezItm* entry = static_cast<CRezItm*>(worlds->GetFirstItem(worlds->GetFirstType()));
         i32 first = 1;
         while (entry != NULL) {
-            CString upper(entry->m_name);
+            CString upper(entry->GetName());
             upper.MakeUpper();
             CString display;
             char c = 0;
@@ -159,7 +157,7 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
                 first = 0;
                 comboChild->SetWindowTextA(display);
             }
-            entry = static_cast<CRezArchiveEntry*>(worlds->NextEntry(entry));
+            entry = static_cast<CRezItm*>(worlds->GetNextItem(entry));
         }
         combo->SendMessageA(CB_SETCURSEL, 0, 0);
         MsgParam prev;

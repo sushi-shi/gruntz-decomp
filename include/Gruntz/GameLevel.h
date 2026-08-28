@@ -93,7 +93,7 @@ static const i32 TILE_CLEAR = -1;
 #include <Gruntz/ImageSets.h>
 #include <Wap32/CoordUnset.h>
 
-struct CRezArchiveEntry;
+struct CRezItm;
 
 struct CGameObject;
 class CDDrawChildGroup;
@@ -125,12 +125,12 @@ public:
         return CLASSID_GAMELEVEL;
     }
     virtual i32 LoadWwdWithCoords(WwdHeader* hdr, LevelCoordRect* coords);
-    virtual i32 LoadSourceWithCoords(CRezArchiveEntry* src, LevelCoordRect* coords);
+    virtual i32 LoadSourceWithCoords(CRezItm* src, LevelCoordRect* coords);
     virtual i32 LoadFileWithCoords(const char* path, LevelCoordRect* coords);
     virtual i32 SetViewportRect(LevelCoordRect* coords);
     virtual i32 SetViewportSize(i32 w, i32 h);
     virtual i32 LoadWwd(WwdHeader* hdr);
-    virtual i32 LoadFromSource(CRezArchiveEntry* source);
+    virtual i32 LoadFromSource(CRezItm* source);
     virtual i32 LoadFromFile(const char* path);
     virtual void ReleaseChildren();
 

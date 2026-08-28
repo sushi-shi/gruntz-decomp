@@ -9,7 +9,7 @@
 #include <Ints.h>
 #include <Wap32/Object.h>
 
-struct CRezArchiveEntry;
+struct CRezItm;
 
 struct CAniSource {
     char m_pad00[0x8];
@@ -30,7 +30,7 @@ public:
     virtual ~CAniElement() OVERRIDE;
     CObject* AtChecked(i32 i) const;
     i32 Build(SoundCueRegistry* ctx, CAniSource* src, i32 flags);
-    i32 Configure(SoundCueRegistry* ctx, CRezArchiveEntry* entry, i32 flags);
+    i32 Configure(SoundCueRegistry* ctx, CRezItm* entry, i32 flags);
     i32 LoadFile(SoundCueRegistry* ctx, const char* filename, i32 unused);
 
     void DeleteAll();

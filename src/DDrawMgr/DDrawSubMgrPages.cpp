@@ -116,7 +116,7 @@ i32 CDDrawSubMgrPages::ResolvePageImage(char* name, DDrawPageKind pageIndex) {
 }
 
 RVA(0x00158b40, 0x2c)
-i32 CDDrawSubMgrPages::LoadPageImage(CRezArchiveEntry* src, DDrawPageKind pageIndex) {
+i32 CDDrawSubMgrPages::LoadPageImage(CRezItm* src, DDrawPageKind pageIndex) {
     CDDrawSurfacePair* p;
     if (pageIndex == DDRAW_PAGE_OVERLAY) {
         p = m_overlayPair;

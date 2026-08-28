@@ -47,9 +47,9 @@ four, all of them reconstructable from the raw bytes in minutes:
 
 | gap | body |
 |---|---|
-| 0x139a00 | `if (m_directory->m_preloadedData) return 1; return m_loadedData != NULL;` |
-| 0x139a20 | `return ReadAt(destination, 0, m_size);` |
-| 0x139bc0 | `return (u32)m_cursor >= m_size;` (`cmp/sbb/inc`) |
+| 0x139a00 | `if (m_pParentDir->m_pMemBlock) return 1; return m_pData != NULL;` |
+| 0x139a20 | `return ReadAt(destination, 0, m_nSize);` |
+| 0x139bc0 | `return (u32)m_nCurPos >= m_nSize;` (`cmp/sbb/inc`) |
 | 0x139bd0 | `char value; Read(&value, 1, -1); return value;` |
 | 0x13a2a0 | `return m_haTypes.Find(typeTag);` (`add ecx,0x40` = the member's address) |
 | 0x13ba50 | a four-argument setter over `[ecx+0x70..0x7c]` |

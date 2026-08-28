@@ -86,7 +86,7 @@ void CChatBoxOwner::HandleTextInputKey(i32 charCode, i32 keyData) {
                     static_cast<const char*>(resourceName)
                 );
 
-                CRezArchiveEntry* source = g_gameReg->m_resourceArchive->FindEntryByPath(
+                CRezItm* source = g_gameReg->m_resourceArchive->GetRezFromPath(
                     static_cast<const char*>(qualified),
                     REZ_TAG_TXT
                 );

@@ -61,7 +61,7 @@ i32 CImage::Create(char* path, i32 keyed) {
 }
 
 RVA(0x00152f20, 0x86)
-i32 CImage::Resolve(CRezArchiveEntry* src, i32 keyed) {
+i32 CImage::Resolve(CRezItm* src, i32 keyed) {
     BEGIN_FILE_IMAGE_PARSE(src, index, resolved)
 
     RecordBytes<PidHeader> blob;
@@ -70,10 +70,10 @@ i32 CImage::Resolve(CRezArchiveEntry* src, i32 keyed) {
 
         static_cast<PidHeader*>(blob.m_rec),
         index,
-        src->m_size,
+        src->GetSize(),
         keyed
     );
-    src->ReleaseData();
+    src->UnLoad();
     return result;
 }
 
@@ -247,7 +247,7 @@ void CImage::FlipVertical(void*) {
 }
 
 RVA(0x00153380, 0xeb)
-i32 CImage::Reload(CRezArchiveEntry* src, i32 keyed) {
+i32 CImage::Reload(CRezItm* src, i32 keyed) {
 
     CDDSurface* surf = m_surface;
     if (surf == NULL) {
@@ -266,7 +266,7 @@ i32 CImage::Reload(CRezArchiveEntry* src, i32 keyed) {
     }
 
     BEGIN_FILE_IMAGE_PARSE(src, index, resolved)
-    if (src->m_size == 0) {
+    if (src->GetSize() == 0) {
         return 0;
     }
 
@@ -274,7 +274,7 @@ i32 CImage::Reload(CRezArchiveEntry* src, i32 keyed) {
         m_ownerCtx->m_deviceManager,
         resolved,
         index,
-        static_cast<u32>(src->m_size),
+        static_cast<u32>(src->GetSize()),
         g_surfaceColorKey
     );
 }
