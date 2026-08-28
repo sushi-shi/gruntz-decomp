@@ -3,9 +3,9 @@
 
 #include <rva.h>
 
-#include <Dsndmgr/IntrusiveList.h>
 #include <Dsndmgr/SoundDevice.h>
 #include <Dsndmgr/StreamVoice.h>
+#include <Lith/BaseList.h>
 #include <Rez/RezArchiveEntry.h>
 
 class SoundStream;
@@ -50,7 +50,7 @@ public:
         u32* outDataBytes
     );
 
-    IntrusiveList m_voices;
+    CLTBaseList m_voices;
 };
 
 extern b32 g_dsoundDebugLog;

@@ -532,7 +532,7 @@ flags = "cpp"
 
 [[unit]]
 unit = "hash"
-source = "src/Bute/Hash.cpp"
+source = "src/Rez/RezHash.cpp"
 flags = "cpp"
 
 [[unit]]
@@ -1039,7 +1039,7 @@ flags = "cpp"
 
 [[unit]]
 unit = "soundvoicelist"
-source = "src/Dsndmgr/IntrusiveList.cpp"
+source = "src/Lith/BaseList.cpp"
 flags = "cpp"
 
 [[unit]]
@@ -1285,7 +1285,7 @@ flags = "cpp"
 
 [[unit]]
 unit = "rezcoll"
-source = "src/Rez/RezColl.cpp"
+source = "src/Lith/BaseHash.cpp"
 flags = "cpp"
 
 [[unit]]

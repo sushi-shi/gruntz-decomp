@@ -427,7 +427,7 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 - butemgr (`cpp`) — src/Bute/ButeMgr.cpp
 - gamestaterecordload (`cpp-rtti`) — src/Gruntz/GameStateRecordLoad.cpp
 - rezarchive (`cpp`) — src/Rez/RezArchive.cpp
-- hash (`cpp`) — src/Bute/Hash.cpp
+- hash (`cpp`) — src/Rez/RezHash.cpp
 - butetree (`cpp`) — src/Bute/ButeTree.cpp
 - debugtiming (`cpp`) — src/Utils/DebugTiming.cpp
 - grunt (`cpp-rtti`) — src/Gruntz/Grunt.cpp
@@ -530,7 +530,7 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 - directinputmgr2 (`cpp`) — src/DinMgr2/DinMgr2.cpp
 - inputdevice (`cpp`) — src/DinMgr2/InputDevice.cpp
 - directsoundmgr (`cpp`) — src/Dsndmgr/SoundBuffer.cpp
-- soundvoicelist (`cpp`) — src/Dsndmgr/IntrusiveList.cpp
+- soundvoicelist (`cpp`) — src/Lith/BaseList.cpp
 - soundstream (`cpp`) — src/Dsndmgr/SoundStream.cpp
 - gruntzsoundz (`cpp`) — src/Dsndmgr/MidiManager.cpp
 - winapimodule (`cpp`) — src/Utils/WinAPIModule.cpp
@@ -579,7 +579,7 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 - leveltime (`cpp-rtti`) — src/Gruntz/LevelTime.cpp
 - statusbarspriteacts (`cpp-rtti`) — src/Gruntz/StatusBarSpriteActs.cpp
 - rezlist (`cpp`) — src/Rez/RezList.cpp
-- rezcoll (`cpp`) — src/Rez/RezColl.cpp
+- rezcoll (`cpp`) — src/Lith/BaseHash.cpp
 - typekeycoll (`cpp`) — src/Bute/TypeKeyColl.cpp
 - buteglobals (`cpp-noeh`) — src/Bute/ButeGlobals.cpp
 - feccrypt (`cpp`) — src/Crypto/FecCrypt.cpp

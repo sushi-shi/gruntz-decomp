@@ -66,9 +66,9 @@ callee-saved register, the operator-new trylevel transitions and the slot-block
 down-counter init loop idiom diverge)". Every one of those symptoms was the missing
 array-new. `??0CRezArchiveEntry@@QAE@XZ` stayed EXACT across the source-structure change.
 
-`CHashBase::Construct(i32)` @0x184960 was already 112-byte exact and carried an identical
+`CBaseHash::CBaseHash(u32)` @0x184960 was already 112-byte exact and carried an identical
 1/1 EH map, but all of its callers were derived-member construction sites. Remodeling it
-as `CHashBase(i32)` and using four derived base-initializer lists preserved the exact body,
+as `CBaseHash(u32)` and using four derived base-initializer lists preserved the exact body,
 all caller bytes, and all caller EH maps after relabeling. This is the negative control:
 exact output did not prove the old semantic name or source structure.
 

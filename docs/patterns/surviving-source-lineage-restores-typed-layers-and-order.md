@@ -27,10 +27,10 @@ as a complete source layer with controlled adaptations, it closed these Gruntz f
 | `CRezItm::Close` 0x13c830 | function-scope `ok`/`check` locals and one shared cleanup tail | 93.0769 -> **100.000** |
 | `CRezArchiveEntry::Read` 0x139af0 | reuse `byteCount` and `m_cursor` directly through the three storage arms | 94.6739 -> **100.000** |
 | `CRezArchiveType` ctor 0x139bf0 | typed member setter plus authored body assignment order | 99.3548 -> **100.000** |
-| `CRezArchiveEntry::Initialize` 0x139710 | typed one-field `SetArchiveEntry` boundary | 96.2963 -> **100.000** |
+| `CRezArchiveEntry::Initialize` 0x139710 | typed one-field `SetRezItm` boundary | 96.2963 -> **100.000** |
 | `CRezArchive::AcquireEntry` 0x13c0c0 | original local census and typed table `Delete` wrapper | 98.2174 -> **100.000** |
-| `CHashBase::Last` 0x184b10 | original decrementing `do` loop | 99.4737 -> **100.000** |
-| `CHashBase::Insert` 0x184a70 | real base/derived hash-item layout and implicit intrusive-base conversion | 99.5455 -> **100.000** |
+| `CBaseHash::GetLast` 0x184b10 | original decrementing `do` loop | 99.4737 -> **100.000** |
+| `CBaseHash::Insert` 0x184a70 | real base/derived hash-item layout and implicit intrusive-base conversion | 99.5455 -> **100.000** |
 | `CRezArchive::MergeArchive` 0x13b0c0 | typed hash hierarchy at its consumers | 98.2888 -> **100.000** |
 | `CRezArchive::Open` 0x13ad00 | hierarchy first, then original header-to-member statement order | 98.4567 -> 98.7437 -> **100.000** |
 | `MonoNewline` 0x184d50 | `unsigned short*` mono buffer and element-indexed scrolling/clear loops | 98.5714 -> **100.000** |
@@ -54,7 +54,7 @@ boundary and gives later searches the right local census.
 
 ## The class-model lesson: a trailing union can hide a missing derived layer
 
-The reconstructed `CHashElement` put the owner payloads in a union:
+The earlier reconstructed `CHashElement` put the owner payloads in a union:
 
 ```cpp
 union {
@@ -69,7 +69,7 @@ surviving hierarchy proves that the base item ends after `{ parentHash, currentB
 each typed derived node owns one payload pointer at base+0x14. The complete derived node is
 the same 0x18 bytes, so layout checks alone cannot distinguish the two declarations.
 
-Typed node/table wrappers (`GetArchiveEntry`, typed `First`, `Insert`, `Delete`, and
+Typed node/table wrappers (`GetRezItm`, typed `GetFirst`, `Insert`, `Delete`, and
 bucket-local iteration) then express the real abstraction. Their bodies normally fold
 away, but the front end sees different typed operations and inline boundaries. That was
 enough to close `Insert` and `MergeArchive` and to move `Open` to its final schedule.
@@ -78,6 +78,22 @@ This hierarchy also explains the retail `+4/-4` adjustments. A polymorphic hash 
 a vptr at +0 and its intrusive-list base subobject at +4. Developers wrote ordinary
 base/derived conversions; VC5 emitted the null-preserving adjustment. Explicit
 `reinterpret_cast<char*>(link) - 4` source is therefore a decompiler artifact here.
+
+## Authentic declarations can rotate a commuted SIB without changing the model
+
+Restoring the surviving names and owners all the way from `CHashBase`/`CHashElement` to
+`CBaseHash`/`CBaseHashItem` left the complete call sets, CFGs, registers, extents, and
+referents intact. It changed only one interchangeable scale-1 SIB byte in each of
+`CBaseHashItem::Next`, `CBaseHash::Insert`, `CBaseHash::GetLast`, and
+`CBaseHash::GetFirstInBin` (99.6970, 99.5455, 99.4737, and 99.0000 current fuzzy). The
+all-time `hist` remains 100 for all four; their new authentic source hashes must be
+banked independently.
+
+This controlled A/B is a declaration-state effect: source expression reversal cannot
+select a different encoding for the mathematically identical `[base+index]` address.
+Keep the authentic hierarchy and names, bank the correct source state, and use a bounded
+target-adjacent C1-state trial if current exactness is needed. Do not retain an inferred
+class name merely because it happened to select retail's interchangeable encoding.
 
 ## Authored order survives optimization indirectly
 

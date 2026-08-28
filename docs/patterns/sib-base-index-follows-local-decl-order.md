@@ -39,12 +39,12 @@ const char* names = blockBase + pd->imageSetsOffset;
 
 ## What does NOT work (measured, so you can stop early)
 
-The declaration order is the ONLY lever. On `CVariantSlot::Find` (0x16e1d0) and the
-three `CHashBase` bucket helpers these all produced byte-identical output:
+The declaration order is the ONLY local-body lever. On `CVariantSlot::Find` (0x16e1d0)
+and the three `CBaseHash` bucket helpers these all produced byte-identical output:
 
 - reversing the source operand order (`lo + hi` for `hi + lo`, `idx + arr` for
   `arr + idx`, even the legal `idx[arr]` spelling) - cl canonicalizes the addition;
-- binding the address to a named local (`CHashSlot* b = &m_buckets[idx]; b->…`);
+- binding the address to a named local (`CHashBin* b = &m_pBinAry[idx]; b->…`);
 - re-reading the member instead of the local index;
 - routing the subscript through an inline accessor (`Bucket(idx)->…`), so the index
   becomes an inline formal materialised at the call.
@@ -61,10 +61,12 @@ loop into `rep stos` (a much bigger change), so its one SIB byte is parked.
 - `CVariantSlot::Find` (0x16e1d0), 2026-07-28: the binary search's `lea eax,[esi+edi]`
   (`(hi + lo) / 2`). Declaring `lo` before `hi` - **not** writing `lo + hi` - flipped the
   SIB byte; 99.69 -> **100 EXACT**.
-- Still open in the same family, all with the pointer coming from a MEMBER rather than a
-  local: `CHashBase::Insert` 0x184a70 / `Remove` 0x184ab0 / `Lookup` 0x184b40 and
-  `CHashElement::Prev` 0x184900 (one SIB byte each; note Insert/Remove and Last want
-  OPPOSITE roles, so it is not a global convention). `Last` 0x184b10 has since gone EXACT.
+- In the same family, all with the pointer coming from a MEMBER rather than a local:
+  `CBaseHash::Insert` 0x184a70 / `Delete` 0x184ab0 / `GetFirstInBin` 0x184b40 and
+  `CBaseHashItem::Prev` 0x184900 (one SIB byte each; note Insert/Delete and GetLast want
+  OPPOSITE roles, so it is not a global convention). Typed-layer restoration made these
+  exact; the later full authentic owner/name restoration commuted one SIB byte again in
+  `Insert`, `GetLast`, and `GetFirstInBin` while preserving their 100% MAX.
 - 2026-08-05 re-audit of the three open ones adds a FOURTH and FIFTH non-lever. `MonoClear`
   (0x184db0): `i + g_monoBuffer` (cl canonicalizes the addition), `&g_monoBuffer[i]`
   (subscript+address-of builds the same tree), and a `(u8*)` cast on the base all emit the
@@ -74,7 +76,7 @@ loop into `rep stos` (a much bigger change), so its one SIB byte is parked.
   one defect, not four. And the TU-STATE parity probe that flips a canonical `imul`
   ([`commutative-operand-order-is-canonical.md`](commutative-operand-order-is-canonical.md))
   leaves all four SIB sites untouched - the SIB role is NOT that mechanism.
-- `CHashElement::Prev` (0x184900), 2026-07-29, adds a THIRD non-lever to the list above:
+- `CBaseHashItem::Prev` (0x184900), 2026-07-29, adds a THIRD non-lever to the list above:
   the address there is strength-reduced into a loop-preheader `lea` rather than re-formed
   per iteration, and neither declaration order flips it (counter-first and pointer-first
   give the identical byte). Routing the subscript through the member (`coll->m_buckets[i]`

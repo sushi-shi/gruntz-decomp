@@ -151,9 +151,9 @@ rva	size	name	kind	note
 0x1ef6ec	0x4	??_7SoundStream@@6B@	primary	
 0x1ef6f0	0xc	??_7StreamFeeder@@6B@	primary	
 0x1ef700	0x40	??_7MidiSequence@@6B@	primary	
-0x1ef740	0x4	??_7CRezArchiveEntryHashNode@@6B@	primary	
-0x1ef744	0x4	??_7CRezArchiveTypeHashNode@@6B@	primary	
-0x1ef748	0x4	??_7CRezArchiveDirHashNode@@6B@	primary	
+0x1ef740	0x4	??_7CRezItmHashByName@@6B@	primary	surviving-lineage
+0x1ef744	0x4	??_7CRezTypeHash@@6B@	primary	surviving-lineage
+0x1ef748	0x4	??_7CRezDirHash@@6B@	primary	surviving-lineage
 0x1ef750	0xc	??_7CRezArchive@@6B@	primary	
 0x1ef75c	0x4	??_7CRezStorageList@@6B@	primary	
 0x1ef760	0x4	??_7CObjListBase@@6B@	primary	

@@ -31,4 +31,5 @@ push eax                           push edx
 Distinct from `branchless-mask-and-explicit-vs-fused-test.md` (which is about whether the AND
 *materializes* vs fuses into a `test`); here the AND materializes in BOTH, only the register
 differs. WALL — bank the 99.3% and move on. Evidence: SoundTaskList::RemoveMatching @0x136f60
-(src/Dsndmgr/IntrusiveList.cpp); the other 3 list helpers (InsertHead/InsertTail/Unlink) are 100%.
+(`src/Lith/BaseList.cpp`); the other three list helpers (`InsertFirst`, `InsertLast`, and
+`Delete`) are 100%.

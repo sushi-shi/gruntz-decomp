@@ -76,14 +76,14 @@ i32 CWwdGrid::Add(WwdRegion* r) {
     i32 row = (r->m_x - m_bounds.m_minX) >> m_shiftY;
     BucketHead* bucket = m_buckets + (col * m_cols + row);
     r->m_bucket = bucket;
-    bucket->InsertHead(r);
+    bucket->InsertFirst(r);
     ++m_count;
     return 1;
 }
 
 RVA(0x00191890, 0x24)
 void CWwdGrid::Remove(WwdRegion* r) {
-    r->m_bucket->Unlink(r);
+    r->m_bucket->Delete(r);
     r->m_bucket = NULL;
     --m_count;
 }
@@ -130,14 +130,14 @@ i32 CWwdGrid::Query(WwdRect q, i32 doRemove) {
                 i32 rowN = cell.m_maxX - cell.m_minX + 1;
                 i32 idx = base;
                 do {
-                    WwdRegion* r = static_cast<WwdRegion*>(m_buckets[idx].m_head);
+                    WwdRegion* r = static_cast<WwdRegion*>(m_buckets[idx].GetFirst());
                     while (r) {
                         i32 x = r->m_x;
-                        WwdRegion* next = static_cast<WwdRegion*>(r->m_next);
+                        WwdRegion* next = static_cast<WwdRegion*>(r->Next());
                         if (x >= q.m_minX && r->m_y >= q.m_minY && x <= q.m_maxX
                             && r->m_y <= q.m_maxY) {
                             if (doRemove) {
-                                m_buckets[idx].Unlink(r);
+                                m_buckets[idx].Delete(r);
                                 r->m_bucket = NULL;
                                 --m_count;
                             }
@@ -159,12 +159,12 @@ RVA(0x00191a70, 0x57)
 i32 CWwdGrid::Clear() {
     i32 nonEmpty = 0;
     for (i32 i = 0; i < m_cellCount; ++i) {
-        WwdRegion* r = static_cast<WwdRegion*>(m_buckets[i].m_head);
+        WwdRegion* r = static_cast<WwdRegion*>(m_buckets[i].GetFirst());
         while (r) {
-            m_buckets[i].Unlink(r);
+            m_buckets[i].Delete(r);
             r->m_bucket = NULL;
             ++nonEmpty;
-            r = static_cast<WwdRegion*>(m_buckets[i].m_head);
+            r = static_cast<WwdRegion*>(m_buckets[i].GetFirst());
         }
     }
     m_count = 0;
@@ -217,7 +217,7 @@ WwdRegion* CWwdGridIter::Init(CWwdGrid* grid, WwdRect rect, i32 remove) {
     m_row = m_rowStart;
     m_rowBase = base;
     m_cell = base;
-    m_next = static_cast<WwdRegion*>(grid->m_buckets[base].m_head);
+    m_next = static_cast<WwdRegion*>(grid->m_buckets[base].GetFirst());
     return GetNext();
 }
 
@@ -239,17 +239,17 @@ WwdRegion* CWwdGridIter::GetNext() {
                 m_row = m_rowStart;
                 ++m_col;
             }
-            m_cur = static_cast<WwdRegion*>(m_grid->m_buckets[m_cell].m_head);
+            m_cur = static_cast<WwdRegion*>(m_grid->m_buckets[m_cell].GetFirst());
         }
         while (m_cur != NULL) {
-            m_next = static_cast<WwdRegion*>(m_cur->m_next);
+            m_next = static_cast<WwdRegion*>(m_cur->Next());
             if (m_cur->m_x < m_rect.m_minX || m_cur->m_y < m_rect.m_minY
                 || m_cur->m_x > m_rect.m_maxX || m_cur->m_y > m_rect.m_maxY) {
                 // Unreachable era bug: a rejected region repeats without advancing m_cur.
                 continue;
             }
             if (m_remove) {
-                m_grid->m_buckets[m_cell].Unlink(m_cur);
+                m_grid->m_buckets[m_cell].Delete(m_cur);
                 m_cur->m_bucket = NULL;
                 --m_grid->m_count;
             }

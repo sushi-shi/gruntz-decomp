@@ -51,20 +51,20 @@ four, all of them reconstructable from the raw bytes in minutes:
 | 0x139a20 | `return ReadAt(destination, 0, m_size);` |
 | 0x139bc0 | `return (u32)m_cursor >= m_size;` (`cmp/sbb/inc`) |
 | 0x139bd0 | `char value; Read(&value, 1, -1); return value;` |
-| 0x13a2a0 | `return m_types.FindTypeByTag(typeTag);` (`add ecx,0x40` = the member's address) |
+| 0x13a2a0 | `return m_haTypes.Find(typeTag);` (`add ecx,0x40` = the member's address) |
 | 0x13ba50 | a four-argument setter over `[ecx+0x70..0x7c]` |
 | 0x13c010 | `return GetRootDirectory()->FindEntryByPath(path);` (push arg, evaluate receiver, call) |
-| 0x139c70, 0x139ec0 | `jmp CHashBase::RemoveAll` — cl's out-of-line copies of two inline hash dtors |
+| 0x139c70, 0x139dd0, 0x139ec0, 0x139ed0 | `jmp CBaseHash::~CBaseHash` — cl's out-of-line typed hash-table dtors |
 
 Reading them is mechanical: `mov eax,[ecx+N]` is a member off `this`; `[esp+4]` is the
 first argument; `ret N` gives the argument count; a lone `e9` is a tail call and its target
 names the callee; `add ecx,N` before a call is a member sub-object's method.
 
-The two thunks are worth their own note: an inline destructor whose whole body is one call
-(`~CRezEntryIdHash() { RemoveAll(); }`) gets an out-of-line COMDAT emitted alongside the inlined
-copies, and it lands next to the function whose member-init list needs it for unwinding.
-Our obj already emitted `??1CRezEntryIdHash@@QAE@XZ` and `??1CRezDirectoryNameHash@@QAE@XZ` — they were simply never
-pinned, so the delinker never carved them. `RVA_COMPGEN` binds them with no source change.
+The four thunks are worth their own note: each implicit typed table destructor gets an
+out-of-line COMDAT emitted alongside its inlined copies and lands next to the function
+whose member-init list needs it for unwinding. `RVA_COMPGEN` binds the authentic
+`CRezItmHashTableByID`, `CRezItmHashTableByName`, `CRezDirHashTable`, and
+`CRezTypeHashTable` symbols without spelling compiler-generated destructor bodies.
 
 On the 2026-08-19 tree the first edge-only scan reported 90 gaps and 6,958 bytes, but that
 was not a function-level queue: eight apparent compiler/runtime bands and several small

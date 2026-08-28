@@ -5,7 +5,6 @@
 
 #include <Mfc.h>
 
-#include <Bute/Hash.h>
 #include <Enums.h>
 #include <Gruntz/String.h>
 #include <Rez/RezList.h>

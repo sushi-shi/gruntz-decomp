@@ -3,14 +3,14 @@
 
 #include <rva.h>
 
-#include <Dsndmgr/IntrusiveList.h>
 #include <Gruntz/WwdGridIter.h>
 #include <Ints.h>
+#include <Lith/BaseList.h>
 #include <Wap32/Object.h>
 
 struct BucketHead;
 
-struct BucketHead : IntrusiveList {
+struct BucketHead : CLTBaseList {
 
     BucketHead() {}
 

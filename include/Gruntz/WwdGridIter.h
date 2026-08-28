@@ -3,8 +3,8 @@
 
 #include <rva.h>
 
-#include <Dsndmgr/IntrusiveList.h>
 #include <Ints.h>
+#include <Lith/BaseList.h>
 #include <Wap32/Object.h>
 
 #include <stddef.h>
@@ -24,7 +24,7 @@ struct WwdRect {
     };
 };
 
-struct WwdGridNode : IntrusiveLink {
+struct WwdGridNode : CBaseListItem {
     WwdGridNode();
 
     enum ENoSeed {

@@ -46,7 +46,7 @@ members, `[esi+0x2c] * [esi+0x28]`): the probe takes its diff to nothing.
 
 **The parity does NOT extend to every commutative residue.** The probe left all of these
 unchanged, so they are a different mechanism: the four-term `+` chain in `SumWeighted`,
-the SIB base/index roles in `MonoClear`/`CHashBase::Insert`/`CHashElement::Prev`
+the SIB base/index roles in `MonoClear`/`CBaseHash::Insert`/`CBaseHashItem::Prev`
 (see [`sib-base-index-follows-local-decl-order.md`](sib-base-index-follows-local-decl-order.md)),
 the vptr-stamp transposition in the `CWayPoint`/`CGuardPoint` ctor family, and the
 scratch-register rotation in `SaveVideoCheckboxes`.

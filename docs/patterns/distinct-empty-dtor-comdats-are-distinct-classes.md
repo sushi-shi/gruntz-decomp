@@ -15,12 +15,12 @@ different `c3`s, the model has CONFLATED several classes into one — split it.
 
 ```cpp
 // The shared, ops-carrying head (ONE copy of every operation in the image).
-struct IntrusiveList { IntrusiveLink* m_head; IntrusiveLink* m_tail; /* Insert*/Unlink */ };
+struct CLTBaseList { CBaseListItem* m_pFirst; CBaseListItem* m_pLast; /* Insert/Delete */ };
 
 // One trivial typed wrapper per element type - each gets its own `ret` COMDAT.
-struct SoundSampleList : public IntrusiveList { ~SoundSampleList() {} };
-struct SoundTaskList  : public IntrusiveList { ~SoundTaskList()  {} };
-struct SoundBufferInstanceList  : public IntrusiveList { ~SoundBufferInstanceList()  {} };
+struct SoundSampleList : public CLTBaseList { ~SoundSampleList() {} };
+struct SoundTaskList  : public CLTBaseList { ~SoundTaskList()  {} };
+struct SoundBufferInstanceList  : public CLTBaseList { ~SoundBufferInstanceList()  {} };
 ```
 ```asm
 ; ??0SoundDevice ctor: two 8-byte zero-init members, two EH states
@@ -53,12 +53,14 @@ one nearest the retail address.
 
 ## Evidence
 
-`IntrusiveList` was modelling THREE retail classes at once. `??0/??1SoundDevice`'s
+The earlier inferred `IntrusiveList` was modelling THREE retail classes at once.
+`??0/??1SoundDevice`'s
 funclets destroy `this+0x4` through 0x1364e0 and `this+0xc` through 0x1364f0;
 `??0/??1SoundSample`'s destroy `this+0x58` through 0x135ba0. Three separate
-1-byte COMDATs, so three classes — while `InsertHead` 0x1390e0 / `Unlink` 0x1391e0
+1-byte COMDATs, so three classes — while `CLTBaseList::InsertFirst` 0x1390e0 /
+`CLTBaseList::Delete` 0x1391e0
 exist in exactly ONE copy each, shared by SoundBuffer, SoundDevice,
-SoundStream, CRezArchive, CHashBase and CWwdGrid, which puts the operations on a
+SoundStream, CRezArchive, CBaseHash and CWwdGrid, which puts the operations on a
 common base and the destructor on the typed wrapper. Splitting the type and
 pinning the three dtors took all four `directsoundmgr` groups to
 `unwind-identical`.
@@ -67,9 +69,10 @@ Same shape, same wave: `??1CRegMgr@@QAE@XZ` at 0x201f0 (an
 `e9` to `?Term@CRegMgr@@QAEXXZ`, 3 groups),
 `??1CMotionState@@QAE@XZ` at 0x58ba0 (`c3`, 2 groups) and
 `??1PlayerLatency@@QAE@XZ` at 0x832e0 (`c3`, 2 groups) were all merely unpinned;
-one `RVA_COMPGEN` line each closed them. Still open under this rule:
-`CRezEntryIdHash` (`include/Bute/Hash.h`) is ONE modelled type where retail has TWO, at
-0x139dd0 and 0x139ed0 — both 5-byte `jmp 0x184a40`.
+one `RVA_COMPGEN` line each closed them. The former open Rez case is now resolved by the
+surviving typed classes: `CRezItmHashTableByName`, `CRezDirHashTable`, and
+`CRezTypeHashTable` own distinct compiler-generated five-byte destructor COMDATs that
+all tail-jump to `CBaseHash::~CBaseHash`.
 
 variants: [eh-funclet-names-the-type.md](eh-funclet-names-the-type.md),
 [eh-funclet-band-owns-the-inline-dtor-comdat.md](eh-funclet-band-owns-the-inline-dtor-comdat.md)

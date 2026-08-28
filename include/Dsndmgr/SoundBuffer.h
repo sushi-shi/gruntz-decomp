@@ -3,7 +3,7 @@
 
 #include <rva.h>
 
-#include <Dsndmgr/IntrusiveList.h>
+#include <Lith/BaseList.h>
 
 #include <stdio.h>
 
@@ -14,21 +14,21 @@ class SoundBuffer;
 struct RiffWaveHeader;
 struct WaveFormatX;
 
-struct SoundBufferNode : public IntrusiveLink {
+struct SoundBufferNode : public CBaseListItem {
     SoundBuffer* m_buffer;
 };
 
-struct SoundSampleList : public IntrusiveList {
+struct SoundSampleList : public CLTBaseList {
     RVA(0x001364e0, 0x1)
     ~SoundSampleList() {}
 };
 
-struct SoundBufferInstanceList : public IntrusiveList {
+struct SoundBufferInstanceList : public CLTBaseList {
     RVA(0x00135ba0, 0x1)
     ~SoundBufferInstanceList() {}
 };
 
-class SoundBuffer : public IntrusiveLink {
+class SoundBuffer : public CBaseListItem {
 public:
     SoundBuffer(IDirectSoundBuffer* buffer, SoundDevice* owner);
     virtual ~SoundBuffer();

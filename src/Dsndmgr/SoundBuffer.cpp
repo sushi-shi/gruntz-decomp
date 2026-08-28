@@ -5,12 +5,12 @@
 #include <Mfc.h>
 
 #include <ComOutRef.h>
-#include <Dsndmgr/IntrusiveList.h>
 #include <Dsndmgr/SoundDevice.h>
 #include <Dsndmgr/SoundVolumeRamp.h>
 #include <Dsndmgr/VolumeScale.h>
 #include <Dsndmgr/WaveFormatSdk.h>
 #include <Enums.h>
+#include <Lith/BaseList.h>
 #include <Pix16.h>
 #include <Rez/RezMgr.h>
 #include <Utils/MillisPer.h>
@@ -331,7 +331,7 @@ i32 SoundBuffer::RampVolumeTo(i32 targetVolumePct, i32 durationMs, b32 stopAndRe
     if (ramp == NULL) {
         return 0;
     }
-    m_owner->m_volumeRamps.InsertHead(ramp);
+    m_owner->m_volumeRamps.InsertFirst(ramp);
     return 1;
 }
 
@@ -510,7 +510,7 @@ RVA(0x00135b10, 0x6b)
 SoundSample::SoundSample(IDirectSoundBuffer* buffer, SoundDevice* owner)
     : SoundBufferInstance(buffer, owner) {
 
-    ((&m_instances))->InsertHead(&m_instanceNode);
+    ((&m_instances))->InsertFirst(&m_instanceNode);
     m_reusable = true;
 }
 
@@ -518,8 +518,8 @@ RVA_COMPGEN(0x00135b80, 0x1e, ??_GSoundSample@@UAEPAXI@Z)
 
 RVA(0x00135bb0, 0x63)
 SoundSample::~SoundSample() {
-    while (m_instances.m_head != NULL) {
-        DestroyInstance(static_cast<SoundBufferNode*>(m_instances.m_head)->m_buffer);
+    while (m_instances.GetFirst() != NULL) {
+        DestroyInstance(static_cast<SoundBufferNode*>(m_instances.GetFirst())->m_buffer);
     }
 }
 
@@ -538,7 +538,7 @@ SoundBuffer* SoundSample::CreateInstance(b32 reusable) {
         ReportError(DSNDMGR_FILE, 0x217, hr);
         return NULL;
     }
-    ((&m_instances))->InsertHead(&instance->m_instanceNode);
+    ((&m_instances))->InsertFirst(&instance->m_instanceNode);
     instance->m_reusable = reusable;
     return instance;
 }
@@ -553,7 +553,7 @@ void SoundSample::DestroyInstance(SoundBuffer* instance) {
         buffer->Release();
         instance->m_buffer = NULL;
     }
-    ((&m_instances))->Unlink(&instance->m_instanceNode);
+    ((&m_instances))->Delete(&instance->m_instanceNode);
     if (instance != this) {
         delete instance;
     }
@@ -564,13 +564,13 @@ SoundBuffer* SoundSample::AcquireInstance() {
     if (!m_owner->m_initialized) {
         return NULL;
     }
-    SoundBufferNode* node = static_cast<SoundBufferNode*>(m_instances.m_head);
+    SoundBufferNode* node = static_cast<SoundBufferNode*>(m_instances.GetFirst());
     if (node) {
         while (true) {
             if (node->m_buffer->m_reusable && node->m_buffer->IsPlaying() == 0) {
                 break;
             }
-            node = static_cast<SoundBufferNode*>(node->m_next);
+            node = static_cast<SoundBufferNode*>(node->Next());
             if (!node) {
                 break;
             }
@@ -591,8 +591,8 @@ SoundBuffer* SoundSample::AcquireInstance() {
         instance = CreateInstance(true);
     }
     if (instance) {
-        m_instances.Unlink(&instance->m_instanceNode);
-        m_instances.InsertTail(&instance->m_instanceNode);
+        m_instances.Delete(&instance->m_instanceNode);
+        m_instances.InsertLast(&instance->m_instanceNode);
     }
     return instance;
 }
@@ -762,8 +762,9 @@ void SoundSample::StopAllInstances() {
     if (m_owner->m_initialized == false) {
         return;
     }
-    for (SoundBufferNode* node = static_cast<SoundBufferNode*>(m_instances.m_head); node != NULL;
-         node = static_cast<SoundBufferNode*>(node->m_next)) {
+    for (SoundBufferNode* node = static_cast<SoundBufferNode*>(m_instances.GetFirst());
+         node != NULL;
+         node = static_cast<SoundBufferNode*>(node->Next())) {
         node->m_buffer->StopAndRewind();
     }
 }
@@ -981,10 +982,10 @@ i32 SoundDevice::Compact() {
 RVA(0x00136690, 0x58)
 void SoundDevice::Shutdown() {
     if (m_initialized) {
-        SoundSample* node = ElementFromLink<SoundSample>(m_samples.m_head);
+        SoundSample* node = static_cast<SoundSample*>(m_samples.GetFirst());
         while (node) {
             DestroyBuffer(node);
-            node = ElementFromLink<SoundSample>(m_samples.m_head);
+            node = static_cast<SoundSample*>(m_samples.GetFirst());
         }
         if (m_primaryBuffer) {
             m_primaryBuffer->Release();
@@ -1042,7 +1043,7 @@ SoundSample* SoundDevice::CreateSample(WaveFormatX* format, u32 bytes, u32 flags
     {
         SoundSample* sample = new SoundSample(directSoundBuffer, this);
         sample->m_baseFrequency = bufferFormat.nSamplesPerSec;
-        m_samples.InsertHead(sample);
+        m_samples.InsertFirst(sample);
         sample->m_baseSampleRate = format->nAvgBytesPerSec;
         sample->m_sampleRate = format->nAvgBytesPerSec;
         sample->m_sampleCount = bytes;
@@ -1271,7 +1272,7 @@ void SoundDevice::DestroyBuffer(SoundBuffer* buffer) {
             buffer->m_buffer->Release();
             buffer->m_buffer = NULL;
         }
-        m_samples.Unlink(buffer);
+        m_samples.Delete(buffer);
         if (buffer) {
             delete buffer;
         }
@@ -1281,11 +1282,11 @@ void SoundDevice::DestroyBuffer(SoundBuffer* buffer) {
 RVA(0x00136de0, 0x3c)
 void SoundDevice::StopAllBuffers() {
     if (m_initialized) {
-        SoundSample* node = ElementFromLink<SoundSample>(m_samples.m_head);
+        SoundSample* node = static_cast<SoundSample*>(m_samples.GetFirst());
         while (node) {
             node->StopAndRewind();
             node->StopAllInstances();
-            node = ElementFromLink<SoundSample>(node->m_next);
+            node = static_cast<SoundSample*>(node->Next());
         }
     }
 }
@@ -1295,8 +1296,8 @@ i32 SoundDevice::TickVolumeRamps(i32 timestampMs) {
     if (m_initialized == false) {
         return 0;
     }
-    IntrusiveLink* head = m_volumeRamps.m_head;
-    SoundVolumeRamp* ramp = ElementFromLink<SoundVolumeRamp>(head);
+    CBaseListItem* head = m_volumeRamps.GetFirst();
+    SoundVolumeRamp* ramp = static_cast<SoundVolumeRamp*>(head);
     if (ramp == NULL) {
         return 0;
     }
@@ -1308,10 +1309,10 @@ i32 SoundDevice::TickVolumeRamps(i32 timestampMs) {
     }
     m_lastRampTickMs = timestampMs;
     do {
-        IntrusiveLink* nextLink = ramp->m_next;
-        SoundVolumeRamp* next = ElementFromLink<SoundVolumeRamp>(nextLink);
+        CBaseListItem* nextLink = ramp->Next();
+        SoundVolumeRamp* next = static_cast<SoundVolumeRamp*>(nextLink);
         if (ramp->Tick(timestampMs) == 0) {
-            m_volumeRamps.Unlink(ramp);
+            m_volumeRamps.Delete(ramp);
             if (ramp) {
                 SoundTask* task = ramp;
                 delete task;
@@ -1327,15 +1328,15 @@ i32 SoundDevice::ClearVolumeRamps() {
     if (m_initialized == false) {
         return 0;
     }
-    SoundTask* node = ElementFromLink<SoundTask>(m_volumeRamps.m_head);
+    SoundTask* node = static_cast<SoundTask*>(m_volumeRamps.GetFirst());
     if (node == NULL) {
         return 1;
     }
     do {
-        IntrusiveLink* nextLink = node->m_next;
-        SoundTask* next = ElementFromLink<SoundTask>(nextLink);
+        CBaseListItem* nextLink = node->Next();
+        SoundTask* next = static_cast<SoundTask*>(nextLink);
         node->Stop();
-        m_volumeRamps.Unlink(node);
+        m_volumeRamps.Delete(node);
         if (node) {
 
             SoundTask* task = node;
@@ -1357,17 +1358,17 @@ i32 SoundDeviceReturnFalse() {
 
 RVA(0x00136f60, 0x74)
 void SoundTaskList::RemoveMatching(SoundBuffer* buffer, u32 tag) {
-    SoundTask* task = ElementFromLink<SoundTask>(m_head);
+    SoundTask* task = static_cast<SoundTask*>(m_pFirst);
     while (task) {
-        IntrusiveLink* link = task;
-        IntrusiveLink* nextLink = task->m_next;
-        SoundTask* next = ElementFromLink<SoundTask>(nextLink);
+        CBaseListItem* link = task;
+        CBaseListItem* nextLink = task->Next();
+        SoundTask* next = static_cast<SoundTask*>(nextLink);
         if (tag != SOUND_TASK_TAG_ALL && task->m_tag != tag) {
             continue;
         }
         if (task->m_buffer == buffer) {
 
-            Unlink(task);
+            Delete(task);
             if (task) {
                 SoundTask* removed = task;
                 delete removed;

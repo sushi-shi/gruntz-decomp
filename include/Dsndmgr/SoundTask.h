@@ -3,8 +3,8 @@
 
 #include <rva.h>
 
-#include <Dsndmgr/IntrusiveList.h>
 #include <Enums.h>
+#include <Lith/BaseList.h>
 
 GZ_ENUM_CONST_BEGIN(SoundTaskTag)
     SOUND_TASK_TAG_VOLUME_RAMP = 1,
@@ -13,7 +13,7 @@ GZ_ENUM_CONST_END(SoundTaskTag)
 
 class SoundBuffer;
 
-struct SoundTask : public IntrusiveLink {
+struct SoundTask : public CBaseListItem {
     virtual i32 Tick(i32 timestampMs) = 0;
     virtual i32 Stop() = 0;
 
@@ -28,7 +28,7 @@ struct SoundTask : public IntrusiveLink {
     ~SoundTask() {}
 };
 
-struct SoundTaskList : public IntrusiveList {
+struct SoundTaskList : public CLTBaseList {
     RVA(0x001364f0, 0x1)
     ~SoundTaskList() {}
 

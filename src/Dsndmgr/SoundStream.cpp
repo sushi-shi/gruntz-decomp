@@ -178,8 +178,8 @@ i32 SoundStream::InitializeDevice(HWND hwnd, i32 cooperativeLevel) {
 
 RVA(0x00137740, 0x3e)
 void SoundStream::ShutdownStreams() {
-    for (StreamVoice* voice = ElementFromLink<StreamVoice>(m_voices.m_head); voice != NULL;
-         voice = ElementFromLink<StreamVoice>(m_voices.m_head)) {
+    for (StreamVoice* voice = static_cast<StreamVoice*>(m_voices.GetFirst()); voice != NULL;
+         voice = static_cast<StreamVoice*>(m_voices.GetFirst())) {
         DestroyVoice(voice);
     }
     Shutdown();
@@ -227,7 +227,7 @@ StreamVoice* SoundStream::CreateStreamVoice(
     }
 
     StreamVoice* voice = new StreamVoice(directSoundBuffer, this, reprimeWhenIdle, destroyWhenIdle);
-    m_voices.InsertHead(voice);
+    m_voices.InsertFirst(voice);
     voice->m_baseSampleRate = format->nAvgBytesPerSec;
     voice->m_sampleRate = format->nAvgBytesPerSec;
     voice->m_sampleCount = bufferBytes;
@@ -277,7 +277,7 @@ void SoundStream::DestroyVoice(StreamVoice* voice) {
         m_volumeRamps.RemoveMatching(voice, SOUND_TASK_TAG_ALL);
         voice->m_buffer->Release();
         voice->m_buffer = NULL;
-        m_voices.Unlink(voice);
+        m_voices.Delete(voice);
         if (voice) {
             delete voice;
         }
@@ -306,10 +306,10 @@ StreamVoice* SoundStream::PlayStream(
 
 RVA(0x00137a80, 0x3d)
 void SoundStream::StopAllStreams() {
-    StreamVoice* node = ElementFromLink<StreamVoice>(m_voices.m_head);
+    StreamVoice* node = static_cast<StreamVoice*>(m_voices.GetFirst());
     while (node != NULL) {
         node->m_feeder.Pause();
-        node = ElementFromLink<StreamVoice>(node->m_next);
+        node = static_cast<StreamVoice*>(node->Next());
     }
     StopAllBuffers();
 }
@@ -319,10 +319,10 @@ i32 SoundStream::TickStreams(i32 timestampMs) {
     if (timestampMs == -1) {
         timestampMs = static_cast<i32>(timeGetTime());
     }
-    IntrusiveLink* head = m_voices.m_head;
-    StreamVoice* voice = ElementFromLink<StreamVoice>(head);
+    CBaseListItem* head = m_voices.GetFirst();
+    StreamVoice* voice = static_cast<StreamVoice*>(head);
     while (voice) {
-        StreamVoice* next = ElementFromLink<StreamVoice>(voice->m_next);
+        StreamVoice* next = static_cast<StreamVoice*>(voice->Next());
         voice->m_feeder.Tick(timestampMs);
         b32 isPlaying = voice->m_feeder.m_buffer->IsPlaying();
         if (isPlaying == false && voice->m_wasPlaying != false) {

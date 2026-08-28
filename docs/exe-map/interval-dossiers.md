@@ -276,7 +276,7 @@ Seam fns:
    TU (contains zlib `_uncompress`!). Probable sub-objs (weak, resolution not
    required here):
    - `0x1848b0-0x184b5d` rezcoll+rezarchive+hash woven
-     (`CRezArchiveEntryHashNode`/`CRezStorageList`/`CHashBase`) — one small
+     (`CRezItmHashByName`/`CRezStorageList`/`CBaseHash`) — one small
      archive/hash utility obj;
    - `0x184b70-0x1851d3` debugprintf+rangeset woven (`RezDebugInit`,
      `RezDebugPrintf*`, `CDebugConfig::InitFromEnv` + `CRangeSet` — the debug
@@ -648,7 +648,7 @@ tail pending the 0xea990-0xf8800 partition package.
 | # | original TU | .text span | our file (unit kept) | flags |
 |---|---|---|---|---|
 | A | REZ archive file (original name unknown) | `0x1396f0-0x13c23a` | src/Rez/RezArchive.cpp (rezarchive) | eh |
-| B | Hash pocket — AMBIGUOUS | `0x13c240-0x13c4ba` | src/Bute/Hash.cpp (hash) | eh |
+| B | Hash pocket — AMBIGUOUS | `0x13c240-0x13c4ba` | src/Rez/RezHash.cpp (hash) | eh |
 | C | RezMgr archive file | `0x13c4e0-0x13ce8c` | src/Rez/RezMgr.cpp (rezmgr) | eh |
 | D | GameWnd.cpp | `0x13cf00-0x13d58a` | src/Wap32/GameWnd.cpp (gamewnd) | base |
 | E | GameApp.cpp | `0x13d590-0x13dfdf` | src/Wap32/GameApp.cpp (gameapp) | eh |
@@ -1031,7 +1031,7 @@ sub-structure is now resolved (was "weak, resolution not required"):
    are this documented COMDAT-pool artifact, not a fixable misplacement.
 2. **Pocket `[0x1848b0..0x185460)` = FIVE objs**, current tree layout already
    correct - no moves:
-   - RezColl.cpp `[0x1848b0..0x184b5d]` (CHashSlot/CHashElement/CHashBase - the rez
+   - BaseHash.cpp `[0x1848b0..0x184b5d]` (`CBaseHash::CHashBin`/`CBaseHashItem`/`CBaseHash` - the rez
      hash/collection utility; no frags, no privates, clean block);
    - DebugPrintf.cpp `[0x184b70..0x1851d3]` - its OWN obj, positively proven: own
      init frag i1493 @0x184b60 (ctor-attributed -> RezDebugInit) + own PRIVATE

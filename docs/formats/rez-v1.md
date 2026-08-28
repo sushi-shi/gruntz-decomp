@@ -10,7 +10,8 @@ reconstruction under `src/Rez/` is **not** an authority here. The container
 reader is now modeled as `CRezArchive`, `CRezArchiveDir`, `CRezArchiveType`, and
 `CRezArchiveEntry` in `RezArchive.cpp`; `RezFile.cpp` separately models the
 storage-driver layer (`CRezItm` / `CRezDir` / `CRezFile` wrapping `FILE*`), and
-`RezColl.cpp` supplies the hash collection used by the archive model.
+`Lith/BaseHash.cpp` and `Rez/RezHash.cpp` supply the base and typed hash collections used
+by the archive model.
 
 Implementation: [`tools/gruntz-rez`](../../tools/gruntz-rez) — reader in
 `src/lib.rs`, writer in `src/write.rs`, CLI in `src/bin/{rezls,rezpack}.rs`.
@@ -195,7 +196,7 @@ what got written; the stride is the bucket count.
 
 Lookup never cares. `CRezArchiveDir::ReadDirectoryBody` inserts each resource into its
 type's name hash (@0x13a7d5), and a lookup hashes the name and walks one bucket
-chain (0x13c270 → `CHashBase::Lookup` @0x184b40, then `strcmp`/`stricmp`).
+chain (0x13c270 → `CBaseHash::GetFirstInBin` @0x184b40, then `strcmp`/`stricmp`).
 Order-independent.
 
 What the flag does gate is a **bulk preload**:
@@ -422,7 +423,7 @@ resource-name hash and wrote siblings out in bucket order.
 
 ### The cross-check that validates the embedded-element offsets
 
-`CHashElement`'s object back-pointer sits at `element + 0x14`
+`CBaseHashItem`'s typed derived-node payload sits at `element + 0x14`
 (`ReadDirectoryBody` and `PreloadData` both reach the owner through it). So any ctor that
 writes a table pointer at `this+X` **and** `this` at `this+X+0x14` is embedding
 an element at X. All three agree:

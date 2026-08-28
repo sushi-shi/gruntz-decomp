@@ -603,7 +603,9 @@ TickSubManagers + the error-reporting tail).
 ### soundvoicelist
 The five 0x1390e0+ list primitives - a separate retail obj PAST the DSndMgSR.cpp
 interval end (0x13848b), so it stays its own unit (RemoveMatching @0x136f60 moved
-to directsoundmgr, whose obj span owns it).
+to directsoundmgr, whose obj span owns it). Surviving LithTech source identifies the
+semantic owner as `Lith/BaseList.cpp`; the synthetic unit key remains `soundvoicelist`
+because unit renames disturb delinker packing.
 
 ### chatbox_eh
 eh: /GX is what makes Clear CALL the header-inline ~CMenuPage instead of

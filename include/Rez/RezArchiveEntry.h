@@ -3,9 +3,9 @@
 
 #include <rva.h>
 
-#include <Bute/Hash.h>
 #include <Enums.h>
 #include <Ints.h>
+#include <Rez/RezHash.h>
 #include <Rez/RezTypeTag.h>
 
 #include <stddef.h>
@@ -15,62 +15,11 @@ class CRezArchiveType;
 
 class CRezItmBase;
 
-struct CRezArchiveEntryHashNode : public CHashElement {
-
-    CRezArchiveEntryHashNode() {
-        m_archiveEntry = NULL;
-    }
-
-    void SetArchiveEntry(CRezArchiveEntry* entry) {
-        m_archiveEntry = entry;
-    }
-
-    CRezArchiveEntry* GetArchiveEntry() {
-        return m_archiveEntry;
-    }
-
-    CRezArchiveEntryHashNode* Next() {
-        return static_cast<CRezArchiveEntryHashNode*>(CHashElement::Next());
-    }
-
-    CRezArchiveEntryHashNode* Prev() {
-        return static_cast<CRezArchiveEntryHashNode*>(CHashElement::Prev());
-    }
-
-    CRezArchiveEntryHashNode* NextInBucket() {
-        return static_cast<CRezArchiveEntryHashNode*>(CHashElement::NextInBucket());
-    }
-
-    CRezArchiveEntryHashNode* PrevInBucket() {
-        return static_cast<CRezArchiveEntryHashNode*>(CHashElement::PrevInBucket());
-    }
-
-    virtual u32 Hash() OVERRIDE;
-
-    CRezArchiveEntry* m_archiveEntry;
-};
-
-inline void CRezEntryNameHash::Insert(CRezArchiveEntryHashNode* entry) {
-    CHashBase::Insert(entry);
-}
-
-inline void CRezEntryNameHash::Delete(CRezArchiveEntryHashNode* entry) {
-    CHashBase::Remove(entry);
-}
-
-inline CRezArchiveEntryHashNode* CRezEntryNameHash::First() {
-    return static_cast<CRezArchiveEntryHashNode*>(CHashBase::First());
-}
-
-inline CRezArchiveEntryHashNode* CRezEntryNameHash::Last() {
-    return static_cast<CRezArchiveEntryHashNode*>(CHashBase::Last());
-}
-
-inline CRezArchiveEntryHashNode* CRezEntryNameHash::Lookup(u32 bucketIndex) {
-    return static_cast<CRezArchiveEntryHashNode*>(CHashBase::Lookup(bucketIndex));
-}
-
 struct CRezArchiveEntry {
+
+    char* GetName() {
+        return m_name;
+    }
 
     GZ_ENUM_RETURN(RezTypeTag, u32) GetTypeTag();
     u32 GetSize() {
@@ -117,7 +66,7 @@ struct CRezArchiveEntry {
     i32 m_dataOffset;
     i32 m_cursor;
 
-    CRezArchiveEntryHashNode m_nameNode;
+    CRezItmHashByName m_heName;
     CRezItmBase* m_storage;
     char* m_loadedData;
 };

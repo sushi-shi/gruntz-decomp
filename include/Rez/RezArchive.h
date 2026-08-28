@@ -3,11 +3,11 @@
 
 #include <rva.h>
 
-#include <Bute/Hash.h>
 #include <Bute/ObjListBase.h>
 #include <Enums.h>
 #include <Ints.h>
 #include <Rez/RezArchiveDir.h>
+#include <Rez/RezHash.h>
 #include <Rez/RezList.h>
 #include <Rez/RezTypeTag.h>
 
@@ -22,11 +22,11 @@ struct CRezStorageList : public CObjList {
 
 struct CRezArchiveEntry;
 
-struct CRezEntryPoolBlock : public IntrusiveLink {
+struct CRezEntryPoolBlock : public CBaseListItem {
     CRezArchiveEntry* m_entries;
 };
 
-struct CRezEntryPoolBlockList : public IntrusiveList {
+struct CRezEntryPoolBlockList : public CLTBaseList {
     RVA(0x0013abb0, 0x1)
     ~CRezEntryPoolBlockList() {}
 };
@@ -145,7 +145,7 @@ public:
     i32 m_resourceIdBucketCount;
     i32 m_subdirectoryBucketCount;
     i32 m_typeBucketCount;
-    CRezEntryNameHash m_freeEntries;
+    CRezItmHashTableByName m_hashRezItmFreeList;
     CRezEntryPoolBlockList m_entryPoolBlocks;
     i32 m_entriesPerPoolBlock;
 };
