@@ -1288,6 +1288,8 @@ bool CButeMgr::Save() {
     m_writeMode = true;
     m_captureText = true;
 
+    char block[4096];
+
     ifstream input(m_filename, ios::nocreate | ios::binary);
     input.seekg(0, ios::end);
     i32 length = input.tellg();
@@ -1299,7 +1301,6 @@ bool CButeMgr::Save() {
         m_crypt.Decode(&input, &source);
         m_pText = new iostream(new strstreambuf(length));
     } else {
-        char block[0x1000];
         while (!input.eof()) {
             input.read(block, sizeof(block));
             source.write(block, input.gcount());

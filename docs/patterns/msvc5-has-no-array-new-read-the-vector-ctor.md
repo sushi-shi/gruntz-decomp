@@ -47,6 +47,20 @@ hand-written clone of it (same four members, same `/8` clamp-to-`[4,1024]` growt
 heuristic, same `ConstructElements` body), so read the whole family off MFC's source
 rather than re-deriving each branch.
 
+The shipped VC5 `AFXTEMPL.H` also fixes the source shape of the growth heuristic: an
+inner `nGrowBy` shadows the parameter and one nested conditional expression clamps it.
+Restoring that exact block in `CRezBufferObject::SetSize` is byte-flat at 96.0414. Base
+and retail remain 0x164 bytes, 145 instructions, four calls, twelve branches, four
+returns, and four relocations; only the zero and data-base register roles differ. This is
+an authentic source correction and a bounded regalloc control, not an invitation to
+replace the MFC expression with whichever split `if` happens to score best.
+
+The wall diagnoser's target-only repeated-prefix hint is a register-renaming false
+positive here. The allocation and `rep stos` construction block is already byte-identical;
+the other occurrence fails the raw repetition test because surrounding zero and existing-
+data values occupy EDI/ESI in base versus ESI/EDX in retail. Exact call and CFG counts plus
+the shipped source adjudicate the apparent duplication question.
+
 ## A constructor-shaped identity helper does not prove a constructor
 
 `0x0017f300` is the three-byte `mov eax,ecx; ret` shape of an empty thiscall

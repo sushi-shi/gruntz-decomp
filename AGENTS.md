@@ -220,6 +220,18 @@
     byte was rejected by Gruntz's already-exact `char` family. Branch-specific
     derived locals that compile byte-flat remain structural evidence, not score
     evidence.
+  * mine the public games and samples as well as the engine libraries. The
+    byte-identical Shogo/Blood2 `NetStart_FillServiceList` copies recovered the
+    authored loop alias, cursor-local census, and direct `LPARAM` casts for
+    `CNetMgr::PopulateProviderList`; those facts are positive evidence even
+    though the corrected Gruntz body is byte-flat. Repeated sibling copies are
+    stronger source-shape evidence than one later engine implementation.
+  * exhaust a lineage-shaped branch as a bounded composition, not a spelling
+    vote. For `CButeMgr::SetString`, one through five assignment-in-condition
+    restorations were byte-flat, the sixth crossed to a lower C1 island, and
+    adding the surviving `else` from that island returned to the baseline.
+    With no intermediate state and the generated deleting-destructor cutoff
+    unchanged, retain neither spelling and route to the next wall.
   The full controlled evidence and reverse-use procedure live in
   `docs/patterns/surviving-source-lineage-restores-typed-layers-and-order.md`.
 - INLINE/MACRO PRIOR (user ruling 2026-08-22): the era devs DID write inline

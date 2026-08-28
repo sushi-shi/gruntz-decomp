@@ -107,18 +107,14 @@ void CRezBufferObject::SetSize(i32 nNewSize, i32 nGrowBy) {
         }
         m_nSize = nNewSize;
     } else {
-        i32 grow = m_nGrowBy;
-        if (grow == 0) {
-            grow = m_nSize / 8;
-            if (grow < 4) {
-                grow = 4;
-            } else if (grow > 1024) {
-                grow = 1024;
-            }
+        i32 nGrowBy = m_nGrowBy;
+        if (nGrowBy == 0) {
+            nGrowBy = m_nSize / 8;
+            nGrowBy = (nGrowBy < 4) ? 4 : ((nGrowBy > 1024) ? 1024 : nGrowBy);
         }
         i32 nNewMax;
-        if (nNewSize < m_nMaxSize + grow) {
-            nNewMax = m_nMaxSize + grow;
+        if (nNewSize < m_nMaxSize + nGrowBy) {
+            nNewMax = m_nMaxSize + nGrowBy;
         } else {
             nNewMax = nNewSize;
         }

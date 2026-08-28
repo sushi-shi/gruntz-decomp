@@ -239,41 +239,42 @@ void CNetMgr::PopulateProviderList(HWND hList, i32 excludedProviderKinds) {
     if (hList == NULL) {
         return;
     }
+
+    CNetProviderNode* provider;
+    CNetProviderNode* next;
+
     SendMessageA(hList, LB_RESETCONTENT, 0, 0);
 
     m_providerCursor = m_providers.GetHeadPosition();
-    CNetProviderNode* provider =
-        m_providerCursor != NULL ? static_cast<CNetProviderNode*>(m_providers.GetNext(m_providerCursor)) : NULL;
+    provider = m_providerCursor != NULL
+                 ? static_cast<CNetProviderNode*>(m_providers.GetNext(m_providerCursor))
+                 : NULL;
 
     while (provider != NULL) {
-        if (((excludedProviderKinds & 1) && provider->IsTcpIpProvider())
-            || ((excludedProviderKinds & 2) && provider->IsIpxProvider())) {
+        CNetProviderNode* service = provider;
+
+        if (((excludedProviderKinds & 1) && service->IsTcpIpProvider())
+            || ((excludedProviderKinds & 2) && service->IsIpxProvider())) {
 
             if (m_providerCursor != NULL) {
-                CNetProviderNode* next = static_cast<CNetProviderNode*>(m_providers.GetAt(m_providerCursor));
+                next = static_cast<CNetProviderNode*>(m_providers.GetAt(m_providerCursor));
                 m_providers.GetNext(m_providerCursor);
                 provider = next;
             } else {
                 provider = NULL;
             }
         } else {
-
-
-
-            MsgParam name;
             i32 idx = static_cast<i32>(SendMessageA(
                 hList,
                 LB_ADDSTRING,
                 0,
-                (name.m_str = static_cast<LPCTSTR>(provider->ProviderName()), name.m_lparam)
+                reinterpret_cast<LPARAM>(static_cast<LPCTSTR>(service->ProviderName()))
             ));
             if (idx != -1) {
-                MsgParam cookie;
-                cookie.m_provider = provider;
-                SendMessageA(hList, LB_SETITEMDATA, idx, cookie.m_lparam);
+                SendMessageA(hList, LB_SETITEMDATA, idx, reinterpret_cast<LPARAM>(service));
             }
             if (m_providerCursor != NULL) {
-                CNetProviderNode* next = static_cast<CNetProviderNode*>(m_providers.GetAt(m_providerCursor));
+                next = static_cast<CNetProviderNode*>(m_providers.GetAt(m_providerCursor));
                 m_providers.GetNext(m_providerCursor);
                 provider = next;
             } else {

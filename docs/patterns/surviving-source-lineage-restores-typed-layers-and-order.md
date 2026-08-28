@@ -38,6 +38,13 @@ relocations. Applied that way, it closed these Gruntz functions:
 The exact controls are strong: all three typed hash lookups stayed exact, both hash-owning
 destructors stayed exact, and `rezarchive` reached 115/115 exact functions.
 
+The useful corpus is broader than `libs/`. Shogo and Blood2 contain byte-identical
+`NetStart_FillServiceList` implementations. They independently preserve a cursor local,
+a per-iteration `pService` alias, and direct `LPARAM` casts around `LB_ADDSTRING` and
+`LB_SETITEMDATA`. Restoring those layers in `CNetMgr::PopulateProviderList` is byte-flat
+at 97.2959%, but replaces an invented union-punning temporary with the authored Win32
+boundary and gives later searches the right local census.
+
 ## The class-model lesson: a trailing union can hide a missing derived layer
 
 The reconstructed `CHashElement` put the owner payloads in a union:
@@ -93,6 +100,19 @@ Use the corpus only in its positive direction:
   and mangled claims support `char`, so the width was not imported.
 * Bute's boolean state fields are useful layout-compatible type evidence, but changing
   them did not move `Save`; a correct type correction is not automatically a wall lever.
+* The surviving `Save` declares its 4096-byte transfer buffer at function scope before
+  the input stream. Gruntz retains that humane scope correction byte-flat. The later
+  implementation's optional output filename, `is_open` guard, zero-length promotion,
+  stream-failure exit, and format-flag writes are absent from retail's 38-call/20-branch
+  topology and were not imported. Forty-four syntax-aware compositions from the corrected
+  base all emitted one 1028-byte compiler island; the remaining EBX literal pinning is a
+  bounded C2 residue, not permission to invent a carrier local.
+* The surviving Bute setter style commonly assigns lookup results in conditions. In
+  `CButeMgr::SetString`, changing one through five of the six lookup sites was byte-flat;
+  the sixth moved to a 77.0314% C1 island. An explicit surviving-style `else` was flat on
+  the baseline but composed with that dip by returning exactly to the 81.7868% baseline
+  island. No intermediate texture or generated deleting-destructor cutoff appeared, so
+  neither experimental spelling is retained.
 * The later PCX decoder proves a one-byte marker/payload temporary, which is retained as
   a compiler-flat source correction. Hoisting its wider local census dropped
   `CRezImage::DecodePcxData` from 97.6772 to 93.3291 but introduced retail's previously

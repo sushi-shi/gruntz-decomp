@@ -49,41 +49,22 @@ Artificial emission devices were removed in August 2026. Finish the real callers
 GameSerializationCallback, BuildGameMenu, and CGruntzMgr::PlayMovieEntry - through the normal
 matching campaign, then census which inline COMDATs the compiler emits naturally.
 
-## Sibling divergence: funclet helper vs inline dtor pair (CButeMgr::Save)
+## Save correction: the heap "resolution" was refuted
 
-Retail registers Save's iostream&-bound strstream temp with a funclet that
-tail-jmps the `??_Diostream` helper; our cl, given the byte-proven same source
-shape (`iostream& source = (iostream&)strstream(...)` - the cast retypes the
-temp's EH registration, era ref-to-temp extension; clang gets an #ifdef
-spelling), emits the funclet as an inline `??1iostream`+`??1ios` call pair and
-never materializes the ??_D COMDAT. Same family of budget-dependent choices.
-The EmitIostreamVbaseDtor device carries the label until this converges.
-Byte-win from the reshape: ??_Dstrstream/??1strstream correctly vanish from
-the TU (retail has neither anywhere).
+The 2026-08-03 heap spelling was selected while the strstream/iostream destructor
+identity and slot attribution were still wrong. Later retail attribution proves a stack
+`strstream` local: its constructor receives the local frame address, scope exit tears down
+the same object and its virtual `ios` base, and the surviving Bute `Save` independently
+declares `strstream ss` on the stack. The heap spelling is therefore not a reverse-use
+rule and is not retained.
 
-## Save residue: the cast-ref temp's SLOT lifetime (open)
-
-With the corrected strstrea.h the symbols and teardown match, but the frames
-differ by 0x58: retail keeps the strstream temp's slot alive to scope end
-(ifstream@0x28 / temp@0x8c / ofstream@0xe4 / block@0x13c, all distinct),
-while our cl treats the static_cast-bound temp as expression-lived for slot
-allocation and overlays it with the ofstream (temp@0x84 vs ofstream@0x78).
-Hoisting `block` to function scope changed nothing. The winning spelling must
-additionally make cl5 hold the temp's slot; the uncast binding does that but
-resurrects the synthesized ??1strstream/??_Dstrstream. Next levers: permute
-(slot assignment follows declaration/temp order), or a spelling that binds an
-lvalue path before the upcast without retyping the dtor.
-
-## Save residue: RESOLVED by the heap spelling (2026-08-03)
-
-`strstream* sourceStore = new strstream(...)` + `iostream* source = sourceStore`
-satisfies all three byte constraints at once: the pointer upcast (neg/sbb/and at
-Decode), no synthesized ??1strstream/??_Dstrstream (scope-end destruction of a
-stack local emits both - proven by the LNK2005 vs libcimt's _strstre.obj), and
-teardown virtual-dispatching into the CRT's own scalar-deleting dtor (the retail
-strstream vtable slot-0 target, 0x169aa0 - the "missing" dtor was never missing,
-only unnamed). The slot-lifetime 0x58 delta reads naturally now: a heap pointer
-lives in one slot to scope end.
+With the stack model restored, current base and retail agree on the 0x1124 local extent,
+38 calls, 20 branches, two returns, 41 ordered relocations, and all stream operations.
+Retail pins constant one in EBX and reuses it for boolean stores, virtual-base flags,
+stream-state tests, and the final return; base emits immediate ones and omits EBX. The
+public function-scope 4096-byte buffer, chained flag stores, a named success result, and
+all 44 syntax-aware declaration/expression variants leave the same 0x404-byte base island.
+This is bounded C2 constant pinning, not a missing object-lifetime abstraction.
 
 ## The CStatusBarMgr half is BROKEN (2026-08-16)
 

@@ -44,6 +44,14 @@ the generated deleting-destructor cutoff. Keep the direct heterogeneous payload
 member and both temporary expressions; collapsing the authored sites would only
 transcribe the compiler fold.
 
+A later lineage-shaped composition tightened that bound. Converting the first one through
+five lookup declarations to assignment-in-condition form is byte-flat at 81.7868; the
+sixth conversion crosses to the older 77.0314 island. Adding an explicit `else` is flat on
+the baseline but, from the six-site dip, returns exactly to the baseline island. Thus the
+two authentic levers compose, but there is no third compiler texture between them and the
+CString deleting-destructor expansion/call split remains unchanged. Neither spelling is a
+route to the retail merge and neither experiment belongs in source.
+
 Safe reverse use:
 
 1. Ignore current dips whose historical MAX is already 100.
