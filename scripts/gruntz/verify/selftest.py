@@ -740,6 +740,62 @@ class AssertRelocsControls(unittest.TestCase):
 
 
 class DataRelocsControls(unittest.TestCase):
+    def test_an_any_comdat_number_is_not_an_associative_ordinal(self):
+        """Integration control for the section-manifest consumer.
+
+        cl 5 writes an `Any` COMDAT's own section number into the aux Number
+        field.  Passing it through as an association produces an invalid
+        `selection=2, associative_ordinal=N` manifest row which the delinker
+        must reject.
+        """
+        import struct
+
+        from gruntz.delink import coffx, data_manifest
+
+        header_size = 20
+        section_size = 40
+        raw_offset = header_size + section_size
+        symbol_offset = raw_offset + 4
+        header = struct.pack(
+            "<HHIIIHH",
+            0x14C,
+            1,
+            0,
+            symbol_offset,
+            2,
+            0,
+            0,
+        )
+        section = struct.pack(
+            "<8sIIIIIIHHI",
+            b".data\0\0\0",
+            0,
+            0,
+            4,
+            raw_offset,
+            0,
+            0,
+            0,
+            0,
+            0xC0301040,
+        )
+        symbol = struct.pack("<8sIhHBB", b".data\0\0\0", 0, 1, 0, 3, 1)
+        # Length=4, Number=1, Selection=Any.  Number is not an association.
+        aux = struct.pack("<IHHIHB3x", 4, 0, 0, 0, 1, 2)
+        payload = header + section + b"\0" * 4 + symbol + aux + struct.pack("<I", 4)
+
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / "probe.obj"
+            path.write_bytes(payload)
+            parsed = coffx.Obj(path).section_table[0]
+
+        self.assertEqual(parsed["comdat"], 2)
+        self.assertEqual(parsed["assoc"], 0)
+        row = dict(parsed, object="probe.c", ordinal=1, rva=0x1000,
+                   storage="data", provenance="selftest")
+        line = data_manifest.section_manifest_bytes([row]).decode().splitlines()[1]
+        self.assertEqual(line.split("\t")[7:10], ["2", "-", "data"])
+
     def test_an_injected_wrong_vtable_slot_is_caught(self):
         """The ported negative control: redirect one vtable slot's relocation
         in a copy of a real normalized base obj - the sieve must return WRONG

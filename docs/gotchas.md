@@ -310,6 +310,15 @@ graph has nothing to do never reaches the delink step, so it reports green and
 banks a scoreboard - and an integration "verified" that way has verified nothing.
 When a build must prove an integration, check that ninja actually did work.
 
+Another superficially similar failure is not a stale binary. COFF's section-definition
+aux record has one `Number` field, but it names an associated section only when
+`Selection == IMAGE_COMDAT_SELECT_ASSOCIATIVE`. VC5 also fills it with the section's own
+ordinal for ordinary `Any` COMDATs. Serializing that value unconditionally produces an
+impossible `comdat_selection=2, associative_ordinal=N` row and the pinned delinker
+correctly reports `associative COMDAT selection/ordinal mismatch`. `coffx.Obj` normalizes
+the field to zero unless the selection is associative; the selftest constructs a real
+minimal COFF `Any` section and drives it through section-manifest serialization.
+
 ## Runtime triage: wine SILENTLY CONTINUES most of our faults (2026-08-09)
 
 The first runtime evidence the project has. Reproduce with the user's own runner —

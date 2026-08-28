@@ -66,7 +66,11 @@ class Obj:
             sec = self.section_table[secnum - 1]
             sec["size"] = scnlen
             sec["comdat"] = sel
-            sec["assoc"] = assoc
+            # The aux `Number` field is meaningful as an associated-section
+            # ordinal only for IMAGE_COMDAT_SELECT_ASSOCIATIVE.  cl 5 writes
+            # the section's own ordinal there for ordinary `Any` COMDATs; do
+            # not serialize that bookkeeping value as an association.
+            sec["assoc"] = assoc if sel == 5 else 0
 
     def sym_name(self, idx: int) -> str:
         base = self.symptr + idx * 18
