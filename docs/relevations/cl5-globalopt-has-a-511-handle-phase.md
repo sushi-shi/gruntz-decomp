@@ -79,6 +79,32 @@ inputs with identical aggregate IL stream sizes can emit opposite states. Raisin
 the `gl` high-water, appending ignored bytes to `ex`/`sy`, and removing the generated
 pre-target function records one by one are also inert.
 
+### Exhaust the phase with an exact stride-one sweep
+
+The ordinary `typedef` state family emits one to four declarations per trial. That is
+useful for island sampling, but it cannot prove that every residue of the 511-handle
+phase was visited. `gruntz permute state` therefore also provides the diagnostic-only
+`typedef-count` family. Trial N contains the exact prefix of N one-handle typedefs, so
+trials 1 through 511, together with the measured baseline, exhaust one complete phase:
+
+```sh
+gruntz permute state --source src/DDrawMgr/ShadeTableCache.cpp --rva 0x14f080 \
+  --trials 511 --families typedef-count --insertion target --jobs 8
+```
+
+`CShadeTableCache::AddTable` is the negative control. Its unchanged 94.362640% source
+graph produced exactly two normalized states across all 511 additions: 94.362640% and
+89.274730%. Neither was exact. The sweep therefore rules out the whole measured `/Og`
+phase for that graph, rather than merely reporting that a random forest failed to find
+the right state. Subsequent channel-level inline/macro boundaries and direct PCH include
+boundaries were also flat at the higher island, routing the remaining work to authentic
+function structure.
+
+As with every state family, `typedef-count` declarations are disposable probes. They
+must never survive in reconstructed source. Use the family only after classification,
+and stop after one complete 511-handle phase unless an authentic structural change gives
+the function a new optimized graph.
+
 ## The target's C1 IL is identical; `/Og` consumes global stream state
 
 The `/d1il` tap resolves which compiler half owns the choice. At the adjacent 20/21

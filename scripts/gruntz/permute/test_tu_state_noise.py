@@ -47,6 +47,16 @@ class TuStateNoiseTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "exceeds --trials"):
             noise.select_variants(left, (13,), 12)
 
+    def test_typedef_count_is_an_exact_stride_one_prefix_sweep(self):
+        variants = noise.make_variants(3, ("typedef-count",), 123)
+        self.assertEqual(
+            [variant.body.count("typedef int GRUNTZ_TU_STATE_COUNT_TYPEDEF_")
+             for variant in variants],
+            [1, 2, 3],
+        )
+        self.assertTrue(variants[1].body.startswith(variants[0].body))
+        self.assertTrue(variants[2].body.startswith(variants[1].body))
+
     def test_state_identity_folds_nonsemantic_compiler_scaffolding(self):
         base = {
             "objdiff_size": 4,

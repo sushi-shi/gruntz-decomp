@@ -71,6 +71,7 @@ DEFAULT_FAMILIES = ("forest",)
 ALL_FAMILIES = (
     "forest", "typedef", "enum", "struct", "class", "packed", "member",
     "extern", "static-data", "prototype", "function", "include", "mixed",
+    "typedef-count",
 )
 SAFE_ENUM_VALUES = (-32768, -1, 0, 1, 2, 7, 31, 255, 256, 1024, 32767, 65535)
 SAFE_SCALAR_TYPES = ("char", "unsigned char", "short", "unsigned short", "int", "unsigned long")
@@ -504,6 +505,16 @@ def make_variants(
             f"typedef {rng.choice(SAFE_SCALAR_TYPES)} {ident}_ALIAS_{i};\n"
             for i in range(repeat)
         )
+        # An exact stride-one handle-phase sweep.  With this family selected by
+        # itself, trial N contains the same prefix of N declarations as trial
+        # N+1, so the only intended state delta is one additional typedef
+        # handle.  The ordinary ``typedef`` family deliberately varies one to
+        # four aliases and therefore cannot exhaust the measured 511-handle
+        # /Og phase.
+        typedef_count = "".join(
+            f"typedef int GRUNTZ_TU_STATE_COUNT_TYPEDEF_{index:04d};\n"
+            for index in range(1, trial + 1)
+        )
 
         enum_count = 1 + rng.randrange(8)
         enum_values = [rng.choice(SAFE_ENUM_VALUES) for _ in range(enum_count)]
@@ -597,6 +608,7 @@ def make_variants(
             "prototype": prototype_decl,
             "function": function_defs,
             "include": includes,
+            "typedef-count": typedef_count,
             "mixed": (
                 includes + declaration_forest + aliases + enum_decl + struct_decl
                 + class_decl + packed_decl
@@ -1136,7 +1148,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument(
         "--families", default=",".join(DEFAULT_FAMILIES),
-        help=f"comma-separated subset of {','.join(DEFAULT_FAMILIES)}",
+        help=f"comma-separated subset of {','.join(ALL_FAMILIES)}",
     )
     parser.add_argument("--output", type=Path, help="artifact directory (default: build/tu-state-noise/...)")
     parser.add_argument(
