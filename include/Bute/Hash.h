@@ -14,14 +14,16 @@ class CHashBase;
 class CRezArchiveType;
 class CRezArchiveDir;
 struct CRezArchiveEntry;
+struct CRezArchiveEntryHashNode;
+struct CRezArchiveDirHashNode;
+struct CRezArchiveTypeHashNode;
 
-struct CHashSlot {
-
+class CHashSlot : IntrusiveLink {
+public:
     CHashSlot();
 
     ~CHashSlot();
 
-    char m_pad00[0x8];
     IntrusiveList m_chain;
 };
 
@@ -33,13 +35,16 @@ public:
 
     CHashElement* Prev();
 
+    CHashElement* NextInBucket() {
+        return static_cast<CHashElement*>(m_next);
+    }
+
+    CHashElement* PrevInBucket() {
+        return static_cast<CHashElement*>(m_prev);
+    }
+
     CHashBase* m_hash;
     u32 m_bucketIndex;
-    union {
-        CRezArchiveEntry* m_archiveEntry;
-        CRezArchiveType* m_archiveType;
-        CRezArchiveDir* m_archiveDirectory;
-    };
 };
 
 class CHashBase {
@@ -89,6 +94,12 @@ public:
 
     u32 HashStr(const char* text);
     CRezArchiveDir* FindByName(const char* name, i32 caseInsensitive);
+
+    void Insert(CRezArchiveDirHashNode* directory);
+    void Delete(CRezArchiveDirHashNode* directory);
+    CRezArchiveDirHashNode* First();
+    CRezArchiveDirHashNode* Last();
+    CRezArchiveDirHashNode* Lookup(u32 bucketIndex);
 };
 
 class CRezEntryNameHash : public CHashBase {
@@ -101,6 +112,12 @@ public:
 
     u32 HashStr(const char* text);
     CRezArchiveEntry* FindByName(const char* name, i32 caseInsensitive);
+
+    void Insert(CRezArchiveEntryHashNode* entry);
+    void Delete(CRezArchiveEntryHashNode* entry);
+    CRezArchiveEntryHashNode* First();
+    CRezArchiveEntryHashNode* Last();
+    CRezArchiveEntryHashNode* Lookup(u32 bucketIndex);
 };
 
 class CRezTypeTagHash : public CHashBase {
@@ -113,6 +130,12 @@ public:
 
     u32 HashTypeTag(u32 typeTag);
     CRezArchiveType* FindTypeByTag(u32 typeTag);
+
+    void Insert(CRezArchiveTypeHashNode* type);
+    void Delete(CRezArchiveTypeHashNode* type);
+    CRezArchiveTypeHashNode* First();
+    CRezArchiveTypeHashNode* Last();
+    CRezArchiveTypeHashNode* Lookup(u32 bucketIndex);
 };
 
 #endif // SRC_BUTE_HASH_H

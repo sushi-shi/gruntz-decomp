@@ -31,23 +31,23 @@ CRezArchiveEntry* CRezEntryNameHash::FindByName(const char* name, i32 caseInsens
     if (!name) {
         return NULL;
     }
-    CHashElement* node = Lookup(HashStr(name));
+    CRezArchiveEntryHashNode* node = Lookup(HashStr(name));
     if (caseInsensitive) {
         while (node) {
-            const char* entryName = node->m_archiveEntry->m_name;
+            const char* entryName = node->GetArchiveEntry()->m_name;
             if (_strcmpi(entryName, name) == 0) {
-                return node->m_archiveEntry;
+                return node->GetArchiveEntry();
             }
-            node = FromLink(node->m_next);
+            node = node->NextInBucket();
         }
         return NULL;
     }
     while (node) {
-        const char* entryName = node->m_archiveEntry->m_name;
+        const char* entryName = node->GetArchiveEntry()->m_name;
         if (strcmp(entryName, name) == 0) {
-            return node->m_archiveEntry;
+            return node->GetArchiveEntry();
         }
-        node = FromLink(node->m_next);
+        node = node->NextInBucket();
     }
     return NULL;
 }
@@ -64,12 +64,12 @@ u32 CRezTypeTagHash::HashTypeTag(u32 typeTag) {
 
 RVA(0x0013c360, 0x47)
 CRezArchiveType* CRezTypeTagHash::FindTypeByTag(u32 typeTag) {
-    CHashElement* node = Lookup(HashTypeTag(typeTag));
+    CRezArchiveTypeHashNode* node = Lookup(HashTypeTag(typeTag));
     while (node) {
-        if (static_cast<u32>(node->m_archiveType->m_typeTag) == typeTag) {
-            return node->m_archiveType;
+        if (static_cast<u32>(node->GetArchiveType()->m_typeTag) == typeTag) {
+            return node->GetArchiveType();
         }
-        node = FromLink(node->m_next);
+        node = node->NextInBucket();
     }
     return NULL;
 }
@@ -97,23 +97,23 @@ CRezArchiveDir* CRezDirectoryNameHash::FindByName(const char* name, i32 caseInse
     if (!name) {
         return NULL;
     }
-    CHashElement* node = Lookup(HashStr(name));
+    CRezArchiveDirHashNode* node = Lookup(HashStr(name));
     if (caseInsensitive) {
         while (node) {
-            const char* directoryName = node->m_archiveDirectory->m_name;
+            const char* directoryName = node->GetArchiveDirectory()->m_name;
             if (_strcmpi(directoryName, name) == 0) {
-                return node->m_archiveDirectory;
+                return node->GetArchiveDirectory();
             }
-            node = FromLink(node->m_next);
+            node = node->NextInBucket();
         }
         return NULL;
     }
     while (node) {
-        const char* directoryName = node->m_archiveDirectory->m_name;
+        const char* directoryName = node->GetArchiveDirectory()->m_name;
         if (strcmp(directoryName, name) == 0) {
-            return node->m_archiveDirectory;
+            return node->GetArchiveDirectory();
         }
-        node = FromLink(node->m_next);
+        node = node->NextInBucket();
     }
     return NULL;
 }

@@ -1285,8 +1285,8 @@ bool CButeMgr::Save() {
         return false;
     }
 
-    m_writeMode = 1;
-    m_captureText = 1;
+    m_writeMode = true;
+    m_captureText = true;
 
     ifstream input(m_filename, ios::nocreate | ios::binary);
     input.seekg(0, ios::end);
@@ -1326,8 +1326,8 @@ bool CButeMgr::Save() {
     }
     delete m_pText;
 
-    m_captureText = 0;
-    m_writeMode = 0;
+    m_captureText = false;
+    m_writeMode = false;
     return true;
 }
 

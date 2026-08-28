@@ -586,6 +586,7 @@ i32 CRezImage::LoadBmp(char* name, HDC dc, i32 ctrl) {
 RVA(0x00176000, 0x18f)
 i32 CRezImage::DecodePcxData(void* buf, HDC dc, i32 ctrl) {
     PcxHeader* hdr = static_cast<PcxHeader*>(buf);
+    u8 temp;
     i32 width = hdr->m_xMax - hdr->m_xMin + 1;
     i32 height = hdr->m_yMax - hdr->m_yMin + 1;
     if (hdr->m_bitsPerPixel != PCX_BITS_PER_PLANE_8) {
@@ -607,21 +608,21 @@ i32 CRezImage::DecodePcxData(void* buf, HDC dc, i32 ctrl) {
 
     for (i32 y = 0; y < height; y++) {
         u8* dst = m_pixels + m_rowOffsets[y];
-        i32 n = width * IDX(hdr->m_planes);
-        while (n > 0) {
-            u8 c = *src++;
-            if ((c & BYTE_RUN_CONTROL_MASK) == BYTE_RUN_MARKER) {
-                i32 count = c & BYTE_RUN_LENGTH_MASK;
-                u8 v = *src++;
+        i32 remaining = width * IDX(hdr->m_planes);
+        while (remaining > 0) {
+            temp = *src++;
+            if ((temp & BYTE_RUN_CONTROL_MASK) == BYTE_RUN_MARKER) {
+                i32 count = temp & BYTE_RUN_LENGTH_MASK;
+                temp = *src++;
                 if (count > 0) {
                     do {
-                        --n;
+                        --remaining;
                         --count;
-                        scan[n] = v;
+                        scan[remaining] = temp;
                     } while (count != 0);
                 }
             } else {
-                scan[--n] = c;
+                scan[--remaining] = temp;
             }
         }
 
@@ -630,14 +631,14 @@ i32 CRezImage::DecodePcxData(void* buf, HDC dc, i32 ctrl) {
                 *dst++ = scan[x - 1];
             }
         } else if (hdr->m_planes == PCX_PLANES_RGB) {
-            u8* b = scan + width * 3;
-            u8* g = scan + width * 2;
+            u8* blue = scan + width * 3;
+            u8* green = scan + width * 2;
             for (i32 x = width; x != 0; x--) {
                 *dst++ = scan[x - 1];
-                *dst++ = g[-1];
-                *dst++ = b[-1];
-                --g;
-                --b;
+                *dst++ = green[-1];
+                *dst++ = blue[-1];
+                --green;
+                --blue;
             }
         }
     }

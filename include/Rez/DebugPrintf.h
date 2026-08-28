@@ -28,6 +28,7 @@ GZ_ENUM_BEGIN(DebugPrintMode)
 GZ_ENUM_END(DebugPrintMode)
 
 GZ_ENUM_CONST_BEGIN(DebugMonoGeometry)
+    DEBUG_MONO_COLUMN_COUNT = 80,
     DEBUG_MONO_ROW_COUNT = 25
 GZ_ENUM_CONST_END(DebugMonoGeometry)
 

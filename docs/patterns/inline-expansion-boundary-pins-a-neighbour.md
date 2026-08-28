@@ -69,17 +69,23 @@ referent; its exact-site retail oracle made the normalized function 100.000. The
 `DecodePcx` was flat across all eight eligible member-read expansions, so this remains a
 per-site lever.
 
-## Negative controls - it is per-site, and it can cost points
+## A first-step dip can be the right base
 
 * `CRezArchiveType::CRezArchiveType(i32,CRezArchiveDir*,i32,i32)` 0x139bf0: routing its FIRST body statement
-  through `SetArchiveType` took it 99.3548 -> **95.6452**. Its residue is an eax/edx pair
-  rotation, not a transposition; the boundary changed the allocation order and lost.
-  Written out again.
+  through `SetArchiveType` first took it 99.3548 -> **95.6452**. That was not a
+  falsification. The surviving LithTech RezMgr source later supplied the missing authored
+  statement order — `m_typeTag`, the typed member setter, then `m_directory` — and the
+  composition reached **100.000**. The old higher form was a local maximum. This is a
+  direct controlled example of EXPLORATORY DESCENT: retain an authentic abstraction as a
+  disposable base and compose the next independently evidenced source fact before ranking
+  the path.
 * `CAniPlayer::TickToggle` 0xe5b90: byte-identical either way (92.0000), so the boundary
   is not a universal improvement even inside a file where it closed two neighbours.
 
-Read a drop after conversion as either "this residue was not a transposition" or the
-`/Ob1` budget flip of the ctor pattern's `CProjectile` case, and write the site out again.
+Read a drop after conversion as a new compiler state, not a verdict. Compose only
+independently evidenced facts; if a bounded composition does not converge, restore the
+higher humane form. A byte-flat control still says the boundary is not the lever at that
+site.
 
 ## Detection signature
 

@@ -21,8 +21,54 @@ struct CRezArchiveEntryHashNode : public CHashElement {
         m_archiveEntry = NULL;
     }
 
+    void SetArchiveEntry(CRezArchiveEntry* entry) {
+        m_archiveEntry = entry;
+    }
+
+    CRezArchiveEntry* GetArchiveEntry() {
+        return m_archiveEntry;
+    }
+
+    CRezArchiveEntryHashNode* Next() {
+        return static_cast<CRezArchiveEntryHashNode*>(CHashElement::Next());
+    }
+
+    CRezArchiveEntryHashNode* Prev() {
+        return static_cast<CRezArchiveEntryHashNode*>(CHashElement::Prev());
+    }
+
+    CRezArchiveEntryHashNode* NextInBucket() {
+        return static_cast<CRezArchiveEntryHashNode*>(CHashElement::NextInBucket());
+    }
+
+    CRezArchiveEntryHashNode* PrevInBucket() {
+        return static_cast<CRezArchiveEntryHashNode*>(CHashElement::PrevInBucket());
+    }
+
     virtual u32 Hash() OVERRIDE;
+
+    CRezArchiveEntry* m_archiveEntry;
 };
+
+inline void CRezEntryNameHash::Insert(CRezArchiveEntryHashNode* entry) {
+    CHashBase::Insert(entry);
+}
+
+inline void CRezEntryNameHash::Delete(CRezArchiveEntryHashNode* entry) {
+    CHashBase::Remove(entry);
+}
+
+inline CRezArchiveEntryHashNode* CRezEntryNameHash::First() {
+    return static_cast<CRezArchiveEntryHashNode*>(CHashBase::First());
+}
+
+inline CRezArchiveEntryHashNode* CRezEntryNameHash::Last() {
+    return static_cast<CRezArchiveEntryHashNode*>(CHashBase::Last());
+}
+
+inline CRezArchiveEntryHashNode* CRezEntryNameHash::Lookup(u32 bucketIndex) {
+    return static_cast<CRezArchiveEntryHashNode*>(CHashBase::Lookup(bucketIndex));
+}
 
 struct CRezArchiveEntry {
 

@@ -146,13 +146,14 @@ i32 CRezItm::Open(char* filename, b32 readonly, b32 write) {
     return 1;
 }
 
-// @early-stop
 RVA(0x0013c830, 0x63)
 i32 CRezItm::Close() {
+    b32 ok;
+    i32 check;
     if (m_fp != NULL) {
-        b32 ok;
         do {
-            if (fclose(m_fp) == 0) {
+            check = fclose(m_fp);
+            if (check == 0) {
                 ok = true;
             } else {
                 ok = false;
@@ -162,15 +163,16 @@ i32 CRezItm::Close() {
             }
         } while (!ok);
 
-        m_fp = NULL;
-        if (m_readBuf != NULL) {
-            delete[] m_readBuf;
-        }
-        m_readBuf = NULL;
-        m_pos = -1;
-        return ok;
+    } else {
+        return 0;
     }
-    return 0;
+    m_fp = NULL;
+    if (m_readBuf != NULL) {
+        delete[] m_readBuf;
+    }
+    m_readBuf = NULL;
+    m_pos = -1;
+    return ok;
 }
 
 RVA(0x0013c8a0, 0x45)

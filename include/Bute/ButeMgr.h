@@ -128,10 +128,10 @@ public:
     CString m_tagName;
     CString m_attributeName;
     CString m_filename;
-    char m_captureText;
-    char m_writeMode;
+    bool m_captureText;
+    bool m_writeMode;
 
-    char m_encrypted;
+    bool m_encrypted;
     CButeTail m_crypt;
 
     ButeIntRect* GetRect(const char* tag, const char* key);

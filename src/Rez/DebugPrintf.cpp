@@ -5,7 +5,6 @@
 #include <Win32.h>
 
 #include <Gruntz/RangeSet.h>
-#include <Pix16.h>
 #include <Rez/DebugConfig.h>
 
 #include <stdarg.h>
@@ -13,7 +12,7 @@
 #include <string.h>
 
 DATA(0x002bf84c)
-char* g_monoBuffer = NULL;
+u16* g_monoBuffer = NULL;
 DATA(0x002bf850)
 CRangeSet g_debugChannels = {0};
 DATA(0x002bf8d4)
@@ -100,48 +99,33 @@ void CRangeSet::AddFromString(char* str) {
     }
 }
 
-// @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00184d50, 0x5f)
 void MonoNewline() {
     g_monoCol = 0;
     if (++g_monoRow == DEBUG_MONO_ROW_COUNT) {
-        i32 i = 0xa0;
-        do {
-            i += 2;
-
-            Pix16Ptr dst;
-            Pix16Ptr src;
-            dst.m_chars = (g_monoBuffer + i - 0xa2);
-            src.m_chars = (g_monoBuffer + i - 2);
-            *dst.m_words = *src.m_words;
-        } while (i < 0xfa0);
-        i = 0xf00;
-        do {
-
-            Pix16Ptr cell;
-            cell.m_chars = g_monoBuffer + i;
-            *cell.m_words = 0x720;
-            i += 2;
-        } while (i < 0xfa0);
+        i32 i;
+        for (i = DEBUG_MONO_COLUMN_COUNT; i < DEBUG_MONO_COLUMN_COUNT * DEBUG_MONO_ROW_COUNT; i++) {
+            g_monoBuffer[i - DEBUG_MONO_COLUMN_COUNT] = g_monoBuffer[i];
+        }
+        for (i = DEBUG_MONO_COLUMN_COUNT * (DEBUG_MONO_ROW_COUNT - 1);
+             i < DEBUG_MONO_COLUMN_COUNT * DEBUG_MONO_ROW_COUNT;
+             i++) {
+            g_monoBuffer[i] = 0x720;
+        }
         g_monoRow--;
     }
 }
 
-// @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00184db0, 0x28)
 void MonoClear() {
-    i32 i = 0;
-    do {
-
-        Pix16Ptr cell;
-        cell.m_chars = g_monoBuffer + i;
-        *cell.m_words = 0x720;
-        i += 2;
-    } while (i < 0xfa0);
+    i32 i;
+    for (i = 0; i < DEBUG_MONO_COLUMN_COUNT * DEBUG_MONO_ROW_COUNT; i++) {
+        g_monoBuffer[i] = 0x720;
+    }
     g_monoRow = 0;
     g_monoCol = 0;
 }

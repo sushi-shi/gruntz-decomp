@@ -51,14 +51,6 @@ static inline CRezItmBase* FirstStorage(CObjList& list) {
     return list.m_head;
 }
 
-static inline void SetArchiveType(CRezArchiveTypeHashNode& node, CRezArchiveType* type) {
-    node.m_archiveType = type;
-}
-
-static inline void SetArchiveDirectory(CRezArchiveDirHashNode& node, CRezArchiveDir* directory) {
-    node.m_archiveDirectory = directory;
-}
-
 static const i32 REZ_SCAN_PATH_MAX = 0x308;
 
 // Byte-forced view of packed serialized storage.
@@ -74,10 +66,9 @@ CRezArchiveEntry::CRezArchiveEntry() {
     m_storage = NULL;
     m_directory = NULL;
     m_name = NULL;
-    m_nameNode.m_archiveEntry = this;
+    m_nameNode.SetArchiveEntry(this);
 }
 
-// @early-stop
 RVA(0x00139710, 0x8d)
 void CRezArchiveEntry::Initialize(
     CRezArchiveDir* directory,
@@ -112,7 +103,7 @@ void CRezArchiveEntry::Initialize(
     m_time = time;
     m_loadedData = NULL;
     m_cursor = 0;
-    m_nameNode.m_archiveEntry = this;
+    m_nameNode.SetArchiveEntry(this);
 }
 
 RVA(0x001397a0, 0x57)
@@ -139,7 +130,7 @@ void CRezArchiveEntry::Reset() {
     m_directory = NULL;
     m_dataOffset = 0;
     m_cursor = 0;
-    m_nameNode.m_archiveEntry = NULL;
+    m_nameNode.SetArchiveEntry(NULL);
 }
 
 RVA(0x00139800, 0x6)
@@ -253,41 +244,36 @@ i32 CRezArchiveEntry::SetPos(i32 position) {
     return 1;
 }
 
-// @early-stop
 RVA(0x00139af0, 0xcc)
 i32 CRezArchiveEntry::Read(void* destination, u32 byteCount, i32 seekPosition) {
     if (seekPosition != -1) {
         SetPos(seekPosition);
     }
 
-    u32 position = static_cast<u32>(m_cursor);
-    u32 bytesToRead = byteCount;
-    if (bytesToRead + position > m_size) {
-        bytesToRead = m_size - position;
+    if (byteCount + m_cursor > m_size) {
+        byteCount = m_size - m_cursor;
     }
-
-    if (bytesToRead > 0) {
-        CRezArchiveDir* directory = m_directory;
-        if (directory->m_preloadedData) {
-
-            const char* source =
-                m_dataOffset - directory->m_minDataOffset + directory->m_preloadedData;
-            source += position;
-            memcpy(destination, source, bytesToRead);
-            m_cursor += bytesToRead;
-            return bytesToRead;
-        }
-        if (m_loadedData) {
-            const char* source = (m_loadedData + position);
-            memcpy(destination, source, bytesToRead);
-            m_cursor += bytesToRead;
-            return bytesToRead;
-        }
-        if (m_storage->Read(m_dataOffset, position, bytesToRead, destination)
-            == static_cast<i32>(bytesToRead)) {
-            m_cursor += bytesToRead;
-            return bytesToRead;
-        }
+    if (byteCount <= 0) {
+        return 0;
+    }
+    if (m_directory->m_preloadedData != NULL) {
+        memcpy(
+            destination,
+            m_directory->m_preloadedData + m_dataOffset + m_cursor - m_directory->m_minDataOffset,
+            byteCount
+        );
+        m_cursor += byteCount;
+        return byteCount;
+    }
+    if (m_loadedData != NULL) {
+        memcpy(destination, m_loadedData + m_cursor, byteCount);
+        m_cursor += byteCount;
+        return byteCount;
+    }
+    if (m_storage->Read(m_dataOffset, m_cursor, byteCount, destination)
+        == static_cast<i32>(byteCount)) {
+        m_cursor += byteCount;
+        return byteCount;
     }
     return 0;
 }
@@ -308,7 +294,6 @@ char CRezArchiveEntry::ReadChar() {
     return value;
 }
 
-// @early-stop
 RVA(0x00139bf0, 0x71)
 CRezArchiveType::CRezArchiveType(
     i32 typeTag,
@@ -317,9 +302,9 @@ CRezArchiveType::CRezArchiveType(
     i32 resourceNameBucketCount
 )
     : m_idIndex(resourceIdBucketCount), m_nameIndex(resourceNameBucketCount) {
-    m_typeNode.m_archiveType = this;
-    m_directory = directory;
     m_typeTag = typeTag;
+    m_typeNode.SetArchiveType(this);
+    m_directory = directory;
 }
 
 RVA(0x00139c80, 0x6c)
@@ -330,7 +315,7 @@ CRezArchiveType::CRezArchiveType(
 )
     : m_idIndex(), m_nameIndex(resourceNameBucketCount) {
     m_typeTag = typeTag;
-    m_typeNode.m_archiveType = this;
+    m_typeNode.SetArchiveType(this);
     m_directory = directory;
 }
 
@@ -338,22 +323,26 @@ RVA(0x00139cf0, 0xd7)
 CRezArchiveType::~CRezArchiveType() {
     if (m_directory->m_archive->m_useIdIndex != false) {
         CHashElement* node = m_idIndex.First();
+        CHashElement* current;
         while (node) {
-            CHashElement* current = node;
+            current = node;
             node = current->Next();
             m_idIndex.Remove(current);
         }
     }
-    CHashElement* node = m_nameIndex.First();
-    while (node) {
-        CHashElement* current = node;
-        node = current->Next();
-        m_nameIndex.Remove(current);
-        current->m_archiveEntry->Reset();
-        m_directory->m_archive->ReleaseEntry(current->m_archiveEntry);
+    {
+        CRezArchiveEntryHashNode* node = m_nameIndex.First();
+        CRezArchiveEntryHashNode* current;
+        while (node) {
+            current = node;
+            node = current->Next();
+            m_nameIndex.Delete(current);
+            current->GetArchiveEntry()->Reset();
+            m_directory->m_archive->ReleaseEntry(current->GetArchiveEntry());
+        }
     }
     m_typeTag = 0;
-    SetArchiveType(m_typeNode, NULL);
+    m_typeNode.SetArchiveType(NULL);
 }
 
 RVA(0x00139de0, 0xd4)
@@ -380,26 +369,31 @@ CRezArchiveDir::CRezArchiveDir(
     m_minDataOffset = 0;
     m_preloadedData = NULL;
     m_parent = parent;
-    SetArchiveDirectory(m_nameNode, this);
+    m_nameNode.SetArchiveDirectory(this);
 }
 
 RVA(0x00139ee0, 0x11e)
 CRezArchiveDir::~CRezArchiveDir() {
 
-    CHashElement* node;
-    for (node = m_types.First(); node != NULL;) {
-        CHashElement* current = node;
-        node = current->Next();
-        m_types.Remove(current);
-        CRezArchiveType* type = current->m_archiveType;
-        delete type;
+    {
+        CRezArchiveTypeHashNode* node = m_types.First();
+        CRezArchiveTypeHashNode* current;
+        while (node != NULL) {
+            current = node;
+            node = current->Next();
+            m_types.Delete(current);
+            delete current->GetArchiveType();
+        }
     }
-    for (node = m_subdirectories.First(); node != NULL;) {
-        CHashElement* current = node;
-        node = current->Next();
-        m_subdirectories.Remove(current);
-        CRezArchiveDir* subdirectory = current->m_archiveDirectory;
-        delete subdirectory;
+    {
+        CRezArchiveDirHashNode* node = m_subdirectories.First();
+        CRezArchiveDirHashNode* current;
+        while (node != NULL) {
+            current = node;
+            node = current->Next();
+            m_subdirectories.Delete(current);
+            delete current->GetArchiveDirectory();
+        }
     }
     if (m_name) {
         delete[] m_name;
@@ -416,7 +410,7 @@ CRezArchiveDir::~CRezArchiveDir() {
     m_preloadedData = NULL;
     m_archive = NULL;
     m_parent = NULL;
-    m_nameNode.m_archiveDirectory = NULL;
+    m_nameNode.SetArchiveDirectory(NULL);
 }
 
 RVA(0x0013a000, 0x37)
@@ -469,9 +463,10 @@ i32 CRezArchiveDir::PreloadData(b32 recursive) {
     }
 
     if (recursive != false) {
-        for (CHashElement* node = m_subdirectories.First(); node != NULL; node = node->Next()) {
+        for (CRezArchiveDirHashNode* node = m_subdirectories.First(); node != NULL;
+             node = node->Next()) {
 
-            node->m_archiveDirectory->PreloadData(true);
+            node->GetArchiveDirectory()->PreloadData(true);
         }
     }
     return 1;
@@ -496,9 +491,9 @@ i32 CRezArchiveDir::ReleaseEntryData(b32 recursive) {
         }
     }
     if (recursive) {
-        CHashElement* node = m_subdirectories.First();
+        CRezArchiveDirHashNode* node = m_subdirectories.First();
         while (node) {
-            node->m_archiveDirectory->ReleaseEntryData(true);
+            node->GetArchiveDirectory()->ReleaseEntryData(true);
             node = node->Next();
         }
     }
@@ -515,20 +510,20 @@ CRezArchiveDir* CRezArchiveDir::FindSubdirectory(const char* name) {
 
 RVA(0x0013a260, 0x11)
 CRezArchiveDir* CRezArchiveDir::FirstSubdirectory() {
-    CHashElement* node = m_subdirectories.First();
+    CRezArchiveDirHashNode* node = m_subdirectories.First();
     if (!node) {
         return NULL;
     }
-    return node->m_archiveDirectory;
+    return node->GetArchiveDirectory();
 }
 
 RVA(0x0013a280, 0x19)
 CRezArchiveDir* CRezArchiveDir::NextSubdirectory(CRezArchiveDir* directory) {
-    CHashElement* node = directory->m_nameNode.Next();
+    CRezArchiveDirHashNode* node = directory->m_nameNode.Next();
     if (!node) {
         return NULL;
     }
-    return node->m_archiveDirectory;
+    return node->GetArchiveDirectory();
 }
 
 // @dead-code
@@ -540,38 +535,38 @@ CRezArchiveType* CRezArchiveDir::FindType(u32 typeTag) {
 
 RVA(0x0013a2b0, 0x11)
 CRezArchiveType* CRezArchiveDir::FirstType() {
-    CHashElement* node = m_types.First();
+    CRezArchiveTypeHashNode* node = m_types.First();
     if (!node) {
         return NULL;
     }
-    return node->m_archiveType;
+    return node->GetArchiveType();
 }
 
 RVA(0x0013a2d0, 0x19)
 CRezArchiveType* CRezArchiveDir::NextType(CRezArchiveType* type) {
-    CHashElement* node = type->m_typeNode.Next();
+    CRezArchiveTypeHashNode* node = type->m_typeNode.Next();
     if (!node) {
         return NULL;
     }
-    return node->m_archiveType;
+    return node->GetArchiveType();
 }
 
 RVA(0x0013a2f0, 0x19)
 CRezArchiveEntry* CRezArchiveDir::FirstEntry(CRezArchiveType* type) {
-    CHashElement* node = type->m_nameIndex.First();
+    CRezArchiveEntryHashNode* node = type->m_nameIndex.First();
     if (!node) {
         return NULL;
     }
-    return node->m_archiveEntry;
+    return node->GetArchiveEntry();
 }
 
 RVA(0x0013a310, 0x19)
 CRezArchiveEntry* CRezArchiveDir::NextEntry(CRezArchiveEntry* entry) {
-    CHashElement* node = entry->m_nameNode.Next();
+    CRezArchiveEntryHashNode* node = entry->m_nameNode.Next();
     if (!node) {
         return NULL;
     }
-    return node->m_archiveEntry;
+    return node->GetArchiveEntry();
 }
 
 RVA(0x0013a330, 0xce)
@@ -673,7 +668,7 @@ CRezArchiveEntry* CRezArchiveDir::CreateEntry(
 RVA(0x0013a530, 0x47)
 i32 CRezArchiveDir::RemoveEntry(CRezArchiveType* type, CRezArchiveEntry* entry) {
     m_totalDataSize -= entry->m_size;
-    type->m_nameIndex.Remove(&entry->m_nameNode);
+    type->m_nameIndex.Delete(&entry->m_nameNode);
     entry->Reset();
     m_archive->ReleaseEntry(entry);
     m_archive->m_isDataContiguous = false;
@@ -691,15 +686,15 @@ i32 CRezArchiveDir::ReadDirectoryTree(
     if (static_cast<u32>(bodySize) <= 0) {
         return success;
     }
-    CHashElement* node = m_subdirectories.First();
+    CRezArchiveDirHashNode* node = m_subdirectories.First();
     while (node) {
-        node->m_archiveDirectory->m_bodyOffset = 0;
+        node->GetArchiveDirectory()->m_bodyOffset = 0;
         node = node->Next();
     }
     if (ReadDirectoryBody(storage, bodyOffset, bodySize, replaceExisting) != 0) {
         node = m_subdirectories.First();
         while (node) {
-            CRezArchiveDir* subdirectory = node->m_archiveDirectory;
+            CRezArchiveDir* subdirectory = node->GetArchiveDirectory();
             if (subdirectory->m_bodyOffset != 0) {
                 if (subdirectory->ReadDirectoryTree(
                         storage,
@@ -986,7 +981,6 @@ CRezArchive::~CRezArchive() {
     }
 }
 
-// @early-stop
 RVA(0x0013ad00, 0x3b8)
 i32 CRezArchive::Open(char* path, b32 readOnly, b32 createNew) {
     m_readOnly = readOnly;
@@ -996,15 +990,14 @@ i32 CRezArchive::Open(char* path, b32 readOnly, b32 createNew) {
     if (m_archivePath) {
         delete[] m_archivePath;
     }
-    char* archivePath = new char[strlen(path) + 1];
-    m_archivePath = archivePath;
-    strcpy(archivePath, path);
+    m_archivePath = new char[strlen(path) + 1];
+    strcpy(m_archivePath, path);
     if (IsDirectoryPath(path) != 0) {
 
         if (m_readOnly == false) {
             return 0;
         }
-        CRezItmBase* storage = new CRezDir(this, m_maxOpenFiles);
+        CRezDir* storage = new CRezDir(this, m_maxOpenFiles);
         if (storage == NULL) {
             delete[] m_archivePath;
             m_archivePath = NULL;
@@ -1017,7 +1010,7 @@ i32 CRezArchive::Open(char* path, b32 readOnly, b32 createNew) {
             return 0;
         }
         m_isOpen = true;
-        CRezArchiveDir* rootDirectory = new CRezArchiveDir(
+        m_rootDirectory = new CRezArchiveDir(
             this,
             NULL,
             "",
@@ -1027,12 +1020,11 @@ i32 CRezArchive::Open(char* path, b32 readOnly, b32 createNew) {
             m_subdirectoryBucketCount,
             m_typeBucketCount
         );
-        m_rootDirectory = rootDirectory;
-        ImportDirectoryTree(storage, rootDirectory, m_archivePath, false);
+        ImportDirectoryTree(storage, m_rootDirectory, m_archivePath, false);
         return 1;
     }
 
-    CRezItmBase* storage = new CRezItm(this);
+    CRezItm* storage = new CRezItm(this);
     if (storage == NULL) {
         delete[] m_archivePath;
         m_archivePath = NULL;
@@ -1048,7 +1040,7 @@ i32 CRezArchive::Open(char* path, b32 readOnly, b32 createNew) {
     if (createNew != false) {
         m_nextWritePos = sizeof(RezArchiveHeader);
         m_isNewArchive = true;
-        CRezArchiveDir* rootDirectory = new CRezArchiveDir(
+        m_rootDirectory = new CRezArchiveDir(
             this,
             NULL,
             "",
@@ -1058,18 +1050,17 @@ i32 CRezArchive::Open(char* path, b32 readOnly, b32 createNew) {
             m_subdirectoryBucketCount,
             m_typeBucketCount
         );
-        m_rootDirectory = rootDirectory;
         return 1;
     }
 
     RezArchiveHeader header;
     storage->Read(0, 0, sizeof(header), &header);
-    m_version = header.m_version;
+    m_nextWritePos = header.m_nextWritePos;
     m_rootDirectoryOffset = header.m_rootDirectoryOffset;
     m_rootDirectorySize = header.m_rootDirectorySize;
     m_rootDirectoryTime = header.m_rootDirectoryTime;
-    m_nextWritePos = header.m_nextWritePos;
     m_archiveTime = header.m_archiveTime;
+    m_version = header.m_version;
     m_largestKeyArrayLength = header.m_largestKeyArrayLength;
     m_largestDirectoryNameSize = header.m_largestDirectoryNameSize;
     m_largestResourceNameSize = header.m_largestResourceNameSize;
@@ -1087,7 +1078,7 @@ i32 CRezArchive::Open(char* path, b32 readOnly, b32 createNew) {
     if (header.m_version != REZ_ARCHIVE_VERSION_1) {
         return 0;
     }
-    CRezArchiveDir* rootDirectory = new CRezArchiveDir(
+    m_rootDirectory = new CRezArchiveDir(
         this,
         NULL,
         "",
@@ -1097,14 +1088,14 @@ i32 CRezArchive::Open(char* path, b32 readOnly, b32 createNew) {
         m_subdirectoryBucketCount,
         m_typeBucketCount
     );
-    m_rootDirectory = rootDirectory;
-    rootDirectory->ReadDirectoryTree(storage, m_rootDirectoryOffset, m_rootDirectorySize, false);
+    m_rootDirectory->ReadDirectoryTree(storage, m_rootDirectoryOffset, m_rootDirectorySize, false);
     return 1;
 }
 
-// @early-stop
 RVA(0x0013b0c0, 0x238)
 i32 CRezArchive::MergeArchive(char* path, b32 replaceExisting) {
+    b32 readOnly = true;
+    b32 createNew = false;
     if (m_readOnly == false) {
         return 0;
     }
@@ -1112,12 +1103,11 @@ i32 CRezArchive::MergeArchive(char* path, b32 replaceExisting) {
     if (m_archivePath) {
         delete[] m_archivePath;
     }
-    char* archivePath = new char[strlen(path) + 1];
-    m_archivePath = archivePath;
-    strcpy(archivePath, path);
+    m_archivePath = new char[strlen(path) + 1];
+    strcpy(m_archivePath, path);
 
     if (IsDirectoryPath(path)) {
-        CRezItmBase* storage = new CRezDir(this, m_maxOpenFiles);
+        CRezDir* storage = new CRezDir(this, m_maxOpenFiles);
         if (storage == NULL) {
             delete[] m_archivePath;
             m_archivePath = NULL;
@@ -1125,7 +1115,7 @@ i32 CRezArchive::MergeArchive(char* path, b32 replaceExisting) {
         }
         m_storages.AddHead(storage);
         m_storages.m_storageCount++;
-        if (storage->Open(path, true, false) == 0) {
+        if (storage->Open(path, readOnly, createNew) == 0) {
             return 0;
         }
         m_isOpen = true;
@@ -1133,7 +1123,7 @@ i32 CRezArchive::MergeArchive(char* path, b32 replaceExisting) {
         return 1;
     }
 
-    CRezItmBase* storage = new CRezItm(this);
+    CRezItm* storage = new CRezItm(this);
     if (storage == NULL) {
         delete[] m_archivePath;
         m_archivePath = NULL;
@@ -1141,28 +1131,23 @@ i32 CRezArchive::MergeArchive(char* path, b32 replaceExisting) {
     }
     m_storages.AddHead(storage);
     m_storages.m_storageCount++;
-    if (storage->Open(path, true, false) == 0) {
+    if (storage->Open(path, readOnly, createNew) == 0) {
         return 0;
     }
 
     RezArchiveHeader header;
     storage->Read(0, 0, sizeof(header), &header);
-    u32 mergedMaximum;
-    mergedMaximum = header.m_largestKeyArrayLength;
-    if (mergedMaximum > m_largestKeyArrayLength) {
-        m_largestKeyArrayLength = mergedMaximum;
+    if (header.m_largestKeyArrayLength > m_largestKeyArrayLength) {
+        m_largestKeyArrayLength = header.m_largestKeyArrayLength;
     }
-    mergedMaximum = header.m_largestDirectoryNameSize;
-    if (mergedMaximum > m_largestDirectoryNameSize) {
-        m_largestDirectoryNameSize = mergedMaximum;
+    if (header.m_largestDirectoryNameSize > m_largestDirectoryNameSize) {
+        m_largestDirectoryNameSize = header.m_largestDirectoryNameSize;
     }
-    mergedMaximum = header.m_largestResourceNameSize;
-    if (mergedMaximum > m_largestResourceNameSize) {
-        m_largestResourceNameSize = mergedMaximum;
+    if (header.m_largestResourceNameSize > m_largestResourceNameSize) {
+        m_largestResourceNameSize = header.m_largestResourceNameSize;
     }
-    mergedMaximum = header.m_largestCommentSize;
-    if (mergedMaximum > m_largestCommentSize) {
-        m_largestCommentSize = mergedMaximum;
+    if (header.m_largestCommentSize > m_largestCommentSize) {
+        m_largestCommentSize = header.m_largestCommentSize;
     }
     m_rootDirectory->ReadDirectoryTree(
         storage,
@@ -1562,36 +1547,34 @@ i32 CRezArchive::IsDirectoryPath(char* path) {
     return (fileInfo.st_mode & _S_IFDIR) == _S_IFDIR;
 }
 
-// @early-stop
 RVA(0x0013c0c0, 0x14b)
 CRezArchiveEntry* CRezArchive::AcquireEntry() {
     CRezArchiveEntry* entry = NULL;
-    CHashElement* node = m_freeEntries.First();
+    CHashElement* node;
+    node = m_freeEntries.First();
     if (node != NULL) {
-        entry = node->m_archiveEntry;
+        entry = static_cast<CRezArchiveEntryHashNode*>(node)->GetArchiveEntry();
     }
     if (entry == NULL) {
-        CRezEntryPoolBlock* block = new CRezEntryPoolBlock;
+        CRezEntryPoolBlock* block;
+        block = new CRezEntryPoolBlock;
         if (block == NULL) {
             return NULL;
         }
-        CRezArchiveEntry* entries = new CRezArchiveEntry[m_entriesPerPoolBlock];
-        block->m_entries = entries;
-        if (entries == NULL) {
+        block->m_entries = new CRezArchiveEntry[m_entriesPerPoolBlock];
+        if (block->m_entries == NULL) {
             delete block;
             return NULL;
         }
-        for (i32 index = 0; static_cast<u32>(index) < static_cast<u32>(m_entriesPerPoolBlock);
-             index++) {
-            block->m_entries[index].m_nameNode.m_archiveEntry = &block->m_entries[index];
+        for (u32 index = 0; index < static_cast<u32>(m_entriesPerPoolBlock); index++) {
+            block->m_entries[index].m_nameNode.SetArchiveEntry(&block->m_entries[index]);
             m_freeEntries.Insert(&block->m_entries[index].m_nameNode);
         }
         m_entryPoolBlocks.InsertHead(block);
-        node = m_freeEntries.First();
-        entry = node->m_archiveEntry;
+        entry = static_cast<CRezArchiveEntryHashNode*>(m_freeEntries.First())->GetArchiveEntry();
     }
     if (entry) {
-        m_freeEntries.Remove(&entry->m_nameNode);
+        m_freeEntries.Delete(&entry->m_nameNode);
     }
     return entry;
 }

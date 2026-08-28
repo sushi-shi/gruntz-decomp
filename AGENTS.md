@@ -183,6 +183,45 @@
   opposite inline decisions. After the checklist is genuinely exhausted,
   a same-call-set/same-CFG residue is a useful stop signal rather than a reason
   for unbounded spelling churn.
+- SURVIVING SOURCE LINEAGE PRIOR (LithTech RezMgr/Bute audit, 2026-08-28):
+  a public sibling revision can recover source layers that retail bytes alone
+  underdetermine, but it is a positive-only oracle. Audit that repository's own
+  history before importing anything: the public `libs/rezmgr` and `libs/lith`
+  implementations were imported once and left source-unchanged, while ButeMgr
+  later received portability edits to stream-size types and casts. Separate the
+  historical import from those edits.
+  * repeated complete-layout evidence outranks a layout-compatible shortcut.
+    The surviving hash hierarchy proved that `CHashElement` ends after its
+    parent/bin fields and each typed derived node owns the payload pointer at
+    base+0x14. A union in the base preserved every 0x18-byte complete-node size
+    but erased the real layer. Restoring typed nodes/tables, their inline
+    setters/getters and typed `First`/`Insert`/`Delete` wrappers closed
+    `CHashBase::Insert`, `CRezArchive::MergeArchive`,
+    `CRezArchiveEntry::Initialize`, and `CRezArchive::AcquireEntry`;
+  * source statement order is evidence even when C2 emits a different store
+    order. The surviving header-to-member sequence closed the final residue in
+    `CRezArchive::Open`. Separately, routing the type ctor through its authentic
+    typed helper dropped it from 99.3548 to 95.6452; retaining that lower state
+    and then adding the surviving authored order reached 100. This proves that
+    an authentic lower-scoring compiler state can be the necessary BASE for the
+    next independently evidenced fact. Never rank or revert such a path before
+    bounded composition merely because its first step descends;
+  * local census/shared tails, parameter reuse, and loop spelling transfer as
+    hypotheses: the same lineage closed `CRezItm::Close`,
+    `CRezArchiveEntry::Read`, and `CHashBase::Last`;
+  * preserve the element type and authored index expression even when C2
+    strength-reduces the loop to a byte induction variable. The surviving
+    `dprintf.cpp` used an `unsigned short*` text buffer and element-indexed
+    `for` loops; restoring that source closed the two final commuted-SIB walls
+    in `MonoNewline` and `MonoClear`. A byte view plus manual byte offsets can
+    match the arithmetic while hiding the source fact that selects the SIB;
+  * never import negative absence or later additions. A later cursor-range
+    guard changed Gruntz retail's CFG and was rejected; Bute's unsigned scanner
+    byte was rejected by Gruntz's already-exact `char` family. Branch-specific
+    derived locals that compile byte-flat remain structural evidence, not score
+    evidence.
+  The full controlled evidence and reverse-use procedure live in
+  `docs/patterns/surviving-source-lineage-restores-typed-layers-and-order.md`.
 - INLINE/MACRO PRIOR (user ruling 2026-08-22): the era devs DID write inline
   functions and macros, so an inline/macro spelling is a priori MORE likely to
   be the real source than a hand-expanded transcription. We may still overrule

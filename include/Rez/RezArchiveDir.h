@@ -14,9 +14,35 @@ struct CRezArchiveDirHashNode : public CHashElement {
 
     virtual u32 Hash() OVERRIDE;
 
+    void SetArchiveDirectory(CRezArchiveDir* directory) {
+        m_archiveDirectory = directory;
+    }
+
+    CRezArchiveDir* GetArchiveDirectory() {
+        return m_archiveDirectory;
+    }
+
+    CRezArchiveDirHashNode* Next() {
+        return static_cast<CRezArchiveDirHashNode*>(CHashElement::Next());
+    }
+
+    CRezArchiveDirHashNode* Prev() {
+        return static_cast<CRezArchiveDirHashNode*>(CHashElement::Prev());
+    }
+
+    CRezArchiveDirHashNode* NextInBucket() {
+        return static_cast<CRezArchiveDirHashNode*>(CHashElement::NextInBucket());
+    }
+
+    CRezArchiveDirHashNode* PrevInBucket() {
+        return static_cast<CRezArchiveDirHashNode*>(CHashElement::PrevInBucket());
+    }
+
     CRezArchiveDirHashNode() {
         m_archiveDirectory = NULL;
     }
+
+    CRezArchiveDir* m_archiveDirectory;
 };
 
 class CRezArchive;
@@ -26,10 +52,77 @@ class CRezArchiveDir;
 struct CRezArchiveTypeHashNode : public CHashElement {
 
     virtual u32 Hash() OVERRIDE;
+
+    void SetArchiveType(CRezArchiveType* type) {
+        m_archiveType = type;
+    }
+
+    CRezArchiveType* GetArchiveType() {
+        return m_archiveType;
+    }
+
+    CRezArchiveTypeHashNode* Next() {
+        return static_cast<CRezArchiveTypeHashNode*>(CHashElement::Next());
+    }
+
+    CRezArchiveTypeHashNode* Prev() {
+        return static_cast<CRezArchiveTypeHashNode*>(CHashElement::Prev());
+    }
+
+    CRezArchiveTypeHashNode* NextInBucket() {
+        return static_cast<CRezArchiveTypeHashNode*>(CHashElement::NextInBucket());
+    }
+
+    CRezArchiveTypeHashNode* PrevInBucket() {
+        return static_cast<CRezArchiveTypeHashNode*>(CHashElement::PrevInBucket());
+    }
+
     CRezArchiveTypeHashNode() {
         m_archiveType = NULL;
     }
+
+    CRezArchiveType* m_archiveType;
 };
+
+inline void CRezDirectoryNameHash::Insert(CRezArchiveDirHashNode* directory) {
+    CHashBase::Insert(directory);
+}
+
+inline void CRezDirectoryNameHash::Delete(CRezArchiveDirHashNode* directory) {
+    CHashBase::Remove(directory);
+}
+
+inline CRezArchiveDirHashNode* CRezDirectoryNameHash::First() {
+    return static_cast<CRezArchiveDirHashNode*>(CHashBase::First());
+}
+
+inline CRezArchiveDirHashNode* CRezDirectoryNameHash::Last() {
+    return static_cast<CRezArchiveDirHashNode*>(CHashBase::Last());
+}
+
+inline CRezArchiveDirHashNode* CRezDirectoryNameHash::Lookup(u32 bucketIndex) {
+    return static_cast<CRezArchiveDirHashNode*>(CHashBase::Lookup(bucketIndex));
+}
+
+inline void CRezTypeTagHash::Insert(CRezArchiveTypeHashNode* type) {
+    CHashBase::Insert(type);
+}
+
+inline void CRezTypeTagHash::Delete(CRezArchiveTypeHashNode* type) {
+    CHashBase::Remove(type);
+}
+
+inline CRezArchiveTypeHashNode* CRezTypeTagHash::First() {
+    return static_cast<CRezArchiveTypeHashNode*>(CHashBase::First());
+}
+
+inline CRezArchiveTypeHashNode* CRezTypeTagHash::Last() {
+    return static_cast<CRezArchiveTypeHashNode*>(CHashBase::Last());
+}
+
+inline CRezArchiveTypeHashNode* CRezTypeTagHash::Lookup(u32 bucketIndex) {
+    return static_cast<CRezArchiveTypeHashNode*>(CHashBase::Lookup(bucketIndex));
+}
 
 class CRezArchiveType {
 public:

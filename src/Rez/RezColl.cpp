@@ -32,16 +32,13 @@ CHashElement* CHashElement::Next() {
     return next;
 }
 
-// @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00184900, 0x43)
 CHashElement* CHashElement::Prev() {
     CHashElement* previous = CHashBase::FromLink(m_prev);
     if (previous == NULL) {
-
         if (m_bucketIndex > 0) {
-
             CHashSlot* buckets = m_hash->m_buckets;
             u32 bucketIndex = m_bucketIndex;
             do {
@@ -79,20 +76,17 @@ void CHashBase::RemoveAll() {
     delete[] m_buckets;
 }
 
-// @early-stop
 RVA(0x00184a70, 0x34)
 void CHashBase::Insert(CHashElement* node) {
     node->m_hash = this;
     u32 bucketIndex = node->Hash();
     node->m_bucketIndex = bucketIndex;
-    IntrusiveLink* link = node;
-    m_buckets[bucketIndex].m_chain.InsertHead(link);
+    m_buckets[bucketIndex].m_chain.InsertHead(node);
 }
 
 RVA(0x00184ab0, 0x25)
 void CHashBase::Remove(CHashElement* entry) {
-    IntrusiveLink* node = entry;
-    m_buckets[entry->m_bucketIndex].m_chain.Unlink(node);
+    m_buckets[entry->m_bucketIndex].m_chain.Unlink(entry);
 }
 
 RVA(0x00184ae0, 0x24)
@@ -106,29 +100,23 @@ CHashElement* CHashBase::First() {
     return first;
 }
 
-// @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00184b10, 0x29)
 CHashElement* CHashBase::Last() {
     u32 bucketIndex = m_bucketCount - 1;
-    IntrusiveLink** tail = &m_buckets[bucketIndex].m_chain.m_tail;
     CHashElement* last;
-    for (;;) {
-        last = FromLink(*tail);
-        if (bucketIndex <= 0) {
+    do {
+        last = FromLink(m_buckets[bucketIndex].m_chain.m_tail);
+        if (bucketIndex > 0) {
+            bucketIndex--;
+        } else {
             break;
         }
-        --bucketIndex;
-        tail -= 4;
-        if (last != NULL) {
-            break;
-        }
-    }
+    } while (last == NULL);
     return last;
 }
 
-// @early-stop
 RVA(0x00184b40, 0x1d)
 CHashElement* CHashBase::Lookup(u32 bucketIndex) {
     return FromLink(m_buckets[bucketIndex].m_chain.m_head);
