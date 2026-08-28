@@ -13,12 +13,12 @@ _Data: objdiff `matched_data` 558,024 of 801,013 B (69.66%) - a per-unit sum (a 
 
 _Totals are vs the whole engine = every in-`.text` reconstruction-target function; the generated/library categories tabled below are excluded from the denominator. `Fuzzy` = code-weighted partial credit; `Fuzzy Max` = the same with every function at its banked best-ever fuzzy% - a gap above `Fuzzy` is entropy churn since the last bank._
 
-_Started units alone: 3,783/4,427 fns exact, 95.65% fuzzy over 1,136,757 of 1,137,347 engine code bytes._
+_Started units alone: 3,783/4,427 fns exact, 95.66% fuzzy over 1,136,757 of 1,137,347 engine code bytes._
 
 | Module       | Units |       Functions exact |  Fuzzy | Fuzzy Max |
 | :----------- | ----: | --------------------: | -----: | --------: |
 | `Gruntz`     |   201 | 2,188 / 2,648 (82.6%) |  95.4% |     95.5% |
-| `DDrawMgr`   |    20 |     530 / 600 (88.3%) |  93.7% |     93.8% |
+| `DDrawMgr`   |    20 |     530 / 600 (88.3%) |  93.8% |     93.9% |
 | `Wwd`        |     7 |     187 / 216 (86.6%) |  97.4% |     97.4% |
 | `Dsndmgr`    |     4 |     159 / 161 (98.8%) |  99.9% |     99.9% |
 | `Rez`        |     8 |     135 / 150 (90.0%) |  97.2% |     97.2% |
