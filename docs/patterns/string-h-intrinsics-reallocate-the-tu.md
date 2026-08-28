@@ -108,9 +108,10 @@ row, not a worklist item, unless its TU is small enough to place a real declarat
 
 A mid-file include is a **state proxy**, not a claim about retail's source. The real
 retail TU almost certainly reached the same split from a different composition - the
-EXE interleaves `CButeTail::Encode`/`Decode` (0x16f6e0/0x16f760) and an
-unreconstructed ~32 B function at 0x16f690 between `Blowfish_InitKey` and
-`Blowfish_encipher`, so retail's blowfish compiland is larger than ours. Adding those
-two bodies with the headers they need did not reproduce the split, so that
-reconstruction is still open. Meanwhile the position is load-bearing: say so in a
-comment, because `include_order --fix` would silently hoist it and cost 40 points.
+EXE interleaves the now-lineage-proven `CCryptMgr::Encrypt`/`Decrypt`
+(0x16f6e0/0x16f760) and `CCryptMgr(char*)` at 0x16f690 between
+`CCryptMgr::SetKey` and `Blowfish_encipher`, so retail's blowfish compiland is larger
+than ours. Restoring that complete surviving class and its reference-based stream API
+did not reproduce the split, so that TU-state reconstruction is still open. Meanwhile
+the position is load-bearing: say so in a comment, because `include_order --fix`
+would silently hoist it and cost 40 points.

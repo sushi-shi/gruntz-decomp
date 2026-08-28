@@ -63,4 +63,4 @@ Three shapes clang's `-fdump-record-layouts` cannot show as fields, so do not
 read them as holes: a **vptr** (primary at 0, and each MI base's at its own
 offset - take those from the vtable catalog), and a member of an **empty class**
 (clang tags both the record and the member `(empty)`; `ghidra_metadata_generate`
-dropped both until 2026-08-08, which hid `CButeMgr::m_crypt` at +0x10f).
+dropped both until 2026-08-08, which hid `CButeMgr::m_cryptMgr` at +0x10f).

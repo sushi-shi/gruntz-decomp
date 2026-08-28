@@ -175,7 +175,7 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x13e010` | `?DebugTrace@@YAXPBDZZ` | debugtiming | `0x13e010` ? |
 | `0x1549d0` | `??0CResolveNode@@QAE@XZ` | cremusnode | `0x1549d0` ? |
 | `0x16ea10` | `?ButeTreeNopFree@@YAXPAX@Z` | buteglobals | `0x16ea10` ? |
-| `0x16f680` | `??0CButeTail@@QAE@XZ` | butetail | `0x16f680` ? |
+| `0x16f680` | `??0CCryptMgr@@QAE@XZ` | butetail | `0x16f680` ? |
 | `0x177480` | `?LoadBmpFile@CImagePaletteNode@@QAEHPADH@Z` | palettebmp | `0x177480` ? |
 | `0x1775f0` | `?Apply@CImagePaletteNode@@QAEHPADH@Z` | palettebmp | `0x1775f0` ? |
 | `0x177670` | `?SetReportMode@CNetMgr@@SAXHHHH@Z` | netmgrerror | `0x177670` ? |

@@ -1298,7 +1298,7 @@ bool CButeMgr::Save() {
 
     strstream source(new char[length], length, ios::in | ios::out);
     if (m_encrypted) {
-        m_crypt.Decode(&input, &source);
+        m_cryptMgr.Decrypt(input, source);
         m_pText = new iostream(new strstreambuf(length));
     } else {
         while (!input.eof()) {
@@ -1318,7 +1318,7 @@ bool CButeMgr::Save() {
 
     if (m_encrypted) {
         ofstream output(m_filename, ios::binary);
-        m_crypt.Encode(m_pText, &output);
+        m_cryptMgr.Encrypt(*m_pText, output);
     }
 
     delete[] source.str();

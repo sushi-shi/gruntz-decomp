@@ -4,11 +4,11 @@
 #include <rva.h>
 
 #include <Bute/ButeStore.h>
-#include <Bute/ButeTail.h>
 #include <Bute/ButeToken.h>
 #include <Bute/ButeTree.h>
 #include <Bute/ButeValue.h>
 #include <Bute/PTreeNode.h>
+#include <Crypto/CryptMgr.h>
 #include <Gruntz/String.h>
 #include <Rez/RezArchiveEntry.h>
 #include <Wap32/ZVec.h>
@@ -132,7 +132,7 @@ public:
     bool m_writeMode;
 
     bool m_encrypted;
-    CButeTail m_crypt;
+    CCryptMgr m_cryptMgr;
 
     ButeIntRect* GetRect(const char* tag, const char* key);
     ButeIntPoint* GetPoint(const char* tag, const char* key);
@@ -154,10 +154,10 @@ inline bool CButeMgr::Parse(CRezItm* stream, const char* key) {
     char* encoded = stream->Load();
     i32 length = stream->GetSize();
     istrstream* input = new istrstream(encoded, length);
-    m_crypt.InitKey(key);
+    m_cryptMgr.SetKey(key);
     char* decoded = new char[length];
     ostrstream* output = new ostrstream(decoded, length, 2);
-    m_crypt.Decode(input, output);
+    m_cryptMgr.Decrypt(*input, *output);
     m_stream = new istrstream(decoded, output->pcount());
     delete input;
     delete output;

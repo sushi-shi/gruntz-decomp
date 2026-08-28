@@ -600,10 +600,10 @@ bitarraystream	??5@YAAAVistream@@AAV0@AAVzBitVec@@@Z	100.0000	100.0000	1	1e09c4b
 bitarraystream	??6@YAAAVostream@@AAV0@ABVzBitVec@@@Z	100.0000	100.0000	5	2876109cbf16	0x193080	100.0000	
 blowfish	?Blowfish_decipher@@YAXPAI0@Z	100.0000	100.0000	1	6e574434e8a9	0x16fc70	100.0000	
 blowfish	?Blowfish_encipher@@YAXPAI0@Z	100.0000	60.3505	1	d92c7ec3c73c	0x16f7f0	100.0000	
-blowfish	?Decode@CButeTail@@QAEXPAVistream@@PAVostream@@@Z	100.0000	100.0000	1	0577f9920ce3	0x16f760	100.0000	
-blowfish	?Encode@CButeTail@@QAEXPAVistream@@PAVostream@@@Z	100.0000	100.0000	1	c45152cad3b8	0x16f6e0	100.0000	
-blowfish	?InitKey@CButeTail@@QAEXPBD@Z	100.0000	100.0000	1	1b2af7d8098b	0x16f6c0	100.0000	
+blowfish	?Decrypt@CCryptMgr@@QAEXAAVistream@@AAVostream@@@Z	100.0000	100.0000	2	4dfc4bb2b9f4	0x16f760	100.0000	
+blowfish	?Encrypt@CCryptMgr@@QAEXAAVistream@@AAVostream@@@Z	100.0000	100.0000	2	7e2fac674830	0x16f6e0	100.0000	
 blowfish	?InitializeBlowfish@@YAFPBDF@Z	100.0000	100.0000	3	a7d893952787	0x170100	100.0000	
+blowfish	?SetKey@CCryptMgr@@QAEXPBD@Z	100.0000	100.0000	2	daf6eecd4ee2	0x16f6c0	100.0000	
 bootystateactivate	??1CBootyState@@UAE@XZ	100.0000	100.0000	1	7390c8dc8b7b	0x8d440	100.0000	
 bootystateactivate	??1CButeMgr@@QAE@XZ	100.0000	100.0000	1	cpp:e2ca049ea8bf	0x213c0	100.0000	
 bootystateactivate	??1CMultiBootyState@@UAE@XZ	100.0000	100.0000	1	23ab1228bab4	0x8d510	100.0000	
@@ -722,7 +722,7 @@ butemgr	?ParseGroup@CButeMgr@@QAE_NXZ	100.0000	100.0000	4	0bca5e2463e8	0x171580	
 butemgr	?ParseTagLine@CButeMgr@@QAE_NXZ	100.0000	100.0000	2	36533e3dbeb7	0x1711b0	100.0000	
 butemgr	?ReportError@CButeMgr@@QAAXPBDZZ	100.0000	100.0000	1	9e4b72ca60f9	0x1706c0	100.0000	
 butemgr	?Reset@CButeMgr@@QAEXXZ	100.0000	100.0000	4	9ef57540f1e9	0x170330	100.0000	
-butemgr	?Save@CButeMgr@@QAE_NXZ	93.3913	93.3913	8	acf244d1b607	0x171640	93.3913	
+butemgr	?Save@CButeMgr@@QAE_NXZ	93.3913	93.3913	9	7a70d4a01b37	0x171640	93.3913	
 butemgr	?ScanToken@CButeMgr@@QAE_NW4ButeToken@@@Z	100.0000	100.0000	1	f8dd61db5b85	0x170710	100.0000	
 butemgr	?SetDouble@CButeMgr@@QAEXPBD0N@Z	100.0000	100.0000	3	8a7a95ac3f99	0x172ce0	100.0000	
 butemgr	?SetDword@CButeMgr@@QAEXPBD0K@Z	100.0000	100.0000	3	ceeb58ae2b7e	0x1722c0	100.0000	
@@ -737,9 +737,9 @@ butemgr	?SetVector@CButeMgr@@QAEXPBD0PAUButeDoubleVector@@@Z	100.0000	100.0000	3
 butemgr	?SkipToTag@CButeMgr@@QAE_NXZ	100.0000	100.0000	3	f2faaeaf9625	0x171160	100.0000	
 butemgr	?Term@CButeMgr@@QAEXXZ	100.0000	100.0000	1	d077592af88f	0x170370	100.0000	
 butemgr	?flush@@YAAAVostream@@AAV1@@Z	100.0000	100.0000	1	cpp:4a31d4474beb	0x171570	100.0000	
-butetail	??0CButeTail@@QAE@PBD@Z	100.0000	100.0000	1	1e62b78abd70	0x16f690	100.0000	
-butetail	??0CButeTail@@QAE@XZ	100.0000	100.0000	2	1e62b78abd70	0x16f680	100.0000	
-butetail	??1CButeTail@@QAE@XZ	100.0000	100.0000	1	922cde9b6054	0x16f6b0	100.0000	
+butetail	??0CCryptMgr@@QAE@PAD@Z	100.0000	100.0000	2	fcd2d6820822	0x16f690	100.0000	
+butetail	??0CCryptMgr@@QAE@XZ	100.0000	100.0000	3	fcd2d6820822	0x16f680	100.0000	
+butetail	??1CCryptMgr@@QAE@XZ	100.0000	100.0000	2	37285e219e5e	0x16f6b0	100.0000	
 butetree	?FindOrInsert@zPTree@@QAEPAXPBDPAX@Z	78.7362	78.7362	7	4392fca0628a	0x1933b0	78.7362	
 butetree	?Walk@zPTree@@QAEXP6AXPADPAX1@Z1PAUCButeTreeNode@@@Z	100.0000	100.0000	4	fe2698479698	0x193340	100.0000	
 bzkinddispatch	?Dispatch@CLatencyList@@QAEHH@Z	100.0000	100.0000	14	1118f113cce6	0x37910	100.0000	

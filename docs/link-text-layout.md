@@ -163,8 +163,8 @@ is homed in the wrong unit). **4 fixed in this change:**
 
 * `TitleAppStart` held two `CSplashState` methods sitting exactly in
   `SplashState.cpp`'s hole → merged into SplashState.cpp, unit deleted (1 pair).
-* `ButeTailEncode`/`BitStreamBlowfish` held `CButeTail::Encode`/`Decode` at
-  0x16f6e0/0x16f760, bracketed by `Blowfish.cpp`'s own functions (InitKey
+* `ButeTailEncode`/`BitStreamBlowfish` held `CCryptMgr::Encrypt`/`Decrypt` at
+  0x16f6e0/0x16f760, bracketed by `Blowfish.cpp`'s own functions (`SetKey`
   0x16f6c0, encipher 0x16f7f0) → one crypto TU; merged, units deleted (2 pairs).
 * `StatusBarUpdaters` held `CTileTriggerSwitchLogic::SwitchDown`/`SwitchUp`
   inside `TileTriggerSwitchLogic.cpp`'s own class and span → merged, unit

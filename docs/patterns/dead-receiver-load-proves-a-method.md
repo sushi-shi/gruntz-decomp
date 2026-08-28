@@ -50,28 +50,30 @@ Confirming evidence is one-sided xrefs — `sema xref` gave each helper exactly 
 ## Third tell: the EH band finds it when neither call site is being read
 
 `CChatBoxOwner::HandleTextInputKey` @0x205c0 carried one unwind funclet retail has not
-got — `??1CButeTail@@QAE@XZ` — which shifted every later state by one and made the whole
-chain read as a wrong-TYPE divergence in `eh_band --census`. The extra state came from a
-fabricated `CButeTail cryptTail;` local, and chasing the class through `sema xref` put
-the object where it belongs and handed over the receiver-load tell for free:
+got — the destructor now known from surviving source as `??1CCryptMgr@@QAE@XZ` — which
+shifted every later state by one and made the whole chain read as a wrong-TYPE
+divergence in `eh_band --census`. The extra state came from a fabricated local of that
+empty type, and chasing the class through `sema xref` put the object where it belongs
+and handed over the receiver-load tell for free:
 
 ```
-$ gruntz sema xref 0x0016f680          # ??0CButeTail
+$ gruntz sema xref 0x0016f680          # ??0CCryptMgr
   <- call 0x00170210 ??0CButeMgr@@QAE@XZ        # `lea ecx,[esi+0x10f]` at 0x17029d
-$ gruntz sema xref 0x0016f6b0          # ??1CButeTail
+$ gruntz sema xref 0x0016f6b0          # ??1CCryptMgr
   <- call 0x000213c0 ??1CButeMgr@@QAE@XZ
   <- call 0x000205c0 ?HandleTextInputKey@...     # `lea ecx,[esp+0x14b]`, the SAME slot
 ```
 
 A type constructed only by another class's constructor and destroyed only by its
-destructor is a MEMBER of it — `CButeMgr::m_crypt` at +0x10f — so the caller uses
-`bute.m_crypt`, not a second object. And the two remaining `CButeTail` entry points read
-the same way: retail loads `ecx` before both of them, `lea ecx,[esp+0x14b]` here and
-`mov ecx,0x6454e7` (`g_buteMgr` + 0x10f) in `CGruntzMgr::Run` @0x83450, so the
-`__stdcall` free function `Blowfish_InitKey` @0x16f6c0 was really
-`CButeTail::InitKey(const char*)`. Its 18-byte body is identical either way because
-`this` is unused — exactly the blind spot at the top of this file. 81.92 -> 83.66, and
-the funclet chain became type-correct at all 26 indices.
+destructor is a MEMBER of it — `CButeMgr::m_cryptMgr` at +0x10f — so the caller uses
+`bute.m_cryptMgr`, not a second object. And the two remaining entry points read the same
+way: retail loads `ecx` before both of them, `lea ecx,[esp+0x14b]` here and
+`mov ecx,0x6454e7` (`g_buteMgr` + 0x10f) in `CGruntzMgr::Run` @0x83450. That proved the
+0x16f6c0 body was a method even before the surviving LithTech source supplied its
+authentic identity, `CCryptMgr::SetKey(const char*)`. Its 18-byte body is identical to
+the earlier free-function model because `this` is unused — exactly the blind spot at
+the top of this file. 81.92 -> 83.66, and the funclet chain became type-correct at all
+26 indices.
 
 **So the EH band is a third route into this pattern**: when a funclet names a type that
 should not be in that frame, `sema xref` on the type's ctor/dtor usually resolves BOTH

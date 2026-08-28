@@ -2,8 +2,8 @@
 
 #include <Crypto/Blowfish.h>
 
-#include <Bute/ButeTail.h>
 #include <Crypto/BlowfishPi.h>
+#include <Crypto/CryptMgr.h>
 #include <Ints.h>
 
 #include <iostream.h>
@@ -26,39 +26,39 @@ u32 g_bfInitS[4][256] = BF_PI_S_INIT;
       + g_bfS[3][(R) & 0xff]))
 
 RVA(0x0016f6c0, 0x12)
-void CButeTail::InitKey(const char* key) {
+void CCryptMgr::SetKey(const char* key) {
     InitializeBlowfish(key, 4);
 }
 
 RVA(0x0016f6e0, 0x76)
-void CButeTail::Encode(istream* src, ostream* dst) {
+void CCryptMgr::Encrypt(istream& src, ostream& dst) {
     i32 last = 0;
-    while (!src->eof()) {
+    while (!src.eof()) {
         BlowfishBlock rec;
 
         memset(rec.m_bytes, 0, 8);
-        src->read(rec.m_bytes, 8);
-        last = src->gcount();
+        src.read(rec.m_bytes, 8);
+        last = src.gcount();
         Blowfish_encipher(&rec.m_w[0], &rec.m_w[1]);
-        dst->write(rec.m_bytes, 8);
+        dst.write(rec.m_bytes, 8);
     }
-    dst->put(static_cast<unsigned char>(last));
+    dst.put(static_cast<unsigned char>(last));
 }
 
 RVA(0x0016f760, 0x82)
-void CButeTail::Decode(istream* in, ostream* out) {
+void CCryptMgr::Decrypt(istream& in, ostream& out) {
 
     BlowfishBlock blk[2];
     bool first = true;
-    while (!in->eof()) {
-        in->read(blk[0].m_bytes, 8);
-        int sample = in->gcount();
+    while (!in.eof()) {
+        in.read(blk[0].m_bytes, 8);
+        int sample = in.gcount();
         if (sample == 1) {
 
             sample = blk[0].m_lenByte;
         }
         if (!first) {
-            out->write(blk[1].m_bytes, sample);
+            out.write(blk[1].m_bytes, sample);
         } else {
             first = false;
         }
