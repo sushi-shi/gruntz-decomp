@@ -207,7 +207,7 @@ frozen in the tu-order ratchet baseline):
   body's shape elsewhere (multi-emission ⇒ inline), or a seam/dossier cut.
 
 The 7 TUs with intra-order violations (GruntzMgr 22, GameLevel 10,
-RegistryHelper 2, AdvancedOptions, ButeNode, ScatterSamples, ToobSpikez) are the
+CRegMgr 2, AdvancedOptions, ButeNode, ScatterSamples, ToobSpikez) are the
 same phenomenon seen from inside: merged files whose parts retail interleaved
 with other objs, or genuinely misordered pins. They stay frozen in the ratchet.
 

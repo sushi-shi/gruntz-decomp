@@ -9,18 +9,9 @@
 #include <Ints.h>
 
 class CGruntzMgr;
-namespace Utils {
-    class RegistryHelper;
-}
+class CRegMgr;
 
 i32 RestoreGameFromFile(CGruntzMgr* mgr, char* path);
-void SaveFrontBufferShot(
-    Utils::RegistryHelper* bute,
-    CGruntzMgr* mgr,
-    i32 w,
-    i32 h,
-    char* name,
-    i32 saveFlag
-);
+void SaveFrontBufferShot(CRegMgr* reg, CGruntzMgr* mgr, i32 w, i32 h, char* name, i32 saveFlag);
 
 #endif // GRUNTZ_GRUNTZMGRCMD_H

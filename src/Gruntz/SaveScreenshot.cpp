@@ -8,12 +8,12 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Utils/RegistryHelper.h>
+#include <Utils/RegMgr.h>
 
 RVA(0x00114ff0, 0x1b3)
 i32 SaveScreenshot(
     CDDSurface* src,
-    Utils::RegistryHelper* bute,
+    CRegMgr* reg,
     CGruntzMgr* owner,
     i32 width,
     i32 height,
@@ -27,7 +27,7 @@ i32 SaveScreenshot(
     if (src == NULL) {
         return 0;
     }
-    if (bute == NULL) {
+    if (reg == NULL) {
         return 0;
     }
     if (owner == NULL) {
@@ -37,8 +37,8 @@ i32 SaveScreenshot(
         return 0;
     }
     if (name == NULL) {
-        i32 screenshotCount = bute->GetValueDword("Screen Dump Count", 0) + 1;
-        bute->SetValueDword("Screen Dump Count", screenshotCount);
+        i32 screenshotCount = reg->Get("Screen Dump Count", 0) + 1;
+        reg->Set("Screen Dump Count", screenshotCount);
         wsprintfA(nameBuf, "Gruntz%04i.BMP", screenshotCount);
         name = nameBuf;
     }

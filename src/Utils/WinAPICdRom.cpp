@@ -4,7 +4,7 @@
 
 #include <Mfc.h>
 
-#include <Utils/RegistryHelper.h>
+#include <Utils/RegMgr.h>
 
 #include <stdio.h>
 
@@ -38,15 +38,14 @@ char CheckCdRomRegistry() {
     char value[32];
     char drivePath[32];
     char cwdPath[256];
-    Utils::RegistryHelper reg;
+    CRegMgr reg;
     char letter;
     i32 i;
 
-    if (reg.Open("Monolith Productions", "Gruntz", "1.0", NULL, HKEY_LOCAL_MACHINE, NULL)) {
+    if (reg.Init("Monolith Productions", "Gruntz", "1.0", NULL, HKEY_LOCAL_MACHINE, NULL)) {
         valueSize = 0x1e;
         value[0] = 0;
-        if (reg.GetValueString("CdRom Drive", value, &valueSize, NULL)
-            && static_cast<i8>(value[0]) > 0x14) {
+        if (reg.Get("CdRom Drive", value, valueSize, NULL) && static_cast<i8>(value[0]) > 0x14) {
             letter = value[0];
             sprintf(drivePath, "%c:\\", letter);
             if (GetDriveTypeA(drivePath) == DRIVE_CDROM) {
@@ -81,14 +80,14 @@ char GetGruntzDriveLetter() {
         char value[32];
         char drivePath[32];
         char exePath[256];
-        Utils::RegistryHelper reg;
+        CRegMgr reg;
         char drivePathScan[256];
         char letter;
 
-        if (reg.Open("Monolith Productions", "Gruntz", "1.0", NULL, HKEY_LOCAL_MACHINE, NULL)) {
+        if (reg.Init("Monolith Productions", "Gruntz", "1.0", NULL, HKEY_LOCAL_MACHINE, NULL)) {
             valueSize = 0x1e;
             value[0] = 0;
-            if (reg.GetValueString("CdRom Drive", value, &valueSize, NULL)
+            if (reg.Get("CdRom Drive", value, valueSize, NULL)
                 && static_cast<i8>(value[0]) > 0x14) {
                 char regLetter = value[0];
                 sprintf(drivePath, "%c:\\", regLetter);
@@ -120,4 +119,4 @@ char GetGruntzDriveLetter() {
     return g_cdDriveLetter;
 }
 
-RVA_COMPGEN(0x000201f0, 0x5, ??1RegistryHelper@Utils@@QAE@XZ)
+RVA_COMPGEN(0x000201f0, 0x5, ??1CRegMgr@@QAE@XZ)

@@ -63,8 +63,8 @@ common base and the destructor on the typed wrapper. Splitting the type and
 pinning the three dtors took all four `directsoundmgr` groups to
 `unwind-identical`.
 
-Same shape, same wave: `??1RegistryHelper@Utils@@QAE@XZ` at 0x201f0 (an
-`e9` to `?Close@RegistryHelper@Utils@@QAEXXZ`, 3 groups),
+Same shape, same wave: `??1CRegMgr@@QAE@XZ` at 0x201f0 (an
+`e9` to `?Term@CRegMgr@@QAEXXZ`, 3 groups),
 `??1CMotionState@@QAE@XZ` at 0x58ba0 (`c3`, 2 groups) and
 `??1PlayerLatency@@QAE@XZ` at 0x832e0 (`c3`, 2 groups) were all merely unpinned;
 one `RVA_COMPGEN` line each closed them. Still open under this rule:

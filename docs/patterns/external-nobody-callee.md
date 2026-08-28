@@ -22,6 +22,6 @@ member is a vtable-ptr emits `mov edx,[ecx]; call [edx+slot]` for COM-style disp
 
 STEERABLE. Evidence: CFileImage decoders / CImage 5 siblings (external no-body, reloc-masked);
 WwdFile stream ctor/dtor/Open/Read; CNetMgr `MultiDispatch __stdcall` (no `add esp,0xc`) + its 3
-`extern "C"` callbacks; CNetMgr reuses already-matched RegistryHelper::SetValueDword cross-TU;
+`extern "C"` callbacks; CNetMgr reuses the already-matched `CRegMgr::Set(DWORD)` cross-TU;
 RezMgr::Load collection iterators as __thiscall (cdecl gave wrong `push;call;add esp,4`).
 related: dummy-virtual-slots.md, ret-n-calling-convention.md, thiscall-ignoring-this.md.

@@ -65,7 +65,7 @@
 #include <Rez/RezSync.h>
 #include <Utils/DebugTiming.h>
 #include <Utils/MapTyped.h>
-#include <Utils/RegistryHelper.h>
+#include <Utils/RegMgr.h>
 #include <Wap32/EngStr.h>
 #include <Wwd/WwdFile.h>
 
@@ -912,17 +912,17 @@ CNetProviderNode* CMulti::SelectNetworkProvider() {
 
     if (g_hostServicesMode != false) {
         if (RunErrorDialog("MULTI_HOSTSERVICES", NetSetupDlgProc, 0) != 0) {
-            Utils::RegistryHelper* store = NetGameMgr()->m_settings;
+            CRegMgr* store = NetGameMgr()->m_settings;
             if (store != NULL && g_serviceId != NET_SERVICE_NONE) {
-                store->SetValueDword("Service", g_serviceId);
+                store->Set("Service", g_serviceId);
                 {
-                    store->SetValueString(
+                    store->Set(
                         "Player Name",
                         const_cast<char*>(static_cast<const char*>(PlayerName()))
                     );
                 }
                 {
-                    store->SetValueString(
+                    store->Set(
                         "Game Name",
                         const_cast<char*>(static_cast<const char*>(GameName()))
                     );
@@ -931,12 +931,12 @@ CNetProviderNode* CMulti::SelectNetworkProvider() {
         }
     } else {
         if (RunErrorDialog("MULTI_JOINSERVICES", NetSetupDlgProc, 0) != 0) {
-            Utils::RegistryHelper* store = NetGameMgr()->m_settings;
+            CRegMgr* store = NetGameMgr()->m_settings;
             if (store != NULL) {
                 if (g_serviceId != NET_SERVICE_NONE) {
-                    store->SetValueDword("Service", g_serviceId);
+                    store->Set("Service", g_serviceId);
                 }
-                store->SetValueString(
+                store->Set(
                     "Player Name",
                     const_cast<char*>(static_cast<const char*>(PlayerName()))
                 );
@@ -973,19 +973,9 @@ BOOL CALLBACK NetSetupDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
             }
 
             DWORD cap = 0xa;
-            g_gameReg->m_settings->GetValueString(
-                const_cast<char*>(static_cast<const char*>(("Player Name"))),
-                nameBuf,
-                &cap,
-                "Player"
-            );
+            g_gameReg->m_settings->Get("Player Name", nameBuf, cap, "Player");
             cap = 0x40;
-            g_gameReg->m_settings->GetValueString(
-                const_cast<char*>(static_cast<const char*>(("Game Name"))),
-                gameBuf,
-                &cap,
-                "Multiplayer Gruntz"
-            );
+            g_gameReg->m_settings->Get("Game Name", gameBuf, cap, "Multiplayer Gruntz");
 
             HWND edName = GetDlgItem(hDlg, 0x51b);
             SendMessageA(edName, EM_LIMITTEXT, 9, 0);
@@ -1193,12 +1183,12 @@ i32 CMulti::DetectConnectionConfig() {
         m_resendInterval = 0xa;
     }
 
-    Utils::RegistryHelper* cfg = NetGameMgr()->m_settings;
+    CRegMgr* cfg = NetGameMgr()->m_settings;
     CString kDelay = m_providerConfigPrefix + "_CmdDelay";
     CString kResend = m_providerConfigPrefix + "_Resend";
     CString kDyn = m_providerConfigPrefix + "_DynCmdDelay";
-    i32 cd = cfg->GetValueDword(const_cast<char*>(static_cast<const char*>((kDelay))), -1);
-    i32 rs = cfg->GetValueDword(const_cast<char*>(static_cast<const char*>((kResend))), -1);
+    i32 cd = cfg->Get(kDelay, -1);
+    i32 rs = cfg->Get(kResend, -1);
     if (cd != -1 && rs != -1) {
         m_commandDelay = cd;
         m_resendInterval = rs;
@@ -1219,14 +1209,14 @@ i32 CMulti::DetectConnectionConfig() {
 
 RVA(0x000b85a0, 0xd2)
 void CMulti::ApplyCmdDelayDefaults() {
-    Utils::RegistryHelper* reg = g_gameReg->m_settings;
+    CRegMgr* reg = g_gameReg->m_settings;
 
     CString cmdDelayName = m_providerConfigPrefix + "_CmdDelay";
     CString resendName = m_providerConfigPrefix + "_Resend";
     CString dynCmdName = m_providerConfigPrefix + "_DynCmdDelay";
 
-    reg->SetValueDword(const_cast<char*>(static_cast<const char*>(cmdDelayName)), m_commandDelay);
-    reg->SetValueDword(const_cast<char*>(static_cast<const char*>(resendName)), m_resendInterval);
+    reg->Set(cmdDelayName, m_commandDelay);
+    reg->Set(resendName, m_resendInterval);
 }
 
 RVA(0x000b86c0, 0x206)
@@ -3000,12 +2990,12 @@ i32 CMulti::SetupTcpIpConfig() {
     m_commandDelay = 5;
     m_resendInterval = 0x3c;
 
-    Utils::RegistryHelper* cfg = NetGameMgr()->m_settings;
+    CRegMgr* cfg = NetGameMgr()->m_settings;
     CString kDelay = m_providerConfigPrefix + "_CmdDelay";
     CString kResend = m_providerConfigPrefix + "_Resend";
     CString kDyn = m_providerConfigPrefix + "_DynCmdDelay";
-    i32 cd = cfg->GetValueDword(const_cast<char*>(static_cast<const char*>((kDelay))), -1);
-    i32 rs = cfg->GetValueDword(const_cast<char*>(static_cast<const char*>((kResend))), -1);
+    i32 cd = cfg->Get(kDelay, -1);
+    i32 rs = cfg->Get(kResend, -1);
     if (cd != -1 && rs != -1) {
         m_commandDelay = cd;
         m_resendInterval = rs;

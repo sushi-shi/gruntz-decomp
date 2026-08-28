@@ -5,14 +5,12 @@
 #include <Ints.h>
 
 class CDDSurface;
-namespace Utils {
-    class RegistryHelper;
-}
+class CRegMgr;
 class CGruntzMgr;
 
 i32 SaveScreenshot(
     CDDSurface* src,
-    Utils::RegistryHelper* bute,
+    CRegMgr* reg,
     CGruntzMgr* owner,
     i32 width,
     i32 height,

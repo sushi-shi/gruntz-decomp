@@ -14,7 +14,7 @@ exact" claim in the 2026-07 note below):** DIR32 data-reloc **NAMES do NOT gate 
 the current objdiff config — naming a global (`DATA()`), a pooled `??_C@` string (`coff_oracle`),
 OR a `??_7` vtable (`data_vtables.tsv`) flips **NOTHING**. Three independent proofs:
 1. **1684** DIR32 name-mismatches sit inside functions already scored **100.0% exact** — including
-   **7 pooled `??_C@` string literals** (`RegistryHelper::Open` is 100% with base `??_C@_08LOIE@Software`
+   **7 pooled `??_C@` string literals** (`CRegMgr::Init` is 100% with base `??_C@_08LOIE@Software`
    vs target `s_ware_0061a068`; `CWorldState::BuildWorldLevelPath` 100% with `??_C@…BATTLEZ` vs
    `s_BATTLEZ__006130b0`) and **205 in-TU-emitted `??_7` vtables** (`CGameWnd::CGameWnd` is 100% with
    base `??_7CGameWnd@@6B@` vs target `?g_vtbl_5ea344@@3PAXA`). If any of these names gated exactness,

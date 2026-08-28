@@ -7,9 +7,7 @@
 #include <Ints.h>
 
 class CDDrawChildGroup;
-namespace Utils {
-    class RegistryHelper;
-}
+class CRegMgr;
 class CVoiceManager;
 
 class CState;

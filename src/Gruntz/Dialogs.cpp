@@ -19,7 +19,7 @@
 #include <Rez/RezArchive.h>
 #include <Rez/RezArchiveDir.h>
 #include <Rez/RezArchiveEntry.h>
-#include <Utils/RegistryHelper.h>
+#include <Utils/RegMgr.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -107,7 +107,7 @@ RVA_COMPGEN(0x00014c90, 0x47, ??1CBattlezDlg@@UAE@XZ)
 // @early-stop
 RVA(0x00014d00, 0xa68)
 void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
-    Utils::RegistryHelper* reg = g_gameReg->m_settings;
+    CRegMgr* reg = g_gameReg->m_settings;
     char key[0x100];
     i32 i;
 
@@ -115,11 +115,11 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
         i32 defaultMax = g_buteMgr.GetDwordDef("Battlez", "DefaultMaxGruntz", 8);
         for (i = 0; i < 4; i++) {
             sprintf(key, "LastMaxGruntz%d", i);
-            g_battlezLastMaxGruntz[i] = reg->GetValueDword(key, defaultMax);
+            g_battlezLastMaxGruntz[i] = reg->Get(key, defaultMax);
             sprintf(key, "LastDiff%d", i);
-            g_battlezLastDifficulties[i] = reg->GetValueDword(key, 1);
+            g_battlezLastDifficulties[i] = reg->Get(key, 1);
             sprintf(key, "LastColour%d", i);
-            g_battlezLastColors[i] = reg->GetValueDword(key, IDX(g_gameReg->m_players[i].m_color));
+            g_battlezLastColors[i] = reg->Get(key, IDX(g_gameReg->m_players[i].m_color));
             g_gameReg->m_players[i].m_color = static_cast<ColorTint>(g_battlezLastColors[i]);
         }
 
@@ -267,13 +267,12 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             GetDlgItem(IDOK)->EnableWindow(false);
         }
 
-        CustomMapSelection customMap = static_cast<CustomMapSelection>(
-            reg->GetValueDword("CustomMap", IDX(CUSTOM_MAP_UNINITIALIZED))
-        );
+        CustomMapSelection customMap =
+            static_cast<CustomMapSelection>(reg->Get("CustomMap", IDX(CUSTOM_MAP_UNINITIALIZED)));
         if (customMap != CUSTOM_MAP_UNINITIALIZED) {
             char mapName[0x100];
             DWORD size = sizeof(mapName);
-            reg->GetValueString("LastMap", mapName, &size, "");
+            reg->Get("LastMap", mapName, size, "");
             m_customNameFlag = IDX(customMap);
             if (customMap != CUSTOM_MAP_STANDARD) {
                 sprintf(key, "custom\\%s", mapName);
@@ -322,8 +321,8 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
             return;
         }
         comboChild->GetWindowTextA(m_worldName);
-        reg->SetValueString("LastMap", m_worldName);
-        reg->SetValueDword("CustomMap", m_customNameFlag);
+        reg->Set("LastMap", m_worldName);
+        reg->Set("CustomMap", m_customNameFlag);
 
         for (i = 0; i < 4; i++) {
             CWnd* edit = GetPlayerNameControl(i);
@@ -351,15 +350,15 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
         g_buteMgr.GetDwordDef("Battlez", "DefaultMaxGruntz", 8);
         for (i = 0; i < 4; i++) {
             sprintf(key, "LastMaxGruntz%d", i);
-            reg->SetValueDword(key, GetMaxGruntzSelection(i));
+            reg->Set(key, GetMaxGruntzSelection(i));
             sprintf(key, "LastDiff%d", i);
             if (m_gameManager->m_players[i].m_active != false) {
-                reg->SetValueDword(key, IDX(m_gameManager->m_players[i].m_difficulty));
+                reg->Set(key, IDX(m_gameManager->m_players[i].m_difficulty));
             } else {
-                reg->SetValueDword(key, -1);
+                reg->Set(key, -1);
             }
             sprintf(key, "LastColour%d", i);
-            reg->SetValueDword(key, IDX(g_gameReg->m_players[i].m_color));
+            reg->Set(key, IDX(g_gameReg->m_players[i].m_color));
         }
         NetLobby::g_curDlg = NULL;
     }

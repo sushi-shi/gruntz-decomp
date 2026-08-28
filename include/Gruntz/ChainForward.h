@@ -5,12 +5,10 @@
 #include <Ints.h>
 
 class CGruntzMgr;
-namespace Utils {
-    class RegistryHelper;
-}
+class CRegMgr;
 
 i32 SaveBackBufferShot(
-    Utils::RegistryHelper* bute,
+    CRegMgr* reg,
     CGruntzMgr* owner,
     i32 width,
     i32 height,
@@ -18,7 +16,7 @@ i32 SaveBackBufferShot(
     i32 saveFlag
 );
 i32 SaveOverlayBufferShot(
-    Utils::RegistryHelper* bute,
+    CRegMgr* reg,
     CGruntzMgr* owner,
     i32 width,
     i32 height,

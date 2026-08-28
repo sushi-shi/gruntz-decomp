@@ -21,7 +21,7 @@
 #include <Io/GameSave.h>
 #include <Io/SaveGame.h>
 #include <MsgParam.h>
-#include <Utils/RegistryHelper.h>
+#include <Utils/RegMgr.h>
 #include <Wap32/ScreenGeometry.h>
 
 #include <stdio.h>

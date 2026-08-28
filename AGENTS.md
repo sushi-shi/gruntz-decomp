@@ -266,6 +266,19 @@
     declarations rotated four current rows and improved another while preserving
     every MAX; that is expected C1 movement from a correct class layer. With this
     closure every `imagepool` function has banked MAX 100.
+  * complete API-and-layout agreement can promote an inferred utility class even
+    when every owner function is already exact. `libs/RegMgr` proves that the
+    0x21c-byte `Utils::RegistryHelper` model is the global `CRegMgr`: its eleven
+    retail bodies map one-for-one to `Init`, `Term`, `SetSubKey`, the three `Set`
+    overloads, the three `Get` overloads, `Delete`, and `CreateKey`, with the same
+    seven handles and two 256-byte names. Restoring that class, overload family,
+    const inputs, reference-sized buffer arguments, field identities, and
+    `RegMgr.cpp` owner keeps all 11 functions exact. Translate the surviving
+    `UINT32&` through the pinned compiler ABI (`DWORD&` here, not this tree's
+    unsigned-int `u32&`). Keep retail-proven revision differences: Gruntz passes
+    `KEY_ALL_ACCESS`, not the later source's `KEY_READ | KEY_WRITE`, and has no
+    evidence for the later three key-deletion helpers. Exact bytes do not prove
+    inferred semantic names, while a complete repeated source family can.
   * exhaust a lineage-shaped branch as a bounded composition, not a spelling
     vote. For `CButeMgr::SetString`, one through five assignment-in-condition
     restorations were byte-flat, the sixth crossed to a lower C1 island, and

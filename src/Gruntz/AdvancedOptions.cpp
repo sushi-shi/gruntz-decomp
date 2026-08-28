@@ -7,7 +7,7 @@
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/StartUpPrompt.h>
 #include <MsgParam.h>
-#include <Utils/RegistryHelper.h>
+#include <Utils/RegMgr.h>
 
 typedef enum AdvancedOptionsDlgId {
     IDC_DISABLE_VIDEO = 0x46c,
@@ -23,15 +23,15 @@ RVA_DYNINIT(0x0000af50, 0xb, g_registryHelper)
 RVA_DYNINIT(0x0000af70, 0xe, g_registryHelper)
 RVA_DYNINIT(0x0000af90, 0xa, g_registryHelper)
 DATA(0x002295d8)
-static Utils::RegistryHelper g_registryHelper;
+static CRegMgr g_registryHelper;
 
 RVA(0x0000afb0, 0x108)
 BOOL CALLBACK AdvancedOptionsDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
     switch (message) {
         case WM_INITDIALOG:
-            g_registryHelper.Close();
+            g_registryHelper.Term();
             g_registryHelper
-                .Open("Monolith Productions", "Gruntz", "1.0", NULL, HKEY_LOCAL_MACHINE, NULL);
+                .Init("Monolith Productions", "Gruntz", "1.0", NULL, HKEY_LOCAL_MACHINE, NULL);
             LoadOptions(hWnd, &g_registryHelper);
 
             {
@@ -70,14 +70,9 @@ BOOL CALLBACK AdvancedOptionsDialogProc(HWND hWnd, UINT message, WPARAM wParam, 
 }
 
 RVA(0x0000b110, 0x32)
-void SaveOption(
-    HWND hWnd,
-    Utils::RegistryHelper* pRegistryHelper,
-    char* szValueName,
-    DWORD controlId
-) {
-    if (hWnd && szValueName && pRegistryHelper) {
-        pRegistryHelper->SetValueDword(szValueName, IsDlgButtonChecked(hWnd, controlId));
+void SaveOption(HWND hWnd, CRegMgr* reg, char* szValueName, DWORD controlId) {
+    if (hWnd && szValueName && reg) {
+        reg->Set(szValueName, IsDlgButtonChecked(hWnd, controlId));
     }
 }
 
@@ -90,31 +85,23 @@ void SetDefaults(HWND hWnd) {
 }
 
 RVA(0x0000b1b0, 0x90)
-void LoadOptions(HWND hWnd, Utils::RegistryHelper* pRegistryHelper) {
-    if (pRegistryHelper) {
-        CheckDlgButton(
-            hWnd,
-            IDC_DISABLE_VIDEO,
-            pRegistryHelper->GetValueDword("Disable Direct Video Access", 0)
-        );
-        CheckDlgButton(hWnd, IDC_DISABLE_AUDIO, pRegistryHelper->GetValueDword("Disable Audio", 0));
-        CheckDlgButton(hWnd, IDC_DISABLE_SOUND, pRegistryHelper->GetValueDword("Disable Sound", 0));
-        CheckDlgButton(hWnd, IDC_DISABLE_MUSIC, pRegistryHelper->GetValueDword("Disable Music", 0));
-        CheckDlgButton(
-            hWnd,
-            IDC_DISABLE_MOVIE,
-            pRegistryHelper->GetValueDword("Disable High Quality Movie", 0)
-        );
+void LoadOptions(HWND hWnd, CRegMgr* reg) {
+    if (reg) {
+        CheckDlgButton(hWnd, IDC_DISABLE_VIDEO, reg->Get("Disable Direct Video Access", 0));
+        CheckDlgButton(hWnd, IDC_DISABLE_AUDIO, reg->Get("Disable Audio", 0));
+        CheckDlgButton(hWnd, IDC_DISABLE_SOUND, reg->Get("Disable Sound", 0));
+        CheckDlgButton(hWnd, IDC_DISABLE_MUSIC, reg->Get("Disable Music", 0));
+        CheckDlgButton(hWnd, IDC_DISABLE_MOVIE, reg->Get("Disable High Quality Movie", 0));
     }
 }
 
 RVA(0x0000b270, 0x75)
-void SaveOptions(HWND hWnd, Utils::RegistryHelper* pRegistryHelper) {
-    if (pRegistryHelper) {
-        SaveOption(hWnd, pRegistryHelper, "Disable Direct Video Access", IDC_DISABLE_VIDEO);
-        SaveOption(hWnd, pRegistryHelper, "Disable Audio", IDC_DISABLE_AUDIO);
-        SaveOption(hWnd, pRegistryHelper, "Disable Sound", IDC_DISABLE_SOUND);
-        SaveOption(hWnd, pRegistryHelper, "Disable Music", IDC_DISABLE_MUSIC);
-        SaveOption(hWnd, pRegistryHelper, "Disable High Quality Movie", IDC_DISABLE_MOVIE);
+void SaveOptions(HWND hWnd, CRegMgr* reg) {
+    if (reg) {
+        SaveOption(hWnd, reg, "Disable Direct Video Access", IDC_DISABLE_VIDEO);
+        SaveOption(hWnd, reg, "Disable Audio", IDC_DISABLE_AUDIO);
+        SaveOption(hWnd, reg, "Disable Sound", IDC_DISABLE_SOUND);
+        SaveOption(hWnd, reg, "Disable Music", IDC_DISABLE_MUSIC);
+        SaveOption(hWnd, reg, "Disable High Quality Movie", IDC_DISABLE_MOVIE);
     }
 }

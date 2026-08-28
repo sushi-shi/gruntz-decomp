@@ -14,26 +14,12 @@
 #include <stddef.h>
 
 RVA(0x00114ec0, 0x27)
-void SaveFrontBufferShot(
-    Utils::RegistryHelper* bute,
-    CGruntzMgr* mgr,
-    i32 w,
-    i32 h,
-    char* name,
-    i32 saveFlag
-) {
-    SaveFrontBufferShotImpl(bute, mgr, w, h, name, saveFlag);
+void SaveFrontBufferShot(CRegMgr* reg, CGruntzMgr* mgr, i32 w, i32 h, char* name, i32 saveFlag) {
+    SaveFrontBufferShotImpl(reg, mgr, w, h, name, saveFlag);
 }
 
 RVA(0x00114f00, 0x3e)
-i32 SaveFrontBufferShotImpl(
-    Utils::RegistryHelper* bute,
-    CGruntzMgr* mgr,
-    i32 w,
-    i32 h,
-    char* name,
-    i32 saveFlag
-) {
+i32 SaveFrontBufferShotImpl(CRegMgr* reg, CGruntzMgr* mgr, i32 w, i32 h, char* name, i32 saveFlag) {
     CDDrawFrontSurface* pair = mgr->m_world->m_drawTarget->m_frontSurface;
     if (pair == NULL) {
         return 0;
@@ -42,5 +28,5 @@ i32 SaveFrontBufferShotImpl(
         return 0;
     }
 
-    return SaveScreenshot(pair->m_surface, bute, mgr, w, h, name, saveFlag);
+    return SaveScreenshot(pair->m_surface, reg, mgr, w, h, name, saveFlag);
 }

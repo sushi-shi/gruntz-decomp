@@ -8,7 +8,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SaveScreenshot.h>
 #include <Ints.h>
-#include <Utils/RegistryHelper.h>
+#include <Utils/RegMgr.h>
 
 #include <stddef.h>
 
@@ -16,7 +16,7 @@
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00114f50, 0x3e)
 i32 SaveBackBufferShot(
-    Utils::RegistryHelper* bute,
+    CRegMgr* reg,
     CGruntzMgr* owner,
     i32 width,
     i32 height,
@@ -31,12 +31,12 @@ i32 SaveBackBufferShot(
     if (leaf == NULL) {
         return 0;
     }
-    return SaveScreenshot(leaf, bute, owner, width, height, name, saveFlag);
+    return SaveScreenshot(leaf, reg, owner, width, height, name, saveFlag);
 }
 
 RVA(0x00114fa0, 0x3e)
 i32 SaveOverlayBufferShot(
-    Utils::RegistryHelper* bute,
+    CRegMgr* reg,
     CGruntzMgr* owner,
     i32 width,
     i32 height,
@@ -51,5 +51,5 @@ i32 SaveOverlayBufferShot(
     if (leaf == NULL) {
         return 0;
     }
-    return SaveScreenshot(leaf, bute, owner, width, height, name, saveFlag);
+    return SaveScreenshot(leaf, reg, owner, width, height, name, saveFlag);
 }

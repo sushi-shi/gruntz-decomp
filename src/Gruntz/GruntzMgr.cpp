@@ -94,7 +94,7 @@
 #include <Rez/RezMgr.h>
 #include <Rez/RezSync.h>
 #include <Utils/MapTyped.h>
-#include <Utils/RegistryHelper.h>
+#include <Utils/RegMgr.h>
 #include <Wap32/GameApp.h>
 #include <Wap32/Object.h>
 #include <Wap32/ScreenGeometry.h>
@@ -286,27 +286,27 @@ void CGruntzMgr::Close() {
     }
     FreeFontsMemory();
     if (m_settings) {
-        m_settings->SetValueDword("Num Runs", m_numRuns);
-        m_settings->SetValueDword("Num Movies", m_numMovies);
-        m_settings->SetValueDword("Sound", m_soundEnabled);
-        m_settings->SetValueDword("Voice", m_isVoiceEnabled);
-        m_settings->SetValueDword("Ambient", m_isAmbientEnabled);
-        m_settings->SetValueDword("Music", m_musicEnabled);
-        m_settings->SetValueDword("Interlaced", m_isInterlaced);
-        m_settings->SetValueDword("High Detail", m_isHighDetail);
-        m_settings->SetValueDword("Effects", m_isEffectsEnabled);
-        m_settings->SetValueDword("Disable Joystick", g_disableJoystick);
+        m_settings->Set("Num Runs", m_numRuns);
+        m_settings->Set("Num Movies", m_numMovies);
+        m_settings->Set("Sound", m_soundEnabled);
+        m_settings->Set("Voice", m_isVoiceEnabled);
+        m_settings->Set("Ambient", m_isAmbientEnabled);
+        m_settings->Set("Music", m_musicEnabled);
+        m_settings->Set("Interlaced", m_isInterlaced);
+        m_settings->Set("High Detail", m_isHighDetail);
+        m_settings->Set("Effects", m_isEffectsEnabled);
+        m_settings->Set("Disable Joystick", g_disableJoystick);
         if (m_midi) {
-            m_settings->SetValueDword("Music Volume", m_midi->GetMasterVolume());
+            m_settings->Set("Music Volume", m_midi->GetMasterVolume());
         }
         if (m_voiceManager) {
-            m_settings->SetValueDword("Voice Volume", m_voiceManager->m_voiceVolume);
+            m_settings->Set("Voice Volume", m_voiceManager->m_voiceVolume);
         }
         if (m_world && m_world->m_soundRegistry) {
-            m_settings->SetValueDword("Sound Volume", g_soundVolumePercent);
+            m_settings->Set("Sound Volume", g_soundVolumePercent);
         }
-        m_settings->SetValueDword("Scroll Speed", m_scrollSpeed);
-        m_settings->SetValueDword("Easy Mode", m_isEasyMode);
+        m_settings->Set("Scroll Speed", m_scrollSpeed);
+        m_settings->Set("Easy Mode", m_isEasyMode);
         Resolution res = RES_640X480;
         if (m_savedModeSize.cx == DISPLAY_WIDTH_1024 && m_savedModeSize.cy == DISPLAY_HEIGHT_768) {
             res = RES_1024X768;
@@ -314,14 +314,14 @@ void CGruntzMgr::Close() {
                    && m_savedModeSize.cy == DISPLAY_HEIGHT_600) {
             res = RES_800X600;
         }
-        m_settings->SetValueDword("Resolution", IDX(res));
-        m_settings->SetValueDword("Checkpoint Prompts", m_isCheckpointPrompts);
+        m_settings->Set("Resolution", IDX(res));
+        m_settings->Set("Checkpoint Prompts", m_isCheckpointPrompts);
         if (m_colorDepth == BPP_RGB_16) {
-            m_settings->SetValueDword("Enable HiColor", 1);
+            m_settings->Set("Enable HiColor", 1);
         } else {
-            m_settings->SetValueDword("Enable HiColor", 0);
+            m_settings->Set("Enable HiColor", static_cast<DWORD>(0));
         }
-        m_settings->SetValueDword("Enable TrueColor", 0);
+        m_settings->Set("Enable TrueColor", static_cast<DWORD>(0));
     }
     ClearStateStack();
     if (m_curState) {
@@ -1110,10 +1110,10 @@ BOOL CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) 
                 g_warpY = valY;
                 if (IsDlgButtonChecked(hDlg, 0x410)) {
                     sprintf(szValue, "Level %i Warp X", g_gameReg->m_curState->m_levelIndex);
-                    g_gameReg->m_settings->SetValueDword(szValue, valX);
+                    g_gameReg->m_settings->Set(szValue, valX);
                     sprintf(szValue, "Level %i Warp Y", g_gameReg->m_curState->m_levelIndex);
-                    g_gameReg->m_settings->SetValueDword(szValue, valY);
-                    g_gameReg->m_settings->SetValueDword(
+                    g_gameReg->m_settings->Set(szValue, valY);
+                    g_gameReg->m_settings->Set(
                         "Last Warp Level",
                         g_gameReg->m_curState->m_levelIndex
                     );
@@ -1262,12 +1262,12 @@ RVA(0x0008eaf0, 0x10b)
 i32 CGruntzMgr::WarpCheat() {
     char key[64];
     sprintf(key, "Level %i Warp X", g_gameReg->m_curState->m_levelIndex);
-    i32 wx = m_settings->GetValueDword(key, -1);
+    i32 wx = m_settings->Get(key, -1);
     sprintf(key, "Level %i Warp Y", g_gameReg->m_curState->m_levelIndex);
-    i32 wy = m_settings->GetValueDword(key, -1);
+    i32 wy = m_settings->Get(key, -1);
     if (wx != -1 && wy != -1) {
         if (m_curState->Update() != GAMESTATE_PLAY) {
-            i32 last = m_settings->GetValueDword("Last Warp Level", -1);
+            i32 last = m_settings->Get("Last Warp Level", -1);
             if (last != -1) {
                 if (!PassClickToPlayState(last, false, 1)) {
                     ReportError(IDX(IDS_SET_GAME_STATE), 0x43b);
@@ -1277,7 +1277,7 @@ i32 CGruntzMgr::WarpCheat() {
                 return 1;
             }
         } else {
-            m_settings->SetValueDword("Last Warp Level", m_curState->m_levelIndex);
+            m_settings->Set("Last Warp Level", m_curState->m_levelIndex);
             return 1;
         }
     }
@@ -2015,14 +2015,14 @@ RVA(0x00090550, 0x1e6)
 i32 __stdcall LaunchPortalExe(char* outPath) {
     DWORD bufSize;
     char regBuf[0x100];
-    Utils::RegistryHelper reg;
+    CRegMgr reg;
 
-    if (!reg.Open("Monolith Productions", "Portal", "1.0", NULL, HKEY_LOCAL_MACHINE, NULL)) {
+    if (!reg.Init("Monolith Productions", "Portal", "1.0", NULL, HKEY_LOCAL_MACHINE, NULL)) {
         return 0;
     }
     regBuf[0] = 0;
     bufSize = 0xde;
-    if (!reg.GetValueString("filedir", regBuf, &bufSize, NULL)) {
+    if (!reg.Get("filedir", regBuf, bufSize, NULL)) {
         return 0;
     }
     i32 len = strlen(regBuf);

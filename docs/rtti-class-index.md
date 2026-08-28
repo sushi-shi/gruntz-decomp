@@ -201,7 +201,7 @@ deferred to the re-anchor.
 
 | Name | Kind | Source file | Known | From | Header |
 |---|---|---|---|---|---|
-| Utils::RegistryHelper | util | C:\Proj\Gruntz (util TU?) | layout (0x21C) | tomalla | graduated: include/Utils/RegistryHelper.h |
+| CRegMgr | util | libs/RegMgr/RegMgr.cpp lineage | layout + complete API (0x21C) | surviving source | include/Utils/RegMgr.h |
 | Utils::MemoryPool<T> | util/template | C:\Proj\Gruntz (util TU?) | layout (0x10) | tomalla | — |
 | Font | util | C:\Proj\Gruntz\font.cpp | layout (0x14) + .fnt format | tomalla | include/Font/Font.h |
 | Pair | struct | C:\Proj\Gruntz | layout {int;int} | tomalla | — |

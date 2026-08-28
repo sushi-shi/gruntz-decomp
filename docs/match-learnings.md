@@ -169,7 +169,7 @@ posted on resync, **+0x574** OnOutOfSync per-instance reentrancy guard, **+0x584
 word cleared on handler entry, **+0x598** CString config value-name prefix, **+0x5a4/+0x5a8**
 _CmdDelay/_Resend command-timing values. Globals: `0x648d08` (ShowMultiplayerOptionsDialog guard),
 `0x648d04` (ShowMultiplayerPauseDialog guard), `0x648ce0` (message-edit HWND cleared by all three). The
-game-manager singleton @0x64556c holds a `RegistryHelper*` @+0x38. Multiplayer dispatcher
+game-manager singleton @0x64556c holds a `CRegMgr*` @+0x38. Multiplayer dispatcher
 @0x4bc250 (`__stdcall`); command callbacks @0x4bda70/0x4bd850/0x4bddd0; HandleVersionCheck
 @0xbd0b0, ShowDropPlayerDialog @0xbc110 byte-exact.
 
@@ -242,12 +242,13 @@ array @+0x30 (CBrickzNodePool: block@+0x04, stride 0x24, next@+0x14/prev@+0x18) 
 
 ## Config subsystem (units `registryhelper`, `advancedoptions`, `winapi`)
 
-**Utils::RegistryHelper** (8/8 byte-exact): **+0x00** open/result gate, **+0x04** base HKEY
-(Open), **+0x08/+0x0c/+0x10/+0x14** nested HKEY chain, **+0x18** deepest open HKEY (getters
-operate on it; Close skips +0x14 when == +0x18), **+0x1c** char[0x100] (szKeyName2), **+0x11c**
-char[0x100] (szLastKey); min ≥0x21c. Open @0x139210, Close @0x139330, InitializeLastKey
-@0x139370, Set/GetValueString/Dword @0x1393b0/0x139460/0x1394a0/0x1395d0, GetRegistryKey
-@0x139650 (__thiscall ret 0xc, ignores `this`). `0x1396f0/0x139710/0x1397a0` are a DIFFERENT
+**CRegMgr** (11/11 byte-exact; identity and API recovered from surviving `libs/RegMgr`):
+**+0x00** initialized gate, **+0x04** root HKEY (`Init`), **+0x08/+0x0c/+0x10/+0x14**
+nested HKEY chain, **+0x18** active subkey HKEY (`Get`/`Set` operate on it; `Term` skips
++0x14 when == +0x18), **+0x1c** char[0x100] app name, **+0x11c** char[0x100] subkey name;
+complete size 0x21c. `Init` @0x139210, `Term` @0x139330, `SetSubKey` @0x139370, the
+`Set`/`Get` overloads @0x1393b0..0x1395d0, and `CreateKey` @0x139650 (__thiscall ret 0xc,
+ignores `this`). `0x1396f0/0x139710/0x1397a0` are a DIFFERENT
 class (vtable@+0x1c). No GetValueBool exists.
 
 **AdvancedOptions** (5/5 byte-exact): persists 5 flags under `HKLM\Software\Monolith

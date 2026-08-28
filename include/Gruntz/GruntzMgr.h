@@ -61,9 +61,7 @@ class CGameLevel;
 class CLightFxMgr;
 
 class CRezArchive;
-namespace Utils {
-    class RegistryHelper;
-}
+class CRegMgr;
 class CFontConfig;
 class CTriggerMgr;
 class CPlay;
@@ -288,7 +286,7 @@ public:
 
     CRezArchive* m_resourceArchive;
 
-    Utils::RegistryHelper* m_settings;
+    CRegMgr* m_settings;
 
     // @identity-TODO
     // Current source only zeroes and deletes this slot; a retail write or allocation

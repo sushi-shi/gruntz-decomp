@@ -9,17 +9,8 @@
 #include <Ints.h>
 
 class CGruntzMgr;
-namespace Utils {
-    class RegistryHelper;
-}
+class CRegMgr;
 
-i32 SaveFrontBufferShotImpl(
-    Utils::RegistryHelper* bute,
-    CGruntzMgr* mgr,
-    i32 w,
-    i32 h,
-    char* name,
-    i32 saveFlag
-);
+i32 SaveFrontBufferShotImpl(CRegMgr* reg, CGruntzMgr* mgr, i32 w, i32 h, char* name, i32 saveFlag);
 
 #endif // GRUNTZ_SAVEFRONTBUFFERSHOT_H

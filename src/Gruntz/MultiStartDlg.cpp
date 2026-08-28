@@ -26,7 +26,7 @@
 #include <Rez/RezArchive.h>
 #include <Rez/RezArchiveDir.h>
 #include <Rez/RezArchiveEntry.h>
-#include <Utils/RegistryHelper.h>
+#include <Utils/RegMgr.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -280,7 +280,7 @@ i32 CMultiStartDlg::RefreshLatencyControl() {
 // @early-stop
 RVA(0x000c20a0, 0x45a)
 void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
-    Utils::RegistryHelper* reg = static_cast<Utils::RegistryHelper*>(g_gameReg->m_settings);
+    CRegMgr* reg = static_cast<CRegMgr*>(g_gameReg->m_settings);
     if (pDX->m_bSaveAndValidate == false) {
         GetDlgItem(IDX(IDC_MULTI_GAME_NAME))->SetWindowTextA(g_multiState->GameName());
         NetLobby::g_curDlg = GetSafeHwnd();
@@ -318,12 +318,12 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
         }
         GetDlgItem(IDX(IDC_MULTI_CHAT_INPUT))->SendMessageA(EM_LIMITTEXT, 100, 0);
         CustomMapSelection customFlag = static_cast<CustomMapSelection>(
-            reg->GetValueDword("CustomMultiMap", IDX(CUSTOM_MAP_UNINITIALIZED))
+            reg->Get("CustomMultiMap", IDX(CUSTOM_MAP_UNINITIALIZED))
         );
         if (g_multiState->m_isHost != false && customFlag != CUSTOM_MAP_UNINITIALIZED) {
             char mapName[0x100];
             DWORD size = 0x100;
-            reg->GetValueString("LastMultiMap", mapName, &size, "");
+            reg->Get("LastMultiMap", mapName, size, "");
             m_customMapSelection = customFlag;
             if (customFlag != CUSTOM_MAP_STANDARD) {
                 char path[0x100];
@@ -375,8 +375,8 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
         }
         child->GetWindowTextA(m_worldName);
         if (g_multiState->m_isHost != false) {
-            reg->SetValueString("LastMultiMap", m_worldName);
-            reg->SetValueDword("CustomMultiMap", IDX(m_customMapSelection));
+            reg->Set("LastMultiMap", m_worldName);
+            reg->Set("CustomMultiMap", IDX(m_customMapSelection));
         }
         GruntzPlayer* slots = m_gameManager->m_players;
         for (i32 i = 0; i < NUM_PLAYER_SLOTS; i++) {

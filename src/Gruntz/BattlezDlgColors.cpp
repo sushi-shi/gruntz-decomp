@@ -16,7 +16,7 @@
 #include <Rez/RezArchive.h>
 #include <Rez/RezArchiveDir.h>
 #include <Rez/RezArchiveEntry.h>
-#include <Utils/RegistryHelper.h>
+#include <Utils/RegMgr.h>
 
 #include <stdio.h>
 #include <string.h>

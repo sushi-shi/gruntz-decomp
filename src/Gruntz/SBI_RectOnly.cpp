@@ -70,7 +70,7 @@
 #include <Rez/RezMgr.h>
 #include <Utils/MapTyped.h>
 #include <Utils/MfcTyped.h>
-#include <Utils/RegistryHelper.h>
+#include <Utils/RegMgr.h>
 #include <Wap32/ScreenGeometry.h>
 
 #include <limits.h>
@@ -145,9 +145,7 @@ i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
     m_battlezPct[36] = m_battlezPct[35] + g_buteMgr.GetInt("Multiplayer", "Welderz");
     m_battlezPct[37] = m_battlezPct[36] + g_buteMgr.GetInt("Multiplayer", "Wingz");
     SetTabState(SBICMD_TAB_GAME, MENUITEM_SELECTED);
-    if ((static_cast<Utils::RegistryHelper*>(g_gameReg->m_settings))
-            ->GetValueDword("StatusBar Position", 0)
-        == 1) {
+    if ((static_cast<CRegMgr*>(g_gameReg->m_settings))->Get("StatusBar Position", 0) == 1) {
         DockStatusBarLeft();
     }
     return 1;
@@ -155,8 +153,7 @@ i32 CStatusBarMgr::LoadBattlezItemConfig(CDDrawSurfaceMgr* world) {
 
 RVA(0x000fe350, 0x6d)
 void CStatusBarMgr::Teardown() {
-    (static_cast<Utils::RegistryHelper*>(g_gameReg->m_settings))
-        ->SetValueDword("StatusBar Position", IDX(m_position));
+    (static_cast<CRegMgr*>(g_gameReg->m_settings))->Set("StatusBar Position", IDX(m_position));
     ResetWidgets(false);
     for (i32 i = 0; i < m_rewardQueue.GetSize(); i++) {
         Coord* p = static_cast<Coord*>(m_rewardQueue.GetData()[i]);

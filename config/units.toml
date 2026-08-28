@@ -457,7 +457,7 @@ flags = "cpp"
 
 [[unit]]
 unit = "registryhelper"
-source = "src/Utils/RegistryHelper.cpp"
+source = "src/Utils/RegMgr.cpp"
 flags = "cpp"
 
 [[unit]]

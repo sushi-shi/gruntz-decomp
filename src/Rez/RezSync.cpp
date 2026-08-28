@@ -54,7 +54,7 @@
 #include <Rez/RezArchiveEntry.h>
 #include <Rez/RezTypeTag.h>
 #include <Utils/MapTyped.h>
-#include <Utils/RegistryHelper.h>
+#include <Utils/RegMgr.h>
 #include <Wap32/GameApp.h>
 #include <Wap32/ScreenGeometry.h>
 #include <Wap32/Wap32.h>
@@ -113,30 +113,30 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     while (ShowCursor(false) >= 0) {
     }
 
-    Utils::RegistryHelper* reg = new Utils::RegistryHelper;
+    CRegMgr* reg = new CRegMgr;
     m_settings = reg;
     if (!m_settings
-             ->Open("Monolith Productions", "Gruntz", "1.0", NULL, HKEY_LOCAL_MACHINE, NULL)) {
+             ->Init("Monolith Productions", "Gruntz", "1.0", NULL, HKEY_LOCAL_MACHINE, NULL)) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x406);
         return 0;
     }
     m_savedModeSize.cx = SCREEN_W_PX;
     m_savedModeSize.cy = SCREEN_H_PX;
-    m_numRuns = m_settings->GetValueDword("Num Runs", 0);
-    m_numMovies = m_settings->GetValueDword("Num Movies", 0);
-    g_enableHqMovie = m_settings->GetValueDword("Disable High Quality Movie", 0) == 0;
-    g_disableAudio = m_settings->GetValueDword("Disable Audio", 0);
-    g_disableSound = m_settings->GetValueDword("Disable Sound", 0);
-    g_disableMusic = m_settings->GetValueDword("Disable Music", 0);
-    g_disableFades = m_settings->GetValueDword("Disable Fades", 0);
-    g_disableDirectVideo = m_settings->GetValueDword("Disable Direct Video Access", 0);
-    g_disableJoystick = m_settings->GetValueDword("Disable Joystick", 0);
-    g_disableSoundFonts = m_settings->GetValueDword("Disable SoundFonts", 0);
-    g_enableTriple = m_settings->GetValueDword("Enable Triple", 0);
-    g_enableHiColor = m_settings->GetValueDword("Enable HiColor", 0);
-    g_enableTrueColor = m_settings->GetValueDword("Enable TrueColor", 0);
-    g_enableEmulation = m_settings->GetValueDword("Enable Emulation", 0);
-    m_isCheckpointPrompts = m_settings->GetValueDword("Checkpoint Prompts", 1);
+    m_numRuns = m_settings->Get("Num Runs", 0);
+    m_numMovies = m_settings->Get("Num Movies", 0);
+    g_enableHqMovie = m_settings->Get("Disable High Quality Movie", 0) == 0;
+    g_disableAudio = m_settings->Get("Disable Audio", 0);
+    g_disableSound = m_settings->Get("Disable Sound", 0);
+    g_disableMusic = m_settings->Get("Disable Music", 0);
+    g_disableFades = m_settings->Get("Disable Fades", 0);
+    g_disableDirectVideo = m_settings->Get("Disable Direct Video Access", 0);
+    g_disableJoystick = m_settings->Get("Disable Joystick", 0);
+    g_disableSoundFonts = m_settings->Get("Disable SoundFonts", 0);
+    g_enableTriple = m_settings->Get("Enable Triple", 0);
+    g_enableHiColor = m_settings->Get("Enable HiColor", 0);
+    g_enableTrueColor = m_settings->Get("Enable TrueColor", 0);
+    g_enableEmulation = m_settings->Get("Enable Emulation", 0);
+    m_isCheckpointPrompts = m_settings->Get("Checkpoint Prompts", 1);
     g_enableHiColor = true;
     g_debugGruntPlayer = 0;
     g_debugGruntTool = 0;
@@ -151,16 +151,16 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     g_debugGruntMoveTop = 0;
     g_debugGruntMoveBottom = 0;
 
-    i32 vMusic = m_settings->GetValueDword("Music", m_musicEnabled);
-    i32 vSound = m_settings->GetValueDword("Sound", m_soundEnabled);
-    i32 vVoice = m_settings->GetValueDword("Voice", m_isVoiceEnabled);
-    i32 vAmbient = m_settings->GetValueDword("Ambient", m_isAmbientEnabled);
-    i32 vInterlaced = m_settings->GetValueDword("Interlaced", m_isInterlaced);
-    i32 vHigh1 = m_settings->GetValueDword("High Detail", m_isHighDetail);
-    i32 vHigh2 = m_settings->GetValueDword("High Detail", m_isEffectsEnabled);
-    m_isEasyMode = m_settings->GetValueDword("Easy Mode", m_isEasyMode);
+    i32 vMusic = m_settings->Get("Music", m_musicEnabled);
+    i32 vSound = m_settings->Get("Sound", m_soundEnabled);
+    i32 vVoice = m_settings->Get("Voice", m_isVoiceEnabled);
+    i32 vAmbient = m_settings->Get("Ambient", m_isAmbientEnabled);
+    i32 vInterlaced = m_settings->Get("Interlaced", m_isInterlaced);
+    i32 vHigh1 = m_settings->Get("High Detail", m_isHighDetail);
+    i32 vHigh2 = m_settings->Get("High Detail", m_isEffectsEnabled);
+    m_isEasyMode = m_settings->Get("Easy Mode", m_isEasyMode);
     Resolution resolution =
-        static_cast<Resolution>(m_settings->GetValueDword("Resolution", IDX(RES_640X480)));
+        static_cast<Resolution>(m_settings->Get("Resolution", IDX(RES_640X480)));
     if (resolution == RES_1024X768) {
         m_savedModeSize.cx = DISPLAY_WIDTH_1024;
         m_savedModeSize.cy = DISPLAY_HEIGHT_768;
@@ -171,10 +171,10 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         m_savedModeSize.cx = SCREEN_W_PX;
         m_savedModeSize.cy = SCREEN_H_PX;
     }
-    i32 musicVolume = m_settings->GetValueDword("Music Volume", 0x64);
-    i32 soundVolume = m_settings->GetValueDword("Sound Volume", 0x3c);
-    i32 voiceVolume = m_settings->GetValueDword("Voice Volume", 0x50);
-    i32 scrollSpeed = m_settings->GetValueDword("Scroll Speed", 0x14);
+    i32 musicVolume = m_settings->Get("Music Volume", 0x64);
+    i32 soundVolume = m_settings->Get("Sound Volume", 0x3c);
+    i32 voiceVolume = m_settings->Get("Voice Volume", 0x50);
+    i32 scrollSpeed = m_settings->Get("Scroll Speed", 0x14);
     m_soundVolume = soundVolume;
     m_voiceVolume = voiceVolume;
 
@@ -529,7 +529,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     CheckMovieFileExists();
     if (!InitializeLobbyConnectionSettings()) {
         if (m_numMovies > 0 && m_numRuns > 1) {
-            if (m_settings->GetValueDword("Skip Logo Movies", 0) == 0 && noLogo == 0) {
+            if (m_settings->Get("Skip Logo Movies", 0) == 0 && noLogo == 0) {
                 PlayLogoMovie();
             }
         } else {

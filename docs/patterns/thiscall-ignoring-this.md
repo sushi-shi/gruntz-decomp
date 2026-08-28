@@ -9,7 +9,7 @@ side: callers of the thiscall emit a redundant `mov ecx,this` before each call. 
 caller, not the callee — if callers set ecx, keep it a (this-ignoring) thiscall member; declaring
 it static drops the `mov ecx` and regresses every caller.
 
-STEERABLE. Evidence: RegistryHelper::GetRegistryKey (@0x139650) is `?…@@QAEH…` thiscall (ret 0xc)
+STEERABLE. Evidence: `CRegMgr::CreateKey` (@0x139650) is `?…@@QAEH…` thiscall (ret 0xc)
 even though its body never reads `this` — declaring it static regressed callers. Contrast
 geterrorstring-static-cdecl.md (the DX/Net error formatters ARE genuinely static __cdecl — there
 the call site is `push×3; call; add esp,0xc`, no `mov ecx`). related: ret-n-calling-convention.md.

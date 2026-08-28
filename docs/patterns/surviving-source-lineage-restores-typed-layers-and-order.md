@@ -122,6 +122,16 @@ Use the corpus only in its positive direction:
   grows `CGruntzMgr::Run` by twelve bytes and two relocations, and drops 91.6618 ->
   91.5421; retail has no such post-`Reset` store. Keep the proven semantic identity, but
   do not import a later abstraction merely because one caller happens to compile flat.
+* `libs/RegMgr` resolves an entire inferred utility family without requiring a code
+  mismatch. The surviving global `CRegMgr` has the same 0x21c-byte complete layout,
+  seven-handle chain, two 256-byte names, and eleven one-to-one bodies as the former
+  `Utils::RegistryHelper` model. Restoring `Init`, `Term`, `SetSubKey`, the three `Set`
+  overloads, the three `Get` overloads, `Delete`, `CreateKey`, their const/reference
+  boundaries, and the `RegMgr.cpp` owner leaves all 11 functions exact. The source's
+  `UINT32&` is a 32-bit unsigned-long reference in this compiler family, so Gruntz uses
+  ABI-equivalent `DWORD&`, not its unsigned-int `u32&`. Positive-only still applies:
+  retail proves `KEY_ALL_ACCESS` instead of the later `KEY_READ | KEY_WRITE`, and does
+  not claim the later `DeleteApp`, `DeleteSubKey`, or `DeleteUnderSubKey` additions.
 * The surviving `Save` declares its 4096-byte transfer buffer at function scope before
   the input stream. Gruntz retains that humane scope correction byte-flat. The later
   implementation's optional output filename, `is_open` guard, zero-length promotion,

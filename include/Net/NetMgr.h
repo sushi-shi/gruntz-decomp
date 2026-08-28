@@ -15,7 +15,7 @@
 #include <Net/NetPacketLayout.h>
 #include <Net/NetSlotState.h>
 #include <Rez/RezMgr.h>
-#include <Utils/RegistryHelper.h>
+#include <Utils/RegMgr.h>
 #include <Wap32/Object.h>
 
 #include <basetyps.h>
