@@ -82,7 +82,7 @@ b32 g_disableSoundFonts = false;
 DATA(0x002455d0)
 b32 g_disableDirectVideo = false;
 DATA(0x002455d4)
-b32 g_disableHqMovie = false;
+b32 g_enableHqMovie = false;
 DATA(0x002455d8)
 b32 g_enableTriple = false;
 DATA(0x002455dc)
@@ -124,7 +124,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_savedModeSize.cy = SCREEN_H_PX;
     m_numRuns = m_settings->GetValueDword("Num Runs", 0);
     m_numMovies = m_settings->GetValueDword("Num Movies", 0);
-    g_disableHqMovie = m_settings->GetValueDword("Disable High Quality Movie", 0);
+    g_enableHqMovie = m_settings->GetValueDword("Disable High Quality Movie", 0) == 0;
     g_disableAudio = m_settings->GetValueDword("Disable Audio", 0);
     g_disableSound = m_settings->GetValueDword("Disable Sound", 0);
     g_disableMusic = m_settings->GetValueDword("Disable Music", 0);
@@ -159,8 +159,8 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     i32 vHigh1 = m_settings->GetValueDword("High Detail", m_isHighDetail);
     i32 vHigh2 = m_settings->GetValueDword("High Detail", m_isEffectsEnabled);
     m_isEasyMode = m_settings->GetValueDword("Easy Mode", m_isEasyMode);
-    i32 resolutionRaw = m_settings->GetValueDword("Resolution", IDX(RES_640X480));
-    Resolution resolution = static_cast<Resolution>(resolutionRaw);
+    Resolution resolution =
+        static_cast<Resolution>(m_settings->GetValueDword("Resolution", IDX(RES_640X480)));
     if (resolution == RES_1024X768) {
         m_savedModeSize.cx = DISPLAY_WIDTH_1024;
         m_savedModeSize.cy = DISPLAY_HEIGHT_768;
@@ -190,8 +190,8 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_driveLetter = 0;
     GetGruntzDriveLetter();
 
-    GameStateId mode = GAMESTATE_ATTRACT;
     i32 noLogo = 0;
+    GameStateId mode = GAMESTATE_ATTRACT;
     char levelName[0x80];
     levelName[0] = 0;
     if (szCmdLine) {

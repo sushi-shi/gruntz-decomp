@@ -15,7 +15,7 @@ extern b32 g_disableMusic;
 extern b32 g_disableJoystick;
 extern b32 g_disableSoundFonts;
 extern b32 g_disableDirectVideo;
-extern b32 g_disableHqMovie;
+extern b32 g_enableHqMovie;
 extern b32 g_enableTriple;
 extern b32 g_enableHiColor;
 extern b32 g_enableTrueColor;

@@ -81,13 +81,38 @@ residue is only a symmetric ESI/EDI coloring of `Lock()`'s result and the two
 loops.  Thus the source-backed gain is the placement of real locals and stores;
 the final register rename is not a reason to add another fake local.
 
+## Independent initializers preserve declaration order inside a larger wall
+
+`CGruntzMgr::Run` 0x00083450 supplies a control where declaration order is not
+the function's first wall.  Retail initializes the command-line locals in this
+order:
+
+```asm
+mov [esp+0x38],ebx             ; noLogo = 0
+cmp eax,ebx                    ; szCmdLine
+mov dword ptr [esp+0x20],0x2   ; mode = GAMESTATE_ATTRACT
+```
+
+The reconstruction declared `mode` before `noLogo`, and VC5 emitted those two
+stores in the opposite semantic order.  Declaring the real independent locals
+as `noLogo` then `mode` swapped only their initialization identities into the
+retail order and raised fuzzy **91.5983 -> 91.6646**.  The 0x430-byte base frame,
+237-call count, and `out_waiting`/`istrstream` call-set residue were unchanged,
+so this is not a fitted explanation of the larger inline wall.  It is a useful
+baseline-delta rule: an exact source-order correction can be retained and banked
+even when an earlier, independently classified divergence still dominates the
+function.
+
 ## Reverse-use heuristic
 
 When a semantic rename leaves an otherwise identical function with only a pair
 of commuting instructions swapped, compare the declaration order of the two
-source values before adding temporaries or distorting the expression.  When the
-first divergence brackets inlined aggregate initialization (`rep stos`, record
-copy, or constructor expansion), use an exact sibling to recover which scalar
-was declared on each side of that boundary; emitted load order is scheduler
-output. Confirm the candidate against the baseline and retail, because this is
-a scheduling lever, not evidence that declaration order carries runtime meaning.
+source values before adding temporaries or distorting the expression.  The same
+test applies when retail and base initialize two independent locals in opposite
+orders inside a larger wall: fix the proven order, then re-diagnose rather than
+claiming it explains unrelated frame or call-set residue.  When the first
+divergence brackets inlined aggregate initialization (`rep stos`, record copy,
+or constructor expansion), use an exact sibling to recover which scalar was
+declared on each side of that boundary; emitted load order is scheduler output.
+Confirm the candidate against the baseline and retail, because this is a
+scheduling lever, not evidence that declaration order carries runtime meaning.

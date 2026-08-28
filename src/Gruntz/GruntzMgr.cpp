@@ -2562,13 +2562,13 @@ i32 CGruntzMgr::MakeRezPath() {
     i32 movFound = 1;
     CString fecHi(s_fecName);
     CString fecLo(s_fecLoName);
-    CString fec(g_disableHqMovie ? fecHi : fecLo);
+    CString fec(g_enableHqMovie ? fecHi : fecLo);
 
     m_haveMoviez = false;
     m_strMoviePath.Format("%s\\%s", cwd, static_cast<LPCTSTR>(fecHi));
     if (!m_inGameDir && !FileExists(m_strMoviePath)) {
         movFound = 0;
-        if (!g_disableHqMovie) {
+        if (!g_enableHqMovie) {
             m_strMoviePath.Format("%s\\%s", cwd, static_cast<LPCTSTR>(fecLo));
             if (FileExists(m_strMoviePath)) {
                 movFound = 1;
