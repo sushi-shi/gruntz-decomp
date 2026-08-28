@@ -710,15 +710,12 @@ i32 CNetSession::VerifyChecksums() {
     return 1;
 }
 
-// @early-stop
 RVA(0x000c0590, 0x21c)
 i32 CNetSession::ComputeChecksum() {
     i32 sum = 0;
-    i32 idx = 0;
-    do {
-        i32 count = 15;
-        do {
-            CGrunt* grunt = static_cast<CGrunt*>(m_owner->m_mgr->m_triggerMgr->m_units[idx]);
+    for (i32 player = 0; player < TM_PLAYER_COUNT; player++) {
+        for (i32 g = 0; g < TM_UNITS_PER_PLAYER; g++) {
+            CGrunt* grunt = m_owner->m_mgr->m_triggerMgr->m_units[player * TM_UNITS_PER_PLAYER + g];
             if (grunt != NULL) {
                 sum += IDX(grunt->m_entranceCell.direction) + grunt->m_stamina + grunt->m_toyTime
                        + grunt->m_health + grunt->m_object->m_screenY + grunt->m_object->m_sortKey
@@ -726,10 +723,7 @@ i32 CNetSession::ComputeChecksum() {
                        + grunt->LastTilePx().m_y;
 
                 PickupType carried = grunt->m_entranceReason;
-                PickupType effective = carried;
-                if (carried > PICKUP_EQUIPPABLE_LAST) {
-                    effective = grunt->m_toolId;
-                }
+                PickupType effective = ArrivalPickupOf(grunt, carried);
                 sum += IDX(grunt->m_vehiclePickupType) + grunt->m_entranceCommitted
                        + grunt->m_entranceActive + grunt->m_daFlag + IDX(effective);
 
@@ -807,11 +801,11 @@ i32 CNetSession::ComputeChecksum() {
                 }
 
                 sum += grunt->m_arrivalPhase + grunt->m_neighborScanEnabled + grunt->m_combatActive
-                       + grunt->m_neighborValid + grunt->m_poweredUp + g_frameTime + IDX(next);
+                       + grunt->m_neighborValid + grunt->m_poweredUp + static_cast<i32>(g_frameTime)
+                       + IDX(next);
                 sum += rand();
             }
-            idx++;
-        } while (--count);
-    } while (idx < 0x3c);
+        }
+    }
     return sum;
 }
