@@ -4,7 +4,7 @@ tags: cpp:param cpp:cast cpp:loop | asm:mov asm:cmp | topic:codegen-idiom
 symptoms: cmp dword ptr [esp+N],0x2 in-place, mov reg,[esp+param] inside each
 arm after the js/jle guard, mov [esp+param],reg cursor write-back, param slot
 recycled for a byte staging local
-confidence: 9/10
+confidence: 10/10
 
 In the CDDSurface Blit-family (`Blit(u8* srcv, .., RasterRowOrder)`) retail
 compares `rowOrder` straight from its stack slot and loads the source pointer
@@ -42,3 +42,13 @@ STEERABLE. Blit248 0x13fe60 94.31 -> 100.00 EXACT and BlitDirect 0x13ece0
 Blit824/Blit816/Blit1624 each moved 2-7 points. Counter-example: Blit816
 retail copies srcv into the DEAD palv slot instead (a plain local, memory-
 homed) — check for the write-back before applying.
+
+The positive source oracle generalizes this beyond `void*` and switch arms. The 1996
+LithTech DIB library's raw-byte initializer advances its typed `BYTE* pBytes` parameter
+directly in the padded-row loop. `CRezImage::DecodeBlit` had copied its `u8* src` parameter
+to a local cursor; deleting that alias while preserving retail's unsigned size lowering
+moved 95.2917 -> 99.9722 with the exact 198-byte/72-instruction topology. Restoring the
+surviving accessor family supplied the semantic base, and target-adjacent C1 forest trial
+1 banked audited MAX 100 for the unchanged source with no probe retained. The reliable
+source question is whether the caller-owned pointer must survive separately; if not, an
+advancing parameter is more likely than a redundant cursor alias.

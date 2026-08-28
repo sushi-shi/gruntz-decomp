@@ -4,7 +4,7 @@ tags: cpp:inheritance cpp:inline cpp:member cpp:local cpp:loop | asm:lea asm:mov
 symptoms: a reconstructed subsystem has correct broad behavior but repeated near-exact
 register/schedule walls, generic base pointers where consumers always recover one owner
 type, payload unions at a common trailing offset, or hand-expanded one-field stores
-confidence: 10/10 (twelve clean exact closures, one audited unchanged-source state closure,
+confidence: 10/10 (twelve clean exact closures, two audited unchanged-source state closures,
 exact controls, revision-history audit, and retail negative controls)
 variants: inline-expansion-boundary-pins-a-neighbour.md, ctor-body-first-statement-is-an-inline-member.md
 
@@ -37,6 +37,7 @@ relocations. Applied that way, it closed these Gruntz functions:
 | `MonoClear` 0x184db0 | same typed buffer and ordinary element-indexed `for` loop | 99.0000 -> **100.000** |
 | `CRezImage::DecodePcxData` 0x176000 | 1996 DIB decoder's function-scope local census, reverse RLE fill, and direct plane indexing | 97.6772 -> 99.9240 -> **MAX 100.000** |
 | `CRezImage::DecodePidData` 0x176440 | unsigned eight-word header census, named transparency value, direct run-byte rereads, and manual literal loop | 81.4772 -> **100.000** |
+| `CRezImage::DecodeBlit` 0x175930 | complete `IsStrideless`/size/height/index/width accessor layer and advancing the incoming pixel pointer | 95.3194 -> 99.9722 -> **MAX 100.000** |
 
 The exact controls are strong: all three typed hash lookups stayed exact, both hash-owning
 destructors stayed exact, and `rezarchive` reached 115/115 exact functions.
@@ -139,6 +140,20 @@ Use the corpus only in its positive direction:
   function-scope census. Together they moved 81.4772% directly to 100.0000% exact. A
   same-CFG REGALLOC diagnosis bounds one source state, not the source family; a full
   surviving composition must invalidate and reopen that review through its new hash.
+* The adjacent raw-byte `CDib::Init` body proves that the strideless test, buffer size,
+  height, row index, and width remain inline accessor calls and that the incoming pixel
+  pointer itself advances in the padded-row loop. Applying the literal signed `/ 8`
+  spelling first dropped `CRezImage::DecodeBlit` from 95.2917 to 91.2917 by adding four
+  sign-correction instructions absent from retail; that is revision/type skew because
+  Gruntz's byte-depth domain supplies unsigned lowering. Keeping the retail-proven shift
+  and restoring the parameter lifetime raised it to 99.9722 with exact extent, calls,
+  CFG, returns, relocations, mnemonics, displacements, stores, and immediates. Swapping
+  the two direct multiply operands was flat. `GetBufferSize` alone was also locally flat
+  and perturbed three dependent rows; restoring the complete five-accessor family was
+  still the authentic base, not a reason to keep the hand expansion. Target-adjacent C1
+  forest trial 1 then reached audited 100.0000 for that unchanged function hash; MAX was
+  banked and the probe removed. Mine and compose the semantic layer as a family—one
+  individually flat helper does not falsify it.
 * Branch-specific derived storage pointer types and direct member assignments in
   `Open`/`MergeArchive` compiled byte-flat in isolation. They remain good structural
   evidence, not credit for a score change.

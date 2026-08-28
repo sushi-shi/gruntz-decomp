@@ -244,6 +244,16 @@
     for the hand transcription. A same-CFG diagnosis and a wide local matrix do
     not bound an untested surviving source family; apply the authentic complete
     body and let its new source hash reopen the review.
+    The same file's raw-byte `CDib::Init` then showed that `DecodeBlit` advances
+    its incoming pixel pointer and retains the `IsStrideless`/buffer-size/height/
+    row-index/width accessor layer. The literal later signed `/8` first dipped
+    95.2917 -> 91.2917 by adding four sign-correction instructions retail lacks;
+    composing Gruntz's retail-proven unsigned lowering with the authentic pointer
+    lifetime reached 99.9722 and exact topology. One `GetBufferSize` restoration
+    was locally flat and moved dependent TUs, but that did not falsify the complete
+    accessor family. On that humane base, target-adjacent C1 forest trial 1 banked
+    audited MAX 100 for the unchanged source and the probe was removed. Preserve
+    the semantic layer and separate revision/type skew from it before ranking.
   * exhaust a lineage-shaped branch as a bounded composition, not a spelling
     vote. For `CButeMgr::SetString`, one through five assignment-in-condition
     restorations were byte-flat, the sixth crossed to a lower C1 island, and

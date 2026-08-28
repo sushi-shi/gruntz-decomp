@@ -398,13 +398,12 @@ i32 CRezImage::DecodeBlit(u8* src, HDC dc, i32 width, i32 height, ColorDepth bit
     if (!DecodeBmpHeader(dc, width, height, bitcount, ctrl)) {
         return 0;
     }
-    if (m_rowPad == 0) {
-        memcpy(m_pixels, src, static_cast<u32>((m_stride * m_height * IDX(bitcount))) >> 3);
+    if (IsStrideless()) {
+        memcpy(m_pixels, src, (GetBufferSize() * IDX(bitcount)) / 8);
     } else {
-        u8* s = src;
-        for (i32 row = 0; row < m_height; row++) {
-            memcpy(m_pixels + m_rowOffsets[row], s, m_width);
-            s += m_width;
+        for (i32 row = 0; row < GetHeight(); row++) {
+            memcpy(&m_pixels[GetIndex(row)], src, GetWidth());
+            src += GetWidth();
         }
     }
     return 1;
