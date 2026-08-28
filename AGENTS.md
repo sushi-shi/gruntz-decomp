@@ -226,6 +226,16 @@
     `CNetMgr::PopulateProviderList`; those facts are positive evidence even
     though the corrected Gruntz body is byte-flat. Repeated sibling copies are
     stronger source-shape evidence than one later engine implementation.
+  * do not stop at the first related implementation. The later runtime PCX
+    decoder supplied only a byte-type clue, while the overlooked 1996
+    `libs/dibmgr::CDib::InitPcx` was the direct same-era ancestor. Its
+    function-scope local census, reverse RLE fill, and direct three-plane
+    indexing moved `CRezImage::DecodePcxData` from 97.6772 to exact extent and
+    topology at 99.9240; target-adjacent C1 forest trial 4 then banked audited
+    MAX 100 for that unchanged source with no probe retained. This falsifies
+    the prior higher-scoring green/blue cursor interpretation: an emitted
+    address sequence can reveal IL order without proving the named locals, and
+    a surviving abstraction can be the base that escapes that local maximum.
   * exhaust a lineage-shaped branch as a bounded composition, not a spelling
     vote. For `CButeMgr::SetString`, one through five assignment-in-condition
     restorations were byte-flat, the sixth crossed to a lower C1 island, and

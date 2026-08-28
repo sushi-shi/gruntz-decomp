@@ -722,7 +722,7 @@ butemgr	?ParseAttributeFile@ButeMgr@@QAE_NXZ	100.0000	100.0000	10	d56b372afe0e	0
 butemgr	?ParseGroup@CButeMgr@@QAE_NXZ	100.0000	100.0000	4	0bca5e2463e8	0x171580	100.0000	
 butemgr	?ParseTagLine@CButeMgr@@QAE_NXZ	100.0000	100.0000	2	36533e3dbeb7	0x1711b0	100.0000	
 butemgr	?ReportError@CButeMgr@@QAAXPBDZZ	100.0000	100.0000	1	9e4b72ca60f9	0x1706c0	100.0000	
-butemgr	?Save@CButeMgr@@QAE_NXZ	93.3913	93.3913	6	3aa7171a21e5	0x171640	93.3913	
+butemgr	?Save@CButeMgr@@QAE_NXZ	93.3913	93.3913	7	e5e644b8ee1e	0x171640	93.3913	
 butemgr	?ScanToken@CButeMgr@@QAE_NW4ButeToken@@@Z	100.0000	100.0000	1	f8dd61db5b85	0x170710	100.0000	
 butemgr	?SetDouble@CButeMgr@@QAEXPBD0N@Z	100.0000	100.0000	3	8a7a95ac3f99	0x172ce0	100.0000	
 butemgr	?SetDword@CButeMgr@@QAEXPBD0K@Z	100.0000	100.0000	3	ceeb58ae2b7e	0x1722c0	100.0000	
@@ -1233,7 +1233,7 @@ debugprintf	?DebugSetCursor@@YAXHHH@Z	100.0000	100.0000	2	8016e4fb372a	0x184fd0	
 debugprintf	?DebugSetCursorXY@@YAXHH@Z	100.0000	100.0000	2	3070d65c80e4	0x184fb0	100.0000	
 debugprintf	?DiscardDebugOutput@@YAXPAD@Z	100.0000	100.0000	1	e90e726b1ab9	0x184df0	100.0000	
 debugprintf	?MonoClear@@YAXXZ	100.0000	100.0000	2	8d1d7e5b7a22	0x184db0	100.0000	
-debugprintf	?MonoNewline@@YAXXZ	100.0000	100.0000	2	db4d5da85749	0x184d50	100.0000	
+debugprintf	?MonoNewline@@YAXXZ	100.0000	100.0000	3	d81549d5925a	0x184d50	100.0000	
 debugprintf	?RezAssertFail@@YAXPADZZ	100.0000	100.0000	1	e25286af7df0	0x184e00	100.0000	
 debugprintf	?RezDebugPrintfCh@@YAXHPADZZ	100.0000	100.0000	1	31c84b385252	0x184ed0	100.0000	
 debugprintf	?RezDebugPrintfChXY@@YAXHHHPADZZ	100.0000	100.0000	1	0da2922b553a	0x184f30	100.0000	
@@ -2644,7 +2644,7 @@ imagepool	?CreateSurfaceFromPixels@CImagePool@@QAEPAVCRezImage@@PAEHHW4ColorDept
 imagepool	?DecodeBlit@CRezImage@@QAEHPAEPAUHDC__@@HHW4ColorDepth@@H@Z	95.3194	95.2917	3	917ae477a751	0x175930	95.3194	
 imagepool	?DecodeBmpData@CRezImage@@QAEHPAXPAUHDC__@@H@Z	100.0000	99.6154	4	904a233396de	0x175e00	100.0000	
 imagepool	?DecodeBmpHeader@CRezImage@@QAEHPAUHDC__@@HHW4ColorDepth@@H@Z	100.0000	100.0000	2	4544d76396ba	0x1757c0	100.0000	
-imagepool	?DecodePcxData@CRezImage@@QAEHPAXPAUHDC__@@H@Z	97.6772	97.6772	5	33e5c457f5ba	0x176000	97.7215	
+imagepool	?DecodePcxData@CRezImage@@QAEHPAXPAUHDC__@@H@Z	100.0000	99.9240	6	a5de27156148	0x176000	100.0000	
 imagepool	?DecodePidData@CRezImage@@QAEHPAXPAUHDC__@@H@Z	81.4772	81.4772	5	1da889918329	0x176440	81.4772	
 imagepool	?DecodeRidData@CRezImage@@QAEHPAXPAUHDC__@@H@Z	100.0000	100.0000	6	494646d31f7a	0x1762c0	100.0000	
 imagepool	?Destroy@CImagePaletteNode@@QAEXXZ	100.0000	100.0000	2	1a15f3d54acb	0x177070	100.0000	
@@ -3299,7 +3299,7 @@ netmgr	?NetEnumPlayerCallback@@YGHKKPBUDPNAME@@KPAX@Z	100.0000	100.0000	3	f58fa8
 netmgr	?NetEnumProviderCallback@@YGHPAU_GUID@@PADKKPAX@Z	100.0000	100.0000	5	c067349cdf5c	0x1782d0	100.0000	
 netmgr	?NetEnumSessionCallback@@YGHPBUDPSESSIONDESC2@@PAKKPAX@Z	100.0000	100.0000	7	8dc5064761b9	0x1786a0	100.0000	
 netmgr	?PopulatePlayerList@CNetMgr@@QAEXPAUHWND__@@@Z	100.0000	100.0000	1	5299d35c5eab	0x178d40	100.0000	
-netmgr	?PopulateProviderList@CNetMgr@@QAEXPAUHWND__@@H@Z	97.2959	97.2959	3	f93c6e59ba18	0x178470	97.2959	
+netmgr	?PopulateProviderList@CNetMgr@@QAEXPAUHWND__@@H@Z	97.2959	97.2959	4	70a7b0092881	0x178470	97.2959	
 netmgr	?PopulateSessionList@CNetMgr@@QAEXPAUHWND__@@@Z	100.0000	100.0000	1	07176ecf67d5	0x178790	100.0000	
 netmgr	?ProviderName@CNetProviderNode@@QAE?AVCString@@XZ	100.0000	100.0000	4	3890f2b452be	0x179300	100.0000	
 netmgr	?ReadProviderSelection@CNetMgr@@QAEHPAUHWND__@@@Z	100.0000	100.0000	3	c57ef6ff9a09	0x178590	100.0000	
@@ -3582,10 +3582,10 @@ rezarchive	?MergeArchive@CRezArchive@@QAEHPADH@Z	100.0000	100.0000	5	490aac504a4
 rezarchive	?NextEntry@CRezArchiveDir@@QAEPAUCRezArchiveEntry@@PAU2@@Z	100.0000	100.0000	5	562e981a0f7b	0x13a310	100.0000	
 rezarchive	?NextSubdirectory@CRezArchiveDir@@QAEPAV1@PAV1@@Z	100.0000	100.0000	5	175e1a1ff2e5	0x13a280	100.0000	
 rezarchive	?NextType@CRezArchiveDir@@QAEPAVCRezArchiveType@@PAV2@@Z	100.0000	100.0000	5	0b7d94058d77	0x13a2d0	100.0000	
-rezarchive	?Open@CRezArchive@@QAEHPADHH@Z	100.0000	100.0000	8	a8221958d574	0x13ad00	100.0000	
+rezarchive	?Open@CRezArchive@@QAEHPADHH@Z	100.0000	100.0000	9	60d833d3c789	0x13ad00	100.0000	
 rezarchive	?PackTag@CRezArchive@@QAE?AW4RezTypeTag@@PBD@Z	100.0000	100.0000	2	f6195faead22	0x13b910	100.0000	
 rezarchive	?PreloadData@CRezArchiveDir@@QAEHH@Z	100.0000	100.0000	4	d5a69306aab2	0x13a0f0	100.0000	
-rezarchive	?Read@CRezArchiveEntry@@QAEHPAXIH@Z	100.0000	100.0000	3	c6f0e5d71852	0x139af0	100.0000	
+rezarchive	?Read@CRezArchiveEntry@@QAEHPAXIH@Z	100.0000	100.0000	4	195be51d088f	0x139af0	100.0000	
 rezarchive	?ReadAll@CRezArchiveEntry@@QAEHPAX@Z	100.0000	100.0000	2	c438695148b7	0x139a20	100.0000	
 rezarchive	?ReadAt@CRezArchiveEntry@@QAEHPAXHI@Z	100.0000	100.0000	2	c4defd17f169	0x139a40	100.0000	
 rezarchive	?ReadChar@CRezArchiveEntry@@QAEDXZ	100.0000	100.0000	2	eecafc07e3c3	0x139bd0	100.0000	
@@ -3606,7 +3606,7 @@ rezarchive	?UnusedArchiveAction@CRezArchive@@UAEXH@Z	100.0000	100.0000	2	813f322
 rezarchive	?UnusedArchiveQuery@CRezArchive@@UAEHH@Z	100.0000	100.0000	2	1477a47f5d4c	0x13b9f0	100.0000	
 rezbufferobject	?InitRezElem@@YIPAURezElem40@@PAU1@@Z	100.0000	100.0000	1	47eca8580a36	0x17f300	100.0000	
 rezbufferobject	?Serialize@CRezBufferObject@@UAEXAAVCArchive@@@Z	100.0000	100.0000	4	f22423b925e4	0x17f130	100.0000	
-rezbufferobject	?SetSize@CRezBufferObject@@QAEXHH@Z	96.0414	96.0414	4	0f241264517f	0x17f390	96.0414	
+rezbufferobject	?SetSize@CRezBufferObject@@QAEXHH@Z	96.0414	96.0414	5	71de07601f60	0x17f390	96.0414	
 rezbufferobject	?ZeroRecords@@YGXPAXH@Z	100.0000	100.0000	1	82bc3969e03d	0x17f500	100.0000	
 rezcoll	??0CHashBase@@QAE@H@Z	100.0000	100.0000	3	e14937bb3430	0x184960	100.0000	
 rezcoll	??0CHashSlot@@QAE@XZ	100.0000	100.0000	1	b14bb577fa64	0x184a20	100.0000	

@@ -4,18 +4,19 @@ tags: cpp:inheritance cpp:inline cpp:member cpp:local cpp:loop | asm:lea asm:mov
 symptoms: a reconstructed subsystem has correct broad behavior but repeated near-exact
 register/schedule walls, generic base pointers where consumers always recover one owner
 type, payload unions at a common trailing offset, or hand-expanded one-field stores
-confidence: 10/10 (eleven exact closures, exact controls, revision-history audit, and retail
-negative controls)
+confidence: 10/10 (eleven clean exact closures, one audited unchanged-source state closure,
+exact controls, revision-history audit, and retail negative controls)
 variants: inline-expansion-boundary-pins-a-neighbour.md, ctor-body-first-statement-is-an-inline-member.md
 
 ## Evidence
 
-The [public LithTech tree](https://github.com/jsj2008/lithtech) contains `libs/rezmgr`
-plus the `libs/lith` hash/list and debug libraries it uses. File headers date the family
-to 1995-1997. Its public Git history is also unusually clean for reverse use: the
-implementation was imported in commit `845119c`; later commits changed only build files
-in RezMgr/Lith. ButeMgr received one 2012 portability patch, so its changed stream-size
-types and casts are excluded from the old-MSVC prior.
+The [public LithTech tree](https://github.com/jsj2008/lithtech) contains `libs/rezmgr`,
+the `libs/lith` hash/list and debug libraries it uses, and the 1996 `libs/dibmgr` image
+decoder family. File headers date these families to 1995-1997. Its public Git history is
+also unusually clean for reverse use: the implementations were imported in commit
+`845119c`; later commits changed only build files in these libraries. ButeMgr received one
+2012 portability patch, so its changed stream-size types and casts are excluded from the
+old-MSVC prior.
 
 The corpus is not Gruntz ground truth. Names and later behavior differ. It is a sibling
 revision whose positive structure must be tested against retail instructions and
@@ -34,6 +35,7 @@ relocations. Applied that way, it closed these Gruntz functions:
 | `CRezArchive::Open` 0x13ad00 | hierarchy first, then original header-to-member statement order | 98.4567 -> 98.7437 -> **100.000** |
 | `MonoNewline` 0x184d50 | `unsigned short*` mono buffer and element-indexed scrolling/clear loops | 98.5714 -> **100.000** |
 | `MonoClear` 0x184db0 | same typed buffer and ordinary element-indexed `for` loop | 99.0000 -> **100.000** |
+| `CRezImage::DecodePcxData` 0x176000 | 1996 DIB decoder's function-scope local census, reverse RLE fill, and direct plane indexing | 97.6772 -> 99.9240 -> **MAX 100.000** |
 
 The exact controls are strong: all three typed hash lookups stayed exact, both hash-owning
 destructors stayed exact, and `rezarchive` reached 115/115 exact functions.
@@ -113,14 +115,19 @@ Use the corpus only in its positive direction:
   the baseline but composed with that dip by returning exactly to the 81.7868% baseline
   island. No intermediate texture or generated deleting-destructor cutoff appeared, so
   neither experimental spelling is retained.
-* The later PCX decoder proves a one-byte marker/payload temporary, which is retained as
-  a compiler-flat source correction. Hoisting its wider local census dropped
-  `CRezImage::DecodePcxData` from 97.6772 to 93.3291 but introduced retail's previously
-  absent `push edi` before `mov ebx,this` prologue texture. Two further evidenced
-  compositions (channel-pointer scope/order and one-byte reuse) did not recover retail's
-  width stack home, so the lower base is recorded as explored and the bank-preserving
-  scoped form remains. A real move toward retail is a reason to compose, not permission
-  for unbounded churn or a requirement to commit the dip.
+* The first PCX audit stopped at a later runtime decoder and therefore mistook a
+  green/blue cursor spelling for the best available source prior. The same public tree's
+  overlooked 1996 `libs/dibmgr/dib.cpp::CDib::InitPcx` is the direct same-era ancestor:
+  it declares `i`, `j`, remaining count, row, byte, source, destination, and scan buffer
+  at function scope; reverse-fills the scan line; and indexes all three planes directly.
+  Adapting that body raised `CRezImage::DecodePcxData` from 97.6772 to 99.9240 with the
+  exact 399-byte extent, 158 instructions, three calls, eighteen branches, three returns,
+  and three ordered relocations. The only clean-source residue was the opening x-bound
+  load pair. A 32-cell expression Cartesian was one flat island; target-adjacent C1 forest
+  trial 4 then reproduced audited 100.0000 for the unchanged function hash. MAX was banked
+  while exact and the generated probe was removed. This corrects the older cursor-order
+  interpretation: a higher transcription can be a local maximum that authentic source
+  composition escapes.
 * Branch-specific derived storage pointer types and direct member assignments in
   `Open`/`MergeArchive` compiled byte-flat in isolation. They remain good structural
   evidence, not credit for a score change.
@@ -141,8 +148,10 @@ Use the corpus only in its positive direction:
    until Gruntz retail independently supports them.
 5. Keep an authentic first-step dip available for a bounded composition. The type-ctor
    setter went down before its surviving assignment order took it to exact. Confirm the
-   feature gained by the dip was absent from the higher baseline; the PCX prologue is a
-   positive example whose bounded follow-ups did not yet converge.
+   feature gained by the dip was absent from the higher baseline. Also keep mining the
+   repository after one related implementation stalls: the later PCX decoder supplied a
+   useful byte type, but the same-era DIB library supplied the authored body that escaped
+   the cursor-local maximum and reached an auditable exact state.
 6. Run the full build. Shared header declarations are C1/TU-state inputs; preserve correct
    structure and bank MAX rather than deleting a proven layer to recover incidental
    current scores.

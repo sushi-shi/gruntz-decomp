@@ -586,7 +586,6 @@ i32 CRezImage::LoadBmp(char* name, HDC dc, i32 ctrl) {
 RVA(0x00176000, 0x18f)
 i32 CRezImage::DecodePcxData(void* buf, HDC dc, i32 ctrl) {
     PcxHeader* hdr = static_cast<PcxHeader*>(buf);
-    u8 temp;
     i32 width = hdr->m_xMax - hdr->m_xMin + 1;
     i32 height = hdr->m_yMax - hdr->m_yMin + 1;
     if (hdr->m_bitsPerPixel != PCX_BITS_PER_PLANE_8) {
@@ -602,43 +601,47 @@ i32 CRezImage::DecodePcxData(void* buf, HDC dc, i32 ctrl) {
         return 0;
     }
 
-    u8* src = hdr->m_pixels;
-    i32 scanBytes = width * IDX(hdr->m_planes) * IDX(hdr->m_bitsPerPixel) / 8;
-    u8* scan = new u8[scanBytes];
+    u8* packed = hdr->m_pixels;
 
-    for (i32 y = 0; y < height; y++) {
-        u8* dst = m_pixels + m_rowOffsets[y];
-        i32 remaining = width * IDX(hdr->m_planes);
+    i32 i;
+    i32 j;
+    i32 remaining;
+    i32 y;
+    u8 value;
+    u8* src = packed;
+    u8* dst;
+    u8* scan;
+
+    scan = new u8[(width * IDX(hdr->m_bitsPerPixel) * IDX(hdr->m_planes)) / 8];
+
+    for (y = 0; y < height; y++) {
+        dst = m_pixels + m_rowOffsets[y];
+        remaining = width * IDX(hdr->m_planes);
+
         while (remaining > 0) {
-            temp = *src++;
-            if ((temp & BYTE_RUN_CONTROL_MASK) == BYTE_RUN_MARKER) {
-                i32 count = temp & BYTE_RUN_LENGTH_MASK;
-                temp = *src++;
-                if (count > 0) {
-                    do {
-                        --remaining;
-                        --count;
-                        scan[remaining] = temp;
-                    } while (count != 0);
+            value = *src++;
+
+            if ((value & BYTE_RUN_CONTROL_MASK) == BYTE_RUN_MARKER) {
+                i = value & BYTE_RUN_LENGTH_MASK;
+                value = *src++;
+
+                for (j = 0; j < i; j++) {
+                    scan[--remaining] = value;
                 }
             } else {
-                scan[--remaining] = temp;
+                scan[--remaining] = value;
             }
         }
 
         if (hdr->m_planes == PCX_PLANES_PALETTED) {
-            for (i32 x = width; x != 0; x--) {
-                *dst++ = scan[x - 1];
+            for (i = width; i != 0; i--) {
+                *dst++ = scan[i - 1];
             }
         } else if (hdr->m_planes == PCX_PLANES_RGB) {
-            u8* blue = scan + width * 3;
-            u8* green = scan + width * 2;
-            for (i32 x = width; x != 0; x--) {
-                *dst++ = scan[x - 1];
-                *dst++ = green[-1];
-                *dst++ = blue[-1];
-                --green;
-                --blue;
+            for (i = width; i != 0; i--) {
+                *dst++ = scan[i - 1];
+                *dst++ = scan[width + i - 1];
+                *dst++ = scan[2 * width + i - 1];
             }
         }
     }
