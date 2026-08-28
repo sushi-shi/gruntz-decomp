@@ -444,6 +444,20 @@ void CGameObject::AddLogicBump(char* key) {
     EnsureBumpLogic(LookupLogicTemplate(OwnerMgr()->m_logicRegistry->m_templatesByName, key));
 }
 
+static inline i32 NotifyLogicForEventCode(CGameObject* object, i32 eventCode) {
+    CLogicRecord* record = object->m_logicRecord;
+    if (!record) {
+        return 0;
+    }
+    i32 savedEventCode = record->m_eventCode;
+    record->SetEventCode(eventCode);
+    object->m_logicRecord->m_dispatch(object);
+    if (object->m_logicRecord->m_eventCode == eventCode) {
+        object->m_logicRecord->SetEventCode(savedEventCode);
+    }
+    return 1;
+}
+
 // @early-stop
 RVA(0x00151150, 0x190)
 i32 CGameObject::SerializeDispatch(
@@ -456,63 +470,34 @@ i32 CGameObject::SerializeDispatch(
         return 0;
     }
 
-    CLogicRecord* notifyRecord;
-    i32 savedEvent;
-    LogicRecordEvent notifyEvent;
     switch (mode) {
-        case SERIAL_PRESAVE: {
+        case SERIAL_PRESAVE:
             m_carrierId = 0;
             if (m_carrier != NULL) {
                 m_carrierId = m_carrier->m_objectId;
             }
-            notifyRecord = m_logicRecord;
-            if (notifyRecord == NULL) {
+            if (!NotifyLogicForEventCode(this, ACT_PREPARE_SAVE)) {
                 goto fail;
             }
-            savedEvent = notifyRecord->m_eventCode;
-            notifyEvent = ACT_PREPARE_SAVE;
-            notifyRecord->SetLogicEvent(notifyEvent);
-
-            m_logicRecord->m_dispatch(this);
-            notifyRecord = m_logicRecord;
-            if (notifyRecord->LogicEvent() == notifyEvent) {
-                notifyRecord->SetEventCode(savedEvent);
-            }
-        }
         default:
         dispatch:
             return m_logicRecord->SerializeDispatch(ar, mode, typeId, object) != 0;
-        case SERIAL_SAVE: {
+        case SERIAL_SAVE:
             if (Serialize(ar) == 0) {
                 return 0;
             }
-            notifyRecord = m_logicRecord;
-            if (notifyRecord == NULL) {
+            if (!NotifyLogicForEventCode(this, ACT_AFTER_SAVE)) {
                 goto fail;
             }
-            savedEvent = notifyRecord->m_eventCode;
-            notifyEvent = ACT_AFTER_SAVE;
-            notifyRecord->SetLogicEvent(notifyEvent);
-
-            m_logicRecord->m_dispatch(this);
-            notifyRecord = m_logicRecord;
-            if (notifyRecord->LogicEvent() == notifyEvent) {
-                notifyRecord->SetEventCode(savedEvent);
-            }
             goto dispatch;
-        }
-        case SERIAL_LOAD: {
+        case SERIAL_LOAD:
             if (SerializeObjectState(ar) == 0) {
                 return 0;
             }
-            notifyRecord = m_logicRecord;
-            if (notifyRecord == NULL) {
+            if (!NotifyLogicForEventCode(this, ACT_AFTER_LOAD)) {
                 goto fail;
             }
-            savedEvent = notifyRecord->m_eventCode;
-            notifyEvent = ACT_AFTER_LOAD;
-            goto notifyAfterLoad;
-        }
+            goto dispatch;
         case SERIAL_POSTLOAD: {
             i32 node = m_carrierId;
             if (node != 0) {
@@ -531,24 +516,11 @@ i32 CGameObject::SerializeDispatch(
             } else {
                 m_carrier = NULL;
             }
-
-            notifyRecord = m_logicRecord;
-            if (notifyRecord != NULL) {
-                savedEvent = notifyRecord->m_eventCode;
-                notifyEvent = ACT_AFTER_LOAD_REFERENCES;
-                goto notifyAfterLoad;
-            }
-            goto fail;
-        }
-
-        notifyAfterLoad:
-            notifyRecord->SetLogicEvent(notifyEvent);
-            m_logicRecord->m_dispatch(this);
-            notifyRecord = m_logicRecord;
-            if (notifyRecord->LogicEvent() == notifyEvent) {
-                notifyRecord->SetEventCode(savedEvent);
+            if (!NotifyLogicForEventCode(this, ACT_AFTER_LOAD_REFERENCES)) {
+                goto fail;
             }
             goto dispatch;
+        }
     }
 fail:
     return 0;
@@ -819,17 +791,7 @@ i32 CGameObject::WriteSnapshot(CFileMemBase* dst, LogicTypeId unused) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00151d20, 0x3a)
 i32 CGameObject::NotifyForEventCode(i32 eventCode) {
-    CLogicRecord* record = m_logicRecord;
-    if (!record) {
-        return 0;
-    }
-    i32 savedEventCode = record->m_eventCode;
-    record->SetEventCode(eventCode);
-    m_logicRecord->m_dispatch(this);
-    if (m_logicRecord->m_eventCode == eventCode) {
-        m_logicRecord->SetEventCode(savedEventCode);
-    }
-    return 1;
+    return NotifyLogicForEventCode(this, eventCode);
 }
 
 RVA(0x00151d60, 0xb)

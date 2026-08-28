@@ -158,6 +158,20 @@ both, while a macro fallback avoids a later C1-state perturbation. A missing dir
 call therefore does not disprove the relationship when the complete semantic body and
 referents occur inside another function and the standalone COMDAT identity is retained.
 
+`CGameObject::NotifyForEventCode` is a second zero-direct-caller control and shows why the
+wrapper must remain a separate source entity even when the expansion is repeated several
+times in one caller. The hand-expanded `SerializeDispatch` stopped at 93.10%. Making the
+member itself visible as an out-of-class or in-class inline produced the retail 400-byte
+caller, but VC5 omitted the exact 58-byte standalone body in both cases. A file-local inline
+`NotifyLogicForEventCode(CGameObject*, i32)` supplies the four expansions, and the pinned
+member is the one-line wrapper which expands that same sibling. Both functions are then
+100.00% exact with one textual implementation. The disposable raw-object scorer reported
+99.75862 because its switch-table relocations still named `$L...` labels; the authoritative
+normalizer retargeted those same-function labels to `SerializeDispatch+addend`, proving the
+real-TU pair identical. Detection signature: an exact zero-ref body recurs in a sub-100
+caller, exposing it directly closes the caller but drops the body, and the wrapper over an
+inline sibling keeps both exact without address-taking or dead call sites.
+
 related: [inline-visibility-splits-call-and-expansion.md](inline-visibility-splits-call-and-expansion.md),
 [base-ctor-pinned-out-of-line-costs-every-derived-ctor.md](base-ctor-pinned-out-of-line-costs-every-derived-ctor.md),
 [inline-base-ctor-emission-wall.md](inline-base-ctor-emission-wall.md),
