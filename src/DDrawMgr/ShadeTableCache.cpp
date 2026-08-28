@@ -521,14 +521,11 @@ CShadeTable* CShadeTableCache::AddTable(float scale) {
                     u8 gc = static_cast<u8>((g < PIXEL_BYTE_MASK ? g : PIXEL_BYTE_MASK));
                     u8 bc = static_cast<u8>((b < PIXEL_BYTE_MASK ? b : PIXEL_BYTE_MASK));
 
-                    float f = static_cast<float>(v) * scale * g_inv255 - g_negone;
+                    float f = static_cast<float>(v) * (scale * g_inv255) - g_negone;
 
-                    float fr = static_cast<float>(rc) * f;
-                    u8 rn = static_cast<u8>(static_cast<i32>((fr < g_255 ? fr : g_255)));
-                    float fg = static_cast<float>(gc) * f;
-                    u8 gn = static_cast<u8>(static_cast<i32>((fg < g_255 ? fg : g_255)));
-                    float fb = static_cast<float>(bc) * f;
-                    u8 bn = static_cast<u8>(static_cast<i32>((fb < g_255 ? fb : g_255)));
+                    u8 rn = static_cast<u8>(HSV_MIN(static_cast<float>(rc) * f, g_255));
+                    u8 gn = static_cast<u8>(HSV_MIN(static_cast<float>(gc) * f, g_255));
+                    u8 bn = static_cast<u8>(HSV_MIN(static_cast<float>(bc) * f, g_255));
                     *out++ = static_cast<u16>(
                         ((static_cast<u8>((static_cast<u8>(rn) >> static_cast<u8>(g_rDown)))
                           << g_rUp)
