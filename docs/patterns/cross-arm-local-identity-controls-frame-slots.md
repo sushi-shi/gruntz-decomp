@@ -75,6 +75,31 @@ lever, but re-test it whenever a higher semantic boundary changes the function's
 front-end state. See
 [`row-dispatch-macro-controls-mirrored-loop-cfg.md`](row-dispatch-macro-controls-mirrored-loop-cfg.md).
 
+## Blit816 evidence and the TU-state control
+
+`CDDSurface::Blit816` 0x00140420 supplies a second production with three byte
+locals rather than a pointer.  Its two row-order arms unpack the same RGB
+channels and then run the same nearest-palette search.  A 64-cell product
+independently shared `row`, destination cursor, column, pixel, RGB channels,
+and best-index identities.  Only sharing the three RGB channels while leaving
+the loop and cursor roles arm-local improved the retained direct-expansion
+base, from 92.355550% to 92.525925%.  Calls, branches, returns, and ordered
+relocations remained 2/2, 20/20, 3/3, and 11/11.
+
+The abstraction control matters.  A file-inline nearest-palette helper and
+block/do-macro forms emitted the same `Blit816` bytes in isolated trials.  With
+the helper present, the shared-RGB cell also produced a much longer exact
+prefix and retail's stack-home permutation.  The full-TU build, however,
+showed that merely adding the helper changed C1 state for three earlier
+`DDSurface.cpp` functions: exact `Blit1624` fell to 95.1172%, `ShadeRect` fell
+82.1455% to 78.4909%, and `ShadeBlt` fell 72.4232% to 71.1034%.  Removing the
+helper restored all three banks while preserving the 92.525925% `Blit816`
+gain.  The helper state is therefore a diagnostic control, not retained source.
+
+This also strengthens the baseline-delta rule: attribute a recovered frame
+feature to the local-identity cell only after checking it without a simultaneous
+TU-state perturbation.
+
 ## Reverse-use rule
 
 1. Require mutually exclusive arms whose locals have the same semantic role

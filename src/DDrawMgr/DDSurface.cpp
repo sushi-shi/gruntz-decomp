@@ -1364,14 +1364,17 @@ i32 CDDSurface::Blit816(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
     Pix16Ptr source;
     source.m_bytes = srcv;
     u16* src = source.m_words;
+    u8 red;
+    u8 green;
+    u8 blue;
     if (rowOrder == RASTER_ROWS_BOTTOM_UP) {
         for (i32 row = this->m_height - 1; row >= 0; row--) {
             u8* dst = locked + row * this->m_pitch;
             for (i32 col = 0; col < this->m_width; col++) {
                 u16 px = *src++;
-                u8 red = static_cast<u8>((static_cast<u8>((px >> g_rUp)) << g_rDown));
-                u8 green = static_cast<u8>((static_cast<u8>((px >> g_gUp)) << g_gDown));
-                u8 blue = static_cast<u8>((static_cast<u8>(px) << g_bDown));
+                red = static_cast<u8>((static_cast<u8>((px >> g_rUp)) << g_rDown));
+                green = static_cast<u8>((static_cast<u8>((px >> g_gUp)) << g_gDown));
+                blue = static_cast<u8>((static_cast<u8>(px) << g_bDown));
                 i32 best = 0;
                 i32 bestd = SQUARE(red - pal->peRed) + SQUARE(green - pal->peGreen)
                             + SQUARE(blue - pal->peBlue);
@@ -1395,9 +1398,9 @@ i32 CDDSurface::Blit816(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
             u8* dst = locked + row * this->m_pitch;
             for (i32 col = 0; col < this->m_width; col++) {
                 u16 px = *src++;
-                u8 red = static_cast<u8>((static_cast<u8>((px >> g_rUp)) << g_rDown));
-                u8 green = static_cast<u8>((static_cast<u8>((px >> g_gUp)) << g_gDown));
-                u8 blue = static_cast<u8>((static_cast<u8>(px) << g_bDown));
+                red = static_cast<u8>((static_cast<u8>((px >> g_rUp)) << g_rDown));
+                green = static_cast<u8>((static_cast<u8>((px >> g_gUp)) << g_gDown));
+                blue = static_cast<u8>((static_cast<u8>(px) << g_bDown));
                 i32 best = 0;
                 i32 bestd = SQUARE(red - pal->peRed) + SQUARE(green - pal->peGreen)
                             + SQUARE(blue - pal->peBlue);
