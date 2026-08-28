@@ -970,27 +970,30 @@ i32 CRezImage::Save(const char* filename, CImagePaletteNode* paletteObj) {
     return 0;
 }
 
-// @early-stop
 RVA(0x00176b30, 0x1e5)
 i32 CRezImage::SaveBmp(const char* filename, CImagePaletteNode* paletteObj) {
+    ASSERT(IsValid());
+    ASSERT(filename);
+
     if (paletteObj == NULL) {
         paletteObj = m_paletteNode;
-        if (paletteObj == NULL) {
-            return 0;
-        }
     }
+    if (paletteObj == NULL) {
+        return 0;
+    }
+
     BmpFileHeaderStamp fileHdr;
     Bmp256Info info;
     memset(&info, 0, sizeof(info));
     info.bmiHeader.biSize = sizeof(info.bmiHeader);
-    info.bmiHeader.biWidth = m_width;
-    info.bmiHeader.biHeight = m_height;
+    info.bmiHeader.biWidth = GetWidth();
+    info.bmiHeader.biHeight = GetHeight();
     info.bmiHeader.biPlanes = 1;
     info.bmiHeader.biBitCount = 8;
-    info.bmiHeader.biCompression = 0;
+    info.bmiHeader.biCompression = BI_RGB;
     info.bmiHeader.biSizeImage = 0;
 
-    PALETTEENTRY* pal = paletteObj->m_logicalPalette.palPalEntry;
+    PALETTEENTRY* pal = paletteObj->Entries();
     if (pal == NULL) {
         return 0;
     }
@@ -1003,21 +1006,24 @@ i32 CRezImage::SaveBmp(const char* filename, CImagePaletteNode* paletteObj) {
 
     memset(&fileHdr, 0, sizeof(fileHdr));
     strcpy(fileHdr.m_bytes, g_bmpHeaderTemplate);
-    fileHdr.m_hdr.bfSize = m_width * m_height + 0x436;
-    fileHdr.m_hdr.bfOffBits = 0x436;
-    u8* pixels = m_pixels;
+    fileHdr.m_hdr.bfSize =
+        sizeof(BITMAPFILEHEADER) + sizeof(Bmp256Info) + (GetWidth() * GetHeight());
+    fileHdr.m_hdr.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(Bmp256Info);
+
+    u8* pixels = GetBytes();
     if (pixels == NULL) {
         return 0;
     }
 
     CFile file;
-    if (file.Open(filename, 0x1001, NULL) == false) {
+    if (!file.Open(filename, CFile::modeCreate | CFile::modeWrite)) {
         return 0;
     }
     file.Write(&fileHdr.m_hdr, sizeof(fileHdr.m_hdr));
     file.Write(&info, sizeof(info));
-    for (i32 row = m_height - 1; row >= 0; row--) {
-        file.Write(pixels + m_rowOffsets[row], m_width);
+    for (i32 row = GetHeight() - 1; row >= 0; row--) {
+        u32 index = GetIndex(row);
+        file.Write(&pixels[index], GetWidth());
     }
     return 1;
 }

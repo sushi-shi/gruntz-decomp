@@ -4,7 +4,7 @@ tags: cpp:inheritance cpp:inline cpp:member cpp:local cpp:loop | asm:lea asm:mov
 symptoms: a reconstructed subsystem has correct broad behavior but repeated near-exact
 register/schedule walls, generic base pointers where consumers always recover one owner
 type, payload unions at a common trailing offset, or hand-expanded one-field stores
-confidence: 10/10 (thirteen clean exact closures, two audited unchanged-source state closures,
+confidence: 10/10 (fourteen clean exact closures, two audited unchanged-source state closures,
 exact controls, revision-history audit, and retail negative controls)
 variants: inline-expansion-boundary-pins-a-neighbour.md, ctor-body-first-statement-is-an-inline-member.md
 
@@ -39,6 +39,7 @@ relocations. Applied that way, it closed these Gruntz functions:
 | `CRezImage::DecodePidData` 0x176440 | unsigned eight-word header census, named transparency value, direct run-byte rereads, and manual literal loop | 81.4772 -> **100.000** |
 | `CRezImage::DecodeBlit` 0x175930 | complete `IsStrideless`/size/height/index/width accessor layer and advancing the incoming pixel pointer | 95.3194 -> 99.9722 -> **MAX 100.000** |
 | `CRezImage::FlipVertical` 0x176840 | three unsigned offsets, shared forward index, cached dimensions, and ordinary copy loops from `CDib::Invert` | 79.7879 -> **100.000** |
+| `CRezImage::SaveBmp` 0x176b30 | two-stage palette fallback, validity/data/palette accessors, symbolic file sizing/open flags, and named row index | 98.9855 -> **100.000** |
 
 The exact controls are strong: all three typed hash lookups stayed exact, both hash-owning
 destructors stayed exact, and `rezarchive` reached 115/115 exact functions.
@@ -164,6 +165,14 @@ Use the corpus only in its positive direction:
   loops. This falsifies the final "IV reconstructed; remaining colour" doctrine in the
   older folded-local review: the exhaustive search was broad only inside the wrong source
   family.
+* `CDib::Save8` closed the last non-100 historical MAX in `imagepool`. The reconstructed
+  `SaveBmp` already had exact calls, CFG, returns, and relocations at 98.9855, but had
+  flattened the validity/data/dimension/index and palette-entry accessors, nested the
+  palette fallback, wrote literal header sizes/open flags, and passed the row address
+  without the authored index local. Restoring that complete layer reached 100.0000 exact.
+  The added shared accessors moved four current rows and improved another source-stable
+  row; banking preserved all historical maxima. Such C1 movement is expected evidence
+  that the declaration layer exists, not a reason to flatten a source body retail closes.
 * Branch-specific derived storage pointer types and direct member assignments in
   `Open`/`MergeArchive` compiled byte-flat in isolation. They remain good structural
   evidence, not credit for a score change.

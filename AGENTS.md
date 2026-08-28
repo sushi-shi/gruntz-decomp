@@ -260,6 +260,12 @@
     based on roughly 750 local Cartesian cells and 65 TU-state probes. Breadth
     inside one hand-transcribed IV family is not evidence against a surviving
     body at a different abstraction level.
+    `CDib::Save8` closed `CRezImage::SaveBmp` 98.9855 -> 100 by restoring the
+    two-stage palette fallback, validity/data/dimension/index and palette-entry
+    accessors, symbolic header sizes/open flags, and named row index. The shared
+    declarations rotated four current rows and improved another while preserving
+    every MAX; that is expected C1 movement from a correct class layer. With this
+    closure every `imagepool` function has banked MAX 100.
   * exhaust a lineage-shaped branch as a bounded composition, not a spelling
     vote. For `CButeMgr::SetString`, one through five assignment-in-condition
     restorations were byte-flat, the sixth crossed to a lower C1 island, and

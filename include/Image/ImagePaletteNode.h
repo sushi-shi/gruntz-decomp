@@ -21,6 +21,9 @@ struct CImagePaletteNode {
         m_reservedSystemColors = false;
         m_listPosition = NULL;
     }
+    PALETTEENTRY* Entries() {
+        return m_logicalPalette.palPalEntry;
+    }
     i32 CreateFromEntries(PALETTEENTRY* entries, i32 flags);
     void ReserveSystemColors();
     i32 CreateFromRgb(u8* rgb, i32 flags);

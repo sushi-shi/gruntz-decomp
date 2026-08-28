@@ -65,6 +65,12 @@ public:
     u32 GetIndex(i32 row) {
         return m_rowOffsets[row];
     }
+    u8* GetBytes() {
+        return m_pixels;
+    }
+    b32 IsValid() {
+        return m_dibSection != NULL && m_pixels != NULL && m_rowOffsets != NULL;
+    }
     b32 IsStrideless() {
         return m_rowPad == 0;
     }
