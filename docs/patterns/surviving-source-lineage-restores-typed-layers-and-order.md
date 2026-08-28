@@ -1,4 +1,4 @@
-# Surviving sibling source is a positive-only oracle for typed layers and authored order
+# Surviving sibling source restores typed layers and authored order
 
 tags: cpp:inheritance cpp:inline cpp:member cpp:local cpp:loop | asm:lea asm:mov | topic:source-oracle topic:codegen-idiom topic:evidence-discipline
 symptoms: a reconstructed subsystem has correct broad behavior but repeated near-exact
@@ -18,9 +18,9 @@ also unusually clean for reverse use: the implementations were imported in commi
 2012 portability patch, so its changed stream-size types and casts are excluded from the
 old-MSVC prior.
 
-The corpus is not Gruntz ground truth. Names and later behavior differ. It is a sibling
-revision whose positive structure must be tested against retail instructions and
-relocations. Applied that way, it closed these Gruntz functions:
+The pinned corpus is presumptively authentic for matching lineages. Gruntz retail
+instructions, relocations, ABI, and ownership still decide a measured conflict. Applied
+as a complete source layer with controlled adaptations, it closed these Gruntz functions:
 
 | retail function | surviving source fact | before -> after |
 |---|---|---:|
@@ -97,139 +97,30 @@ Moving only `m_version` from the front of the reconstructed block to this positi
 the final 1.2563%. The reusable lever is the source statement order, not the emitted store
 order; VC5 uses the former to build the IL and schedules the latter.
 
-## Revision-skew controls
+## Adoption control
 
-Use the corpus only in its positive direction:
+The pinned source is a presumptive source oracle, not merely a bag of optional
+clues. Start with the complete source layer and accept it unless Gruntz retail
+provides a specific contradiction. A first-step score descent remains a valid
+composition base; `CRezArchive::Open` and the DIB family demonstrate why ranking
+one sourced fact in isolation traps the search in a local maximum.
 
-* The surviving `CRezItm::Read` has an additional cursor-range guard. Adding it changes
-  Gruntz retail's CFG, so the guard belongs to the later revision and was rejected.
-* The surviving Bute scanner uses `unsigned char`; Gruntz's already-exact helper family
-  and mangled claims support `char`, so the width was not imported.
-* Bute's boolean state fields are useful layout-compatible type evidence, but changing
-  them did not move `Save`; a correct type correction is not automatically a wall lever.
-* The imported Bute implementation also resolves an inferred semantic name. Gruntz's
-  0x170330 body is the surviving `Reset` operation (position, line/count state, failure
-  state, tag name, and attribute name), whereas the later source's `Init` only calls
-  `Term`; rename the body and its callers accordingly. The sibling stream-facing
-  `Parse(istream&)` boundary is a useful negative control rather than an import. Factoring
-  Gruntz's archive tail through it leaves `rezsync` byte-identical, but the same header is
-  expanded inside `CChatBoxOwner::HandleTextInputKey`: cl 5.0 declines the new nested
-  helper, removes the retail-owned `zPTree::Reset` COMDAT, and changes the call set from
-  retail's expanded `Reset`/tree-reset/`ParseGroup` sequence to one `Parse(istream&)`
-  call. An in-class body, the surviving declaration order, and direct versus accessor
-  tree resets do not cross that boundary. Copying the later helper's literal `Reset`
-  before stream assignment also forces a second member store after the opaque call,
-  grows `CGruntzMgr::Run` by twelve bytes and two relocations, and drops 91.6618 ->
-  91.5421; retail has no such post-`Reset` store. Keep the proven semantic identity, but
-  do not import a later abstraction merely because one caller happens to compile flat.
-* `libs/RegMgr` resolves an entire inferred utility family without requiring a code
-  mismatch. The surviving global `CRegMgr` has the same 0x21c-byte complete layout,
-  seven-handle chain, two 256-byte names, and eleven one-to-one bodies as the former
-  `Utils::RegistryHelper` model. Restoring `Init`, `Term`, `SetSubKey`, the three `Set`
-  overloads, the three `Get` overloads, `Delete`, `CreateKey`, their const/reference
-  boundaries, and the `RegMgr.cpp` owner leaves all 11 functions exact. The source's
-  `UINT32&` is a 32-bit unsigned-long reference in this compiler family, so Gruntz uses
-  ABI-equivalent `DWORD&`, not its unsigned-int `u32&`. Positive-only still applies:
-  retail proves `KEY_ALL_ACCESS` instead of the later `KEY_READ | KEY_WRITE`, and does
-  not claim the later `DeleteApp`, `DeleteSubKey`, or `DeleteUnderSubKey` additions.
-* The surviving `Save` declares its 4096-byte transfer buffer at function scope before
-  the input stream. Gruntz retains that humane scope correction byte-flat. The later
-  implementation's optional output filename, `is_open` guard, zero-length promotion,
-  stream-failure exit, and format-flag writes are absent from retail's 38-call/20-branch
-  topology and were not imported. Forty-four syntax-aware compositions from the corrected
-  base all emitted one 1028-byte compiler island; the remaining EBX literal pinning is a
-  bounded C2 residue, not permission to invent a carrier local.
-* The surviving Bute setter style commonly assigns lookup results in conditions. In
-  `CButeMgr::SetString`, changing one through five of the six lookup sites was byte-flat;
-  the sixth moved to a 77.0314% C1 island. An explicit surviving-style `else` was flat on
-  the baseline but composed with that dip by returning exactly to the 81.7868% baseline
-  island. No intermediate texture or generated deleting-destructor cutoff appeared, so
-  neither experimental spelling is retained.
-* The first PCX audit stopped at a later runtime decoder and therefore mistook a
-  green/blue cursor spelling for the best available source prior. The same public tree's
-  overlooked 1996 `libs/dibmgr/dib.cpp::CDib::InitPcx` is the direct same-era ancestor:
-  it declares `i`, `j`, remaining count, row, byte, source, destination, and scan buffer
-  at function scope; reverse-fills the scan line; and indexes all three planes directly.
-  Adapting that body raised `CRezImage::DecodePcxData` from 97.6772 to 99.9240 with the
-  exact 399-byte extent, 158 instructions, three calls, eighteen branches, three returns,
-  and three ordered relocations. The only clean-source residue was the opening x-bound
-  load pair. A 32-cell expression Cartesian was one flat island; target-adjacent C1 forest
-  trial 4 then reproduced audited 100.0000 for the unchanged function hash. MAX was banked
-  while exact and the generated probe was removed. This corrects the older cursor-order
-  interpretation: a higher transcription can be a local maximum that authentic source
-  composition escapes.
-* The same `DIB_PCXHDR` declaration proves that the header ends at byte 0x80. It has
-  explicit DPI, 16-color palette, reserved, row-stride, palette-kind, screen-size, and
-  filler fields; it does not own a one-byte pseudo-flexible pixel member. Restoring that
-  complete record and deriving packed bytes from `sizeof(PcxHeader)` removed the union/
-  trailing-member fiction across both image families. In `CDDSurface::CreateFromPcxData`,
-  composing the surviving `pStart`, typed-header, `DWORD offset`, and `pPacked` statements
-  made the instructions and ordered relocations identical. The final reported hundredth
-  was only the independently proved one-past `g_grayRamp + 0x401` attribution described
-  by the folded-neighbour pattern. In the normal build, `CRezImage::DecodePcxData` and
-  `CDDSurface::DecodePcx` retain the direct surviving statement layer at 99.9240 and
-  99.8775 respectively, with only their opening coordinate-load order differing. A
-  64-trial target-adjacent forest reached audited exact at trial 1 for BOTH corrected
-  source hashes; each MAX was banked while exact and the generated declaration was
-  removed. Reintroducing a fake payload member merely to recover the normal-build state
-  would hide the class-model defect and is unnecessary.
-* The same 1996 file's `CDib::InitPid` invalidated a hash-scoped bounded review of
-  `CRezImage::DecodePidData`. The old body had already recovered retail's sequential
-  header cursor and exact call/branch/return/relocation counts, then exhausted direct-byte,
-  post-increment, payload-alias, final-advance, byte-token, and 33-state controls around
-  that transcription. The surviving body supplied the missing composition: eight named
-  unsigned header words, a named transparent index, repeated reads of the packed run byte,
-  the natural row-transition guard, and a manual literal-run copy loop with the original
-  function-scope census. Together they moved 81.4772% directly to 100.0000% exact. A
-  same-CFG REGALLOC diagnosis bounds one source state, not the source family; a full
-  surviving composition must invalidate and reopen that review through its new hash.
-* The `CDDSurface` PID/BMP siblings also preserve useful bases without immediately
-  closing their C2 residues. `CDib::InitPid` replaces two record-punning unions with one
-  advancing `DWORD*`, eight named header values, and `pPacked`; the manager's palette and
-  display-depth reads remain typed accessors. Sixty-four target-adjacent state trials all
-  emitted the same 96.1019% island. `CDib::InitBmp` supplies `pData`, `pStart`, and a typed
-  `BITMAPINFOHEADER*`; the adjacent palette helper family supplies the BGRX-to-entry copy
-  boundary. That source stays at 99.8786%. Sixty-four state trials were flat, and a
-  512-shape depth-1..3 Cartesian/M-frontier campaign found only two compiler islands,
-  both at 99.8786%. These are bounded scheduling residues on sourced bases, not evidence
-  for restoring the unions or flattening the helper layer.
-* The adjacent raw-byte `CDib::Init` body proves that the strideless test, buffer size,
-  height, row index, and width remain inline accessor calls and that the incoming pixel
-  pointer itself advances in the padded-row loop. Applying the literal signed `/ 8`
-  spelling first dropped `CRezImage::DecodeBlit` from 95.2917 to 91.2917 by adding four
-  sign-correction instructions absent from retail; that is revision/type skew because
-  Gruntz's byte-depth domain supplies unsigned lowering. Keeping the retail-proven shift
-  and restoring the parameter lifetime raised it to 99.9722 with exact extent, calls,
-  CFG, returns, relocations, mnemonics, displacements, stores, and immediates. Swapping
-  the two direct multiply operands was flat. `GetBufferSize` alone was also locally flat
-  and perturbed three dependent rows; restoring the complete five-accessor family was
-  still the authentic base, not a reason to keep the hand expansion. Target-adjacent C1
-  forest trial 1 then reached audited 100.0000 for that unchanged function hash; MAX was
-  banked and the probe removed. Mine and compose the semantic layer as a family—one
-  individually flat helper does not falsify it.
-* The same-era `CDib::Invert` body closed `CRezImage::FlipVertical` from 79.7879 to
-  100.0000 exact in one composition. The old transcription had been raised from 41.61
-  through cached width, a one-past bottom counter, shared decreasing copy index, and three
-  hand-shaped loops, then declared bounded after roughly 750 copy/outer/declaration/
-  update cells and 65 TU-state probes. The surviving body instead uses three unsigned
-  offsets, one shared forward `j`, cached width and height, and three ordinary incrementing
-  loops. This falsifies the final "IV reconstructed; remaining colour" doctrine in the
-  older folded-local review: the exhaustive search was broad only inside the wrong source
-  family.
-* `CDib::Save8` closed the last non-100 historical MAX in `imagepool`. The reconstructed
-  `SaveBmp` already had exact calls, CFG, returns, and relocations at 98.9855, but had
-  flattened the validity/data/dimension/index and palette-entry accessors, nested the
-  palette fallback, wrote literal header sizes/open flags, and passed the row address
-  without the authored index local. Restoring that complete layer reached 100.0000 exact.
-  The added shared accessors moved four current rows and improved another source-stable
-  row; banking preserved all historical maxima. Such C1 movement is expected evidence
-  that the declaration layer exists, not a reason to flatten a source body retail closes.
-* Branch-specific derived storage pointer types and direct member assignments in
-  `Open`/`MergeArchive` compiled byte-flat in isolation. They remain good structural
-  evidence, not credit for a score change.
-* The surviving `CBaseHashItem::Prev` while-loop spelling falls from 99.6552 to 99.1379;
-  the remaining byte is only a commuted scale-1 SIB encoding. The higher humane Gruntz
-  spelling stays until further evidence appears.
+[The canonical lineage ledger](../../config/lithtech_lineage.tsv) is the only
+place that records candidate status and source-specific exceptions. In
+particular, the retained Rez, Bute, DIB, and RegMgr adaptations are identified
+there by `rez-read-cursor-guard`, `bute-*-byte`,
+`bute-stream-parse-boundary`, `bute-save-adaptation`,
+`dib-init-adaptation`, and `reg-*`. This pattern intentionally does not
+repeat their rejection rationale. Run `gruntz lineage inventory --todo` for
+the dependency/MAX-ordered adoption queue and `gruntz lineage verify --source
+<checkout>` to prove pinned blob identity and discovery coverage.
+
+A `take-adapted` decision means the surviving owner and source layer are
+retained while a precisely measured retail difference is substituted. It does
+not license a hand transcription of the rest of the function. A
+`do-not-take` decision rejects only the ledger entity it names; absence or
+later behavior elsewhere in the sibling revision is not negative evidence
+about Gruntz.
 
 ## Reverse-use procedure
 

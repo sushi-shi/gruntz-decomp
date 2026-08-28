@@ -19,6 +19,8 @@
                                      xref, rva, vtable, classof, strings, ...)
     gruntz walls <sub>               the wall campaign: inventory, diagnose,
                                      inline-model
+    gruntz lineage <sub>             discover, inventory and verify surviving
+                                     LithTech source-lineage decisions
     gruntz permute <verb>            classified state/variant search or island campaign
     gruntz ghidra <sub>              one-way viewer export: the retail image
                                      as a labelled Ghidra project (build,
@@ -60,7 +62,7 @@ def main(argv: list[str] | None = None) -> int:
              "delink": "gruntz.delink.run", "compare": "gruntz.compare.run"}[cmd])
         sys.argv = [f"gruntz {cmd}", *rest]
         return mod.main()
-    if cmd in ("sema", "walls", "ghidra", "verify", "rsrc", "lsp"):
+    if cmd in ("sema", "walls", "ghidra", "verify", "rsrc", "lsp", "lineage"):
         import importlib
         return importlib.import_module(f"gruntz.{cmd}").main(rest)
     if cmd == "permute":

@@ -183,109 +183,39 @@
   opposite inline decisions. After the checklist is genuinely exhausted,
   a same-call-set/same-CFG residue is a useful stop signal rather than a reason
   for unbounded spelling churn.
-- SURVIVING SOURCE LINEAGE PRIOR (LithTech RezMgr/Bute audit, 2026-08-28):
-  a public sibling revision can recover source layers that retail bytes alone
-  underdetermine, but it is a positive-only oracle. Audit that repository's own
-  history before importing anything: the public `libs/rezmgr` and `libs/lith`
-  implementations were imported once and left source-unchanged, while ButeMgr
-  later received portability edits to stream-size types and casts. Separate the
-  historical import from those edits.
-  * repeated complete-layout evidence outranks a layout-compatible shortcut.
-    The surviving hash hierarchy proved that `CHashElement` ends after its
-    parent/bin fields and each typed derived node owns the payload pointer at
-    base+0x14. A union in the base preserved every 0x18-byte complete-node size
-    but erased the real layer. Restoring typed nodes/tables, their inline
-    setters/getters and typed `First`/`Insert`/`Delete` wrappers closed
-    `CHashBase::Insert`, `CRezArchive::MergeArchive`,
-    `CRezArchiveEntry::Initialize`, and `CRezArchive::AcquireEntry`;
-  * source statement order is evidence even when C2 emits a different store
-    order. The surviving header-to-member sequence closed the final residue in
-    `CRezArchive::Open`. Separately, routing the type ctor through its authentic
-    typed helper dropped it from 99.3548 to 95.6452; retaining that lower state
-    and then adding the surviving authored order reached 100. This proves that
-    an authentic lower-scoring compiler state can be the necessary BASE for the
-    next independently evidenced fact. Never rank or revert such a path before
-    bounded composition merely because its first step descends;
-  * local census/shared tails, parameter reuse, and loop spelling transfer as
-    hypotheses: the same lineage closed `CRezItm::Close`,
-    `CRezArchiveEntry::Read`, and `CHashBase::Last`;
-  * preserve the element type and authored index expression even when C2
-    strength-reduces the loop to a byte induction variable. The surviving
-    `dprintf.cpp` used an `unsigned short*` text buffer and element-indexed
-    `for` loops; restoring that source closed the two final commuted-SIB walls
-    in `MonoNewline` and `MonoClear`. A byte view plus manual byte offsets can
-    match the arithmetic while hiding the source fact that selects the SIB;
-  * never import negative absence or later additions. A later cursor-range
-    guard changed Gruntz retail's CFG and was rejected; Bute's unsigned scanner
-    byte was rejected by Gruntz's already-exact `char` family. Branch-specific
-    derived locals that compile byte-flat remain structural evidence, not score
-    evidence.
-  * mine the public games and samples as well as the engine libraries. The
-    byte-identical Shogo/Blood2 `NetStart_FillServiceList` copies recovered the
-    authored loop alias, cursor-local census, and direct `LPARAM` casts for
-    `CNetMgr::PopulateProviderList`; those facts are positive evidence even
-    though the corrected Gruntz body is byte-flat. Repeated sibling copies are
-    stronger source-shape evidence than one later engine implementation.
-  * do not stop at the first related implementation. The later runtime PCX
-    decoder supplied only a byte-type clue, while the overlooked 1996
-    `libs/dibmgr::CDib::InitPcx` was the direct same-era ancestor. Its
-    function-scope local census, reverse RLE fill, and direct three-plane
-    indexing moved `CRezImage::DecodePcxData` from 97.6772 to exact extent and
-    topology at 99.9240; target-adjacent C1 forest trial 4 then banked audited
-    MAX 100 for that unchanged source with no probe retained. This falsifies
-    the prior higher-scoring green/blue cursor interpretation: an emitted
-    address sequence can reveal IL order without proving the named locals, and
-    a surviving abstraction can be the base that escapes that local maximum.
-    The adjacent `CDib::InitPid` then moved `CRezImage::DecodePidData` from
-    81.4772 to 100 exact by composing its eight named unsigned header reads,
-    transparent-index local, direct packed-byte rereads, row guard, and manual
-    literal loop. This invalidated a current hash-scoped `bounded/regalloc`
-    review whose cursor variants and 33-state campaign had been exhaustive only
-    for the hand transcription. A same-CFG diagnosis and a wide local matrix do
-    not bound an untested surviving source family; apply the authentic complete
-    body and let its new source hash reopen the review.
-    The same file's raw-byte `CDib::Init` then showed that `DecodeBlit` advances
-    its incoming pixel pointer and retains the `IsStrideless`/buffer-size/height/
-    row-index/width accessor layer. The literal later signed `/8` first dipped
-    95.2917 -> 91.2917 by adding four sign-correction instructions retail lacks;
-    composing Gruntz's retail-proven unsigned lowering with the authentic pointer
-    lifetime reached 99.9722 and exact topology. One `GetBufferSize` restoration
-    was locally flat and moved dependent TUs, but that did not falsify the complete
-    accessor family. On that humane base, target-adjacent C1 forest trial 1 banked
-    audited MAX 100 for the unchanged source and the probe was removed. Preserve
-    the semantic layer and separate revision/type skew from it before ranking.
-    Finally, `CDib::Invert` moved `CRezImage::FlipVertical` from 79.7879 to 100
-    exact with its three unsigned offsets, shared forward index, cached width/
-    height, and ordinary incrementing loops. This invalidated a bounded review
-    based on roughly 750 local Cartesian cells and 65 TU-state probes. Breadth
-    inside one hand-transcribed IV family is not evidence against a surviving
-    body at a different abstraction level.
-    `CDib::Save8` closed `CRezImage::SaveBmp` 98.9855 -> 100 by restoring the
-    two-stage palette fallback, validity/data/dimension/index and palette-entry
-    accessors, symbolic header sizes/open flags, and named row index. The shared
-    declarations rotated four current rows and improved another while preserving
-    every MAX; that is expected C1 movement from a correct class layer. With this
-    closure every `imagepool` function has banked MAX 100.
-  * complete API-and-layout agreement can promote an inferred utility class even
-    when every owner function is already exact. `libs/RegMgr` proves that the
-    0x21c-byte `Utils::RegistryHelper` model is the global `CRegMgr`: its eleven
-    retail bodies map one-for-one to `Init`, `Term`, `SetSubKey`, the three `Set`
-    overloads, the three `Get` overloads, `Delete`, and `CreateKey`, with the same
-    seven handles and two 256-byte names. Restoring that class, overload family,
-    const inputs, reference-sized buffer arguments, field identities, and
-    `RegMgr.cpp` owner keeps all 11 functions exact. Translate the surviving
-    `UINT32&` through the pinned compiler ABI (`DWORD&` here, not this tree's
-    unsigned-int `u32&`). Keep retail-proven revision differences: Gruntz passes
-    `KEY_ALL_ACCESS`, not the later source's `KEY_READ | KEY_WRITE`, and has no
-    evidence for the later three key-deletion helpers. Exact bytes do not prove
-    inferred semantic names, while a complete repeated source family can.
-  * exhaust a lineage-shaped branch as a bounded composition, not a spelling
-    vote. For `CButeMgr::SetString`, one through five assignment-in-condition
-    restorations were byte-flat, the sixth crossed to a lower C1 island, and
-    adding the surviving `else` from that island returned to the baseline.
-    With no intermediate state and the generated deleting-destructor cutoff
-    unchanged, retain neither spelling and route to the next wall.
-  The full controlled evidence and reverse-use procedure live in
+- SURVIVING SOURCE LINEAGE PRIOR (LithTech campaign, 2026-08-28):
+  the pinned public revision `845119c` is presumptively authentic source for
+  matching Gruntz families. Start from its complete owner, class, declaration,
+  helper, local-census, statement-order, and loop layer; adopt it unless retail
+  instructions, ordered relocations, ABI/layout evidence, or the absence of a
+  retail owner specifically disproves that fact. A lower first score is not a
+  rejection: keep the sourced base and compose independently evidenced facts.
+  ButeMgr portability commit `458a14f` is comparison evidence only.
+  * `gruntz lineage discover|inventory|verify` and
+    `config/lithtech_lineage.tsv` define the complete derived adoption queue.
+    Every candidate must become `take`, `take-adapted`, or `do-not-take`;
+    every retained divergence and its retail evidence live ONLY in that ledger.
+    Other documentation cites ledger IDs and must not duplicate exception
+    explanations.
+  * repeated complete-layout and API evidence outrank layout-compatible
+    shortcuts. The surviving typed hash-node hierarchy, inline wrappers, and
+    authored declaration/order layers closed the Rez hash/archive family; a
+    trailing union with the same complete size was not an authentic substitute.
+  * source statement order, helper boundaries, local census/lifetimes, parameter
+    reuse, and element-indexed loop spelling are first-class evidence even when
+    C2 reorders or strength-reduces the emitted operations. The typed DIB and
+    dprintf families closed walls that wide searches inside hand-transcribed
+    source families had misclassified as irreducible allocation residue.
+  * mine games and samples as well as engine libraries. Repeated Shogo/Blood2
+    implementations preserve source layers that a later runtime analogue may
+    obscure; repeated sibling copies are stronger evidence than one later body.
+  * an authentic complete body invalidates a bounded review of a different
+    source hash. Apply the complete sourced family, reopen the diagnosis, and
+    bank any exact unchanged-source state before removing disposable C1 probes.
+  * complete API/layout agreement can replace an inferred owner even when all
+    affected bodies are already exact. The surviving `CRegMgr` family did so
+    while preserving all eleven retail matches.
+  The controlled closures and reverse-use procedure live in
   `docs/patterns/surviving-source-lineage-restores-typed-layers-and-order.md`.
 - INLINE/MACRO PRIOR (user ruling 2026-08-22): the era devs DID write inline
   functions and macros, so an inline/macro spelling is a priori MORE likely to

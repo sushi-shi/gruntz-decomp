@@ -1,0 +1,132 @@
+# Canonical surviving LithTech source-lineage adoption ledger.
+# Every mechanically plausible candidate is classified here; pending rows form the work queue.
+# Entity-specific rows refine a file-level * candidate. Every retained divergence is recorded only here.
+id	wave	source_commit	source_blob	source_path	source_symbol	gruntz_symbol	rva	module	relation	decision	reason	retail_evidence	landed_commit
+src-libs-lith-basehash-cpp	1	845119c	683c0b4955c9dbebcebe1dd0f22deb1ad468f115	libs/lith/basehash.cpp	*			Rez	direct-family	pending			
+hash-prev-authored-loop	1	845119c	683c0b4955c9dbebcebe1dd0f22deb1ad468f115	libs/lith/basehash.cpp	CBaseHashItem::Prev	CHashElement::Prev	0x184900	Rez	direct-family	pending			
+src-libs-lith-basehash-h	1	845119c	328afa00f72faca52ffdd24539b46c4424530843	libs/lith/basehash.h	*			Rez	direct-family	pending			
+hash-authentic-family	1	845119c	328afa00f72faca52ffdd24539b46c4424530843	libs/lith/basehash.h	CBaseHash and CBaseHashItem	CHashBase and CHashElement		Rez	direct-family	pending			
+src-libs-lith-baselist-cpp	1	845119c	f1a519e0d6518f3a1839077bd10c47c0c71274cc	libs/lith/baselist.cpp	*			Rez	direct-family	pending			
+src-libs-lith-baselist-h	1	845119c	98cf2befd99aa1b57fa2b9f436b88908aee96e67	libs/lith/baselist.h	*			Rez	direct-family	pending			
+src-libs-lith-baselistcounter-cpp	1	845119c	11b080e3914086e102527629949b49ffb859a29d	libs/lith/baselistcounter.cpp	*			Rez	direct-family	pending			
+src-libs-lith-baselistcounter-h	1	845119c	816a19db50e2704dbe9ec4f6623b42b2b2da4fb2	libs/lith/baselistcounter.h	*			Rez	direct-family	pending			
+src-libs-lith-dprintf-cpp	1	845119c	9987e17248054c320f427e18caebd3711af4042e	libs/lith/dprintf.cpp	*			Rez	direct-family	pending			
+src-libs-lith-dprintf-h	1	845119c	8d7486057e467c1745ccda21a57c70c5db03893e	libs/lith/dprintf.h	*			Rez	direct-family	pending			
+src-libs-lith-lith-cpp	1	845119c	1cf63b71f47e36ce67c6e28e69139ce2e48540f2	libs/lith/lith.cpp	*			Rez	direct-family	pending			
+src-libs-lith-lith-h	1	845119c	df5d2451d68f4e04e4f30a993715ea94a7b724a4	libs/lith/lith.h	*			Rez	direct-family	pending			
+src-libs-lith-lithbaselist-cpp	1	845119c	2d1dbdc3c3c5c91d0e1217a75b07ba2e7bac63c5	libs/lith/lithbaselist.cpp	*			Rez	direct-family	pending			
+src-libs-lith-lithbaselist-h	1	845119c	4f5a933f0400f340010aacc718e7101ee2054544	libs/lith/lithbaselist.h	*			Rez	direct-family	pending			
+src-libs-lith-lithchunkallocator-cpp	1	845119c	5d6838a49d25502a87fb702d07dcee935e7fe808	libs/lith/lithchunkallocator.cpp	*			Rez	direct-family	pending			
+src-libs-lith-lithchunkallocator-h	1	845119c	f713fd59c2eb298e03f59fef3b254be41878e2ff	libs/lith/lithchunkallocator.h	*			Rez	direct-family	pending			
+src-libs-lith-lithsimpary-cpp	1	845119c	7103a6991cf8a881c5499726857609ae16f41f15	libs/lith/lithsimpary.cpp	*			Rez	direct-family	pending			
+src-libs-lith-lithsimpary-h	1	845119c	0c8ac560ea01389bd6e6d2d008a52d6c509521c7	libs/lith/lithsimpary.h	*			Rez	direct-family	pending			
+src-libs-lith-lithsimparystat-cpp	1	845119c	fa4f5cfe3a5fc7eeda35cf9247a1f8e2e9db158b	libs/lith/lithsimparystat.cpp	*			Rez	direct-family	pending			
+src-libs-lith-lithsimparystat-h	1	845119c	9181497328005e45a3bad9da7ab357b613d42576	libs/lith/lithsimparystat.h	*			Rez	direct-family	pending			
+src-libs-lith-lithtmpl-h	1	845119c	1d10c4d30e14f304f4557a491ef66ed65cbed494	libs/lith/lithtmpl.h	*			Rez	direct-family	pending			
+src-libs-lith-lithtypes-h	1	845119c	cd92e6e9c11dde301a0ad6eae6a5507bef26889c	libs/lith/lithtypes.h	*			Rez	direct-family	pending			
+src-libs-lith-virtlist-cpp	1	845119c	bf443edea84fe91ea317d9e459bbc2e62027a81c	libs/lith/virtlist.cpp	*			Rez	direct-family	pending			
+src-libs-lith-virtlist-h	1	845119c	d975e65038e8e092c0622434a4a4452dd13cf8f0	libs/lith/virtlist.h	*			Rez	direct-family	pending			
+src-libs-rezmgr-rezfile-cpp	1	845119c	436d9aa58cfad0d11e1666dd7b79199ac96e28c0	libs/rezmgr/rezfile.cpp	*			Rez	direct-family	pending			
+src-libs-rezmgr-rezfile-h	1	845119c	5311516ba337b9b2599524b182c58c5e148efdc3	libs/rezmgr/rezfile.h	*			Rez	direct-family	pending			
+src-libs-rezmgr-rezhash-cpp	1	845119c	671dc4fa253c5e3b6802844a025fffdb1513c779	libs/rezmgr/rezhash.cpp	*			Rez	direct-family	pending			
+src-libs-rezmgr-rezhash-h	1	845119c	ffd8b4322d8defc4c3c77dfae0979a1f3657155d	libs/rezmgr/rezhash.h	*			Rez	direct-family	pending			
+src-libs-rezmgr-rezmgr-cpp	1	845119c	8dc8f00a3959e072d72c52147e6d329481f41112	libs/rezmgr/rezmgr.cpp	*			Rez	direct-family	pending			
+rez-read-cursor-guard	1	845119c	8dc8f00a3959e072d72c52147e6d329481f41112	libs/rezmgr/rezmgr.cpp	CRezItm::Read	CRezArchiveEntry::Read	0x139af0	Rez	same-lineage-revision	take-adapted		surviving local census and shared storage arms retained; source cursor-past-end early return is absent from retail CFG	fb6b188e1
+src-libs-rezmgr-rezmgr-h	1	845119c	33cdd155121e35ecd9a069d58baa96cefce48cb2	libs/rezmgr/rezmgr.h	*			Rez	direct-family	pending			
+rez-authentic-family	1	845119c	33cdd155121e35ecd9a069d58baa96cefce48cb2	libs/rezmgr/rezmgr.h	CRezMgr/CRezItm/CRezTyp/CRezDir	CRezArchive/CRezArchiveEntry/CRezArchiveType/CRezArchiveDir		Rez	direct-family	pending			
+src-libs-rezmgr-reztypes-h	1	845119c	38dc88491001c1576294ed8cb482c45f6b6ba215	libs/rezmgr/reztypes.h	*			Rez	direct-family	pending			
+src-libs-rezmgr-rezutils-cpp	1	845119c	8474073f10c538f5d360a718169ddeff2cc69185	libs/rezmgr/rezutils.cpp	*			Rez	direct-family	pending			
+src-libs-rezmgr-rezutils-h	1	845119c	77d734af0c95091e0ad89402cd4b0c920a56a580	libs/rezmgr/rezutils.h	*			Rez	direct-family	pending			
+src-libs-butemgr-arange-cpp	2	845119c	4ebfb21439b3bda1b62b5cbba3e89937f971ba30	libs/ButeMgr/arange.cpp	*			Bute	direct-family	do-not-take	tooling-only	include-only build scaffold emits no independent retail semantic owner	
+src-libs-butemgr-arange-h	2	845119c	d6470ae8549e8281a42a4ef7ae42c15b6e845f6f	libs/ButeMgr/arange.h	*			Bute	direct-family	pending			
+src-libs-butemgr-avector-cpp	2	845119c	777609bd763d4b2c0c24f39af3fc285c0ea80f19	libs/ButeMgr/avector.cpp	*			Bute	direct-family	do-not-take	tooling-only	include-only build scaffold emits no independent retail semantic owner	
+src-libs-butemgr-avector-h	2	845119c	eaae012cd261be36b51e03bccb2bc724b47ee436	libs/ButeMgr/avector.h	*			Bute	direct-family	pending			
+src-libs-butemgr-butemgr-cpp	2	845119c	966ba831207bc7d4dab38fea51383503832cdb96	libs/ButeMgr/butemgr.cpp	*			Bute	direct-family	pending			
+bute-action-byte	2	845119c	966ba831207bc7d4dab38fea51383503832cdb96	libs/ButeMgr/butemgr.cpp	CButeMgr::Action(short,unsigned char)	CButeMgr::GetLexAction(i16,char)	0x170400	Bute	same-lineage-revision	do-not-take	retail-abi	exact retail mangling and exact scanner call family require char; Action semantic name remains a pending family rename	
+bute-charclass-byte	2	845119c	966ba831207bc7d4dab38fea51383503832cdb96	libs/ButeMgr/butemgr.cpp	CButeMgr::CharClass(unsigned char)	CButeMgr::CharClass(char)	0x1703e0	Bute	same-lineage-revision	do-not-take	retail-abi	exact retail mangling and exact four-function scanner family require char at the call boundary	
+bute-lookupcodes-byte	2	845119c	966ba831207bc7d4dab38fea51383503832cdb96	libs/ButeMgr/butemgr.cpp	CButeMgr::LookupCodes(short,unsigned char)	CButeMgr::AcceptTransition(i16,char)	0x170460	Bute	same-lineage-revision	do-not-take	retail-abi	exact retail mangling and exact scanner call family require char; LookupCodes semantic name remains a pending family rename	
+bute-nextstate-byte	2	845119c	966ba831207bc7d4dab38fea51383503832cdb96	libs/ButeMgr/butemgr.cpp	CButeMgr::NextState(short,unsigned char)	CButeMgr::GetTransitionTarget(i16,char)	0x170430	Bute	same-lineage-revision	do-not-take	retail-abi	exact retail mangling and exact scanner call family require char; NextState semantic name remains a pending family rename	
+bute-save-adaptation	2	845119c	966ba831207bc7d4dab38fea51383503832cdb96	libs/ButeMgr/butemgr.cpp	CButeMgr::Save(const char*)	CButeMgr::Save()	0x171640	Bute	same-lineage-revision	take-adapted		function-scope 4096-byte transfer buffer retained; optional filename open guard zero-length promotion failure exit and format writes are absent from retail 38-call/20-branch topology	5cae6e727
+bute-setstring-authored-conditions	2	845119c	966ba831207bc7d4dab38fea51383503832cdb96	libs/ButeMgr/butemgr.cpp	CButeMgr::SetString	CButeMgr::SetString	0x1732a0	Bute	direct-family	pending			
+src-libs-butemgr-butemgr-h	2	845119c	70d361992ba6fe56d6380ea6daf71ea03ae4f424	libs/ButeMgr/butemgr.h	*			Bute	direct-family	pending			
+bute-authentic-value-types	2	845119c	70d361992ba6fe56d6380ea6daf71ea03ae4f424	libs/ButeMgr/butemgr.h	CARange/CAVector	ButeDoubleRange/ButeDoubleVector		Bute	direct-family	pending			
+bute-stream-parse-boundary	2	845119c	70d361992ba6fe56d6380ea6daf71ea03ae4f424	libs/ButeMgr/butemgr.h	CButeMgr::Parse(istream&,int)	CButeMgr::Parse(CRezArchiveEntry*,const char*)		Bute	same-lineage-revision	do-not-take	retail-callset	factoring the archive path through this later helper removes the retail Reset tree-reset ParseGroup expansion in ChatBox and adds a non-retail Run store	
+src-libs-butemgr-stdafx-cpp	2	845119c	fd4f341c7b247a19f9f24bba29582643f79a0751	libs/ButeMgr/stdafx.cpp	*			Bute	direct-family	do-not-take	tooling-only	include-only build scaffold emits no independent retail semantic owner	
+src-libs-butemgr-stdafx-h	2	845119c	4fbcdf74ae0c48da4a74d361c0c1dac5879ff3ca	libs/ButeMgr/stdafx.h	*			Bute	direct-family	do-not-take	tooling-only	include-only build scaffold emits no independent retail semantic owner	
+src-libs-cryptmgr-blowfish-cpp	2	845119c	c5edb90673f9efd900a10bd88f036f2da1cb411e	libs/CryptMgr/blowfish.cpp	*			Bute	direct-family	pending			
+src-libs-cryptmgr-blowfish-h	2	845119c	179ceea031750ad6060eab1154fd99d32fa80f46	libs/CryptMgr/blowfish.h	*			Bute	direct-family	pending			
+src-libs-cryptmgr-cryptmgr-cpp	2	845119c	6337b4842d7c45b338f1ac0327fa4ffe2bc7df8d	libs/CryptMgr/cryptmgr.cpp	*			Bute	direct-family	pending			
+src-libs-cryptmgr-cryptmgr-h	2	845119c	a59aad31901ccacb2f8213b695b34ab26ad16501	libs/CryptMgr/cryptmgr.h	*			Bute	direct-family	pending			
+crypt-authentic-family	2	845119c	a59aad31901ccacb2f8213b695b34ab26ad16501	libs/CryptMgr/cryptmgr.h	CCryptMgr	CButeTail		Bute	direct-family	pending			
+src-libs-dibmgr-dib-cpp	3	845119c	f1a29855a0bad5d0d72eac258ce130e1da25b717	libs/dibmgr/dib.cpp	*			Image	direct-family	pending			
+dib-init-adaptation	3	845119c	f1a29855a0bad5d0d72eac258ce130e1da25b717	libs/dibmgr/dib.cpp	CDib::Init	CRezImage::DecodeBlit	0x175930	Image	same-lineage-revision	take-adapted		accessor layer and advancing input pointer retained; surviving signed depth/8 adds four sign-correction instructions absent from retail so Gruntz keeps unsigned ColorDepth lowering	a76ad80ae
+src-libs-dibmgr-dib-h	3	845119c	60497eb009eb491926c9596dfce8d5f52a260a87	libs/dibmgr/dib.h	*			Image	direct-family	pending			
+dib-authentic-family	3	845119c	60497eb009eb491926c9596dfce8d5f52a260a87	libs/dibmgr/dib.h	CDib/CDibMgr/CDibPal	CRezImage/ImagePool/CImagePaletteNode		Image	direct-family	pending			
+src-libs-dibmgr-dibmgr-cpp	3	845119c	bab1947d3948918cb7689714c47c45e0634a135a	libs/dibmgr/dibmgr.cpp	*			Image	direct-family	pending			
+src-libs-dibmgr-dibmgr-h	3	845119c	0431f1a7d44bd6f65b8ee8e25ed02e6df47e6c74	libs/dibmgr/dibmgr.h	*			Image	direct-family	pending			
+src-libs-dibmgr-dibpal-cpp	3	845119c	ad612236d2b73a6863158371e4b374f44ff9d750	libs/dibmgr/dibpal.cpp	*			Image	direct-family	pending			
+src-libs-dibmgr-dibpal-h	3	845119c	2ce2f43b877c3b45ba9f51fcb4462f02ba837e47	libs/dibmgr/dibpal.h	*			Image	direct-family	pending			
+src-libs-dibmgr-stdafx-h	3	845119c	ed1ce6b1bb4bb3f4c8d42b39337dd7974a5f22cc	libs/dibmgr/stdafx.h	*			Image	direct-family	do-not-take	tooling-only	include-only build scaffold emits no independent retail semantic owner	
+src-blood2-blood2serv-netstart-cpp-netstart-fillservicelist	4	845119c	5a888c958409adc56676f9110b14001d5f128a36	Blood2/Blood2Serv/NetStart.cpp	NetStart_FillServiceList	CNetMgr::PopulateProviderList	0x178470	Net	cross-game-copy	take-adapted		authored cursor alias and direct LPARAM boundary retained; Gruntz provider ownership and exclusion CFG remain retail-proven	5cae6e727
+src-blood2-clientshelldll-netstart-cpp-netstart-fillservicelist	4	845119c	3491fe41545a4cb237f91575371ec992245c1085	Blood2/ClientShellDLL/NetStart.cpp	NetStart_FillServiceList	CNetMgr::PopulateProviderList	0x178470	Net	cross-game-copy	take-adapted		authored cursor alias and direct LPARAM boundary retained; Gruntz provider ownership and exclusion CFG remain retail-proven	5cae6e727
+src-runtime-kernel-net-src-netmgr-cpp	4	845119c	5bb3f7f98b7cb55ccadc9a56c899f6c4383d1577	runtime/kernel/net/src/netmgr.cpp	*			Net	analogue-only	pending			
+src-runtime-kernel-net-src-netmgr-h	4	845119c	ac25ae0253888a207929757a45c4ef0a4576c5a4	runtime/kernel/net/src/netmgr.h	*			Net	analogue-only	pending			
+src-shogo-clientshelldll-netstart-cpp-netstart-fillservicelist	4	845119c	f4fbdb259d89a4a3b6b491a5e0c5fac7fc31f8b6	Shogo/ClientShellDLL/NetStart.cpp	NetStart_FillServiceList	CNetMgr::PopulateProviderList	0x178470	Net	cross-game-copy	take-adapted		authored cursor alias and direct LPARAM boundary retained; Gruntz provider ownership and exclusion CFG remain retail-proven	5cae6e727
+src-shogo-shogoserv-netstart-cpp-netstart-fillservicelist	4	845119c	ff968c2546d0d6b5552f42a99f9496ebb0177b26	Shogo/ShogoServ/NetStart.cpp	NetStart_FillServiceList	CNetMgr::PopulateProviderList	0x178470	Net	cross-game-copy	take-adapted		authored cursor alias and direct LPARAM boundary retained; Gruntz provider ownership and exclusion CFG remain retail-proven	5cae6e727
+src-libs-regmgr-regmgr-cpp	5	845119c	25700fc2490fe723967e52d2c626773e4347d79a	libs/RegMgr/regmgr.cpp	*			Utils	direct-family	pending			
+reg-createkey-access	5	845119c	25700fc2490fe723967e52d2c626773e4347d79a	libs/RegMgr/regmgr.cpp	CRegMgr::CreateKey	CRegMgr::CreateKey	0x139650	Utils	same-lineage-revision	take-adapted		complete owner/API/layout restored; retail immediate requires KEY_ALL_ACCESS rather than surviving KEY_READ|KEY_WRITE	4d608ded6
+reg-delete-app	5	845119c	25700fc2490fe723967e52d2c626773e4347d79a	libs/RegMgr/regmgr.cpp	CRegMgr::DeleteApp			Utils	same-lineage-revision	do-not-take	no-retail-owner	no retail body claim caller or address-taking reference supports this later API addition	
+reg-delete-subkey	5	845119c	25700fc2490fe723967e52d2c626773e4347d79a	libs/RegMgr/regmgr.cpp	CRegMgr::DeleteSubKey			Utils	same-lineage-revision	do-not-take	no-retail-owner	no retail body claim caller or address-taking reference supports this later API addition	
+reg-delete-under-subkey	5	845119c	25700fc2490fe723967e52d2c626773e4347d79a	libs/RegMgr/regmgr.cpp	CRegMgr::DeleteUnderSubKey			Utils	same-lineage-revision	do-not-take	no-retail-owner	no retail body claim caller or address-taking reference supports this later API addition	
+src-libs-regmgr-regmgr-h	5	845119c	a5228353b6772fa71fb19373a6f9d65db350132e	libs/RegMgr/regmgr.h	*			Utils	direct-family	pending			
+src-libs-wonapi-woncrypt-blowfish-cpp	6	845119c	24c96339c6d9bfc1aacf0118338ccc53a7801596	libs/WONAPI/WONCrypt/Blowfish.cpp	*			Bute	structural-clone	pending			
+src-libs-wonapi-woncrypt-blowfish-h	6	845119c	cf54c23ae6a9b8c2fd1c1e34edb45e7f8a8bbf8d	libs/WONAPI/WONCrypt/Blowfish.h	*			Bute	analogue-only	pending			
+src-runtime-sound-src-soundbuffer-cpp	6	845119c	0e2a2c6690d549a2d5982610e64c11ba9c08ab67	runtime/sound/src/soundbuffer.cpp	*			Dsndmgr	analogue-only	pending			
+src-runtime-sound-src-soundbuffer-h	6	845119c	b1cca22c1771c2084bf00601c6ac208c54f559fe	runtime/sound/src/soundbuffer.h	*			Dsndmgr	analogue-only	pending			
+src-blood2-clientshelldll-lightfx-cpp	7	845119c	930a41f17d56178c0eb642a34a206adf7a4c6def	Blood2/ClientShellDLL/LightFX.cpp	*			Corpus	cross-game-copy	pending			
+src-blood2-clientshelldll-lightfx-h	7	845119c	f48e3678c7cd52ca62d167b3bc5504e72c560345	Blood2/ClientShellDLL/LightFX.h	*			Corpus	cross-game-copy	pending			
+src-blood2-clientshelldll-messagemgr-cpp	7	845119c	338fb722967d31c5fb9e9402ace9ede26f4c64f6	Blood2/ClientShellDLL/MessageMgr.cpp	*			Corpus	cross-game-copy	pending			
+src-blood2-objectdll-exittrigger-cpp	7	845119c	bb510055e34be68f6d7d0ed19b158ec785206316	Blood2/ObjectDLL/ExitTrigger.cpp	*			Corpus	cross-game-copy	pending			
+src-blood2-objectdll-exittrigger-h	7	845119c	1d7b5b7cefd383dcbd2be8927b3f3d1a7ffa3a25	Blood2/ObjectDLL/ExitTrigger.h	*			Corpus	cross-game-copy	pending			
+src-blood2-objectdll-explosion-cpp	7	845119c	55de5da7474cdd4360fa2a4b4006b4f76ec29652	Blood2/ObjectDLL/Explosion.cpp	*			Corpus	cross-game-copy	pending			
+src-blood2-objectdll-explosion-h	7	845119c	8f52480271688c8cefa1610f84d9a99035dbe88e	Blood2/ObjectDLL/Explosion.h	*			Corpus	cross-game-copy	pending			
+src-blood2-objectdll-gameprojectiles-cpp	7	845119c	9963b1a6d3d579a59e5bea63f9b1f98dccff3505	Blood2/ObjectDLL/GameProjectiles.cpp	*			Corpus	cross-game-copy	pending			
+src-blood2-objectdll-lightfx-cpp	7	845119c	79645fb928426acc7a010730f8318cfc8c3f0aea	Blood2/ObjectDLL/LightFX.cpp	*			Corpus	cross-game-copy	pending			
+src-blood2-objectdll-lightfx-h	7	845119c	44621fb8210906a9d1ca7c96b193161fe3758777	Blood2/ObjectDLL/LightFX.h	*			Corpus	cross-game-copy	pending			
+src-blood2-objectdll-projectile-cpp	7	845119c	a6ddc55252359b69a3c680b29d50ceed43c59a34	Blood2/ObjectDLL/Projectile.cpp	*			Corpus	cross-game-copy	pending			
+src-blood2-objectdll-projectile-h	7	845119c	cabb02794ad5fb8cf3d2b2dc8a0c76aeda9b50ab	Blood2/ObjectDLL/Projectile.h	*			Corpus	cross-game-copy	pending			
+src-fear-clientshelldll-cheatmgr-cpp	7	845119c	9f091eadbd065476d69591a55b852b79e25d3d4a	FEAR/ClientShellDLL/CheatMgr.cpp	*			Corpus	analogue-only	pending			
+src-fear-clientshelldll-cheatmgr-h	7	845119c	2fc5ccc6195b949f43075b0e54c88a3230159c33	FEAR/ClientShellDLL/CheatMgr.h	*			Corpus	analogue-only	pending			
+src-fear-objectdll-explosion-h	7	845119c	139a37c5f89ce3a63abcd2656e39699a4a1952f0	FEAR/ObjectDLL/Explosion.h	*			Corpus	analogue-only	pending			
+src-fear-objectdll-projectile-cpp	7	845119c	069ced10e0f6be78dbd1bd6e36961e6c107d971c	FEAR/ObjectDLL/Projectile.cpp	*			Corpus	analogue-only	pending			
+src-fear-objectdll-projectile-h	7	845119c	1e24bfbe3a2351f2cd3744a2192dae185f835ce9	FEAR/ObjectDLL/Projectile.h	*			Corpus	analogue-only	pending			
+src-nolf-clientshelldll-lightfx-cpp	7	845119c	5e864a0d485935b924f2aa94223877cbd6cabe30	NOLF/ClientShellDLL/LightFX.cpp	*			Corpus	structural-clone	pending			
+src-nolf-clientshelldll-lightfx-h	7	845119c	966b3ab892696967787cb7f74edfe2c6a0cd6c94	NOLF/ClientShellDLL/LightFX.h	*			Corpus	analogue-only	pending			
+src-nolf-objectdll-exittrigger-cpp	7	845119c	6bf2bbe94c728c5a98b8e7c82c5cd9f8bb0207ea	NOLF/ObjectDLL/ExitTrigger.cpp	*			Corpus	analogue-only	pending			
+src-nolf-objectdll-exittrigger-h	7	845119c	2ec221f53a0f5bed485158dcd33226c8a499e2a4	NOLF/ObjectDLL/ExitTrigger.h	*			Corpus	analogue-only	pending			
+src-nolf-objectdll-explosion-h	7	845119c	ca0287fe6d9f003bb41f73029ff9a25a8a53ada2	NOLF/ObjectDLL/Explosion.h	*			Corpus	analogue-only	pending			
+src-nolf-objectdll-projectile-cpp	7	845119c	e70d0780dea26f8a7f49788ac6bce8e8ad31dae3	NOLF/ObjectDLL/Projectile.cpp	*			Corpus	analogue-only	pending			
+src-nolf-objectdll-projectile-h	7	845119c	b03bc1813227d24c7b9436f206c20b784672eb4b	NOLF/ObjectDLL/Projectile.h	*			Corpus	analogue-only	pending			
+src-nolf-shared-timer-h	7	845119c	a5c13033fa2df4ce473f5c5f9fd166b02819293c	NOLF/Shared/Timer.h	*			Corpus	analogue-only	pending			
+src-nolf2-clientshelldll-clientshellshared-cheatmgr-cpp	7	845119c	bfe54ed7740516cbc3f56bcfc07331abfc840eb0	NOLF2/ClientShellDLL/ClientShellShared/CheatMgr.cpp	*			Corpus	analogue-only	pending			
+src-nolf2-clientshelldll-clientshellshared-cheatmgr-h	7	845119c	3f6bbf75d7808c544afc2f88ed77cc190ec81297	NOLF2/ClientShellDLL/ClientShellShared/CheatMgr.h	*			Corpus	analogue-only	pending			
+src-nolf2-clientshelldll-clientshellshared-lightfx-cpp	7	845119c	b06a9d3a8d46b729a9ac672f70c846b649cf8fdb	NOLF2/ClientShellDLL/ClientShellShared/LightFX.cpp	*			Corpus	structural-clone	pending			
+src-nolf2-clientshelldll-clientshellshared-lightfx-h	7	845119c	6e46f2e06eef9417f0c36f7f1e5a1055bf520566	NOLF2/ClientShellDLL/ClientShellShared/LightFX.h	*			Corpus	analogue-only	pending			
+src-nolf2-objectdll-objectshared-exittrigger-cpp	7	845119c	12f7de82a3a4100a2c517eecbe84457745a38193	NOLF2/ObjectDLL/ObjectShared/ExitTrigger.cpp	*			Corpus	analogue-only	pending			
+src-nolf2-objectdll-objectshared-exittrigger-h	7	845119c	32b6923389b32e7ba5c91299865972d879c7076b	NOLF2/ObjectDLL/ObjectShared/ExitTrigger.h	*			Corpus	analogue-only	pending			
+src-nolf2-objectdll-objectshared-explosion-h	7	845119c	54c3200832fd8653f77f68d11c50b1a13c71b973	NOLF2/ObjectDLL/ObjectShared/Explosion.h	*			Corpus	analogue-only	pending			
+src-nolf2-objectdll-objectshared-projectile-cpp	7	845119c	8154221f900b7b8ed3edacc537b436557010b1ac	NOLF2/ObjectDLL/ObjectShared/Projectile.cpp	*			Corpus	analogue-only	pending			
+src-nolf2-objectdll-objectshared-projectile-h	7	845119c	e1118eab85343b24e8130fd7a589ba5673ebc0b5	NOLF2/ObjectDLL/ObjectShared/Projectile.h	*			Corpus	analogue-only	pending			
+src-nolf2-shared-timer-h	7	845119c	22732e1f86a392071d7a702094f03fa10e81b032	NOLF2/Shared/Timer.h	*			Corpus	analogue-only	pending			
+src-runtime-client-src-sprite-h	7	845119c	2c7fe96e16dc61f0aaa735edfab59b3ac4e9bb82	runtime/client/src/sprite.h	*			Corpus	analogue-only	pending			
+src-shogo-clientshelldll-keyfixes-cpp	7	845119c	83b7b4bc6d1c3956f8b2fc552a04e3222d20e739	Shogo/ClientShellDLL/KeyFixes.cpp	*			Corpus	cross-game-copy	pending			
+src-shogo-clientshelldll-lightfx-cpp	7	845119c	e0d132e39334eed3911fd0342affb723753313d4	Shogo/ClientShellDLL/LightFX.cpp	*			Corpus	cross-game-copy	pending			
+src-shogo-clientshelldll-lightfx-h	7	845119c	b363c743c9d248b12d148753853b95bb56c66e4b	Shogo/ClientShellDLL/LightFX.h	*			Corpus	cross-game-copy	pending			
+src-shogo-clientshelldll-messagemgr-cpp	7	845119c	2a059b30cd02d0bd115b02bcda3a97a24934ae91	Shogo/ClientShellDLL/MessageMgr.cpp	*			Corpus	cross-game-copy	pending			
+src-shogo-clientshelldll-weaponmodel-cpp	7	845119c	f038ad48291b8206fb8c3ef94ca9439315b77570	Shogo/ClientShellDLL/WeaponModel.cpp	*			Corpus	cross-game-copy	pending			
+src-shogo-objectdll-exittrigger-cpp	7	845119c	4c68aa7cc5167b7e1cb95cad5df0270beec5b517	Shogo/ObjectDLL/ExitTrigger.cpp	*			Corpus	cross-game-copy	pending			
+src-shogo-objectdll-exittrigger-h	7	845119c	734d14b88fdb7f42cd3b7d8f44e25ba8943de301	Shogo/ObjectDLL/ExitTrigger.h	*			Corpus	cross-game-copy	pending			
+src-shogo-objectdll-explosion-h	7	845119c	e354603857a0ba792c328760199fd6bacf2806a4	Shogo/ObjectDLL/Explosion.h	*			Corpus	cross-game-copy	pending			
+src-shogo-objectdll-projectile-cpp	7	845119c	323436716a7ec088a8dff9535fd7bab643d5ed95	Shogo/ObjectDLL/Projectile.cpp	*			Corpus	cross-game-copy	pending			
+src-shogo-objectdll-projectile-h	7	845119c	c6d4407bdefc22094d59dfb0aa90a6918be5b53a	Shogo/ObjectDLL/Projectile.h	*			Corpus	cross-game-copy	pending			
+src-shogo-objectdll-riotprojectiles-cpp	7	845119c	a43a144083babb67faf3365d7d8b82841224b510	Shogo/ObjectDLL/RiotProjectiles.cpp	*			Corpus	cross-game-copy	pending			
