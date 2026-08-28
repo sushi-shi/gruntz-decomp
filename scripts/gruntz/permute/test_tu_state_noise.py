@@ -148,6 +148,20 @@ class TuStateNoiseTests(unittest.TestCase):
             noise.exact_closure_rejections(100.0, 6, 6, metrics, other),
         )
 
+    def test_disposable_objects_use_the_authoritative_canonical_view(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "raw.obj"
+            output = Path(directory) / "normalized.obj"
+            source.write_bytes(b"raw-coff")
+            canonical = SimpleNamespace(data=b"canonical-coff")
+            with mock.patch.object(
+                noise, "canonicalize_coff", return_value=canonical
+            ) as transform:
+                result = noise.canonicalize_disposable_object(source, output)
+            self.assertEqual(result, output)
+            self.assertEqual(output.read_bytes(), b"canonical-coff")
+            transform.assert_called_once_with(b"raw-coff")
+
     def test_resolve_target_reads_current_model_serialization(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

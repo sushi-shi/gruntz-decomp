@@ -38,6 +38,7 @@ an audited exact closure; sub-100 variants remain reproducible from the input ma
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import csv
 import hashlib
 import itertools
@@ -54,6 +55,7 @@ from pathlib import Path
 from gruntz.permute.tu_state_noise import (
     SourceMutationError,
     acquire_source_mutation_lock,
+    canonicalize_disposable_object,
     compile_object,
     exact_closure_rejections,
     object_metrics,
@@ -420,6 +422,57 @@ def iter_variants(original: bytes, axes: tuple[Axis, ...], candidates: tuple[Can
             yield render_combined(original, axes, axis_choices, candidate), labels
 
 
+def compile_disposable_sibling(
+    root: Path,
+    source: Path,
+    scratch: Path,
+    index: int,
+    candidate: bytes,
+    flags: list[str],
+    timeout: float,
+) -> tuple[int, tuple[bool, str, bool]]:
+    probe_source = source.with_name(
+        f".{source.stem}.sourcevariant{index:04d}{source.suffix}"
+    )
+    trial_obj = scratch / f"trial-{index:04d}.obj"
+    probe_source.write_bytes(candidate)
+    try:
+        return index, compile_object(root, probe_source, trial_obj, flags, timeout)
+    finally:
+        probe_source.unlink(missing_ok=True)
+
+
+def precompile_variants(
+    root: Path,
+    source: Path,
+    scratch: Path,
+    variants,
+    flags: list[str],
+    timeout: float,
+    jobs: int,
+) -> dict[int, tuple[bool, str, bool]]:
+    compile_inputs = []
+    compile_seen = {}
+    for index, (candidate, _labels) in enumerate(variants):
+        digest = sha256(candidate)
+        if digest in compile_seen:
+            continue
+        compile_seen[digest] = index
+        compile_inputs.append((index, candidate))
+
+    def compile_one(item):
+        index, candidate = item
+        return compile_disposable_sibling(
+            root, source, scratch, index, candidate, flags, timeout
+        )
+
+    precompiled = {}
+    with concurrent.futures.ThreadPoolExecutor(max_workers=jobs) as pool:
+        for trial_index, compile_result in pool.map(compile_one, compile_inputs):
+            precompiled[trial_index] = compile_result
+    return precompiled
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("manifest", type=Path)
@@ -435,6 +488,10 @@ def main(argv=None) -> int:
     )
     parser.add_argument("--compile-timeout", type=float, default=120.0)
     parser.add_argument(
+        "--jobs", type=int, default=1,
+        help="compile this many full-TU variants concurrently from disposable sibling sources",
+    )
+    parser.add_argument(
         "--wall-time-seconds", type=float, default=1200.0,
         help="stop cleanly after this per-function search budget (default: 20 minutes)",
     )
@@ -444,9 +501,10 @@ def main(argv=None) -> int:
         help="print the best candidate object disassembly before deleting disposable artifacts",
     )
     args = parser.parse_args(argv)
-    if (args.limit < 1 or args.top < 1 or args.frontier < 1 or args.compile_timeout <= 0
+    if (args.limit < 1 or args.top < 1 or args.frontier < 1 or args.jobs < 1
+            or args.compile_timeout <= 0
             or args.wall_time_seconds <= 0):
-        parser.error("--limit, --top, --frontier, timeouts, and wall time must be positive")
+        parser.error("--limit, --top, --frontier, --jobs, timeouts, and wall time must be positive")
 
     root = project_root()
     try:
@@ -479,6 +537,10 @@ def main(argv=None) -> int:
     )
     output.mkdir(parents=True, exist_ok=False)
     (output / "input.json").write_text(json.dumps(payload, indent=2) + "\n")
+
+    target_obj = canonicalize_disposable_object(
+        target_obj, output / "retail.normalized.obj"
+    )
 
     retail_metrics = object_metrics(target_obj)
     retail_target = retail_metrics.get(target.symbol)
@@ -521,6 +583,9 @@ def main(argv=None) -> int:
                 print(f"baseline compile {reason}; source restored", file=sys.stderr)
                 source_lock.close()
                 return 2
+            baseline_obj = canonicalize_disposable_object(
+                baseline_obj, scratch / "baseline.normalized.obj"
+            )
             baseline_scores, baseline_sizes, baseline_counts, baseline_diff_log = objdiff_scores(
                 target_obj, baseline_obj, target.symbol
             )
@@ -553,6 +618,13 @@ def main(argv=None) -> int:
                 f"running {combinations} variants",
                 flush=True,
             )
+            precompiled: dict[int, tuple[bool, str, bool]] = {}
+            if args.jobs > 1:
+                precompiled = precompile_variants(
+                    root, source, scratch,
+                    iter_variants(original, axes, candidates),
+                    flags, args.compile_timeout, args.jobs,
+                )
             for index, (candidate, labels) in enumerate(iter_variants(original, axes, candidates)):
                 remaining_wall_time = args.wall_time_seconds - (time.perf_counter() - started)
                 if remaining_wall_time <= 0:
@@ -569,11 +641,14 @@ def main(argv=None) -> int:
                     continue
                 seen[digest] = index
                 candidate_obj = scratch / f"trial-{index:04d}.obj"
-                with temporary_source(source, original, candidate):
-                    ok, compile_log, timed_out = compile_object(
-                        root, source, candidate_obj, flags,
-                        min(args.compile_timeout, max(0.1, remaining_wall_time)),
-                    )
+                if index in precompiled:
+                    ok, compile_log, timed_out = precompiled.pop(index)
+                else:
+                    with temporary_source(source, original, candidate):
+                        ok, compile_log, timed_out = compile_object(
+                            root, source, candidate_obj, flags,
+                            min(args.compile_timeout, max(0.1, remaining_wall_time)),
+                        )
                 if time.perf_counter() - started >= args.wall_time_seconds:
                     stopped_by_wall_time = True
                 row = {
@@ -587,6 +662,9 @@ def main(argv=None) -> int:
                     row["compile_log"] = compile_log
                     results.append(row)
                     continue
+                candidate_obj = canonicalize_disposable_object(
+                    candidate_obj, scratch / f"trial-{index:04d}.normalized.obj"
+                )
                 scores, sizes, counts, diff_log = objdiff_scores(
                     target_obj, candidate_obj, target.symbol
                 )
@@ -794,6 +872,7 @@ def main(argv=None) -> int:
         "unique_source_count": len(seen),
         "elapsed_seconds": time.perf_counter() - started,
         "wall_time_seconds": args.wall_time_seconds,
+        "jobs": args.jobs,
         "continue_after_exact": args.continue_after_exact,
         "stopped_by_wall_time": stopped_by_wall_time,
         "source_restored": source.read_bytes() == original,

@@ -1603,6 +1603,10 @@ def main(argv=None, *, prog=None, description=None) -> int:
     )
     parser.add_argument("--compile-timeout", type=float, default=120.0)
     parser.add_argument(
+        "--jobs", type=int, default=1,
+        help="with --run, compile this many full-TU variants concurrently",
+    )
+    parser.add_argument(
         "--wall-time-seconds", type=float, default=1200.0,
         help="with --run, stop cleanly after this per-function budget (default: 20 minutes)",
     )
@@ -1616,7 +1620,8 @@ def main(argv=None, *, prog=None, description=None) -> int:
         args.min_depth < 0 or args.max_depth < args.min_depth
         or args.limit < 1 or args.helper_name_count < 1
         or not 1 <= args.rename_name_count <= len(RENAME_SUFFIXES) or args.state_trials < 0
-        or args.top < 1 or args.frontier < 1 or args.compile_timeout <= 0
+        or args.top < 1 or args.frontier < 1 or args.jobs < 1
+        or args.compile_timeout <= 0
         or args.wall_time_seconds <= 0
     ):
         parser.error("require 0 <= --min-depth <= --max-depth and positive limits")
@@ -1774,6 +1779,7 @@ def main(argv=None, *, prog=None, description=None) -> int:
             str(args.output),
             "--limit", str(len(candidates) * max(1, _axis_product(payload))),
             "--top", str(args.top), "--compile-timeout", str(args.compile_timeout),
+            "--jobs", str(args.jobs),
             "--frontier", str(args.frontier),
             "--wall-time-seconds", str(args.wall_time_seconds),
         ]

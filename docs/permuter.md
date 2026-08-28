@@ -13,7 +13,7 @@ gruntz permute state --source src/Gruntz/GameLevel.cpp --rva 0x160450 \
 
 gruntz permute variants src/Gruntz/GameLevel.cpp 0x160450 \
   --axes-from /tmp/probe-head-axes.json --min-depth 0 --max-depth 2 \
-  --state-trials 32 --state-insertion target \
+  --state-trials 32 --state-insertion target --jobs 4 \
   --wall-time-seconds 900 -o /tmp/probe-head-manifest.json --run
 ```
 
@@ -69,6 +69,18 @@ Source restoration is guarded by a process lock and exact source bytes; `state`
 also rechecks the per-function fingerprint. The first audited exact candidate
 normally stops a direct search. Campaigns continue after exact so the M-solution
 frontier remains available for pattern extraction.
+
+`variants --jobs N` compiles N disposable sibling copies of the complete TU in
+parallel. It does not use a reduced function harness: the real include closure,
+declaration population, inline candidates, and sibling functions remain present.
+Each disposable object and the retail object are canonicalized through the same
+same-function jump-table and compiler-private-symbol transform as `gruntz build`
+before scoring; otherwise raw `$L...` labels can hide an exact result. Parallel
+results are still scored and audited one target at a time, and only a real-TU
+result can bank MAX. A target-only harness may be useful as an explicitly
+non-authoritative prefilter, but it is not the default because it can change C1
+handle state; on `gamelevelmove` it was also no faster after warm-up because the
+shared header parse dominated both 0.90-second compiles.
 Exact closure requires all of:
 
 1. unrounded objdiff score exactly 100%;

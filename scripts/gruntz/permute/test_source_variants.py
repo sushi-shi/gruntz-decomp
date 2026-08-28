@@ -4,6 +4,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 import clang.cindex as ci
 
@@ -88,6 +89,53 @@ class BatchSourceVariantTests(unittest.TestCase):
             variants[1][0],
             b"static int new_call;\nint helper;\nint result = new_call;\n",
         )
+
+    def test_disposable_sibling_is_removed_after_compile(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "src" / "unit.cpp"
+            source.parent.mkdir()
+            source.write_bytes(b"original\n")
+            scratch = root / "scratch"
+            scratch.mkdir()
+
+            def inspect_source(_root, probe, output, _flags, _timeout):
+                self.assertEqual(probe.read_bytes(), b"candidate\n")
+                self.assertEqual(output, scratch / "trial-0007.obj")
+                return True, "", False
+
+            with mock.patch.object(batch, "compile_object", side_effect=inspect_source):
+                result = batch.compile_disposable_sibling(
+                    root, source, scratch, 7, b"candidate\n", [], 12.0
+                )
+            self.assertEqual(result, (7, (True, "", False)))
+            self.assertFalse((source.parent / ".unit.sourcevariant0007.cpp").exists())
+
+    def test_parallel_precompile_deduplicates_identical_sources(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "unit.cpp"
+            source.write_bytes(b"original\n")
+            scratch = root / "scratch"
+            scratch.mkdir()
+            variants = [
+                (b"first\n", {"shape": "a"}),
+                (b"first\n", {"shape": "duplicate"}),
+                (b"second\n", {"shape": "b"}),
+            ]
+
+            def compiled(_root, _source, _scratch, index, candidate, _flags, _timeout):
+                return index, (True, candidate.decode().strip(), False)
+
+            with mock.patch.object(batch, "compile_disposable_sibling", side_effect=compiled) as call:
+                results = batch.precompile_variants(
+                    root, source, scratch, variants, [], 12.0, 2
+                )
+            self.assertEqual(
+                results,
+                {0: (True, "first", False), 2: (True, "second", False)},
+            )
+            self.assertEqual(call.call_count, 2)
 
     def test_result_rank_prefers_score_then_size_then_relocations(self):
         best = {"score": 99.0, "candidate_size": 10, "candidate_relocs": 2, "trial": 2}

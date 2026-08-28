@@ -49,6 +49,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Iterable
 
+from gruntz.compare.canonicalize import canonicalize_coff
 from gruntz.permute.tu_state_metrics import read_coff
 from gruntz.permute.topology import (
     compare_topology, function_topology, topology_rank,
@@ -803,6 +804,17 @@ def compile_object(
     return returncode == 0 and output.exists(), log, False
 
 
+def canonicalize_disposable_object(source: Path, output: Path) -> Path:
+    """Write the same canonical COFF view used by the authoritative compare.
+
+    Disposable compiles contain compiler-private labels such as ``$L32721`` for
+    same-function switch tables.  The retail object can only name the owning
+    function plus an addend, so scoring the raw pair creates a false residue.
+    """
+    output.write_bytes(canonicalize_coff(source.read_bytes()).data)
+    return output
+
+
 def objdiff_scores(
     target_obj: Path, candidate_obj: Path, symbol: str
 ) -> tuple[dict[str, float], dict[str, int], dict[str, int], str]:
@@ -1296,6 +1308,10 @@ def main(argv: list[str] | None = None) -> int:
 
     assert scratch is not None
 
+    target_obj = canonicalize_disposable_object(
+        target_obj, output / "retail.normalized.obj"
+    )
+
     baseline_obj = output / "baseline.obj"
     with measure_stage(timings, "baseline_compile"):
         ok, log, baseline_timed_out = compile_object(
@@ -1308,6 +1324,9 @@ def main(argv: list[str] | None = None) -> int:
         print(f"baseline compile {reason}; disposable artifacts removed", file=sys.stderr)
         source_lock.close()
         return 2
+    baseline_obj = canonicalize_disposable_object(
+        baseline_obj, output / "baseline.normalized.obj"
+    )
     with measure_stage(timings, "baseline_objdiff"):
         baseline_scores, baseline_sizes, baseline_counts, diff_log = objdiff_scores(
             target_obj, baseline_obj, target.symbol
@@ -1462,6 +1481,10 @@ def main(argv: list[str] | None = None) -> int:
                 else:
                     trial["rejections"].append("compile failed")
             else:
+                raw_trial_obj = trial_obj
+                trial_obj = canonicalize_disposable_object(
+                    trial_obj, output / f"trial-{variant.trial:04d}.normalized.obj"
+                )
                 with measure_stage(timings, "trial_objdiff"):
                     scores, sizes, symbol_counts, trial_diff_log = objdiff_scores(
                         target_obj, trial_obj, target.symbol
@@ -1532,7 +1555,9 @@ def main(argv: list[str] | None = None) -> int:
                                 variant.block(target.logical_line)
                             )
                 trial_obj.unlink(missing_ok=True)
+                raw_trial_obj.unlink(missing_ok=True)
                 Path(str(trial_obj) + ".d").unlink(missing_ok=True)
+                Path(str(raw_trial_obj) + ".d").unlink(missing_ok=True)
             manifest["trials"].append(trial)
             rows.append(
                 f"{variant.trial}\t{variant.family}\t"
