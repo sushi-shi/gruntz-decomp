@@ -1,7 +1,7 @@
 # Tiny multi-arg ctor/setter (no interleaved sentinels): assignment order fully steers the store schedule
-tags: cpp:ctor cpp:local | asm:mov | topic:codegen-idiom topic:scheduling
+tags: cpp:ctor cpp:inline cpp:local | asm:mov | topic:codegen-idiom topic:scheduling
 symptoms: small __thiscall fn storing 2-3 args (+ a constant/vptr/trailing zeros) into fields; same instruction multiset, only ~2 arg-stores + the edx-held value permute vs retail; 99.5-99.8%
-confidence: 9/10
+confidence: 10/10
 
 The steerable counterpart to [[sentinel-seed-ctor-store-schedule]] (a WALL): when
 the body is just arg-stores + a vptr/constant + a block of trailing `=0` stores —
@@ -58,3 +58,46 @@ steer value creation and register lifetimes while the scheduler emits a differen
 store order. The second exact state puts `m_playing` before the refill-threshold
 assignment; bytes cannot distinguish those two independent source orders, so
 member-layout order is the structural tie-break.
+
+## Inline-helper extension: statement order can recolor the caller before the expansion
+
+`SoundStream::OpenStream` @0x137900 had the same size, 91 instructions, four
+calls, four branches, five returns, constants, displacements, stores, and
+referent sequence as retail. Its first difference was at +0x73, where the
+inlined `StreamFeeder::ConfigureWindow` assignments and the following
+`Initialize` arguments were scheduled in different registers. The helper's
+apparently semantic order was:
+
+```cpp
+m_windowStart = offset;
+m_windowLength = bytes;
+m_source = source;
+m_looping = false;
+m_sourceOffset = 0;
+```
+
+Writing the helper in member-layout order instead closed the caller from
+92.9121% to exact and left all other `soundstream` functions exact:
+
+```cpp
+m_source = source;
+m_looping = false;
+m_sourceOffset = 0;
+m_windowStart = offset;
+m_windowLength = bytes;
+```
+
+Retail nevertheless emits window-start, window-length, source, and the two
+zeros. As in the larger-body case above, emitted store order is not authored
+assignment order.
+
+The negative control is important. Swapping only the first two source
+assignments stayed at 92.9121%, but moved the first difference from +0x73 back
+to +0x20: VC5 changed the stack-slot coloring of `ParseWave`'s output locals,
+well before the helper expansion. Therefore an inline helper's statement order
+is not merely a scheduler knob local to its emitted stores; it participates in
+the caller's C1 pseudo-register and local-home state. Compare from the first
+real divergence after every variant. When several independent orders are
+byte-plausible, test semantic order and member-layout order first, and use the
+class layout as the structural tie-break rather than transcribing retail's
+store run.

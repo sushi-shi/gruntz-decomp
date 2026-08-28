@@ -270,7 +270,7 @@ simpleanimation	7	6
 singleanimation	7	7
 singleframemessage	7	6
 soundfontpath	5	4
-soundstream	36	35
+soundstream	36	36
 soundvoicelist	5	5
 splashstate	9	9
 spotlight	8	4
@@ -4035,7 +4035,7 @@ soundstream	?Initialize@StreamFeeder@@QAEHPAVSoundDevice@@PAUWaveFormatX@@IIPAVS
 soundstream	?InitializeDevice@SoundStream@@QAEHPAUHWND__@@H@Z	100.0000	100.0000	3	82a9ce1e3790	0x137720	100.0000	
 soundstream	?OnReset@StreamFeeder@@UAEXXZ	100.0000	100.0000	2	0dd29eeb7b53	0x137e20	100.0000	
 soundstream	?OnReset@StreamVoiceFeeder@@UAEXXZ	100.0000	100.0000	2	3566461919f9	0x1374b0	100.0000	
-soundstream	?OpenStream@SoundStream@@QAEPAUStreamVoice@@PAUCRezArchiveEntry@@HHHHH@Z	92.9121	92.9121	7	84e3a92ce2e8	0x137900	92.9121	
+soundstream	?OpenStream@SoundStream@@QAEPAUStreamVoice@@PAUCRezArchiveEntry@@HHHHH@Z	100.0000	100.0000	7	84e3a92ce2e8	0x137900	100.0000	
 soundstream	?ParseWave@SoundStream@@QAEHPAUCRezArchiveEntry@@PAUWaveFormatX@@PAI2@Z	100.0000	100.0000	4	4f68e304d7ab	0x137b70	100.0000	
 soundstream	?Pause@StreamFeeder@@QAEHXZ	100.0000	100.0000	3	83020e469417	0x137f00	100.0000	
 soundstream	?PlayStream@SoundStream@@QAEPAUStreamVoice@@PAUCRezArchiveEntry@@HHH@Z	100.0000	100.0000	4	a7bfb1af154d	0x137a30	100.0000	

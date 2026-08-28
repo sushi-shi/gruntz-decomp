@@ -97,6 +97,57 @@
   read from the dipped disassembly and assumed new. Diff the FEATURE against
   the baseline, not just the dip against retail; a dip is only a base when it
   moves something the baseline did not already have.
+- CROSS-PROJECT SOURCE-SHAPE PRIOR (HoMM3 debug-symbol campaign, 2026-08-28):
+  debug locals, scopes, line groups, and authentic source from a sibling
+  contemporary MSVC project proved that many apparent regalloc walls were
+  earlier source-shape defects. Gruntz has no equivalent symbol corpus, but
+  those wins define a bounded checklist of hypotheses to test before declaring
+  a residue irreducible:
+  * recover exact parameter and local storage widths across the complete call
+    family; in particular, distinguish `u8` from `bool` and do not insert bool
+    normalization when dirty upper bytes or the callee ABI support a byte;
+  * test the authentic local census and lifetimes: distinct old/new/result
+    locals, deliberate parameter or local reuse, overwrite versus a new result,
+    declaration and first-use order, removal of unjustified cached member
+    locals, and pointer/base locals used by symmetric blocks. Treat scope
+    topology as separate evidence: multiple sibling block locals can share one
+    retail stack slot while one reused function-scope local stays live and
+    enlarges the frame. Also test whether initialization belongs in a `for`
+    header rather than at the declaration;
+  * preserve abstraction boundaries before transcribing their bodies: inline
+    helpers/macros, accessors, constructors, by-value min/max or selectors, and
+    same-TU candidates all change statement count, pseudo-register lifetime,
+    EH state, and the inliner candidate set even when their arithmetic is
+    equivalent. Assignment order inside an expanded helper can also recolor
+    caller locals and move the first divergence to before the expansion; after
+    every helper-order A/B compare from the function's first real divergence,
+    and use semantic/member-layout order before transcribing emitted stores;
+  * test source statement grouping and evaluation order: ternary versus split
+    `if`, one expression versus sequenced assignments, constructor/member-init
+    order, stores before ownership changes, and independent operand order;
+  * test loop and exit spelling, including post-decrement/count-down loops,
+    `while (1)` plus `break`, separate `continue` paths, `goto` into a shared
+    guard or exit, and duplicated symmetric arms whose textual statement order
+    enables a retail tail merge. Read comparison order before choosing the
+    construct: non-value-order tests can prove an `if` chain where a compiler
+    would sort a `switch`, and equivalent arms may intentionally use different
+    statement orders;
+  * when equal operations appear in a different order, consider repeated
+    inline-helper calls or source-line groups rather than assuming a scheduler
+    permutation; statement count can also move unrelated inline-budget edges.
+  These are hypotheses, not imported ground truth. SH4/Dreamcast instruction
+  order, an absent call, VC6 register choices, STL internals, EH lowering, and
+  `/Ob2` budget behavior do not transfer directly to x86 VC5. Revision-skewed
+  source may also be older than retail. Use such evidence in its positive
+  direction to propose an A/B, then let Gruntz retail instructions, relocations,
+  and the pinned VC5 build decide. Diagnose the inliner before attributing its
+  downstream register texture, but apply caller-size/budget reasoning only to
+  a callee proven eligible under Gruntz's `/Ob1` model. Pair call sets by
+  resolved target identity rather than raw synthetic labels; equal call totals
+  with reciprocal unmatched aliases indicate an attribution defect, not two
+  opposite inline decisions. After the checklist is genuinely exhausted,
+  a same-call-set/same-CFG residue is a useful stop signal rather than a reason
+  for unbounded spelling churn.
 - INLINE/MACRO PRIOR (user ruling 2026-08-22): the era devs DID write inline
   functions and macros, so an inline/macro spelling is a priori MORE likely to
   be the real source than a hand-expanded transcription. We may still overrule
