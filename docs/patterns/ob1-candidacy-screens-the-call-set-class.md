@@ -55,21 +55,49 @@ object has **no `out_waiting` symbol row**. With the constructor argument writte
 directly as `output->pcount()`, expansion of `out_waiting`'s conditional also
 duplicates the destination `istrstream` constructor; the whole `Run` then has
 three constructor sites against retail's two. Naming the accessor result first,
-`i32 decodedLength = output->pcount()`, restores the two constructor sites and
-moves `Run` 88.65 -> 88.77, while the nested call remains expanded. Retail expands
-`pcount()` but declines only its nested `out_waiting()` call. The call-set delta is
-therefore a distinct later budget decision, not evidence that the accessor or its
-destination construction should be hand-expanded.
+`i32 decodedLength = output->pcount()`, restores the two constructor sites and,
+on the current caller, scores 91.6736 against the direct form's 91.35955 while
+the nested call remains expanded.
+
+That higher score does not settle the source. Retail calls `operator new` before
+it calls `out_waiting`; only the direct constructor argument has that evaluation
+order. The named result necessarily evaluates `pcount()` first. The direct form
+is therefore the evidence-backed base even though its recursively expanded
+conditional currently duplicates the constructor tail. Retail expands `pcount()`
+but declines only its nested `out_waiting()` call; once that budget decision is
+reproduced, the duplicate tail disappears without a source-order contradiction.
+The call-set delta is a distinct later budget decision, not evidence that the
+accessor or its destination construction should be hand-expanded.
 
 Charged inline-helper and repeated real-call controls independently confirmed the
-budget reading: small additions left `out_waiting` expanded, while enough preceding
-inline cost made cl 5.0 emit the call. Those probes are evidence only and must not
-remain in source; the retained lever must be authentic missing caller work.
+budget reading. Sixteen cheap eligible sites left `out_waiting` expanded; the
+seventeenth made cl 5.0 emit that call, removed the extra `istrstream` site, and
+made the call multisets exact. The resulting disposable state scored 91.98 and
+then diagnosed CFG, which proves the inline population lever without proving any
+particular helper identity. Those probes are evidence only and must not remain in
+source; the retained lever must be authentic missing caller work.
 
 This also explains why a nested-site model matters: the outer accessor can be
 accepted while the callee inside it is declined. Do not replace the authentic
 accessor with its low-level expansion just because current C2 recursively
 inlines both.
+
+## The shared-header state cost is not contrary source evidence
+
+`CButeMgr::Parse(CRezArchiveEntry*, const char*)` is a header inline, so changing
+the expression tree is visible to TUs that merely parse that header, not only to
+the two callers that expand it. The full-build A/B found exactly two fresh MAX
+dips from the direct form: `CSBI_Image::Render` 100 -> 92.0357 and
+`CDDrawWorkerHost::Load` 100 -> 99.9841. Restoring the named result makes both
+exact again.
+
+That establishes a front-end TU-state consequence, not the named temporary's
+authenticity. The two spellings make opposite, decidable call orders in `Run`,
+and retail selects the direct form. Preserve the unrelated functions' MAX,
+adjudicate the humane correction, and leave their current state to be restored
+by authentic header population later. Moving the inline body into a fitted
+private header merely to protect those scores would erase the measured source
+relationship rather than reconstruct it.
 
 ## What to do with shape (2)
 

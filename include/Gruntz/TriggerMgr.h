@@ -221,22 +221,22 @@ public:
     i32 WireTileSwitchLogic(CGrunt* g, i32 x, i32 y);
 
     CTriggerMgr() {
+        g_curPlayer = 0;
         memset(m_units, 0, sizeof(m_units));
         memset(m_unitCountByPlayer, 0, sizeof(m_unitCountByPlayer));
         memset(m_unitExited, 0, sizeof(m_unitExited));
         memset(m_gruntzExitedByPlayer, 0, sizeof(m_gruntzExitedByPlayer));
         memset(m_gruntzLostByPlayer, 0, sizeof(m_gruntzLostByPlayer));
-        m_world = NULL;
+        m_selSentinel = -1;
         m_goal = NULL;
         m_overlay = NULL;
+        m_world = NULL;
         m_countdownActive = true;
-        m_selSentinel = -1;
+        m_groupFlag = true;
         m_rollingballLoop = NULL;
         m_teleportLoop = NULL;
         m_rollingballWanted = false;
         m_teleportWanted = false;
-        m_groupFlag = true;
-        g_curPlayer = 0;
     }
     RVA(0x00085c50, 0x83)
     ~CTriggerMgr() {

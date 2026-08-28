@@ -92,7 +92,6 @@ b32 g_enableTrueColor = false;
 DATA(0x002455e4)
 b32 g_enableEmulation = false;
 
-// @early-stop
 RVA(0x00083450, 0x192d)
 i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
@@ -524,8 +523,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         m_world->m_soundRegistry->LoadFromTree(static_cast<CRezArchiveDir*>(sz), "GAME", "_");
     }
     {
-        SoundCue* movieCue = NULL;
-        MapLookup(m_world->m_soundRegistry->m_cues, "GAME_MOVIE", movieCue);
+        SoundCue* movieCue = m_world->m_soundRegistry->FindCue("GAME_MOVIE");
         m_world->m_soundRegistry->ConfigurePrimaryFromCue(movieCue, 0);
     }
     CheckMovieFileExists();
@@ -543,7 +541,6 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
 
     {
-
         CRezArchiveDir* attract = m_resourceArchive->FindDirectoryByPath("STATEZ_ATTRACT");
         g_attractStateCount = 0;
         CString title;
