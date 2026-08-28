@@ -13,18 +13,18 @@ _Data: objdiff `matched_data` 558,060 of 800,997 B (69.67%) - a per-unit sum (a 
 
 _Totals are vs the whole engine = every in-`.text` reconstruction-target function; the generated/library categories tabled below are excluded from the denominator. `Fuzzy` = code-weighted partial credit; `Fuzzy Max` = the same with every function at its banked best-ever fuzzy% - a gap above `Fuzzy` is entropy churn since the last bank._
 
-_Started units alone: 3,797/4,425 fns exact, 95.66% fuzzy over 1,136,743 of 1,137,365 engine code bytes._
+_Started units alone: 3,797/4,425 fns exact, 95.67% fuzzy over 1,136,743 of 1,137,365 engine code bytes._
 
 | Module        | Units |       Functions exact |  Fuzzy | Fuzzy Max |
 | :------------ | ----: | --------------------: | -----: | --------: |
-| `Gruntz`      |   201 | 2,188 / 2,648 (82.6%) |  95.4% |     95.6% |
-| `DDrawMgr`    |    20 |     531 / 600 (88.5%) |  94.0% |     94.1% |
-| `Wwd`         |     7 |     188 / 216 (87.0%) |  97.5% |     97.5% |
+| `Gruntz`      |   201 | 2,189 / 2,648 (82.7%) |  95.4% |     95.6% |
+| `DDrawMgr`    |    20 |     532 / 600 (88.7%) |  94.0% |     94.1% |
+| `Wwd`         |     7 |     189 / 216 (87.5%) |  97.5% |     97.5% |
 | `Dsndmgr`     |     3 |     155 / 156 (99.4%) | 100.0% |    100.0% |
 | `Rez`         |     7 |     138 / 140 (98.6%) |  97.5% |     97.5% |
-| `Net`         |     9 |     125 / 140 (89.3%) |  98.7% |     98.7% |
+| `Net`         |     9 |     124 / 140 (88.6%) |  98.7% |     98.7% |
 | `Bute`        |     5 |     100 / 116 (86.2%) |  97.9% |     98.0% |
-| `Image`       |     7 |      88 / 112 (78.6%) |  97.3% |     97.3% |
+| `Image`       |     7 |      86 / 112 (76.8%) |  97.3% |     97.3% |
 | `zlib-1.0.4`  |    11 |      65 / 65 (100.0%) | 100.0% |    100.0% |
 | `DinMgr2`     |     2 |      59 / 59 (100.0%) | 100.0% |    100.0% |
 | `Wap32`       |     4 |       43 / 44 (97.7%) | 100.0% |    100.0% |

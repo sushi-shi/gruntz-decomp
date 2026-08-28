@@ -25,8 +25,20 @@ public:
     u32 GetSize() {
         return m_nSize;
     }
+    CRezDir* GetParentDir() {
+        return m_pParentDir;
+    }
+    i32 GetTime() {
+        return m_nTime;
+    }
     u32 GetSeekPos() {
         return m_nCurPos;
+    }
+    void SetTime(i32 time) {
+        m_nTime = time;
+    }
+    u32 DirectRead_GetFileOffset() {
+        return m_nFilePos;
     }
     char* Load();
     i32 UnLoad();

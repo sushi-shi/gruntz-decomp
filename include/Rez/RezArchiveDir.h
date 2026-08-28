@@ -51,8 +51,24 @@ public:
         return m_sDirName;
     }
 
-    i32 Load(b32 loadAllSubDirs);
-    i32 UnLoad(b32 unloadAllSubDirs);
+    CRezDir* GetParentDir() {
+        return m_pParentDir;
+    }
+
+    CRezMgr* GetParentMgr() {
+        return m_pRezMgr;
+    }
+
+    i32 Load(b32 loadAllSubDirs = false);
+    i32 UnLoad(b32 unloadAllSubDirs = false);
+
+    i32 IsLoaded() {
+        return m_pMemBlock != NULL;
+    }
+
+    i32 GetTime() {
+        return m_nLastTimeModified;
+    }
     CRezItm* GetRez(const char* name, RezTypeTag type);
     CRezItm* GetRezFromDosName(const char* filename);
     CRezItm* GetRezFromPath(const char* path, RezTypeTag type);
@@ -96,6 +112,8 @@ private:
     CRezItm* CreateRezInternal(u32 id, const char* name, CRezTyp* type, CBaseRezFile* rezFile);
 
     i32 RemoveRezInternal(CRezTyp* type, CRezItm* item);
+
+    i32 IsGoodChar(char character);
 
     char* m_sDirName;
 

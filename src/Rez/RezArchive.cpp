@@ -24,9 +24,9 @@
 #include <sys/types.h>
 #include <time.h>
 
-static __inline i32 IsPathComponentCharacter(const char* delimiters, char character) {
-    if (delimiters) {
-        return strchr(delimiters, character) == NULL;
+inline i32 CRezDir::IsGoodChar(char character) {
+    if (m_pRezMgr->m_sDirSeparators) {
+        return strchr(m_pRezMgr->m_sDirSeparators, character) == NULL;
     }
     if (character >= ' ' && character <= '.') {
         return 1;
@@ -1393,13 +1393,13 @@ RVA(0x0013bae0, 0x1b9)
 CRezDir* CRezDir::GetDirFromPath(const char* path) {
     char component[0x40];
     if (static_cast<i32>(strlen(path)) > 1) {
-        if (!IsPathComponentCharacter(m_pRezMgr->m_sDirSeparators, *path)) {
+        if (!IsGoodChar(*path)) {
             ++path;
         }
     }
     const char* cursor = path;
     i32 componentLength = 0;
-    while (IsPathComponentCharacter(m_pRezMgr->m_sDirSeparators, *cursor)) {
+    while (IsGoodChar(*cursor)) {
         component[componentLength] = *cursor;
         ++componentLength;
         ++cursor;
@@ -1413,7 +1413,7 @@ CRezDir* CRezDir::GetDirFromPath(const char* path) {
     if (separator == 0) {
         return subdirectory;
     }
-    while (!IsPathComponentCharacter(m_pRezMgr->m_sDirSeparators, separator)) {
+    while (!IsGoodChar(separator)) {
         separator = path[componentLength + 1];
         ++componentLength;
         if (separator == 0) {
@@ -1429,13 +1429,13 @@ CRezItm* CRezDir::GetRezFromDosPath(const char* qualifiedPath) {
     char resourceName[0x20];
     i32 pathLength = static_cast<i32>(strlen(qualifiedPath));
     if (pathLength > 1) {
-        if (!IsPathComponentCharacter(m_pRezMgr->m_sDirSeparators, *qualifiedPath)) {
+        if (!IsGoodChar(*qualifiedPath)) {
             ++qualifiedPath;
             --pathLength;
         }
     }
     i32 separatorIndex = pathLength - 1;
-    while (IsPathComponentCharacter(m_pRezMgr->m_sDirSeparators, qualifiedPath[separatorIndex])) {
+    while (IsGoodChar(qualifiedPath[separatorIndex])) {
         --separatorIndex;
         if (separatorIndex < 0) {
             break;
@@ -1464,13 +1464,13 @@ CRezItm* CRezDir::GetRezFromPath(const char* qualifiedPath, RezTypeTag typeTag) 
     char resourceName[0x20];
     i32 pathLength = static_cast<i32>(strlen(qualifiedPath));
     if (pathLength > 1) {
-        if (!IsPathComponentCharacter(m_pRezMgr->m_sDirSeparators, *qualifiedPath)) {
+        if (!IsGoodChar(*qualifiedPath)) {
             ++qualifiedPath;
             --pathLength;
         }
     }
     i32 separatorIndex = pathLength - 1;
-    while (IsPathComponentCharacter(m_pRezMgr->m_sDirSeparators, qualifiedPath[separatorIndex])) {
+    while (IsGoodChar(qualifiedPath[separatorIndex])) {
         --separatorIndex;
         if (separatorIndex < 0) {
             break;
@@ -1514,11 +1514,11 @@ CRezDir* CRezMgr::GetDirFromPath(const char* path) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013c050, 0x28)
 i32 CRezMgr::Reset() {
-    if (m_bFileOpened == false) {
+    if (!IsOpen()) {
         return 0;
     }
-    Close(0);
-    return Open(m_sFileName, true, false);
+    Close();
+    return Open(m_sFileName);
 }
 
 RVA(0x0013c080, 0x3c)

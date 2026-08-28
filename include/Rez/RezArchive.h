@@ -50,23 +50,35 @@ public:
     virtual i32 DiskError();
 
     CRezMgr();
-    CRezMgr(const char* fileName, b32 readOnly, b32 createNew);
+    CRezMgr(const char* fileName, b32 readOnly = true, b32 createNew = false);
 
     ~CRezMgr();
 
-    i32 Close(b32 compact);
+    i32 Close(b32 compact = false);
 
     CRezDir* GetRootDir();
 
-    i32 Open(const char* fileName, b32 readOnly, b32 createNew);
+    i32 Open(const char* fileName, b32 readOnly = true, b32 createNew = false);
 
-    i32 OpenAdditional(const char* fileName, b32 overwriteItems);
+    i32 OpenAdditional(const char* fileName, b32 overwriteItems = false);
 
     RezTypeTag StrToType(const char* typeName);
 
     void TypeToStr(RezTypeTag type, char* destination);
 
     i32 Reset();
+
+    i32 IsOpen() {
+        return m_bFileOpened;
+    }
+
+    i32 GetTime() {
+        return m_nLastTimeModified;
+    }
+
+    i32 IsSorted() {
+        return m_bIsSorted;
+    }
 
     i32 VerifyFileOpen();
 
@@ -78,6 +90,46 @@ public:
         u32 dirNumHashBins,
         u32 typeNumHashBins
     );
+
+    void SetRenumberIDCollisions(b32 flag) {
+        m_bRenumberIDCollisions = flag;
+    }
+
+    void SetNextIDNumber(u32 id) {
+        m_nNextIDNumToUse = id;
+    }
+
+    i32 GetLowerCaseUsed() {
+        return m_bLowerCaseUsed;
+    }
+
+    void SetLowerCaseUsed(b32 lowerCaseUsed) {
+        m_bLowerCaseUsed = lowerCaseUsed;
+    }
+
+    i32 GetItemByIDUsed() {
+        return m_bItemByIDUsed;
+    }
+
+    void SetItemByIDUsed(b32 itemByIDUsed) {
+        m_bItemByIDUsed = itemByIDUsed;
+    }
+
+    void ForceIsSortedFlag(b32 flag) {
+        m_bIsSorted = flag;
+    }
+
+    void SetMaxOpenFilesInEmulatedDir(i32 numFiles) {
+        m_nMaxOpenFilesInEmulatedDir = numFiles;
+    }
+
+    void SetNextIDNumToUse(u32 nextIDNumToUse) {
+        m_nNextIDNumToUse = nextIDNumToUse;
+    }
+
+    u32 GetNextIDNumToUse() {
+        return m_nNextIDNumToUse;
+    }
 
     CRezItm* GetRezFromDosPath(const char* path);
     CRezItm* GetRezFromPath(const char* path, RezTypeTag type);
