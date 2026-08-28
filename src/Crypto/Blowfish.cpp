@@ -32,39 +32,43 @@ void CCryptMgr::SetKey(const char* key) {
 
 RVA(0x0016f6e0, 0x76)
 void CCryptMgr::Encrypt(istream& src, ostream& dst) {
-    i32 last = 0;
-    while (!src.eof()) {
-        BlowfishBlock rec;
+    int last = 0;
+    char buf[8];
 
-        memset(rec.m_bytes, 0, 8);
-        src.read(rec.m_bytes, 8);
+    while (!src.eof()) {
+        memset(buf, 0, 8);
+        src.read(buf, 8);
         last = src.gcount();
-        Blowfish_encipher(&rec.m_w[0], &rec.m_w[1]);
-        dst.write(rec.m_bytes, 8);
+        void* left = buf;
+        void* right = &buf[4];
+        Blowfish_encipher(static_cast<u32*>(left), static_cast<u32*>(right));
+        dst.write(buf, 8);
     }
-    dst.put(static_cast<unsigned char>(last));
+    dst.put(static_cast<char>(last));
 }
 
 RVA(0x0016f760, 0x82)
 void CCryptMgr::Decrypt(istream& in, ostream& out) {
-
-    BlowfishBlock blk[2];
+    int count = 0;
+    char buf[8];
+    char previous[8];
     bool first = true;
-    while (!in.eof()) {
-        in.read(blk[0].m_bytes, 8);
-        int sample = in.gcount();
-        if (sample == 1) {
 
-            sample = blk[0].m_lenByte;
+    while (!in.eof()) {
+        in.read(buf, 8);
+        count = in.gcount();
+        if (count == 1) {
+            count = static_cast<int>(buf[0]);
         }
         if (!first) {
-            out.write(blk[1].m_bytes, sample);
+            out.write(previous, count);
         } else {
             first = false;
         }
-        Blowfish_decipher(&blk[0].m_w[0], &blk[0].m_w[1]);
-        blk[1].m_w[0] = blk[0].m_w[0];
-        blk[1].m_w[1] = blk[0].m_w[1];
+        void* left = buf;
+        void* right = &buf[4];
+        Blowfish_decipher(static_cast<u32*>(left), static_cast<u32*>(right));
+        memcpy(previous, buf, 8);
     }
 }
 

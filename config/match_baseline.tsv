@@ -600,8 +600,8 @@ bitarraystream	??5@YAAAVistream@@AAV0@AAVzBitVec@@@Z	100.0000	100.0000	1	1e09c4b
 bitarraystream	??6@YAAAVostream@@AAV0@ABVzBitVec@@@Z	100.0000	100.0000	5	2876109cbf16	0x193080	100.0000	
 blowfish	?Blowfish_decipher@@YAXPAI0@Z	100.0000	100.0000	1	6e574434e8a9	0x16fc70	100.0000	
 blowfish	?Blowfish_encipher@@YAXPAI0@Z	100.0000	60.3505	1	d92c7ec3c73c	0x16f7f0	100.0000	
-blowfish	?Decrypt@CCryptMgr@@QAEXAAVistream@@AAVostream@@@Z	100.0000	100.0000	2	4dfc4bb2b9f4	0x16f760	100.0000	
-blowfish	?Encrypt@CCryptMgr@@QAEXAAVistream@@AAVostream@@@Z	100.0000	100.0000	2	7e2fac674830	0x16f6e0	100.0000	
+blowfish	?Decrypt@CCryptMgr@@QAEXAAVistream@@AAVostream@@@Z	100.0000	100.0000	3	82d86af1f8c5	0x16f760	100.0000	
+blowfish	?Encrypt@CCryptMgr@@QAEXAAVistream@@AAVostream@@@Z	100.0000	100.0000	3	4cb4c7fb2b23	0x16f6e0	100.0000	
 blowfish	?InitializeBlowfish@@YAFPBDF@Z	100.0000	100.0000	3	a7d893952787	0x170100	100.0000	
 blowfish	?SetKey@CCryptMgr@@QAEXPBD@Z	100.0000	100.0000	2	daf6eecd4ee2	0x16f6c0	100.0000	
 bootystateactivate	??1CBootyState@@UAE@XZ	100.0000	100.0000	1	7390c8dc8b7b	0x8d440	100.0000	

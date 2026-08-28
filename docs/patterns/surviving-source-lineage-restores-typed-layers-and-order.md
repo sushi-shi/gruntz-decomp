@@ -91,6 +91,15 @@ a vptr at +0 and its intrusive-list base subobject at +4. Developers wrote ordin
 base/derived conversions; VC5 emitted the null-preserving adjustment. Explicit
 `reinterpret_cast<char*>(link) - 4` source is therefore a decompiler artifact here.
 
+The same audit falsified a second union at a different semantic level. The reconstructed
+crypto stream used one `BlowfishBlock` union to view each eight-byte record as bytes,
+words, and a signed length byte. The surviving `CCryptMgr` instead declares ordinary
+`char buf[8]`/`char tbuf[8]` locals, converts only at the cipher boundary, and copies the
+previous record with `memcpy`. Restoring that source made both `Encrypt` and `Decrypt`
+byte-exact without the union. When a union merely explains several emitted access widths,
+look for an authentic typed operation at the boundary before treating the overlay as an
+object the developers declared.
+
 ## Authentic declarations can rotate a commuted SIB without changing the model
 
 Restoring the surviving names and owners all the way from `CHashBase`/`CHashElement` to

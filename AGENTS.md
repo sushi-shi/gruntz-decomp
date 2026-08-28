@@ -201,6 +201,10 @@
     shortcuts. The surviving typed hash-node hierarchy, inline wrappers, and
     authored declaration/order layers closed the Rez hash/archive family; a
     trailing union with the same complete size was not an authentic substitute.
+    The same rule applies to local byte/word overlays: the surviving
+    `CCryptMgr` uses two ordinary `char[8]` buffers, typed cipher-boundary
+    conversions, and `memcpy`; that source is byte-exact, so the inferred
+    `BlowfishBlock` union was removed.
   * source statement order, helper boundaries, local census/lifetimes, parameter
     reuse, and element-indexed loop spelling are first-class evidence even when
     C2 reorders or strength-reduces the emitted operations. The typed DIB and
