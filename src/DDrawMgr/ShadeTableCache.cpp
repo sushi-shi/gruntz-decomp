@@ -10,6 +10,7 @@
 #include <DDrawMgr/PixelShift.h>
 #include <Enums.h>
 #include <Ints.h>
+#include <Lith/BDefs.h>
 #include <Pix16.h>
 
 #include <afxtempl.h>
@@ -20,7 +21,6 @@
 #define HSV_MAX(a, b) ((a) > (b) ? (a) : (b))
 #define HSV_MIN(a, b) ((a) < (b) ? (a) : (b))
 #define INTERPOLATE(start, end, amount) ((start) * (g_one - (amount)) + (end) * (amount))
-#define SQUARE(value) ((value) * (value))
 
 static inline u16 PackPixel16(u8 red, u8 green, u8 blue) {
     u16 value = static_cast<u8>(blue >> g_bDown);
@@ -314,16 +314,15 @@ CShadeTable* CShadeTableCache::HueRampTable(PALETTEENTRY* pal, i32 steps, i32 pa
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         PALETTEENTRY* p = &pal[i];
         for (i32 j = 0; j < steps; j++) {
-            float t0 = g_one - static_cast<float>(j) / static_cast<float>(steps);
             float t1 = static_cast<float>(j) / static_cast<float>(steps);
             u8 bn = static_cast<u8>(
-                (t0 * static_cast<float>(p->peBlue) + t1 * static_cast<float>(GetBValue(rgb)))
+                INTERPOLATE(static_cast<float>(p->peBlue), static_cast<float>(GetBValue(rgb)), t1)
             );
             u8 gn = static_cast<u8>(
-                (t0 * static_cast<float>(p->peGreen) + t1 * static_cast<float>(GetGValue(rgb)))
+                INTERPOLATE(static_cast<float>(p->peGreen), static_cast<float>(GetGValue(rgb)), t1)
             );
             u8 rn = static_cast<u8>(
-                (t0 * static_cast<float>(p->peRed) + t1 * static_cast<float>(GetRValue(rgb)))
+                INTERPOLATE(static_cast<float>(p->peRed), static_cast<float>(GetRValue(rgb)), t1)
             );
             data[i * steps + j] = static_cast<u8>(FindNearestColor(pal, rn, gn, bn));
         }
@@ -788,9 +787,9 @@ void CShadeTableCache::FindRemove(CShadeTable* key) {
 RVA(0x0014fbf0, 0xcb)
 i32 __cdecl CShadeTableCache::FindNearestColor(PALETTEENTRY* pal, u8 r, u8 g, u8 b) {
     i32 best = 0;
-    i32 bestDist = SQUARE(r - pal->peRed) + SQUARE(g - pal->peGreen) + SQUARE(b - pal->peBlue);
+    i32 bestDist = SQR(r - pal->peRed) + SQR(g - pal->peGreen) + SQR(b - pal->peBlue);
     for (i32 i = 1; i < PALETTE_ENTRY_COUNT; i++) {
-        i32 d = SQUARE(r - pal[i].peRed) + SQUARE(g - pal[i].peGreen) + SQUARE(b - pal[i].peBlue);
+        i32 d = SQR(r - pal[i].peRed) + SQR(g - pal[i].peGreen) + SQR(b - pal[i].peBlue);
         if (d < bestDist) {
             bestDist = d;
             best = i;

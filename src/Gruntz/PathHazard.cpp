@@ -32,6 +32,7 @@
 #include <Gruntz/Ufo.h>
 #include <Image/CImage.h>
 #include <Io/FileMem.h>
+#include <Lith/BDefs.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/TileGeometry.h>
@@ -363,7 +364,7 @@ i32 CPathHazard::BeginLeg() {
 
     double dx = static_cast<double>(m_wpX) - static_cast<double>(obj->m_screenX);
     double dy = static_cast<double>(m_wpY) - static_cast<double>(obj->m_screenY);
-    double len = sqrt(dx * dx + dy * dy);
+    double len = sqrt(SQR(dx) + SQR(dy));
     double ux = dx / len;
     double uy = dy / len;
 

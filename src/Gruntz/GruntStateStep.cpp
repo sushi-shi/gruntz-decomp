@@ -15,6 +15,7 @@
 #include <Gruntz/TypeColl.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Ints.h>
+#include <Lith/BDefs.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/ZVec.h>
 
@@ -196,9 +197,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 Coord np = cur->GetTilePos();
                 i32 dx = np.m_x - here.m_x;
                 i32 dy = np.m_y - here.m_y;
-                dist = static_cast<i32>(
-                    sqrt(static_cast<double>((abs(dx) * abs(dx) + abs(dy) * abs(dy))))
-                );
+                dist = static_cast<i32>(sqrt(static_cast<double>((SQR(abs(dx)) + SQR(abs(dy))))));
             }
             if (dist > m_defenderTargetMaxDistance) {
                 if (m_attackWaypoints.GetSize() != 0) {

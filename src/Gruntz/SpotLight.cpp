@@ -69,12 +69,10 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     m_object->m_screenX = nx;
     m_object->m_screenY = centerY;
     double px = static_cast<double>(nx);
-    m_position.x = px;
-    m_position.y = cy;
+    m_position.Init(px, cy);
     CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR)
-    m_offset.x = m_center.x - px;
-    m_offset.y = m_center.y - cy;
+    m_offset.Init(m_center.x - px, m_center.y - cy);
 
     double period;
     if (m_object->m_damage == 0) {
@@ -189,14 +187,15 @@ i32 CSpotLight::Tick() {
     double oy = -m_offset.y;
     double dAngle = static_cast<double>(g_frameDelta) * m_angularVelocity;
     CWwdSpriteObject* mv = m_focus;
-    m_position.x = ox * c + oy * s;
-    m_position.y = ox * s - oy * c;
+    double rotatedX = ox * c + oy * s;
+    double rotatedY = ox * s - oy * c;
+    m_position.Init(rotatedX, rotatedY);
     if (mv != NULL) {
         m_center.x = static_cast<double>(mv->m_screenX);
         m_center.y = static_cast<double>(mv->m_screenY);
     }
-    m_position.x = m_center.x + m_position.x;
-    m_position.y = m_center.y + m_position.y;
+    m_position.x = m_center.x + rotatedX;
+    m_position.y = m_center.y + rotatedY;
     m_angle = dAngle + m_angle;
     m_object->m_screenX = static_cast<i32>(m_position.x);
     m_object->m_screenY = static_cast<i32>(m_position.y);
@@ -211,16 +210,16 @@ int CSpotLight::Update() {
         double ox = m_offset.x;
         double oy = -m_offset.y;
 
-        double newAngle = static_cast<double>(g_frameDelta) * m_angularVelocity + m_angle;
+        double dAngle = static_cast<double>(g_frameDelta) * m_angularVelocity;
+        CWwdSpriteObject* focus = m_focus;
         m_position.x = oy * s - ox * c;
         m_position.y = ox * s + oy * c;
-        if (m_focus) {
-            m_center.x = static_cast<double>(m_focus->m_screenX);
-            m_center.y = static_cast<double>(m_focus->m_screenY);
+        if (focus) {
+            m_center.x = static_cast<double>(focus->m_screenX);
+            m_center.y = static_cast<double>(focus->m_screenY);
         }
-        m_position.x = m_center.x + m_position.x;
-        m_position.y = m_center.y + m_position.y;
-        m_angle = newAngle;
+        m_position.Init(m_center.x + m_position.x, m_center.y + m_position.y);
+        m_angle = dAngle + m_angle;
     }
     if (g_gameReg->m_triggerMgr
             ->m_units[m_targetUnitIndex + m_targetPlayerIndex * TM_UNITS_PER_PLAYER]

@@ -67,6 +67,13 @@ per-site lever.
   direct controlled example of EXPLORATORY DESCENT: retain an authentic abstraction as a
   disposable base and compose the next independently evidenced source fact before ranking
   the path.
+* `CSpotLight::Tick` 0xb1af0: replacing the two rotation-result stores with the
+  surviving vector `Init` boundary first moved 84.2097 -> **81.6411**. Keeping
+  that boundary and naming the two rotated-coordinate results restored
+  **84.2097**. This did not close the function—the remaining wall is a separately
+  diagnosed CFG mismatch—but it proves that the first helper-shaped island hid
+  the caller-local lifetime that had to be composed next. Reverting at the first
+  dip would have missed the source-backed combined form.
 * `CAniPlayer::TickToggle` 0xe5b90: byte-identical either way (92.0000), so the boundary
   is not a universal improvement even inside a file where it closed two neighbours.
 

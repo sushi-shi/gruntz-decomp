@@ -15,6 +15,7 @@
 #include <Gruntz/SoundCueRegistryInline.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/UserLogic.h>
+#include <Lith/BDefs.h>
 #include <Rez/RezMgr.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
@@ -551,7 +552,7 @@ RVA(0x0000c5b0, 0x1df)
 void CAmbientPosSound::Update(i32 x, i32 y, b32 immediate) {
     i32 dx = abs(m_position.x - x);
     i32 dy = abs(m_position.y - y);
-    i32 dist2 = dx * dx + dy * dy;
+    i32 dist2 = SQR(dx) + SQR(dy);
     if (dx > 0x280 || dy > 0x280) {
         if (m_sound != NULL && m_isPlaying != false) {
             m_sound->StopAndRewind();

@@ -67,20 +67,12 @@ inline CMotionState::CMotionState(EInlineBase) {
 }
 
 inline void CMotionState::InitBounds() {
-    m_position.x = 0.0;
-    m_position.y = 0.0;
-    m_position.z = 0.0;
-    m_velocity.x = 0.0;
-    m_velocity.y = 0.0;
-    m_velocity.z = 0.0;
-    m_acceleration.x = 0.0;
-    m_acceleration.y = 0.0;
-    m_acceleration.z = 0.0;
+    m_position.Init();
+    m_velocity.Init();
+    m_acceleration.Init();
     m_time = 0.0;
     m_deltaTime = 0.0;
-    m_reservedc0.x = 0.0;
-    m_reservedc0.y = 0.0;
-    m_reservedc0.z = 0.0;
+    m_reservedc0.Init();
     m_stepDisabled = false;
     m_minBounds.x = g_movingLogicMin;
     m_maxBounds.x = g_movingLogicMax;
@@ -88,12 +80,8 @@ inline void CMotionState::InitBounds() {
     m_maxBounds.y = g_movingLogicMax;
     m_minBounds.z = g_movingLogicMin;
     m_maxBounds.z = g_movingLogicMax;
-    m_maxStep.x = g_movingLogicMax;
-    m_maxStep.y = g_movingLogicMax;
-    m_maxStep.z = g_movingLogicMax;
-    m_maxVelocity.x = g_movingLogicMax;
-    m_maxVelocity.y = g_movingLogicMax;
-    m_maxVelocity.z = g_movingLogicMax;
+    m_maxStep.Init(g_movingLogicMax, g_movingLogicMax, g_movingLogicMax);
+    m_maxVelocity.Init(g_movingLogicMax, g_movingLogicMax, g_movingLogicMax);
 }
 
 #endif // GRUNTZ_MOTIONSTATE_H

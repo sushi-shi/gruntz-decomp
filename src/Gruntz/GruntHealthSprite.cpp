@@ -18,6 +18,7 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Image/CImage.h>
 #include <Io/FileMem.h>
+#include <Lith/BDefs.h>
 #include <Wap32/ZVec.h>
 
 #include <stddef.h>
@@ -60,7 +61,7 @@ RVA(0x0007f0d0, 0x6e)
 i32 CGruntHealthSprite::BindToGrunt(i32 playerIndex, i32 unitIndex, i32 displayedValue) {
     m_gruntIdentity.m_playerIndex = playerIndex;
     m_gruntIdentity.m_unitIndex = unitIndex;
-    i32 slot = 0x15 - static_cast<i32>((static_cast<double>(displayedValue) * 0.2 + 0.5));
+    i32 slot = 0x15 - ROUND(static_cast<double>(displayedValue) * 0.2);
     CWwdSpriteObject* obj = m_object;
     CDDrawWorker* map = obj->m_imageSet;
     if (map) {
@@ -86,7 +87,7 @@ i32 CGruntHealthSprite::HealthUpdate() {
     }
     i32 result = GetDisplayedValue(e);
     if (m_displayedValue != result) {
-        i32 slot = 0x15 - static_cast<i32>((static_cast<double>(result) * 0.2 + 0.5));
+        i32 slot = 0x15 - ROUND(static_cast<double>(result) * 0.2);
         CWwdSpriteObject* obj = m_object;
         CDDrawWorker* holder = obj->m_imageSet;
         if (holder != NULL) {

@@ -10,6 +10,7 @@
 #include <Image/RasterVtx.h>
 #include <Image/WarpTextureBlit.h>
 #include <Ints.h>
+#include <Lith/BDefs.h>
 #include <Pix16.h>
 
 #include <ddraw.h>
@@ -808,7 +809,7 @@ i32 ProjectWallQuad(
     float adx = static_cast<float>(fabs(static_cast<float>(dx)));
     float ady = static_cast<float>(fabs(static_cast<float>(dy)));
     float turn = static_cast<float>(ang - g_negativePi);
-    float len = static_cast<float>(sqrt(ady * ady + adx * adx));
+    float len = static_cast<float>(sqrt(SQR(ady) + SQR(adx)));
     double s = sin(turn);
     double c = cos(turn);
     float hw = static_cast<float>(halfWidth);

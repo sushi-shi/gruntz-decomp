@@ -9,6 +9,7 @@
 #include <Gruntz/MapCellFlags.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/TriggerMgr.h>
+#include <Lith/BDefs.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/TileGeometry.h>
 
@@ -301,7 +302,7 @@ CGrunt* CTriggerMgr::FindNearestEnemy(CGrunt* w) {
                     && cell->m_gruntKind != GRUNT_GHOST) {
                     i32 dx = (cell->m_object->m_screenX >> TILE_SHIFT_PX) - tileX;
                     i32 dy = (cell->m_object->m_screenY >> TILE_SHIFT_PX) - tileY;
-                    i32 dist = dx * dx + dy * dy;
+                    i32 dist = SQR(dx) + SQR(dy);
                     if (dist < bestDist) {
                         best = cell;
                         bestDist = dist;

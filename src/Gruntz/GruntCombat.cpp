@@ -70,6 +70,7 @@
 #include <Gruntz/VoiceManager.h>
 #include <Ints.h>
 #include <Io/FileMem.h>
+#include <Lith/BDefs.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/Object.h>
@@ -326,7 +327,7 @@ void CGrunt::ComputeFacing(double dt) {
     double dx = static_cast<double>(m_lastTilePx.m_x) - static_cast<double>(h->m_screenX);
     double dy = static_cast<double>(m_lastTilePx.m_y) - static_cast<double>(h->m_screenY);
 
-    m_moveSpeed = (sqrt(dx * dx + dy * dy) / static_cast<double>(m_timePerTile)) * dt;
+    m_moveSpeed = (sqrt(SQR(dx) + SQR(dy)) / static_cast<double>(m_timePerTile)) * dt;
     m_movePosX = static_cast<double>(h->m_screenX);
     m_movePosY = static_cast<double>(h->m_screenY);
 }
@@ -1089,15 +1090,9 @@ i32 CMotionState::SetParams(
     double clock,
     double dt
 ) {
-    m_position.x = posX;
-    m_position.y = posY;
-    m_position.z = posZ;
-    m_velocity.x = velX;
-    m_velocity.y = velY;
-    m_velocity.z = velZ;
-    m_acceleration.x = accelX;
-    m_acceleration.y = accelY;
-    m_acceleration.z = accelZ;
+    m_position.Init(posX, posY, posZ);
+    m_velocity.Init(velX, velY, velZ);
+    m_acceleration.Init(accelX, accelY, accelZ);
     m_time = clock;
     m_deltaTime = dt;
     return 1;
@@ -1105,9 +1100,7 @@ i32 CMotionState::SetParams(
 
 RVA(0x00058ca0, 0x19)
 void CMotionState::SetZ(double z) {
-    m_maxStep.x = z;
-    m_maxStep.y = z;
-    m_maxStep.z = z;
+    m_maxStep.Init(z, z, z);
 }
 
 RVA(0x00058cd0, 0x195)
