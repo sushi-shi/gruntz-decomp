@@ -809,7 +809,7 @@ i32 ProjectWallQuad(
     float adx = static_cast<float>(fabs(static_cast<float>(dx)));
     float ady = static_cast<float>(fabs(static_cast<float>(dy)));
     float turn = static_cast<float>(ang - g_negativePi);
-    float len = static_cast<float>(sqrt(SQR(ady) + SQR(adx)));
+    float len = static_cast<float>(sqrt(SQR(adx) + SQR(ady)));
     double s = sin(turn);
     double c = cos(turn);
     float hw = static_cast<float>(halfWidth);
