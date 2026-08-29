@@ -250,7 +250,6 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
     return 1;
 }
 
-// @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0017bcd0, 0x28b)
@@ -289,8 +288,8 @@ i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
             _chdir(cwd);
             return 0;
         }
-        u32 copied = 0;
         b32 done = false;
+        u32 copied = 0;
         while (done == false) {
             if (pProgress != NULL) {
                 MSG msg;
