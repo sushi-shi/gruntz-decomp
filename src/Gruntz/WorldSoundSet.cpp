@@ -738,6 +738,14 @@ static inline i32 RandRange(CGruntzMgr* mgr, i32 lo, i32 hi) {
     return mgr->Rand() % range + lo;
 }
 
+static inline i32 RandRange(i32 lo, i32 hi) {
+    i32 range = hi - lo + 1;
+    if (range == 0) {
+        return (GetRandomNumber() & 1) ? lo : hi;
+    }
+    return GetRandomNumber() % range + lo;
+}
+
 // @early-stop
 RVA(0x0000cb30, 0x168)
 void CRandomAmbientSound::Update(i32 x, i32 y, b32 immediate) {
@@ -816,22 +824,7 @@ void CRandomAmbientSound::InitCycleTiming(
     m_playDurationMax = playDurationMax;
     m_silenceDurationMin = silenceDurationMin;
     m_silenceDurationMax = silenceDurationMax;
-    i32 span = playDurationMax - playDurationMin + 1;
-    i32 random;
-    if (span == 0) {
-        random = GetRandomNumber();
-        if (random & 1) {
-            i32 countdown = playDurationMin;
-            m_playPhase = true;
-            m_countdownMs = countdown;
-        } else {
-            i32 countdown = playDurationMax;
-            m_playPhase = true;
-            m_countdownMs = countdown;
-        }
-        return;
-    }
-    random = GetRandomNumber();
+    i32 countdown = RandRange(playDurationMin, playDurationMax);
     m_playPhase = true;
-    m_countdownMs = playDurationMin + random % span;
+    m_countdownMs = countdown;
 }
