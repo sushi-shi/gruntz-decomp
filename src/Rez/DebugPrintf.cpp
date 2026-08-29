@@ -42,7 +42,7 @@ BOOLEAN dprintfExcludeRegions::In(u32 Num) {
 
 RVA(0x00184be0, 0x24)
 void dprintfExcludeRegions::Add(u32 From, u32 To) {
-    if (NumRegions + 1 < 16) {
+    if (NumRegions + 1 < MAX_EXCLUDE_REGIONS) {
         Ary[NumRegions].From = From;
         Ary[NumRegions].To = To;
         NumRegions++;
@@ -51,7 +51,7 @@ void dprintfExcludeRegions::Add(u32 From, u32 To) {
 
 RVA(0x00184c10, 0x136)
 void dprintfExcludeRegions::Scan(char* Str) {
-    char TmpStr[DEBUG_PRINT_BUFFER_SIZE];
+    char TmpStr[BUFSIZE];
     char* P;
     i32 From;
     i32 To;
@@ -106,15 +106,13 @@ dprintfExcludeRegions dprintfExReg;
 RVA(0x00184d50, 0x5f)
 void dprintfmonoincline() {
     dprintfcurrentChar = 0;
-    if (++dbprintfcurrentLine == DEBUG_MONO_ROW_COUNT) {
+    if (++dbprintfcurrentLine == LPP) {
         i32 i;
-        for (i = DEBUG_MONO_COLUMN_COUNT; i < DEBUG_MONO_COLUMN_COUNT * DEBUG_MONO_ROW_COUNT; i++) {
-            dprintfmonoscreen[i - DEBUG_MONO_COLUMN_COUNT] = dprintfmonoscreen[i];
+        for (i = CPL; i < CPL * LPP; i++) {
+            dprintfmonoscreen[i - CPL] = dprintfmonoscreen[i];
         }
-        for (i = DEBUG_MONO_COLUMN_COUNT * (DEBUG_MONO_ROW_COUNT - 1);
-             i < DEBUG_MONO_COLUMN_COUNT * DEBUG_MONO_ROW_COUNT;
-             i++) {
-            dprintfmonoscreen[i] = DEBUG_MONO_ATTRIBUTE + ' ';
+        for (i = CPL * (LPP - 1); i < CPL * LPP; i++) {
+            dprintfmonoscreen[i] = ATTR + ' ';
         }
         dbprintfcurrentLine--;
     }
@@ -125,8 +123,8 @@ void dprintfmonoincline() {
 RVA(0x00184db0, 0x28)
 void dprintfmonoclrscr() {
     i32 i;
-    for (i = 0; i < DEBUG_MONO_COLUMN_COUNT * DEBUG_MONO_ROW_COUNT; i++) {
-        dprintfmonoscreen[i] = DEBUG_MONO_ATTRIBUTE + ' ';
+    for (i = 0; i < CPL * LPP; i++) {
+        dprintfmonoscreen[i] = ATTR + ' ';
     }
     dbprintfcurrentLine = 0;
     dprintfcurrentChar = 0;
@@ -152,7 +150,7 @@ void dprintf(char* fmt, ...) {
     }
 
     va_list ap;
-    char buf[DEBUG_PRINT_BUFFER_SIZE];
+    char buf[BUFSIZE];
     va_start(ap, fmt);
     vsprintf(buf, fmt, ap);
     va_end(ap);
@@ -172,7 +170,7 @@ void dprintf(i32 x, i32 y, char* fmt, ...) {
 
     dgotoxy(x, y);
     va_list ap;
-    char buf[DEBUG_PRINT_BUFFER_SIZE];
+    char buf[BUFSIZE];
     va_start(ap, fmt);
     vsprintf(buf, fmt, ap);
     va_end(ap);
@@ -191,7 +189,7 @@ void dprintf(u32 Level, char* fmt, ...) {
     }
 
     va_list ap;
-    char buf[DEBUG_PRINT_BUFFER_SIZE];
+    char buf[BUFSIZE];
     va_start(ap, fmt);
     vsprintf(buf, fmt, ap);
     va_end(ap);
@@ -211,7 +209,7 @@ void dprintf(u32 Level, i32 x, i32 y, char* fmt, ...) {
 
     dgotoxy(x, y);
     va_list ap;
-    char buf[DEBUG_PRINT_BUFFER_SIZE];
+    char buf[BUFSIZE];
     va_start(ap, fmt);
     vsprintf(buf, fmt, ap);
     va_end(ap);
@@ -238,7 +236,7 @@ void dclrscr(u32 Level) {}
 
 RVA(0x00185000, 0x1a6)
 dprintfinittype::dprintfinittype() {
-    char Buf[DEBUG_PRINT_BUFFER_SIZE];
+    char Buf[BUFSIZE];
     dprintfExReg.NumRegions = 0;
     dprintfOutType = DPRINTF_NOTHING;
     dprintfOutType = DPRINTF_NOTHING;
