@@ -18,9 +18,15 @@
 #include <Image/RezDecodeKind.h>
 #include <Pix16.h>
 #include <Rez/RezMgr.h>
-#include <Wap32/TileGeometry.h>
 
 #include <string.h>
+
+#define RGB_TO_16(entry)                                                                           \
+    static_cast<u16>(                                                                              \
+        ((static_cast<u16>((entry).peRed) >> 3) << 10)                                             \
+        | ((static_cast<u16>((entry).peGreen) >> 3) << 5)                                          \
+        | (static_cast<u16>((entry).peBlue) >> 3)                                                  \
+    )
 
 DATA(0x002bf6e0)
 HINSTANCE CDibMgr::s_hInst = NULL;
@@ -280,7 +286,7 @@ i32 CDib::Init(HDC dc, i32 width, i32 height, ColorDepth bitcount, u32 ctrl) {
     m_bmi.hdr.biSize = sizeof(BITMAPINFOHEADER);
     m_bmi.hdr.biHeight = height;
     m_bmi.hdr.biPlanes = 1;
-    m_bmi.hdr.biCompression = 0;
+    m_bmi.hdr.biCompression = BI_RGB;
     m_bmi.hdr.biSizeImage = 0;
     m_bmi.hdr.biClrUsed = 0;
     m_bmi.hdr.biClrImportant = 0;
@@ -369,36 +375,33 @@ i32 CDib::Init(const char* name, HDC dc, u32 ctrl) {
 
 RVA(0x00175b80, 0x105)
 i32 CDib::Init(HDC dc, CDib* src, CDibPal* pal) {
+    u8* srcBuf;
+    u16* destBuf;
+    i32 x;
+    i32 y;
+    PALETTEENTRY* entries;
+    PALETTEENTRY entry;
+
     if (pal == NULL) {
         return 0;
     }
-    PALETTEENTRY* palette = pal->GetPes();
-    if (palette == NULL) {
+    entries = pal->GetPes();
+    if (entries == NULL) {
         return 0;
     }
-    if (!Init(dc, src->m_nWidth, src->m_nHeight, BPP_RGB_16, 0)) {
+    if (!Init(dc, src->GetWidth(), src->GetHeight(), BPP_RGB_16, 0)) {
         return 0;
     }
-    for (i32 y = 0; y < m_nHeight; y++) {
-        u8* sp = src->m_pBytes + y * src->m_nPitch;
 
-        Pix16Ptr row;
-        row.m_bytes = m_pBytes;
-        u16* dp = row.m_words + y * m_nPitch;
-        for (i32 x = 0; x < m_nWidth; x++) {
-            PALETTEENTRY c = palette[*sp];
-            u16 r = c.peRed;
-            u16 g = c.peGreen;
-            u8 b = c.peBlue;
-            r &= ~7;
-            g &= ~7;
-            r <<= TILE_SHIFT_PX;
-            r |= g;
-            b >>= 3;
-            r <<= 2;
-            r |= b;
-            *dp++ = r;
-            sp++;
+    for (y = 0; y < GetHeight(); y++) {
+        srcBuf = &src->GetBytes()[y * src->GetPitch()];
+        destBuf = &GetBuf16()[y * GetPitch()];
+
+        for (x = 0; x < GetWidth(); x++) {
+            entry = entries[*srcBuf];
+            *destBuf = RGB_TO_16(entry);
+            srcBuf++;
+            destBuf++;
         }
     }
     return 1;
@@ -1067,7 +1070,7 @@ void CDibPal::MakeIdentity() {
         &m_logPal.entries[m_logPal.numEntries - half]
     );
     for (i32 i = half; i < sizePal - half; i++) {
-        m_logPal.entries[i].peFlags = 1;
+        m_logPal.entries[i].peFlags = PC_RESERVED;
     }
     DeleteDC(dc);
 }
