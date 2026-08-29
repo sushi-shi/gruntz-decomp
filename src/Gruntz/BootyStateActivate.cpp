@@ -1893,6 +1893,26 @@ i32 CBootyState::OnKeyDown(i32, i32) {
     return BuildBootyGruntIdleAnimation();
 }
 
+static __inline i32 maxRunIndex(const i32* values, i32 count) {
+    i32 best = -1;
+    i32 bestIndex = 0;
+    for (i32 i = 0; i < count; i++) {
+        if (values[i] > best) {
+            best = values[i];
+            bestIndex = i;
+        }
+    }
+    return bestIndex;
+}
+
+static __inline void setDrawFill(CResolveNode* node, ShadeMode mode, CShadeTable* table) {
+    SET_DRAW_FILL(node, mode, table);
+}
+
+static __inline void setDrawFillReversed(CResolveNode* node, ShadeMode mode, CShadeTable* table) {
+    SET_DRAW_FILL_REVERSED(node, mode, table);
+}
+
 // @early-stop
 RVA(0x0001d440, 0xd7d)
 i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
@@ -1960,12 +1980,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         }
         m_puddleSprites[i]->SetImageSetByName("GRUNTZ_GRUNTPUDDLE");
         m_puddleSprites[i]->SetAnimationByName(g_puddleSpriteKey, 0);
-        {
-            CWwdSpriteObject* o = m_puddleSprites[i];
-            o->m_drawActive = true;
-            o->m_drawFillCmd = SHADE_PAL_16;
-            o->m_drawFillArg = tint;
-        }
+        setDrawFill(m_puddleSprites[i], SHADE_PAL_16, tint);
         m_puddleSprites[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
         if (i == QueryGruntSlots()) {
@@ -1982,9 +1997,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             }
             m_gruntSprites[i]->SetImageSetByName("GRUNTZ_EXITZ");
             m_gruntSprites[i]->SetAnimationByName("GAME_GRUNTFLEX", 0);
-            m_gruntSprites[i]->m_drawActive = true;
-            m_gruntSprites[i]->m_drawFillCmd = SHADE_PAL_16;
-            m_gruntSprites[i]->m_drawFillArg = tint;
+            setDrawFillReversed(m_gruntSprites[i], SHADE_PAL_16, tint);
         } else {
             key.Format("GRUNTZ_NORMALGRUNT_IDLE%d", (g_gameReg->Rand() % 2 != 0) ? 1 : 4);
             m_gruntSprites[i] = g_gameReg->m_world->m_childGroup->CreateSprite(
@@ -2000,25 +2013,14 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             }
             m_gruntSprites[i]->SetImageSetByName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
             m_gruntSprites[i]->SetAnimationByName(key, 0);
-            CWwdSpriteObject* o = m_gruntSprites[i];
-            o->m_drawActive = true;
-            o->m_drawFillCmd = SHADE_PAL_16;
-            o->m_drawFillArg = tint;
+            setDrawFill(m_gruntSprites[i], SHADE_PAL_16, tint);
         }
         m_gruntSprites[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
-        {
-            i32 best = -1;
-            i32 bestIdx = 0;
-            const i32* tally = &g_gameReg->m_gameStats->m_weaponPickupsByPlayer[i * 22];
-            for (i32 j = 0; j < 22; j++) {
-                if (tally[j] > best) {
-                    best = tally[j];
-                    bestIdx = j;
-                }
-            }
-            BuildPowerupIconKeys(&key, bestIdx + 1);
-        }
+        BuildPowerupIconKeys(
+            &key,
+            maxRunIndex(&g_gameReg->m_gameStats->m_weaponPickupsByPlayer[i * 22], 22) + 1
+        );
         m_weaponIcons[i] = g_gameReg->m_world->m_childGroup->CreateSprite(
             0,
             0,
@@ -2032,12 +2034,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         }
         m_weaponIcons[i]->SetImageSetByName(key);
         m_weaponIcons[i]->SetAnimationByName("GAME_CYCLE100", 0);
-        {
-            CWwdSpriteObject* o = m_weaponIcons[i];
-            o->m_drawActive = true;
-            o->m_drawFillCmd = SHADE_PAL_16;
-            o->m_drawFillArg = tint;
-        }
+        setDrawFill(m_weaponIcons[i], SHADE_PAL_16, tint);
         m_weaponIcons[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
         {
@@ -2045,18 +2042,10 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             if (iconTint == NULL) {
                 return 0;
             }
-            {
-                i32 best = -1;
-                i32 bestIdx = 0;
-                const i32* tally = &g_gameReg->m_gameStats->m_toyPickupsByPlayer[i * 10];
-                for (i32 j = 0; j < 10; j++) {
-                    if (tally[j] > best) {
-                        best = tally[j];
-                        bestIdx = j;
-                    }
-                }
-                BuildPowerupIconKeys(&key, bestIdx + 0x17);
-            }
+            BuildPowerupIconKeys(
+                &key,
+                maxRunIndex(&g_gameReg->m_gameStats->m_toyPickupsByPlayer[i * 10], 10) + 0x17
+            );
             m_toyIcons[i] = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
                 0,
@@ -2070,26 +2059,13 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             }
             m_toyIcons[i]->SetImageSetByName(key);
             m_toyIcons[i]->SetAnimationByName("GAME_CYCLE100", 0);
-            {
-                CWwdSpriteObject* o = m_toyIcons[i];
-                o->m_drawActive = true;
-                o->m_drawFillCmd = SHADE_PAL_16;
-                o->m_drawFillArg = iconTint;
-            }
+            setDrawFill(m_toyIcons[i], SHADE_PAL_16, iconTint);
             m_toyIcons[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
-            {
-                i32 best = -1;
-                i32 bestIdx = 0;
-                const i32* tally = &g_gameReg->m_gameStats->m_powerupPickupsByPlayer[i * 7];
-                for (i32 j = 0; j < 7; j++) {
-                    if (tally[j] > best) {
-                        best = tally[j];
-                        bestIdx = j;
-                    }
-                }
-                BuildPowerupIconKeys(&key, bestIdx + 0x36);
-            }
+            BuildPowerupIconKeys(
+                &key,
+                maxRunIndex(&g_gameReg->m_gameStats->m_powerupPickupsByPlayer[i * 7], 7) + 0x36
+            );
             m_powerupIcons[i] = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
                 0,
@@ -2103,26 +2079,13 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             }
             m_powerupIcons[i]->SetImageSetByName(key);
             m_powerupIcons[i]->SetAnimationByName("GAME_CYCLE100", 0);
-            {
-                CWwdSpriteObject* o = m_powerupIcons[i];
-                o->m_drawActive = true;
-                o->m_drawFillCmd = SHADE_PAL_16;
-                o->m_drawFillArg = iconTint;
-            }
+            setDrawFill(m_powerupIcons[i], SHADE_PAL_16, iconTint);
             m_powerupIcons[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
-            {
-                i32 best = -1;
-                i32 bestIdx = 0;
-                const i32* tally = &g_gameReg->m_gameStats->m_miscPickupsByPlayer[i * 4];
-                for (i32 j = 0; j < 4; j++) {
-                    if (tally[j] > best) {
-                        best = tally[j];
-                        bestIdx = j;
-                    }
-                }
-                BuildPowerupIconKeys(&key, bestIdx + 0x3d);
-            }
+            BuildPowerupIconKeys(
+                &key,
+                maxRunIndex(&g_gameReg->m_gameStats->m_miscPickupsByPlayer[i * 4], 4) + 0x3d
+            );
             m_miscIcons[i] = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
                 0,
@@ -2136,12 +2099,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             }
             m_miscIcons[i]->SetImageSetByName(key);
             m_miscIcons[i]->SetAnimationByName("GAME_CYCLE100", 0);
-            {
-                CWwdSpriteObject* o = m_miscIcons[i];
-                o->m_drawActive = true;
-                o->m_drawFillCmd = SHADE_PAL_16;
-                o->m_drawFillArg = iconTint;
-            }
+            setDrawFill(m_miscIcons[i], SHADE_PAL_16, iconTint);
             m_miscIcons[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
         }
 
@@ -2189,12 +2147,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         }
         m_tabSprites[t]->SetImageSetByName(tabKey);
         m_tabSprites[t]->SetAnimationByName("GAME_CYCLE100", 0);
-        {
-            CWwdSpriteObject* o = m_tabSprites[t];
-            o->m_drawActive = true;
-            o->m_drawFillCmd = SHADE_PAL_16;
-            o->m_drawFillArg = tint;
-        }
+        setDrawFill(m_tabSprites[t], SHADE_PAL_16, tint);
         m_tabSprites[t]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
         m_flagSprites[t] = g_gameReg->m_world->m_childGroup->CreateSprite(
@@ -2210,12 +2163,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         }
         m_flagSprites[t]->SetImageSetByName(flagKey);
         m_flagSprites[t]->SetAnimationByName("GAME_CYCLE100", 0);
-        {
-            CWwdSpriteObject* o = m_flagSprites[t];
-            o->m_drawActive = true;
-            o->m_drawFillCmd = SHADE_PAL_16;
-            o->m_drawFillArg = tint;
-        }
+        setDrawFill(m_flagSprites[t], SHADE_PAL_16, tint);
         m_flagSprites[t]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
         m_tabSprites[t]->m_screenX = g_bootyTabPos[t].m_x;
@@ -2234,105 +2182,90 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         m_tabSprites[t]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
     }
 
-    {
-        CShadeTable* tint = g_gameReg->m_spriteFactory->GetSel(
-            IDX(g_gameReg->m_players[QueryGruntSlots()].m_color),
-            0
-        );
-        if (tint == NULL) {
-            return 0;
-        }
-        m_fortSprite = g_gameReg->m_world->m_childGroup->CreateSprite(
-            0,
-            0,
-            0,
-            0,
-            "SimpleAnimation",
-            WWD_GAME_OBJECT_FLAGS_SKIP_COLLISION_KEEP_ACTIVE
-        );
-        if (m_fortSprite == NULL) {
-            return 0;
-        }
-        m_fortSprite->SetImageSetByName("LEVEL_FORT");
-        m_fortSprite->SetAnimationByName("GAME_CYCLE100", 0);
-        {
-            CWwdSpriteObject* o = m_fortSprite;
-            o->m_drawActive = true;
-            o->m_drawFillCmd = SHADE_PAL_16;
-            o->m_drawFillArg = tint;
-        }
-        m_fortSprite->m_stateFlags |= SPRITE_STATE_HIDDEN;
-        m_fortSprite->m_screenX = 0x64;
-        m_fortSprite->m_screenY = 0x64;
-        m_fortSprite->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
-
-        CString joyKey;
-        CString bootyKey;
-        joyKey.Format(
-            "GRUNTZ_WARLORDZ_%s_JOY",
-            static_cast<const char*>(GetWarlordName(QueryGruntSlots()))
-        );
-        bootyKey.Format(
-            "GRUNTZ_WARLORDZ_%s_BOOTY",
-            static_cast<const char*>(GetWarlordName(QueryGruntSlots()))
-        );
-        m_warlordBooty = g_gameReg->m_world->m_childGroup->CreateSprite(
-            0,
-            0,
-            0,
-            0,
-            "SimpleAnimation",
-            WWD_GAME_OBJECT_FLAGS_SKIP_COLLISION_KEEP_ACTIVE
-        );
-        if (m_warlordBooty == NULL) {
-            return 0;
-        }
-        m_warlordBooty->SetImageSetByName(joyKey);
-        m_warlordBooty->SetAnimationByName(bootyKey, 0);
-        {
-            CWwdSpriteObject* o = m_warlordBooty;
-            o->m_drawActive = true;
-            o->m_drawFillCmd = SHADE_PAL_16;
-            o->m_drawFillArg = tint;
-        }
-        m_warlordBooty->m_stateFlags |= SPRITE_STATE_HIDDEN;
-        m_warlordBooty->m_screenX = 0x64;
-        m_warlordBooty->m_screenY = 0x64;
-        CWwdSpriteObject* sorted = m_warlordBooty;
-        SET_SORT_KEY_IF_CHANGED(sorted, SORTKEY_BOOTY_WARLORD)
-        m_warlordBooty->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
-
-        AddrWord<const Coord> flagPos;
-        AddrWord<const Coord> flagEnd;
-        flagPos.m_addr = g_bootyFlagPos;
-        flagEnd.m_addr = g_bootyTabPos;
-        i32 w = 0;
-        do {
-            i32 held = g_gameReg->m_gameStats->CountAllFlagCaptures(w);
-            i32 placed = 0;
-            for (i32 c = 0; c < 4; c++) {
-                if (g_gameReg->m_gameStats->GetFlagCapture(w, c) != 0) {
-                    i32 spread[3][3];
-                    spread[0][0] = 0;
-                    spread[0][1] = 0;
-                    spread[0][2] = 0;
-                    spread[1][0] = -1;
-                    spread[1][1] = 1;
-                    spread[1][2] = 0;
-                    spread[2][0] = -2;
-                    spread[2][1] = 0;
-                    spread[2][2] = 2;
-                    m_flagSprites[c]->m_screenX =
-                        (spread[held - 1][placed] << 4) + flagPos.m_addr->m_x;
-                    m_flagSprites[c]->m_screenY = flagPos.m_addr->m_y;
-                    m_flagSprites[c]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
-                    placed++;
-                }
-            }
-            w++;
-            flagPos.m_addr++;
-        } while (flagPos.m_word < flagEnd.m_word);
+    CShadeTable* tint =
+        g_gameReg->m_spriteFactory->GetSel(IDX(g_gameReg->m_players[QueryGruntSlots()].m_color), 0);
+    if (tint == NULL) {
+        return 0;
     }
+    m_fortSprite = g_gameReg->m_world->m_childGroup->CreateSprite(
+        0,
+        0,
+        0,
+        0,
+        "SimpleAnimation",
+        WWD_GAME_OBJECT_FLAGS_SKIP_COLLISION_KEEP_ACTIVE
+    );
+    if (m_fortSprite == NULL) {
+        return 0;
+    }
+    m_fortSprite->SetImageSetByName("LEVEL_FORT");
+    m_fortSprite->SetAnimationByName("GAME_CYCLE100", 0);
+    setDrawFill(m_fortSprite, SHADE_PAL_16, tint);
+    m_fortSprite->m_stateFlags |= SPRITE_STATE_HIDDEN;
+    m_fortSprite->m_screenX = 0x64;
+    m_fortSprite->m_screenY = 0x64;
+    m_fortSprite->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+
+    CString joyKey;
+    CString bootyKey;
+    joyKey.Format(
+        "GRUNTZ_WARLORDZ_%s_JOY",
+        static_cast<const char*>(GetWarlordName(QueryGruntSlots()))
+    );
+    bootyKey.Format(
+        "GRUNTZ_WARLORDZ_%s_BOOTY",
+        static_cast<const char*>(GetWarlordName(QueryGruntSlots()))
+    );
+    m_warlordBooty = g_gameReg->m_world->m_childGroup->CreateSprite(
+        0,
+        0,
+        0,
+        0,
+        "SimpleAnimation",
+        WWD_GAME_OBJECT_FLAGS_SKIP_COLLISION_KEEP_ACTIVE
+    );
+    if (m_warlordBooty == NULL) {
+        return 0;
+    }
+    m_warlordBooty->SetImageSetByName(joyKey);
+    m_warlordBooty->SetAnimationByName(bootyKey, 0);
+    setDrawFill(m_warlordBooty, SHADE_PAL_16, tint);
+    m_warlordBooty->m_stateFlags |= SPRITE_STATE_HIDDEN;
+    m_warlordBooty->m_screenX = 0x64;
+    m_warlordBooty->m_screenY = 0x64;
+    CWwdSpriteObject* sorted = m_warlordBooty;
+    SET_SORT_KEY_IF_CHANGED(sorted, SORTKEY_BOOTY_WARLORD)
+    m_warlordBooty->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+
+    AddrWord<const Coord> flagPos;
+    AddrWord<const Coord> flagEnd;
+    flagPos.m_addr = g_bootyFlagPos;
+    flagEnd.m_addr = g_bootyTabPos;
+    i32 w = 0;
+    do {
+        i32 held = g_gameReg->m_gameStats->CountAllFlagCaptures(w);
+        i32 placed = 0;
+        for (i32 c = 0; c < 4; c++) {
+            if (g_gameReg->m_gameStats->GetFlagCapture(w, c) != 0) {
+                i32 spread[3][3];
+                spread[0][0] = 0;
+                spread[0][1] = 0;
+                spread[0][2] = 0;
+                spread[1][0] = -1;
+                spread[1][1] = 1;
+                spread[1][2] = 0;
+                spread[2][0] = -2;
+                spread[2][1] = 0;
+                spread[2][2] = 2;
+                m_flagSprites[c]->m_screenX = (spread[held - 1][placed] << 4) + flagPos.m_addr->m_x;
+                m_flagSprites[c]->m_screenY = flagPos.m_addr->m_y;
+                m_flagSprites[c]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+                placed++;
+            }
+        }
+        w++;
+        flagPos.m_addr++;
+    } while (flagPos.m_word < flagEnd.m_word);
     return 1;
 }
 
