@@ -1,18 +1,32 @@
-# REFUTED retail diagnosis: the dropped destructor/return came from a shared-return `CopyValue` spelling
+# Historical wrong-code probe on the superseded `CopyValue` source family
 
 **Tags:** `cpp:dtor` `cpp:eh` `cpp:inline` `cpp:switch` `cpp:return` | `asm:jmp` | `topic:wall-refuted` `topic:codegen-bug`
-**Confidence:** 10/10 for the compiler behavior; refuted as the retail source diagnosis
+**Confidence:** 10/10 for the compiler behavior; twice refuted as a retail source diagnosis
+
+## Correction (2026-08-29)
+
+Surviving NOLF source proves that retail's semantic boundary is the nested
+`CButeMgr::CSymTabItem::operator=(const CSymTabItem&)`, with `break` in every
+switch arm and one shared trailing return. Composed with the source-proven typed
+union, that shared-return spelling emits the exact 0x172040 body and makes all
+nine Set callers exact. The earlier per-arm-return `CopyValue` correction below
+was another local solution inside the incomplete global-`CButeValue`/`void*`
+source family. It is not the authored Gruntz source.
+
+The wrong-code behavior measured by this document remains a valid cl 5.0
+negative control. It demonstrates what the compiler does to that superseded
+input, not what retail was compiled from.
 
 ## Correction (2026-08-14)
 
-The compiler behavior below is reproducible, but the conclusion that the victim's
-source was already correct is false. Retail `CButeValue::CopyValue` owns one complete
+The compiler behavior below is reproducible, but the 2026-08-14 conclusion was
+still scoped to the wrong source family. The then-modeled `CButeValue::CopyValue` owns one complete
 return epilogue per distinct switch body. The candidate used `break` in every arm and
 one shared `return this`; its standalone C2 body happened to remain 100%, hiding the
 C1 distinction. Restoring per-arm returns makes eight `CButeMgr::Set*` callers exact
 and closes SetString's 13/12 unwind map to 12/12 without any pragma. The old
 first-optimized-function state and `inline_depth` experiments describe how cl treats
-the wrong shared-return source; they are negative controls, not a retail workaround.
+that wrong shared-return source; they are negative controls, not a retail workaround.
 
 ## Symptom
 
@@ -50,8 +64,9 @@ independent "switch-arm" problem to attack separately:
 * when the defect fires, cl emits **two separate arm sets**, hoists the EH-state store
   into the second set's arms, and the tail that carried the destructor is gone.
 
-The arm duplication and dropped tail disappear together. The former conclusion that
-source arm exits were irrelevant was wrong: per-arm returns are the authentic lever.
+The arm duplication and dropped tail disappear together. In this historical
+source family, per-arm returns avoid the defect; the 2026-08-29 correction above
+shows that they are not the authentic source lever.
 
 ## The trigger, isolated
 

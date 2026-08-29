@@ -103,7 +103,8 @@ def validate_rows(rows: list[dict[str, str]], complete: bool = False) -> list[st
         decision = row.get("decision", "")
         reason = row.get("reason", "")
         evidence = row.get("retail_evidence", "")
-        landed = row.get("landed_commit", "")
+        landed_field = row.get("landed_commit", "")
+        landed = "" if landed_field == "-" else landed_field
         if relation not in RELATIONS:
             errors.append(f"{prefix}: unknown relation {relation!r}")
         if decision not in DECISIONS:

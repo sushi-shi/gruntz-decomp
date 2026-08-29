@@ -59,10 +59,14 @@ nest differently. The remaining target-only
 row is `CFontConfig::MeasureLabel` (`CPen` versus `CGdiObject` teardown).
 
 `CButeMgr::SetString` formerly occupied a seventh count-difference row at 13/12.
-Its exact standalone `CButeValue::CopyValue` body hid a C1 distinction: retail has
-one return epilogue per switch body, while the source used per-arm `break` plus one
-shared `return this`. Restoring per-arm returns leaves `CopyValue` byte-exact, closes
-SetString's map to 12/12, and makes the other eight `CButeMgr::Set*` callers exact.
+The historical global-`CButeValue` model could close that map by changing an
+exact standalone helper from a shared return to per-arm returns, demonstrating
+that byte-identical C2 can hide different C1 accounting. Surviving NOLF source
+later falsified that source diagnosis: nested `CButeMgr::CSymTabItem` uses a
+typed union and a const-reference assignment with one shared trailing return.
+Composing that complete layer also emits the exact standalone body, closes the
+map to 12/12, and makes all nine Set callers exact. The fingerprint diagnosed a
+front-end abstraction difference; it did not by itself select the return spelling.
 
 Two source corrections demonstrate why these categories outrank a local score.
 `CGruntzMgr::Run` emitted a reconstruction-only

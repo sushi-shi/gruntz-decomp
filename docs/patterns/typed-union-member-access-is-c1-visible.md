@@ -1,32 +1,31 @@
-# A typed union can preserve C2 bytes while changing C1 inline decisions
+# A source-proven typed union can be the necessary base despite an inline dip
 
-tags: cpp:union cpp:pointer cpp:inline cpp:member | asm:call asm:jmp | topic:codegen-idiom topic:source-model
-symptoms: standalone inline helpers remain exact after replacing a tagged `void*` with a typed union, but many callers simultaneously cross different /Ob1 cutoffs
+tags: cpp:union cpp:pointer cpp:inline cpp:member cpp:operator | asm:call asm:jmp | topic:codegen-idiom topic:source-model topic:source-oracle
+symptoms: a surviving same-lineage class proves a typed union, but applying only that member layer moves several exact callers onto worse `/Ob1` islands
 confidence: 10/10
 
 Equal layout and equal standalone code do not make two member models equivalent
 to MSVC 5.0's front end. A typed union adds member-selection structure before C2
-sees the helper. That structure participates in the C1 cost and can move /Ob1
-expansion cutoffs throughout a translation unit even when C2 emits identical
-bytes for each out-of-line helper.
+sees an inline helper. That structure participates in C1 cost and can move
+expansion cutoffs throughout a translation unit even when the union is the real
+source model.
 
-## The controlled Bute case
+## The complete Bute composition
 
-`CButeValue` is a tagged heterogeneous heap holder: `type` selects the allocated
-object type for every construction, access, copy, and deletion. Its earlier
-model was the eight-byte pair:
+The surviving NOLF `butemgr.h` defines a nested
+`CButeMgr::CSymTabItem`: an adjacent enum selects one of several typed pointer
+arms in `data`. It also assigns values through a `const CSymTabItem& operator=`
+with `break` in every switch arm and one shared trailing return. This is direct
+source evidence, not a union inferred from layout.
 
-```cpp
-ButeType type;
-void* pValue;
-```
+Gruntz retail proves revision differences within that layer: it has nine values
+numbered 0 through 8, no later Null/Byte/Bool arms, and pointer-taking aggregate
+constructors. Those differences were retained while the nested owner, typed
+union, and assignment boundary were restored.
 
-A cleanup replaced `pValue` with a `ButeValuePayload` union of nine typed
-pointers. The ABI and offsets stayed unchanged. Several standalone functions
-also remained exact, which made the union look harmless. It was not harmless to
-their inline callers:
+Applying only the typed union produced a genuine exploratory descent:
 
-| caller | typed union | direct `void*` member |
+| caller | union-only base | complete source composition |
 |---|---:|---:|
 | `SetInt` | 86.2164 | **100.0000** |
 | `SetDword` | 95.7508 | **100.0000** |
@@ -36,44 +35,56 @@ their inline callers:
 | `SetPoint` | 94.9172 | **100.0000** |
 | `SetVector` | 82.0889 | **100.0000** |
 | `SetRange` | 93.4468 | **100.0000** |
-| `SetString` | 77.0314 | **81.7868** |
+| `SetString` | 95.2445 | **100.0000** |
 
-The module moved from 102/126 to 110/126 exact. `CButeValue::CopyValue`,
-`CButeValue::~CButeValue`, `ButeGroup_Apply`, and `ButeValueTeardown` are exact
-with the direct member and tag-selected `static_cast<T*>` operations.
+Nesting the item under `CButeMgr` was codegen-flat for those callers. Replacing
+the invented pointer-based `CopyValue` boundary with the surviving
+const-reference `operator=` then made the entire family exact. `SetString` is
+exact at 0x3fc bytes, 318 instructions, 33 calls, 41 branches, one return, and
+54 ordered relocations.
 
-An anonymous overlay separated storage layout from expression shape: retaining
-the typed union as a second view while spelling the inline operations through a
-direct `pValue` member recovered `SetString` 81.7868 and the exact setter family.
-A named `payload.m_value` union arm instead sent `SetString` to 61.85. Removing
-the diagnostic overlay and retaining only `pValue` preserved the recovered
-family. The one current exact-count difference between overlay and final model
-is an already-banked-100 caller perturbed by the removed declarations; it is TU
-state, not evidence for two overlapping semantic views.
+The assignment at 0x172040 is also exact: 0x120 bytes, 104 instructions, one
+call, two branches, eight returns, and 11 relocations. This is an important
+negative control. The authored source has one shared return, but C2 duplicates
+it into the same eight emitted epilogues previously misread as proof of
+per-arm source returns. Primary bytes alone did not select the old `CopyValue`
+spelling.
 
-## Why the `void*` is real here
+Finally, changing the six retail vtable identities from the superseded global
+`CButeValue` specialization to nested `CButeMgr::CSymTabItem` fixed the sole
+remaining constructor residue. Its instructions were already identical; only
+the ordered relocation targets named the wrong semantic class.
 
-This is not permission to launder an invented view through `void*`. The storage
-itself is heterogeneous, and the adjacent tag is consulted at every operation.
-Each allocation stores a different real type into the same slot, and each read
-or delete recovers exactly the type selected by that tag. There is no single
-concrete pointee type that could replace the boundary.
+## What this falsifies
 
-The typed union had no independent retail oracle; it merely made those casts
-less visible in the reconstruction. The broad exact-family recovery selects the
-single erased storage member and demonstrates that the union was an invented
-abstraction, not a recovered one.
+The earlier higher-scoring `void* pValue` transcription was a local maximum,
+not the retail-selected abstraction. Its tag-directed casts described behavior
+but erased the source-proven type arms and assignment boundary. The union-only
+dip was not evidence against the union; it was evidence that the surviving
+layer had been applied incompletely.
+
+Likewise, an anonymous union overlay only showed that direct-member expression
+shape moved C1 cost. It could not decide semantic ownership. Once the complete
+surviving family is composed, the humane typed model and retail bytes agree.
 
 ## Reverse-use rule
 
-When a header-inline family has exact standalone helpers but widespread
-inline/call-set residue, audit any recently introduced union or wrapper in the
-callee's expression tree. Test the original direct member spelling as one
-source-shaped A/B and measure the whole caller family. Retain it only when the
-storage semantics independently justify it; never add `void*` as a generic
-inline-budget lever.
+1. Require independent evidence for the union's semantic arms: surviving
+   source, complete typed consumers, or equally strong object/type records.
+2. Treat a one-layer score dip as a new base. Compare the missing call sites and
+   compose the adjacent surviving helpers, overloads, and ownership boundaries.
+3. Do not infer source returns from duplicated C2 epilogues when a shared-return
+   spelling emits the same standalone body.
+4. Audit vtable and relocation identities after changing a nested class or
+   template specialization; masked instruction equality does not make the old
+   referent name correct.
+5. Reject revision-only enum arms and APIs independently rather than rejecting
+   the whole authentic class layer.
+
+The complete import and every retained divergence are recorded in the
+`nolf-bute-*` rows of `config/lithtech_lineage.tsv`.
 
 Related:
 [`inline-callee-frontend-cost-drives-ob1-budget`](inline-callee-frontend-cost-drives-ob1-budget.md),
-[`void-star-is-the-fake-view-laundering-channel`](void-star-is-the-fake-view-laundering-channel.md),
-[`rep-movs-count-is-merge-sensitive`](rep-movs-count-is-merge-sensitive.md).
+[`address-of-temporary-reuses-ctor-return`](address-of-temporary-reuses-ctor-return.md),
+[`void-star-is-the-fake-view-laundering-channel`](void-star-is-the-fake-view-laundering-channel.md).

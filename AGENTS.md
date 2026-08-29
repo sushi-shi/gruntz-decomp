@@ -244,6 +244,34 @@
   * an authentic complete body invalidates a bounded review of a different
     source hash. Apply the complete sourced family, reopen the diagnosis, and
     bank any exact unchanged-source state before removing disposable C1 probes.
+  * an original Debug `.obj` or `.lib` can retain source evidence even when its
+    PDB and `.cpp` are absent. Pair it with the same Release archive member:
+    CodeView source-path, local/type, `BPREL32`, and lexical-block records
+    recover the authored local census and scopes, while the Release member
+    corroborates optimized topology. Old CodeView streams may make current
+    LLVM readers stop partway; decode the length-prefixed records rather than
+    treating that failure as absence. The paired `ptins`/`ptadd` members plus
+    `ztools.h` overturned bounded reviews and made Gruntz `zPTree::insert`
+    and `zPTree::add` exact. Debug stack offsets and register choices do not
+    transfer; compile the recovered family in the real VC5 TU.
+  * do not classify every explicit destructor expression as compiler debris.
+    The surviving `zSymTab<T>` owns an authored typed teardown adapter and the
+    pointer collection separately deallocates the storage. Gruntz retail proves
+    a revision-specific qualified `p->T::~T()` spelling: under VC5 it emits the
+    direct destructor tail jump at 0x174de0, whereas surviving `p->~T()` and its
+    Release object both use virtual dispatch. The function-pointer erasure at
+    the collection boundary is a reviewed ABI cast; keep unexplained casts at
+    zero without rejecting a source-proven seam merely because TOTAL rises.
+  * a typed union is a real fix when surviving source proves the semantic arms;
+    layout compatibility and a higher one-step score do not select `void*`.
+    Restoring NOLF's nested `CButeMgr::CSymTabItem` union alone made all nine
+    Set callers dip because ctor expansions crossed `/Ob1`; nesting itself was
+    codegen-flat. Composing the same source's `const CSymTabItem& operator=`
+    boundary then made the 0x172040 assignment and all nine Set callers exact.
+    This falsifies the old direct-erased-payload and per-arm-return `CopyValue`
+    conclusions: C2 duplicated the authored shared return into the same eight
+    epilogues. Apply a surviving semantic layer as a complete composition before
+    ranking its intermediate compiler states.
   * complete API/layout agreement can replace an inferred owner even when all
     affected bodies are already exact. The surviving `CRegMgr` family did so
     while preserving all eleven retail matches.

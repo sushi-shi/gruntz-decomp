@@ -92,28 +92,31 @@ is not the target — a shape can hit retail's exact `ctor`/`operator new` numbe
 still score worse (measured: a field-wise ctor variant reached 4/9 with the ctor
 COMDAT at 23%). Match the count AND the arm bodies.
 
-## The missing C1 shape was in `CopyValue`, despite its exact body
+## Correction: the epilogues did not select per-arm source returns
 
-The ctor-cost panel above proved that C1 front-end mass controls the cutoff, but it
-did not identify the original source. The retained answer came from a different
-oracle: retail `CButeValue::CopyValue` has eight full return epilogues, one for each
-distinct switch body. The old source assigned in each arm, used `break`, and returned
-`this` once after the switch. C2 duplicated that shared epilogue in the standalone
-COMDAT, so the function was already 100% and the source distinction was invisible in
-its primary bytes.
+The ctor-cost panel above correctly proves that C1 front-end mass controls the
+cutoff. Its later source diagnosis was wrong. Eight emitted return epilogues in
+the exact 0x172040 body were treated as independent evidence that the source
+wrote `return this` in every arm of an invented pointer-based `CopyValue`.
 
-Spelling `return this` in every arm keeps the standalone function 100% but changes
-the inliner's C1 accounting. On a full build it makes `SetInt`, `SetDword`,
-`SetFloat`, `SetDouble`, `SetRect`, `SetPoint`, `SetVector`, and `SetRange` exact.
-`SetString` rises 75.0219% -> 81.7868%; its constructor/new census reaches retail and
-its unwind map changes from 13/12 states to an identical 12/12 topology. Its remaining
-three-call surplus is the string assignment/destruction/delete tail, not the former
-constructor-cutoff mismatch.
+Surviving NOLF source supplies the missing layer: the function is the nested
+`CButeMgr::CSymTabItem::operator=(const CSymTabItem&)`, and it uses `break` in
+every arm plus one shared trailing `return *this`. On the source-proven typed
+union and nested-owner base, that shared-return function still emits the exact
+0x120 retail body with 104 instructions, eight returns, and 11 relocations.
+C2 duplicated the shared source epilogue; the emitted return count did not
+recover the statement boundary.
 
-The dead-statement and typed-pointer panels remain useful negative controls: they
-show why byte-neutral C2 does not imply byte-neutral C1, but they are not admissible
-source fixes. The source-selected lever is the independently visible per-arm return
-structure.
+The typed union alone lowered all nine Set callers, and nesting was codegen-flat.
+Composing the surviving const-reference assignment boundary then made all nine
+callers exact, including `SetString` at its complete 318-instruction, 33-call,
+41-branch topology. Thus the old per-arm-return spelling was a byte-identical
+local route for the incomplete `void*` transcription, not the authentic source.
+
+The dead-statement, typed-pointer, and per-arm-return panels remain useful
+controls for the general C1-cost mechanism. They do not select source without an
+independent abstraction oracle. When such an oracle exists, apply its complete
+helper/member/operator family and compose through intermediate score descents.
 
 ## Related
 

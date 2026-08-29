@@ -10,47 +10,32 @@ copy expressions. C2 can tail-merge identical expanded switch arms on one side
 and retain both on the other. Diagnose the function and compare the local copy
 neighborhoods before changing an aggregate into fields or deleting a copy.
 
-`CButeMgr::SetString` at 0x1732a0 is the negative control. The source has two
-legitimate `CopyValue` call sites. Each expands the `BUTE_VECTOR` arm to the
-same 24-byte whole-object copy. The candidate retains two `rep movsd` blocks;
-retail shares one switch body between both sites and therefore contains one.
-The function simultaneously differs in inline call-set and repeated-prefix
-topology (36/33 calls and 50/41 branches), so the 2-versus-1 count is a CFG
-merge consequence, not an invented object.
+`CButeMgr::SetString` at 0x1732a0 is the negative control. In the historical
+global-`CButeValue` transcription, two legitimate inline copy bodies retained
+two `rep movsd` blocks while retail shared one. The function also differed in
+call set and repeated-prefix topology, so deleting an authored aggregate to
+force the count would have been wrong.
 
-## Why SetString's two bodies do not merge in the current build
+## Correction from the surviving item model
 
-Retail EH states 0/1 and 2/3 independently prove two CString payload
-temporaries, one at each hit path.  Retail expands both `CopyValue` sites into
-one shared switch-body set and routes both temporary cleanups through the same
-generated `CString` deleting destructor.  The current build instead expands
-that deleting-destructor body at the first site (`CString::~CString` plus
-`operator delete`) and calls it at the second.  Those unequal suffixes prevent
-C2 from sharing the two switch bodies.  The duplicated string-assignment arm
-and the second `rep movsd` therefore disappear together when the suffixes are
-identical; neither names another authored copy.
+NOLF source later proved a different abstraction: nested
+`CButeMgr::CSymTabItem`, a typed payload union, and
+`operator=(const CSymTabItem&)`. Applying the union alone made `SetString` dip to
+95.2445 and other setters fall as low as 82.0889. Nesting was codegen-flat.
+Composing the const-reference assignment then made `SetString` exact at 0x3fc
+bytes, 318 instructions, 33 calls, 41 branches, one return, and 54 relocations.
 
-Replacing the invented typed payload union with the retail-selected direct
-`void*` member recovered the banked 81.7868 state and made the other eight
-`Set<Type>` functions exact. Its constructor/new census matches retail. The
-remaining repeated-site delta is therefore not evidence for a missing insertion
-arm; it is the nested deleting-destructor cutoff described above.
+The assignment helper itself is exact with its authored shared trailing return,
+even though C2 emits eight return epilogues. Its equal aggregate arms are merged
+at the caller exactly as retail requires. This closes the historical
+2-versus-1 `rep movsd` residue without deleting a copy expression and falsifies
+the prior conclusion that retail selected direct `void*` storage.
 
-Controlled source-shaped negatives were byte-identical at 77.0314: explicit
-shared `goto` exits for the two hit paths, an `else` around the second miss,
-an inner lexical scope for the first lookup, one use of the real `Tags()`
-accessor, and per-arm `return` rather than `break` in `~CButeValue`. None moves
-the generated deleting-destructor cutoff. Keep the direct heterogeneous payload
-member and both temporary expressions; collapsing the authored sites would only
-transcribe the compiler fold.
-
-A later lineage-shaped composition tightened that bound. Converting the first one through
-five lookup declarations to assignment-in-condition form is byte-flat at 81.7868; the
-sixth conversion crosses to the older 77.0314 island. Adding an explicit `else` is flat on
-the baseline but, from the six-site dip, returns exactly to the baseline island. Thus the
-two authentic levers compose, but there is no third compiler texture between them and the
-CString deleting-destructor expansion/call split remains unchanged. Neither spelling is a
-route to the retail merge and neither experiment belongs in source.
+The old lookup, `goto`, `else`, scope, overlay, and deleting-destructor panels
+remain bounded evidence only for the superseded source hash. Their failure did
+not bound the untested surviving operator/union family. The reusable conclusion
+is narrower and stronger: a copy-instruction count is downstream of abstraction,
+inlining, and tail merging, so it cannot by itself count source objects.
 
 Safe reverse use:
 

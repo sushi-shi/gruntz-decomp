@@ -34,6 +34,15 @@ class LedgerTests(unittest.TestCase):
         self.assertTrue(any("controlled reason" in error for error in errors))
         self.assertTrue(any("retail evidence" in error for error in errors))
 
+    def test_dash_is_an_explicit_empty_landed_commit(self):
+        rejected = row(
+            decision="do-not-take",
+            reason="no-retail-owner",
+            retail_evidence="no compatible retail owner",
+            landed_commit="-",
+        )
+        self.assertFalse(ledger.validate_rows([rejected]))
+
     def test_complete_mode_rejects_pending_rows(self):
         self.assertFalse(ledger.validate_rows([row()]))
         self.assertTrue(any("pending decision remains" in error

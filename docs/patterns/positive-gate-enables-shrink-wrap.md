@@ -280,8 +280,10 @@ if (d) slot = &p->m_child[0];
 *slot = v;
 ```
 
-`zPTree::Insert` @0x16db90 5→4 rets, 53.39 → **60.47**; `CProjActMap::Insert` @0x1933b0 4→3,
-58.21 → **63.58** (its `m_0`/`m_4` are the real `m_child[2]` array retail indexes).
+`zPTree::add` @0x16db90 5→4 rets, 53.39 → **60.47**; `zPTree::insert` @0x1933b0 4→3,
+58.21 → **63.58**. These were valid intermediate controls inside the old
+hand transcription, not final source selections: paired NOLF Debug/Release
+objects later recovered the complete bodies and made both functions exact.
 `CWarpStoneFly::Tick` @0x10a0f0 is the same shape with a `goto` (both y arms share one clamp
 store), 79.37 → **80.52**.
 
