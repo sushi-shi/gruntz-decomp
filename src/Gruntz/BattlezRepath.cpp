@@ -51,22 +51,34 @@
 #include <stdlib.h>
 #include <string.h>
 
+static inline Coord ScreenTile(CGrunt* unit) {
+    Coord out;
+    CGameObject* object = unit->m_object;
+    out.m_x = object->m_screenX >> TILE_SHIFT_PX;
+    out.m_y = object->m_screenY >> TILE_SHIFT_PX;
+    return out;
+}
+
 RVA(0x000350d0, 0xfa)
 i32 CBattlezMapConfig::RepathToFreeCell(CGrunt* unit) {
     if (static_cast<u32>(unit->m_dwell) > static_cast<u32>(m_repathBudget)) {
+        POSITION pos = m_triggerMgr->m_baseList.GetHeadPosition();
         CGruntPuddle* best = NULL;
         i32 bestDist = INT_MAX;
-        POSITION pos = m_triggerMgr->m_baseList.GetHeadPosition();
         while (pos != NULL) {
-            CGruntPuddle* cand = static_cast<CGruntPuddle*>(m_triggerMgr->m_baseList.GetNext(pos));
+            CGruntPuddle* cand = static_cast<CGruntPuddle*>(m_triggerMgr->m_baseList.GetAt(pos));
+            m_triggerMgr->m_baseList.GetNext(pos);
             if (cand->m_pending == false) {
-                CGameObject* lvl = unit->m_object;
-                i32 lx = lvl->m_screenX >> TILE_SHIFT_PX;
-                i32 ly = lvl->m_screenY >> TILE_SHIFT_PX;
-                if (cand->m_tileX != lx || cand->m_tileY != ly) {
-                    i32 dx = cand->m_tileX - lx;
+                i32 candX = cand->m_tileX;
+                i32 candY = cand->m_tileY;
+                CGameObject* object = unit->m_object;
+                i32 screenX = object->m_screenX;
+                i32 screenY = object->m_screenY;
+                Coord current = ScreenTile(unit);
+                if (candX != current.m_x || candY != current.m_y) {
+                    i32 dx = candX - (screenX >> TILE_SHIFT_PX);
                     dx = abs(dx);
-                    i32 dy = cand->m_tileY - ly;
+                    i32 dy = candY - (screenY >> TILE_SHIFT_PX);
                     dy = abs(dy);
                     i32 dist = dx * dx + dy * dy;
                     if (dist < bestDist) {

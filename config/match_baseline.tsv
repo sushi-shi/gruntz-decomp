@@ -573,7 +573,7 @@ battlezmapconfig	?StepRowUnits@CBattlezMapConfig@@QAEHXZ	85.4017	85.4017	22	02a1
 battlezmapconfig	?TrySeedSpawnAt@CBattlezMapConfig@@QAEHHH@Z	94.5918	94.5918	7	cf59804fc116	0x30990	94.5918	
 battlezmapconfig	?ValidateUnitPath@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	88.1068	88.1068	23	4a06d1c14686	0x29b40	88.1068	
 battlezrepath	?ProbeUnoccupiedAt@CBattlezMapConfig@@QAEHHH@Z	100.0000	100.0000	3	65f52039a755	0x35210	100.0000	
-battlezrepath	?RepathToFreeCell@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	77.7977	77.7977	4	e7e0ce1d0d52	0x350d0	77.7977	
+battlezrepath	?RepathToFreeCell@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	89.6742	89.6742	5	cfb625730a31	0x350d0	89.6742	
 battlezreserveplace	?ForcePlaceFromReserve@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	100.0000	100.0000	2	eb3fc00f4091	0x35550	100.0000	
 battlezretarget	?RetargetIdleUnit@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	86.7401	86.7401	17	b11496aa1887	0x358a0	86.7401	
 battlezspawncheck	?CheckQueuedSpawnTile@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	89.3555	89.3555	10	28d6a269108a	0x34c70	89.3555	

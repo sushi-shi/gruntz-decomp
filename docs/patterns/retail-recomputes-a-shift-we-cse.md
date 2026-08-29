@@ -1,45 +1,73 @@
 # Retail recomputes `v >> k` where the recompile CSEs it
 
-tags: cpp:expr cpp:loop | asm:sar | topic:wall
-symptoms: retail loads a member ONCE and then emits two (or four) identical `sar reg,5`
-against copies of it; the recompile emits one `sar` and reaches the two consumers with
-`lea [reg-1]` / `lea [reg+2]`. Every source spelling tried still CSEs
-confidence: 7/10
+tags: cpp:expr cpp:inline cpp:local cpp:loop | asm:mov asm:sar | topic:codegen-idiom topic:wall
+symptoms: retail loads a member once, copies the raw value, and shifts both copies; the
+recompile shifts once and reuses the result
+confidence: 9/10
 
-Two independent tile-neighbourhood scans show the same shape.
-`CBattlezMapConfig::RerouteSwitchSeeker`
-0x35f10 preheader:
+Do not classify this shape as an optimizer anomaly until the two consumers' source
+abstraction has been recovered. A scalar `PxToTile(px)` helper may still fold, while a
+pair-valued helper reached through the higher-level owner can give C1 two distinct trees:
+one expansion produces the equality-test coordinates and the caller separately retains the
+raw coordinates for later distance arithmetic.
 
+The controlled positive is `CBattlezMapConfig::RepathToFreeCell` at `0x350d0`. Retail
+loads `m_screenX` and `m_screenY` once, copies them for a same-cell test, shifts those
+copies, and shifts the originals again in the distance block. The original direct
+transcription CSE'd each shift and scored 77.7977 with a `0x8` frame. These one-layer
+spellings did not recover retail:
+
+- named shifted locals;
+- shifts written directly at every use site;
+- repeated member expressions with no local;
+- a scalar or raw-pair pixel-to-tile helper.
+
+They were incomplete controls, not proof that the source shape was unreachable. The
+effective composition was:
+
+```cpp
+static inline Coord ScreenTile(CGrunt* unit) {
+    Coord out;
+    CGameObject* object = unit->m_object;
+    out.m_x = object->m_screenX >> TILE_SHIFT_PX;
+    out.m_y = object->m_screenY >> TILE_SHIFT_PX;
+    return out;
+}
+
+CGameObject* object = unit->m_object;
+i32 screenX = object->m_screenX;
+i32 screenY = object->m_screenY;
+Coord current = ScreenTile(unit);
 ```
-mov ecx,[eax+0x60]      ; m_screenY loaded ONCE (the load IS CSE'd)
-mov ebp,[eax+0x5c]      ; m_screenX loaded ONCE
-mov edx,ecx / mov esi,ecx / mov edi,ebp / mov eax,ebp
-sar edx,5 / sar esi,5 / sar edi,5 / sar eax,5     <- four shifts, no CSE
-dec esi / add edx,2 / lea ebx,[edi-1] / add eax,2
-```
 
-and again inside the loop body, and again in `CTriggerMgr::FindNearestEnemy` 0x77df0 where
-`(x>>5) - r` and `(x>>5) + r + 1` each get their own `sar`. So retail's cl CSEs *memory
-loads* but not the *arithmetic* built on them.
+That recovered retail's four shifts, cursor spill, and `0x10` frame, moving 77.7977 to
+83.9326. The identity boundary is load-bearing: passing the cached `object` into the
+helper lets C2 correlate the two layers and collapses back to the CSE island. A helper
+that accepts the `CGrunt*` keeps the higher-level accessor expansion distinct from the
+caller's raw object snapshot.
 
-A third instance, found by the loop-body sieve 2026-08-23:
-`CBattlezMapConfig::RepathToFreeCell` 0x350d0 (77.80). Its single loop is 38 instructions
-against retail's 47 and the whole surplus is `retail holds: movx7, sarx2` - retail copies
-the two coordinates to scratch registers and shifts the copies for the equality test, then
-shifts the ORIGINALS again for the distance subtraction. Same asymmetry, same three
-spellings already rejected below; recorded so the sieve does not re-open it.
+Two independent source facts then composed on this base. Reading a `CPtrList` node with
+`GetAt(pos)` before advancing it with `GetNext(pos)` restored retail's payload-before-next
+load order and reached 85.46. Declaring/initializing `POSITION pos` before `best` and
+`bestDist` restored the callee-save push and list-head schedule and reached 89.6742.
+Moving `bestDist` ahead of `best` instead fell to 88.3820, consistent with retail storing
+the null best pointer before the distance sentinel.
 
-Tried and REJECTED (all still emit one `sar`, cl5 /O2 CSEs it every time):
-- named locals `tileX = v >> 5` then `tileX - 1` / `tileX + 2` (the obvious spelling);
-- the shift written out at all four use sites in the `for` header;
-- the shift applied to the member read directly (`p->m_screenY >> 5`), no local at all.
+Three target-adjacent 32-state campaigns were single-island controls: two on the earlier
+four-shift bases and one on the final 89.6742 source hash. The retained function has exact
+call, branch, return, relocation, semantic-operand, and frame counts except for two extra
+retail `mov`s and register/schedule choices. That residue is bounded for this hash; the
+source reconstruction above is still a reusable positive mechanism.
 
-The same asymmetry shows up as retail DUPLICATING an epilogue where our build cross-jumps
-(three `return 0` tails kept apart in `AddActionEvent`, one `xor eax,eax` shared in ours). One
-of these is steerable by source structure and one is not - see
-`allocate-check-then-body-is-the-then-block.md` for the branch-polarity half, which IS
-steerable. The shift half is not, with the spellings above.
+The superficially similar four-shift rows in
+`CBattlezMapConfig::RerouteSwitchSeeker` (`0x35f10`) and
+`CTriggerMgr::FindNearestEnemy` (`0x77df0`) remain open. A scalar
+`PxToTile(i32)` helper was byte-flat there because it preserves one expression layer. Do
+not transfer Repath's result mechanically: first look for a pair-valued or owner-level
+accessor boundary and independently recover its caller-side raw-value lifetime.
 
-Do not spend a budget re-deriving these three attempts. If a flag-level explanation is ever
-found (an alias/CSE switch beyond `/O2 /MT /GX`), it would move a large number of functions
-at once and belongs in `docs/linker-flags.md`, not here.
+Reverse-use rule: when retail CSEs the loads but duplicates arithmetic, classify the
+consumers by semantic layer. Test a real pair/aggregate return or higher-level inline
+accessor while keeping the raw source value alive separately. Confirm the feature was
+absent from baseline, and compose local declaration order before launching compiler-state
+search. Do not use volatile carriers, fake calls, or duplicate loads to imitate the code.
