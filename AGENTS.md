@@ -241,6 +241,20 @@
   * mine games and samples as well as engine libraries. Repeated Shogo/Blood2
     implementations preserve source layers that a later runtime analogue may
     obscure; repeated sibling copies are stronger evidence than one later body.
+  * a retail sibling binary can prove a shared compiled-source family even when
+    neither game shipped source or a PDB. Require a source-path/library anchor,
+    the complete decoded extent and CFG, and an explanation for every differing
+    byte. The 1997 Claw demo's `DIRSURF.CPP` `Blit824` and Gruntz retail are both
+    `0x30b` bytes/265 instructions; 768 bytes agree and the only 11 differences
+    are the `Lock` rel32 displacement or nine independently explained +4 class-
+    member offsets. This proves Gruntz retail's `pal=EBX`/`this=ESI` allocation
+    belongs to the shared DDrawMgr implementation and rules out different pixel
+    logic. It does NOT recover a byte-flat spelling: direct loops, row/search
+    macros, postincrement, and the retained inline `FindNearestColor` helper all
+    emit the same current object. Use sibling binaries positively for family,
+    topology, widths, and compiler texture; never import negative absence or
+    pretend binary identity supplies source text. The controlled method is in
+    `docs/patterns/cross-game-binary-oracle-proves-shared-source-family.md`.
   * an authentic complete body invalidates a bounded review of a different
     source hash. Apply the complete sourced family, reopen the diagnosis, and
     bank any exact unchanged-source state before removing disposable C1 probes.

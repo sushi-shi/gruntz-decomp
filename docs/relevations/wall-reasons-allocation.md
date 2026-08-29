@@ -369,11 +369,13 @@ one onward, and `unsigned char` costs one from the first.
 
 `Blit824` at `0x00140110` is a bounded example where the known rules do not yet
 explain which rotation stop a parameter receives. Retail loads the palette into
-EBX before saving EBP; the current compile loads the same parameter into EBP.
-Both are frameless, save all four callee-saved registers, and have identical
-calls (2), branches (22), returns (3), relocations (1), frame size (`0x2c`), and
-semantic homes for all six byte/widened channel values. The base is 16 bytes and
-six instructions longer solely through the downstream register schedule.
+EBX before saving EBP, then binds `this` to ESI. The current compile finishes the
+save sequence first, loads the palette into ESI, and binds `this` to EDI. Both
+are frameless, save all four callee-saved registers, reserve `0x2c`, and have
+identical calls (2), branches (22), returns (3), relocations (1), instruction
+count (265), and all semantic multisets. Current is `0x309` bytes against
+retail's `0x30b`; the residue is the downstream register/stack schedule, not
+missing operations.
 
 Personally measured negative controls: a typed palette alias defined before or
 after `Lock`, a `void*` parameter plus typed local, implicit versus explicit byte
@@ -381,10 +383,26 @@ narrowing at the destination store, and four semantic palette identifier names
 all compile byte-identically at 69.83012%. A bounded 243/384 syntax campaign
 found 12 islands; its best 71.25869% state only reordered one commutative sum in
 the second duplicated arm, contrary to retail's unchanged square/add order, so
-it is not retained. The existing file-scope TU-state sweep is flat for this
-function. Further work belongs in the allocator tuple-walk/rotation-cursor RE,
-not in additional source-order guesses. `Blit816` is a negative sibling: both
-sides bind its palette to ESI, so its separate residue is spill scheduling.
+it is not retained. After the `SQR` restoration, a new 128-trial target-adjacent
+campaign executed 117 valid forest/typedef/enum/struct/class/prototype/function/
+mixed/count trials and found one compiler island. Postincrement, a complete-row
+macro, row-plus-search macro composition, and row-plus-inline-search composition
+are also byte-flat. The retained `static inline FindNearestColor` boundary leaves
+both `Blit824` and `Blit816` byte-identical while restoring the shared semantic
+operation.
+
+An independent retail oracle now identifies the target state. The original Claw
+demo embeds `C:\Proj\DDrawMgr\DIRSURF.CPP`; its corresponding function at
+`0x4ae0d0` is the same `0x30b`-byte implementation as Gruntz retail. Across the
+whole extent, 768 bytes agree and the only 11 differences are the relative
+`Lock` displacement or nine member operands explained by Claw's four-byte-
+earlier height/width/pitch layout. Thus the retail allocation is known shared
+DDrawMgr compiler output, while the source spelling remains underdetermined.
+Further work belongs in recovery of an authentic earlier TU/source layer or the
+allocator tuple-walk, not additional local pixel arithmetic guesses. `Blit816`
+is a negative sibling: both sides bind its palette to ESI, so its separate
+residue is spill scheduling. See
+`docs/patterns/cross-game-binary-oracle-proves-shared-source-family.md`.
 
 ### Open RE case — `CGrunt::ClaimSwitchTile` aggregate coalescing
 
