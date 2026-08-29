@@ -12,13 +12,11 @@
 #include <string.h>
 
 DATA(0x002bf84c)
-u16* dprintfmonoscreen = NULL;
-DATA(0x002bf850)
-dprintfExcludeRegions dprintfExReg = {0};
+u16* dprintfmonoscreen;
 DATA(0x002bf8d4)
-i32 dbprintfcurrentLine = 0;
+u32 dbprintfcurrentLine = 0;
 DATA(0x002bf8d8)
-i32 dprintfcurrentChar = 0;
+u32 dprintfcurrentChar = 0;
 DATA(0x002bf8dc)
 dprintfOutputType dprintfOutType = DPRINTF_UNKNOWN;
 DATA(0x002bf8e0)
@@ -29,7 +27,7 @@ RVA_DYNINIT(0x00184b70, 0xa, dprintfinit)
 RVA_DYNINIT(0x00184b80, 0xe, dprintfinit)
 RVA_DYNINIT(0x00184b90, 0xa, dprintfinit)
 DATA(0x002bf848)
-dprintfinittype dprintfinit;
+static dprintfinittype dprintfinit;
 
 RVA(0x00184ba0, 0x33)
 BOOLEAN dprintfExcludeRegions::In(u32 Num) {
@@ -99,6 +97,9 @@ void dprintfExcludeRegions::Scan(char* Str) {
         Add(From, To);
     }
 }
+
+DATA(0x002bf850)
+dprintfExcludeRegions dprintfExReg;
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
