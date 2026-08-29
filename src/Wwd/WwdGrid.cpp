@@ -7,12 +7,13 @@
 #include <Wwd/WwdGridShell.h>
 
 #include <math.h>
+#include <string.h>
 
 // @early-stop
 RVA(0x001915c0, 0x15d)
 i32 CWwdGrid::Setup(RECT rect, i32 cellW, i32 cellH) {
     m_count = 0;
-    m_bounds.m_rect = rect;
+    memcpy(&m_bounds, &rect, sizeof(m_bounds));
     if (rect.right < rect.left) {
         i32 t = rect.left;
         rect.left = rect.right;

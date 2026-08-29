@@ -14,17 +14,19 @@ struct BucketHead;
 struct WwdGridNode;
 
 struct WwdRect {
+    void Init(i32 minX, i32 minY, i32 maxX, i32 maxY) {
+        m_minX = minX;
+        m_minY = minY;
+        m_maxX = maxX;
+        m_maxY = maxY;
+    }
+
     i32 Contains(const WwdGridNode* point) const;
 
-    union {
-        struct {
-            i32 m_minX;
-            i32 m_minY;
-            i32 m_maxX;
-            i32 m_maxY;
-        };
-        RECT m_rect;
-    };
+    i32 m_minX;
+    i32 m_minY;
+    i32 m_maxX;
+    i32 m_maxY;
 };
 
 struct WwdGridNode : CBaseListItem {

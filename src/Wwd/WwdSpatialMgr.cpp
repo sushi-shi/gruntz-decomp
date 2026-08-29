@@ -69,22 +69,28 @@ i32 CWwdSpatialMgr::ActivateAt(i32 centerX, i32 centerY) {
     SetActiveCenter(centerX, centerY);
 
     WwdRect r;
-    r.m_minX = centerX - m_defaultRegionHalfWidth;
-    r.m_minY = centerY - m_defaultRegionHalfHeight;
-    r.m_maxX = m_defaultRegionHalfWidth + centerX;
-    r.m_maxY = m_defaultRegionHalfHeight + centerY;
+    r.Init(
+        centerX - m_defaultRegionHalfWidth,
+        centerY - m_defaultRegionHalfHeight,
+        m_defaultRegionHalfWidth + centerX,
+        m_defaultRegionHalfHeight + centerY
+    );
     i32 n0 = m_defaultRegionGrid->Query(r, 1);
 
-    r.m_minX = centerX - m_largeRegionHalfWidth;
-    r.m_minY = centerY - m_largeRegionHalfHeight;
-    r.m_maxX = m_largeRegionHalfWidth + centerX;
-    r.m_maxY = m_largeRegionHalfHeight + centerY;
+    r.Init(
+        centerX - m_largeRegionHalfWidth,
+        centerY - m_largeRegionHalfHeight,
+        m_largeRegionHalfWidth + centerX,
+        m_largeRegionHalfHeight + centerY
+    );
     i32 n1 = m_largeRegionGrid->Query(r, 1);
 
-    r.m_minX = centerX - m_smallRegionHalfWidth;
-    r.m_minY = centerY - m_smallRegionHalfHeight;
-    r.m_maxX = m_smallRegionHalfWidth + centerX;
-    r.m_maxY = m_smallRegionHalfHeight + centerY;
+    r.Init(
+        centerX - m_smallRegionHalfWidth,
+        centerY - m_smallRegionHalfHeight,
+        m_smallRegionHalfWidth + centerX,
+        m_smallRegionHalfHeight + centerY
+    );
     i32 n2 = m_smallRegionGrid->Query(r, 1);
 
     return n0 + n1 + n2;
@@ -122,20 +128,26 @@ RVA(0x00168500, 0x3af)
 i32 CWwdSpatialMgr::DeactivateOutside(i32 centerX, i32 centerY) {
     i32 count = 0;
     WwdRect defaultBounds;
-    defaultBounds.m_minX = centerX - m_defaultRegionHalfWidth;
-    defaultBounds.m_minY = centerY - m_defaultRegionHalfHeight;
-    defaultBounds.m_maxX = m_defaultRegionHalfWidth + centerX;
-    defaultBounds.m_maxY = m_defaultRegionHalfHeight + centerY;
+    defaultBounds.Init(
+        centerX - m_defaultRegionHalfWidth,
+        centerY - m_defaultRegionHalfHeight,
+        m_defaultRegionHalfWidth + centerX,
+        m_defaultRegionHalfHeight + centerY
+    );
     WwdRect largeBounds;
-    largeBounds.m_minX = centerX - m_largeRegionHalfWidth;
-    largeBounds.m_minY = centerY - m_largeRegionHalfHeight;
-    largeBounds.m_maxX = centerX + m_largeRegionHalfWidth;
-    largeBounds.m_maxY = centerY + m_largeRegionHalfHeight;
+    largeBounds.Init(
+        centerX - m_largeRegionHalfWidth,
+        centerY - m_largeRegionHalfHeight,
+        centerX + m_largeRegionHalfWidth,
+        centerY + m_largeRegionHalfHeight
+    );
     WwdRect smallBounds;
-    smallBounds.m_minX = centerX - m_smallRegionHalfWidth;
-    smallBounds.m_minY = centerY - m_smallRegionHalfHeight;
-    smallBounds.m_maxX = centerX + m_smallRegionHalfWidth;
-    smallBounds.m_maxY = centerY + m_smallRegionHalfHeight;
+    smallBounds.Init(
+        centerX - m_smallRegionHalfWidth,
+        centerY - m_smallRegionHalfHeight,
+        centerX + m_smallRegionHalfWidth,
+        centerY + m_smallRegionHalfHeight
+    );
 
     POSITION pos = m_activeGroup->m_list.GetHeadPosition();
     while (pos != NULL) {

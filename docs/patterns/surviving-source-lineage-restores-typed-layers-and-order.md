@@ -179,6 +179,15 @@ Moving only `m_nFileFormatVersion` from the front of the reconstructed block to 
 the final 1.2563%. The reusable lever is the source statement order, not the emitted store
 order; VC5 uses the former to build the IL and schedules the latter.
 
+Rectangle helpers need the same owner check. The surviving scalar `LTRect::Init`
+supports `WwdRect::Init(left, top, right, bottom)` at scalar construction sites.
+The overlapping `RECT` view is independently replaced by a fixed-size copy at
+the one cross-type whole-object transfer. Its sibling `TRect2<T>::Offset`,
+however, belongs to a different vector-backed class. The surviving NOLF client
+code still translates plain `LTRect` values with four explicit additions. Equal
+arithmetic is therefore not enough to transfer the `Offset` member to every
+four-field rectangle type.
+
 ## Adoption control
 
 The pinned source is a presumptive source oracle, not merely a bag of optional

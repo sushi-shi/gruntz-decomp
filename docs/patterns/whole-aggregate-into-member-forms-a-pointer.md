@@ -55,6 +55,20 @@ writes `n->m_rect14 = rc;`, shows the identical `add ebp,0x14` /
 different register, which is why the sieve below keys on the OFFSET and never
 on the register name.
 
+The cross-type form is a fixed-size `memcpy`, not an overlapping union.
+`CWwdGrid::Setup` receives a Win32 `RECT` but stores the layout-identical
+project type `WwdRect`. The old union view made `m_bounds.m_rect = rect` select
+retail's 118-instruction aggregate-copy IL at 99.9658, but represented one
+object as two overlapping types. Removing the union and calling the authentic
+four-scalar `WwdRect::Init` exposed four independent `[this+offset]` stores and
+dipped to 91.8120. Composing a temporary `WwdRect` plus whole assignment
+recovered the zero-based member-pointer stores and reached 94.52, but C2 still
+folded one load. `memcpy(&m_bounds, &rect, sizeof(m_bounds))` recovered the
+complete 118-instruction state, exact extent/calls/CFG/relocations, and the
+99.9658 bank without the false type overlay. Use this only when complete layout
+evidence proves the two types are byte-compatible and the copy transfers the
+whole object.
+
 ## Detection
 
 Find `add <reg>,<imm>` followed, within a short window and **before `<reg>` is
@@ -70,12 +84,12 @@ credited to the arithmetic `add`.
 
 ## Census
 
-Run over all 595 rows of the sub-100 queue, with the guard: **0 rows** where
-retail has more of these sites than the base. The one candidate without the
-guard is the false positive above. So this shape is not a live lead anywhere
-else in the current queue - `UpdateChipGrinderStatusBar` was its only instance
-and it is now exact. The value of the entry is the READING, for the next
-function whose residue is four member stores.
+Run over the then-current 595 rows of the sub-100 queue, with the guard: **0
+rows** where retail had more of these sites than the base. The one candidate
+without the guard was the false positive above. `CWwdGrid::Setup` later
+supplied the cross-type form: its source already produced the member pointer
+through a union assignment, and the task was to preserve that aggregate-copy
+IL while removing the false overlay.
 
 ## Related
 

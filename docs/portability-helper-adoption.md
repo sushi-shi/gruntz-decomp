@@ -90,6 +90,11 @@ Retained in the matching tree:
   `CMovingLogic`'s uniform maximum step, and the proven SpotLight sites. The
   shared declaration rotates several current constructor states, but all MAX
   values hold.
+- The scalar `WwdRect::Init(left, top, right, bottom)` boundary at the six
+  spatial-manager rectangle constructions. `CWwdGrid::Setup` separately uses
+  one fixed-size `memcpy` from its layout-identical Win32 `RECT` parameter;
+  that preserves the whole-object copy while eliminating the former
+  overlapping `RECT` union view.
 - In `CSpotLight::Tick`, the first one-step vector-helper spelling descended
   from 84.2097 to 81.6411. Composing the authentic helper boundary with two
   named rotated-coordinate locals returned to 84.2097. This is a concrete
@@ -124,6 +129,11 @@ Audited but not imported into the matching tree:
 - `Dot` and `MagSqr` have no vector-owned Gruntz consumer. The apparent sites
   belong to scalar fields, `Coord`, or `ClipVtx`; introducing temporary vectors
   would invent an owner rather than restore one.
+- `TRect2<T>::Offset` is semantically useful but belongs to the vector-backed
+  rectangle family, not every Win32 `RECT`. NOLF itself translates its plain
+  `LTRect` instances with four explicit additions. Introduce a portable
+  rectangle translation operation only after those Win32 fields acquire one
+  real portable owner; do not graft the method onto the matching types now.
 
 For the port, reconsider every semantically valid item in the second list when
 the retail compiler constraint is removed. Extend them into explicit rectangle,
