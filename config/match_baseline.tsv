@@ -53,14 +53,14 @@ behindcandy	1	1
 behindcandyani	8	7
 bitarray	3	2
 bitarraystream	2	2
-blowfish	6	5
+blowfish	6	6
 bootystateactivate	52	33
 bracketvalue	1	1
 brickz	4	2
 brickzcellflags	3	1
 brickzload	1	0
 buteglobals	4	4
-butemgr	68	60
+butemgr	68	59
 butetail	3	3
 butetree	2	1
 bzkinddispatch	1	1
@@ -598,11 +598,11 @@ bitarray	?Or@zBitVec@@QAEPAV1@PAV1@@Z	100.0000	100.0000	1	1ea7b32d0bbf	0x193680	
 bitarray	?SetBit@zBitVec@@QAEPAV1@I@Z	100.0000	100.0000	6	d5076fac6cb1	0x193640	100.0000	
 bitarraystream	??5@YAAAVistream@@AAV0@AAVzBitVec@@@Z	100.0000	100.0000	1	1e09c4bae4b0	0x193140	100.0000	
 bitarraystream	??6@YAAAVostream@@AAV0@ABVzBitVec@@@Z	100.0000	100.0000	5	2876109cbf16	0x193080	100.0000	
-blowfish	?Blowfish_decipher@@YAXPAI0@Z	100.0000	100.0000	1	6e574434e8a9	0x16fc70	100.0000	
-blowfish	?Blowfish_encipher@@YAXPAI0@Z	100.0000	60.3505	1	d92c7ec3c73c	0x16f7f0	100.0000	
+blowfish	?Blowfish_decipher@@YAXPAI0@Z	100.0000	100.0000	2	441921f2946f	0x16fc70	100.0000	
+blowfish	?Blowfish_encipher@@YAXPAI0@Z	100.0000	100.0000	2	d476acdbce4f	0x16f7f0	100.0000	
 blowfish	?Decrypt@CCryptMgr@@QAEXAAVistream@@AAVostream@@@Z	100.0000	100.0000	3	82d86af1f8c5	0x16f760	100.0000	
 blowfish	?Encrypt@CCryptMgr@@QAEXAAVistream@@AAVostream@@@Z	100.0000	100.0000	3	4cb4c7fb2b23	0x16f6e0	100.0000	
-blowfish	?InitializeBlowfish@@YAFPBDF@Z	100.0000	100.0000	3	a7d893952787	0x170100	100.0000	
+blowfish	?InitializeBlowfish@@YAFPBDF@Z	100.0000	100.0000	4	0853929960e1	0x170100	100.0000	
 blowfish	?SetKey@CCryptMgr@@QAEXPBD@Z	100.0000	100.0000	3	a0f77ad5b174	0x16f6c0	100.0000	
 bootystateactivate	??1CBootyState@@UAE@XZ	100.0000	100.0000	1	7390c8dc8b7b	0x8d440	100.0000	
 bootystateactivate	??1CButeMgr@@QAE@XZ	100.0000	100.0000	1	cpp:e2ca049ea8bf	0x213c0	100.0000	
@@ -699,7 +699,7 @@ butemgr	?GetDouble@CButeMgr@@QAENPBD0@Z	100.0000	100.0000	5	f744f973e36e	0x172c4
 butemgr	?GetDoubleDef@CButeMgr@@QAENPBD0N@Z	100.0000	100.0000	5	1d16346c4ed8	0x172bd0	100.0000	
 butemgr	?GetDword@CButeMgr@@QAEKPBD0@Z	100.0000	100.0000	5	237d7e0debab	0x172240	100.0000	
 butemgr	?GetDwordDef@CButeMgr@@QAEKPBD0K@Z	100.0000	100.0000	5	1a17c7fc8961	0x1721e0	100.0000	
-butemgr	?GetFloat@CButeMgr@@QAEMPBD0@Z	100.0000	100.0000	5	8f44fbf844b3	0x172730	100.0000	
+butemgr	?GetFloat@CButeMgr@@QAEMPBD0@Z	100.0000	99.7692	5	8f44fbf844b3	0x172730	100.0000	
 butemgr	?GetFloatDef@CButeMgr@@QAEMPBD0M@Z	100.0000	100.0000	5	5d29f99386f9	0x1726c0	100.0000	
 butemgr	?GetInt@CButeMgr@@QAEHPBD0@Z	100.0000	100.0000	5	ec45b19463f4	0x171af0	100.0000	
 butemgr	?GetIntDef@CButeMgr@@QAEHPBD0H@Z	100.0000	100.0000	5	80afff49e566	0x171aa0	100.0000	

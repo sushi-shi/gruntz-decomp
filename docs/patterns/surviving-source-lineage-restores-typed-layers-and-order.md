@@ -4,7 +4,7 @@ tags: cpp:inheritance cpp:inline cpp:member cpp:local cpp:loop | asm:lea asm:mov
 symptoms: a reconstructed subsystem has correct broad behavior but repeated near-exact
 register/schedule walls, generic base pointers where consumers always recover one owner
 type, payload unions at a common trailing offset, or hand-expanded one-field stores
-confidence: 10/10 (seventeen clean exact closures, four audited unchanged-source state closures,
+confidence: 10/10 (twenty clean exact closures, four audited unchanged-source state closures,
 exact controls, revision-history audit, and retail negative controls)
 variants: inline-expansion-boundary-pins-a-neighbour.md, ctor-body-first-statement-is-an-inline-member.md
 
@@ -41,6 +41,9 @@ as a complete source layer with controlled adaptations, it closed these Gruntz f
 | `CRezImage::FlipVertical` 0x176840 | three unsigned offsets, shared forward index, cached dimensions, and ordinary copy loops from `CDib::Invert` | 79.7879 -> **100.000** |
 | `CRezImage::SaveBmp` 0x176b30 | two-stage palette fallback, validity/data/palette accessors, symbolic file sizing/open flags, and named row index | 98.9855 -> **100.000** |
 | `CDDSurface::CreateFromPcxData` 0x144b30 | complete 128-byte PCX header plus `pStart`, typed header, offset, and packed-byte cursor | 99.9766 -> **100.000** |
+| `Blowfish_encipher` 0x16f7f0 | surviving `aword` view and `S`/`bf_F`/`ROUND` macro family, paired with the proven declaration-state boundary | 60.3505 -> 99.9357 -> **100.000** |
+| `Blowfish_decipher` 0x16fc70 | the mirror source body retained through its reciprocal first-step dip, then composed with the declaration boundary | 100.000 -> 61.4969 -> **100.000** |
+| `InitializeBlowfish` 0x170100 | original short local census, `aword temp`, table copies, symbolic round count, and authored xor assignment | 100.000 -> **100.000** |
 
 The exact controls are strong: all three typed hash lookups stayed exact, both hash-owning
 destructors stayed exact, and `rezarchive` reached 115/115 exact functions.
@@ -73,6 +76,18 @@ getters from 99.9296/99.9275 down to 90.6338/93.2609. Composing the surviving
 scores, while the same authentic header state banked `CButeMgr::GetFloat` at exact.
 This is another direct control against one-step ranking: constructor source and its
 initialization sites are one evidence family.
+
+The direct CryptMgr Blowfish source supplies another complete abstraction family. The
+earlier reconstruction had flattened the byte view into scalar shifts and expressed each
+round through a hand-written comma macro. Restoring the surviving `union aword`, its
+little-endian bitfields, the nested `S`/`bf_F`/`ROUND` macros, paired round source-line
+groups, and the original initialization locals initially moved the mirror functions in
+opposite directions: encipher rose from 60.3505 to 99.9357 while decipher fell from exact
+to 61.4969. Their call sets and branch skeletons still agreed with retail. Retaining that
+source and composing the previously measured real-header declaration boundary between the
+two definitions made both 16-round bodies and `InitializeBlowfish` byte-exact. A reciprocal
+mirror-function dip is therefore evidence to inspect TU state, not permission to discard a
+surviving algorithm layer.
 
 ## The class-model lesson: a trailing union can hide a missing derived layer
 

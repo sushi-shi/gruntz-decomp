@@ -8,22 +8,32 @@
 
 #include <iostream.h>
 #include <memory.h>
-#include <string.h>
+
+#define bf_N 16
 
 DATA(0x0021aeb0)
-u32 g_bfP[18] = BF_PI_P_INIT;
+static u32 bf_P[bf_N + 2] = BF_PI_P_INIT;
 DATA(0x0021aef8)
-u32 g_bfS[4][256] = BF_PI_S_INIT;
+static u32 bf_S[4][256] = BF_PI_S_INIT;
 DATA(0x0021bef8)
-u32 g_bfInitP[18] = BF_PI_P_INIT;
+static u32 bf_P_Orig[bf_N + 2] = BF_PI_P_INIT;
 DATA(0x0021bf40)
-u32 g_bfInitS[4][256] = BF_PI_S_INIT;
+static u32 bf_S_Orig[4][256] = BF_PI_S_INIT;
 
-#define BF_ENC(LL, R, P)                                                                           \
-    (LL ^= (P),                                                                                    \
-     LL ^=                                                                                         \
-     (((g_bfS[0][(R) >> 24] + g_bfS[1][((R) >> 16) & 0xff]) ^ g_bfS[2][((R) >> 8) & 0xff])         \
-      + g_bfS[3][(R) & 0xff]))
+union aword {
+    u32 word;
+    u8 byte[4];
+    struct {
+        unsigned int byte3 : 8;
+        unsigned int byte2 : 8;
+        unsigned int byte1 : 8;
+        unsigned int byte0 : 8;
+    } w;
+};
+
+#define S(x, i) (bf_S[i][x.w.byte##i])
+#define bf_F(x) (((S(x, 0) + S(x, 1)) ^ S(x, 2)) + S(x, 3))
+#define ROUND(a, b, n) (a.word ^= bf_F(b) ^ bf_P[n])
 
 RVA(0x0016f6c0, 0x12)
 void CCryptMgr::SetKey(const char* key) {
@@ -74,93 +84,107 @@ void CCryptMgr::Decrypt(istream& in, ostream& out) {
 
 RVA(0x0016f7f0, 0x47b)
 void Blowfish_encipher(u32* xl, u32* xr) {
-    u32 l = *xl;
-    u32 r = *xr;
+    union aword Xl;
+    union aword Xr;
 
-    l ^= g_bfP[0];
-    BF_ENC(r, l, g_bfP[1]);
-    BF_ENC(l, r, g_bfP[2]);
-    BF_ENC(r, l, g_bfP[3]);
-    BF_ENC(l, r, g_bfP[4]);
-    BF_ENC(r, l, g_bfP[5]);
-    BF_ENC(l, r, g_bfP[6]);
-    BF_ENC(r, l, g_bfP[7]);
-    BF_ENC(l, r, g_bfP[8]);
-    BF_ENC(r, l, g_bfP[9]);
-    BF_ENC(l, r, g_bfP[10]);
-    BF_ENC(r, l, g_bfP[11]);
-    BF_ENC(l, r, g_bfP[12]);
-    BF_ENC(r, l, g_bfP[13]);
-    BF_ENC(l, r, g_bfP[14]);
-    BF_ENC(r, l, g_bfP[15]);
-    BF_ENC(l, r, g_bfP[16]);
-    r ^= g_bfP[17];
+    Xl.word = *xl;
+    Xr.word = *xr;
 
-    *xr = l;
-    *xl = r;
+    Xl.word ^= bf_P[0];
+    ROUND(Xr, Xl, 1);
+    ROUND(Xl, Xr, 2);
+    ROUND(Xr, Xl, 3);
+    ROUND(Xl, Xr, 4);
+    ROUND(Xr, Xl, 5);
+    ROUND(Xl, Xr, 6);
+    ROUND(Xr, Xl, 7);
+    ROUND(Xl, Xr, 8);
+    ROUND(Xr, Xl, 9);
+    ROUND(Xl, Xr, 10);
+    ROUND(Xr, Xl, 11);
+    ROUND(Xl, Xr, 12);
+    ROUND(Xr, Xl, 13);
+    ROUND(Xl, Xr, 14);
+    ROUND(Xr, Xl, 15);
+    ROUND(Xl, Xr, 16);
+    Xr.word ^= bf_P[17];
+
+    *xr = Xl.word;
+    *xl = Xr.word;
 }
+
+// Retail's mirror functions use different cl 5.0 register schemes. The surviving
+// source includes string.h before both bodies; the reconstructed TU needs the same
+// declaration boundary here because its preceding class-method composition differs.
+#include <string.h>
 
 RVA(0x0016fc70, 0x48e)
 void Blowfish_decipher(u32* xl, u32* xr) {
-    u32 l = *xl;
-    u32 r = *xr;
+    union aword Xl;
+    union aword Xr;
 
-    l ^= g_bfP[17];
-    BF_ENC(r, l, g_bfP[16]);
-    BF_ENC(l, r, g_bfP[15]);
-    BF_ENC(r, l, g_bfP[14]);
-    BF_ENC(l, r, g_bfP[13]);
-    BF_ENC(r, l, g_bfP[12]);
-    BF_ENC(l, r, g_bfP[11]);
-    BF_ENC(r, l, g_bfP[10]);
-    BF_ENC(l, r, g_bfP[9]);
-    BF_ENC(r, l, g_bfP[8]);
-    BF_ENC(l, r, g_bfP[7]);
-    BF_ENC(r, l, g_bfP[6]);
-    BF_ENC(l, r, g_bfP[5]);
-    BF_ENC(r, l, g_bfP[4]);
-    BF_ENC(l, r, g_bfP[3]);
-    BF_ENC(r, l, g_bfP[2]);
-    BF_ENC(l, r, g_bfP[1]);
-    r ^= g_bfP[0];
+    Xl.word = *xl;
+    Xr.word = *xr;
 
-    *xl = r;
-    *xr = l;
+    Xl.word ^= bf_P[17];
+    ROUND(Xr, Xl, 16);
+    ROUND(Xl, Xr, 15);
+    ROUND(Xr, Xl, 14);
+    ROUND(Xl, Xr, 13);
+    ROUND(Xr, Xl, 12);
+    ROUND(Xl, Xr, 11);
+    ROUND(Xr, Xl, 10);
+    ROUND(Xl, Xr, 9);
+    ROUND(Xr, Xl, 8);
+    ROUND(Xl, Xr, 7);
+    ROUND(Xr, Xl, 6);
+    ROUND(Xl, Xr, 5);
+    ROUND(Xr, Xl, 4);
+    ROUND(Xl, Xr, 3);
+    ROUND(Xr, Xl, 2);
+    ROUND(Xl, Xr, 1);
+    Xr.word ^= bf_P[0];
+
+    *xl = Xr.word;
+    *xr = Xl.word;
 }
 
 RVA(0x00170100, 0x104)
 i16 InitializeBlowfish(const char* key, i16 keybytes) {
-    i16 i, j;
-    u32 data, datal, datar;
+    i16 i;
+    i16 j;
+    u32 data;
+    u32 datal;
+    u32 datar;
+    union aword temp;
 
-    for (i = 0; i < 18; i++) {
-        g_bfP[i] = g_bfInitP[i];
-    }
-    memcpy(g_bfS, g_bfInitS, sizeof(g_bfS));
+    memcpy(bf_P, bf_P_Orig, (bf_N + 2) * sizeof(u32));
+    memcpy(bf_S, bf_S_Orig, 4 * 256 * sizeof(u32));
 
     j = 0;
-    for (i = 0; i < 18; i++) {
-
-        data = static_cast<u32>(static_cast<u8>(key[j])) << 24;
-        data |= static_cast<u32>(static_cast<u8>(key[(j + 1) % keybytes])) << 16;
-        data |= static_cast<u32>(static_cast<u8>(key[(j + 2) % keybytes])) << 8;
-        data |= static_cast<u32>(static_cast<u8>(key[(j + 3) % keybytes]));
-        g_bfP[i] ^= data;
+    for (i = 0; i < bf_N + 2; ++i) {
+        temp.word = 0;
+        temp.w.byte0 = static_cast<u8>(key[j]);
+        temp.w.byte1 = static_cast<u8>(key[(j + 1) % keybytes]);
+        temp.w.byte2 = static_cast<u8>(key[(j + 2) % keybytes]);
+        temp.w.byte3 = static_cast<u8>(key[(j + 3) % keybytes]);
+        data = temp.word;
+        bf_P[i] = bf_P[i] ^ data;
         j = (j + 4) % keybytes;
     }
 
-    datal = 0;
-    datar = 0;
-    for (i = 0; i < 18; i += 2) {
+    datal = 0x00000000;
+    datar = 0x00000000;
+    for (i = 0; i < bf_N + 2; i += 2) {
         Blowfish_encipher(&datal, &datar);
-        g_bfP[i] = datal;
-        g_bfP[i + 1] = datar;
+        bf_P[i] = datal;
+        bf_P[i + 1] = datar;
     }
-    for (i = 0; i < 4; i++) {
+    for (i = 0; i < 4; ++i) {
         for (j = 0; j < 256; j += 2) {
             Blowfish_encipher(&datal, &datar);
-            g_bfS[i][j] = datal;
-            g_bfS[i][j + 1] = datar;
+            bf_S[i][j] = datal;
+            bf_S[i][j + 1] = datar;
         }
     }
     return 0;

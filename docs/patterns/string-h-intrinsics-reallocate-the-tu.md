@@ -6,8 +6,8 @@ window is a new `#include` somewhere in its TU; the diff is pure register rotati
 (which register holds the zero, which holds the shifted byte) with identical
 instruction selection; two near-twin functions in one TU cannot be exact at once
 
-confidence: 9/10 (single-axis A/B; 60+ probe builds across two campaigns; the whole
-`blowfish` unit now 4/4 exact)
+confidence: 10/10 (single-axis A/B; 60+ probe builds across two campaigns; repeated
+success after restoring the surviving Blowfish body; the whole `blowfish` unit is exact)
 
 ## What it is
 
@@ -36,7 +36,7 @@ Measured, one axis at a time, per-function objdiff fuzzy%:
 
 So the include is not "wide vs narrow". `<string.h>` above encipher moves BOTH
 functions past the threshold; `<string.h>` between them moves ONLY decipher, which
-is exactly retail's split. The whole TU (4 functions) is byte-exact that way.
+is exactly retail's split. The complete current TU is byte-exact that way.
 
 ## What the currency is - and is not
 
@@ -106,12 +106,12 @@ row, not a worklist item, unless its TU is small enough to place a real declarat
 
 ## Caveat
 
-A mid-file include is a **state proxy**, not a claim about retail's source. The real
-retail TU almost certainly reached the same split from a different composition - the
-EXE interleaves the now-lineage-proven `CCryptMgr::Encrypt`/`Decrypt`
-(0x16f6e0/0x16f760) and `CCryptMgr(char*)` at 0x16f690 between
-`CCryptMgr::SetKey` and `Blowfish_encipher`, so retail's blowfish compiland is larger
-than ours. Restoring that complete surviving class and its reference-based stream API
-did not reproduce the split, so that TU-state reconstruction is still open. Meanwhile
-the position is load-bearing: say so in a comment, because `include_order --fix`
-would silently hoist it and cost 40 points.
+A mid-file include is a **state proxy**, not a claim that the public source placed the
+header there. The real retail TU reached the split from a different declaration
+composition: the EXE interleaves the lineage-proven `CCryptMgr::Encrypt`/`Decrypt`
+(0x16f6e0/0x16f760) and `CCryptMgr(char*)` at 0x16f690 between `CCryptMgr::SetKey`
+and `Blowfish_encipher`. Restoring that class plus the surviving `aword` and nested
+round-macro body changed the two functions reciprocally but did not remove the retail
+split. Keeping the real `<string.h>` declaration boundary between them then made all
+six ordinary functions in the reconstructed TU exact. The position is load-bearing;
+keep its operational source comment so an include-order rewrite cannot silently hoist it.

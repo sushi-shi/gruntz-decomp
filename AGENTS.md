@@ -217,6 +217,15 @@
     surviving explicit `(0,0)`/`(0,0,0)` static initializers recovered both
     baselines. Do not judge a constructor without its authored initialization
     sites.
+  * import a standard algorithm at its surviving abstraction level, not merely
+    its arithmetic. The public Blowfish body restores the `aword` byte/word
+    view, `S`/`bf_F`/`ROUND` macro family, paired round source-line groups,
+    original local census, and key-schedule expressions. Applied together it
+    replaced a hand-expanded macro state at 60.3505/100 with an authentic base
+    that first landed at 99.9357/61.4969; composing the already-proven real
+    declaration boundary between the mirror functions then made encipher,
+    decipher, and initialization all byte-exact. The reciprocal dip exposed a
+    TU-state split; it did not disprove the surviving body.
   * mine games and samples as well as engine libraries. Repeated Shogo/Blood2
     implementations preserve source layers that a later runtime analogue may
     obscure; repeated sibling copies are stronger evidence than one later body.
