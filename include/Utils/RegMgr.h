@@ -35,6 +35,9 @@ public:
         void* defaultValue = NULL,
         DWORD defaultSize = 0);
     BOOL Delete(const char* key);
+    BOOL IsValid() {
+        return this != NULL;
+    }
 
 private:
     BOOL CreateKey(HKEY key, const char* subKey, HKEY& newKey);
