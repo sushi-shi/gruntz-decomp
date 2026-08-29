@@ -163,37 +163,30 @@ void* zPTree::Find(const char* key) {
         m_errSink->Set(this, msg, 0x16);
         return NULL;
     }
-    CButeTreeNode* root = m_root;
-    m_descentCursor = root;
-    m_candidateLeaf = NULL;
-    m_lookupPending = true;
-    i32 bitmax = static_cast<i32>(strlen(key)) * PTREE_BITS_PER_BYTE + PTREE_BYTE_BIT_MASK;
-    m_keyBitLength = bitmax;
-    if (root == NULL) {
+    p = root;
+    q = NULL;
+    preview = true;
+    sbits = static_cast<i32>(strlen(key)) * PTREE_BITS_PER_BYTE + PTREE_BYTE_BIT_MASK;
+    if (p == NULL) {
         return NULL;
     }
-    i32 b = root->m_bit;
-    while (b <= bitmax) {
-        CButeTreeNode** slot = m_descentCursor->m_child;
-        if (key[b >> PTREE_BYTE_BIT_SHIFT] & (1 << (b & PTREE_BYTE_BIT_MASK))) {
-            ++slot;
-        }
-        m_candidateLeaf = *slot;
-        CButeTreeNode* child = m_candidateLeaf;
-        if (child == NULL) {
+    i32 branch = p->index;
+    while (branch <= sbits) {
+        q = p->ptr(bit(key, branch));
+        if (q == NULL) {
             return NULL;
         }
-        if (child->m_bit <= b) {
-            if (strcmp(key, child->m_key) == 0) {
-                m_lookupPending = false;
-                return m_candidateLeaf->m_value;
+        if (q->index <= branch) {
+            if (strcmp(key, q->symbol) == 0) {
+                preview = false;
+                return q->body;
             }
             return NULL;
         }
-        m_descentCursor = child;
-        b = child->m_bit;
+        p = q;
+        branch = p->index;
     }
-    m_candidateLeaf = m_descentCursor;
+    q = p;
     return NULL;
 }
 
@@ -523,13 +516,17 @@ void* _zvec::GrowTo(i32 idx, i32 at) {
 // @early-stop
 RVA(0x0016db90, 0x206)
 void* zPTree::Insert(const char* key, void* value) {
-    if (m_lookupPending == false) {
+    i32 newbranch;
+    i32 dp;
+    zPTreeNode* t;
+
+    if (preview == false) {
         g_retAddrBreadcrumb = GetCallerRetAddr();
         m_errSink->Set(this, const_cast<char*>("No prior lookup"), 0x16);
         return NULL;
     }
-    m_lookupPending = false;
-    m_keyBitLength -= PTREE_BYTE_BIT_MASK;
+    preview = false;
+    sbits -= PTREE_BYTE_BIT_MASK;
     if (key == NULL || value == NULL) {
         char* msg = g_errNullArg;
         g_retAddrBreadcrumb = GetCallerRetAddr();
@@ -537,91 +534,51 @@ void* zPTree::Insert(const char* key, void* value) {
         return NULL;
     }
 
-    i32 critbit;
-    if (m_candidateLeaf != NULL) {
-        critbit = FirstDiffBit(key, m_candidateLeaf->m_key);
-    } else {
-        critbit = m_keyBitLength - 1;
-    }
-
-    CButeTreeNode* node = new CButeTreeNode;
-    if (node == NULL) {
+    newbranch = q != NULL ? diffpos(key, q->symbol) : sbits - 1;
+    t = new zPTreeNode;
+    if (t == NULL) {
         char* msg = g_errOutOfMem;
         g_retAddrBreadcrumb = GetCallerRetAddr();
         m_errSink->Set(this, msg, 0xc);
         return NULL;
     }
-    node->m_value = static_cast<char*>(value);
-    node->m_bit = critbit;
-    char* keybuf = new char[(m_keyBitLength >> PTREE_BYTE_BIT_SHIFT) + 1];
-    node->m_key = keybuf;
-    if (keybuf == NULL) {
+    t->index = newbranch;
+    t->body = value;
+    t->symbol = new char[(sbits >> PTREE_BYTE_BIT_SHIFT) + 1];
+    if (t->symbol == NULL) {
         char* msg = g_errOutOfMem;
         g_retAddrBreadcrumb = GetCallerRetAddr();
         m_errSink->Set(this, msg, 0xc);
         return NULL;
     }
-    strcpy(keybuf, key);
+    strcpy(t->symbol, key);
 
-    i32 dir = (1 << (critbit & PTREE_BYTE_BIT_MASK))
-              & static_cast<i32>(static_cast<signed char>(key[critbit >> PTREE_BYTE_BIT_SHIFT]));
-    CButeTreeNode** selfLink;
-    if (dir) {
-        selfLink = &node->m_child[1];
-    } else {
-        selfLink = &node->m_child[0];
-    }
-    *selfLink = node;
+    dp = bit(key, newbranch);
+    t->ptr(dp) = t;
 
-    CButeTreeNode* cursor = m_descentCursor;
-    i32 d2 = dir;
-    if (cursor != NULL) {
-        if (critbit >= cursor->m_bit) {
-            CButeTreeNode** s1 = cursor->m_child;
-            if (key[cursor->m_bit >> PTREE_BYTE_BIT_SHIFT]
-                & (1 << (cursor->m_bit & PTREE_BYTE_BIT_MASK))) {
-                ++s1;
-            }
-            *s1 = node;
+    if (p != NULL) {
+        if (newbranch >= p->index) {
+            p->ptr(bit(key, p->index)) = t;
         } else {
-            CButeTreeNode* p = m_root;
-            m_descentCursor = NULL;
-            m_candidateLeaf = p;
-            if (p->m_bit <= critbit) {
-                CButeTreeNode* c;
-                do {
-                    p = m_candidateLeaf;
-                    m_descentCursor = p;
-                    d2 = key[p->m_bit >> PTREE_BYTE_BIT_SHIFT]
-                         & (1 << (p->m_bit & PTREE_BYTE_BIT_MASK));
-                    CButeTreeNode** s = p->m_child;
-                    if (d2) {
-                        ++s;
-                    }
-                    c = *s;
-                    m_candidateLeaf = c;
-                } while (c->m_bit <= critbit);
+            q = root;
+            p = NULL;
+            i32 b;
+            while (q->index <= newbranch) {
+                p = q;
+                b = bit(key, q->index);
+                q = q->ptr(b);
             }
-            CButeTreeNode* cur2 = m_descentCursor;
-            if (cur2 == NULL) {
-                m_root = node;
+            if (p == NULL) {
+                root = t;
             } else {
-                CButeTreeNode** s2 = cur2->m_child;
-                if (d2) {
-                    ++s2;
-                }
-                *s2 = node;
+                p->ptr(b) = t;
             }
         }
     } else {
-        m_root = node;
+        root = t;
     }
 
-    CButeTreeNode** other = &node->m_child[1];
-    if (dir) {
-        other = &node->m_child[0];
-    }
-    *other = m_candidateLeaf;
+    t->ptr(!dp) = q;
     m_nodeCount++;
     return value;
 }
@@ -688,30 +645,27 @@ zPtrColl::~zPtrColl() {}
 RVA(0x0016dff0, 0x73)
 zPTree::zPTree(void(__cdecl* teardown)(void*), i32 n)
 
-    : zErrHandling(&g_rezArchiveErrorSlot),
-      zPtrColl(n, teardown),
-      m_root(NULL),
-      m_lookupPending(false) {}
+    : zErrHandling(&g_rezArchiveErrorSlot), zPtrColl(n, teardown), root(NULL), preview(false) {}
 
 RVA(0x0016e070, 0x7b)
-void zPTree::ClearRecursive(CButeTreeNode* node) {
-    CButeTreeNode* n = node;
+void zPTree::ClearRecursive(zPTreeNode* node) {
+    zPTreeNode* n = node;
     if (n == NULL) {
-        n = m_root;
+        n = root;
         if (n == NULL) {
             return;
         }
     }
-    if (n->m_child[0] != NULL && n->m_child[0]->m_bit > n->m_bit) {
-        ClearRecursive(n->m_child[0]);
+    if (n->left != NULL && n->left->index > n->index) {
+        ClearRecursive(n->left);
     }
-    if (n->m_child[1] != NULL && n->m_child[1]->m_bit > n->m_bit) {
-        ClearRecursive(n->m_child[1]);
+    if (n->right != NULL && n->right->index > n->index) {
+        ClearRecursive(n->right);
     }
-    delete[] n->m_key;
+    delete[] n->symbol;
     if (m_kind & 2) {
-        m_teardown(n->m_value);
-        delete n->m_value;
+        m_teardown(n->body);
+        delete static_cast<char*>(n->body);
     }
     delete n;
 }
@@ -893,7 +847,7 @@ void* CVariantSlot::Add(void* key, void* val) {
 }
 
 RVA(0x0016e480, 0x3e)
-i32 FirstDiffBit(const char* a, const char* b) {
+i32 zPTree::diffpos(const char* a, const char* b) {
     i32 n = 0;
     while (*a == *b) {
         n += 8;

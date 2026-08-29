@@ -33,6 +33,7 @@ public:
     zErrHandling(CVariantSlot* errSink);
     virtual ~zErrHandling();
 
+    void handle(const char* message, i32 code) const;
     void Report(char* message, i32 code);
 
     CVariantSlot* m_errSink;

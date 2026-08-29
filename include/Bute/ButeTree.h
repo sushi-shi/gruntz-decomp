@@ -29,19 +29,17 @@ struct CVariantSlot {
     char* m_label;
 };
 
+inline void zErrHandling::handle(const char* message, i32 code) const {
+    g_retAddrBreadcrumb = GetCallerRetAddr();
+    m_errSink->Set(const_cast<zErrHandling*>(this), const_cast<char*>(message), code);
+}
+
 struct TypeKeyRec {
     TypeKeyRec() {}
     i32 m_key;
     VariantCallback m_callback;
     short m_value;
     char m_pad0a[2];
-};
-
-struct CButeTreeNode {
-    CButeTreeNode* m_child[2];
-    i32 m_bit;
-    char* m_key;
-    char* m_value;
 };
 
 class CButeTree : public zPTree {

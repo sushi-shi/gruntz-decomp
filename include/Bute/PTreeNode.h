@@ -10,7 +10,6 @@
 #include <stddef.h>
 
 struct CVariantSlot;
-struct CButeTreeNode;
 extern CVariantSlot g_rezArchiveErrorSlot;
 
 GZ_ENUM_CONST_BEGIN(PTreeBitLayout)
@@ -19,7 +18,19 @@ GZ_ENUM_CONST_BEGIN(PTreeBitLayout)
     PTREE_BYTE_BIT_MASK = 7
 GZ_ENUM_CONST_END(PTreeBitLayout)
 
-i32 FirstDiffBit(const char* a, const char* b);
+class zPTreeNode {
+    friend class zPTree;
+
+    zPTreeNode*& ptr(i32 d) {
+        return d ? right : left;
+    }
+
+    zPTreeNode* left;
+    zPTreeNode* right;
+    i32 index;
+    char* symbol;
+    void* body;
+};
 
 class zPtrColl {
 public:
@@ -36,13 +47,13 @@ class zPTree : public zErrHandling, public zPtrColl {
 public:
     zPTree(void(__cdecl* teardown)(void*), i32 n);
 
-    void ClearRecursive(CButeTreeNode* node);
+    void ClearRecursive(zPTreeNode* node);
 
     RVA(0x000212a0, 0x21)
     void Reset() {
         ClearRecursive(NULL);
-        m_root = NULL;
-        m_lookupPending = false;
+        root = NULL;
+        preview = false;
         m_nodeCount = 0;
     }
 
@@ -56,13 +67,19 @@ public:
 
     void* FindOrInsert(const char* key, void* value);
 
-    void Walk(void(__cdecl* fn)(char* key, void* value, void* ctx), void* ctx, CButeTreeNode* node);
+    void Walk(void(__cdecl* fn)(char* key, void* value, void* ctx), void* ctx, zPTreeNode* node);
 
-    CButeTreeNode* m_root;
-    CButeTreeNode* m_descentCursor;
-    CButeTreeNode* m_candidateLeaf;
-    i32 m_keyBitLength;
-    b32 m_lookupPending;
+    static i32 bit(const char* s, i32 n) {
+        return s[n >> PTREE_BYTE_BIT_SHIFT] & (1 << (n & PTREE_BYTE_BIT_MASK));
+    }
+
+    static i32 diffpos(const char* a, const char* b);
+
+    zPTreeNode* root;
+    zPTreeNode* p;
+    zPTreeNode* q;
+    i32 sbits;
+    i32 preview;
 };
 
 class CButeNode : public zPTree {

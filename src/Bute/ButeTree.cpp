@@ -11,22 +11,22 @@ RVA(0x00193340, 0x61)
 void zPTree::Walk(
     void(__cdecl* fn)(char* key, void* value, void* ctx),
     void* ctx,
-    CButeTreeNode* node
+    zPTreeNode* node
 ) {
     while (true) {
         if (node == NULL) {
-            node = m_root;
+            node = root;
             if (node == NULL) {
                 return;
             }
         }
-        fn(node->m_key, node->m_value, ctx);
-        CButeTreeNode* l = node->m_child[0];
-        if (l != NULL && l->m_bit > node->m_bit) {
+        fn(node->symbol, node->body, ctx);
+        zPTreeNode* l = node->left;
+        if (l != NULL && l->index > node->index) {
             Walk(fn, ctx, l);
         }
-        CButeTreeNode* r = node->m_child[1];
-        if (r == NULL || r->m_bit <= node->m_bit) {
+        zPTreeNode* r = node->right;
+        if (r == NULL || r->index <= node->index) {
             return;
         }
         node = r;
@@ -35,127 +35,86 @@ void zPTree::Walk(
 
 RVA(0x001933b0, 0x28f)
 void* zPTree::FindOrInsert(const char* key, void* value) {
-    i32 path[32];
-    i32* p = path;
-    m_lookupPending = false;
+    i32* bp;
+    i32 newbranch;
+    i32 stack[32];
+    i32 dp;
+    i32 branch;
+    zPTreeNode* t;
+
+    preview = false;
     if (key == NULL || value == NULL) {
-        char* msg = g_errNullArg;
-        g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errSink->Set(this, msg, 0x16);
+        handle(g_errNullArg, 0x16);
         return NULL;
     }
 
-    i32 nbits = static_cast<i32>((strlen(key) * PTREE_BITS_PER_BYTE));
-    m_candidateLeaf = NULL;
-    m_descentCursor = m_root;
-    m_keyBitLength = nbits;
+    sbits = static_cast<i32>((strlen(key) * PTREE_BITS_PER_BYTE));
+    p = root;
+    q = NULL;
+    bp = stack;
 
-    i32 sbit = nbits + PTREE_BYTE_BIT_MASK;
-    i32 dir;
-    if (m_descentCursor != NULL) {
-        do {
-            dir = sbit;
-            CButeTreeNode* node = m_descentCursor;
-            if (node->m_bit > sbit) {
-                m_candidateLeaf = m_descentCursor;
-                break;
-            }
-            i32 b = node->m_bit;
-            dir = (1 << (b & PTREE_BYTE_BIT_MASK))
-                  & static_cast<i32>(static_cast<signed char>(key[b >> PTREE_BYTE_BIT_SHIFT]));
-            *p++ = dir;
-            CButeTreeNode** slot = &node->m_child[1];
-            if (!dir) {
-                slot = &node->m_child[0];
-            }
-            CButeTreeNode* child = *slot;
-            m_candidateLeaf = child;
-            if (child == NULL) {
-                break;
-            }
-            if (child->m_bit <= m_descentCursor->m_bit) {
-                if (strcmp(key, child->m_key) == 0) {
-                    return child->m_value;
-                }
-                break;
-            }
-            m_descentCursor = child;
-        } while (m_descentCursor != NULL);
-    }
-
-    i32 critbit;
-    if (m_candidateLeaf != NULL) {
-        critbit = FirstDiffBit(key, m_candidateLeaf->m_key);
-    } else {
-        critbit = nbits - 1;
-    }
-    CButeTreeNode* nn = new CButeTreeNode;
-    if (nn == NULL) {
-        char* msg = g_errOutOfMem;
-        g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errSink->Set(this, msg, 0xc);
-        return NULL;
-    }
-    nn->m_bit = critbit;
-    nn->m_value = static_cast<char*>(value);
-    char* kb = new char[(m_keyBitLength >> PTREE_BYTE_BIT_SHIFT) + 1];
-    nn->m_key = kb;
-    if (kb == NULL) {
-        char* msg = g_errOutOfMem;
-        g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errSink->Set(this, msg, 0xc);
-        return NULL;
-    }
-    strcpy(kb, key);
-
-    i32 selfdir =
-        (1 << (critbit & PTREE_BYTE_BIT_MASK))
-        & static_cast<i32>(static_cast<signed char>(key[critbit >> PTREE_BYTE_BIT_SHIFT]));
-    if (selfdir) {
-        nn->m_child[1] = nn;
-    } else {
-        nn->m_child[0] = nn;
-    }
-
-    if (m_descentCursor == NULL) {
-        m_root = nn;
-    } else if (critbit < m_descentCursor->m_bit) {
-        m_descentCursor = NULL;
-        m_candidateLeaf = m_root;
-        i32* pp = path;
-        if (m_candidateLeaf->m_bit <= critbit) {
-            do {
-                i32 d = *pp++;
-                m_descentCursor = m_candidateLeaf;
-                CButeTreeNode** down = m_candidateLeaf->m_child;
-                if (d) {
-                    ++down;
-                }
-                m_candidateLeaf = *down;
-            } while (m_candidateLeaf->m_bit <= critbit);
+    while (p != NULL) {
+        if (p->index > sbits + PTREE_BYTE_BIT_MASK) {
+            q = p;
+            break;
         }
-        if (m_descentCursor == NULL) {
-            m_root = nn;
+        branch = bit(key, p->index);
+        *bp++ = branch;
+        q = p->ptr(branch);
+        if (q == NULL) {
+            break;
+        }
+        if (q->index <= p->index) {
+            if (strcmp(key, q->symbol) == 0) {
+                return q->body;
+            }
+            break;
+        }
+        p = q;
+    }
+
+    newbranch = q != NULL ? diffpos(key, q->symbol) : sbits - 1;
+    t = new zPTreeNode;
+    if (t == NULL) {
+        handle(g_errOutOfMem, 0xc);
+        return NULL;
+    }
+    t->index = newbranch;
+    t->body = value;
+    t->symbol = new char[(sbits >> PTREE_BYTE_BIT_SHIFT) + 1];
+    if (t->symbol == NULL) {
+        handle(g_errOutOfMem, 0xc);
+        return NULL;
+    }
+    strcpy(t->symbol, key);
+
+    dp = bit(key, newbranch);
+    t->ptr(dp) = t;
+
+    if (p != NULL) {
+        if (newbranch >= p->index) {
+            p->ptr(branch) = t;
         } else {
-            CButeTreeNode** s = m_descentCursor->m_child;
-            if (pp[-1]) {
-                ++s;
+            q = root;
+            p = NULL;
+            bp = stack;
+            while (q->index <= newbranch) {
+                p = q;
+                branch = *bp++;
+                q = q->ptr(branch);
             }
-            *s = nn;
+            if (p != NULL) {
+                --bp;
+                p->ptr(*bp) = t;
+            } else {
+                root = t;
+            }
         }
     } else {
-        CButeTreeNode** s = m_descentCursor->m_child;
-        if (dir) {
-            ++s;
-        }
-        *s = nn;
+        root = t;
     }
 
-    CButeTreeNode** other = &nn->m_child[1];
-    if (selfdir) {
-        other = &nn->m_child[0];
-    }
-    *other = m_candidateLeaf;
+    t->ptr(!dp) = q;
     m_nodeCount++;
     return value;
 }
