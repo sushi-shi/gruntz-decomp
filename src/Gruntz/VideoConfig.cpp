@@ -278,20 +278,22 @@ void ReadMenuOptionsDialog(HWND hDlg) {
     }
 }
 
-// @early-stop
 RVA(0x00036be0, 0xd3)
 void ApplyGameOptions() {
     if (g_gameReg == NULL) {
         return;
     }
-    g_gameReg->m_isEasyMode = g_savedEasyMode;
+    b32 easyMode = g_savedEasyMode;
+    g_gameReg->m_isEasyMode = easyMode;
     g_videoResolutionMode = g_savedResolutionMode;
     if (g_disableAudio == false) {
         if (g_disableSound == false) {
             g_gameReg->SetSoundEnabled(g_savedSoundEnabled);
             g_gameReg->SetSoundVolume(g_savedSoundVolume);
-            g_gameReg->m_isVoiceEnabled = g_savedVoiceEnabled;
-            g_gameReg->SetVoiceVolume(g_savedVoiceVolume);
+            b32 voiceEnabled = g_savedVoiceEnabled;
+            g_gameReg->m_isVoiceEnabled = voiceEnabled;
+            i32 voiceVolume = g_savedVoiceVolume;
+            g_gameReg->SetVoiceVolume(voiceVolume);
         }
         if (g_disableAudio == false && g_disableMusic == false
             && g_gameReg->m_midi->m_midiAvailable != false) {

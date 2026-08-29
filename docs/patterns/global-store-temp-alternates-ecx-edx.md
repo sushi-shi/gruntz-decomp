@@ -1,7 +1,7 @@
-# `g_ptr->member = v` address temps alternate ecx/edx - it is a PHASE, not a coin flip
+# Named RHS snapshots steer VC5's global-member receiver/value phase
 
 **Tags:** `cpp:global` `cpp:assign` | `asm:mov` | `topic:wall` `topic:regalloc`
-**Confidence:** 8/10
+**Confidence:** 10/10
 
 ## Symptom
 
@@ -12,20 +12,21 @@ base:    mov edx,[g_gameReg]  ...  mov [edx+0x100],eax
 target:  mov ecx,[g_gameReg]  ...  mov [ecx+0x100],eax
 ```
 
-Everything else in the function - including OTHER reloads of the same global, some
-of which use edx in retail too - is byte-identical. It looks like an unsteerable
-regalloc coin flip. It is deterministic, but the lever is not local.
+Everything else in the function - including other reloads of the same global,
+some of which use edx in retail too - may be semantically identical. It looks like
+an unsteerable regalloc coin flip. It is deterministic, and a source-visible RHS
+snapshot can be the lever even when C2 eliminates the local completely.
 
 ## Cause
 
-For a store through a pointer loaded from a global (`g->m_x = <value already in eax>`),
-cl5 takes the address temp from a 2-register pool and **alternates**: the 1st such
-store in the function gets ecx, the 2nd edx, the 3rd ecx, ... Thiscall receivers
-(`mov ecx,[g]; call ?Set...`) are forced to ecx and do NOT advance the alternation.
+The first micro-replica established that direct global-member stores draw address
+temporaries from a repeatable ecx/edx phase. That observation was real, but the
+original conclusion - that the phase could only be changed by adding or removing
+an upstream store - was too narrow. VC5's front end also gives a named RHS local a
+distinct value-creation tuple. C2 can eliminate the local while retaining the
+changed receiver/value ordering and register phase.
 
-So the register on any one store is a function of HOW MANY such stores precede it -
-a phase. Proven in a 40-line micro-replica (`cl /O2 /MT /GX`) that reproduces the
-production register sequence exactly:
+The original store-count A/B remains a useful control:
 
 | stores present | 0x118 | 0x100 | 0x124 |
 |---|---|---|---|
@@ -33,22 +34,41 @@ production register sequence exactly:
 | delete the 0x118 store   |  -  | **ecx** | ecx |
 | insert a 3rd store first | ecx / edx | **ecx** | edx |
 
+The production A/B on `ApplyGameOptions` is decisive. The hand transcription
+loaded saved globals directly at their consumers and scored 82.65%. Adding the
+ordinary typed snapshots in source order produced this monotonic composition:
+
+| source state | fuzzy | first corrected region |
+|---|---:|---|
+| direct global consumers | 82.65% | baseline |
+| `b32 easyMode = g_savedEasyMode` | 97.84% | entry, resolution/audio order, first member store |
+| plus `b32 voiceEnabled = g_savedVoiceEnabled` | 98.24% | voice-enabled member store |
+| plus `i32 voiceVolume = g_savedVoiceVolume` | **100%** | remaining call chain and tail |
+
+Every state retained 51 instructions, five calls, six branches, one return, and
+27 relocations. The final 0xd3-byte body is normalized-byte exact. A named receiver
+pointer was byte-identical to the 82.65% baseline, so the lever is specifically the
+RHS value census and creation order, not caching `g_gameReg`.
+
 ## What this means when you hit it
 
-If retail's phase differs from yours, retail's source has one MORE (or one fewer)
-pool temp before the differing store, in a form that is otherwise byte-identical -
-i.e. you are missing a construct, not a register hint. There is no local spelling
-that flips one store: temps for the RHS, a named local for the pointer, flattening
-the enclosing `if` nest, and dropping later blocks all leave the phase alone (a named
-local is actively worse - it re-colors several sites and adds a callee-save push).
+When calls, branches, mnemonics, stores, and relocation multisets agree but a chain
+of direct global loads alternates among eax/ecx/edx differently, reconstruct the
+semantic RHS snapshot census before calling it a coin. Start at the first divergent
+assignment, give the saved value its authentic width, and compose the next local
+from that state. Do not infer that every global needs a local: in this function the
+sound, music, MIDI-volume, and scroll globals remained direct consumers at exact.
 
-Do not grind it as a coin flip: either find the missing pool temp upstream, or park
-it. `ReadMenuOptionsDialog` (0x36a30) and `CPlay::ApplyGameOptions` (0x36be0) both sit
-on the same phase break.
+The store-count phase is still a secondary hypothesis when the local census is
+already evidenced and exhausted. A cached receiver pointer is a separate lever and
+must be measured separately.
 
 ## Evidence
 
-`src/Gruntz/VideoConfig.cpp` @0x036a30 (99.90%) and @0x036be0. Micro-replica A/B
-under the production flags; the replica emits our exact `ecx / edx / edx / ecx`
-sequence for the 0x118 store, the 0x100 store, the `m_sound` deref and the 0x124
-store, so the reconstruction and the replica agree and retail is the outlier.
+`src/Gruntz/VideoConfig.cpp` @0x036be0, controlled production builds under pinned
+MSVC 5.0 SP3 `/O2 /MT`; 82.65 -> 97.84 -> 98.24 -> 100. The earlier 40-line
+micro-replica remains evidence for the deterministic address-temp phase, but the
+exact production closure supersedes its claimed lack of a local lever.
+
+`ReadMenuOptionsDialog` @0x036a30 has a superficially similar residue but is not
+proved to share this exact missing-local cause.

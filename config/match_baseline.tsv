@@ -300,7 +300,7 @@ triggermgrhittest	8	5
 typekeycoll	39	34
 uncompr	1	1
 userlogic	5	4
-videoconfig	16	13
+videoconfig	16	14
 videooptions	3	2
 visualandmarkerlogicdispatch	15	15
 wapcompress	1	1
@@ -629,7 +629,7 @@ bootystateactivate	?LeaveState@CBootyState@@UAEHW4GameStateId@@@Z	89.7500	89.750
 bootystateactivate	?LeaveState@CMultiBootyState@@UAEHW4GameStateId@@@Z	89.7500	89.7500	9	fe3a3b35795e	0x1e660	89.7500	
 bootystateactivate	?LevelMsgHudDriver@CBootyState@@QAEHXZ	90.6874	90.6874	15	f0a4adc0cc00	0x1a700	90.6915	
 bootystateactivate	?LoadGameAssetNamespaces@CBootyState@@UAEHPAVCGruntzMgr@@HH@Z	99.5265	99.5265	10	3c34f53c3617	0x18830	99.5265	
-bootystateactivate	?LoadGameAssetNamespaces@CMultiBootyState@@UAEHPAVCGruntzMgr@@HH@Z	82.6115	82.6115	17	06afd76f87fc	0x1d440	82.6115	
+bootystateactivate	?LoadGameAssetNamespaces@CMultiBootyState@@UAEHPAVCGruntzMgr@@HH@Z	88.6615	88.6615	18	2f605c62013b	0x1d440	88.6615	
 bootystateactivate	?LoadGruntEffectSprites@CBootyState@@QAEHXZ	99.9547	99.9547	10	2f3f4cd545c9	0x1a040	99.9547	
 bootystateactivate	?MoveLettersByDir@CBootyState@@QAEXXZ	94.0341	94.0341	2	4d22068c93ca	0x19b90	94.0341	
 bootystateactivate	?OnKeyDown@CBootyState@@UAEHHH@Z	100.0000	100.0000	1	82ef10399f11	0x1d420	100.0000	
@@ -4246,7 +4246,7 @@ tiletriggercontainer	?AddGiantRockLogic@CTileTriggerContainer@@QAEPAVCGiantRockL
 tiletriggercontainer	?AddLogic@CTileTriggerContainer@@QAEPAVCTileTriggerLogic@@W4TileCollisionKind@@W4TrigLogicId@@HHHUtagRECT@@22222HHHH@Z	97.8365	97.8365	4	5831cfb9f332	0x116610	97.8365	
 tiletriggercontainer	?AddLogicDefaults@CTileTriggerContainer@@QAEPAVCTileTriggerLogic@@W4TileCollisionKind@@W4TrigLogicId@@HHHHHHH@Z	100.0000	100.0000	1	04d588ddfa3b	0x1163b0	100.0000	
 tiletriggercontainer	?AddLogicFromRecord@CTileTriggerContainer@@QAEXW4TileCollisionKind@@W4TrigLogicId@@PAUCGameObject@@@Z	100.0000	100.0000	2	492e4ad4f098	0x1164a0	100.0000	
-tiletriggercontainer	?AddSwitchActionEvent@CTileTriggerContainer@@QAEPAVCTileActionEvent@@W4BrickTileId@@HHHH@Z	72.3043	72.3043	7	6ca1cdee083f	0x116b80	75.7826	
+tiletriggercontainer	?AddSwitchActionEvent@CTileTriggerContainer@@QAEPAVCTileActionEvent@@W4BrickTileId@@HHHH@Z	79.9783	79.9783	8	014e3be7de76	0x116b80	79.9783	
 tiletriggercontainer	?AddSwitchLogic@CTileTriggerContainer@@QAEPAVCTileTriggerSwitchLogic@@W4TrigLogicId@@HHHUtagRECT@@11111HHH@Z	100.0000	100.0000	4	766e77b58327	0x115f60	100.0000	
 tiletriggercontainer	?DeserializeLogic@CTileTriggerContainer@@QAEPAXPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	91.0582	91.0582	10	d7e7b746f8ab	0x117800	91.0582	
 tiletriggercontainer	?DrawPageDebugText@@YAHPAVCDDrawSurfaceMgr@@PBVCString@@PAUtagRECT@@HHHHH@Z	100.0000	100.0000	4	244d39909971	0x115b60	100.0000	
@@ -4418,7 +4418,7 @@ userlogic	?FinalizeStep@CUserLogic@@UAEXPAD@Z	100.0000	100.0000	4	60146dbd2cab	0
 userlogic	?FireActivation@CUserLogic@@UAEXH@Z	100.0000	100.0000	1	c0ed59805ee5	0x8b70	100.0000	
 userlogic	?SerializeAnimationState@CWapX@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	96.3636	96.3636	6	529d4aa16257	0x8c00	96.3636	
 userlogic	?StepBehavior@CUserLogic@@UAEXPAD@Z	100.0000	100.0000	4	d0dc99df1abd	0x8b50	100.0000	
-videoconfig	?ApplyGameOptions@@YAXXZ	82.6471	82.6471	5	439f8ce224c4	0x36be0	82.6471	
+videoconfig	?ApplyGameOptions@@YAXXZ	100.0000	100.0000	6	a8509f71814c	0x36be0	100.0000	
 videoconfig	?ConfigureDialogScrollBar@@YAXPAUHWND__@@HHH@Z	100.0000	100.0000	2	59a7b828bba3	0x371e0	100.0000	
 videoconfig	?GameOptionsDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	7	6fbc9defe870	0x36410	100.0000	
 videoconfig	?GetDialogScrollPosition@@YAHPAUHWND__@@H@Z	100.0000	100.0000	1	9fe78f68e089	0x36ec0	100.0000	

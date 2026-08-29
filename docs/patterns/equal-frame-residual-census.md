@@ -60,16 +60,19 @@ identity. Referents are now compared by ADDRESS, and both rows moved to
 `selection`, where their real difference - a load-and-compare against a direct
 memory compare - is what they are.
 
-**The coin classification was AUDITED, and it holds.** `regname` is the biggest
-bucket and the campaign parks all 177 rows on the tool's word, so the word was
-checked: every row was re-read with `walls semdiff`, which is order-sensitive and
-compares referent SEQUENCES rather than the multiset the classifier uses. Fifteen
-rows flagged. All fifteen resolve, and none is a defect:
+**The residual classification was audited; it is not a proof that source has no
+lever.** `regname` is the biggest bucket, so every row was re-read with `walls
+semdiff`, which is order-sensitive and compares referent sequences rather than the
+multiset the classifier uses. This established what differs in the emitted stream,
+but a later exact closure disproved the stronger claim that every such row is an
+unsteerable coin:
 
-* **six are pure MOVES** - delete-and-insert of the SAME symbol, i.e. one global
-  read scheduled at a different point (`LoadScrollSpeedOptions`,
+* **six were classified as pure MOVES** - delete-and-insert of the same symbol,
+  i.e. one global read scheduled at a different point (`LoadScrollSpeedOptions`,
   `UpdateDeathAnimation`, `SendVersionCheck`, `ApplyGameOptions`, and both
-  `CMinimap` palette builders on `g_rDown`);
+  `CMinimap` palette builders on `g_rDown`). `ApplyGameOptions` later reached
+  exact by restoring three typed RHS snapshot locals in sequence; the normalized
+  move was real, but the inference that it lacked a source lever was false;
 * **seven are already catalogued** - `BuildBootyWalkingGruntz` is §8's `$E`
   helper under two non-names plus §14's one-past-the-end addend, and the six
   ctors (`CTeleporter`, `CSecretTeleporterTrigger`, `CSecretLevelTrigger`,
@@ -81,13 +84,14 @@ rows flagged. All fifteen resolve, and none is a defect:
   inc edx; cmp eax,ebp; mov g_frameTicks,edx`) where retail completes the `++`
   first and loads afterwards. Interleaving, not identity.
 
-So a `regname` row is a coin in the strong sense: same instructions, same
-symbols, same values. What this audit does NOT prove is store PAIRING - register
-stripping erases which value reaches which field - and that question has its own
-sieve: `walls storescan --values` over the same queue returns 2 transposition
-candidates in 595 rows, and both are a base-pointer shift (every offset moves by
-one constant, 0x2c0 and 4) rather than a swap. Check the SUM before believing a
-storescan row.
+So a `regname` row says that the current machine streams use the same instructions,
+symbols, and values after register normalization. It does **not** prove that the
+source census is correct or that no source-visible temporary can steer VC5's IL
+creation order. It also does not prove store pairing - register stripping erases
+which value reaches which field - and that question has its own sieve: `walls
+storescan --values` over the same queue returns 2 transposition candidates in 595
+rows, and both are a base-pointer shift (every offset moves by one constant, 0x2c0
+and 4) rather than a swap. Check the sum before believing a storescan row.
 
 **The `arm-copy`/`extra-copy` buckets are NOT an arm-result-temp worklist —
 they are a regalloc bucket with a misleading name.** An earlier revision of
