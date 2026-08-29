@@ -34,5 +34,8 @@ both were written with the negative early return and emitted the teardown
 inline. Caution: the correction is not free - it moves the null-allocation
 return from its own `xor eax,eax`+`jmp` into the shared epilogue (our teardown
 lands before the epilogue, retail's after), so AddSwitchActionEvent fell 75.78 ->
-72.30 while gaining the correct arm order. The remaining flip in all three
-`AddToList*` is that epilogue placement, not the gate.
+72.30 while gaining the correct arm order. A later explicit null-result carrier
+composed on that lower state restores the retail shared epilogue and trailing
+teardown, reaching 79.98 with exact call/branch/return/relocation topology. The
+old claim that epilogue placement was unreachable from the correct gate was
+therefore false; guard polarity and result lifetime are separate levers.

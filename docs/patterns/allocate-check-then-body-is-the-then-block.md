@@ -4,7 +4,7 @@ tags: cpp:if cpp:new | asm:jcc | topic:codegen-idiom
 symptoms: a `new X; check; init; AddTail; return` factory sits at 70-80% with the block skeleton
 diverging at the first branch after the allocation; `gruntz walls diagnose --asm` reports `jcc B7 | fall B4`
 against `jcc B5 | fall B4` and the two tails are in the opposite order
-confidence: 6/10
+confidence: 9/10
 
 MSVC 5.0 emits an `if (c) { S }` with the THEN-block laid out inline immediately after the
 inverted branch. So for the object-factory family the fall-through arm usually reads the source
@@ -36,15 +36,29 @@ the gate polarity and the null-return block, in opposite directions, and never l
 | AddGiantRockLogic | `if (gate == 0) { body }` then teardown | **right** | wrong (merged into the teardown's xor) | 77.41 |
 | AddSwitchActionEvent 0x116b80 | teardown-first | wrong | **right** | **75.78** |
 | AddSwitchActionEvent | body-first | **right** | wrong | 72.30 |
+| AddSwitchActionEvent | body-first + explicit shared result | **right** | **right** | **79.98** |
 | AddActionEvent 0x116a40 | body-first | **right** | wrong | **80.12** |
 | AddActionEvent | teardown-first | wrong | right | 58.63 |
 
-The three rows do not agree on a winner, so the shape has to be chosen per function: AddGiantRockLogic
-and AddSwitchActionEvent want teardown-first, AddActionEvent wants body-first and loses 21.5 points to the
-other cell. AddActionEvent's body ends in a `SetActionCode` call the other two do not have, which is
-the only structural difference between it and AddSwitchActionEvent. Until 2026-08-23 the tree held
-AddGiantRockLogic at the losing cell despite this table naming the winner - re-measure the tree against
-a table before assuming the tree already applies it.
+The first two rows per function were only a two-axis experiment. They did not prove that the
+higher-scoring wrong-polarity spelling was the authored source. On AddSwitchActionEvent, retaining
+the retail-proven body-first gate and adding an explicit null result carried through one shared
+return restores retail's `sub esp,8`, homes `this`, places teardown after the common epilogue, and
+restores all 11 branches. Together with the source-visible `RECT` player flags this raises 72.30 to
+79.98. The remaining base is 88 instructions / 0x124 versus retail's 87 / 0x120, with the same five
+calls, eleven branches, one return, thirteen relocations, eleven stores, four immediates, and six
+ordered semantic referents. This is the direct control for EXPLORATORY DESCENT: do not choose the
+75.78 wrong-gate island merely because it wins the first one-lever vote.
+
+The result carrier's lifetime matters. Declaring it after the first flag initialization moves the
+player-flag register family to retail and is the best humane state. Moving the success assignment
+to the start of the body scores 82.42 but adds a base-only `mov ebx,esi`; the baseline already has
+the retail store texture, so that higher state is a false feature. Reusing `event` as the result
+falls to 70.18. A 231-cell source/state product, a conditioned 33-state forest, result-lifetime and
+declaration-position matrices, slot aliases, scalar-versus-`RECT`, and split assignments found no
+further structural state. An extracted inline member helper, tested with by-value and `const RECT&`
+flags and composed with the result carrier, reproducibly returns to the wrong 84-instruction / ten-
+branch island. It remains a plausible historical abstraction but is not retail-supported here.
 
 An explicit `else` on the teardown is byte-identical to the trailing-statement form (measured on
 AddGiantRockLogic). So is `delete m` versus a hand-written `m->m_live = 0; ::operator delete(m)`.
@@ -53,10 +67,11 @@ the teardown-first form, while making the allocation-null exit `return m` instea
 is byte-identical to the body-first form and still loses one branch. Neither source-level identity
 distinction prevents cl's exit merge.
 
-The residue underneath is a three-block ROTATION no guard spelling reaches: retail lays out
-`[body][shared epilogue][teardown jmp back up]`, we lay out `[teardown][body][epilogue]` or
-`[body][teardown][epilogue]`. A 0..15 throwaway-declaration sweep over the whole TU left all four
-functions bit-for-bit unchanged, so this is source-determined, not TU state.
+The old claim that the residue was an unreachable three-block rotation was incomplete. The explicit
+result carrier reaches retail's `[body][shared epilogue][teardown jmp back up]` topology. What remains
+is a bounded register/schedule residue: retail uses EBP for zero and EBX for `playerSlot`; the best
+base swaps those two roles and emits one extra instruction. Compiler-state searches are flat, so
+reopen this row only for new source-lineage or allocator evidence.
 
 ## A class `new` can have two null tests
 

@@ -432,40 +432,46 @@ CTileActionEvent* CTileTriggerContainer::AddSwitchActionEvent(
     if (event == NULL) {
         return NULL;
     }
-    i32 a = 0, b = 0, c = 0, d = 0;
+    RECT playerFlags;
+    playerFlags.left = 0;
+    CTileActionEvent* result = NULL;
+    playerFlags.top = 0;
+    playerFlags.right = 0;
+    playerFlags.bottom = 0;
     switch (static_cast<PlayerSlot>(playerSlot)) {
         case PLAYER_SLOT_1:
-            c = 1;
+            playerFlags.top = 1;
             break;
         case PLAYER_SLOT_2:
-            b = 1;
+            playerFlags.right = 1;
             break;
         case PLAYER_SLOT_3:
-            a = 1;
+            playerFlags.bottom = 1;
             break;
         case PLAYER_SLOT_ALL:
-            c = b = a = 1;
+            playerFlags.top = playerFlags.right = playerFlags.bottom = 1;
         case PLAYER_SLOT_0:
-            d = 1;
+            playerFlags.left = 1;
             break;
     }
     if (event->m_live == false) {
         event->m_tileX = tileX;
         event->m_tileY = tileY;
         event->m_cellKey = cellKey;
-        event->m_playerFlags[2] = b;
+        event->m_playerFlags[2] = playerFlags.right;
         event->m_actionCode = actionCode;
         event->m_owner = this;
         event->m_live = true;
-        event->m_playerFlags[0] = d;
-        event->m_playerFlags[1] = c;
-        event->m_playerFlags[3] = a;
+        event->m_playerFlags[0] = playerFlags.left;
+        event->m_playerFlags[1] = playerFlags.top;
+        event->m_playerFlags[3] = playerFlags.bottom;
         event->SetActionCode(actionCode);
         m_actionEvents.AddTail(event);
-        return event;
+        result = event;
+    } else {
+        delete event;
     }
-    delete event;
-    return NULL;
+    return result;
 }
 
 RVA(0x00116cf0, 0x111)
