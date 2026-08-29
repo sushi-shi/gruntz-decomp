@@ -814,16 +814,17 @@ i32 ProjectWallQuad(
     double c = cos(turn);
     float hw = static_cast<float>(halfWidth);
 
+    ClipVtx* wall = g_rasterEvenClipPassBuffer;
     float xLeft = -(hw * g_wallHalf);
     float xRight = xLeft + hw;
-    g_rasterEvenClipPassBuffer[0].x = xLeft;
-    g_rasterEvenClipPassBuffer[0].y = len;
-    g_rasterEvenClipPassBuffer[1].x = xRight;
-    g_rasterEvenClipPassBuffer[1].y = len;
-    g_rasterEvenClipPassBuffer[2].x = xRight;
-    g_rasterEvenClipPassBuffer[2].y = g_rasterZero;
-    g_rasterEvenClipPassBuffer[3].x = xLeft;
-    g_rasterEvenClipPassBuffer[3].y = g_rasterZero;
+    wall[0].x = xLeft;
+    wall[0].y = len;
+    wall[1].x = xRight;
+    wall[1].y = len;
+    wall[2].x = xRight;
+    wall[2].y = g_rasterZero;
+    wall[3].x = xLeft;
+    wall[3].y = g_rasterZero;
 
     for (i32 i = 0; i < 4; i++) {
         float bx = g_rasterEvenClipPassBuffer[i].x;
