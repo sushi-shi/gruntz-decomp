@@ -70,7 +70,7 @@ public:
     TextExtent LayoutWrapped(CString text, CRect rc, i32* outLen);
 
     Font* m_font;
-    i32 m_color;
+    COLORREF m_color;
 
     i32 m_surface;
     i32 m_clip;

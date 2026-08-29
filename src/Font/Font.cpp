@@ -211,6 +211,28 @@ static inline LONG RunRightEdge(const CRect& rc, i32 x) {
     return x - rc.left + rc.right;
 }
 
+static inline u16 PackPixel16(u8 red, u8 green, u8 blue) {
+    u16 value = static_cast<u8>(blue >> g_bDown);
+    value |= static_cast<u16>(static_cast<u8>(red >> g_rDown) << g_rUp);
+    value |= static_cast<u16>(static_cast<u8>(green >> g_gDown) << g_gUp);
+    return value;
+}
+
+static inline u8 BlendChannel(u8 dest, i32 source, u8 cover) {
+    return static_cast<u8>((dest * (255 - cover)) / 256 + (source * cover) / 256);
+}
+
+static inline u16 BlendPixel16(u16 pixel, u8 cover, i32 red, i32 green, i32 blue) {
+    u8 dr = static_cast<u8>((static_cast<u8>((pixel >> g_rUp)) << g_rDown));
+    u8 dg = static_cast<u8>((static_cast<u8>((pixel >> g_gUp)) << g_gDown));
+    u8 db = static_cast<u8>((static_cast<u8>(pixel) << g_bDown));
+    return PackPixel16(
+        BlendChannel(dr, red, cover),
+        BlendChannel(dg, green, cover),
+        BlendChannel(db, blue, cover)
+    );
+}
+
 RVA(0x00179e70, 0x5ec)
 void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 blend) {
     if (m_font == NULL) {
@@ -259,9 +281,9 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
     }
 
     i32 destX = x;
-    i32 red = static_cast<u8>(m_color);
-    i32 green = (m_color >> PIXEL_BITS_PER_BYTE) & PIXEL_BYTE_MASK;
-    i32 blue = (m_color >> (PIXEL_BITS_PER_BYTE * 2)) & PIXEL_BYTE_MASK;
+    i32 red = GetRValue(m_color);
+    i32 green = GetGValue(m_color);
+    i32 blue = GetBValue(m_color);
     i32 rightPartial = 0;
     i32 firstCol = 0;
     u16 packedColor =
@@ -273,21 +295,21 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
     i32 acc = 0;
     if (rc.left != 0) {
         i32 prev = 0;
-        i32 i = 0;
+        startChar = 0;
         while (acc < rc.left) {
             Glyph g;
             prev = acc;
-            acc += m_font->GetGlyph(g, text[i]).width;
-            i++;
+            acc += m_font->GetGlyph(g, text[startChar]).width;
+            startChar++;
         }
-        startChar = i - 1;
+        --startChar;
         firstCol = rc.left - prev;
     } else {
         startChar = 0;
     }
 
     i32 endChar;
-    i32 w = 0;
+    acc = 0;
 
     if (rc.right != m.width) {
         i32 j = 0;
@@ -295,12 +317,12 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         if (rc.right >= 0) {
             do {
                 Glyph g;
-                w += m_font->GetGlyph(g, text[j]).width;
+                acc += m_font->GetGlyph(g, text[j]).width;
                 j++;
-            } while (w <= rc.right);
+            } while (acc <= rc.right);
             endChar = j;
         }
-        rightPartial = w - rc.right;
+        rightPartial = acc - rc.right;
     } else {
         endChar = text.GetLength();
     }
@@ -315,32 +337,15 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
             clippedW = g.width;
         }
         u8* glyphBuf = m_font->GetSurface(text[ci])[0];
-        i32 startCol = firstCol;
         if (blend) {
             for (i32 row = rc.top; row < rc.bottom; row++) {
                 u16* dst = bits + ((row - rc.top + y) * pitch) / 2 + destX;
-                for (i32 col = startCol; col < clippedW; col++) {
+                for (i32 col = firstCol; col < clippedW; col++) {
                     u8 cover = glyphBuf[row * g.width + col];
 
                     if (cover == 0) {
                     } else if (cover != UCHAR_MAX) {
-                        i32 inv = 255 - cover;
-                        u16 dp = *dst;
-                        u8 dr = static_cast<u8>((static_cast<u8>((dp >> g_rUp)) << g_rDown));
-                        u8 dg = static_cast<u8>((static_cast<u8>((dp >> g_gUp)) << g_gDown));
-                        u8 db = static_cast<u8>((static_cast<u8>(dp) << g_bDown));
-                        *dst = (static_cast<u8>((db * inv) / 256 + (blue * cover) / 256)
-                                >> static_cast<u8>(g_bDown))
-                               | (static_cast<u8>(
-                                      (static_cast<u8>((dr * inv) / 256 + (red * cover) / 256))
-                                      >> static_cast<u8>(g_rDown)
-                                  )
-                                  << g_rUp)
-                               | (static_cast<u8>(
-                                      (static_cast<u8>((dg * inv) / 256 + (green * cover) / 256))
-                                      >> static_cast<u8>(g_gDown)
-                                  )
-                                  << g_gUp);
+                        *dst = BlendPixel16(*dst, cover, red, green, blue);
                     } else {
                         *dst = packedColor;
                     }
@@ -350,7 +355,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         } else {
             for (i32 row = rc.top; row < rc.bottom; row++) {
                 u16* dst = bits + ((row - rc.top + y) * pitch) / 2 + destX;
-                for (i32 col = startCol; col < clippedW; col++) {
+                for (i32 col = firstCol; col < clippedW; col++) {
                     if (glyphBuf[row * g.width + col] != 0) {
                         *dst = packedColor;
                     }
@@ -358,7 +363,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
                 }
             }
         }
-        destX += clippedW - startCol;
+        destX += clippedW - firstCol;
         firstCol = 0;
     }
 

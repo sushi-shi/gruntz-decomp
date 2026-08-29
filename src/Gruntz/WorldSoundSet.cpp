@@ -5,6 +5,7 @@
 #include <Mfc.h>
 
 #include <Dsndmgr/SoundStream.h>
+#include <Globals.h>
 #include <Gruntz/AmbientSound.h>
 #include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/GameRand.h>
@@ -468,11 +469,7 @@ void CAmbientSound::FadePlayback(b32 startPlaying, i32 volumeLevel, i32 rampMs) 
             if (m_volumeScale > 0) {
                 v = (v * m_volumeScale) / 100;
             }
-            if (v < 0) {
-                v = 0;
-            } else if (v > 0x64) {
-                v = 0x64;
-            }
+            v = Clamp(v, 0, 0x64);
             m_sound->SetVolumePercent(v);
             m_volumeLevel = volumeLevel;
             m_isPlaying = true;
@@ -489,11 +486,7 @@ void CAmbientSound::FadePlayback(b32 startPlaying, i32 volumeLevel, i32 rampMs) 
         if (m_volumeScale > 0) {
             v = (v * m_volumeScale) / 100;
         }
-        if (v < 0) {
-            v = 0;
-        } else if (v > 0x64) {
-            v = 0x64;
-        }
+        v = Clamp(v, 0, 0x64);
         m_sound->RampVolumeTo(v, rampMs, false);
         m_volumeLevel = volumeLevel;
         m_isPlaying = true;

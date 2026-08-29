@@ -40,12 +40,21 @@ i32 cg = GetGValue(rgb);
 i32 cr = GetRValue(rgb);
 ```
 
-## Declaration order is BLUE, GREEN, RED
+## Declaration order is read from each site
 
 Retail extracts in that order in both call sites (`[esp+0x48] <- blue` first),
 independent of the order the channels are USED downstream. `RgbToHsv` in the
 same TU already spelled the macros, which is the corroboration that this file's
-author used them.
+author used them. This order is evidence for those two `CShadeTableCache` sites,
+not a universal property of the macros: `FontRenderer::DrawGlyphRun` extracts
+red, green, then blue and retail selects that order.
+
+The unsignedness can also live in the owner. `DrawGlyphRun` initially declared
+its packed member as `i32`, so `GetBValue(m_color)` still lowered with `sar`.
+Restoring the layout-identical SDK type `COLORREF m_color` changes the shifted
+operand itself to unsigned and produces retail's `shr`; no temporary cast or ABI
+change is needed. The macros moved 91.30% to 93.10%, and the member type reached
+93.54% before the independent clipping-local correction.
 
 ## Evidence
 
