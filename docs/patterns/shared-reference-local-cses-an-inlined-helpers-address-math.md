@@ -4,7 +4,7 @@ tags: cpp:local cpp:inline cpp:expr | asm:lea asm:add asm:mov | topic:codegen-id
 symptoms: an if/else where BOTH arms inline the same small helper on the same object; the base is short by a fixed number of bytes and `--diff` shows one arm missing the helper's first two instructions (`mov <reg>,[base+0x48]` / `add <reg>,0x40`) because they were hoisted above the branch
 confidence: 9/10
 
-`CGameLevel::PointInRect(const RECT*, x, y)` is inlined at both sites. Its expansion
+`PtInRect(const RECT*, x, y)` is inlined at both sites. Its expansion
 begins by materialising the rect address and loading `rect->right`. If the argument
 is a named reference/pointer local computed BEFORE the branch, cl5 treats that
 address arithmetic as loop-invariant-style common subexpression and emits it once
@@ -15,17 +15,17 @@ above the branch. Retail emits it inside each arm.
 CGruntzMgr* g = g_gameReg;
 const RECT& r = g->m_world->m_level->m_mainPlane->m_viewRect;
 if (pick > 0x19) {
-    if (CGameLevel::PointInRect(&r, xp, y)) { g->m_voiceManager->PlayVoice(...); }
+    if (PtInRect(&r, xp, y)) { g->m_voiceManager->PlayVoice(...); }
 } else {
-    if (CGameLevel::PointInRect(&r, xp, y)) { g->m_voiceManager->PlayGruntVoiceCue(...); }
+    if (PtInRect(&r, xp, y)) { g->m_voiceManager->PlayGruntVoiceCue(...); }
 }
 
 // 93.62, size now EXACT - the chain is spelled at each site
 CGruntzMgr* g = g_gameReg;
 if (pick > 0x19) {
-    if (CGameLevel::PointInRect(&g->m_world->m_level->m_mainPlane->m_viewRect, xp, y)) { ... }
+    if (PtInRect(&g->m_world->m_level->m_mainPlane->m_viewRect, xp, y)) { ... }
 } else {
-    if (CGameLevel::PointInRect(&g->m_world->m_level->m_mainPlane->m_viewRect, xp, y)) { ... }
+    if (PtInRect(&g->m_world->m_level->m_mainPlane->m_viewRect, xp, y)) { ... }
 }
 ```
 

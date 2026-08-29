@@ -782,7 +782,7 @@ void CRandomAmbientSound::Update(i32 x, i32 y, b32 immediate) {
 
     m_playPhase = !m_playPhase;
     if (m_playPhase != false) {
-        i32 r = RandRange(g_gameReg, m_playDurationMin, m_playDurationMax);
+        i32 r = RandRange(g_gameReg, m_playDuration.GetMin(), m_playDuration.GetMax());
         m_countdownMs = r;
         i32 half = static_cast<u32>(r) >> 1;
         if (half > 0x3e8) {
@@ -790,7 +790,7 @@ void CRandomAmbientSound::Update(i32 x, i32 y, b32 immediate) {
         }
         FadePlayback(true, 0x64, half);
     } else {
-        i32 r = RandRange(g_gameReg, m_silenceDurationMin, m_silenceDurationMax);
+        i32 r = RandRange(g_gameReg, m_silenceDuration.GetMin(), m_silenceDuration.GetMax());
         m_countdownMs = r;
         i32 half = static_cast<u32>(r) >> 1;
         if (half > 0x3e8) {
@@ -813,10 +813,8 @@ void CRandomAmbientSound::InitCycleTiming(
     i32 silenceDurationMin,
     i32 silenceDurationMax
 ) {
-    m_playDurationMin = playDurationMin;
-    m_playDurationMax = playDurationMax;
-    m_silenceDurationMin = silenceDurationMin;
-    m_silenceDurationMax = silenceDurationMax;
+    m_playDuration.Set(playDurationMin, playDurationMax);
+    m_silenceDuration.Set(silenceDurationMin, silenceDurationMax);
     i32 countdown = RandRange(playDurationMin, playDurationMax);
     m_playPhase = true;
     m_countdownMs = countdown;

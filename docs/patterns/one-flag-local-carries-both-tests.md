@@ -9,7 +9,7 @@ The predicate is spelled as ONE reused `int`, not as a guard plus a fresh result
 ```cpp
 // 95.27 - the enabled test lives in the guard, the rect test in a fresh local
 if (r && r->m_enabled) {
-    i32 hit = CGameLevel::PointInRect(&r->m_rect14, x, y);
+    i32 hit = PtInRect(&r->m_rect14, x, y);
     if (hit) { return r; }
 }
 
@@ -18,7 +18,7 @@ if (r && r->m_enabled) {
 if (r) {
     i32 hit = r->m_enabled;
     if (hit) {
-        hit = CGameLevel::PointInRect(&r->m_rect14, x, y);
+        hit = PtInRect(&r->m_rect14, x, y);
     }
     if (hit) { return r; }
 }

@@ -632,7 +632,7 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
     i32 y = m_object->m_screenY;
     i32 x = m_object->m_screenX;
     CCueRect* rc = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
-    if (CGameLevel::PointInRect(rc, x, y)) {
+    if (::PtInRect(rc, x, y)) {
         g->m_voiceManager->PlayGruntVoiceCue(this, 0xe, -1, -1, -1);
     }
 
@@ -887,7 +887,7 @@ i32 CGrunt::PathScan() {
     nb.top = target.m_y - 4;
     nb.right = target.m_x + 4;
     nb.bottom = target.m_y + 4;
-    if (CGameLevel::PointInRect(&nb, start.m_x, start.m_y)) {
+    if (::PtInRect(&nb, start.m_x, start.m_y)) {
 
         CRect rb(0, 0, grid->m_width, grid->m_height);
         RECT ra;
@@ -1024,14 +1024,14 @@ void CGrunt::OnStruck(b32 wasHit) {
         if (c < 5) {
             CGruntzMgr* g = g_gameReg;
             const RECT* vr = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
-            if (CGameLevel::PointInRect(vr, x, y)) {
+            if (::PtInRect(vr, x, y)) {
                 g->m_voiceManager->PlayVoice(this, 0x370, -1, 0, -1, -1);
             }
             return;
         }
         CGruntzMgr* g = g_gameReg;
         const RECT* vr = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
-        if (CGameLevel::PointInRect(vr, x, y)) {
+        if (::PtInRect(vr, x, y)) {
             g->m_voiceManager->PlayVoice(this, 0x371, -1, 0, -1, -1);
         }
         m_struckCount = 0;
@@ -1043,7 +1043,7 @@ void CGrunt::OnStruck(b32 wasHit) {
         i32 x = m_object->m_screenX;
         CGruntzMgr* g = g_gameReg;
         const RECT* vr = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
-        if (CGameLevel::PointInRect(vr, x, y)) {
+        if (::PtInRect(vr, x, y)) {
             g->m_voiceManager->PlayVoice(this, 0x320, -1, 0, -1, -1);
         }
         return;
@@ -1053,7 +1053,7 @@ void CGrunt::OnStruck(b32 wasHit) {
         i32 x = m_object->m_screenX;
         CGruntzMgr* g = g_gameReg;
         const RECT* vr = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
-        if (CGameLevel::PointInRect(vr, x, y)) {
+        if (::PtInRect(vr, x, y)) {
             g->m_voiceManager->PlayVoice(this, 0x321, -1, 0, -1, -1);
         }
         return;
@@ -1064,7 +1064,7 @@ void CGrunt::OnStruck(b32 wasHit) {
         m_struckCount = 0;
         CGruntzMgr* g = g_gameReg;
         const RECT* vr = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
-        if (CGameLevel::PointInRect(vr, x, y)) {
+        if (::PtInRect(vr, x, y)) {
             g->m_voiceManager->PlayVoice(this, 0x322, -1, 0, -1, -1);
         }
     }
@@ -1340,7 +1340,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     i32 vx = this->m_object->m_screenX;
     i32 vy = this->m_object->m_screenY;
     CGruntzMgr* reg = g_gameReg;
-    if (CGameLevel::PointInRect(&reg->m_viewBounds, vx, vy)) {
+    if (::PtInRect(&reg->m_viewBounds, vx, vy)) {
         if (attackerGruntKind == GRUNT_DEATHTOUCH) {
             LK(s_DEATHTOUCHHIT);
             goto L_cue;
@@ -2391,7 +2391,7 @@ void CGrunt::StepBehavior(char*) {
                 i32 sy = obj->m_screenY;
                 i32 sx = obj->m_screenX;
                 const RECT* vr = &reg3->m_world->m_level->m_mainPlane->m_planeViewRect;
-                if (CGameLevel::PointInRect(vr, sx, sy)) {
+                if (::PtInRect(vr, sx, sy)) {
                     reg3->m_voiceManager->PlayVoice(this, 0x348, -1, 0, -1, -1);
                 }
             }
@@ -2799,7 +2799,7 @@ void CGrunt::FinalizeStep(char* name) {
             CGruntzMgr* g = g_gameReg;
             i32 y = m_object->m_screenY;
             i32 x = m_object->m_screenX;
-            if (!CGameLevel::PointInRect(&g->m_viewBounds, x, y)) {
+            if (!::PtInRect(&g->m_viewBounds, x, y)) {
                 StopPowerupLoopSound();
             }
         }

@@ -15,14 +15,14 @@ CSEs the two loads into one register, so the ASM shows one load and two tests.
 // ONE test - cl folds the ternary's condition into the outer guard
 CSBI_SideTab* p = m_hitRects[i];
 if (p && p->m_enabled) {
-    i32 hit = p->m_enabled ? CGameLevel::PointInRect(&p->m_rect14, x, y) : 0;
+    i32 hit = p->m_enabled ? PtInRect(&p->m_rect14, x, y) : 0;
     if (hit) { return i; }
 }
 
 // TWO, which is retail
 if (m_hitRects[i] && m_hitRects[i]->m_enabled) {
     CSBI_SideTab* p = m_hitRects[i];
-    i32 hit = p->m_enabled ? CGameLevel::PointInRect(&p->m_rect14, x, y) : 0;
+    i32 hit = p->m_enabled ? PtInRect(&p->m_rect14, x, y) : 0;
     if (hit) { return i; }
 }
 ```
@@ -44,6 +44,6 @@ Two spellings that do NOT reach two tests, and are worth not re-trying:
 - assigning the pointer to a second local of the base type (`CStatusBarItem* q = p;`) and
   reading `q->m_enabled` — cl copy-propagates, still one test (88.50);
 - moving the whole guard into an inline member of `CStatusBarItem`
-  (`return m_enabled ? CGameLevel::PointInRect(&m_rect14, x, y) : 0;`) — inlines to
+  (`return m_enabled ? PtInRect(&m_rect14, x, y) : 0;`) — inlines to
   byte-identical code, still one test (88.50). Writing that member with `&&` instead of
   `?:` additionally loses the materialisation (80.63).

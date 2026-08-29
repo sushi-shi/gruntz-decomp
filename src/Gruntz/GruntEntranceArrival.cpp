@@ -129,7 +129,7 @@ i32 CGrunt::UpdateGruntStatus() {
             i32 y = m_object->m_screenY;
             i32 x = m_object->m_screenX;
             const RECT& vr = g->m_world->m_level->m_mainPlane->m_planeViewRect;
-            if (CGameLevel::PointInRect(&vr, x, y)) {
+            if (::PtInRect(&vr, x, y)) {
                 g->m_voiceManager->PlayGruntVoiceCue(this, 2, -1, -1, -1);
             }
             m_lowStaminaCued = true;
@@ -183,7 +183,7 @@ i32 CGrunt::StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIn
         i32 yy = h->m_screenY;
         i32 xx = h->m_screenX;
         const RECT* rect = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
-        if (CGameLevel::PointInRect(rect, xx, yy)) {
+        if (::PtInRect(rect, xx, yy)) {
             g->m_voiceManager->PlayGruntVoiceCue(this, 1, -1, -1, -1);
         }
     }
@@ -525,11 +525,11 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     i32 xx = object->m_screenX;
 
     if (sel == 0) {
-        if (CGameLevel::PointInRect(&g->m_world->m_level->m_mainPlane->m_planeViewRect, xx, yy)) {
+        if (::PtInRect(&g->m_world->m_level->m_mainPlane->m_planeViewRect, xx, yy)) {
             g->m_voiceManager->PlayGruntVoiceCue(this, 0xa, -1, -1, -1);
         }
     } else {
-        if (CGameLevel::PointInRect(&g->m_world->m_level->m_mainPlane->m_planeViewRect, xx, yy)) {
+        if (::PtInRect(&g->m_world->m_level->m_mainPlane->m_planeViewRect, xx, yy)) {
             g->m_voiceManager->PlayGruntVoiceCue(this, 0xb, -1, -1, -1);
         }
     }
@@ -578,7 +578,7 @@ i32 CGrunt::UpdateToyUseAnimation() {
         i32 y = h->m_screenY;
         i32 x = h->m_screenX;
         const RECT& r = g->m_world->m_level->m_mainPlane->m_planeViewRect;
-        if (CGameLevel::PointInRect(&r, x, y)) {
+        if (::PtInRect(&r, x, y)) {
             g->m_voiceManager->PlayGruntVoiceCue(this, 0xc, -1, -1, -1);
         }
         return 0;
@@ -964,19 +964,11 @@ i32 CGrunt::StepArrivalReroll() {
     i32 y = h->m_screenY;
     i32 xp = h->m_screenX;
     if (pick > 0x19) {
-        if (CGameLevel::PointInRect(
-                &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect,
-                xp,
-                y
-            )) {
+        if (::PtInRect(&g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect, xp, y)) {
             g_gameReg->m_voiceManager->PlayVoice(this, 0x15d, -1, 0, -1, -1);
         }
     } else {
-        if (CGameLevel::PointInRect(
-                &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect,
-                xp,
-                y
-            )) {
+        if (::PtInRect(&g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect, xp, y)) {
             g_gameReg->m_voiceManager->PlayGruntVoiceCue(this, 9, -1, -1, -1);
         }
     }
@@ -1024,7 +1016,7 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
             i32 y = h->m_screenY;
             i32 x = h->m_screenX;
             const RECT& rect = g->m_world->m_level->m_mainPlane->m_planeViewRect;
-            if (CGameLevel::PointInRect(&rect, x, y)) {
+            if (::PtInRect(&rect, x, y)) {
                 g->m_voiceManager->PlayGruntVoiceCue(this, 0xc, -1, -1, -1);
                 StopVehicleLoopSound();
                 return 0;
@@ -1041,7 +1033,7 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
         i32 y = h->m_screenY;
         i32 x = h->m_screenX;
         const RECT& rect = g->m_world->m_level->m_mainPlane->m_planeViewRect;
-        if (CGameLevel::PointInRect(&rect, x, y)) {
+        if (::PtInRect(&rect, x, y)) {
             g->m_voiceManager->PlayGruntVoiceCue(this, 0xd, -1, -1, -1);
         }
     }
@@ -1050,7 +1042,7 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
     CGruntzMgr* g2 = g_gameReg;
     i32 hy = h2->m_screenY;
     i32 hx = h2->m_screenX;
-    if (CGameLevel::PointInRect(&g2->m_viewBounds, hx, hy)) {
+    if (::PtInRect(&g2->m_viewBounds, hx, hy)) {
         if (m_entranceReason == PICKUP_GOKART) {
             EnsureVehicleLoopSound(s_GRUNTZ_GOKARTGRUNT);
             return 0;
@@ -1370,7 +1362,7 @@ tail:
         i32 vx = h->m_screenX;
         i32 vy = h->m_screenY;
         const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
-        if (CGameLevel::PointInRect(rect, vx, vy)) {
+        if (::PtInRect(rect, vx, vy)) {
             g_gameReg->m_voiceManager->PlayGruntVoiceCue(this, 7, -1, -1, -1);
         }
     }
@@ -1511,7 +1503,7 @@ i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
         const RECT& rect = g->m_world->m_level->m_mainPlane->m_planeViewRect;
-        if (CGameLevel::PointInRect(&rect, x, y)) {
+        if (::PtInRect(&rect, x, y)) {
             g->m_voiceManager->PlayVoice(this, cueId, -1, 0, -1, -1);
         }
 

@@ -195,7 +195,7 @@ i32 CExitTrigger::AdvanceAnim() {
                     if (cur->m_smarts == m_object->m_smarts) {
                         i32 x = cur->m_screenX;
                         i32 y = cur->m_screenY;
-                        if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, x, y)) {
+                        if (::PtInRect(&g_gameReg->m_viewBounds, x, y)) {
                             CWwdSpriteObject* fx = g_gameReg->m_world->m_childGroup->CreateSprite(
                                 0,
                                 x,

@@ -110,7 +110,7 @@ i32 CTileTriggerSwitchLogic::SwitchDown() {
 
     i32 px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
     i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
-    if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, px, py)) {
+    if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
         SoundCueRegistry* h = g_gameReg->m_world->m_soundRegistry;
         if (h->m_silentMode == false) {
             SoundCue* found = NULL;
@@ -148,7 +148,7 @@ i32 CTileTriggerSwitchLogic::SwitchUp() {
 
     i32 px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
     i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
-    if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, px, py)) {
+    if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
         SoundCueRegistry* h = g_gameReg->m_world->m_soundRegistry;
         if (h->m_silentMode == false) {
             SoundCue* found = NULL;
@@ -266,7 +266,7 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
             px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
             gameMgr = g_gameReg;
-            if (CGameLevel::PointInRect(&gameMgr->m_viewBounds, px, py)) {
+            if (::PtInRect(&gameMgr->m_viewBounds, px, py)) {
                 registry = gameMgr->m_world->m_soundRegistry;
                 if (registry->m_silentMode == false) {
                     SoundCue* cue = static_cast<SoundCue*>(registry->Lookup("GAME_PYRAMIDMOVE"));
@@ -281,7 +281,7 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
             px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
             gameMgr = g_gameReg;
-            if (CGameLevel::PointInRect(&gameMgr->m_viewBounds, px, py)) {
+            if (::PtInRect(&gameMgr->m_viewBounds, px, py)) {
                 registry = gameMgr->m_world->m_soundRegistry;
                 if (registry->m_silentMode == false) {
                     SoundCue* cue =
@@ -297,7 +297,7 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
             px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
             gameMgr = g_gameReg;
-            if (CGameLevel::PointInRect(&gameMgr->m_viewBounds, px, py)) {
+            if (::PtInRect(&gameMgr->m_viewBounds, px, py)) {
                 gameMgr->m_world->m_soundRegistry->PlayCueIfElapsed("LEVEL_WATERBRIDGEMOVE");
             }
             return;
@@ -306,7 +306,7 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
             px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
             gameMgr = g_gameReg;
-            if (CGameLevel::PointInRect(&gameMgr->m_viewBounds, px, py)) {
+            if (::PtInRect(&gameMgr->m_viewBounds, px, py)) {
                 gameMgr->m_world->m_soundRegistry->PlayCueIfElapsed("LEVEL_DEATHBRIDGEMOVE");
             }
             return;
@@ -315,7 +315,7 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
             px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
             gameMgr = g_gameReg;
-            if (CGameLevel::PointInRect(&gameMgr->m_viewBounds, px, py)) {
+            if (::PtInRect(&gameMgr->m_viewBounds, px, py)) {
                 gameMgr->m_world->m_soundRegistry->PlayCueIfElapsed("LEVEL_DEATHBRIDGEMOVE");
             }
             return;
@@ -324,7 +324,7 @@ void CTileTriggerLogic::LoadBridgeMove(TileCollisionKind type) {
             py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
             px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
             gameMgr = g_gameReg;
-            if (CGameLevel::PointInRect(&gameMgr->m_viewBounds, px, py)) {
+            if (::PtInRect(&gameMgr->m_viewBounds, px, py)) {
                 gameMgr->m_world->m_soundRegistry->PlayCueIfElapsed("LEVEL_CRUMBLE");
             }
             return;
@@ -875,8 +875,7 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
 
     i32 by = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
     i32 bx = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
-    if (bx >= g_gameReg->m_viewBounds.right || bx < g_gameReg->m_viewBounds.left
-        || by >= g_gameReg->m_viewBounds.bottom || by < g_gameReg->m_viewBounds.top) {
+    if (!::PtInRect(&g_gameReg->m_viewBounds, bx, by)) {
         return 0;
     }
     SoundCueRegistry* sreg = g_gameReg->m_world->m_soundRegistry;
@@ -1367,7 +1366,7 @@ i32 CTileActionEvent::BreakTopBrick(CGrunt* grunt) {
         } else if (brickEffect == BRICKTILE_GOLD_1) {
             i32 px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
             i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
-            if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, px, py)
+            if (::PtInRect(&g_gameReg->m_viewBounds, px, py)
                 && g_gameReg->m_world->m_soundRegistry->m_silentMode == false) {
                 SoundCue* snd = static_cast<SoundCue*>(
                     g_gameReg->m_world->m_soundRegistry->Lookup("GRUNTZ_NORMALGRUNT_IMPACTMM3")
@@ -1401,7 +1400,7 @@ i32 CTileActionEvent::BreakTopBrick(CGrunt* grunt) {
 
     i32 px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
     i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
-    if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, px, py)) {
+    if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
         CWwdSpriteObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
             0,
             px,

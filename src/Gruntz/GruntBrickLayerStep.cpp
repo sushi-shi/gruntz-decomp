@@ -151,7 +151,7 @@ i32 CGrunt::StepBrickLayerBehavior() {
         CCueRect* board = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
         i32 x = m_object->m_screenX;
         i32 y = m_object->m_screenY;
-        if (CGameLevel::PointInRect(board, x, y)) {
+        if (::PtInRect(board, x, y)) {
             g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
         }
         m_blockedVoicePending = false;

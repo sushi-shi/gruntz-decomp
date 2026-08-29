@@ -82,7 +82,7 @@ i32 CGrunt::StepToyerBehavior() {
         i32 y = c->m_screenY;
         i32 x = c->m_screenX;
         CDDrawWorkerHost* r = g->m_world->m_level->m_mainPlane;
-        if (CGameLevel::PointInRect(&r->m_planeViewRect, x, y)) {
+        if (::PtInRect(&r->m_planeViewRect, x, y)) {
             g->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
         }
     }

@@ -6,6 +6,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Dsndmgr/SoundBuffer.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniElement.h>
@@ -516,7 +517,7 @@ i32 CGrunt::RectContains(i32 x, i32 y) {
     if (IsRectEmpty(&r1) || IsRectEmpty(&r2)) {
         if (IsRectEmpty(&r2)) {
 
-            if (CGameLevel::PointInRect(&r1, x, y)) {
+            if (::PtInRect(&r1, x, y)) {
                 return 1;
             }
             return 0;
@@ -524,9 +525,9 @@ i32 CGrunt::RectContains(i32 x, i32 y) {
         return 0;
     }
 
-    if (CGameLevel::PointInRect(&r1, x, y)) {
+    if (::PtInRect(&r1, x, y)) {
 
-        if (x >= r2.right || x < r2.left || y >= r2.bottom || y < r2.top) {
+        if (!::PtInRect(&r2, x, y)) {
             return 1;
         }
     }
@@ -559,16 +560,16 @@ i32 CGrunt::VehicleContactContains(i32 x, i32 y) {
 
     if (IsRectEmpty(&r1) || IsRectEmpty(&r2)) {
         if (IsRectEmpty(&r2)) {
-            if (CGameLevel::PointInRect(&r1, x, y)) {
+            if (::PtInRect(&r1, x, y)) {
                 return 1;
             }
             return 0;
         }
         return 0;
     }
-    if (CGameLevel::PointInRect(&r1, x, y)) {
+    if (::PtInRect(&r1, x, y)) {
 
-        if (x >= r2.right || x < r2.left || y >= r2.bottom || y < r2.top) {
+        if (!::PtInRect(&r2, x, y)) {
             return 1;
         }
     }

@@ -71,7 +71,7 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
                     i32 vx = h->m_screenX;
                     i32 vy = h->m_screenY;
                     const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
-                    if (CGameLevel::PointInRect(rect, vx, vy)) {
+                    if (::PtInRect(rect, vx, vy)) {
                         g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
                     }
                 }
@@ -89,7 +89,7 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
                 i32 vx = h->m_screenX;
                 i32 vy = h->m_screenY;
                 const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
-                if (CGameLevel::PointInRect(rect, vx, vy)) {
+                if (::PtInRect(rect, vx, vy)) {
                     g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
                 }
             }

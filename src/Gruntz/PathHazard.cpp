@@ -319,7 +319,7 @@ i32 CRainCloud::HitTest(i32 playerIndex, i32 unitIndex) {
 
     CWwdSpriteObject* obj = m_object;
     CGruntzMgr* reg = g_gameReg;
-    if (CGameLevel::PointInRect(&reg->m_viewBounds, obj->m_screenX, obj->m_screenY)) {
+    if (::PtInRect(&reg->m_viewBounds, obj->m_screenX, obj->m_screenY)) {
         SoundCueRegistry* registry = reg->m_world->m_soundRegistry;
         if (registry->m_silentMode == false) {
             SoundCue* found = NULL;

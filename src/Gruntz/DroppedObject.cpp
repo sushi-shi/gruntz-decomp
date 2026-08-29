@@ -473,7 +473,7 @@ i32 CDroppedObject::AdvanceFall() {
                             // fall through
                         case AREA_MINIATURE_MASTERZ:
                         default:
-                            if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, x, m_landY)) {
+                            if (::PtInRect(&g_gameReg->m_viewBounds, x, m_landY)) {
                                 CWwdSpriteObject* s =
                                     g_gameReg->m_world->m_childGroup->CreateSprite(
                                         0,
@@ -495,7 +495,7 @@ i32 CDroppedObject::AdvanceFall() {
                 }
             }
         } else {
-            if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, x, m_landY)) {
+            if (::PtInRect(&g_gameReg->m_viewBounds, x, m_landY)) {
                 CWwdSpriteObject* s = g_gameReg->m_world->m_childGroup->CreateSprite(
                     0,
                     x,

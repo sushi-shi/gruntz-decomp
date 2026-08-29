@@ -4,6 +4,7 @@
 #include <rva.h>
 
 #include <Dsndmgr/SoundBuffer.h>
+#include <Globals.h>
 #include <Gruntz/AmbientSound.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -25,10 +26,8 @@ public:
         i32 silenceDurationMax
     );
 
-    i32 m_playDurationMin;
-    i32 m_playDurationMax;
-    i32 m_silenceDurationMin;
-    i32 m_silenceDurationMax;
+    CRange<i32> m_playDuration;
+    CRange<i32> m_silenceDuration;
     i32 m_countdownMs;
     b32 m_playPhase;
 };

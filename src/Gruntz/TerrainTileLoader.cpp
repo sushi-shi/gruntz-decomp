@@ -653,7 +653,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
             }
             i32 waterX = unit->m_object->m_screenX;
             i32 waterY = unit->m_object->m_screenY;
-            if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, waterX, waterY)) {
+            if (::PtInRect(&g_gameReg->m_viewBounds, waterX, waterY)) {
                 CWwdSpriteObject* splash = m_world->m_childGroup->CreateSprite(
                     0,
                     waterX,

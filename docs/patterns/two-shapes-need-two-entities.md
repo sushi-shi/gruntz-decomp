@@ -40,31 +40,37 @@ these bodies (scanned every section for the VA - zero hits), so it is not what r
 So when the retail image shows both shapes, **the retail source had two entities.** Model
 two.
 
-## The recipe: an inline sibling plus a one-line out-of-line wrapper
+## The recipe: an inline helper plus a one-line out-of-line wrapper
 
 ```cpp
-// GameLevel.h
+// Globals.h - the expansion sites call this surviving NOLF-era helper.
+inline BOOL PtInRect(const RECT* r, int x, int y) {
+    if (x >= r->right || x < r->left || y >= r->bottom || y < r->top) { return FALSE; }
+    return TRUE;
+}
+
+// GameLevel.h - the retail call sites call this separate entity.
 class CGameLevel {
-    // the ~84 expansion sites call THIS
-    static i32 PointInRect(const LevelCoordRect* r, i32 x, i32 y) {
-        if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) { return 1; }
-        return 0;
-    }
-    // the 30 retail `call` sites call THIS
     static i32 PointInBounds(const LevelCoordRect* r, i32 x, i32 y);
 };
 
 // GameLevel.cpp
 RVA(0x0006b330, 0x2a)
 i32 CGameLevel::PointInBounds(const LevelCoordRect* r, i32 x, i32 y) {
-    return PointInRect(r, x, y);
+    return ::PtInRect(r, x, y);
 }
 ```
 
-The wrapper inlines its sibling, so the emitted COMDAT is byte-identical to retail's
+The wrapper inlines the global helper, so the emitted COMDAT is byte-identical to retail's
 standalone body - verified for `CGameLevel::PointInBounds` (0x6b330, 42 B) and
 `CGameLevel::ResetSpatialDefaults` (0x15d170, 115 B, including retail's `edx`/`eax` constant
 CSE). **One textual copy of the logic**, so no clone signature appears.
+
+The earlier reconstructed class-local `PointInRect` sibling was a correct two-entity
+device but an unproven owner. The surviving `NOLF/Shared/Globals.h` family supplies the
+authentic global name, comparison order, and half-open semantics. Migrating all expansion
+sites to that owner and retaining only `PointInBounds` preserves every historical MAX;
+Gruntz's const-correct pointer is the retail-selected adaptation.
 
 Split the sites by evidence, never by guess. Scan `.text` for the two shapes and attribute
 each to its containing function:

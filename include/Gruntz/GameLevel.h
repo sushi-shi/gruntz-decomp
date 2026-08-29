@@ -7,6 +7,7 @@
 
 #include <DDrawMgr/DDrawWorkerHost.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/TileCollisionKind.h>
@@ -152,10 +153,6 @@ public:
     }
 
     void ResetSpatialDefaults();
-
-    static i32 PointInRect(const LevelCoordRect* r, i32 x, i32 y) {
-        return x < r->right && x >= r->left && y < r->bottom && y >= r->top;
-    }
 
     static i32 PointInBounds(const LevelCoordRect* r, i32 x, i32 y);
 

@@ -254,7 +254,7 @@ i32 CVoiceTrigger::Tick() {
         CGameObject* hs = hit->m_object;
         i32 hy = hs->m_screenY;
         i32 hx = hs->m_screenX;
-        if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, hx, hy)) {
+        if (::PtInRect(&g_gameReg->m_viewBounds, hx, hy)) {
             if (g_gameReg->m_voiceManager
                     ->PlayVoice(hit, m_object->m_smarts, m_object->m_health, 0, -1, -1)) {
                 SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));

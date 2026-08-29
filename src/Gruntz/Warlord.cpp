@@ -669,7 +669,7 @@ i32 CWarlord::BuildFortSplashParticles() {
         CWwdSpriteObject* o = m_object;
         i32 y = o->m_screenY;
         i32 x = o->m_screenX;
-        if (CGameLevel::PointInRect(&g_gameReg->m_viewBounds, x, y)) {
+        if (::PtInRect(&g_gameReg->m_viewBounds, x, y)) {
             CWwdSpriteObject* fx = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
                 x - 30,
@@ -774,7 +774,7 @@ i32 CWarlord::ResolveDeathAnimation() {
         CWwdSpriteObject* h = m_object;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
-        if (CGameLevel::PointInRect(&g->m_viewBounds, x, y)) {
+        if (::PtInRect(&g->m_viewBounds, x, y)) {
             g->m_voiceManager->PlayVoice(h->m_objectId, m_ownerTag, -1, -1, -1);
         }
     } else {
@@ -800,7 +800,7 @@ i32 CWarlord::ResolveJoyAnimation() {
         CWwdSpriteObject* h = m_object;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
-        if (CGameLevel::PointInRect(&g->m_viewBounds, x, y)) {
+        if (::PtInRect(&g->m_viewBounds, x, y)) {
             g->m_voiceManager->PlayVoice(h->m_objectId, 0x435, -1, -1, -1);
         }
     } else {
@@ -831,7 +831,7 @@ i32 CWarlord::ResolveIdleAnimation() {
         i32 cue = idx + 0x431;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
-        if (CGameLevel::PointInRect(&g->m_viewBounds, x, y)) {
+        if (::PtInRect(&g->m_viewBounds, x, y)) {
             g->m_voiceManager->PlayVoice(h->m_objectId, cue, -1, -1, -1);
         }
     } else {
@@ -863,7 +863,7 @@ i32 CWarlord::ResolveBattlecryAnimation() {
         i32 cue = idx + 0x42e;
         i32 x = h->m_screenX;
         i32 y = h->m_screenY;
-        if (CGameLevel::PointInRect(&g->m_viewBounds, x, y)) {
+        if (::PtInRect(&g->m_viewBounds, x, y)) {
             g->m_voiceManager->PlayVoice(h->m_objectId, cue, -1, -1, -1);
         }
     } else {

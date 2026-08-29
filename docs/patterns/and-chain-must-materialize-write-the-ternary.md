@@ -1,11 +1,12 @@
-# An `&&`-chain retail MATERIALIZES: spell it `?:`, not `&&`
+# An inlined predicate result MATERIALIZES: spell the caller `?:`, not `&&`
 tags: cpp:expr cpp:branch | asm:test asm:xor asm:jcc | topic:codegen-idiom
 symptoms: retail ends a guard with `mov reg,1 / jmp / xor reg,reg / test reg,reg / jcc` and the base has none of it - the base branches straight out of the comparison chain; every other instruction matches, same registers, same prologue
 confidence: 8/10 (single measured site, mechanism corroborated by the sibling site in the same TU)
 variants: bool-local-materializes-what-should-be-short-circuit.md, redundant-test-elimination-is-syntactic.md, guard-reads-the-array-element-not-the-cached-local.md
 
-`CGameLevel::PointInRect` is a `static i32` inline returning an `&&`-chain. At an inlined
-call site cl5 materialises the return value into `1`/`0` and the caller then `test`s it -
+`PtInRect` is an inline `BOOL` predicate with an exclusion guard and explicit
+`FALSE`/`TRUE` returns. At an inlined call site cl5 materialises the return value into
+`1`/`0` and the caller then `test`s it -
 that is the `mov reg,1 / jmp / xor reg,reg / test reg,reg / jcc` tail, and it is exactly
 what `CStatusBarMgr::HitTestRects` @0xffcb0 shows on both sides.
 
@@ -14,9 +15,9 @@ branch chain instead, losing the materialisation:
 
 ```cpp
 // base: no mov/xor at all - the last cmp jumps straight to `return i`
-i32 hit = p->m_enabled && CGameLevel::PointInRect(&p->m_rect14, x, y);
+i32 hit = p->m_enabled && PtInRect(&p->m_rect14, x, y);
 // base: xor/test/jcc tail appears, as retail has it
-i32 hit = p->m_enabled ? CGameLevel::PointInRect(&p->m_rect14, x, y) : 0;
+i32 hit = p->m_enabled ? PtInRect(&p->m_rect14, x, y) : 0;
 ```
 
 Measured 2026-08-08: `CStatusBarMgr::HitTest` @0x105280 **80.63 -> 88.50**.
@@ -36,7 +37,7 @@ guard already tested it) and keeps an explicit `mov ecx,1` true arm:
   test ebx,ebx
   je   CONTINUE          ; outer  if (p && p->m_enabled)
   test ebx,ebx
-  je   FALSE             ; the &&-chain's own first operand
+  je   FALSE             ; the ternary's own first operand
   <PointInRect chain>
   mov  ecx,1 / jmp DONE
 FALSE: xor ecx,ecx

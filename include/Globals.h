@@ -5,14 +5,13 @@
 
 #include <math.h>
 
-inline BOOL PtInRect(RECT* pRect, int x, int y) {
+inline BOOL PtInRect(const RECT* pRect, int x, int y) {
     if (x >= pRect->right || x < pRect->left || y >= pRect->bottom || y < pRect->top) {
         return FALSE;
     }
 
     return TRUE;
 }
-
 template<class TYPE> class CRange {
 public:
     CRange() {}

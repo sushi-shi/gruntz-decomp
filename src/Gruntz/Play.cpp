@@ -2769,10 +2769,10 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
         if (m_dragInhibit1 != false && m_playerCommandPending == false) {
             eventArg = 0;
             RECT* gr = &m_statusBar->m_barRect;
-            if (CGameLevel::PointInRect(gr, xr, y)) {
+            if (::PtInRect(gr, xr, y)) {
 
             } else {
-                if (CGameLevel::PointInRect(&geom->m_viewportRect, xr, y)) {
+                if (::PtInRect(&geom->m_viewportRect, xr, y)) {
                     if (FindStartPointAt(sx, sy, &x, &y)) {
                         m_mgr->m_commandMgr->EnqueueSingle(
                             true,
@@ -2800,7 +2800,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
         if (m_dragInhibit2 != false && m_playerCommandPending == false) {
             {
                 RECT* gr = &m_statusBar->m_barRect;
-                if (CGameLevel::PointInRect(gr, xr, y)) {
+                if (::PtInRect(gr, xr, y)) {
                     if (m_statusBar->DropFallingItemAt(xr, y, m_cursorFrame)) {
                         m_dragInhibit2 = false;
                         SetCursorFrame(0);
@@ -2810,7 +2810,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
                 }
                 CGameLevel* geom2 = m_mgr->m_world->m_level;
                 RECT* wr = (&geom2->m_viewportRect);
-                if (!CGameLevel::PointInRect(wr, xr, y)) {
+                if (!::PtInRect(wr, xr, y)) {
                     goto waypoint_cancel;
                 }
 
@@ -2897,7 +2897,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
         }
 
         RECT* gr = &m_statusBar->m_barRect;
-        if (CGameLevel::PointInRect(gr, xr, y)) {
+        if (::PtInRect(gr, xr, y)) {
             FlushPendingOps();
             return m_statusBar->UpdateStatusBarTabHighlight(eventArg, xr, y);
         }
@@ -3097,7 +3097,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
         }
         RECT er;
         SetRect(&er, e->m_x - 0x10, e->m_y - 0x10, e->m_x + 0x10, e->m_y + 0x10);
-        if (CGameLevel::PointInRect(&er, px, py)) {
+        if (::PtInRect(&er, px, py)) {
             if (!m_statusBar->FindReadySlot()) {
                 return 1;
             }
@@ -3164,7 +3164,7 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
         return 1;
     }
 
-    if (CGameLevel::PointInRect(&m_statusBar->m_barRect, x, y)) {
+    if (::PtInRect(&m_statusBar->m_barRect, x, y)) {
         return 1;
     }
     i32 idx = m_statusBar->HitTest(x, y);
@@ -3183,7 +3183,7 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
     }
     CGameLevel* ph = m_mgr->m_world->m_level;
     LevelCoordRect pr = ph->m_viewportRect;
-    if (CGameLevel::PointInRect(&pr, x, y)) {
+    if (::PtInRect(&pr, x, y)) {
         CGameLevel* ds = m_world->m_level;
         CDDrawWorkerHost* geom = ds->m_mainPlane;
         i32 rawX = geom->m_planeViewRect.left - ds->m_viewportRect.left + x;
@@ -5914,7 +5914,7 @@ i32 CPlay::FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY) {
                 if (m != NULL) {
                     RECT rc;
                     SetRect(&rc, m->m_x - 0x20, m->m_y - 0x20, m->m_x + 0x20, m->m_y + 0x20);
-                    if (CGameLevel::PointInRect(&rc, x, y)) {
+                    if (::PtInRect(&rc, x, y)) {
                         *outX = m->m_x;
                         *outY = m->m_y;
                         return 1;

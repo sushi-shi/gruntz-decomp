@@ -1560,7 +1560,7 @@ label_4c6e4:
         i32 hudY = m_object->m_screenY;
         i32 hudX = m_object->m_screenX;
         CCueRect* rr = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
-        if (CGameLevel::PointInRect(rr, hudX, hudY)) {
+        if (::PtInRect(rr, hudX, hudY)) {
             g_gameReg->m_voiceManager->PlayGruntVoiceCue(this, 8, -1, -1, -1);
         }
         tgtPxX = beyondPxX;

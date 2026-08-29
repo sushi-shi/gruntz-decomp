@@ -302,7 +302,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
                 CCueRect* r = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
                 i32 x = m_object->m_screenX;
                 i32 y = m_object->m_screenY;
-                if (CGameLevel::PointInRect(r, x, y)) {
+                if (::PtInRect(r, x, y)) {
                     g->m_voiceManager->PlayGruntVoiceCue(this, 3, -1, -1, -1);
                 }
             }

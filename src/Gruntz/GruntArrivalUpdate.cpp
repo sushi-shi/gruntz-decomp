@@ -226,7 +226,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                     const RECT& view = reg->m_world->m_level->m_mainPlane->m_planeViewRect;
                     i32 px = m_object->m_screenX;
                     i32 py = m_object->m_screenY;
-                    if (CGameLevel::PointInRect(&view, px, py)) {
+                    if (::PtInRect(&view, px, py)) {
                         reg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
                     }
                 }

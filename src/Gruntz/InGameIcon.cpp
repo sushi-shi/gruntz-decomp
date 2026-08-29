@@ -663,7 +663,7 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
         }
         if (m_cue != NULL) {
             o = m_object;
-            if (CGameLevel::PointInRect(&reg->m_viewBounds, o->m_screenX, o->m_screenY)) {
+            if (::PtInRect(&reg->m_viewBounds, o->m_screenX, o->m_screenY)) {
 
                 m_cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
                 reg = g_gameReg;
@@ -695,7 +695,7 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
         }
         if (m_cue != NULL) {
             o = m_object;
-            if (CGameLevel::PointInRect(&reg->m_viewBounds, o->m_screenX, o->m_screenY)) {
+            if (::PtInRect(&reg->m_viewBounds, o->m_screenX, o->m_screenY)) {
 
                 m_cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
                 reg = g_gameReg;
@@ -1008,7 +1008,7 @@ i32 CInGameText::Update() {
         i32 y = o->m_screenY;
         i32 x = o->m_screenX;
         CGruntzMgr* reg = g_gameReg;
-        if (CGameLevel::PointInRect(&reg->m_viewBounds, x, y)) {
+        if (::PtInRect(&reg->m_viewBounds, x, y)) {
             SoundCueRegistry* set = reg->m_world->m_soundRegistry;
             if (set->m_silentMode == false) {
                 SoundCue* res = LookupCue(set->m_cues, "GAME_HELPBOOK");

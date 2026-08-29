@@ -829,7 +829,7 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
         if (r) {
             b32 hit = r->m_enabled;
             if (hit) {
-                hit = CGameLevel::PointInRect(&r->m_rect, x, y);
+                hit = ::PtInRect(&r->m_rect, x, y);
             }
             if (hit) {
                 return r;
@@ -843,7 +843,7 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
         if (r) {
             b32 hit = r->m_enabled;
             if (hit) {
-                hit = CGameLevel::PointInRect(&r->m_rect, x, y);
+                hit = ::PtInRect(&r->m_rect, x, y);
             }
             if (hit) {
                 return r;
@@ -856,7 +856,7 @@ CStatusBarItem* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
         if (r) {
             b32 hit = r->m_enabled;
             if (hit) {
-                hit = CGameLevel::PointInRect(&r->m_rect, x, y);
+                hit = ::PtInRect(&r->m_rect, x, y);
             }
             if (hit) {
                 return r;
@@ -2619,7 +2619,7 @@ i32 CStatusBarMgr::HitTest(i32 x, i32 y) {
         for (i32 i = 0; i < STATUSBAR_GRUNT_SLOT_COUNT; i++) {
             if (m_hitRects[i] && m_hitRects[i]->m_enabled) {
                 CSBI_SideTab* p = m_hitRects[i];
-                b32 hit = p->m_enabled ? CGameLevel::PointInRect(&p->m_rect, x, y) : false;
+                b32 hit = p->m_enabled ? ::PtInRect(&p->m_rect, x, y) : false;
                 if (hit) {
                     return i;
                 }
