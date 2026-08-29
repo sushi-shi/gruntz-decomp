@@ -628,10 +628,6 @@ static inline void DrawObjectDebugRect(
     CDDrawWorkerHost* view,
     CDDrawSurfacePair* drawHost
 ) {
-    if (objectRect.left == COORD_UNSET) {
-        return;
-    }
-
     i32 ox = obj->m_screenX;
     RECT rc;
     rc.left = objectRect.left + ox;
@@ -656,7 +652,9 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
         if (pos != NULL) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
-                DrawObjectDebugRect(obj, obj->m_area, view, drawHost);
+                if (obj->m_area.left != COORD_UNSET) {
+                    DrawObjectDebugRect(obj, obj->m_area, view, drawHost);
+                }
             } while (pos != NULL);
         }
     }
@@ -667,7 +665,9 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
         if (pos != NULL) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
-                DrawObjectDebugRect(obj, obj->m_switchRect, view, drawHost);
+                if (obj->m_switchRect.left != COORD_UNSET) {
+                    DrawObjectDebugRect(obj, obj->m_switchRect, view, drawHost);
+                }
             } while (pos != NULL);
         }
     }
@@ -678,7 +678,9 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
         if (pos != NULL) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
-                DrawObjectDebugRect(obj, obj->m_extent, view, drawHost);
+                if (obj->m_extent.left != COORD_UNSET) {
+                    DrawObjectDebugRect(obj, obj->m_extent, view, drawHost);
+                }
             } while (pos != NULL);
         }
     }

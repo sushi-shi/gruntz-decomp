@@ -81,6 +81,31 @@ only 34/36 raw relocations and 85.529880%. The retail rematerialization therefor
 supports a macro boundary, while the operation's proper abstraction supports
 the general `INTERPOLATE` spelling rather than `FLASH_BRIGHT_TERM`.
 
+## Parentheses around a macro argument can reverse the FP-pool constant
+
+The surviving LithTech `ROUND` macro provides a second, smaller witness where
+the macro boundary was already correct but its adapted token tree was not:
+
+```cpp
+// Extra grouping introduced by the adaptation.
+#define ROUND(value) static_cast<int>((value) + 0.5)
+
+// Surviving x+0.5 grouping, retaining the project's named cast.
+#define ROUND(value) static_cast<int>(value + 0.5)
+```
+
+Under the pinned VC5 build, the first form emits `fsub` against a pooled `-0.5`.
+Retail emits `fadd` against `+0.5`; because the base object contains the wrong
+payload, the data-attribution gate correctly refuses to bind retail slot
+`0x1e9aa0`. Removing only those parentheses restores `fadd`, the `+0.5` pool
+entry, and exact code in both users: `CGruntHealthSprite::BindToGrunt`
+98.2353 -> 100.0000 and `HealthUpdate` 99.1304 -> 100.0000.
+
+This is not permission to drop ordinary defensive parentheses around macro
+arguments. It is a reverse-use clue for a proved historical macro whose exact
+body survives: preserve its expression grouping, and let the FP payload plus
+opcode adjudicate adaptations that are mathematically equivalent.
+
 ## Reverse-use rule
 
 When retail repeatedly relocates the same constant/global but the base keeps a

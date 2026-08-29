@@ -106,10 +106,10 @@ eyecandy	1	1
 fader	25	20
 fadereffects	39	29
 fadermgr	13	13
-feccrypt	11	8
+feccrypt	11	9
 fileimage	19	13
 filestream	5	5
-font	22	19
+font	22	20
 fontconfig	15	9
 fonts	2	2
 fortressflag	26	23
@@ -146,7 +146,7 @@ gruntdiggerstep	1	0
 gruntentrancearrival	22	8
 gruntentrancemove	18	9
 gruntgoosuckerstep	2	0
-grunthealthsprite	10	8
+grunthealthsprite	10	10
 gruntindicatorlogicdispatch	7	7
 gruntpeertracking	1	0
 gruntphasestep	1	0
@@ -1669,7 +1669,7 @@ fadermgr	?Trace@CFaderMgr@@QAEXVCString@@@Z	100.0000	100.0000	1	151c913fa558	0x1
 feccrypt	?AddFile@CFecFile@@QAEHPBDPAHPAX@Z	98.8741	98.8741	4	d9abba2081a3	0x17b950	98.8741	
 feccrypt	?Close@CFecFile@@QAEXXZ	100.0000	100.0000	2	5f4d112b2df4	0x17b570	100.0000	
 feccrypt	?CreateArchive@CFecFile@@QAEHPBD@Z	100.0000	100.0000	4	ad8bc440e3f6	0x17b8a0	100.0000	
-feccrypt	?ExtractArchive@CFecFile@@QAEHPBDPAHPAX@Z	95.7303	95.7303	5	a9a165ad9b34	0x17bcd0	95.7303	
+feccrypt	?ExtractArchive@CFecFile@@QAEHPBDPAHPAX@Z	100.0000	100.0000	6	4eda6fd7345c	0x17bcd0	100.0000	
 feccrypt	?FecDecode@CFecFile@@QAEXPBDPADG@Z	100.0000	100.0000	1	81441bc149c1	0x17bfe0	100.0000	
 feccrypt	?FecEncode@CFecFile@@QAEXPBDPAD@Z	100.0000	100.0000	1	af77b1cbae53	0x17bf70	100.0000	
 feccrypt	?Init@CFecFile@@QAEHXZ	100.0000	100.0000	2	f5c23e9b8f15	0x17b510	100.0000	
@@ -1706,19 +1706,19 @@ font	??0FontRenderer@@QAE@XZ	100.0000	100.0000	1	e7cf1144096e	0x179be0	100.0000
 font	??1Font@@QAE@XZ	100.0000	100.0000	1	1f230dd95b83	0x179710	100.0000	
 font	??1FontRenderer@@QAE@XZ	100.0000	100.0000	1	d87483f34623	0x179c00	100.0000	
 font	?AllocateMemory@Font@@QAEHH@Z	100.0000	100.0000	4	3cfdccc36278	0x179720	100.0000	
-font	?DrawGlyphRun@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	94.4792	94.4792	8	c092dcce1678	0x179e70	94.4792	
-font	?DrawLine@FontRenderer@@QAEXVCString@@PAVCDDSurface@@HHH@Z	100.0000	100.0000	1	1c99e425f732	0x179c30	100.0000	
+font	?DrawGlyphRun@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	94.4792	94.4792	9	e24d9fa7c0de	0x179e70	94.4792	
+font	?DrawLine@FontRenderer@@QAEXVCString@@PAVCDDSurface@@HHH@Z	100.0000	100.0000	2	e9893faa2af6	0x179c30	100.0000	
 font	?DrawLineClipped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	100.0000	100.0000	1	86e8144fd715	0x179d10	100.0000	
-font	?DrawWrapped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	76.8479	76.8479	3	ce6f15a86fde	0x17a460	76.8479	
+font	?DrawWrapped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	76.8479	76.8479	4	913e57b201f8	0x17a460	76.8479	
 font	?FreeMemory@Font@@QAEXXZ	100.0000	100.0000	3	33e36809b370	0x1797b0	100.0000	
 font	?GetAt@CString@@QBEDH@Z	100.0000	100.0000	1	cpp:8c44cb1c6fc0	0x17b4f0	100.0000	
 font	?GetGlyph@Font@@QAEAAUGlyph@@AAU2@E@Z	100.0000	100.0000	1	aa81516dc6ec	0x179b80	100.0000	
 font	?GetMaxHeight@Font@@QAEHXZ	100.0000	100.0000	1	78f995c41f3d	0x179bd0	100.0000	
 font	?GetSurface@Font@@QAEPAPAEE@Z	100.0000	100.0000	2	fc26167fcf11	0x179b60	100.0000	
-font	?LayoutWrapped@FontRenderer@@QAE?AUTextExtent@@VCString@@VCRect@@PAH@Z	100.0000	100.0000	3	af5182c8f8e1	0x17b120	100.0000	
+font	?LayoutWrapped@FontRenderer@@QAE?AVCSize@@VCString@@VCRect@@PAH@Z	100.0000	100.0000	4	06e8e232286b	0x17b120	100.0000	
 font	?LoadFont@Font@@QAEHVCString@@@Z	100.0000	100.0000	2	c20a5842d3b0	0x179830	100.0000	
-font	?MeasureText@FontRenderer@@QAE?AUTextExtent@@VCString@@@Z	100.0000	100.0000	1	39fb1c861837	0x17ac50	100.0000	
-font	?MeasureWrapped@FontRenderer@@QAE?AUTextExtent@@VCString@@VCRect@@@Z	99.7745	99.7418	2	8d417e4b5ec7	0x17ad10	99.7745	
+font	?MeasureText@FontRenderer@@QAE?AVCSize@@VCString@@@Z	100.0000	100.0000	2	dda0f2133dae	0x17ac50	100.0000	
+font	?MeasureWrapped@FontRenderer@@QAE?AVCSize@@VCString@@VCRect@@@Z	100.0000	100.0000	3	e1e866c7b9ea	0x17ad10	100.0000	
 font	?SaveFont@Font@@QAEHVCString@@@Z	100.0000	100.0000	2	21ed7031d7be	0x1799f0	100.0000	
 font	?SetColor@FontRenderer@@QAEXH@Z	100.0000	100.0000	1	b2f484280b13	0x179c20	100.0000	
 font	?SetFont@FontRenderer@@QAEXPAVFont@@@Z	100.0000	100.0000	1	2956efb36548	0x179c10	100.0000	
@@ -2120,11 +2120,11 @@ gruntgoosuckerstep	?StepGooSuckerBehavior@CGrunt@@QAEHXZ	91.6483	91.6428	16	9246
 grunthealthsprite	??0CGruntHealthSprite@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	6	bc28388b0a81	0x7eb00	100.0000	
 grunthealthsprite	??1CGruntHealthSprite@@UAE@XZ	100.0000	100.0000	1	cpp:938fdb167b84	0x11fb0	100.0000	
 grunthealthsprite	??_GCGruntHealthSprite@@UAEPAXI@Z	100.0000	100.0000	1	cpp:938fdb167b84	0x11f80	100.0000	
-grunthealthsprite	?BindToGrunt@CGruntHealthSprite@@QAEHHHH@Z	98.2353	98.2353	18	3ec72fe95f7b	0x7f0d0	100.0000	
+grunthealthsprite	?BindToGrunt@CGruntHealthSprite@@QAEHHHH@Z	100.0000	100.0000	18	3ec72fe95f7b	0x7f0d0	100.0000	
 grunthealthsprite	?FireActivation@CGruntHealthSprite@@UAEXH@Z	100.0000	100.0000	2	c4f0b77c96a1	0x7ed70	100.0000	
 grunthealthsprite	?GetDisplayedValue@CGruntHealthSprite@@UAEHPAVCGrunt@@@Z	100.0000	100.0000	1	de2b2b58e53b	0x7f160	100.0000	
 grunthealthsprite	?GetTypeTag@CGruntHealthSprite@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:281810d27b94	0x11f60	100.0000	
-grunthealthsprite	?HealthUpdate@CGruntHealthSprite@@QAEHXZ	99.1304	99.1304	6	0f2682dab55f	0x7f180	100.0000	
+grunthealthsprite	?HealthUpdate@CGruntHealthSprite@@QAEHXZ	100.0000	100.0000	6	0f2682dab55f	0x7f180	100.0000	
 grunthealthsprite	?RegisterActs@CGruntHealthSprite@@SAXXZ	100.0000	100.0000	1	c6f7a7bc9889	0x7eed0	100.0000	
 grunthealthsprite	?SerializeDispatch@CGruntHealthSprite@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	5	b8560bd4c2a5	0x7f270	100.0000	
 gruntindicatorlogicdispatch	?DispatchGruntHealthSpriteLogic@@YAHPAUCGameObject@@@Z	100.0000	100.0000	3	9ddeada1518c	0x7dc60	100.0000	
@@ -4707,7 +4707,7 @@ wwdobjmgr	?DeserializeObjects@CDDrawChildGroup@@QAEHPAVCFileMemBase@@IW4LogicTyp
 wwdobjmgr	?DestroyChildren@CDDrawChildGroup@@UAEXXZ	100.0000	100.0000	3	67d7c5b24564	0x1591f0	100.0000	
 wwdobjmgr	?DispatchSerializationToObjects@CDDrawChildGroup@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@@Z	100.0000	100.0000	7	c37071a30f26	0x15ac20	100.0000	
 wwdobjmgr	?DrawObjectCounts@CDDrawChildGroup@@QAEXXZ	94.9646	94.9646	5	6ad5a6fc7ba8	0x15a650	94.9646	
-wwdobjmgr	?DrawObjectDebugGeometry@CDDrawChildGroup@@QAEXXZ	93.7333	93.7333	6	dacb4d2752df	0x15a210	93.7333	
+wwdobjmgr	?DrawObjectDebugGeometry@CDDrawChildGroup@@QAEXXZ	95.5072	95.5072	7	ed66a6ece442	0x15a210	95.5072	
 wwdobjmgr	?Find@CDDrawChildGroup@@QAEPAUCGameObject@@HPBD@Z	100.0000	100.0000	7	b3a9f2e07587	0x15a8c0	100.0000	
 wwdobjmgr	?FindById@CDDrawChildGroup@@QAEPAVCWwdGameObject@@H@Z	100.0000	100.0000	3	c6c6a6d8e41e	0x15a7f0	100.0000	
 wwdobjmgr	?FindByIdAndCollisionCategory@CDDrawChildGroup@@QAEPAVCWwdGameObject@@HI@Z	100.0000	100.0000	3	891f692e04a4	0x15a940	100.0000	
