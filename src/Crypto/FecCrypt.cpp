@@ -163,6 +163,7 @@ i32 CFecFile::CreateArchive(const char* name) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0017b950, 0x380)
 i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
+    i32 i;
     if (m_writeOpen == false || m_openGate == false) {
         return 0;
     }
@@ -194,7 +195,8 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
         char* p = m_entry.m_name + base.GetLength();
         i32 c = FEC_ENTRY_NAME_CAPACITY - base.GetLength();
         do {
-            *p++ = static_cast<char>((Random() % FEC_RANDOM_BYTE_MODULUS));
+            memset(p, static_cast<u8>(Random() % FEC_RANDOM_BYTE_MODULUS), sizeof(*p));
+            p++;
         } while (--c);
     }
 
@@ -209,15 +211,15 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
     m_stream.Write(&m_entry, sizeof(m_entry));
 
     char* pad = new char[m_entry.m_scramble - FEC_SCRAMBLE_BASE];
-    for (i32 i = 0; i < m_entry.m_scramble - FEC_SCRAMBLE_BASE; i++) {
+    for (i = 0; i < m_entry.m_scramble - FEC_SCRAMBLE_BASE; i++) {
         pad[i] = static_cast<char>((Random() % FEC_RANDOM_BYTE_MODULUS));
     }
     m_stream.Write(pad, m_entry.m_scramble - FEC_SCRAMBLE_BASE);
     delete[] pad;
 
     memset(m_copyBuf, 0, sizeof(m_copyBuf));
-    u32 copied = 0;
     b32 done = false;
+    u32 copied = 0;
     while (done == false) {
         if (pProgress != NULL) {
             MSG msg;
