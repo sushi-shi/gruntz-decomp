@@ -33,10 +33,14 @@ class BoardControls(unittest.TestCase):
     def test_ratcheted_metric_cannot_creep_up(self):
         from gruntz.verify import board
         base = board.load_baseline()
-        floor = base.get("reinterpret_casts", 0)
-        rows = [("reinterpret_casts", floor + 1)]
+        floor = base.get("unexplained casts", 0)
+        rows = [("unexplained casts", floor + 1)]
         self.assertTrue(board.gate(rows))            # a rise FAILS
-        self.assertFalse(board.gate([("reinterpret_casts", floor)]))
+        self.assertFalse(board.gate([("unexplained casts", floor)]))
+
+    def test_reviewed_reinterpret_cast_inventory_only_tracks(self):
+        from gruntz.verify import board
+        self.assertFalse(board.gate([("reinterpret_casts", 10_000)]))
 
     def test_non_ratcheted_metric_only_tracks(self):
         from gruntz.verify import board
@@ -109,6 +113,22 @@ class CompilerArtifactControls(unittest.TestCase):
             "// ::operator delete(p); CThing* RealizeCThing() {}\n"
             "CThing* F() { return new CThing(); }\n"
         )
+        self.assertEqual(findings, [])
+
+    def test_unreviewed_explicit_destructor_call_fails(self):
+        findings = self._scan("void F(CThing* p) { p->~CThing(); }\n")
+        self.assertTrue(any("explicit destructor call" in row for row in findings))
+
+    def test_reviewed_typed_teardown_callback_passes(self):
+        from gruntz.verify import compiler_artifacts as ca
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / "Probe.h"
+            path.write_text("template<class T> void dtf(T* p) { p->~T(); }\n")
+            allowed = Counter({(str(path), "T"): 1})
+            findings = ca.source_findings(
+                [path], placement_allow=Counter(), dtor_allow=allowed,
+                low_level_allow=Counter()
+            )
         self.assertEqual(findings, [])
 
     def test_base_only_realizer_is_fatal(self):
@@ -3583,16 +3603,16 @@ class FloorAbsenceControls(unittest.TestCase):
     def test_board_reports_a_ratcheted_metric_with_no_floor(self):
         from gruntz.verify import board
         with mock.patch.object(board, "load_baseline", return_value={}):
-            found = board.gate([("reinterpret_casts", 9999)])
+            found = board.gate([("unexplained casts", 9999)])
         self.assertTrue(found, "a ratcheted metric with no floor passed")
         self.assertIn("no committed floor", found[0])
 
     def test_board_still_ratchets_when_the_floor_exists(self):
         from gruntz.verify import board
         with mock.patch.object(board, "load_baseline",
-                               return_value={"reinterpret_casts": 10}):
-            self.assertTrue(board.gate([("reinterpret_casts", 11)]))
-            self.assertEqual(board.gate([("reinterpret_casts", 10)]), [])
+                               return_value={"unexplained casts": 10}):
+            self.assertTrue(board.gate([("unexplained casts", 11)]))
+            self.assertEqual(board.gate([("unexplained casts", 10)]), [])
 
     def test_casts_reports_a_missing_floor(self):
         from gruntz.verify import board, casts

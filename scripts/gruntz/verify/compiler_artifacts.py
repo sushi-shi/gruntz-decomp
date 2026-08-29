@@ -2,9 +2,11 @@
 
 The compiler owns allocation calls, deleting destructors, vtables/RTTI, static
 initialization helpers and EH/vector helpers.  A few source-level lifetime
-operations remain real: placement construction and destructor-only calls over
-raw storage.  Their path/type/count signatures are closed here so a new site is
-reviewed instead of silently joining that exception.
+operations remain real: placement construction, destructor-only calls over raw
+storage, and an original typed collection's destructor callback before the
+collection separately deallocates the object.  Their path/type/count signatures
+are closed here so a new site is reviewed instead of silently joining that
+exception.
 
 ``gruntz verify compiler-artifacts`` also prints external code definitions that
 exist only in base objects.  That list is derived from the current COFFs and
@@ -36,7 +38,7 @@ PLACEMENT_ALLOW = Counter({
 
 DTOR_CALL_ALLOW = Counter({
     ("src/Bute/ButeGlobals.cpp", "CString"): 1,
-    ("src/Bute/ButeMgr.cpp", "CButeNode"): 1,
+    ("include/Bute/PTreeNode.h", "T"): 1,
     ("src/Gruntz/ZDArrayDerived.cpp", "CActHandler"): 1,
 })
 

@@ -215,12 +215,12 @@ rva	size	name	kind	note
 0x1f04e0	0x4	??_7CButeTree@@6B@	primary	
 0x1f04e0	0x4	??_7CButeTree@@6BzErrHandling@@@	secondary	MI primary-base alias; the zErrHandling sub-object is at +0 and shares CButeTree's one deleting-destructor slot
 0x1f04e4	0x4	??_7CTypeCollRuntime@@6B@	primary	
-0x1f0510	0x4	??_7CBSecStream@@6B@	primary	
-0x1f0510	0x4	??_7CBSecStream@@6BzErrHandling@@@	secondary	
-0x1f0514	0x4	??_7CBSecStream@@6BzPtrColl@@@	secondary	
-0x1f0518	0x4	??_7CButeNode@@6BzPtrColl@@@	secondary	
-0x1f051c	0x4	??_7CButeNode@@6B@	primary	
-0x1f051c	0x4	??_7CButeNode@@6BzErrHandling@@@	secondary	
+0x1f0510	0x4	??_7?$zSymTab@V?$zSymTab@UCButeValue@@@@@@6B@	primary	nested typed Bute table specialization
+0x1f0510	0x4	??_7?$zSymTab@V?$zSymTab@UCButeValue@@@@@@6BzErrHandling@@@	secondary	primary-base alias for nested typed Bute table
+0x1f0514	0x4	??_7?$zSymTab@V?$zSymTab@UCButeValue@@@@@@6BzPtrColl@@@	secondary	zPtrColl sub-object for nested typed Bute table
+0x1f0518	0x4	??_7?$zSymTab@UCButeValue@@@@6BzPtrColl@@@	secondary	zPtrColl sub-object for typed Bute value table
+0x1f051c	0x4	??_7?$zSymTab@UCButeValue@@@@6B@	primary	typed Bute value table specialization
+0x1f051c	0x4	??_7?$zSymTab@UCButeValue@@@@6BzErrHandling@@@	secondary	primary-base alias for typed Bute value table
 0x1f0748	0x14	??_7CNetProviderNode@@6B@	primary	DirectPlay provider node
 0x1f0760	0x14	??_7CNetSessionListNode@@6B@	primary	DirectPlay session listing
 0x1f0778	0x14	??_7CNetPlayerNode@@6B@	primary	DirectPlay player node

@@ -10,6 +10,7 @@
 #include <stddef.h>
 
 struct CVariantSlot;
+struct CButeValue;
 extern CVariantSlot g_rezArchiveErrorSlot;
 
 GZ_ENUM_CONST_BEGIN(PTreeBitLayout)
@@ -82,13 +83,36 @@ public:
     i32 preview;
 };
 
-class CButeNode : public zPTree {
+template<class T> class zSymTab : public zPTree {
 public:
-    virtual ~CButeNode() OVERRIDE;
+    zSymTab(i32 n = 2)
+        : zPTree(
+              reinterpret_cast<void(__cdecl*)(void*)>(
+                  dtf
+              ), // PROVEN: original zSymTab erases its typed teardown callback at this ABI seam.
+              n
+          ) {}
 
-    CButeNode(i32 kind);
+    T* FindOrInsert(const char* key, T* value) {
+        return static_cast<T*>(zPTree::FindOrInsert(key, value));
+    }
 
-    CButeNode(void(__cdecl* teardown)(void*), i32 n) : zPTree(teardown, n) {}
+    T* Find(const char* key) {
+        return static_cast<T*>(zPTree::Find(key));
+    }
+
+    T* Insert(const char* key, T* value) {
+        return static_cast<T*>(zPTree::Insert(key, value));
+    }
+
+    void Walk(void(__cdecl* fn)(char* key, void* value, void* ctx), void* ctx, zPTreeNode* node) {
+        zPTree::Walk(fn, ctx, node);
+    }
+
+private:
+    static void dtf(T* p) {
+        p->T::~T();
+    }
 };
 
 #endif // SRC_BUTE_PTREENODE_H

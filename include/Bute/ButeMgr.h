@@ -15,11 +15,8 @@
 
 GZ_ENUM_FORWARD(ButeLexAction);
 
-void ButeStoreFreeAdapter(void* p);
-struct CBSecStream : zPTree {
-    CBSecStream() : zPTree(&ButeStoreFreeAdapter, 2) {}
-    virtual ~CBSecStream() OVERRIDE {}
-};
+typedef zSymTab<CButeValue> CButeNode;
+typedef zSymTab<CButeNode> CBSecStream;
 
 #include <stdlib.h>
 #include <strstrea.h>
@@ -117,7 +114,7 @@ public:
     ErrCallback m_pDisplayFunc;
     CBSecStream m_tagTab;
 
-    zPTree* m_pCurrTabOfItems;
+    CButeNode* m_pCurrTabOfItems;
     CBSecStream m_auxTagTab;
     CBSecStream m_newTagTab;
     istream* m_pData;

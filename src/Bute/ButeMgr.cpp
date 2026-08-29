@@ -1148,7 +1148,7 @@ bool CButeMgr::Tag() {
             DisplayMessage(s_fmtDupTag, tok);
             return false;
         }
-        CButeNode* node = new CButeNode(&ButeValueTeardown, 2);
+        CButeNode* node = new CButeNode(2);
 
         m_pCurrTabOfItems = node;
         t->Insert(tok, node);
@@ -2082,51 +2082,14 @@ void CButeMgr::SetRange(const char* tag, const char* key, CARange* val) {
 
 RVA_COMPGEN(0x00174cb0, 0x49, ??0CButeValue@@QAE@W4ButeType@@PAVCARange@@@Z)
 
-RVA(0x00174d00, 0x25)
-CButeNode::CButeNode(i32 kind) : zPTree(&ButeValueTeardown, kind) {}
+RVA_COMPGEN(0x00174d00, 0x25, ??0?$zSymTab@UCButeValue@@@@QAE@H@Z)
 
-RVA_COMPGEN(0x00174d30, 0x1e, ??_GCBSecStream@@UAEPAXI@Z)
+RVA_COMPGEN(0x00174d30, 0x1e, ??_G?$zSymTab@V?$zSymTab@UCButeValue@@@@@@UAEPAXI@Z)
 
-RVA_COMPGEN(0x00174d50, 0x1e, ??_GCButeNode@@UAEPAXI@Z)
+RVA_COMPGEN(0x00174d50, 0x1e, ??_G?$zSymTab@UCButeValue@@@@UAEPAXI@Z)
 
-RVA(0x00174d70, 0x70)
-CButeNode::~CButeNode() {}
+RVA_COMPGEN(0x00174d70, 0x70, ??1?$zSymTab@UCButeValue@@@@UAE@XZ)
 
-RVA(0x00174de0, 0x9)
-void ButeStoreFreeAdapter(void* p) {
-    (static_cast<CButeNode*>(p))->CButeNode::~CButeNode();
-}
+RVA_COMPGEN(0x00174de0, 0x9, ?dtf@?$zSymTab@V?$zSymTab@UCButeValue@@@@@@CAXPAV?$zSymTab@UCButeValue@@@@@Z)
 
-RVA(0x00174df0, 0x7c)
-void __cdecl ButeValueTeardown(void* pValue) {
-    CButeValue* v = static_cast<CButeValue*>(pValue);
-    switch (v->type) {
-        case BUTE_INT:
-            delete static_cast<i32*>(v->pValue);
-            break;
-        case BUTE_DWORD:
-            delete static_cast<DWORD*>(v->pValue);
-            break;
-        case BUTE_DOUBLE:
-            delete static_cast<double*>(v->pValue);
-            break;
-        case BUTE_FLOAT:
-            delete static_cast<float*>(v->pValue);
-            break;
-        case BUTE_STRING:
-            delete static_cast<CString*>(v->pValue);
-            break;
-        case BUTE_RECT:
-            delete static_cast<ButeIntRect*>(v->pValue);
-            break;
-        case BUTE_POINT:
-            delete static_cast<ButeIntPoint*>(v->pValue);
-            break;
-        case BUTE_VECTOR:
-            delete static_cast<CAVector*>(v->pValue);
-            break;
-        case BUTE_RANGE:
-            delete static_cast<CARange*>(v->pValue);
-            break;
-    }
-}
+RVA_COMPGEN(0x00174df0, 0x7c, ?dtf@?$zSymTab@UCButeValue@@@@CAXPAUCButeValue@@@Z)

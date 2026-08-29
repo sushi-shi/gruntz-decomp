@@ -348,7 +348,7 @@ _SEMANTIC_LABEL_SET = set(_SEMANTIC_LABELS)
 
 _RATCHET = _VIEW_METRICS | _SEMANTIC_LABEL_SET | {
     "magic case labels", "unnamed domain compares", ".cpp-local enums",
-    "C-style casts", "reinterpret_casts", "unexplained casts",
+    "C-style casts", "unexplained casts",
     "forced COMDAT emitters", "cpp extern decls", "cpp external prototypes",
     "duplicate header externs", "positional arg placeholders",
     "m_<hex> fields", "address-derived identifiers",

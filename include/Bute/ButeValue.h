@@ -148,6 +148,4 @@ inline CButeValue::~CButeValue() {
     }
 }
 
-void __cdecl ButeValueTeardown(void* pValue);
-
 #endif // SRC_BUTE_BUTEVALUE_H

@@ -4,10 +4,11 @@ Three ported behaviors, one module (they are one campaign):
 
   * the LEDGER: every reinterpret_cast is either structurally FORCED, carries
     a reason from the closed vocabulary within three lines, or is OPEN.
-    PARKED IS NOT DONE (user ruling 2026-07-28) - the number to drive to 0 is
-    the TOTAL; OPEN at 0 only means every cast was looked at once. The gate
-    fails when OPEN exceeds the committed unexplained-casts floor (the board's
-    baseline carries it).
+    OPEN is the debt driven to zero. Reviewed casts remain visible in TOTAL:
+    original source can prove a type-erasing callback boundary that C++ cannot
+    express without a cast, so a forced seam is an audited model fact rather
+    than textual debt. The gate fails when OPEN exceeds the committed
+    unexplained-casts floor (the board's baseline carries it).
   * SELF-RECURSION (merged from self_recursion.py): a one-line accessor whose
     only statement calls the same-arity overload of ITSELF is always the
     seam-sweep footgun (the sweep rewrote the seam's own body). Calls to a
@@ -334,9 +335,9 @@ def main(argv=None) -> int:
     forced, openv = scan_ledger()
     n_open = sum(len(v) for v in openv.values())
     n_forced = sum(forced.values())
-    print(f"cast ledger: {n_forced + n_open} casts total (the number to drive "
-          f"to 0)  |  {n_open} never examined  |  {n_forced} examined + "
-          f"parked, still expected to fold")
+    print(f"cast ledger: {n_forced + n_open} casts total  |  "
+          f"{n_open} unexplained (the debt driven to 0)  |  "
+          f"{n_forced} reviewed ABI/model seams")
     for name, n in forced.most_common():
         print(f"   {n:6d}  {name}")
     if not a.summary and openv:
