@@ -541,7 +541,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 break;
             }
             case WWDLOOP_AT_PARAM: {
-                if (m_boundObject->m_frameIndex == m_element->m_param) {
+                if (m_element->m_param == m_boundObject->m_frameIndex) {
                     if (rd->m_loopMode != WWDLOOP_FINISH) {
                         m_index = m_index + 1;
                         m_element = static_cast<CAniRecordView*>(m_animation->AtChecked(m_index));

@@ -132,10 +132,8 @@ i32 CWwdGrid::Query(WwdRect q, i32 doRemove) {
                 do {
                     WwdRegion* r = static_cast<WwdRegion*>(m_buckets[idx].GetFirst());
                     while (r) {
-                        i32 x = r->m_x;
                         WwdRegion* next = static_cast<WwdRegion*>(r->Next());
-                        if (x >= q.m_minX && r->m_y >= q.m_minY && x <= q.m_maxX
-                            && r->m_y <= q.m_maxY) {
+                        if (q.Contains(r)) {
                             if (doRemove) {
                                 m_buckets[idx].Delete(r);
                                 r->m_bucket = NULL;
@@ -243,8 +241,7 @@ WwdRegion* CWwdGridIter::GetNext() {
         }
         while (m_cur != NULL) {
             m_next = static_cast<WwdRegion*>(m_cur->Next());
-            if (m_cur->m_x < m_rect.m_minX || m_cur->m_y < m_rect.m_minY
-                || m_cur->m_x > m_rect.m_maxX || m_cur->m_y > m_rect.m_maxY) {
+            if (!m_rect.Contains(m_cur)) {
                 // Unreachable era bug: a rejected region repeats without advancing m_cur.
                 continue;
             }

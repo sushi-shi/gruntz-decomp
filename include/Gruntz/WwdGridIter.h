@@ -11,8 +11,11 @@
 
 class CWwdGrid;
 struct BucketHead;
+struct WwdGridNode;
 
 struct WwdRect {
+    i32 Contains(const WwdGridNode* point) const;
+
     union {
         struct {
             i32 m_minX;
@@ -36,6 +39,11 @@ struct WwdGridNode : CBaseListItem {
     i32 m_x;
     i32 m_y;
 };
+
+inline i32 WwdRect::Contains(const WwdGridNode* point) const {
+    return point->m_x >= m_minX && point->m_y >= m_minY && point->m_x <= m_maxX
+           && point->m_y <= m_maxY;
+}
 
 struct WwdRegion : WwdGridNode {
     WwdRegion();

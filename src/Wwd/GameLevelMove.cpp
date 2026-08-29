@@ -180,18 +180,17 @@ i32 CGameLevel::MoveStepYHi(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
         }
         if (result == TILEKIND_SOLID || result == TILEKIND_GROUND) {
             i32 lo = t->m_screenY + t->m_extent.bottom;
-            i32 j = fixedY - 1;
+            y = fixedY - 1;
             state |= IDX(MOVE_RESULT_AXIS_BLOCKED | MOVE_RESULT_TILE_BOTTOM);
-            for (; j > lo; j--) {
-                if (AxisProbe(col, j) == TILEKIND_PASSABLE) {
-                    j -= t->m_extent.bottom;
+            for (; y > lo; y--) {
+                if (AxisProbe(col, y) == TILEKIND_PASSABLE) {
+                    y -= t->m_extent.bottom;
                     goto have_y;
                 }
             }
-            j = t->m_screenY;
+            y = t->m_screenY;
         have_y:
-            y = j;
-            if (j == t->m_screenY) {
+            if (y == t->m_screenY) {
                 *py = t->m_screenY;
                 return state;
             }
@@ -229,18 +228,17 @@ i32 CGameLevel::MoveStepYLo(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
         }
         if (result == TILEKIND_SOLID || result == TILEKIND_GROUND) {
             i32 lo = t->m_screenY + t->m_extent.top;
-            i32 j = fixedY + 1;
+            y = fixedY + 1;
             state |= IDX(MOVE_RESULT_AXIS_BLOCKED | MOVE_RESULT_TILE_TOP);
-            for (; j < lo; j++) {
-                if (AxisProbe(col, j) == TILEKIND_PASSABLE) {
-                    j -= t->m_extent.top;
+            for (; y < lo; y++) {
+                if (AxisProbe(col, y) == TILEKIND_PASSABLE) {
+                    y -= t->m_extent.top;
                     goto have_y;
                 }
             }
-            j = t->m_screenY;
+            y = t->m_screenY;
         have_y:
-            y = j;
-            if (j == t->m_screenY) {
+            if (y == t->m_screenY) {
                 *py = t->m_screenY;
                 return state;
             }

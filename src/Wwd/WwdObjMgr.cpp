@@ -622,6 +622,28 @@ static char s_dbgVid[] = "VID";
 DATA(0x0021ab28)
 static char s_dbgSys[] = "SYS";
 
+static inline void DrawObjectDebugRect(
+    CWwdGameObject* obj,
+    const RECT& objectRect,
+    CDDrawWorkerHost* view,
+    CDDrawSurfacePair* drawHost
+) {
+    if (objectRect.left == COORD_UNSET) {
+        return;
+    }
+
+    i32 ox = obj->m_screenX;
+    RECT rc;
+    rc.left = objectRect.left + ox;
+    i32 oy = obj->m_screenY;
+    rc.top = objectRect.top + oy;
+    rc.right = objectRect.right + ox;
+    rc.bottom = objectRect.bottom + oy;
+    view->WorldToViewport(&rc.left, &rc.top);
+    view->WorldToViewport(&rc.right, &rc.bottom);
+    drawHost->DrawBox(&rc, 0xff);
+}
+
 // @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
@@ -634,18 +656,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
         if (pos != NULL) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
-                if (obj->m_area.left != COORD_UNSET) {
-                    i32 ox = obj->m_screenX;
-                    RECT rc;
-                    rc.left = obj->m_area.left + ox;
-                    i32 oy = obj->m_screenY;
-                    rc.top = obj->m_area.top + oy;
-                    rc.right = obj->m_area.right + ox;
-                    rc.bottom = obj->m_area.bottom + oy;
-                    view->WorldToViewport(&rc.left, &rc.top);
-                    view->WorldToViewport(&rc.right, &rc.bottom);
-                    drawHost->DrawBox(&rc, 0xff);
-                }
+                DrawObjectDebugRect(obj, obj->m_area, view, drawHost);
             } while (pos != NULL);
         }
     }
@@ -656,18 +667,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
         if (pos != NULL) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
-                if (obj->m_switchRect.left != COORD_UNSET) {
-                    i32 ox = obj->m_screenX;
-                    RECT rc;
-                    rc.left = obj->m_switchRect.left + ox;
-                    i32 oy = obj->m_screenY;
-                    rc.top = obj->m_switchRect.top + oy;
-                    rc.right = obj->m_switchRect.right + ox;
-                    rc.bottom = obj->m_switchRect.bottom + oy;
-                    view->WorldToViewport(&rc.left, &rc.top);
-                    view->WorldToViewport(&rc.right, &rc.bottom);
-                    drawHost->DrawBox(&rc, 0xff);
-                }
+                DrawObjectDebugRect(obj, obj->m_switchRect, view, drawHost);
             } while (pos != NULL);
         }
     }
@@ -678,18 +678,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
         if (pos != NULL) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
-                if (obj->m_extent.left != COORD_UNSET) {
-                    i32 ox = obj->m_screenX;
-                    RECT rc;
-                    rc.left = obj->m_extent.left + ox;
-                    i32 oy = obj->m_screenY;
-                    rc.top = obj->m_extent.top + oy;
-                    rc.right = obj->m_extent.right + ox;
-                    rc.bottom = obj->m_extent.bottom + oy;
-                    view->WorldToViewport(&rc.left, &rc.top);
-                    view->WorldToViewport(&rc.right, &rc.bottom);
-                    drawHost->DrawBox(&rc, 0xff);
-                }
+                DrawObjectDebugRect(obj, obj->m_extent, view, drawHost);
             } while (pos != NULL);
         }
     }

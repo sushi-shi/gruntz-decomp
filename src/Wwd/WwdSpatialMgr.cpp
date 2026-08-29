@@ -66,8 +66,7 @@ i32 CWwdSpatialMgr::ActivateAt(i32 centerX, i32 centerY) {
     if (m_activeCenterX == centerX && m_activeCenterY == centerY) {
         return 0;
     }
-    m_activeCenterX = centerX;
-    m_activeCenterY = centerY;
+    SetActiveCenter(centerX, centerY);
 
     WwdRect r;
     r.m_minX = centerX - m_defaultRegionHalfWidth;

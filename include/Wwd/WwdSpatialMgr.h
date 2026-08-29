@@ -43,6 +43,10 @@ struct CWwdSpatialMgr {
         i32* smallRegionSize
     );
     void FreeGrids();
+    void SetActiveCenter(i32 x, i32 y) {
+        m_activeCenterX = x;
+        m_activeCenterY = y;
+    }
     i32 ActivateAt(i32 centerX, i32 centerY);
     i32 ActivateKeepActiveObjects();
     i32 ActivateKeepActiveFromGrid(CWwdGrid* grid);
