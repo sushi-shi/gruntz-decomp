@@ -4,264 +4,318 @@
 
 #include <Win32.h>
 
-#include <Gruntz/RangeSet.h>
-#include <Rez/DebugConfig.h>
+#include <Rez/DebugPrintfInternals.h>
 
 #include <stdarg.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 DATA(0x002bf84c)
-u16* g_monoBuffer = NULL;
+u16* dprintfmonoscreen = NULL;
 DATA(0x002bf850)
-CRangeSet g_debugChannels = {0};
+dprintfExcludeRegions dprintfExReg = {0};
 DATA(0x002bf8d4)
-i32 g_monoRow = 0;
+i32 dbprintfcurrentLine = 0;
 DATA(0x002bf8d8)
-i32 g_monoCol = 0;
+i32 dprintfcurrentChar = 0;
 DATA(0x002bf8dc)
-DebugPrintMode g_debugPrintMode = DEBUG_PRINT_DISABLED;
+dprintfOutputType dprintfOutType = DPRINTF_UNKNOWN;
 DATA(0x002bf8e0)
-FILE* g_debugLogFile = NULL;
+FILE* dprintffile = NULL;
 
-RVA_DYNINIT(0x00184b60, 0xa, g_debugConfig)
-RVA_DYNINIT(0x00184b70, 0xa, g_debugConfig)
-RVA_DYNINIT(0x00184b80, 0xe, g_debugConfig)
-RVA_DYNINIT(0x00184b90, 0xa, g_debugConfig)
+RVA_DYNINIT(0x00184b60, 0xa, dprintfinit)
+RVA_DYNINIT(0x00184b70, 0xa, dprintfinit)
+RVA_DYNINIT(0x00184b80, 0xe, dprintfinit)
+RVA_DYNINIT(0x00184b90, 0xa, dprintfinit)
 DATA(0x002bf848)
-CDebugConfig g_debugConfig;
+dprintfinittype dprintfinit;
 
 RVA(0x00184ba0, 0x33)
-bool CRangeSet::Contains(u32 value) {
-    for (u32 i = 0; i < m_count; i++) {
-        if (value >= m_pairs[i].lo && value <= m_pairs[i].hi) {
-            return true;
+BOOLEAN dprintfExcludeRegions::In(u32 Num) {
+    u32 Loop;
+    for (Loop = 0; Loop < NumRegions; Loop++) {
+        if (Num >= Ary[Loop].From && Num <= Ary[Loop].To) {
+            return TRUE;
         }
     }
-    return false;
+    return FALSE;
 }
 
 RVA(0x00184be0, 0x24)
-void CRangeSet::AddRange(u32 lo, u32 hi) {
-    if (m_count + 1 < 16) {
-        m_pairs[m_count].lo = lo;
-        m_pairs[m_count].hi = hi;
-        m_count = m_count + 1;
+void dprintfExcludeRegions::Add(u32 From, u32 To) {
+    if (NumRegions + 1 < 16) {
+        Ary[NumRegions].From = From;
+        Ary[NumRegions].To = To;
+        NumRegions++;
     }
 }
 
 RVA(0x00184c10, 0x136)
-void CRangeSet::AddFromString(char* str) {
-    char buf[0x100];
-    while (*str != 0) {
-        char* x = strstr(str, "X");
-        if (x == NULL) {
+void dprintfExcludeRegions::Scan(char* Str) {
+    char TmpStr[DEBUG_PRINT_BUFFER_SIZE];
+    char* P;
+    i32 From;
+    i32 To;
+    while (*Str != 0) {
+        Str = strstr(Str, "X");
+        if (Str == NULL) {
             return;
         }
-        str = strpbrk(x, "0123456789");
-        if (str == NULL) {
+        Str = strpbrk(Str, "0123456789");
+        if (Str == NULL) {
             return;
         }
-        strcpy(buf, str);
-        char* q = buf;
-        while (*q != 0) {
-            char c = *q;
-            if (c >= '0' && c <= '9') {
-                q++;
-                str++;
+        strcpy(TmpStr, Str);
+        P = TmpStr;
+        while (*P != 0) {
+            if (*P >= '0' && *P <= '9') {
+                P++;
+                Str++;
             } else {
-                *q = 0;
+                *P = 0;
             }
         }
-        i32 lo = atol(buf);
-        i32 hi;
-        if (*str == '-') {
-            str = strpbrk(str, "0123456789");
-            if (str == NULL) {
+        From = atol(TmpStr);
+        if (*Str == '-') {
+            Str = strpbrk(Str, "0123456789");
+            if (Str == NULL) {
                 return;
             }
-            strcpy(buf, str);
-            q = buf;
-            while (*q != 0) {
-                char c = *q;
-                if (c >= '0' && c <= '9') {
-                    q++;
-                    str++;
+            strcpy(TmpStr, Str);
+            P = TmpStr;
+            while (*P != 0) {
+                if (*P >= '0' && *P <= '9') {
+                    P++;
+                    Str++;
                 } else {
-                    *q = 0;
+                    *P = 0;
                 }
             }
-            hi = atol(buf);
+            To = atol(TmpStr);
         } else {
-            hi = lo;
+            To = From;
         }
-        AddRange(lo, hi);
+        Add(From, To);
     }
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00184d50, 0x5f)
-void MonoNewline() {
-    g_monoCol = 0;
-    if (++g_monoRow == DEBUG_MONO_ROW_COUNT) {
+void dprintfmonoincline() {
+    dprintfcurrentChar = 0;
+    if (++dbprintfcurrentLine == DEBUG_MONO_ROW_COUNT) {
         i32 i;
         for (i = DEBUG_MONO_COLUMN_COUNT; i < DEBUG_MONO_COLUMN_COUNT * DEBUG_MONO_ROW_COUNT; i++) {
-            g_monoBuffer[i - DEBUG_MONO_COLUMN_COUNT] = g_monoBuffer[i];
+            dprintfmonoscreen[i - DEBUG_MONO_COLUMN_COUNT] = dprintfmonoscreen[i];
         }
         for (i = DEBUG_MONO_COLUMN_COUNT * (DEBUG_MONO_ROW_COUNT - 1);
              i < DEBUG_MONO_COLUMN_COUNT * DEBUG_MONO_ROW_COUNT;
              i++) {
-            g_monoBuffer[i] = 0x720;
+            dprintfmonoscreen[i] = DEBUG_MONO_ATTRIBUTE + ' ';
         }
-        g_monoRow--;
+        dbprintfcurrentLine--;
     }
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00184db0, 0x28)
-void MonoClear() {
+void dprintfmonoclrscr() {
     i32 i;
     for (i = 0; i < DEBUG_MONO_COLUMN_COUNT * DEBUG_MONO_ROW_COUNT; i++) {
-        g_monoBuffer[i] = 0x720;
+        dprintfmonoscreen[i] = DEBUG_MONO_ATTRIBUTE + ' ';
     }
-    g_monoRow = 0;
-    g_monoCol = 0;
+    dbprintfcurrentLine = 0;
+    dprintfcurrentChar = 0;
 }
 
-// @identity-TODO: the OutputDebugStringA forwarding behavior is proven; the name is inferred.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00184de0, 0xc)
-void DebugOutputString(char* line) {
-    OutputDebugStringA(line);
+void dprintfmonoprint(char* message) {
+    OutputDebugStringA(message);
 }
 
 RVA(0x00184df0, 0x1)
-void DiscardDebugOutput(char* line) {}
+void dprintfdoprint(char* Str) {}
 
 RVA(0x00184e00, 0x55)
-void RezAssertFail(char* fmt, ...) {
-    char buf[256];
-    if (g_debugPrintMode != DEBUG_PRINT_DISCARD && g_debugPrintMode != DEBUG_PRINT_DISABLED
-        && !(static_cast<CRangeSet*>(&g_debugChannels))->Contains(0)) {
-        va_list ap;
-        va_start(ap, fmt);
-        vsprintf(buf, fmt, ap);
-        DiscardDebugOutput(buf);
+void dprintf(char* fmt, ...) {
+    if (dprintfOutType == DPRINTF_NOTHING || dprintfOutType == DPRINTF_UNKNOWN) {
+        return;
     }
+    if (dprintfExReg.In(0)) {
+        return;
+    }
+
+    va_list ap;
+    char buf[DEBUG_PRINT_BUFFER_SIZE];
+    va_start(ap, fmt);
+    vsprintf(buf, fmt, ap);
+    va_end(ap);
+    dprintfdoprint(buf);
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00184e60, 0x6d)
-void RezDebugPrintfXY(i32 x, i32 y, char* fmt, ...) {
-    char buf[256];
-    if (g_debugPrintMode != DEBUG_PRINT_DISCARD && g_debugPrintMode != DEBUG_PRINT_DISABLED
-        && !(static_cast<CRangeSet*>(&g_debugChannels))->Contains(0)) {
-        DebugSetCursorXY(x, y);
-        va_list ap;
-        va_start(ap, fmt);
-        vsprintf(buf, fmt, ap);
-        DiscardDebugOutput(buf);
+void dprintf(i32 x, i32 y, char* fmt, ...) {
+    if (dprintfOutType == DPRINTF_NOTHING || dprintfOutType == DPRINTF_UNKNOWN) {
+        return;
     }
+    if (dprintfExReg.In(0)) {
+        return;
+    }
+
+    dgotoxy(x, y);
+    va_list ap;
+    char buf[DEBUG_PRINT_BUFFER_SIZE];
+    va_start(ap, fmt);
+    vsprintf(buf, fmt, ap);
+    va_end(ap);
+    dprintfdoprint(buf);
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00184ed0, 0x5b)
-void RezDebugPrintfCh(i32 channel, char* fmt, ...) {
-    char buf[256];
-    if (g_debugPrintMode != DEBUG_PRINT_DISCARD && g_debugPrintMode != DEBUG_PRINT_DISABLED
-        && !(static_cast<CRangeSet*>(&g_debugChannels))->Contains(channel)) {
-        va_list ap;
-        va_start(ap, fmt);
-        vsprintf(buf, fmt, ap);
-        DiscardDebugOutput(buf);
+void dprintf(u32 Level, char* fmt, ...) {
+    if (dprintfOutType == DPRINTF_NOTHING || dprintfOutType == DPRINTF_UNKNOWN) {
+        return;
     }
+    if (dprintfExReg.In(Level)) {
+        return;
+    }
+
+    va_list ap;
+    char buf[DEBUG_PRINT_BUFFER_SIZE];
+    va_start(ap, fmt);
+    vsprintf(buf, fmt, ap);
+    va_end(ap);
+    dprintfdoprint(buf);
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00184f30, 0x73)
-void RezDebugPrintfChXY(i32 channel, i32 x, i32 y, char* fmt, ...) {
-    char buf[256];
-    if (g_debugPrintMode != DEBUG_PRINT_DISCARD && g_debugPrintMode != DEBUG_PRINT_DISABLED
-        && !(static_cast<CRangeSet*>(&g_debugChannels))->Contains(channel)) {
-        DebugSetCursorXY(x, y);
-        va_list ap;
-        va_start(ap, fmt);
-        vsprintf(buf, fmt, ap);
-        DiscardDebugOutput(buf);
+void dprintf(u32 Level, i32 x, i32 y, char* fmt, ...) {
+    if (dprintfOutType == DPRINTF_NOTHING || dprintfOutType == DPRINTF_UNKNOWN) {
+        return;
     }
+    if (dprintfExReg.In(Level)) {
+        return;
+    }
+
+    dgotoxy(x, y);
+    va_list ap;
+    char buf[DEBUG_PRINT_BUFFER_SIZE];
+    va_start(ap, fmt);
+    vsprintf(buf, fmt, ap);
+    va_end(ap);
+    dprintfdoprint(buf);
 }
 
 RVA(0x00184fb0, 0x15)
-void DebugSetCursorXY(i32 x, i32 y) {
-    DebugSetCursor(0, x, y);
+void dgotoxy(i32 x, i32 y) {
+    dgotoxy(0, x, y);
 }
 
 RVA(0x00184fd0, 0x1)
-void DebugSetCursor(i32 channel, i32 x, i32 y) {}
+void dgotoxy(u32 Level, i32 x, i32 y) {}
 
-// @identity-TODO: the default-channel wrapper relationship is proven; the names are inferred.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00184fe0, 0xb)
-void DebugClear() {
-    DebugClearChannel(0);
+void dclrscr() {
+    dclrscr(0);
 }
 
 RVA(0x00184ff0, 0x1)
-void DebugClearChannel(i32 channel) {}
+void dclrscr(u32 Level) {}
 
 RVA(0x00185000, 0x1a6)
-CDebugConfig::CDebugConfig() {
-    char buf[256];
-    g_debugChannels.m_count = 0;
-    g_debugPrintMode = DEBUG_PRINT_DISCARD;
-    char* env = getenv("DPRINTF");
-    if (env != NULL) {
-        strcpy(buf, env);
-        _strupr(buf);
-        if (strstr(buf, "MONO")) {
-            g_debugPrintMode = DEBUG_PRINT_MONO;
+dprintfinittype::dprintfinittype() {
+    char Buf[DEBUG_PRINT_BUFFER_SIZE];
+    dprintfExReg.NumRegions = 0;
+    dprintfOutType = DPRINTF_NOTHING;
+    dprintfOutType = DPRINTF_NOTHING;
+    char* Str = getenv("DPRINTF");
+    if (Str != NULL) {
+        strcpy(Buf, Str);
+        _strupr(Buf);
+        if (strstr(Buf, "MONO")) {
+            dprintfOutType = DPRINTF_MONOCHROME;
         }
-        if (strstr(buf, "FILE")) {
-            g_debugPrintMode = DEBUG_PRINT_FILE;
+        if (strstr(Buf, "FILE")) {
+            dprintfOutType = DPRINTF_FILE;
         }
-        if (strstr(buf, "FILEAPPEND")) {
-            g_debugPrintMode = DEBUG_PRINT_FILE_APPEND;
+        if (strstr(Buf, "FILEAPPEND")) {
+            dprintfOutType = DPRINTF_FILEAPPEND;
         }
-        if (strstr(buf, "COM1")) {
-            g_debugPrintMode = DEBUG_PRINT_COM1;
+        if (strstr(Buf, "COM1")) {
+            dprintfOutType = DPRINTF_COM1;
         }
-        if (strstr(buf, "COM2")) {
-            g_debugPrintMode = DEBUG_PRINT_COM2;
+        if (strstr(Buf, "COM2")) {
+            dprintfOutType = DPRINTF_COM2;
         }
-        if (strstr(buf, "STDOUT")) {
-            g_debugPrintMode = DEBUG_PRINT_STDOUT;
+        if (strstr(Buf, "STDOUT")) {
+            dprintfOutType = DPRINTF_STDOUT;
         }
-        if (strstr(buf, "LPT1")) {
-            g_debugPrintMode = DEBUG_PRINT_LPT;
+        if (strstr(Buf, "LPT1")) {
+            dprintfOutType = DPRINTF_LPT1;
         }
-        if (strstr(buf, "LPT2")) {
-            g_debugPrintMode = DEBUG_PRINT_LPT;
+        if (strstr(Buf, "LPT2")) {
+            dprintfOutType = DPRINTF_LPT1;
         }
-        if (strstr(buf, "PRN")) {
-            g_debugPrintMode = DEBUG_PRINT_PRN;
+        if (strstr(Buf, "PRN")) {
+            dprintfOutType = DPRINTF_PRN;
         }
-        g_debugChannels.AddFromString(buf);
+        dprintfExReg.Scan(Buf);
     }
-    g_debugPrintMode = DEBUG_PRINT_MONO;
+    dprintfOutType = DPRINTF_MONOCHROME;
+
+    switch (dprintfOutType) {
+        case DPRINTF_FILE:
+            dprintffile = fopen("DPRINTF.OUT", "w");
+            if (dprintffile == NULL) {
+                dprintfOutType = DPRINTF_NOTHING;
+            }
+            break;
+        case DPRINTF_FILEAPPEND:
+            dprintffile = fopen("DPRINTF.OUT", "w");
+            fclose(dprintffile);
+            break;
+        case DPRINTF_LPT1:
+            dprintffile = fopen("LPT1", "w");
+            if (dprintffile == NULL) {
+                dprintfOutType = DPRINTF_NOTHING;
+            }
+            break;
+        case DPRINTF_LPT2:
+            dprintffile = fopen("LPT2", "w");
+            if (dprintffile == NULL) {
+                dprintfOutType = DPRINTF_NOTHING;
+            }
+            break;
+        case DPRINTF_PRN:
+            dprintffile = fopen("PRN", "w");
+            if (dprintffile == NULL) {
+                dprintfOutType = DPRINTF_NOTHING;
+            }
+            break;
+    }
 }
 
 RVA(0x001851b0, 0x23)
-CDebugConfig::~CDebugConfig() {
-    if (g_debugPrintMode == DEBUG_PRINT_FILE
-        || (IDX(g_debugPrintMode) > IDX(DEBUG_PRINT_STDOUT)
-            && IDX(g_debugPrintMode) <= IDX(DEBUG_PRINT_PRN))) {
-        fclose(g_debugLogFile);
+dprintfinittype::~dprintfinittype() {
+    switch (dprintfOutType) {
+        case DPRINTF_FILE:
+        case DPRINTF_LPT1:
+        case DPRINTF_LPT2:
+        case DPRINTF_PRN:
+            fclose(dprintffile);
+            break;
     }
 }

@@ -16,8 +16,8 @@ addresses, but each function retained a commuted scale-1 SIB:
 
 | function | byte-view source | typed-index source |
 |---|---:|---:|
-| `MonoNewline` 0x184d50 | 98.5714 | **100.000** |
-| `MonoClear` 0x184db0 | 99.0000 | **100.000** |
+| `dprintfmonoincline` 0x184d50 | 98.5714 | **100.000** |
+| `dprintfmonoclrscr` 0x184db0 | 99.0000 | **100.000** |
 
 The surviving 1995-1997 LithTech `libs/lith/dprintf.cpp` supplies the missing source
 fact. Its mono buffer is an `unsigned short*`, and both operations are ordinary indexed

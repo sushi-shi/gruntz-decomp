@@ -49,7 +49,7 @@ and the three `CBaseHash` bucket helpers these all produced byte-identical outpu
 - routing the subscript through an inline accessor (`Bucket(idx)->…`), so the index
   becomes an inline formal materialised at the call.
 
-**Corollary: with only ONE local in play there is no lever.** `MonoClear` (0x184db0)
+**Corollary: with only ONE local in play there is no lever.** `dprintfmonoclrscr` (0x184db0)
 indexes a GLOBAL buffer by its single loop counter; giving the buffer a local turns the
 loop into `rep stos` (a much bigger change), so its one SIB byte is parked.
 
@@ -67,12 +67,12 @@ loop into `rep stos` (a much bigger change), so its one SIB byte is parked.
   OPPOSITE roles, so it is not a global convention). Typed-layer restoration made these
   exact; the later full authentic owner/name restoration commuted one SIB byte again in
   `Insert`, `GetLast`, and `GetFirstInBin` while preserving their 100% MAX.
-- 2026-08-05 re-audit of the three open ones adds a FOURTH and FIFTH non-lever. `MonoClear`
-  (0x184db0): `i + g_monoBuffer` (cl canonicalizes the addition), `&g_monoBuffer[i]`
+- 2026-08-05 re-audit of the three open ones adds a FOURTH and FIFTH non-lever. `dprintfmonoclrscr`
+  (0x184db0): `i + dprintfmonoscreen` (cl canonicalizes the addition), `&dprintfmonoscreen[i]`
   (subscript+address-of builds the same tree), and a `(u8*)` cast on the base all emit the
   identical SIB byte; giving the buffer a local declared AFTER the counter - the exact form
   the rule above prescribes - is still the `rep stosd` collapse, so the corollary holds.
-  `MonoNewline` (0x184d50) carries the SAME inversion at all three of its sites, so it is
+  `dprintfmonoincline` (0x184d50) carries the SAME inversion at all three of its sites, so it is
   one defect, not four. And the TU-STATE parity probe that flips a canonical `imul`
   ([`commutative-operand-order-is-canonical.md`](commutative-operand-order-is-canonical.md))
   leaves all four SIB sites untouched - the SIB role is NOT that mechanism.

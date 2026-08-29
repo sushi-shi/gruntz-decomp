@@ -279,7 +279,7 @@ Seam fns:
      (`CRezItmHashByName`/`CBaseRezFileList`/`CBaseHash`) — one small
      archive/hash utility obj;
    - `0x184b70-0x1851d3` debugprintf+rangeset woven (`RezDebugInit`,
-     `RezDebugPrintf*`, `CDebugConfig::InitFromEnv` + `CRangeSet` — the debug
+     `dprintf overloads`, `dprintfinittype constructor` + `dprintfExcludeRegions` — the debug
      config parses range strings, same file); 1-frag debugprintf init run
      @`0x184b60` at its head;
    - `0x1851e0-0x185315` rezlist (`CVirtBaseList`);

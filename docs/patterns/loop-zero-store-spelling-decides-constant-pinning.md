@@ -51,9 +51,9 @@ The source lever is how the loop writes its zero/constant, not the constant itse
   zero into `ebx`, which denied `ostream::eof`'s mask `1` its register; `memset(rec.m_bytes,
   0, 8)` freed `bl` for retail's `mov bl,1` / `test [..],bl`. Filed for months as a
   "const-materialize-into-reg-vs-immediate regalloc wall".
-- `src/Rez/DebugPrintf.cpp`, `?MonoNewline@@YAXXZ` @ 0x184d50: **90.95% -> 98.57%**. Its
+- `src/Rez/DebugPrintf.cpp`, `?dprintfmonoincline@@YAXXZ` @ 0x184d50: **90.95% -> 98.57%**. Its
   blank loop was pre-increment and hoisted `0x720` into `ecx` (pushing the page pointer
-  into `edx`); `MonoClear`'s post-increment spelling of the same loop keeps `0x720` an
+  into `edx`); `dprintfmonoclrscr`'s post-increment spelling of the same loop keeps `0x720` an
   immediate and the pointer in `ecx`, matching retail.
 - Non-levers, measured on the same two functions: chained `a = b = 0`, store order, a
   named `u32 z = 0;` temp, `0x0720` vs `0x720`, hoisting the record out of the loop,

@@ -93,7 +93,7 @@ reference or a `jmp` thunk stores their address) — object factories in a type
 table, `*DlgProc` window procedures, `AcceptAlways` callbacks. A `__thiscall`
 member cannot be stored as a plain function pointer, so being unreachable by
 `call` is itself the evidence that they are free. The residual 37 have neither
-a caller nor a reference — `?unexpected@@YAXXZ`, `RezDebugPrintf*`,
+a caller nor a reference — `?unexpected@@YAXXZ`, `dprintf overloads`,
 `SetDDrawReportModes` — and a function nothing reaches has no witness of any
 kind, so the question is undecidable rather than unanswered. Say that; do not
 count them as screened.

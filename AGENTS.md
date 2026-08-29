@@ -210,6 +210,11 @@
     C2 reorders or strength-reduces the emitted operations. The typed DIB and
     dprintf families closed walls that wide searches inside hand-transcribed
     source families had misclassified as irreducible allocation residue.
+  * matching bytes do not justify inferred source identities when the complete
+    surviving owner exists. Restoring the 17-function `dprintf.cpp` family
+    replaced invented class, function, and global names while keeping every
+    function and the TU's text/data model byte-exact. Accept the authentic
+    source layer even when it creates no percentage movement.
   * import a small value type as a complete declaration/use family. Restoring
     `CARange`/`CAVector` removed a fabricated inheritance layer and replaced
     direct field reads with the surviving accessors. Their empty default

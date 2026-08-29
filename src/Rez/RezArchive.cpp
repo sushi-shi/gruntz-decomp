@@ -447,7 +447,7 @@ i32 CRezDir::Load(b32 recursive) {
 
     CRezMgr* archive = m_pRezMgr;
     if (archive->m_bIsSorted == false || archive->m_nNumRezFiles > 1) {
-        RezAssertFail("CRezDir::Load Failed! (File is not sorted!)\n");
+        dprintf("CRezDir::Load Failed! (File is not sorted!)\n");
         return 0;
     }
 

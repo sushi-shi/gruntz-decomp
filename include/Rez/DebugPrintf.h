@@ -4,42 +4,36 @@
 #include <Enums.h>
 #include <Ints.h>
 
-#include <stdio.h>
+void dprintf(char* fmt, ...);
+void dprintf(i32 x, i32 y, char* fmt, ...);
+void dprintf(u32 level, char* fmt, ...);
+void dprintf(u32 level, i32 x, i32 y, char* fmt, ...);
 
-void DiscardDebugOutput(char* line);
-
-void RezAssertFail(char* fmt, ...);
-void RezDebugPrintfXY(i32 x, i32 y, char* fmt, ...);
-void RezDebugPrintfCh(i32 channel, char* fmt, ...);
-void RezDebugPrintfChXY(i32 channel, i32 x, i32 y, char* fmt, ...);
-
-GZ_ENUM_BEGIN(DebugPrintMode)
-    DEBUG_PRINT_DISABLED = 0,
-    DEBUG_PRINT_DISCARD = 1,
-    DEBUG_PRINT_MONO = 2,
-    DEBUG_PRINT_COM1 = 3,
-    DEBUG_PRINT_COM2 = 4,
-    DEBUG_PRINT_FILE = 5,
-    DEBUG_PRINT_FILE_APPEND = 6,
-    DEBUG_PRINT_STDOUT = 7,
-    DEBUG_PRINT_LPT = 8,
-    DEBUG_PRINT_LPT2 = 9,
-    DEBUG_PRINT_PRN = 10
-GZ_ENUM_END(DebugPrintMode)
+GZ_ENUM_BEGIN(dprintfOutputType)
+    DPRINTF_UNKNOWN = 0,
+    DPRINTF_NOTHING = 1,
+    DPRINTF_MONOCHROME = 2,
+    DPRINTF_COM1 = 3,
+    DPRINTF_COM2 = 4,
+    DPRINTF_FILE = 5,
+    DPRINTF_FILEAPPEND = 6,
+    DPRINTF_STDOUT = 7,
+    DPRINTF_LPT1 = 8,
+    DPRINTF_LPT2 = 9,
+    DPRINTF_PRN = 10
+GZ_ENUM_END(dprintfOutputType)
 
 GZ_ENUM_CONST_BEGIN(DebugMonoGeometry)
+    DEBUG_PRINT_BUFFER_SIZE = 256,
     DEBUG_MONO_COLUMN_COUNT = 80,
-    DEBUG_MONO_ROW_COUNT = 25
+    DEBUG_MONO_ROW_COUNT = 25,
+    DEBUG_MONO_ATTRIBUTE = 0x700
 GZ_ENUM_CONST_END(DebugMonoGeometry)
 
-extern DebugPrintMode g_debugPrintMode;
+void dgotoxy(i32 x, i32 y);
 
-void DebugSetCursorXY(i32 x, i32 y);
-
-void DebugSetCursor(i32 channel, i32 x, i32 y);
-void DebugClear();
-void DebugClearChannel(i32 channel);
-int vsprintf(char* buf, const char* fmt, char* va);
-void DiscardDebugOutput(char* line);
+void dgotoxy(u32 level, i32 x, i32 y);
+void dclrscr();
+void dclrscr(u32 level);
 
 #endif // GRUNTZ_REZ_DEBUGPRINTF_H_H

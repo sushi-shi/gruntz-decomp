@@ -59,7 +59,7 @@ is what removes the peel.
 
 ## Evidence
 
-- `src/Rez/DebugPrintf.cpp`, `?AddFromString@CRangeSet@@QAEXPAD@Z` @ 0x184c10:
+- `src/Rez/DebugPrintf.cpp`, `?AddFromString@dprintfExcludeRegions@@QAEXPAD@Z` @ 0x184c10:
   **92.15% -> 100.00% EXACT** from that one restructure; no other edit. The prior note
   had filed it as a "loop-carried-cursor regalloc wall … not source-steerable".
 - The reverse direction is also real and is the SAME test: where retail *has* no

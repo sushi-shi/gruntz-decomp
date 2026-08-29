@@ -56,7 +56,7 @@ one-sided, so it needs no reconstructed, paired or scoring caller, which is what
 from `walls thisscan --arity`. Four reader rules, each forced by a false hit:
 
 * ONE `add esp,N` is the whole cleanup; a SECOND is the caller releasing its own storage
-  (`call DiscardDebugOutput / add esp,0x4 / add esp,0x100` reads as 0x104 if summed).
+  (`call dprintfdoprint / add esp,0x4 / add esp,0x100` reads as 0x104 if summed).
 * cl 5.0 spells a two-argument cleanup as two `pop ecx` and is free to put an instruction
   BETWEEN them (`pop ecx / test eax,eax / pop ecx`), so the run accumulates across non-esp
   instructions. `DestructElements`, `ConstructElements`, `FindPopupMenuFromID`,

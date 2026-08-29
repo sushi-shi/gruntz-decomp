@@ -33,8 +33,8 @@ as a complete source layer with controlled adaptations, it closed these Gruntz f
 | `CBaseHash::Insert` 0x184a70 | real base/derived hash-item layout and implicit intrusive-base conversion | 99.5455 -> **100.000** |
 | `CRezMgr::OpenAdditional` 0x13b0c0 | typed hash hierarchy at its consumers | 98.2888 -> **100.000** |
 | `CRezMgr::Open` 0x13ad00 | hierarchy first, then original header-to-member statement order | 98.4567 -> 98.7437 -> **100.000** |
-| `MonoNewline` 0x184d50 | `unsigned short*` mono buffer and element-indexed scrolling/clear loops | 98.5714 -> **100.000** |
-| `MonoClear` 0x184db0 | same typed buffer and ordinary element-indexed `for` loop | 99.0000 -> **100.000** |
+| `dprintfmonoincline` 0x184d50 | `unsigned short*` mono buffer and element-indexed scrolling/clear loops | 98.5714 -> **100.000** |
+| `dprintfmonoclrscr` 0x184db0 | same typed buffer and ordinary element-indexed `for` loop | 99.0000 -> **100.000** |
 | `CRezImage::DecodePcxData` 0x176000 | 1996 DIB decoder's function-scope local census, reverse RLE fill, and direct plane indexing | 97.6772 -> 99.9240 -> **MAX 100.000** |
 | `CRezImage::DecodePidData` 0x176440 | unsigned eight-word header census, named transparency value, direct run-byte rereads, and manual literal loop | 81.4772 -> **100.000** |
 | `CRezImage::DecodeBlit` 0x175930 | complete `IsStrideless`/size/height/index/width accessor layer and advancing the incoming pixel pointer | 95.3194 -> 99.9722 -> **MAX 100.000** |
@@ -59,6 +59,13 @@ and `rezlist` units remained exact after the complete replacement. The
 surviving ninth virtual `GetFileName` was not imported: Gruntz retail has
 eight-slot vtables for all four storage classes, so the later API would be a
 real ABI change rather than a harmless declaration cleanup.
+
+Exact code is not permission to keep invented identities. The complete
+17-function `libs/lith/dprintf.cpp` family maps one-for-one onto the retail
+`debugprintf` TU. Restoring its classes, overloads, globals, output enum, local
+census, and statement order left all 17 functions exact and preserved 100% of
+the TU's text and data. This is a controlled positive case where the surviving
+source materially improves reconstruction fidelity without moving the score.
 
 The useful corpus is broader than `libs/`. Shogo and Blood2 contain byte-identical
 `NetStart_FillServiceList` implementations. They independently preserve a cursor local,
