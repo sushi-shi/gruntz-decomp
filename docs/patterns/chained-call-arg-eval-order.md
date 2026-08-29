@@ -27,11 +27,11 @@ STEERABLE. Evidence: CBattlezDlg::SetPlayerName 49→100% after splitting the ch
 ## A returned stream reference can require more than one split
 
 The same rule applies to a chain of overloaded calls returning `ostream&`. In
-`ButeMgr::ParseAttributeFile` 0x170750, this natural chain left the order of the
+`CButeMgr::Statement` 0x170750, this natural chain left the order of the
 first stream call and `GetBuffer` to the front end:
 
 ```cpp
-(*m_pText) << static_cast<unsigned char>('"') << tmp.GetBuffer(0)
+(*m_pSaveData) << static_cast<unsigned char>('"') << tmp.GetBuffer(0)
            << static_cast<unsigned char>('"');
 ```
 
@@ -42,7 +42,7 @@ last hand-off as a scheduling choice. Naming both returned references made the
 entire function byte-exact:
 
 ```cpp
-ostream& output = (*m_pText) << static_cast<unsigned char>('"');
+ostream& output = (*m_pSaveData) << static_cast<unsigned char>('"');
 ostream& stringOutput = output << tmp.GetBuffer(0);
 stringOutput << static_cast<unsigned char>('"');
 ```

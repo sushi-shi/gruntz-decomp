@@ -12,11 +12,11 @@ which is what a reconstruction naturally writes, and what retail did not.
 // ours: one load, kept in a callee-saved register for the whole body
 const char* groupName = static_cast<const char*>(group);
 if (!bute.Exists(groupName, NULL)) { ... }
-code = *bute.GetStringDef(groupName, "Text", &code);
+code = *bute.GetString(groupName, "Text", &code);
 
 // retail: the CString goes to each call, so each call re-reads m_pchData
 if (!bute.Exists(group, NULL)) { ... }
-code = *bute.GetStringDef(group, "Text", &code);
+code = *bute.GetString(group, "Text", &code);
 ```
 ```asm
 ; ours - hoisted

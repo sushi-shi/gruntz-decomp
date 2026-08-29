@@ -66,7 +66,7 @@ and that row was this one).
 ## The parked note that was wrong, and why
 
 The function carried an `@early-stop` asserting this exact spelling had been tried and
-cost `98.97 -> 91.22` through the sibling `AcquireAndPlay` and `GetDwordDef` call
+cost `98.97 -> 91.22` through the sibling `AcquireAndPlay` and `GetDword` call
 sites. It does not reproduce: the TU's composition moved between that measurement and
 this one, and the wall went with it. **Re-run a parked lever before believing its
 recorded cost** - a comment records a build that no longer exists, which is why

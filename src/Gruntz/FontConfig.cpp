@@ -38,11 +38,11 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
     CString arial("ARIAL");
 
     const char* faceTF = static_cast<const char*>(
-        *g_buteMgr.GetStringDef("Font", "TrainingFont", static_cast<CString*>(&arial))
+        *g_buteMgr.GetString("Font", "TrainingFont", static_cast<CString*>(&arial))
     );
     m_trainingFont = CreateFontA(
-        g_buteMgr.GetIntDef("Font", "TrainingFontHeight", 0x1c),
-        g_buteMgr.GetIntDef("Font", "TrainingFontWidth", 0xe),
+        g_buteMgr.GetInt("Font", "TrainingFontHeight", 0x1c),
+        g_buteMgr.GetInt("Font", "TrainingFontWidth", 0xe),
         0,
         0,
         FW_BOLD,
@@ -58,8 +58,8 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
     );
     if (!m_trainingFont) {
         m_trainingFont = CreateFontA(
-            g_buteMgr.GetIntDef("Font", "TrainingFontHeight", 0x18),
-            g_buteMgr.GetIntDef("Font", "TrainingFontWidth", 0x10),
+            g_buteMgr.GetInt("Font", "TrainingFontHeight", 0x18),
+            g_buteMgr.GetInt("Font", "TrainingFontWidth", 0x10),
             0,
             0,
             FW_BOLD,
@@ -76,11 +76,11 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
     }
 
     const char* faceMF = static_cast<const char*>(
-        *g_buteMgr.GetStringDef("Font", "MessageFont", static_cast<CString*>(&arial))
+        *g_buteMgr.GetString("Font", "MessageFont", static_cast<CString*>(&arial))
     );
     m_messageFont = CreateFontA(
-        g_buteMgr.GetIntDef("Font", "MessageFontHeight", 0x2a),
-        g_buteMgr.GetIntDef("Font", "MessageFontWidth", 0x18),
+        g_buteMgr.GetInt("Font", "MessageFontHeight", 0x2a),
+        g_buteMgr.GetInt("Font", "MessageFontWidth", 0x18),
         0,
         0,
         FW_BOLD,
@@ -96,8 +96,8 @@ i32 CFontConfig::LoadFontConfig(i32 lowScrollThreshold, i32 highScrollThreshold)
     );
     if (!m_messageFont) {
         m_messageFont = CreateFontA(
-            g_buteMgr.GetIntDef("Font", "MessageFontHeight", 0x2a),
-            g_buteMgr.GetIntDef("Font", "MessageFontWidth", 0x18),
+            g_buteMgr.GetInt("Font", "MessageFontHeight", 0x2a),
+            g_buteMgr.GetInt("Font", "MessageFontWidth", 0x18),
             0,
             0,
             FW_BOLD,

@@ -78,7 +78,7 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
 
     double period;
     if (m_object->m_damage == 0) {
-        period = static_cast<double>(g_buteMgr.GetDwordDef("Hazardz", "SpotLightTime", 0xbb8));
+        period = static_cast<double>(g_buteMgr.GetDword("Hazardz", "SpotLightTime", 0xbb8));
     } else {
         period = static_cast<double>(static_cast<u32>(m_object->m_damage));
     }

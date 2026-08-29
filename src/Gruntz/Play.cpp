@@ -4525,7 +4525,7 @@ i32 CPlay::ExecuteCommand(
                             break;
                         default:
                             g->m_defenderRadius =
-                                g_buteMgr.GetIntDef("Grunt", "PlayerDefenderRadius", 3) + 1;
+                                g_buteMgr.GetInt("Grunt", "PlayerDefenderRadius", 3) + 1;
                     }
                     g->m_arrivalFlags |= 0x18040402;
                     g->m_arrivalCell.m_x = -1;

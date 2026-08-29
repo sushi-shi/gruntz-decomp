@@ -124,7 +124,7 @@ void CTriggerMgr::HudRect(RECT r, b32 selectionReset) {
                     } else {
                         g->CreateHealthSprite();
                         g->m_hudRetireWindowLo =
-                            g_buteMgr.GetDwordDef("Grunt", "CombatTimeout", 0x1388);
+                            g_buteMgr.GetDword("Grunt", "CombatTimeout", 0x1388);
                         g->m_hudRetireWindowHi = 0;
                         g->m_hudRetireClockLo = g_frameTime;
                         g->m_hudRetireClockHi = 0;
@@ -2374,7 +2374,7 @@ i32 CTriggerMgr::SpawnPowerupIcon(
                 g_gameReg->m_world->m_childGroup
                     ->CreateSprite(0, x, y, 0xf, "TimeBomb", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
             if (tb) {
-                tb->m_damage = g_buteMgr.GetDwordDef("Powerupz", "CoveredTimeBombTime", 0x7d0);
+                tb->m_damage = g_buteMgr.GetDword("Powerupz", "CoveredTimeBombTime", 0x7d0);
             }
             return tb != NULL;
         }

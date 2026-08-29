@@ -3316,7 +3316,7 @@ void CMulti::SendVersionCheck(CNetPlayerNode* recipient) {
     packet.m_flags |= NET_PACKET_APPLICATION;
     packet.m_remoteVersion = g_remoteVersion;
     packet.m_cfgWord = g_cfgWord;
-    packet.m_butePos = g_buteMgr.m_pos;
+    packet.m_butePos = g_buteMgr.GetChecksum();
     packet.m_localVersion = g_localVersion;
     packet.m_messageId = STAT_VERSION_CHECK;
 

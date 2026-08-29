@@ -432,7 +432,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             return m_triggerMgr->ApplyGruntAreaEffect(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
-                g_buteMgr.GetIntDef("Spellz", s_FreezeRadius, 8),
+                g_buteMgr.GetInt("Spellz", s_FreezeRadius, 8),
                 GRUNT_AREA_EFFECT_FREEZE,
                 -1
             );
@@ -452,7 +452,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             return m_triggerMgr->ApplyGruntAreaEffect(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
-                g_buteMgr.GetIntDef("Spellz", s_HealthRadius, 8),
+                g_buteMgr.GetInt("Spellz", s_HealthRadius, 8),
                 GRUNT_AREA_EFFECT_HEAL,
                 -1
             );
@@ -472,7 +472,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             return m_triggerMgr->LoadGruntResurrectTuning(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
-                g_buteMgr.GetIntDef("Spellz", s_RessurectionRadius, 8)
+                g_buteMgr.GetInt("Spellz", s_RessurectionRadius, 8)
             );
         }
         case SPELLZ_TOYZ: {
@@ -490,7 +490,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             return m_triggerMgr->ApplyGruntAreaEffect(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
-                g_buteMgr.GetIntDef("Spellz", s_ToyzRadius, 8),
+                g_buteMgr.GetInt("Spellz", s_ToyzRadius, 8),
                 GRUNT_AREA_EFFECT_GIVE_TOY,
                 -1
             );
@@ -510,7 +510,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             return m_triggerMgr->ApplyGruntAreaEffect(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
-                g_buteMgr.GetIntDef("Spellz", s_TeleportRadius, 8),
+                g_buteMgr.GetInt("Spellz", s_TeleportRadius, 8),
                 GRUNT_AREA_EFFECT_TELEPORT,
                 -1
             );
@@ -539,10 +539,9 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             n->SetImageSetByName("LEVEL_ROLLINGBALL_NORTH");
             CLogicRecord* ni = n->m_logicRecord;
             ni->m_speed =
-                static_cast<i32>(g_buteMgr.GetDwordDef("Spellz", s_RollingBallzSpeed, 0x3e8));
+                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_RollingBallzSpeed, 0x3e8));
             n->m_smarts = 0;
-            n->m_points =
-                static_cast<i32>(g_buteMgr.GetDwordDef("Spellz", s_RollingBallzTime, 0x3e8));
+            n->m_points = static_cast<i32>(g_buteMgr.GetDword("Spellz", s_RollingBallzTime, 0x3e8));
 
             CWwdSpriteObject* e = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
@@ -555,10 +554,9 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             e->SetImageSetByName("LEVEL_ROLLINGBALL_EAST");
             CLogicRecord* ei = e->m_logicRecord;
             ei->m_speed =
-                static_cast<i32>(g_buteMgr.GetDwordDef("Spellz", s_RollingBallzSpeed, 0x3e8));
+                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_RollingBallzSpeed, 0x3e8));
             e->m_smarts = 0;
-            e->m_points =
-                static_cast<i32>(g_buteMgr.GetDwordDef("Spellz", s_RollingBallzTime, 0x3e8));
+            e->m_points = static_cast<i32>(g_buteMgr.GetDword("Spellz", s_RollingBallzTime, 0x3e8));
 
             CWwdSpriteObject* s = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
@@ -571,10 +569,9 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             s->SetImageSetByName("LEVEL_ROLLINGBALL_SOUTH");
             CLogicRecord* si = s->m_logicRecord;
             si->m_speed =
-                static_cast<i32>(g_buteMgr.GetDwordDef("Spellz", s_RollingBallzSpeed, 0x3e8));
+                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_RollingBallzSpeed, 0x3e8));
             s->m_smarts = 0;
-            s->m_points =
-                static_cast<i32>(g_buteMgr.GetDwordDef("Spellz", s_RollingBallzTime, 0x3e8));
+            s->m_points = static_cast<i32>(g_buteMgr.GetDword("Spellz", s_RollingBallzTime, 0x3e8));
 
             CWwdSpriteObject* w = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
@@ -587,10 +584,9 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             w->SetImageSetByName("LEVEL_ROLLINGBALL_WEST");
             CLogicRecord* wi = w->m_logicRecord;
             wi->m_speed =
-                static_cast<i32>(g_buteMgr.GetDwordDef("Spellz", s_RollingBallzSpeed, 0x3e8));
+                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_RollingBallzSpeed, 0x3e8));
             w->m_smarts = 0;
-            w->m_points =
-                static_cast<i32>(g_buteMgr.GetDwordDef("Spellz", s_RollingBallzTime, 0x3e8));
+            w->m_points = static_cast<i32>(g_buteMgr.GetDword("Spellz", s_RollingBallzTime, 0x3e8));
             return 1;
         }
         default:
@@ -1734,7 +1730,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         double ddx = static_cast<double>(this->m_lastTilePx.m_x) - this->m_object->m_screenX;
         double ddy = static_cast<double>(this->m_lastTilePx.m_y) - this->m_object->m_screenY;
         double dist = sqrt(ddx * ddx + ddy * ddy);
-        m_moveSpeed = dist / static_cast<double>(g_buteMgr.GetDwordDef("Grunt", s_knockKey, 200));
+        m_moveSpeed = dist / static_cast<double>(g_buteMgr.GetDword("Grunt", s_knockKey, 200));
         m_movePosX = static_cast<double>((this->m_object->m_screenX));
         m_movePosY = static_cast<double>((this->m_object->m_screenY));
 
@@ -2133,17 +2129,17 @@ void CGrunt::StepBehavior(char*) {
                 obj->m_drawActive = true;
                 obj->m_drawFillCmd = SHADE_PAL_16;
             } else {
-                i32 fade = g_buteMgr.GetIntDef("Grunt", s_FadeTransparency, 0xc0);
+                i32 fade = g_buteMgr.GetInt("Grunt", s_FadeTransparency, 0xc0);
                 CWwdSpriteObject* o2 = m_object;
                 SET_DRAW_FILL_FRACTION(o2, SHADE_PAL_ALPHA_16, fade);
             }
-            i32 flash = g_buteMgr.GetIntDef("Grunt", s_SafeFlashTime, 0x32);
-            if (g_buteMgr.GetIntDef("Grunt", s_AccelerateFlash, 0) == 1) {
+            i32 flash = g_buteMgr.GetInt("Grunt", s_SafeFlashTime, 0x32);
+            if (g_buteMgr.GetInt("Grunt", s_AccelerateFlash, 0) == 1) {
                 i64 el = static_cast<i64>(g_frameTime) - m_entranceClock64;
                 u32 elapsed = (el < 0 ? 0 : static_cast<u32>(el));
 
                 double span =
-                    static_cast<double>(g_buteMgr.GetDwordDef("Grunt", "EntranceSafeTime", 0x1388));
+                    static_cast<double>(g_buteMgr.GetDword("Grunt", "EntranceSafeTime", 0x1388));
                 double frac = static_cast<double>(elapsed) / span - 1.0;
                 flash = static_cast<i32>(frac * frac * DATA_COMPGEN(0x001e9a40, 750.0));
             }
@@ -2670,7 +2666,7 @@ kindDispatch:
                 return;
             }
             m_convertTimeLo =
-                static_cast<i32>(g_buteMgr.GetDwordDef("Powerupz", "ConversionTime", 0x1f4));
+                static_cast<i32>(g_buteMgr.GetDword("Powerupz", "ConversionTime", 0x1f4));
             m_convertTimeHi = 0;
             m_convertClockLo = static_cast<i32>(g_frameTime);
             m_convertClockHi = 0;
@@ -2698,7 +2694,7 @@ kindDispatch:
                 i64 rem = m_convertTime64 + m_convertClock64 - static_cast<i64>(g_frameTime);
                 u32 remMs = (rem < 0 ? 0 : static_cast<u32>(rem));
                 double topaque = static_cast<double>(
-                    g_buteMgr.GetIntDef("Powerupz", "GruntGhostTransparencyOn", 0x100)
+                    g_buteMgr.GetInt("Powerupz", "GruntGhostTransparencyOn", 0x100)
                 );
                 i32 frac = static_cast<i32>(
                     topaque * static_cast<double>(remMs)

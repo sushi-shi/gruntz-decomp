@@ -45,7 +45,7 @@ supported by evidence."*
    its initialization API takes `char` and comparisons cast to `u32`. The adjacent
    `u8 m_scheduleSlot` is not a pickup domain: multiplayer assigns it modulo 128
    and uses it to choose the command-execution tick.
-   Same for `CButeMgr::m_tokType/m_lexState` (`i16`) and the `NetMgr` packet
+   Same for `CButeMgr::m_token/m_tokenMinor` (`i16`) and the `NetMgr` packet
    fields. Fragmentation is confined to the serialization/packet/palette
    boundaries; the game-logic core is uniformly `i32`.
 4. **~130 dead enumerators.** `Tool`(23), `Toy`(11), `Powerup`(6), `ColorTint`(18),

@@ -106,7 +106,7 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
 
     CLogicRecord* record = m_object->m_logicRecord;
     if (record->m_speed == 0) {
-        record->m_speed = g_buteMgr.GetDwordDef("Hazardz", "PathHazardTimePerTile", 1000);
+        record->m_speed = g_buteMgr.GetDword("Hazardz", "PathHazardTimePerTile", 1000);
     }
 
     if (BeginLeg() == 0) {
@@ -313,7 +313,7 @@ RVA(0x000b4640, 0x104)
 i32 CRainCloud::HitTest(i32 playerIndex, i32 unitIndex) {
     m_strikeArmed = true;
     m_strike.m_window =
-        static_cast<i64>(g_buteMgr.GetDwordDef("Hazardz", "RainCloudFlashTime", 0x7d0));
+        static_cast<i64>(g_buteMgr.GetDword("Hazardz", "RainCloudFlashTime", 0x7d0));
     m_strike.m_deadline = static_cast<i64>(g_frameTime);
     g_gameReg->m_triggerMgr->StartUnitDeath(playerIndex, unitIndex, DEATH_ELECTROCUTE, -1);
 

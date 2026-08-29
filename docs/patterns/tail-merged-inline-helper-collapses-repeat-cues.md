@@ -46,7 +46,7 @@ sides and look at where the run of identical offsets stops:
 | `CGruntzMgr::HandleCommand` ReportError 2 v 4 | retail cross-jumps the `0x42b` arm onto the shared `push 0x8005 ; call ReportError` block at `0x89e42` and gives `0x42c` (`0x89b17`) its own copy; we merge both. Every error code `0x41e`-`0x479` retail pushes is already in the source - **there was nothing to derive.** |
 | `CPlay::OnKeyDown` PlayIfElapsed 8 v 9 | our `CLEAR_TAB_HINT` at `+0x117` ends `jmp 0x1b0` into another site's `PlayIfElapsed` tail. |
 | `CPlay::OnKeyDown` RebuildSelectionList 9 v 8 | the other direction, same function: retail's `'8'` arm (`0xccf81`) jumps into the `'9'` arm's `je/call` at `0xccf98`; we keep nine. |
-| `CCheatMgr::LoadCheatConfig` GetIntDef 6 v 7 | our two `AddCheat` arms share one `GetIntDef`+`AddCheat` copy; retail's are 0x13b and 0x161. |
+| `CCheatMgr::LoadCheatConfig` GetInt 6 v 7 | our two `AddCheat` arms share one `GetInt`+`AddCheat` copy; retail's are 0x13b and 0x161. |
 | `CFaderShape::RenderFrame` RenderTile 7 v 8, RenderWarpTile 5 v 6 | 16 source sites, both sides merge some. Retail keeps all 8 `RenderTile`; the `x` argument reaches the merge point in a register, so distinct arguments do **not** prevent the cross-jump. |
 | `GameSerializationCallback` `??0CUserLogic` 4 short / `??0CUserBaseLink` 3 long | not a merge - the per-`new`-site ctor cut depth. `CUserBaseLink` is a MEMBER of `CUserLogic`, so a site that names it is a site where cl INLINED `CUserLogic::CUserLogic`. The first ELEVEN inlined sites agree at identical offsets (`0x343`..`0x6b7`) and the divergence starts at the twelfth. |
 

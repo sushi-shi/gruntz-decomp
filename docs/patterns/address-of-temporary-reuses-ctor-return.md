@@ -72,7 +72,7 @@ clang never produces object code here.
 ## The other half: a payload struct built as a stack temporary
 
 The same idiom shows up wherever retail assembles an aggregate argument. In
-`ButeMgr::ParseAttributeFile` (0x170750) the RECT/POINT/VECTOR/RANGE arms build the
+`CButeMgr::Statement` (0x170750) the RECT/POINT/VECTOR/RANGE arms build the
 payload **on the stack** and hand its address to the ordinary pointer constructor:
 
 ```asm
@@ -96,7 +96,7 @@ invented (allocating `new i32[2]` / `new i32[4]` / `new double[2]` / `new double
 which also contradicted the destructor and `CopyValue` arms - those delete and copy
 `BUTE_POINT`'s payload as a `ButeIntPoint`, not as an `i32[2]`. Deleting them and
 giving the four payload structs their field-wise constructors took
-`ParseAttributeFile` 46.00 -> 49.18.
+`Statement` 46.00 -> 49.18.
 
 **Rule:** an aggregate that appears as a *stack* image immediately before a
 `operator new` + block copy is a temporary the source built inline; do not invent a

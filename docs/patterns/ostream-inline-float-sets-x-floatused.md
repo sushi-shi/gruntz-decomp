@@ -70,12 +70,12 @@ The store is also a **type oracle**. If retail streams a value and you see the
 `+4` store, the expression's static type is `float`, not `double` — even when the
 only call is to the `double` overload. Its absence beside an `fstp QWORD` says
 the value really was a `double` (or a hand-widened float, which is what this
-pattern is about). In `ParseAttributeFile` the two `BUTETOK_KEYWORD_FLOAT` /
+pattern is about). In `Statement` the two `BUTETOK_KEYWORD_FLOAT` /
 `BUTETOK_FLOAT_SUFFIX` arms carry the store and the three `BUTETOK_VECTOR` /
 `BUTETOK_RANGE` / `BUTETOK_DOUBLE` arms do not — which is exactly the
 `GetFloat` vs `GetDouble` split.
 
-Measured: `ButeGroup_Apply` 86.95 -> 87.70 and `ParseAttributeFile` 76.49 ->
+Measured: `ButeGroup_Apply` 86.95 -> 87.70 and `Statement` 76.49 ->
 77.14 with no other change (the arm-order fix below landed in the same build).
 
 ## The neighbouring tell: arm bodies are laid out in SOURCE order

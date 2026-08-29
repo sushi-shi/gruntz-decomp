@@ -89,6 +89,19 @@ two definitions made both 16-round bodies and `InitializeBlowfish` byte-exact. A
 mirror-function dip is therefore evidence to inspect TU state, not permission to discard a
 surviving algorithm layer.
 
+The Bute scanner shows that the same rule covers semantic data identity and storage
+scope. Its earlier reconstruction exposed a 256-entry character map and a
+`short[97][49][3]` transition array as generic TU globals, then invented a slot enum to
+explain the final dimension. The surviving source instead names `ClassMap`, declares a
+`TranType { ActionType, A, B }`, and accesses those fields directly. It also proves that
+the token-buffer cursor is `static short Pos` inside `ScanTok`, not a TU-global datum.
+Restoring those facts preserves the table bytes and scanner operations while recovering
+the entity that owns the local static. Semantic method/member identities and the
+overloaded getter family were restored in the same pass, including the inline
+`GetChecksum` boundary at its only external consumer. This is a source-model correction
+even where the generated instructions were already exact: address and width alone do not
+prove scope, record layering, or the developer-facing API.
+
 ## The class-model lesson: a trailing union can hide a missing derived layer
 
 The earlier reconstructed `CHashElement` put the owner payloads in a union:

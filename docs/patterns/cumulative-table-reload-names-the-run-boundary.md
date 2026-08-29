@@ -1,6 +1,6 @@
 # A cumulative table's MISSING reload names where the running total restarts
 tags: cpp:expr cpp:array cpp:member | asm:mov asm:add | topic:correctness
-symptoms: `mov reg,[this+N]; add eax,reg; mov [this+N+4],eax` repeated down an array, with the reload ABSENT at a few elements | a long run of GetInt/GetDwordDef calls each accumulating the previous slot
+symptoms: `mov reg,[this+N]; add eax,reg; mov [this+N+4],eax` repeated down an array, with the reload ABSENT at a few elements | a long run of GetInt/GetDword calls each accumulating the previous slot
 confidence: 10/10
 
 A table built as `t[k] = t[k-1] + f(...)` compiles to one reload of the previous element

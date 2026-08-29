@@ -98,20 +98,20 @@ void CChatBoxOwner::HandleTextInputKey(i32 charCode, i32 keyData) {
                     CString group = "";
                     CString code;
                     b32 enabled = false;
-                    i32 count = bute.GetIntDef("Cheatz", "NumCheatz", 0);
+                    i32 count = bute.GetInt("Cheatz", "NumCheatz", 0);
                     for (i32 i = 1; i <= count; i++) {
                         group.Format("Cheat%i", i);
-                        if (!bute.Exists(group, NULL)) {
+                        if (!bute.Exist(group, NULL)) {
                             continue;
                         }
-                        code = *bute.GetStringDef(group, "Text", &code);
+                        code = *bute.GetString(group, "Text", &code);
                         if (code.GetLength() == 0) {
                             continue;
                         }
-                        if (bute.GetIntDef(group, "NonCheat", 0) == 1) {
+                        if (bute.GetInt(group, "NonCheat", 0) == 1) {
                             if (g_gameReg->m_cheatMgr->AddCheat(
                                     static_cast<const char*>(code),
-                                    bute.GetIntDef(group, "Value", 0x807b),
+                                    bute.GetInt(group, "Value", 0x807b),
                                     1
                                 )) {
                                 enabled++;
@@ -119,7 +119,7 @@ void CChatBoxOwner::HandleTextInputKey(i32 charCode, i32 keyData) {
                         } else {
                             if (g_gameReg->m_cheatMgr->AddCheat(
                                     static_cast<const char*>(code),
-                                    bute.GetIntDef(group, "Value", 0x807b),
+                                    bute.GetInt(group, "Value", 0x807b),
                                     0
                                 )) {
                                 enabled++;

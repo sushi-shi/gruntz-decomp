@@ -485,7 +485,7 @@ void CGrunt::ReadConfigFromButeMgr() {
     m_reserved18c = 0;
     m_reserved418 = 0;
 
-    m_timePerTile = g_buteMgr.GetDwordDef(
+    m_timePerTile = g_buteMgr.GetDword(
         const_cast<char*>(static_cast<const char*>(m_animSetName)),
         "TimePerTile",
         1000
@@ -2142,7 +2142,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
     switch (kind) {
         case PICKUP_NONE: {
             m_animSetName = "NORMALGRUNT";
-            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             if (m_arrivalState == AI_NONE) {
@@ -2161,7 +2161,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_BOMB: {
             m_animSetName = "BOMBGRUNT";
-            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             if (m_arrivalState == AI_NONE) {
@@ -2180,7 +2180,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_BOOMERANG: {
             m_animSetName = "BOOMERANGGRUNT";
-            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             if (m_arrivalState == AI_NONE) {
@@ -2202,7 +2202,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_BRICK: {
             m_animSetName = "BRICKGRUNT";
-            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             if (m_arrivalState == AI_NONE) {
@@ -2221,7 +2221,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_CLUB: {
             m_animSetName = "CLUBGRUNT";
-            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             if (m_arrivalState == AI_NONE) {
@@ -2240,7 +2240,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_GAUNTLETZ: {
             m_animSetName = "GAUNTLETZGRUNT";
-            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             if (m_arrivalState == AI_NONE) {
@@ -2259,7 +2259,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_GLOVEZ: {
             m_animSetName = "GLOVEZGRUNT";
-            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             if (m_arrivalState == AI_NONE) {
@@ -2278,7 +2278,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_GOOBER: {
             m_animSetName = "GOOBERGRUNT";
-            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             if (m_arrivalState == AI_NONE) {
@@ -2328,7 +2328,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_GRAVITYBOOTZ: {
             m_animSetName = "GRAVITYBOOTZGRUNT";
-            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             if (m_arrivalState == AI_NONE) {
@@ -2347,7 +2347,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_GUNHAT: {
             m_animSetName = "GUNHATGRUNT";
-            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             if (m_arrivalState == AI_NONE) {
@@ -2369,7 +2369,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_NERFGUN: {
             m_animSetName = "NERFGUNGRUNT";
-            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             if (m_arrivalState == AI_NONE) {
@@ -2391,7 +2391,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_ROCK: {
             m_animSetName = "ROCKGRUNT";
-            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             if (m_arrivalState == AI_NONE) {
@@ -2413,7 +2413,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_SHIELD: {
             m_animSetName = "SHIELDGRUNT";
-            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             if (m_arrivalState == AI_NONE) {
@@ -2432,7 +2432,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_SHOVEL: {
             m_animSetName = "SHOVELGRUNT";
-            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             if (m_arrivalState == AI_NONE) {
@@ -2451,7 +2451,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_SPRING: {
             m_animSetName = "SPRINGGRUNT";
-            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             if (m_arrivalState == AI_NONE) {
@@ -2470,7 +2470,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_SPY: {
             m_animSetName = "SPYGRUNT";
-            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             if (m_arrivalState == AI_NONE) {
@@ -2489,7 +2489,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_SWORD: {
             m_animSetName = "SWORDGRUNT";
-            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             if (m_arrivalState == AI_NONE) {
@@ -2508,7 +2508,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_TIMEBOMB: {
             m_animSetName = "TIMEBOMBGRUNT";
-            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             if (m_arrivalState == AI_NONE) {
@@ -2527,7 +2527,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_TOOB: {
             m_animSetName = "TOOBGRUNT";
-            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_coordToggle = false;
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
@@ -2547,7 +2547,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_WAND: {
             m_animSetName = "WANDGRUNT";
-            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             if (m_arrivalState == AI_NONE) {
@@ -2566,7 +2566,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_WARPSTONE: {
             m_animSetName = "WARPSTONEGRUNT";
-            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             if (m_arrivalState == AI_NONE) {
@@ -2582,7 +2582,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_WELDER: {
             m_animSetName = "WELDERGRUNT";
-            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             if (m_arrivalState == AI_NONE) {
@@ -2604,7 +2604,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_WINGZ: {
             m_animSetName = "WINGZGRUNT";
-            i32 r = g_buteMgr.GetIntDef(m_animSetName, "ToolAA", 1);
+            i32 r = g_buteMgr.GetInt(m_animSetName, "ToolAA", 1);
             m_reachRect = MakeRect(-r, -r, r, r);
             m_reachExclusionRect = MakeRect(0, 0, 0, 0);
             if (m_arrivalState == AI_NONE) {
@@ -2852,7 +2852,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             break;
         }
         case PICKUP_HEALTH1: {
-            i32 h = g_buteMgr.GetIntDef("Powerupz", "Health1", 0x19) + m_health;
+            i32 h = g_buteMgr.GetInt("Powerupz", "Health1", 0x19) + m_health;
             if (h >= HEALTH_FULL) {
                 h = HEALTH_FULL;
             }
@@ -2860,7 +2860,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             return 1;
         }
         case PICKUP_HEALTH2: {
-            i32 h = g_buteMgr.GetIntDef("Powerupz", "Health2", 0x19) + m_health;
+            i32 h = g_buteMgr.GetInt("Powerupz", "Health2", 0x19) + m_health;
             if (h >= HEALTH_FULL) {
                 h = HEALTH_FULL;
             }
@@ -2868,7 +2868,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             return 1;
         }
         case PICKUP_HEALTH3: {
-            i32 h = g_buteMgr.GetIntDef("Powerupz", "Health3", 0x19) + m_health;
+            i32 h = g_buteMgr.GetInt("Powerupz", "Health3", 0x19) + m_health;
             if (h >= HEALTH_FULL) {
                 h = HEALTH_FULL;
             }
@@ -2893,7 +2893,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_gruntKind = GRUNT_CONVERSION;
-            m_convertTimeLo = g_buteMgr.GetDwordDef("Powerupz", "ConversionTime", 0x1f4);
+            m_convertTimeLo = g_buteMgr.GetDword("Powerupz", "ConversionTime", 0x1f4);
             m_convertTimeHi = 0;
             m_convertClockLo = g_frameTime;
             m_convertClockHi = 0;
@@ -2920,7 +2920,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_passableMask = 0;
             m_gruntKind = GRUNT_DEATHTOUCH;
             if (m_powerupDuration == 0) {
-                m_powerupDuration = g_buteMgr.GetDwordDef("Powerupz", "DeathTouchTime", 0x4e20);
+                m_powerupDuration = g_buteMgr.GetDword("Powerupz", "DeathTouchTime", 0x4e20);
             }
             m_convertTimeLo = m_powerupDuration;
             m_convertTimeHi = 0;
@@ -2934,10 +2934,10 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         }
         case PICKUP_GHOST: {
             m_gruntKind = GRUNT_GHOST;
-            i32 t = g_buteMgr.GetIntDef("Powerupz", "GruntGhostTransparencyOn", 0xe0);
+            i32 t = g_buteMgr.GetInt("Powerupz", "GruntGhostTransparencyOn", 0xe0);
             SET_DRAW_FILL_FRACTION(m_object, SHADE_PAL_ALPHA_16, t);
             if (m_powerupDuration == 0) {
-                m_powerupDuration = g_buteMgr.GetDwordDef("Powerupz", "GhostTime", 0x4e20);
+                m_powerupDuration = g_buteMgr.GetDword("Powerupz", "GhostTime", 0x4e20);
             }
             m_convertTimeLo = m_powerupDuration;
             m_convertTimeHi = 0;
@@ -2952,8 +2952,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         case PICKUP_INVULNERABILITY: {
             m_gruntKind = GRUNT_INVULNERABLE;
             if (m_powerupDuration == 0) {
-                m_powerupDuration =
-                    g_buteMgr.GetDwordDef("Powerupz", "InvulnerabilityTime", 0x4e20);
+                m_powerupDuration = g_buteMgr.GetDword("Powerupz", "InvulnerabilityTime", 0x4e20);
             }
             m_convertTimeLo = m_powerupDuration;
             m_convertTimeHi = 0;
@@ -2969,7 +2968,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_gruntKind = GRUNT_REACTIVEARMOR;
             CreatePowerupSprite(3);
             if (m_powerupDuration == 0) {
-                m_powerupDuration = g_buteMgr.GetDwordDef("Powerupz", "ReactiveArmorTime", 0x4e20);
+                m_powerupDuration = g_buteMgr.GetDword("Powerupz", "ReactiveArmorTime", 0x4e20);
             }
             m_convertTimeLo = m_powerupDuration;
             m_convertTimeHi = 0;
@@ -2985,7 +2984,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_gruntKind = GRUNT_ROIDZ;
             CreatePowerupSprite(1);
             if (m_powerupDuration == 0) {
-                m_powerupDuration = g_buteMgr.GetDwordDef("Powerupz", "RoidzTime", 0x4e20);
+                m_powerupDuration = g_buteMgr.GetDword("Powerupz", "RoidzTime", 0x4e20);
             }
             m_convertTimeLo = m_powerupDuration;
             m_convertTimeHi = 0;
@@ -3001,7 +3000,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_gruntKind = GRUNT_SUPERSPEED;
             CreatePowerupSprite(2);
             if (m_powerupDuration == 0) {
-                m_powerupDuration = g_buteMgr.GetDwordDef("Powerupz", "SuperSpeedTime", 0x4e20);
+                m_powerupDuration = g_buteMgr.GetDword("Powerupz", "SuperSpeedTime", 0x4e20);
             }
             m_convertTimeLo = m_powerupDuration;
             m_convertTimeHi = 0;
@@ -3076,8 +3075,8 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (play->m_levelTimer == NULL) {
                 return 1;
             }
-            i32 mins = g_buteMgr.GetIntDef("Powerupz", "StopwatchMinutes", 1);
-            i32 secs = g_buteMgr.GetIntDef("Powerupz", "StopwatchSeconds", 0);
+            i32 mins = g_buteMgr.GetInt("Powerupz", "StopwatchMinutes", 1);
+            i32 secs = g_buteMgr.GetInt("Powerupz", "StopwatchSeconds", 0);
             if (g_gameReg->m_isEasyMode != false && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 secs += secs;
                 mins += mins;

@@ -726,7 +726,7 @@ i32 CGrunt::StepCompassMove() {
                 break;
         }
         u32 toyCount =
-            g_buteMgr.GetDwordDef(const_cast<char*>(static_cast<LPCTSTR>(str)), s_ToyTiles, 1);
+            g_buteMgr.GetDword(const_cast<char*>(static_cast<LPCTSTR>(str)), s_ToyTiles, 1);
         if (m_toyTileIndex < toyCount) {
             switch (m_entranceCell.direction) {
                 case DIR_NORTH:
@@ -1186,9 +1186,9 @@ applyTail:
             );
             if (spawned != NULL) {
                 if (useSecretColor != false) {
-                    spawned->m_smarts = g_buteMgr.GetIntDef("Wormhole", "SecretColor", 1);
+                    spawned->m_smarts = g_buteMgr.GetInt("Wormhole", "SecretColor", 1);
                 } else {
-                    spawned->m_smarts = g_buteMgr.GetIntDef("Wormhole", "EntranceColor", 3);
+                    spawned->m_smarts = g_buteMgr.GetInt("Wormhole", "EntranceColor", 3);
                 }
             }
         }

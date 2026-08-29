@@ -249,7 +249,7 @@ i32 CTriggerMgr::PlaceObject(
                     logic->SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                     return -1;
                 }
-                hole->m_smarts = g_buteMgr.GetIntDef("Wormhole", "EntranceColor", 0xe);
+                hole->m_smarts = g_buteMgr.GetInt("Wormhole", "EntranceColor", 0xe);
             } else if (mode == GRUNT_ENTRANCE_RESURRECT || mode == GRUNT_ENTRANCE_DROP) {
 
                 if (mode == GRUNT_ENTRANCE_RESURRECT) {
@@ -428,7 +428,7 @@ i32 CTriggerMgr::ResetCell(i32 playerIndex, i32 unitIndex, i32 force, i32 keep) 
         cell->CreateHealthSprite();
         cell->CreateStaminaSprite();
         cell->CreateToySprite();
-        cell->m_hudRetireWindowLo = g_buteMgr.GetDwordDef("Grunt", "CombatTimeout", 0x1388);
+        cell->m_hudRetireWindowLo = g_buteMgr.GetDword("Grunt", "CombatTimeout", 0x1388);
         cell->m_hudRetireWindowHi = 0;
         cell->m_hudRetireClockLo = g_frameTime;
         cell->m_hudRetireClockHi = 0;

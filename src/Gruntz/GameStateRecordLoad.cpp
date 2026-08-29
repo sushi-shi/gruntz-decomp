@@ -283,7 +283,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
 
     if (m_gruntKind == GRUNT_GHOST) {
         CWwdSpriteObject* cb2 = m_object;
-        i32 v = g_buteMgr.GetIntDef("Powerupz", "GruntGhostTransparencyOn", 0xe0);
+        i32 v = g_buteMgr.GetInt("Powerupz", "GruntGhostTransparencyOn", 0xe0);
         SET_DRAW_FILL_FRACTION(cb2, SHADE_PAL_ALPHA_16, v);
     }
     return 1;

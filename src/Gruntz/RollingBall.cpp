@@ -89,7 +89,7 @@ CRollingBall::CRollingBall(CGameObject* obj)
 
     i32 time = m_object->m_logicRecord->m_speed;
     if (time == 0) {
-        time = g_buteMgr.GetDwordDef("Hazardz", "RollingBallTimePerTile", 1000);
+        time = g_buteMgr.GetDword("Hazardz", "RollingBallTimePerTile", 1000);
     }
     CGruntzMgr* reg = g_gameReg;
     if (false != reg->m_isEasyMode && reg->m_gameMode == GAMEMODE_QUESTZ
@@ -270,8 +270,7 @@ i32 CRollingBall::Update() {
                         m_explodeLatch = true;
                         return 0;
                     }
-                    DWORD perTile =
-                        g_buteMgr.GetDwordDef("Hazardz", "RollingBallTimePerTile", 0x3e8);
+                    DWORD perTile = g_buteMgr.GetDword("Hazardz", "RollingBallTimePerTile", 0x3e8);
                     m_moveSpeed = kRollingBallSpeedNum / static_cast<double>(perTile);
 
                     CMapMgr* board = g_gameReg->m_tileGrid;

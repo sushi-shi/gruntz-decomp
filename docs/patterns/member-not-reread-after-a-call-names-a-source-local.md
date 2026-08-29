@@ -67,7 +67,7 @@ slot[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;      // 86.23 -> 91.42
 deciding; the two spellings differ by one `mov` per statement and by nothing else.
 
 The scalar form also appears in `CStaticHazard::CStaticHazard` @0xfb7a0. Retail loads
-`CAniElement::m_durationMs` into `edi` before `CButeMgr::GetIntDef` and adds that saved
+`CAniElement::m_durationMs` into `edi` before `CButeMgr::GetInt` and adds that saved
 value after the call; the reconstruction formerly spelled `entry->m_durationMs` in the
 addition and therefore reloaded it afterward. Introducing
 `i32 durationMs = entry->m_durationMs` restored retail's pre-call lifetime, made both

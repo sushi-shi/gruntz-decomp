@@ -21,7 +21,7 @@ each names a distinct trap:
   different asset.
 * **Cross-jump merge degree duplicates a key.** `CGrunt::LoadGruntTypeTable`
   shows retail with an extra `"Powerupz"`: retail duplicates the `Health1`
-  arm's `GetIntDef` while cl merges all three health arms. Same keys, same
+  arm's `GetInt` while cl merges all three health arms. Same keys, same
   default, same arithmetic.
 
 So the screen is worth running - it is cheap and it reads a dimension scoring

@@ -12,10 +12,10 @@ GZ_ENUM_BEGIN(ButeLexAction)
     LEXACT_ACCEPT_PUSHBACK = 5
 GZ_ENUM_END(ButeLexAction)
 
-GZ_ENUM_CONST_BEGIN(ButeLexSlot)
-    LEXSLOT_ACTION = 0,
-    LEXSLOT_TARGET = 1,
-    LEXSLOT_STATE = 2
-GZ_ENUM_CONST_END(ButeLexSlot)
+struct TranType {
+    i16 ActionType;
+    i16 A;
+    i16 B;
+};
 
 #endif // GRUNTZ_BUTE_BUTELEXACTION_H

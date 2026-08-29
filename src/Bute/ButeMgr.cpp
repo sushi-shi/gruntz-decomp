@@ -18,7 +18,7 @@
 #include <strstrea.h>
 
 DATA(0x0021cf40)
-i16 g_charClass[256] = {
+static i16 ClassMap[256] = {
     49, 48, 48, 48, 48, 48, 48, 48, 48, 15, 12, 48, 48, 13, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
     48, 48, 48, 48, 48, 48, 48, 48, 14, 43, 17, 37, 46, 45, 16, 42, 18, 19, 20, 21, 35, 22, 23, 24,
     11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 25, 26, 27, 28, 29, 47, 40, 8,  10, 10, 1,  5,  6,  10,
@@ -31,8 +31,9 @@ i16 g_charClass[256] = {
     48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
     48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 0
 };
+
 DATA(0x0021d140)
-i16 g_transTable[97][49][3] = {
+static TranType TransTable[97][49] = {
     {{5, 6, 0}, {5, 6, 0},  {5, 6, 0}, {5, 6, 0}, {1, 41, 0}, {3, 16, 0}, {5, 6, 0},
      {5, 6, 0}, {5, 6, 0},  {5, 6, 0}, {1, 0, 0}, {5, 6, 0},  {5, 6, 0},  {5, 6, 0},
      {5, 6, 0}, {5, 6, 0},  {5, 6, 0}, {5, 6, 0}, {5, 6, 0},  {5, 6, 0},  {5, 6, 0},
@@ -714,9 +715,6 @@ i16 g_transTable[97][49][3] = {
      {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}},
 };
 
-DATA(0x002bf678)
-static i16 g_tokenLen;
-
 DATA(0x002240a8)
 static char s_fmtBadSymbol[] = "ButeMgr (%d):  Bad symbol encountered.";
 DATA(0x002240d0)
@@ -766,172 +764,175 @@ static const double s_doubleErr = DBL_MIN;
 
 RVA(0x00170210, 0x118)
 CButeMgr::CButeMgr() {
-    m_streamBase = 0;
-    m_errCallback = NULL;
-    m_lineNo = 0;
-    m_countLine = true;
-    m_captureText = 0;
+    m_decryptCode = 0;
+    m_pDisplayFunc = NULL;
+    m_lineNumber = 0;
+    m_bLineCounterFlag = true;
+    m_bPutChar = 0;
     m_writeMode = 0;
-    m_encrypted = 0;
-    m_parseFailed = 0;
-    m_filename.Empty();
-    m_tagName.Empty();
+    m_bCrypt = 0;
+    m_bErrorFlag = 0;
+    m_sAttributeFilename.Empty();
+    m_sTagName.Empty();
 }
 
 RVA(0x00170330, 0x34)
 void CButeMgr::Reset() {
-    m_pos = 0;
-    m_lineNo = 0;
-    m_countLine = true;
-    m_parseFailed = 0;
-    m_tagName = "";
-    m_attributeName = "";
+    m_checksum = 0;
+    m_lineNumber = 0;
+    m_bLineCounterFlag = true;
+    m_bErrorFlag = 0;
+    m_sTagName = "";
+    m_sAttribute = "";
 }
 
 RVA(0x00170370, 0x1)
 void CButeMgr::Term() {}
 
 RVA(0x00170380, 0xa)
-void CButeMgr::SetErrCallback(ErrCallback cb) {
-    m_errCallback = cb;
+void CButeMgr::Init(ErrCallback cb) {
+    m_pDisplayFunc = cb;
 }
 
 RVA(0x00170390, 0x50)
-void CButeMgr::NextChar() {
-    i32 delta = m_stream->get() - m_streamBase;
-    if (m_stream->eof()) {
-        m_curChar = 0;
+void CButeMgr::ConsumeChar() {
+    i32 delta = m_pData->get() - m_decryptCode;
+    if (m_pData->eof()) {
+        m_currentChar = 0;
         return;
     }
-    if (m_countLine) {
-        m_lineNo++;
+    if (m_bLineCounterFlag) {
+        m_lineNumber++;
     }
-    m_curChar = static_cast<char>(delta);
+    m_currentChar = static_cast<char>(delta);
     if (delta == '\n') {
-        m_countLine = true;
+        m_bLineCounterFlag = true;
     } else {
-        m_countLine = false;
+        m_bLineCounterFlag = false;
     }
-    m_pos += delta;
+    m_checksum += delta;
 }
 
 RVA(0x001703e0, 0x15)
 i16 CButeMgr::CharClass(char c) {
-    return static_cast<i16>((g_charClass[static_cast<u8>(c)] - 1));
+    return static_cast<i16>((ClassMap[static_cast<u8>(c)] - 1));
 }
 
 RVA(0x00170400, 0x2f)
-GZ_ENUM_RETURN(ButeLexAction, i16) CButeMgr::GetLexAction(i16 state, char c) {
-    return g_transTable[state][CharClass(c)][LEXSLOT_ACTION];
+GZ_ENUM_RETURN(ButeLexAction, i16) CButeMgr::Action(i16 state, char c) {
+    return TransTable[state][CharClass(c)].ActionType;
 }
 
 RVA(0x00170430, 0x2f)
-i16 CButeMgr::GetTransitionTarget(i16 state, char c) {
-    return g_transTable[state][CharClass(c)][LEXSLOT_TARGET];
+i16 CButeMgr::NextState(i16 state, char c) {
+    return TransTable[state][CharClass(c)].A;
 }
 
 RVA(0x00170460, 0x58)
-void CButeMgr::AcceptTransition(i16 state, char c) {
-    m_tokType = g_transTable[state][CharClass(c)][LEXSLOT_TARGET];
-    m_lexState = g_transTable[state][CharClass(c)][LEXSLOT_STATE];
+void CButeMgr::LookupCodes(i16 state, char c) {
+    m_token = TransTable[state][CharClass(c)].A;
+    m_tokenMinor = TransTable[state][CharClass(c)].B;
 }
 
 RVA(0x001704c0, 0x200)
-bool CButeMgr::Parse() {
+bool CButeMgr::ScanTok() {
     const i16 kLexStartState = 0x11;
-    i16 kind = kLexStartState;
-    g_tokenLen = 0;
+    i16 State = kLexStartState;
+    DATA(0x002bf678)
+    static i16 Pos;
+
+    Pos = 0;
 
     for (;;) {
-        GZ_ENUM_RETURN(ButeLexAction, i16) cls = GetLexAction(kind, m_curChar);
+        GZ_ENUM_RETURN(ButeLexAction, i16) cls = Action(State, m_currentChar);
         switch (cls) {
             case LEXACT_ERROR:
-                ReportError(s_fmtBadSymbol, m_lineNo);
+                DisplayMessage(s_fmtBadSymbol, m_lineNumber);
                 return false;
 
             case LEXACT_TAKE:
-                kind = GetTransitionTarget(kind, m_curChar);
-                m_token[g_tokenLen++] = m_curChar;
-                if (m_captureText != 0 && m_curChar != 0) {
-                    (*m_pText) << static_cast<unsigned char>(m_curChar);
+                State = NextState(State, m_currentChar);
+                m_szTokenString[Pos++] = m_currentChar;
+                if (m_bPutChar != 0 && m_currentChar != 0) {
+                    (*m_pSaveData) << static_cast<unsigned char>(m_currentChar);
                 }
-                NextChar();
+                ConsumeChar();
                 break;
 
             case LEXACT_SKIP:
-                kind = GetTransitionTarget(kind, m_curChar);
-                if (m_captureText != 0 && m_curChar != 0) {
-                    (*m_pText) << static_cast<unsigned char>(m_curChar);
+                State = NextState(State, m_currentChar);
+                if (m_bPutChar != 0 && m_currentChar != 0) {
+                    (*m_pSaveData) << static_cast<unsigned char>(m_currentChar);
                 }
-                NextChar();
+                ConsumeChar();
                 break;
 
             case LEXACT_ACCEPT_TAKE:
-                AcceptTransition(kind, m_curChar);
-                m_token[g_tokenLen++] = m_curChar;
-                if (m_captureText != 0 && m_curChar != 0) {
-                    (*m_pText) << static_cast<unsigned char>(m_curChar);
+                LookupCodes(State, m_currentChar);
+                m_szTokenString[Pos++] = m_currentChar;
+                if (m_bPutChar != 0 && m_currentChar != 0) {
+                    (*m_pSaveData) << static_cast<unsigned char>(m_currentChar);
                 }
-                NextChar();
-                if (m_tokType == BUTETOK_NONE) {
-                    Parse();
+                ConsumeChar();
+                if (m_token == BUTETOK_NONE) {
+                    ScanTok();
                 }
-                m_token[g_tokenLen] = 0;
+                m_szTokenString[Pos] = 0;
                 return true;
 
             case LEXACT_ACCEPT_SKIP:
-                AcceptTransition(kind, m_curChar);
-                if (m_captureText != 0 && m_curChar != 0) {
-                    (*m_pText) << static_cast<unsigned char>(m_curChar);
+                LookupCodes(State, m_currentChar);
+                if (m_bPutChar != 0 && m_currentChar != 0) {
+                    (*m_pSaveData) << static_cast<unsigned char>(m_currentChar);
                 }
-                NextChar();
-                if (m_tokType == BUTETOK_NONE) {
-                    Parse();
+                ConsumeChar();
+                if (m_token == BUTETOK_NONE) {
+                    ScanTok();
                 }
-                m_token[g_tokenLen] = 0;
+                m_szTokenString[Pos] = 0;
                 return true;
 
             case LEXACT_ACCEPT_PUSHBACK:
-                AcceptTransition(kind, m_curChar);
-                if (m_tokType == BUTETOK_NONE) {
-                    Parse();
+                LookupCodes(State, m_currentChar);
+                if (m_token == BUTETOK_NONE) {
+                    ScanTok();
                 }
-                m_token[g_tokenLen] = 0;
+                m_szTokenString[Pos] = 0;
                 return true;
         }
     }
 }
 
 RVA(0x001706c0, 0x4b)
-void CButeMgr::ReportError(const char* fmt, ...) {
+void CButeMgr::DisplayMessage(const char* fmt, ...) {
     va_list args;
     va_start(args, fmt);
 
-    vsprintf(m_errStr.GetBuffer(0x100), fmt, args);
-    m_errStr.ReleaseBuffer(-1);
+    vsprintf(m_sErrorString.GetBuffer(0x100), fmt, args);
+    m_sErrorString.ReleaseBuffer(-1);
 
-    if (m_errCallback != NULL) {
-        m_errCallback(m_errStr.GetBuffer(0));
+    if (m_pDisplayFunc != NULL) {
+        m_pDisplayFunc(m_sErrorString.GetBuffer(0));
     }
 
     va_end(args);
 }
 
 RVA(0x00170710, 0x3b)
-bool CButeMgr::ScanToken(ButeToken expectType) {
-    if (!Parse()) {
+bool CButeMgr::Match(ButeToken expectType) {
+    if (!ScanTok()) {
         return false;
     }
 
-    if (m_tokType != expectType) {
-        ReportError(s_fmtFormatError, m_lineNo);
+    if (m_token != expectType) {
+        DisplayMessage(s_fmtFormatError, m_lineNumber);
         return false;
     }
     return true;
 }
 
 RVA(0x00170750, 0xa10)
-bool ButeMgr::ParseAttributeFile() {
+bool CButeMgr::Statement() {
     i32 a, b, c, d;
     i32 px, py;
     double x, y, z;
@@ -942,215 +943,218 @@ bool ButeMgr::ParseAttributeFile() {
     char** endptr = NULL;
     bool bDup = false;
 
-    m_attributeName = m_token;
+    m_sAttribute = m_szTokenString;
 
     if (!m_writeMode) {
-        if (m_currentTag->Find(m_attributeName)) {
-            ReportError(s_fmtDupSymbol, m_attributeName.GetBuffer(0));
+        if (m_pCurrTabOfItems->Find(m_sAttribute)) {
+            DisplayMessage(s_fmtDupSymbol, m_sAttribute.GetBuffer(0));
             bDup = true;
         }
     }
 
-    if (!ScanToken(BUTETOK_ASSIGN)) {
+    if (!Match(BUTETOK_ASSIGN)) {
         return false;
     }
     if (m_writeMode) {
-        m_captureText = 0;
-        (*m_pText) << static_cast<unsigned char>(0x20);
+        m_bPutChar = 0;
+        (*m_pSaveData) << static_cast<unsigned char>(0x20);
     }
-    if (!Parse()) {
+    if (!ScanTok()) {
         return false;
     }
 
-    switch (m_tokType) {
+    switch (m_token) {
         case BUTETOK_INT:
         case BUTETOK_INT_SIGNED:
-            intValue = atoi(m_token);
+            intValue = atoi(m_szTokenString);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_currentTag->Insert(m_attributeName, new CButeValue(BUTE_INT, intValue));
+                    m_pCurrTabOfItems->Insert(m_sAttribute, new CButeValue(BUTE_INT, intValue));
                 }
             } else {
-                intValue = GetInt(m_tagName, m_attributeName);
-                (*m_pText) << static_cast<int>(intValue);
+                intValue = GetInt(m_sTagName, m_sAttribute);
+                (*m_pSaveData) << static_cast<int>(intValue);
             }
             break;
         case BUTETOK_KEYWORD_DWORD:
-            if (!ScanToken(BUTETOK_INT)) {
+            if (!Match(BUTETOK_INT)) {
                 return false;
             }
-            dwordValue = strtoul(m_token, endptr, 10);
+            dwordValue = strtoul(m_szTokenString, endptr, 10);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_currentTag->Insert(m_attributeName, new CButeValue(BUTE_DWORD, dwordValue));
+                    m_pCurrTabOfItems->Insert(m_sAttribute, new CButeValue(BUTE_DWORD, dwordValue));
                 }
             } else {
-                dwordValue = GetDword(m_tagName, m_attributeName);
-                (*m_pText) << s_strDword << static_cast<unsigned long>(dwordValue);
+                dwordValue = GetDword(m_sTagName, m_sAttribute);
+                (*m_pSaveData) << s_strDword << static_cast<unsigned long>(dwordValue);
             }
             break;
         case BUTETOK_KEYWORD_FLOAT:
-            if (!ScanToken(BUTETOK_DOUBLE)) {
+            if (!Match(BUTETOK_DOUBLE)) {
                 return false;
             }
-            floatValue = static_cast<float>(atof(m_token));
+            floatValue = static_cast<float>(atof(m_szTokenString));
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_currentTag->Insert(m_attributeName, new CButeValue(BUTE_FLOAT, floatValue));
+                    m_pCurrTabOfItems->Insert(m_sAttribute, new CButeValue(BUTE_FLOAT, floatValue));
                 }
             } else {
-                floatValue = GetFloat(m_tagName, m_attributeName);
-                ((*m_pText) << s_strFloat) << floatValue;
+                floatValue = GetFloat(m_sTagName, m_sAttribute);
+                ((*m_pSaveData) << s_strFloat) << floatValue;
             }
             break;
         case BUTETOK_FLOAT_SUFFIX:
-            floatValue = static_cast<float>(atof(m_token));
+            floatValue = static_cast<float>(atof(m_szTokenString));
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_currentTag->Insert(m_attributeName, new CButeValue(BUTE_FLOAT, floatValue));
+                    m_pCurrTabOfItems->Insert(m_sAttribute, new CButeValue(BUTE_FLOAT, floatValue));
                 }
             } else {
-                floatValue = GetFloat(m_tagName, m_attributeName);
-                (*m_pText) << floatValue << s_strFloatSuffix;
+                floatValue = GetFloat(m_sTagName, m_sAttribute);
+                (*m_pSaveData) << floatValue << s_strFloatSuffix;
             }
             break;
         case BUTETOK_DOUBLE:
-            doubleValue = atof(m_token);
+            doubleValue = atof(m_szTokenString);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_currentTag->Insert(m_attributeName, new CButeValue(BUTE_DOUBLE, doubleValue));
+                    m_pCurrTabOfItems->Insert(
+                        m_sAttribute,
+                        new CButeValue(BUTE_DOUBLE, doubleValue)
+                    );
                 }
             } else {
-                doubleValue = GetDouble(m_tagName, m_attributeName);
-                (*m_pText) << doubleValue;
+                doubleValue = GetDouble(m_sTagName, m_sAttribute);
+                (*m_pSaveData) << doubleValue;
             }
             break;
         case BUTETOK_RECT:
-            sscanf(m_token, s_fmtPoint4, &a, &b, &c, &d);
+            sscanf(m_szTokenString, s_fmtPoint4, &a, &b, &c, &d);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_currentTag->Insert(
-                        m_attributeName,
+                    m_pCurrTabOfItems->Insert(
+                        m_sAttribute,
                         new CButeValue(BUTE_RECT, &ButeIntRect(a, b, c, d))
                     );
                 }
             } else {
-                ButeIntRect r = *GetRect(m_tagName, m_attributeName);
-                (*m_pText) << s_strOpen << static_cast<long>(r.a) << s_strComma
-                           << static_cast<long>(r.b) << s_strComma << static_cast<long>(r.c)
-                           << s_strComma << static_cast<long>(r.d) << s_strClose;
+                ButeIntRect r = *GetRect(m_sTagName, m_sAttribute);
+                (*m_pSaveData) << s_strOpen << static_cast<long>(r.a) << s_strComma
+                               << static_cast<long>(r.b) << s_strComma << static_cast<long>(r.c)
+                               << s_strComma << static_cast<long>(r.d) << s_strClose;
             }
             break;
         case BUTETOK_POINT:
-            sscanf(m_token, s_fmtPoint2, &px, &py);
+            sscanf(m_szTokenString, s_fmtPoint2, &px, &py);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_currentTag->Insert(
-                        m_attributeName,
+                    m_pCurrTabOfItems->Insert(
+                        m_sAttribute,
                         new CButeValue(BUTE_POINT, &ButeIntPoint(px, py))
                     );
                 }
             } else {
-                ButeIntPoint pt = *GetPoint(m_tagName, m_attributeName);
-                (*m_pText) << s_strOpen << static_cast<long>(pt.a) << s_strComma
-                           << static_cast<long>(pt.b) << s_strClose;
+                ButeIntPoint pt = *GetPoint(m_sTagName, m_sAttribute);
+                (*m_pSaveData) << s_strOpen << static_cast<long>(pt.a) << s_strComma
+                               << static_cast<long>(pt.b) << s_strClose;
             }
             break;
         case BUTETOK_VECTOR:
-            sscanf(m_token, s_fmtRect3, &x, &y, &z);
+            sscanf(m_szTokenString, s_fmtRect3, &x, &y, &z);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_currentTag->Insert(
-                        m_attributeName,
+                    m_pCurrTabOfItems->Insert(
+                        m_sAttribute,
                         new CButeValue(BUTE_VECTOR, &CAVector(x, y, z))
                     );
                 }
             } else {
-                CAVector v = *GetVector(m_tagName, m_attributeName);
-                (*m_pText) << s_strLt << v.Geti() << s_strComma << v.Getj() << s_strComma
-                           << v.Getk() << s_strGt;
+                CAVector v = *GetVector(m_sTagName, m_sAttribute);
+                (*m_pSaveData) << s_strLt << v.Geti() << s_strComma << v.Getj() << s_strComma
+                               << v.Getk() << s_strGt;
             }
             break;
         case BUTETOK_RANGE:
-            sscanf(m_token, s_fmtRect2, &x, &y);
+            sscanf(m_szTokenString, s_fmtRect2, &x, &y);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_currentTag->Insert(
-                        m_attributeName,
+                    m_pCurrTabOfItems->Insert(
+                        m_sAttribute,
                         new CButeValue(BUTE_RANGE, &CARange(x, y))
                     );
                 }
             } else {
-                CARange range = *GetRange(m_tagName, m_attributeName);
-                (*m_pText) << "[" << range.GetMin() << s_strComma << range.GetMax() << "]";
+                CARange range = *GetRange(m_sTagName, m_sAttribute);
+                (*m_pSaveData) << "[" << range.GetMin() << s_strComma << range.GetMax() << "]";
             }
             break;
         case BUTETOK_STRING:
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_currentTag->Insert(
-                        m_attributeName,
-                        new CButeValue(BUTE_STRING, CString(m_token))
+                    m_pCurrTabOfItems->Insert(
+                        m_sAttribute,
+                        new CButeValue(BUTE_STRING, CString(m_szTokenString))
                     );
                 }
             } else {
-                CString tmp(*GetString(m_tagName, m_attributeName));
-                ostream& output = (*m_pText) << static_cast<unsigned char>('"');
+                CString tmp(*GetString(m_sTagName, m_sAttribute));
+                ostream& output = (*m_pSaveData) << static_cast<unsigned char>('"');
                 ostream& stringOutput = output << tmp.GetBuffer(0);
                 stringOutput << static_cast<unsigned char>('"');
             }
             break;
         default:
-            ReportError(s_fmtInvalidToken, m_lineNo);
+            DisplayMessage(s_fmtInvalidToken, m_lineNumber);
             return false;
     }
 
     if (m_writeMode) {
-        m_captureText = 1;
+        m_bPutChar = 1;
     }
     return true;
 }
 
 RVA(0x00171160, 0x45)
-bool CButeMgr::SkipToTag() {
+bool CButeMgr::StatementList() {
     for (;;) {
-        if (!(static_cast<ButeMgr*>(this))->ParseAttributeFile()) {
+        if (!Statement()) {
             return false;
         }
-        if (!Parse()) {
+        if (!ScanTok()) {
             return false;
         }
-        if (m_tokType == BUTETOK_TAG_OPEN || m_tokType == BUTETOK_END) {
+        if (m_token == BUTETOK_TAG_OPEN || m_token == BUTETOK_END) {
             return true;
         }
-        if (m_tokType != BUTETOK_NAME) {
+        if (m_token != BUTETOK_NAME) {
             return false;
         }
     }
 }
 
 RVA(0x001711b0, 0xf5)
-bool CButeMgr::ParseTagLine() {
-    if (!ScanToken(BUTETOK_NAME)) {
+bool CButeMgr::Tag() {
+    if (!Match(BUTETOK_NAME)) {
         return false;
     }
 
-    char* tok = m_token;
-    m_tagName = tok;
+    char* tok = m_szTokenString;
+    m_sTagName = tok;
 
     if (!m_writeMode) {
         CBSecStream* t = Tags();
         if (t->Find(tok)) {
-            ReportError(s_fmtDupTag, tok);
+            DisplayMessage(s_fmtDupTag, tok);
             return false;
         }
         CButeNode* node = new CButeNode(&ButeValueTeardown, 2);
 
-        m_currentTag = node;
+        m_pCurrTabOfItems = node;
         t->Insert(tok, node);
     }
 
-    return ScanToken(BUTETOK_TAG_CLOSE) ? true : false;
+    return Match(BUTETOK_TAG_CLOSE) ? true : false;
 }
 
 RVA(0x001712b0, 0x228)
@@ -1236,39 +1240,39 @@ RVA_COMPGEN(0x00171550, 0x11, ??6ostream@@QAEAAV0@P6AAAV0@AAV0@@Z@Z)
 RVA_COMPGEN(0x00171570, 0x9, ?flush@@YAAAVostream@@AAV1@@Z)
 
 RVA(0x00171580, 0xba)
-bool CButeMgr::ParseGroup() {
-    NextChar();
-    if (!Parse()) {
+bool CButeMgr::TagList() {
+    ConsumeChar();
+    if (!ScanTok()) {
         return false;
     }
-    if (m_tokType == BUTETOK_END) {
+    if (m_token == BUTETOK_END) {
         return true;
     }
-    if (m_tokType != BUTETOK_TAG_OPEN) {
+    if (m_token != BUTETOK_TAG_OPEN) {
         return false;
     }
-    while (m_tokType != BUTETOK_END) {
-        if (!ParseTagLine()) {
+    while (m_token != BUTETOK_END) {
+        if (!Tag()) {
             return false;
         }
         if (m_writeMode) {
 
-            CButeNode* grp = static_cast<CButeNode*>(ModifiedTags()->Find(m_tagName));
+            CButeNode* grp = static_cast<CButeNode*>(ModifiedTags()->Find(m_sTagName));
             if (grp) {
-                grp->Walk(&ButeGroup_Apply, m_pText, NULL);
+                grp->Walk(&ButeGroup_Apply, m_pSaveData, NULL);
             }
         }
-        if (!Parse()) {
+        if (!ScanTok()) {
             return false;
         }
-        if (m_tokType == BUTETOK_END) {
+        if (m_token == BUTETOK_END) {
             return true;
         }
-        if (m_tokType != BUTETOK_TAG_OPEN) {
-            if (m_tokType != BUTETOK_NAME) {
+        if (m_token != BUTETOK_TAG_OPEN) {
+            if (m_token != BUTETOK_NAME) {
                 return false;
             }
-            if (!SkipToTag()) {
+            if (!StatementList()) {
                 return false;
             }
         }
@@ -1282,53 +1286,53 @@ bool CButeMgr::ParseGroup() {
 RVA(0x00171640, 0x3f2)
 bool CButeMgr::Save() {
     Reset();
-    if (m_filename.IsEmpty()) {
+    if (m_sAttributeFilename.IsEmpty()) {
         return false;
     }
 
     m_writeMode = true;
-    m_captureText = true;
+    m_bPutChar = true;
 
     char block[4096];
 
-    ifstream input(m_filename, ios::nocreate | ios::binary);
+    ifstream input(m_sAttributeFilename, ios::nocreate | ios::binary);
     input.seekg(0, ios::end);
     i32 length = input.tellg();
     input.clear();
     input.seekg(0);
 
     strstream source(new char[length], length, ios::in | ios::out);
-    if (m_encrypted) {
+    if (m_bCrypt) {
         m_cryptMgr.Decrypt(input, source);
-        m_pText = new iostream(new strstreambuf(length));
+        m_pSaveData = new iostream(new strstreambuf(length));
     } else {
         while (!input.eof()) {
             input.read(block, sizeof(block));
             source.write(block, input.gcount());
         }
         input.close();
-        m_pText = new fstream(m_filename, ios::in | ios::out | ios::binary);
+        m_pSaveData = new fstream(m_sAttributeFilename, ios::in | ios::out | ios::binary);
     }
-    m_pText->precision(100);
+    m_pSaveData->precision(100);
 
     source.clear();
-    m_stream = &source;
-    ParseGroup();
-    m_addedTags.Walk(&ButeTag_Apply, m_pText, NULL);
-    m_pText->clear();
+    m_pData = &source;
+    TagList();
+    m_newTagTab.Walk(&ButeTag_Apply, m_pSaveData, NULL);
+    m_pSaveData->clear();
 
-    if (m_encrypted) {
-        ofstream output(m_filename, ios::binary);
-        m_cryptMgr.Encrypt(*m_pText, output);
+    if (m_bCrypt) {
+        ofstream output(m_sAttributeFilename, ios::binary);
+        m_cryptMgr.Encrypt(*m_pSaveData, output);
     }
 
     delete[] source.str();
-    if (m_encrypted) {
-        delete m_pText->rdbuf();
+    if (m_bCrypt) {
+        delete m_pSaveData->rdbuf();
     }
-    delete m_pText;
+    delete m_pSaveData;
 
-    m_captureText = false;
+    m_bPutChar = false;
     m_writeMode = false;
     return true;
 }
@@ -1336,7 +1340,7 @@ bool CButeMgr::Save() {
 RVA_COMPGEN(0x00171a40, 0x14, ??_Dstrstream@@QAEXXZ)
 
 RVA(0x00171a60, 0x34)
-bool CButeMgr::Exists(const char* tag, const char* key) {
+bool CButeMgr::Exist(const char* tag, const char* key) {
     CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
     if (grp) {
         if (key == NULL) {
@@ -1350,7 +1354,7 @@ bool CButeMgr::Exists(const char* tag, const char* key) {
 }
 
 RVA(0x00171aa0, 0x50)
-i32 CButeMgr::GetIntDef(const char* tag, const char* key, i32 def) {
+i32 CButeMgr::GetInt(const char* tag, const char* key, i32 def) {
     CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
     if (grp) {
         CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
@@ -1358,7 +1362,7 @@ i32 CButeMgr::GetIntDef(const char* tag, const char* key, i32 def) {
             if (rec->type == BUTE_INT) {
                 return *static_cast<i32*>(rec->pValue);
             }
-            ReportError(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag, key);
         }
     }
     return def;
@@ -1373,26 +1377,26 @@ i32 CButeMgr::GetInt(const char* tag, const char* key) {
             if (rec->type == BUTE_INT) {
                 return *static_cast<i32*>(rec->pValue);
             }
-            ReportError(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag, key);
             return COORD_UNSET;
         }
-        ReportError(s_fmtNotFound, tag, key);
+        DisplayMessage(s_fmtNotFound, tag, key);
         return COORD_UNSET;
     }
-    ReportError(s_fmtInvalidTag, tag);
+    DisplayMessage(s_fmtInvalidTag, tag);
     return COORD_UNSET;
 }
 
 RVA(0x00171b80, 0x478)
 void CButeMgr::SetInt(const char* tag, const char* key, i32 val) {
-    CButeNode* grp = static_cast<CButeNode*>(m_tags.Find(tag));
+    CButeNode* grp = static_cast<CButeNode*>(m_tagTab.Find(tag));
     if (grp) {
         CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
         if (hit) {
             hit->CopyValue(&CButeValue(BUTE_INT, val));
             return;
         }
-        CButeNode* modifiedTag = static_cast<CButeNode*>(m_modifiedTags.Find(tag));
+        CButeNode* modifiedTag = static_cast<CButeNode*>(m_auxTagTab.Find(tag));
         if (modifiedTag) {
             CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->Find(key));
             if (modifiedValue) {
@@ -1403,12 +1407,12 @@ void CButeMgr::SetInt(const char* tag, const char* key, i32 val) {
             return;
         }
         CButeNode* newModifiedTag =
-            static_cast<CButeNode*>(m_modifiedTags.Insert(tag, new CButeNode(2)));
+            static_cast<CButeNode*>(m_auxTagTab.Insert(tag, new CButeNode(2)));
         newModifiedTag->FindOrInsert(key, new CButeValue(BUTE_INT, val));
         return;
     }
 
-    CButeNode* addedTag = static_cast<CButeNode*>(m_addedTags.Find(tag));
+    CButeNode* addedTag = static_cast<CButeNode*>(m_newTagTab.Find(tag));
     if (addedTag) {
         CButeValue* addedValue = static_cast<CButeValue*>(addedTag->Find(key));
         if (addedValue) {
@@ -1418,7 +1422,7 @@ void CButeMgr::SetInt(const char* tag, const char* key, i32 val) {
         addedTag->Insert(key, new CButeValue(BUTE_INT, val));
         return;
     }
-    CButeNode* newAddedTag = static_cast<CButeNode*>(m_addedTags.Insert(tag, new CButeNode(2)));
+    CButeNode* newAddedTag = static_cast<CButeNode*>(m_newTagTab.Insert(tag, new CButeNode(2)));
     newAddedTag->FindOrInsert(key, new CButeValue(BUTE_INT, val));
 }
 
@@ -1427,7 +1431,7 @@ RVA_COMPGEN(0x00172000, 0x31, ??0CButeValue@@QAE@W4ButeType@@H@Z)
 RVA_COMPGEN(0x00172160, 0x80, ??1CButeValue@@QAE@XZ)
 
 RVA(0x001721e0, 0x5a)
-DWORD CButeMgr::GetDwordDef(const char* tag, const char* key, DWORD def) {
+DWORD CButeMgr::GetDword(const char* tag, const char* key, DWORD def) {
     CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
     if (grp) {
         CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
@@ -1436,7 +1440,7 @@ DWORD CButeMgr::GetDwordDef(const char* tag, const char* key, DWORD def) {
                 case BUTE_DWORD:
                     return *static_cast<DWORD*>(rec->pValue);
             }
-            ReportError(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag, key);
         }
     }
     return def;
@@ -1452,26 +1456,26 @@ DWORD CButeMgr::GetDword(const char* tag, const char* key) {
                 case BUTE_DWORD:
                     return *static_cast<DWORD*>(rec->pValue);
             }
-            ReportError(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag, key);
             return 0;
         }
-        ReportError(s_fmtNotFound, tag, key);
+        DisplayMessage(s_fmtNotFound, tag, key);
         return 0;
     }
-    ReportError(s_fmtInvalidTag, tag);
+    DisplayMessage(s_fmtInvalidTag, tag);
     return 0;
 }
 
 RVA(0x001722c0, 0x3bc)
 void CButeMgr::SetDword(const char* tag, const char* key, DWORD val) {
-    CButeNode* grp = static_cast<CButeNode*>(m_tags.Find(tag));
+    CButeNode* grp = static_cast<CButeNode*>(m_tagTab.Find(tag));
     if (grp) {
         CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
         if (hit) {
             hit->CopyValue(&CButeValue(BUTE_DWORD, val));
             return;
         }
-        CButeNode* modifiedTag = static_cast<CButeNode*>(m_modifiedTags.Find(tag));
+        CButeNode* modifiedTag = static_cast<CButeNode*>(m_auxTagTab.Find(tag));
         if (modifiedTag) {
             CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->Find(key));
             if (modifiedValue) {
@@ -1482,12 +1486,12 @@ void CButeMgr::SetDword(const char* tag, const char* key, DWORD val) {
             return;
         }
         CButeNode* newModifiedTag =
-            static_cast<CButeNode*>(m_modifiedTags.Insert(tag, new CButeNode(2)));
+            static_cast<CButeNode*>(m_auxTagTab.Insert(tag, new CButeNode(2)));
         newModifiedTag->FindOrInsert(key, new CButeValue(BUTE_DWORD, val));
         return;
     }
 
-    CButeNode* addedTag = static_cast<CButeNode*>(m_addedTags.Find(tag));
+    CButeNode* addedTag = static_cast<CButeNode*>(m_newTagTab.Find(tag));
     if (addedTag) {
         CButeValue* addedValue = static_cast<CButeValue*>(addedTag->Find(key));
         if (addedValue) {
@@ -1497,7 +1501,7 @@ void CButeMgr::SetDword(const char* tag, const char* key, DWORD val) {
         addedTag->Insert(key, new CButeValue(BUTE_DWORD, val));
         return;
     }
-    CButeNode* newAddedTag = static_cast<CButeNode*>(m_addedTags.Insert(tag, new CButeNode(2)));
+    CButeNode* newAddedTag = static_cast<CButeNode*>(m_newTagTab.Insert(tag, new CButeNode(2)));
     newAddedTag->FindOrInsert(key, new CButeValue(BUTE_DWORD, val));
 }
 
@@ -1506,7 +1510,7 @@ RVA_COMPGEN(0x00172680, 0x31, ??0CButeValue@@QAE@W4ButeType@@K@Z)
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001726c0, 0x6b)
-float CButeMgr::GetFloatDef(const char* tag, const char* key, float def) {
+float CButeMgr::GetFloat(const char* tag, const char* key, float def) {
     CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
     if (grp) {
         CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
@@ -1517,7 +1521,7 @@ float CButeMgr::GetFloatDef(const char* tag, const char* key, float def) {
                 case BUTE_FLOAT:
                     return *static_cast<float*>(rec->pValue);
             }
-            ReportError(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag, key);
         }
     }
     return def;
@@ -1535,26 +1539,26 @@ float CButeMgr::GetFloat(const char* tag, const char* key) {
                 case BUTE_FLOAT:
                     return *static_cast<float*>(rec->pValue);
             }
-            ReportError(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag, key);
             return s_floatErr;
         }
-        ReportError(s_fmtNotFound, tag, key);
+        DisplayMessage(s_fmtNotFound, tag, key);
         return s_floatErr;
     }
-    ReportError(s_fmtInvalidTag, tag);
+    DisplayMessage(s_fmtInvalidTag, tag);
     return s_floatErr;
 }
 
 RVA(0x001727d0, 0x3c0)
 void CButeMgr::SetFloat(const char* tag, const char* key, float val) {
-    CButeNode* grp = static_cast<CButeNode*>(m_tags.Find(tag));
+    CButeNode* grp = static_cast<CButeNode*>(m_tagTab.Find(tag));
     if (grp) {
         CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
         if (hit) {
             hit->CopyValue(&CButeValue(BUTE_FLOAT, val));
             return;
         }
-        CButeNode* modifiedTag = static_cast<CButeNode*>(m_modifiedTags.Find(tag));
+        CButeNode* modifiedTag = static_cast<CButeNode*>(m_auxTagTab.Find(tag));
         if (modifiedTag) {
             CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->Find(key));
             if (modifiedValue) {
@@ -1565,12 +1569,12 @@ void CButeMgr::SetFloat(const char* tag, const char* key, float val) {
             return;
         }
         CButeNode* newModifiedTag =
-            static_cast<CButeNode*>(m_modifiedTags.Insert(tag, new CButeNode(2)));
+            static_cast<CButeNode*>(m_auxTagTab.Insert(tag, new CButeNode(2)));
         newModifiedTag->FindOrInsert(key, new CButeValue(BUTE_FLOAT, val));
         return;
     }
 
-    CButeNode* addedTag = static_cast<CButeNode*>(m_addedTags.Find(tag));
+    CButeNode* addedTag = static_cast<CButeNode*>(m_newTagTab.Find(tag));
     if (addedTag) {
         CButeValue* addedValue = static_cast<CButeValue*>(addedTag->Find(key));
         if (addedValue) {
@@ -1580,7 +1584,7 @@ void CButeMgr::SetFloat(const char* tag, const char* key, float val) {
         addedTag->Insert(key, new CButeValue(BUTE_FLOAT, val));
         return;
     }
-    CButeNode* newAddedTag = static_cast<CButeNode*>(m_addedTags.Insert(tag, new CButeNode(2)));
+    CButeNode* newAddedTag = static_cast<CButeNode*>(m_newTagTab.Insert(tag, new CButeNode(2)));
     newAddedTag->FindOrInsert(key, new CButeValue(BUTE_FLOAT, val));
 }
 
@@ -1589,7 +1593,7 @@ RVA_COMPGEN(0x00172b90, 0x31, ??0CButeValue@@QAE@W4ButeType@@M@Z)
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00172bd0, 0x6c)
-double CButeMgr::GetDoubleDef(const char* tag, const char* key, double def) {
+double CButeMgr::GetDouble(const char* tag, const char* key, double def) {
     CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
     if (grp) {
         CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
@@ -1600,7 +1604,7 @@ double CButeMgr::GetDoubleDef(const char* tag, const char* key, double def) {
                 case BUTE_DOUBLE:
                     return *static_cast<double*>(rec->pValue);
             }
-            ReportError(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag, key);
         }
     }
     return def;
@@ -1618,26 +1622,26 @@ double CButeMgr::GetDouble(const char* tag, const char* key) {
                 case BUTE_DOUBLE:
                     return *static_cast<double*>(rec->pValue);
             }
-            ReportError(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag, key);
             return s_doubleErr;
         }
-        ReportError(s_fmtNotFound, tag, key);
+        DisplayMessage(s_fmtNotFound, tag, key);
         return s_doubleErr;
     }
-    ReportError(s_fmtInvalidTag, tag);
+    DisplayMessage(s_fmtInvalidTag, tag);
     return s_doubleErr;
 }
 
 RVA(0x00172ce0, 0x454)
 void CButeMgr::SetDouble(const char* tag, const char* key, double val) {
-    CButeNode* grp = static_cast<CButeNode*>(m_tags.Find(tag));
+    CButeNode* grp = static_cast<CButeNode*>(m_tagTab.Find(tag));
     if (grp) {
         CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
         if (hit) {
             hit->CopyValue(&CButeValue(BUTE_DOUBLE, val));
             return;
         }
-        CButeNode* modifiedTag = static_cast<CButeNode*>(m_modifiedTags.Find(tag));
+        CButeNode* modifiedTag = static_cast<CButeNode*>(m_auxTagTab.Find(tag));
         if (modifiedTag) {
             CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->Find(key));
             if (modifiedValue) {
@@ -1648,12 +1652,12 @@ void CButeMgr::SetDouble(const char* tag, const char* key, double val) {
             return;
         }
         CButeNode* newModifiedTag =
-            static_cast<CButeNode*>(m_modifiedTags.Insert(tag, new CButeNode(2)));
+            static_cast<CButeNode*>(m_auxTagTab.Insert(tag, new CButeNode(2)));
         newModifiedTag->FindOrInsert(key, new CButeValue(BUTE_DOUBLE, val));
         return;
     }
 
-    CButeNode* addedTag = static_cast<CButeNode*>(m_addedTags.Find(tag));
+    CButeNode* addedTag = static_cast<CButeNode*>(m_newTagTab.Find(tag));
     if (addedTag) {
         CButeValue* addedValue = static_cast<CButeValue*>(addedTag->Find(key));
         if (addedValue) {
@@ -1663,14 +1667,14 @@ void CButeMgr::SetDouble(const char* tag, const char* key, double val) {
         addedTag->Insert(key, new CButeValue(BUTE_DOUBLE, val));
         return;
     }
-    CButeNode* newAddedTag = static_cast<CButeNode*>(m_addedTags.Insert(tag, new CButeNode(2)));
+    CButeNode* newAddedTag = static_cast<CButeNode*>(m_newTagTab.Insert(tag, new CButeNode(2)));
     newAddedTag->FindOrInsert(key, new CButeValue(BUTE_DOUBLE, val));
 }
 
 RVA_COMPGEN(0x00173140, 0x38, ??0CButeValue@@QAE@W4ButeType@@N@Z)
 
 RVA(0x00173180, 0x4e)
-CString* CButeMgr::GetStringDef(const char* tag, const char* key, CString* def) {
+CString* CButeMgr::GetString(const char* tag, const char* key, CString* def) {
     CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
     if (grp) {
         CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
@@ -1678,7 +1682,7 @@ CString* CButeMgr::GetStringDef(const char* tag, const char* key, CString* def) 
             if (rec->type == BUTE_STRING) {
                 return static_cast<CString*>(rec->pValue);
             }
-            ReportError(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag, key);
         }
     }
     return def;
@@ -1699,12 +1703,12 @@ CString* CButeMgr::GetString(const char* tag, const char* key) {
             if (rec->type == BUTE_STRING) {
                 return static_cast<CString*>(rec->pValue);
             }
-            ReportError(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag, key);
         } else {
-            ReportError(s_fmtNotFound, tag, key);
+            DisplayMessage(s_fmtNotFound, tag, key);
         }
     } else {
-        ReportError(s_fmtInvalidTag, tag);
+        DisplayMessage(s_fmtInvalidTag, tag);
     }
 
     return &s_empty;
@@ -1712,14 +1716,14 @@ CString* CButeMgr::GetString(const char* tag, const char* key) {
 
 RVA(0x001732a0, 0x3fc)
 void CButeMgr::SetString(const char* tag, const char* key, const CString& val) {
-    CButeNode* grp = static_cast<CButeNode*>(m_tags.Find(tag));
+    CButeNode* grp = static_cast<CButeNode*>(m_tagTab.Find(tag));
     if (grp) {
         CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
         if (hit) {
             hit->CopyValue(&CButeValue(BUTE_STRING, val));
             return;
         }
-        CButeNode* modifiedTag = static_cast<CButeNode*>(m_modifiedTags.Find(tag));
+        CButeNode* modifiedTag = static_cast<CButeNode*>(m_auxTagTab.Find(tag));
         if (modifiedTag) {
             CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->Find(key));
             if (modifiedValue) {
@@ -1730,12 +1734,12 @@ void CButeMgr::SetString(const char* tag, const char* key, const CString& val) {
             return;
         }
         CButeNode* newModifiedTag =
-            static_cast<CButeNode*>(m_modifiedTags.Insert(tag, new CButeNode(2)));
+            static_cast<CButeNode*>(m_auxTagTab.Insert(tag, new CButeNode(2)));
         newModifiedTag->FindOrInsert(key, new CButeValue(BUTE_STRING, val));
         return;
     }
 
-    CButeNode* addedTag = static_cast<CButeNode*>(m_addedTags.Find(tag));
+    CButeNode* addedTag = static_cast<CButeNode*>(m_newTagTab.Find(tag));
     if (addedTag) {
         CButeValue* addedValue = static_cast<CButeValue*>(addedTag->Find(key));
         if (addedValue) {
@@ -1745,7 +1749,7 @@ void CButeMgr::SetString(const char* tag, const char* key, const CString& val) {
         addedTag->Insert(key, new CButeValue(BUTE_STRING, val));
         return;
     }
-    CButeNode* newAddedTag = static_cast<CButeNode*>(m_addedTags.Insert(tag, new CButeNode(2)));
+    CButeNode* newAddedTag = static_cast<CButeNode*>(m_newTagTab.Insert(tag, new CButeNode(2)));
     newAddedTag->FindOrInsert(key, new CButeValue(BUTE_STRING, val));
 }
 
@@ -1763,7 +1767,7 @@ ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key, ButeIntRect* de
             if (rec->type == BUTE_RECT) {
                 return static_cast<ButeIntRect*>(rec->pValue);
             }
-            ReportError(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag, key);
         }
     }
     return def;
@@ -1783,26 +1787,26 @@ ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key) {
             if (rec->type == BUTE_RECT) {
                 return static_cast<ButeIntRect*>(rec->pValue);
             }
-            ReportError(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag, key);
             return &s_default;
         }
-        ReportError(s_fmtNotFound, tag, key);
+        DisplayMessage(s_fmtNotFound, tag, key);
         return &s_default;
     }
-    ReportError(s_fmtInvalidTag, tag);
+    DisplayMessage(s_fmtInvalidTag, tag);
     return &s_default;
 }
 
 RVA(0x00173850, 0x404)
 void CButeMgr::SetRect(const char* tag, const char* key, ButeIntRect* val) {
-    CButeNode* grp = static_cast<CButeNode*>(m_tags.Find(tag));
+    CButeNode* grp = static_cast<CButeNode*>(m_tagTab.Find(tag));
     if (grp) {
         CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
         if (hit) {
             hit->CopyValue(&CButeValue(BUTE_RECT, val));
             return;
         }
-        CButeNode* modifiedTag = static_cast<CButeNode*>(m_modifiedTags.Find(tag));
+        CButeNode* modifiedTag = static_cast<CButeNode*>(m_auxTagTab.Find(tag));
         if (modifiedTag) {
             CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->Find(key));
             if (modifiedValue) {
@@ -1813,12 +1817,12 @@ void CButeMgr::SetRect(const char* tag, const char* key, ButeIntRect* val) {
             return;
         }
         CButeNode* newModifiedTag =
-            static_cast<CButeNode*>(m_modifiedTags.Insert(tag, new CButeNode(2)));
+            static_cast<CButeNode*>(m_auxTagTab.Insert(tag, new CButeNode(2)));
         newModifiedTag->FindOrInsert(key, new CButeValue(BUTE_RECT, val));
         return;
     }
 
-    CButeNode* addedTag = static_cast<CButeNode*>(m_addedTags.Find(tag));
+    CButeNode* addedTag = static_cast<CButeNode*>(m_newTagTab.Find(tag));
     if (addedTag) {
         CButeValue* addedValue = static_cast<CButeValue*>(addedTag->Find(key));
         if (addedValue) {
@@ -1828,7 +1832,7 @@ void CButeMgr::SetRect(const char* tag, const char* key, ButeIntRect* val) {
         addedTag->Insert(key, new CButeValue(BUTE_RECT, val));
         return;
     }
-    CButeNode* newAddedTag = static_cast<CButeNode*>(m_addedTags.Insert(tag, new CButeNode(2)));
+    CButeNode* newAddedTag = static_cast<CButeNode*>(m_newTagTab.Insert(tag, new CButeNode(2)));
     newAddedTag->FindOrInsert(key, new CButeValue(BUTE_RECT, val));
 }
 
@@ -1845,7 +1849,7 @@ ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key, ButeIntPoint*
             if (rec->type == BUTE_POINT) {
                 return static_cast<ButeIntPoint*>(rec->pValue);
             }
-            ReportError(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag, key);
         }
     }
     return def;
@@ -1865,26 +1869,26 @@ ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key) {
             if (rec->type == BUTE_POINT) {
                 return static_cast<ButeIntPoint*>(rec->pValue);
             }
-            ReportError(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag, key);
             return &s_default;
         }
-        ReportError(s_fmtNotFound, tag, key);
+        DisplayMessage(s_fmtNotFound, tag, key);
         return &s_default;
     }
-    ReportError(s_fmtInvalidTag, tag);
+    DisplayMessage(s_fmtInvalidTag, tag);
     return &s_default;
 }
 
 RVA(0x00173dd0, 0x3d8)
 void CButeMgr::SetPoint(const char* tag, const char* key, ButeIntPoint* val) {
-    CButeNode* grp = static_cast<CButeNode*>(m_tags.Find(tag));
+    CButeNode* grp = static_cast<CButeNode*>(m_tagTab.Find(tag));
     if (grp) {
         CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
         if (hit) {
             hit->CopyValue(&CButeValue(BUTE_POINT, val));
             return;
         }
-        CButeNode* modifiedTag = static_cast<CButeNode*>(m_modifiedTags.Find(tag));
+        CButeNode* modifiedTag = static_cast<CButeNode*>(m_auxTagTab.Find(tag));
         if (modifiedTag) {
             CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->Find(key));
             if (modifiedValue) {
@@ -1895,12 +1899,12 @@ void CButeMgr::SetPoint(const char* tag, const char* key, ButeIntPoint* val) {
             return;
         }
         CButeNode* newModifiedTag =
-            static_cast<CButeNode*>(m_modifiedTags.Insert(tag, new CButeNode(2)));
+            static_cast<CButeNode*>(m_auxTagTab.Insert(tag, new CButeNode(2)));
         newModifiedTag->FindOrInsert(key, new CButeValue(BUTE_POINT, val));
         return;
     }
 
-    CButeNode* addedTag = static_cast<CButeNode*>(m_addedTags.Find(tag));
+    CButeNode* addedTag = static_cast<CButeNode*>(m_newTagTab.Find(tag));
     if (addedTag) {
         CButeValue* addedValue = static_cast<CButeValue*>(addedTag->Find(key));
         if (addedValue) {
@@ -1910,7 +1914,7 @@ void CButeMgr::SetPoint(const char* tag, const char* key, ButeIntPoint* val) {
         addedTag->Insert(key, new CButeValue(BUTE_POINT, val));
         return;
     }
-    CButeNode* newAddedTag = static_cast<CButeNode*>(m_addedTags.Insert(tag, new CButeNode(2)));
+    CButeNode* newAddedTag = static_cast<CButeNode*>(m_newTagTab.Insert(tag, new CButeNode(2)));
     newAddedTag->FindOrInsert(key, new CButeValue(BUTE_POINT, val));
 }
 RVA_COMPGEN(0x001741b0, 0x39, ??0CButeValue@@QAE@W4ButeType@@PAUButeIntPoint@@@Z)
@@ -1926,7 +1930,7 @@ CAVector* CButeMgr::GetVector(const char* tag, const char* key, CAVector* def) {
             if (rec->type == BUTE_VECTOR) {
                 return static_cast<CAVector*>(rec->pValue);
             }
-            ReportError(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag, key);
         }
     }
     return def;
@@ -1946,26 +1950,26 @@ CAVector* CButeMgr::GetVector(const char* tag, const char* key) {
             if (rec->type == BUTE_VECTOR) {
                 return static_cast<CAVector*>(rec->pValue);
             }
-            ReportError(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag, key);
             return &s_default;
         }
-        ReportError(s_fmtNotFound, tag, key);
+        DisplayMessage(s_fmtNotFound, tag, key);
         return &s_default;
     }
-    ReportError(s_fmtInvalidTag, tag);
+    DisplayMessage(s_fmtInvalidTag, tag);
     return &s_default;
 }
 
 RVA(0x00174340, 0x3e8)
 void CButeMgr::SetVector(const char* tag, const char* key, CAVector* val) {
-    CButeNode* grp = static_cast<CButeNode*>(m_tags.Find(tag));
+    CButeNode* grp = static_cast<CButeNode*>(m_tagTab.Find(tag));
     if (grp) {
         CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
         if (hit) {
             hit->CopyValue(&CButeValue(BUTE_VECTOR, val));
             return;
         }
-        CButeNode* modifiedTag = static_cast<CButeNode*>(m_modifiedTags.Find(tag));
+        CButeNode* modifiedTag = static_cast<CButeNode*>(m_auxTagTab.Find(tag));
         if (modifiedTag) {
             CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->Find(key));
             if (modifiedValue) {
@@ -1976,12 +1980,12 @@ void CButeMgr::SetVector(const char* tag, const char* key, CAVector* val) {
             return;
         }
         CButeNode* newModifiedTag =
-            static_cast<CButeNode*>(m_modifiedTags.Insert(tag, new CButeNode(2)));
+            static_cast<CButeNode*>(m_auxTagTab.Insert(tag, new CButeNode(2)));
         newModifiedTag->FindOrInsert(key, new CButeValue(BUTE_VECTOR, val));
         return;
     }
 
-    CButeNode* addedTag = static_cast<CButeNode*>(m_addedTags.Find(tag));
+    CButeNode* addedTag = static_cast<CButeNode*>(m_newTagTab.Find(tag));
     if (addedTag) {
         CButeValue* addedValue = static_cast<CButeValue*>(addedTag->Find(key));
         if (addedValue) {
@@ -1991,7 +1995,7 @@ void CButeMgr::SetVector(const char* tag, const char* key, CAVector* val) {
         addedTag->Insert(key, new CButeValue(BUTE_VECTOR, val));
         return;
     }
-    CButeNode* newAddedTag = static_cast<CButeNode*>(m_addedTags.Insert(tag, new CButeNode(2)));
+    CButeNode* newAddedTag = static_cast<CButeNode*>(m_newTagTab.Insert(tag, new CButeNode(2)));
     newAddedTag->FindOrInsert(key, new CButeValue(BUTE_VECTOR, val));
 }
 RVA_COMPGEN(0x00174730, 0x3c, ??0CButeValue@@QAE@W4ButeType@@PAVCAVector@@@Z)
@@ -2007,7 +2011,7 @@ CARange* CButeMgr::GetRange(const char* tag, const char* key, CARange* def) {
             if (rec->type == BUTE_RANGE) {
                 return static_cast<CARange*>(rec->pValue);
             }
-            ReportError(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag, key);
         }
     }
     return def;
@@ -2027,26 +2031,26 @@ CARange* CButeMgr::GetRange(const char* tag, const char* key) {
             if (rec->type == BUTE_RANGE) {
                 return static_cast<CARange*>(rec->pValue);
             }
-            ReportError(s_fmtTypeMismatch, tag, key);
+            DisplayMessage(s_fmtTypeMismatch, tag, key);
             return &s_default;
         }
-        ReportError(s_fmtNotFound, tag, key);
+        DisplayMessage(s_fmtNotFound, tag, key);
         return &s_default;
     }
-    ReportError(s_fmtInvalidTag, tag);
+    DisplayMessage(s_fmtInvalidTag, tag);
     return &s_default;
 }
 
 RVA(0x001748a0, 0x404)
 void CButeMgr::SetRange(const char* tag, const char* key, CARange* val) {
-    CButeNode* grp = static_cast<CButeNode*>(m_tags.Find(tag));
+    CButeNode* grp = static_cast<CButeNode*>(m_tagTab.Find(tag));
     if (grp) {
         CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
         if (hit) {
             hit->CopyValue(&CButeValue(BUTE_RANGE, val));
             return;
         }
-        CButeNode* modifiedTag = static_cast<CButeNode*>(m_modifiedTags.Find(tag));
+        CButeNode* modifiedTag = static_cast<CButeNode*>(m_auxTagTab.Find(tag));
         if (modifiedTag) {
             CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->Find(key));
             if (modifiedValue) {
@@ -2057,12 +2061,12 @@ void CButeMgr::SetRange(const char* tag, const char* key, CARange* val) {
             return;
         }
         CButeNode* newModifiedTag =
-            static_cast<CButeNode*>(m_modifiedTags.Insert(tag, new CButeNode(2)));
+            static_cast<CButeNode*>(m_auxTagTab.Insert(tag, new CButeNode(2)));
         newModifiedTag->FindOrInsert(key, new CButeValue(BUTE_RANGE, val));
         return;
     }
 
-    CButeNode* addedTag = static_cast<CButeNode*>(m_addedTags.Find(tag));
+    CButeNode* addedTag = static_cast<CButeNode*>(m_newTagTab.Find(tag));
     if (addedTag) {
         CButeValue* addedValue = static_cast<CButeValue*>(addedTag->Find(key));
         if (addedValue) {
@@ -2072,7 +2076,7 @@ void CButeMgr::SetRange(const char* tag, const char* key, CARange* val) {
         addedTag->Insert(key, new CButeValue(BUTE_RANGE, val));
         return;
     }
-    CButeNode* newAddedTag = static_cast<CButeNode*>(m_addedTags.Insert(tag, new CButeNode(2)));
+    CButeNode* newAddedTag = static_cast<CButeNode*>(m_newTagTab.Insert(tag, new CButeNode(2)));
     newAddedTag->FindOrInsert(key, new CButeValue(BUTE_RANGE, val));
 }
 

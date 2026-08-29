@@ -11,7 +11,7 @@ equivalent open-coded region). Re-reading the member is a semantic reconstructio
 not harmless spelling.
 
 `CGrunt::StepCompassMove` is the control. Its toy search follows CString and
-`CButeMgr::GetDwordDef` calls; its fallback search follows `rand` and CByteArray calls.
+`CButeMgr::GetDword` calls; its fallback search follows `rand` and CByteArray calls.
 Both retail collision expansions use the original `tx`/`ty` homes. The old helpers
 reloaded `m_lastTilePx.m_x/.m_y` after those calls. Passing the original pixel locals
 and deriving their tile coordinates inside each inline helper preserves the value that

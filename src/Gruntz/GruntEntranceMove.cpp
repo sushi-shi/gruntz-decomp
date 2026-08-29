@@ -391,7 +391,7 @@ i32 CGrunt::LoadEntranceConfig() {
             }
             m_triggerMgr->ResetCell(m_playerIndex, m_unitIndex, 0, 0);
             m_entranceDropActive = true;
-            m_entranceSafeTimeLo = g_buteMgr.GetDwordDef("Grunt", "EntranceSafeTime", 5000);
+            m_entranceSafeTimeLo = g_buteMgr.GetDword("Grunt", "EntranceSafeTime", 5000);
             m_entranceSafeTimeHi = 0;
             m_entranceClockLo = g_frameTime;
             m_entranceClockHi = 0;
@@ -486,8 +486,7 @@ i32 CGrunt::StartBombGruntRun() {
     m_moveTile.m_x = dx;
     m_moveTile.m_y = dy;
     SET_ANIMATION_ACT("M");
-    m_timePerTile =
-        static_cast<i32>(g_buteMgr.GetDwordDef("BOMBGRUNT", "RunningTimePerTile", 0x64));
+    m_timePerTile = static_cast<i32>(g_buteMgr.GetDword("BOMBGRUNT", "RunningTimePerTile", 0x64));
     m_bombRunActive = true;
     {
         CWwdSpriteObject* h = m_object;
@@ -855,7 +854,7 @@ i32 CGrunt::LoadFreezeSpellAssets() {
             return 0;
         }
         SwitchAnimationByName(s_GRUNTZ_DEATHZ_SPARKLE, 0);
-        m_idleDelay = g_buteMgr.GetDwordDef("Spellz", s_FreezeDelay, 0x2710);
+        m_idleDelay = g_buteMgr.GetDword("Spellz", s_FreezeDelay, 0x2710);
         m_idleAnchor = g_frameTime;
         m_freezeDelayDone = false;
     }
@@ -893,8 +892,7 @@ i32 CGrunt::FinishEntranceMove() {
 
 RVA(0x0006a060, 0x520)
 i32 CGrunt::LoadGruntMovingDeathConfig() {
-    m_moveSpeed =
-        16.0 / static_cast<double>(g_buteMgr.GetDwordDef("Grunt", s_MovingDeathTime, 0x3e8));
+    m_moveSpeed = 16.0 / static_cast<double>(g_buteMgr.GetDword("Grunt", s_MovingDeathTime, 0x3e8));
 
     CGruntzMgr* g = g_gameReg;
     CState* state = g->m_curState;
@@ -1200,7 +1198,7 @@ i32 CGrunt::FinishActiveAction() {
                 m_triggerMgr->ResetCell(m_playerIndex, m_unitIndex, 0, 0);
             }
             m_entranceDropActive = true;
-            m_entranceSafeTimeLo = g_buteMgr.GetDwordDef("Grunt", "EntranceSafeTime", 5000);
+            m_entranceSafeTimeLo = g_buteMgr.GetDword("Grunt", "EntranceSafeTime", 5000);
             m_entranceSafeTimeHi = 0;
             m_entranceClockLo = g_frameTime;
             m_entranceClockHi = 0;

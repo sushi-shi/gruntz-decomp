@@ -592,7 +592,7 @@ i32 CWarlord::UpdateMovingState() {
         CWwdSpriteObject* o = m_object;
         i32 dist = reg->m_triggerMgr
                        ->NearestOtherPlayerUnitDistSq(o->m_smarts, o->m_screenX, o->m_screenY);
-        if (dist < g_buteMgr.GetIntDef("Warlordz", "PanicRadius", 0x40)) {
+        if (dist < g_buteMgr.GetInt("Warlordz", "PanicRadius", 0x40)) {
             NotifyFortUnderAttack();
             return 0;
         }
@@ -618,7 +618,7 @@ i32 CWarlord::UpdatePanicState() {
         CWwdSpriteObject* o = m_object;
         i32 dist = g_gameReg->m_triggerMgr
                        ->NearestOtherPlayerUnitDistSq(o->m_smarts, o->m_screenX, o->m_screenY);
-        if (dist >= g_buteMgr.GetIntDef("Warlordz", "PanicRadius", 0x40)) {
+        if (dist >= g_buteMgr.GetInt("Warlordz", "PanicRadius", 0x40)) {
             ResolveJoyAnimation();
             return 0;
         }
@@ -738,13 +738,13 @@ i32 CWarlord::NotifyFortUnderAttack() {
                     static CString s_alert("ALERT - Your Fort is under attack!");
                     g_gameReg->m_chatLog->AddItem(
                         static_cast<LPCTSTR>(
-                            *g_buteMgr.GetStringDef("Warlordz", "NotifyString", &s_alert)
+                            *g_buteMgr.GetString("Warlordz", "NotifyString", &s_alert)
                         ),
                         FONT_ITEM_FLAGS_NONE,
                         0x11
                     );
                     m_notifyTimer.m_window =
-                        static_cast<u32>(g_buteMgr.GetIntDef("Warlordz", "NotifyTimer", 0x1770));
+                        static_cast<u32>(g_buteMgr.GetInt("Warlordz", "NotifyTimer", 0x1770));
                     m_notifyTimer.m_start = static_cast<u32>(g_frameTime);
                 }
                 m_cooldownTimer.m_window = static_cast<u32>((rand() % 0x5dc1 + 0x1770) * 10);

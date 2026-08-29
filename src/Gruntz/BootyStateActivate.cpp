@@ -237,10 +237,10 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
         char* p = g_secretMsgRows[0].strB;
         do {
             grp.Format("A%dC%d", i / 3 + 1, i % 3 + 1);
-            i32 id = g_buteMgr.GetIntDef(bootyCheatz, grp, 1);
+            i32 id = g_buteMgr.GetInt(bootyCheatz, grp, 1);
             grp.Format("Cheat%i", id);
-            text = *g_buteMgr.GetStringDef(grp, "Text", &empty);
-            desc = *g_buteMgr.GetStringDef(grp, "Desc", &empty);
+            text = *g_buteMgr.GetString(grp, "Text", &empty);
+            desc = *g_buteMgr.GetString(grp, "Desc", &empty);
             strcpy(p - 0x20, text);
             strcpy(p, desc);
             i++;
@@ -825,7 +825,7 @@ i32 CBootyState::LoadGruntEffectSprites() {
         return 0;
     }
     CLightFxMgr* lightFxMgr = g_gameReg->m_lightFxMgr;
-    CShadeTable* tint = lightFxMgr->m_tables[g_buteMgr.GetIntDef("Wormhole", "SecretColor", 1)];
+    CShadeTable* tint = lightFxMgr->m_tables[g_buteMgr.GetInt("Wormhole", "SecretColor", 1)];
     m_icons[7]->SetImageSetByName("GAME_WORMHOLE");
     m_icons[7]->SetAnimationByName("GAME_TELEPORTER", 0);
     m_icons[7]->m_stateFlags |= SPRITE_STATE_HIDDEN;

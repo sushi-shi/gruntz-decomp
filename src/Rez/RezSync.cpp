@@ -476,7 +476,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         CRezItm* stream =
             g_gameReg->m_resourceArchive->GetRezFromPath("GAME_ATTRIBUTEZ", REZ_TAG_TXT);
         TRACE("%s\n", static_cast<LPCTSTR>(CString("parsing ") + "GAME_ATTRIBUTEZ"));
-        g_buteMgr.SetErrCallback(&ButeParseErrorSink);
+        g_buteMgr.Init(&ButeParseErrorSink);
         if (!g_buteMgr.Parse(stream, "1212C")) {
             ReportError(IDX(IDS_INITIALIZE_GAME), 0x418);
             return 0;
@@ -499,7 +499,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
     g_localVersion = static_cast<i32>(
-        g_buteMgr.GetDwordDef("General", "RezSync", static_cast<u32>(g_localVersion))
+        g_buteMgr.GetDword("General", "RezSync", static_cast<u32>(g_localVersion))
     );
     m_voiceManager = new CVoiceManager;
     if (!m_voiceManager->Init(this)) {

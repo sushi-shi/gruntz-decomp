@@ -101,7 +101,7 @@ retail  lea edi,[esi+ecx*8]         mov [edi+0x2c0],0x4  mov [edi+0x2d0],eax
 
 Writing `m_conveyorSlots[col].m_state` reproduces retail's form byte for byte and
 silences the row - and costs 99.15 -> 91.50, because the shorter body flips one
-`AcquireAndPlay` and one `GetDwordDef` site's tail-merge.  Not committed for that
+`AcquireAndPlay` and one `GetDword` site's tail-merge.  Not committed for that
 reason; recorded here so the next reader does not re-derive it.
 
 ## Reading a hit

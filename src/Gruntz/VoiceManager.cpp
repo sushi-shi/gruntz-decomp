@@ -126,18 +126,18 @@ BOOL CVoiceManager::PlayGruntVoiceCue(
     voiceSection.Format("SG%i", voiceGroup);
     cueKey.Format("G%i", cueId);
     if (percent == -1) {
-        percent = g_buteMgr.GetIntDef(static_cast<LPCTSTR>(voiceSection), "Per", -1);
+        percent = g_buteMgr.GetInt(static_cast<LPCTSTR>(voiceSection), "Per", -1);
         if (percent == -1) {
-            percent = g_buteMgr.GetIntDef("GruntPercent", static_cast<LPCTSTR>(cueKey), 0);
+            percent = g_buteMgr.GetInt("GruntPercent", static_cast<LPCTSTR>(cueKey), 0);
         }
     }
     if (percent < 100 && g_gameReg->Rand() % 0x65 > percent) {
         return false;
     }
     if (priority == -1) {
-        priority = g_buteMgr.GetIntDef(static_cast<LPCTSTR>(voiceSection), "Pri", -1);
+        priority = g_buteMgr.GetInt(static_cast<LPCTSTR>(voiceSection), "Pri", -1);
         if (priority == -1) {
-            priority = g_buteMgr.GetIntDef("GruntPriority", static_cast<LPCTSTR>(cueKey), 1);
+            priority = g_buteMgr.GetInt("GruntPriority", static_cast<LPCTSTR>(cueKey), 1);
         }
     }
     for (i32 i = 0; i < 2; i++) {
@@ -225,13 +225,13 @@ i32 CVoiceManager::PlayVoice(
     CString voiceSection;
     voiceSection.Format("SG%i", voiceGroup);
     if (percent == -1) {
-        percent = g_buteMgr.GetIntDef(static_cast<LPCTSTR>(voiceSection), "Per", 100);
+        percent = g_buteMgr.GetInt(static_cast<LPCTSTR>(voiceSection), "Per", 100);
     }
     if (percent < 100 && GetRandomNumber() % 0x65 > percent) {
         return 0;
     }
     if (priority == -1) {
-        priority = g_buteMgr.GetIntDef(static_cast<LPCTSTR>(voiceSection), "Pri", 1);
+        priority = g_buteMgr.GetInt(static_cast<LPCTSTR>(voiceSection), "Pri", 1);
     }
     for (i32 i = 0; i < 2; i++) {
         if (indicators[i]->m_priority >= priority) {
@@ -329,13 +329,13 @@ i32 CVoiceManager::PlayVoice(
     CString voiceSection;
     voiceSection.Format("SG%i", voiceGroup);
     if (percent == -1) {
-        percent = g_buteMgr.GetIntDef(static_cast<LPCTSTR>(voiceSection), "Per", 100);
+        percent = g_buteMgr.GetInt(static_cast<LPCTSTR>(voiceSection), "Per", 100);
     }
     if (percent < 100 && GetRandomNumber() % 0x65 > percent) {
         return 0;
     }
     if (priority == -1) {
-        priority = g_buteMgr.GetIntDef(static_cast<LPCTSTR>(voiceSection), "Pri", 1);
+        priority = g_buteMgr.GetInt(static_cast<LPCTSTR>(voiceSection), "Pri", 1);
     }
     for (i32 i = 0; i < 2; i++) {
         if (indicators[i]->m_priority >= priority) {
@@ -601,14 +601,11 @@ CSpawnList* CVoiceManager::BuildVoiceGroup(i32 voiceGroup) {
     CSpawnList* group = NULL;
     CString fallback, section, key, resourceName;
     section.Format("SG%i", voiceGroup);
-    CString directory = *g_buteMgr.GetStringDef(static_cast<LPCTSTR>(section), "DIR", &fallback);
+    CString directory = *g_buteMgr.GetString(static_cast<LPCTSTR>(section), "DIR", &fallback);
 
     key.Format("S%i", 1);
-    CString soundName = *g_buteMgr.GetStringDef(
-        static_cast<LPCTSTR>(section),
-        static_cast<LPCTSTR>(key),
-        &fallback
-    );
+    CString soundName =
+        *g_buteMgr.GetString(static_cast<LPCTSTR>(section), static_cast<LPCTSTR>(key), &fallback);
 
     i32 missingResource = 0;
     if (!soundName.IsEmpty()) {
@@ -636,7 +633,7 @@ CSpawnList* CVoiceManager::BuildVoiceGroup(i32 voiceGroup) {
 
                 group->AddVoiceSound(resourceName, 0);
                 key.Format("S%i", i);
-                soundName = *g_buteMgr.GetStringDef(
+                soundName = *g_buteMgr.GetString(
                     static_cast<LPCTSTR>(section),
                     static_cast<LPCTSTR>(key),
                     &fallback

@@ -367,7 +367,7 @@ i32 CKitchenSlime::LoadSprites() {
     if (Level()->m_logicRecord->m_speed != 0) {
         time = Level()->m_logicRecord->m_speed;
     } else {
-        time = g_buteMgr.GetDwordDef("Hazardz", "KitchenSlimeTimePerTile", 1000);
+        time = g_buteMgr.GetDword("Hazardz", "KitchenSlimeTimePerTile", 1000);
     }
 
     m_tilePosition = tile;

@@ -21,4 +21,4 @@ apply uniformly. Some residues are pure allocator coin-flips no local flips — 
 (zero-register-pinning.md), not this steerable lever.
 
 STEERABLE (when a local flips it). Evidence: CGrunt::Resolve* x/y locals +~6% (Death 89→95);
-ButeMgr::ParseTagLine ebp hint 84→97%; CGrunt sprite creators `inner` split 95.8→99.3% (3-arg).
+ButeMgr::Tag ebp hint 84→97%; CGrunt sprite creators `inner` split 95.8→99.3% (3-arg).

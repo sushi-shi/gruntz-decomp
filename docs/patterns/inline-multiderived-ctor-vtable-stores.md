@@ -11,5 +11,5 @@ Reproduce by modeling `class Derived : public Base` where the BASE ctor is exter
 stores, exactly. (An external/no-body single ctor puts NO inline vtable stores; an empty base
 subobject is size-0 so the second vtable would stay @+0.)
 
-STEERABLE. Evidence: CButeMgr::ParseTagLine `new CButeNode(desc,2)` — two vtables @+0/+8, base
+STEERABLE. Evidence: CButeMgr::Tag `new CButeNode(desc,2)` — two vtables @+0/+8, base
 ctor @0x16dff0 external, derived ctor inline. related: emit-vtable-in-tu.md, newd-class-real-size.md.

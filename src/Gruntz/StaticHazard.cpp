@@ -143,7 +143,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj)
         LookupAnimation(g_gameReg->m_world->m_animRegistry->m_animations, "LEVEL_STATICHAZARDGO");
     if (entry != NULL) {
         i32 durationMs = entry->m_durationMs;
-        m_activeWindow = g_buteMgr.GetIntDef("Hazardz", "AniPad", 0x64) + durationMs;
+        m_activeWindow = g_buteMgr.GetInt("Hazardz", "AniPad", 0x64) + durationMs;
     } else {
         g_gameReg->ReportError(IDX(IDS_DEFAULT_ERROR), 0x461);
     }

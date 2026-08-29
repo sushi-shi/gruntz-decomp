@@ -192,14 +192,13 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
 
         if (static_cast<i64>(g_frameTime) - m_gooTimer.m_base >= m_gooTimer.m_window) {
             obj->m_statusBar->AdvanceGruntWell(1);
-            m_gooTimer.m_window = g_buteMgr.GetDwordDef("Multiplayer", "TimePerGoo", 0x258);
+            m_gooTimer.m_window = g_buteMgr.GetDword("Multiplayer", "TimePerGoo", 0x258);
             m_gooTimer.m_base = g_frameTime;
         }
 
         if (static_cast<i64>(g_frameTime) - m_resourceTimer.m_base >= m_resourceTimer.m_window) {
             obj->m_statusBar->UpdateRezMachineWakeStatusBar();
-            m_resourceTimer.m_window =
-                g_buteMgr.GetDwordDef("Multiplayer", "TimePerResource", 0x7530);
+            m_resourceTimer.m_window = g_buteMgr.GetDword("Multiplayer", "TimePerResource", 0x7530);
             m_resourceTimer.m_base = g_frameTime;
         }
 

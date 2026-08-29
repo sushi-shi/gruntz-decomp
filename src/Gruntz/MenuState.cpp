@@ -212,7 +212,7 @@ i32 CMenuState::EnterState(GameStateId previousState) {
         CDDSurface* tgt = menuRoot()->m_drawTarget->m_backPair->m_surface;
         (static_cast<CDDSurface*>(tgt))
             ->ShadeRect(
-                g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32),
+                g_buteMgr.GetInt("Menu", "BrightnessPercent", 0x32),
                 static_cast<tagRECT*>(0)
             );
         menuRoot()->m_drawTarget->TransTitle();
@@ -221,7 +221,7 @@ i32 CMenuState::EnterState(GameStateId previousState) {
         CDDSurface* tgt = menuRoot()->m_drawTarget->m_overlayPair->m_surface;
         (static_cast<CDDSurface*>(tgt))
             ->ShadeRect(
-                g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32),
+                g_buteMgr.GetInt("Menu", "BrightnessPercent", 0x32),
                 static_cast<tagRECT*>(0)
             );
         menuRoot()->m_drawTarget->TransExit();
@@ -397,10 +397,7 @@ i32 CMenuState::RestoreDisplay() {
     m_stateResources = (saved);
 
     CDDSurface* tgt = menuRoot()->m_drawTarget->m_backPair->m_surface;
-    tgt->ShadeRect(
-        g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32),
-        static_cast<tagRECT*>(0)
-    );
+    tgt->ShadeRect(g_buteMgr.GetInt("Menu", "BrightnessPercent", 0x32), static_cast<tagRECT*>(0));
     menuRoot()->m_drawTarget->TransTitle();
 
     RetireScene(0x50, 0x3e8, 0, true);

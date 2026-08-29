@@ -299,7 +299,7 @@ i32 CCreditsState::InitAttractTitle() {
     }
     m_stateResources = saved;
     CDDSurface* tgt = m_world->m_drawTarget->m_backPair->m_surface;
-    tgt->ShadeRect(g_buteMgr.GetIntDef("Menu", "BrightnessPercent", 0x32), NULL);
+    tgt->ShadeRect(g_buteMgr.GetInt("Menu", "BrightnessPercent", 0x32), NULL);
     (static_cast<CDDrawSubMgrPages*>(m_world->m_drawTarget))->TransTitle();
     RetireScene(0x50, 0x3e8, 0, true);
     return 1;

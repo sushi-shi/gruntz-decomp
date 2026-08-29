@@ -83,7 +83,7 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
     CShadeTable* color;
     if (kind == -1) {
         CLightFxMgr* lightFxMgr = g_gameReg->m_lightFxMgr;
-        color = lightFxMgr->m_tables[g_buteMgr.GetIntDef("Wormhole", "EntranceColor", 3)];
+        color = lightFxMgr->m_tables[g_buteMgr.GetInt("Wormhole", "EntranceColor", 3)];
     } else {
         color = g_gameReg->m_lightFxMgr->m_tables[kind];
     }
@@ -106,7 +106,7 @@ i32 CWormhole::SerializeDispatch(
         if (kind == -1) {
 
             CLightFxMgr* lightFxMgr = g_gameReg->m_lightFxMgr;
-            color = lightFxMgr->m_tables[g_buteMgr.GetIntDef("Wormhole", "EntranceColor", 3)];
+            color = lightFxMgr->m_tables[g_buteMgr.GetInt("Wormhole", "EntranceColor", 3)];
         } else {
             color = g_gameReg->m_lightFxMgr->m_tables[kind];
         }
@@ -326,17 +326,17 @@ void CTeleporter::LoadColors() {
     if (kind == TELEPORTER_SECRET) {
 
         if (m_object->m_health == 0) {
-            m_object->m_health = g_buteMgr.GetIntDef("Wormhole", "SecretColor", 1);
+            m_object->m_health = g_buteMgr.GetInt("Wormhole", "SecretColor", 1);
         }
     } else if (kind == TELEPORTER_SINGLE_USE) {
 
         if (m_object->m_health == 0) {
-            m_object->m_health = g_buteMgr.GetIntDef("Wormhole", "SingleUseColor", 2);
+            m_object->m_health = g_buteMgr.GetInt("Wormhole", "SingleUseColor", 2);
         }
     } else {
 
         if (m_object->m_health == 0) {
-            m_object->m_health = g_buteMgr.GetIntDef("Wormhole", "NormalColor", 4);
+            m_object->m_health = g_buteMgr.GetInt("Wormhole", "NormalColor", 4);
         }
     }
 

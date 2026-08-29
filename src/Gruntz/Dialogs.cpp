@@ -112,7 +112,7 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
     i32 i;
 
     if (!pDX->m_bSaveAndValidate) {
-        i32 defaultMax = g_buteMgr.GetDwordDef("Battlez", "DefaultMaxGruntz", 8);
+        i32 defaultMax = g_buteMgr.GetDword("Battlez", "DefaultMaxGruntz", 8);
         for (i = 0; i < 4; i++) {
             sprintf(key, "LastMaxGruntz%d", i);
             g_battlezLastMaxGruntz[i] = reg->Get(key, defaultMax);
@@ -345,7 +345,7 @@ void CBattlezDlg::DoDataExchange(CDataExchange* pDX) {
         if (g_battlezResetOptions != false) {
             g_battlezResetOptions = false;
         }
-        g_buteMgr.GetDwordDef("Battlez", "DefaultMaxGruntz", 8);
+        g_buteMgr.GetDword("Battlez", "DefaultMaxGruntz", 8);
         for (i = 0; i < 4; i++) {
             sprintf(key, "LastMaxGruntz%d", i);
             reg->Set(key, GetMaxGruntzSelection(i));

@@ -83,8 +83,8 @@ A row is a lead about the SOURCE, and four shapes account for nearly all of them
   [deferred-switch-output-enables-arm-folding.md](deferred-switch-output-enables-arm-folding.md).
 * **cl TAIL-MERGED two arms that retail kept apart, or vice versa.** The tell is that the
   callee AND its argument string move together:
-  `CCheatMgr::LoadCheatConfig` reads `?GetIntDef@CButeMgr@@` 6 vs 7 *and* `"Value"` 1 vs 2,
-  because our two `AddCheat(code, GetIntDef(..,"Value",0x807b), 1/0)` arms cross-jumped
+  `CCheatMgr::LoadCheatConfig` reads `?GetInt@CButeMgr@@` 6 vs 7 *and* `"Value"` 1 vs 2,
+  because our two `AddCheat(code, GetInt(..,"Value",0x807b), 1/0)` arms cross-jumped
   onto one copy while retail's did not (retail defers `push 1` past the call in the then-arm
   and pushes `0` before it in the else-arm - different tails, no merge).
   `CTriggerMgr::HandleTargetSelection` is the mirror image: retail merged all three `CLightFx::Activate`

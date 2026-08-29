@@ -45,9 +45,9 @@ in minutes:
 | function | found | before -> after |
 |---|---|---|
 | `CTriggerMgr::SpawnPowerupIcon` | three powerup arms rotated by one | 98.93 -> **100 EXACT** |
-| `CGrunt::StepCompassMove` | `GetIntDef` should be `GetDwordDef`; the empty-bag `return` belongs inside the `CByteArray` scope (two dtor calls); the random-slot pick keeps its degenerate `count == 0` arm (two `rand()` calls) | 37.48 -> 53.25 |
-| `CTriggerMgr::ReinitGroup` | `GetInt` not `GetIntDef` and its two arguments swapped; `RefreshState` not `Reset`; `SetAtGrow(size, colour)` not `InsertAt(size, 0, 0)`; `Format` had one variadic argument too many; `EnsureSub(outR, outC, colour)` | 75.50 -> 83.06 |
-| `CTriggerMgr::ApplyGruntAreaEffect` | a missing `CGrunt::StepArrivalCommit()` call; `GetDwordDef` | 79.58 -> 85.54 |
+| `CGrunt::StepCompassMove` | `GetInt` should be `GetDword`; the empty-bag `return` belongs inside the `CByteArray` scope (two dtor calls); the random-slot pick keeps its degenerate `count == 0` arm (two `rand()` calls) | 37.48 -> 53.25 |
+| `CTriggerMgr::ReinitGroup` | `GetInt` not `GetInt` and its two arguments swapped; `RefreshState` not `Reset`; `SetAtGrow(size, colour)` not `InsertAt(size, 0, 0)`; `Format` had one variadic argument too many; `EnsureSub(outR, outC, colour)` | 75.50 -> 83.06 |
+| `CTriggerMgr::ApplyGruntAreaEffect` | a missing `CGrunt::StepArrivalCommit()` call; `GetDword` | 79.58 -> 85.54 |
 | `CTriggerMgr::PlaceObjectFull` | a whole missing case arm (GOOBER walks `m_baseList`) plus the spy's hidden-object lookup | 31.94 -> 45.30 |
 | `CGruntzMgr::TransitionState` | `CMulti`'s ctor is inline in retail | 82.60 -> 86.44 |
 | `CRollingBall::Update` | `VtblResolve` is inlined; and the floor/ceil arms were **inverted** (a live behaviour bug) | 83.14 -> 83.96 |

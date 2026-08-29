@@ -161,15 +161,15 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
     m_cellQuery = m_play->m_tileTriggers;
     m_active = true;
 
-    m_gruntCreationTime = g_buteMgr.GetDwordDef("Battlez", "GruntCreationTime", 10000);
-    m_resourceCreationTime = g_buteMgr.GetDwordDef("Battlez", "ResourceCreationTime", 10000);
-    m_gauntletzChance = g_buteMgr.GetDwordDef("Battlez", "GauntletzChance", 50);
-    m_shovelzChance = g_buteMgr.GetDwordDef("Battlez", "ShovelzChance", 50);
-    m_spyzChance = g_buteMgr.GetDwordDef("Battlez", "SpyzChance", 50);
-    m_brickzChance = g_buteMgr.GetDwordDef("Battlez", "BrickzChance", 50);
-    m_gooberzChance = g_buteMgr.GetDwordDef("Battlez", "GooberzChance", 50);
-    m_gruntRatio = g_buteMgr.GetDwordDef("Battlez", "GruntRatio", 25);
-    m_defenderChance = g_buteMgr.GetDwordDef("Battlez", "DefenderChance", 50);
+    m_gruntCreationTime = g_buteMgr.GetDword("Battlez", "GruntCreationTime", 10000);
+    m_resourceCreationTime = g_buteMgr.GetDword("Battlez", "ResourceCreationTime", 10000);
+    m_gauntletzChance = g_buteMgr.GetDword("Battlez", "GauntletzChance", 50);
+    m_shovelzChance = g_buteMgr.GetDword("Battlez", "ShovelzChance", 50);
+    m_spyzChance = g_buteMgr.GetDword("Battlez", "SpyzChance", 50);
+    m_brickzChance = g_buteMgr.GetDword("Battlez", "BrickzChance", 50);
+    m_gooberzChance = g_buteMgr.GetDword("Battlez", "GooberzChance", 50);
+    m_gruntRatio = g_buteMgr.GetDword("Battlez", "GruntRatio", 25);
+    m_defenderChance = g_buteMgr.GetDword("Battlez", "DefenderChance", 50);
 
     for (CGameObject* cur = ListGetFirst(mgr->m_world->m_childGroup); cur != NULL;
          cur = ListGetNext(mgr->m_world->m_childGroup)) {
@@ -216,12 +216,12 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
 
     switch (difficulty) {
         case BZDIFF_EASY: {
-            g_buteMgr.GetIntDef("Battlez", "EasyDifficulty", 100);
+            g_buteMgr.GetInt("Battlez", "EasyDifficulty", 100);
             g_diffTier = 20;
             break;
         }
         case BZDIFF_NORMAL: {
-            i32 r = g_buteMgr.GetIntDef("Battlez", "NormalDifficulty", 50);
+            i32 r = g_buteMgr.GetInt("Battlez", "NormalDifficulty", 50);
             g_diffTier = 10;
             m_gruntCreationTime = static_cast<i32>(
                 (static_cast<double>(r)
@@ -234,7 +234,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
             break;
         }
         case BZDIFF_HARD: {
-            i32 r = g_buteMgr.GetIntDef("Battlez", "HardDifficulty", 25);
+            i32 r = g_buteMgr.GetInt("Battlez", "HardDifficulty", 25);
             g_diffTier = 5;
             m_gruntCreationTime = static_cast<i32>(
                 (static_cast<double>(r)
@@ -1122,7 +1122,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                     if (st3 == PICKUP_WAND
                                                         && unit->m_health > 0x1a) {
                                                         if (rand() % g_diffTier == 0) {
-                                                            i32 r = g_buteMgr.GetIntDef(
+                                                            i32 r = g_buteMgr.GetInt(
                                                                 "Spellz",
                                                                 "SpellRadius",
                                                                 8

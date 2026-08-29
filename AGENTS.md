@@ -226,6 +226,13 @@
     declaration boundary between the mirror functions then made encipher,
     decipher, and initialization all byte-exact. The reciprocal dip exposed a
     TU-state split; it did not disprove the surviving body.
+  * restore semantic identities and storage scope together. In ButeMgr, the
+    surviving `ClassMap` plus typed `TranType` table replaced a flat
+    three-dimensional short array and its invented slot enum; the scanner's
+    `Pos` became the authored function-local static instead of an inferred TU
+    global. Restoring the parser/scanner method names, overloaded getter names,
+    member names, and the inline checksum accessor preserved the retail owners
+    while removing decompiler-era structure from both code and data.
   * mine games and samples as well as engine libraries. Repeated Shogo/Blood2
     implementations preserve source layers that a later runtime analogue may
     obscure; repeated sibling copies are stronger evidence than one later body.

@@ -237,7 +237,7 @@ CObjectDropper::CObjectDropper(CGameObject* obj)
         }
     }
 
-    i32 time = g_buteMgr.GetDwordDef("Hazardz", "ObjectDropperTimePerTile", 1000);
+    i32 time = g_buteMgr.GetDword("Hazardz", "ObjectDropperTimePerTile", 1000);
     m_scrollMode = OBJECT_DROP_ALL_PLAYERS;
     m_lastDropPlayerIndex = -1;
     m_lastDropUnitIndex = -1;
@@ -308,7 +308,7 @@ i32 CObjectDropper::Update() {
                             m_lastDropPlayerIndex = playerIndex;
                             m_lastDropUnitIndex = unitIndex;
                             m_dropInterval =
-                                g_buteMgr.GetDwordDef("Hazardz", "ObjectDropperDelay", 1000);
+                                g_buteMgr.GetDword("Hazardz", "ObjectDropperDelay", 1000);
                             m_lastDropTime = g_frameTime;
                         }
                     }
@@ -416,13 +416,13 @@ CDroppedObject::CDroppedObject(CGameObject* obj)
     i32 adjX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
     m_landY = adjY;
     m_object->m_screenX = adjX;
-    m_object->m_screenY = adjY - g_buteMgr.GetIntDef("Hazardz", "DroppedObjectYOffset", 0x140);
+    m_object->m_screenY = adjY - g_buteMgr.GetInt("Hazardz", "DroppedObjectYOffset", 0x140);
     CWwdSpriteObject* o = m_object;
     m_fallY = static_cast<double>(o->m_screenY);
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR_FRONT)
     m_timePerTile =
         g_objDropDiv
-        / static_cast<double>(g_buteMgr.GetDwordDef("Hazardz", "DroppedObjectTimePerTile", 0x3e8));
+        / static_cast<double>(g_buteMgr.GetDword("Hazardz", "DroppedObjectTimePerTile", 0x3e8));
 }
 
 RVA(0x000c6bd0, 0x102)

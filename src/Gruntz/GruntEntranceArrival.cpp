@@ -662,7 +662,7 @@ void CGrunt::ResetEntranceAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32
         SwitchAnimation(AT(m_poseIdle, GRUNT_IDLE1));
         m_idleWindow = static_cast<u32>(0x3a98);
         m_idleTimer = g_frameTime;
-        i32 d = static_cast<i32>(g_buteMgr.GetDwordDef("Grunt", "IdleDelay", 0x7530));
+        i32 d = static_cast<i32>(g_buteMgr.GetDword("Grunt", "IdleDelay", 0x7530));
         m_idleDelay = static_cast<u32>(0x7530 + GetRandom(0, d));
         m_idleAnchor = g_frameTime;
         applied = 1;
@@ -728,7 +728,7 @@ void CGrunt::ResetEntranceAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32
             }
             SwitchAnimation(AT(m_poseIdle, GRUNT_IDLE1));
             {
-                i32 d = static_cast<i32>(g_buteMgr.GetDwordDef("Grunt", "IdleDelay", 0x7530));
+                i32 d = static_cast<i32>(g_buteMgr.GetDword("Grunt", "IdleDelay", 0x7530));
                 applied = 1;
                 m_idleDelay = static_cast<u32>(GetRandom(0x4e20, d));
                 m_idleAnchor = g_frameTime;
@@ -826,7 +826,7 @@ i32 CGrunt::ResolveEntranceArrival() {
                             break;
                         default:
                             m_defenderRadius =
-                                g_buteMgr.GetIntDef("Grunt", "PlayerDefenderRadius", 3) + 1;
+                                g_buteMgr.GetInt("Grunt", "PlayerDefenderRadius", 3) + 1;
                             break;
                     }
                     m_arrivalCell.m_x = -1;
@@ -1477,7 +1477,7 @@ i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
     if (m_entranceReason == PICKUP_BOMB) {
         SET_ANIMATION_ACT("M");
         m_object->m_stateFlags &= ~SPRITE_STATE_FLASHING;
-        m_timePerTile = g_buteMgr.GetDwordDef("BOMBGRUNT", "RunningTimePerTile", 0x64);
+        m_timePerTile = g_buteMgr.GetDword("BOMBGRUNT", "RunningTimePerTile", 0x64);
         m_entranceActive = true;
         m_bombRunActive = true;
         SetEntrancePos(1, 1);
@@ -1557,7 +1557,7 @@ i32 CGrunt::LoadWandGruntItemConfig() {
             }
             if (m_entranceReason == PICKUP_WAND) {
                 LoadGruntAbilityTuning(m_moveVariant);
-                i32 hp = m_health - g_buteMgr.GetIntDef("WANDGRUNT", "HealthLoss", 0x19);
+                i32 hp = m_health - g_buteMgr.GetInt("WANDGRUNT", "HealthLoss", 0x19);
                 m_health = hp < 0 ? 0 : hp;
                 if (m_health <= 0) {
                     m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);

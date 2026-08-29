@@ -30,8 +30,8 @@ byte-neutral (copy-propagated) — the lever is the per-arm constants, not the l
 
 ## Production
 
-`CButeMgr::NextChar` 0x170390 (butemgr): 88.67 -> **100.00 EXACT** on this change alone.
-The unrelated `m_curChar` byte store also moved back up between the `cmp` and the `sete`,
+`CButeMgr::ConsumeChar` 0x170390 (butemgr): 88.67 -> **100.00 EXACT** on this change alone.
+The unrelated `m_currentChar` byte store also moved back up between the `cmp` and the `sete`,
 matching retail's flags-window schedule, without any separate steering.
 
 related: return-bool-via-local-setcc.md (the return-tail variant),

@@ -7,7 +7,7 @@
 
 inline void ArmGruntCombatTimeout(CGrunt* grunt) {
     grunt->m_combatTimeoutLo =
-        static_cast<i32>(g_buteMgr.GetDwordDef("Grunt", "CombatTimeout", 0x1388));
+        static_cast<i32>(g_buteMgr.GetDword("Grunt", "CombatTimeout", 0x1388));
     grunt->m_combatTimeoutHi = 0;
     grunt->m_combatClockLo = static_cast<i32>(g_frameTime);
     grunt->m_combatClockHi = 0;

@@ -25,7 +25,7 @@ few places where a signedness slip is directly visible instead of hiding behind 
 `fild DWORD [combo] / fimul DWORD [ratio] / fmul DWORD [scale]`. Retyping
 `CBattlezMapConfig::m_gruntRatio` from `i32` to `u32` took it **81.79 -> 84.41**. The
 retype is independently corroborated at the store site - the field is filled from
-`g_buteMgr.GetDwordDef("Battlez", "GruntRatio", 25)`, which returns `DWORD`.
+`g_buteMgr.GetDword("Battlez", "GruntRatio", 25)`, which returns `DWORD`.
 
 ## Do NOT then "fix" the operand order with parentheses
 

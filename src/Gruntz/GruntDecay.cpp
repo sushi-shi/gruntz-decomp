@@ -46,7 +46,7 @@ i32 CGrunt::UpdateDeathAnimation() {
         if (m_cellRemovalNotified == false) {
             m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
         }
-        i32 dt = static_cast<i32>(g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8));
+        i32 dt = static_cast<i32>(g_buteMgr.GetDword("Grunt", "DecayTime", 0xbb8));
         i32 epoch;
         if (m_object->m_drawFillCmd == SHADE_PAL_ALPHA_16) {
             epoch = static_cast<i32>(g_frameTime) - m_object->m_fillFraction * dt / 256;
@@ -63,7 +63,7 @@ i32 CGrunt::UpdateDeathAnimation() {
         u32 elapsed = e < 0 ? 0 : static_cast<u32>(e);
         i32 r = static_cast<i32>(
             (static_cast<double>(elapsed) * 256.0
-             / static_cast<double>(g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8)))
+             / static_cast<double>(g_buteMgr.GetDword("Grunt", "DecayTime", 0xbb8)))
         );
         CWwdSpriteObject* o = m_object;
         SET_DRAW_FILL_FRACTION(o, SHADE_PAL_ALPHA_16, r);
@@ -94,7 +94,7 @@ i32 CGrunt::UpdateDecayFade() {
     CWwdSpriteObject* o = m_object;
     i32 r = static_cast<i32>(
         (static_cast<double>(elapsed) * 256.0
-         / static_cast<double>(g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8)))
+         / static_cast<double>(g_buteMgr.GetDword("Grunt", "DecayTime", 0xbb8)))
     );
     SET_DRAW_FILL_FRACTION(o, SHADE_PAL_ALPHA_16, r);
     return 0;

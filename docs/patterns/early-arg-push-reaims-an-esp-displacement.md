@@ -30,7 +30,7 @@ voice->m_freq = wf.nSamplesPerSec;   // not wf's first dword
 
 The same arithmetic decides what a WRITE means, and getting it wrong turns a missing
 statement into an imaginary compiler quirk. `CStatusBarMgr::LoadChipMachineConfig`
-0x106bb0 stores `edi` (=1) into `[esp+0x1c]` inside a three-push `GetDwordDef` setup,
+0x106bb0 stores `edi` (=1) into `[esp+0x1c]` inside a three-push `GetDword` setup,
 i.e. E+0x10 — the same slot the epilogue reads with `cmp [esp+0x10],ebx` at depth 0.
 Read at face value those five stores look like a write-only fourth local that no source
 spelling can produce, and that is how the row was parked. They are the `rectFlag = 1`
@@ -42,7 +42,7 @@ travelled. 94.15 -> 97.97 on the five added assignments.
 push 0x64                    ; three args pushed, esp = E-0xc
 push <str> / push <str>
 mov  DWORD PTR [esp+0x1c],edi   ; E+0x10  == rectFlag, NOT a fourth slot
-call ?GetDwordDef@CButeMgr@@...
+call ?GetDword@CButeMgr@@...
 ...
 cmp  DWORD PTR [esp+0x10],ebx   ; E+0x10  again, at depth 0
 ```

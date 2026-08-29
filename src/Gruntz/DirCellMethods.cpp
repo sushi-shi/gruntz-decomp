@@ -185,27 +185,27 @@ RVA(0x0003cc20, 0x14e)
 bool CButeMgr::Parse(CString filename, int streamBase) {
 
     ifstream* s = new ifstream(filename, ios::in | ios::nocreate);
-    m_stream = s;
+    m_pData = s;
     if (s->fail()) {
         return false;
     }
 
     Reset();
-    m_streamBase = streamBase;
-    m_filename = filename;
+    m_decryptCode = streamBase;
+    m_sAttributeFilename = filename;
 
-    m_tags.Reset();
-    m_modifiedTags.Reset();
-    m_addedTags.Reset();
+    m_tagTab.Reset();
+    m_auxTagTab.Reset();
+    m_newTagTab.Reset();
 
     bool result = true;
-    if (!ParseGroup()) {
-        m_parseFailed = 1;
+    if (!TagList()) {
+        m_bErrorFlag = 1;
         result = false;
     }
 
-    (static_cast<ifstream*>(m_stream))->close();
-    delete static_cast<ifstream*>(m_stream);
+    (static_cast<ifstream*>(m_pData))->close();
+    delete static_cast<ifstream*>(m_pData);
     return result;
 }
 

@@ -249,7 +249,7 @@ A historical sample from the former `data_value` scoring mode. Each defect score
 | region | retail reaches | we reach |
 |---|---|---|
 | `CGruntzMgr::Close` | `"Num Runs"`, `"Num Movies"`, `"High Detail"`, `"Disable Joystick"` | `"Num_Runs"`, `"Num_Movies"`, `"High_Detail"`, `"Disable_Joystick"` |
-| `ButeMgr::ParseAttributeFile` | `"ButeMgr:  duplicate symbol encountered - %s"` | `"ButeMgr:  duplicate tag encountered - %s"` |
+| `CButeMgr::Statement` | `"ButeMgr:  duplicate symbol encountered - %s"` | `"ButeMgr:  duplicate tag encountered - %s"` |
 | `CStatusBarMgr::LoadTabSprites` | `CSBI_RectOnly::CSBI_RectOnly` | `CStatusBarItem::CStatusBarItem` |
 | `CGrunt::ResetGeometry` | `ActFindId("E")` | `ActFindId("A")` |
 | `RegisterGruntActions` | `_zvec::IndexToPtr` | `zDArray<…>::Resolve` |
@@ -353,7 +353,7 @@ An eleventh classification defect blended **referent multiplicity** into identit
 VC5 can merge several source arms onto one call site or factor repeated global loads;
 the reverse spelling can emit more operands while every one still names an identity
 present on the other side.  `CGrunt::LoadGruntTypeTable` is the compact control:
-retail shares three health cases across two `GetIntDef("Powerupz", ...)` call sites,
+retail shares three health cases across two `GetInt("Powerupz", ...)` call sites,
 while our build shares all three across one.  `CShadeTableCache::FlashTable` similarly
 factors repeated `g_percentScale` loads.  Call/load count can matter, so these regions are not
 discarded: `--multiplicity N` lists them and the integrity gate ratchets them
