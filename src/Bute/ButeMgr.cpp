@@ -1155,7 +1155,7 @@ bool CButeMgr::Tag() {
 }
 
 RVA(0x001712b0, 0x228)
-void ButeGroup_Apply(const char* key, CButeValue* value, void* ctx) {
+void CButeMgr::AuxTabItemsSave(const char* key, CButeValue* value, void* ctx) {
     ostream& output = *static_cast<ostream*>(ctx);
 
     output << "\r\n" << key << " = ";
@@ -1224,12 +1224,12 @@ void ButeGroup_Apply(const char* key, CButeValue* value, void* ctx) {
 }
 
 RVA(0x001714e0, 0x66)
-void ButeTag_Apply(const char* key, TableOfItems* value, void* ctx) {
+void CButeMgr::NewTabsSave(const char* key, TableOfItems* value, void* ctx) {
     ostream& output = *static_cast<ostream*>(ctx);
     output << endl;
     output << endl;
     output << "[" << key << "]";
-    value->traverse(&ButeGroup_Apply, ctx);
+    value->traverse(&AuxTabItemsSave, ctx);
 }
 
 RVA_COMPGEN(0x00171550, 0x11, ??6ostream@@QAEAAV0@P6AAAV0@AAV0@@Z@Z)
@@ -1255,7 +1255,7 @@ bool CButeMgr::TagList() {
 
             TableOfItems* grp = static_cast<TableOfItems*>(ModifiedTags()->lookup(m_sTagName));
             if (grp) {
-                grp->traverse(&ButeGroup_Apply, m_pSaveData);
+                grp->traverse(&AuxTabItemsSave, m_pSaveData);
             }
         }
         if (!ScanTok()) {
@@ -1314,7 +1314,7 @@ bool CButeMgr::Save() {
     source.clear();
     m_pData = &source;
     TagList();
-    m_newTagTab.traverse(&ButeTag_Apply, m_pSaveData);
+    m_newTagTab.traverse(&NewTabsSave, m_pSaveData);
     m_pSaveData->clear();
 
     if (m_bCrypt) {

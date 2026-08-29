@@ -44,12 +44,40 @@ public:
         ACTIVE = 2
     GZ_ENUM_END(cleanup_behaviour)
 
+    GZ_ENUM_BEGIN(marker_validity)
+        SUSPECT = 4
+    GZ_ENUM_END(marker_validity)
+
     size_t count() const {
         return _count;
     }
 
+    i32 valid() const {
+        return !(flags & IDX(SUSPECT));
+    }
+
+    void noclean() {
+        flags |= IDX(NONE);
+    }
+
+    static i32 same(void* a, void* b) {
+        return a == b;
+    }
+
     i32 purge() const {
         return flags & IDX(ACTIVE);
+    }
+
+    i32 leave() const {
+        return flags & IDX(NONE);
+    }
+
+    void makevalid() {
+        flags &= ~IDX(SUSPECT);
+    }
+
+    void invalidate() {
+        flags |= IDX(SUSPECT);
     }
 
     void incc() {
@@ -72,6 +100,10 @@ public:
 
 protected:
     zPtrColl(cleanup_behaviour cleanup, dtorf_t destructor);
+
+    dtorf_t destructor() const {
+        return dtor;
+    }
 
 private:
     dtorf_t dtor;
@@ -158,6 +190,9 @@ private:
     static void dtf(T* p) {
         p->T::~T();
     }
+
+    zSymTab(const zSymTab<T>&);
+    zSymTab<T>& operator=(const zSymTab<T>&);
 };
 
 #endif // SRC_BUTE_PTREENODE_H

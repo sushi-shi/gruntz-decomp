@@ -15,9 +15,6 @@
 
 GZ_ENUM_FORWARD(ButeLexAction);
 
-typedef zSymTab<CButeValue> TableOfItems;
-typedef zSymTab<TableOfItems> TableOfTags;
-
 #include <stdlib.h>
 #include <strstrea.h>
 
@@ -95,6 +92,10 @@ public:
     RVA(0x000213c0, 0x14c)
     ~CButeMgr() {}
 
+private:
+    typedef zSymTab<CButeValue> TableOfItems;
+    typedef zSymTab<TableOfItems> TableOfTags;
+
     TableOfTags* Tags() {
         return &m_tagTab;
     }
@@ -117,6 +118,10 @@ public:
     TableOfItems* m_pCurrTabOfItems;
     TableOfTags m_auxTagTab;
     TableOfTags m_newTagTab;
+
+    static void AuxTabItemsSave(const char* key, CButeValue* value, void* ctx);
+    static void NewTabsSave(const char* key, TableOfItems* value, void* ctx);
+
     istream* m_pData;
 
     iostream* m_pSaveData;
@@ -134,6 +139,7 @@ public:
     bool m_bCrypt;
     CCryptMgr m_cryptMgr;
 
+public:
     ButeIntRect* GetRect(const char* tag, const char* key);
     ButeIntPoint* GetPoint(const char* tag, const char* key);
     CAVector* GetVector(const char* tag, const char* key);
@@ -173,9 +179,6 @@ inline bool CButeMgr::Parse(CRezItm* stream, const char* key) {
 }
 
 extern CButeMgr g_buteMgr;
-
-void ButeGroup_Apply(const char* key, CButeValue* value, void* ctx);
-void ButeTag_Apply(const char* key, TableOfItems* value, void* ctx);
 #include <stdio.h>
 
 #endif // SRC_BUTE_BUTEMGR_H
