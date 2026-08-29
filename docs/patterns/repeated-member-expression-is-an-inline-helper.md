@@ -65,7 +65,7 @@ byte evidence that retail wrote the two differently.
 
 **SCOPE - scalar helpers do not separate arithmetic, but a higher-level aggregate
 boundary can (corrected 2026-08-29).** `CBattlezMapConfig::RerouteSwitchSeeker`
-0x35f10 is the scalar control. Retail loads
+0x35f10 began as the scalar control. Retail loads
 `m_screenY` ONCE and then copies the raw value into two registers and shifts
 BOTH (`mov edx,ecx / mov esi,ecx / sar edx,0x5 / sar esi,0x5`), where we emit one
 `sar` and reach `-1`/`+2` with a `lea` - the shared LEAF with duplicated trees
@@ -73,8 +73,14 @@ that this pattern would predict an inline helper produces. Routing all five site
 through a `static inline i32 PxToTile(i32 px) { return px >> TILE_SHIFT_PX; }`
 is **byte-identical**: 77.97 before, 77.97 after. That does not generalize to a
 pair-valued helper reached through a higher-level owner. `RepathToFreeCell` 0x350d0
-proved the distinction: a `Coord` helper accepting `CGrunt*`, beside caller-owned raw
-screen-coordinate locals, restored four shifts and the retail frame; passing the cached
-`CGameObject*` into the same helper collapsed them again. See
+proved the distinction, and Reroute then supplied a second positive: preserving the raw
+screen-coordinate locals, adding `Coord ScreenTile(CGrunt*)`, and composing a
+neighborhood helper with two pair-valued expansions restored all six shifts and moved
+77.9664 to 86.5714. X-before-Y construction plus upper-before-lower result declaration
+was the strongest authored-order cell; base and retail then agreed at 120 instructions,
+one call, 18 branches, two returns, and one ordered relocation. Raw-pair, in-place RECT,
+single-field repeated-call, and cached-object controls were lower, while a 64-trial
+target-adjacent C1 forest on the final hash was single-island. The remaining frame and
+register residue is still open to a different structural layer. See
 `retail-recomputes-a-shift-we-cse.md`. Classify the identity and result width of the
 boundary instead of voting on "helper versus expression."
