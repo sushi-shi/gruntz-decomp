@@ -106,10 +106,10 @@ BOOL CALLBACK OkCancelDialogProc(HWND, UINT, WPARAM, LPARAM);
 
 extern CSaveGame* g_saveDlgSink;
 
-class CImagePool;
-class CRezImage;
-extern CImagePool* g_previewMgr;
-extern CRezImage* g_previewImage;
+class CDibMgr;
+class CDib;
+extern CDibMgr* g_previewMgr;
+extern CDib* g_previewImage;
 
 void FillSaveDialog(HWND hDlg, CSaveGame* saveGame);
 i32 DrawSaveGameMenu(HWND hDlg, i32 command, CSaveGame* saveGame);

@@ -85,40 +85,8 @@ BOOL CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
             BeginPaint(hDlg, &ps);
             HDC hdc = ps.hdc;
             SetStretchBltMode(hdc, COLORONCOLOR);
-            CRezImage* img = g_previewImage;
-            if (img->m_bitCount == BPP_PALETTED_8) {
-                StretchDIBits(
-                    hdc,
-                    dx,
-                    dy,
-                    w,
-                    h,
-                    0,
-                    0,
-                    img->m_width,
-                    img->m_height,
-                    img->m_pixels,
-                    &img->m_bmi,
-                    DIB_PAL_COLORS,
-                    SRCCOPY
-                );
-            } else {
-                StretchDIBits(
-                    hdc,
-                    dx,
-                    dy,
-                    w,
-                    h,
-                    0,
-                    0,
-                    img->m_width,
-                    img->m_height,
-                    img->m_pixels,
-                    &img->m_bmi,
-                    DIB_RGB_COLORS,
-                    SRCCOPY
-                );
-            }
+            CDib* img = g_previewImage;
+            img->Blt(hdc, dx, dy, w, h);
             EndPaint(hDlg, &ps);
             return true;
         }
@@ -127,9 +95,9 @@ BOOL CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
                 EndDialog(hDlg, 0);
                 return true;
             }
-            g_previewMgr = new CImagePool;
+            g_previewMgr = new CDibMgr;
 
-            if (g_previewMgr->Configure(g_gameReg->m_owner->m_hInstance, hDlg, 0) == 0) {
+            if (g_previewMgr->Init(g_gameReg->m_owner->m_hInstance, hDlg, 0) == 0) {
                 break;
             }
             BuildLevelTitleString(hDlg, g_gameReg->m_saveGame, g_slotState);
@@ -141,7 +109,7 @@ BOOL CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
             }
             if (g_previewMgr != NULL) {
                 if (g_previewImage != NULL) {
-                    g_previewMgr->RemoveSurface(g_previewImage);
+                    g_previewMgr->RemoveDib(g_previewImage);
                 }
                 delete g_previewMgr;
                 g_previewMgr = NULL;
@@ -611,8 +579,7 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
     }
 
     f.Close();
-    g_previewImage =
-        g_previewMgr->LoadSurfaceFromData(&readBuf[SAVE_PREVIEW_BITMAP_OFFSET], DECODE_BMP, 0);
+    g_previewImage = g_previewMgr->AddDib(&readBuf[SAVE_PREVIEW_BITMAP_OFFSET], DECODE_BMP);
     SetDlgItemTextA(hDlg, CTRL_SAVESLOT_PREVIEW_TITLE, title);
 }
 

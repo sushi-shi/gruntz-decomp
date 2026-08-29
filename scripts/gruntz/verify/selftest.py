@@ -132,6 +132,18 @@ class CastControls(unittest.TestCase):
                              "return reinterpret_cast<u16*>(g_scratch); }\n")
                 self.assertEqual(casts.self_recursion(), [])
 
+    def test_different_arity_overload_forwarding_is_not_self_recursion(self):
+        from gruntz.verify import casts
+        with tempfile.TemporaryDirectory() as td:
+            (Path(td) / "src").mkdir()
+            (Path(td) / "include").mkdir()
+            f = Path(td) / "include/Probe.h"
+            f.write_text(
+                "inline int Blt(HDC dc) { return Blt(dc, 0, 0); }\n"
+            )
+            with mock.patch.object(casts, "REPO", Path(td)):
+                self.assertEqual(casts.self_recursion(), [])
+
     def test_unreasoned_cast_is_open_and_reasoned_is_parked(self):
         from gruntz.verify import casts
         with tempfile.TemporaryDirectory() as td:

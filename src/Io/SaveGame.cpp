@@ -32,11 +32,11 @@
 DATA(0x00213a9c)
 i32 g_savedMenuCmd = -1;
 DATA(0x0024c814)
-CImagePool* g_previewMgr;
+CDibMgr* g_previewMgr;
 DATA(0x0024c864)
 SaveSlot* g_slotState;
 DATA(0x0024c868)
-CRezImage* g_previewImage;
+CDib* g_previewImage;
 DATA(0x0024c86c)
 CSaveGame* g_saveDlgSink = NULL;
 

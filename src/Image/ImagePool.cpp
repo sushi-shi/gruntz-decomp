@@ -23,386 +23,312 @@
 #include <string.h>
 
 DATA(0x002bf6e0)
-HINSTANCE g_hResModule = NULL;
+HINSTANCE CDibMgr::s_hInst = NULL;
 
 DATA(0x0021aabc)
 char g_bmpHeaderTemplate[4] = "BM";
 
 RVA(0x00174e90, 0x1c)
-i32 CImagePool::Configure(HINSTANCE resourceModule, HWND sourceWindow, i32 reserved) {
-    m_resourceModuleHandle = resourceModule;
-    m_sourceHwnd = sourceWindow;
-    m_reserved08 = reserved;
+i32 CDibMgr::Init(HINSTANCE instance, HWND window, u32 flags) {
+    m_hInst = instance;
+    m_hWnd = window;
+    m_dwFlags = flags;
     return 1;
 }
 
 RVA(0x00174eb0, 0x1b)
-void CImagePool::Clear() {
-    ClearSurfaces();
-    ClearPalettes();
-    m_resourceModuleHandle = NULL;
-    m_sourceHwnd = NULL;
-    m_reserved08 = 0;
+void CDibMgr::Term() {
+    RemoveAllDibs();
+    RemoveAllPals();
+    m_hInst = NULL;
+    m_hWnd = NULL;
+    m_dwFlags = 0;
 }
 
 RVA(0x00174ed0, 0x5d)
-void CImagePool::RemoveSurface(CRezImage* image) {
-    if (!image) {
+void CDibMgr::RemoveDib(CDib* dib) {
+    if (dib == NULL) {
         return;
     }
-    if (image->m_paletteNode && image->m_paletteScalar) {
-        RemovePalette(image->m_paletteNode);
-        SetImagePalette(NULL, NULL, 0);
+    CDibPal* palette = dib->GetPalette();
+    if (palette != NULL && dib->IsPaletteOwner()) {
+        RemovePal(palette);
+        dib->SetPalette(NULL, false);
     }
-    if (image->m_listPosition) {
-        m_surfaces.RemoveAt(image->m_listPosition);
+    POSITION pos = dib->GetPos();
+    if (pos != NULL) {
+        m_collDibs.RemoveAt(pos);
     }
-    image->Free();
-    delete image;
+    delete dib;
 }
 
 RVA(0x00174f30, 0x30)
-void CImagePool::RemovePalette(CImagePaletteNode* palette) {
-    if (!palette) {
+void CDibMgr::RemovePal(CDibPal* palette) {
+    if (palette == NULL) {
         return;
     }
-    if (palette->m_listPosition) {
-        m_palettes.RemoveAt(palette->m_listPosition);
+    POSITION pos = palette->GetPos();
+    if (pos != NULL) {
+        m_collPals.RemoveAt(pos);
     }
-    palette->Destroy();
     delete palette;
 }
 
 RVA(0x00174f60, 0x37)
-void CImagePool::ClearSurfaces() {
-    POSITION pos = m_surfaces.GetHeadPosition();
+void CDibMgr::RemoveAllDibs() {
+    POSITION pos = m_collDibs.GetHeadPosition();
     while (pos) {
-        CRezImage* item = static_cast<CRezImage*>(m_surfaces.GetNext(pos));
-        if (item) {
-            item->Free();
-            delete item;
-        }
+        CDib* item = static_cast<CDib*>(m_collDibs.GetNext(pos));
+        delete item;
     }
-    m_surfaces.RemoveAll();
+    m_collDibs.RemoveAll();
 }
 
 RVA(0x00174fa0, 0x3e)
-void CImagePool::ClearPalettes() {
-    POSITION pos = m_palettes.GetHeadPosition();
+void CDibMgr::RemoveAllPals() {
+    POSITION pos = m_collPals.GetHeadPosition();
     while (pos) {
-        CImagePaletteNode* item = static_cast<CImagePaletteNode*>(m_palettes.GetNext(pos));
-        if (item) {
-            item->Destroy();
-            delete item;
-        }
+        CDibPal* item = static_cast<CDibPal*>(m_collPals.GetNext(pos));
+        delete item;
     }
-    m_palettes.RemoveAll();
-    m_reserved48 = 0;
+    m_collPals.RemoveAll();
+    m_pCurPal = NULL;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00174fe0, 0xfe)
-CRezImage* CImagePool::CreateSurface(i32 width, i32 height, ColorDepth bitDepth, i32 flags) {
-    HDC hdc = GetDC(m_sourceHwnd);
-    CRezImage* node = new CRezImage();
-    if (node->DecodeBmpHeader(hdc, width, height, bitDepth, flags) == BPP_UNSET) {
-        if (m_selectedPalette) {
-            SelectPalette(hdc, m_selectedPalette, false);
-            m_selectedPalette = NULL;
-        }
-        ReleaseDC(m_sourceHwnd, hdc);
-        if (node) {
-            node->Free();
-            delete node;
-        }
+CDib* CDibMgr::AddDib(i32 width, i32 height, ColorDepth depth, u32 flags) {
+    HDC dc = GetDC(false);
+    CDib* dib = new CDib();
+    if (!dib->Init(dc, width, height, depth, flags)) {
+        ReleaseDC(dc);
+        delete dib;
         return NULL;
     }
-    POSITION pos = m_surfaces.AddTail(node);
-    node->m_listPosition = pos;
-    if (m_selectedPalette) {
-        SelectPalette(hdc, m_selectedPalette, false);
-        m_selectedPalette = NULL;
-    }
-    ReleaseDC(m_sourceHwnd, hdc);
-    return node;
+    POSITION pos = m_collDibs.AddTail(dib);
+    dib->SetPos(pos);
+    ReleaseDC(dc);
+    return dib;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001750e0, 0x103)
-CRezImage* CImagePool::CreateSurfaceFromPixels(
-    u8* pixels,
-    i32 width,
-    i32 height,
-    ColorDepth bitDepth,
-    i32 flags
-) {
-    HDC hdc = GetDC(m_sourceHwnd);
-    CRezImage* node = new CRezImage();
-    if (node->DecodeBlit(pixels, hdc, width, height, bitDepth, flags) == BPP_UNSET) {
-        if (m_selectedPalette) {
-            SelectPalette(hdc, m_selectedPalette, false);
-            m_selectedPalette = NULL;
-        }
-        ReleaseDC(m_sourceHwnd, hdc);
-        if (node) {
-            node->Free();
-            delete node;
-        }
+CDib* CDibMgr::AddDib(u8* bytes, i32 width, i32 height, ColorDepth depth, u32 flags) {
+    HDC dc = GetDC(false);
+    CDib* dib = new CDib();
+    if (!dib->Init(bytes, dc, width, height, depth, flags)) {
+        ReleaseDC(dc);
+        delete dib;
         return NULL;
     }
-    POSITION pos = m_surfaces.AddTail(node);
-    node->m_listPosition = pos;
-    if (m_selectedPalette) {
-        SelectPalette(hdc, m_selectedPalette, false);
-        m_selectedPalette = NULL;
-    }
-    ReleaseDC(m_sourceHwnd, hdc);
-    return node;
+    POSITION pos = m_collDibs.AddTail(dib);
+    dib->SetPos(pos);
+    ReleaseDC(dc);
+    return dib;
 }
 
 RVA(0x001751f0, 0xf9)
-CRezImage* CImagePool::LoadSurfaceFromData(u8* data, RezDecodeKind format, i32 flags) {
-    HDC hdc = GetDC(m_sourceHwnd);
-    CRezImage* node = new CRezImage();
-    if (node->DispatchDecode(data, format, hdc, flags) == 0) {
-        if (m_selectedPalette) {
-            SelectPalette(hdc, m_selectedPalette, false);
-            m_selectedPalette = NULL;
-        }
-        ReleaseDC(m_sourceHwnd, hdc);
-        if (node) {
-            node->Free();
-            delete node;
-        }
+CDib* CDibMgr::AddDib(u8* bytes, RezDecodeKind type, u32 flags) {
+    HDC dc = GetDC(false);
+    CDib* dib = new CDib();
+    if (!dib->Init(bytes, type, dc, flags)) {
+        ReleaseDC(dc);
+        delete dib;
         return NULL;
     }
-    POSITION pos = m_surfaces.AddTail(node);
-    node->m_listPosition = pos;
-    if (m_selectedPalette) {
-        SelectPalette(hdc, m_selectedPalette, false);
-        m_selectedPalette = NULL;
-    }
-    ReleaseDC(m_sourceHwnd, hdc);
-    return node;
+    POSITION pos = m_collDibs.AddTail(dib);
+    dib->SetPos(pos);
+    ReleaseDC(dc);
+    return dib;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001752f0, 0xfc)
-CRezImage* CImagePool::LoadSurfaceFromResource(char* resourceName, i32 flags) {
-    HDC hdc = GetDC(m_sourceHwnd);
-    g_hResModule = m_resourceModuleHandle;
-    CRezImage* node = new CRezImage();
-    if (node->LoadFromRez(resourceName, hdc, flags) == 0) {
-        if (m_selectedPalette) {
-            SelectPalette(hdc, m_selectedPalette, false);
-            m_selectedPalette = NULL;
-        }
-        ReleaseDC(m_sourceHwnd, hdc);
-        if (node) {
-            node->Free();
-            delete node;
-        }
+CDib* CDibMgr::AddDib(const char* file, u32 flags) {
+    HDC dc = GetDC(false);
+    CDibMgr::s_hInst = m_hInst;
+    CDib* dib = new CDib();
+    if (!dib->Init(file, dc, flags)) {
+        ReleaseDC(dc);
+        delete dib;
         return NULL;
     }
-    POSITION pos = m_surfaces.AddTail(node);
-    node->m_listPosition = pos;
-    if (m_selectedPalette) {
-        SelectPalette(hdc, m_selectedPalette, false);
-        m_selectedPalette = NULL;
-    }
-    ReleaseDC(m_sourceHwnd, hdc);
-    return node;
+    POSITION pos = m_collDibs.AddTail(dib);
+    dib->SetPos(pos);
+    ReleaseDC(dc);
+    return dib;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001753f0, 0xf4)
-CRezImage* CImagePool::ConvertSurface(CRezImage* source, CImagePaletteNode* palette) {
-    HDC hdc = GetDC(m_sourceHwnd);
-    CRezImage* node = new CRezImage();
-    if (node->Convert8To16(hdc, source, palette) == 0) {
-        if (m_selectedPalette) {
-            SelectPalette(hdc, m_selectedPalette, false);
-            m_selectedPalette = NULL;
-        }
-        ReleaseDC(m_sourceHwnd, hdc);
-        if (node) {
-            node->Free();
-            delete node;
-        }
+CDib* CDibMgr::AddDib(CDib* original, CDibPal* palette) {
+    HDC dc = GetDC(false);
+    CDib* dib = new CDib();
+    if (!dib->Init(dc, original, palette)) {
+        ReleaseDC(dc);
+        delete dib;
         return NULL;
     }
-    POSITION pos = m_surfaces.AddTail(node);
-    node->m_listPosition = pos;
-    if (m_selectedPalette) {
-        SelectPalette(hdc, m_selectedPalette, false);
-        m_selectedPalette = NULL;
-    }
-    ReleaseDC(m_sourceHwnd, hdc);
-    return node;
+    POSITION pos = m_collDibs.AddTail(dib);
+    dib->SetPos(pos);
+    ReleaseDC(dc);
+    return dib;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001754f0, 0x7b)
-CImagePaletteNode* CImagePool::CreatePaletteFromEntries(PALETTEENTRY* entries, i32 flags) {
-    CImagePaletteNode* node = new CImagePaletteNode();
-    if (node->CreateFromEntries(entries, flags) == 0) {
-        if (node) {
-            node->Destroy();
-            delete node;
-        }
+CDibPal* CDibMgr::AddPal(PALETTEENTRY* entries, u32 flags) {
+    CDibPal* palette = new CDibPal();
+    if (!palette->Init(entries, flags)) {
+        delete palette;
         return NULL;
     }
-    POSITION pos = m_palettes.AddTail(node);
-    node->m_listPosition = pos;
-    return node;
+    POSITION pos = m_collPals.AddTail(palette);
+    palette->SetPos(pos);
+    return palette;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00175570, 0x7b)
-CImagePaletteNode* CImagePool::CreatePaletteFromRgb(u8* rgb, i32 flags) {
-    CImagePaletteNode* node = new CImagePaletteNode();
-    if (node->CreateFromRgb(rgb, flags) == 0) {
-        if (node) {
-            node->Destroy();
-            delete node;
-        }
+CDibPal* CDibMgr::AddPal(u8* rgb, u32 flags) {
+    CDibPal* palette = new CDibPal();
+    if (!palette->Init(rgb, flags)) {
+        delete palette;
         return NULL;
     }
-    POSITION pos = m_palettes.AddTail(node);
-    node->m_listPosition = pos;
-    return node;
+    POSITION pos = m_collPals.AddTail(palette);
+    palette->SetPos(pos);
+    return palette;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001755f0, 0x82)
-CImagePaletteNode* CImagePool::LoadPaletteFromFile(char* path, i32 flags) {
-    g_hResModule = m_resourceModuleHandle;
-    CImagePaletteNode* node = new CImagePaletteNode();
-    if (node->LoadFromFile(path, flags) == 0) {
-        if (node) {
-            node->Destroy();
-            delete node;
-        }
+CDibPal* CDibMgr::AddPal(const char* file, u32 flags) {
+    CDibMgr::s_hInst = m_hInst;
+    CDibPal* palette = new CDibPal();
+    if (!palette->Init(file, flags)) {
+        delete palette;
         return NULL;
     }
-    POSITION pos = m_palettes.AddTail(node);
-    node->m_listPosition = pos;
-    return node;
+    POSITION pos = m_collPals.AddTail(palette);
+    palette->SetPos(pos);
+    return palette;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00175680, 0x85)
-CImagePaletteNode*
-CImagePool::LoadPaletteFromData(u8* data, u32 dataSize, RezDecodeKind format, i32 flags) {
-    CImagePaletteNode* node = new CImagePaletteNode();
-    if (node->LoadFromData(data, dataSize, format, flags) == 0) {
-        if (node) {
-            node->Destroy();
-            delete node;
-        }
+CDibPal* CDibMgr::AddPal(u8* data, u32 dataSize, RezDecodeKind type, u32 flags) {
+    CDibPal* palette = new CDibPal();
+    if (!palette->Init(data, dataSize, type, flags)) {
+        delete palette;
         return NULL;
     }
-    POSITION pos = m_palettes.AddTail(node);
-    node->m_listPosition = pos;
-    return node;
+    POSITION pos = m_collPals.AddTail(palette);
+    palette->SetPos(pos);
+    return palette;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00175710, 0x69)
-i32 CImagePool::ResizeSurface(
-    CRezImage* image,
-    i32 width,
-    i32 height,
-    ColorDepth bitDepth,
-    i32 flags
-) {
-    if (image == NULL) {
+i32 CDibMgr::ResizeDib(CDib* dib, i32 width, i32 height, ColorDepth depth, u32 flags) {
+    if (dib == NULL) {
         return 0;
     }
-    HDC dc = GetDC(m_sourceHwnd);
-    i32 result = image->EnsureSize(dc, width, height, bitDepth, flags);
-    if (m_selectedPalette) {
-        SelectPalette(dc, m_selectedPalette, false);
-        m_selectedPalette = NULL;
-    }
-    ReleaseDC(m_sourceHwnd, dc);
+    HDC dc = GetDC(false);
+    i32 result = dib->Resize(dc, width, height, depth, flags);
+    ReleaseDC(dc);
     return result;
 }
 
 RVA(0x00175780, 0x3f)
-void CImagePool::SetImagePalette(CRezImage* image, CImagePaletteNode* palette, i32 scalar) {
-    if (image->m_paletteNode && image->m_paletteScalar) {
-        RemovePalette(image->m_paletteNode);
-        image->SetPalette(NULL, 0);
+void CDibMgr::SetPalette(CDib* dib, CDibPal* palette, b32 owner) {
+    CDibPal* oldPalette = dib->GetPalette();
+    if (oldPalette != NULL && dib->IsPaletteOwner()) {
+        RemovePal(oldPalette);
+        dib->SetPalette(NULL, false);
     }
-    image->SetPalette(palette, scalar);
+    dib->SetPalette(palette, owner);
 }
 
 RVA(0x001757c0, 0x16f)
-i32 CRezImage::DecodeBmpHeader(HDC dc, i32 width, i32 height, ColorDepth bitcount, i32 ctrl) {
-    m_reserved434 = 0;
-    m_width = width;
-    m_height = (height < 0) ? -height : height;
-    m_bitCount = bitcount;
+i32 CDib::Init(HDC dc, i32 width, i32 height, ColorDepth bitcount, u32 ctrl) {
+    m_dwFlags = 0;
+    m_nWidth = width;
+    m_nHeight = (height < 0) ? -height : height;
+    m_nDepth = bitcount;
     if (bitcount == BPP_PALETTED_8) {
-        m_stride = ((width + 3) / 4) * 4;
+        m_nPitch = ((width + 3) / 4) * 4;
     } else {
-        m_stride = width;
+        m_nPitch = width;
     }
-    m_rowPad = m_stride - width;
-    m_paletteScalar = 0;
-    m_paletteNode = NULL;
-    m_transparent = true;
-    memset(&m_bih, 0, sizeof(BITMAPINFOHEADER));
-    m_bih.biWidth = m_width;
-    m_bih.biBitCount = static_cast<WORD>(IDX(m_bitCount));
-    m_bih.biSize = sizeof(BITMAPINFOHEADER);
-    m_bih.biHeight = height;
-    m_bih.biPlanes = 1;
-    m_bih.biCompression = 0;
-    m_bih.biSizeImage = 0;
-    m_bih.biClrUsed = 0;
-    m_bih.biClrImportant = 0;
+    m_nStride = m_nPitch - width;
+    m_bPalOwner = 0;
+    m_pPal = NULL;
+    m_bTransparent = true;
+    memset(&m_bmi.hdr, 0, sizeof(BITMAPINFOHEADER));
+    m_bmi.hdr.biWidth = m_nWidth;
+    m_bmi.hdr.biBitCount = static_cast<WORD>(IDX(m_nDepth));
+    m_bmi.hdr.biSize = sizeof(BITMAPINFOHEADER);
+    m_bmi.hdr.biHeight = height;
+    m_bmi.hdr.biPlanes = 1;
+    m_bmi.hdr.biCompression = 0;
+    m_bmi.hdr.biSizeImage = 0;
+    m_bmi.hdr.biClrUsed = 0;
+    m_bmi.hdr.biClrImportant = 0;
 
-    u16* pal = m_pal;
-    if (m_bitCount == BPP_PALETTED_8) {
+    u16* pal = static_cast<u16*>(static_cast<void*>(m_bmi.colors));
+    if (m_nDepth == BPP_PALETTED_8) {
         for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
             *pal++ = static_cast<u16>(i);
         }
-        m_dibSection = CreateDIBSection(dc, &m_bmi, DIB_PAL_COLORS, PtrOut(&m_pixels), NULL, 0);
+        m_hBmp = CreateDIBSection(
+            dc,
+            static_cast<BITMAPINFO*>(static_cast<void*>(&m_bmi)),
+            DIB_PAL_COLORS,
+            PtrOut(&m_pBytes),
+            NULL,
+            0
+        );
     } else {
-        m_dibSection = CreateDIBSection(dc, &m_bmi, DIB_RGB_COLORS, PtrOut(&m_pixels), NULL, 0);
+        m_hBmp = CreateDIBSection(
+            dc,
+            static_cast<BITMAPINFO*>(static_cast<void*>(&m_bmi)),
+            DIB_RGB_COLORS,
+            PtrOut(&m_pBytes),
+            NULL,
+            0
+        );
     }
-    if (!m_dibSection) {
+    if (!m_hBmp) {
         return 0;
     }
-    m_rowOffsets = new i32[m_height];
-    for (i32 i = 0; i < m_height; i++) {
-        m_rowOffsets[i] = (m_height - i - 1) * (IDX(m_bitCount) / 8) * m_stride;
+    m_pLines = new u32[m_nHeight];
+    for (i32 i = 0; i < m_nHeight; i++) {
+        m_pLines[i] = (m_nHeight - i - 1) * (IDX(m_nDepth) / 8) * m_nPitch;
     }
     return 1;
 }
 
 // @early-stop
 RVA(0x00175930, 0xc6)
-i32 CRezImage::DecodeBlit(u8* src, HDC dc, i32 width, i32 height, ColorDepth bitcount, i32 ctrl) {
-    if (!DecodeBmpHeader(dc, width, height, bitcount, ctrl)) {
+i32 CDib::Init(u8* src, HDC dc, i32 width, i32 height, ColorDepth bitcount, u32 ctrl) {
+    if (!Init(dc, width, height, bitcount, ctrl)) {
         return 0;
     }
     if (IsStrideless()) {
-        memcpy(m_pixels, src, (GetBufferSize() * IDX(bitcount)) / 8);
+        memcpy(m_pBytes, src, (GetBufferSize() * IDX(bitcount)) / 8);
     } else {
         for (i32 row = 0; row < GetHeight(); row++) {
-            memcpy(&m_pixels[GetIndex(row)], src, GetWidth());
+            memcpy(&m_pBytes[GetIndex(row)], src, GetWidth());
             src += GetWidth();
         }
     }
@@ -410,68 +336,56 @@ i32 CRezImage::DecodeBlit(u8* src, HDC dc, i32 width, i32 height, ColorDepth bit
 }
 
 RVA(0x00175a00, 0x90)
-i32 CRezImage::DispatchDecode(u8* buf, RezDecodeKind kind, HDC dc, i32 ctrl) {
+i32 CDib::Init(u8* buf, RezDecodeKind kind, HDC dc, u32 ctrl) {
     switch (kind) {
-        case DECODE_PCX: {
-            RecordBytes<PcxHeader> data;
-            data.m_bytes = buf;
-            return DecodePcxData(data.m_rec, dc, ctrl);
-        }
-        case DECODE_BMP: {
-            RecordBytes<BITMAPINFOHEADER> data;
-            data.m_bytes = buf;
-            return DecodeBmpData(data.m_rec, dc, ctrl);
-        }
-        case DECODE_RID: {
-            RecordBytes<PidHeader> data;
-            data.m_bytes = buf;
-            return DecodeRidData(data.m_rec, dc, ctrl);
-        }
-        case DECODE_PID: {
-            RecordBytes<PidHeader> data;
-            data.m_bytes = buf;
-            return DecodePidData(data.m_rec, dc, ctrl);
-        }
+        case DECODE_PCX:
+            return InitPcx(buf, dc, ctrl);
+        case DECODE_BMP:
+            return InitBmp(buf, dc, ctrl);
+        case DECODE_RID:
+            return InitRid(buf, dc, ctrl);
+        case DECODE_PID:
+            return InitPid(buf, dc, ctrl);
     }
     return 0;
 }
 
 RVA(0x00175a90, 0xee)
-i32 CRezImage::LoadFromRez(char* name, HDC dc, i32 ctrl) {
-    char* ext = strrchr(name, '.');
+i32 CDib::Init(const char* name, HDC dc, u32 ctrl) {
+    const char* ext = strrchr(name, '.');
 
     if (ext && _strcmpi(ext, ".BMP") == 0) {
-        return LoadBmp(name, dc, ctrl);
+        return InitBmp(name, dc, ctrl);
     } else if (ext && _strcmpi(ext, ".PCX") == 0) {
-        return LoadPcx(name, dc, ctrl);
+        return InitPcx(name, dc, ctrl);
     } else if (ext && _strcmpi(ext, ".RID") == 0) {
-        return LoadRid(name, dc, ctrl);
+        return InitRid(name, dc, ctrl);
     } else if (ext && _strcmpi(ext, ".PID") == 0) {
-        return LoadPid(name, dc, ctrl);
+        return InitPid(name, dc, ctrl);
     }
 
-    return LoadDefault(name, dc, ctrl);
+    return InitRes(name, dc, ctrl);
 }
 
 RVA(0x00175b80, 0x105)
-i32 CRezImage::Convert8To16(HDC dc, CRezImage* src, CImagePaletteNode* pal) {
+i32 CDib::Init(HDC dc, CDib* src, CDibPal* pal) {
     if (pal == NULL) {
         return 0;
     }
-    PALETTEENTRY* palette = pal->m_logicalPalette.palPalEntry;
+    PALETTEENTRY* palette = pal->GetPes();
     if (palette == NULL) {
         return 0;
     }
-    if (!DecodeBmpHeader(dc, src->m_width, src->m_height, BPP_RGB_16, 0)) {
+    if (!Init(dc, src->m_nWidth, src->m_nHeight, BPP_RGB_16, 0)) {
         return 0;
     }
-    for (i32 y = 0; y < m_height; y++) {
-        u8* sp = src->m_pixels + y * src->m_stride;
+    for (i32 y = 0; y < m_nHeight; y++) {
+        u8* sp = src->m_pBytes + y * src->m_nPitch;
 
         Pix16Ptr row;
-        row.m_bytes = m_pixels;
-        u16* dp = row.m_words + y * m_stride;
-        for (i32 x = 0; x < m_width; x++) {
+        row.m_bytes = m_pBytes;
+        u16* dp = row.m_words + y * m_nPitch;
+        for (i32 x = 0; x < m_nWidth; x++) {
             PALETTEENTRY c = palette[*sp];
             u16 r = c.peRed;
             u16 g = c.peGreen;
@@ -491,52 +405,52 @@ i32 CRezImage::Convert8To16(HDC dc, CRezImage* src, CImagePaletteNode* pal) {
 }
 
 RVA(0x00175c90, 0x45)
-void CRezImage::Free() {
-    if (m_dibSection) {
-        DeleteObject(m_dibSection);
-        m_dibSection = NULL;
+void CDib::Term() {
+    if (m_hBmp) {
+        DeleteObject(m_hBmp);
+        m_hBmp = NULL;
     }
-    if (m_rowOffsets) {
-        delete[] m_rowOffsets;
-        m_rowOffsets = NULL;
+    if (m_pLines) {
+        delete[] m_pLines;
+        m_pLines = NULL;
     }
-    m_pixels = NULL;
-    m_paletteNode = NULL;
+    m_pBytes = NULL;
+    m_pPal = NULL;
 }
 
 RVA(0x00175ce0, 0x6b)
-i32 CRezImage::EnsureSize(HDC dc, i32 w, i32 h, ColorDepth bitCount, i32 flag) {
-    if (m_dibSection && m_pixels && m_rowOffsets && m_width == w && m_height == h) {
+i32 CDib::Resize(HDC dc, i32 w, i32 h, ColorDepth bitCount, u32 flag) {
+    if (m_hBmp && m_pBytes && m_pLines && m_nWidth == w && m_nHeight == h) {
         return 1;
     }
-    Free();
-    return DecodeBmpHeader(dc, w, h, bitCount, flag);
+    Term();
+    return Init(dc, w, h, bitCount, flag);
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00175d50, 0xad)
-void CRezImage::Fill(i32 value) {
-    if (m_rowPad == 0) {
+void CDib::Fill(u8 value) {
+    if (m_nStride == 0) {
         i32 fill = value & PIXEL_BYTE_MASK;
-        memset(m_pixels, fill, m_stride * m_height);
+        memset(m_pBytes, fill, m_nPitch * m_nHeight);
     } else {
 
         i32 y = 0;
-        if (y < m_height) {
+        if (y < m_nHeight) {
             i32 fill = value & PIXEL_BYTE_MASK;
             do {
-                memset(m_pixels + m_rowOffsets[y], fill, m_width);
+                memset(m_pBytes + m_pLines[y], fill, m_nWidth);
                 y++;
-            } while (y < m_height);
+            } while (y < m_nHeight);
         }
     }
 }
 
 // @early-stop
 RVA(0x00175e00, 0x3d)
-i32 CRezImage::DecodeBmpData(void* buf, HDC dc, i32 ctrl) {
-    BITMAPINFOHEADER* ih = static_cast<BITMAPINFOHEADER*>(buf);
+i32 CDib::InitBmp(u8* buf, HDC dc, u32 ctrl) {
+    BITMAPINFOHEADER* ih = static_cast<BITMAPINFOHEADER*>(static_cast<void*>(buf));
     i32 width = ih->biWidth;
     i32 height = ih->biHeight;
     ColorDepth bitcount = static_cast<ColorDepth>(ih->biBitCount);
@@ -546,12 +460,12 @@ i32 CRezImage::DecodeBmpData(void* buf, HDC dc, i32 ctrl) {
     if (bitcount == BPP_PALETTED_8) {
         src = data.m_bytes + ih->biSize + sizeof(RGBQUAD) * PALETTE_ENTRY_COUNT;
     }
-    i32 r = DecodeBlit(src, dc, width, height, bitcount, ctrl);
+    i32 r = Init(src, dc, width, height, bitcount, ctrl);
     return r;
 }
 
 RVA(0x00175e40, 0x1b3)
-i32 CRezImage::LoadBmp(char* name, HDC dc, i32 ctrl) {
+i32 CDib::InitBmp(const char* name, HDC dc, u32 ctrl) {
     CFile file;
     BITMAPFILEHEADER fh;
     BITMAPINFOHEADER ih;
@@ -569,13 +483,13 @@ i32 CRezImage::LoadBmp(char* name, HDC dc, i32 ctrl) {
     i32 height = ih.biHeight;
     i32 width = ih.biWidth;
     ColorDepth bitcount = static_cast<ColorDepth>(ih.biBitCount & 0xffff);
-    if (!DecodeBmpHeader(dc, width, height, bitcount, ctrl)) {
+    if (!Init(dc, width, height, bitcount, ctrl)) {
         return 0;
     }
 
     file.Seek(fh.bfOffBits, 0);
-    u32 size = (IDX(bitcount) / 8) * m_stride * height;
-    if (file.Read(m_pixels, size) != size) {
+    u32 size = (IDX(bitcount) / 8) * m_nPitch * height;
+    if (file.Read(m_pBytes, size) != size) {
         return 0;
     }
     return 1;
@@ -583,15 +497,15 @@ i32 CRezImage::LoadBmp(char* name, HDC dc, i32 ctrl) {
 
 // @early-stop
 RVA(0x00176000, 0x18f)
-i32 CRezImage::DecodePcxData(void* buf, HDC dc, i32 ctrl) {
-    u8* pStart = static_cast<u8*>(buf);
+i32 CDib::InitPcx(u8* buf, HDC dc, u32 ctrl) {
+    u8* pStart = buf;
     PcxHeader* hdr = static_cast<PcxHeader*>(static_cast<void*>(pStart));
     i32 width = hdr->m_xMax - hdr->m_xMin + 1;
     i32 height = hdr->m_yMax - hdr->m_yMin + 1;
     if (hdr->m_bitsPerPixel != PCX_BITS_PER_PLANE_8) {
         return 0;
     }
-    if (!DecodeBmpHeader(
+    if (!Init(
             dc,
             width,
             height,
@@ -616,7 +530,7 @@ i32 CRezImage::DecodePcxData(void* buf, HDC dc, i32 ctrl) {
     scan = new u8[(width * IDX(hdr->m_bitsPerPixel) * IDX(hdr->m_planes)) / 8];
 
     for (y = 0; y < height; y++) {
-        dst = m_pixels + m_rowOffsets[y];
+        dst = m_pBytes + m_pLines[y];
         remaining = width * IDX(hdr->m_planes);
 
         while (remaining > 0) {
@@ -652,7 +566,7 @@ i32 CRezImage::DecodePcxData(void* buf, HDC dc, i32 ctrl) {
 }
 
 RVA(0x00176190, 0x126)
-i32 CRezImage::LoadPcx(char* name, HDC dc, i32 ctrl) {
+i32 CDib::InitPcx(const char* name, HDC dc, u32 ctrl) {
     CFile file;
 
     if (!file.Open(name, 0, NULL)) {
@@ -667,15 +581,13 @@ i32 CRezImage::LoadPcx(char* name, HDC dc, i32 ctrl) {
         return 0;
     }
     file.Read(buf, len);
-    RecordBytes<PcxHeader> data;
-    data.m_bytes = buf;
-    i32 result = DecodePcxData(data.m_rec, dc, ctrl);
+    i32 result = InitPcx(buf, dc, ctrl);
     delete[] buf;
     return result;
 }
 
 RVA(0x001762c0, 0x42)
-i32 CRezImage::DecodeRidData(void* buf, HDC dc, i32 ctrl) {
+i32 CDib::InitRid(u8* buf, HDC dc, u32 ctrl) {
     RecordBytes<PidHeader> p;
     p.m_bytes = static_cast<u8*>(buf);
     p.m_bytes += 2 * sizeof(u32);
@@ -684,15 +596,15 @@ i32 CRezImage::DecodeRidData(void* buf, HDC dc, i32 ctrl) {
     i32 height = *p.m_dwords;
     p.m_bytes += sizeof(u32);
     p.m_bytes += 4 * sizeof(u32);
-    i32 ok = DecodeBlit(p.m_bytes, dc, width, height, BPP_PALETTED_8, ctrl);
+    i32 ok = Init(p.m_bytes, dc, width, height, BPP_PALETTED_8, ctrl);
     if (!(ctrl & 1)) {
-        m_transparent = false;
+        m_bTransparent = false;
     }
     return ok;
 }
 
 RVA(0x00176310, 0x126)
-i32 CRezImage::LoadRid(char* name, HDC dc, i32 ctrl) {
+i32 CDib::InitRid(const char* name, HDC dc, u32 ctrl) {
     CFile file;
 
     if (!file.Open(name, 0, NULL)) {
@@ -707,16 +619,14 @@ i32 CRezImage::LoadRid(char* name, HDC dc, i32 ctrl) {
         return 0;
     }
     file.Read(buf, len);
-    RecordBytes<PidHeader> data;
-    data.m_bytes = buf;
-    i32 result = DecodeRidData(data.m_rec, dc, ctrl);
+    i32 result = InitRid(buf, dc, ctrl);
     delete[] buf;
     return result;
 }
 
 RVA(0x00176440, 0x25d)
-i32 CRezImage::DecodePidData(void* buf, HDC dc, i32 ctrl) {
-    PidHeader* header = static_cast<PidHeader*>(buf);
+i32 CDib::InitPid(u8* buf, HDC dc, u32 ctrl) {
+    PidHeader* header = static_cast<PidHeader*>(static_cast<void*>(buf));
     u32* dword = &header->formatTag;
     u32 formatTag = *dword++;
     PidFlags flags = static_cast<PidFlags>(*dword++);
@@ -727,11 +637,11 @@ i32 CRezImage::DecodePidData(void* buf, HDC dc, i32 ctrl) {
     u32 fill = *dword++;
     u32 reserved = *dword++;
 
-    if (!DecodeBmpHeader(dc, width, height, BPP_PALETTED_8, ctrl)) {
+    if (!Init(dc, width, height, BPP_PALETTED_8, ctrl)) {
         return 0;
     }
     if (!(ctrl & 1)) {
-        m_transparent = false;
+        m_bTransparent = false;
     }
 
     u8* packed = static_cast<u8*>(static_cast<void*>(dword));
@@ -744,13 +654,13 @@ i32 CRezImage::DecodePidData(void* buf, HDC dc, i32 ctrl) {
     }
 
     if (HAS(flags, PID_GRAMMAR_SKIPRUN)) {
-        m_transparent = true;
+        m_bTransparent = true;
         i32 x = 0;
         i32 y = 0;
         u32 offset = 0;
-        u8* dst = m_pixels + m_rowOffsets[y];
+        u8* dst = m_pBytes + m_pLines[y];
 
-        while (y < m_height) {
+        while (y < m_nHeight) {
             if (packed[offset] & 0x80) {
                 memset(dst + x, transparentIndex, packed[offset] - 0x80);
                 x += packed[offset] - 0x80;
@@ -761,11 +671,11 @@ i32 CRezImage::DecodePidData(void* buf, HDC dc, i32 ctrl) {
                 offset += packed[offset] + 1;
             }
 
-            if (x >= m_width) {
+            if (x >= m_nWidth) {
                 y++;
                 x = 0;
-                if (y < m_height) {
-                    dst = m_pixels + m_rowOffsets[y];
+                if (y < m_nHeight) {
+                    dst = m_pBytes + m_pLines[y];
                 }
             }
         }
@@ -779,7 +689,7 @@ i32 CRezImage::DecodePidData(void* buf, HDC dc, i32 ctrl) {
         u8* dst;
 
         for (y = 0; y < height; y++) {
-            dst = m_pixels + m_rowOffsets[y];
+            dst = m_pBytes + m_pLines[y];
             n = width;
 
             while (n > 0) {
@@ -805,7 +715,7 @@ i32 CRezImage::DecodePidData(void* buf, HDC dc, i32 ctrl) {
 }
 
 RVA(0x001766a0, 0x126)
-i32 CRezImage::LoadPid(char* name, HDC dc, i32 ctrl) {
+i32 CDib::InitPid(const char* name, HDC dc, u32 ctrl) {
     CFile file;
 
     if (!file.Open(name, 0, NULL)) {
@@ -820,16 +730,14 @@ i32 CRezImage::LoadPid(char* name, HDC dc, i32 ctrl) {
         return 0;
     }
     file.Read(buf, len);
-    RecordBytes<PidHeader> data;
-    data.m_bytes = buf;
-    i32 result = DecodePidData(data.m_rec, dc, ctrl);
+    i32 result = InitPid(buf, dc, ctrl);
     delete[] buf;
     return result;
 }
 
 RVA(0x001767d0, 0x64)
-i32 CRezImage::LoadDefault(char* name, HDC dc, i32 ctrl) {
-    HINSTANCE hModule = g_hResModule;
+i32 CDib::InitRes(const char* name, HDC dc, u32 ctrl) {
+    HINSTANCE hModule = CDibMgr::GetGlobalInstanceHandle();
     if (!hModule) {
         return 0;
     }
@@ -841,17 +749,17 @@ i32 CRezImage::LoadDefault(char* name, HDC dc, i32 ctrl) {
     if (!hGlobal) {
         return 0;
     }
-    BITMAPINFOHEADER* data = static_cast<BITMAPINFOHEADER*>(LockResource(hGlobal));
+    u8* data = static_cast<u8*>(LockResource(hGlobal));
     if (!data) {
         return 0;
     }
-    return DecodeBmpData(data, dc, ctrl);
+    return InitBmp(data, dc, ctrl);
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00176840, 0x11f)
-void CRezImage::FlipVertical() {
+void CDib::Invert() {
     if (GetHeight() <= 1) {
         return;
     }
@@ -873,18 +781,18 @@ void CRezImage::FlipVertical() {
     for (i32 i = 0; i < height / 2; i++) {
         k = i * width;
         for (j = 0; j < width; j++) {
-            scratch[j] = m_pixels[k++];
+            scratch[j] = m_pBytes[k++];
         }
 
         source = (height - 1 - i) * width;
         destination = i * width;
         for (j = 0; j < width; j++) {
-            m_pixels[destination++] = m_pixels[source++];
+            m_pBytes[destination++] = m_pBytes[source++];
         }
 
         destination = (height - 1 - i) * width;
         for (j = 0; j < width; j++) {
-            m_pixels[destination++] = scratch[j];
+            m_pBytes[destination++] = scratch[j];
         }
     }
 
@@ -894,11 +802,11 @@ void CRezImage::FlipVertical() {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00176960, 0x168)
-i32 CRezImage::PasteFrom(CRezImage* src, i32 x, i32 y) {
-    i32 h = src->m_height;
-    i32 w = src->m_width;
-    i32 dstW = m_width;
-    i32 dstH = m_height;
+i32 CDib::Blt(CDib* src, i32 x, i32 y) {
+    i32 h = src->m_nHeight;
+    i32 w = src->m_nWidth;
+    i32 dstW = m_nWidth;
+    i32 dstH = m_nHeight;
     if (x < 0) {
         w += x;
         x = 0;
@@ -914,10 +822,10 @@ i32 CRezImage::PasteFrom(CRezImage* src, i32 x, i32 y) {
         h = dstH - y;
     }
 
-    if (src->m_transparent) {
+    if (src->m_bTransparent) {
         for (i32 row = 0; row < h; row++) {
-            u8* d = m_pixels + m_rowOffsets[y + row] + x;
-            u8* s = src->m_pixels + src->m_rowOffsets[row];
+            u8* d = m_pBytes + m_pLines[y + row] + x;
+            u8* s = src->m_pBytes + src->m_pLines[row];
             for (i32 i = w; i > 0; i--) {
                 u8 px = *s;
                 if (px != 0) {
@@ -929,8 +837,8 @@ i32 CRezImage::PasteFrom(CRezImage* src, i32 x, i32 y) {
         }
     } else {
         for (i32 row = 0; row < h; row++) {
-            u8* s = src->m_pixels + src->m_rowOffsets[row];
-            u8* d = m_pixels + m_rowOffsets[y + row] + x;
+            u8* s = src->m_pBytes + src->m_pLines[row];
+            u8* d = m_pBytes + m_pLines[y + row] + x;
             memcpy(d, s, w);
         }
     }
@@ -938,32 +846,26 @@ i32 CRezImage::PasteFrom(CRezImage* src, i32 x, i32 y) {
 }
 
 RVA(0x00176ad0, 0x17)
-void CRezImage::SetPalette(CImagePaletteNode* paletteNode, i32 scalar) {
+void CDib::SetPalette(CDibPal* palette, b32 owner) {
 
-    m_paletteNode = paletteNode;
-    m_paletteScalar = scalar;
+    m_pPal = palette;
+    m_bPalOwner = owner;
 }
 
-// @identity-TODO: owner, four-argument ABI, and failure result are proven; the operation is not.
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00176af0, 0x5)
-i32 CRezImage::SaveByType(
-    const char* filename,
-    FileImageFormat type,
-    CImagePaletteNode* paletteObj,
-    i32 flags
-) {
+i32 CDib::Scale(i32 newWidth, i32 newHeight, i32 newDepth, u32 flags) {
     return 0;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00176b00, 0x2c)
-i32 CRezImage::Save(const char* filename, CImagePaletteNode* paletteObj) {
-    switch (m_bitCount) {
+i32 CDib::Save(const char* filename, CDibPal* paletteObj) {
+    switch (m_nDepth) {
         case BPP_PALETTED_8:
-            return SaveBmp(filename, paletteObj);
+            return Save8(filename, paletteObj);
         case BPP_RGB_16:
             return 0;
         case BPP_RGB_24:
@@ -973,12 +875,12 @@ i32 CRezImage::Save(const char* filename, CImagePaletteNode* paletteObj) {
 }
 
 RVA(0x00176b30, 0x1e5)
-i32 CRezImage::SaveBmp(const char* filename, CImagePaletteNode* paletteObj) {
+i32 CDib::Save8(const char* filename, CDibPal* paletteObj) {
     ASSERT(IsValid());
     ASSERT(filename);
 
     if (paletteObj == NULL) {
-        paletteObj = m_paletteNode;
+        paletteObj = m_pPal;
     }
     if (paletteObj == NULL) {
         return 0;
@@ -995,7 +897,7 @@ i32 CRezImage::SaveBmp(const char* filename, CImagePaletteNode* paletteObj) {
     info.bmiHeader.biCompression = BI_RGB;
     info.bmiHeader.biSizeImage = 0;
 
-    PALETTEENTRY* pal = paletteObj->Entries();
+    PALETTEENTRY* pal = paletteObj->GetPes();
     if (pal == NULL) {
         return 0;
     }
@@ -1031,19 +933,19 @@ i32 CRezImage::SaveBmp(const char* filename, CImagePaletteNode* paletteObj) {
 }
 
 RVA(0x00176d20, 0x71)
-void CRezImage::FillRect(CRezFillRect* r, i32 color) {
+void CDib::FillRect(RECT* r, u32 color) {
     i32 width = r->right - r->left;
     for (i32 y = r->top; y <= r->bottom; ++y) {
-        i32 off = m_rowOffsets[y] + r->left;
-        memset(m_pixels + off, color, width);
+        i32 off = m_pLines[y] + r->left;
+        memset(m_pBytes + off, color, width);
     }
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00176da0, 0x4b)
-void CRezImage::FillRectAt(i32 dx, i32 dy, CRezFillRect* src, i32 color) {
-    CRezFillRect r;
+void CDib::FillRect(i32 dx, i32 dy, RECT* src, u32 color) {
+    RECT r;
     r.left = dx;
     r.top = dy;
     r.right = src->right + dx - src->left;
@@ -1052,24 +954,24 @@ void CRezImage::FillRectAt(i32 dx, i32 dy, CRezFillRect* src, i32 color) {
 }
 
 RVA(0x00176df0, 0x71)
-i32 CImagePaletteNode::CreateFromEntries(PALETTEENTRY* entries, i32 flags) {
-    m_flags = flags;
-    m_logicalPalette.palNumEntries = 0x100;
-    m_logicalPalette.palVersion = LOGICAL_PALETTE_VERSION;
+i32 CDibPal::Init(PALETTEENTRY* entries, u32 flags) {
+    m_dwFlags = flags;
+    m_logPal.numEntries = 0x100;
+    m_logPal.version = LOGICAL_PALETTE_VERSION;
     for (i32 i = 0; i < 0x100; i++) {
-        m_logicalPalette.palPalEntry[i] = entries[i];
-        m_logicalPalette.palPalEntry[i].peFlags = 0;
+        m_logPal.entries[i] = entries[i];
+        m_logPal.entries[i].peFlags = 0;
     }
-    if (DisplayUsesPalette() && !(flags & 1)) {
-        ReserveSystemColors();
-        m_reservedSystemColors = true;
+    if (CDibPal::IsPaletteDevice() && !(flags & IDX(DMPF_NOIDENTITY))) {
+        MakeIdentity();
+        m_bIdentity = true;
     }
-    m_palette = CreatePalette(&m_logicalPalette);
-    return m_palette != NULL;
+    m_hPal = CreatePalette(static_cast<LOGPALETTE*>(static_cast<void*>(&m_logPal)));
+    return m_hPal != NULL;
 }
 
 RVA(0x00176e70, 0x4e)
-i32 CImagePaletteNode::CreateFromRgb(u8* rgb, i32 flags) {
+i32 CDibPal::Init(u8* rgb, u32 flags) {
     PALETTEENTRY pal[PALETTE_ENTRY_COUNT];
     u8* s = rgb;
 
@@ -1078,71 +980,69 @@ i32 CImagePaletteNode::CreateFromRgb(u8* rgb, i32 flags) {
         pal[i].peGreen = *s++;
         pal[i].peBlue = *s++;
     }
-    return CreateFromEntries(pal, flags);
+    return Init(pal, flags);
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00176ec0, 0x64)
-i32 CImagePaletteNode::CreateFromBgrx(u8* bgrx, i32 flags) {
+i32 CDibPal::Init(RGBQUAD* quads, u32 flags) {
     PALETTEENTRY pal[PALETTE_ENTRY_COUNT];
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
-        u8* s = bgrx + i * 4;
-        pal[i].peRed = s[2];
-        pal[i].peGreen = s[1];
-        pal[i].peBlue = s[0];
+        pal[i].peRed = quads[i].rgbRed;
+        pal[i].peGreen = quads[i].rgbGreen;
+        pal[i].peBlue = quads[i].rgbBlue;
     }
-    return CreateFromEntries(pal, flags);
+    return Init(pal, flags);
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00176f30, 0x51)
-i32 CImagePaletteNode::CreateFromBgr(u8* bgr, i32 flags) {
+i32 CDibPal::Init(RGBTRIPLE* triples, u32 flags) {
     PALETTEENTRY pal[PALETTE_ENTRY_COUNT];
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
-        u8* s = bgr + i * 3;
-        pal[i].peRed = s[2];
-        pal[i].peGreen = s[1];
-        pal[i].peBlue = s[0];
+        pal[i].peRed = triples[i].rgbtRed;
+        pal[i].peGreen = triples[i].rgbtGreen;
+        pal[i].peBlue = triples[i].rgbtBlue;
     }
-    return CreateFromEntries(pal, flags);
+    return Init(pal, flags);
 }
 
 RVA(0x00176f90, 0xa4)
-i32 CImagePaletteNode::LoadFromFile(char* path, i32 flags) {
-    char* ext = strrchr(path, '.');
+i32 CDibPal::Init(const char* path, u32 flags) {
+    const char* ext = strrchr(path, '.');
 
     if (ext && _strcmpi(ext, ".BMP") == 0) {
-        return LoadBmpFile(path, flags);
+        return InitBmp(path, flags);
     } else if (ext && _strcmpi(ext, ".PCX") == 0) {
-        return LoadPcxFile(path, flags);
+        return InitPcx(path, flags);
     } else if (ext && _strcmpi(ext, ".PAL") == 0) {
-        return LoadPalFile(path, flags);
+        return InitPal(path, flags);
     }
 
-    return LoadFromResource(path, flags);
+    return InitRes(path, flags);
 }
 
 RVA(0x00177040, 0x23)
-i32 CImagePaletteNode::LoadFromData(u8* data, u32 dataSize, RezDecodeKind format, i32 flags) {
-    if (format == DECODE_PCX) {
-        return CreateFromTrailingRgb(data, dataSize, flags);
+i32 CDibPal::Init(u8* data, u32 dataSize, RezDecodeKind type, u32 flags) {
+    if (type == DECODE_PCX) {
+        return InitPcx(data, dataSize, flags);
     }
     return 0;
 }
 
 RVA(0x00177070, 0x22)
-void CImagePaletteNode::Destroy() {
-    if (m_palette) {
-        DeleteObject(m_palette);
-        m_palette = NULL;
+void CDibPal::Term() {
+    if (m_hPal) {
+        DeleteObject(m_hPal);
+        m_hPal = NULL;
     }
-    m_flags = 0;
+    m_dwFlags = 0;
 }
 
 RVA(0x001770a0, 0x3a)
-i32 DisplayUsesPalette() {
+i32 CDibPal::IsPaletteDevice() {
     HDC ic = CreateICA("DISPLAY", NULL, NULL, NULL);
     if (ic) {
         i32 caps = GetDeviceCaps(ic, RASTERCAPS) & RC_PALETTE;
@@ -1153,27 +1053,27 @@ i32 DisplayUsesPalette() {
 }
 
 RVA(0x001770e0, 0x7c)
-void CImagePaletteNode::ReserveSystemColors() {
-    ResetSystemPalette();
+void CDibPal::MakeIdentity() {
+    CDibPal::ClearSystemPalette();
     HDC dc = CreateDCA("DISPLAY", NULL, NULL, NULL);
     i32 sizePal = GetDeviceCaps(dc, SIZEPALETTE);
     i32 numReserved = GetDeviceCaps(dc, NUMRESERVED);
     i32 half = numReserved / 2;
-    GetSystemPaletteEntries(dc, 0, half, m_logicalPalette.palPalEntry);
+    GetSystemPaletteEntries(dc, 0, half, m_logPal.entries);
     GetSystemPaletteEntries(
         dc,
         sizePal - half,
         half,
-        &m_logicalPalette.palPalEntry[m_logicalPalette.palNumEntries - half]
+        &m_logPal.entries[m_logPal.numEntries - half]
     );
     for (i32 i = half; i < sizePal - half; i++) {
-        m_logicalPalette.palPalEntry[i].peFlags = 1;
+        m_logPal.entries[i].peFlags = 1;
     }
     DeleteDC(dc);
 }
 
 RVA(0x00177160, 0x81)
-void ResetSystemPalette() {
+void CDibPal::ClearSystemPalette() {
 
     LogPal256 lp;
     HDC hdc = GetDC(NULL);
@@ -1195,7 +1095,7 @@ void ResetSystemPalette() {
 }
 
 RVA(0x001771f0, 0xe2)
-i32 CImagePaletteNode::LoadPalFile(char* path, i32 flags) {
+i32 CDibPal::InitPal(const char* path, u32 flags) {
     CFile file;
     u8 rgb[PALETTE_RGB_BYTE_COUNT];
 
@@ -1206,11 +1106,11 @@ i32 CImagePaletteNode::LoadPalFile(char* path, i32 flags) {
         return 0;
     }
     file.Read(rgb, PALETTE_RGB_BYTE_COUNT);
-    return CreateFromRgb(rgb, flags);
+    return Init(rgb, flags);
 }
 
 RVA(0x001772e0, 0x117)
-i32 CImagePaletteNode::LoadPcxFile(char* path, i32 flags) {
+i32 CDibPal::InitPcx(const char* path, u32 flags) {
     CFile file;
     u8 rgb[PALETTE_RGB_BYTE_COUNT];
 
@@ -1226,16 +1126,16 @@ i32 CImagePaletteNode::LoadPcxFile(char* path, i32 flags) {
 
     u8* src = rgb;
     COPY_RGB_PALETTE(rgbq, src, i, PALETTE_ENTRY_COUNT)
-    return CreateFromEntries(rgbq, flags);
+    return Init(rgbq, flags);
 }
 
 RVA(0x00177400, 0x76)
-i32 CImagePaletteNode::CreateFromTrailingRgb(u8* data, u32 dataSize, i32 flags) {
+i32 CDibPal::InitPcx(u8* data, u32 dataSize, u32 flags) {
     PALETTEENTRY pal[PALETTE_ENTRY_COUNT];
     if (dataSize < PALETTE_RGB_BYTE_COUNT) {
         return 0;
     }
     u8* s = data + dataSize - PALETTE_RGB_BYTE_COUNT;
     COPY_RGB_PALETTE(pal, s, i, PALETTE_ENTRY_COUNT)
-    return CreateFromEntries(pal, flags);
+    return Init(pal, flags);
 }

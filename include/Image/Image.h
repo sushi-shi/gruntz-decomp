@@ -12,111 +12,305 @@
 
 class CDDrawDeviceManager;
 
-struct CImagePaletteNode;
+struct CDibPal;
 
-struct CRezFillRect {
-    i32 left;
-    i32 top;
-    i32 right;
-    i32 bottom;
+struct DIB_BMI256 {
+    BITMAPINFOHEADER hdr;
+    RGBQUAD colors[256];
 };
 
-class CRezImage {
+class CDib {
 public:
-    CRezImage() {
-        m_dibSection = NULL;
-        m_pixels = NULL;
-        m_rowOffsets = NULL;
-        m_reserved434 = 0;
-        m_width = 0;
-        m_height = 0;
-        m_stride = 0;
-        m_rowPad = 0;
-        m_listPosition = NULL;
-        m_paletteScalar = 0;
-        m_paletteNode = NULL;
+    CDib();
+    ~CDib() {
+        Term();
     }
 
-    i32 LoadFromRez(char* name, HDC dc, i32 ctrl);
+    i32 Init(HDC dc, i32 width, i32 height, ColorDepth depth = BPP_PALETTED_8, u32 flags = 0);
+    i32 Init(
+        u8* bytes,
+        HDC dc,
+        i32 width,
+        i32 height,
+        ColorDepth depth = BPP_PALETTED_8,
+        u32 flags = 0
+    );
+    i32 Init(u8* bytes, RezDecodeKind type, HDC dc, u32 flags = 0);
+    i32 Init(const char* file, HDC dc, u32 flags = 0);
+    i32 Init(HDC dc, CDib* dib, CDibPal* palette);
+    void Term();
 
-    i32 LoadBmp(char* name, HDC dc, i32 ctrl);
-    i32 LoadPcx(char* name, HDC dc, i32 ctrl);
-    i32 LoadRid(char* name, HDC dc, i32 ctrl);
-    i32 LoadPid(char* name, HDC dc, i32 ctrl);
-    i32 LoadDefault(char* name, HDC dc, i32 ctrl);
+    b32 IsValid() {
+        return m_hBmp != NULL && m_pBytes != NULL && m_pLines != NULL;
+    }
 
-    i32 DecodeBmpHeader(HDC dc, i32 width, i32 height, ColorDepth bitcount, i32 ctrl);
-    i32 DecodePcxData(void* buf, HDC dc, i32 ctrl);
-    i32 DecodeRidData(void* buf, HDC dc, i32 ctrl);
-    i32 DecodePidData(void* buf, HDC dc, i32 ctrl);
-    i32 DecodeBmpData(void* buf, HDC dc, i32 ctrl);
+    i32 InitBmp(u8* bytes, HDC dc, u32 flags = 0);
+    i32 InitPcx(u8* bytes, HDC dc, u32 flags = 0);
+    i32 InitRid(u8* bytes, HDC dc, u32 flags = 0);
+    i32 InitPid(u8* bytes, HDC dc, u32 flags = 0);
+    i32 InitBmp(const char* file, HDC dc, u32 flags = 0);
+    i32 InitPcx(const char* file, HDC dc, u32 flags = 0);
+    i32 InitRid(const char* file, HDC dc, u32 flags = 0);
+    i32 InitPid(const char* file, HDC dc, u32 flags = 0);
+    i32 InitRes(const char* file, HDC dc, u32 flags = 0);
 
-    i32 DecodeBlit(u8* src, HDC dc, i32 width, i32 height, ColorDepth bitcount, i32 ctrl);
-
+    u8* GetBytes() {
+        return m_pBytes;
+    }
+    u16* GetBuf16() {
+        // The surviving API's byte-evidenced DIB storage has a 16-bit view.
+        return reinterpret_cast<u16*>(m_pBytes);
+    }
+    HBITMAP GetBitmap() {
+        return m_hBmp;
+    }
     i32 GetWidth() {
-        return m_width;
+        return m_nWidth;
     }
     i32 GetHeight() {
-        return m_height;
+        return m_nHeight;
+    }
+    ColorDepth GetDepth() {
+        return m_nDepth;
+    }
+    i32 GetPitch() {
+        return m_nPitch;
+    }
+    i32 GetStride() {
+        return m_nStride;
+    }
+    u8 GetPixel(i32 x, i32 y) {
+        return m_pBytes[m_pLines[y] + x];
     }
     u32 GetBufferSize() {
-        return m_stride * m_height;
+        return m_nPitch * m_nHeight;
     }
-    u32 GetIndex(i32 row) {
-        return m_rowOffsets[row];
+    u32 GetFlags() {
+        return m_dwFlags;
     }
-    u8* GetBytes() {
-        return m_pixels;
+    u32 GetIndex(i32 y) {
+        return m_pLines[y];
     }
-    b32 IsValid() {
-        return m_dibSection != NULL && m_pixels != NULL && m_rowOffsets != NULL;
+    u32 GetIndex(i32 x, i32 y) {
+        return m_pLines[y] + x;
     }
-    b32 IsStrideless() {
-        return m_rowPad == 0;
+    u8* GetAddress(i32 y) {
+        return &m_pBytes[m_pLines[y]];
+    }
+    u8* GetAddress(i32 x, i32 y) {
+        return &m_pBytes[m_pLines[y]] + x;
+    }
+    POSITION GetPos() {
+        return m_pos;
+    }
+    CDibPal* GetPalette() {
+        return m_pPal;
+    }
+    void SetPixel(i32 x, i32 y, u8 pixel) {
+        m_pBytes[m_pLines[y] + x] = pixel;
+    }
+    void SetPos(POSITION pos) {
+        m_pos = pos;
+    }
+    void SetTransparent(b32 transparent) {
+        m_bTransparent = transparent;
+    }
+    void SetPalette(CDibPal* palette, b32 owner = false);
+
+    i32 Resize(HDC dc, i32 width, i32 height, ColorDepth depth = BPP_PALETTED_8, u32 flags = 0);
+    i32 Scale(i32 newWidth, i32 newHeight, i32 newDepth, u32 flags = 0);
+
+    void Invert();
+    void Mirror();
+    void Mirvert() {
+        Invert();
+        Mirror();
     }
 
-    i32 DispatchDecode(u8* buf, RezDecodeKind kind, HDC dc, i32 ctrl);
-    i32 Convert8To16(HDC dc, CRezImage* src, CImagePaletteNode* pal);
-    i32 EnsureSize(HDC dc, i32 w, i32 h, ColorDepth bitCount, i32 flag);
-    void Fill(i32 value);
-    void Free();
-    void SetPalette(CImagePaletteNode* paletteNode, i32 scalar);
-    i32 SaveByType(
-        const char* filename,
-        FileImageFormat type,
-        CImagePaletteNode* paletteObj,
-        i32 flags
+    i32 Blt(HDC dc) {
+        return Blt(dc, 0, 0);
+    }
+    i32 Blt(HDC dc, i32 x, i32 y);
+    i32 Blt(HDC dc, i32 x, i32 y, i32 width, i32 height);
+    i32 Blt(CDib* dib, i32 x, i32 y);
+    i32 StretchBlt(
+        HDC dc,
+        i32 dstX,
+        i32 dstY,
+        i32 dstWidth,
+        i32 dstHeight,
+        i32 srcX,
+        i32 srcY,
+        i32 srcWidth,
+        i32 srcHeight,
+        u32 rop = SRCCOPY
     );
-    i32 Save(const char* filename, CImagePaletteNode* paletteObj);
-    i32 SaveBmp(const char* filename, CImagePaletteNode* paletteObj);
-    void FillRect(CRezFillRect* r, i32 color);
-    void FillRectAt(i32 dx, i32 dy, CRezFillRect* src, i32 color);
-    void FlipVertical();
-    i32 PasteFrom(CRezImage* src, i32 x, i32 y);
 
-    union {
-        BITMAPINFO m_bmi;
-        struct {
-            BITMAPINFOHEADER m_bih;
-            u16 m_pal[256];
-        };
-    };
-    char m_pad228[0x428 - 0x228];
-    HBITMAP m_dibSection;
+    void Fill(u8 pixel);
+    void Clear() {
+        Fill(0);
+    }
+    void FillRect(RECT* rect, u32 color);
+    void FillRect(i32 x, i32 y, RECT* sourceRect, u32 color);
 
-    u8* m_pixels;
-    i32* m_rowOffsets;
-    i32 m_reserved434;
-    i32 m_width;
-    i32 m_height;
-    ColorDepth m_bitCount;
-    i32 m_stride;
-    i32 m_rowPad;
-    POSITION m_listPosition;
-    b32 m_transparent;
-    i32 m_paletteScalar;
-    CImagePaletteNode* m_paletteNode;
+    u8* Lock() {
+        return GetBytes();
+    }
+    void Unlock() {}
+
+    b32 IsStrideless() {
+        return m_nStride == 0;
+    }
+    b32 IsTransparent() {
+        return m_bTransparent;
+    }
+    b32 IsPaletteOwner() {
+        return m_bPalOwner;
+    }
+
+    i32 Save(const char* filename, CDibPal* palette = NULL);
+
+private:
+    i32 Save8(const char* filename, CDibPal* palette = NULL);
+
+    DIB_BMI256 m_bmi;
+    HBITMAP m_hBmp;
+
+    u8* m_pBytes;
+    u32* m_pLines;
+    u32 m_dwFlags;
+    i32 m_nWidth;
+    i32 m_nHeight;
+    ColorDepth m_nDepth;
+    i32 m_nPitch;
+    i32 m_nStride;
+    POSITION m_pos;
+    b32 m_bTransparent;
+    b32 m_bPalOwner;
+    CDibPal* m_pPal;
 };
+
+inline CDib::CDib() {
+    m_hBmp = NULL;
+    m_pBytes = NULL;
+    m_pLines = NULL;
+    m_dwFlags = 0;
+    m_nWidth = 0;
+    m_nHeight = 0;
+    m_nPitch = 0;
+    m_nStride = 0;
+    m_pos = NULL;
+    m_bPalOwner = false;
+    m_pPal = NULL;
+}
+
+inline i32 CDib::Blt(HDC dc, i32 x, i32 y) {
+    ASSERT(m_nDepth == BPP_PALETTED_8 || m_nDepth == BPP_RGB_16 || m_nDepth == BPP_RGB_24);
+    // DIB_BMI256 intentionally shares BITMAPINFO's API prefix.
+    BITMAPINFO* bmi = reinterpret_cast<BITMAPINFO*>(&m_bmi); // API-forced
+    if (m_nDepth == BPP_PALETTED_8) {
+        return StretchDIBits(
+            dc,
+            x,
+            y,
+            m_nWidth,
+            m_nHeight,
+            0,
+            0,
+            m_nWidth,
+            m_nHeight,
+            m_pBytes,
+            bmi,
+            DIB_PAL_COLORS,
+            SRCCOPY
+        );
+    }
+    return StretchDIBits(
+        dc,
+        x,
+        y,
+        m_nWidth,
+        m_nHeight,
+        0,
+        0,
+        m_nWidth,
+        m_nHeight,
+        m_pBytes,
+        bmi,
+        DIB_RGB_COLORS,
+        SRCCOPY
+    );
+}
+
+inline i32 CDib::Blt(HDC dc, i32 x, i32 y, i32 width, i32 height) {
+    ASSERT(m_nDepth == BPP_PALETTED_8 || m_nDepth == BPP_RGB_16 || m_nDepth == BPP_RGB_24);
+    // DIB_BMI256 intentionally shares BITMAPINFO's API prefix.
+    BITMAPINFO* bmi = reinterpret_cast<BITMAPINFO*>(&m_bmi); // API-forced
+    if (m_nDepth == BPP_PALETTED_8) {
+        return StretchDIBits(
+            dc,
+            x,
+            y,
+            width,
+            height,
+            0,
+            0,
+            m_nWidth,
+            m_nHeight,
+            m_pBytes,
+            bmi,
+            DIB_PAL_COLORS,
+            SRCCOPY
+        );
+    }
+    return StretchDIBits(
+        dc,
+        x,
+        y,
+        width,
+        height,
+        0,
+        0,
+        m_nWidth,
+        m_nHeight,
+        m_pBytes,
+        bmi,
+        DIB_RGB_COLORS,
+        SRCCOPY
+    );
+}
+
+inline i32 CDib::StretchBlt(
+    HDC dc,
+    i32 dstX,
+    i32 dstY,
+    i32 dstWidth,
+    i32 dstHeight,
+    i32 srcX,
+    i32 srcY,
+    i32 srcWidth,
+    i32 srcHeight,
+    u32 rop
+) {
+    ASSERT(m_nDepth == BPP_PALETTED_8 || m_nDepth == BPP_RGB_16 || m_nDepth == BPP_RGB_24);
+    // DIB_BMI256 intentionally shares BITMAPINFO's API prefix.
+    BITMAPINFO* bmi = reinterpret_cast<BITMAPINFO*>(&m_bmi); // API-forced
+    return StretchDIBits(
+        dc,
+        dstX,
+        dstY,
+        dstWidth,
+        dstHeight,
+        srcX,
+        srcY,
+        srcWidth,
+        srcHeight,
+        m_pBytes,
+        bmi,
+        m_nDepth == BPP_PALETTED_8 ? DIB_PAL_COLORS : DIB_RGB_COLORS,
+        rop
+    );
+}
 
 class CFileImageSurface : public CDDSurface {
 public:

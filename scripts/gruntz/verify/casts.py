@@ -9,8 +9,9 @@ Three ported behaviors, one module (they are one campaign):
     fails when OPEN exceeds the committed unexplained-casts floor (the board's
     baseline carries it).
   * SELF-RECURSION (merged from self_recursion.py): a one-line accessor whose
-    only statement calls ITSELF is always the seam-sweep footgun (the sweep
-    rewrote the seam's own body). FATAL, no allowlist.
+    only statement calls the same-arity overload of ITSELF is always the
+    seam-sweep footgun (the sweep rewrote the seam's own body). Calls to a
+    different-arity overload are ordinary forwarding. FATAL, no allowlist.
   * NESTED static_casts (merged from nested_static_casts.py, full tier): a
     libclang AST scan for a static_cast whose operand is another static_cast.
     The board's `nested static_casts` floor ratchets it.
@@ -50,10 +51,28 @@ REASON = re.compile(
 
 CAST = re.compile(r"reinterpret_cast\s*<")
 
-# `<ret> NAME(args) [const] { return NAME(...); }` - the seam-sweep footgun.
+# `<ret> NAME(args) [const] { return NAME(...); }` - a seam-sweep candidate.
 _SELF = re.compile(
-    r"\b(?P<name>[A-Za-z_]\w*)\s*\([^;{)]*\)\s*(?:const\s*)?\{\s*"
-    r"return\s+(?P=name)\s*\(", re.S)
+    r"\b(?P<name>[A-Za-z_]\w*)\s*\((?P<params>[^;{)]*)\)\s*"
+    r"(?:const\s*)?\{\s*return\s+(?P=name)\s*\((?P<args>[^;]*)\)\s*;",
+    re.S,
+)
+
+
+def _arity(items: str) -> int:
+    """Count top-level comma-separated items in the matched short form."""
+    if not items.strip():
+        return 0
+    depth = 0
+    count = 1
+    for char in items:
+        if char in "([{":
+            depth += 1
+        elif char in ")]}":
+            depth = max(0, depth - 1)
+        elif char == "," and depth == 0:
+            count += 1
+    return count
 
 
 def scan_ledger():
@@ -95,6 +114,8 @@ def self_recursion() -> list[str]:
             for m in _SELF.finditer(text):
                 name = m.group("name")
                 if name in ("if", "for", "while", "switch", "return", "sizeof"):
+                    continue
+                if _arity(m.group("params")) != _arity(m.group("args")):
                     continue
                 line = text.count("\n", 0, m.start()) + 1
                 body = " ".join(text[m.start():m.end() + 60].split())

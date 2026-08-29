@@ -7,56 +7,121 @@
 
 #include <DDrawMgr/ColorDepth.h>
 #include <Enums.h>
+#include <Image/ImagePaletteNode.h>
 #include <Image/RezDecodeKind.h>
 #include <Ints.h>
-#include <Io/SaveGame.h>
 
-class CRezImage;
-struct CImagePaletteNode;
+class CDib;
 
-class CImagePool {
+GZ_ENUM_FLAGS_BEGIN(DibMgrFlags, u32)
+    DMPF_NOIDENTITY = 0x00000001,
+GZ_ENUM_FLAGS_END(DibMgrFlags, u32)
+GZ_ENUM_FLAGS_OPS(DibMgrFlags)
+
+class CDibMgr {
 public:
-    CImagePool() : m_surfaces(0xa), m_palettes(0xa) {
-        m_resourceModuleHandle = NULL;
-        m_sourceHwnd = NULL;
-        m_reserved08 = 0;
-        m_reserved48 = 0;
-        m_selectedPalette = NULL;
-    }
-    ~CImagePool() {
-        Clear();
+    CDibMgr();
+    ~CDibMgr() {
+        Term();
     }
 
-    i32 Configure(HINSTANCE resourceModule, HWND sourceWindow, i32 reserved);
-    void Clear();
-    void RemoveSurface(CRezImage* image);
-    void RemovePalette(CImagePaletteNode* palette);
-    void ClearSurfaces();
-    void ClearPalettes();
-    CImagePaletteNode* CreatePaletteFromEntries(PALETTEENTRY* entries, i32 flags);
-    CImagePaletteNode* CreatePaletteFromRgb(u8* rgb, i32 flags);
-    CImagePaletteNode* LoadPaletteFromFile(char* path, i32 flags);
-    CImagePaletteNode* LoadPaletteFromData(u8* data, u32 dataSize, RezDecodeKind format, i32 flags);
-    i32 ResizeSurface(CRezImage* image, i32 width, i32 height, ColorDepth bitDepth, i32 flags);
-    void SetImagePalette(CRezImage* image, CImagePaletteNode* palette, i32 scalar);
+    i32 Init(HINSTANCE instance, HWND window, u32 flags = 0);
+    void Term();
 
-    CRezImage* CreateSurface(i32 width, i32 height, ColorDepth bitDepth, i32 flags);
-    CRezImage*
-    CreateSurfaceFromPixels(u8* pixels, i32 width, i32 height, ColorDepth bitDepth, i32 flags);
-    CRezImage* LoadSurfaceFromData(u8* data, RezDecodeKind format, i32 flags);
-    CRezImage* LoadSurfaceFromResource(char* resourceName, i32 flags);
-    CRezImage* ConvertSurface(CRezImage* source, CImagePaletteNode* palette);
+    b32 IsValid() {
+        return m_hInst != NULL && m_hWnd != NULL;
+    }
+    i32 GetNumDibs() {
+        return m_collDibs.GetCount();
+    }
+    i32 GetNumPals() {
+        return m_collPals.GetCount();
+    }
+    u32 GetFlags() {
+        return m_dwFlags;
+    }
+    CDibPal* GetCurPal() {
+        return m_pCurPal;
+    }
 
-    HINSTANCE m_resourceModuleHandle;
-    HWND m_sourceHwnd;
-    i32 m_reserved08;
-    HPALETTE m_selectedPalette;
-    CPtrList m_surfaces;
-    CPtrList m_palettes;
-    i32 m_reserved48;
+    void SetCurPal(CDibPal* palette) {
+        m_pCurPal = palette;
+    }
+    void SetWindowHandle(HWND window) {
+        ASSERT(window != NULL);
+        ASSERT(::IsWindow(window));
+        m_hWnd = window;
+    }
+    void SetPalette(CDib* dib, CDibPal* palette, b32 owner = false);
+
+    CDib* AddDib(i32 width, i32 height, ColorDepth depth = BPP_PALETTED_8, u32 flags = 0);
+    CDib*
+    AddDib(u8* bytes, i32 width, i32 height, ColorDepth depth = BPP_PALETTED_8, u32 flags = 0);
+    CDib* AddDib(u8* bytes, RezDecodeKind type, u32 flags = 0);
+    CDib* AddDib(const char* file, u32 flags = 0);
+    CDib* AddDib(CDib* original, CDibPal* palette);
+
+    CDibPal* AddPal(PALETTEENTRY* entries, u32 flags = 0);
+    CDibPal* AddPal(u8* rgb, u32 flags = 0);
+    CDibPal* AddPal(const char* file, u32 flags = 0);
+    CDibPal* AddPal(u8* data, u32 dataSize, RezDecodeKind type, u32 flags = 0);
+
+    void RemoveDib(CDib* dib);
+    void RemovePal(CDibPal* palette);
+    i32
+    ResizeDib(CDib* dib, i32 width, i32 height, ColorDepth depth = BPP_PALETTED_8, u32 flags = 0);
+    void RemoveAllDibs();
+    void RemoveAllPals();
+
+    HDC GetDC(b32 prepare = true, b32 backgroundPalette = false) {
+        HDC dc = ::GetDC(m_hWnd);
+        if (prepare && dc != NULL && m_pCurPal != NULL) {
+            m_hOldPal = SelectPalette(dc, m_pCurPal->GetHandle(), backgroundPalette);
+            RealizePalette(dc);
+        }
+        return dc;
+    }
+    b32 PrepDC(HDC dc) {
+        if (m_pCurPal != NULL) {
+            m_hOldPal = SelectPalette(dc, m_pCurPal->GetHandle(), false);
+            RealizePalette(dc);
+            return true;
+        }
+        return false;
+    }
+    void ReleaseDC(HDC dc) {
+        if (m_hOldPal != NULL) {
+            SelectPalette(dc, m_hOldPal, false);
+            m_hOldPal = NULL;
+        }
+        ::ReleaseDC(m_hWnd, dc);
+    }
+
+    static HINSTANCE GetGlobalInstanceHandle() {
+        return s_hInst;
+    }
+
+private:
+    HINSTANCE m_hInst;
+    HWND m_hWnd;
+    u32 m_dwFlags;
+    HPALETTE m_hOldPal;
+
+    CPtrList m_collDibs;
+    CPtrList m_collPals;
+
+    CDibPal* m_pCurPal;
+
+    static HINSTANCE s_hInst;
 };
 
-extern HINSTANCE g_hResModule;
+inline CDibMgr::CDibMgr() {
+    m_hInst = NULL;
+    m_hWnd = NULL;
+    m_dwFlags = 0;
+    m_pCurPal = NULL;
+    m_hOldPal = NULL;
+}
 
 extern char g_bmpHeaderTemplate[];
 
