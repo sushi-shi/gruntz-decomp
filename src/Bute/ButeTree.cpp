@@ -8,11 +8,7 @@
 #include <string.h>
 
 RVA(0x00193340, 0x61)
-void zPTree::Walk(
-    void(__cdecl* fn)(char* key, void* value, void* ctx),
-    void* ctx,
-    zPTreeNode* node
-) {
+void zPTree::_trav(stvf_t fn, void* supplementary, zPTreeNode* node) {
     while (true) {
         if (node == NULL) {
             node = root;
@@ -20,10 +16,10 @@ void zPTree::Walk(
                 return;
             }
         }
-        fn(node->symbol, node->body, ctx);
+        fn(node->symbol, node->body, supplementary);
         zPTreeNode* l = node->left;
         if (l != NULL && l->index > node->index) {
-            Walk(fn, ctx, l);
+            _trav(fn, supplementary, l);
         }
         zPTreeNode* r = node->right;
         if (r == NULL || r->index <= node->index) {
@@ -34,7 +30,7 @@ void zPTree::Walk(
 }
 
 RVA(0x001933b0, 0x28f)
-void* zPTree::FindOrInsert(const char* key, void* value) {
+void* zPTree::insert(const char* key, void* value) {
     i32* bp;
     i32 newbranch;
     i32 stack[32];
@@ -115,6 +111,6 @@ void* zPTree::FindOrInsert(const char* key, void* value) {
     }
 
     t->ptr(!dp) = q;
-    m_nodeCount++;
+    incc();
     return value;
 }

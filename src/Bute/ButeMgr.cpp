@@ -946,7 +946,7 @@ bool CButeMgr::Statement() {
     m_sAttribute = m_szTokenString;
 
     if (!m_writeMode) {
-        if (m_pCurrTabOfItems->Find(m_sAttribute)) {
+        if (m_pCurrTabOfItems->lookup(m_sAttribute)) {
             DisplayMessage(s_fmtDupSymbol, m_sAttribute.GetBuffer(0));
             bDup = true;
         }
@@ -969,7 +969,7 @@ bool CButeMgr::Statement() {
             intValue = atoi(m_szTokenString);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pCurrTabOfItems->Insert(m_sAttribute, new CButeValue(BUTE_INT, intValue));
+                    m_pCurrTabOfItems->add(m_sAttribute, new CButeValue(BUTE_INT, intValue));
                 }
             } else {
                 intValue = GetInt(m_sTagName, m_sAttribute);
@@ -983,7 +983,7 @@ bool CButeMgr::Statement() {
             dwordValue = strtoul(m_szTokenString, endptr, 10);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pCurrTabOfItems->Insert(m_sAttribute, new CButeValue(BUTE_DWORD, dwordValue));
+                    m_pCurrTabOfItems->add(m_sAttribute, new CButeValue(BUTE_DWORD, dwordValue));
                 }
             } else {
                 dwordValue = GetDword(m_sTagName, m_sAttribute);
@@ -997,7 +997,7 @@ bool CButeMgr::Statement() {
             floatValue = static_cast<float>(atof(m_szTokenString));
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pCurrTabOfItems->Insert(m_sAttribute, new CButeValue(BUTE_FLOAT, floatValue));
+                    m_pCurrTabOfItems->add(m_sAttribute, new CButeValue(BUTE_FLOAT, floatValue));
                 }
             } else {
                 floatValue = GetFloat(m_sTagName, m_sAttribute);
@@ -1008,7 +1008,7 @@ bool CButeMgr::Statement() {
             floatValue = static_cast<float>(atof(m_szTokenString));
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pCurrTabOfItems->Insert(m_sAttribute, new CButeValue(BUTE_FLOAT, floatValue));
+                    m_pCurrTabOfItems->add(m_sAttribute, new CButeValue(BUTE_FLOAT, floatValue));
                 }
             } else {
                 floatValue = GetFloat(m_sTagName, m_sAttribute);
@@ -1019,10 +1019,7 @@ bool CButeMgr::Statement() {
             doubleValue = atof(m_szTokenString);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pCurrTabOfItems->Insert(
-                        m_sAttribute,
-                        new CButeValue(BUTE_DOUBLE, doubleValue)
-                    );
+                    m_pCurrTabOfItems->add(m_sAttribute, new CButeValue(BUTE_DOUBLE, doubleValue));
                 }
             } else {
                 doubleValue = GetDouble(m_sTagName, m_sAttribute);
@@ -1033,7 +1030,7 @@ bool CButeMgr::Statement() {
             sscanf(m_szTokenString, s_fmtPoint4, &a, &b, &c, &d);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pCurrTabOfItems->Insert(
+                    m_pCurrTabOfItems->add(
                         m_sAttribute,
                         new CButeValue(BUTE_RECT, &ButeIntRect(a, b, c, d))
                     );
@@ -1049,7 +1046,7 @@ bool CButeMgr::Statement() {
             sscanf(m_szTokenString, s_fmtPoint2, &px, &py);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pCurrTabOfItems->Insert(
+                    m_pCurrTabOfItems->add(
                         m_sAttribute,
                         new CButeValue(BUTE_POINT, &ButeIntPoint(px, py))
                     );
@@ -1064,7 +1061,7 @@ bool CButeMgr::Statement() {
             sscanf(m_szTokenString, s_fmtRect3, &x, &y, &z);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pCurrTabOfItems->Insert(
+                    m_pCurrTabOfItems->add(
                         m_sAttribute,
                         new CButeValue(BUTE_VECTOR, &CAVector(x, y, z))
                     );
@@ -1079,7 +1076,7 @@ bool CButeMgr::Statement() {
             sscanf(m_szTokenString, s_fmtRect2, &x, &y);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pCurrTabOfItems->Insert(
+                    m_pCurrTabOfItems->add(
                         m_sAttribute,
                         new CButeValue(BUTE_RANGE, &CARange(x, y))
                     );
@@ -1092,7 +1089,7 @@ bool CButeMgr::Statement() {
         case BUTETOK_STRING:
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pCurrTabOfItems->Insert(
+                    m_pCurrTabOfItems->add(
                         m_sAttribute,
                         new CButeValue(BUTE_STRING, CString(m_szTokenString))
                     );
@@ -1143,24 +1140,23 @@ bool CButeMgr::Tag() {
     m_sTagName = tok;
 
     if (!m_writeMode) {
-        CBSecStream* t = Tags();
-        if (t->Find(tok)) {
+        TableOfTags* t = Tags();
+        if (t->lookup(tok)) {
             DisplayMessage(s_fmtDupTag, tok);
             return false;
         }
-        CButeNode* node = new CButeNode(2);
+        TableOfItems* node = new TableOfItems;
 
         m_pCurrTabOfItems = node;
-        t->Insert(tok, node);
+        t->add(tok, node);
     }
 
     return Match(BUTETOK_TAG_CLOSE) ? true : false;
 }
 
 RVA(0x001712b0, 0x228)
-void ButeGroup_Apply(char* key, void* valuePtr, void* ctx) {
+void ButeGroup_Apply(const char* key, CButeValue* value, void* ctx) {
     ostream& output = *static_cast<ostream*>(ctx);
-    CButeValue* value = static_cast<CButeValue*>(valuePtr);
 
     output << "\r\n" << key << " = ";
     switch (value->type) {
@@ -1228,12 +1224,12 @@ void ButeGroup_Apply(char* key, void* valuePtr, void* ctx) {
 }
 
 RVA(0x001714e0, 0x66)
-void ButeTag_Apply(char* key, void* value, void* ctx) {
+void ButeTag_Apply(const char* key, TableOfItems* value, void* ctx) {
     ostream& output = *static_cast<ostream*>(ctx);
     output << endl;
     output << endl;
     output << "[" << key << "]";
-    static_cast<CButeNode*>(value)->Walk(&ButeGroup_Apply, ctx, NULL);
+    value->traverse(&ButeGroup_Apply, ctx);
 }
 
 RVA_COMPGEN(0x00171550, 0x11, ??6ostream@@QAEAAV0@P6AAAV0@AAV0@@Z@Z)
@@ -1257,9 +1253,9 @@ bool CButeMgr::TagList() {
         }
         if (m_writeMode) {
 
-            CButeNode* grp = static_cast<CButeNode*>(ModifiedTags()->Find(m_sTagName));
+            TableOfItems* grp = static_cast<TableOfItems*>(ModifiedTags()->lookup(m_sTagName));
             if (grp) {
-                grp->Walk(&ButeGroup_Apply, m_pSaveData, NULL);
+                grp->traverse(&ButeGroup_Apply, m_pSaveData);
             }
         }
         if (!ScanTok()) {
@@ -1318,7 +1314,7 @@ bool CButeMgr::Save() {
     source.clear();
     m_pData = &source;
     TagList();
-    m_newTagTab.Walk(&ButeTag_Apply, m_pSaveData, NULL);
+    m_newTagTab.traverse(&ButeTag_Apply, m_pSaveData);
     m_pSaveData->clear();
 
     if (m_bCrypt) {
@@ -1341,12 +1337,12 @@ RVA_COMPGEN(0x00171a40, 0x14, ??_Dstrstream@@QAEXXZ)
 
 RVA(0x00171a60, 0x34)
 bool CButeMgr::Exist(const char* tag, const char* key) {
-    CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
         if (key == NULL) {
             return true;
         }
-        if ((grp)->Find(key)) {
+        if ((grp)->lookup(key)) {
             return true;
         }
     }
@@ -1355,9 +1351,9 @@ bool CButeMgr::Exist(const char* tag, const char* key) {
 
 RVA(0x00171aa0, 0x50)
 i32 CButeMgr::GetInt(const char* tag, const char* key, i32 def) {
-    CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
         if (rec) {
             if (rec->type == BUTE_INT) {
                 return *static_cast<i32*>(rec->pValue);
@@ -1370,9 +1366,9 @@ i32 CButeMgr::GetInt(const char* tag, const char* key, i32 def) {
 
 RVA(0x00171af0, 0x86)
 i32 CButeMgr::GetInt(const char* tag, const char* key) {
-    CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
         if (rec) {
             if (rec->type == BUTE_INT) {
                 return *static_cast<i32*>(rec->pValue);
@@ -1389,41 +1385,41 @@ i32 CButeMgr::GetInt(const char* tag, const char* key) {
 
 RVA(0x00171b80, 0x478)
 void CButeMgr::SetInt(const char* tag, const char* key, i32 val) {
-    CButeNode* grp = static_cast<CButeNode*>(m_tagTab.Find(tag));
+    TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag));
     if (grp) {
-        CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
+        CButeValue* hit = static_cast<CButeValue*>(grp->lookup(key));
         if (hit) {
             hit->CopyValue(&CButeValue(BUTE_INT, val));
             return;
         }
-        CButeNode* modifiedTag = static_cast<CButeNode*>(m_auxTagTab.Find(tag));
+        TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag));
         if (modifiedTag) {
-            CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->Find(key));
+            CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->lookup(key));
             if (modifiedValue) {
                 modifiedValue->CopyValue(&CButeValue(BUTE_INT, val));
                 return;
             }
-            modifiedTag->Insert(key, new CButeValue(BUTE_INT, val));
+            modifiedTag->add(key, new CButeValue(BUTE_INT, val));
             return;
         }
-        CButeNode* newModifiedTag =
-            static_cast<CButeNode*>(m_auxTagTab.Insert(tag, new CButeNode(2)));
-        newModifiedTag->FindOrInsert(key, new CButeValue(BUTE_INT, val));
+        TableOfItems* newModifiedTag =
+            static_cast<TableOfItems*>(m_auxTagTab.add(tag, new TableOfItems));
+        newModifiedTag->insert(key, new CButeValue(BUTE_INT, val));
         return;
     }
 
-    CButeNode* addedTag = static_cast<CButeNode*>(m_newTagTab.Find(tag));
+    TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag));
     if (addedTag) {
-        CButeValue* addedValue = static_cast<CButeValue*>(addedTag->Find(key));
+        CButeValue* addedValue = static_cast<CButeValue*>(addedTag->lookup(key));
         if (addedValue) {
             addedValue->CopyValue(&CButeValue(BUTE_INT, val));
             return;
         }
-        addedTag->Insert(key, new CButeValue(BUTE_INT, val));
+        addedTag->add(key, new CButeValue(BUTE_INT, val));
         return;
     }
-    CButeNode* newAddedTag = static_cast<CButeNode*>(m_newTagTab.Insert(tag, new CButeNode(2)));
-    newAddedTag->FindOrInsert(key, new CButeValue(BUTE_INT, val));
+    TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag, new TableOfItems));
+    newAddedTag->insert(key, new CButeValue(BUTE_INT, val));
 }
 
 RVA_COMPGEN(0x00172000, 0x31, ??0CButeValue@@QAE@W4ButeType@@H@Z)
@@ -1432,9 +1428,9 @@ RVA_COMPGEN(0x00172160, 0x80, ??1CButeValue@@QAE@XZ)
 
 RVA(0x001721e0, 0x5a)
 DWORD CButeMgr::GetDword(const char* tag, const char* key, DWORD def) {
-    CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
         if (rec) {
             switch (rec->type) {
                 case BUTE_DWORD:
@@ -1448,9 +1444,9 @@ DWORD CButeMgr::GetDword(const char* tag, const char* key, DWORD def) {
 
 RVA(0x00172240, 0x7d)
 DWORD CButeMgr::GetDword(const char* tag, const char* key) {
-    CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
         if (rec) {
             switch (rec->type) {
                 case BUTE_DWORD:
@@ -1468,41 +1464,41 @@ DWORD CButeMgr::GetDword(const char* tag, const char* key) {
 
 RVA(0x001722c0, 0x3bc)
 void CButeMgr::SetDword(const char* tag, const char* key, DWORD val) {
-    CButeNode* grp = static_cast<CButeNode*>(m_tagTab.Find(tag));
+    TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag));
     if (grp) {
-        CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
+        CButeValue* hit = static_cast<CButeValue*>(grp->lookup(key));
         if (hit) {
             hit->CopyValue(&CButeValue(BUTE_DWORD, val));
             return;
         }
-        CButeNode* modifiedTag = static_cast<CButeNode*>(m_auxTagTab.Find(tag));
+        TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag));
         if (modifiedTag) {
-            CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->Find(key));
+            CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->lookup(key));
             if (modifiedValue) {
                 modifiedValue->CopyValue(&CButeValue(BUTE_DWORD, val));
                 return;
             }
-            modifiedTag->Insert(key, new CButeValue(BUTE_DWORD, val));
+            modifiedTag->add(key, new CButeValue(BUTE_DWORD, val));
             return;
         }
-        CButeNode* newModifiedTag =
-            static_cast<CButeNode*>(m_auxTagTab.Insert(tag, new CButeNode(2)));
-        newModifiedTag->FindOrInsert(key, new CButeValue(BUTE_DWORD, val));
+        TableOfItems* newModifiedTag =
+            static_cast<TableOfItems*>(m_auxTagTab.add(tag, new TableOfItems));
+        newModifiedTag->insert(key, new CButeValue(BUTE_DWORD, val));
         return;
     }
 
-    CButeNode* addedTag = static_cast<CButeNode*>(m_newTagTab.Find(tag));
+    TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag));
     if (addedTag) {
-        CButeValue* addedValue = static_cast<CButeValue*>(addedTag->Find(key));
+        CButeValue* addedValue = static_cast<CButeValue*>(addedTag->lookup(key));
         if (addedValue) {
             addedValue->CopyValue(&CButeValue(BUTE_DWORD, val));
             return;
         }
-        addedTag->Insert(key, new CButeValue(BUTE_DWORD, val));
+        addedTag->add(key, new CButeValue(BUTE_DWORD, val));
         return;
     }
-    CButeNode* newAddedTag = static_cast<CButeNode*>(m_newTagTab.Insert(tag, new CButeNode(2)));
-    newAddedTag->FindOrInsert(key, new CButeValue(BUTE_DWORD, val));
+    TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag, new TableOfItems));
+    newAddedTag->insert(key, new CButeValue(BUTE_DWORD, val));
 }
 
 RVA_COMPGEN(0x00172680, 0x31, ??0CButeValue@@QAE@W4ButeType@@K@Z)
@@ -1511,9 +1507,9 @@ RVA_COMPGEN(0x00172680, 0x31, ??0CButeValue@@QAE@W4ButeType@@K@Z)
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001726c0, 0x6b)
 float CButeMgr::GetFloat(const char* tag, const char* key, float def) {
-    CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
         if (rec) {
             switch (rec->type) {
                 case BUTE_INT:
@@ -1529,9 +1525,9 @@ float CButeMgr::GetFloat(const char* tag, const char* key, float def) {
 
 RVA(0x00172730, 0x9a)
 float CButeMgr::GetFloat(const char* tag, const char* key) {
-    CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
         if (rec) {
             switch (rec->type) {
                 case BUTE_INT:
@@ -1551,41 +1547,41 @@ float CButeMgr::GetFloat(const char* tag, const char* key) {
 
 RVA(0x001727d0, 0x3c0)
 void CButeMgr::SetFloat(const char* tag, const char* key, float val) {
-    CButeNode* grp = static_cast<CButeNode*>(m_tagTab.Find(tag));
+    TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag));
     if (grp) {
-        CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
+        CButeValue* hit = static_cast<CButeValue*>(grp->lookup(key));
         if (hit) {
             hit->CopyValue(&CButeValue(BUTE_FLOAT, val));
             return;
         }
-        CButeNode* modifiedTag = static_cast<CButeNode*>(m_auxTagTab.Find(tag));
+        TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag));
         if (modifiedTag) {
-            CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->Find(key));
+            CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->lookup(key));
             if (modifiedValue) {
                 modifiedValue->CopyValue(&CButeValue(BUTE_FLOAT, val));
                 return;
             }
-            modifiedTag->Insert(key, new CButeValue(BUTE_FLOAT, val));
+            modifiedTag->add(key, new CButeValue(BUTE_FLOAT, val));
             return;
         }
-        CButeNode* newModifiedTag =
-            static_cast<CButeNode*>(m_auxTagTab.Insert(tag, new CButeNode(2)));
-        newModifiedTag->FindOrInsert(key, new CButeValue(BUTE_FLOAT, val));
+        TableOfItems* newModifiedTag =
+            static_cast<TableOfItems*>(m_auxTagTab.add(tag, new TableOfItems));
+        newModifiedTag->insert(key, new CButeValue(BUTE_FLOAT, val));
         return;
     }
 
-    CButeNode* addedTag = static_cast<CButeNode*>(m_newTagTab.Find(tag));
+    TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag));
     if (addedTag) {
-        CButeValue* addedValue = static_cast<CButeValue*>(addedTag->Find(key));
+        CButeValue* addedValue = static_cast<CButeValue*>(addedTag->lookup(key));
         if (addedValue) {
             addedValue->CopyValue(&CButeValue(BUTE_FLOAT, val));
             return;
         }
-        addedTag->Insert(key, new CButeValue(BUTE_FLOAT, val));
+        addedTag->add(key, new CButeValue(BUTE_FLOAT, val));
         return;
     }
-    CButeNode* newAddedTag = static_cast<CButeNode*>(m_newTagTab.Insert(tag, new CButeNode(2)));
-    newAddedTag->FindOrInsert(key, new CButeValue(BUTE_FLOAT, val));
+    TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag, new TableOfItems));
+    newAddedTag->insert(key, new CButeValue(BUTE_FLOAT, val));
 }
 
 RVA_COMPGEN(0x00172b90, 0x31, ??0CButeValue@@QAE@W4ButeType@@M@Z)
@@ -1594,9 +1590,9 @@ RVA_COMPGEN(0x00172b90, 0x31, ??0CButeValue@@QAE@W4ButeType@@M@Z)
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00172bd0, 0x6c)
 double CButeMgr::GetDouble(const char* tag, const char* key, double def) {
-    CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
         if (rec) {
             switch (rec->type) {
                 case BUTE_INT:
@@ -1612,9 +1608,9 @@ double CButeMgr::GetDouble(const char* tag, const char* key, double def) {
 
 RVA(0x00172c40, 0x9b)
 double CButeMgr::GetDouble(const char* tag, const char* key) {
-    CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
         if (rec) {
             switch (rec->type) {
                 case BUTE_INT:
@@ -1634,50 +1630,50 @@ double CButeMgr::GetDouble(const char* tag, const char* key) {
 
 RVA(0x00172ce0, 0x454)
 void CButeMgr::SetDouble(const char* tag, const char* key, double val) {
-    CButeNode* grp = static_cast<CButeNode*>(m_tagTab.Find(tag));
+    TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag));
     if (grp) {
-        CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
+        CButeValue* hit = static_cast<CButeValue*>(grp->lookup(key));
         if (hit) {
             hit->CopyValue(&CButeValue(BUTE_DOUBLE, val));
             return;
         }
-        CButeNode* modifiedTag = static_cast<CButeNode*>(m_auxTagTab.Find(tag));
+        TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag));
         if (modifiedTag) {
-            CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->Find(key));
+            CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->lookup(key));
             if (modifiedValue) {
                 modifiedValue->CopyValue(&CButeValue(BUTE_DOUBLE, val));
                 return;
             }
-            modifiedTag->Insert(key, new CButeValue(BUTE_DOUBLE, val));
+            modifiedTag->add(key, new CButeValue(BUTE_DOUBLE, val));
             return;
         }
-        CButeNode* newModifiedTag =
-            static_cast<CButeNode*>(m_auxTagTab.Insert(tag, new CButeNode(2)));
-        newModifiedTag->FindOrInsert(key, new CButeValue(BUTE_DOUBLE, val));
+        TableOfItems* newModifiedTag =
+            static_cast<TableOfItems*>(m_auxTagTab.add(tag, new TableOfItems));
+        newModifiedTag->insert(key, new CButeValue(BUTE_DOUBLE, val));
         return;
     }
 
-    CButeNode* addedTag = static_cast<CButeNode*>(m_newTagTab.Find(tag));
+    TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag));
     if (addedTag) {
-        CButeValue* addedValue = static_cast<CButeValue*>(addedTag->Find(key));
+        CButeValue* addedValue = static_cast<CButeValue*>(addedTag->lookup(key));
         if (addedValue) {
             addedValue->CopyValue(&CButeValue(BUTE_DOUBLE, val));
             return;
         }
-        addedTag->Insert(key, new CButeValue(BUTE_DOUBLE, val));
+        addedTag->add(key, new CButeValue(BUTE_DOUBLE, val));
         return;
     }
-    CButeNode* newAddedTag = static_cast<CButeNode*>(m_newTagTab.Insert(tag, new CButeNode(2)));
-    newAddedTag->FindOrInsert(key, new CButeValue(BUTE_DOUBLE, val));
+    TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag, new TableOfItems));
+    newAddedTag->insert(key, new CButeValue(BUTE_DOUBLE, val));
 }
 
 RVA_COMPGEN(0x00173140, 0x38, ??0CButeValue@@QAE@W4ButeType@@N@Z)
 
 RVA(0x00173180, 0x4e)
 CString* CButeMgr::GetString(const char* tag, const char* key, CString* def) {
-    CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
         if (rec) {
             if (rec->type == BUTE_STRING) {
                 return static_cast<CString*>(rec->pValue);
@@ -1696,9 +1692,9 @@ CString* CButeMgr::GetString(const char* tag, const char* key) {
     DATA(0x002bf698)
     static CString s_empty("");
 
-    CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
         if (rec) {
             if (rec->type == BUTE_STRING) {
                 return static_cast<CString*>(rec->pValue);
@@ -1716,41 +1712,41 @@ CString* CButeMgr::GetString(const char* tag, const char* key) {
 
 RVA(0x001732a0, 0x3fc)
 void CButeMgr::SetString(const char* tag, const char* key, const CString& val) {
-    CButeNode* grp = static_cast<CButeNode*>(m_tagTab.Find(tag));
+    TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag));
     if (grp) {
-        CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
+        CButeValue* hit = static_cast<CButeValue*>(grp->lookup(key));
         if (hit) {
             hit->CopyValue(&CButeValue(BUTE_STRING, val));
             return;
         }
-        CButeNode* modifiedTag = static_cast<CButeNode*>(m_auxTagTab.Find(tag));
+        TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag));
         if (modifiedTag) {
-            CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->Find(key));
+            CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->lookup(key));
             if (modifiedValue) {
                 modifiedValue->CopyValue(&CButeValue(BUTE_STRING, val));
                 return;
             }
-            modifiedTag->Insert(key, new CButeValue(BUTE_STRING, val));
+            modifiedTag->add(key, new CButeValue(BUTE_STRING, val));
             return;
         }
-        CButeNode* newModifiedTag =
-            static_cast<CButeNode*>(m_auxTagTab.Insert(tag, new CButeNode(2)));
-        newModifiedTag->FindOrInsert(key, new CButeValue(BUTE_STRING, val));
+        TableOfItems* newModifiedTag =
+            static_cast<TableOfItems*>(m_auxTagTab.add(tag, new TableOfItems));
+        newModifiedTag->insert(key, new CButeValue(BUTE_STRING, val));
         return;
     }
 
-    CButeNode* addedTag = static_cast<CButeNode*>(m_newTagTab.Find(tag));
+    TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag));
     if (addedTag) {
-        CButeValue* addedValue = static_cast<CButeValue*>(addedTag->Find(key));
+        CButeValue* addedValue = static_cast<CButeValue*>(addedTag->lookup(key));
         if (addedValue) {
             addedValue->CopyValue(&CButeValue(BUTE_STRING, val));
             return;
         }
-        addedTag->Insert(key, new CButeValue(BUTE_STRING, val));
+        addedTag->add(key, new CButeValue(BUTE_STRING, val));
         return;
     }
-    CButeNode* newAddedTag = static_cast<CButeNode*>(m_newTagTab.Insert(tag, new CButeNode(2)));
-    newAddedTag->FindOrInsert(key, new CButeValue(BUTE_STRING, val));
+    TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag, new TableOfItems));
+    newAddedTag->insert(key, new CButeValue(BUTE_STRING, val));
 }
 
 RVA_COMPGEN(0x001736a0, 0x5f, ??0CButeValue@@QAE@W4ButeType@@ABVCString@@@Z)
@@ -1760,9 +1756,9 @@ RVA_COMPGEN(0x00173700, 0x1e, ??_GCString@@QAEPAXI@Z)
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00173720, 0x4e)
 ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key, ButeIntRect* def) {
-    CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
         if (rec) {
             if (rec->type == BUTE_RECT) {
                 return static_cast<ButeIntRect*>(rec->pValue);
@@ -1780,9 +1776,9 @@ ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key) {
     RVA_DYNINIT(0x00173840, 0x1, s_default)
     static ButeIntRect s_default;
 
-    CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
         if (rec) {
             if (rec->type == BUTE_RECT) {
                 return static_cast<ButeIntRect*>(rec->pValue);
@@ -1799,41 +1795,41 @@ ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key) {
 
 RVA(0x00173850, 0x404)
 void CButeMgr::SetRect(const char* tag, const char* key, ButeIntRect* val) {
-    CButeNode* grp = static_cast<CButeNode*>(m_tagTab.Find(tag));
+    TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag));
     if (grp) {
-        CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
+        CButeValue* hit = static_cast<CButeValue*>(grp->lookup(key));
         if (hit) {
             hit->CopyValue(&CButeValue(BUTE_RECT, val));
             return;
         }
-        CButeNode* modifiedTag = static_cast<CButeNode*>(m_auxTagTab.Find(tag));
+        TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag));
         if (modifiedTag) {
-            CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->Find(key));
+            CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->lookup(key));
             if (modifiedValue) {
                 modifiedValue->CopyValue(&CButeValue(BUTE_RECT, val));
                 return;
             }
-            modifiedTag->Insert(key, new CButeValue(BUTE_RECT, val));
+            modifiedTag->add(key, new CButeValue(BUTE_RECT, val));
             return;
         }
-        CButeNode* newModifiedTag =
-            static_cast<CButeNode*>(m_auxTagTab.Insert(tag, new CButeNode(2)));
-        newModifiedTag->FindOrInsert(key, new CButeValue(BUTE_RECT, val));
+        TableOfItems* newModifiedTag =
+            static_cast<TableOfItems*>(m_auxTagTab.add(tag, new TableOfItems));
+        newModifiedTag->insert(key, new CButeValue(BUTE_RECT, val));
         return;
     }
 
-    CButeNode* addedTag = static_cast<CButeNode*>(m_newTagTab.Find(tag));
+    TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag));
     if (addedTag) {
-        CButeValue* addedValue = static_cast<CButeValue*>(addedTag->Find(key));
+        CButeValue* addedValue = static_cast<CButeValue*>(addedTag->lookup(key));
         if (addedValue) {
             addedValue->CopyValue(&CButeValue(BUTE_RECT, val));
             return;
         }
-        addedTag->Insert(key, new CButeValue(BUTE_RECT, val));
+        addedTag->add(key, new CButeValue(BUTE_RECT, val));
         return;
     }
-    CButeNode* newAddedTag = static_cast<CButeNode*>(m_newTagTab.Insert(tag, new CButeNode(2)));
-    newAddedTag->FindOrInsert(key, new CButeValue(BUTE_RECT, val));
+    TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag, new TableOfItems));
+    newAddedTag->insert(key, new CButeValue(BUTE_RECT, val));
 }
 
 RVA_COMPGEN(0x00173c60, 0x49, ??0CButeValue@@QAE@W4ButeType@@PAUButeIntRect@@@Z)
@@ -1842,9 +1838,9 @@ RVA_COMPGEN(0x00173c60, 0x49, ??0CButeValue@@QAE@W4ButeType@@PAUButeIntRect@@@Z)
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00173cb0, 0x4e)
 ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key, ButeIntPoint* def) {
-    CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
         if (rec) {
             if (rec->type == BUTE_POINT) {
                 return static_cast<ButeIntPoint*>(rec->pValue);
@@ -1862,9 +1858,9 @@ ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key) {
     RVA_DYNINIT(0x00173dc0, 0x1, s_default)
     static ButeIntPoint s_default;
 
-    CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
         if (rec) {
             if (rec->type == BUTE_POINT) {
                 return static_cast<ButeIntPoint*>(rec->pValue);
@@ -1881,41 +1877,41 @@ ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key) {
 
 RVA(0x00173dd0, 0x3d8)
 void CButeMgr::SetPoint(const char* tag, const char* key, ButeIntPoint* val) {
-    CButeNode* grp = static_cast<CButeNode*>(m_tagTab.Find(tag));
+    TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag));
     if (grp) {
-        CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
+        CButeValue* hit = static_cast<CButeValue*>(grp->lookup(key));
         if (hit) {
             hit->CopyValue(&CButeValue(BUTE_POINT, val));
             return;
         }
-        CButeNode* modifiedTag = static_cast<CButeNode*>(m_auxTagTab.Find(tag));
+        TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag));
         if (modifiedTag) {
-            CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->Find(key));
+            CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->lookup(key));
             if (modifiedValue) {
                 modifiedValue->CopyValue(&CButeValue(BUTE_POINT, val));
                 return;
             }
-            modifiedTag->Insert(key, new CButeValue(BUTE_POINT, val));
+            modifiedTag->add(key, new CButeValue(BUTE_POINT, val));
             return;
         }
-        CButeNode* newModifiedTag =
-            static_cast<CButeNode*>(m_auxTagTab.Insert(tag, new CButeNode(2)));
-        newModifiedTag->FindOrInsert(key, new CButeValue(BUTE_POINT, val));
+        TableOfItems* newModifiedTag =
+            static_cast<TableOfItems*>(m_auxTagTab.add(tag, new TableOfItems));
+        newModifiedTag->insert(key, new CButeValue(BUTE_POINT, val));
         return;
     }
 
-    CButeNode* addedTag = static_cast<CButeNode*>(m_newTagTab.Find(tag));
+    TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag));
     if (addedTag) {
-        CButeValue* addedValue = static_cast<CButeValue*>(addedTag->Find(key));
+        CButeValue* addedValue = static_cast<CButeValue*>(addedTag->lookup(key));
         if (addedValue) {
             addedValue->CopyValue(&CButeValue(BUTE_POINT, val));
             return;
         }
-        addedTag->Insert(key, new CButeValue(BUTE_POINT, val));
+        addedTag->add(key, new CButeValue(BUTE_POINT, val));
         return;
     }
-    CButeNode* newAddedTag = static_cast<CButeNode*>(m_newTagTab.Insert(tag, new CButeNode(2)));
-    newAddedTag->FindOrInsert(key, new CButeValue(BUTE_POINT, val));
+    TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag, new TableOfItems));
+    newAddedTag->insert(key, new CButeValue(BUTE_POINT, val));
 }
 RVA_COMPGEN(0x001741b0, 0x39, ??0CButeValue@@QAE@W4ButeType@@PAUButeIntPoint@@@Z)
 
@@ -1923,9 +1919,9 @@ RVA_COMPGEN(0x001741b0, 0x39, ??0CButeValue@@QAE@W4ButeType@@PAUButeIntPoint@@@Z
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001741f0, 0x4e)
 CAVector* CButeMgr::GetVector(const char* tag, const char* key, CAVector* def) {
-    CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
         if (rec) {
             if (rec->type == BUTE_VECTOR) {
                 return static_cast<CAVector*>(rec->pValue);
@@ -1943,9 +1939,9 @@ CAVector* CButeMgr::GetVector(const char* tag, const char* key) {
     RVA_DYNINIT(0x00174330, 0x1, s_default)
     static CAVector s_default(0, 0, 0);
 
-    CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
         if (rec) {
             if (rec->type == BUTE_VECTOR) {
                 return static_cast<CAVector*>(rec->pValue);
@@ -1962,41 +1958,41 @@ CAVector* CButeMgr::GetVector(const char* tag, const char* key) {
 
 RVA(0x00174340, 0x3e8)
 void CButeMgr::SetVector(const char* tag, const char* key, CAVector* val) {
-    CButeNode* grp = static_cast<CButeNode*>(m_tagTab.Find(tag));
+    TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag));
     if (grp) {
-        CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
+        CButeValue* hit = static_cast<CButeValue*>(grp->lookup(key));
         if (hit) {
             hit->CopyValue(&CButeValue(BUTE_VECTOR, val));
             return;
         }
-        CButeNode* modifiedTag = static_cast<CButeNode*>(m_auxTagTab.Find(tag));
+        TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag));
         if (modifiedTag) {
-            CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->Find(key));
+            CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->lookup(key));
             if (modifiedValue) {
                 modifiedValue->CopyValue(&CButeValue(BUTE_VECTOR, val));
                 return;
             }
-            modifiedTag->Insert(key, new CButeValue(BUTE_VECTOR, val));
+            modifiedTag->add(key, new CButeValue(BUTE_VECTOR, val));
             return;
         }
-        CButeNode* newModifiedTag =
-            static_cast<CButeNode*>(m_auxTagTab.Insert(tag, new CButeNode(2)));
-        newModifiedTag->FindOrInsert(key, new CButeValue(BUTE_VECTOR, val));
+        TableOfItems* newModifiedTag =
+            static_cast<TableOfItems*>(m_auxTagTab.add(tag, new TableOfItems));
+        newModifiedTag->insert(key, new CButeValue(BUTE_VECTOR, val));
         return;
     }
 
-    CButeNode* addedTag = static_cast<CButeNode*>(m_newTagTab.Find(tag));
+    TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag));
     if (addedTag) {
-        CButeValue* addedValue = static_cast<CButeValue*>(addedTag->Find(key));
+        CButeValue* addedValue = static_cast<CButeValue*>(addedTag->lookup(key));
         if (addedValue) {
             addedValue->CopyValue(&CButeValue(BUTE_VECTOR, val));
             return;
         }
-        addedTag->Insert(key, new CButeValue(BUTE_VECTOR, val));
+        addedTag->add(key, new CButeValue(BUTE_VECTOR, val));
         return;
     }
-    CButeNode* newAddedTag = static_cast<CButeNode*>(m_newTagTab.Insert(tag, new CButeNode(2)));
-    newAddedTag->FindOrInsert(key, new CButeValue(BUTE_VECTOR, val));
+    TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag, new TableOfItems));
+    newAddedTag->insert(key, new CButeValue(BUTE_VECTOR, val));
 }
 RVA_COMPGEN(0x00174730, 0x3c, ??0CButeValue@@QAE@W4ButeType@@PAVCAVector@@@Z)
 
@@ -2004,9 +2000,9 @@ RVA_COMPGEN(0x00174730, 0x3c, ??0CButeValue@@QAE@W4ButeType@@PAVCAVector@@@Z)
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00174770, 0x4e)
 CARange* CButeMgr::GetRange(const char* tag, const char* key, CARange* def) {
-    CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
         if (rec) {
             if (rec->type == BUTE_RANGE) {
                 return static_cast<CARange*>(rec->pValue);
@@ -2024,9 +2020,9 @@ CARange* CButeMgr::GetRange(const char* tag, const char* key) {
     RVA_DYNINIT(0x00174890, 0x1, s_default)
     static CARange s_default(0, 0);
 
-    CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
+    TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
+        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
         if (rec) {
             if (rec->type == BUTE_RANGE) {
                 return static_cast<CARange*>(rec->pValue);
@@ -2043,46 +2039,46 @@ CARange* CButeMgr::GetRange(const char* tag, const char* key) {
 
 RVA(0x001748a0, 0x404)
 void CButeMgr::SetRange(const char* tag, const char* key, CARange* val) {
-    CButeNode* grp = static_cast<CButeNode*>(m_tagTab.Find(tag));
+    TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag));
     if (grp) {
-        CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
+        CButeValue* hit = static_cast<CButeValue*>(grp->lookup(key));
         if (hit) {
             hit->CopyValue(&CButeValue(BUTE_RANGE, val));
             return;
         }
-        CButeNode* modifiedTag = static_cast<CButeNode*>(m_auxTagTab.Find(tag));
+        TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag));
         if (modifiedTag) {
-            CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->Find(key));
+            CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->lookup(key));
             if (modifiedValue) {
                 modifiedValue->CopyValue(&CButeValue(BUTE_RANGE, val));
                 return;
             }
-            modifiedTag->Insert(key, new CButeValue(BUTE_RANGE, val));
+            modifiedTag->add(key, new CButeValue(BUTE_RANGE, val));
             return;
         }
-        CButeNode* newModifiedTag =
-            static_cast<CButeNode*>(m_auxTagTab.Insert(tag, new CButeNode(2)));
-        newModifiedTag->FindOrInsert(key, new CButeValue(BUTE_RANGE, val));
+        TableOfItems* newModifiedTag =
+            static_cast<TableOfItems*>(m_auxTagTab.add(tag, new TableOfItems));
+        newModifiedTag->insert(key, new CButeValue(BUTE_RANGE, val));
         return;
     }
 
-    CButeNode* addedTag = static_cast<CButeNode*>(m_newTagTab.Find(tag));
+    TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag));
     if (addedTag) {
-        CButeValue* addedValue = static_cast<CButeValue*>(addedTag->Find(key));
+        CButeValue* addedValue = static_cast<CButeValue*>(addedTag->lookup(key));
         if (addedValue) {
             addedValue->CopyValue(&CButeValue(BUTE_RANGE, val));
             return;
         }
-        addedTag->Insert(key, new CButeValue(BUTE_RANGE, val));
+        addedTag->add(key, new CButeValue(BUTE_RANGE, val));
         return;
     }
-    CButeNode* newAddedTag = static_cast<CButeNode*>(m_newTagTab.Insert(tag, new CButeNode(2)));
-    newAddedTag->FindOrInsert(key, new CButeValue(BUTE_RANGE, val));
+    TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag, new TableOfItems));
+    newAddedTag->insert(key, new CButeValue(BUTE_RANGE, val));
 }
 
 RVA_COMPGEN(0x00174cb0, 0x49, ??0CButeValue@@QAE@W4ButeType@@PAVCARange@@@Z)
 
-RVA_COMPGEN(0x00174d00, 0x25, ??0?$zSymTab@UCButeValue@@@@QAE@H@Z)
+RVA_COMPGEN(0x00174d00, 0x25, ??0?$zSymTab@UCButeValue@@@@QAE@W4cleanup_behaviour@zPtrColl@@@Z)
 
 RVA_COMPGEN(0x00174d30, 0x1e, ??_G?$zSymTab@V?$zSymTab@UCButeValue@@@@@@UAEPAXI@Z)
 

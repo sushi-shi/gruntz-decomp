@@ -15,8 +15,8 @@
 
 GZ_ENUM_FORWARD(ButeLexAction);
 
-typedef zSymTab<CButeValue> CButeNode;
-typedef zSymTab<CButeNode> CBSecStream;
+typedef zSymTab<CButeValue> TableOfItems;
+typedef zSymTab<TableOfItems> TableOfTags;
 
 #include <stdlib.h>
 #include <strstrea.h>
@@ -95,11 +95,11 @@ public:
     RVA(0x000213c0, 0x14c)
     ~CButeMgr() {}
 
-    CBSecStream* Tags() {
+    TableOfTags* Tags() {
         return &m_tagTab;
     }
 
-    CBSecStream* ModifiedTags() {
+    TableOfTags* ModifiedTags() {
         return &m_auxTagTab;
     }
 
@@ -112,11 +112,11 @@ public:
     char m_pad0e[0x10 - 0xe];
     CString m_sErrorString;
     ErrCallback m_pDisplayFunc;
-    CBSecStream m_tagTab;
+    TableOfTags m_tagTab;
 
-    CButeNode* m_pCurrTabOfItems;
-    CBSecStream m_auxTagTab;
-    CBSecStream m_newTagTab;
+    TableOfItems* m_pCurrTabOfItems;
+    TableOfTags m_auxTagTab;
+    TableOfTags m_newTagTab;
     istream* m_pData;
 
     iostream* m_pSaveData;
@@ -159,9 +159,9 @@ inline bool CButeMgr::Parse(CRezItm* stream, const char* key) {
     stream->UnLoad();
 
     Reset();
-    m_tagTab.Reset();
-    m_auxTagTab.Reset();
-    m_newTagTab.Reset();
+    m_tagTab.clear();
+    m_auxTagTab.clear();
+    m_newTagTab.clear();
     bool result = true;
     if (!TagList()) {
         m_bErrorFlag = 1;
@@ -174,8 +174,8 @@ inline bool CButeMgr::Parse(CRezItm* stream, const char* key) {
 
 extern CButeMgr g_buteMgr;
 
-void ButeGroup_Apply(char* key, void* value, void* ctx);
-void ButeTag_Apply(char* key, void* value, void* ctx);
+void ButeGroup_Apply(const char* key, CButeValue* value, void* ctx);
+void ButeTag_Apply(const char* key, TableOfItems* value, void* ctx);
 #include <stdio.h>
 
 #endif // SRC_BUTE_BUTEMGR_H

@@ -44,7 +44,15 @@ struct TypeKeyRec {
 
 class CButeTree : public zPTree {
 public:
-    CButeTree(void(__cdecl* teardown)(void*), i32 n) : zPTree(teardown, n) {}
+    CButeTree(dtorf_t destructor, cleanup_behaviour cleanup) : zPTree(destructor, cleanup) {}
+
+    void* lookup(const char* key) {
+        return zPTree::lookup(key);
+    }
+
+    void* add(const char* key, void* value) {
+        return zPTree::add(key, value);
+    }
 };
 
 void ButeTreeNopFree(void*);
@@ -53,13 +61,13 @@ extern CButeTree g_buteTree;
 
 static inline i32 ActFindId(const char* key) {
     AddrWord<char> v;
-    v.m_addr = static_cast<char*>(g_buteTree.Find(key));
+    v.m_addr = static_cast<char*>(g_buteTree.lookup(key));
     return v.m_word;
 }
 static inline void ActInsertId(const char* key, i32 id) {
     AddrWord<char> v;
     v.m_word = id;
-    g_buteTree.Insert(key, v.m_addr);
+    g_buteTree.add(key, v.m_addr);
 }
 
 #endif // SRC_BUTE_BUTETREE_H

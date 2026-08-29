@@ -13,6 +13,9 @@ struct CVariantSlot;
 struct CButeValue;
 extern CVariantSlot g_rezArchiveErrorSlot;
 
+typedef void(__cdecl* dtorf_t)(void*);
+typedef void(__cdecl* stvf_t)(const char*, void*, void*);
+
 GZ_ENUM_CONST_BEGIN(PTreeBitLayout)
     PTREE_BITS_PER_BYTE = 8,
     PTREE_BYTE_BIT_SHIFT = 3,
@@ -35,40 +38,75 @@ class zPTreeNode {
 
 class zPtrColl {
 public:
-    zPtrColl(i32 n, void(__cdecl* teardown)(void*));
+    GZ_ENUM_BEGIN(cleanup_behaviour)
+        PASSIVE = 0,
+        NONE = 1,
+        ACTIVE = 2
+    GZ_ENUM_END(cleanup_behaviour)
+
+    size_t count() const {
+        return _count;
+    }
+
+    i32 purge() const {
+        return flags & IDX(ACTIVE);
+    }
+
+    void incc() {
+        ++_count;
+    }
+
+    void decc() {
+        --_count;
+    }
+
+    void resetc(size_t value = 0) {
+        _count = value;
+    }
+
+    void destroy(void* value) {
+        dtor(value);
+    }
+
     virtual ~zPtrColl();
 
-    void(__cdecl* m_teardown)(void*);
-    i16 m_kind;
+protected:
+    zPtrColl(cleanup_behaviour cleanup, dtorf_t destructor);
+
+private:
+    dtorf_t dtor;
+    i16 flags;
     char m_pada[2];
-    i32 m_nodeCount;
+    size_t _count;
 };
 
 class zPTree : public zErrHandling, public zPtrColl {
 public:
-    zPTree(void(__cdecl* teardown)(void*), i32 n);
-
-    void ClearRecursive(zPTreeNode* node);
-
     RVA(0x000212a0, 0x21)
-    void Reset() {
-        ClearRecursive(NULL);
+    void clear() {
+        cleanup();
         root = NULL;
         preview = false;
-        m_nodeCount = 0;
+        resetc();
     }
+
+protected:
+    zPTree(dtorf_t destructor, cleanup_behaviour cleanup = ACTIVE);
 
     virtual ~zPTree() OVERRIDE {
-        ClearRecursive(NULL);
+        cleanup();
     }
 
-    void* Find(const char* key);
+    void* insert(const char* key, void* value);
 
-    void* Insert(const char* key, void* value);
+    void* lookup(const char* key);
 
-    void* FindOrInsert(const char* key, void* value);
+    void* add(const char* key, void* value);
 
-    void Walk(void(__cdecl* fn)(char* key, void* value, void* ctx), void* ctx, zPTreeNode* node);
+    void _trav(stvf_t fn, void* supplementary, zPTreeNode* node);
+
+private:
+    void cleanup(zPTreeNode* node = NULL);
 
     static i32 bit(const char* s, i32 n) {
         return s[n >> PTREE_BYTE_BIT_SHIFT] & (1 << (n & PTREE_BYTE_BIT_MASK));
@@ -85,28 +123,35 @@ public:
 
 template<class T> class zSymTab : public zPTree {
 public:
-    zSymTab(i32 n = 2)
+    zSymTab(cleanup_behaviour cleanup = ACTIVE)
         : zPTree(
-              reinterpret_cast<void(__cdecl*)(void*)>(
-                  dtf
-              ), // PROVEN: original zSymTab erases its typed teardown callback at this ABI seam.
-              n
+              // PROVEN: original zSymTab erases its typed teardown callback at this ABI seam.
+              reinterpret_cast<dtorf_t>(dtf),
+              cleanup
           ) {}
 
-    T* FindOrInsert(const char* key, T* value) {
-        return static_cast<T*>(zPTree::FindOrInsert(key, value));
+    T* insert(const char* key, T* value) {
+        return static_cast<T*>(zPTree::insert(key, value));
     }
 
-    T* Find(const char* key) {
-        return static_cast<T*>(zPTree::Find(key));
+    T* lookup(const char* key) {
+        return static_cast<T*>(zPTree::lookup(key));
     }
 
-    T* Insert(const char* key, T* value) {
-        return static_cast<T*>(zPTree::Insert(key, value));
+    T* add(const char* key, T* value) {
+        return static_cast<T*>(zPTree::add(key, value));
     }
 
-    void Walk(void(__cdecl* fn)(char* key, void* value, void* ctx), void* ctx, zPTreeNode* node) {
-        zPTree::Walk(fn, ctx, node);
+    void traverse(
+        void(__cdecl* fn)(const char* key, T* value, void* supplementary),
+        void* supplementary = NULL
+    ) {
+        zPTree::_trav(
+            // PROVEN: original zSymTab erases its typed traversal callback at this ABI seam.
+            reinterpret_cast<stvf_t>(fn),
+            supplementary,
+            NULL
+        );
     }
 
 private:

@@ -52,7 +52,7 @@ RVA_DYNINIT(0x0016e6a0, 0x26, g_buteTree)
 RVA_DYNINIT(0x0016e6d0, 0xe, g_buteTree)
 RVA_DYNINIT(0x0016e6e0, 0x3e, g_buteTree)
 DATA(0x002bf620)
-CButeTree g_buteTree(&ButeTreeNopFree, 0);
+CButeTree g_buteTree(&ButeTreeNopFree, zPtrColl::PASSIVE);
 
 RVA(0x0016e7f0, 0x1cf)
 i32 CUserLogic::SerializeDispatch(

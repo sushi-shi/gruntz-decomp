@@ -194,9 +194,9 @@ bool CButeMgr::Parse(CString filename, int streamBase) {
     m_decryptCode = streamBase;
     m_sAttributeFilename = filename;
 
-    m_tagTab.Reset();
-    m_auxTagTab.Reset();
-    m_newTagTab.Reset();
+    m_tagTab.clear();
+    m_auxTagTab.clear();
+    m_newTagTab.clear();
 
     bool result = true;
     if (!TagList()) {

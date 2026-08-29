@@ -156,7 +156,7 @@ istream& ReadCurve(istream& accum, CMotionState& c) {
 
 // @early-stop
 RVA(0x0016d190, 0x101)
-void* zPTree::Find(const char* key) {
+void* zPTree::lookup(const char* key) {
     if (key == NULL) {
         char* msg = g_errNullArg;
         g_retAddrBreadcrumb = GetCallerRetAddr();
@@ -513,9 +513,8 @@ void* _zvec::GrowTo(i32 idx, i32 at) {
     return p;
 }
 
-// @early-stop
 RVA(0x0016db90, 0x206)
-void* zPTree::Insert(const char* key, void* value) {
+void* zPTree::add(const char* key, void* value) {
     i32 newbranch;
     i32 dp;
     zPTreeNode* t;
@@ -579,7 +578,7 @@ void* zPTree::Insert(const char* key, void* value) {
     }
 
     t->ptr(!dp) = q;
-    m_nodeCount++;
+    incc();
     return value;
 }
 
@@ -634,21 +633,24 @@ _zvec::~_zvec() {
 }
 
 RVA(0x0016df70, 0x22)
-zPtrColl::zPtrColl(i32 n, void(__cdecl* teardown)(void*))
+zPtrColl::zPtrColl(cleanup_behaviour cleanup, dtorf_t destructor)
 
-    : m_teardown(teardown), m_kind(static_cast<i16>(n)), m_nodeCount(0) {}
+    : dtor(destructor), flags(static_cast<i16>(cleanup)), _count(0) {}
 
 RVA_COMPGEN(0x0016dfa0, 0x1e, ??_GzPtrColl@@UAEPAXI@Z)
 RVA(0x0016dfc0, 0x7)
 zPtrColl::~zPtrColl() {}
 
 RVA(0x0016dff0, 0x73)
-zPTree::zPTree(void(__cdecl* teardown)(void*), i32 n)
+zPTree::zPTree(dtorf_t destructor, cleanup_behaviour cleanup)
 
-    : zErrHandling(&g_rezArchiveErrorSlot), zPtrColl(n, teardown), root(NULL), preview(false) {}
+    : zErrHandling(&g_rezArchiveErrorSlot),
+      zPtrColl(cleanup, destructor),
+      root(NULL),
+      preview(false) {}
 
 RVA(0x0016e070, 0x7b)
-void zPTree::ClearRecursive(zPTreeNode* node) {
+void zPTree::cleanup(zPTreeNode* node) {
     zPTreeNode* n = node;
     if (n == NULL) {
         n = root;
@@ -657,14 +659,14 @@ void zPTree::ClearRecursive(zPTreeNode* node) {
         }
     }
     if (n->left != NULL && n->left->index > n->index) {
-        ClearRecursive(n->left);
+        cleanup(n->left);
     }
     if (n->right != NULL && n->right->index > n->index) {
-        ClearRecursive(n->right);
+        cleanup(n->right);
     }
     delete[] n->symbol;
-    if (m_kind & 2) {
-        m_teardown(n->body);
+    if (purge()) {
+        destroy(n->body);
         delete static_cast<char*>(n->body);
     }
     delete n;
