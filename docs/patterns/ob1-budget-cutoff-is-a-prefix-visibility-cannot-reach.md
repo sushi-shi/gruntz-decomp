@@ -53,7 +53,7 @@ between the two, and NO whole-callee visibility choice puts it there.
 Partial moves do not help either, and the reason is structural: **the budget is shared
 across callees within one caller**, so taking any one callee out of line hands its budget
 to the others. Lane 2m measured the single-callee version: forcing only
-`??0CButeValue@...PAUButeDoubleVector@@@Z` out of line turns all of `SetVector`'s sites into
+`??0CButeValue@...PAVCAVector@@@Z` out of line turns all of `SetVector`'s sites into
 calls *and* makes the ctor body byte-exact, but cl spends the freed budget expanding
 `CopyValue` instead and SetVector drops 56.2 -> 21.2. Doing ctor + `CopyValue` + `~CButeValue`
 together (this measurement) does not recover it — it just reaches the other endpoint.

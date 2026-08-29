@@ -76,7 +76,7 @@ The same idiom shows up wherever retail assembles an aggregate argument. In
 payload **on the stack** and hand its address to the ordinary pointer constructor:
 
 ```asm
-push 0x18                 ; sizeof(ButeDoubleVector)
+push 0x18                 ; sizeof(CAVector)
 mov  [esp+0x44],edx       ; \
 mov  [esp+0x48],eax       ;  } the three doubles, into a 24-byte stack temporary
 mov  [esp+0x4c],ecx       ; /
@@ -90,7 +90,7 @@ mov  edi,eax
 rep movsd                 ; the pointer ctor's own bitwise copy
 ```
 
-so the arm is `new CButeValue(BUTE_VECTOR, &ButeDoubleVector(x, y, z))`, **not** a
+so the arm is `new CButeValue(BUTE_VECTOR, &CAVector(x, y, z))`, **not** a
 `CButeValue(ButeType, double, double, double)` overload. Four such overloads had been
 invented (allocating `new i32[2]` / `new i32[4]` / `new double[2]` / `new double[3]`),
 which also contradicted the destructor and `CopyValue` arms - those delete and copy

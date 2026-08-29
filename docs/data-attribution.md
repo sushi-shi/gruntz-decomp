@@ -910,7 +910,7 @@ unnamed object `?$S<n>@…` — so `canonicalize_data_symbols.STATIC_ORDINAL` ma
 function. Proven collision-free: 13 symbols tree-wide carry more than one `$S<n>` and no
 base obj holds two that mask together. `_s_default_string_butemgr` was also 8 B where
 `s_empty` is a 4-byte `CString`; the extra 4 is the pad in front of the 8-aligned
-`ButeDoubleVector` that follows it.
+`CAVector` that follows it.
 
 | | before | after |
 |---|---|---|

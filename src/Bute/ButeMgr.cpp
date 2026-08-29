@@ -1062,12 +1062,13 @@ bool ButeMgr::ParseAttributeFile() {
                 if (!bDup) {
                     m_currentTag->Insert(
                         m_attributeName,
-                        new CButeValue(BUTE_VECTOR, &ButeDoubleVector(x, y, z))
+                        new CButeValue(BUTE_VECTOR, &CAVector(x, y, z))
                     );
                 }
             } else {
-                ButeDoubleVector v = *GetVector(m_tagName, m_attributeName);
-                (*m_pText) << s_strLt << v.x << s_strComma << v.y << s_strComma << v.z << s_strGt;
+                CAVector v = *GetVector(m_tagName, m_attributeName);
+                (*m_pText) << s_strLt << v.Geti() << s_strComma << v.Getj() << s_strComma
+                           << v.Getk() << s_strGt;
             }
             break;
         case BUTETOK_RANGE:
@@ -1076,12 +1077,12 @@ bool ButeMgr::ParseAttributeFile() {
                 if (!bDup) {
                     m_currentTag->Insert(
                         m_attributeName,
-                        new CButeValue(BUTE_RANGE, &ButeDoubleRange(x, y))
+                        new CButeValue(BUTE_RANGE, &CARange(x, y))
                     );
                 }
             } else {
-                ButeDoubleRange range = *GetRange(m_tagName, m_attributeName);
-                (*m_pText) << "[" << range.x << s_strComma << range.y << "]";
+                CARange range = *GetRange(m_tagName, m_attributeName);
+                (*m_pText) << "[" << range.GetMin() << s_strComma << range.GetMax() << "]";
             }
             break;
         case BUTETOK_STRING:
@@ -1204,18 +1205,18 @@ void ButeGroup_Apply(char* key, void* valuePtr, void* ctx) {
         }
 
         case BUTE_VECTOR: {
-            ButeDoubleVector* ref = static_cast<ButeDoubleVector*>(value->pValue);
-            double x = ref->x;
-            double y = ref->y;
-            double z = ref->z;
+            CAVector* ref = static_cast<CAVector*>(value->pValue);
+            double x = ref->Geti();
+            double y = ref->Getj();
+            double z = ref->Getk();
             output << s_strLt << x << s_strComma << y << s_strComma << z << s_strGt;
             break;
         }
 
         case BUTE_RANGE: {
-            ButeDoubleRange* ref = static_cast<ButeDoubleRange*>(value->pValue);
-            double x = ref->x;
-            double y = ref->y;
+            CARange* ref = static_cast<CARange*>(value->pValue);
+            double x = ref->GetMin();
+            double y = ref->GetMax();
             output << "[" << x << s_strComma << y << "]";
             break;
         }
@@ -1917,13 +1918,13 @@ RVA_COMPGEN(0x001741b0, 0x39, ??0CButeValue@@QAE@W4ButeType@@PAUButeIntPoint@@@Z
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001741f0, 0x4e)
-ButeDoubleVector* CButeMgr::GetVector(const char* tag, const char* key, ButeDoubleVector* def) {
+CAVector* CButeMgr::GetVector(const char* tag, const char* key, CAVector* def) {
     CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
     if (grp) {
         CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
         if (rec) {
             if (rec->type == BUTE_VECTOR) {
-                return static_cast<ButeDoubleVector*>(rec->pValue);
+                return static_cast<CAVector*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
         }
@@ -1933,17 +1934,17 @@ ButeDoubleVector* CButeMgr::GetVector(const char* tag, const char* key, ButeDoub
 
 // @early-stop
 RVA(0x00174240, 0xe3)
-ButeDoubleVector* CButeMgr::GetVector(const char* tag, const char* key) {
+CAVector* CButeMgr::GetVector(const char* tag, const char* key) {
     DATA(0x002bf6a0)
     RVA_DYNINIT(0x00174330, 0x1, s_default)
-    static ButeDoubleVector s_default;
+    static CAVector s_default(0, 0, 0);
 
     CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
     if (grp) {
         CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
         if (rec) {
             if (rec->type == BUTE_VECTOR) {
-                return static_cast<ButeDoubleVector*>(rec->pValue);
+                return static_cast<CAVector*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
             return &s_default;
@@ -1956,7 +1957,7 @@ ButeDoubleVector* CButeMgr::GetVector(const char* tag, const char* key) {
 }
 
 RVA(0x00174340, 0x3e8)
-void CButeMgr::SetVector(const char* tag, const char* key, ButeDoubleVector* val) {
+void CButeMgr::SetVector(const char* tag, const char* key, CAVector* val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tags.Find(tag));
     if (grp) {
         CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
@@ -1993,18 +1994,18 @@ void CButeMgr::SetVector(const char* tag, const char* key, ButeDoubleVector* val
     CButeNode* newAddedTag = static_cast<CButeNode*>(m_addedTags.Insert(tag, new CButeNode(2)));
     newAddedTag->FindOrInsert(key, new CButeValue(BUTE_VECTOR, val));
 }
-RVA_COMPGEN(0x00174730, 0x3c, ??0CButeValue@@QAE@W4ButeType@@PAUButeDoubleVector@@@Z)
+RVA_COMPGEN(0x00174730, 0x3c, ??0CButeValue@@QAE@W4ButeType@@PAVCAVector@@@Z)
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00174770, 0x4e)
-ButeDoubleRange* CButeMgr::GetRange(const char* tag, const char* key, ButeDoubleRange* def) {
+CARange* CButeMgr::GetRange(const char* tag, const char* key, CARange* def) {
     CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
     if (grp) {
         CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
         if (rec) {
             if (rec->type == BUTE_RANGE) {
-                return static_cast<ButeDoubleRange*>(rec->pValue);
+                return static_cast<CARange*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
         }
@@ -2014,17 +2015,17 @@ ButeDoubleRange* CButeMgr::GetRange(const char* tag, const char* key, ButeDouble
 
 // @early-stop
 RVA(0x001747c0, 0xcf)
-ButeDoubleRange* CButeMgr::GetRange(const char* tag, const char* key) {
+CARange* CButeMgr::GetRange(const char* tag, const char* key) {
     DATA(0x002bf6c0)
     RVA_DYNINIT(0x00174890, 0x1, s_default)
-    static ButeDoubleRange s_default;
+    static CARange s_default(0, 0);
 
     CButeNode* grp = static_cast<CButeNode*>(Tags()->Find(tag));
     if (grp) {
         CButeValue* rec = static_cast<CButeValue*>((grp)->Find(key));
         if (rec) {
             if (rec->type == BUTE_RANGE) {
-                return static_cast<ButeDoubleRange*>(rec->pValue);
+                return static_cast<CARange*>(rec->pValue);
             }
             ReportError(s_fmtTypeMismatch, tag, key);
             return &s_default;
@@ -2037,7 +2038,7 @@ ButeDoubleRange* CButeMgr::GetRange(const char* tag, const char* key) {
 }
 
 RVA(0x001748a0, 0x404)
-void CButeMgr::SetRange(const char* tag, const char* key, ButeDoubleRange* val) {
+void CButeMgr::SetRange(const char* tag, const char* key, CARange* val) {
     CButeNode* grp = static_cast<CButeNode*>(m_tags.Find(tag));
     if (grp) {
         CButeValue* hit = static_cast<CButeValue*>(grp->Find(key));
@@ -2075,7 +2076,7 @@ void CButeMgr::SetRange(const char* tag, const char* key, ButeDoubleRange* val) 
     newAddedTag->FindOrInsert(key, new CButeValue(BUTE_RANGE, val));
 }
 
-RVA_COMPGEN(0x00174cb0, 0x49, ??0CButeValue@@QAE@W4ButeType@@PAUButeDoubleRange@@@Z)
+RVA_COMPGEN(0x00174cb0, 0x49, ??0CButeValue@@QAE@W4ButeType@@PAVCARange@@@Z)
 
 RVA(0x00174d00, 0x25)
 CButeNode::CButeNode(i32 kind) : zPTree(&ButeValueTeardown, kind) {}
@@ -2118,10 +2119,10 @@ void __cdecl ButeValueTeardown(void* pValue) {
             delete static_cast<ButeIntPoint*>(v->pValue);
             break;
         case BUTE_VECTOR:
-            delete static_cast<ButeDoubleVector*>(v->pValue);
+            delete static_cast<CAVector*>(v->pValue);
             break;
         case BUTE_RANGE:
-            delete static_cast<ButeDoubleRange*>(v->pValue);
+            delete static_cast<CARange*>(v->pValue);
             break;
     }
 }

@@ -44,9 +44,8 @@ public:
 
     struct ButeIntRect* GetRect(const char* tag, const char* key, struct ButeIntRect* def);
     struct ButeIntPoint* GetPoint(const char* tag, const char* key, struct ButeIntPoint* def);
-    struct ButeDoubleVector*
-    GetVector(const char* tag, const char* key, struct ButeDoubleVector* def);
-    struct ButeDoubleRange* GetRange(const char* tag, const char* key, struct ButeDoubleRange* def);
+    CAVector* GetVector(const char* tag, const char* key, CAVector* def);
+    CARange* GetRange(const char* tag, const char* key, CARange* def);
 
     bool ScanToken(ButeToken expectType);
     bool ParseTagLine();
@@ -87,8 +86,8 @@ public:
     void SetDouble(const char* tag, const char* key, double val);
     void SetString(const char* tag, const char* key, const CString& val);
     void SetRect(const char* tag, const char* key, struct ButeIntRect* val);
-    void SetVector(const char* tag, const char* key, struct ButeDoubleVector* val);
-    void SetRange(const char* tag, const char* key, struct ButeDoubleRange* val);
+    void SetVector(const char* tag, const char* key, CAVector* val);
+    void SetRange(const char* tag, const char* key, CARange* val);
 
     bool Exists(const char* tag, const char* key);
 
@@ -136,8 +135,8 @@ public:
 
     ButeIntRect* GetRect(const char* tag, const char* key);
     ButeIntPoint* GetPoint(const char* tag, const char* key);
-    ButeDoubleVector* GetVector(const char* tag, const char* key);
-    ButeDoubleRange* GetRange(const char* tag, const char* key);
+    CAVector* GetVector(const char* tag, const char* key);
+    CARange* GetRange(const char* tag, const char* key);
 };
 
 class ButeMgr : public CButeMgr {

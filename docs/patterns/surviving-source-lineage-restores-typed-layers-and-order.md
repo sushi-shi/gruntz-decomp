@@ -64,6 +64,16 @@ a per-iteration `pService` alias, and direct `LPARAM` casts around `LB_ADDSTRING
 at 97.2959%, but replaces an invented union-punning temporary with the authored Win32
 boundary and gives later searches the right local census.
 
+Small value types require the same complete-family treatment. The surviving `CARange`
+and `CAVector` declarations removed the inferred `ButeRefLarge` inheritance layer and
+restored their protected members, inline constructors, setters, getters, and authored
+accessor use. Applying only their empty default constructors moved the two static-default
+getters from 99.9296/99.9275 down to 90.6338/93.2609. Composing the surviving
+`static CAVector(0,0,0)` and `static CARange(0,0)` sites returned both to their original
+scores, while the same authentic header state banked `CButeMgr::GetFloat` at exact.
+This is another direct control against one-step ranking: constructor source and its
+initialization sites are one evidence family.
+
 ## The class-model lesson: a trailing union can hide a missing derived layer
 
 The earlier reconstructed `CHashElement` put the owner payloads in a union:

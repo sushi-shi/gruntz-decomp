@@ -66,7 +66,7 @@ pointer:
 
 1. **The other eight payload types have TRIVIAL destructors.** `delete p` only
    null-tests when there is a destructor to run. `ButeIntRect`/`ButeIntPoint`/
-   `ButeDoubleVector`/`ButeDoubleRange` therefore carry **no** `~T() {}` — and cl 5
+   `CAVector`/`CARange` therefore carry **no** `~T() {}` — and cl 5
    still emits the `$E` `atexit` helper for a function-local `static` of class type
    with a trivial destructor (the helper is then the bare `ret` at `0x173840` etc.),
    so the static-default `Get<T>()` functions stay byte-exact either way.

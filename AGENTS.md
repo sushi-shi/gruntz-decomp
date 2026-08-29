@@ -210,6 +210,13 @@
     C2 reorders or strength-reduces the emitted operations. The typed DIB and
     dprintf families closed walls that wide searches inside hand-transcribed
     source families had misclassified as irreducible allocation residue.
+  * import a small value type as a complete declaration/use family. Restoring
+    `CARange`/`CAVector` removed a fabricated inheritance layer and replaced
+    direct field reads with the surviving accessors. Their empty default
+    constructors initially dipped the two default getters; composing the
+    surviving explicit `(0,0)`/`(0,0,0)` static initializers recovered both
+    baselines. Do not judge a constructor without its authored initialization
+    sites.
   * mine games and samples as well as engine libraries. Repeated Shogo/Blood2
     implementations preserve source layers that a later runtime analogue may
     obscure; repeated sibling copies are stronger evidence than one later body.

@@ -5,6 +5,8 @@
 
 #include <Mfc.h>
 
+#include <Bute/ARange.h>
+#include <Bute/AVector.h>
 #include <Enums.h>
 #include <Ints.h>
 
@@ -29,35 +31,6 @@ struct ButeIntPoint {
     ButeIntPoint() : a(0), b(0) {}
     ButeIntPoint(DWORD a_, DWORD b_) : a(a_), b(b_) {}
     DWORD a, b;
-};
-
-struct ButeRefLarge {
-    double x, y, z;
-};
-
-struct ButeDoubleVector : ButeRefLarge {
-    ButeDoubleVector() {
-        x = 0;
-        y = 0;
-        z = 0;
-    }
-    ButeDoubleVector(double x_, double y_, double z_) {
-        x = x_;
-        y = y_;
-        z = z_;
-    }
-};
-
-struct ButeDoubleRange {
-    ButeDoubleRange() {
-        x = 0;
-        y = 0;
-    }
-    ButeDoubleRange(double x_, double y_) {
-        x = x_;
-        y = y_;
-    }
-    double x, y;
 };
 
 struct CButeValue {
@@ -95,13 +68,13 @@ struct CButeValue {
         type = t;
         pValue = new ButeIntRect(*src);
     }
-    CButeValue(ButeType t, ButeDoubleVector* src) {
+    CButeValue(ButeType t, CAVector* src) {
         type = t;
-        pValue = new ButeDoubleVector(*src);
+        pValue = new CAVector(*src);
     }
-    CButeValue(ButeType t, ButeDoubleRange* src) {
+    CButeValue(ButeType t, CARange* src) {
         type = t;
-        pValue = new ButeDoubleRange(*src);
+        pValue = new CARange(*src);
     }
 
     inline ~CButeValue();
@@ -134,11 +107,10 @@ inline CButeValue* CButeValue::CopyValue(CButeValue* other) {
             *static_cast<ButeIntPoint*>(pValue) = *static_cast<ButeIntPoint*>(other->pValue);
             return this;
         case BUTE_VECTOR:
-            *static_cast<ButeDoubleVector*>(pValue) =
-                *static_cast<ButeDoubleVector*>(other->pValue);
+            *static_cast<CAVector*>(pValue) = *static_cast<CAVector*>(other->pValue);
             return this;
         case BUTE_RANGE:
-            *static_cast<ButeDoubleRange*>(pValue) = *static_cast<ButeDoubleRange*>(other->pValue);
+            *static_cast<CARange*>(pValue) = *static_cast<CARange*>(other->pValue);
             return this;
     }
     return this;
@@ -168,10 +140,10 @@ inline CButeValue::~CButeValue() {
             delete static_cast<ButeIntPoint*>(pValue);
             break;
         case BUTE_VECTOR:
-            delete static_cast<ButeDoubleVector*>(pValue);
+            delete static_cast<CAVector*>(pValue);
             break;
         case BUTE_RANGE:
-            delete static_cast<ButeDoubleRange*>(pValue);
+            delete static_cast<CARange*>(pValue);
             break;
     }
 }
