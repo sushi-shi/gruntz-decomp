@@ -1,6 +1,7 @@
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/BattlezUnitKind.h>
