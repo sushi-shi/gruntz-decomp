@@ -37,16 +37,6 @@ extern Font g_mediumFont;
 extern Font g_smallFont;
 extern Font g_tinyFont;
 
-struct TextExtent {
-    TextExtent() {}
-    TextExtent(i32 w, i32 h) {
-        width = w;
-        height = h;
-    }
-    i32 width;
-    i32 height;
-};
-
 class CDDSurface;
 
 class FontRenderer {
@@ -56,18 +46,18 @@ public:
     void SetFont(Font* f);
     void SetColor(i32 color);
 
-    TextExtent MeasureText(CString text);
+    CSize MeasureText(CString text);
 
     void DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 blend);
 
     void DrawLine(CString text, CDDSurface* surf, i32 x, i32 y, i32 z);
     void DrawLineClipped(CString text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 z);
 
-    TextExtent MeasureWrapped(CString text, CRect rc);
+    CSize MeasureWrapped(CString text, CRect rc);
 
     void DrawWrapped(CString text, CDDSurface* surf, CRect rc, i32 z, i32 hcenter, i32 spacing);
 
-    TextExtent LayoutWrapped(CString text, CRect rc, i32* outLen);
+    CSize LayoutWrapped(CString text, CRect rc, i32* outLen);
 
     Font* m_font;
     COLORREF m_color;
