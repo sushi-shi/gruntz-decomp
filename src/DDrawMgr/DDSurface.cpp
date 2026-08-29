@@ -1287,6 +1287,22 @@ i32 CDDSurface::Blit2416(u8* srcv, RasterRowOrder rowOrder) {
     return 1;
 }
 
+static inline i32 FindNearestColor(PALETTEENTRY* pal, u8 red, u8 green, u8 blue) {
+    i32 best = 0;
+    i32 bestd = SQR(red - pal->peRed) + SQR(green - pal->peGreen) + SQR(blue - pal->peBlue);
+    for (i32 k = 1; k < PALETTE_ENTRY_COUNT; k++) {
+        i32 d = SQR(red - pal[k].peRed) + SQR(green - pal[k].peGreen) + SQR(blue - pal[k].peBlue);
+        if (d < bestd) {
+            bestd = d;
+            best = k;
+            if (bestd == 0) {
+                break;
+            }
+        }
+    }
+    return best;
+}
+
 RVA(0x00140110, 0x30b)
 i32 CDDSurface::Blit824(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
     if (pal == NULL) {
@@ -1303,22 +1319,7 @@ i32 CDDSurface::Blit824(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
                 u8 blue = *srcv++;
                 u8 green = *srcv++;
                 u8 red = *srcv++;
-                i32 best = 0;
-                i32 bestd =
-                    SQR(red - pal->peRed) + SQR(green - pal->peGreen) + SQR(blue - pal->peBlue);
-                for (i32 k = 1; k < PALETTE_ENTRY_COUNT; k++) {
-                    i32 d = SQR(red - pal[k].peRed) + SQR(green - pal[k].peGreen)
-                            + SQR(blue - pal[k].peBlue);
-                    if (d < bestd) {
-                        bestd = d;
-                        best = k;
-                        if (bestd == 0) {
-                            break;
-                        }
-                    }
-                }
-                *dst = static_cast<u8>(best);
-                dst++;
+                *dst++ = static_cast<u8>(FindNearestColor(pal, red, green, blue));
             }
         }
     } else {
@@ -1328,22 +1329,7 @@ i32 CDDSurface::Blit824(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
                 u8 blue = *srcv++;
                 u8 green = *srcv++;
                 u8 red = *srcv++;
-                i32 best = 0;
-                i32 bestd =
-                    SQR(red - pal->peRed) + SQR(green - pal->peGreen) + SQR(blue - pal->peBlue);
-                for (i32 k = 1; k < PALETTE_ENTRY_COUNT; k++) {
-                    i32 d = SQR(red - pal[k].peRed) + SQR(green - pal[k].peGreen)
-                            + SQR(blue - pal[k].peBlue);
-                    if (d < bestd) {
-                        bestd = d;
-                        best = k;
-                        if (bestd == 0) {
-                            break;
-                        }
-                    }
-                }
-                *dst = static_cast<u8>(best);
-                dst++;
+                *dst++ = static_cast<u8>(FindNearestColor(pal, red, green, blue));
             }
         }
     }
@@ -1374,22 +1360,7 @@ i32 CDDSurface::Blit816(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
                 red = static_cast<u8>((static_cast<u8>((px >> g_rUp)) << g_rDown));
                 green = static_cast<u8>((static_cast<u8>((px >> g_gUp)) << g_gDown));
                 blue = static_cast<u8>((static_cast<u8>(px) << g_bDown));
-                i32 best = 0;
-                i32 bestd =
-                    SQR(red - pal->peRed) + SQR(green - pal->peGreen) + SQR(blue - pal->peBlue);
-                for (i32 k = 1; k < PALETTE_ENTRY_COUNT; k++) {
-                    i32 d = SQR(red - pal[k].peRed) + SQR(green - pal[k].peGreen)
-                            + SQR(blue - pal[k].peBlue);
-                    if (d < bestd) {
-                        bestd = d;
-                        best = k;
-                        if (bestd == 0) {
-                            break;
-                        }
-                    }
-                }
-                *dst = static_cast<u8>(best);
-                dst++;
+                *dst++ = static_cast<u8>(FindNearestColor(pal, red, green, blue));
             }
         }
     } else {
@@ -1400,22 +1371,7 @@ i32 CDDSurface::Blit816(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
                 red = static_cast<u8>((static_cast<u8>((px >> g_rUp)) << g_rDown));
                 green = static_cast<u8>((static_cast<u8>((px >> g_gUp)) << g_gDown));
                 blue = static_cast<u8>((static_cast<u8>(px) << g_bDown));
-                i32 best = 0;
-                i32 bestd =
-                    SQR(red - pal->peRed) + SQR(green - pal->peGreen) + SQR(blue - pal->peBlue);
-                for (i32 k = 1; k < PALETTE_ENTRY_COUNT; k++) {
-                    i32 d = SQR(red - pal[k].peRed) + SQR(green - pal[k].peGreen)
-                            + SQR(blue - pal[k].peBlue);
-                    if (d < bestd) {
-                        bestd = d;
-                        best = k;
-                        if (bestd == 0) {
-                            break;
-                        }
-                    }
-                }
-                *dst = static_cast<u8>(best);
-                dst++;
+                *dst++ = static_cast<u8>(FindNearestColor(pal, red, green, blue));
             }
         }
     }
