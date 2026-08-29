@@ -65,7 +65,7 @@ i32 CImage::Resolve(CRezItm* src, i32 keyed) {
     BEGIN_FILE_IMAGE_PARSE(src, index, resolved)
 
     RecordBytes<PidHeader> blob;
-    blob.m_chars = resolved;
+    blob.m_bytes = resolved;
     i32 result = this->LoadDispatch(
 
         static_cast<PidHeader*>(blob.m_rec),

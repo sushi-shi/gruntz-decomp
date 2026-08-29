@@ -280,28 +280,28 @@ i32 CPlay::BuildMusicCategoryTable(i32) {
     if (levelSet) {
         CRezItm* e = levelSet->GetRez("AMBIENT0", REZ_TAG_XMI);
         if (e) {
-            char* res = e->Load();
+            u8* res = e->Load();
             if (res) {
                 m_mgr->m_midi->LoadBuffer(res, e->GetSize(), "AMBIENT0");
             }
         }
         e = levelSet->GetRez("AMBIENT1", REZ_TAG_XMI);
         if (e) {
-            char* res = e->Load();
+            u8* res = e->Load();
             if (res) {
                 m_mgr->m_midi->LoadBuffer(res, e->GetSize(), "AMBIENT1");
             }
         }
         e = levelSet->GetRez("INTRO0", REZ_TAG_XMI);
         if (e) {
-            char* res = e->Load();
+            u8* res = e->Load();
             if (res) {
                 m_mgr->m_midi->LoadBuffer(res, e->GetSize(), "INTRO0");
             }
         }
         e = levelSet->GetRez("INTRO1", REZ_TAG_XMI);
         if (e) {
-            char* res = e->Load();
+            u8* res = e->Load();
             if (res) {
                 m_mgr->m_midi->LoadBuffer(res, e->GetSize(), "INTRO1");
             }
@@ -312,21 +312,21 @@ i32 CPlay::BuildMusicCategoryTable(i32) {
     if (gameSet) {
         CRezItm* e = gameSet->GetRez("POWERUP", REZ_TAG_XMI);
         if (e) {
-            char* res = e->Load();
+            u8* res = e->Load();
             if (res) {
                 m_mgr->m_midi->LoadBuffer(res, e->GetSize(), "POWERUP");
             }
         }
         e = gameSet->GetRez("CURSE", REZ_TAG_XMI);
         if (e) {
-            char* res = e->Load();
+            u8* res = e->Load();
             if (res) {
                 m_mgr->m_midi->LoadBuffer(res, e->GetSize(), "CURSE");
             }
         }
         e = gameSet->GetRez("MONOLITH", REZ_TAG_XMI);
         if (e) {
-            char* res = e->Load();
+            u8* res = e->Load();
             if (res) {
                 m_mgr->m_midi->LoadBuffer(res, e->GetSize(), "MONOLITH");
             }

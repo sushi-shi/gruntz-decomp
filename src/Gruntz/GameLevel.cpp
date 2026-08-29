@@ -320,13 +320,13 @@ i32 CGameLevel::LoadFromFile(const char* path) {
 
 RVA(0x0015d630, 0x41)
 i32 CGameLevel::LoadFromSource(CRezItm* source) {
-    char* handle = source->Load();
+    u8* handle = source->Load();
     if (handle == NULL) {
         return 0;
     }
 
     // Byte-forced view of packed WWD storage.
-    if (LoadWwd(reinterpret_cast<WwdHeader*>(handle)) == 0) {
+    if (LoadWwd(static_cast<WwdHeader*>(static_cast<void*>(handle))) == 0) {
         source->UnLoad();
         return 0;
     }

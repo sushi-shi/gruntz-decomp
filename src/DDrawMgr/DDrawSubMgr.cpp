@@ -831,7 +831,7 @@ i32 SoundCue::LoadFromFile(char* path) {
 
 RVA(0x00158760, 0x59)
 i32 SoundCue::LoadFromSource(CRezItm* source) {
-    char* blob = source->Load();
+    u8* blob = source->Load();
     if (blob == NULL) {
         return 0;
     }
@@ -841,7 +841,7 @@ i32 SoundCue::LoadFromSource(CRezItm* source) {
         ok = false;
     } else {
         RecordBytes<RiffWaveHeader> riff;
-        riff.m_chars = blob;
+        riff.m_bytes = blob;
         m_sound = dev->LoadSample(riff.m_rec, 0x100ea, 0);
         ok = m_sound != NULL;
     }

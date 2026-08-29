@@ -9,7 +9,7 @@
 #include <Rez/RezFile.h>
 #include <Rez/RezHash.h>
 #include <Rez/RezList.h>
-#include <Rez/RezTypeTag.h>
+#include <Rez/RezTypes.h>
 
 struct CRezItm;
 
@@ -17,28 +17,33 @@ struct CRezItm;
 GZ_ENUM_CONST_BEGIN(RezArchiveMagic)
     REZ_ARCHIVE_MAGIC_CR = '\r',
     REZ_ARCHIVE_MAGIC_LF = '\n',
-    REZ_ARCHIVE_MAGIC_EOF = 0x1a
+    REZ_ARCHIVE_MAGIC_EOF = 0x1a,
+    REZ_MGR_USER_TITLE_SIZE = 60
 GZ_ENUM_CONST_END(RezArchiveMagic)
 
 GZ_ENUM_FORWARD(RezArchiveVersion);
 
-struct RezArchiveHeader {
-    u8 m_initialCarriageReturn;
-    char m_bannerBlock1[0x3f - 0x01];
-    u8 m_firstBannerLineFeed;
-    char m_bannerBlock2[0x7e - 0x40];
-    u8 m_dosEndMarker;
-    RezArchiveVersion m_nFileFormatVersion;
-    i32 m_nRootDirPos;
-    i32 m_nRootDirSize;
-    i32 m_nRootDirTime;
-    i32 m_nNextWritePos;
-    i32 m_nLastTimeModified;
-    u32 m_nLargestKeyAry;
-    u32 m_nLargestDirNameSize;
-    u32 m_nLargestRezNameSize;
-    u32 m_nLargestCommentSize;
-    u8 m_bIsSorted;
+struct FileMainHeaderStruct {
+    char CR1;
+    char LF1;
+    char FileType[REZ_MGR_USER_TITLE_SIZE];
+    char CR2;
+    char LF2;
+    char UserTitle[REZ_MGR_USER_TITLE_SIZE];
+    char CR3;
+    char LF3;
+    char EOF1;
+    RezArchiveVersion FileFormatVersion;
+    u32 RootDirPos;
+    u32 RootDirSize;
+    REZTIME RootDirTime;
+    u32 NextWritePos;
+    REZTIME Time;
+    u32 LargestKeyAry;
+    u32 LargestDirNameSize;
+    u32 LargestRezNameSize;
+    u32 LargestCommentSize;
+    u8 IsSorted;
 };
 
 #pragma pack(pop)
@@ -72,7 +77,7 @@ public:
         return m_bFileOpened;
     }
 
-    i32 GetTime() {
+    REZTIME GetTime() {
         return m_nLastTimeModified;
     }
 
@@ -166,7 +171,7 @@ private:
     i32 IsDirectory(const char* fileName);
     CRezItm* AllocateRezItm();
     void DeAllocateRezItm(CRezItm* item);
-    i32 GetCurTime();
+    REZTIME GetCurTime();
 
     char* m_sDirSeparators;
     b32 m_bIsSorted;
@@ -179,11 +184,11 @@ private:
     i32 m_nMaxOpenFilesInEmulatedDir;
     u32 m_nRootDirPos;
     u32 m_nRootDirSize;
-    i32 m_nRootDirTime;
-    i32 m_nNextWritePos;
+    REZTIME m_nRootDirTime;
+    u32 m_nNextWritePos;
     b32 m_bReadOnly;
     CRezDir* m_pRootDir;
-    i32 m_nLastTimeModified;
+    REZTIME m_nLastTimeModified;
     b32 m_bMustReWriteDirs;
     RezArchiveVersion m_nFileFormatVersion;
 

@@ -55,7 +55,7 @@ i32 CGruntzMgr::ResolveLevelChecksum(
             if (sub == NULL) {
                 return 0;
             }
-            char* parsed = sub->Load();
+            u8* parsed = sub->Load();
             if (parsed == NULL) {
                 return 0;
             }
@@ -72,7 +72,7 @@ i32 CGruntzMgr::ResolveLevelChecksum(
             if (sub == NULL) {
                 return 0;
             }
-            char* parsed = sub->Load();
+            u8* parsed = sub->Load();
             if (parsed == NULL) {
                 return 0;
             }
@@ -97,7 +97,7 @@ i32 CGruntzMgr::ResolveLevelChecksum(
         if (sub == NULL) {
             return 0;
         }
-        char* parsed = sub->Load();
+        u8* parsed = sub->Load();
         if (parsed == NULL) {
             return 0;
         }

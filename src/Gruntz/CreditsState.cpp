@@ -88,7 +88,7 @@ i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 pre
     if (midiTable) {
         CRezItm* creditsEntry = midiTable->GetRez("PLAY", REZ_TAG_XMI);
         if (creditsEntry) {
-            char* creditsData = creditsEntry->Load();
+            u8* creditsData = creditsEntry->Load();
             if (creditsData) {
                 m_mgr->m_midi->LoadBuffer(creditsData, creditsEntry->GetSize(), "CREDITZ");
             }
@@ -98,7 +98,7 @@ i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 pre
     if (midiTable) {
         CRezItm* monolithEntry = midiTable->GetRez("MONOLITH", REZ_TAG_XMI);
         if (monolithEntry) {
-            char* monolithData = monolithEntry->Load();
+            u8* monolithData = monolithEntry->Load();
             if (monolithData) {
                 m_mgr->m_midi->LoadBuffer(monolithData, monolithEntry->GetSize(), "MONOLITH");
             }
@@ -376,7 +376,7 @@ i32 CCreditsState::SetupTitle() {
 
     CRezItm* sect = StateResources()->GetRez("CREDITZ", REZ_TAG_TXT);
     if (sect) {
-        char* src = sect->Load();
+        u8* src = sect->Load();
         if (!src) {
             return 0;
         }

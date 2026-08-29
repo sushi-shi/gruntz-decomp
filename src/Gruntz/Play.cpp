@@ -1148,7 +1148,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             if (ins == NULL) {
                 return 0;
             }
-            desc = ins->Load();
+            desc = static_cast<char*>(static_cast<void*>(ins->Load()));
             if (desc == NULL) {
                 goto fail0;
             }
@@ -1177,7 +1177,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             if (ins == NULL) {
                 return 0;
             }
-            desc = ins->Load();
+            desc = static_cast<char*>(static_cast<void*>(ins->Load()));
             if (desc == NULL) {
                 goto fail0;
             }

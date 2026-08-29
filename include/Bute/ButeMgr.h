@@ -149,9 +149,9 @@ inline bool CButeMgr::Parse(CRezItm* stream, const char* key) {
     }
 
     m_bCrypt = 1;
-    char* encoded = stream->Load();
+    u8* encoded = stream->Load();
     i32 length = stream->GetSize();
-    istrstream* input = new istrstream(encoded, length);
+    istrstream* input = new istrstream(static_cast<char*>(static_cast<void*>(encoded)), length);
     m_cryptMgr.SetKey(key);
     char* decoded = new char[length];
     ostrstream* output = new ostrstream(decoded, length, 2);

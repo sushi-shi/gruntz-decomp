@@ -970,8 +970,8 @@ i32 CAniElement::Configure(SoundCueRegistry* ctx, CRezItm* entry, i32 flags) {
     }
     m_flags = flags;
     RecordBytes<CAniSource> src;
-    src.m_chars = entry->Load();
-    if (src.m_chars == NULL) {
+    src.m_bytes = entry->Load();
+    if (src.m_bytes == NULL) {
         return 0;
     }
     i32 r = Build(ctx, src.m_rec, 0);
@@ -1027,7 +1027,7 @@ RVA(0x001658c0, 0xcc)
 CDDrawPaletteResource*
 CDDrawPaletteRegistry::LoadPaletteFromSource(CRezItm* src, const char* key, i32 flags) {
     RecordBytes<char> source;
-    source.m_chars = src->Load();
+    source.m_bytes = src->Load();
     u8* data = source.m_bytes;
     if (data == NULL) {
         return NULL;
@@ -1085,7 +1085,7 @@ CDDrawPaletteRegistry::LoadPaletteFromTrailingData(CRezItm* src, i32 key, i32 fl
     if (src->GetType() != IMGTAG_XCP) {
         return NULL;
     }
-    char* data = src->Load();
+    u8* data = src->Load();
     if (data == NULL) {
         return NULL;
     }

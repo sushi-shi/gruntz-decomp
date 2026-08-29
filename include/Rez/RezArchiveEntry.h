@@ -6,7 +6,7 @@
 #include <Enums.h>
 #include <Ints.h>
 #include <Rez/RezHash.h>
-#include <Rez/RezTypeTag.h>
+#include <Rez/RezTypes.h>
 
 #include <stddef.h>
 
@@ -22,25 +22,25 @@ public:
     }
 
     GZ_ENUM_RETURN(RezTypeTag, u32) GetType();
-    u32 GetSize() {
+    REZSIZE GetSize() {
         return m_nSize;
     }
     CRezDir* GetParentDir() {
         return m_pParentDir;
     }
-    i32 GetTime() {
+    REZTIME GetTime() {
         return m_nTime;
     }
     u32 GetSeekPos() {
         return m_nCurPos;
     }
-    void SetTime(i32 time) {
+    void SetTime(REZTIME time) {
         m_nTime = time;
     }
     u32 DirectRead_GetFileOffset() {
         return m_nFilePos;
     }
-    char* Load();
+    u8* Load();
     i32 UnLoad();
 
     char* GetDir();
@@ -76,31 +76,31 @@ private:
     void InitRezItm(
         CRezDir* directory,
         const char* name,
-        void* resourceId,
+        REZID resourceId,
         CRezTyp* type,
-        void* comment,
-        i32 size,
-        i32 dataOffset,
-        i32 time,
-        i32 keyCount,
-        void* keys,
+        REZDESC comment,
+        REZSIZE size,
+        u32 dataOffset,
+        REZTIME time,
+        u32 keyCount,
+        REZKEYVAL* keys,
         CBaseRezFile* storage
     );
     void TermRezItm();
 
     char* m_sName;
     CRezTyp* m_pType;
-    i32 m_nTime;
+    REZTIME m_nTime;
 
-    u32 m_nSize;
+    REZSIZE m_nSize;
     CRezDir* m_pParentDir;
 
-    i32 m_nFilePos;
-    i32 m_nCurPos;
+    u32 m_nFilePos;
+    u32 m_nCurPos;
 
     CRezItmHashByName m_heName;
     CBaseRezFile* m_pRezFile;
-    char* m_pData;
+    u8* m_pData;
 };
 
 #define BEGIN_FILE_IMAGE_PARSE(source, format, bytes)                                              \
@@ -121,7 +121,7 @@ private:
         default:                                                                                   \
             return 0;                                                                              \
     }                                                                                              \
-    char* bytes = source->Load();                                                                  \
+    u8* bytes = source->Load();                                                                    \
     if (bytes == NULL) {                                                                           \
         return 0;                                                                                  \
     }
