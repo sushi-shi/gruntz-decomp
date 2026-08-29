@@ -902,6 +902,8 @@ CRezMgr::CRezMgr() : m_hashRezItmFreeList(1) {
     m_nRezItmChunkSize = REZ_ARCHIVE_DEFAULT_ENTRIES_PER_POOL_BLOCK;
 }
 
+RVA_COMPGEN(0x0013aaf0, 0x7, ??1CBaseRezFileList@@QAE@XZ)
+
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0013ab00, 0xac)

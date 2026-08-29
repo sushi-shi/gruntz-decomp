@@ -224,6 +224,8 @@ CRezFileDirectoryEmulation::~CRezFileDirectoryEmulation() {
     }
 }
 
+RVA_COMPGEN(0x0013ca30, 0x7, ??1CRezFileSingleFileList@@QAE@XZ)
+
 RVA(0x0013ca40, 0x5)
 u32 CRezFileDirectoryEmulation::Read(u32 itemPos, u32 itemOffset, u32 size, void* data) {
     return 0;

@@ -3538,13 +3538,13 @@ rezarchive	??0CRezMgr@@QAE@PBDHH@Z	100.0000	100.0000	9	e2cec7a2b1f6	0x13ab00	100
 rezarchive	??0CRezMgr@@QAE@XZ	100.0000	100.0000	9	e2cec7a2b1f6	0x13aa10	100.0000	
 rezarchive	??0CRezTyp@@AAE@W4RezTypeTag@@PAVCRezDir@@I@Z	100.0000	100.0000	7	aef77ce5dbd8	0x139c80	100.0000	
 rezarchive	??0CRezTyp@@AAE@W4RezTypeTag@@PAVCRezDir@@II@Z	100.0000	100.0000	7	aef77ce5dbd8	0x139bf0	100.0000	
+rezarchive	??1CBaseRezFileList@@QAE@XZ	100.0000	100.0000	1	cpp:c31a1659255e	0x13aaf0	100.0000	
 rezarchive	??1CRezDir@@AAE@XZ	100.0000	100.0000	6	3390cb2b7fcd	0x139ee0	100.0000	
 rezarchive	??1CRezDirHashTable@@QAE@XZ	100.0000	100.0000	1	cpp:c31a1659255e	0x139ec0	100.0000	
 rezarchive	??1CRezItmChunkList@CRezMgr@@QAE@XZ	100.0000	100.0000	1	cpp:c31a1659255e	0x13abb0	100.0000	
 rezarchive	??1CRezItmHashTableByID@@QAE@XZ	100.0000	100.0000	1	cpp:c31a1659255e	0x139c70	100.0000	
 rezarchive	??1CRezItmHashTableByName@@QAE@XZ	100.0000	100.0000	1	cpp:c31a1659255e	0x139dd0	100.0000	
 rezarchive	??1CRezMgr@@QAE@XZ	100.0000	100.0000	8	b9595fc618a9	0x13abc0	100.0000	
-rezarchive	??1CRezStorageList@@QAE@XZ	100.0000	100.0000	1	cpp:c31a1659255e	0x13aaf0	100.0000	absent
 rezarchive	??1CRezTyp@@AAE@XZ	100.0000	100.0000	8	cfc3bee71f4c	0x139cf0	100.0000	
 rezarchive	??1CRezTypeHashTable@@QAE@XZ	100.0000	100.0000	1	cpp:c31a1659255e	0x139ed0	100.0000	
 rezarchive	?Alloc@CRezMgr@@UAEPAXI@Z	100.0000	100.0000	3	7902788ac455	0x13b9f0	100.0000	
@@ -3629,7 +3629,7 @@ rezfile	??1CBaseRezFile@@UAE@XZ	100.0000	100.0000	2	63a98984a022	0x13c520	100.00
 rezfile	??1CRezFile@@UAE@XZ	100.0000	100.0000	1	f4c54fbdfa0d	0x13c590	100.0000	
 rezfile	??1CRezFileDirectoryEmulation@@UAE@XZ	100.0000	100.0000	2	d179d368fe75	0x13c9b0	100.0000	
 rezfile	??1CRezFileSingleFile@@UAE@XZ	100.0000	100.0000	2	c02022ecf5c5	0x13cb80	100.0000	
-rezfile	??1CRezList@@QAE@XZ	100.0000	100.0000	1	cpp:12d4935582e8	0x13ca30	100.0000	absent
+rezfile	??1CRezFileSingleFileList@@QAE@XZ	100.0000	100.0000	1	cpp:12d4935582e8	0x13ca30	100.0000	
 rezfile	??_GCBaseRezFile@@UAEPAXI@Z	100.0000	100.0000	1	cpp:12d4935582e8	0x13c500	100.0000	
 rezfile	??_GCRezFile@@UAEPAXI@Z	100.0000	100.0000	1	cpp:55b8d720896a	0x13c570	100.0000	
 rezfile	??_GCRezFileDirectoryEmulation@@UAEPAXI@Z	100.0000	100.0000	1	cpp:12d4935582e8	0x13c990	100.0000	
