@@ -25,6 +25,77 @@ class iostream;
 
 class CButeMgr {
 public:
+    GZ_ENUM_BEGIN(SymTypes)
+        INT_TYPE = 0,
+        DWORD_TYPE = 1,
+        DOUBLE_TYPE = 2,
+        FLOAT_TYPE = 3,
+        STRING_TYPE = 4,
+        RECT_TYPE = 5,
+        POINT_TYPE = 6,
+        VECTOR_TYPE = 7,
+        RANGE_TYPE = 8
+    GZ_ENUM_END(SymTypes)
+
+    class CSymTabItem {
+    public:
+        SymTypes SymType;
+
+        CSymTabItem() {}
+
+        CSymTabItem(SymTypes t, ButeIntPoint* src) {
+            SymType = t;
+            data.point = new ButeIntPoint(*src);
+        }
+        CSymTabItem(SymTypes t, i32 val) {
+            SymType = t;
+            data.i = new i32(val);
+        }
+        CSymTabItem(SymTypes t, DWORD val) {
+            SymType = t;
+            data.dw = new DWORD(val);
+        }
+        CSymTabItem(SymTypes t, float val) {
+            SymType = t;
+            data.f = new float(val);
+        }
+        CSymTabItem(SymTypes t, double val) {
+            SymType = t;
+            data.d = new double(val);
+        }
+        CSymTabItem(SymTypes t, const CString& val) {
+            SymType = t;
+            data.s = new CString(val);
+        }
+        CSymTabItem(SymTypes t, ButeIntRect* src) {
+            SymType = t;
+            data.r = new ButeIntRect(*src);
+        }
+        CSymTabItem(SymTypes t, CAVector* src) {
+            SymType = t;
+            data.v = new CAVector(*src);
+        }
+        CSymTabItem(SymTypes t, CARange* src) {
+            SymType = t;
+            data.range = new CARange(*src);
+        }
+
+        ~CSymTabItem();
+        const CSymTabItem& operator=(const CSymTabItem& item);
+
+        union {
+            i32* i;
+            DWORD* dw;
+            double* d;
+            float* f;
+            CString* s;
+            ButeIntRect* r;
+            ButeIntPoint* point;
+            CAVector* v;
+            CARange* range;
+        } data;
+    };
+
     i32 GetInt(const char* tag, const char* key, i32 def);
     i32 GetInt(const char* tag, const char* key);
     DWORD GetDword(const char* tag, const char* key, DWORD def);
@@ -93,7 +164,7 @@ public:
     ~CButeMgr() {}
 
 private:
-    typedef zSymTab<CButeValue> TableOfItems;
+    typedef zSymTab<CSymTabItem> TableOfItems;
     typedef zSymTab<TableOfItems> TableOfTags;
 
     TableOfTags* Tags() {
@@ -119,7 +190,7 @@ private:
     TableOfTags m_auxTagTab;
     TableOfTags m_newTagTab;
 
-    static void AuxTabItemsSave(const char* key, CButeValue* value, void* ctx);
+    static void AuxTabItemsSave(const char* key, CSymTabItem* value, void* ctx);
     static void NewTabsSave(const char* key, TableOfItems* value, void* ctx);
 
     istream* m_pData;
@@ -145,6 +216,73 @@ public:
     CAVector* GetVector(const char* tag, const char* key);
     CARange* GetRange(const char* tag, const char* key);
 };
+
+RVA(0x00172040, 0x120)
+inline const CButeMgr::CSymTabItem&
+CButeMgr::CSymTabItem::operator=(const CButeMgr::CSymTabItem& item) {
+    switch (SymType) {
+        case INT_TYPE:
+            *data.i = *item.data.i;
+            break;
+        case DWORD_TYPE:
+            *data.dw = *item.data.dw;
+            break;
+        case DOUBLE_TYPE:
+            *data.d = *item.data.d;
+            break;
+        case FLOAT_TYPE:
+            *data.f = *item.data.f;
+            break;
+        case STRING_TYPE:
+            *data.s = *item.data.s;
+            break;
+        case RECT_TYPE:
+            *data.r = *item.data.r;
+            break;
+        case POINT_TYPE:
+            *data.point = *item.data.point;
+            break;
+        case VECTOR_TYPE:
+            *data.v = *item.data.v;
+            break;
+        case RANGE_TYPE:
+            *data.range = *item.data.range;
+            break;
+    }
+    return *this;
+}
+
+inline CButeMgr::CSymTabItem::~CSymTabItem() {
+    switch (SymType) {
+        case INT_TYPE:
+            delete data.i;
+            break;
+        case DWORD_TYPE:
+            delete data.dw;
+            break;
+        case DOUBLE_TYPE:
+            delete data.d;
+            break;
+        case FLOAT_TYPE:
+            delete data.f;
+            break;
+        case STRING_TYPE:
+            delete data.s;
+            break;
+        case RECT_TYPE:
+            delete data.r;
+            break;
+        case POINT_TYPE:
+            delete data.point;
+            break;
+        case VECTOR_TYPE:
+            delete data.v;
+            break;
+        case RANGE_TYPE:
+            delete data.range;
+            break;
+    }
+}
 
 inline bool CButeMgr::Parse(CRezItm* stream, const char* key) {
     if (stream == NULL) {

@@ -244,5 +244,5 @@ i32 __stdcall ChatBoxOwnerReturnTrue(i32) {
 RVA_COMPGEN(0x000212e0, 0x1e, ??_GzPTree@@MAEPAXI@Z)
 
 RVA_COMPGEN(0x00021310, 0x70, ??1zPTree@@MAE@XZ)
-RVA_COMPGEN(0x00021570, 0x70, ??1?$zSymTab@V?$zSymTab@UCButeValue@@@@@@UAE@XZ)
+RVA_COMPGEN(0x00021570, 0x70, ??1?$zSymTab@V?$zSymTab@VCSymTabItem@CButeMgr@@@@@@UAE@XZ)
 RVA_COMPGEN(0x00021600, 0x8, ??_EzPTree@@O7AEPAXI@Z)

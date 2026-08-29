@@ -969,7 +969,7 @@ bool CButeMgr::Statement() {
             intValue = atoi(m_szTokenString);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pCurrTabOfItems->add(m_sAttribute, new CButeValue(BUTE_INT, intValue));
+                    m_pCurrTabOfItems->add(m_sAttribute, new CSymTabItem(INT_TYPE, intValue));
                 }
             } else {
                 intValue = GetInt(m_sTagName, m_sAttribute);
@@ -983,7 +983,7 @@ bool CButeMgr::Statement() {
             dwordValue = strtoul(m_szTokenString, endptr, 10);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pCurrTabOfItems->add(m_sAttribute, new CButeValue(BUTE_DWORD, dwordValue));
+                    m_pCurrTabOfItems->add(m_sAttribute, new CSymTabItem(DWORD_TYPE, dwordValue));
                 }
             } else {
                 dwordValue = GetDword(m_sTagName, m_sAttribute);
@@ -997,7 +997,7 @@ bool CButeMgr::Statement() {
             floatValue = static_cast<float>(atof(m_szTokenString));
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pCurrTabOfItems->add(m_sAttribute, new CButeValue(BUTE_FLOAT, floatValue));
+                    m_pCurrTabOfItems->add(m_sAttribute, new CSymTabItem(FLOAT_TYPE, floatValue));
                 }
             } else {
                 floatValue = GetFloat(m_sTagName, m_sAttribute);
@@ -1008,7 +1008,7 @@ bool CButeMgr::Statement() {
             floatValue = static_cast<float>(atof(m_szTokenString));
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pCurrTabOfItems->add(m_sAttribute, new CButeValue(BUTE_FLOAT, floatValue));
+                    m_pCurrTabOfItems->add(m_sAttribute, new CSymTabItem(FLOAT_TYPE, floatValue));
                 }
             } else {
                 floatValue = GetFloat(m_sTagName, m_sAttribute);
@@ -1019,7 +1019,7 @@ bool CButeMgr::Statement() {
             doubleValue = atof(m_szTokenString);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pCurrTabOfItems->add(m_sAttribute, new CButeValue(BUTE_DOUBLE, doubleValue));
+                    m_pCurrTabOfItems->add(m_sAttribute, new CSymTabItem(DOUBLE_TYPE, doubleValue));
                 }
             } else {
                 doubleValue = GetDouble(m_sTagName, m_sAttribute);
@@ -1032,7 +1032,7 @@ bool CButeMgr::Statement() {
                 if (!bDup) {
                     m_pCurrTabOfItems->add(
                         m_sAttribute,
-                        new CButeValue(BUTE_RECT, &ButeIntRect(a, b, c, d))
+                        new CSymTabItem(RECT_TYPE, &ButeIntRect(a, b, c, d))
                     );
                 }
             } else {
@@ -1048,7 +1048,7 @@ bool CButeMgr::Statement() {
                 if (!bDup) {
                     m_pCurrTabOfItems->add(
                         m_sAttribute,
-                        new CButeValue(BUTE_POINT, &ButeIntPoint(px, py))
+                        new CSymTabItem(POINT_TYPE, &ButeIntPoint(px, py))
                     );
                 }
             } else {
@@ -1063,7 +1063,7 @@ bool CButeMgr::Statement() {
                 if (!bDup) {
                     m_pCurrTabOfItems->add(
                         m_sAttribute,
-                        new CButeValue(BUTE_VECTOR, &CAVector(x, y, z))
+                        new CSymTabItem(VECTOR_TYPE, &CAVector(x, y, z))
                     );
                 }
             } else {
@@ -1078,7 +1078,7 @@ bool CButeMgr::Statement() {
                 if (!bDup) {
                     m_pCurrTabOfItems->add(
                         m_sAttribute,
-                        new CButeValue(BUTE_RANGE, &CARange(x, y))
+                        new CSymTabItem(RANGE_TYPE, &CARange(x, y))
                     );
                 }
             } else {
@@ -1091,7 +1091,7 @@ bool CButeMgr::Statement() {
                 if (!bDup) {
                     m_pCurrTabOfItems->add(
                         m_sAttribute,
-                        new CButeValue(BUTE_STRING, CString(m_szTokenString))
+                        new CSymTabItem(STRING_TYPE, CString(m_szTokenString))
                     );
                 }
             } else {
@@ -1155,40 +1155,40 @@ bool CButeMgr::Tag() {
 }
 
 RVA(0x001712b0, 0x228)
-void CButeMgr::AuxTabItemsSave(const char* key, CButeValue* value, void* ctx) {
+void CButeMgr::AuxTabItemsSave(const char* key, CSymTabItem* value, void* ctx) {
     ostream& output = *static_cast<ostream*>(ctx);
 
     output << "\r\n" << key << " = ";
-    switch (value->type) {
-        case BUTE_INT:
-            output << *static_cast<i32*>(value->pValue);
+    switch (value->SymType) {
+        case INT_TYPE:
+            output << *value->data.i;
             break;
 
-        case BUTE_DWORD:
-            output << s_strDword << *static_cast<DWORD*>(value->pValue);
+        case DWORD_TYPE:
+            output << s_strDword << *value->data.dw;
             break;
 
-        case BUTE_FLOAT: {
-            float scalar = *static_cast<float*>(value->pValue);
+        case FLOAT_TYPE: {
+            float scalar = *value->data.f;
             output << s_strFloat << scalar;
             break;
         }
 
-        case BUTE_DOUBLE:
-            output << *static_cast<double*>(value->pValue);
+        case DOUBLE_TYPE:
+            output << *value->data.d;
             break;
 
-        case BUTE_STRING: {
-            CString& text = *static_cast<CString*>(value->pValue);
+        case STRING_TYPE: {
+            CString& text = *value->data.s;
             ostream& stringOutput = output << static_cast<unsigned char>('"')
                                            << static_cast<const char*>(text);
             stringOutput << static_cast<unsigned char>('"');
             break;
         }
 
-        case BUTE_RECT: {
+        case RECT_TYPE: {
             ostream& rectOutput = output << static_cast<unsigned char>('(');
-            ButeIntRect* ref = static_cast<ButeIntRect*>(value->pValue);
+            ButeIntRect* ref = value->data.r;
             ostream& rectTail = rectOutput << static_cast<long>(ref->a) << s_strComma
                                            << static_cast<long>(ref->b) << s_strComma
                                            << static_cast<long>(ref->c) << s_strComma
@@ -1197,15 +1197,15 @@ void CButeMgr::AuxTabItemsSave(const char* key, CButeValue* value, void* ctx) {
             break;
         }
 
-        case BUTE_POINT: {
-            ButeIntPoint* ref = static_cast<ButeIntPoint*>(value->pValue);
+        case POINT_TYPE: {
+            ButeIntPoint* ref = value->data.point;
             output << s_strOpen << static_cast<long>(ref->a) << s_strComma
                    << static_cast<long>(ref->b) << s_strClose;
             break;
         }
 
-        case BUTE_VECTOR: {
-            CAVector* ref = static_cast<CAVector*>(value->pValue);
+        case VECTOR_TYPE: {
+            CAVector* ref = value->data.v;
             double x = ref->Geti();
             double y = ref->Getj();
             double z = ref->Getk();
@@ -1213,8 +1213,8 @@ void CButeMgr::AuxTabItemsSave(const char* key, CButeValue* value, void* ctx) {
             break;
         }
 
-        case BUTE_RANGE: {
-            CARange* ref = static_cast<CARange*>(value->pValue);
+        case RANGE_TYPE: {
+            CARange* ref = value->data.range;
             double x = ref->GetMin();
             double y = ref->GetMax();
             output << "[" << x << s_strComma << y << "]";
@@ -1353,10 +1353,10 @@ RVA(0x00171aa0, 0x50)
 i32 CButeMgr::GetInt(const char* tag, const char* key, i32 def) {
     TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            if (rec->type == BUTE_INT) {
-                return *static_cast<i32*>(rec->pValue);
+            if (rec->SymType == INT_TYPE) {
+                return *rec->data.i;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
         }
@@ -1368,10 +1368,10 @@ RVA(0x00171af0, 0x86)
 i32 CButeMgr::GetInt(const char* tag, const char* key) {
     TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            if (rec->type == BUTE_INT) {
-                return *static_cast<i32*>(rec->pValue);
+            if (rec->SymType == INT_TYPE) {
+                return *rec->data.i;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
             return COORD_UNSET;
@@ -1387,54 +1387,54 @@ RVA(0x00171b80, 0x478)
 void CButeMgr::SetInt(const char* tag, const char* key, i32 val) {
     TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag));
     if (grp) {
-        CButeValue* hit = static_cast<CButeValue*>(grp->lookup(key));
+        CSymTabItem* hit = static_cast<CSymTabItem*>(grp->lookup(key));
         if (hit) {
-            hit->CopyValue(&CButeValue(BUTE_INT, val));
+            *hit = CSymTabItem(INT_TYPE, val);
             return;
         }
         TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag));
         if (modifiedTag) {
-            CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->lookup(key));
+            CSymTabItem* modifiedValue = static_cast<CSymTabItem*>(modifiedTag->lookup(key));
             if (modifiedValue) {
-                modifiedValue->CopyValue(&CButeValue(BUTE_INT, val));
+                *modifiedValue = CSymTabItem(INT_TYPE, val);
                 return;
             }
-            modifiedTag->add(key, new CButeValue(BUTE_INT, val));
+            modifiedTag->add(key, new CSymTabItem(INT_TYPE, val));
             return;
         }
         TableOfItems* newModifiedTag =
             static_cast<TableOfItems*>(m_auxTagTab.add(tag, new TableOfItems));
-        newModifiedTag->insert(key, new CButeValue(BUTE_INT, val));
+        newModifiedTag->insert(key, new CSymTabItem(INT_TYPE, val));
         return;
     }
 
     TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag));
     if (addedTag) {
-        CButeValue* addedValue = static_cast<CButeValue*>(addedTag->lookup(key));
+        CSymTabItem* addedValue = static_cast<CSymTabItem*>(addedTag->lookup(key));
         if (addedValue) {
-            addedValue->CopyValue(&CButeValue(BUTE_INT, val));
+            *addedValue = CSymTabItem(INT_TYPE, val);
             return;
         }
-        addedTag->add(key, new CButeValue(BUTE_INT, val));
+        addedTag->add(key, new CSymTabItem(INT_TYPE, val));
         return;
     }
     TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag, new TableOfItems));
-    newAddedTag->insert(key, new CButeValue(BUTE_INT, val));
+    newAddedTag->insert(key, new CSymTabItem(INT_TYPE, val));
 }
 
-RVA_COMPGEN(0x00172000, 0x31, ??0CButeValue@@QAE@W4ButeType@@H@Z)
+RVA_COMPGEN(0x00172000, 0x31, ??0CSymTabItem@CButeMgr@@QAE@W4SymTypes@1@H@Z)
 
-RVA_COMPGEN(0x00172160, 0x80, ??1CButeValue@@QAE@XZ)
+RVA_COMPGEN(0x00172160, 0x80, ??1CSymTabItem@CButeMgr@@QAE@XZ)
 
 RVA(0x001721e0, 0x5a)
 DWORD CButeMgr::GetDword(const char* tag, const char* key, DWORD def) {
     TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            switch (rec->type) {
-                case BUTE_DWORD:
-                    return *static_cast<DWORD*>(rec->pValue);
+            switch (rec->SymType) {
+                case DWORD_TYPE:
+                    return *rec->data.dw;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
         }
@@ -1446,11 +1446,11 @@ RVA(0x00172240, 0x7d)
 DWORD CButeMgr::GetDword(const char* tag, const char* key) {
     TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            switch (rec->type) {
-                case BUTE_DWORD:
-                    return *static_cast<DWORD*>(rec->pValue);
+            switch (rec->SymType) {
+                case DWORD_TYPE:
+                    return *rec->data.dw;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
             return 0;
@@ -1466,42 +1466,42 @@ RVA(0x001722c0, 0x3bc)
 void CButeMgr::SetDword(const char* tag, const char* key, DWORD val) {
     TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag));
     if (grp) {
-        CButeValue* hit = static_cast<CButeValue*>(grp->lookup(key));
+        CSymTabItem* hit = static_cast<CSymTabItem*>(grp->lookup(key));
         if (hit) {
-            hit->CopyValue(&CButeValue(BUTE_DWORD, val));
+            *hit = CSymTabItem(DWORD_TYPE, val);
             return;
         }
         TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag));
         if (modifiedTag) {
-            CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->lookup(key));
+            CSymTabItem* modifiedValue = static_cast<CSymTabItem*>(modifiedTag->lookup(key));
             if (modifiedValue) {
-                modifiedValue->CopyValue(&CButeValue(BUTE_DWORD, val));
+                *modifiedValue = CSymTabItem(DWORD_TYPE, val);
                 return;
             }
-            modifiedTag->add(key, new CButeValue(BUTE_DWORD, val));
+            modifiedTag->add(key, new CSymTabItem(DWORD_TYPE, val));
             return;
         }
         TableOfItems* newModifiedTag =
             static_cast<TableOfItems*>(m_auxTagTab.add(tag, new TableOfItems));
-        newModifiedTag->insert(key, new CButeValue(BUTE_DWORD, val));
+        newModifiedTag->insert(key, new CSymTabItem(DWORD_TYPE, val));
         return;
     }
 
     TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag));
     if (addedTag) {
-        CButeValue* addedValue = static_cast<CButeValue*>(addedTag->lookup(key));
+        CSymTabItem* addedValue = static_cast<CSymTabItem*>(addedTag->lookup(key));
         if (addedValue) {
-            addedValue->CopyValue(&CButeValue(BUTE_DWORD, val));
+            *addedValue = CSymTabItem(DWORD_TYPE, val);
             return;
         }
-        addedTag->add(key, new CButeValue(BUTE_DWORD, val));
+        addedTag->add(key, new CSymTabItem(DWORD_TYPE, val));
         return;
     }
     TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag, new TableOfItems));
-    newAddedTag->insert(key, new CButeValue(BUTE_DWORD, val));
+    newAddedTag->insert(key, new CSymTabItem(DWORD_TYPE, val));
 }
 
-RVA_COMPGEN(0x00172680, 0x31, ??0CButeValue@@QAE@W4ButeType@@K@Z)
+RVA_COMPGEN(0x00172680, 0x31, ??0CSymTabItem@CButeMgr@@QAE@W4SymTypes@1@K@Z)
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
@@ -1509,13 +1509,13 @@ RVA(0x001726c0, 0x6b)
 float CButeMgr::GetFloat(const char* tag, const char* key, float def) {
     TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            switch (rec->type) {
-                case BUTE_INT:
-                    return static_cast<float>(*static_cast<i32*>(rec->pValue));
-                case BUTE_FLOAT:
-                    return *static_cast<float*>(rec->pValue);
+            switch (rec->SymType) {
+                case INT_TYPE:
+                    return static_cast<float>(*rec->data.i);
+                case FLOAT_TYPE:
+                    return *rec->data.f;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
         }
@@ -1527,13 +1527,13 @@ RVA(0x00172730, 0x9a)
 float CButeMgr::GetFloat(const char* tag, const char* key) {
     TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            switch (rec->type) {
-                case BUTE_INT:
-                    return static_cast<float>(*static_cast<i32*>(rec->pValue));
-                case BUTE_FLOAT:
-                    return *static_cast<float*>(rec->pValue);
+            switch (rec->SymType) {
+                case INT_TYPE:
+                    return static_cast<float>(*rec->data.i);
+                case FLOAT_TYPE:
+                    return *rec->data.f;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
             return s_floatErr;
@@ -1549,42 +1549,42 @@ RVA(0x001727d0, 0x3c0)
 void CButeMgr::SetFloat(const char* tag, const char* key, float val) {
     TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag));
     if (grp) {
-        CButeValue* hit = static_cast<CButeValue*>(grp->lookup(key));
+        CSymTabItem* hit = static_cast<CSymTabItem*>(grp->lookup(key));
         if (hit) {
-            hit->CopyValue(&CButeValue(BUTE_FLOAT, val));
+            *hit = CSymTabItem(FLOAT_TYPE, val);
             return;
         }
         TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag));
         if (modifiedTag) {
-            CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->lookup(key));
+            CSymTabItem* modifiedValue = static_cast<CSymTabItem*>(modifiedTag->lookup(key));
             if (modifiedValue) {
-                modifiedValue->CopyValue(&CButeValue(BUTE_FLOAT, val));
+                *modifiedValue = CSymTabItem(FLOAT_TYPE, val);
                 return;
             }
-            modifiedTag->add(key, new CButeValue(BUTE_FLOAT, val));
+            modifiedTag->add(key, new CSymTabItem(FLOAT_TYPE, val));
             return;
         }
         TableOfItems* newModifiedTag =
             static_cast<TableOfItems*>(m_auxTagTab.add(tag, new TableOfItems));
-        newModifiedTag->insert(key, new CButeValue(BUTE_FLOAT, val));
+        newModifiedTag->insert(key, new CSymTabItem(FLOAT_TYPE, val));
         return;
     }
 
     TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag));
     if (addedTag) {
-        CButeValue* addedValue = static_cast<CButeValue*>(addedTag->lookup(key));
+        CSymTabItem* addedValue = static_cast<CSymTabItem*>(addedTag->lookup(key));
         if (addedValue) {
-            addedValue->CopyValue(&CButeValue(BUTE_FLOAT, val));
+            *addedValue = CSymTabItem(FLOAT_TYPE, val);
             return;
         }
-        addedTag->add(key, new CButeValue(BUTE_FLOAT, val));
+        addedTag->add(key, new CSymTabItem(FLOAT_TYPE, val));
         return;
     }
     TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag, new TableOfItems));
-    newAddedTag->insert(key, new CButeValue(BUTE_FLOAT, val));
+    newAddedTag->insert(key, new CSymTabItem(FLOAT_TYPE, val));
 }
 
-RVA_COMPGEN(0x00172b90, 0x31, ??0CButeValue@@QAE@W4ButeType@@M@Z)
+RVA_COMPGEN(0x00172b90, 0x31, ??0CSymTabItem@CButeMgr@@QAE@W4SymTypes@1@M@Z)
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
@@ -1592,13 +1592,13 @@ RVA(0x00172bd0, 0x6c)
 double CButeMgr::GetDouble(const char* tag, const char* key, double def) {
     TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            switch (rec->type) {
-                case BUTE_INT:
-                    return static_cast<double>(*static_cast<i32*>(rec->pValue));
-                case BUTE_DOUBLE:
-                    return *static_cast<double*>(rec->pValue);
+            switch (rec->SymType) {
+                case INT_TYPE:
+                    return static_cast<double>(*rec->data.i);
+                case DOUBLE_TYPE:
+                    return *rec->data.d;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
         }
@@ -1610,13 +1610,13 @@ RVA(0x00172c40, 0x9b)
 double CButeMgr::GetDouble(const char* tag, const char* key) {
     TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            switch (rec->type) {
-                case BUTE_INT:
-                    return static_cast<double>(*static_cast<i32*>(rec->pValue));
-                case BUTE_DOUBLE:
-                    return *static_cast<double*>(rec->pValue);
+            switch (rec->SymType) {
+                case INT_TYPE:
+                    return static_cast<double>(*rec->data.i);
+                case DOUBLE_TYPE:
+                    return *rec->data.d;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
             return s_doubleErr;
@@ -1632,51 +1632,51 @@ RVA(0x00172ce0, 0x454)
 void CButeMgr::SetDouble(const char* tag, const char* key, double val) {
     TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag));
     if (grp) {
-        CButeValue* hit = static_cast<CButeValue*>(grp->lookup(key));
+        CSymTabItem* hit = static_cast<CSymTabItem*>(grp->lookup(key));
         if (hit) {
-            hit->CopyValue(&CButeValue(BUTE_DOUBLE, val));
+            *hit = CSymTabItem(DOUBLE_TYPE, val);
             return;
         }
         TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag));
         if (modifiedTag) {
-            CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->lookup(key));
+            CSymTabItem* modifiedValue = static_cast<CSymTabItem*>(modifiedTag->lookup(key));
             if (modifiedValue) {
-                modifiedValue->CopyValue(&CButeValue(BUTE_DOUBLE, val));
+                *modifiedValue = CSymTabItem(DOUBLE_TYPE, val);
                 return;
             }
-            modifiedTag->add(key, new CButeValue(BUTE_DOUBLE, val));
+            modifiedTag->add(key, new CSymTabItem(DOUBLE_TYPE, val));
             return;
         }
         TableOfItems* newModifiedTag =
             static_cast<TableOfItems*>(m_auxTagTab.add(tag, new TableOfItems));
-        newModifiedTag->insert(key, new CButeValue(BUTE_DOUBLE, val));
+        newModifiedTag->insert(key, new CSymTabItem(DOUBLE_TYPE, val));
         return;
     }
 
     TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag));
     if (addedTag) {
-        CButeValue* addedValue = static_cast<CButeValue*>(addedTag->lookup(key));
+        CSymTabItem* addedValue = static_cast<CSymTabItem*>(addedTag->lookup(key));
         if (addedValue) {
-            addedValue->CopyValue(&CButeValue(BUTE_DOUBLE, val));
+            *addedValue = CSymTabItem(DOUBLE_TYPE, val);
             return;
         }
-        addedTag->add(key, new CButeValue(BUTE_DOUBLE, val));
+        addedTag->add(key, new CSymTabItem(DOUBLE_TYPE, val));
         return;
     }
     TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag, new TableOfItems));
-    newAddedTag->insert(key, new CButeValue(BUTE_DOUBLE, val));
+    newAddedTag->insert(key, new CSymTabItem(DOUBLE_TYPE, val));
 }
 
-RVA_COMPGEN(0x00173140, 0x38, ??0CButeValue@@QAE@W4ButeType@@N@Z)
+RVA_COMPGEN(0x00173140, 0x38, ??0CSymTabItem@CButeMgr@@QAE@W4SymTypes@1@N@Z)
 
 RVA(0x00173180, 0x4e)
 CString* CButeMgr::GetString(const char* tag, const char* key, CString* def) {
     TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            if (rec->type == BUTE_STRING) {
-                return static_cast<CString*>(rec->pValue);
+            if (rec->SymType == STRING_TYPE) {
+                return rec->data.s;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
         }
@@ -1694,10 +1694,10 @@ CString* CButeMgr::GetString(const char* tag, const char* key) {
 
     TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            if (rec->type == BUTE_STRING) {
-                return static_cast<CString*>(rec->pValue);
+            if (rec->SymType == STRING_TYPE) {
+                return rec->data.s;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
         } else {
@@ -1714,42 +1714,42 @@ RVA(0x001732a0, 0x3fc)
 void CButeMgr::SetString(const char* tag, const char* key, const CString& val) {
     TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag));
     if (grp) {
-        CButeValue* hit = static_cast<CButeValue*>(grp->lookup(key));
+        CSymTabItem* hit = static_cast<CSymTabItem*>(grp->lookup(key));
         if (hit) {
-            hit->CopyValue(&CButeValue(BUTE_STRING, val));
+            *hit = CSymTabItem(STRING_TYPE, val);
             return;
         }
         TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag));
         if (modifiedTag) {
-            CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->lookup(key));
+            CSymTabItem* modifiedValue = static_cast<CSymTabItem*>(modifiedTag->lookup(key));
             if (modifiedValue) {
-                modifiedValue->CopyValue(&CButeValue(BUTE_STRING, val));
+                *modifiedValue = CSymTabItem(STRING_TYPE, val);
                 return;
             }
-            modifiedTag->add(key, new CButeValue(BUTE_STRING, val));
+            modifiedTag->add(key, new CSymTabItem(STRING_TYPE, val));
             return;
         }
         TableOfItems* newModifiedTag =
             static_cast<TableOfItems*>(m_auxTagTab.add(tag, new TableOfItems));
-        newModifiedTag->insert(key, new CButeValue(BUTE_STRING, val));
+        newModifiedTag->insert(key, new CSymTabItem(STRING_TYPE, val));
         return;
     }
 
     TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag));
     if (addedTag) {
-        CButeValue* addedValue = static_cast<CButeValue*>(addedTag->lookup(key));
+        CSymTabItem* addedValue = static_cast<CSymTabItem*>(addedTag->lookup(key));
         if (addedValue) {
-            addedValue->CopyValue(&CButeValue(BUTE_STRING, val));
+            *addedValue = CSymTabItem(STRING_TYPE, val);
             return;
         }
-        addedTag->add(key, new CButeValue(BUTE_STRING, val));
+        addedTag->add(key, new CSymTabItem(STRING_TYPE, val));
         return;
     }
     TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag, new TableOfItems));
-    newAddedTag->insert(key, new CButeValue(BUTE_STRING, val));
+    newAddedTag->insert(key, new CSymTabItem(STRING_TYPE, val));
 }
 
-RVA_COMPGEN(0x001736a0, 0x5f, ??0CButeValue@@QAE@W4ButeType@@ABVCString@@@Z)
+RVA_COMPGEN(0x001736a0, 0x5f, ??0CSymTabItem@CButeMgr@@QAE@W4SymTypes@1@ABVCString@@@Z)
 RVA_COMPGEN(0x00173700, 0x1e, ??_GCString@@QAEPAXI@Z)
 
 // @dead-code
@@ -1758,10 +1758,10 @@ RVA(0x00173720, 0x4e)
 ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key, ButeIntRect* def) {
     TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            if (rec->type == BUTE_RECT) {
-                return static_cast<ButeIntRect*>(rec->pValue);
+            if (rec->SymType == RECT_TYPE) {
+                return rec->data.r;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
         }
@@ -1778,10 +1778,10 @@ ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key) {
 
     TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            if (rec->type == BUTE_RECT) {
-                return static_cast<ButeIntRect*>(rec->pValue);
+            if (rec->SymType == RECT_TYPE) {
+                return rec->data.r;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
             return &s_default;
@@ -1797,42 +1797,42 @@ RVA(0x00173850, 0x404)
 void CButeMgr::SetRect(const char* tag, const char* key, ButeIntRect* val) {
     TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag));
     if (grp) {
-        CButeValue* hit = static_cast<CButeValue*>(grp->lookup(key));
+        CSymTabItem* hit = static_cast<CSymTabItem*>(grp->lookup(key));
         if (hit) {
-            hit->CopyValue(&CButeValue(BUTE_RECT, val));
+            *hit = CSymTabItem(RECT_TYPE, val);
             return;
         }
         TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag));
         if (modifiedTag) {
-            CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->lookup(key));
+            CSymTabItem* modifiedValue = static_cast<CSymTabItem*>(modifiedTag->lookup(key));
             if (modifiedValue) {
-                modifiedValue->CopyValue(&CButeValue(BUTE_RECT, val));
+                *modifiedValue = CSymTabItem(RECT_TYPE, val);
                 return;
             }
-            modifiedTag->add(key, new CButeValue(BUTE_RECT, val));
+            modifiedTag->add(key, new CSymTabItem(RECT_TYPE, val));
             return;
         }
         TableOfItems* newModifiedTag =
             static_cast<TableOfItems*>(m_auxTagTab.add(tag, new TableOfItems));
-        newModifiedTag->insert(key, new CButeValue(BUTE_RECT, val));
+        newModifiedTag->insert(key, new CSymTabItem(RECT_TYPE, val));
         return;
     }
 
     TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag));
     if (addedTag) {
-        CButeValue* addedValue = static_cast<CButeValue*>(addedTag->lookup(key));
+        CSymTabItem* addedValue = static_cast<CSymTabItem*>(addedTag->lookup(key));
         if (addedValue) {
-            addedValue->CopyValue(&CButeValue(BUTE_RECT, val));
+            *addedValue = CSymTabItem(RECT_TYPE, val);
             return;
         }
-        addedTag->add(key, new CButeValue(BUTE_RECT, val));
+        addedTag->add(key, new CSymTabItem(RECT_TYPE, val));
         return;
     }
     TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag, new TableOfItems));
-    newAddedTag->insert(key, new CButeValue(BUTE_RECT, val));
+    newAddedTag->insert(key, new CSymTabItem(RECT_TYPE, val));
 }
 
-RVA_COMPGEN(0x00173c60, 0x49, ??0CButeValue@@QAE@W4ButeType@@PAUButeIntRect@@@Z)
+RVA_COMPGEN(0x00173c60, 0x49, ??0CSymTabItem@CButeMgr@@QAE@W4SymTypes@1@PAUButeIntRect@@@Z)
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
@@ -1840,10 +1840,10 @@ RVA(0x00173cb0, 0x4e)
 ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key, ButeIntPoint* def) {
     TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            if (rec->type == BUTE_POINT) {
-                return static_cast<ButeIntPoint*>(rec->pValue);
+            if (rec->SymType == POINT_TYPE) {
+                return rec->data.point;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
         }
@@ -1860,10 +1860,10 @@ ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key) {
 
     TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            if (rec->type == BUTE_POINT) {
-                return static_cast<ButeIntPoint*>(rec->pValue);
+            if (rec->SymType == POINT_TYPE) {
+                return rec->data.point;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
             return &s_default;
@@ -1879,41 +1879,41 @@ RVA(0x00173dd0, 0x3d8)
 void CButeMgr::SetPoint(const char* tag, const char* key, ButeIntPoint* val) {
     TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag));
     if (grp) {
-        CButeValue* hit = static_cast<CButeValue*>(grp->lookup(key));
+        CSymTabItem* hit = static_cast<CSymTabItem*>(grp->lookup(key));
         if (hit) {
-            hit->CopyValue(&CButeValue(BUTE_POINT, val));
+            *hit = CSymTabItem(POINT_TYPE, val);
             return;
         }
         TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag));
         if (modifiedTag) {
-            CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->lookup(key));
+            CSymTabItem* modifiedValue = static_cast<CSymTabItem*>(modifiedTag->lookup(key));
             if (modifiedValue) {
-                modifiedValue->CopyValue(&CButeValue(BUTE_POINT, val));
+                *modifiedValue = CSymTabItem(POINT_TYPE, val);
                 return;
             }
-            modifiedTag->add(key, new CButeValue(BUTE_POINT, val));
+            modifiedTag->add(key, new CSymTabItem(POINT_TYPE, val));
             return;
         }
         TableOfItems* newModifiedTag =
             static_cast<TableOfItems*>(m_auxTagTab.add(tag, new TableOfItems));
-        newModifiedTag->insert(key, new CButeValue(BUTE_POINT, val));
+        newModifiedTag->insert(key, new CSymTabItem(POINT_TYPE, val));
         return;
     }
 
     TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag));
     if (addedTag) {
-        CButeValue* addedValue = static_cast<CButeValue*>(addedTag->lookup(key));
+        CSymTabItem* addedValue = static_cast<CSymTabItem*>(addedTag->lookup(key));
         if (addedValue) {
-            addedValue->CopyValue(&CButeValue(BUTE_POINT, val));
+            *addedValue = CSymTabItem(POINT_TYPE, val);
             return;
         }
-        addedTag->add(key, new CButeValue(BUTE_POINT, val));
+        addedTag->add(key, new CSymTabItem(POINT_TYPE, val));
         return;
     }
     TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag, new TableOfItems));
-    newAddedTag->insert(key, new CButeValue(BUTE_POINT, val));
+    newAddedTag->insert(key, new CSymTabItem(POINT_TYPE, val));
 }
-RVA_COMPGEN(0x001741b0, 0x39, ??0CButeValue@@QAE@W4ButeType@@PAUButeIntPoint@@@Z)
+RVA_COMPGEN(0x001741b0, 0x39, ??0CSymTabItem@CButeMgr@@QAE@W4SymTypes@1@PAUButeIntPoint@@@Z)
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
@@ -1921,10 +1921,10 @@ RVA(0x001741f0, 0x4e)
 CAVector* CButeMgr::GetVector(const char* tag, const char* key, CAVector* def) {
     TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            if (rec->type == BUTE_VECTOR) {
-                return static_cast<CAVector*>(rec->pValue);
+            if (rec->SymType == VECTOR_TYPE) {
+                return rec->data.v;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
         }
@@ -1941,10 +1941,10 @@ CAVector* CButeMgr::GetVector(const char* tag, const char* key) {
 
     TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            if (rec->type == BUTE_VECTOR) {
-                return static_cast<CAVector*>(rec->pValue);
+            if (rec->SymType == VECTOR_TYPE) {
+                return rec->data.v;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
             return &s_default;
@@ -1960,41 +1960,41 @@ RVA(0x00174340, 0x3e8)
 void CButeMgr::SetVector(const char* tag, const char* key, CAVector* val) {
     TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag));
     if (grp) {
-        CButeValue* hit = static_cast<CButeValue*>(grp->lookup(key));
+        CSymTabItem* hit = static_cast<CSymTabItem*>(grp->lookup(key));
         if (hit) {
-            hit->CopyValue(&CButeValue(BUTE_VECTOR, val));
+            *hit = CSymTabItem(VECTOR_TYPE, val);
             return;
         }
         TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag));
         if (modifiedTag) {
-            CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->lookup(key));
+            CSymTabItem* modifiedValue = static_cast<CSymTabItem*>(modifiedTag->lookup(key));
             if (modifiedValue) {
-                modifiedValue->CopyValue(&CButeValue(BUTE_VECTOR, val));
+                *modifiedValue = CSymTabItem(VECTOR_TYPE, val);
                 return;
             }
-            modifiedTag->add(key, new CButeValue(BUTE_VECTOR, val));
+            modifiedTag->add(key, new CSymTabItem(VECTOR_TYPE, val));
             return;
         }
         TableOfItems* newModifiedTag =
             static_cast<TableOfItems*>(m_auxTagTab.add(tag, new TableOfItems));
-        newModifiedTag->insert(key, new CButeValue(BUTE_VECTOR, val));
+        newModifiedTag->insert(key, new CSymTabItem(VECTOR_TYPE, val));
         return;
     }
 
     TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag));
     if (addedTag) {
-        CButeValue* addedValue = static_cast<CButeValue*>(addedTag->lookup(key));
+        CSymTabItem* addedValue = static_cast<CSymTabItem*>(addedTag->lookup(key));
         if (addedValue) {
-            addedValue->CopyValue(&CButeValue(BUTE_VECTOR, val));
+            *addedValue = CSymTabItem(VECTOR_TYPE, val);
             return;
         }
-        addedTag->add(key, new CButeValue(BUTE_VECTOR, val));
+        addedTag->add(key, new CSymTabItem(VECTOR_TYPE, val));
         return;
     }
     TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag, new TableOfItems));
-    newAddedTag->insert(key, new CButeValue(BUTE_VECTOR, val));
+    newAddedTag->insert(key, new CSymTabItem(VECTOR_TYPE, val));
 }
-RVA_COMPGEN(0x00174730, 0x3c, ??0CButeValue@@QAE@W4ButeType@@PAVCAVector@@@Z)
+RVA_COMPGEN(0x00174730, 0x3c, ??0CSymTabItem@CButeMgr@@QAE@W4SymTypes@1@PAVCAVector@@@Z)
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
@@ -2002,10 +2002,10 @@ RVA(0x00174770, 0x4e)
 CARange* CButeMgr::GetRange(const char* tag, const char* key, CARange* def) {
     TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            if (rec->type == BUTE_RANGE) {
-                return static_cast<CARange*>(rec->pValue);
+            if (rec->SymType == RANGE_TYPE) {
+                return rec->data.range;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
         }
@@ -2022,10 +2022,10 @@ CARange* CButeMgr::GetRange(const char* tag, const char* key) {
 
     TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
-        CButeValue* rec = static_cast<CButeValue*>((grp)->lookup(key));
+        CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            if (rec->type == BUTE_RANGE) {
-                return static_cast<CARange*>(rec->pValue);
+            if (rec->SymType == RANGE_TYPE) {
+                return rec->data.range;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
             return &s_default;
@@ -2041,51 +2041,51 @@ RVA(0x001748a0, 0x404)
 void CButeMgr::SetRange(const char* tag, const char* key, CARange* val) {
     TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag));
     if (grp) {
-        CButeValue* hit = static_cast<CButeValue*>(grp->lookup(key));
+        CSymTabItem* hit = static_cast<CSymTabItem*>(grp->lookup(key));
         if (hit) {
-            hit->CopyValue(&CButeValue(BUTE_RANGE, val));
+            *hit = CSymTabItem(RANGE_TYPE, val);
             return;
         }
         TableOfItems* modifiedTag = static_cast<TableOfItems*>(m_auxTagTab.lookup(tag));
         if (modifiedTag) {
-            CButeValue* modifiedValue = static_cast<CButeValue*>(modifiedTag->lookup(key));
+            CSymTabItem* modifiedValue = static_cast<CSymTabItem*>(modifiedTag->lookup(key));
             if (modifiedValue) {
-                modifiedValue->CopyValue(&CButeValue(BUTE_RANGE, val));
+                *modifiedValue = CSymTabItem(RANGE_TYPE, val);
                 return;
             }
-            modifiedTag->add(key, new CButeValue(BUTE_RANGE, val));
+            modifiedTag->add(key, new CSymTabItem(RANGE_TYPE, val));
             return;
         }
         TableOfItems* newModifiedTag =
             static_cast<TableOfItems*>(m_auxTagTab.add(tag, new TableOfItems));
-        newModifiedTag->insert(key, new CButeValue(BUTE_RANGE, val));
+        newModifiedTag->insert(key, new CSymTabItem(RANGE_TYPE, val));
         return;
     }
 
     TableOfItems* addedTag = static_cast<TableOfItems*>(m_newTagTab.lookup(tag));
     if (addedTag) {
-        CButeValue* addedValue = static_cast<CButeValue*>(addedTag->lookup(key));
+        CSymTabItem* addedValue = static_cast<CSymTabItem*>(addedTag->lookup(key));
         if (addedValue) {
-            addedValue->CopyValue(&CButeValue(BUTE_RANGE, val));
+            *addedValue = CSymTabItem(RANGE_TYPE, val);
             return;
         }
-        addedTag->add(key, new CButeValue(BUTE_RANGE, val));
+        addedTag->add(key, new CSymTabItem(RANGE_TYPE, val));
         return;
     }
     TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag, new TableOfItems));
-    newAddedTag->insert(key, new CButeValue(BUTE_RANGE, val));
+    newAddedTag->insert(key, new CSymTabItem(RANGE_TYPE, val));
 }
 
-RVA_COMPGEN(0x00174cb0, 0x49, ??0CButeValue@@QAE@W4ButeType@@PAVCARange@@@Z)
+RVA_COMPGEN(0x00174cb0, 0x49, ??0CSymTabItem@CButeMgr@@QAE@W4SymTypes@1@PAVCARange@@@Z)
 
-RVA_COMPGEN(0x00174d00, 0x25, ??0?$zSymTab@UCButeValue@@@@QAE@W4cleanup_behaviour@zPtrColl@@@Z)
+RVA_COMPGEN(0x00174d00, 0x25, ??0?$zSymTab@VCSymTabItem@CButeMgr@@@@QAE@W4cleanup_behaviour@zPtrColl@@@Z)
 
-RVA_COMPGEN(0x00174d30, 0x1e, ??_G?$zSymTab@V?$zSymTab@UCButeValue@@@@@@UAEPAXI@Z)
+RVA_COMPGEN(0x00174d30, 0x1e, ??_G?$zSymTab@V?$zSymTab@VCSymTabItem@CButeMgr@@@@@@UAEPAXI@Z)
 
-RVA_COMPGEN(0x00174d50, 0x1e, ??_G?$zSymTab@UCButeValue@@@@UAEPAXI@Z)
+RVA_COMPGEN(0x00174d50, 0x1e, ??_G?$zSymTab@VCSymTabItem@CButeMgr@@@@UAEPAXI@Z)
 
-RVA_COMPGEN(0x00174d70, 0x70, ??1?$zSymTab@UCButeValue@@@@UAE@XZ)
+RVA_COMPGEN(0x00174d70, 0x70, ??1?$zSymTab@VCSymTabItem@CButeMgr@@@@UAE@XZ)
 
-RVA_COMPGEN(0x00174de0, 0x9, ?dtf@?$zSymTab@V?$zSymTab@UCButeValue@@@@@@CAXPAV?$zSymTab@UCButeValue@@@@@Z)
+RVA_COMPGEN(0x00174de0, 0x9, ?dtf@?$zSymTab@V?$zSymTab@VCSymTabItem@CButeMgr@@@@@@CAXPAV?$zSymTab@VCSymTabItem@CButeMgr@@@@@Z)
 
-RVA_COMPGEN(0x00174df0, 0x7c, ?dtf@?$zSymTab@UCButeValue@@@@CAXPAUCButeValue@@@Z)
+RVA_COMPGEN(0x00174df0, 0x7c, ?dtf@?$zSymTab@VCSymTabItem@CButeMgr@@@@CAXPAVCSymTabItem@CButeMgr@@@Z)

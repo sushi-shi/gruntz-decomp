@@ -10,7 +10,6 @@
 #include <stddef.h>
 
 struct CVariantSlot;
-struct CButeValue;
 extern CVariantSlot g_rezArchiveErrorSlot;
 
 typedef void(__cdecl* dtorf_t)(void*);
