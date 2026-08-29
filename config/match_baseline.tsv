@@ -1864,7 +1864,7 @@ gamelevel	?MoveFalling@CGameLevel@@QAEHPAUCGameObject@@HHH@Z	96.2739	96.2739	5	6
 gamelevel	?MoveGrounded@CGameLevel@@QAEHPAUCGameObject@@HHH@Z	97.6101	97.6101	3	d8597b782d27	0x15e130	97.6101	
 gamelevel	?MovePlane@CGameLevel@@AAEHHH@Z	100.0000	100.0000	2	285a54f880ab	0x15dbe0	100.0000	
 gamelevel	?MoveRising@CGameLevel@@QAEHPAUCGameObject@@HHH@Z	100.0000	100.0000	2	35d273af2154	0x15e4b0	100.0000	
-gamelevel	?MoveToward@CGameLevel@@QAEHPAUCGameObject@@HHH@Z	78.0070	78.0070	4	cdd2aa017ab9	0x15de40	78.0070	
+gamelevel	?MoveToward@CGameLevel@@QAEHPAUCGameObject@@HHH@Z	87.2168	87.2168	5	6607d50b9bb7	0x15de40	87.2168	
 gamelevel	?NotifyAllPlanes@CGameLevel@@QAEXXZ	100.0000	100.0000	1	aad9131c1ad4	0x160f40	100.0000	
 gamelevel	?ProbeColumn@CGameLevel@@QAE?AW4TileCollisionKind@@PAUCGameObject@@H@Z	100.0000	100.0000	1	8f0661447f93	0x160980	100.0000	
 gamelevel	?ProbeFeetKind@CGameLevel@@QAE?AW4TileCollisionKind@@PAUCGameObject@@H@Z	100.0000	100.0000	1	c4503678f151	0x1608c0	100.0000	

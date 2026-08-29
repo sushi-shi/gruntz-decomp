@@ -614,75 +614,65 @@ CDDrawWorkerHost* CGameLevel::FindPlaneByName(const char* name) {
     return NULL;
 }
 
+static inline i32 StepTowardGoal(i32 current, i32 step, i32 goal) {
+    i32 next = step;
+    next += current;
+    if (step > 0) {
+        if (next > goal) {
+            next = goal;
+        }
+    } else if (next < goal) {
+        next = goal;
+    }
+    return next;
+}
+
+static inline i32 SignedStepToward(i32 current, i32 goal, i32 magnitude) {
+    return current > goal ? -magnitude : magnitude;
+}
+
+static inline b32 IsWithinStep(i32 current, i32 goal, i32 magnitude) {
+    return abs(current - goal) <= magnitude;
+}
+
 RVA(0x0015de40, 0x164)
 i32 CGameLevel::MoveToward(CGameObject* target, i32 destX, i32 destY, i32 moveFlags) {
-    CGameObject* t = target;
-    i32 limX = m_maxStepX;
+    i32 step = m_maxStepX;
 
-    i32 sx = t->m_screenX;
-
-    i32 dx = abs(sx - destX);
-    if (dx <= limX) {
-        i32 dy = abs(t->m_screenY - destY);
-        if (dy <= m_maxStepY) {
-            return DispatchMove(target, destX, destY, moveFlags);
-        }
-    }
-
-    if (t->m_flags & IDX(WWD_GAME_OBJECT_FLAG_ON_CARRIER)) {
-        return DispatchMove(target, destX, destY, moveFlags);
-    }
-
-    MoveMode kind = t->m_moveMode;
-    if (kind == MOVE_DIRECT) {
-        return DispatchMove(target, destX, destY, moveFlags);
-    }
-
-    b32 ok = true;
-    i32 stepX = limX;
-    i32 goalX = destX;
-    if (sx > destX) {
-        stepX = -stepX;
-    }
-    i32 stepY = m_maxStepY;
-    if (t->m_screenY > destY) {
-        stepY = -stepY;
-    }
-    do {
-        i32 nx = stepX + t->m_screenX;
-        if (stepX > 0) {
-            if (nx > goalX) {
-                nx = goalX;
-            }
+    i32 flags;
+    if (IsWithinStep(target->m_screenX, destX, step)
+        && IsWithinStep(target->m_screenY, destY, m_maxStepY)) {
+        flags = DispatchMove(target, destX, destY, moveFlags);
+    } else if (target->m_flags & IDX(WWD_GAME_OBJECT_FLAG_ON_CARRIER)) {
+        flags = DispatchMove(target, destX, destY, moveFlags);
+    } else {
+        MoveMode kind = target->m_moveMode;
+        if (kind == MOVE_DIRECT) {
+            flags = DispatchMove(target, destX, destY, moveFlags);
         } else {
-            if (nx < goalX) {
-                nx = goalX;
-            }
-        }
-        i32 ny = stepY + t->m_screenY;
-        if (stepY > 0) {
-            if (ny > destY) {
-                ny = destY;
-            }
-        } else {
-            if (ny < destY) {
-                ny = destY;
-            }
-        }
+            b32 ok = true;
+            i32 goalX = destX;
+            destX = SignedStepToward(target->m_screenX, goalX, step);
+            step = SignedStepToward(target->m_screenY, destY, m_maxStepY);
+            do {
+                i32 nx = StepTowardGoal(target->m_screenX, destX, goalX);
+                i32 ny = StepTowardGoal(target->m_screenY, step, destY);
 
-        i32 flags = DispatchMove(target, nx, ny, moveFlags);
+                flags = DispatchMove(target, nx, ny, moveFlags);
 
-        if (t->m_moveMode != kind) {
-            ok = false;
-        } else if ((flags & IDX(MOVE_RESULT_TILE_COLLISION)) != 0) {
-            ok = false;
-        } else if (t->m_screenX == goalX && t->m_screenY == destY) {
-            ok = false;
-        } else if ((flags & IDX(MOVE_RESULT_NO_POSITION_CHANGE)) != 0) {
-            ok = false;
+                if (target->m_moveMode != kind) {
+                    ok = false;
+                } else if ((flags & IDX(MOVE_RESULT_TILE_COLLISION)) != 0) {
+                    ok = false;
+                } else if (target->m_screenX == goalX && target->m_screenY == destY) {
+                    ok = false;
+                } else if ((flags & IDX(MOVE_RESULT_NO_POSITION_CHANGE)) != 0) {
+                    ok = false;
+                }
+            } while (ok != false);
         }
-    } while (ok != false);
-    return ok;
+    }
+    return flags;
 }
 
 RVA(0x0015dfb0, 0x180)
