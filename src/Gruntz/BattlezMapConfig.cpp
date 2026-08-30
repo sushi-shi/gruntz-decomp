@@ -3678,10 +3678,10 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
         return 0;
     }
     Coord target;
+    CoordNode* n = unit->CoordHead();
     b32 found = false;
     if (useArg == false) {
 
-        CoordNode* n = unit->CoordHead();
         while (n != NULL) {
             CoordNode* cur = n;
             n = n->m_next;
@@ -3724,8 +3724,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
             }
         }
     } else {
-        target.m_x = ax;
-        target.m_y = ay;
+        target.Set(ax, ay);
         found = true;
     }
     if (found == false) {
