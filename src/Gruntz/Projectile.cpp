@@ -578,9 +578,9 @@ i32 CBoomerang::LoadProjectileSprites(
     return 1;
 }
 
-// @early-stop
 RVA(0x000e08b0, 0x1de)
 void CBoomerang::AdvanceMotion() {
+    double s;
     if (m_launched == false && m_phase > g_boomerangHalfTurnRadians) {
         m_object->m_screenX = m_targetPxX;
         m_object->m_screenY = m_targetPxY;
@@ -600,14 +600,20 @@ void CBoomerang::AdvanceMotion() {
     }
     ScanTargets(0);
 
-    double s = sin(m_phase);
+    s = sin(m_phase);
     double c = cos(m_phase);
-    double amp = static_cast<double>(g_frameDelta);
     double vx = m_dirX;
     double vy = -m_dirY;
-    m_posX = m_originX + (vy * s - vx * c);
-    m_posY = m_originY + (vx * s + vy * c);
-    m_phase += amp * m_velScale;
+    double phaseDelta = static_cast<double>(g_frameDelta) * m_velScale;
+    double xSinTerm = vy * s;
+    double xCosTerm = vx * c;
+    double ySinTerm = vx * s;
+    double yCosTerm = vy * c;
+    m_posX = xSinTerm - xCosTerm;
+    m_posY = ySinTerm + yCosTerm;
+    m_posX = m_originX + m_posX;
+    m_posY = m_originY + m_posY;
+    m_phase = phaseDelta + m_phase;
     m_object->m_screenX = static_cast<i32>(m_posX);
     m_object->m_screenY = static_cast<i32>(m_posY);
     if (m_shadow != NULL) {
