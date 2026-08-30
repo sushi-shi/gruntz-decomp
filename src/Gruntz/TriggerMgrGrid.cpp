@@ -1099,6 +1099,8 @@ void CTriggerMgr::EnqueueGuardEnd(i32 playerIndex, i32 unitIndex) {
 // @early-stop
 RVA(0x0006dae0, 0x4f9)
 i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY) {
+    i32 hitPlayerIndex;
+    i32 hitUnitIndex;
     CGrunt* cell = m_units[playerIndex * TM_UNITS_PER_PLAYER + unitIndex];
     if (cell == NULL || cell->m_entranceCommitted == false) {
         return 0;
@@ -1108,136 +1110,134 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
     i32 argTileX = worldX >> TILE_SHIFT_PX;
     i32 argTileY = worldY >> TILE_SHIFT_PX;
     CGameObject* o = cell->m_object;
-    if (o->m_screenX != cell->m_lastTilePx.m_x) {
-        return -1;
-    }
-    if (o->m_screenY != cell->m_lastTilePx.m_y) {
-        return -1;
-    }
-    PickupType k = ArrivalPickup(cell);
-    if (k == PICKUP_WAND && cell->CanShowStamina() != 0) {
-        if (cellTileX != argTileX || cellTileY != argTileY) {
-            return 0;
+    if (o->m_screenX == cell->m_lastTilePx.m_x) {
+        if (o->m_screenY != cell->m_lastTilePx.m_y) {
+            return -1;
         }
-        cell->RunMoveConfig(cellTileX, cellTileY + 1);
-        return 1;
-    }
-    if (cellTileX == argTileX && cellTileY == argTileY) {
-        PickupType kSame = ArrivalPickup(cell);
-        if (kSame != PICKUP_SPY) {
-            return 0;
-        }
-        if (cell->CanShowStamina() == 0) {
-            return 0;
-        }
-        cell->RunMoveConfig(cellTileX, cellTileY);
-        return 1;
-    }
-    PickupType kDiag = ArrivalPickup(cell);
-    if (kDiag == PICKUP_BOMB) {
-
-        if (cellTileY != argTileY && cellTileX != argTileX) {
-            if (abs(argTileY - cellTileY) != abs(argTileX - cellTileX)) {
-                return -1;
+        PickupType k = ArrivalPickup(cell);
+        if (k == PICKUP_WAND && cell->CanShowStamina() != 0) {
+            if (cellTileX != argTileX || cellTileY != argTileY) {
+                return 0;
             }
+            cell->RunMoveConfig(cellTileX, cellTileY + 1);
+            return 1;
         }
-        if (cell->CanShowStamina() == 0) {
-            return 0;
-        }
-        cell->RunMoveConfig(argTileX, argTileY);
-        return 1;
-    }
-    i32 by = (worldY & ~TILE_MASK_PX) + TILE_HALF_PX;
-    i32 bx = (worldX & ~TILE_MASK_PX) + TILE_HALF_PX;
-    if (cell->RectContains(bx, by) == 0) {
-        return -1;
-    }
-    cell->m_arrivalPhase = 0;
-    i32 hitPlayerIndex;
-    i32 hitUnitIndex;
-    CGrunt* hit = CellHitTest(worldX, worldY, &hitPlayerIndex, &hitUnitIndex, TM_ALL_PLAYERS);
-    if (hit != NULL) {
-        if (hit->m_playerIndex == cell->m_playerIndex && g_traitorMode == false) {
-            return 0;
-        }
-        return cell->CommitNeighbor(hitPlayerIndex, hitUnitIndex, bx, by) != 0;
-    }
-    if (cell->CanShowStamina() == 0) {
-        return 0;
-    }
-    CGruntzMapMgr* map = g_gameReg->m_tileGrid;
-    TileCollisionKind bute = map->m_rows[by >> TILE_SHIFT_PX][bx >> TILE_SHIFT_PX].m_typeCode;
-    PickupType kind = ArrivalPickup(cell);
-
-    switch (kind) {
-        case PICKUP_GAUNTLETZ:
-            if (bute == TILEKIND_GAUNTLET_ROCK_A || bute == TILEKIND_GAUNTLET_ROCK_B
-                || bute == TILEKIND_GIANT_ROCK || bute == TILEKIND_GAUNTLET_BRICK_A
-                || bute == TILEKIND_GAUNTLET_BRICK_B || bute == TILEKIND_GAUNTLET_BRICK_C) {
-                cell->RunMoveConfig(argTileX, argTileY);
-                return 1;
+        if (cellTileX == argTileX && cellTileY == argTileY) {
+            PickupType kSame = ArrivalPickup(cell);
+            if (kSame != PICKUP_SPY) {
+                return 0;
             }
-            return 0;
-        case PICKUP_SHOVEL:
-            if (bute == TILEKIND_COVERED_POWERUP || bute == TILEKIND_REVEALED_POWERUP) {
-                cell->RunMoveConfig(argTileX, argTileY);
-                return 1;
+            if (cell->CanShowStamina() == 0) {
+                return 0;
             }
-            return 0;
-        case PICKUP_GOOBER: {
-            POSITION pos = m_baseList.GetHeadPosition();
-            while (pos != NULL) {
-                CGruntPuddle* cand = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
-                if (cand->m_pending == false && cand->m_tileX == argTileX
-                    && cand->m_tileY == argTileY) {
-                    cell->RunMoveConfig(argTileX, argTileY);
-                    cand->m_value = cand->m_wwdObject->m_animationCursor.m_animation;
-                    cand->m_wwdObject->SetAnimationByName("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE3", 0);
-                    cand->m_pending = true;
-                    return 1;
-                }
-            }
-            return 0;
-        }
-        case PICKUP_SPY:
             cell->RunMoveConfig(cellTileX, cellTileY);
             return 1;
-        case PICKUP_BRICK:
-            if (bute == TILEKIND_HIDDEN_POWERUP || bute == TILEKIND_GAUNTLET_BRICK_A
-                || bute == TILEKIND_GAUNTLET_BRICK_B) {
-                cell->RunMoveConfig(argTileX, argTileY);
-                return 1;
+        }
+        PickupType kDiag = ArrivalPickup(cell);
+        if (kDiag == PICKUP_BOMB) {
+
+            if (cellTileY != argTileY && cellTileX != argTileX) {
+                if (abs(argTileY - cellTileY) != abs(argTileX - cellTileX)) {
+                    return -1;
+                }
             }
-            return 0;
-        case PICKUP_BOOMERANG:
-            return cell->BeginAttack(bx, by) != 0;
-        case PICKUP_GUNHAT:
-        case PICKUP_NERFGUN:
-        case PICKUP_ROCK:
-            return cell->BeginAttack(bx, by) != 0;
-        case PICKUP_TIMEBOMB:
-            return cell->BeginAttack(bx, by) != 0;
-        case PICKUP_WELDER:
-        case PICKUP_WINGZ:
-            return cell->BeginAttack(bx, by) != 0;
-        case PICKUP_WARPSTONE: {
-            if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+            if (cell->CanShowStamina() == 0) {
                 return 0;
             }
-            i32 flags = map->CellFlagsAt(argTileX, argTileY);
-            if ((flags & 0x40939) != 0 || (flags & IDX(CELL_FLAG_SPECIAL)) != 0) {
-                return 0;
-            }
-            SpawnPowerupIcon(PICKUP_WARPSTONE, bx, by, 0, cell->m_warpstoneAnchorIndex, 0);
-            cell->FaceTowardPixel(bx, by);
-            if (cell->m_poweredUp != false && cell->m_neighborValid == false) {
-                RESET_GRUNT_POWERED_STATE(cell)
-            }
-            cell->LoadGruntTypeTable(PICKUP_NONE, 1, 0, 0);
+            cell->RunMoveConfig(argTileX, argTileY);
             return 1;
         }
+        i32 by = (worldY & ~TILE_MASK_PX) + TILE_HALF_PX;
+        i32 bx = (worldX & ~TILE_MASK_PX) + TILE_HALF_PX;
+        if (cell->RectContains(bx, by) == 0) {
+            return -1;
+        }
+        cell->m_arrivalPhase = 0;
+        CGrunt* hit = CellHitTest(worldX, worldY, &hitPlayerIndex, &hitUnitIndex, TM_ALL_PLAYERS);
+        if (hit != NULL) {
+            if (hit->m_playerIndex == cell->m_playerIndex && g_traitorMode == false) {
+                return 0;
+            }
+            return cell->CommitNeighbor(hitPlayerIndex, hitUnitIndex, bx, by) != 0;
+        }
+        if (cell->CanShowStamina() == 0) {
+            return 0;
+        }
+        CGruntzMapMgr* map = g_gameReg->m_tileGrid;
+        TileCollisionKind bute = map->m_rows[by >> TILE_SHIFT_PX][bx >> TILE_SHIFT_PX].m_typeCode;
+        PickupType kind = ArrivalPickup(cell);
+
+        switch (kind) {
+            case PICKUP_GAUNTLETZ:
+                if (bute == TILEKIND_GAUNTLET_ROCK_A || bute == TILEKIND_GAUNTLET_ROCK_B
+                    || bute == TILEKIND_GIANT_ROCK || bute == TILEKIND_GAUNTLET_BRICK_A
+                    || bute == TILEKIND_GAUNTLET_BRICK_B || bute == TILEKIND_GAUNTLET_BRICK_C) {
+                    cell->RunMoveConfig(argTileX, argTileY);
+                    return 1;
+                }
+                return 0;
+            case PICKUP_SHOVEL:
+                if (bute == TILEKIND_COVERED_POWERUP || bute == TILEKIND_REVEALED_POWERUP) {
+                    cell->RunMoveConfig(argTileX, argTileY);
+                    return 1;
+                }
+                return 0;
+            case PICKUP_GOOBER: {
+                POSITION pos = m_baseList.GetHeadPosition();
+                while (pos != NULL) {
+                    CGruntPuddle* cand = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
+                    if (cand->m_pending == false && cand->m_tileX == argTileX
+                        && cand->m_tileY == argTileY) {
+                        cell->RunMoveConfig(argTileX, argTileY);
+                        cand->m_value = cand->m_wwdObject->m_animationCursor.m_animation;
+                        cand->m_wwdObject->SetAnimationByName("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE3", 0);
+                        cand->m_pending = true;
+                        return 1;
+                    }
+                }
+                return 0;
+            }
+            case PICKUP_SPY:
+                cell->RunMoveConfig(cellTileX, cellTileY);
+                return 1;
+            case PICKUP_BRICK:
+                if (bute == TILEKIND_HIDDEN_POWERUP || bute == TILEKIND_GAUNTLET_BRICK_A
+                    || bute == TILEKIND_GAUNTLET_BRICK_B) {
+                    cell->RunMoveConfig(argTileX, argTileY);
+                    return 1;
+                }
+                return 0;
+            case PICKUP_BOOMERANG:
+                return cell->BeginAttack(bx, by) != 0;
+            case PICKUP_GUNHAT:
+            case PICKUP_NERFGUN:
+            case PICKUP_ROCK:
+                return cell->BeginAttack(bx, by) != 0;
+            case PICKUP_TIMEBOMB:
+                return cell->BeginAttack(bx, by) != 0;
+            case PICKUP_WELDER:
+            case PICKUP_WINGZ:
+                return cell->BeginAttack(bx, by) != 0;
+            case PICKUP_WARPSTONE: {
+                if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+                    return 0;
+                }
+                i32 flags = map->CellFlagsAt(argTileX, argTileY);
+                if ((flags & 0x40939) != 0 || (flags & IDX(CELL_FLAG_SPECIAL)) != 0) {
+                    return 0;
+                }
+                SpawnPowerupIcon(PICKUP_WARPSTONE, bx, by, 0, cell->m_warpstoneAnchorIndex, 0);
+                cell->FaceTowardPixel(bx, by);
+                if (cell->m_poweredUp != false && cell->m_neighborValid == false) {
+                    RESET_GRUNT_POWERED_STATE(cell)
+                }
+                cell->LoadGruntTypeTable(PICKUP_NONE, 1, 0, 0);
+                return 1;
+            }
+        }
+        return 0;
     }
-    return 0;
+    return -1;
 }
 
 // @early-stop

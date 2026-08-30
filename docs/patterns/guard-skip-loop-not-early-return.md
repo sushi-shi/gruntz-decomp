@@ -115,6 +115,17 @@ count already agrees and only the placement differs, which is
 [identical-return-epilogue-tailmerge](identical-return-epilogue-tailmerge.md)'s
 wall.
 
+The bounded follow-up found one source correction short of that final merge.
+Keeping the Y guard and the later `RectContains` failure as ordinary early
+returns, but gating the complete body on the positive X comparison, moves
+`UseEquippedToolAt` **87.4484 -> 87.6802**. Hoisting the two real `CellHitTest`
+output locals to function scope composes to **88.1407**. A second positive gate
+around the `RectContains` success arm does reproduce retail's 52 branches, 15
+returns, 20 calls, 37 ordered relocations, and `0x14` frame, but recolours the
+whole function and lands at 86.3626. That lower state is useful structural
+evidence, not a spelling to commit by itself; the bankable partial correction
+keeps 16 returns and leaves the last tail-placement question open.
+
 ## One source return can still produce two machine epilogues — and recolour the whole function
 
 `CRezImage::PasteFrom` 0x176960 is the composition control.  It has two mutually
