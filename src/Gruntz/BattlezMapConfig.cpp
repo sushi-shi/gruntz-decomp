@@ -99,6 +99,14 @@ static inline CGameObject* ListGetNext(CDDrawChildGroup* list) {
     return list->NextChild(list->m_walkCursor);
 }
 
+static inline i32 ScreenTileX(CGrunt* unit) {
+    return unit->m_object->m_screenX >> TILE_SHIFT_PX;
+}
+
+static inline i32 ScreenTileY(CGrunt* unit) {
+    return unit->m_object->m_screenY >> TILE_SHIFT_PX;
+}
+
 // @early-stop
 RVA(0x00024dc0, 0x158)
 CBattlezMapConfig::CBattlezMapConfig()
@@ -4130,10 +4138,10 @@ i32 CBattlezMapConfig::RouteUnitTo(
 ) {
     CPtrList list(10);
     CGameObject* lvl = unit->m_object;
-    if ((lvl->m_screenX >> TILE_SHIFT_PX) != goalCol
-        || (lvl->m_screenY >> TILE_SHIFT_PX) != goalRow) {
+    i32 screenX = lvl->m_screenX;
+    if (ScreenTileX(unit) != goalCol || ScreenTileY(unit) != goalRow) {
         if ((m_board)->FindPathWithEndpointOverrides(
-                lvl->m_screenX >> TILE_SHIFT_PX,
+                screenX >> TILE_SHIFT_PX,
                 lvl->m_screenY >> TILE_SHIFT_PX,
                 goalCol,
                 goalRow,

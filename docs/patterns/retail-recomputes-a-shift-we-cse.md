@@ -7,9 +7,9 @@ confidence: 9/10
 
 Do not classify this shape as an optimizer anomaly until the two consumers' source
 abstraction has been recovered. A scalar `PxToTile(px)` helper may still fold, while a
-pair-valued helper reached through the higher-level owner can give C1 two distinct trees:
-one expansion produces the equality-test coordinates and the caller separately retains the
-raw coordinates for later distance arithmetic.
+helper reached through the higher-level owner can give C1 two distinct trees. Depending on
+the source evaluation boundary, that helper may return the coordinate pair or expose one
+axis at a time; the caller separately retains the raw coordinate for later use.
 
 The controlled positive is `CBattlezMapConfig::RepathToFreeCell` at `0x350d0`. Retail
 loads `m_screenX` and `m_screenY` once, copies them for a same-cell test, shifts those
@@ -71,12 +71,25 @@ landed on lower islands. A 64-state target-adjacent campaign on that final sourc
 was completely flat. The retained layer remains an open base because its `0x1c` frame
 and register assignment still differ from retail's `0x14` frame.
 
+`CBattlezMapConfig::RouteUnitTo` (`0x300c0`) distinguishes pair-valued and per-axis
+owner helpers. The direct transcription CSE'd the first `screenX >> 5` and scored 85.1475.
+A pair-valued `ScreenTile(CGrunt*)` plus a caller-retained raw X recovered the second shift,
+exact extent and topology, reaching 88.2787, but it eagerly loaded and shifted Y before the
+short-circuit X comparison. Splitting that boundary into `ScreenTileX(CGrunt*)` and
+`ScreenTileY(CGrunt*)` preserved the second X shift while restoring retail's lazy Y read:
+89.3853, exact `0x190` extent, 125 instructions, 9 calls, 14 branches, one return, 14
+relocations, and a first divergence moved from `+0x1b` to `+0x2a`. Moving the helper
+definitions from the TU prelude to immediately before the function was byte-flat. Making
+the existing `CGrunt::GetTilePos` method header-inline was also byte-flat in this caller,
+but eliminated retail's separately emitted 29-byte method body and is therefore disproved.
+
 The remaining superficially similar row is `CTriggerMgr::FindNearestEnemy` (`0x77df0`).
-Do not transfer either positive mechanically: first look for a pair-valued or owner-level
-accessor boundary and independently recover its caller-side raw-value lifetime.
+Do not transfer any positive mechanically: first look for a pair-valued or owner-level
+accessor boundary, decide whether evaluation is pair-eager or axis-lazy from the retail
+load order, and independently recover its caller-side raw-value lifetime.
 
 Reverse-use rule: when retail CSEs the loads but duplicates arithmetic, classify the
 consumers by semantic layer. Test a real pair/aggregate return or higher-level inline
-accessor while keeping the raw source value alive separately. Confirm the feature was
+axis accessor while keeping the raw source value alive separately. Confirm the feature was
 absent from baseline, and compose local declaration order before launching compiler-state
 search. Do not use volatile carriers, fake calls, or duplicate loads to imitate the code.
