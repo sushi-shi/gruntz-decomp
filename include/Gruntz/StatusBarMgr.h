@@ -78,8 +78,6 @@ struct SbiClockPair {
 struct CSbiHlRow {
     RVA(0x000c86d0, 0x11)
     CSbiHlRow() {
-        m_state = IDX(HLROW_OFF);
-        m_value = 0;
         m_lastLo = 0;
         m_intervalLo = 0;
         m_lastHi = 0;

@@ -49,12 +49,15 @@ StatusBar/InitTabRects, every one 100% EXACT and none of them writing
 m_resourceSlots.
 
 CONCLUSION SHAPE. "Retail relies on fresh-heap zeros" is a legitimate,
-reportable outcome: the shipped game has uninitialized-memory UB, our build
-reproduces it faithfully, and the behaviour then depends on allocation
-history - typically working on the first load of a session (OS-zeroed pages)
-and failing once the block is recycled. That changes what gets shipped as the
-fix (a deliberate, documented divergence-from-retail initializer) and it must
-not be mistaken for a matching target: there is no sub-100 writer to correct.
+reportable outcome: the shipped game has uninitialized-memory UB, and the
+matching source must reproduce it faithfully. Behaviour then depends on
+allocation history - typically working on the first load of a session
+(OS-zeroed pages) and failing once the block is recycled. A portable/playable
+build may deliberately initialize these fields, but that belongs in its
+divergence layer rather than the retail-matching source: there is no sub-100
+writer to correct here. A prior in-tree initializer was measured as the
+expected runtime fix but deliberately broke the exact 17-byte constructor; it
+was removed when the tree returned to the strict matching objective.
 
 Wall: no - it is not a codegen question at all. Evidence: the resource-belt
 slot-landing symptom, 2026-08-20; the whole chain screened EQUAL at operand

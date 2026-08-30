@@ -3092,7 +3092,7 @@ multi	?InitializeFields@CNetSession@@QAEXXZ	96.9697	96.9697	5	664deca0c2c4	0xbbf
 multi	?JoinSession@CMulti@@QAEHXZ	100.0000	100.0000	3	ae97412c48c6	0xb7fe0	100.0000	
 multi	?LeaveState@CMulti@@UAEHW4GameStateId@@@Z	100.0000	100.0000	7	4e53045c7609	0xb63f0	100.0000	
 multi	?LoadByMode@CMulti@@UAEHHH@Z	100.0000	100.0000	6	9421b90a8ac2	0xb6580	100.0000	
-multi	?LoadGameAssetNamespaces@CMulti@@UAEHPAVCGruntzMgr@@HH@Z	92.8157	92.8157	16	41399ad2f71b	0xb5460	94.2991	
+multi	?LoadGameAssetNamespaces@CMulti@@UAEHPAVCGruntzMgr@@HH@Z	93.9270	93.9270	16	41399ad2f71b	0xb5460	94.2991	
 multi	?MultiJoinDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	5	7258c8b66578	0xb8020	100.0000	
 multi	?NetSetupDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	7	d442cb9623f2	0xb7b10	100.0000	
 multi	?OnChar@CMulti@@UAEHHH@Z	100.0000	100.0000	5	8aa82b59bfaf	0xbd210	100.0000	
@@ -3371,7 +3371,7 @@ pathhazard	?SiblingTick@CPathHazard@@UAEHXZ	100.0000	100.0000	13	41313812ed14	0x
 pathhazard	?Tick@CPathHazard@@UAEHXZ	97.5678	97.5678	9	abeea192d938	0xb4020	97.5678	
 pathhazard	?Tick@CRainCloud@@UAEHXZ	100.0000	100.0000	5	39449386f84e	0xb4350	100.0000	
 pathhazard	?Tick@CUFO@@UAEHXZ	100.0000	100.0000	1	41b9dc44dedf	0xb4330	100.0000	
-play	??0CSbiHlRow@@QAE@XZ	100.0000	62.4286	1	cpp:b62c0d908eff	0xc86d0	100.0000	
+play	??0CSbiHlRow@@QAE@XZ	100.0000	100.0000	1	cpp:b62c0d908eff	0xc86d0	100.0000	
 play	??1CImage@@UAE@XZ	100.0000	100.0000	1	cpp:02f89280bcb9	0xd5e80	100.0000	
 play	??1CStatusBarMgr@@QAE@XZ	100.0000	100.0000	1	cpp:b62c0d908eff	0xc8980	100.0000	
 play	??1CTileTriggerContainer@@QAE@XZ	100.0000	100.0000	1	cpp:b62c0d908eff	0xc8640	100.0000	
@@ -3416,7 +3416,7 @@ play	?LeaveState@CPlay@@UAEHW4GameStateId@@@Z	100.0000	100.0000	7	afd1aa44d0bc	0
 play	?LoadByMode@CPlay@@UAEHHH@Z	94.3549	94.3549	31	480f63b9bf1f	0xca200	94.5728	
 play	?LoadCursorAnimation@CPlay@@QAEHPBDHHHH@Z	100.0000	100.0000	7	b9f2b3e2726d	0xd0920	100.0000	
 play	?LoadCursorSprites@CPlay@@QAEHHH@Z	99.0221	99.0221	11	e8e1a523b92b	0xd0120	99.0221	
-play	?LoadGameAssetNamespaces@CPlay@@UAEHPAVCGruntzMgr@@HH@Z	85.4948	85.4948	15	86928d8c0318	0xc7ec0	85.5285	
+play	?LoadGameAssetNamespaces@CPlay@@UAEHPAVCGruntzMgr@@HH@Z	85.4948	84.4611	15	86928d8c0318	0xc7ec0	85.5285	
 play	?LoadImageBanks@CPlay@@UAEHXZ	100.0000	100.0000	4	2795e0276fc5	0xcffe0	100.0000	
 play	?LoadLoadingBarSprite@CPlay@@QAEHXZ	100.0000	100.0000	4	b77b0361e6e0	0xd7440	100.0000	
 play	?LoadPlayState@CPlay@@QAEHPAVCFileMemBase@@@Z	97.1069	97.1069	14	505b4ed67e3b	0xd8060	97.1069	
