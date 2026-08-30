@@ -64,23 +64,27 @@ i32 CGrunt::StepToolThiefBehavior() {
             return 1;
         }
 
-        Coord selfTile;
-        GetScreenTile(&selfTile);
         Coord slotTile;
+        Coord selfTileX;
+        Coord selfTileY;
         slot->GetScreenTile(&slotTile);
-        Coord selfTileB;
-        GetScreenTile(&selfTileB);
-        Coord slotTileB;
-        slot->GetScreenTile(&slotTileB);
-        i32 dx = selfTile.m_x - slotTile.m_x;
-        i32 dy = selfTileB.m_y - slotTileB.m_y;
+        i32 slotX = slotTile.m_x;
+        selfTileY.m_y = slotTile.m_y;
+        this->GetScreenPos(&selfTileX);
+        i32 selfX = selfTileX.m_x >> TILE_SHIFT_PX;
+        slot->GetScreenTile(&slotTile);
+        selfTileX = slotTile;
+        this->GetScreenPos(&selfTileY);
+        selfTileY.m_y >>= TILE_SHIFT_PX;
+        i32 dx = slotX - selfX;
+        i32 dy = selfTileX.m_y - selfTileY.m_y;
         if (abs(dx) <= 1 && abs(dy) <= 1) {
             PickupType r2 = slot->m_entranceReason;
             if (r2 > PICKUP_EQUIPPABLE_LAST) {
                 r2 = slot->m_toolId;
             }
             if (r2 != PICKUP_WARPSTONE && r2 != PICKUP_BOMB) {
-                slot->LoadGruntTypeTable(r2, 1, 0, 0);
+                this->LoadGruntTypeTable(r2, 1, 0, 0);
                 slot->LoadGruntTypeTable(PICKUP_NONE, 1, 0, 0);
                 this->m_defenderState = AISTATE_COOLDOWN;
                 if (this->CoordCount() == 0) {
@@ -166,13 +170,14 @@ i32 CGrunt::StepToolThiefBehavior() {
             return 1;
         }
         if (this->m_blockedVoicePending != false) {
+            CGruntzMgr* gameReg = g_gameReg;
             i32 r = CGameLevel::PointInBounds(
-                &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect,
+                &gameReg->m_world->m_level->m_mainPlane->m_planeViewRect,
                 this->m_object->m_screenX,
                 this->m_object->m_screenY
             );
             if (r != 0) {
-                g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
+                gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
             }
             this->m_blockedVoicePending = false;
             this->m_dwell = 0;

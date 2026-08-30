@@ -2149,7 +2149,7 @@ gruntpowerupsprite	?Update@CGruntPowerupSprite@@QAEHXZ	100.0000	89.8214	19	08256
 gruntpuddle	?SetBute@CGruntPuddle@@QAEXPAD@Z	100.0000	100.0000	6	e5d356855c9b	0x7d810	100.0000	
 gruntreticlescan	?StepDefenderBehavior@CGrunt@@QAEHXZ	91.2299	91.2299	27	eeea2f5bc0e1	0xee800	91.2299	
 gruntscantarget	?StepSmartChaserBehavior@CGrunt@@QAEHXZ	95.7603	95.5786	29	a03bffc63721	0xf42f0	95.7603	
-gruntseektarget	?StepToolThiefBehavior@CGrunt@@QAEHXZ	87.1610	87.1610	37	b23c36320bbe	0xf71c0	87.1610	
+gruntseektarget	?StepToolThiefBehavior@CGrunt@@QAEHXZ	93.4186	93.4186	38	39082aa1cc63	0xf71c0	93.4186	
 gruntselectedsprite	??0CGruntSelectedSprite@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	6	5e4d6e53b886	0x7e3e0	100.0000	
 gruntselectedsprite	??1CGruntSelectedSprite@@UAE@XZ	100.0000	100.0000	1	cpp:fce6a4e44737	0x11e80	100.0000	
 gruntselectedsprite	??_GCGruntSelectedSprite@@UAEPAXI@Z	100.0000	100.0000	1	cpp:fce6a4e44737	0x11e50	100.0000	
