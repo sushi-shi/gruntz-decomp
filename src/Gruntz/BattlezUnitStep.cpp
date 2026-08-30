@@ -247,13 +247,18 @@ L_clear: {
 }
 #undef MOVE_RECYCLE
 
-// @early-stop
+static inline void ScreenTile(Coord* pos) {
+    pos->m_x >>= TILE_SHIFT_PX;
+    pos->m_y >>= TILE_SHIFT_PX;
+}
+
 RVA(0x00031c70, 0x1d)
 Coord CGrunt::GetTilePos() {
     Coord out;
-    CWwdSpriteObject* h = m_object;
-    out.m_x = h->m_screenX >> TILE_SHIFT_PX;
-    out.m_y = h->m_screenY >> TILE_SHIFT_PX;
+    CWwdSpriteObject* object = m_object;
+    out.m_x = object->m_screenX;
+    out.m_y = object->m_screenY;
+    ScreenTile(&out);
     return out;
 }
 

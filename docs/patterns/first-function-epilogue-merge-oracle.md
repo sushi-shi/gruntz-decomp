@@ -110,18 +110,15 @@ COMDAT placement says the preceding bodies really were.
   dedicated local [ebp-0x70]); per-arm derived-type temps did not move it.
   The slot/home assignment is the still-unmapped residue for such rows.
 
-## Adjacent bound: the sret-slot schedule (GetTilePos, 2026-08-22)
+## Resolved adjacent case: the sret-slot schedule (GetTilePos, 2026-08-30)
 
-`CGrunt::GetTilePos` (29 B, 85.70) isolates a second slot/home input: retail
-loads the sret pointer at insn 2, binds it in edx for the whole body and
-returns it through a final `mov eax,edx`; ours loads it late straight into
-eax. Six spellings measured inert or worse (field-assign, h-local, &out
-pointer local, Set-returning-this, void-Set, GetScreenPos+shift - the last
-emits a real call, 10.40, because era GetScreenPos is a PLAIN out-of-line
-function at 0x29a50 in battlezmapconfig, ruling out cross-TU inlining).
-Probe TU reproduces ours cold AND warm - not a TU-state input. Same residue
-family as AddLogic's EH cleanup home ([ebp+0x8] vs [ebp-0x70]): cl's
-slot/home assignment carries one more unmapped input.
+The old conclusion that `CGrunt::GetTilePos` carried an unmapped sret-slot
+input was false.  A pointer-mutating inline helper around the coordinate
+conversion changes C1's result lifetime and makes all 29 bytes exact, while a
+plain `&out` local and 272 source/TU-state variants remain in the old 27-byte
+island.  This is an abstraction-boundary input, not TU warmth or an arbitrary
+slot-home coin.  The controlled A/B and reverse-use rule are in
+`inlined-mutating-helper-pins-outer-sret-result.md`.
 
 ## Round 4: the real-TU warm driver is still unidentified
 

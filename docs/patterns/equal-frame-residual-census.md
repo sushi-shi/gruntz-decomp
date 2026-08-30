@@ -114,8 +114,11 @@ rows read by hand are unambiguous, and none is an arm result:
   lives in.
 * `?OnExit@CPlay@@UAEXXZ` 0x0cb400 — retail `mov eax,ds:<global>` then
   `mov ecx,eax`; base loads straight into `ecx`.
-* `?GetTilePos@CGrunt@@QAE?AUCoord@@XZ` 0x031c70 — the whole 7-instruction
-  residual is `eax`/`edx` swapped plus the copy that swap needs.
+* `?GetTilePos@CGrunt@@QAE?AUCoord@@XZ` 0x031c70 — this historical row's whole
+  7-instruction residual was `eax`/`edx` swapped plus the copy that swap needs.
+  It is now exact: a pointer-mutating inline helper around the coordinate
+  conversion proved that the apparent allocation residue was an earlier
+  abstraction-boundary defect.
 
 Three of the sixteen that DO carry the signature were read too, and they are
 allocation as well: `?DrawFocusCursors@CMenuTree@@...` 0x182f90 is a load-compare-keep whose

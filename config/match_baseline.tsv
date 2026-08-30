@@ -48,7 +48,7 @@ battlezreserveplace	1	1
 battlezretarget	1	0
 battlezspawncheck	1	0
 battlezspecialanim	3	2
-battlezunitstep	4	0
+battlezunitstep	4	1
 behindcandy	1	1
 behindcandyani	8	7
 bitarray	3	2
@@ -581,7 +581,7 @@ battlezspecialanim	?CanPlaySpecialAnim@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	94.2
 battlezspecialanim	?RecycleCoords@CGrunt@@QAEXXZ	100.0000	100.0000	3	56800e198b1b	0x343f0	100.0000	
 battlezspecialanim	?Report@zErrHandling@@QAEXPADH@Z	100.0000	100.0000	2	f8f0fb8e94d8	0x34960	100.0000	
 battlezunitstep	?AdvanceToEnemyBase@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	87.1623	87.1623	21	3a19b3c64ea0	0x32060	87.1623	
-battlezunitstep	?GetTilePos@CGrunt@@QAE?AUCoord@@XZ	85.7000	85.7000	2	dbe93efd6e63	0x31c70	85.7000	
+battlezunitstep	?GetTilePos@CGrunt@@QAE?AUCoord@@XZ	100.0000	100.0000	3	99430f49ea17	0x31c70	100.0000	
 battlezunitstep	?Step@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	88.0918	88.0867	15	dfe211dbe23a	0x31610	88.0918	
 battlezunitstep	?TrackAssignedEnemy@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	96.2511	96.2511	16	713bf7d352cc	0x31ca0	96.2511	
 behindcandy	?SerializeDispatch@CBehindCandy@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	4	8360207c7c30	0xfb90	100.0000	
