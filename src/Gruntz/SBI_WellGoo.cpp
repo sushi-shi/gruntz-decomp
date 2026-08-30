@@ -23,6 +23,12 @@
 
 #include <string.h>
 
+static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
+    CObject* found = NULL;
+    map.Lookup(name, found);
+    return static_cast<CDDrawWorker*>(found);
+}
+
 // @early-stop
 RVA(0x000e6020, 0x288)
 i32 CSBI_WellGoo::Setup(
@@ -37,7 +43,6 @@ i32 CSBI_WellGoo::Setup(
 
     i32 sel;
     CShadeTable* node;
-    CObject* found;
     CDDrawWorker* set;
 
     CImage* f;
@@ -72,9 +77,7 @@ i32 CSBI_WellGoo::Setup(
         node = g_gameReg->m_spriteFactory->GetSel(1, 0);
     }
 
-    found = NULL;
-    m_host->m_imageRegistry->m_workersByName.Lookup(key, found);
-    set = static_cast<CDDrawWorker*>(found);
+    set = LookupWorker(m_host->m_imageRegistry->m_workersByName, key);
     SetFrame((set != NULL) ? set->GetAt(4) : NULL);
     if (m_frame == NULL) {
         goto fail;
@@ -91,9 +94,7 @@ i32 CSBI_WellGoo::Setup(
         goto fail;
     }
 
-    found = NULL;
-    m_host->m_imageRegistry->m_workersByName.Lookup(key, found);
-    set = static_cast<CDDrawWorker*>(found);
+    set = LookupWorker(m_host->m_imageRegistry->m_workersByName, key);
     m_baseFrame = (set != NULL) ? set->GetAt(2) : NULL;
     if (m_baseFrame == NULL) {
         goto fail;
@@ -106,26 +107,23 @@ i32 CSBI_WellGoo::Setup(
         f->m_owned->m_palDescr = node;
     }
 
-    found = NULL;
-    m_host->m_imageRegistry->m_workersByName.Lookup(key, found);
-    set = static_cast<CDDrawWorker*>(found);
+    set = LookupWorker(m_host->m_imageRegistry->m_workersByName, key);
     m_fgFrame = (set != NULL) ? set->GetAt(3) : NULL;
-    if (m_fgFrame == NULL) {
-        goto fail;
-    }
-    if (m_fgFrame->m_owned != NULL) {
-        m_fgFrame->m_owned->Select(SHADE_PAL_16, NULL);
-    }
-    f = m_fgFrame;
-    if (node != NULL && f->m_owned != NULL) {
-        f->m_owned->m_palDescr = node;
-    }
+    if (m_fgFrame != NULL) {
+        if (m_fgFrame->m_owned != NULL) {
+            m_fgFrame->m_owned->Select(SHADE_PAL_16, NULL);
+        }
+        f = m_fgFrame;
+        if (node != NULL && f->m_owned != NULL) {
+            f->m_owned->m_palDescr = node;
+        }
 
-    SetRect(&rc, 0, 0, m_frame->m_width - 1, m_frame->m_height - 1);
-    m_srcRect = rc;
+        SetRect(&rc, 0, 0, m_frame->m_width - 1, m_frame->m_height - 1);
+        m_srcRect = rc;
 
-    m_drawX = m_rect.left + ((m_rect.right - m_rect.left) >> 1) + 1;
-    return 1;
+        m_drawX = m_rect.left + ((m_rect.right - m_rect.left) >> 1) + 1;
+        return 1;
+    }
 fail:
     return 0;
 }
