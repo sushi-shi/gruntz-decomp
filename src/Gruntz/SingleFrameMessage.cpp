@@ -44,10 +44,14 @@ CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj)
         RECT bounds;
         CopyRect(&r, g_gameReg->GetRect(&bounds));
     }
-    i32 centerY = r.top + (r.bottom - r.top) / 2;
-    i32 centerX = r.left + (r.right - r.left) / 2;
-    m_object->m_screenX = centerX;
-    m_object->m_screenY = centerY;
+    POINT origin = {r.left, r.top};
+    i32 centerY = (r.bottom - origin.y) / 2;
+    i32 centerX = (r.right - origin.x) / 2;
+    centerY += origin.y;
+    centerX += origin.x;
+    CWwdSpriteObject* object = m_object;
+    object->m_screenX = centerX;
+    object->m_screenY = centerY;
 }
 
 RVA(0x000ab5b0, 0x102)
