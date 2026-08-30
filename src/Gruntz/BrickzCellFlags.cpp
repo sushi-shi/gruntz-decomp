@@ -15,6 +15,10 @@
 
 #include <limits.h>
 
+static inline i32 SquaredDistance(i32 dx, i32 dy) {
+    return SQR(dx) + SQR(dy);
+}
+
 // @early-stop
 RVA(0x00077790, 0x4f0)
 void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 tileId) {
@@ -302,7 +306,7 @@ CGrunt* CTriggerMgr::FindNearestEnemy(CGrunt* w) {
                     && cell->m_gruntKind != GRUNT_GHOST) {
                     i32 dx = (cell->m_object->m_screenX >> TILE_SHIFT_PX) - tileX;
                     i32 dy = (cell->m_object->m_screenY >> TILE_SHIFT_PX) - tileY;
-                    i32 dist = SQR(dx) + SQR(dy);
+                    i32 dist = SquaredDistance(dx, dy);
                     if (dist < bestDist) {
                         best = cell;
                         bestDist = dist;
