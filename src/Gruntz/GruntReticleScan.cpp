@@ -4,6 +4,7 @@
 #include <MfcWin.h>
 
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/EnemyAiType.h>
@@ -42,41 +43,37 @@
 // @early-stop
 RVA(0x000ee800, 0x971)
 i32 CGrunt::StepDefenderBehavior() {
-    i32 defTX = m_defenderPx.m_x >> TILE_SHIFT_PX;
-    i32 defTY = m_defenderPx.m_y >> TILE_SHIFT_PX;
+    Coord defenderTile = m_defenderPx;
+    defenderTile.m_x >>= TILE_SHIFT_PX;
+    defenderTile.m_y >>= TILE_SHIFT_PX;
 
     i32 scanRadius = m_defenderRadius + m_reachRect.right - 1;
     i32 trimRadius = m_defenderRadius - 1;
     RECT scanBounds;
-    scanBounds.left = defTX - scanRadius;
-    scanBounds.top = defTY - scanRadius;
-    scanBounds.right = defTX + scanRadius + 1;
-    scanBounds.bottom = defTY + scanRadius + 1;
+    scanBounds.left = defenderTile.m_x - scanRadius;
+    scanBounds.top = defenderTile.m_y - scanRadius;
+    scanBounds.right = defenderTile.m_x + scanRadius + 1;
+    scanBounds.bottom = defenderTile.m_y + scanRadius + 1;
 
-    Coord pt;
-    GetScreenPos(&pt);
-    i32 dTX = abs((pt.m_x >> TILE_SHIFT_PX) - (m_defenderPx.m_x >> TILE_SHIFT_PX));
-    GetScreenPos(&pt);
-    i32 dTY = abs((pt.m_y >> TILE_SHIFT_PX) - (m_defenderPx.m_y >> TILE_SHIFT_PX));
-    i32 dist = dTX > dTY ? dTX : dTY;
-    if (dist > m_defenderRadius) {
-        m_defenderPx = m_lastTilePx;
-        return 1;
-    }
-
-    CGrunt* occ = m_triggerMgr->FindNearestEnemy(this);
-    i32 occOnTile = 0;
-    if (occ) {
-        CGameObject* oo = occ->m_object;
-        if (IsGruntAtSavedScreenPos(occ) != 0) {
-            if (RectContains(oo->m_screenX, oo->m_screenY)) {
-                occOnTile = 1;
-            }
+    {
+        Coord pt;
+        GetScreenPos(&pt);
+        i32 dTX = abs((pt.m_x >> TILE_SHIFT_PX) - (m_defenderPx.m_x >> TILE_SHIFT_PX));
+        GetScreenPos(&pt);
+        i32 dTY = abs((pt.m_y >> TILE_SHIFT_PX) - (m_defenderPx.m_y >> TILE_SHIFT_PX));
+        i32 dist = Max(dTX, dTY);
+        if (dist > m_defenderRadius) {
+            m_defenderPx = m_lastTilePx;
+            return 1;
         }
     }
 
-    if (m_poweredUp) {
-        if (m_neighborValid == false) {
+    FIND_NEAREST_ENEMY_AT_TARGET(occ, occOnTile, occScreenX)
+
+    b32 powered = m_poweredUp;
+    if (powered != false) {
+        b32 neighborValid = m_neighborValid;
+        if (neighborValid == false) {
             if (m_combatActive) {
                 return 1;
             }
@@ -125,16 +122,17 @@ i32 CGrunt::StepDefenderBehavior() {
     if (occ != NULL && static_cast<u32>(m_dwell) > DWELL_REPATH_MS) {
         i32 occTX = occ->m_object->m_screenX >> TILE_SHIFT_PX;
         i32 occTY = occ->m_object->m_screenY >> TILE_SHIFT_PX;
-        i32 dx = abs(occTX - defTX);
-        i32 dy = abs(occTY - defTY);
-        i32 radius = dx > dy ? dx : dy;
+        i32 dx = abs(occTX - defenderTile.m_x);
+        i32 dy = abs(occTY - defenderTile.m_y);
+        i32 radius = Max(dx, dy);
 
         if (radius < m_defenderRadius + m_reachRect.right) {
             if (m_blockedVoicePending != false) {
-                const RECT* view = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
+                CGruntzMgr* gameMgr = g_gameReg;
+                const RECT* view = &gameMgr->m_world->m_level->m_mainPlane->m_planeViewRect;
                 if (CGameLevel::PointInBounds(view, m_object->m_screenX, m_object->m_screenY)
                     != 0) {
-                    g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
+                    gameMgr->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
                 }
                 m_blockedVoicePending = false;
             }
@@ -212,14 +210,14 @@ i32 CGrunt::StepDefenderBehavior() {
                     while (pos != NULL) {
                         POSITION trimPos = pos;
                         Coord* trimCoord = static_cast<Coord*>(m_coordList.GetNext(pos));
-                        i32 pathDx = abs(trimCoord->m_x - defTX);
-                        i32 pathDy = abs(trimCoord->m_y - defTY);
-                        i32 pathDist = pathDx > pathDy ? pathDx : pathDy;
+                        i32 pathDx = abs(trimCoord->m_x - defenderTile.m_x);
+                        i32 pathDy = abs(trimCoord->m_y - defenderTile.m_y);
+                        i32 pathDist = Max(pathDx, pathDy);
                         if (pathDist > trimRadius) {
                             if (previous != NULL) {
                                 i32 backDx = abs(previous->m_x - occTX);
                                 i32 backDy = abs(previous->m_y - occTY);
-                                i32 backDist = backDx > backDy ? backDx : backDy;
+                                i32 backDist = Max(backDx, backDy);
                                 if (backDist <= m_reachRect.right) {
                                     PushFreeNode(&g_coordPool, trimCoord);
                                     m_coordList.RemoveAt(trimPos);
@@ -248,24 +246,25 @@ i32 CGrunt::StepDefenderBehavior() {
                         }
                         previous = trimCoord;
                     }
-                } else if ((m_object->m_screenX >> TILE_SHIFT_PX) != defTX
-                           || (m_object->m_screenY >> TILE_SHIFT_PX) != defTY) {
-                    TileSwitch(defTX, defTY, 0, m_arrivalFlags, 1, 0);
+                } else if ((m_object->m_screenX >> TILE_SHIFT_PX) != defenderTile.m_x
+                           || (m_object->m_screenY >> TILE_SHIFT_PX) != defenderTile.m_y) {
+                    TileSwitch(defenderTile.m_x, defenderTile.m_y, 0, m_arrivalFlags, 1, 0);
                     m_dwell = 0;
                 }
             }
-        } else if ((m_object->m_screenX >> TILE_SHIFT_PX) != defTX
-                   || (m_object->m_screenY >> TILE_SHIFT_PX) != defTY) {
-            TileSwitch(defTX, defTY, 0, m_arrivalFlags, 1, 0);
+        } else if ((m_object->m_screenX >> TILE_SHIFT_PX) != defenderTile.m_x
+                   || (m_object->m_screenY >> TILE_SHIFT_PX) != defenderTile.m_y) {
+            TileSwitch(defenderTile.m_x, defenderTile.m_y, 0, m_arrivalFlags, 1, 0);
         }
         m_dwell = 0;
     } else if (occ == NULL && static_cast<u32>(m_dwell) > DWELL_REPATH_MS
-               && ((m_object->m_screenX >> TILE_SHIFT_PX) != defTX
-                   || (m_object->m_screenY >> TILE_SHIFT_PX) != defTY)) {
-        TileSwitch(defTX, defTY, 0, m_arrivalFlags, 1, 0);
+               && ((m_object->m_screenX >> TILE_SHIFT_PX) != defenderTile.m_x
+                   || (m_object->m_screenY >> TILE_SHIFT_PX) != defenderTile.m_y)) {
+        TileSwitch(defenderTile.m_x, defenderTile.m_y, 0, m_arrivalFlags, 1, 0);
     }
 
-    GRID_RECT_INLINE_LOCAL(g_gameReg->m_tileGrid);
+    CMapMgr* grid = g_gameReg->m_tileGrid;
+    GRID_CLIP_INL_FIELDS(grid, NULL);
 
     return 1;
 }

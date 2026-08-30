@@ -2147,7 +2147,7 @@ gruntpowerupsprite	?RegisterActs@CGruntPowerupSprite@@SAXXZ	100.0000	100.0000	1	
 gruntpowerupsprite	?SerializeDispatch@CGruntPowerupSprite@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	7	edb654879d3c	0x80490	100.0000	
 gruntpowerupsprite	?Update@CGruntPowerupSprite@@QAEHXZ	100.0000	89.8214	19	082561096993	0x80410	100.0000	
 gruntpuddle	?SetBute@CGruntPuddle@@QAEXPAD@Z	100.0000	100.0000	6	e5d356855c9b	0x7d810	100.0000	
-gruntreticlescan	?StepDefenderBehavior@CGrunt@@QAEHXZ	85.7782	85.7782	26	40c7c9f50bff	0xee800	85.9959	
+gruntreticlescan	?StepDefenderBehavior@CGrunt@@QAEHXZ	91.2299	91.2299	27	eeea2f5bc0e1	0xee800	91.2299	
 gruntscantarget	?StepSmartChaserBehavior@CGrunt@@QAEHXZ	95.7603	95.5786	29	a03bffc63721	0xf42f0	95.7603	
 gruntseektarget	?StepToolThiefBehavior@CGrunt@@QAEHXZ	87.1610	87.1610	37	b23c36320bbe	0xf71c0	87.1610	
 gruntselectedsprite	??0CGruntSelectedSprite@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	6	5e4d6e53b886	0x7e3e0	100.0000	
