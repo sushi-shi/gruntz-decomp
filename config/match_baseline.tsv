@@ -1706,7 +1706,7 @@ font	??0FontRenderer@@QAE@XZ	100.0000	100.0000	1	e7cf1144096e	0x179be0	100.0000
 font	??1Font@@QAE@XZ	100.0000	100.0000	1	1f230dd95b83	0x179710	100.0000	
 font	??1FontRenderer@@QAE@XZ	100.0000	100.0000	1	d87483f34623	0x179c00	100.0000	
 font	?AllocateMemory@Font@@QAEHH@Z	100.0000	100.0000	4	3cfdccc36278	0x179720	100.0000	
-font	?DrawGlyphRun@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	94.4792	94.4792	9	e24d9fa7c0de	0x179e70	94.4792	
+font	?DrawGlyphRun@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	94.4653	94.4653	10	f04cbb13c792	0x179e70	94.4792	
 font	?DrawLine@FontRenderer@@QAEXVCString@@PAVCDDSurface@@HHH@Z	100.0000	100.0000	2	e9893faa2af6	0x179c30	100.0000	
 font	?DrawLineClipped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	100.0000	100.0000	1	86e8144fd715	0x179d10	100.0000	
 font	?DrawWrapped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	76.8479	76.8479	4	913e57b201f8	0x17a460	76.8479	

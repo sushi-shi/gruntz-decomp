@@ -259,13 +259,11 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
     }
 
     CSize m = MeasureText(text);
-    RECT extent;
-    extent.right = m.cx;
-    extent.bottom = m.cy;
-    extent.left = 0;
-    extent.top = 0;
-    if (!IntersectRect(&rc, &rc, &extent)) {
-        return;
+    {
+        CRect extent(CPoint(0, 0), m);
+        if (!rc.IntersectRect(&rc, &extent)) {
+            return;
+        }
     }
     if (rc.right > m.cx) {
         rc.right = m.cx;
