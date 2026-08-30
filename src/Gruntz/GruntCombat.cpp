@@ -2686,12 +2686,11 @@ kindDispatch:
 
                 i64 rem = m_convertTime64 + m_convertClock64 - static_cast<i64>(g_frameTime);
                 u32 remMs = (rem < 0 ? 0 : static_cast<u32>(rem));
-                double topaque = static_cast<double>(
-                    g_buteMgr.GetInt("Powerupz", "GruntGhostTransparencyOn", 0x100)
-                );
                 i32 frac = static_cast<i32>(
-                    topaque * static_cast<double>(remMs)
-                    * DATA_COMPGEN(0x001e9a60, 0.0003333333333333333)
+                    static_cast<double>(
+                        g_buteMgr.GetInt("Powerupz", "GruntGhostTransparencyOn", 0x100)
+                    )
+                    * static_cast<double>(remMs) * DATA_COMPGEN(0x001e9a60, 0.0003333333333333333)
                     );
                 CWwdSpriteObject* obj = m_object;
                 SET_DRAW_FILL_FRACTION(obj, SHADE_PAL_ALPHA_16, frac);
