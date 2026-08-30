@@ -602,12 +602,8 @@ static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
     i32 tileY = owner->m_screenY >> TILE_SHIFT_PX;
     if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
         && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
-
-        i32 cellInt = tileX * 8 - tileX;
-        i32* cell0 = grid->m_rowInts[tileY];
-        cell0[cellInt + 2] = 0;
-        i32* cell1 = grid->m_rowInts[tileY];
-        cell1[cellInt] &= ~0x40000;
+        grid->m_rows[tileY][tileX].m_objectId = 0;
+        grid->m_rows[tileY][tileX].m_flags &= ~0x40000;
     }
 }
 
