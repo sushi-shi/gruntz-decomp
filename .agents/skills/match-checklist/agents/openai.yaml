@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gruntz Match Checklist"
+  short_description: "Plan every Gruntz function match from proven exact levers"
+  default_prompt: "Use $match-checklist to build and execute a complete evidence-backed plan for this Gruntz function before editing it."

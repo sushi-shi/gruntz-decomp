@@ -9,6 +9,11 @@ Recover the original source structure that explains retail bytes. Correct
 classes, types, ownership, control flow, storage, calls, and referents outrank a
 temporary score. The objective is per-function historical MAX fuzzy = 100%.
 
+Before editing any function below historical MAX, use the repository's
+`match-checklist` skill to publish and execute its evidence-backed Function
+Match Plan. A wall may not be declared bounded until that checklist has an
+evidence-backed disposition for every family.
+
 ## Establish the environment
 
 1. Work in the pinned `nix develop` environment.
