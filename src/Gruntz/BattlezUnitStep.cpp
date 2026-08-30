@@ -238,9 +238,9 @@ inflight: {
     }
 
 L_clear: {
-    Coord none;
-    g->m_arrivalCell = *none.Set(-1, -1);
+    g->m_arrivalCell.m_x = -1;
     g->m_defenderState = AISTATE_SEEK;
+    g->m_arrivalCell.m_y = -1;
     return 1;
 }
 }
