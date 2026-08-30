@@ -522,22 +522,16 @@ i32 CBattlezMapConfig::StepRowSpawn(b32 allowReserved) {
     if (occupied >= m_ctx->m_players[m_playerIndex].m_maxGruntz) {
         return 1;
     }
-    i32 n = m_candArray.GetSize();
-    if (n <= 0) {
-        return 1;
-    }
-    Coord** cands = MfcPtrArrayData<Coord>(m_candArray);
-    Coord* cand = NULL;
     i32 i = 0;
+    Coord* cand = NULL;
     BrickzCell tileRec;
-    for (;;) {
-        cand = cands[i];
-        b32 usable = true;
+    for (; i < m_candArray.GetSize(); i++) {
+        cand = static_cast<Coord*>(m_candArray.GetAt(i));
         if (cand != NULL) {
 
             const i32* tilePtr = &m_board->m_rowInts[cand->m_y][cand->m_x * 7];
             memcpy(&tileRec, tilePtr, sizeof(tileRec));
-            usable = true;
+            b32 usable = true;
             if (tileRec.m_flags & BRICKZ_CELL_OCCUPIED) {
 
                 if (tileRec.m_occupantIdBytes[1] == m_playerIndex) {
@@ -548,15 +542,13 @@ i32 CBattlezMapConfig::StepRowSpawn(b32 allowReserved) {
                 }
             }
             if (usable) {
-                break;
+                goto candidateFound;
             }
         }
-        i++;
-        if (i < m_candArray.GetSize()) {
-            continue;
-        }
-        return 1;
     }
+    return 1;
+
+candidateFound:
     Coord screen;
     m_ctx->m_world->m_level->m_mainPlane
         ->SnapToTileCenter(&screen, cand->m_x << TILE_SHIFT_PX, cand->m_y << TILE_SHIFT_PX);

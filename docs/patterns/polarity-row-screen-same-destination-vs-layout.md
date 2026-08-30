@@ -46,7 +46,7 @@ different kind:
 | function | row | what it really is |
 |---|---|---|
 | `CProjectile::ScanTargets` 0xe0b10 | `#14 jge->jl` | loop back-edge; retail's epilogue A sits after the loop so `jl top` falls through to it, ours is tail-merged far away. Three spellings already measured byte-identical |
-| `CBattlezMapConfig::StepRowSpawn` 0x26470 | `#9 jge->jl` | same loop-exit shape (rets 4->5) |
+| `CBattlezMapConfig::StepRowSpawn` 0x26470 | `#9 jge->jl` | **closed:** the loop was a bounded `for` with its own exhaustion return, not an unbounded scan plus an external size guard; restoring that source makes branches 20=20 and returns 5=5 |
 | `CMulti::SetupTcpIpConfig` 0xbc460 | `#3 jne->je` | retail materializes `!ok` (`neg/sbb/inc`) and tests the byte; we compare `ok` against a pinned zero |
 | `CDDSurface::SaveTga` 0x144900 | `#1`, `#4` | zero-register-pinning, MIRRORED - retail spells the per-gate form at `#1` and folds at `#4`, we do the exact opposite |
 | `CGrunt::PathScan` 0x57db0 | `#46 jne->je` | two `Clip(0); return 0` guards; retail routes both to the shared end block, we emit one local copy |

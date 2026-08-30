@@ -29,6 +29,10 @@ instead of `u8` gives `movsbl`, and `u8 == u8` gives a byte compare - neither is
 this shape.
 
 CBattlezMapConfig::StepRowSpawn 0x26470 reads this way and its
-`m_occupantIdBytes[1]` is byte-correct; the residue there is the loop's
-enregistration (retail keeps the candidate index in ebp and the cursor on the
-stack, cl the reverse).
+`m_occupantIdBytes[1]` is byte-correct. Restoring the bounded candidate loop
+and the inline `CPtrArray::GetAt` access recovered retail's index in EBP,
+spilled array cursor, branch/return topology and frame. The remaining residue
+is now precisely this local-aggregate byte-load choice plus its downstream
+register colouring. A target-adjacent 128-state C1 forest was flat at the
+88.8080 source island, and the eleven local-aggregate variants above bound the
+source-level family.
