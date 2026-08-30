@@ -14,6 +14,11 @@ source-model rules, or verification gates.
 
 Before the first source edit, publish a concise **Function Match Plan** using
 the template in [references/function-plan.md](references/function-plan.md).
+Read and copy the applicable rows from
+[references/attempt-matrix.md](references/attempt-matrix.md) into that plan.
+The matrix is executable: every row must end as `tested`, `proved`,
+`checked — no evidence`, or `proved inapplicable`; merely naming a family is
+not completion.
 The plan is specific to the selected function, not a generic list. It must:
 
 1. state the current/bank/historical score, size, owner TU, source fingerprint,
@@ -25,7 +30,11 @@ The plan is specific to the selected function, not a generic list. It must:
    that licenses it and the machine-code feature it is expected to move;
 4. mark every checklist family `candidate`, `checked — no evidence`, `tested`,
    or `proved inapplicable`, with a short reason. No family may be silently
-   skipped.
+   skipped; and
+5. enumerate the concrete source forms to compile within every candidate
+   family. In particular, “checked inlining” is invalid unless the plan records
+   the distinct helper/macro/visibility forms from the attempt matrix and their
+   individual verdicts.
 
 Keep the live plan in commentary/task notes. Do not create a hand-maintained wall
 ledger. Persist only reusable compiler findings in `docs/patterns/` and durable
@@ -87,6 +96,12 @@ Do not run a Cartesian/permutation campaign until the plan shows that all
 applicable structural families were checked and the current wall is genuinely
 register/schedule or TU-state. Do not retain probes, unused declarations,
 artificial locals, or distorted source.
+
+“Checked” means one of two things: a real-TU A/B was compiled, or retail/source
+evidence proves that exact form inapplicable. A score from an older source hash
+may serve as the A/B only when the historical body and relevant TU context are
+identified. Do not replace the attempt matrix with one broad experiment that
+mixes several independent levers.
 
 ## Exit criteria
 

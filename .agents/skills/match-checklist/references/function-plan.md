@@ -59,6 +59,26 @@ Every row needs one of: `candidate`, `checked — no evidence`, `tested`, or
 |---:|---|---|---|---|---|
 | 1 | | | | | pending |
 
+## Required attempt checklist
+
+Copy every row from
+[attempt-matrix.md](attempt-matrix.md) that can affect this function. Keep the
+checkbox open while work remains. Close it only with one of these explicit
+verdicts:
+
+```text
+[x] tested — <real-TU result and structural delta>
+[x] proved — <retail/source/history evidence selects this form>
+[x] checked — no evidence — <where the search was performed>
+[x] proved inapplicable — <machine/source reason>
+```
+
+For a candidate family, list each concrete spelling separately. For example,
+do not write `[x] inlining`; write separate rows for member inline, free/static
+inline, macro, wrapper/operator/accessor, nested/flat composition,
+visibility/COMDAT, helper statement order, and repeated-call versus cached
+result as applicable.
+
 Queue composition rules:
 
 - Put correctness/model/source-lineage candidates before codegen spellings.
