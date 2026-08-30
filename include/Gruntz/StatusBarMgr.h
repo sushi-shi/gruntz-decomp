@@ -43,8 +43,8 @@ GZ_ENUM_END(SbiSlotState)
 struct CSbiSlot {
 
     CSbiSlot() {
-        m_startTime = 0;
         m_interval = 0;
+        m_startTime = 0;
     }
     SbiSlotState m_state;
     i32 m_value;
@@ -102,6 +102,19 @@ struct CSbiHlRow {
             i32 m_intervalLo, m_intervalHi;
         };
     };
+};
+
+struct CSbiMachineRow {
+    CSbiMachineRow() : m_last(0), m_interval(0) {}
+
+    i32 m_state;
+
+    union {
+        i32 m_value;
+        i32 m_counter;
+    };
+    i64 m_last;
+    i64 m_interval;
 };
 
 class CSBI_SideTab;
@@ -302,8 +315,8 @@ public:
     CSBI_ImageSet* m_conveyorSprites[3];
     char m_pad314[0x318 - 0x314];
 
-    CSbiHlRow m_rightMachine;
-    CSbiHlRow m_leftMachine;
+    CSbiMachineRow m_rightMachine;
+    CSbiMachineRow m_leftMachine;
     CSBI_GruntMachine* m_machineDisplay;
     i32 m_reserved34c;
     i32 m_reserved350;

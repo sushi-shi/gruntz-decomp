@@ -268,6 +268,51 @@ the retail boundary. A smaller nested `ClampX` helper was not a substitute: it
 changed the caller to 69 branches against retail's 67 and dropped it to 87.29.
 Only the repeated semantic operation is a credible candidate boundary.
 
+### Worked example: restore the candidate layers before changing the leaf
+
+`CPlay::LoadGameAssetNamespaces` at `0x0c7ec0` had the inverse nested-constructor
+texture: retail calls `??_H` for both the 3- and 12-element `CSbiHlRow` arrays,
+then expands the two scalar machine-row constructions; the reconstruction
+expanded both arrays and later declined the scalar row constructor. Moving the
+already exact `CSbiHlRow` leaf around could only exchange one wrong site for
+another.
+
+The measured composition was monotonic only after keeping each authentic base:
+
+| source-visible composition | fuzzy | nested result |
+|---|---:|---|
+| direct stores | 84.4611 | both arrays expanded; scalar row calls |
+| grouped initial asset state | 87.1736 | 12-element array calls `??_H` |
+| plus four later one-field helpers | 89.1347 | one array still expanded |
+| plus the fifth one-field helper | 93.5155 | both arrays call `??_H`; scalar row calls remain |
+| distinct compact `CSbiMachineRow` value type | 96.6192 | both scalar constructors expand; call set exact |
+| authored `CSbiSlot` qword initializer order | 96.6321 | every displacement and store exact |
+
+The first helper groups the play/player activation state. The later five are
+ordinary state boundaries whose expansions are byte-flat: pending-frame,
+notification-latch, final-level, save-slot clear, and saved-clock setters. They
+occur after the status-bar allocation and therefore participate in cl 5.0's
+remaining-site divisor without adding machine code.
+
+The scalar residue was not another budget probe. Right/left machine rows use
+`counter`, `last`, and `interval` as one semantic value type, while the arrays
+are highlight rows. Giving the machine rows their own compact constructor lets
+cl expand those two sites independently of the address-taken array element
+constructor. This is the reverse-use rule: when one declared element type must
+simultaneously be called and expanded at adjacent scalar/array sites, first ask
+whether flattened reconstruction merged two same-layout source types.
+
+One final source-order fact was visible only after the call set closed.
+`CSbiSlot` has two real qword initializers. Both spellings write the same bytes,
+but `startTime` then `interval` makes C2 derive the five-element loop cursor from
+the second field and address the first with negative offsets. The authored
+`interval` then `startTime` order derives the cursor from the first field and
+emits retail's positive `+0,+8,+4,+0xc` sequence. At the banked state base and
+retail have 34 calls and 36 relocations; `semdiff` reports identical stores,
+displacements, immediates, FP operands, and referent order. The remaining
+392-versus-394-instruction residue is only a two-instruction failure-tail CFG
+split, not grounds to reopen the recovered inline family.
+
 ## Quantified PARK: `CGruntzMgr::TransitionState` 0x8b960
 
 Worked 2026-08-21 with `walls inline-model`, and the first case where the model

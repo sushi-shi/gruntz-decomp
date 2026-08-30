@@ -2974,8 +2974,8 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
 
 RVA(0x00105e40, 0x63c)
 void CStatusBarMgr::LoadRezMachineConfig() {
-    CSbiHlRow* rightMachine = &m_rightMachine;
-    CSbiHlRow* leftMachine = &m_leftMachine;
+    CSbiMachineRow* rightMachine = &m_rightMachine;
+    CSbiMachineRow* leftMachine = &m_leftMachine;
     switch (static_cast<SbiMachineState>(rightMachine->m_state)) {
         case MACHINE_RIGHT_RUNNING:
             if (static_cast<i64>(g_frameTime) - rightMachine->m_last >= rightMachine->m_interval) {
