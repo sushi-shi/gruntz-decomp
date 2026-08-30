@@ -53,6 +53,7 @@
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/VoiceManager.h>
 #include <Io/FileMem.h>
+#include <Lith/BDefs.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/zBitVec.h>
 #include <Wap32/ZVec.h>
@@ -3455,10 +3456,11 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
     return 1;
 }
 
-// @early-stop
-RVA(0x0002e3a0, 0x7e1)
-i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
+static inline i32 DistSq(i32 dx, i32 dy) {
+    return SQR(dx) + SQR(dy);
+}
 
+static inline void BuildUnitSearchBox(CGrunt* unit, RECT* box, i32 radius) {
     i32 bottom;
     i32 right;
     i32 top;
@@ -3480,11 +3482,17 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
         unit->GetScreenTile(&leftProbe);
         left = leftProbe.m_x;
     }
+    box->left = left - radius;
+    box->top = top - radius;
+    box->right = right + radius;
+    box->bottom = bottom + radius;
+}
+
+// @early-stop
+RVA(0x0002e3a0, 0x7e1)
+i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
     RECT box;
-    box.left = left - 7;
-    box.top = top - 7;
-    box.right = right + 7;
-    box.bottom = bottom + 7;
+    BuildUnitSearchBox(unit, &box, 7);
 
     CGrunt* best = NULL;
     i32 bestDist = INT_MAX;
@@ -3551,7 +3559,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
             Coord candidatePos2;
             u->GetScreenTile(&candidatePos2);
             i32 dy = abs(unitPos2.m_y - candidatePos2.m_y);
-            i32 dist = dx * dx + dy * dy;
+            i32 dist = DistSq(dx, dy);
             if (dist >= bestDist) {
                 continue;
             }
@@ -3766,7 +3774,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
                     i32 dy = (ul->m_screenY >> TILE_SHIFT_PX) - cy;
                     dx = abs(dx);
                     dy = abs(dy);
-                    if (dx * dx + dy * dy <= 0x190) {
+                    if (DistSq(dx, dy) <= 0x190) {
 
                         i32 flags = BATTLEZ_ROUTE_OTHER_TOOLS_TRIGGER;
                         PickupType cer = cand->m_entranceReason;
@@ -4395,7 +4403,7 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
             dx = abs(dx);
             dy = abs(dy);
 
-            if (dx * dx + dy * dy <= 0x19) {
+            if (DistSq(dx, dy) <= 0x19) {
                 ok = false;
             }
         }
@@ -4526,7 +4534,7 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
                 i32 dy = cy - goalY;
                 dx = abs(dx);
                 dy = abs(dy);
-                i32 dist = dx * dx + dy * dy;
+                i32 dist = DistSq(dx, dy);
                 if (dist < bestDist) {
                     bestX = cx;
                     bestY = cy;
