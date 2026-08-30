@@ -140,6 +140,21 @@ static __inline BrickTileId PickThreeBrickStack(
                                                            : BRICKTILE_BLACK_3_MID;
 }
 
+static inline CGameObject* ListGetFirst(CDDrawChildGroup* list) {
+    list->m_walkCursor = list->m_list.GetHeadPosition();
+    if (list->m_walkCursor == NULL) {
+        return NULL;
+    }
+    return list->NextChild(list->m_walkCursor);
+}
+
+static inline CGameObject* ListGetNext(CDDrawChildGroup* list) {
+    if (list->m_walkCursor == NULL) {
+        return NULL;
+    }
+    return list->NextChild(list->m_walkCursor);
+}
+
 // @early-stop
 RVA(0x000810f0, 0xa80)
 i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
@@ -412,70 +427,65 @@ i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
             cell->m_tileId = tileId;
             cell->m_typeCode = typeCode;
 
-            if ((cell->m_flags & 0x100) != 0) {
-                i32 colCount = m_width;
-                for (i32 neighborTileX = static_cast<i32>(tileX) - 1;
-                     neighborTileX <= static_cast<i32>(tileX) + 1;
-                     neighborTileX++) {
-                    if (neighborTileX <= 0
+            for (i32 neighborTileX = static_cast<i32>(tileX) - 1;
+                 neighborTileX <= static_cast<i32>(tileX) + 1;
+                 neighborTileX++) {
+                for (i32 neighborTileY = static_cast<i32>(tileY) - 1;
+                     neighborTileY <= static_cast<i32>(tileY) + 1;
+                     neighborTileY++) {
+                    if (neighborTileY < 0
+                        || static_cast<u32>(neighborTileY) >= static_cast<u32>(m_height)
+                        || neighborTileX <= 0
                         || static_cast<u32>(neighborTileX) >= static_cast<u32>(m_width)) {
                         continue;
                     }
-                    for (i32 neighborTileY = static_cast<i32>(tileY) - 1;
-                         neighborTileY <= static_cast<i32>(tileY) + 1;
-                         neighborTileY++) {
-                        if (neighborTileY < 0
-                            || static_cast<u32>(neighborTileY) >= static_cast<u32>(m_height)) {
-                            continue;
-                        }
-                        BrickzCell* nc = &m_rows[neighborTileY][neighborTileX];
-                        i32 nf = nc->m_flags & ~0x1000;
-                        nc->m_flags = nf;
-                        if ((nf & 0x100) == 0) {
-                            continue;
-                        }
-                        BrickzCell* up = NULL;
-                        BrickzCell* down = NULL;
-                        BrickzCell* right = NULL;
-                        BrickzCell* left = NULL;
-                        BrickzCell* ur = NULL;
-                        BrickzCell* ul = NULL;
-                        BrickzCell* dr = NULL;
-                        BrickzCell* dl = NULL;
-                        if (neighborTileY > 0) {
-                            up = nc - colCount;
-                        }
-                        if (static_cast<u32>(neighborTileY) < static_cast<u32>(m_height - 1)) {
-                            down = nc + colCount;
-                        }
-                        if (static_cast<u32>(neighborTileX) < static_cast<u32>(colCount - 1)) {
-                            right = nc + 1;
-                        }
-                        if (neighborTileX > 0) {
-                            left = nc - 1;
-                        }
-                        if (up != NULL && right != NULL) {
-                            ur = up + 1;
-                        }
-                        if (up != NULL && left != NULL) {
-                            ul = up - 1;
-                        }
-                        if (down != NULL && right != NULL) {
-                            dr = down + 1;
-                        }
-                        if (down != NULL && left != NULL) {
-                            dl = down - 1;
-                        }
-                        if ((up && down && !(up->m_flags & BRICKZ_BLOCKED_MASK)
-                             && !(down->m_flags & BRICKZ_BLOCKED_MASK))
-                            || (right && left && !(right->m_flags & BRICKZ_BLOCKED_MASK)
-                                && !(left->m_flags & BRICKZ_BLOCKED_MASK))
-                            || (ur && dl && !(ur->m_flags & BRICKZ_BLOCKED_MASK)
-                                && !(dl->m_flags & BRICKZ_BLOCKED_MASK))
-                            || (ul && dr && !(ul->m_flags & BRICKZ_BLOCKED_MASK)
-                                && !(dr->m_flags & BRICKZ_BLOCKED_MASK))) {
-                            nc->m_flags = nf | 0x1000;
-                        }
+                    BrickzCell* nc = &m_rows[neighborTileY][neighborTileX];
+                    i32 nf = nc->m_flags & ~0x1000;
+                    nc->m_flags = nf;
+                    if ((nf & 0x100) == 0) {
+                        continue;
+                    }
+                    BrickzCell* up = NULL;
+                    BrickzCell* down = NULL;
+                    BrickzCell* right = NULL;
+                    BrickzCell* left = NULL;
+                    BrickzCell* ur = NULL;
+                    BrickzCell* ul = NULL;
+                    BrickzCell* dr = NULL;
+                    BrickzCell* dl = NULL;
+                    if (neighborTileY > 0) {
+                        up = nc - m_width;
+                    }
+                    if (static_cast<u32>(neighborTileY) < static_cast<u32>(m_height - 1)) {
+                        down = nc + m_width;
+                    }
+                    if (static_cast<u32>(neighborTileX) < static_cast<u32>(m_width - 1)) {
+                        right = nc + 1;
+                    }
+                    if (neighborTileX > 0) {
+                        left = nc - 1;
+                    }
+                    if (up != NULL && right != NULL) {
+                        ur = up + 1;
+                    }
+                    if (up != NULL && left != NULL) {
+                        ul = up - 1;
+                    }
+                    if (down != NULL && right != NULL) {
+                        dr = down + 1;
+                    }
+                    if (down != NULL && left != NULL) {
+                        dl = down - 1;
+                    }
+                    if ((up && down && !(up->m_flags & BRICKZ_BLOCKED_MASK)
+                         && !(down->m_flags & BRICKZ_BLOCKED_MASK))
+                        || (right && left && !(right->m_flags & BRICKZ_BLOCKED_MASK)
+                            && !(left->m_flags & BRICKZ_BLOCKED_MASK))
+                        || (ur && dl && !(ur->m_flags & BRICKZ_BLOCKED_MASK)
+                            && !(dl->m_flags & BRICKZ_BLOCKED_MASK))
+                        || (ul && dr && !(ul->m_flags & BRICKZ_BLOCKED_MASK)
+                            && !(dr->m_flags & BRICKZ_BLOCKED_MASK))) {
+                        nc->m_flags = nf | 0x1000;
                     }
                 }
             }
@@ -483,14 +493,8 @@ i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
     }
 
     CDDrawChildGroup* childGroup = g_gameReg->m_world->m_childGroup;
-    childGroup->m_walkCursor = childGroup->m_list.GetHeadPosition();
-    CGameObject* obj;
-    if (childGroup->m_walkCursor != NULL) {
-        obj = childGroup->NextChild(childGroup->m_walkCursor);
-    } else {
-        obj = NULL;
-    }
-    while (obj != NULL) {
+    for (CGameObject* obj = ListGetFirst(childGroup); obj != NULL;
+         obj = ListGetNext(g_gameReg->m_world->m_childGroup)) {
 
         if (obj->m_logicRecord->m_dispatch == &DispatchExitTriggerLogic) {
             i32 tileX = obj->m_screenX / TILE_SIZE_PX;
@@ -522,12 +526,6 @@ i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
                 }
             }
             m_arr.SetSize(0, -1);
-        }
-        CDDrawChildGroup* nextChildGroup = g_gameReg->m_world->m_childGroup;
-        if (nextChildGroup->m_walkCursor != NULL) {
-            obj = nextChildGroup->NextChild(nextChildGroup->m_walkCursor);
-        } else {
-            obj = NULL;
         }
     }
 

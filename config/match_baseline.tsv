@@ -664,7 +664,7 @@ brickz	?UpdateDiagonals@CMapMgr@@QAEHPAVCGruntzMgr@@@Z	90.1655	90.1655	5	4bfe78c
 brickzcellflags	?ComputeCellFlags@CMapMgr@@QAEXHHH@Z	97.6586	97.6586	9	2bc5236e0a95	0x77790	97.6586	
 brickzcellflags	?FindNearestEnemy@CTriggerMgr@@QAEPAVCGrunt@@PAV2@@Z	93.2718	93.2718	7	e1ad38fab7bb	0x77df0	93.2718	
 brickzcellflags	?SetCell@CDDrawWorkerHost@@QAEXHHH@Z	100.0000	100.0000	2	ca91274c34f6	0x77dc0	100.0000	
-brickzload	?BuildCellAttributes@CGruntzMapMgr@@QAEHHH@Z	86.8596	86.8596	29	cb19181741e6	0x810f0	86.8596	
+brickzload	?BuildCellAttributes@CGruntzMapMgr@@QAEHHH@Z	89.6123	89.6123	30	69d7f7e0d178	0x810f0	89.6123	
 buteglobals	??_GCButeTree@@UAEPAXI@Z	100.0000	100.0000	1	cpp:b2b2a3648e76	0x16e9c0	100.0000	
 buteglobals	??_GCTypeCollRuntime@@UAEPAXI@Z	100.0000	100.0000	1	cpp:b2b2a3648e76	0x16ea20	100.0000	
 buteglobals	?ButeTreeNopFree@@YAXPAX@Z	100.0000	100.0000	1	a24c4973a48e	0x16ea10	100.0000	
