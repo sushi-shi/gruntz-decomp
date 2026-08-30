@@ -52,6 +52,15 @@ required definitions below `StepArrivalDrop` and `ShadeRect`, restored all four
 banked scores in the same full build. Later macro-backed sites remained compiled and
 the MAX gate returned to zero fresh regressions.
 
+A 2026-08-30 reconstruction of the `StepArrivalDrop` control narrowed the required
+composition further. Moving only the coordinate-recycle, movement, sort-key, and
+tile-coordinate definition headers back below the function left it at 0.0000% and
+still omitted the fourth emitted `CPtrList::RemoveHead` site. Restoring the two later
+powered-state and sprite definition boundaries as well returned the unchanged body to
+32.2933%. The perturbation therefore belongs to the cumulative C1 definition-boundary
+state, not to any one macro family; when reversing a hoist, restore the complete
+historical boundary population before judging the A/B.
+
 ## Interpretation and reverse use
 
 The exact internal C1 mechanism is not recovered. The controlled result implies that

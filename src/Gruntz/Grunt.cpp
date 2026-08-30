@@ -33,18 +33,14 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStats.h>
 #include <Gruntz/GruntAiState.h>
-#include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntEntranceArrival.h>
 #include <Gruntz/GruntEntranceMove.h>
 #include <Gruntz/GruntHealthSprite.h>
 #include <Gruntz/GruntIdentity.h>
 #include <Gruntz/GruntMovementInline.h>
-#include <Gruntz/GruntMovementMacros.h>
-#include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPowerupSprite.h>
 #include <Gruntz/GruntSelectedSprite.h>
-#include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntToySprite.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMapMgr.h>
@@ -61,14 +57,12 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/SortKeyLayer.h>
-#include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/StaminaPct.h>
 #include <Gruntz/State.h>
 #include <Gruntz/StatusBarDock.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/StatusBarTab.h>
-#include <Gruntz/TileCoordMacros.h>
 #include <Gruntz/Timer.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -1254,6 +1248,11 @@ reProbe:
     return arrivalPhase != 0;
 }
 
+#include <Gruntz/GruntCoordRecycleMacros.h>
+#include <Gruntz/GruntMovementMacros.h>
+#include <Gruntz/SortKeyMacros.h>
+#include <Gruntz/TileCoordMacros.h>
+
 RVA(0x0004c170, 0xbe7)
 i32 CGrunt::StepGruntMovement() {
     i32 coordX, coordY;
@@ -1823,6 +1822,9 @@ i32 CGrunt::CreateStaminaSprite() {
     }
     return 1;
 }
+
+#include <Gruntz/GruntPoweredStateMacros.h>
+#include <Gruntz/GruntSpriteMacros.h>
 
 // @early-stop
 RVA(0x0004d3e0, 0xf5)
