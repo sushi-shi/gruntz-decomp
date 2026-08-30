@@ -3378,7 +3378,7 @@ play	??1CTileTriggerContainer@@QAE@XZ	100.0000	100.0000	1	cpp:b62c0d908eff	0xc86
 play	??1CWapObj@@UAE@XZ	100.0000	100.0000	1	cpp:02f89280bcb9	0xd5d70	100.0000	
 play	??_GCImage@@UAEPAXI@Z	100.0000	100.0000	1	cpp:02f89280bcb9	0xd5e50	100.0000	
 play	?ActivateVisibleObjectsOnMainPlane@CGameLevel@@QAEHXZ	100.0000	100.0000	1	29b29c315f9c	0xcedf0	100.0000	
-play	?AddLevelGruntz@CPlay@@QAEHXZ	87.3929	87.3929	7	13a81a7882e5	0xd5960	87.3929	
+play	?AddLevelGruntz@CPlay@@QAEHXZ	100.0000	100.0000	8	aed91ec6b524	0xd5960	100.0000	
 play	?AdvanceCursorAnimation@CPlay@@QAEHH@Z	100.0000	100.0000	4	36e79001ebad	0xd0a60	100.0000	
 play	?BuildHelpReveal@CPlay@@QAEHH@Z	100.0000	100.0000	4	99be80e31203	0xd72c0	100.0000	
 play	?CanQuickSave@CPlay@@QAEHXZ	100.0000	100.0000	9	c1184d9d833d	0xda3b0	100.0000	

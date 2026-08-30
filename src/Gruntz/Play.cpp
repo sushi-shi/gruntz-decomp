@@ -5757,7 +5757,6 @@ i32 CPlay::ScanBuildTiles() {
     return 1;
 }
 
-// @early-stop
 RVA(0x000d5960, 0x160)
 i32 CPlay::AddLevelGruntz() {
     CObList* chain = &m_world->m_childGroup->m_list;
@@ -5779,22 +5778,22 @@ i32 CPlay::AddLevelGruntz() {
         i32 x = ((g->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX);
         i32 y = ((g->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX);
 
-        i32 r = m_mgr->m_triggerMgr->PlaceObject(
-            g->m_smarts,
-            x,
-            y,
-            0x186a0,
-            GRUNT_ENTRANCE_NONE,
-            g->m_score,
-            g->m_powerup,
-            g->m_damage,
-            g->m_points,
-            g->m_direction,
-            g->m_logicRecord->m_minX,
-            g->m_logicRecord->m_maxX,
-            &g->m_extent
-        );
-        if (r == -1) {
+        if (m_mgr->m_triggerMgr->PlaceObject(
+                g->m_smarts,
+                x,
+                y,
+                0x186a0,
+                GRUNT_ENTRANCE_NONE,
+                g->m_score,
+                g->m_powerup,
+                g->m_damage,
+                g->m_points,
+                g->m_direction,
+                g->m_logicRecord->m_minX,
+                g->m_logicRecord->m_maxX,
+                &g->m_extent
+            )
+            == -1) {
             CString msg;
             msg.Format("Could not add Grunt: Player=%d, x=%d, y=%d", g->m_smarts, x, y);
 

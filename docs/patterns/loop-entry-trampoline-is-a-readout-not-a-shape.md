@@ -82,12 +82,26 @@ retail's 28, with all 11 returns and 24 relocations unchanged. The score descend
 correction remains decisive. The all-parameter control also has 28 branches, while
 every high-score local-alpha frontier restores the two wrong jumps.
 
+`CPlay::AddLevelGruntz` 0xd5960 proves a third source class: a **named result used
+only by the immediately following comparison**. The baseline assigned
+`PlaceObject(...)` to `i32 r` and then tested `r == -1`. C2 eliminated the machine
+store, but the C1 local still changed allocation across the function: `this` occupied
+EBP, the `POSITION` cursor lived at `[esp+0x10]`, and C2 inserted the entry trampoline
+over its reload. Testing the call directly in the condition homes `this`, keeps the
+cursor in EBP, and removes the trampoline: 0x165 -> 0x160 bytes, 116 -> 114
+instructions, 8 -> 7 branches, and 87.3929 -> 100.0000 exact with the same five calls,
+three returns, and ten ordered referents. Predeclaring the cursor, moving it into a
+`for` header, and declaring all ordinary locals at function scope were byte-identical
+negative controls. The direct condition is therefore a local-census correction, not
+a loop-spelling trick.
+
 So the screen is not "who has the extra jmp" but **"why does the entry edge already
 own the value whose stack home the latch reloads?"** First inspect a hoisted invariant.
-For a large switch, also inspect parameter aliases across every sibling arm and run the
-Cartesian product: a local test cannot see a function-entry preload selected by the
-other arms. If neither source defect exists and the block sits above a bare reload the
-other side also performs, it is bounded allocation.
+Then remove unjustified one-use result locals before changing the loop. For a large
+switch, also inspect parameter aliases across every sibling arm and run the Cartesian
+product: a local test cannot see a function-entry preload selected by the other arms.
+If none of these source defects exists and the block sits above a bare reload the other
+side also performs, it is bounded allocation.
 
     # rows where ours carries more unconditional jumps than retail
     # (34 of 579 in the sub-100 queue; 514 agree exactly)
