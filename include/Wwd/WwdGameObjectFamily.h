@@ -89,6 +89,8 @@ public:
 
     void Notify(CGameObject* p);
 
+    i32 AttackBits(CGameObject* target) const;
+
     i32 PrepareSave(CFileMemBase* ar);
     i32 Serialize(CFileMemBase* ar);
     i32 WriteSnapshot(CFileMemBase* dst, LogicTypeId unused);
@@ -169,6 +171,10 @@ public:
     i32 m_carrierId;
     i32 m_objectId;
 };
+
+inline i32 CGameObject::AttackBits(CGameObject* target) const {
+    return static_cast<i32>(target->m_objectType) & m_attackTypeMask;
+}
 
 inline void CGameObject::AttachToOwner(CDDrawSurfaceMgr* owner, i32 id) {
     m_screenX = COORD_UNSET;

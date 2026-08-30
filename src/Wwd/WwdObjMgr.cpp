@@ -491,9 +491,25 @@ void CDDrawChildGroup::ClearChildren() {
     DestroyChildren();
 }
 
+static inline i32 WorldSpaceDifference(i32 leftFlags, i32 rightFlags) {
+    return (leftFlags ^ rightFlags) & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE);
+}
+
+static inline i32 ObjectTypeBits(u32 objectType, i32 mask) {
+    return static_cast<i32>(objectType) & mask;
+}
+
+#define PLACE_OBJECT_RECT(dst, object, rect)                                                       \
+    (dst).left = (object)->rect.left + (object)->m_screenX;                                        \
+    (dst).top = (object)->rect.top + (object)->m_screenY;                                          \
+    (dst).right = (object)->rect.right + (object)->m_screenX;                                      \
+    (dst).bottom = (object)->rect.bottom + (object)->m_screenY
+
 // @early-stop
 RVA(0x00159f00, 0x22e)
 void CDDrawChildGroup::CollideBroadcast() {
+    i32 mask1;
+    i32 mask2;
     POSITION pos = m_list.GetHeadPosition();
     while (pos != NULL) {
         CGameObject* oi = NextChild(pos);
@@ -506,14 +522,14 @@ void CDDrawChildGroup::CollideBroadcast() {
                     continue;
                 }
                 i32 fi = oi->m_flags;
-                if ((fi ^ fj) & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
+                if (WorldSpaceDifference(oj->m_flags, oi->m_flags)) {
                     continue;
                 }
 
                 if (!(fi & IDX(WWD_GAME_OBJECT_FLAG_IGNORE_HITS))
                     && !(fj & IDX(WWD_GAME_OBJECT_FLAG_DISABLE_ATTACKS))) {
-                    i32 mask1 = static_cast<i32>(oj->m_objectType) & oi->m_hitTypeFlags;
-                    i32 mask2 = static_cast<i32>(oi->m_objectType) & oj->m_attackTypeMask;
+                    mask1 = ObjectTypeBits(oj->m_objectType, oi->m_hitTypeFlags);
+                    mask2 = oj->AttackBits(oi);
                     if (mask1 || mask2) {
                         i32 overlap;
                         if (oj->m_switchRect.left == COORD_UNSET) {
@@ -522,18 +538,8 @@ void CDDrawChildGroup::CollideBroadcast() {
                             overlap = 0;
                         } else {
                             CDDrawRect ra, rb;
-                            i32 xi = oi->m_screenX;
-                            i32 yi = oi->m_screenY;
-                            ra.left = oi->m_area.left + xi;
-                            ra.top = oi->m_area.top + yi;
-                            ra.right = oi->m_area.right + xi;
-                            ra.bottom = oi->m_area.bottom + yi;
-                            i32 xj = oj->m_screenX;
-                            i32 yj = oj->m_screenY;
-                            rb.left = oj->m_switchRect.left + xj;
-                            rb.top = oj->m_switchRect.top + yj;
-                            rb.right = oj->m_switchRect.right + xj;
-                            rb.bottom = oj->m_switchRect.bottom + yj;
+                            PLACE_OBJECT_RECT(ra, oi, m_area);
+                            PLACE_OBJECT_RECT(rb, oj, m_switchRect);
                             overlap = RectsOverlap(&ra, &rb);
                         }
                         if (overlap) {
@@ -548,9 +554,7 @@ void CDDrawChildGroup::CollideBroadcast() {
                             if (mask1) {
                                 if (oi->m_flags
                                     & IDX(WWD_GAME_OBJECT_FLAG_DAMAGE_HEALTH_DIRECTLY)) {
-                                    i32 v = oi->m_health - oj->m_damage;
-                                    oi->m_health = v;
-                                    if (v <= 0) {
+                                    if ((oi->m_health = oi->m_health - oj->m_damage) <= 0) {
 
                                         oi->m_logicRecord->SetLogicEvent(ACT_HEALTH_DEPLETED);
                                     }
@@ -572,17 +576,17 @@ void CDDrawChildGroup::CollideBroadcast() {
                 if (oi->m_flags & IDX(WWD_GAME_OBJECT_FLAG_DISABLE_ATTACKS)) {
                     continue;
                 }
-                i32 mask1b = oj->m_hitTypeFlags & static_cast<i32>(oi->m_objectType);
-                i32 mask2b = static_cast<i32>(oj->m_objectType) & oi->m_attackTypeMask;
-                if ((mask1b || mask2b) && BoxesOverlap(oj, oi)) {
-                    if (mask2b) {
+                mask1 = ObjectTypeBits(oi->m_objectType, oj->m_hitTypeFlags);
+                mask2 = oi->AttackBits(oj);
+                if ((mask1 || mask2) && BoxesOverlap(oj, oi)) {
+                    if (mask2) {
                         CLogicRecord* attackLogic = oi->m_attackLogic;
                         if (attackLogic != NULL) {
                             oi->m_attackTarget = oj;
                             attackLogic->m_dispatch(oi);
                         }
                     }
-                    if (mask1b) {
+                    if (mask1) {
                         oj->Notify(oi);
                     }
                 }
@@ -592,12 +596,6 @@ void CDDrawChildGroup::CollideBroadcast() {
 }
 
 #include <Wwd/WwdRectOverlapInline.h>
-
-#define PLACE_OBJECT_RECT(dst, object, rect)                                                       \
-    (dst).left = (object)->rect.left + (object)->m_screenX;                                        \
-    (dst).top = (object)->rect.top + (object)->m_screenY;                                          \
-    (dst).right = (object)->rect.right + (object)->m_screenX;                                      \
-    (dst).bottom = (object)->rect.bottom + (object)->m_screenY
 
 RVA(0x0015a130, 0xdc)
 i32 CDDrawChildGroup::BoxesOverlap(CGameObject* areaObj, CGameObject* switchObj) {

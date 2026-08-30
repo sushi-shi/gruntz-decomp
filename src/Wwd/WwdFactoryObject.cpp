@@ -304,6 +304,22 @@ void CAniAdvanceCursor::RestartAnimation(i32 resetElapsedTime) {
     }
 }
 
+static inline void AdvanceToNextRecord(CAniAdvanceCursor* cursor) {
+    CAniElement* animation = cursor->m_animation;
+    cursor->m_index = cursor->m_index + 1;
+    CAniRecordView* record =
+        static_cast<CAniRecordView*>(GetAniElementAt(animation, cursor->m_index));
+    cursor->m_element = record;
+    if (record == NULL) {
+        cursor->m_index = 0;
+        cursor->m_element = static_cast<CAniRecordView*>(animation->AtChecked(0));
+    }
+    if (cursor->m_element != NULL) {
+        cursor->m_curDraw = cursor->m_pendingDraw;
+        cursor->m_pendingDraw = cursor->m_element->m_drawValue;
+    }
+}
+
 // @early-stop
 RVA(0x0015c360, 0x59c)
 i32 CAniAdvanceCursor::Advance(u32 elapsed) {
@@ -508,9 +524,6 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         }
 
         i32 modeWord = IDX(rd->m_loopMode);
-        CAniElement* arr;
-        i32 i;
-        CAniRecordView* nd;
         switch (static_cast<WwdAnimLoopMode>(modeWord & 0xffff)) {
             case WWDLOOP_FINISH:
                 m_finished = true;
@@ -562,19 +575,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 CDDrawWorker* seq = c2->m_imageSet;
                 if (c2->m_frameIndex == seq->m_minIndex) {
                     if (rd->m_loopMode != WWDLOOP_FINISH) {
-                        CAniElement* anim = m_animation;
-                        m_index = m_index + 1;
-                        CAniRecordView* rec =
-                            static_cast<CAniRecordView*>(GetAniElementAt(anim, m_index));
-                        m_element = rec;
-                        if (rec == NULL) {
-                            m_index = 0;
-                            m_element = static_cast<CAniRecordView*>(anim->AtChecked(0));
-                        }
-                        if (m_element != NULL) {
-                            m_curDraw = m_pendingDraw;
-                            m_pendingDraw = m_element->m_drawValue;
-                        }
+                        AdvanceToNextRecord(this);
                     }
                 }
                 break;
@@ -584,19 +585,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 CDDrawWorker* seq = c2->m_imageSet;
                 if (c2->m_frameIndex == seq->m_maxIndex) {
                     if (rd->m_loopMode != WWDLOOP_FINISH) {
-                        CAniElement* anim = m_animation;
-                        m_index = m_index + 1;
-                        CAniRecordView* rec =
-                            static_cast<CAniRecordView*>(GetAniElementAt(anim, m_index));
-                        m_element = rec;
-                        if (rec == NULL) {
-                            m_index = 0;
-                            m_element = static_cast<CAniRecordView*>(anim->AtChecked(0));
-                        }
-                        if (m_element != NULL) {
-                            m_curDraw = m_pendingDraw;
-                            m_pendingDraw = m_element->m_drawValue;
-                        }
+                        AdvanceToNextRecord(this);
                     }
                 }
                 break;
@@ -606,37 +595,14 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                 CDDrawWorker* seq = c2->m_imageSet;
                 if (c2->m_frameIndex == seq->m_minIndex + 1) {
                     if (rd->m_loopMode != WWDLOOP_FINISH) {
-                        CAniElement* anim = m_animation;
-                        m_index = m_index + 1;
-                        CAniRecordView* rec =
-                            static_cast<CAniRecordView*>(GetAniElementAt(anim, m_index));
-                        m_element = rec;
-                        if (rec == NULL) {
-                            m_index = 0;
-                            m_element = static_cast<CAniRecordView*>(anim->AtChecked(0));
-                        }
-                        if (m_element != NULL) {
-                            m_curDraw = m_pendingDraw;
-                            m_pendingDraw = m_element->m_drawValue;
-                        }
+                        AdvanceToNextRecord(this);
                     }
                 }
                 break;
             }
             case WWDLOOP_NEXT:
                 if (rd->m_loopMode != WWDLOOP_FINISH) {
-                    arr = m_animation;
-                    m_index = m_index + 1;
-                    nd = static_cast<CAniRecordView*>(GetAniElementAt(arr, m_index));
-                    m_element = nd;
-                    if (nd == NULL) {
-                        m_index = 0;
-                        m_element = static_cast<CAniRecordView*>(arr->AtChecked(0));
-                    }
-                    if (m_element != NULL) {
-                        m_curDraw = m_pendingDraw;
-                        m_pendingDraw = m_element->m_drawValue;
-                    }
+                    AdvanceToNextRecord(this);
                 }
                 break;
             case WWDLOOP_BEFORE_LAST: {
