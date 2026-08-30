@@ -46,6 +46,7 @@
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/VoiceManager.h>
 #include <Io/FileMem.h>
+#include <Lith/BDefs.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/zBitVec.h>
 #include <Wwd/WwdFile.h>
@@ -69,8 +70,8 @@
         (g)->m_coordList.RemoveAll();                                                              \
     }
 
-static inline i32 DistSq(i32 dx, i32 dy) {
-    return dx * dx + dy * dy;
+static inline i32 SquaredDistance(i32 dx, i32 dy) {
+    return SQR(dx) + SQR(dy);
 }
 
 DATA(0x0022b7ec)
@@ -203,7 +204,7 @@ inflight: {
             i32 dy = nbpos.m_y - y5;
             i32 adx = abs(dx);
             i32 ady = abs(dy);
-            i32 dist = static_cast<i32>(sqrt(static_cast<double>(DistSq(adx, ady))));
+            i32 dist = static_cast<i32>(sqrt(static_cast<double>(SquaredDistance(adx, ady))));
             if (dist > m_assignedTargetMaxDistance) {
                 if (g->CoordCount() != 0) {
                     MOVE_RECYCLE(g);
@@ -417,10 +418,10 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                 i32 currentDx = abs(marker.m_x - (currentScreenPos.m_x >> TILE_SHIFT_PX));
                 (static_cast<CUserLogic*>(unit))->GetScreenPos((&currentScreenPos));
                 i32 currentDy = abs(marker.m_y - (currentScreenPos.m_y >> TILE_SHIFT_PX));
-                i32 currentDistanceSquared = DistSq(currentDx, currentDy);
+                i32 currentDistanceSquared = SquaredDistance(currentDx, currentDy);
                 i32 goalDx = abs(marker.m_x - goal.m_x);
                 i32 goalDy = abs(marker.m_y - goal.m_y);
-                i32 goalDistanceSquared = DistSq(goalDx, goalDy);
+                i32 goalDistanceSquared = SquaredDistance(goalDx, goalDy);
                 if (currentDistanceSquared > goalDistanceSquared) {
                     unit->m_defenderState = AISTATE_BATTLEZ_ROUTE_TARGET;
                 } else {
@@ -449,7 +450,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                 CGameObject* lvl = unit->m_object;
                 i32 dx = abs(gx - (lvl->m_screenX >> TILE_SHIFT_PX));
                 i32 dy = abs(gy - (lvl->m_screenY >> TILE_SHIFT_PX));
-                if (DistSq(dx, dy) > 0x10) {
+                if (SquaredDistance(dx, dy) > 0x10) {
                     i32 cfg = unit->m_routeBlockedMask;
                     i32 flags = AddBattlezTraversalFlags(unit, unit->m_routePassableMask);
                     Coord routeTarget = unit->m_defenderPx;
@@ -531,7 +532,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
     CGameObject* lvl = unit->m_object;
     i32 dx = abs(gx - (lvl->m_screenX >> TILE_SHIFT_PX));
     i32 dy = abs(gy - (lvl->m_screenY >> TILE_SHIFT_PX));
-    if (DistSq(dx, dy) > 0x10) {
+    if (SquaredDistance(dx, dy) > 0x10) {
         return 1;
     }
     RECYCLE_GRUNT_COORDS_EXPANDED(unit)

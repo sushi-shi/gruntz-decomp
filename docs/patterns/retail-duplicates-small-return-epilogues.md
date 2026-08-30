@@ -162,7 +162,7 @@ the transcription lacked:
   `Coord currentScreenPos = unit->m_defenderPx` are complete aggregate locals.
   Their later assignments explain four stack stores and two loads that looked
   like allocator residue in the hand transcription;
-* spelling the route work as the `DistSq(dx, dy) > 0x10` arm preserves the
+* spelling the route work as the `SquaredDistance(dx, dy) > 0x10` arm preserves the
   private final-route tail instead of inviting the old cross-jump;
 * the two successful `TileSwitch` sites genuinely share a later
   `routeSuccess` label. This `goto` does not cross the switch-arm declarations

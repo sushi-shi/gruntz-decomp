@@ -3456,7 +3456,7 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
     return 1;
 }
 
-static inline i32 DistSq(i32 dx, i32 dy) {
+static inline i32 SquaredDistance(i32 dx, i32 dy) {
     return SQR(dx) + SQR(dy);
 }
 
@@ -3559,7 +3559,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
             Coord candidatePos2;
             u->GetScreenTile(&candidatePos2);
             i32 dy = abs(unitPos2.m_y - candidatePos2.m_y);
-            i32 dist = DistSq(dx, dy);
+            i32 dist = SquaredDistance(dx, dy);
             if (dist >= bestDist) {
                 continue;
             }
@@ -3774,7 +3774,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
                     i32 dy = (ul->m_screenY >> TILE_SHIFT_PX) - cy;
                     dx = abs(dx);
                     dy = abs(dy);
-                    if (DistSq(dx, dy) <= 0x190) {
+                    if (SquaredDistance(dx, dy) <= 0x190) {
 
                         i32 flags = BATTLEZ_ROUTE_OTHER_TOOLS_TRIGGER;
                         PickupType cer = cand->m_entranceReason;
@@ -4403,7 +4403,7 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
             dx = abs(dx);
             dy = abs(dy);
 
-            if (DistSq(dx, dy) <= 0x19) {
+            if (SquaredDistance(dx, dy) <= 0x19) {
                 ok = false;
             }
         }
@@ -4534,7 +4534,7 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
                 i32 dy = cy - goalY;
                 dx = abs(dx);
                 dy = abs(dy);
-                i32 dist = DistSq(dx, dy);
+                i32 dist = SquaredDistance(dx, dy);
                 if (dist < bestDist) {
                     bestX = cx;
                     bestY = cy;

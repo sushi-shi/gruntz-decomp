@@ -41,6 +41,7 @@
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/VoiceManager.h>
 #include <Io/FileMem.h>
+#include <Lith/BDefs.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/zBitVec.h>
 #include <Wwd/WwdFile.h>
@@ -59,8 +60,8 @@ static inline Coord ScreenTile(CGrunt* unit) {
     return out;
 }
 
-static inline i32 DistSq(i32 dx, i32 dy) {
-    return dx * dx + dy * dy;
+static inline i32 SquaredDistance(i32 dx, i32 dy) {
+    return SQR(dx) + SQR(dy);
 }
 
 RVA(0x000350d0, 0xfa)
@@ -84,7 +85,7 @@ i32 CBattlezMapConfig::RepathToFreeCell(CGrunt* unit) {
                     dx = abs(dx);
                     i32 dy = candY - (screenY >> TILE_SHIFT_PX);
                     dy = abs(dy);
-                    i32 dist = DistSq(dx, dy);
+                    i32 dist = SquaredDistance(dx, dy);
                     if (dist < bestDist) {
                         bestDist = dist;
                         best = cand;
