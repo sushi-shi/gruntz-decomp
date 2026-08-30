@@ -110,7 +110,11 @@
     source-facing wrapper, by-value argument, const-reference result, or
     receiver-qualified overload can be folded completely while still deciding
     the caller's temporaries and evaluation order. The emitted implementation
-    ABI alone does not disprove such an inline adapter;
+    ABI alone does not disprove such an inline adapter. Do not infer references
+    only from mutation: a non-const inline accessor returning `T&` can make a
+    caller's read-only `const T&` lifetime authentic. Test that boundary against
+    the same collection's by-value getter and raw-data pointer rather than
+    flattening all three to identical address arithmetic;
   * test the authentic local census and lifetimes: distinct old/new/result
     locals, deliberate parameter or local reuse, overwrite versus a new result,
     declaration and first-use order, removal of unjustified cached member
