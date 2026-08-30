@@ -59,6 +59,10 @@ static inline Coord ScreenTile(CGrunt* unit) {
     return out;
 }
 
+static inline i32 DistSq(i32 dx, i32 dy) {
+    return dx * dx + dy * dy;
+}
+
 RVA(0x000350d0, 0xfa)
 i32 CBattlezMapConfig::RepathToFreeCell(CGrunt* unit) {
     if (static_cast<u32>(unit->m_dwell) > static_cast<u32>(m_repathBudget)) {
@@ -80,7 +84,7 @@ i32 CBattlezMapConfig::RepathToFreeCell(CGrunt* unit) {
                     dx = abs(dx);
                     i32 dy = candY - (screenY >> TILE_SHIFT_PX);
                     dy = abs(dy);
-                    i32 dist = dx * dx + dy * dy;
+                    i32 dist = DistSq(dx, dy);
                     if (dist < bestDist) {
                         bestDist = dist;
                         best = cand;
