@@ -2218,18 +2218,15 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
     i32 ycoord = ScreenTileY(actor);
     i32 xcoord = ScreenTileX(actor);
     ycoord += rand() % 10 - 5;
-    xcoord += rand() % 10 - 5;
+    i32 r2 = rand() % 10;
     CGameObject* tl2 = actor->m_object;
-    i32 left = (tl2->m_screenX >> TILE_SHIFT_PX) - 5;
-    i32 right = (tl2->m_screenX >> TILE_SHIFT_PX) + 5;
-    CMapMgr* board = m_board;
-    i32 bottom = (tl2->m_screenY >> TILE_SHIFT_PX) + 5;
-    i32 top = (tl2->m_screenY >> TILE_SHIFT_PX) - 5;
     RECT box;
-    box.left = left;
-    box.top = top;
-    box.right = right;
-    box.bottom = bottom;
+    box.left = (tl2->m_screenX >> TILE_SHIFT_PX) - 5;
+    xcoord += r2 - 5;
+    box.right = (tl2->m_screenX >> TILE_SHIFT_PX) + 5;
+    CMapMgr* board = m_board;
+    box.bottom = (tl2->m_screenY >> TILE_SHIFT_PX) + 5;
+    box.top = (tl2->m_screenY >> TILE_SHIFT_PX) - 5;
 
     const RECT* src = &box;
     RECT a, bounds;
