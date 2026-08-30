@@ -31,7 +31,14 @@ static __inline BrickTileId PickOneBrickStack(
     i32 blueThreshold,
     i32 goldThreshold
 ) {
-    i32 colorRoll = (totalWeight == 0) ? (rand() & 1) : (rand() % totalWeight + 1);
+    i32 colorRoll;
+    if (totalWeight == 0) {
+        colorRoll = static_cast<i8>(rand());
+        colorRoll &= 1;
+    } else {
+        colorRoll = rand() % totalWeight;
+        colorRoll++;
+    }
     if (colorRoll <= brownThreshold) {
         return BRICKTILE_BROWN_1;
     }
@@ -53,7 +60,14 @@ static __inline BrickTileId PickTwoBrickStack(
     i32 blueThreshold,
     i32 goldThreshold
 ) {
-    i32 colorRoll = (totalWeight == 0) ? (rand() & 1) : (rand() % totalWeight + 1);
+    i32 colorRoll;
+    if (totalWeight == 0) {
+        colorRoll = static_cast<i8>(rand());
+        colorRoll &= 1;
+    } else {
+        colorRoll = rand() % totalWeight;
+        colorRoll++;
+    }
     if (colorRoll <= brownThreshold) {
         return BRICKTILE_BROWN_2;
     }
@@ -83,7 +97,14 @@ static __inline BrickTileId PickThreeBrickStack(
     i32 blueThreshold,
     i32 goldThreshold
 ) {
-    i32 colorRoll = (totalWeight == 0) ? (rand() & 1) : (rand() % totalWeight + 1);
+    i32 colorRoll;
+    if (totalWeight == 0) {
+        colorRoll = static_cast<i8>(rand());
+        colorRoll &= 1;
+    } else {
+        colorRoll = rand() % totalWeight;
+        colorRoll++;
+    }
     if (colorRoll <= brownThreshold) {
         return BRICKTILE_BROWN_3;
     }
