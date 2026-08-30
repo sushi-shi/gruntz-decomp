@@ -14,7 +14,7 @@ other signal. It is the one invariant `--diff` (address-masked) and `--blocks`
 (shape-only) are both blind to, and `insn_count` cannot see either, because
 allocating a local costs ZERO instructions.
 
-Two things move it, and only two:
+Three source facts commonly move it:
 
 1. **An array's size.** `CFecFile`-style buffers are the usual case:
    `DrawSaveGameMenu` @0xe3f40 had `sub esp,0x20` against retail's `0x24`, and the
@@ -29,6 +29,14 @@ Two things move it, and only two:
    @0x137b70 declared five (`riffTag/riffSize/waveTag` + a loop-local
    `chunkId/chunkSize` pair) against retail's three: the dev **reused the header
    pair as the chunk pair**. 99.82 -> 99.97 and the frame matched.
+3. **The declared scope of an address-taken local.** cl 5.0 packs stack homes by
+   source scope, not only by machine live range. A loop-local aggregate may permit
+   an earlier temporary to reuse a dead incoming parameter home, while the same
+   real local declared at function scope prevents that reuse. In
+   `CFecFile::AddFile` @0x17b950, moving the existing `MSG msg` declaration from
+   the copy loop to function scope took the frame from `0x38` to retail's `0x3c`
+   and made the function plus all of its EH helpers exact. See
+   [function-scope-address-taken-local-blocks-param-home-reuse.md](function-scope-address-taken-local-blocks-param-home-reuse.md).
 
 ## The sweep
 
@@ -79,10 +87,14 @@ A mismatch of 8+ bytes was twice a *reconstruction* gap rather than a local-coun
 bug (`CGruntzMgr::HandleCommand` is 16 B AND 264 instructions short) - check the
 instruction delta before assuming the frame is the whole story.
 
-**Scope tricks are NOT the lever.** Block-scoping the locals so two sets overlay
-either does nothing or overshoots (`ParseWave` reached `sub esp,0x8` against
-retail's `0xc` that way, and `CSBI_GruntMachine::SerializeFields` lost 4 points).
-Find the variable the dev actually REUSED, or the array whose size is wrong.
+**Blind scope tricks are not a lever.** Block-scoping locals merely to move
+`sub esp,N` either does nothing or overshoots (`ParseWave` reached `sub esp,0x8`
+against retail's `0xc` that way, and `CSBI_GruntMachine::SerializeFields` lost
+4 points). Scope becomes evidence only after the stack map names the roles:
+which real local is address-taken, which temporary occupies an incoming
+parameter home, and which declaration boundary permits or prevents that reuse.
+`CFecFile::AddFile` is the positive control; otherwise find the variable the dev
+actually reused or the array whose size is wrong.
 
 Slot *assignment* within the frame is a separate, weaker signal: it follows
 first-USE order, not declaration order (swapping declarations in `ParseWave`

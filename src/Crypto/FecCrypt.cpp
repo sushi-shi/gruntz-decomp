@@ -158,12 +158,12 @@ i32 CFecFile::CreateArchive(const char* name) {
     return 0;
 }
 
-// @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0017b950, 0x380)
 i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
     i32 i;
+    MSG msg;
     if (m_writeOpen == false || m_openGate == false) {
         return 0;
     }
@@ -190,10 +190,11 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
     memcpy(m_entry.m_name, enc, base.GetLength());
     delete[] enc;
 
-    if (base.GetLength() < FEC_ENTRY_NAME_CAPACITY) {
+    i32 length = base.GetLength();
+    if (length < FEC_ENTRY_NAME_CAPACITY) {
 
-        char* p = m_entry.m_name + base.GetLength();
-        i32 c = FEC_ENTRY_NAME_CAPACITY - base.GetLength();
+        char* p = m_entry.m_name + length;
+        i32 c = FEC_ENTRY_NAME_CAPACITY - length;
         do {
             memset(p, static_cast<u8>(Random() % FEC_RANDOM_BYTE_MODULUS), sizeof(*p));
             p++;
@@ -222,7 +223,6 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
     u32 copied = 0;
     while (done == false) {
         if (pProgress != NULL) {
-            MSG msg;
             if (PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE)) {
                 TranslateMessage(&msg);
                 DispatchMessageA(&msg);

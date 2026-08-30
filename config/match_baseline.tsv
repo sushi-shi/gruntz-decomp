@@ -106,7 +106,7 @@ eyecandy	1	1
 fader	25	20
 fadereffects	39	29
 fadermgr	13	13
-feccrypt	11	9
+feccrypt	11	10
 fileimage	19	13
 filestream	5	5
 font	22	20
@@ -1666,7 +1666,7 @@ fadermgr	?Serialize@CFaderArray@@UAEXAAVCArchive@@@Z	100.0000	100.0000	1	8d4d91b
 fadermgr	?SetDefaults@CFaderMgr@@QAEHPAVCDDSurface@@0PAVCDDrawDeviceManager@@@Z	100.0000	100.0000	4	beb0d3aabfc5	0x17d980	100.0000	
 fadermgr	?SetTraceEnabled@CFaderMgr@@QAEXH@Z	100.0000	100.0000	2	8ec295a825f0	0x17e220	100.0000	
 fadermgr	?Trace@CFaderMgr@@QAEXVCString@@@Z	100.0000	100.0000	1	151c913fa558	0x17e230	100.0000	
-feccrypt	?AddFile@CFecFile@@QAEHPBDPAHPAX@Z	99.8489	99.8489	5	f2a2b8275630	0x17b950	99.8489	
+feccrypt	?AddFile@CFecFile@@QAEHPBDPAHPAX@Z	100.0000	100.0000	9	094eb7af05b9	0x17b950	100.0000	
 feccrypt	?Close@CFecFile@@QAEXXZ	100.0000	100.0000	2	5f4d112b2df4	0x17b570	100.0000	
 feccrypt	?CreateArchive@CFecFile@@QAEHPBD@Z	100.0000	100.0000	4	ad8bc440e3f6	0x17b8a0	100.0000	
 feccrypt	?ExtractArchive@CFecFile@@QAEHPBDPAHPAX@Z	100.0000	100.0000	6	4eda6fd7345c	0x17bcd0	100.0000	
@@ -1676,7 +1676,7 @@ feccrypt	?Init@CFecFile@@QAEHXZ	100.0000	100.0000	2	f5c23e9b8f15	0x17b510	100.00
 feccrypt	?Lookup@CFecFile@@QAEHI@Z	100.0000	100.0000	1	06702c305199	0x17b840	100.0000	
 feccrypt	?OnFail@CFecFile@@QAEHXZ	100.0000	100.0000	2	583838389c8b	0x17b5a0	100.0000	
 feccrypt	?Random@CFecFile@@QAEHXZ	100.0000	100.0000	1	f2e35da5a6f6	0x17bf60	100.0000	
-feccrypt	?ReadArchive@CFecFile@@QAEHPBD@Z	86.2571	86.2571	16	36f4dae9f2be	0x17b5f0	86.2571	
+feccrypt	?ReadArchive@CFecFile@@QAEHPBD@Z	86.2571	86.2571	19	36f4dae9f2be	0x17b5f0	87.1314	
 fileimage	?CreateFromBmpData@CDDSurface@@QAEHPAVCDDrawDeviceManager@@PAUBmpFileImage@@HH@Z	99.8786	99.8786	11	f0d7ea64e0f4	0x143cf0	99.8786	
 fileimage	?CreateFromBmpFile@CDDSurface@@QAEHPAVCDDrawDeviceManager@@PBDH@Z	100.0000	100.0000	8	fdce3919b30a	0x143e60	100.0000	
 fileimage	?CreateFromPcxData@CDDSurface@@QAEHPAVCDDrawDeviceManager@@PAUPcxHeader@@HH@Z	100.0000	99.8879	11	43fb1629eb7f	0x144b30	100.0000	
