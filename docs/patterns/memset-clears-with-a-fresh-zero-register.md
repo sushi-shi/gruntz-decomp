@@ -69,3 +69,11 @@ signature is an already byte-complete clear whose only difference is that
 retail destructively biases `this` to the member-array base and then creates a
 fresh zero in the accumulator. Do not retain a pointer loop merely because its
 stores and final state are equivalent.
+
+The same signature can occur twice at the end of a larger method. Retail
+`CVoiceManager::Clear` clears `m_indicators[2]` through an address local, then
+advances `this` by `0x10` and clears `m_streamVoices[2]` with a second fresh
+zero. Two hand-written two-iteration loops had the same stores but selected the
+opposite cursors. Restoring the already-attested `CLEAR_VOICE_INDICATORS` macro
+and `memset(m_streamVoices, 0, sizeof(m_streamVoices))` made the complete
+0x95-byte function exact: 87.24 -> 100.00.

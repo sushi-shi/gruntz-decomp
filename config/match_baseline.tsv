@@ -157,7 +157,7 @@ gruntreticlescan	1	0
 gruntscantarget	1	0
 gruntseektarget	1	0
 gruntselectedsprite	9	8
-gruntspawnconfig	21	16
+gruntspawnconfig	21	17
 gruntstaminasprite	5	5
 gruntstartingpoint	8	8
 gruntstaterec	1	1
@@ -2164,7 +2164,7 @@ gruntspawnconfig	??1CVoiceManager@@QAE@XZ	100.0000	100.0000	2	02cd90104dbe	0x85d
 gruntspawnconfig	?AddVoiceSound@CSpawnList@@QAEXVCString@@H@Z	100.0000	100.0000	2	016dab19e9eb	0x11c560	100.0000	
 gruntspawnconfig	?BuildVoiceGroup@CVoiceManager@@QAEPAVCSpawnList@@H@Z	97.8063	97.8063	8	441dfc6a0e1d	0x11c210	97.8063	
 gruntspawnconfig	?BuildVoiceGroups@CVoiceManager@@QAEHXZ	100.0000	100.0000	4	0d6920d10661	0x11c1a0	100.0000	
-gruntspawnconfig	?Clear@CVoiceManager@@QAEXXZ	87.2414	87.2414	2	3baba197d1e5	0x11ae30	87.2414	
+gruntspawnconfig	?Clear@CVoiceManager@@QAEXXZ	100.0000	100.0000	3	333e3c38c071	0x11ae30	100.0000	
 gruntspawnconfig	?ClearVoiceIndicatorSlots@CVoiceManager@@QAEXXZ	100.0000	100.0000	4	24d570779c98	0x11af90	100.0000	
 gruntspawnconfig	?CreateVoiceIndicators@CVoiceManager@@QAEHXZ	100.0000	100.0000	5	312b62228502	0x11af00	100.0000	
 gruntspawnconfig	?Init@CVoiceManager@@QAEHPAVCGruntzMgr@@@Z	100.0000	100.0000	4	143a39163b50	0x11adc0	100.0000	

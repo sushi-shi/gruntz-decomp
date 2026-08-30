@@ -41,7 +41,6 @@ BOOL CVoiceManager::Init(CGruntzMgr* game) {
     return BuildVoiceGroups() != false;
 }
 
-// @early-stop
 RVA(0x0011ae30, 0x95)
 void CVoiceManager::Clear() {
     for (i32 i = 0; i < m_voiceGroups.GetSize(); i++) {
@@ -62,16 +61,8 @@ void CVoiceManager::Clear() {
     }
     m_game = NULL;
     m_world = NULL;
-    CGruntVoice** indicator = m_indicators;
-    for (i32 a = 0; a < 2; a++) {
-        *indicator = NULL;
-        indicator++;
-    }
-    StreamVoice** stream = m_streamVoices;
-    for (i32 b = 0; b < 2; b++) {
-        *stream = NULL;
-        stream++;
-    }
+    CLEAR_VOICE_INDICATORS;
+    memset(m_streamVoices, 0, sizeof(m_streamVoices));
 }
 
 RVA(0x0011af00, 0x62)
