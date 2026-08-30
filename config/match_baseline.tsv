@@ -580,7 +580,7 @@ battlezspawncheck	?CheckQueuedSpawnTile@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	89.
 battlezspecialanim	?CanPlaySpecialAnim@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	94.2548	94.2548	5	a43eceee672d	0x34460	94.2548	
 battlezspecialanim	?RecycleCoords@CGrunt@@QAEXXZ	100.0000	100.0000	3	56800e198b1b	0x343f0	100.0000	
 battlezspecialanim	?Report@zErrHandling@@QAEXPADH@Z	100.0000	100.0000	2	f8f0fb8e94d8	0x34960	100.0000	
-battlezunitstep	?AdvanceToEnemyBase@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	83.0501	83.0501	17	26b15110d9aa	0x32060	83.0501	
+battlezunitstep	?AdvanceToEnemyBase@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	87.1623	87.1623	20	1bc879d649b8	0x32060	87.1623	
 battlezunitstep	?GetTilePos@CGrunt@@QAE?AUCoord@@XZ	85.7000	85.7000	2	dbe93efd6e63	0x31c70	85.7000	
 battlezunitstep	?Step@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	88.0918	88.0918	13	8f986f9993a1	0x31610	88.0918	
 battlezunitstep	?TrackAssignedEnemy@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	96.2511	96.2511	16	713bf7d352cc	0x31ca0	96.2511	

@@ -133,14 +133,6 @@ Two rows widen the signature past `ret` blocks, in functions with NO /GX frame
 [first-function-epilogue-merge-oracle.md](first-function-epilogue-merge-oracle.md)
 cannot be the discriminator):
 
-* `CBattlezMapConfig::AdvanceToEnemyBase` 0x32060 - retail keeps TWO copies of a
-  twelve-instruction tail that is four member stores (`m_defenderState=7`,
-  `m_routeBlockedMask=g_battlezRouteBlockedMask`, `m_routePassableMask=0x248`) plus `mov eax,1` and the
-  epilogue; we cross-jump them. The accounting closes exactly: base 591 insns /
-  65 branches against target 603 / 66, and 603-591 = the twelve, 66-65 = the
-  `jmp` we emit instead. The two source sites are the `dist<=0x10` arm of the
-  BATTLEZ_ROUTE_TARGET switch case and the bottom-of-function path; they are
-  source-identical, and retail's two copies are byte-identical to each other.
 * `CGrunt::StepGruntMovement` 0x4c170 - the duplicated unit is not a return at
   all. Retail emits SEVEN `sub esp,0xc` + three-store by-value pushes of the
   12-byte `GruntDirectionCell` feeding only THREE `SetFacing` calls (three of
@@ -149,9 +141,36 @@ cannot be the discriminator):
   per-arm slot at all eight direction arms (`mov [esp+0x2c],ebp`), which is its
   whole extra frame dword (0x38 vs our 0x30).
 
-A `goto` to one shared block is NOT the fix: cl 5.0 rejects it outright here
-(C2362 across the arm's initializations) and, per
+A `goto` to one shared block is not automatically the fix: cl 5.0 may reject it
+with C2362 when it crosses arm initializations and, per
 `single-predecessor-tail-block-gets-replicated.md`, a two-predecessor block does
-not replicate anyway. Treat both as the same era residue - recognize and stop.
+not necessarily replicate. This is a screening result, not proof that the
+source is already correct.
 
-Recognize the rest and stop - the code is already correct.
+## CORRECTION: the AdvanceToEnemyBase accounting was a symptom (2026-08-30)
+
+The previous `AdvanceToEnemyBase` entry above was false and has been removed.
+Its exact twelve-instruction / one-branch deficit described what cl omitted,
+but did not establish an optimizer wall. Retail contained source structure that
+the transcription lacked:
+
+* the SEEK distance comparison has a real `else` arm which selects
+  `AISTATE_BATTLEZ_FINAL_ROUTE` and its route masks;
+* the path-present side has a distinct `AISTATE_SEEK` guard before the
+  `!= AISTATE_BATTLEZ_ROUTE_TARGET` guard;
+* `Coord goal = marker` and
+  `Coord currentScreenPos = unit->m_defenderPx` are complete aggregate locals.
+  Their later assignments explain four stack stores and two loads that looked
+  like allocator residue in the hand transcription;
+* spelling the route work as the `DistSq(dx, dy) > 0x10` arm preserves the
+  private final-route tail instead of inviting the old cross-jump;
+* the two successful `TileSwitch` sites genuinely share a later
+  `routeSuccess` label. This `goto` does not cross the switch-arm declarations
+  and restores retail's single blocked-mask/passable-mask/dwell reset tail. It
+  is different from the rejected attempt to share the final-state tail itself.
+
+Composed with the authored rectangle initialization order, those changes move
+the function from 83.0501 to 87.16 and make base and retail exactly `0x7bd`
+bytes with 14 calls, 66 branches, 14 returns, and 31 relocations. Stores and
+immediates also agree. The remaining 601/603 instruction residue is classified
+register/scheduling; it is no longer evidence for a duplicated-tail wall.

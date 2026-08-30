@@ -120,6 +120,19 @@ fell from 43 to 8 missing halves (`battlezunitstep` closed 8/24 to 24/24):
 | `CBattlezMapConfig::Step` | 87.13 | 87.23 |
 | `CGrunt::StepSmartChaserBehavior` | 94.60 | 94.78 |
 
+`CBattlezMapConfig::AdvanceToEnemyBase` supplied a stronger follow-up control
+on 2026-08-30. Retail copied both halves of `m_defenderPx` into a local even
+though an immediate `GetScreenPos` call overwrote that local. The apparently
+dead second-half store was not an allocator accident: it came from
+`Coord currentScreenPos = unit->m_defenderPx`. A separate
+`Coord goal = marker`, later overwritten by `goal = unit->m_defenderPx`,
+recovered the other complete-object lifetime. Composed with the function's
+missing control-flow and statement-order facts, the two locals reproduce four
+stack stores, two later loads, and retail's exact `0x7bd` extent, moving the
+function from 83.0501 to 87.16. A store that dies at the next out-parameter call
+can therefore still be positive complete-object source evidence when retail
+materializes both adjacent fields.
+
 An earlier bound claimed `TrySeedSpawnAt` and
 `StepRowUnits` "really do store the two fields independently" because the fold
 cost them score. The target objs refute that: `StepRowUnits` has FIVE
