@@ -231,7 +231,8 @@ inline void CUserLogic::GetScreenTile(Coord* out) {
 }
 
 inline void CUserLogic::RegisterLogicTypesOnce() {
-    if (!g_logicTypesRegistered) {
+    b32 registered = g_logicTypesRegistered;
+    if (!registered) {
         BuildLogicTypeTable(m_logicObject);
         g_logicTypesRegistered = true;
     }
