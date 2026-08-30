@@ -1647,10 +1647,10 @@ fadereffects	?PrepareFrame@CFaderFlat@@QAEXXZ	100.0000	100.0000	1	6e2d2e824b3a	0
 fadereffects	?ReleaseBuffers@CFaderLight@@QAEXXZ	100.0000	100.0000	3	a3436fa98633	0x180630	100.0000	
 fadereffects	?Render@CFaderLight@@QAEXHHHPAE00@Z	97.9257	97.9257	3	ce40ed90e213	0x180fb0	98.8538	
 fadereffects	?RenderFrame@CFaderFlat@@UAEXH@Z	90.7854	90.7854	5	aecc68365e7a	0x17f660	90.7854	
-fadereffects	?RenderFrame@CFaderLight@@UAEXH@Z	91.1565	90.8721	7	845419d4628b	0x180640	91.1565	
+fadereffects	?RenderFrame@CFaderLight@@UAEXH@Z	91.1565	91.1565	7	845419d4628b	0x180640	91.1565	
 fadereffects	?RenderFrame@CFaderRadial@@UAEXH@Z	99.7222	99.7222	3	b31d25567930	0x17fc60	99.7222	
-fadereffects	?RenderFrame@CFaderShape@@UAEXH@Z	99.9080	99.9080	9	9d2ba3b2447c	0x181b00	99.9080	
-fadereffects	?RenderFrame@CFaderSine@@UAEXH@Z	94.6626	94.6626	7	e21d4d7b60b4	0x17ff30	94.6626	
+fadereffects	?RenderFrame@CFaderShape@@UAEXH@Z	99.9080	99.6626	9	9d2ba3b2447c	0x181b00	99.9080	
+fadereffects	?RenderFrame@CFaderSine@@UAEXH@Z	94.6626	94.6626	8	31912e9bc5e1	0x17ff30	94.6626	
 fadereffects	?RenderTile@CFaderShape@@QAEXHH@Z	100.0000	100.0000	4	2d045e1be471	0x182610	100.0000	
 fadereffects	?RenderWarpTile@CFaderShape@@QAEXHH@Z	91.2869	91.2869	8	4add459398a7	0x181e50	91.2869	
 fadermgr	??0CFaderMgr@@QAE@XZ	100.0000	100.0000	3	248c552f0c07	0x17d8f0	100.0000	

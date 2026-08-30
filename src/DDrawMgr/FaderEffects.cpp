@@ -54,6 +54,12 @@ static inline void CopyBytes(u8* dst, const u8* src, i32 count) {
     }
 }
 
+static inline void ClearSample(u8* row, i32 sample, i32 bpp) {
+    if (bpp > 0) {
+        memset(row + sample * bpp, 0, bpp);
+    }
+}
+
 inline i32 CFaderSine::AccumulateSampleCount(i32 row, i32 delta, float step) {
     i32 count = 0;
     double wanted = delta * step;
@@ -401,18 +407,14 @@ void CFaderSine::RenderFrame(i32 frame) {
                 i32 n = AccumulateSampleCount(row, delta, step);
                 while (n > 0) {
                     i32 pick = AdvanceSampleCursor(row);
-                    if (bpp > 0) {
-                        memset(targetRow + pick * bpp, 0, bpp);
-                    }
+                    ClearSample(targetRow, pick, bpp);
                     n--;
                 }
                 m_appliedCounts[row] += delta;
                 n = static_cast<i32>(step + step);
                 while (n > 0) {
                     i32 pick = GetRandom(0, m_width - 1);
-                    if (bpp > 0) {
-                        memset(targetRow + pick * bpp, 0, bpp);
-                    }
+                    ClearSample(targetRow, pick, bpp);
                     n--;
                 }
             } else {
