@@ -2213,12 +2213,12 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
         return 1;
     }
 
-    CGameObject* tl = actor->m_object;
-    i32 ycoord = (tl->m_screenY >> TILE_SHIFT_PX) + rand() % 10 - 5;
-    i32 r2 = rand() % 10;
+    i32 ycoord = ScreenTileY(actor);
+    i32 xcoord = ScreenTileX(actor);
+    ycoord += rand() % 10 - 5;
+    xcoord += rand() % 10 - 5;
     CGameObject* tl2 = actor->m_object;
     i32 left = (tl2->m_screenX >> TILE_SHIFT_PX) - 5;
-    i32 xcoord = (tl->m_screenX >> TILE_SHIFT_PX) + r2 - 5;
     i32 right = (tl2->m_screenX >> TILE_SHIFT_PX) + 5;
     CMapMgr* board = m_board;
     i32 bottom = (tl2->m_screenY >> TILE_SHIFT_PX) + 5;
@@ -2251,7 +2251,7 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
     board->m_gridW = aDst->right - aDst->left;
     board->m_gridH = aDst->bottom - aDst->top;
     RouteUnitTo(actor, xcoord, ycoord, 0x20000d87, 0, 0);
-    board->Clip(static_cast<const RECT*>(0));
+    m_board->Clip(static_cast<const RECT*>(0));
     return 1;
 }
 
