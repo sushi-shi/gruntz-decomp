@@ -1688,7 +1688,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             pathHeadCellSource = &pathHeadCell;
         }
         pathHeadCell = *pathHeadCellSource;
-        PickupType prim = ArrivalPickup(unit);
+        PickupType prim = ARRIVAL_PICKUP_TERNARY_LE(unit);
 
         Coord pt2;
         (static_cast<CUserLogic*>(unit))->GetScreenTile((&pt2));
@@ -1798,7 +1798,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                 PickupType er = unit->m_entranceReason;
                 PickupType p = ArrivalPickupOf(unit, er);
                 if (p == PICKUP_WINGZ) {
-                    return 1;
+                    goto returnOne;
                 }
                 PickupType entranceMode2 = ArrivalPickupOf(unit, er);
                 if (entranceMode2 == PICKUP_TOOB) {
@@ -1809,7 +1809,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             if (wingzGate) {
                 PickupType p = ArrivalPickup(unit);
                 if (p == PICKUP_WINGZ) {
-                    goto returnOne;
+                    return 1;
                 }
             }
             if (PathToNearestGoal(unit, cx, cy) != 0) {
@@ -1867,33 +1867,35 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             return RepathAroundBlockedTiles(unit);
         }
         PickupType pk = ArrivalPickup(unit);
-        if (pk != PICKUP_GOOBER) {
-            goto returnOne;
-        }
-
-        POSITION opos = m_triggerMgr->m_baseList.GetHeadPosition();
-        while (opos != NULL) {
-            CGruntPuddle* cand = static_cast<CGruntPuddle*>(m_triggerMgr->m_baseList.GetNext(opos));
-            if (cand->m_pending == false) {
-                i32 ox = cand->m_tileX;
-                i32 oy = cand->m_tileY;
-                if ((static_cast<CGrunt*>(unit))->RectContains(ox * 0x20 + 0x10, oy * 0x20 + 0x10)
-                    != 0) {
-                    m_triggerMgr->UseEquippedToolAt(
-                        unit->m_playerIndex,
-                        unit->m_unitIndex,
-                        ox * 0x20 + 0x10,
-                        oy * 0x20 + 0x10
-                    );
-                    if (unit->CoordCount() != 0) {
-                        RECYCLE_GRUNT_COORDS_EXPANDED(unit)
+        if (pk == PICKUP_GOOBER) {
+            POSITION opos = m_triggerMgr->m_baseList.GetHeadPosition();
+            while (opos != NULL) {
+                CGruntPuddle* cand =
+                    static_cast<CGruntPuddle*>(m_triggerMgr->m_baseList.GetNext(opos));
+                if (cand->m_pending == false) {
+                    i32 ox = cand->m_tileX;
+                    i32 oy = cand->m_tileY;
+                    if ((static_cast<CGrunt*>(unit))
+                            ->RectContains(ox * 0x20 + 0x10, oy * 0x20 + 0x10)
+                        != 0) {
+                        m_triggerMgr->UseEquippedToolAt(
+                            unit->m_playerIndex,
+                            unit->m_unitIndex,
+                            ox * 0x20 + 0x10,
+                            oy * 0x20 + 0x10
+                        );
+                        if (unit->CoordCount() != 0) {
+                            RECYCLE_GRUNT_COORDS_EXPANDED(unit)
+                        }
+                        m_spawnTimer +=
+                            static_cast<i32>((static_cast<u32>(m_gruntCreationTime) >> 2));
+                        return 1;
                     }
-                    m_spawnTimer += static_cast<i32>((static_cast<u32>(m_gruntCreationTime) >> 2));
-                    return 1;
                 }
             }
+            return 1;
         }
-        return 1;
+        goto returnOne;
     }
 returnOne:
     return 1;
