@@ -76,7 +76,11 @@ The alias-opacity signature also applies to a fixed-size scalar member array. In
 `CTileTriggerContainer::SetCell` (0x117f60), writing four player flags directly let cl load
 `elem->m_actionCode` before the store run. Binding `i32* flags = elem->m_playerFlags` kept the
 four ascending stores together and pinned the action-code load after them, matching retail's
-statement schedule and raising 82.5735% → 85.4412%. This is not a generic pointer-style rule:
+statement schedule and raising 82.5735% → 85.4412%. That was one necessary layer, not the
+closure: repeating the inline cell-key operation at its two semantic consumers changed the CSE
+value's creation identity, and expressing the four stores as the natural fixed-count loop scoped
+the fill literal to the all-player arm. The composition reaches 100.0000% exact. This is not a
+generic pointer-style rule:
 the evidence is the retail run of `+0/+4/+8/+0xc` stores followed by a load from the owning
 object, and the pointer names the real array subobject.
 

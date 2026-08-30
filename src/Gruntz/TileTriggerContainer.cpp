@@ -25,6 +25,10 @@
 
 #include <new>
 
+static inline i32 CellKey(i32 tileX, i32 tileY) {
+    return (tileX << 8) + tileY;
+}
+
 RVA_DYNINIT(0x00115c30, 0x5, s_gruntDirNorth)
 RVA_DYNINIT(0x00115c50, 0x1a, s_gruntDirNorth)
 RVA_DYNINIT(0x00115c80, 0x5, s_gruntDirNorthEast)
@@ -1098,7 +1102,7 @@ CGiantRockLogic* CTileTriggerContainer::ScanNeighborhood(i32 tileX, i32 tileY) {
         for (i32 scanY = tileY - 1; scanY < tileY + 2; scanY++) {
 
             CGiantRockLogic* logic = static_cast<CGiantRockLogic*>(
-                FindLogic(scanY + (scanX << 8), TRIGID_GIANT_ROCK_22)
+                FindLogic(CellKey(scanX, scanY), TRIGID_GIANT_ROCK_22)
             );
             if (logic != NULL) {
                 return logic;
@@ -1111,15 +1115,13 @@ CGiantRockLogic* CTileTriggerContainer::ScanNeighborhood(i32 tileX, i32 tileY) {
 // @early-stop
 RVA(0x00117f60, 0xa1)
 i32 CTileTriggerContainer::SetCell(i32 tileX, i32 tileY, i32 playerSlot) {
-    i32 key = (tileX << 8) + tileY;
-    CTileActionEvent* elem = FindActionByCellKey(key);
+    CTileActionEvent* elem = FindActionByCellKey(CellKey(tileX, tileY));
     if (elem != NULL) {
         if (playerSlot == IDX(PLAYER_SLOT_ALL)) {
             i32* flags = elem->m_playerFlags;
-            flags[0] = 1;
-            flags[1] = 1;
-            flags[2] = 1;
-            flags[3] = 1;
+            for (i32 i = 0; i < 4; i++) {
+                flags[i] = 1;
+            }
         } else {
             elem->m_playerFlags[playerSlot] = 1;
         }
@@ -1127,7 +1129,7 @@ i32 CTileTriggerContainer::SetCell(i32 tileX, i32 tileY, i32 playerSlot) {
         return 1;
     }
 
-    if (FindLogic(key, TRIGID_COVERED_POWERUP_26) != NULL) {
+    if (FindLogic(CellKey(tileX, tileY), TRIGID_COVERED_POWERUP_26) != NULL) {
         return 1;
     }
     CGiantRockLogic* found = ScanNeighborhood(tileX, tileY);

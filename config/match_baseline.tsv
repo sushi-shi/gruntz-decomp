@@ -289,7 +289,7 @@ terraintileloader	1	0
 tilelogicpump	57	54
 tilescan	1	0
 tileswitchlogic	50	38
-tiletriggercontainer	27	21
+tiletriggercontainer	27	22
 timesplit	3	3
 timestring	1	1
 toobspikez	7	6
@@ -4260,11 +4260,11 @@ tiletriggercontainer	?RemoveAll@CTileTriggerContainer@@QAEXXZ	100.0000	100.0000	
 tiletriggercontainer	?RemoveIdleLogic@CTileTriggerContainer@@QAEHPAVCTileTriggerLogic@@@Z	100.0000	100.0000	2	38dbf2e524c5	0x116e60	100.0000	
 tiletriggercontainer	?RemoveSwitchLogic@CTileTriggerContainer@@QAEHHW4TrigLogicId@@@Z	100.0000	100.0000	2	e6c341f45db3	0x116320	100.0000	
 tiletriggercontainer	?SaveInitialized@CTileTriggerContainer@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	5	ae92c72bfdfa	0x117e20	100.0000	
-tiletriggercontainer	?ScanNeighborhood@CTileTriggerContainer@@QAEPAVCGiantRockLogic@@HH@Z	100.0000	100.0000	3	dea9c30c2e28	0x117ec0	100.0000	
+tiletriggercontainer	?ScanNeighborhood@CTileTriggerContainer@@QAEPAVCGiantRockLogic@@HH@Z	100.0000	100.0000	4	506b64c38b2c	0x117ec0	100.0000	
 tiletriggercontainer	?Serialize@CTileTriggerContainer@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	8	d47069a33fbc	0x117280	100.0000	
 tiletriggercontainer	?SerializeSwitchLogic@CTileTriggerContainer@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@HPAVCTileTriggerSwitchLogic@@@Z	100.0000	100.0000	4	b9a13cc1bf2c	0x117630	100.0000	
 tiletriggercontainer	?SerializeTriggerLogic@CTileTriggerContainer@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@HPAVCTileTriggerLogic@@@Z	100.0000	100.0000	4	039969249812	0x117710	100.0000	
-tiletriggercontainer	?SetCell@CTileTriggerContainer@@QAEHHHH@Z	85.4412	85.4412	3	52b342091fc9	0x117f60	85.4412	
+tiletriggercontainer	?SetCell@CTileTriggerContainer@@QAEHHHH@Z	100.0000	100.0000	4	5c65f25d8ac3	0x117f60	100.0000	
 tiletriggercontainer	?Shutdown@CTileTriggerContainer@@QAEXXZ	100.0000	100.0000	3	95189e477233	0x115f30	100.0000	
 tiletriggercontainer	?UpdateTimedLogics@CTileTriggerContainer@@QAEHH@Z	100.0000	100.0000	2	379b6089c01c	0x1170b0	100.0000	
 timesplit	?BlockScreenSaver@@YAHPAXIIJ@Z	100.0000	100.0000	1	90e7f9539a5a	0x1192d0	100.0000	
