@@ -13,6 +13,7 @@
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/LogicRecordRegistry.h>
+#include <DDrawMgr/LogicRecordRegistryFindInline.h>
 #include <DDrawMgr/PixelShift.h>
 #include <Enums.h>
 #include <Gruntz/GameLevel.h>
@@ -678,21 +679,14 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
         return used;
     }
 
-    if (logic.GetLength() == 0) {
+    if (logic.IsEmpty()) {
         i32 used = static_cast<i32>((strCursor - src->m_strings)) + 0x11c;
         delete obj;
         return used;
     }
 
-    CLogicRecord* logicTemplate;
-    {
-        CObject* foundOb = NULL;
-        OwnerMgr()->m_logicRegistry->m_templatesByName.Lookup(
-            static_cast<const char*>(logic),
-            foundOb
-        );
-        logicTemplate = static_cast<CLogicRecord*>(foundOb);
-    }
+    CLogicRecord* logicTemplate =
+        OwnerMgr()->m_logicRegistry->FindTemplate(static_cast<const char*>(logic));
     if (logicTemplate == NULL) {
         i32 used = static_cast<i32>((strCursor - src->m_strings)) + 0x11c;
         delete obj;

@@ -330,6 +330,11 @@ CShadeTable* CShadeTableCache::HueRampTable(PALETTEENTRY* pal, i32 steps, i32 pa
     return t;
 }
 
+static inline u8
+WeightedPaletteChannel(u8 row, u8 column, i32 rowWeight, i32 columnWeight, i32 divisor) {
+    return static_cast<u8>((column * columnWeight / 100 + row * rowWeight / 100) / divisor);
+}
+
 // @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
@@ -351,10 +356,9 @@ CShadeTable* CShadeTableCache::GammaTable(PALETTEENTRY* pal, i32 wRow, i32 wCol)
     i32 div = (wRow + wCol) / 100;
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         for (i32 j = 0; j < PALETTE_ENTRY_COUNT; j++) {
-            u8 r = static_cast<u8>((pal[j].peRed * wCol / 100 + pal[i].peRed * wRow / 100) / div);
-            u8 g =
-                static_cast<u8>((pal[j].peGreen * wCol / 100 + pal[i].peGreen * wRow / 100) / div);
-            u8 b = static_cast<u8>((pal[j].peBlue * wCol / 100 + pal[i].peBlue * wRow / 100) / div);
+            u8 r = WeightedPaletteChannel(pal[i].peRed, pal[j].peRed, wRow, wCol, div);
+            u8 g = WeightedPaletteChannel(pal[i].peGreen, pal[j].peGreen, wRow, wCol, div);
+            u8 b = WeightedPaletteChannel(pal[i].peBlue, pal[j].peBlue, wRow, wCol, div);
             data[i * PALETTE_ENTRY_COUNT + j] = static_cast<u8>(FindNearestColor(pal, r, g, b));
         }
     }
