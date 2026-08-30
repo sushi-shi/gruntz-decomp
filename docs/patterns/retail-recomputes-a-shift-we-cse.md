@@ -67,9 +67,18 @@ expansions recovered all four bound shifts plus the two in-loop center shifts:
 77.9664 -> 86.5714. The authored-order matrix mattered: X-before-Y pair construction and
 upper-before-lower result declaration produced 120 instructions, exactly matching
 retail's call/branch/return/relocation topology and instruction count; the reverse orders
-landed on lower islands. A 64-state target-adjacent campaign on that final source hash
-was completely flat. The retained layer remains an open base because its `0x1c` frame
-and register assignment still differ from retail's `0x14` frame.
+landed on lower islands. That score was still a local maximum. Composing a separate raw
+`Coord ScreenPosition(CGameObject*)` result for the in-loop center, with the X then Y
+result-store order independently attested by the exact out-of-line `GetScreenPos`, raised
+86.5714 to 87.7983. The Y-then-X store order reached only 86.5882, while output-parameter,
+result-initialization, scalar-extraction, scope, receiver-type and wrapper-composition
+controls were byte-flat at the stronger state. Base and retail now have 119/120
+instructions and otherwise exact call, branch, return, store, immediate, relocation and
+ordered-referent counts. A 512-candidate depth-1..3 AST Cartesian campaign found 24
+lower-or-equal islands, and a 96-state target-adjacent campaign on the retained source
+hash found one flat island. The retained layer remains an open base because its `0x1c`
+frame and raw-coordinate stack homes still differ from retail's `0x14` frame and ECX/EBP
+raw-coordinate assignment.
 
 `CBattlezMapConfig::RouteUnitTo` (`0x300c0`) distinguishes pair-valued and per-axis
 owner helpers. The direct transcription CSE'd the first `screenX >> 5` and scored 85.1475.

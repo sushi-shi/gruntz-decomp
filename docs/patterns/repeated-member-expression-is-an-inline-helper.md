@@ -78,9 +78,13 @@ screen-coordinate locals, adding `Coord ScreenTile(CGrunt*)`, and composing a
 neighborhood helper with two pair-valued expansions restored all six shifts and moved
 77.9664 to 86.5714. X-before-Y construction plus upper-before-lower result declaration
 was the strongest authored-order cell; base and retail then agreed at 120 instructions,
-one call, 18 branches, two returns, and one ordered relocation. Raw-pair, in-place RECT,
-single-field repeated-call, and cached-object controls were lower, while a 64-trial
-target-adjacent C1 forest on the final hash was single-island. The remaining frame and
-register residue is still open to a different structural layer. See
+one call, 18 branches, two returns, and one ordered relocation. That state was itself a
+local maximum: composing a raw `Coord ScreenPosition(CGameObject*)` lifetime whose result
+stores follow the exact `GetScreenPos` X-then-Y order raised it again to 87.7983. The
+reverse order reached only 86.5882; output-parameter, local-scope, scalar-extraction and
+wrapper controls were flat at 87.7983. Base/retail retain exact topology and referents at
+119/120 instructions. A 512-candidate AST Cartesian search and 96-trial target-adjacent
+C1 forest on the retained hash found no higher state. The remaining frame and register
+residue is still open to an independently evidenced structural layer. See
 `retail-recomputes-a-shift-we-cse.md`. Classify the identity and result width of the
 boundary instead of voting on "helper versus expression."

@@ -9,6 +9,15 @@
 #include <Ints.h>
 #include <Wap32/TileGeometry.h>
 
+static inline Coord ScreenPosition(CGameObject* object) {
+    Coord out;
+    i32 y = object->m_screenY;
+    i32 x = object->m_screenX;
+    out.m_x = x;
+    out.m_y = y;
+    return out;
+}
+
 static inline Coord ScreenTile(CGrunt* grunt) {
     Coord out;
     CGameObject* object = grunt->m_object;
@@ -47,14 +56,12 @@ i32 CBattlezMapConfig::RerouteSwitchSeeker(CGrunt* grunt) {
         return 1;
     }
 
-    CGameObject* object = grunt->m_object;
-    i32 centerY = object->m_screenY;
-    i32 centerX = object->m_screenX;
+    Coord center = ScreenPosition(grunt->m_object);
     RECT box = TileNeighborhood(grunt);
     for (i32 row = box.top; row < box.bottom; row++) {
         for (i32 col = box.left; col < box.right; col++) {
-            i32 tileX = centerX >> TILE_SHIFT_PX;
-            i32 tileY = centerY >> TILE_SHIFT_PX;
+            i32 tileX = center.m_x >> TILE_SHIFT_PX;
+            i32 tileY = center.m_y >> TILE_SHIFT_PX;
             if (col == tileX && row == tileY) {
                 continue;
             }

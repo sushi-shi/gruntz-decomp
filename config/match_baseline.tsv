@@ -4189,7 +4189,7 @@ tilelogicpump	?RegisterActs@CWarpStonePad@@SAXXZ	100.0000	100.0000	1	fca3048c8fc
 tilelogicpump	?SerializeDispatch@CCheckpointTrigger@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	4	1c2597fd3367	0x10f9a0	100.0000	
 tilelogicpump	?TransitionAct@CTileTriggerTransition@@QAEHXZ	100.0000	100.0000	4	7dfae84c1320	0x110110	100.0000	
 tilelogicpump	?Trigger@CBrickz@@QAEHXZ	100.0000	100.0000	1	18fbb6a917f0	0x10ede0	100.0000	
-tilescan	?RerouteSwitchSeeker@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	86.5714	86.5714	13	2677e6b99834	0x35f10	86.5714	
+tilescan	?RerouteSwitchSeeker@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	87.7983	87.7983	14	782350782d21	0x35f10	87.7983	
 tileswitchlogic	??0CCheckpointTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	1	1756216b219d	0x1127f0	100.0000	
 tileswitchlogic	??0CCoveredPowerupLogic@@QAE@XZ	100.0000	100.0000	1	3af0621b487e	0x112240	100.0000	
 tileswitchlogic	??0CGiantRockLogic@@QAE@XZ	100.0000	100.0000	1	967e1f743d7a	0x112210	100.0000	
