@@ -130,13 +130,16 @@ i32 CGameLevel::LoadWwdWithCoords(WwdHeader* hdr, LevelCoordRect* coords) {
     return 1;
 }
 
-// @early-stop
+static inline void SetLevelViewport(LevelCoordRect* rect, i32 w, i32 h) {
+    rect->left = 0;
+    rect->top = 0;
+    rect->right = w - 1;
+    rect->bottom = h - 1;
+}
+
 RVA(0x0015d030, 0x92)
 i32 CGameLevel::SetViewportSize(i32 w, i32 h) {
-    m_viewportRect.left = 0;
-    m_viewportRect.top = 0;
-    m_viewportRect.right = w - 1;
-    m_viewportRect.bottom = h - 1;
+    SetLevelViewport(&m_viewportRect, w, h);
     SetSpatialDefaults();
     return 1;
 }

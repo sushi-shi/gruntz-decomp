@@ -119,7 +119,7 @@ gameapp	24	23
 gameassetnamespaces	1	0
 gameiconflasheffect	1	1
 gameinfostring	4	4
-gamelevel	96	83
+gamelevel	96	84
 gamelevelmove	17	12
 gameobjectlogictypes	1	1
 gamesave	1	1
@@ -1899,7 +1899,7 @@ gamelevel	?ScanUp@CUniformTileImageSet@@UAEHHHPAH0@Z	100.0000	100.0000	1	cpp:b69
 gamelevel	?ScanUpForValue@CUniformTileImageSet@@UAEHHHHPAH@Z	100.0000	100.0000	1	1e1a557d48d9	0x1613c0	100.0000	
 gamelevel	?SerializeDispatch@CGameLevel@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	5	702c7c7720e7	0x160f70	100.0000	
 gamelevel	?SetViewportRect@CGameLevel@@UAEHPAUtagRECT@@@Z	100.0000	100.0000	2	a459e946f353	0x15d0d0	100.0000	
-gamelevel	?SetViewportSize@CGameLevel@@UAEHHH@Z	84.2800	84.2800	2	0dae84124b74	0x15d030	84.2800	
+gamelevel	?SetViewportSize@CGameLevel@@UAEHHH@Z	100.0000	100.0000	3	5817cbf90a56	0x15d030	100.0000	
 gamelevel	?SetViewportSizeAndUpdatePlanes@CGameLevel@@QAEHHH@Z	100.0000	100.0000	2	de6679076714	0x15d700	100.0000	
 gamelevel	?SnapCeilUp@CGameLevel@@AAEHPAUCGameObject@@HHPAH@Z	100.0000	100.0000	1	6827ffcf951c	0x15f340	100.0000	
 gamelevel	?SnapFloorDown@CGameLevel@@AAEHPAUCGameObject@@HHPAH@Z	100.0000	100.0000	1	e2ecf59eb5c9	0x15f090	100.0000	
