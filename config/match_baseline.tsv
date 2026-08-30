@@ -2902,10 +2902,10 @@ mapmgr	?FindPath@CMapMgr@@UAEHHHHHPAVCPtrList@@HHH@Z	97.4015	97.4015	8	345149bf4
 mapmgr	?Free@CBrickzCellNodePool@@QAEXXZ	100.0000	100.0000	3	929333f14b22	0x9e900	100.0000	
 mapmgr	?Free@CBrickzNodePool@@QAEXXZ	100.0000	100.0000	3	bf07dbc77f66	0x9e7e0	100.0000	
 mapmgr	?InsertOpenNode@CMapMgr@@QAEHPAUBrickzNode@@@Z	100.0000	100.0000	2	1886e9bc8c61	0x9f370	100.0000	
-mapmgr	?LinkClosedNode@CMapMgr@@QAEXPAUBrickzNode@@@Z	85.9070	85.9070	3	65eefb7cef44	0x9f470	85.9070	
+mapmgr	?LinkClosedNode@CMapMgr@@QAEXPAUBrickzNode@@@Z	93.9535	93.9535	4	966e7ff01770	0x9f470	93.9535	
 mapmgr	?Load@CMapMgr@@UAEHPAVCFileMemBase@@@Z	100.0000	100.0000	3	1cc30c555bad	0x9f9a0	100.0000	
 mapmgr	?PopBestOpenNode@CMapMgr@@QAEPAUBrickzNode@@XZ	100.0000	100.0000	2	29ff82978a28	0x9f430	100.0000	
-mapmgr	?RecycleClosedNodes@CMapMgr@@QAEXXZ	99.3077	99.3077	3	9fc5e5d0ba23	0x9f5d0	99.3846	
+mapmgr	?RecycleClosedNodes@CMapMgr@@QAEXXZ	99.3846	99.3846	3	9fc5e5d0ba23	0x9f5d0	99.3846	
 mapmgr	?RecycleOpenNodes@CMapMgr@@QAEXXZ	100.0000	100.0000	3	582961149dae	0x9f590	100.0000	
 mapmgr	?Reset@CMapMgr@@UAEXXZ	100.0000	100.0000	2	16e653d5cc80	0x9ec30	100.0000	
 mapmgr	?Save@CMapMgr@@UAEHPAVCFileMemBase@@@Z	100.0000	100.0000	3	1371987414a2	0x9f840	100.0000	

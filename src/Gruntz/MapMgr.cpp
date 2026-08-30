@@ -513,18 +513,22 @@ BrickzNode* CMapMgr::PopBestOpenNode() {
     return head;
 }
 
+static inline BrickzCellNode* PopFreeCellNode(BrickzCellNode*& freeList) {
+    BrickzCellNode* node = freeList;
+    BrickzCellNode* next = node->m_cellNext;
+    if (next == NULL) {
+        return NULL;
+    }
+    freeList = next;
+    next->m_cellPrev = NULL;
+    return node;
+}
+
 // @early-stop
 RVA(0x0009f470, 0x62)
 void CMapMgr::LinkClosedNode(BrickzNode* node) {
     BrickzCellNode** head = &m_rows[node->m_row][node->m_col].m_head;
-    BrickzCellNode* slot = m_cellNodePool.m_freeList;
-    BrickzCellNode* nx = slot->m_cellNext;
-    if (nx == NULL) {
-        slot = NULL;
-    } else {
-        m_cellNodePool.m_freeList = nx;
-        nx->m_cellPrev = NULL;
-    }
+    BrickzCellNode* slot = PopFreeCellNode(m_cellNodePool.m_freeList);
     BrickzCellNode* old = *head;
     if (old == NULL) {
         *head = slot;
