@@ -69,6 +69,10 @@
         (g)->m_coordList.RemoveAll();                                                              \
     }
 
+static inline i32 DistSq(i32 dx, i32 dy) {
+    return dx * dx + dy * dy;
+}
+
 DATA(0x0022b7ec)
 i32 g_battlezRoutePassableMask;
 
@@ -199,7 +203,7 @@ inflight: {
             i32 dy = nbpos.m_y - y5;
             i32 adx = abs(dx);
             i32 ady = abs(dy);
-            i32 dist = static_cast<i32>(sqrt(static_cast<double>((adx * adx + ady * ady))));
+            i32 dist = static_cast<i32>(sqrt(static_cast<double>(DistSq(adx, ady))));
             if (dist > m_assignedTargetMaxDistance) {
                 if (g->CoordCount() != 0) {
                     MOVE_RECYCLE(g);
@@ -250,6 +254,30 @@ Coord CGrunt::GetTilePos() {
     out.m_x = h->m_screenX >> TILE_SHIFT_PX;
     out.m_y = h->m_screenY >> TILE_SHIFT_PX;
     return out;
+}
+
+static inline i32 AddBattlezTraversalFlags(CGrunt* unit, i32 flags) {
+    PickupType prim = unit->m_entranceReason;
+    PickupType t = ArrivalPickupOf(unit, prim);
+    if (t == PICKUP_TOOB) {
+        flags |= BATTLEZ_ROUTE_TOOB_TRAVERSAL;
+    } else {
+        t = prim;
+        if (prim > PICKUP_EQUIPPABLE_LAST) {
+            t = unit->m_toolId;
+        }
+        if (t == PICKUP_SPRING) {
+            flags |= BATTLEZ_ROUTE_SPRING_TRAVERSAL;
+        } else {
+            if (prim > PICKUP_EQUIPPABLE_LAST) {
+                prim = unit->m_toolId;
+            }
+            if (prim == PICKUP_WINGZ) {
+                flags |= BATTLEZ_ROUTE_WINGZ_TRAVERSAL;
+            }
+        }
+    }
+    return flags;
 }
 
 // @early-stop
@@ -391,10 +419,10 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                 i32 currentDx = abs(marker.m_x - (currentScreenPos.m_x >> TILE_SHIFT_PX));
                 (static_cast<CUserLogic*>(unit))->GetScreenPos((&currentScreenPos));
                 i32 currentDy = abs(marker.m_y - (currentScreenPos.m_y >> TILE_SHIFT_PX));
-                i32 currentDistanceSquared = currentDx * currentDx + currentDy * currentDy;
+                i32 currentDistanceSquared = DistSq(currentDx, currentDy);
                 i32 goalDx = abs(marker.m_x - gx);
                 i32 goalDy = abs(marker.m_y - gy);
-                i32 goalDistanceSquared = goalDx * goalDx + goalDy * goalDy;
+                i32 goalDistanceSquared = DistSq(goalDx, goalDy);
                 if (currentDistanceSquared > goalDistanceSquared) {
                     unit->m_defenderState = AISTATE_BATTLEZ_ROUTE_TARGET;
                 }
@@ -419,34 +447,14 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                 CGameObject* lvl = unit->m_object;
                 i32 dx = abs(gx - (lvl->m_screenX >> TILE_SHIFT_PX));
                 i32 dy = abs(gy - (lvl->m_screenY >> TILE_SHIFT_PX));
-                if (dx * dx + dy * dy <= 0x10) {
+                if (DistSq(dx, dy) <= 0x10) {
                     unit->m_defenderState = AISTATE_BATTLEZ_FINAL_ROUTE;
                     unit->m_routeBlockedMask = g_battlezRouteBlockedMask;
                     unit->m_routePassableMask = BATTLEZ_ROUTE_WINGZ_SHOVEL_EXPANDED;
                     return 1;
                 }
-                PickupType prim = unit->m_entranceReason;
                 i32 cfg = unit->m_routeBlockedMask;
-                i32 flags = unit->m_routePassableMask;
-                PickupType t = ArrivalPickupOf(unit, prim);
-                if (t == PICKUP_TOOB) {
-                    flags |= BATTLEZ_ROUTE_TOOB_TRAVERSAL;
-                } else {
-                    t = prim;
-                    if (prim > PICKUP_EQUIPPABLE_LAST) {
-                        t = unit->m_toolId;
-                    }
-                    if (t == PICKUP_SPRING) {
-                        flags |= BATTLEZ_ROUTE_SPRING_TRAVERSAL;
-                    } else {
-                        if (prim > PICKUP_EQUIPPABLE_LAST) {
-                            prim = unit->m_toolId;
-                        }
-                        if (prim == PICKUP_WINGZ) {
-                            flags |= BATTLEZ_ROUTE_WINGZ_TRAVERSAL;
-                        }
-                    }
-                }
+                i32 flags = AddBattlezTraversalFlags(unit, unit->m_routePassableMask);
                 if (unit->TileSwitch(gx, gy, 0, cfg, 0, flags) != 0) {
                     unit->m_routeBlockedMask = g_battlezRouteBlockedMask;
                     unit->m_routePassableMask = g_battlezRoutePassableMask;
@@ -486,27 +494,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                 }
                 board->m_gridW = rcDst->right - rcDst->left;
                 board->m_gridH = rcDst->bottom - rcDst->top;
-                PickupType prim = unit->m_entranceReason;
-                i32 flags = unit->m_routePassableMask;
-                PickupType t = ArrivalPickupOf(unit, prim);
-                if (t == PICKUP_TOOB) {
-                    flags |= BATTLEZ_ROUTE_TOOB_TRAVERSAL;
-                } else {
-                    t = prim;
-                    if (prim > PICKUP_EQUIPPABLE_LAST) {
-                        t = unit->m_toolId;
-                    }
-                    if (t == PICKUP_SPRING) {
-                        flags |= BATTLEZ_ROUTE_SPRING_TRAVERSAL;
-                    } else {
-                        if (prim > PICKUP_EQUIPPABLE_LAST) {
-                            prim = unit->m_toolId;
-                        }
-                        if (prim == PICKUP_WINGZ) {
-                            flags |= BATTLEZ_ROUTE_WINGZ_TRAVERSAL;
-                        }
-                    }
-                }
+                i32 flags = AddBattlezTraversalFlags(unit, unit->m_routePassableMask);
                 if (unit->TileSwitch(marker.m_x, marker.m_y, 0, 0x987, 1, flags) != 0) {
                     unit->m_routeBlockedMask = g_battlezRouteBlockedMask;
                     unit->m_routePassableMask = g_battlezRoutePassableMask;
@@ -538,7 +526,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
     CGameObject* lvl = unit->m_object;
     i32 dx = abs(gx - (lvl->m_screenX >> TILE_SHIFT_PX));
     i32 dy = abs(gy - (lvl->m_screenY >> TILE_SHIFT_PX));
-    if (dx * dx + dy * dy > 0x10) {
+    if (DistSq(dx, dy) > 0x10) {
         return 1;
     }
     RECYCLE_GRUNT_COORDS_EXPANDED(unit)
