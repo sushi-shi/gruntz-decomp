@@ -15,6 +15,7 @@
 #include <Gruntz/EnemyAiType.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
+#include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStateRecord.h>
 #include <Gruntz/Grunt.h>
@@ -776,7 +777,7 @@ i32 CGrunt::StepCompassMove() {
                     break;
             }
             result = s_CanCommitToyMove(this, moveX, moveY, x, y);
-            if (result == 0) {
+            if (0 == result) {
                 m_toyTileIndex = 0;
             }
         } else {
@@ -799,13 +800,7 @@ i32 CGrunt::StepCompassMove() {
         bag.SetAtGrow(bag.GetSize(), 8);
         while (bag.GetSize() > 0) {
             i32 last = bag.GetUpperBound();
-            i32 count = last + 1;
-            i32 idx;
-            if (count == 0) {
-                idx = (rand() & 1) != 0 ? 0 : last;
-            } else {
-                idx = rand() % count;
-            }
+            i32 idx = GetRandom(0, last);
             i32 dir = bag.GetAt(idx);
             moveX = x;
             moveY = y;
