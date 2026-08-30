@@ -13,6 +13,20 @@ inline i32 IsGruntAtSavedScreenPos(CGrunt* grunt) {
     return 0;
 }
 
+inline void MirrorGruntAcrossArrival(CGrunt* grunt) {
+    Coord pa;
+    grunt->GetScreenTile(&pa);
+    Coord pb;
+    pb.m_y = pa.m_y;
+    grunt->GetScreenPos(&pb);
+    i32 gx = (pb.m_x >> TILE_SHIFT_PX) - grunt->m_arrivalCell.m_x + pa.m_x;
+    grunt->GetScreenTile(&pa);
+    pb.m_x = pa.m_x;
+    grunt->GetScreenPos(&pb);
+    i32 gy = (pb.m_y >> TILE_SHIFT_PX) - grunt->m_arrivalCell.m_y + pa.m_y;
+    grunt->TileSwitch(gx, gy, 0, grunt->m_arrivalFlags, 1, 0);
+}
+
 inline void RecycleGruntCoords(CGrunt* grunt) {
     if (grunt->CoordCount() == 0) {
         return;

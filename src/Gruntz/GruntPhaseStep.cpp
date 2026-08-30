@@ -17,6 +17,7 @@
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntzMapMgr.h>
@@ -30,6 +31,7 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/VoiceManager.h>
 #include <Ints.h>
+#include <MakeRect.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/ZVec.h>
 
@@ -46,35 +48,15 @@ i32 CGrunt::StepTimeBomberBehavior() {
     if (isFlag) {
         return 1;
     }
-    m_defenderPx = m_lastTilePx;
+    m_defenderPx = LastTilePx();
 
     if (m_defenderState == AISTATE_PHASE_MIRROR_THEN_COOLDOWN) {
-        Coord pa;
-        Coord pb;
-        GetScreenTile(&pa);
-        pb.m_y = pa.m_y;
-        GetScreenPos(&pb);
-        i32 gx = (pb.m_x >> TILE_SHIFT_PX) - m_arrivalCell.m_x + pa.m_x;
-        GetScreenTile(&pa);
-        pb.m_x = pa.m_x;
-        GetScreenPos(&pb);
-        i32 gy = (pb.m_y >> TILE_SHIFT_PX) - m_arrivalCell.m_y + pa.m_y;
-        TileSwitch(gx, gy, 0, m_arrivalFlags, 1, 0);
+        MirrorGruntAcrossArrival(this);
         m_dwell = 0;
         m_defenderState = AISTATE_COOLDOWN;
     }
     if (m_defenderState == AISTATE_PHASE_MIRROR_THEN_SEEK) {
-        Coord pa;
-        Coord pb;
-        GetScreenTile(&pa);
-        pb.m_y = pa.m_y;
-        GetScreenPos(&pb);
-        i32 gx = (pb.m_x >> TILE_SHIFT_PX) - m_arrivalCell.m_x + pa.m_x;
-        GetScreenTile(&pa);
-        pb.m_x = pa.m_x;
-        GetScreenPos(&pb);
-        i32 gy = (pb.m_y >> TILE_SHIFT_PX) - m_arrivalCell.m_y + pa.m_y;
-        TileSwitch(gx, gy, 0, m_arrivalFlags, 1, 0);
+        MirrorGruntAcrossArrival(this);
         m_defenderState = AISTATE_SEEK;
         return 1;
     }
@@ -93,7 +75,68 @@ i32 CGrunt::StepTimeBomberBehavior() {
     }
     goto common;
 
+state2: {
+    bool isFlagObj = ANIMATION_ACT_EQUALS("F");
+    if (isFlagObj) {
+        goto common;
+    }
+    {
+        RECT box = MakeRect(
+            m_arrivalCell.m_x - 4,
+            m_arrivalCell.m_y - 4,
+            m_arrivalCell.m_x + 5,
+            m_arrivalCell.m_y + 5
+        );
+        CMapMgr* grid = g_gameReg->m_tileGrid;
+        GRID_CLIP_INL(grid, &box);
+    }
+
+    CDWordArray acc;
+    acc.Add(((m_arrivalCell.m_x - 2) << 16) | (m_arrivalCell.m_y - 2));
+    acc.Add(((m_arrivalCell.m_x - 1) << 16) | (m_arrivalCell.m_y - 2));
+    acc.Add((m_arrivalCell.m_x << 16) | (m_arrivalCell.m_y - 2));
+    acc.Add(((m_arrivalCell.m_x + 1) << 16) | (m_arrivalCell.m_y - 2));
+    acc.Add(((m_arrivalCell.m_x + 2) << 16) | (m_arrivalCell.m_y - 2));
+    acc.Add(((m_arrivalCell.m_x - 2) << 16) | (m_arrivalCell.m_y + 2));
+    acc.Add(((m_arrivalCell.m_x - 1) << 16) | (m_arrivalCell.m_y + 2));
+    acc.Add((m_arrivalCell.m_x << 16) | (m_arrivalCell.m_y + 2));
+    acc.Add(((m_arrivalCell.m_x + 1) << 16) | (m_arrivalCell.m_y + 2));
+    acc.Add(((m_arrivalCell.m_x + 2) << 16) | (m_arrivalCell.m_y + 2));
+    acc.Add(((m_arrivalCell.m_x - 2) << 16) | (m_arrivalCell.m_y - 1));
+    acc.Add(((m_arrivalCell.m_x - 2) << 16) | m_arrivalCell.m_y);
+    acc.Add(((m_arrivalCell.m_x - 2) << 16) | (m_arrivalCell.m_y + 1));
+    acc.Add(((m_arrivalCell.m_x + 2) << 16) | (m_arrivalCell.m_y - 1));
+    acc.Add(((m_arrivalCell.m_x + 2) << 16) | m_arrivalCell.m_y);
+    acc.Add(((m_arrivalCell.m_x + 2) << 16) | (m_arrivalCell.m_y + 1));
+    while (acc.GetSize() != 0) {
+        i32 sel = rand() % acc.GetSize();
+        DWORD pt = acc.GetAt(sel);
+        i32 px = HIWORD(pt);
+        i32 py = LOWORD(pt);
+        CMapMgr* pl = g_gameReg->m_tileGrid;
+        if (static_cast<u32>(px) < g_gameReg->m_tileGrid->m_width
+            && static_cast<u32>(py) < g_gameReg->m_tileGrid->m_height) {
+            i32 flag = pl->CellFlagsAt(px, py);
+            if ((flag & BRICKZ_BLOCKED_MASK) == 0) {
+                if (TileSwitch(px, py, 0, m_arrivalFlags, 1, 0) != 0) {
+                    m_defenderState = AISTATE_COOLDOWN;
+                    m_dwell = 0;
+                    CMapMgr* hit = g_gameReg->m_tileGrid;
+                    GRID_CLIP_INL(hit, NULL);
+                    return 1;
+                }
+            }
+        }
+        acc.RemoveAt(sel, 1);
+    }
+    CMapMgr* spent = g_gameReg->m_tileGrid;
+    GRID_CLIP_INL(spent, NULL);
+    m_defenderState = AISTATE_SEEK;
+    goto common;
+}
+
 state0: {
+    CGruntzMgr* game;
     CGrunt* nb = m_triggerMgr->FindNearestEnemy(this);
     if (nb == NULL) {
         goto common;
@@ -140,74 +183,18 @@ state0: {
     if (m_blockedVoicePending == false) {
         goto common;
     }
+    game = g_gameReg;
     if (CGameLevel::PointInBounds(
-            &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect,
+            &game->m_world->m_level->m_mainPlane->m_planeViewRect,
             m_object->m_screenX,
             m_object->m_screenY
         )
         == 0) {
         goto s0_reset;
     }
-    g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
+    game->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
 s0_reset:
     m_blockedVoicePending = false;
-    goto common;
-}
-
-state2: {
-    bool isFlagObj = ANIMATION_ACT_EQUALS("F");
-    if (isFlagObj) {
-        goto common;
-    }
-    CMapMgr* grid = g_gameReg->m_tileGrid;
-    RECT box;
-    box.left = m_arrivalCell.m_x - 4;
-    box.top = m_arrivalCell.m_y - 4;
-    box.right = m_arrivalCell.m_x + 5;
-    box.bottom = m_arrivalCell.m_y + 5;
-    GRID_CLIP_INL(grid, &box);
-
-    CDWordArray acc;
-    acc.SetAtGrow(acc.GetSize(), ((m_arrivalCell.m_x - 2) << 16) | (m_arrivalCell.m_y - 2));
-    acc.SetAtGrow(acc.GetSize(), ((m_arrivalCell.m_x - 1) << 16) | (m_arrivalCell.m_y - 2));
-    acc.SetAtGrow(acc.GetSize(), (m_arrivalCell.m_x << 16) | (m_arrivalCell.m_y - 2));
-    acc.SetAtGrow(acc.GetSize(), ((m_arrivalCell.m_x + 1) << 16) | (m_arrivalCell.m_y - 2));
-    acc.SetAtGrow(acc.GetSize(), ((m_arrivalCell.m_x + 2) << 16) | (m_arrivalCell.m_y - 2));
-    acc.SetAtGrow(acc.GetSize(), ((m_arrivalCell.m_x - 2) << 16) | (m_arrivalCell.m_y + 2));
-    acc.SetAtGrow(acc.GetSize(), ((m_arrivalCell.m_x - 1) << 16) | (m_arrivalCell.m_y + 2));
-    acc.SetAtGrow(acc.GetSize(), (m_arrivalCell.m_x << 16) | (m_arrivalCell.m_y + 2));
-    acc.SetAtGrow(acc.GetSize(), ((m_arrivalCell.m_x + 1) << 16) | (m_arrivalCell.m_y + 2));
-    acc.SetAtGrow(acc.GetSize(), ((m_arrivalCell.m_x + 2) << 16) | (m_arrivalCell.m_y + 2));
-    acc.SetAtGrow(acc.GetSize(), ((m_arrivalCell.m_x - 2) << 16) | (m_arrivalCell.m_y - 1));
-    acc.SetAtGrow(acc.GetSize(), ((m_arrivalCell.m_x - 2) << 16) | m_arrivalCell.m_y);
-    acc.SetAtGrow(acc.GetSize(), ((m_arrivalCell.m_x - 2) << 16) | (m_arrivalCell.m_y + 1));
-    acc.SetAtGrow(acc.GetSize(), ((m_arrivalCell.m_x + 2) << 16) | (m_arrivalCell.m_y - 1));
-    acc.SetAtGrow(acc.GetSize(), ((m_arrivalCell.m_x + 2) << 16) | m_arrivalCell.m_y);
-    acc.SetAtGrow(acc.GetSize(), ((m_arrivalCell.m_x + 2) << 16) | (m_arrivalCell.m_y + 1));
-    while (acc.GetSize() != 0) {
-        i32 sel = rand() % acc.GetSize();
-        i32 pt = acc.GetAt(sel);
-        i32 px = static_cast<u32>(pt) >> 0x10;
-        i32 py = pt & 0xffff;
-        CMapMgr* pl = g_gameReg->m_tileGrid;
-        if (static_cast<u32>(px) < g_gameReg->m_tileGrid->m_width
-            && static_cast<u32>(py) < g_gameReg->m_tileGrid->m_height) {
-            i32 flag = pl->CellFlagsAt(px, py);
-            if ((flag & BRICKZ_BLOCKED_MASK) == 0) {
-                if (TileSwitch(px, py, 0, m_arrivalFlags, 1, 0) != 0) {
-                    m_defenderState = AISTATE_COOLDOWN;
-                    m_dwell = 0;
-                    CMapMgr* hit = g_gameReg->m_tileGrid;
-                    GRID_CLIP_INL(hit, NULL);
-                    return 1;
-                }
-            }
-        }
-        acc.RemoveAt(sel, 1);
-    }
-    CMapMgr* spent = g_gameReg->m_tileGrid;
-    GRID_CLIP_INL(spent, NULL);
-    m_defenderState = AISTATE_SEEK;
     goto common;
 }
 
