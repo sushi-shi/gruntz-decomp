@@ -56,7 +56,7 @@ bitarraystream	2	2
 blowfish	6	6
 bootystateactivate	52	33
 bracketvalue	1	1
-brickz	4	2
+brickz	4	1
 brickzcellflags	3	1
 brickzload	1	0
 buteglobals	4	4
@@ -657,9 +657,9 @@ bootystateactivate	?Update@CBootyState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000
 bootystateactivate	?Update@CMultiBootyState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	cpp:d8875af51935	0x8d4c0	100.0000	
 bootystateactivate	?UpdateBootyWalkingGruntz@CBootyState@@QAEHXZ	95.9925	95.9925	28	24a1249ec8d7	0x1b690	95.9925	
 bracketvalue	?ExtractBracketValue@@YAHPAD00@Z	100.0000	100.0000	23	5be633df004a	0xf9160	100.0000	
-brickz	?FindPathWithEndpointOverrides@CMapMgr@@QAEHHHHHPAVCPtrList@@HHH@Z	86.3731	86.3731	6	98b48d6c8106	0x81e10	86.3731	
+brickz	?FindPathWithEndpointOverrides@CMapMgr@@QAEHHHHHPAVCPtrList@@HHH@Z	90.2761	90.2761	7	ca4b74454024	0x81e10	90.2761	
 brickz	?IsCellClear@CMapMgr@@UAEHHH@Z	100.0000	100.0000	2	84fad4ef8ae9	0x853f0	100.0000	
-brickz	?LineIsClear@CMapMgr@@QAEHHHHH@Z	100.0000	100.0000	1	8c0b48d24e73	0x82250	100.0000	
+brickz	?LineIsClear@CMapMgr@@QAEHHHHH@Z	100.0000	99.7500	1	8c0b48d24e73	0x82250	100.0000	
 brickz	?UpdateDiagonals@CMapMgr@@QAEHPAVCGruntzMgr@@@Z	90.1655	90.1655	5	4bfe78cabd35	0x82030	90.1655	
 brickzcellflags	?ComputeCellFlags@CMapMgr@@QAEXHHH@Z	97.6586	97.6586	9	2bc5236e0a95	0x77790	97.6586	
 brickzcellflags	?FindNearestEnemy@CTriggerMgr@@QAEPAVCGrunt@@PAV2@@Z	93.2718	93.2718	7	e1ad38fab7bb	0x77df0	93.2718	

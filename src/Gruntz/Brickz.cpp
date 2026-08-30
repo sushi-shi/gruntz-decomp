@@ -26,10 +26,10 @@ i32 CMapMgr::FindPathWithEndpointOverrides(
     }
     BrickzCell* goalCell = &self->m_rows[goalY][goalX];
     BrickzCell* startCell = &self->m_rows[startY][startX];
-    i32 savedGoalFlags = goalCell->m_flags;
     i32 savedStartOccupantId = startCell->m_occupantId;
-    i32 savedStartFlags = startCell->m_flags;
+    i32 savedGoalFlags = goalCell->m_flags;
     i32 goalWasOccupied = (static_cast<u32>(savedGoalFlags) >> 29) & 1;
+    i32 savedStartFlags = startCell->m_flags;
     i32 savedGoalOccupantId = goalCell->m_occupantId;
     if (goalWasOccupied != 0) {
         goalCell->m_flags = savedGoalFlags & BRICKZ_CELL_UNOCCUPIED_MASK;
@@ -42,7 +42,7 @@ i32 CMapMgr::FindPathWithEndpointOverrides(
         m_rows[startY][startX].m_flags = 0;
         m_rows[goalY][goalX].m_flags = 0;
     }
-    i32 result = CMapMgr::FindPath(
+    blockedMask = self->CMapMgr::FindPath(
         startX,
         startY,
         goalX,
@@ -63,7 +63,7 @@ i32 CMapMgr::FindPathWithEndpointOverrides(
         BrickzCell* restoredGoalCell = &m_rows[goalY][goalX];
         restoredGoalCell->m_flags |= BRICKZ_CELL_OCCUPIED;
     }
-    return result;
+    return blockedMask;
 }
 
 // @early-stop
