@@ -289,17 +289,56 @@ void CDDrawWorkerHost::SetCell(i32 x, i32 y, i32 id) {
     SET_WORKER_HOST_CELL(this, x, y, id);
 }
 
+static inline Coord ScreenPosition(CGameObject* object) {
+    Coord out;
+    i32 y = object->m_screenY;
+    i32 x = object->m_screenX;
+    out.m_y = y;
+    out.m_x = x;
+    return out;
+}
+
+static inline void ScreenTile(Coord* pos) {
+    pos->m_x >>= TILE_SHIFT_PX;
+    pos->m_y >>= TILE_SHIFT_PX;
+}
+
+static inline RECT TileNeighborhood(CGrunt* grunt) {
+    i32 halfBox = grunt->m_defenderRadius + grunt->m_reachRect.right + 1;
+    CGameObject* object = grunt->m_object;
+    Coord pt1 = ScreenPosition(object);
+    ScreenTile(&pt1);
+    i32 by = pt1.m_y;
+    Coord pt2 = ScreenPosition(object);
+    ScreenTile(&pt2);
+    i32 bx = pt2.m_x;
+    Coord pt3 = ScreenPosition(object);
+    ScreenTile(&pt3);
+    i32 topY = pt3.m_y;
+    Coord pt4 = ScreenPosition(object);
+    pt4.m_x >>= TILE_SHIFT_PX;
+    i32 leftX = pt4.m_x;
+    RECT box;
+    box.left = leftX - halfBox;
+    box.top = topY - halfBox;
+    box.right = bx + halfBox + 1;
+    box.bottom = by + halfBox + 1;
+    return box;
+}
+
 RVA(0x00077df0, 0x13d)
 CGrunt* CTriggerMgr::FindNearestEnemy(CGrunt* w) {
     CGrunt* best = NULL;
     i32 bestDist = INT_MAX;
-    i32 tileX = w->m_lastTilePx.m_x >> TILE_SHIFT_PX;
-    i32 tileY = w->m_lastTilePx.m_y >> TILE_SHIFT_PX;
+    Coord lastTilePx = w->LastTilePx();
+    i32 tileX = lastTilePx.m_x >> TILE_SHIFT_PX;
+    i32 tileY = lastTilePx.m_y >> TILE_SHIFT_PX;
+    i32 i = 0;
     CGrunt** rowPtr = m_units;
-    for (i32 i = 0; i < 4; i++) {
+    for (; i < TM_PLAYER_COUNT; i++, rowPtr += TM_UNITS_PER_PLAYER) {
         if (i != w->m_playerIndex) {
             CGrunt** colPtr = rowPtr;
-            i32 j = 15;
+            i32 j = TM_UNITS_PER_PLAYER;
             do {
                 CGrunt* cell = *colPtr;
                 if (cell && cell->m_entranceCommitted != false
@@ -315,20 +354,13 @@ CGrunt* CTriggerMgr::FindNearestEnemy(CGrunt* w) {
                 colPtr++;
             } while (--j != 0);
         }
-        rowPtr += 15;
     }
-    i32 k = w->m_reachRect.right + w->m_defenderRadius + 1;
-    i32 px = w->m_object->m_screenX >> TILE_SHIFT_PX;
-    i32 py = w->m_object->m_screenY >> TILE_SHIFT_PX;
-    RECT rc;
-    rc.left = px - k;
-    rc.top = py - k;
-    rc.right = px + k + 1;
-    rc.bottom = py + k + 1;
+    RECT rc = TileNeighborhood(w);
     if (best) {
+        Coord bestPos = ScreenPosition(best->m_object);
         POINT pt;
-        pt.x = best->m_object->m_screenX >> TILE_SHIFT_PX;
-        pt.y = best->m_object->m_screenY >> TILE_SHIFT_PX;
+        pt.x = bestPos.m_x >> TILE_SHIFT_PX;
+        pt.y = bestPos.m_y >> TILE_SHIFT_PX;
         if (!PtInRect(&rc, pt)) {
             best = NULL;
         }
