@@ -2071,7 +2071,7 @@ gruntcreationpoint	?RegisterActs@CGruntCreationPoint@@SAXXZ	100.0000	100.0000	1	
 gruntcreationpoint	?SerializeDispatch@CGruntCreationPoint@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	8	78fce60e219e	0x3e7a0	100.0000	
 gruntdatarecord	?DeserializeStrings@CGruntCellRec@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	1	82e6a13b8a6d	0x56eb0	100.0000	
 gruntdatarecord	?SerializeStrings@CGruntCellRec@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	5	6aa69d4e50cb	0x56da0	100.0000	
-gruntdefensealt	?StepObjectGuardBehavior@CGrunt@@QAEHXZ	84.2845	84.2845	32	80f69a9888be	0xf1c70	84.3794	
+gruntdefensealt	?StepObjectGuardBehavior@CGrunt@@QAEHXZ	84.2845	84.2845	33	a743c210ddf9	0xf1c70	84.3794	
 gruntdefenselean	?StepMagicWandGruntBehavior@CGrunt@@QAEHXZ	89.7111	89.7111	43	d1e25ee8023f	0xf8240	91.9458	
 gruntdefensestep	?StepScrollGruntBehavior@CGrunt@@QAEHXZ	91.6680	91.6680	40	305137323061	0xf2b20	91.6680	
 gruntdiggerstep	?StepDiggerBehavior@CGrunt@@QAEHXZ	90.0266	90.0066	24	aa685369b8b7	0xf36a0	90.0266	
