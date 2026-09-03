@@ -139,6 +139,8 @@ GZ_ENUM_CONST_BEGIN(StatusBarGruntSlots)
 GZ_ENUM_CONST_END(StatusBarGruntSlots)
 
 class CStatusBarMgr {
+    inline b32 ActivateReadySlot(i32 slot);
+
 public:
     CStatusBarMgr();
     i32 BuildSideTabs();

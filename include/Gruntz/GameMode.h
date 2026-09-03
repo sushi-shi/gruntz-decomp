@@ -32,6 +32,8 @@ struct CGameObject;
 class CWwdSpriteObject;
 
 class CMenuState : public CState {
+    inline void HandleControllerInput();
+
 public:
     CMenuState() {
         m_menuTree = NULL;

@@ -1,4 +1,4 @@
-# A long homogeneous short-circuit chain: collapse to one `&&` (one shared return-0 tail), NOT a per-rung `if (!Fn(...)) return 0;`
+# A homogeneous guard chain can be one `&&` with one shared return-0 tail
 
 tags: cpp:branch cpp:return cpp:loop | asm:test asm:je asm:ret | topic:codegen-idiom
 confidence: 8/10
@@ -6,8 +6,9 @@ variants: identical-return-epilogue-tailmerge.md, guard-skip-loop-not-early-retu
 
 ## Symptom
 
-A function is a long run of the SAME predicate (same callee, only the args differ),
-each of which aborts the function on failure, then a single success return:
+A function is a long run of side-effect-free readiness predicates, each of
+which aborts the function on failure, then a single success return. The most
+obvious form repeats one callee with different arguments:
 
 ```cpp
 if (!Fn(a, "X0")) return 0;
@@ -46,6 +47,15 @@ Evidence: `CSpriteRefTable::LoadToolToyPalettes` (0xe2980, a `src` guard + 34
 `LoadGruntzPalette(src,"<COLOR>TOOL/TOY")` rungs) — the per-rung
 `if (!LoadGruntzPalette(...)) return 0;` form compiled to ~0x310 bytes (vs retail's
 0x2cd) and failed to pair (no %); the single `&&` chain landed **100.0%**.
+
+The predicates need not call the same function. `CDDrawSurfaceMgr::IsReady`
+0x155f00 cached `m_drawTarget`, tested five object pointers, called
+`first->IsLoaded()`, and finally tested `m_level`. Six `goto fail` sites plus a
+positive final test compiled to the same 0x41-byte retail body as one positive
+`&&` chain returned directly as its `b32` result. The rewrite removed all six
+gotos, remained 100%, and changed no other compared `ddrawsurfacemgr` function. The common
+property is one shared pure-failure tail and no work between rungs, not callee
+identity.
 
 ## When NOT to use it
 

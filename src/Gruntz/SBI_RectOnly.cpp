@@ -5109,82 +5109,39 @@ i32 CStatusBarMgr::SelectBrickResource(StatusBarHighlightRow row) {
     return 0;
 }
 
+inline b32 CStatusBarMgr::ActivateReadySlot(i32 slot) {
+    const i32 slotCount = static_cast<i32>(sizeof(m_slots) / sizeof(m_slots[0]));
+    if (slot == -1) {
+        for (slot = 0; slot < slotCount; slot++) {
+            if (m_slots[slot].m_state == SLOT_READY) {
+                break;
+            }
+        }
+        if (slot == slotCount) {
+            return false;
+        }
+    }
+    if (!(static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(0x66)) {
+        return false;
+    }
+    HiCueTimed();
+    m_activeSlot = slot;
+    m_slots[slot].m_value = 1;
+    if (m_slotNotify[slot]) {
+        m_slotNotify[slot]->Notify(1);
+    }
+    return true;
+}
+
 RVA(0x0010b930, 0x1a7)
 i32 CStatusBarMgr::ActivateSlot(i32 idx) {
-
-    if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_playerCommandPending != false) {
-        goto notActivated;
-    }
-    if (idx == -1) {
-        i32 slot;
-        for (slot = 0; slot < 5; slot++) {
-            if (m_slots[slot].m_state == SLOT_READY) {
-                goto slotFound;
-            }
-        }
-        return 0;
-
-    slotFound:
-        if (!(static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(0x66)) {
-            goto notActivated;
-        }
-        SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-        if (registry->m_silentMode == false) {
-            SoundCue* found = NULL;
-            CMapStringToPtr* map = &registry->m_cues;
-            MapLookup(*map, "GAME_TABHIGHLIGHT1", found);
-            if (found) {
-                b32 soundEnabled = g_soundEnabled;
-                i32 volumePercent = g_soundVolumePercent;
-                if (soundEnabled != false) {
-                    SoundCue* p = found;
-                    if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
-                        >= static_cast<u32>(p->m_replayDelayMs)) {
-                        p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                        p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                    }
-                }
-            }
-        }
-        m_activeSlot = slot;
-        m_slots[slot].m_value = 1;
-        if (m_slotNotify[slot]) {
-            m_slotNotify[slot]->Notify(1);
-        }
-        return 1;
-    }
-    {
-        if (m_slots[idx].m_state != SLOT_READY) {
-            goto notActivated;
-        }
-        if ((static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(0x66)) {
-            SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-            if (registry->m_silentMode == false) {
-                SoundCue* found = NULL;
-                CMapStringToPtr* map = &registry->m_cues;
-                MapLookup(*map, "GAME_TABHIGHLIGHT1", found);
-                if (found) {
-                    b32 soundEnabled = g_soundEnabled;
-                    i32 volumePercent = g_soundVolumePercent;
-                    if (soundEnabled != false) {
-                        SoundCue* p = found;
-                        if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
-                            >= static_cast<u32>(p->m_replayDelayMs)) {
-                            p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                            p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                        }
-                    }
-                }
-            }
-            m_activeSlot = idx;
-            m_slots[idx].m_value = 1;
-            if (m_slotNotify[idx]) {
-                m_slotNotify[idx]->Notify(1);
-            }
+    if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_playerCommandPending == false) {
+        if (idx == -1) {
+            return ActivateReadySlot(idx);
+        } else if (m_slots[idx].m_state == SLOT_READY && ActivateReadySlot(idx)) {
             return 1;
         }
     }
-notActivated:
     return 0;
 }
 

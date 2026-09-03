@@ -66,6 +66,8 @@ struct PLAYLISTINFOSTRUCT {
 typedef CArray<PLAYLISTINFOSTRUCT*, PLAYLISTINFOSTRUCT*> CMoviePlaylist;
 
 class CMoviePlayer {
+    inline void DecodeFrame();
+
 public:
     CMoviePlayer() {
         m_window = NULL;

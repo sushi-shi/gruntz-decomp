@@ -66,7 +66,7 @@ public:
     CDDrawSurfaceMgr();
 
     virtual ~CDDrawSurfaceMgr() OVERRIDE;
-    virtual i32 IsReady();
+    virtual b32 IsReady();
 
     virtual i32 Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags);
     virtual void Cleanup();

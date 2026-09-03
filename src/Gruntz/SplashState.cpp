@@ -81,6 +81,17 @@ i32 CSplashState::LeaveState(GameStateId nextState) {
     return 1;
 }
 
+inline b32 CSplashState::IsAdvanceRequested() {
+    CFixedPtrArray32* actors = g_actorList;
+    i32 count = actors->m_count;
+    for (i32 i = 0; i < count; i++) {
+        if (actors->m_items[i]->m_pressedButtons & IDX(INPUT_BUTTON0)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 RVA(0x000f9920, 0x108)
 i32 CSplashState::Render() {
     IDirectDrawSurface* in = m_world->m_drawTarget->m_frontSurface->m_surface->m_ddSurface;
@@ -106,20 +117,9 @@ i32 CSplashState::Render() {
         }
     }
 
-    {
-        CFixedPtrArray32* L = g_actorList;
-        i32 n = L->m_count;
-        i32 j;
-        for (j = 0; j < n; j++) {
-            if (L->m_items[j]->m_pressedButtons & IDX(INPUT_BUTTON0)) {
-                goto post;
-            }
-        }
-        if (m_splashCountdownMs) {
-            return 1;
-        }
+    if (!IsAdvanceRequested() && m_splashCountdownMs) {
+        return 1;
     }
-post:
     PostMessageA(m_mgr->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_MAIN_MENU), 0);
     m_mgr->m_owner->m_running = false;
     return 1;
