@@ -252,10 +252,10 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
     }
 
     if (RunRightEdge(rc, x) > surf->m_width) {
-        rc.right = rc.right + rc.right - rc.left + x - surf->m_width;
+        rc.right += rc.Width() + x - surf->m_width;
     }
     if (y - rc.top + rc.bottom > surf->m_height) {
-        rc.bottom = rc.bottom + rc.bottom - rc.top + y - surf->m_height;
+        rc.bottom += rc.Height() + y - surf->m_height;
     }
 
     CSize m = MeasureText(text);
@@ -380,7 +380,7 @@ void FontRenderer::DrawWrapped(
     i32 lineAdvance = m_font->GetMaxHeight() + spacing;
     if (hcenter) {
         CSize m = MeasureWrapped(text, rc);
-        rc.top = rc.top + (rc.bottom - rc.top) / 2 - m.cy / 2;
+        rc.top += rc.Height() / 2 - m.cy / 2;
     }
 
     i32 x = rc.left;
@@ -443,7 +443,7 @@ void FontRenderer::DrawWrapped(
             if (headW + x < rc.right) {
                 line += head;
                 x = headW + x;
-            } else if (headW < rc.right - rc.left) {
+            } else if (headW < rc.Width()) {
                 if (hcenter) {
                     CSize le = MeasureText(line);
                     i32 cx = rc.left + rc.Width() / 2 - le.cx / 2;
@@ -584,7 +584,7 @@ CSize FontRenderer::MeasureWrapped(CString text, CRect rc) {
             if (headW + cursor.x < rc.right) {
                 line += head;
                 cursor.x = headW + cursor.x;
-            } else if (headW < rc.right - rc.left) {
+            } else if (headW < rc.Width()) {
                 CSize lw = MeasureText(line);
                 i32 w = lw.cx;
                 if (maxExtent.cx <= w) {
@@ -686,7 +686,7 @@ CSize FontRenderer::LayoutWrapped(CString text, CRect rc, i32* outLen) {
             if (headW + cursor.x < rc.right) {
                 line += head;
                 cursor.x = headW + cursor.x;
-            } else if (headW < rc.right - rc.left) {
+            } else if (headW < rc.Width()) {
                 totalChars += line.GetLength();
                 cursor.y = cursor.y + m_font->GetMaxHeight();
                 cursor.x = rc.left;

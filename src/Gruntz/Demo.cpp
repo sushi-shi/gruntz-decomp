@@ -151,8 +151,7 @@ i32 DispatchDemoMoverLogic(CGameObject* owner) {
         }
         case DEMO_MOVER_CHOOSE_TARGET: {
 
-            SIZE
-            range = st->m_ownerCtx->m_level->m_mainPlane->m_planePixelSize;
+            CSize range = st->m_ownerCtx->m_level->m_mainPlane->m_planePixelSize;
             st->m_scrollTarget.Set(
                 (range.cx == -1) ? (rand() % 2 - 1) : (rand() % (range.cx + 1)),
                 (range.cy == -1) ? (rand() % 2 - 1) : (rand() % (range.cy + 1))

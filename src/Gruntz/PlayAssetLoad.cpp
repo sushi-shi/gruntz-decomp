@@ -661,9 +661,8 @@ i32 CState::BuildAssetNamespacePrefixes(
             if (lightGate != 0) {
                 CString cs;
                 cs.LoadString(IDS_LOADING);
-                RECT r = *(&g_gameReg->m_world->m_level->m_viewportRect);
-                RECT r2;
-                CopyRect(&r2, &r);
+                CRect r = g_gameReg->m_world->m_level->m_viewportRect;
+                CRect r2 = r;
                 DrawTextToFrontSurface(g_gameReg->m_world, &cs, &r2, 0x82, 1, 0xff, 0xff, 0, 1);
             }
             g_resourceInstallActive = true;

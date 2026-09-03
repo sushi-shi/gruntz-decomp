@@ -270,9 +270,7 @@ i32 CObjectDropper::Update() {
         if (g_gameReg->m_isEasyMode == false || g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
             CWwdSpriteObject* o = m_object;
             Coord dropperPosition = o->ScreenPos();
-            RECT box;
-            SetRect(
-                &box,
+            CRect box(
                 dropperPosition.m_x - o->m_frameImage->m_anchor.x + 7,
                 dropperPosition.m_y - o->m_frameImage->m_anchor.y + 7,
                 dropperPosition.m_x + o->m_frameImage->m_anchor.x - 7,

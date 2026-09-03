@@ -150,9 +150,7 @@ i32 CPathHazard::Tick() {
 
     CWwdSpriteObject* obj = m_object;
 
-    RECT rect;
-    ::SetRect(
-        &rect,
+    CRect rect(
         obj->m_screenPosition.m_x - obj->m_frameImage->m_anchor.x + 7,
         obj->m_screenPosition.m_y - obj->m_frameImage->m_anchor.y + 7,
         obj->m_frameImage->m_anchor.x + obj->m_screenPosition.m_x - 7,
@@ -269,8 +267,7 @@ i32 CPathHazard::SiblingTick() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
 
     CWwdSpriteObject* obj = m_object;
-    RECT rect;
-    rect = MakeRect(
+    CRect rect = MakeRect(
         obj->m_screenPosition.m_x - obj->m_frameImage->m_anchor.x + 7,
         obj->m_screenPosition.m_y - obj->m_frameImage->m_anchor.y + 7,
         obj->m_frameImage->m_anchor.x + obj->m_screenPosition.m_x - 7,

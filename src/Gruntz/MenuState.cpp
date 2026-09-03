@@ -114,7 +114,7 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
         }
     }
 
-    RECT menuBounds = MakeRect(0, 8, 0x27f, 0x1df);
+    CRect menuBounds = MakeRect(0, 8, 0x27f, 0x1df);
     m_menuTree = new CMenuTree;
     if (!m_menuTree->Configure(m_world, m_mgr->m_gameWnd->m_hwnd, &menuBounds, 0x14, 0xa, 1)) {
         return 0;

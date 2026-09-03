@@ -46,7 +46,7 @@ i32 CBattlezMapConfig::RerouteSwitchSeeker(CGrunt* grunt) {
     }
 
     Coord center = ScreenPosition(grunt->m_object);
-    RECT box = TileNeighborhood(grunt);
+    CRect box = TileNeighborhood(grunt);
     for (i32 row = box.top; row < box.bottom; row++) {
         for (i32 col = box.left; col < box.right; col++) {
             Coord tile = center;

@@ -419,7 +419,7 @@ void CPlay::ReleaseResources() {
 
 RVA(0x000c8a10, 0x119)
 i32 CPlay::EnterState(GameStateId previousState) {
-    POINT pt;
+    CPoint pt;
     GetCursorPos(&pt);
     m_cursorPosition.Set(pt.x, pt.y);
     if (ShowCursor(false) >= 0) {
@@ -468,8 +468,8 @@ i32 CPlay::LeaveState(GameStateId nextState) {
         m_world->m_drawTarget->m_overlayPair->m_surface->Fill(0);
         CString s;
         s.LoadString(IDS_PLEASE_WAIT);
-        tagSIZE mode = m_mgr->GetModeSize();
-        RECT r = MakeRect(0, 0, mode.cx, mode.cy);
+        CSize mode = m_mgr->GetModeSize();
+        CRect r = MakeRect(0, 0, mode.cx, mode.cy);
         DrawTextToOverlaySurface(m_world, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
         RetireScene(0x50, 0x3e8, 0, true);
         if (m_mgr && m_mgr->m_triggerMgr) {
@@ -642,12 +642,11 @@ i32 CPlay::Render() {
 
         if (m_minimap != NULL && m_statusBar->m_position != STATUSBAR_HIDDEN
             && m_statusBar->m_activeTab != TAB_GAME) {
-            RECT rc;
+            CRect rc;
             if (m_statusBar->m_position == STATUSBAR_DOCK_LEFT) {
-                SetRect(&rc, 20, 5, 140, 125);
+                rc.SetRect(20, 5, 140, 125);
             } else {
-                SetRect(
-                    &rc,
+                rc.SetRect(
                     g_gameReg->GetModeSize().cx - 140,
                     5,
                     g_gameReg->GetModeSize().cx - 20,
@@ -713,9 +712,8 @@ i32 CPlay::Render() {
 
                 CString tmp;
                 tmp.Format("%d", secsLeft);
-                RECT lvl = g_gameReg->m_world->m_level->m_viewportRect;
-                RECT box;
-                CopyRect(&box, &lvl);
+                CRect lvl = g_gameReg->m_world->m_level->m_viewportRect;
+                CRect box = lvl;
                 DrawTextToBackSurface(g_gameReg->m_world, &tmp, &box, 0x82, 1, 0xff, 0xff, 0, 1);
             }
         }
@@ -1592,7 +1590,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             CString scr;
             self->m_inGame = true;
             self->m_hudSuppressed = false;
-            RECT rect = MakeRect(0, 0, SCREEN_W_PX, SCREEN_H_PX);
+            CRect rect = MakeRect(0, 0, SCREEN_W_PX, SCREEN_H_PX);
             if (scr.LoadString(IDS_CONTINUE_PROMPT)) {
                 DrawTextToFrontSurface(self->m_world, &scr, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
             }
@@ -1829,12 +1827,10 @@ i32 CPlay::RestoreDisplay() {
     if (IsActive() == 0) {
         return 0;
     }
-    i32 savedW = m_mgr->m_savedModeSize.cx;
-    i32 liveW = m_mgr->m_modeSize.cx;
-    i32 savedH = m_mgr->m_savedModeSize.cy;
-    i32 liveH = m_mgr->m_modeSize.cy;
-    if (savedW != liveW || savedH != liveH) {
-        if (m_mgr->SetVideoMode(savedW, savedH, true) == 0) {
+    CSize savedMode = m_mgr->m_savedModeSize;
+    CSize liveMode = m_mgr->m_modeSize;
+    if (savedMode != liveMode) {
+        if (m_mgr->SetVideoMode(savedMode.cx, savedMode.cy, true) == 0) {
             return 0;
         }
     }
@@ -2854,9 +2850,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
                     return 1;
                 }
 
-                RECT box;
-                SetRect(
-                    &box,
+                CRect box(
                     dropPosition.m_x - 0xf,
                     dropPosition.m_y - 0xf,
                     dropPosition.m_x + 0xf,
@@ -3078,7 +3072,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
         return 1;
     }
 
-    RECT rc = m_world->m_level->m_viewportRect;
+    CRect rc = m_world->m_level->m_viewportRect;
     if (x < rc.left || x > rc.right || y < rc.top || y > rc.bottom) {
         return m_statusBar->HandleDoubleClick(keyFlags, x, y);
     }
@@ -3114,8 +3108,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
         if (e == NULL) {
             continue;
         }
-        RECT er;
-        SetRect(&er, e->m_x - 0x10, e->m_y - 0x10, e->m_x + 0x10, e->m_y + 0x10);
+        CRect er(e->m_x - 0x10, e->m_y - 0x10, e->m_x + 0x10, e->m_y + 0x10);
         if (::PtInRect(&er, position.m_x, position.m_y)) {
             if (!m_statusBar->FindReadySlot()) {
                 return 1;
@@ -3415,8 +3408,8 @@ void CPlay::DrawDebugStatsFull() {
 
     {
         RECT* src = &m_world->m_level->m_viewportRect;
-        RECT lr = *src;
-        RECT dr = MakeRect(lr.left, lr.bottom - 0x1c, lr.right, lr.bottom);
+        CRect lr = *src;
+        CRect dr = MakeRect(lr.left, lr.bottom - 0x1c, lr.right, lr.bottom);
         DrawTextA(hdc, buf, -1, &dr, DT_SINGLELINE);
     }
 
@@ -3507,12 +3500,12 @@ void CPlay::DrawDebugStats() {
     PostSetup(hdc);
 
     if (buf[0] != 0) {
-        RECT lr;
+        CRect lr;
 
         RecordBytes<RECT> reuse;
         reuse.m_chars = scratch;
-        CopyRect(&lr, g_gameReg->GetRect(static_cast<RECT*>(reuse.m_rec)));
-        RECT dr = MakeRect(lr.left, lr.bottom - 0x1c, lr.right, lr.bottom);
+        lr = *g_gameReg->GetRect(static_cast<RECT*>(reuse.m_rec));
+        CRect dr = MakeRect(lr.left, lr.bottom - 0x1c, lr.right, lr.bottom);
         if (lr.left > 0) {
             DrawTextA(hdc, buf, -1, &dr, DT_SINGLELINE);
         } else {
@@ -3587,7 +3580,7 @@ void CPlay::DrawCustomLevelBanner() {
     }
     SetBkMode(hdc, TRANSPARENT);
     SetTextColor(hdc, 0);
-    RECT rc = MakeRect(0, 0x1b8, 0x27f, 0x1d6);
+    CRect rc = MakeRect(0, 0x1b8, 0x27f, 0x1d6);
     DrawTextA(hdc, g_customLevelText, -1, &rc, DT_CENTER | DT_SINGLELINE);
     surface->m_ddSurface->ReleaseDC(hdc);
 }
@@ -3652,9 +3645,8 @@ i32 CPlay::CountObjectsByCategory(i32 category) {
 
 RVA(0x000d00a0, 0x5a)
 void CPlay::PostSetup(HDC dc) {
-    RECT src = *(&m_world->m_level->m_viewportRect);
-    RECT dst;
-    CopyRect(&dst, &src);
+    CRect src = m_world->m_level->m_viewportRect;
+    CRect dst = src;
     m_mgr->m_chatLog->DrawTextLines(8, dc, &dst, 0x10);
 }
 
@@ -4023,7 +4015,7 @@ i32 CPlay::SaveUnderAndDrawCursor(CDDrawSurfacePair* pair) {
         cursor.m_x - m_cursorImage->m_anchor.x + m_cursorImage->m_width,
         cursor.m_y - m_cursorImage->m_anchor.y + m_cursorImage->m_height
     );
-    tagSIZE mode = m_mgr->GetModeSize();
+    CSize mode = m_mgr->GetModeSize();
     if (screenRect->left < 0) {
         screenRect->left = 0;
     }
@@ -4036,8 +4028,8 @@ i32 CPlay::SaveUnderAndDrawCursor(CDDrawSurfacePair* pair) {
     if (screenRect->bottom > mode.cy) {
         screenRect->bottom = mode.cy;
     }
-    savedRect->right = screenRect->right - screenRect->left;
-    savedRect->bottom = screenRect->bottom - screenRect->top;
+    CSize savedSize = CRect(*screenRect).Size();
+    *savedRect = CRect(CPoint(0, 0), savedSize);
 
     CDDSurface* target = pair->m_surface;
     if (target == NULL) {
@@ -4050,9 +4042,8 @@ i32 CPlay::SaveUnderAndDrawCursor(CDDrawSurfacePair* pair) {
     }
 
     if (m_drewThisFrame != false) {
-        RECT vp = m_world->m_level->m_viewportRect;
-        RECT clip;
-        CopyRect((&clip), (&vp));
+        CRect vp = m_world->m_level->m_viewportRect;
+        CRect clip = vp;
         target->DecodeThunk(
             m_pathPreviewSource.x,
             m_pathPreviewSource.y,
@@ -4233,8 +4224,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
     double frac = static_cast<double>(w->m_scrollSpeed) * 0.01;
     i32 speed = static_cast<i32>(frac * s_scrollSpeedRange + s_minScrollSpeed);
 
-    SIZE
-    extent = w->m_modeSize;
+    CSize extent = w->m_modeSize;
 
     if (self->m_cursorPosition.m_x < 0xc || HAS(self->m_scrollEdgeLock, SCROLL_EDGE_LEFT)) {
         if (HAS(self->m_scrollEdgeActive, SCROLL_EDGE_LEFT)) {
@@ -4336,19 +4326,23 @@ void CPlay::DrawMessageFrame(i32 index, b32 useFront) {
     }
 }
 
+static inline CRect GetTextBounds(const RECT& bounds) {
+    CRect insets;
+    insets.bottom = g_buteMgr.GetInt("Font", "TextBottomEdge");
+    insets.right = g_buteMgr.GetInt("Font", "TextRightEdge");
+    insets.top = g_buteMgr.GetInt("Font", "TextTopEdge");
+    insets.left = g_buteMgr.GetInt("Font", "TextLeftEdge");
+    CRect result(bounds);
+    result.DeflateRect(&insets);
+    return result;
+}
+
 RVA(0x000d1710, 0x122)
 void CPlay::LoadSBITextEdges(i32 msgId) {
     CString s;
     s.LoadString(msgId);
 
-    RECT rect;
-
-    RECT vp = m_world->m_level->m_viewportRect;
-    i32 bottom = vp.bottom - g_buteMgr.GetInt("Font", "TextBottomEdge");
-    i32 right = vp.right - g_buteMgr.GetInt("Font", "TextRightEdge");
-    i32 top = vp.top + g_buteMgr.GetInt("Font", "TextTopEdge");
-    i32 left = vp.left + g_buteMgr.GetInt("Font", "TextLeftEdge");
-    SetRect(&rect, left, top, right, bottom);
+    CRect rect = GetTextBounds(m_world->m_level->m_viewportRect);
 
     DrawTextToFrontSurface(m_world, &s, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
     m_stepCountdown = 2;
@@ -4365,7 +4359,7 @@ void CPlay::PlayCueAt(
     i32 flag,
     RECT* rectSrc
 ) {
-    RECT rect;
+    CRect rect;
 
     if (cueId != m_lastCueId) {
 
@@ -4376,19 +4370,9 @@ void CPlay::PlayCueAt(
     }
 
     if (rectSrc != NULL) {
-        i32 bottom = rectSrc->bottom - g_buteMgr.GetInt("Font", "TextBottomEdge");
-        i32 right = rectSrc->right - g_buteMgr.GetInt("Font", "TextRightEdge");
-        i32 top = rectSrc->top + g_buteMgr.GetInt("Font", "TextTopEdge");
-        i32 left = rectSrc->left + g_buteMgr.GetInt("Font", "TextLeftEdge");
-        SetRect(&rect, left, top, right, bottom);
+        rect = GetTextBounds(*rectSrc);
     } else {
-
-        RECT vp = m_world->m_level->m_viewportRect;
-        i32 bottom = vp.bottom - g_buteMgr.GetInt("Font", "TextBottomEdge");
-        i32 right = vp.right - g_buteMgr.GetInt("Font", "TextRightEdge");
-        i32 top = vp.top + g_buteMgr.GetInt("Font", "TextTopEdge");
-        i32 left = vp.left + g_buteMgr.GetInt("Font", "TextLeftEdge");
-        SetRect(&rect, left, top, right, bottom);
+        rect = GetTextBounds(m_world->m_level->m_viewportRect);
     }
 
     if (toFrontPage != 0) {
@@ -6002,8 +5986,7 @@ i32 CPlay::FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY) {
             do {
                 Coord* m = StartMarkerAt(i);
                 if (m != NULL) {
-                    RECT rc;
-                    SetRect(&rc, m->m_x - 0x20, m->m_y - 0x20, m->m_x + 0x20, m->m_y + 0x20);
+                    CRect rc(m->m_x - 0x20, m->m_y - 0x20, m->m_x + 0x20, m->m_y + 0x20);
                     if (::PtInRect(&rc, x, y)) {
                         *outX = m->m_x;
                         *outY = m->m_y;
@@ -7131,22 +7114,19 @@ i32 CPlay::SetRandomMoveIconsCurse(b32 active) {
 RVA(0x000d8c60, 0xea)
 i32 CPlay::ResetViewport() {
     CGruntzMgr* w = m_mgr;
-    tagSIZE mode = w->GetModeSize();
-    i32 right = mode.cx;
+    CSize mode = w->GetModeSize();
     StatusBarDock state = m_statusBar->m_position;
-    i32 bottom = mode.cy;
-    RECT r;
+    CRect r;
     if (state == STATUSBAR_DOCK_LEFT) {
-        SetRect(&r, STATUSBAR_WIDTH_PX, 0, right - 1, bottom - 1);
+        r.SetRect(STATUSBAR_WIDTH_PX, 0, mode.cx - 1, mode.cy - 1);
     } else if (state == STATUSBAR_DOCK_RIGHT) {
-        SetRect(&r, 0, 0, right - (STATUSBAR_WIDTH_PX + 1), bottom - 1);
+        r.SetRect(0, 0, mode.cx - (STATUSBAR_WIDTH_PX + 1), mode.cy - 1);
     } else {
-        SetRect(&r, 0, 0, right - 1, bottom - 1);
+        r.SetRect(0, 0, mode.cx - 1, mode.cy - 1);
     }
     if (m_region0Gate) {
-        i32 halfW = (r.right - r.left) / 2;
-        i32 halfH = (r.bottom - r.top) / 2;
-        InflateRect(&r, 0x60 - halfW, 0x60 - halfH);
+        CSize halfSize(r.Width() / 2, r.Height() / 2);
+        r.InflateRect(0x60 - halfSize.cx, 0x60 - halfSize.cy);
     }
     m_viewportResizeMode = VIEW_RESIZE_IDLE;
     m_world->m_level->UpdatePlaneViewports((&r));
@@ -7171,14 +7151,14 @@ i32 CPlay::ShrinkViewport(i32 step) {
     CDDrawSurfaceMgr* world = m_world;
     b32 changed = false;
     LevelCoordRect* viewport = &world->m_level->m_viewportRect;
-    RECT resized = *viewport;
+    CRect resized = *viewport;
 
-    if (resized.right - resized.left > 0xc0) {
-        InflateRect(&resized, -step, 0);
+    if (resized.Width() > 0xc0) {
+        resized.InflateRect(-step, 0);
         changed = true;
     }
-    if (resized.bottom - resized.top > 0xc0) {
-        InflateRect(&resized, 0, -step);
+    if (resized.Height() > 0xc0) {
+        resized.InflateRect(0, -step);
         changed = true;
     }
     if (changed == false) {
@@ -7206,26 +7186,18 @@ i32 CPlay::ExpandViewport(i32 step) {
 
     CSize modeSize = manager->m_modeSize;
 
-    if (resized.right - resized.left
+    if (resized.Width()
         < (statusBar->m_position == STATUSBAR_HIDDEN ? modeSize.cx
                                                      : modeSize.cx - STATUSBAR_WIDTH_PX)) {
         resized.InflateRect(step, 0);
-        if (resized.left < 0) {
-            resized.left = 0;
-        }
-        if (resized.right >= modeSize.cx) {
-            resized.right = modeSize.cx - 1;
-        }
+        resized.left = Max(resized.left, 0L);
+        resized.right = Min(resized.right, static_cast<LONG>(modeSize.cx - 1));
         changed = true;
     }
-    if (resized.bottom - resized.top < modeSize.cy) {
+    if (resized.Height() < modeSize.cy) {
         resized.InflateRect(0, step);
-        if (resized.top < 0) {
-            resized.top = 0;
-        }
-        if (resized.bottom >= modeSize.cy) {
-            resized.bottom = modeSize.cy - 1;
-        }
+        resized.top = Max(resized.top, 0L);
+        resized.bottom = Min(resized.bottom, static_cast<LONG>(modeSize.cy - 1));
         changed = true;
     }
 
@@ -7595,14 +7567,10 @@ i32 CPlay::DrawLevelInfoText() {
 
     s3.LoadString(IDS_LOADING);
 
-    RECT r1;
-    RECT r2;
-    RECT r3;
-    RECT r4;
-    SetRect(&r1, 0, 0, SCREEN_W_PX, 0x38);
-    SetRect(&r2, 0, 0x2b, SCREEN_W_PX, 0x59);
-    SetRect(&r3, 0, 0x176, SCREEN_W_PX, 0x1a2);
-    SetRect(&r4, 0, 0x1b8, SCREEN_W_PX, SCREEN_H_PX);
+    CRect r1(0, 0, SCREEN_W_PX, 0x38);
+    CRect r2(0, 0x2b, SCREEN_W_PX, 0x59);
+    CRect r3(0, 0x176, SCREEN_W_PX, 0x1a2);
+    CRect r4(0, 0x1b8, SCREEN_W_PX, SCREEN_H_PX);
     DrawTextToFrontSurface(m_world, &s0, &r1, 0x78, 0, 0, 0, 0, 1);
     DrawTextToFrontSurface(m_world, &s1, &r2, 0x6e, 0, 0, 0, 0, 1);
     DrawTextToFrontSurface(m_world, &s2, &r3, 0x6e, 0, 0, 0, 0, 1);

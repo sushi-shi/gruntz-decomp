@@ -91,18 +91,16 @@ inline CMovingLogic::CMovingLogic(CGameObject* owner, EGruntScale) : CUserLogic(
 }
 
 inline void CMovingLogic::InitOwner(const double& timeScale) {
-    i32 lo0 = m_logicRecord->m_minX;
-    i32 lo1 = m_logicRecord->m_minY;
+    Coord lowerBounds(m_logicRecord->m_minX, m_logicRecord->m_minY);
     Motion()->m_minBounds.Init(
-        lo0 == 0 ? g_movingLogicMin : static_cast<double>(lo0),
-        lo1 == 0 ? g_movingLogicMin : static_cast<double>(lo1),
+        lowerBounds.m_x == 0 ? g_movingLogicMin : static_cast<double>(lowerBounds.m_x),
+        lowerBounds.m_y == 0 ? g_movingLogicMin : static_cast<double>(lowerBounds.m_y),
         Motion()->m_minBounds.z
     );
-    i32 hi0 = m_logicRecord->m_maxX;
-    i32 hi1 = m_logicRecord->m_maxY;
+    Coord upperBounds(m_logicRecord->m_maxX, m_logicRecord->m_maxY);
     Motion()->m_maxBounds.Init(
-        hi0 == 0 ? g_movingLogicMax : static_cast<double>(hi0),
-        hi1 == 0 ? g_movingLogicMax : static_cast<double>(hi1),
+        upperBounds.m_x == 0 ? g_movingLogicMax : static_cast<double>(upperBounds.m_x),
+        upperBounds.m_y == 0 ? g_movingLogicMax : static_cast<double>(upperBounds.m_y),
         Motion()->m_maxBounds.z
     );
     m_motion.SetParams(

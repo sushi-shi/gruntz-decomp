@@ -591,7 +591,7 @@ void CProjectile::ScanTargets(i32 impact) {
     Coord halfExtent(TILE_HALF_PX, TILE_HALF_PX);
     Coord boxMin = position - halfExtent;
     Coord boxMax = position + halfExtent;
-    RECT box = MakeRect(boxMin.m_x, boxMin.m_y, boxMax.m_x, boxMax.m_y);
+    CRect box = MakeRect(boxMin.m_x, boxMin.m_y, boxMax.m_x, boxMax.m_y);
     i32 playerBase = 0;
     i32 gridIndex;
     i32 unitIndex;
@@ -607,9 +607,7 @@ void CProjectile::ScanTargets(i32 impact) {
                 continue;
             }
             Coord gruntPosition = g->m_object->ScreenPos();
-            RECT gruntBox;
-            ::SetRect(
-                &gruntBox,
+            CRect gruntBox(
                 gruntPosition.m_x - 7,
                 gruntPosition.m_y - 7,
                 gruntPosition.m_x + 7,
@@ -638,10 +636,11 @@ void CProjectile::ScanTargets(i32 impact) {
 
             i32 hitPlayerIndex = g->m_playerIndex;
             i32 hitUnitIndex = g->m_unitIndex;
+            Coord hitIdentity(hitPlayerIndex, hitUnitIndex);
             for (POSITION pos = m_hitList.GetHeadPosition(); pos != NULL;) {
 
                 Coord* k = static_cast<Coord*>(m_hitList.GetNext(pos));
-                if (k->m_x == hitPlayerIndex && k->m_y == hitUnitIndex) {
+                if (*k == hitIdentity) {
                     return;
                 }
             }

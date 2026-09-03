@@ -42,7 +42,7 @@ static inline Coord ResolveImagePosition(
     b32 mirrorX,
     b32 mirrorY
 ) {
-    Coord offset(origin.x + info->m_plotOffset.m_x, origin.y + info->m_plotOffset.m_y);
+    Coord offset = Coord(origin.x, origin.y) + info->m_plotOffset;
     if (mirrorX != false) {
         offset.m_x = -offset.m_x;
     }
@@ -128,11 +128,10 @@ i32 CImage::LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 ke
     if (item == NULL) {
         return 0;
     }
-    i32 w = item->m_width;
-    m_width = w;
-    i32 h = item->m_height;
-    m_height = h;
-    m_anchor = CPoint(w >> 1, h >> 1);
+    CSize imageSize(item->m_width, item->m_height);
+    m_width = imageSize.cx;
+    m_height = imageSize.cy;
+    m_anchor = CPoint(imageSize.cx >> 1, imageSize.cy >> 1);
     if (item->m_hasColorKey != false) {
         m_bltFastFlags = DDBLTFAST_WAIT | DDBLTFAST_SRCCOLORKEY;
         return 1;
@@ -154,11 +153,10 @@ i32 CImage::CreateBlankSurface(i32 width, i32 height, i32 keyed) {
     if (item == NULL) {
         return 0;
     }
-    i32 w = item->m_width;
-    m_width = w;
-    i32 h = item->m_height;
-    m_height = h;
-    m_anchor = CPoint(w >> 1, h >> 1);
+    CSize imageSize(item->m_width, item->m_height);
+    m_width = imageSize.cx;
+    m_height = imageSize.cy;
+    m_anchor = CPoint(imageSize.cx >> 1, imageSize.cy >> 1);
     if (item->m_hasColorKey != false) {
         m_bltFastFlags = DDBLTFAST_WAIT | DDBLTFAST_SRCCOLORKEY;
     } else {
@@ -180,12 +178,11 @@ i32 CImage::BuildShadeBlitter(PidHeader* desc, u32 size) {
     if (!owned->Build(desc, static_cast<i32>(size), fmt)) {
         return 0;
     }
-    i32 w = m_owned->m_width;
-    m_width = w;
-    i32 h = m_owned->m_height;
-    m_height = h;
+    CSize imageSize(m_owned->m_width, m_owned->m_height);
+    m_width = imageSize.cx;
+    m_height = imageSize.cy;
     m_bltFastFlags = DDBLTFAST_WAIT | DDBLTFAST_SRCCOLORKEY;
-    m_anchor = CPoint(w >> 1, h >> 1);
+    m_anchor = CPoint(imageSize.cx >> 1, imageSize.cy >> 1);
     m_origin = CPoint(desc->offsetX, desc->offsetY);
     return 1;
 }
@@ -345,8 +342,7 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
     CRect destination(position.x, position.y, farCorner.x, farCorner.y);
     if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
         BlitRect srcClip = m_ownerCtx->m_level->m_viewportRect;
-        RECT destClip;
-        CopyRect(&destClip, static_cast<const RECT*>(&srcClip));
+        CRect destClip = static_cast<const RECT&>(srcClip);
         if (position.x < destClip.left) {
             destination.left += destClip.left - position.x;
         }
@@ -386,10 +382,7 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
             destination.bottom = info->m_clip.bottom;
         }
     }
-    CSize visibleSize(
-        destination.right - destination.left + 1,
-        destination.bottom - destination.top + 1
-    );
+    CSize visibleSize = destination.Size() + CSize(1, 1);
     if (visibleSize.cx <= 0 || visibleSize.cy <= 0) {
         info->m_dirty.m_armed = -1;
         return;
@@ -458,8 +451,7 @@ void CImage::BlitNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
         farCorner.y,
         visibleSize
     )
-    RECT s;
-    s = MakeRect(
+    CRect s = MakeRect(
         farCorner.x - d.right,
         farCorner.y - d.bottom,
         farCorner.x - d.right + visibleSize.cx,
@@ -495,8 +487,7 @@ void CImage::BlitFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
         farCorner.y,
         visibleSize
     )
-    RECT s;
-    s = MakeRect(
+    CRect s = MakeRect(
         farCorner.x - d.right,
         d.top - position.y,
         farCorner.x - d.right + visibleSize.cx,
@@ -532,8 +523,7 @@ void CImage::BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
         farCorner.y,
         visibleSize
     )
-    RECT s;
-    s = MakeRect(
+    CRect s = MakeRect(
         d.left - position.x,
         farCorner.y - d.bottom,
         d.left - position.x + visibleSize.cx,

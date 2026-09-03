@@ -78,7 +78,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
         }
     }
 
-    RECT box;
+    CRect box;
     {
         i32 halfBox = m_defenderRadius + m_reachRect.right + 1;
         Coord selfTile;

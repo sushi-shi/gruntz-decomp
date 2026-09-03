@@ -10,8 +10,7 @@
     rectType rect = MakeRect(originX, originY, farX, farY);                                        \
     if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {                                   \
         BlitRect clipA = m_ownerCtx->m_level->m_viewportRect;                                      \
-        RECT clip;                                                                                 \
-        CopyRect(&clip, static_cast<const RECT*>(&clipA));                                         \
+        CRect clip = static_cast<const RECT&>(clipA);                                              \
         if (originX < clip.left) {                                                                 \
             rect.left += clip.left - originX;                                                      \
         }                                                                                          \
@@ -51,7 +50,7 @@
             rect.bottom = info->m_clip.bottom;                                                     \
         }                                                                                          \
     }                                                                                              \
-    CSize size(rect.right - rect.left + 1, rect.bottom - rect.top + 1);                            \
+    CSize size = CRect(rect).Size() + CSize(1, 1);                                                 \
     if (size.cx <= 0 || size.cy <= 0) {                                                            \
         info->m_dirty.m_armed = -1;                                                                \
         return;                                                                                    \

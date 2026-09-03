@@ -90,9 +90,8 @@ i32 LayerBlitFrame(
         return 0;
     }
     CPoint destination(x - src->m_anchor.x, y - src->m_anchor.y);
-    RECT rc;
-    SetRect(&rc, 0, 0, src->m_width - 1, src->m_height - 1);
-    RECT rc2 = rc;
+    CRect rc(0, 0, src->m_width - 1, src->m_height - 1);
+    CRect rc2 = rc;
     u32 flags = DDBLTFAST_WAIT;
     if (useColorKey) {
         flags |= DDBLTFAST_SRCCOLORKEY;

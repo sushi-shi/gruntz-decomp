@@ -139,12 +139,10 @@ L_tailc:
     if (CoordCount() == 0) {
         if ((m_poweredUp == false) & (static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS)) {
             i32 r = m_defenderRadius;
-            RECT box;
-            SetRect(&box, center.m_x - r, center.m_y - r, center.m_x + r, center.m_y + r);
-            RECT gb;
-            SetRect(&gb, 0, 0, grid->m_width, grid->m_height);
-            RECT isect;
-            if (!IntersectRect(&isect, &box, &gb)) {
+            CRect box(center.m_x - r, center.m_y - r, center.m_x + r, center.m_y + r);
+            CRect gridBounds(0, 0, grid->m_width, grid->m_height);
+            CRect isect;
+            if (!isect.IntersectRect(&box, &gridBounds)) {
                 isect = box;
             }
             i32 best = INT_MAX;

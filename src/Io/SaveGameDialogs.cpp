@@ -63,11 +63,11 @@ BOOL CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
             if (g_previewMgr == NULL || g_previewImage == NULL || item == NULL) {
                 return true;
             }
-            RECT wr;
+            CRect wr;
             GetWindowRect(item, &wr);
             CPoint pt(wr.left, wr.top);
             ScreenToClient(hDlg, &pt);
-            CSize previewSize(wr.right - wr.left - 1, wr.bottom - wr.top - 1);
+            CSize previewSize = wr.Size() - CSize(1, 1);
             if (previewSize.cx >= SCREEN_HALF_W_PX) {
                 pt.x += (previewSize.cx - SCREEN_HALF_W_PX) / 2;
                 previewSize.cx = SCREEN_HALF_W_PX;

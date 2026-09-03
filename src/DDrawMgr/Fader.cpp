@@ -1,6 +1,7 @@
 #include <rva.h>
 
 #include <Mfc.h>
+#include <MfcWin.h>
 
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawDeviceManager.h>
@@ -262,6 +263,7 @@ i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
 
     Coord halfSize(m_dstSurface->m_width / 2, m_dstSurface->m_height / 2);
     Coord cellSize(m_sourceSurface->m_width / m_cols, m_sourceSurface->m_height / m_rows);
+    Coord negativeCellSize = -cellSize;
     float radius = static_cast<float>(cellSize.Mag());
     if (m_rows <= 0) {
         return 1;
@@ -270,7 +272,6 @@ i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
     RezElem40 elem;
     i32 y = 0;
     i32 ay = halfSize.m_y;
-    i32 negH = -cellSize.m_y;
     i32 r = 0;
     do {
         if (m_cols > 0) {
@@ -279,7 +280,6 @@ i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
             float cellR = static_cast<float>(halfSize.Mag() + radius - g_fxBias);
             i32 x = 0;
             i32 bx = halfSize.m_x;
-            i32 negW = -cellSize.m_x;
             i32 i = 0;
             do {
                 CRect pt48(0, 0, cellSize.m_x, cellSize.m_y);
@@ -365,12 +365,12 @@ i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
                 mesh->m_pData[idx] = elem;
 
                 x += cellSize.m_x;
-                bx += negW;
+                bx += negativeCellSize.m_x;
                 i++;
             } while (i < m_cols);
         }
         y += cellSize.m_y;
-        ay += negH;
+        ay += negativeCellSize.m_y;
         r++;
     } while (r < m_rows);
     return 1;
@@ -389,9 +389,9 @@ void CFaderMesh::RenderFrame(i32 frame) {
         u32 cur = frame;
         u32 total = GetFrameCount();
         float t = static_cast<float>(cur) / static_cast<float>(total);
-        RECT srcRect = elem.m_startRect;
+        CRect srcRect = elem.m_startRect;
         CRect dstRect = InterpolateRect(elem.m_startRect, elem.m_endRect, t);
-        RECT boundRect = elem.m_endRect;
+        CRect boundRect = elem.m_endRect;
 
         if (dstRect.left < 0 && dstRect.right > 0) {
             boundRect.left = elem.m_endRect.left - dstRect.left;

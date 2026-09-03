@@ -191,18 +191,11 @@ i32 CTileTriggerLogic::FindIndexByKey(i32 key) {
 }
 
 static __inline TileCollisionKind PbResolveCell(CGameLevel* level, i32 x, i32 y) {
-    if (x < 0) {
-        x = 0;
-    } else if (x >= level->m_mainPlane->m_tileGridSize.cx) {
-        x = level->m_mainPlane->m_tileGridSize.cx - 1;
-    }
-    if (y < 0) {
-        y = 0;
-    } else if (y >= level->m_mainPlane->m_tileGridSize.cy) {
-        y = level->m_mainPlane->m_tileGridSize.cy - 1;
-    }
     CDDrawWorkerHost* plane = level->m_mainPlane;
-    i32 cell = plane->m_tileHandles[plane->m_tileRowOffsets[y] + x];
+    Coord tile(x, y);
+    tile.Max(Coord(0, 0));
+    tile.Min(Coord(plane->m_tileGridSize.cx - 1, plane->m_tileGridSize.cy - 1));
+    i32 cell = plane->m_tileHandles[plane->m_tileRowOffsets[tile.m_y] + tile.m_x];
     if (cell == UNINIT_FILL || cell == TILE_CLEAR) {
         return TILEKIND_PASSABLE;
     }
@@ -213,17 +206,11 @@ static __inline TileCollisionKind PbResolveCell(CGameLevel* level, i32 x, i32 y)
 }
 
 static __inline TileCollisionKind PbResolveCellHandle(CGameLevel* level, i32 x, i32 y) {
-    if (x < 0) {
-        x = 0;
-    } else if (x >= level->m_mainPlane->m_tileGridSize.cx) {
-        x = level->m_mainPlane->m_tileGridSize.cx - 1;
-    }
-    if (y < 0) {
-        y = 0;
-    } else if (y >= level->m_mainPlane->m_tileGridSize.cy) {
-        y = level->m_mainPlane->m_tileGridSize.cy - 1;
-    }
-    i32 cell = level->m_mainPlane->GetTileHandle(x, y);
+    CDDrawWorkerHost* plane = level->m_mainPlane;
+    Coord tile(x, y);
+    tile.Max(Coord(0, 0));
+    tile.Min(Coord(plane->m_tileGridSize.cx - 1, plane->m_tileGridSize.cy - 1));
+    i32 cell = plane->GetTileHandle(tile.m_x, tile.m_y);
     if (cell == UNINIT_FILL || cell == TILE_CLEAR) {
         return TILEKIND_PASSABLE;
     }

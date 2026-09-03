@@ -335,17 +335,13 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
         if (obj != t && (obj->m_flags & IDX(WWD_GAME_OBJECT_FLAG_COLLIDE_WITH_OBJECTS))
             && (t->m_collMask & obj->m_objectType) && t->m_extent.left != COORD_UNSET
             && obj->m_extent.left != COORD_UNSET) {
-            RECT currentBounds;
-            SetRect(
-                &currentBounds,
+            CRect currentBounds(
                 t->m_extent.left + t->m_screenPosition.m_x,
                 t->m_extent.top + t->m_screenPosition.m_y,
                 t->m_screenPosition.m_x + t->m_extent.right,
                 t->m_extent.bottom + t->m_screenPosition.m_y
             );
-            RECT otherBounds;
-            SetRect(
-                &otherBounds,
+            CRect otherBounds(
                 obj->m_screenPosition.m_x + obj->m_extent.left,
                 obj->m_extent.top + obj->m_screenPosition.m_y,
                 obj->m_screenPosition.m_x + obj->m_extent.right,
@@ -354,9 +350,7 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
             if (currentBounds.left > otherBounds.right || currentBounds.right < otherBounds.left
                 || currentBounds.top > otherBounds.bottom
                 || currentBounds.bottom < otherBounds.top) {
-                RECT candidateBounds;
-                SetRect(
-                    &candidateBounds,
+                CRect candidateBounds(
                     candX + t->m_extent.left,
                     candY + t->m_extent.top,
                     t->m_extent.right + candX,

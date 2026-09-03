@@ -1,6 +1,7 @@
 #include <Image/FileImage.h>
 
 #include <Mfc.h>
+#include <MfcWin.h>
 
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawDeviceManager.h>
@@ -912,8 +913,7 @@ i32 CDDSurface::DecodePcxData(
     record.m_dwords++;
 
     PidFlags flags = static_cast<PidFlags>(*record.m_dwords++);
-    SIZE
-    imageSize;
+    CSize imageSize;
     imageSize.cx = *record.m_dwords++;
     imageSize.cy = *record.m_dwords++;
     record.m_dwords += 4;
@@ -1034,11 +1034,10 @@ i32 CDDSurface::DecodePid(
     DWORD* pDWord = static_cast<DWORD*>(static_cast<void*>(image));
     DWORD id = *pDWord++;
     PidFlags flags2 = static_cast<PidFlags>(*pDWord++);
-    SIZE
-    imageSize;
+    CSize imageSize;
     imageSize.cx = *pDWord++;
     imageSize.cy = *pDWord++;
-    POINT offset;
+    CPoint offset;
     offset.x = *pDWord++;
     offset.y = *pDWord++;
     DWORD user1 = *pDWord++;

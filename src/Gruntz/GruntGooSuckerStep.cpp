@@ -183,10 +183,10 @@ L_scanb:
         }
 
         i32 r = m_defenderRadius;
-        RECT box = MakeRect(selfTile.m_x - r, selfTile.m_y - r, selfTile.m_x + r, selfTile.m_y + r);
-        RECT gb = MakeRect(0, 0, grid->m_width, grid->m_height);
-        RECT isect;
-        if (!IntersectRect(&isect, &box, &gb)) {
+        CRect box(selfTile.m_x - r, selfTile.m_y - r, selfTile.m_x + r, selfTile.m_y + r);
+        CRect gridBounds(0, 0, grid->m_width, grid->m_height);
+        CRect isect;
+        if (!isect.IntersectRect(&box, &gridBounds)) {
             isect = box;
         }
         grid->Clip(&isect);

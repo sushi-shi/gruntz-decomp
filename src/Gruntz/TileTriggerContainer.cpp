@@ -1084,8 +1084,9 @@ i32 CTileTriggerContainer::LoadInitialized(CFileMemBase* archive) {
 
 RVA(0x00117ec0, 0x7f)
 CGiantRockLogic* CTileTriggerContainer::ScanNeighborhood(i32 tileX, i32 tileY) {
-    for (i32 scanX = tileX - 1; scanX < tileX + 2; scanX++) {
-        for (i32 scanY = tileY - 1; scanY < tileY + 2; scanY++) {
+    CRect bounds(tileX - 1, tileY - 1, tileX + 2, tileY + 2);
+    for (i32 scanX = bounds.left; scanX < bounds.right; scanX++) {
+        for (i32 scanY = bounds.top; scanY < bounds.bottom; scanY++) {
 
             CGiantRockLogic* logic = static_cast<CGiantRockLogic*>(
                 FindLogic(CellKey(scanX, scanY), TRIGID_GIANT_ROCK_22)

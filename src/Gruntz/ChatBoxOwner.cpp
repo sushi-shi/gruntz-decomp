@@ -194,10 +194,9 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
     SetTextColor(hdc, 0);
     SetBkColor(hdc, 0);
 
-    RECT rect;
+    CRect rect;
     if (self->m_mode == CHATBOX_WITH_HIDDEN_STATUSBAR) {
-        SetRect(
-            &rect,
+        rect.SetRect(
             self->m_origin.x + 0x4c,
             self->m_origin.y + 0x2b,
             self->m_origin.x + 0x267,
@@ -205,8 +204,7 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
         );
         self->m_fontConfig->RenderInputText(hdc, 0x21b, &rect);
     } else {
-        SetRect(
-            &rect,
+        rect.SetRect(
             self->m_origin.x + 0x4c,
             self->m_origin.y + 0x2b,
             self->m_origin.x + 0x1c7,
@@ -217,7 +215,7 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
     surface->m_ddSurface->ReleaseDC(hdc);
     return 1;
 }
-static __inline tagSIZE ModeSize() {
+static __inline CSize ModeSize() {
     return g_gameReg->m_modeSize;
 }
 

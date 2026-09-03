@@ -421,8 +421,8 @@ i32 CMulti::LeaveState(GameStateId nextState) {
         m_world->m_drawTarget->m_overlayPair->m_surface->Fill(0);
         CString s;
         s.LoadString(0x81a9);
-        tagSIZE mode = m_mgr->GetModeSize();
-        RECT r = MakeRect(0, 0, mode.cx, mode.cy);
+        CSize mode = m_mgr->GetModeSize();
+        CRect r = MakeRect(0, 0, mode.cx, mode.cy);
         DrawTextToOverlaySurface(m_world, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
         RetireScene(0x50, 0x3e8, 0, true);
         if (m_mgr && m_mgr->m_triggerMgr) {
@@ -738,15 +738,15 @@ void CMulti::RenderGameFrame() {
     if (m_minimap != NULL) {
         CStatusBarMgr* statusBar = m_statusBar;
         if (statusBar->m_position != STATUSBAR_HIDDEN && statusBar->m_activeTab != TAB_GAME) {
-            RECT rc;
+            CRect rc;
             if (statusBar->m_position == STATUSBAR_DOCK_LEFT) {
-                SetRect(&rc, 20, 5, 140, 125);
+                rc.SetRect(20, 5, 140, 125);
             } else {
                 rc.top = g_gameReg->m_modeSize.cy;
                 i32 right = g_gameReg->m_modeSize.cx - 20;
                 i32 left = g_gameReg->m_modeSize.cx - 140;
                 rc.top = g_gameReg->m_modeSize.cy;
-                SetRect(&rc, left, 5, right, 125);
+                rc.SetRect(left, 5, right, 125);
             }
             m_minimap->Refresh(static_cast<i32>(g_frameDelta), false);
             m_minimap->Draw(
@@ -2636,8 +2636,8 @@ i32 CMulti::WaitForOtherPlayers() {
             CString waitStr("Waiting for other playerz...");
             CGruntzMgr* g = g_gameReg;
 
-            tagSIZE mode = g->GetModeSize();
-            RECT rc = MakeRect(0, 0, mode.cx, mode.cy);
+            CSize mode = g->GetModeSize();
+            CRect rc = MakeRect(0, 0, mode.cx, mode.cy);
             DrawTextToFrontSurface(g->m_world, &waitStr, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
 
             i32 resend = 0x1388;

@@ -43,6 +43,7 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/VoiceManager.h>
 #include <Ints.h>
+#include <Lith/BDefs.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/Object.h>
@@ -209,7 +210,7 @@ i32 CGrunt::GruntInRadius(i32 playerIndex, i32 unitIndex) {
         ScreenTile(&targetTile);
         i32 sum = m_defenderRadius + m_reachRect.right;
         i32 dist2 = otherTile.DistSqr(targetTile);
-        return dist2 < sum * sum ? 1 : 0;
+        return dist2 < SQR(sum) ? 1 : 0;
     }
     return 0;
 }

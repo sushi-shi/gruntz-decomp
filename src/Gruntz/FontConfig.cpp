@@ -276,10 +276,10 @@ i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
     if (text.GetLength() == 0) {
         g_chatTextWidth = 0;
     } else {
-        RECT rc = *rect;
+        CRect rc = *rect;
         DrawTextA(hdc, text, text.GetLength(), &rc, DT_CALCRECT | DT_SINGLELINE);
-        i32 textW = rc.right - rc.left;
-        i32 provW = rect->right - rect->left;
+        i32 textW = rc.Width();
+        i32 provW = CRect(*rect).Width();
         g_chatTextWidth = provW;
         if (provW >= textW) {
             g_chatTextWidth = textW;
@@ -334,9 +334,9 @@ i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
         MeasureLabel(hdc, rect);
     }
     int(WINAPI * pDraw)(HDC, LPCSTR, int, LPRECT, UINT) = DrawTextA;
-    RECT rc = *rect;
+    CRect rc = *rect;
     pDraw(hdc, text, text.GetLength(), &rc, DT_CALCRECT | DT_SINGLELINE);
-    i32 fmt = ((rc.right - rc.left) > maxWidth) ? DT_RIGHT | DT_SINGLELINE : DT_SINGLELINE;
+    i32 fmt = (rc.Width() > maxWidth) ? DT_RIGHT | DT_SINGLELINE : DT_SINGLELINE;
     g_lastDrawTextFormat = fmt;
     pDraw(hdc, text, text.GetLength(), rect, fmt);
     if (prev) {
@@ -408,9 +408,9 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
     if (n <= 0) {
         return 0;
     }
-    RECT calc;
-    RECT cur = *rect;
-    RECT work = *rect;
+    CRect calc;
+    CRect cur = *rect;
+    CRect work = *rect;
     for (i32 i = 0; i < n; i++) {
         HGDIOBJ savedFont = NULL;
         if (m_arialFont) {
@@ -420,7 +420,8 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
         if (item != NULL) {
             if (HAS(item->flags, FONT_ITEM_SHADOW)) {
                 SetTextColor(hdc, TCLR_BLACK);
-                work = MakeRect(cur.left + 1, cur.top + 1, cur.right + 1, cur.bottom + 1);
+                work = cur;
+                work.OffsetRect(1, 1);
                 DrawTextA(hdc, item->name, strlen(item->name), &work, format);
             }
             if (HAS(item->flags, FONT_ITEM_COLORED)) {
@@ -485,14 +486,12 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
             calc = cur;
             DrawTextA(hdc, item->name, strlen(item->name), &calc, format | DT_CALCRECT);
             DrawTextA(hdc, item->name, strlen(item->name), &cur, format);
-            i32 measuredBottom = calc.bottom;
-            i32 measuredLeft = calc.left;
-            i32 rr = rect->right;
-            i32 rb = rect->bottom;
-            calc.top = measuredBottom;
-            calc.bottom = rb;
-            calc.right = rr;
-            cur = MakeRect(measuredLeft, measuredBottom, rr, rb);
+            CPoint measuredCorner(calc.left, calc.bottom);
+            CPoint farCorner(rect->right, rect->bottom);
+            calc.top = measuredCorner.y;
+            calc.bottom = farCorner.y;
+            calc.right = farCorner.x;
+            cur = calc;
             SetTextColor(hdc, TCLR_WHITE);
         }
         if (savedFont) {
@@ -550,7 +549,7 @@ i32 CFontConfig::Draw3DText(
         return 0;
     }
     HGDIOBJ selPrev = NULL;
-    RECT rc = *dst;
+    CRect rc = *dst;
     if (fontFlag == 0) {
         if (m_trainingFont) {
             selPrev = SelectObject(hdc, m_trainingFont);
@@ -565,13 +564,13 @@ i32 CFontConfig::Draw3DText(
     CString text(*strSrc);
     DrawTextA(hdc, text, strlen(text), &rc, DT_CALCRECT | DT_WORDBREAK | DT_CENTER);
     i32 hoff = (dst->right + rc.left - dst->left - rc.right) / 2;
-    i32 voff = (dst->bottom - dst->top + rc.top - rc.bottom) / 2;
-    OffsetRect(&rc, hoff, voff);
+    i32 voff = (CRect(*dst).Height() - rc.Height()) / 2;
+    rc.OffsetRect(hoff, voff);
     if (shadow) {
         SetTextColor(hdc, 0);
-        OffsetRect(&rc, dx, dy);
+        rc.OffsetRect(dx, dy);
         DrawTextA(hdc, text, strlen(text), &rc, DT_WORDBREAK | DT_CENTER);
-        OffsetRect(&rc, -dx, -dy);
+        rc.OffsetRect(-dx, -dy);
     }
     SetTextColor(hdc, RGB(r, g, b));
     DrawTextA(hdc, text, strlen(text), &rc, DT_WORDBREAK | DT_CENTER);

@@ -144,7 +144,7 @@ i32 CGrunt::StepDefenderBehavior() {
 
             CPoint target(occupantTile.m_x, occupantTile.m_y);
             if (scanBounds.PtInRect(target) != false && m_defenderRadius > 1) {
-                RECT oldBounds = g_gameReg->m_tileGrid->m_bounds;
+                CRect oldBounds = g_gameReg->m_tileGrid->m_bounds;
                 CDWordArray saved;
                 for (i32 y = oldBounds.top; y < oldBounds.bottom + 1; y++) {
                     for (i32 x = oldBounds.left; x < oldBounds.right + 1; x++) {
@@ -160,37 +160,43 @@ i32 CGrunt::StepDefenderBehavior() {
 
                 Coord center = m_defenderPx;
                 ScreenTile(&center);
-                for (i32 borderX = center.m_x - m_defenderRadius;
-                     borderX < center.m_x + m_defenderRadius + 1;
+                CRect defenderBounds(
+                    center.m_x - m_defenderRadius,
+                    center.m_y - m_defenderRadius,
+                    center.m_x + m_defenderRadius,
+                    center.m_y + m_defenderRadius
+                );
+                for (i32 borderX = defenderBounds.left; borderX <= defenderBounds.right;
                      borderX++) {
-                    i32 top = center.m_y - m_defenderRadius;
-                    i32 bottom = center.m_y + m_defenderRadius;
                     if (static_cast<u32>(borderX) < g_gameReg->m_tileGrid->m_width
-                        && static_cast<u32>(top) < g_gameReg->m_tileGrid->m_height
-                        && (borderX != occupantTile.m_x || top != occupantTile.m_y)) {
-                        g_gameReg->m_tileGrid->m_rows[top][borderX].m_flags = IDX(CELL_FLAG_SOLID);
+                        && static_cast<u32>(defenderBounds.top) < g_gameReg->m_tileGrid->m_height
+                        && (borderX != occupantTile.m_x
+                            || defenderBounds.top != occupantTile.m_y)) {
+                        g_gameReg->m_tileGrid->m_rows[defenderBounds.top][borderX].m_flags =
+                            IDX(CELL_FLAG_SOLID);
                     }
                     if (static_cast<u32>(borderX) < g_gameReg->m_tileGrid->m_width
-                        && static_cast<u32>(bottom) < g_gameReg->m_tileGrid->m_height
-                        && (borderX != occupantTile.m_x || bottom != occupantTile.m_y)) {
-                        g_gameReg->m_tileGrid->m_rows[bottom][borderX].m_flags =
+                        && static_cast<u32>(defenderBounds.bottom) < g_gameReg->m_tileGrid->m_height
+                        && (borderX != occupantTile.m_x
+                            || defenderBounds.bottom != occupantTile.m_y)) {
+                        g_gameReg->m_tileGrid->m_rows[defenderBounds.bottom][borderX].m_flags =
                             IDX(CELL_FLAG_SOLID);
                     }
                 }
-                for (i32 borderY = center.m_y - m_defenderRadius;
-                     borderY < center.m_y + m_defenderRadius + 1;
+                for (i32 borderY = defenderBounds.top; borderY <= defenderBounds.bottom;
                      borderY++) {
-                    i32 left = center.m_x - m_defenderRadius;
-                    i32 right = center.m_x + m_defenderRadius;
-                    if (static_cast<u32>(left) < g_gameReg->m_tileGrid->m_width
+                    if (static_cast<u32>(defenderBounds.left) < g_gameReg->m_tileGrid->m_width
                         && static_cast<u32>(borderY) < g_gameReg->m_tileGrid->m_height
-                        && (left != occupantTile.m_x || borderY != occupantTile.m_y)) {
-                        g_gameReg->m_tileGrid->m_rows[borderY][left].m_flags = IDX(CELL_FLAG_SOLID);
+                        && (defenderBounds.left != occupantTile.m_x
+                            || borderY != occupantTile.m_y)) {
+                        g_gameReg->m_tileGrid->m_rows[borderY][defenderBounds.left].m_flags =
+                            IDX(CELL_FLAG_SOLID);
                     }
-                    if (static_cast<u32>(right) < g_gameReg->m_tileGrid->m_width
+                    if (static_cast<u32>(defenderBounds.right) < g_gameReg->m_tileGrid->m_width
                         && static_cast<u32>(borderY) < g_gameReg->m_tileGrid->m_height
-                        && (right != occupantTile.m_x || borderY != occupantTile.m_y)) {
-                        g_gameReg->m_tileGrid->m_rows[borderY][right].m_flags =
+                        && (defenderBounds.right != occupantTile.m_x
+                            || borderY != occupantTile.m_y)) {
+                        g_gameReg->m_tileGrid->m_rows[borderY][defenderBounds.right].m_flags =
                             IDX(CELL_FLAG_SOLID);
                     }
                 }

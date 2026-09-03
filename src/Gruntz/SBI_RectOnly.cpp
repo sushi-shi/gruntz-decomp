@@ -216,7 +216,7 @@ i32 CStatusBarMgr::DockStatusBarRight() {
     }
     ResetWidgets(true);
 
-    tagSIZE screenSize = g_gameReg->m_modeSize;
+    CSize screenSize = g_gameReg->m_modeSize;
     SetRect(&m_barRect, screenSize.cx - 0xa0, 0, screenSize.cx, SCREEN_H_PX);
     SetState(STATUSBAR_DOCK_RIGHT);
     (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
@@ -263,7 +263,7 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
             if (v > SCREEN_H_PX) {
                 CDDSurface* tgt = (g_gameReg->m_world->m_drawTarget)->m_backPair->m_surface;
 
-                RECT below = MakeRect(m_barRect.left, m_barRect.bottom, m_barRect.right, v);
+                CRect below = MakeRect(m_barRect.left, m_barRect.bottom, m_barRect.right, v);
                 tgt->Restore(&below, 0);
             }
             CMapStringToOb* map = &m_world->m_imageRegistry->m_workersByName;
@@ -377,9 +377,7 @@ RVA(0x000fe8a0, 0x4e)
 i32 CStatusBarMgr::HitTestLayer(i32 x, i32 y) {
     CWwdSpriteObject* r = m_barSprite;
     CImage* L = r->m_frameImage;
-    RECT bounds;
-    SetRect(
-        &bounds,
+    CRect bounds(
         r->m_screenPosition.m_x - L->m_anchor.x,
         r->m_screenPosition.m_y - L->m_anchor.y,
         r->m_screenPosition.m_x - L->m_anchor.x + L->m_width,
@@ -3687,8 +3685,8 @@ void CStatusBarMgr::LoadChipMachineConfig() {
     CSBI_ImageSet* w = m_machineItemSprite;
     if (w) {
         if (rectFlag) {
-            RECT rc = m_machineItemRect;
-            OffsetRect(&rc, m_barRect.left, m_barRect.top);
+            CRect rc = m_machineItemRect;
+            rc.OffsetRect(m_barRect.left, m_barRect.top);
             w->m_rect = rc;
         }
         if (refreshFlag) {
@@ -3715,8 +3713,8 @@ i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 item, i32 x, i32 y) {
         center.m_y + 0xc
     );
     if (n) {
-        RECT rc = m_fallingItemRect;
-        OffsetRect(&rc, m_barRect.left, m_barRect.top);
+        CRect rc = m_fallingItemRect;
+        rc.OffsetRect(m_barRect.left, m_barRect.top);
         n->m_rect = rc;
     }
     NotifyAllSlots();
@@ -3772,8 +3770,8 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
             OffsetRect(&m_fallingItemRect, 0, speed);
             CSBI_ImageSet* w = m_fallingItemSprite;
             if (w) {
-                RECT rc = m_fallingItemRect;
-                OffsetRect(&rc, m_barRect.left, m_barRect.top);
+                CRect rc = m_fallingItemRect;
+                rc.OffsetRect(m_barRect.left, m_barRect.top);
                 w->m_rect = rc;
             }
             clock[1] = delay;
@@ -3802,7 +3800,7 @@ i32 CStatusBarMgr::DropFallingItemAt(i32 screenX, i32 screenY, i32 itemFrame) {
     }
 
     i32 clampedX = screenX;
-    RECT rc = r->m_rect;
+    CRect rc = r->m_rect;
     i32 lo = rc.left + 0x1b;
     i32 xHi = rc.right;
     if (screenX < lo) {
@@ -3994,8 +3992,8 @@ i32 CStatusBarMgr::StartChipMachineCycle() {
     m_machinePhase = BELT_IDLE;
     SetRect(&m_machineItemRect, 0x49, 0xd7, 0x61, 0xef);
     if (m_machineItemSprite) {
-        RECT rc = m_machineItemRect;
-        OffsetRect(&rc, m_barRect.left, m_barRect.top);
+        CRect rc = m_machineItemRect;
+        rc.OffsetRect(m_barRect.left, m_barRect.top);
         m_machineItemSprite->m_rect = rc;
     }
     NotifyAllSlots();

@@ -362,9 +362,9 @@ CGrunt::CGrunt(CGameObject* owner)
     m_wingzEnabled = false;
     m_vehicleLoopSound = NULL;
     m_powerupLoopSound = NULL;
-    RECT reach = MakeRect(-1, -1, 1, 1);
+    CRect reach = MakeRect(-1, -1, 1, 1);
     m_reachRect = reach;
-    RECT zero = MakeRect(0, 0, 0, 0);
+    CRect zero = MakeRect(0, 0, 0, 0);
     m_reachExclusionRect = zero;
     m_vehicleContactRect = zero;
     m_vehicleContactExclusionRect = zero;
@@ -607,15 +607,14 @@ GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
     if (other == NULL) {
         return &g_gruntMoveDirCenter;
     }
-    DoubleVector2 delta(other->m_position.x - m_position.x, m_position.y - other->m_position.y);
+    DoubleVector2 delta = other->m_position - m_position;
+    delta.y = -delta.y;
     Coord integerDelta = delta.ToCoord();
-    i32 horizontalDelta = integerDelta.m_x;
-    i32 verticalDelta = integerDelta.m_y;
-    if (horizontalDelta == 0) {
-        if (verticalDelta > 0) {
+    if (integerDelta.m_x == 0) {
+        if (integerDelta.m_y > 0) {
             return &g_gruntMoveDirNorth;
         }
-        if (verticalDelta < 0) {
+        if (integerDelta.m_y < 0) {
             return &g_gruntMoveDirSouth;
         }
         return &g_gruntMoveDirCenter;
@@ -625,9 +624,9 @@ GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
     if (onCell) {
         onCell = (m_position.ToCoord() == m_gridPosition) ? 1 : 0;
     }
-    double ratio = static_cast<double>(verticalDelta) / static_cast<double>(horizontalDelta);
+    double ratio = static_cast<double>(integerDelta.m_y) / static_cast<double>(integerDelta.m_x);
 
-    if (verticalDelta >= 0 && horizontalDelta > 0) {
+    if (integerDelta.m_y >= 0 && integerDelta.m_x > 0) {
         if (onCell) {
             return &g_gruntMoveDirNorthEast;
         }
@@ -639,7 +638,7 @@ GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
         }
         return &g_gruntMoveDirNorth;
     }
-    if (verticalDelta >= 0 && horizontalDelta < 0) {
+    if (integerDelta.m_y >= 0 && integerDelta.m_x < 0) {
         if (onCell) {
             return &g_gruntMoveDirNorthWest;
         }
@@ -651,7 +650,7 @@ GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
         }
         return &g_gruntMoveDirWest;
     }
-    if (verticalDelta <= 0 && horizontalDelta > 0) {
+    if (integerDelta.m_y <= 0 && integerDelta.m_x > 0) {
         if (onCell) {
             return &g_gruntMoveDirSouthEast;
         }
@@ -685,10 +684,9 @@ i32 CGrunt::IntersectsTileObjectAxes() {
     if (tgt == NULL) {
         return 0;
     }
-    RECT r;
-    CopyRect(&r, &tgt->m_wwdObject->m_area);
+    CRect r = tgt->m_wwdObject->m_area;
     CGameObject* th = tgt->m_object;
-    OffsetRect(&r, th->m_screenPosition.m_x, th->m_screenPosition.m_y);
+    r.OffsetRect(th->m_screenPosition.m_x, th->m_screenPosition.m_y);
 
     Coord center = m_object->ScreenPos();
     CPoint b(center.m_x, center.m_y - 0x3e8);
@@ -1970,9 +1968,8 @@ i32 CGrunt::Place(
             tile.m_y + span->bottom
         );
     }
-    RECT reach;
-    CopyRect(&reach, &m_object->m_extent);
-    if (reach.right - reach.left == 0 && reach.top - reach.bottom == 0) {
+    CRect reach = m_object->m_extent;
+    if (reach.Width() == 0 && reach.Height() == 0) {
         m_hasExtent = false;
     } else {
         m_hasExtent = true;

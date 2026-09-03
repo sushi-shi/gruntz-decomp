@@ -791,8 +791,7 @@ i32 CGrunt::PathScan() {
 
     grid->Clip(NULL);
 
-    RECT nb;
-    SetRect(&nb, target.m_x - 4, target.m_y - 4, target.m_x + 4, target.m_y + 4);
+    CRect nb(target.m_x - 4, target.m_y - 4, target.m_x + 4, target.m_y + 4);
     if (::PtInRect(&nb, start.m_x, start.m_y)) {
 
         grid->Clip(&nb);
@@ -1988,7 +1987,7 @@ void CGrunt::StepBehavior(char*) {
                 double span =
                     static_cast<double>(g_buteMgr.GetDword("Grunt", "EntranceSafeTime", 0x1388));
                 double frac = static_cast<double>(elapsed) / span - 1.0;
-                flash = static_cast<i32>(frac * frac * DATA_COMPGEN(0x001e9a40, 750.0));
+                flash = static_cast<i32>(SQR(frac) * DATA_COMPGEN(0x001e9a40, 750.0));
             }
             if (flash < 0x1e) {
                 flash = 0x1e;

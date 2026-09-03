@@ -82,15 +82,14 @@ i32 CBattlezMapConfig::Step(CGrunt* g) {
             goto inflight;
         }
 
-        i32 W = m_board->m_width;
-        i32 H = m_board->m_height;
+        CSize boardSize(m_board->m_width, m_board->m_height);
         Coord c0;
         g->GetScreenTile((&c0));
         CGrunt* nb = FindIdleGruntInBox(
             c0.m_x,
             c0.m_y,
-            static_cast<i32>((static_cast<u32>(W) / 3)),
-            static_cast<i32>((static_cast<u32>(H) / 3))
+            static_cast<i32>((static_cast<u32>(boardSize.cx) / 3)),
+            static_cast<i32>((static_cast<u32>(boardSize.cy) / 3))
         );
         if (nb != NULL) {
             Coord c1;
@@ -134,15 +133,14 @@ inflight: {
 
     CGrunt* cur =
         m_triggerMgr->m_units[TM_UNITS_PER_PLAYER * g->ArrivalCell().m_x + g->ArrivalCell().m_y];
-    i32 W = m_board->m_width;
-    i32 H = m_board->m_height;
+    CSize boardSize(m_board->m_width, m_board->m_height);
     Coord c0;
     g->GetScreenTile((&c0));
     CGrunt* nb = FindIdleGruntInBox(
         c0.m_x,
         c0.m_y,
-        static_cast<i32>((static_cast<u32>(W) / 3)),
-        static_cast<i32>((static_cast<u32>(H) / 3))
+        static_cast<i32>((static_cast<u32>(boardSize.cx) / 3)),
+        static_cast<i32>((static_cast<u32>(boardSize.cy) / 3))
     );
 
     if (cur == NULL) {

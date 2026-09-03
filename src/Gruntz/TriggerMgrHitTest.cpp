@@ -1817,8 +1817,7 @@ CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outPlayerIndex, i32* outUnit
 
     if (exact == 0) {
         CGameObject* o = cell->m_object;
-        RECT box;
-        SetRect(&box, position.m_x - 7, position.m_y - 7, position.m_x + 7, position.m_y + 7);
+        CRect box(position.m_x - 7, position.m_y - 7, position.m_x + 7, position.m_y + 7);
         Coord objectLo = o->ScreenPos();
         objectLo -= Coord(7, 7);
         if (box.left > objectLo.m_x + 14 || box.right < objectLo.m_x || box.top > objectLo.m_y + 14
@@ -1864,13 +1863,17 @@ CGrunt* CTriggerMgr::FindGruntAt(
         Coord high = position + farExtent + margin;
         rc.SetRect(low.m_x, low.m_y, high.m_x, high.m_y);
     }
-    i32 x = tile.m_x - span->left - 1;
-    i32 xEnd = span->right + tile.m_x + 1;
+    CRect tileBounds(
+        tile.m_x - span->left - 1,
+        tile.m_y - span->top - 1,
+        span->right + tile.m_x + 1,
+        span->bottom + tile.m_y + 1
+    );
+    i32 x = tileBounds.left;
 
-    if (static_cast<u32>(x) <= static_cast<u32>(xEnd)) {
+    if (static_cast<u32>(x) <= static_cast<u32>(tileBounds.right)) {
         do {
-            i32 yEnd = span->bottom + tile.m_y + 1;
-            for (i32 y = tile.m_y - span->top - 1; static_cast<u32>(y) <= static_cast<u32>(yEnd);
+            for (i32 y = tileBounds.top; static_cast<u32>(y) <= static_cast<u32>(tileBounds.bottom);
                  y++) {
                 if (static_cast<u32>(x) >= static_cast<u32>(g_gameReg->m_tileGrid->m_width)) {
                     continue;
@@ -1910,7 +1913,7 @@ CGrunt* CTriggerMgr::FindGruntAt(
                 }
             }
             x++;
-        } while (static_cast<u32>(x) <= static_cast<u32>(xEnd));
+        } while (static_cast<u32>(x) <= static_cast<u32>(tileBounds.right));
     }
     return NULL;
 }

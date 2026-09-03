@@ -789,7 +789,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                             Coord tile;
                                                             static_cast<CUserLogic*>(unit)
                                                                 ->GetScreenTile(&tile);
-                                                            RECT box = MakeRect(
+                                                            CRect box = MakeRect(
                                                                 tile.m_x - 4,
                                                                 tile.m_y - 4,
                                                                 tile.m_x + 4,
@@ -1026,11 +1026,10 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                                 "SpellRadius",
                                                                 8
                                                             );
-                                                            RECT spell;
+                                                            CRect spell;
                                                             Coord spellCenter;
                                                             unit->GetScreenTile(&spellCenter);
-                                                            SetRect(
-                                                                &spell,
+                                                            spell.SetRect(
                                                                 spellCenter.m_x - r,
                                                                 spellCenter.m_y - r,
                                                                 spellCenter.m_x + r,
@@ -1913,7 +1912,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
 // @early-stop
 RVA(0x0002ab80, 0x15e)
 CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 halfH) {
-    RECT rect = MakeRect(cx - halfW, cy - halfH, cx + halfW, cy + halfH);
+    CRect rect = MakeRect(cx - halfW, cy - halfH, cx + halfW, cy + halfH);
     CGrunt* best = NULL;
     i32 bestDist = INT_MAX;
     for (i32 band = 0; band < 4; band++) {
@@ -2562,7 +2561,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
             CRect box(gruntTile.m_x - 1, gruntTile.m_y - 1, gruntTile.m_x + 2, gruntTile.m_y + 2);
             m_board->Clip(&box);
 
-            RECT scan = m_board->m_bounds;
+            CRect scan = m_board->m_bounds;
 
             Coord step = gruntTile - arrival;
             if (g->TileSwitch(
@@ -3113,7 +3112,7 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
         }
     }
 
-    RECT sweep = m_board->m_bounds;
+    CRect sweep = m_board->m_bounds;
     if (sweep.left < sweep.right) {
         for (i32 col = sweep.left; col < sweep.right; col++) {
             for (i32 r = sweep.top; r < sweep.bottom; r++) {
@@ -3140,7 +3139,7 @@ static inline void BuildUnitSearchBox(CGrunt* unit, RECT* box, i32 radius) {
 // @early-stop
 RVA(0x0002e3a0, 0x7e1)
 i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
-    RECT box;
+    CRect box;
     BuildUnitSearchBox(unit, &box, 7);
 
     CGrunt* best = NULL;

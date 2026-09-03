@@ -233,9 +233,7 @@ i32 CActionOptionsMenuBar::HitClick(i32 mx, i32 my) {
         ++p;
     } while (--k != 0);
 
-    RECT primaryButton;
-    SetRect(
-        &primaryButton,
+    CRect primaryButton(
         m_screenPosition.m_x - 0x18,
         m_screenPosition.m_y - 0xa,
         m_screenPosition.m_x,
@@ -248,9 +246,7 @@ i32 CActionOptionsMenuBar::HitClick(i32 mx, i32 my) {
         return 1;
     }
 
-    RECT secondaryButton;
-    SetRect(
-        &secondaryButton,
+    CRect secondaryButton(
         m_screenPosition.m_x + 0x4,
         m_screenPosition.m_y - 0xa,
         m_screenPosition.m_x + 0x1c,
@@ -271,9 +267,7 @@ ActionOptionHit CActionOptionsMenuBar::HitHover(i32 mx, i32 my) {
     if (!m_active) {
         return ACTIONOPTION_HIT_NONE;
     }
-    RECT primaryButton;
-    SetRect(
-        &primaryButton,
+    CRect primaryButton(
         m_screenPosition.m_x - 0x18,
         m_screenPosition.m_y - 0xc,
         m_screenPosition.m_x,
@@ -283,9 +277,7 @@ ActionOptionHit CActionOptionsMenuBar::HitHover(i32 mx, i32 my) {
         return ACTIONOPTION_HIT_PRIMARY;
     }
 
-    RECT secondaryButton;
-    SetRect(
-        &secondaryButton,
+    CRect secondaryButton(
         m_screenPosition.m_x,
         m_screenPosition.m_y - 0xc,
         m_screenPosition.m_x + 0x18,

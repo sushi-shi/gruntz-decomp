@@ -597,8 +597,8 @@ i32 CGrunt::RecordFrameTick() {
 // @early-stop
 RVA(0x00062b70, 0x205)
 i32 CGrunt::RectSegProbe(RECT* p, POINT* e1, POINT* e2) {
-    POINT first = *e1;
-    POINT second = *e2;
+    CPoint first = *e1;
+    CPoint second = *e2;
 
     i32 py = p->top;
     if ((first.y < py) != (second.y < py)) {

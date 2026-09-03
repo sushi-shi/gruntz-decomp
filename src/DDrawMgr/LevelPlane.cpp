@@ -173,10 +173,7 @@ i32 CDDrawWorkerHost::InitGeometry(
     m_movementPercent.Set(movementXPercent, movementYPercent);
     m_planePixelSize = CSize(tileWidthPx * tileColumns, tileHeightPx * tileRows);
     SetRect(&m_tileRect, 0, 0, tileWidthPx, tileHeightPx);
-    m_viewportSize = CSize(
-        m_viewportRect.right - m_viewportRect.left + 1,
-        m_viewportRect.bottom - m_viewportRect.top + 1
-    );
+    m_viewportSize = CRect(m_viewportRect).Size() + CSize(1, 1);
     m_viewHalfSize = CSize(m_viewportSize.cx / 2, m_viewportSize.cy / 2);
     m_tileShift.Set(TileShiftForSize(tileWidthPx), TileShiftForSize(tileHeightPx));
     if (planeName != NULL) {
@@ -364,65 +361,72 @@ void CDDrawWorkerHost::Draw(CDDrawSurfacePair* ctx) {
     if ((m_flags & IDX(WWD_PLANE_FLAG_NO_DRAW)) != 0) {
         return;
     }
-    i32 colL = m_planeViewRect.left >> m_tileShift.m_x;
-    i32 leftW = ((colL + 1) << m_tileShift.m_x) - m_planeViewRect.left;
-    i32 rowT = m_planeViewRect.top >> m_tileShift.m_y;
-    i32 topH = ((rowT + 1) << m_tileShift.m_y) - m_planeViewRect.top;
-    i32 colR = m_planeViewRect.right >> m_tileShift.m_x;
-    i32 rightW = m_planeViewRect.right - (colR << m_tileShift.m_x) + 1;
-    i32 rowB = m_planeViewRect.bottom >> m_tileShift.m_y;
-    i32 botH = m_planeViewRect.bottom - (rowB << m_tileShift.m_y) + 1;
-    RECT topSrc = MakeRect(0, m_tilePixelSize.cy - topH, m_tilePixelSize.cx, m_tilePixelSize.cy);
-    RECT leftSrc = MakeRect(m_tilePixelSize.cx - leftW, 0, m_tilePixelSize.cx, m_tilePixelSize.cy);
-    RECT rightSrc = MakeRect(0, 0, rightW, m_tilePixelSize.cy);
+    CRect tileBounds(
+        m_planeViewRect.left >> m_tileShift.m_x,
+        m_planeViewRect.top >> m_tileShift.m_y,
+        m_planeViewRect.right >> m_tileShift.m_x,
+        m_planeViewRect.bottom >> m_tileShift.m_y
+    );
+    CSize nearTileSize(
+        ((tileBounds.left + 1) << m_tileShift.m_x) - m_planeViewRect.left,
+        ((tileBounds.top + 1) << m_tileShift.m_y) - m_planeViewRect.top
+    );
+    CSize farTileSize(
+        m_planeViewRect.right - (tileBounds.right << m_tileShift.m_x) + 1,
+        m_planeViewRect.bottom - (tileBounds.bottom << m_tileShift.m_y) + 1
+    );
+    CRect topSrc =
+        MakeRect(0, m_tilePixelSize.cy - nearTileSize.cy, m_tilePixelSize.cx, m_tilePixelSize.cy);
+    CRect leftSrc =
+        MakeRect(m_tilePixelSize.cx - nearTileSize.cx, 0, m_tilePixelSize.cx, m_tilePixelSize.cy);
+    CRect rightSrc = MakeRect(0, 0, farTileSize.cx, m_tilePixelSize.cy);
     CRect corner;
     CRect dr;
     CDDSurface* surf = ctx->m_surface;
-    i32 nCols = colR - colL - 1;
-    i32 nRows = rowB - rowT - 1;
+    CSize interiorTileCount(tileBounds.Width() - 1, tileBounds.Height() - 1);
 
     CPoint position(m_viewportRect.left, m_viewportRect.top);
     i32 col, row, i;
     i32 rowBase;
 
-    rowBase = m_tileRowOffsets[rowT];
+    rowBase = m_tileRowOffsets[tileBounds.top];
     corner = MakeRect(
-        m_tilePixelSize.cx - leftW,
-        m_tilePixelSize.cy - topH,
+        m_tilePixelSize.cx - nearTileSize.cx,
+        m_tilePixelSize.cy - nearTileSize.cy,
         m_tilePixelSize.cx,
         m_tilePixelSize.cy
     );
-    DRAW_CELL(m_tileHandles[rowBase + colL], position.x, position.y, &corner);
-    position.x += leftW;
-    col = colL + 1;
+    DRAW_CELL(m_tileHandles[rowBase + tileBounds.left], position.x, position.y, &corner);
+    position.x += nearTileSize.cx;
+    col = tileBounds.left + 1;
     if (col >= m_tileGridSize.cx) {
         col = 0;
     }
-    for (i = nCols; i > 0; i--) {
+    for (i = interiorTileCount.cx; i > 0; i--) {
         DRAW_CELL(m_tileHandles[rowBase + col], position.x, position.y, &topSrc);
         position.x += m_tilePixelSize.cx;
         if (++col >= m_tileGridSize.cx) {
             col = 0;
         }
     }
-    corner = MakeRect(0, m_tilePixelSize.cy - topH, rightW, m_tilePixelSize.cy);
+    corner = MakeRect(0, m_tilePixelSize.cy - nearTileSize.cy, farTileSize.cx, m_tilePixelSize.cy);
     DRAW_CELL(m_tileHandles[rowBase + col], position.x, position.y, &corner);
 
-    position.y += topH;
-    row = rowT + 1;
+    position.y += nearTileSize.cy;
+    row = tileBounds.top + 1;
     if (row >= m_tileGridSize.cy) {
         row = 0;
     }
-    for (i32 r = nRows; r > 0; r--) {
+    for (i32 r = interiorTileCount.cy; r > 0; r--) {
         rowBase = m_tileRowOffsets[row];
         position.x = m_viewportRect.left;
-        DRAW_CELL(m_tileHandles[rowBase + colL], position.x, position.y, &leftSrc);
-        position.x += leftW;
-        col = colL + 1;
+        DRAW_CELL(m_tileHandles[rowBase + tileBounds.left], position.x, position.y, &leftSrc);
+        position.x += nearTileSize.cx;
+        col = tileBounds.left + 1;
         if (col >= m_tileGridSize.cx) {
             col = 0;
         }
-        for (i = nCols; i > 0; i--) {
+        for (i = interiorTileCount.cx; i > 0; i--) {
             DRAW_CELL(m_tileHandles[rowBase + col], position.x, position.y, &m_tileRect);
             position.x += m_tilePixelSize.cx;
             if (++col >= m_tileGridSize.cx) {
@@ -436,24 +440,24 @@ void CDDrawWorkerHost::Draw(CDDrawSurfacePair* ctx) {
         }
     }
 
-    RECT botSrc = MakeRect(0, 0, m_tilePixelSize.cx, botH);
+    CRect botSrc = MakeRect(0, 0, m_tilePixelSize.cx, farTileSize.cy);
     position.x = m_viewportRect.left;
     rowBase = m_tileRowOffsets[row];
-    corner = MakeRect(m_tilePixelSize.cx - leftW, 0, m_tilePixelSize.cx, botH);
-    DRAW_CELL(m_tileHandles[rowBase + colL], position.x, position.y, &corner);
-    position.x += leftW;
-    col = colL + 1;
+    corner = MakeRect(m_tilePixelSize.cx - nearTileSize.cx, 0, m_tilePixelSize.cx, farTileSize.cy);
+    DRAW_CELL(m_tileHandles[rowBase + tileBounds.left], position.x, position.y, &corner);
+    position.x += nearTileSize.cx;
+    col = tileBounds.left + 1;
     if (col >= m_tileGridSize.cx) {
         col = 0;
     }
-    for (i = nCols; i > 0; i--) {
+    for (i = interiorTileCount.cx; i > 0; i--) {
         DRAW_CELL(m_tileHandles[rowBase + col], position.x, position.y, &botSrc);
         position.x += m_tilePixelSize.cx;
         if (++col >= m_tileGridSize.cx) {
             col = 0;
         }
     }
-    corner = MakeRect(0, 0, rightW, botH);
+    corner = MakeRect(0, 0, farTileSize.cx, farTileSize.cy);
     DRAW_CELL(m_tileHandles[rowBase + col], position.x, position.y, &corner);
 }
 #undef DRAW_CELL
@@ -486,8 +490,7 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
         spatialMgr = NULL;
     }
 
-    RECT rc;
-    rc = MakeRect(0, 0, m_planePixelSize.cx - 1, m_planePixelSize.cy - 1);
+    CRect rc = MakeRect(0, 0, m_planePixelSize.cx - 1, m_planePixelSize.cy - 1);
 
     CDDrawSurfaceMgr* reg = OwnerMgr();
     CDDrawChildGroup* activeGroup = reg->m_childGroup;
@@ -702,14 +705,16 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
     obj->m_objectType = src->m_objectType;
     obj->m_hitTypeFlags = src->m_hitTypeFlags;
 
-    u32 w = static_cast<u32>(src->m_strideX);
-    if (w > 0) {
-        obj->m_stride.m_x = static_cast<i32>(w);
+    Coord stride = obj->m_stride;
+    u32 strideX = static_cast<u32>(src->m_strideX);
+    if (strideX > 0) {
+        stride.m_x = static_cast<i32>(strideX);
     }
-    u32 h = static_cast<u32>(src->m_strideY);
-    if (h > 0) {
-        obj->m_stride.m_y = static_cast<i32>(h);
+    u32 strideY = static_cast<u32>(src->m_strideY);
+    if (strideY > 0) {
+        stride.m_y = static_cast<i32>(strideY);
     }
+    obj->m_stride = stride;
 
     m_spatialMgr->ParkObject(static_cast<CWwdGameObject*>(obj));
 

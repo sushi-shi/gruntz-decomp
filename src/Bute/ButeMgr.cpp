@@ -1024,19 +1024,11 @@ bool CButeMgr::Statement() {
             }
             break;
         case BUTETOK_RECT: {
-            RECT parsed;
-            sscanf(
-                m_szTokenString,
-                s_fmtPoint4,
-                &parsed.left,
-                &parsed.top,
-                &parsed.right,
-                &parsed.bottom
-            );
+            ButeIntRect parsed;
+            sscanf(m_szTokenString, s_fmtPoint4, &parsed.a, &parsed.b, &parsed.c, &parsed.d);
             if (!m_writeMode) {
                 if (!bDup) {
-                    ButeIntRect value(parsed.left, parsed.top, parsed.right, parsed.bottom);
-                    m_pCurrTabOfItems->add(m_sAttribute, new CSymTabItem(RECT_TYPE, &value));
+                    m_pCurrTabOfItems->add(m_sAttribute, new CSymTabItem(RECT_TYPE, &parsed));
                 }
             } else {
                 ButeIntRect r = *GetRect(m_sTagName, m_sAttribute);
@@ -1047,12 +1039,11 @@ bool CButeMgr::Statement() {
             break;
         }
         case BUTETOK_POINT: {
-            POINT parsed;
-            sscanf(m_szTokenString, s_fmtPoint2, &parsed.x, &parsed.y);
+            ButeIntPoint parsed;
+            sscanf(m_szTokenString, s_fmtPoint2, &parsed.a, &parsed.b);
             if (!m_writeMode) {
                 if (!bDup) {
-                    ButeIntPoint value(parsed.x, parsed.y);
-                    m_pCurrTabOfItems->add(m_sAttribute, new CSymTabItem(POINT_TYPE, &value));
+                    m_pCurrTabOfItems->add(m_sAttribute, new CSymTabItem(POINT_TYPE, &parsed));
                 }
             } else {
                 ButeIntPoint pt = *GetPoint(m_sTagName, m_sAttribute);
@@ -1219,9 +1210,7 @@ void CButeMgr::AuxTabItemsSave(const char* key, CSymTabItem* value, void* ctx) {
 
         case RANGE_TYPE: {
             CARange* ref = value->data.range;
-            double minimum = ref->GetMin();
-            double maximum = ref->GetMax();
-            output << "[" << minimum << s_strComma << maximum << "]";
+            output << "[" << ref->GetMin() << s_strComma << ref->GetMax() << "]";
             break;
         }
     }

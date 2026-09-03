@@ -81,14 +81,8 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 Coord gruntTile;
                 g->GetScreenTile(&gruntTile);
                 CMapMgr* grid = m_board;
-                RECT box;
-                SetRect(
-                    &box,
-                    gruntTile.m_x - 5,
-                    gruntTile.m_y - 5,
-                    gruntTile.m_x + 5,
-                    gruntTile.m_y + 5
-                );
+                CRect
+                    box(gruntTile.m_x - 5, gruntTile.m_y - 5, gruntTile.m_x + 5, gruntTile.m_y + 5);
                 arrivalMask |= BRICKZ_CELL_OCCUPIED;
                 grid->Clip(&box);
             }
@@ -238,14 +232,8 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 Coord gruntTile;
                 g->GetScreenTile(&gruntTile);
                 CMapMgr* grid = m_board;
-                RECT box;
-                SetRect(
-                    &box,
-                    gruntTile.m_x - 5,
-                    gruntTile.m_y - 5,
-                    gruntTile.m_x + 5,
-                    gruntTile.m_y + 5
-                );
+                CRect
+                    box(gruntTile.m_x - 5, gruntTile.m_y - 5, gruntTile.m_x + 5, gruntTile.m_y + 5);
                 arrivalMask |= BRICKZ_CELL_OCCUPIED;
                 grid->Clip(&box);
             }

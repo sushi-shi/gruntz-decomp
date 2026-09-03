@@ -552,7 +552,7 @@ void CAmbientPosSound::Update(i32 x, i32 y, b32 immediate) {
     Coord soundPosition(m_position.x, m_position.y);
     Coord delta = soundPosition - listener;
     Coord distance = delta.GetAbs();
-    if (distance.m_x > 0x280 || distance.m_y > 0x280) {
+    if (Max(distance.m_x, distance.m_y) > 0x280) {
         if (m_sound != NULL && m_isPlaying != false) {
             m_sound->StopAndRewind();
             m_isPlaying = false;
@@ -561,18 +561,8 @@ void CAmbientPosSound::Update(i32 x, i32 y, b32 immediate) {
     }
 
     i32 dist = distance.Mag();
-    i32 vol = 0x64 - dist / 12;
-    if (vol > 0x64) {
-        vol = 0x64;
-    } else if (vol < 0) {
-        vol = 0;
-    }
-    i32 pan = distance.m_x / 4;
-    if (pan > 0x64) {
-        pan = 0x64;
-    } else if (pan < 0) {
-        pan = 0;
-    }
+    i32 vol = Clamp(0x64 - dist / 12, 0, 0x64);
+    i32 pan = Clamp(distance.m_x / 4, 0, 0x64);
     if (m_position.x < x) {
         pan = -pan;
     }
@@ -627,10 +617,9 @@ i32 DispatchAmbientSoundLogic(CGameObject* obj) {
         }
         SoundCue* layer = sprite->m_soundCue;
         if (layer && g_gameReg) {
-            RECT rc;
-            CopyRect(&rc, &obj->m_area);
+            CRect rc = obj->m_area;
             if (record->m_minX > 0 || record->m_maxX > 0) {
-                SetRect(&rc, record->m_minX, record->m_minY, record->m_maxX, record->m_maxY);
+                rc.SetRect(record->m_minX, record->m_minY, record->m_maxX, record->m_maxY);
             }
             if (g_gameReg->m_worldSounds) {
                 CAmbientSound* placed;
@@ -782,18 +771,12 @@ void CRandomAmbientSound::Update(i32 x, i32 y, b32 immediate) {
     if (m_playPhase != false) {
         i32 r = RandRange(g_gameReg, m_playDuration.GetMin(), m_playDuration.GetMax());
         m_countdownMs = r;
-        i32 half = static_cast<u32>(r) >> 1;
-        if (half > 0x3e8) {
-            half = 0x3e8;
-        }
+        i32 half = Min(static_cast<i32>(static_cast<u32>(r) >> 1), 0x3e8);
         FadePlayback(true, 0x64, half);
     } else {
         i32 r = RandRange(g_gameReg, m_silenceDuration.GetMin(), m_silenceDuration.GetMax());
         m_countdownMs = r;
-        i32 half = static_cast<u32>(r) >> 1;
-        if (half > 0x3e8) {
-            half = 0x3e8;
-        }
+        i32 half = Min(static_cast<i32>(static_cast<u32>(r) >> 1), 0x3e8);
         FadePlayback(false, 0x64, half);
     }
 }

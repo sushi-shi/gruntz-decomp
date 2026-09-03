@@ -3,6 +3,7 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <Globals.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
@@ -212,14 +213,8 @@ i32 CTimer::Draw(CDDrawSurfacePair* target, b32 forceVisible) {
 
 RVA(0x0009c090, 0x37)
 void CTimer::SetTime(i32 minutes, i32 seconds) {
-    u32 clampedMinutes = static_cast<u32>(minutes);
-    if (clampedMinutes > 0x63) {
-        clampedMinutes = 0x63;
-    }
-    u32 clampedSeconds = static_cast<u32>(seconds);
-    if (clampedSeconds > 0x3b) {
-        clampedSeconds = 0x3b;
-    }
+    u32 clampedMinutes = Min(static_cast<u32>(minutes), 0x63u);
+    u32 clampedSeconds = Min(static_cast<u32>(seconds), 0x3bu);
     m_currentMs = static_cast<i32>((clampedMinutes * 60 + clampedSeconds) * MILLIS_PER_SECOND);
 }
 
@@ -228,14 +223,8 @@ void CTimer::AddTime(i32 minutes, i32 seconds) {
     if (!m_running) {
         return;
     }
-    u32 secs = static_cast<u32>(seconds);
-    if (secs > 0x3b) {
-        secs = 0x3b;
-    }
-    u32 mins = static_cast<u32>(minutes);
-    if (mins > 0x63) {
-        mins = 0x63;
-    }
+    u32 secs = Min(static_cast<u32>(seconds), 0x3bu);
+    u32 mins = Min(static_cast<u32>(minutes), 0x63u);
     u32 cur = static_cast<u32>(m_currentMs);
     u32 carry = 0;
     u32 onClock;

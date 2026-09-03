@@ -300,14 +300,8 @@ static inline RECT TileNeighborhood(CGrunt* grunt) {
     i32 halfBox = grunt->m_defenderRadius + grunt->m_reachRect.right + 1;
     Coord tile;
     grunt->GetScreenTile(&tile);
-    RECT box;
-    SetRect(
-        &box,
-        tile.m_x - halfBox,
-        tile.m_y - halfBox,
-        tile.m_x + halfBox + 1,
-        tile.m_y + halfBox + 1
-    );
+    CRect
+        box(tile.m_x - halfBox, tile.m_y - halfBox, tile.m_x + halfBox + 1, tile.m_y + halfBox + 1);
     return box;
 }
 
@@ -339,7 +333,7 @@ CGrunt* CTriggerMgr::FindNearestEnemy(CGrunt* w) {
             } while (--j != 0);
         }
     }
-    RECT rc = TileNeighborhood(w);
+    CRect rc = TileNeighborhood(w);
     if (best) {
         Coord bestPos;
         best->GetScreenTile(&bestPos);

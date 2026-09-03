@@ -14,6 +14,14 @@ struct Coord {
     i32 m_x;
     i32 m_y;
 
+    const i32& operator[](i32 index) const {
+        return *(&m_x + index);
+    }
+
+    i32& operator[](i32 index) {
+        return *(&m_x + index);
+    }
+
     i32 operator==(const Coord& other) const {
         if (m_x != other.m_x) {
             return 0;
@@ -23,6 +31,11 @@ struct Coord {
 
     i32 operator!=(const Coord& other) const {
         return !(*this == other);
+    }
+
+    i32 NearlyEquals(const Coord& other, i32 radius) const {
+        Coord delta = *this - other;
+        return delta.Dot(delta) < radius * radius;
     }
 
     Coord operator-() const {
@@ -63,6 +76,10 @@ struct Coord {
 
     Coord operator*(i32 scale) const {
         return Coord(m_x * scale, m_y * scale);
+    }
+
+    friend Coord operator*(i32 scale, const Coord& value) {
+        return value * scale;
     }
 
     Coord operator/(i32 scale) const {

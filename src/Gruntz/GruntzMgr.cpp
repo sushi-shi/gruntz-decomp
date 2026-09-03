@@ -28,6 +28,7 @@
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/Demo.h>
 #include <Gruntz/Dialogs.h>
+#include <Gruntz/DoubleVector.h>
 #include <Gruntz/ErrorStringId.h>
 #include <Gruntz/FaderMgr.h>
 #include <Gruntz/FontConfig.h>
@@ -87,6 +88,7 @@
 #include <Io/FileStream.h>
 #include <Io/MoviePlayer.h>
 #include <Io/SaveGame.h>
+#include <Lith/BDefs.h>
 #include <Net/NetLobby.h>
 #include <Net/NetMgr.h>
 #include <Pix16.h>
@@ -308,10 +310,9 @@ void CGruntzMgr::Close() {
         m_settings->Set("Scroll Speed", m_scrollSpeed);
         m_settings->Set("Easy Mode", m_isEasyMode);
         Resolution res = RES_640X480;
-        if (m_savedModeSize.cx == DISPLAY_WIDTH_1024 && m_savedModeSize.cy == DISPLAY_HEIGHT_768) {
+        if (CSize(m_savedModeSize) == CSize(DISPLAY_WIDTH_1024, DISPLAY_HEIGHT_768)) {
             res = RES_1024X768;
-        } else if (m_savedModeSize.cx == DISPLAY_WIDTH_800
-                   && m_savedModeSize.cy == DISPLAY_HEIGHT_600) {
+        } else if (CSize(m_savedModeSize) == CSize(DISPLAY_WIDTH_800, DISPLAY_HEIGHT_600)) {
             res = RES_800X600;
         }
         m_settings->Set("Resolution", IDX(res));
@@ -902,7 +903,7 @@ i32 CDDrawDeviceManager::GetCapsChecked() {
     return hr;
 }
 
-#define IS_STANDARD_VIDEO_MODE (m_modeSize.cx == SCREEN_W_PX && m_modeSize.cy == SCREEN_H_PX)
+#define IS_STANDARD_VIDEO_MODE (CSize(m_modeSize) == CSize(SCREEN_W_PX, SCREEN_H_PX))
 
 RVA(0x0008ddd0, 0x7e)
 i32 CGruntzMgr::RestoreVideoMode(b32 save) {
@@ -922,7 +923,7 @@ i32 CGruntzMgr::RestoreVideoMode(b32 save) {
 RVA(0x0008de70, 0x61)
 i32 CGruntzMgr::CheckSavedMode() {
 
-    if ((m_modeSize.cx == m_savedModeSize.cx && m_modeSize.cy == m_savedModeSize.cy)
+    if ((CSize(m_modeSize) == CSize(m_savedModeSize))
         || SetVideoMode(m_savedModeSize.cx, m_savedModeSize.cy, true) || RestoreVideoMode(true)) {
         return 1;
     }
@@ -1052,8 +1053,7 @@ i32 CGruntzMgr::TryPreviousResolution() {
 
 RVA(0x0008e3a0, 0x94)
 RECT* CGruntzMgr::GetRect(RECT* out) {
-    RECT local;
-    SetRect(&local, 0, 0, 0x27f, 0x1df);
+    CRect local(0, 0, 0x27f, 0x1df);
     if (!m_world) {
         *out = local;
         return out;
@@ -1686,23 +1686,21 @@ void CGruntzMgr::RecomputeViewScale() {
     }
     CGameLevel* view = m_world->m_level;
     LevelCoordRect ext = view->m_viewportRect;
-    i32 iw = ext.right - ext.left + 1;
-    i32 ih = ext.bottom - ext.top + 1;
-    float fw = static_cast<float>(iw);
-    float fh = static_cast<float>(ih);
+    CSize viewSize = CRect(ext).Size() + CSize(1, 1);
+    FloatVector2 floatViewSize(static_cast<float>(viewSize.cx), static_cast<float>(viewSize.cy));
 
-    view->m_defaultActiveRegionSize.w = static_cast<i32>((fw * 1.4f));
-    view->m_defaultActiveRegionSize.h = static_cast<i32>((fh * 1.4f));
+    Coord activeRegionSize = (floatViewSize * 1.4f).ToCoord();
+    view->m_defaultActiveRegionSize.Init(activeRegionSize.m_x, activeRegionSize.m_y);
     view->MainPlaneNotify();
 
     view = m_world->m_level;
-    view->m_largeActiveRegionSize.w = static_cast<i32>((fw * 5.3f));
-    view->m_largeActiveRegionSize.h = static_cast<i32>((fh * 5.3f));
+    activeRegionSize = (floatViewSize * 5.3f).ToCoord();
+    view->m_largeActiveRegionSize.Init(activeRegionSize.m_x, activeRegionSize.m_y);
     view->MainPlaneNotify();
 
     view = m_world->m_level;
-    view->m_smallActiveRegionSize.w = static_cast<i32>((fw * 1.12f));
-    view->m_smallActiveRegionSize.h = static_cast<i32>((fh * 1.12f));
+    activeRegionSize = (floatViewSize * 1.12f).ToCoord();
+    view->m_smallActiveRegionSize.Init(activeRegionSize.m_x, activeRegionSize.m_y);
     view->MainPlaneNotify();
 
     CGameLevel* v = m_world->m_level;
@@ -2815,7 +2813,7 @@ i32 CGruntzMgr::ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, ScanCb c
     if (cb == NULL) {
         return 0;
     }
-    i32 r2 = radius * radius;
+    i32 r2 = SQR(radius);
     i32 count = 0;
     CDDrawChildGroup* children = m_world->m_childGroup;
     POSITION pos = children->m_list.GetHeadPosition();
@@ -2848,9 +2846,7 @@ i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, RECT* rect, i32 mask, Scan
         return 0;
     }
     Coord offset(offX, offY);
-    RECT box;
-    SetRect(
-        &box,
+    CRect box(
         r->left + offset.m_x,
         r->top + offset.m_y,
         r->right + offset.m_x,

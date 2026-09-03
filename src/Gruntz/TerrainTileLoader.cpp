@@ -250,12 +250,17 @@ i32 CTriggerMgr::LoadTileArrivalFx(
         case PICKUP_SPY:
             if (cue == WWDDRAW_TOOL_APPLIES) {
                 for (i32 radius = 1; radius <= 2; radius++) {
-                    i32 topY = tileY - radius;
-                    i32 bottomY = tileY + radius;
+                    CRect revealBounds(
+                        tileX - radius,
+                        tileY - radius,
+                        tileX + radius,
+                        tileY + radius
+                    );
                     for (i32 scanX = tileX - radius; scanX <= tileX + radius; scanX++) {
-                        if (state->m_tileTriggers->SetCell(scanX, topY, playerIndex) != 0
+                        if (state->m_tileTriggers->SetCell(scanX, revealBounds.top, playerIndex)
+                                != 0
                             && playerIndex == g_curPlayer) {
-                            Coord fx(scanX, topY);
+                            Coord fx(scanX, revealBounds.top);
                             TileCenter(&fx);
                             CWwdSpriteObject* light = m_world->m_childGroup->CreateSprite(
                                 0,
@@ -273,9 +278,10 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                         AddrWord<char> objectKey;
                         objectKey.m_word = 0;
                         if (static_cast<u32>(scanX) < g_gameReg->m_tileGrid->m_width
-                            && static_cast<u32>(topY) < g_gameReg->m_tileGrid->m_height) {
+                            && static_cast<u32>(revealBounds.top)
+                                   < g_gameReg->m_tileGrid->m_height) {
                             objectKey.m_word =
-                                g_gameReg->m_tileGrid->m_rows[topY][scanX].m_objectId;
+                                g_gameReg->m_tileGrid->m_rows[revealBounds.top][scanX].m_objectId;
                         }
                         if (objectKey.m_word != 0) {
                             CWwdGameObject* mapped = NULL;
@@ -298,7 +304,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                     icon->m_object->m_score = playerIndex;
                                     icon->HandleInput();
                                     if (playerIndex == g_curPlayer) {
-                                        Coord fx(scanX, topY);
+                                        Coord fx(scanX, revealBounds.top);
                                         TileCenter(&fx);
                                         CWwdSpriteObject* light =
                                             m_world->m_childGroup->CreateSprite(
@@ -334,9 +340,10 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             }
                         }
 
-                        if (state->m_tileTriggers->SetCell(scanX, bottomY, playerIndex) != 0
+                        if (state->m_tileTriggers->SetCell(scanX, revealBounds.bottom, playerIndex)
+                                != 0
                             && playerIndex == g_curPlayer) {
-                            Coord fx(scanX, bottomY);
+                            Coord fx(scanX, revealBounds.bottom);
                             TileCenter(&fx);
                             CWwdSpriteObject* light = m_world->m_childGroup->CreateSprite(
                                 0,
@@ -353,9 +360,11 @@ i32 CTriggerMgr::LoadTileArrivalFx(
 
                         objectKey.m_word = 0;
                         if (static_cast<u32>(scanX) < g_gameReg->m_tileGrid->m_width
-                            && static_cast<u32>(bottomY) < g_gameReg->m_tileGrid->m_height) {
+                            && static_cast<u32>(revealBounds.bottom)
+                                   < g_gameReg->m_tileGrid->m_height) {
                             objectKey.m_word =
-                                g_gameReg->m_tileGrid->m_rows[bottomY][scanX].m_objectId;
+                                g_gameReg->m_tileGrid->m_rows[revealBounds.bottom][scanX]
+                                    .m_objectId;
                         }
                         if (objectKey.m_word != 0) {
                             CWwdGameObject* mapped = NULL;
@@ -378,7 +387,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                     icon->m_object->m_score = playerIndex;
                                     icon->HandleInput();
                                     if (playerIndex == g_curPlayer) {
-                                        Coord fx(scanX, bottomY);
+                                        Coord fx(scanX, revealBounds.bottom);
                                         TileCenter(&fx);
                                         CWwdSpriteObject* light =
                                             m_world->m_childGroup->CreateSprite(
@@ -415,12 +424,11 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                         }
                     }
 
-                    i32 leftX = tileX - radius;
-                    i32 rightX = tileX + radius;
-                    for (i32 scanY = topY + 1; scanY < bottomY; scanY++) {
-                        if (state->m_tileTriggers->SetCell(leftX, scanY, playerIndex) != 0
+                    for (i32 scanY = revealBounds.top + 1; scanY < revealBounds.bottom; scanY++) {
+                        if (state->m_tileTriggers->SetCell(revealBounds.left, scanY, playerIndex)
+                                != 0
                             && g_curPlayer == playerIndex) {
-                            Coord fx(leftX, scanY);
+                            Coord fx(revealBounds.left, scanY);
                             TileCenter(&fx);
                             CWwdSpriteObject* light = m_world->m_childGroup->CreateSprite(
                                 0,
@@ -437,10 +445,10 @@ i32 CTriggerMgr::LoadTileArrivalFx(
 
                         AddrWord<char> objectKey;
                         objectKey.m_word = 0;
-                        if (static_cast<u32>(leftX) < g_gameReg->m_tileGrid->m_width
+                        if (static_cast<u32>(revealBounds.left) < g_gameReg->m_tileGrid->m_width
                             && static_cast<u32>(scanY) < g_gameReg->m_tileGrid->m_height) {
                             objectKey.m_word =
-                                g_gameReg->m_tileGrid->m_rows[scanY][leftX].m_objectId;
+                                g_gameReg->m_tileGrid->m_rows[scanY][revealBounds.left].m_objectId;
                         }
                         if (objectKey.m_word != 0) {
                             CWwdGameObject* mapped = NULL;
@@ -463,7 +471,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                     icon->m_object->m_score = playerIndex;
                                     icon->HandleInput();
                                     if (playerIndex == g_curPlayer) {
-                                        Coord fx(leftX, scanY);
+                                        Coord fx(revealBounds.left, scanY);
                                         TileCenter(&fx);
                                         CWwdSpriteObject* light =
                                             m_world->m_childGroup->CreateSprite(
@@ -499,9 +507,10 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                             }
                         }
 
-                        if (state->m_tileTriggers->SetCell(rightX, scanY, playerIndex) != 0
+                        if (state->m_tileTriggers->SetCell(revealBounds.right, scanY, playerIndex)
+                                != 0
                             && playerIndex == g_curPlayer) {
-                            Coord fx(rightX, scanY);
+                            Coord fx(revealBounds.right, scanY);
                             TileCenter(&fx);
                             CWwdSpriteObject* light = m_world->m_childGroup->CreateSprite(
                                 0,
@@ -517,10 +526,10 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                         }
 
                         objectKey.m_word = 0;
-                        if (static_cast<u32>(rightX) < g_gameReg->m_tileGrid->m_width
+                        if (static_cast<u32>(revealBounds.right) < g_gameReg->m_tileGrid->m_width
                             && static_cast<u32>(scanY) < g_gameReg->m_tileGrid->m_height) {
                             objectKey.m_word =
-                                g_gameReg->m_tileGrid->m_rows[scanY][rightX].m_objectId;
+                                g_gameReg->m_tileGrid->m_rows[scanY][revealBounds.right].m_objectId;
                         }
                         if (objectKey.m_word != 0) {
                             CWwdGameObject* mapped = NULL;
@@ -543,7 +552,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                     icon->m_object->m_score = playerIndex;
                                     icon->HandleInput();
                                     if (playerIndex == g_curPlayer) {
-                                        Coord fx(rightX, scanY);
+                                        Coord fx(revealBounds.right, scanY);
                                         TileCenter(&fx);
                                         CWwdSpriteObject* light =
                                             m_world->m_childGroup->CreateSprite(

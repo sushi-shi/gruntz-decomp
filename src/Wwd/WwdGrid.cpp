@@ -13,7 +13,7 @@
 RVA(0x001915c0, 0x15d)
 i32 CWwdGrid::Setup(RECT rect, i32 cellW, i32 cellH) {
     m_count = 0;
-    m_bounds = rect;
+    m_bounds.Init(rect.left, rect.top, rect.right, rect.bottom);
     CRect normalized = rect;
     normalized.NormalizeRect();
     m_extent = normalized.Size();
@@ -59,9 +59,11 @@ void CWwdGrid::FreeBuckets() {
 
 RVA(0x00191840, 0x48)
 i32 CWwdGrid::Add(WwdRegion* r) {
-    i32 row = (r->m_position.m_y - m_bounds.m_minY) >> m_cellShift.cy;
-    i32 col = (r->m_position.m_x - m_bounds.m_minX) >> m_cellShift.cx;
-    BucketHead* bucket = m_buckets + (row * m_gridSize.cx + col);
+    Coord cell(
+        (r->m_position.m_x - m_bounds.m_minX) >> m_cellShift.cx,
+        (r->m_position.m_y - m_bounds.m_minY) >> m_cellShift.cy
+    );
+    BucketHead* bucket = m_buckets + (cell.m_y * m_gridSize.cx + cell.m_x);
     r->m_bucket = bucket;
     bucket->InsertFirst(r);
     ++m_count;

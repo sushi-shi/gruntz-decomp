@@ -593,7 +593,7 @@ void CMoviePlayer::Snapshot(HWND hWnd) {
 
 RVA(0x0017cdf0, 0x1c6)
 i32 CMoviePlayer::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
-    RECT dst, src;
+    CRect dst, src;
     if (m_destRect) {
         dst = *m_destRect;
     } else {
@@ -604,7 +604,7 @@ i32 CMoviePlayer::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
             nRows * m_tilesDown + row * m_tilesDown + m_origin.y
         );
     }
-    SetRect(&src, col, row, col + nCols, row + nRows);
+    src.SetRect(col, row, col + nCols, row + nRows);
 
     for (;;) {
         i32 hr;

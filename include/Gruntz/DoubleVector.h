@@ -25,6 +25,14 @@ struct FloatVector2 {
         y = static_cast<float>(value.m_y);
     }
 
+    const float& operator[](i32 index) const {
+        return *(&x + index);
+    }
+
+    float& operator[](i32 index) {
+        return *(&x + index);
+    }
+
     Coord ToCoord() const {
         return Coord(static_cast<i32>(x), static_cast<i32>(y));
     }
@@ -35,6 +43,11 @@ struct FloatVector2 {
 
     i32 operator!=(const FloatVector2& other) const {
         return !(*this == other);
+    }
+
+    i32 NearlyEquals(const FloatVector2& other, float radius) const {
+        FloatVector2 delta = *this - other;
+        return delta.Dot(delta) < radius * radius;
     }
 
     FloatVector2 operator-() const {
@@ -75,6 +88,10 @@ struct FloatVector2 {
 
     FloatVector2 operator*(float scale) const {
         return FloatVector2(x * scale, y * scale);
+    }
+
+    friend FloatVector2 operator*(float scale, const FloatVector2& value) {
+        return value * scale;
     }
 
     FloatVector2 operator/(float scale) const {
@@ -176,6 +193,14 @@ struct DoubleVector2 {
         y = static_cast<double>(value.m_y);
     }
 
+    const double& operator[](i32 index) const {
+        return *(&x + index);
+    }
+
+    double& operator[](i32 index) {
+        return *(&x + index);
+    }
+
     Coord ToCoord() const {
         return Coord(static_cast<i32>(x), static_cast<i32>(y));
     }
@@ -186,6 +211,11 @@ struct DoubleVector2 {
 
     i32 operator!=(const DoubleVector2& other) const {
         return !(*this == other);
+    }
+
+    i32 NearlyEquals(const DoubleVector2& other, double radius) const {
+        DoubleVector2 delta = *this - other;
+        return delta.Dot(delta) < radius * radius;
     }
 
     DoubleVector2 operator-() const {
@@ -226,6 +256,10 @@ struct DoubleVector2 {
 
     DoubleVector2 operator*(double scale) const {
         return DoubleVector2(x * scale, y * scale);
+    }
+
+    friend DoubleVector2 operator*(double scale, const DoubleVector2& value) {
+        return value * scale;
     }
 
     DoubleVector2 operator/(double scale) const {
@@ -326,6 +360,14 @@ struct DoubleVector3 {
         z = c;
     }
 
+    const double& operator[](i32 index) const {
+        return *(&x + index);
+    }
+
+    double& operator[](i32 index) {
+        return *(&x + index);
+    }
+
     double Dot(const DoubleVector3& other) const {
         return x * other.x + y * other.y + z * other.z;
     }
@@ -340,6 +382,10 @@ struct DoubleVector3 {
 
     double LengthSqr() const {
         return MagSqr();
+    }
+
+    double LengthSquared() const {
+        return LengthSqr();
     }
 
     double Length() const {
@@ -374,6 +420,27 @@ struct DoubleVector3 {
         return !(*this == other);
     }
 
+    i32 NearlyEquals(const DoubleVector3& other, double radius = 0.0) const {
+        DoubleVector3 delta = *this - other;
+        return delta.Dot(delta) <= radius * radius;
+    }
+
+    i32 operator>(const DoubleVector3& other) const {
+        return x > other.x && y > other.y && z > other.z;
+    }
+
+    i32 operator<(const DoubleVector3& other) const {
+        return x < other.x && y < other.y && z < other.z;
+    }
+
+    i32 operator>=(const DoubleVector3& other) const {
+        return x >= other.x && y >= other.y && z >= other.z;
+    }
+
+    i32 operator<=(const DoubleVector3& other) const {
+        return x <= other.x && y <= other.y && z <= other.z;
+    }
+
     DoubleVector3 operator-() const {
         return DoubleVector3(-x, -y, -z);
     }
@@ -397,6 +464,18 @@ struct DoubleVector3 {
         y -= other.y;
         z -= other.z;
         return *this;
+    }
+
+    void operator+=(double scalar) {
+        x += scalar;
+        y += scalar;
+        z += scalar;
+    }
+
+    void operator-=(double scalar) {
+        x -= scalar;
+        y -= scalar;
+        z -= scalar;
     }
 
     const DoubleVector3& operator*=(double scale) {
@@ -426,9 +505,21 @@ struct DoubleVector3 {
         return DoubleVector3(x * scale, y * scale, z * scale);
     }
 
+    friend DoubleVector3 operator*(double scale, const DoubleVector3& value) {
+        return value * scale;
+    }
+
+    DoubleVector3 operator*(const DoubleVector3& other) const {
+        return DoubleVector3(x * other.x, y * other.y, z * other.z);
+    }
+
     DoubleVector3 operator/(double scale) const {
         double inverse = 1.0 / scale;
         return DoubleVector3(x * inverse, y * inverse, z * inverse);
+    }
+
+    DoubleVector3 operator/(const DoubleVector3& other) const {
+        return DoubleVector3(x / other.x, y / other.y, z / other.z);
     }
 
     double Dist(const DoubleVector3& other) const {

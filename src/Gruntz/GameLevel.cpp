@@ -78,19 +78,12 @@ CGameLevel::CGameLevel(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
     : CWapObj(owner, id, flags, CWapObj::NO_SEED) {
 
     m_maxStep.Set(0x40, 0x40);
-    m_defaultActiveGridCellSize.h = 250;
-    m_largeActiveGridCellSize.Init(1000, 1000);
-    m_smallActiveGridCellSize.w = 250;
+    SetSpatialDefaults();
 
     m_viewportRect.left = COORD_UNSET;
     m_mainPlane = NULL;
     m_mainIndex = -1;
     m_checksum = 0;
-    m_defaultActiveGridCellSize.w = 500;
-    m_smallActiveGridCellSize.h = 125;
-    m_defaultActiveRegionSize.Init(1600, 1200);
-    m_largeActiveRegionSize.Init(2560, 1920);
-    m_smallActiveRegionSize.Init(768, 576);
 }
 
 RVA(0x0015cdf0, 0xb8)

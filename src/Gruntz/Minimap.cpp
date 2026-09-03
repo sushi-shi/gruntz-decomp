@@ -273,11 +273,7 @@ i32 CMinimap::Draw(CDDrawSurfacePair* target, RECT* bounds) {
     ScreenTile(&viewHigh);
     CRect box(viewLow.m_x, viewLow.m_y, viewHigh.m_x, viewHigh.m_y);
     if (m_cellScale != 1) {
-
-        box.left *= m_cellScale;
-        box.top *= m_cellScale;
-        box.right *= m_cellScale;
-        box.bottom *= m_cellScale;
+        box = box.MulDiv(m_cellScale, 1);
         i32 extension = m_cellScale - 1;
         box.InflateRect(0, 0, extension, extension);
     }
@@ -291,7 +287,7 @@ i32 CMinimap::Draw(CDDrawSurfacePair* target, RECT* bounds) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000a3a20, 0xe2)
 void CMinimap::DrawBorderRaw(RECT* rect, char* pixels, i32 color) {
-    CSize borderSize(rect->right - rect->left + 1, rect->bottom - rect->top + 1);
+    CSize borderSize = CRect(*rect).Size() + CSize(1, 1);
 
     u16* topPixels = Pix16(pixels + PixOffset(m_surface, rect->left, rect->top));
     for (i32 topX = 0; topX < borderSize.cx; topX++) {
@@ -328,7 +324,7 @@ void CMinimap::DrawBorder(RECT* rect, CDDrawSurfacePair* target, i32 color) {
     if (pixels == NULL) {
         return;
     }
-    CSize borderSize(rect->right - rect->left + 1, rect->bottom - rect->top + 1);
+    CSize borderSize = CRect(*rect).Size() + CSize(1, 1);
 
     u16* topPixels =
         Pix16(pixels + rect->top * surface->m_pitch + rect->left * surface->m_bytesPerPixel);

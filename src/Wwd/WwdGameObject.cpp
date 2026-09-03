@@ -125,11 +125,11 @@ void CWwdSpriteObject::BltDirtyEx(
     CDDrawSurfacePair* restoreSrc
 ) {
     if (m_dirty.m_armed != -1 && m_shadow.m_armed != -1) {
-        RECT ir;
-        if (IntersectRect(&ir, &m_dirty.m_rect, &m_shadow.m_rect)) {
-            UnionRect(&ir, &m_dirty.m_rect, &m_shadow.m_rect);
+        CRect ir;
+        if (ir.IntersectRect(&m_dirty.m_rect, &m_shadow.m_rect)) {
+            ir.UnionRect(&m_dirty.m_rect, &m_shadow.m_rect);
             Coord position(ir.left, ir.top);
-            CSize size(ir.right - ir.left + 1, ir.bottom - ir.top + 1);
+            CSize size = ir.Size() + CSize(1, 1);
             dst->BlitDirtyRect(src, position, size);
         } else {
             dst->BlitDirtyRect(src, m_dirty.m_lastPosition, m_dirty.m_size);
@@ -149,11 +149,11 @@ void CWwdSpriteObject::BltDirtyRegions(
     CDDrawSurfacePair* restoreSrc
 ) {
     if (m_dirty.m_armed != -1 && m_shadow.m_armed != -1) {
-        RECT ir;
-        if (IntersectRect(&ir, &m_dirty.m_rect, &m_shadow.m_rect)) {
-            UnionRect(&ir, &m_dirty.m_rect, &m_shadow.m_rect);
+        CRect ir;
+        if (ir.IntersectRect(&m_dirty.m_rect, &m_shadow.m_rect)) {
+            ir.UnionRect(&m_dirty.m_rect, &m_shadow.m_rect);
             Coord position(ir.left, ir.top);
-            CSize size(ir.right - ir.left + 1, ir.bottom - ir.top + 1);
+            CSize size = ir.Size() + CSize(1, 1);
             dst->BlitDirtyRect(src, position, size);
         } else {
             dst->BlitDirtyRect(src, m_dirty.m_lastPosition, m_dirty.m_size);
@@ -173,9 +173,7 @@ i32 CWwdSpriteObject::IntersectsViewport() {
     if (m_frameImage == NULL) {
         return 0;
     }
-    RECT bounds;
-    SetRect(
-        &bounds,
+    CRect bounds(
         m_screenPosition.m_x - m_frameImage->m_anchor.x,
         m_screenPosition.m_y - m_frameImage->m_anchor.y,
         m_screenPosition.m_x + m_frameImage->m_anchor.x,
@@ -1038,7 +1036,8 @@ i32 CDDrawWorker::GetMemoryUsage(i32 raw) {
     for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
         CImage* frame = GetAt(i);
         if (frame) {
-            i32 size = frame->m_height * frame->m_width;
+            CSize frameSize(frame->m_width, frame->m_height);
+            i32 size = frameSize.cx * frameSize.cy;
             if (frame->m_surface && frame->m_surface->m_bitDepth == BPP_RGB_16) {
                 size += size;
             }

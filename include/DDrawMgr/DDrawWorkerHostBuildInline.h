@@ -9,10 +9,7 @@
         LevelCoordRect local;                                                                      \
         CopyRect((&local), (coords));                                                              \
         m_viewportRect = local;                                                                    \
-        m_viewportSize = CSize(                                                                    \
-            m_viewportRect.right - m_viewportRect.left + 1,                                        \
-            m_viewportRect.bottom - m_viewportRect.top + 1                                         \
-        );                                                                                         \
+        m_viewportSize = CRect(m_viewportRect).Size() + CSize(1, 1);                               \
         m_viewHalfSize = CSize(m_viewportSize.cx / 2, m_viewportSize.cy / 2);                      \
         UpdatePlaneViewRect();                                                                     \
     }

@@ -3,6 +3,7 @@
 #include <DDrawMgr/DDrawSurfacePair.h>
 
 #include <Mfc.h>
+#include <MfcWin.h>
 
 #include <AddrWord.h>
 #include <DDrawMgr/AniRecord.h>
@@ -149,16 +150,15 @@ i32 CDDrawSurfacePair::InitFromSurface(CDDSurface* src) {
     if (src == NULL) {
         return 0;
     }
-    i32 w = src->m_width;
+    CSize surfaceSize(src->m_width, src->m_height);
     ColorDepth bpp = src->m_bitDepth;
-    i32 h = src->m_height;
-    if (w <= 0 || h <= 0) {
+    if (surfaceSize.cx <= 0 || surfaceSize.cy <= 0) {
         return 0;
     }
-    m_width = w;
-    m_height = h;
+    m_width = surfaceSize.cx;
+    m_height = surfaceSize.cy;
     m_bpp = bpp;
-    m_srcRect = MakeRect(0, 0, w, h);
+    m_srcRect = MakeRect(0, 0, surfaceSize.cx, surfaceSize.cy);
     m_id = 0x63;
     m_surface = src;
     m_ownsSurface = false;
@@ -228,12 +228,12 @@ void CDDrawSurfacePair::DrawBox(RECT* rect, i32 color) {
 
     u8 c = static_cast<u8>(color);
     i32 left = rect->left;
-    i32 w = rect->right - left + 1;
+    CSize borderSize = CRect(*rect).Size() + CSize(1, 1);
 
     CDDSurface* surface = m_surface;
     if (m_bpp == BPP_RGB_16) {
         i32 offTop = surface->m_pitch * rect->top + surface->m_bytesPerPixel * left;
-        i32 n = 2 * w;
+        i32 n = 2 * borderSize.cx;
         if (n > 0) {
             memset(base + offTop, color, n);
         }
@@ -245,20 +245,19 @@ void CDDrawSurfacePair::DrawBox(RECT* rect, i32 color) {
         }
     } else {
         i32 offTop = surface->m_pitch * rect->top + surface->m_bytesPerPixel * left;
-        if (w > 0) {
-            memset(base + offTop, color, w);
+        if (borderSize.cx > 0) {
+            memset(base + offTop, color, borderSize.cx);
         }
         CDDSurface* bottomSurface = m_surface;
         i32 offBot =
             bottomSurface->m_pitch * rect->bottom + bottomSurface->m_bytesPerPixel * rect->left;
-        if (w > 0) {
-            memset(base + offBot, color, w);
+        if (borderSize.cx > 0) {
+            memset(base + offBot, color, borderSize.cx);
         }
     }
 
     {
-        i32 h = rect->bottom - rect->top + 1;
-        for (i32 y = 0; y < h; ++y) {
+        for (i32 y = 0; y < borderSize.cy; ++y) {
             if (m_bpp == BPP_RGB_16) {
                 i32 lo =
                     (rect->top + y) * m_surface->m_pitch + m_surface->m_bytesPerPixel * rect->left;

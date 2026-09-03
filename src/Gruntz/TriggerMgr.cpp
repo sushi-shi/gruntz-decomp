@@ -107,9 +107,7 @@ void CTriggerMgr::HudRect(RECT r, b32 selectionReset) {
             CGrunt* g = m_units[i * TM_UNITS_PER_PLAYER + j];
             if (g) {
                 Coord position = g->m_object->ScreenPos();
-                RECT box;
-                SetRect(
-                    &box,
+                CRect box(
                     position.m_x - 0xf,
                     position.m_y - 0xf,
                     position.m_x + 0xf,
@@ -140,6 +138,7 @@ void CTriggerMgr::HudRect(RECT r, b32 selectionReset) {
 // @early-stop
 RVA(0x00078260, 0x165)
 i32 CTriggerMgr::RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelection) {
+    Coord identity(playerIndex, unitIndex);
     if (fromSelection != 0) {
         CPtrList* list = m_selLists;
         i32 k = 10;
@@ -148,7 +147,7 @@ i32 CTriggerMgr::RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelect
             while (pos != NULL) {
                 POSITION cur = pos;
                 Coord* p = static_cast<Coord*>(list->GetNext(pos));
-                if (p->m_x == playerIndex && p->m_y == unitIndex) {
+                if (*p == identity) {
                     CoordPoolNode* slot = g_coordPool.NodeOf(p);
                     slot->m_next = g_coordPool.m_freeHead;
                     g_coordPool.m_freeHead = slot;
@@ -163,7 +162,7 @@ i32 CTriggerMgr::RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelect
     while (pos != NULL) {
         POSITION cur = pos;
         Coord* p = static_cast<Coord*>(m_recList.GetNext(pos));
-        if (p->m_x == playerIndex && p->m_y == unitIndex) {
+        if (*p == identity) {
             if (m_recList.GetCount() == 1) {
                 StopPendingFx();
             }
@@ -225,10 +224,11 @@ void CTriggerMgr::ResetAll() {
 
 RVA(0x000784d0, 0x3a)
 i32 CTriggerMgr::RecordListHas(i32 playerIndex, i32 unitIndex) {
+    Coord identity(playerIndex, unitIndex);
     POSITION pos = m_recList.GetHeadPosition();
     while (pos != NULL) {
         Coord* p = static_cast<Coord*>(m_recList.GetNext(pos));
-        if (p->m_x == playerIndex && p->m_y == unitIndex) {
+        if (*p == identity) {
             return 1;
         }
     }
@@ -382,7 +382,7 @@ i32 CTriggerMgr::LoadCameraSprite() {
         return 0;
     }
 
-    tagSIZE viewportSize = g_gameReg->m_modeSize;
+    CSize viewportSize = g_gameReg->m_modeSize;
     StatusBarDock pos = (static_cast<CPlay*>(g_gameReg->m_curState))->m_statusBar->m_position;
 
     Coord cameraPosition;
@@ -648,30 +648,29 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                     CDDrawWorkerHost* plane = m_world->m_level->m_mainPlane;
                     CPoint destination(position.m_x, position.m_y);
                     WwdPlaneFlags wflags = static_cast<WwdPlaneFlags>(plane->m_flags);
+                    CSize planeSize = plane->m_planePixelSize;
                     if (HAS(wflags, WWD_PLANE_FLAG_WRAP_X)) {
-                        i32 w = plane->m_planePixelSize.cx;
                         if (destination.x < 0) {
-                            destination.x += w;
-                        } else if (destination.x >= w) {
-                            destination.x -= w;
+                            destination.x += planeSize.cx;
+                        } else if (destination.x >= planeSize.cx) {
+                            destination.x -= planeSize.cx;
                         }
-                        if (plane->m_planeViewRect.right >= w
+                        if (plane->m_planeViewRect.right >= planeSize.cx
                             && destination.x < plane->m_planeViewRect.left
-                            && destination.x <= plane->m_planeViewRect.right - w) {
-                            destination.x += w;
+                            && destination.x <= plane->m_planeViewRect.right - planeSize.cx) {
+                            destination.x += planeSize.cx;
                         }
                     }
                     if (HAS(wflags, WWD_PLANE_FLAG_WRAP_Y)) {
-                        i32 h = plane->m_planePixelSize.cy;
                         if (destination.y < 0) {
-                            destination.y += h;
-                        } else if (destination.y >= h) {
-                            destination.y -= h;
+                            destination.y += planeSize.cy;
+                        } else if (destination.y >= planeSize.cy) {
+                            destination.y -= planeSize.cy;
                         }
-                        if (plane->m_planeViewRect.bottom >= h
+                        if (plane->m_planeViewRect.bottom >= planeSize.cy
                             && destination.y < plane->m_planeViewRect.top
-                            && destination.y <= plane->m_planeViewRect.bottom - h) {
-                            destination.y += h;
+                            && destination.y <= plane->m_planeViewRect.bottom - planeSize.cy) {
+                            destination.y += planeSize.cy;
                         }
                     }
                     destination.Offset(
@@ -1941,8 +1940,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
     Coord center(cx, cy);
     Coord centerTile = center;
     ScreenTile(&centerTile);
-    RECT rect;
-    SetRect(&rect, centerTile.m_x - r, centerTile.m_y - r, centerTile.m_x + r, centerTile.m_y + r);
+    CRect rect(centerTile.m_x - r, centerTile.m_y - r, centerTile.m_x + r, centerTile.m_y + r);
 
     POSITION pos = m_baseList.GetHeadPosition();
     while (pos != NULL) {
@@ -2602,12 +2600,13 @@ i32 CTriggerMgr::SelectionListFind(i32 playerIndex, i32 unitIndex) {
         return 0;
     }
     i32 result = 0;
+    Coord identity(playerIndex, unitIndex);
     CPtrList* list = m_selLists;
     for (i32 i = 0; i < 10; i++, list++) {
         POSITION pos = list->GetHeadPosition();
         while (pos != NULL) {
             Coord* payload = static_cast<Coord*>(list->GetNext(pos));
-            if (payload->m_x == playerIndex && payload->m_y == unitIndex) {
+            if (*payload == identity) {
                 if (result != 0) {
                     return 10;
                 }

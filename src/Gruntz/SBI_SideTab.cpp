@@ -85,7 +85,7 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
             frame = DDRAW_WORKER_FRAME_AT_UNCHECKED(worker, 1);
         }
         m_topFrame = frame;
-        drawX = parent->m_barRect.left - (rc.right - rc.left) / 2;
+        drawX = parent->m_barRect.left - CRect(rc).Width() / 2;
         m_bottomFrameDy = 1;
     } else {
         CDDrawWorker* worker;
@@ -104,7 +104,7 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
             frame = DDRAW_WORKER_FRAME_AT_UNCHECKED(worker, 1);
         }
         m_topFrame = frame;
-        drawX = (rc.right - rc.left) / 2 + parent->m_barRect.right;
+        drawX = CRect(rc).Width() / 2 + parent->m_barRect.right;
         m_bottomFrameDy = -1;
     }
     m_drawPosition = Coord(drawX, colIndex * 0x12 + 0xd1);

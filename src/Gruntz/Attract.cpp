@@ -422,9 +422,9 @@ i32 CState::InputVirtual() {
     }
     if (g_playActive == false) {
         CString text;
-        RECT rect;
+        CRect rect;
         text.LoadString(0x81a9);
-        tagSIZE mode = m_mgr->GetModeSize();
+        CSize mode = m_mgr->GetModeSize();
         rect = MakeRect(0, 0, mode.cx, mode.cy);
         DrawTextToFrontSurface(m_world, &text, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
     }

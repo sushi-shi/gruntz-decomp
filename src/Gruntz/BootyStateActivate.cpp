@@ -392,10 +392,9 @@ i32 CBootyState::ShowSecretBonusMessage() {
         if (!LoadTitlePage("multi", 0, 0, 0, 0, true)) {
             return 0;
         }
-        RECT rA, rB, rTitle;
-        SetRect(&rA, 0, -15, SCREEN_W_PX, 0x1d1);
-        SetRect(&rB, 0, 0x19, SCREEN_W_PX, 0x1f9);
-        SetRect(&rTitle, 0, 0x38, SCREEN_W_PX, 0x78);
+        CRect rA(0, -15, SCREEN_W_PX, 0x1d1);
+        CRect rB(0, 0x19, SCREEN_W_PX, 0x1f9);
+        CRect rTitle(0, 0x38, SCREEN_W_PX, 0x78);
         s.Format("The Secret of Secretz:");
         DrawTextToOverlaySurface(m_world, &s, &rTitle, 0x82, 1, 0xff, 0xff, 0, 1);
 
@@ -420,8 +419,7 @@ i32 CBootyState::ShowSecretBonusMessage() {
             return 0;
         }
         CString title;
-        RECT rTitle;
-        SetRect(&rTitle, 0, 0x38, SCREEN_W_PX, 0x78);
+        CRect rTitle(0, 0x38, SCREEN_W_PX, 0x78);
         if (category == SECRET_BONUS_TIER_ONE) {
             title.Format("Secret Bonus Acquired:");
         } else {
@@ -430,28 +428,28 @@ i32 CBootyState::ShowSecretBonusMessage() {
         DrawTextToOverlaySurface(m_world, &title, &rTitle, 0x82, 1, 0xff, 0xff, 0, 1);
 
         for (i32 j = 0; j < IDX(category); j++) {
-            RECT rA, rB;
+            CRect rA, rB;
             if (category == SECRET_BONUS_TIER_ONE) {
-                SetRect(&rA, 0, -15, SCREEN_W_PX, 0x1d1);
-                SetRect(&rB, 0, 0x19, SCREEN_W_PX, 0x1f9);
+                rA.SetRect(0, -15, SCREEN_W_PX, 0x1d1);
+                rB.SetRect(0, 0x19, SCREEN_W_PX, 0x1f9);
             } else if (category == SECRET_BONUS_TIER_TWO) {
                 if (j == 0) {
-                    SetRect(&rA, 0, -20, SCREEN_W_PX, 0x1cc);
-                    SetRect(&rB, 0, 0x14, SCREEN_W_PX, 0x1f4);
+                    rA.SetRect(0, -20, SCREEN_W_PX, 0x1cc);
+                    rB.SetRect(0, 0x14, SCREEN_W_PX, 0x1f4);
                 } else {
-                    SetRect(&rA, 0, 0x46, SCREEN_W_PX, 0x226);
-                    SetRect(&rB, 0, 0x6e, SCREEN_W_PX, 0x24e);
+                    rA.SetRect(0, 0x46, SCREEN_W_PX, 0x226);
+                    rB.SetRect(0, 0x6e, SCREEN_W_PX, 0x24e);
                 }
             } else {
                 if (j == 0) {
-                    SetRect(&rA, 0, -60, SCREEN_W_PX, 0x1a4);
-                    SetRect(&rB, 0, -20, SCREEN_W_PX, 0x1cc);
+                    rA.SetRect(0, -60, SCREEN_W_PX, 0x1a4);
+                    rB.SetRect(0, -20, SCREEN_W_PX, 0x1cc);
                 } else if (j == 1) {
-                    SetRect(&rA, 0, 0x1e, SCREEN_W_PX, 0x1fe);
-                    SetRect(&rB, 0, 0x46, SCREEN_W_PX, 0x226);
+                    rA.SetRect(0, 0x1e, SCREEN_W_PX, 0x1fe);
+                    rB.SetRect(0, 0x46, SCREEN_W_PX, 0x226);
                 } else {
-                    SetRect(&rA, 0, 0x78, SCREEN_W_PX, 0x24e);
-                    SetRect(&rB, 0, 0xa0, SCREEN_W_PX, 0x276);
+                    rA.SetRect(0, 0x78, SCREEN_W_PX, 0x24e);
+                    rB.SetRect(0, 0xa0, SCREEN_W_PX, 0x276);
                 }
             }
             i32 idx = rowBase * 3 + j;
@@ -1004,16 +1002,16 @@ i32 CBootyState::LevelMsgHudDriver() {
 
         i32 shown = 0;
         for (i32 i = 0; i < 8; i++) {
-            RECT box;
+            CRect box;
             m_bomb[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
             m_gokart[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
             m_icons[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
             m_icons[i]->SetScreenPos(g_levelMsgIconPos[i]);
-            CopyRect(&box, &g_levelMsgRectsA[i]);
+            box = g_levelMsgRectsA[i];
             CString text = g_levelMsgStrings[i];
             m_templateFlags[i] = 1;
             DrawTextToOverlaySurface(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
-            CopyRect(&box, &g_levelMsgRectsB[i]);
+            box = g_levelMsgRectsB[i];
             this->FormatHudText(&text, static_cast<BootyStatRow>(i));
             m_readyFlags[i] = 1;
             DrawTextToOverlaySurface(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
@@ -1056,9 +1054,9 @@ i32 CBootyState::LevelMsgHudDriver() {
 
         if (m_templateFlags[s] == 0
             && gx >= (g_levelMsgRectsA[s].right + g_levelMsgRectsA[s].left) / 2) {
-            RECT box;
+            CRect box;
             m_templateFlags[s] = 1;
-            CopyRect(&box, &g_levelMsgRectsA[m_slot]);
+            box = g_levelMsgRectsA[m_slot];
             CString text = g_levelMsgStrings[m_slot];
             m_templateFlags[m_slot] = 1;
             DrawTextToOverlaySurface(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
@@ -1080,9 +1078,9 @@ i32 CBootyState::LevelMsgHudDriver() {
 
     for (i32 i = m_slot; i < 8; i++) {
         if (m_gokart[i]->m_screenPosition.m_x >= m_bomb[i]->m_screenPosition.m_x) {
-            RECT box;
+            CRect box;
             CString text;
-            CopyRect(&box, &g_levelMsgRectsB[i]);
+            box = g_levelMsgRectsB[i];
             this->FormatHudText(&text, static_cast<BootyStatRow>(i));
             m_readyFlags[i] = 1;
             DrawTextToOverlaySurface(m_world, &text, &box, 0x78, 1, 0xff, 0xff, 0, 1);
@@ -1531,12 +1529,12 @@ i32 CBootyState::Render() {
             }
             if (m_initOnce != false && g_gameReg->m_gameStats->m_currentAreaComplete != false
                 && g_levelBias100 == false) {
-                RECT rc = MakeRect(0, 0x24, 0x1ea, 0x64);
+                CRect rc = MakeRect(0, 0x24, 0x1ea, 0x64);
                 CString s("World Completed!");
                 m_levelCompleteGate = true;
                 DrawTextToOverlaySurface(m_world, &s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
             } else {
-                RECT rc = MakeRect(0, 0x24, 0x1ea, 0x64);
+                CRect rc = MakeRect(0, 0x24, 0x1ea, 0x64);
                 CString s("Level Completed!");
                 m_levelCompleteGate = true;
                 DrawTextToOverlaySurface(m_world, &s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
@@ -1563,7 +1561,7 @@ i32 CBootyState::Render() {
             CheckPerfectBonus();
             if (m_secretHudHandled == false && g_gameReg->m_gameStats->m_isCustomLevel == false) {
                 CString s;
-                RECT rc;
+                CRect rc;
                 CGameStats* gameStats = g_gameReg->m_gameStats;
                 if (gameStats->m_levelNumber > IDX(QUESTLEVEL_LAST)) {
 
@@ -1572,7 +1570,7 @@ i32 CBootyState::Render() {
                     } else {
                         s = "You are closer to achieving mastery! Keep training!";
                     }
-                    SetRect(&rc, 0x194, 0xaa, 0x263, SCREEN_H_PX);
+                    rc.SetRect(0x194, 0xaa, 0x263, SCREEN_H_PX);
                 } else {
                     if (gameStats->m_currentAreaComplete != false) {
                         if (gameStats->CurrentAreaHasAllWarpLetters()) {
@@ -1587,7 +1585,7 @@ i32 CBootyState::Render() {
                     } else {
                         s = "Collect all four WARP letterz to receive secret bonus!";
                     }
-                    SetRect(&rc, 0x194, 0xe6, 0x263, SCREEN_H_PX);
+                    rc.SetRect(0x194, 0xe6, 0x263, SCREEN_H_PX);
                 }
                 m_secretGate = true;
                 DrawTextToOverlaySurface(m_world, &s, &rc, 0x6e, 1, 0xff, 0xff, 0, 1);
@@ -1651,14 +1649,12 @@ RVA(0x0001c9d0, 0x351)
 void CBootyState::ShowLevelCompleteMessage() {
     for (i32 i = 0; i < 8; i++) {
         if (m_templateFlags[i]) {
-            RECT r1;
-            CopyRect(&r1, &g_levelMsgRectsA[i]);
+            CRect r1 = g_levelMsgRectsA[i];
             CString t(g_levelMsgStrings[i]);
             DrawTextToOverlaySurface(m_world, &t, &r1, 0x78, 1, 0xff, 0xff, 0, 1);
         }
         if (m_readyFlags[i]) {
-            RECT r2;
-            CopyRect(&r2, &g_levelMsgRectsB[i]);
+            CRect r2 = g_levelMsgRectsB[i];
             CString t2;
             FormatHudText(&t2, static_cast<BootyStatRow>(i));
             DrawTextToOverlaySurface(m_world, &t2, &r2, 0x78, 1, 0xff, 0xff, 0, 1);
@@ -1679,7 +1675,7 @@ void CBootyState::ShowLevelCompleteMessage() {
 
     if (g_gameReg->m_gameStats->m_isCustomLevel == false && m_secretGate != false) {
         CString s;
-        RECT r;
+        CRect r;
         CGameStats* gameStats = g_gameReg->m_gameStats;
         if (gameStats->m_levelNumber > IDX(QUESTLEVEL_LAST)) {
             if (gameStats->m_currentAreaComplete != false) {
@@ -1687,7 +1683,7 @@ void CBootyState::ShowLevelCompleteMessage() {
             } else {
                 s = "You are closer to achieving mastery! Keep training!";
             }
-            SetRect(&r, 0x194, 0xaa, 0x263, SCREEN_H_PX);
+            r.SetRect(0x194, 0xaa, 0x263, SCREEN_H_PX);
         } else {
             if (gameStats->m_currentAreaComplete != false) {
                 if ((gameStats)->CurrentAreaHasAllWarpLetters()) {
@@ -1702,7 +1698,7 @@ void CBootyState::ShowLevelCompleteMessage() {
                     s = "Collect all four WARP letterz to receive secret bonus!";
                 }
             }
-            SetRect(&r, 0x194, 0xe6, 0x263, SCREEN_H_PX);
+            r.SetRect(0x194, 0xe6, 0x263, SCREEN_H_PX);
         }
         DrawTextToOverlaySurface(m_world, &s, &r, 0x6e, 1, 0xff, 0xff, 0, 1);
     }
@@ -2712,8 +2708,7 @@ i32 CMultiBootyState::Render() {
 
     u32 secs = g_gameReg->m_gameStats->m_elapsedTimeMs / MILLIS_PER_SECOND;
     CString s;
-    RECT rc;
-    SetRect(&rc, 8, 0x41, 0xcb, 0xae);
+    CRect rc(8, 0x41, 0xcb, 0xae);
     if (secs / 3600 != 0) {
         s.Format("%d:%2.2d:%2.2d", secs / 3600, (secs / 60) % 60, secs % 60);
     } else {

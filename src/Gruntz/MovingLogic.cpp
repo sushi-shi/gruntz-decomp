@@ -9,6 +9,7 @@
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/SerialArchive.h>
 #include <Io/FileMem.h>
+#include <Lith/BDefs.h>
 #include <Wwd/MoveFlags.h>
 
 #include <math.h>
@@ -100,7 +101,7 @@ void CMovingLogic::AdvanceMotion() {
         if (a == g_motionZero) {                                                                   \
             nv = v;                                                                                \
         } else {                                                                                   \
-            double disc = v * v - ((target) - (s)) * a * g_motionNegTwo;                           \
+            double disc = SQR(v) - ((target) - (s)) * a * g_motionNegTwo;                          \
             if (g_motionZero > disc) {                                                             \
                 disc = g_motionZero;                                                               \
             }                                                                                      \
@@ -191,8 +192,7 @@ double CMotionState::ArrivalVelX(double target) {
     if (m_acceleration.x == 0.0) {
         return m_velocity.x;
     }
-    double disc =
-        m_velocity.x * m_velocity.x - (target - m_position.x) * m_acceleration.x * g_motionNegTwo;
+    double disc = SQR(m_velocity.x) - (target - m_position.x) * m_acceleration.x * g_motionNegTwo;
     if (0.0 > disc) {
         disc = 0.0;
     }
@@ -205,8 +205,7 @@ double CMotionState::ArrivalVelY(double target) {
     if (m_acceleration.y == 0.0) {
         return m_velocity.y;
     }
-    double disc =
-        m_velocity.y * m_velocity.y - (target - m_position.y) * m_acceleration.y * g_motionNegTwo;
+    double disc = SQR(m_velocity.y) - (target - m_position.y) * m_acceleration.y * g_motionNegTwo;
     if (0.0 > disc) {
         disc = 0.0;
     }

@@ -453,8 +453,8 @@ i32 CGrunt::RectContains(i32 x, i32 y) {
     r1.InflateRect(0, 0, 1, 1);
     r2.OffsetRect(offset.m_x, offset.m_y);
 
-    if (IsRectEmpty(&r1) || IsRectEmpty(&r2)) {
-        if (IsRectEmpty(&r2)) {
+    if (r1.IsRectEmpty() || r2.IsRectEmpty()) {
+        if (r2.IsRectEmpty()) {
 
             if (::PtInRect(&r1, point.m_x, point.m_y)) {
                 return 1;
@@ -490,8 +490,8 @@ i32 CGrunt::VehicleContactContains(i32 x, i32 y) {
         return 0;
     }
 
-    if (IsRectEmpty(&r1) || IsRectEmpty(&r2)) {
-        if (IsRectEmpty(&r2)) {
+    if (r1.IsRectEmpty() || r2.IsRectEmpty()) {
+        if (r2.IsRectEmpty()) {
             if (::PtInRect(&r1, point.m_x, point.m_y)) {
                 return 1;
             }
