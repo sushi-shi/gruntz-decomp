@@ -53,6 +53,8 @@ class SoundSample;
 
 class SoundBuffer;
 
+struct SoundCue;
+
 typedef struct tagRECT CCueRect;
 
 class CVoiceManager;
@@ -797,6 +799,14 @@ public:
         i32 otherUnitIndex
     );
 
+    inline void SelectCombatHitCue(
+        CGruntzMgr* reg,
+        SoundCue*& cue,
+        PickupType attackKind,
+        i32 struckPose,
+        PickupType attackerGruntKind
+    );
+
     i32 LoadGruntCombatAnimations(
         PickupType attackKind,
         i32 struckPose,
@@ -908,7 +918,6 @@ public:
         RECT* span,
         GruntEntranceMode entranceMode
     );
-
     i32 StepDefenderBehavior();
 };
 

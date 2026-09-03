@@ -3908,16 +3908,14 @@ i32 CStatusBarMgr::QueuePickupReward(i32 pickupValue, i32 score) {
         while (i < n) {
             Coord* e = *t;
             if (e != NULL && score < e->m_y) {
-                goto insert;
+                m_rewardQueue.InsertAt(i, node, 1);
+                return 1;
             }
             i++;
             t++;
         }
     }
     m_rewardQueue.Add(node);
-    return 1;
-insert:
-    m_rewardQueue.InsertAt(i, node, 1);
     return 1;
 }
 
