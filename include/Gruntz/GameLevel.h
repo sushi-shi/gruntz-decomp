@@ -28,20 +28,11 @@ static const i32 TILE_CLEAR = -1;
         Coord pixel_;                                                                              \
         pixel_.m_y = (Y);                                                                          \
         pixel_.m_x = (X);                                                                          \
-        if (pixel_.m_x < 0) {                                                                      \
-            pixel_.m_x = 0;                                                                        \
-        } else {                                                                                   \
-            if (pixel_.m_x >= (LVL)->m_mainPlane->m_planePixelSize.cx) {                           \
-                pixel_.m_x = (LVL)->m_mainPlane->m_planePixelSize.cx - 1;                          \
-            }                                                                                      \
-        }                                                                                          \
-        if (pixel_.m_y < 0) {                                                                      \
-            pixel_.m_y = 0;                                                                        \
-        } else {                                                                                   \
-            if (pixel_.m_y >= (LVL)->m_mainPlane->m_planePixelSize.cy) {                           \
-                pixel_.m_y = (LVL)->m_mainPlane->m_planePixelSize.cy - 1;                          \
-            }                                                                                      \
-        }                                                                                          \
+        pixel_.Max(Coord(0, 0));                                                                   \
+        pixel_.Min(Coord(                                                                          \
+            (LVL)->m_mainPlane->m_planePixelSize.cx - 1,                                           \
+            (LVL)->m_mainPlane->m_planePixelSize.cy - 1                                            \
+        ));                                                                                        \
         CDDrawWorkerHost* pl_ = (LVL)->m_mainPlane;                                                \
         Coord tile_(pixel_.m_x >> pl_->m_tileShift.m_x, pixel_.m_y >> pl_->m_tileShift.m_y);       \
         Coord cellOrigin_(tile_.m_x << pl_->m_tileShift.m_x, tile_.m_y << pl_->m_tileShift.m_y);   \
@@ -63,20 +54,11 @@ static const i32 TILE_CLEAR = -1;
         Coord pixel_;                                                                              \
         pixel_.m_y = (Y);                                                                          \
         pixel_.m_x = (X);                                                                          \
-        if (pixel_.m_x < 0) {                                                                      \
-            pixel_.m_x = 0;                                                                        \
-        } else {                                                                                   \
-            if (pixel_.m_x >= (LVL)->m_mainPlane->m_planePixelSize.cx) {                           \
-                pixel_.m_x = (LVL)->m_mainPlane->m_planePixelSize.cx - 1;                          \
-            }                                                                                      \
-        }                                                                                          \
-        if (pixel_.m_y < 0) {                                                                      \
-            pixel_.m_y = 0;                                                                        \
-        } else {                                                                                   \
-            if (pixel_.m_y >= (LVL)->m_mainPlane->m_planePixelSize.cy) {                           \
-                pixel_.m_y = (LVL)->m_mainPlane->m_planePixelSize.cy - 1;                          \
-            }                                                                                      \
-        }                                                                                          \
+        pixel_.Max(Coord(0, 0));                                                                   \
+        pixel_.Min(Coord(                                                                          \
+            (LVL)->m_mainPlane->m_planePixelSize.cx - 1,                                           \
+            (LVL)->m_mainPlane->m_planePixelSize.cy - 1                                            \
+        ));                                                                                        \
         CDDrawWorkerHost* pl_ = (LVL)->m_mainPlane;                                                \
         Coord tile_(pixel_.m_x >> pl_->m_tileShift.m_x, pixel_.m_y >> pl_->m_tileShift.m_y);       \
         Coord cellOrigin_(tile_.m_x << pl_->m_tileShift.m_x, tile_.m_y << pl_->m_tileShift.m_y);   \

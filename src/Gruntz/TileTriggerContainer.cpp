@@ -435,33 +435,38 @@ CTileActionEvent* CTileTriggerContainer::AddSwitchActionEvent(
     if (event == NULL) {
         return NULL;
     }
-    i32 playerFlags[4] = {0, 0, 0, 0};
+    RECT playerFlags;
+    playerFlags.left = 0;
     CTileActionEvent* result = NULL;
+    playerFlags.top = 0;
+    playerFlags.right = 0;
+    playerFlags.bottom = 0;
     switch (static_cast<PlayerSlot>(playerSlot)) {
         case PLAYER_SLOT_1:
-            playerFlags[1] = 1;
+            playerFlags.top = 1;
             break;
         case PLAYER_SLOT_2:
-            playerFlags[2] = 1;
+            playerFlags.right = 1;
             break;
         case PLAYER_SLOT_3:
-            playerFlags[3] = 1;
+            playerFlags.bottom = 1;
             break;
         case PLAYER_SLOT_ALL:
-            playerFlags[1] = playerFlags[2] = playerFlags[3] = 1;
+            playerFlags.top = playerFlags.right = playerFlags.bottom = 1;
         case PLAYER_SLOT_0:
-            playerFlags[0] = 1;
+            playerFlags.left = 1;
             break;
     }
     if (event->m_live == false) {
         event->m_tile.Set(tileX, tileY);
         event->m_cellKey = cellKey;
+        event->m_playerFlags[2] = playerFlags.right;
         event->m_actionCode = actionCode;
         event->m_owner = this;
         event->m_live = true;
-        for (i32 i = 0; i < 4; i++) {
-            event->m_playerFlags[i] = playerFlags[i];
-        }
+        event->m_playerFlags[0] = playerFlags.left;
+        event->m_playerFlags[1] = playerFlags.top;
+        event->m_playerFlags[3] = playerFlags.bottom;
         event->SetActionCode(actionCode);
         m_actionEvents.AddTail(event);
         result = event;
