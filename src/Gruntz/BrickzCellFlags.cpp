@@ -263,21 +263,14 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 tileId) {
             if (down && left) {
                 dl = down - 1;
             }
-            if (up && down && !(up->m_flags & BRICKZ_BLOCKED_MASK)
-                && !(down->m_flags & BRICKZ_BLOCKED_MASK)) {
-                goto setbit;
-            }
-            if (right && left && !(right->m_flags & BRICKZ_BLOCKED_MASK)
-                && !(left->m_flags & BRICKZ_BLOCKED_MASK)) {
-                goto setbit;
-            }
-            if (ur && dl && !(ur->m_flags & BRICKZ_BLOCKED_MASK)
-                && !(dl->m_flags & BRICKZ_BLOCKED_MASK)) {
-                goto setbit;
-            }
-            if (ul && dr && !(ul->m_flags & BRICKZ_BLOCKED_MASK)
-                && !(dr->m_flags & BRICKZ_BLOCKED_MASK)) {
-            setbit:
+            if ((up && down && !(up->m_flags & BRICKZ_BLOCKED_MASK)
+                 && !(down->m_flags & BRICKZ_BLOCKED_MASK))
+                || (right && left && !(right->m_flags & BRICKZ_BLOCKED_MASK)
+                    && !(left->m_flags & BRICKZ_BLOCKED_MASK))
+                || (ur && dl && !(ur->m_flags & BRICKZ_BLOCKED_MASK)
+                    && !(dl->m_flags & BRICKZ_BLOCKED_MASK))
+                || (ul && dr && !(ul->m_flags & BRICKZ_BLOCKED_MASK)
+                    && !(dr->m_flags & BRICKZ_BLOCKED_MASK))) {
                 nc->m_flags = nf | 0x1000;
             }
         }

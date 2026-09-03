@@ -1272,7 +1272,7 @@ i32 CGrunt::StepGruntMovement() {
         i32 lastX = m_lastTilePx.m_x;
         i32 entY = m_entrancePx.m_y;
         if (entX == lastX && m_lastTilePx.m_y == entY) {
-            goto label_ret1;
+            return 1;
         }
     }
     if (m_arrivalState == AI_BATTLEZ_PATH) {
@@ -1701,7 +1701,7 @@ label_4cb4b:
             }
         } else {
             if (m_coordToggle == false) {
-                goto label_ret1;
+                return 1;
             }
         }
         RunMoveConfig(tgtTileX, tgtTileY);
@@ -1709,7 +1709,7 @@ label_4cb4b:
     }
     if (reason16) {
         if (!(flagHead & 0xd02)) {
-            goto label_ret1;
+            return 1;
         }
         if (m_wingzEnabled != false) {
             goto label_ret1;
@@ -1721,7 +1721,7 @@ label_4cb4b:
         SwitchAnimation(m_poseWalk);
         return 1;
     }
-    goto label_ret1;
+    return 1;
 
 label_dropRet0:
     SetEntrancePos(1, 1);

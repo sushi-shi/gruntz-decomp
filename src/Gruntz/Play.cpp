@@ -5839,35 +5839,31 @@ i32 CPlay::PositionBridgeToggle(StatusBarDock mode, StatusBarDock) {
     if (mode == STATUSBAR_DOCK_LEFT) {
         m_chatBox->Configure(CHATBOX_WITH_LEFT_STATUSBAR);
         pt = m_levelTimer;
-        if (pt == NULL) {
-            goto done;
+        if (pt != NULL) {
+            ex -= 0x37;
+            ey -= 0x16;
+            pt->m_baseX = ex;
+            pt->m_baseY = ey;
         }
-        ex -= 0x37;
-        ey -= 0x16;
-        pt->m_baseX = ex;
-        pt->m_baseY = ey;
     } else if (mode == STATUSBAR_DOCK_RIGHT) {
         m_chatBox->Configure(CHATBOX_WITH_RIGHT_STATUSBAR);
         pt = m_levelTimer;
-        if (pt == NULL) {
-            goto done;
+        if (pt != NULL) {
+            ex -= 0xd7;
+            ey -= 0x16;
+            pt->m_baseX = ex;
+            pt->m_baseY = ey;
         }
-        ex -= 0xd7;
-        ey -= 0x16;
-        pt->m_baseX = ex;
-        pt->m_baseY = ey;
     } else {
         m_chatBox->Configure(CHATBOX_WITH_HIDDEN_STATUSBAR);
         pt = m_levelTimer;
-        if (pt == NULL) {
-            goto done;
+        if (pt != NULL) {
+            ex -= 0x37;
+            ey -= 0x16;
+            pt->m_baseX = ex;
+            pt->m_baseY = ey;
         }
-        ex -= 0x37;
-        ey -= 0x16;
-        pt->m_baseX = ex;
-        pt->m_baseY = ey;
     }
-done:
 
     if (m_mgr->m_triggerMgr->m_goal != NULL) {
         CTriggerMgr* g = m_mgr->m_triggerMgr;
