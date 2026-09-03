@@ -1,6 +1,7 @@
 #include <Image/FileImage.h>
 
 #include <Mfc.h>
+#include <MfcWin.h>
 
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawDeviceManager.h>
@@ -44,8 +45,7 @@ i32 CDDSurface::CreateFromBmpData(
         static_cast<BITMAPINFOHEADER*>(static_cast<void*>(pData + sizeof(BITMAPFILEHEADER)));
 
     ColorDepth sourceBitDepth = static_cast<ColorDepth>(pBmiHdr->biBitCount);
-    i32 width = pBmiHdr->biWidth;
-    i32 height = pBmiHdr->biHeight;
+    CSize imageSize(pBmiHdr->biWidth, pBmiHdr->biHeight);
     if (sourceBitDepth != BPP_PALETTED_8 && sourceBitDepth != BPP_RGB_24) {
         return 0;
     }
@@ -72,7 +72,8 @@ i32 CDDSurface::CreateFromBmpData(
         }
     }
 
-    if (CDDSurface::BlitSurf(manager, width, height, BPP_UNSET, surfaceCaps) == BPP_UNSET) {
+    if (CDDSurface::BlitSurf(manager, imageSize.cx, imageSize.cy, BPP_UNSET, surfaceCaps)
+        == BPP_UNSET) {
         return 0;
     }
 
@@ -121,10 +122,9 @@ static inline i32 HasPalette(CDDrawDeviceManager* manager) {
 RVA(0x00143fc0, 0x142)
 i32 CDDSurface::DecodeBmp(CDDrawDeviceManager* manager, BmpFileImage* image, u32 dataSize) {
     BITMAPINFOHEADER* ih = &image->info.bmiHeader;
-    i32 width = ih->biWidth;
+    CSize imageSize(ih->biWidth, ih->biHeight);
     ColorDepth bitcount = static_cast<ColorDepth>(ih->biBitCount);
-    i32 height = ih->biHeight;
-    if (m_width == width && m_height == height
+    if (m_width == imageSize.cx && m_height == imageSize.cy
         && (bitcount == BPP_PALETTED_8 || bitcount == BPP_RGB_24)) {
         i32 remap = 0;
         ColorDepth palBpp = manager->m_displayColorDepth;
@@ -211,8 +211,7 @@ i32 CDDSurface::Load(CDDrawDeviceManager* manager, char* resourceName, i32 surfa
     if (!bih) {
         return 0;
     }
-    i32 width = bih->biWidth;
-    i32 height = bih->biHeight;
+    CSize imageSize(bih->biWidth, bih->biHeight);
     if (static_cast<ColorDepth>(bih->biBitCount) != BPP_PALETTED_8) {
         return 0;
     }
@@ -220,8 +219,8 @@ i32 CDDSurface::Load(CDDrawDeviceManager* manager, char* resourceName, i32 surfa
     m_descSize = sizeof(DDSURFACEDESC);
     m_surfaceCaps = surfaceCaps | 0x40;
     m_descFlags = 7;
-    m_width = width;
-    m_height = height;
+    m_width = imageSize.cx;
+    m_height = imageSize.cy;
     if (!CDDSurface::CreateFromDesc(manager, NULL)) {
         return 0;
     }
@@ -344,22 +343,21 @@ i32 CDDSurface::SaveRle16(char* path, CFileImagePal* pal, i32 flag) {
 
     BITMAPINFO bi;
     memset(&bi, 0, sizeof(bi));
-    i32 width = this->m_width;
+    CSize imageSize(this->m_width, this->m_height);
     BmpFileHeaderStamp bfh;
     memset(&bfh, 0, sizeof(bfh));
     bi.bmiHeader.biCompression = 0;
     bi.bmiHeader.biSizeImage = 0;
-    i32 height = this->m_height;
     strcpy(bfh.m_bytes, g_bmpHeaderTemplate);
-    bi.bmiHeader.biHeight = height;
+    bi.bmiHeader.biHeight = imageSize.cy;
     bi.bmiHeader.biSize = sizeof(bi.bmiHeader);
-    bi.bmiHeader.biWidth = width;
+    bi.bmiHeader.biWidth = imageSize.cx;
     bi.bmiHeader.biPlanes = 1;
     bi.bmiHeader.biBitCount = IDX(BPP_RGB_24);
-    bfh.m_hdr.bfSize = height * width * 3 + 0x3a;
+    bfh.m_hdr.bfSize = imageSize.cy * imageSize.cx * 3 + 0x3a;
     bfh.m_hdr.bfOffBits = 0x3a;
 
-    u8* line = new u8[3 * width];
+    u8* line = new u8[3 * imageSize.cx];
     if (line == NULL) {
         return 0;
     }
@@ -432,17 +430,16 @@ i32 CDDSurface::SaveTga(const char* path, CFileImagePal* pal, i32 mode) {
 
     BITMAPINFO bi;
     memset(&bi, 0, sizeof(bi));
-    i32 width = m_width;
+    CSize imageSize(m_width, m_height);
     BmpFileHeaderStamp fh;
     memset(&fh, 0, sizeof(fh));
-    i32 height = m_height;
     bi.bmiHeader.biCompression = 0;
     bi.bmiHeader.biSizeImage = 0;
     strcpy(fh.m_bytes, g_bmpHeaderTemplate);
-    bi.bmiHeader.biHeight = height;
+    bi.bmiHeader.biHeight = imageSize.cy;
     bi.bmiHeader.biSize = sizeof(bi.bmiHeader);
-    bi.bmiHeader.biWidth = width;
-    fh.m_hdr.bfSize = height * width * 3 + 0x3a;
+    bi.bmiHeader.biWidth = imageSize.cx;
+    fh.m_hdr.bfSize = imageSize.cy * imageSize.cx * 3 + 0x3a;
     bi.bmiHeader.biPlanes = 1;
     bi.bmiHeader.biBitCount = IDX(BPP_RGB_24);
     fh.m_hdr.bfOffBits = 0x3a;
@@ -497,8 +494,7 @@ i32 CDDSurface::CreateFromPcxData(
     BYTE* pStart = static_cast<BYTE*>(static_cast<void*>(image));
     PcxHeader* pPcxHdr = static_cast<PcxHeader*>(static_cast<void*>(pStart));
 
-    i32 width = pPcxHdr->m_xMax - pPcxHdr->m_xMin + 1;
-    i32 height = pPcxHdr->m_yMax - pPcxHdr->m_yMin + 1;
+    CSize imageSize(pPcxHdr->m_xMax - pPcxHdr->m_xMin + 1, pPcxHdr->m_yMax - pPcxHdr->m_yMin + 1);
 
     ColorDepth sourceBitDepth;
     if (pPcxHdr->m_planes == PCX_PLANES_PALETTED) {
@@ -532,7 +528,7 @@ i32 CDDSurface::CreateFromPcxData(
         }
     }
 
-    if (this->BlitSurf(manager, width, height, BPP_UNSET, surfaceCaps) == BPP_UNSET) {
+    if (this->BlitSurf(manager, imageSize.cx, imageSize.cy, BPP_UNSET, surfaceCaps) == BPP_UNSET) {
         return 0;
     }
 
@@ -552,23 +548,23 @@ i32 CDDSurface::CreateFromPcxData(
         }
     } else {
         if (sourceBitDepth == BPP_PALETTED_8) {
-            if (width % 2 != 0) {
+            if (imageSize.cx % 2 != 0) {
                 return 0;
             }
-            buf = new u8[height * width];
+            buf = new u8[imageSize.cy * imageSize.cx];
             if (buf == NULL) {
                 return 0;
             }
-            result = DecodeByteRun1Plane(buf, pPacked, width, height);
+            result = DecodeByteRun1Plane(buf, pPacked, imageSize.cx, imageSize.cy);
         } else {
-            if (width % 2 != 0) {
+            if (imageSize.cx % 2 != 0) {
                 return 0;
             }
-            buf = new u8[height * width * 3];
+            buf = new u8[imageSize.cy * imageSize.cx * 3];
             if (buf == NULL) {
                 return 0;
             }
-            result = DecodeByteRun3Planes(buf, pPacked, width, height);
+            result = DecodeByteRun3Planes(buf, pPacked, imageSize.cx, imageSize.cy);
         }
         if (result == 0) {
             delete[] buf;
@@ -615,8 +611,7 @@ i32 CDDSurface::CreateFromPcxFile(CDDrawDeviceManager* manager, const char* path
 RVA(0x00144ee0, 0x225)
 i32 CDDSurface::DecodePcx(CDDrawDeviceManager* manager, PcxHeader* image, u32 dataSize) {
     if (image != NULL) {
-        i32 width = image->m_xMax - image->m_xMin + 1;
-        i32 height = image->m_yMax - image->m_yMin + 1;
+        CSize imageSize(image->m_xMax - image->m_xMin + 1, image->m_yMax - image->m_yMin + 1);
         GZ_ENUM_STORAGE(PcxPlaneCount, i8) planes = image->m_planes;
 
         ColorDepth bitcount = BPP_UNSET;
@@ -625,7 +620,7 @@ i32 CDDSurface::DecodePcx(CDDrawDeviceManager* manager, PcxHeader* image, u32 da
         } else if (planes == PCX_PLANES_RGB) {
             bitcount = BPP_RGB_24;
         }
-        if (bitcount != BPP_UNSET && m_width == width && m_height == height) {
+        if (bitcount != BPP_UNSET && m_width == imageSize.cx && m_height == imageSize.cy) {
             b32 remap = false;
             ColorDepth palBpp = manager->m_displayColorDepth;
             if (palBpp != bitcount) {
@@ -660,17 +655,17 @@ i32 CDDSurface::DecodePcx(CDDrawDeviceManager* manager, PcxHeader* image, u32 da
                     }
                 } else {
                     if (bitcount == BPP_PALETTED_8) {
-                        decoded = new u8[width * height];
+                        decoded = new u8[imageSize.cx * imageSize.cy];
                         if (decoded == NULL) {
                             return 0;
                         }
-                        ok = DecodeByteRun1Plane(decoded, pixels, width, height);
+                        ok = DecodeByteRun1Plane(decoded, pixels, imageSize.cx, imageSize.cy);
                     } else {
-                        decoded = new u8[width * height * 3];
+                        decoded = new u8[imageSize.cx * imageSize.cy * 3];
                         if (decoded == NULL) {
                             return 0;
                         }
-                        ok = DecodeByteRun3Planes(decoded, pixels, width, height);
+                        ok = DecodeByteRun3Planes(decoded, pixels, imageSize.cx, imageSize.cy);
                     }
                     if (!ok) {
                         delete[] decoded;
@@ -918,17 +913,18 @@ i32 CDDSurface::DecodePcxData(
     record.m_dwords++;
 
     PidFlags flags = static_cast<PidFlags>(*record.m_dwords++);
-    i32 width = *record.m_dwords++;
-    i32 height = *record.m_dwords++;
+    CSize imageSize;
+    imageSize.cx = *record.m_dwords++;
+    imageSize.cy = *record.m_dwords++;
     record.m_dwords += 4;
 
-    if (width & 3) {
+    if (imageSize.cx & 3) {
         return 0;
     }
     if (HAS(flags, PID_SYSTEM_MEMORY)) {
-        surfaceCaps = (surfaceCaps & ~0x4000) | 0x800;
+        surfaceCaps = (surfaceCaps & ~DDSCAPS_VIDEOMEMORY) | DDSCAPS_SYSTEMMEMORY;
     } else if (HAS(flags, PID_VIDEO_MEMORY)) {
-        surfaceCaps = surfaceCaps & ~0x800;
+        surfaceCaps = surfaceCaps & ~DDSCAPS_SYSTEMMEMORY;
     }
 
     i32 remap = 0;
@@ -962,7 +958,7 @@ i32 CDDSurface::DecodePcxData(
         }
     }
 
-    if (!CDDSurface::BlitSurf(manager, width, height, BPP_UNSET, surfaceCaps)) {
+    if (!CDDSurface::BlitSurf(manager, imageSize.cx, imageSize.cy, BPP_UNSET, surfaceCaps)) {
         return 0;
     }
 
@@ -972,11 +968,11 @@ i32 CDDSurface::DecodePcxData(
             return 0;
         }
     } else {
-        decoded = new u8[height * width];
+        decoded = new u8[imageSize.cy * imageSize.cx];
         if (!decoded) {
             return 0;
         }
-        if (!DecodeByteRun1Plane(decoded, record.m_bytes, width, height)) {
+        if (!DecodeByteRun1Plane(decoded, record.m_bytes, imageSize.cx, imageSize.cy)) {
             delete[] decoded;
             return 0;
         }
@@ -1038,15 +1034,17 @@ i32 CDDSurface::DecodePid(
     DWORD* pDWord = static_cast<DWORD*>(static_cast<void*>(image));
     DWORD id = *pDWord++;
     PidFlags flags2 = static_cast<PidFlags>(*pDWord++);
-    DWORD width = *pDWord++;
-    DWORD height = *pDWord++;
-    DWORD dwX = *pDWord++;
-    DWORD dwY = *pDWord++;
+    CSize imageSize;
+    imageSize.cx = *pDWord++;
+    imageSize.cy = *pDWord++;
+    CPoint offset;
+    offset.x = *pDWord++;
+    offset.y = *pDWord++;
     DWORD user1 = *pDWord++;
     DWORD user2 = *pDWord++;
     u8* pPacked = static_cast<u8*>(static_cast<void*>(pDWord));
 
-    if (!(width & 3) && m_width == width && m_height == height) {
+    if (!(imageSize.cx & 3) && m_width == imageSize.cx && m_height == imageSize.cy) {
         PALETTEENTRY* palette = NULL;
         i32 remap = 0;
         b32 hasPalette = manager->HasPalette();
@@ -1077,11 +1075,11 @@ i32 CDDSurface::DecodePid(
                 return 0;
             }
         } else {
-            decoded = new u8[height * width];
+            decoded = new u8[imageSize.cy * imageSize.cx];
             if (!decoded) {
                 return 0;
             }
-            if (!DecodeByteRun1Plane(decoded, pPacked, width, height)) {
+            if (!DecodeByteRun1Plane(decoded, pPacked, imageSize.cx, imageSize.cy)) {
                 delete[] decoded;
                 return 0;
             }

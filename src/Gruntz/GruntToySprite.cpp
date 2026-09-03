@@ -85,8 +85,8 @@ i32 CGruntToySprite::Update() {
             r->m_frameIndex = layerIndex;
         }
     }
-    m_object->m_screenX = e->m_object->m_screenX;
-    m_object->m_screenY = e->m_object->m_screenY - 0x20;
+    Coord position = e->m_object->ScreenPos() + Coord(0, -0x20);
+    m_object->SetScreenPos(position);
     return 0;
 }
 

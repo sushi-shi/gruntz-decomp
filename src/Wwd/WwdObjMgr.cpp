@@ -3,6 +3,7 @@
 #include <Wwd/WwdObjMgr.h>
 
 #include <Mfc.h>
+#include <MfcWin.h>
 
 #include <AddrWord.h>
 #include <DDrawMgr/DDrawChildGroup.h>
@@ -499,11 +500,13 @@ static inline i32 ObjectTypeBits(u32 objectType, i32 mask) {
     return static_cast<i32>(objectType) & mask;
 }
 
-#define PLACE_OBJECT_RECT(dst, object, rect)                                                       \
-    (dst).left = (object)->rect.left + (object)->m_screenX;                                        \
-    (dst).top = (object)->rect.top + (object)->m_screenY;                                          \
-    (dst).right = (object)->rect.right + (object)->m_screenX;                                      \
-    (dst).bottom = (object)->rect.bottom + (object)->m_screenY
+static inline void
+PlaceObjectRect(CDDrawRect& destination, const RECT& objectRect, const Coord& position) {
+    destination.left = objectRect.left + position.m_x;
+    destination.top = objectRect.top + position.m_y;
+    destination.right = objectRect.right + position.m_x;
+    destination.bottom = objectRect.bottom + position.m_y;
+}
 
 // @early-stop
 RVA(0x00159f00, 0x22e)
@@ -538,8 +541,8 @@ void CDDrawChildGroup::CollideBroadcast() {
                             overlap = 0;
                         } else {
                             CDDrawRect ra, rb;
-                            PLACE_OBJECT_RECT(ra, oi, m_area);
-                            PLACE_OBJECT_RECT(rb, oj, m_switchRect);
+                            PlaceObjectRect(ra, oi->m_area, oi->m_screenPosition);
+                            PlaceObjectRect(rb, oj->m_switchRect, oj->m_screenPosition);
                             overlap = RectsOverlap(&ra, &rb);
                         }
                         if (overlap) {
@@ -607,11 +610,10 @@ i32 CDDrawChildGroup::BoxesOverlap(CGameObject* areaObj, CGameObject* switchObj)
     }
 
     CDDrawRect ra, rb;
-    PLACE_OBJECT_RECT(ra, areaObj, m_area);
-    PLACE_OBJECT_RECT(rb, switchObj, m_switchRect);
+    PlaceObjectRect(ra, areaObj->m_area, areaObj->m_screenPosition);
+    PlaceObjectRect(rb, switchObj->m_switchRect, switchObj->m_screenPosition);
     return CDDrawRectsOverlap(&ra, &rb);
 }
-#undef PLACE_OBJECT_RECT
 
 DATA(0x0021ab30)
 static char s_dbgRle[] = "RLE";
@@ -626,13 +628,8 @@ static inline void DrawObjectDebugRect(
     CDDrawWorkerHost* view,
     CDDrawSurfacePair* drawHost
 ) {
-    i32 ox = obj->m_screenX;
-    RECT rc;
-    rc.left = objectRect.left + ox;
-    i32 oy = obj->m_screenY;
-    rc.top = objectRect.top + oy;
-    rc.right = objectRect.right + ox;
-    rc.bottom = objectRect.bottom + oy;
+    CRect rc = objectRect;
+    rc.OffsetRect(obj->m_screenPosition.m_x, obj->m_screenPosition.m_y);
     view->WorldToViewport(&rc.left, &rc.top);
     view->WorldToViewport(&rc.right, &rc.bottom);
     drawHost->DrawBox(&rc, 0xff);
@@ -689,38 +686,38 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
         if (pos != NULL) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
-                i32 x = obj->m_screenX;
-                if (x != COORD_UNSET) {
+                Coord position = obj->ScreenPos();
+                if (position.m_x != COORD_UNSET) {
 
                     WwdPlaneFlags fl = static_cast<WwdPlaneFlags>(view->m_flags);
-                    i32 y = obj->m_screenY;
+                    CSize planeSize = view->m_planePixelSize;
                     if (HAS(fl, WWD_PLANE_FLAG_WRAP_X)) {
-                        i32 w = view->m_planePixelWidth;
-                        if (x < 0) {
-                            x = x + w;
-                        } else if (x >= w) {
-                            x = x - w;
+                        if (position.m_x < 0) {
+                            position.m_x += planeSize.cx;
+                        } else if (position.m_x >= planeSize.cx) {
+                            position.m_x -= planeSize.cx;
                         }
                         i32 farEdge = view->m_planeViewRect.right;
-                        if (farEdge >= w && x < view->m_planeViewRect.left && x <= farEdge - w) {
-                            x = x + w;
+                        if (farEdge >= planeSize.cx && position.m_x < view->m_planeViewRect.left
+                            && position.m_x <= farEdge - planeSize.cx) {
+                            position.m_x += planeSize.cx;
                         }
                     }
                     if (HAS(fl, WWD_PLANE_FLAG_WRAP_Y)) {
-                        i32 h = view->m_planePixelHeight;
-                        if (y < 0) {
-                            y = y + h;
-                        } else if (y >= h) {
-                            y = y - h;
+                        if (position.m_y < 0) {
+                            position.m_y += planeSize.cy;
+                        } else if (position.m_y >= planeSize.cy) {
+                            position.m_y -= planeSize.cy;
                         }
                         i32 farEdge = view->m_planeViewRect.bottom;
-                        if (farEdge >= h && y < view->m_planeViewRect.top && y <= farEdge - h) {
-                            y = y + h;
+                        if (farEdge >= planeSize.cy && position.m_y < view->m_planeViewRect.top
+                            && position.m_y <= farEdge - planeSize.cy) {
+                            position.m_y += planeSize.cy;
                         }
                     }
                     drawHost->DrawCross(
-                        view->m_viewportRect.left - view->m_planeViewRect.left + x,
-                        view->m_viewportRect.top - view->m_planeViewRect.top + y
+                        view->m_viewportRect.left - view->m_planeViewRect.left + position.m_x,
+                        view->m_viewportRect.top - view->m_planeViewRect.top + position.m_y
                     );
                 }
             } while (pos != NULL);
@@ -733,7 +730,7 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
         if (pos != NULL) {
             do {
                 CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
-                if (obj->m_screenX == COORD_UNSET) {
+                if (obj->m_screenPosition.m_x == COORD_UNSET) {
                     continue;
                 }
                 if (obj->GetClassId() != CLASSID_SERIALREF) {
@@ -743,11 +740,14 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                 if (fr == NULL) {
                     continue;
                 }
-                i32 x = obj->m_screenX;
-                i32 y = obj->m_screenY;
-                RECT box;
-                SetRect(&box, x - 0x20, y + 8, x + 0x20, y + 0x20);
-                RECT rc = box;
+                Coord position = obj->ScreenPos();
+                CRect box(
+                    position.m_x - 0x20,
+                    position.m_y + 8,
+                    position.m_x + 0x20,
+                    position.m_y + 0x20
+                );
+                CRect rc = box;
                 view->WorldToViewport(&rc.left, &rc.top);
                 view->WorldToViewport(&rc.right, &rc.bottom);
                 if (fr->m_owned != NULL) {
@@ -789,54 +789,50 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015a650, 0x12c)
 void CDDrawChildGroup::DrawObjectCounts() {
-    i32 w, h;
     if (!(m_flags & IDX(DDRAW_CHILD_GROUP_FLAG_DEBUG_SORT_KEY))) {
         return;
     }
     POSITION pos = m_list.GetHeadPosition();
     CDDrawWorkerHost* view = OwnerMgr()->m_level->m_mainPlane;
     CDDrawSurfacePair* drawHost = OwnerMgr()->m_drawTarget->m_backPair;
+    CSize planeSize = view->m_planePixelSize;
     if (pos == NULL) {
         return;
     }
     do {
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(NextChild(pos));
-        i32 oy = obj->m_screenY;
-        i32 ox = obj->m_screenX;
-        RECT box;
-        SetRect(&box, ox - 0x20, oy - 8, ox + 0x20, oy + 8);
-        RECT rc;
-        i32 wl = box.left;
-        i32 wt = box.top;
-        rc.right = box.right;
-        rc.bottom = box.bottom;
+        Coord position = obj->ScreenPos();
+        CRect box(position.m_x - 0x20, position.m_y - 8, position.m_x + 0x20, position.m_y + 8);
+        CRect rc;
+        CPoint wrappedTopLeft = box.TopLeft();
+        rc.BottomRight() = box.BottomRight();
         WwdPlaneFlags fl = static_cast<WwdPlaneFlags>(view->m_flags);
         if (HAS(fl, WWD_PLANE_FLAG_WRAP_X)) {
-            w = view->m_planePixelWidth;
             if (box.left < 0) {
-                wl = box.left + w;
-            } else if (box.left >= w) {
-                wl = box.left - w;
+                wrappedTopLeft.x = box.left + planeSize.cx;
+            } else if (box.left >= planeSize.cx) {
+                wrappedTopLeft.x = box.left - planeSize.cx;
             }
             i32 farEdge = view->m_planeViewRect.right;
-            if (farEdge >= w && wl < view->m_planeViewRect.left && wl <= farEdge - w) {
-                wl += w;
+            if (farEdge >= planeSize.cx && wrappedTopLeft.x < view->m_planeViewRect.left
+                && wrappedTopLeft.x <= farEdge - planeSize.cx) {
+                wrappedTopLeft.x += planeSize.cx;
             }
         }
         if (HAS(fl, WWD_PLANE_FLAG_WRAP_Y)) {
-            h = view->m_planePixelHeight;
             if (box.top < 0) {
-                wt = box.top + h;
-            } else if (box.top >= h) {
-                wt = box.top - h;
+                wrappedTopLeft.y = box.top + planeSize.cy;
+            } else if (box.top >= planeSize.cy) {
+                wrappedTopLeft.y = box.top - planeSize.cy;
             }
             i32 farEdge = view->m_planeViewRect.bottom;
-            if (farEdge >= h && wt < view->m_planeViewRect.top && wt <= farEdge - h) {
-                wt += h;
+            if (farEdge >= planeSize.cy && wrappedTopLeft.y < view->m_planeViewRect.top
+                && wrappedTopLeft.y <= farEdge - planeSize.cy) {
+                wrappedTopLeft.y += planeSize.cy;
             }
         }
-        rc.left = wl - view->m_planeViewRect.left + view->m_viewportRect.left;
-        rc.top = wt - view->m_planeViewRect.top + view->m_viewportRect.top;
+        rc.TopLeft() = wrappedTopLeft - CRect(view->m_planeViewRect).TopLeft()
+                       + CRect(view->m_viewportRect).TopLeft();
 
         view->WorldToViewport(&rc.right, &rc.bottom);
         drawHost->DrawCount(&rc, obj->m_sortKey);
@@ -1054,7 +1050,9 @@ i32 CDDrawChildGroup::SumWeighted() {
     while (node != NULL) {
         CGameObject* cur_obj = NextChild(node);
         CWwdGameObject* obj = static_cast<CWwdGameObject*>(cur_obj);
-        sum += i * (obj->m_screenX + obj->m_sortKey + obj->m_screenY + obj->m_id);
+        sum +=
+            i
+            * (obj->m_screenPosition.m_x + obj->m_sortKey + obj->m_screenPosition.m_y + obj->m_id);
         ++i;
     }
     return sum;
@@ -1188,8 +1186,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
             }
             case CLASSID_WWD_SPRITE_OBJECT: {
                 i32 sortKey = desc.m_sortKey;
-                i32 y = desc.m_screenY;
-                i32 x = desc.m_screenX;
+                Coord position = desc.m_screenPosition;
                 i32 id = desc.m_id;
                 CLogicRecord* logicTemplate = LookupLogicTemplate(
                     OwnerMgr()->m_logicRegistry->m_templatesByName,
@@ -1198,14 +1195,20 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                 if (logicTemplate == NULL) {
                     createdObj = NULL;
                 } else {
-                    createdObj = CreateSpriteObject(id, x, y, sortKey, logicTemplate, 0);
+                    createdObj = CreateSpriteObject(
+                        id,
+                        position.m_x,
+                        position.m_y,
+                        sortKey,
+                        logicTemplate,
+                        0
+                    );
                 }
                 break;
             }
             case CLASSID_WWD_CONTAINER_OBJECT: {
                 i32 sortKey = desc.m_sortKey;
-                i32 y = desc.m_screenY;
-                i32 x = desc.m_screenX;
+                Coord position = desc.m_screenPosition;
                 i32 id = desc.m_id;
                 CLogicRecord* logicTemplate = LookupLogicTemplate(
                     OwnerMgr()->m_logicRegistry->m_templatesByName,
@@ -1214,7 +1217,14 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
                 if (logicTemplate == NULL) {
                     createdObj = NULL;
                 } else {
-                    createdObj = CreateContainerObject(id, x, y, sortKey, logicTemplate, 0);
+                    createdObj = CreateContainerObject(
+                        id,
+                        position.m_x,
+                        position.m_y,
+                        sortKey,
+                        logicTemplate,
+                        0
+                    );
                 }
                 break;
             }
@@ -1237,8 +1247,8 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
 
                 if (AttachSprite(
                         rec,
-                        desc.m_screenX,
-                        desc.m_screenY,
+                        desc.m_screenPosition.m_x,
+                        desc.m_screenPosition.m_y,
                         desc.m_sortKey,
                         desc.m_logicTypeName,
                         0
@@ -1393,7 +1403,7 @@ WwdRegion::WwdRegion() : WwdGridNode(WwdGridNode::NO_SEED) {
 RVA(0x0015b2c0, 0x3d)
 CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
     : CWapObj(owner, id, flags, CWapObj::NO_SEED), m_dirty(WwdDirtyRect::INLINE_SEED) {
-    m_screenX = COORD_UNSET;
+    m_screenPosition.m_x = COORD_UNSET;
     m_clip.left = COORD_UNSET;
     m_level = NULL;
     m_stateFlags = SPRITE_STATE_NONE;

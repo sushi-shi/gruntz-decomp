@@ -23,6 +23,7 @@
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/ScanGridMacros.h>
 #include <Gruntz/StaminaPct.h>
@@ -32,6 +33,7 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/VoiceManager.h>
 #include <Ints.h>
+#include <MakeRect.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/ZVec.h>
 
@@ -44,31 +46,31 @@
 RVA(0x000ee800, 0x971)
 i32 CGrunt::StepDefenderBehavior() {
     Coord defenderTile = m_defenderPx;
-    defenderTile.m_x >>= TILE_SHIFT_PX;
-    defenderTile.m_y >>= TILE_SHIFT_PX;
+    ScreenTile(&defenderTile);
+    Coord currentTile;
+    GetScreenTile(&currentTile);
 
     i32 scanRadius = m_defenderRadius + m_reachRect.right - 1;
     i32 trimRadius = m_defenderRadius - 1;
-    RECT scanBounds;
-    scanBounds.left = defenderTile.m_x - scanRadius;
-    scanBounds.top = defenderTile.m_y - scanRadius;
-    scanBounds.right = defenderTile.m_x + scanRadius + 1;
-    scanBounds.bottom = defenderTile.m_y + scanRadius + 1;
+    CRect scanBounds(
+        defenderTile.m_x - scanRadius,
+        defenderTile.m_y - scanRadius,
+        defenderTile.m_x + scanRadius + 1,
+        defenderTile.m_y + scanRadius + 1
+    );
 
     {
-        Coord pt;
-        GetScreenPos(&pt);
-        i32 dTX = abs((pt.m_x >> TILE_SHIFT_PX) - (m_defenderPx.m_x >> TILE_SHIFT_PX));
-        GetScreenPos(&pt);
-        i32 dTY = abs((pt.m_y >> TILE_SHIFT_PX) - (m_defenderPx.m_y >> TILE_SHIFT_PX));
-        i32 dist = Max(dTX, dTY);
+        Coord selfTile;
+        GetScreenTile(&selfTile);
+        Coord distance = (selfTile - defenderTile).GetAbs();
+        i32 dist = Max(distance.m_x, distance.m_y);
         if (dist > m_defenderRadius) {
             m_defenderPx = m_lastTilePx;
             return 1;
         }
     }
 
-    FIND_NEAREST_ENEMY_AT_TARGET(occ, occOnTile, occScreenX)
+    FIND_NEAREST_ENEMY_AT_TARGET(occ, occOnTile)
 
     b32 powered = m_poweredUp;
     if (powered != false) {
@@ -120,28 +122,29 @@ i32 CGrunt::StepDefenderBehavior() {
     }
 
     if (occ != NULL && static_cast<u32>(m_dwell) > DWELL_REPATH_MS) {
-        i32 occTX = occ->m_object->m_screenX >> TILE_SHIFT_PX;
-        i32 occTY = occ->m_object->m_screenY >> TILE_SHIFT_PX;
-        i32 dx = abs(occTX - defenderTile.m_x);
-        i32 dy = abs(occTY - defenderTile.m_y);
-        i32 radius = Max(dx, dy);
+        Coord occupantTile;
+        occ->GetScreenTile(&occupantTile);
+        Coord distance = (occupantTile - defenderTile).GetAbs();
+        i32 radius = Max(distance.m_x, distance.m_y);
 
         if (radius < m_defenderRadius + m_reachRect.right) {
             if (m_blockedVoicePending != false) {
                 CGruntzMgr* gameMgr = g_gameReg;
                 const RECT* view = &gameMgr->m_world->m_level->m_mainPlane->m_planeViewRect;
-                if (CGameLevel::PointInBounds(view, m_object->m_screenX, m_object->m_screenY)
+                if (CGameLevel::PointInBounds(
+                        view,
+                        m_object->m_screenPosition.m_x,
+                        m_object->m_screenPosition.m_y
+                    )
                     != 0) {
                     gameMgr->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
                 }
                 m_blockedVoicePending = false;
             }
 
-            POINT target;
-            target.x = occTX;
-            target.y = occTY;
-            if (PtInRect(&scanBounds, target) != false && m_defenderRadius > 1) {
-                RECT oldBounds = g_gameReg->m_tileGrid->m_bounds;
+            CPoint target(occupantTile.m_x, occupantTile.m_y);
+            if (scanBounds.PtInRect(target) != false && m_defenderRadius > 1) {
+                CRect oldBounds = g_gameReg->m_tileGrid->m_bounds;
                 CDWordArray saved;
                 for (i32 y = oldBounds.top; y < oldBounds.bottom + 1; y++) {
                     for (i32 x = oldBounds.left; x < oldBounds.right + 1; x++) {
@@ -155,40 +158,50 @@ i32 CGrunt::StepDefenderBehavior() {
                     }
                 }
 
-                i32 cx = m_defenderPx.m_x >> TILE_SHIFT_PX;
-                i32 cy = m_defenderPx.m_y >> TILE_SHIFT_PX;
-                for (i32 borderX = cx - m_defenderRadius; borderX < cx + m_defenderRadius + 1;
+                Coord center = m_defenderPx;
+                ScreenTile(&center);
+                CRect defenderBounds(
+                    center.m_x - m_defenderRadius,
+                    center.m_y - m_defenderRadius,
+                    center.m_x + m_defenderRadius,
+                    center.m_y + m_defenderRadius
+                );
+                for (i32 borderX = defenderBounds.left; borderX <= defenderBounds.right;
                      borderX++) {
-                    i32 top = cy - m_defenderRadius;
-                    i32 bottom = cy + m_defenderRadius;
                     if (static_cast<u32>(borderX) < g_gameReg->m_tileGrid->m_width
-                        && static_cast<u32>(top) < g_gameReg->m_tileGrid->m_height
-                        && (borderX != occTX || top != occTY)) {
-                        g_gameReg->m_tileGrid->m_rows[top][borderX].m_flags = 1;
+                        && static_cast<u32>(defenderBounds.top) < g_gameReg->m_tileGrid->m_height
+                        && (borderX != occupantTile.m_x
+                            || defenderBounds.top != occupantTile.m_y)) {
+                        g_gameReg->m_tileGrid->m_rows[defenderBounds.top][borderX].m_flags =
+                            IDX(CELL_FLAG_SOLID);
                     }
                     if (static_cast<u32>(borderX) < g_gameReg->m_tileGrid->m_width
-                        && static_cast<u32>(bottom) < g_gameReg->m_tileGrid->m_height
-                        && (borderX != occTX || bottom != occTY)) {
-                        g_gameReg->m_tileGrid->m_rows[bottom][borderX].m_flags = 1;
+                        && static_cast<u32>(defenderBounds.bottom) < g_gameReg->m_tileGrid->m_height
+                        && (borderX != occupantTile.m_x
+                            || defenderBounds.bottom != occupantTile.m_y)) {
+                        g_gameReg->m_tileGrid->m_rows[defenderBounds.bottom][borderX].m_flags =
+                            IDX(CELL_FLAG_SOLID);
                     }
                 }
-                for (i32 borderY = cy - m_defenderRadius; borderY < cy + m_defenderRadius + 1;
+                for (i32 borderY = defenderBounds.top; borderY <= defenderBounds.bottom;
                      borderY++) {
-                    i32 left = cx - m_defenderRadius;
-                    i32 right = cx + m_defenderRadius;
-                    if (static_cast<u32>(left) < g_gameReg->m_tileGrid->m_width
+                    if (static_cast<u32>(defenderBounds.left) < g_gameReg->m_tileGrid->m_width
                         && static_cast<u32>(borderY) < g_gameReg->m_tileGrid->m_height
-                        && (left != occTX || borderY != occTY)) {
-                        g_gameReg->m_tileGrid->m_rows[borderY][left].m_flags = 1;
+                        && (defenderBounds.left != occupantTile.m_x
+                            || borderY != occupantTile.m_y)) {
+                        g_gameReg->m_tileGrid->m_rows[borderY][defenderBounds.left].m_flags =
+                            IDX(CELL_FLAG_SOLID);
                     }
-                    if (static_cast<u32>(right) < g_gameReg->m_tileGrid->m_width
+                    if (static_cast<u32>(defenderBounds.right) < g_gameReg->m_tileGrid->m_width
                         && static_cast<u32>(borderY) < g_gameReg->m_tileGrid->m_height
-                        && (right != occTX || borderY != occTY)) {
-                        g_gameReg->m_tileGrid->m_rows[borderY][right].m_flags = 1;
+                        && (defenderBounds.right != occupantTile.m_x
+                            || borderY != occupantTile.m_y)) {
+                        g_gameReg->m_tileGrid->m_rows[borderY][defenderBounds.right].m_flags =
+                            IDX(CELL_FLAG_SOLID);
                     }
                 }
 
-                TileSwitch(occTX, occTY, 0, m_arrivalFlags, 1, 0);
+                TileSwitch(occupantTile.m_x, occupantTile.m_y, 0, m_arrivalFlags, 1, 0);
 
                 i32 savedIndex = 0;
                 for (i32 restoreY = oldBounds.top; restoreY < oldBounds.bottom + 1; restoreY++) {
@@ -210,14 +223,12 @@ i32 CGrunt::StepDefenderBehavior() {
                     while (pos != NULL) {
                         POSITION trimPos = pos;
                         Coord* trimCoord = static_cast<Coord*>(m_coordList.GetNext(pos));
-                        i32 pathDx = abs(trimCoord->m_x - defenderTile.m_x);
-                        i32 pathDy = abs(trimCoord->m_y - defenderTile.m_y);
-                        i32 pathDist = Max(pathDx, pathDy);
+                        Coord pathDistance = (*trimCoord - defenderTile).GetAbs();
+                        i32 pathDist = Max(pathDistance.m_x, pathDistance.m_y);
                         if (pathDist > trimRadius) {
                             if (previous != NULL) {
-                                i32 backDx = abs(previous->m_x - occTX);
-                                i32 backDy = abs(previous->m_y - occTY);
-                                i32 backDist = Max(backDx, backDy);
+                                Coord backDistance = (*previous - occupantTile).GetAbs();
+                                i32 backDist = Max(backDistance.m_x, backDistance.m_y);
                                 if (backDist <= m_reachRect.right) {
                                     PushFreeNode(&g_coordPool, trimCoord);
                                     m_coordList.RemoveAt(trimPos);
@@ -246,25 +257,22 @@ i32 CGrunt::StepDefenderBehavior() {
                         }
                         previous = trimCoord;
                     }
-                } else if ((m_object->m_screenX >> TILE_SHIFT_PX) != defenderTile.m_x
-                           || (m_object->m_screenY >> TILE_SHIFT_PX) != defenderTile.m_y) {
+                } else if (currentTile != defenderTile) {
                     TileSwitch(defenderTile.m_x, defenderTile.m_y, 0, m_arrivalFlags, 1, 0);
                     m_dwell = 0;
                 }
             }
-        } else if ((m_object->m_screenX >> TILE_SHIFT_PX) != defenderTile.m_x
-                   || (m_object->m_screenY >> TILE_SHIFT_PX) != defenderTile.m_y) {
+        } else if (currentTile != defenderTile) {
             TileSwitch(defenderTile.m_x, defenderTile.m_y, 0, m_arrivalFlags, 1, 0);
         }
         m_dwell = 0;
     } else if (occ == NULL && static_cast<u32>(m_dwell) > DWELL_REPATH_MS
-               && ((m_object->m_screenX >> TILE_SHIFT_PX) != defenderTile.m_x
-                   || (m_object->m_screenY >> TILE_SHIFT_PX) != defenderTile.m_y)) {
+               && currentTile != defenderTile) {
         TileSwitch(defenderTile.m_x, defenderTile.m_y, 0, m_arrivalFlags, 1, 0);
     }
 
     CMapMgr* grid = g_gameReg->m_tileGrid;
-    GRID_CLIP_INL_FIELDS(grid, NULL);
+    grid->Clip(NULL);
 
     return 1;
 }

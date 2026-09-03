@@ -38,7 +38,6 @@
 #include <Gruntz/SpellId.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/SpriteStateFlags.h>
-#include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/ToyPeek.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -117,7 +116,9 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     m_peekTimer.m_hi = 0;
     m_peekWindow.m_hi = 0;
 
-    SNAP_OBJECT_TO_TILE_CENTER_COPY(m_object, snapX, snapY)
+    Coord position = m_object->ScreenPos();
+    SnapTileCenter(&position);
+    m_object->SetScreenPos(position);
 
     CWwdSpriteObject* snapped = m_object;
     SET_SORT_KEY_IF_CHANGED(snapped, SORTKEY_INGAME_INFO)
@@ -201,37 +202,25 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
             m_object->m_smarts = IDX(PICKUP_WARPSTONE);
             m_object->m_health = IDX(WARPSTONE_FRAGMENT_FIRST);
             CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
-            i32 anchorX = m_object->m_screenX;
-            i32 anchorY = m_object->m_screenY;
-            lvl->m_anchors[0].m_x = anchorX;
-            lvl->m_anchors[0].m_y = anchorY;
+            lvl->m_anchors[0] = m_object->ScreenPos();
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ2") == 0) {
             m_object->m_smarts = IDX(PICKUP_WARPSTONE);
             m_object->m_health = IDX(WARPSTONE_FRAGMENT_SECOND);
             CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
-            i32 anchorX = m_object->m_screenX;
-            i32 anchorY = m_object->m_screenY;
-            lvl->m_anchors[1].m_x = anchorX;
-            lvl->m_anchors[1].m_y = anchorY;
+            lvl->m_anchors[1] = m_object->ScreenPos();
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ3") == 0) {
             m_object->m_smarts = IDX(PICKUP_WARPSTONE);
             m_object->m_health = IDX(WARPSTONE_FRAGMENT_THIRD);
             CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
-            i32 anchorX = m_object->m_screenX;
-            i32 anchorY = m_object->m_screenY;
-            lvl->m_anchors[2].m_x = anchorX;
-            lvl->m_anchors[2].m_y = anchorY;
+            lvl->m_anchors[2] = m_object->ScreenPos();
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ4") == 0) {
             m_object->m_smarts = IDX(PICKUP_WARPSTONE);
             m_object->m_health = IDX(WARPSTONE_FRAGMENT_FOURTH);
             CPlay* lvl = static_cast<CPlay*>(g_gameReg->m_curState);
-            i32 anchorX = m_object->m_screenX;
-            i32 anchorY = m_object->m_screenY;
-            lvl->m_anchors[3].m_x = anchorX;
-            lvl->m_anchors[3].m_y = anchorY;
+            lvl->m_anchors[3] = m_object->ScreenPos();
             SetupSprite("GAME_TREASURE");
         } else if (strcmp(name, "GAME_INGAMEICONZ_TOOLZ_WELDERZ") == 0) {
             m_object->m_smarts = IDX(PICKUP_WELDER);
@@ -380,8 +369,8 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     if (glitter != ICON_GLITTER_NONE) {
         CWwdSpriteObject* fx = g_gameReg->m_world->m_childGroup->CreateSprite(
             0,
-            m_object->m_screenX,
-            m_object->m_screenY,
+            m_object->m_screenPosition.m_x,
+            m_object->m_screenPosition.m_y,
             SORTKEY_INGAME_INFO_FX,
             "SimpleAnimation",
             WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
@@ -403,15 +392,16 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
 
     i32 mv = m_object->m_objectId;
     CMapMgr* grid = g_gameReg->m_tileGrid;
-    i32 col = m_object->m_screenX >> TILE_SHIFT_PX;
-    i32 row = m_object->m_screenY >> TILE_SHIFT_PX;
-    if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
-        && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
-        grid->m_rowInts[row][col * 7 + 2] = mv;
+    Coord tile;
+    GetScreenTile(&tile);
+    if (static_cast<u32>(tile.m_x) < static_cast<u32>(grid->m_width)
+        && static_cast<u32>(tile.m_y) < static_cast<u32>(grid->m_height)) {
+        BrickzCell& cell = grid->m_rows[tile.m_y][tile.m_x];
+        cell.m_objectId = mv;
         if (mv != 0) {
-            grid->m_rowInts[row][col * 7] |= 0x40000;
+            cell.m_flags |= IDX(CELL_FLAG_IN_GAME_ICON);
         } else {
-            grid->m_rowInts[row][col * 7] &= ~0x40000;
+            cell.m_flags &= ~IDX(CELL_FLAG_IN_GAME_ICON);
         }
     }
     m_object->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
@@ -510,7 +500,7 @@ RVA(0x00098140, 0x18e)
 CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     m_startClock.m_v = 0;
     m_countdown.m_v = 0;
-    m_object->m_screenY -= 0x18;
+    m_object->m_screenPosition.m_y -= 0x18;
     CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_HUD)
     SetImageFrameByName("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", m_object->m_smarts);
@@ -522,16 +512,17 @@ CToyPeek::CToyPeek(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
 RVA(0x00098340, 0x71)
 i32 CInGameIcon::RefreshCell() {
     CWwdSpriteObject* obj = m_object;
-    i32 tileX = obj->m_screenX >> TILE_SHIFT_PX;
-    i32 tileY = (obj->m_screenY + 0x18) >> TILE_SHIFT_PX;
+    Coord tile = obj->ScreenPos();
+    tile.m_y += 0x18;
+    ScreenTile(&tile);
     i64 delta = static_cast<i64>(g_frameTime) - m_driftPos.m_v;
     if (delta < m_driftThresh.m_v) {
         CMapMgr* grid = g_gameReg->m_tileGrid;
         i32 cell;
-        if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
-            && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
-            BrickzCell* row = grid->m_rows[tileY];
-            cell = row[tileX].m_objectId;
+        if (static_cast<u32>(tile.m_x) < static_cast<u32>(grid->m_width)
+            && static_cast<u32>(tile.m_y) < static_cast<u32>(grid->m_height)) {
+            BrickzCell* row = grid->m_rows[tile.m_y];
+            cell = row[tile.m_x].m_objectId;
         } else {
             cell = 0;
         }
@@ -564,15 +555,15 @@ i32 CInGameIcon::PeekCycle() {
     CWwdSpriteObject* obj = m_object;
     PickupType cmd = static_cast<PickupType>(obj->m_smarts);
     if (cmd == PICKUP_TOYBOX) {
-        i32 tileY = obj->m_screenY >> TILE_SHIFT_PX;
+        Coord tile;
+        GetScreenTile(&tile);
         CMapMgr* grid = g_gameReg->m_tileGrid;
-        i32 tileX = obj->m_screenX >> TILE_SHIFT_PX;
-        i32 cell = grid->CellFlagsAt(tileX, tileY);
+        i32 cell = grid->CellFlagsAt(tile.m_x, tile.m_y);
         if ((cell & BRICKZ_BLOCKED_MASK) != 0 || (cell & IDX(CELL_FLAG_SPECIAL)) != 0) {
-            if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
-                && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
-                grid->m_rows[tileY][tileX].m_objectId = 0;
-                grid->m_rows[tileY][tileX].m_flags &= ~0x40000;
+            if (static_cast<u32>(tile.m_x) < static_cast<u32>(grid->m_width)
+                && static_cast<u32>(tile.m_y) < static_cast<u32>(grid->m_height)) {
+                grid->m_rows[tile.m_y][tile.m_x].m_objectId = 0;
+                grid->m_rows[tile.m_y][tile.m_x].m_flags &= ~IDX(CELL_FLAG_IN_GAME_ICON);
             }
             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         }
@@ -598,12 +589,12 @@ i32 CInGameIcon::PeekCycle() {
 
 static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
     CMapMgr* grid = reg->m_tileGrid;
-    i32 tileX = owner->m_screenX >> TILE_SHIFT_PX;
-    i32 tileY = owner->m_screenY >> TILE_SHIFT_PX;
-    if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
-        && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
-        grid->m_rows[tileY][tileX].m_objectId = 0;
-        grid->m_rows[tileY][tileX].m_flags &= ~0x40000;
+    Coord tile = owner->ScreenPos();
+    ScreenTile(&tile);
+    if (static_cast<u32>(tile.m_x) < static_cast<u32>(grid->m_width)
+        && static_cast<u32>(tile.m_y) < static_cast<u32>(grid->m_height)) {
+        grid->m_rows[tile.m_y][tile.m_x].m_objectId = 0;
+        grid->m_rows[tile.m_y][tile.m_x].m_flags &= ~IDX(CELL_FLAG_IN_GAME_ICON);
     }
 }
 
@@ -659,7 +650,7 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
         }
         if (m_cue != NULL) {
             o = m_object;
-            if (::PtInRect(&reg->m_viewBounds, o->m_screenX, o->m_screenY)) {
+            if (::PtInRect(&reg->m_viewBounds, o->m_screenPosition.m_x, o->m_screenPosition.m_y)) {
 
                 m_cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
                 reg = g_gameReg;
@@ -691,7 +682,7 @@ i32 CInGameIcon::PlaceAt(i32 playerIndex, i32 unitIndex) {
         }
         if (m_cue != NULL) {
             o = m_object;
-            if (::PtInRect(&reg->m_viewBounds, o->m_screenX, o->m_screenY)) {
+            if (::PtInRect(&reg->m_viewBounds, o->m_screenPosition.m_x, o->m_screenPosition.m_y)) {
 
                 m_cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
                 reg = g_gameReg;
@@ -735,13 +726,13 @@ i32 CInGameIcon::Reposition() {
 
         CGruntzMgr* reg = g_gameReg;
         CWwdSpriteObject* obj = m_object;
-        i32 tileX = obj->m_screenX >> TILE_SHIFT_PX;
-        i32 tileY = obj->m_screenY >> TILE_SHIFT_PX;
+        Coord tile;
+        GetScreenTile(&tile);
         CMapMgr* grid = reg->m_tileGrid;
         i32 cellVal;
-        if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
-            && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
-            cellVal = grid->m_rowInts[tileY][tileX * 7 + 2];
+        if (static_cast<u32>(tile.m_x) < static_cast<u32>(grid->m_width)
+            && static_cast<u32>(tile.m_y) < static_cast<u32>(grid->m_height)) {
+            cellVal = grid->m_rows[tile.m_y][tile.m_x].m_objectId;
         } else {
             cellVal = 0;
         }
@@ -759,23 +750,25 @@ i32 CInGameIcon::Reposition() {
         }
         reg = g_gameReg;
         grid = reg->m_tileGrid;
-        if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
-            && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
-            grid->m_rowInts[tileY][tileX * 7 + 2] = 0;
-            grid->m_rowInts[tileY][tileX * 7] &= ~0x40000;
+        if (static_cast<u32>(tile.m_x) < static_cast<u32>(grid->m_width)
+            && static_cast<u32>(tile.m_y) < static_cast<u32>(grid->m_height)) {
+            BrickzCell& cell = grid->m_rows[tile.m_y][tile.m_x];
+            cell.m_objectId = 0;
+            cell.m_flags &= ~IDX(CELL_FLAG_IN_GAME_ICON);
         }
         obj = m_object;
         grid = g_gameReg->m_tileGrid;
-        i32 tileX2 = obj->m_screenX >> TILE_SHIFT_PX;
-        i32 tileY2 = obj->m_screenY >> TILE_SHIFT_PX;
+        Coord currentTile;
+        GetScreenTile(&currentTile);
         i32 mv = obj->m_objectId;
-        if (static_cast<u32>(tileX2) < static_cast<u32>(grid->m_width)
-            && static_cast<u32>(tileY2) < static_cast<u32>(grid->m_height)) {
-            grid->m_rowInts[tileY2][tileX2 * 7 + 2] = mv;
+        if (static_cast<u32>(currentTile.m_x) < static_cast<u32>(grid->m_width)
+            && static_cast<u32>(currentTile.m_y) < static_cast<u32>(grid->m_height)) {
+            BrickzCell& cell = grid->m_rows[currentTile.m_y][currentTile.m_x];
+            cell.m_objectId = mv;
             if (mv != 0) {
-                grid->m_rowInts[tileY2][tileX2 * 7] |= 0x40000;
+                cell.m_flags |= IDX(CELL_FLAG_IN_GAME_ICON);
             } else {
-                grid->m_rowInts[tileY2][tileX2 * 7] &= ~0x40000;
+                cell.m_flags &= ~IDX(CELL_FLAG_IN_GAME_ICON);
             }
         }
     }
@@ -939,7 +932,9 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
         }
     }
 
-    SNAP_OBJECT_TO_TILE_CENTER(m_object)
+    Coord position = m_object->ScreenPos();
+    SnapTileCenter(&position);
+    m_object->SetScreenPos(position);
     CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_INGAME_INFO)
     m_cachedPlayerIndex = -1;
@@ -968,9 +963,13 @@ i32 CInGameText::Update() {
 
     i32 playerIndex;
     i32 unitIndex;
-    CGrunt* found =
-        g_gameReg->m_triggerMgr
-            ->HitTestCell(m_object->m_screenX, m_object->m_screenY, &playerIndex, &unitIndex, 1);
+    CGrunt* found = g_gameReg->m_triggerMgr->HitTestCell(
+        m_object->m_screenPosition.m_x,
+        m_object->m_screenPosition.m_y,
+        &playerIndex,
+        &unitIndex,
+        1
+    );
 
     if (found != NULL) {
         if (playerIndex != g_curPlayer) {
@@ -1000,11 +999,9 @@ i32 CInGameText::Update() {
             return 0;
         }
 
-        CWwdSpriteObject* o = m_object;
-        i32 y = o->m_screenY;
-        i32 x = o->m_screenX;
+        Coord position = m_object->ScreenPos();
         CGruntzMgr* reg = g_gameReg;
-        if (::PtInRect(&reg->m_viewBounds, x, y)) {
+        if (::PtInRect(&reg->m_viewBounds, position.m_x, position.m_y)) {
             SoundCueRegistry* set = reg->m_world->m_soundRegistry;
             if (set->m_silentMode == false) {
                 SoundCue* res = LookupCue(set->m_cues, "GAME_HELPBOOK");

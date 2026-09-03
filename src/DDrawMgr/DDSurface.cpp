@@ -2,6 +2,8 @@
 
 #include <DDrawMgr/DDSurface.h>
 
+#include <MfcWin.h>
+
 #include <ComOutRef.h>
 #include <DDrawMgr/ClutTable.h>
 #include <DDrawMgr/ColorDepth.h>
@@ -12,6 +14,7 @@
 #include <DDrawMgr/PixelShift.h>
 #include <DDrawMgr/WallProject.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Image/ByteRunEncoding.h>
 #include <Image/Image.h>
 #include <Image/ImageRotate.h>
@@ -159,12 +162,9 @@ i32 CDDSurface::Refresh(IDirectDrawSurface* surface) {
     }
 
     m_pixelsPerRow = static_cast<u32>(m_pitch) / static_cast<u32>(m_bytesPerPixel);
-    m_fullRect.left = 0;
-    m_fullRect.top = 0;
-    m_fullRect.right = m_width;
-    m_fullRect.bottom = m_height;
+    m_fullRect = MakeRect(0, 0, m_width, m_height);
     m_imageBytes = m_height * m_bytesPerRow;
-    m_dontOwn = m_dontOwn | 1;
+    m_dontOwn = true;
     return 1;
 }
 
@@ -238,10 +238,7 @@ i32 CDDSurface::BlitIntoDesc(CDDrawDeviceManager* manager) {
     }
 
     m_pixelsPerRow = static_cast<u32>(m_pitch) / static_cast<u32>(m_bytesPerPixel);
-    m_fullRect.left = 0;
-    m_fullRect.top = 0;
-    m_fullRect.right = m_width;
-    m_fullRect.bottom = m_height;
+    m_fullRect = MakeRect(0, 0, m_width, m_height);
     m_imageBytes = m_height * m_bytesPerRow;
     return 1;
 }
@@ -255,13 +252,13 @@ void CDDSurface::FreeSurfaces() {
     }
     m_elements.SetSize(0, -1);
     if (this->m_ddSurface != NULL) {
-        if ((this->m_dontOwn & 1) == 0) {
+        if (!this->m_dontOwn) {
             this->m_ddSurface->Release();
         }
         this->m_ddSurface = NULL;
     }
     if (this->m_ddSurfaceBack != NULL) {
-        if ((this->m_dontOwn & 1) == 0) {
+        if (!this->m_dontOwn) {
             this->m_ddSurfaceBack->Release();
         }
         this->m_ddSurfaceBack = NULL;
@@ -537,31 +534,30 @@ void CDDSurface::FlipVertical() {
         return;
     }
 
-    i32 height = m_height;
-    i32 width = m_width;
+    CSize size(m_width, m_height);
     i32 i = 0;
-    i32 half = height / 2;
+    i32 half = size.cy / 2;
     if (half > 0) {
         do {
 
             i32 topOff = i * m_pitch;
             i32 j = 0;
-            if (width > 0) {
+            if (size.cx > 0) {
                 u8* top = buf + topOff;
                 do {
                     tmp[j] = *top;
                     ++top;
                     ++j;
-                } while (j < width);
+                } while (j < size.cx);
             }
 
-            i32 botRow = height - i - 1;
+            i32 botRow = size.cy - i - 1;
             i32 dstOff = i * m_pitch;
             i32 srcOff = botRow * m_pitch;
-            if (width > 0) {
+            if (size.cx > 0) {
                 u8* topDst = buf + dstOff;
                 u8* botSrc = buf + srcOff;
-                i32 k = width;
+                i32 k = size.cx;
                 do {
                     *topDst = *botSrc;
                     ++topDst;
@@ -572,13 +568,13 @@ void CDDSurface::FlipVertical() {
 
             i32 botOff = botRow * m_pitch;
             i32 m = 0;
-            if (width > 0) {
+            if (size.cx > 0) {
                 u8* botDst = buf + botOff;
                 do {
                     ++botDst;
                     botDst[-1] = tmp[m];
                     ++m;
-                } while (m < width);
+                } while (m < size.cx);
             }
             ++i;
         } while (i < half);
@@ -713,21 +709,15 @@ i32 CDDSurface::ShadeBlt(
     struct tagRECT* srcRect,
     i32 shade
 ) {
-    RECT dr, sr;
-    CopyRect(&dr, dstRect);
-    CopyRect(&sr, srcRect);
+    CRect dr = *dstRect;
+    CRect sr = *srcRect;
     if (m_bytesPerPixel != PIXEL16_BYTES_PER_PIXEL) {
         return 0;
     }
     {
-        i32 srcW = sr.right - sr.left;
-        i32 dstW = dr.right - dr.left;
-        if (dstW != srcW) {
-            return 0;
-        }
-        i32 srcH = sr.bottom - sr.top;
-        i32 dstH = dr.bottom - dr.top;
-        if (dstH != srcH) {
+        CSize srcSize = sr.Size();
+        CSize dstSize = dr.Size();
+        if (dstSize != srcSize) {
             return 0;
         }
         if (dr.left < 0) {
@@ -748,10 +738,10 @@ i32 CDDSurface::ShadeBlt(
         if (sr.top < 0) {
             return 0;
         }
-        if (sr.right > srcW) {
+        if (sr.right > src->m_width) {
             return 0;
         }
-        if (sr.bottom > srcH) {
+        if (sr.bottom > src->m_height) {
             return 0;
         }
     }
@@ -762,22 +752,21 @@ i32 CDDSurface::ShadeBlt(
     i32 srcStride = src->m_pitch / 2;
     srcPtr += sr.top * srcStride + sr.left;
     i32 dstRowAdv = dstStride + dr.left - dr.right;
-    i32 width = dr.right - dr.left;
+    CSize blitSize = dr.Size();
     i32 srcRowAdv = srcStride + sr.left - sr.right;
-    i32 height = dr.bottom - dr.top;
-    u16* temp = new u16[width * 2];
+    u16* temp = new u16[blitSize.cx * 2];
     i32 bank = static_cast<u8>(shade) / 8 * CLUT_ALPHA_BANK_ENTRY_COUNT * sizeof(u16);
     i32 redDown = g_rDown;
 
     if (redDown == PIXEL16_RED_DOWN && g_gDown == redDown && g_bDown == redDown
         && g_rUp == RGB555_RED_UP && g_gUp == PIXEL16_GREEN_UP) {
 
-        if (height > 0) {
-            i32 rows = height;
+        if (blitSize.cy > 0) {
+            i32 rows = blitSize.cy;
             do {
-                memcpy(temp, dstPtr, width * 2);
-                if (width > 0) {
-                    i32 n = width;
+                memcpy(temp, dstPtr, blitSize.cx * 2);
+                if (blitSize.cx > 0) {
+                    i32 n = blitSize.cx;
                     u16* t = temp;
                     do {
                         u32 tp = *t;
@@ -815,12 +804,12 @@ i32 CDDSurface::ShadeBlt(
     } else if (redDown == PIXEL16_RED_DOWN && g_gDown == RGB565_GREEN_DOWN && g_bDown == redDown
                && g_rUp == RGB565_RED_UP && g_gUp == PIXEL16_GREEN_UP) {
 
-        if (height > 0) {
-            i32 rows = height;
+        if (blitSize.cy > 0) {
+            i32 rows = blitSize.cy;
             do {
-                memcpy(temp, dstPtr, width * 2);
-                if (width > 0) {
-                    i32 n = width;
+                memcpy(temp, dstPtr, blitSize.cx * 2);
+                if (blitSize.cx > 0) {
+                    i32 n = blitSize.cx;
                     u16* t = temp;
                     do {
                         u32 tp = *t;
@@ -874,7 +863,7 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
     if (pct > CLUT_BLEND_PERCENT_MAX) {
         return 0;
     }
-    RECT rc;
+    CRect rc;
     if (clip) {
         if (clip->left < 0) {
             return 0;
@@ -888,7 +877,7 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
         if (clip->bottom > m_height) {
             return 0;
         }
-        CopyRect(&rc, clip);
+        rc = *clip;
     } else {
         rc = MakeRect(0, 0, m_width, m_height);
     }
@@ -897,18 +886,17 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
     i32 rowPix = m_pitch / 2;
     u16* srcPix = src + rc.top * rowPix + rc.left;
     i32 stride = rc.left - rc.right + rowPix;
-    i32 width = rc.right - rc.left;
-    i32 height = rc.bottom - rc.top;
-    u16* scratch = new u16[width * 2];
+    CSize size = rc.Size();
+    u16* scratch = new u16[size.cx * 2];
     i32 off = pct << CLUT_LEVEL_BYTE_SHIFT;
 
     if (g_rDown == PIXEL16_RED_DOWN && g_gDown == RGB555_GREEN_DOWN && g_bDown == PIXEL16_BLUE_DOWN
         && g_rUp == RGB555_RED_UP && g_gUp == PIXEL16_GREEN_UP) {
-        for (; height > 0; height--) {
-            memcpy(scratch, srcPix, width * 2);
-            if (width > 0) {
+        for (; size.cy > 0; size.cy--) {
+            memcpy(scratch, srcPix, size.cx * 2);
+            if (size.cx > 0) {
                 u16* rd = scratch;
-                i32 x = width;
+                i32 x = size.cx;
                 do {
                     u32 p = *rd++;
                     u32 blue = p & RGB555_CHANNEL_MASK;
@@ -933,11 +921,11 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
     } else if (g_rDown == PIXEL16_RED_DOWN && g_gDown == RGB565_GREEN_DOWN
                && g_bDown == PIXEL16_BLUE_DOWN && g_rUp == RGB565_RED_UP
                && g_gUp == PIXEL16_GREEN_UP) {
-        for (; height > 0; height--) {
-            memcpy(scratch, srcPix, width * 2);
-            if (width > 0) {
+        for (; size.cy > 0; size.cy--) {
+            memcpy(scratch, srcPix, size.cx * 2);
+            if (size.cx > 0) {
                 u16* rd = scratch;
-                i32 x = width;
+                i32 x = size.cx;
                 do {
                     u32 p = *rd++;
                     u32 blue = p & RGB555_CHANNEL_MASK;
@@ -1077,21 +1065,11 @@ void CDDSurface::Tile(CDDSurface* src, b32 useColorKey) {
     i32 dwTrans = DDBLTFAST_WAIT + DDBLTFAST_SRCCOLORKEY * (useColorKey != false);
     for (i32 y = 0; y < m_height; y += src->m_height) {
         for (i32 x = 0; x < m_width; x += src->m_width) {
-            RECT rect;
+            CRect rect;
             RECT* pRect = NULL;
             if (x + src->m_width >= m_width || y + src->m_height >= m_height) {
-                rect.left = 0;
-                rect.top = 0;
-                i32 w = m_width - x;
-                if (w >= src->m_width) {
-                    w = src->m_width;
-                }
-                rect.right = w;
-                i32 h = m_height - y;
-                if (h >= src->m_height) {
-                    h = src->m_height;
-                }
-                rect.bottom = h;
+                CSize tileSize(Min(m_width - x, src->m_width), Min(m_height - y, src->m_height));
+                rect = CRect(CPoint(0, 0), tileSize);
                 pRect = &rect;
             }
             m_ddSurface->BltFast(x, y, src->m_ddSurface, pRect, dwTrans);
@@ -1746,35 +1724,23 @@ i32 CDDSurface::RotateBlit(
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00141080, 0x174)
 i32 CDDSurface::StretchBlit(CDDSurface* src, RECT* srcRect, RECT* dstRect, i32 mode, i32 colorkey) {
-    RECT sr;
+    CRect sr;
     ClipVtx v[4];
 
-    i32 srcW = src->m_width;
-    i32 srcH = src->m_height;
+    CSize sourceSize(src->m_width, src->m_height);
     if (srcRect != NULL) {
         sr = *srcRect;
     } else {
-        sr.left = 0;
-        sr.right = srcW - 1;
-        sr.top = 0;
-        sr.bottom = srcH - 1;
+        sr = MakeRect(0, 0, sourceSize.cx - 1, sourceSize.cy - 1);
     }
-    v[0].x = static_cast<float>(dstRect->left);
-    v[0].y = static_cast<float>(dstRect->top);
-    v[0].u = static_cast<float>(sr.left);
-    v[0].v = static_cast<float>(sr.top);
-    v[1].x = static_cast<float>(dstRect->right);
-    v[1].y = static_cast<float>(dstRect->top);
-    v[1].u = static_cast<float>(sr.right);
-    v[1].v = static_cast<float>(sr.top);
-    v[2].x = static_cast<float>(dstRect->right);
-    v[2].y = static_cast<float>(dstRect->bottom);
-    v[2].u = static_cast<float>(sr.right);
-    v[2].v = static_cast<float>(sr.bottom);
-    v[3].x = static_cast<float>(dstRect->left);
-    v[3].y = static_cast<float>(dstRect->bottom);
-    v[3].u = static_cast<float>(sr.left);
-    v[3].v = static_cast<float>(sr.bottom);
+    v[0].SetPosition(static_cast<float>(dstRect->left), static_cast<float>(dstRect->top));
+    v[0].SetTexture(static_cast<float>(sr.left), static_cast<float>(sr.top));
+    v[1].SetPosition(static_cast<float>(dstRect->right), static_cast<float>(dstRect->top));
+    v[1].SetTexture(static_cast<float>(sr.right), static_cast<float>(sr.top));
+    v[2].SetPosition(static_cast<float>(dstRect->right), static_cast<float>(dstRect->bottom));
+    v[2].SetTexture(static_cast<float>(sr.right), static_cast<float>(sr.bottom));
+    v[3].SetPosition(static_cast<float>(dstRect->left), static_cast<float>(dstRect->bottom));
+    v[3].SetTexture(static_cast<float>(sr.left), static_cast<float>(sr.bottom));
     RotateRasterize(v, 4, this, src, mode, colorkey, -1, -1, -1, -1);
     return 1;
 }

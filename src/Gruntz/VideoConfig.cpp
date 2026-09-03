@@ -74,12 +74,11 @@ HWND g_optHwndVoiceVolume = NULL;
 
 RVA(0x000363a0, 0x41)
 Resolution GetResolutionCode() {
-    i32 w = g_gameReg->m_savedModeSize.cx;
-    i32 h = g_gameReg->m_savedModeSize.cy;
-    if (w == DISPLAY_WIDTH_1024 && h == DISPLAY_HEIGHT_768) {
+    CSize modeSize = g_gameReg->m_savedModeSize;
+    if (modeSize == CSize(DISPLAY_WIDTH_1024, DISPLAY_HEIGHT_768)) {
         return RES_1024X768;
     }
-    if (w == DISPLAY_WIDTH_800 && h == DISPLAY_HEIGHT_600) {
+    if (modeSize == CSize(DISPLAY_WIDTH_800, DISPLAY_HEIGHT_600)) {
         return RES_800X600;
     }
     return RES_640X480;
@@ -120,20 +119,16 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                     }
                     ReadMenuOptionsDialog(hDlg);
                     EndDialog(hDlg, 1);
-                    i32 w, h;
+                    CSize modeSize;
                     if (g_videoResolutionMode == RES_1024X768) {
-                        w = DISPLAY_WIDTH_1024;
-                        h = DISPLAY_HEIGHT_768;
+                        modeSize = CSize(DISPLAY_WIDTH_1024, DISPLAY_HEIGHT_768);
                     } else if (g_videoResolutionMode == RES_800X600) {
-                        w = DISPLAY_WIDTH_800;
-                        h = DISPLAY_HEIGHT_600;
+                        modeSize = CSize(DISPLAY_WIDTH_800, DISPLAY_HEIGHT_600);
                     } else {
-                        w = SCREEN_W_PX;
-                        h = SCREEN_H_PX;
+                        modeSize = CSize(SCREEN_W_PX, SCREEN_H_PX);
                     }
                     CGruntzMgr* reg = g_gameReg;
-                    reg->m_savedModeSize.cx = w;
-                    reg->m_savedModeSize.cy = h;
+                    reg->m_savedModeSize = modeSize;
                     if (g_gameReg->IsInPlayState()) {
                         g_gameReg->CheckSavedMode();
                     }

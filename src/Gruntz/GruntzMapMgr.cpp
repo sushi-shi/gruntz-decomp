@@ -72,25 +72,11 @@ i32 CGruntzMapMgr::SerializeDispatch(
 
 RVA(0x00082600, 0x73)
 TileCollisionKind CGameLevel::LookupTile(i32 x, i32 y) {
-    CDDrawWorkerHost* mp;
-    if (x < 0) {
-        x = 0;
-    } else {
-        mp = m_mainPlane;
-        if (x >= mp->m_tileColumns) {
-            x = mp->m_tileColumns - 1;
-        }
-    }
-    if (y < 0) {
-        y = 0;
-    } else {
-        mp = m_mainPlane;
-        if (y >= mp->m_tileRows) {
-            y = mp->m_tileRows - 1;
-        }
-    }
-    mp = m_mainPlane;
-    i32 tile = mp->m_tileHandles[mp->m_tileRowOffsets[y] + x];
+    CDDrawWorkerHost* mp = m_mainPlane;
+    Coord position(x, y);
+    position.Max(Coord(0, 0));
+    position.Min(Coord(mp->m_tileGridSize.cx - 1, mp->m_tileGridSize.cy - 1));
+    i32 tile = mp->m_tileHandles[mp->m_tileRowOffsets[position.m_y] + position.m_x];
     if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
         return TILEKIND_PASSABLE;
     }

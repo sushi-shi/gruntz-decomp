@@ -7,34 +7,23 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/MapCellFlags.h>
 #include <Ints.h>
+#include <MakeRect.h>
 #include <Wap32/TileGeometry.h>
 
 static inline Coord ScreenPosition(CGameObject* object) {
-    Coord out;
-    i32 y = object->m_screenY;
-    i32 x = object->m_screenX;
-    out.m_x = x;
-    out.m_y = y;
-    return out;
+    return object->ScreenPos();
 }
 
 static inline Coord ScreenTile(CGrunt* grunt) {
     Coord out;
-    CGameObject* object = grunt->m_object;
-    out.m_x = object->m_screenX >> TILE_SHIFT_PX;
-    out.m_y = object->m_screenY >> TILE_SHIFT_PX;
+    grunt->GetScreenTile(&out);
     return out;
 }
 
 static inline RECT TileNeighborhood(CGrunt* grunt) {
     Coord high = ScreenTile(grunt);
     Coord low = ScreenTile(grunt);
-    RECT box;
-    box.top = low.m_y - 1;
-    box.bottom = high.m_y + 2;
-    box.left = low.m_x - 1;
-    box.right = high.m_x + 2;
-    return box;
+    return MakeRect(low.m_x - 1, low.m_y - 1, high.m_x + 2, high.m_y + 2);
 }
 
 RVA(0x00035f10, 0x155)
@@ -57,12 +46,12 @@ i32 CBattlezMapConfig::RerouteSwitchSeeker(CGrunt* grunt) {
     }
 
     Coord center = ScreenPosition(grunt->m_object);
-    RECT box = TileNeighborhood(grunt);
+    CRect box = TileNeighborhood(grunt);
     for (i32 row = box.top; row < box.bottom; row++) {
         for (i32 col = box.left; col < box.right; col++) {
-            i32 tileX = center.m_x >> TILE_SHIFT_PX;
-            i32 tileY = center.m_y >> TILE_SHIFT_PX;
-            if (col == tileX && row == tileY) {
+            Coord tile = center;
+            ScreenTile(&tile);
+            if (col == tile.m_x && row == tile.m_y) {
                 continue;
             }
             if (static_cast<u32>(col) >= static_cast<u32>(m_board->m_width)
@@ -74,7 +63,15 @@ i32 CBattlezMapConfig::RerouteSwitchSeeker(CGrunt* grunt) {
                 continue;
             }
             if ((flags & IDX(CELL_FLAG_SPECIAL)) == 0) {
-                grunt->TileSwitch(col, row, 0, 0xd87, 0, 0);
+                grunt->TileSwitch(
+                    col,
+                    row,
+                    0,
+                    IDX(CELL_FLAG_SOLID | CELL_FLAG_SPECIAL | CELL_FLAG_TRIGGER | CELL_FLAG_ARROW
+                        | CELL_FLAG_WATER | CELL_FLAG_SPIKES | CELL_FLAG_SINK_HAZARD),
+                    0,
+                    0
+                );
                 grunt->m_dwell = 0;
                 return 1;
             }

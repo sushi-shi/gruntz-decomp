@@ -63,30 +63,25 @@ BOOL CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
             if (g_previewMgr == NULL || g_previewImage == NULL || item == NULL) {
                 return true;
             }
-            RECT wr;
+            CRect wr;
             GetWindowRect(item, &wr);
-            POINT pt;
-            pt.x = wr.left;
-            pt.y = wr.top;
+            CPoint pt(wr.left, wr.top);
             ScreenToClient(hDlg, &pt);
-            i32 dx = pt.x;
-            i32 dy = pt.y;
-            i32 w = wr.right - wr.left - 1;
-            i32 h = wr.bottom - wr.top - 1;
-            if (w >= SCREEN_HALF_W_PX) {
-                dx += (w - SCREEN_HALF_W_PX) / 2;
-                w = SCREEN_HALF_W_PX;
+            CSize previewSize = wr.Size() - CSize(1, 1);
+            if (previewSize.cx >= SCREEN_HALF_W_PX) {
+                pt.x += (previewSize.cx - SCREEN_HALF_W_PX) / 2;
+                previewSize.cx = SCREEN_HALF_W_PX;
             }
-            if (h >= SCREEN_HALF_H_PX) {
-                dy += (h - SCREEN_HALF_H_PX) / 2;
-                h = SCREEN_HALF_H_PX;
+            if (previewSize.cy >= SCREEN_HALF_H_PX) {
+                pt.y += (previewSize.cy - SCREEN_HALF_H_PX) / 2;
+                previewSize.cy = SCREEN_HALF_H_PX;
             }
             PAINTSTRUCT ps;
             BeginPaint(hDlg, &ps);
             HDC hdc = ps.hdc;
             SetStretchBltMode(hdc, COLORONCOLOR);
             CDib* img = g_previewImage;
-            img->Blt(hdc, dx, dy, w, h);
+            img->Blt(hdc, pt.x, pt.y, previewSize.cx, previewSize.cy);
             EndPaint(hDlg, &ps);
             return true;
         }

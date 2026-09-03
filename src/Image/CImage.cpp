@@ -3,6 +3,7 @@
 #include <Image/CImage.h>
 
 #include <Mfc.h>
+#include <MfcWin.h>
 
 #include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DDrawShadeBlit.h>
@@ -15,6 +16,7 @@
 #include <Gruntz/ResolveNode.h>
 #include <Gruntz/State.h>
 #include <Image/ImageClipMacros.h>
+#include <MakeRect.h>
 #include <Pix16.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezArchiveDir.h>
@@ -33,6 +35,23 @@ b32 g_resourceInstallActive = false;
 DATA(0x002bf380)
 i32 g_surfaceColorKey = 0;
 
+static inline Coord ResolveImagePosition(
+    const CResolveNode* info,
+    const POINT& origin,
+    const POINT& anchor,
+    b32 mirrorX,
+    b32 mirrorY
+) {
+    Coord offset = Coord(origin.x, origin.y) + info->m_plotOffset;
+    if (mirrorX != false) {
+        offset.m_x = -offset.m_x;
+    }
+    if (mirrorY != false) {
+        offset.m_y = -offset.m_y;
+    }
+    return info->m_screenPosition + offset - Coord(anchor.x, anchor.y);
+}
+
 RVA(0x00152e90, 0x8b)
 i32 CImage::Create(char* path, i32 keyed) {
     i32 colorKey = (keyed != 0) ? g_surfaceColorKey : -1;
@@ -48,15 +67,13 @@ i32 CImage::Create(char* path, i32 keyed) {
 
     m_width = item->m_width;
     m_height = item->m_height;
-    m_anchorX = m_width >> 1;
-    m_anchorY = m_height >> 1;
+    m_anchor = CPoint(m_width >> 1, m_height >> 1);
     if (item->m_hasColorKey != false) {
         m_bltFastFlags = DDBLTFAST_WAIT | DDBLTFAST_SRCCOLORKEY;
     } else {
         m_bltFastFlags = DDBLTFAST_WAIT;
     }
-    m_originX = 0;
-    m_originY = 0;
+    m_origin = CPoint(0, 0);
     return 1;
 }
 
@@ -96,13 +113,9 @@ i32 CImage::LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 ke
     }
     i32 colorKey = (keyed != 0) ? g_surfaceColorKey : -1;
     if (mode == FMT_PID || mode == FMT_RID) {
-        i32 g10 = desc->offsetX;
-        i32 g14 = desc->offsetY;
-        m_originX = g10;
-        m_originY = g14;
+        m_origin = CPoint(desc->offsetX, desc->offsetY);
     } else {
-        m_originX = 0;
-        m_originY = 0;
+        m_origin = CPoint(0, 0);
     }
     i32 surfaceCaps = 0;
     if (g_resourceInstallActive != false) {
@@ -115,12 +128,10 @@ i32 CImage::LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 ke
     if (item == NULL) {
         return 0;
     }
-    i32 w = item->m_width;
-    m_width = w;
-    i32 h = item->m_height;
-    m_height = h;
-    m_anchorX = w >> 1;
-    m_anchorY = h >> 1;
+    CSize imageSize(item->m_width, item->m_height);
+    m_width = imageSize.cx;
+    m_height = imageSize.cy;
+    m_anchor = CPoint(imageSize.cx >> 1, imageSize.cy >> 1);
     if (item->m_hasColorKey != false) {
         m_bltFastFlags = DDBLTFAST_WAIT | DDBLTFAST_SRCCOLORKEY;
         return 1;
@@ -142,19 +153,16 @@ i32 CImage::CreateBlankSurface(i32 width, i32 height, i32 keyed) {
     if (item == NULL) {
         return 0;
     }
-    i32 w = item->m_width;
-    m_width = w;
-    i32 h = item->m_height;
-    m_height = h;
-    m_anchorX = w >> 1;
-    m_anchorY = h >> 1;
+    CSize imageSize(item->m_width, item->m_height);
+    m_width = imageSize.cx;
+    m_height = imageSize.cy;
+    m_anchor = CPoint(imageSize.cx >> 1, imageSize.cy >> 1);
     if (item->m_hasColorKey != false) {
         m_bltFastFlags = DDBLTFAST_WAIT | DDBLTFAST_SRCCOLORKEY;
     } else {
         m_bltFastFlags = DDBLTFAST_WAIT;
     }
-    m_originX = 0;
-    m_originY = 0;
+    m_origin = CPoint(0, 0);
     return 1;
 }
 
@@ -170,15 +178,12 @@ i32 CImage::BuildShadeBlitter(PidHeader* desc, u32 size) {
     if (!owned->Build(desc, static_cast<i32>(size), fmt)) {
         return 0;
     }
-    i32 w = m_owned->m_width;
-    m_width = w;
-    i32 h = m_owned->m_height;
-    m_height = h;
+    CSize imageSize(m_owned->m_width, m_owned->m_height);
+    m_width = imageSize.cx;
+    m_height = imageSize.cy;
     m_bltFastFlags = DDBLTFAST_WAIT | DDBLTFAST_SRCCOLORKEY;
-    m_anchorX = w >> 1;
-    m_anchorY = h >> 1;
-    m_originX = desc->offsetX;
-    m_originY = desc->offsetY;
+    m_anchor = CPoint(imageSize.cx >> 1, imageSize.cy >> 1);
+    m_origin = CPoint(desc->offsetX, desc->offsetY);
     return 1;
 }
 
@@ -228,13 +233,9 @@ i32 CImage::CopyFrom(CImage* other) {
 RVA(0x00153330, 0x36)
 i32 CImage::SetOrigin(PidHeader* desc, FileImageFormat mode) {
     if (mode == FMT_PID || mode == FMT_RID) {
-        i32 oy = desc->offsetY;
-        i32 ox = desc->offsetX;
-        m_originX = ox;
-        m_originY = oy;
+        m_origin = CPoint(desc->offsetX, desc->offsetY);
     } else {
-        m_originX = 0;
-        m_originY = 0;
+        m_origin = CPoint(0, 0);
     }
     return 1;
 }
@@ -332,81 +333,71 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
         return;
     }
 
-    LONG x = m_originX - m_anchorX + info->m_plotDX + info->m_screenX;
-    LONG y = m_originY - m_anchorY + info->m_plotDY + info->m_screenY;
+    Coord resolvedPosition = ResolveImagePosition(info, m_origin, m_anchor, false, false);
+    CPoint position(resolvedPosition.m_x, resolvedPosition.m_y);
     if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        info->m_level->m_mainPlane->WorldToViewport(&x, &y);
+        info->m_level->m_mainPlane->WorldToViewport(&position.x, &position.y);
     }
-    i32 right = m_width + x - 1;
-    i32 bottom = m_height + y - 1;
-    i32 dleft = x;
-    i32 dtop = y;
-    i32 dright = right;
-    i32 dbottom = bottom;
+    CPoint farCorner = position + CSize(m_width - 1, m_height - 1);
+    CRect destination(position.x, position.y, farCorner.x, farCorner.y);
     if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
         BlitRect srcClip = m_ownerCtx->m_level->m_viewportRect;
-        RECT destClip;
-        CopyRect(&destClip, static_cast<const RECT*>(&srcClip));
-        if (x < destClip.left) {
-            dleft += destClip.left - x;
+        CRect destClip = static_cast<const RECT&>(srcClip);
+        if (position.x < destClip.left) {
+            destination.left += destClip.left - position.x;
         }
-        if (right > destClip.right) {
-            dright = destClip.right;
+        if (farCorner.x > destClip.right) {
+            destination.right = destClip.right;
         }
-        if (y < destClip.top) {
-            dtop += destClip.top - y;
+        if (position.y < destClip.top) {
+            destination.top += destClip.top - position.y;
         }
-        if (bottom > destClip.bottom) {
-            dbottom = destClip.bottom;
+        if (farCorner.y > destClip.bottom) {
+            destination.bottom = destClip.bottom;
         }
     } else if (info->m_clip.left == COORD_UNSET) {
-        if (x < 0) {
-            dleft = 0;
+        if (position.x < 0) {
+            destination.left = 0;
         }
-        if (right >= dst->m_width) {
-            dright = dst->m_width - 1;
+        if (farCorner.x >= dst->m_width) {
+            destination.right = dst->m_width - 1;
         }
-        if (y < 0) {
-            dtop = 0;
+        if (position.y < 0) {
+            destination.top = 0;
         }
-        if (bottom >= dst->m_height) {
-            dbottom = dst->m_height - 1;
+        if (farCorner.y >= dst->m_height) {
+            destination.bottom = dst->m_height - 1;
         }
     } else {
-        if (x < info->m_clip.left) {
-            dleft = info->m_clip.left;
+        if (position.x < info->m_clip.left) {
+            destination.left = info->m_clip.left;
         }
-        if (right > info->m_clip.right) {
-            dright = info->m_clip.right;
+        if (farCorner.x > info->m_clip.right) {
+            destination.right = info->m_clip.right;
         }
-        if (y < info->m_clip.top) {
-            dtop = info->m_clip.top;
+        if (position.y < info->m_clip.top) {
+            destination.top = info->m_clip.top;
         }
-        if (bottom > info->m_clip.bottom) {
-            dbottom = info->m_clip.bottom;
+        if (farCorner.y > info->m_clip.bottom) {
+            destination.bottom = info->m_clip.bottom;
         }
     }
-    i32 w = dright - dleft + 1;
-    i32 h = dbottom - dtop + 1;
-    if (w <= 0 || h <= 0) {
+    CSize visibleSize = destination.Size() + CSize(1, 1);
+    if (visibleSize.cx <= 0 || visibleSize.cy <= 0) {
         info->m_dirty.m_armed = -1;
         return;
     }
-    RECT s;
-    s.left = dleft - x;
-    s.top = dtop - y;
-    s.right = s.left + w;
-    s.bottom = s.top + h;
-    dst->m_surface->BltFast(dleft, dtop, m_surface, &s, m_bltFastFlags);
-    info->m_dirty.m_lastX = dleft;
-    info->m_dirty.m_rect.left = dleft;
-    info->m_dirty.m_lastY = dtop;
-    info->m_dirty.m_w = w;
-    info->m_dirty.m_rect.top = dtop;
-    info->m_dirty.m_h = h;
+    CRect s(
+        destination.left - position.x,
+        destination.top - position.y,
+        destination.left - position.x + visibleSize.cx,
+        destination.top - position.y + visibleSize.cy
+    );
+    dst->m_surface->BltFast(destination.left, destination.top, m_surface, &s, m_bltFastFlags);
+    info->m_dirty.m_lastPosition.Set(destination.left, destination.top);
+    info->m_dirty.m_size = visibleSize;
     info->m_dirty.m_armed = 0;
-    info->m_dirty.m_rect.right = dright;
-    info->m_dirty.m_rect.bottom = dbottom;
+    info->m_dirty.m_rect = destination;
 }
 
 // @early-stop
@@ -443,201 +434,255 @@ void CImage::RenderFrameClipped(
 // @early-stop
 RVA(0x001538c0, 0x257)
 void CImage::BlitNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
-    LONG x = info->m_screenX - m_originX - info->m_plotDX - m_anchorX;
-    LONG y = info->m_screenY - m_originY - info->m_plotDY - m_anchorY;
+    Coord resolvedPosition = ResolveImagePosition(info, m_origin, m_anchor, true, true);
+    CPoint position(resolvedPosition.m_x, resolvedPosition.m_y);
     if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        info->m_level->m_mainPlane->WorldToViewport(&x, &y);
+        info->m_level->m_mainPlane->WorldToViewport(&position.x, &position.y);
     }
-    i32 right = m_width + x - 1;
-    i32 bottom = m_height + y - 1;
-    DECLARE_CLIPPED_IMAGE_RECT(RECT, d, info, dst, x, y, right, bottom, w, h)
-    RECT s;
-    s.left = right - d.right;
-    s.top = bottom - d.bottom;
-    s.right = s.left + w;
-    s.bottom = s.top + h;
+    CPoint farCorner = position + CSize(m_width - 1, m_height - 1);
+    DECLARE_CLIPPED_IMAGE_RECT(
+        CRect,
+        d,
+        info,
+        dst,
+        position.x,
+        position.y,
+        farCorner.x,
+        farCorner.y,
+        visibleSize
+    )
+    CRect s = MakeRect(
+        farCorner.x - d.right,
+        farCorner.y - d.bottom,
+        farCorner.x - d.right + visibleSize.cx,
+        farCorner.y - d.bottom + visibleSize.cy
+    );
     g_bltFx.dwDDFX = DDBLTFX_MIRRORLEFTRIGHT | DDBLTFX_MIRRORUPDOWN;
-    d.right += 1;
-    d.bottom += 1;
+    d.InflateRect(0, 0, 1, 1);
     dst->m_surface->BltEx(&d, m_surface, &s, DDBLT_DDFX | DDBLT_KEYSRC, &g_bltFx);
-    d.right -= 1;
-    d.bottom -= 1;
-    info->m_dirty.m_lastX = d.left;
-    info->m_dirty.m_lastY = d.top;
-    info->m_dirty.m_rect = *(&d);
-    info->m_dirty.m_w = w;
-    info->m_dirty.m_h = h;
+    d.DeflateRect(0, 0, 1, 1);
+    info->m_dirty.m_lastPosition.Set(d.left, d.top);
+    info->m_dirty.m_rect = d;
+    info->m_dirty.m_size = visibleSize;
     info->m_dirty.m_armed = 0;
 }
 
 // @early-stop
 RVA(0x00153b20, 0x270)
 void CImage::BlitFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
-    LONG x = info->m_screenX - info->m_plotDX - m_anchorX - m_originX;
-    LONG y = m_originY - m_anchorY + info->m_plotDY + info->m_screenY;
+    Coord resolvedPosition = ResolveImagePosition(info, m_origin, m_anchor, true, false);
+    CPoint position(resolvedPosition.m_x, resolvedPosition.m_y);
     if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        info->m_level->m_mainPlane->WorldToViewport(&x, &y);
+        info->m_level->m_mainPlane->WorldToViewport(&position.x, &position.y);
     }
-    i32 right = m_width + x - 1;
-    i32 bottom = m_height + y - 1;
-    DECLARE_CLIPPED_IMAGE_RECT(RECT, d, info, dst, x, y, right, bottom, w, h)
-    RECT s;
-    s.left = right - d.right;
-    s.top = d.top - y;
-    s.right = s.left + w;
-    s.bottom = s.top + h;
-    d.right += 1;
-    d.bottom += 1;
+    CPoint farCorner = position + CSize(m_width - 1, m_height - 1);
+    DECLARE_CLIPPED_IMAGE_RECT(
+        CRect,
+        d,
+        info,
+        dst,
+        position.x,
+        position.y,
+        farCorner.x,
+        farCorner.y,
+        visibleSize
+    )
+    CRect s = MakeRect(
+        farCorner.x - d.right,
+        d.top - position.y,
+        farCorner.x - d.right + visibleSize.cx,
+        d.top - position.y + visibleSize.cy
+    );
+    d.InflateRect(0, 0, 1, 1);
     g_bltFx.dwDDFX = DDBLTFX_MIRRORLEFTRIGHT;
     dst->m_surface->BltEx(&d, m_surface, &s, DDBLT_DDFX | DDBLT_KEYSRC, &g_bltFx);
-    d.right -= 1;
-    d.bottom -= 1;
-    info->m_dirty.m_lastX = d.left;
-    info->m_dirty.m_lastY = d.top;
-    info->m_dirty.m_rect = *(&d);
-    info->m_dirty.m_w = w;
-    info->m_dirty.m_h = h;
+    d.DeflateRect(0, 0, 1, 1);
+    info->m_dirty.m_lastPosition.Set(d.left, d.top);
+    info->m_dirty.m_rect = d;
+    info->m_dirty.m_size = visibleSize;
     info->m_dirty.m_armed = 0;
 }
 
 // @early-stop
 RVA(0x00153d90, 0x259)
 void CImage::BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
-    LONG x = info->m_plotDX - m_anchorX + m_originX + info->m_screenX;
-    LONG y = info->m_screenY - m_originY - m_anchorY - info->m_plotDY;
+    Coord resolvedPosition = ResolveImagePosition(info, m_origin, m_anchor, false, true);
+    CPoint position(resolvedPosition.m_x, resolvedPosition.m_y);
     if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        info->m_level->m_mainPlane->WorldToViewport(&x, &y);
+        info->m_level->m_mainPlane->WorldToViewport(&position.x, &position.y);
     }
-    i32 right = m_width + x - 1;
-    i32 bottom = m_height + y - 1;
-    DECLARE_CLIPPED_IMAGE_RECT(RECT, d, info, dst, x, y, right, bottom, w, h)
-    RECT s;
-    s.left = d.left - x;
-    s.top = bottom - d.bottom;
-    s.right = s.left + w;
-    s.bottom = s.top + h;
-    d.right += 1;
-    d.bottom += 1;
+    CPoint farCorner = position + CSize(m_width - 1, m_height - 1);
+    DECLARE_CLIPPED_IMAGE_RECT(
+        CRect,
+        d,
+        info,
+        dst,
+        position.x,
+        position.y,
+        farCorner.x,
+        farCorner.y,
+        visibleSize
+    )
+    CRect s = MakeRect(
+        d.left - position.x,
+        farCorner.y - d.bottom,
+        d.left - position.x + visibleSize.cx,
+        farCorner.y - d.bottom + visibleSize.cy
+    );
+    d.InflateRect(0, 0, 1, 1);
     g_bltFx.dwDDFX = DDBLTFX_MIRRORUPDOWN;
     dst->m_surface->BltEx(&d, m_surface, &s, DDBLT_DDFX | DDBLT_KEYSRC, &g_bltFx);
-    d.right -= 1;
-    d.bottom -= 1;
-    info->m_dirty.m_lastX = d.left;
-    info->m_dirty.m_lastY = d.top;
-    info->m_dirty.m_rect = *(&d);
-    info->m_dirty.m_w = w;
-    info->m_dirty.m_h = h;
+    d.DeflateRect(0, 0, 1, 1);
+    info->m_dirty.m_lastPosition.Set(d.left, d.top);
+    info->m_dirty.m_rect = d;
+    info->m_dirty.m_size = visibleSize;
     info->m_dirty.m_armed = 0;
 }
 
 // @early-stop
 RVA(0x00153ff0, 0x280)
 void CImage::BlitShadeFlipHV(CResolveNode* info, CDDrawSurfacePair* dst) {
-    LONG x = info->m_screenX - m_anchorX + m_originX + info->m_plotDX;
-    LONG y = info->m_screenY - m_anchorY + m_originY + info->m_plotDY;
+    Coord resolvedPosition = ResolveImagePosition(info, m_origin, m_anchor, false, false);
+    CPoint position(resolvedPosition.m_x, resolvedPosition.m_y);
     if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        info->m_level->m_mainPlane->WorldToViewport(&x, &y);
+        info->m_level->m_mainPlane->WorldToViewport(&position.x, &position.y);
     }
-    i32 right = m_width + x - 1;
-    i32 bottom = m_height + y - 1;
-    DECLARE_CLIPPED_IMAGE_RECT(ShadeRect, d, info, dst, x, y, right, bottom, w, h)
+    CPoint farCorner = position + CSize(m_width - 1, m_height - 1);
+    DECLARE_CLIPPED_IMAGE_RECT(
+        ShadeRect,
+        d,
+        info,
+        dst,
+        position.x,
+        position.y,
+        farCorner.x,
+        farCorner.y,
+        visibleSize
+    )
     ShadeRect s;
-    s.left = d.left - x;
-    s.top = d.top - y;
-    s.right = s.left + w - 1;
-    s.bottom = s.top + h - 1;
+    s = MakeRect(
+        d.left - position.x,
+        d.top - position.y,
+        d.left - position.x + visibleSize.cx - 1,
+        d.top - position.y + visibleSize.cy - 1
+    );
     if (info->m_drawActive) {
         m_owned->Select(info->m_drawFillCmd, info->m_drawFillArg);
         m_owned->m_light = info->m_fillFraction;
     }
     m_owned->Blit(&d, dst->m_surface, &s, 0, 0);
-    info->m_dirty.m_lastX = d.left;
-    info->m_dirty.m_lastY = d.top;
-    info->m_dirty.m_rect = *(&d);
-    info->m_dirty.m_w = w;
-    info->m_dirty.m_h = h;
+    info->m_dirty.m_lastPosition.Set(d.left, d.top);
+    info->m_dirty.m_rect = d;
+    info->m_dirty.m_size = visibleSize;
     info->m_dirty.m_armed = 0;
 }
 
 RVA(0x00154270, 0x257)
 void CImage::BlitShadeNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
-    LONG x = info->m_screenX - m_originX - m_anchorX - info->m_plotDX;
-    LONG y = info->m_screenY - m_originY - m_anchorY - info->m_plotDY;
+    Coord resolvedPosition = ResolveImagePosition(info, m_origin, m_anchor, true, true);
+    CPoint position(resolvedPosition.m_x, resolvedPosition.m_y);
     if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        info->m_level->m_mainPlane->WorldToViewport(&x, &y);
+        info->m_level->m_mainPlane->WorldToViewport(&position.x, &position.y);
     }
-    i32 right = m_width + x - 1;
-    i32 bottom = m_height + y - 1;
-    DECLARE_CLIPPED_IMAGE_RECT(ShadeRect, d, info, dst, x, y, right, bottom, w, h)
+    CPoint farCorner = position + CSize(m_width - 1, m_height - 1);
+    DECLARE_CLIPPED_IMAGE_RECT(
+        ShadeRect,
+        d,
+        info,
+        dst,
+        position.x,
+        position.y,
+        farCorner.x,
+        farCorner.y,
+        visibleSize
+    )
     ShadeRect s;
-    s.left = right - d.right;
-    s.top = bottom - d.bottom;
-    s.right = s.left + w - 1;
-    s.bottom = s.top + h - 1;
+    s = MakeRect(
+        farCorner.x - d.right,
+        farCorner.y - d.bottom,
+        farCorner.x - d.right + visibleSize.cx - 1,
+        farCorner.y - d.bottom + visibleSize.cy - 1
+    );
     if (info->m_drawActive) {
         m_owned->Select(info->m_drawFillCmd, info->m_drawFillArg);
     }
     m_owned->Blit(&d, dst->m_surface, &s, 1, 1);
-    info->m_dirty.m_lastX = d.left;
-    info->m_dirty.m_lastY = d.top;
-    info->m_dirty.m_rect = *(&d);
-    info->m_dirty.m_w = w;
-    info->m_dirty.m_h = h;
+    info->m_dirty.m_lastPosition.Set(d.left, d.top);
+    info->m_dirty.m_rect = d;
+    info->m_dirty.m_size = visibleSize;
     info->m_dirty.m_armed = 0;
 }
 
 // @early-stop
 RVA(0x001544d0, 0x275)
 void CImage::BlitShadeFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
-    LONG x = info->m_screenX - m_anchorX - info->m_plotDX - m_originX;
-    LONG y = m_originY + info->m_plotDY + info->m_screenY - m_anchorY;
+    Coord resolvedPosition = ResolveImagePosition(info, m_origin, m_anchor, true, false);
+    CPoint position(resolvedPosition.m_x, resolvedPosition.m_y);
     if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        info->m_level->m_mainPlane->WorldToViewport(&x, &y);
+        info->m_level->m_mainPlane->WorldToViewport(&position.x, &position.y);
     }
-    i32 right = m_width + x - 1;
-    i32 bottom = m_height + y - 1;
-    DECLARE_CLIPPED_IMAGE_RECT(ShadeRect, d, info, dst, x, y, right, bottom, w, h)
+    CPoint farCorner = position + CSize(m_width - 1, m_height - 1);
+    DECLARE_CLIPPED_IMAGE_RECT(
+        ShadeRect,
+        d,
+        info,
+        dst,
+        position.x,
+        position.y,
+        farCorner.x,
+        farCorner.y,
+        visibleSize
+    )
     ShadeRect s;
-    s.left = d.left - x;
-    s.top = d.top - y;
-    s.right = s.left + w - 1;
-    s.bottom = s.top + h - 1;
+    s = MakeRect(
+        d.left - position.x,
+        d.top - position.y,
+        d.left - position.x + visibleSize.cx - 1,
+        d.top - position.y + visibleSize.cy - 1
+    );
     if (info->m_drawActive) {
         m_owned->Select(info->m_drawFillCmd, info->m_drawFillArg);
     }
     m_owned->Blit(&d, dst->m_surface, &s, 1, 0);
-    info->m_dirty.m_lastX = d.left;
-    info->m_dirty.m_lastY = d.top;
-    info->m_dirty.m_rect = *(&d);
-    info->m_dirty.m_w = w;
-    info->m_dirty.m_h = h;
+    info->m_dirty.m_lastPosition.Set(d.left, d.top);
+    info->m_dirty.m_rect = d;
+    info->m_dirty.m_size = visibleSize;
     info->m_dirty.m_armed = 0;
 }
 
 // @early-stop
 RVA(0x00154750, 0x275)
 void CImage::BlitShadeFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
-    LONG x = info->m_plotDX + m_originX + info->m_screenX - m_anchorX;
-    LONG y = info->m_screenY - m_originY - info->m_plotDY - m_anchorY;
+    Coord resolvedPosition = ResolveImagePosition(info, m_origin, m_anchor, false, true);
+    CPoint position(resolvedPosition.m_x, resolvedPosition.m_y);
     if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        info->m_level->m_mainPlane->WorldToViewport(&x, &y);
+        info->m_level->m_mainPlane->WorldToViewport(&position.x, &position.y);
     }
-    i32 right = m_width + x - 1;
-    i32 bottom = m_height + y - 1;
-    DECLARE_CLIPPED_IMAGE_RECT(ShadeRect, d, info, dst, x, y, right, bottom, w, h)
+    CPoint farCorner = position + CSize(m_width - 1, m_height - 1);
+    DECLARE_CLIPPED_IMAGE_RECT(
+        ShadeRect,
+        d,
+        info,
+        dst,
+        position.x,
+        position.y,
+        farCorner.x,
+        farCorner.y,
+        visibleSize
+    )
     ShadeRect s;
-    s.left = d.left - x;
-    s.top = bottom - d.bottom;
-    s.right = s.left + w - 1;
-    s.bottom = s.top + h - 1;
+    s = MakeRect(
+        d.left - position.x,
+        farCorner.y - d.bottom,
+        d.left - position.x + visibleSize.cx - 1,
+        farCorner.y - d.bottom + visibleSize.cy - 1
+    );
     if (info->m_drawActive) {
         m_owned->Select(info->m_drawFillCmd, info->m_drawFillArg);
     }
     m_owned->Blit(&d, dst->m_surface, &s, 0, 1);
-    info->m_dirty.m_lastX = d.left;
-    info->m_dirty.m_lastY = d.top;
-    info->m_dirty.m_rect = *(&d);
-    info->m_dirty.m_w = w;
-    info->m_dirty.m_h = h;
+    info->m_dirty.m_lastPosition.Set(d.left, d.top);
+    info->m_dirty.m_rect = d;
+    info->m_dirty.m_size = visibleSize;
     info->m_dirty.m_armed = 0;
 }

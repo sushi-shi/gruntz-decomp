@@ -3,6 +3,7 @@
 #include <Gruntz/SBI_ImageSet.h>
 
 #include <Mfc.h>
+#include <MfcWin.h>
 
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -88,9 +89,13 @@ i32 CSBI_ImageSet::Render() {
         CImage* cel = tbl->GetAt(idx);
         SetFrame(cel);
         if (cel != NULL) {
-            i32 y = cel->m_anchorY + m_rect.top;
-            i32 x = cel->m_anchorX + m_rect.left;
-            cel->RenderFrame(g_gameReg->m_world->m_drawTarget->m_backPair, x, y, 0);
+            CPoint position(cel->m_anchor.x + m_rect.left, cel->m_anchor.y + m_rect.top);
+            cel->RenderFrame(
+                g_gameReg->m_world->m_drawTarget->m_backPair,
+                position.x,
+                position.y,
+                0
+            );
         }
     }
     return 1;

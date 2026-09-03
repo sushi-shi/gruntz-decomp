@@ -174,8 +174,8 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_moveTile, sizeof(m_moveTile));
     ar->Read(&m_arrivalPhase, sizeof(m_arrivalPhase));
     ar->Read(&m_timePerTile, sizeof(m_timePerTile));
-    ar->Read(&m_movePosX, sizeof(m_movePosX));
-    ar->Read(&m_movePosY, sizeof(m_movePosY));
+    ar->Read(&m_movePosition.x, sizeof(m_movePosition.x));
+    ar->Read(&m_movePosition.y, sizeof(m_movePosition.y));
     ar->Read(&m_reserved8d0, sizeof(m_reserved8d0));
     ar->Read(&m_coordToggle, sizeof(m_coordToggle));
     ar->Read(&m_wingzEnabled, sizeof(m_wingzEnabled));

@@ -1,16 +1,19 @@
 #ifndef GRUNTZ_BIGANIMATIONMACROS_H
 #define GRUNTZ_BIGANIMATIONMACROS_H
 
+#include <Mfc.h>
+
 #include <DDrawMgr/LogicRecordFlags.h>
 #include <Wwd/WwdGameObjectFlags.h>
 
 #define NORMALIZE_BIG_ANIMATION_WITH_AUX(heightLayer)                                              \
     CImage* aux = m_object->m_frameImage;                                                          \
     if (aux != NULL) {                                                                             \
-        i32 bigW = aux->m_width;                                                                   \
-        i32 bigH;                                                                                  \
-        if (bigW >= g_buteMgr.GetInt("World", "BigActHeight")                                      \
-            || (bigH = heightLayer->m_height) >= g_buteMgr.GetInt("World", "BigActHeight")) {      \
+        CSize bigSize;                                                                             \
+        bigSize.cx = aux->m_width;                                                                 \
+        if (bigSize.cx >= g_buteMgr.GetInt("World", "BigActHeight")                                \
+            || (bigSize.cy = heightLayer->m_height)                                                \
+                   >= g_buteMgr.GetInt("World", "BigActHeight")) {                                 \
             if (m_object->m_logicRecord != NULL) {                                                 \
                 m_object->m_logicRecord->m_flags &=                                                \
                     ~(IDX(LOGIC_RECORD_FLAG_SMALL_ACTIVE_REGION)                                   \

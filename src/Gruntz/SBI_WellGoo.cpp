@@ -2,7 +2,7 @@
 
 #include <Gruntz/SBI_WellGoo.h>
 
-#include <Mfc.h>
+#include <MfcWin.h>
 
 #include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DDrawShadeBlit.h>
@@ -121,7 +121,7 @@ i32 CSBI_WellGoo::Setup(
         SetRect(&rc, 0, 0, m_frame->m_width - 1, m_frame->m_height - 1);
         m_srcRect = rc;
 
-        m_drawX = m_rect.left + ((m_rect.right - m_rect.left) >> 1) + 1;
+        m_drawX = m_rect.left + (CRect(m_rect).Width() >> 1) + 1;
         return 1;
     }
 fail:
@@ -146,7 +146,7 @@ i32 CSBI_WellGoo::Render() {
     CDDrawSurfacePair* ctx = g_gameReg->m_world->m_drawTarget->m_backPair;
     m_baseFrame->RenderFrame(ctx, m_drawX, m_rect.bottom + 3, 0);
 
-    double fill = static_cast<float>((m_rect.bottom - m_rect.top)) * m_fillScale * 0.01f - 3.0f;
+    double fill = static_cast<float>(CRect(m_rect).Height()) * m_fillScale * 0.01f - 3.0f;
     if (fill <= 1.0) {
         fill = 1.0;
     }
@@ -154,11 +154,9 @@ i32 CSBI_WellGoo::Render() {
 
     m_blitter->Blit(&m_srcRect, m_gooSrc, &m_srcRect, 0, 0);
 
-    m_srcRect.right++;
-    m_srcRect.bottom++;
-    ctx->m_surface->BltEx(&m_dstRect, m_gooSrc, &m_srcRect, DDBLT_WAIT, NULL);
-    m_srcRect.right--;
-    m_srcRect.bottom--;
+    CRect srcRect = m_srcRect;
+    srcRect.InflateRect(0, 0, 1, 1);
+    ctx->m_surface->BltEx(&m_dstRect, m_gooSrc, &srcRect, DDBLT_WAIT, NULL);
 
     m_fgFrame->RenderFrame(ctx, m_drawX, m_dstRect.top - 2, 0);
     return 1;

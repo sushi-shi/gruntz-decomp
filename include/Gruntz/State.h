@@ -6,6 +6,7 @@
 #include <Mfc.h>
 
 #include <Enums.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/GameStateId.h>
 #include <Gruntz/LevelArea.h>
 #include <Ints.h>
@@ -209,10 +210,8 @@ public:
 
     char m_versionString[0x100];
     i32 m_reserved14c;
-    i32 m_cursorX;
-    i32 m_cursorY;
-    i32 m_snapOriginX;
-    i32 m_snapOriginY;
+    Coord m_cursorPosition;
+    Coord m_snapOrigin;
 
     CDDSurface* m_cursorSavedSurfaces[2];
 
@@ -237,24 +236,11 @@ inline CState::CState() {
     m_previousStateId = GAMESTATE_NONE;
     m_cursorSavedSurfaces[0] = NULL;
     m_cursorSavedSurfaces[1] = NULL;
-    m_cursorSavedRects[0].left = 0;
-    m_cursorSavedRects[0].right = 0x40;
-    m_cursorSavedRects[0].top = 0;
-    m_cursorSavedRects[0].bottom = 0x40;
-    m_cursorSavedRects[1].left = 0;
-    m_cursorSavedRects[1].right = 0x40;
-    m_cursorSavedRects[1].top = 0;
-    m_cursorSavedRects[1].bottom = 0x40;
-    m_cursorScreenRects[0].left = 0;
-    m_cursorScreenRects[0].right = 0;
-    m_cursorScreenRects[0].top = 0;
-    m_cursorScreenRects[0].bottom = 0;
-    m_cursorScreenRects[1].left = 0;
-    m_cursorScreenRects[1].right = 0;
-    m_cursorScreenRects[1].top = 0;
-    m_cursorScreenRects[1].bottom = 0;
-    m_cursorX = 0;
-    m_cursorY = 0;
+    SetRect(&m_cursorSavedRects[0], 0, 0, 0x40, 0x40);
+    SetRect(&m_cursorSavedRects[1], 0, 0, 0x40, 0x40);
+    SetRectEmpty(&m_cursorScreenRects[0]);
+    SetRectEmpty(&m_cursorScreenRects[1]);
+    m_cursorPosition.Set(0, 0);
 }
 
 #endif // GRUNTZ_GRUNTZ_CSTATE_H

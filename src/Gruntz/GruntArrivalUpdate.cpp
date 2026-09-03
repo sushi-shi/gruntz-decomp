@@ -5,6 +5,7 @@
 
 #include <Enums.h>
 #include <Gruntz/Brickz.h>
+#include <Gruntz/BattlezRouteMaskPreset.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/EnemyAiType.h>
 #include <Gruntz/FreeNodePool.h>
@@ -13,12 +14,13 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPuddle.h>
-#include <Gruntz/GruntRandomPointMacros.h>
+#include <Gruntz/RandomExtentPoint.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
@@ -47,7 +49,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
         return 1;
     }
     this->m_defenderPx = this->m_lastTilePx;
-    FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget, x)
+    FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget)
 
     b32 poweredUp = this->m_poweredUp;
     if (poweredUp != false) {
@@ -100,24 +102,24 @@ i32 CGrunt::StepGauntletGruntBehavior() {
         case AISTATE_SEEK:
             if (g != NULL) {
                 if (this->m_stamina >= STAMINA_FULL) {
-                    i32 x = g->m_object->m_screenX;
-                    if (GRUNT_X_AT_SAVED_POS(x, g) && g->GRUNT_SCREEN_Y_AT_SAVED_POS(m_object, g)
-                        && RectContains(x, g->m_object->m_screenY) != 0) {
+                    Coord position = g->m_object->ScreenPos();
+                    if (position == g->m_lastTilePx
+                        && RectContains(position.m_x, position.m_y) != 0) {
                         COMMIT_GRUNT_NEIGHBOR(g);
                         break;
                     }
                 }
                 if (g != NULL && static_cast<u32>(this->m_dwell) > 1000) {
                     if (GruntInRadius(g->m_playerIndex, g->m_unitIndex) != 0) {
-                        Coord c[2];
-                        g->GetScreenPos(c);
+                        Coord targetTile;
+                        g->GetScreenTile(&targetTile);
                         if (TileSwitch(
-                                c[0].m_x >> TILE_SHIFT_PX,
-                                c[0].m_y >> TILE_SHIFT_PX,
+                                targetTile.m_x,
+                                targetTile.m_y,
                                 0,
                                 this->m_arrivalFlags,
                                 0,
-                                0x20
+                                BATTLEZ_ROUTE_OTHER_TOOLS
                             )
                             != 0) {
                             SET_GRUNT_ARRIVAL_TARGET(g);
@@ -125,8 +127,8 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                             CGruntzMgr* reg = g_gameReg;
                             i32 r = CGameLevel::PointInBounds(
                                 &reg->m_world->m_level->m_mainPlane->m_planeViewRect,
-                                this->m_object->m_screenX,
-                                this->m_object->m_screenY
+                                this->m_object->m_screenPosition.m_x,
+                                this->m_object->m_screenPosition.m_y
                             );
                             if (r != 0) {
                                 reg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
@@ -141,23 +143,15 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                 && static_cast<u32>(this->m_dwell) > 3000) {
                 if (IsArrivalRerollPending() != 0) {
                     CGameObject* base = this->m_object;
-                    SELECT_RANDOM_EXTENT_POINT_UNSIGNED_CAST(base, lo, ax, lo2, ay)
-                    if (lo < g_gameReg->m_tileGrid->m_width
-                        && lo2 < g_gameReg->m_tileGrid->m_height) {
-                        TileSwitch(
-                            static_cast<i32>(lo),
-                            static_cast<i32>(lo2),
-                            0,
-                            this->m_arrivalFlags,
-                            1,
-                            0
-                        );
+                    Coord point;
+                    Coord span;
+                    SelectRandomExtentPoint(base, &point, &span);
+                    if (static_cast<u32>(point.m_x) < g_gameReg->m_tileGrid->m_width
+                        && static_cast<u32>(point.m_y) < g_gameReg->m_tileGrid->m_height) {
+                        TileSwitch(point.m_x, point.m_y, 0, this->m_arrivalFlags, 1, 0);
                     }
                     if (this->CoordCount() != 0) {
-                        if (ax <= ay) {
-                            ax = ay;
-                        }
-                        if (this->CoordCount() > ax) {
+                        if (this->CoordCount() > Max(span.m_x, span.m_y)) {
                             SetEntrancePos(1, 1);
                         }
                     }
@@ -183,18 +177,20 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                         0,
                         this->m_arrivalFlags,
                         0,
-                        0x20
+                        BATTLEZ_ROUTE_OTHER_TOOLS
                     );
                     if (this->m_poweredUp == false && this->m_stamina >= STAMINA_FULL
-                        && RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) != 0
+                        && RectContains(
+                               slot->m_object->m_screenPosition.m_x,
+                               slot->m_object->m_screenPosition.m_y
+                           ) != 0
                         && GRUNT_AT_SAVED_SCREEN_POS(slot)) {
                         COMMIT_GRUNT_NEIGHBOR(slot);
                         this->m_defenderState = AISTATE_ATTACK;
                     }
                 }
             } else {
-                Coord none;
-                this->m_arrivalCell = *none.Set(-1, -1);
+                this->m_arrivalCell.Set(-1, -1);
                 this->m_defenderState = AISTATE_SEEK;
             }
             break;
@@ -210,7 +206,10 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                         || m_stamina < STAMINA_FULL) {
                         break;
                     }
-                    if (RectContains(slot->m_object->m_screenX, slot->m_object->m_screenY) != 0
+                    if (RectContains(
+                            slot->m_object->m_screenPosition.m_x,
+                            slot->m_object->m_screenPosition.m_y
+                        ) != 0
                         && GRUNT_AT_SAVED_SCREEN_POS(slot)) {
                         COMMIT_GRUNT_NEIGHBOR(slot);
                         break;
@@ -224,9 +223,8 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                 {
                     CGruntzMgr* reg = g_gameReg;
                     const RECT& view = reg->m_world->m_level->m_mainPlane->m_planeViewRect;
-                    i32 px = m_object->m_screenX;
-                    i32 py = m_object->m_screenY;
-                    if (::PtInRect(&view, px, py)) {
+                    Coord voicePosition = m_object->ScreenPos();
+                    if (::PtInRect(&view, voicePosition.m_x, voicePosition.m_y)) {
                         reg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
                     }
                 }
@@ -242,17 +240,15 @@ i32 CGrunt::StepGauntletGruntBehavior() {
         Coord* cell = this->CoordHead()->m_coord;
 
         BrickzCell& gc = g_gameReg->m_tileGrid->m_rows[cell->m_y][cell->m_x];
-        if ((gc.m_flagBytes[0] & 0x20) != 0) {
+        if ((gc.m_flags & IDX(CELL_FLAG_DESTRUCTIBLE_ROCK)) != 0) {
             SetEntrancePos(1, 1);
             if (this->CoordCount() != 0) {
                 RECYCLE_GRUNT_COORDS_EXPANDED(this)
             }
-            g_gameReg->m_triggerMgr->UseEquippedToolAt(
-                m_playerIndex,
-                m_unitIndex,
-                cell->m_x * 0x20 + 0x10,
-                cell->m_y * 0x20 + 0x10
-            );
+            Coord position = *cell;
+            TileCenter(&position);
+            g_gameReg->m_triggerMgr
+                ->UseEquippedToolAt(m_playerIndex, m_unitIndex, position.m_x, position.m_y);
         }
     }
     return 1;

@@ -18,7 +18,7 @@
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPuddle.h>
-#include <Gruntz/GruntRandomPointMacros.h>
+#include <Gruntz/RandomExtentPoint.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
@@ -46,7 +46,8 @@ i32 CGrunt::StepDumbChaserBehavior() {
     b32 hitGate = false;
     if (g != NULL) {
         CGameObject* gp = g->m_object;
-        if (GRUNT_OBJECT_AT_SAVED_SCREEN_POS(gp, g) && RectContains(gp->m_screenX, gp->m_screenY)) {
+        if (GRUNT_OBJECT_AT_SAVED_SCREEN_POS(gp, g)
+            && RectContains(gp->m_screenPosition.m_x, gp->m_screenPosition.m_y)) {
             hitGate = true;
         }
     }
@@ -96,7 +97,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                 if (hitGate != false && m_stamina >= STAMINA_FULL) {
                     CGameObject* gp = g->m_object;
                     if (GRUNT_OBJECT_AT_SAVED_SCREEN_POS(gp, g)
-                        && RectContains(gp->m_screenX, gp->m_screenY)) {
+                        && RectContains(gp->m_screenPosition.m_x, gp->m_screenPosition.m_y)) {
                         COMMIT_GRUNT_NEIGHBOR(g);
                         return 1;
                     }
@@ -105,15 +106,9 @@ i32 CGrunt::StepDumbChaserBehavior() {
                     if (GruntInRadius(g->m_playerIndex, g->m_unitIndex) == 0) {
                         return 1;
                     }
-                    if (TileSwitch(
-                            g->m_object->m_screenX >> TILE_SHIFT_PX,
-                            g->m_object->m_screenY >> TILE_SHIFT_PX,
-                            0,
-                            m_arrivalFlags,
-                            1,
-                            0
-                        )
-                        != 0) {
+                    Coord targetTile;
+                    g->GetScreenTile(&targetTile);
+                    if (TileSwitch(targetTile.m_x, targetTile.m_y, 0, m_arrivalFlags, 1, 0) != 0) {
                         SET_GRUNT_ARRIVAL_TARGET(g);
                         m_defenderState = AISTATE_CHASE;
                         CWwdSpriteObject* mp = m_object;
@@ -121,8 +116,8 @@ i32 CGrunt::StepDumbChaserBehavior() {
 
                         i32 los = CGameLevel::PointInBounds(
                             &mgr->m_world->m_level->m_mainPlane->m_planeViewRect,
-                            mp->m_screenX,
-                            mp->m_screenY
+                            mp->m_screenPosition.m_x,
+                            mp->m_screenPosition.m_y
                         );
                         if (los != 0) {
                             mgr->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
@@ -135,17 +130,16 @@ i32 CGrunt::StepDumbChaserBehavior() {
             if (m_resetApplied == false && m_hasExtent != false
                 && static_cast<u32>(m_dwell) > 3000) {
                 CWwdSpriteObject* mp = m_object;
-                SELECT_RANDOM_EXTENT_POINT(mp, baseX, spanX, baseY, spanY)
+                Coord point;
+                Coord span;
+                SelectRandomExtentPoint(mp, &point, &span);
                 CGruntzMgr* mgr = g_gameReg;
-                if (static_cast<u32>(baseX) < static_cast<u32>(mgr->m_tileGrid->m_width)
-                    && static_cast<u32>(baseY) < static_cast<u32>(mgr->m_tileGrid->m_height)) {
-                    TileSwitch(baseX, baseY, 0, m_arrivalFlags, 1, 0);
+                if (static_cast<u32>(point.m_x) < static_cast<u32>(mgr->m_tileGrid->m_width)
+                    && static_cast<u32>(point.m_y) < static_cast<u32>(mgr->m_tileGrid->m_height)) {
+                    TileSwitch(point.m_x, point.m_y, 0, m_arrivalFlags, 1, 0);
                 }
                 if (m_coordList.GetCount() != 0) {
-                    if (spanX <= spanY) {
-                        spanX = spanY;
-                    }
-                    if (m_coordList.GetCount() > spanX) {
+                    if (m_coordList.GetCount() > Max(span.m_x, span.m_y)) {
                         SetEntrancePos(1, 1);
                     }
                 }
@@ -159,8 +153,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                 m_triggerMgr->m_units[m_arrivalCell.m_y + m_arrivalCell.m_x * TM_UNITS_PER_PLAYER];
             CGrunt* cur = m_triggerMgr->FindNearestEnemy(this);
             if (cur != NULL && cur != t) {
-                Coord none;
-                m_arrivalCell = *none.Set(-1, -1);
+                m_arrivalCell.Set(-1, -1);
                 m_defenderState = AISTATE_SEEK;
                 return 1;
             }
@@ -174,7 +167,10 @@ i32 CGrunt::StepDumbChaserBehavior() {
                 m_dwell = 0;
             }
             if (m_poweredUp == false && m_stamina >= STAMINA_FULL
-                && RectContains(t->m_object->m_screenX, t->m_object->m_screenY) != 0
+                && RectContains(
+                       t->m_object->m_screenPosition.m_x,
+                       t->m_object->m_screenPosition.m_y
+                   ) != 0
                 && GRUNT_AT_SAVED_SCREEN_POS(t)) {
                 COMMIT_GRUNT_NEIGHBOR(t);
                 m_defenderState = AISTATE_ATTACK;
@@ -198,7 +194,10 @@ i32 CGrunt::StepDumbChaserBehavior() {
                     || m_stamina < STAMINA_FULL) {
                     return 1;
                 }
-                if (RectContains(t->m_object->m_screenX, t->m_object->m_screenY) == 0
+                if (RectContains(
+                        t->m_object->m_screenPosition.m_x,
+                        t->m_object->m_screenPosition.m_y
+                    ) == 0
                     || GRUNT_NOT_AT_SAVED_SCREEN_POS(t)) {
                     m_defenderState = AISTATE_CHASE;
                     m_dwell = DWELL_REPATH_MS;

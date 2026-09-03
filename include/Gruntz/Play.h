@@ -16,6 +16,7 @@
 #include <Gruntz/PickupType.h>
 #include <Gruntz/PlayerCommandKind.h>
 #include <Gruntz/QuestLevel.h>
+#include <Gruntz/ScrollEdgeFlags.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/State.h>
 #include <Gruntz/StatusBarDock.h>
@@ -99,8 +100,7 @@ public:
     virtual i32 OnRButtonDblClk(i32 keyFlags, i32 x, i32 y) OVERRIDE;
     RVA(0x0008c970, 0x1c)
     virtual i32 OnMouseMove(i32 keyFlags, i32 cursorX, i32 cursorY) OVERRIDE {
-        m_cursorX = cursorX;
-        m_cursorY = cursorY;
+        m_cursorPosition.Set(cursorX, cursorY);
         return 1;
     }
     virtual i32 CompleteLevel() OVERRIDE;
@@ -312,8 +312,7 @@ public:
     i32 m_cursorFrame;
     i32 m_cursorId;
     Coord m_cursorOffset;
-    i32 m_dragClampMaxX;
-    i32 m_dragClampMaxY;
+    Coord m_dragClampMax;
     b32 m_worldReady;
     RECT m_hudRect;
 
@@ -331,10 +330,7 @@ public:
 
     CPtrArray m_startMarkers;
 
-    struct Anchor {
-        i32 m_x;
-        i32 m_y;
-    };
+    typedef Coord Anchor;
     Anchor m_anchors[4];
 
     CPtrArray m_placedObjectCells[4];
@@ -365,8 +361,8 @@ public:
     i32 m_cameraBookmarkIndex;
     ClockInterval m_defeatCountdownTiming;
     b32 m_defeatCountdownActive;
-    i32 m_scrollEdgeActive;
-    i32 m_scrollEdgeLock;
+    GZ_ENUM_STORAGE(ScrollEdgeFlags, i32) m_scrollEdgeActive;
+    GZ_ENUM_STORAGE(ScrollEdgeFlags, i32) m_scrollEdgeLock;
     i32 m_revealFrame;
 
     CImage *m_revealCapMid, *m_revealCapEnd, *m_revealCapStart;

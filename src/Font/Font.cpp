@@ -252,10 +252,10 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
     }
 
     if (RunRightEdge(rc, x) > surf->m_width) {
-        rc.right = rc.right + rc.right - rc.left + x - surf->m_width;
+        rc.right += rc.Width() + x - surf->m_width;
     }
     if (y - rc.top + rc.bottom > surf->m_height) {
-        rc.bottom = rc.bottom + rc.bottom - rc.top + y - surf->m_height;
+        rc.bottom += rc.Height() + y - surf->m_height;
     }
 
     CSize m = MeasureText(text);
@@ -380,7 +380,7 @@ void FontRenderer::DrawWrapped(
     i32 lineAdvance = m_font->GetMaxHeight() + spacing;
     if (hcenter) {
         CSize m = MeasureWrapped(text, rc);
-        rc.top = rc.top + (rc.bottom - rc.top) / 2 - m.cy / 2;
+        rc.top += rc.Height() / 2 - m.cy / 2;
     }
 
     i32 x = rc.left;
@@ -443,7 +443,7 @@ void FontRenderer::DrawWrapped(
             if (headW + x < rc.right) {
                 line += head;
                 x = headW + x;
-            } else if (headW < rc.right - rc.left) {
+            } else if (headW < rc.Width()) {
                 if (hcenter) {
                     CSize le = MeasureText(line);
                     i32 cx = rc.left + rc.Width() / 2 - le.cx / 2;
@@ -513,8 +513,6 @@ void FontRenderer::DrawWrapped(
 
 RVA(0x0017ac50, 0xbd)
 CSize FontRenderer::MeasureText(CString text) {
-    CSize ext;
-
     Glyph g;
     g.height = 0;
     i32 i = 0;
@@ -527,21 +525,17 @@ CSize FontRenderer::MeasureText(CString text) {
 
         width += m_font->GetGlyph(g, c).width;
     }
-    ext.cx = width;
-    ext.cy = m_font->GetMaxHeight();
-    return ext;
+    return CSize(width, m_font->GetMaxHeight());
 }
 
 // @early-stop
 RVA(0x0017ad10, 0x402)
 CSize FontRenderer::MeasureWrapped(CString text, CRect rc) {
-    i32 y = rc.top;
-    CSize maxExtent;
-    maxExtent.cx = 0;
-    i32 x = rc.left;
+    CPoint cursor(rc.left, rc.top);
+    CSize maxExtent(0, 0);
 
     CString line;
-    while (y < rc.bottom) {
+    while (cursor.y < rc.bottom) {
         i32 len = text.GetLength();
         if (len <= 0) {
             break;
@@ -557,10 +551,10 @@ CSize FontRenderer::MeasureWrapped(CString text, CRect rc) {
 
         CSize e;
         e = MeasureText(text);
-        if (e.cx + x <= rc.right && !nl) {
+        if (e.cx + cursor.x <= rc.right && !nl) {
             line += text;
             text = "";
-            if (m_font->GetMaxHeight() + y <= rc.bottom) {
+            if (m_font->GetMaxHeight() + cursor.y <= rc.bottom) {
                 CSize lw = MeasureText(line);
                 i32 w = lw.cx;
                 if (maxExtent.cx <= w) {
@@ -587,67 +581,66 @@ CSize FontRenderer::MeasureWrapped(CString text, CRect rc) {
             he = MeasureText(head);
             i32 headW = he.cx;
             text = text.Right(text.GetLength() - i - 1);
-            if (headW + x < rc.right) {
+            if (headW + cursor.x < rc.right) {
                 line += head;
-                x = headW + x;
-            } else if (headW < rc.right - rc.left) {
+                cursor.x = headW + cursor.x;
+            } else if (headW < rc.Width()) {
                 CSize lw = MeasureText(line);
                 i32 w = lw.cx;
                 if (maxExtent.cx <= w) {
                     maxExtent.cx = w;
                 }
-                y = y + m_font->GetMaxHeight();
-                x = rc.left;
+                cursor.y = cursor.y + m_font->GetMaxHeight();
+                cursor.x = rc.left;
                 line = "";
-                if (m_font->GetMaxHeight() + y < rc.bottom) {
+                if (m_font->GetMaxHeight() + cursor.y < rc.bottom) {
                     line += head;
-                    x = headW + rc.left;
+                    cursor.x = headW + rc.left;
                 }
             } else {
 
                 for (i32 j = 0; j < head.GetLength(); j++) {
-                    if (y >= rc.bottom) {
+                    if (cursor.y >= rc.bottom) {
                         break;
                     }
                     CSize ce;
                     ce = MeasureText(CString(head.GetAt(j), 1));
                     i32 chW = ce.cx;
-                    if (chW + x > rc.right) {
-                        y = y + m_font->GetMaxHeight();
-                        x = rc.left;
+                    if (chW + cursor.x > rc.right) {
+                        cursor.y = cursor.y + m_font->GetMaxHeight();
+                        cursor.x = rc.left;
                         CSize lw = MeasureText(line);
                         i32 w = lw.cx;
                         if (maxExtent.cx <= w) {
                             maxExtent.cx = w;
                         }
                     }
-                    if (m_font->GetMaxHeight() + y >= rc.bottom) {
+                    if (m_font->GetMaxHeight() + cursor.y >= rc.bottom) {
                         break;
                     }
                     line += head[j];
-                    x += chW;
+                    cursor.x += chW;
                 }
             }
             if (breakNL) {
-                y = y + m_font->GetMaxHeight();
-                x = rc.left;
+                cursor.y = cursor.y + m_font->GetMaxHeight();
+                cursor.x = rc.left;
                 line = "";
             }
         }
     }
-    return CSize(maxExtent.cx - rc.left + 1, m_font->GetMaxHeight() + (y - rc.top) + 1);
+    return CSize(maxExtent.cx - rc.left + 1, m_font->GetMaxHeight() + (cursor.y - rc.top) + 1);
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0017b120, 0x3c6)
 CSize FontRenderer::LayoutWrapped(CString text, CRect rc, i32* outLen) {
-    i32 y = rc.top;
+    CPoint cursor(rc.left, rc.top);
     i32 totalChars = 0;
-    i32 x = rc.left;
 
     CString line;
-    while (y < rc.bottom) {
+    while (cursor.y < rc.bottom) {
         i32 len = text.GetLength();
         if (len <= 0) {
             break;
@@ -663,10 +656,10 @@ CSize FontRenderer::LayoutWrapped(CString text, CRect rc, i32* outLen) {
 
         CSize e;
         e = MeasureText(text);
-        if (e.cx + x <= rc.right && !nl) {
+        if (e.cx + cursor.x <= rc.right && !nl) {
             line += text;
             text = "";
-            if (m_font->GetMaxHeight() + y <= rc.bottom) {
+            if (m_font->GetMaxHeight() + cursor.y <= rc.bottom) {
                 totalChars += line.GetLength();
             }
             line = "";
@@ -690,55 +683,55 @@ CSize FontRenderer::LayoutWrapped(CString text, CRect rc, i32* outLen) {
             he = MeasureText(head);
             i32 headW = he.cx;
             text = text.Right(text.GetLength() - i - 1);
-            if (headW + x < rc.right) {
+            if (headW + cursor.x < rc.right) {
                 line += head;
-                x = headW + x;
-            } else if (headW < rc.right - rc.left) {
+                cursor.x = headW + cursor.x;
+            } else if (headW < rc.Width()) {
                 totalChars += line.GetLength();
-                y = y + m_font->GetMaxHeight();
-                x = rc.left;
+                cursor.y = cursor.y + m_font->GetMaxHeight();
+                cursor.x = rc.left;
                 line = "";
-                if (m_font->GetMaxHeight() + y < rc.bottom) {
+                if (m_font->GetMaxHeight() + cursor.y < rc.bottom) {
                     line += head;
-                    x = headW + rc.left;
+                    cursor.x = headW + rc.left;
                 }
             } else {
 
                 while (head.GetLength() > 0) {
-                    if (y >= rc.bottom) {
+                    if (cursor.y >= rc.bottom) {
                         break;
                     }
                     CSize ce;
                     ce = MeasureText(CString(head.GetAt(0), 1));
                     i32 chW = ce.cx;
-                    if (chW + x > rc.right) {
-                        y = y + m_font->GetMaxHeight();
-                        x = rc.left;
+                    if (chW + cursor.x > rc.right) {
+                        cursor.y = cursor.y + m_font->GetMaxHeight();
+                        cursor.x = rc.left;
                         totalChars += line.GetLength();
                         line = "";
                     }
-                    if (m_font->GetMaxHeight() + y >= rc.bottom) {
+                    if (m_font->GetMaxHeight() + cursor.y >= rc.bottom) {
                         break;
                     }
                     line += head[0];
-                    x += chW;
+                    cursor.x += chW;
                 }
             }
             if (breakNL) {
                 totalChars += line.GetLength();
-                y = y + m_font->GetMaxHeight();
-                x = rc.left;
+                cursor.y = cursor.y + m_font->GetMaxHeight();
+                cursor.x = rc.left;
                 line = "";
             }
         }
     }
-    if (m_font->GetMaxHeight() + y <= rc.bottom && line.GetLength() > 0) {
+    if (m_font->GetMaxHeight() + cursor.y <= rc.bottom && line.GetLength() > 0) {
         totalChars += line.GetLength();
     }
     if (outLen) {
         *outLen = totalChars;
     }
-    return CSize(x, m_font->GetMaxHeight() + y + 1);
+    return CSize(cursor.x, m_font->GetMaxHeight() + cursor.y + 1);
 }
 
 RVA_COMPGEN(0x0017b4f0, 0xc, ?GetAt@CString@@QBEDH@Z)

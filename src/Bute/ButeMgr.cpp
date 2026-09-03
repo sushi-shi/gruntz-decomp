@@ -933,9 +933,6 @@ bool CButeMgr::Match(ButeToken expectType) {
 
 RVA(0x00170750, 0xa10)
 bool CButeMgr::Statement() {
-    i32 a, b, c, d;
-    i32 px, py;
-    double x, y, z;
     double doubleValue;
     float floatValue;
     i32 intValue;
@@ -1026,14 +1023,12 @@ bool CButeMgr::Statement() {
                 (*m_pSaveData) << doubleValue;
             }
             break;
-        case BUTETOK_RECT:
-            sscanf(m_szTokenString, s_fmtPoint4, &a, &b, &c, &d);
+        case BUTETOK_RECT: {
+            ButeIntRect parsed;
+            sscanf(m_szTokenString, s_fmtPoint4, &parsed.a, &parsed.b, &parsed.c, &parsed.d);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pCurrTabOfItems->add(
-                        m_sAttribute,
-                        new CSymTabItem(RECT_TYPE, &ButeIntRect(a, b, c, d))
-                    );
+                    m_pCurrTabOfItems->add(m_sAttribute, new CSymTabItem(RECT_TYPE, &parsed));
                 }
             } else {
                 ButeIntRect r = *GetRect(m_sTagName, m_sAttribute);
@@ -1042,14 +1037,13 @@ bool CButeMgr::Statement() {
                                << s_strComma << static_cast<long>(r.d) << s_strClose;
             }
             break;
-        case BUTETOK_POINT:
-            sscanf(m_szTokenString, s_fmtPoint2, &px, &py);
+        }
+        case BUTETOK_POINT: {
+            ButeIntPoint parsed;
+            sscanf(m_szTokenString, s_fmtPoint2, &parsed.a, &parsed.b);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pCurrTabOfItems->add(
-                        m_sAttribute,
-                        new CSymTabItem(POINT_TYPE, &ButeIntPoint(px, py))
-                    );
+                    m_pCurrTabOfItems->add(m_sAttribute, new CSymTabItem(POINT_TYPE, &parsed));
                 }
             } else {
                 ButeIntPoint pt = *GetPoint(m_sTagName, m_sAttribute);
@@ -1057,14 +1051,14 @@ bool CButeMgr::Statement() {
                                << static_cast<long>(pt.b) << s_strClose;
             }
             break;
-        case BUTETOK_VECTOR:
-            sscanf(m_szTokenString, s_fmtRect3, &x, &y, &z);
+        }
+        case BUTETOK_VECTOR: {
+            double components[3];
+            sscanf(m_szTokenString, s_fmtRect3, &components[0], &components[1], &components[2]);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pCurrTabOfItems->add(
-                        m_sAttribute,
-                        new CSymTabItem(VECTOR_TYPE, &CAVector(x, y, z))
-                    );
+                    CAVector value(components[0], components[1], components[2]);
+                    m_pCurrTabOfItems->add(m_sAttribute, new CSymTabItem(VECTOR_TYPE, &value));
                 }
             } else {
                 CAVector v = *GetVector(m_sTagName, m_sAttribute);
@@ -1072,20 +1066,21 @@ bool CButeMgr::Statement() {
                                << v.Getk() << s_strGt;
             }
             break;
-        case BUTETOK_RANGE:
-            sscanf(m_szTokenString, s_fmtRect2, &x, &y);
+        }
+        case BUTETOK_RANGE: {
+            double endpoints[2];
+            sscanf(m_szTokenString, s_fmtRect2, &endpoints[0], &endpoints[1]);
             if (!m_writeMode) {
                 if (!bDup) {
-                    m_pCurrTabOfItems->add(
-                        m_sAttribute,
-                        new CSymTabItem(RANGE_TYPE, &CARange(x, y))
-                    );
+                    CARange value(endpoints[0], endpoints[1]);
+                    m_pCurrTabOfItems->add(m_sAttribute, new CSymTabItem(RANGE_TYPE, &value));
                 }
             } else {
                 CARange range = *GetRange(m_sTagName, m_sAttribute);
                 (*m_pSaveData) << "[" << range.GetMin() << s_strComma << range.GetMax() << "]";
             }
             break;
+        }
         case BUTETOK_STRING:
             if (!m_writeMode) {
                 if (!bDup) {
@@ -1206,18 +1201,16 @@ void CButeMgr::AuxTabItemsSave(const char* key, CSymTabItem* value, void* ctx) {
 
         case VECTOR_TYPE: {
             CAVector* ref = value->data.v;
-            double x = ref->Geti();
-            double y = ref->Getj();
-            double z = ref->Getk();
-            output << s_strLt << x << s_strComma << y << s_strComma << z << s_strGt;
+            double i = ref->Geti();
+            double j = ref->Getj();
+            double k = ref->Getk();
+            output << s_strLt << i << s_strComma << j << s_strComma << k << s_strGt;
             break;
         }
 
         case RANGE_TYPE: {
             CARange* ref = value->data.range;
-            double x = ref->GetMin();
-            double y = ref->GetMax();
-            output << "[" << x << s_strComma << y << "]";
+            output << "[" << ref->GetMin() << s_strComma << ref->GetMax() << "]";
             break;
         }
     }

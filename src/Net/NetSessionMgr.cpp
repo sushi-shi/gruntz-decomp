@@ -141,8 +141,8 @@ void CNetSession::BuildGruntzCrcInfo() {
                 player,
                 g,
                 grunt->m_health,
-                grunt->m_object->m_screenX,
-                grunt->m_object->m_screenY,
+                grunt->m_object->m_screenPosition.m_x,
+                grunt->m_object->m_screenPosition.m_y,
                 grunt->m_entranceCell.direction,
                 grunt->m_stamina,
                 grunt->m_toyTime,
@@ -463,15 +463,15 @@ i32 CNetSession::SendRecord(CNetCmdSlot* slot, i32 sequence) {
     if (sequence < 0) {
         return 1;
     }
-    unsigned char flags = 0;
+    NetCmdReceiptFlags flags = static_cast<NetCmdReceiptFlags>(0);
     i32 baseSeq = slot->m_contiguousSequence;
     if (slot->ContainsSequence(slot->m_receivedAhead, baseSeq + 2)) {
-        flags = 0x10;
+        flags = NET_CMD_RECEIVED_WINDOW_BASE_PLUS_TWO;
     }
     if (slot->ContainsSequence(slot->m_receivedAhead, baseSeq + 3)) {
-        flags |= 0x20;
+        flags |= NET_CMD_RECEIVED_WINDOW_BASE_PLUS_THREE;
     }
-    g_netCmdSendMsg.m_flags = flags;
+    g_netCmdSendMsg.m_flags = static_cast<u8>(flags);
     g_netCmdSendMsg.m_sequence = sequence;
     i32 recordIndex = sequence % 0x80;
     GruntRec* entry = &m_commandRecords[recordIndex];
@@ -718,9 +718,9 @@ i32 CNetSession::ComputeChecksum() {
             CGrunt* grunt = m_owner->m_mgr->m_triggerMgr->m_units[player * TM_UNITS_PER_PLAYER + g];
             if (grunt != NULL) {
                 sum += IDX(grunt->m_entranceCell.direction) + grunt->m_stamina + grunt->m_toyTime
-                       + grunt->m_health + grunt->m_object->m_screenY + grunt->m_object->m_sortKey
-                       + grunt->m_object->m_screenX + grunt->LastTilePx().m_x
-                       + grunt->LastTilePx().m_y;
+                       + grunt->m_health + grunt->m_object->m_screenPosition.m_y
+                       + grunt->m_object->m_sortKey + grunt->m_object->m_screenPosition.m_x
+                       + grunt->LastTilePx().m_x + grunt->LastTilePx().m_y;
 
                 PickupType carried = grunt->m_entranceReason;
                 PickupType effective = ArrivalPickupOf(grunt, carried);

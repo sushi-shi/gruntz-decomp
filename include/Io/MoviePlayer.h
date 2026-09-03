@@ -84,8 +84,7 @@ public:
         m_tilesAcross = 0;
         m_tilesDown = 0;
         m_destRect = NULL;
-        m_originX = 0;
-        m_originY = 0;
+        m_origin = CPoint(0, 0);
         m_forceSingleRow = false;
         m_smackBufMode = 0;
         m_videoWnd = NULL;
@@ -179,8 +178,7 @@ public:
     ColorDepth m_bpp;
     i32 m_tilesAcross;
     i32 m_tilesDown;
-    i32 m_originX;
-    i32 m_originY;
+    POINT m_origin;
     RECT* m_destRect;
     union {
         b32 m_forceSingleRow;

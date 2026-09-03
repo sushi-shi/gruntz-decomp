@@ -16,7 +16,7 @@ struct CDDrawRect {
 
 inline CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 id, i32 flags, EInlineSeed)
     : CWapObj(owner, id, flags, CWapObj::NO_SEED), m_dirty(WwdDirtyRect::INLINE_SEED) {
-    m_screenX = COORD_UNSET;
+    m_screenPosition.m_x = COORD_UNSET;
     m_clip.left = COORD_UNSET;
     m_level = NULL;
     m_stateFlags = SPRITE_STATE_NONE;

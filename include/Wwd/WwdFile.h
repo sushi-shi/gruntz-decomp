@@ -19,7 +19,10 @@ typedef u32 uLong;
 typedef u32 uLongf;
 
 GZ_ENUM_CONST_BEGIN(WwdFormatConstants)
-    WWD_PLANE_HEADER_SIZE = 0xa0
+    WWD_PLANE_HEADER_SIZE = 0xa0,
+    WWD_LEVEL_FLAG_USE_Z_COORDS = 0x1,
+    WWD_LEVEL_FLAG_COMPRESSED = 0x2,
+    WWD_LEVEL_FLAG_DIRECT_MOVEMENT = 0x4
 GZ_ENUM_CONST_END(WwdFormatConstants)
 
 struct WwdHeader {

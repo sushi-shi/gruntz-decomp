@@ -6,6 +6,7 @@
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AnimationRegistry.h>
+#include <Gruntz/Brickz.h>
 #include <Gruntz/EnemyAiType.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
@@ -20,7 +21,6 @@
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/TileCollisionKind.h>
-#include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/VoiceManager.h>
@@ -71,8 +71,8 @@ static const char s_NORMALGRUNT_DEATH[] = "GRUNTZ_NORMALGRUNT_DEATH";
         CGruntzMgr* _g = g_gameReg;                                                                \
         if (CGameLevel::PointInBounds(                                                             \
                 &_g->m_world->m_level->m_mainPlane->m_planeViewRect,                               \
-                m_object->m_screenX,                                                               \
-                m_object->m_screenY                                                                \
+                m_object->m_screenPosition.m_x,                                                    \
+                m_object->m_screenPosition.m_y                                                     \
             )) {                                                                                   \
             _g->m_voiceManager->PlayVoice(this, (tag), -1, 0, -1, -1);                             \
         }                                                                                          \
@@ -172,8 +172,11 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
             DEATH_CUE(0x352);
             goto finalize;
 
-        case DEATH_QUICKFALL:
-            SNAP_OBJECT_TO_TILE_CENTER(m_object)
+        case DEATH_QUICKFALL: {
+            Coord position = m_object->ScreenPos();
+            SnapTileCenter(&position);
+            m_object->SetScreenPos(position);
+        }
             m_poseDeath =
                 m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_DEATHZ_QUICKFALL);
             SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
@@ -187,9 +190,9 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
 
         case DEATH_FALL: {
             CMapMgr* grid = g_gameReg->m_tileGrid;
-            TileCollisionKind attr = static_cast<TileCollisionKind>((
-                (grid->m_rowInts[m_object->m_screenY >> TILE_SHIFT_PX])
-            )[(m_object->m_screenX >> TILE_SHIFT_PX) * 7 + 4]);
+            Coord tile;
+            GetScreenTile(&tile);
+            TileCollisionKind attr = grid->m_rows[tile.m_y][tile.m_x].m_typeCode;
             i32 tag = 0x355;
             if (attr == TILEKIND_DEATHBRIDGE_UP || attr == TILEKIND_TOGGLEDEATHBRIDGE_UP) {
                 m_poseDeath =
@@ -199,7 +202,9 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
                     CWwdSpriteObject* o = m_object;
                     SET_SORT_KEY_IF_CHANGED(o, -1)
                 }
-                SNAP_OBJECT_TO_TILE_CENTER(m_object)
+                Coord position = m_object->ScreenPos();
+                SnapTileCenter(&position);
+                m_object->SetScreenPos(position);
             } else {
                 m_poseDeath = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_DEATHZ_FALL);
             }
@@ -213,9 +218,9 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
 
         case DEATH_FALL2: {
             CMapMgr* grid = g_gameReg->m_tileGrid;
-            TileCollisionKind attr = static_cast<TileCollisionKind>((
-                (grid->m_rowInts[m_object->m_screenY >> TILE_SHIFT_PX])
-            )[(m_object->m_screenX >> TILE_SHIFT_PX) * 7 + 4]);
+            Coord tile;
+            GetScreenTile(&tile);
+            TileCollisionKind attr = grid->m_rows[tile.m_y][tile.m_x].m_typeCode;
             i32 tag = 0x355;
             if (attr == TILEKIND_DEATHBRIDGE_UP || attr == TILEKIND_TOGGLEDEATHBRIDGE_UP) {
                 m_poseDeath =
@@ -225,7 +230,9 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
                     CWwdSpriteObject* o = m_object;
                     SET_SORT_KEY_IF_CHANGED(o, -1)
                 }
-                SNAP_OBJECT_TO_TILE_CENTER(m_object)
+                Coord position = m_object->ScreenPos();
+                SnapTileCenter(&position);
+                m_object->SetScreenPos(position);
             } else {
                 m_poseDeath = LookupAnim(
                     m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
@@ -300,9 +307,8 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
             {
                 CGruntzMgr* g = g_gameReg;
                 CCueRect* r = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
-                i32 x = m_object->m_screenX;
-                i32 y = m_object->m_screenY;
-                if (::PtInRect(r, x, y)) {
+                Coord position = m_object->ScreenPos();
+                if (::PtInRect(r, position.m_x, position.m_y)) {
                     g->m_voiceManager->PlayGruntVoiceCue(this, 3, -1, -1, -1);
                 }
             }
@@ -320,8 +326,8 @@ pathA:
         CGruntzMgr* g = g_gameReg;
         if (CGameLevel::PointInBounds(
                 &g->m_world->m_level->m_mainPlane->m_planeViewRect,
-                m_object->m_screenX,
-                m_object->m_screenY
+                m_object->m_screenPosition.m_x,
+                m_object->m_screenPosition.m_y
             )) {
             g->m_voiceManager->PlayGruntVoiceCue(this, 3, -1, -1, -1);
         }
@@ -335,7 +341,11 @@ finalize:
 tail:
 
     if (m_entranceReason == PICKUP_WARPSTONE && g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
-        m_triggerMgr->SpawnTileFx(m_object->m_screenX, m_object->m_screenY, m_warpstoneAnchorIndex);
+        m_triggerMgr->SpawnTileFx(
+            m_object->m_screenPosition.m_x,
+            m_object->m_screenPosition.m_y,
+            m_warpstoneAnchorIndex
+        );
     }
     if (m_arrivalState == AI_TOOLTHIEF) {
         TryPowerupAtTile();

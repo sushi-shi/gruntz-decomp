@@ -18,7 +18,7 @@
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPuddle.h>
-#include <Gruntz/GruntRandomPointMacros.h>
+#include <Gruntz/RandomExtentPoint.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
@@ -30,6 +30,7 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/VoiceManager.h>
 #include <Ints.h>
+#include <MakeRect.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/ZVec.h>
 
@@ -43,8 +44,8 @@ RVA(0x000f42f0, 0x15c0)
 i32 CGrunt::StepSmartChaserBehavior() {
     i32 playerIndex = m_playerIndex;
     COPY_LAST_TILE_TO_DEFENDER
-    i32 cx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
-    i32 cy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
+    Coord centerTile = m_lastTilePx;
+    ScreenTile(&centerTile);
 
     CGrunt* best = NULL;
     i32 bestDist = INT_MAX;
@@ -65,9 +66,9 @@ i32 CGrunt::StepSmartChaserBehavior() {
                 i32 pb;
                 PRIO(pb, cand->m_entranceReason);
                 if (pa <= pb) {
-                    i32 dx = (cand->m_object->m_screenX >> TILE_SHIFT_PX) - cx;
-                    i32 dy = (cand->m_object->m_screenY >> TILE_SHIFT_PX) - cy;
-                    i32 d = dx * dx + dy * dy;
+                    Coord candidateTile;
+                    cand->GetScreenTile(&candidateTile);
+                    i32 d = candidateTile.DistSqr(centerTile);
                     if (d < bestDist) {
                         best = cand;
                         bestDist = d;
@@ -77,33 +78,22 @@ i32 CGrunt::StepSmartChaserBehavior() {
         }
     }
 
-    RECT box;
+    CRect box;
     {
         i32 halfBox = m_defenderRadius + m_reachRect.right + 1;
-        Coord pt1;
-        GetScreenTile(&pt1);
-        i32 by = pt1.m_y;
-        Coord pt2;
-        GetScreenTile(&pt2);
-        i32 bx = pt2.m_x;
-        Coord pt3;
-        GetScreenTile(&pt3);
-        i32 t3y = pt3.m_y;
-        Coord pt4;
-        GetScreenPos(&pt4);
-        pt4.m_x >>= TILE_SHIFT_PX;
-        i32 t4x = pt4.m_x;
-        box.left = t4x - halfBox;
-        box.top = t3y - halfBox;
-        box.right = bx + halfBox + 1;
-        box.bottom = by + halfBox + 1;
+        Coord selfTile;
+        GetScreenTile(&selfTile);
+        box = MakeRect(
+            selfTile.m_x - halfBox,
+            selfTile.m_y - halfBox,
+            selfTile.m_x + halfBox + 1,
+            selfTile.m_y + halfBox + 1
+        );
     }
     if (best != NULL) {
         Coord bp;
-        best->GetScreenPos(&bp);
-        POINT pt;
-        pt.x = bp.m_x >> TILE_SHIFT_PX;
-        pt.y = bp.m_y >> TILE_SHIFT_PX;
+        best->GetScreenTile(&bp);
+        CPoint pt(bp.m_x, bp.m_y);
         if (!PtInRect(&box, pt)) {
             best = NULL;
         }
@@ -111,9 +101,8 @@ i32 CGrunt::StepSmartChaserBehavior() {
 
     i32 atTarget = 0;
     if (best != NULL) {
-        i32 x = best->m_object->m_screenX;
-        if (GRUNT_X_AT_SAVED_POS(x, best) && best->GRUNT_SCREEN_Y_AT_SAVED_POS(m_object, best)
-            && this->RectContains(x, best->m_object->m_screenY) != 0) {
+        Coord position = best->m_object->ScreenPos();
+        if (position == best->m_lastTilePx && this->RectContains(position.m_x, position.m_y) != 0) {
             atTarget = 1;
         }
     }
@@ -168,8 +157,10 @@ i32 CGrunt::StepSmartChaserBehavior() {
                     i32 pb;
                     PRIO(pb, best->m_entranceReason);
                     if (pa <= pb
-                        && this->RectContains(best->m_object->m_screenX, best->m_object->m_screenY)
-                               != 0) {
+                        && this->RectContains(
+                               best->m_object->m_screenPosition.m_x,
+                               best->m_object->m_screenPosition.m_y
+                           ) != 0) {
                         COMMIT_GRUNT_NEIGHBOR(best);
                         return 1;
                     }
@@ -190,23 +181,15 @@ i32 CGrunt::StepSmartChaserBehavior() {
                     if (pathPa <= pathPb
                         && this->GruntInRadius(best->m_playerIndex, best->m_unitIndex) != 0) {
                         Coord cc;
-                        best->GetScreenPos(&cc);
-                        if (this->TileSwitch(
-                                cc.m_x >> TILE_SHIFT_PX,
-                                cc.m_y >> TILE_SHIFT_PX,
-                                0,
-                                m_arrivalFlags,
-                                1,
-                                0
-                            )
-                            != 0) {
+                        best->GetScreenTile(&cc);
+                        if (this->TileSwitch(cc.m_x, cc.m_y, 0, m_arrivalFlags, 1, 0) != 0) {
                             SET_GRUNT_ARRIVAL_TARGET(best);
                             m_defenderState = AISTATE_CHASE;
                             CGruntzMgr* reg = g_gameReg;
                             if (CGameLevel::PointInBounds(
                                     &reg->m_world->m_level->m_mainPlane->m_planeViewRect,
-                                    m_object->m_screenX,
-                                    m_object->m_screenY
+                                    m_object->m_screenPosition.m_x,
+                                    m_object->m_screenPosition.m_y
                                 )
                                 != 0) {
                                 reg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
@@ -227,16 +210,17 @@ i32 CGrunt::StepSmartChaserBehavior() {
                 if (IsArrivalRerollPending() != 0) {
 
                     CWwdSpriteObject* object = m_object;
-                    SELECT_RANDOM_EXTENT_POINT(object, baseCol, spanX, baseRow, spanY)
+                    Coord point;
+                    Coord span;
+                    SelectRandomExtentPoint(object, &point, &span);
                     CMapMgr* grid = g_gameReg->m_tileGrid;
-                    if (static_cast<u32>(baseCol) < static_cast<u32>(grid->m_width)
-                        && static_cast<u32>(baseRow) < static_cast<u32>(grid->m_height)) {
-                        this->TileSwitch(baseCol, baseRow, 0, m_arrivalFlags, 1, 0);
+                    if (static_cast<u32>(point.m_x) < static_cast<u32>(grid->m_width)
+                        && static_cast<u32>(point.m_y) < static_cast<u32>(grid->m_height)) {
+                        this->TileSwitch(point.m_x, point.m_y, 0, m_arrivalFlags, 1, 0);
                     }
                     i32 steps = CoordCount();
                     if (steps != 0) {
-                        i32 maxSpan = spanX > spanY ? spanX : spanY;
-                        if (steps > maxSpan) {
+                        if (steps > Max(span.m_x, span.m_y)) {
                             SetEntrancePos(1, 1);
                         }
                     }
@@ -251,8 +235,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
             CGrunt* sg =
                 m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
             if (best != NULL && best != sg) {
-                Coord none;
-                m_arrivalCell = *none.Set(-1, -1);
+                m_arrivalCell.Set(-1, -1);
                 m_defenderState = AISTATE_SEEK;
                 return 1;
             }
@@ -277,7 +260,11 @@ i32 CGrunt::StepSmartChaserBehavior() {
                     if (m_poweredUp != false || m_stamina < STAMINA_FULL) {
                         return 1;
                     }
-                    if (this->RectContains(sg->m_object->m_screenX, sg->m_object->m_screenY) == 0) {
+                    if (this->RectContains(
+                            sg->m_object->m_screenPosition.m_x,
+                            sg->m_object->m_screenPosition.m_y
+                        )
+                        == 0) {
                         return 1;
                     }
                     if (GRUNT_NOT_AT_SAVED_SCREEN_POS(sg)) {
@@ -312,8 +299,10 @@ i32 CGrunt::StepSmartChaserBehavior() {
                             || m_stamina < STAMINA_FULL) {
                             return 1;
                         }
-                        if (this->RectContains(sg->m_object->m_screenX, sg->m_object->m_screenY)
-                                != 0
+                        if (this->RectContains(
+                                sg->m_object->m_screenPosition.m_x,
+                                sg->m_object->m_screenPosition.m_y
+                            ) != 0
                             && GRUNT_AT_SAVED_SCREEN_POS(sg)) {
                             COMMIT_GRUNT_NEIGHBOR(sg);
                             return 1;

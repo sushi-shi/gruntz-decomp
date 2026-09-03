@@ -3,6 +3,7 @@
 #include <Gruntz/Brickz.h>
 
 #include <Gruntz/GameStats.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/SerialArchive.h>
 
 #include <stdlib.h>
@@ -73,7 +74,7 @@ i32 CMapMgr::UpdateDiagonals(CGruntzMgr* unused) {
     if (m_dirty != false) {
         for (u32 r = 0; r < m_height; r++) {
             for (u32 c = 0; c < m_width; c++) {
-                if ((cell->m_flags & 0x100) != 0) {
+                if ((cell->m_flags & IDX(CELL_FLAG_WATER)) != 0) {
                     BrickzCell* down = NULL;
                     BrickzCell* right = NULL;
                     BrickzCell* left = NULL;
@@ -106,7 +107,7 @@ i32 CMapMgr::UpdateDiagonals(CGruntzMgr* unused) {
                     if (down && left) {
                         dl = down - 1;
                     }
-                    cell->m_flags &= ~0x1000;
+                    cell->m_flags &= ~IDX(CELL_FLAG_WATER_DIAGONAL_PASSAGE);
                     if ((up && down && !(up->m_flags & BRICKZ_BLOCKED_MASK)
                          && !(down->m_flags & BRICKZ_BLOCKED_MASK))
                         || (right && left && !(right->m_flags & BRICKZ_BLOCKED_MASK)
@@ -115,7 +116,7 @@ i32 CMapMgr::UpdateDiagonals(CGruntzMgr* unused) {
                             && !(dl->m_flags & BRICKZ_BLOCKED_MASK))
                         || (ul && dr && !(ul->m_flags & BRICKZ_BLOCKED_MASK)
                             && !(dr->m_flags & BRICKZ_BLOCKED_MASK))) {
-                        cell->m_flags |= 0x1000;
+                        cell->m_flags |= IDX(CELL_FLAG_WATER_DIAGONAL_PASSAGE);
                     }
                 }
                 cell++;
@@ -130,25 +131,26 @@ i32 CMapMgr::UpdateDiagonals(CGruntzMgr* unused) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00082250, 0x17c)
 i32 CMapMgr::LineIsClear(i32 x0, i32 y0, i32 x1, i32 y1) {
-    if (x0 == x1 && y0 == y1) {
+    Coord start(x0, y0);
+    Coord goal(x1, y1);
+    if (start == goal) {
         return 1;
     }
 
-    i32 dy, dx;
-    dx = x1 - x0;
-    dy = y1 - y0;
-    if (abs(dx) > abs(dy)) {
-        i32 slope = (dy << 16) / dx;
-        i32 yacc = y0 << 16;
-        if (dx > 0) {
-            for (i32 x = x0; x < x1; x++) {
+    Coord delta = goal - start;
+    Coord distance = delta.GetAbs();
+    if (distance.m_x > distance.m_y) {
+        i32 slope = (delta.m_y << 16) / delta.m_x;
+        i32 yacc = start.m_y << 16;
+        if (delta.m_x > 0) {
+            for (i32 x = start.m_x; x < goal.m_x; x++) {
                 if (m_rows[yacc >> 16][x].m_flags != 0) {
                     return 0;
                 }
                 yacc += slope;
             }
         } else {
-            for (i32 x = x0; x > x1; x--) {
+            for (i32 x = start.m_x; x > goal.m_x; x--) {
                 if (m_rows[yacc >> 16][x].m_flags != 0) {
                     return 0;
                 }
@@ -156,17 +158,17 @@ i32 CMapMgr::LineIsClear(i32 x0, i32 y0, i32 x1, i32 y1) {
             }
         }
     } else {
-        i32 slope = (dx << 16) / dy;
-        i32 xacc = x0 << 16;
-        if (dy > 0) {
-            for (i32 y = y0; y < y1; y++) {
+        i32 slope = (delta.m_x << 16) / delta.m_y;
+        i32 xacc = start.m_x << 16;
+        if (delta.m_y > 0) {
+            for (i32 y = start.m_y; y < goal.m_y; y++) {
                 if (m_rows[y][xacc >> 16].m_flags != 0) {
                     return 0;
                 }
                 xacc += slope;
             }
         } else {
-            for (i32 y = y0; y > y1; y--) {
+            for (i32 y = start.m_y; y > goal.m_y; y--) {
                 if (m_rows[y][xacc >> 16].m_flags != 0) {
                     return 0;
                 }

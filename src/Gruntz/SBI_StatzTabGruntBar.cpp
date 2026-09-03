@@ -47,43 +47,43 @@ i32 CSBI_StatzTabGruntBar::Render() {
         m_redrawFrames--;
         m_statusGlyph->RenderFrame(
             ctx,
-            m_rect.left + m_statusGlyph->m_anchorX,
-            m_rect.top + m_statusGlyph->m_anchorY,
+            m_rect.left + m_statusGlyph->m_anchor.x,
+            m_rect.top + m_statusGlyph->m_anchor.y,
             0
         );
         m_abilityGlyph->RenderFrame(
             ctx,
-            m_rect.left + m_abilityGlyph->m_anchorX + 0x14,
-            m_rect.top + m_abilityGlyph->m_anchorY,
+            m_rect.left + m_abilityGlyph->m_anchor.x + 0x14,
+            m_rect.top + m_abilityGlyph->m_anchor.y,
             0
         );
         m_overrideGlyph->RenderFrame(
             ctx,
-            m_rect.left + m_overrideGlyph->m_anchorX + 0x28,
-            m_rect.top + m_overrideGlyph->m_anchorY,
+            m_rect.left + m_overrideGlyph->m_anchor.x + 0x28,
+            m_rect.top + m_overrideGlyph->m_anchor.y,
             0
         );
         if (m_selectKey != NULL) {
             m_selectKey->RenderFrame(
                 ctx,
-                m_rect.left + m_selectKey->m_anchorX + 0x3c,
-                m_rect.top + m_selectKey->m_anchorY,
+                m_rect.left + m_selectKey->m_anchor.x + 0x3c,
+                m_rect.top + m_selectKey->m_anchor.y,
                 0
             );
         }
         if (m_statusGlyphLatched != NULL) {
             m_statusGlyphLatched->RenderFrame(
                 ctx,
-                m_rect.left + m_statusGlyph->m_anchorX + 1,
-                m_rect.top + m_statusGlyph->m_anchorY,
+                m_rect.left + m_statusGlyph->m_anchor.x + 1,
+                m_rect.top + m_statusGlyph->m_anchor.y,
                 0
             );
         }
         if (m_abilityGlyphLatched != NULL) {
             m_abilityGlyphLatched->RenderFrame(
                 ctx,
-                m_rect.left + m_abilityGlyph->m_anchorX + 0x14,
-                m_rect.top + m_abilityGlyph->m_anchorY,
+                m_rect.left + m_abilityGlyph->m_anchor.x + 0x14,
+                m_rect.top + m_abilityGlyph->m_anchor.y,
                 0
             );
         }
@@ -94,16 +94,16 @@ i32 CSBI_StatzTabGruntBar::Render() {
         if (m_overrideGlyphLatched != NULL) {
             m_overrideGlyphLatched->RenderFrame(
                 ctx,
-                m_rect.left + m_overrideGlyph->m_anchorX + 0x28 + adj,
-                m_rect.top + m_overrideGlyph->m_anchorY,
+                m_rect.left + m_overrideGlyph->m_anchor.x + 0x28 + adj,
+                m_rect.top + m_overrideGlyph->m_anchor.y,
                 0
             );
         }
         if (m_selectGlyph != NULL) {
             m_selectGlyph->RenderFrame(
                 ctx,
-                m_rect.left + m_selectKey->m_anchorX + 0x3b,
-                m_rect.top + m_selectKey->m_anchorY,
+                m_rect.left + m_selectKey->m_anchor.x + 0x3b,
+                m_rect.top + m_selectKey->m_anchor.y,
                 0
             );
         }
@@ -111,8 +111,8 @@ i32 CSBI_StatzTabGruntBar::Render() {
     if (m_timerGlyph != NULL) {
         m_timerGlyph->RenderFrame(
             ctx,
-            m_rect.left + m_timerGlyph->m_anchorX,
-            m_rect.top + m_timerGlyph->m_anchorY,
+            m_rect.left + m_timerGlyph->m_anchor.x,
+            m_rect.top + m_timerGlyph->m_anchor.y,
             0
         );
     }

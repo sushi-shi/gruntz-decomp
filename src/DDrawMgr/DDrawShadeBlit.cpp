@@ -11,6 +11,7 @@
 #include <Enums.h>
 #include <Ints.h>
 #include <Io/FileStream.h>
+#include <MakeRect.h>
 #include <Pix16.h>
 #include <Rez/RezMgr.h>
 
@@ -327,21 +328,25 @@ i32 CDDrawShadeBlit::Decompress(u8* dest) {
     if (fill == -1) {
         fill = 0;
     }
-    i32 x = 0;
+    CPoint output(0, 0);
     i32 cursor = 0;
-    for (i32 y = 0; y < m_height;) {
+    while (output.y < m_height) {
         if (m_rleData[cursor] & SHADE_RLE_TRANSPARENT_FLAG) {
-            memset(dest + y * m_width + x, fill, m_rleData[cursor] - SHADE_RLE_TRANSPARENT_FLAG);
-            x += m_rleData[cursor] - SHADE_RLE_TRANSPARENT_FLAG;
+            memset(
+                dest + output.y * m_width + output.x,
+                fill,
+                m_rleData[cursor] - SHADE_RLE_TRANSPARENT_FLAG
+            );
+            output.x += m_rleData[cursor] - SHADE_RLE_TRANSPARENT_FLAG;
             cursor += 1;
         } else {
-            memcpy(dest + y * m_width + x, m_rleData + cursor + 1, m_rleData[cursor]);
-            x += m_rleData[cursor];
+            memcpy(dest + output.y * m_width + output.x, m_rleData + cursor + 1, m_rleData[cursor]);
+            output.x += m_rleData[cursor];
             cursor += m_rleData[cursor] + 1;
         }
-        if (x >= m_width) {
-            y++;
-            x = 0;
+        if (output.x >= m_width) {
+            output.y++;
+            output.x = 0;
         }
     }
     return 1;
@@ -429,14 +434,8 @@ RVA(0x00149780, 0x69)
 i32 CDDrawShadeBlit::BlitAt(CDDSurface* dstSurf, i32 x, i32 y, i32 sel, i32 vflip) {
     ShadeRect clip;
     ShadeRect dst;
-    clip.left = 0;
-    clip.top = 0;
-    clip.right = m_width - 1;
-    clip.bottom = m_height - 1;
-    dst.left = x;
-    dst.top = y;
-    dst.right = x + m_width - 1;
-    dst.bottom = y + m_height - 1;
+    clip = MakeRect(0, 0, m_width - 1, m_height - 1);
+    dst = MakeRect(x, y, x + m_width - 1, y + m_height - 1);
     return Blit(&dst, dstSurf, &clip, sel, vflip);
 }
 

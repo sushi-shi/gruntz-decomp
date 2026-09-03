@@ -242,7 +242,7 @@ void CAniAdvanceCursor::BindSprite(CWwdSpriteObject* src) {
     m_finished = true;
     m_animation = NULL;
     m_scale = 1.0f;
-    m_consumeDraw = src->OwnerMgr()->m_flags & 0x40;
+    m_consumeDraw = src->OwnerMgr()->m_flags & SURFACEMGR_CONSUME_ANIMATION_DRAW_VALUES;
     m_useElapsedTime = true;
 }
 
@@ -445,34 +445,28 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         }
 
         ctx = m_boundObject;
-        ctx->m_plotDX = 0;
-        ctx->m_plotDY = 0;
+        ctx->m_plotOffset.Set(0, 0);
         switch (m_element->m_positionMode) {
             case WWDPOS_PLOT_OFFSET: {
                 CAniRecordView* pd = m_element;
                 CWwdSpriteObject* c = m_boundObject;
-                c->m_plotDX = pd->m_positionDeltaX;
-                c->m_plotDY = pd->m_positionDeltaY;
+                c->m_plotOffset = pd->m_positionDelta;
                 break;
             }
             case WWDPOS_MOVE_RELATIVE: {
                 CAniRecordView* pd = m_element;
                 CWwdSpriteObject* c = m_boundObject;
-                i32 x = c->m_screenX;
-                i32 dy = pd->m_positionDeltaY;
-                i32 dx = pd->m_positionDeltaX;
+                Coord position = c->ScreenPos();
+                Coord delta = pd->m_positionDelta;
                 if (HAS(c->m_stateFlags, SPRITE_STATE_MIRROR_X)) {
-                    c->m_screenX = x - dx;
-                    c->m_screenY = c->m_screenY + dy;
-                } else {
-                    c->m_screenX = x + dx;
-                    c->m_screenY = c->m_screenY + dy;
+                    delta.m_x = -delta.m_x;
                 }
+                position += delta;
+                c->SetScreenPos(position);
                 break;
             }
             case WWDPOS_MOVE_ABSOLUTE:
-                m_boundObject->m_screenX = m_element->m_positionDeltaX;
-                m_boundObject->m_screenY = m_element->m_positionDeltaY;
+                m_boundObject->SetScreenPos(m_element->m_positionDelta);
                 break;
             default:
                 break;
@@ -490,7 +484,7 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         if (shouldPlayCue) {
             CAniRecordView* dd = m_element;
             if (HAS(dd->m_flags, ANI_RECORD_FLAG_POSITIONAL_CUE)) {
-                i32 sourceX = c->m_screenX;
+                i32 sourceX = c->m_screenPosition.m_x;
                 SoundCue* soundCue;
                 if (dd->m_cueCount == 0) {
                     soundCue = NULL;

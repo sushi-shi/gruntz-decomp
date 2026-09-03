@@ -16,7 +16,7 @@
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntPuddle.h>
-#include <Gruntz/GruntRandomPointMacros.h>
+#include <Gruntz/RandomExtentPoint.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
@@ -44,32 +44,23 @@ i32 CGrunt::StepBomberBehavior() {
     m_defenderPx = m_lastTilePx;
     if (occ != NULL && GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) != 0) {
         if (static_cast<u32>(m_dwell) > 0xfa) {
-            CGameObject* oh = occ->m_object;
-            if (TileSwitch(
-                    oh->m_screenX >> TILE_SHIFT_PX,
-                    oh->m_screenY >> TILE_SHIFT_PX,
-                    0,
-                    m_arrivalFlags,
-                    1,
-                    0
-                )
-                != 0) {
+            Coord targetTile;
+            occ->GetScreenTile(&targetTile);
+            if (TileSwitch(targetTile.m_x, targetTile.m_y, 0, m_arrivalFlags, 1, 0) != 0) {
                 CGameObject* oh2 = occ->m_object;
                 if (m_triggerMgr->UseEquippedToolAt(
                         m_playerIndex,
                         m_unitIndex,
-                        oh2->m_screenX,
-                        oh2->m_screenY
+                        oh2->m_screenPosition.m_x,
+                        oh2->m_screenPosition.m_y
                     )
                     == -1) {
                     m_dwell = 0;
                     if (m_blockedVoicePending != false) {
-                        CWwdSpriteObject* h = m_object;
-                        i32 vx = h->m_screenX;
-                        i32 vy = h->m_screenY;
+                        Coord voicePosition = m_object->ScreenPos();
                         const RECT* rect =
                             &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
-                        if (::PtInRect(rect, vx, vy)) {
+                        if (::PtInRect(rect, voicePosition.m_x, voicePosition.m_y)) {
                             g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
                         }
                         m_blockedVoicePending = false;
@@ -90,12 +81,13 @@ i32 CGrunt::StepBomberBehavior() {
             if (IsArrivalRerollPending() != 0) {
 
                 CWwdSpriteObject* h = m_object;
-                SELECT_RANDOM_EXTENT_POINT_SPANS_FIRST(h, spanX, spanY, outX, outY)
-                TileSwitch(outX, outY, 0, m_arrivalFlags, 1, 0);
+                Coord point;
+                Coord span;
+                SelectRandomExtentPoint(h, &point, &span);
+                TileSwitch(point.m_x, point.m_y, 0, m_arrivalFlags, 1, 0);
                 i32 m328 = CoordCount();
                 if (m328 != 0) {
-                    i32 mx = spanX > spanY ? spanX : spanY;
-                    if (m328 > mx) {
+                    if (m328 > Max(span.m_x, span.m_y)) {
                         SetEntrancePos(1, 1);
                     }
                 }

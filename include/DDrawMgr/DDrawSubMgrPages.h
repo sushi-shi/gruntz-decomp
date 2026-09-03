@@ -5,6 +5,7 @@
 
 #include <DDrawMgr/ColorDepth.h>
 #include <Enums.h>
+#include <Gruntz/CoordNode.h>
 #include <Ints.h>
 #include <Wap32/WapObj.h>
 
@@ -83,6 +84,12 @@ public:
 
     i32 Probe();
     void BlitDirtyRect(CDDrawSurfacePair* other, i32* pos, i32* size);
+
+    void BlitDirtyRect(CDDrawSurfacePair* other, const Coord& position, const SIZE& size) {
+        i32 positionValues[2] = {position.m_x, position.m_y};
+        i32 sizeValues[2] = {static_cast<i32>(size.cx), static_cast<i32>(size.cy)};
+        BlitDirtyRect(other, positionValues, sizeValues);
+    }
 
     virtual ~CDrawSubWorker() OVERRIDE {
         m_width = 0;

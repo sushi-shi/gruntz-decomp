@@ -87,7 +87,7 @@ i32 CDemo::BuildWorldLevelPath(i32 unused) {
         return 0;
     }
     m_world->m_level->NotifyAllPlanes();
-    m_world->m_level->m_flags |= 4;
+    m_world->m_level->m_flags |= WWD_LEVEL_FLAG_DIRECT_MOVEMENT;
     return 1;
 }
 
@@ -121,42 +121,41 @@ i32 DispatchDemoMoverLogic(CGameObject* owner) {
         case DEMO_MOVER_SCROLL_TO_TARGET: {
 
             CGameLevel* gh = st->m_ownerCtx->m_level;
-            i32 curX = gh->m_mainPlane->m_scrollPixelX;
-            i32 curY = gh->m_mainPlane->m_scrollPixelY;
-            if (curX < st->m_scrollTargetX) {
-                curX++;
-            } else if (curX > st->m_scrollTargetX) {
-                curX--;
+            Coord current = gh->m_mainPlane->m_scrollPixel;
+            if (current.m_x < st->m_scrollTarget.m_x) {
+                current.m_x++;
+            } else if (current.m_x > st->m_scrollTarget.m_x) {
+                current.m_x--;
             }
-            if (curY < st->m_scrollTargetY) {
-                curY++;
-            } else if (curY > st->m_scrollTargetY) {
-                curY--;
+            if (current.m_y < st->m_scrollTarget.m_y) {
+                current.m_y++;
+            } else if (current.m_y > st->m_scrollTarget.m_y) {
+                current.m_y--;
             }
 
             CDDrawWorkerHost* mg = gh->m_mainPlane;
-            SET_SCROLL_POSITION_PRODUCT_CAST(mg, curX, curY);
+            SET_SCROLL_POSITION_PRODUCT_CAST(mg, current.m_x, current.m_y);
 
-            i32 snapX = gh->m_mainPlane->m_scrollPixelX;
-            i32 snapY = gh->m_mainPlane->m_scrollPixelY;
+            Coord snapped = gh->m_mainPlane->m_scrollPixel;
             for (i32 i = 0; i < gh->m_planes.GetSize(); i++) {
                 if (i != gh->m_mainIndex) {
                     CDDrawWorkerHost* p = static_cast<CDDrawWorkerHost*>(gh->m_planes[i]);
-                    SET_SCROLL_POSITION_PRODUCT_CAST(p, snapX, snapY);
+                    SET_SCROLL_POSITION_PRODUCT_CAST(p, snapped.m_x, snapped.m_y);
                 }
             }
 
-            if (st->m_scrollTargetX == curX && st->m_scrollTargetY == curY) {
+            if (st->m_scrollTarget == current) {
                 st->SetEventCode(IDX(DEMO_MOVER_CHOOSE_TARGET));
             }
             return 1;
         }
         case DEMO_MOVER_CHOOSE_TARGET: {
 
-            i32 rx = st->m_ownerCtx->m_level->m_mainPlane->m_planePixelWidth;
-            st->m_scrollTargetX = (rx == -1) ? (rand() % 2 - 1) : (rand() % (rx + 1));
-            i32 ry = st->m_ownerCtx->m_level->m_mainPlane->m_planePixelHeight;
-            st->m_scrollTargetY = (ry == -1) ? (rand() % 2 - 1) : (rand() % (ry + 1));
+            CSize range = st->m_ownerCtx->m_level->m_mainPlane->m_planePixelSize;
+            st->m_scrollTarget.Set(
+                (range.cx == -1) ? (rand() % 2 - 1) : (rand() % (range.cx + 1)),
+                (range.cy == -1) ? (rand() % 2 - 1) : (rand() % (range.cy + 1))
+            );
             st->SetEventCode(IDX(DEMO_MOVER_SCROLL_TO_TARGET));
             break;
         }

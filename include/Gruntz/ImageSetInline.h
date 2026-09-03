@@ -4,8 +4,8 @@
 #include <Gruntz/ImageSets.h>
 
 #define READ_TILE_IMAGE_DIMENSIONS(record, fields)                                                 \
-    i32* fields = &record->m_width;                                                                \
-    m_width = *fields++;                                                                           \
-    m_height = *fields++;
+    m_width = (record)->m_width;                                                                   \
+    m_height = (record)->m_height;                                                                 \
+    i32* fields = (record)->m_fields;
 
 #endif // GRUNTZ_IMAGESETINLINE_H

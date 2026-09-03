@@ -382,7 +382,7 @@ i32 CPlay::BuildWorldLevelPath(i32 unused) {
         }
     }
     m_world->m_level->NotifyAllPlanes();
-    m_world->m_level->m_flags |= 4;
+    m_world->m_level->m_flags |= WWD_LEVEL_FLAG_DIRECT_MOVEMENT;
     g_backView = m_world->m_level->FindPlaneByName("BACK");
     return 1;
 }
@@ -661,9 +661,8 @@ i32 CState::BuildAssetNamespacePrefixes(
             if (lightGate != 0) {
                 CString cs;
                 cs.LoadString(IDS_LOADING);
-                RECT r = *(&g_gameReg->m_world->m_level->m_viewportRect);
-                RECT r2;
-                CopyRect(&r2, &r);
+                CRect r = g_gameReg->m_world->m_level->m_viewportRect;
+                CRect r2 = r;
                 DrawTextToFrontSurface(g_gameReg->m_world, &cs, &r2, 0x82, 1, 0xff, 0xff, 0, 1);
             }
             g_resourceInstallActive = true;

@@ -3,6 +3,7 @@
 #include <Gruntz/TileTriggerContainer.h>
 
 #include <Mfc.h>
+#include <MfcWin.h>
 
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -208,7 +209,7 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogicDefaults(
     i32 leadInSpan,
     i32 dutyOffSpan
 ) {
-    RECT empty = {0, 0, 0, 0};
+    CRect empty(0, 0, 0, 0);
     return AddLogic(
         tileType,
         logicType,
@@ -239,8 +240,8 @@ void CTileTriggerContainer::AddLogicFromRecord(
     AddLogic(
         tileType,
         logicType,
-        object->m_speedX,
-        object->m_speedY,
+        object->m_speed.m_x,
+        object->m_speed.m_y,
         object->m_id,
         object->m_extent,
         object->m_area,
@@ -298,8 +299,7 @@ __inline i32 CTileTriggerLogic::Setup(
     if (m_initGate != false) {
         return 0;
     }
-    m_tileY = tileY;
-    m_tileX = tileX;
+    m_tile.Set(tileX, tileY);
     m_owner = owner;
     m_typeTag = typeTag;
     m_cellKey = cellKey;
@@ -406,8 +406,7 @@ CTileActionEvent* CTileTriggerContainer::AddActionEvent(
         return NULL;
     }
     if (event->m_live == false) {
-        event->m_tileX = tileX;
-        event->m_tileY = tileY;
+        event->m_tile.Set(tileX, tileY);
         event->m_cellKey = cellKey;
         event->m_playerFlags[0] = playerFlags.left;
         event->m_playerFlags[1] = playerFlags.top;
@@ -459,8 +458,7 @@ CTileActionEvent* CTileTriggerContainer::AddSwitchActionEvent(
             break;
     }
     if (event->m_live == false) {
-        event->m_tileX = tileX;
-        event->m_tileY = tileY;
+        event->m_tile.Set(tileX, tileY);
         event->m_cellKey = cellKey;
         event->m_playerFlags[2] = playerFlags.right;
         event->m_actionCode = actionCode;
@@ -497,8 +495,7 @@ CGiantRockLogic* CTileTriggerContainer::AddGiantRockLogic(
         e->m_powerupType = static_cast<PickupType>(powerupType);
         e->m_textId = textId;
         e->m_typeTag = TRIGID_GIANT_ROCK_22;
-        e->m_tileX = tileX;
-        e->m_tileY = tileY;
+        e->m_tile.Set(tileX, tileY);
         e->m_cellKey = cellKey;
         e->m_owner = this;
         e->m_initGate = true;
@@ -993,19 +990,13 @@ void* CTileTriggerContainer::DeserializeLogic(
             obj->m_typeTag = id;
 
             CGameLevel* level = g_gameReg->m_world->m_level;
-            i32 x = obj->m_tileX;
-            i32 y = obj->m_tileY;
-            if (x < 0) {
-                x = 0;
-            } else if (x >= level->m_mainPlane->m_tileColumns) {
-                x = level->m_mainPlane->m_tileColumns - 1;
-            }
-            if (y < 0) {
-                y = 0;
-            } else if (y >= level->m_mainPlane->m_tileRows) {
-                y = level->m_mainPlane->m_tileRows - 1;
-            }
-            i32 cell = level->m_mainPlane->m_tileRowOffsets[y] + x;
+            Coord tilePosition = obj->m_tile;
+            tilePosition.Max(Coord(0, 0));
+            tilePosition.Min(Coord(
+                level->m_mainPlane->m_tileGridSize.cx - 1,
+                level->m_mainPlane->m_tileGridSize.cy - 1
+            ));
+            i32 cell = level->m_mainPlane->m_tileRowOffsets[tilePosition.m_y] + tilePosition.m_x;
             i32 tile = level->m_mainPlane->m_tileHandles[cell];
             TileCollisionKind tileKind;
             if (tile == UNINIT_FILL || tile == -1) {
@@ -1098,8 +1089,9 @@ i32 CTileTriggerContainer::LoadInitialized(CFileMemBase* archive) {
 
 RVA(0x00117ec0, 0x7f)
 CGiantRockLogic* CTileTriggerContainer::ScanNeighborhood(i32 tileX, i32 tileY) {
-    for (i32 scanX = tileX - 1; scanX < tileX + 2; scanX++) {
-        for (i32 scanY = tileY - 1; scanY < tileY + 2; scanY++) {
+    CRect bounds(tileX - 1, tileY - 1, tileX + 2, tileY + 2);
+    for (i32 scanX = bounds.left; scanX < bounds.right; scanX++) {
+        for (i32 scanY = bounds.top; scanY < bounds.bottom; scanY++) {
 
             CGiantRockLogic* logic = static_cast<CGiantRockLogic*>(
                 FindLogic(CellKey(scanX, scanY), TRIGID_GIANT_ROCK_22)

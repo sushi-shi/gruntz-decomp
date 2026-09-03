@@ -1,5 +1,7 @@
 #include <rva.h>
 
+#include <MfcWin.h>
+
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
@@ -7,11 +9,14 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/CoordNode.h>
+#include <Gruntz/DoubleVector.h>
 #include <Gruntz/MgrAutoScroll.h>
 #include <Gruntz/ScrollState.h>
 #include <Gruntz/StatusBarDock.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Ints.h>
+#include <MakeRect.h>
 #include <Rez/FrameClock.h>
 #include <Wwd/WwdFile.h>
 
@@ -36,8 +41,7 @@ void Cmd_ResetScroll() {
 RVA(0x000ebd70, 0x366)
 void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
     CDDrawWorkerHost* v = pm->m_world->m_level->m_mainPlane;
-    i32 scrollX = v->m_scrollPixelX;
-    i32 scrollY = v->m_scrollPixelY;
+    Coord scrollPosition = v->m_scrollPixel;
 
     if (g_scrollClock > g_frameTime) {
         if (g_frameDelta >= g_scrollTimer) {
@@ -47,69 +51,65 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
         }
         if (g_scrollTimer == 0) {
             g_scrollTimer = RandRange(pm, g_panMinX, g_panMaxX);
-            i32 jitterX = RandRange(pm, -g_jitterX, g_jitterX);
-            i32 jitterY = RandRange(pm, -g_jitterY, g_jitterY);
-            scrollX += jitterX;
-            scrollY += jitterY;
+            Coord jitter(
+                RandRange(pm, -g_jitterX, g_jitterX),
+                RandRange(pm, -g_jitterY, g_jitterY)
+            );
+            scrollPosition += jitter;
         }
     }
 
-    tagSIZE screenSize = g_gameReg->m_modeSize;
-    i32 cx = screenSize.cx / 2;
-    i32 cy = screenSize.cy / 2;
+    CSize screenSize = g_gameReg->m_modeSize;
+    CSize halfViewport(screenSize.cx / 2, screenSize.cy / 2);
     if (bar->m_position != STATUSBAR_HIDDEN) {
-        cx -= 0xa0;
+        halfViewport.cx -= 0xa0;
     }
     if (snapFlag) {
-        cx = 0x60;
-        cy = 0x60;
+        halfViewport = CSize(0x60, 0x60);
     }
 
-    if (scrollX < cx - 1) {
-        scrollX = cx - 1;
-    }
     CDDrawWorkerHost* v2 = pm->m_world->m_level->m_mainPlane;
-    if (scrollX > v2->m_planePixelWidth - cx) {
-        scrollX = v2->m_planePixelWidth - cx;
-    }
-    if (scrollY < cy - 1) {
-        scrollY = cy - 1;
-    }
-    if (scrollY > v2->m_planePixelHeight - cy) {
-        scrollY = v2->m_planePixelHeight - cy;
-    }
+    scrollPosition.Max(Coord(halfViewport.cx - 1, halfViewport.cy - 1));
+    scrollPosition.Min(
+        Coord(v2->m_planePixelSize.cx - halfViewport.cx, v2->m_planePixelSize.cy - halfViewport.cy)
+    );
 
-    i32 deltaX = scrollX - g_lastScrollX;
-    i32 deltaY = scrollY - g_lastScrollY;
-    g_lastScrollX = scrollX;
-    g_lastScrollY = scrollY;
+    Coord previousScroll(g_lastScrollX, g_lastScrollY);
+    Coord scrollDelta = scrollPosition - previousScroll;
+    g_lastScrollX = scrollPosition.m_x;
+    g_lastScrollY = scrollPosition.m_y;
 
     CDDrawWorkerHost* v3 = pm->m_world->m_level->m_mainPlane;
-    SET_SCROLL_POSITION_PRODUCT_CAST(v3, scrollX, scrollY);
+    SET_SCROLL_POSITION_PRODUCT_CAST(v3, scrollPosition.m_x, scrollPosition.m_y);
 
     CDDrawWorkerHost* gm = g_backView;
     if (gm != NULL) {
-        i32 nx = gm->m_scrollPixelX;
-        i32 ny = gm->m_scrollPixelY;
-        if (deltaX != 0 || deltaY != 0) {
-            nx = static_cast<i32>((static_cast<float>(nx) - static_cast<float>(deltaX) * -0.05f));
-            ny = static_cast<i32>((static_cast<float>(ny) - static_cast<float>(deltaY) * -0.05f));
+        Coord backScroll = gm->m_scrollPixel;
+        if (scrollDelta != Coord(0, 0)) {
+            FloatVector2 parallax(backScroll);
+            parallax -= FloatVector2(scrollDelta) * -0.05f;
+            backScroll = parallax.ToCoord();
         }
         if (static_cast<i64>(g_frameTime) - g_scrollPace.m_lastTime >= g_scrollPace.m_period) {
-            nx += g_buteMgr.GetDword("BackPlane", "ScrollDistX");
-            ny += g_buteMgr.GetDword("BackPlane", "ScrollDistY");
+            Coord pace(
+                g_buteMgr.GetDword("BackPlane", "ScrollDistX"),
+                g_buteMgr.GetDword("BackPlane", "ScrollDistY")
+            );
+            backScroll += pace;
             CDDrawWorkerHost* g2 = g_backView;
-            SET_SCROLL_POSITION_PRODUCT_CAST(g2, nx, ny);
+            SET_SCROLL_POSITION_PRODUCT_CAST(g2, backScroll.m_x, backScroll.m_y);
             g_scrollPace.m_period = g_buteMgr.GetDword("BackPlane", "ScrollTime");
             g_scrollPace.m_lastTime = g_frameTime;
         }
     }
 
-    CDDrawSurfaceMgr* o = pm->m_world;
-    pm->m_viewBounds.left = o->m_level->m_mainPlane->m_planeViewRect.left - 0x60;
-    pm->m_viewBounds.top = o->m_level->m_mainPlane->m_planeViewRect.top - 0x60;
-    pm->m_viewBounds.right = o->m_level->m_mainPlane->m_planeViewRect.right + 0x60;
-    pm->m_viewBounds.bottom = o->m_level->m_mainPlane->m_planeViewRect.bottom + 0x60;
+    const RECT& planeView = pm->m_world->m_level->m_mainPlane->m_planeViewRect;
+    pm->m_viewBounds = MakeRect(
+        planeView.left - 0x60,
+        planeView.top - 0x60,
+        planeView.right + 0x60,
+        planeView.bottom + 0x60
+    );
 }
 
 RVA(0x000ec1c0, 0x43)

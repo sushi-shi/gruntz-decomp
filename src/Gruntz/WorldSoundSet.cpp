@@ -35,8 +35,7 @@ i32 CWorldSoundSet::Init(SoundCueRegistry* cueRegistry, i32 masterVolume) {
     m_cueRegistry = cueRegistry;
     m_masterVolume = masterVolume;
     m_enabled = true;
-    m_listenerX = 0;
-    m_listenerY = 0;
+    m_listenerPosition.Set(0, 0);
     return 1;
 }
 
@@ -254,7 +253,7 @@ void CWorldSoundSet::Resume() {
         CAmbientSound* sound = static_cast<CAmbientSound*>(m_list.GetNext(pos));
         if (sound != NULL) {
             sound->m_isPlaying = false;
-            sound->Update(m_listenerX, m_listenerY, true);
+            sound->Update(m_listenerPosition.m_x, m_listenerPosition.m_y, true);
         }
     }
 
@@ -263,8 +262,7 @@ void CWorldSoundSet::Resume() {
 
 RVA(0x0000bd60, 0x4b)
 void CWorldSoundSet::SetListenerPosition(i32 x, i32 y) {
-    m_listenerX = x;
-    m_listenerY = y;
+    m_listenerPosition.Set(x, y);
     POSITION pos = m_list.GetHeadPosition();
     while (pos != NULL) {
         CAmbientSound* sound = static_cast<CAmbientSound*>(m_list.GetNext(pos));
@@ -550,10 +548,11 @@ i32 CAmbientPosSound::InitFromSound(
 
 RVA(0x0000c5b0, 0x1df)
 void CAmbientPosSound::Update(i32 x, i32 y, b32 immediate) {
-    i32 dx = abs(m_position.x - x);
-    i32 dy = abs(m_position.y - y);
-    i32 dist2 = SQR(dx) + SQR(dy);
-    if (dx > 0x280 || dy > 0x280) {
+    Coord listener(x, y);
+    Coord soundPosition(m_position.x, m_position.y);
+    Coord delta = soundPosition - listener;
+    Coord distance = delta.GetAbs();
+    if (Max(distance.m_x, distance.m_y) > 0x280) {
         if (m_sound != NULL && m_isPlaying != false) {
             m_sound->StopAndRewind();
             m_isPlaying = false;
@@ -561,19 +560,9 @@ void CAmbientPosSound::Update(i32 x, i32 y, b32 immediate) {
         return;
     }
 
-    i32 dist = static_cast<i32>(sqrt(static_cast<double>(dist2)));
-    i32 vol = 0x64 - dist / 12;
-    if (vol > 0x64) {
-        vol = 0x64;
-    } else if (vol < 0) {
-        vol = 0;
-    }
-    i32 pan = dx / 4;
-    if (pan > 0x64) {
-        pan = 0x64;
-    } else if (pan < 0) {
-        pan = 0;
-    }
+    i32 dist = distance.Mag();
+    i32 vol = Clamp(0x64 - dist / 12, 0, 0x64);
+    i32 pan = Clamp(distance.m_x / 4, 0, 0x64);
     if (m_position.x < x) {
         pan = -pan;
     }
@@ -628,10 +617,9 @@ i32 DispatchAmbientSoundLogic(CGameObject* obj) {
         }
         SoundCue* layer = sprite->m_soundCue;
         if (layer && g_gameReg) {
-            RECT rc;
-            CopyRect(&rc, &obj->m_area);
+            CRect rc = obj->m_area;
             if (record->m_minX > 0 || record->m_maxX > 0) {
-                SetRect(&rc, record->m_minX, record->m_minY, record->m_maxX, record->m_maxY);
+                rc.SetRect(record->m_minX, record->m_minY, record->m_maxX, record->m_maxY);
             }
             if (g_gameReg->m_worldSounds) {
                 CAmbientSound* placed;
@@ -709,9 +697,7 @@ i32 DispatchSpotAmbientSoundLogic(CGameObject* obj) {
 
         CWorldSoundSet* set = g_gameReg->m_worldSounds;
         if (set != NULL) {
-            AmbientPoint pt;
-            pt.x = obj->m_screenX;
-            pt.y = obj->m_screenY;
+            AmbientPoint pt(obj->m_screenPosition.m_x, obj->m_screenPosition.m_y);
 
             CAmbientPosSound* v =
                 set->CreatePositionedFromSound(layer->m_sound, 0x64, &pt, obj->m_damage, 0);
@@ -785,18 +771,12 @@ void CRandomAmbientSound::Update(i32 x, i32 y, b32 immediate) {
     if (m_playPhase != false) {
         i32 r = RandRange(g_gameReg, m_playDuration.GetMin(), m_playDuration.GetMax());
         m_countdownMs = r;
-        i32 half = static_cast<u32>(r) >> 1;
-        if (half > 0x3e8) {
-            half = 0x3e8;
-        }
+        i32 half = Min(static_cast<i32>(static_cast<u32>(r) >> 1), 0x3e8);
         FadePlayback(true, 0x64, half);
     } else {
         i32 r = RandRange(g_gameReg, m_silenceDuration.GetMin(), m_silenceDuration.GetMax());
         m_countdownMs = r;
-        i32 half = static_cast<u32>(r) >> 1;
-        if (half > 0x3e8) {
-            half = 0x3e8;
-        }
+        i32 half = Min(static_cast<i32>(static_cast<u32>(r) >> 1), 0x3e8);
         FadePlayback(false, 0x64, half);
     }
 }

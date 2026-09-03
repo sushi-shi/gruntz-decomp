@@ -5,6 +5,8 @@
 
 #include <DDrawMgr/DDrawWorker.h>
 #include <Enums.h>
+#include <Gruntz/CoordNode.h>
+#include <Gruntz/DoubleVector.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Ints.h>
@@ -91,34 +93,29 @@ public:
         return static_cast<CDDrawWorker*>(m_imageSets[static_cast<int>(index)]);
     }
 
-    float m_scrollCenterX;
-    float m_scrollCenterY;
-    float m_scrollScaleX;
-    float m_scrollScaleY;
+    FloatVector2 m_scrollCenter;
+    FloatVector2 m_scrollScale;
     i32* m_tileHandles;
     i32* m_tileRowOffsets;
-    i32 m_tileColumns;
-    i32 m_tileRows;
-    i32 m_planePixelWidth;
-    i32 m_planePixelHeight;
-    i32 m_tileWidthPx;
-    i32 m_tileHeightPx;
+    SIZE
+    m_tileGridSize;
+    SIZE
+    m_planePixelSize;
+    SIZE
+    m_tilePixelSize;
     RECT m_planeViewRect;
 
     LevelCoordRect m_viewportRect;
     RECT m_tileRect;
 
-    i32 m_viewportWidth;
-    i32 m_viewportHeight;
-    i32 m_viewHalfWidth;
-    i32 m_viewHalfHeight;
+    SIZE
+    m_viewportSize;
+    SIZE
+    m_viewHalfSize;
     i32 m_zCoord;
-    i32 m_scrollPixelX;
-    i32 m_scrollPixelY;
-    i32 m_shiftX;
-    i32 m_shiftY;
-    i32 m_movementXPercent;
-    i32 m_movementYPercent;
+    Coord m_scrollPixel;
+    Coord m_tileShift;
+    Coord m_movementPercent;
     CObArray m_imageSets;
 
     CWwdSpatialMgr* m_spatialMgr;
@@ -127,43 +124,44 @@ public:
     DDBLTFX m_fillFx;
 };
 
-#define SET_SCROLL_POSITION_SCALED_FIRST(plane, x, y)                                              \
+#define SET_SCROLL_POSITION_SCALED_FIRST(plane, x_, y_)                                            \
     if (!HAS(static_cast<WwdPlaneFlags>((plane)->m_flags), WWD_PLANE_FLAG_MAIN)) {                 \
-        plane->m_scrollCenterX = static_cast<float>(x) * plane->m_scrollScaleX;                    \
-        plane->m_scrollCenterY = static_cast<float>(y) * plane->m_scrollScaleY;                    \
+        plane->m_scrollCenter.Init(                                                                \
+            static_cast<float>(x_) * plane->m_scrollScale.x,                                       \
+            static_cast<float>(y_) * plane->m_scrollScale.y                                        \
+        );                                                                                         \
     } else {                                                                                       \
-        plane->m_scrollCenterX = static_cast<float>(x);                                            \
-        plane->m_scrollCenterY = static_cast<float>(y);                                            \
+        plane->m_scrollCenter.Init(static_cast<float>(x_), static_cast<float>(y_));                \
     }                                                                                              \
     plane->UpdatePlaneViewRect()
 
-#define SET_SCROLL_POSITION_RAW_FIRST(plane, x, y)                                                 \
+#define SET_SCROLL_POSITION_RAW_FIRST(plane, x_, y_)                                               \
     if (HAS(static_cast<WwdPlaneFlags>((plane)->m_flags), WWD_PLANE_FLAG_MAIN)) {                  \
-        plane->m_scrollCenterX = static_cast<float>(x);                                            \
-        plane->m_scrollCenterY = static_cast<float>(y);                                            \
+        plane->m_scrollCenter.Init(static_cast<float>(x_), static_cast<float>(y_));                \
     } else {                                                                                       \
-        plane->m_scrollCenterX = static_cast<float>(x) * plane->m_scrollScaleX;                    \
-        plane->m_scrollCenterY = static_cast<float>(y) * plane->m_scrollScaleY;                    \
+        plane->m_scrollCenter.Init(                                                                \
+            static_cast<float>(x_) * plane->m_scrollScale.x,                                       \
+            static_cast<float>(y_) * plane->m_scrollScale.y                                        \
+        );                                                                                         \
     }                                                                                              \
     plane->UpdatePlaneViewRect()
 
-#define SET_SCROLL_POSITION_PRODUCT_CAST(plane, x, y)                                              \
+#define SET_SCROLL_POSITION_PRODUCT_CAST(plane, x_, y_)                                            \
     if (!HAS(static_cast<WwdPlaneFlags>((plane)->m_flags), WWD_PLANE_FLAG_MAIN)) {                 \
-        plane->m_scrollCenterX = static_cast<float>(x * plane->m_scrollScaleX);                    \
-        plane->m_scrollCenterY = static_cast<float>(y * plane->m_scrollScaleY);                    \
+        plane->m_scrollCenter.Init(                                                                \
+            static_cast<float>(x_ * plane->m_scrollScale.x),                                       \
+            static_cast<float>(y_ * plane->m_scrollScale.y)                                        \
+        );                                                                                         \
     } else {                                                                                       \
-        plane->m_scrollCenterX = static_cast<float>(x);                                            \
-        plane->m_scrollCenterY = static_cast<float>(y);                                            \
+        plane->m_scrollCenter.Init(static_cast<float>(x_), static_cast<float>(y_));                \
     }                                                                                              \
     plane->UpdatePlaneViewRect()
 
 #define SET_SCROLL_POSITION_ZERO(plane)                                                            \
     if (!HAS(static_cast<WwdPlaneFlags>((plane)->m_flags), WWD_PLANE_FLAG_MAIN)) {                 \
-        plane->m_scrollCenterX = 0.0f * plane->m_scrollScaleX;                                     \
-        plane->m_scrollCenterY = 0.0f * plane->m_scrollScaleY;                                     \
+        plane->m_scrollCenter.Init(0.0f * plane->m_scrollScale.x, 0.0f * plane->m_scrollScale.y);  \
     } else {                                                                                       \
-        plane->m_scrollCenterX = 0.0f;                                                             \
-        plane->m_scrollCenterY = 0.0f;                                                             \
+        plane->m_scrollCenter.Init(0.0f, 0.0f);                                                    \
     }                                                                                              \
     plane->UpdatePlaneViewRect()
 

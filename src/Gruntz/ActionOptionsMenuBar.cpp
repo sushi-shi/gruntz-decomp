@@ -1,5 +1,7 @@
 #include <Gruntz/ActionOptionsMenuBar.h>
 
+#include <MfcWin.h>
+
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerHost.h>
@@ -94,25 +96,24 @@ i32 CActionOptionsMenuBar::Init(
     if (m_active) {
         return 0;
     }
-    if (x - 0x25 < 0) {
-        x = 0x25;
+    Coord position(x, y);
+    if (position.m_x - 0x25 < 0) {
+        position.m_x = 0x25;
     } else {
-        i32 limit = (g_gameReg->m_world->m_level->m_mainPlane)->m_planePixelWidth;
-        if (x + 0x25 >= limit) {
-            x = limit - 0x26;
+        i32 limit = (g_gameReg->m_world->m_level->m_mainPlane)->m_planePixelSize.cx;
+        if (position.m_x + 0x25 >= limit) {
+            position.m_x = limit - 0x26;
         }
     }
-    i32 ym = y - 0x34;
-    i32 yy;
-    if (ym - 0x19 >= 0) {
-        yy = ym;
+    i32 upperY = position.m_y - 0x34;
+    if (upperY - 0x19 >= 0) {
+        position.m_y = upperY;
     } else {
-        yy = y + 0x34;
+        position.m_y += 0x34;
     }
     m_playerIndex = playerIndex;
     m_unitIndex = unitIndex;
-    m_screenX = x;
-    m_screenY = yy;
+    m_screenPosition = position;
     m_buttonState[0] = primaryState;
     m_buttonState[1] = secondaryState;
     if (Refresh() == 0) {
@@ -193,21 +194,20 @@ i32 CActionOptionsMenuBar::Render() {
         return 1;
     }
     CGameLevel* level = g_gameReg->m_world->m_level;
-    LONG sx = m_screenX;
-    LONG sy = m_screenY;
-    level->m_mainPlane->WorldToViewport(&sx, &sy);
+    CPoint screen(m_screenPosition.m_x, m_screenPosition.m_y);
+    level->m_mainPlane->WorldToViewport(&screen.x, &screen.y);
 
     CDDrawSurfacePair* ctx = g_gameReg->m_world->m_drawTarget->m_backPair;
     LevelCoordRect r = g_gameReg->m_world->m_level->m_viewportRect;
-    m_frame->RenderFrameClipped(ctx, sx, sy, &r, 0);
+    m_frame->RenderFrameClipped(ctx, screen.x, screen.y, &r, 0);
 
     if (m_buttonFrame[0]) {
         r = g_gameReg->m_world->m_level->m_viewportRect;
-        m_buttonFrame[0]->RenderFrameClipped(ctx, sx - 0xc, sy + 2, &r, 0);
+        m_buttonFrame[0]->RenderFrameClipped(ctx, screen.x - 0xc, screen.y + 2, &r, 0);
     }
     if (m_buttonFrame[1]) {
         r = g_gameReg->m_world->m_level->m_viewportRect;
-        m_buttonFrame[1]->RenderFrameClipped(ctx, sx + 0x10, sy + 2, &r, 0);
+        m_buttonFrame[1]->RenderFrameClipped(ctx, screen.x + 0x10, screen.y + 2, &r, 0);
     }
     return 1;
 }
@@ -233,22 +233,26 @@ i32 CActionOptionsMenuBar::HitClick(i32 mx, i32 my) {
         ++p;
     } while (--k != 0);
 
-    i32 y0 = m_screenY;
-    i32 ylo = y0 - 0xa;
-    i32 yhi = y0 + 0xe;
-    i32 x0 = m_screenX;
-    i32 xlo = x0 - 0x18;
-
-    if (mx < x0 && mx >= xlo && my < yhi && my >= ylo) {
+    CRect primaryButton(
+        m_screenPosition.m_x - 0x18,
+        m_screenPosition.m_y - 0xa,
+        m_screenPosition.m_x,
+        m_screenPosition.m_y + 0xe
+    );
+    if (::PtInRect(&primaryButton, mx, my)) {
         if (*btn == ACTIONOPTION_NORMAL) {
             *btn = ACTIONOPTION_SELECTED;
         }
         return 1;
     }
 
-    i32 xlo2 = x0 + 0x4;
-    i32 xhi2 = x0 + 0x1c;
-    if (mx < xhi2 && mx >= xlo2 && my < yhi && my >= ylo) {
+    CRect secondaryButton(
+        m_screenPosition.m_x + 0x4,
+        m_screenPosition.m_y - 0xa,
+        m_screenPosition.m_x + 0x1c,
+        m_screenPosition.m_y + 0xe
+    );
+    if (::PtInRect(&secondaryButton, mx, my)) {
         if (m_buttonState[1] != ACTIONOPTION_NORMAL) {
             return 1;
         }
@@ -263,18 +267,23 @@ ActionOptionHit CActionOptionsMenuBar::HitHover(i32 mx, i32 my) {
     if (!m_active) {
         return ACTIONOPTION_HIT_NONE;
     }
-    i32 y0 = m_screenY;
-    i32 x0 = m_screenX;
-    i32 ylo = y0 - 0xc;
-    i32 yhi = y0 + 0xc;
-    i32 xlo = x0 - 0x18;
-    if (mx < x0 && mx >= xlo && my < yhi && my >= ylo
-        && m_buttonState[0] != ACTIONOPTION_DISABLED) {
+    CRect primaryButton(
+        m_screenPosition.m_x - 0x18,
+        m_screenPosition.m_y - 0xc,
+        m_screenPosition.m_x,
+        m_screenPosition.m_y + 0xc
+    );
+    if (::PtInRect(&primaryButton, mx, my) && m_buttonState[0] != ACTIONOPTION_DISABLED) {
         return ACTIONOPTION_HIT_PRIMARY;
     }
 
-    if (mx < x0 + 0x18 && mx >= x0 && my < yhi && my >= ylo
-        && m_buttonState[1] != ACTIONOPTION_DISABLED) {
+    CRect secondaryButton(
+        m_screenPosition.m_x,
+        m_screenPosition.m_y - 0xc,
+        m_screenPosition.m_x + 0x18,
+        m_screenPosition.m_y + 0xc
+    );
+    if (::PtInRect(&secondaryButton, mx, my) && m_buttonState[1] != ACTIONOPTION_DISABLED) {
         return ACTIONOPTION_HIT_SECONDARY;
     }
     return ACTIONOPTION_HIT_NONE;
@@ -301,8 +310,8 @@ i32 CActionOptionsMenuBar::Serialize(CFileMemBase* ar) {
     }
 
     ar->Write(this, 8);
-    ar->Write(&m_screenX, sizeof(m_screenX));
-    ar->Write(&m_screenY, sizeof(m_screenY));
+    ar->Write(&m_screenPosition.m_x, sizeof(m_screenPosition.m_x));
+    ar->Write(&m_screenPosition.m_y, sizeof(m_screenPosition.m_y));
     ar->Write(&m_loaded, sizeof(m_loaded));
     ar->Write(&m_active, sizeof(m_active));
     ar->Write(m_buttonState, 8);
@@ -387,8 +396,8 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     i32 idx;
 
     s->Read(this, 8);
-    s->Read(&m_screenX, sizeof(m_screenX));
-    s->Read(&m_screenY, sizeof(m_screenY));
+    s->Read(&m_screenPosition.m_x, sizeof(m_screenPosition.m_x));
+    s->Read(&m_screenPosition.m_y, sizeof(m_screenPosition.m_y));
     s->Read(&m_loaded, sizeof(m_loaded));
     s->Read(&m_active, sizeof(m_active));
     s->Read(&m_buttonState[0], 8);
@@ -459,27 +468,28 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
 
 RVA(0x0000a000, 0xac)
 void CDDrawWorkerHost::WorldToViewport(LONG* px, LONG* py) {
-    if (m_flags & 0x4) {
+    WwdPlaneFlags flags = static_cast<WwdPlaneFlags>(m_flags);
+    if (HAS(flags, WWD_PLANE_FLAG_WRAP_X)) {
         if (*px < 0) {
-            *px += m_planePixelWidth;
-        } else if (*px >= m_planePixelWidth) {
-            *px -= m_planePixelWidth;
+            *px += m_planePixelSize.cx;
+        } else if (*px >= m_planePixelSize.cx) {
+            *px -= m_planePixelSize.cx;
         }
-        if (m_planeViewRect.right >= m_planePixelWidth && *px < m_planeViewRect.left
-            && *px <= m_planeViewRect.right - m_planePixelWidth) {
-            *px = m_planePixelWidth + *px;
+        if (m_planeViewRect.right >= m_planePixelSize.cx && *px < m_planeViewRect.left
+            && *px <= m_planeViewRect.right - m_planePixelSize.cx) {
+            *px = m_planePixelSize.cx + *px;
         }
     }
 
-    if (m_flags & 0x8) {
+    if (HAS(flags, WWD_PLANE_FLAG_WRAP_Y)) {
         if (*py < 0) {
-            *py += m_planePixelHeight;
-        } else if (*py >= m_planePixelHeight) {
-            *py -= m_planePixelHeight;
+            *py += m_planePixelSize.cy;
+        } else if (*py >= m_planePixelSize.cy) {
+            *py -= m_planePixelSize.cy;
         }
-        if (m_planeViewRect.bottom >= m_planePixelHeight && *py < m_planeViewRect.top
-            && *py <= m_planeViewRect.bottom - m_planePixelHeight) {
-            *py = m_planePixelHeight + *py;
+        if (m_planeViewRect.bottom >= m_planePixelSize.cy && *py < m_planeViewRect.top
+            && *py <= m_planeViewRect.bottom - m_planePixelSize.cy) {
+            *py = m_planePixelSize.cy + *py;
         }
     }
 

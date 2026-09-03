@@ -3,6 +3,8 @@
 
 #include <rva.h>
 
+#include <Gruntz/CoordNode.h>
+#include <Gruntz/DoubleVector.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/WarpStoneFragment.h>
@@ -24,14 +26,11 @@ public:
     i32 SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, i32 payload);
 
     WarpStoneFragment m_arrivalMode;
-    i32 m_targetX;
-    i32 m_targetY;
+    Coord m_target;
     char m_padc[0x10 - 0xc];
-    double m_currentX;
-    double m_currentY;
+    DoubleVector2 m_current;
     double m_velocityScale;
-    double m_xDirection;
-    double m_yDirection;
+    DoubleVector2 m_direction;
     CImage* m_sprite;
     CStatusBarMgr* m_owner;
 };

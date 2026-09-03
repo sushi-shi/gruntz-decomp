@@ -26,6 +26,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
@@ -75,17 +76,24 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
             CBattlezMapConfig* b = &m_ctx->m_players[band].m_battlezConfig;
             if (b != NULL) {
                 i32 cnt = b->m_attackWaypoints.GetSize();
-                i32 x = b->m_marker.m_x;
-                i32 y = b->m_marker.m_y;
+                Coord target = b->m_marker;
                 if (cnt != 0) {
                     Coord** arr = MfcPtrArrayData<Coord>(b->m_attackWaypoints);
                     Coord* pair = arr[rand() % cnt];
-                    x = pair->m_x;
-                    y = pair->m_y;
+                    target = *pair;
                 }
-                if (unit->TileSwitch(x, y, 0, 0x9cf, 0, 0x4020) != 0) {
-                    unit->m_arrivalCell.m_x = band;
-                    unit->m_arrivalCell.m_y = 0;
+                if (unit->TileSwitch(
+                        target.m_x,
+                        target.m_y,
+                        0,
+                        IDX(CELL_FLAG_SOLID | CELL_FLAG_SPECIAL | CELL_FLAG_TRIGGER
+                            | CELL_FLAG_BRIDGE | CELL_FLAG_REVEALED_POWERUP | CELL_FLAG_ARROW
+                            | CELL_FLAG_WATER | CELL_FLAG_SINK_HAZARD),
+                        0,
+                        BATTLEZ_ROUTE_OTHER_TOOLS_TRIGGER
+                    )
+                    != 0) {
+                    unit->m_arrivalCell.Set(band, 0);
                     AcceptAlways(unit);
                 }
             }
@@ -100,29 +108,34 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
             return 1;
         }
 
-        i32 y = recB->m_marker.m_y;
-        i32 x = recB->m_marker.m_x;
-        unit->TileSwitch(x, y, 0, 0x987, 0, 0x4068);
+        Coord target = recB->m_marker;
+        unit->TileSwitch(
+            target.m_x,
+            target.m_y,
+            0,
+            IDX(CELL_FLAG_SOLID | CELL_FLAG_SPECIAL | CELL_FLAG_TRIGGER | CELL_FLAG_ARROW
+                | CELL_FLAG_WATER | CELL_FLAG_SINK_HAZARD),
+            0,
+            IDX(CELL_FLAG_BRIDGE | CELL_FLAG_DESTRUCTIBLE_ROCK | CELL_FLAG_REVEALED_POWERUP
+                | CELL_FLAG_GAUNTLET_BRICK)
+        );
         unit->m_dwell = 0;
         return 1;
     }
     if (recA == NULL || cfgB == NULL) {
-        Coord none;
-        unit->m_arrivalCell = *none.Set(-1, -1);
+        unit->m_arrivalCell.Set(-1, -1);
         return 1;
     }
     if (recA->m_humanControlled == false && cfgB->m_active == false) {
         RECYCLE_GRUNT_COORDS(unit)
-        Coord none;
-        unit->m_arrivalCell = *none.Set(-1, -1);
+        unit->m_arrivalCell.Set(-1, -1);
         return 1;
     }
     if (unit->ArrivalCell().m_y == 1) {
         return 1;
     }
-    CGameObject* lvl = unit->m_object;
-    i32 px = lvl->m_screenX >> TILE_SHIFT_PX;
-    i32 py = lvl->m_screenY >> TILE_SHIFT_PX;
+    Coord position;
+    unit->GetScreenTile(&position);
     i32 nearBand = 0;
 
     i32 cnt2 = cfgB->m_attackWaypoints.GetSize();
@@ -130,9 +143,8 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
         Coord** vec = MfcPtrArrayData<Coord>(cfgB->m_attackWaypoints);
         for (i32 j = cnt2; j > 0; j--) {
             Coord* pair = *vec;
-            i32 dy = abs(pair->m_y - py);
-            i32 dx = abs(pair->m_x - px);
-            if (dx + dy <= 6) {
+            Coord distance = (*pair - position).GetAbs();
+            if (distance.m_x + distance.m_y <= 6) {
                 nearBand = 1;
             }
             vec++;
@@ -141,7 +153,6 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
     if (nearBand == 0) {
         return 1;
     }
-    unit->m_arrivalCell.m_x = unit->m_arrivalCell.m_x;
     unit->m_arrivalCell.m_y = 1;
     if (unit->CoordCount() == 0) {
         return 1;

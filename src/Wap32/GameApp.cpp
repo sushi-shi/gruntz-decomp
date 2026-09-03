@@ -239,22 +239,18 @@ void CGameApp::InitializeDefaultCreateStruct() {
         hMenu = LoadMenuA(m_hInstance, m_gameInfo.szGameIdentifier);
     }
 
-    i32 x, y;
+    CPoint position;
     if (HAS(m_gameInfo.windowClassFlags, GAME_WINDOW_FLAG_WINDOWED)) {
-        x = COORD_UNSET;
-        y = COORD_UNSET;
+        position = CPoint(COORD_UNSET, COORD_UNSET);
     } else {
-        x = 0;
-        y = 0;
+        position = CPoint(0, 0);
     }
 
-    i32 cx, cy;
+    CSize size;
     if (HAS(m_gameInfo.windowClassFlags, GAME_WINDOW_FLAG_WINDOWED)) {
-        cx = m_gameInfo.windowWidth;
-        cy = m_gameInfo.windowHeight;
+        size = CSize(m_gameInfo.windowWidth, m_gameInfo.windowHeight);
     } else {
-        cx = GetSystemMetrics(SM_CXSCREEN);
-        cy = GetSystemMetrics(SM_CYSCREEN);
+        size = CSize(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
     }
 
     i32 style;
@@ -273,12 +269,12 @@ void CGameApp::InitializeDefaultCreateStruct() {
     m_createStruct.style = style;
     m_createStruct.hInstance = m_hInstance;
     m_createStruct.hMenu = hMenu;
-    m_createStruct.y = y;
-    m_createStruct.cx = cx;
+    m_createStruct.y = position.y;
+    m_createStruct.cx = size.cx;
     m_createStruct.lpCreateParams = NULL;
     m_createStruct.hwndParent = NULL;
-    m_createStruct.x = x;
-    m_createStruct.cy = cy;
+    m_createStruct.x = position.x;
+    m_createStruct.cy = size.cy;
     m_createStruct.lpszName = m_gameInfo.szWindowName;
     m_createStruct.lpszClass = m_gameInfo.szWindowClassName;
     m_createStruct.dwExStyle = exStyle;

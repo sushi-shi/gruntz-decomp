@@ -13,6 +13,7 @@
 #include <Ints.h>
 #include <Io/FileStream.h>
 #include <Io/MoviePlayer.h>
+#include <MakeRect.h>
 #include <Wap32/ScreenGeometry.h>
 
 #include <ddraw.h>
@@ -592,22 +593,18 @@ void CMoviePlayer::Snapshot(HWND hWnd) {
 
 RVA(0x0017cdf0, 0x1c6)
 i32 CMoviePlayer::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
-    RECT dst, src;
+    CRect dst, src;
     if (m_destRect) {
-        dst.left = m_destRect->left;
-        dst.top = m_destRect->top;
-        dst.right = m_destRect->right;
-        dst.bottom = m_destRect->bottom;
+        dst = *m_destRect;
     } else {
-        dst.left = col * m_tilesAcross + m_originX;
-        dst.top = row * m_tilesDown + m_originY;
-        dst.right = nCols * m_tilesAcross + dst.left;
-        dst.bottom = nRows * m_tilesDown + dst.top;
+        dst = MakeRect(
+            col * m_tilesAcross + m_origin.x,
+            row * m_tilesDown + m_origin.y,
+            nCols * m_tilesAcross + col * m_tilesAcross + m_origin.x,
+            nRows * m_tilesDown + row * m_tilesDown + m_origin.y
+        );
     }
-    src.left = col;
-    src.top = row;
-    src.right = col + nCols;
-    src.bottom = row + nRows;
+    src.SetRect(col, row, col + nCols, row + nRows);
 
     for (;;) {
         i32 hr;
@@ -700,11 +697,12 @@ i32 CMoviePlayer::Configure(MovieLayout mode, MovieOpenFlags openFlags, POINT* o
                 if (!origin) {
                     return 0;
                 }
-                m_originX = origin->x;
-                m_originY = origin->y;
+                m_origin = *origin;
             } else {
-                m_originX = (m_screenWidth - m_tilesAcross * m_smackHandle->Width) >> 1;
-                m_originY = (m_screenHeight - m_tilesDown * m_smackHandle->Height) >> 1;
+                m_origin = CPoint(
+                    (m_screenWidth - m_tilesAcross * m_smackHandle->Width) >> 1,
+                    (m_screenHeight - m_tilesDown * m_smackHandle->Height) >> 1
+                );
             }
             break;
         case MOVIE_SINGLE:
@@ -714,11 +712,12 @@ i32 CMoviePlayer::Configure(MovieLayout mode, MovieOpenFlags openFlags, POINT* o
                 if (!origin) {
                     return 0;
                 }
-                m_originX = origin->x;
-                m_originY = origin->y;
+                m_origin = *origin;
             } else {
-                m_originX = (m_screenWidth - m_smackHandle->Width) >> 1;
-                m_originY = (m_screenHeight - m_smackHandle->Height) >> 1;
+                m_origin = CPoint(
+                    (m_screenWidth - m_smackHandle->Width) >> 1,
+                    (m_screenHeight - m_smackHandle->Height) >> 1
+                );
             }
             break;
         case MOVIE_TILE_OR_STRETCH:
@@ -730,39 +729,32 @@ i32 CMoviePlayer::Configure(MovieLayout mode, MovieOpenFlags openFlags, POINT* o
                     if (!origin) {
                         return 0;
                     }
-                    m_originX = origin->x;
-                    m_originY = origin->y;
+                    m_origin = *origin;
                 } else {
-                    m_originX = (m_screenWidth - m_tilesAcross * m_smackHandle->Width) >> 1;
-                    m_originY = (m_screenHeight - m_tilesDown * m_smackHandle->Height) >> 1;
+                    m_origin = CPoint(
+                        (m_screenWidth - m_tilesAcross * m_smackHandle->Width) >> 1,
+                        (m_screenHeight - m_tilesDown * m_smackHandle->Height) >> 1
+                    );
                 }
             } else {
                 m_tilesAcross = 1;
                 m_tilesDown = 1;
-                m_originX = 0;
-                m_originY = 0;
+                m_origin = CPoint(0, 0);
                 m_destRect = new RECT;
-                m_destRect->top = 0;
-                m_destRect->left = 0;
-                m_destRect->bottom = m_screenHeight;
-                m_destRect->right = m_screenWidth;
+                SetRect(m_destRect, 0, 0, m_screenWidth, m_screenHeight);
                 m_blitMode = MOVIE_SINGLE;
             }
             break;
         case MOVIE_DEST_RECT: {
             m_tilesAcross = 1;
             m_tilesDown = 1;
-            m_originX = 0;
-            m_originY = 0;
+            m_origin = CPoint(0, 0);
             if (!rect) {
                 return 0;
             }
             RECT* r = new RECT;
             m_destRect = r;
-            r->left = rect->left;
-            r->top = rect->top;
-            r->right = rect->right;
-            r->bottom = rect->bottom;
+            *r = *rect;
             break;
         }
         default:

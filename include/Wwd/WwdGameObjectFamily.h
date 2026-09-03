@@ -68,7 +68,7 @@ public:
             m_collisionLogic = NULL;
         }
         m_shadow.Reset();
-        m_screenX = COORD_UNSET;
+        m_screenPosition.m_x = COORD_UNSET;
         m_dirty.Reset();
     }
 
@@ -136,11 +136,9 @@ public:
     i32 m_attackTypeMask;
 
     u32 m_collMask;
-    i32 m_strideX;
-    i32 m_strideY;
+    Coord m_stride;
     i32 m_reserved100;
-    i32 m_spawnX;
-    i32 m_spawnY;
+    Coord m_spawnPosition;
     i32 m_spawnSortKey;
     i32 m_reserved110;
     i32 m_score;
@@ -160,12 +158,10 @@ public:
 
     RECT m_switchRect;
 
-    i32 m_speedX;
-    i32 m_speedY;
+    Coord m_speed;
     i32 m_reserved16c;
     i32 m_reserved170;
-    i32 m_deltaX;
-    i32 m_deltaY;
+    Coord m_delta;
     i32 m_reserved17c;
     i32 m_reserved180;
     i32 m_carrierId;
@@ -177,7 +173,7 @@ inline i32 CGameObject::AttackBits(CGameObject* target) const {
 }
 
 inline void CGameObject::AttachToOwner(CDDrawSurfaceMgr* owner, i32 id) {
-    m_screenX = COORD_UNSET;
+    m_screenPosition.m_x = COORD_UNSET;
     m_posCache = NULL;
     m_logicRecord = new CLogicRecord(owner, id, 0);
     m_carrier = NULL;

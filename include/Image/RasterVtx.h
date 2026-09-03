@@ -8,6 +8,16 @@
 class CDDSurface;
 
 struct ClipVtx {
+    void SetPosition(float positionX, float positionY) {
+        x = positionX;
+        y = positionY;
+    }
+
+    void SetTexture(float textureU, float textureV) {
+        u = textureU;
+        v = textureV;
+    }
+
     float x, y, u, v;
 
     i32 fx, fu, fv;

@@ -48,6 +48,10 @@ GZ_ENUM_FLAGS_BEGIN(PidFlags, u32)
 GZ_ENUM_FLAGS_END(PidFlags, u32)
 GZ_ENUM_FLAGS_OPS(PidFlags)
 
+GZ_ENUM_CONST_BEGIN(PidRunEncoding)
+    PID_SKIP_RUN_MARKER = 0x80
+GZ_ENUM_CONST_END(PidRunEncoding)
+
 struct PidHeader {
 
     u32 formatTag;
@@ -255,7 +259,7 @@ public:
             i32 m_surfaceCaps;
         };
     };
-    i32 m_dontOwn;
+    b32 m_dontOwn;
 
     RECT m_fullRect;
     i32 m_imageBytes;

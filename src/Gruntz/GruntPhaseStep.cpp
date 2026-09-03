@@ -14,6 +14,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
@@ -81,14 +82,14 @@ state2: {
         goto common;
     }
     {
-        RECT box = MakeRect(
+        CRect box = MakeRect(
             m_arrivalCell.m_x - 4,
             m_arrivalCell.m_y - 4,
             m_arrivalCell.m_x + 5,
             m_arrivalCell.m_y + 5
         );
         CMapMgr* grid = g_gameReg->m_tileGrid;
-        GRID_CLIP_INL(grid, &box);
+        grid->Clip(&box);
     }
 
     CDWordArray acc;
@@ -111,18 +112,17 @@ state2: {
     while (acc.GetSize() != 0) {
         i32 sel = rand() % acc.GetSize();
         DWORD pt = acc.GetAt(sel);
-        i32 px = HIWORD(pt);
-        i32 py = LOWORD(pt);
+        Coord tile(HIWORD(pt), LOWORD(pt));
         CMapMgr* pl = g_gameReg->m_tileGrid;
-        if (static_cast<u32>(px) < g_gameReg->m_tileGrid->m_width
-            && static_cast<u32>(py) < g_gameReg->m_tileGrid->m_height) {
-            i32 flag = pl->CellFlagsAt(px, py);
+        if (static_cast<u32>(tile.m_x) < g_gameReg->m_tileGrid->m_width
+            && static_cast<u32>(tile.m_y) < g_gameReg->m_tileGrid->m_height) {
+            i32 flag = pl->CellFlagsAt(tile.m_x, tile.m_y);
             if ((flag & BRICKZ_BLOCKED_MASK) == 0) {
-                if (TileSwitch(px, py, 0, m_arrivalFlags, 1, 0) != 0) {
+                if (TileSwitch(tile.m_x, tile.m_y, 0, m_arrivalFlags, 1, 0) != 0) {
                     m_defenderState = AISTATE_COOLDOWN;
                     m_dwell = 0;
                     CMapMgr* hit = g_gameReg->m_tileGrid;
-                    GRID_CLIP_INL(hit, NULL);
+                    hit->Clip(NULL);
                     return 1;
                 }
             }
@@ -130,7 +130,7 @@ state2: {
         acc.RemoveAt(sel, 1);
     }
     CMapMgr* spent = g_gameReg->m_tileGrid;
-    GRID_CLIP_INL(spent, NULL);
+    spent->Clip(NULL);
     m_defenderState = AISTATE_SEEK;
     goto common;
 }
@@ -145,11 +145,12 @@ state0: {
         goto common;
     }
     if (m_poweredUp == false && m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(nb)
-        && RectContains(nb->m_object->m_screenX, nb->m_object->m_screenY) != 0) {
+        && RectContains(nb->m_object->m_screenPosition.m_x, nb->m_object->m_screenPosition.m_y)
+               != 0) {
         COMMIT_GRUNT_NEIGHBOR(nb);
         CWwdSpriteObject* hit = nb->m_object;
-        m_arrivalCell.m_x = hit->m_screenX >> TILE_SHIFT_PX;
-        m_arrivalCell.m_y = hit->m_screenY >> TILE_SHIFT_PX;
+        m_arrivalCell = hit->ScreenPos();
+        ScreenTile(&m_arrivalCell);
         m_defenderState = AISTATE_ATTACK;
         goto common;
     }
@@ -159,25 +160,14 @@ state0: {
     if (GruntInRadius(nb->m_playerIndex, nb->m_unitIndex) == 0) {
         goto s0_reset;
     }
-    if (TileSwitch(
-            nb->m_object->m_screenX >> TILE_SHIFT_PX,
-            nb->m_object->m_screenY >> TILE_SHIFT_PX,
-            0,
-            m_arrivalFlags,
-            1,
-            0
-        )
-        == 0) {
-        m_passableMask |= 0x4020;
-        TileSwitch(
-            nb->m_object->m_screenX >> TILE_SHIFT_PX,
-            nb->m_object->m_screenY >> TILE_SHIFT_PX,
-            0,
-            m_arrivalFlags,
-            1,
-            0
-        );
-        m_passableMask &= 0xffffbfdf;
+    {
+        Coord targetTile;
+        nb->GetScreenTile(&targetTile);
+        if (TileSwitch(targetTile.m_x, targetTile.m_y, 0, m_arrivalFlags, 1, 0) == 0) {
+            m_passableMask |= IDX(CELL_FLAG_DESTRUCTIBLE_ROCK | CELL_FLAG_GAUNTLET_BRICK);
+            TileSwitch(targetTile.m_x, targetTile.m_y, 0, m_arrivalFlags, 1, 0);
+            m_passableMask &= ~IDX(CELL_FLAG_DESTRUCTIBLE_ROCK | CELL_FLAG_GAUNTLET_BRICK);
+        }
     }
     m_dwell = 0;
     if (m_blockedVoicePending == false) {
@@ -186,8 +176,8 @@ state0: {
     game = g_gameReg;
     if (CGameLevel::PointInBounds(
             &game->m_world->m_level->m_mainPlane->m_planeViewRect,
-            m_object->m_screenX,
-            m_object->m_screenY
+            m_object->m_screenPosition.m_x,
+            m_object->m_screenPosition.m_y
         )
         == 0) {
         goto s0_reset;
@@ -202,23 +192,23 @@ common: {
     GruntAiState st = m_defenderState;
     if (st != AISTATE_COOLDOWN && st != AISTATE_PHASE_MIRROR_THEN_COOLDOWN && CoordCount() >= 2) {
         CoordNode* head = CoordHead();
-        i32 bx = head->m_coord->m_x;
-        i32 by = head->m_coord->m_y;
-        Coord* nc = head->m_next->m_coord;
-        i32 fx = nc->m_x;
-        i32 fy = nc->m_y;
-        if ((g_gameReg->m_tileGrid->CellFlagsAt(fx, fy) & 0x20) != 0) {
+        Coord targetTile = *head->m_coord;
+        Coord nextTile = *head->m_next->m_coord;
+        if ((g_gameReg->m_tileGrid->CellFlagsAt(nextTile.m_x, nextTile.m_y)
+             & IDX(CELL_FLAG_DESTRUCTIBLE_ROCK))
+            != 0) {
             if (CoordCount() != 0) {
                 RECYCLE_GRUNT_COORDS_EXPANDED(this)
             }
+            Coord targetPosition = targetTile;
+            TileCenter(&targetPosition);
             g_gameReg->m_triggerMgr->UseEquippedToolAt(
                 m_playerIndex,
                 m_unitIndex,
-                (bx << TILE_SHIFT_PX) + TILE_HALF_PX,
-                (by << TILE_SHIFT_PX) + TILE_HALF_PX
+                targetPosition.m_x,
+                targetPosition.m_y
             );
-            m_arrivalCell.m_x = bx;
-            m_arrivalCell.m_y = by;
+            m_arrivalCell = targetTile;
             m_defenderState = AISTATE_PHASE_MIRROR_THEN_COOLDOWN;
             return 1;
         }
@@ -227,7 +217,9 @@ common: {
         return 1;
     }
     Coord* head = CoordHead()->m_coord;
-    if ((g_gameReg->m_tileGrid->CellFlagsAt(head->m_x, head->m_y) & 0x20) == 0) {
+    if ((g_gameReg->m_tileGrid->CellFlagsAt(head->m_x, head->m_y)
+         & IDX(CELL_FLAG_DESTRUCTIBLE_ROCK))
+        == 0) {
         return 1;
     }
     m_arrivalCell = *head;

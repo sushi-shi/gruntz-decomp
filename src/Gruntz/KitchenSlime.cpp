@@ -11,6 +11,7 @@
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/Brickz.h>
+#include <Gruntz/CardinalDirectionOffset.h>
 #include <Gruntz/CardinalDir.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegistry.h>
@@ -25,12 +26,12 @@
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/Sprite.h>
-#include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
 #include <Image/CImage.h>
 #include <Io/FileMem.h>
+#include <MakeRect.h>
 #include <Rez/FrameClock.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/zBitVec.h>
@@ -65,36 +66,25 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
 
-    SNAP_OBJECT_TO_TILE_CENTER_DOUBLE_POS(m_object, snapX, snapY, m_posX, m_posY)
+    Coord snappedPosition = m_object->ScreenPos();
+    SnapTileCenter(&snappedPosition);
+    m_object->SetScreenPos(snappedPosition);
+    m_position.Init(snappedPosition);
     CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_KITCHEN_SLIME)
-    m_tilePosition.m_y = snapY;
-    m_tilePosition.m_x = snapX;
+    m_tilePosition = snappedPosition;
 
-    m_object->m_speedX = (m_object->m_speedX << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_object->m_speedY = (m_object->m_speedY << TILE_SHIFT_PX) + TILE_HALF_PX;
-    if (m_object->m_screenX == m_object->m_speedX && m_object->m_screenY == m_object->m_speedY) {
+    TileCenter(&m_object->m_speed);
+    Coord target = m_object->m_speed;
+    if (m_object->ScreenPos() == target) {
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         return;
     }
-    m_object->m_extent.left =
-        (m_object->m_screenX < m_object->m_speedX) ? m_object->m_screenX : m_object->m_speedX;
-
-    i32 exRight = m_object->m_speedX;
-    if (m_object->m_screenX > exRight) {
-        exRight = m_object->m_screenX;
-    }
-    m_object->m_extent.right = exRight;
-    i32 exTop = m_object->m_speedY;
-    if (m_object->m_screenY < exTop) {
-        exTop = m_object->m_screenY;
-    }
-    m_object->m_extent.top = exTop;
-    i32 exBottom = m_object->m_speedY;
-    if (m_object->m_screenY > exBottom) {
-        exBottom = m_object->m_screenY;
-    }
-    m_object->m_extent.bottom = exBottom;
+    Coord extentLo = snappedPosition;
+    extentLo.Min(target);
+    Coord extentHi = snappedPosition;
+    extentHi.Max(target);
+    m_object->m_extent = MakeRect(extentLo.m_x, extentLo.m_y, extentHi.m_x, extentHi.m_y);
 
     CDDrawWorker* frameSet = Anim()->m_imageSet;
     if (frameSet != NULL) {
@@ -147,8 +137,8 @@ i32 CKitchenSlime::Tick() {
         CGameObject* lvl = Level();
         i32 playerIndex, unitIndex;
         CGrunt* ent = static_cast<CGrunt*>(reg->m_triggerMgr->FindGruntAt(
-            lvl->m_screenX,
-            lvl->m_screenY,
+            lvl->m_screenPosition.m_x,
+            lvl->m_screenPosition.m_y,
             &lvl->m_area,
             &playerIndex,
             &unitIndex,
@@ -161,63 +151,56 @@ i32 CKitchenSlime::Tick() {
     }
 
     CGameObject* lvl = Level();
-    if (lvl->m_screenX == m_tilePosition.m_x && lvl->m_screenY == m_tilePosition.m_y
-        && LoadSprites() == 0) {
+    if (lvl->ScreenPos() == m_tilePosition && LoadSprites() == 0) {
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         return 0;
     }
 
     double step = static_cast<double>(g_frameDelta) * m_speed;
 
-    i32 newX;
-    if (m_dirX > 0.0) {
-        double t = (m_posX = m_posX + step);
-        newX = static_cast<i32>(floor(t));
-        i32 tx = m_tilePosition.m_x;
-        m_stepMag = fabs(m_posX - static_cast<double>(tx));
+    Coord next;
+    if (m_direction.x > 0.0) {
+        double t = (m_position.x = m_position.x + step);
+        next.m_x = static_cast<i32>(floor(t));
+        m_stepMag = fabs(m_position.x - static_cast<double>(m_tilePosition.m_x));
 
-        if (newX > tx) {
-            newX = tx;
+        if (next.m_x > m_tilePosition.m_x) {
+            next.m_x = m_tilePosition.m_x;
         }
-    } else if (m_dirX < 0.0) {
-        double t = (m_posX = m_posX - step);
-        newX = static_cast<i32>(ceil(t));
-        i32 tx = m_tilePosition.m_x;
-        m_stepMag = fabs(m_posX - static_cast<double>(tx));
-        if (newX < tx) {
-            newX = tx;
+    } else if (m_direction.x < 0.0) {
+        double t = (m_position.x = m_position.x - step);
+        next.m_x = static_cast<i32>(ceil(t));
+        m_stepMag = fabs(m_position.x - static_cast<double>(m_tilePosition.m_x));
+        if (next.m_x < m_tilePosition.m_x) {
+            next.m_x = m_tilePosition.m_x;
         }
     } else {
-        newX = static_cast<i32>(floor(m_posX));
+        next.m_x = static_cast<i32>(floor(m_position.x));
     }
 
-    i32 newY;
-    if (m_dirY > 0.0) {
-        double t = (m_posY = m_posY + step);
-        newY = static_cast<i32>(floor(t));
-        i32 ty = m_tilePosition.m_y;
-        m_stepMag = fabs(m_posY - static_cast<double>(ty));
-        if (newY > ty) {
-            Level()->m_screenX = newX;
-            Level()->m_screenY = ty;
+    if (m_direction.y > 0.0) {
+        double t = (m_position.y = m_position.y + step);
+        next.m_y = static_cast<i32>(floor(t));
+        m_stepMag = fabs(m_position.y - static_cast<double>(m_tilePosition.m_y));
+        if (next.m_y > m_tilePosition.m_y) {
+            next.m_y = m_tilePosition.m_y;
+            Level()->SetScreenPos(next);
             return 0;
         }
-    } else if (m_dirY < 0.0) {
-        double t = (m_posY = m_posY - step);
-        newY = static_cast<i32>(ceil(t));
-        i32 ty = m_tilePosition.m_y;
-        m_stepMag = fabs(m_posY - static_cast<double>(ty));
-        if (newY < ty) {
-            Level()->m_screenX = newX;
-            Level()->m_screenY = ty;
+    } else if (m_direction.y < 0.0) {
+        double t = (m_position.y = m_position.y - step);
+        next.m_y = static_cast<i32>(ceil(t));
+        m_stepMag = fabs(m_position.y - static_cast<double>(m_tilePosition.m_y));
+        if (next.m_y < m_tilePosition.m_y) {
+            next.m_y = m_tilePosition.m_y;
+            Level()->SetScreenPos(next);
             return 0;
         }
     } else {
-        newY = static_cast<i32>(floor(m_posY));
+        next.m_y = static_cast<i32>(floor(m_position.y));
     }
 
-    Level()->m_screenX = newX;
-    Level()->m_screenY = newY;
+    Level()->SetScreenPos(next);
     return 0;
 }
 
@@ -233,19 +216,19 @@ i32 CKitchenSlime::SerializeDispatch(
     if (mode != SERIAL_SAVE) {
         if (mode == SERIAL_LOAD) {
             s->Read(&m_speed, sizeof(m_speed));
-            s->Read(&m_posX, sizeof(m_posX));
-            s->Read(&m_posY, sizeof(m_posY));
-            s->Read(&m_dirX, sizeof(m_dirX));
-            s->Read(&m_dirY, sizeof(m_dirY));
+            s->Read(&m_position.x, sizeof(m_position.x));
+            s->Read(&m_position.y, sizeof(m_position.y));
+            s->Read(&m_direction.x, sizeof(m_direction.x));
+            s->Read(&m_direction.y, sizeof(m_direction.y));
             s->Read(&m_tilePosition, sizeof(m_tilePosition));
             s->Read(&m_stepMag, sizeof(m_stepMag));
         }
     } else {
         s->Write(&m_speed, sizeof(m_speed));
-        s->Write(&m_posX, sizeof(m_posX));
-        s->Write(&m_posY, sizeof(m_posY));
-        s->Write(&m_dirX, sizeof(m_dirX));
-        s->Write(&m_dirY, sizeof(m_dirY));
+        s->Write(&m_position.x, sizeof(m_position.x));
+        s->Write(&m_position.y, sizeof(m_position.y));
+        s->Write(&m_direction.x, sizeof(m_direction.x));
+        s->Write(&m_direction.y, sizeof(m_direction.y));
         s->Write(&m_tilePosition, sizeof(m_tilePosition));
         s->Write(&m_stepMag, sizeof(m_stepMag));
     }
@@ -262,42 +245,13 @@ i32 CKitchenSlime::LoadSprites() {
     i32 i = 0;
     while (found == false) {
         CGameObject* lvl = Level();
-        i32 sw = lvl->m_smarts;
-        switch (static_cast<CardinalDir>(sw)) {
-            case CARDINAL_NORTH: {
-                Coord step;
-                step.m_x = m_tilePosition.m_x;
-                step.m_y = m_tilePosition.m_y - 0x20;
-                tile = step;
-                break;
-            }
-            case CARDINAL_EAST: {
-                Coord step;
-                step.m_x = m_tilePosition.m_x + 0x20;
-                step.m_y = m_tilePosition.m_y;
-                tile = step;
-                break;
-            }
-            case CARDINAL_SOUTH: {
-                Coord step;
-                step.m_x = m_tilePosition.m_x;
-                step.m_y = m_tilePosition.m_y + 0x20;
-                tile = step;
-                break;
-            }
-            case CARDINAL_WEST: {
-                Coord step;
-                step.m_x = m_tilePosition.m_x - 0x20;
-                step.m_y = m_tilePosition.m_y;
-                tile = step;
-                break;
-            }
-        }
+        CardinalDir direction = static_cast<CardinalDir>(lvl->m_smarts);
+        tile = m_tilePosition + CardinalDirectionOffset(direction, TILE_SIZE_PX);
 
-        i32 gx = tile.m_x >> TILE_SHIFT_PX;
-        i32 gy = tile.m_y >> TILE_SHIFT_PX;
+        Coord tileCell = tile;
+        ScreenTile(&tileCell);
         CMapMgr* map = g_gameReg->m_tileGrid;
-        i32 tileFlags = map->CellFlagsAt(gx, gy);
+        i32 tileFlags = map->CellFlagsAt(tileCell.m_x, tileCell.m_y);
 
         if (tile.m_y >= lvl->m_extent.top && tile.m_x <= lvl->m_extent.right
             && tile.m_y <= lvl->m_extent.bottom && tile.m_x >= lvl->m_extent.left
@@ -309,7 +263,7 @@ i32 CKitchenSlime::LoadSprites() {
             }
 
             if (lvl->m_direction == 1) {
-                lvl->m_smarts = sw - 1;
+                lvl->m_smarts = IDX(direction) - 1;
                 if (Level()->m_smarts <= 0) {
                     Level()->m_smarts = 4;
                 }
@@ -322,46 +276,40 @@ i32 CKitchenSlime::LoadSprites() {
         }
     }
 
-    m_posX = 0;
-    m_posY = 0;
+    m_position.Init();
     b32 changed = (Level()->m_smarts != savedDir);
-    switch (static_cast<CardinalDir>(Level()->m_smarts)) {
+    CardinalDir direction = static_cast<CardinalDir>(Level()->m_smarts);
+    if (direction >= CARDINAL_FIRST && direction <= CARDINAL_LAST) {
+        Coord stepDirection = CardinalDirectionOffset(direction, 1);
+        m_direction = DoubleVector2(stepDirection);
+        m_position = m_direction * m_stepMag;
+    }
+    switch (direction) {
         case CARDINAL_NORTH:
-            m_dirX = 0.0;
-            m_dirY = -1.0;
-            m_posY = -m_stepMag;
             if (changed) {
                 Anim()->SetImageSetByName("LEVEL_KITCHENSLIME_NORTH");
             }
             break;
         case CARDINAL_EAST:
-            m_dirX = 1.0;
-            m_dirY = 0.0;
-            m_posX = m_stepMag;
             if (changed) {
                 Anim()->SetImageSetByName("LEVEL_KITCHENSLIME_EAST");
             }
             break;
         case CARDINAL_SOUTH:
-            m_dirX = 0.0;
-            m_dirY = 1.0;
-            m_posY = m_stepMag;
             if (changed) {
                 Anim()->SetImageSetByName("LEVEL_KITCHENSLIME_SOUTH");
             }
             break;
         case CARDINAL_WEST:
-            m_dirX = -1.0;
-            m_dirY = 0.0;
-            m_posX = -m_stepMag;
             if (changed) {
                 Anim()->SetImageSetByName("LEVEL_KITCHENSLIME_WEST");
             }
             break;
     }
 
-    m_posX = static_cast<double>(Level()->m_screenX) + m_posX;
-    m_posY = static_cast<double>(Level()->m_screenY) + m_posY;
+    Coord screenPosition = Level()->ScreenPos();
+    DoubleVector2 origin(screenPosition);
+    m_position += origin;
 
     u32 time;
     if (Level()->m_logicRecord->m_speed != 0) {

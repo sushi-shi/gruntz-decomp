@@ -229,19 +229,18 @@ void CGruntzCmdMgr::EnqueuePlaceGruntAtScreenPoint(
 ) {
     CGameLevel* level = m_manager->m_world->m_level;
     const RECT* view = &level->m_mainPlane->m_planeViewRect;
-    i32 targetX =
-        ((view->left - level->m_viewportRect.left + static_cast<u16>(screenX)) & ~TILE_MASK_PX)
-        + TILE_HALF_PX;
-    i32 targetY =
-        ((view->top - level->m_viewportRect.top + static_cast<u16>(screenY)) & ~TILE_MASK_PX)
-        + TILE_HALF_PX;
+    Coord target(
+        view->left - level->m_viewportRect.left + static_cast<u16>(screenX),
+        view->top - level->m_viewportRect.top + static_cast<u16>(screenY)
+    );
+    SnapTileCenter(&target);
     EnqueueSingle(
         isLocalCommand,
         static_cast<char>(playerIndex),
         0,
         0,
-        static_cast<i16>(targetX),
-        static_cast<i16>(targetY),
+        static_cast<i16>(target.m_x),
+        static_cast<i16>(target.m_y),
         0,
         static_cast<char>(scheduleSlot)
     );

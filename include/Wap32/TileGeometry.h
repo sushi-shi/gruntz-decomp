@@ -10,4 +10,13 @@ GZ_ENUM_CONST_BEGIN(TileGeometry)
     TILE_MASK_PX = 0x1f
 GZ_ENUM_CONST_END(TileGeometry)
 
+inline i32 TileShiftForSize(i32 tileSize) {
+    i32 shift = 0;
+    while (tileSize > 1) {
+        tileSize >>= 1;
+        shift++;
+    }
+    return shift;
+}
+
 #endif // WAP32_TILEGEOMETRY_H
