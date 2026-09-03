@@ -44,14 +44,9 @@ CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj)
         RECT bounds;
         CopyRect(&r, g_gameReg->GetRect(&bounds));
     }
-    POINT origin = {r.left, r.top};
-    i32 centerY = (r.bottom - origin.y) / 2;
-    i32 centerX = (r.right - origin.x) / 2;
-    centerY += origin.y;
-    centerX += origin.x;
+    CPoint center = CRect(r).CenterPoint();
     CWwdSpriteObject* object = m_object;
-    object->m_screenX = centerX;
-    object->m_screenY = centerY;
+    object->SetScreenPos(Coord(center.x, center.y));
 }
 
 RVA(0x000ab5b0, 0x102)

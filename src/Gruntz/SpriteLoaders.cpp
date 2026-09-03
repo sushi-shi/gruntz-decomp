@@ -81,8 +81,7 @@ i32 CTimer::LoadTimerSprite(i32 originX, i32 originY) {
         return 0;
     }
 
-    m_baseX = originX;
-    m_baseY = originY;
+    m_basePosition.Set(originX, originY);
     m_active = true;
     m_running = false;
     return 1;
@@ -194,19 +193,19 @@ i32 CTimer::Draw(CDDrawSurfacePair* target, b32 forceVisible) {
         return 1;
     }
     if (m_frameMinTens) {
-        m_frameMinTens->RenderFrame(target, m_baseX - 0x22, m_baseY, 0);
+        m_frameMinTens->RenderFrame(target, m_basePosition.m_x - 0x22, m_basePosition.m_y, 0);
     }
     if (m_frameMinOnes) {
-        m_frameMinOnes->RenderFrame(target, m_baseX - 0x10, m_baseY, 0);
+        m_frameMinOnes->RenderFrame(target, m_basePosition.m_x - 0x10, m_basePosition.m_y, 0);
     }
     if (m_frameColon) {
-        m_frameColon->RenderFrame(target, m_baseX, m_baseY, 0);
+        m_frameColon->RenderFrame(target, m_basePosition.m_x, m_basePosition.m_y, 0);
     }
     if (m_frameSecTens) {
-        m_frameSecTens->RenderFrame(target, m_baseX + 0x10, m_baseY, 0);
+        m_frameSecTens->RenderFrame(target, m_basePosition.m_x + 0x10, m_basePosition.m_y, 0);
     }
     if (m_frameSecOnes) {
-        m_frameSecOnes->RenderFrame(target, m_baseX + 0x22, m_baseY, 0);
+        m_frameSecOnes->RenderFrame(target, m_basePosition.m_x + 0x22, m_basePosition.m_y, 0);
     }
     return 1;
 }
@@ -291,8 +290,8 @@ i32 CTimer::Serialize(CFileMemBase* ar) {
         return 0;
     }
 
-    ar->Write(&m_baseX, sizeof(m_baseX));
-    ar->Write(&m_baseY, sizeof(m_baseY));
+    ar->Write(&m_basePosition.m_x, sizeof(m_basePosition.m_x));
+    ar->Write(&m_basePosition.m_y, sizeof(m_basePosition.m_y));
 
     char tmp[SERIAL_NAME_LEN];
 

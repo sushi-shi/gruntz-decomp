@@ -159,12 +159,9 @@ i32 CDDSurface::Refresh(IDirectDrawSurface* surface) {
     }
 
     m_pixelsPerRow = static_cast<u32>(m_pitch) / static_cast<u32>(m_bytesPerPixel);
-    m_fullRect.left = 0;
-    m_fullRect.top = 0;
-    m_fullRect.right = m_width;
-    m_fullRect.bottom = m_height;
+    m_fullRect = MakeRect(0, 0, m_width, m_height);
     m_imageBytes = m_height * m_bytesPerRow;
-    m_dontOwn = m_dontOwn | 1;
+    m_dontOwn = true;
     return 1;
 }
 
@@ -238,10 +235,7 @@ i32 CDDSurface::BlitIntoDesc(CDDrawDeviceManager* manager) {
     }
 
     m_pixelsPerRow = static_cast<u32>(m_pitch) / static_cast<u32>(m_bytesPerPixel);
-    m_fullRect.left = 0;
-    m_fullRect.top = 0;
-    m_fullRect.right = m_width;
-    m_fullRect.bottom = m_height;
+    m_fullRect = MakeRect(0, 0, m_width, m_height);
     m_imageBytes = m_height * m_bytesPerRow;
     return 1;
 }
@@ -255,13 +249,13 @@ void CDDSurface::FreeSurfaces() {
     }
     m_elements.SetSize(0, -1);
     if (this->m_ddSurface != NULL) {
-        if ((this->m_dontOwn & 1) == 0) {
+        if (!this->m_dontOwn) {
             this->m_ddSurface->Release();
         }
         this->m_ddSurface = NULL;
     }
     if (this->m_ddSurfaceBack != NULL) {
-        if ((this->m_dontOwn & 1) == 0) {
+        if (!this->m_dontOwn) {
             this->m_ddSurfaceBack->Release();
         }
         this->m_ddSurfaceBack = NULL;
@@ -537,31 +531,30 @@ void CDDSurface::FlipVertical() {
         return;
     }
 
-    i32 height = m_height;
-    i32 width = m_width;
+    CSize size(m_width, m_height);
     i32 i = 0;
-    i32 half = height / 2;
+    i32 half = size.cy / 2;
     if (half > 0) {
         do {
 
             i32 topOff = i * m_pitch;
             i32 j = 0;
-            if (width > 0) {
+            if (size.cx > 0) {
                 u8* top = buf + topOff;
                 do {
                     tmp[j] = *top;
                     ++top;
                     ++j;
-                } while (j < width);
+                } while (j < size.cx);
             }
 
-            i32 botRow = height - i - 1;
+            i32 botRow = size.cy - i - 1;
             i32 dstOff = i * m_pitch;
             i32 srcOff = botRow * m_pitch;
-            if (width > 0) {
+            if (size.cx > 0) {
                 u8* topDst = buf + dstOff;
                 u8* botSrc = buf + srcOff;
-                i32 k = width;
+                i32 k = size.cx;
                 do {
                     *topDst = *botSrc;
                     ++topDst;
@@ -572,13 +565,13 @@ void CDDSurface::FlipVertical() {
 
             i32 botOff = botRow * m_pitch;
             i32 m = 0;
-            if (width > 0) {
+            if (size.cx > 0) {
                 u8* botDst = buf + botOff;
                 do {
                     ++botDst;
                     botDst[-1] = tmp[m];
                     ++m;
-                } while (m < width);
+                } while (m < size.cx);
             }
             ++i;
         } while (i < half);
@@ -720,14 +713,12 @@ i32 CDDSurface::ShadeBlt(
         return 0;
     }
     {
-        i32 srcW = sr.right - sr.left;
-        i32 dstW = dr.right - dr.left;
-        if (dstW != srcW) {
+        CSize srcSize(sr.right - sr.left, sr.bottom - sr.top);
+        CSize dstSize(dr.right - dr.left, dr.bottom - dr.top);
+        if (dstSize.cx != srcSize.cx) {
             return 0;
         }
-        i32 srcH = sr.bottom - sr.top;
-        i32 dstH = dr.bottom - dr.top;
-        if (dstH != srcH) {
+        if (dstSize.cy != srcSize.cy) {
             return 0;
         }
         if (dr.left < 0) {
@@ -748,10 +739,10 @@ i32 CDDSurface::ShadeBlt(
         if (sr.top < 0) {
             return 0;
         }
-        if (sr.right > srcW) {
+        if (sr.right > src->m_width) {
             return 0;
         }
-        if (sr.bottom > srcH) {
+        if (sr.bottom > src->m_height) {
             return 0;
         }
     }
@@ -897,18 +888,17 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
     i32 rowPix = m_pitch / 2;
     u16* srcPix = src + rc.top * rowPix + rc.left;
     i32 stride = rc.left - rc.right + rowPix;
-    i32 width = rc.right - rc.left;
-    i32 height = rc.bottom - rc.top;
-    u16* scratch = new u16[width * 2];
+    CSize size(rc.right - rc.left, rc.bottom - rc.top);
+    u16* scratch = new u16[size.cx * 2];
     i32 off = pct << CLUT_LEVEL_BYTE_SHIFT;
 
     if (g_rDown == PIXEL16_RED_DOWN && g_gDown == RGB555_GREEN_DOWN && g_bDown == PIXEL16_BLUE_DOWN
         && g_rUp == RGB555_RED_UP && g_gUp == PIXEL16_GREEN_UP) {
-        for (; height > 0; height--) {
-            memcpy(scratch, srcPix, width * 2);
-            if (width > 0) {
+        for (; size.cy > 0; size.cy--) {
+            memcpy(scratch, srcPix, size.cx * 2);
+            if (size.cx > 0) {
                 u16* rd = scratch;
-                i32 x = width;
+                i32 x = size.cx;
                 do {
                     u32 p = *rd++;
                     u32 blue = p & RGB555_CHANNEL_MASK;
@@ -933,11 +923,11 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
     } else if (g_rDown == PIXEL16_RED_DOWN && g_gDown == RGB565_GREEN_DOWN
                && g_bDown == PIXEL16_BLUE_DOWN && g_rUp == RGB565_RED_UP
                && g_gUp == PIXEL16_GREEN_UP) {
-        for (; height > 0; height--) {
-            memcpy(scratch, srcPix, width * 2);
-            if (width > 0) {
+        for (; size.cy > 0; size.cy--) {
+            memcpy(scratch, srcPix, size.cx * 2);
+            if (size.cx > 0) {
                 u16* rd = scratch;
-                i32 x = width;
+                i32 x = size.cx;
                 do {
                     u32 p = *rd++;
                     u32 blue = p & RGB555_CHANNEL_MASK;
@@ -1077,21 +1067,18 @@ void CDDSurface::Tile(CDDSurface* src, b32 useColorKey) {
     i32 dwTrans = DDBLTFAST_WAIT + DDBLTFAST_SRCCOLORKEY * (useColorKey != false);
     for (i32 y = 0; y < m_height; y += src->m_height) {
         for (i32 x = 0; x < m_width; x += src->m_width) {
-            RECT rect;
+            CRect rect;
             RECT* pRect = NULL;
             if (x + src->m_width >= m_width || y + src->m_height >= m_height) {
-                rect.left = 0;
-                rect.top = 0;
                 i32 w = m_width - x;
                 if (w >= src->m_width) {
                     w = src->m_width;
                 }
-                rect.right = w;
                 i32 h = m_height - y;
                 if (h >= src->m_height) {
                     h = src->m_height;
                 }
-                rect.bottom = h;
+                rect = CRect(0, 0, w, h);
                 pRect = &rect;
             }
             m_ddSurface->BltFast(x, y, src->m_ddSurface, pRect, dwTrans);
@@ -1754,27 +1741,16 @@ i32 CDDSurface::StretchBlit(CDDSurface* src, RECT* srcRect, RECT* dstRect, i32 m
     if (srcRect != NULL) {
         sr = *srcRect;
     } else {
-        sr.left = 0;
-        sr.right = srcW - 1;
-        sr.top = 0;
-        sr.bottom = srcH - 1;
+        sr = MakeRect(0, 0, srcW - 1, srcH - 1);
     }
-    v[0].x = static_cast<float>(dstRect->left);
-    v[0].y = static_cast<float>(dstRect->top);
-    v[0].u = static_cast<float>(sr.left);
-    v[0].v = static_cast<float>(sr.top);
-    v[1].x = static_cast<float>(dstRect->right);
-    v[1].y = static_cast<float>(dstRect->top);
-    v[1].u = static_cast<float>(sr.right);
-    v[1].v = static_cast<float>(sr.top);
-    v[2].x = static_cast<float>(dstRect->right);
-    v[2].y = static_cast<float>(dstRect->bottom);
-    v[2].u = static_cast<float>(sr.right);
-    v[2].v = static_cast<float>(sr.bottom);
-    v[3].x = static_cast<float>(dstRect->left);
-    v[3].y = static_cast<float>(dstRect->bottom);
-    v[3].u = static_cast<float>(sr.left);
-    v[3].v = static_cast<float>(sr.bottom);
+    v[0].SetPosition(static_cast<float>(dstRect->left), static_cast<float>(dstRect->top));
+    v[0].SetTexture(static_cast<float>(sr.left), static_cast<float>(sr.top));
+    v[1].SetPosition(static_cast<float>(dstRect->right), static_cast<float>(dstRect->top));
+    v[1].SetTexture(static_cast<float>(sr.right), static_cast<float>(sr.top));
+    v[2].SetPosition(static_cast<float>(dstRect->right), static_cast<float>(dstRect->bottom));
+    v[2].SetTexture(static_cast<float>(sr.right), static_cast<float>(sr.bottom));
+    v[3].SetPosition(static_cast<float>(dstRect->left), static_cast<float>(dstRect->bottom));
+    v[3].SetTexture(static_cast<float>(sr.left), static_cast<float>(sr.bottom));
     RotateRasterize(v, 4, this, src, mode, colorkey, -1, -1, -1, -1);
     return 1;
 }

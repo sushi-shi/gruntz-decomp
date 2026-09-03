@@ -1,6 +1,7 @@
 #include <rva.h>
 
 #include <Enums.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/PickupType.h>
 
 GZ_ENUM_BEGIN(ActionOptionButtonState)
@@ -46,8 +47,7 @@ public:
 
     i32 m_playerIndex;
     i32 m_unitIndex;
-    i32 m_screenX;
-    i32 m_screenY;
+    Coord m_screenPosition;
     CImage* m_frame;
 
     ActionOptionButtonState m_buttonState[2];

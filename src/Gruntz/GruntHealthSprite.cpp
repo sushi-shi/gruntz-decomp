@@ -97,8 +97,8 @@ i32 CGruntHealthSprite::HealthUpdate() {
         }
         m_displayedValue = result;
     }
-    m_object->m_screenX = e->m_object->m_screenX;
-    m_object->m_screenY = m_yOffset + e->m_object->m_screenY;
+    Coord position = e->m_object->ScreenPos() + Coord(0, m_yOffset);
+    m_object->SetScreenPos(position);
     return 0;
 }
 

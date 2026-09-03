@@ -132,8 +132,7 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                         h = SCREEN_H_PX;
                     }
                     CGruntzMgr* reg = g_gameReg;
-                    reg->m_savedModeSize.cx = w;
-                    reg->m_savedModeSize.cy = h;
+                    reg->m_savedModeSize = CSize(w, h);
                     if (g_gameReg->IsInPlayState()) {
                         g_gameReg->CheckSavedMode();
                     }

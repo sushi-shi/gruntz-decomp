@@ -92,7 +92,7 @@ i32 CSBI_WarlordHead::Render() {
             f = cfg->GetAt(4);
         }
         if (f) {
-            f->RenderFrame(target, m_rect.left + f->m_anchorX, m_rect.top + f->m_anchorY, 0);
+            f->RenderFrame(target, m_rect.left + f->m_anchor.x, m_rect.top + f->m_anchor.y, 0);
         }
 
         cfg = m_frameSet;
@@ -100,7 +100,7 @@ i32 CSBI_WarlordHead::Render() {
         CImage* g = cfg->GetAt(idx);
         SetFrame(g);
         if (g) {
-            g->RenderFrame(target, m_rect.left + g->m_anchorX, m_rect.top + g->m_anchorY, 0);
+            g->RenderFrame(target, m_rect.left + g->m_anchor.x, m_rect.top + g->m_anchor.y, 0);
         }
     }
     return 1;

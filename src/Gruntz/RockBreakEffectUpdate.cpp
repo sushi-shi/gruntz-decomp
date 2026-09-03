@@ -16,8 +16,12 @@ i32 CExplosion::Update() {
     if (m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta) == 1) {
         CWwdSpriteObject* t = m_object;
         if (t->m_score == 1) {
-            g_gameReg->m_triggerMgr
-                ->BuildRockBreakParticles(t->m_screenX, t->m_screenY, 1, t->m_smarts);
+            g_gameReg->m_triggerMgr->BuildRockBreakParticles(
+                t->m_screenPosition.m_x,
+                t->m_screenPosition.m_y,
+                1,
+                t->m_smarts
+            );
         }
     }
     MARK_OBJECT_COMPLETE_IF(IsAniCursorComplete(&m_wwdObject->m_animationCursor))

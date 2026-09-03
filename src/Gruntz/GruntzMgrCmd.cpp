@@ -601,7 +601,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             if (!si) {
                 return 1;
             }
-            if (!(si->m_flags & 1)) {
+            if (!(si->m_flags & SAVESLOT_PRESENT)) {
                 return 1;
             }
             m_loadingSaveGame = true;

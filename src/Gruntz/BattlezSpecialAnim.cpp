@@ -77,10 +77,7 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
         return 0;
     }
     CGameObject* lvl = unit->m_object;
-    if (GRUNT_SCREEN_X_NOT_AT_SAVED_POS(lvl, unit)) {
-        goto fail;
-    }
-    if (GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(lvl, unit)) {
+    if (lvl->ScreenPos() != unit->m_lastTilePx) {
         return 0;
     }
     if (unit->m_entranceCommitted == false) {
@@ -155,7 +152,7 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
     }
     eq = (strcmp(*recs, "C") == 0);
     if (eq) {
-        goto fail;
+        return 0;
     }
 
     ci = unit->m_logicRecord->EventCode();
@@ -179,8 +176,6 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
     }
     eq = (strcmp(*sel, "R") == 0);
     return !eq;
-fail:
-    return 0;
 }
 
 RVA(0x00034960, 0x24)

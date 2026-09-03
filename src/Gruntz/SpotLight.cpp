@@ -55,24 +55,20 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     m_logicRecord->m_eventCode = ActFindId("A");
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
 
-    i32 ax = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-    i32 centerY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
-    m_center.x = static_cast<double>(ax);
-    double cy = static_cast<double>(centerY);
-    m_center.y = cy;
-    i32 nx;
+    Coord center = m_object->ScreenPos();
+    SnapTileCenter(&center);
+    m_center.Init(center);
+    Coord position = center;
     if (m_object->m_smarts == 0) {
-        nx = ax - TILE_SIZE_PX;
+        position.m_x -= TILE_SIZE_PX;
     } else {
-        nx = ax - m_object->m_smarts * TILE_SIZE_PX;
+        position.m_x -= m_object->m_smarts * TILE_SIZE_PX;
     }
-    m_object->m_screenX = nx;
-    m_object->m_screenY = centerY;
-    double px = static_cast<double>(nx);
-    m_position.Init(px, cy);
+    m_object->SetScreenPos(position);
+    m_position.Init(position);
     CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR)
-    m_offset.Init(m_center.x - px, m_center.y - cy);
+    m_offset = m_center - m_position;
 
     double period;
     if (m_object->m_damage == 0) {
@@ -135,8 +131,8 @@ RVA(0x000b1af0, 0x318)
 i32 CSpotLight::Tick() {
     if (g_gameReg->m_isEasyMode == false || g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
         CGrunt* tgt = g_gameReg->m_triggerMgr->FindGruntAt(
-            m_object->m_screenX,
-            m_object->m_screenY,
+            m_object->m_screenPosition.m_x,
+            m_object->m_screenPosition.m_y,
             &m_object->m_area,
             &m_targetPlayerIndex,
             &m_targetUnitIndex,
@@ -146,8 +142,7 @@ i32 CSpotLight::Tick() {
             && !(m_storyMode != false && m_targetPlayerIndex != 0)) {
             m_previousAnimationActId = m_logicRecord->m_eventCode;
             m_logicRecord->m_eventCode = ActFindId("B");
-            m_object->m_screenX = tgt->m_object->m_screenX;
-            m_object->m_screenY = tgt->m_object->m_screenY;
+            m_object->SetScreenPos(tgt->m_object->ScreenPos());
             if (m_object->m_score == 1) {
                 g_gameReg->m_triggerMgr
                     ->StartUnitDeath(m_targetPlayerIndex, m_targetUnitIndex, DEATH_MELT, -1);
@@ -183,22 +178,17 @@ i32 CSpotLight::Tick() {
 
     double s = sin(m_angle);
     double c = cos(m_angle);
-    double ox = m_offset.x;
-    double oy = -m_offset.y;
+    DoubleVector2 offset(m_offset.x, -m_offset.y);
     double dAngle = static_cast<double>(g_frameDelta) * m_angularVelocity;
     CWwdSpriteObject* mv = m_focus;
-    double rotatedX = ox * c + oy * s;
-    double rotatedY = ox * s - oy * c;
-    m_position.Init(rotatedX, rotatedY);
+    DoubleVector2 rotated(offset.x * c + offset.y * s, offset.x * s - offset.y * c);
     if (mv != NULL) {
-        m_center.x = static_cast<double>(mv->m_screenX);
-        m_center.y = static_cast<double>(mv->m_screenY);
+        Coord focusPosition = mv->ScreenPos();
+        m_center.Init(focusPosition);
     }
-    m_position.x = m_center.x + rotatedX;
-    m_position.y = m_center.y + rotatedY;
+    m_position = m_center + rotated;
     m_angle = dAngle + m_angle;
-    m_object->m_screenX = static_cast<i32>(m_position.x);
-    m_object->m_screenY = static_cast<i32>(m_position.y);
+    m_object->SetScreenPos(m_position.ToCoord());
     return 0;
 }
 
@@ -207,18 +197,16 @@ int CSpotLight::Update() {
     if (m_object->m_score == 1) {
         double c = cos(m_angle);
         double s = sin(m_angle);
-        double ox = m_offset.x;
-        double oy = -m_offset.y;
+        DoubleVector2 offset(m_offset.x, -m_offset.y);
 
         double dAngle = static_cast<double>(g_frameDelta) * m_angularVelocity;
         CWwdSpriteObject* focus = m_focus;
-        m_position.x = oy * s - ox * c;
-        m_position.y = ox * s + oy * c;
+        DoubleVector2 rotated(offset.y * s - offset.x * c, offset.x * s + offset.y * c);
         if (focus) {
-            m_center.x = static_cast<double>(focus->m_screenX);
-            m_center.y = static_cast<double>(focus->m_screenY);
+            Coord focusPosition = focus->ScreenPos();
+            m_center.Init(focusPosition);
         }
-        m_position.Init(m_center.x + m_position.x, m_center.y + m_position.y);
+        m_position = m_center + rotated;
         m_angle = dAngle + m_angle;
     }
     if (g_gameReg->m_triggerMgr

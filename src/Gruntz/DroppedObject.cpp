@@ -32,7 +32,6 @@
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/State.h>
-#include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
@@ -209,7 +208,10 @@ CObjectDropper::CObjectDropper(CGameObject* obj)
     SET_ANIMATION_ACT("A");
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
 
-    SNAP_OBJECT_TO_TILE_CENTER_DOUBLE_POS(m_object, snapX, snapY, m_posX, m_posY)
+    Coord position = m_object->ScreenPos();
+    SnapTileCenter(&position);
+    m_object->SetScreenPos(position);
+    m_position.Init(position);
     CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR_FRONT)
 
@@ -220,20 +222,16 @@ CObjectDropper::CObjectDropper(CGameObject* obj)
         const char* s = name;
         if (strcmp(s, "LEVEL_OBJECTDROPPER_NORTH") == 0) {
             m_object->m_direction = IDX(CARDINAL_NORTH);
-            m_travelDx = 0;
-            m_travelDy = -1;
+            m_travelDirection.Set(0, -1);
         } else if (strcmp(s, "LEVEL_OBJECTDROPPER_EAST") == 0) {
             m_object->m_direction = IDX(CARDINAL_EAST);
-            m_travelDx = 1;
-            m_travelDy = 0;
+            m_travelDirection.Set(1, 0);
         } else if (strcmp(s, "LEVEL_OBJECTDROPPER_SOUTH") == 0) {
             m_object->m_direction = IDX(CARDINAL_SOUTH);
-            m_travelDx = 0;
-            m_travelDy = 1;
+            m_travelDirection.Set(0, 1);
         } else if (strcmp(s, "LEVEL_OBJECTDROPPER_WEST") == 0) {
             m_object->m_direction = IDX(CARDINAL_WEST);
-            m_travelDx = -1;
-            m_travelDy = 0;
+            m_travelDirection.Set(-1, 0);
         }
     }
 
@@ -271,16 +269,20 @@ i32 CObjectDropper::Update() {
     if (static_cast<i64>(g_frameTime) - m_lastDropTime >= m_dropInterval) {
         if (g_gameReg->m_isEasyMode == false || g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
             CWwdSpriteObject* o = m_object;
+            Coord dropperPosition = o->ScreenPos();
             RECT box;
-            box.left = o->m_screenX - o->m_frameImage->m_anchorX + 7;
-            box.right = o->m_screenX + o->m_frameImage->m_anchorX - 7;
-            box.top = o->m_screenY - o->m_frameImage->m_anchorY + 7;
-            box.bottom = o->m_screenY + o->m_frameImage->m_anchorY - 7;
+            SetRect(
+                &box,
+                dropperPosition.m_x - o->m_frameImage->m_anchor.x + 7,
+                dropperPosition.m_y - o->m_frameImage->m_anchor.y + 7,
+                dropperPosition.m_x + o->m_frameImage->m_anchor.x - 7,
+                dropperPosition.m_y + o->m_frameImage->m_anchor.y - 7
+            );
             i32 playerIndex;
             i32 unitIndex;
             CGrunt* found = g_gameReg->m_triggerMgr->FindGruntAt(
-                o->m_screenX,
-                o->m_screenY,
+                dropperPosition.m_x,
+                dropperPosition.m_y,
                 &o->m_area,
                 &playerIndex,
                 &unitIndex,
@@ -289,18 +291,16 @@ i32 CObjectDropper::Update() {
             if (found != NULL) {
                 if (m_lastDropPlayerIndex != playerIndex || m_lastDropUnitIndex != unitIndex) {
                     if (m_scrollMode == OBJECT_DROP_ALL_PLAYERS || playerIndex == 0) {
-                        CGameObject* fo = found->m_object;
-                        i32 fx = fo->m_screenX;
-                        i32 fy = fo->m_screenY;
+                        Coord foundPosition = found->m_object->ScreenPos();
                         CMapMgr* plane = g_gameReg->m_tileGrid;
-                        i32 cx = fx >> TILE_SHIFT_PX;
-                        i32 cy = fy >> TILE_SHIFT_PX;
-                        u32 flags = plane->CellFlagsAt(cx, cy);
+                        Coord foundTile = foundPosition;
+                        ScreenTile(&foundTile);
+                        u32 flags = plane->CellFlagsAt(foundTile.m_x, foundTile.m_y);
                         if ((flags & IDX(CELL_FLAG_SPECIAL)) == 0) {
                             g_gameReg->m_world->m_childGroup->CreateSprite(
                                 0,
-                                fx,
-                                fy,
+                                foundPosition.m_x,
+                                foundPosition.m_y,
                                 0,
                                 "DroppedObjectShadow",
                                 WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
@@ -320,45 +320,45 @@ i32 CObjectDropper::Update() {
     m_wwdObject->m_animationCursor.Advance(static_cast<i32>(g_engineFrameDelta));
 
     double drift = static_cast<double>(g_frameDelta) * m_speed;
-    if (m_travelDx > 0) {
-        m_posX += drift;
-        if (m_posX
-            >= static_cast<double>(g_gameReg->m_world->m_level->m_mainPlane->m_planePixelWidth)) {
-            m_posX = 0.0;
+    if (m_travelDirection.m_x > 0) {
+        m_position.x += drift;
+        if (m_position.x
+            >= static_cast<double>(g_gameReg->m_world->m_level->m_mainPlane->m_planePixelSize.cx)) {
+            m_position.x = 0.0;
             m_lastDropPlayerIndex = -1;
             m_lastDropUnitIndex = -1;
         }
-    } else if (m_travelDx < 0) {
-        m_posX -= drift;
-        if (m_posX < 0.0) {
-            m_posX = static_cast<double>(
-                (g_gameReg->m_world->m_level->m_mainPlane->m_planePixelWidth - 1)
+    } else if (m_travelDirection.m_x < 0) {
+        m_position.x -= drift;
+        if (m_position.x < 0.0) {
+            m_position.x = static_cast<double>(
+                (g_gameReg->m_world->m_level->m_mainPlane->m_planePixelSize.cx - 1)
             );
             m_lastDropPlayerIndex = -1;
             m_lastDropUnitIndex = -1;
         }
     }
-    if (m_travelDy > 0) {
-        m_posY += drift;
-        if (m_posY
-            > static_cast<double>(g_gameReg->m_world->m_level->m_mainPlane->m_planePixelHeight)) {
-            m_posY = 0.0;
+    if (m_travelDirection.m_y > 0) {
+        m_position.y += drift;
+        if (m_position.y
+            > static_cast<double>(g_gameReg->m_world->m_level->m_mainPlane->m_planePixelSize.cy)) {
+            m_position.y = 0.0;
             m_lastDropPlayerIndex = -1;
             m_lastDropUnitIndex = -1;
         }
-    } else if (m_travelDy < 0) {
-        m_posY -= drift;
-        if (m_posY < 0.0) {
-            m_posY = static_cast<double>(
-                (g_gameReg->m_world->m_level->m_mainPlane->m_planePixelHeight - 1)
+    } else if (m_travelDirection.m_y < 0) {
+        m_position.y -= drift;
+        if (m_position.y < 0.0) {
+            m_position.y = static_cast<double>(
+                (g_gameReg->m_world->m_level->m_mainPlane->m_planePixelSize.cy - 1)
             );
             m_lastDropPlayerIndex = -1;
             m_lastDropUnitIndex = -1;
         }
     }
 
-    m_object->m_screenX = static_cast<i32>(m_posX);
-    m_object->m_screenY = static_cast<i32>(m_posY);
+    Coord position = m_position.ToCoord();
+    m_object->SetScreenPos(position);
     return 0;
 }
 
@@ -376,20 +376,20 @@ i32 CObjectDropper::SerializeDispatch(
     switch (mode) {
         case SERIAL_SAVE:
             ar->Write(&m_speed, sizeof(m_speed));
-            ar->Write(&m_posX, sizeof(m_posX));
-            ar->Write(&m_posY, sizeof(m_posY));
-            ar->Write(&m_travelDx, sizeof(m_travelDx));
-            ar->Write(&m_travelDy, sizeof(m_travelDy));
+            ar->Write(&m_position.x, sizeof(m_position.x));
+            ar->Write(&m_position.y, sizeof(m_position.y));
+            ar->Write(&m_travelDirection.m_x, sizeof(m_travelDirection.m_x));
+            ar->Write(&m_travelDirection.m_y, sizeof(m_travelDirection.m_y));
             ar->Write(&m_lastDropPlayerIndex, sizeof(m_lastDropPlayerIndex));
             ar->Write(&m_lastDropUnitIndex, sizeof(m_lastDropUnitIndex));
             ar->Write(&m_scrollMode, sizeof(m_scrollMode));
             break;
         case SERIAL_LOAD:
             ar->Read(&m_speed, sizeof(m_speed));
-            ar->Read(&m_posX, sizeof(m_posX));
-            ar->Read(&m_posY, sizeof(m_posY));
-            ar->Read(&m_travelDx, sizeof(m_travelDx));
-            ar->Read(&m_travelDy, sizeof(m_travelDy));
+            ar->Read(&m_position.x, sizeof(m_position.x));
+            ar->Read(&m_position.y, sizeof(m_position.y));
+            ar->Read(&m_travelDirection.m_x, sizeof(m_travelDirection.m_x));
+            ar->Read(&m_travelDirection.m_y, sizeof(m_travelDirection.m_y));
             ar->Read(&m_lastDropPlayerIndex, sizeof(m_lastDropPlayerIndex));
             ar->Read(&m_lastDropUnitIndex, sizeof(m_lastDropUnitIndex));
             ar->Read(&m_scrollMode, sizeof(m_scrollMode));
@@ -412,13 +412,15 @@ CDroppedObject::CDroppedObject(CGameObject* obj)
     SetImageSetByName("LEVEL_OBJECTDROPPER_OBJECT");
     SwitchAnimationByName("LEVEL_DROPPEDOBJECT", 0);
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
-    i32 adjY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
-    i32 adjX = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-    m_landY = adjY;
-    m_object->m_screenX = adjX;
-    m_object->m_screenY = adjY - g_buteMgr.GetInt("Hazardz", "DroppedObjectYOffset", 0x140);
+    Coord adjusted = m_object->m_screenPosition;
+    SnapTileCenter(&adjusted);
+    m_landY = adjusted.m_y;
+    m_object->SetScreenPos(
+        adjusted.m_x,
+        adjusted.m_y - g_buteMgr.GetInt("Hazardz", "DroppedObjectYOffset", 0x140)
+    );
     CWwdSpriteObject* o = m_object;
-    m_fallY = static_cast<double>(o->m_screenY);
+    m_fallY = static_cast<double>(o->m_screenPosition.m_y);
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR_FRONT)
     m_timePerTile =
         g_objDropDiv
@@ -452,15 +454,15 @@ i32 CDroppedObject::AdvanceFall() {
     m_fallY = static_cast<double>(g_frameDelta) * m_timePerTile + m_fallY;
     i32 landed = static_cast<i32>((m_fallY - g_dropFallBias));
     if (landed > m_landY) {
-        i32 x = m_object->m_screenX;
+        Coord landing(m_object->m_screenPosition.m_x, m_landY);
         CMapMgr* g = g_gameReg->m_tileGrid;
         i32 cell;
         {
-            i32 cx = x >> TILE_SHIFT_PX;
-            i32 cy = m_landY >> TILE_SHIFT_PX;
-            cell = g->CellFlagsAt(cx, cy);
+            Coord tile = landing;
+            ScreenTile(&tile);
+            cell = g->CellFlagsAt(tile.m_x, tile.m_y);
         }
-        if ((cell & 0x900) == 0) {
+        if ((cell & IDX(CELL_FLAG_WATER | CELL_FLAG_SINK_HAZARD)) == 0) {
             if (cell & IDX(CELL_FLAG_SPECIAL)) {
                 if (cell == IDX(CELL_FLAG_REVEALED_POWERUP)) {
                     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
@@ -473,12 +475,12 @@ i32 CDroppedObject::AdvanceFall() {
                             // fall through
                         case AREA_MINIATURE_MASTERZ:
                         default:
-                            if (::PtInRect(&g_gameReg->m_viewBounds, x, m_landY)) {
+                            if (::PtInRect(&g_gameReg->m_viewBounds, landing.m_x, landing.m_y)) {
                                 CWwdSpriteObject* s =
                                     g_gameReg->m_world->m_childGroup->CreateSprite(
                                         0,
-                                        x,
-                                        m_landY,
+                                        landing.m_x,
+                                        landing.m_y,
                                         SORTKEY_ACTOR_BEHIND,
                                         "Particlez",
                                         WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
@@ -495,11 +497,11 @@ i32 CDroppedObject::AdvanceFall() {
                 }
             }
         } else {
-            if (::PtInRect(&g_gameReg->m_viewBounds, x, m_landY)) {
+            if (::PtInRect(&g_gameReg->m_viewBounds, landing.m_x, landing.m_y)) {
                 CWwdSpriteObject* s = g_gameReg->m_world->m_childGroup->CreateSprite(
                     0,
-                    x,
-                    m_landY,
+                    landing.m_x,
+                    landing.m_y,
                     SORTKEY_ACTOR_BEHIND,
                     "Particlez",
                     WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
@@ -513,10 +515,10 @@ i32 CDroppedObject::AdvanceFall() {
         SwitchAnimationByName("LEVEL_DROPPEDOBJECTHIT", 0);
         SET_ANIMATION_ACT("B");
         g_gameReg->m_triggerMgr
-            ->ApplyGruntAreaEffect(m_object->m_screenX, m_landY, 1, GRUNT_AREA_EFFECT_SQUASH, -1);
+            ->ApplyGruntAreaEffect(landing.m_x, landing.m_y, 1, GRUNT_AREA_EFFECT_SQUASH, -1);
         return 0;
     }
-    m_object->m_screenY = landed;
+    m_object->m_screenPosition.m_y = landed;
     return 0;
 }
 
@@ -585,8 +587,8 @@ i32 CDroppedObjectShadow::Advance() {
         CWwdSpriteObject* o = m_object;
         g_gameReg->m_world->m_childGroup->CreateSprite(
             0,
-            o->m_screenX,
-            o->m_screenY,
+            o->m_screenPosition.m_x,
+            o->m_screenPosition.m_y,
             0,
             "DroppedObject",
             WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE

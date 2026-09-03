@@ -55,6 +55,10 @@ public:
 
     void BlitDirtyRect(CDDrawSurfacePair* other, i32* pos, i32* size);
 
+    void BlitDirtyRect(CDDrawSurfacePair* other, const Coord& position, const SIZE& size) {
+        CDrawSubWorker::BlitDirtyRect(other, position, size);
+    }
+
     b32 m_ownsSurface;
 };
 

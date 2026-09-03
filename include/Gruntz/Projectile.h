@@ -6,6 +6,8 @@
 #include <Mfc.h>
 
 #include <Gruntz/ActReg.h>
+#include <Gruntz/CoordNode.h>
+#include <Gruntz/DoubleVector.h>
 #include <Gruntz/HaznColl.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MovingLogic.h>
@@ -49,17 +51,14 @@ public:
 
     PickupType m_kind;
     i32 m_sourcePlayerIndex, m_sourceUnitIndex;
-    i32 m_targetPxX, m_targetPxY;
+    Coord m_targetPx;
     double m_flightDist;
     i32 m_timePerTile;
     double m_velScale;
-    double m_posX;
-    double m_posY;
-    double m_velX;
-    double m_velY;
-    double m_roundX;
-    double m_roundY;
-    i32 m_curX, m_curY;
+    DoubleVector2 m_position;
+    DoubleVector2 m_velocity;
+    DoubleVector2 m_roundBias;
+    Coord m_currentPx;
     b32 m_isArcing;
     b32 m_arrived;
 
@@ -71,7 +70,7 @@ public:
     CWwdSpriteObject* m_shadow;
     SoundBuffer* m_sound;
     CPtrList m_hitList;
-    i32 m_sourcePxX, m_sourcePxY;
+    Coord m_sourcePx;
 };
 
 #endif // GRUNTZ_PROJECTILE_H

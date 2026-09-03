@@ -31,7 +31,6 @@
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/Teleporter.h>
-#include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
@@ -143,9 +142,8 @@ i32 CWormhole::SpawnPartners() {
     }
     g->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
 
-    i32 tx = m_object->m_speedX;
-    i32 ty = m_object->m_speedY;
-    if (tx == 0 || ty == 0) {
+    Coord target = m_object->m_speed;
+    if (target.m_x == 0 || target.m_y == 0) {
         return 0;
     }
 
@@ -161,8 +159,8 @@ i32 CWormhole::SpawnPartners() {
         CGameObject* obj = static_cast<CGameObject*>(list->GetNext(pos));
         if (obj != NULL) {
             CLogicRecord* record = obj->m_logicRecord;
-            if (record->m_dispatch == &DispatchTeleporterLogic && obj->m_screenX == tx
-                && obj->m_screenY == ty && record->m_userLogic != NULL) {
+            if (record->m_dispatch == &DispatchTeleporterLogic && obj->ScreenPos() == target
+                && record->m_userLogic != NULL) {
                 static_cast<CTeleporter*>(record->m_userLogic)->ReapplyConfig();
             }
         }
@@ -180,7 +178,9 @@ CGruntPuddle::CGruntPuddle(CGameObject* obj)
     SwitchAnimationByName("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE1", 0);
     SET_ANIMATION_ACT("A");
     Hide();
-    SNAP_OBJECT_TO_TILE_CENTER(m_object)
+    Coord position = m_object->ScreenPos();
+    SnapTileCenter(&position);
+    m_object->SetScreenPos(position);
     m_pending = true;
     m_placed = false;
 }
@@ -213,8 +213,8 @@ i32 CGruntPuddle::Idle() {
 RVA(0x00040c30, 0xb3)
 i32 CGruntPuddle::Place(i32 playerIndex, i32 moveIcon, b32 animatePlacement, i32 gaugePoints) {
     CWwdSpriteObject* o = m_object;
-    m_tileX = o->m_screenX >> TILE_SHIFT_PX;
-    m_tileY = o->m_screenY >> TILE_SHIFT_PX;
+    m_tile = o->ScreenPos();
+    ScreenTile(&m_tile);
     m_gaugePoints = gaugePoints;
     m_playerIndex = playerIndex;
     m_moveIcon = moveIcon;
@@ -235,10 +235,9 @@ RVA(0x00040d20, 0xe3)
 i32 CGruntPuddle::Remove() {
     if (m_placed != false) {
         CGruntzMgr* reg = g_gameReg;
-        i32 ty = m_tileY;
         CMapMgr* grid = reg->m_tileGrid;
-        i32 tx = m_tileX;
-        i32 flags = grid->CellFlagsAt(tx, ty);
+        Coord tile = m_tile;
+        i32 flags = grid->CellFlagsAt(tile.m_x, tile.m_y);
         if ((flags & BRICKZ_BLOCKED_MASK) != 0 || (flags & IDX(CELL_FLAG_SPECIAL)) != 0) {
             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             CPtrList& list = g_gameReg->m_triggerMgr->m_baseList;
@@ -276,8 +275,8 @@ i32 CGruntPuddle::SerializeDispatch(
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
     switch (mode) {
         case SERIAL_SAVE:
-            ar->Write(&m_tileX, sizeof(m_tileX));
-            ar->Write(&m_tileY, sizeof(m_tileY));
+            ar->Write(&m_tile.m_x, sizeof(m_tile.m_x));
+            ar->Write(&m_tile.m_y, sizeof(m_tile.m_y));
             ar->Write(&m_pending, sizeof(m_pending));
             ar->Write(&m_placed, sizeof(m_placed));
             ar->Write(&m_gaugePoints, sizeof(m_gaugePoints));
@@ -285,8 +284,8 @@ i32 CGruntPuddle::SerializeDispatch(
             ar->Write(&m_moveIcon, sizeof(m_moveIcon));
             break;
         case SERIAL_LOAD:
-            ar->Read(&m_tileX, sizeof(m_tileX));
-            ar->Read(&m_tileY, sizeof(m_tileY));
+            ar->Read(&m_tile.m_x, sizeof(m_tile.m_x));
+            ar->Read(&m_tile.m_y, sizeof(m_tile.m_y));
             ar->Read(&m_pending, sizeof(m_pending));
             ar->Read(&m_placed, sizeof(m_placed));
             ar->Read(&m_gaugePoints, sizeof(m_gaugePoints));
@@ -314,7 +313,9 @@ CTeleporter::CTeleporter(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
     CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_TELEPORT)
-    SNAP_OBJECT_TO_TILE_CENTER(m_object)
+    Coord position = m_object->ScreenPos();
+    SnapTileCenter(&position);
+    m_object->SetScreenPos(position);
     LoadColors();
     ReapplyConfig();
 }
@@ -444,9 +445,8 @@ i32 CTeleporter::Update() {
     if (m_tickHandled == false) {
         CWwdSpriteObject* o = m_object;
         mgr = g_gameReg;
-        i32 y = o->m_screenY;
-        i32 x = o->m_screenX;
-        if (::PtInRect(&mgr->m_viewBounds, x, y)) {
+        Coord position = o->ScreenPos();
+        if (::PtInRect(&mgr->m_viewBounds, position.m_x, position.m_y)) {
             (static_cast<CTriggerMgr*>(mgr->m_triggerMgr))->m_teleportWanted = true;
         }
     }
@@ -468,21 +468,28 @@ i32 CTeleporter::Update() {
 
     i32 playerIndex;
     i32 unitIndex;
-    CGrunt* found =
-        mgr->m_triggerMgr->HitTestCell(o->m_screenX, o->m_screenY, &playerIndex, &unitIndex, 1);
+    CGrunt* found = mgr->m_triggerMgr->HitTestCell(
+        o->m_screenPosition.m_x,
+        o->m_screenPosition.m_y,
+        &playerIndex,
+        &unitIndex,
+        1
+    );
     if (found == NULL) {
         return 0;
     }
 
     if (static_cast<TeleporterKind>(m_object->m_smarts) == TELEPORTER_SECRET) {
-        found->TryTeleportToCell(m_object->m_speedX, m_object->m_speedY, true, true);
+        found->TryTeleportToCell(m_object->m_speed.m_x, m_object->m_speed.m_y, true, true);
         g_gameReg->m_gameStats->m_secretsFound++;
         SwitchAnimationByName("GAME_TELEPORTERCLOSE", 0);
         CWwdSpriteObject* s = m_object;
+        Coord spawnPosition(s->m_powerup, s->m_damage);
+        TileCenter(&spawnPosition);
         CWwdSpriteObject* spawned = g_gameReg->m_world->m_childGroup->CreateSprite(
             0,
-            s->m_powerup * TILE_SIZE_PX + TILE_HALF_PX,
-            s->m_damage * TILE_SIZE_PX + TILE_HALF_PX,
+            spawnPosition.m_x,
+            spawnPosition.m_y,
             0,
             "Teleporter",
             WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
@@ -490,24 +497,24 @@ i32 CTeleporter::Update() {
         if (spawned != NULL) {
             spawned->m_smarts = IDX(TELEPORTER_SINGLE_USE);
             spawned->m_health = m_object->m_health;
-            spawned->m_speedX = m_object->m_score;
-            spawned->m_speedY = m_object->m_points;
+            spawned->m_speed.Set(m_object->m_score, m_object->m_points);
             spawned->m_logicRecord->m_speed = 0;
         }
     } else {
         CWwdSpriteObject* s = m_object;
+        Coord spawnPosition = s->m_speed;
+        TileCenter(&spawnPosition);
         CWwdSpriteObject* spawned = g_gameReg->m_world->m_childGroup->CreateSprite(
             0,
-            s->m_speedX * TILE_SIZE_PX + TILE_HALF_PX,
-            s->m_speedY * TILE_SIZE_PX + TILE_HALF_PX,
+            spawnPosition.m_x,
+            spawnPosition.m_y,
             0,
             "Wormhole",
             WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
         );
-        spawned->m_speedX = m_object->m_screenX;
-        spawned->m_speedY = m_object->m_screenY;
+        spawned->m_speed = m_object->ScreenPos();
         spawned->m_smarts = m_object->m_health;
-        found->TryTeleportToCell(m_object->m_speedX, m_object->m_speedY, false, false);
+        found->TryTeleportToCell(m_object->m_speed.m_x, m_object->m_speed.m_y, false, false);
         SwitchAnimationByName("GAME_TELEPORTERCLOSE", 0);
     }
 
@@ -524,7 +531,8 @@ i32 CTeleporter::Update() {
     }
     if (found == current && playerIndex == g_curPlayer) {
         CGameObject* g = found->m_object;
-        (static_cast<CPlay*>(mgr->m_curState))->ResetGoals(g->m_screenX, g->m_screenY);
+        (static_cast<CPlay*>(mgr->m_curState))
+            ->ResetGoals(g->m_screenPosition.m_x, g->m_screenPosition.m_y);
     }
     return 0;
 }

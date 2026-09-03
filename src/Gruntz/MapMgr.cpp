@@ -11,6 +11,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Io/FileMem.h>
+#include <MakeRect.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -166,7 +167,7 @@ i32 CMapMgr::AllocGrid(i32 width, i32 height, void (*callback)()) {
     if (m_rows == NULL) {
         return 0;
     }
-    memset(m_cellPool, 0, count * 0x1c);
+    memset(m_cellPool, 0, count * sizeof(BrickzCell));
     i32 stride = width;
     i32 off = 0;
 
@@ -182,22 +183,7 @@ i32 CMapMgr::AllocGrid(i32 width, i32 height, void (*callback)()) {
     }
     m_stepCb = callback;
 
-    RECT a;
-    RECT b;
-    a.left = 0;
-    a.top = 0;
-    a.right = width;
-    a.bottom = height;
-    b.left = 0;
-    b.top = 0;
-    b.right = width;
-    b.bottom = height;
-    RECT* out = &m_bounds;
-    if (!IntersectRect(out, &a, &b)) {
-        *out = a;
-    }
-    m_gridW = out->right - out->left;
-    m_gridH = out->bottom - out->top;
+    Clip(NULL);
     return 1;
 }
 
@@ -233,25 +219,26 @@ i32 CMapMgr::FindPath(
     i32 diagonalMask,
     i32 passableMask
 ) {
-    i32 boundsX = m_bounds.left;
-    if (static_cast<u32>((startX - boundsX)) >= static_cast<u32>(m_gridW)) {
+    Coord start(startX, startY);
+    Coord goal(goalX, goalY);
+    Coord bounds(m_bounds.left, m_bounds.top);
+    if (static_cast<u32>(start.m_x - bounds.m_x) >= static_cast<u32>(m_gridSize.cx)) {
         return 0;
     }
-    i32 gridHeight = m_gridH;
-    i32 boundsY = m_bounds.top;
-    if (static_cast<u32>((startY - boundsY)) >= static_cast<u32>(gridHeight)) {
+    i32 gridHeight = m_gridSize.cy;
+    if (static_cast<u32>(start.m_y - bounds.m_y) >= static_cast<u32>(gridHeight)) {
         return 0;
     }
-    if (static_cast<u32>((goalX - boundsX)) >= static_cast<u32>(m_gridW)) {
+    if (static_cast<u32>(goal.m_x - bounds.m_x) >= static_cast<u32>(m_gridSize.cx)) {
         return 0;
     }
-    if (static_cast<u32>((goalY - boundsY)) >= static_cast<u32>(gridHeight)) {
+    if (static_cast<u32>(goal.m_y - bounds.m_y) >= static_cast<u32>(gridHeight)) {
         return 0;
     }
     m_passableMask = passableMask;
     m_diagonalMask = diagonalMask;
     m_blockedMask = blockedMask;
-    i32 goalFlags = m_rows[goalY][goalX].m_flags;
+    i32 goalFlags = m_rows[goal.m_y][goal.m_x].m_flags;
     if ((blockedMask & goalFlags) != 0 && (passableMask & goalFlags) == 0) {
         return 0;
     }
@@ -259,13 +246,11 @@ i32 CMapMgr::FindPath(
     for (u32 i = 0; i < m_cellCount; i++) {
         m_cellPool[i].m_count = 0;
     }
-    if (startX == goalX && startY == goalY) {
+    if (start == goal) {
         return 1;
     }
-    m_goal.m_x = goalX;
-    m_start.m_x = startX;
-    m_goal.m_y = goalY;
-    m_start.m_y = startY;
+    m_goal = goal;
+    m_start = start;
 
     BrickzNode* seed = m_nodePool.m_freeList;
     BrickzNode* slot = seed->m_openNext;
@@ -278,19 +263,19 @@ i32 CMapMgr::FindPath(
     if (seed == NULL) {
         return 0;
     }
-    seed->m_col = startX;
-    seed->m_row = startY;
+    seed->m_col = start.m_x;
+    seed->m_row = start.m_y;
     seed->m_gCost = 0;
-    i32 deltaY = abs(m_goal.m_y - startY);
-    i32 deltaX = abs(m_goal.m_x - startX);
-    i32 h = (deltaY + deltaX) * 2;
+    Coord delta = goal - start;
+    Coord distance = delta.GetAbs();
+    i32 h = (distance.m_y + distance.m_x) * 2;
     seed->m_hCost = h;
     seed->m_fCost = h;
     seed->m_openNext = NULL;
     seed->m_openPrev = NULL;
     seed->m_parent = NULL;
     InsertOpenNode(seed);
-    (&m_rows[startY][startX])->m_count++;
+    (&m_rows[start.m_y][start.m_x])->m_count++;
     BrickzNode* node = NULL;
     while (m_openList != NULL) {
         node = PopBestOpenNode();
@@ -321,13 +306,11 @@ reached:
     BrickzNode* p = node;
     while (p != NULL) {
         CoordPoolNode* rec = g_coordPool.m_freeHead;
-        i32 cellX = p->m_col;
-        i32 cellY = p->m_row;
+        Coord cell(p->m_col, p->m_row);
         Coord* slot = NULL;
         if (rec->m_next != NULL) {
             slot = &rec->m_coord;
-            slot->m_x = cellX;
-            slot->m_y = cellY;
+            *slot = cell;
             g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
         }
 
@@ -349,15 +332,14 @@ reached:
 RVA(0x0009f010, 0x2a1)
 i32 CMapMgr::ExpandNeighbor(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diagonal) {
     i32 ng = node->m_gCost + cost;
-    i32 ncol = node->m_col + dx;
-    i32 nrow = node->m_row + dy;
-    if (static_cast<u32>((ncol - m_bounds.left)) >= static_cast<u32>(m_gridW)) {
+    Coord neighbor(node->m_col + dx, node->m_row + dy);
+    if (static_cast<u32>((neighbor.m_x - m_bounds.left)) >= static_cast<u32>(m_gridSize.cx)) {
         return 1;
     }
-    if (static_cast<u32>((nrow - m_bounds.top)) >= static_cast<u32>(m_gridH)) {
+    if (static_cast<u32>((neighbor.m_y - m_bounds.top)) >= static_cast<u32>(m_gridSize.cy)) {
         return 1;
     }
-    BrickzCell* ncell = &m_rows[nrow][ncol];
+    BrickzCell* ncell = &m_rows[neighbor.m_y][neighbor.m_x];
     i32 nflags = ncell->m_flags;
     BrickzCell* cell = &m_rows[node->m_row][node->m_col];
     if ((m_edgeMask & nflags) != 0) {
@@ -401,7 +383,7 @@ relax:
     }
     BrickzNode* open;
     if (ncell->m_count != 0) {
-        open = FindOpenNode(ncol, nrow);
+        open = FindOpenNode(neighbor.m_x, neighbor.m_y);
     } else {
         open = NULL;
     }
@@ -445,12 +427,12 @@ relax:
     if (rec == NULL) {
         return 0;
     }
-    rec->m_col = ncol;
-    rec->m_row = nrow;
+    rec->m_col = neighbor.m_x;
+    rec->m_row = neighbor.m_y;
     rec->m_gCost = ng;
-    i32 hy = abs(m_goal.m_y - nrow);
-    i32 hx = abs(m_goal.m_x - ncol);
-    i32 h = (hy + hx) * 2;
+    Coord delta = m_goal - neighbor;
+    Coord distance = delta.GetAbs();
+    i32 h = (distance.m_x + distance.m_y) * 2;
     rec->m_parent = node;
     rec->m_hCost = h;
     rec->m_fCost = ng + h;
@@ -703,8 +685,8 @@ i32 CMapMgr::Save(CFileMemBase* ar) {
     ar->Write(&m_diagonalMask, sizeof(m_diagonalMask));
     ar->Write(&m_dirty, sizeof(m_dirty));
     ar->Write(&m_bounds.left, sizeof(m_bounds));
-    ar->Write(&m_gridW, sizeof(m_gridW));
-    ar->Write(&m_gridH, sizeof(m_gridH));
+    ar->Write(&m_gridSize.cx, sizeof(m_gridSize.cx));
+    ar->Write(&m_gridSize.cy, sizeof(m_gridSize.cy));
     for (u32 i = 0; i < m_width; i++) {
         for (u32 j = 0; j < m_height; j++) {
             ar->Write(&m_cellPool[j * m_width + i], sizeof(m_cellPool[j * m_width + i]));
@@ -728,8 +710,8 @@ i32 CMapMgr::Load(CFileMemBase* ar) {
     ar->Read(&m_diagonalMask, sizeof(m_diagonalMask));
     ar->Read(&m_dirty, sizeof(m_dirty));
     ar->Read(&m_bounds.left, sizeof(m_bounds));
-    ar->Read(&m_gridW, sizeof(m_gridW));
-    ar->Read(&m_gridH, sizeof(m_gridH));
+    ar->Read(&m_gridSize.cx, sizeof(m_gridSize.cx));
+    ar->Read(&m_gridSize.cy, sizeof(m_gridSize.cy));
     for (u32 i = 0; i < m_width; i++) {
         for (u32 j = 0; j < m_height; j++) {
             ar->Read(&m_cellPool[j * m_width + i], sizeof(m_cellPool[j * m_width + i]));

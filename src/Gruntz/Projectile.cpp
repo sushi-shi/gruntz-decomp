@@ -46,6 +46,7 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Ints.h>
 #include <Io/FileMem.h>
+#include <MakeRect.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/TileGeometry.h>
@@ -157,14 +158,13 @@ i32 CProjectile::LoadProjectileSprites(
     CString key;
     m_sourcePlayerIndex = sourcePlayerIndex;
     m_sourceUnitIndex = sourceUnitIndex;
-    m_targetPxX = (targetPxX & ~TILE_MASK_PX) + TILE_HALF_PX;
-    m_targetPxY = (targetPxY & ~TILE_MASK_PX) + TILE_HALF_PX;
+    m_targetPx.Set(targetPxX, targetPxY);
+    SnapTileCenter(&m_targetPx);
     m_kind = kind;
-    m_sourcePxX = sourcePxX;
-    m_sourcePxY = sourcePxY;
+    m_sourcePx.Set(sourcePxX, sourcePxY);
 
-    double dx = static_cast<double>(m_targetPxX) - m_object->m_screenX;
-    double dy = static_cast<double>(m_targetPxY) - m_object->m_screenY;
+    Coord sourcePosition = m_object->ScreenPos();
+    DoubleVector2 direction(m_targetPx - sourcePosition);
     i32 count = 1;
 
     switch (kind) {
@@ -199,11 +199,14 @@ i32 CProjectile::LoadProjectileSprites(
             m_timePerTile = g_buteMgr.GetDword("Projectile", "WingzProjectileTimePerTile", 0xbb8);
             LaunchSound("GRUNTZ_WINGZGRUNT_WINGZGRUNTLOOP");
             m_isArcing = false;
-            i32 ddx = abs((m_targetPxX >> TILE_SHIFT_PX) - (m_object->m_screenX >> TILE_SHIFT_PX));
-            i32 ddy = abs((m_targetPxY >> TILE_SHIFT_PX) - (m_object->m_screenY >> TILE_SHIFT_PX));
-            count = ddx;
-            if (ddx <= ddy) {
-                count = ddy;
+            Coord targetTile = m_targetPx;
+            ScreenTile(&targetTile);
+            Coord sourceTile = sourcePosition;
+            ScreenTile(&sourceTile);
+            Coord tileDistance = (targetTile - sourceTile).GetAbs();
+            count = tileDistance.m_x;
+            if (tileDistance.m_x <= tileDistance.m_y) {
+                count = tileDistance.m_y;
             }
             break;
         }
@@ -231,41 +234,23 @@ i32 CProjectile::LoadProjectileSprites(
     SetImageSetByName(key + "_OBJECT");
 
     u32 totalTime = static_cast<u32>((count * m_timePerTile));
-    double len = sqrt(dx * dx + dy * dy);
+    double len = direction.Mag();
     double t = static_cast<double>(totalTime);
-    double vx = dx / len;
     m_flightDist = len;
     m_velScale = len / t;
-    m_posX = m_object->m_screenX;
-    m_posY = m_object->m_screenY;
-    m_velX = vx;
-    dy /= len;
-    m_velY = dy;
-
-    if (vx > 0.0) {
-        m_roundX = 0.5;
-    } else if (vx < 0.0) {
-        m_roundX = -0.5;
-    } else {
-        m_roundX = 0.0;
-    }
-    if (dy > 0.0) {
-        m_roundY = 0.5;
-    } else if (dy < 0.0) {
-        m_roundY = -0.5;
-    } else {
-        m_roundY = 0.0;
-    }
+    m_position.Init(sourcePosition);
+    direction.Normalize();
+    m_velocity = direction;
+    m_roundBias = PixelRoundBias(direction);
     m_flightDist = fabs(len);
-    m_curX = m_object->m_screenX;
-    m_curY = m_object->m_screenY;
+    m_currentPx = sourcePosition;
     m_arrived = false;
 
     CDDrawChildGroup* factory = g_gameReg->m_world->m_childGroup;
     m_shadow = (factory->CreateSprite(
         0,
-        m_object->m_screenX,
-        m_object->m_screenY,
+        m_object->m_screenPosition.m_x,
+        m_object->m_screenPosition.m_y,
         SORTKEY_ACTOR_BEHIND,
         "LightFx",
         WWD_GAME_OBJECT_FLAGS_CULL_SOUND_WORLD_SPRITE
@@ -314,7 +299,11 @@ void CProjectile::AdvanceMotion() {
     if (m_kind == PICKUP_WINGZ) {
         CWwdSpriteObject* owner = m_object;
         CGruntzMgr* reg = g_gameReg;
-        if (::PtInRect(&reg->m_viewBounds, owner->m_screenX, owner->m_screenY)) {
+        if (::PtInRect(
+                &reg->m_viewBounds,
+                owner->m_screenPosition.m_x,
+                owner->m_screenPosition.m_y
+            )) {
             LaunchSound("GRUNTZ_WINGZGRUNT_PROJECTILELOOP");
         } else if (m_sound != NULL) {
             m_sound->StopAndRewind();
@@ -322,47 +311,38 @@ void CProjectile::AdvanceMotion() {
         }
     }
 
-    if (m_curX != m_targetPxX || m_curY != m_targetPxY) {
+    if (m_currentPx != m_targetPx) {
 
         if (m_kind == PICKUP_WINGZ) {
             ScanTargets(0);
         }
-        m_posX = m_posX + static_cast<double>(g_frameDelta) * m_velX * m_velScale;
-        m_posY = m_posY + static_cast<double>(g_frameDelta) * m_velY * m_velScale;
-        i32 xRes = static_cast<i32>((m_roundX + m_posX));
-        i32 yRes = static_cast<i32>((m_roundY + m_posY));
-        i32 localX = xRes;
-        if (m_velX > 0.0) {
-            if (xRes > m_targetPxX) {
-                localX = m_targetPxX;
-                xRes = m_targetPxX;
+        m_position += m_velocity * (static_cast<double>(g_frameDelta) * m_velScale);
+        Coord nextPosition = (m_roundBias + m_position).ToCoord();
+        if (m_velocity.x > 0.0) {
+            if (nextPosition.m_x > m_targetPx.m_x) {
+                nextPosition.m_x = m_targetPx.m_x;
             }
-        } else if (m_velX < 0.0) {
-            if (xRes < m_targetPxX) {
-                localX = m_targetPxX;
-                xRes = m_targetPxX;
+        } else if (m_velocity.x < 0.0) {
+            if (nextPosition.m_x < m_targetPx.m_x) {
+                nextPosition.m_x = m_targetPx.m_x;
             }
         }
-        if (m_velY > 0.0) {
-            if (yRes > m_targetPxY) {
-                yRes = m_targetPxY;
+        if (m_velocity.y > 0.0) {
+            if (nextPosition.m_y > m_targetPx.m_y) {
+                nextPosition.m_y = m_targetPx.m_y;
             }
-        } else if (m_velY < 0.0) {
-            if (yRes < m_targetPxY) {
-                yRes = m_targetPxY;
+        } else if (m_velocity.y < 0.0) {
+            if (nextPosition.m_y < m_targetPx.m_y) {
+                nextPosition.m_y = m_targetPx.m_y;
             }
         }
-        m_curX = xRes;
-        m_curY = yRes;
-        i32 offX = 0;
-        i32 offY = 0;
+        m_currentPx = nextPosition;
+        Coord arcOffset(0, 0);
         if (m_isArcing != false) {
-            double dx = fabs(static_cast<double>(m_targetPxX) - m_posX);
-            double dy = fabs(static_cast<double>(m_targetPxY) - m_posY);
-            double dist = sqrt(dx * dx + dy * dy);
+            DoubleVector2 target(m_targetPx);
+            double dist = m_position.Dist(target);
             if (dist >= m_flightDist * 0.9 || dist < m_flightDist * 0.1) {
-                offX = 0x4;
-                offY = -0x4;
+                arcOffset.Set(0x4, -0x4);
                 if (m_wwdObject->m_animationCursor.m_animation != m_frames[0]) {
                     SwitchAnimation(m_frames[0]);
                     if (m_shadow != NULL) {
@@ -370,8 +350,7 @@ void CProjectile::AdvanceMotion() {
                     }
                 }
             } else if (dist >= m_flightDist * 0.8 || dist < m_flightDist * 0.2) {
-                offX = 0x8;
-                offY = -0x8;
+                arcOffset.Set(0x8, -0x8);
                 if (m_wwdObject->m_animationCursor.m_animation != m_frames[1]) {
                     SwitchAnimation(m_frames[1]);
                     if (m_shadow != NULL) {
@@ -379,8 +358,7 @@ void CProjectile::AdvanceMotion() {
                     }
                 }
             } else if (dist >= m_flightDist * 0.7 || dist < m_flightDist * 0.3) {
-                offX = 0xc;
-                offY = -0xc;
+                arcOffset.Set(0xc, -0xc);
                 if (m_wwdObject->m_animationCursor.m_animation != m_frames[2]) {
                     SwitchAnimation(m_frames[2]);
                     if (m_shadow != NULL) {
@@ -388,8 +366,7 @@ void CProjectile::AdvanceMotion() {
                     }
                 }
             } else if (dist >= m_flightDist * 0.6 || dist < m_flightDist * 0.4) {
-                offX = 0x10;
-                offY = -0x10;
+                arcOffset.Set(0x10, -0x10);
                 if (m_wwdObject->m_animationCursor.m_animation != m_frames[3]) {
                     SwitchAnimation(m_frames[3]);
                     if (m_shadow != NULL) {
@@ -397,8 +374,7 @@ void CProjectile::AdvanceMotion() {
                     }
                 }
             } else {
-                offX = 0x14;
-                offY = -0x14;
+                arcOffset.Set(0x14, -0x14);
                 if (m_wwdObject->m_animationCursor.m_animation != m_frames[4]) {
                     SwitchAnimation(m_frames[4]);
                     if (m_shadow != NULL) {
@@ -407,11 +383,11 @@ void CProjectile::AdvanceMotion() {
                 }
             }
         }
-        m_object->m_screenX = offX + m_curX;
-        m_object->m_screenY = offY + m_curY;
+        Coord displayPosition = m_currentPx;
+        displayPosition += arcOffset;
+        m_object->SetScreenPos(displayPosition);
         if (m_shadow != NULL) {
-            m_shadow->m_screenX = localX;
-            m_shadow->m_screenY = yRes;
+            m_shadow->SetScreenPos(m_currentPx);
         }
         return;
     }
@@ -430,10 +406,10 @@ void CProjectile::AdvanceMotion() {
     if (m_kind != PICKUP_WINGZ) {
         CGruntzMgr* reg = g_gameReg;
         CMapMgr* plane = reg->m_tileGrid;
-        i32 tileY = m_targetPxY >> TILE_SHIFT_PX;
-        i32 tileX = m_targetPxX >> TILE_SHIFT_PX;
-        u32 flags = plane->CellFlagsAt(tileX, tileY);
-        if ((flags & 0x900) == 0) {
+        Coord targetTile = m_targetPx;
+        ScreenTile(&targetTile);
+        u32 flags = plane->CellFlagsAt(targetTile.m_x, targetTile.m_y);
+        if ((flags & IDX(CELL_FLAG_WATER | CELL_FLAG_SINK_HAZARD)) == 0) {
             if (flags & IDX(CELL_FLAG_SPECIAL)) {
                 if (flags & IDX(CELL_FLAG_REVEALED_POWERUP)) {
                     tier = 1;
@@ -448,11 +424,11 @@ void CProjectile::AdvanceMotion() {
                             break;
                         default:
 
-                            if (::PtInRect(&reg->m_viewBounds, m_targetPxX, m_targetPxY)) {
+                            if (::PtInRect(&reg->m_viewBounds, m_targetPx.m_x, m_targetPx.m_y)) {
                                 CWwdSpriteObject* fx = reg->m_world->m_childGroup->CreateSprite(
                                     0,
-                                    m_targetPxX,
-                                    m_targetPxY,
+                                    m_targetPx.m_x,
+                                    m_targetPx.m_y,
                                     SORTKEY_ACTOR_BEHIND,
                                     "Particlez",
                                     WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
@@ -468,11 +444,11 @@ void CProjectile::AdvanceMotion() {
                 }
             }
         } else {
-            if (::PtInRect(&reg->m_viewBounds, m_targetPxX, m_targetPxY)) {
+            if (::PtInRect(&reg->m_viewBounds, m_targetPx.m_x, m_targetPx.m_y)) {
                 CWwdSpriteObject* fx = reg->m_world->m_childGroup->CreateSprite(
                     0,
-                    m_targetPxX,
-                    m_targetPxY,
+                    m_targetPx.m_x,
+                    m_targetPx.m_y,
                     SORTKEY_ACTOR_BEHIND,
                     "Particlez",
                     WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
@@ -550,15 +526,10 @@ i32 CBoomerang::LoadProjectileSprites(
     double d =
         g_boomerangHalfTurnRadians / (duration * (g_boomerangPixelToTileScale * m_flightDist));
     CWwdSpriteObject* owner = m_object;
-    m_launchX = owner->m_screenX;
-    m_launchY = owner->m_screenY;
-    double originY = (static_cast<double>(m_targetPxY) + static_cast<double>(owner->m_screenY))
-                     * g_boomerangMidpointScale;
-    m_originX = (static_cast<double>(m_targetPxX) + static_cast<double>(owner->m_screenX))
-                * g_boomerangMidpointScale;
-    m_originY = originY;
-    m_dirX = m_originX - static_cast<double>(m_launchX);
-    m_dirY = originY - static_cast<double>(m_launchY);
+    m_launchPosition = owner->ScreenPos();
+    DoubleVector2 launchPosition(m_launchPosition);
+    m_origin = (DoubleVector2(m_targetPx) + launchPosition) * g_boomerangMidpointScale;
+    m_direction = m_origin - launchPosition;
     m_phase = 0.0;
     m_velScale = d;
     CGrunt* g =
@@ -582,11 +553,9 @@ RVA(0x000e08b0, 0x1de)
 void CBoomerang::AdvanceMotion() {
     double s;
     if (m_launched == false && m_phase > g_boomerangHalfTurnRadians) {
-        m_object->m_screenX = m_targetPxX;
-        m_object->m_screenY = m_targetPxY;
+        m_object->SetScreenPos(m_targetPx);
         if (m_shadow != NULL) {
-            m_shadow->m_screenX = m_targetPxX;
-            m_shadow->m_screenY = m_targetPxY;
+            m_shadow->SetScreenPos(m_targetPx);
         }
         m_launched = true;
     } else if (m_phase > g_boomerangFullTurnRadians && m_launched != false) {
@@ -602,34 +571,27 @@ void CBoomerang::AdvanceMotion() {
 
     s = sin(m_phase);
     double c = cos(m_phase);
-    double vx = m_dirX;
-    double vy = -m_dirY;
+    DoubleVector2 direction(m_direction.x, -m_direction.y);
     double phaseDelta = static_cast<double>(g_frameDelta) * m_velScale;
-    double xSinTerm = vy * s;
-    double xCosTerm = vx * c;
-    double ySinTerm = vx * s;
-    double yCosTerm = vy * c;
-    m_posX = xSinTerm - xCosTerm;
-    m_posY = ySinTerm + yCosTerm;
-    m_posX = m_originX + m_posX;
-    m_posY = m_originY + m_posY;
+    DoubleVector2 rotated(direction.y * s - direction.x * c, direction.x * s + direction.y * c);
+    m_position = m_origin;
+    m_position += rotated;
     m_phase = phaseDelta + m_phase;
-    m_object->m_screenX = static_cast<i32>(m_posX);
-    m_object->m_screenY = static_cast<i32>(m_posY);
+    Coord displayPosition = m_position.ToCoord();
+    m_object->SetScreenPos(displayPosition);
     if (m_shadow != NULL) {
-        m_shadow->m_screenX = static_cast<i32>(m_posX);
-        m_shadow->m_screenY = static_cast<i32>(m_posY);
+        m_shadow->SetScreenPos(displayPosition);
     }
 }
 
 RVA(0x000e0b10, 0x1bd)
 void CProjectile::ScanTargets(i32 impact) {
     i32 playerIndex = 0;
-    RECT box;
-    box.left = m_object->m_screenX - 0x10;
-    box.right = box.left + 0x20;
-    box.top = m_object->m_screenY - 0x10;
-    box.bottom = box.top + 0x20;
+    Coord position = m_object->ScreenPos();
+    Coord halfExtent(TILE_HALF_PX, TILE_HALF_PX);
+    Coord boxMin = position - halfExtent;
+    Coord boxMax = position + halfExtent;
+    RECT box = MakeRect(boxMin.m_x, boxMin.m_y, boxMax.m_x, boxMax.m_y);
     i32 playerBase = 0;
     i32 gridIndex;
     i32 unitIndex;
@@ -644,20 +606,25 @@ void CProjectile::ScanTargets(i32 impact) {
             if (g->m_entranceCommitted == false) {
                 continue;
             }
-            i32 gx = g->m_object->m_screenX - 7;
-            i32 gy = g->m_object->m_screenY - 7;
-            i32 gxhi = gx + 0xe;
-            i32 gyhi = gy + 0xe;
-            if (box.left > gxhi) {
+            Coord gruntPosition = g->m_object->ScreenPos();
+            RECT gruntBox;
+            ::SetRect(
+                &gruntBox,
+                gruntPosition.m_x - 7,
+                gruntPosition.m_y - 7,
+                gruntPosition.m_x + 7,
+                gruntPosition.m_y + 7
+            );
+            if (box.left > gruntBox.right) {
                 continue;
             }
-            if (box.right < gx) {
+            if (box.right < gruntBox.left) {
                 continue;
             }
-            if (box.top > gyhi) {
+            if (box.top > gruntBox.bottom) {
                 continue;
             }
-            if (box.bottom < gy) {
+            if (box.bottom < gruntBox.top) {
                 continue;
             }
             if (m_sourcePlayerIndex == playerIndex && m_sourceUnitIndex == unitIndex) {
@@ -683,8 +650,7 @@ void CProjectile::ScanTargets(i32 impact) {
             CoordPoolNode* p = g_coordPool.m_freeHead;
             if (p->m_next != NULL) {
                 slot = &p->m_coord;
-                slot->m_x = hitPlayerIndex;
-                slot->m_y = hitUnitIndex;
+                slot->Set(hitPlayerIndex, hitUnitIndex);
                 g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
             }
             m_hitList.AddTail(slot);
@@ -693,8 +659,8 @@ void CProjectile::ScanTargets(i32 impact) {
                 1,
                 m_sourcePlayerIndex,
                 m_sourceUnitIndex,
-                m_sourcePxX,
-                m_sourcePxY,
+                m_sourcePx.m_x,
+                m_sourcePx.m_y,
                 1,
                 PICKUP_NONE
             );
@@ -725,23 +691,23 @@ i32 CProjectile::SerializeDispatch(
             s->Read(&m_kind, sizeof(m_kind));
             s->Read(&m_sourcePlayerIndex, sizeof(m_sourcePlayerIndex));
             s->Read(&m_sourceUnitIndex, sizeof(m_sourceUnitIndex));
-            s->Read(&m_targetPxX, sizeof(m_targetPxX));
-            s->Read(&m_targetPxY, sizeof(m_targetPxY));
+            s->Read(&m_targetPx.m_x, sizeof(m_targetPx.m_x));
+            s->Read(&m_targetPx.m_y, sizeof(m_targetPx.m_y));
             s->Read(&m_flightDist, sizeof(m_flightDist));
             s->Read(&m_timePerTile, sizeof(m_timePerTile));
             s->Read(&m_velScale, sizeof(m_velScale));
-            s->Read(&m_posX, sizeof(m_posX));
-            s->Read(&m_posY, sizeof(m_posY));
-            s->Read(&m_velX, sizeof(m_velX));
-            s->Read(&m_velY, sizeof(m_velY));
-            s->Read(&m_roundX, sizeof(m_roundX));
-            s->Read(&m_roundY, sizeof(m_roundY));
-            s->Read(&m_curX, sizeof(m_curX));
-            s->Read(&m_curY, sizeof(m_curY));
+            s->Read(&m_position.x, sizeof(m_position.x));
+            s->Read(&m_position.y, sizeof(m_position.y));
+            s->Read(&m_velocity.x, sizeof(m_velocity.x));
+            s->Read(&m_velocity.y, sizeof(m_velocity.y));
+            s->Read(&m_roundBias.x, sizeof(m_roundBias.x));
+            s->Read(&m_roundBias.y, sizeof(m_roundBias.y));
+            s->Read(&m_currentPx.m_x, sizeof(m_currentPx.m_x));
+            s->Read(&m_currentPx.m_y, sizeof(m_currentPx.m_y));
             s->Read(&m_isArcing, sizeof(m_isArcing));
             s->Read(&m_arrived, sizeof(m_arrived));
-            s->Read(&m_sourcePxX, sizeof(m_sourcePxX));
-            s->Read(&m_sourcePxY, sizeof(m_sourcePxY));
+            s->Read(&m_sourcePx.m_x, sizeof(m_sourcePx.m_x));
+            s->Read(&m_sourcePx.m_y, sizeof(m_sourcePx.m_y));
 
             for (i32 ni = 0; ni < 7; ni++) {
                 g_serialCounter++;
@@ -779,23 +745,23 @@ i32 CProjectile::SerializeDispatch(
             s->Write(&m_kind, sizeof(m_kind));
             s->Write(&m_sourcePlayerIndex, sizeof(m_sourcePlayerIndex));
             s->Write(&m_sourceUnitIndex, sizeof(m_sourceUnitIndex));
-            s->Write(&m_targetPxX, sizeof(m_targetPxX));
-            s->Write(&m_targetPxY, sizeof(m_targetPxY));
+            s->Write(&m_targetPx.m_x, sizeof(m_targetPx.m_x));
+            s->Write(&m_targetPx.m_y, sizeof(m_targetPx.m_y));
             s->Write(&m_flightDist, sizeof(m_flightDist));
             s->Write(&m_timePerTile, sizeof(m_timePerTile));
             s->Write(&m_velScale, sizeof(m_velScale));
-            s->Write(&m_posX, sizeof(m_posX));
-            s->Write(&m_posY, sizeof(m_posY));
-            s->Write(&m_velX, sizeof(m_velX));
-            s->Write(&m_velY, sizeof(m_velY));
-            s->Write(&m_roundX, sizeof(m_roundX));
-            s->Write(&m_roundY, sizeof(m_roundY));
-            s->Write(&m_curX, sizeof(m_curX));
-            s->Write(&m_curY, sizeof(m_curY));
+            s->Write(&m_position.x, sizeof(m_position.x));
+            s->Write(&m_position.y, sizeof(m_position.y));
+            s->Write(&m_velocity.x, sizeof(m_velocity.x));
+            s->Write(&m_velocity.y, sizeof(m_velocity.y));
+            s->Write(&m_roundBias.x, sizeof(m_roundBias.x));
+            s->Write(&m_roundBias.y, sizeof(m_roundBias.y));
+            s->Write(&m_currentPx.m_x, sizeof(m_currentPx.m_x));
+            s->Write(&m_currentPx.m_y, sizeof(m_currentPx.m_y));
             s->Write(&m_isArcing, sizeof(m_isArcing));
             s->Write(&m_arrived, sizeof(m_arrived));
-            s->Write(&m_sourcePxX, sizeof(m_sourcePxX));
-            s->Write(&m_sourcePxY, sizeof(m_sourcePxY));
+            s->Write(&m_sourcePx.m_x, sizeof(m_sourcePx.m_x));
+            s->Write(&m_sourcePx.m_y, sizeof(m_sourcePx.m_y));
 
             CAniElement** fp = m_frames;
             for (i32 fi = 0; fi < 7; fi++) {
@@ -878,22 +844,22 @@ i32 CBoomerang::SerializeDispatch(
     }
     switch (mode) {
         case SERIAL_LOAD:
-            ar->Read(&m_launchX, sizeof(m_launchX));
-            ar->Read(&m_launchY, sizeof(m_launchY));
-            ar->Read(&m_dirX, sizeof(m_dirX));
-            ar->Read(&m_dirY, sizeof(m_dirY));
-            ar->Read(&m_originX, sizeof(m_originX));
-            ar->Read(&m_originY, sizeof(m_originY));
+            ar->Read(&m_launchPosition.m_x, sizeof(m_launchPosition.m_x));
+            ar->Read(&m_launchPosition.m_y, sizeof(m_launchPosition.m_y));
+            ar->Read(&m_direction.x, sizeof(m_direction.x));
+            ar->Read(&m_direction.y, sizeof(m_direction.y));
+            ar->Read(&m_origin.x, sizeof(m_origin.x));
+            ar->Read(&m_origin.y, sizeof(m_origin.y));
             ar->Read(&m_phase, sizeof(m_phase));
             ar->Read(&m_launched, sizeof(m_launched));
             break;
         case SERIAL_SAVE:
-            ar->Write(&m_launchX, sizeof(m_launchX));
-            ar->Write(&m_launchY, sizeof(m_launchY));
-            ar->Write(&m_dirX, sizeof(m_dirX));
-            ar->Write(&m_dirY, sizeof(m_dirY));
-            ar->Write(&m_originX, sizeof(m_originX));
-            ar->Write(&m_originY, sizeof(m_originY));
+            ar->Write(&m_launchPosition.m_x, sizeof(m_launchPosition.m_x));
+            ar->Write(&m_launchPosition.m_y, sizeof(m_launchPosition.m_y));
+            ar->Write(&m_direction.x, sizeof(m_direction.x));
+            ar->Write(&m_direction.y, sizeof(m_direction.y));
+            ar->Write(&m_origin.x, sizeof(m_origin.x));
+            ar->Write(&m_origin.y, sizeof(m_origin.y));
             ar->Write(&m_phase, sizeof(m_phase));
             ar->Write(&m_launched, sizeof(m_launched));
             break;
@@ -942,33 +908,33 @@ CTimeBomb::CTimeBomb(CGameObject* obj)
         m_startTime = static_cast<u32>(g_frameTime);
         m_fastPhase = false;
     }
-    i32 cx = m_object->m_screenX >> TILE_SHIFT_PX;
-    i32 cy = m_object->m_screenY >> TILE_SHIFT_PX;
+    Coord tile;
+    GetScreenTile(&tile);
     CMapMgr* g = g_gameReg->m_tileGrid;
-    if (cx < g->m_width && cy < g->m_height) {
-        g->m_rowInts[cy][cx * 7] |= 0x1000000;
+    if (tile.m_x < g->m_width && tile.m_y < g->m_height) {
+        g->m_rows[tile.m_y][tile.m_x].m_flags |= IDX(CELL_FLAG_TIME_BOMB);
     }
     m_object->m_smarts = -1;
 }
 
 static inline i32 TBombGridCell(CGameObject* obj) {
     CMapMgr* g = g_gameReg->m_tileGrid;
-    i32 cx = obj->m_screenX >> TILE_SHIFT_PX;
-    i32 cy = obj->m_screenY >> TILE_SHIFT_PX;
-    if (static_cast<u32>(cx) < static_cast<u32>(g->m_width)
-        && static_cast<u32>(cy) < static_cast<u32>(g->m_height)) {
-        BrickzCell* row = g->m_rows[cy];
-        return row[cx].m_flags;
+    Coord tile = obj->ScreenPos();
+    ScreenTile(&tile);
+    if (static_cast<u32>(tile.m_x) < static_cast<u32>(g->m_width)
+        && static_cast<u32>(tile.m_y) < static_cast<u32>(g->m_height)) {
+        BrickzCell* row = g->m_rows[tile.m_y];
+        return row[tile.m_x].m_flags;
     }
     return 1;
 }
 static inline void TBombGridClear(CGameObject* obj) {
     CMapMgr* g = g_gameReg->m_tileGrid;
-    i32 cx = obj->m_screenX >> TILE_SHIFT_PX;
-    i32 cy = obj->m_screenY >> TILE_SHIFT_PX;
-    if (static_cast<u32>(cx) < static_cast<u32>(g->m_width)
-        && static_cast<u32>(cy) < static_cast<u32>(g->m_height)) {
-        g->m_rowInts[cy][cx * 7] &= ~0x1000000;
+    Coord tile = obj->ScreenPos();
+    ScreenTile(&tile);
+    if (static_cast<u32>(tile.m_x) < static_cast<u32>(g->m_width)
+        && static_cast<u32>(tile.m_y) < static_cast<u32>(g->m_height)) {
+        g->m_rows[tile.m_y][tile.m_x].m_flags &= ~IDX(CELL_FLAG_TIME_BOMB);
     }
 }
 
@@ -993,8 +959,8 @@ i32 CTimeBomb::UpdateCountdown() {
             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             TBombGridClear(m_object);
             g_gameReg->m_triggerMgr->LoadExplosionSprites(
-                m_object->m_screenX,
-                m_object->m_screenY,
+                m_object->m_screenPosition.m_x,
+                m_object->m_screenPosition.m_y,
                 m_object->m_smarts,
                 1
             );

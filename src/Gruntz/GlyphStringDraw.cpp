@@ -2,6 +2,8 @@
 
 #include <Gruntz/GlyphStringDraw.h>
 
+#include <MfcWin.h>
+
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
@@ -87,8 +89,7 @@ i32 LayerBlitFrame(
     if (!srcHandle) {
         return 0;
     }
-    i32 dx = x - src->m_anchorX;
-    i32 dy = y - src->m_anchorY;
+    CPoint destination(x - src->m_anchor.x, y - src->m_anchor.y);
     RECT rc;
     SetRect(&rc, 0, 0, src->m_width - 1, src->m_height - 1);
     RECT rc2 = rc;
@@ -96,7 +97,7 @@ i32 LayerBlitFrame(
     if (useColorKey) {
         flags |= DDBLTFAST_SRCCOLORKEY;
     }
-    dst->BltFast(dx, dy, srcHandle, &rc2, flags);
+    dst->BltFast(destination.x, destination.y, srcHandle, &rc2, flags);
     return 1;
 }
 

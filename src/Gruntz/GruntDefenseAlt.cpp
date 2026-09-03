@@ -20,6 +20,7 @@
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/ScanGridMacros.h>
 #include <Gruntz/StaminaPct.h>
@@ -39,11 +40,12 @@
 
 RVA(0x000f1c70, 0x620)
 i32 CGrunt::StepObjectGuardBehavior() {
-    m_arrivalFlags |= 0x40000;
+    m_arrivalFlags |= IDX(CELL_FLAG_IN_GAME_ICON);
     CGrunt* occ = m_triggerMgr->FindNearestEnemy(this);
     i32 inRange = 0;
     if (occ != NULL && GRUNT_AT_SAVED_SCREEN_POS(occ)
-        && RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0) {
+        && RectContains(occ->m_object->m_screenPosition.m_x, occ->m_object->m_screenPosition.m_y)
+               != 0) {
         inRange = 1;
     }
 
@@ -95,7 +97,10 @@ i32 CGrunt::StepObjectGuardBehavior() {
                     goto tail;
                 }
                 if (m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(o)
-                    && RectContains(o->m_object->m_screenX, o->m_object->m_screenY) != 0) {
+                    && RectContains(
+                           o->m_object->m_screenPosition.m_x,
+                           o->m_object->m_screenPosition.m_y
+                       ) != 0) {
                     COMMIT_GRUNT_NEIGHBOR(o);
                     return 1;
                 }
@@ -106,16 +111,16 @@ i32 CGrunt::StepObjectGuardBehavior() {
             {
                 Coord entrance = EntrancePx();
                 Coord tile = LastTilePx();
-                if (tile.m_x != entrance.m_x || tile.m_y != entrance.m_y) {
+                if (tile != entrance) {
                     goto tail;
                 }
             }
             {
-                i32 tx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
-                i32 ty = m_lastTilePx.m_y >> TILE_SHIFT_PX;
-                i32 gx = m_defenderPx.m_x >> TILE_SHIFT_PX;
-                i32 gy = m_defenderPx.m_y >> TILE_SHIFT_PX;
-                if (tx < gx && ty < gy) {
+                Coord tile = m_lastTilePx;
+                Coord guardTile = m_defenderPx;
+                ScreenTile(&tile);
+                ScreenTile(&guardTile);
+                if (tile.m_x < guardTile.m_x && tile.m_y < guardTile.m_y) {
                     StepArrivalDrop(
                         m_lastTilePx.m_x + 0x40,
                         m_lastTilePx.m_y,
@@ -126,7 +131,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
                     );
                     return 1;
                 }
-                if (tx < gx && ty > gy) {
+                if (tile.m_x < guardTile.m_x && tile.m_y > guardTile.m_y) {
                     StepArrivalDrop(
                         m_lastTilePx.m_x,
                         m_lastTilePx.m_y - 0x40,
@@ -137,7 +142,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
                     );
                     return 1;
                 }
-                if (tx > gx && ty < gy) {
+                if (tile.m_x > guardTile.m_x && tile.m_y < guardTile.m_y) {
                     StepArrivalDrop(
                         m_lastTilePx.m_x,
                         m_lastTilePx.m_y + 0x40,
@@ -148,7 +153,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
                     );
                     return 1;
                 }
-                if (tx > gx && ty > gy) {
+                if (tile.m_x > guardTile.m_x && tile.m_y > guardTile.m_y) {
                     StepArrivalDrop(
                         m_lastTilePx.m_x - 0x40,
                         m_lastTilePx.m_y,
@@ -168,8 +173,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
                 m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
             CGrunt* g = m_triggerMgr->FindNearestEnemy(this);
             if (g != NULL && g != o) {
-                Coord none;
-                m_arrivalCell = *none.Set(-1, -1);
+                m_arrivalCell.Set(-1, -1);
                 m_defenderState = AISTATE_SEEK;
                 return 1;
             }
@@ -192,13 +196,11 @@ i32 CGrunt::StepObjectGuardBehavior() {
             if (m_stamina < STAMINA_FULL) {
                 goto tail;
             }
-            if (RectContains(o->m_object->m_screenX, o->m_object->m_screenY) == 0) {
+            if (RectContains(o->m_object->m_screenPosition.m_x, o->m_object->m_screenPosition.m_y)
+                == 0) {
                 goto tail;
             }
-            if (o->GRUNT_SCREEN_X_NOT_AT_SAVED_POS(m_object, o)) {
-                goto tail;
-            }
-            if (o->GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(m_object, o)) {
+            if (o->m_object->ScreenPos() != o->m_lastTilePx) {
                 goto tail;
             }
             COMMIT_GRUNT_NEIGHBOR(o);
@@ -211,16 +213,9 @@ i32 CGrunt::StepObjectGuardBehavior() {
             return 1;
 
         case AISTATE_RETURN: {
-            StepArrivalDrop(
-                m_defenderPx.m_x - 0x20,
-                m_defenderPx.m_y - 0x20,
-                0,
-                m_arrivalFlags,
-                1,
-                0
-            );
-            if (m_object->m_screenX == m_defenderPx.m_x - 0x20
-                && m_object->m_screenY == m_defenderPx.m_y - 0x20) {
+            Coord returnPosition = m_defenderPx - Coord(TILE_SIZE_PX, TILE_SIZE_PX);
+            StepArrivalDrop(returnPosition.m_x, returnPosition.m_y, 0, m_arrivalFlags, 1, 0);
+            if (m_object->ScreenPos() == returnPosition) {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
             }
@@ -229,22 +224,22 @@ i32 CGrunt::StepObjectGuardBehavior() {
                 goto tail;
             }
             if (m_poweredUp == false && m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(o)
-                && RectContains(o->m_object->m_screenX, o->m_object->m_screenY) != 0) {
+                && RectContains(
+                       o->m_object->m_screenPosition.m_x,
+                       o->m_object->m_screenPosition.m_y
+                   ) != 0) {
                 COMMIT_GRUNT_NEIGHBOR(o);
                 m_defenderState = AISTATE_ATTACK;
             }
             if (GruntInRadius(o->m_playerIndex, o->m_unitIndex) == 0) {
                 goto tail;
             }
-            m_arrivalCell.m_x = o->m_playerIndex;
-            m_arrivalCell.m_y = o->m_unitIndex;
+            m_arrivalCell.Set(o->m_playerIndex, o->m_unitIndex);
             m_defenderState = AISTATE_CHASE;
             {
-                CWwdSpriteObject* h = m_object;
-                i32 x = h->m_screenX;
-                i32 y = h->m_screenY;
+                Coord voicePosition = m_object->ScreenPos();
                 const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
-                if (::PtInRect(rect, x, y)) {
+                if (::PtInRect(rect, voicePosition.m_x, voicePosition.m_y)) {
                     g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
                 }
             }

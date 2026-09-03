@@ -443,7 +443,12 @@ i32 CGrunt::LoadPickupSprites(
     if (id != 0) {
         CWwdSpriteObject* object = m_object;
         CGruntzMgr* g = g_gameReg;
-        if ((::PtInRect(&g->m_viewBounds, object->m_screenX, object->m_screenY)) || forced != 0) {
+        if ((::PtInRect(
+                &g->m_viewBounds,
+                object->m_screenPosition.m_x,
+                object->m_screenPosition.m_y
+            ))
+            || forced != 0) {
             g->m_voiceManager->PlayVoice(this, id, -1, 0, -1, -1);
         }
     }

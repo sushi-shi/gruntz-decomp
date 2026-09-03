@@ -3,6 +3,8 @@
 
 #include <rva.h>
 
+#include <Gruntz/CoordNode.h>
+#include <Gruntz/DoubleVector.h>
 #include <Ints.h>
 
 struct GruntDirectionCell;
@@ -12,11 +14,9 @@ struct GruntDirectionCell;
 // allocation site, vtable, or RTTI identifies the owning class.
 struct MotionEntity {
     char _pad00[0x78];
-    double m_positionX;
-    double m_positionY;
+    DoubleVector2 m_position;
     char _pad88[0x140 - 0x88];
-    i32 m_gridX;
-    i32 m_gridY;
+    Coord m_gridPosition;
     GruntDirectionCell* Classify(MotionEntity* other, char exact);
 };
 

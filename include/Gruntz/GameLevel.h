@@ -8,6 +8,7 @@
 #include <DDrawMgr/DDrawWorkerHost.h>
 #include <Enums.h>
 #include <Globals.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/TileCollisionKind.h>
@@ -24,70 +25,70 @@ static const i32 TILE_CLEAR = -1;
 
 #define PROBE_TILE(LVL, X, Y, RESULT)                                                              \
     do {                                                                                           \
-        i32 py_ = (Y);                                                                             \
-        i32 px_ = (X);                                                                             \
-        if (px_ < 0) {                                                                             \
-            px_ = 0;                                                                               \
+        Coord pixel_;                                                                              \
+        pixel_.m_y = (Y);                                                                          \
+        pixel_.m_x = (X);                                                                          \
+        if (pixel_.m_x < 0) {                                                                      \
+            pixel_.m_x = 0;                                                                        \
         } else {                                                                                   \
-            if (px_ >= (LVL)->m_mainPlane->m_planePixelWidth) {                                    \
-                px_ = (LVL)->m_mainPlane->m_planePixelWidth - 1;                                   \
+            if (pixel_.m_x >= (LVL)->m_mainPlane->m_planePixelSize.cx) {                           \
+                pixel_.m_x = (LVL)->m_mainPlane->m_planePixelSize.cx - 1;                          \
             }                                                                                      \
         }                                                                                          \
-        if (py_ < 0) {                                                                             \
-            py_ = 0;                                                                               \
+        if (pixel_.m_y < 0) {                                                                      \
+            pixel_.m_y = 0;                                                                        \
         } else {                                                                                   \
-            if (py_ >= (LVL)->m_mainPlane->m_planePixelHeight) {                                   \
-                py_ = (LVL)->m_mainPlane->m_planePixelHeight - 1;                                  \
+            if (pixel_.m_y >= (LVL)->m_mainPlane->m_planePixelSize.cy) {                           \
+                pixel_.m_y = (LVL)->m_mainPlane->m_planePixelSize.cy - 1;                          \
             }                                                                                      \
         }                                                                                          \
         CDDrawWorkerHost* pl_ = (LVL)->m_mainPlane;                                                \
-        i32 qx_ = px_ >> pl_->m_shiftX;                                                            \
-        i32 qy_ = py_ >> pl_->m_shiftY;                                                            \
-        i32 col_ = qx_;                                                                            \
-        i32 subX_ = px_ - (qx_ << pl_->m_shiftX);                                                  \
-        i32 idx_ = pl_->m_tileRowOffsets[qy_] + col_;                                              \
-        i32 subY_ = py_ - (qy_ << pl_->m_shiftY);                                                  \
-        i32 tile_ = pl_->m_tileHandles[idx_];                                                      \
-        if (tile_ == UNINIT_FILL || tile_ == TILE_CLEAR) {                                         \
+        Coord tile_(pixel_.m_x >> pl_->m_tileShift.m_x, pixel_.m_y >> pl_->m_tileShift.m_y);       \
+        Coord cellOrigin_(tile_.m_x << pl_->m_tileShift.m_x, tile_.m_y << pl_->m_tileShift.m_y);   \
+        Coord subPixel_ = pixel_ - cellOrigin_;                                                    \
+        i32 idx_ = pl_->m_tileRowOffsets[tile_.m_y] + tile_.m_x;                                   \
+        i32 tileHandle_ = pl_->m_tileHandles[idx_];                                                \
+        if (tileHandle_ == UNINIT_FILL || tileHandle_ == TILE_CLEAR) {                             \
             (RESULT) = TILEKIND_PASSABLE;                                                          \
         } else {                                                                                   \
-            CTileImageSet* set_ =                                                                  \
-                static_cast<CTileImageSet*>(m_imageSets[tile_ & WWD_TILE_IMAGE_SET_INDEX_MASK]);   \
-            (RESULT) = set_->GetCollisionAt(subX_, subY_);                                         \
+            CTileImageSet* set_ = static_cast<CTileImageSet*>(                                     \
+                m_imageSets[tileHandle_ & WWD_TILE_IMAGE_SET_INDEX_MASK]                           \
+            );                                                                                     \
+            (RESULT) = set_->GetCollisionAt(subPixel_.m_x, subPixel_.m_y);                         \
         }                                                                                          \
     } while (0)
 
 #define PROBE_TILE_VIA_HANDLE(LVL, X, Y, RESULT)                                                   \
     do {                                                                                           \
-        i32 py_ = (Y);                                                                             \
-        i32 px_ = (X);                                                                             \
-        if (px_ < 0) {                                                                             \
-            px_ = 0;                                                                               \
+        Coord pixel_;                                                                              \
+        pixel_.m_y = (Y);                                                                          \
+        pixel_.m_x = (X);                                                                          \
+        if (pixel_.m_x < 0) {                                                                      \
+            pixel_.m_x = 0;                                                                        \
         } else {                                                                                   \
-            if (px_ >= (LVL)->m_mainPlane->m_planePixelWidth) {                                    \
-                px_ = (LVL)->m_mainPlane->m_planePixelWidth - 1;                                   \
+            if (pixel_.m_x >= (LVL)->m_mainPlane->m_planePixelSize.cx) {                           \
+                pixel_.m_x = (LVL)->m_mainPlane->m_planePixelSize.cx - 1;                          \
             }                                                                                      \
         }                                                                                          \
-        if (py_ < 0) {                                                                             \
-            py_ = 0;                                                                               \
+        if (pixel_.m_y < 0) {                                                                      \
+            pixel_.m_y = 0;                                                                        \
         } else {                                                                                   \
-            if (py_ >= (LVL)->m_mainPlane->m_planePixelHeight) {                                   \
-                py_ = (LVL)->m_mainPlane->m_planePixelHeight - 1;                                  \
+            if (pixel_.m_y >= (LVL)->m_mainPlane->m_planePixelSize.cy) {                           \
+                pixel_.m_y = (LVL)->m_mainPlane->m_planePixelSize.cy - 1;                          \
             }                                                                                      \
         }                                                                                          \
         CDDrawWorkerHost* pl_ = (LVL)->m_mainPlane;                                                \
-        i32 qx_ = px_ >> pl_->m_shiftX;                                                            \
-        i32 qy_ = py_ >> pl_->m_shiftY;                                                            \
-        i32 col_ = qx_;                                                                            \
-        i32 subX_ = px_ - (qx_ << pl_->m_shiftX);                                                  \
-        i32 subY_ = py_ - (qy_ << pl_->m_shiftY);                                                  \
-        i32 tile_ = pl_->GetTileHandle(col_, qy_);                                                 \
-        if (tile_ == UNINIT_FILL || tile_ == TILE_CLEAR) {                                         \
+        Coord tile_(pixel_.m_x >> pl_->m_tileShift.m_x, pixel_.m_y >> pl_->m_tileShift.m_y);       \
+        Coord cellOrigin_(tile_.m_x << pl_->m_tileShift.m_x, tile_.m_y << pl_->m_tileShift.m_y);   \
+        Coord subPixel_ = pixel_ - cellOrigin_;                                                    \
+        i32 tileHandle_ = pl_->GetTileHandle(tile_.m_x, tile_.m_y);                                \
+        if (tileHandle_ == UNINIT_FILL || tileHandle_ == TILE_CLEAR) {                             \
             (RESULT) = TILEKIND_PASSABLE;                                                          \
         } else {                                                                                   \
-            CTileImageSet* set_ =                                                                  \
-                static_cast<CTileImageSet*>(m_imageSets[tile_ & WWD_TILE_IMAGE_SET_INDEX_MASK]);   \
-            (RESULT) = set_->GetCollisionAt(subX_, subY_);                                         \
+            CTileImageSet* set_ = static_cast<CTileImageSet*>(                                     \
+                m_imageSets[tileHandle_ & WWD_TILE_IMAGE_SET_INDEX_MASK]                           \
+            );                                                                                     \
+            (RESULT) = set_->GetCollisionAt(subPixel_.m_x, subPixel_.m_y);                         \
         }                                                                                          \
     } while (0)
 
@@ -101,6 +102,11 @@ class CDDrawChildGroup;
 class CDDrawSurfaceMgr;
 
 struct LevelDims {
+    void Init(i32 width, i32 height) {
+        w = width;
+        h = height;
+    }
+
     i32 w;
     i32 h;
 };
@@ -138,18 +144,12 @@ public:
     CGameLevel(class CDDrawSurfaceMgr* owner, i32 id, i32 flags);
 
     void SetSpatialDefaults() {
-        m_defaultActiveGridCellSize[0] = 500;
-        m_defaultActiveGridCellSize[1] = 250;
-        m_largeActiveGridCellSize[0] = 1000;
-        m_largeActiveGridCellSize[1] = 1000;
-        m_smallActiveGridCellSize[0] = 250;
-        m_smallActiveGridCellSize[1] = 125;
-        m_defaultActiveRegionSize.w = 1600;
-        m_defaultActiveRegionSize.h = 1200;
-        m_largeActiveRegionSize.w = 2560;
-        m_largeActiveRegionSize.h = 1920;
-        m_smallActiveRegionSize.w = 768;
-        m_smallActiveRegionSize.h = 576;
+        m_defaultActiveGridCellSize.Init(500, 250);
+        m_largeActiveGridCellSize.Init(1000, 1000);
+        m_smallActiveGridCellSize.Init(250, 125);
+        m_defaultActiveRegionSize.Init(1600, 1200);
+        m_largeActiveRegionSize.Init(2560, 1920);
+        m_smallActiveRegionSize.Init(768, 576);
     }
 
     void ResetSpatialDefaults();
@@ -278,14 +278,13 @@ public:
     CObArray m_imageSets;
     CDDrawWorkerHost* m_mainPlane;
     i32 m_mainIndex;
-    i32 m_maxStepX;
-    i32 m_maxStepY;
+    Coord m_maxStep;
     char m_levelName[0xac - 0x6c];
     u32 m_checksum;
 
-    i32 m_defaultActiveGridCellSize[2];
-    i32 m_largeActiveGridCellSize[2];
-    i32 m_smallActiveGridCellSize[2];
+    LevelDims m_defaultActiveGridCellSize;
+    LevelDims m_largeActiveGridCellSize;
+    LevelDims m_smallActiveGridCellSize;
 
     LevelDims m_defaultActiveRegionSize;
     LevelDims m_largeActiveRegionSize;

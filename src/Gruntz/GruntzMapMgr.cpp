@@ -77,16 +77,16 @@ TileCollisionKind CGameLevel::LookupTile(i32 x, i32 y) {
         x = 0;
     } else {
         mp = m_mainPlane;
-        if (x >= mp->m_tileColumns) {
-            x = mp->m_tileColumns - 1;
+        if (x >= mp->m_tileGridSize.cx) {
+            x = mp->m_tileGridSize.cx - 1;
         }
     }
     if (y < 0) {
         y = 0;
     } else {
         mp = m_mainPlane;
-        if (y >= mp->m_tileRows) {
-            y = mp->m_tileRows - 1;
+        if (y >= mp->m_tileGridSize.cy) {
+            y = mp->m_tileGridSize.cy - 1;
         }
     }
     mp = m_mainPlane;

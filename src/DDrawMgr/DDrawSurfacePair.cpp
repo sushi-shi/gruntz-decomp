@@ -31,6 +31,7 @@
 #include <Gruntz/UserLogic.h>
 #include <Image/ImageSet.h>
 #include <Io/FileMem.h>
+#include <MakeRect.h>
 #include <Pix16.h>
 #include <Rez/RezArchiveEntry.h>
 #include <Rez/RezTypeTag.h>
@@ -111,11 +112,7 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
     m_width = w;
     m_height = h;
     m_bpp = bpp;
-    RECT* rect = &m_srcRect;
-    rect->left = 0;
-    rect->top = 0;
-    rect->right = w;
-    rect->bottom = h;
+    m_srcRect = MakeRect(0, 0, w, h);
     if (kind == DDRAW_PAGE_BACK) {
         CDDrawSurfaceMgr* mgr = OwnerMgr();
         m_surface = mgr->m_deviceManager->WrapAttachedSurface(
@@ -159,12 +156,9 @@ i32 CDDrawSurfacePair::InitFromSurface(CDDSurface* src) {
         return 0;
     }
     m_width = w;
-    m_srcRect.right = w;
     m_height = h;
     m_bpp = bpp;
-    m_srcRect.left = 0;
-    m_srcRect.top = 0;
-    m_srcRect.bottom = h;
+    m_srcRect = MakeRect(0, 0, w, h);
     m_id = 0x63;
     m_surface = src;
     m_ownsSurface = false;
@@ -374,13 +368,10 @@ i32 CDDrawSurfacePair::SetGeom(i32 w, i32 h, ColorDepth bpp) {
                 && bpp != BPP_RGB_32)) {
             return 0;
         }
-        m_srcRect.left = 0;
-        m_srcRect.top = 0;
         m_width = w;
         m_height = h;
         m_bpp = bpp;
-        m_srcRect.right = w;
-        m_srcRect.bottom = h;
+        m_srcRect = MakeRect(0, 0, w, h);
     }
     return 1;
 }
@@ -565,10 +556,7 @@ i32 CDDrawFrontSurface::SetGeom(i32 w, i32 h, ColorDepth bpp) {
         m_bpp = bpp;
         m_width = w;
         m_height = h;
-        m_srcRect.left = 0;
-        m_srcRect.top = 0;
-        m_srcRect.right = w;
-        m_srcRect.bottom = h;
+        m_srcRect = MakeRect(0, 0, w, h);
         return 1;
     }
     return 0;
@@ -582,12 +570,10 @@ static inline void ResetResolveDrawFill(CResolveNode* node) {
 
 RVA(0x00164790, 0x41)
 i32 CResolveNode::SetPosition(i32 x, i32 y) {
-    m_screenX = x;
-    m_plotDX = 0;
-    m_plotDY = 0;
+    m_screenPosition.Set(x, y);
+    m_plotOffset.Set(0, 0);
     m_stateFlags = SPRITE_STATE_NONE;
     m_flashCountdown = 0;
-    m_screenY = y;
     m_flashInterval = 0x32;
     ResetResolveDrawFill(this);
     m_level = OwnerMgr()->m_level;
@@ -691,10 +677,10 @@ i32 CLogicRecord::Save(CFileMemBase* ar) {
     ar->Write(&m_maxY, sizeof(m_maxY));
     ar->Write(&m_pad3c, sizeof(m_pad3c));
     ar->Write(&m_reserved40, sizeof(m_reserved40));
-    ar->Write(&m_tweakX, sizeof(m_tweakX));
-    ar->Write(&m_tweakY, sizeof(m_tweakY));
-    ar->Write(&m_scrollTargetX, sizeof(m_scrollTargetX));
-    ar->Write(&m_scrollTargetY, sizeof(m_scrollTargetY));
+    ar->Write(&m_tweak.m_x, sizeof(m_tweak.m_x));
+    ar->Write(&m_tweak.m_y, sizeof(m_tweak.m_y));
+    ar->Write(&m_scrollTarget.m_x, sizeof(m_scrollTarget.m_x));
+    ar->Write(&m_scrollTarget.m_y, sizeof(m_scrollTarget.m_y));
     ar->Write(&m_pad54, sizeof(m_pad54));
     ar->Write(&m_reserved58, sizeof(m_reserved58));
     ar->Write(&m_reserved5c, sizeof(m_reserved5c));
@@ -724,8 +710,8 @@ i32 CLogicRecord::Save(CFileMemBase* ar) {
     ar->Write(&m_speed, sizeof(m_speed));
     ar->Write(&m_padc0, sizeof(m_padc0));
     ar->Write(&m_reservedc4, sizeof(m_reservedc4));
-    ar->Write(&m_width, sizeof(m_width));
-    ar->Write(&m_height, sizeof(m_height));
+    ar->Write(&m_size.cx, sizeof(m_size.cx));
+    ar->Write(&m_size.cy, sizeof(m_size.cy));
     ar->Write(&m_reservedd0, sizeof(m_reservedd0));
     ar->Write(&m_reservede0, sizeof(m_reservede0));
     ar->Write(&m_userRect1, sizeof(m_userRect1));
@@ -770,10 +756,10 @@ i32 CLogicRecord::Load(CFileMemBase* ar) {
     ar->Read(&m_maxY, sizeof(m_maxY));
     ar->Read(&m_pad3c, sizeof(m_pad3c));
     ar->Read(&m_reserved40, sizeof(m_reserved40));
-    ar->Read(&m_tweakX, sizeof(m_tweakX));
-    ar->Read(&m_tweakY, sizeof(m_tweakY));
-    ar->Read(&m_scrollTargetX, sizeof(m_scrollTargetX));
-    ar->Read(&m_scrollTargetY, sizeof(m_scrollTargetY));
+    ar->Read(&m_tweak.m_x, sizeof(m_tweak.m_x));
+    ar->Read(&m_tweak.m_y, sizeof(m_tweak.m_y));
+    ar->Read(&m_scrollTarget.m_x, sizeof(m_scrollTarget.m_x));
+    ar->Read(&m_scrollTarget.m_y, sizeof(m_scrollTarget.m_y));
     ar->Read(&m_pad54, sizeof(m_pad54));
     ar->Read(&m_reserved58, sizeof(m_reserved58));
     ar->Read(&m_reserved5c, sizeof(m_reserved5c));
@@ -803,8 +789,8 @@ i32 CLogicRecord::Load(CFileMemBase* ar) {
     ar->Read(&m_speed, sizeof(m_speed));
     ar->Read(&m_padc0, sizeof(m_padc0));
     ar->Read(&m_reservedc4, sizeof(m_reservedc4));
-    ar->Read(&m_width, sizeof(m_width));
-    ar->Read(&m_height, sizeof(m_height));
+    ar->Read(&m_size.cx, sizeof(m_size.cx));
+    ar->Read(&m_size.cy, sizeof(m_size.cy));
     ar->Read(&m_reservedd0, sizeof(m_reservedd0));
     ar->Read(&m_reservede0, sizeof(m_reservede0));
     ar->Read(&m_userRect1, sizeof(m_userRect1));
@@ -1255,23 +1241,21 @@ void CDDrawPixelWorker::RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurface
     {
 
         char c = m_pixelValue;
-        i32 y = m_screenY;
-        i32 x = m_screenX;
+        Coord position = ScreenPos();
         CDDSurface* s = overlay->m_surface;
         char* base = static_cast<char*>(s->Lock(NULL));
         if (base != NULL) {
-            base[s->m_bytesPerPixel * x + s->m_pitch * y] = c;
+            base[s->m_bytesPerPixel * position.m_x + s->m_pitch * position.m_y] = c;
             s->m_ddSurface->Unlock(NULL);
         }
     }
     {
         char c = m_pixelValue;
-        i32 y = m_screenY;
-        i32 x = m_screenX;
+        Coord position = ScreenPos();
         CDDSurface* s = backBuffer->m_surface;
         char* base = static_cast<char*>(s->Lock(NULL));
         if (base != NULL) {
-            base[s->m_bytesPerPixel * x + y * s->m_pitch] = c;
+            base[s->m_bytesPerPixel * position.m_x + position.m_y * s->m_pitch] = c;
             s->m_ddSurface->Unlock(NULL);
         }
     }

@@ -2,7 +2,7 @@
 
 #include <Gruntz/SBI_WellGoo.h>
 
-#include <Mfc.h>
+#include <MfcWin.h>
 
 #include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DDrawShadeBlit.h>
@@ -154,11 +154,9 @@ i32 CSBI_WellGoo::Render() {
 
     m_blitter->Blit(&m_srcRect, m_gooSrc, &m_srcRect, 0, 0);
 
-    m_srcRect.right++;
-    m_srcRect.bottom++;
-    ctx->m_surface->BltEx(&m_dstRect, m_gooSrc, &m_srcRect, DDBLT_WAIT, NULL);
-    m_srcRect.right--;
-    m_srcRect.bottom--;
+    CRect srcRect = m_srcRect;
+    srcRect.InflateRect(0, 0, 1, 1);
+    ctx->m_surface->BltEx(&m_dstRect, m_gooSrc, &srcRect, DDBLT_WAIT, NULL);
 
     m_fgFrame->RenderFrame(ctx, m_drawX, m_dstRect.top - 2, 0);
     return 1;

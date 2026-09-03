@@ -51,8 +51,8 @@ i32 EngStr_RenderText(
     RECT* rc = dst;
     CRect rect;
     if (shadow) {
-        CopyRect(&rect, rc);
-        OffsetRect(&rect, ENGSTR_SHADOW_OFFSET_X_PX, ENGSTR_SHADOW_OFFSET_Y_PX);
+        rect = *rc;
+        rect.OffsetRect(ENGSTR_SHADOW_OFFSET_X_PX, ENGSTR_SHADOW_OFFSET_Y_PX);
         g_textObj.SetColor(ENGSTR_SHADOW_COLOR);
 
         g_textObj.DrawWrapped(*str, drawSurface, rect, 1, flag, 0);

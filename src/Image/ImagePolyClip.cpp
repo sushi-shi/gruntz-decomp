@@ -6,6 +6,8 @@
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/WallProject.h>
+#include <Gruntz/CoordNode.h>
+#include <Gruntz/DoubleVector.h>
 #include <Image/PolygonWinding.h>
 #include <Image/RasterVtx.h>
 #include <Image/WarpTextureBlit.h>
@@ -84,18 +86,9 @@ i32 PolyIsConvexCW(ClipVtx* verts, i32 count) {
         ClipVtx* v0 = &verts[i % count];
         ClipVtx* v1 = &verts[(i + 1) % count];
         ClipVtx* v2 = &verts[(i + 2) % count];
-        float x0 = v0->x;
-        float y0 = v0->y;
-        float x1 = v1->x;
-        float y1 = v1->y;
-        float x2 = v2->x;
-        float y2 = v2->y;
-        float dy2, dx2, dy1, dx1;
-        dx1 = x1 - x0;
-        dy1 = y1 - y0;
-        dx2 = x2 - x0;
-        dy2 = y2 - y0;
-        float cross = (-dy1) * dx2 + dx1 * dy2;
+        FloatVector2 delta1(v1->x - v0->x, v1->y - v0->y);
+        FloatVector2 delta2(v2->x - v0->x, v2->y - v0->y);
+        float cross = (-delta1.y) * delta2.x + delta1.x * delta2.y;
         if (cross != g_rasterZero) {
             if (cross > g_rasterZero) {
                 sign = POLYGON_WINDING_COUNTERCLOCKWISE;
@@ -126,61 +119,44 @@ void ImageRotateBlit(
     i32 colorkey
 ) {
 
-    i32 w = src->m_width;
-    i32 h = src->m_height;
+    CSize imageSize(src->m_width, src->m_height);
 
-    i32 sq[4];
+    RECT sourceRect;
     if (pivot != NULL) {
-        sq[0] = pivot[0];
-        sq[1] = pivot[1];
-        sq[2] = pivot[2];
-        sq[3] = pivot[3];
+        SetRect(&sourceRect, pivot[0], pivot[1], pivot[2], pivot[3]);
     } else {
-        sq[0] = 0;
-        sq[1] = 0;
-        sq[2] = w - 1;
-        sq[3] = h - 1;
+        SetRect(&sourceRect, 0, 0, imageSize.cx - 1, imageSize.cy - 1);
     }
 
     float rad = rot * g_degToRadNeg;
     float sn = static_cast<float>(sin(rad));
     float cs = static_cast<float>(cos(rad));
 
-    i32 cx = w >> 1;
-    i32 cy = h >> 1;
+    Coord center(imageSize.cx >> 1, imageSize.cy >> 1);
 
-    float ex0 = static_cast<float>(-cx) * scale;
-    float ey0 = static_cast<float>(-cy) * scale;
-    float ex1 = static_cast<float>(w - cx) * scale;
-    float ey1 = static_cast<float>(h - cy) * scale;
+    FloatVector2 extentMin = FloatVector2(-center) * scale;
+    FloatVector2 extentMax = FloatVector2(Coord(imageSize.cx, imageSize.cy) - center) * scale;
 
     ClipVtx prod[4];
-    prod[0].x = ex0;
-    prod[0].y = ey0;
-    prod[1].x = ex1;
-    prod[1].y = ey0;
-    prod[2].x = ex1;
-    prod[2].y = ey1;
-    prod[3].x = ex0;
-    prod[3].y = ey1;
+    prod[0].SetPosition(extentMin.x, extentMin.y);
+    prod[1].SetPosition(extentMax.x, extentMin.y);
+    prod[2].SetPosition(extentMax.x, extentMax.y);
+    prod[3].SetPosition(extentMin.x, extentMax.y);
 
-    float tx = static_cast<float>(destX);
-    float ty = static_cast<float>(destY);
+    FloatVector2 translation(Coord(destX, destY));
 
     ClipVtx mtx[4];
     for (i32 k = 0; k < 4; k++) {
-        mtx[k].y = prod[k].y * cs - prod[k].x * sn + ty;
-        mtx[k].x = prod[k].x * cs + prod[k].y * sn + tx;
+        mtx[k].SetPosition(
+            prod[k].x * cs + prod[k].y * sn + translation.x,
+            prod[k].y * cs - prod[k].x * sn + translation.y
+        );
     }
 
-    mtx[0].u = static_cast<float>(sq[0]);
-    mtx[0].v = static_cast<float>(sq[1]);
-    mtx[1].u = static_cast<float>(sq[2]);
-    mtx[1].v = static_cast<float>(sq[1]);
-    mtx[2].u = static_cast<float>(sq[2]);
-    mtx[2].v = static_cast<float>(sq[3]);
-    mtx[3].u = static_cast<float>(sq[0]);
-    mtx[3].v = static_cast<float>(sq[3]);
+    mtx[0].SetTexture(static_cast<float>(sourceRect.left), static_cast<float>(sourceRect.top));
+    mtx[1].SetTexture(static_cast<float>(sourceRect.right), static_cast<float>(sourceRect.top));
+    mtx[2].SetTexture(static_cast<float>(sourceRect.right), static_cast<float>(sourceRect.bottom));
+    mtx[3].SetTexture(static_cast<float>(sourceRect.left), static_cast<float>(sourceRect.bottom));
 
     RotateRasterize(mtx, 4, dst, src, mode, colorkey, -1, -1, -1, -1);
 }
@@ -210,8 +186,10 @@ i32 ImagePolyClipRect(
                 *out++ = *prev;
             }
             if ((prev->x < left && !(cur->x < left)) || (!(prev->x < left) && cur->x < left)) {
-                out->x = left;
-                out->y = prev->y + (left - prev->x) * ((cur->y - prev->y) / (cur->x - prev->x));
+                out->SetPosition(
+                    left,
+                    prev->y + (left - prev->x) * ((cur->y - prev->y) / (cur->x - prev->x))
+                );
                 out++;
             }
             prev = cur;
@@ -232,8 +210,10 @@ i32 ImagePolyClipRect(
                 *out++ = *prev;
             }
             if ((prev->x < right && !(cur->x < right)) || (!(prev->x < right) && cur->x < right)) {
-                out->x = right;
-                out->y = prev->y + (right - prev->x) * ((cur->y - prev->y) / (cur->x - prev->x));
+                out->SetPosition(
+                    right,
+                    prev->y + (right - prev->x) * ((cur->y - prev->y) / (cur->x - prev->x))
+                );
                 out++;
             }
             prev = cur;
@@ -254,8 +234,10 @@ i32 ImagePolyClipRect(
                 *out++ = *prev;
             }
             if ((!(prev->y < top) && cur->y < top) || (prev->y < top && !(cur->y < top))) {
-                out->y = top;
-                out->x = prev->x + (top - prev->y) * ((cur->x - prev->x) / (cur->y - prev->y));
+                out->SetPosition(
+                    prev->x + (top - prev->y) * ((cur->x - prev->x) / (cur->y - prev->y)),
+                    top
+                );
                 out++;
             }
             prev = cur;
@@ -277,8 +259,10 @@ i32 ImagePolyClipRect(
             }
             if ((prev->y < bottom && !(cur->y < bottom))
                 || (!(prev->y < bottom) && cur->y < bottom)) {
-                out->y = bottom;
-                out->x = prev->x + (bottom - prev->y) * ((cur->x - prev->x) / (cur->y - prev->y));
+                out->SetPosition(
+                    prev->x + (bottom - prev->y) * ((cur->x - prev->x) / (cur->y - prev->y)),
+                    bottom
+                );
                 out++;
             }
             prev = cur;
@@ -332,13 +316,14 @@ i32 RotateRasterize(
                 }
                 if ((prev->x < leftBound && cur->x >= leftBound)
                     || (prev->x >= leftBound && cur->x < leftBound)) {
-                    out->x = leftBound;
-                    out->y =
-                        prev->y + ((cur->y - prev->y) / (cur->x - prev->x)) * (leftBound - prev->x);
-                    out->u =
-                        prev->u + ((cur->u - prev->u) / (cur->x - prev->x)) * (leftBound - prev->x);
-                    out->v =
-                        prev->v + ((cur->v - prev->v) / (cur->x - prev->x)) * (leftBound - prev->x);
+                    out->SetPosition(
+                        leftBound,
+                        prev->y + ((cur->y - prev->y) / (cur->x - prev->x)) * (leftBound - prev->x)
+                    );
+                    out->SetTexture(
+                        prev->u + ((cur->u - prev->u) / (cur->x - prev->x)) * (leftBound - prev->x),
+                        prev->v + ((cur->v - prev->v) / (cur->x - prev->x)) * (leftBound - prev->x)
+                    );
                     out++;
                 }
                 prev = cur;
@@ -363,13 +348,15 @@ i32 RotateRasterize(
                 }
                 if ((prev->x < rightBound && cur->x >= rightBound)
                     || (prev->x >= rightBound && cur->x < rightBound)) {
-                    out->x = rightBound;
-                    out->y = prev->y
-                             + ((cur->y - prev->y) / (cur->x - prev->x)) * (rightBound - prev->x);
-                    out->u = prev->u
-                             + ((cur->u - prev->u) / (cur->x - prev->x)) * (rightBound - prev->x);
-                    out->v = prev->v
-                             + ((cur->v - prev->v) / (cur->x - prev->x)) * (rightBound - prev->x);
+                    out->SetPosition(
+                        rightBound,
+                        prev->y + ((cur->y - prev->y) / (cur->x - prev->x)) * (rightBound - prev->x)
+                    );
+                    out->SetTexture(
+                        prev->u
+                            + ((cur->u - prev->u) / (cur->x - prev->x)) * (rightBound - prev->x),
+                        prev->v + ((cur->v - prev->v) / (cur->x - prev->x)) * (rightBound - prev->x)
+                    );
                     out++;
                 }
                 prev = cur;
@@ -394,13 +381,14 @@ i32 RotateRasterize(
                 }
                 if ((prev->y >= topBound && cur->y < topBound)
                     || (prev->y < topBound && cur->y >= topBound)) {
-                    out->y = topBound;
-                    out->x =
-                        prev->x + ((cur->x - prev->x) / (cur->y - prev->y)) * (topBound - prev->y);
-                    out->u =
-                        prev->u + ((cur->u - prev->u) / (cur->y - prev->y)) * (topBound - prev->y);
-                    out->v =
-                        prev->v + ((cur->v - prev->v) / (cur->y - prev->y)) * (topBound - prev->y);
+                    out->SetPosition(
+                        prev->x + ((cur->x - prev->x) / (cur->y - prev->y)) * (topBound - prev->y),
+                        topBound
+                    );
+                    out->SetTexture(
+                        prev->u + ((cur->u - prev->u) / (cur->y - prev->y)) * (topBound - prev->y),
+                        prev->v + ((cur->v - prev->v) / (cur->y - prev->y)) * (topBound - prev->y)
+                    );
                     out++;
                 }
                 prev = cur;
@@ -425,13 +413,17 @@ i32 RotateRasterize(
                 }
                 if ((prev->y < bottomBound && cur->y >= bottomBound)
                     || (prev->y >= bottomBound && cur->y < bottomBound)) {
-                    out->y = bottomBound;
-                    out->x = prev->x
-                             + ((cur->x - prev->x) / (cur->y - prev->y)) * (bottomBound - prev->y);
-                    out->u = prev->u
-                             + ((cur->u - prev->u) / (cur->y - prev->y)) * (bottomBound - prev->y);
-                    out->v = prev->v
-                             + ((cur->v - prev->v) / (cur->y - prev->y)) * (bottomBound - prev->y);
+                    out->SetPosition(
+                        prev->x
+                            + ((cur->x - prev->x) / (cur->y - prev->y)) * (bottomBound - prev->y),
+                        bottomBound
+                    );
+                    out->SetTexture(
+                        prev->u
+                            + ((cur->u - prev->u) / (cur->y - prev->y)) * (bottomBound - prev->y),
+                        prev->v
+                            + ((cur->v - prev->v) / (cur->y - prev->y)) * (bottomBound - prev->y)
+                    );
                     out++;
                 }
                 prev = cur;
@@ -803,13 +795,13 @@ i32 ProjectWallQuad(
     i16 color,
     RECT clip
 ) {
-    i32 dx = x1 - x0;
-    i32 dy = y1 - y0;
-    double ang = atan2(static_cast<double>(dx), static_cast<double>(dy));
-    float adx = static_cast<float>(fabs(static_cast<float>(dx)));
-    float ady = static_cast<float>(fabs(static_cast<float>(dy)));
+    Coord start(x0, y0);
+    Coord end(x1, y1);
+    Coord delta = end - start;
+    double ang = atan2(static_cast<double>(delta.m_x), static_cast<double>(delta.m_y));
+    FloatVector2 floatDelta(delta);
     float turn = static_cast<float>(ang - g_negativePi);
-    float len = static_cast<float>(sqrt(SQR(adx) + SQR(ady)));
+    float len = floatDelta.Mag();
     double s = sin(turn);
     double c = cos(turn);
     float hw = static_cast<float>(halfWidth);
@@ -817,24 +809,22 @@ i32 ProjectWallQuad(
     ClipVtx* wall = g_rasterEvenClipPassBuffer;
     float xLeft = -(hw * g_wallHalf);
     float xRight = xLeft + hw;
-    wall[0].x = xLeft;
-    wall[0].y = len;
-    wall[1].x = xRight;
-    wall[1].y = len;
-    wall[2].x = xRight;
-    wall[2].y = g_rasterZero;
-    wall[3].x = xLeft;
-    wall[3].y = g_rasterZero;
+    wall[0].SetPosition(xLeft, len);
+    wall[1].SetPosition(xRight, len);
+    wall[2].SetPosition(xRight, g_rasterZero);
+    wall[3].SetPosition(xLeft, g_rasterZero);
 
     for (i32 i = 0; i < 4; i++) {
-        float bx = g_rasterEvenClipPassBuffer[i].x;
-        float by = -g_rasterEvenClipPassBuffer[i].y;
-        g_rasterEvenClipPassBuffer[i].x = static_cast<float>((by * s - bx * c));
-        g_rasterEvenClipPassBuffer[i].y = static_cast<float>((bx * s + by * c));
+        FloatVector2 base(g_rasterEvenClipPassBuffer[i].x, -g_rasterEvenClipPassBuffer[i].y);
+        g_rasterEvenClipPassBuffer[i].SetPosition(
+            static_cast<float>(base.y * s - base.x * c),
+            static_cast<float>(base.x * s + base.y * c)
+        );
     }
     for (i32 j = 0; j < 4; j++) {
-        g_rasterEvenClipPassBuffer[j].x = static_cast<float>(x0) + g_rasterEvenClipPassBuffer[j].x;
-        g_rasterEvenClipPassBuffer[j].y = static_cast<float>(y0) + g_rasterEvenClipPassBuffer[j].y;
+        ClipVtx& vertex = g_rasterEvenClipPassBuffer[j];
+        FloatVector2 translated = FloatVector2(start) + FloatVector2(vertex.x, vertex.y);
+        vertex.SetPosition(translated.x, translated.y);
     }
 
     if (ImagePolyClipRect(

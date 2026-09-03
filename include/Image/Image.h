@@ -19,6 +19,12 @@ struct DIB_BMI256 {
     RGBQUAD colors[256];
 };
 
+GZ_ENUM_FLAGS_BEGIN(DibInitFlags, u32)
+    DIB_INIT_FLAGS_NONE = 0,
+    DIB_INIT_KEEP_TRANSPARENCY = 0x1
+GZ_ENUM_FLAGS_END(DibInitFlags, u32)
+GZ_ENUM_FLAGS_OPS(DibInitFlags)
+
 class CDib {
 public:
     CDib();

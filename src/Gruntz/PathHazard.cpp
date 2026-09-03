@@ -26,13 +26,13 @@
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/SpotLight.h>
-#include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/Ufo.h>
 #include <Image/CImage.h>
 #include <Io/FileMem.h>
 #include <Lith/BDefs.h>
+#include <MakeRect.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/TileGeometry.h>
@@ -59,36 +59,41 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
 
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
 
-    SNAP_OBJECT_TO_TILE_CENTER_DOUBLE_POS(m_object, snapX, snapY, m_posX, m_posY)
+    Coord snappedPosition = m_object->ScreenPos();
+    SnapTileCenter(&snappedPosition);
+    m_object->SetScreenPos(snappedPosition);
+    m_position.Init(snappedPosition);
     CWwdSpriteObject* h = m_object;
     SET_SORT_KEY_IF_CHANGED(h, SORTKEY_ACTOR)
 
-    m_wp[0].x = m_object->m_screenX;
-    m_wp[0].y = m_object->m_screenY;
-    m_wp[1].x = (m_object->m_extent.left << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[1].y = (m_object->m_extent.top << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[2].x = (m_object->m_extent.right << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[2].y = (m_object->m_extent.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[3].x = (m_object->m_area.left << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[3].y = (m_object->m_area.top << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[4].x = (m_object->m_area.right << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[4].y = (m_object->m_area.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[5].x = (m_object->m_switchRect.left << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[5].y = (m_object->m_switchRect.top << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[6].x = (m_object->m_switchRect.right << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[6].y = (m_object->m_switchRect.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[7].x = (m_object->m_clip.left << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[7].y = (m_object->m_clip.top << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[8].x = (m_object->m_clip.right << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[8].y = (m_object->m_clip.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[9].x = (m_object->m_logicRecord->m_userRect1.left << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[9].y = (m_object->m_logicRecord->m_userRect1.top << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[10].x = (m_object->m_logicRecord->m_userRect1.right << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[10].y = (m_object->m_logicRecord->m_userRect1.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[11].x = (m_object->m_logicRecord->m_userRect2.left << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[11].y = (m_object->m_logicRecord->m_userRect2.top << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[12].x = (m_object->m_logicRecord->m_userRect2.right << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[12].y = (m_object->m_logicRecord->m_userRect2.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[0] = m_object->ScreenPos();
+    m_wp[1].Set(m_object->m_extent.left, m_object->m_extent.top);
+    m_wp[2].Set(m_object->m_extent.right, m_object->m_extent.bottom);
+    m_wp[3].Set(m_object->m_area.left, m_object->m_area.top);
+    m_wp[4].Set(m_object->m_area.right, m_object->m_area.bottom);
+    m_wp[5].Set(m_object->m_switchRect.left, m_object->m_switchRect.top);
+    m_wp[6].Set(m_object->m_switchRect.right, m_object->m_switchRect.bottom);
+    m_wp[7].Set(m_object->m_clip.left, m_object->m_clip.top);
+    m_wp[8].Set(m_object->m_clip.right, m_object->m_clip.bottom);
+    m_wp[9].Set(
+        m_object->m_logicRecord->m_userRect1.left,
+        m_object->m_logicRecord->m_userRect1.top
+    );
+    m_wp[10].Set(
+        m_object->m_logicRecord->m_userRect1.right,
+        m_object->m_logicRecord->m_userRect1.bottom
+    );
+    m_wp[11].Set(
+        m_object->m_logicRecord->m_userRect2.left,
+        m_object->m_logicRecord->m_userRect2.top
+    );
+    m_wp[12].Set(
+        m_object->m_logicRecord->m_userRect2.right,
+        m_object->m_logicRecord->m_userRect2.bottom
+    );
+    for (i32 waypointIndex = 1; waypointIndex < 13; ++waypointIndex) {
+        TileCenter(&m_wp[waypointIndex]);
+    }
 
     i32 i = 1;
     b32 found = false;
@@ -96,7 +101,8 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
         if (found != false) {
             break;
         }
-        if (m_wp[i].x == TILE_HALF_PX && m_wp[i].y == TILE_HALF_PX) {
+        Coord emptyWaypoint(TILE_HALF_PX, TILE_HALF_PX);
+        if (m_wp[i] == emptyWaypoint) {
             found = true;
         } else {
             i++;
@@ -145,17 +151,20 @@ i32 CPathHazard::Tick() {
     CWwdSpriteObject* obj = m_object;
 
     RECT rect;
-    rect.left = obj->m_screenX - obj->m_frameImage->m_anchorX + 7;
-    rect.right = obj->m_frameImage->m_anchorX + obj->m_screenX - 7;
-    rect.top = obj->m_screenY - obj->m_frameImage->m_anchorY + 7;
-    rect.bottom = obj->m_frameImage->m_anchorY + obj->m_screenY - 7;
+    ::SetRect(
+        &rect,
+        obj->m_screenPosition.m_x - obj->m_frameImage->m_anchor.x + 7,
+        obj->m_screenPosition.m_y - obj->m_frameImage->m_anchor.y + 7,
+        obj->m_frameImage->m_anchor.x + obj->m_screenPosition.m_x - 7,
+        obj->m_frameImage->m_anchor.y + obj->m_screenPosition.m_y - 7
+    );
 
     CGruntzMgr* reg = g_gameReg;
     if (reg->m_isEasyMode == false || reg->m_gameMode != GAMEMODE_QUESTZ) {
         i32 playerIndex, unitIndex;
         CGrunt* ent = reg->m_triggerMgr->FindGruntAt(
-            obj->m_screenX,
-            obj->m_screenY,
+            obj->m_screenPosition.m_x,
+            obj->m_screenPosition.m_y,
             &obj->m_area,
             &playerIndex,
             &unitIndex,
@@ -172,53 +181,45 @@ i32 CPathHazard::Tick() {
     }
 
     CWwdSpriteObject* m10 = m_object;
-    if (m10->m_screenX == m_wpX) {
-        i32 wy = m_wpY;
-        if (m10->m_screenY == wy) {
-
-            m_posX = static_cast<double>(m_wpX);
-            m_posY = static_cast<double>(wy);
-            this->Arrive();
-            i32 segs = m_object->m_damage;
-            if (segs > 0) {
-                m_leg.m_window = static_cast<u32>(segs);
-                m_leg.m_deadline = static_cast<u32>(g_frameTime);
-                SET_ANIMATION_ACT("B");
-                return 0;
-            }
-            this->BeginLeg();
+    if (m10->ScreenPos() == m_waypoint) {
+        m_position.Init(m_waypoint);
+        this->Arrive();
+        i32 segs = m_object->m_damage;
+        if (segs > 0) {
+            m_leg.m_window = static_cast<u32>(segs);
+            m_leg.m_deadline = static_cast<u32>(g_frameTime);
+            SET_ANIMATION_ACT("B");
             return 0;
         }
+        this->BeginLeg();
+        return 0;
     }
 
     double step = static_cast<double>(g_frameDelta) * m_speed;
-    m_posX = m_posX + step * m_unitX;
-    m_posY = m_posY + static_cast<double>(g_frameDelta) * m_unitY * m_speed;
-    i32 newX = static_cast<i32>((m_roundBiasX + m_posX));
-    i32 newY = static_cast<i32>((m_roundBiasY + m_posY));
+    m_position += m_unit * step;
+    Coord next = (m_roundBias + m_position).ToCoord();
 
-    if (m_unitX > 0.0) {
-        if (newX > m_wpX) {
-            newX = m_wpX;
+    if (m_unit.x > 0.0) {
+        if (next.m_x > m_waypoint.m_x) {
+            next.m_x = m_waypoint.m_x;
         }
-    } else if (m_unitX < 0.0) {
-        if (newX < m_wpX) {
-            newX = m_wpX;
+    } else if (m_unit.x < 0.0) {
+        if (next.m_x < m_waypoint.m_x) {
+            next.m_x = m_waypoint.m_x;
         }
     }
 
-    if (m_unitY > 0.0) {
-        if (newY > m_wpY) {
-            newY = m_wpY;
+    if (m_unit.y > 0.0) {
+        if (next.m_y > m_waypoint.m_y) {
+            next.m_y = m_waypoint.m_y;
         }
-    } else if (m_unitY < 0.0) {
-        if (newY < m_wpY) {
-            newY = m_wpY;
+    } else if (m_unit.y < 0.0) {
+        if (next.m_y < m_waypoint.m_y) {
+            next.m_y = m_waypoint.m_y;
         }
     }
 
-    m_object->m_screenX = newX;
-    m_object->m_screenY = newY;
+    m_object->SetScreenPos(next);
     return 0;
 }
 
@@ -269,10 +270,12 @@ i32 CPathHazard::SiblingTick() {
 
     CWwdSpriteObject* obj = m_object;
     RECT rect;
-    rect.left = obj->m_screenX - obj->m_frameImage->m_anchorX + 7;
-    rect.right = obj->m_frameImage->m_anchorX + obj->m_screenX - 7;
-    rect.top = obj->m_screenY - obj->m_frameImage->m_anchorY + 7;
-    rect.bottom = obj->m_frameImage->m_anchorY + obj->m_screenY - 7;
+    rect = MakeRect(
+        obj->m_screenPosition.m_x - obj->m_frameImage->m_anchor.x + 7,
+        obj->m_screenPosition.m_y - obj->m_frameImage->m_anchor.y + 7,
+        obj->m_frameImage->m_anchor.x + obj->m_screenPosition.m_x - 7,
+        obj->m_frameImage->m_anchor.y + obj->m_screenPosition.m_y - 7
+    );
 
     CGruntzMgr* reg = g_gameReg;
     if (reg->m_isEasyMode != false && reg->m_gameMode == GAMEMODE_QUESTZ) {
@@ -280,8 +283,8 @@ i32 CPathHazard::SiblingTick() {
     } else {
         i32 playerIndex, unitIndex;
         CGrunt* ent = reg->m_triggerMgr->FindGruntAt(
-            obj->m_screenX,
-            obj->m_screenY,
+            obj->m_screenPosition.m_x,
+            obj->m_screenPosition.m_y,
             &obj->m_area,
             &playerIndex,
             &unitIndex,
@@ -320,7 +323,7 @@ i32 CRainCloud::HitTest(i32 playerIndex, i32 unitIndex) {
 
     CWwdSpriteObject* obj = m_object;
     CGruntzMgr* reg = g_gameReg;
-    if (::PtInRect(&reg->m_viewBounds, obj->m_screenX, obj->m_screenY)) {
+    if (::PtInRect(&reg->m_viewBounds, obj->m_screenPosition.m_x, obj->m_screenPosition.m_y)) {
         SoundCueRegistry* registry = reg->m_world->m_soundRegistry;
         if (registry->m_silentMode == false) {
             SoundCue* found = NULL;
@@ -357,38 +360,17 @@ RVA(0x000b47e0, 0x170)
 i32 CPathHazard::BeginLeg() {
     CWwdSpriteObject* obj = m_object;
     i32 idx = m_wpIndex;
-    i32 wx = m_wp[idx].x;
-    m_wpX = wx;
-    i32 wy = m_wp[idx].y;
-    m_wpY = wy;
+    m_waypoint = m_wp[idx];
 
-    double dx = static_cast<double>(m_wpX) - static_cast<double>(obj->m_screenX);
-    double dy = static_cast<double>(m_wpY) - static_cast<double>(obj->m_screenY);
-    double len = sqrt(SQR(dx) + SQR(dy));
-    double ux = dx / len;
-    double uy = dy / len;
+    Coord position = obj->ScreenPos();
+    DoubleVector2 unit(m_waypoint - position);
+    unit.Normalize();
 
     m_speed = 1.0 / (static_cast<double>(obj->m_logicRecord->m_speed) * 0.03125);
-    m_posX = static_cast<double>(obj->m_screenX);
-    m_posY = static_cast<double>(obj->m_screenY);
-    m_unitX = ux;
-    m_unitY = uy;
+    m_position.Init(position);
+    m_unit = unit;
 
-    if (ux > 0.0) {
-        m_roundBiasX = 0.5;
-    } else if (ux < 0.0) {
-        m_roundBiasX = -0.5;
-    } else {
-        m_roundBiasX = 0.0;
-    }
-
-    if (uy > 0.0) {
-        m_roundBiasY = 0.5;
-    } else if (uy < 0.0) {
-        m_roundBiasY = -0.5;
-    } else {
-        m_roundBiasY = 0.0;
-    }
+    m_roundBias = PixelRoundBias(unit);
     return 1;
 }
 
@@ -403,13 +385,17 @@ CRainCloud::CRainCloud(CGameObject* obj) : CPathHazard(obj) {
 
 RVA(0x000b4a90, 0x145)
 CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
-    i32 sx = m_object->m_screenX;
-    i32 sy = m_object->m_screenY;
+    Coord position = m_object->ScreenPos();
     SwitchAnimationByName("LEVEL_UFO", 0);
     for (i32 i = 0; i < 2; ++i) {
-        CWwdSpriteObject* sl =
-            g_gameReg->m_world->m_childGroup
-                ->CreateSprite(0, sx, sy, 0, "SpotLight", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
+        CWwdSpriteObject* sl = g_gameReg->m_world->m_childGroup->CreateSprite(
+            0,
+            position.m_x,
+            position.m_y,
+            0,
+            "SpotLight",
+            WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+        );
         if (sl != NULL) {
             sl->SetImageSetByName("LEVEL_SPOTLIGHT");
             CLogicRecord* sub = sl->m_logicRecord;
@@ -498,12 +484,12 @@ i32 CPathHazard::SerializeDispatch(
     if (mode != SERIAL_SAVE) {
         if (mode == SERIAL_LOAD) {
             s->Read(&m_speed, sizeof(m_speed));
-            s->Read(&m_posX, sizeof(m_posX));
-            s->Read(&m_posY, sizeof(m_posY));
-            s->Read(&m_unitX, sizeof(m_unitX));
-            s->Read(&m_unitY, sizeof(m_unitY));
-            s->Read(&m_roundBiasX, sizeof(m_roundBiasX));
-            s->Read(&m_roundBiasY, sizeof(m_roundBiasY));
+            s->Read(&m_position.x, sizeof(m_position.x));
+            s->Read(&m_position.y, sizeof(m_position.y));
+            s->Read(&m_unit.x, sizeof(m_unit.x));
+            s->Read(&m_unit.y, sizeof(m_unit.y));
+            s->Read(&m_roundBias.x, sizeof(m_roundBias.x));
+            s->Read(&m_roundBias.y, sizeof(m_roundBias.y));
             CPathWaypoint* p = m_wp;
             i32 n = 13;
             do {
@@ -511,19 +497,19 @@ i32 CPathHazard::SerializeDispatch(
                 p += 1;
             } while (--n != 0);
             s->Read(&m_wpIndex, sizeof(m_wpIndex));
-            s->Read(&m_wpX, sizeof(m_wpX));
-            s->Read(&m_wpY, sizeof(m_wpY));
+            s->Read(&m_waypoint.m_x, sizeof(m_waypoint.m_x));
+            s->Read(&m_waypoint.m_y, sizeof(m_waypoint.m_y));
             s->Read(&m_wpCount, sizeof(m_wpCount));
             s->Read(&m_strikeArmed, sizeof(m_strikeArmed));
         }
     } else {
         s->Write(&m_speed, sizeof(m_speed));
-        s->Write(&m_posX, sizeof(m_posX));
-        s->Write(&m_posY, sizeof(m_posY));
-        s->Write(&m_unitX, sizeof(m_unitX));
-        s->Write(&m_unitY, sizeof(m_unitY));
-        s->Write(&m_roundBiasX, sizeof(m_roundBiasX));
-        s->Write(&m_roundBiasY, sizeof(m_roundBiasY));
+        s->Write(&m_position.x, sizeof(m_position.x));
+        s->Write(&m_position.y, sizeof(m_position.y));
+        s->Write(&m_unit.x, sizeof(m_unit.x));
+        s->Write(&m_unit.y, sizeof(m_unit.y));
+        s->Write(&m_roundBias.x, sizeof(m_roundBias.x));
+        s->Write(&m_roundBias.y, sizeof(m_roundBias.y));
         CPathWaypoint* p = m_wp;
         i32 n = 13;
         do {
@@ -531,8 +517,8 @@ i32 CPathHazard::SerializeDispatch(
             p += 1;
         } while (--n != 0);
         s->Write(&m_wpIndex, sizeof(m_wpIndex));
-        s->Write(&m_wpX, sizeof(m_wpX));
-        s->Write(&m_wpY, sizeof(m_wpY));
+        s->Write(&m_waypoint.m_x, sizeof(m_waypoint.m_x));
+        s->Write(&m_waypoint.m_y, sizeof(m_waypoint.m_y));
         s->Write(&m_wpCount, sizeof(m_wpCount));
         s->Write(&m_strikeArmed, sizeof(m_strikeArmed));
     }

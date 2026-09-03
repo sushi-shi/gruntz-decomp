@@ -587,10 +587,7 @@ void CBattlezDlg::PaintPlayerColorControls() {
         } else {
             brush.Attach(CreateSolidBrush(0x808080));
         }
-        rect.left += 2;
-        rect.top += 2;
-        rect.right -= 2;
-        rect.bottom -= 2;
+        rect.InflateRect(-2, -2);
         FillRect(dc.m_hDC, &rect, brush);
     }
 }

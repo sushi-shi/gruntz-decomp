@@ -4,6 +4,8 @@
 #include <rva.h>
 
 #include <Enums.h>
+#include <Gruntz/CoordNode.h>
+#include <Gruntz/DoubleVector.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
@@ -37,10 +39,8 @@ public:
 
     char m_pad54[0x58 - 0x54];
     double m_speed;
-    double m_posX;
-    double m_posY;
-    i32 m_travelDx;
-    i32 m_travelDy;
+    DoubleVector2 m_position;
+    Coord m_travelDirection;
     i32 m_lastDropPlayerIndex;
     i32 m_lastDropUnitIndex;
     ObjectDropScope m_scrollMode;

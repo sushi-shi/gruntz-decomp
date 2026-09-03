@@ -32,6 +32,7 @@
 #include <Gruntz/ColorTint.h>
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/DrawDebugStats.h>
+#include <MakeRect.h>
 #include <Gruntz/EnemyAiType.h>
 #include <Gruntz/ErrorStringId.h>
 #include <Gruntz/FontConfig.h>
@@ -57,6 +58,7 @@
 #include <Gruntz/InputState.h>
 #include <Gruntz/LevelArea.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/MgrAutoScroll.h>
 #include <Gruntz/Minimap.h>
 #include <Gruntz/MovieEntryId.h>
@@ -419,8 +421,7 @@ RVA(0x000c8a10, 0x119)
 i32 CPlay::EnterState(GameStateId previousState) {
     POINT pt;
     GetCursorPos(&pt);
-    m_cursorX = pt.x;
-    m_cursorY = pt.y;
+    m_cursorPosition.Set(pt.x, pt.y);
     if (ShowCursor(false) >= 0) {
         do {
         } while (ShowCursor(false) >= 0);
@@ -464,15 +465,11 @@ i32 CPlay::LeaveState(GameStateId nextState) {
         QuitToMenu();
     }
     if (nextState != GAMESTATE_HELP) {
-        RECT r;
         m_world->m_drawTarget->m_overlayPair->m_surface->Fill(0);
         CString s;
         s.LoadString(IDS_PLEASE_WAIT);
         tagSIZE mode = m_mgr->GetModeSize();
-        r.right = mode.cx;
-        r.bottom = mode.cy;
-        r.left = 0;
-        r.top = 0;
+        RECT r = MakeRect(0, 0, mode.cx, mode.cy);
         DrawTextToOverlaySurface(m_world, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
         RetireScene(0x50, 0x3e8, 0, true);
         if (m_mgr && m_mgr->m_triggerMgr) {
@@ -487,7 +484,7 @@ RVA(0x000c8cf0, 0xc14)
 i32 CPlay::Render() {
 
     m_drewThisFrame = false;
-    HandleDragMove(0, m_cursorX, m_cursorY);
+    HandleDragMove(0, m_cursorPosition.m_x, m_cursorPosition.m_y);
 
     if (m_renderDisabled != false) {
         return 1;
@@ -509,8 +506,8 @@ i32 CPlay::Render() {
             m_world->m_drawTarget->m_overlayPair
         );
         m_mgr->m_worldSounds->SetListenerPosition(
-            m_world->m_level->m_mainPlane->m_scrollPixelX,
-            m_world->m_level->m_mainPlane->m_scrollPixelY
+            m_world->m_level->m_mainPlane->m_scrollPixel.m_x,
+            m_world->m_level->m_mainPlane->m_scrollPixel.m_y
         );
         SoundStream* stream = m_world->m_soundStream;
         if (stream != NULL) {
@@ -616,8 +613,8 @@ i32 CPlay::Render() {
         }
 
         m_mgr->m_worldSounds->SetListenerPosition(
-            m_world->m_level->m_mainPlane->m_scrollPixelX,
-            m_world->m_level->m_mainPlane->m_scrollPixelY
+            m_world->m_level->m_mainPlane->m_scrollPixel.m_x,
+            m_world->m_level->m_mainPlane->m_scrollPixel.m_y
         );
         {
             SoundStream* stream = m_world->m_soundStream;
@@ -940,8 +937,8 @@ i32 CPlay::UpdateWorldFixedSteps() {
 RVA(0x000c9e40, 0x1d7)
 i32 CPlay::ProfileInputFrame() {
     m_mgr->m_worldSounds->SetListenerPosition(
-        m_world->m_level->m_mainPlane->m_scrollPixelX,
-        m_world->m_level->m_mainPlane->m_scrollPixelY
+        m_world->m_level->m_mainPlane->m_scrollPixel.m_x,
+        m_world->m_level->m_mainPlane->m_scrollPixel.m_y
     );
     DWORD(WINAPI * tg)(void) = timeGetTime;
 
@@ -1028,8 +1025,8 @@ i32 CPlay::ProfileDeltaFrame() {
     }
     i32 renderMs = static_cast<i32>((tg() - t0));
     m_mgr->m_worldSounds->SetListenerPosition(
-        m_world->m_level->m_mainPlane->m_scrollPixelX,
-        m_world->m_level->m_mainPlane->m_scrollPixelY
+        m_world->m_level->m_mainPlane->m_scrollPixel.m_x,
+        m_world->m_level->m_mainPlane->m_scrollPixel.m_y
     );
     u32 t2 = tg();
     m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
@@ -1107,8 +1104,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
 
     for (i32 a = 0; a < 4; ++a) {
-        self->m_anchors[a].m_x = -1;
-        self->m_anchors[a].m_y = -1;
+        self->m_anchors[a] = Coord(-1, -1);
     }
 
     g_soundCueTimeMs = g_lastNow;
@@ -1458,7 +1454,10 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         CDDrawWorkerHost* mainPlane =
             static_cast<CDDrawWorkerHost*>(self->m_world->m_level->m_mainPlane);
         CGruntzMapMgr* tileGrid = self->m_mgr->m_tileGrid;
-        if (!tileGrid->BuildCellAttributes(mainPlane->m_tileColumns, mainPlane->m_tileRows)) {
+        if (!tileGrid->BuildCellAttributes(
+                mainPlane->m_tileGridSize.cx,
+                mainPlane->m_tileGridSize.cy
+            )) {
             goto fail0;
         }
     }
@@ -1593,11 +1592,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             CString scr;
             self->m_inGame = true;
             self->m_hudSuppressed = false;
-            RECT rect;
-            rect.left = 0;
-            rect.top = 0;
-            rect.right = SCREEN_W_PX;
-            rect.bottom = SCREEN_H_PX;
+            RECT rect = MakeRect(0, 0, SCREEN_W_PX, SCREEN_H_PX);
             if (scr.LoadString(IDS_CONTINUE_PROMPT)) {
                 DrawTextToFrontSurface(self->m_world, &scr, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
             }
@@ -2094,7 +2089,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         if (area->m_joined != false && area->m_doneFlag == false && area->m_clearedRound == false) {
             this->m_focusPlayerIndex = pick;
-            this->ResetGoals(area->m_focusX, area->m_focusY);
+            this->ResetGoals(area->m_focus.m_x, area->m_focus.m_y);
         }
     }
 
@@ -2103,7 +2098,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (a == NULL) {
             return 1;
         }
-        this->ResetGoals(a->m_focusX, a->m_focusY);
+        this->ResetGoals(a->m_focus.m_x, a->m_focus.m_y);
         return 1;
     }
 
@@ -2146,8 +2141,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     if (vk == VK_SPACE) {
         if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) {
             CDDrawWorkerHost* obj = this->m_world->m_level->m_mainPlane;
-            i32 v0 = obj->m_scrollPixelX;
-            i32 v1 = obj->m_scrollPixelY;
+            Coord scrollPosition = obj->m_scrollPixel;
             Coord* slot;
             if (this->CameraBookmarkCount() < 4) {
                 CoordPoolNode* head = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
@@ -2168,8 +2162,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                     this->m_cameraBookmarkIndex = this->CameraBookmarkCount() - 1;
                 }
             }
-            slot->m_x = v0;
-            slot->m_y = v1;
+            *slot = scrollPosition;
             if (this->m_cameraBookmarkIndex != this->CameraBookmarkCount() - 1) {
                 this->m_cameraBookmarks.InsertAt(this->m_cameraBookmarkIndex + 1, slot, 1);
                 this->m_cameraBookmarkIndex = this->m_cameraBookmarkIndex + 1;
@@ -2333,21 +2326,21 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
 
-    if (lparam & 0x1000000) {
+    if (HIWORD(lparam) & KF_EXTENDED) {
         if (vk == VK_LEFT) {
-            this->m_scrollEdgeLock |= 1;
+            this->m_scrollEdgeLock |= SCROLL_EDGE_LEFT;
             return 1;
         }
         if (vk == VK_RIGHT) {
-            this->m_scrollEdgeLock |= 4;
+            this->m_scrollEdgeLock |= SCROLL_EDGE_RIGHT;
             return 1;
         }
         if (vk == VK_UP) {
-            this->m_scrollEdgeLock |= 2;
+            this->m_scrollEdgeLock |= SCROLL_EDGE_UP;
             return 1;
         }
         if (vk == VK_DOWN) {
-            this->m_scrollEdgeLock |= 8;
+            this->m_scrollEdgeLock |= SCROLL_EDGE_DOWN;
             return 1;
         }
         if (vk == VK_INSERT || vk == VK_DELETE || vk == VK_HOME || vk == VK_END || vk == VK_PRIOR
@@ -2377,17 +2370,13 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             return 1;
         }
         CGruntzMgr* h = this->m_mgr;
-        i32 my = this->m_cursorY;
+        Coord cursor = this->m_cursorPosition;
         LevelCoordRect* r = &h->m_world->m_level->m_viewportRect;
-        i32 x0 = r->left;
-        i32 y0 = r->top;
-        i32 x1 = r->right;
-        i32 y1 = r->bottom;
-        i32 mx = this->m_cursorX;
-        if (mx >= x1 || mx < x0 || my >= y1 || my < y0) {
+        if (!::PtInRect(r, cursor.m_x, cursor.m_y)) {
             return 1;
         }
-        h->m_commandMgr->EnqueuePlaceGruntAtScreenPoint(true, g_curPlayer, mx, my, 0);
+        h->m_commandMgr
+            ->EnqueuePlaceGruntAtScreenPoint(true, g_curPlayer, cursor.m_x, cursor.m_y, 0);
         return 1;
     }
 
@@ -2399,20 +2388,18 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             return 1;
         }
         CGruntzMgr* h = this->m_mgr;
-        i32 mx = this->m_cursorX;
+        Coord cursor = this->m_cursorPosition;
         CGameLevel* q = h->m_world->m_level;
         LevelCoordRect* r = &q->m_viewportRect;
-        i32 x0 = r->left;
-        i32 y0 = r->top;
-        i32 x1 = r->right;
-        i32 y1 = r->bottom;
-        i32 my = this->m_cursorY;
-        if (!(mx >= x1 || mx < x0 || my >= y1 || my < y0)) {
+        if (::PtInRect(r, cursor.m_x, cursor.m_y)) {
             CDDrawWorkerHost* g = q->m_mainPlane;
             RECT* view = &g->m_planeViewRect;
-            i32 by = view->top - q->m_viewportRect.top + my;
-            i32 bx = view->left - q->m_viewportRect.left + mx;
-            mgr->m_triggerMgr->SpawnPuddle(bx, by, 0, 0, true, 0x19);
+            Coord viewportOffset(
+                view->left - q->m_viewportRect.left,
+                view->top - q->m_viewportRect.top
+            );
+            Coord worldPosition = viewportOffset + cursor;
+            mgr->m_triggerMgr->SpawnPuddle(worldPosition.m_x, worldPosition.m_y, 0, 0, true, 0x19);
         }
     }
 
@@ -2421,14 +2408,14 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             return 1;
         }
         CGruntzMgr* h = this->m_mgr;
-        i32 my = this->m_cursorY;
+        Coord worldPosition = this->m_cursorPosition;
         CGameLevel* q = h->m_world->m_level;
         CDDrawWorkerHost* g = q->m_mainPlane;
         RECT* view = &g->m_planeViewRect;
-        i32 by = ((view->top - q->m_viewportRect.top + my) & ~TILE_MASK_PX) + TILE_HALF_PX;
-        i32 bx = ((this->m_cursorX - q->m_viewportRect.left + view->left) & ~TILE_MASK_PX)
-                 + TILE_HALF_PX;
-        g_gameReg->m_triggerMgr->LoadExplosionSprites(bx, by, -1, 1);
+        worldPosition +=
+            Coord(view->left - q->m_viewportRect.left, view->top - q->m_viewportRect.top);
+        SnapTileCenter(&worldPosition);
+        g_gameReg->m_triggerMgr->LoadExplosionSprites(worldPosition.m_x, worldPosition.m_y, -1, 1);
         return 1;
     }
 
@@ -2439,8 +2426,8 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         i32 playerIndex;
         i32 unitIndex;
         CGrunt* r = mgr->m_triggerMgr->ScreenToCell(
-            this->m_cursorX,
-            this->m_cursorY,
+            this->m_cursorPosition.m_x,
+            this->m_cursorPosition.m_y,
             &playerIndex,
             &unitIndex,
             TM_ALL_PLAYERS
@@ -2728,15 +2715,15 @@ tail_default2:
 
 RVA(0x000cda70, 0x7a)
 i32 CPlay::OnKeyUp(i32 key, i32 flags) {
-    if (flags & 0x01000000) {
+    if (HIWORD(flags) & KF_EXTENDED) {
         if (key == VK_LEFT) {
-            m_scrollEdgeLock &= ~1;
+            m_scrollEdgeLock &= ~SCROLL_EDGE_LEFT;
         } else if (key == VK_RIGHT) {
-            m_scrollEdgeLock &= ~4;
+            m_scrollEdgeLock &= ~SCROLL_EDGE_RIGHT;
         } else if (key == VK_UP) {
-            m_scrollEdgeLock &= ~2;
+            m_scrollEdgeLock &= ~SCROLL_EDGE_UP;
         } else if (key == VK_DOWN) {
-            m_scrollEdgeLock &= ~8;
+            m_scrollEdgeLock &= ~SCROLL_EDGE_DOWN;
         }
     }
     return 1;
@@ -2746,8 +2733,7 @@ i32 CPlay::OnKeyUp(i32 key, i32 flags) {
 RVA(0x000cdb10, 0x80c)
 i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
     i32 xr;
-    i32 sx;
-    i32 sy;
+    Coord worldPosition;
 
     if (m_hudSuppressed != false) {
         return 1;
@@ -2787,8 +2773,10 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
         CGameLevel* geom = m_mgr->m_world->m_level;
         CDDrawWorkerHost* cam = geom->m_mainPlane;
         RECT* view = &cam->m_planeViewRect;
-        sx = view->left - geom->m_viewportRect.left + xr;
-        sy = view->top - geom->m_viewportRect.top + y;
+        worldPosition.Set(
+            view->left - geom->m_viewportRect.left + xr,
+            view->top - geom->m_viewportRect.top + y
+        );
 
         if (m_dragInhibit1 != false && m_playerCommandPending == false) {
             eventArg = 0;
@@ -2797,7 +2785,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
 
             } else {
                 if (::PtInRect(&geom->m_viewportRect, xr, y)) {
-                    if (FindStartPointAt(sx, sy, &x, &y)) {
+                    if (FindStartPointAt(worldPosition.m_x, worldPosition.m_y, &x, &y)) {
                         m_mgr->m_commandMgr->EnqueueSingle(
                             true,
                             static_cast<char>(g_curPlayer),
@@ -2840,9 +2828,17 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
 
                 CGameLevel* ds = m_world->m_level;
                 LevelCoordRect* vr2 = &ds->m_mainPlane->m_planeViewRect;
-                i32 wx = vr2->left - ds->m_viewportRect.left + xr;
-                i32 wy = vr2->top - ds->m_viewportRect.top + y;
-                if (g_gameReg->m_triggerMgr->CellHitTest(wx, wy, &eventArg, &y, g_curPlayer)
+                Coord dropPosition(
+                    vr2->left - ds->m_viewportRect.left + xr,
+                    vr2->top - ds->m_viewportRect.top + y
+                );
+                if (g_gameReg->m_triggerMgr->CellHitTest(
+                        dropPosition.m_x,
+                        dropPosition.m_y,
+                        &eventArg,
+                        &y,
+                        g_curPlayer
+                    )
                     != NULL) {
                     m_mgr->m_commandMgr->EnqueueSingle(
                         true,
@@ -2859,14 +2855,23 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
                 }
 
                 RECT box;
-                box.left = wx - 0xf;
-                box.top = wy - 0xf;
-                box.right = wx + 0xf;
-                box.bottom = wy + 0xf;
+                SetRect(
+                    &box,
+                    dropPosition.m_x - 0xf,
+                    dropPosition.m_y - 0xf,
+                    dropPosition.m_x + 0xf,
+                    dropPosition.m_y + 0xf
+                );
 
-                RECT span = {0, 0, 0, 0};
-                CGrunt* p =
-                    g_gameReg->m_triggerMgr->FindGruntAt(wx, wy, &span, &eventArg, &y, &box);
+                CRect span(0, 0, 0, 0);
+                CGrunt* p = g_gameReg->m_triggerMgr->FindGruntAt(
+                    dropPosition.m_x,
+                    dropPosition.m_y,
+                    &span,
+                    &eventArg,
+                    &y,
+                    &box
+                );
                 if (p == NULL || g_curPlayer != p->m_playerIndex) {
                     goto waypoint_cancel;
                 }
@@ -2890,8 +2895,7 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
             return 1;
         }
     } else {
-        sx = y;
-        sy = y;
+        worldPosition = Coord(y, y);
     }
 
     {
@@ -2903,18 +2907,12 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
             if (m_statusBar->HitTestLayer(xr, y)) {
                 m_dragSnapActive = true;
 
-                CGameObject* g8 = m_statusBar->m_barSprite;
-                i32 dx = 0;
-                if (g8 != NULL) {
-                    dx = g8->m_screenX - xr;
-                }
-                m_snapOriginX = dx;
-                CGameObject* g8b = m_statusBar->m_barSprite;
-                if (g8b == NULL) {
-                    m_snapOriginY = 0;
+                CGameObject* barSprite = m_statusBar->m_barSprite;
+                if (barSprite == NULL) {
+                    m_snapOrigin = Coord(0, 0);
                     return 1;
                 }
-                m_snapOriginY = g8b->m_screenY - y;
+                m_snapOrigin = barSprite->ScreenPos() - Coord(xr, y);
                 return 1;
             }
             goto drag_box;
@@ -2943,29 +2941,32 @@ drag_box: {
     }
 
     if (m_cursorTargetValid != false) {
-        i32 ex = (sx & ~TILE_MASK_PX) + TILE_HALF_PX;
-        i32 ey = (sy & ~TILE_MASK_PX) + TILE_HALF_PX;
+        Coord snapped = worldPosition;
+        SnapTileCenter(&snapped);
         i32 lv = m_cursorId - IDX(CURSOR_TOOL_HANDZ);
         PickupType item = static_cast<PickupType>(lv);
         if (item <= PICKUP_EQUIPPABLE_LAST) {
-            g_gameReg->m_triggerMgr
-                ->HandleTargetSelection(ex, ey, 0, 0, 0, TARGET_SELECTION_GRUNT, 1);
+            g_gameReg->m_triggerMgr->HandleTargetSelection(
+                snapped.m_x,
+                snapped.m_y,
+                0,
+                0,
+                0,
+                TARGET_SELECTION_GRUNT,
+                1
+            );
         } else if (item >= PICKUP_TOYZ_FIRST && item <= PICKUP_TOYZ_LAST) {
             g_gameReg->m_triggerMgr
-                ->HandleTargetSelection(ex, ey, 0, 0, 0, TARGET_SELECTION_TOY, 1);
+                ->HandleTargetSelection(snapped.m_x, snapped.m_y, 0, 0, 0, TARGET_SELECTION_TOY, 1);
         }
         g_gameReg->m_triggerMgr->m_pendingFxKind = 0;
         LoadCursorSprites(0, false);
-        m_dragClampMaxX = xr;
-        m_dragClampMaxY = y;
-        m_hudRect.left = xr;
-        m_hudRect.top = y;
-        m_hudRect.right = xr;
-        m_hudRect.bottom = y;
+        m_dragClampMax.Set(xr, y);
+        m_hudRect = MakeRect(xr, y, xr, y);
         m_worldReady = true;
         return 1;
     }
-    if (g_gameReg->m_triggerMgr->HandleActionOptionsPointer(sx, sy)) {
+    if (g_gameReg->m_triggerMgr->HandleActionOptionsPointer(worldPosition.m_x, worldPosition.m_y)) {
         return 1;
     }
 
@@ -3005,12 +3006,8 @@ drag_box: {
         picked->OnStruck(false);
         return 1;
     }
-    m_dragClampMaxX = xr;
-    m_dragClampMaxY = y;
-    m_hudRect.left = xr;
-    m_hudRect.right = xr;
-    m_hudRect.top = y;
-    m_hudRect.bottom = y;
+    m_dragClampMax.Set(xr, y);
+    m_hudRect = MakeRect(xr, y, xr, y);
     m_worldReady = true;
     goto ret1;
 }
@@ -3101,8 +3098,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
     }
     CGameLevel* h;
     RECT* vr;
-    i32 px;
-    i32 py;
+    Coord position;
     i32 i;
     i32 area = g_curPlayer;
     GruntzPlayer* cfg = &g_gameReg->m_players[area];
@@ -3112,8 +3108,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
 
     h = m_mgr->m_world->m_level;
     vr = &h->m_mainPlane->m_planeViewRect;
-    px = vr->left - h->m_viewportRect.left + x;
-    py = vr->top - h->m_viewportRect.top + y;
+    position.Set(vr->left - h->m_viewportRect.left + x, vr->top - h->m_viewportRect.top + y);
     for (i = 0; i < StartMarkerCount(); i++) {
         Coord* e = StartMarkerAt(i);
         if (e == NULL) {
@@ -3121,20 +3116,19 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
         }
         RECT er;
         SetRect(&er, e->m_x - 0x10, e->m_y - 0x10, e->m_x + 0x10, e->m_y + 0x10);
-        if (::PtInRect(&er, px, py)) {
+        if (::PtInRect(&er, position.m_x, position.m_y)) {
             if (!m_statusBar->FindReadySlot()) {
                 return 1;
             }
             char ab = static_cast<char>(g_curPlayer);
-            px = (px & 0xffe0) + 0x10;
-            py = (py & 0xffe0) + 0x10;
+            SnapTileCenter(&position);
             m_mgr->m_commandMgr->EnqueueSingle(
                 true,
                 ab,
                 0,
                 static_cast<char>(IDX(PLAYERCMD_PLACE_GRUNT)),
-                px,
-                py,
+                position.m_x,
+                position.m_y,
                 0,
                 0
             );
@@ -3210,18 +3204,27 @@ i32 CPlay::OnRButtonDown(i32 keyFlags, i32 x, i32 y) {
     if (::PtInRect(&pr, x, y)) {
         CGameLevel* ds = m_world->m_level;
         CDDrawWorkerHost* geom = ds->m_mainPlane;
-        i32 rawX = geom->m_planeViewRect.left - ds->m_viewportRect.left + x;
-        i32 rawY = geom->m_planeViewRect.top - ds->m_viewportRect.top + y;
-        i32 snapX = (rawX & ~TILE_MASK_PX) + TILE_HALF_PX;
-        i32 snapY = (rawY & ~TILE_MASK_PX) + TILE_HALF_PX;
-        m_tileClick.m_x = snapX;
-        m_tileClick.m_y = snapY;
+        Coord rawPosition(
+            geom->m_planeViewRect.left - ds->m_viewportRect.left + x,
+            geom->m_planeViewRect.top - ds->m_viewportRect.top + y
+        );
+        Coord snapped = rawPosition;
+        SnapTileCenter(&snapped);
+        m_tileClick = snapped;
         CTriggerMgr* w = m_mgr->m_triggerMgr;
         if (w->m_overlay != NULL && w->m_overlay->m_active != false) {
             w->CloseActionOptionsMenu();
             return 1;
         }
-        w->HandleTargetSelection(snapX, snapY, rawX, rawY, 1, TARGET_SELECTION_AUTO, 1);
+        w->HandleTargetSelection(
+            snapped.m_x,
+            snapped.m_y,
+            rawPosition.m_x,
+            rawPosition.m_y,
+            1,
+            TARGET_SELECTION_AUTO,
+            1
+        );
     }
     return 1;
 }
@@ -3374,7 +3377,7 @@ void CPlay::DrawDebugStatsFull() {
     }
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_WORLD_POSITION)) {
         CDDrawWorkerHost* p = m_world->m_level->m_mainPlane;
-        sprintf(scratch, " Pos = %i,%i", p->m_scrollPixelX, p->m_scrollPixelY);
+        sprintf(scratch, " Pos = %i,%i", p->m_scrollPixel.m_x, p->m_scrollPixel.m_y);
         strcat(buf, scratch);
     }
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_ELAPSED_TIME)) {
@@ -3413,11 +3416,7 @@ void CPlay::DrawDebugStatsFull() {
     {
         RECT* src = &m_world->m_level->m_viewportRect;
         RECT lr = *src;
-        RECT dr;
-        dr.left = lr.left;
-        dr.top = lr.bottom - 0x1c;
-        dr.right = lr.right;
-        dr.bottom = lr.bottom;
+        RECT dr = MakeRect(lr.left, lr.bottom - 0x1c, lr.right, lr.bottom);
         DrawTextA(hdc, buf, -1, &dr, DT_SINGLELINE);
     }
 
@@ -3472,7 +3471,7 @@ void CPlay::DrawDebugStats() {
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_WORLD_POSITION)) {
         CDDrawWorkerHost* p = m_world->m_level->m_mainPlane;
 
-        sprintf(scratch, " Pos = %i,%i", p->m_scrollPixelX, p->m_scrollPixelY);
+        sprintf(scratch, " Pos = %i,%i", p->m_scrollPixel.m_x, p->m_scrollPixel.m_y);
         strcat(buf, scratch);
     }
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_TIMING)) {
@@ -3513,11 +3512,7 @@ void CPlay::DrawDebugStats() {
         RecordBytes<RECT> reuse;
         reuse.m_chars = scratch;
         CopyRect(&lr, g_gameReg->GetRect(static_cast<RECT*>(reuse.m_rec)));
-        RECT dr;
-        dr.left = lr.left;
-        dr.top = lr.bottom - 0x1c;
-        dr.right = lr.right;
-        dr.bottom = lr.bottom;
+        RECT dr = MakeRect(lr.left, lr.bottom - 0x1c, lr.right, lr.bottom);
         if (lr.left > 0) {
             DrawTextA(hdc, buf, -1, &dr, DT_SINGLELINE);
         } else {
@@ -3592,11 +3587,7 @@ void CPlay::DrawCustomLevelBanner() {
     }
     SetBkMode(hdc, TRANSPARENT);
     SetTextColor(hdc, 0);
-    RECT rc;
-    rc.left = 0;
-    rc.top = 0x1b8;
-    rc.right = 0x27f;
-    rc.bottom = 0x1d6;
+    RECT rc = MakeRect(0, 0x1b8, 0x27f, 0x1d6);
     DrawTextA(hdc, g_customLevelText, -1, &rc, DT_CENTER | DT_SINGLELINE);
     surface->m_ddSurface->ReleaseDC(hdc);
 }
@@ -3693,8 +3684,7 @@ i32 CPlay::LoadCursorSprites(i32 cursorId, b32 targetValid) {
         if (this->m_cursorSnapSprite != NULL) {
             this->m_cursorSnapSprite->m_stateFlags |= SPRITE_STATE_HIDDEN;
         }
-        this->m_cursorOffset.m_x = 0;
-        this->m_cursorOffset.m_y = 0;
+        this->m_cursorOffset = Coord(0, 0);
         this->m_dragInhibit2 = true;
         this->m_cursorTargetValid = false;
         this->m_cursorId = cursorId;
@@ -3707,8 +3697,7 @@ i32 CPlay::LoadCursorSprites(i32 cursorId, b32 targetValid) {
         if (this->m_cursorSnapSprite != NULL) {
             this->m_cursorSnapSprite->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
         }
-        this->m_cursorOffset.m_x = 0x10;
-        this->m_cursorOffset.m_y = 0x10;
+        this->m_cursorOffset = Coord(0x10, 0x10);
         this->m_cursorTargetValid = false;
         this->m_cursorId = cursorId;
         return 1;
@@ -3720,8 +3709,7 @@ i32 CPlay::LoadCursorSprites(i32 cursorId, b32 targetValid) {
         if (this->m_cursorSnapSprite != NULL) {
             this->m_cursorSnapSprite->m_stateFlags |= SPRITE_STATE_HIDDEN;
         }
-        this->m_cursorOffset.m_x = 0;
-        this->m_cursorOffset.m_y = 0;
+        this->m_cursorOffset = Coord(0, 0);
         this->m_dragInhibit1 = true;
         this->m_cursorTargetValid = false;
         g_gameReg->m_voiceManager->PlayVoice(NULL, 0x33e, -1, 1, -1, -1);
@@ -3931,8 +3919,7 @@ i32 CPlay::LoadCursorSprites(i32 cursorId, b32 targetValid) {
     if (this->m_cursorSnapSprite != NULL) {
         this->m_cursorSnapSprite->m_stateFlags |= SPRITE_STATE_HIDDEN;
     }
-    this->m_cursorOffset.m_x = 0;
-    this->m_cursorOffset.m_y = 0;
+    this->m_cursorOffset = Coord(0, 0);
     this->m_cursorTargetValid = targetValid;
     this->m_cursorId = cursorId;
     return 1;
@@ -4013,8 +4000,8 @@ i32 CPlay::AdvanceCursorAnimation(i32 elapsedMs) {
 // @early-stop
 RVA(0x000d0b30, 0x200)
 i32 CPlay::SaveUnderAndDrawCursor(CDDrawSurfacePair* pair) {
-    i32 x = m_cursorX + m_cursorOffset.m_x;
-    i32 y = m_cursorY + m_cursorOffset.m_y;
+    Coord cursor = m_cursorPosition;
+    cursor += m_cursorOffset;
 
     CDDSurface* savedPixels;
     RECT* screenRect;
@@ -4029,10 +4016,13 @@ i32 CPlay::SaveUnderAndDrawCursor(CDDrawSurfacePair* pair) {
         savedRect = &m_cursorSavedRects[1];
     }
 
-    screenRect->left = x - m_cursorImage->m_anchorX;
-    screenRect->right = m_cursorImage->m_width + screenRect->left;
-    screenRect->top = y - m_cursorImage->m_anchorY;
-    screenRect->bottom = m_cursorImage->m_height + screenRect->top;
+    SetRect(
+        screenRect,
+        cursor.m_x - m_cursorImage->m_anchor.x,
+        cursor.m_y - m_cursorImage->m_anchor.y,
+        cursor.m_x - m_cursorImage->m_anchor.x + m_cursorImage->m_width,
+        cursor.m_y - m_cursorImage->m_anchor.y + m_cursorImage->m_height
+    );
     tagSIZE mode = m_mgr->GetModeSize();
     if (screenRect->left < 0) {
         screenRect->left = 0;
@@ -4074,7 +4064,7 @@ i32 CPlay::SaveUnderAndDrawCursor(CDDrawSurfacePair* pair) {
         );
     }
 
-    m_cursorImage->RenderFrame(pair, x, y, 0);
+    m_cursorImage->RenderFrame(pair, cursor.m_x, cursor.m_y, 0);
 
     DDSCAPS caps;
     i32 inSysMem;
@@ -4109,7 +4099,7 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
         if (m_statusBar == NULL) {
             return 1;
         }
-        m_statusBar->SetSpritePos(m_snapOriginX + x, m_snapOriginY + y);
+        m_statusBar->SetSpritePos(m_snapOrigin.m_x + x, m_snapOrigin.m_y + y);
         goto rearm;
     }
 
@@ -4127,14 +4117,12 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
         if (m_worldReady != false) {
 
             {
-                i32 anchorX = m_dragClampMaxX;
-                i32 curX = m_cursorX;
-                m_hudRect.left = curX < anchorX ? curX : anchorX;
-                m_hudRect.right = curX <= anchorX ? anchorX : curX;
-                i32 anchorY = m_dragClampMaxY;
-                i32 curY = m_cursorY;
-                m_hudRect.top = curY < anchorY ? curY : anchorY;
-                m_hudRect.bottom = curY <= anchorY ? anchorY : curY;
+                Coord anchor = m_dragClampMax;
+                Coord low = m_cursorPosition;
+                Coord high = low;
+                low.Min(anchor);
+                high.Max(anchor);
+                m_hudRect = MakeRect(low.m_x, low.m_y, high.m_x, high.m_y);
             }
         rearm:
             CWwdSpriteObject* s = m_cursorSnapSprite;
@@ -4159,9 +4147,11 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
             }
             CGameLevel* v = m_world->m_level;
             LevelCoordRect* vr = &v->m_mainPlane->m_planeViewRect;
-            i32 wx = vr->left - v->m_viewportRect.left + x;
-            i32 wy = vr->top - v->m_viewportRect.top + y;
-            m_mgr->m_triggerMgr->PlaceObjectFull(wx, wy);
+            Coord worldPosition(
+                vr->left - v->m_viewportRect.left + x,
+                vr->top - v->m_viewportRect.top + y
+            );
+            m_mgr->m_triggerMgr->PlaceObjectFull(worldPosition.m_x, worldPosition.m_y);
             return 1;
         }
         if (m_cursorSnapSprite != NULL) {
@@ -4176,15 +4166,11 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
     m_dragInProgress = true;
     m_statusBar->HandlePointerDrag(keyFlags, x, y);
     if (m_worldReady != false) {
-
-        m_hudRect.left = m_cursorX > box.left ? m_cursorX : box.left;
-        m_hudRect.left = m_hudRect.left < m_dragClampMaxX ? m_hudRect.left : m_dragClampMaxX;
-        m_hudRect.right = m_cursorX < box.right ? m_cursorX : box.right;
-        m_hudRect.right = m_hudRect.right > m_dragClampMaxX ? m_hudRect.right : m_dragClampMaxX;
-        m_hudRect.top = m_cursorY <= box.top ? box.top : m_cursorY;
-        m_hudRect.top = m_hudRect.top < m_dragClampMaxY ? m_hudRect.top : m_dragClampMaxY;
-        m_hudRect.bottom = m_cursorY < box.bottom ? m_cursorY : box.bottom;
-        m_hudRect.bottom = m_hudRect.bottom > m_dragClampMaxY ? m_hudRect.bottom : m_dragClampMaxY;
+        Coord boxMin(static_cast<i32>(box.left), static_cast<i32>(box.top));
+        Coord boxMax(static_cast<i32>(box.right), static_cast<i32>(box.bottom));
+        Coord topLeft = m_cursorPosition.GetMax(boxMin).GetMin(m_dragClampMax);
+        Coord bottomRight = m_cursorPosition.GetMax(m_dragClampMax).GetMin(boxMax);
+        m_hudRect = MakeRect(topLeft.m_x, topLeft.m_y, bottomRight.m_x, bottomRight.m_y);
     }
     if (m_cursorTargetValid != false && m_mgr->m_triggerMgr->m_pendingFxKind == 0) {
         FlushPendingOps();
@@ -4243,96 +4229,95 @@ i32 CPlay::LoadScrollSpeedOptions() {
     b32 changed = false;
     CDDrawWorkerHost* g = w->m_world->m_level->m_mainPlane;
 
-    i32 sx = g->m_scrollPixelX;
-    i32 sy = g->m_scrollPixelY;
+    Coord scrollPosition = g->m_scrollPixel;
     double frac = static_cast<double>(w->m_scrollSpeed) * 0.01;
     i32 speed = static_cast<i32>(frac * s_scrollSpeedRange + s_minScrollSpeed);
 
     SIZE
-    extent;
-    extent.cx = w->m_modeSize.cx;
-    extent.cy = w->m_modeSize.cy;
+    extent = w->m_modeSize;
 
-    if (self->m_cursorX < 0xc || (self->m_scrollEdgeLock & 1)) {
-        if (self->m_scrollEdgeActive & 1) {
+    if (self->m_cursorPosition.m_x < 0xc || HAS(self->m_scrollEdgeLock, SCROLL_EDGE_LEFT)) {
+        if (HAS(self->m_scrollEdgeActive, SCROLL_EDGE_LEFT)) {
             i32 d = (timeGetTime() - self->m_lastScrollTimeX) * speed / MILLIS_PER_SECOND;
             if (d) {
                 if (d > 0x64) {
                     d = 0x64;
                 }
-                sx -= d;
+                scrollPosition.m_x -= d;
                 self->m_lastScrollTimeX = timeGetTime();
                 changed = true;
             }
         } else {
-            self->m_scrollEdgeActive |= 1;
+            self->m_scrollEdgeActive |= SCROLL_EDGE_LEFT;
             self->m_lastScrollTimeX = timeGetTime();
         }
     } else {
-        self->m_scrollEdgeActive &= ~1;
+        self->m_scrollEdgeActive &= ~SCROLL_EDGE_LEFT;
     }
 
-    if (self->m_cursorX > extent.cx - 0xc || (self->m_scrollEdgeLock & 4)) {
-        if (self->m_scrollEdgeActive & 4) {
+    if (self->m_cursorPosition.m_x > extent.cx - 0xc
+        || HAS(self->m_scrollEdgeLock, SCROLL_EDGE_RIGHT)) {
+        if (HAS(self->m_scrollEdgeActive, SCROLL_EDGE_RIGHT)) {
             i32 d = (timeGetTime() - self->m_lastScrollTimeX) * speed / MILLIS_PER_SECOND;
             if (d) {
                 if (d > 0x64) {
                     d = 0x64;
                 }
-                sx += d;
+                scrollPosition.m_x += d;
                 self->m_lastScrollTimeX = timeGetTime();
                 changed = true;
             }
         } else {
-            self->m_scrollEdgeActive |= 4;
+            self->m_scrollEdgeActive |= SCROLL_EDGE_RIGHT;
             self->m_lastScrollTimeX = timeGetTime();
         }
     } else {
-        self->m_scrollEdgeActive &= ~4;
+        self->m_scrollEdgeActive &= ~SCROLL_EDGE_RIGHT;
     }
 
-    if (self->m_cursorY < 0xf || (self->m_scrollEdgeLock & 2)) {
-        if (self->m_scrollEdgeActive & 2) {
+    if (self->m_cursorPosition.m_y < 0xf || HAS(self->m_scrollEdgeLock, SCROLL_EDGE_UP)) {
+        if (HAS(self->m_scrollEdgeActive, SCROLL_EDGE_UP)) {
             i32 d = (timeGetTime() - self->m_lastScrollTimeY) * speed / MILLIS_PER_SECOND;
             if (d) {
                 if (d > 0x64) {
                     d = 0x64;
                 }
-                sy -= d;
+                scrollPosition.m_y -= d;
                 self->m_lastScrollTimeY = timeGetTime();
                 changed = true;
             }
         } else {
-            self->m_scrollEdgeActive |= 2;
+            self->m_scrollEdgeActive |= SCROLL_EDGE_UP;
             self->m_lastScrollTimeY = timeGetTime();
 
             changed = true;
         }
     } else {
-        self->m_scrollEdgeActive &= ~2;
+        self->m_scrollEdgeActive &= ~SCROLL_EDGE_UP;
     }
 
-    if (self->m_cursorY > extent.cy - 0xf || (self->m_scrollEdgeLock & 8)) {
-        if (self->m_scrollEdgeActive & 8) {
+    if (self->m_cursorPosition.m_y > extent.cy - 0xf
+        || HAS(self->m_scrollEdgeLock, SCROLL_EDGE_DOWN)) {
+        if (HAS(self->m_scrollEdgeActive, SCROLL_EDGE_DOWN)) {
             i32 d = (timeGetTime() - self->m_lastScrollTimeY) * speed / MILLIS_PER_SECOND;
             if (d) {
                 if (d > 0x64) {
                     d = 0x64;
                 }
-                sy += d;
+                scrollPosition.m_y += d;
                 self->m_lastScrollTimeY = timeGetTime();
                 changed = true;
             }
         } else {
-            self->m_scrollEdgeActive |= 8;
+            self->m_scrollEdgeActive |= SCROLL_EDGE_DOWN;
             self->m_lastScrollTimeY = timeGetTime();
         }
     } else {
-        self->m_scrollEdgeActive &= ~8;
+        self->m_scrollEdgeActive &= ~SCROLL_EDGE_DOWN;
     }
 
     if (changed) {
-        self->ResetGoals(sx, sy);
+        self->ResetGoals(scrollPosition.m_x, scrollPosition.m_y);
     }
     return 1;
 }
@@ -4345,10 +4330,8 @@ void CPlay::DrawMessageFrame(i32 index, b32 useFront) {
     if (set != NULL) {
         CImage* frame = set->GetAt(index);
         if (frame != NULL) {
-            LevelCoordRect vp = m_world->m_level->m_viewportRect;
-            i32 cx = vp.left + (vp.right - vp.left) / 2;
-            i32 cy = vp.top + (vp.bottom - vp.top) / 2;
-            LayerBlitFrame(m_world, frame, cx, cy, useFront, true);
+            CPoint center = CRect(m_world->m_level->m_viewportRect).CenterPoint();
+            LayerBlitFrame(m_world, frame, center.x, center.y, useFront, true);
         }
     }
 }
@@ -4421,14 +4404,13 @@ void CPlay::StepScroll() {
 
     RECT* vr = &v->m_mainPlane->m_planeViewRect;
 
-    i32 y = m_cursorY + (vr->top - v->m_viewportRect.top);
-    i32 x = vr->left + (m_cursorX - v->m_viewportRect.left);
+    Coord position(
+        vr->left + (m_cursorPosition.m_x - v->m_viewportRect.left),
+        m_cursorPosition.m_y + (vr->top - v->m_viewportRect.top)
+    );
+    SnapTileCenter(&position);
 
-    y = (y & ~TILE_MASK_PX) + TILE_HALF_PX;
-    x = (x & ~TILE_MASK_PX) + TILE_HALF_PX;
-
-    m_cursorSnapSprite->m_screenX = x;
-    m_cursorSnapSprite->m_screenY = y;
+    m_cursorSnapSprite->SetScreenPos(position);
 }
 
 RVA(0x000d1b30, 0x20)
@@ -4530,9 +4512,8 @@ i32 CPlay::ExecuteCommand(
                     g->m_arrivalRerollWindowLo = 0;
                     g->m_arrivalRerollHi = 0;
                     g->m_arrivalRerollWindowHi = 0;
-                    g->m_defenderPx.m_x = g->m_lastTilePx.m_x;
+                    g->m_defenderPx = g->m_lastTilePx;
                     g->m_tileClaimed = true;
-                    g->m_defenderPx.m_y = g->m_lastTilePx.m_y;
 
                     switch (g->m_entranceReason) {
                         case PICKUP_BOOMERANG:
@@ -4551,16 +4532,14 @@ i32 CPlay::ExecuteCommand(
                             g->m_defenderRadius =
                                 g_buteMgr.GetInt("Grunt", "PlayerDefenderRadius", 3) + 1;
                     }
-                    g->m_arrivalFlags |= 0x18040402;
-                    g->m_arrivalCell.m_x = -1;
+                    g->m_arrivalFlags |=
+                        IDX(CELL_FLAG_SPECIAL | CELL_FLAG_SPIKES | CELL_FLAG_IN_GAME_ICON
+                            | CELL_FLAG_STATIC_HAZARD | CELL_FLAG_ROLLING_BALL);
+                    g->m_arrivalCell = Coord(-1, -1);
                     g->m_arrivalState = AI_DEFENDER;
                     g->m_defenderState = AISTATE_SEEK;
-                    g->m_arrivalCell.m_y = -1;
                     g->m_arrivalActive = false;
-                    g->m_object->m_extent.left = 0;
-                    g->m_object->m_extent.right = 0;
-                    g->m_object->m_extent.top = 0;
-                    g->m_object->m_extent.bottom = 0;
+                    SetRectEmpty(&g->m_object->m_extent);
                     g->SetEntrancePos(1, 1);
                 }
                 g->m_arrivalNotified = false;
@@ -4582,7 +4561,10 @@ i32 CPlay::ExecuteCommand(
             g->m_arrivalRerollWindowHi = 0;
             g->m_tileClaimed = false;
             g->m_arrivalState = AI_NONE;
-            g->m_arrivalFlags &= 0xe7fbfbfd;
+            g->m_arrivalFlags &= ~IDX(
+                CELL_FLAG_SPECIAL | CELL_FLAG_SPIKES | CELL_FLAG_IN_GAME_ICON
+                | CELL_FLAG_STATIC_HAZARD | CELL_FLAG_ROLLING_BALL
+            );
             g->SetEntrancePos(1, 1);
             return 1;
         }
@@ -4601,26 +4583,35 @@ i32 CPlay::ExecuteCommand(
                 g->m_arrivalRerollWindowHi = 0;
                 g->m_tileClaimed = false;
                 g->m_arrivalState = AI_NONE;
-                g->m_arrivalFlags &= 0xe7fbfbfd;
+                g->m_arrivalFlags &= ~IDX(
+                    CELL_FLAG_SPECIAL | CELL_FLAG_SPIKES | CELL_FLAG_IN_GAME_ICON
+                    | CELL_FLAG_STATIC_HAZARD | CELL_FLAG_ROLLING_BALL
+                );
                 g->SetEntrancePos(1, 1);
             }
-            i32 px = static_cast<u16>(targetXOrPlayerIndex);
-            i32 py = static_cast<u16>(targetYOrUnitIndex);
+            Coord target(
+                static_cast<u16>(targetXOrPlayerIndex),
+                static_cast<u16>(targetYOrUnitIndex)
+            );
 
-            CGrunt* node =
-                m_mgr->m_triggerMgr
-                    ->CellHitTest(px, py, &hitPlayerIndex, &hitUnitIndex, TM_ALL_PLAYERS);
+            CGrunt* node = m_mgr->m_triggerMgr->CellHitTest(
+                target.m_x,
+                target.m_y,
+                &hitPlayerIndex,
+                &hitUnitIndex,
+                TM_ALL_PLAYERS
+            );
             if (node != NULL && g->m_entranceActive == false) {
                 g->SetArrivalTarget(
                     hitPlayerIndex,
                     hitUnitIndex,
-                    node->m_object->m_screenX,
-                    node->m_object->m_screenY
+                    node->m_object->m_screenPosition.m_x,
+                    node->m_object->m_screenPosition.m_y
                 );
             } else {
                 g->m_arrivalActive = false;
             }
-            res = m_mgr->m_triggerMgr->UseEquippedToolAt(player, gi, px, py);
+            res = m_mgr->m_triggerMgr->UseEquippedToolAt(player, gi, target.m_x, target.m_y);
             if (res == 0) {
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
                     return 0;
@@ -4629,7 +4620,7 @@ i32 CPlay::ExecuteCommand(
                 return 0;
             }
             if (res == -1) {
-                if (!m_mgr->m_triggerMgr->ClearCell(player, gi, px, py, 2)) {
+                if (!m_mgr->m_triggerMgr->ClearCell(player, gi, target.m_x, target.m_y, 2)) {
                     if (player != static_cast<u32>(g_curPlayer)
                         || g->m_entranceCommitted == false) {
                         return 0;
@@ -4664,7 +4655,10 @@ i32 CPlay::ExecuteCommand(
                 g->m_arrivalRerollWindowHi = 0;
                 g->m_tileClaimed = false;
                 g->m_arrivalState = AI_NONE;
-                g->m_arrivalFlags &= 0xe7fbfbfd;
+                g->m_arrivalFlags &= ~IDX(
+                    CELL_FLAG_SPECIAL | CELL_FLAG_SPIKES | CELL_FLAG_IN_GAME_ICON
+                    | CELL_FLAG_STATIC_HAZARD | CELL_FLAG_ROLLING_BALL
+                );
                 g->SetEntrancePos(1, 1);
             }
             i32 targetPlayerIndex = static_cast<u16>(targetXOrPlayerIndex);
@@ -4675,10 +4669,15 @@ i32 CPlay::ExecuteCommand(
                 g->m_arrivalActive = false;
                 return 0;
             }
-            i32 sx = g2->m_object->m_screenX;
-            i32 sy = g2->m_object->m_screenY;
-            g->SetArrivalTarget(targetPlayerIndex, targetUnitIndex, sx, sy);
-            res = m_mgr->m_triggerMgr->UseEquippedToolAt(player, gi, sx, sy);
+            Coord targetPosition = g2->m_object->ScreenPos();
+            g->SetArrivalTarget(
+                targetPlayerIndex,
+                targetUnitIndex,
+                targetPosition.m_x,
+                targetPosition.m_y
+            );
+            res = m_mgr->m_triggerMgr
+                      ->UseEquippedToolAt(player, gi, targetPosition.m_x, targetPosition.m_y);
             if (res == 0) {
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
                     return 0;
@@ -4687,7 +4686,8 @@ i32 CPlay::ExecuteCommand(
                 return 0;
             }
             if (res == -1) {
-                if (!m_mgr->m_triggerMgr->ClearCell(player, gi, sx, sy, 2)) {
+                if (!m_mgr->m_triggerMgr
+                         ->ClearCell(player, gi, targetPosition.m_x, targetPosition.m_y, 2)) {
                     if (player != static_cast<u32>(g_curPlayer)
                         || g->m_entranceCommitted == false) {
                         return 0;
@@ -4726,25 +4726,34 @@ i32 CPlay::ExecuteCommand(
                 g->m_arrivalRerollWindowHi = 0;
                 g->m_tileClaimed = false;
                 g->m_arrivalState = AI_NONE;
-                g->m_arrivalFlags &= 0xe7fbfbfd;
+                g->m_arrivalFlags &= ~IDX(
+                    CELL_FLAG_SPECIAL | CELL_FLAG_SPIKES | CELL_FLAG_IN_GAME_ICON
+                    | CELL_FLAG_STATIC_HAZARD | CELL_FLAG_ROLLING_BALL
+                );
                 g->SetEntrancePos(1, 1);
             }
-            i32 px = static_cast<u16>(targetXOrPlayerIndex);
-            i32 py = static_cast<u16>(targetYOrUnitIndex);
-            CGrunt* node =
-                m_mgr->m_triggerMgr
-                    ->CellHitTest(px, py, &hitPlayerIndex, &hitUnitIndex, TM_ALL_PLAYERS);
+            Coord target(
+                static_cast<u16>(targetXOrPlayerIndex),
+                static_cast<u16>(targetYOrUnitIndex)
+            );
+            CGrunt* node = m_mgr->m_triggerMgr->CellHitTest(
+                target.m_x,
+                target.m_y,
+                &hitPlayerIndex,
+                &hitUnitIndex,
+                TM_ALL_PLAYERS
+            );
             if (node != NULL && g->m_entranceActive == false) {
                 g->SetArrivalTarget(
                     hitPlayerIndex,
                     hitUnitIndex,
-                    node->m_object->m_screenX,
-                    node->m_object->m_screenY
+                    node->m_object->m_screenPosition.m_x,
+                    node->m_object->m_screenPosition.m_y
                 );
             } else {
                 g->m_arrivalActive = false;
             }
-            res = m_mgr->m_triggerMgr->UseToyAt(player, gi, px, py);
+            res = m_mgr->m_triggerMgr->UseToyAt(player, gi, target.m_x, target.m_y);
             if (res == 0) {
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
                     return 0;
@@ -4753,7 +4762,7 @@ i32 CPlay::ExecuteCommand(
                 return 0;
             }
             if (res == -1) {
-                if (!m_mgr->m_triggerMgr->ClearCell(player, gi, px, py, 3)) {
+                if (!m_mgr->m_triggerMgr->ClearCell(player, gi, target.m_x, target.m_y, 3)) {
                     if (player != static_cast<u32>(g_curPlayer)
                         || g->m_entranceCommitted == false) {
                         return 0;
@@ -4788,7 +4797,10 @@ i32 CPlay::ExecuteCommand(
                 g->m_arrivalRerollWindowHi = 0;
                 g->m_tileClaimed = false;
                 g->m_arrivalState = AI_NONE;
-                g->m_arrivalFlags &= 0xe7fbfbfd;
+                g->m_arrivalFlags &= ~IDX(
+                    CELL_FLAG_SPECIAL | CELL_FLAG_SPIKES | CELL_FLAG_IN_GAME_ICON
+                    | CELL_FLAG_STATIC_HAZARD | CELL_FLAG_ROLLING_BALL
+                );
                 g->SetEntrancePos(1, 1);
             }
             i32 targetPlayerIndex = static_cast<u16>(targetXOrPlayerIndex);
@@ -4799,10 +4811,14 @@ i32 CPlay::ExecuteCommand(
                 g->m_arrivalActive = false;
                 return 0;
             }
-            i32 sx = g2->m_object->m_screenX;
-            i32 sy = g2->m_object->m_screenY;
-            g->SetArrivalTarget(targetPlayerIndex, targetUnitIndex, sx, sy);
-            res = m_mgr->m_triggerMgr->UseToyAt(player, gi, sx, sy);
+            Coord targetPosition = g2->m_object->ScreenPos();
+            g->SetArrivalTarget(
+                targetPlayerIndex,
+                targetUnitIndex,
+                targetPosition.m_x,
+                targetPosition.m_y
+            );
+            res = m_mgr->m_triggerMgr->UseToyAt(player, gi, targetPosition.m_x, targetPosition.m_y);
             if (res == 0) {
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
                     return 0;
@@ -4811,7 +4827,8 @@ i32 CPlay::ExecuteCommand(
                 return 0;
             }
             if (res == -1) {
-                if (!m_mgr->m_triggerMgr->ClearCell(player, gi, sx, sy, 3)) {
+                if (!m_mgr->m_triggerMgr
+                         ->ClearCell(player, gi, targetPosition.m_x, targetPosition.m_y, 3)) {
                     if (player != static_cast<u32>(g_curPlayer)
                         || g->m_entranceCommitted == false) {
                         return 0;
@@ -4851,7 +4868,10 @@ i32 CPlay::ExecuteCommand(
                 g->m_arrivalRerollWindowHi = 0;
                 g->m_tileClaimed = false;
                 g->m_arrivalState = AI_NONE;
-                g->m_arrivalFlags &= 0xe7fbfbfd;
+                g->m_arrivalFlags &= ~IDX(
+                    CELL_FLAG_SPECIAL | CELL_FLAG_SPIKES | CELL_FLAG_IN_GAME_ICON
+                    | CELL_FLAG_STATIC_HAZARD | CELL_FLAG_ROLLING_BALL
+                );
                 g->SetEntrancePos(1, 1);
             }
             i32 sel = 0;
@@ -4898,7 +4918,10 @@ i32 CPlay::ExecuteCommand(
                 g->m_arrivalRerollWindowHi = 0;
                 g->m_tileClaimed = false;
                 g->m_arrivalState = AI_NONE;
-                g->m_arrivalFlags &= 0xe7fbfbfd;
+                g->m_arrivalFlags &= ~IDX(
+                    CELL_FLAG_SPECIAL | CELL_FLAG_SPIKES | CELL_FLAG_IN_GAME_ICON
+                    | CELL_FLAG_STATIC_HAZARD | CELL_FLAG_ROLLING_BALL
+                );
                 g->SetEntrancePos(1, 1);
             }
             return 1;
@@ -4914,21 +4937,13 @@ static inline CGameLevel* LevelOf(CDDrawSurfaceMgr* holder) {
 
 static inline TileCollisionKind LookupTileType(CGameLevel* level, i32 x, i32 y) {
     CDDrawWorkerHost* g = level->m_mainPlane;
-    if (x < 0) {
-        x = 0;
-    } else if (x >= g->m_planePixelWidth) {
-        x = g->m_planePixelWidth - 1;
-    }
-    if (y < 0) {
-        y = 0;
-    } else if (y >= g->m_planePixelHeight) {
-        y = g->m_planePixelHeight - 1;
-    }
-    i32 tx = x >> g->m_shiftX;
-    i32 ty = y >> g->m_shiftY;
-    i32 subX = x - (tx << g->m_shiftX);
-    i32 subY = y - (ty << g->m_shiftY);
-    i32 cell = g->GetTileHandle(tx, ty);
+    Coord position(x, y);
+    position.Max(Coord(0, 0));
+    position.Min(Coord(g->m_planePixelSize.cx - 1, g->m_planePixelSize.cy - 1));
+    Coord tile(position.m_x >> g->m_tileShift.m_x, position.m_y >> g->m_tileShift.m_y);
+    Coord tileOrigin(tile.m_x << g->m_tileShift.m_x, tile.m_y << g->m_tileShift.m_y);
+    Coord sub = position - tileOrigin;
+    i32 cell = g->GetTileHandle(tile.m_x, tile.m_y);
     if (cell == UNINIT_FILL || cell == -1) {
         return TILEKIND_PASSABLE;
     }
@@ -4936,26 +4951,18 @@ static inline TileCollisionKind LookupTileType(CGameLevel* level, i32 x, i32 y) 
     CUniformTileImageSet* tc = static_cast<CUniformTileImageSet*>(
         level->m_imageSets.GetAt(cell & WWD_TILE_IMAGE_SET_INDEX_MASK)
     );
-    return tc->GetCollisionAt(subX, subY);
+    return tc->GetCollisionAt(sub.m_x, sub.m_y);
 }
 
 static inline TileCollisionKind LookupTileTypeDirect(CGameLevel* level, i32 x, i32 y) {
     CDDrawWorkerHost* g = level->m_mainPlane;
-    if (x < 0) {
-        x = 0;
-    } else if (x >= g->m_planePixelWidth) {
-        x = g->m_planePixelWidth - 1;
-    }
-    if (y < 0) {
-        y = 0;
-    } else if (y >= g->m_planePixelHeight) {
-        y = g->m_planePixelHeight - 1;
-    }
-    i32 tx = x >> g->m_shiftX;
-    i32 ty = y >> g->m_shiftY;
-    i32 subX = x - (tx << g->m_shiftX);
-    i32 subY = y - (ty << g->m_shiftY);
-    i32 cell = g->m_tileHandles[g->m_tileRowOffsets[ty] + tx];
+    Coord position(x, y);
+    position.Max(Coord(0, 0));
+    position.Min(Coord(g->m_planePixelSize.cx - 1, g->m_planePixelSize.cy - 1));
+    Coord tile(position.m_x >> g->m_tileShift.m_x, position.m_y >> g->m_tileShift.m_y);
+    Coord tileOrigin(tile.m_x << g->m_tileShift.m_x, tile.m_y << g->m_tileShift.m_y);
+    Coord sub = position - tileOrigin;
+    i32 cell = g->m_tileHandles[g->m_tileRowOffsets[tile.m_y] + tile.m_x];
     if (cell == UNINIT_FILL || cell == -1) {
         return TILEKIND_PASSABLE;
     }
@@ -4963,7 +4970,7 @@ static inline TileCollisionKind LookupTileTypeDirect(CGameLevel* level, i32 x, i
     CUniformTileImageSet* tc = static_cast<CUniformTileImageSet*>(
         level->m_imageSets.GetAt(cell & WWD_TILE_IMAGE_SET_INDEX_MASK)
     );
-    return tc->GetCollisionAt(subX, subY);
+    return tc->GetCollisionAt(sub.m_x, sub.m_y);
 }
 
 RVA(0x000d2b20, 0x21f)
@@ -4986,12 +4993,12 @@ b32 CPlay::PlaceStartGruntz() {
 
             LogicRecordDispatchFn dispatch = record->m_dispatch;
             if (dispatch == DispatchGruntStartingPointLogic) {
-                i32 x = (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-                i32 y = (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+                Coord spawn = obj->m_screenPosition;
+                SnapTileCenter(&spawn);
                 i32 idx = m_mgr->m_triggerMgr->PlaceObject(
                     obj->m_smarts,
-                    x,
-                    y,
+                    spawn.m_x,
+                    spawn.m_y,
                     100000,
                     entranceMode,
                     obj->m_score,
@@ -5005,7 +5012,12 @@ b32 CPlay::PlaceStartGruntz() {
                 );
                 if (idx == -1) {
                     CString s;
-                    s.Format("Could not add Grunt: Player=%d, x=%d, y=%d", obj->m_smarts, x, y);
+                    s.Format(
+                        "Could not add Grunt: Player=%d, x=%d, y=%d",
+                        obj->m_smarts,
+                        spawn.m_x,
+                        spawn.m_y
+                    );
                     g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return false;
                 }
@@ -5016,15 +5028,15 @@ b32 CPlay::PlaceStartGruntz() {
 
                 GruntzPlayer* e = &g_gameReg->m_players[g_curPlayer];
                 if (e != NULL && counter < e->m_maxGruntz) {
-                    i32 x = (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-                    i32 y = (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+                    Coord spawn = obj->m_screenPosition;
+                    SnapTileCenter(&spawn);
                     m_mgr->m_commandMgr->EnqueueSingle(
                         true,
                         static_cast<char>(obj->m_smarts),
                         0,
                         static_cast<char>(IDX(PLAYERCMD_PLACE_GRUNT)),
-                        x,
-                        y,
+                        spawn.m_x,
+                        spawn.m_y,
                         0,
                         0
                     );
@@ -5064,18 +5076,21 @@ i32 CPlay::ValidateLevelTiles() {
         LogicRecordDispatchFn dispatch = obj->m_logicRecord->m_dispatch;
 
         if (dispatch == DispatchTileTriggerSwitchLogic) {
-            TileCollisionKind type =
-                LookupTileType(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
+            TileCollisionKind type = LookupTileType(
+                LevelOf(m_world),
+                obj->m_screenPosition.m_x,
+                obj->m_screenPosition.m_y
+            );
             if (type == TILEKIND_GIANT_ROCK) {
 
                 CTileTriggerLogic* hit;
-                i32 col = obj->m_speedX - 1;
-                i32 row = obj->m_speedY - 1;
+                i32 col = obj->m_speed.m_x - 1;
+                i32 row = obj->m_speed.m_y - 1;
                 b32 found = false;
                 i32 colOff = col << 8;
-                while (found == false && col < obj->m_speedX + 2) {
-                    row = obj->m_speedY - 1;
-                    while (found == false && row < obj->m_speedY + 2) {
+                while (found == false && col < obj->m_speed.m_x + 2) {
+                    row = obj->m_speed.m_y - 1;
+                    while (found == false && row < obj->m_speed.m_y + 2) {
                         hit = m_tileTriggers->FindLogic(row + colOff, TRIGID_GIANT_ROCK_22);
                         if (hit != NULL) {
                             found = true;
@@ -5091,16 +5106,24 @@ i32 CPlay::ValidateLevelTiles() {
                 }
                 if (found == false) {
                     CString s;
-                    s.Format("Bad switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    s.Format(
+                        "Bad switch at: x=%d, y=%d",
+                        obj->m_screenPosition.m_x,
+                        obj->m_screenPosition.m_y
+                    );
                     g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return 0;
                 }
-                i32 rel = (obj->m_speedY - row) * 3 - col + obj->m_speedX;
+                i32 rel = (obj->m_speed.m_y - row) * 3 - col + obj->m_speed.m_x;
 
                 i32 tcidx = (static_cast<CGiantRockLogic*>(hit))->m_matrix[rel + 4];
                 if (tcidx == 0) {
                     CString s;
-                    s.Format("Bad switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    s.Format(
+                        "Bad switch at: x=%d, y=%d",
+                        obj->m_screenPosition.m_x,
+                        obj->m_screenPosition.m_y
+                    );
                     g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return 0;
                 }
@@ -5115,14 +5138,22 @@ i32 CPlay::ValidateLevelTiles() {
                     m_tileTriggers->FindLogic(obj->m_id, TRIGID_COVERED_POWERUP_26);
                 if (r == NULL) {
                     CString s;
-                    s.Format("Bad switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    s.Format(
+                        "Bad switch at: x=%d, y=%d",
+                        obj->m_screenPosition.m_x,
+                        obj->m_screenPosition.m_y
+                    );
                     g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return 0;
                 }
                 i32 tcidx = r->m_tileToken;
                 if (tcidx == 0) {
                     CString s;
-                    s.Format("Bad switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    s.Format(
+                        "Bad switch at: x=%d, y=%d",
+                        obj->m_screenPosition.m_x,
+                        obj->m_screenPosition.m_y
+                    );
                     g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return 0;
                 }
@@ -5135,8 +5166,8 @@ i32 CPlay::ValidateLevelTiles() {
                 case TILEKIND_MULTI_SWITCH_UP:
                     if (!m_tileTriggers->AddSwitchLogic(
                             TRIGID_MULTI_SWITCH_3,
-                            obj->m_speedX,
-                            obj->m_speedY,
+                            obj->m_speed.m_x,
+                            obj->m_speed.m_y,
                             obj->m_id,
                             obj->m_extent,
                             obj->m_area,
@@ -5149,7 +5180,11 @@ i32 CPlay::ValidateLevelTiles() {
                             0
                         )) {
                         CString s;
-                        s.Format("Bad multi switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                        s.Format(
+                            "Bad multi switch at: x=%d, y=%d",
+                            obj->m_screenPosition.m_x,
+                            obj->m_screenPosition.m_y
+                        );
                         g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                         return 0;
                     }
@@ -5160,8 +5195,8 @@ i32 CPlay::ValidateLevelTiles() {
                 case TILEKIND_EXCLUSIVE_SWITCH_UP:
                     if (!m_tileTriggers->AddSwitchLogic(
                             TRIGID_EXCLUSIVE_SWITCH_4,
-                            obj->m_speedX,
-                            obj->m_speedY,
+                            obj->m_speed.m_x,
+                            obj->m_speed.m_y,
                             obj->m_id,
                             obj->m_extent,
                             obj->m_area,
@@ -5176,8 +5211,8 @@ i32 CPlay::ValidateLevelTiles() {
                         CString s;
                         s.Format(
                             "Bad up-down switch at: x=%d, y=%d",
-                            obj->m_screenX,
-                            obj->m_screenY
+                            obj->m_screenPosition.m_x,
+                            obj->m_screenPosition.m_y
                         );
                         g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                         return 0;
@@ -5191,8 +5226,8 @@ i32 CPlay::ValidateLevelTiles() {
                 case TILEKIND_SECRET_SWITCH_UP:
                     if (!m_tileTriggers->AddSwitchLogic(
                             TRIGID_SECRET_SWITCH_6,
-                            obj->m_speedX,
-                            obj->m_speedY,
+                            obj->m_speed.m_x,
+                            obj->m_speed.m_y,
                             obj->m_id,
                             obj->m_extent,
                             obj->m_area,
@@ -5207,8 +5242,8 @@ i32 CPlay::ValidateLevelTiles() {
                         CString s;
                         s.Format(
                             "Bad secret switch at: x=%d, y=%d",
-                            obj->m_screenX,
-                            obj->m_screenY
+                            obj->m_screenPosition.m_x,
+                            obj->m_screenPosition.m_y
                         );
                         g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                         return 0;
@@ -5220,8 +5255,8 @@ i32 CPlay::ValidateLevelTiles() {
                 case TILEKIND_TIME_SWITCH_UP:
                     if (!m_tileTriggers->AddSwitchLogic(
                             TRIGID_TIME_SWITCH_7,
-                            obj->m_speedX,
-                            obj->m_speedY,
+                            obj->m_speed.m_x,
+                            obj->m_speed.m_y,
                             obj->m_id,
                             obj->m_extent,
                             obj->m_area,
@@ -5234,7 +5269,11 @@ i32 CPlay::ValidateLevelTiles() {
                             0
                         )) {
                         CString s;
-                        s.Format("Bad time switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                        s.Format(
+                            "Bad time switch at: x=%d, y=%d",
+                            obj->m_screenPosition.m_x,
+                            obj->m_screenPosition.m_y
+                        );
                         g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                         return 0;
                     }
@@ -5245,8 +5284,8 @@ i32 CPlay::ValidateLevelTiles() {
                 case TILEKIND_CHECKPOINT_UP:
                     if (!m_tileTriggers->AddSwitchLogic(
                             TRIGID_CHECKPOINT_SWITCH_8,
-                            obj->m_speedX,
-                            obj->m_speedY,
+                            obj->m_speed.m_x,
+                            obj->m_speed.m_y,
                             obj->m_id,
                             obj->m_extent,
                             obj->m_area,
@@ -5261,8 +5300,8 @@ i32 CPlay::ValidateLevelTiles() {
                         CString s;
                         s.Format(
                             "Bad pressure plate at: x=%d, y=%d",
-                            obj->m_screenX,
-                            obj->m_screenY
+                            obj->m_screenPosition.m_x,
+                            obj->m_screenPosition.m_y
                         );
                         g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                         return 0;
@@ -5274,8 +5313,8 @@ i32 CPlay::ValidateLevelTiles() {
                 case TILEKIND_SWITCH_A_UP:
                     if (!m_tileTriggers->AddSwitchLogic(
                             TRIGID_SWITCH_1,
-                            obj->m_speedX,
-                            obj->m_speedY,
+                            obj->m_speed.m_x,
+                            obj->m_speed.m_y,
                             obj->m_id,
                             obj->m_extent,
                             obj->m_area,
@@ -5292,8 +5331,8 @@ i32 CPlay::ValidateLevelTiles() {
                         CString s;
                         s.Format(
                             "Bad toggle switch at: x=%d, y=%d",
-                            obj->m_screenX,
-                            obj->m_screenY
+                            obj->m_screenPosition.m_x,
+                            obj->m_screenPosition.m_y
                         );
                         g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                         return 0;
@@ -5305,8 +5344,8 @@ i32 CPlay::ValidateLevelTiles() {
                 case TILEKIND_SWITCH_B_UP:
                     if (!m_tileTriggers->AddSwitchLogic(
                             TRIGID_SWITCH_2,
-                            obj->m_speedX,
-                            obj->m_speedY,
+                            obj->m_speed.m_x,
+                            obj->m_speed.m_y,
                             obj->m_id,
                             obj->m_extent,
                             obj->m_area,
@@ -5321,7 +5360,11 @@ i32 CPlay::ValidateLevelTiles() {
                             0
                         )) {
                         CString s;
-                        s.Format("Bad hold switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                        s.Format(
+                            "Bad hold switch at: x=%d, y=%d",
+                            obj->m_screenPosition.m_x,
+                            obj->m_screenPosition.m_y
+                        );
                         g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                         return 0;
                     }
@@ -5332,8 +5375,8 @@ i32 CPlay::ValidateLevelTiles() {
                 case TILEKIND_SWITCH_C_UP:
                     if (!m_tileTriggers->AddSwitchLogic(
                             TRIGID_SWITCH_5,
-                            obj->m_speedX,
-                            obj->m_speedY,
+                            obj->m_speed.m_x,
+                            obj->m_speed.m_y,
                             obj->m_id,
                             obj->m_extent,
                             obj->m_area,
@@ -5350,8 +5393,8 @@ i32 CPlay::ValidateLevelTiles() {
                         CString s;
                         s.Format(
                             "Bad once-only switch at: x=%d, y=%d",
-                            obj->m_screenX,
-                            obj->m_screenY
+                            obj->m_screenPosition.m_x,
+                            obj->m_screenPosition.m_y
                         );
                         g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                         return 0;
@@ -5363,26 +5406,29 @@ i32 CPlay::ValidateLevelTiles() {
                     CString s;
                     s.Format(
                         "Switch on an unknown tile at: x=%d, y=%d",
-                        obj->m_screenX,
-                        obj->m_screenY
+                        obj->m_screenPosition.m_x,
+                        obj->m_screenPosition.m_y
                     );
                     g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return 0;
                 }
             }
         } else if (dispatch == DispatchTileTriggerLogic) {
-            TileCollisionKind type =
-                LookupTileTypeDirect(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
+            TileCollisionKind type = LookupTileTypeDirect(
+                LevelOf(m_world),
+                obj->m_screenPosition.m_x,
+                obj->m_screenPosition.m_y
+            );
             if (type == TILEKIND_GIANT_ROCK) {
 
                 CTileTriggerLogic* hit;
-                i32 col = obj->m_speedX - 1;
-                i32 row = obj->m_speedY - 1;
+                i32 col = obj->m_speed.m_x - 1;
+                i32 row = obj->m_speed.m_y - 1;
                 b32 found = false;
                 i32 colOff = col << 8;
-                while (found == false && col < obj->m_speedX + 2) {
-                    row = obj->m_speedY - 1;
-                    while (found == false && row < obj->m_speedY + 2) {
+                while (found == false && col < obj->m_speed.m_x + 2) {
+                    row = obj->m_speed.m_y - 1;
+                    while (found == false && row < obj->m_speed.m_y + 2) {
                         hit = m_tileTriggers->FindLogic(row + colOff, TRIGID_GIANT_ROCK_22);
                         if (hit != NULL) {
                             found = true;
@@ -5398,16 +5444,24 @@ i32 CPlay::ValidateLevelTiles() {
                 }
                 if (found == false) {
                     CString s;
-                    s.Format("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    s.Format(
+                        "Bad trigger at: x=%d, y=%d",
+                        obj->m_screenPosition.m_x,
+                        obj->m_screenPosition.m_y
+                    );
                     g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return 0;
                 }
-                i32 rel = (obj->m_speedX - col) * 3 - row + obj->m_speedY;
+                i32 rel = (obj->m_speed.m_x - col) * 3 - row + obj->m_speed.m_y;
 
                 i32 tcidx = (static_cast<CGiantRockLogic*>(hit))->m_matrix[rel + 4];
                 if (tcidx == 0) {
                     CString s;
-                    s.Format("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    s.Format(
+                        "Bad trigger at: x=%d, y=%d",
+                        obj->m_screenPosition.m_x,
+                        obj->m_screenPosition.m_y
+                    );
                     g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return 0;
                 }
@@ -5421,14 +5475,22 @@ i32 CPlay::ValidateLevelTiles() {
                     m_tileTriggers->FindLogic(obj->m_id, TRIGID_COVERED_POWERUP_26);
                 if (r == NULL) {
                     CString s;
-                    s.Format("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    s.Format(
+                        "Bad trigger at: x=%d, y=%d",
+                        obj->m_screenPosition.m_x,
+                        obj->m_screenPosition.m_y
+                    );
                     g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return 0;
                 }
                 i32 tcidx = r->m_tileToken;
                 if (tcidx == 0) {
                     CString s;
-                    s.Format("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    s.Format(
+                        "Bad trigger at: x=%d, y=%d",
+                        obj->m_screenPosition.m_x,
+                        obj->m_screenPosition.m_y
+                    );
                     g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return 0;
                 }
@@ -5440,8 +5502,8 @@ i32 CPlay::ValidateLevelTiles() {
                 if (!m_tileTriggers->AddLogic(
                         static_cast<TileCollisionKind>(type),
                         TRIGID_TIME_TRIGGER_23,
-                        obj->m_speedX,
-                        obj->m_speedY,
+                        obj->m_speed.m_x,
+                        obj->m_speed.m_y,
                         obj->m_id,
                         obj->m_extent,
                         obj->m_area,
@@ -5457,8 +5519,8 @@ i32 CPlay::ValidateLevelTiles() {
                     CString s;
                     s.Format(
                         "Bad toggle-bridge trigger at: x=%d, y=%d",
-                        obj->m_screenX,
-                        obj->m_screenY
+                        obj->m_screenPosition.m_x,
+                        obj->m_screenPosition.m_y
                     );
                     g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return 0;
@@ -5469,8 +5531,8 @@ i32 CPlay::ValidateLevelTiles() {
                 if (!m_tileTriggers->AddLogic(
                         static_cast<TileCollisionKind>(type),
                         TRIGID_TILE_TRIGGER_21,
-                        obj->m_speedX,
-                        obj->m_speedY,
+                        obj->m_speed.m_x,
+                        obj->m_speed.m_y,
                         obj->m_id,
                         obj->m_extent,
                         obj->m_area,
@@ -5484,7 +5546,11 @@ i32 CPlay::ValidateLevelTiles() {
                         0
                     )) {
                     CString s;
-                    s.Format("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    s.Format(
+                        "Bad trigger at: x=%d, y=%d",
+                        obj->m_screenPosition.m_x,
+                        obj->m_screenPosition.m_y
+                    );
                     g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return 0;
                 }
@@ -5492,13 +5558,16 @@ i32 CPlay::ValidateLevelTiles() {
                 obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
             }
         } else if (dispatch == DispatchTileSecretTriggerLogic) {
-            TileCollisionKind type =
-                LookupTileTypeDirect(LevelOf(m_world), obj->m_screenX, obj->m_screenY);
+            TileCollisionKind type = LookupTileTypeDirect(
+                LevelOf(m_world),
+                obj->m_screenPosition.m_x,
+                obj->m_screenPosition.m_y
+            );
             if (!m_tileTriggers->AddLogic(
                     type,
                     TRIGID_SECRET_TRIGGER_25,
-                    obj->m_speedX,
-                    obj->m_speedY,
+                    obj->m_speed.m_x,
+                    obj->m_speed.m_y,
                     obj->m_id,
                     obj->m_extent,
                     obj->m_area,
@@ -5512,7 +5581,11 @@ i32 CPlay::ValidateLevelTiles() {
                     0
                 )) {
                 CString s;
-                s.Format("Bad secret trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                s.Format(
+                    "Bad secret trigger at: x=%d, y=%d",
+                    obj->m_screenPosition.m_x,
+                    obj->m_screenPosition.m_y
+                );
                 g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                 return 0;
             }
@@ -5546,25 +5619,29 @@ i32 CPlay::ValidateLevelTiles() {
                     slot = &cell->m_coord;
                     g_coordPool.m_freeHead = cell->m_next;
                 }
-                slot->m_x = (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-                slot->m_y = (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+                *slot = obj->ScreenPos();
+                SnapTileCenter(slot);
                 m_startMarkers.SetAtGrow(StartMarkerCount(), slot);
             }
         } else if (dispatch == DispatchBrickzLogic) {
 
             CDDrawWorkerHost* pl = m_world->m_level->m_mainPlane;
-            i32 tile = pl->m_tileHandles[pl->m_tileRowOffsets[obj->m_speedY] + obj->m_speedX];
+            i32 tile = pl->m_tileHandles[pl->m_tileRowOffsets[obj->m_speed.m_y] + obj->m_speed.m_x];
             if (tile >= 0x12f && tile <= 0x149) {
                 if (m_tileTriggers->AddActionEvent(
                         static_cast<BrickTileId>(tile),
-                        obj->m_speedX,
-                        obj->m_speedY,
+                        obj->m_speed.m_x,
+                        obj->m_speed.m_y,
                         obj->m_id,
                         obj->m_extent
                     )
                     == NULL) {
                     CString s;
-                    s.Format("Bad brickz at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                    s.Format(
+                        "Bad brickz at: x=%d, y=%d",
+                        obj->m_screenPosition.m_x,
+                        obj->m_screenPosition.m_y
+                    );
                     g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return 0;
                 }
@@ -5572,7 +5649,11 @@ i32 CPlay::ValidateLevelTiles() {
                 obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
             } else {
                 CString s;
-                s.Format("Bad brickz at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
+                s.Format(
+                    "Bad brickz at: x=%d, y=%d",
+                    obj->m_screenPosition.m_x,
+                    obj->m_screenPosition.m_y
+                );
                 g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                 return 0;
             }
@@ -5581,54 +5662,48 @@ i32 CPlay::ValidateLevelTiles() {
             m_mgr->m_triggerMgr->PlacePuddle(obj, false);
         } else if (dispatch == DispatchGuardPointLogic) {
 
-            i32 col = obj->m_screenX >> TILE_SHIFT_PX;
-            i32 rowBase = obj->m_screenY >> TILE_SHIFT_PX;
-            i32 stride = (col << 3) - col;
-
-            i32 ebp = stride - 7;
-            for (i32 dy = -1; dy < 2; dy++, ebp += 7) {
-                i32 row = rowBase;
-                i32 ofs = rowBase - 1;
-                for (i32 k = 3; k != 0; k--, ofs++, row++) {
-                    i32 gx = dy + col;
-                    i32 gyy = row - 1;
+            Coord center = obj->ScreenPos();
+            ScreenTile(&center);
+            for (i32 dx = -1; dx < 2; dx++) {
+                for (i32 dy = -1; dy < 2; dy++) {
+                    Coord tile = center + Coord(dx, dy);
                     CGruntzMapMgr* gg = g_gameReg->m_tileGrid;
-                    if (static_cast<u32>(gx) >= gg->m_width
-                        || static_cast<u32>(gyy) >= gg->m_height) {
+                    if (static_cast<u32>(tile.m_x) >= gg->m_width
+                        || static_cast<u32>(tile.m_y) >= gg->m_height) {
                         continue;
                     }
                     i32 kind = obj->m_smarts;
-                    i32 bit = 0;
+                    u32 bit = 0;
                     switch (static_cast<PlayerSlot>(kind)) {
                         case PLAYER_SLOT_0:
-                            bit = 0x100000;
+                            bit = IDX(CELL_FLAG_PLAYER0_START);
                             break;
                         case PLAYER_SLOT_1:
-                            bit = 0x200000;
+                            bit = IDX(CELL_FLAG_PLAYER1_START);
                             break;
                         case PLAYER_SLOT_2:
-                            bit = 0x400000;
+                            bit = IDX(CELL_FLAG_PLAYER2_START);
                             break;
                         case PLAYER_SLOT_3:
-                            bit = 0x800000;
+                            bit = IDX(CELL_FLAG_PLAYER3_START);
                             break;
                     }
                     counts[kind]++;
                     gg = g_gameReg->m_tileGrid;
-                    if (static_cast<u32>(gx) >= gg->m_width
-                        || static_cast<u32>(gyy) >= gg->m_height) {
+                    if (static_cast<u32>(tile.m_x) >= gg->m_width
+                        || static_cast<u32>(tile.m_y) >= gg->m_height) {
                         continue;
                     }
-                    i32* cellRow = gg->m_rowInts[ofs];
-                    cellRow[ebp] |= bit;
+                    gg->m_rows[tile.m_y][tile.m_x].m_flags |= bit;
                 }
             }
         } else if (dispatch == DispatchToobSpikezLogic) {
             CGruntzMapMgr* gg = g_gameReg->m_tileGrid;
-            i32 tileX = obj->m_screenX >> TILE_SHIFT_PX;
-            i32 tileY = obj->m_screenY >> TILE_SHIFT_PX;
-            if (static_cast<u32>(tileX) < gg->m_width && static_cast<u32>(tileY) < gg->m_height) {
-                gg->m_rowInts[tileY][tileX * 7] |= 0x2000000;
+            Coord tile = obj->ScreenPos();
+            ScreenTile(&tile);
+            if (static_cast<u32>(tile.m_x) < gg->m_width
+                && static_cast<u32>(tile.m_y) < gg->m_height) {
+                gg->m_rows[tile.m_y][tile.m_x].m_flags |= IDX(CELL_FLAG_TOOB_SPIKE);
             }
         } else if (dispatch == DispatchWarpStonePadLogic) {
             if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
@@ -5638,8 +5713,8 @@ i32 CPlay::ValidateLevelTiles() {
                     slot = &cell->m_coord;
                     g_coordPool.m_freeHead = cell->m_next;
                 }
-                slot->m_x = obj->m_screenX >> TILE_SHIFT_PX;
-                slot->m_y = obj->m_screenY >> TILE_SHIFT_PX;
+                *slot = obj->ScreenPos();
+                ScreenTile(slot);
                 CPtrArray* cells = &m_placedObjectCells[obj->m_score];
                 cells->SetAtGrow(cells->GetSize(), slot);
             }
@@ -5693,8 +5768,8 @@ i32 CPlay::ScanBuildTiles() {
             buf[7] = p->m_switchRect.top;
             buf[8] = p->m_switchRect.right;
             if (m_tileTriggers->AddGiantRockLogic(
-                    p->m_speedX,
-                    p->m_speedY,
+                    p->m_speed.m_x,
+                    p->m_speed.m_y,
                     p->m_id,
                     buf,
                     p->m_powerup,
@@ -5703,7 +5778,11 @@ i32 CPlay::ScanBuildTiles() {
                 )
                 == NULL) {
                 CString s;
-                s.Format("Bad rock at: x=%d, y=%d", p->m_screenX, p->m_screenY);
+                s.Format(
+                    "Bad rock at: x=%d, y=%d",
+                    p->m_screenPosition.m_x,
+                    p->m_screenPosition.m_y
+                );
                 g_gameReg->EnterModalUI(s);
                 return 0;
             }
@@ -5713,32 +5792,18 @@ i32 CPlay::ScanBuildTiles() {
             p->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
         } else if (dispatch == DispatchCoveredPowerupLogic) {
             CGameLevel* ds = m_world->m_level;
-            i32 x = p->m_screenX;
-            i32 y = p->m_screenY;
-            if (x < 0) {
-                x = 0;
-            } else {
-                i32 lim = ds->m_mainPlane->m_planePixelWidth;
-                if (x >= lim) {
-                    x = lim - 1;
-                }
-            }
-            if (y < 0) {
-                y = 0;
-            } else {
-                i32 lim = ds->m_mainPlane->m_planePixelHeight;
-                if (y >= lim) {
-                    y = lim - 1;
-                }
-            }
+            Coord position = p->ScreenPos();
+            position.Max(Coord(0, 0));
+            position.Min(Coord(
+                ds->m_mainPlane->m_planePixelSize.cx - 1,
+                ds->m_mainPlane->m_planePixelSize.cy - 1
+            ));
             CDDrawWorkerHost* g = ds->m_mainPlane;
-            i32 shX = g->m_shiftX;
-            i32 tileX = x >> shX;
-            i32 shY = g->m_shiftY;
-            i32 tileY = y >> shY;
-            i32 subX = x - (tileX << shX);
-            i32 subY = y - (tileY << shY);
-            i32 cell = g->m_tileHandles[g->m_tileRowOffsets[tileY] + tileX];
+            Coord shift = g->m_tileShift;
+            Coord cellPosition(position.m_x >> shift.m_x, position.m_y >> shift.m_y);
+            Coord tileOrigin(cellPosition.m_x << shift.m_x, cellPosition.m_y << shift.m_y);
+            Coord sub = position - tileOrigin;
+            i32 cell = g->m_tileHandles[g->m_tileRowOffsets[cellPosition.m_y] + cellPosition.m_x];
             TileCollisionKind tile;
             if (cell == UNINIT_FILL || cell == static_cast<i32>(0xffffffff)) {
                 tile = TILEKIND_PASSABLE;
@@ -5747,13 +5812,13 @@ i32 CPlay::ScanBuildTiles() {
                 tile = (static_cast<CUniformTileImageSet*>(
                             ds->m_imageSets[cell & WWD_TILE_IMAGE_SET_INDEX_MASK]
                         ))
-                           ->GetCollisionAt(subX, subY);
+                           ->GetCollisionAt(sub.m_x, sub.m_y);
             }
             if (m_tileTriggers->AddLogic(
                     tile,
                     TRIGID_COVERED_POWERUP_26,
-                    p->m_speedX,
-                    p->m_speedY,
+                    p->m_speed.m_x,
+                    p->m_speed.m_y,
                     p->m_id,
                     p->m_extent,
                     p->m_area,
@@ -5768,7 +5833,11 @@ i32 CPlay::ScanBuildTiles() {
                 )
                 == NULL) {
                 CString s;
-                s.Format("Bad covered powerup at: x=%d, y=%d", p->m_screenX, p->m_screenY);
+                s.Format(
+                    "Bad covered powerup at: x=%d, y=%d",
+                    p->m_screenPosition.m_x,
+                    p->m_screenPosition.m_y
+                );
                 g_gameReg->EnterModalUI(s);
                 return 0;
             }
@@ -5799,13 +5868,13 @@ i32 CPlay::AddLevelGruntz() {
         if (g->m_smarts == g_curPlayer) {
             continue;
         }
-        i32 x = ((g->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX);
-        i32 y = ((g->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX);
+        Coord spawn = g->m_screenPosition;
+        SnapTileCenter(&spawn);
 
         if (m_mgr->m_triggerMgr->PlaceObject(
                 g->m_smarts,
-                x,
-                y,
+                spawn.m_x,
+                spawn.m_y,
                 0x186a0,
                 GRUNT_ENTRANCE_NONE,
                 g->m_score,
@@ -5819,7 +5888,12 @@ i32 CPlay::AddLevelGruntz() {
             )
             == -1) {
             CString msg;
-            msg.Format("Could not add Grunt: Player=%d, x=%d, y=%d", g->m_smarts, x, y);
+            msg.Format(
+                "Could not add Grunt: Player=%d, x=%d, y=%d",
+                g->m_smarts,
+                spawn.m_x,
+                spawn.m_y
+            );
 
             (g_gameReg)->EnterModalUI(msg);
             return 0;
@@ -5833,8 +5907,7 @@ i32 CPlay::AddLevelGruntz() {
 RVA(0x000d5b20, 0xbb)
 i32 CPlay::PositionBridgeToggle(StatusBarDock mode, StatusBarDock) {
     CGruntzMgr* w = m_mgr;
-    i32 ex = w->m_modeSize.cx;
-    i32 ey = w->m_modeSize.cy;
+    Coord timerPosition(w->m_modeSize.cx, w->m_modeSize.cy);
     CTimer* pt;
     if (mode == STATUSBAR_DOCK_LEFT) {
         m_chatBox->Configure(CHATBOX_WITH_LEFT_STATUSBAR);
@@ -5842,30 +5915,24 @@ i32 CPlay::PositionBridgeToggle(StatusBarDock mode, StatusBarDock) {
         if (pt == NULL) {
             goto done;
         }
-        ex -= 0x37;
-        ey -= 0x16;
-        pt->m_baseX = ex;
-        pt->m_baseY = ey;
+        timerPosition -= Coord(0x37, 0x16);
+        pt->m_basePosition = timerPosition;
     } else if (mode == STATUSBAR_DOCK_RIGHT) {
         m_chatBox->Configure(CHATBOX_WITH_RIGHT_STATUSBAR);
         pt = m_levelTimer;
         if (pt == NULL) {
             goto done;
         }
-        ex -= 0xd7;
-        ey -= 0x16;
-        pt->m_baseX = ex;
-        pt->m_baseY = ey;
+        timerPosition -= Coord(0xd7, 0x16);
+        pt->m_basePosition = timerPosition;
     } else {
         m_chatBox->Configure(CHATBOX_WITH_HIDDEN_STATUSBAR);
         pt = m_levelTimer;
         if (pt == NULL) {
             goto done;
         }
-        ex -= 0x37;
-        ey -= 0x16;
-        pt->m_baseX = ex;
-        pt->m_baseY = ey;
+        timerPosition -= Coord(0x37, 0x16);
+        pt->m_basePosition = timerPosition;
     }
 done:
 
@@ -6006,7 +6073,7 @@ i32 CPlay::ResetPlayState() {
     } else {
         GruntzPlayer* slot = &g_gameReg->m_players[g_curPlayer];
         if (slot != NULL) {
-            ResetGoals(slot->m_focusX, slot->m_focusY);
+            ResetGoals(slot->m_focus.m_x, slot->m_focus.m_y);
         } else {
             CGameLevel* g = m_mgr->m_world->m_level;
             ResetGoals(g->m_header.startX, g->m_header.startY);
@@ -7079,10 +7146,7 @@ i32 CPlay::ResetViewport() {
     if (m_region0Gate) {
         i32 halfW = (r.right - r.left) / 2;
         i32 halfH = (r.bottom - r.top) / 2;
-        r.left = r.left + halfW - 0x60;
-        r.top = r.top + halfH - 0x60;
-        r.right = r.right + (0x60 - halfW);
-        r.bottom = r.bottom + (0x60 - halfH);
+        InflateRect(&r, 0x60 - halfW, 0x60 - halfH);
     }
     m_viewportResizeMode = VIEW_RESIZE_IDLE;
     m_world->m_level->UpdatePlaneViewports((&r));
@@ -7110,13 +7174,11 @@ i32 CPlay::ShrinkViewport(i32 step) {
     RECT resized = *viewport;
 
     if (resized.right - resized.left > 0xc0) {
-        resized.left += step;
-        resized.right -= step;
+        InflateRect(&resized, -step, 0);
         changed = true;
     }
     if (resized.bottom - resized.top > 0xc0) {
-        resized.top += step;
-        resized.bottom -= step;
+        InflateRect(&resized, 0, -step);
         changed = true;
     }
     if (changed == false) {
@@ -7140,18 +7202,14 @@ i32 CPlay::ExpandViewport(i32 step) {
     CStatusBarMgr* statusBar = m_statusBar;
 
     LevelCoordRect* viewport = &world->m_level->m_viewportRect;
-    RECT resized = *viewport;
+    CRect resized = *viewport;
 
-    SIZE
-    modeSize;
-    modeSize.cx = manager->m_modeSize.cx;
-    modeSize.cy = manager->m_modeSize.cy;
+    CSize modeSize = manager->m_modeSize;
 
     if (resized.right - resized.left
         < (statusBar->m_position == STATUSBAR_HIDDEN ? modeSize.cx
                                                      : modeSize.cx - STATUSBAR_WIDTH_PX)) {
-        resized.left -= step;
-        resized.right += step;
+        resized.InflateRect(step, 0);
         if (resized.left < 0) {
             resized.left = 0;
         }
@@ -7161,8 +7219,7 @@ i32 CPlay::ExpandViewport(i32 step) {
         changed = true;
     }
     if (resized.bottom - resized.top < modeSize.cy) {
-        resized.top -= step;
-        resized.bottom += step;
+        resized.InflateRect(0, step);
         if (resized.top < 0) {
             resized.top = 0;
         }
@@ -7191,9 +7248,8 @@ i32 CPlay::NotifyVisibleEntities() {
     CDDrawSurfacePair* held = v->m_drawTarget->m_backPair;
     CObList& chain = v->m_childGroup->m_list;
 
-    RECT r = vp;
-    r.right = r.right + 1;
-    r.bottom = r.bottom + 1;
+    CRect r = vp;
+    r.InflateRect(0, 0, 1, 1);
     held->m_surface->Restore(&r, 0);
 
     POSITION pos = chain.GetHeadPosition();
@@ -7321,10 +7377,7 @@ i32 CPlay::ScanShuffleQuads() {
             scatter[perm[1]] = p->m_extent.top;
             scatter[perm[2]] = p->m_extent.right;
             scatter[perm[3]] = p->m_extent.bottom;
-            p->m_extent.left = scatter[0];
-            p->m_extent.top = scatter[1];
-            p->m_extent.right = scatter[2];
-            p->m_extent.bottom = scatter[3];
+            p->m_extent = MakeRect(scatter[0], scatter[1], scatter[2], scatter[3]);
         }
     }
     return 1;
@@ -7569,11 +7622,10 @@ i32 CPlay::ClearPlacedObjects() {
                 CMapMgr* grid = g_gameReg->m_tileGrid;
 
                 i32 occupantId;
-                i32 cellX = obj->m_x;
-                i32 cellY = obj->m_y;
-                if (static_cast<u32>(cellX) < static_cast<u32>(grid->m_width)
-                    && static_cast<u32>(cellY) < static_cast<u32>(grid->m_height)) {
-                    occupantId = grid->m_rows[cellY][cellX].m_objectId;
+                Coord cell = *obj;
+                if (static_cast<u32>(cell.m_x) < static_cast<u32>(grid->m_width)
+                    && static_cast<u32>(cell.m_y) < static_cast<u32>(grid->m_height)) {
+                    occupantId = grid->m_rows[cell.m_y][cell.m_x].m_objectId;
                 } else {
                     occupantId = 0;
                 }
@@ -7591,12 +7643,10 @@ i32 CPlay::ClearPlacedObjects() {
                     if (result == NULL) {
 
                         CMapMgr* g = g_gameReg->m_tileGrid;
-                        i32 freeX = obj->m_x;
-                        i32 freeY = obj->m_y;
-                        if (static_cast<u32>(freeX) < static_cast<u32>(g->m_width)
-                            && static_cast<u32>(freeY) < static_cast<u32>(g->m_height)) {
-                            g->m_rows[freeY][freeX].m_objectId = 0;
-                            g->m_rows[freeY][freeX].m_flags &= 0xfffbffff;
+                        if (static_cast<u32>(cell.m_x) < static_cast<u32>(g->m_width)
+                            && static_cast<u32>(cell.m_y) < static_cast<u32>(g->m_height)) {
+                            g->m_rows[cell.m_y][cell.m_x].m_objectId = 0;
+                            g->m_rows[cell.m_y][cell.m_x].m_flags &= ~IDX(CELL_FLAG_IN_GAME_ICON);
                         }
                         m_placedObjectCells[blockIdx].RemoveAt(i, 1);
 

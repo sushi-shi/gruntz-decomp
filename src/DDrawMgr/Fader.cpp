@@ -14,6 +14,7 @@
 #include <Gruntz/FaderSubtypes.h>
 #include <Gruntz/ShapeFaderConfig.h>
 #include <Ints.h>
+#include <MakeRect.h>
 #include <Utils/RecordFill.h>
 #include <Wap32/ScreenGeometry.h>
 
@@ -23,6 +24,19 @@
 
 DATA(0x001f07bc)
 static const float kMsToSeconds = 0.001f;
+
+static inline i32 InterpolateRectCoord(i32 first, i32 last, float amount) {
+    return first + static_cast<i32>(static_cast<float>(last - first) * amount);
+}
+
+static inline CRect InterpolateRect(const RECT& first, const RECT& last, float amount) {
+    return CRect(
+        InterpolateRectCoord(first.left, last.left, amount),
+        InterpolateRectCoord(first.top, last.top, amount),
+        InterpolateRectCoord(first.right, last.right, amount),
+        InterpolateRectCoord(first.bottom, last.bottom, amount)
+    );
+}
 
 RVA(0x0017e450, 0x23)
 CFader::CFader() {
@@ -161,13 +175,12 @@ CShapeFaderConfig::CShapeFaderConfig() {
 
 RVA(0x0017e840, 0x37)
 CLightFaderConfig::CLightFaderConfig() {
-    m_centerX = SCREEN_HALF_W_PX;
+    m_center.Set(SCREEN_HALF_W_PX, SCREEN_HALF_H_PX);
     m_kind = FADER_CONFIG_LIGHT;
     m_sourceSurface = NULL;
     m_targetSurface = NULL;
     m_clearMode = true;
     m_spanCount = 0;
-    m_centerY = SCREEN_HALF_H_PX;
     m_shadeTable = NULL;
 }
 
@@ -247,57 +260,47 @@ i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
     CRezBufferObject* mesh = &m_meshBuf;
     mesh->SetSize(0, -1);
 
-    i32 halfW = m_dstSurface->m_width / 2;
-    i32 halfH = m_dstSurface->m_height / 2;
-    i32 cellW = m_sourceSurface->m_width / m_cols;
-    i32 cellH = m_sourceSurface->m_height / m_rows;
-    float radius = static_cast<float>(sqrt(static_cast<double>((cellW * cellW + cellH * cellH))));
+    Coord halfSize(m_dstSurface->m_width / 2, m_dstSurface->m_height / 2);
+    Coord cellSize(m_sourceSurface->m_width / m_cols, m_sourceSurface->m_height / m_rows);
+    float radius = static_cast<float>(cellSize.Mag());
     if (m_rows <= 0) {
         return 1;
     }
 
     RezElem40 elem;
     i32 y = 0;
-    i32 ay = halfH;
-    i32 negH = -cellH;
+    i32 ay = halfSize.m_y;
+    i32 negH = -cellSize.m_y;
     i32 r = 0;
     do {
         if (m_cols > 0) {
             elem.m_reserved20 = 0;
             elem.m_scale = 1.0f;
-            i32 rowD2 = ay * ay;
-            float cellR = static_cast<float>(
-                sqrt(static_cast<double>(halfH * halfH + halfW * halfW)) + radius - g_fxBias
-            );
+            float cellR = static_cast<float>(halfSize.Mag() + radius - g_fxBias);
             i32 x = 0;
-            i32 bx = halfW;
-            i32 negW = -cellW;
+            i32 bx = halfSize.m_x;
+            i32 negW = -cellSize.m_x;
             i32 i = 0;
             do {
-                RECT pt48;
-                pt48.left = 0;
-                pt48.top = 0;
-                pt48.right = cellW;
-                pt48.bottom = cellH;
-                i32 d2 = bx * bx + rowD2;
-                double v = sqrt(static_cast<double>(d2));
-                float u, w;
-                if (v > g_fxEps) {
-                    u = static_cast<float>((x - halfW) / v);
-                    w = static_cast<float>((y - halfH) / v);
+                CRect pt48(0, 0, cellSize.m_x, cellSize.m_y);
+                Coord radialOffset(bx, ay);
+                i32 radiusSqr = radialOffset.MagSqr();
+                double distance = radialOffset.Mag();
+                FloatVector2 spreadDirection;
+                if (distance > g_fxEps) {
+                    spreadDirection =
+                        FloatVector2(Coord(x, y) - halfSize) / static_cast<float>(distance);
                 } else {
-                    u = 0.0f;
-                    w = 1.0f;
+                    spreadDirection.Init(0.0f, 1.0f);
                 }
-                OffsetRect(&pt48, x, y);
-                OffsetRect(&pt48, static_cast<i32>((u * cellR)), static_cast<i32>((w * cellR)));
+                pt48.OffsetRect(x, y);
+                pt48.OffsetRect(
+                    static_cast<i32>(spreadDirection.x * cellR),
+                    static_cast<i32>(spreadDirection.y * cellR)
+                );
 
-                RECT pt64;
-                pt64.left = 0;
-                pt64.top = 0;
-                pt64.right = d2;
-                pt64.bottom = cellH;
-                OffsetRect(&pt64, x, y);
+                CRect pt64(0, 0, radiusSqr, cellSize.m_y);
+                pt64.OffsetRect(x, y);
 
                 if (m_reverseOrder) {
                     elem.m_startRect = pt64;
@@ -361,12 +364,12 @@ i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
                 }
                 mesh->m_pData[idx] = elem;
 
-                x += cellW;
+                x += cellSize.m_x;
                 bx += negW;
                 i++;
             } while (i < m_cols);
         }
-        y += cellH;
+        y += cellSize.m_y;
         ay += negH;
         r++;
     } while (r < m_rows);
@@ -387,23 +390,8 @@ void CFaderMesh::RenderFrame(i32 frame) {
         u32 total = GetFrameCount();
         float t = static_cast<float>(cur) / static_cast<float>(total);
         RECT srcRect = elem.m_startRect;
-        RECT dstRect;
+        CRect dstRect = InterpolateRect(elem.m_startRect, elem.m_endRect, t);
         RECT boundRect = elem.m_endRect;
-
-        dstRect.left =
-            elem.m_startRect.left
-            + static_cast<i32>(static_cast<float>(elem.m_endRect.left - elem.m_startRect.left) * t);
-        dstRect.top =
-            elem.m_startRect.top
-            + static_cast<i32>(static_cast<float>(elem.m_endRect.top - elem.m_startRect.top) * t);
-        dstRect.right = elem.m_startRect.right
-                        + static_cast<i32>(
-                            static_cast<float>(elem.m_endRect.right - elem.m_startRect.right) * t
-                        );
-        dstRect.bottom = elem.m_startRect.bottom
-                         + static_cast<i32>(
-                             static_cast<float>(elem.m_endRect.bottom - elem.m_startRect.bottom) * t
-                         );
 
         if (dstRect.left < 0 && dstRect.right > 0) {
             boundRect.left = elem.m_endRect.left - dstRect.left;

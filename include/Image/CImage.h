@@ -6,6 +6,7 @@
 #include <DDrawMgr/DDSurface.h>
 #include <Ints.h>
 #include <Wap32/WapObj.h>
+#include <Win32.h>
 
 #include <stddef.h>
 
@@ -74,10 +75,8 @@ public:
 
     i32 m_width;
     i32 m_height;
-    i32 m_anchorX;
-    i32 m_anchorY;
-    i32 m_originX;
-    i32 m_originY;
+    POINT m_anchor;
+    POINT m_origin;
     i32 m_bltFastFlags;
     CDDSurface* m_surface;
     CDDrawShadeBlit* m_owned;

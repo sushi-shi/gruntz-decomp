@@ -19,6 +19,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
@@ -60,11 +61,19 @@ i32 CBattlezMapConfig::CheckQueuedSpawnTile(CGrunt* unit) {
     BrickzCell* tile = &(
         static_cast<BrickzCell*>((m_board)->m_rows[unit->ArrivalCell().m_y])
     )[unit->ArrivalCell().m_x];
-    if (tile->m_flags & 0x20) {
+    if (tile->m_flags & IDX(CELL_FLAG_DESTRUCTIBLE_ROCK)) {
         if (static_cast<u32>(unit->m_dwell) <= static_cast<u32>(m_reserveBudget)) {
             return 1;
         }
-        if (unit->TileSwitch(unit->m_arrivalCell.m_x, unit->m_arrivalCell.m_y, 0, 0xd87, 0, 0)
+        if (unit->TileSwitch(
+                unit->m_arrivalCell.m_x,
+                unit->m_arrivalCell.m_y,
+                0,
+                IDX(CELL_FLAG_SOLID | CELL_FLAG_SPECIAL | CELL_FLAG_TRIGGER | CELL_FLAG_ARROW
+                    | CELL_FLAG_WATER | CELL_FLAG_SPIKES | CELL_FLAG_SINK_HAZARD),
+                0,
+                0
+            )
             != 0) {
             unit->m_dwell = 0;
             return 1;
@@ -80,8 +89,7 @@ i32 CBattlezMapConfig::CheckQueuedSpawnTile(CGrunt* unit) {
             RECYCLE_GRUNT_COORDS_EXPANDED(unit)
         }
     }
-    Coord none;
-    unit->m_arrivalCell = *none.Set(-1, -1);
+    unit->m_arrivalCell.Set(-1, -1);
     unit->m_defenderState = AISTATE_SEEK;
     unit->m_dwell = 0;
     return 1;

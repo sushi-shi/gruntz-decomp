@@ -17,7 +17,7 @@
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPuddle.h>
-#include <Gruntz/GruntRandomPointMacros.h>
+#include <Gruntz/RandomExtentPoint.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
@@ -62,17 +62,18 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
                 if (m_stamina < STAMINA_FULL) {
                     return 1;
                 }
-                if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) != 0
+                if (RectContains(
+                        occ->m_object->m_screenPosition.m_x,
+                        occ->m_object->m_screenPosition.m_y
+                    ) != 0
                     && GRUNT_AT_SAVED_SCREEN_POS(occ)) {
                     COMMIT_GRUNT_NEIGHBOR(occ);
                     return 1;
                 }
                 {
-                    CWwdSpriteObject* h = m_object;
-                    i32 vx = h->m_screenX;
-                    i32 vy = h->m_screenY;
+                    Coord voicePosition = m_object->ScreenPos();
                     const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
-                    if (::PtInRect(rect, vx, vy)) {
+                    if (::PtInRect(rect, voicePosition.m_x, voicePosition.m_y)) {
                         g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
                     }
                 }
@@ -86,11 +87,9 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
             m_defenderState = AISTATE_CHASE;
             m_dwell = DWELL_REPATH_MS;
             {
-                CWwdSpriteObject* h = m_object;
-                i32 vx = h->m_screenX;
-                i32 vy = h->m_screenY;
+                Coord voicePosition = m_object->ScreenPos();
                 const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
-                if (::PtInRect(rect, vx, vy)) {
+                if (::PtInRect(rect, voicePosition.m_x, voicePosition.m_y)) {
                     g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
                 }
             }
@@ -101,8 +100,7 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
                 m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
             CGrunt* g = m_triggerMgr->FindNearestEnemy(this);
             if (g != NULL && g != occ) {
-                Coord none;
-                m_arrivalCell = *none.Set(-1, -1);
+                m_arrivalCell.Set(-1, -1);
                 m_defenderState = AISTATE_SEEK;
                 return 1;
             }
@@ -132,13 +130,14 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
             if (m_stamina < STAMINA_FULL) {
                 return 1;
             }
-            if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) == 0) {
+            if (RectContains(
+                    occ->m_object->m_screenPosition.m_x,
+                    occ->m_object->m_screenPosition.m_y
+                )
+                == 0) {
                 return 1;
             }
-            if (occ->GRUNT_SCREEN_X_NOT_AT_SAVED_POS(m_object, occ)) {
-                return 1;
-            }
-            if (occ->GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(m_object, occ)) {
+            if (occ->m_object->ScreenPos() != occ->m_lastTilePx) {
                 return 1;
             }
             COMMIT_GRUNT_NEIGHBOR(occ);
@@ -170,24 +169,17 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
             if (IsArrivalRerollPending() != 0) {
                 {
                     CWwdSpriteObject* h = m_object;
-                    SELECT_RANDOM_EXTENT_POINT_SEPARATE_BASE(
-                        h,
-                        baseX,
-                        spanX,
-                        baseY,
-                        spanY,
-                        outX,
-                        outY
-                    )
+                    Coord point;
+                    Coord span;
+                    SelectRandomExtentPoint(h, &point, &span);
                     CMapMgr* bd = g_gameReg->m_tileGrid;
-                    if (static_cast<u32>(outX) < static_cast<u32>(bd->m_width)
-                        && static_cast<u32>(outY) < static_cast<u32>(bd->m_height)) {
-                        TileSwitch(outX, outY, 0, m_arrivalFlags, 1, 0);
+                    if (static_cast<u32>(point.m_x) < static_cast<u32>(bd->m_width)
+                        && static_cast<u32>(point.m_y) < static_cast<u32>(bd->m_height)) {
+                        TileSwitch(point.m_x, point.m_y, 0, m_arrivalFlags, 1, 0);
                     }
                     i32 m328 = CoordCount();
                     if (m328 != 0) {
-                        i32 mx = spanX > spanY ? spanX : spanY;
-                        if (m328 > mx) {
+                        if (m328 > Max(span.m_x, span.m_y)) {
                             SetEntrancePos(1, 1);
                         }
                     }

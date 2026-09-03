@@ -5,6 +5,7 @@
 
 #include <Gruntz/ActReg.h>
 #include <Gruntz/CoordNode.h>
+#include <Gruntz/DoubleVector.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/UserLogic.h>
@@ -33,10 +34,8 @@ public:
     }
     char m_pad54[0x58 - 0x54];
     double m_speed;
-    double m_posX;
-    double m_posY;
-    double m_dirX;
-    double m_dirY;
+    DoubleVector2 m_position;
+    DoubleVector2 m_direction;
     Coord m_tilePosition;
     double m_stepMag;
 };

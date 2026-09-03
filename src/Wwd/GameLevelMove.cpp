@@ -1,12 +1,14 @@
 #include <rva.h>
 
 #include <Mfc.h>
+#include <MfcWin.h>
 
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/WwdGrid.h>
+#include <MakeRect.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/Object.h>
 #include <Wwd/MoveFlags.h>
@@ -17,15 +19,13 @@
 RVA(0x00167130, 0x83)
 i32 CGameLevel::ApplyMove(CGameObject* target, i32 destX, i32 destY, i32 moveFlags) {
     i32 result = 0;
-    i32 prevX = target->m_screenX;
-    i32 prevY = target->m_screenY;
+    Coord previousPosition = target->ScreenPos();
     MoveMode moveMode = target->m_moveMode;
 
     if (moveMode > MOVE_NONE) {
         if (moveMode > MOVE_GROUNDED_LAST) {
             if (moveMode == MOVE_DIRECT) {
-                target->m_screenX = destX;
-                target->m_screenY = destY;
+                target->SetScreenPos(destX, destY);
             }
         } else {
             result = MoveAxisAligned(target, destX, destY, moveFlags);
@@ -39,10 +39,10 @@ i32 CGameLevel::ApplyMove(CGameObject* target, i32 destX, i32 destY, i32 moveFla
     if (objectFlags & IDX(WWD_GAME_OBJECT_FLAG_TOUCHED_DEATH_TILE)) {
         result |= IDX(MOVE_RESULT_DEATH_TILE);
     }
-    if (objectFlags & 0x10) {
+    if (objectFlags & IDX(WWD_GAME_OBJECT_FLAG_ON_CARRIER)) {
         result |= IDX(MOVE_RESULT_ON_CARRIER);
     }
-    if (target->m_screenX == prevX && target->m_screenY == prevY) {
+    if (target->ScreenPos() == previousPosition) {
         result |= IDX(MOVE_RESULT_NO_POSITION_CHANGE);
     }
     return result;
@@ -51,20 +51,18 @@ i32 CGameLevel::ApplyMove(CGameObject* target, i32 destX, i32 destY, i32 moveFla
 RVA(0x001671c0, 0x97)
 i32 CGameLevel::MoveAxisAligned(CGameObject* t, i32 x, i32 y, i32 flags) {
     i32 result = 0;
-    i32 curX = t->m_screenX;
-    if (x > curX) {
+    Coord currentPosition = t->ScreenPos();
+    if (x > currentPosition.m_x) {
         result = MoveStepXHi(t, x, y, &x, flags);
-    } else if (x < curX) {
+    } else if (x < currentPosition.m_x) {
         result = MoveStepXLo(t, x, y, &x, flags);
     }
-    i32 curY = t->m_screenY;
-    if (y > curY) {
+    if (y > currentPosition.m_y) {
         result |= MoveStepYHi(t, x, y, &y, flags);
-    } else if (y < curY) {
+    } else if (y < currentPosition.m_y) {
         result |= MoveStepYLo(t, x, y, &y, flags);
     }
-    t->m_screenX = x;
-    t->m_screenY = y;
+    t->SetScreenPos(x, y);
     return result;
 }
 
@@ -83,7 +81,7 @@ i32 CGameLevel::MoveStepXHi(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
             result = TILEKIND_PASSABLE;
         }
         if (result == TILEKIND_SOLID || result == TILEKIND_GROUND) {
-            i32 lo = t->m_screenX + t->m_extent.right;
+            i32 lo = t->m_screenPosition.m_x + t->m_extent.right;
             x = xEnd - 1;
             state |= IDX(MOVE_RESULT_AXIS_BLOCKED | MOVE_RESULT_TILE_RIGHT);
             for (; x > lo; x--) {
@@ -92,24 +90,24 @@ i32 CGameLevel::MoveStepXHi(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
                     goto have_x;
                 }
             }
-            x = t->m_screenX;
+            x = t->m_screenPosition.m_x;
         have_x:
-            if (x == t->m_screenX) {
-                *px = t->m_screenX;
+            if (x == t->m_screenPosition.m_x) {
+                *px = t->m_screenPosition.m_x;
                 return state;
             }
         }
         if (yLo == yHi) {
             yLo++;
         } else {
-            yLo += t->m_strideY;
+            yLo += t->m_stride.m_y;
             if (yLo > yHi) {
                 yLo = yHi;
             }
         }
     }
     if (BroadPhase(t, x, y) != 0) {
-        *px = t->m_screenX;
+        *px = t->m_screenPosition.m_x;
         return state | IDX(MOVE_RESULT_OBJECT_COLLISION | MOVE_RESULT_OBJECT_RIGHT);
     }
     *px = x;
@@ -131,7 +129,7 @@ i32 CGameLevel::MoveStepXLo(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
             result = TILEKIND_PASSABLE;
         }
         if (result == TILEKIND_SOLID || result == TILEKIND_GROUND) {
-            i32 lo = t->m_screenX + t->m_extent.left;
+            i32 lo = t->m_screenPosition.m_x + t->m_extent.left;
             x = xEnd + 1;
             state |= IDX(MOVE_RESULT_AXIS_BLOCKED | MOVE_RESULT_TILE_LEFT);
             for (; x < lo; x++) {
@@ -140,24 +138,24 @@ i32 CGameLevel::MoveStepXLo(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
                     goto have_x;
                 }
             }
-            x = t->m_screenX;
+            x = t->m_screenPosition.m_x;
         have_x:
-            if (x == t->m_screenX) {
-                *px = t->m_screenX;
+            if (x == t->m_screenPosition.m_x) {
+                *px = t->m_screenPosition.m_x;
                 return state;
             }
         }
         if (yLo == yHi) {
             yLo++;
         } else {
-            yLo += t->m_strideY;
+            yLo += t->m_stride.m_y;
             if (yLo > yHi) {
                 yLo = yHi;
             }
         }
     }
     if (BroadPhase(t, x, y) != 0) {
-        *px = t->m_screenX;
+        *px = t->m_screenPosition.m_x;
         return state | IDX(MOVE_RESULT_OBJECT_COLLISION | MOVE_RESULT_OBJECT_LEFT);
     }
     *px = x;
@@ -179,7 +177,7 @@ i32 CGameLevel::MoveStepYHi(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
             result = TILEKIND_PASSABLE;
         }
         if (result == TILEKIND_SOLID || result == TILEKIND_GROUND) {
-            i32 lo = t->m_screenY + t->m_extent.bottom;
+            i32 lo = t->m_screenPosition.m_y + t->m_extent.bottom;
             y = fixedY - 1;
             state |= IDX(MOVE_RESULT_AXIS_BLOCKED | MOVE_RESULT_TILE_BOTTOM);
             for (; y > lo; y--) {
@@ -188,24 +186,24 @@ i32 CGameLevel::MoveStepYHi(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
                     goto have_y;
                 }
             }
-            y = t->m_screenY;
+            y = t->m_screenPosition.m_y;
         have_y:
-            if (y == t->m_screenY) {
-                *py = t->m_screenY;
+            if (y == t->m_screenPosition.m_y) {
+                *py = t->m_screenPosition.m_y;
                 return state;
             }
         }
         if (col == colHi) {
             col++;
         } else {
-            col += t->m_strideX;
+            col += t->m_stride.m_x;
             if (col > colHi) {
                 col = colHi;
             }
         }
     }
     if (BroadPhase(t, x, y) != 0) {
-        *py = t->m_screenY;
+        *py = t->m_screenPosition.m_y;
         return state | IDX(MOVE_RESULT_OBJECT_COLLISION | MOVE_RESULT_OBJECT_BOTTOM);
     }
     *py = y;
@@ -227,7 +225,7 @@ i32 CGameLevel::MoveStepYLo(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
             result = TILEKIND_PASSABLE;
         }
         if (result == TILEKIND_SOLID || result == TILEKIND_GROUND) {
-            i32 lo = t->m_screenY + t->m_extent.top;
+            i32 lo = t->m_screenPosition.m_y + t->m_extent.top;
             y = fixedY + 1;
             state |= IDX(MOVE_RESULT_AXIS_BLOCKED | MOVE_RESULT_TILE_TOP);
             for (; y < lo; y++) {
@@ -236,24 +234,24 @@ i32 CGameLevel::MoveStepYLo(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
                     goto have_y;
                 }
             }
-            y = t->m_screenY;
+            y = t->m_screenPosition.m_y;
         have_y:
-            if (y == t->m_screenY) {
-                *py = t->m_screenY;
+            if (y == t->m_screenPosition.m_y) {
+                *py = t->m_screenPosition.m_y;
                 return state;
             }
         }
         if (col == colHi) {
             col++;
         } else {
-            col += t->m_strideX;
+            col += t->m_stride.m_x;
             if (col > colHi) {
                 col = colHi;
             }
         }
     }
     if (BroadPhase(t, x, y) != 0) {
-        *py = t->m_screenY;
+        *py = t->m_screenPosition.m_y;
         return state | IDX(MOVE_RESULT_OBJECT_COLLISION | MOVE_RESULT_OBJECT_TOP);
     }
     *py = y;
@@ -264,7 +262,7 @@ i32 CGameLevel::MoveStepYLo(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00167a20, 0x11b)
 i32 CGameLevel::ResolveRightX(CGameObject* t, i32 x, i32 y) {
-    i32 sx = t->m_screenX;
+    i32 sx = t->m_screenPosition.m_x;
     i32 limit = sx + t->m_extent.right;
     for (x--; x > limit; x--) {
         TileCollisionKind result;
@@ -273,14 +271,14 @@ i32 CGameLevel::ResolveRightX(CGameObject* t, i32 x, i32 y) {
             return x - t->m_extent.right;
         }
     }
-    return t->m_screenX;
+    return t->m_screenPosition.m_x;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00167b40, 0x11b)
 i32 CGameLevel::ResolveLeftX(CGameObject* t, i32 x, i32 y) {
-    i32 limit = t->m_screenX;
+    i32 limit = t->m_screenPosition.m_x;
     limit += t->m_extent.left;
     for (x++; x < limit; x++) {
         TileCollisionKind result;
@@ -289,14 +287,14 @@ i32 CGameLevel::ResolveLeftX(CGameObject* t, i32 x, i32 y) {
             return x - t->m_extent.left;
         }
     }
-    return t->m_screenX;
+    return t->m_screenPosition.m_x;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00167c60, 0x11b)
 i32 CGameLevel::ResolveBottomY(CGameObject* t, i32 x, i32 y) {
-    i32 sy = t->m_screenY;
+    i32 sy = t->m_screenPosition.m_y;
     i32 limit = sy + t->m_extent.bottom;
     for (y--; y > limit; y--) {
         TileCollisionKind result;
@@ -305,14 +303,14 @@ i32 CGameLevel::ResolveBottomY(CGameObject* t, i32 x, i32 y) {
             return y - t->m_extent.bottom;
         }
     }
-    return t->m_screenY;
+    return t->m_screenPosition.m_y;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00167d80, 0x11b)
 i32 CGameLevel::ResolveTopY(CGameObject* t, i32 x, i32 y) {
-    i32 sy = t->m_screenY;
+    i32 sy = t->m_screenPosition.m_y;
     i32 e = t->m_extent.top;
     i32 limit = sy + e;
     for (y++; y < limit; y++) {
@@ -322,7 +320,7 @@ i32 CGameLevel::ResolveTopY(CGameObject* t, i32 x, i32 y) {
             return y - t->m_extent.top;
         }
     }
-    return t->m_screenY;
+    return t->m_screenPosition.m_y;
 }
 
 RVA(0x00167ea0, 0x1b9)
@@ -337,20 +335,37 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
         if (obj != t && (obj->m_flags & IDX(WWD_GAME_OBJECT_FLAG_COLLIDE_WITH_OBJECTS))
             && (t->m_collMask & obj->m_objectType) && t->m_extent.left != COORD_UNSET
             && obj->m_extent.left != COORD_UNSET) {
-            i32 tLeft = t->m_extent.left + t->m_screenX;
-            i32 tBot = t->m_extent.top + t->m_screenY;
-            i32 tRight = t->m_screenX + t->m_extent.right;
-            i32 tTop = t->m_extent.bottom + t->m_screenY;
-            i32 oLeft = obj->m_screenX + obj->m_extent.left;
-            i32 oBot = obj->m_extent.top + obj->m_screenY;
-            i32 oTop = obj->m_screenY + obj->m_extent.bottom;
-            i32 oRight = obj->m_screenX + obj->m_extent.right;
-            if (tLeft > oRight || tRight < oLeft || tBot > oTop || tTop < oBot) {
-                i32 cLeft = candX + t->m_extent.left;
-                i32 cRight = t->m_extent.right + candX;
-                i32 cBot = t->m_extent.top + candY;
-                i32 cTop = t->m_extent.bottom + candY;
-                if (cLeft <= oRight && cRight >= oLeft && cBot <= oTop && cTop >= oBot) {
+            RECT currentBounds;
+            SetRect(
+                &currentBounds,
+                t->m_extent.left + t->m_screenPosition.m_x,
+                t->m_extent.top + t->m_screenPosition.m_y,
+                t->m_screenPosition.m_x + t->m_extent.right,
+                t->m_extent.bottom + t->m_screenPosition.m_y
+            );
+            RECT otherBounds;
+            SetRect(
+                &otherBounds,
+                obj->m_screenPosition.m_x + obj->m_extent.left,
+                obj->m_extent.top + obj->m_screenPosition.m_y,
+                obj->m_screenPosition.m_x + obj->m_extent.right,
+                obj->m_screenPosition.m_y + obj->m_extent.bottom
+            );
+            if (currentBounds.left > otherBounds.right || currentBounds.right < otherBounds.left
+                || currentBounds.top > otherBounds.bottom
+                || currentBounds.bottom < otherBounds.top) {
+                RECT candidateBounds;
+                SetRect(
+                    &candidateBounds,
+                    candX + t->m_extent.left,
+                    candY + t->m_extent.top,
+                    t->m_extent.right + candX,
+                    t->m_extent.bottom + candY
+                );
+                if (candidateBounds.left <= otherBounds.right
+                    && candidateBounds.right >= otherBounds.left
+                    && candidateBounds.top <= otherBounds.bottom
+                    && candidateBounds.bottom >= otherBounds.top) {
                     i32 fire;
                     if (t->m_collisionLogic != NULL) {
                         t->m_hitOther = obj;
@@ -397,42 +412,28 @@ i32 CWwdSpatialMgr::Init(
     i32* smallRegionSize
 ) {
     if (owner) {
+        CSize defaultGridSize(defaultGridCellSize[0], defaultGridCellSize[1]);
+        CSize largeGridSize(largeGridCellSize[0], largeGridCellSize[1]);
+        CSize smallGridSize(smallGridCellSize[0], smallGridCellSize[1]);
+        CSize defaultRegion(defaultRegionSize[0], defaultRegionSize[1]);
+        CSize largeRegion(largeRegionSize[0], largeRegionSize[1]);
+        CSize smallRegion(smallRegionSize[0], smallRegionSize[1]);
         m_defaultRegionGrid = new CWwdGridShell;
         m_largeRegionGrid = new CWwdGridShell;
         m_smallRegionGrid = new CWwdGridShell;
         if (m_defaultRegionGrid && m_largeRegionGrid && m_smallRegionGrid
-            && m_defaultRegionGrid
-                   ->Setup(*levelBounds, defaultGridCellSize[0], defaultGridCellSize[1])
-            && m_largeRegionGrid->Setup(*levelBounds, largeGridCellSize[0], largeGridCellSize[1])
-            && m_smallRegionGrid->Setup(*levelBounds, smallGridCellSize[0], smallGridCellSize[1])) {
-            m_defaultRegionRect.left = 0;
-            m_defaultRegionRect.top = 0;
-            m_defaultRegionRect.right = defaultRegionSize[0] - 1;
-            m_defaultRegionRect.bottom = defaultRegionSize[1] - 1;
-            m_defaultRegionHalfWidth = defaultRegionSize[0] / 2;
-            m_defaultRegionHalfHeight = defaultRegionSize[1] / 2;
-            m_largeRegionRect.left = 0;
-            m_largeRegionRect.top = 0;
-            m_largeRegionRect.right = largeRegionSize[0] - 1;
-            m_largeRegionRect.bottom = largeRegionSize[1] - 1;
-            m_largeRegionHalfWidth = largeRegionSize[0] / 2;
-            m_largeRegionHalfHeight = largeRegionSize[1] / 2;
-            m_smallRegionRect.left = 0;
-            m_smallRegionRect.top = 0;
-            m_smallRegionRect.right = smallRegionSize[0] - 1;
-            m_smallRegionRect.bottom = smallRegionSize[1] - 1;
-            m_smallRegionHalfWidth = smallRegionSize[0] / 2;
-            m_smallRegionHalfHeight = smallRegionSize[1] / 2;
+            && m_defaultRegionGrid->Setup(*levelBounds, defaultGridSize.cx, defaultGridSize.cy)
+            && m_largeRegionGrid->Setup(*levelBounds, largeGridSize.cx, largeGridSize.cy)
+            && m_smallRegionGrid->Setup(*levelBounds, smallGridSize.cx, smallGridSize.cy)) {
+            m_defaultRegionRect = MakeRect(0, 0, defaultRegion.cx - 1, defaultRegion.cy - 1);
+            m_defaultRegionHalfSize = CSize(defaultRegion.cx / 2, defaultRegion.cy / 2);
+            m_largeRegionRect = MakeRect(0, 0, largeRegion.cx - 1, largeRegion.cy - 1);
+            m_largeRegionHalfSize = CSize(largeRegion.cx / 2, largeRegion.cy / 2);
+            m_smallRegionRect = MakeRect(0, 0, smallRegion.cx - 1, smallRegion.cy - 1);
+            m_smallRegionHalfSize = CSize(smallRegion.cx / 2, smallRegion.cy / 2);
             m_activeGroup = owner;
-            SetRect(
-                &m_levelBounds,
-                levelBounds->left,
-                levelBounds->top,
-                levelBounds->right,
-                levelBounds->bottom
-            );
-            m_activeCenterX = static_cast<i32>(0xffffa932);
-            m_activeCenterY = static_cast<i32>(0xffffa932);
+            m_levelBounds = *levelBounds;
+            m_activeCenter.Set(static_cast<i32>(0xffffa932), static_cast<i32>(0xffffa932));
             return 1;
         }
     }

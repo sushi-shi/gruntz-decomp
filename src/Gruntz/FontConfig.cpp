@@ -8,6 +8,7 @@
 #include <Bute/ButeMgr.h>
 #include <Enums.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <MakeRect.h>
 #include <Rez/FrameClock.h>
 
 #include <string.h>
@@ -419,10 +420,7 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
         if (item != NULL) {
             if (HAS(item->flags, FONT_ITEM_SHADOW)) {
                 SetTextColor(hdc, TCLR_BLACK);
-                work.left = cur.left + 1;
-                work.right = cur.right + 1;
-                work.top = cur.top + 1;
-                work.bottom = cur.bottom + 1;
+                work = MakeRect(cur.left + 1, cur.top + 1, cur.right + 1, cur.bottom + 1);
                 DrawTextA(hdc, item->name, strlen(item->name), &work, format);
             }
             if (HAS(item->flags, FONT_ITEM_COLORED)) {
@@ -494,10 +492,7 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
             calc.top = measuredBottom;
             calc.bottom = rb;
             calc.right = rr;
-            cur.left = measuredLeft;
-            cur.top = measuredBottom;
-            cur.right = rr;
-            cur.bottom = rb;
+            cur = MakeRect(measuredLeft, measuredBottom, rr, rb);
             SetTextColor(hdc, TCLR_WHITE);
         }
         if (savedFont) {
@@ -571,21 +566,12 @@ i32 CFontConfig::Draw3DText(
     DrawTextA(hdc, text, strlen(text), &rc, DT_CALCRECT | DT_WORDBREAK | DT_CENTER);
     i32 hoff = (dst->right + rc.left - dst->left - rc.right) / 2;
     i32 voff = (dst->bottom - dst->top + rc.top - rc.bottom) / 2;
-    rc.left += hoff;
-    rc.right += hoff;
-    rc.top += voff;
-    rc.bottom += voff;
+    OffsetRect(&rc, hoff, voff);
     if (shadow) {
         SetTextColor(hdc, 0);
-        rc.left += dx;
-        rc.top += dy;
-        rc.right += dx;
-        rc.bottom += dy;
+        OffsetRect(&rc, dx, dy);
         DrawTextA(hdc, text, strlen(text), &rc, DT_WORDBREAK | DT_CENTER);
-        rc.right -= dx;
-        rc.left -= dx;
-        rc.bottom -= dy;
-        rc.top -= dy;
+        OffsetRect(&rc, -dx, -dy);
     }
     SetTextColor(hdc, RGB(r, g, b));
     DrawTextA(hdc, text, strlen(text), &rc, DT_WORDBREAK | DT_CENTER);

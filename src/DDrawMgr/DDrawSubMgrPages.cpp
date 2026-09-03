@@ -35,6 +35,7 @@
 #include <Gruntz/StateId.h>
 #include <Image/CImage.h>
 #include <Io/FileMem.h>
+#include <MakeRect.h>
 #include <Pix16.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezArchive.h>
@@ -385,10 +386,7 @@ i32 CDrawSubWorker::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
     m_width = w;
     m_bpp = bpp;
     m_height = h;
-    m_srcRect.bottom = h;
-    m_srcRect.left = 0;
-    m_srcRect.top = 0;
-    m_srcRect.right = w;
+    m_srcRect = MakeRect(0, 0, w, h);
     return 1;
 }
 
@@ -400,13 +398,10 @@ i32 CDrawSubWorker::SetGeom(i32 w, i32 h, ColorDepth bpp) {
     if (bpp != BPP_PALETTED_8 && bpp != BPP_RGB_16 && bpp != BPP_RGB_24 && bpp != BPP_RGB_32) {
         return 0;
     }
-    m_height = h;
-    m_srcRect.bottom = h;
     m_width = w;
+    m_height = h;
     m_bpp = bpp;
-    m_srcRect.left = 0;
-    m_srcRect.top = 0;
-    m_srcRect.right = w;
+    m_srcRect = MakeRect(0, 0, w, h);
     return 1;
 }
 

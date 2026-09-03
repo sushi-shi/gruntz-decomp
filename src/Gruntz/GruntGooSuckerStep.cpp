@@ -31,6 +31,7 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/VoiceManager.h>
 #include <Ints.h>
+#include <MakeRect.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/ZVec.h>
 
@@ -43,6 +44,7 @@
 RVA(0x000f0db0, 0x48)
 
 i32 CellTargetable(i32 tileX, i32 tileY) {
+    Coord tile(tileX, tileY);
     CPtrList& list = g_gameReg->m_triggerMgr->m_baseList;
     POSITION pos = list.GetHeadPosition();
 
@@ -50,9 +52,7 @@ i32 CellTargetable(i32 tileX, i32 tileY) {
         do {
             CGruntPuddle* p = static_cast<CGruntPuddle*>(list.GetNext(pos));
             if (p->m_pending == false) {
-                i32 puddleX = p->m_tileX;
-                i32 puddleY = p->m_tileY;
-                if (puddleX == tileX && puddleY == tileY) {
+                if (p->m_tile == tile) {
                     return 1;
                 }
             }
@@ -69,16 +69,12 @@ i32 CGrunt::StepGooSuckerBehavior() {
     }
     m_defenderPx = m_lastTilePx;
     CMapMgr* grid = g_gameReg->m_tileGrid;
-    GRID_CLIP_NULL(grid);
+    grid->Clip(NULL);
 
-    Coord c1;
-    GetScreenPos(&c1);
-    c1.m_x >>= TILE_SHIFT_PX;
-    Coord c2;
-    GetScreenPos(&c2);
-    c2.m_y >>= TILE_SHIFT_PX;
+    Coord selfTile;
+    GetScreenTile(&selfTile);
 
-    FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget, x)
+    FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget)
 
     b32 powered = m_poweredUp;
     if (powered != false) {
@@ -149,7 +145,8 @@ L_ed006b:
         goto L_scanb;
     }
     if (m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(g)
-        && RectContains(g->m_object->m_screenX, g->m_object->m_screenY) != 0) {
+        && RectContains(g->m_object->m_screenPosition.m_x, g->m_object->m_screenPosition.m_y)
+               != 0) {
         COMMIT_GRUNT_NEIGHBOR(g);
     }
     if (m_poweredUp != false) {
@@ -160,17 +157,15 @@ L_ed006b:
     }
     {
         Coord cc;
-        g->GetScreenPos(&cc);
-        if (TileSwitch(cc.m_x >> TILE_SHIFT_PX, cc.m_y >> TILE_SHIFT_PX, 0, m_arrivalFlags, 1, 0)
-            != 0) {
+        g->GetScreenTile(&cc);
+        if (TileSwitch(cc.m_x, cc.m_y, 0, m_arrivalFlags, 1, 0) != 0) {
             if (m_blockedVoicePending != false) {
-                i32 x = m_object->m_screenX;
-                i32 y = m_object->m_screenY;
+                Coord voicePosition = m_object->ScreenPos();
                 CGruntzMgr* game = g_gameReg;
                 if (CGameLevel::PointInBounds(
                         &game->m_world->m_level->m_mainPlane->m_planeViewRect,
-                        x,
-                        y
+                        voicePosition.m_x,
+                        voicePosition.m_y
                     )
                     != 0) {
                     game->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
@@ -188,92 +183,71 @@ L_scanb:
         }
 
         i32 r = m_defenderRadius;
-        RECT box;
-        box.left = c1.m_x - r;
-        box.right = c1.m_x + r;
-        box.top = c2.m_y - r;
-        box.bottom = c2.m_y + r;
-        RECT gb;
-        gb.left = 0;
-        gb.top = 0;
-        gb.right = grid->m_width;
-        gb.bottom = grid->m_height;
+        RECT box = MakeRect(selfTile.m_x - r, selfTile.m_y - r, selfTile.m_x + r, selfTile.m_y + r);
+        RECT gb = MakeRect(0, 0, grid->m_width, grid->m_height);
         RECT isect;
         if (!IntersectRect(&isect, &box, &gb)) {
             isect = box;
         }
-        GRID_CLIP_INL(grid, &isect);
+        grid->Clip(&isect);
 
         i32 best = INT_MAX;
-        i32 bestX = 0;
-        i32 bestY = 0;
+        Coord bestTile(0, 0);
 
         POSITION pos = m_triggerMgr->m_baseList.GetHeadPosition();
         while (pos != NULL) {
             CGruntPuddle* gg = static_cast<CGruntPuddle*>(m_triggerMgr->m_baseList.GetNext(pos));
             if (gg->m_pending == false) {
-                i32 gx = gg->m_tileX;
-                i32 gy = gg->m_tileY;
-                if (RectContains(
-                        (gx << TILE_SHIFT_PX) + TILE_HALF_PX,
-                        (gy << TILE_SHIFT_PX) + TILE_HALF_PX
-                    )
-                    != 0) {
+                Coord puddleTile = gg->m_tile;
+                Coord puddlePosition = puddleTile;
+                TileCenter(&puddlePosition);
+                if (RectContains(puddlePosition.m_x, puddlePosition.m_y) != 0) {
                     m_triggerMgr->UseEquippedToolAt(
                         m_playerIndex,
                         m_unitIndex,
-                        (gx << TILE_SHIFT_PX) + TILE_HALF_PX,
-                        (gy << TILE_SHIFT_PX) + TILE_HALF_PX
+                        puddlePosition.m_x,
+                        puddlePosition.m_y
                     );
-                    GRID_CLIP_INL(grid, NULL);
+                    grid->Clip(NULL);
                     return 1;
                 }
-                i32 dx = gx - (m_object->m_screenX >> TILE_SHIFT_PX);
-                i32 dy = gy - (m_object->m_screenY >> TILE_SHIFT_PX);
-                i32 dist = abs(dx) + abs(dy);
+                Coord distance = (puddleTile - selfTile).GetAbs();
+                i32 dist = distance.m_x + distance.m_y;
                 if (dist < best) {
-                    POINT pt;
-                    pt.x = gx;
-                    pt.y = gy;
-                    if (PtInRect(&isect, pt)) {
+                    if (::PtInRect(&isect, puddleTile.m_x, puddleTile.m_y)) {
                         best = dist;
-                        bestX = gx;
-                        bestY = gy;
+                        bestTile = puddleTile;
                     }
                 }
             }
         }
         if (best != INT_MAX) {
-            i32 dx = bestX - c1.m_x;
-            dx = abs(dx);
-            i32 dy = bestY - c2.m_y;
-            dy = abs(dy);
-            if (dx <= 1 && dy <= 1) {
+            Coord distance = (bestTile - selfTile).GetAbs();
+            if (distance.m_x <= 1 && distance.m_y <= 1) {
+                Coord bestPosition = bestTile;
+                TileCenter(&bestPosition);
                 m_triggerMgr->UseEquippedToolAt(
                     m_playerIndex,
                     m_unitIndex,
-                    (bestX << TILE_SHIFT_PX) + TILE_HALF_PX,
-                    (bestY << TILE_SHIFT_PX) + TILE_HALF_PX
+                    bestPosition.m_x,
+                    bestPosition.m_y
                 );
                 SetEntrancePos(1, 1);
             } else {
-                TileSwitch(bestX, bestY, 0, m_arrivalFlags, 1, 0);
+                TileSwitch(bestTile.m_x, bestTile.m_y, 0, m_arrivalFlags, 1, 0);
             }
         }
-        GRID_RECT_INLINE(grid);
+        grid->Clip(NULL);
     } else {
         Coord* coord = static_cast<Coord*>(m_coordList.GetHead());
-        i32 col = coord->m_x;
-        i32 row = coord->m_y;
-        if (CellTargetable(col, row) == 0) {
+        Coord targetTile = *coord;
+        if (CellTargetable(targetTile.m_x, targetTile.m_y) == 0) {
             return 1;
         }
-        m_triggerMgr->UseEquippedToolAt(
-            m_playerIndex,
-            m_unitIndex,
-            (col << TILE_SHIFT_PX) + TILE_HALF_PX,
-            (row << TILE_SHIFT_PX) + TILE_HALF_PX
-        );
+        Coord targetPosition = targetTile;
+        TileCenter(&targetPosition);
+        m_triggerMgr
+            ->UseEquippedToolAt(m_playerIndex, m_unitIndex, targetPosition.m_x, targetPosition.m_y);
         SetEntrancePos(1, 1);
     }
     m_dwell = 0;

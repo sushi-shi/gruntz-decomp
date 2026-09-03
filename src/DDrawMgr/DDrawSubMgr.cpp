@@ -24,6 +24,7 @@
 #include <Dsndmgr/SoundStream.h>
 #include <Dsndmgr/VolumeScale.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AnimationRegistry.h>
@@ -213,7 +214,7 @@ void CDDrawPixelWorker::Unload() {
 
     i32 v = COORD_UNSET;
     m_pixelValue = 0;
-    m_screenX = v;
+    m_screenPosition.m_x = v;
     m_dirty.m_rect.left = v;
     m_dirty.m_armed = -1;
 }
@@ -282,7 +283,7 @@ void CDDrawPlacedWorker::Unload() {
 
     i32 v = COORD_UNSET;
     m_contentValue = 0;
-    m_screenX = v;
+    m_screenPosition.m_x = v;
     m_dirty.m_rect.left = v;
     m_dirty.m_armed = -1;
 }
@@ -866,7 +867,7 @@ i32 SoundCue::PlaySpatialized(i32 sourceX, i32 listenerX, i32 maxPanOffsetPx, i3
         return 0;
     }
     if (listenerX <= 0) {
-        listenerX = OwnerMgr()->m_level->m_mainPlane->m_scrollPixelX;
+        listenerX = OwnerMgr()->m_level->m_mainPlane->m_scrollPixel.m_x;
     }
     if (maxPanOffsetPx <= 0) {
         maxPanOffsetPx = OwnerMgr()->m_drawTarget->m_frontSurface->m_width << 2;
@@ -880,13 +881,13 @@ i32 SoundCue::PlaySpatialized(i32 sourceX, i32 listenerX, i32 maxPanOffsetPx, i3
 
         if (panOffsetPx >= maxPanOffsetPx || panOffsetPx >= fullPanOffsetPx) {
 
-            panOffsetPx = maxPanOffsetPx < fullPanOffsetPx ? maxPanOffsetPx : fullPanOffsetPx;
+            panOffsetPx = Min(maxPanOffsetPx, fullPanOffsetPx);
         }
     } else {
 
         i32 absPanOffsetPx = abs(panOffsetPx);
         if (absPanOffsetPx >= maxPanOffsetPx || absPanOffsetPx >= fullPanOffsetPx) {
-            panOffsetPx = -(maxPanOffsetPx < fullPanOffsetPx ? maxPanOffsetPx : fullPanOffsetPx);
+            panOffsetPx = -Min(maxPanOffsetPx, fullPanOffsetPx);
         }
     }
     i32 panPercent = (panOffsetPx * VOLUME_PCT_MAX) / fullPanOffsetPx;

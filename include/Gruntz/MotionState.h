@@ -74,12 +74,8 @@ inline void CMotionState::InitBounds() {
     m_deltaTime = 0.0;
     m_reservedc0.Init();
     m_stepDisabled = false;
-    m_minBounds.x = g_movingLogicMin;
-    m_maxBounds.x = g_movingLogicMax;
-    m_minBounds.y = g_movingLogicMin;
-    m_maxBounds.y = g_movingLogicMax;
-    m_minBounds.z = g_movingLogicMin;
-    m_maxBounds.z = g_movingLogicMax;
+    m_minBounds.Init(g_movingLogicMin, g_movingLogicMin, g_movingLogicMin);
+    m_maxBounds.Init(g_movingLogicMax, g_movingLogicMax, g_movingLogicMax);
     m_maxStep.Init(g_movingLogicMax, g_movingLogicMax, g_movingLogicMax);
     m_maxVelocity.Init(g_movingLogicMax, g_movingLogicMax, g_movingLogicMax);
 }

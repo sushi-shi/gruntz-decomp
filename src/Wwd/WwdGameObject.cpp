@@ -1,6 +1,7 @@
 #include <rva.h>
 
 #include <Mfc.h>
+#include <MfcWin.h>
 
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawChildGroup.h>
@@ -127,22 +128,17 @@ void CWwdSpriteObject::BltDirtyEx(
         RECT ir;
         if (IntersectRect(&ir, &m_dirty.m_rect, &m_shadow.m_rect)) {
             UnionRect(&ir, &m_dirty.m_rect, &m_shadow.m_rect);
-            i32 pos[2];
-            i32 size[2];
-
-            pos[0] = ir.left;
-            pos[1] = ir.top;
-            size[0] = ir.right - ir.left + 1;
-            size[1] = ir.bottom - ir.top + 1;
-            dst->BlitDirtyRect(src, pos, size);
+            Coord position(ir.left, ir.top);
+            CSize size(ir.right - ir.left + 1, ir.bottom - ir.top + 1);
+            dst->BlitDirtyRect(src, position, size);
         } else {
-            dst->BlitDirtyRect(src, &m_dirty.m_lastX, &m_dirty.m_w);
-            dst->BlitDirtyRect(src, &m_shadow.m_lastX, &m_shadow.m_w);
+            dst->BlitDirtyRect(src, m_dirty.m_lastPosition, m_dirty.m_size);
+            dst->BlitDirtyRect(src, m_shadow.m_lastPosition, m_shadow.m_size);
         }
     } else if (m_dirty.m_armed != -1) {
-        dst->BlitDirtyRect(src, &m_dirty.m_lastX, &m_dirty.m_w);
+        dst->BlitDirtyRect(src, m_dirty.m_lastPosition, m_dirty.m_size);
     } else if (m_shadow.m_armed != -1) {
-        dst->BlitDirtyRect(src, &m_shadow.m_lastX, &m_shadow.m_w);
+        dst->BlitDirtyRect(src, m_shadow.m_lastPosition, m_shadow.m_size);
     }
 }
 
@@ -156,22 +152,17 @@ void CWwdSpriteObject::BltDirtyRegions(
         RECT ir;
         if (IntersectRect(&ir, &m_dirty.m_rect, &m_shadow.m_rect)) {
             UnionRect(&ir, &m_dirty.m_rect, &m_shadow.m_rect);
-            i32 pos[2];
-            i32 size[2];
-
-            pos[0] = ir.left;
-            pos[1] = ir.top;
-            size[0] = ir.right - ir.left + 1;
-            size[1] = ir.bottom - ir.top + 1;
-            dst->BlitDirtyRect(src, pos, size);
+            Coord position(ir.left, ir.top);
+            CSize size(ir.right - ir.left + 1, ir.bottom - ir.top + 1);
+            dst->BlitDirtyRect(src, position, size);
         } else {
-            dst->BlitDirtyRect(src, &m_dirty.m_lastX, &m_dirty.m_w);
-            dst->BlitDirtyRect(src, &m_shadow.m_lastX, &m_shadow.m_w);
+            dst->BlitDirtyRect(src, m_dirty.m_lastPosition, m_dirty.m_size);
+            dst->BlitDirtyRect(src, m_shadow.m_lastPosition, m_shadow.m_size);
         }
     } else if (m_dirty.m_armed != -1) {
-        dst->BlitDirtyRect(src, &m_dirty.m_lastX, &m_dirty.m_w);
+        dst->BlitDirtyRect(src, m_dirty.m_lastPosition, m_dirty.m_size);
     } else if (m_shadow.m_armed != -1) {
-        dst->BlitDirtyRect(src, &m_shadow.m_lastX, &m_shadow.m_w);
+        dst->BlitDirtyRect(src, m_shadow.m_lastPosition, m_shadow.m_size);
     }
 }
 
@@ -182,39 +173,42 @@ i32 CWwdSpriteObject::IntersectsViewport() {
     if (m_frameImage == NULL) {
         return 0;
     }
-    i32 left = m_screenX - m_frameImage->m_anchorX;
-    i32 right = m_screenX + m_frameImage->m_anchorX;
-    i32 top = m_screenY - m_frameImage->m_anchorY;
-    i32 bottom = m_screenY + m_frameImage->m_anchorY;
+    RECT bounds;
+    SetRect(
+        &bounds,
+        m_screenPosition.m_x - m_frameImage->m_anchor.x,
+        m_screenPosition.m_y - m_frameImage->m_anchor.y,
+        m_screenPosition.m_x + m_frameImage->m_anchor.x,
+        m_screenPosition.m_y + m_frameImage->m_anchor.y
+    );
     if (HAS(static_cast<WwdGameObjectFlags>(m_flags), WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
 
         RECT* r = &OwnerMgr()->m_level->m_mainPlane->m_planeViewRect;
-        if (right < r->left) {
+        if (bounds.right < r->left) {
             return 0;
         }
-        if (left > r->right) {
+        if (bounds.left > r->right) {
             return 0;
         }
-        if (bottom < r->top) {
+        if (bounds.bottom < r->top) {
             return 0;
         }
-        return top <= r->bottom;
+        return bounds.top <= r->bottom;
     } else {
 
         CDDrawFrontSurface* g = OwnerMgr()->m_drawTarget->m_frontSurface;
 
-        i32 gw = g->m_width;
-        i32 gh = g->m_height;
-        if (right < 0) {
+        CSize surfaceSize(g->m_width, g->m_height);
+        if (bounds.right < 0) {
             return 0;
         }
-        if (left >= gw) {
+        if (bounds.left >= surfaceSize.cx) {
             return 0;
         }
-        if (bottom < 0) {
+        if (bounds.bottom < 0) {
             return 0;
         }
-        return top < gh;
+        return bounds.top < surfaceSize.cy;
     }
 }
 
@@ -320,15 +314,12 @@ i32 CWwdSpriteObject::ReadSpriteState(CFileMemBase* stream) {
 RVA(0x00150d60, 0x14d)
 i32 CGameObject::Setup(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTemplate) {
     CResolveNode::SetPosition(x, y);
-    m_screenX = x;
-    m_screenY = y;
+    SetScreenPos(x, y);
     m_sortKey = sortKey;
-    m_spawnX = x;
+    m_spawnPosition.Set(x, y);
     CLogicRecord* record = m_logicRecord;
-    m_spawnY = y;
     m_spawnSortKey = sortKey;
-    m_strideX = 10;
-    m_strideY = 10;
+    m_stride.Set(10, 10);
     m_points = 0;
     m_score = 0;
     m_health = 0;
@@ -337,8 +328,7 @@ i32 CGameObject::Setup(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTemplate) {
     m_damage = 0;
     m_direction = 0;
     m_faceDirection = 0;
-    m_speedX = 0;
-    m_speedY = 0;
+    m_speed.Set(0, 0);
     m_reservede0 = 0;
     m_reserved180 = 0;
 
@@ -359,8 +349,7 @@ i32 CGameObject::Setup(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTemplate) {
     m_area.left = COORD_UNSET;
     m_switchRect.left = COORD_UNSET;
     m_region.m_object = this;
-    m_region.m_x = m_screenX;
-    m_region.m_y = m_screenY;
+    m_region.m_position = m_screenPosition;
     LogicRecordFlags logicFlags = static_cast<LogicRecordFlags>(m_logicRecord->m_flags);
     if (HAS(logicFlags, LOGIC_RECORD_FLAG_LARGE_ACTIVE_REGION)) {
         m_flags |= IDX(WWD_GAME_OBJECT_FLAG_LARGE_ACTIVE_REGION);
@@ -559,11 +548,11 @@ i32 CGameObject::Serialize(CFileMemBase* arParam) {
     ar->Write(&m_hitTypeFlags, sizeof(m_hitTypeFlags));
     ar->Write(&m_attackTypeMask, sizeof(m_attackTypeMask));
     ar->Write(&m_collMask, sizeof(m_collMask));
-    ar->Write(&m_strideX, sizeof(m_strideX));
-    ar->Write(&m_strideY, sizeof(m_strideY));
+    ar->Write(&m_stride.m_x, sizeof(m_stride.m_x));
+    ar->Write(&m_stride.m_y, sizeof(m_stride.m_y));
     ar->Write(&m_reserved100, sizeof(m_reserved100));
-    ar->Write(&m_spawnX, sizeof(m_spawnX));
-    ar->Write(&m_spawnY, sizeof(m_spawnY));
+    ar->Write(&m_spawnPosition.m_x, sizeof(m_spawnPosition.m_x));
+    ar->Write(&m_spawnPosition.m_y, sizeof(m_spawnPosition.m_y));
     ar->Write(&m_spawnSortKey, sizeof(m_spawnSortKey));
     ar->Write(&m_reserved110, sizeof(m_reserved110));
     ar->Write(&m_score, sizeof(m_score));
@@ -577,16 +566,16 @@ i32 CGameObject::Serialize(CFileMemBase* arParam) {
     ar->Write(&m_extent.left, sizeof(m_extent));
     ar->Write(&m_area.left, sizeof(m_area));
     ar->Write(&m_switchRect.left, sizeof(m_switchRect));
-    ar->Write(&m_speedX, sizeof(m_speedX));
-    ar->Write(&m_speedY, sizeof(m_speedY));
+    ar->Write(&m_speed.m_x, sizeof(m_speed.m_x));
+    ar->Write(&m_speed.m_y, sizeof(m_speed.m_y));
     ar->Write(&m_reserved16c, sizeof(m_reserved16c));
     ar->Write(&m_reserved170, sizeof(m_reserved170));
-    ar->Write(&m_deltaX, sizeof(m_deltaX));
-    ar->Write(&m_deltaY, sizeof(m_deltaY));
+    ar->Write(&m_delta.m_x, sizeof(m_delta.m_x));
+    ar->Write(&m_delta.m_y, sizeof(m_delta.m_y));
     ar->Write(&m_reserved17c, sizeof(m_reserved17c));
     ar->Write(&m_reserved180, sizeof(m_reserved180));
-    ar->Write(&m_plotDX, sizeof(m_plotDX));
-    ar->Write(&m_plotDY, sizeof(m_plotDY));
+    ar->Write(&m_plotOffset.m_x, sizeof(m_plotOffset.m_x));
+    ar->Write(&m_plotOffset.m_y, sizeof(m_plotOffset.m_y));
     ar->Write(&m_dirty, sizeof(m_dirty));
     ar->Write(&m_stateFlags, sizeof(m_stateFlags));
     ar->Write(&m_flashCountdown, sizeof(m_flashCountdown));
@@ -637,11 +626,11 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     ar->Read(&m_hitTypeFlags, sizeof(m_hitTypeFlags));
     ar->Read(&m_attackTypeMask, sizeof(m_attackTypeMask));
     ar->Read(&m_collMask, sizeof(m_collMask));
-    ar->Read(&m_strideX, sizeof(m_strideX));
-    ar->Read(&m_strideY, sizeof(m_strideY));
+    ar->Read(&m_stride.m_x, sizeof(m_stride.m_x));
+    ar->Read(&m_stride.m_y, sizeof(m_stride.m_y));
     ar->Read(&m_reserved100, sizeof(m_reserved100));
-    ar->Read(&m_spawnX, sizeof(m_spawnX));
-    ar->Read(&m_spawnY, sizeof(m_spawnY));
+    ar->Read(&m_spawnPosition.m_x, sizeof(m_spawnPosition.m_x));
+    ar->Read(&m_spawnPosition.m_y, sizeof(m_spawnPosition.m_y));
     ar->Read(&m_spawnSortKey, sizeof(m_spawnSortKey));
     ar->Read(&m_reserved110, sizeof(m_reserved110));
     ar->Read(&m_score, sizeof(m_score));
@@ -655,16 +644,16 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     ar->Read(&m_extent.left, sizeof(m_extent));
     ar->Read(&m_area.left, sizeof(m_area));
     ar->Read(&m_switchRect.left, sizeof(m_switchRect));
-    ar->Read(&m_speedX, sizeof(m_speedX));
-    ar->Read(&m_speedY, sizeof(m_speedY));
+    ar->Read(&m_speed.m_x, sizeof(m_speed.m_x));
+    ar->Read(&m_speed.m_y, sizeof(m_speed.m_y));
     ar->Read(&m_reserved16c, sizeof(m_reserved16c));
     ar->Read(&m_reserved170, sizeof(m_reserved170));
-    ar->Read(&m_deltaX, sizeof(m_deltaX));
-    ar->Read(&m_deltaY, sizeof(m_deltaY));
+    ar->Read(&m_delta.m_x, sizeof(m_delta.m_x));
+    ar->Read(&m_delta.m_y, sizeof(m_delta.m_y));
     ar->Read(&m_reserved17c, sizeof(m_reserved17c));
     ar->Read(&m_reserved180, sizeof(m_reserved180));
-    ar->Read(&m_plotDX, sizeof(m_plotDX));
-    ar->Read(&m_plotDY, sizeof(m_plotDY));
+    ar->Read(&m_plotOffset.m_x, sizeof(m_plotOffset.m_x));
+    ar->Read(&m_plotOffset.m_y, sizeof(m_plotOffset.m_y));
     ar->Read(&m_dirty, sizeof(m_dirty));
     ar->Read(&m_stateFlags, sizeof(m_stateFlags));
     ar->Read(&m_flashCountdown, sizeof(m_flashCountdown));
@@ -771,8 +760,7 @@ i32 CGameObject::WriteSnapshot(CFileMemBase* dst, LogicTypeId unused) {
     snapshot.m_id = m_id;
     snapshot.m_classId = this->GetClassId();
     snapshot.m_objectId = m_objectId;
-    snapshot.m_screenX = m_screenX;
-    snapshot.m_screenY = m_screenY;
+    snapshot.m_screenPosition = ScreenPos();
     snapshot.m_sortKey = m_sortKey;
     snapshot.m_serialTypeId = serialTypeId;
     snapshot.m_logicTypeId = logicTypeId;
@@ -979,12 +967,12 @@ i32 CDDrawWorker::BuildFramesFromArchive(CRezDir* tab) {
                 count++;
             }
             val = tab->GetNextItem(val);
-            if ((OwnerMgr()->m_flags & 0x100) && count > 0) {
+            if ((OwnerMgr()->m_flags & SURFACEMGR_SINGLE_FRAME_WORKERS) && count > 0) {
                 val = NULL;
             }
         }
         sym = tab->GetNextType(sym);
-        if ((OwnerMgr()->m_flags & 0x100) && count > 0) {
+        if ((OwnerMgr()->m_flags & SURFACEMGR_SINGLE_FRAME_WORKERS) && count > 0) {
             sym = NULL;
         }
     }

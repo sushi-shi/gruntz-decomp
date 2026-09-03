@@ -4,6 +4,7 @@
 #include <rva.h>
 
 #include <Gruntz/FaderConfigKind.h>
+#include <Gruntz/CoordNode.h>
 #include <Ints.h>
 
 class CFaderConfig {
@@ -21,8 +22,7 @@ public:
     class CDDPalette* m_palette;
     b32 m_clearMode;
     i32 m_spanCount;
-    i32 m_centerX;
-    i32 m_centerY;
+    Coord m_center;
     class CShadeTable* m_shadeTable;
 };
 

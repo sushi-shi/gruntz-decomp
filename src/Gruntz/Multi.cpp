@@ -33,6 +33,7 @@
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
+#include <MakeRect.h>
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/Minimap.h>
 #include <Gruntz/Play.h>
@@ -417,15 +418,11 @@ i32 CMulti::LeaveState(GameStateId nextState) {
         QuitToMenu();
     }
     if (nextState != GAMESTATE_HELP) {
-        RECT r;
         m_world->m_drawTarget->m_overlayPair->m_surface->Fill(0);
         CString s;
         s.LoadString(0x81a9);
         tagSIZE mode = m_mgr->GetModeSize();
-        r.right = mode.cx;
-        r.bottom = mode.cy;
-        r.left = 0;
-        r.top = 0;
+        RECT r = MakeRect(0, 0, mode.cx, mode.cy);
         DrawTextToOverlaySurface(m_world, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
         RetireScene(0x50, 0x3e8, 0, true);
         if (m_mgr && m_mgr->m_triggerMgr) {
@@ -525,7 +522,7 @@ i32 CMulti::Connect(i32 mode) {
 RVA(0x000b6890, 0x21b)
 i32 CMulti::Render() {
     m_drewThisFrame = false;
-    HandleDragMove(0, m_cursorX, m_cursorY);
+    HandleDragMove(0, m_cursorPosition.m_x, m_cursorPosition.m_y);
     i32 oldT = m_lastTime;
     i32 t = timeGetTime();
     m_lastTime = t;
@@ -725,8 +722,8 @@ void CMulti::RenderGameFrame() {
     }
     StepScroll();
     Mgr()->m_worldSounds->SetListenerPosition(
-        (m_world->m_level->m_mainPlane)->m_scrollPixelX,
-        (m_world->m_level->m_mainPlane)->m_scrollPixelY
+        (m_world->m_level->m_mainPlane)->m_scrollPixel.m_x,
+        (m_world->m_level->m_mainPlane)->m_scrollPixel.m_y
     );
     if (m_region1Gate != false) {
         NotifyVisibleEntities();
@@ -2639,12 +2636,8 @@ i32 CMulti::WaitForOtherPlayers() {
             CString waitStr("Waiting for other playerz...");
             CGruntzMgr* g = g_gameReg;
 
-            RECT rc;
             tagSIZE mode = g->GetModeSize();
-            rc.right = g->GetModeSize().cx;
-            rc.bottom = mode.cy;
-            rc.left = 0;
-            rc.top = 0;
+            RECT rc = MakeRect(0, 0, mode.cx, mode.cy);
             DrawTextToFrontSurface(g->m_world, &waitStr, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
 
             i32 resend = 0x1388;

@@ -3,10 +3,17 @@
 
 #include <rva.h>
 
+#include <Enums.h>
 #include <Ints.h>
 #include <Net/NetPacketLayout.h>
 
 class CGruntzCommand;
+
+GZ_ENUM_FLAGS_BEGIN(NetCmdReceiptFlags, u8)
+    NET_CMD_RECEIVED_WINDOW_BASE_PLUS_TWO = 0x10,
+    NET_CMD_RECEIVED_WINDOW_BASE_PLUS_THREE = 0x20
+GZ_ENUM_FLAGS_END(NetCmdReceiptFlags, u8)
+GZ_ENUM_FLAGS_OPS(NetCmdReceiptFlags)
 
 #pragma pack(push, 1)
 struct NetCmdSendMsg {

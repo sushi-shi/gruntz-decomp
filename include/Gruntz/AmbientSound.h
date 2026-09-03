@@ -19,6 +19,10 @@ GZ_ENUM_CONST_END(AmbientSoundActState)
 #include <Ints.h>
 
 struct AmbientPoint {
+    AmbientPoint() {}
+
+    AmbientPoint(i32 pointX, i32 pointY) : x(pointX), y(pointY) {}
+
     i32 x;
     i32 y;
 };

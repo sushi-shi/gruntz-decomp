@@ -258,8 +258,8 @@ i32 CCreditsState::OnKeyDown(i32 code, i32 unused) {
 
 RVA(0x000394b0, 0x86)
 i32 CCreditsState::OnLButtonDown(i32 unused, i32 x, i32 y) {
-    POINT pt = {x, y};
-    RECT rc = {0, 0, 0x64, 0x64};
+    CPoint pt(x, y);
+    CRect rc(0, 0, 0x64, 0x64);
     if (PtInRect(&rc, pt)) {
         LoadCreditzAssets();
         return 1;
@@ -336,8 +336,7 @@ i32 CCreditsState::DrawScrollingCredits() {
     m_scrollAccum += step * kMsToSeconds;
     m_drawRect = m_scrollRect;
     i32 scrolled = static_cast<i32>(m_scrollAccum);
-    m_drawRect.top -= scrolled;
-    m_drawRect.bottom -= scrolled;
+    m_drawRect.OffsetRect(0, -scrolled);
     if (m_drawRect.bottom < 0) {
         m_scrollAccum = 0.0;
         m_drawRect = m_scrollRect;
@@ -356,7 +355,7 @@ i32 CCreditsState::DrawScrollingCredits() {
         SetTextColor(hdc, oldColor);
         if (m_fxEnabled != false && m_fadeCountdown != 0) {
             CString s("Now is the time at Monolith when we dance");
-            RECT r = {0, 0, SCREEN_W_PX, SCREEN_H_PX};
+            CRect r(0, 0, SCREEN_W_PX, SCREEN_H_PX);
             i32 oldColor2 = SetTextColor(hdc, 0xffffff);
             DrawTextA(hdc, s, -1, &r, 0x75);
             SetTextColor(hdc, oldColor2);
@@ -397,7 +396,7 @@ i32 CCreditsState::SetupTitle() {
     prov->m_ddSurface->GetDC(&hdc);
     if (hdc) {
         i32 h = DrawTextA(hdc, m_caption, -1, &m_drawRect, 0x450);
-        SetRect(&m_scrollRect, 0x32, SCREEN_H_PX, 0x24e, h + SCREEN_H_PX);
+        m_scrollRect.SetRect(0x32, SCREEN_H_PX, 0x24e, h + SCREEN_H_PX);
         prov->m_ddSurface->ReleaseDC(hdc);
     }
     m_scrollAccum = 0.0;

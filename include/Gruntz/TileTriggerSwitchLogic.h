@@ -4,6 +4,7 @@
 #include <rva.h>
 
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/TileTriggerLogic.h>
 #include <Ints.h>
@@ -54,8 +55,7 @@ public:
 
     TrigLogicId m_typeId;
 
-    i32 m_tileX;
-    i32 m_tileY;
+    Coord m_tile;
     i32 m_cellKey;
     b32 m_linkGate;
     i32 m_damageParam;

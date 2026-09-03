@@ -24,7 +24,6 @@
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SpriteStateFlags.h>
-#include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TileTriggerTransition.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -32,6 +31,7 @@
 #include <Gruntz/VoiceManager.h>
 #include <Gruntz/VoiceTrigger.h>
 #include <Image/CImage.h>
+#include <MakeRect.h>
 #include <Rez/RezSync.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/TileGeometry.h>
@@ -195,12 +195,17 @@ CVoiceTrigger::CVoiceTrigger(CGameObject* obj)
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
     Hide();
     SET_ANIMATION_ACT("A");
-    SNAP_OBJECT_TO_TILE_CENTER(m_object)
-    m_object->m_area.left = m_object->m_screenX - (m_object->m_extent.left << TILE_SHIFT_PX) - 7;
-    m_object->m_area.right = m_object->m_screenX + (m_object->m_extent.right << TILE_SHIFT_PX) + 7;
-    m_object->m_area.top = m_object->m_screenY - (m_object->m_extent.top << TILE_SHIFT_PX) - 7;
-    m_object->m_area.bottom =
-        m_object->m_screenY + (m_object->m_extent.bottom << TILE_SHIFT_PX) + 7;
+    Coord position = m_object->ScreenPos();
+    SnapTileCenter(&position);
+    m_object->SetScreenPos(position);
+    Coord nearExtent(m_object->m_extent.left, m_object->m_extent.top);
+    nearExtent *= TILE_SIZE_PX;
+    Coord farExtent(m_object->m_extent.right, m_object->m_extent.bottom);
+    farExtent *= TILE_SIZE_PX;
+    Coord margin(7, 7);
+    Coord low = position - nearExtent - margin;
+    Coord high = position + farExtent + margin;
+    m_object->m_area = MakeRect(low.m_x, low.m_y, high.m_x, high.m_y);
 }
 
 RVA(0x00119e40, 0x102)
@@ -243,18 +248,16 @@ RVA(0x0011a700, 0xae)
 i32 CVoiceTrigger::Tick() {
     i32 playerIndex, unitIndex;
     CGrunt* hit = g_gameReg->m_triggerMgr->FindGruntAt(
-        m_object->m_screenX,
-        m_object->m_screenY,
+        m_object->m_screenPosition.m_x,
+        m_object->m_screenPosition.m_y,
         &m_object->m_extent,
         &playerIndex,
         &unitIndex,
         &m_object->m_area
     );
     if (hit && playerIndex == g_curPlayer) {
-        CGameObject* hs = hit->m_object;
-        i32 hy = hs->m_screenY;
-        i32 hx = hs->m_screenX;
-        if (::PtInRect(&g_gameReg->m_viewBounds, hx, hy)) {
+        Coord hitPosition = hit->m_object->ScreenPos();
+        if (::PtInRect(&g_gameReg->m_viewBounds, hitPosition.m_x, hitPosition.m_y)) {
             if (g_gameReg->m_voiceManager
                     ->PlayVoice(hit, m_object->m_smarts, m_object->m_health, 0, -1, -1)) {
                 SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
@@ -335,8 +338,8 @@ i32 CGruntVoice::UpdateIndicator() {
             goto stopped;
         }
         m_object->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
-        m_object->m_screenX = logic->m_object->m_screenX;
-        m_object->m_screenY = logic->m_object->m_screenY - 0x32;
+        Coord position = logic->m_object->ScreenPos() + Coord(0, -0x32);
+        m_object->SetScreenPos(position);
     } else {
         CGameObject* out = NULL;
         i32 sourceObjectId = m_sourceObjectId;
@@ -356,14 +359,15 @@ i32 CGruntVoice::UpdateIndicator() {
 
         if (resolved != NULL) {
             m_object->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
-            i32 dx = 0, dy = 0;
+            Coord origin(0, 0);
             CImage* layer = static_cast<CWwdSpriteObject*>(resolved)->m_frameImage;
             if (layer != NULL) {
-                dx = layer->m_originX;
-                dy = layer->m_originY;
+                origin.Set(layer->m_origin.x, layer->m_origin.y);
             }
-            m_object->m_screenX = resolved->m_screenX + dx;
-            m_object->m_screenY = resolved->m_screenY + dy - 0x32;
+            Coord position = resolved->ScreenPos();
+            position += origin;
+            position.m_y -= 0x32;
+            m_object->SetScreenPos(position);
             return 0;
         }
         goto stopped;

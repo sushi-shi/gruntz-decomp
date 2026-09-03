@@ -123,20 +123,23 @@ i32 CMenuItem::DrawAt(CDDrawSurfacePair* target, i32 centerX, i32 centerY) {
         return 0;
     }
 
-    if (m_fixedCenterX != UNINIT_FILL) {
-        centerX = m_fixedCenterX;
-        centerY = m_fixedCenterY;
+    Coord center(centerX, centerY);
+    if (m_fixedCenter.m_x != UNINIT_FILL) {
+        center = m_fixedCenter;
     }
     MenuItemState state = m_state;
     CImage* frame = animation->GetAt(IDX(state));
     if (!frame) {
         return 0;
     }
-    frame->RenderFrame(target, centerX, centerY, 0);
-    m_hitLeft = centerX - frame->m_anchorX;
-    m_hitRight = centerX + frame->m_anchorX;
-    m_hitTop = centerY - frame->m_anchorY;
-    m_hitBottom = centerY + frame->m_anchorY;
+    frame->RenderFrame(target, center.m_x, center.m_y, 0);
+    SetRect(
+        &m_hitRect,
+        center.m_x - frame->m_anchor.x,
+        center.m_y - frame->m_anchor.y,
+        center.m_x + frame->m_anchor.x,
+        center.m_y + frame->m_anchor.y
+    );
     return 1;
 }
 RVA(0x00185690, 0x25)
@@ -162,19 +165,19 @@ i32 CMenuItem::Activate() {
 }
 RVA(0x00185700, 0x4b)
 i32 CMenuItem::HitTest(i32 screenX, i32 screenY) {
-    if (m_hitLeft == UNINIT_FILL) {
+    if (m_hitRect.left == UNINIT_FILL) {
         return 0;
     }
-    if (screenX < m_hitLeft) {
+    if (screenX < m_hitRect.left) {
         return 0;
     }
-    if (screenX > m_hitRight) {
+    if (screenX > m_hitRect.right) {
         return 0;
     }
-    if (screenY < m_hitTop) {
+    if (screenY < m_hitRect.top) {
         return 0;
     }
-    return screenY <= m_hitBottom;
+    return screenY <= m_hitRect.bottom;
 }
 
 RVA(0x00185750, 0x123)
@@ -240,20 +243,22 @@ i32 CAnimatedMenuItem::Update(u32 deltaMs) {
 
 RVA(0x001858d0, 0x72)
 i32 CAnimatedMenuItem::DrawAt(CDDrawSurfacePair* target, i32 centerX, i32 centerY) {
-
-    if (m_fixedCenterX != UNINIT_FILL) {
-        centerX = m_fixedCenterX;
-        centerY = m_fixedCenterY;
+    Coord center(centerX, centerY);
+    if (m_fixedCenter.m_x != UNINIT_FILL) {
+        center = m_fixedCenter;
     }
     CImage* frame = GetCurrentFrame();
     if (!frame) {
         return 0;
     }
-    frame->RenderFrame(target, centerX, centerY, 0);
-    m_hitLeft = centerX - frame->m_anchorX;
-    m_hitRight = centerX + frame->m_anchorX;
-    m_hitTop = centerY - frame->m_anchorY;
-    m_hitBottom = centerY + frame->m_anchorY;
+    frame->RenderFrame(target, center.m_x, center.m_y, 0);
+    SetRect(
+        &m_hitRect,
+        center.m_x - frame->m_anchor.x,
+        center.m_y - frame->m_anchor.y,
+        center.m_x + frame->m_anchor.x,
+        center.m_y + frame->m_anchor.y
+    );
     return 1;
 }
 RVA(0x00185950, 0x1b)

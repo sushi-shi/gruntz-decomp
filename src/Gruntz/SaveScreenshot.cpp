@@ -8,6 +8,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <MakeRect.h>
 #include <Utils/RegMgr.h>
 
 RVA(0x00114ff0, 0x1b3)
@@ -21,8 +22,8 @@ i32 SaveScreenshot(
     i32 saveFlag
 ) {
     char nameBuf[0x80];
-    RECT dstRect;
-    RECT srcRect;
+    CRect dstRect;
+    CRect srcRect;
 
     if (src == NULL) {
         return 0;
@@ -53,18 +54,9 @@ i32 SaveScreenshot(
     }
 
     CGruntzMgr* gameManager = g_gameReg;
-    srcRect.left = 0;
-    srcRect.top = 0;
-    srcRect.right = 0;
-    srcRect.bottom = 0;
-    dstRect.left = 0;
-    dstRect.top = 0;
-    dstRect.right = 0;
-    dstRect.bottom = 0;
-    srcRect.right = gameManager->GetModeSize().cx;
-    srcRect.bottom = gameManager->GetModeSize().cy;
-    dstRect.right = width;
-    dstRect.bottom = height;
+    CSize modeSize = gameManager->GetModeSize();
+    srcRect = CRect(CPoint(0, 0), modeSize);
+    dstRect = CRect(CPoint(0, 0), CSize(width, height));
     if (image->BltEx(&dstRect, src, &srcRect, DDBLT_WAIT, NULL)) {
         manager->RemoveSurface(image);
         return 0;

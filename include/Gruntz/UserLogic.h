@@ -143,11 +143,6 @@ public:
     m_wwdObject->m_animationCursor.Advance(elapsed);                                               \
     CAniAdvanceCursor* cursor = &m_wwdObject->m_animationCursor;
 
-#define GET_SCREEN_TILE_Y_FIRST(logic, out)                                                        \
-    (logic)->GetScreenPos((&out));                                                                 \
-    out.m_y >>= TILE_SHIFT_PX;                                                                     \
-    out.m_x >>= TILE_SHIFT_PX;
-
 #define DECLARE_CURRENT_ANIMATION_FRAME(frame, animation, record)                                  \
     CAniElement* animation = m_wwdObject->m_animationCursor.m_animation;                           \
     CAniRecordView* record = static_cast<CAniRecordView*>(GetAniElementAt(animation, 0));          \
@@ -177,17 +172,9 @@ public:
     CAniRecordView* record = static_cast<CAniRecordView*>(GetAniElementAt(animation, 0));          \
     APPLY_LOOKUP_SPRITE_INLINE(name, record->m_param);
 
-#define SET_OBJECT_AREA(value)                                                                     \
-    m_object->m_area.left = value;                                                                 \
-    m_object->m_area.right = value;                                                                \
-    m_object->m_area.top = value;                                                                  \
-    m_object->m_area.bottom = value;
+#define SET_OBJECT_AREA(value) SetRect(&m_object->m_area, value, value, value, value);
 
-#define CLEAR_OBJECT_AREA                                                                          \
-    m_object->m_area.left = 0;                                                                     \
-    m_object->m_area.right = 0;                                                                    \
-    m_object->m_area.top = 0;                                                                      \
-    m_object->m_area.bottom = 0;
+#define CLEAR_OBJECT_AREA SetRectEmpty(&m_object->m_area);
 
 #define SERIALIZE_USER_LOGIC_OR_RETURN(ar, mode, typeId, object)                                   \
     if (!CUserLogic::SerializeDispatch(ar, mode, typeId, object)) {                                \
@@ -226,8 +213,7 @@ public:
 
 inline void CUserLogic::GetScreenTile(Coord* out) {
     GetScreenPos(out);
-    out->m_x >>= TILE_SHIFT_PX;
-    out->m_y >>= TILE_SHIFT_PX;
+    ScreenTile(out);
 }
 
 inline void CUserLogic::RegisterLogicTypesOnce() {

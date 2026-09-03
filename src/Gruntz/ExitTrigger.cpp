@@ -14,7 +14,6 @@
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
-#include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/Warlord.h>
@@ -33,7 +32,9 @@ CExitTrigger::CExitTrigger(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
     SET_ANIMATION_ACT("A");
-    SNAP_OBJECT_TO_TILE_CENTER(m_object)
+    Coord position = m_object->ScreenPos();
+    SnapTileCenter(&position);
+    m_object->SetScreenPos(position);
     CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_EXIT_TRIGGER)
     SET_OBJECT_AREA(1)
@@ -44,14 +45,12 @@ CExitTrigger::CExitTrigger(CGameObject* obj)
         m_resolved = false;
         return;
     }
-    i32 focusX = m_object->m_screenX;
-    i32 focusY = m_object->m_screenY;
-    slot->m_focusX = focusX;
-    slot->m_focusY = focusY;
+    Coord focus = m_object->ScreenPos();
+    slot->m_focus = focus;
     CGameObject* e = g_gameReg->m_world->m_childGroup->CreateSprite(
         0,
-        m_object->m_screenX,
-        m_object->m_screenY,
+        m_object->m_screenPosition.m_x,
+        m_object->m_screenPosition.m_y,
         0,
         "Warlord",
         WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE

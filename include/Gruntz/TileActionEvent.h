@@ -4,6 +4,7 @@
 #include <rva.h>
 
 #include <Enums.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/PlayerSlot.h>
@@ -35,8 +36,7 @@ public:
     i32 SerializeFields(CFileMemBase* ar);
 
     BrickTileId m_actionCode;
-    i32 m_tileX;
-    i32 m_tileY;
+    Coord m_tile;
     i32 m_cellKey;
     b32 m_live;
 

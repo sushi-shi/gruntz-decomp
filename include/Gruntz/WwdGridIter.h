@@ -4,6 +4,7 @@
 #include <rva.h>
 
 #include <Ints.h>
+#include <Gruntz/CoordNode.h>
 #include <Lith/BaseList.h>
 #include <Wap32/Object.h>
 
@@ -19,6 +20,26 @@ struct WwdRect {
         m_minY = minY;
         m_maxX = maxX;
         m_maxY = maxY;
+    }
+
+    i32 Intersects(const WwdRect& other) const {
+        return m_minX <= other.m_maxX && m_maxX >= other.m_minX && m_minY <= other.m_maxY
+               && m_maxY >= other.m_minY;
+    }
+
+    void Intersect(const WwdRect& other) {
+        if (m_minX < other.m_minX) {
+            m_minX = other.m_minX;
+        }
+        if (m_minY < other.m_minY) {
+            m_minY = other.m_minY;
+        }
+        if (m_maxX > other.m_maxX) {
+            m_maxX = other.m_maxX;
+        }
+        if (m_maxY > other.m_maxY) {
+            m_maxY = other.m_maxY;
+        }
     }
 
     i32 Contains(const WwdGridNode* point) const;
@@ -38,13 +59,12 @@ struct WwdGridNode : CBaseListItem {
     WwdGridNode(ENoSeed) {}
     i32 m_reserved08;
     BucketHead* m_bucket;
-    i32 m_x;
-    i32 m_y;
+    Coord m_position;
 };
 
 inline i32 WwdRect::Contains(const WwdGridNode* point) const {
-    return point->m_x >= m_minX && point->m_y >= m_minY && point->m_x <= m_maxX
-           && point->m_y <= m_maxY;
+    return point->m_position.m_x >= m_minX && point->m_position.m_y >= m_minY
+           && point->m_position.m_x <= m_maxX && point->m_position.m_y <= m_maxY;
 }
 
 struct WwdRegion : WwdGridNode {
@@ -88,13 +108,13 @@ public:
     WwdRegion* m_cur;
     WwdRegion* m_next;
     WwdRect m_rect;
-    i32 m_rowStart;
     i32 m_colStart;
-    i32 m_rowEnd;
+    i32 m_rowStart;
     i32 m_colEnd;
+    i32 m_rowEnd;
     i32 m_cell;
-    i32 m_row;
     i32 m_col;
+    i32 m_row;
     i32 m_rowBase;
     i32 m_remove;
 };

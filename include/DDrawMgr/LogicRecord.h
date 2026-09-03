@@ -5,6 +5,7 @@
 
 #include <DDrawMgr/LogicRecordFlags.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/SerialArchive.h>
 #include <Ints.h>
 #include <Wap32/WapObj.h>
@@ -87,10 +88,8 @@ struct CLogicRecord : public CWapObj {
     i32 m_maxY;
     char m_pad3c[0x40 - 0x3c];
     i32 m_reserved40;
-    i32 m_tweakX;
-    i32 m_tweakY;
-    i32 m_scrollTargetX;
-    i32 m_scrollTargetY;
+    Coord m_tweak;
+    Coord m_scrollTarget;
     char m_pad54[0x58 - 0x54];
     i32 m_reserved58;
     i32 m_reserved5c;
@@ -121,8 +120,8 @@ struct CLogicRecord : public CWapObj {
 
     char m_padc0[0xc4 - 0xc0];
     i32 m_reservedc4;
-    i32 m_width;
-    i32 m_height;
+    SIZE
+    m_size;
     RECT m_reservedd0;
     RECT m_reservede0;
 

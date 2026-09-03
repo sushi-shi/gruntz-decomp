@@ -30,22 +30,21 @@ const double g_motionNegTwo = -2.0;
 RVA(0x0016ea90, 0x234)
 void CMovingLogic::AdvanceMotion() {
 
-    m_previousScreenPosition.m_x = static_cast<i32>(Motion()->m_position.x);
-    m_previousScreenPosition.m_y = static_cast<i32>(Motion()->m_position.y);
+    m_previousScreenPosition = Motion()->m_position.ToCoord();
     Motion()->Step(static_cast<double>(g_frameTime) * g_motionTimeScale - Motion()->m_time);
 
     if ((m_object->m_flags & IDX(WWD_GAME_OBJECT_FLAG_ON_CARRIER)) && m_object->m_carrier != NULL) {
-        m_object->m_screenX += m_object->m_carrier->m_deltaX;
-        Motion()->m_position.x = static_cast<double>(m_object->m_screenX);
-        m_object->m_screenY += m_object->m_carrier->m_deltaY;
-        Motion()->m_position.y = static_cast<double>(m_object->m_screenY);
+        Coord position = m_object->ScreenPos();
+        position += m_object->m_carrier->m_delta;
+        m_object->SetScreenPos(position);
+        Motion()->m_position.SetXY(position);
     }
 
     if (m_object->m_moveMode == MOVE_GROUNDED) {
         m_collisionFlags = m_object->OwnerMgr()->m_level->MoveToward(
             m_object,
             static_cast<i32>(Motion()->m_position.x),
-            m_object->m_screenY,
+            m_object->m_screenPosition.m_y,
             IDX(m_moveFlags)
         );
         Motion()->m_velocity.y = 0.0;
@@ -60,18 +59,17 @@ void CMovingLogic::AdvanceMotion() {
     }
 
     CMotionState* ms = Motion();
-    i32 sx = m_object->m_screenX;
-    if (static_cast<i32>(Motion()->m_position.x) != sx) {
-        double d = static_cast<double>(sx);
+    Coord screenPosition = m_object->ScreenPos();
+    if (static_cast<i32>(Motion()->m_position.x) != screenPosition.m_x) {
+        double d = static_cast<double>(screenPosition.m_x);
         ms->m_velocity.x = ms->ArrivalVelX(d);
         double a0new = ms->m_step.x - (ms->m_position.x - d);
         ms->m_position.x = d;
         ms->m_step.x = a0new;
     }
 
-    i32 sy = m_object->m_screenY;
-    if (static_cast<i32>(Motion()->m_position.y) != sy) {
-        double d = static_cast<double>(sy);
+    if (static_cast<i32>(Motion()->m_position.y) != screenPosition.m_y) {
+        double d = static_cast<double>(screenPosition.m_y);
         ms->m_velocity.y = ms->ArrivalVelY(d);
         double a8new = ms->m_step.y - (ms->m_position.y - d);
         ms->m_position.y = d;
@@ -150,9 +148,7 @@ void CMovingLogic::AdvanceMotion() {
 // @early-stop
 RVA(0x0016ecd0, 0x6e6)
 void CMotionState::Step(double dt) {
-    m_previousPosition.x = m_position.x;
-    m_previousPosition.y = m_position.y;
-    m_previousPosition.z = m_position.z;
+    m_previousPosition = m_position;
     m_deltaTime = dt;
     m_time = dt + m_time;
     if (m_stepDisabled != false) {

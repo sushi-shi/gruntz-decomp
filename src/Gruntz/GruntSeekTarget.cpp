@@ -65,20 +65,11 @@ i32 CGrunt::StepToolThiefBehavior() {
         }
 
         Coord slotTile;
-        Coord selfTileX;
-        Coord selfTileY;
+        Coord selfTile;
         slot->GetScreenTile(&slotTile);
-        i32 slotX = slotTile.m_x;
-        selfTileY.m_y = slotTile.m_y;
-        this->GetScreenPos(&selfTileX);
-        i32 selfX = selfTileX.m_x >> TILE_SHIFT_PX;
-        slot->GetScreenTile(&slotTile);
-        selfTileX = slotTile;
-        this->GetScreenPos(&selfTileY);
-        selfTileY.m_y >>= TILE_SHIFT_PX;
-        i32 dx = slotX - selfX;
-        i32 dy = selfTileX.m_y - selfTileY.m_y;
-        if (abs(dx) <= 1 && abs(dy) <= 1) {
+        this->GetScreenTile(&selfTile);
+        Coord distance = (slotTile - selfTile).GetAbs();
+        if (distance.m_x <= 1 && distance.m_y <= 1) {
             PickupType r2 = slot->m_entranceReason;
             if (r2 > PICKUP_EQUIPPABLE_LAST) {
                 r2 = slot->m_toolId;
@@ -101,7 +92,7 @@ i32 CGrunt::StepToolThiefBehavior() {
         reason = IDX(this->m_toolId);
     }
     if (reason != 0) {
-        FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget, x)
+        FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget)
         b32 powered = this->m_poweredUp;
         if (powered != false) {
             b32 neighborValid = this->m_neighborValid;
@@ -148,33 +139,25 @@ i32 CGrunt::StepToolThiefBehavior() {
             return 1;
         }
         if (this->m_poweredUp == false && this->m_stamina >= STAMINA_FULL) {
-            i32 x = g->m_object->m_screenX;
-            if (GRUNT_X_AT_SAVED_POS(x, g) && g->GRUNT_SCREEN_Y_AT_SAVED_POS(m_object, g)
-
-                && RectContains(x, g->m_object->m_screenY) != 0) {
+            Coord position = g->m_object->ScreenPos();
+            if (position == g->m_lastTilePx && RectContains(position.m_x, position.m_y) != 0) {
                 COMMIT_GRUNT_NEIGHBOR(g);
             }
         }
         if (static_cast<u32>(this->m_dwell) <= DWELL_REPATH_MS) {
             return 1;
         }
-        if (TileSwitch(
-                g->m_object->m_screenX >> TILE_SHIFT_PX,
-                g->m_object->m_screenY >> TILE_SHIFT_PX,
-                0,
-                this->m_arrivalFlags,
-                1,
-                0
-            )
-            == 0) {
+        Coord targetTile;
+        g->GetScreenTile(&targetTile);
+        if (TileSwitch(targetTile.m_x, targetTile.m_y, 0, this->m_arrivalFlags, 1, 0) == 0) {
             return 1;
         }
         if (this->m_blockedVoicePending != false) {
             CGruntzMgr* gameReg = g_gameReg;
             i32 r = CGameLevel::PointInBounds(
                 &gameReg->m_world->m_level->m_mainPlane->m_planeViewRect,
-                this->m_object->m_screenX,
-                this->m_object->m_screenY
+                this->m_object->m_screenPosition.m_x,
+                this->m_object->m_screenPosition.m_y
             );
             if (r != 0) {
                 gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
@@ -207,11 +190,11 @@ i32 CGrunt::StepToolThiefBehavior() {
                             seekable = 0;
                         }
                         if (seekable) {
-                            i32 ex = sv->m_object->m_screenX >> TILE_SHIFT_PX;
-                            i32 ddx = ex - (this->m_object->m_screenX >> TILE_SHIFT_PX);
-                            i32 ey = (sv->m_object->m_screenY >> TILE_SHIFT_PX)
-                                     - (this->m_object->m_screenY >> TILE_SHIFT_PX);
-                            i32 dist = abs(ddx * ddx) + abs(ey * ey);
+                            Coord candidateTile;
+                            sv->GetScreenTile(&candidateTile);
+                            Coord selfTile;
+                            GetScreenTile(&selfTile);
+                            i32 dist = candidateTile.DistSqr(selfTile);
                             if (dist < best
                                 && dist <= this->m_defenderRadius * this->m_defenderRadius) {
                                 best = dist;
@@ -224,20 +207,13 @@ i32 CGrunt::StepToolThiefBehavior() {
             } while (i < 0xf);
             if (bestIdx != -1) {
                 this->m_arrivalCell.m_x = bestIdx;
-                CGameObject* base = slots[bestIdx]->m_object;
-                if (TileSwitch(
-                        base->m_screenX >> TILE_SHIFT_PX,
-                        base->m_screenY >> TILE_SHIFT_PX,
-                        0,
-                        this->m_arrivalFlags,
-                        1,
-                        0
-                    )
+                Coord targetTile;
+                slots[bestIdx]->GetScreenTile(&targetTile);
+                if (TileSwitch(targetTile.m_x, targetTile.m_y, 0, this->m_arrivalFlags, 1, 0)
                     != 0) {
-                    i32 by = this->m_object->m_screenY;
-                    i32 bx = this->m_object->m_screenX;
+                    Coord voicePosition = this->m_object->ScreenPos();
                     CCueRect* board = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
-                    if (::PtInRect(board, bx, by)) {
+                    if (::PtInRect(board, voicePosition.m_x, voicePosition.m_y)) {
                         g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
                     }
                 }
@@ -251,17 +227,11 @@ i32 CGrunt::StepToolThiefBehavior() {
         if (static_cast<u32>(this->m_dwell) <= 0x3e8) {
             return 1;
         }
-        CGameObject* base =
-            g_gameReg->m_triggerMgr->m_units[0 * TM_UNITS_PER_PLAYER + this->m_arrivalCell.m_x]
-                ->m_object;
-        TileSwitch(
-            base->m_screenX >> TILE_SHIFT_PX,
-            base->m_screenY >> TILE_SHIFT_PX,
-            0,
-            this->m_arrivalFlags,
-            1,
-            0
-        );
+        CGrunt* target =
+            g_gameReg->m_triggerMgr->m_units[0 * TM_UNITS_PER_PLAYER + this->m_arrivalCell.m_x];
+        Coord targetTile;
+        target->GetScreenTile(&targetTile);
+        TileSwitch(targetTile.m_x, targetTile.m_y, 0, this->m_arrivalFlags, 1, 0);
     }
     this->m_dwell = 0;
     return 1;
