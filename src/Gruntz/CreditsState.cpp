@@ -427,7 +427,7 @@ i32 CCreditsState::StepVideo() {
             ret = FinishState();
         }
         if (dst && src) {
-            BLT_SURFACE_PAIR_SELF(src, dst);
+            src->BltSelf(dst);
         }
     }
     return ret;
@@ -483,11 +483,6 @@ void CCreditsState::LoadCreditzAssets() {
             }
         }
     }
-}
-
-RVA(0x0003a1d0, 0x1d)
-void CDDrawSurfacePair::BltSelf(CDDrawSurfacePair* src) {
-    BLT_SURFACE_PAIR_SELF(this, src);
 }
 
 RVA_COMPGEN(0x0008c400, 0x46, ??1CRgn@@UAE@XZ)

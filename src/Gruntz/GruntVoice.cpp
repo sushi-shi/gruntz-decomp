@@ -173,7 +173,7 @@ CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     m_duration.m_v = 0;
     SetImageSetByName("GAME_EXCLAMATION");
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_VOICE)
+    o->SetSortKey(SORTKEY_GRUNT_VOICE);
     m_stream = NULL;
     m_startStamp.m_v = 0;
     m_duration.m_v = 0;

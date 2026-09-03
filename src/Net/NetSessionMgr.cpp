@@ -130,7 +130,7 @@ void CNetSession::BuildGruntzCrcInfo() {
             i32 rnd = rand();
             PickupType type = grunt->m_entranceReason;
             i32 wp;
-            PRIO(wp, type);
+            wp = PickupPriority(type);
             b32 da = grunt->m_daFlag;
             PickupType toy = grunt->m_vehiclePickupType;
             PickupType tool = ArrivalPickupOf(grunt, type);

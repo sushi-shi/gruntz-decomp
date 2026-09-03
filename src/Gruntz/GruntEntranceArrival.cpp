@@ -27,7 +27,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntCombatClockInline.h>
-#include <Gruntz/GruntCoordRecycleMacros.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntDirection.h>
 #include <Gruntz/GruntMovementMacros.h>
@@ -187,7 +187,7 @@ i32 CGrunt::StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIn
     {
         CWwdSpriteObject* h = m_object;
         i32 z = h->m_screenPosition.m_y + 0x186c1;
-        SET_SORT_KEY_IF_CHANGED(h, z)
+        h->SetSortKey(z);
     }
 
     CWwdSpriteObject* p = m_wwdObject;
@@ -356,7 +356,7 @@ i32 CGrunt::StepAttackFire() {
     }
     CWwdSpriteObject* h = m_object;
     i32 zkey = h->m_screenPosition.m_y + 0x186a0;
-    SET_SORT_KEY_IF_CHANGED(h, zkey)
+    h->SetSortKey(zkey);
     i32 v220 = m_poweredUp;
     m_entranceActive = false;
     if (v220 != 0) {
@@ -387,13 +387,13 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
         }
 
         if (m_poweredUp != false && m_neighborValid == false) {
-            RESET_GRUNT_POWERED_STATE(this)
+            ResetGruntPoweredState(this);
         }
         m_entranceActive = true;
         SetEntrancePos(1, 1);
 
         if (CoordCount() != 0) {
-            RECYCLE_GRUNT_COORDS(this)
+            RecycleGruntCoords(this);
         }
 
         m_entranceStamped = false;
@@ -457,7 +457,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
 
         m_toyTileIndex = 0;
         if (m_poweredUp != false && m_neighborValid == false) {
-            RESET_GRUNT_POWERED_STATE(this)
+            ResetGruntPoweredState(this);
         }
         SET_ANIMATION_ACT("L");
         SwitchAnimation(m_poseWalk);
@@ -474,7 +474,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
 
     CWwdSpriteObject* h = m_object;
     i32 z = h->m_screenPosition.m_y + 0xc3500;
-    SET_SORT_KEY_IF_CHANGED(h, z)
+    h->SetSortKey(z);
 
     i32 toy1DurationMs = AT(m_poseToy, GRUNT_TOY1)->m_durationMs;
     i32 toy2DurationMs = AT(m_poseToy, GRUNT_TOY2)->m_durationMs;
@@ -560,7 +560,7 @@ i32 CGrunt::UpdateToyUseAnimation() {
         }
         CWwdSpriteObject* h = m_object;
         i32 v = h->m_screenPosition.m_y + 0x186a0;
-        SET_SORT_KEY_IF_CHANGED(h, v)
+        h->SetSortKey(v);
         return 0;
     }
 
@@ -773,7 +773,7 @@ latch:
 // @early-stop
 RVA(0x000633e0, 0x2f1)
 i32 CGrunt::ResolveEntranceArrival() {
-    if (m_entranceActive != false && GRUNT_AT_SAVED_SCREEN_POS(this)) {
+    if (m_entranceActive != false && IsGruntAtSavedScreenPos(this)) {
         CGruntzMgr* g = g_gameReg;
         CMapMgr* grid = g->m_tileGrid;
         Coord tile;
@@ -883,7 +883,7 @@ i32 CGrunt::StepEntranceReinit() {
         );
     }
     if (m_poweredUp != false && m_neighborValid == false) {
-        RESET_GRUNT_POWERED_STATE(this)
+        ResetGruntPoweredState(this);
     }
     m_tileMoveCommitted = false;
     if (CoordCount() == 0) {
@@ -997,7 +997,7 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
 
     i64 elapsed = static_cast<i64>(g_frameTime) - m_toyClock;
     if (elapsed >= m_toyDuration) {
-        if (m_entranceStamped == false && GRUNT_AT_SAVED_SCREEN_POS(this)) {
+        if (m_entranceStamped == false && IsGruntAtSavedScreenPos(this)) {
             HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
             SetEntrancePos(1, 1);
             m_entranceStamped = true;
@@ -1073,10 +1073,10 @@ i32 CGrunt::BuildGruntExitAnimation() {
 
     m_gruntKind = GRUNT_NORMAL;
     if (m_poweredUp != false && m_neighborValid == false) {
-        RESET_GRUNT_POWERED_STATE(this)
+        ResetGruntPoweredState(this);
     }
 
-    BEGIN_GRUNT_ENTRANCE_AND_RELEASE_CELL
+    BeginGruntEntranceAndReleaseCell(this);
 
     SET_ANIMATION_ACT("B");
 
@@ -1162,7 +1162,7 @@ i32 CGrunt::StepCombatReaction(
     {
         CWwdSpriteObject* h = m_object;
         i32 v = h->m_screenPosition.m_y + 0x186a0;
-        SET_SORT_KEY_IF_CHANGED(h, v)
+        h->SetSortKey(v);
     }
 
     bool ne;
@@ -1214,7 +1214,7 @@ i32 CGrunt::StepCombatReaction(
                     eq = (strcmp(*g_typeColl.GetNameRecord(m_previousAnimationActId), "D") == 0);
                     if (eq) {
                         if (m_poweredUp != false && m_neighborValid == false) {
-                            RESET_GRUNT_POWERED_STATE(this)
+                            ResetGruntPoweredState(this);
                         }
                         m_tileMoveCommitted = false;
                         SET_ANIMATION_ACT("D");
@@ -1269,7 +1269,7 @@ i32 CGrunt::StepCombatReaction(
     {
         CWwdSpriteObject* h = m_object;
         i32 v = h->m_screenPosition.m_y + 0x186a0;
-        SET_SORT_KEY_IF_CHANGED(h, v)
+        h->SetSortKey(v);
     }
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
     m_toyTime = 0;
@@ -1278,7 +1278,7 @@ i32 CGrunt::StepCombatReaction(
 tail:
     CreateHealthSprite();
     ArmGruntCombatTimeout(this);
-    if (GRUNT_NOT_AT_SAVED_SCREEN_POS(this)) {
+    if (!IsGruntAtSavedScreenPos(this)) {
         ConsiderArrival(1);
     }
     if (LoadGruntCombatAnimations(
@@ -1446,7 +1446,7 @@ i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
     FaceTowardTile(tileX, tileY);
     m_moveTile.Set(tileX, tileY);
     if (m_poweredUp != false && m_neighborValid == false) {
-        RESET_GRUNT_POWERED_STATE(this)
+        ResetGruntPoweredState(this);
     }
 
     i32 poseIdx = 0;

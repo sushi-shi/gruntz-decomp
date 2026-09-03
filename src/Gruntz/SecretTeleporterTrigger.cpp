@@ -104,7 +104,7 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj)
         SnapTileCenter(&position);
         m_object->SetScreenPos(position);
         CWwdSpriteObject* o = m_object;
-        SET_SORT_KEY_IF_CHANGED(o, 0)
+        o->SetSortKey(0);
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
         Hide();
         SET_ANIMATION_ACT("A");
@@ -137,7 +137,7 @@ CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj)
         SnapTileCenter(&position);
         m_object->SetScreenPos(position);
         CWwdSpriteObject* o = m_object;
-        SET_SORT_KEY_IF_CHANGED(o, 0)
+        o->SetSortKey(0);
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
         Hide();
         SET_ANIMATION_ACT("A");

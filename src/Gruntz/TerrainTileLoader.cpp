@@ -48,8 +48,8 @@ i32 CTriggerMgr::LoadTileArrivalFx(
 
     Coord tile(tileX, tileY);
     Coord clamped = tile;
-    clamped.Max(Coord(0, 0));
-    clamped.Min(
+    clamped.Clamp(
+        Coord(0, 0),
         Coord(grid->m_mainPlane->m_tileGridSize.cx - 1, grid->m_mainPlane->m_tileGridSize.cy - 1)
     );
 
@@ -118,7 +118,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                                     [m_world->m_level->m_mainPlane->m_tileRowOffsets[tileY] + tileX]
                                 - 1;
                 CDDrawWorkerHost* dst = g_gameReg->m_world->m_level->m_mainPlane;
-                SET_WORKER_HOST_CELL(dst, tileX, tileY, recovered);
+                dst->SetCell(tileX, tileY, recovered);
                 g_gameReg->m_tileGrid->ComputeCellFlags(tileX, tileY, recovered);
                 return 1;
             }
@@ -161,11 +161,11 @@ i32 CTriggerMgr::LoadTileArrivalFx(
                     state->m_tileTriggers->RemoveIdleLogic(found);
                 } else if (cellType == TILEKIND_GAUNTLET_ROCK_A) {
                     CDDrawWorkerHost* dst = g_gameReg->m_world->m_level->m_mainPlane;
-                    SET_WORKER_HOST_CELL(dst, tileX, tileY, 0x5a);
+                    dst->SetCell(tileX, tileY, 0x5a);
                     g_gameReg->m_tileGrid->ComputeCellFlags(tileX, tileY, 0x5a);
                 } else {
                     CDDrawWorkerHost* dst = g_gameReg->m_world->m_level->m_mainPlane;
-                    SET_WORKER_HOST_CELL(dst, tileX, tileY, 0x5b);
+                    dst->SetCell(tileX, tileY, 0x5b);
                     g_gameReg->m_tileGrid->ComputeCellFlags(tileX, tileY, 0x5b);
                 }
             } else if (cellType == TILEKIND_GIANT_ROCK) {

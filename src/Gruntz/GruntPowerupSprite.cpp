@@ -37,7 +37,7 @@ CGruntPowerupSprite::CGruntPowerupSprite(CGameObject* obj)
     SetImageSetByName("GAME_LIGHTING_POWERUP");
     SwitchAnimationByName("GAME_CYCLE100", 0);
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_POWERUP)
+    o->SetSortKey(SORTKEY_GRUNT_POWERUP);
     Hide();
 }
 
@@ -62,7 +62,7 @@ i32 CGruntPowerupSprite::BindToGrunt(i32 playerIndex, i32 unitIndex, i32 powerup
     m_powerupId = powerupId;
     CShadeTable* rec = g_gameReg->m_lightFxMgr->m_tables[powerupId];
     CWwdSpriteObject* r = m_object;
-    SET_DRAW_FILL(r, SHADE_DST_BY_SRC_16, rec);
+    r->SetDrawFill(SHADE_DST_BY_SRC_16, rec);
     m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
     SET_ANIMATION_ACT("A");
     return 1;
@@ -99,7 +99,7 @@ i32 CGruntPowerupSprite::SerializeDispatch(
             i32 id = m_powerupId;
             CWwdSpriteObject* r = m_object;
             CShadeTable* v = g_gameReg->m_lightFxMgr->m_tables[id];
-            SET_DRAW_FILL_REVERSED(r, SHADE_DST_BY_SRC_16, v);
+            r->SetDrawFill(SHADE_DST_BY_SRC_16, v);
             break;
         }
     }

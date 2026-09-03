@@ -23,53 +23,6 @@ struct WwdTileImageRecord;
 
 static const i32 TILE_CLEAR = -1;
 
-#define PROBE_TILE(LVL, X, Y, RESULT)                                                              \
-    do {                                                                                           \
-        Coord pixel_((X), (Y));                                                                    \
-        pixel_.Max(Coord(0, 0));                                                                   \
-        pixel_.Min(Coord(                                                                          \
-            (LVL)->m_mainPlane->m_planePixelSize.cx - 1,                                           \
-            (LVL)->m_mainPlane->m_planePixelSize.cy - 1                                            \
-        ));                                                                                        \
-        CDDrawWorkerHost* pl_ = (LVL)->m_mainPlane;                                                \
-        Coord tile_(pixel_.m_x >> pl_->m_tileShift.m_x, pixel_.m_y >> pl_->m_tileShift.m_y);       \
-        Coord cellOrigin_(tile_.m_x << pl_->m_tileShift.m_x, tile_.m_y << pl_->m_tileShift.m_y);   \
-        Coord subPixel_ = pixel_ - cellOrigin_;                                                    \
-        i32 idx_ = pl_->m_tileRowOffsets[tile_.m_y] + tile_.m_x;                                   \
-        i32 tileHandle_ = pl_->m_tileHandles[idx_];                                                \
-        if (tileHandle_ == UNINIT_FILL || tileHandle_ == TILE_CLEAR) {                             \
-            (RESULT) = TILEKIND_PASSABLE;                                                          \
-        } else {                                                                                   \
-            CTileImageSet* set_ = static_cast<CTileImageSet*>(                                     \
-                m_imageSets[tileHandle_ & WWD_TILE_IMAGE_SET_INDEX_MASK]                           \
-            );                                                                                     \
-            (RESULT) = set_->GetCollisionAt(subPixel_.m_x, subPixel_.m_y);                         \
-        }                                                                                          \
-    } while (0)
-
-#define PROBE_TILE_VIA_HANDLE(LVL, X, Y, RESULT)                                                   \
-    do {                                                                                           \
-        Coord pixel_((X), (Y));                                                                    \
-        pixel_.Max(Coord(0, 0));                                                                   \
-        pixel_.Min(Coord(                                                                          \
-            (LVL)->m_mainPlane->m_planePixelSize.cx - 1,                                           \
-            (LVL)->m_mainPlane->m_planePixelSize.cy - 1                                            \
-        ));                                                                                        \
-        CDDrawWorkerHost* pl_ = (LVL)->m_mainPlane;                                                \
-        Coord tile_(pixel_.m_x >> pl_->m_tileShift.m_x, pixel_.m_y >> pl_->m_tileShift.m_y);       \
-        Coord cellOrigin_(tile_.m_x << pl_->m_tileShift.m_x, tile_.m_y << pl_->m_tileShift.m_y);   \
-        Coord subPixel_ = pixel_ - cellOrigin_;                                                    \
-        i32 tileHandle_ = pl_->GetTileHandle(tile_.m_x, tile_.m_y);                                \
-        if (tileHandle_ == UNINIT_FILL || tileHandle_ == TILE_CLEAR) {                             \
-            (RESULT) = TILEKIND_PASSABLE;                                                          \
-        } else {                                                                                   \
-            CTileImageSet* set_ = static_cast<CTileImageSet*>(                                     \
-                m_imageSets[tileHandle_ & WWD_TILE_IMAGE_SET_INDEX_MASK]                           \
-            );                                                                                     \
-            (RESULT) = set_->GetCollisionAt(subPixel_.m_x, subPixel_.m_y);                         \
-        }                                                                                          \
-    } while (0)
-
 #include <Gruntz/ImageSets.h>
 #include <Wap32/CoordUnset.h>
 
@@ -109,6 +62,46 @@ public:
     virtual LoadableClassId GetClassId() OVERRIDE {
         return CLASSID_GAMELEVEL;
     }
+
+    TileCollisionKind ProbeTile(i32 x, i32 y) {
+        Coord pixel(x, y);
+        pixel.Clamp(
+            Coord(0, 0),
+            Coord(m_mainPlane->m_planePixelSize.cx - 1, m_mainPlane->m_planePixelSize.cy - 1)
+        );
+        CDDrawWorkerHost* plane = m_mainPlane;
+        Coord tile(pixel.m_x >> plane->m_tileShift.m_x, pixel.m_y >> plane->m_tileShift.m_y);
+        Coord cellOrigin(tile.m_x << plane->m_tileShift.m_x, tile.m_y << plane->m_tileShift.m_y);
+        Coord subPixel = pixel - cellOrigin;
+        i32 index = plane->m_tileRowOffsets[tile.m_y] + tile.m_x;
+        i32 tileHandle = plane->m_tileHandles[index];
+        if (tileHandle == UNINIT_FILL || tileHandle == TILE_CLEAR) {
+            return TILEKIND_PASSABLE;
+        }
+        CTileImageSet* set =
+            static_cast<CTileImageSet*>(m_imageSets[tileHandle & WWD_TILE_IMAGE_SET_INDEX_MASK]);
+        return set->GetCollisionAt(subPixel.m_x, subPixel.m_y);
+    }
+
+    TileCollisionKind ProbeTileViaHandle(i32 x, i32 y) {
+        Coord pixel(x, y);
+        pixel.Clamp(
+            Coord(0, 0),
+            Coord(m_mainPlane->m_planePixelSize.cx - 1, m_mainPlane->m_planePixelSize.cy - 1)
+        );
+        CDDrawWorkerHost* plane = m_mainPlane;
+        Coord tile(pixel.m_x >> plane->m_tileShift.m_x, pixel.m_y >> plane->m_tileShift.m_y);
+        Coord cellOrigin(tile.m_x << plane->m_tileShift.m_x, tile.m_y << plane->m_tileShift.m_y);
+        Coord subPixel = pixel - cellOrigin;
+        i32 tileHandle = plane->GetTileHandle(tile.m_x, tile.m_y);
+        if (tileHandle == UNINIT_FILL || tileHandle == TILE_CLEAR) {
+            return TILEKIND_PASSABLE;
+        }
+        CTileImageSet* set =
+            static_cast<CTileImageSet*>(m_imageSets[tileHandle & WWD_TILE_IMAGE_SET_INDEX_MASK]);
+        return set->GetCollisionAt(subPixel.m_x, subPixel.m_y);
+    }
+
     virtual i32 LoadWwdWithCoords(WwdHeader* hdr, LevelCoordRect* coords);
     virtual i32 LoadSourceWithCoords(CRezItm* src, LevelCoordRect* coords);
     virtual i32 LoadFileWithCoords(const char* path, LevelCoordRect* coords);

@@ -46,6 +46,14 @@ public:
         m_enabled = on;
     }
 
+    inline void InitializeBase(CStatusBarMgr* owner, StatusBarTab tab, CDDrawSurfaceMgr* host) {
+        m_owner = owner;
+        m_tab = tab;
+        m_host = host;
+        m_redrawFrames = 0;
+        SetEnabled(1);
+    }
+
     b32 m_enabled;
     StatusBarItemKind m_kind;
     SbiCommandId m_cmd;

@@ -960,7 +960,7 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
 
 RVA(0x0013f740, 0x1c8)
 void BuildColorChannelTables() {
-    if (PIXEL_FORMAT_IS_RGB555) {
+    if (PixelFormatIsRgb555()) {
         i32 bShift = g_bUp;
         i32 a = 0;
         i32 stepA = CLUT_BLEND_LEVEL_COUNT;

@@ -408,13 +408,11 @@ CTileActionEvent* CTileTriggerContainer::AddActionEvent(
     if (event->m_live == false) {
         event->m_tile.Set(tileX, tileY);
         event->m_cellKey = cellKey;
-        event->m_playerFlags[0] = playerFlags.left;
-        event->m_playerFlags[1] = playerFlags.top;
-        event->m_playerFlags[3] = playerFlags.bottom;
+        event->m_playerFlags
+            .Init(playerFlags.left, playerFlags.top, playerFlags.right, playerFlags.bottom);
         event->m_actionCode = actionCode;
         event->m_owner = this;
         event->m_live = true;
-        event->m_playerFlags[2] = playerFlags.right;
         event->SetActionCode(actionCode);
         m_actionEvents.AddTail(event);
         return event;
@@ -435,38 +433,17 @@ CTileActionEvent* CTileTriggerContainer::AddSwitchActionEvent(
     if (event == NULL) {
         return NULL;
     }
-    RECT playerFlags;
-    playerFlags.left = 0;
+    PlayerSlotFlags playerFlags;
+    playerFlags.Clear();
     CTileActionEvent* result = NULL;
-    playerFlags.top = 0;
-    playerFlags.right = 0;
-    playerFlags.bottom = 0;
-    switch (static_cast<PlayerSlot>(playerSlot)) {
-        case PLAYER_SLOT_1:
-            playerFlags.top = 1;
-            break;
-        case PLAYER_SLOT_2:
-            playerFlags.right = 1;
-            break;
-        case PLAYER_SLOT_3:
-            playerFlags.bottom = 1;
-            break;
-        case PLAYER_SLOT_ALL:
-            playerFlags.top = playerFlags.right = playerFlags.bottom = 1;
-        case PLAYER_SLOT_0:
-            playerFlags.left = 1;
-            break;
-    }
+    playerFlags.EnableIfValid(playerSlot);
     if (event->m_live == false) {
         event->m_tile.Set(tileX, tileY);
         event->m_cellKey = cellKey;
-        event->m_playerFlags[2] = playerFlags.right;
+        event->m_playerFlags = playerFlags;
         event->m_actionCode = actionCode;
         event->m_owner = this;
         event->m_live = true;
-        event->m_playerFlags[0] = playerFlags.left;
-        event->m_playerFlags[1] = playerFlags.top;
-        event->m_playerFlags[3] = playerFlags.bottom;
         event->SetActionCode(actionCode);
         m_actionEvents.AddTail(event);
         result = event;
@@ -991,11 +968,13 @@ void* CTileTriggerContainer::DeserializeLogic(
 
             CGameLevel* level = g_gameReg->m_world->m_level;
             Coord tilePosition = obj->m_tile;
-            tilePosition.Max(Coord(0, 0));
-            tilePosition.Min(Coord(
-                level->m_mainPlane->m_tileGridSize.cx - 1,
-                level->m_mainPlane->m_tileGridSize.cy - 1
-            ));
+            tilePosition.Clamp(
+                Coord(0, 0),
+                Coord(
+                    level->m_mainPlane->m_tileGridSize.cx - 1,
+                    level->m_mainPlane->m_tileGridSize.cy - 1
+                )
+            );
             i32 cell = level->m_mainPlane->m_tileRowOffsets[tilePosition.m_y] + tilePosition.m_x;
             i32 tile = level->m_mainPlane->m_tileHandles[cell];
             TileCollisionKind tileKind;
@@ -1109,14 +1088,7 @@ RVA(0x00117f60, 0xa1)
 i32 CTileTriggerContainer::SetCell(i32 tileX, i32 tileY, i32 playerSlot) {
     CTileActionEvent* elem = FindActionByCellKey(CellKey(tileX, tileY));
     if (elem != NULL) {
-        if (playerSlot == IDX(PLAYER_SLOT_ALL)) {
-            i32* flags = elem->m_playerFlags;
-            for (i32 i = 0; i < 4; i++) {
-                flags[i] = 1;
-            }
-        } else {
-            elem->m_playerFlags[playerSlot] = 1;
-        }
+        elem->m_playerFlags.Enable(static_cast<PlayerSlot>(playerSlot));
         elem->SetActionCode(elem->m_actionCode);
         return 1;
     }

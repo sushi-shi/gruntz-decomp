@@ -15,7 +15,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
-#include <Gruntz/GruntCoordRecycleMacros.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
@@ -74,7 +74,8 @@ i32 CGrunt::StepGooSuckerBehavior() {
     Coord selfTile;
     GetScreenTile(&selfTile);
 
-    FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget)
+    i32 atTarget;
+    CGrunt* g = FindNearestEnemyAtTarget(this, &atTarget);
 
     b32 powered = m_poweredUp;
     if (powered != false) {
@@ -104,7 +105,7 @@ i32 CGrunt::StepGooSuckerBehavior() {
             if (m_neighborValid != false) {
                 goto L_yes;
             }
-            RESET_GRUNT_POWERED_STATE(this)
+            ResetGruntPoweredState(this);
         } else {
             m_neighborValid = false;
         }
@@ -118,16 +119,16 @@ i32 CGrunt::StepGooSuckerBehavior() {
         }
         if (m_combatActive == false && m_stamina >= STAMINA_FULL) {
             if (atTarget) {
-                COMMIT_GRUNT_NEIGHBOR(g);
+                CommitGruntNeighbor(this, g);
                 if (CoordCount() != 0) {
-                    RECYCLE_GRUNT_COORDS(this)
+                    RecycleGruntCoords(this);
                 }
                 return 1;
             }
         } else {
             if (atTarget) {
                 if (CoordCount() != 0) {
-                    RECYCLE_GRUNT_COORDS(this)
+                    RecycleGruntCoords(this);
                 }
                 return 1;
             }
@@ -144,10 +145,10 @@ L_ed006b:
     if (m_poweredUp != false) {
         goto L_scanb;
     }
-    if (m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(g)
+    if (m_stamina >= STAMINA_FULL && IsGruntAtSavedScreenPos(g)
         && RectContains(g->m_object->m_screenPosition.m_x, g->m_object->m_screenPosition.m_y)
                != 0) {
-        COMMIT_GRUNT_NEIGHBOR(g);
+        CommitGruntNeighbor(this, g);
     }
     if (m_poweredUp != false) {
         goto L_scanb;

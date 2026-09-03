@@ -23,7 +23,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
-#include <Gruntz/GruntCoordRecycleMacros.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntPickupInline.h>
 #include <Gruntz/GruntPuddle.h>
@@ -57,19 +57,6 @@
 #include <new>
 #include <stdlib.h>
 #include <string.h>
-
-#define MOVE_RECYCLE(g)                                                                            \
-    {                                                                                              \
-        CoordNode* nd = (g)->CoordHead();                                                          \
-        while (nd != 0) {                                                                          \
-            CoordNode* cur = nd;                                                                   \
-            nd = nd->m_next;                                                                       \
-            if (cur->m_coord != 0) {                                                               \
-                g_coordPool.Push(cur->m_coord);                                                    \
-            }                                                                                      \
-        }                                                                                          \
-        (g)->m_coordList.RemoveAll();                                                              \
-    }
 
 DATA(0x0022b7ec)
 i32 g_battlezRoutePassableMask;
@@ -119,7 +106,7 @@ i32 CBattlezMapConfig::Step(CGrunt* g) {
             RerouteIdleUnit(g, here.m_x, here.m_y, m_idleBurnRand.m_x, m_idleBurnRand.m_y, -1);
             if (g->CoordCount() > m_idleRouteLimit.m_y + m_idleRouteLimit.m_x
                 && g->CoordCount() != 0) {
-                RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(g)
+                RecycleGruntCoords(g);
             }
             g->m_dwell = 0;
         }
@@ -148,7 +135,7 @@ inflight: {
     }
     if (nb != NULL && cur != nb) {
         if (g->CoordCount() != 0) {
-            MOVE_RECYCLE(g);
+            RecycleGruntCoords(g);
         }
         g->m_arrivalCell.Set(nb->m_playerIndex, nb->m_unitIndex);
         g->m_defenderState = AISTATE_ATTACK;
@@ -178,7 +165,7 @@ inflight: {
             if (g->RectContains(s->m_screenPosition.m_x, s->m_screenPosition.m_y) != 0) {
 
                 if (g->CoordCount() != 0) {
-                    MOVE_RECYCLE(g);
+                    RecycleGruntCoords(g);
                 }
                 g->m_arrivalCell.Set(-1, -1);
                 HandleUnitContact(g, cur);
@@ -197,12 +184,12 @@ inflight: {
             i32 dist = nbpos.Dist(here);
             if (dist > m_assignedTargetMaxDistance) {
                 if (g->CoordCount() != 0) {
-                    MOVE_RECYCLE(g);
+                    RecycleGruntCoords(g);
                 }
                 goto L_clearAt;
             }
             if (g->CoordCount() != 0) {
-                MOVE_RECYCLE(g);
+                RecycleGruntCoords(g);
             }
             Coord targetTile;
             cur->GetScreenTile(&targetTile);
@@ -235,7 +222,6 @@ L_clear: {
 }
 }
 }
-#undef MOVE_RECYCLE
 
 RVA(0x00031c70, 0x1d)
 Coord CGrunt::GetTilePos() {
@@ -281,7 +267,7 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
                     ->RectContains(lvl->m_screenPosition.m_x, lvl->m_screenPosition.m_y)
                 != 0) {
                 if (unit->CoordCount() != 0) {
-                    RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
+                    RecycleGruntCoords(unit);
                 }
                 unit->m_arrivalCell.Set(-1, -1);
                 HandleUnitContact(unit, target);
@@ -313,7 +299,7 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
         unit->m_defenderState = AISTATE_SEEK;
         unit->m_battleState = BZTASK_ADVANCE;
         if (unit->CoordCount() != 0) {
-            RECYCLE_GRUNT_COORDS_EXPANDED(unit)
+            RecycleGruntCoords(unit);
         }
         return 1;
     }
@@ -323,7 +309,7 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
     unit->m_defenderState = AISTATE_SEEK;
     unit->m_battleState = BZTASK_ADVANCE;
     if (unit->CoordCount() != 0) {
-        RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
+        RecycleGruntCoords(unit);
     }
     return 1;
 }
@@ -356,7 +342,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
         if (slot->m_clearedRound != false || slot->m_active == false) {
 
             if (unit->CoordCount() != 0) {
-                RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
+                RecycleGruntCoords(unit);
             }
             unit->m_arrivalCell.Set(-1, -1);
             unit->m_defenderPx.Set(-1, -1);
@@ -408,7 +394,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
 
                     unit->m_defenderState = AISTATE_SEEK;
                     if (unit->CoordCount() != 0) {
-                        RECYCLE_GRUNT_COORDS(unit)
+                        RecycleGruntCoords(unit);
                     }
                     unit->m_defenderPx.Set(-1, -1);
                     return 1;
@@ -483,7 +469,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
 
         unit->m_defenderState = AISTATE_SEEK;
         if (unit->CoordCount() != 0) {
-            RECYCLE_GRUNT_COORDS_EXPANDED(unit)
+            RecycleGruntCoords(unit);
         }
         unit->m_defenderPx.Set(-1, -1);
         return 1;
@@ -493,7 +479,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
     if (target.DistSqr(current) > 0x10) {
         return 1;
     }
-    RECYCLE_GRUNT_COORDS_EXPANDED(unit)
+    RecycleGruntCoords(unit);
     unit->m_defenderState = AISTATE_BATTLEZ_FINAL_ROUTE;
     unit->m_routeBlockedMask = g_battlezRouteBlockedMask;
     unit->m_routePassableMask = BATTLEZ_ROUTE_WINGZ_SHOVEL_EXPANDED;

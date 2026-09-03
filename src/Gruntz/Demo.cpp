@@ -134,13 +134,13 @@ i32 DispatchDemoMoverLogic(CGameObject* owner) {
             }
 
             CDDrawWorkerHost* mg = gh->m_mainPlane;
-            SET_SCROLL_POSITION_PRODUCT_CAST(mg, current.m_x, current.m_y);
+            mg->SetScrollPosition(current.m_x, current.m_y);
 
             Coord snapped = gh->m_mainPlane->m_scrollPixel;
             for (i32 i = 0; i < gh->m_planes.GetSize(); i++) {
                 if (i != gh->m_mainIndex) {
                     CDDrawWorkerHost* p = static_cast<CDDrawWorkerHost*>(gh->m_planes[i]);
-                    SET_SCROLL_POSITION_PRODUCT_CAST(p, snapped.m_x, snapped.m_y);
+                    p->SetScrollPosition(snapped.m_x, snapped.m_y);
                 }
             }
 
@@ -152,9 +152,10 @@ i32 DispatchDemoMoverLogic(CGameObject* owner) {
         case DEMO_MOVER_CHOOSE_TARGET: {
 
             CSize range = st->m_ownerCtx->m_level->m_mainPlane->m_planePixelSize;
-            i32 targetX = (range.cx == -1) ? (rand() % 2 - 1) : (rand() % (range.cx + 1));
-            i32 targetY = (range.cy == -1) ? (rand() % 2 - 1) : (rand() % (range.cy + 1));
-            st->m_scrollTarget.Set(targetX, targetY);
+            Coord target;
+            target.m_x = (range.cx == -1) ? (rand() % 2 - 1) : (rand() % (range.cx + 1));
+            target.m_y = (range.cy == -1) ? (rand() % 2 - 1) : (rand() % (range.cy + 1));
+            st->m_scrollTarget = target;
             st->SetEventCode(IDX(DEMO_MOVER_SCROLL_TO_TARGET));
             break;
         }

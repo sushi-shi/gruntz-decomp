@@ -108,7 +108,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_selectedSprite)
 
     if (m_poweredUp != false && m_neighborValid == false) {
-        RESET_GRUNT_POWERED_STATE(this)
+        ResetGruntPoweredState(this);
     }
     m_triggerMgr->RemoveCellRecord(m_playerIndex, m_unitIndex, 1);
 
@@ -117,7 +117,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION));
     {
         CWwdSpriteObject* o = m_object;
-        SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_DEATH)
+        o->SetSortKey(SORTKEY_GRUNT_DEATH);
     }
 
     if (killerPlayerIndex != -1) {
@@ -183,7 +183,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
             APPLY_LOOKUP_SPRITE_INLINE(s_DEATHZ_FALL, DEATH_FRAME());
             {
                 CWwdSpriteObject* o = m_object;
-                SET_SORT_KEY_IF_CHANGED(o, -1)
+                o->SetSortKey(-1);
             }
             DEATH_CUE(0x357);
             goto finalize;
@@ -200,7 +200,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
                 tag = 0x357;
                 {
                     CWwdSpriteObject* o = m_object;
-                    SET_SORT_KEY_IF_CHANGED(o, -1)
+                    o->SetSortKey(-1);
                 }
                 Coord position = m_object->ScreenPos();
                 SnapTileCenter(&position);
@@ -228,7 +228,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
                 tag = 0x357;
                 {
                     CWwdSpriteObject* o = m_object;
-                    SET_SORT_KEY_IF_CHANGED(o, -1)
+                    o->SetSortKey(-1);
                 }
                 Coord position = m_object->ScreenPos();
                 SnapTileCenter(&position);

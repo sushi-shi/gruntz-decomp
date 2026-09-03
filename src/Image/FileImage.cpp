@@ -913,9 +913,9 @@ i32 CDDSurface::DecodePcxData(
     record.m_dwords++;
 
     PidFlags flags = static_cast<PidFlags>(*record.m_dwords++);
-    i32 imageWidth = *record.m_dwords++;
-    i32 imageHeight = *record.m_dwords++;
-    CSize imageSize(imageWidth, imageHeight);
+    CSize imageSize;
+    imageSize.cx = *record.m_dwords++;
+    imageSize.cy = *record.m_dwords++;
     record.m_dwords += 4;
 
     if (imageSize.cx & 3) {
@@ -1034,12 +1034,12 @@ i32 CDDSurface::DecodePid(
     DWORD* pDWord = static_cast<DWORD*>(static_cast<void*>(image));
     DWORD id = *pDWord++;
     PidFlags flags2 = static_cast<PidFlags>(*pDWord++);
-    i32 imageWidth = *pDWord++;
-    i32 imageHeight = *pDWord++;
-    CSize imageSize(imageWidth, imageHeight);
-    i32 offsetX = *pDWord++;
-    i32 offsetY = *pDWord++;
-    CPoint offset(offsetX, offsetY);
+    CSize imageSize;
+    imageSize.cx = *pDWord++;
+    imageSize.cy = *pDWord++;
+    CPoint offset;
+    offset.x = *pDWord++;
+    offset.y = *pDWord++;
     DWORD user1 = *pDWord++;
     DWORD user2 = *pDWord++;
     u8* pPacked = static_cast<u8*>(static_cast<void*>(pDWord));

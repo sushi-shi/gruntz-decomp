@@ -213,7 +213,7 @@ CObjectDropper::CObjectDropper(CGameObject* obj)
     m_object->SetScreenPos(position);
     m_position.Init(position);
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR_FRONT)
+    o->SetSortKey(SORTKEY_ACTOR_FRONT);
 
     CDDrawWorker* frameSet = m_wwdObject->m_imageSet;
     if (frameSet != NULL) {
@@ -244,10 +244,10 @@ CObjectDropper::CObjectDropper(CGameObject* obj)
         m_scrollMode = OBJECT_DROP_PLAYER_ZERO_ONLY;
     }
     CShadeTable* sel = g_gameReg->m_lightFxMgr->m_tables[5];
-    SET_DRAW_FILL(m_object, SHADE_DST_BY_SRC_16, sel);
+    m_object->SetDrawFill(SHADE_DST_BY_SRC_16, sel);
     m_lastDropTime = 0;
     m_dropInterval = 0;
-    SET_OBJECT_AREA(1)
+    SetObjectArea(1);
 }
 
 RVA(0x000c5f80, 0x102)
@@ -395,7 +395,7 @@ i32 CObjectDropper::SerializeDispatch(
         case SERIAL_POSTLOAD: {
             CShadeTable* fill = g_gameReg->m_lightFxMgr->m_tables[5];
             CWwdSpriteObject* o = m_object;
-            SET_DRAW_FILL_REVERSED(o, SHADE_DST_BY_SRC_16, fill);
+            o->SetDrawFill(SHADE_DST_BY_SRC_16, fill);
             break;
         }
     }
@@ -419,7 +419,7 @@ CDroppedObject::CDroppedObject(CGameObject* obj)
     );
     CWwdSpriteObject* o = m_object;
     m_fallY = static_cast<double>(o->m_screenPosition.m_y);
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR_FRONT)
+    o->SetSortKey(SORTKEY_ACTOR_FRONT);
     m_timePerTile =
         g_objDropDiv
         / static_cast<double>(g_buteMgr.GetDword("Hazardz", "DroppedObjectTimePerTile", 0x3e8));
@@ -559,9 +559,9 @@ CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj)
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
     CShadeTable* fill = g_gameReg->m_lightFxMgr->m_tables[5];
     CWwdSpriteObject* draw = m_object;
-    SET_DRAW_FILL(draw, SHADE_DST_BY_SRC_16, fill);
+    draw->SetDrawFill(SHADE_DST_BY_SRC_16, fill);
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR_BEHIND)
+    o->SetSortKey(SORTKEY_ACTOR_BEHIND);
 }
 
 RVA(0x000c7750, 0x102)
@@ -607,7 +607,7 @@ i32 CDroppedObjectShadow::SerializeDispatch(
     if (mode == SERIAL_POSTLOAD) {
         CShadeTable* fill = g_gameReg->m_lightFxMgr->m_tables[5];
         CWwdSpriteObject* o = m_object;
-        SET_DRAW_FILL(o, SHADE_DST_BY_SRC_16, fill);
+        o->SetDrawFill(SHADE_DST_BY_SRC_16, fill);
     }
     return 1;
 }

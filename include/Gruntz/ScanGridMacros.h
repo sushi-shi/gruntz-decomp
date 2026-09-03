@@ -5,75 +5,55 @@
 
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/FreeNodePool.h>
+#include <Gruntz/PickupType.h>
 
-#define PRIO(dst, r)                                                                               \
-    switch (r) {                                                                                   \
-        case PICKUP_BOMB:                                                                          \
-            dst = 2;                                                                               \
-            break;                                                                                 \
-        case PICKUP_WELDER:                                                                        \
-            dst = 3;                                                                               \
-            break;                                                                                 \
-        case PICKUP_SWORD:                                                                         \
-            dst = 4;                                                                               \
-            break;                                                                                 \
-        case PICKUP_GUNHAT:                                                                        \
-            dst = 5;                                                                               \
-            break;                                                                                 \
-        case PICKUP_CLUB:                                                                          \
-            dst = 6;                                                                               \
-            break;                                                                                 \
-        case PICKUP_ROCK:                                                                          \
-            dst = 7;                                                                               \
-            break;                                                                                 \
-        case PICKUP_SHOVEL:                                                                        \
-            dst = 8;                                                                               \
-            break;                                                                                 \
-        case PICKUP_BOOMERANG:                                                                     \
-            dst = 9;                                                                               \
-            break;                                                                                 \
-        case PICKUP_SPRING:                                                                        \
-            dst = 10;                                                                              \
-            break;                                                                                 \
-        case PICKUP_GAUNTLETZ:                                                                     \
-            dst = 11;                                                                              \
-            break;                                                                                 \
-        case PICKUP_WINGZ:                                                                         \
-            dst = 12;                                                                              \
-            break;                                                                                 \
-        case PICKUP_SPY:                                                                           \
-            dst = 13;                                                                              \
-            break;                                                                                 \
-        case PICKUP_BRICK:                                                                         \
-            dst = 14;                                                                              \
-            break;                                                                                 \
-        case PICKUP_GRAVITYBOOTZ:                                                                  \
-            dst = 15;                                                                              \
-            break;                                                                                 \
-        case PICKUP_SHIELD:                                                                        \
-            dst = 16;                                                                              \
-            break;                                                                                 \
-        case PICKUP_GOOBER:                                                                        \
-            dst = 17;                                                                              \
-            break;                                                                                 \
-        case PICKUP_TOOB:                                                                          \
-            dst = 18;                                                                              \
-            break;                                                                                 \
-        case PICKUP_GLOVEZ:                                                                        \
-            dst = 19;                                                                              \
-            break;                                                                                 \
-        case PICKUP_TIMEBOMB:                                                                      \
-            dst = 20;                                                                              \
-            break;                                                                                 \
-        case PICKUP_NERFGUN:                                                                       \
-            dst = 21;                                                                              \
-            break;                                                                                 \
-        case PICKUP_WAND:                                                                          \
-            dst = 22;                                                                              \
-            break;                                                                                 \
-        default:                                                                                   \
-            dst = 23;                                                                              \
-            break;                                                                                 \
+inline i32 PickupPriority(PickupType pickup) {
+    switch (pickup) {
+        case PICKUP_BOMB:
+            return 2;
+        case PICKUP_WELDER:
+            return 3;
+        case PICKUP_SWORD:
+            return 4;
+        case PICKUP_GUNHAT:
+            return 5;
+        case PICKUP_CLUB:
+            return 6;
+        case PICKUP_ROCK:
+            return 7;
+        case PICKUP_SHOVEL:
+            return 8;
+        case PICKUP_BOOMERANG:
+            return 9;
+        case PICKUP_SPRING:
+            return 10;
+        case PICKUP_GAUNTLETZ:
+            return 11;
+        case PICKUP_WINGZ:
+            return 12;
+        case PICKUP_SPY:
+            return 13;
+        case PICKUP_BRICK:
+            return 14;
+        case PICKUP_GRAVITYBOOTZ:
+            return 15;
+        case PICKUP_SHIELD:
+            return 16;
+        case PICKUP_GOOBER:
+            return 17;
+        case PICKUP_TOOB:
+            return 18;
+        case PICKUP_GLOVEZ:
+            return 19;
+        case PICKUP_TIMEBOMB:
+            return 20;
+        case PICKUP_NERFGUN:
+            return 21;
+        case PICKUP_WAND:
+            return 22;
+        default:
+            return 23;
     }
+}
 
 #endif // INCLUDE_GRUNTZ_SCANGRIDMACROS_H

@@ -340,50 +340,8 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
     }
     CPoint farCorner = position + CSize(m_width - 1, m_height - 1);
     CRect destination(position.x, position.y, farCorner.x, farCorner.y);
-    if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        BlitRect srcClip = m_ownerCtx->m_level->m_viewportRect;
-        CRect destClip = static_cast<const RECT&>(srcClip);
-        if (position.x < destClip.left) {
-            destination.left += destClip.left - position.x;
-        }
-        if (farCorner.x > destClip.right) {
-            destination.right = destClip.right;
-        }
-        if (position.y < destClip.top) {
-            destination.top += destClip.top - position.y;
-        }
-        if (farCorner.y > destClip.bottom) {
-            destination.bottom = destClip.bottom;
-        }
-    } else if (info->m_clip.left == COORD_UNSET) {
-        if (position.x < 0) {
-            destination.left = 0;
-        }
-        if (farCorner.x >= dst->m_width) {
-            destination.right = dst->m_width - 1;
-        }
-        if (position.y < 0) {
-            destination.top = 0;
-        }
-        if (farCorner.y >= dst->m_height) {
-            destination.bottom = dst->m_height - 1;
-        }
-    } else {
-        if (position.x < info->m_clip.left) {
-            destination.left = info->m_clip.left;
-        }
-        if (farCorner.x > info->m_clip.right) {
-            destination.right = info->m_clip.right;
-        }
-        if (position.y < info->m_clip.top) {
-            destination.top = info->m_clip.top;
-        }
-        if (farCorner.y > info->m_clip.bottom) {
-            destination.bottom = info->m_clip.bottom;
-        }
-    }
-    CSize visibleSize = destination.Size() + CSize(1, 1);
-    if (visibleSize.cx <= 0 || visibleSize.cy <= 0) {
+    CSize visibleSize;
+    if (!ClipImageRect(&destination, &visibleSize, info, dst, m_ownerCtx)) {
         info->m_dirty.m_armed = -1;
         return;
     }
@@ -440,17 +398,12 @@ void CImage::BlitNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
         info->m_level->m_mainPlane->WorldToViewport(&position.x, &position.y);
     }
     CPoint farCorner = position + CSize(m_width - 1, m_height - 1);
-    DECLARE_CLIPPED_IMAGE_RECT(
-        CRect,
-        d,
-        info,
-        dst,
-        position.x,
-        position.y,
-        farCorner.x,
-        farCorner.y,
-        visibleSize
-    )
+    CRect d(position.x, position.y, farCorner.x, farCorner.y);
+    CSize visibleSize;
+    if (!ClipImageRect(&d, &visibleSize, info, dst, m_ownerCtx)) {
+        info->m_dirty.m_armed = -1;
+        return;
+    }
     CRect s = MakeRect(
         farCorner.x - d.right,
         farCorner.y - d.bottom,
@@ -476,17 +429,12 @@ void CImage::BlitFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
         info->m_level->m_mainPlane->WorldToViewport(&position.x, &position.y);
     }
     CPoint farCorner = position + CSize(m_width - 1, m_height - 1);
-    DECLARE_CLIPPED_IMAGE_RECT(
-        CRect,
-        d,
-        info,
-        dst,
-        position.x,
-        position.y,
-        farCorner.x,
-        farCorner.y,
-        visibleSize
-    )
+    CRect d(position.x, position.y, farCorner.x, farCorner.y);
+    CSize visibleSize;
+    if (!ClipImageRect(&d, &visibleSize, info, dst, m_ownerCtx)) {
+        info->m_dirty.m_armed = -1;
+        return;
+    }
     CRect s = MakeRect(
         farCorner.x - d.right,
         d.top - position.y,
@@ -512,17 +460,12 @@ void CImage::BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
         info->m_level->m_mainPlane->WorldToViewport(&position.x, &position.y);
     }
     CPoint farCorner = position + CSize(m_width - 1, m_height - 1);
-    DECLARE_CLIPPED_IMAGE_RECT(
-        CRect,
-        d,
-        info,
-        dst,
-        position.x,
-        position.y,
-        farCorner.x,
-        farCorner.y,
-        visibleSize
-    )
+    CRect d(position.x, position.y, farCorner.x, farCorner.y);
+    CSize visibleSize;
+    if (!ClipImageRect(&d, &visibleSize, info, dst, m_ownerCtx)) {
+        info->m_dirty.m_armed = -1;
+        return;
+    }
     CRect s = MakeRect(
         d.left - position.x,
         farCorner.y - d.bottom,
@@ -548,17 +491,12 @@ void CImage::BlitShadeFlipHV(CResolveNode* info, CDDrawSurfacePair* dst) {
         info->m_level->m_mainPlane->WorldToViewport(&position.x, &position.y);
     }
     CPoint farCorner = position + CSize(m_width - 1, m_height - 1);
-    DECLARE_CLIPPED_IMAGE_RECT(
-        ShadeRect,
-        d,
-        info,
-        dst,
-        position.x,
-        position.y,
-        farCorner.x,
-        farCorner.y,
-        visibleSize
-    )
+    ShadeRect d = MakeRect(position.x, position.y, farCorner.x, farCorner.y);
+    CSize visibleSize;
+    if (!ClipImageRect(&d, &visibleSize, info, dst, m_ownerCtx)) {
+        info->m_dirty.m_armed = -1;
+        return;
+    }
     ShadeRect s;
     s = MakeRect(
         d.left - position.x,
@@ -585,17 +523,12 @@ void CImage::BlitShadeNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
         info->m_level->m_mainPlane->WorldToViewport(&position.x, &position.y);
     }
     CPoint farCorner = position + CSize(m_width - 1, m_height - 1);
-    DECLARE_CLIPPED_IMAGE_RECT(
-        ShadeRect,
-        d,
-        info,
-        dst,
-        position.x,
-        position.y,
-        farCorner.x,
-        farCorner.y,
-        visibleSize
-    )
+    ShadeRect d = MakeRect(position.x, position.y, farCorner.x, farCorner.y);
+    CSize visibleSize;
+    if (!ClipImageRect(&d, &visibleSize, info, dst, m_ownerCtx)) {
+        info->m_dirty.m_armed = -1;
+        return;
+    }
     ShadeRect s;
     s = MakeRect(
         farCorner.x - d.right,
@@ -622,17 +555,12 @@ void CImage::BlitShadeFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
         info->m_level->m_mainPlane->WorldToViewport(&position.x, &position.y);
     }
     CPoint farCorner = position + CSize(m_width - 1, m_height - 1);
-    DECLARE_CLIPPED_IMAGE_RECT(
-        ShadeRect,
-        d,
-        info,
-        dst,
-        position.x,
-        position.y,
-        farCorner.x,
-        farCorner.y,
-        visibleSize
-    )
+    ShadeRect d = MakeRect(position.x, position.y, farCorner.x, farCorner.y);
+    CSize visibleSize;
+    if (!ClipImageRect(&d, &visibleSize, info, dst, m_ownerCtx)) {
+        info->m_dirty.m_armed = -1;
+        return;
+    }
     ShadeRect s;
     s = MakeRect(
         d.left - position.x,
@@ -659,17 +587,12 @@ void CImage::BlitShadeFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
         info->m_level->m_mainPlane->WorldToViewport(&position.x, &position.y);
     }
     CPoint farCorner = position + CSize(m_width - 1, m_height - 1);
-    DECLARE_CLIPPED_IMAGE_RECT(
-        ShadeRect,
-        d,
-        info,
-        dst,
-        position.x,
-        position.y,
-        farCorner.x,
-        farCorner.y,
-        visibleSize
-    )
+    ShadeRect d = MakeRect(position.x, position.y, farCorner.x, farCorner.y);
+    CSize visibleSize;
+    if (!ClipImageRect(&d, &visibleSize, info, dst, m_ownerCtx)) {
+        info->m_dirty.m_armed = -1;
+        return;
+    }
     ShadeRect s;
     s = MakeRect(
         d.left - position.x,

@@ -65,7 +65,7 @@ CRollingBall::CRollingBall(CGameObject* obj)
     m_object->SetScreenPos(snappedPosition);
     m_subPosition.Init(snappedPosition);
     CWwdSpriteObject* snapped = m_object;
-    SET_SORT_KEY_IF_CHANGED(snapped, SORTKEY_ROLLING_BALL_BASE + snappedPosition.m_y)
+    snapped->SetSortKey(SORTKEY_ROLLING_BALL_BASE + snappedPosition.m_y);
     CDDrawWorker* frameSet = m_wwdObject->m_imageSet;
     if (frameSet != NULL) {
         CString name;
@@ -101,7 +101,7 @@ CRollingBall::CRollingBall(CGameObject* obj)
     m_explodeLatch = false;
     m_fallLatch = 0;
     m_moveSpeed = g_slimeSpeedNum / static_cast<double>(static_cast<u32>(time));
-    CLEAR_OBJECT_AREA
+    ClearObjectArea();
     m_moveDelta = 0.0;
 }
 
@@ -193,11 +193,13 @@ i32 CRollingBall::Update() {
 
             CGameLevel* lvl = g_gameReg->m_world->m_level;
             Coord clampedTile = targetTile;
-            clampedTile.Max(Coord(0, 0));
-            clampedTile.Min(Coord(
-                lvl->m_mainPlane->m_tileGridSize.cx - 1,
-                lvl->m_mainPlane->m_tileGridSize.cy - 1
-            ));
+            clampedTile.Clamp(
+                Coord(0, 0),
+                Coord(
+                    lvl->m_mainPlane->m_tileGridSize.cx - 1,
+                    lvl->m_mainPlane->m_tileGridSize.cy - 1
+                )
+            );
             CDDrawWorkerHost* pl = lvl->m_mainPlane;
             i32 raw = pl->m_tileHandles[pl->m_tileRowOffsets[clampedTile.m_y] + clampedTile.m_x];
             i32 act;
@@ -380,11 +382,13 @@ i32 CRollingBall::Update() {
         if ((terrain & IDX(CELL_FLAG_ARROW)) != 0) {
             CGameLevel* lvl2 = g_gameReg->m_world->m_level;
             Coord clampedTile = targetTile;
-            clampedTile.Max(Coord(0, 0));
-            clampedTile.Min(Coord(
-                lvl2->m_mainPlane->m_tileGridSize.cx - 1,
-                lvl2->m_mainPlane->m_tileGridSize.cy - 1
-            ));
+            clampedTile.Clamp(
+                Coord(0, 0),
+                Coord(
+                    lvl2->m_mainPlane->m_tileGridSize.cx - 1,
+                    lvl2->m_mainPlane->m_tileGridSize.cy - 1
+                )
+            );
             CDDrawWorkerHost* pl2 = lvl2->m_mainPlane;
             i32 raw2 = pl2->m_tileHandles[pl2->m_tileRowOffsets[clampedTile.m_y] + clampedTile.m_x];
             i32 act2;
@@ -514,7 +518,7 @@ i32 CRollingBall::Update() {
     fin->SetScreenPos(nextPosition);
     CWwdSpriteObject* fin3 = m_object;
     i32 next = fin3->m_screenPosition.m_y + 0x186a0;
-    SET_SORT_KEY_IF_CHANGED(fin3, next)
+    fin3->SetSortKey(next);
     return 0;
 }
 

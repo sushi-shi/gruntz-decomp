@@ -480,11 +480,13 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
     Coord switchTile = position;
     ScreenTile(&switchTile);
     Coord clamped = position;
-    clamped.Max(Coord(0, 0));
-    clamped.Min(Coord(
-        level->m_mainPlane->m_planePixelSize.cx - 1,
-        level->m_mainPlane->m_planePixelSize.cy - 1
-    ));
+    clamped.Clamp(
+        Coord(0, 0),
+        Coord(
+            level->m_mainPlane->m_planePixelSize.cx - 1,
+            level->m_mainPlane->m_planePixelSize.cy - 1
+        )
+    );
     Coord tile(
         clamped.m_x >> level->m_mainPlane->m_tileShift.m_x,
         clamped.m_y >> level->m_mainPlane->m_tileShift.m_y
@@ -900,11 +902,13 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     Coord switchTile = position;
     ScreenTile(&switchTile);
     Coord clamped = position;
-    clamped.Max(Coord(0, 0));
-    clamped.Min(Coord(
-        view->m_mainPlane->m_planePixelSize.cx - 1,
-        view->m_mainPlane->m_planePixelSize.cy - 1
-    ));
+    clamped.Clamp(
+        Coord(0, 0),
+        Coord(
+            view->m_mainPlane->m_planePixelSize.cx - 1,
+            view->m_mainPlane->m_planePixelSize.cy - 1
+        )
+    );
     CDDrawWorkerHost* scroll = view->m_mainPlane;
     Coord shift = scroll->m_tileShift;
     Coord tile(clamped.m_x >> shift.m_x, clamped.m_y >> shift.m_y);
@@ -1235,7 +1239,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
                 );
                 cell->FaceTowardPixel(snapped.m_x, snapped.m_y);
                 if (cell->m_poweredUp != false && cell->m_neighborValid == false) {
-                    RESET_GRUNT_POWERED_STATE(cell)
+                    ResetGruntPoweredState(cell);
                 }
                 cell->LoadGruntTypeTable(PICKUP_NONE, 1, 0, 0);
                 return 1;
@@ -1319,7 +1323,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
         }
         cell->FaceTowardPixel(snapped.m_x, snapped.m_y);
         if (cell->m_poweredUp != false && cell->m_neighborValid == false) {
-            RESET_GRUNT_POWERED_STATE(cell)
+            ResetGruntPoweredState(cell);
         }
         cell->LoadVehicleGruntSprites(PICKUP_NONE);
         return 1;
@@ -1353,7 +1357,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
     cell->FaceTowardPixel(snapped.m_x, snapped.m_y);
     cell->m_neighborValid = false;
     if (cell->m_poweredUp != false) {
-        RESET_GRUNT_POWERED_STATE(cell)
+        ResetGruntPoweredState(cell);
     }
 
     typeRec = g_typeColl.ScratchResolve(cell->m_logicRecord->m_eventCode);

@@ -76,7 +76,7 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
     SetImageSetByName("GAME_WORMHOLE");
     SwitchAnimationByName("GAME_WORMHOLE", 0);
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_TELEPORT)
+    o->SetSortKey(SORTKEY_TELEPORT);
     SET_ANIMATION_ACT("A");
     i32 kind = m_object->m_smarts;
     CShadeTable* color;
@@ -87,7 +87,7 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
         color = g_gameReg->m_lightFxMgr->m_tables[kind];
     }
     CWwdSpriteObject* s = m_object;
-    SET_DRAW_FILL(s, SHADE_DST_BY_SRC_16, color);
+    s->SetDrawFill(SHADE_DST_BY_SRC_16, color);
 }
 
 RVA(0x0003fed0, 0xa9)
@@ -111,7 +111,7 @@ i32 CWormhole::SerializeDispatch(
         }
 
         CWwdSpriteObject* s = m_object;
-        SET_DRAW_FILL(s, SHADE_DST_BY_SRC_16, color);
+        s->SetDrawFill(SHADE_DST_BY_SRC_16, color);
     }
     return 1;
 }
@@ -173,7 +173,7 @@ CGruntPuddle::CGruntPuddle(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_PUDDLE)
+    o->SetSortKey(SORTKEY_GRUNT_PUDDLE);
     SetImageSetByName("GRUNTZ_GRUNTPUDDLE");
     SwitchAnimationByName("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE1", 0);
     SET_ANIMATION_ACT("A");
@@ -220,7 +220,7 @@ i32 CGruntPuddle::Place(i32 playerIndex, i32 moveIcon, b32 animatePlacement, i32
     m_moveIcon = moveIcon;
     CShadeTable* shade = g_gameReg->m_spriteFactory->GetSel(moveIcon, 0);
     CWwdSpriteObject* sprite = m_object;
-    SET_DRAW_FILL(sprite, SHADE_PAL_16, shade);
+    sprite->SetDrawFill(SHADE_PAL_16, shade);
     m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
     SET_ANIMATION_ACT("B");
     if (animatePlacement == false) {
@@ -298,7 +298,7 @@ i32 CGruntPuddle::SerializeDispatch(
                 sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
             }
             CGameObject* obj = m_object;
-            SET_DRAW_FILL_ARG_FIRST(obj, SHADE_PAL_16, sel);
+            obj->SetDrawFill(SHADE_PAL_16, sel);
             break;
         }
     }
@@ -312,7 +312,7 @@ CTeleporter::CTeleporter(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     m_interval = 0;
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_TELEPORT)
+    o->SetSortKey(SORTKEY_TELEPORT);
     Coord position = m_object->ScreenPos();
     SnapTileCenter(&position);
     m_object->SetScreenPos(position);
@@ -343,7 +343,7 @@ void CTeleporter::LoadColors() {
 
     CWwdSpriteObject* s = m_object;
     CShadeTable* colorEntry = g_gameReg->m_lightFxMgr->m_tables[s->m_health];
-    SET_DRAW_FILL(s, SHADE_DST_BY_SRC_16, colorEntry);
+    s->SetDrawFill(SHADE_DST_BY_SRC_16, colorEntry);
 }
 
 RVA(0x000412c0, 0x63)

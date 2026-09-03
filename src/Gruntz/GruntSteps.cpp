@@ -20,7 +20,7 @@
 #include <Gruntz/GameStateRecord.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
-#include <Gruntz/GruntCoordRecycleMacros.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntDirection.h>
 #include <Gruntz/GruntDirectionOffset.h>
@@ -212,6 +212,13 @@ i32 CGrunt::LoadTypeTableClearMove(PickupType typeId) {
     return r;
 }
 
+static inline void InitializeVehicleContactRegion(CGrunt* grunt) {
+    CRect contact(-1, -1, 1, 1);
+    grunt->m_vehicleContactRect = contact;
+    contact.SetRectEmpty();
+    grunt->m_vehicleContactExclusionRect = contact;
+}
+
 // @early-stop
 RVA(0x00050ce0, 0x3c4)
 i32 CGrunt::LoadVehicleGruntSprites(PickupType kind) {
@@ -219,67 +226,57 @@ i32 CGrunt::LoadVehicleGruntSprites(PickupType kind) {
     m_entrancePickup = PICKUP_INVALID;
 
     CString name;
-
-#define REGION_INIT()                                                                              \
-    do {                                                                                           \
-        CRect a(-1, -1, 1, 1);                                                                     \
-        m_vehicleContactRect = a;                                                                  \
-        a.SetRectEmpty();                                                                          \
-        m_vehicleContactExclusionRect = a;                                                         \
-    } while (0)
     switch (kind) {
         case PICKUP_BABYWALKER:
-            REGION_INIT();
+            InitializeVehicleContactRegion(this);
             name = "BABYWALKERGRUNT";
             break;
         case PICKUP_BEACHBALL:
-            REGION_INIT();
+            InitializeVehicleContactRegion(this);
             name = "BEACHBALLGRUNT";
             break;
         case PICKUP_BIGWHEEL:
-            REGION_INIT();
+            InitializeVehicleContactRegion(this);
             name = "BIGWHEELGRUNT";
             break;
         case PICKUP_GOKART:
-            REGION_INIT();
+            InitializeVehicleContactRegion(this);
             name = "GOKARTGRUNT";
             break;
         case PICKUP_JACKINTHEBOX:
-            REGION_INIT();
+            InitializeVehicleContactRegion(this);
             name = "JACKINTHEBOXGRUNT";
             break;
         case PICKUP_JUMPROPE:
-            REGION_INIT();
+            InitializeVehicleContactRegion(this);
             name = "JUMPROPEGRUNT";
             break;
         case PICKUP_POGOSTICK:
-            REGION_INIT();
+            InitializeVehicleContactRegion(this);
             name = "POGOSTICKGRUNT";
             break;
         case PICKUP_SCROLL:
-            REGION_INIT();
+            InitializeVehicleContactRegion(this);
             name = "SCROLLGRUNT";
             break;
         case PICKUP_SQUEAKTOY:
-            REGION_INIT();
+            InitializeVehicleContactRegion(this);
             name = "SQUEAKTOYGRUNT";
             break;
         case PICKUP_YOYO:
-            REGION_INIT();
+            InitializeVehicleContactRegion(this);
             name = "YOYOGRUNT";
             break;
         default:
             break;
     }
-#undef REGION_INIT
-
     g_gameReg->m_curState->BuildAssetNamespacePrefixes(name, 1, 1, NULL);
 
     Coord tile = m_lastTilePx;
     ScreenTile(&tile);
     TileCollisionKind tileKind = g_gameReg->m_tileGrid->m_rows[tile.m_y][tile.m_x].m_typeCode;
     if (tileKind == TILEKIND_CHECKPOINT || tileKind == TILEKIND_CHECKPOINT_UP) {
-        if (GRUNT_AT_SAVED_SCREEN_POS(this)) {
+        if (IsGruntAtSavedScreenPos(this)) {
 
             m_triggerMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
             m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
@@ -431,7 +428,7 @@ RVA(0x000517b0, 0x7d)
 void CGrunt::SnapToLastTile(i32 clearArrivalState) {
     m_object->SetScreenPos(m_lastTilePx);
     CWwdSpriteObject* h = m_object;
-    SET_SORT_KEY_IF_CHANGED(h, h->m_screenPosition.m_y + 0x186a0)
+    h->SetSortKey(h->m_screenPosition.m_y + 0x186a0);
     SetEntrancePos(clearArrivalState, 1);
     if (m_arrivalPending != false) {
 
@@ -905,7 +902,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spaw
                     eq = (strcmp(*g_typeColl.GetNameRecord(m_previousAnimationActId), "D") == 0);
                     if (eq) {
                         if (m_poweredUp != false && m_neighborValid == false) {
-                            RESET_GRUNT_POWERED_STATE(this)
+                            ResetGruntPoweredState(this);
                         }
                         m_tileMoveCommitted = false;
                         SET_ANIMATION_ACT("D");
@@ -986,7 +983,7 @@ idleReseed:
     {
         i32 z = m_object->m_screenPosition.m_y + 0x186a0;
         CWwdSpriteObject* o = m_object;
-        SET_SORT_KEY_IF_CHANGED(o, z)
+        o->SetSortKey(z);
     }
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
     m_toyTime = 0;
@@ -998,7 +995,7 @@ applyTail:
         LoadWingzGruntSprites(false);
     }
     if (m_poweredUp != false && m_neighborValid == false) {
-        RESET_GRUNT_POWERED_STATE(this)
+        ResetGruntPoweredState(this);
     }
     m_triggerMgr->ApplySwitch(this, m_object->m_screenPosition.m_x, m_object->m_screenPosition.m_y);
     {
@@ -1016,7 +1013,7 @@ applyTail:
         }
         SetEntrancePos(1, 1);
         if (CoordCount() != 0) {
-            RECYCLE_GRUNT_COORDS_EXPANDED(this)
+            RecycleGruntCoords(this);
         }
         if (m_arrivalState == AI_BATTLEZ_PATH) {
             m_defenderState = AISTATE_SEEK;

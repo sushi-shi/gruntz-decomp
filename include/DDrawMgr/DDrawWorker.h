@@ -57,6 +57,14 @@ public:
             return NULL;
         }
 
+        return FrameAtUnchecked(index);
+    }
+
+    inline b32 ContainsFrame(i32 index) const {
+        return index >= m_minIndex && index <= m_maxIndex;
+    }
+
+    inline CImage* FrameAtUnchecked(i32 index) {
         return static_cast<CImage*>(m_items.GetAt(index));
     }
 
@@ -66,7 +74,16 @@ public:
         return OwnerMgr();
     }
 
-    void AddFrameAt(CObject* elem, i32 index);
+    RVA(0x001521c0, 0x2b)
+    inline void AddFrameAt(CObject* elem, i32 index) {
+        m_items.SetAtGrow(index, elem);
+        if (index < m_minIndex) {
+            m_minIndex = index;
+        }
+        if (index > m_maxIndex) {
+            m_maxIndex = index;
+        }
+    }
 
     CObArray m_items;
     char m_name[0x40];
@@ -74,17 +91,5 @@ public:
     i32 m_minIndex;
     i32 m_maxIndex;
 };
-
-// Caller-shape fallbacks for sites where VC5 cannot preserve the GetAt expansion.
-#define DDRAW_WORKER_CONTAINS_FRAME(worker, index)                                                 \
-    worker->m_minIndex <= index && worker->m_maxIndex >= index
-#define DDRAW_WORKER_FRAME_IN_RANGE(worker, index)                                                 \
-    index >= worker->m_minIndex&& index <= worker->m_maxIndex
-#define DDRAW_WORKER_FRAME_OUT_OF_RANGE(worker, index)                                             \
-    index<worker->m_minIndex || index> worker->m_maxIndex
-#define DDRAW_WORKER_MISSES_FRAME(worker, index)                                                   \
-    worker->m_minIndex > index || worker->m_maxIndex < index
-#define DDRAW_WORKER_FRAME_AT_UNCHECKED(worker, index)                                             \
-    static_cast<CImage*>(worker->m_items.GetAt(index))
 
 #endif // GRUNTZ_CDDRAWWORKER_H

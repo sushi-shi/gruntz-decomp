@@ -66,8 +66,8 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
                         occ->m_object->m_screenPosition.m_x,
                         occ->m_object->m_screenPosition.m_y
                     ) != 0
-                    && GRUNT_AT_SAVED_SCREEN_POS(occ)) {
-                    COMMIT_GRUNT_NEIGHBOR(occ);
+                    && IsGruntAtSavedScreenPos(occ)) {
+                    CommitGruntNeighbor(this, occ);
                     return 1;
                 }
                 {
@@ -140,7 +140,7 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
             if (occ->m_object->ScreenPos() != occ->m_lastTilePx) {
                 return 1;
             }
-            COMMIT_GRUNT_NEIGHBOR(occ);
+            CommitGruntNeighbor(this, occ);
             m_defenderState = AISTATE_ATTACK;
             return 1;
         }

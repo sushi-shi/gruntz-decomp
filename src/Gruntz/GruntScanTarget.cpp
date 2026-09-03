@@ -43,7 +43,7 @@
 RVA(0x000f42f0, 0x15c0)
 i32 CGrunt::StepSmartChaserBehavior() {
     i32 playerIndex = m_playerIndex;
-    COPY_LAST_TILE_TO_DEFENDER
+    CopyLastTileToDefender(this);
     Coord centerTile = m_lastTilePx;
     ScreenTile(&centerTile);
 
@@ -62,9 +62,9 @@ i32 CGrunt::StepSmartChaserBehavior() {
             if (cand != NULL && cand->m_entranceCommitted != false
                 && cand->m_gruntKind != GRUNT_GHOST) {
                 i32 pa;
-                PRIO(pa, m_entranceReason);
+                pa = PickupPriority(m_entranceReason);
                 i32 pb;
-                PRIO(pb, cand->m_entranceReason);
+                pb = PickupPriority(cand->m_entranceReason);
                 if (pa <= pb) {
                     Coord candidateTile;
                     cand->GetScreenTile(&candidateTile);
@@ -127,7 +127,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
                 if (m_neighborValid != false) {
                     return 1;
                 }
-                RESET_GRUNT_POWERED_STATE(this)
+                ResetGruntPoweredState(this);
                 return 1;
             }
             if (atTarget) {
@@ -139,7 +139,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
             if (m_neighborValid != false) {
                 return 1;
             }
-            RESET_GRUNT_POWERED_STATE(this)
+            ResetGruntPoweredState(this);
             return 1;
         }
         m_neighborValid = false;
@@ -151,17 +151,17 @@ i32 CGrunt::StepSmartChaserBehavior() {
 
             if (best != NULL) {
                 if (m_poweredUp == false && m_stamina >= STAMINA_FULL
-                    && GRUNT_AT_SAVED_SCREEN_POS(best)) {
+                    && IsGruntAtSavedScreenPos(best)) {
                     i32 pa;
-                    PRIO(pa, m_entranceReason);
+                    pa = PickupPriority(m_entranceReason);
                     i32 pb;
-                    PRIO(pb, best->m_entranceReason);
+                    pb = PickupPriority(best->m_entranceReason);
                     if (pa <= pb
                         && this->RectContains(
                                best->m_object->m_screenPosition.m_x,
                                best->m_object->m_screenPosition.m_y
                            ) != 0) {
-                        COMMIT_GRUNT_NEIGHBOR(best);
+                        CommitGruntNeighbor(this, best);
                         return 1;
                     }
                 }
@@ -169,21 +169,21 @@ i32 CGrunt::StepSmartChaserBehavior() {
 
             if (best != NULL) {
                 i32 seekPa;
-                PRIO(seekPa, m_entranceReason);
+                seekPa = PickupPriority(m_entranceReason);
                 i32 seekPb;
-                PRIO(seekPb, best->m_entranceReason);
+                seekPb = PickupPriority(best->m_entranceReason);
                 if (seekPa <= seekPb && static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS) {
-                    COPY_LAST_TILE_TO_DEFENDER
+                    CopyLastTileToDefender(this);
                     i32 pathPa;
-                    PRIO(pathPa, m_entranceReason);
+                    pathPa = PickupPriority(m_entranceReason);
                     i32 pathPb;
-                    PRIO(pathPb, best->m_entranceReason);
+                    pathPb = PickupPriority(best->m_entranceReason);
                     if (pathPa <= pathPb
                         && this->GruntInRadius(best->m_playerIndex, best->m_unitIndex) != 0) {
                         Coord cc;
                         best->GetScreenTile(&cc);
                         if (this->TileSwitch(cc.m_x, cc.m_y, 0, m_arrivalFlags, 1, 0) != 0) {
-                            SET_GRUNT_ARRIVAL_TARGET(best);
+                            SetGruntArrivalTarget(this, best);
                             m_defenderState = AISTATE_CHASE;
                             CGruntzMgr* reg = g_gameReg;
                             if (CGameLevel::PointInBounds(
@@ -241,9 +241,9 @@ i32 CGrunt::StepSmartChaserBehavior() {
             }
             if (sg != NULL) {
                 i32 pa;
-                PRIO(pa, m_entranceReason);
+                pa = PickupPriority(m_entranceReason);
                 i32 pb;
-                PRIO(pb, sg->m_entranceReason);
+                pb = PickupPriority(sg->m_entranceReason);
                 if (pa <= pb && sg->m_entranceCommitted != false
                     && this->GruntInRadius(sg->m_playerIndex, sg->m_unitIndex) != 0) {
                     if (static_cast<u32>(m_dwell) > DWELL_REPATH_MS) {
@@ -267,10 +267,10 @@ i32 CGrunt::StepSmartChaserBehavior() {
                         == 0) {
                         return 1;
                     }
-                    if (GRUNT_NOT_AT_SAVED_SCREEN_POS(sg)) {
+                    if (!IsGruntAtSavedScreenPos(sg)) {
                         return 1;
                     }
-                    COMMIT_GRUNT_NEIGHBOR(sg);
+                    CommitGruntNeighbor(this, sg);
                     m_defenderState = AISTATE_ATTACK;
                     return 1;
                 }
@@ -290,9 +290,9 @@ i32 CGrunt::StepSmartChaserBehavior() {
                         ->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
                 if (sg != NULL) {
                     i32 pa;
-                    PRIO(pa, m_entranceReason);
+                    pa = PickupPriority(m_entranceReason);
                     i32 pb;
-                    PRIO(pb, sg->m_entranceReason);
+                    pb = PickupPriority(sg->m_entranceReason);
                     if (pa <= pb && this->GruntInRadius(sg->m_playerIndex, sg->m_unitIndex) != 0
                         && sg->m_entranceCommitted != false) {
                         if (m_neighborValid != false || m_combatActive != false
@@ -303,8 +303,8 @@ i32 CGrunt::StepSmartChaserBehavior() {
                                 sg->m_object->m_screenPosition.m_x,
                                 sg->m_object->m_screenPosition.m_y
                             ) != 0
-                            && GRUNT_AT_SAVED_SCREEN_POS(sg)) {
-                            COMMIT_GRUNT_NEIGHBOR(sg);
+                            && IsGruntAtSavedScreenPos(sg)) {
+                            CommitGruntNeighbor(this, sg);
                             return 1;
                         }
                     }

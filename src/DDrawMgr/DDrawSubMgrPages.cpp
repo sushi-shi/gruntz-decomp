@@ -208,7 +208,7 @@ i32 CDDrawSubMgrPages::CreateOverlay(i32 copyFromBack, i32 createFlag) {
         return 0;
     }
     if (copyFromBack) {
-        BLT_SURFACE_PAIR_SELF(m_overlayPair, m_backPair);
+        m_overlayPair->BltSelf(m_backPair);
     }
     return 1;
 }
@@ -332,7 +332,7 @@ i32 CDDrawSubMgrPages::TransTitle() {
     }
     CDDrawSurfacePair* a = m_backPair;
     CDDrawSurfacePair* b = m_overlayPair;
-    BLT_SURFACE_PAIR_SELF(b, a);
+    b->BltSelf(a);
     return 1;
 }
 
@@ -349,7 +349,7 @@ i32 CDDrawSubMgrPages::TransExit() {
     }
     CDDrawSurfacePair* a = m_overlayPair;
     CDDrawSurfacePair* b = m_backPair;
-    BLT_SURFACE_PAIR_SELF(b, a);
+    b->BltSelf(a);
     return 1;
 }
 

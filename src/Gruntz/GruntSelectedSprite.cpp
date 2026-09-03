@@ -36,7 +36,7 @@ CGruntSelectedSprite::CGruntSelectedSprite(CGameObject* obj)
     SwitchAnimationByName("GAME_GRUNTSELECTEDSPRITE", 0);
     SET_ANIMATION_ACT("A");
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_SELECTED)
+    o->SetSortKey(SORTKEY_GRUNT_SELECTED);
 }
 
 RVA(0x0007e660, 0x102)

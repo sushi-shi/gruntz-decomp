@@ -372,7 +372,7 @@ i32 CTriggerMgr::ScrollToActiveRecord() {
             ->m_object;
     Coord position = src->ScreenPos();
     CDDrawWorkerHost* t = m_world->m_level->m_mainPlane;
-    SET_SCROLL_POSITION_RAW_FIRST(t, position.m_x, position.m_y);
+    t->SetScrollPosition(position.m_x, position.m_y);
     return 1;
 }
 
@@ -466,8 +466,8 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     Coord tile = position;
     ScreenTile(&tile);
     Coord clampedTile = tile;
-    clampedTile.Max(Coord(0, 0));
-    clampedTile.Min(
+    clampedTile.Clamp(
+        Coord(0, 0),
         Coord(level->m_mainPlane->m_tileGridSize.cx - 1, level->m_mainPlane->m_tileGridSize.cy - 1)
     );
     TileCollisionKind collision;
@@ -499,7 +499,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         return 1;
     }
 
-    PickupType gruntKind = ARRIVAL_PICKUP_TERNARY_GT(cell);
+    PickupType gruntKind = ArrivalPickup(cell);
 
     if (hitFlag != 0) {
         if (pfk == 0) {
@@ -791,9 +791,9 @@ i32 CTriggerMgr::HandleTargetSelection(
                     if (selectedGrunt != hit) {
                         goto reportError;
                     }
-                    PickupType v = ARRIVAL_PICKUP_TERNARY_LE(hit);
+                    PickupType v = ArrivalPickup(hit);
                     if (v != PICKUP_SPY) {
-                        PickupType v2 = ARRIVAL_PICKUP_TERNARY_LE(hit);
+                        PickupType v2 = ArrivalPickup(hit);
                         if (v2 != PICKUP_WAND) {
                             goto reportError;
                         }
@@ -1663,11 +1663,13 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
                 continue;
             }
             Coord clampedTile = tile;
-            clampedTile.Max(Coord(0, 0));
-            clampedTile.Min(Coord(
-                board->m_mainPlane->m_tileGridSize.cx - 1,
-                board->m_mainPlane->m_tileGridSize.cy - 1
-            ));
+            clampedTile.Clamp(
+                Coord(0, 0),
+                Coord(
+                    board->m_mainPlane->m_tileGridSize.cx - 1,
+                    board->m_mainPlane->m_tileGridSize.cy - 1
+                )
+            );
             i32 cell =
                 board->m_mainPlane->m_tileHandles
                     [board->m_mainPlane->m_tileRowOffsets[clampedTile.m_y] + clampedTile.m_x];
@@ -1830,11 +1832,11 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
                         }
                         i32 placed = 0;
                         do {
-                            i32 tileX = maxTile.m_x == 0 ? static_cast<char>(rand()) & 1
-                                                         : rand() % maxTile.m_x + 1;
-                            i32 tileY = maxTile.m_y == 0 ? static_cast<char>(rand()) & 1
-                                                         : rand() % maxTile.m_y + 1;
-                            Coord tile(tileX, tileY);
+                            Coord tile;
+                            tile.m_x = maxTile.m_x == 0 ? static_cast<char>(rand()) & 1
+                                                        : rand() % maxTile.m_x + 1;
+                            tile.m_y = maxTile.m_y == 0 ? static_cast<char>(rand()) & 1
+                                                        : rand() % maxTile.m_y + 1;
                             if (grunt->TryTeleportToCell(tile.m_x, tile.m_y, false, true)) {
                                 CGameObject* flashObject =
                                     g_gameReg->m_world->m_childGroup->CreateSprite(
@@ -2058,7 +2060,7 @@ i32 CTriggerMgr::SpawnGrunt(
     CGameObject* o = src->m_object;
     Coord spawn = o->m_screenPosition;
     SnapTileCenter(&spawn);
-    PickupType k = ARRIVAL_PICKUP_TERNARY_GT(src);
+    PickupType k = ArrivalPickup(src);
     PickupType vis = src->m_vehiclePickupType;
     this->StartUnitDeath(srcPlayerIndex, srcUnitIndex, DEATH_DROP, dstPlayerIndex);
     CDDrawChildGroup* fac = m_world->m_childGroup;

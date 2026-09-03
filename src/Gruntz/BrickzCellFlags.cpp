@@ -24,8 +24,8 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 tileId) {
 
     Coord position(x, y);
     Coord clamped = position;
-    clamped.Max(Coord(0, 0));
-    clamped.Min(
+    clamped.Clamp(
+        Coord(0, 0),
         Coord(level->m_mainPlane->m_tileGridSize.cx - 1, level->m_mainPlane->m_tileGridSize.cy - 1)
     );
     i32 id = level->m_mainPlane
@@ -289,11 +289,6 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 tileId) {
             }
         }
     }
-}
-
-RVA(0x00077dc0, 0x1d)
-void CDDrawWorkerHost::SetCell(i32 x, i32 y, i32 id) {
-    SET_WORKER_HOST_CELL(this, x, y, id);
 }
 
 static inline RECT TileNeighborhood(CGrunt* grunt) {

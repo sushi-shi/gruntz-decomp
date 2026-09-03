@@ -39,7 +39,7 @@ CGruntToySprite::CGruntToySprite(CGameObject* obj)
     SET_ANIMATION_ACT("A");
     Hide();
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_HUD)
+    o->SetSortKey(SORTKEY_GRUNT_HUD);
     m_lastLayer = PICKUP_NONE;
 }
 

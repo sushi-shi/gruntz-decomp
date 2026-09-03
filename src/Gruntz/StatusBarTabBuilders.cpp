@@ -60,7 +60,7 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
         goto fail;
     }
     h = host;
-    INITIALIZE_STATUS_BAR_ITEM(owner, tab, h)
+    InitializeBase(owner, tab, h);
 
     m_rect = g;
 
@@ -71,10 +71,10 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
         found
     );
     rec = static_cast<CDDrawWorker*>(found);
-    if (rec == NULL || DDRAW_WORKER_MISSES_FRAME(rec, 1)) {
+    if (rec == NULL || !rec->ContainsFrame(1)) {
         spr = NULL;
     } else {
-        spr = DDRAW_WORKER_FRAME_AT_UNCHECKED(rec, 1);
+        spr = rec->FrameAtUnchecked(1);
     }
     m_standaloneFrame = spr;
     if (spr == NULL) {
@@ -245,8 +245,8 @@ i32 CSBI_GruntMachine::SerializeFields(
                     reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
                     CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
                     CImage* r;
-                    if (rec != NULL && DDRAW_WORKER_FRAME_IN_RANGE(rec, i)) {
-                        r = DDRAW_WORKER_FRAME_AT_UNCHECKED(rec, i);
+                    if (rec != NULL && rec->ContainsFrame(i)) {
+                        r = rec->FrameAtUnchecked(i);
                     } else {
                         r = NULL;
                     }
@@ -268,8 +268,8 @@ i32 CSBI_GruntMachine::SerializeFields(
                     reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
                     CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
                     CImage* r;
-                    if (rec != NULL && DDRAW_WORKER_FRAME_IN_RANGE(rec, i)) {
-                        r = DDRAW_WORKER_FRAME_AT_UNCHECKED(rec, i);
+                    if (rec != NULL && rec->ContainsFrame(i)) {
+                        r = rec->FrameAtUnchecked(i);
                     } else {
                         r = NULL;
                     }
@@ -290,8 +290,8 @@ i32 CSBI_GruntMachine::SerializeFields(
                     reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
                     CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
                     CImage* r;
-                    if (rec != NULL && DDRAW_WORKER_FRAME_IN_RANGE(rec, i)) {
-                        r = DDRAW_WORKER_FRAME_AT_UNCHECKED(rec, i);
+                    if (rec != NULL && rec->ContainsFrame(i)) {
+                        r = rec->FrameAtUnchecked(i);
                     } else {
                         r = NULL;
                     }

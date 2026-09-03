@@ -180,8 +180,10 @@ i32 CWwdSpatialMgr::DeactivateOutside(i32 centerX, i32 centerY) {
             )) {
             Coord position = obj->m_screenPosition;
             WwdRegion* r = &obj->m_region;
-            position.Max(Coord(m_levelBounds.left, m_levelBounds.top));
-            position.Min(Coord(m_levelBounds.right, m_levelBounds.bottom));
+            position.Clamp(
+                Coord(m_levelBounds.left, m_levelBounds.top),
+                Coord(m_levelBounds.right, m_levelBounds.bottom)
+            );
             r->m_position = position;
             WwdGameObjectFlags flags = static_cast<WwdGameObjectFlags>(obj->m_flags);
             i32 result;

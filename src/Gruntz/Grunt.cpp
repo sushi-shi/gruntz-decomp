@@ -549,7 +549,7 @@ void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
     CWwdSpriteObject* h = m_object;
     ShadeMode fillCmd = h->m_drawFillCmd;
 
-    SET_DRAW_FILL_SPLIT(m_object, h, fillCmd, sel);
+    h->SetDrawFill(fillCmd, sel);
 }
 
 RVA(0x00049c60, 0x8d1)
@@ -1236,7 +1236,6 @@ reProbe:
     goto returnZero;
 }
 
-#include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/SortKeyMacros.h>
 
@@ -1683,7 +1682,7 @@ void CGrunt::SetEntrancePos(i32 clearArrivalState, i32 recycleRoute) {
         m_arrivalActive = false;
     }
     if (recycleRoute && m_arrivalState != AI_BATTLEZ_PATH && CoordCount() != 0) {
-        RECYCLE_GRUNT_COORDS_EXPANDED(this)
+        RecycleGruntCoords(this);
     }
 }
 
@@ -1981,7 +1980,7 @@ i32 CGrunt::Place(
     if (shade == NULL) {
         shade = g_gameReg->m_spriteFactory->GetSel(1, 0);
     }
-    SET_DRAW_FILL_ARG_FIRST(m_object, SHADE_PAL_16, shade);
+    m_object->SetDrawFill(SHADE_PAL_16, shade);
     if (entranceMode != GRUNT_ENTRANCE_NONE) {
         BuildEntranceAnimation(entranceMode);
         return 1;
@@ -2243,7 +2242,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (m_arrivalState == AI_BATTLEZ_PATH) {
                 if (m_battleState != BZTASK_ADVANCE) {
                     if (this->CoordCount() != 0) {
-                        RECYCLE_GRUNT_COORDS(this)
+                        RecycleGruntCoords(this);
                     }
                     for (;;) {
                         i32* h;
@@ -2883,7 +2882,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         case PICKUP_GHOST: {
             m_gruntKind = GRUNT_GHOST;
             i32 t = g_buteMgr.GetInt("Powerupz", "GruntGhostTransparencyOn", 0xe0);
-            SET_DRAW_FILL_FRACTION(m_object, SHADE_PAL_ALPHA_16, t);
+            m_object->SetDrawFillFraction(SHADE_PAL_ALPHA_16, t);
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "GhostTime", 0x4e20);
             }
@@ -3088,7 +3087,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             SetImageFrameByName(EntranceCell()->m_names[1].GetBuffer(0), handle);
         } else {
             if (m_poweredUp != false && m_neighborValid == false) {
-                RESET_GRUNT_POWERED_STATE(this)
+                ResetGruntPoweredState(this);
             }
             CString* rec2;
             {
@@ -3122,7 +3121,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         ScreenTile(&tile);
         TileCollisionKind tk = g_gameReg->m_tileGrid->m_rows[tile.m_y][tile.m_x].m_typeCode;
         if (tk == TILEKIND_CHECKPOINT || tk == TILEKIND_CHECKPOINT_UP) {
-            if (GRUNT_AT_SAVED_SCREEN_POS(this)) {
+            if (IsGruntAtSavedScreenPos(this)) {
                 m_triggerMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
                 m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
             }

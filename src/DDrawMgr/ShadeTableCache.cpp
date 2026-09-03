@@ -197,11 +197,11 @@ CShadeTable* CShadeTableCache::FlashTable(
         }
 
         i32 br = static_cast<i32>(pal[i].peRed) + FLASH_SHADE_CHANNEL_BOOST;
-        pal[i].peRed = static_cast<u8>(Min(br, FLASH_SHADE_CHANNEL_MAX));
+        pal[i].peRed = static_cast<u8>(Min(br, static_cast<i32>(FLASH_SHADE_CHANNEL_MAX)));
         i32 bg = static_cast<i32>(pal[i].peGreen) + FLASH_SHADE_CHANNEL_BOOST;
-        pal[i].peGreen = static_cast<u8>(Min(bg, FLASH_SHADE_CHANNEL_MAX));
+        pal[i].peGreen = static_cast<u8>(Min(bg, static_cast<i32>(FLASH_SHADE_CHANNEL_MAX)));
         i32 bb = static_cast<i32>(pal[i].peBlue) + FLASH_SHADE_CHANNEL_BOOST;
-        pal[i].peBlue = static_cast<u8>(Min(bb, FLASH_SHADE_CHANNEL_MAX));
+        pal[i].peBlue = static_cast<u8>(Min(bb, static_cast<i32>(FLASH_SHADE_CHANNEL_MAX)));
 
         for (i32 k = darkRampSteps; k < total; k++) {
             float uu =
@@ -467,7 +467,7 @@ CShadeTable* CShadeTableCache::GreyTable() {
     arr.SetSizeGrow(idx + 1, -1);
     arr.m_pData[idx] = t;
     u16* out = Pix16(t->m_data);
-    if (PIXEL_FORMAT_IS_RGB555) {
+    if (PixelFormatIsRgb555()) {
         for (i32 v = 0; v < PIXEL16_VALUE_COUNT; v++) {
             i32 acc = static_cast<u8>((v >> RGB555_RED_TO_4_SHIFT)) << PIXEL_NIBBLE_BITS;
             acc = (acc + static_cast<u8>((v >> RGB555_GREEN_TO_4_SHIFT) & PIXEL_NIBBLE_MASK))
@@ -515,9 +515,9 @@ CShadeTable* CShadeTableCache::AddTable(float scale) {
             for (i32 ng = PIXEL_NIBBLE_VALUE_COUNT; ng != 0; ng--) {
                 i32 b = PIXEL_NIBBLE_MIDPOINT;
                 for (i32 nb = PIXEL_NIBBLE_VALUE_COUNT; nb != 0; nb--) {
-                    u8 rc = static_cast<u8>(Min(r, PIXEL_BYTE_MASK));
-                    u8 gc = static_cast<u8>(Min(g, PIXEL_BYTE_MASK));
-                    u8 bc = static_cast<u8>(Min(b, PIXEL_BYTE_MASK));
+                    u8 rc = static_cast<u8>(Min(r, static_cast<i32>(PIXEL_BYTE_MASK)));
+                    u8 gc = static_cast<u8>(Min(g, static_cast<i32>(PIXEL_BYTE_MASK)));
+                    u8 bc = static_cast<u8>(Min(b, static_cast<i32>(PIXEL_BYTE_MASK)));
 
                     float f = static_cast<float>(v) * (scale * g_inv255) - g_negone;
 

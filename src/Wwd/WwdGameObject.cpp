@@ -857,15 +857,6 @@ void CDDrawWorker::Unload() {
     m_maxIndex = 0;
 }
 
-#define ADD_FRAME_AT(elem, index)                                                                  \
-    m_items.SetAtGrow(index, elem);                                                                \
-    if (index < m_minIndex) {                                                                      \
-        m_minIndex = index;                                                                        \
-    }                                                                                              \
-    if (index > m_maxIndex) {                                                                      \
-        m_maxIndex = index;                                                                        \
-    }
-
 RVA(0x00151f00, 0xa4)
 CImage* CDDrawWorker::InsertFrame(CRezItm* src, i32 n, i32 mode) {
     if (n < m_items.GetSize() && static_cast<CImage*>(m_items.GetAt(n)) != NULL) {
@@ -879,7 +870,7 @@ CImage* CDDrawWorker::InsertFrame(CRezItm* src, i32 n, i32 mode) {
         }
         return NULL;
     }
-    ADD_FRAME_AT(static_cast<CObject*>(worker), n)
+    AddFrameAt(static_cast<CObject*>(worker), n);
     return worker;
 }
 
@@ -898,7 +889,7 @@ CImage* CDDrawWorker::LoadFrame(char* path, i32 index, i32 keyed) {
         return NULL;
     }
 
-    ADD_FRAME_AT(static_cast<CObject*>(nf), index)
+    AddFrameAt(static_cast<CObject*>(nf), index);
     return nf;
 }
 
@@ -918,7 +909,7 @@ CDDrawWorker::CreateDescriptorFrame(PidHeader* desc, FileImageFormat mode, i32 i
         return NULL;
     }
 
-    ADD_FRAME_AT(static_cast<CObject*>(nf), index)
+    AddFrameAt(static_cast<CObject*>(nf), index);
     return nf;
 }
 
@@ -937,15 +928,12 @@ CImage* CDDrawWorker::CreateBlankFrame(i32 width, i32 height, i32 index, i32 key
         return NULL;
     }
 
-    ADD_FRAME_AT(static_cast<CObject*>(nf), index)
+    AddFrameAt(static_cast<CObject*>(nf), index);
     return nf;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x001521c0, 0x2b)
-void CDDrawWorker::AddFrameAt(CObject* elem, i32 index){ADD_FRAME_AT(elem, index)}
-
 RVA(0x001521f0, 0xbc)
 i32 CDDrawWorker::BuildFramesFromArchive(CRezDir* tab) {
     i32 count = 0;
@@ -985,8 +973,8 @@ i32 CDDrawWorker::ValidateFramesFromArchive(CRezDir* tab) {
     i32 n = m_items.GetSize();
     for (i32 i = 0; i < n; i++) {
         CImage* el;
-        if (DDRAW_WORKER_FRAME_IN_RANGE(this, i)) {
-            el = DDRAW_WORKER_FRAME_AT_UNCHECKED(this, i);
+        if (this->ContainsFrame(i)) {
+            el = this->FrameAtUnchecked(i);
         } else {
             el = NULL;
         }

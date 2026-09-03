@@ -16,7 +16,6 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/MapCellFlags.h>
 #include <Gruntz/GruntAiState.h>
-#include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntMovementMacros.h>
@@ -144,10 +143,10 @@ state0: {
     if (nb->m_entranceCommitted == false) {
         goto common;
     }
-    if (m_poweredUp == false && m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(nb)
+    if (m_poweredUp == false && m_stamina >= STAMINA_FULL && IsGruntAtSavedScreenPos(nb)
         && RectContains(nb->m_object->m_screenPosition.m_x, nb->m_object->m_screenPosition.m_y)
                != 0) {
-        COMMIT_GRUNT_NEIGHBOR(nb);
+        CommitGruntNeighbor(this, nb);
         CWwdSpriteObject* hit = nb->m_object;
         m_arrivalCell = hit->ScreenPos();
         ScreenTile(&m_arrivalCell);
@@ -198,7 +197,7 @@ common: {
              & IDX(CELL_FLAG_DESTRUCTIBLE_ROCK))
             != 0) {
             if (CoordCount() != 0) {
-                RECYCLE_GRUNT_COORDS_EXPANDED(this)
+                RecycleGruntCoords(this);
             }
             Coord targetPosition = targetTile;
             TileCenter(&targetPosition);
@@ -224,7 +223,7 @@ common: {
     }
     m_arrivalCell = *head;
     if (CoordCount() != 0) {
-        RECYCLE_GRUNT_COORDS_EXPANDED(this)
+        RecycleGruntCoords(this);
     }
     m_defenderState = AISTATE_PHASE_MIRROR_THEN_SEEK;
     return 1;

@@ -364,6 +364,54 @@ struct DoubleVector3 {
         return sqrt(MagSqr());
     }
 
+    double MagApprox() const {
+        double min;
+        double med;
+        double max;
+        double temp;
+
+        max = fabs(x);
+        med = fabs(y);
+        min = fabs(z);
+
+        if (max < med) {
+            temp = max;
+            max = med;
+            med = temp;
+        }
+        if (max < min) {
+            temp = max;
+            max = min;
+            min = temp;
+        }
+
+        return max + (med + min) * 0.25f;
+    }
+
+    void Norm(double value = 1.0) {
+        double mag = Mag();
+        if (mag == 0.0) {
+            return;
+        }
+
+        double inverse = value / mag;
+        x = x * inverse;
+        y = y * inverse;
+        z = z * inverse;
+    }
+
+    void NormApprox(double value = 1.0) {
+        double mag = MagApprox();
+        if (mag == 0.0) {
+            return;
+        }
+
+        double inverse = value / mag;
+        x = x * inverse;
+        y = y * inverse;
+        z = z * inverse;
+    }
+
     double LengthSqr() const {
         return MagSqr();
     }

@@ -182,13 +182,9 @@ i32 CDDrawPixelWorker::IsLoaded() {
     return 0;
 }
 
-#define SET_RESOLVE_POSITION_REFERENCED(x, y)                                                      \
-    m_refCount = 2;                                                                                \
-    return CResolveNode::SetPosition(x, y)
-
 RVA(0x00157080, 0x19)
 i32 CDDrawPlacedWorker::SetPosition(i32 x, i32 y) {
-    SET_RESOLVE_POSITION_REFERENCED(x, y);
+    return SetReferencedPosition(x, y);
 }
 
 RVA(0x001570a0, 0x6)
@@ -206,7 +202,7 @@ CDDrawPixelWorker::~CDDrawPixelWorker() {
 RVA(0x00157110, 0x20)
 i32 CDDrawPixelWorker::PlacePixel(i32 x, i32 y, i32 pixelValue) {
     m_pixelValue = static_cast<char>(pixelValue);
-    SET_RESOLVE_POSITION_REFERENCED(x, y);
+    return SetReferencedPosition(x, y);
 }
 
 RVA(0x00157130, 0x17)
@@ -262,20 +258,20 @@ CDDrawFrameWorker::~CDDrawFrameWorker() {
 RVA(0x00157280, 0x30)
 i32 CDDrawFrameWorker::PlaceFrame(i32 x, i32 y, const char* workerName, i32 frameIndex) {
     ResolveFrame(workerName, frameIndex);
-    SET_RESOLVE_POSITION_REFERENCED(x, y);
+    return SetReferencedPosition(x, y);
 }
 
 RVA(0x001572b0, 0x38)
 i32 CDDrawFrameWorker::PlaceFrame(i32 x, i32 y, CDDrawWorker* source, i32 frameIndex) {
     CImage* frame = source->GetAt(frameIndex);
     m_frame = frame;
-    SET_RESOLVE_POSITION_REFERENCED(x, y);
+    return SetReferencedPosition(x, y);
 }
 
 RVA(0x001572f0, 0x20)
 i32 CDDrawFrameWorker::PlaceFrame(i32 x, i32 y, CImage* frame) {
     m_frame = frame;
-    SET_RESOLVE_POSITION_REFERENCED(x, y);
+    return SetReferencedPosition(x, y);
 }
 
 RVA(0x00157310, 0x1a)

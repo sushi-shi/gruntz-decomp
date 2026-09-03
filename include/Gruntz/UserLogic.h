@@ -99,6 +99,14 @@ public:
 
     void GetScreenTile(Coord* out);
 
+    inline void SetObjectArea(i32 value) {
+        SetRect(&m_object->m_area, value, value, value, value);
+    }
+
+    inline void ClearObjectArea() {
+        SetRectEmpty(&m_object->m_area);
+    }
+
     void RegisterLogicTypesOnce();
     void BuildLogicTypeTable(CGameObject* obj);
 
@@ -171,10 +179,6 @@ public:
     CAniElement* animation = m_wwdObject->m_animationCursor.m_animation;                           \
     CAniRecordView* record = static_cast<CAniRecordView*>(GetAniElementAt(animation, 0));          \
     APPLY_LOOKUP_SPRITE_INLINE(name, record->m_param);
-
-#define SET_OBJECT_AREA(value) SetRect(&m_object->m_area, value, value, value, value);
-
-#define CLEAR_OBJECT_AREA SetRectEmpty(&m_object->m_area);
 
 #define SERIALIZE_USER_LOGIC_OR_RETURN(ar, mode, typeId, object)                                   \
     if (!CUserLogic::SerializeDispatch(ar, mode, typeId, object)) {                                \

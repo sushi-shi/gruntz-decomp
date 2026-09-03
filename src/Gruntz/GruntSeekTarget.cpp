@@ -14,7 +14,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
-#include <Gruntz/GruntCoordRecycleMacros.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPickupInline.h>
@@ -42,11 +42,11 @@
 // @early-stop
 RVA(0x000f71c0, 0x721)
 i32 CGrunt::StepToolThiefBehavior() {
-    COPY_CURRENT_GRUNT_LAST_TILE_TO_DEFENDER
+    CopyLastTileToDefender(this);
     if (this->CoordCount() != 0
         && g_gameReg->m_triggerMgr->m_units[0 * TM_UNITS_PER_PLAYER + this->m_arrivalCell.m_x]
                == NULL) {
-        RECYCLE_GRUNT_COORDS(this)
+        RecycleGruntCoords(this);
         this->m_arrivalCell.m_x = 0;
     }
 
@@ -58,7 +58,7 @@ i32 CGrunt::StepToolThiefBehavior() {
         CGrunt* slot = g_gameReg->m_triggerMgr->m_units[0 * TM_UNITS_PER_PLAYER + reason];
         if (slot == NULL || slot->m_entranceCommitted == false) {
             if (this->CoordCount() != 0) {
-                RECYCLE_GRUNT_COORDS(this)
+                RecycleGruntCoords(this);
             }
             this->m_arrivalCell.m_x = -1;
             return 1;
@@ -81,7 +81,7 @@ i32 CGrunt::StepToolThiefBehavior() {
                 if (this->CoordCount() == 0) {
                     return 1;
                 }
-                RECYCLE_GRUNT_COORDS(this)
+                RecycleGruntCoords(this);
                 return 1;
             }
         }
@@ -92,7 +92,8 @@ i32 CGrunt::StepToolThiefBehavior() {
         reason = IDX(this->m_toolId);
     }
     if (reason != 0) {
-        FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget)
+        i32 atTarget;
+        CGrunt* g = FindNearestEnemyAtTarget(this, &atTarget);
         b32 powered = this->m_poweredUp;
         if (powered != false) {
             b32 neighborValid = this->m_neighborValid;
@@ -113,7 +114,7 @@ i32 CGrunt::StepToolThiefBehavior() {
                     if (this->m_neighborValid != false) {
                         return 1;
                     }
-                    RESET_CURRENT_GRUNT_POWERED_STATE
+                    ResetGruntPoweredState(this);
                     return 1;
                 } else {
                     if (atTarget) {
@@ -125,7 +126,7 @@ i32 CGrunt::StepToolThiefBehavior() {
                     if (this->m_neighborValid != false) {
                         return 1;
                     }
-                    RESET_CURRENT_GRUNT_POWERED_STATE
+                    ResetGruntPoweredState(this);
                     return 1;
                 }
             } else {
@@ -133,7 +134,7 @@ i32 CGrunt::StepToolThiefBehavior() {
             }
             return 1;
         }
-        COPY_CURRENT_GRUNT_LAST_TILE_TO_DEFENDER
+        CopyLastTileToDefender(this);
         if (g == NULL || GruntInRadius(g->m_playerIndex, g->m_unitIndex) == 0) {
             this->m_blockedVoicePending = false;
             return 1;
@@ -141,7 +142,7 @@ i32 CGrunt::StepToolThiefBehavior() {
         if (this->m_poweredUp == false && this->m_stamina >= STAMINA_FULL) {
             Coord position = g->m_object->ScreenPos();
             if (position == g->m_lastTilePx && RectContains(position.m_x, position.m_y) != 0) {
-                COMMIT_GRUNT_NEIGHBOR(g);
+                CommitGruntNeighbor(this, g);
             }
         }
         if (static_cast<u32>(this->m_dwell) <= DWELL_REPATH_MS) {
@@ -179,14 +180,14 @@ i32 CGrunt::StepToolThiefBehavior() {
                 CGrunt* sv = slots[i];
                 if (sv != NULL && sv->m_entranceCommitted != false) {
                     PickupType k = sv->m_entranceReason;
-                    if (ARRIVAL_PICKUP_OF_TERNARY_LE(sv, k) != PICKUP_NONE
-                        && ARRIVAL_PICKUP_OF_TERNARY_LE(sv, k) != PICKUP_WARPSTONE
-                        && ARRIVAL_PICKUP_OF_TERNARY_LE(sv, k) != PICKUP_BOMB) {
+                    if (ArrivalPickupOf(sv, k) != PICKUP_NONE
+                        && ArrivalPickupOf(sv, k) != PICKUP_WARPSTONE
+                        && ArrivalPickupOf(sv, k) != PICKUP_BOMB) {
                         i32 seekable = 1;
                         if (sv->m_gruntKind == GRUNT_GHOST) {
                             seekable = 0;
                         }
-                        if (ARRIVAL_PICKUP_OF_TERNARY_LE(sv, k) == PICKUP_WARPSTONE) {
+                        if (ArrivalPickupOf(sv, k) == PICKUP_WARPSTONE) {
                             seekable = 0;
                         }
                         if (seekable) {

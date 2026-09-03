@@ -44,7 +44,7 @@ i32 CSBI_ImageSetAni::Init(
     if (owner == NULL) {
         goto fail;
     }
-    INITIALIZE_STATUS_BAR_ITEM(owner, tab, host)
+    InitializeBase(owner, tab, host);
 
     m_rect = rc;
     m_cmd = cmd;
@@ -83,10 +83,10 @@ i32 CSBI_ImageSetAni::Init(
     m_frameIndex = m_frameStart;
 
     CImage* cel;
-    if (DDRAW_WORKER_FRAME_OUT_OF_RANGE(tbl, m_frameStart)) {
+    if (!tbl->ContainsFrame(m_frameStart)) {
         cel = NULL;
     } else {
-        cel = DDRAW_WORKER_FRAME_AT_UNCHECKED(tbl, m_frameStart);
+        cel = tbl->FrameAtUnchecked(m_frameStart);
     }
     SetFrame(cel);
     return cel != NULL;

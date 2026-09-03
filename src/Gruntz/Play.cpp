@@ -3946,8 +3946,8 @@ i32 CPlay::LoadCursorAnimation(
     }
     CDDrawWorker* g = m_cursorSprite;
     CImage* frame;
-    if (DDRAW_WORKER_FRAME_IN_RANGE(g, initialFrame)) {
-        frame = DDRAW_WORKER_FRAME_AT_UNCHECKED(g, initialFrame);
+    if (g->ContainsFrame(initialFrame)) {
+        frame = g->FrameAtUnchecked(initialFrame);
     } else {
         frame = NULL;
     }
@@ -3975,8 +3975,8 @@ i32 CPlay::AdvanceCursorAnimation(i32 elapsedMs) {
         i32 idx = m_cursorFrameIndex;
         CDDrawWorker* g = m_cursorSprite;
         CImage* frame;
-        if (DDRAW_WORKER_FRAME_IN_RANGE(g, idx)) {
-            frame = DDRAW_WORKER_FRAME_AT_UNCHECKED(g, idx);
+        if (g->ContainsFrame(idx)) {
+            frame = g->FrameAtUnchecked(idx);
         } else {
             frame = NULL;
         }
@@ -4922,8 +4922,7 @@ static inline CGameLevel* LevelOf(CDDrawSurfaceMgr* holder) {
 static inline TileCollisionKind LookupTileType(CGameLevel* level, i32 x, i32 y) {
     CDDrawWorkerHost* g = level->m_mainPlane;
     Coord position(x, y);
-    position.Max(Coord(0, 0));
-    position.Min(Coord(g->m_planePixelSize.cx - 1, g->m_planePixelSize.cy - 1));
+    position.Clamp(Coord(0, 0), Coord(g->m_planePixelSize.cx - 1, g->m_planePixelSize.cy - 1));
     Coord tile(position.m_x >> g->m_tileShift.m_x, position.m_y >> g->m_tileShift.m_y);
     Coord tileOrigin(tile.m_x << g->m_tileShift.m_x, tile.m_y << g->m_tileShift.m_y);
     Coord sub = position - tileOrigin;
@@ -4941,8 +4940,7 @@ static inline TileCollisionKind LookupTileType(CGameLevel* level, i32 x, i32 y) 
 static inline TileCollisionKind LookupTileTypeDirect(CGameLevel* level, i32 x, i32 y) {
     CDDrawWorkerHost* g = level->m_mainPlane;
     Coord position(x, y);
-    position.Max(Coord(0, 0));
-    position.Min(Coord(g->m_planePixelSize.cx - 1, g->m_planePixelSize.cy - 1));
+    position.Clamp(Coord(0, 0), Coord(g->m_planePixelSize.cx - 1, g->m_planePixelSize.cy - 1));
     Coord tile(position.m_x >> g->m_tileShift.m_x, position.m_y >> g->m_tileShift.m_y);
     Coord tileOrigin(tile.m_x << g->m_tileShift.m_x, tile.m_y << g->m_tileShift.m_y);
     Coord sub = position - tileOrigin;
@@ -5777,11 +5775,13 @@ i32 CPlay::ScanBuildTiles() {
         } else if (dispatch == DispatchCoveredPowerupLogic) {
             CGameLevel* ds = m_world->m_level;
             Coord position = p->ScreenPos();
-            position.Max(Coord(0, 0));
-            position.Min(Coord(
-                ds->m_mainPlane->m_planePixelSize.cx - 1,
-                ds->m_mainPlane->m_planePixelSize.cy - 1
-            ));
+            position.Clamp(
+                Coord(0, 0),
+                Coord(
+                    ds->m_mainPlane->m_planePixelSize.cx - 1,
+                    ds->m_mainPlane->m_planePixelSize.cy - 1
+                )
+            );
             CDDrawWorkerHost* g = ds->m_mainPlane;
             Coord shift = g->m_tileShift;
             Coord cellPosition(position.m_x >> shift.m_x, position.m_y >> shift.m_y);
@@ -5970,7 +5970,7 @@ i32 CPlay::ResetGoals(i32 x, i32 y) {
     }
     g->m_armed = false;
     CDDrawWorkerHost* pg = m_mgr->m_world->m_level->m_mainPlane;
-    SET_SCROLL_POSITION_SCALED_FIRST(pg, x, y);
+    pg->SetScrollPosition(x, y);
     return 1;
 }
 
@@ -6594,12 +6594,9 @@ i32 CPlay::LoadLoadingBarSprite() {
         return 0;
     }
 
-    m_revealCapStart =
-        DDRAW_WORKER_CONTAINS_FRAME(spr, 1) ? DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, 1) : NULL;
-    m_revealCapMid =
-        DDRAW_WORKER_CONTAINS_FRAME(spr, 2) ? DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, 2) : NULL;
-    m_revealCapEnd =
-        DDRAW_WORKER_CONTAINS_FRAME(spr, 3) ? DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, 3) : NULL;
+    m_revealCapStart = spr->ContainsFrame(1) ? spr->FrameAtUnchecked(1) : NULL;
+    m_revealCapMid = spr->ContainsFrame(2) ? spr->FrameAtUnchecked(2) : NULL;
+    m_revealCapEnd = spr->ContainsFrame(3) ? spr->FrameAtUnchecked(3) : NULL;
     m_revealFrame = 1;
     return 1;
 }
@@ -6918,10 +6915,10 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
             CObject* found = NULL;
             res->m_imageRegistry->m_workersByName.Lookup(static_cast<const char*>(nameBuf), found);
             CDDrawWorker* set = static_cast<CDDrawWorker*>(found);
-            if (set == NULL || DDRAW_WORKER_FRAME_OUT_OF_RANGE(set, idx)) {
+            if (set == NULL || !set->ContainsFrame(idx)) {
                 m_cursorImage = NULL;
             } else {
-                m_cursorImage = DDRAW_WORKER_FRAME_AT_UNCHECKED(set, idx);
+                m_cursorImage = set->FrameAtUnchecked(idx);
             }
         } else {
             m_cursorImage = NULL;

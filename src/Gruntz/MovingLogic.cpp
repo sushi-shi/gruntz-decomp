@@ -95,56 +95,63 @@ void CMovingLogic::AdvanceMotion() {
     }
 }
 
-#define ARRIVAL_V(v, a, s, target)                                                                 \
-    do {                                                                                           \
-        double nv;                                                                                 \
-        if (a == g_motionZero) {                                                                   \
-            nv = v;                                                                                \
-        } else {                                                                                   \
-            double disc = SQR(v) - ((target) - (s)) * a * g_motionNegTwo;                          \
-            if (g_motionZero > disc) {                                                             \
-                disc = g_motionZero;                                                               \
-            }                                                                                      \
-            double r = sqrt(disc);                                                                 \
-            nv = (v > g_motionZero) ? r : -r;                                                      \
-        }                                                                                          \
-        v = nv;                                                                                    \
-    } while (0)
+static inline double
+ArrivalVelocity(double velocity, double acceleration, double position, double target) {
+    if (acceleration == g_motionZero) {
+        return velocity;
+    }
+    double discriminant = SQR(velocity) - (target - position) * acceleration * g_motionNegTwo;
+    if (g_motionZero > discriminant) {
+        discriminant = g_motionZero;
+    }
+    double root = sqrt(discriminant);
+    return (velocity > g_motionZero) ? root : -root;
+}
 
-#define STEP_AXIS(v, a, s, vmax, loBand, hiBand, posClamp, scr)                                    \
-    do {                                                                                           \
-        double step0 = dt * a;                                                                     \
-        double t = (v - step0 * g_motionNegHalf) * dt;                                             \
-        scr = t;                                                                                   \
-        do {                                                                                       \
-            double c;                                                                              \
-            if (t > vmax) {                                                                        \
-                c = vmax;                                                                          \
-            } else if (t < -vmax) {                                                                \
-                c = -vmax;                                                                         \
-            } else {                                                                               \
-                break;                                                                             \
-            }                                                                                      \
-            scr = c;                                                                               \
-            ARRIVAL_V(v, a, s, c + s);                                                             \
-        } while (0);                                                                               \
-        double oldS = s;                                                                           \
-        double newS = scr + s;                                                                     \
-        s = newS;                                                                                  \
-        if (newS > hiBand) {                                                                       \
-            ARRIVAL_V(v, a, s, hiBand);                                                            \
-            scr = hiBand - oldS;                                                                   \
-            s = hiBand;                                                                            \
-        } else if (newS < loBand) {                                                                \
-            ARRIVAL_V(v, a, s, loBand);                                                            \
-            scr = loBand - oldS;                                                                   \
-            s = loBand;                                                                            \
-        } else {                                                                                   \
-            v += step0;                                                                            \
-        }                                                                                          \
-        if (v > posClamp)                                                                          \
-            v = posClamp;                                                                          \
-    } while (0)
+static inline void StepMotionAxis(
+    double& velocity,
+    double acceleration,
+    double& position,
+    double maxStep,
+    double lowerBound,
+    double upperBound,
+    double positiveVelocityClamp,
+    double& step,
+    double dt
+) {
+    double accelerationStep = dt * acceleration;
+    double proposedStep = (velocity - accelerationStep * g_motionNegHalf) * dt;
+    step = proposedStep;
+    do {
+        double clampedStep;
+        if (proposedStep > maxStep) {
+            clampedStep = maxStep;
+        } else if (proposedStep < -maxStep) {
+            clampedStep = -maxStep;
+        } else {
+            break;
+        }
+        step = clampedStep;
+        velocity = ArrivalVelocity(velocity, acceleration, position, clampedStep + position);
+    } while (0);
+    double oldPosition = position;
+    double newPosition = step + position;
+    position = newPosition;
+    if (newPosition > upperBound) {
+        velocity = ArrivalVelocity(velocity, acceleration, position, upperBound);
+        step = upperBound - oldPosition;
+        position = upperBound;
+    } else if (newPosition < lowerBound) {
+        velocity = ArrivalVelocity(velocity, acceleration, position, lowerBound);
+        step = lowerBound - oldPosition;
+        position = lowerBound;
+    } else {
+        velocity += accelerationStep;
+    }
+    if (velocity > positiveVelocityClamp) {
+        velocity = positiveVelocityClamp;
+    }
+}
 
 // @early-stop
 RVA(0x0016ecd0, 0x6e6)
@@ -155,7 +162,7 @@ void CMotionState::Step(double dt) {
     if (m_stepDisabled != false) {
         return;
     }
-    STEP_AXIS(
+    StepMotionAxis(
         m_velocity.x,
         m_acceleration.x,
         m_position.x,
@@ -163,9 +170,10 @@ void CMotionState::Step(double dt) {
         m_minBounds.x,
         m_maxBounds.x,
         m_maxVelocity.x,
-        m_step.x
+        m_step.x,
+        dt
     );
-    STEP_AXIS(
+    StepMotionAxis(
         m_velocity.y,
         m_acceleration.y,
         m_position.y,
@@ -173,9 +181,10 @@ void CMotionState::Step(double dt) {
         m_minBounds.y,
         m_maxBounds.y,
         m_maxVelocity.y,
-        m_step.y
+        m_step.y,
+        dt
     );
-    STEP_AXIS(
+    StepMotionAxis(
         m_velocity.z,
         m_acceleration.z,
         m_position.z,
@@ -183,34 +192,19 @@ void CMotionState::Step(double dt) {
         m_minBounds.z,
         m_maxBounds.z,
         m_maxVelocity.z,
-        m_step.z
+        m_step.z,
+        dt
     );
 }
 
 RVA(0x0016f3c0, 0x61)
 double CMotionState::ArrivalVelX(double target) {
-    if (m_acceleration.x == 0.0) {
-        return m_velocity.x;
-    }
-    double disc = SQR(m_velocity.x) - (target - m_position.x) * m_acceleration.x * g_motionNegTwo;
-    if (0.0 > disc) {
-        disc = 0.0;
-    }
-    double r = sqrt(disc);
-    return (m_velocity.x > 0.0) ? r : -r;
+    return ArrivalVelocity(m_velocity.x, m_acceleration.x, m_position.x, target);
 }
 
 RVA(0x0016f430, 0x61)
 double CMotionState::ArrivalVelY(double target) {
-    if (m_acceleration.y == 0.0) {
-        return m_velocity.y;
-    }
-    double disc = SQR(m_velocity.y) - (target - m_position.y) * m_acceleration.y * g_motionNegTwo;
-    if (0.0 > disc) {
-        disc = 0.0;
-    }
-    double r = sqrt(disc);
-    return (m_velocity.y > 0.0) ? r : -r;
+    return ArrivalVelocity(m_velocity.y, m_acceleration.y, m_position.y, target);
 }
 
 RVA(0x0016f4a0, 0x1da)

@@ -31,7 +31,7 @@
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntCombatClockInline.h>
 #include <Gruntz/GruntCombatDirection.h>
-#include <Gruntz/GruntCoordRecycleMacros.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntDirection.h>
 #include <Gruntz/GruntDirStatics.h>
@@ -237,11 +237,11 @@ CActReg CActRegPool<CGrunt>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
         cue = out;                                                                                 \
     } while (0)
 
-#define SETDIR(cell)                                                                               \
-    do {                                                                                           \
-        this->m_entranceCell = (cell);                                                             \
-        newPos = this->m_lastTilePx - GruntDirectionPixelOffset(cell);                             \
-    } while (0)
+static inline void
+SetEntranceDirection(CGrunt* grunt, const GruntDirectionCell& direction, Coord* newPosition) {
+    grunt->m_entranceCell = direction;
+    *newPosition = grunt->m_lastTilePx - GruntDirectionPixelOffset(direction);
+}
 
 // @early-stop
 RVA(0x00056f80, 0xb0)
@@ -251,13 +251,6 @@ i32* CGrunt::EntranceTileOffset(i32* out) {
     out[1] = result.m_y;
     return out;
 }
-
-#define FREELIST_PUSH(elem)                                                                        \
-    {                                                                                              \
-        CoordPoolNode* node = g_coordPool.NodeOf((elem));                                          \
-        node->m_next = g_coordPool.m_freeHead;                                                     \
-        g_coordPool.m_freeHead = node;                                                             \
-    }
 
 RVA(0x00057060, 0x72)
 void CGrunt::ComputeFacing(double dt) {
@@ -544,7 +537,7 @@ void CGrunt::SelectMoveIcon(i32 moveIconId) {
     CShadeTable* sel =
         g_gameReg->m_spriteFactory->GetSel(IDX(m_moveIcon), m_entranceReason >= PICKUP_TOYZ_FIRST);
     CWwdSpriteObject* h = m_object;
-    SET_DRAW_FILL(h, SHADE_PAL_16, sel);
+    h->SetDrawFill(SHADE_PAL_16, sel);
 }
 
 RVA(0x00057890, 0x19c)
@@ -771,7 +764,7 @@ i32 CGrunt::PathScan() {
                         }
                         Coord* elem = static_cast<Coord*>(s.RemoveHead());
                         if (elem != NULL) {
-                            FREELIST_PUSH(elem);
+                            PushFreeNode(&g_coordPool, elem);
                         }
                         s.RemoveAll();
                         grid->Clip(NULL);
@@ -831,7 +824,7 @@ i32 CGrunt::PathScan() {
                     if (s.GetCount() != 0) {
                         Coord* elem = static_cast<Coord*>(s.RemoveHead());
                         if (elem != NULL) {
-                            FREELIST_PUSH(elem);
+                            PushFreeNode(&g_coordPool, elem);
                         }
                         if (s.GetCount() != 0) {
 
@@ -872,7 +865,7 @@ i32 CGrunt::PathScan() {
                                 if (s.GetCount() != 0) {
                                     Coord* e2 = static_cast<Coord*>(s.RemoveHead());
                                     if (e2 != NULL) {
-                                        FREELIST_PUSH(e2);
+                                        PushFreeNode(&g_coordPool, e2);
                                     }
                                     if (s.GetCount() != 0) {
                                         POSITION q = s.GetHeadPosition();
@@ -1428,63 +1421,63 @@ i32 CGrunt::LoadGruntCombatAnimations(
     if (attackKind == PICKUP_WINGZ) {
         switch (static_cast<WingzKnockbackChoice>(rand() % 8 - 1)) {
             case WINGZ_KNOCKBACK_NORTHEAST:
-                SETDIR(s_gruntDirSouthWest);
+                SetEntranceDirection(this, s_gruntDirSouthWest, &newPos);
                 break;
             case WINGZ_KNOCKBACK_EAST:
-                SETDIR(s_gruntDirWest);
+                SetEntranceDirection(this, s_gruntDirWest, &newPos);
                 break;
             case WINGZ_KNOCKBACK_SOUTHEAST:
-                SETDIR(s_gruntDirNorthWest);
+                SetEntranceDirection(this, s_gruntDirNorthWest, &newPos);
                 break;
             case WINGZ_KNOCKBACK_SOUTH:
-                SETDIR(s_gruntDirNorth);
+                SetEntranceDirection(this, s_gruntDirNorth, &newPos);
                 break;
             case WINGZ_KNOCKBACK_SOUTHWEST:
-                SETDIR(s_gruntDirNorthEast);
+                SetEntranceDirection(this, s_gruntDirNorthEast, &newPos);
                 break;
             case WINGZ_KNOCKBACK_WEST:
-                SETDIR(s_gruntDirEast);
+                SetEntranceDirection(this, s_gruntDirEast, &newPos);
                 break;
             case WINGZ_KNOCKBACK_NORTHWEST:
-                SETDIR(s_gruntDirSouthEast);
+                SetEntranceDirection(this, s_gruntDirSouthEast, &newPos);
                 break;
             default:
-                SETDIR(s_gruntDirSouth);
+                SetEntranceDirection(this, s_gruntDirSouth, &newPos);
                 break;
         }
     } else if (delta.m_x == 0) {
         if (source.m_y > position.m_y) {
-            SETDIR(s_gruntDirSouth);
+            SetEntranceDirection(this, s_gruntDirSouth, &newPos);
         } else if (source.m_y < position.m_y) {
-            SETDIR(s_gruntDirNorth);
+            SetEntranceDirection(this, s_gruntDirNorth, &newPos);
         }
     } else {
         float slope = static_cast<float>(delta.m_y) / delta.m_x;
         if (slope > g_slopeTwo || slope < g_slopeNegTwo) {
             if (source.m_y > position.m_y) {
-                SETDIR(s_gruntDirSouth);
+                SetEntranceDirection(this, s_gruntDirSouth, &newPos);
             } else {
-                SETDIR(s_gruntDirNorth);
+                SetEntranceDirection(this, s_gruntDirNorth, &newPos);
             }
         } else if (slope > g_combatSlopeHalf || slope < g_combatSlopeNegHalf) {
             if (slope > g_combatSlopeHalf) {
                 if (source.m_x > position.m_x) {
-                    SETDIR(s_gruntDirSouthEast);
+                    SetEntranceDirection(this, s_gruntDirSouthEast, &newPos);
                 } else {
-                    SETDIR(s_gruntDirNorthWest);
+                    SetEntranceDirection(this, s_gruntDirNorthWest, &newPos);
                 }
             } else if (slope < g_combatSlopeNegHalf) {
                 if (source.m_x > position.m_x) {
-                    SETDIR(s_gruntDirNorthEast);
+                    SetEntranceDirection(this, s_gruntDirNorthEast, &newPos);
                 } else {
-                    SETDIR(s_gruntDirSouthWest);
+                    SetEntranceDirection(this, s_gruntDirSouthWest, &newPos);
                 }
             }
         } else {
             if (source.m_x > position.m_x) {
-                SETDIR(s_gruntDirEast);
+                SetEntranceDirection(this, s_gruntDirEast, &newPos);
             } else {
-                SETDIR(s_gruntDirWest);
+                SetEntranceDirection(this, s_gruntDirWest, &newPos);
             }
         }
     }
@@ -1585,7 +1578,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         m_movePosition.Init(position);
 
         if (m_coordList.GetCount() != 0) {
-            RECYCLE_GRUNT_COORDS_EXPANDED(this)
+            RecycleGruntCoords(this);
         }
         this->m_arrivalPending = false;
     }
@@ -1977,7 +1970,7 @@ void CGrunt::StepBehavior(char*) {
             } else {
                 i32 fade = g_buteMgr.GetInt("Grunt", s_FadeTransparency, 0xc0);
                 CWwdSpriteObject* o2 = m_object;
-                SET_DRAW_FILL_FRACTION(o2, SHADE_PAL_ALPHA_16, fade);
+                o2->SetDrawFillFraction(SHADE_PAL_ALPHA_16, fade);
             }
             i32 flash = g_buteMgr.GetInt("Grunt", s_SafeFlashTime, 0x32);
             if (g_buteMgr.GetInt("Grunt", s_AccelerateFlash, 0) == 1) {
@@ -2005,7 +1998,7 @@ void CGrunt::StepBehavior(char*) {
 
     {
         CWwdSpriteObject* obj = m_object;
-        if (GRUNT_OBJECT_NOT_AT_SELF_SAVED_SCREEN_POS(obj)) {
+        if (!IsObjectAtGruntSavedScreenPos(obj, this)) {
             goto afterTile;
         }
     }
@@ -2119,11 +2112,13 @@ void CGrunt::StepBehavior(char*) {
 
             CGameLevel* level = g_gameReg->m_world->m_level;
             Coord clampedTile = tile;
-            clampedTile.Max(Coord(0, 0));
-            clampedTile.Min(Coord(
-                level->m_mainPlane->m_tileGridSize.cx - 1,
-                level->m_mainPlane->m_tileGridSize.cy - 1
-            ));
+            clampedTile.Clamp(
+                Coord(0, 0),
+                Coord(
+                    level->m_mainPlane->m_tileGridSize.cx - 1,
+                    level->m_mainPlane->m_tileGridSize.cy - 1
+                )
+            );
             i32 raw = level->m_mainPlane->m_tileHandles
                           [level->m_mainPlane->m_tileRowOffsets[clampedTile.m_y] + clampedTile.m_x];
             TileCollisionKind kind;
@@ -2276,9 +2271,9 @@ afterTile:
 
                     Coord baseTile = position;
                     ScreenTile(&baseTile);
-                    i32 randomY = rand() % 6 - 3;
-                    i32 randomX = rand() % 6 - 3;
-                    Coord randomOffset(randomX, randomY);
+                    Coord randomOffset;
+                    randomOffset.m_y = rand() % 6 - 3;
+                    randomOffset.m_x = rand() % 6 - 3;
                     Coord wanderTile = baseTile + randomOffset;
                     TileSwitch(wanderTile.m_x, wanderTile.m_y, 0, m_arrivalFlags, 0, 0);
                     m_dwell = 0;
@@ -2439,14 +2434,14 @@ afterArrival:
             }
             if (eq) {
                 if (m_poweredUp != false && m_neighborValid == false) {
-                    RESET_GRUNT_POWERED_STATE(this)
+                    ResetGruntPoweredState(this);
                 }
             }
         }
     } else {
         if (static_cast<i64>(g_frameTime) - m_combatClock64 >= m_combatTimeout64) {
             if (m_poweredUp != false && m_neighborValid == false) {
-                RESET_GRUNT_POWERED_STATE(this)
+                ResetGruntPoweredState(this);
             }
             if (m_arrived == false
                 && static_cast<i64>(g_frameTime) - m_hudRetireClock64 >= m_hudRetireWindow64) {
@@ -2490,7 +2485,7 @@ kindDispatch:
                     g_gameReg->m_spriteFactory->GetSel(pick, m_entranceReason >= PICKUP_TOYZ_FIRST);
                 CWwdSpriteObject* obj = m_object;
                 ShadeMode cmd = obj->m_drawFillCmd;
-                SET_DRAW_FILL(obj, cmd, sel);
+                obj->SetDrawFill(cmd, sel);
             }
         }
         i64 left = m_convertTime64 + m_convertClock64 - static_cast<i64>(g_frameTime);
@@ -2507,7 +2502,7 @@ kindDispatch:
                     * static_cast<double>(remMs) * DATA_COMPGEN(0x001e9a60, 0.0003333333333333333)
                     );
                 CWwdSpriteObject* obj = m_object;
-                SET_DRAW_FILL_FRACTION(obj, SHADE_PAL_ALPHA_16, frac);
+                obj->SetDrawFillFraction(SHADE_PAL_ALPHA_16, frac);
             } else {
                 CWwdSpriteObject* obj = m_object;
                 if (!HAS(obj->m_stateFlags, SPRITE_STATE_FLASHING)) {
@@ -2610,7 +2605,7 @@ void CGrunt::FinalizeStep(char* name) {
         }
     }
     bool eqO = ANIMATION_ACT_EQUALS("O");
-    if (eqO && (GRUNT_NOT_AT_SAVED_SCREEN_POS(this))) {
+    if (eqO && (!IsGruntAtSavedScreenPos(this))) {
         GruntDirectionCell c = m_entranceCell;
         switch (c.row) {
             case GRUNT_DIRECTION_GRID_LOW:
@@ -2653,7 +2648,7 @@ void CGrunt::FinalizeStep(char* name) {
         m_object->SetScreenPos(next);
         CWwdSpriteObject* h = m_object;
         i32 v = h->m_screenPosition.m_y + 0x186a0;
-        SET_SORT_KEY_IF_CHANGED(h, v)
+        h->SetSortKey(v);
         return;
     }
 
@@ -2661,7 +2656,7 @@ void CGrunt::FinalizeStep(char* name) {
     ActNameConstructGrownSlots();
     bool eqPos = (strcmp(*rec, "S") == 0);
     if (eqPos) {
-        if (GRUNT_AT_SAVED_SCREEN_POS(this)) {
+        if (IsGruntAtSavedScreenPos(this)) {
             return;
         }
         DoubleVector2 direction = EntranceCell()->m_motion.m_direction;
@@ -2749,7 +2744,7 @@ void CGrunt::AdvanceMotion() {
             }
         }
     }
-    if (GRUNT_AT_SAVED_SCREEN_POS(this)) {
+    if (IsGruntAtSavedScreenPos(this)) {
         if (m_arrivalPending != false) {
             m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
             m_arrivalPending = false;
@@ -2922,5 +2917,5 @@ void CGrunt::AdvanceMotion() {
     m_object->SetScreenPos(position);
     CWwdSpriteObject* o = m_object;
     i32 sortKey = o->m_screenPosition.m_y + 0x186a0;
-    SET_SORT_KEY_IF_CHANGED(o, sortKey)
+    o->SetSortKey(sortKey);
 }

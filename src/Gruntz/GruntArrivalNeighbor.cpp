@@ -81,6 +81,6 @@ i32 CGrunt::StepPostGuardBehavior() {
     if (occ->m_object->ScreenPos() != occ->m_lastTilePx) {
         return 1;
     }
-    COMMIT_GRUNT_NEIGHBOR(occ);
+    CommitGruntNeighbor(this, occ);
     return 1;
 }

@@ -19,14 +19,4 @@ inline PickupType ArrivalPickupOf(CGrunt* grunt, PickupType entranceReason) {
     return pickup;
 }
 
-#define ARRIVAL_PICKUP_TERNARY_LE(grunt)                                                           \
-    ((grunt->m_entranceReason <= PICKUP_EQUIPPABLE_LAST) ? grunt->m_entranceReason                 \
-                                                         : grunt->m_toolId)
-
-#define ARRIVAL_PICKUP_TERNARY_GT(grunt)                                                           \
-    ((grunt->m_entranceReason > PICKUP_EQUIPPABLE_LAST) ? grunt->m_toolId : grunt->m_entranceReason)
-
-#define ARRIVAL_PICKUP_OF_TERNARY_LE(grunt, entranceReason)                                        \
-    ((entranceReason <= PICKUP_EQUIPPABLE_LAST) ? entranceReason : grunt->m_toolId)
-
 #endif // GRUNTZ_GRUNTPICKUPINLINE_H

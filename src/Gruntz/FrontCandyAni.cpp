@@ -73,15 +73,15 @@ RVA_COMPGEN(0x0000ffc0, 0x44, ??1CEyeCandyAni@@UAE@XZ)
 RVA(0x000abfa0, 0x1b6)
 CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_OVERLAY)
-    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_frameImage)
+    o->SetSortKey(SORTKEY_OVERLAY);
+    NormalizeBigAnimation(m_object, m_wwdObject, m_object->m_frameImage);
 }
 
 // @early-stop
 RVA(0x000ac1d0, 0x1a5)
 CDoNothing::CDoNothing(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION));
-    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_frameImage)
+    NormalizeBigAnimation(m_object, m_wwdObject, m_object->m_frameImage);
 }
 
 // @early-stop
@@ -89,8 +89,8 @@ RVA(0x000ac3f0, 0x1b1)
 CBehindCandy::CBehindCandy(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, 0)
-    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_frameImage)
+    o->SetSortKey(0);
+    NormalizeBigAnimation(m_object, m_wwdObject, m_object->m_frameImage);
 }
 
 // @early-stop
@@ -99,9 +99,9 @@ CEyeCandy::CEyeCandy(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
     CWwdSpriteObject* o = m_object;
     if (o->m_sortKey == 0 && o->m_frameImage != NULL) {
         i32 v = o->m_frameImage->m_anchor.y + o->m_screenPosition.m_y + 0x186a0;
-        SET_SORT_KEY_IF_CHANGED(o, v)
+        o->SetSortKey(v);
     }
-    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_frameImage)
+    NormalizeBigAnimation(m_object, m_wwdObject, m_object->m_frameImage);
 }
 
 // @early-stop
@@ -112,9 +112,9 @@ CEyeCandyAni::CEyeCandyAni(CGameObject* obj)
     CWwdSpriteObject* o = m_object;
     if (o->m_sortKey == 0 && o->m_frameImage != NULL) {
         i32 v = o->m_frameImage->m_anchor.y + o->m_screenPosition.m_y + 0x186a0;
-        SET_SORT_KEY_IF_CHANGED(o, v)
+        o->SetSortKey(v);
     }
-    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_frameImage)
+    NormalizeBigAnimation(m_object, m_wwdObject, m_object->m_frameImage);
 }
 
 RVA(0x000acbb0, 0x102)
@@ -143,7 +143,7 @@ CFrontCandyAni::CFrontCandyAni(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     INITIALIZE_DEFAULT_CYCLE_ANIMATION
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_OVERLAY)
+    o->SetSortKey(SORTKEY_OVERLAY);
 }
 
 RVA(0x000ad1b0, 0x102)

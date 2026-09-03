@@ -29,7 +29,7 @@ i32 CPixelTileImageSet::GetStride() {
 
 RVA(0x00166d70, 0x8d)
 i32 CPixelTileImageSet::Parse(WwdTileImageRecord* record) {
-    READ_TILE_IMAGE_DIMENSIONS(record, p)
+    i32* p = ReadDimensions(record);
     i32 h = m_height;
     m_heightLog2 = 0;
     i32 size = m_width * m_height;

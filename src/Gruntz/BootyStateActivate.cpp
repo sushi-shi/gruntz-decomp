@@ -516,7 +516,7 @@ i32 CBootyState::StepGlitterAnim() {
             CWwdSpriteObject* e = m_trailSprites[i];
             e->SetScreenPos(g_bootyLetterCoords[i]);
             e = m_trailSprites[i];
-            SET_SORT_KEY_IF_CHANGED(e, 1)
+            e->SetSortKey(1);
         }
         m_cursorLetter->SetScreenPos(g_bootyLetterCoords[m_letterIdx]);
         return 1;
@@ -526,9 +526,10 @@ i32 CBootyState::StepGlitterAnim() {
     i32 idx = m_letterIdx;
     double r = static_cast<float>(m_radius);
     double ang = (static_cast<float>(step) - kGlitterPhaseBias) * kDegToRad;
-    i32 scratchX = static_cast<i32>((sin(ang) * r + g_bootyLetterCoords[idx].m_x));
-    i32 scratchY = static_cast<i32>((cos(ang) * r + g_bootyLetterCoords[idx].m_y));
-    m_scratchPosition.Set(scratchX, scratchY);
+    Coord scratchPosition;
+    scratchPosition.m_x = static_cast<i32>((sin(ang) * r + g_bootyLetterCoords[idx].m_x));
+    scratchPosition.m_y = static_cast<i32>((cos(ang) * r + g_bootyLetterCoords[idx].m_y));
+    m_scratchPosition = scratchPosition;
     m_angleStep = step + 5;
     double shrink = static_cast<float>(step + 5) * kGlitterShrinkRate;
     m_radius = static_cast<i32>((kGlitterStartRadius - shrink * kGlitterStartRadius));
@@ -549,7 +550,7 @@ i32 CBootyState::StepGlitterAnim() {
 
     if (m_radius == 0) {
         CWwdSpriteObject* e = m_trailSprites[i];
-        SET_SORT_KEY_IF_CHANGED(e, 1)
+        e->SetSortKey(1);
         return 1;
     }
     return 0;
@@ -1857,11 +1858,11 @@ static __inline i32 maxRunIndex(const i32* values, i32 count) {
 }
 
 static __inline void setDrawFill(CResolveNode* node, ShadeMode mode, CShadeTable* table) {
-    SET_DRAW_FILL(node, mode, table);
+    node->SetDrawFill(mode, table);
 }
 
 static __inline void setDrawFillReversed(CResolveNode* node, ShadeMode mode, CShadeTable* table) {
-    SET_DRAW_FILL_REVERSED(node, mode, table);
+    node->SetDrawFill(mode, table);
 }
 
 // @early-stop
@@ -2176,7 +2177,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
     m_warlordBooty->m_stateFlags |= SPRITE_STATE_HIDDEN;
     m_warlordBooty->SetScreenPos(0x64, 0x64);
     CWwdSpriteObject* sorted = m_warlordBooty;
-    SET_SORT_KEY_IF_CHANGED(sorted, SORTKEY_BOOTY_WARLORD)
+    sorted->SetSortKey(SORTKEY_BOOTY_WARLORD);
     m_warlordBooty->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
 
     AddrWord<const Coord> flagPos;

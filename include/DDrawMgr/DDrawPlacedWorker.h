@@ -28,6 +28,11 @@ public:
 
     virtual i32 SetPosition(i32 x, i32 y) OVERRIDE;
 
+    inline i32 SetReferencedPosition(i32 x, i32 y) {
+        m_refCount = 2;
+        return CResolveNode::SetPosition(x, y);
+    }
+
     virtual void RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay);
 
     i32 m_refCount;

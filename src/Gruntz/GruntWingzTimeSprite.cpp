@@ -15,7 +15,7 @@ CGruntWingzTimeSprite::CGruntWingzTimeSprite(CGameObject* obj) : CGruntHealthSpr
     SetImageFrameByName("GAME_GRUNTWINGZTIMESPRITE", 1);
     SET_ANIMATION_ACT("A");
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_HUD)
+    o->SetSortKey(SORTKEY_GRUNT_HUD);
     m_displayedValue = 0;
     m_yOffset = -0x26;
 }

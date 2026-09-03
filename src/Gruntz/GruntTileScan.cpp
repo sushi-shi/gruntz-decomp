@@ -8,7 +8,7 @@
 #include <Gruntz/Brickz.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/Grunt.h>
-#include <Gruntz/GruntCoordRecycleMacros.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/MapCellFlags.h>
 #include <Gruntz/MapMgr.h>
@@ -36,7 +36,7 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
             i32 flags = grid->CellFlagsAt(cell.m_x, cell.m_y);
             if ((flags & IDX(CELL_FLAG_GAUNTLET_BRICK))
                 && grid->m_rows[cell.m_y][cell.m_x].m_typeCode == TILEKIND_GAUNTLET_BRICK_C) {
-                RECYCLE_GRUNT_COORDS(g)
+                RecycleGruntCoords(g);
                 return 1;
             }
         }

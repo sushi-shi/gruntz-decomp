@@ -71,7 +71,7 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj)
     m_object->SetScreenPos(snappedPosition);
     m_position.Init(snappedPosition);
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_KITCHEN_SLIME)
+    o->SetSortKey(SORTKEY_KITCHEN_SLIME);
     m_tilePosition = snappedPosition;
 
     TileCenter(&m_object->m_speed);
@@ -108,7 +108,7 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj)
     }
     SET_ANIMATION_ACT("A");
     SwitchAnimationByName("GAME_CYCLE100", 0);
-    CLEAR_OBJECT_AREA
+    ClearObjectArea();
 }
 
 RVA(0x000b2940, 0x102)
@@ -325,8 +325,8 @@ i32 CKitchenSlime::LoadSprites() {
         CWwdSpriteObject* player = Anim();
         CDDrawWorker* spr = player->m_imageSet;
         if (spr != NULL) {
-            if (DDRAW_WORKER_CONTAINS_FRAME(spr, 1)) {
-                CImage* img = DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, 1);
+            if (spr->ContainsFrame(1)) {
+                CImage* img = spr->FrameAtUnchecked(1);
                 player->m_frameIndex = 1;
                 player->m_frameImage = img;
                 m_stepMag = 0.0;

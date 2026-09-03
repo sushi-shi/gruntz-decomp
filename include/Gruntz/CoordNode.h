@@ -128,6 +128,11 @@ struct Coord {
         }
     }
 
+    void Clamp(const Coord& lower, const Coord& upper) {
+        Max(lower);
+        Min(upper);
+    }
+
     Coord GetMin(const Coord& other) const {
         Coord result = *this;
         result.Min(other);

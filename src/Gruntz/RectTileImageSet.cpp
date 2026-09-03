@@ -5,7 +5,7 @@
 // @early-stop
 RVA(0x00166990, 0x4c)
 i32 CRectTileImageSet::Parse(WwdTileImageRecord* record) {
-    READ_TILE_IMAGE_DIMENSIONS(record, p)
+    i32* p = ReadDimensions(record);
     m_outsideValue = *p++;
     m_insideValue = *p++;
     m_left = *p++;

@@ -42,7 +42,7 @@ i32 CSBI_ImageSet::SetupImage(
     if (owner == NULL) {
         goto fail;
     }
-    INITIALIZE_STATUS_BAR_ITEM(owner, obj, host)
+    InitializeBase(owner, obj, host);
 
     m_rect = rect;
     m_cmd = cmd;

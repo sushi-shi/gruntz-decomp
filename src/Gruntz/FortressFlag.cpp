@@ -90,7 +90,7 @@ CFortressFlag::CFortressFlag(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     CWwdSpriteObject* o = m_object;
     i32 v = o->m_frameImage->m_anchor.y + o->m_screenPosition.m_y + 0x186a0;
-    SET_SORT_KEY_IF_CHANGED(o, v)
+    o->SetSortKey(v);
     switch (static_cast<WarlordOwner>(m_object->m_smarts)) {
         case WARLORDZ_KING:
             SetImageSetByName("GAME_FORTRESSFLAGZ_KING");
@@ -114,7 +114,7 @@ CFortressFlag::CFortressFlag(CGameObject* obj)
     i32 idx = IDX(g_gameReg->m_players[m_object->m_smarts].m_color);
     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
     CWwdSpriteObject* spr = m_object;
-    SET_DRAW_FILL(spr, SHADE_PAL_16, sel);
+    spr->SetDrawFill(SHADE_PAL_16, sel);
 }
 
 RVA(0x00046080, 0x102)
@@ -152,7 +152,7 @@ i32 CFortressFlag::SerializeDispatch(
         i32 idx = IDX(g_gameReg->m_players[spr->m_smarts].m_color);
         CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
         spr = m_object;
-        SET_DRAW_FILL(spr, SHADE_PAL_16, sel);
+        spr->SetDrawFill(SHADE_PAL_16, sel);
     }
     return 1;
 }
@@ -262,7 +262,7 @@ CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     SET_ANIMATION_ACT("A");
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR_BEHIND)
+    o->SetSortKey(SORTKEY_ACTOR_BEHIND);
     m_object->m_dirty.m_armed = 0;
 }
 
@@ -298,7 +298,7 @@ CExplosion::CExplosion(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     SET_ANIMATION_ACT("A");
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_OVERLAY)
+    o->SetSortKey(SORTKEY_OVERLAY);
     m_object->m_dirty.m_armed = 0;
 }
 

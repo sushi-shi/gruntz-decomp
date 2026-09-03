@@ -95,7 +95,7 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
         goto fail;
     }
     h = host;
-    INITIALIZE_STATUS_BAR_ITEM(owner, tab, h)
+    InitializeBase(owner, tab, h);
 
     m_rect = g;
 

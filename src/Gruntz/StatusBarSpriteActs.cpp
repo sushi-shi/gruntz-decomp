@@ -74,7 +74,7 @@ CStatusBarSprite::CStatusBarSprite(CGameObject* obj)
     SwitchAnimationByName("GAME_SINGLEIMAGEANI", 0);
     SET_ANIMATION_ACT("A");
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_OVERLAY)
+    o->SetSortKey(SORTKEY_OVERLAY);
 }
 
 RVA(0x0010c4b0, 0x102)

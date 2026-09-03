@@ -68,7 +68,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
                         occ->m_object->m_screenPosition.m_x,
                         occ->m_object->m_screenPosition.m_y
                     ) != 0
-                    && GRUNT_AT_SAVED_SCREEN_POS(occ)) {
+                    && IsGruntAtSavedScreenPos(occ)) {
                     if (m_vehiclePickupType == PICKUP_SCROLL) {
                         g_gameReg->m_triggerMgr->UseToyAt(
                             m_playerIndex,
@@ -78,7 +78,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
                         );
                         return 1;
                     }
-                    COMMIT_GRUNT_NEIGHBOR(occ);
+                    CommitGruntNeighbor(this, occ);
                     return 1;
                 }
             } else if (occ == NULL) {
@@ -146,8 +146,8 @@ i32 CGrunt::StepScrollGruntBehavior() {
                 m_defenderState = AISTATE_ATTACK;
                 return 1;
             }
-            if (GRUNT_AT_SAVED_SCREEN_POS(occ)) {
-                COMMIT_GRUNT_NEIGHBOR(occ);
+            if (IsGruntAtSavedScreenPos(occ)) {
+                CommitGruntNeighbor(this, occ);
             }
             m_defenderState = AISTATE_ATTACK;
             return 1;
@@ -158,7 +158,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
             if (occ == NULL) {
                 goto L_f308a;
             }
-            if (m_poweredUp == false && m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(occ)
+            if (m_poweredUp == false && m_stamina >= STAMINA_FULL && IsGruntAtSavedScreenPos(occ)
                 && RectContains(
                        occ->m_object->m_screenPosition.m_x,
                        occ->m_object->m_screenPosition.m_y
@@ -175,7 +175,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
                 if (occ->m_object->ScreenPos() != occ->m_lastTilePx) {
                     return 1;
                 }
-                COMMIT_GRUNT_NEIGHBOR(occ);
+                CommitGruntNeighbor(this, occ);
                 return 1;
             }
             if (occ != NULL && static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS) {
@@ -188,7 +188,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
                     if (TileSwitch(sp.m_x, sp.m_y, 0, m_arrivalFlags, 1, 0) == 0) {
                         goto L_f318a;
                     }
-                    SET_GRUNT_ARRIVAL_TARGET(occ);
+                    SetGruntArrivalTarget(this, occ);
                     m_defenderState = AISTATE_CHASE;
                     CWwdSpriteObject* h = m_object;
                     CGruntzMgr* reg = g_gameReg;

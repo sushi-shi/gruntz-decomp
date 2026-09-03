@@ -51,7 +51,8 @@ i32 CGrunt::StepDiggerBehavior() {
     GetScreenTile(&center);
     Coord targetTile;
 
-    FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget)
+    i32 atTarget;
+    CGrunt* g = FindNearestEnemyAtTarget(this, &atTarget);
 
     m_defenderPx = m_lastTilePx;
 
@@ -112,7 +113,7 @@ i32 CGrunt::StepDiggerBehavior() {
     if (m_stamina >= STAMINA_FULL && g->m_object->ScreenPos() == g->m_lastTilePx
         && RectContains(g->m_object->m_screenPosition.m_x, g->m_object->m_screenPosition.m_y)
                != 0) {
-        COMMIT_GRUNT_NEIGHBOR(g);
+        CommitGruntNeighbor(this, g);
         m_dwell = 0;
         return 1;
     }

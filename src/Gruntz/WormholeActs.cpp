@@ -130,7 +130,7 @@ i32 CExitTrigger::AdvanceAnim() {
                         IDX(g_gameReg->m_players[hitPlayerIndex].m_color),
                         0
                     );
-                    SET_DRAW_FILL(cur, SHADE_PAL_16, tbl);
+                    cur->SetDrawFill(SHADE_PAL_16, tbl);
                     if (hitPlayerIndex == g_curPlayer) {
                         CoordPoolNode* head = g_coordPool.m_freeHead;
                         Coord* mark = NULL;
@@ -154,7 +154,7 @@ i32 CExitTrigger::AdvanceAnim() {
                         IDX(g_gameReg->m_players[hitPlayerIndex].m_color),
                         0
                     );
-                    SET_DRAW_FILL(cur, SHADE_PAL_16, tbl);
+                    cur->SetDrawFill(SHADE_PAL_16, tbl);
                 }
             }
             if (owningPlayer == g_curPlayer) {

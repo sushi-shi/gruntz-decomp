@@ -54,7 +54,7 @@ i32 CGrunt::StepToyerBehavior() {
         return 1;
     }
     CGameObject* a = p->m_object;
-    if (GRUNT_OBJECT_AT_SAVED_SCREEN_POS(a, p)
+    if (IsObjectAtGruntSavedScreenPos(a, p)
         && VehicleContactContains(a->m_screenPosition.m_x, a->m_screenPosition.m_y)) {
         CGameObject* b = p->m_object;
         g_gameReg->m_triggerMgr->UseToyAt(

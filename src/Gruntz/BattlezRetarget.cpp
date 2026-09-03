@@ -20,7 +20,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
-#include <Gruntz/GruntCoordRecycleMacros.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntzMgr.h>
@@ -127,7 +127,7 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
         return 1;
     }
     if (recA->m_humanControlled == false && cfgB->m_active == false) {
-        RECYCLE_GRUNT_COORDS(unit)
+        RecycleGruntCoords(unit);
         unit->m_arrivalCell.Set(-1, -1);
         return 1;
     }
@@ -157,6 +157,6 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
     if (unit->CoordCount() == 0) {
         return 1;
     }
-    RECYCLE_GRUNT_COORDS_EXPANDED(unit)
+    RecycleGruntCoords(unit);
     return 1;
 }

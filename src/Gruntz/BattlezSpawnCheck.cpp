@@ -21,7 +21,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/MapCellFlags.h>
 #include <Gruntz/GruntAiState.h>
-#include <Gruntz/GruntCoordRecycleMacros.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntzMgr.h>
@@ -81,12 +81,12 @@ i32 CBattlezMapConfig::CheckQueuedSpawnTile(CGrunt* unit) {
         unit->m_battleState = BZTASK_ADVANCE;
 
         if (unit->CoordCount() != 0) {
-            RECYCLE_GRUNT_COORDS(unit)
+            RecycleGruntCoords(unit);
         }
     } else {
         unit->m_battleState = BZTASK_ADVANCE;
         if (unit->CoordCount() != 0) {
-            RECYCLE_GRUNT_COORDS_EXPANDED(unit)
+            RecycleGruntCoords(unit);
         }
     }
     unit->m_arrivalCell.Set(-1, -1);

@@ -67,6 +67,18 @@ public:
         SetScreenPos(Coord(x, y));
     }
 
+    inline void SetDrawFill(ShadeMode mode, CShadeTable* table) {
+        m_drawActive = true;
+        m_drawFillCmd = mode;
+        m_drawFillArg = table;
+    }
+
+    inline void SetDrawFillFraction(ShadeMode mode, i32 fraction) {
+        m_drawActive = true;
+        m_drawFillCmd = mode;
+        m_fillFraction = fraction;
+    }
+
     CResolveNode();
 
     CResolveNode(CDDrawSurfaceMgr* owner, i32 id, i32 flags);
@@ -110,30 +122,5 @@ public:
 
     RECT m_clip;
 };
-
-#define SET_DRAW_FILL(node, mode, table)                                                           \
-    node->m_drawActive = true;                                                                     \
-    node->m_drawFillCmd = mode;                                                                    \
-    node->m_drawFillArg = table
-
-#define SET_DRAW_FILL_REVERSED(node, mode, table)                                                  \
-    node->m_drawActive = true;                                                                     \
-    node->m_drawFillArg = table;                                                                   \
-    node->m_drawFillCmd = mode
-
-#define SET_DRAW_FILL_SPLIT(activeNode, node, mode, table)                                         \
-    activeNode->m_drawActive = true;                                                               \
-    node->m_drawFillCmd = mode;                                                                    \
-    node->m_drawFillArg = table
-
-#define SET_DRAW_FILL_ARG_FIRST(node, mode, table)                                                 \
-    node->m_drawFillArg = table;                                                                   \
-    node->m_drawActive = true;                                                                     \
-    node->m_drawFillCmd = mode
-
-#define SET_DRAW_FILL_FRACTION(node, mode, fraction)                                               \
-    node->m_drawActive = true;                                                                     \
-    node->m_drawFillCmd = mode;                                                                    \
-    node->m_fillFraction = fraction
 
 #endif // GRUNTZ_GRUNTZ_RESOLVENODE_H

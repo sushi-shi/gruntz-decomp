@@ -46,7 +46,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
     b32 hitGate = false;
     if (g != NULL) {
         CGameObject* gp = g->m_object;
-        if (GRUNT_OBJECT_AT_SAVED_SCREEN_POS(gp, g)
+        if (IsObjectAtGruntSavedScreenPos(gp, g)
             && RectContains(gp->m_screenPosition.m_x, gp->m_screenPosition.m_y)) {
             hitGate = true;
         }
@@ -71,7 +71,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                 if (m_neighborValid != false) {
                     return 1;
                 }
-                RESET_GRUNT_POWERED_STATE(this)
+                ResetGruntPoweredState(this);
                 return 1;
             }
             if (hitGate != false) {
@@ -83,7 +83,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
             if (m_neighborValid != false) {
                 return 1;
             }
-            RESET_GRUNT_POWERED_STATE(this)
+            ResetGruntPoweredState(this);
             return 1;
         }
         m_neighborValid = false;
@@ -96,9 +96,9 @@ i32 CGrunt::StepDumbChaserBehavior() {
             if (g != NULL) {
                 if (hitGate != false && m_stamina >= STAMINA_FULL) {
                     CGameObject* gp = g->m_object;
-                    if (GRUNT_OBJECT_AT_SAVED_SCREEN_POS(gp, g)
+                    if (IsObjectAtGruntSavedScreenPos(gp, g)
                         && RectContains(gp->m_screenPosition.m_x, gp->m_screenPosition.m_y)) {
-                        COMMIT_GRUNT_NEIGHBOR(g);
+                        CommitGruntNeighbor(this, g);
                         return 1;
                     }
                 }
@@ -109,7 +109,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                     Coord targetTile;
                     g->GetScreenTile(&targetTile);
                     if (TileSwitch(targetTile.m_x, targetTile.m_y, 0, m_arrivalFlags, 1, 0) != 0) {
-                        SET_GRUNT_ARRIVAL_TARGET(g);
+                        SetGruntArrivalTarget(this, g);
                         m_defenderState = AISTATE_CHASE;
                         CWwdSpriteObject* mp = m_object;
                         CGruntzMgr* mgr = g_gameReg;
@@ -171,8 +171,8 @@ i32 CGrunt::StepDumbChaserBehavior() {
                        t->m_object->m_screenPosition.m_x,
                        t->m_object->m_screenPosition.m_y
                    ) != 0
-                && GRUNT_AT_SAVED_SCREEN_POS(t)) {
-                COMMIT_GRUNT_NEIGHBOR(t);
+                && IsGruntAtSavedScreenPos(t)) {
+                CommitGruntNeighbor(this, t);
                 m_defenderState = AISTATE_ATTACK;
                 return 1;
             }
@@ -198,12 +198,12 @@ i32 CGrunt::StepDumbChaserBehavior() {
                         t->m_object->m_screenPosition.m_x,
                         t->m_object->m_screenPosition.m_y
                     ) == 0
-                    || GRUNT_NOT_AT_SAVED_SCREEN_POS(t)) {
+                    || !IsGruntAtSavedScreenPos(t)) {
                     m_defenderState = AISTATE_CHASE;
                     m_dwell = DWELL_REPATH_MS;
                     return 1;
                 }
-                COMMIT_GRUNT_NEIGHBOR(t);
+                CommitGruntNeighbor(this, t);
                 return 1;
             }
             m_defenderState = AISTATE_CHASE;

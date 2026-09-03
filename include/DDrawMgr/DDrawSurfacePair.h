@@ -47,7 +47,10 @@ public:
 
     virtual ~CDDrawSurfacePair() OVERRIDE;
 
-    void BltSelf(CDDrawSurfacePair* src);
+    RVA(0x0003a1d0, 0x1d)
+    inline void BltSelf(CDDrawSurfacePair* src) {
+        m_surface->BltFast(0, 0, src->m_surface, &src->m_srcRect, DDBLTFAST_WAIT);
+    }
     i32 RestoreIfLost();
 
     void DrawBox(RECT* rect, i32 color);
@@ -67,8 +70,5 @@ inline void CDrawSubWorker::BlitDirtyRect(CDDrawSurfacePair* other, i32* pos, i3
     rc = MakeRect(pos[0], pos[1], pos[0] + size[0], pos[1] + size[1]);
     m_surface->BltEx(&rc, other->m_surface, &rc, DDBLT_WAIT, NULL);
 }
-
-#define BLT_SURFACE_PAIR_SELF(dst, src)                                                            \
-    (dst)->m_surface->BltFast(0, 0, (src)->m_surface, &(src)->m_srcRect, DDBLTFAST_WAIT)
 
 #endif // GRUNTZ_CDDRAWSURFACEPAIR_H

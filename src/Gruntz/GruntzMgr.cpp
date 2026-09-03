@@ -903,11 +903,13 @@ i32 CDDrawDeviceManager::GetCapsChecked() {
     return hr;
 }
 
-#define IS_STANDARD_VIDEO_MODE (CSize(m_modeSize) == CSize(SCREEN_W_PX, SCREEN_H_PX))
+static inline b32 IsStandardVideoMode(const SIZE& size) {
+    return CSize(size) == CSize(SCREEN_W_PX, SCREEN_H_PX);
+}
 
 RVA(0x0008ddd0, 0x7e)
 i32 CGruntzMgr::RestoreVideoMode(b32 save) {
-    if (IS_STANDARD_VIDEO_MODE) {
+    if (IsStandardVideoMode(m_modeSize)) {
         if (save) {
             m_savedModeSize = m_modeSize;
         }
@@ -1098,9 +1100,9 @@ BOOL CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) 
                 return true;
             }
             if (wParam == IDOK) {
-                i32 valueX = GetDlgItemInt(hDlg, 0x40e, NULL, false);
-                i32 valueY = GetDlgItemInt(hDlg, 0x40f, NULL, false);
-                Coord value(valueX, valueY);
+                Coord value;
+                value.m_x = GetDlgItemInt(hDlg, 0x40e, NULL, false);
+                value.m_y = GetDlgItemInt(hDlg, 0x40f, NULL, false);
                 g_warpX = value.m_x;
                 g_warpY = value.m_y;
                 if (IsDlgButtonChecked(hDlg, 0x410)) {
@@ -1256,11 +1258,11 @@ i32 CGruntzMgr::FinishLevel(b32 pauseGame, b32 pauseMusic) {
 RVA(0x0008eaf0, 0x10b)
 i32 CGruntzMgr::WarpCheat() {
     char key[64];
+    Coord warp;
     sprintf(key, "Level %i Warp X", g_gameReg->m_curState->m_levelIndex);
-    i32 warpX = m_settings->Get(key, -1);
+    warp.m_x = m_settings->Get(key, -1);
     sprintf(key, "Level %i Warp Y", g_gameReg->m_curState->m_levelIndex);
-    i32 warpY = m_settings->Get(key, -1);
-    Coord warp(warpX, warpY);
+    warp.m_y = m_settings->Get(key, -1);
     if (warp.m_x != -1 && warp.m_y != -1) {
         if (m_curState->Update() != GAMESTATE_PLAY) {
             i32 last = m_settings->Get("Last Warp Level", -1);
@@ -1720,7 +1722,7 @@ void CGruntzMgr::RecomputeViewScale() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0008f980, 0x21)
 i32 CGruntzMgr::IsStandardMode() {
-    if (IS_STANDARD_VIDEO_MODE) {
+    if (IsStandardVideoMode(m_modeSize)) {
         return 1;
     }
     return 0;
@@ -2236,7 +2238,7 @@ i32 CGruntzMgr::LoadMonologoSprite() {
             for (i32 j = 0; j < spr->m_tileGridSize.cx; j++) {
                 i32 val = parity ? savedIdx : -1;
                 parity ^= 1;
-                SET_WORKER_HOST_CELL(spr, j, i, val);
+                spr->SetCell(j, i, val);
             }
             parity ^= 1;
         }

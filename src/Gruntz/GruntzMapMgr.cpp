@@ -74,8 +74,7 @@ RVA(0x00082600, 0x73)
 TileCollisionKind CGameLevel::LookupTile(i32 x, i32 y) {
     CDDrawWorkerHost* mp = m_mainPlane;
     Coord position(x, y);
-    position.Max(Coord(0, 0));
-    position.Min(Coord(mp->m_tileGridSize.cx - 1, mp->m_tileGridSize.cy - 1));
+    position.Clamp(Coord(0, 0), Coord(mp->m_tileGridSize.cx - 1, mp->m_tileGridSize.cy - 1));
     i32 tile = mp->m_tileHandles[mp->m_tileRowOffsets[position.m_y] + position.m_x];
     if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
         return TILEKIND_PASSABLE;

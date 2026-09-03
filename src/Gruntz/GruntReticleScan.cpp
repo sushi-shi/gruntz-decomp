@@ -15,7 +15,6 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
-#include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntMovementMacros.h>
@@ -70,7 +69,8 @@ i32 CGrunt::StepDefenderBehavior() {
         }
     }
 
-    FIND_NEAREST_ENEMY_AT_TARGET(occ, occOnTile)
+    i32 occOnTile;
+    CGrunt* occ = FindNearestEnemyAtTarget(this, &occOnTile);
 
     b32 powered = m_poweredUp;
     if (powered != false) {
@@ -97,7 +97,7 @@ i32 CGrunt::StepDefenderBehavior() {
             if (m_neighborValid) {
                 return 1;
             }
-            RESET_GRUNT_POWERED_STATE(this)
+            ResetGruntPoweredState(this);
         } else {
             m_neighborValid = false;
         }
@@ -109,7 +109,7 @@ i32 CGrunt::StepDefenderBehavior() {
             return 1;
         }
         if (m_combatActive == false && m_stamina >= STAMINA_FULL && occOnTile) {
-            COMMIT_GRUNT_NEIGHBOR(occ);
+            CommitGruntNeighbor(this, occ);
             RecycleGruntCoords(this);
             return 1;
         }
@@ -244,13 +244,13 @@ i32 CGrunt::StepDefenderBehavior() {
                                 } else {
                                     SetEntrancePos(1, 1);
                                     if (CoordCount() != 0) {
-                                        RECYCLE_GRUNT_COORDS_EXPANDED(this)
+                                        RecycleGruntCoords(this);
                                     }
                                 }
                             } else {
                                 SetEntrancePos(1, 1);
                                 if (CoordCount() != 0) {
-                                    RECYCLE_GRUNT_COORDS_EXPANDED(this)
+                                    RecycleGruntCoords(this);
                                 }
                             }
                             return 1;

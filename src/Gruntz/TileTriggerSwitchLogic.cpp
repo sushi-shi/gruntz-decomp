@@ -104,7 +104,7 @@ i32 CTileTriggerSwitchLogic::SwitchDown() {
     CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
     i32 v = layer->m_tileHandles[tile.m_x + layer->m_tileRowOffsets[tile.m_y]] + 1;
     CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
-    SET_WORKER_HOST_CELL(layer2, tile.m_x, tile.m_y, v);
+    layer2->SetCell(tile.m_x, tile.m_y, v);
     reg->m_tileGrid->ComputeCellFlags(tile.m_x, tile.m_y, v);
 
     Coord position = tile;
@@ -141,7 +141,7 @@ i32 CTileTriggerSwitchLogic::SwitchUp() {
     CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
     i32 v = layer->m_tileHandles[tile.m_x + layer->m_tileRowOffsets[tile.m_y]] - 1;
     CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
-    SET_WORKER_HOST_CELL(layer2, tile.m_x, tile.m_y, v);
+    layer2->SetCell(tile.m_x, tile.m_y, v);
     reg->m_tileGrid->ComputeCellFlags(tile.m_x, tile.m_y, v);
 
     Coord position = tile;
@@ -193,8 +193,7 @@ i32 CTileTriggerLogic::FindIndexByKey(i32 key) {
 static __inline TileCollisionKind PbResolveCell(CGameLevel* level, i32 x, i32 y) {
     CDDrawWorkerHost* plane = level->m_mainPlane;
     Coord tile(x, y);
-    tile.Max(Coord(0, 0));
-    tile.Min(Coord(plane->m_tileGridSize.cx - 1, plane->m_tileGridSize.cy - 1));
+    tile.Clamp(Coord(0, 0), Coord(plane->m_tileGridSize.cx - 1, plane->m_tileGridSize.cy - 1));
     i32 cell = plane->m_tileHandles[plane->m_tileRowOffsets[tile.m_y] + tile.m_x];
     if (cell == UNINIT_FILL || cell == TILE_CLEAR) {
         return TILEKIND_PASSABLE;
@@ -208,8 +207,7 @@ static __inline TileCollisionKind PbResolveCell(CGameLevel* level, i32 x, i32 y)
 static __inline TileCollisionKind PbResolveCellHandle(CGameLevel* level, i32 x, i32 y) {
     CDDrawWorkerHost* plane = level->m_mainPlane;
     Coord tile(x, y);
-    tile.Max(Coord(0, 0));
-    tile.Min(Coord(plane->m_tileGridSize.cx - 1, plane->m_tileGridSize.cy - 1));
+    tile.Clamp(Coord(0, 0), Coord(plane->m_tileGridSize.cx - 1, plane->m_tileGridSize.cy - 1));
     i32 cell = plane->GetTileHandle(tile.m_x, tile.m_y);
     if (cell == UNINIT_FILL || cell == TILE_CLEAR) {
         return TILEKIND_PASSABLE;
@@ -349,7 +347,7 @@ i32 CTileTriggerLogic::Tick() {
             }
             CGruntzMgr* reg = g_gameReg;
             CDDrawWorkerHost* pl = reg->m_world->m_level->m_mainPlane;
-            SET_WORKER_HOST_CELL(pl, tile.m_x, tile.m_y, 0xca);
+            pl->SetCell(tile.m_x, tile.m_y, 0xca);
             reg->m_tileGrid->ComputeCellFlags(tile.m_x, tile.m_y, 0xca);
             break;
         }
@@ -360,7 +358,7 @@ i32 CTileTriggerLogic::Tick() {
             }
             CGruntzMgr* reg = g_gameReg;
             CDDrawWorkerHost* pl = reg->m_world->m_level->m_mainPlane;
-            SET_WORKER_HOST_CELL(pl, tile.m_x, tile.m_y, 0xc9);
+            pl->SetCell(tile.m_x, tile.m_y, 0xc9);
             reg->m_tileGrid->ComputeCellFlags(tile.m_x, tile.m_y, 0xc9);
             break;
         }
@@ -371,7 +369,7 @@ i32 CTileTriggerLogic::Tick() {
             }
             CGruntzMgr* reg = g_gameReg;
             CDDrawWorkerHost* pl = reg->m_world->m_level->m_mainPlane;
-            SET_WORKER_HOST_CELL(pl, tile.m_x, tile.m_y, 0xcc);
+            pl->SetCell(tile.m_x, tile.m_y, 0xcc);
             reg->m_tileGrid->ComputeCellFlags(tile.m_x, tile.m_y, 0xcc);
             break;
         }
@@ -382,7 +380,7 @@ i32 CTileTriggerLogic::Tick() {
             }
             CGruntzMgr* reg = g_gameReg;
             CDDrawWorkerHost* pl = reg->m_world->m_level->m_mainPlane;
-            SET_WORKER_HOST_CELL(pl, tile.m_x, tile.m_y, 0xcb);
+            pl->SetCell(tile.m_x, tile.m_y, 0xcb);
             reg->m_tileGrid->ComputeCellFlags(tile.m_x, tile.m_y, 0xcb);
             break;
         }
@@ -395,14 +393,14 @@ i32 CTileTriggerLogic::Tick() {
                     if (PbResolveCell(world->m_level, gx, gy) == TILEKIND_REDPYRAMID_UP) {
                         CGruntzMgr* reg = g_gameReg;
                         CDDrawWorkerHost* pl = reg->m_world->m_level->m_mainPlane;
-                        SET_WORKER_HOST_CELL(pl, gx, gy, 0xfd);
+                        pl->SetCell(gx, gy, 0xfd);
                         reg->m_tileGrid->ComputeCellFlags(gx, gy, 0xfd);
                         anim = "GAME_PYRAMIDUP";
                         hit = 1;
                     } else if (PbResolveCell(world->m_level, gx, gy) == TILEKIND_REDPYRAMID_DOWN) {
                         CGruntzMgr* reg = g_gameReg;
                         CDDrawWorkerHost* pl = reg->m_world->m_level->m_mainPlane;
-                        SET_WORKER_HOST_CELL(pl, gx, gy, 0xfe);
+                        pl->SetCell(gx, gy, 0xfe);
                         reg->m_tileGrid->ComputeCellFlags(gx, gy, 0xfe);
                         anim = "GAME_PYRAMIDDOWN";
                         hit = 1;
@@ -452,10 +450,10 @@ i32 CTileTriggerLogic::Tick() {
             CGruntzMgr* reg = g_gameReg;
             CDDrawWorkerHost* pl = reg->m_world->m_level->m_mainPlane;
             if (now == TILEKIND_GREENPYRAMID_UP) {
-                SET_WORKER_HOST_CELL(pl, tile.m_x, tile.m_y, 0xfb);
+                pl->SetCell(tile.m_x, tile.m_y, 0xfb);
                 reg->m_tileGrid->ComputeCellFlags(tile.m_x, tile.m_y, 0xfb);
             } else {
-                SET_WORKER_HOST_CELL(pl, tile.m_x, tile.m_y, 0xfc);
+                pl->SetCell(tile.m_x, tile.m_y, 0xfc);
                 reg->m_tileGrid->ComputeCellFlags(tile.m_x, tile.m_y, 0xfc);
             }
             break;
@@ -472,10 +470,10 @@ i32 CTileTriggerLogic::Tick() {
             CGruntzMgr* reg = g_gameReg;
             CDDrawWorkerHost* pl = reg->m_world->m_level->m_mainPlane;
             if (now == TILEKIND_PURPLEPYRAMID_UP) {
-                SET_WORKER_HOST_CELL(pl, tile.m_x, tile.m_y, 0xff);
+                pl->SetCell(tile.m_x, tile.m_y, 0xff);
                 reg->m_tileGrid->ComputeCellFlags(tile.m_x, tile.m_y, 0xff);
             } else {
-                SET_WORKER_HOST_CELL(pl, tile.m_x, tile.m_y, 0x100);
+                pl->SetCell(tile.m_x, tile.m_y, 0x100);
                 reg->m_tileGrid->ComputeCellFlags(tile.m_x, tile.m_y, 0x100);
             }
             break;
@@ -492,10 +490,10 @@ i32 CTileTriggerLogic::Tick() {
             CGruntzMgr* reg = g_gameReg;
             CDDrawWorkerHost* pl = reg->m_world->m_level->m_mainPlane;
             if (now == TILEKIND_ORANGEPYRAMID_UP) {
-                SET_WORKER_HOST_CELL(pl, tile.m_x, tile.m_y, 0xf7);
+                pl->SetCell(tile.m_x, tile.m_y, 0xf7);
                 reg->m_tileGrid->ComputeCellFlags(tile.m_x, tile.m_y, 0xf7);
             } else {
-                SET_WORKER_HOST_CELL(pl, tile.m_x, tile.m_y, 0xf8);
+                pl->SetCell(tile.m_x, tile.m_y, 0xf8);
                 reg->m_tileGrid->ComputeCellFlags(tile.m_x, tile.m_y, 0xf8);
             }
             break;
@@ -782,7 +780,7 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
             Coord tile(i + m_tile.m_x - 1, j + m_tile.m_y - 1);
             CGruntzMgr* reg = g_gameReg;
             CDDrawWorkerHost* plane = reg->m_world->m_level->m_mainPlane;
-            SET_WORKER_HOST_CELL(plane, tile.m_x, tile.m_y, value);
+            plane->SetCell(tile.m_x, tile.m_y, value);
             reg->m_tileGrid->ComputeCellFlags(tile.m_x, tile.m_y, value);
             Coord particlePosition = tile;
             TileCenter(&particlePosition);
@@ -858,7 +856,7 @@ i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
     if (tok != 0) {
         CGruntzMgr* reg = g_gameReg;
         CDDrawWorkerHost* L = reg->m_world->m_level->m_mainPlane;
-        SET_WORKER_HOST_CELL(L, tile.m_x, tile.m_y, tok);
+        L->SetCell(tile.m_x, tile.m_y, tok);
         (reg->m_tileGrid)->ComputeCellFlags(tile.m_x, tile.m_y, tok);
     } else {
         switch (verb) {
@@ -867,21 +865,21 @@ i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
                 CDDrawWorkerHost* L = reg->m_world->m_level->m_mainPlane;
                 i32 v = L->m_tileHandles[tile.m_x + L->m_tileRowOffsets[tile.m_y]] + 1;
                 CDDrawWorkerHost* L2 = g_gameReg->m_world->m_level->m_mainPlane;
-                SET_WORKER_HOST_CELL(L2, tile.m_x, tile.m_y, v);
+                L2->SetCell(tile.m_x, tile.m_y, v);
                 (reg->m_tileGrid)->ComputeCellFlags(tile.m_x, tile.m_y, v);
                 break;
             }
             case TILEKIND_GAUNTLET_ROCK_B: {
                 CGruntzMgr* reg = g_gameReg;
                 CDDrawWorkerHost* L = reg->m_world->m_level->m_mainPlane;
-                SET_WORKER_HOST_CELL(L, tile.m_x, tile.m_y, 0x5b);
+                L->SetCell(tile.m_x, tile.m_y, 0x5b);
                 (reg->m_tileGrid)->ComputeCellFlags(tile.m_x, tile.m_y, 0x5b);
                 break;
             }
             case TILEKIND_GAUNTLET_ROCK_A: {
                 CGruntzMgr* reg = g_gameReg;
                 CDDrawWorkerHost* L = reg->m_world->m_level->m_mainPlane;
-                SET_WORKER_HOST_CELL(L, tile.m_x, tile.m_y, 0x5a);
+                L->SetCell(tile.m_x, tile.m_y, 0x5a);
                 (reg->m_tileGrid)->ComputeCellFlags(tile.m_x, tile.m_y, 0x5a);
                 break;
             }
@@ -963,7 +961,7 @@ i32 CTileSecretTriggerLogic::Tick() {
     CDDrawWorkerHost* layer = mgr->m_world->m_level->m_mainPlane;
     i32 newTok = layer->m_tileHandles[tile.m_x + layer->m_tileRowOffsets[tile.m_y]];
     CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
-    SET_WORKER_HOST_CELL(layer2, tile.m_x, tile.m_y, oldTok);
+    layer2->SetCell(tile.m_x, tile.m_y, oldTok);
     mgr->m_tileGrid->ComputeCellFlags(tile.m_x, tile.m_y, oldTok);
     m_tileToken = newTok;
     return 1;
@@ -1074,7 +1072,7 @@ i32 CCheckpointTriggerSwitchLogic::SwitchDown() {
     CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
     i32 v = layer->m_tileHandles[tile.m_x + layer->m_tileRowOffsets[tile.m_y]] + 1;
     CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
-    SET_WORKER_HOST_CELL(layer2, tile.m_x, tile.m_y, v);
+    layer2->SetCell(tile.m_x, tile.m_y, v);
     reg->m_tileGrid->ComputeCellFlags(tile.m_x, tile.m_y, v);
     m_linkGate = true;
     return 1;
@@ -1088,7 +1086,7 @@ i32 CCheckpointTriggerSwitchLogic::SwitchUp() {
     CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
     i32 v = layer->m_tileHandles[tile.m_x + layer->m_tileRowOffsets[tile.m_y]] - 1;
     CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
-    SET_WORKER_HOST_CELL(layer2, tile.m_x, tile.m_y, v);
+    layer2->SetCell(tile.m_x, tile.m_y, v);
     reg->m_tileGrid->ComputeCellFlags(tile.m_x, tile.m_y, v);
     m_linkGate = false;
     return 1;
@@ -1190,7 +1188,7 @@ i32 CTileActionEvent::SetActionCode(BrickTileId code) {
         return 0;
     }
     CDDrawWorkerHost* layer2 = reg->m_world->m_level->m_mainPlane;
-    SET_WORKER_HOST_CELL(layer2, tile.m_x, tile.m_y, IDX(code));
+    layer2->SetCell(tile.m_x, tile.m_y, IDX(code));
     g_gameReg->m_tileGrid->ComputeCellFlags(tile.m_x, tile.m_y, IDX(code));
     return 1;
 }
@@ -1329,15 +1327,11 @@ i32 CTileActionEvent::BreakTopBrick(CGrunt* grunt) {
             }
             i32 slot = grunt->m_playerIndex;
             if (slot == IDX(PLAYER_SLOT_ALL)) {
-                i32* flags = m_playerFlags;
-                flags[0] = 1;
-                flags[1] = 1;
-                flags[2] = 1;
-                flags[3] = 1;
+                m_playerFlags.EnableAll();
                 SetActionCode(m_actionCode);
                 return 0;
             }
-            m_playerFlags[slot] = 1;
+            m_playerFlags.Enable(static_cast<PlayerSlot>(slot));
             SetActionCode(m_actionCode);
             return 0;
         } else if (brickEffect == BRICKTILE_BLACK_1) {
@@ -1395,17 +1389,8 @@ i32 CTileActionEvent::MorphByTool(PickupType toolId, PlayerSlot playerSlot) {
                 m_actionCode = BRICKTILE_BROWN_2;
 
             commit: {
-
-                i32* flags = m_playerFlags;
-                memset(flags, 0, sizeof(m_playerFlags));
-                if (playerSlot == PLAYER_SLOT_ALL) {
-                    flags[0] = 1;
-                    flags[1] = 1;
-                    flags[2] = 1;
-                    flags[3] = 1;
-                } else {
-                    m_playerFlags[IDX(playerSlot)] = 1;
-                }
+                m_playerFlags.Clear();
+                m_playerFlags.Enable(playerSlot);
                 SetActionCode(m_actionCode);
                 return 1;
             }

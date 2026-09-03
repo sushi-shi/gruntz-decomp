@@ -75,7 +75,7 @@ i32 CGameLevel::MoveStepXHi(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
     i32 yLo = t->m_extent.top + y;
     while (yLo <= yHi) {
         TileCollisionKind result;
-        PROBE_TILE(this, xEnd, yLo, result);
+        result = ProbeTile(xEnd, yLo);
         if (result == TILEKIND_GROUND
             && (t->m_flags & IDX(WWD_GAME_OBJECT_FLAG_GROUND_IS_PASSABLE))) {
             result = TILEKIND_PASSABLE;
@@ -123,7 +123,7 @@ i32 CGameLevel::MoveStepXLo(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
     i32 yLo = t->m_extent.top + y;
     while (yLo <= yHi) {
         TileCollisionKind result;
-        PROBE_TILE(this, xEnd, yLo, result);
+        result = ProbeTile(xEnd, yLo);
         if (result == TILEKIND_GROUND
             && (t->m_flags & IDX(WWD_GAME_OBJECT_FLAG_GROUND_IS_PASSABLE))) {
             result = TILEKIND_PASSABLE;
@@ -171,7 +171,7 @@ i32 CGameLevel::MoveStepYHi(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
     i32 state = 0;
     while (col <= colHi) {
         TileCollisionKind result;
-        PROBE_TILE(this, col, fixedY, result);
+        result = ProbeTile(col, fixedY);
         if (result == TILEKIND_GROUND
             && (t->m_flags & IDX(WWD_GAME_OBJECT_FLAG_GROUND_IS_PASSABLE))) {
             result = TILEKIND_PASSABLE;
@@ -219,7 +219,7 @@ i32 CGameLevel::MoveStepYLo(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
     i32 state = 0;
     while (col <= colHi) {
         TileCollisionKind result;
-        PROBE_TILE(this, col, fixedY, result);
+        result = ProbeTile(col, fixedY);
         if (result == TILEKIND_GROUND
             && (t->m_flags & IDX(WWD_GAME_OBJECT_FLAG_GROUND_IS_PASSABLE))) {
             result = TILEKIND_PASSABLE;
@@ -266,7 +266,7 @@ i32 CGameLevel::ResolveRightX(CGameObject* t, i32 x, i32 y) {
     i32 limit = sx + t->m_extent.right;
     for (x--; x > limit; x--) {
         TileCollisionKind result;
-        PROBE_TILE(this, x, y, result);
+        result = ProbeTile(x, y);
         if (result == TILEKIND_PASSABLE) {
             return x - t->m_extent.right;
         }
@@ -282,7 +282,7 @@ i32 CGameLevel::ResolveLeftX(CGameObject* t, i32 x, i32 y) {
     limit += t->m_extent.left;
     for (x++; x < limit; x++) {
         TileCollisionKind result;
-        PROBE_TILE(this, x, y, result);
+        result = ProbeTile(x, y);
         if (result == TILEKIND_PASSABLE) {
             return x - t->m_extent.left;
         }
@@ -298,7 +298,7 @@ i32 CGameLevel::ResolveBottomY(CGameObject* t, i32 x, i32 y) {
     i32 limit = sy + t->m_extent.bottom;
     for (y--; y > limit; y--) {
         TileCollisionKind result;
-        PROBE_TILE(this, x, y, result);
+        result = ProbeTile(x, y);
         if (result == TILEKIND_PASSABLE) {
             return y - t->m_extent.bottom;
         }
@@ -315,7 +315,7 @@ i32 CGameLevel::ResolveTopY(CGameObject* t, i32 x, i32 y) {
     i32 limit = sy + e;
     for (y++; y < limit; y++) {
         TileCollisionKind result;
-        PROBE_TILE(this, x, y, result);
+        result = ProbeTile(x, y);
         if (result == TILEKIND_PASSABLE) {
             return y - t->m_extent.top;
         }
@@ -433,5 +433,3 @@ i32 CWwdSpatialMgr::Init(
     }
     return 0;
 }
-
-#undef PROBE_TILE

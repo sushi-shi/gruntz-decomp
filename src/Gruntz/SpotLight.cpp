@@ -67,7 +67,7 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     m_object->SetScreenPos(position);
     m_position.Init(position);
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR)
+    o->SetSortKey(SORTKEY_ACTOR);
     m_offset = m_center - m_position;
 
     double period;
@@ -91,7 +91,7 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     d->m_drawFillCmd = SHADE_DST_BY_SRC_16;
     d->m_drawFillArg = looked;
     m_focus = NULL;
-    CLEAR_OBJECT_AREA
+    ClearObjectArea();
     m_targetPlayerIndex = -1;
     m_targetUnitIndex = -1;
     m_storyMode = false;

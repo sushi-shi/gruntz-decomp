@@ -79,10 +79,10 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
         CImage* frame;
         if (worker == NULL) {
             frame = NULL;
-        } else if (DDRAW_WORKER_MISSES_FRAME(worker, 1)) {
+        } else if (!worker->ContainsFrame(1)) {
             frame = NULL;
         } else {
-            frame = DDRAW_WORKER_FRAME_AT_UNCHECKED(worker, 1);
+            frame = worker->FrameAtUnchecked(1);
         }
         m_topFrame = frame;
         drawX = parent->m_barRect.left - CRect(rc).Width() / 2;
@@ -98,10 +98,10 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
         CImage* frame;
         if (worker == NULL) {
             frame = NULL;
-        } else if (DDRAW_WORKER_MISSES_FRAME(worker, 1)) {
+        } else if (!worker->ContainsFrame(1)) {
             frame = NULL;
         } else {
-            frame = DDRAW_WORKER_FRAME_AT_UNCHECKED(worker, 1);
+            frame = worker->FrameAtUnchecked(1);
         }
         m_topFrame = frame;
         drawX = CRect(rc).Width() / 2 + parent->m_barRect.right;
@@ -187,10 +187,10 @@ i32 CSBI_SideTab::BuildHandle() {
         "GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ"
     );
     CImage* glyph;
-    if (gm == NULL || DDRAW_WORKER_FRAME_OUT_OF_RANGE(gm, val)) {
+    if (gm == NULL || !gm->ContainsFrame(val)) {
         glyph = NULL;
     } else {
-        glyph = DDRAW_WORKER_FRAME_AT_UNCHECKED(gm, val);
+        glyph = gm->FrameAtUnchecked(val);
     }
     m_sampledValue = val;
     m_bottomFrame = glyph;
@@ -271,8 +271,8 @@ i32 CSBI_SideTab::SerializeFields(
                 reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
                 CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
                 CImage* r;
-                if (rec != NULL && DDRAW_WORKER_FRAME_IN_RANGE(rec, i)) {
-                    r = DDRAW_WORKER_FRAME_AT_UNCHECKED(rec, i);
+                if (rec != NULL && rec->ContainsFrame(i)) {
+                    r = rec->FrameAtUnchecked(i);
                 } else {
                     r = NULL;
                 }
@@ -290,8 +290,8 @@ i32 CSBI_SideTab::SerializeFields(
                 reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
                 CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
                 CImage* r;
-                if (rec != NULL && DDRAW_WORKER_FRAME_IN_RANGE(rec, i)) {
-                    r = DDRAW_WORKER_FRAME_AT_UNCHECKED(rec, i);
+                if (rec != NULL && rec->ContainsFrame(i)) {
+                    r = rec->FrameAtUnchecked(i);
                 } else {
                     r = NULL;
                 }

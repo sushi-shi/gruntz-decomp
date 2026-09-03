@@ -152,7 +152,7 @@ i32 CGrunt::RunEntranceMove() {
     previousActWasD = (strcmp(previousActNameText, DATA_COMPGEN(0x0020cca4, "D")) == 0);
     if (previousActWasD) {
         if (m_poweredUp != false && m_neighborValid == false) {
-            RESET_GRUNT_POWERED_STATE(this)
+            ResetGruntPoweredState(this);
         }
         m_tileMoveCommitted = false;
         SET_ANIMATION_ACT("D");
@@ -230,7 +230,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
     m_entranceCommitted = false;
     m_entranceActive = true;
     CWwdSpriteObject* h = m_object;
-    SET_SORT_KEY_IF_CHANGED(h, SORTKEY_ACTOR)
+    h->SetSortKey(SORTKEY_ACTOR);
 
     ClearAllSprites();
 
@@ -373,7 +373,7 @@ i32 CGrunt::LoadEntranceConfig() {
 
         h = m_object;
         m_entranceCommitted = true;
-        SET_SORT_KEY_IF_CHANGED(h, h->m_screenPosition.m_y + 0x186a0)
+        h->SetSortKey(h->m_screenPosition.m_y + 0x186a0);
 
         CWwdSpriteObject* p = m_wwdObject;
         CAniElement* found = NULL;
@@ -457,9 +457,9 @@ i32 CGrunt::StartBombGruntRun() {
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_selectedSprite)
     m_gruntKind = GRUNT_NORMAL;
     if (m_poweredUp != false && m_neighborValid == false) {
-        RESET_GRUNT_POWERED_STATE(this)
+        ResetGruntPoweredState(this);
     }
-    BEGIN_GRUNT_ENTRANCE_AND_RELEASE_CELL
+    BeginGruntEntranceAndReleaseCell(this);
     SnapToLastTile(1);
     SetEntrancePos(1, 1);
     if (LoadGruntTypeTable(PICKUP_BOMB, 1, 0, 1) == 0) {
@@ -467,9 +467,9 @@ i32 CGrunt::StartBombGruntRun() {
         m_triggerMgr->LoadExplosionSprites(h->m_screenPosition.m_x, h->m_screenPosition.m_y, -1, 0);
         return 0;
     }
-    i32 moveX = rand() % 3 - 1;
-    i32 moveY = rand() % 3 - 1;
-    Coord move(moveX, moveY);
+    Coord move;
+    move.m_x = rand() % 3 - 1;
+    move.m_y = rand() % 3 - 1;
     if (move == Coord(0, 0)) {
         move.Set(1, 0);
     }
@@ -655,7 +655,7 @@ i32 CGrunt::UpdateEntranceAnim() {
 
     CWwdSpriteObject* h = m_object;
     i32 z = h->m_screenPosition.m_y + 0x186a0;
-    SET_SORT_KEY_IF_CHANGED(h, z)
+    h->SetSortKey(z);
     return 0;
 }
 
@@ -712,7 +712,7 @@ i32 CGrunt::StepArrivalCommit() {
         eq = (strcmp(*g_typeColl.GetNameRecord(m_previousAnimationActId), "D") == 0);
         if (eq) {
             if (m_poweredUp != false && m_neighborValid == false) {
-                RESET_GRUNT_POWERED_STATE(this)
+                ResetGruntPoweredState(this);
             }
             m_tileMoveCommitted = false;
             SET_ANIMATION_ACT("D");
@@ -762,7 +762,7 @@ idleReseed:
     {
         i32 z = m_object->m_screenPosition.m_y + 0x186a0;
         CWwdSpriteObject* o = m_object;
-        SET_SORT_KEY_IF_CHANGED(o, z)
+        o->SetSortKey(z);
     }
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
     m_toyTime = 0;
@@ -799,14 +799,14 @@ finalize:
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_wingzTimeSprite)
     if (m_poweredUp != false && m_neighborValid == false) {
-        RESET_GRUNT_POWERED_STATE(this)
+        ResetGruntPoweredState(this);
     }
-    BEGIN_GRUNT_ENTRANCE_AND_RELEASE_CELL
+    BeginGruntEntranceAndReleaseCell(this);
     SET_ANIMATION_ACT("Q");
     {
         i32 z = m_object->m_screenPosition.m_y + 0x186a0;
         CWwdSpriteObject* o = m_object;
-        SET_SORT_KEY_IF_CHANGED(o, z)
+        o->SetSortKey(z);
     }
     SwitchAnimationByName("GRUNTZ_DEATHZ_FREEZE", 0);
     {
@@ -872,6 +872,11 @@ i32 CGrunt::FinishEntranceMove() {
     return 0;
 }
 
+static inline void SetMovingDeathDirection(CGrunt* grunt, const GruntDirectionCell& direction) {
+    grunt->m_entranceCell = direction;
+    grunt->m_lastTilePx += GruntDirectionPixelOffset(direction) / 2;
+}
+
 RVA(0x0006a060, 0x520)
 i32 CGrunt::LoadGruntMovingDeathConfig() {
     m_moveSpeed = 16.0 / static_cast<double>(g_buteMgr.GetDword("Grunt", s_MovingDeathTime, 0x3e8));
@@ -893,47 +898,43 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
 
     LevelArea area = state->m_levelType;
 
-#define MV_DIR(direction)                                                                          \
-    m_entranceCell = g_gruntDir##direction;                                                        \
-    m_lastTilePx += GruntDirectionPixelOffset(m_entranceCell) / 2
-
     if (area < AREA_TILESET_B_FIRST) {
         switch (static_cast<MovingDeathTileSetAId>(tileId)) {
             case MOVING_DEATH_A_S_1:
             case MOVING_DEATH_A_S_2:
-                MV_DIR(South);
+                SetMovingDeathDirection(this, g_gruntDirSouth);
                 break;
             case MOVING_DEATH_A_SW_1:
             case MOVING_DEATH_A_SW_2:
             case MOVING_DEATH_A_SW_3:
-                MV_DIR(SouthWest);
+                SetMovingDeathDirection(this, g_gruntDirSouthWest);
                 break;
             case MOVING_DEATH_A_W_1:
             case MOVING_DEATH_A_W_2:
-                MV_DIR(West);
+                SetMovingDeathDirection(this, g_gruntDirWest);
                 break;
             case MOVING_DEATH_A_NW_1:
             case MOVING_DEATH_A_NW_2:
             case MOVING_DEATH_A_NW_3:
-                MV_DIR(NorthWest);
+                SetMovingDeathDirection(this, g_gruntDirNorthWest);
                 break;
             case MOVING_DEATH_A_N_1:
             case MOVING_DEATH_A_N_2:
-                MV_DIR(North);
+                SetMovingDeathDirection(this, g_gruntDirNorth);
                 break;
             case MOVING_DEATH_A_NE_1:
             case MOVING_DEATH_A_NE_2:
             case MOVING_DEATH_A_NE_3:
-                MV_DIR(NorthEast);
+                SetMovingDeathDirection(this, g_gruntDirNorthEast);
                 break;
             case MOVING_DEATH_A_E_1:
             case MOVING_DEATH_A_E_2:
-                MV_DIR(East);
+                SetMovingDeathDirection(this, g_gruntDirEast);
                 break;
             case MOVING_DEATH_A_SE_1:
             case MOVING_DEATH_A_SE_2:
             case MOVING_DEATH_A_SE_3:
-                MV_DIR(SouthEast);
+                SetMovingDeathDirection(this, g_gruntDirSouthEast);
                 break;
             default:
                 return 0;
@@ -944,20 +945,20 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
             case MOVING_DEATH_B_N_2:
             case MOVING_DEATH_B_N_3:
             case MOVING_DEATH_B_N_4:
-                MV_DIR(North);
+                SetMovingDeathDirection(this, g_gruntDirNorth);
                 break;
             case MOVING_DEATH_B_NE_1:
             case MOVING_DEATH_B_NE_2:
             case MOVING_DEATH_B_NE_3:
             case MOVING_DEATH_B_NE_4:
             case MOVING_DEATH_B_NE_5:
-                MV_DIR(NorthEast);
+                SetMovingDeathDirection(this, g_gruntDirNorthEast);
                 break;
             case MOVING_DEATH_B_E_1:
             case MOVING_DEATH_B_E_2:
             case MOVING_DEATH_B_E_3:
             case MOVING_DEATH_B_E_4:
-                MV_DIR(East);
+                SetMovingDeathDirection(this, g_gruntDirEast);
                 break;
             case MOVING_DEATH_B_SE_1:
             case MOVING_DEATH_B_SE_2:
@@ -965,11 +966,11 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
             case MOVING_DEATH_B_SE_4:
             case MOVING_DEATH_B_SE_5:
             case MOVING_DEATH_B_SE_6:
-                MV_DIR(SouthEast);
+                SetMovingDeathDirection(this, g_gruntDirSouthEast);
                 break;
             case MOVING_DEATH_B_S_1:
             case MOVING_DEATH_B_S_2:
-                MV_DIR(South);
+                SetMovingDeathDirection(this, g_gruntDirSouth);
                 break;
             case MOVING_DEATH_B_SW_1:
             case MOVING_DEATH_B_SW_2:
@@ -977,27 +978,25 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
             case MOVING_DEATH_B_SW_4:
             case MOVING_DEATH_B_SW_5:
             case MOVING_DEATH_B_SW_6:
-                MV_DIR(SouthWest);
+                SetMovingDeathDirection(this, g_gruntDirSouthWest);
                 break;
             case MOVING_DEATH_B_W_1:
             case MOVING_DEATH_B_W_2:
             case MOVING_DEATH_B_W_3:
             case MOVING_DEATH_B_W_4:
-                MV_DIR(West);
+                SetMovingDeathDirection(this, g_gruntDirWest);
                 break;
             case MOVING_DEATH_B_NW_1:
             case MOVING_DEATH_B_NW_2:
             case MOVING_DEATH_B_NW_3:
             case MOVING_DEATH_B_NW_4:
             case MOVING_DEATH_B_NW_5:
-                MV_DIR(NorthWest);
+                SetMovingDeathDirection(this, g_gruntDirNorthWest);
                 break;
             default:
                 return 0;
         }
     }
-#undef MV_DIR
-
     SET_ANIMATION_ACT("S");
     return 1;
 }
@@ -1046,7 +1045,7 @@ i32 CGrunt::FinishActiveAction() {
         eq = (strcmp(*g_typeColl.GetNameRecord(m_previousAnimationActId), "D") == 0);
         if (eq) {
             if (m_poweredUp != false && m_neighborValid == false) {
-                RESET_GRUNT_POWERED_STATE(this)
+                ResetGruntPoweredState(this);
             }
             m_tileMoveCommitted = false;
             SET_ANIMATION_ACT("D");
@@ -1123,7 +1122,7 @@ i32 CGrunt::FinishActiveAction() {
 
         m_entranceCommitted = true;
         i32 sortKey = m_object->m_screenPosition.m_y + 0x186a0;
-        SET_SORT_KEY_IF_CHANGED(m_object, sortKey)
+        m_object->SetSortKey(sortKey);
 
         CAniElement* found = NULL;
         CAniElement* cached = m_wwdObject->m_animationCursor.m_animation;
@@ -1163,7 +1162,7 @@ idleReseed:
     {
         i32 sortKey = m_object->m_screenPosition.m_y + 0x186a0;
         CWwdSpriteObject* o = m_object;
-        SET_SORT_KEY_IF_CHANGED(o, sortKey)
+        o->SetSortKey(sortKey);
     }
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
     m_toyTime = 0;

@@ -51,9 +51,9 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
         }
         if (g_scrollTimer == 0) {
             g_scrollTimer = RandRange(pm, g_panMinX, g_panMaxX);
-            i32 jitterX = RandRange(pm, -g_jitterX, g_jitterX);
-            i32 jitterY = RandRange(pm, -g_jitterY, g_jitterY);
-            Coord jitter(jitterX, jitterY);
+            Coord jitter;
+            jitter.m_x = RandRange(pm, -g_jitterX, g_jitterX);
+            jitter.m_y = RandRange(pm, -g_jitterY, g_jitterY);
             scrollPosition += jitter;
         }
     }
@@ -68,8 +68,8 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
     }
 
     CDDrawWorkerHost* v2 = pm->m_world->m_level->m_mainPlane;
-    scrollPosition.Max(Coord(halfViewport.cx - 1, halfViewport.cy - 1));
-    scrollPosition.Min(
+    scrollPosition.Clamp(
+        Coord(halfViewport.cx - 1, halfViewport.cy - 1),
         Coord(v2->m_planePixelSize.cx - halfViewport.cx, v2->m_planePixelSize.cy - halfViewport.cy)
     );
 
@@ -79,7 +79,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
     g_lastScrollY = scrollPosition.m_y;
 
     CDDrawWorkerHost* v3 = pm->m_world->m_level->m_mainPlane;
-    SET_SCROLL_POSITION_PRODUCT_CAST(v3, scrollPosition.m_x, scrollPosition.m_y);
+    v3->SetScrollPosition(scrollPosition.m_x, scrollPosition.m_y);
 
     CDDrawWorkerHost* gm = g_backView;
     if (gm != NULL) {
@@ -90,12 +90,12 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
             backScroll = parallax.ToCoord();
         }
         if (static_cast<i64>(g_frameTime) - g_scrollPace.m_lastTime >= g_scrollPace.m_period) {
-            i32 paceX = g_buteMgr.GetDword("BackPlane", "ScrollDistX");
-            i32 paceY = g_buteMgr.GetDword("BackPlane", "ScrollDistY");
-            Coord pace(paceX, paceY);
+            Coord pace;
+            pace.m_x = g_buteMgr.GetDword("BackPlane", "ScrollDistX");
+            pace.m_y = g_buteMgr.GetDword("BackPlane", "ScrollDistY");
             backScroll += pace;
             CDDrawWorkerHost* g2 = g_backView;
-            SET_SCROLL_POSITION_PRODUCT_CAST(g2, backScroll.m_x, backScroll.m_y);
+            g2->SetScrollPosition(backScroll.m_x, backScroll.m_y);
             g_scrollPace.m_period = g_buteMgr.GetDword("BackPlane", "ScrollTime");
             g_scrollPace.m_lastTime = g_frameTime;
         }

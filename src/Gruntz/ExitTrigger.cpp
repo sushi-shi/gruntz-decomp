@@ -36,8 +36,8 @@ CExitTrigger::CExitTrigger(CGameObject* obj)
     SnapTileCenter(&position);
     m_object->SetScreenPos(position);
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_EXIT_TRIGGER)
-    SET_OBJECT_AREA(1)
+    o->SetSortKey(SORTKEY_EXIT_TRIGGER);
+    SetObjectArea(1);
     SwitchAnimationByName("GAME_CYCLE100", 0);
     m_warlordLogic = NULL;
     GruntzPlayer* slot = &g_gameReg->m_players[m_object->m_smarts];

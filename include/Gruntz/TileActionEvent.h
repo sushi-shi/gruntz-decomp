@@ -8,6 +8,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/PlayerSlot.h>
+#include <Gruntz/PlayerSlotFlags.h>
 #include <Gruntz/SerialArchive.h>
 
 GZ_ENUM_FORWARD(BrickTileId);
@@ -41,7 +42,7 @@ public:
     b32 m_live;
 
     CTileTriggerContainer* m_owner;
-    i32 m_playerFlags[4];
+    PlayerSlotFlags m_playerFlags;
 };
 
 #endif // GRUNTZ_TILEACTIONEVENT_H

@@ -16,7 +16,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/MapCellFlags.h>
 #include <Gruntz/GruntAiState.h>
-#include <Gruntz/GruntCoordRecycleMacros.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPuddle.h>
@@ -49,7 +49,8 @@ i32 CGrunt::StepGauntletGruntBehavior() {
         return 1;
     }
     this->m_defenderPx = this->m_lastTilePx;
-    FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget)
+    i32 atTarget;
+    CGrunt* g = FindNearestEnemyAtTarget(this, &atTarget);
 
     b32 poweredUp = this->m_poweredUp;
     if (poweredUp != false) {
@@ -105,7 +106,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                     Coord position = g->m_object->ScreenPos();
                     if (position == g->m_lastTilePx
                         && RectContains(position.m_x, position.m_y) != 0) {
-                        COMMIT_GRUNT_NEIGHBOR(g);
+                        CommitGruntNeighbor(this, g);
                         break;
                     }
                 }
@@ -122,7 +123,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                                 BATTLEZ_ROUTE_OTHER_TOOLS
                             )
                             != 0) {
-                            SET_GRUNT_ARRIVAL_TARGET(g);
+                            SetGruntArrivalTarget(this, g);
                             this->m_defenderState = AISTATE_CHASE;
                             CGruntzMgr* reg = g_gameReg;
                             i32 r = CGameLevel::PointInBounds(
@@ -184,8 +185,8 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                                slot->m_object->m_screenPosition.m_x,
                                slot->m_object->m_screenPosition.m_y
                            ) != 0
-                        && GRUNT_AT_SAVED_SCREEN_POS(slot)) {
-                        COMMIT_GRUNT_NEIGHBOR(slot);
+                        && IsGruntAtSavedScreenPos(slot)) {
+                        CommitGruntNeighbor(this, slot);
                         this->m_defenderState = AISTATE_ATTACK;
                     }
                 }
@@ -210,8 +211,8 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                             slot->m_object->m_screenPosition.m_x,
                             slot->m_object->m_screenPosition.m_y
                         ) != 0
-                        && GRUNT_AT_SAVED_SCREEN_POS(slot)) {
-                        COMMIT_GRUNT_NEIGHBOR(slot);
+                        && IsGruntAtSavedScreenPos(slot)) {
+                        CommitGruntNeighbor(this, slot);
                         break;
                     }
                 }
@@ -243,7 +244,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
         if ((gc.m_flags & IDX(CELL_FLAG_DESTRUCTIBLE_ROCK)) != 0) {
             SetEntrancePos(1, 1);
             if (this->CoordCount() != 0) {
-                RECYCLE_GRUNT_COORDS_EXPANDED(this)
+                RecycleGruntCoords(this);
             }
             Coord position = *cell;
             TileCenter(&position);

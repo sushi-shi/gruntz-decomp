@@ -54,7 +54,7 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj)
     }
     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
 
-    SET_DRAW_FILL(m_object, SHADE_PAL_16, sel);
+    m_object->SetDrawFill(SHADE_PAL_16, sel);
     Coord position = m_object->ScreenPos();
     SnapTileCenter(&position);
     m_object->SetScreenPos(position);
@@ -92,7 +92,7 @@ i32 CGruntCreationPoint::SerializeDispatch(
             sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
         }
         CWwdSpriteObject* obj = m_object;
-        SET_DRAW_FILL(obj, SHADE_PAL_16, sel);
+        obj->SetDrawFill(SHADE_PAL_16, sel);
     }
     return 1;
 }

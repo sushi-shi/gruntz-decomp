@@ -109,7 +109,7 @@ i32 CDDrawWorkerHost::Read(
         for (i32 f = 0; f < set->m_items.GetSize(); f++) {
             if (set->GetAt(f) != NULL) {
                 CImage* first = set->GetAt(f);
-                SET_TILE_SIZE_FROM_IMAGE(first);
+                SetTileSizeFromImage(first);
                 break;
             }
         }
@@ -121,7 +121,7 @@ i32 CDDrawWorkerHost::Read(
     m_fillFx.dwFillColor = pd->fillColor;
     m_flags = IDX(pd->flags);
 
-    APPLY_WORKER_HOST_BOUNDS(bounds);
+    SetViewportRect(bounds);
 
     m_scrollScale = FloatVector2(m_movementPercent) * 0.01f;
 
@@ -179,14 +179,14 @@ i32 CDDrawWorkerHost::InitGeometry(
     if (planeName != NULL) {
         strcpy(m_planeName, planeName);
     }
-    APPLY_WORKER_HOST_BOUNDS(viewportRect);
+    SetViewportRect(viewportRect);
     m_scrollScale = FloatVector2(m_movementPercent) * 0.01f;
     m_tileHandles = new i32[m_tileGridSize.cx * m_tileGridSize.cy];
     m_tileRowOffsets = new i32[m_tileGridSize.cy];
     for (i32 i = 0; i < m_tileGridSize.cy; i++) {
         m_tileRowOffsets[i] = i * m_tileGridSize.cx;
     }
-    SET_SCROLL_POSITION_ZERO(this);
+    SetScrollPosition(0, 0);
     return 1;
 }
 
@@ -303,11 +303,6 @@ void CDDrawWorkerHost::UpdatePlaneViewRect() {
     }
 }
 
-RVA(0x00161e80, 0x79)
-void CDDrawWorkerHost::SetViewportRect(LevelCoordRect* coords) {
-    APPLY_WORKER_HOST_BOUNDS(coords);
-}
-
 RVA(0x00161f00, 0x75)
 void CDDrawWorkerHost::SetTileSize(i32 tileWidthPx, i32 tileHeightPx) {
     m_tilePixelSize = CSize(tileWidthPx, tileHeightPx);
@@ -318,42 +313,31 @@ void CDDrawWorkerHost::SetTileSize(i32 tileWidthPx, i32 tileHeightPx) {
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
-RVA(0x00161f80, 0x14)
-void CDDrawWorkerHost::SetTileSizeFromImage(CImage* image) {
-    SET_TILE_SIZE_FROM_IMAGE(image);
-}
-
-// @dead-code
-// Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00161fa0, 0x6c)
 void CDDrawWorkerHost::SetTileSizeFromImageSet(CDDrawWorker* set) {
     for (i32 i = 0; i < set->m_items.GetSize(); i++) {
         if (set->GetAt(i) != NULL) {
             CImage* f = set->GetAt(i);
-            SET_TILE_SIZE_FROM_IMAGE(f);
+            SetTileSizeFromImage(f);
             break;
         }
     }
 }
 
-#define DRAW_CELL(handle, xp, yp, srcp)                                                            \
-    do {                                                                                           \
-        u32 h_ = static_cast<u32>(handle);                                                         \
-        if (h_ == UNINIT_FILL) {                                                                   \
-            dr = MakeRect(                                                                         \
-                (xp),                                                                              \
-                (yp),                                                                              \
-                (xp) + ((srcp)->right - (srcp)->left),                                             \
-                (yp) + ((srcp)->bottom - (srcp)->top)                                              \
-            );                                                                                     \
-            surf->BltEx(&dr, 0, 0, DDBLT_WAIT | DDBLT_COLORFILL, &m_fillFx);                       \
-        } else if (h_ != static_cast<u32>(TILE_CLEAR)) {                                           \
-            CDDrawWorker* fr_ = ImageSetAt(h_ >> 16);                                              \
-            i32 idx_ = static_cast<i32>(h_ & WWD_TILE_IMAGE_SET_INDEX_MASK);                       \
-            CImage* e_ = fr_->GetAt(idx_);                                                         \
-            surf->BltFast((xp), (yp), e_->m_surface, (srcp), e_->m_bltFastFlags);                  \
-        }                                                                                          \
-    } while (0)
+static inline void
+DrawCell(CDDrawWorkerHost* host, CDDSurface* surface, i32 handle, i32 x, i32 y, RECT* source) {
+    u32 tileHandle = static_cast<u32>(handle);
+    if (tileHandle == UNINIT_FILL) {
+        CRect destination =
+            MakeRect(x, y, x + (source->right - source->left), y + (source->bottom - source->top));
+        surface->BltEx(&destination, NULL, NULL, DDBLT_WAIT | DDBLT_COLORFILL, &host->m_fillFx);
+    } else if (tileHandle != static_cast<u32>(TILE_CLEAR)) {
+        CDDrawWorker* frames = host->ImageSetAt(tileHandle >> 16);
+        i32 index = static_cast<i32>(tileHandle & WWD_TILE_IMAGE_SET_INDEX_MASK);
+        CImage* image = frames->GetAt(index);
+        surface->BltFast(x, y, image->m_surface, source, image->m_bltFastFlags);
+    }
+}
 
 // @early-stop
 RVA(0x00162010, 0x8bd)
@@ -381,7 +365,6 @@ void CDDrawWorkerHost::Draw(CDDrawSurfacePair* ctx) {
         MakeRect(m_tilePixelSize.cx - nearTileSize.cx, 0, m_tilePixelSize.cx, m_tilePixelSize.cy);
     CRect rightSrc = MakeRect(0, 0, farTileSize.cx, m_tilePixelSize.cy);
     CRect corner;
-    CRect dr;
     CDDSurface* surf = ctx->m_surface;
     CSize interiorTileCount(tileBounds.Width() - 1, tileBounds.Height() - 1);
 
@@ -396,21 +379,21 @@ void CDDrawWorkerHost::Draw(CDDrawSurfacePair* ctx) {
         m_tilePixelSize.cx,
         m_tilePixelSize.cy
     );
-    DRAW_CELL(m_tileHandles[rowBase + tileBounds.left], position.x, position.y, &corner);
+    DrawCell(this, surf, m_tileHandles[rowBase + tileBounds.left], position.x, position.y, &corner);
     position.x += nearTileSize.cx;
     col = tileBounds.left + 1;
     if (col >= m_tileGridSize.cx) {
         col = 0;
     }
     for (i = interiorTileCount.cx; i > 0; i--) {
-        DRAW_CELL(m_tileHandles[rowBase + col], position.x, position.y, &topSrc);
+        DrawCell(this, surf, m_tileHandles[rowBase + col], position.x, position.y, &topSrc);
         position.x += m_tilePixelSize.cx;
         if (++col >= m_tileGridSize.cx) {
             col = 0;
         }
     }
     corner = MakeRect(0, m_tilePixelSize.cy - nearTileSize.cy, farTileSize.cx, m_tilePixelSize.cy);
-    DRAW_CELL(m_tileHandles[rowBase + col], position.x, position.y, &corner);
+    DrawCell(this, surf, m_tileHandles[rowBase + col], position.x, position.y, &corner);
 
     position.y += nearTileSize.cy;
     row = tileBounds.top + 1;
@@ -420,20 +403,27 @@ void CDDrawWorkerHost::Draw(CDDrawSurfacePair* ctx) {
     for (i32 r = interiorTileCount.cy; r > 0; r--) {
         rowBase = m_tileRowOffsets[row];
         position.x = m_viewportRect.left;
-        DRAW_CELL(m_tileHandles[rowBase + tileBounds.left], position.x, position.y, &leftSrc);
+        DrawCell(
+            this,
+            surf,
+            m_tileHandles[rowBase + tileBounds.left],
+            position.x,
+            position.y,
+            &leftSrc
+        );
         position.x += nearTileSize.cx;
         col = tileBounds.left + 1;
         if (col >= m_tileGridSize.cx) {
             col = 0;
         }
         for (i = interiorTileCount.cx; i > 0; i--) {
-            DRAW_CELL(m_tileHandles[rowBase + col], position.x, position.y, &m_tileRect);
+            DrawCell(this, surf, m_tileHandles[rowBase + col], position.x, position.y, &m_tileRect);
             position.x += m_tilePixelSize.cx;
             if (++col >= m_tileGridSize.cx) {
                 col = 0;
             }
         }
-        DRAW_CELL(m_tileHandles[rowBase + col], position.x, position.y, &rightSrc);
+        DrawCell(this, surf, m_tileHandles[rowBase + col], position.x, position.y, &rightSrc);
         position.y += m_tilePixelSize.cy;
         if (++row >= m_tileGridSize.cy) {
             row = 0;
@@ -444,23 +434,22 @@ void CDDrawWorkerHost::Draw(CDDrawSurfacePair* ctx) {
     position.x = m_viewportRect.left;
     rowBase = m_tileRowOffsets[row];
     corner = MakeRect(m_tilePixelSize.cx - nearTileSize.cx, 0, m_tilePixelSize.cx, farTileSize.cy);
-    DRAW_CELL(m_tileHandles[rowBase + tileBounds.left], position.x, position.y, &corner);
+    DrawCell(this, surf, m_tileHandles[rowBase + tileBounds.left], position.x, position.y, &corner);
     position.x += nearTileSize.cx;
     col = tileBounds.left + 1;
     if (col >= m_tileGridSize.cx) {
         col = 0;
     }
     for (i = interiorTileCount.cx; i > 0; i--) {
-        DRAW_CELL(m_tileHandles[rowBase + col], position.x, position.y, &botSrc);
+        DrawCell(this, surf, m_tileHandles[rowBase + col], position.x, position.y, &botSrc);
         position.x += m_tilePixelSize.cx;
         if (++col >= m_tileGridSize.cx) {
             col = 0;
         }
     }
     corner = MakeRect(0, 0, farTileSize.cx, farTileSize.cy);
-    DRAW_CELL(m_tileHandles[rowBase + col], position.x, position.y, &corner);
+    DrawCell(this, surf, m_tileHandles[rowBase + col], position.x, position.y, &corner);
 }
-#undef DRAW_CELL
 
 static inline u16 PackPalEntry16(u8 r, u8 g, u8 b) {
     return static_cast<u16>(

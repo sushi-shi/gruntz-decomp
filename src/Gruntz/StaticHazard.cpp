@@ -119,7 +119,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj)
     SnapTileCenter(&position);
     m_object->SetScreenPos(position);
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, 0)
+    o->SetSortKey(0);
     m_tile = position;
     ScreenTile(&m_tile);
     m_object->m_health = 0;
@@ -212,7 +212,7 @@ i32 CStaticHazard::UpdateActiveState() {
                 {
                     APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)
                 } CWwdSpriteObject* o = m_object;
-                SET_SORT_KEY_IF_CHANGED(o, 0)
+                o->SetSortKey(0);
                 m_fired = false;
                 return 0;
             }
@@ -221,7 +221,7 @@ i32 CStaticHazard::UpdateActiveState() {
             SwitchAnimationByName("LEVEL_STATICHAZARDIDLE", 0);
             {APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)} CWwdSpriteObject* o =
                 m_object;
-            SET_SORT_KEY_IF_CHANGED(o, 0)
+            o->SetSortKey(0);
 
             CMapMgr* grid = g_gameReg->m_tileGrid;
             Coord tile = m_tile;
@@ -236,7 +236,7 @@ i32 CStaticHazard::UpdateActiveState() {
         SwitchAnimationByName("LEVEL_STATICHAZARDGO", 0);
         {APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)} CWwdSpriteObject* o =
             m_object;
-        SET_SORT_KEY_IF_CHANGED(o, 0)
+        o->SetSortKey(0);
         m_fired = true;
         return 0;
     }
@@ -259,7 +259,7 @@ i32 CStaticHazard::UpdateActiveState() {
             );
         }
         CWwdSpriteObject* o = m_object;
-        SET_SORT_KEY_IF_CHANGED(o, o->m_health)
+        o->SetSortKey(o->m_health);
         CMapMgr* grid = g_gameReg->m_tileGrid;
         Coord tile = m_tile;
         if (static_cast<u32>(tile.m_x) < static_cast<u32>(grid->m_width)
@@ -274,7 +274,7 @@ i32 CStaticHazard::UpdateActiveState() {
             grid->m_rows[tile.m_y][tile.m_x].m_flags &= ~IDX(CELL_FLAG_STATIC_HAZARD);
         }
         CWwdSpriteObject* o = m_object;
-        SET_SORT_KEY_IF_CHANGED(o, 0)
+        o->SetSortKey(0);
     }
     {
         CAniAdvanceCursor* sub = &m_wwdObject->m_animationCursor;
