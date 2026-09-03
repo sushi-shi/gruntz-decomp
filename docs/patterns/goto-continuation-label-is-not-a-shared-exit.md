@@ -49,6 +49,24 @@ Advance(); ...                       // was: dispatch:
 steps, of which this was the largest (70.40 -> 98.10, and it is what made blocks B0-B13
 align). The other two steps are the companions below.
 
+`CPlay::EnterMode` 0x0d6fa0 is an exact-preservation control. Two tests used
+`goto finish` when an existing or newly created help overlay was ready; the
+label was the continuation immediately after the enclosing arm. Expressing the
+only failure as one short-circuit early return keeps both success edges as
+fallthrough and removes both gotos while remaining 0x1fa bytes and 100%:
+
+```cpp
+if (HasOverlay() == 0 && CreateOverlay() == 0) {
+    return 0;
+}
+```
+
+Every compared `play` symbol retained its baseline score. A TU-local inline
+`EnsureHelpOverlay` predicate was a negative control: it grew the function by
+15 bytes and fell to 94.96774%. The boolean boundary itself was therefore not
+the missing abstraction; the source-level polarity and short-circuit edge were
+the matching lever.
+
 ## Companion 1: read WHICH SIDE of the guard retail falls through to
 
 Same function, first step (52.65 -> 58.82): we had

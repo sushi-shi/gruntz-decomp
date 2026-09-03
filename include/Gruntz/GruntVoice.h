@@ -20,6 +20,9 @@ enum {
 };
 
 class CGruntVoice : public CUserLogic, public CWapX {
+    inline b32 PositionIndicatorAtLogicObject();
+    inline b32 PositionIndicatorAtSourceObject();
+
 public:
     CGruntVoice(CGameObject* obj);
 

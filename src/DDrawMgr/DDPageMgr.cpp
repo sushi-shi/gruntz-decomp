@@ -457,15 +457,11 @@ void CMoviePlayer::ResetPalette() {
     m_palette->SetEntries(0, 0, PALETTE_ENTRY_COUNT, m_palEntries);
 }
 
-RVA(0x0017caa0, 0x13b)
-i32 CMoviePlayer::Frame() {
-    if (m_smackHandle->NewPalette && m_bpp == BPP_PALETTED_8) {
-        UploadPalette();
-    }
+inline void CMoviePlayer::DecodeFrame() {
     i32 hr = m_srcSurf->Lock(NULL, &m_srcDesc, 1, NULL);
     while (hr == static_cast<i32>(DDERR_SURFACELOST)) {
         if (m_srcSurf->Restore() != 0) {
-            goto afterLock;
+            return;
         }
         hr = m_srcSurf->Lock(NULL, &m_srcDesc, 1, NULL);
     }
@@ -483,7 +479,14 @@ i32 CMoviePlayer::Frame() {
         m_frameDecoded = true;
         m_srcSurf->Unlock(m_srcDesc.lpSurface);
     }
-afterLock:
+}
+
+RVA(0x0017caa0, 0x13b)
+i32 CMoviePlayer::Frame() {
+    if (m_smackHandle->NewPalette && m_bpp == BPP_PALETTED_8) {
+        UploadPalette();
+    }
+    DecodeFrame();
     if (m_blitMode != MOVIE_SINGLE) {
         while (SmackToBufferRect(m_smackHandle, 0) != 0) {
             BlitRegion(

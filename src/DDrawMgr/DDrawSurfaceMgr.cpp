@@ -200,33 +200,11 @@ void CDDrawSurfaceMgr::Cleanup() {
 }
 
 RVA(0x00155f00, 0x41)
-i32 CDDrawSurfaceMgr::IsReady() {
+b32 CDDrawSurfaceMgr::IsReady() {
     CDDrawSubMgrPages* first = m_drawTarget;
 
-    if (first == NULL) {
-        goto fail;
-    }
-    if (m_childGroup == NULL) {
-        goto fail;
-    }
-    if (m_workerList == NULL) {
-        goto fail;
-    }
-    if (m_imageRegistry == NULL) {
-        goto fail;
-    }
-    if (m_logicRegistry == NULL) {
-        goto fail;
-    }
-    if (first->IsLoaded() == 0) {
-        goto fail;
-    }
-    if (m_level != NULL) {
-        return 1;
-    }
-
-fail:
-    return 0;
+    return first != NULL && m_childGroup != NULL && m_workerList != NULL && m_imageRegistry != NULL
+           && m_logicRegistry != NULL && first->IsLoaded() != 0 && m_level != NULL;
 }
 
 RVA(0x00155f50, 0x10)

@@ -7,6 +7,8 @@
 #include <Gruntz/State.h>
 
 class CSplashState : public CState {
+    inline b32 IsAdvanceRequested();
+
 public:
     CSplashState() {
         m_reserved1b4 = 0;

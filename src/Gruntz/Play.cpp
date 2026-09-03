@@ -6434,18 +6434,15 @@ i32 CPlay::EnterMode(GameStateId mode) {
         m_statusBar->Deactivate();
         m_statusBar->LoadMainStatusBarSprite();
         if (mode == GAMESTATE_HELP) {
-            if (m_world->m_drawTarget->HasOverlay() != 0) {
-                goto finish;
+            if (m_world->m_drawTarget->HasOverlay() == 0
+                && m_world->m_drawTarget->CreateOverlay(0, 0x30000) == 0) {
+                return 0;
             }
-            if (m_world->m_drawTarget->CreateOverlay(0, 0x30000) != 0) {
-                goto finish;
-            }
-            return 0;
+        } else {
+            m_world->m_drawTarget->m_backPair->m_surface->Fill(0);
         }
-        m_world->m_drawTarget->m_backPair->m_surface->Fill(0);
     }
 
-finish:
     m_world->m_drawTarget->TransTitle();
     RetireScene(0x50, 0x3e8, 0, true);
 
