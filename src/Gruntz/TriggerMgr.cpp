@@ -1830,11 +1830,11 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
                         }
                         i32 placed = 0;
                         do {
-                            Coord tile;
-                            tile.m_x = maxTile.m_x == 0 ? static_cast<char>(rand()) & 1
-                                                        : rand() % maxTile.m_x + 1;
-                            tile.m_y = maxTile.m_y == 0 ? static_cast<char>(rand()) & 1
-                                                        : rand() % maxTile.m_y + 1;
+                            i32 tileX = maxTile.m_x == 0 ? static_cast<char>(rand()) & 1
+                                                         : rand() % maxTile.m_x + 1;
+                            i32 tileY = maxTile.m_y == 0 ? static_cast<char>(rand()) & 1
+                                                         : rand() % maxTile.m_y + 1;
+                            Coord tile(tileX, tileY);
                             if (grunt->TryTeleportToCell(tile.m_x, tile.m_y, false, true)) {
                                 CGameObject* flashObject =
                                     g_gameReg->m_world->m_childGroup->CreateSprite(
@@ -2579,7 +2579,7 @@ i32 CTriggerMgr::NearestOtherPlayerUnitDistSq(i32 skipPlayerIndex, i32 px, i32 p
                 if (g != NULL && g->m_entranceCommitted != false) {
                     Coord otherTile;
                     g->GetScreenTile(&otherTile);
-                    i32 d = otherTile.DistSqr(tile);
+                    i32 d = abs(otherTile.DistSqr(tile));
                     if (d < best) {
                         best = d;
                     }

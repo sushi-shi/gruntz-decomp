@@ -1098,9 +1098,9 @@ BOOL CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) 
                 return true;
             }
             if (wParam == IDOK) {
-                Coord value;
-                value.m_x = GetDlgItemInt(hDlg, 0x40e, NULL, false);
-                value.m_y = GetDlgItemInt(hDlg, 0x40f, NULL, false);
+                i32 valueX = GetDlgItemInt(hDlg, 0x40e, NULL, false);
+                i32 valueY = GetDlgItemInt(hDlg, 0x40f, NULL, false);
+                Coord value(valueX, valueY);
                 g_warpX = value.m_x;
                 g_warpY = value.m_y;
                 if (IsDlgButtonChecked(hDlg, 0x410)) {
@@ -1257,10 +1257,10 @@ RVA(0x0008eaf0, 0x10b)
 i32 CGruntzMgr::WarpCheat() {
     char key[64];
     sprintf(key, "Level %i Warp X", g_gameReg->m_curState->m_levelIndex);
-    Coord warp;
-    warp.m_x = m_settings->Get(key, -1);
+    i32 warpX = m_settings->Get(key, -1);
     sprintf(key, "Level %i Warp Y", g_gameReg->m_curState->m_levelIndex);
-    warp.m_y = m_settings->Get(key, -1);
+    i32 warpY = m_settings->Get(key, -1);
+    Coord warp(warpX, warpY);
     if (warp.m_x != -1 && warp.m_y != -1) {
         if (m_curState->Update() != GAMESTATE_PLAY) {
             i32 last = m_settings->Get("Last Warp Level", -1);
@@ -2822,7 +2822,8 @@ i32 CGruntzMgr::ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, ScanCb c
         CGameObject* obj = children->NextChild(pos);
         if (obj->m_objectType & mask) {
             Coord objectPosition = obj->ScreenPos();
-            if (objectPosition.DistSqr(center) < r2) {
+            Coord delta = (objectPosition - center).GetAbs();
+            if (SQR(delta.m_x) + delta.m_y + delta.m_y < r2) {
                 count++;
                 if (cb(obj, user) == 0) {
                     return count;

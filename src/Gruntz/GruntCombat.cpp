@@ -2276,9 +2276,9 @@ afterTile:
 
                     Coord baseTile = position;
                     ScreenTile(&baseTile);
-                    Coord randomOffset;
-                    randomOffset.m_y = rand() % 6 - 3;
-                    randomOffset.m_x = rand() % 6 - 3;
+                    i32 randomY = rand() % 6 - 3;
+                    i32 randomX = rand() % 6 - 3;
+                    Coord randomOffset(randomX, randomY);
                     Coord wanderTile = baseTile + randomOffset;
                     TileSwitch(wanderTile.m_x, wanderTile.m_y, 0, m_arrivalFlags, 0, 0);
                     m_dwell = 0;

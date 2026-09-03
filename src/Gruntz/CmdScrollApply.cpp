@@ -51,10 +51,9 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
         }
         if (g_scrollTimer == 0) {
             g_scrollTimer = RandRange(pm, g_panMinX, g_panMaxX);
-            Coord jitter(
-                RandRange(pm, -g_jitterX, g_jitterX),
-                RandRange(pm, -g_jitterY, g_jitterY)
-            );
+            i32 jitterX = RandRange(pm, -g_jitterX, g_jitterX);
+            i32 jitterY = RandRange(pm, -g_jitterY, g_jitterY);
+            Coord jitter(jitterX, jitterY);
             scrollPosition += jitter;
         }
     }
@@ -91,10 +90,9 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
             backScroll = parallax.ToCoord();
         }
         if (static_cast<i64>(g_frameTime) - g_scrollPace.m_lastTime >= g_scrollPace.m_period) {
-            Coord pace(
-                g_buteMgr.GetDword("BackPlane", "ScrollDistX"),
-                g_buteMgr.GetDword("BackPlane", "ScrollDistY")
-            );
+            i32 paceX = g_buteMgr.GetDword("BackPlane", "ScrollDistX");
+            i32 paceY = g_buteMgr.GetDword("BackPlane", "ScrollDistY");
+            Coord pace(paceX, paceY);
             backScroll += pace;
             CDDrawWorkerHost* g2 = g_backView;
             SET_SCROLL_POSITION_PRODUCT_CAST(g2, backScroll.m_x, backScroll.m_y);

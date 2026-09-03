@@ -526,10 +526,9 @@ i32 CBootyState::StepGlitterAnim() {
     i32 idx = m_letterIdx;
     double r = static_cast<float>(m_radius);
     double ang = (static_cast<float>(step) - kGlitterPhaseBias) * kDegToRad;
-    m_scratchPosition.Set(
-        static_cast<i32>((sin(ang) * r + g_bootyLetterCoords[idx].m_x)),
-        static_cast<i32>((cos(ang) * r + g_bootyLetterCoords[idx].m_y))
-    );
+    i32 scratchX = static_cast<i32>((sin(ang) * r + g_bootyLetterCoords[idx].m_x));
+    i32 scratchY = static_cast<i32>((cos(ang) * r + g_bootyLetterCoords[idx].m_y));
+    m_scratchPosition.Set(scratchX, scratchY);
     m_angleStep = step + 5;
     double shrink = static_cast<float>(step + 5) * kGlitterShrinkRate;
     m_radius = static_cast<i32>((kGlitterStartRadius - shrink * kGlitterStartRadius));

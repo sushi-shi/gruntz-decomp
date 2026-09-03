@@ -25,9 +25,7 @@ static const i32 TILE_CLEAR = -1;
 
 #define PROBE_TILE(LVL, X, Y, RESULT)                                                              \
     do {                                                                                           \
-        Coord pixel_;                                                                              \
-        pixel_.m_y = (Y);                                                                          \
-        pixel_.m_x = (X);                                                                          \
+        Coord pixel_((X), (Y));                                                                    \
         pixel_.Max(Coord(0, 0));                                                                   \
         pixel_.Min(Coord(                                                                          \
             (LVL)->m_mainPlane->m_planePixelSize.cx - 1,                                           \
@@ -51,9 +49,7 @@ static const i32 TILE_CLEAR = -1;
 
 #define PROBE_TILE_VIA_HANDLE(LVL, X, Y, RESULT)                                                   \
     do {                                                                                           \
-        Coord pixel_;                                                                              \
-        pixel_.m_y = (Y);                                                                          \
-        pixel_.m_x = (X);                                                                          \
+        Coord pixel_((X), (Y));                                                                    \
         pixel_.Max(Coord(0, 0));                                                                   \
         pixel_.Min(Coord(                                                                          \
             (LVL)->m_mainPlane->m_planePixelSize.cx - 1,                                           \

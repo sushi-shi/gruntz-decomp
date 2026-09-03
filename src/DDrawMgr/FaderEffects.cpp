@@ -256,14 +256,15 @@ i32 CFaderRadial::ApplyInit(CFaderConfig* desc) {
     m_center = Coord(s->m_width / 2, s->m_height / 2);
     m_cells = new CFaderRadialCell[s->m_height * s->m_width];
 
-    m_maxRadius = static_cast<i32>(m_center.Mag() * g_faderScale);
+    m_maxRadius = static_cast<i32>(DoubleVector2(m_center).Mag() * g_faderScale);
 
     for (i32 y = 0; y < m_srcSurface->m_height; y++) {
         for (i32 x = 0; x < m_srcSurface->m_width; x++) {
             Coord delta = Coord(x, y) - m_center;
             CFaderRadialCell cell;
             cell.m_radius = static_cast<float>(
-                (static_cast<double>(m_maxRadius) - delta.Mag() * g_faderScale - g_faderBiasR)
+                (static_cast<double>(m_maxRadius) - DoubleVector2(delta).Mag() * g_faderScale
+                 - g_faderBiasR)
             );
             float fade = cell.m_radius / m_fadeDivisor - g_faderBiasFade;
             cell.m_velocity = FloatVector2(Coord(delta.m_x, -delta.m_y)) * fade;

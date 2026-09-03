@@ -134,21 +134,13 @@ struct FloatVector2 {
     }
 
     void Min(const FloatVector2& other) {
-        if (other.x < x) {
-            x = other.x;
-        }
-        if (other.y < y) {
-            y = other.y;
-        }
+        x = x < other.x ? x : other.x;
+        y = y < other.y ? y : other.y;
     }
 
     void Max(const FloatVector2& other) {
-        if (other.x > x) {
-            x = other.x;
-        }
-        if (other.y > y) {
-            y = other.y;
-        }
+        x = x > other.x ? x : other.x;
+        y = y > other.y ? y : other.y;
     }
 
     FloatVector2 GetMin(const FloatVector2& other) const {
@@ -299,21 +291,13 @@ struct DoubleVector2 {
     }
 
     void Min(const DoubleVector2& other) {
-        if (other.x < x) {
-            x = other.x;
-        }
-        if (other.y < y) {
-            y = other.y;
-        }
+        x = x < other.x ? x : other.x;
+        y = y < other.y ? y : other.y;
     }
 
     void Max(const DoubleVector2& other) {
-        if (other.x > x) {
-            x = other.x;
-        }
-        if (other.y > y) {
-            y = other.y;
-        }
+        x = x > other.x ? x : other.x;
+        y = y > other.y ? y : other.y;
     }
 
     DoubleVector2 GetMin(const DoubleVector2& other) const {

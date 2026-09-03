@@ -182,7 +182,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
                 g_coordPool.m_freeHead = p->m_next;
             }
             *slot = cur->ScreenPos();
-            ScreenTile(slot);
+            *slot /= TILE_SIZE_PX;
             m_candArray.SetAtGrow(m_candArray.GetSize(), slot);
         }
     }
@@ -192,7 +192,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
         if (cur2->m_logicRecord->m_dispatch == &DispatchExitTriggerLogic
             && cur2->m_smarts == playerIndex) {
             m_marker = cur2->ScreenPos();
-            ScreenTile(&m_marker);
+            m_marker /= TILE_SIZE_PX;
             break;
         }
     }
@@ -2058,9 +2058,9 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
 
     Coord center;
     actor->GetScreenTile(&center);
-    Coord target = center;
-    target.m_y += rand() % 10 - 5;
-    target.m_x += rand() % 10 - 5;
+    i32 randomY = rand() % 10 - 5;
+    i32 randomX = rand() % 10 - 5;
+    Coord target = center + Coord(randomX, randomY);
     CMapMgr* board = m_board;
     CRect box(center.m_x - 5, center.m_y - 5, center.m_x + 5, center.m_y + 5);
     board->Clip(&box);

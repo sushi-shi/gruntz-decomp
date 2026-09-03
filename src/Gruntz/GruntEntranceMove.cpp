@@ -209,7 +209,7 @@ i32 CGrunt::GruntInRadius(i32 playerIndex, i32 unitIndex) {
         Coord targetTile = m_defenderPx;
         ScreenTile(&targetTile);
         i32 sum = m_defenderRadius + m_reachRect.right;
-        i32 dist2 = otherTile.DistSqr(targetTile);
+        i32 dist2 = abs(otherTile.DistSqr(targetTile));
         return dist2 < SQR(sum) ? 1 : 0;
     }
     return 0;
@@ -467,11 +467,11 @@ i32 CGrunt::StartBombGruntRun() {
         m_triggerMgr->LoadExplosionSprites(h->m_screenPosition.m_x, h->m_screenPosition.m_y, -1, 0);
         return 0;
     }
-    Coord move;
-    move.m_x = rand() % 3 - 1;
-    move.m_y = rand() % 3 - 1;
+    i32 moveX = rand() % 3 - 1;
+    i32 moveY = rand() % 3 - 1;
+    Coord move(moveX, moveY);
     if (move == Coord(0, 0)) {
-        move.m_x = 1;
+        move.Set(1, 0);
     }
     {
         CWwdSpriteObject* h = m_object;

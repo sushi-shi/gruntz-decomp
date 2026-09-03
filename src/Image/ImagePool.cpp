@@ -594,11 +594,11 @@ i32 CDib::InitRid(u8* buf, HDC dc, u32 ctrl) {
     RecordBytes<PidHeader> p;
     p.m_bytes = static_cast<u8*>(buf);
     p.m_bytes += 2 * sizeof(u32);
-    CSize imageSize;
-    imageSize.cx = *p.m_dwords;
+    i32 imageWidth = *p.m_dwords;
     p.m_bytes += sizeof(u32);
-    imageSize.cy = *p.m_dwords;
+    i32 imageHeight = *p.m_dwords;
     p.m_bytes += sizeof(u32);
+    CSize imageSize(imageWidth, imageHeight);
     p.m_bytes += 4 * sizeof(u32);
     i32 ok = Init(p.m_bytes, dc, imageSize.cx, imageSize.cy, BPP_PALETTED_8, ctrl);
     if (!(ctrl & IDX(DIB_INIT_KEEP_TRANSPARENCY))) {
@@ -634,12 +634,12 @@ i32 CDib::InitPid(u8* buf, HDC dc, u32 ctrl) {
     u32* dword = &header->formatTag;
     u32 formatTag = *dword++;
     PidFlags flags = static_cast<PidFlags>(*dword++);
-    CSize imageSize;
-    imageSize.cx = *dword++;
-    imageSize.cy = *dword++;
-    CPoint offset;
-    offset.x = *dword++;
-    offset.y = *dword++;
+    i32 imageWidth = *dword++;
+    i32 imageHeight = *dword++;
+    CSize imageSize(imageWidth, imageHeight);
+    i32 offsetX = *dword++;
+    i32 offsetY = *dword++;
+    CPoint offset(offsetX, offsetY);
     u32 fill = *dword++;
     u32 reserved = *dword++;
 

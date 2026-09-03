@@ -194,7 +194,8 @@ i32 CGrunt::StepToolThiefBehavior() {
                             sv->GetScreenTile(&candidateTile);
                             Coord selfTile;
                             GetScreenTile(&selfTile);
-                            i32 dist = candidateTile.DistSqr(selfTile);
+                            Coord delta = (candidateTile - selfTile).GetAbs();
+                            i32 dist = delta.MagSqr();
                             if (dist < best
                                 && dist <= this->m_defenderRadius * this->m_defenderRadius) {
                                 best = dist;

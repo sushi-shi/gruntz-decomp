@@ -515,7 +515,7 @@ i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
 
         if (obj->m_logicRecord->m_dispatch == &DispatchExitTriggerLogic) {
             Coord tile = obj->ScreenPos();
-            ScreenTile(&tile);
+            tile /= TILE_SIZE_PX;
             for (i32 xo = -1; xo < 2; xo++) {
                 for (i32 yo = -1; yo < 2; yo++) {
                     Coord neighbor = tile;

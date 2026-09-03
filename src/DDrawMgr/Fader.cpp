@@ -264,7 +264,7 @@ i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
     Coord halfSize(m_dstSurface->m_width / 2, m_dstSurface->m_height / 2);
     Coord cellSize(m_sourceSurface->m_width / m_cols, m_sourceSurface->m_height / m_rows);
     Coord negativeCellSize = -cellSize;
-    float radius = static_cast<float>(cellSize.Mag());
+    float radius = static_cast<float>(DoubleVector2(cellSize).Mag());
     if (m_rows <= 0) {
         return 1;
     }
@@ -277,7 +277,7 @@ i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
         if (m_cols > 0) {
             elem.m_reserved20 = 0;
             elem.m_scale = 1.0f;
-            float cellR = static_cast<float>(halfSize.Mag() + radius - g_fxBias);
+            float cellR = static_cast<float>(DoubleVector2(halfSize).Mag() + radius - g_fxBias);
             i32 x = 0;
             i32 bx = halfSize.m_x;
             i32 i = 0;
@@ -285,7 +285,7 @@ i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
                 CRect pt48(0, 0, cellSize.m_x, cellSize.m_y);
                 Coord radialOffset(bx, ay);
                 i32 radiusSqr = radialOffset.MagSqr();
-                double distance = radialOffset.Mag();
+                double distance = DoubleVector2(radialOffset).Mag();
                 FloatVector2 spreadDirection;
                 if (distance > g_fxEps) {
                     spreadDirection =

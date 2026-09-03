@@ -239,19 +239,28 @@ void CGameApp::InitializeDefaultCreateStruct() {
         hMenu = LoadMenuA(m_hInstance, m_gameInfo.szGameIdentifier);
     }
 
-    CPoint position;
+    i32 positionX;
+    i32 positionY;
     if (HAS(m_gameInfo.windowClassFlags, GAME_WINDOW_FLAG_WINDOWED)) {
-        position = CPoint(COORD_UNSET, COORD_UNSET);
+        positionX = COORD_UNSET;
+        positionY = COORD_UNSET;
     } else {
-        position = CPoint(0, 0);
+        positionX = 0;
+        positionY = 0;
     }
+    POINT position = {positionX, positionY};
 
-    CSize size;
+    i32 width;
+    i32 height;
     if (HAS(m_gameInfo.windowClassFlags, GAME_WINDOW_FLAG_WINDOWED)) {
-        size = CSize(m_gameInfo.windowWidth, m_gameInfo.windowHeight);
+        width = m_gameInfo.windowWidth;
+        height = m_gameInfo.windowHeight;
     } else {
-        size = CSize(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
+        width = GetSystemMetrics(SM_CXSCREEN);
+        height = GetSystemMetrics(SM_CYSCREEN);
     }
+    SIZE
+    size = {width, height};
 
     i32 style;
     DWORD exStyle;
