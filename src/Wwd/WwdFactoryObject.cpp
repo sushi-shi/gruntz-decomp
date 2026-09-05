@@ -37,6 +37,10 @@
 
 #include <string.h>
 
+namespace {
+#include <Utils/RandomNumber.inl>
+}
+
 RVA(0x0015b340, 0x2b)
 i32 CLogicRecord::Consume(i32 amount) {
     i32 remaining = m_timeDelay;

@@ -102,17 +102,19 @@ CL_MODS = _mods("graph/cc.py", "tool/cl.py") + TOOL_MODS
 COMPDB_MODS = _mods("graph/compdb.py", "tool/clang.py", "manifest.py",
                     "core/paths.py")
 LABELS_MODS = _mods("retail_labels/", "tool/clang.py", "core/coff.py",
-                    "core/tsv.py", "manifest.py", "core/paths.py")
-MODEL_MODS = _mods("model.py", "retail_labels/", "core/tsv.py", "core/paths.py")
+                    "core/tsv.py", "manifest.py", "core/paths.py", "core/msvc_names.py")
+MODEL_MODS = _mods("model.py", "retail_labels/", "core/tsv.py", "core/paths.py",
+                   "core/msvc_names.py")
 DELINK_MODS = _mods("delink/", "tool/delinker.py", "core/pe.py",
-                    "core/coff.py", "model.py") + TOOL_MODS
+                    "core/coff.py", "core/msvc_names.py", "model.py") + TOOL_MODS
 NORMALIZE_MODS = _mods("compare/normalize.py", "compare/canonicalize.py",
-                       "delink/eh_band.py", "core/coff.py")
+                       "delink/eh_band.py", "core/coff.py", "core/msvc_names.py")
 PROJECT_MODS = _mods("compare/project.py", "compare/normalize.py", "manifest.py")
 REPORT_MODS = _mods("tool/objdiff.py")
 LINK_MODS = _mods("graph/link.py", "graph/implib.py", "tool/link.py",
                   "core/pe.py") + TOOL_MODS
-VERIFY_MODS = _mods("verify/", "model.py", "core/tsv.py", "core/paths.py")
+VERIFY_MODS = _mods("verify/", "model.py", "core/tsv.py", "core/paths.py",
+                    "core/msvc_names.py", "walls/pairscan.py")
 #: committed inputs of the default-tier verify gates (fast+normal): the MAX
 #: ledger and every gate's own baseline/allowlist. Named so a bless re-runs
 #: the check edge.

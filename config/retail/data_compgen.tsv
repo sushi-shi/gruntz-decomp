@@ -1023,11 +1023,11 @@ rva	size	name	owner	class
 0x002bf6b8	0x1	_?$S@?1??GetString@CButeMgr@@QAEPAVCString@@PBD0@Z@4EA$S	butemgr	copy
 0x002bf6c0	0x10	_?s_default@?1??GetRange@CButeMgr@@QAEPAVCARange@@PBD0@Z@4V3@A$S	butemgr	copy
 0x002bf6d0	0x10	_?s_default@?1??GetRect@CButeMgr@@QAEPAUButeIntRect@@PBD0@Z@4U3@A$S	butemgr	copy
-0x002c127d	0x1	??_B?1??GetRandomNumber@@YAHXZ@51	include/Gruntz/GameRand.h:GetRandomNumber	common
-0x002c1288	0x4	?holdrand@?1??GetRandomNumber@@YAHXZ@4JA	include/Gruntz/GameRand.h:GetRandomNumber	common
-0x002c278c	0x1	??_B?1??GetRandomNumber@CAniRecordView@@QAEHXZ@51	include/Gruntz/AniRecordView.h:CAniRecordView::GetRandomNumber	common
-0x002c2798	0x4	?holdrand@?1??GetRandomNumber@CAniRecordView@@QAEHXZ@4JA	include/Gruntz/AniRecordView.h:CAniRecordView::GetRandomNumber	common
-0x002c279c	0x1	??_B?1??GetRandomNumber@CFaderSine@@QAEHXZ@51	include/Gruntz/FaderSubtypes.h:CFaderSine::GetRandomNumber	common
-0x002c27a8	0x4	?holdrand@?1??GetRandomNumber@CFaderSine@@QAEHXZ@4JA	include/Gruntz/FaderSubtypes.h:CFaderSine::GetRandomNumber	common
+0x002c127d	0x1	??_B?1??GetRandomNumber@@YAHXZ@51	include/Utils/RandomNumber.inl:GetRandomNumber	common
+0x002c1288	0x4	?holdrand@?1??GetRandomNumber@@YAHXZ@4JA	include/Utils/RandomNumber.inl:GetRandomNumber	common
+0x002c278c	0x1	??_B?1??GetRandomNumber@?A0x303bff2c82ad75df@@YAHXZ@51	src/Wwd/WwdFactoryObject.cpp:GetRandomNumber	common
+0x002c2798	0x4	?holdrand@?1??GetRandomNumber@?A0x303bff2c82ad75df@@YAHXZ@4JA	src/Wwd/WwdFactoryObject.cpp:GetRandomNumber	common
+0x002c279c	0x1	??_B?1??GetRandomNumber@?A0xfcce57fbce9073f9@@YAHXZ@51	src/DDrawMgr/FaderEffects.cpp:GetRandomNumber	common
+0x002c27a8	0x4	?holdrand@?1??GetRandomNumber@?A0xfcce57fbce9073f9@@YAHXZ@4JA	src/DDrawMgr/FaderEffects.cpp:GetRandomNumber	common
 0x001e9738	0x8	$T2004792	grunt	fppool
 0x001eaa88	0x8	$T2009736	projectile	fppool

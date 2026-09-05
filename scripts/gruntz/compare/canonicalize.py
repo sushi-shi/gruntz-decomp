@@ -1572,6 +1572,25 @@ def canonicalize_coff(payload: bytes) -> CanonicalizedObject:
                 symbol.section, symbol.value, 0, 0, 0, "-",
                 "eh-funcinfo-owner-derived-name", ""))
 
+    # Anonymous namespaces declared in .cpp files carry a checkout path and a
+    # volatile cl nonce. Keep their TU identity in both definitions and uses.
+    # Header namespaces cannot be identified from the encoded path alone.
+    namespace_names = {}
+    for symbol in coff.symbols.values():
+        current = renames.get(symbol.index, symbol.name)
+        canonical = msvc_names.anonymous_namespaces(current)
+        previous = namespace_names.setdefault(canonical, current)
+        if previous != current:
+            raise ValueError("anonymous-namespace identities collide: "
+                             + previous + " / " + current)
+        if canonical != current:
+            renames[symbol.index] = canonical
+            rows.append(CanonicalRow(
+                symbol.name, canonical, "namespace",
+                "defined" if symbol.section > 0 else "undefined",
+                symbol.section, symbol.value, 0, 0, 0, "-",
+                "source-file-anonymous-namespace", ""))
+
     normalized = _rewrite_names(coff, renames)
     normalized, jump_table_rewrites = _rewrite_jump_table_relocations(
         coff, normalized)

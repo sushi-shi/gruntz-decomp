@@ -288,6 +288,10 @@ def _common_owner(base_dir=BASE_DIR):
         for name in commons:
             key = msvc_names.mask(name)
             prev = owners.get(key)
+            if (msvc_names.anonymous_namespaces(name) != name
+                    and prev is not None and prev != obj.stem):
+                raise ValueError("source-file anonymous COMMON emitted by multiple units: "
+                                 + key + " in " + prev + " and " + obj.stem)
             if prev is None or pos.get(obj.stem, 1 << 30) < pos.get(prev, 1 << 30):
                 owners[key] = obj.stem
     return owners
