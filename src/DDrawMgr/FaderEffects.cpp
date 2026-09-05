@@ -23,11 +23,11 @@
 
 namespace {
 #include <Utils/RandomNumber.inl>
-}
 
-inline i32 CFaderSine::GetRandom(i32 lo, i32 hi) {
-    return lo + GetRandomNumber() % (hi - lo + 1);
-}
+    inline i32 GetRandom(i32 lo, i32 hi) {
+        return lo + GetRandomNumber() % (hi - lo + 1);
+    }
+} // namespace
 
 DATA(0x001f07ec)
 const float g_fxBias = -50.0f;
