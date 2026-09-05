@@ -12,7 +12,9 @@ confidence: 10/10 for the retained compiler/linker behavior; original include sc
 with the credits body unchanged. `GameRand.h` includes it at global scope.
 `WwdFactoryObject.cpp` and `FaderEffects.cpp` each include it inside an anonymous
 namespace. Both invented RNG member definitions were removed. The fader's range
-wrapper remains inline, defined in its owner TU so it sees that TU's RNG.
+wrapper is a free inline function in that private scope; it has no instance
+state and no reason to claim a `CFaderSine` receiver. Moving it out of the
+class preserves both callers' instruction bytes and ordered referents.
 
 This models the observed shared/private state boundary without assigning RNG
 ownership to the animation or fader class. The local scopes are a reconstruction
@@ -34,6 +36,29 @@ delta is +12, matching the two library pairs in retail without filler storage.
 The library callers preserve their prior instruction bytes and ordered
 referents. Animation `Rng2Next` remains exact; fader ApplyInit/RenderFrame retain
 their 96.5000/94.6626 MAX and their existing register/scheduling residues.
+
+## Receiver-independent wrappers still need a caller ABI audit
+
+The fader range adapter uses only its two integer arguments and the private
+RNG. Converting it from `CFaderSine::GetRandom` to a free inline `GetRandom`
+in the same private scope preserves ApplyInit's 300 bytes/8 relocations and
+RenderFrame's 1224 bytes/24 relocations exactly after namespace normalization.
+There is no emitted range-helper body or receiver-bearing call to preserve.
+
+Animation's `Rng2Next` is a different case. Retail `CAniAdvanceCursor::Advance`
+loads the animation-record pointer with `mov ecx,edi` at both 0x15c5f6 and
+0x15c624, immediately before its calls to 0x15cbe0. The callee immediately
+overwrites CL and never reads the incoming receiver, but the callers still
+support a receiver-bearing ABI. The exact source-facing method name remains
+inferred; absence of receiver use does not disprove a method boundary.
+
+Two actual-TU controls replaced `dd->Rng2Next()` with the private free inline:
+one kept its definition at the top, the other used a forward declaration and
+included the same body at the old standalone's source position. VC5 expanded
+both sites in both forms and emitted no standalone RNG. The caller grew from
+1456 to 1576 bytes against retail's 1436-byte extent. Neither control recovers
+the two receiver-bearing calls, so neither was retained. This is not evidence
+for duplicated RNG arithmetic: the kept method forwards to the one shared body.
 
 ## Stable attribution of VC5 anonymous-namespace state
 

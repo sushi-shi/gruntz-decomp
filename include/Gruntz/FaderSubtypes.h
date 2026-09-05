@@ -49,7 +49,6 @@ public:
     i32 AccumulateSampleCount(i32 row, i32 delta, float step);
     i32 AdvanceSampleCursor(i32 row);
 
-    inline i32 GetRandom(i32 lo, i32 hi);
     CFaderSine();
     virtual ~CFaderSine() OVERRIDE;
     virtual void RenderFrame(i32 frame) OVERRIDE;
