@@ -3851,6 +3851,87 @@ class SourceNameRewriteControls(unittest.TestCase):
         self.assertEqual(m.mask(m.discriminate("_s_x$S", 0x244970)), "_s_x$S")
 
 
+class AnonymousNamespaceControls(unittest.TestCase):
+    """Anonymous .cpp COMMON identities survive both consumers and rebuilds."""
+
+    @staticmethod
+    def names(path=r"Z:\checkout\src\Wwd\WwdFactoryObject.cpp", nonce="1234"):
+        scope = "?%" + path + nonce + "@"
+        return ("?holdrand@?1??GetRandomNumber@" + scope + "@YAHXZ@4JA",
+                "??_B?1??GetRandomNumber@" + scope + "@YAHXZ@51")
+
+    @staticmethod
+    def obj(names):
+        import struct
+        code = b"\xa1" + bytes(4) + b"\x8a\x15" + bytes(4) + b"\xc3"
+        rawptr = 60
+        relptr = rawptr + len(code)
+        symptr = relptr + 20
+        strings = bytearray(bytes(4))
+        symbols = bytearray()
+        for name, value, sec, typ in [
+                (names[0], 4, 0, 0), (names[1], 1, 0, 0),
+                ("_entry", 0, 1, 0x20)]:
+            symbols += struct.pack("<II", 0, len(strings))
+            strings += name.encode("latin1") + b"\0"
+            symbols += struct.pack("<IhHBB", value, sec, typ, 2, 0)
+        struct.pack_into("<I", strings, 0, len(strings))
+        header = struct.pack("<HHIIIHH", 0x14c, 1, 0, symptr, 3, 0, 0)
+        section = struct.pack("<8sIIIIIIHHI", b".text", 0, 0, len(code),
+                              rawptr, relptr, 0, 2, 0, 0x60500020)
+        relocs = struct.pack("<IIHIIH", 1, 0, 6, 7, 1, 6)
+        return header + section + code + relocs + symbols + strings
+
+    def test_actual_normalizer_removes_only_cpp_namespace_build_identity(self):
+        from gruntz.compare.canonicalize import canonicalize_coff
+        from gruntz.core.msvc_names import anonymous_namespaces
+        a = self.obj(self.names())
+        b = self.obj(self.names(r"Z:\another\worktree\src\Wwd\WwdFactoryObject.cpp", "987654"))
+        self.assertNotEqual(a, b)
+        self.assertEqual(canonicalize_coff(a).data, canonicalize_coff(b).data)
+        # A recognizer-only test would pass if canonicalize_coff forgot to use it.
+        with mock.patch("gruntz.compare.canonicalize.msvc_names.anonymous_namespaces",
+                        side_effect=lambda name: name):
+            self.assertNotEqual(canonicalize_coff(a).data, canonicalize_coff(b).data)
+        self.assertNotEqual(
+            canonicalize_coff(a).data,
+            canonicalize_coff(self.obj(self.names(r"Z:\checkout\src\DDrawMgr\FaderEffects.cpp"))).data)
+        header = self.names(r"Z:\checkout\include\Shared.h")[0]
+        self.assertEqual(anonymous_namespaces(header), header)
+
+    def test_common_owner_and_raw_referent_resolver_use_same_identity(self):
+        from gruntz.core.msvc_names import mask
+        from gruntz.delink.data_manifest import _common_owner
+        from gruntz.verify.assert_relocs import Resolver
+        names = self.names()
+        with tempfile.TemporaryDirectory() as td:
+            Path(td, "wwdfactoryobject.obj").write_bytes(self.obj(names))
+            owners = _common_owner(td)
+        self.assertEqual(owners[mask(names[0])], "wwdfactoryobject")
+        self.assertEqual(owners[mask(names[1])], "wwdfactoryobject")
+        resolver = Resolver.__new__(Resolver)
+        resolver.names = {mask(names[0]): {0x2c2798}, mask(names[1]): {0x2c278c}}
+        self.assertEqual(resolver.rva_of(names[0]), {0x2c2798})
+        self.assertEqual(resolver.rva_of(names[1]), {0x2c278c})
+        other = self.names(r"Z:\checkout\src\DDrawMgr\FaderEffects.cpp")[0]
+        self.assertEqual(resolver.rva_of(other), set())
+
+    def test_namespace_identity_collision_is_an_error(self):
+        from gruntz.compare.canonicalize import canonicalize_coff
+        a = self.names()[0]
+        b = self.names(nonce="9876")[0]
+        with self.assertRaisesRegex(ValueError, "namespace identities collide"):
+            canonicalize_coff(self.obj((a, b)))
+
+    def test_same_source_compiled_into_multiple_objects_is_not_coalesced(self):
+        from gruntz.delink.data_manifest import _common_owner
+        with tempfile.TemporaryDirectory() as td:
+            Path(td, "first.obj").write_bytes(self.obj(self.names()))
+            Path(td, "second.obj").write_bytes(self.obj(self.names(nonce="9876")))
+            with self.assertRaisesRegex(ValueError, "emitted by multiple units"):
+                _common_owner(td)
+
+
 class ReadmeFreshnessControls(unittest.TestCase):
     """README's derived block must not be able to go stale.
 

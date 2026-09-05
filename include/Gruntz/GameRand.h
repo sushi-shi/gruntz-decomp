@@ -6,11 +6,7 @@
 #include <Ints.h>
 
 #include <stdlib.h>
-
-__inline i32 GetRandomNumber() {
-    static long holdrand = timeGetTime();
-    return (((holdrand = holdrand * 214013L + 2531011L) >> 16) & 0x7fff);
-}
+#include <Utils/RandomNumber.inl>
 
 __inline i32 GetRandom(i32 lo, i32 hi) {
     i32 n = hi - lo + 1;
