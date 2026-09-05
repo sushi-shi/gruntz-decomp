@@ -9,6 +9,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/WorkerLookup.h>
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntDirStatics.h>
@@ -22,12 +23,6 @@
 #include <Io/FileMem.h>
 
 #include <string.h>
-
-static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
-    CObject* found = NULL;
-    map.Lookup(name, found);
-    return static_cast<CDDrawWorker*>(found);
-}
 
 // @early-stop
 RVA(0x000e6020, 0x288)

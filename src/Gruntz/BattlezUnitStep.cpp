@@ -70,10 +70,6 @@
         (g)->m_coordList.RemoveAll();                                                              \
     }
 
-static inline i32 SquaredDistance(i32 dx, i32 dy) {
-    return SQR(dx) + SQR(dy);
-}
-
 DATA(0x0022b7ec)
 i32 g_battlezRoutePassableMask;
 

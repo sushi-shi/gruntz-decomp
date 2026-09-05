@@ -22,13 +22,6 @@
 #define HSV_MIN(a, b) ((a) < (b) ? (a) : (b))
 #define INTERPOLATE(start, end, amount) ((start) * (g_one - (amount)) + (end) * (amount))
 
-static inline u16 PackPixel16(u8 red, u8 green, u8 blue) {
-    u16 value = static_cast<u8>(blue >> g_bDown);
-    value |= static_cast<u16>(static_cast<u8>(red >> g_rDown) << g_rUp);
-    value |= static_cast<u16>(static_cast<u8>(green >> g_gDown) << g_gUp);
-    return value;
-}
-
 DATA(0x002bf224)
 PALETTEENTRY* g_pal = NULL;
 

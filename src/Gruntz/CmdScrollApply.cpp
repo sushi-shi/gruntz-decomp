@@ -8,6 +8,7 @@
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/MgrAutoScroll.h>
+#include <Gruntz/RandomRange.h>
 #include <Gruntz/ScrollState.h>
 #include <Gruntz/StatusBarDock.h>
 #include <Gruntz/StatusBarMgr.h>
@@ -16,14 +17,6 @@
 #include <Wwd/WwdFile.h>
 
 #include <stddef.h>
-
-static inline i32 RandRange(CGruntzMgr* mgr, i32 lo, i32 hi) {
-    i32 range = hi - lo + 1;
-    if (range == 0) {
-        return (mgr->Rand() & 1) ? lo : hi;
-    }
-    return mgr->Rand() % range + lo;
-}
 
 RVA(0x000ebd30, 0x21)
 void Cmd_ResetScroll() {

@@ -60,10 +60,6 @@ static inline Coord ScreenTile(CGrunt* unit) {
     return out;
 }
 
-static inline i32 SquaredDistance(i32 dx, i32 dy) {
-    return SQR(dx) + SQR(dy);
-}
-
 RVA(0x000350d0, 0xfa)
 i32 CBattlezMapConfig::RepathToFreeCell(CGrunt* unit) {
     if (static_cast<u32>(unit->m_dwell) > static_cast<u32>(m_repathBudget)) {

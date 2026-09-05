@@ -47,8 +47,11 @@ static inline void LookupCue(CMapStringToPtr& cues, const char* name, SoundCue*&
 ```
 
 and the 32 sites are `LookupCue(m_world->m_soundRegistry->m_cues, "GAME_...", d);`.
-File-local `static inline`, per inline-expansion-boundary-pins-a-neighbour.md (a header
-placement ripples 40+ TUs).
+The original experiment used file-local `static inline`. That establishes the
+helper boundary, not a separate original definition in each TU. Header placement
+can move unrelated compiler state; the later
+[shared-definition control](shared-inline-definitions-preserve-helper-boundaries.md)
+preserves the worker-lookup boundary while removing its duplicate definitions.
 
 ## Measured
 

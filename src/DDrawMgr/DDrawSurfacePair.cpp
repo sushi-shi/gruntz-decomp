@@ -21,6 +21,7 @@
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/LogicRecord.h>
 #include <DDrawMgr/LogicRecordRegistry.h>
+#include <DDrawMgr/WorkerLookup.h>
 #include <Enums.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/LogicTypeId.h>
@@ -1275,12 +1276,6 @@ void CDDrawPixelWorker::RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurface
             s->m_ddSurface->Unlock(NULL);
         }
     }
-}
-
-static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
-    CObject* found = NULL;
-    map.Lookup(name, found);
-    return static_cast<CDDrawWorker*>(found);
 }
 
 RVA(0x00166040, 0x66)

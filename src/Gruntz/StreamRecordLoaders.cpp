@@ -2,6 +2,7 @@
 
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/LogicRecordRegistry.h>
+#include <DDrawMgr/WorkerLookup.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
@@ -13,12 +14,6 @@
 #include <Io/FileMem.h>
 
 #include <string.h>
-
-static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
-    CObject* found = NULL;
-    map.Lookup(name, found);
-    return static_cast<CDDrawWorker*>(found);
-}
 
 RVA(0x0009c650, 0x372)
 i32 CTimer::Deserialize(CFileMemBase* s) {

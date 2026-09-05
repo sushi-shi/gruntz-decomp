@@ -29,6 +29,7 @@
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialRefLookup.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SoundCue.h>
@@ -91,17 +92,6 @@ static inline CAniElement* LookupAni(CMapStringToPtr& map, LPCTSTR name) {
     CAniElement* found = NULL;
     MapLookup(map, name, found);
     return found;
-}
-
-static inline CWwdSpriteObject* LookupSerialRef(CMapPtrToPtr& byId, i32 id) {
-    CGameObject* found = NULL;
-    if (MapLookupById(byId, id, found) == false) {
-        return NULL;
-    }
-    if (found == NULL) {
-        return NULL;
-    }
-    return found->GetClassId() == CLASSID_SERIALREF ? static_cast<CWwdSpriteObject*>(found) : NULL;
 }
 
 // @early-stop

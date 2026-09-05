@@ -6,6 +6,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorker.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/WorkerLookup.h>
 #include <Enums.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/MenuItemState.h>
@@ -19,12 +20,6 @@
 RVA(0x001832d0, 0x20)
 CString CMenuPage::GetPageKey() {
     return m_pageKey;
-}
-
-static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
-    CObject* foundObject = NULL;
-    map.Lookup(name, foundObject);
-    return static_cast<CDDrawWorker*>(foundObject);
 }
 
 #define RESOLVE_MENU_HEADER_ANIMATION(animationKey, animation)                                     \

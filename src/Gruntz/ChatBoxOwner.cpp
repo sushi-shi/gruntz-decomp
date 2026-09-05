@@ -11,6 +11,7 @@
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/WorkerLookup.h>
 #include <Gruntz/CheatMgr.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/GameRegistry.h>
@@ -27,12 +28,6 @@
 #include <ddraw.h>
 #include <string.h>
 #include <strstrea.h>
-
-inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
-    CObject* ob = NULL;
-    map.Lookup(name, ob);
-    return static_cast<CDDrawWorker*>(ob);
-}
 
 RVA(0x000204e0, 0x19)
 i32 CChatBoxOwner::Attach(CDDrawSurfaceMgr* world, CFontConfig* host) {

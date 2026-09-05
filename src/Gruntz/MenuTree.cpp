@@ -7,6 +7,7 @@
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DirectDrawMgr.h>
+#include <DDrawMgr/WorkerLookup.h>
 #include <Dsndmgr/SoundBuffer.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/MenuPage.h>
@@ -168,12 +169,6 @@ i32 CMenuTree::SetActivePage(CMenuPage* page) {
 RVA(0x00182dd0, 0x19)
 i32 CMenuTree::SetActivePageByKey(const char* pageKey) {
     return SetActivePage(FindPage(pageKey));
-}
-
-static inline CDDrawWorker* LookupWorker(CDDrawSurfaceMgr* world, LPCTSTR name) {
-    CObject* foundObject = NULL;
-    world->m_imageRegistry->m_workersByName.Lookup(name, foundObject);
-    return static_cast<CDDrawWorker*>(foundObject);
 }
 
 RVA(0x00182df0, 0x69)

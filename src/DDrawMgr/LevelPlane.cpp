@@ -15,6 +15,7 @@
 #include <DDrawMgr/LogicRecordRegistry.h>
 #include <DDrawMgr/LogicRecordRegistryFindInline.h>
 #include <DDrawMgr/PixelShift.h>
+#include <DDrawMgr/WorkerLookup.h>
 #include <Enums.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GruntzMgr.h>
@@ -33,18 +34,6 @@
 #include <new>
 #include <stdio.h>
 #include <string.h>
-
-static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
-    CObject* found = NULL;
-    map.Lookup(name, found);
-    return static_cast<CDDrawWorker*>(found);
-}
-
-static inline CDDrawWorker* LookupWorker(CDDrawSurfaceMgr* host, LPCTSTR name) {
-    CObject* found = NULL;
-    host->m_imageRegistry->m_workersByName.Lookup(name, found);
-    return static_cast<CDDrawWorker*>(found);
-}
 
 RVA(0x001615a0, 0x9a)
 CDDrawWorkerHost::CDDrawWorkerHost(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
