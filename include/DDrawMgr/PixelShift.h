@@ -42,4 +42,11 @@ extern i32 g_rDown;
 extern i32 g_gDown;
 extern i32 g_bDown;
 
+inline u16 PackPixel16(u8 red, u8 green, u8 blue) {
+    u16 value = static_cast<u8>(blue >> g_bDown);
+    value |= static_cast<u16>(static_cast<u8>(red >> g_rDown) << g_rUp);
+    value |= static_cast<u16>(static_cast<u8>(green >> g_gDown) << g_gUp);
+    return value;
+}
+
 #endif // INCLUDE_DDRAWMGR_PIXELSHIFT_H

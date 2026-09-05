@@ -6,6 +6,8 @@ Sorted by primary tag so families cluster. Grep this file by tag (`cpp:switch`,
 how-to-search: [`README.md`](README.md). Authoring: new pattern = new file + one
 line here, SAME commit.
 
+- [Shared inline definitions preserve helper boundaries](shared-inline-definitions-preserve-helper-boundaries.md) - c9 - cpp:inline cpp:header cpp:call cpp:local | asm:call asm:mov | topic:codegen-idiom - 30 duplicate helper definitions become six shared definitions across 27 TUs; all recorded caller hashes and call/branch/return counts survive, and canonical object evidence separates label-counter churn from 28 actual compiler-state movements.
+
 WALL vs STEERABLE: `topic:codegen-idiom`/`topic:flags` = a source spelling closes the
 diff; `topic:wall`/`topic:scoring-artifact` = code already correct / no source form —
 stop chasing (orchestration §2a).

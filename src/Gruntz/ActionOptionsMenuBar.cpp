@@ -4,6 +4,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerHost.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/WorkerLookup.h>
 #include <Enums.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegistry.h>
@@ -20,12 +21,6 @@
 #include <Wwd/WwdFile.h>
 
 #include <string.h>
-
-static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
-    CObject* found = NULL;
-    map.Lookup(name, found);
-    return static_cast<CDDrawWorker*>(found);
-}
 
 RVA(0x00009090, 0x32)
 CActionOptionsMenuBar::CActionOptionsMenuBar() {

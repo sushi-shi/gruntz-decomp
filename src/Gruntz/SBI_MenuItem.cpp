@@ -7,6 +7,7 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/WorkerLookup.h>
 #include <Dsndmgr/SoundBuffer.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntDirStatics.h>
@@ -26,18 +27,6 @@
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
-
-static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
-    CObject* found = NULL;
-    map.Lookup(name, found);
-    return static_cast<CDDrawWorker*>(found);
-}
-
-static inline CDDrawWorker* LookupWorker(CDDrawSurfaceMgr* host, LPCTSTR name) {
-    CObject* found = NULL;
-    host->m_imageRegistry->m_workersByName.Lookup(name, found);
-    return static_cast<CDDrawWorker*>(found);
-}
 
 static inline SoundCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
     SoundCue* found = NULL;

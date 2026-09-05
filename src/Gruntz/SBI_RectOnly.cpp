@@ -9,6 +9,7 @@
 #include <DDrawMgr/DDrawWorker.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/WorkerLookup.h>
 #include <Dsndmgr/SoundBuffer.h>
 #include <Dsndmgr/StreamFeeder.h>
 #include <Enums.h>
@@ -4361,12 +4362,6 @@ RVA(0x00109bb0, 0xb)
 CWarpStoneFly::CWarpStoneFly() {
     m_sprite = NULL;
     m_owner = NULL;
-}
-
-static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
-    CObject* found = NULL;
-    map.Lookup(name, found);
-    return static_cast<CDDrawWorker*>(found);
 }
 
 // @early-stop
