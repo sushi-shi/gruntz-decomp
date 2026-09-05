@@ -3455,10 +3455,6 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
     return 1;
 }
 
-static inline i32 SquaredDistance(i32 dx, i32 dy) {
-    return SQR(dx) + SQR(dy);
-}
-
 static inline void BuildUnitSearchBox(CGrunt* unit, RECT* box, i32 radius) {
     i32 bottom;
     i32 right;

@@ -4,6 +4,7 @@
 
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/WorkerLookup.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
@@ -27,12 +28,6 @@
 #include <Wwd/LogicRecordEvent.h>
 
 #include <stddef.h>
-
-static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
-    CObject* found = NULL;
-    map.Lookup(name, found);
-    return static_cast<CDDrawWorker*>(found);
-}
 
 static inline CAniElement* LookupAnimation(CMapStringToPtr& map, LPCTSTR name) {
     CAniElement* result = NULL;

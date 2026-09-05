@@ -14,6 +14,7 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DirectDrawMgr.h>
+#include <DDrawMgr/WorkerLookup.h>
 #include <DinMgr2/DirectInputMgr2.h>
 #include <DinMgr2/InputMgrPtr.h>
 #include <Dsndmgr/MidiManager.h>
@@ -171,18 +172,6 @@ GZ_ENUM_END(ToolCursorId)
                 found->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);                                       \
         }                                                                                          \
     } while (0)
-
-static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
-    CObject* ob = NULL;
-    map.Lookup(name, ob);
-    return static_cast<CDDrawWorker*>(ob);
-}
-
-static inline CDDrawWorker* LookupWorker(CDDrawSurfaceMgr* host, LPCTSTR name) {
-    CObject* ob = NULL;
-    host->m_imageRegistry->m_workersByName.Lookup(name, ob);
-    return static_cast<CDDrawWorker*>(ob);
-}
 
 DATA(0x002bf3bc)
 u32 g_engineFrameDelta = 0;

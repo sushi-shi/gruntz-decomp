@@ -13,6 +13,7 @@
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/LogicRecord.h>
 #include <DDrawMgr/LogicRecordRegistry.h>
+#include <DDrawMgr/WorkerLookup.h>
 #include <Enums.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AnimationRegistry.h>
@@ -45,12 +46,6 @@
 
 DATA(0x002bf674)
 b32 g_logicTypesRegistered;
-
-static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
-    CObject* result = NULL;
-    map.Lookup(name, result);
-    return static_cast<CDDrawWorker*>(result);
-}
 
 RVA(0x001504d0, 0x6c)
 void CWwdSpriteObject::SetImageFrameByName(const char* name, i32 frame) {
