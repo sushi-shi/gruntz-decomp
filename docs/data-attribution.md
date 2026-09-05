@@ -632,10 +632,15 @@ relocations so an unnamed COMMON costs 0%, and it links cleanly (`gruntz link` r
 each as `<common>`), so `link_defects` is silent too. `assert_relocs` was the only reporter
 and it mis-read COMMON as an unresolved external — see its `defined_syms`, now fixed.
 
-First (and currently only) claims: the three `GetRandomNumber` guard/seed pairs —
-0x2c127d/0x2c1288 (the free function in `<Gruntz/GameRand.h>`), 0x2c278c/0x2c2798
-(`CAniRecordView`), 0x2c279c/0x2c27a8 (`CFaderSine`). 26 `assert_relocs` FAKE → 0,
-byte-neutral (3322/4290 exact, 89.08% fuzzy unchanged).
+The first claims were the three `GetRandomNumber` guard/seed pairs:
+0x2c127d/0x2c1288 (shared game state), 0x2c278c/0x2c2798 (animation TU state),
+and 0x2c279c/0x2c27a8 (fader TU state). They now arise from one shared
+`Utils/RandomNumber.inl` definition, globally included by GameRand.h and locally
+included inside the two library TUs. The former class-member identities were
+inferred and have been removed. Source-file anonymous-namespace COMMONs use
+source-path identities with the compiler nonce and checkout prefix removed;
+header-declared anonymous namespaces are not generalized this way. See
+[the compiler, linker, and consumer controls](patterns/header-inline-local-static-three-copies.md).
 
 ### 3c. `.bss` was capped by an objdiff INFERENCE artifact — FIXED in the CLI
 

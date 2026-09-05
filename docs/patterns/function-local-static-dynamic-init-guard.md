@@ -54,9 +54,13 @@ references the bytes between.
 
 **Linkage decides how many pairs exist.** `static __inline` in a header gives each TU its OWN
 guard+datum; a plain `__inline` gives the local static external linkage (emitted COMMON) so the whole
-module shares ONE. Retail has three distinct pairs for `GetRandomNumber` — Gruntz 0x2c127d/0x2c1288,
-Wwd 0x2c278c/0x2c2798, DDrawMgr 0x2c279c/0x2c27a8 — because each module carries its own copy of the
-source, not because the statics are per-TU.
+module shares ONE when the enclosing identity agrees. Retail has three distinct pairs for
+`GetRandomNumber` — Gruntz 0x2c127d/0x2c1288, Wwd 0x2c278c/0x2c2798,
+DDrawMgr 0x2c279c/0x2c27a8. This does not prove duplicated source: one header in
+different scopes or compiled with different calling conventions can produce distinct COMMON
+identities. VC5 anonymous-namespace inlines also emit per-TU COMMON pairs. See the controlled
+counterexamples and the surrounding-ABI rejection in
+[One RNG definition with shared game state and private library states](header-inline-local-static-three-copies.md).
 
 **Re-initialization hazard.** When one guard governs a value read several times later, hold it in a
 local; re-writing the initializer expression at each use silently re-runs it (for an RNG, that means
@@ -97,13 +101,14 @@ by the linker into one bss slot. `DATA()` cannot reach either (it binds an AST V
 file, and these live in a header), and `DATA_COMPGEN` cannot either (it wraps a value expression at
 a use site; the guard byte has no source expression). Pin both in
 **`config/retail/data_compgen.tsv`** — the manifest form of `RVA_COMPGEN`, used because a
-COMMON has no owning TU for a source pin to sit in. GRUNTZ's three `GetRandomNumber` copies:
+COMMON has no owning TU for a source pin to sit in. One shared
+`Utils/RandomNumber.inl` definition supplies three states through its include scopes:
 
 | emitter | guard | seed |
 | :-- | --: | --: |
 | `<Gruntz/GameRand.h>` free function | 0x2c127d | 0x2c1288 |
-| `CAniRecordView::GetRandomNumber` | 0x2c278c | 0x2c2798 |
-| `CFaderSine::GetRandomNumber` | 0x2c279c | 0x2c27a8 |
+| `WwdFactoryObject.cpp` anonymous scope | 0x2c278c | 0x2c2798 |
+| `FaderEffects.cpp` anonymous scope | 0x2c279c | 0x2c27a8 |
 
 Naming them is byte-neutral (objdiff masks relocations) and they were never a link defect — the real
 MSVC 5.0 link resolves all six as `<common>`. What the pins buy is *verifiability*: until they
