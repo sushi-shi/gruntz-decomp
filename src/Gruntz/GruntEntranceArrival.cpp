@@ -370,9 +370,9 @@ i32 CGrunt::StepAttackFire() {
     CWwdSpriteObject* h = m_object;
     i32 zkey = h->m_screenY + 0x186a0;
     SET_SORT_KEY_IF_CHANGED(h, zkey)
-    i32 v220 = m_poweredUp;
+    i32 poweredUpSnapshot = m_poweredUp;
     m_entranceActive = false;
-    if (v220 != 0) {
+    if (poweredUpSnapshot != 0) {
         ResetGeometry();
         return 0;
     }

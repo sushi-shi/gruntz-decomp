@@ -2822,24 +2822,24 @@ void CGrunt::FinalizeStep(char* name) {
                 break;
         }
         i32 base = GRUNT_DIRECTION_GRID_WIDTH * row + column;
-        double d48 = m_cells[base].m_motion.m_direction.x;
-        double d50 = m_cells[base].m_motion.m_direction.y;
-        m_movePosX = static_cast<double>(g_frameDelta) * d48 * m_moveSpeed + m_movePosX;
-        m_movePosY = static_cast<double>(g_frameDelta) * d50 * m_moveSpeed + m_movePosY;
+        double moveDirectionX = m_cells[base].m_motion.m_direction.x;
+        double moveDirectionY = m_cells[base].m_motion.m_direction.y;
+        m_movePosX = static_cast<double>(g_frameDelta) * moveDirectionX * m_moveSpeed + m_movePosX;
+        m_movePosY = static_cast<double>(g_frameDelta) * moveDirectionY * m_moveSpeed + m_movePosY;
         i32 nx = static_cast<i32>((m_cells[base].m_motion.m_step.x + m_movePosX));
         i32 ny = static_cast<i32>((m_cells[base].m_motion.m_step.y + m_movePosY));
-        if (d48 > s_fpZero) {
+        if (moveDirectionX > s_fpZero) {
             if (nx > m_lastTilePx.m_x) {
                 nx = m_lastTilePx.m_x;
             }
-        } else if (d48 < s_fpZero && nx < m_lastTilePx.m_x) {
+        } else if (moveDirectionX < s_fpZero && nx < m_lastTilePx.m_x) {
             nx = m_lastTilePx.m_x;
         }
-        if (d50 > s_fpZero) {
+        if (moveDirectionY > s_fpZero) {
             if (ny > m_lastTilePx.m_y) {
                 ny = m_lastTilePx.m_y;
             }
-        } else if (d50 < s_fpZero && ny < m_lastTilePx.m_y) {
+        } else if (moveDirectionY < s_fpZero && ny < m_lastTilePx.m_y) {
             ny = m_lastTilePx.m_y;
         }
         m_object->m_screenX = nx;
@@ -2857,24 +2857,24 @@ void CGrunt::FinalizeStep(char* name) {
         if (GRUNT_AT_SAVED_SCREEN_POS(this)) {
             return;
         }
-        double d48 = EntranceCell()->m_motion.m_direction.x;
-        double d50 = EntranceCell()->m_motion.m_direction.y;
-        m_movePosX = static_cast<double>(g_frameDelta) * d48 * m_moveSpeed + m_movePosX;
-        m_movePosY = static_cast<double>(g_frameDelta) * d50 * m_moveSpeed + m_movePosY;
+        double moveDirectionX = EntranceCell()->m_motion.m_direction.x;
+        double moveDirectionY = EntranceCell()->m_motion.m_direction.y;
+        m_movePosX = static_cast<double>(g_frameDelta) * moveDirectionX * m_moveSpeed + m_movePosX;
+        m_movePosY = static_cast<double>(g_frameDelta) * moveDirectionY * m_moveSpeed + m_movePosY;
         i32 nx = static_cast<i32>((EntranceCell()->m_motion.m_step.x + m_movePosX));
         i32 ny = static_cast<i32>((EntranceCell()->m_motion.m_step.y + m_movePosY));
-        if (d48 > s_fpZero) {
+        if (moveDirectionX > s_fpZero) {
             if (nx > m_lastTilePx.m_x) {
                 nx = m_lastTilePx.m_x;
             }
-        } else if (d48 < s_fpZero && nx < m_lastTilePx.m_x) {
+        } else if (moveDirectionX < s_fpZero && nx < m_lastTilePx.m_x) {
             nx = m_lastTilePx.m_x;
         }
-        if (d50 > s_fpZero) {
+        if (moveDirectionY > s_fpZero) {
             if (ny > m_lastTilePx.m_y) {
                 ny = m_lastTilePx.m_y;
             }
-        } else if (d50 < s_fpZero && ny < m_lastTilePx.m_y) {
+        } else if (moveDirectionY < s_fpZero && ny < m_lastTilePx.m_y) {
             ny = m_lastTilePx.m_y;
         }
         m_object->m_screenX = nx;

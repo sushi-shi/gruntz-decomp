@@ -5585,8 +5585,8 @@ i32 CPlay::ValidateLevelTiles() {
             i32 rowBase = obj->m_screenY >> TILE_SHIFT_PX;
             i32 stride = (col << 3) - col;
 
-            i32 ebp = stride - 7;
-            for (i32 dy = -1; dy < 2; dy++, ebp += 7) {
+            i32 guardColumnOffset = stride - 7;
+            for (i32 dy = -1; dy < 2; dy++, guardColumnOffset += 7) {
                 i32 row = rowBase;
                 i32 ofs = rowBase - 1;
                 for (i32 k = 3; k != 0; k--, ofs++, row++) {
@@ -5620,7 +5620,7 @@ i32 CPlay::ValidateLevelTiles() {
                         continue;
                     }
                     i32* cellRow = gg->m_rowInts[ofs];
-                    cellRow[ebp] |= bit;
+                    cellRow[guardColumnOffset] |= bit;
                 }
             }
         } else if (dispatch == DispatchToobSpikezLogic) {
@@ -6942,8 +6942,8 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     ar->Read(&m_focusPlayerIndex, sizeof(m_focusPlayerIndex));
 
     {
-        i32 n488;
-        ar->Read(&n488, sizeof(n488));
+        i32 cameraBookmarkCount;
+        ar->Read(&cameraBookmarkCount, sizeof(cameraBookmarkCount));
         for (i32 i = 0; i < CameraBookmarkCount(); i++) {
             Coord* node = CameraBookmarkAt(i);
             if (node) {
@@ -6953,8 +6953,8 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
             }
         }
         m_cameraBookmarks.SetSize(0, -1);
-        m_cameraBookmarks.SetSize(n488, -1);
-        for (u32 j = 0; j < static_cast<u32>(n488); j++) {
+        m_cameraBookmarks.SetSize(cameraBookmarkCount, -1);
+        for (u32 j = 0; j < static_cast<u32>(cameraBookmarkCount); j++) {
             Coord* node = NULL;
             CoordPoolNode* head = g_coordPool.m_freeHead;
             CoordPoolNode* next = head->m_next;

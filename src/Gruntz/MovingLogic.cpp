@@ -64,18 +64,18 @@ void CMovingLogic::AdvanceMotion() {
     if (static_cast<i32>(Motion()->m_position.x) != sx) {
         double d = static_cast<double>(sx);
         ms->m_velocity.x = ms->ArrivalVelX(d);
-        double a0new = ms->m_step.x - (ms->m_position.x - d);
+        double correctedStepX = ms->m_step.x - (ms->m_position.x - d);
         ms->m_position.x = d;
-        ms->m_step.x = a0new;
+        ms->m_step.x = correctedStepX;
     }
 
     i32 sy = m_object->m_screenY;
     if (static_cast<i32>(Motion()->m_position.y) != sy) {
         double d = static_cast<double>(sy);
         ms->m_velocity.y = ms->ArrivalVelY(d);
-        double a8new = ms->m_step.y - (ms->m_position.y - d);
+        double correctedStepY = ms->m_step.y - (ms->m_position.y - d);
         ms->m_position.y = d;
-        ms->m_step.y = a8new;
+        ms->m_step.y = correctedStepY;
     }
 
     if (m_object->m_moveMode != MOVE_DIRECT) {

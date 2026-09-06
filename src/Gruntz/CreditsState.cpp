@@ -200,9 +200,9 @@ i32 CCreditsState::Render() {
     StepVideo();
     DrawScrollingCredits();
 
-    CDDrawSubMgrPages* v4 = m_world->m_drawTarget;
-    v4->m_frontSurface->m_surface->Flip(NULL);
-    v4->m_backPair->BltSelf(v4->m_overlayPair);
+    CDDrawSubMgrPages* drawPages = m_world->m_drawTarget;
+    drawPages->m_frontSurface->m_surface->Flip(NULL);
+    drawPages->m_backPair->BltSelf(drawPages->m_overlayPair);
 
     if (!m_musicStarted && owner()->m_musicEnabled) {
         owner()->m_midi->PlaySequence("CREDITZ", true);

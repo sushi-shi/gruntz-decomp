@@ -96,10 +96,10 @@ i32 CImage::LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 ke
     }
     i32 colorKey = (keyed != 0) ? g_surfaceColorKey : -1;
     if (mode == FMT_PID || mode == FMT_RID) {
-        i32 g10 = desc->offsetX;
-        i32 g14 = desc->offsetY;
-        m_originX = g10;
-        m_originY = g14;
+        i32 imageOffsetX = desc->offsetX;
+        i32 imageOffsetY = desc->offsetY;
+        m_originX = imageOffsetX;
+        m_originY = imageOffsetY;
     } else {
         m_originX = 0;
         m_originY = 0;
