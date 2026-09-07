@@ -2235,8 +2235,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
 
             {
-                i32 by17 = bx + 0x17;
-                i32 by52 = bx + 0x52;
+                i32 gruntBarLeft = bx + 0x17;
+                i32 gruntBarRight = bx + 0x52;
                 i32 y = by + 0xd9;
                 for (i = 0; i < STATUSBAR_GRUNT_SLOT_COUNT; i++) {
                     bar = new CSBI_StatzTabGruntBar;
@@ -2245,7 +2245,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                             code,
                             static_cast<SbiCommandId>(IDX(SBICMD_CURSOR_TARGET_FIRST) + i),
                             TAB_MULTIPLAYER,
-                            SbGeom(by17, y - 0x11, by52, y),
+                            SbGeom(gruntBarLeft, y - 0x11, gruntBarRight, y),
                             "GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ",
                             m_tabCycle,
                             i,

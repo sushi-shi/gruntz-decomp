@@ -2903,18 +2903,18 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
             if (m_statusBar->HitTestLayer(xr, y)) {
                 m_dragSnapActive = true;
 
-                CGameObject* g8 = m_statusBar->m_barSprite;
+                CGameObject* xAnchorSprite = m_statusBar->m_barSprite;
                 i32 dx = 0;
-                if (g8 != NULL) {
-                    dx = g8->m_screenX - xr;
+                if (xAnchorSprite != NULL) {
+                    dx = xAnchorSprite->m_screenX - xr;
                 }
                 m_snapOriginX = dx;
-                CGameObject* barObject = m_statusBar->m_barSprite;
-                if (barObject == NULL) {
+                CGameObject* yAnchorSprite = m_statusBar->m_barSprite;
+                if (yAnchorSprite == NULL) {
                     m_snapOriginY = 0;
                     return 1;
                 }
-                m_snapOriginY = barObject->m_screenY - y;
+                m_snapOriginY = yAnchorSprite->m_screenY - y;
                 return 1;
             }
             goto drag_box;
@@ -6848,9 +6848,9 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     ar->Read(&m_cueToggle, sizeof(m_cueToggle));
     g_serialCounter++;
     {
-        char buf512[0x200];
-        ar->Read(buf512, 0x200);
-        m_cueText = buf512;
+        char cueTextBuffer[0x200];
+        ar->Read(cueTextBuffer, 0x200);
+        m_cueText = cueTextBuffer;
     }
     ar->Read(&m_lastCueId, sizeof(m_lastCueId));
     ar->Read(&g_lastLevelNum, sizeof(g_lastLevelNum));
