@@ -36,14 +36,14 @@ public:
 
 class dprintfFromTo {
 public:
-    u32 From;
-    u32 To;
+    u32 m_From;
+    u32 m_To;
 };
 
 class dprintfExcludeRegions {
 public:
-    u32 NumRegions;
-    dprintfFromTo Ary[MAX_EXCLUDE_REGIONS];
+    u32 m_NumRegions;
+    dprintfFromTo m_Ary[MAX_EXCLUDE_REGIONS];
     BOOLEAN In(u32 Num);
     void Add(u32 From, u32 To);
     void Scan(char* Str);

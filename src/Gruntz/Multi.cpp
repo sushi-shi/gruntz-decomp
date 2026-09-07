@@ -97,7 +97,7 @@ DATA(0x00211d8c)
 
 i32 g_serviceId = NET_SERVICE_NONE;
 DATA(0x00211ec4)
-char s_GameKey[] = "GAME_KEY";
+char g_GameKey[] = "GAME_KEY";
 DATA(0x00246378)
 CNetOptionsStatePacket g_optionsClosedPacket;
 DATA(0x00246fd8)
@@ -1246,7 +1246,7 @@ i32 CMulti::ShowMultiStartDlg() {
         SoundCueRegistry* reg = m_world->m_soundRegistry;
         if (reg->m_silentMode == false) {
             SoundCue* found = NULL;
-            MapLookup(reg->m_cues, s_GameKey, found);
+            MapLookup(reg->m_cues, g_GameKey, found);
             SoundCue* rec = found;
             if (rec != NULL) {
                 b32 soundEnabled = g_soundEnabled;

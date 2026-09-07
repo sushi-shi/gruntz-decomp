@@ -4,16 +4,16 @@
 #include <Wwd/WwdFactoryObject.h>
 
 inline i32 CDDrawRectsOverlap(const CDDrawRect* a, const CDDrawRect* b) {
-    if (a->left > b->right) {
+    if (a->m_left > b->m_right) {
         return 0;
     }
-    if (a->right < b->left) {
+    if (a->m_right < b->m_left) {
         return 0;
     }
-    if (a->top > b->bottom) {
+    if (a->m_top > b->m_bottom) {
         return 0;
     }
-    return a->bottom >= b->top;
+    return a->m_bottom >= b->m_top;
 }
 
 #endif // GRUNTZ_WWD_WWDRECTOVERLAPINLINE_H

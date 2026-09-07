@@ -100,9 +100,9 @@ const double g_slopeNegHalf = -0.5;
 DATA(0x001e9758)
 const double g_slopePosHalf = 0.5;
 DATA(0x001e9760)
-const double g_slopePosTwo = 2.0;
+const double s_slopePosTwo = 2.0;
 DATA(0x001e9768)
-const double g_slopeNegTwo = -2.0;
+const double s_slopeNegTwo = -2.0;
 
 i32 g_movingSeed;
 
@@ -648,7 +648,7 @@ GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
         if (ratio <= g_slopePosHalf) {
             return &g_gruntMoveDirEast;
         }
-        if (ratio <= g_slopePosTwo) {
+        if (ratio <= s_slopePosTwo) {
             return &g_gruntMoveDirNorthEast;
         }
         return &g_gruntMoveDirNorth;
@@ -657,7 +657,7 @@ GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
         if (onCell) {
             return &g_gruntMoveDirNorthWest;
         }
-        if (ratio <= g_slopeNegTwo) {
+        if (ratio <= s_slopeNegTwo) {
             return &g_gruntMoveDirNorth;
         }
         if (ratio <= g_slopeNegHalf) {
@@ -669,7 +669,7 @@ GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
         if (onCell) {
             return &g_gruntMoveDirSouthEast;
         }
-        if (ratio <= g_slopeNegTwo) {
+        if (ratio <= s_slopeNegTwo) {
             return &g_gruntMoveDirSouth;
         }
         if (ratio <= g_slopeNegHalf) {
@@ -684,7 +684,7 @@ GruntDirectionCell* MotionEntity::Classify(MotionEntity* other, char exact) {
     if (ratio <= g_slopePosHalf) {
         return &g_gruntMoveDirWest;
     }
-    if (ratio <= g_slopePosTwo) {
+    if (ratio <= s_slopePosTwo) {
         return &g_gruntMoveDirSouthWest;
     }
     return &g_gruntMoveDirSouth;
@@ -794,8 +794,8 @@ void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
                                        ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0))
                                        : NULL;
             i32 frame = elem->m_param;
-            i32 row = facing.row;
-            i32 column = facing.column;
+            i32 row = facing.m_row;
+            i32 column = facing.m_column;
             i32 index = 3 * row + column;
 
             const char* nm = m_cells[index].IdleName().GetBuffer(0);
@@ -808,8 +808,8 @@ walk:
 
     SwitchAnimation(m_poseWalk);
     {
-        i32 row = facing.row;
-        i32 column = facing.column;
+        i32 row = facing.m_row;
+        i32 column = facing.m_column;
         i32 index = 3 * row + column;
 
         const char* nm = m_cells[index].WalkName().GetBuffer(0);
@@ -1302,46 +1302,46 @@ i32 CGrunt::StepGruntMovement() {
     gtY = m_object->m_screenY >> TILE_SHIFT_PX;
     if (coordX > gtX) {
         if (coordY > gtY) {
-            recColumn = g_gruntMoveDirSouthEast.column;
-            recRow = g_gruntMoveDirSouthEast.row;
-            recDirection = g_gruntMoveDirSouthEast.direction;
+            recColumn = g_gruntMoveDirSouthEast.m_column;
+            recRow = g_gruntMoveDirSouthEast.m_row;
+            recDirection = g_gruntMoveDirSouthEast.m_direction;
         } else if (coordY == gtY) {
-            recColumn = g_gruntMoveDirEast.column;
-            recDirection = g_gruntMoveDirEast.direction;
-            recRow = g_gruntMoveDirEast.row;
+            recColumn = g_gruntMoveDirEast.m_column;
+            recDirection = g_gruntMoveDirEast.m_direction;
+            recRow = g_gruntMoveDirEast.m_row;
         } else {
-            recColumn = g_gruntMoveDirNorthEast.column;
-            recDirection = g_gruntMoveDirNorthEast.direction;
-            recRow = g_gruntMoveDirNorthEast.row;
+            recColumn = g_gruntMoveDirNorthEast.m_column;
+            recDirection = g_gruntMoveDirNorthEast.m_direction;
+            recRow = g_gruntMoveDirNorthEast.m_row;
         }
     } else if (coordX < gtX) {
         if (coordY > gtY) {
-            recColumn = g_gruntMoveDirSouthWest.column;
-            recRow = g_gruntMoveDirSouthWest.row;
-            recDirection = g_gruntMoveDirSouthWest.direction;
+            recColumn = g_gruntMoveDirSouthWest.m_column;
+            recRow = g_gruntMoveDirSouthWest.m_row;
+            recDirection = g_gruntMoveDirSouthWest.m_direction;
         } else if (coordY == gtY) {
-            recColumn = g_gruntMoveDirWest.column;
-            recRow = g_gruntMoveDirWest.row;
-            recDirection = g_gruntMoveDirWest.direction;
+            recColumn = g_gruntMoveDirWest.m_column;
+            recRow = g_gruntMoveDirWest.m_row;
+            recDirection = g_gruntMoveDirWest.m_direction;
         } else {
-            recColumn = g_gruntMoveDirNorthWest.column;
-            recRow = g_gruntMoveDirNorthWest.row;
-            recDirection = g_gruntMoveDirNorthWest.direction;
+            recColumn = g_gruntMoveDirNorthWest.m_column;
+            recRow = g_gruntMoveDirNorthWest.m_row;
+            recDirection = g_gruntMoveDirNorthWest.m_direction;
         }
     } else {
         if (coordY < gtY) {
-            recRow = g_gruntMoveDirNorth.row;
-            recColumn = g_gruntMoveDirNorth.column;
-            recDirection = g_gruntMoveDirNorth.direction;
+            recRow = g_gruntMoveDirNorth.m_row;
+            recColumn = g_gruntMoveDirNorth.m_column;
+            recDirection = g_gruntMoveDirNorth.m_direction;
         } else {
-            recColumn = g_gruntMoveDirSouth.column;
-            recRow = g_gruntMoveDirSouth.row;
-            recDirection = g_gruntMoveDirSouth.direction;
+            recColumn = g_gruntMoveDirSouth.m_column;
+            recRow = g_gruntMoveDirSouth.m_row;
+            recDirection = g_gruntMoveDirSouth.m_direction;
         }
     }
-    rec.row = recRow;
-    rec.column = recColumn;
-    rec.direction = recDirection;
+    rec.m_row = recRow;
+    rec.m_column = recColumn;
+    rec.m_direction = recDirection;
 
     SET_TILE_CENTER_PIXEL_PAIR_Y_FIRST(tgtPxY, tgtPxX, coordY, coordX)
     bd = g_gameReg->m_tileGrid;
@@ -1422,46 +1422,46 @@ i32 CGrunt::StepGruntMovement() {
                 i32 gy = m_object->m_screenY >> TILE_SHIFT_PX;
                 if (cx > gx) {
                     if (cy > gy) {
-                        recRow = g_gruntMoveDirSouthEast.row;
-                        recColumn = g_gruntMoveDirSouthEast.column;
-                        recDirection = g_gruntMoveDirSouthEast.direction;
+                        recRow = g_gruntMoveDirSouthEast.m_row;
+                        recColumn = g_gruntMoveDirSouthEast.m_column;
+                        recDirection = g_gruntMoveDirSouthEast.m_direction;
                     } else if (cy == gy) {
-                        recRow = g_gruntMoveDirEast.row;
-                        recColumn = g_gruntMoveDirEast.column;
-                        recDirection = g_gruntMoveDirEast.direction;
+                        recRow = g_gruntMoveDirEast.m_row;
+                        recColumn = g_gruntMoveDirEast.m_column;
+                        recDirection = g_gruntMoveDirEast.m_direction;
                     } else {
-                        recRow = g_gruntMoveDirNorthEast.row;
-                        recColumn = g_gruntMoveDirNorthEast.column;
-                        recDirection = g_gruntMoveDirNorthEast.direction;
+                        recRow = g_gruntMoveDirNorthEast.m_row;
+                        recColumn = g_gruntMoveDirNorthEast.m_column;
+                        recDirection = g_gruntMoveDirNorthEast.m_direction;
                     }
                 } else if (cx < gx) {
                     if (cy > gy) {
-                        recRow = g_gruntMoveDirSouthWest.row;
-                        recColumn = g_gruntMoveDirSouthWest.column;
-                        recDirection = g_gruntMoveDirSouthWest.direction;
+                        recRow = g_gruntMoveDirSouthWest.m_row;
+                        recColumn = g_gruntMoveDirSouthWest.m_column;
+                        recDirection = g_gruntMoveDirSouthWest.m_direction;
                     } else if (gy == cy) {
-                        recRow = g_gruntMoveDirWest.row;
-                        recColumn = g_gruntMoveDirWest.column;
-                        recDirection = g_gruntMoveDirWest.direction;
+                        recRow = g_gruntMoveDirWest.m_row;
+                        recColumn = g_gruntMoveDirWest.m_column;
+                        recDirection = g_gruntMoveDirWest.m_direction;
                     } else {
-                        recRow = g_gruntMoveDirNorthWest.row;
-                        recColumn = g_gruntMoveDirNorthWest.column;
-                        recDirection = g_gruntMoveDirNorthWest.direction;
+                        recRow = g_gruntMoveDirNorthWest.m_row;
+                        recColumn = g_gruntMoveDirNorthWest.m_column;
+                        recDirection = g_gruntMoveDirNorthWest.m_direction;
                     }
                 } else {
                     if (cy < gy) {
-                        recRow = g_gruntMoveDirNorth.row;
-                        recColumn = g_gruntMoveDirNorth.column;
-                        recDirection = g_gruntMoveDirNorth.direction;
+                        recRow = g_gruntMoveDirNorth.m_row;
+                        recColumn = g_gruntMoveDirNorth.m_column;
+                        recDirection = g_gruntMoveDirNorth.m_direction;
                     } else {
-                        recRow = g_gruntMoveDirSouth.row;
-                        recColumn = g_gruntMoveDirSouth.column;
-                        recDirection = g_gruntMoveDirSouth.direction;
+                        recRow = g_gruntMoveDirSouth.m_row;
+                        recColumn = g_gruntMoveDirSouth.m_column;
+                        recDirection = g_gruntMoveDirSouth.m_direction;
                     }
                 }
-                rec.row = recRow;
-                rec.column = recColumn;
-                rec.direction = recDirection;
+                rec.m_row = recRow;
+                rec.m_column = recColumn;
+                rec.m_direction = recDirection;
                 CGruntzMapMgr* bd = g_gameReg->m_tileGrid;
                 if (bd->m_rowInts[cy][cx * 7] & BRICKZ_CELL_OCCUPIED) {
                     SetFacing(0x3e8, rec);
@@ -3139,7 +3139,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             i32 handle = first->m_param;
             GruntDirectionCell cell = m_entranceCell;
             SetImageFrameByName(
-                m_cells[cell.row * 3 + cell.column].m_names[1].GetBuffer(0),
+                m_cells[cell.m_row * 3 + cell.m_column].m_names[1].GetBuffer(0),
                 handle
             );
         } else {
@@ -3166,7 +3166,9 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             eq = (strcmp(*rec2, "D") == 0);
             if (eq) {
                 GruntDirectionCell cell2 = m_entranceCell;
-                SetImageSetByName(m_cells[cell2.row * 3 + cell2.column].m_names[2].GetBuffer(0));
+                SetImageSetByName(
+                    m_cells[cell2.m_row * 3 + cell2.m_column].m_names[2].GetBuffer(0)
+                );
                 SwitchAnimation(m_poseWalk);
             } else {
                 ResetEntranceAnimation(1, 0, 0);

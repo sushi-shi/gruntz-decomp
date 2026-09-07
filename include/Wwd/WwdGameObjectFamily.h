@@ -368,7 +368,7 @@ public:
     virtual void SetDotColor(u8 dotColor);
 
     u8 m_dotColor;
-    char _p18d[0x190 - 0x18d];
+    char m_p18d[0x190 - 0x18d];
 };
 
 #define NEXT_CHILD_FROM_LIST(list, pos) static_cast<CGameObject*>(list.GetNext(pos))

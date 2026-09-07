@@ -91,7 +91,7 @@ TileCollisionKind CGameLevel::LookupTile(i32 x, i32 y) {
     }
     mp = m_mainPlane;
     i32 tile = mp->m_tileHandles[mp->m_tileRowOffsets[y] + x];
-    if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
+    if (tile == UNINIT_FILL || tile == s_TILE_CLEAR) {
         return TILEKIND_PASSABLE;
     }
     CTileImageSet* set =

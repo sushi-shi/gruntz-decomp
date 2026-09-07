@@ -87,8 +87,8 @@ i32 CGrunt::ResetGeometry() {
     DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
 
     GruntDirectionCell cell = m_entranceCell;
-    i32 row = cell.row;
-    i32 column = cell.column;
+    i32 row = cell.m_row;
+    i32 column = cell.m_column;
     i32 index = 3 * row + column;
 
     const char* name = m_cells[index].AttackName().GetBuffer(0);
@@ -202,8 +202,8 @@ i32 CGrunt::StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIn
     DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, el)
 
     GruntDirectionCell cell = m_entranceCell;
-    i32 cellRow = cell.row;
-    i32 cellColumn = cell.column;
+    i32 cellRow = cell.m_row;
+    i32 cellColumn = cell.m_column;
     i32 base = cellRow + (cellColumn + 2 * cellRow);
     char* buf = m_cells[base].AttackName().GetBuffer(0);
     SetImageFrameByName(buf, frame);
@@ -223,8 +223,8 @@ i32 CGrunt::StartRangedAttackAnimation() {
     DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, el)
 
     GruntDirectionCell cell = m_entranceCell;
-    i32 row = cell.row;
-    i32 column = cell.column;
+    i32 row = cell.m_row;
+    i32 column = cell.m_column;
     i32 base = row + (column + 2 * row);
     char* buf = m_cells[base].AttackName().GetBuffer(0);
     SetImageFrameByName(buf, frame);
@@ -468,8 +468,8 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
         SET_ANIMATION_ACT("L");
         SwitchAnimation(m_poseWalk);
         GruntDirectionCell cell = m_entranceCell;
-        i32 colv = cell.column + cell.row * 2;
-        i32 basev = cell.row + colv;
+        i32 colv = cell.m_column + cell.m_row * 2;
+        i32 basev = cell.m_row + colv;
         char* nm = m_cells[basev].WalkName().GetBuffer(0);
         SetImageSetByName(nm);
 
@@ -749,7 +749,7 @@ latch:
 
     GruntDirectionCell cell = m_entranceCell;
     if (m_wwdObject->m_animationCursor.m_animation != AT(m_poseIdle, GRUNT_IDLE1)) {
-        switch (m_entranceCell.direction) {
+        switch (m_entranceCell.m_direction) {
             case DIR_NORTHEAST:
             case DIR_EAST:
                 cell = g_gruntDirEast;
@@ -769,8 +769,8 @@ latch:
     }
 
     {
-        i32 col = cell.column + cell.row * 2;
-        i32 base = cell.row + col;
+        i32 col = cell.m_column + cell.m_row * 2;
+        i32 base = cell.m_row + col;
         CString key = m_cells[base].IdleName();
 
         APPLY_CURRENT_ANIMATION_FRAME_SPRITE(key, desc, elem)
@@ -920,8 +920,8 @@ i32 CGrunt::StepEntranceReinit() {
         cell = m_entranceCell;
         m_entranceActive = true;
     }
-    i32 col = cell.column + cell.row * 2;
-    i32 base = cell.row + col;
+    i32 col = cell.m_column + cell.m_row * 2;
+    i32 base = cell.m_row + col;
 
     char* walkAnimationName = m_cells[base].WalkName().GetBuffer(0);
     SetImageSetByName(walkAnimationName);
@@ -1228,8 +1228,8 @@ i32 CGrunt::StepCombatReaction(
                         SET_ANIMATION_ACT("D");
                         SwitchAnimation(m_poseWalk);
                         GruntDirectionCell cell = m_entranceCell;
-                        i32 col = cell.column + cell.row * 2;
-                        i32 base = cell.row + col;
+                        i32 col = cell.m_column + cell.m_row * 2;
+                        i32 base = cell.m_row + col;
                         char* cn = m_cells[base].WalkName().GetBuffer(0);
                         SetImageSetByName(cn);
                     } else {
@@ -1353,8 +1353,8 @@ tail:
     }
     {
         GruntDirectionCell cell = m_entranceCell;
-        i32 col = cell.column + cell.row * 2;
-        i32 base = cell.row + col;
+        i32 col = cell.m_column + cell.m_row * 2;
+        i32 base = cell.m_row + col;
         char* cn = m_cells[base].StruckName().GetBuffer(0);
         SetImageFrameByName(cn, frame);
     }
@@ -1519,8 +1519,8 @@ i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
     SwitchAnimation(m_poseItem[poseIdx]);
 
     GruntDirectionCell cell = m_entranceCell;
-    i32 col = cell.column + cell.row * 2;
-    i32 base = cell.row + col;
+    i32 col = cell.m_column + cell.m_row * 2;
+    i32 base = cell.m_row + col;
     char* name = m_cells[base].ItemName().GetBuffer(0);
     SetImageSetByName(name);
     return 0;

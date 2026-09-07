@@ -7,7 +7,7 @@
 
 struct CButeTextBuf {
     char m_pad00[0xc];
-    ostream accum;
+    ostream m_accum;
 };
 
 #endif // SRC_BUTE_BUTETEXTBUF_H

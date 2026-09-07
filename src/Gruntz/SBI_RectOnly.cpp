@@ -198,7 +198,7 @@ i32 CStatusBarMgr::DockStatusBarLeft() {
         SetState(STATUSBAR_DOCK_LEFT);
         (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
         if (BuildStatusBarTabs() == 0) {
-            g_gameReg->ReportError(kActivateErrId, 0x448);
+            g_gameReg->ReportError(s_activateErrId, 0x448);
             return 0;
         }
         SetTabState(static_cast<SbiCommandId>(IDX(m_activeTab)), MENUITEM_SELECTED);
@@ -221,7 +221,7 @@ i32 CStatusBarMgr::DockStatusBarRight() {
     SetState(STATUSBAR_DOCK_RIGHT);
     (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
     if (BuildStatusBarTabs() == 0) {
-        g_gameReg->ReportError(kActivateErrId, 0x449);
+        g_gameReg->ReportError(s_activateErrId, 0x449);
         return 0;
     }
     SetTabState(static_cast<SbiCommandId>(IDX(m_activeTab)), MENUITEM_SELECTED);
@@ -1671,7 +1671,7 @@ i32 CStatusBarMgr::SetTab(GameTabContent tab, b32 forceReload) {
     m_itemKind = tab;
 
     if (!LoadTabSprites()) {
-        g_gameReg->ReportError(kActivateErrId, kSetTabErrTag);
+        g_gameReg->ReportError(s_activateErrId, s_setTabErrTag);
         return 0;
     }
     Deactivate();
@@ -2468,7 +2468,7 @@ i32 CStatusBarMgr::TryActivate() {
         return Activate();
     }
     if (!BuildStatusBarTabs()) {
-        g_gameReg->ReportError(kActivateErrId, kActivateErrTag);
+        g_gameReg->ReportError(s_activateErrId, s_activateErrTag);
         return 0;
     }
     SetTabState(static_cast<SbiCommandId>(IDX(m_activeTab)), MENUITEM_SELECTED);
@@ -3232,7 +3232,7 @@ void CStatusBarMgr::CommitSlot(b32 active) {
         ArmSlot(m_activeSlot);
         m_activeSlot = -1;
     } else {
-        m_slots[m_activeSlot].m_value = kSlotCommitLevel;
+        m_slots[m_activeSlot].m_value = s_slotCommitLevel;
         if (m_slotNotify[m_activeSlot]) {
             m_slotNotify[m_activeSlot]->Notify(m_slots[m_activeSlot].m_value);
         }
@@ -3737,12 +3737,12 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     GameModeId mode = g_gameReg->m_gameMode;
     if (mode == GAMEMODE_MULTIPLAYER) {
         for (i32 i = 0; i < g_buteMgr.GetInt("Multiplayer", "StartingGruntz", 0); i++) {
-            m_slots[i].m_value = kSlotCommitLevel;
+            m_slots[i].m_value = s_slotCommitLevel;
             m_slots[i].m_state = SLOT_READY;
         }
     } else if (mode == GAMEMODE_BATTLEZ) {
         for (i32 i = 0; i < g_buteMgr.GetInt("Battlez", "StartingGruntz", 0); i++) {
-            m_slots[i].m_value = kSlotCommitLevel;
+            m_slots[i].m_value = s_slotCommitLevel;
             m_slots[i].m_state = SLOT_READY;
         }
     }

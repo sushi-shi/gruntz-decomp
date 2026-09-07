@@ -205,7 +205,7 @@ static __inline TileCollisionKind PbResolveCell(CGameLevel* level, i32 x, i32 y)
     }
     CDDrawWorkerHost* plane = level->m_mainPlane;
     i32 cell = plane->m_tileHandles[plane->m_tileRowOffsets[y] + x];
-    if (cell == UNINIT_FILL || cell == TILE_CLEAR) {
+    if (cell == UNINIT_FILL || cell == s_TILE_CLEAR) {
         return TILEKIND_PASSABLE;
     }
 
@@ -226,7 +226,7 @@ static __inline TileCollisionKind PbResolveCellHandle(CGameLevel* level, i32 x, 
         y = level->m_mainPlane->m_tileRows - 1;
     }
     i32 cell = level->m_mainPlane->GetTileHandle(x, y);
-    if (cell == UNINIT_FILL || cell == TILE_CLEAR) {
+    if (cell == UNINIT_FILL || cell == s_TILE_CLEAR) {
         return TILEKIND_PASSABLE;
     }
     CTileImageSet* set =

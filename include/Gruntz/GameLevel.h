@@ -20,7 +20,7 @@ class CFileMemBase;
 class CDDrawSurfacePair;
 struct WwdTileImageRecord;
 
-static const i32 TILE_CLEAR = -1;
+static const i32 s_TILE_CLEAR = -1;
 
 #define PROBE_TILE(LVL, X, Y, RESULT)                                                              \
     do {                                                                                           \
@@ -48,7 +48,7 @@ static const i32 TILE_CLEAR = -1;
         i32 idx_ = pl_->m_tileRowOffsets[qy_] + col_;                                              \
         i32 subY_ = py_ - (qy_ << pl_->m_shiftY);                                                  \
         i32 tile_ = pl_->m_tileHandles[idx_];                                                      \
-        if (tile_ == UNINIT_FILL || tile_ == TILE_CLEAR) {                                         \
+        if (tile_ == UNINIT_FILL || tile_ == s_TILE_CLEAR) {                                       \
             (RESULT) = TILEKIND_PASSABLE;                                                          \
         } else {                                                                                   \
             CTileImageSet* set_ =                                                                  \
@@ -82,7 +82,7 @@ static const i32 TILE_CLEAR = -1;
         i32 subX_ = px_ - (qx_ << pl_->m_shiftX);                                                  \
         i32 subY_ = py_ - (qy_ << pl_->m_shiftY);                                                  \
         i32 tile_ = pl_->GetTileHandle(col_, qy_);                                                 \
-        if (tile_ == UNINIT_FILL || tile_ == TILE_CLEAR) {                                         \
+        if (tile_ == UNINIT_FILL || tile_ == s_TILE_CLEAR) {                                       \
             (RESULT) = TILEKIND_PASSABLE;                                                          \
         } else {                                                                                   \
             CTileImageSet* set_ =                                                                  \
@@ -101,8 +101,8 @@ class CDDrawChildGroup;
 class CDDrawSurfaceMgr;
 
 struct LevelDims {
-    i32 w;
-    i32 h;
+    i32 m_w;
+    i32 m_h;
 };
 
 GZ_ENUM_CONST_BEGIN(LevelPlaneLayout)
@@ -144,12 +144,12 @@ public:
         m_largeActiveGridCellSize[1] = 1000;
         m_smallActiveGridCellSize[0] = 250;
         m_smallActiveGridCellSize[1] = 125;
-        m_defaultActiveRegionSize.w = 1600;
-        m_defaultActiveRegionSize.h = 1200;
-        m_largeActiveRegionSize.w = 2560;
-        m_largeActiveRegionSize.h = 1920;
-        m_smallActiveRegionSize.w = 768;
-        m_smallActiveRegionSize.h = 576;
+        m_defaultActiveRegionSize.m_w = 1600;
+        m_defaultActiveRegionSize.m_h = 1200;
+        m_largeActiveRegionSize.m_w = 2560;
+        m_largeActiveRegionSize.m_h = 1920;
+        m_smallActiveRegionSize.m_w = 768;
+        m_smallActiveRegionSize.m_h = 576;
     }
 
     void ResetSpatialDefaults();

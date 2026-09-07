@@ -30,68 +30,68 @@ const double g_motionNegTwo = -2.0;
 RVA(0x0016ea90, 0x234)
 void CMovingLogic::AdvanceMotion() {
 
-    m_previousScreenPosition.m_x = static_cast<i32>(Motion()->m_position.x);
-    m_previousScreenPosition.m_y = static_cast<i32>(Motion()->m_position.y);
+    m_previousScreenPosition.m_x = static_cast<i32>(Motion()->m_position.m_x);
+    m_previousScreenPosition.m_y = static_cast<i32>(Motion()->m_position.m_y);
     Motion()->Step(static_cast<double>(g_frameTime) * g_motionTimeScale - Motion()->m_time);
 
     if ((m_object->m_flags & IDX(WWD_GAME_OBJECT_FLAG_ON_CARRIER)) && m_object->m_carrier != NULL) {
         m_object->m_screenX += m_object->m_carrier->m_deltaX;
-        Motion()->m_position.x = static_cast<double>(m_object->m_screenX);
+        Motion()->m_position.m_x = static_cast<double>(m_object->m_screenX);
         m_object->m_screenY += m_object->m_carrier->m_deltaY;
-        Motion()->m_position.y = static_cast<double>(m_object->m_screenY);
+        Motion()->m_position.m_y = static_cast<double>(m_object->m_screenY);
     }
 
     if (m_object->m_moveMode == MOVE_GROUNDED) {
         m_collisionFlags = m_object->OwnerMgr()->m_level->MoveToward(
             m_object,
-            static_cast<i32>(Motion()->m_position.x),
+            static_cast<i32>(Motion()->m_position.m_x),
             m_object->m_screenY,
             IDX(m_moveFlags)
         );
-        Motion()->m_velocity.y = 0.0;
+        Motion()->m_velocity.m_y = 0.0;
     } else {
         m_object->m_flags &= ~IDX(WWD_GAME_OBJECT_FLAG_ON_CARRIER);
         m_collisionFlags = m_object->OwnerMgr()->m_level->MoveToward(
             m_object,
-            static_cast<i32>(Motion()->m_position.x),
-            static_cast<i32>(Motion()->m_position.y),
+            static_cast<i32>(Motion()->m_position.m_x),
+            static_cast<i32>(Motion()->m_position.m_y),
             IDX(m_moveFlags)
         );
     }
 
     CMotionState* ms = Motion();
     i32 sx = m_object->m_screenX;
-    if (static_cast<i32>(Motion()->m_position.x) != sx) {
+    if (static_cast<i32>(Motion()->m_position.m_x) != sx) {
         double d = static_cast<double>(sx);
-        ms->m_velocity.x = ms->ArrivalVelX(d);
-        double correctedStepX = ms->m_step.x - (ms->m_position.x - d);
-        ms->m_position.x = d;
-        ms->m_step.x = correctedStepX;
+        ms->m_velocity.m_x = ms->ArrivalVelX(d);
+        double correctedStepX = ms->m_step.m_x - (ms->m_position.m_x - d);
+        ms->m_position.m_x = d;
+        ms->m_step.m_x = correctedStepX;
     }
 
     i32 sy = m_object->m_screenY;
-    if (static_cast<i32>(Motion()->m_position.y) != sy) {
+    if (static_cast<i32>(Motion()->m_position.m_y) != sy) {
         double d = static_cast<double>(sy);
-        ms->m_velocity.y = ms->ArrivalVelY(d);
-        double correctedStepY = ms->m_step.y - (ms->m_position.y - d);
-        ms->m_position.y = d;
-        ms->m_step.y = correctedStepY;
+        ms->m_velocity.m_y = ms->ArrivalVelY(d);
+        double correctedStepY = ms->m_step.m_y - (ms->m_position.m_y - d);
+        ms->m_position.m_y = d;
+        ms->m_step.m_y = correctedStepY;
     }
 
     if (m_object->m_moveMode != MOVE_DIRECT) {
         i32 f = IDX(m_collisionFlags);
         if (f & IDX(MOVE_RESULT_TILE_TOP)) {
-            Motion()->m_velocity.y = -Motion()->m_velocity.y;
+            Motion()->m_velocity.m_y = -Motion()->m_velocity.m_y;
             return;
         }
         if (f & IDX(MOVE_RESULT_TILE_RIGHT)) {
-            Motion()->m_maxBounds.x = static_cast<double>(m_previousScreenPosition.m_x);
-            Motion()->m_velocity.x = Motion()->m_velocity.x * g_motionNegHalf;
+            Motion()->m_maxBounds.m_x = static_cast<double>(m_previousScreenPosition.m_x);
+            Motion()->m_velocity.m_x = Motion()->m_velocity.m_x * g_motionNegHalf;
             return;
         }
         if (f & IDX(MOVE_RESULT_TILE_LEFT)) {
-            Motion()->m_minBounds.x = static_cast<double>(m_previousScreenPosition.m_x);
-            Motion()->m_velocity.x = Motion()->m_velocity.x * g_motionNegHalf;
+            Motion()->m_minBounds.m_x = static_cast<double>(m_previousScreenPosition.m_x);
+            Motion()->m_velocity.m_x = Motion()->m_velocity.m_x * g_motionNegHalf;
         }
     }
 }
@@ -150,72 +150,72 @@ void CMovingLogic::AdvanceMotion() {
 // @early-stop
 RVA(0x0016ecd0, 0x6e6)
 void CMotionState::Step(double dt) {
-    m_previousPosition.x = m_position.x;
-    m_previousPosition.y = m_position.y;
-    m_previousPosition.z = m_position.z;
+    m_previousPosition.m_x = m_position.m_x;
+    m_previousPosition.m_y = m_position.m_y;
+    m_previousPosition.m_z = m_position.m_z;
     m_deltaTime = dt;
     m_time = dt + m_time;
     if (m_stepDisabled != false) {
         return;
     }
     STEP_AXIS(
-        m_velocity.x,
-        m_acceleration.x,
-        m_position.x,
-        m_maxStep.x,
-        m_minBounds.x,
-        m_maxBounds.x,
-        m_maxVelocity.x,
-        m_step.x
+        m_velocity.m_x,
+        m_acceleration.m_x,
+        m_position.m_x,
+        m_maxStep.m_x,
+        m_minBounds.m_x,
+        m_maxBounds.m_x,
+        m_maxVelocity.m_x,
+        m_step.m_x
     );
     STEP_AXIS(
-        m_velocity.y,
-        m_acceleration.y,
-        m_position.y,
-        m_maxStep.y,
-        m_minBounds.y,
-        m_maxBounds.y,
-        m_maxVelocity.y,
-        m_step.y
+        m_velocity.m_y,
+        m_acceleration.m_y,
+        m_position.m_y,
+        m_maxStep.m_y,
+        m_minBounds.m_y,
+        m_maxBounds.m_y,
+        m_maxVelocity.m_y,
+        m_step.m_y
     );
     STEP_AXIS(
-        m_velocity.z,
-        m_acceleration.z,
-        m_position.z,
-        m_maxStep.z,
-        m_minBounds.z,
-        m_maxBounds.z,
-        m_maxVelocity.z,
-        m_step.z
+        m_velocity.m_z,
+        m_acceleration.m_z,
+        m_position.m_z,
+        m_maxStep.m_z,
+        m_minBounds.m_z,
+        m_maxBounds.m_z,
+        m_maxVelocity.m_z,
+        m_step.m_z
     );
 }
 
 RVA(0x0016f3c0, 0x61)
 double CMotionState::ArrivalVelX(double target) {
-    if (m_acceleration.x == 0.0) {
-        return m_velocity.x;
+    if (m_acceleration.m_x == 0.0) {
+        return m_velocity.m_x;
     }
-    double disc =
-        m_velocity.x * m_velocity.x - (target - m_position.x) * m_acceleration.x * g_motionNegTwo;
+    double disc = m_velocity.m_x * m_velocity.m_x
+                  - (target - m_position.m_x) * m_acceleration.m_x * g_motionNegTwo;
     if (0.0 > disc) {
         disc = 0.0;
     }
     double r = sqrt(disc);
-    return (m_velocity.x > 0.0) ? r : -r;
+    return (m_velocity.m_x > 0.0) ? r : -r;
 }
 
 RVA(0x0016f430, 0x61)
 double CMotionState::ArrivalVelY(double target) {
-    if (m_acceleration.y == 0.0) {
-        return m_velocity.y;
+    if (m_acceleration.m_y == 0.0) {
+        return m_velocity.m_y;
     }
-    double disc =
-        m_velocity.y * m_velocity.y - (target - m_position.y) * m_acceleration.y * g_motionNegTwo;
+    double disc = m_velocity.m_y * m_velocity.m_y
+                  - (target - m_position.m_y) * m_acceleration.m_y * g_motionNegTwo;
     if (0.0 > disc) {
         disc = 0.0;
     }
     double r = sqrt(disc);
-    return (m_velocity.y > 0.0) ? r : -r;
+    return (m_velocity.m_y > 0.0) ? r : -r;
 }
 
 RVA(0x0016f4a0, 0x1da)

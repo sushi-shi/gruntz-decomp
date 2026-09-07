@@ -25,7 +25,7 @@ union BltFxWords {
 };
 
 struct ClipRect16 {
-    i32 a, b, c, d;
+    i32 m_a, m_b, m_c, m_d;
 };
 
 GZ_ENUM_FLAGS_BEGIN(PidFlags, u32)
@@ -50,16 +50,16 @@ GZ_ENUM_FLAGS_OPS(PidFlags)
 
 struct PidHeader {
 
-    u32 formatTag;
-    PidFlags flags;
-    i32 width;
-    i32 height;
-    i32 offsetX;
-    i32 offsetY;
-    u32 fill;
-    u32 reserved1c;
+    u32 m_formatTag;
+    PidFlags m_flags;
+    i32 m_width;
+    i32 m_height;
+    i32 m_offsetX;
+    i32 m_offsetY;
+    u32 m_fill;
+    u32 m_reserved1c;
 
-    u8 pixels[1];
+    u8 m_pixels[1];
 };
 
 GZ_ENUM_BEGIN(FileImageFormat)

@@ -169,9 +169,9 @@ i32 CFontConfig::AddItem(const char* str, GZ_ENUM_PARAM(FontItemFlags, i32) flag
         m_list.RemoveAll();
     }
     FontItem* item = new FontItem;
-    item->name = str;
-    item->flags = flags;
-    item->payload = payload;
+    item->m_name = str;
+    item->m_flags = flags;
+    item->m_payload = payload;
     if (HAS(flags, FONT_ITEM_PREPEND)) {
         m_list.AddHead(item);
     } else {
@@ -212,7 +212,7 @@ void CFontConfig::Scroll(i32 delta) {
             return;
         }
     }
-    item->name.Empty();
+    item->m_name.Empty();
     delete item;
     m_scrollOffset = 0;
 }
@@ -399,7 +399,7 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
     while (m_list.GetCount() > count) {
         FontItem* dead = static_cast<FontItem*>(m_list.RemoveHead());
         if (dead != NULL) {
-            dead->name.Empty();
+            dead->m_name.Empty();
             delete dead;
         }
     }
@@ -417,17 +417,17 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
         }
         FontItem* item = static_cast<FontItem*>(m_list.GetAt(m_list.FindIndex(i)));
         if (item != NULL) {
-            if (HAS(item->flags, FONT_ITEM_SHADOW)) {
+            if (HAS(item->m_flags, FONT_ITEM_SHADOW)) {
                 SetTextColor(hdc, TCLR_BLACK);
                 work.left = cur.left + 1;
                 work.right = cur.right + 1;
                 work.top = cur.top + 1;
                 work.bottom = cur.bottom + 1;
-                DrawTextA(hdc, item->name, strlen(item->name), &work, format);
+                DrawTextA(hdc, item->m_name, strlen(item->m_name), &work, format);
             }
-            if (HAS(item->flags, FONT_ITEM_COLORED)) {
+            if (HAS(item->m_flags, FONT_ITEM_COLORED)) {
                 COLORREF color;
-                switch (item->payload) {
+                switch (item->m_payload) {
                     case TEXTCOLOR_NAVY:
                         color = TCLR_NAVY;
                         break;
@@ -485,8 +485,8 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
                 SetTextColor(hdc, TCLR_WHITE);
             }
             calc = cur;
-            DrawTextA(hdc, item->name, strlen(item->name), &calc, format | DT_CALCRECT);
-            DrawTextA(hdc, item->name, strlen(item->name), &cur, format);
+            DrawTextA(hdc, item->m_name, strlen(item->m_name), &calc, format | DT_CALCRECT);
+            DrawTextA(hdc, item->m_name, strlen(item->m_name), &cur, format);
             i32 measuredBottom = calc.bottom;
             i32 measuredLeft = calc.left;
             i32 rr = rect->right;

@@ -249,7 +249,7 @@ RVA(0x00056f80, 0xb0)
 i32* CGrunt::EntranceTileOffset(i32* out) {
     i32 x = m_lastTilePx.m_x;
     i32 y = m_lastTilePx.m_y;
-    switch (m_entranceCell.direction) {
+    switch (m_entranceCell.m_direction) {
         case DIR_NORTH:
             y -= 0x20;
             break;
@@ -1994,54 +1994,62 @@ void CGrunt::Activate() {
 
     double s = 1.0 / diag;
 
-    m_cells[3 * g_gruntDirNorth.row + g_gruntDirNorth.column].m_motion.m_direction.x = 0.0;
-    m_cells[3 * g_gruntDirNorth.row + g_gruntDirNorth.column].m_motion.m_direction.y = -1.0;
-    m_cells[3 * g_gruntDirNorth.row + g_gruntDirNorth.column].m_motion.m_step.x = 0.0;
-    m_cells[3 * g_gruntDirNorth.row + g_gruntDirNorth.column].m_motion.m_step.y = -0.5;
+    m_cells[3 * g_gruntDirNorth.m_row + g_gruntDirNorth.m_column].m_motion.m_direction.m_x = 0.0;
+    m_cells[3 * g_gruntDirNorth.m_row + g_gruntDirNorth.m_column].m_motion.m_direction.m_y = -1.0;
+    m_cells[3 * g_gruntDirNorth.m_row + g_gruntDirNorth.m_column].m_motion.m_step.m_x = 0.0;
+    m_cells[3 * g_gruntDirNorth.m_row + g_gruntDirNorth.m_column].m_motion.m_step.m_y = -0.5;
 
-    m_cells[3 * g_gruntDirNorthEast.row + g_gruntDirNorthEast.column].m_motion.m_direction.x = s;
-    m_cells[3 * g_gruntDirNorthEast.row + g_gruntDirNorthEast.column].m_motion.m_direction.y =
+    m_cells[3 * g_gruntDirNorthEast.m_row + g_gruntDirNorthEast.m_column].m_motion.m_direction.m_x =
+        s;
+    m_cells[3 * g_gruntDirNorthEast.m_row + g_gruntDirNorthEast.m_column].m_motion.m_direction.m_y =
         -1.0 / diag;
-    m_cells[3 * g_gruntDirNorthEast.row + g_gruntDirNorthEast.column].m_motion.m_step.x = 0.5;
-    m_cells[3 * g_gruntDirNorthEast.row + g_gruntDirNorthEast.column].m_motion.m_step.y = -0.5;
+    m_cells[3 * g_gruntDirNorthEast.m_row + g_gruntDirNorthEast.m_column].m_motion.m_step.m_x = 0.5;
+    m_cells[3 * g_gruntDirNorthEast.m_row + g_gruntDirNorthEast.m_column].m_motion.m_step.m_y =
+        -0.5;
 
-    m_cells[3 * g_gruntDirEast.row + g_gruntDirEast.column].m_motion.m_direction.x = 1.0;
-    m_cells[3 * g_gruntDirEast.row + g_gruntDirEast.column].m_motion.m_direction.y = 0.0;
-    m_cells[3 * g_gruntDirEast.row + g_gruntDirEast.column].m_motion.m_step.x = 0.5;
-    m_cells[3 * g_gruntDirEast.row + g_gruntDirEast.column].m_motion.m_step.y = 0.0;
+    m_cells[3 * g_gruntDirEast.m_row + g_gruntDirEast.m_column].m_motion.m_direction.m_x = 1.0;
+    m_cells[3 * g_gruntDirEast.m_row + g_gruntDirEast.m_column].m_motion.m_direction.m_y = 0.0;
+    m_cells[3 * g_gruntDirEast.m_row + g_gruntDirEast.m_column].m_motion.m_step.m_x = 0.5;
+    m_cells[3 * g_gruntDirEast.m_row + g_gruntDirEast.m_column].m_motion.m_step.m_y = 0.0;
 
-    m_cells[3 * g_gruntDirSouthEast.row + g_gruntDirSouthEast.column].m_motion.m_direction.x = s;
-    m_cells[3 * g_gruntDirSouthEast.row + g_gruntDirSouthEast.column].m_motion.m_direction.y = s;
-    m_cells[3 * g_gruntDirSouthEast.row + g_gruntDirSouthEast.column].m_motion.m_step.x = 0.5;
-    m_cells[3 * g_gruntDirSouthEast.row + g_gruntDirSouthEast.column].m_motion.m_step.y = 0.5;
+    m_cells[3 * g_gruntDirSouthEast.m_row + g_gruntDirSouthEast.m_column].m_motion.m_direction.m_x =
+        s;
+    m_cells[3 * g_gruntDirSouthEast.m_row + g_gruntDirSouthEast.m_column].m_motion.m_direction.m_y =
+        s;
+    m_cells[3 * g_gruntDirSouthEast.m_row + g_gruntDirSouthEast.m_column].m_motion.m_step.m_x = 0.5;
+    m_cells[3 * g_gruntDirSouthEast.m_row + g_gruntDirSouthEast.m_column].m_motion.m_step.m_y = 0.5;
 
-    m_cells[3 * g_gruntDirSouth.row + g_gruntDirSouth.column].m_motion.m_direction.x = 0.0;
-    m_cells[3 * g_gruntDirSouth.row + g_gruntDirSouth.column].m_motion.m_direction.y = 1.0;
-    m_cells[3 * g_gruntDirSouth.row + g_gruntDirSouth.column].m_motion.m_step.x = 0.0;
-    m_cells[3 * g_gruntDirSouth.row + g_gruntDirSouth.column].m_motion.m_step.y = 0.5;
+    m_cells[3 * g_gruntDirSouth.m_row + g_gruntDirSouth.m_column].m_motion.m_direction.m_x = 0.0;
+    m_cells[3 * g_gruntDirSouth.m_row + g_gruntDirSouth.m_column].m_motion.m_direction.m_y = 1.0;
+    m_cells[3 * g_gruntDirSouth.m_row + g_gruntDirSouth.m_column].m_motion.m_step.m_x = 0.0;
+    m_cells[3 * g_gruntDirSouth.m_row + g_gruntDirSouth.m_column].m_motion.m_step.m_y = 0.5;
 
-    m_cells[3 * g_gruntDirSouthWest.row + g_gruntDirSouthWest.column].m_motion.m_direction.x =
+    m_cells[3 * g_gruntDirSouthWest.m_row + g_gruntDirSouthWest.m_column].m_motion.m_direction.m_x =
         -1.0 / diag;
-    m_cells[3 * g_gruntDirSouthWest.row + g_gruntDirSouthWest.column].m_motion.m_direction.y = s;
-    m_cells[3 * g_gruntDirSouthWest.row + g_gruntDirSouthWest.column].m_motion.m_step.x = -0.5;
-    m_cells[3 * g_gruntDirSouthWest.row + g_gruntDirSouthWest.column].m_motion.m_step.y = 0.5;
+    m_cells[3 * g_gruntDirSouthWest.m_row + g_gruntDirSouthWest.m_column].m_motion.m_direction.m_y =
+        s;
+    m_cells[3 * g_gruntDirSouthWest.m_row + g_gruntDirSouthWest.m_column].m_motion.m_step.m_x =
+        -0.5;
+    m_cells[3 * g_gruntDirSouthWest.m_row + g_gruntDirSouthWest.m_column].m_motion.m_step.m_y = 0.5;
 
-    m_cells[3 * g_gruntDirWest.row + g_gruntDirWest.column].m_motion.m_direction.x = -1.0;
-    m_cells[3 * g_gruntDirWest.row + g_gruntDirWest.column].m_motion.m_direction.y = 0.0;
-    m_cells[3 * g_gruntDirWest.row + g_gruntDirWest.column].m_motion.m_step.x = -0.5;
-    m_cells[3 * g_gruntDirWest.row + g_gruntDirWest.column].m_motion.m_step.y = 0.0;
+    m_cells[3 * g_gruntDirWest.m_row + g_gruntDirWest.m_column].m_motion.m_direction.m_x = -1.0;
+    m_cells[3 * g_gruntDirWest.m_row + g_gruntDirWest.m_column].m_motion.m_direction.m_y = 0.0;
+    m_cells[3 * g_gruntDirWest.m_row + g_gruntDirWest.m_column].m_motion.m_step.m_x = -0.5;
+    m_cells[3 * g_gruntDirWest.m_row + g_gruntDirWest.m_column].m_motion.m_step.m_y = 0.0;
 
-    m_cells[3 * g_gruntDirNorthWest.row + g_gruntDirNorthWest.column].m_motion.m_direction.x =
+    m_cells[3 * g_gruntDirNorthWest.m_row + g_gruntDirNorthWest.m_column].m_motion.m_direction.m_x =
         -1.0 / diag;
-    m_cells[3 * g_gruntDirNorthWest.row + g_gruntDirNorthWest.column].m_motion.m_direction.y =
+    m_cells[3 * g_gruntDirNorthWest.m_row + g_gruntDirNorthWest.m_column].m_motion.m_direction.m_y =
         -1.0 / diag;
-    m_cells[3 * g_gruntDirNorthWest.row + g_gruntDirNorthWest.column].m_motion.m_step.x = -0.5;
-    m_cells[3 * g_gruntDirNorthWest.row + g_gruntDirNorthWest.column].m_motion.m_step.y = -0.5;
+    m_cells[3 * g_gruntDirNorthWest.m_row + g_gruntDirNorthWest.m_column].m_motion.m_step.m_x =
+        -0.5;
+    m_cells[3 * g_gruntDirNorthWest.m_row + g_gruntDirNorthWest.m_column].m_motion.m_step.m_y =
+        -0.5;
 
-    m_cells[3 * g_gruntDirCenter.row + g_gruntDirCenter.column].m_motion.m_direction.x = 0.0;
-    m_cells[3 * g_gruntDirCenter.row + g_gruntDirCenter.column].m_motion.m_direction.y = 0.0;
-    m_cells[3 * g_gruntDirCenter.row + g_gruntDirCenter.column].m_motion.m_step.x = 0.0;
-    m_cells[3 * g_gruntDirCenter.row + g_gruntDirCenter.column].m_motion.m_step.y = 0.0;
+    m_cells[3 * g_gruntDirCenter.m_row + g_gruntDirCenter.m_column].m_motion.m_direction.m_x = 0.0;
+    m_cells[3 * g_gruntDirCenter.m_row + g_gruntDirCenter.m_column].m_motion.m_direction.m_y = 0.0;
+    m_cells[3 * g_gruntDirCenter.m_row + g_gruntDirCenter.m_column].m_motion.m_step.m_x = 0.0;
+    m_cells[3 * g_gruntDirCenter.m_row + g_gruntDirCenter.m_column].m_motion.m_step.m_y = 0.0;
 
     CWwdSpriteObject* h = m_object;
     i32 px = h->m_screenX;
@@ -2799,7 +2807,7 @@ void CGrunt::FinalizeStep(char* name) {
     bool eqO = ANIMATION_ACT_EQUALS("O");
     if (eqO && (GRUNT_NOT_AT_SAVED_SCREEN_POS(this))) {
         GruntDirectionCell c = m_entranceCell;
-        i32 row = c.row;
+        i32 row = c.m_row;
         switch (row) {
             case GRUNT_DIRECTION_GRID_LOW:
                 row = GRUNT_DIRECTION_GRID_HIGH;
@@ -2810,7 +2818,7 @@ void CGrunt::FinalizeStep(char* name) {
             default:
                 break;
         }
-        i32 column = c.column;
+        i32 column = c.m_column;
         switch (column) {
             case GRUNT_DIRECTION_GRID_LOW:
                 column = GRUNT_DIRECTION_GRID_HIGH;
@@ -2822,12 +2830,12 @@ void CGrunt::FinalizeStep(char* name) {
                 break;
         }
         i32 base = GRUNT_DIRECTION_GRID_WIDTH * row + column;
-        double moveDirectionX = m_cells[base].m_motion.m_direction.x;
-        double moveDirectionY = m_cells[base].m_motion.m_direction.y;
+        double moveDirectionX = m_cells[base].m_motion.m_direction.m_x;
+        double moveDirectionY = m_cells[base].m_motion.m_direction.m_y;
         m_movePosX = static_cast<double>(g_frameDelta) * moveDirectionX * m_moveSpeed + m_movePosX;
         m_movePosY = static_cast<double>(g_frameDelta) * moveDirectionY * m_moveSpeed + m_movePosY;
-        i32 nx = static_cast<i32>((m_cells[base].m_motion.m_step.x + m_movePosX));
-        i32 ny = static_cast<i32>((m_cells[base].m_motion.m_step.y + m_movePosY));
+        i32 nx = static_cast<i32>((m_cells[base].m_motion.m_step.m_x + m_movePosX));
+        i32 ny = static_cast<i32>((m_cells[base].m_motion.m_step.m_y + m_movePosY));
         if (moveDirectionX > s_fpZero) {
             if (nx > m_lastTilePx.m_x) {
                 nx = m_lastTilePx.m_x;
@@ -2857,12 +2865,12 @@ void CGrunt::FinalizeStep(char* name) {
         if (GRUNT_AT_SAVED_SCREEN_POS(this)) {
             return;
         }
-        double moveDirectionX = EntranceCell()->m_motion.m_direction.x;
-        double moveDirectionY = EntranceCell()->m_motion.m_direction.y;
+        double moveDirectionX = EntranceCell()->m_motion.m_direction.m_x;
+        double moveDirectionY = EntranceCell()->m_motion.m_direction.m_y;
         m_movePosX = static_cast<double>(g_frameDelta) * moveDirectionX * m_moveSpeed + m_movePosX;
         m_movePosY = static_cast<double>(g_frameDelta) * moveDirectionY * m_moveSpeed + m_movePosY;
-        i32 nx = static_cast<i32>((EntranceCell()->m_motion.m_step.x + m_movePosX));
-        i32 ny = static_cast<i32>((EntranceCell()->m_motion.m_step.y + m_movePosY));
+        i32 nx = static_cast<i32>((EntranceCell()->m_motion.m_step.m_x + m_movePosX));
+        i32 ny = static_cast<i32>((EntranceCell()->m_motion.m_step.m_y + m_movePosY));
         if (moveDirectionX > s_fpZero) {
             if (nx > m_lastTilePx.m_x) {
                 nx = m_lastTilePx.m_x;
@@ -3094,12 +3102,12 @@ void CGrunt::AdvanceMotion() {
         }
     }
 
-    double dirX = EntranceCell()->m_motion.m_direction.x;
-    double dirY = EntranceCell()->m_motion.m_direction.y;
+    double dirX = EntranceCell()->m_motion.m_direction.m_x;
+    double dirY = EntranceCell()->m_motion.m_direction.m_y;
     m_movePosX = static_cast<double>(g_frameDelta) * dirX * m_moveSpeed + m_movePosX;
     m_movePosY = static_cast<double>(g_frameDelta) * dirY * m_moveSpeed + m_movePosY;
-    i32 x = static_cast<i32>(EntranceCell()->m_motion.m_step.x + m_movePosX);
-    i32 y = static_cast<i32>(EntranceCell()->m_motion.m_step.y + m_movePosY);
+    i32 x = static_cast<i32>(EntranceCell()->m_motion.m_step.m_x + m_movePosX);
+    i32 y = static_cast<i32>(EntranceCell()->m_motion.m_step.m_y + m_movePosY);
     if (dirX > s_fpZero) {
         if (x > m_lastTilePx.m_x) {
             x = m_lastTilePx.m_x;

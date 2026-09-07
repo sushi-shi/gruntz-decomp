@@ -18,7 +18,7 @@
 #include <strstrea.h>
 
 DATA(0x0021cf40)
-static i16 ClassMap[256] = {
+static i16 s_ClassMap[256] = {
     49, 48, 48, 48, 48, 48, 48, 48, 48, 15, 12, 48, 48, 13, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
     48, 48, 48, 48, 48, 48, 48, 48, 14, 43, 17, 37, 46, 45, 16, 42, 18, 19, 20, 21, 35, 22, 23, 24,
     11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 25, 26, 27, 28, 29, 47, 40, 8,  10, 10, 1,  5,  6,  10,
@@ -33,7 +33,7 @@ static i16 ClassMap[256] = {
 };
 
 DATA(0x0021d140)
-static TranType TransTable[97][49] = {
+static TranType s_TransTable[97][49] = {
     {{5, 6, 0}, {5, 6, 0},  {5, 6, 0}, {5, 6, 0}, {1, 41, 0}, {3, 16, 0}, {5, 6, 0},
      {5, 6, 0}, {5, 6, 0},  {5, 6, 0}, {1, 0, 0}, {5, 6, 0},  {5, 6, 0},  {5, 6, 0},
      {5, 6, 0}, {5, 6, 0},  {5, 6, 0}, {5, 6, 0}, {5, 6, 0},  {5, 6, 0},  {5, 6, 0},
@@ -815,23 +815,23 @@ void CButeMgr::ConsumeChar() {
 
 RVA(0x001703e0, 0x15)
 i16 CButeMgr::CharClass(char c) {
-    return static_cast<i16>((ClassMap[static_cast<u8>(c)] - 1));
+    return static_cast<i16>((s_ClassMap[static_cast<u8>(c)] - 1));
 }
 
 RVA(0x00170400, 0x2f)
 GZ_ENUM_RETURN(ButeLexAction, i16) CButeMgr::Action(i16 state, char c) {
-    return TransTable[state][CharClass(c)].ActionType;
+    return s_TransTable[state][CharClass(c)].m_ActionType;
 }
 
 RVA(0x00170430, 0x2f)
 i16 CButeMgr::NextState(i16 state, char c) {
-    return TransTable[state][CharClass(c)].A;
+    return s_TransTable[state][CharClass(c)].m_A;
 }
 
 RVA(0x00170460, 0x58)
 void CButeMgr::LookupCodes(i16 state, char c) {
-    m_token = TransTable[state][CharClass(c)].A;
-    m_tokenMinor = TransTable[state][CharClass(c)].B;
+    m_token = s_TransTable[state][CharClass(c)].m_A;
+    m_tokenMinor = s_TransTable[state][CharClass(c)].m_B;
 }
 
 RVA(0x001704c0, 0x200)
@@ -839,9 +839,9 @@ bool CButeMgr::ScanTok() {
     const i16 kLexStartState = 0x11;
     i16 State = kLexStartState;
     DATA(0x002bf678)
-    static i16 Pos;
+    static i16 s_Pos;
 
-    Pos = 0;
+    s_Pos = 0;
 
     for (;;) {
         GZ_ENUM_RETURN(ButeLexAction, i16) cls = Action(State, m_currentChar);
@@ -852,7 +852,7 @@ bool CButeMgr::ScanTok() {
 
             case LEXACT_TAKE:
                 State = NextState(State, m_currentChar);
-                m_szTokenString[Pos++] = m_currentChar;
+                m_szTokenString[s_Pos++] = m_currentChar;
                 if (m_bPutChar != 0 && m_currentChar != 0) {
                     (*m_pSaveData) << static_cast<unsigned char>(m_currentChar);
                 }
@@ -869,7 +869,7 @@ bool CButeMgr::ScanTok() {
 
             case LEXACT_ACCEPT_TAKE:
                 LookupCodes(State, m_currentChar);
-                m_szTokenString[Pos++] = m_currentChar;
+                m_szTokenString[s_Pos++] = m_currentChar;
                 if (m_bPutChar != 0 && m_currentChar != 0) {
                     (*m_pSaveData) << static_cast<unsigned char>(m_currentChar);
                 }
@@ -877,7 +877,7 @@ bool CButeMgr::ScanTok() {
                 if (m_token == BUTETOK_NONE) {
                     ScanTok();
                 }
-                m_szTokenString[Pos] = 0;
+                m_szTokenString[s_Pos] = 0;
                 return true;
 
             case LEXACT_ACCEPT_SKIP:
@@ -889,7 +889,7 @@ bool CButeMgr::ScanTok() {
                 if (m_token == BUTETOK_NONE) {
                     ScanTok();
                 }
-                m_szTokenString[Pos] = 0;
+                m_szTokenString[s_Pos] = 0;
                 return true;
 
             case LEXACT_ACCEPT_PUSHBACK:
@@ -897,7 +897,7 @@ bool CButeMgr::ScanTok() {
                 if (m_token == BUTETOK_NONE) {
                     ScanTok();
                 }
-                m_szTokenString[Pos] = 0;
+                m_szTokenString[s_Pos] = 0;
                 return true;
         }
     }
@@ -1037,9 +1037,9 @@ bool CButeMgr::Statement() {
                 }
             } else {
                 ButeIntRect r = *GetRect(m_sTagName, m_sAttribute);
-                (*m_pSaveData) << s_strOpen << static_cast<long>(r.a) << s_strComma
-                               << static_cast<long>(r.b) << s_strComma << static_cast<long>(r.c)
-                               << s_strComma << static_cast<long>(r.d) << s_strClose;
+                (*m_pSaveData) << s_strOpen << static_cast<long>(r.m_a) << s_strComma
+                               << static_cast<long>(r.m_b) << s_strComma << static_cast<long>(r.m_c)
+                               << s_strComma << static_cast<long>(r.m_d) << s_strClose;
             }
             break;
         case BUTETOK_POINT:
@@ -1053,8 +1053,8 @@ bool CButeMgr::Statement() {
                 }
             } else {
                 ButeIntPoint pt = *GetPoint(m_sTagName, m_sAttribute);
-                (*m_pSaveData) << s_strOpen << static_cast<long>(pt.a) << s_strComma
-                               << static_cast<long>(pt.b) << s_strClose;
+                (*m_pSaveData) << s_strOpen << static_cast<long>(pt.m_a) << s_strComma
+                               << static_cast<long>(pt.m_b) << s_strClose;
             }
             break;
         case BUTETOK_VECTOR:
@@ -1159,27 +1159,27 @@ void CButeMgr::AuxTabItemsSave(const char* key, CSymTabItem* value, void* ctx) {
     ostream& output = *static_cast<ostream*>(ctx);
 
     output << "\r\n" << key << " = ";
-    switch (value->SymType) {
+    switch (value->m_SymType) {
         case INT_TYPE:
-            output << *value->data.i;
+            output << *value->m_data.m_i;
             break;
 
         case DWORD_TYPE:
-            output << s_strDword << *value->data.dw;
+            output << s_strDword << *value->m_data.m_dw;
             break;
 
         case FLOAT_TYPE: {
-            float scalar = *value->data.f;
+            float scalar = *value->m_data.m_f;
             output << s_strFloat << scalar;
             break;
         }
 
         case DOUBLE_TYPE:
-            output << *value->data.d;
+            output << *value->m_data.m_d;
             break;
 
         case STRING_TYPE: {
-            CString& text = *value->data.s;
+            CString& text = *value->m_data.m_s;
             ostream& stringOutput = output << static_cast<unsigned char>('"')
                                            << static_cast<const char*>(text);
             stringOutput << static_cast<unsigned char>('"');
@@ -1188,24 +1188,24 @@ void CButeMgr::AuxTabItemsSave(const char* key, CSymTabItem* value, void* ctx) {
 
         case RECT_TYPE: {
             ostream& rectOutput = output << static_cast<unsigned char>('(');
-            ButeIntRect* ref = value->data.r;
-            ostream& rectTail = rectOutput << static_cast<long>(ref->a) << s_strComma
-                                           << static_cast<long>(ref->b) << s_strComma
-                                           << static_cast<long>(ref->c) << s_strComma
-                                           << static_cast<long>(ref->d);
+            ButeIntRect* ref = value->m_data.m_r;
+            ostream& rectTail = rectOutput << static_cast<long>(ref->m_a) << s_strComma
+                                           << static_cast<long>(ref->m_b) << s_strComma
+                                           << static_cast<long>(ref->m_c) << s_strComma
+                                           << static_cast<long>(ref->m_d);
             rectTail << static_cast<unsigned char>(')');
             break;
         }
 
         case POINT_TYPE: {
-            ButeIntPoint* ref = value->data.point;
-            output << s_strOpen << static_cast<long>(ref->a) << s_strComma
-                   << static_cast<long>(ref->b) << s_strClose;
+            ButeIntPoint* ref = value->m_data.m_point;
+            output << s_strOpen << static_cast<long>(ref->m_a) << s_strComma
+                   << static_cast<long>(ref->m_b) << s_strClose;
             break;
         }
 
         case VECTOR_TYPE: {
-            CAVector* ref = value->data.v;
+            CAVector* ref = value->m_data.m_v;
             double x = ref->Geti();
             double y = ref->Getj();
             double z = ref->Getk();
@@ -1214,7 +1214,7 @@ void CButeMgr::AuxTabItemsSave(const char* key, CSymTabItem* value, void* ctx) {
         }
 
         case RANGE_TYPE: {
-            CARange* ref = value->data.range;
+            CARange* ref = value->m_data.m_range;
             double x = ref->GetMin();
             double y = ref->GetMax();
             output << "[" << x << s_strComma << y << "]";
@@ -1355,8 +1355,8 @@ i32 CButeMgr::GetInt(const char* tag, const char* key, i32 def) {
     if (grp) {
         CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            if (rec->SymType == INT_TYPE) {
-                return *rec->data.i;
+            if (rec->m_SymType == INT_TYPE) {
+                return *rec->m_data.m_i;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
         }
@@ -1370,8 +1370,8 @@ i32 CButeMgr::GetInt(const char* tag, const char* key) {
     if (grp) {
         CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            if (rec->SymType == INT_TYPE) {
-                return *rec->data.i;
+            if (rec->m_SymType == INT_TYPE) {
+                return *rec->m_data.m_i;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
             return COORD_UNSET;
@@ -1432,9 +1432,9 @@ DWORD CButeMgr::GetDword(const char* tag, const char* key, DWORD def) {
     if (grp) {
         CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            switch (rec->SymType) {
+            switch (rec->m_SymType) {
                 case DWORD_TYPE:
-                    return *rec->data.dw;
+                    return *rec->m_data.m_dw;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
         }
@@ -1448,9 +1448,9 @@ DWORD CButeMgr::GetDword(const char* tag, const char* key) {
     if (grp) {
         CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            switch (rec->SymType) {
+            switch (rec->m_SymType) {
                 case DWORD_TYPE:
-                    return *rec->data.dw;
+                    return *rec->m_data.m_dw;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
             return 0;
@@ -1511,11 +1511,11 @@ float CButeMgr::GetFloat(const char* tag, const char* key, float def) {
     if (grp) {
         CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            switch (rec->SymType) {
+            switch (rec->m_SymType) {
                 case INT_TYPE:
-                    return static_cast<float>(*rec->data.i);
+                    return static_cast<float>(*rec->m_data.m_i);
                 case FLOAT_TYPE:
-                    return *rec->data.f;
+                    return *rec->m_data.m_f;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
         }
@@ -1529,11 +1529,11 @@ float CButeMgr::GetFloat(const char* tag, const char* key) {
     if (grp) {
         CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            switch (rec->SymType) {
+            switch (rec->m_SymType) {
                 case INT_TYPE:
-                    return static_cast<float>(*rec->data.i);
+                    return static_cast<float>(*rec->m_data.m_i);
                 case FLOAT_TYPE:
-                    return *rec->data.f;
+                    return *rec->m_data.m_f;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
             return s_floatErr;
@@ -1594,11 +1594,11 @@ double CButeMgr::GetDouble(const char* tag, const char* key, double def) {
     if (grp) {
         CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            switch (rec->SymType) {
+            switch (rec->m_SymType) {
                 case INT_TYPE:
-                    return static_cast<double>(*rec->data.i);
+                    return static_cast<double>(*rec->m_data.m_i);
                 case DOUBLE_TYPE:
-                    return *rec->data.d;
+                    return *rec->m_data.m_d;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
         }
@@ -1612,11 +1612,11 @@ double CButeMgr::GetDouble(const char* tag, const char* key) {
     if (grp) {
         CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            switch (rec->SymType) {
+            switch (rec->m_SymType) {
                 case INT_TYPE:
-                    return static_cast<double>(*rec->data.i);
+                    return static_cast<double>(*rec->m_data.m_i);
                 case DOUBLE_TYPE:
-                    return *rec->data.d;
+                    return *rec->m_data.m_d;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
             return s_doubleErr;
@@ -1675,8 +1675,8 @@ CString* CButeMgr::GetString(const char* tag, const char* key, CString* def) {
     if (grp) {
         CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            if (rec->SymType == STRING_TYPE) {
-                return rec->data.s;
+            if (rec->m_SymType == STRING_TYPE) {
+                return rec->m_data.m_s;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
         }
@@ -1696,8 +1696,8 @@ CString* CButeMgr::GetString(const char* tag, const char* key) {
     if (grp) {
         CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            if (rec->SymType == STRING_TYPE) {
-                return rec->data.s;
+            if (rec->m_SymType == STRING_TYPE) {
+                return rec->m_data.m_s;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
         } else {
@@ -1760,8 +1760,8 @@ ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key, ButeIntRect* de
     if (grp) {
         CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            if (rec->SymType == RECT_TYPE) {
-                return rec->data.r;
+            if (rec->m_SymType == RECT_TYPE) {
+                return rec->m_data.m_r;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
         }
@@ -1780,8 +1780,8 @@ ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key) {
     if (grp) {
         CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            if (rec->SymType == RECT_TYPE) {
-                return rec->data.r;
+            if (rec->m_SymType == RECT_TYPE) {
+                return rec->m_data.m_r;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
             return &s_default;
@@ -1842,8 +1842,8 @@ ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key, ButeIntPoint*
     if (grp) {
         CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            if (rec->SymType == POINT_TYPE) {
-                return rec->data.point;
+            if (rec->m_SymType == POINT_TYPE) {
+                return rec->m_data.m_point;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
         }
@@ -1862,8 +1862,8 @@ ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key) {
     if (grp) {
         CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            if (rec->SymType == POINT_TYPE) {
-                return rec->data.point;
+            if (rec->m_SymType == POINT_TYPE) {
+                return rec->m_data.m_point;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
             return &s_default;
@@ -1923,8 +1923,8 @@ CAVector* CButeMgr::GetVector(const char* tag, const char* key, CAVector* def) {
     if (grp) {
         CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            if (rec->SymType == VECTOR_TYPE) {
-                return rec->data.v;
+            if (rec->m_SymType == VECTOR_TYPE) {
+                return rec->m_data.m_v;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
         }
@@ -1943,8 +1943,8 @@ CAVector* CButeMgr::GetVector(const char* tag, const char* key) {
     if (grp) {
         CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            if (rec->SymType == VECTOR_TYPE) {
-                return rec->data.v;
+            if (rec->m_SymType == VECTOR_TYPE) {
+                return rec->m_data.m_v;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
             return &s_default;
@@ -2004,8 +2004,8 @@ CARange* CButeMgr::GetRange(const char* tag, const char* key, CARange* def) {
     if (grp) {
         CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            if (rec->SymType == RANGE_TYPE) {
-                return rec->data.range;
+            if (rec->m_SymType == RANGE_TYPE) {
+                return rec->m_data.m_range;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
         }
@@ -2024,8 +2024,8 @@ CARange* CButeMgr::GetRange(const char* tag, const char* key) {
     if (grp) {
         CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
-            if (rec->SymType == RANGE_TYPE) {
-                return rec->data.range;
+            if (rec->m_SymType == RANGE_TYPE) {
+                return rec->m_data.m_range;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
             return &s_default;

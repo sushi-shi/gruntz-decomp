@@ -285,14 +285,14 @@ public:
     b32 m_groupInitialized;
 
     FinishLevelState m_phase;
-    char _pad28c[0x4];
+    char m_pad28c[0x4];
 
     CueTimer m_cueTimer;
 
     CWarlord* m_pendingFx;
     b32 m_countdownActive;
     i32 m_pendingFxKind;
-    char _pad2ac[0x4];
+    char m_pad2ac[0x4];
 
     CueTimer m_gooTimer;
     CueTimer m_resourceTimer;

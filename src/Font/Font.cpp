@@ -42,8 +42,8 @@ i32 Font::AllocateMemory(i32 count) {
         m_surfaces[i] = NULL;
 
         Glyph g;
-        g.width = 0;
-        g.height = 0;
+        g.m_width = 0;
+        g.m_height = 0;
         SET_FONT_GLYPH(i, g);
     }
 
@@ -88,8 +88,8 @@ i32 Font::LoadFont(CString szFileName) {
 
     for (i32 i = 0; i < m_count; i++) {
         ar.Read(&m_glyphs[i], sizeof(Glyph));
-        m_surfaces[i] = new u8[m_glyphs[i].width * m_glyphs[i].height];
-        ar.Read(m_surfaces[i], m_glyphs[i].width * m_glyphs[i].height);
+        m_surfaces[i] = new u8[m_glyphs[i].m_width * m_glyphs[i].m_height];
+        ar.Read(m_surfaces[i], m_glyphs[i].m_width * m_glyphs[i].m_height);
     }
 
     ar.Close();
@@ -97,8 +97,8 @@ i32 Font::LoadFont(CString szFileName) {
 
     i32 maxHeight = 0;
     for (i32 j = 0; j < m_count; j++) {
-        if (maxHeight <= m_glyphs[j].height) {
-            maxHeight = m_glyphs[j].height;
+        if (maxHeight <= m_glyphs[j].m_height) {
+            maxHeight = m_glyphs[j].m_height;
         }
     }
     m_maxHeight = maxHeight;
@@ -122,7 +122,7 @@ i32 Font::SaveFont(CString szFileName) {
     for (i32 i = 0; i < m_count; i++) {
         Glyph g = m_glyphs[i];
         ar.Write(&g, sizeof(Glyph));
-        ar.Write(m_surfaces[i], m_glyphs[i].width * m_glyphs[i].height);
+        ar.Write(m_surfaces[i], m_glyphs[i].m_width * m_glyphs[i].m_height);
     }
 
     ar.Close();
@@ -297,7 +297,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         while (acc < rc.left) {
             Glyph g;
             prev = acc;
-            acc += m_font->GetGlyph(g, text[startChar]).width;
+            acc += m_font->GetGlyph(g, text[startChar]).m_width;
             startChar++;
         }
         --startChar;
@@ -315,7 +315,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         if (rc.right >= 0) {
             do {
                 Glyph g;
-                acc += m_font->GetGlyph(g, text[j]).width;
+                acc += m_font->GetGlyph(g, text[j]).m_width;
                 j++;
             } while (acc <= rc.right);
             endChar = j;
@@ -330,16 +330,16 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         Glyph gm = m_font->GetGlyph(g, text[ci]);
         i32 clippedW;
         if (ci == endChar - 1) {
-            clippedW = gm.width - rightPartial;
+            clippedW = gm.m_width - rightPartial;
         } else {
-            clippedW = g.width;
+            clippedW = g.m_width;
         }
         u8* glyphBuf = m_font->GetSurface(text[ci])[0];
         if (blend) {
             for (i32 row = rc.top; row < rc.bottom; row++) {
                 u16* dst = bits + ((row - rc.top + y) * pitch) / 2 + destX;
                 for (i32 col = firstCol; col < clippedW; col++) {
-                    u8 cover = glyphBuf[row * g.width + col];
+                    u8 cover = glyphBuf[row * g.m_width + col];
 
                     if (cover == 0) {
                     } else if (cover != UCHAR_MAX) {
@@ -354,7 +354,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
             for (i32 row = rc.top; row < rc.bottom; row++) {
                 u16* dst = bits + ((row - rc.top + y) * pitch) / 2 + destX;
                 for (i32 col = firstCol; col < clippedW; col++) {
-                    if (glyphBuf[row * g.width + col] != 0) {
+                    if (glyphBuf[row * g.m_width + col] != 0) {
                         *dst = packedColor;
                     }
                     dst++;
@@ -516,7 +516,7 @@ CSize FontRenderer::MeasureText(CString text) {
     CSize ext;
 
     Glyph g;
-    g.height = 0;
+    g.m_height = 0;
     i32 i = 0;
     i32 width = 0;
     if (m_font == NULL) {
@@ -525,7 +525,7 @@ CSize FontRenderer::MeasureText(CString text) {
     for (; i < text.GetLength(); i++) {
         u8 c = text[i];
 
-        width += m_font->GetGlyph(g, c).width;
+        width += m_font->GetGlyph(g, c).m_width;
     }
     ext.cx = width;
     ext.cy = m_font->GetMaxHeight();

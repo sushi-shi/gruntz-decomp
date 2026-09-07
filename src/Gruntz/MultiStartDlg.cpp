@@ -52,21 +52,21 @@ DATA(0x0024bdcc)
 i32 g_latencyDisplayTick;
 
 DATA(0x0021243c)
-char s_UsingCmdDelay[] = "Using CmdDelay of %d and ResendDelay of %d.";
+char g_UsingCmdDelay[] = "Using CmdDelay of %d and ResendDelay of %d.";
 
 enum {
     NUM_PLAYER_SLOTS = 4
 };
 
 DATA(0x001ea578)
-const AFX_MSGMAP CMultiStartDlg::messageMap = {
+const AFX_MSGMAP CMultiStartDlg::s_messageMap = {
     &CDialog::messageMap,
-    &CMultiStartDlg::_messageEntries[0],
+    &CMultiStartDlg::s_messageEntries[0],
 };
 
 DATA(0x001ea580)
 // clang-format off
-const AFX_MSGMAP_ENTRY CMultiStartDlg::_messageEntries[] = {
+const AFX_MSGMAP_ENTRY CMultiStartDlg::s_messageEntries[] = {
     ON_CBN_SELCHANGE(CTRL_PLAYER_TYPE0, CMultiStartDlg::OnPlayerTypeSelection0)
     ON_CBN_SELCHANGE(CTRL_PLAYER_TYPE1, CMultiStartDlg::OnPlayerTypeSelection1)
     ON_CBN_SELCHANGE(CTRL_PLAYER_TYPE2, CMultiStartDlg::OnPlayerTypeSelection2)
@@ -394,7 +394,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
 
 RVA(0x000c2620, 0x6)
 const AFX_MSGMAP* CMultiStartDlg::GetMessageMap() const {
-    return &messageMap;
+    return &s_messageMap;
 }
 
 RVA(0x000c2640, 0x60)
@@ -1553,7 +1553,7 @@ void CMultiStartDlg::EchoLatencySettings() {
     char message[128];
     wsprintfA(
         message,
-        s_UsingCmdDelay,
+        g_UsingCmdDelay,
         g_multiState->m_commandDelay,
         g_multiState->m_resendInterval
     );

@@ -143,7 +143,7 @@ void CNetSession::BuildGruntzCrcInfo() {
                 grunt->m_health,
                 grunt->m_object->m_screenX,
                 grunt->m_object->m_screenY,
-                grunt->m_entranceCell.direction,
+                grunt->m_entranceCell.m_direction,
                 grunt->m_stamina,
                 grunt->m_toyTime,
                 tool,
@@ -717,7 +717,7 @@ i32 CNetSession::ComputeChecksum() {
         for (i32 g = 0; g < TM_UNITS_PER_PLAYER; g++) {
             CGrunt* grunt = m_owner->m_mgr->m_triggerMgr->m_units[player * TM_UNITS_PER_PLAYER + g];
             if (grunt != NULL) {
-                sum += IDX(grunt->m_entranceCell.direction) + grunt->m_stamina + grunt->m_toyTime
+                sum += IDX(grunt->m_entranceCell.m_direction) + grunt->m_stamina + grunt->m_toyTime
                        + grunt->m_health + grunt->m_object->m_screenY + grunt->m_object->m_sortKey
                        + grunt->m_object->m_screenX + grunt->LastTilePx().m_x
                        + grunt->LastTilePx().m_y;

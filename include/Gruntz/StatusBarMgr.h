@@ -122,12 +122,12 @@ class CSBI_StatzTabArrow;
 class CSBI_WarlordHead;
 class CWarpStoneFly;
 
-const i32 kSlotCommitLevel = 0x1a;
+const i32 s_slotCommitLevel = 0x1a;
 
-const i32 kActivateErrId = 0x80e4;
-const i32 kActivateErrTag = 0x44b;
+const i32 s_activateErrId = 0x80e4;
+const i32 s_activateErrTag = 0x44b;
 
-const i32 kSetTabErrTag = 0x44a;
+const i32 s_setTabErrTag = 0x44a;
 
 GZ_ENUM_CONST_BEGIN(GruntWellPct)
     GRUNT_WELL_EMPTY = 0,

@@ -56,7 +56,7 @@ i32 CGameApp::InitInstance(
     if (g_gameAppInstanceCount > 1) {
         goto Fail;
     }
-    if (!pGameInfo || pGameInfo->size != sizeof(GameInfo)) {
+    if (!pGameInfo || pGameInfo->m_size != sizeof(GameInfo)) {
         goto Fail;
     }
     if (pWndClass && (!pWndClass->lpszClassName || !*pWndClass->lpszClassName)) {
@@ -69,8 +69,8 @@ i32 CGameApp::InitInstance(
     m_errorDetail = 0;
     m_gameInfo = *pGameInfo;
 
-    if (m_gameInfo.hInstance) {
-        hInst = m_gameInfo.hInstance;
+    if (m_gameInfo.m_hInstance) {
+        hInst = m_gameInfo.m_hInstance;
     } else if (pWndClass && pWndClass->hInstance) {
         hInst = pWndClass->hInstance;
     } else if (pCreateStruct && pCreateStruct->hInstance) {
@@ -80,11 +80,11 @@ i32 CGameApp::InitInstance(
     }
     m_hInstance = hInst;
 
-    if (!m_gameInfo.szWindowClassName[0]) {
-        sprintf(m_gameInfo.szWindowClassName, "%sClass", m_gameInfo.szGameIdentifier);
+    if (!m_gameInfo.m_szWindowClassName[0]) {
+        sprintf(m_gameInfo.m_szWindowClassName, "%sClass", m_gameInfo.m_szGameIdentifier);
     }
-    if (!m_gameInfo.szWindowName[0]) {
-        sprintf(m_gameInfo.szWindowName, "%s", m_gameInfo.szGameIdentifier);
+    if (!m_gameInfo.m_szWindowName[0]) {
+        sprintf(m_gameInfo.m_szWindowName, "%s", m_gameInfo.m_szGameIdentifier);
     }
 
     if (pWndClass) {
@@ -103,7 +103,7 @@ i32 CGameApp::InitInstance(
         goto Fail;
     }
 
-    InitializeAccelerators(m_gameInfo.szGameIdentifier);
+    InitializeAccelerators(m_gameInfo.m_szGameIdentifier);
 
     m_gameWnd = InitializeGameWindow();
     if (!m_gameWnd) {
@@ -121,7 +121,7 @@ i32 CGameApp::InitInstance(
         goto Fail;
     }
 
-    if (!m_gameMgr->Run(m_gameWnd, m_gameInfo.szCmdLine)) {
+    if (!m_gameMgr->Run(m_gameWnd, m_gameInfo.m_szCmdLine)) {
         delete m_gameMgr;
         m_gameMgr = NULL;
         return 0;
@@ -149,19 +149,19 @@ i32 CGameApp::Init(
     }
 
     memset(&gi, 0, sizeof(gi));
-    gi.hInstance = hInstance;
-    gi.size = sizeof(GameInfo);
-    gi.windowClassFlags = static_cast<GameWindowFlags>(windowClassFlags);
-    gi.windowWidth = windowWidth;
-    gi.windowHeight = windowHeight;
+    gi.m_hInstance = hInstance;
+    gi.m_size = sizeof(GameInfo);
+    gi.m_windowClassFlags = static_cast<GameWindowFlags>(windowClassFlags);
+    gi.m_windowWidth = windowWidth;
+    gi.m_windowHeight = windowHeight;
     if (szWindowName) {
-        strcpy(gi.szWindowName, szWindowName);
+        strcpy(gi.m_szWindowName, szWindowName);
     }
     if (szGameIdentifier) {
-        strcpy(gi.szGameIdentifier, szGameIdentifier);
+        strcpy(gi.m_szGameIdentifier, szGameIdentifier);
     }
     if (szCmdLine) {
-        strcpy(gi.szCmdLine, szCmdLine);
+        strcpy(gi.m_szCmdLine, szCmdLine);
     }
 
     return InitInstance(&gi, NULL, NULL);
@@ -211,8 +211,8 @@ void CGameApp::InitializeDefaultWindowClass() {
 
     memset(&m_wc, 0, sizeof(m_wc));
 
-    HCURSOR hCursor = LoadCursorA(m_hInstance, m_gameInfo.szGameIdentifier);
-    if (HAS(m_gameInfo.windowClassFlags, GAME_WINDOW_FLAG_WINDOWED)) {
+    HCURSOR hCursor = LoadCursorA(m_hInstance, m_gameInfo.m_szGameIdentifier);
+    if (HAS(m_gameInfo.m_windowClassFlags, GAME_WINDOW_FLAG_WINDOWED)) {
         hCursor = LoadCursorA(NULL, IDC_ARROW);
     }
 
@@ -221,11 +221,11 @@ void CGameApp::InitializeDefaultWindowClass() {
     m_wc.cbClsExtra = 0;
     m_wc.cbWndExtra = 0;
     m_wc.hInstance = m_hInstance;
-    m_wc.hIcon = LoadIconA(m_hInstance, m_gameInfo.szGameIdentifier);
+    m_wc.hIcon = LoadIconA(m_hInstance, m_gameInfo.m_szGameIdentifier);
     m_wc.hCursor = hCursor;
     m_wc.hbrBackground = static_cast<HBRUSH>(GetStockObject(BLACK_BRUSH));
     m_wc.lpszMenuName = NULL;
-    m_wc.lpszClassName = m_gameInfo.szWindowClassName;
+    m_wc.lpszClassName = m_gameInfo.m_szWindowClassName;
 }
 
 // @early-stop
@@ -235,12 +235,12 @@ void CGameApp::InitializeDefaultCreateStruct() {
     memset(&m_createStruct, 0, sizeof(m_createStruct));
 
     HMENU hMenu = NULL;
-    if (HAS(m_gameInfo.windowClassFlags, GAME_WINDOW_FLAG_WINDOWED)) {
-        hMenu = LoadMenuA(m_hInstance, m_gameInfo.szGameIdentifier);
+    if (HAS(m_gameInfo.m_windowClassFlags, GAME_WINDOW_FLAG_WINDOWED)) {
+        hMenu = LoadMenuA(m_hInstance, m_gameInfo.m_szGameIdentifier);
     }
 
     i32 x, y;
-    if (HAS(m_gameInfo.windowClassFlags, GAME_WINDOW_FLAG_WINDOWED)) {
+    if (HAS(m_gameInfo.m_windowClassFlags, GAME_WINDOW_FLAG_WINDOWED)) {
         x = COORD_UNSET;
         y = COORD_UNSET;
     } else {
@@ -249,9 +249,9 @@ void CGameApp::InitializeDefaultCreateStruct() {
     }
 
     i32 cx, cy;
-    if (HAS(m_gameInfo.windowClassFlags, GAME_WINDOW_FLAG_WINDOWED)) {
-        cx = m_gameInfo.windowWidth;
-        cy = m_gameInfo.windowHeight;
+    if (HAS(m_gameInfo.m_windowClassFlags, GAME_WINDOW_FLAG_WINDOWED)) {
+        cx = m_gameInfo.m_windowWidth;
+        cy = m_gameInfo.m_windowHeight;
     } else {
         cx = GetSystemMetrics(SM_CXSCREEN);
         cy = GetSystemMetrics(SM_CYSCREEN);
@@ -259,10 +259,10 @@ void CGameApp::InitializeDefaultCreateStruct() {
 
     i32 style;
     DWORD exStyle;
-    if (HAS(m_gameInfo.windowClassFlags, GAME_WINDOW_FLAG_WINDOWED)) {
+    if (HAS(m_gameInfo.m_windowClassFlags, GAME_WINDOW_FLAG_WINDOWED)) {
         style = WS_OVERLAPPEDWINDOW;
         exStyle = WS_EX_APPWINDOW;
-        if (HAS(m_gameInfo.windowClassFlags, GAME_WINDOW_FLAG_FIXED_SIZE)) {
+        if (HAS(m_gameInfo.m_windowClassFlags, GAME_WINDOW_FLAG_FIXED_SIZE)) {
             style = WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
         }
     } else {
@@ -279,8 +279,8 @@ void CGameApp::InitializeDefaultCreateStruct() {
     m_createStruct.hwndParent = NULL;
     m_createStruct.x = x;
     m_createStruct.cy = cy;
-    m_createStruct.lpszName = m_gameInfo.szWindowName;
-    m_createStruct.lpszClass = m_gameInfo.szWindowClassName;
+    m_createStruct.lpszName = m_gameInfo.m_szWindowName;
+    m_createStruct.lpszClass = m_gameInfo.m_szWindowClassName;
     m_createStruct.dwExStyle = exStyle;
 }
 

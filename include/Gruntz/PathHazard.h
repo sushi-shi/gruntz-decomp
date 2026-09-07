@@ -12,8 +12,8 @@
 #include <Ints.h>
 
 struct CPathWaypoint {
-    i32 x;
-    i32 y;
+    i32 m_x;
+    i32 m_y;
 };
 
 struct CHazardTimer {

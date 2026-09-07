@@ -1695,18 +1695,18 @@ void CGruntzMgr::RecomputeViewScale() {
     float fw = static_cast<float>(iw);
     float fh = static_cast<float>(ih);
 
-    view->m_defaultActiveRegionSize.w = static_cast<i32>((fw * 1.4f));
-    view->m_defaultActiveRegionSize.h = static_cast<i32>((fh * 1.4f));
+    view->m_defaultActiveRegionSize.m_w = static_cast<i32>((fw * 1.4f));
+    view->m_defaultActiveRegionSize.m_h = static_cast<i32>((fh * 1.4f));
     view->MainPlaneNotify();
 
     view = m_world->m_level;
-    view->m_largeActiveRegionSize.w = static_cast<i32>((fw * 5.3f));
-    view->m_largeActiveRegionSize.h = static_cast<i32>((fh * 5.3f));
+    view->m_largeActiveRegionSize.m_w = static_cast<i32>((fw * 5.3f));
+    view->m_largeActiveRegionSize.m_h = static_cast<i32>((fh * 5.3f));
     view->MainPlaneNotify();
 
     view = m_world->m_level;
-    view->m_smallActiveRegionSize.w = static_cast<i32>((fw * 1.12f));
-    view->m_smallActiveRegionSize.h = static_cast<i32>((fh * 1.12f));
+    view->m_smallActiveRegionSize.m_w = static_cast<i32>((fw * 1.12f));
+    view->m_smallActiveRegionSize.m_h = static_cast<i32>((fh * 1.12f));
     view->MainPlaneNotify();
 
     CGameLevel* v = m_world->m_level;

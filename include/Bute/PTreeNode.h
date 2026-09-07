@@ -25,14 +25,14 @@ class zPTreeNode {
     friend class zPTree;
 
     zPTreeNode*& ptr(i32 d) {
-        return d ? right : left;
+        return d ? m_right : m_left;
     }
 
-    zPTreeNode* left;
-    zPTreeNode* right;
-    i32 index;
-    char* symbol;
-    void* body;
+    zPTreeNode* m_left;
+    zPTreeNode* m_right;
+    i32 m_index;
+    char* m_symbol;
+    void* m_body;
 };
 
 class zPtrColl {
@@ -48,15 +48,15 @@ public:
     GZ_ENUM_END(marker_validity)
 
     size_t count() const {
-        return _count;
+        return m_count;
     }
 
     i32 valid() const {
-        return !(flags & IDX(SUSPECT));
+        return !(m_flags & IDX(SUSPECT));
     }
 
     void noclean() {
-        flags |= IDX(NONE);
+        m_flags |= IDX(NONE);
     }
 
     static i32 same(void* a, void* b) {
@@ -64,35 +64,35 @@ public:
     }
 
     i32 purge() const {
-        return flags & IDX(ACTIVE);
+        return m_flags & IDX(ACTIVE);
     }
 
     i32 leave() const {
-        return flags & IDX(NONE);
+        return m_flags & IDX(NONE);
     }
 
     void makevalid() {
-        flags &= ~IDX(SUSPECT);
+        m_flags &= ~IDX(SUSPECT);
     }
 
     void invalidate() {
-        flags |= IDX(SUSPECT);
+        m_flags |= IDX(SUSPECT);
     }
 
     void incc() {
-        ++_count;
+        ++m_count;
     }
 
     void decc() {
-        --_count;
+        --m_count;
     }
 
     void resetc(size_t value = 0) {
-        _count = value;
+        m_count = value;
     }
 
     void destroy(void* value) {
-        dtor(value);
+        m_dtor(value);
     }
 
     virtual ~zPtrColl();
@@ -101,14 +101,14 @@ protected:
     zPtrColl(cleanup_behaviour cleanup, dtorf_t destructor);
 
     dtorf_t destructor() const {
-        return dtor;
+        return m_dtor;
     }
 
 private:
-    dtorf_t dtor;
-    i16 flags;
+    dtorf_t m_dtor;
+    i16 m_flags;
     char m_pada[2];
-    size_t _count;
+    size_t m_count;
 };
 
 class zPTree : public zErrHandling, public zPtrColl {
@@ -116,8 +116,8 @@ public:
     RVA(0x000212a0, 0x21)
     void clear() {
         cleanup();
-        root = NULL;
-        preview = false;
+        m_root = NULL;
+        m_preview = false;
         resetc();
     }
 
@@ -145,11 +145,11 @@ private:
 
     static i32 diffpos(const char* a, const char* b);
 
-    zPTreeNode* root;
-    zPTreeNode* p;
-    zPTreeNode* q;
-    i32 sbits;
-    i32 preview;
+    zPTreeNode* m_root;
+    zPTreeNode* m_p;
+    zPTreeNode* m_q;
+    i32 m_sbits;
+    i32 m_preview;
 };
 
 template<class T> class zSymTab : public zPTree {

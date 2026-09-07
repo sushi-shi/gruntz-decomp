@@ -6002,14 +6002,14 @@ i32 CPlay::ResetPlayState() {
             (static_cast<CSaveGame*>(reg->m_saveGame))->Save(NULL, 0x81a6);
         }
         CGameLevel* g = m_mgr->m_world->m_level;
-        ResetGoals(g->m_header.startX, g->m_header.startY);
+        ResetGoals(g->m_header.m_startX, g->m_header.m_startY);
     } else {
         GruntzPlayer* slot = &g_gameReg->m_players[g_curPlayer];
         if (slot != NULL) {
             ResetGoals(slot->m_focusX, slot->m_focusY);
         } else {
             CGameLevel* g = m_mgr->m_world->m_level;
-            ResetGoals(g->m_header.startX, g->m_header.startY);
+            ResetGoals(g->m_header.m_startX, g->m_header.m_startY);
         }
     }
     if (m_cursorSnapSprite != NULL) {

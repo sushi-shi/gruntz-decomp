@@ -93,27 +93,27 @@ inline CMovingLogic::CMovingLogic(CGameObject* owner, EGruntScale) : CUserLogic(
 inline void CMovingLogic::InitOwner(const double& timeScale) {
     i32 lo0 = m_logicRecord->m_minX;
     if (lo0 == 0) {
-        Motion()->m_minBounds.x = g_movingLogicMin;
+        Motion()->m_minBounds.m_x = g_movingLogicMin;
     } else {
-        Motion()->m_minBounds.x = static_cast<double>(lo0);
+        Motion()->m_minBounds.m_x = static_cast<double>(lo0);
     }
     i32 lo1 = m_logicRecord->m_minY;
     if (lo1 == 0) {
-        Motion()->m_minBounds.y = g_movingLogicMin;
+        Motion()->m_minBounds.m_y = g_movingLogicMin;
     } else {
-        Motion()->m_minBounds.y = static_cast<double>(lo1);
+        Motion()->m_minBounds.m_y = static_cast<double>(lo1);
     }
     i32 hi0 = m_logicRecord->m_maxX;
     if (hi0 == 0) {
-        Motion()->m_maxBounds.x = g_movingLogicMax;
+        Motion()->m_maxBounds.m_x = g_movingLogicMax;
     } else {
-        Motion()->m_maxBounds.x = static_cast<double>(hi0);
+        Motion()->m_maxBounds.m_x = static_cast<double>(hi0);
     }
     i32 hi1 = m_logicRecord->m_maxY;
     if (hi1 == 0) {
-        Motion()->m_maxBounds.y = g_movingLogicMax;
+        Motion()->m_maxBounds.m_y = g_movingLogicMax;
     } else {
-        Motion()->m_maxBounds.y = static_cast<double>(hi1);
+        Motion()->m_maxBounds.m_y = static_cast<double>(hi1);
     }
     m_motion.SetParams(
         static_cast<double>(m_object->m_screenX),

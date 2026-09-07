@@ -47,7 +47,7 @@ const float g_lumaB = 0.109375f;
 DATA(0x001efb58)
 const float g_inv255 = 0.003921568859368563f;
 DATA(0x001efb5c)
-const float g_negone = -1.0f;
+const float s_negone = -1.0f;
 
 inline CShadeTableArray::CShadeTableArray() {
 
@@ -270,12 +270,12 @@ CShadeTableCache::HsvShiftTable(PALETTEENTRY* pal, i32 steps, i32 pct, i32 gamma
             float luma = static_cast<float>(red) * g_lumaR + static_cast<float>(green) * g_lumaG
                          + static_cast<float>(blue) * g_lumaB;
             i32 lumaByte = static_cast<i32>(luma) & PIXEL_BYTE_MASK;
-            float x = g_one / (static_cast<float>(lumaByte) * g_inv255 - g_negone);
+            float x = g_one / (static_cast<float>(lumaByte) * g_inv255 - s_negone);
             float factor =
                 static_cast<float>(pow(static_cast<double>(x), static_cast<double>(gamma)));
             float scale = static_cast<float>(j) / static_cast<float>(steps)
                               * ((static_cast<float>((pct - 100)) * factor) * g_percentScale)
-                          - g_negone;
+                          - s_negone;
             u8 rn = static_cast<u8>(HSV_MIN(
                 static_cast<float>(((baseArg & PIXEL_BYTE_MASK) + pal[i].peRed)) * scale,
                 g_colorChannelMax
@@ -524,7 +524,7 @@ CShadeTable* CShadeTableCache::AddTable(float scale) {
                     u8 gc = static_cast<u8>((g < PIXEL_BYTE_MASK ? g : PIXEL_BYTE_MASK));
                     u8 bc = static_cast<u8>((b < PIXEL_BYTE_MASK ? b : PIXEL_BYTE_MASK));
 
-                    float f = static_cast<float>(v) * (scale * g_inv255) - g_negone;
+                    float f = static_cast<float>(v) * (scale * g_inv255) - s_negone;
 
                     u8 rn = static_cast<u8>(HSV_MIN(static_cast<float>(rc) * f, g_colorChannelMax));
                     u8 gn = static_cast<u8>(HSV_MIN(static_cast<float>(gc) * f, g_colorChannelMax));
@@ -744,10 +744,10 @@ i32 __cdecl CShadeTableCache::CompareHue(const void* a, const void* b) {
     ColorHSV ha, hb;
     ha = RgbToHsv((g_pal[ia].peBlue << 0x10) | (g_pal[ia].peGreen << 8) | g_pal[ia].peRed);
     hb = RgbToHsv((g_pal[ib].peBlue << 0x10) | (g_pal[ib].peGreen << 8) | g_pal[ib].peRed);
-    if (ha.h < hb.h) {
+    if (ha.m_h < hb.m_h) {
         return -1;
     }
-    if (ha.h > hb.h) {
+    if (ha.m_h > hb.m_h) {
         return 1;
     }
     return 0;
@@ -811,13 +811,13 @@ ColorHSV RgbToHsv(u32 color) {
         static_cast<float>(HSV_MIN(HSV_MIN(GetRValue(color), GetGValue(color)), GetBValue(color)));
     float h;
 
-    hsv.v = v;
+    hsv.m_v = v;
     if (v == 0.0) {
-        hsv.s = 0.0;
-        hsv.h = 0.0;
+        hsv.m_s = 0.0;
+        hsv.m_h = 0.0;
     } else {
         float delta = v - mn;
-        hsv.s = delta / v;
+        hsv.m_s = delta / v;
         if (delta == 0.0) {
             h = 0.0f;
         } else if (GetRValue(color) == v) {
@@ -831,7 +831,7 @@ ColorHSV RgbToHsv(u32 color) {
         if (h < 0.0) {
             h = h - -360.0f;
         }
-        hsv.h = h;
+        hsv.m_h = h;
     }
     return hsv;
 }

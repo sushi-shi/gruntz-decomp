@@ -44,7 +44,7 @@ template<> DATA(0x002461b0)
 CActReg CActRegPool<CRollingBall>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 DATA(0x001ea3e8)
-static const double kRollingBallSpeedNum = 16.0;
+static const double s_rollingBallSpeedNum = 16.0;
 
 static __inline i32 VtblResolve(CTileImageSet* imageSet) {
     return IDX(imageSet->GetCollisionAt(0, 0));
@@ -271,7 +271,7 @@ i32 CRollingBall::Update() {
                         return 0;
                     }
                     DWORD perTile = g_buteMgr.GetDword("Hazardz", "RollingBallTimePerTile", 0x3e8);
-                    m_moveSpeed = kRollingBallSpeedNum / static_cast<double>(perTile);
+                    m_moveSpeed = s_rollingBallSpeedNum / static_cast<double>(perTile);
 
                     CMapMgr* board = g_gameReg->m_tileGrid;
                     CWwdSpriteObject* o2 = m_object;

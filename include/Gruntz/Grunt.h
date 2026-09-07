@@ -442,7 +442,7 @@ public:
     }
     CGruntCellRec* EntranceCell() {
         GruntDirectionCell c = m_entranceCell;
-        return &m_cells[3 * c.row + c.column];
+        return &m_cells[3 * c.m_row + c.m_column];
     }
     i32 PayloadCount() const {
         return m_payloads.GetCount();

@@ -42,9 +42,9 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
     if (mode != NULL) {
         info = *mode;
     } else {
-        info.width = SCREEN_W_PX;
-        info.height = SCREEN_H_PX;
-        info.bpp = BPP_PALETTED_8;
+        info.m_width = SCREEN_W_PX;
+        info.m_height = SCREEN_H_PX;
+        info.m_bpp = BPP_PALETTED_8;
     }
 
     m_borrowedDisplayResources = false;
@@ -60,7 +60,7 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
         HandleError();
         return 0;
     }
-    if (m_directDraw2->SetDisplayMode(info.width, info.height, IDX(info.bpp), 0, 0) != 0) {
+    if (m_directDraw2->SetDisplayMode(info.m_width, info.m_height, IDX(info.m_bpp), 0, 0) != 0) {
         HandleError();
         return 0;
     }
@@ -83,7 +83,7 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
 
     Snapshot(static_cast<HWND>(window));
 
-    if (mode->bpp == BPP_PALETTED_8) {
+    if (mode->m_bpp == BPP_PALETTED_8) {
         if (m_directDraw2->CreatePalette(
                 DDPCAPS_8BIT,
                 static_cast<LPPALETTEENTRY>(m_palEntries),
@@ -98,22 +98,22 @@ i32 CMoviePlayer::Init(HWND window, DDModeInfo* mode, u32 coopFlags) {
         m_smackBufMode = 0;
     }
 
-    if (mode->bpp == BPP_RGB_24) {
+    if (mode->m_bpp == BPP_RGB_24) {
         HandleError();
         return 0;
     }
-    if (mode->bpp == BPP_RGB_16) {
+    if (mode->m_bpp == BPP_RGB_16) {
         if (SelectSmackBufferFormat16() == 0) {
             HandleError();
             return 0;
         }
     }
 
-    m_screenWidth = info.width;
+    m_screenWidth = info.m_width;
     m_srcSurf = NULL;
     m_srcSurfRaw = NULL;
-    m_screenHeight = info.height;
-    m_bpp = info.bpp;
+    m_screenHeight = info.m_height;
+    m_bpp = info.m_bpp;
     m_window = window;
     m_streamOpen = false;
     ShowCursor(false);

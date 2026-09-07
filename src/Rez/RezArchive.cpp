@@ -42,7 +42,7 @@ inline i32 CRezDir::IsGoodChar(char character) {
     return 0;
 }
 
-static const i32 REZ_SCAN_PATH_MAX = 0x308;
+static const i32 s_REZ_SCAN_PATH_MAX = 0x308;
 
 // Byte-forced view of packed serialized storage.
 static inline u32 ReadPackedDWORD(const u8* bytes) {
@@ -1042,27 +1042,27 @@ i32 CRezMgr::Open(const char* path, b32 readOnly, b32 createNew) {
 
     FileMainHeaderStruct header;
     storage->Read(0, 0, sizeof(header), &header);
-    m_nNextWritePos = header.NextWritePos;
-    m_nRootDirPos = header.RootDirPos;
-    m_nRootDirSize = header.RootDirSize;
-    m_nRootDirTime = header.RootDirTime;
-    m_nLastTimeModified = header.Time;
-    m_nFileFormatVersion = header.FileFormatVersion;
-    m_nLargestKeyAry = header.LargestKeyAry;
-    m_nLargestDirNameSize = header.LargestDirNameSize;
-    m_nLargestRezNameSize = header.LargestRezNameSize;
-    m_nLargestCommentSize = header.LargestCommentSize;
-    m_bIsSorted = header.IsSorted;
-    if (header.CR1 != REZ_ARCHIVE_MAGIC_CR) {
+    m_nNextWritePos = header.m_NextWritePos;
+    m_nRootDirPos = header.m_RootDirPos;
+    m_nRootDirSize = header.m_RootDirSize;
+    m_nRootDirTime = header.m_RootDirTime;
+    m_nLastTimeModified = header.m_Time;
+    m_nFileFormatVersion = header.m_FileFormatVersion;
+    m_nLargestKeyAry = header.m_LargestKeyAry;
+    m_nLargestDirNameSize = header.m_LargestDirNameSize;
+    m_nLargestRezNameSize = header.m_LargestRezNameSize;
+    m_nLargestCommentSize = header.m_LargestCommentSize;
+    m_bIsSorted = header.m_IsSorted;
+    if (header.m_CR1 != REZ_ARCHIVE_MAGIC_CR) {
         return 0;
     }
-    if (header.LF2 != REZ_ARCHIVE_MAGIC_LF) {
+    if (header.m_LF2 != REZ_ARCHIVE_MAGIC_LF) {
         return 0;
     }
-    if (header.EOF1 != REZ_ARCHIVE_MAGIC_EOF) {
+    if (header.m_EOF1 != REZ_ARCHIVE_MAGIC_EOF) {
         return 0;
     }
-    if (header.FileFormatVersion != REZ_ARCHIVE_VERSION_1) {
+    if (header.m_FileFormatVersion != REZ_ARCHIVE_VERSION_1) {
         return 0;
     }
     m_pRootDir = new CRezDir(
@@ -1125,19 +1125,19 @@ i32 CRezMgr::OpenAdditional(const char* path, b32 replaceExisting) {
 
     FileMainHeaderStruct header;
     storage->Read(0, 0, sizeof(header), &header);
-    if (header.LargestKeyAry > m_nLargestKeyAry) {
-        m_nLargestKeyAry = header.LargestKeyAry;
+    if (header.m_LargestKeyAry > m_nLargestKeyAry) {
+        m_nLargestKeyAry = header.m_LargestKeyAry;
     }
-    if (header.LargestDirNameSize > m_nLargestDirNameSize) {
-        m_nLargestDirNameSize = header.LargestDirNameSize;
+    if (header.m_LargestDirNameSize > m_nLargestDirNameSize) {
+        m_nLargestDirNameSize = header.m_LargestDirNameSize;
     }
-    if (header.LargestRezNameSize > m_nLargestRezNameSize) {
-        m_nLargestRezNameSize = header.LargestRezNameSize;
+    if (header.m_LargestRezNameSize > m_nLargestRezNameSize) {
+        m_nLargestRezNameSize = header.m_LargestRezNameSize;
     }
-    if (header.LargestCommentSize > m_nLargestCommentSize) {
-        m_nLargestCommentSize = header.LargestCommentSize;
+    if (header.m_LargestCommentSize > m_nLargestCommentSize) {
+        m_nLargestCommentSize = header.m_LargestCommentSize;
     }
-    m_pRootDir->ReadAllDirs(storage, header.RootDirPos, header.RootDirSize, replaceExisting);
+    m_pRootDir->ReadAllDirs(storage, header.m_RootDirPos, header.m_RootDirSize, replaceExisting);
     return 1;
 }
 
@@ -1148,12 +1148,12 @@ i32 CRezMgr::ReadEmulationDirectory(
     char* path,
     b32 replaceExisting
 ) {
-    char pattern[REZ_SCAN_PATH_MAX];
+    char pattern[s_REZ_SCAN_PATH_MAX];
     strcpy(pattern, path);
     if (pattern[strlen(pattern) - 1] != '\\') {
         strcat(pattern, "\\");
     }
-    char full[REZ_SCAN_PATH_MAX];
+    char full[s_REZ_SCAN_PATH_MAX];
     strcpy(full, pattern);
     strcat(full, g_wildcard);
     _finddata_t fileData;
@@ -1167,12 +1167,12 @@ i32 CRezMgr::ReadEmulationDirectory(
         }
         if ((fileData.attrib & _A_SUBDIR) == _A_SUBDIR) {
 
-            char subdirectoryName[REZ_SCAN_PATH_MAX];
+            char subdirectoryName[s_REZ_SCAN_PATH_MAX];
             strcpy(subdirectoryName, fileData.name);
             if (m_bLowerCaseUsed == false) {
                 _strupr(subdirectoryName);
             }
-            char childPath[REZ_SCAN_PATH_MAX];
+            char childPath[s_REZ_SCAN_PATH_MAX];
             strcpy(childPath, pattern);
             strcat(childPath, subdirectoryName);
             strcat(childPath, "\\");
@@ -1187,13 +1187,13 @@ i32 CRezMgr::ReadEmulationDirectory(
             continue;
         }
 
-        char filePath[REZ_SCAN_PATH_MAX];
+        char filePath[s_REZ_SCAN_PATH_MAX];
         strcpy(filePath, pattern);
         strcat(filePath, fileData.name);
         char drive[_MAX_DRIVE];
         char directoryPath[_MAX_PATH];
         char splitName[_MAX_PATH];
-        char resourceName[REZ_SCAN_PATH_MAX];
+        char resourceName[s_REZ_SCAN_PATH_MAX];
         char extension[_MAX_PATH];
         _splitpath(filePath, drive, directoryPath, splitName, extension);
         strcpy(resourceName, splitName);

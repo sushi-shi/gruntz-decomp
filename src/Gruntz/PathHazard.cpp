@@ -63,32 +63,32 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
     CWwdSpriteObject* h = m_object;
     SET_SORT_KEY_IF_CHANGED(h, SORTKEY_ACTOR)
 
-    m_wp[0].x = m_object->m_screenX;
-    m_wp[0].y = m_object->m_screenY;
-    m_wp[1].x = (m_object->m_extent.left << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[1].y = (m_object->m_extent.top << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[2].x = (m_object->m_extent.right << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[2].y = (m_object->m_extent.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[3].x = (m_object->m_area.left << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[3].y = (m_object->m_area.top << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[4].x = (m_object->m_area.right << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[4].y = (m_object->m_area.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[5].x = (m_object->m_switchRect.left << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[5].y = (m_object->m_switchRect.top << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[6].x = (m_object->m_switchRect.right << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[6].y = (m_object->m_switchRect.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[7].x = (m_object->m_clip.left << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[7].y = (m_object->m_clip.top << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[8].x = (m_object->m_clip.right << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[8].y = (m_object->m_clip.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[9].x = (m_object->m_logicRecord->m_userRect1.left << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[9].y = (m_object->m_logicRecord->m_userRect1.top << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[10].x = (m_object->m_logicRecord->m_userRect1.right << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[10].y = (m_object->m_logicRecord->m_userRect1.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[11].x = (m_object->m_logicRecord->m_userRect2.left << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[11].y = (m_object->m_logicRecord->m_userRect2.top << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[12].x = (m_object->m_logicRecord->m_userRect2.right << TILE_SHIFT_PX) + TILE_HALF_PX;
-    m_wp[12].y = (m_object->m_logicRecord->m_userRect2.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[0].m_x = m_object->m_screenX;
+    m_wp[0].m_y = m_object->m_screenY;
+    m_wp[1].m_x = (m_object->m_extent.left << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[1].m_y = (m_object->m_extent.top << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[2].m_x = (m_object->m_extent.right << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[2].m_y = (m_object->m_extent.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[3].m_x = (m_object->m_area.left << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[3].m_y = (m_object->m_area.top << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[4].m_x = (m_object->m_area.right << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[4].m_y = (m_object->m_area.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[5].m_x = (m_object->m_switchRect.left << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[5].m_y = (m_object->m_switchRect.top << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[6].m_x = (m_object->m_switchRect.right << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[6].m_y = (m_object->m_switchRect.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[7].m_x = (m_object->m_clip.left << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[7].m_y = (m_object->m_clip.top << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[8].m_x = (m_object->m_clip.right << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[8].m_y = (m_object->m_clip.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[9].m_x = (m_object->m_logicRecord->m_userRect1.left << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[9].m_y = (m_object->m_logicRecord->m_userRect1.top << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[10].m_x = (m_object->m_logicRecord->m_userRect1.right << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[10].m_y = (m_object->m_logicRecord->m_userRect1.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[11].m_x = (m_object->m_logicRecord->m_userRect2.left << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[11].m_y = (m_object->m_logicRecord->m_userRect2.top << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[12].m_x = (m_object->m_logicRecord->m_userRect2.right << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[12].m_y = (m_object->m_logicRecord->m_userRect2.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
 
     i32 i = 1;
     b32 found = false;
@@ -96,7 +96,7 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
         if (found != false) {
             break;
         }
-        if (m_wp[i].x == TILE_HALF_PX && m_wp[i].y == TILE_HALF_PX) {
+        if (m_wp[i].m_x == TILE_HALF_PX && m_wp[i].m_y == TILE_HALF_PX) {
             found = true;
         } else {
             i++;
@@ -357,9 +357,9 @@ RVA(0x000b47e0, 0x170)
 i32 CPathHazard::BeginLeg() {
     CWwdSpriteObject* obj = m_object;
     i32 idx = m_wpIndex;
-    i32 wx = m_wp[idx].x;
+    i32 wx = m_wp[idx].m_x;
     m_wpX = wx;
-    i32 wy = m_wp[idx].y;
+    i32 wy = m_wp[idx].m_y;
     m_wpY = wy;
 
     double dx = static_cast<double>(m_wpX) - static_cast<double>(obj->m_screenX);

@@ -52,7 +52,7 @@
 #include <string.h>
 
 DATA(0x001eff2c)
-const float c_volumePercentUnitScale = 0.009999999776482582f;
+const float g_volumePercentUnitScale = 0.009999999776482582f;
 
 RVA(0x00156cb0, 0x20)
 CWapObj::CWapObj(CDDrawSurfaceMgr* owner, i32 id, i32 flags) {
@@ -894,7 +894,7 @@ i32 SoundCue::PlaySpatialized(i32 sourceX, i32 listenerX, i32 maxPanOffsetPx, i3
     i32 volumePercent = abs(VOLUME_PCT_MAX);
     if (g_soundVolumePercent != VOLUME_PCT_MAX) {
         volumePercent =
-            static_cast<i32>(volumePercent * (g_soundVolumePercent * c_volumePercentUnitScale));
+            static_cast<i32>(volumePercent * (g_soundVolumePercent * g_volumePercentUnitScale));
     }
     return m_sound->AcquireAndPlay(volumePercent, panPercent, 0, false);
 }
