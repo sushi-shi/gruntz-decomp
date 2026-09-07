@@ -35,7 +35,7 @@ PALETTEENTRY* g_pal = NULL;
 DATA(0x001efb40)
 const float g_one = 1.0f;
 DATA(0x001efb44)
-const float g_255 = 255.0f;
+const float g_colorChannelMax = 255.0f;
 DATA(0x001efb48)
 const float g_percentScale = 0.01f;
 DATA(0x001efb4c)
@@ -173,26 +173,26 @@ CShadeTable* CShadeTableCache::FlashTable(
             u8 rn = static_cast<u8>(
                 (static_cast<float>((startPct * static_cast<i32>(pal[i].peRed) / 100)) * inv
                  + static_cast<float>(pal[i].peRed) * tt)
-                        < g_255
+                        < g_colorChannelMax
                     ? static_cast<float>((startPct * static_cast<i32>(pal[i].peRed) / 100)) * inv
                           + static_cast<float>(pal[i].peRed) * tt
-                    : g_255
+                    : g_colorChannelMax
             );
             u8 gn = static_cast<u8>(
                 (static_cast<float>((startPct * static_cast<i32>(pal[i].peGreen) / 100)) * inv
                  + static_cast<float>(pal[i].peGreen) * tt)
-                        < g_255
+                        < g_colorChannelMax
                     ? static_cast<float>((startPct * static_cast<i32>(pal[i].peGreen) / 100)) * inv
                           + static_cast<float>(pal[i].peGreen) * tt
-                    : g_255
+                    : g_colorChannelMax
             );
             u8 bn = static_cast<u8>(
                 (static_cast<float>((startPct * static_cast<i32>(pal[i].peBlue) / 100)) * inv
                  + static_cast<float>(pal[i].peBlue) * tt)
-                        < g_255
+                        < g_colorChannelMax
                     ? static_cast<float>((startPct * static_cast<i32>(pal[i].peBlue) / 100)) * inv
                           + static_cast<float>(pal[i].peBlue) * tt
-                    : g_255
+                    : g_colorChannelMax
             );
             ramp[j] = static_cast<u8>(FindNearestColor(pal, rn, gn, bn));
         }
@@ -217,7 +217,7 @@ CShadeTable* CShadeTableCache::FlashTable(
                         * g_percentScale,
                     uu
                 ),
-                g_255
+                g_colorChannelMax
             ));
             u8 gn = static_cast<u8>(HSV_MIN(
                 INTERPOLATE(
@@ -226,7 +226,7 @@ CShadeTable* CShadeTableCache::FlashTable(
                         * g_percentScale,
                     uu
                 ),
-                g_255
+                g_colorChannelMax
             ));
             u8 bn = static_cast<u8>(HSV_MIN(
                 INTERPOLATE(
@@ -235,7 +235,7 @@ CShadeTable* CShadeTableCache::FlashTable(
                         * g_percentScale,
                     uu
                 ),
-                g_255
+                g_colorChannelMax
             ));
             ramp[k] = static_cast<u8>(FindNearestColor(pal, rn, gn, bn));
         }
@@ -278,15 +278,15 @@ CShadeTableCache::HsvShiftTable(PALETTEENTRY* pal, i32 steps, i32 pct, i32 gamma
                           - g_negone;
             u8 rn = static_cast<u8>(HSV_MIN(
                 static_cast<float>(((baseArg & PIXEL_BYTE_MASK) + pal[i].peRed)) * scale,
-                g_255
+                g_colorChannelMax
             ));
             u8 gn = static_cast<u8>(HSV_MIN(
                 static_cast<float>(((baseArg & PIXEL_BYTE_MASK) + pal[i].peGreen)) * scale,
-                g_255
+                g_colorChannelMax
             ));
             u8 bn = static_cast<u8>(HSV_MIN(
                 static_cast<float>(((baseArg & PIXEL_BYTE_MASK) + pal[i].peBlue)) * scale,
-                g_255
+                g_colorChannelMax
             ));
             data[i * steps + j] = FindNearestColor(pal, rn, gn, bn);
         }
@@ -526,9 +526,9 @@ CShadeTable* CShadeTableCache::AddTable(float scale) {
 
                     float f = static_cast<float>(v) * (scale * g_inv255) - g_negone;
 
-                    u8 rn = static_cast<u8>(HSV_MIN(static_cast<float>(rc) * f, g_255));
-                    u8 gn = static_cast<u8>(HSV_MIN(static_cast<float>(gc) * f, g_255));
-                    u8 bn = static_cast<u8>(HSV_MIN(static_cast<float>(bc) * f, g_255));
+                    u8 rn = static_cast<u8>(HSV_MIN(static_cast<float>(rc) * f, g_colorChannelMax));
+                    u8 gn = static_cast<u8>(HSV_MIN(static_cast<float>(gc) * f, g_colorChannelMax));
+                    u8 bn = static_cast<u8>(HSV_MIN(static_cast<float>(bc) * f, g_colorChannelMax));
                     *out++ = static_cast<u16>(
                         ((static_cast<u8>((static_cast<u8>(rn) >> static_cast<u8>(g_rDown)))
                           << g_rUp)

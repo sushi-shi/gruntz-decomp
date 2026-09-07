@@ -36,24 +36,24 @@ CGruntStartingPoint::CGruntStartingPoint(CGameObject* obj)
     Hide();
 }
 
-static inline CActHandler* R4Lookup(i32 coord) {
+static inline CActHandler* ResolveGruntStartingPointAct(i32 coord) {
     return (CActRegPool<CGruntStartingPoint>::s_table.ResolveEntry(coord));
 }
 
 RVA(0x0003e1a0, 0x102)
 void CGruntStartingPoint::FireActivation(i32 coord) {
-    CActHandler* e = R4Lookup(coord);
+    CActHandler* e = ResolveGruntStartingPointAct(coord);
     if ((*e) != NULL) {
-        CActHandler* e2 = R4Lookup(coord);
+        CActHandler* e2 = ResolveGruntStartingPointAct(coord);
         (this->*((*e2)))();
     }
 }
 
 RVA(0x0003e300, 0x18d)
-void ActReg4RegisterType() {
+void RegisterGruntStartingPointActions() {
     ACT_NAME_ID(id, "A")
 
-    *R4Lookup(id) = static_cast<CActHandler>(&CGruntStartingPoint::Idle);
+    *ResolveGruntStartingPointAct(id) = static_cast<CActHandler>(&CGruntStartingPoint::Idle);
 }
 
 RVA(0x0003e500, 0x3)

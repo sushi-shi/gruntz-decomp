@@ -107,103 +107,103 @@ const double g_slopeNegTwo = -2.0;
 i32 g_movingSeed;
 
 DATA(0x0020d424)
-static char s_d48_BREAK[] = "_BREAK";
+static char s_gruntAnimSuffix_BREAK[] = "_BREAK";
 DATA(0x0020d42c)
-static char s_d48_SOUTHEAST[] = "_SOUTHEAST";
+static char s_gruntAnimSuffix_SOUTHEAST[] = "_SOUTHEAST";
 DATA(0x0020d43c)
-static char s_d48_SOUTH[] = "_SOUTH";
+static char s_gruntAnimSuffix_SOUTH[] = "_SOUTH";
 DATA(0x0020d444)
-static char s_d48_SOUTHWEST[] = "_SOUTHWEST";
+static char s_gruntAnimSuffix_SOUTHWEST[] = "_SOUTHWEST";
 DATA(0x0020d454)
-static char s_d48_EAST[] = "_EAST";
+static char s_gruntAnimSuffix_EAST[] = "_EAST";
 DATA(0x0020d45c)
-static char s_d48_WEST[] = "_WEST";
+static char s_gruntAnimSuffix_WEST[] = "_WEST";
 DATA(0x0020d464)
-static char s_d48_NORTHEAST[] = "_NORTHEAST";
+static char s_gruntAnimSuffix_NORTHEAST[] = "_NORTHEAST";
 DATA(0x0020d474)
-static char s_d48_NORTH[] = "_NORTH";
+static char s_gruntAnimSuffix_NORTH[] = "_NORTH";
 DATA(0x0020d47c)
-static char s_d48_NORTHWEST[] = "_NORTHWEST";
+static char s_gruntAnimSuffix_NORTHWEST[] = "_NORTHWEST";
 DATA(0x0020d48c)
-static char s_d48_SOUTHEAST_ITEM[] = "_SOUTHEAST_ITEM";
+static char s_gruntAnimSuffix_SOUTHEAST_ITEM[] = "_SOUTHEAST_ITEM";
 DATA(0x0020d4a0)
-static char s_d48_SOUTH_ITEM[] = "_SOUTH_ITEM";
+static char s_gruntAnimSuffix_SOUTH_ITEM[] = "_SOUTH_ITEM";
 DATA(0x0020d4b0)
-static char s_d48_SOUTHWEST_ITEM[] = "_SOUTHWEST_ITEM";
+static char s_gruntAnimSuffix_SOUTHWEST_ITEM[] = "_SOUTHWEST_ITEM";
 DATA(0x0020d4c4)
-static char s_d48_EAST_ITEM[] = "_EAST_ITEM";
+static char s_gruntAnimSuffix_EAST_ITEM[] = "_EAST_ITEM";
 DATA(0x0020d4d4)
-static char s_d48_WEST_ITEM[] = "_WEST_ITEM";
+static char s_gruntAnimSuffix_WEST_ITEM[] = "_WEST_ITEM";
 DATA(0x0020d4e4)
-static char s_d48_NORTHEAST_ITEM[] = "_NORTHEAST_ITEM";
+static char s_gruntAnimSuffix_NORTHEAST_ITEM[] = "_NORTHEAST_ITEM";
 DATA(0x0020d4f8)
-static char s_d48_NORTH_ITEM[] = "_NORTH_ITEM";
+static char s_gruntAnimSuffix_NORTH_ITEM[] = "_NORTH_ITEM";
 DATA(0x0020d508)
-static char s_d48_NORTHWEST_ITEM[] = "_NORTHWEST_ITEM";
+static char s_gruntAnimSuffix_NORTHWEST_ITEM[] = "_NORTHWEST_ITEM";
 DATA(0x0020d51c)
-static char s_d48_SOUTHEAST_IDLE[] = "_SOUTHEAST_IDLE";
+static char s_gruntAnimSuffix_SOUTHEAST_IDLE[] = "_SOUTHEAST_IDLE";
 DATA(0x0020d530)
-static char s_d48_SOUTH_IDLE[] = "_SOUTH_IDLE";
+static char s_gruntAnimSuffix_SOUTH_IDLE[] = "_SOUTH_IDLE";
 DATA(0x0020d540)
-static char s_d48_SOUTHWEST_IDLE[] = "_SOUTHWEST_IDLE";
+static char s_gruntAnimSuffix_SOUTHWEST_IDLE[] = "_SOUTHWEST_IDLE";
 DATA(0x0020d554)
-static char s_d48_EAST_IDLE[] = "_EAST_IDLE";
+static char s_gruntAnimSuffix_EAST_IDLE[] = "_EAST_IDLE";
 DATA(0x0020d564)
-static char s_d48_WEST_IDLE[] = "_WEST_IDLE";
+static char s_gruntAnimSuffix_WEST_IDLE[] = "_WEST_IDLE";
 DATA(0x0020d574)
-static char s_d48_NORTHEAST_IDLE[] = "_NORTHEAST_IDLE";
+static char s_gruntAnimSuffix_NORTHEAST_IDLE[] = "_NORTHEAST_IDLE";
 DATA(0x0020d588)
-static char s_d48_NORTH_IDLE[] = "_NORTH_IDLE";
+static char s_gruntAnimSuffix_NORTH_IDLE[] = "_NORTH_IDLE";
 DATA(0x0020d598)
-static char s_d48_NORTHWEST_IDLE[] = "_NORTHWEST_IDLE";
+static char s_gruntAnimSuffix_NORTHWEST_IDLE[] = "_NORTHWEST_IDLE";
 DATA(0x0020d5ac)
-static char s_d48_SOUTHEAST_ATTACK[] = "_SOUTHEAST_ATTACK";
+static char s_gruntAnimSuffix_SOUTHEAST_ATTACK[] = "_SOUTHEAST_ATTACK";
 DATA(0x0020d5c4)
-static char s_d48_SOUTH_ATTACK[] = "_SOUTH_ATTACK";
+static char s_gruntAnimSuffix_SOUTH_ATTACK[] = "_SOUTH_ATTACK";
 DATA(0x0020d5d4)
-static char s_d48_SOUTHWEST_ATTACK[] = "_SOUTHWEST_ATTACK";
+static char s_gruntAnimSuffix_SOUTHWEST_ATTACK[] = "_SOUTHWEST_ATTACK";
 DATA(0x0020d5ec)
-static char s_d48_EAST_ATTACK[] = "_EAST_ATTACK";
+static char s_gruntAnimSuffix_EAST_ATTACK[] = "_EAST_ATTACK";
 DATA(0x0020d5fc)
-static char s_d48_WEST_ATTACK[] = "_WEST_ATTACK";
+static char s_gruntAnimSuffix_WEST_ATTACK[] = "_WEST_ATTACK";
 DATA(0x0020d60c)
-static char s_d48_NORTHEAST_ATTACK[] = "_NORTHEAST_ATTACK";
+static char s_gruntAnimSuffix_NORTHEAST_ATTACK[] = "_NORTHEAST_ATTACK";
 DATA(0x0020d624)
-static char s_d48_NORTH_ATTACK[] = "_NORTH_ATTACK";
+static char s_gruntAnimSuffix_NORTH_ATTACK[] = "_NORTH_ATTACK";
 DATA(0x0020d634)
-static char s_d48_NORTHWEST_ATTACK[] = "_NORTHWEST_ATTACK";
+static char s_gruntAnimSuffix_NORTHWEST_ATTACK[] = "_NORTHWEST_ATTACK";
 DATA(0x0020d64c)
-static char s_d48_SOUTHEAST_STRUCK[] = "_SOUTHEAST_STRUCK";
+static char s_gruntAnimSuffix_SOUTHEAST_STRUCK[] = "_SOUTHEAST_STRUCK";
 DATA(0x0020d664)
-static char s_d48_SOUTH_STRUCK[] = "_SOUTH_STRUCK";
+static char s_gruntAnimSuffix_SOUTH_STRUCK[] = "_SOUTH_STRUCK";
 DATA(0x0020d674)
-static char s_d48_SOUTHWEST_STRUCK[] = "_SOUTHWEST_STRUCK";
+static char s_gruntAnimSuffix_SOUTHWEST_STRUCK[] = "_SOUTHWEST_STRUCK";
 DATA(0x0020d68c)
-static char s_d48_EAST_STRUCK[] = "_EAST_STRUCK";
+static char s_gruntAnimSuffix_EAST_STRUCK[] = "_EAST_STRUCK";
 DATA(0x0020d69c)
-static char s_d48_WEST_STRUCK[] = "_WEST_STRUCK";
+static char s_gruntAnimSuffix_WEST_STRUCK[] = "_WEST_STRUCK";
 DATA(0x0020d6ac)
-static char s_d48_NORTHEAST_STRUCK[] = "_NORTHEAST_STRUCK";
+static char s_gruntAnimSuffix_NORTHEAST_STRUCK[] = "_NORTHEAST_STRUCK";
 DATA(0x0020d6c4)
-static char s_d48_NORTH_STRUCK[] = "_NORTH_STRUCK";
+static char s_gruntAnimSuffix_NORTH_STRUCK[] = "_NORTH_STRUCK";
 DATA(0x0020d6d4)
-static char s_d48_NORTHWEST_STRUCK[] = "_NORTHWEST_STRUCK";
+static char s_gruntAnimSuffix_NORTHWEST_STRUCK[] = "_NORTHWEST_STRUCK";
 DATA(0x0020d6ec)
-static char s_d48_SOUTHEAST_WALK[] = "_SOUTHEAST_WALK";
+static char s_gruntAnimSuffix_SOUTHEAST_WALK[] = "_SOUTHEAST_WALK";
 DATA(0x0020d700)
-static char s_d48_SOUTH_WALK[] = "_SOUTH_WALK";
+static char s_gruntAnimSuffix_SOUTH_WALK[] = "_SOUTH_WALK";
 DATA(0x0020d710)
-static char s_d48_SOUTHWEST_WALK[] = "_SOUTHWEST_WALK";
+static char s_gruntAnimSuffix_SOUTHWEST_WALK[] = "_SOUTHWEST_WALK";
 DATA(0x0020d724)
-static char s_d48_EAST_WALK[] = "_EAST_WALK";
+static char s_gruntAnimSuffix_EAST_WALK[] = "_EAST_WALK";
 DATA(0x0020d734)
-static char s_d48_WEST_WALK[] = "_WEST_WALK";
+static char s_gruntAnimSuffix_WEST_WALK[] = "_WEST_WALK";
 DATA(0x0020d744)
-static char s_d48_NORTHEAST_WALK[] = "_NORTHEAST_WALK";
+static char s_gruntAnimSuffix_NORTHEAST_WALK[] = "_NORTHEAST_WALK";
 DATA(0x0020d758)
-static char s_d48_NORTH_WALK[] = "_NORTH_WALK";
+static char s_gruntAnimSuffix_NORTH_WALK[] = "_NORTH_WALK";
 DATA(0x0020d768)
-static char s_d48_NORTHWEST_WALK[] = "_NORTHWEST_WALK";
+static char s_gruntAnimSuffix_NORTHWEST_WALK[] = "_NORTHWEST_WALK";
 DATA(0x0020d77c)
 static char s_pose_TOYBREAK[] = "_TOY-BREAK";
 DATA(0x0020d78c)
@@ -499,63 +499,63 @@ void CGrunt::ReadConfigFromButeMgr() {
 RVA(0x00048470, 0x131b)
 void CGrunt::LoadCellAnimNames(i32 kind, i32 dirOnly) {
     if (kind == 0) {
-        m_cells[0].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_NORTHWEST_WALK;
-        m_cells[1].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_NORTH_WALK;
-        m_cells[2].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_NORTHEAST_WALK;
-        m_cells[3].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_WEST_WALK;
-        m_cells[4].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_NORTH_WALK;
-        m_cells[5].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_EAST_WALK;
-        m_cells[6].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTHWEST_WALK;
-        m_cells[7].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTH_WALK;
-        m_cells[8].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTHEAST_WALK;
-        m_cells[0].StruckName() = "GRUNTZ_" + m_animSetName + s_d48_NORTHWEST_STRUCK;
-        m_cells[1].StruckName() = "GRUNTZ_" + m_animSetName + s_d48_NORTH_STRUCK;
-        m_cells[2].StruckName() = "GRUNTZ_" + m_animSetName + s_d48_NORTHEAST_STRUCK;
-        m_cells[3].StruckName() = "GRUNTZ_" + m_animSetName + s_d48_WEST_STRUCK;
-        m_cells[4].StruckName() = "GRUNTZ_" + m_animSetName + s_d48_NORTH_STRUCK;
-        m_cells[5].StruckName() = "GRUNTZ_" + m_animSetName + s_d48_EAST_STRUCK;
-        m_cells[6].StruckName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTHWEST_STRUCK;
-        m_cells[7].StruckName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTH_STRUCK;
-        m_cells[8].StruckName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTHEAST_STRUCK;
-        m_cells[0].AttackName() = "GRUNTZ_" + m_animSetName + s_d48_NORTHWEST_ATTACK;
-        m_cells[1].AttackName() = "GRUNTZ_" + m_animSetName + s_d48_NORTH_ATTACK;
-        m_cells[2].AttackName() = "GRUNTZ_" + m_animSetName + s_d48_NORTHEAST_ATTACK;
-        m_cells[3].AttackName() = "GRUNTZ_" + m_animSetName + s_d48_WEST_ATTACK;
-        m_cells[4].AttackName() = "GRUNTZ_" + m_animSetName + s_d48_NORTH_ATTACK;
-        m_cells[5].AttackName() = "GRUNTZ_" + m_animSetName + s_d48_EAST_ATTACK;
-        m_cells[6].AttackName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTHWEST_ATTACK;
-        m_cells[7].AttackName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTH_ATTACK;
-        m_cells[8].AttackName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTHEAST_ATTACK;
-        m_cells[0].IdleName() = "GRUNTZ_" + m_animSetName + s_d48_NORTHWEST_IDLE;
-        m_cells[1].IdleName() = "GRUNTZ_" + m_animSetName + s_d48_NORTH_IDLE;
-        m_cells[2].IdleName() = "GRUNTZ_" + m_animSetName + s_d48_NORTHEAST_IDLE;
-        m_cells[3].IdleName() = "GRUNTZ_" + m_animSetName + s_d48_WEST_IDLE;
-        m_cells[4].IdleName() = "GRUNTZ_" + m_animSetName + s_d48_NORTH_IDLE;
-        m_cells[5].IdleName() = "GRUNTZ_" + m_animSetName + s_d48_EAST_IDLE;
-        m_cells[6].IdleName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTHWEST_IDLE;
-        m_cells[7].IdleName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTH_IDLE;
-        m_cells[8].IdleName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTHEAST_IDLE;
-        m_cells[0].ItemName() = "GRUNTZ_" + m_animSetName + s_d48_NORTHWEST_ITEM;
-        m_cells[1].ItemName() = "GRUNTZ_" + m_animSetName + s_d48_NORTH_ITEM;
-        m_cells[2].ItemName() = "GRUNTZ_" + m_animSetName + s_d48_NORTHEAST_ITEM;
-        m_cells[3].ItemName() = "GRUNTZ_" + m_animSetName + s_d48_WEST_ITEM;
-        m_cells[4].ItemName() = "GRUNTZ_" + m_animSetName + s_d48_NORTH_ITEM;
-        m_cells[5].ItemName() = "GRUNTZ_" + m_animSetName + s_d48_EAST_ITEM;
-        m_cells[6].ItemName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTHWEST_ITEM;
-        m_cells[7].ItemName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTH_ITEM;
-        m_cells[8].ItemName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTHEAST_ITEM;
+        m_cells[0].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHWEST_WALK;
+        m_cells[1].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_WALK;
+        m_cells[2].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHEAST_WALK;
+        m_cells[3].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_WEST_WALK;
+        m_cells[4].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_WALK;
+        m_cells[5].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_EAST_WALK;
+        m_cells[6].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHWEST_WALK;
+        m_cells[7].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTH_WALK;
+        m_cells[8].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHEAST_WALK;
+        m_cells[0].StruckName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHWEST_STRUCK;
+        m_cells[1].StruckName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_STRUCK;
+        m_cells[2].StruckName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHEAST_STRUCK;
+        m_cells[3].StruckName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_WEST_STRUCK;
+        m_cells[4].StruckName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_STRUCK;
+        m_cells[5].StruckName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_EAST_STRUCK;
+        m_cells[6].StruckName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHWEST_STRUCK;
+        m_cells[7].StruckName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTH_STRUCK;
+        m_cells[8].StruckName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHEAST_STRUCK;
+        m_cells[0].AttackName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHWEST_ATTACK;
+        m_cells[1].AttackName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_ATTACK;
+        m_cells[2].AttackName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHEAST_ATTACK;
+        m_cells[3].AttackName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_WEST_ATTACK;
+        m_cells[4].AttackName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_ATTACK;
+        m_cells[5].AttackName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_EAST_ATTACK;
+        m_cells[6].AttackName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHWEST_ATTACK;
+        m_cells[7].AttackName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTH_ATTACK;
+        m_cells[8].AttackName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHEAST_ATTACK;
+        m_cells[0].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHWEST_IDLE;
+        m_cells[1].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_IDLE;
+        m_cells[2].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHEAST_IDLE;
+        m_cells[3].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_WEST_IDLE;
+        m_cells[4].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_IDLE;
+        m_cells[5].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_EAST_IDLE;
+        m_cells[6].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHWEST_IDLE;
+        m_cells[7].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTH_IDLE;
+        m_cells[8].IdleName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHEAST_IDLE;
+        m_cells[0].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHWEST_ITEM;
+        m_cells[1].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_ITEM;
+        m_cells[2].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHEAST_ITEM;
+        m_cells[3].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_WEST_ITEM;
+        m_cells[4].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH_ITEM;
+        m_cells[5].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_EAST_ITEM;
+        m_cells[6].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHWEST_ITEM;
+        m_cells[7].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTH_ITEM;
+        m_cells[8].ItemName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHEAST_ITEM;
         m_deathFrameSetName = "GRUNTZ_" + m_animSetName + "_DEATH";
     } else if (dirOnly != 0) {
-        m_cells[0].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_NORTHWEST;
-        m_cells[1].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_NORTH;
-        m_cells[2].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_NORTHEAST;
-        m_cells[3].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_WEST;
-        m_cells[4].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_NORTH;
-        m_cells[5].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_EAST;
-        m_cells[6].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTHWEST;
-        m_cells[7].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTH;
-        m_cells[8].WalkName() = "GRUNTZ_" + m_animSetName + s_d48_SOUTHEAST;
-        m_frameSetName = "GRUNTZ_" + m_animSetName + s_d48_BREAK;
+        m_cells[0].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHWEST;
+        m_cells[1].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH;
+        m_cells[2].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTHEAST;
+        m_cells[3].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_WEST;
+        m_cells[4].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_NORTH;
+        m_cells[5].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_EAST;
+        m_cells[6].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHWEST;
+        m_cells[7].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTH;
+        m_cells[8].WalkName() = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_SOUTHEAST;
+        m_frameSetName = "GRUNTZ_" + m_animSetName + s_gruntAnimSuffix_BREAK;
     } else {
         m_frameSetName = "GRUNTZ_" + m_animSetName;
     }

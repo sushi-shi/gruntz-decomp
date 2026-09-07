@@ -102,7 +102,7 @@ public:
 };
 
 extern const float g_one;
-extern const float g_255;
+extern const float g_colorChannelMax;
 extern const float g_percentScale;
 extern const float g_lumaR;
 extern const float g_lumaG;

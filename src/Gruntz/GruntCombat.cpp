@@ -332,7 +332,7 @@ void CGrunt::ComputeFacing(double dt) {
     m_movePosY = static_cast<double>(h->m_screenY);
 }
 
-#define BIND_ACT_644AF0_RAW(id, handler)                                                           \
+#define BIND_GRUNT_ACT_RAW(id, handler)                                                            \
     {                                                                                              \
         GruntActPmf _p;                                                                            \
         _p.m_pmf = (handler);                                                                      \
@@ -341,14 +341,14 @@ void CGrunt::ComputeFacing(double dt) {
         *CActReg::AsElem(CActRegPool<CGrunt>::s_table._zvec::IndexToPtr(id)) = _p.m_h;             \
     }
 
-#define BIND_ACT_644AF0_TYPED(id, handler)                                                         \
+#define BIND_GRUNT_ACT_TYPED(id, handler)                                                          \
     {                                                                                              \
         GruntActPmf _p;                                                                            \
         _p.m_pmf = (handler);                                                                      \
         *CActRegPool<CGrunt>::s_table.Resolve(id) = _p.m_h;                                        \
     }
 
-#define REGISTER_KEY_644AF0_IMPL(key, handler, bind)                                               \
+#define REGISTER_GRUNT_ACT_KEY_IMPL(key, handler, bind)                                            \
     {                                                                                              \
         i32 id = ActFindId(key);                                                                   \
         if (id == 0) {                                                                             \
@@ -372,13 +372,13 @@ void CGrunt::ComputeFacing(double dt) {
         bind(id, handler);                                                                         \
     }
 
-#define REGISTER_KEY_644AF0(key, handler)                                                          \
-    REGISTER_KEY_644AF0_IMPL(key, handler, BIND_ACT_644AF0_RAW)
+#define REGISTER_GRUNT_ACT_KEY(key, handler)                                                       \
+    REGISTER_GRUNT_ACT_KEY_IMPL(key, handler, BIND_GRUNT_ACT_RAW)
 
-#define REGISTER_KEY_644AF0_TYPED(key, handler)                                                    \
-    REGISTER_KEY_644AF0_IMPL(key, handler, BIND_ACT_644AF0_TYPED)
+#define REGISTER_GRUNT_ACT_KEY_TYPED(key, handler)                                                 \
+    REGISTER_GRUNT_ACT_KEY_IMPL(key, handler, BIND_GRUNT_ACT_TYPED)
 
-#define REGISTER_KEY_644AF0_DERIVED(key, handler)                                                  \
+#define REGISTER_GRUNT_ACT_KEY_DERIVED(key, handler)                                               \
     {                                                                                              \
         i32 id = ActFindId(key);                                                                   \
         if (id == 0) {                                                                             \
@@ -387,7 +387,7 @@ void CGrunt::ComputeFacing(double dt) {
             *g_typeColl.SlotOf(id) = (key);                                                        \
             g_typeCounter++;                                                                       \
         }                                                                                          \
-        BIND_ACT_644AF0_TYPED(id, handler);                                                        \
+        BIND_GRUNT_ACT_TYPED(id, handler);                                                         \
     }
 
 RVA(0x00057100, 0x590)
@@ -1967,25 +1967,25 @@ void CGrunt::FireActivation(i32 id) {
 // @early-stop
 RVA(0x0005be30, 0x9e5)
 void RegisterGruntActions() {
-    REGISTER_KEY_644AF0("A", &CGrunt::ResolveEntranceArrival);
-    REGISTER_KEY_644AF0("B", &CGrunt::StepWarpExit);
-    REGISTER_KEY_644AF0("C", &CGrunt::UpdateDeathAnimation);
-    REGISTER_KEY_644AF0("D", &CGrunt::StepArrivalReroll);
-    REGISTER_KEY_644AF0("E", &CGrunt::UpdateGruntStatus);
-    REGISTER_KEY_644AF0("F", &CGrunt::StepAttackAction);
-    REGISTER_KEY_644AF0("G", &CGrunt::UpdateToyUseAnimation);
-    REGISTER_KEY_644AF0("H", &CGrunt::FinishStruckAnimation);
-    REGISTER_KEY_644AF0("I", &CGrunt::LoadWandGruntItemConfig);
-    REGISTER_KEY_644AF0("J", &CGrunt::RunEntranceMove);
-    REGISTER_KEY_644AF0("K", &CGrunt::LoadEntranceConfig);
-    REGISTER_KEY_644AF0("L", &CGrunt::LoadVehicleGruntAnimations);
-    REGISTER_KEY_644AF0("M", &CGrunt::RearmEntranceDrop);
-    REGISTER_KEY_644AF0("N", &CGrunt::FinishToobMoveAnimation);
-    REGISTER_KEY_644AF0("O", &CGrunt::FinishKnockbackAnimation);
-    REGISTER_KEY_644AF0("P", &CGrunt::UpdateEntranceAnim);
-    REGISTER_KEY_644AF0("Q", &CGrunt::LoadFreezeSpellAssets);
-    REGISTER_KEY_644AF0_TYPED("R", &CGrunt::UpdateDecayFade);
-    REGISTER_KEY_644AF0_DERIVED("S", &CGrunt::FinishEntranceMove);
+    REGISTER_GRUNT_ACT_KEY("A", &CGrunt::ResolveEntranceArrival);
+    REGISTER_GRUNT_ACT_KEY("B", &CGrunt::StepWarpExit);
+    REGISTER_GRUNT_ACT_KEY("C", &CGrunt::UpdateDeathAnimation);
+    REGISTER_GRUNT_ACT_KEY("D", &CGrunt::StepArrivalReroll);
+    REGISTER_GRUNT_ACT_KEY("E", &CGrunt::UpdateGruntStatus);
+    REGISTER_GRUNT_ACT_KEY("F", &CGrunt::StepAttackAction);
+    REGISTER_GRUNT_ACT_KEY("G", &CGrunt::UpdateToyUseAnimation);
+    REGISTER_GRUNT_ACT_KEY("H", &CGrunt::FinishStruckAnimation);
+    REGISTER_GRUNT_ACT_KEY("I", &CGrunt::LoadWandGruntItemConfig);
+    REGISTER_GRUNT_ACT_KEY("J", &CGrunt::RunEntranceMove);
+    REGISTER_GRUNT_ACT_KEY("K", &CGrunt::LoadEntranceConfig);
+    REGISTER_GRUNT_ACT_KEY("L", &CGrunt::LoadVehicleGruntAnimations);
+    REGISTER_GRUNT_ACT_KEY("M", &CGrunt::RearmEntranceDrop);
+    REGISTER_GRUNT_ACT_KEY("N", &CGrunt::FinishToobMoveAnimation);
+    REGISTER_GRUNT_ACT_KEY("O", &CGrunt::FinishKnockbackAnimation);
+    REGISTER_GRUNT_ACT_KEY("P", &CGrunt::UpdateEntranceAnim);
+    REGISTER_GRUNT_ACT_KEY("Q", &CGrunt::LoadFreezeSpellAssets);
+    REGISTER_GRUNT_ACT_KEY_TYPED("R", &CGrunt::UpdateDecayFade);
+    REGISTER_GRUNT_ACT_KEY_DERIVED("S", &CGrunt::FinishEntranceMove);
 }
 
 RVA(0x0005caa0, 0x5e4)
@@ -2069,7 +2069,7 @@ void CGrunt::Activate() {
     m_tileClaimed = false;
 }
 
-#undef REGISTER_KEY_644AF0
+#undef REGISTER_GRUNT_ACT_KEY
 
 DATA(0x001e999c)
 const float g_quarterScale = 0.25f;

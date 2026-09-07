@@ -60,19 +60,26 @@ void FillGameInfoDialog(HWND hWnd, CSaveGame* sg) {
 }
 
 RVA(0x0009e2d0, 0x84)
-void LabelGameInfoSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6) {
+void LabelGameInfoSlot(
+    HWND hWnd,
+    SaveSlot* item,
+    i32 nameControlId,
+    i32 loadControlId,
+    i32 infoControlId,
+    i32 deleteControlId
+) {
     b32 flag;
     if (TempFileExists(item)) {
-        SetDlgItemTextA(hWnd, id3, item->m_name);
+        SetDlgItemTextA(hWnd, nameControlId, item->m_name);
         flag = true;
     } else {
-        SetDlgItemTextA(hWnd, id3, "(Empty)");
+        SetDlgItemTextA(hWnd, nameControlId, "(Empty)");
         flag = false;
     }
-    EnableWindow(GetDlgItem(hWnd, id3), flag);
-    EnableWindow(GetDlgItem(hWnd, id4), flag);
-    EnableWindow(GetDlgItem(hWnd, id5), flag);
-    EnableWindow(GetDlgItem(hWnd, id6), flag);
+    EnableWindow(GetDlgItem(hWnd, nameControlId), flag);
+    EnableWindow(GetDlgItem(hWnd, loadControlId), flag);
+    EnableWindow(GetDlgItem(hWnd, infoControlId), flag);
+    EnableWindow(GetDlgItem(hWnd, deleteControlId), flag);
 }
 
 // @early-stop

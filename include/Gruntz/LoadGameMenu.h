@@ -11,7 +11,14 @@ struct SaveSlot;
 class CSaveGame;
 
 void FillGameInfoDialog(HWND hDlg, CSaveGame* dlg);
-void LabelGameInfoSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6);
+void LabelGameInfoSlot(
+    HWND hWnd,
+    SaveSlot* item,
+    i32 nameControlId,
+    i32 loadControlId,
+    i32 infoControlId,
+    i32 deleteControlId
+);
 
 int TempFileExists(SaveSlot* p);
 i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg);
