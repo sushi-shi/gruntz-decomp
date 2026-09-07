@@ -302,10 +302,10 @@ CWwdGameObject* CDDrawChildGroup::CreateNamedContainerObject(
 // @early-stop
 RVA(0x00159a70, 0x200)
 void CDDrawChildGroup::TickKillCues(i32 advance) {
-    RVA_DYNINIT(0x00159c80, 0xa, killQueue)
+    RVA_DYNINIT(0x00159c80, 0xa, s_killQueue)
     DATA(0x002bf3a8)
     static CObArray s_killQueue;
-    RVA_DYNINIT(0x00159c70, 0xa, sortQueue)
+    RVA_DYNINIT(0x00159c70, 0xa, s_sortQueue)
     DATA(0x002bf390)
     static CObArray s_sortQueue;
     s_killQueue.SetSize(0, -1);

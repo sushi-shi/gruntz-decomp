@@ -33,6 +33,8 @@ remain in the declaration dump but do not appear in the unique-name lists.
 The dump records source declarations, not the original game's lost debug names.
 Do not rename SDK members or literals through a text-wide replacement of a
 common identifier; use symbol identities and verify macro bodies separately.
+Compiler-ignored annotation arguments are not AST references: update the owner
+spelling in `RVA_DYNINIT` and any explicit COMMON-symbol pins when renaming data.
 
 A rename must pass the full pinned build. Compare actual COFF objects while
 preserving payloads and ordered typed referents; storage-name changes can alter

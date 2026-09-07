@@ -22,10 +22,10 @@ dprintfOutputType g_dprintfOutType = DPRINTF_UNKNOWN;
 DATA(0x002bf8e0)
 FILE* g_dprintffile = NULL;
 
-RVA_DYNINIT(0x00184b60, 0xa, dprintfinit)
-RVA_DYNINIT(0x00184b70, 0xa, dprintfinit)
-RVA_DYNINIT(0x00184b80, 0xe, dprintfinit)
-RVA_DYNINIT(0x00184b90, 0xa, dprintfinit)
+RVA_DYNINIT(0x00184b60, 0xa, s_dprintfinit)
+RVA_DYNINIT(0x00184b70, 0xa, s_dprintfinit)
+RVA_DYNINIT(0x00184b80, 0xe, s_dprintfinit)
+RVA_DYNINIT(0x00184b90, 0xa, s_dprintfinit)
 DATA(0x002bf848)
 static dprintfinittype s_dprintfinit;
 

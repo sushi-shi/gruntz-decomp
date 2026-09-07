@@ -6,7 +6,8 @@ confidence: 9/10
 
 ## Controlled observation
 
-The data-prefix cleanup started from `eb3cb9544` and changed 323 data identifiers
+The pre-rebase data-prefix control started from working snapshot `eb3cb9544`
+and changed 323 data identifiers
 using AST declarations and symbol-scoped references. The changes preserve
 storage classes, types, initializers, declaration order and function statements.
 Macro-body references required separate updates, including Blowfish's pasted
@@ -37,7 +38,9 @@ changes, not changes to either object's C++ member layout.
 This batch establishes that identifier-only edits can change VC5's placement
 of uninitialized storage. It does not isolate a particular identifier or prove
 a hash algorithm, compiler pass, or general prediction of the resulting order.
-Do not attribute unrelated instruction scheduling to this observation.
+Do not attribute unrelated instruction scheduling to this observation. The
+cleanup was subsequently replayed onto remote main; this table describes the
+controlled rename batch, not arbitrary differences between those two bases.
 
 ## Reverse audit
 

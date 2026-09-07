@@ -1267,7 +1267,7 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
         if (m_visSprites[i] == NULL) {
             return 0;
         }
-        RVA_DYNINIT(0x0001b670, 0xa, buf)
+        RVA_DYNINIT(0x0001b670, 0xa, s_buf)
         DATA(0x0022af0c)
         static CString s_buf;
         const char* prefix = (i < (g_gameReg->m_gameStats->m_levelNumber - 1) % 4 + 1)
