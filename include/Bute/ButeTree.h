@@ -39,7 +39,6 @@ struct TypeKeyRec {
     i32 m_key;
     VariantCallback m_callback;
     short m_value;
-    char m_pad0a[2];
 };
 
 class CButeTree : public zPTree {

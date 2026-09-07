@@ -104,59 +104,59 @@ RVA_DYNINIT(0x000591e0, 0x5, s_gruntDirCenter)
 RVA_DYNINIT(0x00059200, 0x1a, s_gruntDirCenter)
 
 DATA(0x0020dc64)
-static char s_RollingBallzTime[] = "RollingBallzTime";
+static char s_rollingBallzTime[] = "RollingBallzTime";
 DATA(0x0020dc78)
-static char s_RollingBallzSpeed[] = "RollingBallzSpeed";
+static char s_rollingBallzSpeed[] = "RollingBallzSpeed";
 DATA(0x0020dcac)
-static char s_TeleportRadius[] = "TeleportRadius";
+static char s_teleportRadius[] = "TeleportRadius";
 DATA(0x0020dcc0)
-static char s_ToyzRadius[] = "ToyzRadius";
+static char s_toyzRadius[] = "ToyzRadius";
 DATA(0x0020dcd0)
-static char s_RessurectionRadius[] = "RessurectionRadius";
+static char s_ressurectionRadius[] = "RessurectionRadius";
 DATA(0x0020dce8)
-static char s_HealthRadius[] = "HealthRadius";
+static char s_healthRadius[] = "HealthRadius";
 DATA(0x0020dcf8)
-static char s_FreezeRadius[] = "FreezeRadius";
+static char s_freezeRadius[] = "FreezeRadius";
 DATA(0x0020dd30)
-static char s_GAME_ATTACK[] = "GAME_ATTACK";
+static char s_gameAttack[] = "GAME_ATTACK";
 DATA(0x0020dd40)
-static char s__LOSEITEM[] = "_LOSEITEM";
+static char s_loseItemSuffix[] = "_LOSEITEM";
 DATA(0x0020dd4c)
 static char s_knockKey[] = "KnockBackTimePerTile";
 DATA(0x0020dd68)
-static char s_IMPACTWM3[] = "GRUNTZ_NORMALGRUNT_IMPACTWM3";
+static char s_impactwm3[] = "GRUNTZ_NORMALGRUNT_IMPACTWM3";
 DATA(0x0020dd8c)
-static char s_IMPACTMM2[] = "GRUNTZ_NORMALGRUNT_IMPACTMM2";
+static char s_impactmm2[] = "GRUNTZ_NORMALGRUNT_IMPACTMM2";
 DATA(0x0020ddb0)
-static char s_IMPACTWM2[] = "GRUNTZ_NORMALGRUNT_IMPACTWM2";
+static char s_impactwm2[] = "GRUNTZ_NORMALGRUNT_IMPACTWM2";
 DATA(0x0020ddd4)
-static char s_BLOCKBODY1[] = "GRUNTZ_NORMALGRUNT_BLOCKBODY1";
+static char s_blockbody1[] = "GRUNTZ_NORMALGRUNT_BLOCKBODY1";
 DATA(0x0020ddf8)
-static char s_IMPACTWM1[] = "GRUNTZ_NORMALGRUNT_IMPACTWM1";
+static char s_impactwm1[] = "GRUNTZ_NORMALGRUNT_IMPACTWM1";
 DATA(0x0020de1c)
-static char s_IMPACTMM1[] = "GRUNTZ_NORMALGRUNT_IMPACTMM1";
+static char s_impactmm1[] = "GRUNTZ_NORMALGRUNT_IMPACTMM1";
 DATA(0x0020de40)
-static char s_BLOCKBODY2[] = "GRUNTZ_NORMALGRUNT_BLOCKBODY2";
+static char s_blockbody2[] = "GRUNTZ_NORMALGRUNT_BLOCKBODY2";
 DATA(0x0020de64)
-static char s_TOOBZ[] = "GRUNTZ_TOOBGRUNT_TOOBZGRUNTUI1B";
+static char s_toobz[] = "GRUNTZ_TOOBGRUNT_TOOBZGRUNTUI1B";
 DATA(0x0020de8c)
-static char s_SPRING1[] = "GRUNTZ_SPRINGGRUNT_SPRINGGRUNTS1S1";
+static char s_spring1[] = "GRUNTZ_SPRINGGRUNT_SPRINGGRUNTS1S1";
 DATA(0x0020deb8)
-static char s_SPRING2[] = "GRUNTZ_SPRINGGRUNT_SPRINGGRUNTS2S1";
+static char s_spring2[] = "GRUNTZ_SPRINGGRUNT_SPRINGGRUNTS2S1";
 DATA(0x0020dee4)
-static char s_BLOCKMETAL1[] = "GRUNTZ_NORMALGRUNT_BLOCKMETAL1";
+static char s_blockmetal1[] = "GRUNTZ_NORMALGRUNT_BLOCKMETAL1";
 DATA(0x0020df0c)
-static char s_IMPACTMM4[] = "GRUNTZ_NORMALGRUNT_IMPACTMM4";
+static char s_impactmm4[] = "GRUNTZ_NORMALGRUNT_IMPACTMM4";
 DATA(0x0020df54)
-static char s_DEATHTOUCHHIT[] = "GAME_DEATHTOUCHHIT";
+static char s_deathtouchhit[] = "GAME_DEATHTOUCHHIT";
 DATA(0x0020df6c)
-static char s_CONVERSIONHIT[] = "GAME_CONVERSIONHIT";
+static char s_conversionhit[] = "GAME_CONVERSIONHIT";
 DATA(0x0020dfac)
-static char s_AccelerateFlash[] = "AccelerateFlash";
+static char s_accelerateFlash[] = "AccelerateFlash";
 DATA(0x0020dfc0)
-static char s_SafeFlashTime[] = "SafeFlashTime";
+static char s_safeFlashTime[] = "SafeFlashTime";
 DATA(0x0020dfd0)
-static char s_FadeTransparency[] = "FadeTransparency";
+static char s_fadeTransparency[] = "FadeTransparency";
 
 DATA(0x001e9788)
 const u8 g_hitTable[23][23] = {
@@ -410,7 +410,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         (static_cast<CDDrawSurfaceMgr*>(m_ownerLogicRecord->m_ownerCtx))->m_soundRegistry;
     if (slot->m_silentMode == false) {
         SoundCue* sout = NULL;
-        MapLookup(slot->m_cues, s_GAME_ATTACK, sout);
+        MapLookup(slot->m_cues, s_gameAttack, sout);
         if (sout != NULL) {
 
             sout->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
@@ -433,7 +433,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             return m_triggerMgr->ApplyGruntAreaEffect(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
-                g_buteMgr.GetInt("Spellz", s_FreezeRadius, 8),
+                g_buteMgr.GetInt("Spellz", s_freezeRadius, 8),
                 GRUNT_AREA_EFFECT_FREEZE,
                 -1
             );
@@ -453,7 +453,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             return m_triggerMgr->ApplyGruntAreaEffect(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
-                g_buteMgr.GetInt("Spellz", s_HealthRadius, 8),
+                g_buteMgr.GetInt("Spellz", s_healthRadius, 8),
                 GRUNT_AREA_EFFECT_HEAL,
                 -1
             );
@@ -473,7 +473,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             return m_triggerMgr->LoadGruntResurrectTuning(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
-                g_buteMgr.GetInt("Spellz", s_RessurectionRadius, 8)
+                g_buteMgr.GetInt("Spellz", s_ressurectionRadius, 8)
             );
         }
         case SPELLZ_TOYZ: {
@@ -491,7 +491,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             return m_triggerMgr->ApplyGruntAreaEffect(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
-                g_buteMgr.GetInt("Spellz", s_ToyzRadius, 8),
+                g_buteMgr.GetInt("Spellz", s_toyzRadius, 8),
                 GRUNT_AREA_EFFECT_GIVE_TOY,
                 -1
             );
@@ -511,7 +511,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             return m_triggerMgr->ApplyGruntAreaEffect(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
-                g_buteMgr.GetInt("Spellz", s_TeleportRadius, 8),
+                g_buteMgr.GetInt("Spellz", s_teleportRadius, 8),
                 GRUNT_AREA_EFFECT_TELEPORT,
                 -1
             );
@@ -540,9 +540,9 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             n->SetImageSetByName("LEVEL_ROLLINGBALL_NORTH");
             CLogicRecord* ni = n->m_logicRecord;
             ni->m_speed =
-                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_RollingBallzSpeed, 0x3e8));
+                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzSpeed, 0x3e8));
             n->m_smarts = 0;
-            n->m_points = static_cast<i32>(g_buteMgr.GetDword("Spellz", s_RollingBallzTime, 0x3e8));
+            n->m_points = static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8));
 
             CWwdSpriteObject* e = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
@@ -555,9 +555,9 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             e->SetImageSetByName("LEVEL_ROLLINGBALL_EAST");
             CLogicRecord* ei = e->m_logicRecord;
             ei->m_speed =
-                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_RollingBallzSpeed, 0x3e8));
+                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzSpeed, 0x3e8));
             e->m_smarts = 0;
-            e->m_points = static_cast<i32>(g_buteMgr.GetDword("Spellz", s_RollingBallzTime, 0x3e8));
+            e->m_points = static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8));
 
             CWwdSpriteObject* s = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
@@ -570,9 +570,9 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             s->SetImageSetByName("LEVEL_ROLLINGBALL_SOUTH");
             CLogicRecord* si = s->m_logicRecord;
             si->m_speed =
-                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_RollingBallzSpeed, 0x3e8));
+                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzSpeed, 0x3e8));
             s->m_smarts = 0;
-            s->m_points = static_cast<i32>(g_buteMgr.GetDword("Spellz", s_RollingBallzTime, 0x3e8));
+            s->m_points = static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8));
 
             CWwdSpriteObject* w = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
@@ -585,9 +585,9 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             w->SetImageSetByName("LEVEL_ROLLINGBALL_WEST");
             CLogicRecord* wi = w->m_logicRecord;
             wi->m_speed =
-                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_RollingBallzSpeed, 0x3e8));
+                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzSpeed, 0x3e8));
             w->m_smarts = 0;
-            w->m_points = static_cast<i32>(g_buteMgr.GetDword("Spellz", s_RollingBallzTime, 0x3e8));
+            w->m_points = static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8));
             return 1;
         }
         default:
@@ -626,8 +626,8 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
         "SingleAnimation",
         WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
     );
-    spr->SetImageSetByName("GRUNTZ_" + m_animSetName + s__LOSEITEM);
-    spr->SetAnimationByName("GRUNTZ_" + m_animSetName + s__LOSEITEM, 0);
+    spr->SetImageSetByName("GRUNTZ_" + m_animSetName + s_loseItemSuffix);
+    spr->SetAnimationByName("GRUNTZ_" + m_animSetName + s_loseItemSuffix, 0);
 
     CGruntzMgr* g = g_gameReg;
     i32 y = m_object->m_screenY;
@@ -1282,7 +1282,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
             SoundCueRegistry* registry =
                 (static_cast<CDDrawSurfaceMgr*>(m_ownerLogicRecord->m_ownerCtx))->m_soundRegistry;
             if (registry->m_silentMode == false) {
-                SoundCue* cue = static_cast<SoundCue*>(registry->Lookup(s_CONVERSIONHIT));
+                SoundCue* cue = static_cast<SoundCue*>(registry->Lookup(s_conversionhit));
                 if (cue != NULL) {
                     cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
                 }
@@ -1335,149 +1335,149 @@ i32 CGrunt::LoadGruntCombatAnimations(
     CGruntzMgr* reg = g_gameReg;
     if (::PtInRect(&reg->m_viewBounds, vx, vy)) {
         if (attackerGruntKind == GRUNT_DEATHTOUCH) {
-            LK(s_DEATHTOUCHHIT);
+            LK(s_deathtouchhit);
             goto L_cue;
         }
         if (attackKind == PICKUP_NERFGUN || attackKind == PICKUP_GLOVEZ
             || attackKind == PICKUP_WINGZ) {
             if (this->m_entranceReason == PICKUP_GRAVITYBOOTZ) {
-                LK(s_BLOCKBODY2);
+                LK(s_blockbody2);
             } else {
-                LK(s_IMPACTMM2);
+                LK(s_impactmm2);
             }
             goto L_cue;
         }
         if (this->m_entranceReason == PICKUP_GUNHAT) {
             if (attackKind == PICKUP_GAUNTLETZ || attackKind == PICKUP_SHOVEL
                 || attackKind == PICKUP_SPRING || attackKind == PICKUP_CLUB) {
-                LK(s_IMPACTMM4);
+                LK(s_impactmm4);
             } else {
                 LK("GRUNTZ_NORMALGRUNT_IMPACTMM3");
             }
             goto L_cue;
         }
         if (this->m_entranceReason == PICKUP_SHIELD) {
-            LK(s_BLOCKMETAL1);
+            LK(s_blockmetal1);
             goto L_cue;
         }
         if (this->m_entranceReason == PICKUP_SPRING) {
             if (struckPose == 1) {
-                LK(s_SPRING2);
+                LK(s_spring2);
             } else {
-                LK(s_SPRING1);
+                LK(s_spring1);
             }
             goto L_cue;
         }
         if (this->m_entranceReason == PICKUP_TOOB && this->m_coordToggle != false) {
-            LK(s_TOOBZ);
+            LK(s_toobz);
             goto L_cue;
         }
         switch (attackKind) {
             case PICKUP_NONE:
                 if (struckPose == 0) {
-                    LK(s_BLOCKBODY2);
+                    LK(s_blockbody2);
                 } else {
-                    LK(s_IMPACTMM1);
+                    LK(s_impactmm1);
                 }
                 break;
             case PICKUP_BOOMERANG:
-                LK(s_IMPACTMM1);
+                LK(s_impactmm1);
                 break;
             case PICKUP_BRICK:
                 if (struckPose == 0) {
-                    LK(s_BLOCKBODY2);
+                    LK(s_blockbody2);
                 } else {
-                    LK(s_IMPACTMM4);
+                    LK(s_impactmm4);
                 }
                 break;
             case PICKUP_CLUB:
                 if (struckPose == 0) {
-                    LK(s_BLOCKBODY2);
+                    LK(s_blockbody2);
                 } else {
-                    LK(s_IMPACTMM4);
+                    LK(s_impactmm4);
                 }
                 break;
             case PICKUP_GAUNTLETZ:
                 if (struckPose == 0) {
-                    LK(s_BLOCKBODY2);
+                    LK(s_blockbody2);
                 } else {
                     LK("GRUNTZ_NORMALGRUNT_IMPACTMM3");
                 }
                 break;
             case PICKUP_GOOBER:
                 if (struckPose == 0) {
-                    LK(s_BLOCKBODY2);
+                    LK(s_blockbody2);
                 } else {
-                    LK(s_IMPACTWM1);
+                    LK(s_impactwm1);
                 }
                 break;
             case PICKUP_GRAVITYBOOTZ:
                 if (struckPose == 0) {
-                    LK(s_BLOCKBODY1);
+                    LK(s_blockbody1);
                 } else {
-                    LK(s_IMPACTMM1);
+                    LK(s_impactmm1);
                 }
                 break;
             case PICKUP_GUNHAT:
-                LK(s_IMPACTWM2);
+                LK(s_impactwm2);
                 break;
             case PICKUP_ROCK:
-                LK(s_IMPACTMM2);
+                LK(s_impactmm2);
                 break;
             case PICKUP_SHIELD:
                 if (struckPose == 0) {
-                    LK(s_BLOCKBODY1);
+                    LK(s_blockbody1);
                 } else {
-                    LK(s_IMPACTMM4);
+                    LK(s_impactmm4);
                 }
                 break;
             case PICKUP_SHOVEL:
                 if (struckPose == 0) {
-                    LK(s_BLOCKMETAL1);
+                    LK(s_blockmetal1);
                 } else {
-                    LK(s_IMPACTMM4);
+                    LK(s_impactmm4);
                 }
                 break;
             case PICKUP_SPRING:
                 if (struckPose == 0) {
-                    LK(s_BLOCKBODY2);
+                    LK(s_blockbody2);
                 } else {
-                    LK(s_IMPACTWM3);
+                    LK(s_impactwm3);
                 }
                 break;
             case PICKUP_SPY:
                 if (struckPose == 0) {
-                    LK(s_BLOCKBODY2);
+                    LK(s_blockbody2);
                 } else {
-                    LK(s_IMPACTMM1);
+                    LK(s_impactmm1);
                 }
                 break;
             case PICKUP_SWORD:
                 if (struckPose == 0) {
-                    LK(s_BLOCKBODY2);
+                    LK(s_blockbody2);
                 } else {
                     LK("GRUNTZ_NORMALGRUNT_IMPACTMM3");
                 }
                 break;
             case PICKUP_TOOB:
                 if (struckPose == 0) {
-                    LK(s_BLOCKBODY2);
+                    LK(s_blockbody2);
                 } else {
-                    LK(s_IMPACTMM1);
+                    LK(s_impactmm1);
                 }
                 break;
             case PICKUP_WAND:
                 if (struckPose == 0) {
-                    LK(s_BLOCKBODY2);
+                    LK(s_blockbody2);
                 } else {
-                    LK(s_IMPACTMM1);
+                    LK(s_impactmm1);
                 }
                 break;
             case PICKUP_WARPSTONE:
-                LK(s_IMPACTWM2);
+                LK(s_impactwm2);
                 break;
             case PICKUP_WELDER:
-                LK(s_IMPACTWM2);
+                LK(s_impactwm2);
                 break;
             default:
                 LK("GRUNTZ_NORMALGRUNT_IMPACTMM3");
@@ -2130,12 +2130,12 @@ void CGrunt::StepBehavior(char*) {
                 obj->m_drawActive = true;
                 obj->m_drawFillCmd = SHADE_PAL_16;
             } else {
-                i32 fade = g_buteMgr.GetInt("Grunt", s_FadeTransparency, 0xc0);
+                i32 fade = g_buteMgr.GetInt("Grunt", s_fadeTransparency, 0xc0);
                 CWwdSpriteObject* o2 = m_object;
                 SET_DRAW_FILL_FRACTION(o2, SHADE_PAL_ALPHA_16, fade);
             }
-            i32 flash = g_buteMgr.GetInt("Grunt", s_SafeFlashTime, 0x32);
-            if (g_buteMgr.GetInt("Grunt", s_AccelerateFlash, 0) == 1) {
+            i32 flash = g_buteMgr.GetInt("Grunt", s_safeFlashTime, 0x32);
+            if (g_buteMgr.GetInt("Grunt", s_accelerateFlash, 0) == 1) {
                 i64 el = static_cast<i64>(g_frameTime) - m_entranceClock64;
                 u32 elapsed = (el < 0 ? 0 : static_cast<u32>(el));
 

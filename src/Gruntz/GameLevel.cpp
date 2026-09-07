@@ -1508,7 +1508,7 @@ i32 CGameLevel::ClampSpan(i32 x, i32 y, i32* outLo, i32* outHi) {
     i32 qy = y >> pl->m_shiftY;
     i32 idx = pl->m_tileRowOffsets[qy] + qx;
     i32 tile = pl->m_tileHandles[idx];
-    if (tile == UNINIT_FILL || tile == s_TILE_CLEAR) {
+    if (tile == UNINIT_FILL || tile == s_tileClear) {
         return 0;
     }
     CTileImageSet* set =
@@ -1934,7 +1934,7 @@ TileCollisionKind CGameLevel::AxisProbe(i32 coord, i32 limit) {
     i32 idx = pl->m_tileRowOffsets[qy] + col;
     i32 subY = py - (qy << pl->m_shiftY);
     i32 tile = pl->m_tileHandles[idx];
-    if (tile == UNINIT_FILL || tile == s_TILE_CLEAR) {
+    if (tile == UNINIT_FILL || tile == s_tileClear) {
         return TILEKIND_PASSABLE;
     }
     CTileImageSet* set =

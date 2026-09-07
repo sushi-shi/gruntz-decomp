@@ -32,8 +32,8 @@ static dprintfinittype s_dprintfinit;
 RVA(0x00184ba0, 0x33)
 BOOLEAN dprintfExcludeRegions::In(u32 Num) {
     u32 Loop;
-    for (Loop = 0; Loop < m_NumRegions; Loop++) {
-        if (Num >= m_Ary[Loop].m_From && Num <= m_Ary[Loop].m_To) {
+    for (Loop = 0; Loop < m_numRegions; Loop++) {
+        if (Num >= m_ary[Loop].m_from && Num <= m_ary[Loop].m_to) {
             return TRUE;
         }
     }
@@ -42,10 +42,10 @@ BOOLEAN dprintfExcludeRegions::In(u32 Num) {
 
 RVA(0x00184be0, 0x24)
 void dprintfExcludeRegions::Add(u32 From, u32 To) {
-    if (m_NumRegions + 1 < MAX_EXCLUDE_REGIONS) {
-        m_Ary[m_NumRegions].m_From = From;
-        m_Ary[m_NumRegions].m_To = To;
-        m_NumRegions++;
+    if (m_numRegions + 1 < MAX_EXCLUDE_REGIONS) {
+        m_ary[m_numRegions].m_from = From;
+        m_ary[m_numRegions].m_to = To;
+        m_numRegions++;
     }
 }
 
@@ -237,7 +237,7 @@ void dclrscr(u32 Level) {}
 RVA(0x00185000, 0x1a6)
 dprintfinittype::dprintfinittype() {
     char Buf[BUFSIZE];
-    g_dprintfExReg.m_NumRegions = 0;
+    g_dprintfExReg.m_numRegions = 0;
     g_dprintfOutType = DPRINTF_NOTHING;
     g_dprintfOutType = DPRINTF_NOTHING;
     char* Str = getenv("DPRINTF");

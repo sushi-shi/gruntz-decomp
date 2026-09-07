@@ -42,23 +42,23 @@
 #include <stdlib.h>
 
 DATA(0x0020d218)
-static char s__PANIC[] = "_PANIC";
+static char s_panicSuffix[] = "_PANIC";
 DATA(0x0020d220)
-static char s__MOVING[] = "_MOVING";
+static char s_movingSuffix[] = "_MOVING";
 DATA(0x0020d234)
-static char s__JOY[] = "_JOY";
+static char s_joySuffix[] = "_JOY";
 DATA(0x0020d23c)
-static char s__BATTLECRY3[] = "_BATTLECRY3";
+static char s_battleCry3Suffix[] = "_BATTLECRY3";
 DATA(0x0020d24c)
-static char s__BATTLECRY2[] = "_BATTLECRY2";
+static char s_battleCry2Suffix[] = "_BATTLECRY2";
 DATA(0x0020d25c)
-static char s__BATTLECRY1[] = "_BATTLECRY1";
+static char s_battleCry1Suffix[] = "_BATTLECRY1";
 DATA(0x0020d2d8)
-static char s_WARLORDZ_KING[] = "WARLORDZ_KING";
+static char s_warlordzKing[] = "WARLORDZ_KING";
 DATA(0x0020d36c)
-static char s__IDLE[] = "_IDLE";
+static char s_idleSuffix[] = "_IDLE";
 DATA(0x0020d374)
-static char s__BATTLECRY[] = "_BATTLECRY";
+static char s_battleCrySuffix[] = "_BATTLECRY";
 
 RVA_DYNINIT(0x000445a0, 0xa, CActRegPool<CWarlord>::s_table)
 RVA_DYNINIT(0x000445c0, 0x15, CActRegPool<CWarlord>::s_table)
@@ -135,7 +135,7 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
 
     switch (owner) {
         case WARLORDZ_KING:
-            m_warlordName = s_WARLORDZ_KING;
+            m_warlordName = s_warlordzKing;
             m_ownerTag = WARLORD_TAG_KING;
             break;
         case WARLORDZ_NAPOLEAN:
@@ -176,19 +176,19 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
     );
     m_battlecryAnims[0] = LookupAnim(
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
-        "GRUNTZ_" + m_warlordName + s__BATTLECRY1
+        "GRUNTZ_" + m_warlordName + s_battleCry1Suffix
     );
     m_battlecryAnims[1] = LookupAnim(
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
-        "GRUNTZ_" + m_warlordName + s__BATTLECRY2
+        "GRUNTZ_" + m_warlordName + s_battleCry2Suffix
     );
     m_battlecryAnims[2] = LookupAnim(
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
-        "GRUNTZ_" + m_warlordName + s__BATTLECRY3
+        "GRUNTZ_" + m_warlordName + s_battleCry3Suffix
     );
     m_animJoy = LookupAnim(
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
-        "GRUNTZ_" + m_warlordName + s__JOY
+        "GRUNTZ_" + m_warlordName + s_joySuffix
     );
     m_animDeath = LookupAnim(
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
@@ -196,11 +196,11 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
     );
     m_animMoving = LookupAnim(
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
-        "GRUNTZ_" + m_warlordName + s__MOVING
+        "GRUNTZ_" + m_warlordName + s_movingSuffix
     );
     m_animPanic = LookupAnim(
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
-        "GRUNTZ_" + m_warlordName + s__PANIC
+        "GRUNTZ_" + m_warlordName + s_panicSuffix
     );
 
     m_notifyTimer.m_start = 0;
@@ -707,7 +707,7 @@ i32 CWarlord::ResolveMovingAnimation() {
         return 0;
     }
 
-    SetImageSetByName("GRUNTZ_" + m_warlordName + s__MOVING);
+    SetImageSetByName("GRUNTZ_" + m_warlordName + s_movingSuffix);
 
     SwitchAnimation(m_animMoving);
 
@@ -753,7 +753,7 @@ i32 CWarlord::NotifyFortUnderAttack() {
 
             SwitchAnimation(m_animPanic);
 
-            SetImageSetByName("GRUNTZ_" + m_warlordName + s__PANIC);
+            SetImageSetByName("GRUNTZ_" + m_warlordName + s_panicSuffix);
 
             SET_ANIMATION_ACT("D");
             return 1;
@@ -810,7 +810,7 @@ i32 CWarlord::ResolveJoyAnimation() {
     CAniElement* anim = m_animJoy;
     SwitchAnimation(anim);
 
-    SetImageSetByName("GRUNTZ_" + m_warlordName + s__JOY);
+    SetImageSetByName("GRUNTZ_" + m_warlordName + s_joySuffix);
 
     SET_ANIMATION_ACT("E");
     return 1;
@@ -843,7 +843,7 @@ i32 CWarlord::ResolveIdleAnimation() {
 
     DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
 
-    SetImageFrameByName("GRUNTZ_" + m_warlordName + s__IDLE, frame);
+    SetImageFrameByName("GRUNTZ_" + m_warlordName + s_idleSuffix, frame);
 
     SET_ANIMATION_ACT("A");
     return 1;
@@ -873,7 +873,7 @@ i32 CWarlord::ResolveBattlecryAnimation() {
     CAniElement* anim = m_battlecryAnims[idx];
     SwitchAnimation(anim);
 
-    SetImageSetByName("GRUNTZ_" + m_warlordName + s__BATTLECRY);
+    SetImageSetByName("GRUNTZ_" + m_warlordName + s_battleCrySuffix);
 
     SET_ANIMATION_ACT("F");
     return 1;

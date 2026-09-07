@@ -24,26 +24,26 @@ GZ_ENUM_CONST_END(RezArchiveMagic)
 GZ_ENUM_FORWARD(RezArchiveVersion);
 
 struct FileMainHeaderStruct {
-    char m_CR1;
-    char m_LF1;
-    char m_FileType[REZ_MGR_USER_TITLE_SIZE];
-    char m_CR2;
-    char m_LF2;
-    char m_UserTitle[REZ_MGR_USER_TITLE_SIZE];
-    char m_CR3;
-    char m_LF3;
-    char m_EOF1;
-    RezArchiveVersion m_FileFormatVersion;
-    u32 m_RootDirPos;
-    u32 m_RootDirSize;
-    REZTIME m_RootDirTime;
-    u32 m_NextWritePos;
-    REZTIME m_Time;
-    u32 m_LargestKeyAry;
-    u32 m_LargestDirNameSize;
-    u32 m_LargestRezNameSize;
-    u32 m_LargestCommentSize;
-    u8 m_IsSorted;
+    char m_cr1;
+    char m_lf1;
+    char m_fileType[REZ_MGR_USER_TITLE_SIZE];
+    char m_cr2;
+    char m_lf2;
+    char m_userTitle[REZ_MGR_USER_TITLE_SIZE];
+    char m_cr3;
+    char m_lf3;
+    char m_eof1;
+    RezArchiveVersion m_fileFormatVersion;
+    u32 m_rootDirPos;
+    u32 m_rootDirSize;
+    REZTIME m_rootDirTime;
+    u32 m_nextWritePos;
+    REZTIME m_time;
+    u32 m_largestKeyAry;
+    u32 m_largestDirNameSize;
+    u32 m_largestRezNameSize;
+    u32 m_largestCommentSize;
+    u8 m_isSorted;
 };
 
 #pragma pack(pop)

@@ -35,7 +35,6 @@ public:
 
     static void RegisterActs();
 
-    char m_pad54[0x58 - 0x54];
     double m_speed;
     double m_posX;
     double m_posY;
@@ -44,7 +43,6 @@ public:
     i32 m_lastDropPlayerIndex;
     i32 m_lastDropUnitIndex;
     ObjectDropScope m_scrollMode;
-    char m_pad84[0x88 - 0x84];
     union {
         struct {
             i64 m_lastDropTime;

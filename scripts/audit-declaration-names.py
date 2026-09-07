@@ -135,7 +135,8 @@ def main():
         kind, name, _, _, storage = row[:5]
         static = kind == 'static_member' or storage == 'STATIC' or (kind == 'global' and row[-1] == 'INTERNAL')
         prefix = ('s_' if static else 'm_' if kind == 'field' else 'g_' if kind == 'global' else '') if kind != 'function' else ''
-        if name and prefix and not name.startswith(prefix):
+        if name and prefix and (not name.startswith(prefix) or len(name) == len(prefix)
+                                or not name[len(prefix)].islower()):
             violations.append((*row, prefix))
     with (OUT / 'prefix-violations.tsv').open('w') as f:
         w = csv.writer(f, delimiter='\t')

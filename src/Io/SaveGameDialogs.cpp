@@ -28,8 +28,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-static const i32 s_SAVE_PREVIEW_BYTES = 0x3843a;
-static const i32 s_SAVE_PREVIEW_BITMAP_OFFSET = 0xe;
+static const i32 s_savePreviewBytes = 0x3843a;
+static const i32 s_savePreviewBitmapOffset = 0xe;
 
 RVA(0x000e35f0, 0x77)
 BOOL CALLBACK SaveGameDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -521,7 +521,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
 RVA(0x000e44e0, 0x2b2)
 void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
     char title[0x80];
-    u8 readBuf[s_SAVE_PREVIEW_BYTES];
+    u8 readBuf[s_savePreviewBytes];
 
     if (!hDlg) {
         return;
@@ -578,7 +578,7 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
         return;
     }
 
-    f.Seek(-s_SAVE_PREVIEW_BYTES, CFile::end);
+    f.Seek(-s_savePreviewBytes, CFile::end);
     if (f.Read(readBuf, sizeof(readBuf)) != sizeof(readBuf)) {
         g_previewImage = NULL;
         f.Close();
@@ -586,7 +586,7 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
     }
 
     f.Close();
-    g_previewImage = g_previewMgr->AddDib(&readBuf[s_SAVE_PREVIEW_BITMAP_OFFSET], DECODE_BMP);
+    g_previewImage = g_previewMgr->AddDib(&readBuf[s_savePreviewBitmapOffset], DECODE_BMP);
     SetDlgItemTextA(hDlg, CTRL_SAVESLOT_PREVIEW_TITLE, title);
 }
 

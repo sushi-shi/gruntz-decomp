@@ -22,6 +22,7 @@ Outputs under `build/audits/declaration-names/`:
 - `summary.json`: counts, parse errors, supplemental headers and coverage gaps.
 
 Instance fields use `m_`; external globals use `g_`; static data uses `s_`.
+The name after the prefix starts with a lowercase letter, including constants.
 The static-data rule includes class and function-local statics and file-scope
 constants with internal linkage. Function names have no required prefix.
 The process exits nonzero for parse errors or prefix violations. Unique names

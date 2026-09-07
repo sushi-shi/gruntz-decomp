@@ -103,7 +103,7 @@ i32 __stdcall DdEnumModesCallback(DDSURFACEDESC* mode, i32 unused);
 extern i32 (*g_restoreHandler)();
 class CDDrawDeviceManager;
 
-extern CDDrawDeviceManager* g_DirectDrawMgr;
+extern CDDrawDeviceManager* g_directDrawMgr;
 
 void BuildColorChannelTables();
 i32 __stdcall CreateDirectDrawVia(

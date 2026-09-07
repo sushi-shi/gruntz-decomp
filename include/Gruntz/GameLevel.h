@@ -20,7 +20,7 @@ class CFileMemBase;
 class CDDrawSurfacePair;
 struct WwdTileImageRecord;
 
-static const i32 s_TILE_CLEAR = -1;
+static const i32 s_tileClear = -1;
 
 #define PROBE_TILE(LVL, X, Y, RESULT)                                                              \
     do {                                                                                           \
@@ -48,7 +48,7 @@ static const i32 s_TILE_CLEAR = -1;
         i32 idx_ = pl_->m_tileRowOffsets[qy_] + col_;                                              \
         i32 subY_ = py_ - (qy_ << pl_->m_shiftY);                                                  \
         i32 tile_ = pl_->m_tileHandles[idx_];                                                      \
-        if (tile_ == UNINIT_FILL || tile_ == s_TILE_CLEAR) {                                       \
+        if (tile_ == UNINIT_FILL || tile_ == s_tileClear) {                                        \
             (RESULT) = TILEKIND_PASSABLE;                                                          \
         } else {                                                                                   \
             CTileImageSet* set_ =                                                                  \
@@ -82,7 +82,7 @@ static const i32 s_TILE_CLEAR = -1;
         i32 subX_ = px_ - (qx_ << pl_->m_shiftX);                                                  \
         i32 subY_ = py_ - (qy_ << pl_->m_shiftY);                                                  \
         i32 tile_ = pl_->GetTileHandle(col_, qy_);                                                 \
-        if (tile_ == UNINIT_FILL || tile_ == s_TILE_CLEAR) {                                       \
+        if (tile_ == UNINIT_FILL || tile_ == s_tileClear) {                                        \
             (RESULT) = TILEKIND_PASSABLE;                                                          \
         } else {                                                                                   \
             CTileImageSet* set_ =                                                                  \

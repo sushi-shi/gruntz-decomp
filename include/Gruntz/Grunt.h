@@ -481,7 +481,6 @@ public:
     i32 m_stamina;
     i32 m_toyTime;
     i32 m_wingzTime;
-    char m_pad3fc[0x400 - 0x3fc];
 
     double m_moveSpeed;
     double m_movePosX;

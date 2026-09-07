@@ -51,7 +51,6 @@ extern i32 g_cfgWord;
 
 struct CNetVersionPacket {
     GZ_ENUM_STORAGE(NetPacketFlags, u8) m_flags;
-    char m_pad1[3];
 
     NetMsgId m_messageId;
     i32 m_butePos;
@@ -65,7 +64,6 @@ class CNetPlayerNode;
 
 struct CNetValuePacket {
     GZ_ENUM_STORAGE(NetPacketFlags, u8) m_flags;
-    char m_pad1[3];
     NetMsgId m_messageId;
     i32 m_value;
     char m_padc[4];
@@ -73,7 +71,6 @@ struct CNetValuePacket {
 
 struct CNetOptionsStatePacket {
     GZ_ENUM_STORAGE(NetPacketFlags, u8) m_flags;
-    char m_pad1[3];
     NetMsgId m_messageId;
     i32 m_value;
 };
@@ -191,7 +188,6 @@ struct GruntRec {
     i32 m_sequence;
     i32 m_checksum;
     unsigned char m_entryCount;
-    char m_pad09[3];
     i32 m_payloadLength;
     char m_payload[NET_COMMAND_RECORD_PAYLOAD_BYTES];
 };
@@ -351,7 +347,6 @@ extern CNetOptionsStatePacket g_optionsClosedPacket;
 
 struct CNetChatPacket {
     GZ_ENUM_STORAGE(NetPacketFlags, u8) m_flags;
-    char m_pad1[3];
     NetMsgId m_messageId;
     i32 m_value;
     char m_text[0x100]; // capacity unproven

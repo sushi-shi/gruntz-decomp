@@ -315,7 +315,6 @@ public:
 
     CSbiHlRow m_conveyorSlots[3];
     CSBI_ImageSet* m_conveyorSprites[3];
-    char m_pad314[0x318 - 0x314];
 
     CSbiMachineRow m_rightMachine;
     CSbiMachineRow m_leftMachine;
@@ -330,7 +329,6 @@ public:
     CStatusBarItem* m_resourceMachineFramework;
     CStatusBarItem* m_resourceUpperBackground;
     CStatusBarItem* m_resourceWindowBackground;
-    char m_pad374[0x378 - 0x374];
     CSbiHlRow m_resourceSlots[12];
     CSBI_ImageSet* m_resourceSlotSprites[12];
     SbiBeltPhase m_machinePhase;

@@ -52,7 +52,7 @@ DATA(0x0024bdcc)
 i32 g_latencyDisplayTick;
 
 DATA(0x0021243c)
-char g_UsingCmdDelay[] = "Using CmdDelay of %d and ResendDelay of %d.";
+char g_usingCmdDelay[] = "Using CmdDelay of %d and ResendDelay of %d.";
 
 enum {
     NUM_PLAYER_SLOTS = 4
@@ -1553,7 +1553,7 @@ void CMultiStartDlg::EchoLatencySettings() {
     char message[128];
     wsprintfA(
         message,
-        g_UsingCmdDelay,
+        g_usingCmdDelay,
         g_multiState->m_commandDelay,
         g_multiState->m_resendInterval
     );

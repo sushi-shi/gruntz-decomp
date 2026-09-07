@@ -174,8 +174,8 @@ i32 CDDPalette::SetAndNotify(u32 start, u32 count, PALETTEENTRY* data, i32 unuse
     for (u32 i = start; i < start + count; i++) {
         m_entries[i] = data[i - start];
     }
-    if (g_DirectDrawMgr != NULL) {
-        IDirectDraw2* dd = g_DirectDrawMgr->m_device;
+    if (g_directDrawMgr != NULL) {
+        IDirectDraw2* dd = g_directDrawMgr->m_device;
         dd->WaitForVerticalBlank(1, NULL);
     }
     return m_palette->SetEntries(0, start, count, data);
@@ -244,8 +244,8 @@ void CDDPalette::Apply(i32 unused) {
     for (u32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         m_entries[i] = readback[i];
     }
-    if (g_DirectDrawMgr != NULL) {
-        IDirectDraw2* dd = g_DirectDrawMgr->m_device;
+    if (g_directDrawMgr != NULL) {
+        IDirectDraw2* dd = g_directDrawMgr->m_device;
         dd->WaitForVerticalBlank(1, NULL);
     }
     m_palette->SetEntries(0, 0, PALETTE_ENTRY_COUNT, readback);

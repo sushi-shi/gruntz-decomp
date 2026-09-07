@@ -107,7 +107,6 @@ protected:
 private:
     dtorf_t m_dtor;
     i16 m_flags;
-    char m_pada[2];
     size_t m_count;
 };
 

@@ -302,7 +302,7 @@ void RefreshSessionSelection(HWND hDlg, HWND hList);
 
 extern HWND g_netMessageEditHwnd;
 
-extern char g_GameKey[];
+extern char g_gameKey[];
 extern u32 g_ackThrottleDeadline;
 
 i32 DrawTextToOverlaySurface(

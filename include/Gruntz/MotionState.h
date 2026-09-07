@@ -54,7 +54,6 @@ public:
     DoubleVector3 m_maxBounds;
     DoubleVector3 m_step;
     b32 m_stepDisabled;
-    char m_padbc[0xc0 - 0xbc];
     DoubleVector3 m_reservedc0; // zeroed + save-streamed; Step never reads it
     DoubleVector3 m_maxStep;
     DoubleVector3 m_maxVelocity;

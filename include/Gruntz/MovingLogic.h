@@ -44,8 +44,6 @@ public:
         AdvanceMotion();
     }
 
-    char m_pad34[0x38 - 0x34];
-
 public:
     CMovingLogic();
     CMovingLogic(CUserLogic::EInlineBase);

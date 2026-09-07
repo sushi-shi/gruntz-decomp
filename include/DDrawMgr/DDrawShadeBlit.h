@@ -82,7 +82,6 @@ public:
     i32 m_colorKey;
     u8 m_srcBpp;
     u8 m_dstBpp;
-    char m_alignmentPadding[0x2c - 0x2a];
     b32 m_blendVariant;
 
     u16* m_lutBank0;

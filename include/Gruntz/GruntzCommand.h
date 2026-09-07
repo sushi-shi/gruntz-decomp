@@ -35,7 +35,6 @@ public:
     u8 m_playerIndex;
     GZ_ENUM_STORAGE(PlayerCommandKind, char) m_commandKind;
     u8 m_scheduleSlot;
-    char m_pad07;
 
     i16 m_targetXOrPlayerIndex;
     i16 m_targetYOrUnitIndex;
@@ -49,7 +48,6 @@ public:
         };
         u16 m_unitMask;
     };
-    i16 m_pad12;
 
     virtual ~CGruntzCommand() {}
 

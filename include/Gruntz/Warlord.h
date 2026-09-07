@@ -60,7 +60,6 @@ public:
     CAniElement* m_animDeath;
     CAniElement* m_animMoving;
     CAniElement* m_animPanic;
-    char m_pad84[0x88 - 0x84];
 
     WarlordTimer m_cooldownTimer;
     WarlordTimer m_notifyTimer;

@@ -89,10 +89,10 @@ RVA_DYNINIT(0x00047990, 0x17, g_gruntMoveDirNorthWest)
 DATA(0x00244918)
 GruntDirectionCell g_gruntMoveDirNorthWest = GruntDirectionCell(0, 0, DIR_NORTHWEST);
 
-static char s_EntranceSafeTime[] = "EntranceSafeTime";
+static char s_entranceSafeTime[] = "EntranceSafeTime";
 
 DATA(0x0020dbf8)
-static char s_ToyTiles[] = "ToyTiles";
+static char s_toyTiles[] = "ToyTiles";
 
 static inline i32 TileFlags(const char* rec) {
 
@@ -727,7 +727,7 @@ i32 CGrunt::StepCompassMove() {
                 break;
         }
         u32 toyCount =
-            g_buteMgr.GetDword(const_cast<char*>(static_cast<LPCTSTR>(str)), s_ToyTiles, 1);
+            g_buteMgr.GetDword(const_cast<char*>(static_cast<LPCTSTR>(str)), s_toyTiles, 1);
         if (m_toyTileIndex < toyCount) {
             switch (m_entranceCell.m_direction) {
                 case DIR_NORTH:

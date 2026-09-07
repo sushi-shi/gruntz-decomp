@@ -39,44 +39,44 @@ public:
 
     class CSymTabItem {
     public:
-        SymTypes m_SymType;
+        SymTypes m_symType;
 
         CSymTabItem() {}
 
         CSymTabItem(SymTypes t, ButeIntPoint* src) {
-            m_SymType = t;
+            m_symType = t;
             m_data.m_point = new ButeIntPoint(*src);
         }
         CSymTabItem(SymTypes t, i32 val) {
-            m_SymType = t;
+            m_symType = t;
             m_data.m_i = new i32(val);
         }
         CSymTabItem(SymTypes t, DWORD val) {
-            m_SymType = t;
+            m_symType = t;
             m_data.m_dw = new DWORD(val);
         }
         CSymTabItem(SymTypes t, float val) {
-            m_SymType = t;
+            m_symType = t;
             m_data.m_f = new float(val);
         }
         CSymTabItem(SymTypes t, double val) {
-            m_SymType = t;
+            m_symType = t;
             m_data.m_d = new double(val);
         }
         CSymTabItem(SymTypes t, const CString& val) {
-            m_SymType = t;
+            m_symType = t;
             m_data.m_s = new CString(val);
         }
         CSymTabItem(SymTypes t, ButeIntRect* src) {
-            m_SymType = t;
+            m_symType = t;
             m_data.m_r = new ButeIntRect(*src);
         }
         CSymTabItem(SymTypes t, CAVector* src) {
-            m_SymType = t;
+            m_symType = t;
             m_data.m_v = new CAVector(*src);
         }
         CSymTabItem(SymTypes t, CARange* src) {
-            m_SymType = t;
+            m_symType = t;
             m_data.m_range = new CARange(*src);
         }
 
@@ -181,7 +181,6 @@ private:
     bool m_bLineCounterFlag;
 
     bool m_bErrorFlag;
-    char m_pad0e[0x10 - 0xe];
     CString m_sErrorString;
     ErrCallback m_pDisplayFunc;
     TableOfTags m_tagTab;
@@ -197,7 +196,6 @@ private:
 
     iostream* m_pSaveData;
     char m_currentChar;
-    char m_pada9;
     GZ_ENUM_STORAGE(ButeToken, i16) m_token;
     i16 m_tokenMinor;
     char m_szTokenString[0x100 - 0xae];
@@ -220,7 +218,7 @@ public:
 RVA(0x00172040, 0x120)
 inline const CButeMgr::CSymTabItem&
 CButeMgr::CSymTabItem::operator=(const CButeMgr::CSymTabItem& item) {
-    switch (m_SymType) {
+    switch (m_symType) {
         case INT_TYPE:
             *m_data.m_i = *item.m_data.m_i;
             break;
@@ -253,7 +251,7 @@ CButeMgr::CSymTabItem::operator=(const CButeMgr::CSymTabItem& item) {
 }
 
 inline CButeMgr::CSymTabItem::~CSymTabItem() {
-    switch (m_SymType) {
+    switch (m_symType) {
         case INT_TYPE:
             delete m_data.m_i;
             break;

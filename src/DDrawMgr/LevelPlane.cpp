@@ -401,7 +401,7 @@ void CDDrawWorkerHost::SetTileSizeFromImageSet(CDDrawWorker* set) {
             dr.right = (xp) + ((srcp)->right - (srcp)->left);                                      \
             dr.bottom = (yp) + ((srcp)->bottom - (srcp)->top);                                     \
             surf->BltEx(&dr, 0, 0, DDBLT_WAIT | DDBLT_COLORFILL, &m_fillFx);                       \
-        } else if (h_ != static_cast<u32>(s_TILE_CLEAR)) {                                         \
+        } else if (h_ != static_cast<u32>(s_tileClear)) {                                          \
             CDDrawWorker* fr_ = ImageSetAt(h_ >> 16);                                              \
             i32 idx_ = static_cast<i32>(h_ & WWD_TILE_IMAGE_SET_INDEX_MASK);                       \
             CImage* e_ = fr_->GetAt(idx_);                                                         \
@@ -949,7 +949,7 @@ i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
     for (i32 row = 0; row < m_tileRows; row++) {
         for (i32 col = 0; col < m_tileColumns; col++) {
             i32 handle = m_tileHandles[m_tileRowOffsets[row] + col];
-            if (handle == s_TILE_CLEAR || static_cast<u32>(handle) == UNINIT_FILL) {
+            if (handle == s_tileClear || static_cast<u32>(handle) == UNINIT_FILL) {
                 continue;
             }
             u32 setIdx = static_cast<u32>(handle) >> 16;

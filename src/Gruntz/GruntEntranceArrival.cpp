@@ -68,17 +68,17 @@
 #include <string.h>
 
 DATA(0x0020e194)
-static char s_ToyTime[] = "ToyTime";
+static char s_toyTime[] = "ToyTime";
 DATA(0x0020e1c8)
-static char s_GRUNTZ_BIGWHEELGRUNT[] = "GRUNTZ_BIGWHEELGRUNT_BIGWHEELGRUNTLOOP";
+static char s_gruntzBigwheelgrunt[] = "GRUNTZ_BIGWHEELGRUNT_BIGWHEELGRUNTLOOP";
 DATA(0x0020e1f8)
-static char s_GRUNTZ_GOKARTGRUNT[] = "GRUNTZ_GOKARTGRUNT_GOKARTGRUNTLOOP";
+static char s_gruntzGokartgrunt[] = "GRUNTZ_GOKARTGRUNT_GOKARTGRUNTLOOP";
 DATA(0x0020e224)
-static char s_GRUNTZ_EXITZ_THREE[] = "GRUNTZ_EXITZ_THREE";
+static char s_gruntzExitzThree[] = "GRUNTZ_EXITZ_THREE";
 DATA(0x0020e23c)
-static char s_GRUNTZ_EXITZ_TWO[] = "GRUNTZ_EXITZ_TWO";
+static char s_gruntzExitzTwo[] = "GRUNTZ_EXITZ_TWO";
 DATA(0x0020e250)
-static char s_GRUNTZ_EXITZ_ONE[] = "GRUNTZ_EXITZ_ONE";
+static char s_gruntzExitzOne[] = "GRUNTZ_EXITZ_ONE";
 
 RVA(0x000616e0, 0xa8)
 i32 CGrunt::ResetGeometry() {
@@ -451,7 +451,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
             }
             return 0;
         } else {
-            DWORD tt = g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), s_ToyTime);
+            DWORD tt = g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), s_toyTime);
             m_toyDuration = static_cast<u32>(tt);
             m_toyClock = static_cast<u32>(g_frameTime);
             m_toyTime = 0x64;
@@ -473,7 +473,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
         char* nm = m_cells[basev].WalkName().GetBuffer(0);
         SetImageSetByName(nm);
 
-        DWORD tt = g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), s_ToyTime);
+        DWORD tt = g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), s_toyTime);
         m_idleDelay = tt >> 1;
         m_idleAnchor = g_frameTime;
         return 0;
@@ -1045,11 +1045,11 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
     i32 hx = h2->m_screenX;
     if (::PtInRect(&g2->m_viewBounds, hx, hy)) {
         if (m_entranceReason == PICKUP_GOKART) {
-            EnsureVehicleLoopSound(s_GRUNTZ_GOKARTGRUNT);
+            EnsureVehicleLoopSound(s_gruntzGokartgrunt);
             return 0;
         }
         if (m_entranceReason == PICKUP_BIGWHEEL) {
-            EnsureVehicleLoopSound(s_GRUNTZ_BIGWHEELGRUNT);
+            EnsureVehicleLoopSound(s_gruntzBigwheelgrunt);
             return 0;
         }
         return 0;
@@ -1091,7 +1091,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
     CAniElement* found;
     i32 r = rand() % 0x1e1;
     if (r > 0x140) {
-        found = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_GRUNTZ_EXITZ_ONE);
+        found = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_gruntzExitzOne);
         CGruntzMgr* g = g_gameReg;
         if (CGameLevel::PointInBounds(
                 &g->m_world->m_level->m_mainPlane->m_planeViewRect,
@@ -1101,7 +1101,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
             g->m_voiceManager->PlayVoice(this, 0x384, -1, 0, -1, -1);
         }
     } else if (r > 0xa0) {
-        found = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_GRUNTZ_EXITZ_TWO);
+        found = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_gruntzExitzTwo);
         CGruntzMgr* g = g_gameReg;
         if (CGameLevel::PointInBounds(
                 &g->m_world->m_level->m_mainPlane->m_planeViewRect,
@@ -1111,7 +1111,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
             g->m_voiceManager->PlayVoice(this, 0x385, -1, 0, -1, -1);
         }
     } else {
-        found = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_GRUNTZ_EXITZ_THREE);
+        found = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_gruntzExitzThree);
         CGruntzMgr* g = g_gameReg;
         if (CGameLevel::PointInBounds(
                 &g->m_world->m_level->m_mainPlane->m_planeViewRect,

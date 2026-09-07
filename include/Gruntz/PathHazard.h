@@ -55,7 +55,6 @@ public:
     i32 ForwardTick();
     i32 ForwardSiblingTick();
 
-    char m_pad54[0x58 - 0x54];
     double m_speed;
     double m_posX;
     double m_posY;
@@ -71,7 +70,6 @@ public:
 
     CHazardTimer m_leg;
     b32 m_strikeArmed;
-    char m_pad11c[0x120 - 0x11c];
     CHazardTimer m_strike;
 };
 
