@@ -796,8 +796,8 @@ i32 CTriggerMgr::HandleTargetSelection(
                     }
                     PickupType v = ARRIVAL_PICKUP_TERNARY_LE(hit);
                     if (v != PICKUP_SPY) {
-                        PickupType v2 = ARRIVAL_PICKUP_TERNARY_LE(hit);
-                        if (v2 != PICKUP_WAND) {
+                        PickupType pickupType = ARRIVAL_PICKUP_TERNARY_LE(hit);
+                        if (pickupType != PICKUP_WAND) {
                             goto reportError;
                         }
                     }

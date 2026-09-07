@@ -324,20 +324,20 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&g_zBitSetError
             } while (isspace(*q));
         }
         if (sep == '-') {
-            i32 v2 = 0;
+            i32 rangeEnd = 0;
             if (*q == 0) {
                 break;
             }
             while (isdigit(*q)) {
-                v2 = v2 * 10 + (*q - '0');
+                rangeEnd = rangeEnd * 10 + (*q - '0');
                 ++q;
             }
-            if (static_cast<u32>(v) > static_cast<u32>(v2)) {
+            if (static_cast<u32>(v) > static_cast<u32>(rangeEnd)) {
                 i32 t = v;
-                v = v2;
-                v2 = t;
+                v = rangeEnd;
+                rangeEnd = t;
             }
-            for (++v; static_cast<u32>(v) <= static_cast<u32>(v2); ++v) {
+            for (++v; static_cast<u32>(v) <= static_cast<u32>(rangeEnd); ++v) {
                 u32* band = (static_cast<u32>(m_capacity) > 0x20) ? m_words : &m_inline;
                 band[static_cast<u32>(v) >> BITARRAY_WORD_SHIFT] |= 1u << (v & BITARRAY_BIT_MASK);
             }

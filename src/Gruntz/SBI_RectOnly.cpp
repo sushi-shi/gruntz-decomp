@@ -4233,16 +4233,17 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     s->Read(&seq, sizeof(seq));
 
     CGameObject* obj = NULL;
-    CWwdSpriteObject* m8;
+    CWwdSpriteObject* barSprite;
     if (MapLookupById(gm->m_childGroup->m_registeredGameObjectsById, seq, obj) == false) {
-        m8 = NULL;
+        barSprite = NULL;
     } else if (obj == NULL) {
-        m8 = NULL;
+        barSprite = NULL;
     } else {
-        m8 = (obj->GetClassId() == CLASSID_SERIALREF) ? static_cast<CWwdSpriteObject*>(obj) : NULL;
+        barSprite =
+            (obj->GetClassId() == CLASSID_SERIALREF) ? static_cast<CWwdSpriteObject*>(obj) : NULL;
     }
-    m_barSprite = m8;
-    if (m8 == NULL && seq != 0) {
+    m_barSprite = barSprite;
+    if (barSprite == NULL && seq != 0) {
         return 0;
     }
 

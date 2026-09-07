@@ -274,11 +274,11 @@ i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
             i32 negW = -cellW;
             i32 i = 0;
             do {
-                RECT pt48;
-                pt48.left = 0;
-                pt48.top = 0;
-                pt48.right = cellW;
-                pt48.bottom = cellH;
+                RECT dispersedRect;
+                dispersedRect.left = 0;
+                dispersedRect.top = 0;
+                dispersedRect.right = cellW;
+                dispersedRect.bottom = cellH;
                 i32 d2 = bx * bx + rowD2;
                 double v = sqrt(static_cast<double>(d2));
                 float u, w;
@@ -289,22 +289,26 @@ i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
                     u = 0.0f;
                     w = 1.0f;
                 }
-                OffsetRect(&pt48, x, y);
-                OffsetRect(&pt48, static_cast<i32>((u * cellR)), static_cast<i32>((w * cellR)));
+                OffsetRect(&dispersedRect, x, y);
+                OffsetRect(
+                    &dispersedRect,
+                    static_cast<i32>((u * cellR)),
+                    static_cast<i32>((w * cellR))
+                );
 
-                RECT pt64;
-                pt64.left = 0;
-                pt64.top = 0;
-                pt64.right = d2;
-                pt64.bottom = cellH;
-                OffsetRect(&pt64, x, y);
+                RECT assembledRect;
+                assembledRect.left = 0;
+                assembledRect.top = 0;
+                assembledRect.right = d2;
+                assembledRect.bottom = cellH;
+                OffsetRect(&assembledRect, x, y);
 
                 if (m_reverseOrder) {
-                    elem.m_startRect = pt64;
-                    elem.m_endRect = pt48;
+                    elem.m_startRect = assembledRect;
+                    elem.m_endRect = dispersedRect;
                 } else {
-                    elem.m_startRect = pt48;
-                    elem.m_endRect = pt64;
+                    elem.m_startRect = dispersedRect;
+                    elem.m_endRect = assembledRect;
                 }
 
                 i32 idx = mesh->m_nSize;

@@ -424,9 +424,9 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
             SetImageFrameByName(buf, frame);
 
             i32 cueTier = ((toyIdx != 0) ? 0xa : 0) + 0x406;
-            i32 m380 = m_moveVariant;
-            if (m380 != 0) {
-                i32 tier = cueTier + m380 - 1;
+            i32 moveVariant = m_moveVariant;
+            if (moveVariant != 0) {
+                i32 tier = cueTier + moveVariant - 1;
                 CGruntzMgr* g = g_gameReg;
                 const LevelCoordRect* bounds = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
                 if (CGameLevel::PointInBounds(bounds, m_object->m_screenX, m_object->m_screenY)

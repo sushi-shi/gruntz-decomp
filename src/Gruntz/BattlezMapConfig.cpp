@@ -769,8 +769,9 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         {
                             PickupType st = ArrivalPickup(unit);
                             if (st == PICKUP_GOOBER) {
-                                BattlezTask d8 = unit->m_battleState;
-                                if (d8 != BZTASK_CARRY_GOOBER && d8 != BZTASK_ASSIGNED_TARGET) {
+                                BattlezTask battleTask = unit->m_battleState;
+                                if (battleTask != BZTASK_CARRY_GOOBER
+                                    && battleTask != BZTASK_ASSIGNED_TARGET) {
                                     if (unit->CoordCount() != 0) {
                                         RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
                                     }
@@ -1059,8 +1060,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
         hit = 0;
         if (unit != NULL) {
             if (!unit->IsArrivalRerollPending()) {
-                BattlezTask d8 = unit->m_battleState;
-                if (d8 != BZTASK_ASSIGNED_TARGET && d8 != BZTASK_SEEK_SWITCH) {
+                BattlezTask battleTask = unit->m_battleState;
+                if (battleTask != BZTASK_ASSIGNED_TARGET && battleTask != BZTASK_SEEK_SWITCH) {
                     if (unit->m_entranceCommitted != false && unit->m_deathAnimStarted == false
                         && unit->m_entranceActive == false && unit->m_poweredUp == false) {
                         char ne;

@@ -908,10 +908,10 @@ i32 CBootyState::LoadGruntEffectSprites() {
     }
     bb->SetImageSetByName("GAME_INGAMEICONZ_TOYZ_BEACHBALLZ");
     m_icons[4]->SetAnimationByName("GAME_CYCLE100", 0);
-    CWwdSpriteObject* p30c = m_icons[4];
-    p30c->m_drawActive = true;
-    p30c->m_drawFillCmd = SHADE_PAL_16;
-    p30c->m_drawFillArg = handleA;
+    CWwdSpriteObject* beachBallIcon = m_icons[4];
+    beachBallIcon->m_drawActive = true;
+    beachBallIcon->m_drawFillCmd = SHADE_PAL_16;
+    beachBallIcon->m_drawFillArg = handleA;
     m_icons[4]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
     CWwdSpriteObject* rz = g_gameReg->m_world->m_childGroup->CreateSprite(
@@ -1493,10 +1493,10 @@ i32 CBootyState::CheckPerfectBonus() {
     if (phase == static_cast<i32>(0xffffff7e)) {
         CDDrawSurfaceMgr* host = g_gameReg->m_world;
         i32 item = g_gameReg->m_soundVolume;
-        SoundCueRegistry* m28 = host->m_soundRegistry;
-        if (m28->m_silentMode == false) {
+        SoundCueRegistry* cueRegistry = host->m_soundRegistry;
+        if (cueRegistry->m_silentMode == false) {
             SoundCue* found = NULL;
-            MapLookup(m28->m_cues, "BOOTY_PERFECT", found);
+            MapLookup(cueRegistry->m_cues, "BOOTY_PERFECT", found);
             if (found) {
                 PlaySoundCueIfElapsed(found, item, 0, 0, false);
             }
@@ -2293,10 +2293,10 @@ i32 CMultiBootyState::EnterState(GameStateId previousState) {
 
     CDDrawSurfaceMgr* host = g_gameReg->m_world;
     i32 item = g_gameReg->m_soundVolume;
-    SoundCueRegistry* m28 = host->m_soundRegistry;
-    if (m28->m_silentMode == false) {
+    SoundCueRegistry* cueRegistry = host->m_soundRegistry;
+    if (cueRegistry->m_silentMode == false) {
         SoundCue* found = NULL;
-        MapLookup(m28->m_cues, "BOOTY_LOOP", found);
+        MapLookup(cueRegistry->m_cues, "BOOTY_LOOP", found);
         if (found) {
             PlaySoundCueIfElapsed(found, item, 0, 0, true);
         }

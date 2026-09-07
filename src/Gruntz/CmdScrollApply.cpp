@@ -68,15 +68,15 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
     if (scrollX < cx - 1) {
         scrollX = cx - 1;
     }
-    CDDrawWorkerHost* v2 = pm->m_world->m_level->m_mainPlane;
-    if (scrollX > v2->m_planePixelWidth - cx) {
-        scrollX = v2->m_planePixelWidth - cx;
+    CDDrawWorkerHost* boundsPlane = pm->m_world->m_level->m_mainPlane;
+    if (scrollX > boundsPlane->m_planePixelWidth - cx) {
+        scrollX = boundsPlane->m_planePixelWidth - cx;
     }
     if (scrollY < cy - 1) {
         scrollY = cy - 1;
     }
-    if (scrollY > v2->m_planePixelHeight - cy) {
-        scrollY = v2->m_planePixelHeight - cy;
+    if (scrollY > boundsPlane->m_planePixelHeight - cy) {
+        scrollY = boundsPlane->m_planePixelHeight - cy;
     }
 
     i32 deltaX = scrollX - g_lastScrollX;
@@ -84,8 +84,8 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
     g_lastScrollX = scrollX;
     g_lastScrollY = scrollY;
 
-    CDDrawWorkerHost* v3 = pm->m_world->m_level->m_mainPlane;
-    SET_SCROLL_POSITION_PRODUCT_CAST(v3, scrollX, scrollY);
+    CDDrawWorkerHost* scrollPlane = pm->m_world->m_level->m_mainPlane;
+    SET_SCROLL_POSITION_PRODUCT_CAST(scrollPlane, scrollX, scrollY);
 
     CDDrawWorkerHost* gm = g_backView;
     if (gm != NULL) {

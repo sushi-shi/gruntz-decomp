@@ -171,10 +171,10 @@ i32 CPathHazard::Tick() {
         }
     }
 
-    CWwdSpriteObject* m10 = m_object;
-    if (m10->m_screenX == m_wpX) {
+    CWwdSpriteObject* sprite = m_object;
+    if (sprite->m_screenX == m_wpX) {
         i32 wy = m_wpY;
-        if (m10->m_screenY == wy) {
+        if (sprite->m_screenY == wy) {
 
             m_posX = static_cast<double>(m_wpX);
             m_posY = static_cast<double>(wy);
