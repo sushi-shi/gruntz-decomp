@@ -34,7 +34,7 @@ template<> DATA(0x00229388)
 CActReg CActRegPool<CActionArea>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 static inline CActHandler* ResolveActionAreaAct(i32 coord) {
-    return (CActRegPool<CActionArea>::s_table.ResolveEntry(coord));
+    return &CActRegPool<CActionArea>::s_table[coord];
 }
 
 RVA(0x00007c60, 0xf1)

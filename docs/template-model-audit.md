@@ -3,7 +3,7 @@
 The audit starts at merged main `814e76985`, after naming/padding PR #77 and
 SDK-layout PR #78. It examines project-defined container-like records that may
 actually be instantiations of an existing template. The initial identity audit is followed below by a compiled application of the
-confirmed findings; unresolved identities have not been replaced.
+confirmed findings and a later usage-backed compiler-method application. The latest results are at the end of this document.
 
 Run `nix develop -c python3 scripts/audit-template-models.py`. The script reads
 the real compilation database with pylibclang, visits template bodies, records
@@ -277,3 +277,82 @@ The typed tree and its global retain the complete 44-byte layout.
 Evidence is retained under `build/audits/template-application/tree-*`, including
 the producer/consumer plan, before/after reports, raw relocation audit, build
 logs, bank comparison, and fresh inventory log.
+
+## Compiler-method follow-up to PR #79
+
+The follow-up removes the remaining caller-side `zDArray` bounds/growth/error
+and CString-construction expansions. Registration and animation use the shared
+`operator[]`; twelve obsolete raw/name helpers and accessors are gone. The
+compiler-artifact verifier now also rejects explicit constructor expressions
+such as `p->CString::CString()`, which previously bypassed its placement-new
+check. Only the two reviewed typed placement-construction sites remain.
+
+Seven of the nine remaining container candidates now use recovered templates,
+with the coordinate node recovered as part of its pool:
+
+| Previous records | Kept model | Evidence |
+| --- | --- | --- |
+| `CFixedPtrArray32`, `CInputDeviceGroup` | `CFixedPtrArray<CInputDevBase,32>` and a domain alias | Complete inline storage/count API, all insertion/indexing users, 136-byte extent and slots at +8. |
+| `FreeNodePool`, `CoordPoolNode` | `FreeNodePool<Coord>` and its nested node | Contiguous 12-byte nodes, four-byte link, eight-byte coordinate payload, offset parameter and complete allocation/recycling use. |
+| `BucketHead` | `CLTList<WwdRegion>` | Region insertion, typed traversal and bucket backlink over the shared erased list. |
+| `SoundSampleList` | `CLTList<SoundSample>` | Sample allocation, insertion and traversal. |
+| `SoundBufferInstanceList` | `CLTList<SoundBufferNode>` | Embedded nodes point to sound buffers; the node is the element type. |
+| `SoundTaskList` | Domain owner over `CLTList<SoundTask>` | Retains buffer/tag filtering and the erased polymorphic-node adjustment. |
+
+These primary names are reconstructions from complete layout and usage, not
+claims of recovered original identifiers. No second specialization or unique
+machine-code spelling of `T` is required. The shared erased list API remains
+intact, including removal through a `SoundBuffer*` in `DestroyBuffer`.
+
+The two Brickz pools retain their owners. Their element types are known:
+`BrickzNode` and `BrickzCellNode`. Retail reverses the storage/free-list fields
+at +0/+4, and the cell allocator initializes an additional search-node member.
+A common owner/node policy is still missing; introducing arbitrary layout
+specializations would preserve the duplicated modeling. The review table now
+records that concrete discrepancy rather than calling the element type unknown.
+
+Ten manually annotated method bodies become `RVA_COMPGEN` bindings: three
+fixed-array operations, pool `Push`, four list destructors, and the two
+`CGruntCellRec` lifetimes. The grid head's already-pinned constructor also
+becomes implicit. `CGruntCellRec` keeps its actual CString array, rectangles
+and motion members; their types now generate its lifetime code directly.
+
+The sound destructor experiment is a negative control. Omitting
+`SoundBufferInstance::~SoundBufferInstance` emits a five-byte base-destructor
+jump; retail first stores the derived vptr and occupies eleven bytes. The
+explicit empty base and derived destructors remain. Authored task filtering,
+constructors that initialize instance state, `SoundSample` teardown, source-
+backed concrete Rez classes and the real `CDDSurface::UnlockThunk` also remain.
+Empty bodies and a `Thunk` suffix alone do not select compiler artifacts.
+
+The full VC5 application changes current fuzzy **94.77745% → 93.81391%**
+(−0.96354 percentage points), with the same 1,167,465-byte / 7,466-function
+report denominator. Current exact functions move 6,653 → 6,629.
+`RegisterGruntActions` improves **5.06812% → 97.792915%**. Both typed array
+indexers, the erased accessor, list/grid lifetimes and implicit cell-record
+lifetimes remain exact. `FillFrom` becomes 76.111115% because the template
+expands `Add`; its source behavior and layout are preserved.
+
+A direct raw-byte and ordered-relocation audit passes for 17 methods, including
+both cell-record lifetimes, both typed indexers, the raw accessor, pool Push,
+fixed-array Clear/Add, list/grid lifetimes, and retained sound destructors.
+Actual VC5 compilation confirms all recovered sizes and offsets. A negative
+compile rejects a `Coord*` passed to the input-device array. Six compiler-
+artifact controls pass, including the constructor-expression bypass through
+the public gate. Seven stale review certifications are refreshed; superseded bounded claims are reopened. Correct typed
+source and member lifetime are retained; current codegen changes are adjudicated
+for banking without reducing any historical RVA maximum.
+
+Final `gruntz build` passes MAX and every fast/normal gate. All 4,429 historical RVA maxima are preserved.
+
+The final pylibclang census covers 282 TUs, 437 owned records, 23 template
+declarations, 4,785 function definitions and 31,551 use sites, with zero parse
+errors or uncovered files. It emits `functions.json`, `uses.json`,
+`manual-methods.tsv` and `emitted-methods.tsv` alongside its record worklist.
+Source USRs join owners and use sites; source RVA attributes and actual COFF
+symbols join emitted methods, including deleting destructors. The complete libclang constructor/destructor
+variant API also joins unannotated inline special members. Anonymous model
+rows are excluded from name joins. Run it against a stable source/build
+snapshot; the final dump is under `build/audits/compgen-methods/final-census/`.
+The reusable controls and interpretation are in
+[typed container use](patterns/typed-container-use-replaces-manual-compiler-methods.md).

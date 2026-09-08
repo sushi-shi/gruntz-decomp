@@ -515,10 +515,11 @@ SoundSample::SoundSample(IDirectSoundBuffer* buffer, SoundDevice* owner)
 
 RVA_COMPGEN(0x00135b80, 0x1e, ??_GSoundSample@@UAEPAXI@Z)
 
+RVA_COMPGEN(0x00135ba0, 0x1, ??1?$CLTList@USoundBufferNode@@@@QAE@XZ)
 RVA(0x00135bb0, 0x63)
 SoundSample::~SoundSample() {
     while (m_instances.GetFirst() != NULL) {
-        DestroyInstance(static_cast<SoundBufferNode*>(m_instances.GetFirst())->m_buffer);
+        DestroyInstance(m_instances.GetFirst()->m_buffer);
     }
 }
 
@@ -563,7 +564,7 @@ SoundBuffer* SoundSample::AcquireInstance() {
     if (!m_owner->m_initialized) {
         return NULL;
     }
-    SoundBufferNode* node = static_cast<SoundBufferNode*>(m_instances.GetFirst());
+    SoundBufferNode* node = m_instances.GetFirst();
     if (node) {
         while (true) {
             if (node->m_buffer->m_reusable && node->m_buffer->IsPlaying() == 0) {
@@ -761,8 +762,7 @@ void SoundSample::StopAllInstances() {
     if (m_owner->m_initialized == false) {
         return;
     }
-    for (SoundBufferNode* node = static_cast<SoundBufferNode*>(m_instances.GetFirst());
-         node != NULL;
+    for (SoundBufferNode* node = m_instances.GetFirst(); node != NULL;
          node = static_cast<SoundBufferNode*>(node->Next())) {
         node->m_buffer->StopAndRewind();
     }
@@ -912,6 +912,8 @@ SoundDevice::SoundDevice() {
 
 RVA_COMPGEN(0x001364c0, 0x1e, ??_GSoundDevice@@UAEPAXI@Z)
 
+RVA_COMPGEN(0x001364e0, 0x1, ??1?$CLTList@VSoundSample@@@@QAE@XZ)
+RVA_COMPGEN(0x001364f0, 0x1, ??1SoundTaskList@@QAE@XZ)
 RVA(0x00136500, 0x43)
 SoundDevice::~SoundDevice() {
 
@@ -981,10 +983,10 @@ i32 SoundDevice::Compact() {
 RVA(0x00136690, 0x58)
 void SoundDevice::Shutdown() {
     if (m_initialized) {
-        SoundSample* node = static_cast<SoundSample*>(m_samples.GetFirst());
+        SoundSample* node = m_samples.GetFirst();
         while (node) {
             DestroyBuffer(node);
-            node = static_cast<SoundSample*>(m_samples.GetFirst());
+            node = m_samples.GetFirst();
         }
         if (m_primaryBuffer) {
             m_primaryBuffer->Release();
@@ -1281,7 +1283,7 @@ void SoundDevice::DestroyBuffer(SoundBuffer* buffer) {
 RVA(0x00136de0, 0x3c)
 void SoundDevice::StopAllBuffers() {
     if (m_initialized) {
-        SoundSample* node = static_cast<SoundSample*>(m_samples.GetFirst());
+        SoundSample* node = m_samples.GetFirst();
         while (node) {
             node->StopAndRewind();
             node->StopAllInstances();
@@ -1327,7 +1329,7 @@ i32 SoundDevice::ClearVolumeRamps() {
     if (m_initialized == false) {
         return 0;
     }
-    SoundTask* node = static_cast<SoundTask*>(m_volumeRamps.GetFirst());
+    SoundTask* node = m_volumeRamps.GetFirst();
     if (node == NULL) {
         return 1;
     }

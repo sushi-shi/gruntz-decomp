@@ -80,7 +80,6 @@
 #include <Wwd/WwdSpriteAnimationInline.h>
 
 #include <math.h>
-#include <new>
 #include <stdlib.h>
 #include <string.h>
 
@@ -332,14 +331,7 @@ void CGrunt::ComputeFacing(double dt) {
     m_movePosY = static_cast<double>(h->m_screenY);
 }
 
-#define BIND_GRUNT_ACT_RAW(id, handler)                                                            \
-    {                                                                                              \
-        GruntActPmf _p;                                                                            \
-        _p.m_pmf = (handler);                                                                      \
-        *CActReg::AsElem(CActRegPool<CGrunt>::s_table._zdvec::IndexToPtr(id)) = _p.m_h;            \
-    }
-
-#define BIND_GRUNT_ACT_TYPED(id, handler)                                                          \
+#define BIND_GRUNT_ACT(id, handler)                                                                \
     {                                                                                              \
         GruntActPmf _p;                                                                            \
         _p.m_pmf = (handler);                                                                      \
@@ -352,29 +344,14 @@ void CGrunt::ComputeFacing(double dt) {
         if (id == 0) {                                                                             \
             ActInsertId(key, g_typeCounter);                                                       \
             id = g_typeCounter;                                                                    \
-            /* Keep the global counter as the name-slot lookup's direct argument; */               \
-            /* using id changes MSVC's two-consumer CSE and register allocation. */                \
-            /* See docs/patterns/act-registrar-counter-cse-and-freeloop.md. */                     \
-            CString* slot = g_typeColl.ScratchResolve(g_typeCounter);                              \
-            i32 n = g_typeColl.m_grown;                                                            \
-            CString* list = ActNameSlots();                                                        \
-            while (n-- != 0) {                                                                     \
-                if (list != 0) {                                                                   \
-                    list->CString::CString();                                                      \
-                }                                                                                  \
-                list++;                                                                            \
-            }                                                                                      \
-            *slot = (key);                                                                         \
+            g_typeColl[g_typeCounter] = (key);                                                     \
             g_typeCounter++;                                                                       \
         }                                                                                          \
         bind(id, handler);                                                                         \
     }
 
 #define REGISTER_GRUNT_ACT_KEY(key, handler)                                                       \
-    REGISTER_GRUNT_ACT_KEY_IMPL(key, handler, BIND_GRUNT_ACT_RAW)
-
-#define REGISTER_GRUNT_ACT_KEY_TYPED(key, handler)                                                 \
-    REGISTER_GRUNT_ACT_KEY_IMPL(key, handler, BIND_GRUNT_ACT_TYPED)
+    REGISTER_GRUNT_ACT_KEY_IMPL(key, handler, BIND_GRUNT_ACT)
 
 #define REGISTER_GRUNT_ACT_KEY_DERIVED(key, handler)                                               \
     {                                                                                              \
@@ -385,7 +362,7 @@ void CGrunt::ComputeFacing(double dt) {
             g_typeColl[id] = (key);                                                                \
             g_typeCounter++;                                                                       \
         }                                                                                          \
-        BIND_GRUNT_ACT_TYPED(id, handler);                                                         \
+        BIND_GRUNT_ACT(id, handler);                                                               \
     }
 
 RVA(0x00057100, 0x590)
@@ -828,7 +805,7 @@ i32 CGrunt::PathScan() {
                             Coord* fresh = NULL;
                             CoordPoolNode* free = g_coordPool.m_freeHead;
                             if (free->m_next != NULL) {
-                                fresh = &free->m_coord;
+                                fresh = &free->m_value;
                                 *fresh = *src;
                                 g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
                             }
@@ -1199,42 +1176,15 @@ i32 CGrunt::HandleCombatContact(
     } else {
         FaceTowardPixel(otherPxX, otherPxY);
 
-        CString* rec0 = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-        ActNameConstructGrownSlots();
+        CString* rec0 = &g_typeColl[m_logicRecord->m_eventCode];
         bool neH = (strcmp(*rec0, "H") != 0);
         if (neH) {
             i32 keyF = m_logicRecord->m_eventCode;
-            g_typeColl.m_grown = 0;
-            CString* recF;
-            if (keyF < g_typeColl.m_lo || keyF > g_typeColl.m_hi) {
-                if (g_typeColl.GrowTo(keyF, 0) != NULL) {
-                    recF = g_typeColl.Elem(keyF);
-                } else {
-                    g_typeColl.Report(g_errOutOfMem, 0xc);
-                    recF = g_typeColl.Scratch();
-                }
-            } else {
-                recF = g_typeColl.Elem(keyF);
-            }
-            ActNameConstructGrownSlots();
+            CString* recF = &g_typeColl[keyF];
             bool neF = (strcmp(*recF, DATA_COMPGEN(0x0020d2e8, "F")) != 0);
             if (neF) {
                 i32 keyO = m_logicRecord->m_eventCode;
-                g_typeColl.m_grown = 0;
-                CString* recO;
-                if (keyO < g_typeColl.m_lo || keyO > g_typeColl.m_hi) {
-                    if (g_typeColl.GrowTo(keyO, 0) != NULL) {
-                        recO = g_typeColl.Elem(keyO);
-                    } else {
-                        char* msg = g_errOutOfMem;
-                        g_retAddrBreadcrumb = GetRetAddr();
-                        g_typeColl.m_errSink->Set(&g_typeColl, msg, 0xc);
-                        recO = g_typeColl.Scratch();
-                    }
-                } else {
-                    recO = g_typeColl.Elem(keyO);
-                }
-                ActNameConstructGrownSlots();
+                CString* recO = &g_typeColl[keyO];
                 bool neO = (strcmp(*recO, "O") != 0);
                 if (neO) {
                     ResetGeometry();
@@ -1513,17 +1463,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         return 1;
     }
 
-    CString* typeRec = g_typeColl.ScratchResolve(this->m_logicRecord->m_eventCode);
-    if (g_typeColl.m_grown != 0) {
-        CString* p = g_typeColl.Slots();
-        i32 n = g_typeColl.m_grown;
-        do {
-            if (p != NULL) {
-                new (p) CString();
-            }
-            p++;
-        } while (--n != 0);
-    }
+    CString* typeRec = &g_typeColl[this->m_logicRecord->m_eventCode];
     bool isCodeO = (strcmp(*typeRec, "O") == 0);
     if (isCodeO) {
         return 1;
@@ -1706,7 +1646,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
             i32 rx = this->m_lastTilePx.m_x >> TILE_SHIFT_PX;
             i32 ry = this->m_lastTilePx.m_y >> TILE_SHIFT_PX;
             if (g_coordPool.m_freeHead->m_next != NULL) {
-                node = &g_coordPool.m_freeHead->m_coord;
+                node = &g_coordPool.m_freeHead->m_value;
                 node->m_x = rx;
                 node->m_y = ry;
                 g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
@@ -1849,8 +1789,7 @@ RVA(0x0005b570, 0x12b)
 i32 CGrunt::BeginAttack(i32 targetPxX, i32 targetPxY) {
     if (m_entranceCommitted != false) {
 
-        CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-        ActNameConstructGrownSlots();
+        CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
         bool eq = (strcmp(*rec, "F") == 0);
         if (!eq) {
             if (m_stamina >= STAMINA_FULL) {
@@ -1954,9 +1893,9 @@ i32 DispatchGruntLogic(CGameObject* owner) {
 
 RVA(0x0005bcd0, 0x102)
 void CGrunt::FireActivation(i32 id) {
-    CActHandler* e = CActRegPool<CGrunt>::s_table.ResolveEntry(id);
+    CActHandler* e = &CActRegPool<CGrunt>::s_table[id];
     if (*e != NULL) {
-        (this->*(*CActRegPool<CGrunt>::s_table.ResolveEntry(id)))();
+        (this->*(CActRegPool<CGrunt>::s_table[id]))();
     }
 }
 
@@ -1980,7 +1919,7 @@ void RegisterGruntActions() {
     REGISTER_GRUNT_ACT_KEY("O", &CGrunt::FinishKnockbackAnimation);
     REGISTER_GRUNT_ACT_KEY("P", &CGrunt::UpdateEntranceAnim);
     REGISTER_GRUNT_ACT_KEY("Q", &CGrunt::LoadFreezeSpellAssets);
-    REGISTER_GRUNT_ACT_KEY_TYPED("R", &CGrunt::UpdateDecayFade);
+    REGISTER_GRUNT_ACT_KEY("R", &CGrunt::UpdateDecayFade);
     REGISTER_GRUNT_ACT_KEY_DERIVED("S", &CGrunt::FinishEntranceMove);
 }
 
@@ -2398,15 +2337,7 @@ void CGrunt::StepBehavior(char*) {
             m_entranceClockHi = 0;
         } else if (flags & 0x2000000) {
             if (m_entranceReason == PICKUP_TOOB) {
-                CString* node = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-                CString* slot = g_typeColl.Slots();
-                i32 n = g_typeColl.m_grown;
-                while (n-- != 0) {
-                    if (slot != NULL) {
-                        slot->CString::CString();
-                    }
-                    slot++;
-                }
+                CString* node = &g_typeColl[m_logicRecord->m_eventCode];
                 bool nameDiffers = (strcmp(*node, "N") != 0);
                 if (nameDiffers) {
                     BuildGruntLoseItemAnimation();
@@ -2604,27 +2535,11 @@ afterArrival:
         if (m_poweredUp != false && m_stamina >= STAMINA_FULL) {
             bool eq;
             {
-                CString* node = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-                CString* slot = g_typeColl.Slots();
-                i32 n = g_typeColl.m_grown;
-                while (n-- != 0) {
-                    if (slot != NULL) {
-                        slot->CString::CString();
-                    }
-                    slot++;
-                }
+                CString* node = &g_typeColl[m_logicRecord->m_eventCode];
                 eq = (strcmp(*node, "E") == 0);
             }
             if (!eq) {
-                CString* node = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-                CString* slot = g_typeColl.Slots();
-                i32 n = g_typeColl.m_grown;
-                while (n-- != 0) {
-                    if (slot != NULL) {
-                        slot->CString::CString();
-                    }
-                    slot++;
-                }
+                CString* node = &g_typeColl[m_logicRecord->m_eventCode];
                 eq = (strcmp(*node, "A") == 0);
             }
             if (eq) {
@@ -2854,8 +2769,7 @@ void CGrunt::FinalizeStep(char* name) {
         return;
     }
 
-    CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-    ActNameConstructGrownSlots();
+    CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
     bool eqPos = (strcmp(*rec, "S") == 0);
     if (eqPos) {
         if (GRUNT_AT_SAVED_SCREEN_POS(this)) {
@@ -2922,20 +2836,16 @@ void CGrunt::AdvanceMotion() {
         }
     }
 
-    CString* code = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-    ActNameConstructGrownSlots();
+    CString* code = &g_typeColl[m_logicRecord->m_eventCode];
     bool different = strcmp(*code, "D");
     if (different) {
-        code = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-        ActNameConstructGrownSlots();
+        code = &g_typeColl[m_logicRecord->m_eventCode];
         different = strcmp(*code, "N");
         if (different) {
-            code = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-            ActNameConstructGrownSlots();
+            code = &g_typeColl[m_logicRecord->m_eventCode];
             different = strcmp(*code, "L");
             if (different) {
-                code = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-                ActNameConstructGrownSlots();
+                code = &g_typeColl[m_logicRecord->m_eventCode];
                 different = strcmp(*code, "M");
                 if (different) {
                     return;
@@ -3061,14 +2971,12 @@ void CGrunt::AdvanceMotion() {
             }
         }
 
-        CString* rec = ActNameLookupCallReport(m_logicRecord->m_eventCode);
-        ActNameConstructGrownSlots();
+        CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
         bool hit = (strcmp(*rec, "N") == 0);
         if (hit) {
             return;
         }
-        rec = ActNameLookupCallReport(m_logicRecord->m_eventCode);
-        ActNameConstructGrownSlots();
+        rec = &g_typeColl[m_logicRecord->m_eventCode];
         hit = (strcmp(*rec, "L") == 0);
         if (hit) {
             if (StepCompassMove() != 0) {
@@ -3077,8 +2985,7 @@ void CGrunt::AdvanceMotion() {
             m_toyDuration = 0;
             return;
         }
-        rec = ActNameLookupCallReport(m_logicRecord->m_eventCode);
-        ActNameConstructGrownSlots();
+        rec = &g_typeColl[m_logicRecord->m_eventCode];
         hit = (strcmp(*rec, "M") == 0);
         if (hit) {
             if (ClaimSwitchTile() != 0) {

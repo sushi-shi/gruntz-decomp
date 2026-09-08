@@ -119,8 +119,8 @@ i32 CWormhole::SerializeDispatch(
 
 RVA(0x00040050, 0x102)
 void CWormhole::FireActivation(i32 idx) {
-    if (*CActRegPool<CWormhole>::s_table.ResolveEntry(idx) != NULL) {
-        CActHandler fn = *CActRegPool<CWormhole>::s_table.ResolveEntry(idx);
+    if (CActRegPool<CWormhole>::s_table[idx] != NULL) {
+        CActHandler fn = CActRegPool<CWormhole>::s_table[idx];
         (this->*fn)();
     }
 }
@@ -128,7 +128,7 @@ void CWormhole::FireActivation(i32 idx) {
 RVA(0x000401b0, 0x18d)
 void RegisterWormholeLogic() {
     ACT_NAME_ID(idx, "A")
-    CActHandler* dslot = CActRegPool<CWormhole>::s_table.ResolveEntry(idx);
+    CActHandler* dslot = &CActRegPool<CWormhole>::s_table[idx];
     *dslot = static_cast<CActHandler>(&CWormhole::SpawnPartners);
 }
 
@@ -187,22 +187,20 @@ CGruntPuddle::CGruntPuddle(CGameObject* obj)
 
 RVA(0x00040750, 0x102)
 void CGruntPuddle::FireActivation(i32 id) {
-    CActHandler* e = (CActRegPool<CGruntPuddle>::s_table.ResolveEntry(id));
+    CActHandler* e = &CActRegPool<CGruntPuddle>::s_table[id];
     if ((*e) != NULL) {
-        CActHandler* e2 = (CActRegPool<CGruntPuddle>::s_table.ResolveEntry(id));
+        CActHandler* e2 = &CActRegPool<CGruntPuddle>::s_table[id];
         (this->*((*e2)))();
     }
 }
 
 RVA(0x000408b0, 0x2ac)
 void RegisterLogic() {
-    ACT_NAME_ID_CALL_REPORT(id, "A")
-    *CActRegPool<CGruntPuddle>::s_table.ResolveEntryCallReport(id) =
-        static_cast<CActHandler>(&CGruntPuddle::Idle);
+    ACT_NAME_ID(id, "A")
+    CActRegPool<CGruntPuddle>::s_table[id] = static_cast<CActHandler>(&CGruntPuddle::Idle);
 
     ACT_NAME_ID(id2, "B")
-    *CActRegPool<CGruntPuddle>::s_table.ResolveEntryCallReport(id2) =
-        static_cast<CActHandler>(&CGruntPuddle::Remove);
+    CActRegPool<CGruntPuddle>::s_table[id2] = static_cast<CActHandler>(&CGruntPuddle::Remove);
 }
 
 RVA(0x00040c10, 0x3)
@@ -392,22 +390,20 @@ i32 CTeleporter::SerializeDispatch(
 
 RVA(0x00041520, 0x102)
 void CTeleporter::FireActivation(i32 coord) {
-    CActHandler* e = (CActRegPool<CTeleporter>::s_table.ResolveEntry(coord));
+    CActHandler* e = &CActRegPool<CTeleporter>::s_table[coord];
     if ((*e) != NULL) {
-        CActHandler* e2 = (CActRegPool<CTeleporter>::s_table.ResolveEntry(coord));
+        CActHandler* e2 = &CActRegPool<CTeleporter>::s_table[coord];
         (this->*((*e2)))();
     }
 }
 
 RVA(0x00041680, 0x2ac)
 void CTeleporter_RegisterActs() {
-    ACT_NAME_ID_CALL_REPORT(id, "A")
-    *CActRegPool<CTeleporter>::s_table.ResolveEntryCallReport(id) =
-        static_cast<CActHandler>(&CTeleporter::Begin);
+    ACT_NAME_ID(id, "A")
+    CActRegPool<CTeleporter>::s_table[id] = static_cast<CActHandler>(&CTeleporter::Begin);
 
     ACT_NAME_ID(id2, "B")
-    *CActRegPool<CTeleporter>::s_table.ResolveEntryCallReport(id2) =
-        static_cast<CActHandler>(&CTeleporter::Update);
+    CActRegPool<CTeleporter>::s_table[id2] = static_cast<CActHandler>(&CTeleporter::Update);
 }
 
 RVA(0x000419e0, 0x81)

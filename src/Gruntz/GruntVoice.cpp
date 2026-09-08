@@ -74,7 +74,7 @@ CActReg CActRegPool<CVoiceTrigger>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 struct CString;
 
 static inline CActHandler* VActLookup(i32 coord) {
-    return (CActRegPool<CGruntVoice>::s_table.ResolveEntry(coord));
+    return &CActRegPool<CGruntVoice>::s_table[coord];
 }
 
 RVA(0x00013470, 0x4b)
@@ -214,20 +214,19 @@ void CGruntVoice::FireActivation(i32 actionId) {
 
 RVA(0x00119fa0, 0x2ac)
 void RegisterGruntVoiceActions() {
-    ACT_NAME_ID_CALL_REPORT(id, "A")
-    *CActRegPool<CGruntVoice>::s_table.ResolveEntryCallReport(id) =
-        static_cast<CActHandler>(&CGruntVoice::HideIndicator);
+    ACT_NAME_ID(id, "A")
+    CActRegPool<CGruntVoice>::s_table[id] = static_cast<CActHandler>(&CGruntVoice::HideIndicator);
 
     ACT_NAME_ID(id2, "B")
-    *CActRegPool<CGruntVoice>::s_table.ResolveEntryCallReport(id2) =
+    CActRegPool<CGruntVoice>::s_table[id2] =
         static_cast<CActHandler>(&CGruntVoice::UpdateIndicator);
 }
 
 RVA(0x0011a3a0, 0x102)
 void CVoiceTrigger::FireActivation(i32 actionId) {
-    CActHandler* e = (CActRegPool<CVoiceTrigger>::s_table.ResolveEntry(actionId));
+    CActHandler* e = &CActRegPool<CVoiceTrigger>::s_table[actionId];
     if ((*e) != NULL) {
-        CActHandler* e2 = (CActRegPool<CVoiceTrigger>::s_table.ResolveEntry(actionId));
+        CActHandler* e2 = &CActRegPool<CVoiceTrigger>::s_table[actionId];
         (this->*((*e2)))();
     }
 }
@@ -235,7 +234,7 @@ void CVoiceTrigger::FireActivation(i32 actionId) {
 RVA(0x0011a500, 0x18d)
 void CVoiceTrigger::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    *(CActRegPool<CVoiceTrigger>::s_table.ResolveEntry(id)) =
+    CActRegPool<CVoiceTrigger>::s_table[id] =
         static_cast<i32 (CUserLogic::*)()>(&CVoiceTrigger::Tick);
 }
 

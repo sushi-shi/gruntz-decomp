@@ -1442,7 +1442,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
         CoordPoolNode* fl = g_coordPool.m_freeHead;
         Coord* node = NULL;
         if (fl->m_next != NULL) {
-            node = &fl->m_coord;
+            node = &fl->m_value;
             g_coordPool.m_freeHead = fl->m_next;
         }
         ar->Read(node, 8);
@@ -1457,7 +1457,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
             CoordPoolNode* fl = g_coordPool.m_freeHead;
             Coord* node = NULL;
             if (fl->m_next != NULL) {
-                node = &fl->m_coord;
+                node = &fl->m_value;
                 g_coordPool.m_freeHead = fl->m_next;
             }
             ar->Read(node, 8);
@@ -2424,7 +2424,7 @@ i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
         CoordPoolNode* fhNode = g_coordPool.m_freeHead;
         Coord* dst = NULL;
         if (fhNode->m_next != NULL) {
-            dst = &fhNode->m_coord;
+            dst = &fhNode->m_value;
             g_coordPool.m_freeHead = fhNode->m_next;
         }
         *dst = *src;

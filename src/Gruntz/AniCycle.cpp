@@ -32,16 +32,16 @@ CAniCycle::CAniCycle(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE
 
 RVA(0x000aaf80, 0x102)
 void CAniCycle::FireActivation(i32 id) {
-    CActHandler* e = (CActRegPool<CAniCycle>::s_table.ResolveEntry(id));
+    CActHandler* e = &CActRegPool<CAniCycle>::s_table[id];
     if ((*e) != NULL) {
-        (this->*(*((CActRegPool<CAniCycle>::s_table.ResolveEntry(id)))))();
+        (this->*(CActRegPool<CAniCycle>::s_table[id]))();
     }
 }
 
 RVA(0x000ab0e0, 0x18d)
 void CAniCycle::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CAniCycle>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CAniCycle>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CAniCycle::AdvanceAnim);
 }
 

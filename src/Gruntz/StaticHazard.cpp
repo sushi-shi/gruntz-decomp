@@ -59,7 +59,7 @@ RVA_COMPGEN(0x00012b30, 0x44, ??1CStaticHazard@@UAE@XZ)
 struct CString;
 
 static inline CActHandler* HaznLookup(i32 coord) {
-    return (CActRegPool<CStaticHazard>::s_table.ResolveEntry(coord));
+    return &CActRegPool<CStaticHazard>::s_table[coord];
 }
 
 inline void DispatchUnhandledLogicEvent(CUserLogic* sub) {
@@ -163,12 +163,12 @@ void CStaticHazard::FireActivation(i32 coord) {
 
 RVA(0x000fbd50, 0x2ac)
 void CStaticHazard::RegisterActs() {
-    ACT_NAME_ID_CALL_REPORT(id, "A")
-    (*CActRegPool<CStaticHazard>::s_table.ResolveEntryCallReport(id)) =
+    ACT_NAME_ID(id, "A")
+    (CActRegPool<CStaticHazard>::s_table[id]) =
         static_cast<CActHandler>(&CStaticHazard::UpdateIdleState);
 
     ACT_NAME_ID(id2, "B")
-    (*CActRegPool<CStaticHazard>::s_table.ResolveEntryCallReport(id2)) =
+    (CActRegPool<CStaticHazard>::s_table[id2]) =
         static_cast<CActHandler>(&CStaticHazard::UpdateActiveState);
 }
 

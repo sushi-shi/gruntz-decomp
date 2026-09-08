@@ -113,21 +113,19 @@ CActReg CActRegPool<CSpotLight>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 RVA(0x000b1630, 0x102)
 void CSpotLight::FireActivation(i32 id) {
-    CActHandler* e = (CActRegPool<CSpotLight>::s_table.ResolveEntry(id));
+    CActHandler* e = &CActRegPool<CSpotLight>::s_table[id];
     if ((*e) != NULL) {
-        (this->*(*((CActRegPool<CSpotLight>::s_table.ResolveEntry(id)))))();
+        (this->*(CActRegPool<CSpotLight>::s_table[id]))();
     }
 }
 
 RVA(0x000b1790, 0x2ac)
 void RegisterSpotLightActions() {
-    ACT_NAME_ID_CALL_REPORT(id, "A")
-    *CActRegPool<CSpotLight>::s_table.ResolveEntryCallReport(id) =
-        static_cast<CActHandler>(&CSpotLight::Tick);
+    ACT_NAME_ID(id, "A")
+    CActRegPool<CSpotLight>::s_table[id] = static_cast<CActHandler>(&CSpotLight::Tick);
 
     ACT_NAME_ID(id2, "B")
-    *CActRegPool<CSpotLight>::s_table.ResolveEntryCallReport(id2) =
-        static_cast<CActHandler>(&CSpotLight::Update);
+    CActRegPool<CSpotLight>::s_table[id2] = static_cast<CActHandler>(&CSpotLight::Update);
 }
 
 // @early-stop

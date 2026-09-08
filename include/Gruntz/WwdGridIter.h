@@ -4,13 +4,14 @@
 #include <rva.h>
 
 #include <Ints.h>
-#include <Lith/BaseList.h>
+#include <Lith/TypedList.h>
 #include <Wap32/Object.h>
 
 #include <stddef.h>
 
 class CWwdGrid;
-struct BucketHead;
+struct WwdRegion;
+typedef CLTList<WwdRegion> BucketHead;
 struct WwdGridNode;
 
 struct WwdRect {

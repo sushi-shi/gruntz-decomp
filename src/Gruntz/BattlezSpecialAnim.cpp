@@ -47,7 +47,6 @@
 
 #include <limits.h>
 #include <math.h>
-#include <new>
 #include <stdlib.h>
 #include <string.h>
 
@@ -70,7 +69,6 @@ void CGrunt::RecycleCoords() {
     m_coordList.RemoveAll();
 }
 
-// @early-stop
 RVA(0x00034460, 0x3fc)
 i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
     if (unit == NULL) {
@@ -111,72 +109,29 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
     }
 
     CString* recs;
-    CString* slot;
     CString* sel;
-    i32 cnt;
     i32 ci;
 
-    recs = g_typeColl.ScratchResolve(unit->m_logicRecord->m_eventCode);
-    slot = g_typeColl.Slots();
-    cnt = g_typeColl.m_grown;
-    while (cnt-- != 0) {
-        if (slot != NULL) {
-            new (slot) CString();
-        }
-        slot++;
-    }
+    recs = &g_typeColl[unit->m_logicRecord->m_eventCode];
     eq = (strcmp(*recs, "P") == 0);
     if (eq) {
         return 0;
     }
 
-    recs = g_typeColl.ScratchResolve(unit->m_logicRecord->m_eventCode);
-    slot = g_typeColl.Slots();
-    cnt = g_typeColl.m_grown;
-    while (cnt-- != 0) {
-        if (slot != NULL) {
-            new (slot) CString();
-        }
-        slot++;
-    }
+    recs = &g_typeColl[unit->m_logicRecord->m_eventCode];
     eq = (strcmp(*recs, "J") == 0);
     if (eq) {
         return 0;
     }
 
-    recs = g_typeColl.ScratchResolve(unit->m_logicRecord->m_eventCode);
-    slot = g_typeColl.Slots();
-    cnt = g_typeColl.m_grown;
-    while (cnt-- != 0) {
-        if (slot != NULL) {
-            new (slot) CString();
-        }
-        slot++;
-    }
+    recs = &g_typeColl[unit->m_logicRecord->m_eventCode];
     eq = (strcmp(*recs, "C") == 0);
     if (eq) {
         goto fail;
     }
 
     ci = unit->m_logicRecord->EventCode();
-    g_typeColl.m_grown = 0;
-    if (ci >= g_typeColl.m_lo && ci <= g_typeColl.m_hi) {
-        sel = g_typeColl.Elem(ci);
-    } else if (g_typeColl.GrowTo(ci, 0) != NULL) {
-        sel = g_typeColl.Elem(ci);
-    } else {
-        g_typeColl.Report(g_errOutOfMem, 0xc);
-        sel = g_typeColl.Scratch();
-    }
-
-    slot = g_typeColl.Slots();
-    cnt = g_typeColl.m_grown;
-    while (cnt-- != 0) {
-        if (slot != NULL) {
-            new (slot) CString();
-        }
-        slot++;
-    }
+    sel = &g_typeColl[ci];
     eq = (strcmp(*sel, "R") == 0);
     return !eq;
 fail:

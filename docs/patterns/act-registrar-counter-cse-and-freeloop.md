@@ -1,150 +1,63 @@
-# Act-registrar create path: feed the name-slot lookup the GLOBAL counter, not the local id
-tags: cpp:local cpp:loop cpp:global | asm:mov asm:push asm:dec asm:test | topic:codegen-idiom
-symptoms: `?RegisterActs@C*@@SAXXZ` / `RegisterXLogic_*` / `RegisterType` stuck at exactly
-92.9130 / 91.1739 / 96.4783 / 79.0896%; diff shows `mov edi,[g_typeCounter]; push edi` where retail
-has `mov eax,[g_typeCounter]; push eax; mov edi,eax`; and/or `mov ebp,[m_grown]; test ebp,ebp` where
-retail has `mov ecx,eax; dec eax; test ecx,ecx; je; lea ebp,[eax+0x1]`
-confidence: 10/10
+# Action registration: counter lifetime and template expansion
 
-The ~55 activation registrars all share one hand-repeated find-or-create block. Two independent
-source slips kept the whole family off 100%; both were mis-filed as "register-pinning walls" in the
-per-function `@early-stop` notes. Neither is a wall.
+tags: cpp:local cpp:loop cpp:global cpp:template | asm:mov asm:push asm:dec asm:test | topic:codegen-idiom
 
-## 1. The counter is read TWICE from the global, and cl CSEs it
+The action registrar family exposes two independent facts: the integer ID's
+lifetime, and the compiler's expansion of a typed array accessor. The old
+hand-expanded implementation reached exact states, but its raw/typed/report
+variants did not establish separate authored APIs. The surviving `zDArray<T>`
+family now supplies the construction loop through `operator[]`.
 
-Retail, create path (`CLightFx::RegisterActs` @0x9d320, identical in every sibling):
+## Counter lifetime
 
-```asm
-call  <ActFindId>
-mov   edi,eax
-test  edi,edi
-jne   done
-mov   eax,ds:[g_typeCounter]   ; ONE load, CSE of two source reads
-mov   ecx,<&g_buteTree>
-push  eax                      ;   -> the ActInsertId argument
-push  <key>
-call  <ActInsertId>
-mov   esi,ds:[g_typeCounter]   ; reloaded (a call sits between)
-mov   eax,ds:[g_typeColl.m_lo]
-cmp   esi,eax
-mov   edi,esi                  ;   -> id, must survive the next call => callee-saved
-mov   dword ptr ds:[g_typeColl.m_grown],0
-```
-
-The tell is the **copy**: cl materialises the value in a scratch register for the push and then
-copies it into the callee-saved home of `id`. That only happens when the *name-slot lookup argument*
-is another read of the global — the CSE has two consumers with different lifetimes. Write it as
+In the common create path, retail copies a loaded global counter into a
+callee-saved ID while the value also feeds the name lookup. The established
+source order is insertion, ID capture, name assignment, then increment:
 
 ```cpp
-ActInsertId("A", g_typeCounter);              // arg = the GLOBAL
-id = g_typeCounter;                           // and so is the id latch
-CString* slot = ActNameLookup(g_typeCounter);  // <- the GLOBAL, NOT `id`
+ActInsertId(key, g_typeCounter);
+id = g_typeCounter;
+g_typeColl[g_typeCounter] = key;
+++g_typeCounter;
 ```
 
-Passing `id` instead gives the lookup a single consumer, so cl coalesces the load straight into the
-callee-saved register (`mov edi,[g_typeCounter]; push edi`) and drops the copy. Costs ~2.7% per
-block — ×6 blocks in `RegisterWarlordActions` it was the entire residual.
+Earlier controlled builds of the hand-expanded body showed that replacing
+the lookup's global argument with `id` could remove the scratch-register to
+callee-saved-register copy. That observation describes two-consumer CSE in
+that source family; it is not a blanket instruction to replace every local
+argument with a global. The final registration block in `RegisterGruntActions`
+uses the captured ID. Both source expressions remain meaningful after the
+typed accessor restoration.
 
-Two further slips in the same family, both the same bug wearing a different shirt:
-- `id = g_typeCounter; ActInsertId(key, id);` — the argument must be the global, so the local's
-  live range starts *after* the load, not at it. Reorder to insert-then-latch.
-- an extra `i32 key = g_typeCounter; id = key; Lookup(key);` scratch local — collapse it.
-- the latch **missing entirely** (`ActInsertId(...); CString* slot = Lookup(g_typeCounter);` with no
-  `id = g_typeCounter`). That is also a live logic bug: the create path registered the handler at
-  slot 0. Retail's `mov edi,esi` is the missing line.
+## The repeated loop constructs array elements
 
-## 2. The scratch-slot free loop is POST-decrement
+Retail calls `CString::CString`, never `CString::~CString`, on slots newly
+allocated by `_zdvec::GrowTo`. The original audit checked 54 sites across 35
+functions. Its initial destructor interpretation was wrong despite exact
+scores under the older comparison pipeline. Ordered referents are required;
+that historical failure is not the current strict-relocation contract.
 
-Retail runs the `m_grown` fixup as `while (n-- != 0)`, i.e. load, pre-decrement, test the OLD value,
-recover the trip count with `lea`:
-
-```asm
-mov   ebx,ds:[g_typeColl.m_alloc]
-mov   eax,ds:[g_typeColl.m_grown]
-mov   ecx,eax
-dec   eax
-test  ecx,ecx
-je    skip
-lea   ebp,[eax+0x1]
-```
-
-The peeled spelling `if (n != 0) { do { … } while (--n); }` emits a plain `test ebp,ebp; je` and
-misses the `dec`/`lea` pair. Write the loop top-tested with the post-decrement:
+The surviving primary owns the post-decrement construction loop:
 
 ```cpp
-i32 n = g_typeColl.m_grown;
-CString* list = ActNameSlots();
-while (n-- != 0) {
-    if (list != 0) {
-        list->CString::CString();
-    }
-    list++;
+T* rv = AsElem(IndexToPtr(i));
+T* p = AsElem(m_alloc);
+for (i32 j = m_grown; j--; ++p) {
+    T* t = new (p) T;
 }
+return *rv;
 ```
 
-**The loop CONSTRUCTS. It is not a "free loop" - that name is a misreading.** It is the tail of
-`_zdvec::IndexToPtr` (see
-[zdvec-indextoptr-is-zvec-plus-ctor-loop.md](zdvec-indextoptr-is-zvec-plus-ctor-loop.md)), which
-default-constructs the slots `GrowTo` just `memset`-zeroed. Every retail body in this family calls
-`??0CString@@QAE@XZ` @0x1b9b93 and **none** calls `??1CString@@QAE@XZ` @0x1b9cde - verified by
-scanning each registrar's `call rel32` targets (2026-08-08, 54 sites / 35 functions).
+The old recommendation to spell `p->CString::CString()` in registrars is
+withdrawn. Callers now use the typed accessor. The two emitted functions at
+0x312a0 and 0x310f0 are respectively `_zdvec::IndexToPtr` and
+`zDArray<CString>::operator[]`. A call to the first followed by a construction
+loop is a nested inline cut; a call to the second retains the outer boundary.
+It does not establish that developers deliberately chose two indexing APIs.
 
-**And objdiff cannot see the difference, so 42 of them were EXACT while wrong.** The base obj
-carried `U ??1CString@@QAE@XZ` against the delinked target's `U ??0CString@@QAE@XZ` and
-`?RegisterActs@CLightFx@@SAXXZ` still scored 100.00%. Correcting all 54 sites moved overall fuzzy
-by 0.00% and the exact count by +1 - byte-neutral, as the CRT carve-out makes it. It is still a
-live crash in a candidate link: MFC's `~CString` computes `(CStringData*)m_pchData - 1` and frees
-it, and on a freshly zeroed slot that is `free(0xfffffff0)`. A textbook
-[hundred-percent-can-still-be-wrong] case: the score is blind here, so the *retail call target* is
-the only oracle. `p->CString::CString()` and `new (p) CString()` are byte-identical (measured);
-prefer whichever the file already includes headers for.
-
-(Same idiom as [`test-old-value-decrement-loop-while-postdec.md`](test-old-value-decrement-loop-while-postdec.md);
-this file records where the family lives and that it is the *registrar* archetype.)
-
-## 3. Not every block in a registrar uses the SAME accessor — check the last one
-
-`RegisterActs_644af0` (0x5be30, 19 keys) still sat at 97.49% after §1, with one block's worth
-of residual. The keys are *not* interchangeable: `g_typeColl` has **two** index accessors and the
-devs used both in the same function.
-
-| retail call | via ILT | what it does |
-|---|---|---|
-| `_zvec::IndexToPtr` @0x312a0 | 0x3864 | the plain base accessor; the caller open-codes the `m_grown` free loop after it |
-| `_zdvec::IndexToPtr` @0x310f0 | 0x437c | the DERIVED accessor — the same index math with the free loop **already inlined in its body** (@0x31156) |
-
-Eighteen blocks call the base form and open-code the loop. The nineteenth calls the derived form
-and has **no loop at the site at all**:
-
-```asm
-call  <ActInsertId>
-mov   esi,ds:[g_typeCounter]   ; id  -- ONE consumer, so cl loads straight into callee-saved esi
-push  <key>                    ; the operator= arg, pushed early
-push  esi                      ; the accessor arg = `id`, NOT the global
-mov   ecx,<&g_typeColl>
-call  0x437c                   ; _zdvec::IndexToPtr
-mov   ecx,eax
-call  <CString::operator=>
-inc   ds:[g_typeCounter]
-```
-
-Note the argument flips back to `id` here — §1's "always pass the global" is not a blanket rule,
-it is a *readout of the consumer count*. `push eax; mov edi,eax` (materialise + copy) means two
-consumers ⇒ pass the global; `mov esi,[g]; push esi` (load straight into a callee-saved home)
-means one ⇒ pass the local. Read the tell, do not apply the rule blindly.
-
-Give the odd block its own macro rather than open-coding it, and factor the shared
-`*pool.Resolve(id) = reinterpret_cast<CActHandler>(handler)` tail into a third macro both call —
-otherwise the duplicated PMF reinterpret trips the cast ratchet.
-
-**97.49% → 100.00% EXACT.**
-
-## Result
-
-Applied mechanically across the family (31 + 13 + 7 + 11 + 6 sites): **2838 → 2880 exact**
-(+42 functions), overall fuzzy 75.74% → 75.93%, zero regressions. Every one of them carried an
-`@early-stop` claiming a "register-pinning / slot-vs-id callee-saved coloring wall". Re-audit an
-`@early-stop` before believing it.
-
-related: test-old-value-decrement-loop-while-postdec.md, zero-register-pinning.md,
-predecrement-guard-lea-recover-count.md
+Both specialized indexers remain exact after replacing caller expansions.
+The array-only follow-up takes `RegisterGruntActions` from 5.06812% to
+97.792915% without per-site raw/typed implementations. Caller residues remain
+open and all historical maxima are preserved. The controlled mechanism and
+negative lifetime controls are documented in
+[typed container use](typed-container-use-replaces-manual-compiler-methods.md).

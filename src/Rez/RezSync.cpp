@@ -21,7 +21,6 @@
 #include <Gruntz/ErrorStringId.h>
 #include <Gruntz/FaderMgr.h>
 #include <Gruntz/FaderSettings.h>
-#include <Gruntz/FixedPtrArray32.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/Fonts.h>
 #include <Gruntz/FreeNodePool.h>
@@ -35,6 +34,7 @@
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
+#include <Gruntz/InputDeviceGroup.h>
 #include <Gruntz/InputDeviceSel.h>
 #include <Gruntz/InputState.h>
 #include <Gruntz/LightFxMgr.h>

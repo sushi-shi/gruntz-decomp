@@ -43,15 +43,15 @@ CGruntPowerupSprite::CGruntPowerupSprite(CGameObject* obj)
 
 RVA(0x00080020, 0x102)
 void CGruntPowerupSprite::FireActivation(i32 id) {
-    if ((*((CActRegPool<CGruntPowerupSprite>::s_table.ResolveEntry(id)))) != NULL) {
-        (this->*(*((CActRegPool<CGruntPowerupSprite>::s_table.ResolveEntry(id)))))();
+    if ((CActRegPool<CGruntPowerupSprite>::s_table[id]) != NULL) {
+        (this->*(CActRegPool<CGruntPowerupSprite>::s_table[id]))();
     }
 }
 
 RVA(0x00080180, 0x18d)
 void CGruntPowerupSprite::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CGruntPowerupSprite>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CGruntPowerupSprite>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CGruntPowerupSprite::Update);
 }
 

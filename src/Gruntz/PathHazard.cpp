@@ -120,20 +120,19 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
 
 RVA(0x000b3b60, 0x102)
 void CPathHazard::FireActivation(i32 id) {
-    CActHandler* e = (CActRegPool<CPathHazard>::s_table.ResolveEntry(id));
+    CActHandler* e = &CActRegPool<CPathHazard>::s_table[id];
     if ((*e) != NULL) {
-        (this->*(*((CActRegPool<CPathHazard>::s_table.ResolveEntry(id)))))();
+        (this->*(CActRegPool<CPathHazard>::s_table[id]))();
     }
 }
 
 RVA(0x000b3cc0, 0x2ac)
 void RegisterPathHazardActions() {
-    ACT_NAME_ID_CALL_REPORT(id, "A")
-    *CActRegPool<CPathHazard>::s_table.ResolveEntryCallReport(id) =
-        static_cast<CActHandler>(&CPathHazard::ForwardTick);
+    ACT_NAME_ID(id, "A")
+    CActRegPool<CPathHazard>::s_table[id] = static_cast<CActHandler>(&CPathHazard::ForwardTick);
 
     ACT_NAME_ID(id2, "B")
-    *CActRegPool<CPathHazard>::s_table.ResolveEntryCallReport(id2) =
+    CActRegPool<CPathHazard>::s_table[id2] =
         static_cast<CActHandler>(&CPathHazard::ForwardSiblingTick);
 }
 

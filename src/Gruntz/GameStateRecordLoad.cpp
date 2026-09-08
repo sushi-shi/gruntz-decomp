@@ -242,7 +242,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
         CoordPoolNode* nf = slot->m_next;
         Coord* item = NULL;
         if (nf != NULL) {
-            item = &slot->m_coord;
+            item = &slot->m_value;
             g_coordPool.m_freeHead = nf;
         }
         ar->Read(item, 8);

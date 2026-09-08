@@ -475,33 +475,33 @@ i32 CInGameIcon::HandleInput() {
 
 RVA(0x00097880, 0x102)
 void CInGameIcon::FireActivation(i32 id) {
-    if (*CActRegPool<CInGameIcon>::s_table.ResolveEntry(id) != NULL) {
-        (this->*(*CActRegPool<CInGameIcon>::s_table.ResolveEntry(id)))();
+    if (CActRegPool<CInGameIcon>::s_table[id] != NULL) {
+        (this->*(CActRegPool<CInGameIcon>::s_table[id]))();
     }
 }
 
 RVA(0x000979e0, 0x2ac)
 void RegisterIconActions() {
-    ACT_NAME_ID_CALL_REPORT(idxA, "A")
-    CActHandler* dslotA = CActRegPool<CInGameIcon>::s_table.ResolveEntryCallReport(idxA);
+    ACT_NAME_ID(idxA, "A")
+    CActHandler* dslotA = &CActRegPool<CInGameIcon>::s_table[idxA];
     *dslotA = static_cast<CActHandler>(&CInGameIcon::PeekCycle);
 
     ACT_NAME_ID(idxB, "B")
-    CActHandler* dslotB = CActRegPool<CInGameIcon>::s_table.ResolveEntryCallReport(idxB);
+    CActHandler* dslotB = &CActRegPool<CInGameIcon>::s_table[idxB];
     *dslotB = static_cast<CActHandler>(&CInGameIcon::Reposition);
 }
 
 RVA(0x00097de0, 0x102)
 void CToyPeek::FireActivation(i32 id) {
-    if (*CActRegPool<CToyPeek>::s_table.ResolveEntry(id) != NULL) {
-        (this->*(*CActRegPool<CToyPeek>::s_table.ResolveEntry(id)))();
+    if (CActRegPool<CToyPeek>::s_table[id] != NULL) {
+        (this->*(CActRegPool<CToyPeek>::s_table[id]))();
     }
 }
 
 RVA(0x00097f40, 0x18d)
 void RegisterIconState() {
     ACT_NAME_ID(idx, "A")
-    CActHandler* dslot = CActRegPool<CToyPeek>::s_table.ResolveEntry(idx);
+    CActHandler* dslot = &CActRegPool<CToyPeek>::s_table[idx];
     *dslot = static_cast<CActHandler>(&CInGameIcon::RefreshCell);
 }
 
@@ -948,8 +948,8 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
 
 RVA(0x00099460, 0x102)
 void CInGameText::FireActivation(i32 idx) {
-    if (*CActRegPool<CInGameText>::s_table.ResolveEntry(idx) != NULL) {
-        CActHandler fn = *CActRegPool<CInGameText>::s_table.ResolveEntry(idx);
+    if (CActRegPool<CInGameText>::s_table[idx] != NULL) {
+        CActHandler fn = CActRegPool<CInGameText>::s_table[idx];
         (this->*fn)();
     }
 }
@@ -957,7 +957,7 @@ void CInGameText::FireActivation(i32 idx) {
 RVA(0x000995c0, 0x18d)
 void RegisterTextLogic() {
     ACT_NAME_ID(idx, "A")
-    CActHandler* dslot = CActRegPool<CInGameText>::s_table.ResolveEntry(idx);
+    CActHandler* dslot = &CActRegPool<CInGameText>::s_table[idx];
     *dslot = static_cast<CActHandler>(&CInGameText::Update);
 }
 
@@ -981,16 +981,8 @@ i32 CInGameText::Update() {
             return 0;
         }
 
-        CString* node = g_typeColl.ScratchResolve(found->m_logicRecord->EventCode());
+        CString* node = &g_typeColl[found->m_logicRecord->EventCode()];
 
-        CString* p = g_typeColl.Slots();
-        i32 n = g_typeColl.m_grown;
-        while (n-- != 0) {
-            if (p != NULL) {
-                p->CString::CString();
-            }
-            p++;
-        }
         bool eq = (strcmp(*node, "K") == 0);
         if (eq) {
             return 0;

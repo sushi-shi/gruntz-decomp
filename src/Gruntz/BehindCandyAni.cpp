@@ -38,16 +38,16 @@ CBehindCandyAni::CBehindCandyAni(CGameObject* obj)
 
 RVA(0x000ad850, 0x102)
 void CBehindCandyAni::FireActivation(i32 id) {
-    CActHandler* e = (CActRegPool<CBehindCandyAni>::s_table.ResolveEntry(id));
+    CActHandler* e = &CActRegPool<CBehindCandyAni>::s_table[id];
     if ((*e) != NULL) {
-        (this->*(*((CActRegPool<CBehindCandyAni>::s_table.ResolveEntry(id)))))();
+        (this->*(CActRegPool<CBehindCandyAni>::s_table[id]))();
     }
 }
 
 RVA(0x000ad9b0, 0x18d)
 void CBehindCandyAni::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CBehindCandyAni>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CBehindCandyAni>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CBehindCandyAni::AdvanceAnim);
 }
 

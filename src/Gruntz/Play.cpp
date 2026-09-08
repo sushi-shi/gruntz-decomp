@@ -2153,7 +2153,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 CoordPoolNode* head = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
                 CoordPoolNode* nx = head->m_next;
                 if (nx != NULL) {
-                    slot = &head->m_coord;
+                    slot = &head->m_value;
                     g_coordPool.m_freeHead = nx;
                 } else {
                     slot = NULL;
@@ -5543,7 +5543,7 @@ i32 CPlay::ValidateLevelTiles() {
                 CoordPoolNode* cell = g_coordPool.m_freeHead;
                 Coord* slot = NULL;
                 if (cell->m_next != NULL) {
-                    slot = &cell->m_coord;
+                    slot = &cell->m_value;
                     g_coordPool.m_freeHead = cell->m_next;
                 }
                 slot->m_x = (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
@@ -5635,7 +5635,7 @@ i32 CPlay::ValidateLevelTiles() {
                 CoordPoolNode* cell = g_coordPool.m_freeHead;
                 Coord* slot = NULL;
                 if (cell->m_next != NULL) {
-                    slot = &cell->m_coord;
+                    slot = &cell->m_value;
                     g_coordPool.m_freeHead = cell->m_next;
                 }
                 slot->m_x = obj->m_screenX >> TILE_SHIFT_PX;
@@ -6800,7 +6800,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
             CoordPoolNode* head = g_coordPool.m_freeHead;
             CoordPoolNode* next = head->m_next;
             if (next) {
-                node = &head->m_coord;
+                node = &head->m_value;
                 g_coordPool.m_freeHead = next;
             }
             ar->Read(node, sizeof(*node));
@@ -6836,7 +6836,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
                 CoordPoolNode* head = g_coordPool.m_freeHead;
                 CoordPoolNode* next = head->m_next;
                 if (next) {
-                    node = &head->m_coord;
+                    node = &head->m_value;
                     g_coordPool.m_freeHead = next;
                 }
                 ar->Read(node, sizeof(*node));
@@ -6959,7 +6959,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
             CoordPoolNode* head = g_coordPool.m_freeHead;
             CoordPoolNode* next = head->m_next;
             if (next) {
-                node = &head->m_coord;
+                node = &head->m_value;
                 g_coordPool.m_freeHead = next;
             }
             ar->Read(node, 8);

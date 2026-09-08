@@ -41,15 +41,15 @@ CGruntSelectedSprite::CGruntSelectedSprite(CGameObject* obj)
 
 RVA(0x0007e660, 0x102)
 void CGruntSelectedSprite::FireActivation(i32 id) {
-    if ((*((CActRegPool<CGruntSelectedSprite>::s_table.ResolveEntry(id)))) != NULL) {
-        (this->*(*((CActRegPool<CGruntSelectedSprite>::s_table.ResolveEntry(id)))))();
+    if ((CActRegPool<CGruntSelectedSprite>::s_table[id]) != NULL) {
+        (this->*(CActRegPool<CGruntSelectedSprite>::s_table[id]))();
     }
 }
 
 RVA(0x0007e7c0, 0x18d)
 void CGruntSelectedSprite::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CGruntSelectedSprite>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CGruntSelectedSprite>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CGruntSelectedSprite::Update);
 }
 

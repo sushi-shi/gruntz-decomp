@@ -880,40 +880,13 @@ i32 DispatchLogicBump(CGameObject* obj) {
     return obj->m_logicRecord->m_userLogic->RecordFrameTick();
 }
 
-static inline CString* TypeResolve(i32 key) {
-    g_typeColl.m_grown = 0;
-    if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
-        return g_typeColl.Elem(key);
-    }
-    if ((static_cast<_zdvec*>(&g_typeColl))->GrowTo(key, 0) != NULL) {
-        return g_typeColl.Elem(key);
-    }
-    char* msg = g_errOutOfMem;
-    g_retAddrBreadcrumb = GetRetAddr();
-    g_typeColl.m_errSink->Set(&g_typeColl, msg, 0xc);
-    return g_typeColl.Scratch();
-}
-
-static inline void FreeNodes() {
-    CString* nodes = g_typeColl.Slots();
-    i32 cnt = g_typeColl.m_grown;
-    while (cnt-- != 0) {
-        if (nodes != NULL) {
-            nodes->CString::CString();
-        }
-        ++nodes;
-    }
-}
-
 RVA(0x0016e4f0, 0x19b)
 i32 DispatchLogicEvent(CUserLogic* ar) {
-    CString* entry = TypeResolve(ar->m_logicRecord->EventCode());
-    FreeNodes();
+    CString* entry = &g_typeColl[ar->m_logicRecord->EventCode()];
     ar->StepBehavior(entry->GetBuffer(0));
     ar->FireActivation(ar->m_logicRecord->EventCode());
 
-    entry = TypeResolve(ar->m_logicRecord->EventCode());
-    FreeNodes();
+    entry = &g_typeColl[ar->m_logicRecord->EventCode()];
     ar->FinalizeStep(entry->GetBuffer(0));
     return 1;
 }

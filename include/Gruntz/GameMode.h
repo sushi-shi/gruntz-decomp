@@ -9,10 +9,10 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/BootySeqPhase.h>
 #include <Gruntz/BootyStatRow.h>
-#include <Gruntz/FixedPtrArray32.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameStateId.h>
 #include <Gruntz/GlyphStringDraw.h>
+#include <Gruntz/InputDeviceGroup.h>
 #include <Gruntz/MenuTree.h>
 #include <Gruntz/State.h>
 #include <Gruntz/View.h>

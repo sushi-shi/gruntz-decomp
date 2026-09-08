@@ -8,13 +8,13 @@
 
 #include <stddef.h>
 
-struct CoordPoolNode {
-    CoordPoolNode* m_next;
-    Coord m_coord;
-};
-
-class FreeNodePool {
+template<class T> class FreeNodePool {
 public:
+    struct Node {
+        Node* m_next;
+        T m_value;
+    };
+
     FreeNodePool() : m_block(NULL), m_freeHead(NULL), m_count(0), m_linkOffset(0) {}
 
     ~FreeNodePool() {
@@ -28,13 +28,13 @@ public:
     }
 
     bool Init(i32 count, i32 linkOffset) {
-        m_block = new CoordPoolNode[count];
+        m_block = new Node[count];
         if (m_block == NULL) {
             return false;
         }
 
         m_count = count;
-        CoordPoolNode* node = m_block;
+        Node* node = m_block;
         u32 i = 0;
         do {
             node->m_next = node + 1;
@@ -49,18 +49,25 @@ public:
 
     void Push(void* p);
 
-    CoordPoolNode* NodeOf(void* payload) {
+    Node* NodeOf(void* payload) {
 
         // Language-forced container-of adjustment; a union spelling changes codegen.
-        return reinterpret_cast<CoordPoolNode*>(static_cast<char*>(payload) - m_linkOffset);
+        return reinterpret_cast<Node*>(static_cast<char*>(payload) - m_linkOffset);
     }
 
-    CoordPoolNode* m_block;
-    CoordPoolNode* m_freeHead;
+    Node* m_block;
+    Node* m_freeHead;
     i32 m_count;
     i32 m_linkOffset;
 };
 
-extern FreeNodePool g_coordPool;
+template<class T> void FreeNodePool<T>::Push(void* p) {
+    Node* node = NodeOf(p);
+    node->m_next = m_freeHead;
+    m_freeHead = node;
+}
+
+typedef FreeNodePool<Coord>::Node CoordPoolNode;
+extern FreeNodePool<Coord> g_coordPool;
 
 #endif // GRUNTZ_FREENODEPOOL_H

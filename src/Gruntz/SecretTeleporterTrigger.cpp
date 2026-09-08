@@ -61,7 +61,7 @@ template<> DATA(0x00244598)
 CActReg CActRegPool<CSecretLevelTrigger>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 static inline CActHandler* ActLookup(i32 coord) {
-    return (CActRegPool<CSecretTeleporterTrigger>::s_table.ResolveEntry(coord));
+    return &CActRegPool<CSecretTeleporterTrigger>::s_table[coord];
 }
 
 RVA(0x00010a10, 0x47)
@@ -145,9 +145,9 @@ CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj)
 
 RVA(0x00042760, 0x102)
 void CSecretLevelTrigger::FireActivation(i32 coord) {
-    CActHandler* e = (CActRegPool<CSecretLevelTrigger>::s_table.ResolveEntry(coord));
+    CActHandler* e = &CActRegPool<CSecretLevelTrigger>::s_table[coord];
     if ((*e) != NULL) {
-        CActHandler* e2 = (CActRegPool<CSecretLevelTrigger>::s_table.ResolveEntry(coord));
+        CActHandler* e2 = &CActRegPool<CSecretLevelTrigger>::s_table[coord];
         (this->*((*e2)))();
     }
 }
@@ -155,7 +155,7 @@ void CSecretLevelTrigger::FireActivation(i32 coord) {
 RVA(0x000428c0, 0x18d)
 void CSecretLevelTrigger::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CSecretLevelTrigger>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CSecretLevelTrigger>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CSecretLevelTrigger::Tick);
 }
 

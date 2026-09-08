@@ -56,9 +56,9 @@ CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj)
 
 RVA(0x000ab5b0, 0x102)
 void CSingleFrameMessage::FireActivation(i32 id) {
-    CActHandler* e = (CActRegPool<CSingleFrameMessage>::s_table.ResolveEntry(id));
+    CActHandler* e = &CActRegPool<CSingleFrameMessage>::s_table[id];
     if ((*e) != NULL) {
-        (this->*(*((CActRegPool<CSingleFrameMessage>::s_table.ResolveEntry(id)))))();
+        (this->*(CActRegPool<CSingleFrameMessage>::s_table[id]))();
     }
 }
 
@@ -67,7 +67,7 @@ void CSingleFrameMessage::FireActivation(i32 id) {
 RVA(0x000ab710, 0x18d)
 void CSingleFrameMessage::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CSingleFrameMessage>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CSingleFrameMessage>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CSingleFrameMessage::AdvanceAnim);
 }
 

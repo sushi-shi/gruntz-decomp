@@ -1306,8 +1306,7 @@ tail:
     }
 
     {
-        CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-        ActNameConstructGrownSlots();
+        CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
         eq = (strcmp(*rec, "F") == 0);
         if (eq) {
             if (m_entranceCommitted != false) {
@@ -1317,8 +1316,7 @@ tail:
     }
     m_entranceActive = true;
     {
-        CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-        ActNameConstructGrownSlots();
+        CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
         ne = (strcmp(*rec, "O") != 0);
         if (ne) {
             SET_ANIMATION_ACT("H");

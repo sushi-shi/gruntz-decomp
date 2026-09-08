@@ -45,15 +45,15 @@ CGruntToySprite::CGruntToySprite(CGameObject* obj)
 
 RVA(0x0007f5c0, 0x102)
 void CGruntToySprite::FireActivation(i32 id) {
-    if ((*((CActRegPool<CGruntToySprite>::s_table.ResolveEntry(id)))) != NULL) {
-        (this->*(*((CActRegPool<CGruntToySprite>::s_table.ResolveEntry(id)))))();
+    if ((CActRegPool<CGruntToySprite>::s_table[id]) != NULL) {
+        (this->*(CActRegPool<CGruntToySprite>::s_table[id]))();
     }
 }
 
 RVA(0x0007f720, 0x18d)
 void CGruntToySprite::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CGruntToySprite>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CGruntToySprite>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CGruntToySprite::Update);
 }
 

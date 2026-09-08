@@ -142,8 +142,7 @@ i32 CGrunt::RunEntranceMove() {
     }
 
     m_entranceActive = false;
-    CString* previousActName = g_typeColl.ScratchResolve(m_previousAnimationActId);
-    ActNameConstructGrownSlots();
+    CString* previousActName = &g_typeColl[m_previousAnimationActId];
     const char* previousActNameText = *previousActName;
     bool previousActWasD;
     previousActWasD = (strcmp(previousActNameText, DATA_COMPGEN(0x0020cca4, "D")) == 0);
@@ -593,8 +592,7 @@ i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
             LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgIdle5);
     }
 
-    CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-    ActNameConstructGrownSlots();
+    CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
     bool eqWalk = (strcmp(*rec, "D") == 0);
     if (eqWalk) {
         SwitchAnimation(m_poseWalk);
@@ -606,8 +604,7 @@ i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
         return 1;
     }
 
-    CString* rec2 = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-    ActNameConstructGrownSlots();
+    CString* rec2 = &g_typeColl[m_logicRecord->m_eventCode];
     bool eqIdle = (strcmp(*rec2, "A") == 0);
     if (eqIdle) {
         SwitchAnimation(AT(m_poseIdle, GRUNT_IDLE1));
@@ -759,8 +756,7 @@ i32 CGrunt::StepArrivalCommit() {
         goto finalize;
     }
     {
-        const char* prev = *g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-        ActNameConstructGrownSlots();
+        const char* prev = g_typeColl[m_logicRecord->m_eventCode];
         eq = (strcmp(prev, "M") == 0);
         if (eq) {
             m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);
