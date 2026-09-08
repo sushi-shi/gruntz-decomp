@@ -509,8 +509,7 @@ CDDSurface* CDDrawDeviceManager::LoadSurfaceFromPid(
 
 RVA_COMPGEN(0x00142340, 0x1e, ??_GCFileImageSurface@@UAEPAXI@Z)
 
-RVA(0x00142360, 0x53)
-CFileImageSurface::~CFileImageSurface() {}
+RVA_COMPGEN(0x00142360, 0x53, ??1CFileImageSurface@@UAE@XZ)
 
 RVA(0x001423c0, 0xd2)
 CDDSurface* CDDrawDeviceManager::CreateKeyedSurface(
@@ -600,8 +599,7 @@ CDDSurface* CDDrawDeviceManager::CreateOverlaySurface(i32 width, i32 height, i32
 }
 
 RVA_COMPGEN(0x00142800, 0x1e, ??_GCDDrawOverlaySurface@@UAEPAXI@Z)
-RVA(0x00142820, 0x53)
-CDDrawOverlaySurface::~CDDrawOverlaySurface() {}
+RVA_COMPGEN(0x00142820, 0x53, ??1CDDrawOverlaySurface@@UAE@XZ)
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
@@ -632,8 +630,7 @@ CDDrawDeviceManager::CreatePrimarySurface(i32 caps, i32 descFlags, i32 backBuffe
 }
 
 RVA_COMPGEN(0x00142a20, 0x1e, ??_GCDDrawPrimarySurface@@UAEPAXI@Z)
-RVA(0x00142a40, 0x53)
-CDDrawPrimarySurface::~CDDrawPrimarySurface() {}
+RVA_COMPGEN(0x00142a40, 0x53, ??1CDDrawPrimarySurface@@UAE@XZ)
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
@@ -687,8 +684,7 @@ CDDSurface* CDDrawDeviceManager::CreateZBufferSurface(
 }
 
 RVA_COMPGEN(0x00142d20, 0x1e, ??_GCDDrawZBufferSurface@@UAEPAXI@Z)
-RVA(0x00142d40, 0x53)
-CDDrawZBufferSurface::~CDDrawZBufferSurface() {}
+RVA_COMPGEN(0x00142d40, 0x53, ??1CDDrawZBufferSurface@@UAE@XZ)
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.

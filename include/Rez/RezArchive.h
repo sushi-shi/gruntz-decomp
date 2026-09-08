@@ -154,9 +154,6 @@ private:
     };
 
     struct CRezItmChunkList : public CLTBaseList {
-        RVA(0x0013abb0, 0x1)
-        ~CRezItmChunkList() {}
-
         CRezItmChunk* GetFirst() {
             return static_cast<CRezItmChunk*>(CLTBaseList::GetFirst());
         }
