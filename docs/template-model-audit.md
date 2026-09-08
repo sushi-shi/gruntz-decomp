@@ -165,8 +165,20 @@ at 0x16e7a0 match retail byte-for-byte after resolving every ordered relocation.
 
 The aggregate hides large local changes: `RegisterGruntActions` moves from
 100% to 8.303815%, `RegisterWarlordActions` from 100% to 23.621399%, and
-`StepRowUnits` from 83.512184% to 41.490196%. The newly visible bodies alter
-inlining; these caller residues are open, not certified source closures.
+`StepRowUnits` from 83.512184% to 41.490196%. These caller residues are open,
+not certified source closures.
+
+The registrar's direct cause is specifically the newly header-visible ordinary
+`_zdvec::IndexToPtr`, not the separate unmarked-template compiler exception.
+It loses 20 of retail's 35 accessor calls and gains 20 calls each to `GrowTo`,
+`GetRetAddr`, and `CVariantSlot::Set`. The raw accessor expands bounds, growth,
+and error handling into the repeated registration sites. The registrar grows
+from retail's 0x9e5 bytes / 113 calls / 73 branches to 0x12eb bytes / 153 calls /
+173 branches. Registers already differ at +0x13; the first structural change is
+retail's accessor-call block at +0x7a becoming the expanded block at base +0x82.
+The ordered referent comparison identifies 20 replacement regions with that
+same helper topology. This establishes the codegen cause of the drop without
+rejecting the recovered container identity or certifying the caller factoring.
 The stale bounded review for `RouteToNearbyEnemy` is reopened because its
 call/relocation census changes from 26/37 to 33/67. Historical MAX is retained.
 
@@ -195,3 +207,34 @@ selftests pass; a standalone VC5 compile verifies both headers and the base/
 derived sizes and offsets. The optional whole-lineage validator also reports
 30 pre-existing metadata findings, outside the three new adoption rows; these
 are not hidden by the successful build gates.
+
+## Reassessment of the ten remaining records
+
+The hypothesis that all ten have a template origin remains open. The audit's
+unresolved dispositions do not certify the current names as authored concrete
+classes. Exact original names are not a prerequisite for reconstruction:
+independent layout, ownership, typed-use, and complete-family agreement can
+establish an instantiation. The remaining issue is selecting a model that those
+facts actually distinguish from its alternatives.
+
+| Records | Positive evidence | What the follow-up establishes |
+| --- | --- | --- |
+| `CButeTree` | Complete fieldless `zPTree` wrapper and teardown-adapter family strongly support `zSymTab<T>`. | A real VC5 control using the existing shared header instantiates `i32`, `char`, and `void*`. All three have the current wrapper's complete size, emit a one-byte `ret` teardown adapter, and forward lookup to the same erased callee. The family is strong; these operations do not select the argument. |
+| `CFixedPtrArray32`, `CInputDeviceGroup` | Complete 32-element inline pointer storage and typed input-device consumers. | The array/group relationship could hide a template or an embedded template member. `CLithSimpAryStat<CInputDevBase*,32>` explains the slots but lacks the group's two dwords and append/count API. `CFastMoArray<T>` is heap-backed. Neither is a demonstrated replacement for the complete owner. |
+| `FreeNodePool` | Typed contiguous allocation, a free chain, and a configurable payload offset are generic-pool evidence. | The surviving `ObjectBank<T>` uses a larger paged `StructBank`, and `CObjectBank<T>` allocates individual objects through a counted linked list. Neither explains this 16-byte, single-block owner. A different primary template remains possible. |
+| `CBrickzNodePool`, `CBrickzCellNodePool` | Closely parallel complete allocation/linking/free families support investigating shared generic origin. | The allocation and teardown instructions independently prove reversed ownership fields: node storage is +4, cell storage is +0. The extra cell search-pointer store is also real. One unchanged primary template cannot explain both layouts; separate templates, specializations, or another owner layer remain possible. |
+| `BucketHead`, `SoundSampleList`, `SoundBufferInstanceList`, `SoundTaskList` | Repeated fieldless wrappers around the same intrusive list are plausible typed adapters. | The shared erased insert/delete callees and base-subobject pointers are real. They rule out directly substituting the surviving typed-link `CLithBaseList<T>` implementation, but do not rule out an earlier template adapter over `CLTBaseList`. `SoundTaskList` also has buffer/tag filtering behavior whose owner must be recovered. |
+
+The follow-up reads and Git-blob-verifies 17 headers from pinned `845119c`,
+including Blood2's `FastArray`, `BareList`, `LinkList`, `MultiLinkList`,
+`GoodLinkList`, `FastLinkList`, both object-bank families, and the corresponding
+Lith/stdlith definitions. This broadens the source check beyond MFC and later
+dynamic arrays. It finds no complete replacement for the remaining records.
+The original NOLF release's complete tree was also checked for additional
+array/list/pool headers. No claim is made that all possible source lineages
+have been exhausted.
+
+The new controls are under `build/audits/template-application/`: the seven raw
+pool/array bodies, `symtab-argument-probe.*`, `symtab-argument-verdict.txt`,
+`register-grunt-inline-model.txt`, `register-grunt-semdiff.txt`, and the verified
+`oracles/` copies. These checks make no further production C++ changes.
