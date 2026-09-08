@@ -356,3 +356,7 @@ rows are excluded from name joins. Run it against a stable source/build
 snapshot; the final dump is under `build/audits/compgen-methods/final-census/`.
 The reusable controls and interpretation are in
 [typed container use](patterns/typed-container-use-replaces-manual-compiler-methods.md).
+
+The ongoing exhaustive method queue and subsequent compiler controls are in
+[compiler-method-audit.md](compiler-method-audit.md). They reopen method-level
+questions inside retained concrete owners as well as the unresolved pool models.

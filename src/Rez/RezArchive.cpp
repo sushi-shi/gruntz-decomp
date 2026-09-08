@@ -914,6 +914,8 @@ CRezMgr::CRezMgr(const char* path, b32 readOnly, b32 createNew) : m_hashRezItmFr
     Open(path, readOnly, createNew);
 }
 
+RVA_COMPGEN(0x0013abb0, 0x1, ??1CRezItmChunkList@CRezMgr@@QAE@XZ)
+
 RVA(0x0013abc0, 0x13f)
 CRezMgr::~CRezMgr() {
 
