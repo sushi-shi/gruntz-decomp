@@ -336,16 +336,14 @@ void CGrunt::ComputeFacing(double dt) {
     {                                                                                              \
         GruntActPmf _p;                                                                            \
         _p.m_pmf = (handler);                                                                      \
-        /* The stored generic CUserLogic PMF is reached through retail's raw */                    \
-        /* _zvec accessor; the typed view exists only at this ABI seam. */                         \
-        *CActReg::AsElem(CActRegPool<CGrunt>::s_table._zvec::IndexToPtr(id)) = _p.m_h;             \
+        *CActReg::AsElem(CActRegPool<CGrunt>::s_table._zdvec::IndexToPtr(id)) = _p.m_h;            \
     }
 
 #define BIND_GRUNT_ACT_TYPED(id, handler)                                                          \
     {                                                                                              \
         GruntActPmf _p;                                                                            \
         _p.m_pmf = (handler);                                                                      \
-        *CActRegPool<CGrunt>::s_table.Resolve(id) = _p.m_h;                                        \
+        CActRegPool<CGrunt>::s_table[id] = _p.m_h;                                                 \
     }
 
 #define REGISTER_GRUNT_ACT_KEY_IMPL(key, handler, bind)                                            \
@@ -384,7 +382,7 @@ void CGrunt::ComputeFacing(double dt) {
         if (id == 0) {                                                                             \
             ActInsertId(key, g_typeCounter);                                                       \
             id = g_typeCounter;                                                                    \
-            *g_typeColl.SlotOf(id) = (key);                                                        \
+            g_typeColl[id] = (key);                                                                \
             g_typeCounter++;                                                                       \
         }                                                                                          \
         BIND_GRUNT_ACT_TYPED(id, handler);                                                         \
@@ -1201,7 +1199,7 @@ i32 CGrunt::HandleCombatContact(
     } else {
         FaceTowardPixel(otherPxX, otherPxY);
 
-        CString* rec0 = g_typeColl.GetNameRecordRaw(m_logicRecord->m_eventCode);
+        CString* rec0 = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
         ActNameConstructGrownSlots();
         bool neH = (strcmp(*rec0, "H") != 0);
         if (neH) {

@@ -2804,6 +2804,25 @@ class InlineModelFlagControls(unittest.TestCase):
             with self.assertRaises(SystemExit):
                 inline_model.main(["--gap", str(Path(td) / "absent.json")])
 
+    def test_unmarked_template_candidate_reaches_cli_prediction(self):
+        import contextlib
+        import io
+        import json
+        from gruntz.walls import inline_model
+        with tempfile.TemporaryDirectory() as td:
+            spec = Path(td) / "template.json"
+            spec.write_text(json.dumps({"caller_cb": 120, "sites": [
+                {"name": "Array<int>::operator[]", "cb": 20,
+                 "marked": False, "candidate": True},
+                {"name": "Plain::At", "cb": 20,
+                 "marked": False, "candidate": False},
+            ]}))
+            with contextlib.redirect_stdout(io.StringIO()) as out:
+                rc = inline_model.main(["--spec", str(spec)])
+        self.assertEqual(rc, 0)
+        self.assertIn("EXPAND Array<int>::operator[]", out.getvalue())
+        self.assertIn("call   Plain::At", out.getvalue())
+
 
 class ExeMapWriteControls(unittest.TestCase):
     """`python3 -m gruntz.sema.exe_map --help` ignored the flag and rewrote

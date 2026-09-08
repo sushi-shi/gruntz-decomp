@@ -56,7 +56,7 @@
 #include <Lith/BDefs.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/zBitVec.h>
-#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayIndex.h>
 #include <Wwd/WwdFile.h>
 
 #include <limits.h>
@@ -1201,40 +1201,40 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                                             if (!eq) {
                                                                 eq =
                                                                     (strcmp(
-                                                                         (*g_typeColl.GetNameRecord(
-                                                                             unit->m_logicRecord
-                                                                                 ->m_eventCode
-                                                                         )),
+                                                                         (g_typeColl
+                                                                              [unit->m_logicRecord
+                                                                                   ->m_eventCode]),
                                                                          "P"
                                                                      )
                                                                      == 0);
                                                                 if (!eq) {
                                                                     eq =
                                                                         (strcmp(
-                                                                             (*g_typeColl.GetNameRecord(
-                                                                                 unit->m_logicRecord
-                                                                                     ->m_eventCode
-                                                                             )),
+                                                                             (g_typeColl
+                                                                                  [unit->m_logicRecord
+                                                                                       ->m_eventCode]),
                                                                              "J"
                                                                          )
                                                                          == 0);
                                                                     if (!eq) {
                                                                         eq =
                                                                             (strcmp(
-                                                                                 (*g_typeColl.GetNameRecord(
-                                                                                     unit->m_logicRecord
-                                                                                         ->m_eventCode
-                                                                                 )),
+                                                                                 (
+                                                                                     g_typeColl
+                                                                                         [unit->m_logicRecord
+                                                                                              ->m_eventCode]
+                                                                                 ),
                                                                                  "C"
                                                                              )
                                                                              == 0);
                                                                         if (!eq) {
                                                                             eq =
                                                                                 (strcmp(
-                                                                                     (*g_typeColl.GetNameRecord(
-                                                                                         unit->m_logicRecord
-                                                                                             ->m_eventCode
-                                                                                     )),
+                                                                                     (
+                                                                                         g_typeColl
+                                                                                             [unit->m_logicRecord
+                                                                                                  ->m_eventCode]
+                                                                                     ),
                                                                                      "R"
                                                                                  )
                                                                                  == 0);
@@ -4654,30 +4654,8 @@ Coord* CBattlezMapConfig::PickSpawnCoord(Coord* o, CGrunt* unit, i32 kind) {
     return o;
 }
 
-RVA(0x000310f0, 0x8d)
-char* _zdvec::IndexToPtr(i32 i) {
-    char* r;
-    m_grown = 0;
-    if (i >= m_lo && i <= m_hi) {
-        r = m_base + (i - m_lo) * m_stride;
-    } else if (GrowTo(i, 0)) {
-        r = m_base + (i - m_lo) * m_stride;
-    } else {
-        char* msg = g_errOutOfMem;
-        g_retAddrBreadcrumb = GetRetAddr();
-        m_errSink->Set(this, msg, 0xc);
-        r = m_spare;
-    }
-    char* slot = m_alloc;
-    i32 n = m_grown;
-    while (n-- != 0) {
-        if (slot) {
-            new (slot) CString();
-        }
-        slot += 4;
-    }
-    return r;
-}
+template CString& zDArray<CString>::operator[](i32 i);
+RVA_COMPGEN(0x000310f0, 0x8d, ??A?$zDArray@VCString@@@@QAEAAVCString@@H@Z)
 
 RVA(0x000311b0, 0x14)
 void FreeNodePool::Push(void* p) {
@@ -4711,19 +4689,4 @@ CGameObject* CDDrawChildGroup::Drain() {
     }
 }
 
-RVA(0x000312a0, 0x74)
-char* _zvec::IndexToPtr(i32 idx) {
-    char* r;
-    m_grown = 0;
-    if (idx >= m_lo && idx <= m_hi) {
-        r = m_base + (idx - m_lo) * m_stride;
-    } else if (GrowTo(idx, 0)) {
-        r = m_base + (idx - m_lo) * m_stride;
-    } else {
-        char* msg = g_errOutOfMem;
-        g_retAddrBreadcrumb = GetRetAddr();
-        m_errSink->Set(this, msg, 0xc);
-        r = m_spare;
-    }
-    return r;
-}
+RVA_COMPGEN(0x000312a0, 0x74, ?IndexToPtr@_zdvec@@QAEPADH@Z)

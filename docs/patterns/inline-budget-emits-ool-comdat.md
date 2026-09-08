@@ -54,10 +54,12 @@ Two boundaries matter and both are measured:
   The plateau at 9 is the 1000 floor; it breaks at ~36-40 caller statements,
   which is where `2 x cb(caller)` first exceeds 1000. See § "The rule".
 
-`/O2` is `/Ob1` here: cl 5.0 does **not** auto-inline a function that is not
-marked `inline`, at any definition position (before, after, or interleaved with
+`/O2` is `/Ob1` here: cl 5.0 does **not** auto-inline an ordinary non-template
+function that is not marked `inline`, at any definition position (before, after, or interleaved with
 its callers — all three measured, all emit 2/2 calls). So a plain out-of-line
-member never gives you the inline half.
+member never gives you the inline half. This control does not cover
+[instantiated template members](vc5-template-members-inline-without-inline-keyword.md),
+which can expand without the keyword under `/Ob1`.
 
 ## The rule (ported from the homm3 VC6 back-end RE, re-validated on cl 5.0)
 

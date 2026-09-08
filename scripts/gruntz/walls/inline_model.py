@@ -13,10 +13,12 @@ docs/patterns/inline-budget-emits-ool-comdat.md.
     nested expansions get truncated budget / sites-remaining.
 
 Where cl 5.0 diverges from the VC6 model (measured; do NOT port these back):
-  * `/O2` implies `/Ob1`: an UNMARKED function is never a candidate at any
-    definition position. Candidacy = inline-declared (or in-class body) AND
-    the collector's cb < 1000 gate. Build `Callee(candidate=...)` from THAT
-    rule, not from VC6's /Ob2 auto-inline heuristics.
+  * `/O2` implies `/Ob1`: unmarked ordinary non-template functions stay calls,
+    but instantiated template members can expand without the inline keyword.
+    Candidacy requires an eligible, visible body and the collector's cb < 1000
+    gate. Supply `Callee(candidate=...)` from compiler/source evidence; do not
+    derive it from `marked` alone. The template exception is measured in
+    docs/patterns/vc5-template-members-inline-without-inline-keyword.md.
   * VC6's front-end body-save cliff (all sites become calls at ~S=14) does
     NOT exist on cl 5.0 - the staircase continues (25,25,20,16,11,9,6,5 for
     S=1..13 agrees on both compilers, and cl 5.0 keeps going).
@@ -80,7 +82,7 @@ class Callee:
         self.sites = list(sites)        # candidate Sites inside the body
         self.forceinline = forceinline
         self.marked = marked            # inline-declared
-        self.candidate = candidate      # cl 5.0: inline-marked AND cb < 1000
+        self.candidate = candidate      # independently proved eligible, cb < 1000
 
 
 class Site:
@@ -102,7 +104,7 @@ def _expand(sites, depth, budget, state, out):
         out.append(node)
         if not c.candidate:
             node.update(action="call", reason="not-a-candidate "
-                        "(unmarked under /Ob1, or cb>=1000)")
+                        "(ineligible body, or cb>=1000)")
             continue
         if depth > site.depth_allow:
             node.update(action="call", reason="depth")
@@ -285,7 +287,7 @@ def _selftest() -> int:
     check("fill 6+3 across cb=[143,166]", ok)
 
     # 2. candidate=False -> every site is a call. (On cl 5.0 the flag comes
-    #    from /Ob1 candidacy - unmarked fn or cb>=1000 - not VC6's save gate.)
+    #    from /Ob1 candidacy or cb>=1000, not VC6's save gate.)
     rep = predict(120, [Site(Callee("filsd", 170, candidate=False))] * 9)
     check("candidacy drop 0+9", _counts(rep, "filsd") == (0, 9))
 
@@ -558,7 +560,7 @@ def main(argv=None) -> int:
         if lo is None:
             verdict = f"cb <= {SMALL_FREE} (never rejected; budget-exempt)"
         elif hi is None:
-            verdict = f"NOT an inline candidate (/Ob1 unmarked, or cb >= {CANDIDACY_CB})"
+            verdict = f"NOT an inline candidate (ineligible body, or cb >= {CANDIDACY_CB})"
         else:
             verdict = f"cb in [{lo},{hi}]"
         print(f"[measure-cb] {args.fn}: {ex} expanded, {rej} rejected "

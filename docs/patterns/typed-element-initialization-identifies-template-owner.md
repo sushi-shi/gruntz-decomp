@@ -7,7 +7,7 @@ constructor, inspect the complete typed wrapper above it. A template's expanded
 body may have been assigned to its erased base and then given a separately
 invented class name.
 
-The Gruntz function at 0x310f0 is currently named `_zdvec::IndexToPtr`, yet its
+The Gruntz function at 0x310f0 was named `_zdvec::IndexToPtr`, yet its
 retail tail reads initialization pointer/count fields, calls CString construction
 and advances four bytes per element. The pinned original `ztools.h` places that
 work in `zDArray<T>::operator[]` above `_zdvec::get`. The global construction and
@@ -27,5 +27,6 @@ do not move a type-specific loop into a generic base to preserve one caller.
 
 The negative control is `CButeTree`: a no-op destructor callback and erased
 pointer payload fit several `zSymTab<T>` arguments. That evidence proposes a
-template family but does not license an arbitrary specialization. This pattern
-records an identity finding; it does not claim a compiled matching closure.
+template family but does not license an arbitrary specialization. The confirmed replacement now compiles: both typed index bodies and the
+shared lifetime functions remain exact. The caller inlining residues remain
+open; the complete application measurements are in the template audit.

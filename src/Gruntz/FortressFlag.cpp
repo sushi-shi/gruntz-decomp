@@ -28,7 +28,7 @@
 #include <Image/CImage.h>
 #include <Rez/FrameClock.h>
 #include <Wap32/zBitVec.h>
-#include <Wap32/ZVec.h>
+#include <Wap32/ZDArrayIndex.h>
 #include <Wwd/LogicRecordEvent.h>
 
 #include <stddef.h>
@@ -157,28 +157,8 @@ i32 CFortressFlag::SerializeDispatch(
     return 1;
 }
 
-template<> RVA(0x000464e0, 0x74)
-CActHandler* zDArray<CActHandler>::Resolve(i32 id) {
-    char* r;
-    m_grown = 0;
-    if (id >= m_lo && id <= m_hi) {
-        r = m_base + (id - m_lo) * m_stride;
-    } else if (GrowTo(id, 0)) {
-        r = m_base + (id - m_lo) * m_stride;
-    } else {
-        char* msg = g_errOutOfMem;
-        g_retAddrBreadcrumb = GetRetAddr();
-        m_errSink->Set(this, msg, 0xc);
-        r = m_spare;
-    }
-
-    union {
-        char* m_bytes;
-        CActHandler* m_slot;
-    } band;
-    band.m_bytes = r;
-    return band.m_slot;
-}
+template CActHandler& zDArray<CActHandler>::operator[](i32 id);
+RVA_COMPGEN(0x000464e0, 0x74, ??A?$zDArray@P8CUserLogic@@AEHXZ@@QAEAAP8CUserLogic@@AEHXZH@Z)
 
 RVA(0x00046850, 0xf1)
 i32 DispatchParticlezLogic(CGameObject* owner) {

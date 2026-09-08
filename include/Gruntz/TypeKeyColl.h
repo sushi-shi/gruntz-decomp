@@ -3,10 +3,12 @@
 
 #include <rva.h>
 
-#include <Bute/ButeTree.h>
-#include <Gruntz/TypeCollRuntime.h>
+#include <Mfc.h>
 
-extern CTypeCollRuntime g_typeColl;
+#include <Bute/ButeTree.h>
+#include <Wap32/ZVec.h>
+
+extern zDArray<CString> g_typeColl;
 
 extern i32 g_typeCounter;
 

@@ -214,7 +214,7 @@ rva	size	name	kind	note
 0x1f04dc	0x4	??_7CButeTree@@6BzPtrColl@@@	secondary	MI secondary for the zPtrColl sub-object at +8; its one slot is the adjustor thunk 0x16ea80 (sub ecx
 0x1f04e0	0x4	??_7CButeTree@@6B@	primary	
 0x1f04e0	0x4	??_7CButeTree@@6BzErrHandling@@@	secondary	MI primary-base alias; the zErrHandling sub-object is at +0 and shares CButeTree's one deleting-destructor slot
-0x1f04e4	0x4	??_7CTypeCollRuntime@@6B@	primary	
+0x1f04e4	0x4	??_7?$zDArray@VCString@@@@6B@	template	CString dynamic array specialization
 0x1f0510	0x4	??_7?$zSymTab@V?$zSymTab@VCSymTabItem@CButeMgr@@@@@@6B@	primary	nested typed Bute table specialization
 0x1f0510	0x4	??_7?$zSymTab@V?$zSymTab@VCSymTabItem@CButeMgr@@@@@@6BzErrHandling@@@	secondary	primary-base alias for nested typed Bute table
 0x1f0514	0x4	??_7?$zSymTab@V?$zSymTab@VCSymTabItem@CButeMgr@@@@@@6BzPtrColl@@@	secondary	zPtrColl sub-object for nested typed Bute table

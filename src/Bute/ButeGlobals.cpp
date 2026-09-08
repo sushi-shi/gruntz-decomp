@@ -5,47 +5,20 @@
 #include <Bute/ButeTree.h>
 #include <Bute/PTreeNode.h>
 #include <Gruntz/SerialArchive.h>
-#include <Gruntz/TypeCollRuntime.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
 #include <Io/FileMem.h>
-#include <Wap32/ZVec.h>
+#include <Wap32/ZDArray.h>
 #include <Wwd/WwdGameObjectFamily.h>
 
 #include <strstrea.h>
-
-inline CTypeCollRuntime::CTypeCollRuntime()
-
-    : _zdvec(sizeof(CString), 0x7d0, 0x7da, ZVecNoScratch()) {
-    CString* slot = Slots();
-    if (slot != NULL) {
-        i32 cnt = m_grown;
-        while (cnt-- != 0) {
-            if (slot != NULL) {
-                slot->CString::CString();
-            }
-            ++slot;
-        }
-    }
-}
-
-inline CTypeCollRuntime::~CTypeCollRuntime() {
-    CString* item = Elem(m_lo);
-    if (item != NULL) {
-        i32 count = m_hi - m_lo + 1;
-        while (count-- != 0) {
-            item->CString::~CString();
-            ++item;
-        }
-    }
-}
 
 RVA_DYNINIT(0x0016e720, 0xa, g_typeColl)
 RVA_DYNINIT(0x0016e730, 0x51, g_typeColl)
 RVA_DYNINIT(0x0016e790, 0xe, g_typeColl)
 RVA_DYNINIT(0x0016e7a0, 0x48, g_typeColl)
 DATA(0x002bf650)
-CTypeCollRuntime g_typeColl;
+zDArray<CString> g_typeColl(0x7d0, 0x7da);
 
 RVA_DYNINIT(0x0016e690, 0xa, g_buteTree)
 RVA_DYNINIT(0x0016e6a0, 0x26, g_buteTree)
@@ -110,4 +83,4 @@ RVA_COMPGEN(0x0016e9c0, 0x45, ??_GCButeTree@@UAEPAXI@Z)
 RVA(0x0016ea10, 0x1)
 void ButeTreeNopFree(void*) {}
 
-RVA_COMPGEN(0x0016ea20, 0x51, ??_GCTypeCollRuntime@@UAEPAXI@Z)
+RVA_COMPGEN(0x0016ea20, 0x51, ??_G?$zDArray@VCString@@@@UAEPAXI@Z)

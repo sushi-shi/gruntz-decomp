@@ -123,17 +123,15 @@ public:
     m_previousAnimationActId = m_logicRecord->m_eventCode;                                         \
     m_logicRecord->m_eventCode = ActFindId(key)
 
-#define ANIMATION_ACT_EQUALS(key)                                                                  \
-    (strcmp(*g_typeColl.GetNameRecord(m_logicRecord->m_eventCode), key) == 0)
+#define ANIMATION_ACT_EQUALS(key) (strcmp(g_typeColl[m_logicRecord->m_eventCode], key) == 0)
 
-#define ANIMATION_ACT_DIFFERS(key)                                                                 \
-    (strcmp(*g_typeColl.GetNameRecord(m_logicRecord->m_eventCode), key) != 0)
+#define ANIMATION_ACT_DIFFERS(key) (strcmp(g_typeColl[m_logicRecord->m_eventCode], key) != 0)
 
 #define ANIMATION_ACT_EQUALS_FOR(logic, key)                                                       \
-    (strcmp(*g_typeColl.GetNameRecord(logic->m_logicRecord->m_eventCode), key) == 0)
+    (strcmp(g_typeColl[logic->m_logicRecord->m_eventCode], key) == 0)
 
 #define ANIMATION_ACT_DIFFERS_FOR(logic, key)                                                      \
-    (strcmp(*g_typeColl.GetNameRecord(logic->m_logicRecord->m_eventCode), key) != 0)
+    (strcmp(g_typeColl[logic->m_logicRecord->m_eventCode], key) != 0)
 
 #define APPLY_NAME_INLINE(name) m_wwdObject->SetImageSetByName(name)
 

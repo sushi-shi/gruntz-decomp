@@ -22,8 +22,10 @@ select.
 
 ## What the symbol table proves—and what it does not
 
-`/O2` implies `/Ob1`: cl 5.0 never auto-inlines an unmarked function at any
-definition position. A callee emitted as a **defined COMDAT** in the caller's
+`/O2` implies `/Ob1`: unmarked ordinary non-template functions stay calls.
+[Instantiated template members are an exception](vc5-template-members-inline-without-inline-keyword.md),
+even with an out-of-class definition lacking `inline`.
+A callee emitted as a **defined COMDAT** in the caller's
 object therefore positively proves that an inline body was visible.
 
 The inverse is false. An **UNDEFINED** row can be left by another declined or

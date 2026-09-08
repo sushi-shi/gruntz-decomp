@@ -1300,7 +1300,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
             return 0;
         }
 
-        const char* name = *g_typeColl.GetNameRecord(cell->m_logicRecord->m_eventCode);
+        const char* name = g_typeColl[cell->m_logicRecord->m_eventCode];
         bool isI = (strcmp(name, "I") == 0);
         if (isI) {
             LoadTileArrivalFx(
@@ -1456,7 +1456,7 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
     if (cell == NULL || span.m_outPlayerIndex != g_curPlayer) {
         return;
     }
-    const char* name = *g_typeColl.GetNameRecord(cell->m_logicRecord->m_eventCode);
+    const char* name = g_typeColl[cell->m_logicRecord->m_eventCode];
     bool differ = strcmp(name, "B") != 0;
     if (!differ) {
         return;
