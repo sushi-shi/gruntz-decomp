@@ -434,7 +434,7 @@ i32 CGrunt::IsDropReady(i32 clearArrivalState) {
         i32 coordX = m_lastTilePx.m_x >> TILE_SHIFT_PX;
         i32 coordY = m_lastTilePx.m_y >> TILE_SHIFT_PX;
         if (node->m_next != NULL) {
-            coord = &node->m_coord;
+            coord = &node->m_value;
             coord->m_x = coordX;
             coord->m_y = coordY;
             g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
@@ -1092,8 +1092,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spaw
                     goto applyTail;
                 }
                 {
-                    CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-                    ActNameConstructGrownSlots();
+                    CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
                     eq = (strcmp(*rec, "N") == 0);
                 }
                 if (eq) {
@@ -1118,8 +1117,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spaw
                     goto applyTail;
                 }
                 {
-                    CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-                    ActNameConstructGrownSlots();
+                    CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
                     eq = (strcmp(*rec, "M") == 0);
                 }
                 if (eq) {

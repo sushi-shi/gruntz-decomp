@@ -43,7 +43,7 @@ i32 CGruntzMapMgr::SerializeDispatch(
                 CoordPoolNode* node = g_coordPool.m_freeHead;
                 Coord* elem = NULL;
                 if (node->m_next != NULL) {
-                    elem = &node->m_coord;
+                    elem = &node->m_value;
                     g_coordPool.m_freeHead = node->m_next;
                 }
                 ar->Read(elem, 8);

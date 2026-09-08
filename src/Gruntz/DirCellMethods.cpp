@@ -8,7 +8,6 @@
 #include <Gruntz/DemoHelpers.h>
 #include <Gruntz/DemoMoverState.h>
 #include <Gruntz/ExitTrigger.h>
-#include <Gruntz/FixedPtrArray32.h>
 #include <Gruntz/FortressFlag.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameObjectLogicTypes.h>
@@ -19,6 +18,7 @@
 #include <Gruntz/GruntStartingPoint.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/InputDeviceGroup.h>
 #include <Gruntz/LogicRecordDispatchInline.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SecretLevelTrigger.h>

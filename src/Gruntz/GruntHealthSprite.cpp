@@ -45,15 +45,15 @@ CGruntHealthSprite::CGruntHealthSprite(CGameObject* obj)
 
 RVA(0x0007ed70, 0x102)
 void CGruntHealthSprite::FireActivation(i32 id) {
-    if ((*((CActRegPool<CGruntHealthSprite>::s_table.ResolveEntry(id)))) != NULL) {
-        (this->*(*((CActRegPool<CGruntHealthSprite>::s_table.ResolveEntry(id)))))();
+    if ((CActRegPool<CGruntHealthSprite>::s_table[id]) != NULL) {
+        (this->*(CActRegPool<CGruntHealthSprite>::s_table[id]))();
     }
 }
 
 RVA(0x0007eed0, 0x18d)
 void CGruntHealthSprite::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CGruntHealthSprite>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CGruntHealthSprite>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CGruntHealthSprite::HealthUpdate);
 }
 

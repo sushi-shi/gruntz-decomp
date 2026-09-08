@@ -286,7 +286,7 @@ i32 CProjectile::LoadProjectileSprites(
 }
 
 static inline CActHandler* ProjActLookup(i32 coord) {
-    return (CActRegPool<CProjectile>::s_table.ResolveEntry(coord));
+    return &CActRegPool<CProjectile>::s_table[coord];
 }
 
 RVA(0x000df9a0, 0x102)
@@ -682,7 +682,7 @@ void CProjectile::ScanTargets(i32 impact) {
             Coord* slot = NULL;
             CoordPoolNode* p = g_coordPool.m_freeHead;
             if (p->m_next != NULL) {
-                slot = &p->m_coord;
+                slot = &p->m_value;
                 slot->m_x = hitPlayerIndex;
                 slot->m_y = hitUnitIndex;
                 g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
@@ -766,7 +766,7 @@ i32 CProjectile::SerializeDispatch(
                 CoordPoolNode* node = g_coordPool.m_freeHead;
                 Coord* payload = NULL;
                 if (node->m_next != NULL) {
-                    payload = &node->m_coord;
+                    payload = &node->m_value;
                     g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
                 }
                 s->Read(payload, 8);
@@ -902,7 +902,7 @@ i32 CBoomerang::SerializeDispatch(
 }
 
 static inline CActHandler* TBombLookup(i32 coord) {
-    return (CActRegPool<CTimeBomb>::s_table.ResolveEntry(coord));
+    return &CActRegPool<CTimeBomb>::s_table[coord];
 }
 
 RVA(0x000e1830, 0x102)

@@ -4,7 +4,7 @@
 #include <rva.h>
 
 #include <Enums.h>
-#include <Gruntz/FixedPtrArray32.h>
+#include <Gruntz/InputDeviceGroup.h>
 #include <Ints.h>
 
 #include <stddef.h>
@@ -21,7 +21,7 @@ GZ_ENUM_FLAGS_OPS(InputDirectionBits)
 
 class DirectInputMgr2;
 class CInputDevBase;
-struct CInputDeviceGroup;
+#include <Gruntz/InputDeviceGroup.h>
 class CJoystickDevice;
 class CKeyboardDevice;
 class CMouseDevice;

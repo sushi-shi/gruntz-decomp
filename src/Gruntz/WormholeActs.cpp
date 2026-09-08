@@ -42,9 +42,9 @@ CActReg CActRegPool<CExitTrigger>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 RVA(0x0003f290, 0x102)
 void CExitTrigger::FireActivation(i32 coord) {
-    CActHandler* e = (CActRegPool<CExitTrigger>::s_table.ResolveEntry(coord));
+    CActHandler* e = &CActRegPool<CExitTrigger>::s_table[coord];
     if ((*e) != NULL) {
-        CActHandler* e2 = (CActRegPool<CExitTrigger>::s_table.ResolveEntry(coord));
+        CActHandler* e2 = &CActRegPool<CExitTrigger>::s_table[coord];
         (this->*((*e2)))();
     }
 }
@@ -52,7 +52,7 @@ void CExitTrigger::FireActivation(i32 coord) {
 RVA(0x0003f3f0, 0x18d)
 void CExitTrigger::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CExitTrigger>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CExitTrigger>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CExitTrigger::AdvanceAnim);
 }
 
@@ -134,7 +134,7 @@ i32 CExitTrigger::AdvanceAnim() {
                         CoordPoolNode* head = g_coordPool.m_freeHead;
                         Coord* mark = NULL;
                         if (head->m_next != NULL) {
-                            mark = &head->m_coord;
+                            mark = &head->m_value;
                             head = head->m_next;
                             g_coordPool.m_freeHead = head;
                         }

@@ -10,7 +10,6 @@
 #include <Enums.h>
 #include <Gruntz/Attract.h>
 #include <Gruntz/ErrorStringId.h>
-#include <Gruntz/FixedPtrArray32.h>
 #include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -18,6 +17,7 @@
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/InputDeviceGroup.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundCueRegistryInline.h>
 #include <Gruntz/SoundState.h>
@@ -116,7 +116,7 @@ i32 CAttract::EnterState(GameStateId previousState) {
         m_titleCountdownMs = 0x1f40;
     }
 
-    CFixedPtrArray32* list = g_actorList;
+    CInputDeviceGroup* list = g_actorList;
     for (i32 i = 0; i < list->m_count; i++) {
         list->m_items[i]->ResetState();
     }
@@ -159,7 +159,7 @@ i32 CAttract::Render() {
         m_titleCountdownMs -= g_frameDelta;
     }
 
-    CFixedPtrArray32* list = g_actorList;
+    CInputDeviceGroup* list = g_actorList;
     i32 i;
     for (i = 0; i < list->m_count; i++) {
         list->m_items[i]->Poll();

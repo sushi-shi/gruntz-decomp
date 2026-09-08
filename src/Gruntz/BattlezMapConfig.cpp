@@ -187,7 +187,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
             CoordPoolNode* p = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
             Coord* slot = NULL;
             if (p->m_next != NULL) {
-                slot = &p->m_coord;
+                slot = &p->m_value;
                 g_coordPool.m_freeHead = p->m_next;
             }
             slot->m_x = cur->m_screenX / TILE_SIZE_PX;
@@ -213,7 +213,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
             CoordPoolNode* p = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
             Coord* slot = NULL;
             if (p->m_next != NULL) {
-                slot = &p->m_coord;
+                slot = &p->m_value;
                 g_coordPool.m_freeHead = p->m_next;
             }
             slot->m_x = cur3->m_screenX >> TILE_SHIFT_PX;
@@ -2005,7 +2005,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
                     unit->m_coordList.GetNext(node);
                     Coord* copy = NULL;
                     if (g_coordPool.m_freeHead->m_next != NULL) {
-                        copy = &g_coordPool.m_freeHead->m_coord;
+                        copy = &g_coordPool.m_freeHead->m_value;
                         *copy = *static_cast<Coord*>(unit->m_coordList.GetAt(remaining));
                         g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
                     }
@@ -2468,7 +2468,7 @@ i32 CBattlezMapConfig::Deserialize(CFileMemBase* ar) {
         CoordPoolNode* node = g_coordPool.m_freeHead;
         Coord* payload = NULL;
         if (node->m_next != NULL) {
-            payload = &node->m_coord;
+            payload = &node->m_value;
             g_coordPool.m_freeHead = node->m_next;
         }
         ar->Read(payload, 8);
@@ -2490,7 +2490,7 @@ i32 CBattlezMapConfig::Deserialize(CFileMemBase* ar) {
         CoordPoolNode* node = g_coordPool.m_freeHead;
         Coord* payload = NULL;
         if (node->m_next != NULL) {
-            payload = &node->m_coord;
+            payload = &node->m_value;
             g_coordPool.m_freeHead = node->m_next;
         }
         ar->Read(payload, 8);
@@ -3857,88 +3857,38 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     }
 
     CString* recs;
-    CString* slot;
-    i32 cnt;
 
-    recs = g_typeColl.ScratchResolve(unit->m_logicRecord->m_eventCode);
-    slot = g_typeColl.Slots();
-    cnt = g_typeColl.m_grown;
-    while (cnt-- != 0) {
-        if (slot != NULL) {
-            slot->CString::CString();
-        }
-        slot++;
-    }
+    recs = &g_typeColl[unit->m_logicRecord->m_eventCode];
     eq = (strcmp(*recs, "G") == 0);
     if (eq) {
         return 0;
     }
 
-    recs = g_typeColl.ScratchResolve(unit->m_logicRecord->m_eventCode);
-    slot = g_typeColl.Slots();
-    cnt = g_typeColl.m_grown;
-    while (cnt-- != 0) {
-        if (slot != NULL) {
-            slot->CString::CString();
-        }
-        slot++;
-    }
+    recs = &g_typeColl[unit->m_logicRecord->m_eventCode];
     eq = (strcmp(*recs, "L") == 0);
     if (eq) {
         return 0;
     }
 
-    recs = g_typeColl.ScratchResolve(unit->m_logicRecord->m_eventCode);
-    slot = g_typeColl.Slots();
-    cnt = g_typeColl.m_grown;
-    while (cnt-- != 0) {
-        if (slot != NULL) {
-            slot->CString::CString();
-        }
-        slot++;
-    }
+    recs = &g_typeColl[unit->m_logicRecord->m_eventCode];
     eq = (strcmp(*recs, "P") == 0);
     if (eq) {
         return 0;
     }
 
-    recs = g_typeColl.ScratchResolve(unit->m_logicRecord->m_eventCode);
-    slot = g_typeColl.Slots();
-    cnt = g_typeColl.m_grown;
-    while (cnt-- != 0) {
-        if (slot != NULL) {
-            slot->CString::CString();
-        }
-        slot++;
-    }
+    recs = &g_typeColl[unit->m_logicRecord->m_eventCode];
     eq = (strcmp(*recs, "J") == 0);
     if (eq) {
         return 0;
     }
 
-    recs = g_typeColl.ScratchResolve(unit->m_logicRecord->m_eventCode);
-    slot = g_typeColl.Slots();
-    cnt = g_typeColl.m_grown;
-    while (cnt-- != 0) {
-        if (slot != NULL) {
-            slot->CString::CString();
-        }
-        slot++;
-    }
+    recs = &g_typeColl[unit->m_logicRecord->m_eventCode];
     eq = (strcmp(*recs, "C") == 0);
     if (eq) {
         return 0;
     }
 
-    recs = g_typeColl.ScratchResolve(unit->m_logicRecord->m_eventCode);
-    slot = g_typeColl.Slots();
-    cnt = g_typeColl.m_grown;
-    while (cnt-- != 0) {
-        if (slot != NULL) {
-            slot->CString::CString();
-        }
-        slot++;
-    }
+    recs = &g_typeColl[unit->m_logicRecord->m_eventCode];
     eq = (strcmp(*recs, "R") == 0);
     if (eq) {
         return 0;
@@ -4128,7 +4078,6 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     }
 }
 
-// @early-stop
 RVA(0x000300c0, 0x190)
 i32 CBattlezMapConfig::RouteUnitTo(
     CGrunt* unit,
@@ -4657,10 +4606,8 @@ Coord* CBattlezMapConfig::PickSpawnCoord(Coord* o, CGrunt* unit, i32 kind) {
 template CString& zDArray<CString>::operator[](i32 i);
 RVA_COMPGEN(0x000310f0, 0x8d, ??A?$zDArray@VCString@@@@QAEAAVCString@@H@Z)
 
-RVA(0x000311b0, 0x14)
-void FreeNodePool::Push(void* p) {
-    PushFreeNode(this, p);
-}
+template void FreeNodePool<Coord>::Push(void* p);
+RVA_COMPGEN(0x000311b0, 0x14, ?Push@?$FreeNodePool@UCoord@@@@QAEXPAX@Z)
 
 RVA(0x000311e0, 0x4c)
 void CDDrawWorkerHost::SnapToTileCenter(Coord* out, i32 x, i32 y) {

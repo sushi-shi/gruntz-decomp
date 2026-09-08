@@ -53,7 +53,7 @@ DATA(0x0021aea8)
 i32 g_typeCounter = ACT_ID_FIRST;
 
 static inline CActHandler* KSlimeLookup(i32 coord) {
-    return (CActRegPool<CKitchenSlime>::s_table.ResolveEntry(coord));
+    return &CActRegPool<CKitchenSlime>::s_table[coord];
 }
 
 RVA_COMPGEN(0x000130d0, 0x1e, ??_GCKitchenSlime@@UAEPAXI@Z)

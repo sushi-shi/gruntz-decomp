@@ -765,3 +765,4 @@ Full old→new table: [`../tooling-map.md`](../tooling-map.md).
 - [SDK members explain template constructor helpers](sdk-member-constructors-explain-template-helpers.md): real CArray/CRect restoration replaces a fake initializer while reproducing the exact retail serializer.
 
 - [SDK record copies cross member widths](sdk-record-copies-cross-member-widths.md): decoded complete GUID argument copies expose a false field-width finding; full-consumer negative controls protect the gate.
+- [Typed container use replaces manual compiler methods](typed-container-use-replaces-manual-compiler-methods.md) — cpp:template cpp:array cpp:constructor cpp:destructor | asm:coff asm:mov | topic:source-model — recover element types and the full API before replacing compiler methods; typed registration removes raw growth/constructor copies, while an omitted explicit sound destructor loses a retail vptr store.

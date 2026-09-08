@@ -64,26 +64,11 @@ public:
 
     T& operator[](i32 id);
 
-    T* ResolveEntry(i32 id);
-
-    T* ResolveEntryCallReport(i32 id);
-
-    T* ScratchResolve(i32 key) {
-        return AsElem(_zdvec::IndexToPtr(key));
-    }
-    T* Elem(i32 id) {
-        return AsElem(m_base + (id - m_lo) * m_stride);
-    }
-    T* Slots() {
-        return AsElem(m_alloc);
-    }
-    T* Scratch() {
-        return AsElem(m_spare);
-    }
-
     static T* AsElem(char* p) {
         return static_cast<T*>(static_cast<void*>(p));
     }
 };
+
+#include <Wap32/ZDArrayIndex.h>
 
 #endif // GRUNTZ_WAP32_ZVEC_H

@@ -97,9 +97,9 @@ i32 CGruntCreationPoint::SerializeDispatch(
 
 RVA(0x0003e960, 0x102)
 void CGruntCreationPoint::FireActivation(i32 coord) {
-    CActHandler* e = (CActRegPool<CGruntCreationPoint>::s_table.ResolveEntry(coord));
+    CActHandler* e = &CActRegPool<CGruntCreationPoint>::s_table[coord];
     if (*e != NULL) {
-        CActHandler* e2 = (CActRegPool<CGruntCreationPoint>::s_table.ResolveEntry(coord));
+        CActHandler* e2 = &CActRegPool<CGruntCreationPoint>::s_table[coord];
         (this->*(*e2))();
     }
 }
@@ -107,7 +107,7 @@ void CGruntCreationPoint::FireActivation(i32 coord) {
 RVA(0x0003eac0, 0x18d)
 void CGruntCreationPoint::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    *(CActRegPool<CGruntCreationPoint>::s_table.ResolveEntry(id)) =
+    CActRegPool<CGruntCreationPoint>::s_table[id] =
         static_cast<i32 (CUserLogic::*)()>(&CGruntCreationPoint::AdvanceAnim);
 }
 

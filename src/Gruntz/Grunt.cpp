@@ -247,11 +247,9 @@ CGrunt::~CGrunt() {
     OnObjectRemoved();
 }
 
-RVA(0x0000f400, 0x1b)
-CGruntCellRec::CGruntCellRec() {}
+RVA_COMPGEN(0x0000f400, 0x1b, ??0CGruntCellRec@@QAE@XZ)
 
-RVA(0x0000f430, 0x10)
-CGruntCellRec::~CGruntCellRec() {}
+RVA_COMPGEN(0x0000f430, 0x10, ??1CGruntCellRec@@QAE@XZ)
 
 // @early-stop
 RVA(0x00047a10, 0x770)
@@ -736,7 +734,6 @@ i32 CGrunt::IntersectsTileObjectAxes() {
     return RectSegProbe(&r, &b, &a) != 0;
 }
 
-// @early-stop
 RVA(0x0004ac10, 0x402)
 void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
     static_cast<void>(unused);
@@ -1400,7 +1397,7 @@ i32 CGrunt::StepGruntMovement() {
                 Coord* node = NULL;
                 CoordPoolNode* head = g_coordPool.m_freeHead;
                 if (head->m_next != NULL) {
-                    node = &head->m_coord;
+                    node = &head->m_value;
                     g_coordPool.m_freeHead = head->m_next;
                 }
                 node->m_x = tgtTileX;
@@ -1506,8 +1503,7 @@ label_4c6e4:
     if (flagHead & 0x80) {
         m_entranceActive = true;
     } else {
-        CString* r = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-        ActNameConstructGrownSlots();
+        CString* r = &g_typeColl[m_logicRecord->m_eventCode];
         bool ne;
         ne = (strcmp(*r, "L") != 0);
         if (ne) {
@@ -2642,8 +2638,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "BABYWALKERGRUNT";
-            CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-            ActNameConstructGrownSlots();
+            CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
             eq = (strcmp(*rec, "D") == 0);
             if (eq) {
                 ConsiderArrival(0);
@@ -2665,8 +2660,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "BEACHBALLGRUNT";
-            CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-            ActNameConstructGrownSlots();
+            CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
             eq = (strcmp(*rec, "D") == 0);
             if (eq) {
                 ConsiderArrival(0);
@@ -2687,8 +2681,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "BIGWHEELGRUNT";
-            CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-            ActNameConstructGrownSlots();
+            CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
             eq = (strcmp(*rec, "D") == 0);
             if (eq) {
                 ConsiderArrival(0);
@@ -2710,8 +2703,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "GOKARTGRUNT";
-            CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-            ActNameConstructGrownSlots();
+            CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
             eq = (strcmp(*rec, "D") == 0);
             if (eq) {
                 ConsiderArrival(0);
@@ -2733,8 +2725,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "JACKINTHEBOXGRUNT";
-            CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-            ActNameConstructGrownSlots();
+            CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
             eq = (strcmp(*rec, "D") == 0);
             if (eq) {
                 ConsiderArrival(0);
@@ -2755,8 +2746,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "JUMPROPEGRUNT";
-            CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-            ActNameConstructGrownSlots();
+            CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
             eq = (strcmp(*rec, "D") == 0);
             if (eq) {
                 ConsiderArrival(0);
@@ -2777,8 +2767,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "POGOSTICKGRUNT";
-            CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-            ActNameConstructGrownSlots();
+            CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
             eq = (strcmp(*rec, "D") == 0);
             if (eq) {
                 ConsiderArrival(0);
@@ -2801,8 +2790,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_moveVariant = variant;
             m_passableMask = 0;
             m_animSetName = "SCROLLGRUNT";
-            CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-            ActNameConstructGrownSlots();
+            CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
             eq = (strcmp(*rec, "D") == 0);
             if (eq) {
                 ConsiderArrival(0);
@@ -2823,8 +2811,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "SQUEAKTOYGRUNT";
-            CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-            ActNameConstructGrownSlots();
+            CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
             eq = (strcmp(*rec, "D") == 0);
             if (eq) {
                 ConsiderArrival(0);
@@ -2845,8 +2832,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "YOYOGRUNT";
-            CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-            ActNameConstructGrownSlots();
+            CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
             eq = (strcmp(*rec, "D") == 0);
             if (eq) {
                 ConsiderArrival(0);
@@ -3116,18 +3102,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         CString* rec;
         {
             i32 key = m_logicRecord->EventCode();
-            g_typeColl.m_grown = 0;
-            if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
-                rec = g_typeColl.Elem(key);
-            } else if ((static_cast<_zdvec*>(&g_typeColl))->GrowTo(key, 0) != NULL) {
-                rec = g_typeColl.Elem(key);
-            } else {
-                char* msg = g_errOutOfMem;
-                g_retAddrBreadcrumb = GetRetAddr();
-                g_typeColl.m_errSink->Set(&g_typeColl, msg, 0xc);
-                rec = g_typeColl.Scratch();
-            }
-            ActNameConstructGrownSlots();
+            rec = &g_typeColl[key];
         }
 
         eq = (strcmp(*rec, "H") == 0);
@@ -3152,18 +3127,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             CString* rec2;
             {
                 i32 key2 = m_logicRecord->EventCode();
-                g_typeColl.m_grown = 0;
-                if (key2 >= g_typeColl.m_lo && key2 <= g_typeColl.m_hi) {
-                    rec2 = g_typeColl.Elem(key2);
-                } else if ((static_cast<_zdvec*>(&g_typeColl))->GrowTo(key2, 0) != NULL) {
-                    rec2 = g_typeColl.Elem(key2);
-                } else {
-                    char* msg2 = g_errOutOfMem;
-                    g_retAddrBreadcrumb = GetRetAddr();
-                    g_typeColl.m_errSink->Set(&g_typeColl, msg2, 0xc);
-                    rec2 = g_typeColl.Scratch();
-                }
-                ActNameConstructGrownSlots();
+                rec2 = &g_typeColl[key2];
             }
 
             eq = (strcmp(*rec2, "D") == 0);

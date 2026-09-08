@@ -72,7 +72,7 @@ template<> DATA(0x002447f8)
 CActReg CActRegPool<CExplosion>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 static inline CActHandler* PartLookup(i32 coord) {
-    return (CActRegPool<CParticlez>::s_table.ResolveEntry(coord));
+    return &CActRegPool<CParticlez>::s_table[coord];
 }
 
 RVA_COMPGEN(0x00010e60, 0x1e, ??_GCFortressFlag@@UAEPAXI@Z)
@@ -119,9 +119,9 @@ CFortressFlag::CFortressFlag(CGameObject* obj)
 
 RVA(0x00046080, 0x102)
 void CFortressFlag::FireActivation(i32 coord) {
-    CActHandler* e = (CActRegPool<CFortressFlag>::s_table.ResolveEntry(coord));
+    CActHandler* e = &CActRegPool<CFortressFlag>::s_table[coord];
     if ((*e) != NULL) {
-        CActHandler* e2 = (CActRegPool<CFortressFlag>::s_table.ResolveEntry(coord));
+        CActHandler* e2 = &CActRegPool<CFortressFlag>::s_table[coord];
         (this->*((*e2)))();
     }
 }
@@ -129,7 +129,7 @@ void CFortressFlag::FireActivation(i32 coord) {
 RVA(0x000461e0, 0x18d)
 void CFortressFlag::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CFortressFlag>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CFortressFlag>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CFortressFlag::AdvanceAnim);
 }
 
@@ -284,9 +284,9 @@ CExplosion::CExplosion(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
 
 RVA(0x00047350, 0x102)
 void CExplosion::FireActivation(i32 id) {
-    CActHandler* e = (CActRegPool<CExplosion>::s_table.ResolveEntry(id));
+    CActHandler* e = &CActRegPool<CExplosion>::s_table[id];
     if ((*e) != NULL) {
-        CActHandler* e2 = (CActRegPool<CExplosion>::s_table.ResolveEntry(id));
+        CActHandler* e2 = &CActRegPool<CExplosion>::s_table[id];
         (this->*((*e2)))();
     }
 }
@@ -294,6 +294,5 @@ void CExplosion::FireActivation(i32 id) {
 RVA(0x000474b0, 0x18d)
 void RegisterExplosionActions() {
     ACT_NAME_ID(id, "A")
-    *CActRegPool<CExplosion>::s_table.ResolveEntry(id) =
-        static_cast<CActHandler>(&CExplosion::Update);
+    CActRegPool<CExplosion>::s_table[id] = static_cast<CActHandler>(&CExplosion::Update);
 }

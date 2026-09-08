@@ -79,9 +79,9 @@ CStatusBarSprite::CStatusBarSprite(CGameObject* obj)
 
 RVA(0x0010c4b0, 0x102)
 void CStatusBarSprite::FireActivation(i32 coord) {
-    CActHandler* e = (CActRegPool<CStatusBarSprite>::s_table.ResolveEntry(coord));
+    CActHandler* e = &CActRegPool<CStatusBarSprite>::s_table[coord];
     if ((*e) != NULL) {
-        CActHandler* e2 = (CActRegPool<CStatusBarSprite>::s_table.ResolveEntry(coord));
+        CActHandler* e2 = &CActRegPool<CStatusBarSprite>::s_table[coord];
         (this->*((*e2)))();
     }
 }
@@ -89,7 +89,7 @@ void CStatusBarSprite::FireActivation(i32 coord) {
 RVA(0x0010c610, 0x18d)
 void CStatusBarSprite::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CStatusBarSprite>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CStatusBarSprite>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CStatusBarSprite::AdvanceAnim);
 }
 

@@ -73,7 +73,7 @@ CActReg CActRegPool<CDroppedObjectShadow>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 struct CString;
 
 static inline CActHandler* DropLookup(i32 coord) {
-    return (CActRegPool<CDroppedObject>::s_table.ResolveEntry(coord));
+    return &CActRegPool<CDroppedObject>::s_table[coord];
 }
 
 RVA_COMPGEN(0x000124c0, 0x1e, ??_GCObjectDropper@@UAEPAXI@Z)
@@ -254,15 +254,15 @@ CObjectDropper::CObjectDropper(CGameObject* obj)
 
 RVA(0x000c5f80, 0x102)
 void CObjectDropper::FireActivation(i32 actId) {
-    if ((*((CActRegPool<CObjectDropper>::s_table.ResolveEntry(actId)))) != NULL) {
-        (this->*((*((CActRegPool<CObjectDropper>::s_table.ResolveEntry(actId))))))();
+    if ((CActRegPool<CObjectDropper>::s_table[actId]) != NULL) {
+        (this->*((CActRegPool<CObjectDropper>::s_table[actId])))();
     }
 }
 
 RVA(0x000c60e0, 0x18d)
 void CObjectDropper::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CObjectDropper>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CObjectDropper>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CObjectDropper::Update);
 }
 
@@ -436,13 +436,13 @@ void CDroppedObject::FireActivation(i32 coord) {
 
 RVA(0x000c6d30, 0x2ac)
 void CDroppedObject::RegisterActs() {
-    ACT_NAME_ID_CALL_REPORT(id, "A")
-    *(CActRegPool<CDroppedObject>::s_table.ResolveEntryCallReport(id)) =
+    ACT_NAME_ID(id, "A")
+    CActRegPool<CDroppedObject>::s_table[id] =
 
         static_cast<i32 (CUserLogic::*)()>(&CDroppedObject::AdvanceFall);
 
     ACT_NAME_ID(id2, "B")
-    *(CActRegPool<CDroppedObject>::s_table.ResolveEntryCallReport(id2)) =
+    CActRegPool<CDroppedObject>::s_table[id2] =
         static_cast<i32 (CUserLogic::*)()>(&CDroppedObject::AdvanceImpactAnimation);
 }
 
@@ -566,15 +566,15 @@ CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj)
 
 RVA(0x000c7750, 0x102)
 void CDroppedObjectShadow::FireActivation(i32 coord) {
-    if ((*((CActRegPool<CDroppedObjectShadow>::s_table.ResolveEntry(coord)))) != NULL) {
-        (this->*((*((CActRegPool<CDroppedObjectShadow>::s_table.ResolveEntry(coord))))))();
+    if ((CActRegPool<CDroppedObjectShadow>::s_table[coord]) != NULL) {
+        (this->*((CActRegPool<CDroppedObjectShadow>::s_table[coord])))();
     }
 }
 
 RVA(0x000c78b0, 0x18d)
 void CDroppedObjectShadow::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CDroppedObjectShadow>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CDroppedObjectShadow>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CDroppedObjectShadow::Advance);
 }
 

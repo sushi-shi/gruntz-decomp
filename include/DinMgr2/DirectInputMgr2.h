@@ -9,7 +9,7 @@
 #include <Enums.h>
 #include <Ints.h>
 
-#include <Gruntz/FixedPtrArray32.h>
+#include <Gruntz/InputDeviceGroup.h>
 #include <Mfc.h>
 #include <dinput.h>
 
@@ -64,13 +64,6 @@ GZ_ENUM_END(InputBindingSlot)
 GZ_ENUM_CONST_BEGIN(InputBindingConstants)
     INPUT_BINDING_COUNT = 0x20
 GZ_ENUM_CONST_END(InputBindingConstants)
-
-struct CInputDeviceGroup : public CFixedPtrArray32 {
-    CInputDeviceGroup() {
-        m_reserved00 = 0;
-        m_count = 0;
-    }
-};
 
 class DirectInputMgr2 {
 public:

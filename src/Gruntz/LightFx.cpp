@@ -97,16 +97,16 @@ CLightFx::CLightFx(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
 }
 RVA(0x0009d1c0, 0x102)
 void CLightFx::FireActivation(i32 id) {
-    CActHandler* e = (CActRegPool<CLightFx>::s_table.ResolveEntry(id));
+    CActHandler* e = &CActRegPool<CLightFx>::s_table[id];
     if ((*e) != NULL) {
-        (this->*(*((CActRegPool<CLightFx>::s_table.ResolveEntry(id)))))();
+        (this->*(CActRegPool<CLightFx>::s_table[id]))();
     }
 }
 
 RVA(0x0009d320, 0x18d)
 void CLightFx::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CLightFx>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CLightFx>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CLightFx::AdvanceAnim);
 }
 

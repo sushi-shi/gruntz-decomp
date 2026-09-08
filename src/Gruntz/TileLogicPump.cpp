@@ -232,9 +232,9 @@ CWarpStonePad::CWarpStonePad(CGameObject* obj)
 
 RVA(0x0010d8c0, 0x102)
 void CWarpStonePad::FireActivation(i32 coord) {
-    CActHandler* e = (CActRegPool<CWarpStonePad>::s_table.ResolveEntry(coord));
+    CActHandler* e = &CActRegPool<CWarpStonePad>::s_table[coord];
     if ((*e) != NULL) {
-        CActHandler* e2 = (CActRegPool<CWarpStonePad>::s_table.ResolveEntry(coord));
+        CActHandler* e2 = &CActRegPool<CWarpStonePad>::s_table[coord];
         (this->*((*e2)))();
     }
 }
@@ -242,7 +242,7 @@ void CWarpStonePad::FireActivation(i32 coord) {
 RVA(0x0010da20, 0x18d)
 void CWarpStonePad::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CWarpStonePad>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CWarpStonePad>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CWarpStonePad::AdvanceAnim);
 }
 
@@ -263,9 +263,9 @@ CTileTriggerSwitch::CTileTriggerSwitch(CGameObject* obj)
 
 RVA(0x0010dea0, 0x102)
 void CTileTriggerSwitch::FireActivation(i32 coord) {
-    CActHandler* e = (CActRegPool<CTileTriggerSwitch>::s_table.ResolveEntry(coord));
+    CActHandler* e = &CActRegPool<CTileTriggerSwitch>::s_table[coord];
     if ((*e) != NULL) {
-        CActHandler* e2 = (CActRegPool<CTileTriggerSwitch>::s_table.ResolveEntry(coord));
+        CActHandler* e2 = &CActRegPool<CTileTriggerSwitch>::s_table[coord];
         (this->*((*e2)))();
     }
 }
@@ -273,7 +273,7 @@ void CTileTriggerSwitch::FireActivation(i32 coord) {
 RVA(0x0010e000, 0x18d)
 void CTileTriggerSwitch::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CTileTriggerSwitch>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CTileTriggerSwitch>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CTileTriggerSwitch::AdvanceAnim);
 }
 
@@ -300,9 +300,9 @@ CTileTrigger::CTileTrigger(CGameObject* obj)
 
 RVA(0x0010e4a0, 0x102)
 void CTileTrigger::FireActivation(i32 coord) {
-    CActHandler* e = (CActRegPool<CTileTrigger>::s_table.ResolveEntry(coord));
+    CActHandler* e = &CActRegPool<CTileTrigger>::s_table[coord];
     if ((*e) != NULL) {
-        CActHandler* e2 = (CActRegPool<CTileTrigger>::s_table.ResolveEntry(coord));
+        CActHandler* e2 = &CActRegPool<CTileTrigger>::s_table[coord];
         (this->*((*e2)))();
     }
 }
@@ -310,7 +310,7 @@ void CTileTrigger::FireActivation(i32 coord) {
 RVA(0x0010e600, 0x18d)
 void CTileTrigger::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CTileTrigger>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CTileTrigger>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CTileTrigger::AdvanceAnim);
 }
 
@@ -331,9 +331,9 @@ CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), C
 
 RVA(0x0010ea80, 0x102)
 void CBrickz::FireActivation(i32 coord) {
-    CActHandler* e = (CActRegPool<CBrickz>::s_table.ResolveEntry(coord));
+    CActHandler* e = &CActRegPool<CBrickz>::s_table[coord];
     if ((*e) != NULL) {
-        CActHandler* e2 = (CActRegPool<CBrickz>::s_table.ResolveEntry(coord));
+        CActHandler* e2 = &CActRegPool<CBrickz>::s_table[coord];
         (this->*((*e2)))();
     }
 }
@@ -341,8 +341,7 @@ void CBrickz::FireActivation(i32 coord) {
 RVA(0x0010ebe0, 0x18d)
 void CBrickz::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CBrickz>::s_table.ResolveEntry(id)))) =
-        static_cast<i32 (CUserLogic::*)()>(&CBrickz::Trigger);
+    (CActRegPool<CBrickz>::s_table[id]) = static_cast<i32 (CUserLogic::*)()>(&CBrickz::Trigger);
 }
 
 RVA(0x0010ede0, 0x3)
@@ -409,21 +408,21 @@ CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj)
 
 RVA(0x0010f1e0, 0x102)
 void CCheckpointTrigger::FireActivation(i32 coord) {
-    CActHandler* e = (CActRegPool<CCheckpointTrigger>::s_table.ResolveEntry(coord));
+    CActHandler* e = &CActRegPool<CCheckpointTrigger>::s_table[coord];
     if ((*e) != NULL) {
-        CActHandler* e2 = (CActRegPool<CCheckpointTrigger>::s_table.ResolveEntry(coord));
+        CActHandler* e2 = &CActRegPool<CCheckpointTrigger>::s_table[coord];
         (this->*((*e2)))();
     }
 }
 
 RVA(0x0010f340, 0x2ac)
 void CCheckpointTrigger::RegisterActs() {
-    ACT_NAME_ID_CALL_REPORT(id, "A")
-    (*((CActRegPool<CCheckpointTrigger>::s_table.ResolveEntryCallReport(id)))) =
+    ACT_NAME_ID(id, "A")
+    (CActRegPool<CCheckpointTrigger>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CCheckpointTrigger::Act);
 
     ACT_NAME_ID(id2, "B")
-    (*((CActRegPool<CCheckpointTrigger>::s_table.ResolveEntryCallReport(id2)))) =
+    (CActRegPool<CCheckpointTrigger>::s_table[id2]) =
         static_cast<i32 (CUserLogic::*)()>(&CCheckpointTrigger::AdvanceCheckpointAnimation);
 }
 
@@ -576,9 +575,9 @@ CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj)
 
 RVA(0x0010fd10, 0x102)
 void CTileTriggerTransition::FireActivation(i32 coord) {
-    CActHandler* e = (CActRegPool<CTileTriggerTransition>::s_table.ResolveEntry(coord));
+    CActHandler* e = &CActRegPool<CTileTriggerTransition>::s_table[coord];
     if ((*e) != NULL) {
-        CActHandler* e2 = (CActRegPool<CTileTriggerTransition>::s_table.ResolveEntry(coord));
+        CActHandler* e2 = &CActRegPool<CTileTriggerTransition>::s_table[coord];
         (this->*((*e2)))();
     }
 }
@@ -586,7 +585,7 @@ void CTileTriggerTransition::FireActivation(i32 coord) {
 RVA(0x0010fe70, 0x18d)
 void CTileTriggerTransition::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CTileTriggerTransition>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CTileTriggerTransition>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CTileTriggerTransition::TransitionAct);
 }
 

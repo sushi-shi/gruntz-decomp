@@ -446,7 +446,7 @@ i32 CTriggerMgr::ResetCell(i32 playerIndex, i32 unitIndex, i32 force, i32 keep) 
     CoordPoolNode* node = g_coordPool.m_freeHead;
     Coord* slot = NULL;
     if (node->m_next != NULL) {
-        slot = &node->m_coord;
+        slot = &node->m_value;
         slot->m_x = playerIndex;
         slot->m_y = unitIndex;
         g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
@@ -1248,8 +1248,6 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
     CGrunt* hit;
     i32 moveKind;
     CString* typeRec;
-    CString* slot;
-    i32 grown;
     bool isG;
     bool isL;
     bool isP;
@@ -1351,15 +1349,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
         RESET_GRUNT_POWERED_STATE(cell)
     }
 
-    typeRec = g_typeColl.ScratchResolve(cell->m_logicRecord->m_eventCode);
-    slot = g_typeColl.Slots();
-    grown = g_typeColl.m_grown;
-    while (grown--) {
-        if (slot != NULL) {
-            slot->CString::CString();
-        }
-        slot++;
-    }
+    typeRec = &g_typeColl[cell->m_logicRecord->m_eventCode];
     isI2 = (strcmp(*typeRec, "I") == 0);
     if (isI2) {
         LoadTileArrivalFx(
@@ -1422,15 +1412,7 @@ i32 CTriggerMgr::ClearCell(
     if (cell->m_entranceActive != false) {
         return 0;
     }
-    CString* typeRec = g_typeColl.ScratchResolve(cell->m_logicRecord->m_eventCode);
-    CString* p = g_typeColl.Slots();
-    i32 n = g_typeColl.m_grown;
-    while (n--) {
-        if (p != NULL) {
-            p->CString::CString();
-        }
-        p++;
-    }
+    CString* typeRec = &g_typeColl[cell->m_logicRecord->m_eventCode];
     bool isI = (strcmp(*typeRec, "I") == 0);
     if (isI) {
         this->LoadTileArrivalFx(

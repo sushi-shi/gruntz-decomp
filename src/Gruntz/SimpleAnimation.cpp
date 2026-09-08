@@ -49,8 +49,8 @@ CSimpleAnimation::CSimpleAnimation(CGameObject* obj)
 
 RVA(0x000abc10, 0x102)
 void CSimpleAnimation::FireActivation(i32 idx) {
-    if (*CActRegPool<CSimpleAnimation>::s_table.ResolveEntry(idx) != NULL) {
-        CActHandler fn = *CActRegPool<CSimpleAnimation>::s_table.ResolveEntry(idx);
+    if (CActRegPool<CSimpleAnimation>::s_table[idx] != NULL) {
+        CActHandler fn = CActRegPool<CSimpleAnimation>::s_table[idx];
         (this->*fn)();
     }
 }
@@ -58,7 +58,7 @@ void CSimpleAnimation::FireActivation(i32 idx) {
 RVA(0x000abd70, 0x18d)
 void RegisterSimpleAnimLogic() {
     ACT_NAME_ID(idx, "A")
-    CActHandler* dslot = CActRegPool<CSimpleAnimation>::s_table.ResolveEntry(idx);
+    CActHandler* dslot = &CActRegPool<CSimpleAnimation>::s_table[idx];
     *dslot = static_cast<CActHandler>(&CSimpleAnimation::AdvanceAnim);
 }
 

@@ -42,16 +42,16 @@ CSingleAnimation::CSingleAnimation(CGameObject* obj)
 
 RVA(0x000aea20, 0x102)
 void CSingleAnimation::FireActivation(i32 id) {
-    CActHandler* e = (CActRegPool<CSingleAnimation>::s_table.ResolveEntry(id));
+    CActHandler* e = &CActRegPool<CSingleAnimation>::s_table[id];
     if ((*e) != NULL) {
-        (this->*(*((CActRegPool<CSingleAnimation>::s_table.ResolveEntry(id)))))();
+        (this->*(CActRegPool<CSingleAnimation>::s_table[id]))();
     }
 }
 
 RVA(0x000aeb80, 0x18d)
 void CSingleAnimation::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CSingleAnimation>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CSingleAnimation>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CSingleAnimation::AdvanceAnim);
 }
 

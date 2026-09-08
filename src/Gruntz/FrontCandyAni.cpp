@@ -119,16 +119,16 @@ CEyeCandyAni::CEyeCandyAni(CGameObject* obj)
 
 RVA(0x000acbb0, 0x102)
 void CEyeCandyAni::FireActivation(i32 id) {
-    CActHandler* e = (CActRegPool<CEyeCandyAni>::s_table.ResolveEntry(id));
+    CActHandler* e = &CActRegPool<CEyeCandyAni>::s_table[id];
     if ((*e) != NULL) {
-        (this->*(*((CActRegPool<CEyeCandyAni>::s_table.ResolveEntry(id)))))();
+        (this->*(CActRegPool<CEyeCandyAni>::s_table[id]))();
     }
 }
 
 RVA(0x000acd10, 0x18d)
 void CEyeCandyAni::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CEyeCandyAni>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CEyeCandyAni>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CEyeCandyAni::AdvanceAnim);
 }
 
@@ -148,9 +148,9 @@ CFrontCandyAni::CFrontCandyAni(CGameObject* obj)
 
 RVA(0x000ad1b0, 0x102)
 void CFrontCandyAni::FireActivation(i32 coord) {
-    CActHandler* e = (CActRegPool<CFrontCandyAni>::s_table.ResolveEntry(coord));
+    CActHandler* e = &CActRegPool<CFrontCandyAni>::s_table[coord];
     if ((*e) != NULL) {
-        CActHandler* e2 = (CActRegPool<CFrontCandyAni>::s_table.ResolveEntry(coord));
+        CActHandler* e2 = &CActRegPool<CFrontCandyAni>::s_table[coord];
         (this->*((*e2)))();
     }
 }
@@ -158,7 +158,7 @@ void CFrontCandyAni::FireActivation(i32 coord) {
 RVA(0x000ad310, 0x18d)
 void CFrontCandyAni::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CFrontCandyAni>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CFrontCandyAni>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CFrontCandyAni::AdvanceAnim);
 }
 

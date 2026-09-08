@@ -82,7 +82,7 @@ i32 CSplashState::LeaveState(GameStateId nextState) {
 }
 
 inline b32 CSplashState::IsAdvanceRequested() {
-    CFixedPtrArray32* actors = g_actorList;
+    CInputDeviceGroup* actors = g_actorList;
     i32 count = actors->m_count;
     for (i32 i = 0; i < count; i++) {
         if (actors->m_items[i]->m_pressedButtons & IDX(INPUT_BUTTON0)) {
@@ -111,7 +111,7 @@ i32 CSplashState::Render() {
     }
 
     {
-        CFixedPtrArray32* L = g_actorList;
+        CInputDeviceGroup* L = g_actorList;
         for (i32 i = 0; i < L->m_count; i++) {
             L->m_items[i]->Poll();
         }

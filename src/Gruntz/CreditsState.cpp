@@ -174,14 +174,14 @@ i32 CCreditsState::Render() {
     TickSoundVolumeRamps(m_world->m_soundRegistry);
 
     {
-        CFixedPtrArray32* L = g_actorList;
+        CInputDeviceGroup* L = g_actorList;
         for (i32 i = 0; i < L->m_count; i++) {
             L->m_items[i]->Poll();
         }
     }
 
     {
-        CFixedPtrArray32* L = g_actorList;
+        CInputDeviceGroup* L = g_actorList;
         i32 n = L->m_count;
         for (i32 j = 0; j < n; j++) {
             if (L->m_items[j]->m_pressedButtons & IDX(INPUT_BUTTON_MASK)) {

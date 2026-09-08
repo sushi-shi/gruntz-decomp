@@ -38,7 +38,6 @@
 #include <Wap32/TileGeometry.h>
 #include <Wap32/ZVec.h>
 
-#include <new>
 #include <stdlib.h>
 
 DATA(0x0020d218)
@@ -72,23 +71,11 @@ CActReg CActRegPool<CWarlord>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
     if (id_ == 0) {                                                                                \
         ActInsertId(key, g_typeCounter);                                                           \
         id_ = g_typeCounter;                                                                       \
-        CString* slot_ = g_typeColl.ScratchResolve(g_typeCounter);                                 \
-        CString* p_ = g_typeColl.Slots();                                                          \
-        for (i32 n_ = g_typeColl.m_grown; n_--; p_++) {                                            \
-            ::new (static_cast<void*>(p_)) CString;                                                \
-        }                                                                                          \
-        *slot_ = key;                                                                              \
+        g_typeColl[g_typeCounter] = key;                                                           \
         ++g_typeCounter;                                                                           \
     }
 
 #define REGISTER_ACTION(key, handler)                                                              \
-    do {                                                                                           \
-        REGISTER_NAME(key)                                                                         \
-        *CActReg::AsElem(CActRegPool<CWarlord>::s_table._zdvec::IndexToPtr(id_)) =                 \
-            static_cast<CActHandler>(handler);                                                     \
-    } while (0)
-
-#define REGISTER_ACTION_TYPED(key, handler)                                                        \
     do {                                                                                           \
         REGISTER_NAME(key)                                                                         \
         CActRegPool<CWarlord>::s_table[id_] = static_cast<CActHandler>(handler);                   \
@@ -550,8 +537,8 @@ fail:
 RVA(0x00044640, 0x102)
 void CWarlord::FireActivation(i32 key) {
 
-    if (*CActRegPool<CWarlord>::s_table.ResolveEntry(key) != NULL) {
-        CActHandler h = *CActRegPool<CWarlord>::s_table.ResolveEntry(key);
+    if (CActRegPool<CWarlord>::s_table[key] != NULL) {
+        CActHandler h = CActRegPool<CWarlord>::s_table[key];
         (this->*h)();
     }
 }
@@ -563,7 +550,7 @@ void RegisterWarlordActions() {
     REGISTER_ACTION("C", &CWarlord::BuildFortSplashParticles);
     REGISTER_ACTION("D", &CWarlord::UpdatePanicState);
     REGISTER_ACTION("E", &CWarlord::FinishJoyAnimation);
-    REGISTER_ACTION_TYPED("F", &CWarlord::FinishBattlecryAnimation);
+    REGISTER_ACTION("F", &CWarlord::FinishBattlecryAnimation);
 }
 
 #undef REGISTER_ACTION

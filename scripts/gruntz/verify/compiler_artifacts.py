@@ -31,9 +31,6 @@ from gruntz.verify.srcscan import blank_comments, rel, source_files
 PLACEMENT_ALLOW = Counter({
     ("include/Wap32/ZDArray.h", "T"): 1,
     ("include/Wap32/ZDArrayIndex.h", "T"): 1,
-    ("src/Gruntz/BattlezSpecialAnim.cpp", "CString"): 4,
-    ("src/Gruntz/GruntCombat.cpp", "CString"): 1,
-    ("src/Gruntz/Warlord.cpp", "CString"): 1,
 })
 
 DTOR_CALL_ALLOW = Counter({
@@ -56,6 +53,7 @@ PLACEMENT_RE = re.compile(
 DTOR_CALL_RE = re.compile(
     r"(?:->|\.)\s*(?:[A-Za-z_]\w*::)?~([A-Za-z_]\w*)\s*\("
 )
+CTOR_CALL_RE = re.compile(r"(?:->|\.)\s*([A-Za-z_]\w*)\s*::\s*\1\s*\(")
 FORCE_HELPER_RE = re.compile(
     r"\b(Realize[A-Z]\w*|ForceEmit\w*|EmitCompiler\w*)\s*"
     r"\([^;{}]*\)\s*\{",
@@ -90,6 +88,9 @@ def source_findings(files=None, *, placement_allow=PLACEMENT_ALLOW,
             findings.append(
                 f"compiler allocation call: {site}:{line}: {match.group(0).strip()}"
             )
+        for match in CTOR_CALL_RE.finditer(text):
+            line = text.count("\n", 0, match.start()) + 1
+            findings.append(f"explicit constructor call: {site}:{line}: {match.group(1)}")
         for match in FORCE_HELPER_RE.finditer(text):
             line = text.count("\n", 0, match.start()) + 1
             findings.append(

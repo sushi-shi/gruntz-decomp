@@ -325,7 +325,7 @@ reached:
         i32 cellY = p->m_row;
         Coord* slot = NULL;
         if (rec->m_next != NULL) {
-            slot = &rec->m_coord;
+            slot = &rec->m_value;
             slot->m_x = cellX;
             slot->m_y = cellY;
             g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;

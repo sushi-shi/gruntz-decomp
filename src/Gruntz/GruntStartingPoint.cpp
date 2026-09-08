@@ -37,7 +37,7 @@ CGruntStartingPoint::CGruntStartingPoint(CGameObject* obj)
 }
 
 static inline CActHandler* ResolveGruntStartingPointAct(i32 coord) {
-    return (CActRegPool<CGruntStartingPoint>::s_table.ResolveEntry(coord));
+    return &CActRegPool<CGruntStartingPoint>::s_table[coord];
 }
 
 RVA(0x0003e1a0, 0x102)

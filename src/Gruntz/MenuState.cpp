@@ -55,7 +55,7 @@
 #include <string.h>
 
 DATA(0x00245574)
-CFixedPtrArray32* g_actorList = NULL;
+CInputDeviceGroup* g_actorList = NULL;
 DATA(0x00251608)
 i32 g_versionMajor = 0;
 DATA(0x0025160c)
@@ -286,7 +286,7 @@ i32 CMenuState::LeaveState(GameStateId) {
 }
 
 inline void CMenuState::HandleControllerInput() {
-    CFixedPtrArray32* actors = g_actorList;
+    CInputDeviceGroup* actors = g_actorList;
     i32 count = actors->m_count;
     i32 i;
     for (i = 0; i < count; i++) {
@@ -331,7 +331,7 @@ inline void CMenuState::HandleControllerInput() {
 
 RVA(0x000a0750, 0x1d0)
 i32 CMenuState::Render() {
-    CFixedPtrArray32* L = g_actorList;
+    CInputDeviceGroup* L = g_actorList;
 
     for (i32 i = 0; i < L->m_count; i++) {
         L->m_items[i]->Poll();

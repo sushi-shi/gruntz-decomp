@@ -108,16 +108,16 @@ CRollingBall::CRollingBall(CGameObject* obj)
 
 RVA(0x000afde0, 0x102)
 void CRollingBall::FireActivation(i32 id) {
-    CActHandler* e = (CActRegPool<CRollingBall>::s_table.ResolveEntry(id));
+    CActHandler* e = &CActRegPool<CRollingBall>::s_table[id];
     if ((*e) != NULL) {
-        (this->*(*((CActRegPool<CRollingBall>::s_table.ResolveEntry(id)))))();
+        (this->*(CActRegPool<CRollingBall>::s_table[id]))();
     }
 }
 
 RVA(0x000aff40, 0x18d)
 void CRollingBall::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CRollingBall>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CRollingBall>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CRollingBall::Update);
 }
 

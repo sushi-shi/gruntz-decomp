@@ -13,12 +13,12 @@
 #include <Gruntz/BankMgr.h>
 #include <Gruntz/Demo.h>
 #include <Gruntz/ErrorStringId.h>
-#include <Gruntz/FixedPtrArray32.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameStateId.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/InputDeviceGroup.h>
 #include <Gruntz/SoundCueRegistryInline.h>
 #include <Gruntz/SplashState.h>
 #include <Rez/RezArchive.h>
@@ -108,7 +108,7 @@ i32 CHelpState::Render() {
 
     TickSoundVolumeRamps(m_world->m_soundRegistry);
 
-    CFixedPtrArray32* list = g_actorList;
+    CInputDeviceGroup* list = g_actorList;
     i32 i;
     for (i = 0; i < list->m_count; i++) {
         list->m_items[i]->Poll();

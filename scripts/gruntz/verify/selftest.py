@@ -119,6 +119,16 @@ class CompilerArtifactControls(unittest.TestCase):
         findings = self._scan("void F(CThing* p) { p->~CThing(); }\n")
         self.assertTrue(any("explicit destructor call" in row for row in findings))
 
+    def test_explicit_constructor_expression_reaches_gate(self):
+        from gruntz.verify import compiler_artifacts as ca
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / "Probe.cpp"
+            path.write_text("void F(CString* p) { p->CString::CString(); }\n")
+            with mock.patch.object(ca, "base_only_suspicious", return_value=[]):
+                findings = ca.gate_findings([path])
+        self.assertTrue(any("explicit constructor call" in row for row in findings))
+        self.assertEqual(self._scan("void F(CThing* p) { p->CThing::Reset(); }\n"), [])
+
     def test_reviewed_typed_teardown_callback_passes(self):
         from gruntz.verify import compiler_artifacts as ca
         with tempfile.TemporaryDirectory() as td:

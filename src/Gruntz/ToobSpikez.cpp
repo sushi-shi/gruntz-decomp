@@ -81,9 +81,9 @@ CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
 
 RVA(0x00114860, 0x102)
 void CToobSpikez::FireActivation(i32 coord) {
-    CActHandler* e = (CActRegPool<CToobSpikez>::s_table.ResolveEntry(coord));
+    CActHandler* e = &CActRegPool<CToobSpikez>::s_table[coord];
     if (*e != NULL) {
-        CActHandler* e2 = (CActRegPool<CToobSpikez>::s_table.ResolveEntry(coord));
+        CActHandler* e2 = &CActRegPool<CToobSpikez>::s_table[coord];
         (this->*(*e2))();
     }
 }
@@ -91,8 +91,7 @@ void CToobSpikez::FireActivation(i32 coord) {
 RVA(0x001149c0, 0x18d)
 void CToobSpikez::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    *CActRegPool<CToobSpikez>::s_table.ResolveEntry(id) =
-        static_cast<CActHandler>(&CToobSpikez::AdvanceAnim);
+    CActRegPool<CToobSpikez>::s_table[id] = static_cast<CActHandler>(&CToobSpikez::AdvanceAnim);
 }
 
 RVA(0x00114bc0, 0x17)
