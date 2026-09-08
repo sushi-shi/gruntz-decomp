@@ -25,8 +25,21 @@ overflow behavior, initialization range, base layout and lifetime. Then restore
 the complete template family, including its existing sibling specializations;
 do not move a type-specific loop into a generic base to preserve one caller.
 
-The negative control is `CButeTree`: a no-op destructor callback and erased
-pointer payload fit several `zSymTab<T>` arguments. That evidence proposes a
-template family but does not license an arbitrary specialization. The confirmed replacement now compiles: both typed index bodies and the
-shared lifetime functions remain exact. The caller inlining residues remain
-open; the complete application measurements are in the template audit.
+`CButeTree` supplies a useful limit on byte-only identification: `zSymTab<i32>`,
+`zSymTab<char>`, and `zSymTab<void*>` compile to the same one-byte teardown
+adapter and erased lookup boundary under VC5. The earlier audit wrongly used
+that ambiguity to leave the template argument unresolved after tracing its
+usage. Every stored value is the incrementing action-ID counter; lookup results
+become integer event codes and array indices. That complete use family selects
+`zSymTab<i32>` as the reconstruction. It does not claim recovery of the exact
+original declaration.
+
+For reverse use, distinguish an erased implementation's inability to select a
+type from the complete program's semantic evidence. Check producers, consumers,
+arithmetic, sentinel values, dereferences, and ownership before ranking otherwise
+byte-equivalent specializations. A byte-equivalent alternative with a different
+semantic role is a compiler control, not an equally supported source model.
+
+Both typed array index bodies and the shared lifetime functions remain exact.
+The caller inlining residues remain open; the complete application measurements
+are in the template audit.

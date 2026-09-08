@@ -25,7 +25,7 @@ RVA_DYNINIT(0x0016e6a0, 0x26, g_buteTree)
 RVA_DYNINIT(0x0016e6d0, 0xe, g_buteTree)
 RVA_DYNINIT(0x0016e6e0, 0x3e, g_buteTree)
 DATA(0x002bf620)
-CButeTree g_buteTree(&ButeTreeNopFree, zPtrColl::PASSIVE);
+zSymTab<i32> g_buteTree(zPtrColl::PASSIVE);
 
 RVA(0x0016e7f0, 0x1cf)
 i32 CUserLogic::SerializeDispatch(
@@ -79,8 +79,7 @@ i32 CUserLogic::SerializeDispatch(
     return 1;
 }
 
-RVA_COMPGEN(0x0016e9c0, 0x45, ??_GCButeTree@@UAEPAXI@Z)
-RVA(0x0016ea10, 0x1)
-void ButeTreeNopFree(void*) {}
+RVA_COMPGEN(0x0016e9c0, 0x45, ??_G?$zSymTab@H@@UAEPAXI@Z)
+RVA_COMPGEN(0x0016ea10, 0x1, ?dtf@?$zSymTab@H@@CAXPAH@Z)
 
 RVA_COMPGEN(0x0016ea20, 0x51, ??_G?$zDArray@VCString@@@@UAEPAXI@Z)

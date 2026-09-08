@@ -77,7 +77,7 @@ pre-audit `_zvec` model. Preserve the complete derived size and verified offsets
 The source-facing return is a reference; identical pointer/reference machine
 returns do not justify keeping a pointer-only API.
 
-### `CButeTree`: the family is stronger than the argument identity
+### `CButeTree`: usage selects `zSymTab<i32>`
 
 The same surviving header declares a fieldless `zSymTab<T>` derived from
 `zPTree`, forwarding typed insert/lookup/add calls and binding a typed teardown
@@ -85,13 +85,20 @@ adapter. The current `CButeTree` has the same erased forwarding surface,
 passive cleanup, and an independently emitted one-byte no-op callback at
 0x16ea10. Its global stores action IDs as pointer-sized payloads.
 
-These facts support the template family, but do not select `T`: multiple scalar
-or pointer instantiations have the same no-op pseudo-destructor and erased
-payload operations. Do not replace the class with a guessed specialization.
-The next evidence should be a surviving original declaration, a relevant debug
-type/instantiation record, or an unambiguous typed use. Generated labels are not
-independent evidence. The existing CButeMgr symbol table already uses real
-`zSymTab<CButeMgr::CSymTabItem>` and is a positive control.
+The complete producer/consumer family selects an integer interpretation:
+`g_typeCounter` starts at 2000, each insertion stores that counter's value,
+and registration increments it. Lookup results are tested against zero, used
+as array indices, and stored as integer event codes. The payloads are never
+dereferenced as objects. The existing CButeMgr symbol table already uses real
+`zSymTab<CButeMgr::CSymTabItem>` and is a positive control for the family.
+
+The prior audit over-weighted the fact that several scalar/pointer arguments
+emit identical code. That compiler control limits recovery of the exact original
+declaration; it does not defeat the usage-backed `i32` reconstruction. The
+follow-up replaces `CButeTree` and its separate no-op callback with the shared
+`zSymTab<i32>` specialization. Passive cleanup, pointer-encoded ID storage,
+the global owner, and its complete base layout remain the retail operations.
+The adoption decision is `nolf-zsymtab-action-ids` in the lineage ledger.
 
 ### Arrays, pools and lists needing more evidence
 
@@ -168,7 +175,7 @@ The aggregate hides large local changes: `RegisterGruntActions` moves from
 `StepRowUnits` from 83.512184% to 41.490196%. These caller residues are open,
 not certified source closures.
 
-The registrar's direct cause is specifically the newly header-visible ordinary
+In that array stage, the registrar's direct cause is the newly header-visible ordinary
 `_zdvec::IndexToPtr`, not the separate unmarked-template compiler exception.
 It loses 20 of retail's 35 accessor calls and gains 20 calls each to `GrowTo`,
 `GetRetAddr`, and `CVariantSlot::Set`. The raw accessor expands bounds, growth,
@@ -190,8 +197,9 @@ skill, and [reusable pattern](patterns/vc5-template-members-inline-without-inlin
 The follow-up AST census still parses all 282 TUs without errors or uncovered
 files. It has 93 current candidates; the 94 review rows include one explicit
 removed-candidate row for `CTypeCollRuntime`. `_zvec` measures 28 bytes,
-`_zdvec` 36, with derived fields at +0x1c/+0x20. The confirmed correction does
-not establish `CButeTree`'s argument or a primary template for the other nine.
+`_zdvec` 36, with derived fields at +0x1c/+0x20. This array correction
+initially left `CButeTree` and the other nine candidates unchanged. The later
+usage-backed tree application is recorded below.
 
 Further raw list evidence supports retaining their erased base: sound, grid,
 and Rez callers share `CLTBaseList::InsertFirst` at 0x1390e0. The sound ramp
@@ -208,9 +216,10 @@ derived sizes and offsets. The optional whole-lineage validator also reports
 30 pre-existing metadata findings, outside the three new adoption rows; these
 are not hidden by the successful build gates.
 
-## Reassessment of the ten remaining records
+## Reassessment of the ten initially unresolved records
 
-The hypothesis that all ten have a template origin remains open. The audit's
+`CButeTree` is now reconstructed as `zSymTab<i32>` from its complete usage.
+Template origins remain open for the other nine records. The audit's
 unresolved dispositions do not certify the current names as authored concrete
 classes. Exact original names are not a prerequisite for reconstruction:
 independent layout, ownership, typed-use, and complete-family agreement can
@@ -219,7 +228,7 @@ facts actually distinguish from its alternatives.
 
 | Records | Positive evidence | What the follow-up establishes |
 | --- | --- | --- |
-| `CButeTree` | Complete fieldless `zPTree` wrapper and teardown-adapter family strongly support `zSymTab<T>`. | A real VC5 control using the existing shared header instantiates `i32`, `char`, and `void*`. All three have the current wrapper's complete size, emit a one-byte `ret` teardown adapter, and forward lookup to the same erased callee. The family is strong; these operations do not select the argument. |
+| `CButeTree` | Complete fieldless `zPTree` wrapper plus the integer ID producer/consumer family. | Replaced with `zSymTab<i32>`. The real VC5 `i32`/`char`/`void*` control proves that byte-only analysis cannot select the original argument; the stored counter, integer event-code consumers, and array indexing select the reconstruction. |
 | `CFixedPtrArray32`, `CInputDeviceGroup` | Complete 32-element inline pointer storage and typed input-device consumers. | The array/group relationship could hide a template or an embedded template member. `CLithSimpAryStat<CInputDevBase*,32>` explains the slots but lacks the group's two dwords and append/count API. `CFastMoArray<T>` is heap-backed. Neither is a demonstrated replacement for the complete owner. |
 | `FreeNodePool` | Typed contiguous allocation, a free chain, and a configurable payload offset are generic-pool evidence. | The surviving `ObjectBank<T>` uses a larger paged `StructBank`, and `CObjectBank<T>` allocates individual objects through a counted linked list. Neither explains this 16-byte, single-block owner. A different primary template remains possible. |
 | `CBrickzNodePool`, `CBrickzCellNodePool` | Closely parallel complete allocation/linking/free families support investigating shared generic origin. | The allocation and teardown instructions independently prove reversed ownership fields: node storage is +4, cell storage is +0. The extra cell search-pointer store is also real. One unchanged primary template cannot explain both layouts; separate templates, specializations, or another owner layer remain possible. |
@@ -237,4 +246,34 @@ have been exhausted.
 The new controls are under `build/audits/template-application/`: the seven raw
 pool/array bodies, `symtab-argument-probe.*`, `symtab-argument-verdict.txt`,
 `register-grunt-inline-model.txt`, `register-grunt-semdiff.txt`, and the verified
-`oracles/` copies. These checks make no further production C++ changes.
+`oracles/` copies. The array/list/pool checks make no further production C++
+changes; the tree follow-up removes the invented class and callback.
+
+## Usage-backed tree application
+
+The actual VC5 build of `zSymTab<i32>` preserves all five audited retail bodies:
+the 69-byte deleting destructor at 0x16e9c0, one-byte scalar teardown adapter at
+0x16ea10, 38-byte global initializer at 0x16e6a0, 62-byte global teardown at
+0x16e6e0, and eight-byte secondary-base adjustor at 0x16ea80. The comparison
+resolves every ordered relocation and DIR32 addend. The adjustor's `??_E`
+reference follows its actual COFF weak default to the `??_G` implementation;
+the normalizer independently checks that no strong definition overrides it.
+
+The scored tree bodies remain 100%. Overall current fuzzy moves from the array
+application's 94.69956% to 94.77745% (+0.07789 points); against merged main's
+95.75678% the complete PR is -0.97933 points. The same 1,167,465-byte denominator
+is used. The tree declaration also changes caller codegen: the registrar's
+current score is now 5.06812%, with 21 expanded raw-accessor sites, 155 calls,
+and 178 branches; its historical 100% is retained. This is an
+identity correction; no unrelated caller spelling is changed to steer scores.
+
+The full rebuild and final MAX/fast/normal gates pass after banking the correct
+source model. All 4,429 historical RVA maxima are preserved; neither renamed
+tree function loses its history. The final pylibclang inventory covers 282 TUs,
+1,852 records, 442 owned records, and 92 current candidates without parse errors
+or uncovered files. The 94 review rows now include two removed substitutes.
+The typed tree and its global retain the complete 44-byte layout.
+
+Evidence is retained under `build/audits/template-application/tree-*`, including
+the producer/consumer plan, before/after reports, raw relocation audit, build
+logs, bank comparison, and fresh inventory log.
