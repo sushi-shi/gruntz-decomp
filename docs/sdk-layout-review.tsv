@@ -1,0 +1,69 @@
+file	record	fields	disposition	evidence
+include/Gruntz/AmbientSound.h	AmbientPoint	m_x, m_y	retain-distinct	Game ambient-sound attenuation coordinates.
+include/Gruntz/Brickz.h	BrickzCellNode	m_searchNode, m_cellPrev, m_cellNext	retain-distinct	Intrusive Brickz cell/search links, allocated by its engine owner.
+include/Bute/ButeValue.h	ButeIntPoint	m_a, m_b	retain-distinct	Lineage decision bute-string-point-rect-api.
+include/Bute/ButeValue.h	ButeIntRect	m_a, m_b, m_c, m_d	retain-distinct	Lineage decision bute-string-point-rect-api.
+include/Bute/ARange.h	CARange	m_min, m_max	retain-distinct	Surviving range min/max API, not complex arithmetic.
+include/Gruntz/ActionArea.h	union_decl {anonymous, m_timing}	anonymous, m_timing	retain-distinct	Game timing/clock representation; clock and serialization uses distinguish it from SDK geometry.
+include/Gruntz/AniPlayer.h	struct_decl {m_windowLo, m_windowHi}	m_windowLo, m_windowHi	retain-distinct	Game timing/clock representation; clock and serialization uses distinguish it from SDK geometry.
+src/Rez/RezBufferObject.cpp	CArray<RezElem40, const RezElem40 &>	m_pData, m_nSize, m_nMaxSize, m_nGrowBy	actual-sdk	Actual AFXTEMPL.H instantiation, not a project record definition.
+src/DDrawMgr/FaderMgr.cpp	CArray<CFader *, CFader *>	m_pData, m_nSize, m_nMaxSize, m_nGrowBy	actual-sdk	Actual AFXTEMPL.H instantiation, not a project record definition.
+src/DDrawMgr/ShadeTableCache.cpp	CArray<CShadeTable *, CShadeTable *>	m_pData, m_nSize, m_nMaxSize, m_nGrowBy	actual-sdk	Actual AFXTEMPL.H instantiation, not a project record definition.
+src/Gruntz/ArraySerialize.cpp	CArray<PLAYLISTINFOSTRUCT *, PLAYLISTINFOSTRUCT *>	m_pData, m_nSize, m_nMaxSize, m_nGrowBy	actual-sdk	Actual AFXTEMPL.H instantiation, not a project record definition.
+include/Lith/BaseHash.h	CBaseHash	m_nNumBins, m_pBinAry	retain-distinct	Surviving LithTech bin count and bin array.
+include/Lith/BaseList.h	CBaseListItem	m_pNext, m_pPrev	retain-distinct	Surviving intrusive engine list links.
+include/Gruntz/BattlezMapConfig.h	struct_decl {m_routeClockLo, m_routeClockHi, m_routeWindowLo, m_routeWindowHi}	m_routeClockLo, m_routeClockHi, m_routeWindowLo, m_routeWindowHi	retain-distinct	Game timing/clock representation; clock and serialization uses distinguish it from SDK geometry.
+include/Gruntz/GameMode.h	struct_decl {m_frameIntervalLo, m_frameIntervalHi}	m_frameIntervalLo, m_frameIntervalHi	retain-distinct	Game timing/clock representation; clock and serialization uses distinguish it from SDK geometry.
+include/Gruntz/MapMgr.h	CBrickzCellNodePool	m_storage, m_freeList, m_count	retain-distinct	Brickz cell-node allocator storage/free-list/count.
+include/Gruntz/MapMgr.h	CBrickzNodePool	m_freeList, m_storage, m_count	retain-distinct	Brickz node allocator storage/free-list/count.
+include/Wap32/Wap32.h	CGameWnd	m_hwnd, m_owner, m_closeGuard	retain-distinct	Game window handle/owner/close guard, not an SDK device context.
+include/Gruntz/Grunt.h	union_decl {anonymous, m_arrivalVoiceTiming}	anonymous, m_arrivalVoiceTiming	retain-distinct	Game timing/clock representation; clock and serialization uses distinguish it from SDK geometry.
+include/Gruntz/Grunt.h	struct_decl {anonymous, anonymous}	anonymous, anonymous	retain-distinct	Game timing/clock representation; clock and serialization uses distinguish it from SDK geometry.
+include/Gruntz/Grunt.h	union_decl {m_arrivalVoiceWindow, anonymous}	m_arrivalVoiceWindow, anonymous	retain-distinct	Game timing/clock representation; clock and serialization uses distinguish it from SDK geometry.
+include/Gruntz/Grunt.h	struct_decl {m_arrivalVoiceWindowLo, m_arrivalVoiceWindowHi}	m_arrivalVoiceWindowLo, m_arrivalVoiceWindowHi	retain-distinct	Game timing/clock representation; clock and serialization uses distinguish it from SDK geometry.
+include/Gruntz/Grunt.h	struct_decl {m_direction, m_step}	m_direction, m_step	retain-distinct	Motion direction and step vectors.
+include/Gruntz/GruntVoice.h	union_decl {m_duration, anonymous}	m_duration, anonymous	retain-distinct	Game timing/clock representation; clock and serialization uses distinguish it from SDK geometry.
+include/Gruntz/GruntVoice.h	struct_decl {m_durationMs, m_durationHi}	m_durationMs, m_durationHi	retain-distinct	Game timing/clock representation; clock and serialization uses distinguish it from SDK geometry.
+include/Lith/BaseList.h	CLTBaseList	m_pFirst, m_pLast	retain-distinct	Surviving intrusive engine first/last links.
+include/Gruntz/MapMgr.h	union_decl {m_rows, m_rowInts, m_rowBytes}	m_rows, m_rowInts, m_rowBytes	retain-distinct	Value/pointer/ABI alternatives; no SDK record fields redeclared.
+include/Io/MoviePlayer.h	union_decl {m_forceSingleRow, m_interlaced}	m_forceSingleRow, m_interlaced	retain-distinct	Value/pointer/ABI alternatives; no SDK record fields redeclared.
+include/Gruntz/ObjectDropper.h	union_decl {anonymous, m_dropTiming}	anonymous, m_dropTiming	retain-distinct	Game timing/clock representation; clock and serialization uses distinguish it from SDK geometry.
+include/Gruntz/SerialRecords.h	CPairRecord	m_start, m_duration	retain-distinct	Serialized clock start and duration.
+include/Gruntz/PathHazard.h	CPathWaypoint	m_x, m_y	retain-distinct	Game path coordinates.
+include/Gruntz/Play.h	Anchor	m_x, m_y	retain-distinct	Game viewport anchor.
+include/Gruntz/Play.h	ClockInterval	m_start, m_interval	retain-distinct	Game clock start and interval.
+include/Gruntz/SBI_StatzTabGruntBar.h	union_decl {m_timerWindow, anonymous}	m_timerWindow, anonymous	retain-distinct	Game timing/clock representation; clock and serialization uses distinguish it from SDK geometry.
+include/Gruntz/SBI_StatzTabGruntBar.h	struct_decl {m_timerWindowLo, m_timerWindowHi}	m_timerWindowLo, m_timerWindowHi	retain-distinct	Game timing/clock representation; clock and serialization uses distinguish it from SDK geometry.
+include/Gruntz/StatusBarMgr.h	struct_decl {m_intervalLo, m_intervalHi}	m_intervalLo, m_intervalHi	retain-distinct	Game timing/clock representation; clock and serialization uses distinguish it from SDK geometry.
+include/Gruntz/StatusBarMgr.h	union_decl {m_value, m_counter}	m_value, m_counter	retain-distinct	Value/pointer/ABI alternatives; no SDK record fields redeclared.
+include/Gruntz/StatusBarMgr.h	struct_decl {m_startTimeLo, m_startTimeHi}	m_startTimeLo, m_startTimeHi	retain-distinct	Game timing/clock representation; clock and serialization uses distinguish it from SDK geometry.
+include/DDrawMgr/ShadeTableCache.h	union_decl {m_data, m_lut16}	m_data, m_lut16	retain-distinct	Value/pointer/ABI alternatives; no SDK record fields redeclared.
+include/Gruntz/TimeBomb.h	union_decl {anonymous, m_timing}	anonymous, m_timing	retain-distinct	Game timing/clock representation; clock and serialization uses distinguish it from SDK geometry.
+include/Gruntz/TriggerMgr.h	HitSpanArg	m_span, m_outPlayerIndex	retain-distinct	Game callback context with RECT pointer and player index.
+include/Gruntz/CheatMgr.h	CheatEntry	m_commandId, m_flag	retain-distinct	Cheat ID and enable flag.
+include/DDrawMgr/ColorHsv.h	ColorHSV	m_h, m_s, m_v	retain-distinct	HSV conversion channels, not ABC text extents.
+include/Gruntz/CoordNode.h	Coord	m_x, m_y	retain-distinct	Game coordinate API and list payload; not an SDK private node.
+include/DDrawMgr/DirectDrawMgr.h	DisplayResolution	m_width, m_height	retain-distinct	Display mode dimensions; no SDK whole-object buffer identity.
+include/Gruntz/DoubleVector.h	DoubleVector2	m_x, m_y	retain-distinct	Motion x/y vector, not complex arithmetic.
+include/Crypto/FecCrypt.h	FecArchiveHeader	m_versionMajor, m_versionMinor, m_fileCount	retain-distinct	File archive version and count.
+include/Gruntz/FontConfig.h	FontItem	m_flags, m_payload, m_name	retain-distinct	Font flags/payload/CString owner, not SDK transfer medium.
+include/Font/Font.h	Glyph	m_width, m_height	retain-distinct	Glyph dimensions, not an SDK buffer.
+include/Gruntz/GruntIdentity.h	GruntIdentity	m_playerIndex, m_unitIndex	retain-distinct	Player and unit IDs.
+include/Gruntz/GameLevel.h	LevelDims	m_w, m_h	retain-distinct	Level grid dimensions.
+include/Image/FileImageRecords.h	PcxRgb	m_red, m_green, m_blue	retain-distinct	PCX RGB order differs from SDK RGBTRIPLE BGR order.
+include/Gruntz/GruntzPlayer.h	PlayerLatency	m_avg, m_count	retain-distinct	Latency accumulator and count.
+include/Gruntz/StatusBarMgr.h	struct_decl {m_intervalLo, m_intervalHi}	m_intervalLo, m_intervalHi	retain-distinct	Game timing/clock representation; clock and serialization uses distinguish it from SDK geometry.
+include/Bute/ButeLexAction.h	TranType	m_actionType, m_a, m_b	retain-distinct	Surviving parser transition table.
+include/Gruntz/WwdGridIter.h	WwdRect	m_minX, m_minY, m_maxX, m_maxY	retain-distinct	Inclusive grid-node containment differs from SDK rectangle containment.
+include/Rez/DebugPrintfInternals.h	dprintfFromTo	m_from, m_to	retain-distinct	Surviving dprintf range declaration.
+include/Wap32/zBitVec.h	zBitVec	m_capacity, anonymous	retain-distinct	Bit-vector capacity and storage, not an archive exception.
+include/Wap32/zBitVec.h	union_decl {m_words, m_inline}	m_words, m_inline	retain-distinct	Value/pointer/ABI alternatives; no SDK record fields redeclared.
+include/Clock64.h	struct_decl {m_lo, m_hi}	m_lo, m_hi	retain-distinct	Game timing/clock representation; clock and serialization uses distinguish it from SDK geometry.
+include/DDrawMgr/ClutTable.h	ClutByteCursor	m_bytes, m_words	retain-distinct	Value/pointer/ABI alternatives; no SDK record fields redeclared.
+include/DDrawMgr/DirectDrawMgr.h	DdDriverEnumFn	m_sdk, m_body	retain-distinct	Value/pointer/ABI alternatives; no SDK record fields redeclared.
+include/DDrawMgr/DirectDrawMgr.h	DdModeEnumFn	m_sdk, m_body	retain-distinct	Value/pointer/ABI alternatives; no SDK record fields redeclared.
+include/DinMgr2/DirectInputMgr2.h	DinJoystickEnumFn	m_sdk, m_body	retain-distinct	Value/pointer/ABI alternatives; no SDK record fields redeclared.
+include/MsgParam.h	RegBuf	m_bytes, m_chars, m_dword	retain-distinct	Value/pointer/ABI alternatives; no SDK record fields redeclared.
+include/MsgParam.h	RegBufC	m_bytes, m_chars	retain-distinct	Value/pointer/ABI alternatives; no SDK record fields redeclared.
+include/Io/MoviePlayer.h	SmackSource	m_path, m_handle	retain-distinct	Value/pointer/ABI alternatives; no SDK record fields redeclared.
+src/Gruntz/FortressFlag.cpp	union_decl {m_bytes, m_slot}	m_bytes, m_slot	retain-distinct	Value/pointer/ABI alternatives; no SDK record fields redeclared.

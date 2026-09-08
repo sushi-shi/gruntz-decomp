@@ -2,7 +2,6 @@
 
 #include <DinMgr2/DirectInputMgr2.h>
 #include <Gruntz/FixedPtrArray32.h>
-#include <Pix16.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -450,12 +449,11 @@ i32 CKeyboardDevice::CreateDevice(IDirectInputA* di, const GUID* guid, HWND owne
     if (SetCooperativeLevel(DISCL_NONEXCLUSIVE | DISCL_FOREGROUND) == 0) {
         return 0;
     }
-    RecordBytes<DeviceState> state;
-    state.m_bytes = new u8[KEYBOARD_STATE_BUFFER_SIZE];
-    if (state.m_bytes == NULL) {
+    u8* state = new u8[KEYBOARD_STATE_BUFFER_SIZE];
+    if (state == NULL) {
         return 0;
     }
-    m_stateBuffer = state.m_rec;
+    m_stateBuffer = state;
     m_stateBufferSize = KEYBOARD_STATE_BUFFER_SIZE;
     return 1;
 }
@@ -463,9 +461,7 @@ i32 CKeyboardDevice::CreateDevice(IDirectInputA* di, const GUID* guid, HWND owne
 RVA(0x00133bf0, 0x33)
 void CKeyboardDevice::ReleaseDevices() {
     if (m_stateBuffer != NULL) {
-        RecordBytes<DeviceState> state;
-        state.m_rec = m_stateBuffer;
-        delete[] state.m_bytes;
+        delete[] static_cast<u8*>(m_stateBuffer);
         m_stateBuffer = NULL;
         m_stateBufferSize = 0;
     }
@@ -555,7 +551,7 @@ i32 CKeyboardDevice::Poll() {
             m_pressedButtons |= IDX(INPUT_DOWN);
         }
     } else {
-        u8* buf = m_stateBuffer->m_keys;
+        u8* buf = static_cast<u8*>(m_stateBuffer);
         if (buf[m_keyBindings[IDX(INPUT_BINDING_BUTTON0)]] & DINPUT_STATE_PRESSED) {
             m_pressedButtons |= IDX(INPUT_BUTTON0);
         }
@@ -757,13 +753,12 @@ i32 CMouseDevice::CreateDevice(IDirectInputA* di, const GUID* guid, HWND owner, 
     if (SetDataFormat(&c_dfDIMouse) == 0) {
         return 0;
     }
-    RecordBytes<DeviceState> state;
-    state.m_bytes = new u8[sizeof(DIMouseStateZ)];
-    if (state.m_bytes == NULL) {
+    u8* state = new u8[sizeof(DIMOUSESTATE)];
+    if (state == NULL) {
         return 0;
     }
-    m_stateBuffer = state.m_rec;
-    m_stateBufferSize = sizeof(DIMouseStateZ);
+    m_stateBuffer = state;
+    m_stateBufferSize = sizeof(DIMOUSESTATE);
     if (SetCooperativeLevel(DISCL_NONEXCLUSIVE | DISCL_FOREGROUND) == 0) {
         return 0;
     }
@@ -772,9 +767,7 @@ i32 CMouseDevice::CreateDevice(IDirectInputA* di, const GUID* guid, HWND owner, 
 RVA(0x00134360, 0x33)
 void CMouseDevice::ReleaseDevices() {
     if (m_stateBuffer) {
-        RecordBytes<DeviceState> state;
-        state.m_rec = m_stateBuffer;
-        delete[] state.m_bytes;
+        delete[] static_cast<u8*>(m_stateBuffer);
         m_stateBuffer = NULL;
         m_stateBufferSize = 0;
     }
@@ -806,32 +799,32 @@ i32 CMouseDevice::Poll() {
     if (ReadState() == NULL) {
         return 0;
     }
-    DIMouseStateZ* ms = &m_stateBuffer->m_mouse;
+    DIMOUSESTATE* ms = static_cast<DIMOUSESTATE*>(m_stateBuffer);
     if (ms == NULL) {
         return 0;
     }
-    if (ms->m_lX < 0) {
+    if (ms->lX < 0) {
         m_pressedButtons |= IDX(INPUT_LEFT);
     }
-    if (ms->m_lX > 0) {
+    if (ms->lX > 0) {
         m_pressedButtons |= IDX(INPUT_RIGHT);
     }
-    if (ms->m_lY < 0) {
+    if (ms->lY < 0) {
         m_pressedButtons |= IDX(INPUT_UP);
     }
-    if (ms->m_lY > 0) {
+    if (ms->lY > 0) {
         m_pressedButtons |= IDX(INPUT_DOWN);
     }
-    if (ms->m_rgbButtons[0] & DINPUT_STATE_PRESSED) {
+    if (ms->rgbButtons[0] & DINPUT_STATE_PRESSED) {
         m_pressedButtons |= IDX(INPUT_BUTTON0);
     }
-    if (ms->m_rgbButtons[1] & DINPUT_STATE_PRESSED) {
+    if (ms->rgbButtons[1] & DINPUT_STATE_PRESSED) {
         m_pressedButtons |= IDX(INPUT_BUTTON1);
     }
-    if (ms->m_rgbButtons[2] & DINPUT_STATE_PRESSED) {
+    if (ms->rgbButtons[2] & DINPUT_STATE_PRESSED) {
         m_pressedButtons |= IDX(INPUT_BUTTON2);
     }
-    if (ms->m_rgbButtons[3] & DINPUT_STATE_PRESSED) {
+    if (ms->rgbButtons[3] & DINPUT_STATE_PRESSED) {
         m_pressedButtons |= IDX(INPUT_BUTTON3);
     }
     m_heldButtons = m_pressedButtons;
@@ -861,13 +854,12 @@ i32 CJoystickDevice::CreateDevice(IDirectInputA* di, const GUID* guid, HWND owne
     if (SetDataFormat(&c_dfDIJoystick2) == 0) {
         return 0;
     }
-    RecordBytes<DeviceState> state;
-    state.m_bytes = new u8[sizeof(DIJoyState2Z)];
-    if (state.m_bytes == NULL) {
+    u8* state = new u8[sizeof(DIJOYSTATE2)];
+    if (state == NULL) {
         return 0;
     }
-    m_stateBuffer = state.m_rec;
-    m_stateBufferSize = sizeof(DIJoyState2Z);
+    m_stateBuffer = state;
+    m_stateBufferSize = sizeof(DIJOYSTATE2);
     if (SetCooperativeLevel(DISCL_NONEXCLUSIVE | DISCL_FOREGROUND) == 0) {
         return 0;
     }
@@ -876,9 +868,7 @@ i32 CJoystickDevice::CreateDevice(IDirectInputA* di, const GUID* guid, HWND owne
 RVA(0x001346d0, 0x33)
 void CJoystickDevice::ReleaseDevices() {
     if (m_stateBuffer) {
-        RecordBytes<DeviceState> state;
-        state.m_rec = m_stateBuffer;
-        delete[] state.m_bytes;
+        delete[] static_cast<u8*>(m_stateBuffer);
         m_stateBuffer = NULL;
         m_stateBufferSize = 0;
     }
@@ -922,50 +912,50 @@ i32 CJoystickDevice::Poll() {
     if (ReadState() == NULL) {
         return 0;
     }
-    DIJoyState2Z* js = &m_stateBuffer->m_joy;
+    DIJOYSTATE2* js = static_cast<DIJOYSTATE2*>(m_stateBuffer);
     if (js == NULL) {
         return 0;
     }
-    if (js->m_lX < 0) {
+    if (js->lX < 0) {
         m_pressedButtons |= IDX(INPUT_LEFT);
     }
-    if (js->m_lX > 0) {
+    if (js->lX > 0) {
         m_pressedButtons |= IDX(INPUT_RIGHT);
     }
-    if (js->m_lY < 0) {
+    if (js->lY < 0) {
         m_pressedButtons |= IDX(INPUT_UP);
     }
-    if (js->m_lY > 0) {
+    if (js->lY > 0) {
         m_pressedButtons |= IDX(INPUT_DOWN);
     }
-    if (js->m_rgbButtons[0] & DINPUT_STATE_PRESSED) {
+    if (js->rgbButtons[0] & DINPUT_STATE_PRESSED) {
         m_pressedButtons |= IDX(INPUT_BUTTON0);
     }
-    if (js->m_rgbButtons[1] & DINPUT_STATE_PRESSED) {
+    if (js->rgbButtons[1] & DINPUT_STATE_PRESSED) {
         m_pressedButtons |= IDX(INPUT_BUTTON1);
     }
-    if (js->m_rgbButtons[2] & DINPUT_STATE_PRESSED) {
+    if (js->rgbButtons[2] & DINPUT_STATE_PRESSED) {
         m_pressedButtons |= IDX(INPUT_BUTTON2);
     }
-    if (js->m_rgbButtons[3] & DINPUT_STATE_PRESSED) {
+    if (js->rgbButtons[3] & DINPUT_STATE_PRESSED) {
         m_pressedButtons |= IDX(INPUT_BUTTON3);
     }
-    if (js->m_rgbButtons[4] & DINPUT_STATE_PRESSED) {
+    if (js->rgbButtons[4] & DINPUT_STATE_PRESSED) {
         m_pressedButtons |= IDX(INPUT_BUTTON4);
     }
-    if (js->m_rgbButtons[5] & DINPUT_STATE_PRESSED) {
+    if (js->rgbButtons[5] & DINPUT_STATE_PRESSED) {
         m_pressedButtons |= IDX(INPUT_BUTTON5);
     }
-    if (js->m_rgbButtons[6] & DINPUT_STATE_PRESSED) {
+    if (js->rgbButtons[6] & DINPUT_STATE_PRESSED) {
         m_pressedButtons |= IDX(INPUT_BUTTON6);
     }
-    if (js->m_rgbButtons[7] & DINPUT_STATE_PRESSED) {
+    if (js->rgbButtons[7] & DINPUT_STATE_PRESSED) {
         m_pressedButtons |= IDX(INPUT_BUTTON7);
     }
-    if (js->m_rgbButtons[8] & DINPUT_STATE_PRESSED) {
+    if (js->rgbButtons[8] & DINPUT_STATE_PRESSED) {
         m_pressedButtons |= IDX(INPUT_BUTTON8);
     }
-    if (js->m_rgbButtons[9] & DINPUT_STATE_PRESSED) {
+    if (js->rgbButtons[9] & DINPUT_STATE_PRESSED) {
         m_pressedButtons |= IDX(INPUT_BUTTON9);
     }
     m_heldButtons = m_pressedButtons;

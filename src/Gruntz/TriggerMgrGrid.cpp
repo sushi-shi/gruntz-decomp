@@ -1300,7 +1300,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
             return 0;
         }
 
-        char* name = *g_typeColl.GetNameRecord(cell->m_logicRecord->m_eventCode);
+        const char* name = *g_typeColl.GetNameRecord(cell->m_logicRecord->m_eventCode);
         bool isI = (strcmp(name, "I") == 0);
         if (isI) {
             LoadTileArrivalFx(

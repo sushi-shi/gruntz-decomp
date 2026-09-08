@@ -880,7 +880,7 @@ i32 CMulti::Open() {
     if (!provider) {
         return 0;
     }
-    if (!Network()->InitializeFromProvider(provider, g_dplayAppGuid.m_guid)) {
+    if (!Network()->InitializeFromProvider(provider, g_dplayAppGuid)) {
         return 0;
     }
     if (g_hostServicesMode) {

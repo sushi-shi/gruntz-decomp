@@ -124,7 +124,7 @@ i32 CDDSurface::DecodeBmp(CDDrawDeviceManager* manager, BmpFileImage* image, u32
     i32 width = ih->biWidth;
     ColorDepth bitcount = static_cast<ColorDepth>(ih->biBitCount);
     i32 height = ih->biHeight;
-    if (m_width == width && m_height == height
+    if (m_apiDesc.dwWidth == width && m_apiDesc.dwHeight == height
         && (bitcount == BPP_PALETTED_8 || bitcount == BPP_RGB_24)) {
         i32 remap = 0;
         ColorDepth palBpp = manager->m_displayColorDepth;
@@ -216,12 +216,12 @@ i32 CDDSurface::Load(CDDrawDeviceManager* manager, char* resourceName, i32 surfa
     if (static_cast<ColorDepth>(bih->biBitCount) != BPP_PALETTED_8) {
         return 0;
     }
-    memset(m_descWords, 0, sizeof(DDSURFACEDESC));
-    m_descSize = sizeof(DDSURFACEDESC);
-    m_surfaceCaps = surfaceCaps | 0x40;
-    m_descFlags = 7;
-    m_width = width;
-    m_height = height;
+    memset(&m_apiDesc, 0, sizeof(m_apiDesc));
+    m_apiDesc.dwSize = sizeof(DDSURFACEDESC);
+    m_apiDesc.ddsCaps.dwCaps = surfaceCaps | 0x40;
+    m_apiDesc.dwFlags = 7;
+    m_apiDesc.dwWidth = width;
+    m_apiDesc.dwHeight = height;
     if (!CDDSurface::CreateFromDesc(manager, NULL)) {
         return 0;
     }
@@ -271,8 +271,8 @@ i32 CDDSurface::SaveBmp(const char* path, CFileImagePal* pal, i32 mode) {
     Bmp256Info info;
     memset(&info.m_bmiHeader, 0, sizeof(info.m_bmiHeader));
     info.m_bmiHeader.biSize = sizeof(info.m_bmiHeader);
-    info.m_bmiHeader.biWidth = m_width;
-    i32 height = m_height;
+    info.m_bmiHeader.biWidth = m_apiDesc.dwWidth;
+    i32 height = m_apiDesc.dwHeight;
     info.m_bmiHeader.biHeight = height;
     info.m_bmiHeader.biPlanes = 1;
     info.m_bmiHeader.biBitCount = 8;
@@ -293,7 +293,7 @@ i32 CDDSurface::SaveBmp(const char* path, CFileImagePal* pal, i32 mode) {
     BmpFileHeaderStamp fh;
     memset(&fh, 0, sizeof(fh));
     strcpy(fh.m_bytes, g_bmpHeaderTemplate);
-    fh.m_hdr.bfSize = height * m_width + 0x436;
+    fh.m_hdr.bfSize = height * m_apiDesc.dwWidth + 0x436;
     fh.m_hdr.bfOffBits = 0x436;
 
     u8* buf = static_cast<u8*>(Lock(NULL));
@@ -318,9 +318,9 @@ i32 CDDSurface::SaveBmp(const char* path, CFileImagePal* pal, i32 mode) {
     file.Write(&fh.m_hdr, sizeof(fh.m_hdr));
     file.Write(&info, sizeof(info));
 
-    i32 row = m_height;
+    i32 row = m_apiDesc.dwHeight;
     while (--row >= 0) {
-        file.Write(buf + row * m_pitch, m_width);
+        file.Write(buf + row * m_apiDesc.lPitch, m_apiDesc.dwWidth);
     }
 
     m_ddSurface->Unlock(NULL);
@@ -344,12 +344,12 @@ i32 CDDSurface::SaveRle16(char* path, CFileImagePal* pal, i32 flag) {
 
     BITMAPINFO bi;
     memset(&bi, 0, sizeof(bi));
-    i32 width = this->m_width;
+    i32 width = this->m_apiDesc.dwWidth;
     BmpFileHeaderStamp bfh;
     memset(&bfh, 0, sizeof(bfh));
     bi.bmiHeader.biCompression = 0;
     bi.bmiHeader.biSizeImage = 0;
-    i32 height = this->m_height;
+    i32 height = this->m_apiDesc.dwHeight;
     strcpy(bfh.m_bytes, g_bmpHeaderTemplate);
     bi.bmiHeader.biHeight = height;
     bi.bmiHeader.biSize = sizeof(bi.bmiHeader);
@@ -388,12 +388,12 @@ i32 CDDSurface::SaveRle16(char* path, CFileImagePal* pal, i32 flag) {
     file.Write(&bfh.m_hdr, sizeof(bfh.m_hdr));
     file.Write(&bi, sizeof(bi));
 
-    i32 row = this->m_height;
+    i32 row = this->m_apiDesc.dwHeight;
     while (--row >= 0) {
-        u8* src = locked + row * this->m_pitch;
+        u8* src = locked + row * this->m_apiDesc.lPitch;
         i32 x = 0;
         u8* dst = line;
-        while (x < this->m_width) {
+        while (x < static_cast<i32>(this->m_apiDesc.dwWidth)) {
             Pix16Ptr sp;
             sp.m_bytes = src;
             u16 px = *sp.m_words;
@@ -406,7 +406,7 @@ i32 CDDSurface::SaveRle16(char* path, CFileImagePal* pal, i32 flag) {
             *dst++ = r;
             x++;
         }
-        file.Write(line, 3 * this->m_width);
+        file.Write(line, 3 * this->m_apiDesc.dwWidth);
     }
 
     this->m_ddSurface->Unlock(NULL);
@@ -432,10 +432,10 @@ i32 CDDSurface::SaveTga(const char* path, CFileImagePal* pal, i32 mode) {
 
     BITMAPINFO bi;
     memset(&bi, 0, sizeof(bi));
-    i32 width = m_width;
+    i32 width = m_apiDesc.dwWidth;
     BmpFileHeaderStamp fh;
     memset(&fh, 0, sizeof(fh));
-    i32 height = m_height;
+    i32 height = m_apiDesc.dwHeight;
     bi.bmiHeader.biCompression = 0;
     bi.bmiHeader.biSizeImage = 0;
     strcpy(fh.m_bytes, g_bmpHeaderTemplate);
@@ -469,13 +469,13 @@ i32 CDDSurface::SaveTga(const char* path, CFileImagePal* pal, i32 mode) {
     file.Write(&fh.m_hdr, sizeof(fh.m_hdr));
     file.Write(&bi, sizeof(bi));
 
-    for (i32 row = m_height - 1; row >= 0; row--) {
+    for (i32 row = m_apiDesc.dwHeight - 1; row >= 0; row--) {
         i32 col = 0;
-        if (m_width > 0) {
+        if (static_cast<i32>(m_apiDesc.dwWidth) > 0) {
             do {
-                file.Write(buf + row * m_pitch, m_width * 3);
+                file.Write(buf + row * m_apiDesc.lPitch, m_apiDesc.dwWidth * 3);
                 ++col;
-            } while (col < m_width);
+            } while (col < static_cast<i32>(m_apiDesc.dwWidth));
         }
     }
 
@@ -625,7 +625,7 @@ i32 CDDSurface::DecodePcx(CDDrawDeviceManager* manager, PcxHeader* image, u32 da
         } else if (planes == PCX_PLANES_RGB) {
             bitcount = BPP_RGB_24;
         }
-        if (bitcount != BPP_UNSET && m_width == width && m_height == height) {
+        if (bitcount != BPP_UNSET && m_apiDesc.dwWidth == width && m_apiDesc.dwHeight == height) {
             b32 remap = false;
             ColorDepth palBpp = manager->m_displayColorDepth;
             if (palBpp != bitcount) {
@@ -1046,7 +1046,7 @@ i32 CDDSurface::DecodePid(
     DWORD user2 = *pDWord++;
     u8* pPacked = static_cast<u8*>(static_cast<void*>(pDWord));
 
-    if (!(width & 3) && m_width == width && m_height == height) {
+    if (!(width & 3) && m_apiDesc.dwWidth == width && m_apiDesc.dwHeight == height) {
         PALETTEENTRY* palette = NULL;
         i32 remap = 0;
         b32 hasPalette = manager->HasPalette();

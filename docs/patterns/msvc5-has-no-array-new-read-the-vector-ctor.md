@@ -35,8 +35,9 @@ static_cast<RezElem40*>(static_cast<void*>(
 and *no* array cookie (MSVC 5.0 only needs the count back at `delete[]` time, i.e. when
 `T` has a destructor). So:
 
-> **Retail allocating exactly `n * sizeof(T)` bytes with no `??0T` loop after the
-> `call ??2` proves the source did NOT write `new T[n]`** — it wrote a raw byte
+> **When a constructor is independently proven non-inline, retail allocating
+> exactly `n * sizeof(T)` bytes without its construction loop rules out that
+> particular `new T[n]` declaration** — it wrote a raw byte
 > allocation. If a proven class has a real `??0T` and the allocation site never calls it,
 > the elements are constructed somewhere else — e.g. MFC's
 > `ConstructElements<TYPE>` placement-new loop.
@@ -61,39 +62,16 @@ the other occurrence fails the raw repetition test because surrounding zero and 
 data values occupy EDI/ESI in base versus ESI/EDX in retail. Exact call and CFG counts plus
 the shipped source adjudicate the apparent duplication question.
 
-## A constructor-shaped identity helper does not prove a constructor
+## Constructor identity: the old POD conclusion was disproved
 
-`0x0017f300` is the three-byte `mov eax,ecx; ret` shape of an empty thiscall
-constructor, and its only caller walks 0x28-byte elements. That shape is insufficient
-to type it as `RezElem40::RezElem40()`. Declaring that constructor adds an eleventh call
-to `CFaderMesh::ApplyInit`; retail has ten. The existing stack `RezElem40 elem;` is the
-negative control: retail performs no default-constructor call there. `RezElem40`
-therefore remains POD and the exact callable is conservatively modeled as the
-constructor-shaped `InitRezElem` identity helper.
-
-The caller still proves a per-element null check. Its signature is
-`test element,element; je next; mov ecx,element; call init`, where the candidate
-lacks only the four-byte `test`/`je` pair and its calls, returns, relocations, and
-remaining CFG already agree.
-
-Model that check at the semantic seam, around the per-element initializer, rather than
-adding a function-wide probe or changing the allocation arm:
-
-```cpp
-for (; n--; p++) {
-    if (p != NULL) {
-        InitRezElem(p);
-    }
-}
-```
-
-This is the exact source lever for `CRezBufferObject::Serialize` at `0x17f130`:
-`98.841805%`, 0x1ca bytes / 175 instructions / 19 branches became byte-identical
-`100%`, 0x1ce / 177 / 20, with the same 10 calls, two returns, and 10 relocations.
-The negative control is an outer guard around the whole loop: it changes the loop's
-zero-trip CFG instead of guarding each placement result. A prior claim that every
-guard placement compiled two bytes long was stale; the direct per-call `p != NULL`
-form is exact under the pinned VC5 build.
+The old `InitRezElem` model and the conclusion that an absent stack-site call
+proved a POD element were overturned by the complete SDK family. Real `CRect`
+members generate the implicit element constructor, and the actual `CArray`
+serializer reproduces the exact retail body and all ordered helper targets.
+The controlled POD/explicit-inline/SDK-member probes and safe reverse-use rule
+are in [SDK member constructors](sdk-member-constructors-explain-template-helpers.md).
+The historical copied-SetSize allocation experiments below are compiler
+observations, not permission to retain a handwritten MFC layout or body.
 
 ## The `delete` spelling is regalloc-load-bearing (the steerable half)
 

@@ -59,12 +59,12 @@
 
 #define MOVE_RECYCLE(g)                                                                            \
     {                                                                                              \
-        CoordNode* nd = (g)->CoordHead();                                                          \
+        POSITION nd = (g)->CoordHead();                                                            \
         while (nd != 0) {                                                                          \
-            CoordNode* cur = nd;                                                                   \
-            nd = nd->m_next;                                                                       \
-            if (cur->m_coord != 0) {                                                               \
-                g_coordPool.Push(cur->m_coord);                                                    \
+            POSITION cur = nd;                                                                     \
+            (g)->m_coordList.GetNext(nd);                                                          \
+            if (static_cast<Coord*>((g)->m_coordList.GetAt(cur)) != 0) {                           \
+                g_coordPool.Push(static_cast<Coord*>((g)->m_coordList.GetAt(cur)));                \
             }                                                                                      \
         }                                                                                          \
         (g)->m_coordList.RemoveAll();                                                              \

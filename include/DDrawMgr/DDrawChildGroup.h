@@ -153,7 +153,7 @@ public:
 
     void ClearChildren();
 
-    i32 RectsOverlap(struct CDDrawRect* a, struct CDDrawRect* b);
+    i32 RectsOverlap(RECT* a, RECT* b);
     i32 BoxesOverlap(CGameObject* areaObj, CGameObject* switchObj);
 
     CGameObject* Drain();

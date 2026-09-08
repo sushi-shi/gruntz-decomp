@@ -193,7 +193,7 @@ CWwdGameObject::~CWwdGameObject() {
 #include <Wwd/WwdRectOverlapInline.h>
 
 RVA(0x0015bfb0, 0x4a)
-i32 CDDrawChildGroup::RectsOverlap(CDDrawRect* a, CDDrawRect* b) {
+i32 CDDrawChildGroup::RectsOverlap(RECT* a, RECT* b) {
     return CDDrawRectsOverlap(a, b);
 }
 

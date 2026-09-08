@@ -37,7 +37,7 @@ GridSize(const CGruntzMapMgr* mapMgr) {
 }
 
 static inline i32 PixOffset(const CDDSurface* surface, i32 x, i32 y) {
-    return y * surface->m_pitch + x * surface->m_bytesPerPixel;
+    return y * surface->m_apiDesc.lPitch + x * surface->m_bytesPerPixel;
 }
 
 static inline i32 OccupantAt(const CGruntzMapMgr* mapMgr, u32 x, u32 y) {
@@ -149,8 +149,8 @@ i32 CMinimap::Refresh(i32 elapsedMs, b32 forceRefresh) {
             return 0;
         }
     }
-    if (m_surface->m_width != static_cast<i32>(m_mapMgr->m_width)
-        || m_surface->m_height != static_cast<i32>(m_mapMgr->m_height)) {
+    if (m_surface->m_apiDesc.dwWidth != static_cast<i32>(m_mapMgr->m_width)
+        || m_surface->m_apiDesc.dwHeight != static_cast<i32>(m_mapMgr->m_height)) {
         if (!AllocSurface()) {
             return 0;
         }
@@ -161,7 +161,8 @@ i32 CMinimap::Refresh(i32 elapsedMs, b32 forceRefresh) {
     }
     for (u32 y = 0; y < m_mapMgr->m_height; y++) {
         for (u32 x = 0; x < m_mapMgr->m_width; x++) {
-            u16* pixel = Pix16(pixels + y * m_surface->m_pitch + x * m_surface->m_bytesPerPixel);
+            u16* pixel =
+                Pix16(pixels + y * m_surface->m_apiDesc.lPitch + x * m_surface->m_bytesPerPixel);
             i32 occupantId = OccupantAt(m_mapMgr, x, y);
 
             if (occupantId != -1) {
@@ -250,8 +251,8 @@ i32 CMinimap::Draw(CDDrawSurfacePair* target, RECT* bounds) {
 
     i32 centerX = left + width / 2;
     i32 centerY = top + height / 2;
-    i32 scaleX = width / m_surface->m_width;
-    i32 scaleY = height / m_surface->m_height;
+    i32 scaleX = width / static_cast<i32>(m_surface->m_apiDesc.dwWidth);
+    i32 scaleY = height / static_cast<i32>(m_surface->m_apiDesc.dwHeight);
 
     i32 scale = scaleY;
     if (scaleX < scaleY) {
@@ -263,13 +264,13 @@ i32 CMinimap::Draw(CDDrawSurfacePair* target, RECT* bounds) {
         cellScale = scale;
     }
     m_cellScale = cellScale;
-    i32 drawLeft = centerX - m_surface->m_width * cellScale / 2;
-    i32 drawTop = centerY - m_surface->m_height * cellScale / 2;
+    i32 drawLeft = centerX - static_cast<i32>(m_surface->m_apiDesc.dwWidth) * cellScale / 2;
+    i32 drawTop = centerY - static_cast<i32>(m_surface->m_apiDesc.dwHeight) * cellScale / 2;
     RECT* dstRect = &m_drawRect;
     dstRect->left = drawLeft;
     dstRect->top = drawTop;
-    dstRect->right = m_surface->m_width * cellScale + drawLeft;
-    dstRect->bottom = m_surface->m_height * cellScale + drawTop;
+    dstRect->right = m_surface->m_apiDesc.dwWidth * cellScale + drawLeft;
+    dstRect->bottom = m_surface->m_apiDesc.dwHeight * cellScale + drawTop;
     if (target->m_surface->BltEx(dstRect, m_surface, NULL, DDBLT_WAIT, NULL) != 0) {
         return 0;
     }
@@ -318,7 +319,7 @@ void CMinimap::DrawBorderRaw(RECT* rect, char* pixels, i32 color) {
     i32 height = rect->bottom - rect->top + 1;
     i32 leftOffset = PixOffset(m_surface, rect->left, rect->top);
     i32 rightOffset = PixOffset(m_surface, rect->right, rect->top);
-    i32 rowStride = m_surface->m_pitch;
+    i32 rowStride = m_surface->m_apiDesc.lPitch;
 
     if (height > 0) {
         char* leftPixel = pixels + leftOffset;
@@ -343,22 +344,25 @@ void CMinimap::DrawBorder(RECT* rect, CDDrawSurfacePair* target, i32 color) {
     }
     i32 width = rect->right - rect->left + 1;
 
-    u16* topPixels =
-        Pix16(pixels + rect->top * surface->m_pitch + rect->left * surface->m_bytesPerPixel);
+    u16* topPixels = Pix16(
+        pixels + rect->top * surface->m_apiDesc.lPitch + rect->left * surface->m_bytesPerPixel
+    );
     for (i32 topX = 0; topX < width; topX++) {
         topPixels[topX] = static_cast<u16>(color);
     }
 
-    u16* bottomPixels =
-        Pix16(pixels + rect->bottom * surface->m_pitch + rect->left * surface->m_bytesPerPixel);
+    u16* bottomPixels = Pix16(
+        pixels + rect->bottom * surface->m_apiDesc.lPitch + rect->left * surface->m_bytesPerPixel
+    );
     for (i32 bottomX = 0; bottomX < width; bottomX++) {
         bottomPixels[bottomX] = static_cast<u16>(color);
     }
 
     i32 height = rect->bottom - rect->top + 1;
-    i32 leftOffset = rect->left * surface->m_bytesPerPixel + rect->top * surface->m_pitch;
-    i32 rightOffset = rect->right * surface->m_bytesPerPixel + rect->top * surface->m_pitch;
-    i32 rowStride = surface->m_pitch;
+    i32 leftOffset = rect->left * surface->m_bytesPerPixel + rect->top * surface->m_apiDesc.lPitch;
+    i32 rightOffset =
+        rect->right * surface->m_bytesPerPixel + rect->top * surface->m_apiDesc.lPitch;
+    i32 rowStride = surface->m_apiDesc.lPitch;
     for (i32 y = 0; y < height; y++) {
         *Pix16(pixels + leftOffset) = static_cast<u16>(color);
         *Pix16(pixels + rightOffset) = static_cast<u16>(color);

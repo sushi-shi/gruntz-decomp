@@ -28,7 +28,6 @@
 #include <Gruntz/WwdGameReg.h>
 #include <Ints.h>
 #include <Rez/FrameClock.h>
-#include <Utils/MfcTyped.h>
 
 #include <stdlib.h>
 
@@ -88,11 +87,6 @@ extern GruntDirectionCell g_gruntDirSouthWest;
 extern GruntDirectionCell g_gruntDirWest;
 extern GruntDirectionCell g_gruntDirNorthWest;
 extern GruntDirectionCell g_gruntDirCenter;
-
-class CGruntCoordList : public CPtrList {
-public:
-    void*& NextData(POSITION& pos);
-};
 
 class CGruntPuddle;
 
@@ -428,14 +422,11 @@ public:
     CPtrList m_coordList;
     CPtrList m_payloads;
 
-    CoordNode* CoordHead() const {
-        return MfcNodeFromPosition<CoordNode>(m_coordList.GetHeadPosition());
+    POSITION CoordHead() const {
+        return m_coordList.GetHeadPosition();
     }
-    CGruntCoordList* CoordListOps() {
-        return static_cast<CGruntCoordList*>(&m_coordList);
-    }
-    CoordNode* CoordTail() const {
-        return MfcNodeFromPosition<CoordNode>(m_coordList.GetTailPosition());
+    POSITION CoordTail() const {
+        return m_coordList.GetTailPosition();
     }
     i32 CoordCount() const {
         return m_coordList.GetCount();

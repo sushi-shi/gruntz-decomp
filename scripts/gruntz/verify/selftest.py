@@ -1992,10 +1992,10 @@ def _access(target, width=4, form="direct", rw="r", mnemonic="mov", text="",
                   text=text or f"{mnemonic} probe", owner=None)
 
 
-def _findings(claims, accesses, rows=(), layout=None, cells=()):
+def _findings(claims, accesses, rows=(), layout=None, cells=(), image=None):
     """Categories fired by one synthetic claim set - hermetic, no image."""
     from gruntz.verify import data_access as da
-    img = mock.Mock()
+    img = image if image is not None else mock.Mock()
     img.pe.data_regions.return_value = {"rdata": (0, 0), "data": (0, 1 << 30),
                                         "bss": (0, 0),
                                         "idata": (0x2C3000, 0x2C6C00)}
@@ -2056,6 +2056,71 @@ class LayoutOracleControls(unittest.TestCase):
         miss = [b.name for b in resolve().data
                 if b.channel == "src" and not lay.var(b.unit, b.name)]
         self.assertEqual(miss[:5], [])
+
+
+class RecordCopyWidthControls(unittest.TestCase):
+    def fixture(self, *, last_store=True, wrong_destination=False, altered_value=False,
+                extra_read=False, partial_register=False, overwrite_store=False):
+        import struct
+        node = {'k': 'rec', 't': 'SDKRecord', 'sz': 16, 'm': [
+            [0, '.Data1', _prim('unsigned long', 4)],
+            [4, '.Data2', _prim('unsigned short', 2)],
+            [6, '.Data3', _prim('unsigned short', 2)],
+            [8, '.Data4', _arr(_prim('unsigned char', 1), 8)],
+        ]}
+        blob = bytearray()
+        accesses = []
+        for offset in range(0, 16, 4):
+            site = 0x1000 + len(blob)
+            blob += b'\xa1' + struct.pack('<I', 0x402000 + offset)
+            access = _access(0x2000 + offset, insn=site)
+            access.insn_len = 5
+            accesses.append(access)
+            if offset == 0:
+                blob += bytes.fromhex('83ec10 8bd4 51')
+            if altered_value and offset == 4:
+                blob += b'\x40'  # inc eax: value no longer a copy
+            if partial_register and offset == 4:
+                blob += bytes.fromhex('b000')  # mov al,0 also clobbers eax
+            if offset != 12 or last_store:
+                dest = 0x10 if wrong_destination and offset == 12 else offset
+                blob += b'\x89\x02' if dest == 0 else b'\x89\x42' + bytes([dest])
+            if overwrite_store and offset == 4:
+                blob += bytes.fromhex('c7420400000000')  # mov DWORD PTR [edx+4],0
+        blob += b'\xc3'
+        image = mock.Mock()
+        image.read.side_effect = lambda rva, size: bytes(blob[rva - 0x1000:rva - 0x1000 + size])
+        if extra_read:
+            accesses.append(_access(0x2004, insn=0x2000))
+        return _claim(0x2000, node), accesses, image
+
+    def test_complete_decoded_copy_passes_the_full_width_consumer(self):
+        claim, accesses, image = self.fixture()
+        self.assertNotIn('width', _cats(_findings([claim], accesses, image=image)))
+
+    def test_missing_store_does_not_suppress_the_wide_read(self):
+        claim, accesses, image = self.fixture(last_store=False)
+        self.assertIn('width', _cats(_findings([claim], accesses, image=image)))
+
+    def test_wrong_destination_stride_is_not_a_record_copy(self):
+        claim, accesses, image = self.fixture(wrong_destination=True)
+        self.assertIn('width', _cats(_findings([claim], accesses, image=image)))
+
+    def test_modified_register_is_not_a_copy(self):
+        claim, accesses, image = self.fixture(altered_value=True)
+        self.assertIn('width', _cats(_findings([claim], accesses, image=image)))
+
+    def test_one_valid_copy_does_not_exempt_other_accesses(self):
+        claim, accesses, image = self.fixture(extra_read=True)
+        self.assertIn('width', _cats(_findings([claim], accesses, image=image)))
+
+    def test_partial_register_write_is_not_a_copy(self):
+        claim, accesses, image = self.fixture(partial_register=True)
+        self.assertIn('width', _cats(_findings([claim], accesses, image=image)))
+
+    def test_overwritten_destination_is_not_a_copy(self):
+        claim, accesses, image = self.fixture(overwrite_store=True)
+        self.assertIn('width', _cats(_findings([claim], accesses, image=image)))
 
 
 class DataAccessCategoryControls(unittest.TestCase):

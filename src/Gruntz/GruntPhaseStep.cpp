@@ -201,10 +201,12 @@ s0_reset:
 common: {
     GruntAiState st = m_defenderState;
     if (st != AISTATE_COOLDOWN && st != AISTATE_PHASE_MIRROR_THEN_COOLDOWN && CoordCount() >= 2) {
-        CoordNode* head = CoordHead();
-        i32 bx = head->m_coord->m_x;
-        i32 by = head->m_coord->m_y;
-        Coord* nc = head->m_next->m_coord;
+        POSITION head = CoordHead();
+        i32 bx = static_cast<Coord*>(m_coordList.GetAt(head))->m_x;
+        i32 by = static_cast<Coord*>(m_coordList.GetAt(head))->m_y;
+        POSITION next = head;
+        m_coordList.GetNext(next);
+        Coord* nc = static_cast<Coord*>(m_coordList.GetAt(next));
         i32 fx = nc->m_x;
         i32 fy = nc->m_y;
         if ((g_gameReg->m_tileGrid->CellFlagsAt(fx, fy) & 0x20) != 0) {
@@ -226,7 +228,7 @@ common: {
     if (CoordCount() == 0) {
         return 1;
     }
-    Coord* head = CoordHead()->m_coord;
+    Coord* head = static_cast<Coord*>(m_coordList.GetAt(CoordHead()));
     if ((g_gameReg->m_tileGrid->CellFlagsAt(head->m_x, head->m_y) & 0x20) == 0) {
         return 1;
     }

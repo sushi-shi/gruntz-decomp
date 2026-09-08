@@ -162,7 +162,14 @@ i32 CDDrawShadeBlit::BuildFromSurface(CDDSurface* surf, i32 keyVal, PALETTEENTRY
     if (bits == NULL) {
         return 0;
     }
-    i32 r = BuildRle(bits, surf->m_width, surf->m_height, surf->m_pitch, keyVal, palette);
+    i32 r = BuildRle(
+        bits,
+        surf->m_apiDesc.dwWidth,
+        surf->m_apiDesc.dwHeight,
+        surf->m_apiDesc.lPitch,
+        keyVal,
+        palette
+    );
     surf->m_ddSurface->Unlock(NULL);
     return r;
 }
@@ -516,7 +523,7 @@ void CDDrawShadeBlit::BlitCopyForward(
     ShadeRect* clip,
     i32 vflip
 ) {
-    i32 pitch = surf->m_pitch;
+    i32 pitch = surf->m_apiDesc.lPitch;
     u8* base = static_cast<u8*>(surf->Lock(NULL));
 
     i32 pos = 0;
@@ -655,7 +662,7 @@ void CDDrawShadeBlit::BlitCopyMirrored(
     ShadeRect* clip,
     i32 vflip
 ) {
-    i32 pitch = surf->m_pitch;
+    i32 pitch = surf->m_apiDesc.lPitch;
     u8* base = static_cast<u8*>(surf->Lock(NULL));
 
     i32 pos = 0;
@@ -852,7 +859,7 @@ void CDDrawShadeBlit::BlitShadedForward(
     ShadeRect* clip,
     i32 vflip
 ) {
-    i32 pitch = src->m_pitch;
+    i32 pitch = src->m_apiDesc.lPitch;
     u8* base = static_cast<u8*>(src->Lock(NULL));
 
     u32 pos = 0;
@@ -1506,7 +1513,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
     ShadeRect* clip,
     i32 vflip
 ) {
-    i32 pitch = surf->m_pitch;
+    i32 pitch = surf->m_apiDesc.lPitch;
     u8* base = static_cast<u8*>(surf->Lock(NULL));
 
     i32 pos = 0, row = 0, x = 0;

@@ -74,7 +74,7 @@ i32 CNetMgr::InitializeFromProvider(CNetProviderNode* provider, GUID appGuid) {
     m_playerCursor = NULL;
 
 
-    m_appGuid.m_guid = appGuid;
+    m_appGuid = appGuid;
     m_selectedProvider = provider;
     m_selectedSession = NULL;
     m_selectedPlayer = NULL;
@@ -98,7 +98,7 @@ i32 CNetMgr::InitializeFromProvider(CNetProviderNode* provider, GUID appGuid) {
 
 
 RVA(0x00178170, 0xba)
-i32 CNetMgr::Initialize(void* lobbyIface, NetGuid appGuid) {
+i32 CNetMgr::Initialize(void* lobbyIface, GUID appGuid) {
     IDirectPlayLobby* lobby = static_cast<IDirectPlayLobby*>(lobbyIface);
 
 
@@ -125,7 +125,7 @@ i32 CNetMgr::Initialize(void* lobbyIface, NetGuid appGuid) {
     m_providerCursor = NULL;
     m_sessionCursor = NULL;
     m_playerCursor = NULL;
-    m_appGuid.m_guid = appGuid.m_guid;
+    m_appGuid = appGuid;
     m_selectedProvider = NULL;
     m_selectedSession = NULL;
     m_selectedPlayer = NULL;
@@ -330,7 +330,7 @@ i32 CNetMgr::EnumerateSessions(DWORD timeoutMs, DWORD flags) {
     DPSESSIONDESC2 desc;
     memset(&desc, 0, sizeof(desc));
     desc.dwSize = sizeof(desc);
-    desc.guidApplication = m_appGuid.m_guid;
+    desc.guidApplication = m_appGuid;
 
     IDirectPlay4A* directPlay = m_directPlay;
     i32 hr = directPlay->EnumSessions(&desc, timeoutMs, &NetEnumSessionCallback, this, flags);
@@ -495,7 +495,7 @@ CNetMgr::CreateSession(
     buf.dwSize = sizeof(buf);
     buf.dwFlags = DPSESSION_MIGRATEHOST | DPSESSION_KEEPALIVE
                     | DPSESSION_OPTIMIZELATENCY | DPSESSION_DIRECTPLAYPROTOCOL;
-    buf.guidApplication = m_appGuid.m_guid;
+    buf.guidApplication = m_appGuid;
     buf.dwMaxPlayers = maxPlayers;
     buf.lpszSessionNameA = sessionName;
     buf.dwUser1 = applicationData;

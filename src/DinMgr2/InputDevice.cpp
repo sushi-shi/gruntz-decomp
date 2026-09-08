@@ -50,7 +50,7 @@ void CInputDevRoot::ReleaseDevices() {
 }
 
 RVA(0x00134d90, 0x60)
-DeviceState* CInputDevRoot::ReadState() {
+void* CInputDevRoot::ReadState() {
     if (m_stateBuffer == NULL) {
         return NULL;
     }

@@ -909,8 +909,8 @@ i32 CGrunt::StepArrivalDrop(
     i32 clearEndpointFlags,
     i32 extraPassableMask
 ) {
-    CoordNode* n;
-    CoordNode* cur;
+    POSITION n;
+    POSITION cur;
     Coord* tail;
     POSITION pos;
     i32 lastX, lastY, tileX, tileY;
@@ -960,7 +960,7 @@ i32 CGrunt::StepArrivalDrop(
         if (cnt == 0) {
             goto commitEntrance;
         }
-        tail = CoordHead()->m_coord;
+        tail = static_cast<Coord*>(m_coordList.GetAt(CoordHead()));
         headFlags = g_gameReg->m_tileGrid->CellFlagsAt(tail->m_x, tail->m_y);
         lastFlags = g_gameReg->m_tileGrid->CellFlagsAt(lastX, lastY);
         if ((lastFlags & 0x80) != 0) {
@@ -1010,9 +1010,12 @@ i32 CGrunt::StepArrivalDrop(
                         n = CoordHead();
                         while (NULL != n) {
                             cur = n;
-                            n = n->m_next;
-                            if (cur->m_coord != NULL) {
-                                PushFreeNode(&g_coordPool, cur->m_coord);
+                            m_coordList.GetNext(n);
+                            if (static_cast<Coord*>(m_coordList.GetAt(cur)) != NULL) {
+                                PushFreeNode(
+                                    &g_coordPool,
+                                    static_cast<Coord*>(m_coordList.GetAt(cur))
+                                );
                             }
                         }
                         m_coordList.RemoveAll();
@@ -1111,7 +1114,7 @@ i32 CGrunt::StepArrivalDrop(
             PushFreeNode(&g_coordPool, m_coordList.RemoveTail());
             if (CoordCount() != 0) {
                 nudged = 1;
-                tail = CoordTail()->m_coord;
+                tail = static_cast<Coord*>(m_coordList.GetAt(CoordTail()));
                 pxX = tail->m_x * TILE_SIZE_PX + TILE_HALF_PX;
                 pxY = tail->m_y * TILE_SIZE_PX + TILE_HALF_PX;
             }
@@ -1293,7 +1296,7 @@ i32 CGrunt::StepGruntMovement() {
         p->m_next = g_coordPool.m_freeHead;
         g_coordPool.m_freeHead = p;
     } else {
-        Coord* co = CoordHead()->m_coord;
+        Coord* co = static_cast<Coord*>(m_coordList.GetAt(CoordHead()));
         coordX = co->m_x;
         coordY = co->m_y;
     }
@@ -1414,7 +1417,7 @@ i32 CGrunt::StepGruntMovement() {
                 goto label_4cb2a;
             }
             {
-                Coord* co = CoordHead()->m_coord;
+                Coord* co = static_cast<Coord*>(m_coordList.GetAt(CoordHead()));
                 i32 cx = co->m_x;
                 i32 cy = co->m_y;
                 SET_TILE_CENTER_PIXEL_PAIR(tgtPxX, tgtPxY, cx, cy)

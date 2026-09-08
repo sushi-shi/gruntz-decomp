@@ -3,9 +3,9 @@
 
 #include <rva.h>
 
+#include <Dsndmgr/RiffWave.h>
 #include <Dsndmgr/SoundBuffer.h>
 #include <Dsndmgr/StreamFeeder.h>
-#include <Dsndmgr/WaveFormatX.h>
 #include <Rez/RezArchiveEntry.h>
 
 struct IDirectSoundBuffer;

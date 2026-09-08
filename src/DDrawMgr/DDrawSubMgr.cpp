@@ -768,7 +768,7 @@ i32 SoundCueRegistry::ConfigurePrimaryFromCue(SoundCue* cue, i32 startPrimary) {
         return 0;
     }
 
-    WaveFormatX fmt;
+    WAVEFORMATEX fmt;
     if (cue->m_sound->GetFormat(&fmt, sizeof(fmt), NULL) == 0) {
         return 0;
     }
