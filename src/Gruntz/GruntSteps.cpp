@@ -1053,7 +1053,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spaw
                 if (eq) {
 
                     m_entranceActive = false;
-                    eq = (strcmp(*g_typeColl.GetNameRecord(m_previousAnimationActId), "D") == 0);
+                    eq = (strcmp(g_typeColl[m_previousAnimationActId], "D") == 0);
                     if (eq) {
                         if (m_poweredUp != false && m_neighborValid == false) {
                             RESET_GRUNT_POWERED_STATE(this)

@@ -48,8 +48,11 @@ separate scored records (`CKeyedList::AddNode`, `CFaderMesh::~CFaderMesh`, and
 
 ### inline / call-set
 
-`/O2` on cl 5.0 is `/Ob1`: an unmarked function is NEVER auto-inlined, and an
-`inline`-marked one is expanded under a per-CALLER budget that is measured and
+`/O2` on cl 5.0 is `/Ob1`: unmarked ordinary non-template functions stay calls.
+Instantiated template members can expand without the `inline` keyword; the
+controlled `/Ob1` versus `/Ob0` exception is documented in
+`docs/patterns/vc5-template-members-inline-without-inline-keyword.md`.
+Eligible bodies expand under a per-CALLER budget that is measured and
 modeled — `docs/patterns/inline-budget-emits-ool-comdat.md` re-validated the
 sibling HoMM3 formula (`budget = clamp(2*cb(caller), 1000, 35000)`, free below
 cb 0x28, nested expansions split the remainder) on our compiler, including where

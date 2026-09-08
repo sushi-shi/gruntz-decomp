@@ -476,7 +476,7 @@ zErrHandling::~zErrHandling() {
 }
 
 RVA(0x0016da80, 0x10b)
-void* _zvec::GrowTo(i32 idx, i32 at) {
+void* _zdvec::GrowTo(i32 idx, i32 at) {
     char* p;
     if (idx < m_lo) {
         idx -= at;
@@ -885,7 +885,7 @@ static inline CString* TypeResolve(i32 key) {
     if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
         return g_typeColl.Elem(key);
     }
-    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != NULL) {
+    if ((static_cast<_zdvec*>(&g_typeColl))->GrowTo(key, 0) != NULL) {
         return g_typeColl.Elem(key);
     }
     char* msg = g_errOutOfMem;

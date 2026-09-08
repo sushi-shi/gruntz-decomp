@@ -2094,9 +2094,9 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         if (m_entranceActive != false) {
             goto fail;
         }
-        eq = (strcmp((*g_typeColl.GetNameRecord(m_logicRecord->m_eventCode)), "A") != 0);
+        eq = (strcmp((g_typeColl[m_logicRecord->m_eventCode]), "A") != 0);
         if (eq) {
-            eq = (strcmp((*g_typeColl.GetNameRecord(m_logicRecord->m_eventCode)), "D") != 0);
+            eq = (strcmp((g_typeColl[m_logicRecord->m_eventCode]), "D") != 0);
             if (eq) {
                 goto fail;
             }
@@ -3119,7 +3119,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             g_typeColl.m_grown = 0;
             if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
                 rec = g_typeColl.Elem(key);
-            } else if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != NULL) {
+            } else if ((static_cast<_zdvec*>(&g_typeColl))->GrowTo(key, 0) != NULL) {
                 rec = g_typeColl.Elem(key);
             } else {
                 char* msg = g_errOutOfMem;
@@ -3155,7 +3155,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                 g_typeColl.m_grown = 0;
                 if (key2 >= g_typeColl.m_lo && key2 <= g_typeColl.m_hi) {
                     rec2 = g_typeColl.Elem(key2);
-                } else if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key2, 0) != NULL) {
+                } else if ((static_cast<_zdvec*>(&g_typeColl))->GrowTo(key2, 0) != NULL) {
                     rec2 = g_typeColl.Elem(key2);
                 } else {
                     char* msg2 = g_errOutOfMem;

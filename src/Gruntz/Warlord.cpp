@@ -84,16 +84,14 @@ CActReg CActRegPool<CWarlord>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 #define REGISTER_ACTION(key, handler)                                                              \
     do {                                                                                           \
         REGISTER_NAME(key)                                                                         \
-        /* Language-forced member-function representation seam; the byte accessor */               \
-        /* returns to CActHandler only here. */                                                    \
-        *reinterpret_cast<CActHandler*>(CActRegPool<CWarlord>::s_table._zvec::IndexToPtr(id_)) =   \
+        *CActReg::AsElem(CActRegPool<CWarlord>::s_table._zdvec::IndexToPtr(id_)) =                 \
             static_cast<CActHandler>(handler);                                                     \
     } while (0)
 
 #define REGISTER_ACTION_TYPED(key, handler)                                                        \
     do {                                                                                           \
         REGISTER_NAME(key)                                                                         \
-        *CActRegPool<CWarlord>::s_table.Resolve(id_) = static_cast<CActHandler>(handler);          \
+        CActRegPool<CWarlord>::s_table[id_] = static_cast<CActHandler>(handler);                   \
     } while (0)
 
 RVA_COMPGEN(0x000107c0, 0x1e, ??_GCWarlord@@UAEPAXI@Z)

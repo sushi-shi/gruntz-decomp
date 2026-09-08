@@ -29,17 +29,16 @@ from gruntz.verify.srcscan import blank_comments, rel, source_files
 
 
 PLACEMENT_ALLOW = Counter({
-    ("src/Gruntz/BattlezMapConfig.cpp", "CString"): 1,
+    ("include/Wap32/ZDArray.h", "T"): 1,
+    ("include/Wap32/ZDArrayIndex.h", "T"): 1,
     ("src/Gruntz/BattlezSpecialAnim.cpp", "CString"): 4,
     ("src/Gruntz/GruntCombat.cpp", "CString"): 1,
     ("src/Gruntz/Warlord.cpp", "CString"): 1,
-    ("src/Gruntz/ZDArrayDerived.cpp", "CActHandler"): 1,
 })
 
 DTOR_CALL_ALLOW = Counter({
-    ("src/Bute/ButeGlobals.cpp", "CString"): 1,
+    ("include/Wap32/ZDArray.h", "T"): 1,
     ("include/Bute/PTreeNode.h", "T"): 1,
-    ("src/Gruntz/ZDArrayDerived.cpp", "CActHandler"): 1,
 })
 
 LOW_LEVEL_ALLOW = Counter({

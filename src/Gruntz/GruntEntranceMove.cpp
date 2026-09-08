@@ -722,7 +722,7 @@ i32 CGrunt::StepArrivalCommit() {
     if (eq) {
 
         m_entranceActive = false;
-        eq = (strcmp(*g_typeColl.GetNameRecord(m_previousAnimationActId), "D") == 0);
+        eq = (strcmp(g_typeColl[m_previousAnimationActId], "D") == 0);
         if (eq) {
             if (m_poweredUp != false && m_neighborValid == false) {
                 RESET_GRUNT_POWERED_STATE(this)
@@ -1095,7 +1095,7 @@ i32 CGrunt::FinishActiveAction() {
     eq = ANIMATION_ACT_EQUALS("J");
     if (eq) {
         m_entranceActive = false;
-        eq = (strcmp(*g_typeColl.GetNameRecord(m_previousAnimationActId), "D") == 0);
+        eq = (strcmp(g_typeColl[m_previousAnimationActId], "D") == 0);
         if (eq) {
             if (m_poweredUp != false && m_neighborValid == false) {
                 RESET_GRUNT_POWERED_STATE(this)

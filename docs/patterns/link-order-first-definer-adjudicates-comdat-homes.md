@@ -3,6 +3,18 @@
 Class: layout / identity. Proven 2026-08-15 during the tu-order baseline drain
 (the 38-row kept-comdat-exiles ledger -> 0).
 
+## Scope correction from the template audit
+
+The IndexToPtr example below used invented type identities. The source-backed
+replacement identifies a typed `zDArray<CString>::operator[]` above `_zdvec`,
+and [unmarked template members can expand under /Ob1](vc5-template-members-inline-without-inline-keyword.md).
+Its earlier score drop is an observation about that source/visibility state,
+not a rejection of the recovered template. Caller inlining remains open.
+Generated contribution boundaries alone do not identify the original source
+provider; verify the complete family and ordered calls before applying the
+first-definer argument. The `Realize<C>` device mentioned in the historical
+companion section is retired and must not be reintroduced.
+
 ## The rule
 
 link.exe 5.10 keeps a multi-defined COMDAT from the FIRST obj on the link line
