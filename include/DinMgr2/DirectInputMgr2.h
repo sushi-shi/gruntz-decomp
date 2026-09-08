@@ -127,25 +127,6 @@ inline DirectInputMgr2::~DirectInputMgr2() {
     Shutdown();
 }
 
-struct DIMouseStateZ {
-    i32 m_lX;
-    i32 m_lY;
-    i32 m_lZ;
-    u8 m_rgbButtons[4];
-};
-struct DIJoyState2Z {
-    i32 m_lX;
-    i32 m_lY;
-    char m_pad08[0x30 - 0x08];
-    u8 m_rgbButtons[10];
-    char m_pad3a[0x110 - 0x3a];
-};
-union DeviceState {
-    u8 m_keys[0x100];
-    DIMouseStateZ m_mouse;
-    DIJoyState2Z m_joy;
-};
-
 class CInputDevRoot {
 public:
     CInputDevRoot();
@@ -162,7 +143,7 @@ public:
 
     i32 Acquire();
     i32 PollDevice();
-    DeviceState* ReadState();
+    void* ReadState();
     i32 Unacquire();
     i32 Escape(LPDIEFFESCAPE data);
 
@@ -182,7 +163,7 @@ public:
     DIDEVCAPS m_caps;
     DIPROPHEADER m_prop;
     HWND m_hwnd;
-    DeviceState* m_stateBuffer;
+    void* m_stateBuffer;
     u32 m_stateBufferSize;
     i32 m_buttonLatch;
     u32 m_pressedButtons;

@@ -13,16 +13,6 @@ struct Bmp256Info {
     RGBQUAD m_bmiColors[256];
 };
 
-union BmpInfoHeaderStamp {
-    BITMAPINFOHEADER m_ih;
-    struct {
-        DWORD m_biSize;
-        LONG m_biWidth;
-        LONG m_biHeight;
-        DWORD m_planesAndBitCount;
-    };
-};
-
 union BmpFileHeaderStamp {
     BITMAPFILEHEADER m_hdr;
     char m_bytes[0xe];

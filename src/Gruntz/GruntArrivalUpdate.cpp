@@ -41,7 +41,7 @@
 // @early-stop
 RVA(0x000f0130, 0x7c0)
 i32 CGrunt::StepGauntletGruntBehavior() {
-    char* name = *g_typeColl.GetNameRecord(m_logicRecord->m_eventCode);
+    const char* name = *g_typeColl.GetNameRecord(m_logicRecord->m_eventCode);
     bool eqI = (strcmp(name, "I") == 0);
     if (eqI) {
         return 1;
@@ -239,7 +239,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
 
     if (this->CoordCount() != 0) {
 
-        Coord* cell = this->CoordHead()->m_coord;
+        Coord* cell = static_cast<Coord*>(m_coordList.GetAt(this->CoordHead()));
 
         BrickzCell& gc = g_gameReg->m_tileGrid->m_rows[cell->m_y][cell->m_x];
         if ((gc.m_flagBytes[0] & 0x20) != 0) {

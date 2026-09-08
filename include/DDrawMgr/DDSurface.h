@@ -6,7 +6,6 @@
 #include <Mfc.h>
 
 #include <DDrawMgr/ColorDepth.h>
-#include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/RasterRowOrder.h>
 #include <Enums.h>
 #include <Ints.h>
@@ -18,15 +17,6 @@ class CDDrawDeviceManager;
 class CFileImagePal;
 struct PcxHeader;
 struct BmpFileImage;
-
-union BltFxWords {
-    DDBLTFX m_fx;
-    i32 m_words[0x19];
-};
-
-struct ClipRect16 {
-    i32 m_a, m_b, m_c, m_d;
-};
 
 GZ_ENUM_FLAGS_BEGIN(PidFlags, u32)
 
@@ -229,32 +219,7 @@ public:
     IDirectDrawSurface* m_ddSurface;
     IDirectDrawSurface* m_ddSurfaceBack;
 
-    union {
-        DDSURFACEDESC m_apiDesc;
-        i32 m_descWords[0x6c / 4];
-        struct {
-            i32 m_descSize;
-            i32 m_descFlags;
-            i32 m_height;
-            i32 m_width;
-            i32 m_pitch;
-            i32 m_backBufferCount;
-            i32 m_mipMapCount;
-            i32 m_alphaBitDepth;
-            i32 m_descReserved;
-            u8* m_lockBits;
-            char m_colorKeys[0x20];
-            i32 m_pixelFormatSize;
-            i32 m_pixelFormatFlags;
-            i32 m_pixelFormatFourCC;
-            ColorDepth m_srcBitDepth;
-            i32 m_rMask;
-            i32 m_gMask;
-            i32 m_bMask;
-            i32 m_alphaMask;
-            i32 m_surfaceCaps;
-        };
-    };
+    DDSURFACEDESC m_apiDesc;
     i32 m_dontOwn;
 
     RECT m_fullRect;
@@ -273,7 +238,7 @@ public:
 inline u8 CDDSurface::GetPixel(i32 x, i32 y) {
     u8* bits = static_cast<u8*>(Lock(NULL));
     if (bits != NULL) {
-        u8 color = bits[m_bytesPerPixel * x + m_pitch * y];
+        u8 color = bits[m_bytesPerPixel * x + m_apiDesc.lPitch * y];
         m_ddSurface->Unlock(NULL);
         return color;
     }
@@ -283,7 +248,7 @@ inline u8 CDDSurface::GetPixel(i32 x, i32 y) {
 inline void CDDSurface::PutPixel(i32 x, i32 y, u8 color) {
     u8* bits = static_cast<u8*>(Lock(NULL));
     if (bits != NULL) {
-        bits[m_bytesPerPixel * x + m_pitch * y] = color;
+        bits[m_bytesPerPixel * x + m_apiDesc.lPitch * y] = color;
         m_ddSurface->Unlock(NULL);
     }
 }

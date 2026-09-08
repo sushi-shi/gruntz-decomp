@@ -114,3 +114,12 @@ block.md` named teardown-first the winner for `AddGiantRockLogic` at 80.00 while
 tree held the 77.41 body-first spelling - that was a real unapplied lever and
 taking it was free score. This line names no shape the tree lacks, so it is
 closed. A number without a shape is not a target.
+
+## SDK restoration correction (2026-09-08)
+
+The tree still contained copied class definitions and expanded callers despite
+this document having identified the CArray family. The SDK layout audit now
+uses the real template declarations and public API. That is a missing source
+layer even where the former handwritten body was exact; a score claim did not
+justify preserving the duplicate definition. See [the SDK audit](../sdk-layout-audit.md)
+and [SDK member constructors](sdk-member-constructors-explain-template-helpers.md).

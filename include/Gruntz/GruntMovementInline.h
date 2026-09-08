@@ -31,12 +31,12 @@ inline void RecycleGruntCoords(CGrunt* grunt) {
     if (grunt->CoordCount() == 0) {
         return;
     }
-    CoordNode* node = grunt->CoordHead();
+    POSITION node = grunt->CoordHead();
     if (node != NULL) {
         do {
-            CoordNode* current = node;
-            node = node->m_next;
-            Coord* coord = current->m_coord;
+            POSITION current = node;
+            grunt->m_coordList.GetNext(node);
+            Coord* coord = static_cast<Coord*>(grunt->m_coordList.GetAt(current));
             if (coord != NULL) {
                 g_coordPool.Push(coord);
             }

@@ -78,8 +78,8 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
                 i32 x = b->m_marker.m_x;
                 i32 y = b->m_marker.m_y;
                 if (cnt != 0) {
-                    Coord** arr = MfcPtrArrayData<Coord>(b->m_attackWaypoints);
-                    Coord* pair = arr[rand() % cnt];
+                    void** arr = b->m_attackWaypoints.GetData();
+                    Coord* pair = static_cast<Coord*>(arr[rand() % cnt]);
                     x = pair->m_x;
                     y = pair->m_y;
                 }
@@ -127,9 +127,9 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
 
     i32 cnt2 = cfgB->m_attackWaypoints.GetSize();
     if (cnt2 > 0) {
-        Coord** vec = MfcPtrArrayData<Coord>(cfgB->m_attackWaypoints);
+        void** vec = cfgB->m_attackWaypoints.GetData();
         for (i32 j = cnt2; j > 0; j--) {
-            Coord* pair = *vec;
+            Coord* pair = static_cast<Coord*>(*vec);
             i32 dy = abs(pair->m_y - py);
             i32 dx = abs(pair->m_x - px);
             if (dx + dy <= 6) {

@@ -181,7 +181,7 @@ void FontRenderer::DrawLine(CString text, CDDSurface* surf, i32 x, i32 y, i32 z)
     if (m_font == NULL) {
         return;
     }
-    i32 limit = surf->m_height;
+    i32 limit = surf->m_apiDesc.dwHeight;
     if (m_font->GetMaxHeight() + y > limit) {
         return;
     }
@@ -251,11 +251,11 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         return;
     }
 
-    if (RunRightEdge(rc, x) > surf->m_width) {
-        rc.right = rc.right + rc.right - rc.left + x - surf->m_width;
+    if (RunRightEdge(rc, x) > static_cast<i32>(surf->m_apiDesc.dwWidth)) {
+        rc.right = rc.right + rc.right - rc.left + x - surf->m_apiDesc.dwWidth;
     }
-    if (y - rc.top + rc.bottom > surf->m_height) {
-        rc.bottom = rc.bottom + rc.bottom - rc.top + y - surf->m_height;
+    if (y - rc.top + rc.bottom > static_cast<i32>(surf->m_apiDesc.dwHeight)) {
+        rc.bottom = rc.bottom + rc.bottom - rc.top + y - surf->m_apiDesc.dwHeight;
     }
 
     CSize m = MeasureText(text);
@@ -273,7 +273,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
     }
 
     u16* bits = static_cast<u16*>(surf->Lock(NULL));
-    i32 pitch = surf->m_pitch;
+    i32 pitch = surf->m_apiDesc.lPitch;
     if (bits == NULL) {
         return;
     }

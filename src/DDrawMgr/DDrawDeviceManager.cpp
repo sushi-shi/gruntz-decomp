@@ -154,11 +154,11 @@ i32 CDDrawPrimarySurface::CreatePrimary(
     i32 descFlags,
     i32 backBufferCount
 ) {
-    memset(m_descWords, 0, sizeof(DDSURFACEDESC));
-    m_descSize = sizeof(DDSURFACEDESC);
-    m_surfaceCaps = caps | DDSCAPS_PRIMARYSURFACE;
-    m_descFlags = descFlags;
-    m_backBufferCount = backBufferCount;
+    memset(&m_apiDesc, 0, sizeof(m_apiDesc));
+    m_apiDesc.dwSize = sizeof(DDSURFACEDESC);
+    m_apiDesc.ddsCaps.dwCaps = caps | DDSCAPS_PRIMARYSURFACE;
+    m_apiDesc.dwFlags = descFlags;
+    m_apiDesc.dwBackBufferCount = backBufferCount;
     if (!CDDSurface::CreateFromDesc(manager, NULL)) {
         return 0;
     }
@@ -177,7 +177,7 @@ i32 CDDrawPrimarySurface::CreateFromDesc(CDDrawDeviceManager* manager, const DDS
 
 RVA(0x00148b80, 0xb5)
 i32 CDDrawPrimarySurface::InstallColorFormat() {
-    u32 mask = m_rMask;
+    u32 mask = m_apiDesc.ddpfPixelFormat.dwRBitMask;
     i32 bitCount = 0;
     i32 firstBit;
     firstBit = -1;
@@ -194,7 +194,7 @@ i32 CDDrawPrimarySurface::InstallColorFormat() {
     g_rUp = firstBit;
 
     bitCount = 0;
-    mask = m_gMask;
+    mask = m_apiDesc.ddpfPixelFormat.dwGBitMask;
     firstBit = -1;
     for (i32 greenBit = 0; greenBit < 0x20; greenBit++) {
         if ((1 & mask) == 1) {
@@ -209,7 +209,7 @@ i32 CDDrawPrimarySurface::InstallColorFormat() {
     g_gUp = firstBit;
 
     bitCount = 0;
-    mask = m_bMask;
+    mask = m_apiDesc.ddpfPixelFormat.dwBBitMask;
     firstBit = -1;
     for (i32 blueBit = 0; blueBit < 0x20; blueBit++) {
         if ((mask & 1) == 1) {

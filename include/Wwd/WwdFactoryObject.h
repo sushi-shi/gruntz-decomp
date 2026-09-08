@@ -7,13 +7,6 @@
 #include <Gruntz/ResolveNode.h>
 #include <Ints.h>
 
-struct CDDrawRect {
-    i32 m_left;
-    i32 m_top;
-    i32 m_right;
-    i32 m_bottom;
-};
-
 inline CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 id, i32 flags, EInlineSeed)
     : CWapObj(owner, id, flags, CWapObj::NO_SEED), m_dirty(WwdDirtyRect::INLINE_SEED) {
     m_screenX = COORD_UNSET;

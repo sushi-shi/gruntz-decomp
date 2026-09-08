@@ -800,8 +800,8 @@ i32 CGrunt::PathScan() {
         grid->m_gridH = grid->m_bounds.bottom - grid->m_bounds.top;
     }
 
-    CoordNode* tail = CoordTail();
-    Coord target = *tail->m_coord;
+    POSITION tail = CoordTail();
+    Coord target = *static_cast<Coord*>(m_coordList.GetAt(tail));
     i32 hits = 0;
 
     while (node != NULL) {
@@ -947,9 +947,7 @@ i32 CGrunt::PathScan() {
                                 POSITION pos = m_coordList.GetHeadPosition();
                                 if (pos != NULL) {
                                     do {
-                                        Coord* d = static_cast<Coord*>(
-                                            static_cast<CGruntCoordList*>(coordz)->NextData(pos)
-                                        );
+                                        Coord* d = static_cast<Coord*>(coordz->GetNext(pos));
                                         if (d != NULL) {
                                             g_coordPool.Push(d);
                                         }
@@ -1203,7 +1201,7 @@ i32 CGrunt::HandleCombatContact(
     } else {
         FaceTowardPixel(otherPxX, otherPxY);
 
-        char** rec0 = g_typeColl.GetNameRecordRaw(m_logicRecord->m_eventCode);
+        CString* rec0 = g_typeColl.GetNameRecordRaw(m_logicRecord->m_eventCode);
         ActNameConstructGrownSlots();
         bool neH = (strcmp(*rec0, "H") != 0);
         if (neH) {
@@ -1221,7 +1219,7 @@ i32 CGrunt::HandleCombatContact(
                 recF = g_typeColl.Elem(keyF);
             }
             ActNameConstructGrownSlots();
-            bool neF = (strcmp(*CTypeCollRuntime::NameOf(recF), DATA_COMPGEN(0x0020d2e8, "F")) != 0);
+            bool neF = (strcmp(*recF, DATA_COMPGEN(0x0020d2e8, "F")) != 0);
             if (neF) {
                 i32 keyO = m_logicRecord->m_eventCode;
                 g_typeColl.m_grown = 0;
@@ -1239,7 +1237,7 @@ i32 CGrunt::HandleCombatContact(
                     recO = g_typeColl.Elem(keyO);
                 }
                 ActNameConstructGrownSlots();
-                bool neO = (strcmp(*CTypeCollRuntime::NameOf(recO), "O") != 0);
+                bool neO = (strcmp(*recO, "O") != 0);
                 if (neO) {
                     ResetGeometry();
                 }
@@ -2898,21 +2896,21 @@ void CGrunt::AdvanceMotion() {
         bool eq;
         eq = ANIMATION_ACT_EQUALS("A");
         if (eq && CoordCount() != 0) {
-            CoordNode* head = CoordHead();
-            Coord* co = head->m_coord;
+            POSITION head = CoordHead();
+            Coord* co = static_cast<Coord*>(m_coordList.GetAt(head));
             i32 fl = g_gameReg->m_tileGrid->m_rowInts[co->m_y][co->m_x * 7];
             if (!(fl & BRICKZ_CELL_OCCUPIED) && !((m_arrivalFlags & fl) & BRICKZ_CELL_OCCUPIED)
                 && ((m_arrivalFlags & fl) == 0 || (m_passableMask & fl) != 0)) {
-                Coord* tc = (CoordTail())->m_coord;
+                Coord* tc = static_cast<Coord*>(m_coordList.GetAt((CoordTail())));
                 SET_TILE_CENTER_PIXEL_PAIR(m_entrancePx.m_x, m_entrancePx.m_y, tc->m_x, tc->m_y)
                 m_coordRetryCount = 0;
                 StepEntranceReinit();
             } else if (static_cast<u32>(m_coordRetryCount) <= 5) {
                 if (PathScan() != 0) {
-                    Coord* h2 = (CoordTail())->m_coord;
+                    Coord* h2 = static_cast<Coord*>(m_coordList.GetAt((CoordTail())));
                     SET_TILE_CENTER_PIXEL_PAIR(m_entrancePx.m_x, m_entrancePx.m_y, h2->m_x, h2->m_y)
                     if (CoordCount() != 0) {
-                        Coord* h3 = (CoordHead())->m_coord;
+                        Coord* h3 = static_cast<Coord*>(m_coordList.GetAt((CoordHead())));
                         i32 fl2 = g_gameReg->m_tileGrid->m_rowInts[h3->m_y][h3->m_x * 7];
                         if (!(fl2 & BRICKZ_CELL_OCCUPIED)) {
                             m_coordRetryCount = 0;

@@ -74,7 +74,7 @@ static inline void ClutStore16(u32 byteOffset, u16 v) {
 RVA(0x0013e0a0, 0x27)
 i32 CDDSurface::CreateFromDesc(CDDrawDeviceManager* manager, const DDSURFACEDESC* desc) {
     if (desc != NULL) {
-        memcpy(m_descWords, desc, sizeof(DDSURFACEDESC));
+        memcpy(&m_apiDesc, desc, sizeof(m_apiDesc));
     }
     return BlitIntoDesc(manager);
 }
@@ -87,19 +87,16 @@ i32 CDDSurface::BlitSurf(
     ColorDepth bitDepth,
     i32 caps
 ) {
-    i32* desc = this->m_descWords;
-    for (i32 i = 0x1b; i != 0; i--) {
-        *desc++ = 0;
-    }
-    this->m_surfaceCaps = caps;
-    this->m_width = width;
-    this->m_height = height;
-    this->m_descSize = sizeof(DDSURFACEDESC);
-    this->m_descFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH;
+    memset(&m_apiDesc, 0, sizeof(m_apiDesc));
+    this->m_apiDesc.ddsCaps.dwCaps = caps;
+    this->m_apiDesc.dwWidth = width;
+    this->m_apiDesc.dwHeight = height;
+    this->m_apiDesc.dwSize = sizeof(DDSURFACEDESC);
+    this->m_apiDesc.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH;
     if (bitDepth != BPP_UNSET && bitDepth != manager->m_displayColorDepth) {
-        this->m_descFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT;
-        this->m_pixelFormatSize = sizeof(DDPIXELFORMAT);
-        this->m_srcBitDepth = bitDepth;
+        this->m_apiDesc.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT;
+        this->m_apiDesc.ddpfPixelFormat.dwSize = sizeof(DDPIXELFORMAT);
+        this->m_apiDesc.ddpfPixelFormat.dwRGBBitCount = bitDepth;
     }
     return this->BlitIntoDesc(manager);
 }
@@ -108,35 +105,32 @@ RVA(0x0013e140, 0x1a0)
 i32 CDDSurface::Refresh(IDirectDrawSurface* surface) {
     m_ddSurface = surface;
     i32 i;
-    i32* d = m_descWords;
-    for (i = 0x1b; i != 0; i--) {
-        *d++ = 0;
-    }
-    m_descSize = sizeof(DDSURFACEDESC);
+    memset(&m_apiDesc, 0, sizeof(m_apiDesc));
+    m_apiDesc.dwSize = sizeof(DDSURFACEDESC);
     i32 hr = m_ddSurface->GetSurfaceDesc(&m_apiDesc);
     if (hr != 0) {
         CDDrawDeviceManager::ReportError(DIRSURF_FILE, 0x7e, hr);
     }
 
-    ColorDepth bits = m_srcBitDepth;
+    ColorDepth bits = static_cast<ColorDepth>(m_apiDesc.ddpfPixelFormat.dwRGBBitCount);
     m_hasColorKey = false;
     m_bitDepth = bits;
 
     switch (bits) {
         case BPP_PALETTED_8:
-            m_bytesPerRow = m_width;
+            m_bytesPerRow = m_apiDesc.dwWidth;
             break;
         case BPP_RGB_16:
-            m_bytesPerRow = m_width * 2;
+            m_bytesPerRow = m_apiDesc.dwWidth * 2;
             break;
         case BPP_RGB_24:
-            m_bytesPerRow = m_width * 3;
+            m_bytesPerRow = m_apiDesc.dwWidth * 3;
             break;
         case BPP_RGB_32:
-            m_bytesPerRow = m_width * 4;
+            m_bytesPerRow = m_apiDesc.dwWidth * 4;
             break;
         default:
-            m_bytesPerRow = m_width;
+            m_bytesPerRow = m_apiDesc.dwWidth;
             break;
     }
 
@@ -158,12 +152,12 @@ i32 CDDSurface::Refresh(IDirectDrawSurface* surface) {
             break;
     }
 
-    m_pixelsPerRow = static_cast<u32>(m_pitch) / static_cast<u32>(m_bytesPerPixel);
+    m_pixelsPerRow = static_cast<u32>(m_apiDesc.lPitch) / static_cast<u32>(m_bytesPerPixel);
     m_fullRect.left = 0;
     m_fullRect.top = 0;
-    m_fullRect.right = m_width;
-    m_fullRect.bottom = m_height;
-    m_imageBytes = m_height * m_bytesPerRow;
+    m_fullRect.right = m_apiDesc.dwWidth;
+    m_fullRect.bottom = m_apiDesc.dwHeight;
+    m_imageBytes = m_apiDesc.dwHeight * m_bytesPerRow;
     m_dontOwn = m_dontOwn | 1;
     return 1;
 }
@@ -188,34 +182,31 @@ i32 CDDSurface::BlitIntoDesc(CDDrawDeviceManager* manager) {
         return 0;
     }
 
-    i32* d = m_descWords;
-    for (i32 i = 0x1b; i != 0; i--) {
-        *d++ = 0;
-    }
-    m_descSize = sizeof(DDSURFACEDESC);
+    memset(&m_apiDesc, 0, sizeof(m_apiDesc));
+    m_apiDesc.dwSize = sizeof(DDSURFACEDESC);
     hr = m_ddSurface->GetSurfaceDesc(&m_apiDesc);
     if (hr != 0) {
         CDDrawDeviceManager::ReportError(DIRSURF_FILE, 0xeb, hr);
     }
 
-    ColorDepth bits = m_srcBitDepth;
+    ColorDepth bits = static_cast<ColorDepth>(m_apiDesc.ddpfPixelFormat.dwRGBBitCount);
     m_hasColorKey = false;
     m_bitDepth = bits;
     switch (bits) {
         case BPP_PALETTED_8:
-            m_bytesPerRow = m_width;
+            m_bytesPerRow = m_apiDesc.dwWidth;
             break;
         case BPP_RGB_16:
-            m_bytesPerRow = m_width * 2;
+            m_bytesPerRow = m_apiDesc.dwWidth * 2;
             break;
         case BPP_RGB_24:
-            m_bytesPerRow = m_width * 3;
+            m_bytesPerRow = m_apiDesc.dwWidth * 3;
             break;
         case BPP_RGB_32:
-            m_bytesPerRow = m_width * 4;
+            m_bytesPerRow = m_apiDesc.dwWidth * 4;
             break;
         default:
-            m_bytesPerRow = m_width;
+            m_bytesPerRow = m_apiDesc.dwWidth;
             break;
     }
 
@@ -237,12 +228,12 @@ i32 CDDSurface::BlitIntoDesc(CDDrawDeviceManager* manager) {
             break;
     }
 
-    m_pixelsPerRow = static_cast<u32>(m_pitch) / static_cast<u32>(m_bytesPerPixel);
+    m_pixelsPerRow = static_cast<u32>(m_apiDesc.lPitch) / static_cast<u32>(m_bytesPerPixel);
     m_fullRect.left = 0;
     m_fullRect.top = 0;
-    m_fullRect.right = m_width;
-    m_fullRect.bottom = m_height;
-    m_imageBytes = m_height * m_bytesPerRow;
+    m_fullRect.right = m_apiDesc.dwWidth;
+    m_fullRect.bottom = m_apiDesc.dwHeight;
+    m_imageBytes = m_apiDesc.dwHeight * m_bytesPerRow;
     return 1;
 }
 
@@ -335,7 +326,7 @@ RVA(0x0013e6d0, 0x88)
 void* CDDSurface::Lock(RECT* rect) {
     i32 hr = m_ddSurface->Lock(rect, &m_apiDesc, 1, NULL);
     if (hr == 0) {
-        return m_lockBits;
+        return m_apiDesc.lpSurface;
     }
     if (hr == static_cast<i32>(DDERR_SURFACELOST)) {
         if (RestoreLost() == 0) {
@@ -343,7 +334,7 @@ void* CDDSurface::Lock(RECT* rect) {
         }
         hr = m_ddSurface->Lock(NULL, &m_apiDesc, 1, NULL);
         if (hr == 0) {
-            return m_lockBits;
+            return m_apiDesc.lpSurface;
         }
         CDDrawDeviceManager::ReportError(DIRSURF_FILE, 0x203, hr);
         return NULL;
@@ -354,14 +345,11 @@ void* CDDSurface::Lock(RECT* rect) {
 
 RVA(0x0013e760, 0x63)
 i32 CDDSurface::Fill(u32 color) {
-    BltFxWords fx;
-    i32* p = fx.m_words;
-    for (i32 i = 0x19; i != 0; i--) {
-        *p++ = 0;
-    }
-    fx.m_words[0] = sizeof(DDBLTFX);
-    fx.m_words[0x14] = static_cast<i32>(color);
-    i32 hr = this->BltEx(NULL, NULL, NULL, DDBLT_WAIT | DDBLT_COLORFILL, &fx.m_fx);
+    DDBLTFX fx;
+    memset(&fx, 0, sizeof(fx));
+    fx.dwSize = sizeof(fx);
+    fx.dwFillColor = color;
+    i32 hr = this->BltEx(NULL, NULL, NULL, DDBLT_WAIT | DDBLT_COLORFILL, &fx);
     if (hr != 0) {
         CDDrawDeviceManager::ReportError(
             const_cast<char*>("C:\\Proj\\DDrawMgr\\DIRSURF.CPP"),
@@ -524,27 +512,27 @@ i32 CDDSurface::SetDestColorKey(u32 key) {
 
 RVA(0x0013ebb0, 0x126)
 void CDDSurface::FlipVertical() {
-    if (m_height <= 1) {
+    if (static_cast<i32>(m_apiDesc.dwHeight) <= 1) {
         return;
     }
     u8* buf = static_cast<u8*>(Lock(NULL));
     if (buf == NULL) {
         return;
     }
-    u8* tmp = new u8[m_width];
+    u8* tmp = new u8[m_apiDesc.dwWidth];
     if (tmp == NULL) {
         m_ddSurface->Unlock(NULL);
         return;
     }
 
-    i32 height = m_height;
-    i32 width = m_width;
+    i32 height = m_apiDesc.dwHeight;
+    i32 width = m_apiDesc.dwWidth;
     i32 i = 0;
     i32 half = height / 2;
     if (half > 0) {
         do {
 
-            i32 topOff = i * m_pitch;
+            i32 topOff = i * m_apiDesc.lPitch;
             i32 j = 0;
             if (width > 0) {
                 u8* top = buf + topOff;
@@ -556,8 +544,8 @@ void CDDSurface::FlipVertical() {
             }
 
             i32 botRow = height - i - 1;
-            i32 dstOff = i * m_pitch;
-            i32 srcOff = botRow * m_pitch;
+            i32 dstOff = i * m_apiDesc.lPitch;
+            i32 srcOff = botRow * m_apiDesc.lPitch;
             if (width > 0) {
                 u8* topDst = buf + dstOff;
                 u8* botSrc = buf + srcOff;
@@ -570,7 +558,7 @@ void CDDSurface::FlipVertical() {
                 } while (k != 0);
             }
 
-            i32 botOff = botRow * m_pitch;
+            i32 botOff = botRow * m_apiDesc.lPitch;
             i32 m = 0;
             if (width > 0) {
                 u8* botDst = buf + botOff;
@@ -595,8 +583,8 @@ i32 CDDSurface::BlitDirect(u8* src, RasterRowOrder rowOrder) {
         return 0;
     }
     if (rowOrder == RASTER_ROWS_BOTTOM_UP) {
-        for (i32 row = this->m_height - 1; row >= 0; row--) {
-            u8* dst = locked + row * this->m_pitch;
+        for (i32 row = this->m_apiDesc.dwHeight - 1; row >= 0; row--) {
+            u8* dst = locked + row * this->m_apiDesc.lPitch;
             u8* sp = src;
             i32 i = this->m_bytesPerRow;
             while (i-- > 0) {
@@ -605,8 +593,8 @@ i32 CDDSurface::BlitDirect(u8* src, RasterRowOrder rowOrder) {
             src += this->m_bytesPerRow;
         }
     } else {
-        for (i32 row = 0; row < this->m_height; row++) {
-            u8* dst = locked + row * this->m_pitch;
+        for (i32 row = 0; row < static_cast<i32>(this->m_apiDesc.dwHeight); row++) {
+            u8* dst = locked + row * this->m_apiDesc.lPitch;
             u8* sp = src;
             i32 i = this->m_bytesPerRow;
             while (i-- > 0) {
@@ -622,15 +610,12 @@ i32 CDDSurface::BlitDirect(u8* src, RasterRowOrder rowOrder) {
 RVA(0x0013edb0, 0x78)
 void CDDSurface::Clear(i32 white) {
 
-    BltFxWords fx;
-    i32* p = fx.m_words;
-    for (i32 i = 0x19; i != 0; i--) {
-        *p++ = 0;
-    }
-    fx.m_fx.dwSize = sizeof(fx.m_fx);
+    DDBLTFX fx;
+    memset(&fx, 0, sizeof(fx));
+    fx.dwSize = sizeof(fx);
 
-    fx.m_fx.dwROP = white ? WHITENESS : BLACKNESS;
-    i32 hr = this->m_ddSurface->Blt(NULL, NULL, NULL, DDBLT_WAIT | DDBLT_ROP, &fx.m_fx);
+    fx.dwROP = white ? WHITENESS : BLACKNESS;
+    i32 hr = this->m_ddSurface->Blt(NULL, NULL, NULL, DDBLT_WAIT | DDBLT_ROP, &fx);
     if (hr != 0) {
         if (white != 0) {
             Fill(0xff);
@@ -736,10 +721,10 @@ i32 CDDSurface::ShadeBlt(
         if (dr.top < 0) {
             return 0;
         }
-        if (dr.right > m_width) {
+        if (dr.right > static_cast<i32>(m_apiDesc.dwWidth)) {
             return 0;
         }
-        if (dr.bottom > m_height) {
+        if (dr.bottom > static_cast<i32>(m_apiDesc.dwHeight)) {
             return 0;
         }
         if (sr.left < 0) {
@@ -757,9 +742,9 @@ i32 CDDSurface::ShadeBlt(
     }
 
     u16 *dstPtr = static_cast<u16*>(Lock(NULL)), *srcPtr = static_cast<u16*>(src->Lock(NULL));
-    i32 dstStride = m_pitch / 2;
+    i32 dstStride = m_apiDesc.lPitch / 2;
     dstPtr += dr.top * dstStride + dr.left;
-    i32 srcStride = src->m_pitch / 2;
+    i32 srcStride = src->m_apiDesc.lPitch / 2;
     srcPtr += sr.top * srcStride + sr.left;
     i32 dstRowAdv = dstStride + dr.left - dr.right;
     i32 width = dr.right - dr.left;
@@ -879,22 +864,22 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
         if (clip->left < 0) {
             return 0;
         }
-        if (clip->right > m_width) {
+        if (clip->right > static_cast<i32>(m_apiDesc.dwWidth)) {
             return 0;
         }
         if (clip->top < 0) {
             return 0;
         }
-        if (clip->bottom > m_height) {
+        if (clip->bottom > static_cast<i32>(m_apiDesc.dwHeight)) {
             return 0;
         }
         CopyRect(&rc, clip);
     } else {
-        rc = MakeRect(0, 0, m_width, m_height);
+        rc = MakeRect(0, 0, m_apiDesc.dwWidth, m_apiDesc.dwHeight);
     }
     pct = pct * CLUT_BLEND_LEVEL_COUNT / CLUT_BLEND_PERCENT_MAX;
     u16* src = static_cast<u16*>(Lock(NULL));
-    i32 rowPix = m_pitch / 2;
+    i32 rowPix = m_apiDesc.lPitch / 2;
     u16* srcPix = src + rc.top * rowPix + rc.left;
     i32 stride = rc.left - rc.right + rowPix;
     i32 width = rc.right - rc.left;
@@ -1075,21 +1060,23 @@ i32 CDDSurface::RestoreLost() {
 RVA(0x0013f990, 0xc4)
 void CDDSurface::Tile(CDDSurface* src, b32 useColorKey) {
     i32 dwTrans = DDBLTFAST_WAIT + DDBLTFAST_SRCCOLORKEY * (useColorKey != false);
-    for (i32 y = 0; y < m_height; y += src->m_height) {
-        for (i32 x = 0; x < m_width; x += src->m_width) {
+    for (i32 y = 0; y < static_cast<i32>(m_apiDesc.dwHeight); y += src->m_apiDesc.dwHeight) {
+        for (i32 x = 0; x < static_cast<i32>(m_apiDesc.dwWidth); x += src->m_apiDesc.dwWidth) {
             RECT rect;
             RECT* pRect = NULL;
-            if (x + src->m_width >= m_width || y + src->m_height >= m_height) {
+            if (x + static_cast<i32>(src->m_apiDesc.dwWidth) >= static_cast<i32>(m_apiDesc.dwWidth)
+                || y + static_cast<i32>(src->m_apiDesc.dwHeight)
+                       >= static_cast<i32>(m_apiDesc.dwHeight)) {
                 rect.left = 0;
                 rect.top = 0;
-                i32 w = m_width - x;
-                if (w >= src->m_width) {
-                    w = src->m_width;
+                i32 w = m_apiDesc.dwWidth - x;
+                if (w >= static_cast<i32>(src->m_apiDesc.dwWidth)) {
+                    w = src->m_apiDesc.dwWidth;
                 }
                 rect.right = w;
-                i32 h = m_height - y;
-                if (h >= src->m_height) {
-                    h = src->m_height;
+                i32 h = m_apiDesc.dwHeight - y;
+                if (h >= static_cast<i32>(src->m_apiDesc.dwHeight)) {
+                    h = src->m_apiDesc.dwHeight;
                 }
                 rect.bottom = h;
                 pRect = &rect;
@@ -1162,17 +1149,17 @@ i32 CDDSurface::Blit168(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
         return 0;
     }
     if (rowOrder == RASTER_ROWS_BOTTOM_UP) {
-        for (i32 row = this->m_height - 1; row >= 0; row--) {
-            u16* dst = Row16(locked, row, m_pitch);
-            for (i32 col = 0; col < this->m_width; col++) {
+        for (i32 row = this->m_apiDesc.dwHeight - 1; row >= 0; row--) {
+            u16* dst = Row16(locked, row, m_apiDesc.lPitch);
+            for (i32 col = 0; col < static_cast<i32>(this->m_apiDesc.dwWidth); col++) {
                 *dst++ = g_lut16[*srcv];
                 srcv++;
             }
         }
     } else {
-        for (i32 row = 0; row < this->m_height; row++) {
-            u16* dst = Row16(locked, row, m_pitch);
-            for (i32 col = 0; col < this->m_width; col++) {
+        for (i32 row = 0; row < static_cast<i32>(this->m_apiDesc.dwHeight); row++) {
+            u16* dst = Row16(locked, row, m_apiDesc.lPitch);
+            for (i32 col = 0; col < static_cast<i32>(this->m_apiDesc.dwWidth); col++) {
                 *dst++ = g_lut16[*srcv];
                 srcv++;
             }
@@ -1189,9 +1176,9 @@ i32 CDDSurface::Blit1624(u8* srcv, RasterRowOrder rowOrder) {
         return 0;
     }
     if (rowOrder == RASTER_ROWS_BOTTOM_UP) {
-        for (i32 row = this->m_height - 1; row >= 0; row--) {
-            u16* dst = Row16(locked, row, m_pitch);
-            for (i32 col = 0; col < this->m_width; col++) {
+        for (i32 row = this->m_apiDesc.dwHeight - 1; row >= 0; row--) {
+            u16* dst = Row16(locked, row, m_apiDesc.lPitch);
+            for (i32 col = 0; col < static_cast<i32>(this->m_apiDesc.dwWidth); col++) {
                 u8 b = *srcv++;
                 u8 g = *srcv++;
                 u8 r = *srcv++;
@@ -1199,9 +1186,9 @@ i32 CDDSurface::Blit1624(u8* srcv, RasterRowOrder rowOrder) {
             }
         }
     } else {
-        for (i32 row = 0; row < this->m_height; row++) {
-            u16* dst = Row16(locked, row, m_pitch);
-            for (i32 col = 0; col < this->m_width; col++) {
+        for (i32 row = 0; row < static_cast<i32>(this->m_apiDesc.dwHeight); row++) {
+            u16* dst = Row16(locked, row, m_apiDesc.lPitch);
+            for (i32 col = 0; col < static_cast<i32>(this->m_apiDesc.dwWidth); col++) {
                 u8 r = *srcv++;
                 u8 g = *srcv++;
                 u8 b = *srcv++;
@@ -1223,9 +1210,9 @@ i32 CDDSurface::Blit248(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
         return 0;
     }
     if (rowOrder == RASTER_ROWS_BOTTOM_UP) {
-        for (i32 row = this->m_height - 1; row >= 0; row--) {
-            u8* dst = locked + row * this->m_pitch;
-            for (i32 col = 0; col < this->m_width; col++) {
+        for (i32 row = this->m_apiDesc.dwHeight - 1; row >= 0; row--) {
+            u8* dst = locked + row * this->m_apiDesc.lPitch;
+            for (i32 col = 0; col < static_cast<i32>(this->m_apiDesc.dwWidth); col++) {
                 u8 idx = *srcv++;
                 *dst++ = pal[idx].peBlue;
                 *dst++ = pal[idx].peGreen;
@@ -1233,9 +1220,9 @@ i32 CDDSurface::Blit248(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
             }
         }
     } else {
-        for (i32 row = 0; row < this->m_height; row++) {
-            u8* dst = locked + row * this->m_pitch;
-            for (i32 col = 0; col < this->m_width; col++) {
+        for (i32 row = 0; row < static_cast<i32>(this->m_apiDesc.dwHeight); row++) {
+            u8* dst = locked + row * this->m_apiDesc.lPitch;
+            for (i32 col = 0; col < static_cast<i32>(this->m_apiDesc.dwWidth); col++) {
                 u8 idx = *srcv++;
                 *dst++ = pal[idx].peBlue;
                 *dst++ = pal[idx].peGreen;
@@ -1257,9 +1244,9 @@ i32 CDDSurface::Blit2416(u8* srcv, RasterRowOrder rowOrder) {
     source.m_bytes = srcv;
     u16* src = source.m_words;
     if (rowOrder == RASTER_ROWS_BOTTOM_UP) {
-        for (i32 row = this->m_height - 1; row >= 0; row--) {
-            u16* dst = Row16(locked, row, m_pitch);
-            for (i32 col = 0; col < this->m_width; col++) {
+        for (i32 row = this->m_apiDesc.dwHeight - 1; row >= 0; row--) {
+            u16* dst = Row16(locked, row, m_apiDesc.lPitch);
+            for (i32 col = 0; col < static_cast<i32>(this->m_apiDesc.dwWidth); col++) {
                 u16 px = *src++;
                 u8 r = static_cast<u8>((static_cast<u8>((px >> g_rUp)) << g_rDown));
                 u8 g = static_cast<u8>((static_cast<u8>((px >> g_gUp)) << g_gDown));
@@ -1270,9 +1257,9 @@ i32 CDDSurface::Blit2416(u8* srcv, RasterRowOrder rowOrder) {
             }
         }
     } else {
-        for (i32 row = 0; row < this->m_height; row++) {
-            u16* dst = Row16(locked, row, m_pitch);
-            for (i32 col = 0; col < this->m_width; col++) {
+        for (i32 row = 0; row < static_cast<i32>(this->m_apiDesc.dwHeight); row++) {
+            u16* dst = Row16(locked, row, m_apiDesc.lPitch);
+            for (i32 col = 0; col < static_cast<i32>(this->m_apiDesc.dwWidth); col++) {
                 u16 px = *src++;
                 u8 r = static_cast<u8>((static_cast<u8>((px >> g_rUp)) << g_rDown));
                 u8 g = static_cast<u8>((static_cast<u8>((px >> g_gUp)) << g_gDown));
@@ -1313,9 +1300,9 @@ i32 CDDSurface::Blit824(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
         return 0;
     }
     if (rowOrder == RASTER_ROWS_BOTTOM_UP) {
-        for (i32 row = this->m_height - 1; row >= 0; row--) {
-            u8* dst = locked + row * this->m_pitch;
-            for (i32 col = 0; col < this->m_width; col++) {
+        for (i32 row = this->m_apiDesc.dwHeight - 1; row >= 0; row--) {
+            u8* dst = locked + row * this->m_apiDesc.lPitch;
+            for (i32 col = 0; col < static_cast<i32>(this->m_apiDesc.dwWidth); col++) {
                 u8 blue = *srcv++;
                 u8 green = *srcv++;
                 u8 red = *srcv++;
@@ -1323,9 +1310,9 @@ i32 CDDSurface::Blit824(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
             }
         }
     } else {
-        for (i32 row = 0; row < this->m_height; row++) {
-            u8* dst = locked + row * this->m_pitch;
-            for (i32 col = 0; col < this->m_width; col++) {
+        for (i32 row = 0; row < static_cast<i32>(this->m_apiDesc.dwHeight); row++) {
+            u8* dst = locked + row * this->m_apiDesc.lPitch;
+            for (i32 col = 0; col < static_cast<i32>(this->m_apiDesc.dwWidth); col++) {
                 u8 blue = *srcv++;
                 u8 green = *srcv++;
                 u8 red = *srcv++;
@@ -1353,9 +1340,9 @@ i32 CDDSurface::Blit816(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
     u8 green;
     u8 blue;
     if (rowOrder == RASTER_ROWS_BOTTOM_UP) {
-        for (i32 row = this->m_height - 1; row >= 0; row--) {
-            u8* dst = locked + row * this->m_pitch;
-            for (i32 col = 0; col < this->m_width; col++) {
+        for (i32 row = this->m_apiDesc.dwHeight - 1; row >= 0; row--) {
+            u8* dst = locked + row * this->m_apiDesc.lPitch;
+            for (i32 col = 0; col < static_cast<i32>(this->m_apiDesc.dwWidth); col++) {
                 u16 px = *src++;
                 red = static_cast<u8>((static_cast<u8>((px >> g_rUp)) << g_rDown));
                 green = static_cast<u8>((static_cast<u8>((px >> g_gUp)) << g_gDown));
@@ -1364,9 +1351,9 @@ i32 CDDSurface::Blit816(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
             }
         }
     } else {
-        for (i32 row = 0; row < this->m_height; row++) {
-            u8* dst = locked + row * this->m_pitch;
-            for (i32 col = 0; col < this->m_width; col++) {
+        for (i32 row = 0; row < static_cast<i32>(this->m_apiDesc.dwHeight); row++) {
+            u8* dst = locked + row * this->m_apiDesc.lPitch;
+            for (i32 col = 0; col < static_cast<i32>(this->m_apiDesc.dwWidth); col++) {
                 u16 px = *src++;
                 red = static_cast<u8>((static_cast<u8>((px >> g_rUp)) << g_rDown));
                 green = static_cast<u8>((static_cast<u8>((px >> g_gUp)) << g_gDown));
@@ -1384,11 +1371,8 @@ i32 CDDSurface::Blit816(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
 RVA(0x00140770, 0x326)
 void CDDSurface::DumpSurfaceInfo(i32 detailed) {
     i32 i;
-    i32* p = m_descWords;
-    for (i = 0x1b; i != 0; i--) {
-        *p++ = 0;
-    }
-    m_descSize = sizeof(DDSURFACEDESC);
+    memset(&m_apiDesc, 0, sizeof(m_apiDesc));
+    m_apiDesc.dwSize = sizeof(DDSURFACEDESC);
     LPDDSURFACEDESC desc = &m_apiDesc;
     m_ddSurface->GetSurfaceDesc(desc);
     if (desc == NULL) {
@@ -1419,10 +1403,10 @@ void CDDSurface::DumpSurfaceInfo(i32 detailed) {
         }
         DDrawLogLine(
             "Surface: width = %i, height = %i, depth = %i, pitch = %i\n",
-            m_width,
-            m_height,
+            m_apiDesc.dwWidth,
+            m_apiDesc.dwHeight,
             IDX(depth),
-            m_pitch
+            m_apiDesc.lPitch
         );
         return;
     }
@@ -1453,10 +1437,10 @@ void CDDSurface::DumpSurfaceInfo(i32 detailed) {
     DDrawLogLine("Surface Information for surface pointer %p:\n", this);
     DDrawLogLine(
         "width = %i, height = %i, depth = %i, pitch = %i\n",
-        m_width,
-        m_height,
+        m_apiDesc.dwWidth,
+        m_apiDesc.dwHeight,
         IDX(depth),
-        m_pitch
+        m_apiDesc.lPitch
     );
     if (depth == BPP_RGB_16) {
         DDrawLogLine(
@@ -1749,8 +1733,8 @@ i32 CDDSurface::StretchBlit(CDDSurface* src, RECT* srcRect, RECT* dstRect, i32 m
     RECT sr;
     ClipVtx v[4];
 
-    i32 srcW = src->m_width;
-    i32 srcH = src->m_height;
+    i32 srcW = src->m_apiDesc.dwWidth;
+    i32 srcH = src->m_apiDesc.dwHeight;
     if (srcRect != NULL) {
         sr = *srcRect;
     } else {
@@ -1833,12 +1817,12 @@ DDSurfacePoolKind CDDSurface::GetPoolKind() {
 
 RVA(0x00141310, 0x4)
 i32 CDDSurface::GetWidth() {
-    return m_width;
+    return m_apiDesc.dwWidth;
 }
 
 RVA(0x00141320, 0x4)
 i32 CDDSurface::GetHeight() {
-    return m_height;
+    return m_apiDesc.dwHeight;
 }
 
 RVA_COMPGEN(0x00141330, 0x1e, ??_GCDDSurface@@UAEPAXI@Z)
@@ -1851,5 +1835,5 @@ void CDDSurface::UnlockThunk() {
 
 RVA(0x001413c0, 0xb)
 i32 CDDSurface::Scale(i32 n) {
-    return m_pitch * n;
+    return m_apiDesc.lPitch * n;
 }

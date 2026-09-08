@@ -69,7 +69,6 @@
 #include <Rez/RezList.h>
 #include <Rez/RezMgr.h>
 #include <Utils/MapTyped.h>
-#include <Utils/MfcTyped.h>
 #include <Utils/RegMgr.h>
 #include <Wap32/ScreenGeometry.h>
 
@@ -3904,9 +3903,9 @@ i32 CStatusBarMgr::QueuePickupReward(i32 pickupValue, i32 score) {
     i32 n = m_rewardQueue.GetSize();
     i32 i = 0;
     if (i < n) {
-        Coord** t = MfcPtrArrayData<Coord>(m_rewardQueue);
+        void** t = m_rewardQueue.GetData();
         while (i < n) {
-            Coord* e = *t;
+            Coord* e = static_cast<Coord*>(*t);
             if (e != NULL && score < e->m_y) {
                 goto insert;
             }

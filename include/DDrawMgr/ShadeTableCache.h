@@ -3,9 +3,13 @@
 
 #include <rva.h>
 
+#include <Mfc.h>
+
 #include <DDrawMgr/ShadeMode.h>
 #include <Enums.h>
 #include <Wap32/Object.h>
+
+#include <afxtempl.h>
 
 class CFile;
 class CString;
@@ -47,26 +51,7 @@ struct CShadeTable {
     i32 SaveToFile(CString path);
 };
 
-struct CShadeTableArray : CObject {
-    CShadeTable** m_pData;
-    i32 m_nSize;
-    i32 m_nMaxSize;
-    i32 m_nGrowBy;
-
-    CShadeTableArray();
-    virtual ~CShadeTableArray() OVERRIDE;
-    virtual void Serialize(CArchive& ar) OVERRIDE;
-
-    void SetSizeGrow(i32 n, i32 grow);
-
-    i32 GetSize() const {
-        return m_nSize;
-    }
-
-    CShadeTable*& operator[](i32 i) {
-        return m_pData[i];
-    }
-};
+typedef CArray<CShadeTable*, CShadeTable*> CShadeTableArray;
 
 class CShadeTableCache {
 public:

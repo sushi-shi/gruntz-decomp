@@ -56,12 +56,12 @@ void CGrunt::RecycleCoords() {
     if (CoordCount() == 0) {
         return;
     }
-    CoordNode* n = CoordHead();
+    POSITION n = CoordHead();
     if (n != NULL) {
         do {
-            CoordNode* cur = n;
-            n = n->m_next;
-            Coord* coord = cur->m_coord;
+            POSITION cur = n;
+            m_coordList.GetNext(n);
+            Coord* coord = static_cast<Coord*>(m_coordList.GetAt(cur));
             if (coord != NULL) {
                 PushFreeNode(&g_coordPool, coord);
             }

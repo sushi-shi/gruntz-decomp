@@ -17,6 +17,7 @@ rva	name	lib	confidence	source
 0x007c20	??_H@YGXPAXIHP6EX0@Z@Z	NAFXCW	HIGH	vector-ctor-iterator
 0x021280	?out_waiting@streambuf@@QBEHXZ	LIBCIMT	HIGH	manual-crt-reclass
 0x0213a0	?rdbuf@ostrstream@@QBEPAVstrstreambuf@@XZ	LIBCIMT	HIGH	manual-crt-reclass
+0x029a30	?GetNext@CPtrList@@QAEAAPAXAAPAU__POSITION@@@Z	NAFXCW	HIGH	mfc-4.2-header-inline
 0x029ac0	??0CRect@@QAE@HHHH@Z	NAFXCW	HIGH	mfc-4.2-header-inline
 0x0853d0	??3CObject@@SGXPAX@Z	NAFXCW	MED	manual-unmatched-library-audit
 0x08c380	?SetRect@CRect@@QAEXHHHH@Z	NAFXCW	HIGH	mfc-4.2-header-inline

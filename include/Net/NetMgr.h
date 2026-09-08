@@ -41,12 +41,7 @@ extern i32 g_dropPlayerId;
 extern i32 g_localVersion;
 extern i32 g_remoteVersion;
 
-union NetGuid {
-    GUID m_guid;
-    i32 m_words[4];
-};
-
-extern NetGuid g_dplayAppGuid;
+extern GUID g_dplayAppGuid;
 extern i32 g_cfgWord;
 
 struct CNetVersionPacket {
@@ -413,7 +408,7 @@ public:
 
     i32 EnumerateSessions(DWORD timeoutMs, DWORD flags);
 
-    i32 Initialize(void* lobby, NetGuid appGuid);
+    i32 Initialize(void* lobby, GUID appGuid);
 
     CNetSessionListNode* AddSessionListing(LPCDPSESSIONDESC2 sessionDesc);
     void PopulateSessionList(HWND hList);
@@ -442,7 +437,7 @@ public:
     static void SetReportMode(b32 log, b32 msgBox, b32 beep, b32 debugOutput);
     void PopulateProviderList(HWND hList, i32 excludedProviderKinds);
 
-    NetGuid m_appGuid;
+    GUID m_appGuid;
     IDirectPlay* m_directPlayBase;
     IDirectPlay4A* m_directPlay;
 

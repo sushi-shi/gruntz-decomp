@@ -16,7 +16,7 @@ public:
     virtual ~SoundStream() OVERRIDE;
 
     StreamVoice* CreateStreamVoice(
-        WaveFormatX* format,
+        WAVEFORMATEX* format,
         u32 bufferBytes,
         i32 dsFlags,
         i32 reprimeWhenIdle,
@@ -43,7 +43,7 @@ public:
     i32 InitializeDevice(HWND hwnd, i32 cooperativeLevel);
 
     i32 TickStreams(i32 timestampMs);
-    i32 ParseWave(CRezItm* source, WaveFormatX* outFormat, u32* outDataOffset, u32* outDataBytes);
+    i32 ParseWave(CRezItm* source, WAVEFORMATEX* outFormat, u32* outDataOffset, u32* outDataBytes);
 
     CLTBaseList m_voices;
 };
