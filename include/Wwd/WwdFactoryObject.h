@@ -8,10 +8,10 @@
 #include <Ints.h>
 
 struct CDDrawRect {
-    i32 left;
-    i32 top;
-    i32 right;
-    i32 bottom;
+    i32 m_left;
+    i32 m_top;
+    i32 m_right;
+    i32 m_bottom;
 };
 
 inline CResolveNode::CResolveNode(CDDrawSurfaceMgr* owner, i32 id, i32 flags, EInlineSeed)

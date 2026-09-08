@@ -9,9 +9,9 @@
 #include <Ints.h>
 
 struct DIB_LOGPAL256 {
-    u16 version;
-    u16 numEntries;
-    PALETTEENTRY entries[256];
+    u16 m_version;
+    u16 m_numEntries;
+    PALETTEENTRY m_entries[256];
 };
 
 class CDibPal {
@@ -43,7 +43,7 @@ public:
         return m_hPal;
     }
     PALETTEENTRY* GetPes() {
-        return m_logPal.entries;
+        return m_logPal.m_entries;
     }
     u32 GetFlags() {
         return m_dwFlags;

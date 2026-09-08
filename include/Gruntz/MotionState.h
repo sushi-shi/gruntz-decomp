@@ -54,7 +54,6 @@ public:
     DoubleVector3 m_maxBounds;
     DoubleVector3 m_step;
     b32 m_stepDisabled;
-    char m_padbc[0xc0 - 0xbc];
     DoubleVector3 m_reservedc0; // zeroed + save-streamed; Step never reads it
     DoubleVector3 m_maxStep;
     DoubleVector3 m_maxVelocity;
@@ -74,12 +73,12 @@ inline void CMotionState::InitBounds() {
     m_deltaTime = 0.0;
     m_reservedc0.Init();
     m_stepDisabled = false;
-    m_minBounds.x = g_movingLogicMin;
-    m_maxBounds.x = g_movingLogicMax;
-    m_minBounds.y = g_movingLogicMin;
-    m_maxBounds.y = g_movingLogicMax;
-    m_minBounds.z = g_movingLogicMin;
-    m_maxBounds.z = g_movingLogicMax;
+    m_minBounds.m_x = g_movingLogicMin;
+    m_maxBounds.m_x = g_movingLogicMax;
+    m_minBounds.m_y = g_movingLogicMin;
+    m_maxBounds.m_y = g_movingLogicMax;
+    m_minBounds.m_z = g_movingLogicMin;
+    m_maxBounds.m_z = g_movingLogicMax;
     m_maxStep.Init(g_movingLogicMax, g_movingLogicMax, g_movingLogicMax);
     m_maxVelocity.Init(g_movingLogicMax, g_movingLogicMax, g_movingLogicMax);
 }

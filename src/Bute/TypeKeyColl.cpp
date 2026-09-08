@@ -35,7 +35,7 @@ DATA(0x0021ad28)
 i32 g_defaultProjActSize = 32;
 
 DATA(0x0021adf4)
-char s_out_of_memory[] = "out of memory";
+char g_out_of_memory[] = "out of memory";
 
 RVA_DYNINIT(0x0016d6f0, 0x5, g_zBitSetErrorSlot)
 RVA_DYNINIT(0x0016d700, 0x10, g_zBitSetErrorSlot)
@@ -88,34 +88,34 @@ RVA(0x0016cdd0, 0x22f)
 ostream& WriteCurve(ostream& accum, const CMotionState& c) {
     accum << c.m_time;
     accum << c.m_deltaTime;
-    accum << c.m_acceleration.x;
-    accum << c.m_acceleration.y;
-    accum << c.m_acceleration.z;
-    accum << c.m_velocity.x;
-    accum << c.m_velocity.y;
-    accum << c.m_velocity.z;
-    accum << c.m_position.x;
-    accum << c.m_position.y;
-    accum << c.m_position.z;
-    accum << c.m_minBounds.x;
-    accum << c.m_minBounds.y;
-    accum << c.m_minBounds.z;
-    accum << c.m_maxBounds.x;
-    accum << c.m_maxBounds.y;
-    accum << c.m_maxBounds.z;
-    accum << c.m_step.x;
-    accum << c.m_step.y;
-    accum << c.m_step.z;
+    accum << c.m_acceleration.m_x;
+    accum << c.m_acceleration.m_y;
+    accum << c.m_acceleration.m_z;
+    accum << c.m_velocity.m_x;
+    accum << c.m_velocity.m_y;
+    accum << c.m_velocity.m_z;
+    accum << c.m_position.m_x;
+    accum << c.m_position.m_y;
+    accum << c.m_position.m_z;
+    accum << c.m_minBounds.m_x;
+    accum << c.m_minBounds.m_y;
+    accum << c.m_minBounds.m_z;
+    accum << c.m_maxBounds.m_x;
+    accum << c.m_maxBounds.m_y;
+    accum << c.m_maxBounds.m_z;
+    accum << c.m_step.m_x;
+    accum << c.m_step.m_y;
+    accum << c.m_step.m_z;
     accum << c.m_stepDisabled;
-    accum << c.m_reservedc0.x;
-    accum << c.m_reservedc0.y;
-    accum << c.m_reservedc0.z;
-    accum << c.m_maxStep.x;
-    accum << c.m_maxStep.y;
-    accum << c.m_maxStep.z;
-    accum << c.m_maxVelocity.x;
-    accum << c.m_maxVelocity.y;
-    accum << c.m_maxVelocity.z;
+    accum << c.m_reservedc0.m_x;
+    accum << c.m_reservedc0.m_y;
+    accum << c.m_reservedc0.m_z;
+    accum << c.m_maxStep.m_x;
+    accum << c.m_maxStep.m_y;
+    accum << c.m_maxStep.m_z;
+    accum << c.m_maxVelocity.m_x;
+    accum << c.m_maxVelocity.m_y;
+    accum << c.m_maxVelocity.m_z;
     return accum;
 }
 
@@ -123,34 +123,34 @@ RVA(0x0016d000, 0x189)
 istream& ReadCurve(istream& accum, CMotionState& c) {
     accum >> c.m_time;
     accum >> c.m_deltaTime;
-    accum >> c.m_acceleration.x;
-    accum >> c.m_acceleration.y;
-    accum >> c.m_acceleration.z;
-    accum >> c.m_velocity.x;
-    accum >> c.m_velocity.y;
-    accum >> c.m_velocity.z;
-    accum >> c.m_position.x;
-    accum >> c.m_position.y;
-    accum >> c.m_position.z;
-    accum >> c.m_minBounds.x;
-    accum >> c.m_minBounds.y;
-    accum >> c.m_minBounds.z;
-    accum >> c.m_maxBounds.x;
-    accum >> c.m_maxBounds.y;
-    accum >> c.m_maxBounds.z;
-    accum >> c.m_step.x;
-    accum >> c.m_step.y;
-    accum >> c.m_step.z;
+    accum >> c.m_acceleration.m_x;
+    accum >> c.m_acceleration.m_y;
+    accum >> c.m_acceleration.m_z;
+    accum >> c.m_velocity.m_x;
+    accum >> c.m_velocity.m_y;
+    accum >> c.m_velocity.m_z;
+    accum >> c.m_position.m_x;
+    accum >> c.m_position.m_y;
+    accum >> c.m_position.m_z;
+    accum >> c.m_minBounds.m_x;
+    accum >> c.m_minBounds.m_y;
+    accum >> c.m_minBounds.m_z;
+    accum >> c.m_maxBounds.m_x;
+    accum >> c.m_maxBounds.m_y;
+    accum >> c.m_maxBounds.m_z;
+    accum >> c.m_step.m_x;
+    accum >> c.m_step.m_y;
+    accum >> c.m_step.m_z;
     accum >> c.m_stepDisabled;
-    accum >> c.m_reservedc0.x;
-    accum >> c.m_reservedc0.y;
-    accum >> c.m_reservedc0.z;
-    accum >> c.m_maxStep.x;
-    accum >> c.m_maxStep.y;
-    accum >> c.m_maxStep.z;
-    accum >> c.m_maxVelocity.x;
-    accum >> c.m_maxVelocity.y;
-    accum >> c.m_maxVelocity.z;
+    accum >> c.m_reservedc0.m_x;
+    accum >> c.m_reservedc0.m_y;
+    accum >> c.m_reservedc0.m_z;
+    accum >> c.m_maxStep.m_x;
+    accum >> c.m_maxStep.m_y;
+    accum >> c.m_maxStep.m_z;
+    accum >> c.m_maxVelocity.m_x;
+    accum >> c.m_maxVelocity.m_y;
+    accum >> c.m_maxVelocity.m_z;
     return accum;
 }
 
@@ -163,30 +163,30 @@ void* zPTree::lookup(const char* key) {
         m_errSink->Set(this, msg, 0x16);
         return NULL;
     }
-    p = root;
-    q = NULL;
-    preview = true;
-    sbits = static_cast<i32>(strlen(key)) * PTREE_BITS_PER_BYTE + PTREE_BYTE_BIT_MASK;
-    if (p == NULL) {
+    m_p = m_root;
+    m_q = NULL;
+    m_preview = true;
+    m_sbits = static_cast<i32>(strlen(key)) * PTREE_BITS_PER_BYTE + PTREE_BYTE_BIT_MASK;
+    if (m_p == NULL) {
         return NULL;
     }
-    i32 branch = p->index;
-    while (branch <= sbits) {
-        q = p->ptr(bit(key, branch));
-        if (q == NULL) {
+    i32 branch = m_p->m_index;
+    while (branch <= m_sbits) {
+        m_q = m_p->ptr(bit(key, branch));
+        if (m_q == NULL) {
             return NULL;
         }
-        if (q->index <= branch) {
-            if (strcmp(key, q->symbol) == 0) {
-                preview = false;
-                return q->body;
+        if (m_q->m_index <= branch) {
+            if (strcmp(key, m_q->m_symbol) == 0) {
+                m_preview = false;
+                return m_q->m_body;
             }
             return NULL;
         }
-        p = q;
-        branch = p->index;
+        m_p = m_q;
+        branch = m_p->m_index;
     }
-    q = p;
+    m_q = m_p;
     return NULL;
 }
 
@@ -324,20 +324,20 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&g_zBitSetError
             } while (isspace(*q));
         }
         if (sep == '-') {
-            i32 v2 = 0;
+            i32 rangeEnd = 0;
             if (*q == 0) {
                 break;
             }
             while (isdigit(*q)) {
-                v2 = v2 * 10 + (*q - '0');
+                rangeEnd = rangeEnd * 10 + (*q - '0');
                 ++q;
             }
-            if (static_cast<u32>(v) > static_cast<u32>(v2)) {
+            if (static_cast<u32>(v) > static_cast<u32>(rangeEnd)) {
                 i32 t = v;
-                v = v2;
-                v2 = t;
+                v = rangeEnd;
+                rangeEnd = t;
             }
-            for (++v; static_cast<u32>(v) <= static_cast<u32>(v2); ++v) {
+            for (++v; static_cast<u32>(v) <= static_cast<u32>(rangeEnd); ++v) {
                 u32* band = (static_cast<u32>(m_capacity) > 0x20) ? m_words : &m_inline;
                 band[static_cast<u32>(v) >> BITARRAY_WORD_SHIFT] |= 1u << (v & BITARRAY_BIT_MASK);
             }
@@ -483,7 +483,7 @@ void* _zvec::GrowTo(i32 idx, i32 at) {
         p = static_cast<char*>(realloc(m_base, (m_hi - idx + 1) * m_stride));
         if (!p) {
             g_retAddrBreadcrumb = GetCallerRetAddr();
-            m_errSink->Set(this, const_cast<char*>(s_out_of_memory), 0x22);
+            m_errSink->Set(this, const_cast<char*>(g_out_of_memory), 0x22);
             return NULL;
         }
         i32 oldbytes = (m_hi - m_lo + 1) * m_stride;
@@ -500,7 +500,7 @@ void* _zvec::GrowTo(i32 idx, i32 at) {
     p = static_cast<char*>(realloc(m_base, (idx - m_lo + 1) * m_stride));
     if (!p) {
         g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errSink->Set(this, const_cast<char*>(s_out_of_memory), 0x22);
+        m_errSink->Set(this, const_cast<char*>(g_out_of_memory), 0x22);
         return NULL;
     }
     i32 oldbytes = (m_hi - m_lo + 1) * m_stride;
@@ -519,13 +519,13 @@ void* zPTree::add(const char* key, void* value) {
     i32 dp;
     zPTreeNode* t;
 
-    if (preview == false) {
+    if (m_preview == false) {
         g_retAddrBreadcrumb = GetCallerRetAddr();
         m_errSink->Set(this, const_cast<char*>("No prior lookup"), 0x16);
         return NULL;
     }
-    preview = false;
-    sbits -= PTREE_BYTE_BIT_MASK;
+    m_preview = false;
+    m_sbits -= PTREE_BYTE_BIT_MASK;
     if (key == NULL || value == NULL) {
         char* msg = g_errNullArg;
         g_retAddrBreadcrumb = GetCallerRetAddr();
@@ -533,7 +533,7 @@ void* zPTree::add(const char* key, void* value) {
         return NULL;
     }
 
-    newbranch = q != NULL ? diffpos(key, q->symbol) : sbits - 1;
+    newbranch = m_q != NULL ? diffpos(key, m_q->m_symbol) : m_sbits - 1;
     t = new zPTreeNode;
     if (t == NULL) {
         char* msg = g_errOutOfMem;
@@ -541,43 +541,43 @@ void* zPTree::add(const char* key, void* value) {
         m_errSink->Set(this, msg, 0xc);
         return NULL;
     }
-    t->index = newbranch;
-    t->body = value;
-    t->symbol = new char[(sbits >> PTREE_BYTE_BIT_SHIFT) + 1];
-    if (t->symbol == NULL) {
+    t->m_index = newbranch;
+    t->m_body = value;
+    t->m_symbol = new char[(m_sbits >> PTREE_BYTE_BIT_SHIFT) + 1];
+    if (t->m_symbol == NULL) {
         char* msg = g_errOutOfMem;
         g_retAddrBreadcrumb = GetCallerRetAddr();
         m_errSink->Set(this, msg, 0xc);
         return NULL;
     }
-    strcpy(t->symbol, key);
+    strcpy(t->m_symbol, key);
 
     dp = bit(key, newbranch);
     t->ptr(dp) = t;
 
-    if (p != NULL) {
-        if (newbranch >= p->index) {
-            p->ptr(bit(key, p->index)) = t;
+    if (m_p != NULL) {
+        if (newbranch >= m_p->m_index) {
+            m_p->ptr(bit(key, m_p->m_index)) = t;
         } else {
-            q = root;
-            p = NULL;
+            m_q = m_root;
+            m_p = NULL;
             i32 b;
-            while (q->index <= newbranch) {
-                p = q;
-                b = bit(key, q->index);
-                q = q->ptr(b);
+            while (m_q->m_index <= newbranch) {
+                m_p = m_q;
+                b = bit(key, m_q->m_index);
+                m_q = m_q->ptr(b);
             }
-            if (p == NULL) {
-                root = t;
+            if (m_p == NULL) {
+                m_root = t;
             } else {
-                p->ptr(b) = t;
+                m_p->ptr(b) = t;
             }
         }
     } else {
-        root = t;
+        m_root = t;
     }
 
-    t->ptr(!dp) = q;
+    t->ptr(!dp) = m_q;
     incc();
     return value;
 }
@@ -619,7 +619,7 @@ _zvec::_zvec(i32 stride, i32 lo, i32 hi, void* scratch)
         }
     }
     g_retAddrBreadcrumb = GetCallerRetAddr();
-    m_errSink->Set(this, const_cast<char*>(s_out_of_memory), 0xc);
+    m_errSink->Set(this, const_cast<char*>(g_out_of_memory), 0xc);
 }
 
 RVA_COMPGEN(0x0016df20, 0x1e, ??_G_zvec@@UAEPAXI@Z)
@@ -635,7 +635,7 @@ _zvec::~_zvec() {
 RVA(0x0016df70, 0x22)
 zPtrColl::zPtrColl(cleanup_behaviour cleanup, dtorf_t destructor)
 
-    : dtor(destructor), flags(static_cast<i16>(cleanup)), _count(0) {}
+    : m_dtor(destructor), m_flags(static_cast<i16>(cleanup)), m_count(0) {}
 
 RVA_COMPGEN(0x0016dfa0, 0x1e, ??_GzPtrColl@@UAEPAXI@Z)
 RVA(0x0016dfc0, 0x7)
@@ -646,28 +646,28 @@ zPTree::zPTree(dtorf_t destructor, cleanup_behaviour cleanup)
 
     : zErrHandling(&g_rezArchiveErrorSlot),
       zPtrColl(cleanup, destructor),
-      root(NULL),
-      preview(false) {}
+      m_root(NULL),
+      m_preview(false) {}
 
 RVA(0x0016e070, 0x7b)
 void zPTree::cleanup(zPTreeNode* node) {
     zPTreeNode* n = node;
     if (n == NULL) {
-        n = root;
+        n = m_root;
         if (n == NULL) {
             return;
         }
     }
-    if (n->left != NULL && n->left->index > n->index) {
-        cleanup(n->left);
+    if (n->m_left != NULL && n->m_left->m_index > n->m_index) {
+        cleanup(n->m_left);
     }
-    if (n->right != NULL && n->right->index > n->index) {
-        cleanup(n->right);
+    if (n->m_right != NULL && n->m_right->m_index > n->m_index) {
+        cleanup(n->m_right);
     }
-    delete[] n->symbol;
+    delete[] n->m_symbol;
     if (purge()) {
-        destroy(n->body);
-        delete static_cast<char*>(n->body);
+        destroy(n->m_body);
+        delete static_cast<char*>(n->m_body);
     }
     delete n;
 }

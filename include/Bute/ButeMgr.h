@@ -39,61 +39,61 @@ public:
 
     class CSymTabItem {
     public:
-        SymTypes SymType;
+        SymTypes m_symType;
 
         CSymTabItem() {}
 
         CSymTabItem(SymTypes t, ButeIntPoint* src) {
-            SymType = t;
-            data.point = new ButeIntPoint(*src);
+            m_symType = t;
+            m_data.m_point = new ButeIntPoint(*src);
         }
         CSymTabItem(SymTypes t, i32 val) {
-            SymType = t;
-            data.i = new i32(val);
+            m_symType = t;
+            m_data.m_i = new i32(val);
         }
         CSymTabItem(SymTypes t, DWORD val) {
-            SymType = t;
-            data.dw = new DWORD(val);
+            m_symType = t;
+            m_data.m_dw = new DWORD(val);
         }
         CSymTabItem(SymTypes t, float val) {
-            SymType = t;
-            data.f = new float(val);
+            m_symType = t;
+            m_data.m_f = new float(val);
         }
         CSymTabItem(SymTypes t, double val) {
-            SymType = t;
-            data.d = new double(val);
+            m_symType = t;
+            m_data.m_d = new double(val);
         }
         CSymTabItem(SymTypes t, const CString& val) {
-            SymType = t;
-            data.s = new CString(val);
+            m_symType = t;
+            m_data.m_s = new CString(val);
         }
         CSymTabItem(SymTypes t, ButeIntRect* src) {
-            SymType = t;
-            data.r = new ButeIntRect(*src);
+            m_symType = t;
+            m_data.m_r = new ButeIntRect(*src);
         }
         CSymTabItem(SymTypes t, CAVector* src) {
-            SymType = t;
-            data.v = new CAVector(*src);
+            m_symType = t;
+            m_data.m_v = new CAVector(*src);
         }
         CSymTabItem(SymTypes t, CARange* src) {
-            SymType = t;
-            data.range = new CARange(*src);
+            m_symType = t;
+            m_data.m_range = new CARange(*src);
         }
 
         ~CSymTabItem();
         const CSymTabItem& operator=(const CSymTabItem& item);
 
         union {
-            i32* i;
-            DWORD* dw;
-            double* d;
-            float* f;
-            CString* s;
-            ButeIntRect* r;
-            ButeIntPoint* point;
-            CAVector* v;
-            CARange* range;
-        } data;
+            i32* m_i;
+            DWORD* m_dw;
+            double* m_d;
+            float* m_f;
+            CString* m_s;
+            ButeIntRect* m_r;
+            ButeIntPoint* m_point;
+            CAVector* m_v;
+            CARange* m_range;
+        } m_data;
     };
 
     i32 GetInt(const char* tag, const char* key, i32 def);
@@ -181,7 +181,6 @@ private:
     bool m_bLineCounterFlag;
 
     bool m_bErrorFlag;
-    char m_pad0e[0x10 - 0xe];
     CString m_sErrorString;
     ErrCallback m_pDisplayFunc;
     TableOfTags m_tagTab;
@@ -197,7 +196,6 @@ private:
 
     iostream* m_pSaveData;
     char m_currentChar;
-    char m_pada9;
     GZ_ENUM_STORAGE(ButeToken, i16) m_token;
     i16 m_tokenMinor;
     char m_szTokenString[0x100 - 0xae];
@@ -220,66 +218,66 @@ public:
 RVA(0x00172040, 0x120)
 inline const CButeMgr::CSymTabItem&
 CButeMgr::CSymTabItem::operator=(const CButeMgr::CSymTabItem& item) {
-    switch (SymType) {
+    switch (m_symType) {
         case INT_TYPE:
-            *data.i = *item.data.i;
+            *m_data.m_i = *item.m_data.m_i;
             break;
         case DWORD_TYPE:
-            *data.dw = *item.data.dw;
+            *m_data.m_dw = *item.m_data.m_dw;
             break;
         case DOUBLE_TYPE:
-            *data.d = *item.data.d;
+            *m_data.m_d = *item.m_data.m_d;
             break;
         case FLOAT_TYPE:
-            *data.f = *item.data.f;
+            *m_data.m_f = *item.m_data.m_f;
             break;
         case STRING_TYPE:
-            *data.s = *item.data.s;
+            *m_data.m_s = *item.m_data.m_s;
             break;
         case RECT_TYPE:
-            *data.r = *item.data.r;
+            *m_data.m_r = *item.m_data.m_r;
             break;
         case POINT_TYPE:
-            *data.point = *item.data.point;
+            *m_data.m_point = *item.m_data.m_point;
             break;
         case VECTOR_TYPE:
-            *data.v = *item.data.v;
+            *m_data.m_v = *item.m_data.m_v;
             break;
         case RANGE_TYPE:
-            *data.range = *item.data.range;
+            *m_data.m_range = *item.m_data.m_range;
             break;
     }
     return *this;
 }
 
 inline CButeMgr::CSymTabItem::~CSymTabItem() {
-    switch (SymType) {
+    switch (m_symType) {
         case INT_TYPE:
-            delete data.i;
+            delete m_data.m_i;
             break;
         case DWORD_TYPE:
-            delete data.dw;
+            delete m_data.m_dw;
             break;
         case DOUBLE_TYPE:
-            delete data.d;
+            delete m_data.m_d;
             break;
         case FLOAT_TYPE:
-            delete data.f;
+            delete m_data.m_f;
             break;
         case STRING_TYPE:
-            delete data.s;
+            delete m_data.m_s;
             break;
         case RECT_TYPE:
-            delete data.r;
+            delete m_data.m_r;
             break;
         case POINT_TYPE:
-            delete data.point;
+            delete m_data.m_point;
             break;
         case VECTOR_TYPE:
-            delete data.v;
+            delete m_data.m_v;
             break;
         case RANGE_TYPE:
-            delete data.range;
+            delete m_data.m_range;
             break;
     }
 }

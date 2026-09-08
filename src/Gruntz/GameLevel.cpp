@@ -89,12 +89,12 @@ CGameLevel::CGameLevel(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
     m_checksum = 0;
     m_defaultActiveGridCellSize[0] = 500;
     m_smallActiveGridCellSize[1] = 125;
-    m_defaultActiveRegionSize.w = 1600;
-    m_defaultActiveRegionSize.h = 1200;
-    m_largeActiveRegionSize.w = 2560;
-    m_largeActiveRegionSize.h = 1920;
-    m_smallActiveRegionSize.w = 768;
-    m_smallActiveRegionSize.h = 576;
+    m_defaultActiveRegionSize.m_w = 1600;
+    m_defaultActiveRegionSize.m_h = 1200;
+    m_largeActiveRegionSize.m_w = 2560;
+    m_largeActiveRegionSize.m_h = 1920;
+    m_smallActiveRegionSize.m_w = 768;
+    m_smallActiveRegionSize.m_h = 576;
 }
 
 RVA(0x0015cdf0, 0xb8)
@@ -187,7 +187,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     ReleaseChildren();
 
     WwdHeader* source = hdr;
-    if (source->headerSize > sizeof(*source)) {
+    if (source->m_headerSize > sizeof(*source)) {
         return 0;
     }
 
@@ -197,10 +197,10 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     char* block = reinterpret_cast<char*>(source);
     Bytef* ehAlloc = NULL;
 
-    u32* pflags = &source->flags;
+    u32* pflags = &source->m_flags;
 
     if (*pflags & 0x2) {
-        u32 capacity = source->mainBlockLength + source->headerSize + 0x20;
+        u32 capacity = source->m_mainBlockLength + source->m_headerSize + 0x20;
         Bytef* buf = new Bytef[capacity + 0x20];
         if (buf == NULL) {
             return 0;
@@ -217,15 +217,15 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
         ehAlloc = buf;
     }
 
-    strcpy(m_levelName, source->levelName);
+    strcpy(m_levelName, source->m_levelName);
     m_flags = *pflags;
-    m_checksum = source->checksum;
+    m_checksum = source->m_checksum;
 
     i32 result = 0;
 
-    char* cursor = block + source->planesOffset;
+    char* cursor = block + source->m_planesOffset;
 
-    for (u32 i = 0; i < source->numPlanes; ++i) {
+    for (u32 i = 0; i < source->m_numPlanes; ++i) {
         // Byte-forced view of packed WWD storage.
 
         if (ReadPlane(reinterpret_cast<const WwdPlaneHeader*>(cursor), block, &m_viewportRect)
@@ -235,10 +235,10 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
         cursor += 0xa0;
     }
 
-    if (source->tileDescriptionsOffset > 0) {
+    if (source->m_tileDescriptionsOffset > 0) {
 
         WwdTileDescTable* rec = // Byte-forced view of packed WWD storage.
-            reinterpret_cast<WwdTileDescTable*>(block + source->tileDescriptionsOffset);
+            reinterpret_cast<WwdTileDescTable*>(block + source->m_tileDescriptionsOffset);
         char* elem = rec->m_descriptors;
         if (elem == NULL) {
             result = -1;
@@ -269,8 +269,8 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     }
 
     {
-        i32 startX = source->startX;
-        i32 startY = source->startY;
+        i32 startX = source->m_startX;
+        i32 startY = source->m_startY;
         CDDrawWorkerHost* mp = m_mainPlane;
         SET_SCROLL_POSITION_RAW_FIRST(mp, startX, startY);
 
@@ -1508,7 +1508,7 @@ i32 CGameLevel::ClampSpan(i32 x, i32 y, i32* outLo, i32* outHi) {
     i32 qy = y >> pl->m_shiftY;
     i32 idx = pl->m_tileRowOffsets[qy] + qx;
     i32 tile = pl->m_tileHandles[idx];
-    if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
+    if (tile == UNINIT_FILL || tile == s_tileClear) {
         return 0;
     }
     CTileImageSet* set =
@@ -1588,7 +1588,7 @@ i32 CGameLevel::IsValidWwd(const char* name, WwdHeader* headerBuf) {
         return 0;
     }
 
-    if (headerBuf->headerSize > sizeof(WwdHeader)) {
+    if (headerBuf->m_headerSize > sizeof(WwdHeader)) {
         return 0;
     }
 
@@ -1616,11 +1616,11 @@ i32 CGameLevel::ReadWwdHeaderName(const char* name, char* nameOut) {
         return 0;
     }
 
-    if (header.headerSize > sizeof(header)) {
+    if (header.m_headerSize > sizeof(header)) {
         return 0;
     }
 
-    strcpy(nameOut, header.levelName);
+    strcpy(nameOut, header.m_levelName);
     return 1;
 }
 
@@ -1636,34 +1636,34 @@ Bytef* CGameLevel::InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destLen) {
         return NULL;
     }
 
-    if (src->headerSize > sizeof(*src)) {
+    if (src->m_headerSize > sizeof(*src)) {
         return NULL;
     }
-    if ((src->flags & 0x2) == 0) {
+    if ((src->m_flags & 0x2) == 0) {
         return NULL;
     }
-    if (src->mainBlockLength == 0) {
+    if (src->m_mainBlockLength == 0) {
         return NULL;
     }
-    if (src->mainBlockLength > destLen + src->headerSize) {
+    if (src->m_mainBlockLength > destLen + src->m_headerSize) {
         return NULL;
     }
 
-    memcpy(dest, src, src->headerSize);
-    outLen = static_cast<uLongf>((destLen - src->headerSize));
+    memcpy(dest, src, src->m_headerSize);
+    outLen = static_cast<uLongf>((destLen - src->m_headerSize));
     if (uncompress(
-            dest + src->headerSize,
+            dest + src->m_headerSize,
             &outLen,
 
             // Byte-forced view of packed WWD storage.
-            reinterpret_cast<Bytef*>(src) + src->headerSize,
-            src->mainBlockLength
+            reinterpret_cast<Bytef*>(src) + src->m_headerSize,
+            src->m_mainBlockLength
         )
         != 0) {
         return NULL;
     }
 
-    return outLen == src->mainBlockLength ? dest : NULL;
+    return outLen == src->m_mainBlockLength ? dest : NULL;
 }
 
 // @dead-code
@@ -1934,7 +1934,7 @@ TileCollisionKind CGameLevel::AxisProbe(i32 coord, i32 limit) {
     i32 idx = pl->m_tileRowOffsets[qy] + col;
     i32 subY = py - (qy << pl->m_shiftY);
     i32 tile = pl->m_tileHandles[idx];
-    if (tile == UNINIT_FILL || tile == TILE_CLEAR) {
+    if (tile == UNINIT_FILL || tile == s_tileClear) {
         return TILEKIND_PASSABLE;
     }
     CTileImageSet* set =

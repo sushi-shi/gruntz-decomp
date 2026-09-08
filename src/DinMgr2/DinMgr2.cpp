@@ -555,7 +555,7 @@ i32 CKeyboardDevice::Poll() {
             m_pressedButtons |= IDX(INPUT_DOWN);
         }
     } else {
-        u8* buf = m_stateBuffer->keys;
+        u8* buf = m_stateBuffer->m_keys;
         if (buf[m_keyBindings[IDX(INPUT_BINDING_BUTTON0)]] & DINPUT_STATE_PRESSED) {
             m_pressedButtons |= IDX(INPUT_BUTTON0);
         }
@@ -806,32 +806,32 @@ i32 CMouseDevice::Poll() {
     if (ReadState() == NULL) {
         return 0;
     }
-    DIMouseStateZ* ms = &m_stateBuffer->mouse;
+    DIMouseStateZ* ms = &m_stateBuffer->m_mouse;
     if (ms == NULL) {
         return 0;
     }
-    if (ms->lX < 0) {
+    if (ms->m_lX < 0) {
         m_pressedButtons |= IDX(INPUT_LEFT);
     }
-    if (ms->lX > 0) {
+    if (ms->m_lX > 0) {
         m_pressedButtons |= IDX(INPUT_RIGHT);
     }
-    if (ms->lY < 0) {
+    if (ms->m_lY < 0) {
         m_pressedButtons |= IDX(INPUT_UP);
     }
-    if (ms->lY > 0) {
+    if (ms->m_lY > 0) {
         m_pressedButtons |= IDX(INPUT_DOWN);
     }
-    if (ms->rgbButtons[0] & DINPUT_STATE_PRESSED) {
+    if (ms->m_rgbButtons[0] & DINPUT_STATE_PRESSED) {
         m_pressedButtons |= IDX(INPUT_BUTTON0);
     }
-    if (ms->rgbButtons[1] & DINPUT_STATE_PRESSED) {
+    if (ms->m_rgbButtons[1] & DINPUT_STATE_PRESSED) {
         m_pressedButtons |= IDX(INPUT_BUTTON1);
     }
-    if (ms->rgbButtons[2] & DINPUT_STATE_PRESSED) {
+    if (ms->m_rgbButtons[2] & DINPUT_STATE_PRESSED) {
         m_pressedButtons |= IDX(INPUT_BUTTON2);
     }
-    if (ms->rgbButtons[3] & DINPUT_STATE_PRESSED) {
+    if (ms->m_rgbButtons[3] & DINPUT_STATE_PRESSED) {
         m_pressedButtons |= IDX(INPUT_BUTTON3);
     }
     m_heldButtons = m_pressedButtons;
@@ -922,50 +922,50 @@ i32 CJoystickDevice::Poll() {
     if (ReadState() == NULL) {
         return 0;
     }
-    DIJoyState2Z* js = &m_stateBuffer->joy;
+    DIJoyState2Z* js = &m_stateBuffer->m_joy;
     if (js == NULL) {
         return 0;
     }
-    if (js->lX < 0) {
+    if (js->m_lX < 0) {
         m_pressedButtons |= IDX(INPUT_LEFT);
     }
-    if (js->lX > 0) {
+    if (js->m_lX > 0) {
         m_pressedButtons |= IDX(INPUT_RIGHT);
     }
-    if (js->lY < 0) {
+    if (js->m_lY < 0) {
         m_pressedButtons |= IDX(INPUT_UP);
     }
-    if (js->lY > 0) {
+    if (js->m_lY > 0) {
         m_pressedButtons |= IDX(INPUT_DOWN);
     }
-    if (js->rgbButtons[0] & DINPUT_STATE_PRESSED) {
+    if (js->m_rgbButtons[0] & DINPUT_STATE_PRESSED) {
         m_pressedButtons |= IDX(INPUT_BUTTON0);
     }
-    if (js->rgbButtons[1] & DINPUT_STATE_PRESSED) {
+    if (js->m_rgbButtons[1] & DINPUT_STATE_PRESSED) {
         m_pressedButtons |= IDX(INPUT_BUTTON1);
     }
-    if (js->rgbButtons[2] & DINPUT_STATE_PRESSED) {
+    if (js->m_rgbButtons[2] & DINPUT_STATE_PRESSED) {
         m_pressedButtons |= IDX(INPUT_BUTTON2);
     }
-    if (js->rgbButtons[3] & DINPUT_STATE_PRESSED) {
+    if (js->m_rgbButtons[3] & DINPUT_STATE_PRESSED) {
         m_pressedButtons |= IDX(INPUT_BUTTON3);
     }
-    if (js->rgbButtons[4] & DINPUT_STATE_PRESSED) {
+    if (js->m_rgbButtons[4] & DINPUT_STATE_PRESSED) {
         m_pressedButtons |= IDX(INPUT_BUTTON4);
     }
-    if (js->rgbButtons[5] & DINPUT_STATE_PRESSED) {
+    if (js->m_rgbButtons[5] & DINPUT_STATE_PRESSED) {
         m_pressedButtons |= IDX(INPUT_BUTTON5);
     }
-    if (js->rgbButtons[6] & DINPUT_STATE_PRESSED) {
+    if (js->m_rgbButtons[6] & DINPUT_STATE_PRESSED) {
         m_pressedButtons |= IDX(INPUT_BUTTON6);
     }
-    if (js->rgbButtons[7] & DINPUT_STATE_PRESSED) {
+    if (js->m_rgbButtons[7] & DINPUT_STATE_PRESSED) {
         m_pressedButtons |= IDX(INPUT_BUTTON7);
     }
-    if (js->rgbButtons[8] & DINPUT_STATE_PRESSED) {
+    if (js->m_rgbButtons[8] & DINPUT_STATE_PRESSED) {
         m_pressedButtons |= IDX(INPUT_BUTTON8);
     }
-    if (js->rgbButtons[9] & DINPUT_STATE_PRESSED) {
+    if (js->m_rgbButtons[9] & DINPUT_STATE_PRESSED) {
         m_pressedButtons |= IDX(INPUT_BUTTON9);
     }
     m_heldButtons = m_pressedButtons;

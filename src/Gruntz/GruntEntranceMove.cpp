@@ -52,85 +52,85 @@
 #include <string.h>
 
 DATA(0x0020e924)
-static char s_GRUNTZ_ENTRANCEZ_RESSURECT[] = "GRUNTZ_ENTRANCEZ_RESSURECT";
+static char s_gruntzEntrancezRessurect[] = "GRUNTZ_ENTRANCEZ_RESSURECT";
 DATA(0x0020e944)
-static char s_GRUNTZ_ENTRANCEZ_DROP[] = "GRUNTZ_ENTRANCEZ_DROP";
+static char s_gruntzEntrancezDrop[] = "GRUNTZ_ENTRANCEZ_DROP";
 DATA(0x0020e960)
-static char s_GRUNTZ_ENTRANCEZ_THREE[] = "GRUNTZ_ENTRANCEZ_THREE";
+static char s_gruntzEntrancezThree[] = "GRUNTZ_ENTRANCEZ_THREE";
 DATA(0x0020e97c)
-static char s_GRUNTZ_ENTRANCEZ_TWO[] = "GRUNTZ_ENTRANCEZ_TWO";
+static char s_gruntzEntrancezTwo[] = "GRUNTZ_ENTRANCEZ_TWO";
 DATA(0x0020e9ac)
-static char s_GRUNTZ_ENTRANCEZ_ONE[] = "GRUNTZ_ENTRANCEZ_ONE";
+static char s_gruntzEntrancezOne[] = "GRUNTZ_ENTRANCEZ_ONE";
 DATA(0x0020e9c8)
-static char s_WG_IDLE5[] = "GRUNTZ_WINGZGRUNT_IDLE5";
+static char s_wgIdle5[] = "GRUNTZ_WINGZGRUNT_IDLE5";
 DATA(0x0020e9e4)
-static char s_WG_IDLE4[] = "GRUNTZ_WINGZGRUNT_IDLE4";
+static char s_wgIdle4[] = "GRUNTZ_WINGZGRUNT_IDLE4";
 DATA(0x0020ea00)
-static char s_WG_IDLE3[] = "GRUNTZ_WINGZGRUNT_IDLE3";
+static char s_wgIdle3[] = "GRUNTZ_WINGZGRUNT_IDLE3";
 DATA(0x0020ea1c)
-static char s_WG_IDLE2[] = "GRUNTZ_WINGZGRUNT_IDLE2";
+static char s_wgIdle2[] = "GRUNTZ_WINGZGRUNT_IDLE2";
 DATA(0x0020ea38)
-static char s_WG_IDLE1[] = "GRUNTZ_WINGZGRUNT_IDLE1";
+static char s_wgIdle1[] = "GRUNTZ_WINGZGRUNT_IDLE1";
 DATA(0x0020ea54)
-static char s_WG_WALK[] = "GRUNTZ_WINGZGRUNT_WALK";
+static char s_wgWalk[] = "GRUNTZ_WINGZGRUNT_WALK";
 DATA(0x0020ea70)
-static char s_SE_IDLE[] = "GRUNTZ_WINGZGRUNT_SOUTHEAST_IDLE";
+static char s_seIdle[] = "GRUNTZ_WINGZGRUNT_SOUTHEAST_IDLE";
 DATA(0x0020ea98)
-static char s_S_IDLE[] = "GRUNTZ_WINGZGRUNT_SOUTH_IDLE";
+static char s_sIdle[] = "GRUNTZ_WINGZGRUNT_SOUTH_IDLE";
 DATA(0x0020eabc)
-static char s_SW_IDLE[] = "GRUNTZ_WINGZGRUNT_SOUTHWEST_IDLE";
+static char s_swIdle[] = "GRUNTZ_WINGZGRUNT_SOUTHWEST_IDLE";
 DATA(0x0020eae4)
-static char s_E_IDLE[] = "GRUNTZ_WINGZGRUNT_EAST_IDLE";
+static char s_eIdle[] = "GRUNTZ_WINGZGRUNT_EAST_IDLE";
 DATA(0x0020eb08)
-static char s_W_IDLE[] = "GRUNTZ_WINGZGRUNT_WEST_IDLE";
+static char s_wIdle[] = "GRUNTZ_WINGZGRUNT_WEST_IDLE";
 DATA(0x0020eb2c)
-static char s_NE_IDLE[] = "GRUNTZ_WINGZGRUNT_NORTHEAST_IDLE";
+static char s_neIdle[] = "GRUNTZ_WINGZGRUNT_NORTHEAST_IDLE";
 DATA(0x0020eb54)
-static char s_N_IDLE[] = "GRUNTZ_WINGZGRUNT_NORTH_IDLE";
+static char s_nIdle[] = "GRUNTZ_WINGZGRUNT_NORTH_IDLE";
 DATA(0x0020eb78)
-static char s_NW_IDLE[] = "GRUNTZ_WINGZGRUNT_NORTHWEST_IDLE";
+static char s_nwIdle[] = "GRUNTZ_WINGZGRUNT_NORTHWEST_IDLE";
 DATA(0x0020eba0)
-static char s_SE_WALK[] = "GRUNTZ_WINGZGRUNT_SOUTHEAST_WALK";
+static char s_seWalk[] = "GRUNTZ_WINGZGRUNT_SOUTHEAST_WALK";
 DATA(0x0020ebc8)
-static char s_S_WALK[] = "GRUNTZ_WINGZGRUNT_SOUTH_WALK";
+static char s_sWalk[] = "GRUNTZ_WINGZGRUNT_SOUTH_WALK";
 DATA(0x0020ebec)
-static char s_SW_WALK[] = "GRUNTZ_WINGZGRUNT_SOUTHWEST_WALK";
+static char s_swWalk[] = "GRUNTZ_WINGZGRUNT_SOUTHWEST_WALK";
 DATA(0x0020ec14)
-static char s_E_WALK[] = "GRUNTZ_WINGZGRUNT_EAST_WALK";
+static char s_eWalk[] = "GRUNTZ_WINGZGRUNT_EAST_WALK";
 DATA(0x0020ec38)
-static char s_W_WALK[] = "GRUNTZ_WINGZGRUNT_WEST_WALK";
+static char s_wWalk[] = "GRUNTZ_WINGZGRUNT_WEST_WALK";
 DATA(0x0020ec5c)
-static char s_NE_WALK[] = "GRUNTZ_WINGZGRUNT_NORTHEAST_WALK";
+static char s_neWalk[] = "GRUNTZ_WINGZGRUNT_NORTHEAST_WALK";
 DATA(0x0020ec84)
-static char s_N_WALK[] = "GRUNTZ_WINGZGRUNT_NORTH_WALK";
+static char s_nWalk[] = "GRUNTZ_WINGZGRUNT_NORTH_WALK";
 DATA(0x0020eca8)
-static char s_NW_WALK[] = "GRUNTZ_WINGZGRUNT_NORTHWEST_WALK";
+static char s_nwWalk[] = "GRUNTZ_WINGZGRUNT_NORTHWEST_WALK";
 DATA(0x0020ecd0)
-static char s_WG_ITEM[] = "GRUNTZ_WINGZGRUNT_ITEM";
+static char s_wgItem[] = "GRUNTZ_WINGZGRUNT_ITEM";
 DATA(0x0020ecec)
-static char s_SE_ITEM[] = "GRUNTZ_WINGZGRUNT_SOUTHEAST_ITEM";
+static char s_seItem[] = "GRUNTZ_WINGZGRUNT_SOUTHEAST_ITEM";
 DATA(0x0020ed14)
-static char s_S_ITEM[] = "GRUNTZ_WINGZGRUNT_SOUTH_ITEM";
+static char s_sItem[] = "GRUNTZ_WINGZGRUNT_SOUTH_ITEM";
 DATA(0x0020ed38)
-static char s_SW_ITEM[] = "GRUNTZ_WINGZGRUNT_SOUTHWEST_ITEM";
+static char s_swItem[] = "GRUNTZ_WINGZGRUNT_SOUTHWEST_ITEM";
 DATA(0x0020ed60)
-static char s_E_ITEM[] = "GRUNTZ_WINGZGRUNT_EAST_ITEM";
+static char s_eItem[] = "GRUNTZ_WINGZGRUNT_EAST_ITEM";
 DATA(0x0020ed84)
-static char s_W_ITEM[] = "GRUNTZ_WINGZGRUNT_WEST_ITEM";
+static char s_wItem[] = "GRUNTZ_WINGZGRUNT_WEST_ITEM";
 DATA(0x0020eda8)
-static char s_NE_ITEM[] = "GRUNTZ_WINGZGRUNT_NORTHEAST_ITEM";
+static char s_neItem[] = "GRUNTZ_WINGZGRUNT_NORTHEAST_ITEM";
 DATA(0x0020edd0)
-static char s_N_ITEM[] = "GRUNTZ_WINGZGRUNT_NORTH_ITEM";
+static char s_nItem[] = "GRUNTZ_WINGZGRUNT_NORTH_ITEM";
 DATA(0x0020edf4)
-static char s_NW_ITEM[] = "GRUNTZ_WINGZGRUNT_NORTHWEST_ITEM";
+static char s_nwItem[] = "GRUNTZ_WINGZGRUNT_NORTHWEST_ITEM";
 DATA(0x0020ee1c)
-static char s_GRUNTZ_DEATHZ_UNFREEZE[] = "GRUNTZ_DEATHZ_UNFREEZE";
+static char s_gruntzDeathzUnfreeze[] = "GRUNTZ_DEATHZ_UNFREEZE";
 DATA(0x0020ee38)
-static char s_FreezeDelay[] = "FreezeDelay";
+static char s_freezeDelay[] = "FreezeDelay";
 DATA(0x0020ee48)
-static char s_GRUNTZ_DEATHZ_SPARKLE[] = "GRUNTZ_DEATHZ_SPARKLE";
+static char s_gruntzDeathzSparkle[] = "GRUNTZ_DEATHZ_SPARKLE";
 DATA(0x0020ee64)
-static char s_MovingDeathTime[] = "MovingDeathTime";
+static char s_movingDeathTime[] = "MovingDeathTime";
 
 // @early-stop
 RVA(0x00067850, 0x214)
@@ -155,8 +155,8 @@ i32 CGrunt::RunEntranceMove() {
         SET_ANIMATION_ACT("D");
         SwitchAnimation(m_poseWalk);
         GruntDirectionCell cell = m_entranceCell;
-        i32 col = cell.column + cell.row * 2;
-        i32 base = cell.row + col;
+        i32 col = cell.m_column + cell.m_row * 2;
+        i32 base = cell.m_row + col;
         char* nm = m_cells[base].WalkName().GetBuffer(0);
         SetImageSetByName(nm);
     } else {
@@ -267,7 +267,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
         if (r > 0x140) {
             found = LookupAnimation(
                 m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
-                s_GRUNTZ_ENTRANCEZ_ONE
+                s_gruntzEntrancezOne
             );
             if (onScreen) {
                 g_gameReg->m_voiceManager->PlayVoice(this, 0x37a, -1, 0, -1, -1);
@@ -276,7 +276,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
         } else if (r > 0xa0) {
             found = LookupAnimation(
                 m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
-                s_GRUNTZ_ENTRANCEZ_TWO
+                s_gruntzEntrancezTwo
             );
             if (onScreen) {
                 g_gameReg->m_voiceManager->PlayVoice(this, 0x37b, -1, 0, -1, -1);
@@ -285,7 +285,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
         } else {
             found = LookupAnimation(
                 m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
-                s_GRUNTZ_ENTRANCEZ_THREE
+                s_gruntzEntrancezThree
             );
             if (onScreen) {
                 g_gameReg->m_voiceManager->PlayVoice(this, 0x37c, -1, 0, -1, -1);
@@ -295,13 +295,13 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
     } else if (mode == GRUNT_ENTRANCE_DROP) {
         found = LookupAnimation(
             m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
-            s_GRUNTZ_ENTRANCEZ_DROP
+            s_gruntzEntrancezDrop
         );
-        key = s_GRUNTZ_ENTRANCEZ_DROP;
+        key = s_gruntzEntrancezDrop;
     } else {
         found = LookupAnimation(
             m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
-            s_GRUNTZ_ENTRANCEZ_RESSURECT
+            s_gruntzEntrancezRessurect
         );
         key = "GRUNTZ_DEATHZ_MELT";
     }
@@ -384,7 +384,7 @@ i32 CGrunt::LoadEntranceConfig() {
         CWwdSpriteObject* p = m_wwdObject;
         CAniElement* found = NULL;
         CAniElement* cached = p->m_animationCursor.m_animation;
-        MapLookup(p->OwnerMgr()->m_animRegistry->m_animations, s_GRUNTZ_ENTRANCEZ_DROP, found);
+        MapLookup(p->OwnerMgr()->m_animRegistry->m_animations, s_gruntzEntrancezDrop, found);
         if (cached == found) {
             if (m_playerIndex == g_curPlayer) {
                 g_gameReg->m_voiceManager->PlayVoice(this, 0x33f, -1, 0, -1, -1);
@@ -426,8 +426,8 @@ i32 CGrunt::RearmEntranceDrop() {
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
 
         GruntDirectionCell cell = m_entranceCell;
-        i32 row = cell.row;
-        i32 column = cell.column;
+        i32 row = cell.m_row;
+        i32 column = cell.m_column;
 
         const char* name = m_cells[3 * row + column].ItemName().GetBuffer(0);
         SetImageFrameByName(name, frame);
@@ -499,8 +499,8 @@ i32 CGrunt::StartBombGruntRun() {
     }
     SwitchAnimation(AT(m_poseItem, GRUNT_ITEM1));
     GruntDirectionCell cell = m_entranceCell;
-    i32 col = cell.column + cell.row * 2;
-    i32 base = cell.row + col;
+    i32 col = cell.m_column + cell.m_row * 2;
+    i32 base = cell.m_row + col;
     char* cn = m_cells[base].ItemName().GetBuffer(0);
     SetImageSetByName(cn);
     return 0;
@@ -518,29 +518,29 @@ i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
         m_wingzClockHi = 0;
         CreateWingzTimeSprite();
 
-        m_cells[0].IdleName() = s_NW_ITEM;
-        m_cells[1].IdleName() = s_N_ITEM;
-        m_cells[2].IdleName() = s_NE_ITEM;
-        m_cells[3].IdleName() = s_W_ITEM;
-        m_cells[4].IdleName() = s_N_ITEM;
-        m_cells[5].IdleName() = s_E_ITEM;
-        m_cells[6].IdleName() = s_SW_ITEM;
-        m_cells[7].IdleName() = s_S_ITEM;
-        m_cells[8].IdleName() = s_SE_ITEM;
-        m_cells[0].WalkName() = s_NW_ITEM;
-        m_cells[1].WalkName() = s_N_ITEM;
-        m_cells[2].WalkName() = s_NE_ITEM;
-        m_cells[3].WalkName() = s_W_ITEM;
-        m_cells[4].WalkName() = s_N_ITEM;
-        m_cells[5].WalkName() = s_E_ITEM;
-        m_cells[6].WalkName() = s_SW_ITEM;
-        m_cells[7].WalkName() = s_S_ITEM;
-        m_cells[8].WalkName() = s_SE_ITEM;
+        m_cells[0].IdleName() = s_nwItem;
+        m_cells[1].IdleName() = s_nItem;
+        m_cells[2].IdleName() = s_neItem;
+        m_cells[3].IdleName() = s_wItem;
+        m_cells[4].IdleName() = s_nItem;
+        m_cells[5].IdleName() = s_eItem;
+        m_cells[6].IdleName() = s_swItem;
+        m_cells[7].IdleName() = s_sItem;
+        m_cells[8].IdleName() = s_seItem;
+        m_cells[0].WalkName() = s_nwItem;
+        m_cells[1].WalkName() = s_nItem;
+        m_cells[2].WalkName() = s_neItem;
+        m_cells[3].WalkName() = s_wItem;
+        m_cells[4].WalkName() = s_nItem;
+        m_cells[5].WalkName() = s_eItem;
+        m_cells[6].WalkName() = s_swItem;
+        m_cells[7].WalkName() = s_sItem;
+        m_cells[8].WalkName() = s_seItem;
 
         m_poseWalk =
-            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_WG_ITEM);
+            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgItem);
         CAniElement* pose =
-            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_WG_ITEM);
+            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgItem);
         AT(m_poseIdle, GRUNT_IDLE3) = NULL;
         AT(m_poseIdle, GRUNT_IDLE1) = pose;
         AT(m_poseIdle, GRUNT_IDLE2) = pose;
@@ -560,37 +560,37 @@ i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
         m_wingzDurationHi = 0;
         HIDE_AND_CLEAR_GRUNT_SPRITE(m_wingzTimeSprite)
 
-        m_cells[0].WalkName() = s_NW_WALK;
-        m_cells[1].WalkName() = s_N_WALK;
-        m_cells[2].WalkName() = s_NE_WALK;
-        m_cells[3].WalkName() = s_W_WALK;
-        m_cells[4].WalkName() = s_N_WALK;
-        m_cells[5].WalkName() = s_E_WALK;
-        m_cells[6].WalkName() = s_SW_WALK;
-        m_cells[7].WalkName() = s_S_WALK;
-        m_cells[8].WalkName() = s_SE_WALK;
-        m_cells[0].IdleName() = s_NW_IDLE;
-        m_cells[1].IdleName() = s_N_IDLE;
-        m_cells[2].IdleName() = s_NE_IDLE;
-        m_cells[3].IdleName() = s_W_IDLE;
-        m_cells[4].IdleName() = s_N_IDLE;
-        m_cells[5].IdleName() = s_E_IDLE;
-        m_cells[6].IdleName() = s_SW_IDLE;
-        m_cells[7].IdleName() = s_S_IDLE;
-        m_cells[8].IdleName() = s_SE_IDLE;
+        m_cells[0].WalkName() = s_nwWalk;
+        m_cells[1].WalkName() = s_nWalk;
+        m_cells[2].WalkName() = s_neWalk;
+        m_cells[3].WalkName() = s_wWalk;
+        m_cells[4].WalkName() = s_nWalk;
+        m_cells[5].WalkName() = s_eWalk;
+        m_cells[6].WalkName() = s_swWalk;
+        m_cells[7].WalkName() = s_sWalk;
+        m_cells[8].WalkName() = s_seWalk;
+        m_cells[0].IdleName() = s_nwIdle;
+        m_cells[1].IdleName() = s_nIdle;
+        m_cells[2].IdleName() = s_neIdle;
+        m_cells[3].IdleName() = s_wIdle;
+        m_cells[4].IdleName() = s_nIdle;
+        m_cells[5].IdleName() = s_eIdle;
+        m_cells[6].IdleName() = s_swIdle;
+        m_cells[7].IdleName() = s_sIdle;
+        m_cells[8].IdleName() = s_seIdle;
 
         m_poseWalk =
-            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_WG_WALK);
+            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgWalk);
         AT(m_poseIdle, GRUNT_IDLE1) =
-            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_WG_IDLE1);
+            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgIdle1);
         AT(m_poseIdle, GRUNT_IDLE2) =
-            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_WG_IDLE2);
+            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgIdle2);
         AT(m_poseIdle, GRUNT_IDLE3) =
-            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_WG_IDLE3);
+            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgIdle3);
         AT(m_poseIdle, GRUNT_IDLE4) =
-            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_WG_IDLE4);
+            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgIdle4);
         AT(m_poseIdle, GRUNT_IDLE5) =
-            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_WG_IDLE5);
+            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgIdle5);
     }
 
     CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
@@ -600,7 +600,7 @@ i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
         SwitchAnimation(m_poseWalk);
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
         GruntDirectionCell cell = m_entranceCell;
-        i32 idx = 3 * cell.row + cell.column;
+        i32 idx = 3 * cell.m_row + cell.m_column;
         char* buf = m_cells[idx].WalkName().GetBuffer(0);
         SetImageFrameByName(buf, frame);
         return 1;
@@ -613,7 +613,7 @@ i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
         SwitchAnimation(AT(m_poseIdle, GRUNT_IDLE1));
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
         GruntDirectionCell cell = m_entranceCell;
-        i32 idx = 3 * cell.row + cell.column;
+        i32 idx = 3 * cell.m_row + cell.m_column;
         char* buf = m_cells[idx].IdleName().GetBuffer(0);
         SetImageFrameByName(buf, frame);
     }
@@ -731,8 +731,8 @@ i32 CGrunt::StepArrivalCommit() {
             SET_ANIMATION_ACT("D");
             SwitchAnimation(m_poseWalk);
             GruntDirectionCell cell = m_entranceCell;
-            i32 colv = cell.column + cell.row * 2;
-            i32 base = cell.row + colv;
+            i32 colv = cell.m_column + cell.m_row * 2;
+            i32 base = cell.m_row + colv;
             char* nm = m_cells[base].WalkName().GetBuffer(0);
             APPLY_NAME_INLINE(nm);
         } else {
@@ -853,14 +853,14 @@ i32 CGrunt::LoadFreezeSpellAssets() {
             }
             return 0;
         }
-        SwitchAnimationByName(s_GRUNTZ_DEATHZ_SPARKLE, 0);
-        m_idleDelay = g_buteMgr.GetDword("Spellz", s_FreezeDelay, 0x2710);
+        SwitchAnimationByName(s_gruntzDeathzSparkle, 0);
+        m_idleDelay = g_buteMgr.GetDword("Spellz", s_freezeDelay, 0x2710);
         m_idleAnchor = g_frameTime;
         m_freezeDelayDone = false;
     }
     if (m_freezeDelayDone == false) {
         if (static_cast<i64>(g_frameTime) - m_idleAnchor >= m_idleDelay) {
-            SwitchAnimationByName(s_GRUNTZ_DEATHZ_UNFREEZE, 0);
+            SwitchAnimationByName(s_gruntzDeathzUnfreeze, 0);
             CWwdSpriteObject* h = m_object;
             i32 vx = h->m_screenX;
             i32 vy = h->m_screenY;
@@ -892,7 +892,7 @@ i32 CGrunt::FinishEntranceMove() {
 
 RVA(0x0006a060, 0x520)
 i32 CGrunt::LoadGruntMovingDeathConfig() {
-    m_moveSpeed = 16.0 / static_cast<double>(g_buteMgr.GetDword("Grunt", s_MovingDeathTime, 0x3e8));
+    m_moveSpeed = 16.0 / static_cast<double>(g_buteMgr.GetDword("Grunt", s_movingDeathTime, 0x3e8));
 
     CGruntzMgr* g = g_gameReg;
     CState* state = g->m_curState;
@@ -1105,8 +1105,8 @@ i32 CGrunt::FinishActiveAction() {
             SwitchAnimation(m_poseWalk);
 
             GruntDirectionCell cell = m_entranceCell;
-            i32 col = cell.column + cell.row * 2;
-            i32 base = cell.row + col;
+            i32 col = cell.m_column + cell.m_row * 2;
+            i32 base = cell.m_row + col;
             char* nm = m_cells[base].WalkName().GetBuffer(0);
             SetImageSetByName(nm);
         } else {
@@ -1189,7 +1189,7 @@ i32 CGrunt::FinishActiveAction() {
         CAniElement* cached = m_wwdObject->m_animationCursor.m_animation;
         MapLookup(
             m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
-            s_GRUNTZ_ENTRANCEZ_DROP,
+            s_gruntzEntrancezDrop,
             found
         );
         if (found == cached) {

@@ -18,21 +18,21 @@ typedef enum AdvancedOptionsDlgId {
     IDC_DEFAULTS = 0x426,
 } AdvancedOptionsDlgId;
 
-RVA_DYNINIT(0x0000af30, 0xa, g_registryHelper)
-RVA_DYNINIT(0x0000af50, 0xb, g_registryHelper)
-RVA_DYNINIT(0x0000af70, 0xe, g_registryHelper)
-RVA_DYNINIT(0x0000af90, 0xa, g_registryHelper)
+RVA_DYNINIT(0x0000af30, 0xa, s_registryHelper)
+RVA_DYNINIT(0x0000af50, 0xb, s_registryHelper)
+RVA_DYNINIT(0x0000af70, 0xe, s_registryHelper)
+RVA_DYNINIT(0x0000af90, 0xa, s_registryHelper)
 DATA(0x002295d8)
-static CRegMgr g_registryHelper;
+static CRegMgr s_registryHelper;
 
 RVA(0x0000afb0, 0x108)
 BOOL CALLBACK AdvancedOptionsDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
     switch (message) {
         case WM_INITDIALOG:
-            g_registryHelper.Term();
-            g_registryHelper
+            s_registryHelper.Term();
+            s_registryHelper
                 .Init("Monolith Productions", "Gruntz", "1.0", NULL, HKEY_LOCAL_MACHINE, NULL);
-            LoadOptions(hWnd, &g_registryHelper);
+            LoadOptions(hWnd, &s_registryHelper);
 
             {
                 HICON hIcon = LoadIconA(g_appResHandle, "GRUNTZ");
@@ -55,7 +55,7 @@ BOOL CALLBACK AdvancedOptionsDialogProc(HWND hWnd, UINT message, WPARAM wParam, 
                 return true;
             }
             if (wParam == 1) {
-                SaveOptions(hWnd, &g_registryHelper);
+                SaveOptions(hWnd, &s_registryHelper);
                 EndDialog(hWnd, 1);
                 return true;
             }

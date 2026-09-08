@@ -1759,22 +1759,22 @@ i32 CDDSurface::StretchBlit(CDDSurface* src, RECT* srcRect, RECT* dstRect, i32 m
         sr.top = 0;
         sr.bottom = srcH - 1;
     }
-    v[0].x = static_cast<float>(dstRect->left);
-    v[0].y = static_cast<float>(dstRect->top);
-    v[0].u = static_cast<float>(sr.left);
-    v[0].v = static_cast<float>(sr.top);
-    v[1].x = static_cast<float>(dstRect->right);
-    v[1].y = static_cast<float>(dstRect->top);
-    v[1].u = static_cast<float>(sr.right);
-    v[1].v = static_cast<float>(sr.top);
-    v[2].x = static_cast<float>(dstRect->right);
-    v[2].y = static_cast<float>(dstRect->bottom);
-    v[2].u = static_cast<float>(sr.right);
-    v[2].v = static_cast<float>(sr.bottom);
-    v[3].x = static_cast<float>(dstRect->left);
-    v[3].y = static_cast<float>(dstRect->bottom);
-    v[3].u = static_cast<float>(sr.left);
-    v[3].v = static_cast<float>(sr.bottom);
+    v[0].m_x = static_cast<float>(dstRect->left);
+    v[0].m_y = static_cast<float>(dstRect->top);
+    v[0].m_u = static_cast<float>(sr.left);
+    v[0].m_v = static_cast<float>(sr.top);
+    v[1].m_x = static_cast<float>(dstRect->right);
+    v[1].m_y = static_cast<float>(dstRect->top);
+    v[1].m_u = static_cast<float>(sr.right);
+    v[1].m_v = static_cast<float>(sr.top);
+    v[2].m_x = static_cast<float>(dstRect->right);
+    v[2].m_y = static_cast<float>(dstRect->bottom);
+    v[2].m_u = static_cast<float>(sr.right);
+    v[2].m_v = static_cast<float>(sr.bottom);
+    v[3].m_x = static_cast<float>(dstRect->left);
+    v[3].m_y = static_cast<float>(dstRect->bottom);
+    v[3].m_u = static_cast<float>(sr.left);
+    v[3].m_v = static_cast<float>(sr.bottom);
     RotateRasterize(v, 4, this, src, mode, colorkey, -1, -1, -1, -1);
     return 1;
 }

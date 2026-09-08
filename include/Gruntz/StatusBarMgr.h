@@ -122,12 +122,12 @@ class CSBI_StatzTabArrow;
 class CSBI_WarlordHead;
 class CWarpStoneFly;
 
-const i32 kSlotCommitLevel = 0x1a;
+const i32 s_slotCommitLevel = 0x1a;
 
-const i32 kActivateErrId = 0x80e4;
-const i32 kActivateErrTag = 0x44b;
+const i32 s_activateErrId = 0x80e4;
+const i32 s_activateErrTag = 0x44b;
 
-const i32 kSetTabErrTag = 0x44a;
+const i32 s_setTabErrTag = 0x44a;
 
 GZ_ENUM_CONST_BEGIN(GruntWellPct)
     GRUNT_WELL_EMPTY = 0,
@@ -315,7 +315,6 @@ public:
 
     CSbiHlRow m_conveyorSlots[3];
     CSBI_ImageSet* m_conveyorSprites[3];
-    char m_pad314[0x318 - 0x314];
 
     CSbiMachineRow m_rightMachine;
     CSbiMachineRow m_leftMachine;
@@ -330,7 +329,6 @@ public:
     CStatusBarItem* m_resourceMachineFramework;
     CStatusBarItem* m_resourceUpperBackground;
     CStatusBarItem* m_resourceWindowBackground;
-    char m_pad374[0x378 - 0x374];
     CSbiHlRow m_resourceSlots[12];
     CSBI_ImageSet* m_resourceSlotSprites[12];
     SbiBeltPhase m_machinePhase;

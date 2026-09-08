@@ -40,10 +40,10 @@ CDib* g_previewImage;
 DATA(0x0024c86c)
 CSaveGame* g_saveDlgSink = NULL;
 
-static const i32 SAVE_FILE_HEADER_BYTES = 0xa1c;
-static const i32 SAVE_PREVIEW_BYTES = 0x3843a;
-static const i32 SAVE_PREVIEW_BITMAP_OFFSET = 0xe;
-static const u32 SAVE_PROGRESS_MAGIC = 0x42a;
+static const i32 s_saveFileHeaderBytes = 0xa1c;
+static const i32 s_savePreviewBytes = 0x3843a;
+static const i32 s_savePreviewBitmapOffset = 0xe;
+static const u32 s_saveProgressMagic = 0x42a;
 
 RVA(0x000e4b60, 0x158)
 i32 CSaveGame::InitializeSaveDirectory(const char* saveDirectory) {
@@ -52,7 +52,7 @@ i32 CSaveGame::InitializeSaveDirectory(const char* saveDirectory) {
     }
     m_saveDirectory = saveDirectory;
     m_progressFilePath = m_saveDirectory + "Gruntz.sav";
-    memset(m_header, 0, SAVE_FILE_HEADER_BYTES);
+    memset(m_header, 0, s_saveFileHeaderBytes);
     Init();
     Load();
     for (i32 i = 0; i < SAVE_SLOT_COUNT; i++) {
@@ -89,7 +89,7 @@ i32 CSaveGame::Load() {
     if (!file.Open(m_progressFilePath, CFile::modeRead, NULL)) {
         return 0;
     }
-    file.Read(m_header, SAVE_FILE_HEADER_BYTES);
+    file.Read(m_header, s_saveFileHeaderBytes);
     file.Read(m_slots, sizeof(m_slots));
     file.Close();
     if (!Verify()) {
@@ -110,7 +110,7 @@ i32 CSaveGame::Save(char* screenshotPath, i32 messageId) {
         return 0;
     }
     ComputeAll();
-    file.Write(m_header, SAVE_FILE_HEADER_BYTES);
+    file.Write(m_header, s_saveFileHeaderBytes);
     file.Write(m_slots, sizeof(m_slots));
     file.Close();
     Verify();
@@ -356,12 +356,12 @@ void CSaveGame::SetCurLevel(QuestLevel v) {
 RVA(0x000e5690, 0xf)
 i32 CSaveGame::CheckMagic() {
     i32 v = m_magic;
-    return v == SAVE_PROGRESS_MAGIC;
+    return v == s_saveProgressMagic;
 }
 
 RVA(0x000e56b0, 0x8)
 void CSaveGame::SetMagic() {
-    m_magic = SAVE_PROGRESS_MAGIC;
+    m_magic = s_saveProgressMagic;
 }
 
 // @dead-code

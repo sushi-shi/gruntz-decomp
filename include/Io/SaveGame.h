@@ -115,7 +115,14 @@ void FillSaveDialog(HWND hDlg, CSaveGame* saveGame);
 i32 DrawSaveGameMenu(HWND hDlg, i32 command, CSaveGame* saveGame);
 
 int TempFileExists(SaveSlot* p);
-void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6);
+void LabelSaveSlot(
+    HWND hWnd,
+    SaveSlot* item,
+    i32 nameControlId,
+    i32 loadControlId,
+    i32 infoControlId,
+    i32 deleteControlId
+);
 void SetSaveSlotDialogName(HWND hWnd, CSaveGame* gate, SaveSlot* item);
 
 void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev);

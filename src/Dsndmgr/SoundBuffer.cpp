@@ -23,13 +23,13 @@
 #include <string.h>
 
 DATA(0x001ef698)
-const double c_volumePercentScale = 100.0;
+const double g_volumePercentScale = 100.0;
 DATA(0x001ef6a0)
-const double c_volumeCurveUnit = 1.0;
+const double g_volumeCurveUnit = 1.0;
 DATA(0x001ef6a8)
-const double c_decibelScale = 10.0;
+const double g_decibelScale = 10.0;
 DATA(0x001ef6b0)
-const double c_attenuationBase = 2.0;
+const double g_attenuationBase = 2.0;
 
 #define DSNDMGR_FILE "C:\\Proj\\Dsndmgr\\DSNDMGR.CPP"
 
@@ -52,9 +52,9 @@ i32 SoundDevice::VolumeToAttenuation(i32 volumePct) {
         return -10000;
     }
 
-    double ratio = acos(pow(c_volumeCurveUnit / (volumePct / c_volumePercentScale), c_decibelScale))
-                   / acos(c_attenuationBase);
-    return static_cast<i32>((-(ratio * c_volumePercentScale)));
+    double ratio = acos(pow(g_volumeCurveUnit / (volumePct / g_volumePercentScale), g_decibelScale))
+                   / acos(g_attenuationBase);
+    return static_cast<i32>((-(ratio * g_volumePercentScale)));
 }
 
 RVA(0x00135110, 0x8e)
@@ -68,9 +68,9 @@ i32 ConvertVolumeToPercent(i32 attenuation) {
     } else {
         decibels = static_cast<double>((attenuation / 100));
     }
-    double volumePct = c_volumePercentScale
-                       - (c_volumeCurveUnit - pow(c_attenuationBase, -decibels / c_decibelScale))
-                             * c_volumePercentScale;
+    double volumePct = g_volumePercentScale
+                       - (g_volumeCurveUnit - pow(g_attenuationBase, -decibels / g_decibelScale))
+                             * g_volumePercentScale;
     if (attenuation < 0) {
         return static_cast<i32>(volumePct);
     }
@@ -1015,13 +1015,13 @@ SoundSample* SoundDevice::CreateSample(WaveFormatX* format, u32 bytes, u32 flags
         result = NULL;
         goto done;
     }
-    if (format->wFormatTag != 1) {
+    if (format->m_wFormatTag != 1) {
         result = NULL;
         goto done;
     }
 
     bufferFormat = *format;
-    bufferFormat.cbSize = 0;
+    bufferFormat.m_cbSize = 0;
 
     memset(&bufferDesc, 0, sizeof(DSBUFFERDESC));
     bufferDesc.dwSize = DSBUFFERDESC_SIZE;
@@ -1042,10 +1042,10 @@ SoundSample* SoundDevice::CreateSample(WaveFormatX* format, u32 bytes, u32 flags
 
     {
         SoundSample* sample = new SoundSample(directSoundBuffer, this);
-        sample->m_baseFrequency = bufferFormat.nSamplesPerSec;
+        sample->m_baseFrequency = bufferFormat.m_nSamplesPerSec;
         m_samples.InsertFirst(sample);
-        sample->m_baseSampleRate = format->nAvgBytesPerSec;
-        sample->m_sampleRate = format->nAvgBytesPerSec;
+        sample->m_baseSampleRate = format->m_nAvgBytesPerSec;
+        sample->m_sampleRate = format->m_nAvgBytesPerSec;
         sample->m_sampleCount = bytes;
         sample->UpdateDuration();
         result = sample;
@@ -1101,14 +1101,14 @@ SoundSample* SoundDevice::LoadSample(RiffWaveHeader* riff, u32 flags, u32 loadOp
     if (m_force8Bit != false || (loadOptions & 1) == 1) {
         convert16To8 = true;
     }
-    if (format->wBitsPerSample != sizeof(i16) * 8 || format->wFormatTag != WAVE_FORMAT_PCM) {
+    if (format->m_wBitsPerSample != sizeof(i16) * 8 || format->m_wFormatTag != WAVE_FORMAT_PCM) {
         convert16To8 = false;
     }
     if (convert16To8) {
         dataBytes >>= 1;
-        format->wBitsPerSample = 8;
-        format->nAvgBytesPerSec >>= 1;
-        format->nBlockAlign >>= 1;
+        format->m_wBitsPerSample = 8;
+        format->m_nAvgBytesPerSec >>= 1;
+        format->m_nBlockAlign >>= 1;
     }
 
     SoundSample* sample = CreateSample(format, dataBytes, flags);
@@ -1158,7 +1158,7 @@ i32 SoundDevice::ValidateRestore(SoundBuffer* buffer, WaveFormatX* format, u32 f
     if (format == NULL) {
         return 0;
     }
-    if (format->wFormatTag != 1) {
+    if (format->m_wFormatTag != 1) {
         return 0;
     }
     return buffer->Restore() != 0;
@@ -1219,14 +1219,14 @@ i32 SoundDevice::ReloadRiff(SoundBuffer* buffer, RiffWaveHeader* riff, u32 loadO
     if (m_force8Bit != false || (loadOptions & 1) == 1) {
         convert16To8 = true;
     }
-    if (format->wBitsPerSample != sizeof(i16) * 8 || format->wFormatTag != WAVE_FORMAT_PCM) {
+    if (format->m_wBitsPerSample != sizeof(i16) * 8 || format->m_wFormatTag != WAVE_FORMAT_PCM) {
         convert16To8 = false;
     }
     if (convert16To8) {
         dataBytes >>= 1;
-        format->wBitsPerSample = 8;
-        format->nAvgBytesPerSec >>= 1;
-        format->nBlockAlign >>= 1;
+        format->m_wBitsPerSample = 8;
+        format->m_nAvgBytesPerSec >>= 1;
+        format->m_nBlockAlign >>= 1;
     }
 
     if (ValidateRestore(buffer, format, dataBytes) == 0) {

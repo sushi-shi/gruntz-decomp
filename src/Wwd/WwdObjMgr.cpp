@@ -302,14 +302,14 @@ CWwdGameObject* CDDrawChildGroup::CreateNamedContainerObject(
 // @early-stop
 RVA(0x00159a70, 0x200)
 void CDDrawChildGroup::TickKillCues(i32 advance) {
-    RVA_DYNINIT(0x00159c80, 0xa, killQueue)
+    RVA_DYNINIT(0x00159c80, 0xa, s_killQueue)
     DATA(0x002bf3a8)
-    static CObArray killQueue;
-    RVA_DYNINIT(0x00159c70, 0xa, sortQueue)
+    static CObArray s_killQueue;
+    RVA_DYNINIT(0x00159c70, 0xa, s_sortQueue)
     DATA(0x002bf390)
-    static CObArray sortQueue;
-    killQueue.SetSize(0, -1);
-    sortQueue.SetSize(0, -1);
+    static CObArray s_sortQueue;
+    s_killQueue.SetSize(0, -1);
+    s_sortQueue.SetSize(0, -1);
 
     if (advance != 0) {
         u32 now = timeGetTime();
@@ -332,15 +332,15 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
         }
         WwdGameObjectFlags objectFlags = static_cast<WwdGameObjectFlags>(obj->m_flags);
         if (HAS(objectFlags, WWD_GAME_OBJECT_FLAG_PENDING_DELETE)) {
-            killQueue.Add(static_cast<CObject*>(obj));
+            s_killQueue.Add(static_cast<CObject*>(obj));
         } else if (HAS(objectFlags, WWD_GAME_OBJECT_FLAG_SORT_PENDING)) {
-            sortQueue.Add(static_cast<CObject*>(obj));
+            s_sortQueue.Add(static_cast<CObject*>(obj));
         }
     }
 
     i32 i;
-    for (i = 0; i < killQueue.GetSize(); i++) {
-        CWwdGameObject* obj = static_cast<CWwdGameObject*>(killQueue.GetData()[i]);
+    for (i = 0; i < s_killQueue.GetSize(); i++) {
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(s_killQueue.GetData()[i]);
         if (HAS(static_cast<WwdGameObjectFlags>(obj->m_flags),
                 WWD_GAME_OBJECT_FLAG_DISPATCH_OBJECT_REMOVED)) {
             CLogicRecord* record = obj->m_logicRecord;
@@ -361,8 +361,8 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
         }
     }
 
-    for (i = 0; i < sortQueue.GetSize(); i++) {
-        CWwdGameObject* obj = static_cast<CWwdGameObject*>(sortQueue.GetData()[i]);
+    for (i = 0; i < s_sortQueue.GetSize(); i++) {
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(s_sortQueue.GetData()[i]);
         obj->m_flags &= ~IDX(WWD_GAME_OBJECT_FLAG_SORT_PENDING);
         m_list.RemoveAt(obj->m_posCache);
         InsertSorted(obj, 0);
@@ -500,10 +500,10 @@ static inline i32 ObjectTypeBits(u32 objectType, i32 mask) {
 }
 
 #define PLACE_OBJECT_RECT(dst, object, rect)                                                       \
-    (dst).left = (object)->rect.left + (object)->m_screenX;                                        \
-    (dst).top = (object)->rect.top + (object)->m_screenY;                                          \
-    (dst).right = (object)->rect.right + (object)->m_screenX;                                      \
-    (dst).bottom = (object)->rect.bottom + (object)->m_screenY
+    (dst).m_left = (object)->rect.left + (object)->m_screenX;                                      \
+    (dst).m_top = (object)->rect.top + (object)->m_screenY;                                        \
+    (dst).m_right = (object)->rect.right + (object)->m_screenX;                                    \
+    (dst).m_bottom = (object)->rect.bottom + (object)->m_screenY
 
 // @early-stop
 RVA(0x00159f00, 0x22e)

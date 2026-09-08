@@ -31,7 +31,6 @@ public:
 
     i32 Update();
 
-    char m_pad54[0x58 - 0x54];
     double m_moveSpeed;
 
     double m_subX;

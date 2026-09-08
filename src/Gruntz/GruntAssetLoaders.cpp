@@ -31,32 +31,32 @@
 #include <string.h>
 
 DATA(0x0020dfe4)
-static char s_EXITZ_DRAIN[] = "GRUNTZ_EXITZ_DRAIN";
+static char s_exitzDrain[] = "GRUNTZ_EXITZ_DRAIN";
 DATA(0x0020dffc)
-static char s_DEATHZ_EXPLODE[] = "GRUNTZ_DEATHZ_EXPLODE";
+static char s_deathzExplode[] = "GRUNTZ_DEATHZ_EXPLODE";
 DATA(0x0020e018)
-static char s_DEATHZ_KAROKE[] = "GRUNTZ_DEATHZ_KAROKE";
+static char s_deathzKaroke[] = "GRUNTZ_DEATHZ_KAROKE";
 DATA(0x0020e04c)
-static char s_DEATHZ_ELECTROCUTE[] = "GRUNTZ_DEATHZ_ELECTROCUTE";
+static char s_deathzElectrocute[] = "GRUNTZ_DEATHZ_ELECTROCUTE";
 DATA(0x0020e06c)
-static char s_DEATHZ_QUICKFALL2[] = "GRUNTZ_DEATHZ_QUICKFALL2";
+static char s_deathzQuickfall2[] = "GRUNTZ_DEATHZ_QUICKFALL2";
 DATA(0x0020e08c)
-static char s_DEATHZ_FALL2[] = "GRUNTZ_DEATHZ_FALL2";
+static char s_deathzFall2[] = "GRUNTZ_DEATHZ_FALL2";
 DATA(0x0020e0a4)
-static char s_DEATHZ_FALL[] = "GRUNTZ_DEATHZ_FALL";
+static char s_deathzFall[] = "GRUNTZ_DEATHZ_FALL";
 DATA(0x0020e0bc)
-static char s_DEATHZ_QUICKFALL[] = "GRUNTZ_DEATHZ_QUICKFALL";
+static char s_deathzQuickfall[] = "GRUNTZ_DEATHZ_QUICKFALL";
 DATA(0x0020e0d8)
-static char s_DEATHZ_BURN[] = "GRUNTZ_DEATHZ_BURN";
+static char s_deathzBurn[] = "GRUNTZ_DEATHZ_BURN";
 DATA(0x0020e10c)
-static char s_DEATHZ_SHATTER[] = "GRUNTZ_DEATHZ_SHATTER";
+static char s_deathzShatter[] = "GRUNTZ_DEATHZ_SHATTER";
 DATA(0x0020e128)
-static char s_DEATHZ_HOLE[] = "GRUNTZ_DEATHZ_HOLE";
+static char s_deathzHole[] = "GRUNTZ_DEATHZ_HOLE";
 DATA(0x0020e140)
-static char s_DEATHZ_SINK[] = "GRUNTZ_DEATHZ_SINK";
+static char s_deathzSink[] = "GRUNTZ_DEATHZ_SINK";
 DATA(0x0020e158)
-static char s_DEATHZ_SQUASH[] = "GRUNTZ_DEATHZ_SQUASH";
-static const char s_NORMALGRUNT_DEATH[] = "GRUNTZ_NORMALGRUNT_DEATH";
+static char s_deathzSquash[] = "GRUNTZ_DEATHZ_SQUASH";
+static const char s_normalgruntDeath[] = "GRUNTZ_NORMALGRUNT_DEATH";
 
 #define DEATH_FRAME()                                                                              \
     (static_cast<CAniRecordView*>(                                                                 \
@@ -131,9 +131,9 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
                 SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
                 goto pathA;
             }
-            m_poseDeath = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_DEATHZ_SQUASH);
+            m_poseDeath = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_deathzSquash);
             SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
-            APPLY_LOOKUP_SPRITE_INLINE(s_DEATHZ_SQUASH, DEATH_FRAME());
+            APPLY_LOOKUP_SPRITE_INLINE(s_deathzSquash, DEATH_FRAME());
             DEATH_CUE(0x35b);
             goto finalize;
 
@@ -143,41 +143,40 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
             goto tail;
 
         case DEATH_SINK:
-            m_poseDeath = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_DEATHZ_SINK);
+            m_poseDeath = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_deathzSink);
             SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
-            APPLY_LOOKUP_SPRITE_INLINE(s_DEATHZ_SINK, DEATH_FRAME());
+            APPLY_LOOKUP_SPRITE_INLINE(s_deathzSink, DEATH_FRAME());
             DEATH_CUE(0x35a);
             m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
             LoadGruntMovingDeathConfig();
             goto tail;
 
         case DEATH_HOLE:
-            m_poseDeath = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_DEATHZ_HOLE);
+            m_poseDeath = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_deathzHole);
             SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
-            APPLY_LOOKUP_SPRITE_INLINE(s_DEATHZ_HOLE, DEATH_FRAME());
+            APPLY_LOOKUP_SPRITE_INLINE(s_deathzHole, DEATH_FRAME());
             DEATH_CUE(0x357);
             goto finalize;
 
         case DEATH_SHATTER:
-            m_poseDeath = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_DEATHZ_SHATTER);
+            m_poseDeath = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_deathzShatter);
             SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
             APPLY_LOOKUP_SPRITE_INLINE("GRUNTZ_DEATHZ_FREEZE", DEATH_FRAME());
             DEATH_CUE(0x354);
             goto finalize;
 
         case DEATH_BURN:
-            m_poseDeath = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_DEATHZ_BURN);
+            m_poseDeath = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_deathzBurn);
             SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
-            APPLY_LOOKUP_SPRITE_INLINE(s_DEATHZ_BURN, DEATH_FRAME());
+            APPLY_LOOKUP_SPRITE_INLINE(s_deathzBurn, DEATH_FRAME());
             DEATH_CUE(0x352);
             goto finalize;
 
         case DEATH_QUICKFALL:
             SNAP_OBJECT_TO_TILE_CENTER(m_object)
-            m_poseDeath =
-                m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_DEATHZ_QUICKFALL);
+            m_poseDeath = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_deathzQuickfall);
             SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
-            APPLY_LOOKUP_SPRITE_INLINE(s_DEATHZ_FALL, DEATH_FRAME());
+            APPLY_LOOKUP_SPRITE_INLINE(s_deathzFall, DEATH_FRAME());
             {
                 CWwdSpriteObject* o = m_object;
                 SET_SORT_KEY_IF_CHANGED(o, -1)
@@ -193,7 +192,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
             i32 tag = 0x355;
             if (attr == TILEKIND_DEATHBRIDGE_UP || attr == TILEKIND_TOGGLEDEATHBRIDGE_UP) {
                 m_poseDeath =
-                    m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_DEATHZ_QUICKFALL);
+                    m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_deathzQuickfall);
                 tag = 0x357;
                 {
                     CWwdSpriteObject* o = m_object;
@@ -201,10 +200,10 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
                 }
                 SNAP_OBJECT_TO_TILE_CENTER(m_object)
             } else {
-                m_poseDeath = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_DEATHZ_FALL);
+                m_poseDeath = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_deathzFall);
             }
             SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
-            APPLY_LOOKUP_SPRITE_INLINE(s_DEATHZ_FALL, DEATH_FRAME());
+            APPLY_LOOKUP_SPRITE_INLINE(s_deathzFall, DEATH_FRAME());
             DEATH_CUE(tag);
             m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
             LoadGruntMovingDeathConfig();
@@ -219,7 +218,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
             i32 tag = 0x355;
             if (attr == TILEKIND_DEATHBRIDGE_UP || attr == TILEKIND_TOGGLEDEATHBRIDGE_UP) {
                 m_poseDeath =
-                    m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_DEATHZ_QUICKFALL2);
+                    m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_deathzQuickfall2);
                 tag = 0x357;
                 {
                     CWwdSpriteObject* o = m_object;
@@ -229,11 +228,11 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
             } else {
                 m_poseDeath = LookupAnim(
                     m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
-                    s_DEATHZ_FALL2
+                    s_deathzFall2
                 );
             }
             SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
-            APPLY_LOOKUP_SPRITE_INLINE(s_DEATHZ_FALL, DEATH_FRAME());
+            APPLY_LOOKUP_SPRITE_INLINE(s_deathzFall, DEATH_FRAME());
             DEATH_CUE(tag);
             m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
             LoadGruntMovingDeathConfig();
@@ -243,10 +242,10 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
         case DEATH_ELECTROCUTE: {
             m_poseDeath = LookupAnim(
                 m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
-                s_DEATHZ_ELECTROCUTE
+                s_deathzElectrocute
             );
             SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
-            APPLY_LOOKUP_SPRITE_INLINE(s_DEATHZ_ELECTROCUTE, DEATH_FRAME());
+            APPLY_LOOKUP_SPRITE_INLINE(s_deathzElectrocute, DEATH_FRAME());
             DEATH_CUE(0x353);
             goto finalize;
         }
@@ -265,9 +264,9 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
 
         case DEATH_KAROKE: {
             m_poseDeath =
-                LookupAnim(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_DEATHZ_KAROKE);
+                LookupAnim(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_deathzKaroke);
             SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
-            APPLY_LOOKUP_SPRITE_INLINE(s_DEATHZ_KAROKE, DEATH_FRAME());
+            APPLY_LOOKUP_SPRITE_INLINE(s_deathzKaroke, DEATH_FRAME());
             DEATH_CUE(0x358);
             goto tail;
         }
@@ -278,16 +277,16 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
                 goto pathA;
             }
             m_poseDeath =
-                LookupAnim(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_DEATHZ_EXPLODE);
+                LookupAnim(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_deathzExplode);
             SwitchAnimation(m_poseDeath);
-            APPLY_LOOKUP_SPRITE_INLINE(s_DEATHZ_EXPLODE, DEATH_FRAME());
+            APPLY_LOOKUP_SPRITE_INLINE(s_deathzExplode, DEATH_FRAME());
             DEATH_CUE(0x354);
             goto finalize;
         }
 
         case DEATH_DRAIN: {
             m_poseDeath =
-                LookupAnim(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_EXITZ_DRAIN);
+                LookupAnim(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_exitzDrain);
             SwitchAnimation(m_poseDeath);
             APPLY_LOOKUP_SPRITE_INLINE("GRUNTZ_EXITZ", DEATH_FRAME());
             SET_ANIMATION_ACT("B");

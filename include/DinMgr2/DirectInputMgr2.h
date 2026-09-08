@@ -128,22 +128,22 @@ inline DirectInputMgr2::~DirectInputMgr2() {
 }
 
 struct DIMouseStateZ {
-    i32 lX;
-    i32 lY;
-    i32 lZ;
-    u8 rgbButtons[4];
+    i32 m_lX;
+    i32 m_lY;
+    i32 m_lZ;
+    u8 m_rgbButtons[4];
 };
 struct DIJoyState2Z {
-    i32 lX;
-    i32 lY;
-    char pad08[0x30 - 0x08];
-    u8 rgbButtons[10];
-    char pad3a[0x110 - 0x3a];
+    i32 m_lX;
+    i32 m_lY;
+    char m_pad08[0x30 - 0x08];
+    u8 m_rgbButtons[10];
+    char m_pad3a[0x110 - 0x3a];
 };
 union DeviceState {
-    u8 keys[0x100];
-    DIMouseStateZ mouse;
-    DIJoyState2Z joy;
+    u8 m_keys[0x100];
+    DIMouseStateZ m_mouse;
+    DIJoyState2Z m_joy;
 };
 
 class CInputDevRoot {

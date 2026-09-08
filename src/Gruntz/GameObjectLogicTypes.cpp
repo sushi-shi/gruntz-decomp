@@ -76,7 +76,7 @@ void RegisterGameObjectLogicTypes(CDDrawSurfaceMgr* ctx) {
     CTileTriggerTransition::RegisterActs();
     ctx->m_logicRegistry
         ->RegisterLogicType(DispatchGruntStartingPointLogic, "GruntStartingPoint", 4);
-    ActReg4RegisterType();
+    RegisterGruntStartingPointActions();
     ctx->m_logicRegistry
         ->RegisterLogicType(DispatchGruntCreationPointLogic, "GruntCreationPoint", 4);
     CGruntCreationPoint::RegisterActs();

@@ -198,7 +198,7 @@ i32 CStatusBarMgr::DockStatusBarLeft() {
         SetState(STATUSBAR_DOCK_LEFT);
         (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
         if (BuildStatusBarTabs() == 0) {
-            g_gameReg->ReportError(kActivateErrId, 0x448);
+            g_gameReg->ReportError(s_activateErrId, 0x448);
             return 0;
         }
         SetTabState(static_cast<SbiCommandId>(IDX(m_activeTab)), MENUITEM_SELECTED);
@@ -221,7 +221,7 @@ i32 CStatusBarMgr::DockStatusBarRight() {
     SetState(STATUSBAR_DOCK_RIGHT);
     (static_cast<CPlay*>(g_gameReg->m_curState))->ResetViewport();
     if (BuildStatusBarTabs() == 0) {
-        g_gameReg->ReportError(kActivateErrId, 0x449);
+        g_gameReg->ReportError(s_activateErrId, 0x449);
         return 0;
     }
     SetTabState(static_cast<SbiCommandId>(IDX(m_activeTab)), MENUITEM_SELECTED);
@@ -1671,7 +1671,7 @@ i32 CStatusBarMgr::SetTab(GameTabContent tab, b32 forceReload) {
     m_itemKind = tab;
 
     if (!LoadTabSprites()) {
-        g_gameReg->ReportError(kActivateErrId, kSetTabErrTag);
+        g_gameReg->ReportError(s_activateErrId, s_setTabErrTag);
         return 0;
     }
     Deactivate();
@@ -2235,8 +2235,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
 
             {
-                i32 by17 = bx + 0x17;
-                i32 by52 = bx + 0x52;
+                i32 gruntBarLeft = bx + 0x17;
+                i32 gruntBarRight = bx + 0x52;
                 i32 y = by + 0xd9;
                 for (i = 0; i < STATUSBAR_GRUNT_SLOT_COUNT; i++) {
                     bar = new CSBI_StatzTabGruntBar;
@@ -2245,7 +2245,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                             code,
                             static_cast<SbiCommandId>(IDX(SBICMD_CURSOR_TARGET_FIRST) + i),
                             TAB_MULTIPLAYER,
-                            SbGeom(by17, y - 0x11, by52, y),
+                            SbGeom(gruntBarLeft, y - 0x11, gruntBarRight, y),
                             "GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ",
                             m_tabCycle,
                             i,
@@ -2468,7 +2468,7 @@ i32 CStatusBarMgr::TryActivate() {
         return Activate();
     }
     if (!BuildStatusBarTabs()) {
-        g_gameReg->ReportError(kActivateErrId, kActivateErrTag);
+        g_gameReg->ReportError(s_activateErrId, s_activateErrTag);
         return 0;
     }
     SetTabState(static_cast<SbiCommandId>(IDX(m_activeTab)), MENUITEM_SELECTED);
@@ -3232,7 +3232,7 @@ void CStatusBarMgr::CommitSlot(b32 active) {
         ArmSlot(m_activeSlot);
         m_activeSlot = -1;
     } else {
-        m_slots[m_activeSlot].m_value = kSlotCommitLevel;
+        m_slots[m_activeSlot].m_value = s_slotCommitLevel;
         if (m_slotNotify[m_activeSlot]) {
             m_slotNotify[m_activeSlot]->Notify(m_slots[m_activeSlot].m_value);
         }
@@ -3737,12 +3737,12 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     GameModeId mode = g_gameReg->m_gameMode;
     if (mode == GAMEMODE_MULTIPLAYER) {
         for (i32 i = 0; i < g_buteMgr.GetInt("Multiplayer", "StartingGruntz", 0); i++) {
-            m_slots[i].m_value = kSlotCommitLevel;
+            m_slots[i].m_value = s_slotCommitLevel;
             m_slots[i].m_state = SLOT_READY;
         }
     } else if (mode == GAMEMODE_BATTLEZ) {
         for (i32 i = 0; i < g_buteMgr.GetInt("Battlez", "StartingGruntz", 0); i++) {
-            m_slots[i].m_value = kSlotCommitLevel;
+            m_slots[i].m_value = s_slotCommitLevel;
             m_slots[i].m_state = SLOT_READY;
         }
     }
@@ -4233,16 +4233,17 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     s->Read(&seq, sizeof(seq));
 
     CGameObject* obj = NULL;
-    CWwdSpriteObject* m8;
+    CWwdSpriteObject* barSprite;
     if (MapLookupById(gm->m_childGroup->m_registeredGameObjectsById, seq, obj) == false) {
-        m8 = NULL;
+        barSprite = NULL;
     } else if (obj == NULL) {
-        m8 = NULL;
+        barSprite = NULL;
     } else {
-        m8 = (obj->GetClassId() == CLASSID_SERIALREF) ? static_cast<CWwdSpriteObject*>(obj) : NULL;
+        barSprite =
+            (obj->GetClassId() == CLASSID_SERIALREF) ? static_cast<CWwdSpriteObject*>(obj) : NULL;
     }
-    m_barSprite = m8;
-    if (m8 == NULL && seq != 0) {
+    m_barSprite = barSprite;
+    if (barSprite == NULL && seq != 0) {
         return 0;
     }
 

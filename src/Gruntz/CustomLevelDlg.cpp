@@ -32,13 +32,13 @@ RVA_DYNINIT(0x00017fe0, 0x5, s_gruntDirCenter)
 RVA_DYNINIT(0x00018000, 0x1a, s_gruntDirCenter)
 
 DATA(0x001e8e98)
-const AFX_MSGMAP CBattlezDlgCustom::messageMap = {
+const AFX_MSGMAP CBattlezDlgCustom::s_messageMap = {
     &CDialog::messageMap,
-    &CBattlezDlgCustom::_messageEntries[0],
+    &CBattlezDlgCustom::s_messageEntries[0],
 };
 
 DATA(0x001e8ea0)
-const AFX_MSGMAP_ENTRY CBattlezDlgCustom::_messageEntries[] = {
+const AFX_MSGMAP_ENTRY CBattlezDlgCustom::s_messageEntries[] = {
     ON_LBN_DBLCLK(0x516, CBattlezDlgCustom::PickIfSelected){0, 0, 0, 0, AfxSig_end, 0},
 };
 
@@ -90,7 +90,7 @@ void CBattlezDlgCustom::DoDataExchange(CDataExchange* pDX) {
 
 RVA(0x000183d0, 0x6)
 const AFX_MSGMAP* CBattlezDlgCustom::GetMessageMap() const {
-    return &messageMap;
+    return &s_messageMap;
 }
 
 RVA(0x000183f0, 0x2e)

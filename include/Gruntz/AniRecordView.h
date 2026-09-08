@@ -45,8 +45,8 @@ struct CAniRecordView : public CObject {
     i32 Rng2Next();
 
     i32 GetRandomNumber() {
-        static long holdrand = timeGetTime();
-        return (((holdrand = holdrand * 214013L + 2531011L) >> 16) & 0x7fff);
+        static long s_holdrand = timeGetTime();
+        return (((s_holdrand = s_holdrand * 214013L + 2531011L) >> 16) & 0x7fff);
     }
 
     inline CAniRecordView() {
@@ -56,7 +56,6 @@ struct CAniRecordView : public CObject {
     }
 
     GZ_ENUM_STORAGE(AniRecordFlags, u16) m_flags;
-    u16 m_pad06;
     WwdAnimStepMode m_stepMode;
     WwdAnimLoopMode m_loopMode;
     WwdAnimPositionMode m_positionMode;
@@ -66,7 +65,6 @@ struct CAniRecordView : public CObject {
     i32 m_positionDeltaX;
     i32 m_positionDeltaY;
     u16 m_reserved28; // parsed from ANI frame record; never read
-    u16 m_pad2a;
     i32 m_cueCount;
     SoundCue** m_cues;
 };

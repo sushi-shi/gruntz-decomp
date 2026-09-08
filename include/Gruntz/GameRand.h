@@ -8,8 +8,8 @@
 #include <stdlib.h>
 
 __inline i32 GetRandomNumber() {
-    static long holdrand = timeGetTime();
-    return (((holdrand = holdrand * 214013L + 2531011L) >> 16) & 0x7fff);
+    static long s_holdrand = timeGetTime();
+    return (((s_holdrand = s_holdrand * 214013L + 2531011L) >> 16) & 0x7fff);
 }
 
 __inline i32 GetRandom(i32 lo, i32 hi) {

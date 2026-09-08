@@ -125,8 +125,8 @@ i32 ParseWaveChunks(RiffWaveHeader* riff, WaveFormatX** outFormat, u8** outData,
 
 i32 ConvertVolumeToPercent(i32 attenuation);
 
-extern const double c_volumePercentScale;
-extern const double c_volumeCurveUnit;
-extern const double c_decibelScale;
-extern const double c_attenuationBase;
+extern const double g_volumePercentScale;
+extern const double g_volumeCurveUnit;
+extern const double g_decibelScale;
+extern const double g_attenuationBase;
 #endif // DSNDMGR_SOUNDBUFFER_H

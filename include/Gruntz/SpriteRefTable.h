@@ -19,7 +19,6 @@ public:
     u16 m_teamColor1;
     u16 m_teamColor3;
     u16 m_teamColor2;
-    u16 m_pad0e;
 };
 
 inline CSpriteRef::CSpriteRef() {

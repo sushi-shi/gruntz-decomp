@@ -25,14 +25,14 @@ GZ_ENUM_CONST_BEGIN(ShadeLightLevel)
 GZ_ENUM_CONST_END(ShadeLightLevel)
 
 struct PidWriteHeader {
-    i32 formatTag;
-    i32 flags;
-    i32 width;
-    i32 height;
-    i32 offsetX;
-    i32 offsetY;
-    i32 fill;
-    i32 reserved1c;
+    i32 m_formatTag;
+    i32 m_flags;
+    i32 m_width;
+    i32 m_height;
+    i32 m_offsetX;
+    i32 m_offsetY;
+    i32 m_fill;
+    i32 m_reserved1c;
 };
 
 class CDDrawShadeBlit {
@@ -82,7 +82,6 @@ public:
     i32 m_colorKey;
     u8 m_srcBpp;
     u8 m_dstBpp;
-    char _2a[0x2c - 0x2a];
     b32 m_blendVariant;
 
     u16* m_lutBank0;

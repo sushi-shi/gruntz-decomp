@@ -5,13 +5,13 @@
 
 #pragma pack(push, 1)
 struct WaveFormatX {
-    u16 wFormatTag;
-    u16 nChannels;
-    u32 nSamplesPerSec;
-    u32 nAvgBytesPerSec;
-    u16 nBlockAlign;
-    u16 wBitsPerSample;
-    u16 cbSize;
+    u16 m_wFormatTag;
+    u16 m_nChannels;
+    u32 m_nSamplesPerSec;
+    u32 m_nAvgBytesPerSec;
+    u16 m_nBlockAlign;
+    u16 m_wBitsPerSample;
+    u16 m_cbSize;
 };
 
 struct RiffWaveHeader {

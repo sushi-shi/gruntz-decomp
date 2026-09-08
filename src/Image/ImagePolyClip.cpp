@@ -20,7 +20,7 @@
 DATA(0x001efb10)
 const float g_rasterZero = 0.0f;
 DATA(0x001efb14)
-const float g_degToRadNeg = -0.01745329238474369f;
+const float s_degToRadNeg = -0.01745329238474369f;
 DATA(0x001efb18)
 const float g_rasterScale = 16384.0f;
 DATA(0x001efb1c)
@@ -84,12 +84,12 @@ i32 PolyIsConvexCW(ClipVtx* verts, i32 count) {
         ClipVtx* v0 = &verts[i % count];
         ClipVtx* v1 = &verts[(i + 1) % count];
         ClipVtx* v2 = &verts[(i + 2) % count];
-        float x0 = v0->x;
-        float y0 = v0->y;
-        float x1 = v1->x;
-        float y1 = v1->y;
-        float x2 = v2->x;
-        float y2 = v2->y;
+        float x0 = v0->m_x;
+        float y0 = v0->m_y;
+        float x1 = v1->m_x;
+        float y1 = v1->m_y;
+        float x2 = v2->m_x;
+        float y2 = v2->m_y;
         float dy2, dx2, dy1, dx1;
         dx1 = x1 - x0;
         dy1 = y1 - y0;
@@ -142,7 +142,7 @@ void ImageRotateBlit(
         sq[3] = h - 1;
     }
 
-    float rad = rot * g_degToRadNeg;
+    float rad = rot * s_degToRadNeg;
     float sn = static_cast<float>(sin(rad));
     float cs = static_cast<float>(cos(rad));
 
@@ -155,32 +155,32 @@ void ImageRotateBlit(
     float ey1 = static_cast<float>(h - cy) * scale;
 
     ClipVtx prod[4];
-    prod[0].x = ex0;
-    prod[0].y = ey0;
-    prod[1].x = ex1;
-    prod[1].y = ey0;
-    prod[2].x = ex1;
-    prod[2].y = ey1;
-    prod[3].x = ex0;
-    prod[3].y = ey1;
+    prod[0].m_x = ex0;
+    prod[0].m_y = ey0;
+    prod[1].m_x = ex1;
+    prod[1].m_y = ey0;
+    prod[2].m_x = ex1;
+    prod[2].m_y = ey1;
+    prod[3].m_x = ex0;
+    prod[3].m_y = ey1;
 
     float tx = static_cast<float>(destX);
     float ty = static_cast<float>(destY);
 
     ClipVtx mtx[4];
     for (i32 k = 0; k < 4; k++) {
-        mtx[k].y = prod[k].y * cs - prod[k].x * sn + ty;
-        mtx[k].x = prod[k].x * cs + prod[k].y * sn + tx;
+        mtx[k].m_y = prod[k].m_y * cs - prod[k].m_x * sn + ty;
+        mtx[k].m_x = prod[k].m_x * cs + prod[k].m_y * sn + tx;
     }
 
-    mtx[0].u = static_cast<float>(sq[0]);
-    mtx[0].v = static_cast<float>(sq[1]);
-    mtx[1].u = static_cast<float>(sq[2]);
-    mtx[1].v = static_cast<float>(sq[1]);
-    mtx[2].u = static_cast<float>(sq[2]);
-    mtx[2].v = static_cast<float>(sq[3]);
-    mtx[3].u = static_cast<float>(sq[0]);
-    mtx[3].v = static_cast<float>(sq[3]);
+    mtx[0].m_u = static_cast<float>(sq[0]);
+    mtx[0].m_v = static_cast<float>(sq[1]);
+    mtx[1].m_u = static_cast<float>(sq[2]);
+    mtx[1].m_v = static_cast<float>(sq[1]);
+    mtx[2].m_u = static_cast<float>(sq[2]);
+    mtx[2].m_v = static_cast<float>(sq[3]);
+    mtx[3].m_u = static_cast<float>(sq[0]);
+    mtx[3].m_v = static_cast<float>(sq[3]);
 
     RotateRasterize(mtx, 4, dst, src, mode, colorkey, -1, -1, -1, -1);
 }
@@ -206,12 +206,14 @@ i32 ImagePolyClipRect(
         ClipVtx* prev = &poly[n - 1];
         ClipVtx* cur = poly;
         for (i = n; i > 0; i--) {
-            if (!(prev->x < left)) {
+            if (!(prev->m_x < left)) {
                 *out++ = *prev;
             }
-            if ((prev->x < left && !(cur->x < left)) || (!(prev->x < left) && cur->x < left)) {
-                out->x = left;
-                out->y = prev->y + (left - prev->x) * ((cur->y - prev->y) / (cur->x - prev->x));
+            if ((prev->m_x < left && !(cur->m_x < left))
+                || (!(prev->m_x < left) && cur->m_x < left)) {
+                out->m_x = left;
+                out->m_y = prev->m_y
+                           + (left - prev->m_x) * ((cur->m_y - prev->m_y) / (cur->m_x - prev->m_x));
                 out++;
             }
             prev = cur;
@@ -228,12 +230,15 @@ i32 ImagePolyClipRect(
         ClipVtx* prev = &g_rasterOddClipPassBuffer[n1 - 1];
         ClipVtx* cur = g_rasterOddClipPassBuffer;
         for (i = n1; i > 0; i--) {
-            if (prev->x < right) {
+            if (prev->m_x < right) {
                 *out++ = *prev;
             }
-            if ((prev->x < right && !(cur->x < right)) || (!(prev->x < right) && cur->x < right)) {
-                out->x = right;
-                out->y = prev->y + (right - prev->x) * ((cur->y - prev->y) / (cur->x - prev->x));
+            if ((prev->m_x < right && !(cur->m_x < right))
+                || (!(prev->m_x < right) && cur->m_x < right)) {
+                out->m_x = right;
+                out->m_y =
+                    prev->m_y
+                    + (right - prev->m_x) * ((cur->m_y - prev->m_y) / (cur->m_x - prev->m_x));
                 out++;
             }
             prev = cur;
@@ -250,12 +255,13 @@ i32 ImagePolyClipRect(
         ClipVtx* prev = &g_rasterEvenClipPassBuffer[n2 - 1];
         ClipVtx* cur = g_rasterEvenClipPassBuffer;
         for (i = n2; i > 0; i--) {
-            if (!(prev->y < top)) {
+            if (!(prev->m_y < top)) {
                 *out++ = *prev;
             }
-            if ((!(prev->y < top) && cur->y < top) || (prev->y < top && !(cur->y < top))) {
-                out->y = top;
-                out->x = prev->x + (top - prev->y) * ((cur->x - prev->x) / (cur->y - prev->y));
+            if ((!(prev->m_y < top) && cur->m_y < top) || (prev->m_y < top && !(cur->m_y < top))) {
+                out->m_y = top;
+                out->m_x = prev->m_x
+                           + (top - prev->m_y) * ((cur->m_x - prev->m_x) / (cur->m_y - prev->m_y));
                 out++;
             }
             prev = cur;
@@ -272,13 +278,15 @@ i32 ImagePolyClipRect(
         ClipVtx* prev = &g_rasterOddClipPassBuffer[n3 - 1];
         ClipVtx* cur = g_rasterOddClipPassBuffer;
         for (i = n3; i > 0; i--) {
-            if (prev->y < bottom) {
+            if (prev->m_y < bottom) {
                 *out++ = *prev;
             }
-            if ((prev->y < bottom && !(cur->y < bottom))
-                || (!(prev->y < bottom) && cur->y < bottom)) {
-                out->y = bottom;
-                out->x = prev->x + (bottom - prev->y) * ((cur->x - prev->x) / (cur->y - prev->y));
+            if ((prev->m_y < bottom && !(cur->m_y < bottom))
+                || (!(prev->m_y < bottom) && cur->m_y < bottom)) {
+                out->m_y = bottom;
+                out->m_x =
+                    prev->m_x
+                    + (bottom - prev->m_y) * ((cur->m_x - prev->m_x) / (cur->m_y - prev->m_y));
                 out++;
             }
             prev = cur;
@@ -327,18 +335,21 @@ i32 RotateRasterize(
         if (n > 0) {
             i32 j = n;
             do {
-                if (prev->x >= leftBound) {
+                if (prev->m_x >= leftBound) {
                     *out++ = *prev;
                 }
-                if ((prev->x < leftBound && cur->x >= leftBound)
-                    || (prev->x >= leftBound && cur->x < leftBound)) {
-                    out->x = leftBound;
-                    out->y =
-                        prev->y + ((cur->y - prev->y) / (cur->x - prev->x)) * (leftBound - prev->x);
-                    out->u =
-                        prev->u + ((cur->u - prev->u) / (cur->x - prev->x)) * (leftBound - prev->x);
-                    out->v =
-                        prev->v + ((cur->v - prev->v) / (cur->x - prev->x)) * (leftBound - prev->x);
+                if ((prev->m_x < leftBound && cur->m_x >= leftBound)
+                    || (prev->m_x >= leftBound && cur->m_x < leftBound)) {
+                    out->m_x = leftBound;
+                    out->m_y = prev->m_y
+                               + ((cur->m_y - prev->m_y) / (cur->m_x - prev->m_x))
+                                     * (leftBound - prev->m_x);
+                    out->m_u = prev->m_u
+                               + ((cur->m_u - prev->m_u) / (cur->m_x - prev->m_x))
+                                     * (leftBound - prev->m_x);
+                    out->m_v = prev->m_v
+                               + ((cur->m_v - prev->m_v) / (cur->m_x - prev->m_x))
+                                     * (leftBound - prev->m_x);
                     out++;
                 }
                 prev = cur;
@@ -358,18 +369,21 @@ i32 RotateRasterize(
         if (n > 0) {
             i32 j = n;
             do {
-                if (prev->x < rightBound) {
+                if (prev->m_x < rightBound) {
                     *out++ = *prev;
                 }
-                if ((prev->x < rightBound && cur->x >= rightBound)
-                    || (prev->x >= rightBound && cur->x < rightBound)) {
-                    out->x = rightBound;
-                    out->y = prev->y
-                             + ((cur->y - prev->y) / (cur->x - prev->x)) * (rightBound - prev->x);
-                    out->u = prev->u
-                             + ((cur->u - prev->u) / (cur->x - prev->x)) * (rightBound - prev->x);
-                    out->v = prev->v
-                             + ((cur->v - prev->v) / (cur->x - prev->x)) * (rightBound - prev->x);
+                if ((prev->m_x < rightBound && cur->m_x >= rightBound)
+                    || (prev->m_x >= rightBound && cur->m_x < rightBound)) {
+                    out->m_x = rightBound;
+                    out->m_y = prev->m_y
+                               + ((cur->m_y - prev->m_y) / (cur->m_x - prev->m_x))
+                                     * (rightBound - prev->m_x);
+                    out->m_u = prev->m_u
+                               + ((cur->m_u - prev->m_u) / (cur->m_x - prev->m_x))
+                                     * (rightBound - prev->m_x);
+                    out->m_v = prev->m_v
+                               + ((cur->m_v - prev->m_v) / (cur->m_x - prev->m_x))
+                                     * (rightBound - prev->m_x);
                     out++;
                 }
                 prev = cur;
@@ -389,18 +403,21 @@ i32 RotateRasterize(
             ClipVtx* cur = g_rasterEvenClipPassBuffer;
             i32 j = n;
             do {
-                if (prev->y >= topBound) {
+                if (prev->m_y >= topBound) {
                     *out++ = *prev;
                 }
-                if ((prev->y >= topBound && cur->y < topBound)
-                    || (prev->y < topBound && cur->y >= topBound)) {
-                    out->y = topBound;
-                    out->x =
-                        prev->x + ((cur->x - prev->x) / (cur->y - prev->y)) * (topBound - prev->y);
-                    out->u =
-                        prev->u + ((cur->u - prev->u) / (cur->y - prev->y)) * (topBound - prev->y);
-                    out->v =
-                        prev->v + ((cur->v - prev->v) / (cur->y - prev->y)) * (topBound - prev->y);
+                if ((prev->m_y >= topBound && cur->m_y < topBound)
+                    || (prev->m_y < topBound && cur->m_y >= topBound)) {
+                    out->m_y = topBound;
+                    out->m_x = prev->m_x
+                               + ((cur->m_x - prev->m_x) / (cur->m_y - prev->m_y))
+                                     * (topBound - prev->m_y);
+                    out->m_u = prev->m_u
+                               + ((cur->m_u - prev->m_u) / (cur->m_y - prev->m_y))
+                                     * (topBound - prev->m_y);
+                    out->m_v = prev->m_v
+                               + ((cur->m_v - prev->m_v) / (cur->m_y - prev->m_y))
+                                     * (topBound - prev->m_y);
                     out++;
                 }
                 prev = cur;
@@ -420,18 +437,21 @@ i32 RotateRasterize(
             ClipVtx* cur = g_rasterOddClipPassBuffer;
             i32 j = n;
             do {
-                if (prev->y < bottomBound) {
+                if (prev->m_y < bottomBound) {
                     *out++ = *prev;
                 }
-                if ((prev->y < bottomBound && cur->y >= bottomBound)
-                    || (prev->y >= bottomBound && cur->y < bottomBound)) {
-                    out->y = bottomBound;
-                    out->x = prev->x
-                             + ((cur->x - prev->x) / (cur->y - prev->y)) * (bottomBound - prev->y);
-                    out->u = prev->u
-                             + ((cur->u - prev->u) / (cur->y - prev->y)) * (bottomBound - prev->y);
-                    out->v = prev->v
-                             + ((cur->v - prev->v) / (cur->y - prev->y)) * (bottomBound - prev->y);
+                if ((prev->m_y < bottomBound && cur->m_y >= bottomBound)
+                    || (prev->m_y >= bottomBound && cur->m_y < bottomBound)) {
+                    out->m_y = bottomBound;
+                    out->m_x = prev->m_x
+                               + ((cur->m_x - prev->m_x) / (cur->m_y - prev->m_y))
+                                     * (bottomBound - prev->m_y);
+                    out->m_u = prev->m_u
+                               + ((cur->m_u - prev->m_u) / (cur->m_y - prev->m_y))
+                                     * (bottomBound - prev->m_y);
+                    out->m_v = prev->m_v
+                               + ((cur->m_v - prev->m_v) / (cur->m_y - prev->m_y))
+                                     * (bottomBound - prev->m_y);
                     out++;
                 }
                 prev = cur;
@@ -482,13 +502,13 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
         ClipVtx* cur = va;
         i32 count = n;
         do {
-            i32 prevYi = static_cast<i32>(prev->y);
-            i32 curYi = static_cast<i32>(cur->y);
+            i32 prevYi = static_cast<i32>(prev->m_y);
+            i32 curYi = static_cast<i32>(cur->m_y);
             if (prevYi != curYi) {
                 ClipVtx* top;
                 ClipVtx* bot;
                 ClipVtx* table;
-                if (cur->y < prev->y) {
+                if (cur->m_y < prev->m_y) {
                     top = cur;
                     bot = prev;
                     table = g_rasterEdgeL;
@@ -498,37 +518,40 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
                     table = g_rasterEdgeR;
                 }
 
-                i32 topU = static_cast<i32>(static_cast<double>(top->u) * g_rasterScale);
-                i32 topV = static_cast<i32>(static_cast<double>(top->v) * g_rasterScale);
-                i32 topX = static_cast<i32>(static_cast<double>(top->x) * g_rasterScale);
-                i32 topYi = static_cast<i32>(static_cast<double>(top->y) * g_rasterScale)
+                i32 topU = static_cast<i32>(static_cast<double>(top->m_u) * g_rasterScale);
+                i32 topV = static_cast<i32>(static_cast<double>(top->m_v) * g_rasterScale);
+                i32 topX = static_cast<i32>(static_cast<double>(top->m_x) * g_rasterScale);
+                i32 topYi = static_cast<i32>(static_cast<double>(top->m_y) * g_rasterScale)
                             >> WARP_TEXTURE_FRACTION_BITS;
-                i32 botYi = static_cast<i32>(static_cast<double>(bot->y) * g_rasterScale)
+                i32 botYi = static_cast<i32>(static_cast<double>(bot->m_y) * g_rasterScale)
                             >> WARP_TEXTURE_FRACTION_BITS;
                 i32 h = botYi - topYi;
 
                 ClipVtx* rec = &table[topYi];
                 i32 dx =
-                    (-topX - static_cast<i32>(static_cast<double>(bot->x) * g_rasterScaleNeg)) / h;
+                    (-topX - static_cast<i32>(static_cast<double>(bot->m_x) * g_rasterScaleNeg))
+                    / h;
                 i32 du =
-                    (-topU - static_cast<i32>(static_cast<double>(bot->u) * g_rasterScaleNeg)) / h;
+                    (-topU - static_cast<i32>(static_cast<double>(bot->m_u) * g_rasterScaleNeg))
+                    / h;
                 i32 dv =
-                    (-topV - static_cast<i32>(static_cast<double>(bot->v) * g_rasterScaleNeg)) / h;
+                    (-topV - static_cast<i32>(static_cast<double>(bot->m_v) * g_rasterScaleNeg))
+                    / h;
 
                 i32 x = topX;
                 i32 u = topU;
                 i32 vv = topV;
                 for (i32 s = 0; s < h; s++) {
-                    rec->fx = x;
-                    rec->fu = u;
-                    rec->fv = vv;
+                    rec->m_fx = x;
+                    rec->m_fu = u;
+                    rec->m_fv = vv;
                     x += dx;
                     u += du;
                     vv += dv;
                     rec++;
                 }
             }
-            i32 vy = static_cast<i32>(prev->y);
+            i32 vy = static_cast<i32>(prev->m_y);
             if (vy < minY) {
                 minY = vy;
             }
@@ -552,15 +575,15 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
         if (minY < maxY) {
             i32 rows = maxY - minY;
             do {
-                i32 rx = rrow->fx >> WARP_TEXTURE_FRACTION_BITS;
-                i32 lx = lrow->fx >> WARP_TEXTURE_FRACTION_BITS;
+                i32 rx = rrow->m_fx >> WARP_TEXTURE_FRACTION_BITS;
+                i32 lx = lrow->m_fx >> WARP_TEXTURE_FRACTION_BITS;
                 i32 span = lx - rx;
                 if (span > 0) {
-                    i32 u = rrow->fu;
+                    i32 u = rrow->m_fu;
                     g_warpU = u;
-                    g_warpV = rrow->fv;
-                    g_warpUStep = (lrow->fu - u) / span;
-                    i32 dv = (lrow->fv - g_warpV) / span;
+                    g_warpV = rrow->m_fv;
+                    g_warpUStep = (lrow->m_fu - u) / span;
+                    i32 dv = (lrow->m_fv - g_warpV) / span;
                     g_warpV = g_warpV << shift;
                     g_warpVStep = dv << shift;
 
@@ -598,15 +621,15 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
         if (minY < maxY) {
             i32 rows = maxY - minY;
             do {
-                i32 rx = rrow->fx >> WARP_TEXTURE_FRACTION_BITS;
-                i32 lx = lrow->fx >> WARP_TEXTURE_FRACTION_BITS;
+                i32 rx = rrow->m_fx >> WARP_TEXTURE_FRACTION_BITS;
+                i32 lx = lrow->m_fx >> WARP_TEXTURE_FRACTION_BITS;
                 i32 span = lx - rx;
                 if (span > 0) {
-                    i32 u = rrow->fu;
+                    i32 u = rrow->m_fu;
                     g_warpU = u;
-                    g_warpV = rrow->fv;
-                    g_warpUStep = (lrow->fu - u) / span;
-                    i32 dv = (lrow->fv - g_warpV) / span;
+                    g_warpV = rrow->m_fv;
+                    g_warpUStep = (lrow->m_fu - u) / span;
+                    i32 dv = (lrow->m_fv - g_warpV) / span;
                     g_warpV = g_warpV << shift;
                     g_warpVStep = dv << shift;
 
@@ -647,15 +670,15 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
         if (minY < maxY) {
             i32 rows = maxY - minY;
             do {
-                i32 rx = rrow->fx >> WARP_TEXTURE_FRACTION_BITS;
-                i32 lx = lrow->fx >> WARP_TEXTURE_FRACTION_BITS;
+                i32 rx = rrow->m_fx >> WARP_TEXTURE_FRACTION_BITS;
+                i32 lx = lrow->m_fx >> WARP_TEXTURE_FRACTION_BITS;
                 i32 span = lx - rx;
                 if (span > 0) {
-                    i32 u = rrow->fu;
+                    i32 u = rrow->m_fu;
                     g_warpU = u;
-                    g_warpV = rrow->fv;
-                    g_warpUStep = (lrow->fu - u) / span;
-                    i32 dv = (lrow->fv - g_warpV) / span;
+                    g_warpV = rrow->m_fv;
+                    g_warpUStep = (lrow->m_fu - u) / span;
+                    i32 dv = (lrow->m_fv - g_warpV) / span;
                     g_warpV = g_warpV << shift;
                     g_warpVStep = dv << shift;
 
@@ -709,38 +732,38 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
     if (count > 0) {
         i32 n = count;
         do {
-            i32 prevYi = static_cast<i32>(prev->y);
-            i32 curYi = static_cast<i32>(cur->y);
+            i32 prevYi = static_cast<i32>(prev->m_y);
+            i32 curYi = static_cast<i32>(cur->m_y);
             if (prevYi != curYi) {
                 ClipVtx* top = prev;
                 ClipVtx* bottom = cur;
                 ClipVtx* table;
-                if (prev->y < cur->y) {
+                if (prev->m_y < cur->m_y) {
                     table = g_rasterEdgeL;
                 } else {
                     top = cur;
                     bottom = prev;
                     table = g_rasterEdgeR;
                 }
-                i32 topX = static_cast<i32>((top->x * g_rasterScale));
-                i32 topYi = static_cast<i32>((top->y * g_rasterScale));
-                i32 botYi = static_cast<i32>((bottom->y * g_rasterScale));
+                i32 topX = static_cast<i32>((top->m_x * g_rasterScale));
+                i32 topYi = static_cast<i32>((top->m_y * g_rasterScale));
+                i32 botYi = static_cast<i32>((bottom->m_y * g_rasterScale));
                 i32 topRow = topYi >> WARP_TEXTURE_FRACTION_BITS;
                 ClipVtx* entry = &table[topRow];
                 i32 botRow = botYi >> WARP_TEXTURE_FRACTION_BITS;
                 i32 height = botRow - topRow;
-                i32 botX = static_cast<i32>((bottom->x * g_rasterScaleNeg));
+                i32 botX = static_cast<i32>((bottom->m_x * g_rasterScaleNeg));
                 i32 xSlope = (-topX - botX) / height;
                 if (topRow < botRow) {
                     i32 x = topX;
                     do {
-                        entry->fx = x;
+                        entry->m_fx = x;
                         x += xSlope;
                         entry++;
                     } while (--height != 0);
                 }
             }
-            i32 py = static_cast<i32>(prev->y);
+            i32 py = static_cast<i32>(prev->m_y);
             if (py < minYi) {
                 minYi = py;
             }
@@ -760,8 +783,8 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
     if (minYi < maxYi) {
         i32 rowCount = maxYi - minYi;
         do {
-            i32 ascendingX = pAsc->fx >> WARP_TEXTURE_FRACTION_BITS;
-            i32 descendingX = pDesc->fx >> WARP_TEXTURE_FRACTION_BITS;
+            i32 ascendingX = pAsc->m_fx >> WARP_TEXTURE_FRACTION_BITS;
+            i32 descendingX = pDesc->m_fx >> WARP_TEXTURE_FRACTION_BITS;
             i32 lo = ascendingX;
             i32 hi = descendingX;
             if (ascendingX > descendingX) {
@@ -817,24 +840,26 @@ i32 ProjectWallQuad(
     ClipVtx* wall = g_rasterEvenClipPassBuffer;
     float xLeft = -(hw * g_wallHalf);
     float xRight = xLeft + hw;
-    wall[0].x = xLeft;
-    wall[0].y = len;
-    wall[1].x = xRight;
-    wall[1].y = len;
-    wall[2].x = xRight;
-    wall[2].y = g_rasterZero;
-    wall[3].x = xLeft;
-    wall[3].y = g_rasterZero;
+    wall[0].m_x = xLeft;
+    wall[0].m_y = len;
+    wall[1].m_x = xRight;
+    wall[1].m_y = len;
+    wall[2].m_x = xRight;
+    wall[2].m_y = g_rasterZero;
+    wall[3].m_x = xLeft;
+    wall[3].m_y = g_rasterZero;
 
     for (i32 i = 0; i < 4; i++) {
-        float bx = g_rasterEvenClipPassBuffer[i].x;
-        float by = -g_rasterEvenClipPassBuffer[i].y;
-        g_rasterEvenClipPassBuffer[i].x = static_cast<float>((by * s - bx * c));
-        g_rasterEvenClipPassBuffer[i].y = static_cast<float>((bx * s + by * c));
+        float bx = g_rasterEvenClipPassBuffer[i].m_x;
+        float by = -g_rasterEvenClipPassBuffer[i].m_y;
+        g_rasterEvenClipPassBuffer[i].m_x = static_cast<float>((by * s - bx * c));
+        g_rasterEvenClipPassBuffer[i].m_y = static_cast<float>((bx * s + by * c));
     }
     for (i32 j = 0; j < 4; j++) {
-        g_rasterEvenClipPassBuffer[j].x = static_cast<float>(x0) + g_rasterEvenClipPassBuffer[j].x;
-        g_rasterEvenClipPassBuffer[j].y = static_cast<float>(y0) + g_rasterEvenClipPassBuffer[j].y;
+        g_rasterEvenClipPassBuffer[j].m_x =
+            static_cast<float>(x0) + g_rasterEvenClipPassBuffer[j].m_x;
+        g_rasterEvenClipPassBuffer[j].m_y =
+            static_cast<float>(y0) + g_rasterEvenClipPassBuffer[j].m_y;
     }
 
     if (ImagePolyClipRect(

@@ -25,13 +25,13 @@
 #include <string.h>
 
 DATA(0x001e88b0)
-const AFX_MSGMAP CBattlezDlg::messageMap = {
+const AFX_MSGMAP CBattlezDlg::s_messageMap = {
     &CDialog::messageMap,
-    &CBattlezDlg::_messageEntries[0],
+    &CBattlezDlg::s_messageEntries[0],
 };
 
 DATA(0x001e88b8)
-const AFX_MSGMAP_ENTRY CBattlezDlg::_messageEntries[] = {
+const AFX_MSGMAP_ENTRY CBattlezDlg::s_messageEntries[] = {
 
     ON_CBN_SELCHANGE(CTRL_PLAYER_TYPE0, CBattlezDlg::OnPlayerTypeSelection0)
         ON_CBN_SELCHANGE(CTRL_PLAYER_TYPE1, CBattlezDlg::OnPlayerTypeSelection1)
@@ -378,7 +378,7 @@ i32 CALLBACK BattlezMapComboEditProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM 
 
 RVA(0x00015aa0, 0x6)
 const AFX_MSGMAP* CBattlezDlg::GetMessageMap() const {
-    return &messageMap;
+    return &s_messageMap;
 }
 
 RVA(0x00015ac0, 0x60)

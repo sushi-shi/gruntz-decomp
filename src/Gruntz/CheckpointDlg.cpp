@@ -21,13 +21,13 @@ template<> DATA(0x0022b640)
 CPtrList CPtrListPool<CGruntzMultiCommand>::s_freeList(0xa);
 
 DATA(0x001e94b8)
-const AFX_MSGMAP CCheckpointDlg::messageMap = {
+const AFX_MSGMAP CCheckpointDlg::s_messageMap = {
     &CDialog::messageMap,
-    &CCheckpointDlg::_messageEntries[0],
+    &CCheckpointDlg::s_messageEntries[0],
 };
 
 DATA(0x001e94c0)
-const AFX_MSGMAP_ENTRY CCheckpointDlg::_messageEntries[] = {
+const AFX_MSGMAP_ENTRY CCheckpointDlg::s_messageEntries[] = {
     ON_BN_CLICKED(0x53a, CCheckpointDlg::OnToggleCheckpointPrompts){0, 0, 0, 0, AfxSig_end, 0},
 };
 
@@ -48,7 +48,7 @@ void CCheckpointDlg::DoDataExchange(CDataExchange* pDX) {
 
 RVA(0x00023570, 0x6)
 const AFX_MSGMAP* CCheckpointDlg::GetMessageMap() const {
-    return &messageMap;
+    return &s_messageMap;
 }
 
 RVA(0x00023590, 0x31)

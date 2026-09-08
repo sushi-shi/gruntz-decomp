@@ -263,7 +263,7 @@ public:
     CNetPlayerNode* m_localPlayer;
     i32 m_localPlayerId;
     i32 m_lastSenderId;
-    char _p5c4[0x5cc - 0x5c8];
+    char m_p5c4[0x5cc - 0x5c8];
     i32 m_processedCommandTick;
     i32 m_reserved5d0;
     i32 m_drainTimer;
@@ -302,7 +302,7 @@ void RefreshSessionSelection(HWND hDlg, HWND hList);
 
 extern HWND g_netMessageEditHwnd;
 
-extern char s_GameKey[];
+extern char g_gameKey[];
 extern u32 g_ackThrottleDeadline;
 
 i32 DrawTextToOverlaySurface(

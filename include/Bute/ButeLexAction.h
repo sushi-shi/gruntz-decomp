@@ -13,9 +13,9 @@ GZ_ENUM_BEGIN(ButeLexAction)
 GZ_ENUM_END(ButeLexAction)
 
 struct TranType {
-    i16 ActionType;
-    i16 A;
-    i16 B;
+    i16 m_actionType;
+    i16 m_a;
+    i16 m_b;
 };
 
 #endif // GRUNTZ_BUTE_BUTELEXACTION_H

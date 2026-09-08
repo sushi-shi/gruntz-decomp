@@ -7,8 +7,8 @@
 
 struct Glyph {
     Glyph() {}
-    i32 width;
-    i32 height;
+    i32 m_width;
+    i32 m_height;
 };
 
 class Font {

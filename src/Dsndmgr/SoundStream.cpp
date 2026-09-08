@@ -202,7 +202,7 @@ StreamVoice* SoundStream::CreateStreamVoice(
     if (format == NULL) {
         return NULL;
     }
-    if (format->wFormatTag != 1) {
+    if (format->m_wFormatTag != 1) {
         return NULL;
     }
 
@@ -213,7 +213,7 @@ StreamVoice* SoundStream::CreateStreamVoice(
     bufferDesc.dwFlags = dsFlags;
     bufferDesc.lpwfxFormat = WaveFormatSdk(&bufferFormat);
 
-    bufferFormat.cbSize = 0;
+    bufferFormat.m_cbSize = 0;
     bufferDesc.dwSize = 0x14;
     bufferDesc.dwBufferBytes = bufferBytes;
 
@@ -228,8 +228,8 @@ StreamVoice* SoundStream::CreateStreamVoice(
 
     StreamVoice* voice = new StreamVoice(directSoundBuffer, this, reprimeWhenIdle, destroyWhenIdle);
     m_voices.InsertFirst(voice);
-    voice->m_baseSampleRate = format->nAvgBytesPerSec;
-    voice->m_sampleRate = format->nAvgBytesPerSec;
+    voice->m_baseSampleRate = format->m_nAvgBytesPerSec;
+    voice->m_sampleRate = format->m_nAvgBytesPerSec;
     voice->m_sampleCount = bufferBytes;
     voice->UpdateDuration();
     return voice;
@@ -425,7 +425,7 @@ i32 StreamFeeder::Initialize(
     m_bufferBytes = bufferBytes;
     m_refillThresholdBytes = refillThresholdBytes;
     m_playing = false;
-    if (format->wBitsPerSample > 8) {
+    if (format->m_wBitsPerSample > 8) {
         m_silenceByte = 0;
     } else {
         m_silenceByte = 0x80;

@@ -97,7 +97,7 @@ DATA(0x00211d8c)
 
 i32 g_serviceId = NET_SERVICE_NONE;
 DATA(0x00211ec4)
-char s_GameKey[] = "GAME_KEY";
+char g_gameKey[] = "GAME_KEY";
 DATA(0x00246378)
 CNetOptionsStatePacket g_optionsClosedPacket;
 DATA(0x00246fd8)
@@ -1246,7 +1246,7 @@ i32 CMulti::ShowMultiStartDlg() {
         SoundCueRegistry* reg = m_world->m_soundRegistry;
         if (reg->m_silentMode == false) {
             SoundCue* found = NULL;
-            MapLookup(reg->m_cues, s_GameKey, found);
+            MapLookup(reg->m_cues, g_gameKey, found);
             SoundCue* rec = found;
             if (rec != NULL) {
                 b32 soundEnabled = g_soundEnabled;
@@ -2806,8 +2806,8 @@ i32 CMulti::CreateSession() {
     }
 
     Session()->m_localPlayer = LocalPlayer();
-    i32 raw10 = m_session->m_commandTick;
-    u8 b = static_cast<u8>(raw10);
+    i32 commandTickSnapshot = m_session->m_commandTick;
+    u8 b = static_cast<u8>(commandTickSnapshot);
     if (b == 0) {
         b = 0x7f;
     } else {

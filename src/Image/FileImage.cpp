@@ -61,7 +61,7 @@ i32 CDDSurface::CreateFromBmpData(
 
     PALETTEENTRY* pal = NULL;
     if (convert && sourceBitDepth == BPP_PALETTED_8) {
-        RGBQUAD* sourcePalette = image->info.bmiColors;
+        RGBQUAD* sourcePalette = image->m_info.m_bmiColors;
         COPY_BGRX_PALETTE(g_paletteRampBuf, sourcePalette, i, PALETTE_ENTRY_COUNT)
         pal = g_paletteRampBuf;
     } else if (convert && displayBitDepth == BPP_PALETTED_8) {
@@ -76,7 +76,7 @@ i32 CDDSurface::CreateFromBmpData(
         return 0;
     }
 
-    pData = pStart + image->fh.bfOffBits;
+    pData = pStart + image->m_fh.bfOffBits;
     if (convert) {
         if (Blit(pData, sourceBitDepth, pal, RASTER_ROWS_BOTTOM_UP) == BPP_UNSET) {
             return 0;
@@ -120,7 +120,7 @@ static inline i32 HasPalette(CDDrawDeviceManager* manager) {
 
 RVA(0x00143fc0, 0x142)
 i32 CDDSurface::DecodeBmp(CDDrawDeviceManager* manager, BmpFileImage* image, u32 dataSize) {
-    BITMAPINFOHEADER* ih = &image->info.bmiHeader;
+    BITMAPINFOHEADER* ih = &image->m_info.m_bmiHeader;
     i32 width = ih->biWidth;
     ColorDepth bitcount = static_cast<ColorDepth>(ih->biBitCount);
     i32 height = ih->biHeight;
@@ -134,7 +134,7 @@ i32 CDDSurface::DecodeBmp(CDDrawDeviceManager* manager, BmpFileImage* image, u32
         if (!remap || palBpp != BPP_PALETTED_8 || HasPalette(manager) != 0) {
             PALETTEENTRY* palette = NULL;
             if (remap && bitcount == BPP_PALETTED_8) {
-                RGBQUAD* src = image->info.bmiColors;
+                RGBQUAD* src = image->m_info.m_bmiColors;
                 for (i32 i = 0; i < 0x100; i++) {
                     s_palBmp[i].peRed = src[i].rgbRed;
                     s_palBmp[i].peGreen = src[i].rgbGreen;
@@ -152,7 +152,7 @@ i32 CDDSurface::DecodeBmp(CDDrawDeviceManager* manager, BmpFileImage* image, u32
 
             RecordBytes<BmpFileImage> data;
             data.m_rec = image;
-            u8* pixels = data.m_bytes + image->fh.bfOffBits;
+            u8* pixels = data.m_bytes + image->m_fh.bfOffBits;
             if (remap) {
                 if (Blit(pixels, bitcount, palette, RASTER_ROWS_BOTTOM_UP) == BPP_UNSET) {
                     return 0;
@@ -269,15 +269,15 @@ i32 CDDSurface::SaveBmp(const char* path, CFileImagePal* pal, i32 mode) {
     }
 
     Bmp256Info info;
-    memset(&info.bmiHeader, 0, sizeof(info.bmiHeader));
-    info.bmiHeader.biSize = sizeof(info.bmiHeader);
-    info.bmiHeader.biWidth = m_width;
+    memset(&info.m_bmiHeader, 0, sizeof(info.m_bmiHeader));
+    info.m_bmiHeader.biSize = sizeof(info.m_bmiHeader);
+    info.m_bmiHeader.biWidth = m_width;
     i32 height = m_height;
-    info.bmiHeader.biHeight = height;
-    info.bmiHeader.biPlanes = 1;
-    info.bmiHeader.biBitCount = 8;
-    info.bmiHeader.biCompression = 0;
-    info.bmiHeader.biSizeImage = 0;
+    info.m_bmiHeader.biHeight = height;
+    info.m_bmiHeader.biPlanes = 1;
+    info.m_bmiHeader.biBitCount = 8;
+    info.m_bmiHeader.biCompression = 0;
+    info.m_bmiHeader.biSizeImage = 0;
 
     PALETTEENTRY* spal = src->m_srcPalette;
     if (spal == NULL) {
@@ -285,9 +285,9 @@ i32 CDDSurface::SaveBmp(const char* path, CFileImagePal* pal, i32 mode) {
     }
 
     for (i32 i = 0; i < 0x100; i++) {
-        info.bmiColors[i].rgbRed = spal[i].peRed;
-        info.bmiColors[i].rgbGreen = spal[i].peGreen;
-        info.bmiColors[i].rgbBlue = spal[i].peBlue;
+        info.m_bmiColors[i].rgbRed = spal[i].peRed;
+        info.m_bmiColors[i].rgbGreen = spal[i].peGreen;
+        info.m_bmiColors[i].rgbBlue = spal[i].peBlue;
     }
 
     BmpFileHeaderStamp fh;

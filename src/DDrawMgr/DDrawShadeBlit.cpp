@@ -186,7 +186,7 @@ i32 CDDrawShadeBlit::LoadFromFile(CString name, ColorDepth fmt) {
 
 RVA(0x001490d0, 0x173)
 i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, GZ_ENUM_PARAM(ColorDepth, u8) fmt) {
-    PidFlags flags = src->flags;
+    PidFlags flags = src->m_flags;
 
     if ((HAS(flags, PID_SRC_8BPP_SHADE)) || (HAS(flags, PID_SRC_8BPP))) {
         if (fmt == BPP_RGB_16) {
@@ -204,8 +204,8 @@ i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, GZ_ENUM_PARAM(ColorDepth, u
         m_dstBpp = PIXEL8_BYTES_PER_PIXEL;
     }
 
-    if (HAS(src->flags, PID_FILL_IS_WORD)) {
-        m_colorKey = static_cast<u8>(src->fill);
+    if (HAS(src->m_flags, PID_FILL_IS_WORD)) {
+        m_colorKey = static_cast<u8>(src->m_fill);
     } else {
         m_colorKey = -1;
     }
@@ -216,7 +216,7 @@ i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, GZ_ENUM_PARAM(ColorDepth, u
         return 0;
     }
 
-    if (HAS(src->flags, PID_EMBEDDED_PALETTE)) {
+    if (HAS(src->m_flags, PID_EMBEDDED_PALETTE)) {
         stride -= PALETTE_RGB_BYTE_COUNT;
         m_rleLen = stride;
         if (fmt == BPP_RGB_16) {
@@ -229,22 +229,22 @@ i32 CDDrawShadeBlit::Build(PidHeader* src, i32 size, GZ_ENUM_PARAM(ColorDepth, u
             i32 sourceIndex = 0;
             do {
                 destIndex++;
-                m_palette[destIndex - 1].peRed = src->pixels[m_rleLen + sourceIndex];
+                m_palette[destIndex - 1].peRed = src->m_pixels[m_rleLen + sourceIndex];
                 sourceIndex += 3;
-                m_palette[destIndex - 1].peGreen = src->pixels[m_rleLen + sourceIndex - 2];
-                m_palette[destIndex - 1].peBlue = src->pixels[m_rleLen + sourceIndex - 1];
+                m_palette[destIndex - 1].peGreen = src->m_pixels[m_rleLen + sourceIndex - 2];
+                m_palette[destIndex - 1].peBlue = src->m_pixels[m_rleLen + sourceIndex - 1];
             } while (sourceIndex < PALETTE_RGB_BYTE_COUNT);
         }
     }
 
-    m_width = src->width;
-    m_height = src->height;
+    m_width = src->m_width;
+    m_height = src->m_height;
     if (m_rleData != NULL) {
         delete[] m_rleData;
     }
     m_rleData = new u8[m_rleLen];
 
-    memcpy(m_rleData, src->pixels, m_rleLen);
+    memcpy(m_rleData, src->m_pixels, m_rleLen);
 
     if (m_srcBpp == PIXEL16_BYTES_PER_PIXEL) {
         u8* remapped = EncodeRle16(m_rleData);
@@ -268,7 +268,7 @@ i32 CDDrawShadeBlit::WritePidFile(CString path, PidWriteHeader header) {
     }
     file.Write(&header, sizeof(header));
     file.Write(m_rleData, m_rleLen);
-    if (HAS(static_cast<PidFlags>(header.flags), PID_EMBEDDED_PALETTE)) {
+    if (HAS(static_cast<PidFlags>(header.m_flags), PID_EMBEDDED_PALETTE)) {
         if (m_palette == NULL) {
             return 0;
         }
@@ -292,23 +292,23 @@ i32 CDDrawShadeBlit::SavePid(CString path, i32 offsetX, i32 offsetY) {
         return 0;
     }
     PidWriteHeader header;
-    header.formatTag = 0;
-    header.flags = 0x3d;
+    header.m_formatTag = 0;
+    header.m_flags = 0x3d;
     if (m_palette != NULL) {
-        header.flags = 0xbd;
+        header.m_flags = 0xbd;
     }
-    header.width = m_width;
-    header.height = m_height;
-    header.offsetX = offsetX;
-    header.offsetY = offsetY;
-    header.fill = 0;
-    header.reserved1c = 0;
+    header.m_width = m_width;
+    header.m_height = m_height;
+    header.m_offsetX = offsetX;
+    header.m_offsetY = offsetY;
+    header.m_fill = 0;
+    header.m_reserved1c = 0;
     if (m_colorKey != -1) {
-        header.fill = static_cast<u8>(m_colorKey);
-        header.flags |= IDX(PID_FILL_IS_WORD);
+        header.m_fill = static_cast<u8>(m_colorKey);
+        header.m_flags |= IDX(PID_FILL_IS_WORD);
     }
     if (m_palette != NULL) {
-        header.flags |= IDX(PID_EMBEDDED_PALETTE);
+        header.m_flags |= IDX(PID_EMBEDDED_PALETTE);
     }
     return WritePidFile(path, header);
 }

@@ -11,18 +11,18 @@ RVA(0x00193340, 0x61)
 void zPTree::_trav(stvf_t fn, void* supplementary, zPTreeNode* node) {
     while (true) {
         if (node == NULL) {
-            node = root;
+            node = m_root;
             if (node == NULL) {
                 return;
             }
         }
-        fn(node->symbol, node->body, supplementary);
-        zPTreeNode* l = node->left;
-        if (l != NULL && l->index > node->index) {
+        fn(node->m_symbol, node->m_body, supplementary);
+        zPTreeNode* l = node->m_left;
+        if (l != NULL && l->m_index > node->m_index) {
             _trav(fn, supplementary, l);
         }
-        zPTreeNode* r = node->right;
-        if (r == NULL || r->index <= node->index) {
+        zPTreeNode* r = node->m_right;
+        if (r == NULL || r->m_index <= node->m_index) {
             return;
         }
         node = r;
@@ -38,79 +38,79 @@ void* zPTree::insert(const char* key, void* value) {
     i32 branch;
     zPTreeNode* t;
 
-    preview = false;
+    m_preview = false;
     if (key == NULL || value == NULL) {
         handle(g_errNullArg, 0x16);
         return NULL;
     }
 
-    sbits = static_cast<i32>((strlen(key) * PTREE_BITS_PER_BYTE));
-    p = root;
-    q = NULL;
+    m_sbits = static_cast<i32>((strlen(key) * PTREE_BITS_PER_BYTE));
+    m_p = m_root;
+    m_q = NULL;
     bp = stack;
 
-    while (p != NULL) {
-        if (p->index > sbits + PTREE_BYTE_BIT_MASK) {
-            q = p;
+    while (m_p != NULL) {
+        if (m_p->m_index > m_sbits + PTREE_BYTE_BIT_MASK) {
+            m_q = m_p;
             break;
         }
-        branch = bit(key, p->index);
+        branch = bit(key, m_p->m_index);
         *bp++ = branch;
-        q = p->ptr(branch);
-        if (q == NULL) {
+        m_q = m_p->ptr(branch);
+        if (m_q == NULL) {
             break;
         }
-        if (q->index <= p->index) {
-            if (strcmp(key, q->symbol) == 0) {
-                return q->body;
+        if (m_q->m_index <= m_p->m_index) {
+            if (strcmp(key, m_q->m_symbol) == 0) {
+                return m_q->m_body;
             }
             break;
         }
-        p = q;
+        m_p = m_q;
     }
 
-    newbranch = q != NULL ? diffpos(key, q->symbol) : sbits - 1;
+    newbranch = m_q != NULL ? diffpos(key, m_q->m_symbol) : m_sbits - 1;
     t = new zPTreeNode;
     if (t == NULL) {
         handle(g_errOutOfMem, 0xc);
         return NULL;
     }
-    t->index = newbranch;
-    t->body = value;
-    t->symbol = new char[(sbits >> PTREE_BYTE_BIT_SHIFT) + 1];
-    if (t->symbol == NULL) {
+    t->m_index = newbranch;
+    t->m_body = value;
+    t->m_symbol = new char[(m_sbits >> PTREE_BYTE_BIT_SHIFT) + 1];
+    if (t->m_symbol == NULL) {
         handle(g_errOutOfMem, 0xc);
         return NULL;
     }
-    strcpy(t->symbol, key);
+    strcpy(t->m_symbol, key);
 
     dp = bit(key, newbranch);
     t->ptr(dp) = t;
 
-    if (p != NULL) {
-        if (newbranch >= p->index) {
-            p->ptr(branch) = t;
+    if (m_p != NULL) {
+        if (newbranch >= m_p->m_index) {
+            m_p->ptr(branch) = t;
         } else {
-            q = root;
-            p = NULL;
+            m_q = m_root;
+            m_p = NULL;
             bp = stack;
-            while (q->index <= newbranch) {
-                p = q;
+            while (m_q->m_index <= newbranch) {
+                m_p = m_q;
                 branch = *bp++;
-                q = q->ptr(branch);
+                m_q = m_q->ptr(branch);
             }
-            if (p != NULL) {
+            if (m_p != NULL) {
                 --bp;
-                p->ptr(*bp) = t;
+                m_p->ptr(*bp) = t;
             } else {
-                root = t;
+                m_root = t;
             }
         }
     } else {
-        root = t;
+        m_root = t;
     }
 
-    t->ptr(!dp) = q;
+    t->ptr(!dp) = m_q;
     incc();
     return value;
 }

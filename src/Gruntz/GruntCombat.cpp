@@ -104,59 +104,59 @@ RVA_DYNINIT(0x000591e0, 0x5, s_gruntDirCenter)
 RVA_DYNINIT(0x00059200, 0x1a, s_gruntDirCenter)
 
 DATA(0x0020dc64)
-static char s_RollingBallzTime[] = "RollingBallzTime";
+static char s_rollingBallzTime[] = "RollingBallzTime";
 DATA(0x0020dc78)
-static char s_RollingBallzSpeed[] = "RollingBallzSpeed";
+static char s_rollingBallzSpeed[] = "RollingBallzSpeed";
 DATA(0x0020dcac)
-static char s_TeleportRadius[] = "TeleportRadius";
+static char s_teleportRadius[] = "TeleportRadius";
 DATA(0x0020dcc0)
-static char s_ToyzRadius[] = "ToyzRadius";
+static char s_toyzRadius[] = "ToyzRadius";
 DATA(0x0020dcd0)
-static char s_RessurectionRadius[] = "RessurectionRadius";
+static char s_ressurectionRadius[] = "RessurectionRadius";
 DATA(0x0020dce8)
-static char s_HealthRadius[] = "HealthRadius";
+static char s_healthRadius[] = "HealthRadius";
 DATA(0x0020dcf8)
-static char s_FreezeRadius[] = "FreezeRadius";
+static char s_freezeRadius[] = "FreezeRadius";
 DATA(0x0020dd30)
-static char s_GAME_ATTACK[] = "GAME_ATTACK";
+static char s_gameAttack[] = "GAME_ATTACK";
 DATA(0x0020dd40)
-static char s__LOSEITEM[] = "_LOSEITEM";
+static char s_loseItemSuffix[] = "_LOSEITEM";
 DATA(0x0020dd4c)
 static char s_knockKey[] = "KnockBackTimePerTile";
 DATA(0x0020dd68)
-static char s_IMPACTWM3[] = "GRUNTZ_NORMALGRUNT_IMPACTWM3";
+static char s_impactwm3[] = "GRUNTZ_NORMALGRUNT_IMPACTWM3";
 DATA(0x0020dd8c)
-static char s_IMPACTMM2[] = "GRUNTZ_NORMALGRUNT_IMPACTMM2";
+static char s_impactmm2[] = "GRUNTZ_NORMALGRUNT_IMPACTMM2";
 DATA(0x0020ddb0)
-static char s_IMPACTWM2[] = "GRUNTZ_NORMALGRUNT_IMPACTWM2";
+static char s_impactwm2[] = "GRUNTZ_NORMALGRUNT_IMPACTWM2";
 DATA(0x0020ddd4)
-static char s_BLOCKBODY1[] = "GRUNTZ_NORMALGRUNT_BLOCKBODY1";
+static char s_blockbody1[] = "GRUNTZ_NORMALGRUNT_BLOCKBODY1";
 DATA(0x0020ddf8)
-static char s_IMPACTWM1[] = "GRUNTZ_NORMALGRUNT_IMPACTWM1";
+static char s_impactwm1[] = "GRUNTZ_NORMALGRUNT_IMPACTWM1";
 DATA(0x0020de1c)
-static char s_IMPACTMM1[] = "GRUNTZ_NORMALGRUNT_IMPACTMM1";
+static char s_impactmm1[] = "GRUNTZ_NORMALGRUNT_IMPACTMM1";
 DATA(0x0020de40)
-static char s_BLOCKBODY2[] = "GRUNTZ_NORMALGRUNT_BLOCKBODY2";
+static char s_blockbody2[] = "GRUNTZ_NORMALGRUNT_BLOCKBODY2";
 DATA(0x0020de64)
-static char s_TOOBZ[] = "GRUNTZ_TOOBGRUNT_TOOBZGRUNTUI1B";
+static char s_toobz[] = "GRUNTZ_TOOBGRUNT_TOOBZGRUNTUI1B";
 DATA(0x0020de8c)
-static char s_SPRING1[] = "GRUNTZ_SPRINGGRUNT_SPRINGGRUNTS1S1";
+static char s_spring1[] = "GRUNTZ_SPRINGGRUNT_SPRINGGRUNTS1S1";
 DATA(0x0020deb8)
-static char s_SPRING2[] = "GRUNTZ_SPRINGGRUNT_SPRINGGRUNTS2S1";
+static char s_spring2[] = "GRUNTZ_SPRINGGRUNT_SPRINGGRUNTS2S1";
 DATA(0x0020dee4)
-static char s_BLOCKMETAL1[] = "GRUNTZ_NORMALGRUNT_BLOCKMETAL1";
+static char s_blockmetal1[] = "GRUNTZ_NORMALGRUNT_BLOCKMETAL1";
 DATA(0x0020df0c)
-static char s_IMPACTMM4[] = "GRUNTZ_NORMALGRUNT_IMPACTMM4";
+static char s_impactmm4[] = "GRUNTZ_NORMALGRUNT_IMPACTMM4";
 DATA(0x0020df54)
-static char s_DEATHTOUCHHIT[] = "GAME_DEATHTOUCHHIT";
+static char s_deathtouchhit[] = "GAME_DEATHTOUCHHIT";
 DATA(0x0020df6c)
-static char s_CONVERSIONHIT[] = "GAME_CONVERSIONHIT";
+static char s_conversionhit[] = "GAME_CONVERSIONHIT";
 DATA(0x0020dfac)
-static char s_AccelerateFlash[] = "AccelerateFlash";
+static char s_accelerateFlash[] = "AccelerateFlash";
 DATA(0x0020dfc0)
-static char s_SafeFlashTime[] = "SafeFlashTime";
+static char s_safeFlashTime[] = "SafeFlashTime";
 DATA(0x0020dfd0)
-static char s_FadeTransparency[] = "FadeTransparency";
+static char s_fadeTransparency[] = "FadeTransparency";
 
 DATA(0x001e9788)
 const u8 g_hitTable[23][23] = {
@@ -249,7 +249,7 @@ RVA(0x00056f80, 0xb0)
 i32* CGrunt::EntranceTileOffset(i32* out) {
     i32 x = m_lastTilePx.m_x;
     i32 y = m_lastTilePx.m_y;
-    switch (m_entranceCell.direction) {
+    switch (m_entranceCell.m_direction) {
         case DIR_NORTH:
             y -= 0x20;
             break;
@@ -332,7 +332,7 @@ void CGrunt::ComputeFacing(double dt) {
     m_movePosY = static_cast<double>(h->m_screenY);
 }
 
-#define BIND_ACT_644AF0_RAW(id, handler)                                                           \
+#define BIND_GRUNT_ACT_RAW(id, handler)                                                            \
     {                                                                                              \
         GruntActPmf _p;                                                                            \
         _p.m_pmf = (handler);                                                                      \
@@ -341,14 +341,14 @@ void CGrunt::ComputeFacing(double dt) {
         *CActReg::AsElem(CActRegPool<CGrunt>::s_table._zvec::IndexToPtr(id)) = _p.m_h;             \
     }
 
-#define BIND_ACT_644AF0_TYPED(id, handler)                                                         \
+#define BIND_GRUNT_ACT_TYPED(id, handler)                                                          \
     {                                                                                              \
         GruntActPmf _p;                                                                            \
         _p.m_pmf = (handler);                                                                      \
         *CActRegPool<CGrunt>::s_table.Resolve(id) = _p.m_h;                                        \
     }
 
-#define REGISTER_KEY_644AF0_IMPL(key, handler, bind)                                               \
+#define REGISTER_GRUNT_ACT_KEY_IMPL(key, handler, bind)                                            \
     {                                                                                              \
         i32 id = ActFindId(key);                                                                   \
         if (id == 0) {                                                                             \
@@ -372,13 +372,13 @@ void CGrunt::ComputeFacing(double dt) {
         bind(id, handler);                                                                         \
     }
 
-#define REGISTER_KEY_644AF0(key, handler)                                                          \
-    REGISTER_KEY_644AF0_IMPL(key, handler, BIND_ACT_644AF0_RAW)
+#define REGISTER_GRUNT_ACT_KEY(key, handler)                                                       \
+    REGISTER_GRUNT_ACT_KEY_IMPL(key, handler, BIND_GRUNT_ACT_RAW)
 
-#define REGISTER_KEY_644AF0_TYPED(key, handler)                                                    \
-    REGISTER_KEY_644AF0_IMPL(key, handler, BIND_ACT_644AF0_TYPED)
+#define REGISTER_GRUNT_ACT_KEY_TYPED(key, handler)                                                 \
+    REGISTER_GRUNT_ACT_KEY_IMPL(key, handler, BIND_GRUNT_ACT_TYPED)
 
-#define REGISTER_KEY_644AF0_DERIVED(key, handler)                                                  \
+#define REGISTER_GRUNT_ACT_KEY_DERIVED(key, handler)                                               \
     {                                                                                              \
         i32 id = ActFindId(key);                                                                   \
         if (id == 0) {                                                                             \
@@ -387,7 +387,7 @@ void CGrunt::ComputeFacing(double dt) {
             *g_typeColl.SlotOf(id) = (key);                                                        \
             g_typeCounter++;                                                                       \
         }                                                                                          \
-        BIND_ACT_644AF0_TYPED(id, handler);                                                        \
+        BIND_GRUNT_ACT_TYPED(id, handler);                                                         \
     }
 
 RVA(0x00057100, 0x590)
@@ -410,7 +410,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         (static_cast<CDDrawSurfaceMgr*>(m_ownerLogicRecord->m_ownerCtx))->m_soundRegistry;
     if (slot->m_silentMode == false) {
         SoundCue* sout = NULL;
-        MapLookup(slot->m_cues, s_GAME_ATTACK, sout);
+        MapLookup(slot->m_cues, s_gameAttack, sout);
         if (sout != NULL) {
 
             sout->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
@@ -433,7 +433,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             return m_triggerMgr->ApplyGruntAreaEffect(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
-                g_buteMgr.GetInt("Spellz", s_FreezeRadius, 8),
+                g_buteMgr.GetInt("Spellz", s_freezeRadius, 8),
                 GRUNT_AREA_EFFECT_FREEZE,
                 -1
             );
@@ -453,7 +453,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             return m_triggerMgr->ApplyGruntAreaEffect(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
-                g_buteMgr.GetInt("Spellz", s_HealthRadius, 8),
+                g_buteMgr.GetInt("Spellz", s_healthRadius, 8),
                 GRUNT_AREA_EFFECT_HEAL,
                 -1
             );
@@ -473,7 +473,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             return m_triggerMgr->LoadGruntResurrectTuning(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
-                g_buteMgr.GetInt("Spellz", s_RessurectionRadius, 8)
+                g_buteMgr.GetInt("Spellz", s_ressurectionRadius, 8)
             );
         }
         case SPELLZ_TOYZ: {
@@ -491,7 +491,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             return m_triggerMgr->ApplyGruntAreaEffect(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
-                g_buteMgr.GetInt("Spellz", s_ToyzRadius, 8),
+                g_buteMgr.GetInt("Spellz", s_toyzRadius, 8),
                 GRUNT_AREA_EFFECT_GIVE_TOY,
                 -1
             );
@@ -511,7 +511,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             return m_triggerMgr->ApplyGruntAreaEffect(
                 m_lastTilePx.m_x,
                 m_lastTilePx.m_y,
-                g_buteMgr.GetInt("Spellz", s_TeleportRadius, 8),
+                g_buteMgr.GetInt("Spellz", s_teleportRadius, 8),
                 GRUNT_AREA_EFFECT_TELEPORT,
                 -1
             );
@@ -540,9 +540,9 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             n->SetImageSetByName("LEVEL_ROLLINGBALL_NORTH");
             CLogicRecord* ni = n->m_logicRecord;
             ni->m_speed =
-                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_RollingBallzSpeed, 0x3e8));
+                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzSpeed, 0x3e8));
             n->m_smarts = 0;
-            n->m_points = static_cast<i32>(g_buteMgr.GetDword("Spellz", s_RollingBallzTime, 0x3e8));
+            n->m_points = static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8));
 
             CWwdSpriteObject* e = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
@@ -555,9 +555,9 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             e->SetImageSetByName("LEVEL_ROLLINGBALL_EAST");
             CLogicRecord* ei = e->m_logicRecord;
             ei->m_speed =
-                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_RollingBallzSpeed, 0x3e8));
+                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzSpeed, 0x3e8));
             e->m_smarts = 0;
-            e->m_points = static_cast<i32>(g_buteMgr.GetDword("Spellz", s_RollingBallzTime, 0x3e8));
+            e->m_points = static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8));
 
             CWwdSpriteObject* s = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
@@ -570,9 +570,9 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             s->SetImageSetByName("LEVEL_ROLLINGBALL_SOUTH");
             CLogicRecord* si = s->m_logicRecord;
             si->m_speed =
-                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_RollingBallzSpeed, 0x3e8));
+                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzSpeed, 0x3e8));
             s->m_smarts = 0;
-            s->m_points = static_cast<i32>(g_buteMgr.GetDword("Spellz", s_RollingBallzTime, 0x3e8));
+            s->m_points = static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8));
 
             CWwdSpriteObject* w = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
@@ -585,9 +585,9 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             w->SetImageSetByName("LEVEL_ROLLINGBALL_WEST");
             CLogicRecord* wi = w->m_logicRecord;
             wi->m_speed =
-                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_RollingBallzSpeed, 0x3e8));
+                static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzSpeed, 0x3e8));
             w->m_smarts = 0;
-            w->m_points = static_cast<i32>(g_buteMgr.GetDword("Spellz", s_RollingBallzTime, 0x3e8));
+            w->m_points = static_cast<i32>(g_buteMgr.GetDword("Spellz", s_rollingBallzTime, 0x3e8));
             return 1;
         }
         default:
@@ -626,8 +626,8 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
         "SingleAnimation",
         WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
     );
-    spr->SetImageSetByName("GRUNTZ_" + m_animSetName + s__LOSEITEM);
-    spr->SetAnimationByName("GRUNTZ_" + m_animSetName + s__LOSEITEM, 0);
+    spr->SetImageSetByName("GRUNTZ_" + m_animSetName + s_loseItemSuffix);
+    spr->SetAnimationByName("GRUNTZ_" + m_animSetName + s_loseItemSuffix, 0);
 
     CGruntzMgr* g = g_gameReg;
     i32 y = m_object->m_screenY;
@@ -1282,7 +1282,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
             SoundCueRegistry* registry =
                 (static_cast<CDDrawSurfaceMgr*>(m_ownerLogicRecord->m_ownerCtx))->m_soundRegistry;
             if (registry->m_silentMode == false) {
-                SoundCue* cue = static_cast<SoundCue*>(registry->Lookup(s_CONVERSIONHIT));
+                SoundCue* cue = static_cast<SoundCue*>(registry->Lookup(s_conversionhit));
                 if (cue != NULL) {
                     cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
                 }
@@ -1335,149 +1335,149 @@ i32 CGrunt::LoadGruntCombatAnimations(
     CGruntzMgr* reg = g_gameReg;
     if (::PtInRect(&reg->m_viewBounds, vx, vy)) {
         if (attackerGruntKind == GRUNT_DEATHTOUCH) {
-            LK(s_DEATHTOUCHHIT);
+            LK(s_deathtouchhit);
             goto L_cue;
         }
         if (attackKind == PICKUP_NERFGUN || attackKind == PICKUP_GLOVEZ
             || attackKind == PICKUP_WINGZ) {
             if (this->m_entranceReason == PICKUP_GRAVITYBOOTZ) {
-                LK(s_BLOCKBODY2);
+                LK(s_blockbody2);
             } else {
-                LK(s_IMPACTMM2);
+                LK(s_impactmm2);
             }
             goto L_cue;
         }
         if (this->m_entranceReason == PICKUP_GUNHAT) {
             if (attackKind == PICKUP_GAUNTLETZ || attackKind == PICKUP_SHOVEL
                 || attackKind == PICKUP_SPRING || attackKind == PICKUP_CLUB) {
-                LK(s_IMPACTMM4);
+                LK(s_impactmm4);
             } else {
                 LK("GRUNTZ_NORMALGRUNT_IMPACTMM3");
             }
             goto L_cue;
         }
         if (this->m_entranceReason == PICKUP_SHIELD) {
-            LK(s_BLOCKMETAL1);
+            LK(s_blockmetal1);
             goto L_cue;
         }
         if (this->m_entranceReason == PICKUP_SPRING) {
             if (struckPose == 1) {
-                LK(s_SPRING2);
+                LK(s_spring2);
             } else {
-                LK(s_SPRING1);
+                LK(s_spring1);
             }
             goto L_cue;
         }
         if (this->m_entranceReason == PICKUP_TOOB && this->m_coordToggle != false) {
-            LK(s_TOOBZ);
+            LK(s_toobz);
             goto L_cue;
         }
         switch (attackKind) {
             case PICKUP_NONE:
                 if (struckPose == 0) {
-                    LK(s_BLOCKBODY2);
+                    LK(s_blockbody2);
                 } else {
-                    LK(s_IMPACTMM1);
+                    LK(s_impactmm1);
                 }
                 break;
             case PICKUP_BOOMERANG:
-                LK(s_IMPACTMM1);
+                LK(s_impactmm1);
                 break;
             case PICKUP_BRICK:
                 if (struckPose == 0) {
-                    LK(s_BLOCKBODY2);
+                    LK(s_blockbody2);
                 } else {
-                    LK(s_IMPACTMM4);
+                    LK(s_impactmm4);
                 }
                 break;
             case PICKUP_CLUB:
                 if (struckPose == 0) {
-                    LK(s_BLOCKBODY2);
+                    LK(s_blockbody2);
                 } else {
-                    LK(s_IMPACTMM4);
+                    LK(s_impactmm4);
                 }
                 break;
             case PICKUP_GAUNTLETZ:
                 if (struckPose == 0) {
-                    LK(s_BLOCKBODY2);
+                    LK(s_blockbody2);
                 } else {
                     LK("GRUNTZ_NORMALGRUNT_IMPACTMM3");
                 }
                 break;
             case PICKUP_GOOBER:
                 if (struckPose == 0) {
-                    LK(s_BLOCKBODY2);
+                    LK(s_blockbody2);
                 } else {
-                    LK(s_IMPACTWM1);
+                    LK(s_impactwm1);
                 }
                 break;
             case PICKUP_GRAVITYBOOTZ:
                 if (struckPose == 0) {
-                    LK(s_BLOCKBODY1);
+                    LK(s_blockbody1);
                 } else {
-                    LK(s_IMPACTMM1);
+                    LK(s_impactmm1);
                 }
                 break;
             case PICKUP_GUNHAT:
-                LK(s_IMPACTWM2);
+                LK(s_impactwm2);
                 break;
             case PICKUP_ROCK:
-                LK(s_IMPACTMM2);
+                LK(s_impactmm2);
                 break;
             case PICKUP_SHIELD:
                 if (struckPose == 0) {
-                    LK(s_BLOCKBODY1);
+                    LK(s_blockbody1);
                 } else {
-                    LK(s_IMPACTMM4);
+                    LK(s_impactmm4);
                 }
                 break;
             case PICKUP_SHOVEL:
                 if (struckPose == 0) {
-                    LK(s_BLOCKMETAL1);
+                    LK(s_blockmetal1);
                 } else {
-                    LK(s_IMPACTMM4);
+                    LK(s_impactmm4);
                 }
                 break;
             case PICKUP_SPRING:
                 if (struckPose == 0) {
-                    LK(s_BLOCKBODY2);
+                    LK(s_blockbody2);
                 } else {
-                    LK(s_IMPACTWM3);
+                    LK(s_impactwm3);
                 }
                 break;
             case PICKUP_SPY:
                 if (struckPose == 0) {
-                    LK(s_BLOCKBODY2);
+                    LK(s_blockbody2);
                 } else {
-                    LK(s_IMPACTMM1);
+                    LK(s_impactmm1);
                 }
                 break;
             case PICKUP_SWORD:
                 if (struckPose == 0) {
-                    LK(s_BLOCKBODY2);
+                    LK(s_blockbody2);
                 } else {
                     LK("GRUNTZ_NORMALGRUNT_IMPACTMM3");
                 }
                 break;
             case PICKUP_TOOB:
                 if (struckPose == 0) {
-                    LK(s_BLOCKBODY2);
+                    LK(s_blockbody2);
                 } else {
-                    LK(s_IMPACTMM1);
+                    LK(s_impactmm1);
                 }
                 break;
             case PICKUP_WAND:
                 if (struckPose == 0) {
-                    LK(s_BLOCKBODY2);
+                    LK(s_blockbody2);
                 } else {
-                    LK(s_IMPACTMM1);
+                    LK(s_impactmm1);
                 }
                 break;
             case PICKUP_WARPSTONE:
-                LK(s_IMPACTWM2);
+                LK(s_impactwm2);
                 break;
             case PICKUP_WELDER:
-                LK(s_IMPACTWM2);
+                LK(s_impactwm2);
                 break;
             default:
                 LK("GRUNTZ_NORMALGRUNT_IMPACTMM3");
@@ -1967,25 +1967,25 @@ void CGrunt::FireActivation(i32 id) {
 // @early-stop
 RVA(0x0005be30, 0x9e5)
 void RegisterGruntActions() {
-    REGISTER_KEY_644AF0("A", &CGrunt::ResolveEntranceArrival);
-    REGISTER_KEY_644AF0("B", &CGrunt::StepWarpExit);
-    REGISTER_KEY_644AF0("C", &CGrunt::UpdateDeathAnimation);
-    REGISTER_KEY_644AF0("D", &CGrunt::StepArrivalReroll);
-    REGISTER_KEY_644AF0("E", &CGrunt::UpdateGruntStatus);
-    REGISTER_KEY_644AF0("F", &CGrunt::StepAttackAction);
-    REGISTER_KEY_644AF0("G", &CGrunt::UpdateToyUseAnimation);
-    REGISTER_KEY_644AF0("H", &CGrunt::FinishStruckAnimation);
-    REGISTER_KEY_644AF0("I", &CGrunt::LoadWandGruntItemConfig);
-    REGISTER_KEY_644AF0("J", &CGrunt::RunEntranceMove);
-    REGISTER_KEY_644AF0("K", &CGrunt::LoadEntranceConfig);
-    REGISTER_KEY_644AF0("L", &CGrunt::LoadVehicleGruntAnimations);
-    REGISTER_KEY_644AF0("M", &CGrunt::RearmEntranceDrop);
-    REGISTER_KEY_644AF0("N", &CGrunt::FinishToobMoveAnimation);
-    REGISTER_KEY_644AF0("O", &CGrunt::FinishKnockbackAnimation);
-    REGISTER_KEY_644AF0("P", &CGrunt::UpdateEntranceAnim);
-    REGISTER_KEY_644AF0("Q", &CGrunt::LoadFreezeSpellAssets);
-    REGISTER_KEY_644AF0_TYPED("R", &CGrunt::UpdateDecayFade);
-    REGISTER_KEY_644AF0_DERIVED("S", &CGrunt::FinishEntranceMove);
+    REGISTER_GRUNT_ACT_KEY("A", &CGrunt::ResolveEntranceArrival);
+    REGISTER_GRUNT_ACT_KEY("B", &CGrunt::StepWarpExit);
+    REGISTER_GRUNT_ACT_KEY("C", &CGrunt::UpdateDeathAnimation);
+    REGISTER_GRUNT_ACT_KEY("D", &CGrunt::StepArrivalReroll);
+    REGISTER_GRUNT_ACT_KEY("E", &CGrunt::UpdateGruntStatus);
+    REGISTER_GRUNT_ACT_KEY("F", &CGrunt::StepAttackAction);
+    REGISTER_GRUNT_ACT_KEY("G", &CGrunt::UpdateToyUseAnimation);
+    REGISTER_GRUNT_ACT_KEY("H", &CGrunt::FinishStruckAnimation);
+    REGISTER_GRUNT_ACT_KEY("I", &CGrunt::LoadWandGruntItemConfig);
+    REGISTER_GRUNT_ACT_KEY("J", &CGrunt::RunEntranceMove);
+    REGISTER_GRUNT_ACT_KEY("K", &CGrunt::LoadEntranceConfig);
+    REGISTER_GRUNT_ACT_KEY("L", &CGrunt::LoadVehicleGruntAnimations);
+    REGISTER_GRUNT_ACT_KEY("M", &CGrunt::RearmEntranceDrop);
+    REGISTER_GRUNT_ACT_KEY("N", &CGrunt::FinishToobMoveAnimation);
+    REGISTER_GRUNT_ACT_KEY("O", &CGrunt::FinishKnockbackAnimation);
+    REGISTER_GRUNT_ACT_KEY("P", &CGrunt::UpdateEntranceAnim);
+    REGISTER_GRUNT_ACT_KEY("Q", &CGrunt::LoadFreezeSpellAssets);
+    REGISTER_GRUNT_ACT_KEY_TYPED("R", &CGrunt::UpdateDecayFade);
+    REGISTER_GRUNT_ACT_KEY_DERIVED("S", &CGrunt::FinishEntranceMove);
 }
 
 RVA(0x0005caa0, 0x5e4)
@@ -1994,54 +1994,62 @@ void CGrunt::Activate() {
 
     double s = 1.0 / diag;
 
-    m_cells[3 * g_gruntDirNorth.row + g_gruntDirNorth.column].m_motion.m_direction.x = 0.0;
-    m_cells[3 * g_gruntDirNorth.row + g_gruntDirNorth.column].m_motion.m_direction.y = -1.0;
-    m_cells[3 * g_gruntDirNorth.row + g_gruntDirNorth.column].m_motion.m_step.x = 0.0;
-    m_cells[3 * g_gruntDirNorth.row + g_gruntDirNorth.column].m_motion.m_step.y = -0.5;
+    m_cells[3 * g_gruntDirNorth.m_row + g_gruntDirNorth.m_column].m_motion.m_direction.m_x = 0.0;
+    m_cells[3 * g_gruntDirNorth.m_row + g_gruntDirNorth.m_column].m_motion.m_direction.m_y = -1.0;
+    m_cells[3 * g_gruntDirNorth.m_row + g_gruntDirNorth.m_column].m_motion.m_step.m_x = 0.0;
+    m_cells[3 * g_gruntDirNorth.m_row + g_gruntDirNorth.m_column].m_motion.m_step.m_y = -0.5;
 
-    m_cells[3 * g_gruntDirNorthEast.row + g_gruntDirNorthEast.column].m_motion.m_direction.x = s;
-    m_cells[3 * g_gruntDirNorthEast.row + g_gruntDirNorthEast.column].m_motion.m_direction.y =
+    m_cells[3 * g_gruntDirNorthEast.m_row + g_gruntDirNorthEast.m_column].m_motion.m_direction.m_x =
+        s;
+    m_cells[3 * g_gruntDirNorthEast.m_row + g_gruntDirNorthEast.m_column].m_motion.m_direction.m_y =
         -1.0 / diag;
-    m_cells[3 * g_gruntDirNorthEast.row + g_gruntDirNorthEast.column].m_motion.m_step.x = 0.5;
-    m_cells[3 * g_gruntDirNorthEast.row + g_gruntDirNorthEast.column].m_motion.m_step.y = -0.5;
+    m_cells[3 * g_gruntDirNorthEast.m_row + g_gruntDirNorthEast.m_column].m_motion.m_step.m_x = 0.5;
+    m_cells[3 * g_gruntDirNorthEast.m_row + g_gruntDirNorthEast.m_column].m_motion.m_step.m_y =
+        -0.5;
 
-    m_cells[3 * g_gruntDirEast.row + g_gruntDirEast.column].m_motion.m_direction.x = 1.0;
-    m_cells[3 * g_gruntDirEast.row + g_gruntDirEast.column].m_motion.m_direction.y = 0.0;
-    m_cells[3 * g_gruntDirEast.row + g_gruntDirEast.column].m_motion.m_step.x = 0.5;
-    m_cells[3 * g_gruntDirEast.row + g_gruntDirEast.column].m_motion.m_step.y = 0.0;
+    m_cells[3 * g_gruntDirEast.m_row + g_gruntDirEast.m_column].m_motion.m_direction.m_x = 1.0;
+    m_cells[3 * g_gruntDirEast.m_row + g_gruntDirEast.m_column].m_motion.m_direction.m_y = 0.0;
+    m_cells[3 * g_gruntDirEast.m_row + g_gruntDirEast.m_column].m_motion.m_step.m_x = 0.5;
+    m_cells[3 * g_gruntDirEast.m_row + g_gruntDirEast.m_column].m_motion.m_step.m_y = 0.0;
 
-    m_cells[3 * g_gruntDirSouthEast.row + g_gruntDirSouthEast.column].m_motion.m_direction.x = s;
-    m_cells[3 * g_gruntDirSouthEast.row + g_gruntDirSouthEast.column].m_motion.m_direction.y = s;
-    m_cells[3 * g_gruntDirSouthEast.row + g_gruntDirSouthEast.column].m_motion.m_step.x = 0.5;
-    m_cells[3 * g_gruntDirSouthEast.row + g_gruntDirSouthEast.column].m_motion.m_step.y = 0.5;
+    m_cells[3 * g_gruntDirSouthEast.m_row + g_gruntDirSouthEast.m_column].m_motion.m_direction.m_x =
+        s;
+    m_cells[3 * g_gruntDirSouthEast.m_row + g_gruntDirSouthEast.m_column].m_motion.m_direction.m_y =
+        s;
+    m_cells[3 * g_gruntDirSouthEast.m_row + g_gruntDirSouthEast.m_column].m_motion.m_step.m_x = 0.5;
+    m_cells[3 * g_gruntDirSouthEast.m_row + g_gruntDirSouthEast.m_column].m_motion.m_step.m_y = 0.5;
 
-    m_cells[3 * g_gruntDirSouth.row + g_gruntDirSouth.column].m_motion.m_direction.x = 0.0;
-    m_cells[3 * g_gruntDirSouth.row + g_gruntDirSouth.column].m_motion.m_direction.y = 1.0;
-    m_cells[3 * g_gruntDirSouth.row + g_gruntDirSouth.column].m_motion.m_step.x = 0.0;
-    m_cells[3 * g_gruntDirSouth.row + g_gruntDirSouth.column].m_motion.m_step.y = 0.5;
+    m_cells[3 * g_gruntDirSouth.m_row + g_gruntDirSouth.m_column].m_motion.m_direction.m_x = 0.0;
+    m_cells[3 * g_gruntDirSouth.m_row + g_gruntDirSouth.m_column].m_motion.m_direction.m_y = 1.0;
+    m_cells[3 * g_gruntDirSouth.m_row + g_gruntDirSouth.m_column].m_motion.m_step.m_x = 0.0;
+    m_cells[3 * g_gruntDirSouth.m_row + g_gruntDirSouth.m_column].m_motion.m_step.m_y = 0.5;
 
-    m_cells[3 * g_gruntDirSouthWest.row + g_gruntDirSouthWest.column].m_motion.m_direction.x =
+    m_cells[3 * g_gruntDirSouthWest.m_row + g_gruntDirSouthWest.m_column].m_motion.m_direction.m_x =
         -1.0 / diag;
-    m_cells[3 * g_gruntDirSouthWest.row + g_gruntDirSouthWest.column].m_motion.m_direction.y = s;
-    m_cells[3 * g_gruntDirSouthWest.row + g_gruntDirSouthWest.column].m_motion.m_step.x = -0.5;
-    m_cells[3 * g_gruntDirSouthWest.row + g_gruntDirSouthWest.column].m_motion.m_step.y = 0.5;
+    m_cells[3 * g_gruntDirSouthWest.m_row + g_gruntDirSouthWest.m_column].m_motion.m_direction.m_y =
+        s;
+    m_cells[3 * g_gruntDirSouthWest.m_row + g_gruntDirSouthWest.m_column].m_motion.m_step.m_x =
+        -0.5;
+    m_cells[3 * g_gruntDirSouthWest.m_row + g_gruntDirSouthWest.m_column].m_motion.m_step.m_y = 0.5;
 
-    m_cells[3 * g_gruntDirWest.row + g_gruntDirWest.column].m_motion.m_direction.x = -1.0;
-    m_cells[3 * g_gruntDirWest.row + g_gruntDirWest.column].m_motion.m_direction.y = 0.0;
-    m_cells[3 * g_gruntDirWest.row + g_gruntDirWest.column].m_motion.m_step.x = -0.5;
-    m_cells[3 * g_gruntDirWest.row + g_gruntDirWest.column].m_motion.m_step.y = 0.0;
+    m_cells[3 * g_gruntDirWest.m_row + g_gruntDirWest.m_column].m_motion.m_direction.m_x = -1.0;
+    m_cells[3 * g_gruntDirWest.m_row + g_gruntDirWest.m_column].m_motion.m_direction.m_y = 0.0;
+    m_cells[3 * g_gruntDirWest.m_row + g_gruntDirWest.m_column].m_motion.m_step.m_x = -0.5;
+    m_cells[3 * g_gruntDirWest.m_row + g_gruntDirWest.m_column].m_motion.m_step.m_y = 0.0;
 
-    m_cells[3 * g_gruntDirNorthWest.row + g_gruntDirNorthWest.column].m_motion.m_direction.x =
+    m_cells[3 * g_gruntDirNorthWest.m_row + g_gruntDirNorthWest.m_column].m_motion.m_direction.m_x =
         -1.0 / diag;
-    m_cells[3 * g_gruntDirNorthWest.row + g_gruntDirNorthWest.column].m_motion.m_direction.y =
+    m_cells[3 * g_gruntDirNorthWest.m_row + g_gruntDirNorthWest.m_column].m_motion.m_direction.m_y =
         -1.0 / diag;
-    m_cells[3 * g_gruntDirNorthWest.row + g_gruntDirNorthWest.column].m_motion.m_step.x = -0.5;
-    m_cells[3 * g_gruntDirNorthWest.row + g_gruntDirNorthWest.column].m_motion.m_step.y = -0.5;
+    m_cells[3 * g_gruntDirNorthWest.m_row + g_gruntDirNorthWest.m_column].m_motion.m_step.m_x =
+        -0.5;
+    m_cells[3 * g_gruntDirNorthWest.m_row + g_gruntDirNorthWest.m_column].m_motion.m_step.m_y =
+        -0.5;
 
-    m_cells[3 * g_gruntDirCenter.row + g_gruntDirCenter.column].m_motion.m_direction.x = 0.0;
-    m_cells[3 * g_gruntDirCenter.row + g_gruntDirCenter.column].m_motion.m_direction.y = 0.0;
-    m_cells[3 * g_gruntDirCenter.row + g_gruntDirCenter.column].m_motion.m_step.x = 0.0;
-    m_cells[3 * g_gruntDirCenter.row + g_gruntDirCenter.column].m_motion.m_step.y = 0.0;
+    m_cells[3 * g_gruntDirCenter.m_row + g_gruntDirCenter.m_column].m_motion.m_direction.m_x = 0.0;
+    m_cells[3 * g_gruntDirCenter.m_row + g_gruntDirCenter.m_column].m_motion.m_direction.m_y = 0.0;
+    m_cells[3 * g_gruntDirCenter.m_row + g_gruntDirCenter.m_column].m_motion.m_step.m_x = 0.0;
+    m_cells[3 * g_gruntDirCenter.m_row + g_gruntDirCenter.m_column].m_motion.m_step.m_y = 0.0;
 
     CWwdSpriteObject* h = m_object;
     i32 px = h->m_screenX;
@@ -2069,7 +2077,7 @@ void CGrunt::Activate() {
     m_tileClaimed = false;
 }
 
-#undef REGISTER_KEY_644AF0
+#undef REGISTER_GRUNT_ACT_KEY
 
 DATA(0x001e999c)
 const float g_quarterScale = 0.25f;
@@ -2122,12 +2130,12 @@ void CGrunt::StepBehavior(char*) {
                 obj->m_drawActive = true;
                 obj->m_drawFillCmd = SHADE_PAL_16;
             } else {
-                i32 fade = g_buteMgr.GetInt("Grunt", s_FadeTransparency, 0xc0);
+                i32 fade = g_buteMgr.GetInt("Grunt", s_fadeTransparency, 0xc0);
                 CWwdSpriteObject* o2 = m_object;
                 SET_DRAW_FILL_FRACTION(o2, SHADE_PAL_ALPHA_16, fade);
             }
-            i32 flash = g_buteMgr.GetInt("Grunt", s_SafeFlashTime, 0x32);
-            if (g_buteMgr.GetInt("Grunt", s_AccelerateFlash, 0) == 1) {
+            i32 flash = g_buteMgr.GetInt("Grunt", s_safeFlashTime, 0x32);
+            if (g_buteMgr.GetInt("Grunt", s_accelerateFlash, 0) == 1) {
                 i64 el = static_cast<i64>(g_frameTime) - m_entranceClock64;
                 u32 elapsed = (el < 0 ? 0 : static_cast<u32>(el));
 
@@ -2799,7 +2807,7 @@ void CGrunt::FinalizeStep(char* name) {
     bool eqO = ANIMATION_ACT_EQUALS("O");
     if (eqO && (GRUNT_NOT_AT_SAVED_SCREEN_POS(this))) {
         GruntDirectionCell c = m_entranceCell;
-        i32 row = c.row;
+        i32 row = c.m_row;
         switch (row) {
             case GRUNT_DIRECTION_GRID_LOW:
                 row = GRUNT_DIRECTION_GRID_HIGH;
@@ -2810,7 +2818,7 @@ void CGrunt::FinalizeStep(char* name) {
             default:
                 break;
         }
-        i32 column = c.column;
+        i32 column = c.m_column;
         switch (column) {
             case GRUNT_DIRECTION_GRID_LOW:
                 column = GRUNT_DIRECTION_GRID_HIGH;
@@ -2822,24 +2830,24 @@ void CGrunt::FinalizeStep(char* name) {
                 break;
         }
         i32 base = GRUNT_DIRECTION_GRID_WIDTH * row + column;
-        double d48 = m_cells[base].m_motion.m_direction.x;
-        double d50 = m_cells[base].m_motion.m_direction.y;
-        m_movePosX = static_cast<double>(g_frameDelta) * d48 * m_moveSpeed + m_movePosX;
-        m_movePosY = static_cast<double>(g_frameDelta) * d50 * m_moveSpeed + m_movePosY;
-        i32 nx = static_cast<i32>((m_cells[base].m_motion.m_step.x + m_movePosX));
-        i32 ny = static_cast<i32>((m_cells[base].m_motion.m_step.y + m_movePosY));
-        if (d48 > s_fpZero) {
+        double moveDirectionX = m_cells[base].m_motion.m_direction.m_x;
+        double moveDirectionY = m_cells[base].m_motion.m_direction.m_y;
+        m_movePosX = static_cast<double>(g_frameDelta) * moveDirectionX * m_moveSpeed + m_movePosX;
+        m_movePosY = static_cast<double>(g_frameDelta) * moveDirectionY * m_moveSpeed + m_movePosY;
+        i32 nx = static_cast<i32>((m_cells[base].m_motion.m_step.m_x + m_movePosX));
+        i32 ny = static_cast<i32>((m_cells[base].m_motion.m_step.m_y + m_movePosY));
+        if (moveDirectionX > s_fpZero) {
             if (nx > m_lastTilePx.m_x) {
                 nx = m_lastTilePx.m_x;
             }
-        } else if (d48 < s_fpZero && nx < m_lastTilePx.m_x) {
+        } else if (moveDirectionX < s_fpZero && nx < m_lastTilePx.m_x) {
             nx = m_lastTilePx.m_x;
         }
-        if (d50 > s_fpZero) {
+        if (moveDirectionY > s_fpZero) {
             if (ny > m_lastTilePx.m_y) {
                 ny = m_lastTilePx.m_y;
             }
-        } else if (d50 < s_fpZero && ny < m_lastTilePx.m_y) {
+        } else if (moveDirectionY < s_fpZero && ny < m_lastTilePx.m_y) {
             ny = m_lastTilePx.m_y;
         }
         m_object->m_screenX = nx;
@@ -2857,24 +2865,24 @@ void CGrunt::FinalizeStep(char* name) {
         if (GRUNT_AT_SAVED_SCREEN_POS(this)) {
             return;
         }
-        double d48 = EntranceCell()->m_motion.m_direction.x;
-        double d50 = EntranceCell()->m_motion.m_direction.y;
-        m_movePosX = static_cast<double>(g_frameDelta) * d48 * m_moveSpeed + m_movePosX;
-        m_movePosY = static_cast<double>(g_frameDelta) * d50 * m_moveSpeed + m_movePosY;
-        i32 nx = static_cast<i32>((EntranceCell()->m_motion.m_step.x + m_movePosX));
-        i32 ny = static_cast<i32>((EntranceCell()->m_motion.m_step.y + m_movePosY));
-        if (d48 > s_fpZero) {
+        double moveDirectionX = EntranceCell()->m_motion.m_direction.m_x;
+        double moveDirectionY = EntranceCell()->m_motion.m_direction.m_y;
+        m_movePosX = static_cast<double>(g_frameDelta) * moveDirectionX * m_moveSpeed + m_movePosX;
+        m_movePosY = static_cast<double>(g_frameDelta) * moveDirectionY * m_moveSpeed + m_movePosY;
+        i32 nx = static_cast<i32>((EntranceCell()->m_motion.m_step.m_x + m_movePosX));
+        i32 ny = static_cast<i32>((EntranceCell()->m_motion.m_step.m_y + m_movePosY));
+        if (moveDirectionX > s_fpZero) {
             if (nx > m_lastTilePx.m_x) {
                 nx = m_lastTilePx.m_x;
             }
-        } else if (d48 < s_fpZero && nx < m_lastTilePx.m_x) {
+        } else if (moveDirectionX < s_fpZero && nx < m_lastTilePx.m_x) {
             nx = m_lastTilePx.m_x;
         }
-        if (d50 > s_fpZero) {
+        if (moveDirectionY > s_fpZero) {
             if (ny > m_lastTilePx.m_y) {
                 ny = m_lastTilePx.m_y;
             }
-        } else if (d50 < s_fpZero && ny < m_lastTilePx.m_y) {
+        } else if (moveDirectionY < s_fpZero && ny < m_lastTilePx.m_y) {
             ny = m_lastTilePx.m_y;
         }
         m_object->m_screenX = nx;
@@ -3094,12 +3102,12 @@ void CGrunt::AdvanceMotion() {
         }
     }
 
-    double dirX = EntranceCell()->m_motion.m_direction.x;
-    double dirY = EntranceCell()->m_motion.m_direction.y;
+    double dirX = EntranceCell()->m_motion.m_direction.m_x;
+    double dirY = EntranceCell()->m_motion.m_direction.m_y;
     m_movePosX = static_cast<double>(g_frameDelta) * dirX * m_moveSpeed + m_movePosX;
     m_movePosY = static_cast<double>(g_frameDelta) * dirY * m_moveSpeed + m_movePosY;
-    i32 x = static_cast<i32>(EntranceCell()->m_motion.m_step.x + m_movePosX);
-    i32 y = static_cast<i32>(EntranceCell()->m_motion.m_step.y + m_movePosY);
+    i32 x = static_cast<i32>(EntranceCell()->m_motion.m_step.m_x + m_movePosX);
+    i32 y = static_cast<i32>(EntranceCell()->m_motion.m_step.m_y + m_movePosY);
     if (dirX > s_fpZero) {
         if (x > m_lastTilePx.m_x) {
             x = m_lastTilePx.m_x;

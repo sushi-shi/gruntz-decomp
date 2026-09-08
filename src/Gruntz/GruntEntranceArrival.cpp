@@ -68,17 +68,17 @@
 #include <string.h>
 
 DATA(0x0020e194)
-static char s_ToyTime[] = "ToyTime";
+static char s_toyTime[] = "ToyTime";
 DATA(0x0020e1c8)
-static char s_GRUNTZ_BIGWHEELGRUNT[] = "GRUNTZ_BIGWHEELGRUNT_BIGWHEELGRUNTLOOP";
+static char s_gruntzBigwheelgrunt[] = "GRUNTZ_BIGWHEELGRUNT_BIGWHEELGRUNTLOOP";
 DATA(0x0020e1f8)
-static char s_GRUNTZ_GOKARTGRUNT[] = "GRUNTZ_GOKARTGRUNT_GOKARTGRUNTLOOP";
+static char s_gruntzGokartgrunt[] = "GRUNTZ_GOKARTGRUNT_GOKARTGRUNTLOOP";
 DATA(0x0020e224)
-static char s_GRUNTZ_EXITZ_THREE[] = "GRUNTZ_EXITZ_THREE";
+static char s_gruntzExitzThree[] = "GRUNTZ_EXITZ_THREE";
 DATA(0x0020e23c)
-static char s_GRUNTZ_EXITZ_TWO[] = "GRUNTZ_EXITZ_TWO";
+static char s_gruntzExitzTwo[] = "GRUNTZ_EXITZ_TWO";
 DATA(0x0020e250)
-static char s_GRUNTZ_EXITZ_ONE[] = "GRUNTZ_EXITZ_ONE";
+static char s_gruntzExitzOne[] = "GRUNTZ_EXITZ_ONE";
 
 RVA(0x000616e0, 0xa8)
 i32 CGrunt::ResetGeometry() {
@@ -87,8 +87,8 @@ i32 CGrunt::ResetGeometry() {
     DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
 
     GruntDirectionCell cell = m_entranceCell;
-    i32 row = cell.row;
-    i32 column = cell.column;
+    i32 row = cell.m_row;
+    i32 column = cell.m_column;
     i32 index = 3 * row + column;
 
     const char* name = m_cells[index].AttackName().GetBuffer(0);
@@ -202,8 +202,8 @@ i32 CGrunt::StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIn
     DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, el)
 
     GruntDirectionCell cell = m_entranceCell;
-    i32 cellRow = cell.row;
-    i32 cellColumn = cell.column;
+    i32 cellRow = cell.m_row;
+    i32 cellColumn = cell.m_column;
     i32 base = cellRow + (cellColumn + 2 * cellRow);
     char* buf = m_cells[base].AttackName().GetBuffer(0);
     SetImageFrameByName(buf, frame);
@@ -223,8 +223,8 @@ i32 CGrunt::StartRangedAttackAnimation() {
     DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, el)
 
     GruntDirectionCell cell = m_entranceCell;
-    i32 row = cell.row;
-    i32 column = cell.column;
+    i32 row = cell.m_row;
+    i32 column = cell.m_column;
     i32 base = row + (column + 2 * row);
     char* buf = m_cells[base].AttackName().GetBuffer(0);
     SetImageFrameByName(buf, frame);
@@ -370,9 +370,9 @@ i32 CGrunt::StepAttackFire() {
     CWwdSpriteObject* h = m_object;
     i32 zkey = h->m_screenY + 0x186a0;
     SET_SORT_KEY_IF_CHANGED(h, zkey)
-    i32 v220 = m_poweredUp;
+    i32 poweredUpSnapshot = m_poweredUp;
     m_entranceActive = false;
-    if (v220 != 0) {
+    if (poweredUpSnapshot != 0) {
         ResetGeometry();
         return 0;
     }
@@ -424,9 +424,9 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
             SetImageFrameByName(buf, frame);
 
             i32 cueTier = ((toyIdx != 0) ? 0xa : 0) + 0x406;
-            i32 m380 = m_moveVariant;
-            if (m380 != 0) {
-                i32 tier = cueTier + m380 - 1;
+            i32 moveVariant = m_moveVariant;
+            if (moveVariant != 0) {
+                i32 tier = cueTier + moveVariant - 1;
                 CGruntzMgr* g = g_gameReg;
                 const LevelCoordRect* bounds = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
                 if (CGameLevel::PointInBounds(bounds, m_object->m_screenX, m_object->m_screenY)
@@ -451,7 +451,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
             }
             return 0;
         } else {
-            DWORD tt = g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), s_ToyTime);
+            DWORD tt = g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), s_toyTime);
             m_toyDuration = static_cast<u32>(tt);
             m_toyClock = static_cast<u32>(g_frameTime);
             m_toyTime = 0x64;
@@ -468,12 +468,12 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
         SET_ANIMATION_ACT("L");
         SwitchAnimation(m_poseWalk);
         GruntDirectionCell cell = m_entranceCell;
-        i32 colv = cell.column + cell.row * 2;
-        i32 basev = cell.row + colv;
+        i32 colv = cell.m_column + cell.m_row * 2;
+        i32 basev = cell.m_row + colv;
         char* nm = m_cells[basev].WalkName().GetBuffer(0);
         SetImageSetByName(nm);
 
-        DWORD tt = g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), s_ToyTime);
+        DWORD tt = g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), s_toyTime);
         m_idleDelay = tt >> 1;
         m_idleAnchor = g_frameTime;
         return 0;
@@ -749,7 +749,7 @@ latch:
 
     GruntDirectionCell cell = m_entranceCell;
     if (m_wwdObject->m_animationCursor.m_animation != AT(m_poseIdle, GRUNT_IDLE1)) {
-        switch (m_entranceCell.direction) {
+        switch (m_entranceCell.m_direction) {
             case DIR_NORTHEAST:
             case DIR_EAST:
                 cell = g_gruntDirEast;
@@ -769,8 +769,8 @@ latch:
     }
 
     {
-        i32 col = cell.column + cell.row * 2;
-        i32 base = cell.row + col;
+        i32 col = cell.m_column + cell.m_row * 2;
+        i32 base = cell.m_row + col;
         CString key = m_cells[base].IdleName();
 
         APPLY_CURRENT_ANIMATION_FRAME_SPRITE(key, desc, elem)
@@ -920,8 +920,8 @@ i32 CGrunt::StepEntranceReinit() {
         cell = m_entranceCell;
         m_entranceActive = true;
     }
-    i32 col = cell.column + cell.row * 2;
-    i32 base = cell.row + col;
+    i32 col = cell.m_column + cell.m_row * 2;
+    i32 base = cell.m_row + col;
 
     char* walkAnimationName = m_cells[base].WalkName().GetBuffer(0);
     SetImageSetByName(walkAnimationName);
@@ -1045,11 +1045,11 @@ i32 CGrunt::LoadVehicleGruntAnimations() {
     i32 hx = h2->m_screenX;
     if (::PtInRect(&g2->m_viewBounds, hx, hy)) {
         if (m_entranceReason == PICKUP_GOKART) {
-            EnsureVehicleLoopSound(s_GRUNTZ_GOKARTGRUNT);
+            EnsureVehicleLoopSound(s_gruntzGokartgrunt);
             return 0;
         }
         if (m_entranceReason == PICKUP_BIGWHEEL) {
-            EnsureVehicleLoopSound(s_GRUNTZ_BIGWHEELGRUNT);
+            EnsureVehicleLoopSound(s_gruntzBigwheelgrunt);
             return 0;
         }
         return 0;
@@ -1091,7 +1091,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
     CAniElement* found;
     i32 r = rand() % 0x1e1;
     if (r > 0x140) {
-        found = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_GRUNTZ_EXITZ_ONE);
+        found = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_gruntzExitzOne);
         CGruntzMgr* g = g_gameReg;
         if (CGameLevel::PointInBounds(
                 &g->m_world->m_level->m_mainPlane->m_planeViewRect,
@@ -1101,7 +1101,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
             g->m_voiceManager->PlayVoice(this, 0x384, -1, 0, -1, -1);
         }
     } else if (r > 0xa0) {
-        found = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_GRUNTZ_EXITZ_TWO);
+        found = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_gruntzExitzTwo);
         CGruntzMgr* g = g_gameReg;
         if (CGameLevel::PointInBounds(
                 &g->m_world->m_level->m_mainPlane->m_planeViewRect,
@@ -1111,7 +1111,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
             g->m_voiceManager->PlayVoice(this, 0x385, -1, 0, -1, -1);
         }
     } else {
-        found = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_GRUNTZ_EXITZ_THREE);
+        found = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_gruntzExitzThree);
         CGruntzMgr* g = g_gameReg;
         if (CGameLevel::PointInBounds(
                 &g->m_world->m_level->m_mainPlane->m_planeViewRect,
@@ -1228,8 +1228,8 @@ i32 CGrunt::StepCombatReaction(
                         SET_ANIMATION_ACT("D");
                         SwitchAnimation(m_poseWalk);
                         GruntDirectionCell cell = m_entranceCell;
-                        i32 col = cell.column + cell.row * 2;
-                        i32 base = cell.row + col;
+                        i32 col = cell.m_column + cell.m_row * 2;
+                        i32 base = cell.m_row + col;
                         char* cn = m_cells[base].WalkName().GetBuffer(0);
                         SetImageSetByName(cn);
                     } else {
@@ -1353,8 +1353,8 @@ tail:
     }
     {
         GruntDirectionCell cell = m_entranceCell;
-        i32 col = cell.column + cell.row * 2;
-        i32 base = cell.row + col;
+        i32 col = cell.m_column + cell.m_row * 2;
+        i32 base = cell.m_row + col;
         char* cn = m_cells[base].StruckName().GetBuffer(0);
         SetImageFrameByName(cn, frame);
     }
@@ -1519,8 +1519,8 @@ i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
     SwitchAnimation(m_poseItem[poseIdx]);
 
     GruntDirectionCell cell = m_entranceCell;
-    i32 col = cell.column + cell.row * 2;
-    i32 base = cell.row + col;
+    i32 col = cell.m_column + cell.m_row * 2;
+    i32 base = cell.m_row + col;
     char* name = m_cells[base].ItemName().GetBuffer(0);
     SetImageSetByName(name);
     return 0;

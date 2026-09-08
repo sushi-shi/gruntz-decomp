@@ -125,28 +125,28 @@ const Coord g_bootyFlagPos[4] = {{218, 180}, {334, 180}, {450, 180}, {566, 180}}
 DATA(0x001e9158)
 const Coord g_bootyTabPos[4] = {{218, 138}, {334, 138}, {450, 138}, {566, 138}};
 DATA(0x001e9178)
-const RECT g_col1Rects[4] =
+const RECT s_col1Rects[4] =
     {{200, 415, 284, 465}, {316, 415, 400, 465}, {432, 415, 516, 465}, {548, 415, 632, 465}};
 DATA(0x001e91b8)
-const RECT g_col2Rects[4] =
+const RECT s_col2Rects[4] =
     {{200, 372, 284, 422}, {316, 372, 400, 422}, {432, 372, 516, 422}, {548, 372, 632, 422}};
 DATA(0x001e91f8)
-const RECT g_col3Rects[4] =
+const RECT s_col3Rects[4] =
     {{200, 329, 284, 379}, {316, 329, 400, 379}, {432, 329, 516, 379}, {548, 329, 632, 379}};
 DATA(0x001e9238)
-const RECT g_col4Rects[4] =
+const RECT s_col4Rects[4] =
     {{200, 286, 284, 336}, {316, 286, 400, 336}, {432, 286, 516, 336}, {548, 286, 632, 336}};
 DATA(0x001e9278)
-const RECT g_col5Rects[4] =
+const RECT s_col5Rects[4] =
     {{200, 243, 284, 293}, {316, 243, 400, 293}, {432, 243, 516, 293}, {548, 243, 632, 293}};
 DATA(0x001e92b8)
-const RECT g_col6Rects[4] =
+const RECT s_col6Rects[4] =
     {{200, 200, 284, 250}, {316, 200, 400, 250}, {432, 200, 516, 250}, {548, 200, 632, 250}};
 DATA(0x001e92f8)
-const RECT g_colorRects[4] =
+const RECT s_colorRects[4] =
     {{50, 87, 390, 115}, {166, 87, 506, 115}, {282, 87, 622, 115}, {398, 87, 738, 115}};
 DATA(0x001e9338)
-const RECT g_labelRects[7] = {
+const RECT s_labelRects[7] = {
     {45, 155, 175, 215},
     {50, 198, 180, 258},
     {34, 241, 172, 301},
@@ -161,13 +161,13 @@ const char g_secretChars[] = "WARP";
 DATA(0x001e93b0)
 const float g_secretRatioScale = 100.0f;
 DATA(0x001e93b4)
-static const float kGlitterPhaseBias = -225.0f;
+static const float s_glitterPhaseBias = -225.0f;
 DATA(0x001e93b8)
-static const double kDegToRad = 0.017453292;
+static const double s_degToRad = 0.017453292;
 DATA(0x001e93c0)
-static const double kGlitterShrinkRate = 0.002;
+static const double s_glitterShrinkRate = 0.002;
 DATA(0x001e93c8)
-static const double kGlitterStartRadius = 350.0;
+static const double s_glitterStartRadius = 350.0;
 
 DATA(0x0020b838)
 RECT g_levelMsgRectsA[8] = {
@@ -233,8 +233,8 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
 
         AddrWord<char> cur;
         AddrWord<char> last;
-        last.m_addr = g_secretMsgRows[24].strB + sizeof(SecretMsgRow);
-        char* p = g_secretMsgRows[0].strB;
+        last.m_addr = g_secretMsgRows[24].m_strB + sizeof(SecretMsgRow);
+        char* p = g_secretMsgRows[0].m_strB;
         do {
             grp.Format("A%dC%d", i / 3 + 1, i % 3 + 1);
             i32 id = g_buteMgr.GetInt(bootyCheatz, grp, 1);
@@ -391,8 +391,8 @@ i32 CBootyState::ShowSecretBonusMessage() {
         s.Format("The Secret of Secretz:");
         DrawTextToOverlaySurface(m_world, &s, &rTitle, 0x82, 1, 0xff, 0xff, 0, 1);
 
-        CString s2(g_secretMsgRows[24].strA);
-        CString s3(g_secretMsgRows[24].strB);
+        CString s2(g_secretMsgRows[24].m_strA);
+        CString s3(g_secretMsgRows[24].m_strB);
         for (i32 k = 0; k < s2.GetLength(); k++) {
             s2.SetAt(k, static_cast<char>(((static_cast<const char*>(s2))[k] - 0x3d)));
         }
@@ -447,8 +447,8 @@ i32 CBootyState::ShowSecretBonusMessage() {
                 }
             }
             i32 idx = rowBase * 3 + j;
-            CString s5(g_secretMsgRows[idx].strA);
-            CString s6(g_secretMsgRows[idx].strB);
+            CString s5(g_secretMsgRows[idx].m_strA);
+            CString s6(g_secretMsgRows[idx].m_strB);
             for (i32 k = 0; k < s5.GetLength(); k++) {
                 s5.SetAt(k, static_cast<char>(((static_cast<const char*>(s5))[k] - 0x3d)));
             }
@@ -523,12 +523,12 @@ i32 CBootyState::StepGlitterAnim() {
     i32 step = m_angleStep;
     i32 idx = m_letterIdx;
     double r = static_cast<float>(m_radius);
-    double ang = (static_cast<float>(step) - kGlitterPhaseBias) * kDegToRad;
+    double ang = (static_cast<float>(step) - s_glitterPhaseBias) * s_degToRad;
     m_scratchX = static_cast<i32>((sin(ang) * r + g_bootyLetterCoords[idx].m_x));
     m_scratchY = static_cast<i32>((cos(ang) * r + g_bootyLetterCoords[idx].m_y));
     m_angleStep = step + 5;
-    double shrink = static_cast<float>(step + 5) * kGlitterShrinkRate;
-    m_radius = static_cast<i32>((kGlitterStartRadius - shrink * kGlitterStartRadius));
+    double shrink = static_cast<float>(step + 5) * s_glitterShrinkRate;
+    m_radius = static_cast<i32>((s_glitterStartRadius - shrink * s_glitterStartRadius));
 
     i32 i = 0;
     if (idx > 0) {
@@ -908,10 +908,10 @@ i32 CBootyState::LoadGruntEffectSprites() {
     }
     bb->SetImageSetByName("GAME_INGAMEICONZ_TOYZ_BEACHBALLZ");
     m_icons[4]->SetAnimationByName("GAME_CYCLE100", 0);
-    CWwdSpriteObject* p30c = m_icons[4];
-    p30c->m_drawActive = true;
-    p30c->m_drawFillCmd = SHADE_PAL_16;
-    p30c->m_drawFillArg = handleA;
+    CWwdSpriteObject* beachBallIcon = m_icons[4];
+    beachBallIcon->m_drawActive = true;
+    beachBallIcon->m_drawFillCmd = SHADE_PAL_16;
+    beachBallIcon->m_drawFillArg = handleA;
     m_icons[4]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
     CWwdSpriteObject* rz = g_gameReg->m_world->m_childGroup->CreateSprite(
@@ -1267,14 +1267,14 @@ i32 CBootyState::BuildBootyWalkingGruntz() {
         if (m_visSprites[i] == NULL) {
             return 0;
         }
-        RVA_DYNINIT(0x0001b670, 0xa, buf)
+        RVA_DYNINIT(0x0001b670, 0xa, s_buf)
         DATA(0x0022af0c)
-        static CString buf;
+        static CString s_buf;
         const char* prefix = (i < (g_gameReg->m_gameStats->m_levelNumber - 1) % 4 + 1)
                                  ? "GAME_INGAMEICONZ_"
                                  : "BOOTY_DIM";
-        buf.Format("%sSECRET%c", prefix, g_secretChars[i]);
-        m_visSprites[i]->SetImageSetByName(buf);
+        s_buf.Format("%sSECRET%c", prefix, g_secretChars[i]);
+        m_visSprites[i]->SetImageSetByName(s_buf);
         m_visSprites[i]->SetAnimationByName("GAME_CYCLE100", 0);
         m_visSprites[i]->m_screenX = g_idleSpriteIds[i] + 0xfa;
         m_visSprites[i]->m_screenY = 0xdc;
@@ -1493,10 +1493,10 @@ i32 CBootyState::CheckPerfectBonus() {
     if (phase == static_cast<i32>(0xffffff7e)) {
         CDDrawSurfaceMgr* host = g_gameReg->m_world;
         i32 item = g_gameReg->m_soundVolume;
-        SoundCueRegistry* m28 = host->m_soundRegistry;
-        if (m28->m_silentMode == false) {
+        SoundCueRegistry* cueRegistry = host->m_soundRegistry;
+        if (cueRegistry->m_silentMode == false) {
             SoundCue* found = NULL;
-            MapLookup(m28->m_cues, "BOOTY_PERFECT", found);
+            MapLookup(cueRegistry->m_cues, "BOOTY_PERFECT", found);
             if (found) {
                 PlaySoundCueIfElapsed(found, item, 0, 0, false);
             }
@@ -2293,10 +2293,10 @@ i32 CMultiBootyState::EnterState(GameStateId previousState) {
 
     CDDrawSurfaceMgr* host = g_gameReg->m_world;
     i32 item = g_gameReg->m_soundVolume;
-    SoundCueRegistry* m28 = host->m_soundRegistry;
-    if (m28->m_silentMode == false) {
+    SoundCueRegistry* cueRegistry = host->m_soundRegistry;
+    if (cueRegistry->m_silentMode == false) {
         SoundCue* found = NULL;
-        MapLookup(m28->m_cues, "BOOTY_LOOP", found);
+        MapLookup(cueRegistry->m_cues, "BOOTY_LOOP", found);
         if (found) {
             PlaySoundCueIfElapsed(found, item, 0, 0, true);
         }
@@ -2614,27 +2614,27 @@ void CMultiBootyState::DrawBattleStats() {
     for (i = 0; i < 4; i++) {
         if (g_gameReg->m_players[i].m_joined != false) {
             s.Format("%d", sumRun(&g_gameReg->m_gameStats->m_miscPickupsByPlayer[i * 4], 4));
-            copyRect(&rc, &g_col1Rects[i]);
+            copyRect(&rc, &s_col1Rects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s.Format("%d", sumRun(&g_gameReg->m_gameStats->m_powerupPickupsByPlayer[i * 7], 7));
-            copyRect(&rc, &g_col2Rects[i]);
+            copyRect(&rc, &s_col2Rects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s.Format("%d", sumRun(&g_gameReg->m_gameStats->m_toyPickupsByPlayer[i * 10], 10));
-            copyRect(&rc, &g_col3Rects[i]);
+            copyRect(&rc, &s_col3Rects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s.Format("%d", sumRun(&g_gameReg->m_gameStats->m_weaponPickupsByPlayer[i * 22], 22));
-            copyRect(&rc, &g_col4Rects[i]);
+            copyRect(&rc, &s_col4Rects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s.Format("%d", g_gameReg->m_gameStats->m_gruntzByPlayer[i]);
-            copyRect(&rc, &g_col5Rects[i]);
+            copyRect(&rc, &s_col5Rects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
 
             s.Format("%d", (g_gameReg->m_gameStats)->CountKillsForPlayer(i));
-            copyRect(&rc, &g_col6Rects[i]);
+            copyRect(&rc, &s_col6Rects[i]);
             DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
         }
     }
@@ -2664,7 +2664,7 @@ void CMultiBootyState::DrawBattleStats() {
                 s = "Cursez:";
                 break;
         }
-        copyRect(&rc, &g_labelRects[c]);
+        copyRect(&rc, &s_labelRects[c]);
         DrawTextToOverlaySurface(m_world, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
     }
 
@@ -2725,7 +2725,7 @@ void CMultiBootyState::DrawBattleStats() {
                     break;
             }
             s.Format("%s", static_cast<const char*>(g_gameReg->m_players[i].GetName()));
-            copyRect(&rc, &g_colorRects[i]);
+            copyRect(&rc, &s_colorRects[i]);
             DrawTextToOverlaySurface(
                 m_world,
                 &s,
