@@ -5,24 +5,24 @@
 
 struct DoubleVector2 {
     void Init(double a = 0.0, double b = 0.0) {
-        x = a;
-        y = b;
+        m_x = a;
+        m_y = b;
     }
 
-    double x;
-    double y;
+    double m_x;
+    double m_y;
 };
 
 struct DoubleVector3 {
     void Init(double a = 0.0, double b = 0.0, double c = 0.0) {
-        x = a;
-        y = b;
-        z = c;
+        m_x = a;
+        m_y = b;
+        m_z = c;
     }
 
-    double x;
-    double y;
-    double z;
+    double m_x;
+    double m_y;
+    double m_z;
 };
 
 #endif // GRUNTZ_DOUBLEVECTOR_H

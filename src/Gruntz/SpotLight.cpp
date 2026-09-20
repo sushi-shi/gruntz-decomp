@@ -40,9 +40,9 @@
 #include <math.h>
 
 DATA(0x001ea3f0)
-const double g_spotRateNum = 3.1415927;
+const double s_spotRateNum = 3.1415927;
 DATA(0x001ea3f8)
-const double g_spotRateMul = -1.0;
+const double s_spotRateMul = -1.0;
 
 RVA_COMPGEN(0x00013010, 0x1e, ??_GCSpotLight@@UAEPAXI@Z)
 
@@ -57,9 +57,9 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
 
     i32 ax = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
     i32 centerY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
-    m_center.x = static_cast<double>(ax);
+    m_center.m_x = static_cast<double>(ax);
     double cy = static_cast<double>(centerY);
-    m_center.y = cy;
+    m_center.m_y = cy;
     i32 nx;
     if (m_object->m_smarts == 0) {
         nx = ax - TILE_SIZE_PX;
@@ -72,7 +72,7 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     m_position.Init(px, cy);
     CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR)
-    m_offset.Init(m_center.x - px, m_center.y - cy);
+    m_offset.Init(m_center.m_x - px, m_center.m_y - cy);
 
     double period;
     if (m_object->m_damage == 0) {
@@ -80,9 +80,9 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     } else {
         period = static_cast<double>(static_cast<u32>(m_object->m_damage));
     }
-    m_angularVelocity = g_spotRateNum / period;
+    m_angularVelocity = s_spotRateNum / period;
     if (m_object->m_direction == 1) {
-        m_angularVelocity = m_angularVelocity * g_spotRateMul;
+        m_angularVelocity = m_angularVelocity * s_spotRateMul;
     }
     if (m_object->m_points == 1) {
         m_angle = 3.1415927;
@@ -183,22 +183,22 @@ i32 CSpotLight::Tick() {
 
     double s = sin(m_angle);
     double c = cos(m_angle);
-    double ox = m_offset.x;
-    double oy = -m_offset.y;
+    double ox = m_offset.m_x;
+    double oy = -m_offset.m_y;
     double dAngle = static_cast<double>(g_frameDelta) * m_angularVelocity;
     CWwdSpriteObject* mv = m_focus;
     double rotatedX = ox * c + oy * s;
     double rotatedY = ox * s - oy * c;
     m_position.Init(rotatedX, rotatedY);
     if (mv != NULL) {
-        m_center.x = static_cast<double>(mv->m_screenX);
-        m_center.y = static_cast<double>(mv->m_screenY);
+        m_center.m_x = static_cast<double>(mv->m_screenX);
+        m_center.m_y = static_cast<double>(mv->m_screenY);
     }
-    m_position.x = m_center.x + rotatedX;
-    m_position.y = m_center.y + rotatedY;
+    m_position.m_x = m_center.m_x + rotatedX;
+    m_position.m_y = m_center.m_y + rotatedY;
     m_angle = dAngle + m_angle;
-    m_object->m_screenX = static_cast<i32>(m_position.x);
-    m_object->m_screenY = static_cast<i32>(m_position.y);
+    m_object->m_screenX = static_cast<i32>(m_position.m_x);
+    m_object->m_screenY = static_cast<i32>(m_position.m_y);
     return 0;
 }
 
@@ -207,18 +207,18 @@ int CSpotLight::Update() {
     if (m_object->m_score == 1) {
         double c = cos(m_angle);
         double s = sin(m_angle);
-        double ox = m_offset.x;
-        double oy = -m_offset.y;
+        double ox = m_offset.m_x;
+        double oy = -m_offset.m_y;
 
         double dAngle = static_cast<double>(g_frameDelta) * m_angularVelocity;
         CWwdSpriteObject* focus = m_focus;
-        m_position.x = oy * s - ox * c;
-        m_position.y = ox * s + oy * c;
+        m_position.m_x = oy * s - ox * c;
+        m_position.m_y = ox * s + oy * c;
         if (focus) {
-            m_center.x = static_cast<double>(focus->m_screenX);
-            m_center.y = static_cast<double>(focus->m_screenY);
+            m_center.m_x = static_cast<double>(focus->m_screenX);
+            m_center.m_y = static_cast<double>(focus->m_screenY);
         }
-        m_position.Init(m_center.x + m_position.x, m_center.y + m_position.y);
+        m_position.Init(m_center.m_x + m_position.m_x, m_center.m_y + m_position.m_y);
         m_angle = dAngle + m_angle;
     }
     if (g_gameReg->m_triggerMgr
@@ -251,12 +251,12 @@ i32 CSpotLight::SerializeDispatch(
     switch (mode) {
         case SERIAL_SAVE:
             s->Write(&m_angularVelocity, sizeof(m_angularVelocity));
-            s->Write(&m_position.x, sizeof(m_position.x));
-            s->Write(&m_position.y, sizeof(m_position.y));
-            s->Write(&m_center.x, sizeof(m_center.x));
-            s->Write(&m_center.y, sizeof(m_center.y));
-            s->Write(&m_offset.x, sizeof(m_offset.x));
-            s->Write(&m_offset.y, sizeof(m_offset.y));
+            s->Write(&m_position.m_x, sizeof(m_position.m_x));
+            s->Write(&m_position.m_y, sizeof(m_position.m_y));
+            s->Write(&m_center.m_x, sizeof(m_center.m_x));
+            s->Write(&m_center.m_y, sizeof(m_center.m_y));
+            s->Write(&m_offset.m_x, sizeof(m_offset.m_x));
+            s->Write(&m_offset.m_y, sizeof(m_offset.m_y));
             s->Write(&m_angle, sizeof(m_angle));
             g_serialCounter++;
             {
@@ -272,12 +272,12 @@ i32 CSpotLight::SerializeDispatch(
             break;
         case SERIAL_LOAD:
             s->Read(&m_angularVelocity, sizeof(m_angularVelocity));
-            s->Read(&m_position.x, sizeof(m_position.x));
-            s->Read(&m_position.y, sizeof(m_position.y));
-            s->Read(&m_center.x, sizeof(m_center.x));
-            s->Read(&m_center.y, sizeof(m_center.y));
-            s->Read(&m_offset.x, sizeof(m_offset.x));
-            s->Read(&m_offset.y, sizeof(m_offset.y));
+            s->Read(&m_position.m_x, sizeof(m_position.m_x));
+            s->Read(&m_position.m_y, sizeof(m_position.m_y));
+            s->Read(&m_center.m_x, sizeof(m_center.m_x));
+            s->Read(&m_center.m_y, sizeof(m_center.m_y));
+            s->Read(&m_offset.m_x, sizeof(m_offset.m_x));
+            s->Read(&m_offset.m_y, sizeof(m_offset.m_y));
             s->Read(&m_angle, sizeof(m_angle));
             g_serialCounter++;
             {

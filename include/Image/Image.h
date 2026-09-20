@@ -15,8 +15,8 @@ class CDDrawDeviceManager;
 struct CDibPal;
 
 struct DIB_BMI256 {
-    BITMAPINFOHEADER hdr;
-    RGBQUAD colors[256];
+    BITMAPINFOHEADER m_hdr;
+    RGBQUAD m_colors[256];
 };
 
 class CDib {
@@ -338,7 +338,7 @@ public:
 
 class CFileImagePal {
 public:
-    char _00[0x0c];
+    char m_reserved[0x0c];
     PALETTEENTRY* m_srcPalette;
 };
 

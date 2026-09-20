@@ -337,7 +337,6 @@ public:
     CString m_strWorldFile;
     i32 m_reservedcc;
     char m_driveLetter;
-    char m_padD1[3];
     b32 m_driveLetterProbed;
     CPtrArray m_stateStack;
 

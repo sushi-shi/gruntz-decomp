@@ -6,9 +6,9 @@
 #include <Ints.h>
 
 struct ColorHSV {
-    float h;
-    float s;
-    float v;
+    float m_h;
+    float m_s;
+    float m_v;
 };
 
 ColorHSV RgbToHsv(u32 color);

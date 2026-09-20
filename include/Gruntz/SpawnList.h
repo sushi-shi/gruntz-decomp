@@ -22,12 +22,6 @@ public:
     i32 m_data;
 };
 
-struct CSpawnNode {
-    CSpawnNode* m_next;
-    CSpawnNode* m_prev;
-    CSpawnEntry* m_entry;
-};
-
 class CSpawnList {
 public:
     CSpawnList() {

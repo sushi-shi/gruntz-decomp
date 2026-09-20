@@ -167,7 +167,7 @@ rva	size	name	kind	note
 0x1efa88	0x2c	??_7CDDrawOverlaySurface@@6B@	primary	
 0x1efab8	0x2c	??_7CDDrawPrimarySurface@@6B@	primary	
 0x1efae8	0x28	??_7CDDrawZBufferSurface@@6B@	primary	
-0x1efb28	0x14	??_7CShadeTableArray@@6B@	primary	
+0x1efb28	0x14	??_7?$CArray@PAUCShadeTable@@PAU1@@@6B@	primary	MFC CArray instantiation
 0x1efb80	0x28	??_7CLogicRecord@@6B@	primary	
 0x1efba8	0x14	??_7CAniElement@@6B@	primary	
 0x1efbc0	0x28	??_7CResolveNode@@6B@	primary	
@@ -224,10 +224,10 @@ rva	size	name	kind	note
 0x1f0748	0x14	??_7CNetProviderNode@@6B@	primary	DirectPlay provider node
 0x1f0760	0x14	??_7CNetSessionListNode@@6B@	primary	DirectPlay session listing
 0x1f0778	0x14	??_7CNetPlayerNode@@6B@	primary	DirectPlay player node
-0x1f0790	0x14	??_7CFaderArray@@6B@	primary	
+0x1f0790	0x14	??_7?$CArray@PAVCFader@@PAV1@@@6B@	primary	MFC CArray instantiation
 0x1f07a8	0x14	??_7CFader@@6B@	primary	
 0x1f07c0	0x14	??_7CFaderMesh@@6B@	primary	
-0x1f07d8	0x14	??_7CRezBufferObject@@6B@	primary	
+0x1f07d8	0x14	??_7?$CArray@URezElem40@@ABU1@@@6B@	primary	MFC CArray instantiation
 0x1f07f8	0x14	??_7CFaderFlat@@6B@	primary	
 0x1f0810	0x14	??_7CFaderRadial@@6B@	primary	
 0x1f0848	0x14	??_7CFaderSine@@6B@	primary	

@@ -550,8 +550,8 @@ i32 CAmbientPosSound::InitFromSound(
 
 RVA(0x0000c5b0, 0x1df)
 void CAmbientPosSound::Update(i32 x, i32 y, b32 immediate) {
-    i32 dx = abs(m_position.x - x);
-    i32 dy = abs(m_position.y - y);
+    i32 dx = abs(m_position.m_x - x);
+    i32 dy = abs(m_position.m_y - y);
     i32 dist2 = SQR(dx) + SQR(dy);
     if (dx > 0x280 || dy > 0x280) {
         if (m_sound != NULL && m_isPlaying != false) {
@@ -574,7 +574,7 @@ void CAmbientPosSound::Update(i32 x, i32 y, b32 immediate) {
     } else if (pan < 0) {
         pan = 0;
     }
-    if (m_position.x < x) {
+    if (m_position.m_x < x) {
         pan = -pan;
     }
 
@@ -710,8 +710,8 @@ i32 DispatchSpotAmbientSoundLogic(CGameObject* obj) {
         CWorldSoundSet* set = g_gameReg->m_worldSounds;
         if (set != NULL) {
             AmbientPoint pt;
-            pt.x = obj->m_screenX;
-            pt.y = obj->m_screenY;
+            pt.m_x = obj->m_screenX;
+            pt.m_y = obj->m_screenY;
 
             CAmbientPosSound* v =
                 set->CreatePositionedFromSound(layer->m_sound, 0x64, &pt, obj->m_damage, 0);

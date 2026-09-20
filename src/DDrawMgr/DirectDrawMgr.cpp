@@ -21,7 +21,7 @@
 #define DDRAWMGR_H_FILE "C:\\Proj\\DDrawMgr\\ddrawmgr.h"
 
 DATA(0x002bed00)
-CDDrawDeviceManager* g_DirectDrawMgr = NULL;
+CDDrawDeviceManager* g_directDrawMgr = NULL;
 
 DATA(0x00283eb8)
 b32 g_ddLogEnabled = false;
@@ -38,7 +38,7 @@ DATA(0x00283ee0)
 HINSTANCE g_resModule;
 
 DATA(0x00283ee8)
-IDirectDraw2* g_DirectDraw = NULL;
+IDirectDraw2* g_directDraw = NULL;
 RVA_DYNINIT(0x00141c70, 0xa, g_modeArray)
 RVA_DYNINIT(0x00141c80, 0xa, g_modeArray)
 RVA_DYNINIT(0x00141c90, 0xe, g_modeArray)
@@ -330,7 +330,7 @@ i32 CDDrawDeviceManager::CreateDevice(
 ) {
     m_hasPalette = false;
     m_paletteTag = 0;
-    IDirectDraw2* dd = g_DirectDraw;
+    IDirectDraw2* dd = g_directDraw;
     if (dd != NULL) {
         m_device = dd;
     } else {
@@ -398,7 +398,7 @@ i32 CDDrawDeviceManager::CreateDevice(
         }
     }
 
-    g_DirectDrawMgr = this;
+    g_directDrawMgr = this;
     return 1;
 }
 
@@ -438,7 +438,7 @@ void CDDrawDeviceManager::Clear(i32 restoreDisplayMode) {
     m_displayModes.SetSize(0, -1);
     ClearSurfaces();
     ClearPalettes();
-    g_DirectDrawMgr = NULL;
+    g_directDrawMgr = NULL;
     if (m_device) {
         m_device->Release();
         m_device = NULL;
@@ -1081,7 +1081,7 @@ CreateDirectDrawVia(
     if (factory != NULL) {
         IDirectDraw2* dd = factory(lpGuid, driverDesc, driverName);
         if (dd != NULL) {
-            g_DirectDraw = dd;
+            g_directDraw = dd;
             g_ddCreateCtx = lpGuid;
             return 0;
         }

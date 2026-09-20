@@ -67,14 +67,14 @@ i32 CDDrawWorkerHost::Read(
     const char* blockBase,
     LevelCoordRect* bounds
 ) {
-    if (pd->headerSize != WWD_PLANE_HEADER_SIZE) {
+    if (pd->m_headerSize != WWD_PLANE_HEADER_SIZE) {
         return 0;
     }
 
     char nameBuf[0x80];
     i32 pos = 0;
-    const char* names = blockBase + pd->imageSetsOffset;
-    for (u32 n = 0; n < pd->imageSetsCount; n++) {
+    const char* names = blockBase + pd->m_imageSetsOffset;
+    for (u32 n = 0; n < pd->m_imageSetsCount; n++) {
         i32 len = 0;
         while ((names[pos] < '0' || names[pos] > 0x80) && names[pos] != 0) {
             pos++;
@@ -91,17 +91,17 @@ i32 CDDrawWorkerHost::Read(
         }
     }
 
-    m_flags = IDX(pd->flags);
-    m_movementXPercent = pd->movementXPercent;
-    m_movementYPercent = pd->movementYPercent;
+    m_flags = IDX(pd->m_flags);
+    m_movementXPercent = pd->m_movementXPercent;
+    m_movementYPercent = pd->m_movementYPercent;
     m_scrollCenterX = 0;
     m_scrollCenterY = 0;
     m_zCoord = -999999;
-    m_tileColumns = pd->tilesWide;
-    m_tileRows = pd->tilesHigh;
-    m_tileWidthPx = pd->tilePixelWidth;
-    m_tileHeightPx = pd->tilePixelHeight;
-    m_zCoord = pd->zCoord;
+    m_tileColumns = pd->m_tilesWide;
+    m_tileRows = pd->m_tilesHigh;
+    m_tileWidthPx = pd->m_tilePixelWidth;
+    m_tileHeightPx = pd->m_tilePixelHeight;
+    m_zCoord = pd->m_zCoord;
     m_viewportRect.left = bounds->left;
     m_viewportRect.top = bounds->top;
     m_viewportRect.right = bounds->right;
@@ -124,12 +124,12 @@ i32 CDDrawWorkerHost::Read(
             }
         }
     } else {
-        SetTileSize(pd->tilePixelWidth, pd->tilePixelHeight);
+        SetTileSize(pd->m_tilePixelWidth, pd->m_tilePixelHeight);
     }
 
-    strcpy(m_planeName, pd->name);
-    m_fillFx.dwFillColor = pd->fillColor;
-    m_flags = IDX(pd->flags);
+    strcpy(m_planeName, pd->m_name);
+    m_fillFx.dwFillColor = pd->m_fillColor;
+    m_flags = IDX(pd->m_flags);
 
     APPLY_WORKER_HOST_BOUNDS(bounds);
 
@@ -139,7 +139,7 @@ i32 CDDrawWorkerHost::Read(
     m_tileHandles = new i32[m_tileRows * m_tileColumns];
     // Byte-forced view of packed WWD storage.
 
-    const i32* cell = reinterpret_cast<const i32*>(blockBase + pd->tilesOffset);
+    const i32* cell = reinterpret_cast<const i32*>(blockBase + pd->m_tilesOffset);
     for (u32 t = 0; t < static_cast<u32>(m_tileRows * m_tileColumns); t++) {
         m_tileHandles[t] = *cell;
         cell++;
@@ -150,8 +150,8 @@ i32 CDDrawWorkerHost::Read(
         m_tileRowOffsets[c] = c * m_tileColumns;
     }
 
-    i32 originY = pd->scrollY;
-    i32 originX = pd->scrollX;
+    i32 originY = pd->m_scrollY;
+    i32 originX = pd->m_scrollX;
     float sy = static_cast<float>(originY);
     float sx = static_cast<float>(originX);
     if ((m_flags & IDX(WWD_PLANE_FLAG_MAIN)) == 0) {
@@ -162,8 +162,8 @@ i32 CDDrawWorkerHost::Read(
     m_scrollCenterY = sy;
     UpdatePlaneViewRect();
 
-    if (pd->objectsOffset != 0) {
-        if (RebuildPlanes(blockBase + pd->objectsOffset, pd->objectsCount) == 0) {
+    if (pd->m_objectsOffset != 0) {
+        if (RebuildPlanes(blockBase + pd->m_objectsOffset, pd->m_objectsCount) == 0) {
             return 0;
         }
     }
@@ -401,7 +401,7 @@ void CDDrawWorkerHost::SetTileSizeFromImageSet(CDDrawWorker* set) {
             dr.right = (xp) + ((srcp)->right - (srcp)->left);                                      \
             dr.bottom = (yp) + ((srcp)->bottom - (srcp)->top);                                     \
             surf->BltEx(&dr, 0, 0, DDBLT_WAIT | DDBLT_COLORFILL, &m_fillFx);                       \
-        } else if (h_ != static_cast<u32>(TILE_CLEAR)) {                                           \
+        } else if (h_ != static_cast<u32>(s_tileClear)) {                                          \
             CDDrawWorker* fr_ = ImageSetAt(h_ >> 16);                                              \
             i32 idx_ = static_cast<i32>(h_ & WWD_TILE_IMAGE_SET_INDEX_MASK);                       \
             CImage* e_ = fr_->GetAt(idx_);                                                         \
@@ -574,11 +574,17 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
         level->m_smallActiveGridCellSize[1]
     };
     i32 defaultRegionSize[2] = {
-        level->m_defaultActiveRegionSize.w,
-        level->m_defaultActiveRegionSize.h
+        level->m_defaultActiveRegionSize.m_w,
+        level->m_defaultActiveRegionSize.m_h
     };
-    i32 largeRegionSize[2] = {level->m_largeActiveRegionSize.w, level->m_largeActiveRegionSize.h};
-    i32 smallRegionSize[2] = {level->m_smallActiveRegionSize.w, level->m_smallActiveRegionSize.h};
+    i32 largeRegionSize[2] = {
+        level->m_largeActiveRegionSize.m_w,
+        level->m_largeActiveRegionSize.m_h
+    };
+    i32 smallRegionSize[2] = {
+        level->m_smallActiveRegionSize.m_w,
+        level->m_smallActiveRegionSize.m_h
+    };
 
     CWwdSpatialMgr* newSpatialMgr = new CWwdSpatialMgr;
     spatialMgr = newSpatialMgr;
@@ -892,15 +898,15 @@ void CDDrawWorkerHost::UpdateActiveRegionSizes() {
         return;
     }
 
-    i32 defaultWidth = level->m_defaultActiveRegionSize.w;
-    i32 defaultHeight = level->m_defaultActiveRegionSize.h;
+    i32 defaultWidth = level->m_defaultActiveRegionSize.m_w;
+    i32 defaultHeight = level->m_defaultActiveRegionSize.m_h;
 
     LevelDims largeSize;
-    largeSize.w = level->m_largeActiveRegionSize.w;
-    largeSize.h = level->m_largeActiveRegionSize.h;
+    largeSize.m_w = level->m_largeActiveRegionSize.m_w;
+    largeSize.m_h = level->m_largeActiveRegionSize.m_h;
     LevelDims smallSize;
-    smallSize.w = level->m_smallActiveRegionSize.w;
-    smallSize.h = level->m_smallActiveRegionSize.h;
+    smallSize.m_w = level->m_smallActiveRegionSize.m_w;
+    smallSize.m_h = level->m_smallActiveRegionSize.m_h;
 
     CWwdSpatialMgr* spatialMgr = m_spatialMgr;
     spatialMgr->m_defaultRegionRect.left = 0;
@@ -913,18 +919,18 @@ void CDDrawWorkerHost::UpdateActiveRegionSizes() {
     spatialMgr = m_spatialMgr;
     spatialMgr->m_largeRegionRect.left = 0;
     spatialMgr->m_largeRegionRect.top = 0;
-    spatialMgr->m_largeRegionRect.right = largeSize.w - 1;
-    spatialMgr->m_largeRegionRect.bottom = largeSize.h - 1;
-    spatialMgr->m_largeRegionHalfWidth = largeSize.w / 2;
-    spatialMgr->m_largeRegionHalfHeight = largeSize.h / 2;
+    spatialMgr->m_largeRegionRect.right = largeSize.m_w - 1;
+    spatialMgr->m_largeRegionRect.bottom = largeSize.m_h - 1;
+    spatialMgr->m_largeRegionHalfWidth = largeSize.m_w / 2;
+    spatialMgr->m_largeRegionHalfHeight = largeSize.m_h / 2;
 
     spatialMgr = m_spatialMgr;
     spatialMgr->m_smallRegionRect.left = 0;
     spatialMgr->m_smallRegionRect.top = 0;
-    spatialMgr->m_smallRegionRect.right = smallSize.w - 1;
-    spatialMgr->m_smallRegionRect.bottom = smallSize.h - 1;
-    spatialMgr->m_smallRegionHalfWidth = smallSize.w / 2;
-    spatialMgr->m_smallRegionHalfHeight = smallSize.h / 2;
+    spatialMgr->m_smallRegionRect.right = smallSize.m_w - 1;
+    spatialMgr->m_smallRegionRect.bottom = smallSize.m_h - 1;
+    spatialMgr->m_smallRegionHalfWidth = smallSize.m_w / 2;
+    spatialMgr->m_smallRegionHalfHeight = smallSize.m_h / 2;
 
     spatialMgr = m_spatialMgr;
     spatialMgr->m_activeCenterX = -22222;
@@ -943,7 +949,7 @@ i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
     for (i32 row = 0; row < m_tileRows; row++) {
         for (i32 col = 0; col < m_tileColumns; col++) {
             i32 handle = m_tileHandles[m_tileRowOffsets[row] + col];
-            if (handle == TILE_CLEAR || static_cast<u32>(handle) == UNINIT_FILL) {
+            if (handle == s_tileClear || static_cast<u32>(handle) == UNINIT_FILL) {
                 continue;
             }
             u32 setIdx = static_cast<u32>(handle) >> 16;

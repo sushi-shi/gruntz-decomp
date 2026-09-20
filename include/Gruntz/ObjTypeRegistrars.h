@@ -46,7 +46,7 @@ void RegisterMenuSparkleActions();
 void RegisterGruntActions();
 void RegisterExplosionActions();
 void RegisterIconState();
-void ActReg4RegisterType();
+void RegisterGruntStartingPointActions();
 void RegisterIconActions();
 void RegisterTextLogic();
 void RegisterWormholeLogic();

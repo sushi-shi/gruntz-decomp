@@ -8,7 +8,6 @@
 #include <Dsndmgr/SoundDevice.h>
 #include <Dsndmgr/SoundVolumeRamp.h>
 #include <Dsndmgr/VolumeScale.h>
-#include <Dsndmgr/WaveFormatSdk.h>
 #include <Enums.h>
 #include <Lith/BaseList.h>
 #include <Pix16.h>
@@ -23,13 +22,13 @@
 #include <string.h>
 
 DATA(0x001ef698)
-const double c_volumePercentScale = 100.0;
+const double g_volumePercentScale = 100.0;
 DATA(0x001ef6a0)
-const double c_volumeCurveUnit = 1.0;
+const double g_volumeCurveUnit = 1.0;
 DATA(0x001ef6a8)
-const double c_decibelScale = 10.0;
+const double g_decibelScale = 10.0;
 DATA(0x001ef6b0)
-const double c_attenuationBase = 2.0;
+const double g_attenuationBase = 2.0;
 
 #define DSNDMGR_FILE "C:\\Proj\\Dsndmgr\\DSNDMGR.CPP"
 
@@ -52,9 +51,9 @@ i32 SoundDevice::VolumeToAttenuation(i32 volumePct) {
         return -10000;
     }
 
-    double ratio = acos(pow(c_volumeCurveUnit / (volumePct / c_volumePercentScale), c_decibelScale))
-                   / acos(c_attenuationBase);
-    return static_cast<i32>((-(ratio * c_volumePercentScale)));
+    double ratio = acos(pow(g_volumeCurveUnit / (volumePct / g_volumePercentScale), g_decibelScale))
+                   / acos(g_attenuationBase);
+    return static_cast<i32>((-(ratio * g_volumePercentScale)));
 }
 
 RVA(0x00135110, 0x8e)
@@ -68,9 +67,9 @@ i32 ConvertVolumeToPercent(i32 attenuation) {
     } else {
         decibels = static_cast<double>((attenuation / 100));
     }
-    double volumePct = c_volumePercentScale
-                       - (c_volumeCurveUnit - pow(c_attenuationBase, -decibels / c_decibelScale))
-                             * c_volumePercentScale;
+    double volumePct = g_volumePercentScale
+                       - (g_volumeCurveUnit - pow(g_attenuationBase, -decibels / g_decibelScale))
+                             * g_volumePercentScale;
     if (attenuation < 0) {
         return static_cast<i32>(volumePct);
     }
@@ -494,11 +493,11 @@ i32 SoundBuffer::SetCurrentPosition(u32 position) {
 }
 
 RVA(0x00135ac0, 0x4f)
-i32 SoundBuffer::GetFormat(WaveFormatX* outFormat, u32 formatBytes, DWORD* writtenBytes) {
+i32 SoundBuffer::GetFormat(WAVEFORMATEX* outFormat, u32 formatBytes, DWORD* writtenBytes) {
     if (m_owner->m_initialized == false) {
         return 0;
     }
-    b32 hr = m_buffer->GetFormat(WaveFormatSdk(outFormat), formatBytes, writtenBytes) != 0;
+    b32 hr = m_buffer->GetFormat(outFormat, formatBytes, writtenBytes) != 0;
     if (hr) {
         ReportError(DSNDMGR_FILE, 0x1e2, hr);
         return 0;
@@ -996,8 +995,8 @@ void SoundDevice::Shutdown() {
 }
 
 RVA(0x001366f0, 0x168)
-SoundSample* SoundDevice::CreateSample(WaveFormatX* format, u32 bytes, u32 flags) {
-    WaveFormatX bufferFormat;
+SoundSample* SoundDevice::CreateSample(WAVEFORMATEX* format, u32 bytes, u32 flags) {
+    WAVEFORMATEX bufferFormat;
     IDirectSoundBuffer* directSoundBuffer;
     DSBUFFERDESC bufferDesc;
     i32 hr;
@@ -1027,7 +1026,7 @@ SoundSample* SoundDevice::CreateSample(WaveFormatX* format, u32 bytes, u32 flags
     bufferDesc.dwSize = DSBUFFERDESC_SIZE;
     bufferDesc.dwFlags = flags;
     bufferDesc.dwBufferBytes = bytes;
-    bufferDesc.lpwfxFormat = WaveFormatSdk(&bufferFormat);
+    bufferDesc.lpwfxFormat = &bufferFormat;
 
     hr = m_device->CreateSoundBuffer(&bufferDesc, &directSoundBuffer, NULL) != 0;
     if (hr) {
@@ -1089,7 +1088,7 @@ SoundSample* SoundDevice::LoadSample(RiffWaveHeader* riff, u32 flags, u32 loadOp
 
     u8* data;
     u32 dataBytes;
-    WaveFormatX* format;
+    WAVEFORMATEX* format;
     format = NULL;
     data = NULL;
     dataBytes = 0;
@@ -1148,7 +1147,7 @@ SoundSample* SoundDevice::LoadSampleResource(const char* name, u32 flags, u32 lo
 }
 
 RVA(0x00136ab0, 0x41)
-i32 SoundDevice::ValidateRestore(SoundBuffer* buffer, WaveFormatX* format, u32 formatBytes) {
+i32 SoundDevice::ValidateRestore(SoundBuffer* buffer, WAVEFORMATEX* format, u32 formatBytes) {
     if (m_initialized == false) {
         return 0;
     }
@@ -1207,7 +1206,7 @@ i32 SoundDevice::ReloadRiff(SoundBuffer* buffer, RiffWaveHeader* riff, u32 loadO
 
     u8* data;
     u32 dataBytes;
-    WaveFormatX* format;
+    WAVEFORMATEX* format;
     format = NULL;
     data = NULL;
     dataBytes = 0;
@@ -1430,7 +1429,7 @@ i32 SoundVolumeRamp::Stop() {
 RVA(0x00137110, 0x8d)
 i32 ParseWaveChunks(
     RiffWaveHeader* riff,
-    WaveFormatX** outFormat,
+    WAVEFORMATEX** outFormat,
     u8** outData,
     u32* outDataBytes
 ) {
@@ -1457,7 +1456,7 @@ i32 ParseWaveChunks(
         u32 size = static_cast<u32>(*cursor.m_dwords);
         cursor.m_bytes += 4;
         if (id == mmioFOURCC('f', 'm', 't', ' ')) {
-            RecordBytes<WaveFormatX> fmtView;
+            RecordBytes<WAVEFORMATEX> fmtView;
             fmtView.m_bytes = cursor.m_bytes;
             *outFormat = fmtView.m_rec;
         } else if (id == mmioFOURCC('d', 'a', 't', 'a')) {
@@ -1471,14 +1470,14 @@ i32 ParseWaveChunks(
 }
 
 RVA(0x001371a0, 0x5a)
-i32 SoundDevice::SetPrimaryFormat(WaveFormatX* format) {
+i32 SoundDevice::SetPrimaryFormat(WAVEFORMATEX* format) {
     if (m_initialized == false) {
         return 0;
     }
     if (CreatePrimaryBuffer() == 0) {
         return 0;
     }
-    b32 hr = m_primaryBuffer->SetFormat(WaveFormatSdk(format)) != 0;
+    b32 hr = m_primaryBuffer->SetFormat(format) != 0;
     if (hr) {
         SoundBuffer::ReportError(DSNDMGR_FILE, 0x678, hr);
         return 0;

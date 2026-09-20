@@ -8,9 +8,9 @@
 class CDDSurface;
 
 struct ClipVtx {
-    float x, y, u, v;
+    float m_x, m_y, m_u, m_v;
 
-    i32 fx, fu, fv;
+    i32 m_fx, m_fu, m_fv;
 };
 
 extern ClipVtx g_rasterOddClipPassBuffer[100];

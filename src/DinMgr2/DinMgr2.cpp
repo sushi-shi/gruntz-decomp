@@ -2,7 +2,6 @@
 
 #include <DinMgr2/DirectInputMgr2.h>
 #include <Gruntz/FixedPtrArray32.h>
-#include <Pix16.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -10,7 +9,6 @@
 GZ_ENUM_CONST_BEGIN(DinInputConstants)
     KEYBOARD_STATE_BUFFER_SIZE = 0x100,
     DINPUT_STATE_PRESSED = 0x80,
-    ASYNC_KEY_PRESSED_SIGN_BIT = 0x80000000,
     JOYSTICK_AXIS_MIN = -1000,
     JOYSTICK_AXIS_MAX = 1000,
     JOYSTICK_DEADZONE_50_PERCENT = 5000
@@ -450,12 +448,11 @@ i32 CKeyboardDevice::CreateDevice(IDirectInputA* di, const GUID* guid, HWND owne
     if (SetCooperativeLevel(DISCL_NONEXCLUSIVE | DISCL_FOREGROUND) == 0) {
         return 0;
     }
-    RecordBytes<DeviceState> state;
-    state.m_bytes = new u8[KEYBOARD_STATE_BUFFER_SIZE];
-    if (state.m_bytes == NULL) {
+    u8* state = new u8[KEYBOARD_STATE_BUFFER_SIZE];
+    if (state == NULL) {
         return 0;
     }
-    m_stateBuffer = state.m_rec;
+    m_stateBuffer = state;
     m_stateBufferSize = KEYBOARD_STATE_BUFFER_SIZE;
     return 1;
 }
@@ -463,9 +460,7 @@ i32 CKeyboardDevice::CreateDevice(IDirectInputA* di, const GUID* guid, HWND owne
 RVA(0x00133bf0, 0x33)
 void CKeyboardDevice::ReleaseDevices() {
     if (m_stateBuffer != NULL) {
-        RecordBytes<DeviceState> state;
-        state.m_rec = m_stateBuffer;
-        delete[] state.m_bytes;
+        delete[] static_cast<u8*>(m_stateBuffer);
         m_stateBuffer = NULL;
         m_stateBufferSize = 0;
     }
@@ -509,53 +504,44 @@ i32 CKeyboardDevice::Poll() {
         }
     }
     if (HAS(static_cast<DirectInputCreateFlags>(m_createFlags), DIN_CREATE_ASYNC_KEYBOARD)) {
-        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON0)])
-            & ASYNC_KEY_PRESSED_SIGN_BIT) {
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON0)]) & ASYNC_KEYSTATE_DOWN) {
             m_pressedButtons |= IDX(INPUT_BUTTON0);
         }
-        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON1)])
-            & ASYNC_KEY_PRESSED_SIGN_BIT) {
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON1)]) & ASYNC_KEYSTATE_DOWN) {
             m_pressedButtons |= IDX(INPUT_BUTTON1);
         }
-        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON2)])
-            & ASYNC_KEY_PRESSED_SIGN_BIT) {
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON2)]) & ASYNC_KEYSTATE_DOWN) {
             m_pressedButtons |= IDX(INPUT_BUTTON2);
         }
-        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON3)])
-            & ASYNC_KEY_PRESSED_SIGN_BIT) {
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON3)]) & ASYNC_KEYSTATE_DOWN) {
             m_pressedButtons |= IDX(INPUT_BUTTON3);
         }
-        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON4)])
-            & ASYNC_KEY_PRESSED_SIGN_BIT) {
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON4)]) & ASYNC_KEYSTATE_DOWN) {
             m_pressedButtons |= IDX(INPUT_BUTTON4);
         }
-        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON5)])
-            & ASYNC_KEY_PRESSED_SIGN_BIT) {
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON5)]) & ASYNC_KEYSTATE_DOWN) {
             m_pressedButtons |= IDX(INPUT_BUTTON5);
         }
-        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON6)])
-            & ASYNC_KEY_PRESSED_SIGN_BIT) {
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON6)]) & ASYNC_KEYSTATE_DOWN) {
             m_pressedButtons |= IDX(INPUT_BUTTON6);
         }
-        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON7)])
-            & ASYNC_KEY_PRESSED_SIGN_BIT) {
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON7)]) & ASYNC_KEYSTATE_DOWN) {
             m_pressedButtons |= IDX(INPUT_BUTTON7);
         }
-        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_LEFT)]) & ASYNC_KEY_PRESSED_SIGN_BIT) {
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_LEFT)]) & ASYNC_KEYSTATE_DOWN) {
             m_pressedButtons |= IDX(INPUT_LEFT);
         }
-        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_RIGHT)])
-            & ASYNC_KEY_PRESSED_SIGN_BIT) {
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_RIGHT)]) & ASYNC_KEYSTATE_DOWN) {
             m_pressedButtons |= IDX(INPUT_RIGHT);
         }
-        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_UP)]) & ASYNC_KEY_PRESSED_SIGN_BIT) {
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_UP)]) & ASYNC_KEYSTATE_DOWN) {
             m_pressedButtons |= IDX(INPUT_UP);
         }
-        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_DOWN)]) & ASYNC_KEY_PRESSED_SIGN_BIT) {
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_DOWN)]) & ASYNC_KEYSTATE_DOWN) {
             m_pressedButtons |= IDX(INPUT_DOWN);
         }
     } else {
-        u8* buf = m_stateBuffer->keys;
+        u8* buf = static_cast<u8*>(m_stateBuffer);
         if (buf[m_keyBindings[IDX(INPUT_BINDING_BUTTON0)]] & DINPUT_STATE_PRESSED) {
             m_pressedButtons |= IDX(INPUT_BUTTON0);
         }
@@ -757,13 +743,12 @@ i32 CMouseDevice::CreateDevice(IDirectInputA* di, const GUID* guid, HWND owner, 
     if (SetDataFormat(&c_dfDIMouse) == 0) {
         return 0;
     }
-    RecordBytes<DeviceState> state;
-    state.m_bytes = new u8[sizeof(DIMouseStateZ)];
-    if (state.m_bytes == NULL) {
+    u8* state = new u8[sizeof(DIMOUSESTATE)];
+    if (state == NULL) {
         return 0;
     }
-    m_stateBuffer = state.m_rec;
-    m_stateBufferSize = sizeof(DIMouseStateZ);
+    m_stateBuffer = state;
+    m_stateBufferSize = sizeof(DIMOUSESTATE);
     if (SetCooperativeLevel(DISCL_NONEXCLUSIVE | DISCL_FOREGROUND) == 0) {
         return 0;
     }
@@ -772,9 +757,7 @@ i32 CMouseDevice::CreateDevice(IDirectInputA* di, const GUID* guid, HWND owner, 
 RVA(0x00134360, 0x33)
 void CMouseDevice::ReleaseDevices() {
     if (m_stateBuffer) {
-        RecordBytes<DeviceState> state;
-        state.m_rec = m_stateBuffer;
-        delete[] state.m_bytes;
+        delete[] static_cast<u8*>(m_stateBuffer);
         m_stateBuffer = NULL;
         m_stateBufferSize = 0;
     }
@@ -806,7 +789,7 @@ i32 CMouseDevice::Poll() {
     if (ReadState() == NULL) {
         return 0;
     }
-    DIMouseStateZ* ms = &m_stateBuffer->mouse;
+    DIMOUSESTATE* ms = static_cast<DIMOUSESTATE*>(m_stateBuffer);
     if (ms == NULL) {
         return 0;
     }
@@ -861,13 +844,12 @@ i32 CJoystickDevice::CreateDevice(IDirectInputA* di, const GUID* guid, HWND owne
     if (SetDataFormat(&c_dfDIJoystick2) == 0) {
         return 0;
     }
-    RecordBytes<DeviceState> state;
-    state.m_bytes = new u8[sizeof(DIJoyState2Z)];
-    if (state.m_bytes == NULL) {
+    u8* state = new u8[sizeof(DIJOYSTATE2)];
+    if (state == NULL) {
         return 0;
     }
-    m_stateBuffer = state.m_rec;
-    m_stateBufferSize = sizeof(DIJoyState2Z);
+    m_stateBuffer = state;
+    m_stateBufferSize = sizeof(DIJOYSTATE2);
     if (SetCooperativeLevel(DISCL_NONEXCLUSIVE | DISCL_FOREGROUND) == 0) {
         return 0;
     }
@@ -876,9 +858,7 @@ i32 CJoystickDevice::CreateDevice(IDirectInputA* di, const GUID* guid, HWND owne
 RVA(0x001346d0, 0x33)
 void CJoystickDevice::ReleaseDevices() {
     if (m_stateBuffer) {
-        RecordBytes<DeviceState> state;
-        state.m_rec = m_stateBuffer;
-        delete[] state.m_bytes;
+        delete[] static_cast<u8*>(m_stateBuffer);
         m_stateBuffer = NULL;
         m_stateBufferSize = 0;
     }
@@ -922,7 +902,7 @@ i32 CJoystickDevice::Poll() {
     if (ReadState() == NULL) {
         return 0;
     }
-    DIJoyState2Z* js = &m_stateBuffer->joy;
+    DIJOYSTATE2* js = static_cast<DIJOYSTATE2*>(m_stateBuffer);
     if (js == NULL) {
         return 0;
     }

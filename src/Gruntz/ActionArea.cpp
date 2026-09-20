@@ -33,7 +33,7 @@ RVA_DYNINIT(0x000080b0, 0x1f, CActRegPool<CActionArea>::s_table)
 template<> DATA(0x00229388)
 CActReg CActRegPool<CActionArea>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
-static inline CActHandler* R3Lookup(i32 coord) {
+static inline CActHandler* ResolveActionAreaAct(i32 coord) {
     return (CActRegPool<CActionArea>::s_table.ResolveEntry(coord));
 }
 
@@ -59,9 +59,9 @@ RVA_COMPGEN(0x00007fd0, 0x44, ??1CActionArea@@UAE@XZ)
 
 RVA(0x000080e0, 0x102)
 void CActionArea::FireActivation(i32 coord) {
-    CActHandler* e = R3Lookup(coord);
+    CActHandler* e = ResolveActionAreaAct(coord);
     if ((*e) != NULL) {
-        CActHandler* e2 = R3Lookup(coord);
+        CActHandler* e2 = ResolveActionAreaAct(coord);
         (this->*((*e2)))();
     }
 }
@@ -70,7 +70,7 @@ RVA(0x00008240, 0x18d)
 void CProjActObj::RegisterType() {
     ACT_NAME_ID(id, "A")
 
-    *R3Lookup(id) = static_cast<CActHandler>(&CActionArea::Tick);
+    *ResolveActionAreaAct(id) = static_cast<CActHandler>(&CActionArea::Tick);
 }
 
 RVA(0x00008440, 0xfe)

@@ -6,7 +6,6 @@
 
 #include <Dsndmgr/StreamFeeder.h>
 #include <Dsndmgr/StreamVoice.h>
-#include <Dsndmgr/WaveFormatSdk.h>
 #include <Rez/RezMgr.h>
 #include <Utils/MillisPer.h>
 
@@ -100,7 +99,7 @@ i32 StreamVoice::SetSource(CRezItm* source) {
     if (source == NULL) {
         return 0;
     }
-    WaveFormatX format;
+    WAVEFORMATEX format;
     u32 dataOffset;
     u32 dataBytes;
 
@@ -187,7 +186,7 @@ void SoundStream::ShutdownStreams() {
 
 RVA(0x00137780, 0x171)
 StreamVoice* SoundStream::CreateStreamVoice(
-    WaveFormatX* format,
+    WAVEFORMATEX* format,
     u32 bufferBytes,
     i32 dsFlags,
     i32 reprimeWhenIdle,
@@ -206,12 +205,12 @@ StreamVoice* SoundStream::CreateStreamVoice(
         return NULL;
     }
 
-    WaveFormatX bufferFormat = *format;
+    WAVEFORMATEX bufferFormat = *format;
     IDirectSoundBuffer* directSoundBuffer;
     DSBUFFERDESC bufferDesc;
     memset(&bufferDesc, 0, sizeof(DSBUFFERDESC));
     bufferDesc.dwFlags = dsFlags;
-    bufferDesc.lpwfxFormat = WaveFormatSdk(&bufferFormat);
+    bufferDesc.lpwfxFormat = &bufferFormat;
 
     bufferFormat.cbSize = 0;
     bufferDesc.dwSize = 0x14;
@@ -248,7 +247,7 @@ StreamVoice* SoundStream::OpenStream(
     if (source == NULL) {
         return NULL;
     }
-    WaveFormatX format;
+    WAVEFORMATEX format;
     u32 dataOffset;
     u32 dataBytes;
     if (ParseWave(source, &format, &dataOffset, &dataBytes) == 0) {
@@ -341,7 +340,7 @@ i32 SoundStream::TickStreams(i32 timestampMs) {
 RVA(0x00137b70, 0x159)
 i32 SoundStream::ParseWave(
     CRezItm* source,
-    WaveFormatX* outFormat,
+    WAVEFORMATEX* outFormat,
     u32* outDataOffset,
     u32* outDataBytes
 ) {
@@ -415,7 +414,7 @@ StreamFeeder::~StreamFeeder() {
 RVA(0x00137d10, 0xab)
 i32 StreamFeeder::Initialize(
     SoundDevice* owner,
-    WaveFormatX* format,
+    WAVEFORMATEX* format,
     u32 bufferBytes,
     u32 refillThresholdBytes,
     SoundBuffer* buffer,

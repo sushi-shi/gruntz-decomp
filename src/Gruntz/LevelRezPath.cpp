@@ -38,7 +38,7 @@ i32 CGruntzMgr::ResolveLevelChecksum(
             } else {
                 file.Read(&buf, sizeof(buf));
                 file.Close();
-                return buf.checksum;
+                return buf.m_checksum;
             }
         }
         return 0;
@@ -61,7 +61,7 @@ i32 CGruntzMgr::ResolveLevelChecksum(
             }
             memcpy(&buf, parsed, 0x5f4);
             sub->UnLoad();
-            return buf.checksum;
+            return buf.m_checksum;
         } else {
             WwdHeader buf;
             CRezDir* node = m_resourceArchive->GetDirFromPath("GAME_MULTI");
@@ -78,7 +78,7 @@ i32 CGruntzMgr::ResolveLevelChecksum(
             }
             memcpy(&buf, parsed, 0x5f4);
             sub->UnLoad();
-            return buf.checksum;
+            return buf.m_checksum;
         }
     } else {
         WwdHeader buf;
@@ -103,7 +103,7 @@ i32 CGruntzMgr::ResolveLevelChecksum(
         }
         memcpy(&buf, parsed, 0x5f4);
         sub->UnLoad();
-        return buf.checksum;
+        return buf.m_checksum;
     }
 }
 

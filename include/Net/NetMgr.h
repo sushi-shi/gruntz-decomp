@@ -9,6 +9,7 @@
 #include <Gruntz/ColorTint.h>
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/ObList.h>
+#include <Gruntz/PlayerSlot.h>
 #include <Gruntz/String.h>
 #include <Ints.h>
 #include <Net/NetMsgId.h>
@@ -41,17 +42,11 @@ extern i32 g_dropPlayerId;
 extern i32 g_localVersion;
 extern i32 g_remoteVersion;
 
-union NetGuid {
-    GUID m_guid;
-    i32 m_words[4];
-};
-
-extern NetGuid g_dplayAppGuid;
+extern GUID g_dplayAppGuid;
 extern i32 g_cfgWord;
 
 struct CNetVersionPacket {
     GZ_ENUM_STORAGE(NetPacketFlags, u8) m_flags;
-    char m_pad1[3];
 
     NetMsgId m_messageId;
     i32 m_butePos;
@@ -65,7 +60,6 @@ class CNetPlayerNode;
 
 struct CNetValuePacket {
     GZ_ENUM_STORAGE(NetPacketFlags, u8) m_flags;
-    char m_pad1[3];
     NetMsgId m_messageId;
     i32 m_value;
     char m_padc[4];
@@ -73,7 +67,6 @@ struct CNetValuePacket {
 
 struct CNetOptionsStatePacket {
     GZ_ENUM_STORAGE(NetPacketFlags, u8) m_flags;
-    char m_pad1[3];
     NetMsgId m_messageId;
     i32 m_value;
 };
@@ -148,7 +141,7 @@ struct CNetCmdSlot {
     CMulti* m_owner;
 
     CPtrList m_records;
-    i32 m_drainAckFlags[NET_SLOT_COUNT];
+    i32 m_drainAckFlags[PLAYER_SLOT_COUNT];
     i32 m_receivedAhead[3];
     i32 m_peerReceivedAhead[3];
 
@@ -191,7 +184,6 @@ struct GruntRec {
     i32 m_sequence;
     i32 m_checksum;
     unsigned char m_entryCount;
-    char m_pad09[3];
     i32 m_payloadLength;
     char m_payload[NET_COMMAND_RECORD_PAYLOAD_BYTES];
 };
@@ -233,7 +225,7 @@ struct CNetSession {
     b32 m_batchBuilt;
     i32 m_sequence;
     i32 m_commandPeriod;
-    CNetCmdSlot m_slots[NET_SLOT_COUNT];
+    CNetCmdSlot m_slots[PLAYER_SLOT_COUNT];
     CGruntzCommand* m_commandByTick[0x80];
     GruntRec m_commandRecords[0x80];
 
@@ -351,7 +343,6 @@ extern CNetOptionsStatePacket g_optionsClosedPacket;
 
 struct CNetChatPacket {
     GZ_ENUM_STORAGE(NetPacketFlags, u8) m_flags;
-    char m_pad1[3];
     NetMsgId m_messageId;
     i32 m_value;
     char m_text[0x100]; // capacity unproven
@@ -418,7 +409,7 @@ public:
 
     i32 EnumerateSessions(DWORD timeoutMs, DWORD flags);
 
-    i32 Initialize(void* lobby, NetGuid appGuid);
+    i32 Initialize(void* lobby, GUID appGuid);
 
     CNetSessionListNode* AddSessionListing(LPCDPSESSIONDESC2 sessionDesc);
     void PopulateSessionList(HWND hList);
@@ -447,7 +438,7 @@ public:
     static void SetReportMode(b32 log, b32 msgBox, b32 beep, b32 debugOutput);
     void PopulateProviderList(HWND hList, i32 excludedProviderKinds);
 
-    NetGuid m_appGuid;
+    GUID m_appGuid;
     IDirectPlay* m_directPlayBase;
     IDirectPlay4A* m_directPlay;
 

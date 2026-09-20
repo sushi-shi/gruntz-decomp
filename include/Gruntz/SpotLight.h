@@ -27,7 +27,6 @@ public:
 
     int Update();
 
-    char m_pad54[0x58 - 0x54];
     double m_angularVelocity;
     DoubleVector2 m_position;
     DoubleVector2 m_center;

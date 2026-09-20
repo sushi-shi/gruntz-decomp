@@ -130,8 +130,6 @@ public:
     i32 m_reserved20c; // 1 in init, 2 in credits; never read
     CMoviePlayer* m_videoHandle;
 
-    char m_pad214[0x218 - 0x214];
-
     i32 InitAttractTitle();
 
     i32 SetupTitle();
@@ -253,8 +251,6 @@ public:
     CWwdSpriteObject* m_bootyPerfectSprite;
 
     CWwdSpriteObject* m_icons[8];
-
-    char m_pad31c[0x320 - 0x31c];
 };
 
 class CMultiBootyState : public CState {

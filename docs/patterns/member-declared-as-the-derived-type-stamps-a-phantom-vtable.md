@@ -11,16 +11,10 @@ into the enclosing constructor, which calls the base ctor and then stamps
 stamps nothing. Sizes and layouts are identical - `Derived` adds no data - so
 nothing but the vptr census sees it.
 
-```cpp
-// NO - CGrunt::CGrunt gains `mov [reg],OFFSET ??_7CGruntCoordList@@6B@`
-class CGruntCoordList : public CPtrList { public: void*& NextData(POSITION&); };
-CGruntCoordList m_coordList;
-
-// YES - the member is the base; the derived type is still reachable where the
-// source really used it, through a cast, which emits nothing at all
-CPtrList m_coordList;
-CGruntCoordList* CoordListOps() { return static_cast<CGruntCoordList*>(&m_coordList); }
-```
+The current source stores a real `CPtrList` member and traverses it through
+`POSITION` and the SDK API. A derived member would add an unsupported vptr
+stamp. The earlier cast-only subclass was also removed by the SDK audit;
+see the correction below.
 
 ## The trap: a missing vtable does NOT mean a missing class
 
@@ -63,16 +57,23 @@ instructions / 34 relocations against target 408 / 33.
 Retyping the member: **89.74 -> 92.39**, a new MAX, and the census drops from 4
 withheld rows to 3 with 976 aligned pairs and 0 defects.
 
-## Do not over-correct
+## Identity needs positive evidence
 
-Deleting the class outright - member to `CPtrList`, `NextData` respelled
-`GetNext`, the `RVA(0x29a30)` claim moved to `functions_static_libs.tsv` as an
-out-of-line MFC header inline - was measured and is WORSE: 19 fresh regressions
-instead of 10, because the eight call sites lose retail's out-of-line call
-(`CVoiceManager::SelectVoiceVariant` 100.00 -> 83.71 on its own) once cl expands the
-tiny `CPtrList::GetNext` body. Reproducing that call honestly is an inline-budget
-question, not a spelling one: `<MfcNoInline.h>` cannot reach `afxcoll.inl`, because
-the canonical include order parses `<Mfc.h>` - and with it `<afxcoll.h>` - before
-`<MfcNoInline.h>`'s `#undef _AFX_ENABLE_INLINES` is seen. Moving that `#undef`
-ahead of `<afxcoll.h>` inside `<MfcNoInline.h>` is byte-for-byte inert for exactly
-that reason (measured: identical score, identical 19 rows).
+Earlier tests found that replacing the cast-only `NextData` wrapper with the
+SDK API expanded eight calls and changed caller scores. That is evidence about
+inline boundaries, not proof of a source class. No allocation, member, or
+independent class identity supported the subclass. The old `MfcNoInline.h`
+experiment was inert because `afxcoll.inl` had already been parsed.
+
+## SDK audit correction (2026-09-08)
+
+The absence of a derived vtable remains insufficient by itself to disprove a
+class. It also never supplied positive evidence for the cast-only class used
+here. The retained `NextData` body was exactly the shipped non-const
+`CPtrList::GetNext`, and every underlying object was constructed as `CPtrList`.
+The SDK cleanup removes the fabricated subclass and its downcasts, uses the
+public list API, and attributes 0x29a30 as an MFC header inline, consistently
+with the nearby SDK CRect constructor at 0x29ac0. Current TUs expand all uses;
+no fake call, extra definition, or source visibility switch is retained to
+force an emitter. Earlier caller-score differences record an inline boundary
+question; they do not justify a fabricated class or private-node layout.

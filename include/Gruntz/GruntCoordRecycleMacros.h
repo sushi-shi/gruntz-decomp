@@ -3,12 +3,12 @@
 
 #define RECYCLE_GRUNT_COORDS(grunt)                                                                \
     {                                                                                              \
-        CoordNode* node = (grunt)->CoordHead();                                                    \
+        POSITION node = (grunt)->CoordHead();                                                      \
         while (node != NULL) {                                                                     \
-            CoordNode* current = node;                                                             \
-            node = node->m_next;                                                                   \
-            if (current->m_coord != NULL) {                                                        \
-                g_coordPool.Push(current->m_coord);                                                \
+            POSITION current = node;                                                               \
+            (grunt)->m_coordList.GetNext(node);                                                    \
+            if (static_cast<Coord*>((grunt)->m_coordList.GetAt(current)) != NULL) {                \
+                g_coordPool.Push(static_cast<Coord*>((grunt)->m_coordList.GetAt(current)));        \
             }                                                                                      \
         }                                                                                          \
         (grunt)->m_coordList.RemoveAll();                                                          \
@@ -16,12 +16,13 @@
 
 #define RECYCLE_GRUNT_COORDS_EXPANDED(grunt)                                                       \
     {                                                                                              \
-        CoordNode* node = (grunt)->CoordHead();                                                    \
+        POSITION node = (grunt)->CoordHead();                                                      \
         while (node != NULL) {                                                                     \
-            CoordNode* current = node;                                                             \
-            node = node->m_next;                                                                   \
-            if (current->m_coord != NULL) {                                                        \
-                CoordPoolNode* slot = g_coordPool.NodeOf(current->m_coord);                        \
+            POSITION current = node;                                                               \
+            (grunt)->m_coordList.GetNext(node);                                                    \
+            if (static_cast<Coord*>((grunt)->m_coordList.GetAt(current)) != NULL) {                \
+                CoordPoolNode* slot =                                                              \
+                    g_coordPool.NodeOf(static_cast<Coord*>((grunt)->m_coordList.GetAt(current)));  \
                 slot->m_next = g_coordPool.m_freeHead;                                             \
                 g_coordPool.m_freeHead = slot;                                                     \
             }                                                                                      \
@@ -33,7 +34,7 @@
     {                                                                                              \
         POSITION position = (grunt)->m_coordList.GetHeadPosition();                                \
         while (position != NULL) {                                                                 \
-            Coord* coord = static_cast<Coord*>((grunt)->CoordListOps()->NextData(position));       \
+            Coord* coord = static_cast<Coord*>((grunt)->m_coordList.GetNext(position));            \
             if (coord != NULL) {                                                                   \
                 g_coordPool.Push(coord);                                                           \
             }                                                                                      \

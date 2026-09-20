@@ -28,8 +28,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-static const i32 SAVE_PREVIEW_BYTES = 0x3843a;
-static const i32 SAVE_PREVIEW_BITMAP_OFFSET = 0xe;
+static const i32 s_savePreviewBytes = 0x3843a;
+static const i32 s_savePreviewBitmapOffset = 0xe;
 
 RVA(0x000e35f0, 0x77)
 BOOL CALLBACK SaveGameDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -283,19 +283,26 @@ void FillSaveDialog(HWND hWnd, CSaveGame* sg) {
 }
 
 RVA(0x000e3e80, 0x86)
-void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6) {
+void LabelSaveSlot(
+    HWND hWnd,
+    SaveSlot* item,
+    i32 nameControlId,
+    i32 loadControlId,
+    i32 infoControlId,
+    i32 deleteControlId
+) {
     b32 flag;
     if (TempFileExists(item)) {
-        SetDlgItemTextA(hWnd, id3, item->m_name);
+        SetDlgItemTextA(hWnd, nameControlId, item->m_name);
         flag = true;
     } else {
-        SetDlgItemTextA(hWnd, id3, "(Empty)");
+        SetDlgItemTextA(hWnd, nameControlId, "(Empty)");
         flag = false;
     }
-    EnableWindow(GetDlgItem(hWnd, id3), true);
-    EnableWindow(GetDlgItem(hWnd, id4), true);
-    EnableWindow(GetDlgItem(hWnd, id5), flag);
-    EnableWindow(GetDlgItem(hWnd, id6), flag);
+    EnableWindow(GetDlgItem(hWnd, nameControlId), true);
+    EnableWindow(GetDlgItem(hWnd, loadControlId), true);
+    EnableWindow(GetDlgItem(hWnd, infoControlId), flag);
+    EnableWindow(GetDlgItem(hWnd, deleteControlId), flag);
 }
 RVA(0x000e3f40, 0x478)
 i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
@@ -514,7 +521,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
 RVA(0x000e44e0, 0x2b2)
 void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
     char title[0x80];
-    u8 readBuf[SAVE_PREVIEW_BYTES];
+    u8 readBuf[s_savePreviewBytes];
 
     if (!hDlg) {
         return;
@@ -571,7 +578,7 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
         return;
     }
 
-    f.Seek(-SAVE_PREVIEW_BYTES, CFile::end);
+    f.Seek(-s_savePreviewBytes, CFile::end);
     if (f.Read(readBuf, sizeof(readBuf)) != sizeof(readBuf)) {
         g_previewImage = NULL;
         f.Close();
@@ -579,7 +586,7 @@ void BuildLevelTitleString(HWND hDlg, CSaveGame* gate, SaveSlot* lev) {
     }
 
     f.Close();
-    g_previewImage = g_previewMgr->AddDib(&readBuf[SAVE_PREVIEW_BITMAP_OFFSET], DECODE_BMP);
+    g_previewImage = g_previewMgr->AddDib(&readBuf[s_savePreviewBitmapOffset], DECODE_BMP);
     SetDlgItemTextA(hDlg, CTRL_SAVESLOT_PREVIEW_TITLE, title);
 }
 

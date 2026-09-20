@@ -76,14 +76,14 @@ i32 g_dwRectsEditLen;
 
 RVA(0x0003c7f0, 0x18)
 bool SameCellTag(const GruntDirectionCell* a, const GruntDirectionCell* b) {
-    return a->direction == b->direction;
+    return a->m_direction == b->m_direction;
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0003c820, 0x18)
 bool DifferentCellTag(const GruntDirectionCell* a, const GruntDirectionCell* b) {
-    return a->direction != b->direction;
+    return a->m_direction != b->m_direction;
 }
 
 // @dead-code
@@ -92,10 +92,10 @@ RVA(0x0003c850, 0x38)
 void GruntDirectionCell::RotateClockwise(i32 steps) {
     if (steps > 0) {
         do {
-            CTriRecord next = g_directionClockwiseTable[row * 3 + column];
-            row = next.row;
-            column = next.column;
-            direction = next.direction;
+            CTriRecord next = g_directionClockwiseTable[m_row * 3 + m_column];
+            m_row = next.m_row;
+            m_column = next.m_column;
+            m_direction = next.m_direction;
         } while (--steps);
     }
 }
@@ -106,10 +106,10 @@ RVA(0x0003c8a0, 0x38)
 void GruntDirectionCell::RotateCounterclockwise(i32 steps) {
     if (steps > 0) {
         do {
-            CTriRecord next = g_directionCounterclockwiseTable[row * 3 + column];
-            row = next.row;
-            column = next.column;
-            direction = next.direction;
+            CTriRecord next = g_directionCounterclockwiseTable[m_row * 3 + m_column];
+            m_row = next.m_row;
+            m_column = next.m_column;
+            m_direction = next.m_direction;
         } while (--steps);
     }
 }
@@ -123,14 +123,14 @@ i32 CTriRecord::Serialize(
 ) {
     switch (mode) {
         case SERIAL_SAVE:
-            ar->Write(&row, sizeof(row));
-            ar->Write(&column, sizeof(column));
-            ar->Write(&direction, sizeof(direction));
+            ar->Write(&m_row, sizeof(m_row));
+            ar->Write(&m_column, sizeof(m_column));
+            ar->Write(&m_direction, sizeof(m_direction));
             break;
         case SERIAL_LOAD:
-            ar->Read(&row, sizeof(row));
-            ar->Read(&column, sizeof(column));
-            ar->Read(&direction, sizeof(direction));
+            ar->Read(&m_row, sizeof(m_row));
+            ar->Read(&m_column, sizeof(m_column));
+            ar->Read(&m_direction, sizeof(m_direction));
             break;
     }
     return 1;

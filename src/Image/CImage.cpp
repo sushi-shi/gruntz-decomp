@@ -46,8 +46,8 @@ i32 CImage::Create(char* path, i32 keyed) {
         return 0;
     }
 
-    m_width = item->m_width;
-    m_height = item->m_height;
+    m_width = item->m_apiDesc.dwWidth;
+    m_height = item->m_apiDesc.dwHeight;
     m_anchorX = m_width >> 1;
     m_anchorY = m_height >> 1;
     if (item->m_hasColorKey != false) {
@@ -83,12 +83,12 @@ i32 CImage::LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 ke
         return 0;
     }
 
-    if (mode == FMT_PID && (HAS(desc->flags, PID_GRAMMAR_SKIPRUN))) {
+    if (mode == FMT_PID && (HAS(desc->m_flags, PID_GRAMMAR_SKIPRUN))) {
         if (!BuildShadeBlitter(desc, size)) {
             return 0;
         }
 
-        if (m_owned != NULL && (HAS(desc->flags, PID_SRC_8BPP_SHADE))) {
+        if (m_owned != NULL && (HAS(desc->m_flags, PID_SRC_8BPP_SHADE))) {
             m_owned->Select(SHADE_DST_BY_SRC, NULL);
             return 1;
         }
@@ -96,10 +96,10 @@ i32 CImage::LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 ke
     }
     i32 colorKey = (keyed != 0) ? g_surfaceColorKey : -1;
     if (mode == FMT_PID || mode == FMT_RID) {
-        i32 g10 = desc->offsetX;
-        i32 g14 = desc->offsetY;
-        m_originX = g10;
-        m_originY = g14;
+        i32 imageOffsetX = desc->m_offsetX;
+        i32 imageOffsetY = desc->m_offsetY;
+        m_originX = imageOffsetX;
+        m_originY = imageOffsetY;
     } else {
         m_originX = 0;
         m_originY = 0;
@@ -115,9 +115,9 @@ i32 CImage::LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 ke
     if (item == NULL) {
         return 0;
     }
-    i32 w = item->m_width;
+    i32 w = item->m_apiDesc.dwWidth;
     m_width = w;
-    i32 h = item->m_height;
+    i32 h = item->m_apiDesc.dwHeight;
     m_height = h;
     m_anchorX = w >> 1;
     m_anchorY = h >> 1;
@@ -142,9 +142,9 @@ i32 CImage::CreateBlankSurface(i32 width, i32 height, i32 keyed) {
     if (item == NULL) {
         return 0;
     }
-    i32 w = item->m_width;
+    i32 w = item->m_apiDesc.dwWidth;
     m_width = w;
-    i32 h = item->m_height;
+    i32 h = item->m_apiDesc.dwHeight;
     m_height = h;
     m_anchorX = w >> 1;
     m_anchorY = h >> 1;
@@ -177,8 +177,8 @@ i32 CImage::BuildShadeBlitter(PidHeader* desc, u32 size) {
     m_bltFastFlags = DDBLTFAST_WAIT | DDBLTFAST_SRCCOLORKEY;
     m_anchorX = w >> 1;
     m_anchorY = h >> 1;
-    m_originX = desc->offsetX;
-    m_originY = desc->offsetY;
+    m_originX = desc->m_offsetX;
+    m_originY = desc->m_offsetY;
     return 1;
 }
 
@@ -228,8 +228,8 @@ i32 CImage::CopyFrom(CImage* other) {
 RVA(0x00153330, 0x36)
 i32 CImage::SetOrigin(PidHeader* desc, FileImageFormat mode) {
     if (mode == FMT_PID || mode == FMT_RID) {
-        i32 oy = desc->offsetY;
-        i32 ox = desc->offsetX;
+        i32 oy = desc->m_offsetY;
+        i32 ox = desc->m_offsetX;
         m_originX = ox;
         m_originY = oy;
     } else {
@@ -412,11 +412,11 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
 // @early-stop
 RVA(0x00153790, 0x6a)
 void CImage::RenderFrame(CDDrawSurfacePair* target, i32 x, i32 y, i32 flags) {
-    RVA_DYNINIT(0x00153800, 0x10, clip)
+    RVA_DYNINIT(0x00153800, 0x10, s_clip)
     DATA(0x002bf2a0)
-    static CResolveNode clip;
-    if (clip.Init(m_ownerCtx, 0, x, y, flags, 0)) {
-        this->RenderImage(&clip, target);
+    static CResolveNode s_clip;
+    if (s_clip.Init(m_ownerCtx, 0, x, y, flags, 0)) {
+        this->RenderImage(&s_clip, target);
     }
 }
 
@@ -429,14 +429,14 @@ void CImage::RenderFrameClipped(
     RECT* clipRect,
     i32 flags
 ) {
-    RVA_DYNINIT(0x001538b0, 0x10, clip)
+    RVA_DYNINIT(0x001538b0, 0x10, s_clip)
     DATA(0x002bf228)
-    static CResolveNode clip;
-    if (clip.Init(m_ownerCtx, 0, x, y, flags, 0)) {
+    static CResolveNode s_clip;
+    if (s_clip.Init(m_ownerCtx, 0, x, y, flags, 0)) {
         if (clipRect != NULL) {
-            clip.m_clip = *clipRect;
+            s_clip.m_clip = *clipRect;
         }
-        this->RenderImage(&clip, target);
+        this->RenderImage(&s_clip, target);
     }
 }
 

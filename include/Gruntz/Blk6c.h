@@ -6,7 +6,7 @@
 #include <Ints.h>
 
 struct Blk6c {
-    i32 d[0x1b];
+    i32 m_d[0x1b];
 };
 
 #endif // GRUNTZ_GRUNTZ_BLK6C_H

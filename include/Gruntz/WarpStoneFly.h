@@ -26,7 +26,6 @@ public:
     WarpStoneFragment m_arrivalMode;
     i32 m_targetX;
     i32 m_targetY;
-    char m_padc[0x10 - 0xc];
     double m_currentX;
     double m_currentY;
     double m_velocityScale;

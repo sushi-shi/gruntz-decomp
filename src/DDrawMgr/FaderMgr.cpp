@@ -231,7 +231,7 @@ void CFaderMgr::Remove(CFader* pFader) {
     i32 i = 0;
     i32 count = m_arr.GetSize();
     while (i <= count - 1) {
-        if (m_arr.m_pData[i] == pFader) {
+        if (m_arr[i] == pFader) {
             m_arr.RemoveAt(i);
             delete pFader;
             return;
@@ -243,21 +243,16 @@ void CFaderMgr::Remove(CFader* pFader) {
 RVA(0x0017e1d0, 0x4d)
 void CFaderMgr::DeleteAll() {
     i32 i = 0;
-    i32 last = m_arr.m_nSize - 1;
+    i32 last = m_arr.GetSize() - 1;
     if (last >= 0) {
         do {
-            CFader* p = m_arr.m_pData[i];
+            CFader* p = m_arr[i];
             delete p;
             i++;
-            last = m_arr.m_nSize - 1;
+            last = m_arr.GetSize() - 1;
         } while (i <= last);
     }
-    if (m_arr.m_pData) {
-        delete[] m_arr.m_pData;
-        m_arr.m_pData = NULL;
-    }
-    m_arr.m_nMaxSize = 0;
-    m_arr.m_nSize = 0;
+    m_arr.RemoveAll();
 }
 
 // @identity-TODO: placement beside Trace is the only evidence for the setting's name.
@@ -273,56 +268,7 @@ void CFaderMgr::Trace(CString s) {
     static_cast<void>(s);
 }
 
-RVA_COMPGEN(0x0017e240, 0x51, ??1CFaderArray@@UAE@XZ)
-
-RVA(0x0017e2a0, 0x188)
-RVA_COMPGEN(0x0017e430, 0x1e, ??_GCFaderArray@@UAEPAXI@Z)
-void CFaderArray::Serialize(CArchive& ar) {
-    if (ar.IsStoring()) {
-        ar.WriteCount(m_nSize);
-    } else {
-        i32 n = ar.ReadCount();
-        if (n == 0) {
-            if (m_pData != NULL) {
-                delete[] m_pData;
-                m_pData = NULL;
-            }
-            m_nMaxSize = 0;
-            m_nSize = 0;
-        } else if (m_pData == NULL) {
-            m_pData = new CFader*[n];
-            ConstructElements<CFader*>(m_pData, n);
-            m_nMaxSize = n;
-            m_nSize = n;
-        } else if (n <= m_nMaxSize) {
-            if (n > m_nSize) {
-                ConstructElements<CFader*>(&m_pData[m_nSize], n - m_nSize);
-            }
-            m_nSize = n;
-        } else {
-            i32 grow = m_nGrowBy;
-            if (grow == 0) {
-                grow = m_nSize / 8;
-                if (grow < 4) {
-                    grow = 4;
-                } else if (grow > 0x400) {
-                    grow = 0x400;
-                }
-            }
-            i32 newMax;
-            if (n < m_nMaxSize + grow) {
-                newMax = m_nMaxSize + grow;
-            } else {
-                newMax = n;
-            }
-            CFader** nd = new CFader*[newMax];
-            memcpy(nd, m_pData, m_nSize * 4);
-            ConstructElements<CFader*>(&nd[m_nSize], n - m_nSize);
-            delete[] m_pData;
-            m_pData = nd;
-            m_nSize = n;
-            m_nMaxSize = newMax;
-        }
-    }
-    SerializeElements<CFader*>(ar, m_pData, m_nSize);
-}
+RVA_COMPGEN(0x0017e240, 0x51, ??1?$CArray@PAVCFader@@PAV1@@@UAE@XZ)
+RVA_COMPGEN(0x0017e2a0, 0x188, ?Serialize@?$CArray@PAVCFader@@PAV1@@@UAEXAAVCArchive@@@Z)
+RVA_COMPGEN(0x0017e430, 0x1e, ??_G?$CArray@PAVCFader@@PAV1@@@UAEPAXI@Z)
+template class CArray<CFader*, CFader*>;

@@ -28,7 +28,6 @@ public:
     virtual void FireActivation(i32 id) OVERRIDE;
     i32 AdvanceFall();
 
-    char m_pad54[0x58 - 0x54];
     double m_timePerTile;
     double m_fallY;
     i32 m_landY;

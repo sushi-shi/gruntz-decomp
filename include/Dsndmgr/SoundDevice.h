@@ -5,9 +5,9 @@
 
 #include <Mfc.h>
 
+#include <Dsndmgr/RiffWave.h>
 #include <Dsndmgr/SoundBuffer.h>
 #include <Dsndmgr/SoundTask.h>
-#include <Dsndmgr/WaveFormatX.h>
 #include <Enums.h>
 
 class SoundDevice;
@@ -25,17 +25,17 @@ public:
     void DestroyBuffer(SoundBuffer* buffer);
     void StopAllBuffers();
     i32 ClearVolumeRamps();
-    i32 SetPrimaryFormat(WaveFormatX* format);
+    i32 SetPrimaryFormat(WAVEFORMATEX* format);
 
     i32 StartPrimaryBuffer();
     i32 CreatePrimaryBuffer();
     IDirectSoundBuffer* GetPrimary();
-    SoundSample* CreateSample(WaveFormatX* format, u32 bytes, u32 flags);
+    SoundSample* CreateSample(WAVEFORMATEX* format, u32 bytes, u32 flags);
     SoundSample* LoadSampleFile(char* path, u32 flags, u32 loadOptions);
     SoundSample* LoadSample(RiffWaveHeader* riff, u32 flags, u32 loadOptions);
     SoundSample* LoadSampleResource(const char* name, u32 flags, u32 loadOptions);
     i32 ReloadResource(SoundBuffer* buffer, const char* name, u32 loadOptions);
-    i32 ValidateRestore(SoundBuffer* buffer, WaveFormatX* format, u32 formatBytes);
+    i32 ValidateRestore(SoundBuffer* buffer, WAVEFORMATEX* format, u32 formatBytes);
     i32 ReloadRiff(SoundBuffer* buffer, RiffWaveHeader* riff, u32 loadOptions);
     i32 ReloadFile(SoundBuffer* buffer, char* path, u32 loadOptions);
 

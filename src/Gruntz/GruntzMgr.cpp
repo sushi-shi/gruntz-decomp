@@ -179,9 +179,8 @@ i32 g_remoteVersion = 1;
 DATA(0x0020fa78)
 i32 g_unreferencedGruntzMgrValues[16] = {1, 2, -1, 3, -1, 4, -1, 5, -1, 6, -1, 7, -1, 8, 9, 10};
 DATA(0x0020fab8)
-NetGuid g_dplayAppGuid = {
-    {0xf41cf640, 0x91b2, 0x11d1, {0x8d, 0xfc, 0x00, 0x60, 0x97, 0x9f, 0xa8, 0x1e}}
-};
+GUID g_dplayAppGuid =
+    {0xf41cf640, 0x91b2, 0x11d1, {0x8d, 0xfc, 0x00, 0x60, 0x97, 0x9f, 0xa8, 0x1e}};
 DATA(0x0020fac8)
 b32 g_pendingFrame = true;
 DATA(0x00212610)
@@ -526,9 +525,9 @@ RVA(0x0008b960, 0x808)
 i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, b32 keepCurrent, i32 unused) {
     static_cast<void>(unused);
     TRACE("TransitionState %d\n", stateId);
-    GameStateId local10 = GAMESTATE_NONE;
+    GameStateId previousState = GAMESTATE_NONE;
     if (m_curState != NULL) {
-        local10 = m_curState->Update();
+        previousState = m_curState->Update();
         i32 savedSub = m_curState->m_levelIndex;
         m_curState->LeaveState(stateId);
         if (keepCurrent != false) {
@@ -595,7 +594,7 @@ i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, b32 keepCurren
     {
         CState* st = m_curState;
 
-        b32 ok = st->LoadGameAssetNamespaces(this, areaArg, IDX(local10));
+        b32 ok = st->LoadGameAssetNamespaces(this, areaArg, IDX(previousState));
         st = m_curState;
         if (ok == false) {
             if (st != NULL) {
@@ -604,7 +603,7 @@ i32 CGruntzMgr::TransitionState(GameStateId stateId, i32 areaArg, b32 keepCurren
             m_curState = NULL;
             return 0;
         }
-        st->EnterState(local10);
+        st->EnterState(previousState);
         m_owner->m_running = true;
         g_inputMgr->ReadAll();
         RefreshGameClock();
@@ -1695,18 +1694,18 @@ void CGruntzMgr::RecomputeViewScale() {
     float fw = static_cast<float>(iw);
     float fh = static_cast<float>(ih);
 
-    view->m_defaultActiveRegionSize.w = static_cast<i32>((fw * 1.4f));
-    view->m_defaultActiveRegionSize.h = static_cast<i32>((fh * 1.4f));
+    view->m_defaultActiveRegionSize.m_w = static_cast<i32>((fw * 1.4f));
+    view->m_defaultActiveRegionSize.m_h = static_cast<i32>((fh * 1.4f));
     view->MainPlaneNotify();
 
     view = m_world->m_level;
-    view->m_largeActiveRegionSize.w = static_cast<i32>((fw * 5.3f));
-    view->m_largeActiveRegionSize.h = static_cast<i32>((fh * 5.3f));
+    view->m_largeActiveRegionSize.m_w = static_cast<i32>((fw * 5.3f));
+    view->m_largeActiveRegionSize.m_h = static_cast<i32>((fh * 5.3f));
     view->MainPlaneNotify();
 
     view = m_world->m_level;
-    view->m_smallActiveRegionSize.w = static_cast<i32>((fw * 1.12f));
-    view->m_smallActiveRegionSize.h = static_cast<i32>((fh * 1.12f));
+    view->m_smallActiveRegionSize.m_w = static_cast<i32>((fw * 1.12f));
+    view->m_smallActiveRegionSize.m_h = static_cast<i32>((fh * 1.12f));
     view->MainPlaneNotify();
 
     CGameLevel* v = m_world->m_level;

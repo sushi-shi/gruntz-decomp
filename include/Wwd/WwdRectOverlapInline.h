@@ -3,7 +3,7 @@
 
 #include <Wwd/WwdFactoryObject.h>
 
-inline i32 CDDrawRectsOverlap(const CDDrawRect* a, const CDDrawRect* b) {
+inline i32 CDDrawRectsOverlap(const RECT* a, const RECT* b) {
     if (a->left > b->right) {
         return 0;
     }

@@ -46,7 +46,6 @@ public:
     i64 m_armClock;
     i64 m_interval;
     b32 m_tickHandled;
-    char m_pad6c[0x70 - 0x6c];
 };
 
 #endif // GRUNTZ_CTELEPORTER_H

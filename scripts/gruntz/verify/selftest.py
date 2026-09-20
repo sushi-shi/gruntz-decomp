@@ -237,6 +237,132 @@ class EnumDomainControls(unittest.TestCase):
         self.assertTrue(any("names a MEMBER" in f for f in fatal))
 
 
+class EnumReuseControls(unittest.TestCase):
+    def _scan(self, files):
+        from gruntz.verify import enum_reuse
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            (root / "src").mkdir()
+            paths = []
+            entries = []
+            for name, source in files.items():
+                path = root / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(source)
+                paths.append(path)
+                if path.suffix == ".cpp":
+                    entries.append({
+                        "directory": str(root),
+                        "file": name,
+                        "arguments": ["clang-cl", "/c", name, "/TP"],
+                    })
+            blocks = enum_reuse.scan_blocks(repo=root, paths=paths)
+            raw, contexts, errors = enum_reuse.scan_entries(
+                entries, repo=root, jobs=1)
+            constants, uncovered_source, uncovered_ast = enum_reuse._join(
+                raw, contexts, blocks)
+            return constants, blocks, uncovered_source, uncovered_ast, errors
+
+    def test_evaluates_aliases_expressions_and_implicit_members(self):
+        constants, blocks, missing_source, missing_ast, errors = self._scan({
+            "src/Probe.cpp": (
+                "enum First { FIRST_ZERO = 0, FIRST_TEN = 5 * 2 };\n"
+                "enum Second { SECOND_TEN = FIRST_TEN, SECOND_NEXT };\n"
+            ),
+        })
+        self.assertEqual(errors, [])
+        self.assertEqual(missing_source, [])
+        self.assertEqual(missing_ast, [])
+        self.assertEqual(len(blocks), 2)
+        self.assertEqual(
+            [(row.name, row.value) for row in constants],
+            [("FIRST_ZERO", 0), ("FIRST_TEN", 10),
+             ("SECOND_TEN", 10), ("SECOND_NEXT", 11)],
+        )
+
+    def test_shared_header_declaration_is_deduplicated_with_both_contexts(self):
+        header = "enum Shared { SHARED_TEN = 10 };\n"
+        constants, _blocks, missing_source, missing_ast, errors = self._scan({
+            "include/Shared.h": header,
+            "src/A.cpp": '#include "../include/Shared.h"\n',
+            "src/B.cpp": '#include "../include/Shared.h"\n',
+        })
+        self.assertEqual(errors, [])
+        self.assertEqual(missing_source, [])
+        self.assertEqual(missing_ast, [])
+        self.assertEqual(len(constants), 1)
+        self.assertEqual(constants[0].contexts, ("src/A.cpp", "src/B.cpp"))
+
+    def test_member_comments_are_not_mistaken_for_enumerator_names(self):
+        constants, blocks, missing_source, missing_ast, errors = self._scan({
+            "src/Probe.cpp": (
+                "enum First { /* explanatory words */ FIRST = 10,\n"
+                "// another explanation\nSECOND = 11 };\n"
+            ),
+        })
+        self.assertEqual(errors, [])
+        self.assertEqual(missing_source, [])
+        self.assertEqual(missing_ast, [])
+        self.assertEqual(
+            [member.name for member in blocks[0].members],
+            ["FIRST", "SECOND"],
+        )
+        self.assertEqual(
+            [(row.name, row.value) for row in constants],
+            [("FIRST", 10), ("SECOND", 11)],
+        )
+
+    def test_ledger_rejects_pending_and_unclaimed_members(self):
+        from gruntz.verify import enum_reuse
+        constants, blocks, _missing_source, _missing_ast, _errors = self._scan({
+            "src/Probe.cpp": "enum First { FIRST = 10 };\n",
+        })
+        with tempfile.TemporaryDirectory() as td:
+            ledger = Path(td) / "review.tsv"
+            enum_reuse.init_ledger(ledger, constants, blocks)
+            findings = enum_reuse.check_ledger(ledger, constants)
+        self.assertTrue(any("review is pending" in row for row in findings))
+
+    def test_ledger_proves_removed_members_reuse_a_current_canonical(self):
+        from gruntz.verify import enum_reuse
+        constants, _blocks, _missing_source, _missing_ast, _errors = self._scan({
+            "src/Probe.cpp": "enum Canonical { CANONICAL_TEN = 10 };\n",
+        })
+        canonical = "src/Probe.cpp:Canonical"
+        removed = "src/Old.h:OldDomain"
+        with tempfile.TemporaryDirectory() as td:
+            ledger = Path(td) / "review.tsv"
+            ledger.write_text(
+                "\t".join(enum_reuse.LEDGER_FIELDS) + "\n"
+                f"{canonical}\tCANONICAL_TEN=10\tcanonical\t{canonical}\t\t"
+                "Owns the shared quantity.\n"
+                f"{removed}\tOLD_TEN=10\treuse\t{canonical}\t"
+                f"OLD_TEN={canonical}::CANONICAL_TEN\t"
+                "The old producer and canonical consumer carry one value.\n"
+            )
+            findings = enum_reuse.check_ledger(ledger, constants)
+        self.assertEqual(findings, [])
+
+    def test_ledger_rejects_a_current_member_without_starting_provenance(self):
+        from gruntz.verify import enum_reuse
+        constants, _blocks, _missing_source, _missing_ast, _errors = self._scan({
+            "src/Probe.cpp": (
+                "enum Canonical { CANONICAL_TEN = 10, CANONICAL_NEW = 11 };\n"
+            ),
+        })
+        canonical = "src/Probe.cpp:Canonical"
+        with tempfile.TemporaryDirectory() as td:
+            ledger = Path(td) / "review.tsv"
+            ledger.write_text(
+                "\t".join(enum_reuse.LEDGER_FIELDS) + "\n"
+                f"{canonical}\tCANONICAL_TEN=10\tcanonical\t{canonical}\t\t"
+                "Owns the shared quantity.\n"
+            )
+            findings = enum_reuse.check_ledger(ledger, constants)
+        self.assertTrue(any("no starting-ledger provenance" in row
+                            for row in findings))
+
+
 class ConstantControls(unittest.TestCase):
     def _scan(self, source, *, flags=None):
         from gruntz.verify import constants
@@ -1992,10 +2118,10 @@ def _access(target, width=4, form="direct", rw="r", mnemonic="mov", text="",
                   text=text or f"{mnemonic} probe", owner=None)
 
 
-def _findings(claims, accesses, rows=(), layout=None, cells=()):
+def _findings(claims, accesses, rows=(), layout=None, cells=(), image=None):
     """Categories fired by one synthetic claim set - hermetic, no image."""
     from gruntz.verify import data_access as da
-    img = mock.Mock()
+    img = image if image is not None else mock.Mock()
     img.pe.data_regions.return_value = {"rdata": (0, 0), "data": (0, 1 << 30),
                                         "bss": (0, 0),
                                         "idata": (0x2C3000, 0x2C6C00)}
@@ -2056,6 +2182,71 @@ class LayoutOracleControls(unittest.TestCase):
         miss = [b.name for b in resolve().data
                 if b.channel == "src" and not lay.var(b.unit, b.name)]
         self.assertEqual(miss[:5], [])
+
+
+class RecordCopyWidthControls(unittest.TestCase):
+    def fixture(self, *, last_store=True, wrong_destination=False, altered_value=False,
+                extra_read=False, partial_register=False, overwrite_store=False):
+        import struct
+        node = {'k': 'rec', 't': 'SDKRecord', 'sz': 16, 'm': [
+            [0, '.Data1', _prim('unsigned long', 4)],
+            [4, '.Data2', _prim('unsigned short', 2)],
+            [6, '.Data3', _prim('unsigned short', 2)],
+            [8, '.Data4', _arr(_prim('unsigned char', 1), 8)],
+        ]}
+        blob = bytearray()
+        accesses = []
+        for offset in range(0, 16, 4):
+            site = 0x1000 + len(blob)
+            blob += b'\xa1' + struct.pack('<I', 0x402000 + offset)
+            access = _access(0x2000 + offset, insn=site)
+            access.insn_len = 5
+            accesses.append(access)
+            if offset == 0:
+                blob += bytes.fromhex('83ec10 8bd4 51')
+            if altered_value and offset == 4:
+                blob += b'\x40'  # inc eax: value no longer a copy
+            if partial_register and offset == 4:
+                blob += bytes.fromhex('b000')  # mov al,0 also clobbers eax
+            if offset != 12 or last_store:
+                dest = 0x10 if wrong_destination and offset == 12 else offset
+                blob += b'\x89\x02' if dest == 0 else b'\x89\x42' + bytes([dest])
+            if overwrite_store and offset == 4:
+                blob += bytes.fromhex('c7420400000000')  # mov DWORD PTR [edx+4],0
+        blob += b'\xc3'
+        image = mock.Mock()
+        image.read.side_effect = lambda rva, size: bytes(blob[rva - 0x1000:rva - 0x1000 + size])
+        if extra_read:
+            accesses.append(_access(0x2004, insn=0x2000))
+        return _claim(0x2000, node), accesses, image
+
+    def test_complete_decoded_copy_passes_the_full_width_consumer(self):
+        claim, accesses, image = self.fixture()
+        self.assertNotIn('width', _cats(_findings([claim], accesses, image=image)))
+
+    def test_missing_store_does_not_suppress_the_wide_read(self):
+        claim, accesses, image = self.fixture(last_store=False)
+        self.assertIn('width', _cats(_findings([claim], accesses, image=image)))
+
+    def test_wrong_destination_stride_is_not_a_record_copy(self):
+        claim, accesses, image = self.fixture(wrong_destination=True)
+        self.assertIn('width', _cats(_findings([claim], accesses, image=image)))
+
+    def test_modified_register_is_not_a_copy(self):
+        claim, accesses, image = self.fixture(altered_value=True)
+        self.assertIn('width', _cats(_findings([claim], accesses, image=image)))
+
+    def test_one_valid_copy_does_not_exempt_other_accesses(self):
+        claim, accesses, image = self.fixture(extra_read=True)
+        self.assertIn('width', _cats(_findings([claim], accesses, image=image)))
+
+    def test_partial_register_write_is_not_a_copy(self):
+        claim, accesses, image = self.fixture(partial_register=True)
+        self.assertIn('width', _cats(_findings([claim], accesses, image=image)))
+
+    def test_overwritten_destination_is_not_a_copy(self):
+        claim, accesses, image = self.fixture(overwrite_store=True)
+        self.assertIn('width', _cats(_findings([claim], accesses, image=image)))
 
 
 class DataAccessCategoryControls(unittest.TestCase):

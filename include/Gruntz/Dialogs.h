@@ -140,17 +140,17 @@ public:
     long OnPaint();
 
 protected:
-    static const AFX_MSGMAP messageMap;
+    static const AFX_MSGMAP s_messageMap;
 
 private:
-    static const AFX_MSGMAP_ENTRY _messageEntries[];
+    static const AFX_MSGMAP_ENTRY s_messageEntries[];
 };
 
 class CBattlezDlgCustom : public CDialog {
 public:
     CBattlezDlgCustom(CWnd* pParent);
 
-    static const AFX_MSGMAP messageMap;
+    static const AFX_MSGMAP s_messageMap;
     virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE;
     virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE;
 
@@ -160,15 +160,15 @@ public:
 
 protected:
 private:
-    static const AFX_MSGMAP_ENTRY _messageEntries[];
+    static const AFX_MSGMAP_ENTRY s_messageEntries[];
 };
 
 class CBattlezDlgColors : public CDialog {
 public:
     CBattlezDlgColors(class CGruntzMgr* gameManager, i32 slotIndex, i32 networked, CWnd* pParent);
 
-    static const AFX_MSGMAP messageMap;
-    static const AFX_MSGMAP_ENTRY _messageEntries[];
+    static const AFX_MSGMAP s_messageMap;
+    static const AFX_MSGMAP_ENTRY s_messageEntries[];
 
     virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE;
     virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE;
@@ -186,8 +186,8 @@ class CMultiStartDlg : public CDialog {
 public:
     CMultiStartDlg(class CGruntzMgr* gameManager, CWnd* pParent);
 
-    static const AFX_MSGMAP messageMap;
-    static const AFX_MSGMAP_ENTRY _messageEntries[];
+    static const AFX_MSGMAP s_messageMap;
+    static const AFX_MSGMAP_ENTRY s_messageEntries[];
 
     virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE;
     virtual i32 DestroyWindow() OVERRIDE;
@@ -286,10 +286,10 @@ public:
 
     void OnToggleCheckpointPrompts();
 
-    static const AFX_MSGMAP messageMap;
+    static const AFX_MSGMAP s_messageMap;
 
 private:
-    static const AFX_MSGMAP_ENTRY _messageEntries[];
+    static const AFX_MSGMAP_ENTRY s_messageEntries[];
 };
 
 class CMultiHelpDlg : public CDialog {
@@ -299,11 +299,11 @@ public:
     virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE;
 
 protected:
-    static const AFX_MSGMAP messageMap;
+    static const AFX_MSGMAP s_messageMap;
     virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE;
 
 private:
-    static const AFX_MSGMAP_ENTRY _messageEntries[];
+    static const AFX_MSGMAP_ENTRY s_messageEntries[];
 };
 
 extern CString g_defaultPlayerNames[4];

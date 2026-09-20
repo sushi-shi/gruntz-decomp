@@ -8,9 +8,9 @@
 #include <string.h>
 
 DATA(0x0021a0a4)
-char s_rPlusB[] = "r+b";
+char g_rPlusB[] = "r+b";
 DATA(0x0021a0a8)
-char s_wPlusB[] = "w+b";
+char g_wPlusB[] = "w+b";
 
 DATA(0x0021a0a0)
 char g_wildcard[] = "*.*";
@@ -112,11 +112,11 @@ i32 CRezFile::Open(const char* fileName, b32 readOnly, b32 createNew) {
             if (readOnly) {
                 return 0;
             }
-            m_pFile = fopen(fileName, s_wPlusB);
+            m_pFile = fopen(fileName, g_wPlusB);
         } else if (readOnly) {
             m_pFile = fopen(fileName, "rb");
         } else {
-            m_pFile = fopen(fileName, s_rPlusB);
+            m_pFile = fopen(fileName, g_rPlusB);
         }
         if (m_pFile != NULL) {
             break;
@@ -383,11 +383,11 @@ i32 CRezFileSingleFile::ReallyOpen() {
             if (m_pDirEmulation->m_bReadOnly) {
                 return 0;
             }
-            m_pFile = fopen(m_sFileName, s_wPlusB);
+            m_pFile = fopen(m_sFileName, g_wPlusB);
         } else if (m_pDirEmulation->m_bReadOnly) {
             m_pFile = fopen(m_sFileName, "rb");
         } else {
-            m_pFile = fopen(m_sFileName, s_rPlusB);
+            m_pFile = fopen(m_sFileName, g_rPlusB);
         }
         if (m_pFile != NULL) {
             break;

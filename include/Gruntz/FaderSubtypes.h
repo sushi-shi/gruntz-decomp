@@ -50,8 +50,8 @@ public:
     i32 AdvanceSampleCursor(i32 row);
 
     i32 GetRandomNumber() {
-        static long holdrand = timeGetTime();
-        return (((holdrand = holdrand * 214013L + 2531011L) >> 16) & 0x7fff);
+        static long s_holdrand = timeGetTime();
+        return (((s_holdrand = s_holdrand * 214013L + 2531011L) >> 16) & 0x7fff);
     }
 
     i32 GetRandom(i32 lo, i32 hi) {
@@ -184,7 +184,7 @@ public:
     i32 m_sourceHeight;
     i32 m_warpWidth;
     i32 m_warpHeight;
-    char _pad78[0x478 - 0x78];
+    char m_pad78[0x478 - 0x78];
     i32* m_warpTable;
     u8* m_dstBase;
     u8* m_straightBase;

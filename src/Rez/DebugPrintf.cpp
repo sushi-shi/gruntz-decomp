@@ -12,28 +12,28 @@
 #include <string.h>
 
 DATA(0x002bf84c)
-u16* dprintfmonoscreen;
+u16* g_dprintfmonoscreen;
 DATA(0x002bf8d4)
-u32 dbprintfcurrentLine = 0;
+u32 g_dbprintfcurrentLine = 0;
 DATA(0x002bf8d8)
-u32 dprintfcurrentChar = 0;
+u32 g_dprintfcurrentChar = 0;
 DATA(0x002bf8dc)
-dprintfOutputType dprintfOutType = DPRINTF_UNKNOWN;
+dprintfOutputType g_dprintfOutType = DPRINTF_UNKNOWN;
 DATA(0x002bf8e0)
-FILE* dprintffile = NULL;
+FILE* g_dprintffile = NULL;
 
-RVA_DYNINIT(0x00184b60, 0xa, dprintfinit)
-RVA_DYNINIT(0x00184b70, 0xa, dprintfinit)
-RVA_DYNINIT(0x00184b80, 0xe, dprintfinit)
-RVA_DYNINIT(0x00184b90, 0xa, dprintfinit)
+RVA_DYNINIT(0x00184b60, 0xa, s_dprintfinit)
+RVA_DYNINIT(0x00184b70, 0xa, s_dprintfinit)
+RVA_DYNINIT(0x00184b80, 0xe, s_dprintfinit)
+RVA_DYNINIT(0x00184b90, 0xa, s_dprintfinit)
 DATA(0x002bf848)
-static dprintfinittype dprintfinit;
+static dprintfinittype s_dprintfinit;
 
 RVA(0x00184ba0, 0x33)
 BOOLEAN dprintfExcludeRegions::In(u32 Num) {
     u32 Loop;
-    for (Loop = 0; Loop < NumRegions; Loop++) {
-        if (Num >= Ary[Loop].From && Num <= Ary[Loop].To) {
+    for (Loop = 0; Loop < m_numRegions; Loop++) {
+        if (Num >= m_ary[Loop].m_from && Num <= m_ary[Loop].m_to) {
             return TRUE;
         }
     }
@@ -42,10 +42,10 @@ BOOLEAN dprintfExcludeRegions::In(u32 Num) {
 
 RVA(0x00184be0, 0x24)
 void dprintfExcludeRegions::Add(u32 From, u32 To) {
-    if (NumRegions + 1 < MAX_EXCLUDE_REGIONS) {
-        Ary[NumRegions].From = From;
-        Ary[NumRegions].To = To;
-        NumRegions++;
+    if (m_numRegions + 1 < MAX_EXCLUDE_REGIONS) {
+        m_ary[m_numRegions].m_from = From;
+        m_ary[m_numRegions].m_to = To;
+        m_numRegions++;
     }
 }
 
@@ -99,22 +99,22 @@ void dprintfExcludeRegions::Scan(char* Str) {
 }
 
 DATA(0x002bf850)
-dprintfExcludeRegions dprintfExReg;
+dprintfExcludeRegions g_dprintfExReg;
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00184d50, 0x5f)
 void dprintfmonoincline() {
-    dprintfcurrentChar = 0;
-    if (++dbprintfcurrentLine == LPP) {
+    g_dprintfcurrentChar = 0;
+    if (++g_dbprintfcurrentLine == LPP) {
         i32 i;
         for (i = CPL; i < CPL * LPP; i++) {
-            dprintfmonoscreen[i - CPL] = dprintfmonoscreen[i];
+            g_dprintfmonoscreen[i - CPL] = g_dprintfmonoscreen[i];
         }
         for (i = CPL * (LPP - 1); i < CPL * LPP; i++) {
-            dprintfmonoscreen[i] = ATTR + ' ';
+            g_dprintfmonoscreen[i] = ATTR + ' ';
         }
-        dbprintfcurrentLine--;
+        g_dbprintfcurrentLine--;
     }
 }
 
@@ -124,10 +124,10 @@ RVA(0x00184db0, 0x28)
 void dprintfmonoclrscr() {
     i32 i;
     for (i = 0; i < CPL * LPP; i++) {
-        dprintfmonoscreen[i] = ATTR + ' ';
+        g_dprintfmonoscreen[i] = ATTR + ' ';
     }
-    dbprintfcurrentLine = 0;
-    dprintfcurrentChar = 0;
+    g_dbprintfcurrentLine = 0;
+    g_dprintfcurrentChar = 0;
 }
 
 // @dead-code
@@ -142,10 +142,10 @@ void dprintfdoprint(char* Str) {}
 
 RVA(0x00184e00, 0x55)
 void dprintf(char* fmt, ...) {
-    if (dprintfOutType == DPRINTF_NOTHING || dprintfOutType == DPRINTF_UNKNOWN) {
+    if (g_dprintfOutType == DPRINTF_NOTHING || g_dprintfOutType == DPRINTF_UNKNOWN) {
         return;
     }
-    if (dprintfExReg.In(0)) {
+    if (g_dprintfExReg.In(0)) {
         return;
     }
 
@@ -161,10 +161,10 @@ void dprintf(char* fmt, ...) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00184e60, 0x6d)
 void dprintf(i32 x, i32 y, char* fmt, ...) {
-    if (dprintfOutType == DPRINTF_NOTHING || dprintfOutType == DPRINTF_UNKNOWN) {
+    if (g_dprintfOutType == DPRINTF_NOTHING || g_dprintfOutType == DPRINTF_UNKNOWN) {
         return;
     }
-    if (dprintfExReg.In(0)) {
+    if (g_dprintfExReg.In(0)) {
         return;
     }
 
@@ -181,10 +181,10 @@ void dprintf(i32 x, i32 y, char* fmt, ...) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00184ed0, 0x5b)
 void dprintf(u32 Level, char* fmt, ...) {
-    if (dprintfOutType == DPRINTF_NOTHING || dprintfOutType == DPRINTF_UNKNOWN) {
+    if (g_dprintfOutType == DPRINTF_NOTHING || g_dprintfOutType == DPRINTF_UNKNOWN) {
         return;
     }
-    if (dprintfExReg.In(Level)) {
+    if (g_dprintfExReg.In(Level)) {
         return;
     }
 
@@ -200,10 +200,10 @@ void dprintf(u32 Level, char* fmt, ...) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00184f30, 0x73)
 void dprintf(u32 Level, i32 x, i32 y, char* fmt, ...) {
-    if (dprintfOutType == DPRINTF_NOTHING || dprintfOutType == DPRINTF_UNKNOWN) {
+    if (g_dprintfOutType == DPRINTF_NOTHING || g_dprintfOutType == DPRINTF_UNKNOWN) {
         return;
     }
-    if (dprintfExReg.In(Level)) {
+    if (g_dprintfExReg.In(Level)) {
         return;
     }
 
@@ -237,71 +237,71 @@ void dclrscr(u32 Level) {}
 RVA(0x00185000, 0x1a6)
 dprintfinittype::dprintfinittype() {
     char Buf[BUFSIZE];
-    dprintfExReg.NumRegions = 0;
-    dprintfOutType = DPRINTF_NOTHING;
-    dprintfOutType = DPRINTF_NOTHING;
+    g_dprintfExReg.m_numRegions = 0;
+    g_dprintfOutType = DPRINTF_NOTHING;
+    g_dprintfOutType = DPRINTF_NOTHING;
     char* Str = getenv("DPRINTF");
     if (Str != NULL) {
         strcpy(Buf, Str);
         _strupr(Buf);
         if (strstr(Buf, "MONO")) {
-            dprintfOutType = DPRINTF_MONOCHROME;
+            g_dprintfOutType = DPRINTF_MONOCHROME;
         }
         if (strstr(Buf, "FILE")) {
-            dprintfOutType = DPRINTF_FILE;
+            g_dprintfOutType = DPRINTF_FILE;
         }
         if (strstr(Buf, "FILEAPPEND")) {
-            dprintfOutType = DPRINTF_FILEAPPEND;
+            g_dprintfOutType = DPRINTF_FILEAPPEND;
         }
         if (strstr(Buf, "COM1")) {
-            dprintfOutType = DPRINTF_COM1;
+            g_dprintfOutType = DPRINTF_COM1;
         }
         if (strstr(Buf, "COM2")) {
-            dprintfOutType = DPRINTF_COM2;
+            g_dprintfOutType = DPRINTF_COM2;
         }
         if (strstr(Buf, "STDOUT")) {
-            dprintfOutType = DPRINTF_STDOUT;
+            g_dprintfOutType = DPRINTF_STDOUT;
         }
         if (strstr(Buf, "LPT1")) {
-            dprintfOutType = DPRINTF_LPT1;
+            g_dprintfOutType = DPRINTF_LPT1;
         }
         if (strstr(Buf, "LPT2")) {
-            dprintfOutType = DPRINTF_LPT1;
+            g_dprintfOutType = DPRINTF_LPT1;
         }
         if (strstr(Buf, "PRN")) {
-            dprintfOutType = DPRINTF_PRN;
+            g_dprintfOutType = DPRINTF_PRN;
         }
-        dprintfExReg.Scan(Buf);
+        g_dprintfExReg.Scan(Buf);
     }
-    dprintfOutType = DPRINTF_MONOCHROME;
+    g_dprintfOutType = DPRINTF_MONOCHROME;
 
-    switch (dprintfOutType) {
+    switch (g_dprintfOutType) {
         case DPRINTF_FILE:
-            dprintffile = fopen("DPRINTF.OUT", "w");
-            if (dprintffile == NULL) {
-                dprintfOutType = DPRINTF_NOTHING;
+            g_dprintffile = fopen("DPRINTF.OUT", "w");
+            if (g_dprintffile == NULL) {
+                g_dprintfOutType = DPRINTF_NOTHING;
             }
             break;
         case DPRINTF_FILEAPPEND:
-            dprintffile = fopen("DPRINTF.OUT", "w");
-            fclose(dprintffile);
+            g_dprintffile = fopen("DPRINTF.OUT", "w");
+            fclose(g_dprintffile);
             break;
         case DPRINTF_LPT1:
-            dprintffile = fopen("LPT1", "w");
-            if (dprintffile == NULL) {
-                dprintfOutType = DPRINTF_NOTHING;
+            g_dprintffile = fopen("LPT1", "w");
+            if (g_dprintffile == NULL) {
+                g_dprintfOutType = DPRINTF_NOTHING;
             }
             break;
         case DPRINTF_LPT2:
-            dprintffile = fopen("LPT2", "w");
-            if (dprintffile == NULL) {
-                dprintfOutType = DPRINTF_NOTHING;
+            g_dprintffile = fopen("LPT2", "w");
+            if (g_dprintffile == NULL) {
+                g_dprintfOutType = DPRINTF_NOTHING;
             }
             break;
         case DPRINTF_PRN:
-            dprintffile = fopen("PRN", "w");
-            if (dprintffile == NULL) {
-                dprintfOutType = DPRINTF_NOTHING;
+            g_dprintffile = fopen("PRN", "w");
+            if (g_dprintffile == NULL) {
+                g_dprintfOutType = DPRINTF_NOTHING;
             }
             break;
     }
@@ -309,12 +309,12 @@ dprintfinittype::dprintfinittype() {
 
 RVA(0x001851b0, 0x23)
 dprintfinittype::~dprintfinittype() {
-    switch (dprintfOutType) {
+    switch (g_dprintfOutType) {
         case DPRINTF_FILE:
         case DPRINTF_LPT1:
         case DPRINTF_LPT2:
         case DPRINTF_PRN:
-            fclose(dprintffile);
+            fclose(g_dprintffile);
             break;
     }
 }

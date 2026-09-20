@@ -173,15 +173,15 @@ i32 FillLevelInfoDialog(HWND hDlg) {
     WwdHeader info;
     BOOL(WINAPI * setText)(HWND, int, LPCSTR) = SetDlgItemTextA;
     if (g_gameReg->m_world->m_level->IsValidWwd(static_cast<const char*>(g_pathStr), &info)) {
-        char* p = info.levelName;
+        char* p = info.m_levelName;
         while (*p && (*p < '0' || *p > '9')) {
             p++;
         }
         sprintf(num, "%i", atoi(p));
         setText(hDlg, 0x408, static_cast<const char*>(g_selectedCustomWorldName));
-        setText(hDlg, 0x428, info.author);
+        setText(hDlg, 0x428, info.m_author);
         setText(hDlg, 0x40c, num);
-        setText(hDlg, 0x429, info.created);
+        setText(hDlg, 0x429, info.m_created);
     } else {
         setText(hDlg, 0x408, "Bad Level File");
         setText(hDlg, 0x428, "Bad Level File");
@@ -259,14 +259,14 @@ BOOL CALLBACK CustomWorldInfoDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM 
                 && g_customWorldSurfaceMgr->m_level
                        ->IsValidWwd(static_cast<const char*>(g_pathStr), &info)) {
                 SetDlgItemTextA(hDlg, 0x408, static_cast<const char*>(g_levelStr));
-                SetDlgItemTextA(hDlg, 0x428, info.author);
-                char* p = info.levelName;
+                SetDlgItemTextA(hDlg, 0x428, info.m_author);
+                char* p = info.m_levelName;
                 while (*p && (*p < '0' || *p > '9')) {
                     p++;
                 }
                 sprintf(num, "%i", atoi(p));
                 SetDlgItemTextA(hDlg, 0x40c, num);
-                SetDlgItemTextA(hDlg, 0x429, info.created);
+                SetDlgItemTextA(hDlg, 0x429, info.m_created);
                 bad = 0;
             }
             if (bad) {

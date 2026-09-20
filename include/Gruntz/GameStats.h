@@ -5,13 +5,10 @@
 
 #include <Enums.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/PlayerSlot.h>
 #include <Gruntz/QuestLevelStats.h>
 #include <Gruntz/SerialArchive.h>
 #include <Ints.h>
-
-GZ_ENUM_CONST_BEGIN(BattlezPlayerCount)
-    BZ_PLAYER_COUNT = 4
-GZ_ENUM_CONST_END(BattlezPlayerCount)
 
 class CGameStats {
 public:
@@ -68,9 +65,9 @@ public:
     i32 m_secretsAvailable;
     i32 m_coinsAvailable;
     b32 m_warpLetterFound;
-    i32 m_gruntzByPlayer[BZ_PLAYER_COUNT];
-    i32 m_killsByPlayer[BZ_PLAYER_COUNT][BZ_PLAYER_COUNT];
-    i32 m_flagCapturesByPlayer[BZ_PLAYER_COUNT][BZ_PLAYER_COUNT];
+    i32 m_gruntzByPlayer[PLAYER_SLOT_COUNT];
+    i32 m_killsByPlayer[PLAYER_SLOT_COUNT][PLAYER_SLOT_COUNT];
+    i32 m_flagCapturesByPlayer[PLAYER_SLOT_COUNT][PLAYER_SLOT_COUNT];
 
     i32 m_weaponPickupsByPlayer[88];
     i32 m_toyPickupsByPlayer[40];

@@ -51,14 +51,14 @@ DATA(0x0022bf74)
 b32 g_clipRegionEnabled;
 
 DATA(0x001e96f0)
-static const double kScrollRate = 0.025;
+static const double s_scrollRate = 0.025;
 DATA(0x001e96f8)
-static const double kScreenH = 480.0;
+static const double s_screenH = 480.0;
 
 DATA(0x001e9700)
-static const double kMsToSeconds = 0.001;
+static const double s_msToSeconds = 0.001;
 DATA(0x001e9708)
-static const double kStepScale = 1000.0;
+static const double s_stepScale = 1000.0;
 
 RVA(0x00038d20, 0x176)
 i32 CCreditsState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
@@ -200,9 +200,9 @@ i32 CCreditsState::Render() {
     StepVideo();
     DrawScrollingCredits();
 
-    CDDrawSubMgrPages* v4 = m_world->m_drawTarget;
-    v4->m_frontSurface->m_surface->Flip(NULL);
-    v4->m_backPair->BltSelf(v4->m_overlayPair);
+    CDDrawSubMgrPages* drawPages = m_world->m_drawTarget;
+    drawPages->m_frontSurface->m_surface->Flip(NULL);
+    drawPages->m_backPair->BltSelf(drawPages->m_overlayPair);
 
     if (!m_musicStarted && owner()->m_musicEnabled) {
         owner()->m_midi->PlaySequence("CREDITZ", true);
@@ -333,7 +333,7 @@ i32 CCreditsState::DrawScrollingCredits() {
     }
 
     double step = static_cast<double>(g_frameDelta) * m_scrollStep;
-    m_scrollAccum += step * kMsToSeconds;
+    m_scrollAccum += step * s_msToSeconds;
     m_drawRect = m_scrollRect;
     i32 scrolled = static_cast<i32>(m_scrollAccum);
     m_drawRect.top -= scrolled;
@@ -341,7 +341,7 @@ i32 CCreditsState::DrawScrollingCredits() {
     if (m_drawRect.bottom < 0) {
         m_scrollAccum = 0.0;
         m_drawRect = m_scrollRect;
-        m_scrollReseedTimer = static_cast<i32>((kScreenH / kScrollRate));
+        m_scrollReseedTimer = static_cast<i32>((s_screenH / s_scrollRate));
     }
 
     HDC hdc = NULL;
@@ -401,9 +401,9 @@ i32 CCreditsState::SetupTitle() {
         prov->m_ddSurface->ReleaseDC(hdc);
     }
     m_scrollAccum = 0.0;
-    m_scrollReseedTimer = static_cast<i32>((kScreenH / kScrollRate));
+    m_scrollReseedTimer = static_cast<i32>((s_screenH / s_scrollRate));
     m_scrollStep =
-        (kScreenH * kStepScale) / static_cast<double>(static_cast<unsigned>(m_scrollReseedTimer));
+        (s_screenH * s_stepScale) / static_cast<double>(static_cast<unsigned>(m_scrollReseedTimer));
     return 1;
 }
 

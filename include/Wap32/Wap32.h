@@ -138,16 +138,16 @@ GZ_ENUM_FLAGS_END(GameWindowFlags, i32)
 GZ_ENUM_FLAGS_OPS(GameWindowFlags)
 
 struct GameInfo {
-    i32 size;
-    GameWindowFlags windowClassFlags;
-    HINSTANCE hInstance;
-    char szCmdLine[0x80];
-    char szGameIdentifier[0x40];
-    char szWindowName[0x40];
-    char _pad10c[0x40];
-    char szWindowClassName[0x80];
-    i32 windowWidth;
-    i32 windowHeight;
+    i32 m_size;
+    GameWindowFlags m_windowClassFlags;
+    HINSTANCE m_hInstance;
+    char m_szCmdLine[0x80];
+    char m_szGameIdentifier[0x40];
+    char m_szWindowName[0x40];
+    char m_pad10c[0x40];
+    char m_szWindowClassName[0x80];
+    i32 m_windowWidth;
+    i32 m_windowHeight;
 };
 
 extern i32 g_gameAppInstanceCount;

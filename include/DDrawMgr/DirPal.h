@@ -11,9 +11,9 @@
 union LogPal256 {
     LOGPALETTE m_lp;
     struct {
-        u16 palVersion;
-        u16 palNumEntries;
-        PALETTEENTRY palPalEntry[PALETTE_ENTRY_COUNT];
+        u16 m_palVersion;
+        u16 m_palNumEntries;
+        PALETTEENTRY m_palPalEntry[PALETTE_ENTRY_COUNT];
     };
 };
 

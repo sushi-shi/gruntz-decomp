@@ -89,10 +89,10 @@ RVA_DYNINIT(0x00047990, 0x17, g_gruntMoveDirNorthWest)
 DATA(0x00244918)
 GruntDirectionCell g_gruntMoveDirNorthWest = GruntDirectionCell(0, 0, DIR_NORTHWEST);
 
-static char s_EntranceSafeTime[] = "EntranceSafeTime";
+static char s_entranceSafeTime[] = "EntranceSafeTime";
 
 DATA(0x0020dbf8)
-static char s_ToyTiles[] = "ToyTiles";
+static char s_toyTiles[] = "ToyTiles";
 
 static inline i32 TileFlags(const char* rec) {
 
@@ -622,7 +622,7 @@ i32 CGrunt::StepCompassMove() {
                 facing = g_gruntMoveDirWest;
                 break;
             case TILEKIND_ARROW_CURRENT:
-                switch (m_entranceCell.direction) {
+                switch (m_entranceCell.m_direction) {
                     case DIR_NORTH:
                         y -= 0x20;
                         moveX = x;
@@ -727,9 +727,9 @@ i32 CGrunt::StepCompassMove() {
                 break;
         }
         u32 toyCount =
-            g_buteMgr.GetDword(const_cast<char*>(static_cast<LPCTSTR>(str)), s_ToyTiles, 1);
+            g_buteMgr.GetDword(const_cast<char*>(static_cast<LPCTSTR>(str)), s_toyTiles, 1);
         if (m_toyTileIndex < toyCount) {
-            switch (m_entranceCell.direction) {
+            switch (m_entranceCell.m_direction) {
                 case DIR_NORTH:
                     moveX = x;
                     facing = g_gruntMoveDirNorth;
@@ -895,7 +895,7 @@ i32 CGrunt::ClaimSwitchTile() {
     Coord tile = m_lastTilePx;
     i32 nextX;
     i32 nextY;
-    switch (m_entranceCell.direction) {
+    switch (m_entranceCell.m_direction) {
         case DIR_NORTH:
             nextX = tile.m_x;
             nextY = tile.m_y - 0x20;
@@ -1063,8 +1063,8 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spaw
                         SwitchAnimation(m_poseWalk);
 
                         GruntDirectionCell cell = m_entranceCell;
-                        i32 col = cell.column + cell.row * 2;
-                        i32 base = cell.row + col;
+                        i32 col = cell.m_column + cell.m_row * 2;
+                        i32 base = cell.m_row + col;
                         char* nm = m_cells[base].WalkName().GetBuffer(0);
                         SetImageSetByName(nm);
                     } else {

@@ -1,0 +1,10 @@
+#ifndef UTILS_ASYNCKEYSTATE_H
+#define UTILS_ASYNCKEYSTATE_H
+
+#include <Enums.h>
+
+GZ_ENUM_CONST_BEGIN(AsyncKeyStateMask)
+    ASYNC_KEYSTATE_DOWN = 0x80000000
+GZ_ENUM_CONST_END(AsyncKeyStateMask)
+
+#endif // UTILS_ASYNCKEYSTATE_H

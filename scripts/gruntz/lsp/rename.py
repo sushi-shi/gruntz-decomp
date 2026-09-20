@@ -1,10 +1,11 @@
 """gruntz.lsp.rename - the type-aware bulk member renamer.
 
 Renames a class's data members across the WHOLE tree via clangd's
-`textDocument/rename`: one call returns the complete WorkspaceEdit - the
-declaration plus EVERY reference in every TU, in every syntactic form
-(member access, `&C::m_x`, offsetof, designated init). Rename keys on the
-symbol's USR, so ONLY the named class's member moves and never a same-named
+`textDocument/rename`: one call requests a cross-TU WorkspaceEdit for the
+declaration and its indexed references (member access, `&C::m_x`, offsetof,
+designated init). Macro bodies and token-pasted identifiers may be omitted;
+the returned edit is not proof that every use was found. Rename keys on the
+symbol's USR, so only the named class's member moves and never a same-named
 field of a different struct - dozens of unrelated classes reuse names like
 `m_5c`, and a text sed would wreck them.
 
@@ -22,7 +23,9 @@ already-renamed old names are simply absent).
 Cross-file completeness needs the background index; the tool blocks until it
 settles. The wine `cl` build is the safety net: an index-missed site fails to
 compile (`m_old is not a member of C`) because the decl itself was renamed.
-Renaming is matching-NEUTRAL at /O2, but the tool only PRINTS the re-prove
+Also reparse unused template bodies with the declaration-name audit.
+Identifier changes can reorder uninitialized storage; compare actual objects
+and typed referents. The tool only PRINTS the re-prove
 ritual (gruntz build - the MAX gate) - it never runs it.
 """
 
@@ -335,8 +338,7 @@ def run_rename(args) -> int:
             content = content[:s] + new_text + content[t:]
         path.write_text(content)
     print(f"wrote {len(per_file)} file(s).")
-    print("\nrenames are matching-neutral at /O2 - re-prove it, do not "
-          "assume it:\n    gruntz build      # rebuild + verify check "
+    print("\nverify the rename against the actual compiler and objects:\n    gruntz build      # rebuild + verify check "
           "(the MAX gate)")
     return 0
 

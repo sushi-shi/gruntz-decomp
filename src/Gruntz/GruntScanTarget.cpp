@@ -48,7 +48,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
 
     CGrunt* best = NULL;
     i32 bestDist = INT_MAX;
-    for (i32 candidatePlayerIndex = 0; candidatePlayerIndex < TM_PLAYER_COUNT;
+    for (i32 candidatePlayerIndex = 0; candidatePlayerIndex < PLAYER_SLOT_COUNT;
          candidatePlayerIndex++) {
         if (candidatePlayerIndex == playerIndex) {
             continue;

@@ -3,7 +3,7 @@
 
 #include <rva.h>
 
-#include <Dsndmgr/WaveFormatX.h>
+#include <Dsndmgr/RiffWave.h>
 #include <Rez/RezArchiveEntry.h>
 
 class SoundDevice;
@@ -47,7 +47,7 @@ struct StreamFeeder {
     ~StreamFeeder();
     i32 Initialize(
         SoundDevice* owner,
-        WaveFormatX* format,
+        WAVEFORMATEX* format,
         u32 bufferBytes,
         u32 refillThresholdBytes,
         SoundBuffer* buffer,

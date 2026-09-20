@@ -8,6 +8,7 @@
 
 #include <Enums.h>
 #include <Ints.h>
+#include <Utils/AsyncKeyState.h>
 
 #include <Gruntz/FixedPtrArray32.h>
 #include <Mfc.h>
@@ -127,25 +128,6 @@ inline DirectInputMgr2::~DirectInputMgr2() {
     Shutdown();
 }
 
-struct DIMouseStateZ {
-    i32 lX;
-    i32 lY;
-    i32 lZ;
-    u8 rgbButtons[4];
-};
-struct DIJoyState2Z {
-    i32 lX;
-    i32 lY;
-    char pad08[0x30 - 0x08];
-    u8 rgbButtons[10];
-    char pad3a[0x110 - 0x3a];
-};
-union DeviceState {
-    u8 keys[0x100];
-    DIMouseStateZ mouse;
-    DIJoyState2Z joy;
-};
-
 class CInputDevRoot {
 public:
     CInputDevRoot();
@@ -162,7 +144,7 @@ public:
 
     i32 Acquire();
     i32 PollDevice();
-    DeviceState* ReadState();
+    void* ReadState();
     i32 Unacquire();
     i32 Escape(LPDIEFFESCAPE data);
 
@@ -182,7 +164,7 @@ public:
     DIDEVCAPS m_caps;
     DIPROPHEADER m_prop;
     HWND m_hwnd;
-    DeviceState* m_stateBuffer;
+    void* m_stateBuffer;
     u32 m_stateBufferSize;
     i32 m_buttonLatch;
     u32 m_pressedButtons;

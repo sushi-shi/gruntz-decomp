@@ -280,18 +280,18 @@ i32 CDib::Init(HDC dc, i32 width, i32 height, ColorDepth bitcount, u32 ctrl) {
     m_bPalOwner = 0;
     m_pPal = NULL;
     m_bTransparent = true;
-    memset(&m_bmi.hdr, 0, sizeof(BITMAPINFOHEADER));
-    m_bmi.hdr.biWidth = m_nWidth;
-    m_bmi.hdr.biBitCount = static_cast<WORD>(IDX(m_nDepth));
-    m_bmi.hdr.biSize = sizeof(BITMAPINFOHEADER);
-    m_bmi.hdr.biHeight = height;
-    m_bmi.hdr.biPlanes = 1;
-    m_bmi.hdr.biCompression = BI_RGB;
-    m_bmi.hdr.biSizeImage = 0;
-    m_bmi.hdr.biClrUsed = 0;
-    m_bmi.hdr.biClrImportant = 0;
+    memset(&m_bmi.m_hdr, 0, sizeof(BITMAPINFOHEADER));
+    m_bmi.m_hdr.biWidth = m_nWidth;
+    m_bmi.m_hdr.biBitCount = static_cast<WORD>(IDX(m_nDepth));
+    m_bmi.m_hdr.biSize = sizeof(BITMAPINFOHEADER);
+    m_bmi.m_hdr.biHeight = height;
+    m_bmi.m_hdr.biPlanes = 1;
+    m_bmi.m_hdr.biCompression = BI_RGB;
+    m_bmi.m_hdr.biSizeImage = 0;
+    m_bmi.m_hdr.biClrUsed = 0;
+    m_bmi.m_hdr.biClrImportant = 0;
 
-    u16* pal = static_cast<u16*>(static_cast<void*>(m_bmi.colors));
+    u16* pal = static_cast<u16*>(static_cast<void*>(m_bmi.m_colors));
     if (m_nDepth == BPP_PALETTED_8) {
         for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
             *pal++ = static_cast<u16>(i);
@@ -630,7 +630,7 @@ i32 CDib::InitRid(const char* name, HDC dc, u32 ctrl) {
 RVA(0x00176440, 0x25d)
 i32 CDib::InitPid(u8* buf, HDC dc, u32 ctrl) {
     PidHeader* header = static_cast<PidHeader*>(static_cast<void*>(buf));
-    u32* dword = &header->formatTag;
+    u32* dword = &header->m_formatTag;
     u32 formatTag = *dword++;
     PidFlags flags = static_cast<PidFlags>(*dword++);
     u32 width = *dword++;
@@ -892,13 +892,13 @@ i32 CDib::Save8(const char* filename, CDibPal* paletteObj) {
     BmpFileHeaderStamp fileHdr;
     Bmp256Info info;
     memset(&info, 0, sizeof(info));
-    info.bmiHeader.biSize = sizeof(info.bmiHeader);
-    info.bmiHeader.biWidth = GetWidth();
-    info.bmiHeader.biHeight = GetHeight();
-    info.bmiHeader.biPlanes = 1;
-    info.bmiHeader.biBitCount = 8;
-    info.bmiHeader.biCompression = BI_RGB;
-    info.bmiHeader.biSizeImage = 0;
+    info.m_bmiHeader.biSize = sizeof(info.m_bmiHeader);
+    info.m_bmiHeader.biWidth = GetWidth();
+    info.m_bmiHeader.biHeight = GetHeight();
+    info.m_bmiHeader.biPlanes = 1;
+    info.m_bmiHeader.biBitCount = 8;
+    info.m_bmiHeader.biCompression = BI_RGB;
+    info.m_bmiHeader.biSizeImage = 0;
 
     PALETTEENTRY* pal = paletteObj->GetPes();
     if (pal == NULL) {
@@ -906,9 +906,9 @@ i32 CDib::Save8(const char* filename, CDibPal* paletteObj) {
     }
 
     for (i32 i = 0; i < 0x100; i++) {
-        info.bmiColors[i].rgbRed = pal[i].peRed;
-        info.bmiColors[i].rgbGreen = pal[i].peGreen;
-        info.bmiColors[i].rgbBlue = pal[i].peBlue;
+        info.m_bmiColors[i].rgbRed = pal[i].peRed;
+        info.m_bmiColors[i].rgbGreen = pal[i].peGreen;
+        info.m_bmiColors[i].rgbBlue = pal[i].peBlue;
     }
 
     memset(&fileHdr, 0, sizeof(fileHdr));
@@ -959,11 +959,11 @@ void CDib::FillRect(i32 dx, i32 dy, RECT* src, u32 color) {
 RVA(0x00176df0, 0x71)
 i32 CDibPal::Init(PALETTEENTRY* entries, u32 flags) {
     m_dwFlags = flags;
-    m_logPal.numEntries = 0x100;
-    m_logPal.version = LOGICAL_PALETTE_VERSION;
+    m_logPal.m_numEntries = 0x100;
+    m_logPal.m_version = LOGICAL_PALETTE_VERSION;
     for (i32 i = 0; i < 0x100; i++) {
-        m_logPal.entries[i] = entries[i];
-        m_logPal.entries[i].peFlags = 0;
+        m_logPal.m_entries[i] = entries[i];
+        m_logPal.m_entries[i].peFlags = 0;
     }
     if (CDibPal::IsPaletteDevice() && !(flags & IDX(DMPF_NOIDENTITY))) {
         MakeIdentity();
@@ -1062,15 +1062,15 @@ void CDibPal::MakeIdentity() {
     i32 sizePal = GetDeviceCaps(dc, SIZEPALETTE);
     i32 numReserved = GetDeviceCaps(dc, NUMRESERVED);
     i32 half = numReserved / 2;
-    GetSystemPaletteEntries(dc, 0, half, m_logPal.entries);
+    GetSystemPaletteEntries(dc, 0, half, m_logPal.m_entries);
     GetSystemPaletteEntries(
         dc,
         sizePal - half,
         half,
-        &m_logPal.entries[m_logPal.numEntries - half]
+        &m_logPal.m_entries[m_logPal.m_numEntries - half]
     );
     for (i32 i = half; i < sizePal - half; i++) {
-        m_logPal.entries[i].peFlags = PC_RESERVED;
+        m_logPal.m_entries[i].peFlags = PC_RESERVED;
     }
     DeleteDC(dc);
 }
@@ -1080,13 +1080,13 @@ void CDibPal::ClearSystemPalette() {
 
     LogPal256 lp;
     HDC hdc = GetDC(NULL);
-    lp.palVersion = LOGICAL_PALETTE_VERSION;
-    lp.palNumEntries = 256;
+    lp.m_palVersion = LOGICAL_PALETTE_VERSION;
+    lp.m_palNumEntries = 256;
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
-        lp.palPalEntry[i].peRed = 0;
-        lp.palPalEntry[i].peGreen = 0;
-        lp.palPalEntry[i].peBlue = 0;
-        lp.palPalEntry[i].peFlags = 4;
+        lp.m_palPalEntry[i].peRed = 0;
+        lp.m_palPalEntry[i].peGreen = 0;
+        lp.m_palPalEntry[i].peBlue = 0;
+        lp.m_palPalEntry[i].peFlags = 4;
     }
     HPALETTE hpal = CreatePalette(&lp.m_lp);
     if (hpal) {

@@ -15,10 +15,4 @@ struct Coord {
     }
 };
 
-struct CoordNode {
-    CoordNode* m_next;
-    CoordNode* m_prev;
-    Coord* m_coord;
-};
-
 #endif // GRUNTZ_GRUNTZ_COORDNODE_H

@@ -171,7 +171,7 @@ public:
 
     DDCAPS m_driverCaps;
     DDCAPS m_helCaps;
-    char _pad300[0x47c - 0x300];
+    char m_pad300[0x47c - 0x300];
     CPtrList m_surfaces;
     CPtrList m_palettes;
     CPtrArray m_displayModes;

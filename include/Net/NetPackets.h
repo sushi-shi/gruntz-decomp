@@ -8,7 +8,6 @@
 
 struct CNetGameConfigPacket {
     GZ_ENUM_STORAGE(NetPacketFlags, u8) m_flags;
-    char m_pad1[3];
     NetMsgId m_messageId;
     b32 m_usesCustomLevel;
     char m_builtInLevelName[0x80];
@@ -21,7 +20,6 @@ struct CNetGameConfigPacket {
 
 struct CNetMsg {
     GZ_ENUM_STORAGE(NetPacketFlags, u8) m_flags;
-    char m_pad1[3];
     NetMsgId m_messageId;
     i32 m_value;
 };

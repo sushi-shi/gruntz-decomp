@@ -28,7 +28,6 @@
 #include <Gruntz/WwdGameReg.h>
 #include <Ints.h>
 #include <Rez/FrameClock.h>
-#include <Utils/MfcTyped.h>
 
 #include <stdlib.h>
 
@@ -90,11 +89,6 @@ extern GruntDirectionCell g_gruntDirSouthWest;
 extern GruntDirectionCell g_gruntDirWest;
 extern GruntDirectionCell g_gruntDirNorthWest;
 extern GruntDirectionCell g_gruntDirCenter;
-
-class CGruntCoordList : public CPtrList {
-public:
-    void*& NextData(POSITION& pos);
-};
 
 class CGruntPuddle;
 
@@ -430,21 +424,18 @@ public:
     CPtrList m_coordList;
     CPtrList m_payloads;
 
-    CoordNode* CoordHead() const {
-        return MfcNodeFromPosition<CoordNode>(m_coordList.GetHeadPosition());
+    POSITION CoordHead() const {
+        return m_coordList.GetHeadPosition();
     }
-    CGruntCoordList* CoordListOps() {
-        return static_cast<CGruntCoordList*>(&m_coordList);
-    }
-    CoordNode* CoordTail() const {
-        return MfcNodeFromPosition<CoordNode>(m_coordList.GetTailPosition());
+    POSITION CoordTail() const {
+        return m_coordList.GetTailPosition();
     }
     i32 CoordCount() const {
         return m_coordList.GetCount();
     }
     CGruntCellRec* EntranceCell() {
         GruntDirectionCell c = m_entranceCell;
-        return &m_cells[3 * c.row + c.column];
+        return &m_cells[3 * c.m_row + c.m_column];
     }
     i32 PayloadCount() const {
         return m_payloads.GetCount();
@@ -483,7 +474,6 @@ public:
     i32 m_stamina;
     i32 m_toyTime;
     i32 m_wingzTime;
-    char m_pad3fc[0x400 - 0x3fc];
 
     double m_moveSpeed;
     double m_movePosX;

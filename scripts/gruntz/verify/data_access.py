@@ -66,8 +66,9 @@ REFER = ("lea", "imm", "indcall", "iat")
 #:              dwords); vptr = g_buteTree's +0/+8 `??_7` stamps; string-op =
 #:              `repnz scas al` inlined strlen; byte-buffer = ___init_numeric
 #:              copying the 2-byte literal g_dot with one WORD move;
-#:              negative-addend = `[ecx + &next - 1]`; unresolved = a union
-#:              (g_dplayAppGuid), never adjudicated.
+#:              negative-addend = `[ecx + &next - 1]`; record-copy = complete
+#:              decoded dword load/store sequences (including GUID's WORD pair).
+#:              Unresolved unions remain reported rather than adjudicated.
 #:   undercount 0 firing rows after merging the false g_panTable split back
 #:              into the 101-entry g_volumeTable; the injected one-element
 #:              array control proves it fires.
@@ -201,6 +202,96 @@ def _explained_by_next_claim(spine, ac, window=NEG_ADDEND_WINDOW):
         return False
     nxt = spine.next_start(ac.target_rva)
     return nxt is not None and 0 < nxt - ac.target_rva <= window
+
+
+def _whole_record_copy_reads(spine, claim, accesses):
+    """Prove unrolled dword copies of a complete record into one destination.
+
+    Width alone is insufficient: require every source chunk, decoded stores of
+    those unchanged register values at corresponding destination offsets, and
+    no intervening control flow or destination-base modification. This covers
+    VC5 by-value GUID arguments without exempting GUID names or wide scalars.
+    """
+    from gruntz.verify.access_map import _decode, parse_mem, split_operands
+    node = claim.node or {}
+    size = node.get('sz', 0)
+    if (node.get('k') != 'rec' or node.get('u') or node.get('poly')
+            or size < 8 or size > 128 or size % 4 or size != claim.extent):
+        return set()
+    seq = sorted(accesses, key=lambda a: a.insn_rva)
+    result = set()
+    count = size // 4
+    for i, first in enumerate(seq):
+        if first.target_rva != claim.rva:
+            continue
+        group = seq[i:i + count]
+        if len(group) != count or any(
+                a.target_rva != claim.rva + n * 4 or a.width != 4
+                or a.rw != 'r' or a.form != 'direct' or a.mnemonic != 'mov'
+                or a.owner != first.owner for n, a in enumerate(group)):
+            continue
+        end = group[-1].insn_rva + group[-1].insn_len + 8
+        if end - first.insn_rva > count * 32:
+            continue
+        blob = spine.img.read(first.insn_rva, end - first.insn_rva)
+        if not isinstance(blob, bytes):
+            continue
+        decoded = _decode(blob, first.insn_rva)
+        loads = {a.insn_rva: a.target_rva - claim.rva for a in group}
+        values, stored = {}, set()
+        dest_base, dest_bias = None, None
+        valid = True
+        for address, text in zip(decoded.starts, decoded.lines):
+            mnemonic, operands = split_operands(text)
+            if address in loads:
+                if mnemonic != 'mov' or len(operands) != 2 or parse_mem(operands[0]):
+                    valid = False
+                    break
+                if dest_base == operands[0]:
+                    valid = False
+                    break
+                values[operands[0]] = loads[address]
+                continue
+            if mnemonic == 'mov' and len(operands) == 2:
+                dst, src = operands
+                mem = parse_mem(dst)
+                if mem and src in values:
+                    width, base, index, scale, disp = mem
+                    offset = values[src]
+                    if width != 4 or not base or index or base == 'esp':
+                        valid = False
+                        break
+                    if dest_base is None:
+                        dest_base, dest_bias = base, disp - offset
+                    if base != dest_base or disp - offset != dest_bias:
+                        valid = False
+                        break
+                    stored.add(offset)
+                    if len(stored) == count:
+                        break
+                    continue
+                if not mem:
+                    if dst == dest_base or dst not in (
+                            'eax', 'ebx', 'ecx', 'edx', 'esi', 'edi', 'ebp', 'esp'):
+                        valid = False
+                        break
+                    values.pop(dst, None)
+                else:
+                    # An unrelated store may overwrite an already copied chunk.
+                    valid = False
+                    break
+                continue
+            # Stack argument setup before the first store does not modify the
+            # record's values or its register-held destination address.
+            if (not stored and mnemonic in ('sub', 'push', 'lea')
+                    and not any(op in values for op in operands)
+                    and (not operands or operands[0] != dest_base)):
+                continue
+            valid = False
+            break
+        if valid and stored == set(range(0, size, 4)):
+            result.update(loads)
+    return result
 
 
 # --------------------------------------------------------------------------- #
@@ -356,6 +447,7 @@ def derive_findings(spine, accesses, cells, owners, trace=None):
     for c in spine.claims:
         if c.node is None or not per[c.rva]:
             continue
+        copied = _whole_record_copy_reads(spine, c, per[c.rva])
         seen = defaultdict(lambda: [Counter(), Counter(), Counter(), Counter(),
                                     Counter()])
         acc_at = defaultdict(list)
@@ -371,6 +463,9 @@ def derive_findings(spine, accesses, cells, owners, trace=None):
                      ac.target_rva - c.rva, [ac])
                 continue
             off = ac.target_rva - c.rva
+            if ac.insn_rva in copied:
+                skip("width-skip-record-copy", c.name, off, [ac])
+                continue
             acc_at[off].append(ac)
             seen[off][0][ac.width] += 1
             if ac.fpu:

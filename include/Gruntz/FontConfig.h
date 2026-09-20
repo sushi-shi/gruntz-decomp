@@ -76,9 +76,9 @@ extern b32 g_caretBlinkOn;
 extern i32 g_lastDrawTextFormat;
 
 struct FontItem {
-    FontItemFlags flags;
-    i32 payload;
-    CString name;
+    FontItemFlags m_flags;
+    i32 m_payload;
+    CString m_name;
 };
 
 #endif // GRUNTZ_GRUNTZ_FONTCONFIG_H

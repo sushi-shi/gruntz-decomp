@@ -8,8 +8,8 @@
 #include <Ints.h>
 
 struct CheatEntry {
-    i32 commandId;
-    i32 flag;
+    i32 m_commandId;
+    i32 m_flag;
 };
 
 class CCheatMgr {

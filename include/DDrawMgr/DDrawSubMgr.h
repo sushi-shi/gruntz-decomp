@@ -3,6 +3,6 @@
 
 #include <Ints.h>
 
-extern const float c_volumePercentUnitScale;
+extern const float g_volumePercentUnitScale;
 
 #endif // GRUNTZ_DDRAWMGR_DDRAWSUBMGR_H

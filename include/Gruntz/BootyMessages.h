@@ -7,8 +7,8 @@
 #include <Gruntz/GlyphStringDraw.h>
 
 struct SecretMsgRow {
-    char strA[0x20];
-    char strB[0x80];
+    char m_strA[0x20];
+    char m_strB[0x80];
 };
 
 extern RECT g_levelMsgRectsA[8];

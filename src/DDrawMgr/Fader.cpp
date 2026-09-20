@@ -14,7 +14,6 @@
 #include <Gruntz/FaderSubtypes.h>
 #include <Gruntz/ShapeFaderConfig.h>
 #include <Ints.h>
-#include <Utils/RecordFill.h>
 #include <Wap32/ScreenGeometry.h>
 
 #include <ddraw.h>
@@ -22,7 +21,7 @@
 #include <string.h>
 
 DATA(0x001f07bc)
-static const float kMsToSeconds = 0.001f;
+static const float s_msToSeconds = 0.001f;
 
 RVA(0x0017e450, 0x23)
 CFader::CFader() {
@@ -75,7 +74,7 @@ void CFader::RunFadeStepped(i32 step, i32 lead, i32 vsync) {
     }
     float fLoops = static_cast<float>(loops);
     m_measuredFps = static_cast<i32>(
-        (fLoops / (static_cast<float>(GetTickCount() - startTick) * kMsToSeconds))
+        (fLoops / (static_cast<float>(GetTickCount() - startTick) * s_msToSeconds))
     );
     EndFade();
 }
@@ -117,7 +116,7 @@ void CFader::RunFade(u32 dur, i32 lead, i32 vsync) {
     }
     float fLoops = static_cast<float>(loops);
     m_measuredFps = static_cast<i32>(
-        (fLoops / (static_cast<float>(GetTickCount() - startTick) * kMsToSeconds))
+        (fLoops / (static_cast<float>(GetTickCount() - startTick) * s_msToSeconds))
     );
     EndFade();
 }
@@ -247,10 +246,10 @@ i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
     CRezBufferObject* mesh = &m_meshBuf;
     mesh->SetSize(0, -1);
 
-    i32 halfW = m_dstSurface->m_width / 2;
-    i32 halfH = m_dstSurface->m_height / 2;
-    i32 cellW = m_sourceSurface->m_width / m_cols;
-    i32 cellH = m_sourceSurface->m_height / m_rows;
+    i32 halfW = static_cast<i32>(m_dstSurface->m_apiDesc.dwWidth) / 2;
+    i32 halfH = static_cast<i32>(m_dstSurface->m_apiDesc.dwHeight) / 2;
+    i32 cellW = static_cast<i32>(m_sourceSurface->m_apiDesc.dwWidth) / m_cols;
+    i32 cellH = static_cast<i32>(m_sourceSurface->m_apiDesc.dwHeight) / m_rows;
     float radius = static_cast<float>(sqrt(static_cast<double>((cellW * cellW + cellH * cellH))));
     if (m_rows <= 0) {
         return 1;
@@ -274,11 +273,11 @@ i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
             i32 negW = -cellW;
             i32 i = 0;
             do {
-                RECT pt48;
-                pt48.left = 0;
-                pt48.top = 0;
-                pt48.right = cellW;
-                pt48.bottom = cellH;
+                CRect dispersedRect;
+                dispersedRect.left = 0;
+                dispersedRect.top = 0;
+                dispersedRect.right = cellW;
+                dispersedRect.bottom = cellH;
                 i32 d2 = bx * bx + rowD2;
                 double v = sqrt(static_cast<double>(d2));
                 float u, w;
@@ -289,77 +288,29 @@ i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
                     u = 0.0f;
                     w = 1.0f;
                 }
-                OffsetRect(&pt48, x, y);
-                OffsetRect(&pt48, static_cast<i32>((u * cellR)), static_cast<i32>((w * cellR)));
+                OffsetRect(&dispersedRect, x, y);
+                OffsetRect(
+                    &dispersedRect,
+                    static_cast<i32>((u * cellR)),
+                    static_cast<i32>((w * cellR))
+                );
 
-                RECT pt64;
-                pt64.left = 0;
-                pt64.top = 0;
-                pt64.right = d2;
-                pt64.bottom = cellH;
-                OffsetRect(&pt64, x, y);
+                CRect assembledRect;
+                assembledRect.left = 0;
+                assembledRect.top = 0;
+                assembledRect.right = d2;
+                assembledRect.bottom = cellH;
+                OffsetRect(&assembledRect, x, y);
 
                 if (m_reverseOrder) {
-                    elem.m_startRect = pt64;
-                    elem.m_endRect = pt48;
+                    elem.m_startRect = assembledRect;
+                    elem.m_endRect = dispersedRect;
                 } else {
-                    elem.m_startRect = pt48;
-                    elem.m_endRect = pt64;
+                    elem.m_startRect = dispersedRect;
+                    elem.m_endRect = assembledRect;
                 }
 
-                i32 idx = mesh->m_nSize;
-                i32 newSize = idx + 1;
-                if (newSize == 0) {
-                    if (mesh->m_pData) {
-                        delete[] mesh->m_pData;
-                        mesh->m_pData = NULL;
-                    }
-                    mesh->m_nMaxSize = 0;
-                    mesh->m_nSize = 0;
-                } else if (mesh->m_pData == NULL) {
-                    mesh->m_pData = static_cast<RezElem40*>(
-                        static_cast<void*>(new BYTE[newSize * sizeof(RezElem40)])
-                    );
-                    memset(mesh->m_pData, 0, newSize * sizeof(RezElem40));
-                    mesh->m_nMaxSize = newSize;
-                    mesh->m_nSize = newSize;
-                } else if (newSize <= mesh->m_nMaxSize) {
-                    if (newSize > idx) {
-                        memset(&mesh->m_pData[idx], 0, (newSize - idx) * sizeof(RezElem40));
-                    } else if (idx > newSize) {
-                        RezElem40* gone = &mesh->m_pData[newSize];
-                        i32 nGone = idx - newSize;
-                        for (; nGone--; gone++) {
-                        }
-                    }
-                    mesh->m_nSize = newSize;
-                } else {
-                    i32 grow = mesh->m_nGrowBy;
-                    if (grow == 0) {
-                        grow = idx / 8;
-                        if (grow < 4) {
-                            grow = 4;
-                        } else if (grow > 0x400) {
-                            grow = 0x400;
-                        }
-                    }
-                    i32 newMax;
-                    if (newSize < mesh->m_nMaxSize + grow) {
-                        newMax = mesh->m_nMaxSize + grow;
-                    } else {
-                        newMax = newSize;
-                    }
-                    RezElem40* nd = static_cast<RezElem40*>(
-                        static_cast<void*>(new BYTE[newMax * sizeof(RezElem40)])
-                    );
-                    memcpy(nd, mesh->m_pData, mesh->m_nSize * sizeof(RezElem40));
-                    memset(&nd[mesh->m_nSize], 0, (newSize - mesh->m_nSize) * sizeof(RezElem40));
-                    delete[] mesh->m_pData;
-                    mesh->m_pData = nd;
-                    mesh->m_nSize = newSize;
-                    mesh->m_nMaxSize = newMax;
-                }
-                mesh->m_pData[idx] = elem;
+                mesh->Add(elem);
 
                 x += cellW;
                 bx += negW;
@@ -381,8 +332,8 @@ void CFaderMesh::RenderFrame(i32 frame) {
     } else {
         m_dstSurface->Clear(0);
     }
-    for (i32 i = 0; i < m_meshBuf.m_nSize; i++) {
-        RezElem40 elem = m_meshBuf.m_pData[i];
+    for (i32 i = 0; i < m_meshBuf.GetSize(); i++) {
+        RezElem40 elem = m_meshBuf[i];
         u32 cur = frame;
         u32 total = GetFrameCount();
         float t = static_cast<float>(cur) / static_cast<float>(total);
@@ -408,17 +359,20 @@ void CFaderMesh::RenderFrame(i32 frame) {
         if (dstRect.left < 0 && dstRect.right > 0) {
             boundRect.left = elem.m_endRect.left - dstRect.left;
             dstRect.left = 0;
-        } else if (dstRect.right >= m_dstSurface->m_width && dstRect.left < m_dstSurface->m_width) {
-            boundRect.right = elem.m_endRect.right - dstRect.right + m_dstSurface->m_width;
-            dstRect.right = m_dstSurface->m_width - 1;
+        } else if (dstRect.right >= static_cast<i32>(m_dstSurface->m_apiDesc.dwWidth)
+                   && dstRect.left < static_cast<i32>(m_dstSurface->m_apiDesc.dwWidth)) {
+            boundRect.right =
+                elem.m_endRect.right - dstRect.right + m_dstSurface->m_apiDesc.dwWidth;
+            dstRect.right = m_dstSurface->m_apiDesc.dwWidth - 1;
         }
         if (dstRect.top < 0 && dstRect.bottom > 0) {
             boundRect.top = boundRect.top - dstRect.top;
             dstRect.top = 0;
-        } else if (dstRect.bottom >= m_dstSurface->m_height
-                   && dstRect.top < m_dstSurface->m_height) {
-            boundRect.bottom = boundRect.bottom + (m_dstSurface->m_height - dstRect.bottom);
-            dstRect.bottom = m_dstSurface->m_height - 1;
+        } else if (dstRect.bottom >= static_cast<i32>(m_dstSurface->m_apiDesc.dwHeight)
+                   && dstRect.top < static_cast<i32>(m_dstSurface->m_apiDesc.dwHeight)) {
+            boundRect.bottom =
+                boundRect.bottom + (m_dstSurface->m_apiDesc.dwHeight - dstRect.bottom);
+            dstRect.bottom = m_dstSurface->m_apiDesc.dwHeight - 1;
         }
 
         m_dstSurface->BltEx(
@@ -436,6 +390,3 @@ RVA(0x0017f120, 0x6)
 i32 CFaderMesh::GetFrameCount() {
     return 0x1f4;
 }
-
-RVA_COMPGEN(0x0017f310, 0x1e, ??_GCRezBufferObject@@UAEPAXI@Z)
-RVA_COMPGEN(0x0017f330, 0x51, ??1CRezBufferObject@@UAE@XZ)

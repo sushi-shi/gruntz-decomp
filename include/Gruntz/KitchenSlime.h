@@ -31,7 +31,6 @@ public:
     CWwdSpriteObject* Anim() {
         return m_wwdObject;
     }
-    char m_pad54[0x58 - 0x54];
     double m_speed;
     double m_posX;
     double m_posY;

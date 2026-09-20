@@ -86,9 +86,9 @@ public:
 };
 
 struct DDModeInfo {
-    i32 width;
-    i32 height;
-    ColorDepth bpp;
+    i32 m_width;
+    i32 m_height;
+    ColorDepth m_bpp;
 };
 
 class CMoviePlayer;
@@ -103,7 +103,7 @@ i32 __stdcall DdEnumModesCallback(DDSURFACEDESC* mode, i32 unused);
 extern i32 (*g_restoreHandler)();
 class CDDrawDeviceManager;
 
-extern CDDrawDeviceManager* g_DirectDrawMgr;
+extern CDDrawDeviceManager* g_directDrawMgr;
 
 void BuildColorChannelTables();
 i32 __stdcall CreateDirectDrawVia(

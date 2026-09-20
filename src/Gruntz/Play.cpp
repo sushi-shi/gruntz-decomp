@@ -290,8 +290,8 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
             return 0;
         }
 
-        CTileTriggerContainer* r78 = new CTileTriggerContainer;
-        m_tileTriggers = r78;
+        CTileTriggerContainer* tileTriggers = new CTileTriggerContainer;
+        m_tileTriggers = tileTriggers;
         if (m_tileTriggers->Initialize() == 0) {
             if (m_tileTriggers == NULL) {
                 return 0;
@@ -301,9 +301,9 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
             return 0;
         }
 
-        CTimer* r50 = new CTimer;
-        m_levelTimer = r50;
-        if (r50 == NULL) {
+        CTimer* levelTimer = new CTimer;
+        m_levelTimer = levelTimer;
+        if (levelTimer == NULL) {
             return 0;
         }
 
@@ -476,7 +476,7 @@ i32 CPlay::LeaveState(GameStateId nextState) {
         DrawTextToOverlaySurface(m_world, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
         RetireScene(0x50, 0x3e8, 0, true);
         if (m_mgr && m_mgr->m_triggerMgr) {
-            m_mgr->m_triggerMgr->RemovePlayerUnitsImmediately(TM_ALL_PLAYERS);
+            m_mgr->m_triggerMgr->RemovePlayerUnitsImmediately(PLAYER_SLOT_ALL);
         }
     }
     return 1;
@@ -676,7 +676,7 @@ i32 CPlay::Render() {
             if (left < 0) {
                 leftMs = 0;
             }
-            i32 secsLeft = static_cast<i32>(leftMs / MS_PER_SECOND) + 1;
+            i32 secsLeft = static_cast<i32>(leftMs / MILLIS_PER_SECOND) + 1;
             if (static_cast<i64>(g_frameTime) - m_defeatCountdownTiming.m_start.m_v
                 >= m_defeatCountdownTiming.m_interval.m_v) {
 
@@ -1667,7 +1667,7 @@ void CPlay::FreeListTeardown() {
         return;
     }
     if (m_mgr->m_triggerMgr != NULL) {
-        m_mgr->m_triggerMgr->RemovePlayerUnitsImmediately(TM_ALL_PLAYERS);
+        m_mgr->m_triggerMgr->RemovePlayerUnitsImmediately(PLAYER_SLOT_ALL);
     }
     ForwardReady();
     {
@@ -1694,10 +1694,10 @@ void CPlay::FreeListTeardown() {
     }
     m_cursorSnapSprite = NULL;
     m_mgr->m_triggerMgr->CloseActionOptionsMenu();
-    CTriggerMgr* tl68 = m_mgr->m_triggerMgr;
+    CTriggerMgr* triggerManager = m_mgr->m_triggerMgr;
 
-    tl68->m_byteArr.SetSize(0, -1);
-    tl68->m_groupInitialized = false;
+    triggerManager->m_byteArr.SetSize(0, -1);
+    triggerManager->m_groupInitialized = false;
     m_mgr->m_triggerMgr->m_baseList.RemoveAll();
     m_mgr->m_triggerMgr->m_pendingFx = NULL;
     (static_cast<CDDrawWorkerList*>(m_world->m_workerList))->ClearWorkers();
@@ -2020,13 +2020,13 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     }
 
     if (vk == VK_ESCAPE) {
-        CTriggerMgr* h68 = mgr->m_triggerMgr;
-        CWwdSpriteObject* n = h68->m_goal;
+        CTriggerMgr* triggerManager = mgr->m_triggerMgr;
+        CWwdSpriteObject* n = triggerManager->m_goal;
         if (n != NULL) {
             n->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
-            h68->m_goal = NULL;
+            triggerManager->m_goal = NULL;
         }
-        h68->m_armed = false;
+        triggerManager->m_armed = false;
         CChatBoxOwner* rec = this->m_chatBox;
         if (rec->m_inputActive != false) {
             this->FlushPendingOps();
@@ -2146,8 +2146,8 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     if (vk == VK_SPACE) {
         if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) {
             CDDrawWorkerHost* obj = this->m_world->m_level->m_mainPlane;
-            i32 v0 = obj->m_scrollPixelX;
-            i32 v1 = obj->m_scrollPixelY;
+            i32 bookmarkScrollX = obj->m_scrollPixelX;
+            i32 bookmarkScrollY = obj->m_scrollPixelY;
             Coord* slot;
             if (this->CameraBookmarkCount() < 4) {
                 CoordPoolNode* head = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
@@ -2168,8 +2168,8 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                     this->m_cameraBookmarkIndex = this->CameraBookmarkCount() - 1;
                 }
             }
-            slot->m_x = v0;
-            slot->m_y = v1;
+            slot->m_x = bookmarkScrollX;
+            slot->m_y = bookmarkScrollY;
             if (this->m_cameraBookmarkIndex != this->CameraBookmarkCount() - 1) {
                 this->m_cameraBookmarks.InsertAt(this->m_cameraBookmarkIndex + 1, slot, 1);
                 this->m_cameraBookmarkIndex = this->m_cameraBookmarkIndex + 1;
@@ -2443,7 +2443,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             this->m_cursorY,
             &playerIndex,
             &unitIndex,
-            TM_ALL_PLAYERS
+            PLAYER_SLOT_ALL
         );
         if (r == NULL) {
             return 1;
@@ -2903,18 +2903,18 @@ i32 CPlay::OnLButtonDown(i32 eventArg, i32 x, i32 y) {
             if (m_statusBar->HitTestLayer(xr, y)) {
                 m_dragSnapActive = true;
 
-                CGameObject* g8 = m_statusBar->m_barSprite;
+                CGameObject* xAnchorSprite = m_statusBar->m_barSprite;
                 i32 dx = 0;
-                if (g8 != NULL) {
-                    dx = g8->m_screenX - xr;
+                if (xAnchorSprite != NULL) {
+                    dx = xAnchorSprite->m_screenX - xr;
                 }
                 m_snapOriginX = dx;
-                CGameObject* g8b = m_statusBar->m_barSprite;
-                if (g8b == NULL) {
+                CGameObject* yAnchorSprite = m_statusBar->m_barSprite;
+                if (yAnchorSprite == NULL) {
                     m_snapOriginY = 0;
                     return 1;
                 }
-                m_snapOriginY = g8b->m_screenY - y;
+                m_snapOriginY = yAnchorSprite->m_screenY - y;
                 return 1;
             }
             goto drag_box;
@@ -2990,7 +2990,7 @@ drag_box: {
     }
 
     CGrunt* picked = static_cast<CGrunt*>(
-        m_mgr->m_triggerMgr->ScreenToCell(xr, y, &eventArg, &x, TM_ALL_PLAYERS)
+        m_mgr->m_triggerMgr->ScreenToCell(xr, y, &eventArg, &x, PLAYER_SLOT_ALL)
     );
     if (picked != NULL) {
         m_mgr->m_triggerMgr
@@ -3089,7 +3089,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
     {
         i32 playerIndex;
         i32 unitIndex;
-        if (m_mgr->m_triggerMgr->ScreenToCell(x, y, &playerIndex, &unitIndex, TM_ALL_PLAYERS)
+        if (m_mgr->m_triggerMgr->ScreenToCell(x, y, &playerIndex, &unitIndex, PLAYER_SLOT_ALL)
             && g_curPlayer == playerIndex) {
             m_statusBar->ToggleStat(unitIndex);
             return 1;
@@ -4609,7 +4609,7 @@ i32 CPlay::ExecuteCommand(
 
             CGrunt* node =
                 m_mgr->m_triggerMgr
-                    ->CellHitTest(px, py, &hitPlayerIndex, &hitUnitIndex, TM_ALL_PLAYERS);
+                    ->CellHitTest(px, py, &hitPlayerIndex, &hitUnitIndex, PLAYER_SLOT_ALL);
             if (node != NULL && g->m_entranceActive == false) {
                 g->SetArrivalTarget(
                     hitPlayerIndex,
@@ -4733,7 +4733,7 @@ i32 CPlay::ExecuteCommand(
             i32 py = static_cast<u16>(targetYOrUnitIndex);
             CGrunt* node =
                 m_mgr->m_triggerMgr
-                    ->CellHitTest(px, py, &hitPlayerIndex, &hitUnitIndex, TM_ALL_PLAYERS);
+                    ->CellHitTest(px, py, &hitPlayerIndex, &hitUnitIndex, PLAYER_SLOT_ALL);
             if (node != NULL && g->m_entranceActive == false) {
                 g->SetArrivalTarget(
                     hitPlayerIndex,
@@ -5585,8 +5585,8 @@ i32 CPlay::ValidateLevelTiles() {
             i32 rowBase = obj->m_screenY >> TILE_SHIFT_PX;
             i32 stride = (col << 3) - col;
 
-            i32 ebp = stride - 7;
-            for (i32 dy = -1; dy < 2; dy++, ebp += 7) {
+            i32 guardColumnOffset = stride - 7;
+            for (i32 dy = -1; dy < 2; dy++, guardColumnOffset += 7) {
                 i32 row = rowBase;
                 i32 ofs = rowBase - 1;
                 for (i32 k = 3; k != 0; k--, ofs++, row++) {
@@ -5620,7 +5620,7 @@ i32 CPlay::ValidateLevelTiles() {
                         continue;
                     }
                     i32* cellRow = gg->m_rowInts[ofs];
-                    cellRow[ebp] |= bit;
+                    cellRow[guardColumnOffset] |= bit;
                 }
             }
         } else if (dispatch == DispatchToobSpikezLogic) {
@@ -5998,14 +5998,14 @@ i32 CPlay::ResetPlayState() {
             (static_cast<CSaveGame*>(reg->m_saveGame))->Save(NULL, 0x81a6);
         }
         CGameLevel* g = m_mgr->m_world->m_level;
-        ResetGoals(g->m_header.startX, g->m_header.startY);
+        ResetGoals(g->m_header.m_startX, g->m_header.m_startY);
     } else {
         GruntzPlayer* slot = &g_gameReg->m_players[g_curPlayer];
         if (slot != NULL) {
             ResetGoals(slot->m_focusX, slot->m_focusY);
         } else {
             CGameLevel* g = m_mgr->m_world->m_level;
-            ResetGoals(g->m_header.startX, g->m_header.startY);
+            ResetGoals(g->m_header.m_startX, g->m_header.m_startY);
         }
     }
     if (m_cursorSnapSprite != NULL) {
@@ -6844,9 +6844,9 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     ar->Read(&m_cueToggle, sizeof(m_cueToggle));
     g_serialCounter++;
     {
-        char buf512[0x200];
-        ar->Read(buf512, 0x200);
-        m_cueText = buf512;
+        char cueTextBuffer[0x200];
+        ar->Read(cueTextBuffer, 0x200);
+        m_cueText = cueTextBuffer;
     }
     ar->Read(&m_lastCueId, sizeof(m_lastCueId));
     ar->Read(&g_lastLevelNum, sizeof(g_lastLevelNum));
@@ -6938,8 +6938,8 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     ar->Read(&m_focusPlayerIndex, sizeof(m_focusPlayerIndex));
 
     {
-        i32 n488;
-        ar->Read(&n488, sizeof(n488));
+        i32 cameraBookmarkCount;
+        ar->Read(&cameraBookmarkCount, sizeof(cameraBookmarkCount));
         for (i32 i = 0; i < CameraBookmarkCount(); i++) {
             Coord* node = CameraBookmarkAt(i);
             if (node) {
@@ -6949,8 +6949,8 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
             }
         }
         m_cameraBookmarks.SetSize(0, -1);
-        m_cameraBookmarks.SetSize(n488, -1);
-        for (u32 j = 0; j < static_cast<u32>(n488); j++) {
+        m_cameraBookmarks.SetSize(cameraBookmarkCount, -1);
+        for (u32 j = 0; j < static_cast<u32>(cameraBookmarkCount); j++) {
             Coord* node = NULL;
             CoordPoolNode* head = g_coordPool.m_freeHead;
             CoordPoolNode* next = head->m_next;

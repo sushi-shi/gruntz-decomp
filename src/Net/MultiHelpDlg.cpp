@@ -19,13 +19,13 @@
 #include <string.h>
 
 DATA(0x001ea448)
-const AFX_MSGMAP CMultiHelpDlg::messageMap = {
+const AFX_MSGMAP CMultiHelpDlg::s_messageMap = {
     &CDialog::messageMap,
-    &CMultiHelpDlg::_messageEntries[0],
+    &CMultiHelpDlg::s_messageEntries[0],
 };
 
 DATA(0x001ea450)
-const AFX_MSGMAP_ENTRY CMultiHelpDlg::_messageEntries[] = {
+const AFX_MSGMAP_ENTRY CMultiHelpDlg::s_messageEntries[] = {
     {0, 0, 0, 0, AfxSig_end, 0},
 };
 
@@ -42,5 +42,5 @@ void CMultiHelpDlg::DoDataExchange(CDataExchange*) {}
 
 RVA(0x000bec00, 0x6)
 const AFX_MSGMAP* CMultiHelpDlg::GetMessageMap() const {
-    return &messageMap;
+    return &s_messageMap;
 }

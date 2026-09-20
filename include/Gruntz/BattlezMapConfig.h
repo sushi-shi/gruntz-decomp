@@ -11,7 +11,6 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/SerialArchive.h>
-#include <Utils/MfcTyped.h>
 
 class CTriggerMgr;
 class CTileTriggerSwitchLogic;

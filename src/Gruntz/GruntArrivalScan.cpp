@@ -92,10 +92,10 @@ i32 CGrunt::StepBomberBehavior() {
                 CWwdSpriteObject* h = m_object;
                 SELECT_RANDOM_EXTENT_POINT_SPANS_FIRST(h, spanX, spanY, outX, outY)
                 TileSwitch(outX, outY, 0, m_arrivalFlags, 1, 0);
-                i32 m328 = CoordCount();
-                if (m328 != 0) {
+                i32 coordCount = CoordCount();
+                if (coordCount != 0) {
                     i32 mx = spanX > spanY ? spanX : spanY;
-                    if (m328 > mx) {
+                    if (coordCount > mx) {
                         SetEntrancePos(1, 1);
                     }
                 }

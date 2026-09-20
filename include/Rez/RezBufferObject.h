@@ -1,4 +1,7 @@
 #pragma once
+#include <Mfc.h>
+#include <MfcWin.h>
+#include <afxtempl.h>
 #include <Ints.h>
 #include <rva.h>
 #include <Wap32/Object.h>
@@ -6,34 +9,10 @@
 #include <stddef.h>
 
 struct RezElem40 {
-    RECT m_startRect;
-    RECT m_endRect;
+    CRect m_startRect;
+    CRect m_endRect;
     i32 m_reserved20;
     float m_scale;
 };
 
-RezElem40* __fastcall InitRezElem(RezElem40* p);
-
-struct CRezBufferObject : public CObject {
-    RezElem40* m_pData;
-    i32 m_nSize;
-    i32 m_nMaxSize;
-    i32 m_nGrowBy;
-
-    CRezBufferObject() {
-        m_pData = NULL;
-        m_nGrowBy = 0;
-        m_nMaxSize = 0;
-        m_nSize = 0;
-    }
-    virtual ~CRezBufferObject() OVERRIDE;
-    virtual void Serialize(CArchive& ar) OVERRIDE;
-
-    void SetSize(i32 nNewSize, i32 nGrowBy);
-};
-
-inline CRezBufferObject::~CRezBufferObject() {
-    if (m_pData) {
-        delete[] m_pData;
-    }
-}
+typedef CArray<RezElem40, const RezElem40&> CRezBufferObject;

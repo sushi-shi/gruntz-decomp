@@ -9,18 +9,8 @@
 #include <Ints.h>
 
 struct Bmp256Info {
-    BITMAPINFOHEADER bmiHeader;
-    RGBQUAD bmiColors[256];
-};
-
-union BmpInfoHeaderStamp {
-    BITMAPINFOHEADER m_ih;
-    struct {
-        DWORD m_biSize;
-        LONG m_biWidth;
-        LONG m_biHeight;
-        DWORD m_planesAndBitCount;
-    };
+    BITMAPINFOHEADER m_bmiHeader;
+    RGBQUAD m_bmiColors[256];
 };
 
 union BmpFileHeaderStamp {
@@ -31,8 +21,8 @@ union BmpFileHeaderStamp {
 #pragma pack(push, 1)
 
 struct BmpFileImage {
-    BITMAPFILEHEADER fh;
-    Bmp256Info info;
+    BITMAPFILEHEADER m_fh;
+    Bmp256Info m_info;
 };
 #pragma pack(pop)
 

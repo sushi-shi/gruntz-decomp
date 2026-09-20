@@ -87,7 +87,7 @@ void CNetSession::Shutdown() {
 
 RVA(0x000bf120, 0x11)
 void CNetCmdSlot::ClearDrainAcks() {
-    for (i32 i = 0; i < NET_SLOT_COUNT; i++) {
+    for (i32 i = 0; i < PLAYER_SLOT_COUNT; i++) {
         m_drainAckFlags[i] = 0;
     }
 }
@@ -143,7 +143,7 @@ void CNetSession::BuildGruntzCrcInfo() {
                 grunt->m_health,
                 grunt->m_object->m_screenX,
                 grunt->m_object->m_screenY,
-                grunt->m_entranceCell.direction,
+                grunt->m_entranceCell.m_direction,
                 grunt->m_stamina,
                 grunt->m_toyTime,
                 tool,
@@ -492,7 +492,7 @@ i32 CNetSession::SendRecord(CNetCmdSlot* slot, i32 sequence) {
 
 RVA(0x000bfff0, 0x5d)
 CNetCmdSlot* CNetSession::CreateSlot(i32 index, NetSlotState state) {
-    if (index < 0 || index >= NET_SLOT_COUNT) {
+    if (index < 0 || index >= PLAYER_SLOT_COUNT) {
         return NULL;
     }
     CNetCmdSlot* slot = &m_slots[index];
@@ -713,11 +713,11 @@ i32 CNetSession::VerifyChecksums() {
 RVA(0x000c0590, 0x21c)
 i32 CNetSession::ComputeChecksum() {
     i32 sum = 0;
-    for (i32 player = 0; player < TM_PLAYER_COUNT; player++) {
+    for (i32 player = 0; player < PLAYER_SLOT_COUNT; player++) {
         for (i32 g = 0; g < TM_UNITS_PER_PLAYER; g++) {
             CGrunt* grunt = m_owner->m_mgr->m_triggerMgr->m_units[player * TM_UNITS_PER_PLAYER + g];
             if (grunt != NULL) {
-                sum += IDX(grunt->m_entranceCell.direction) + grunt->m_stamina + grunt->m_toyTime
+                sum += IDX(grunt->m_entranceCell.m_direction) + grunt->m_stamina + grunt->m_toyTime
                        + grunt->m_health + grunt->m_object->m_screenY + grunt->m_object->m_sortKey
                        + grunt->m_object->m_screenX + grunt->LastTilePx().m_x
                        + grunt->LastTilePx().m_y;

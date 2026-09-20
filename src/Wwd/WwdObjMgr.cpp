@@ -302,14 +302,14 @@ CWwdGameObject* CDDrawChildGroup::CreateNamedContainerObject(
 // @early-stop
 RVA(0x00159a70, 0x200)
 void CDDrawChildGroup::TickKillCues(i32 advance) {
-    RVA_DYNINIT(0x00159c80, 0xa, killQueue)
+    RVA_DYNINIT(0x00159c80, 0xa, s_killQueue)
     DATA(0x002bf3a8)
-    static CObArray killQueue;
-    RVA_DYNINIT(0x00159c70, 0xa, sortQueue)
+    static CObArray s_killQueue;
+    RVA_DYNINIT(0x00159c70, 0xa, s_sortQueue)
     DATA(0x002bf390)
-    static CObArray sortQueue;
-    killQueue.SetSize(0, -1);
-    sortQueue.SetSize(0, -1);
+    static CObArray s_sortQueue;
+    s_killQueue.SetSize(0, -1);
+    s_sortQueue.SetSize(0, -1);
 
     if (advance != 0) {
         u32 now = timeGetTime();
@@ -332,15 +332,15 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
         }
         WwdGameObjectFlags objectFlags = static_cast<WwdGameObjectFlags>(obj->m_flags);
         if (HAS(objectFlags, WWD_GAME_OBJECT_FLAG_PENDING_DELETE)) {
-            killQueue.Add(static_cast<CObject*>(obj));
+            s_killQueue.Add(static_cast<CObject*>(obj));
         } else if (HAS(objectFlags, WWD_GAME_OBJECT_FLAG_SORT_PENDING)) {
-            sortQueue.Add(static_cast<CObject*>(obj));
+            s_sortQueue.Add(static_cast<CObject*>(obj));
         }
     }
 
     i32 i;
-    for (i = 0; i < killQueue.GetSize(); i++) {
-        CWwdGameObject* obj = static_cast<CWwdGameObject*>(killQueue.GetData()[i]);
+    for (i = 0; i < s_killQueue.GetSize(); i++) {
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(s_killQueue.GetData()[i]);
         if (HAS(static_cast<WwdGameObjectFlags>(obj->m_flags),
                 WWD_GAME_OBJECT_FLAG_DISPATCH_OBJECT_REMOVED)) {
             CLogicRecord* record = obj->m_logicRecord;
@@ -361,8 +361,8 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
         }
     }
 
-    for (i = 0; i < sortQueue.GetSize(); i++) {
-        CWwdGameObject* obj = static_cast<CWwdGameObject*>(sortQueue.GetData()[i]);
+    for (i = 0; i < s_sortQueue.GetSize(); i++) {
+        CWwdGameObject* obj = static_cast<CWwdGameObject*>(s_sortQueue.GetData()[i]);
         obj->m_flags &= ~IDX(WWD_GAME_OBJECT_FLAG_SORT_PENDING);
         m_list.RemoveAt(obj->m_posCache);
         InsertSorted(obj, 0);
@@ -537,7 +537,7 @@ void CDDrawChildGroup::CollideBroadcast() {
                         } else if (oi->m_area.left == COORD_UNSET) {
                             overlap = 0;
                         } else {
-                            CDDrawRect ra, rb;
+                            RECT ra, rb;
                             PLACE_OBJECT_RECT(ra, oi, m_area);
                             PLACE_OBJECT_RECT(rb, oj, m_switchRect);
                             overlap = RectsOverlap(&ra, &rb);
@@ -606,7 +606,7 @@ i32 CDDrawChildGroup::BoxesOverlap(CGameObject* areaObj, CGameObject* switchObj)
         return 0;
     }
 
-    CDDrawRect ra, rb;
+    RECT ra, rb;
     PLACE_OBJECT_RECT(ra, areaObj, m_area);
     PLACE_OBJECT_RECT(rb, switchObj, m_switchRect);
     return CDDrawRectsOverlap(&ra, &rb);

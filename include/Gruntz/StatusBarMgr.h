@@ -25,6 +25,7 @@
 #include <Gruntz/StatusBarItem.h>
 #include <Gruntz/StatusBarTab.h>
 #include <Gruntz/StatusSampleMode.h>
+#include <Gruntz/TriggerGridDimensions.h>
 #include <Gruntz/WarpStoneFragment.h>
 #include <Ints.h>
 
@@ -122,21 +123,17 @@ class CSBI_StatzTabArrow;
 class CSBI_WarlordHead;
 class CWarpStoneFly;
 
-const i32 kSlotCommitLevel = 0x1a;
+const i32 s_slotCommitLevel = 0x1a;
 
-const i32 kActivateErrId = 0x80e4;
-const i32 kActivateErrTag = 0x44b;
+const i32 s_activateErrId = 0x80e4;
+const i32 s_activateErrTag = 0x44b;
 
-const i32 kSetTabErrTag = 0x44a;
+const i32 s_setTabErrTag = 0x44a;
 
 GZ_ENUM_CONST_BEGIN(GruntWellPct)
     GRUNT_WELL_EMPTY = 0,
     GRUNT_WELL_FULL = 100
 GZ_ENUM_CONST_END(GruntWellPct)
-
-GZ_ENUM_CONST_BEGIN(StatusBarGruntSlots)
-    STATUSBAR_GRUNT_SLOT_COUNT = 15
-GZ_ENUM_CONST_END(StatusBarGruntSlots)
 
 class CStatusBarMgr {
     inline b32 ActivateReadySlot(i32 slot);
@@ -281,10 +278,10 @@ public:
     CPtrList m_tabLists[8];
     StatusBarTab m_activeTab;
     GameTabContent m_itemKind;
-    StatusSampleMode m_statFlags[STATUSBAR_GRUNT_SLOT_COUNT];
-    CSBI_SideTab* m_hitRects[STATUSBAR_GRUNT_SLOT_COUNT];
+    StatusSampleMode m_statFlags[TM_UNITS_PER_PLAYER];
+    CSBI_SideTab* m_hitRects[TM_UNITS_PER_PLAYER];
 
-    CSBI_StatzTabArrow* m_statObj[STATUSBAR_GRUNT_SLOT_COUNT];
+    CSBI_StatzTabArrow* m_statObj[TM_UNITS_PER_PLAYER];
     CSBI_MenuItem* m_statzTabButton;
     CSBI_MenuItem* m_resourceTabButton;
     CSBI_MenuItem* m_gruntzTabButton;
@@ -315,7 +312,6 @@ public:
 
     CSbiHlRow m_conveyorSlots[3];
     CSBI_ImageSet* m_conveyorSprites[3];
-    char m_pad314[0x318 - 0x314];
 
     CSbiMachineRow m_rightMachine;
     CSbiMachineRow m_leftMachine;
@@ -330,7 +326,6 @@ public:
     CStatusBarItem* m_resourceMachineFramework;
     CStatusBarItem* m_resourceUpperBackground;
     CStatusBarItem* m_resourceWindowBackground;
-    char m_pad374[0x378 - 0x374];
     CSbiHlRow m_resourceSlots[12];
     CSBI_ImageSet* m_resourceSlotSprites[12];
     SbiBeltPhase m_machinePhase;

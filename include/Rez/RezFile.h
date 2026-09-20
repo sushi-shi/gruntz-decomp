@@ -139,7 +139,7 @@ inline CRezFileSingleFile* CRezFileSingleFileList::GetLast() {
 }
 
 extern char g_wildcard[];
-extern char s_rPlusB[];
-extern char s_wPlusB[];
+extern char g_rPlusB[];
+extern char g_wPlusB[];
 
 #endif // REZ_REZFILE_H

@@ -3,8 +3,11 @@
 
 #include <rva.h>
 
+#include <Mfc.h>
+
 #include <Lith/BaseList.h>
 
+#include <mmsystem.h>
 #include <stdio.h>
 
 struct IDirectSound;
@@ -12,7 +15,6 @@ struct IDirectSoundBuffer;
 class SoundDevice;
 class SoundBuffer;
 struct RiffWaveHeader;
-struct WaveFormatX;
 
 struct SoundBufferNode : public CBaseListItem {
     SoundBuffer* m_buffer;
@@ -59,7 +61,7 @@ public:
 
     i32 GetCurrentPosition(unsigned long* playCursor, unsigned long* writeCursor);
     i32 SetCurrentPosition(u32 position);
-    i32 GetFormat(WaveFormatX* outFormat, u32 formatBytes, unsigned long* writtenBytes);
+    i32 GetFormat(WAVEFORMATEX* outFormat, u32 formatBytes, unsigned long* writtenBytes);
     i32 LoadFromFile(FILE* file, u32 bytes, i32 offset);
     i32 LockConvert(u8* sourceAudio, u32 lockBytes, b32 convert16To8);
     i32 Play();
@@ -121,12 +123,17 @@ public:
     SoundBufferInstanceList m_instances;
 };
 
-i32 ParseWaveChunks(RiffWaveHeader* riff, WaveFormatX** outFormat, u8** outData, u32* outDataBytes);
+i32 ParseWaveChunks(
+    RiffWaveHeader* riff,
+    WAVEFORMATEX** outFormat,
+    u8** outData,
+    u32* outDataBytes
+);
 
 i32 ConvertVolumeToPercent(i32 attenuation);
 
-extern const double c_volumePercentScale;
-extern const double c_volumeCurveUnit;
-extern const double c_decibelScale;
-extern const double c_attenuationBase;
+extern const double g_volumePercentScale;
+extern const double g_volumeCurveUnit;
+extern const double g_decibelScale;
+extern const double g_attenuationBase;
 #endif // DSNDMGR_SOUNDBUFFER_H

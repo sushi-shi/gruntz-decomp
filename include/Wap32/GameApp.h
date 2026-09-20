@@ -4,6 +4,7 @@
 #include <rva.h>
 
 #include <Enums.h>
+#include <Utils/AsyncKeyState.h>
 #include <Utils/MillisPer.h>
 
 GZ_ENUM_CONST_BEGIN(GameAppTiming)
@@ -12,10 +13,6 @@ GZ_ENUM_CONST_BEGIN(GameAppTiming)
     GAMEAPP_FPS_SAMPLE_SECONDS = 2,
     GAMEAPP_FPS_SAMPLE_INTERVAL_MS = GAMEAPP_FPS_SAMPLE_SECONDS * MILLIS_PER_SECOND
 GZ_ENUM_CONST_END(GameAppTiming)
-
-GZ_ENUM_CONST_BEGIN(AsyncKeyStateMask)
-    ASYNC_KEYSTATE_DOWN = 0x80000000
-GZ_ENUM_CONST_END(AsyncKeyStateMask)
 
 extern i32 g_gameAppNowMs;
 extern i32 g_gameAppFrameDeltaMs;

@@ -152,9 +152,9 @@ i32 CDDrawSurfacePair::InitFromSurface(CDDSurface* src) {
     if (src == NULL) {
         return 0;
     }
-    i32 w = src->m_width;
+    i32 w = src->m_apiDesc.dwWidth;
     ColorDepth bpp = src->m_bitDepth;
-    i32 h = src->m_height;
+    i32 h = src->m_apiDesc.dwHeight;
     if (w <= 0 || h <= 0) {
         return 0;
     }
@@ -238,25 +238,25 @@ void CDDrawSurfacePair::DrawBox(RECT* rect, i32 color) {
 
     CDDSurface* surface = m_surface;
     if (m_bpp == BPP_RGB_16) {
-        i32 offTop = surface->m_pitch * rect->top + surface->m_bytesPerPixel * left;
+        i32 offTop = surface->m_apiDesc.lPitch * rect->top + surface->m_bytesPerPixel * left;
         i32 n = 2 * w;
         if (n > 0) {
             memset(base + offTop, color, n);
         }
         CDDSurface* bottomSurface = m_surface;
-        i32 offBot =
-            bottomSurface->m_pitch * rect->bottom + bottomSurface->m_bytesPerPixel * rect->left;
+        i32 offBot = bottomSurface->m_apiDesc.lPitch * rect->bottom
+                     + bottomSurface->m_bytesPerPixel * rect->left;
         if (n > 0) {
             memset(base + offBot, color, n);
         }
     } else {
-        i32 offTop = surface->m_pitch * rect->top + surface->m_bytesPerPixel * left;
+        i32 offTop = surface->m_apiDesc.lPitch * rect->top + surface->m_bytesPerPixel * left;
         if (w > 0) {
             memset(base + offTop, color, w);
         }
         CDDSurface* bottomSurface = m_surface;
-        i32 offBot =
-            bottomSurface->m_pitch * rect->bottom + bottomSurface->m_bytesPerPixel * rect->left;
+        i32 offBot = bottomSurface->m_apiDesc.lPitch * rect->bottom
+                     + bottomSurface->m_bytesPerPixel * rect->left;
         if (w > 0) {
             memset(base + offBot, color, w);
         }
@@ -266,20 +266,20 @@ void CDDrawSurfacePair::DrawBox(RECT* rect, i32 color) {
         i32 h = rect->bottom - rect->top + 1;
         for (i32 y = 0; y < h; ++y) {
             if (m_bpp == BPP_RGB_16) {
-                i32 lo =
-                    (rect->top + y) * m_surface->m_pitch + m_surface->m_bytesPerPixel * rect->left;
+                i32 lo = (rect->top + y) * m_surface->m_apiDesc.lPitch
+                         + m_surface->m_bytesPerPixel * rect->left;
                 base[lo] = c;
                 base[lo + 1] = c;
-                i32 ro =
-                    (rect->top + y) * m_surface->m_pitch + m_surface->m_bytesPerPixel * rect->right;
+                i32 ro = (rect->top + y) * m_surface->m_apiDesc.lPitch
+                         + m_surface->m_bytesPerPixel * rect->right;
                 base[ro] = c;
                 base[ro + 1] = c;
             } else {
-                i32 lo =
-                    (rect->top + y) * m_surface->m_pitch + m_surface->m_bytesPerPixel * rect->left;
+                i32 lo = (rect->top + y) * m_surface->m_apiDesc.lPitch
+                         + m_surface->m_bytesPerPixel * rect->left;
                 base[lo] = c;
-                i32 ro =
-                    (rect->top + y) * m_surface->m_pitch + m_surface->m_bytesPerPixel * rect->right;
+                i32 ro = (rect->top + y) * m_surface->m_apiDesc.lPitch
+                         + m_surface->m_bytesPerPixel * rect->right;
                 base[ro] = c;
             }
         }
@@ -307,7 +307,7 @@ void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
     if (base == NULL) {
         return;
     }
-    i32 off = m_surface->m_bytesPerPixel * x + m_surface->m_pitch * y;
+    i32 off = m_surface->m_bytesPerPixel * x + m_surface->m_apiDesc.lPitch * y;
 
     i32 i;
     char* p = base + off - 1;
@@ -320,16 +320,16 @@ void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
         base[off + i] = 0;
     }
 
-    i32 up = off - m_surface->m_pitch;
+    i32 up = off - m_surface->m_apiDesc.lPitch;
     for (i = 0; i < 3; ++i) {
         base[up] = static_cast<char>(0xff);
-        up -= m_surface->m_pitch;
+        up -= m_surface->m_apiDesc.lPitch;
     }
 
-    i32 down = off + m_surface->m_pitch;
+    i32 down = off + m_surface->m_apiDesc.lPitch;
     for (i = 0; i < 3; ++i) {
         base[down] = static_cast<char>(0xff);
-        down += m_surface->m_pitch;
+        down += m_surface->m_apiDesc.lPitch;
     }
 
     m_surface->m_ddSurface->Unlock(NULL);
@@ -1260,7 +1260,7 @@ void CDDrawPixelWorker::RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurface
         CDDSurface* s = overlay->m_surface;
         char* base = static_cast<char*>(s->Lock(NULL));
         if (base != NULL) {
-            base[s->m_bytesPerPixel * x + s->m_pitch * y] = c;
+            base[s->m_bytesPerPixel * x + s->m_apiDesc.lPitch * y] = c;
             s->m_ddSurface->Unlock(NULL);
         }
     }
@@ -1271,7 +1271,7 @@ void CDDrawPixelWorker::RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurface
         CDDSurface* s = backBuffer->m_surface;
         char* base = static_cast<char*>(s->Lock(NULL));
         if (base != NULL) {
-            base[s->m_bytesPerPixel * x + y * s->m_pitch] = c;
+            base[s->m_bytesPerPixel * x + y * s->m_apiDesc.lPitch] = c;
             s->m_ddSurface->Unlock(NULL);
         }
     }

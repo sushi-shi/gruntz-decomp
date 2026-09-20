@@ -27,17 +27,17 @@ GZ_ENUM_FORWARD(LogicTypeId);
 struct CTriRecord {
     i32 Serialize(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object);
 
-    i32 row;
-    i32 column;
-    GruntDirection direction;
+    i32 m_row;
+    i32 m_column;
+    GruntDirection m_direction;
 };
 
 struct GruntDirectionCell : public CTriRecord {
     GruntDirectionCell() {}
     GruntDirectionCell(i32 row_, i32 column_, GruntDirection direction_) {
-        row = row_;
-        column = column_;
-        direction = direction_;
+        m_row = row_;
+        m_column = column_;
+        m_direction = direction_;
     }
 
     void RotateClockwise(i32 steps);

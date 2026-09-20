@@ -202,8 +202,9 @@ i32 CDDrawSubMgrPages::CreateOverlay(i32 copyFromBack, i32 createFlag) {
     if (m_overlayPair->IsLoaded()) {
         return 0;
     }
-    CDDrawSurfacePair* s14 = m_backPair;
-    if (!m_overlayPair->Create(s14->m_width, s14->m_height, s14->m_bpp, createFlag)) {
+    CDDrawSurfacePair* backBuffer = m_backPair;
+    if (!m_overlayPair
+             ->Create(backBuffer->m_width, backBuffer->m_height, backBuffer->m_bpp, createFlag)) {
         return 0;
     }
     if (copyFromBack) {
@@ -249,15 +250,15 @@ i32 CDDrawSubMgrPages::PresentBackPage() {
     if (front == NULL) {
         ok = false;
     } else {
-        CDDSurface* s10 = front->m_surface;
-        if (s10 == NULL) {
+        CDDSurface* frontBuffer = front->m_surface;
+        if (frontBuffer == NULL) {
             ok = false;
         } else {
-            CDDSurface* s14 = back->m_surface;
-            if (s14 == NULL) {
+            CDDSurface* backBuffer = back->m_surface;
+            if (backBuffer == NULL) {
                 ok = false;
             } else {
-                i32 hr = s14->Blt(s10);
+                i32 hr = backBuffer->Blt(frontBuffer);
                 ok = (hr == 0);
             }
         }
