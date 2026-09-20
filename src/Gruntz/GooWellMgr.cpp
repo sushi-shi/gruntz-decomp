@@ -80,12 +80,12 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
     }
 
     if (m_countdownActive == false) {
-        goto done;
+        return 0;
     }
 
     if (m_phase == FINISH_STATE_DEFEAT) {
         if (m_pendingFx != NULL) {
-            goto done;
+            return 0;
         }
         if (static_cast<i64>(g_frameTime) - m_cueTimer.m_base >= m_cueTimer.m_window) {
             if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
@@ -96,7 +96,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
             m_countdownActive = false;
             return 0;
         }
-        goto done;
+        return 0;
     }
 
     if (m_phase == FINISH_STATE_VICTORY) {
@@ -104,7 +104,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
             goto done;
         }
         if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ && m_pendingFx != NULL) {
-            goto done;
+            return 0;
         }
         (static_cast<CPlay*>(g_gameReg->m_curState))->OpenLevelOverlay(false);
         m_countdownActive = false;
@@ -180,7 +180,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
         }
         if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
             if (m_unitCountByPlayer[g_curPlayer] != 0) {
-                goto done;
+                return 0;
             }
             if (obj->m_winLoseBanner != false) {
                 LoadFinishLevelSprite(FINISH_REASON_TIME_EXPIRED);
@@ -208,7 +208,7 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
             }
             GruntzPlayer* slot = &g_gameReg->m_players[i];
             if (slot->m_joined && !slot->m_doneFlag && !slot->m_clearedRound) {
-                goto done;
+                return 0;
             }
         }
         LoadFinishLevelSprite(FINISH_REASON_BATTLEZ_VICTORY);

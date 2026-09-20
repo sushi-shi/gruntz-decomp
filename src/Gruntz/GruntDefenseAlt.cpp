@@ -55,32 +55,32 @@ i32 CGrunt::StepObjectGuardBehavior() {
             return 1;
         }
         if (m_combatActive != false) {
-            goto tail;
+            return 1;
         }
         if (m_stamina >= STAMINA_FULL) {
             if (FindGridNeighbor(1) != NULL) {
-                goto tail;
+                return 1;
             }
             if (inRange != 0 && occ == NULL) {
-                goto tail;
+                return 1;
             }
             if (m_poweredUp == false) {
-                goto tail;
+                return 1;
             }
             if (m_neighborValid != false) {
-                goto tail;
+                return 1;
             }
             RESET_GRUNT_POWERED_STATE(this)
             return 1;
         } else {
             if (inRange != 0) {
-                goto tail;
+                return 1;
             }
             if (m_poweredUp == false) {
-                goto tail;
+                return 1;
             }
             if (m_neighborValid != false) {
-                goto tail;
+                return 1;
             }
             RESET_GRUNT_POWERED_STATE(this)
             return 1;
@@ -92,7 +92,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
             CGrunt* o = m_triggerMgr->FindNearestEnemy(this);
             if (o != NULL) {
                 if (m_poweredUp != false) {
-                    goto tail;
+                    return 1;
                 }
                 if (m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(o)
                     && RectContains(o->m_object->m_screenX, o->m_object->m_screenY) != 0) {
@@ -101,13 +101,13 @@ i32 CGrunt::StepObjectGuardBehavior() {
                 }
             }
             if (m_poweredUp != false) {
-                goto tail;
+                return 1;
             }
             {
                 Coord entrance = EntrancePx();
                 Coord tile = LastTilePx();
                 if (tile.m_x != entrance.m_x || tile.m_y != entrance.m_y) {
-                    goto tail;
+                    return 1;
                 }
             }
             {
@@ -187,19 +187,19 @@ i32 CGrunt::StepObjectGuardBehavior() {
             }
             StepArrivalDrop(o->m_lastTilePx.m_x, o->m_lastTilePx.m_y, 0, m_arrivalFlags, 1, 0);
             if (m_poweredUp != false) {
-                goto tail;
+                return 1;
             }
             if (m_stamina < STAMINA_FULL) {
-                goto tail;
+                return 1;
             }
             if (RectContains(o->m_object->m_screenX, o->m_object->m_screenY) == 0) {
-                goto tail;
+                return 1;
             }
             if (o->GRUNT_SCREEN_X_NOT_AT_SAVED_POS(m_object, o)) {
-                goto tail;
+                return 1;
             }
             if (o->GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(m_object, o)) {
-                goto tail;
+                return 1;
             }
             COMMIT_GRUNT_NEIGHBOR(o);
             m_defenderState = AISTATE_ATTACK;
@@ -226,7 +226,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
             }
             CGrunt* o = m_triggerMgr->FindNearestEnemy(this);
             if (o == NULL) {
-                goto tail;
+                return 1;
             }
             if (m_poweredUp == false && m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(o)
                 && RectContains(o->m_object->m_screenX, o->m_object->m_screenY) != 0) {
@@ -234,7 +234,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
                 m_defenderState = AISTATE_ATTACK;
             }
             if (GruntInRadius(o->m_playerIndex, o->m_unitIndex) == 0) {
-                goto tail;
+                return 1;
             }
             m_arrivalCell.m_x = o->m_playerIndex;
             m_arrivalCell.m_y = o->m_unitIndex;
@@ -248,17 +248,14 @@ i32 CGrunt::StepObjectGuardBehavior() {
                     g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
                 }
             }
-            goto tail;
+            return 1;
         }
 
         default:
-            goto tail;
+            return 1;
     }
 
 resetState:
     m_defenderState = AISTATE_RETURN;
-    return 1;
-
-tail:
     return 1;
 }

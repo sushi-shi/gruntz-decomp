@@ -1258,7 +1258,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                 }
             }
         }
-        goto nexti;
+        continue;
     dispatch: {
         CMapMgr* bd2 = m_board;
         RECT a;
@@ -1346,16 +1346,16 @@ i32 CBattlezMapConfig::StepRowUnits() {
                 wingzGate: {
                     PickupType wp = ArrivalPickup(unit);
                     if (wp != PICKUP_WINGZ) {
-                        goto nexti;
+                        continue;
                     }
                 }
                     if ((cell & IDX(CELL_FLAG_SPECIAL)) == 0 && (cell & 0x100) == 0) {
-                        goto nexti;
+                        continue;
                     }
                     if ((cell & BRICKZ_CELL_OCCUPIED) == 0) {
                         goto tailArm2;
                     }
-                    goto nexti;
+                    continue;
                 dropCoords:
                     if (unit->CoordCount() != 0) {
                         RECYCLE_GRUNT_COORDS_EXPANDED(unit)
@@ -1364,7 +1364,6 @@ i32 CBattlezMapConfig::StepRowUnits() {
             }
         }
     }
-    nexti:;
     }
     return 1;
 

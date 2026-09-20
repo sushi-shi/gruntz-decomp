@@ -715,18 +715,18 @@ void CBootyState::GenMenuRandPos(GruntDirection sel, i32* outX, i32* outY) {
             return;
         case DIR_EAST:
             *outX = 0;
-            goto y_1e1;
+            *outY = g_gameReg->Rand() % 0x1e1;
+            return;
         case DIR_WEST:
             *outX = SCREEN_W_PX;
-            goto y_1e1;
-        y_1e1:
             *outY = g_gameReg->Rand() % 0x1e1;
             return;
         case DIR_NORTHEAST:
             flip = g_gameReg->Rand() % 2;
             if (flip) {
                 *outX = 0;
-                goto y_f1;
+                *outY = g_gameReg->Rand() % 0xf1 + SCREEN_HALF_H_PX;
+                return;
             }
             *outX = g_gameReg->Rand() % 0x141;
             *outY = SCREEN_H_PX;
@@ -735,13 +735,11 @@ void CBootyState::GenMenuRandPos(GruntDirection sel, i32* outX, i32* outY) {
             flip = g_gameReg->Rand() % 2;
             if (flip) {
                 *outX = SCREEN_W_PX;
-                goto y_f1;
+                *outY = g_gameReg->Rand() % 0xf1 + SCREEN_HALF_H_PX;
+                return;
             }
             *outX = g_gameReg->Rand() % 0x141 + SCREEN_HALF_W_PX;
             *outY = SCREEN_H_PX;
-            return;
-        y_f1:
-            *outY = g_gameReg->Rand() % 0xf1 + SCREEN_HALF_H_PX;
             return;
         case DIR_SOUTHEAST:
             flip = g_gameReg->Rand() % 2;
@@ -751,7 +749,8 @@ void CBootyState::GenMenuRandPos(GruntDirection sel, i32* outX, i32* outY) {
                 return;
             }
             *outX = 0;
-            goto y_f0;
+            *outY = g_gameReg->RandRange(0, SCREEN_HALF_H_PX);
+            return;
         case DIR_SOUTHWEST:
             if (g_gameReg->RandRange(0, 1)) {
                 *outX = g_gameReg->RandRange(0, SCREEN_HALF_W_PX) + SCREEN_HALF_W_PX;
@@ -759,8 +758,6 @@ void CBootyState::GenMenuRandPos(GruntDirection sel, i32* outX, i32* outY) {
                 return;
             }
             *outX = SCREEN_W_PX;
-            goto y_f0;
-        y_f0:
             *outY = g_gameReg->RandRange(0, SCREEN_HALF_H_PX);
             return;
     }

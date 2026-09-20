@@ -174,29 +174,20 @@ i32 CGrunt::RunEntranceMove() {
         return 0;
     }
     if (mode >= PICKUP_POWERUPZ_FIRST) {
-        goto clearMove;
+        return LoadTypeTableClearMove(mode);
     }
     if (mode >= PICKUP_BRICKZ_FIRST) {
-        goto brick;
+        m_brickPickupType = mode;
+        m_entrancePickup = PICKUP_INVALID;
+        return 1;
     }
     if (mode < PICKUP_BRICKZ_FIRST) {
-        goto toyCheck;
+        if (mode >= PICKUP_TOYZ_FIRST) {
+            return LoadVehicleGruntSprites(mode);
+        }
+        return LoadTypeTableClearMove(mode);
     }
     return 0;
-
-brick:
-    m_brickPickupType = mode;
-    m_entrancePickup = PICKUP_INVALID;
-    return 1;
-
-toyCheck:
-    if (mode >= PICKUP_TOYZ_FIRST) {
-        return LoadVehicleGruntSprites(mode);
-    }
-    goto clearMove;
-
-clearMove:
-    return LoadTypeTableClearMove(mode);
 }
 
 // @early-stop

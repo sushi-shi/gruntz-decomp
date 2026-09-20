@@ -59,3 +59,18 @@ ended in statement-identical `return 1;`, feeding the early return cross-jump.
 Changing each arm to `break;` plus one trailing `return 1;` took 88.53 to exact.
 Always inspect the arm terminator and shared suffix before assigning a switch
 to the residual tail-merge family.
+
+The inverse source shape closed `CBootyState::GenMenuRandPos` 0x19cd0. Three
+pairs of switch arms used explicit `goto` statements to share a one-line
+coordinate assignment and `return`. Duplicating that tiny suffix in each arm
+left the emitted size, instruction count, calls, branches, returns, and
+relocations unchanged because cl cross-jumped the identical machine tails
+again. It nevertheless changed the allocation inside those tails and raised
+the function from 97.8182 to exact.
+
+Therefore, a shared machine tail does not prove an authored source label. When
+a regalloc-only switch residue has identical aggregate topology and a
+hand-written cross-arm `goto` to a tiny suffix, A/B the ordinary duplicated
+statements and let cl recover the join. Restrict this test to small identical
+tails; cleanup exits and substantive state transitions remain evidence for a
+real shared source path.

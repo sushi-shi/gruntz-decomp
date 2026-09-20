@@ -1448,61 +1448,46 @@ i32 CTileActionEvent::MorphByTool(PickupType toolId, PlayerSlot playerSlot) {
         switch (m_actionCode) {
             case BRICKTILE_BROWN_1:
                 m_actionCode = BRICKTILE_BROWN_2;
-
-            commit: {
-
-                i32* flags = m_playerFlags;
-                memset(flags, 0, sizeof(m_playerFlags));
-                if (playerSlot == PLAYER_SLOT_ALL) {
-                    flags[0] = 1;
-                    flags[1] = 1;
-                    flags[2] = 1;
-                    flags[3] = 1;
-                } else {
-                    m_playerFlags[IDX(playerSlot)] = 1;
-                }
-                SetActionCode(m_actionCode);
-                return 1;
-            }
+                break;
             case BRICKTILE_RED_1:
                 m_actionCode = BRICKTILE_RED_2_LOW;
-                goto commit;
+                break;
             case BRICKTILE_BLUE_1:
                 m_actionCode = BRICKTILE_BLUE_2_LOW;
-                goto commit;
+                break;
             case BRICKTILE_GOLD_1:
                 m_actionCode = BRICKTILE_GOLD_2_LOW;
-                goto commit;
+                break;
             case BRICKTILE_BLACK_1:
                 m_actionCode = BRICKTILE_BLACK_2_LOW;
-                goto commit;
+                break;
             case BRICKTILE_BROWN_2:
                 m_actionCode = BRICKTILE_BROWN_3;
-                goto commit;
+                break;
             case BRICKTILE_RED_2_LOW:
                 m_actionCode = BRICKTILE_RED_3_LOW;
-                goto commit;
+                break;
             case BRICKTILE_RED_2_TOP:
                 m_actionCode = BRICKTILE_RED_3_MID;
-                goto commit;
+                break;
             case BRICKTILE_BLUE_2_LOW:
                 m_actionCode = BRICKTILE_BLUE_3_LOW;
-                goto commit;
+                break;
             case BRICKTILE_BLUE_2_TOP:
                 m_actionCode = BRICKTILE_BLUE_3_MID;
-                goto commit;
+                break;
             case BRICKTILE_GOLD_2_LOW:
                 m_actionCode = BRICKTILE_GOLD_3_LOW;
-                goto commit;
+                break;
             case BRICKTILE_GOLD_2_TOP:
                 m_actionCode = BRICKTILE_GOLD_3_MID;
-                goto commit;
+                break;
             case BRICKTILE_BLACK_2_LOW:
                 m_actionCode = BRICKTILE_BLACK_3_LOW;
-                goto commit;
+                break;
             case BRICKTILE_BLACK_2_TOP:
                 m_actionCode = BRICKTILE_BLACK_3_MID;
-                goto commit;
+                break;
             default:
                 return 0;
         }
@@ -1514,7 +1499,7 @@ i32 CTileActionEvent::MorphByTool(PickupType toolId, PlayerSlot playerSlot) {
             case BRICKTILE_GOLD_1:
             case BRICKTILE_BLACK_1:
                 m_actionCode = BRICKTILE_RED_2_TOP;
-                goto commit;
+                break;
             case BRICKTILE_BROWN_2:
             case BRICKTILE_RED_2_LOW:
             case BRICKTILE_RED_2_TOP:
@@ -1525,7 +1510,7 @@ i32 CTileActionEvent::MorphByTool(PickupType toolId, PlayerSlot playerSlot) {
             case BRICKTILE_BLACK_2_LOW:
             case BRICKTILE_BLACK_2_TOP:
                 m_actionCode = BRICKTILE_RED_3_TOP;
-                goto commit;
+                break;
             default:
                 return 0;
         }
@@ -1537,7 +1522,7 @@ i32 CTileActionEvent::MorphByTool(PickupType toolId, PlayerSlot playerSlot) {
             case BRICKTILE_GOLD_1:
             case BRICKTILE_BLACK_1:
                 m_actionCode = BRICKTILE_BLUE_2_TOP;
-                goto commit;
+                break;
             case BRICKTILE_BROWN_2:
             case BRICKTILE_RED_2_LOW:
             case BRICKTILE_RED_2_TOP:
@@ -1548,7 +1533,7 @@ i32 CTileActionEvent::MorphByTool(PickupType toolId, PlayerSlot playerSlot) {
             case BRICKTILE_BLACK_2_LOW:
             case BRICKTILE_BLACK_2_TOP:
                 m_actionCode = BRICKTILE_BLUE_3_TOP;
-                goto commit;
+                break;
             default:
                 return 0;
         }
@@ -1560,7 +1545,7 @@ i32 CTileActionEvent::MorphByTool(PickupType toolId, PlayerSlot playerSlot) {
             case BRICKTILE_GOLD_1:
             case BRICKTILE_BLACK_1:
                 m_actionCode = BRICKTILE_BLACK_2_TOP;
-                goto commit;
+                break;
             case BRICKTILE_BROWN_2:
             case BRICKTILE_RED_2_LOW:
             case BRICKTILE_RED_2_TOP:
@@ -1571,7 +1556,7 @@ i32 CTileActionEvent::MorphByTool(PickupType toolId, PlayerSlot playerSlot) {
             case BRICKTILE_BLACK_2_LOW:
             case BRICKTILE_BLACK_2_TOP:
                 m_actionCode = BRICKTILE_BLACK_3_TOP;
-                goto commit;
+                break;
             default:
                 return 0;
         }
@@ -1583,7 +1568,7 @@ i32 CTileActionEvent::MorphByTool(PickupType toolId, PlayerSlot playerSlot) {
             case BRICKTILE_GOLD_1:
             case BRICKTILE_BLACK_1:
                 m_actionCode = BRICKTILE_GOLD_2_TOP;
-                goto commit;
+                break;
             case BRICKTILE_BROWN_2:
             case BRICKTILE_RED_2_LOW:
             case BRICKTILE_RED_2_TOP:
@@ -1594,13 +1579,24 @@ i32 CTileActionEvent::MorphByTool(PickupType toolId, PlayerSlot playerSlot) {
             case BRICKTILE_BLACK_2_LOW:
             case BRICKTILE_BLACK_2_TOP:
                 m_actionCode = BRICKTILE_GOLD_3_TOP;
-                goto commit;
+                break;
             default:
                 return 0;
         }
     }
 
-    goto commit;
+    i32* flags = m_playerFlags;
+    memset(flags, 0, sizeof(m_playerFlags));
+    if (playerSlot == PLAYER_SLOT_ALL) {
+        flags[0] = 1;
+        flags[1] = 1;
+        flags[2] = 1;
+        flags[3] = 1;
+    } else {
+        m_playerFlags[IDX(playerSlot)] = 1;
+    }
+    SetActionCode(m_actionCode);
+    return 1;
 }
 
 RVA(0x00113860, 0x3b)
