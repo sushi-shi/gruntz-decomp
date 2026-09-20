@@ -87,10 +87,6 @@ GZ_ENUM_CONST_BEGIN(NetSentinels)
     NET_PREFERRED_PLAYER_INDEX_ANY = 99
 GZ_ENUM_CONST_END(NetSentinels)
 
-GZ_ENUM_CONST_BEGIN(NetPlayerDefaults)
-    NET_DEFAULT_MAX_GRUNTZ = 15
-GZ_ENUM_CONST_END(NetPlayerDefaults)
-
 DATA(0x00211d88)
 i32 g_dropPlayerId = NET_PLAYER_ID_NONE;
 DATA(0x00211d8c)
@@ -429,7 +425,7 @@ i32 CMulti::LeaveState(GameStateId nextState) {
         DrawTextToOverlaySurface(m_world, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
         RetireScene(0x50, 0x3e8, 0, true);
         if (m_mgr && m_mgr->m_triggerMgr) {
-            m_mgr->m_triggerMgr->RemovePlayerUnitsImmediately(TM_ALL_PLAYERS);
+            m_mgr->m_triggerMgr->RemovePlayerUnitsImmediately(PLAYER_SLOT_ALL);
         }
     }
     return 1;
@@ -1400,7 +1396,7 @@ i32 CMulti::OnJoinConfirm(HWND hDlg) {
     packet.m_difficulty = BZDIFF_EASY;
     packet.m_preferredPlayerIndex = NET_PREFERRED_PLAYER_INDEX_ANY;
     packet.m_ready = false;
-    packet.m_maxGruntz = NET_DEFAULT_MAX_GRUNTZ;
+    packet.m_maxGruntz = TM_UNITS_PER_PLAYER;
     strcpy(packet.m_name, PlayerName());
     BroadcastPacket(&packet, sizeof(packet), DPSEND_GUARANTEED);
     return 1;
@@ -2628,7 +2624,7 @@ i32 CMulti::WaitForOtherPlayers() {
     {
         i32 count = 0;
         CNetCmdSlot* slot = m_session->m_slots;
-        for (i32 j = NET_SLOT_COUNT; j != 0; j--) {
+        for (i32 j = PLAYER_SLOT_COUNT; j != 0; j--) {
             if (slot != NULL && slot->m_state == NETSLOT_ACTIVE) {
                 count++;
             }
@@ -3056,7 +3052,7 @@ i32 CMulti::CreateLocalPlayer() {
     pkt.m_difficulty = BZDIFF_EASY;
 
     pkt.m_ready = false;
-    pkt.m_maxGruntz = NET_DEFAULT_MAX_GRUNTZ;
+    pkt.m_maxGruntz = TM_UNITS_PER_PLAYER;
     pkt.m_preferredPlayerIndex = NET_PREFERRED_PLAYER_INDEX_ANY;
     pkt.m_networkPlayerId = m_localPlayerId;
     {

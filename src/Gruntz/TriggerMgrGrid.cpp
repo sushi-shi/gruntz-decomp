@@ -284,9 +284,9 @@ i32 CTriggerMgr::StartUnitDeathForObject(
     i32 deathParam
 ) {
     i32 lastPlayerIndex;
-    if (playerSelector == TM_ALL_PLAYERS) {
+    if (playerSelector == PLAYER_SLOT_ALL) {
         playerSelector = 0;
-        lastPlayerIndex = TM_PLAYER_COUNT - 1;
+        lastPlayerIndex = PLAYER_SLOT_COUNT - 1;
     } else {
         lastPlayerIndex = playerSelector;
     }
@@ -328,7 +328,7 @@ i32 CTriggerMgr::StartUnitDeath(
 RVA(0x0006bd40, 0xb3)
 i32 CTriggerMgr::RemovePlayerUnitsImmediately(i32 playerSelector) {
     i32 firstPlayerIndex, lastPlayerIndex;
-    if (playerSelector == TM_ALL_PLAYERS) {
+    if (playerSelector == PLAYER_SLOT_ALL) {
         firstPlayerIndex = 0;
         lastPlayerIndex = 3;
     } else {
@@ -380,7 +380,7 @@ CGrunt* CTriggerMgr::CellHitTest(
     i32 startPlayerIndex
 ) {
     i32 last;
-    if (startPlayerIndex == TM_ALL_PLAYERS) {
+    if (startPlayerIndex == PLAYER_SLOT_ALL) {
         startPlayerIndex = 0;
         last = 3;
     } else {
@@ -1153,7 +1153,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
             return -1;
         }
         cell->m_arrivalPhase = 0;
-        CGrunt* hit = CellHitTest(worldX, worldY, &hitPlayerIndex, &hitUnitIndex, TM_ALL_PLAYERS);
+        CGrunt* hit = CellHitTest(worldX, worldY, &hitPlayerIndex, &hitUnitIndex, PLAYER_SLOT_ALL);
         if (hit != NULL) {
             if (hit->m_playerIndex == cell->m_playerIndex && g_traitorMode == false) {
                 return 0;
@@ -1283,7 +1283,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
     cell->m_arrivalPhase = 0;
     i32 hitPlayerIndex;
     i32 hitUnitIndex;
-    hit = CellHitTest(worldX, worldY, &hitPlayerIndex, &hitUnitIndex, TM_ALL_PLAYERS);
+    hit = CellHitTest(worldX, worldY, &hitPlayerIndex, &hitUnitIndex, PLAYER_SLOT_ALL);
     if (hit == NULL) {
         CGruntzMapMgr* map = g_gameReg->m_tileGrid;
         i32 flags = map->CellFlagsAt(argTileX, argTileY);

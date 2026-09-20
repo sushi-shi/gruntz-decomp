@@ -2,6 +2,8 @@
 #define GRUNTZ_GRUNTZ_BATTLEZTASK_H
 
 #include <Enums.h>
+#include <Gruntz/PlayerSlot.h>
+#include <Gruntz/TriggerGridDimensions.h>
 
 GZ_ENUM_BEGIN(BattlezTask)
     BZTASK_UNASSIGNED = 0,
@@ -16,9 +18,7 @@ GZ_ENUM_BEGIN(BattlezTask)
 GZ_ENUM_END(BattlezTask)
 
 GZ_ENUM_CONST_BEGIN(BattlezRoster)
-    BATTLEZ_TEAM_COUNT = 4,
-    BATTLEZ_UNIT_SLOT_COUNT = 15,
-    BATTLEZ_QUEUE_POSITION_UNSET = BATTLEZ_UNIT_SLOT_COUNT + 1
+    BATTLEZ_QUEUE_POSITION_UNSET = TM_UNITS_PER_PLAYER + 1
 GZ_ENUM_CONST_END(BattlezRoster)
 
 #endif // GRUNTZ_GRUNTZ_BATTLEZTASK_H

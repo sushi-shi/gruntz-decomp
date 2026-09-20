@@ -14,17 +14,13 @@
 #include <Gruntz/GruntEntranceMode.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/PickupType.h>
+#include <Gruntz/PlayerSlot.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/TargetSelectionKind.h>
+#include <Gruntz/TriggerGridDimensions.h>
 #include <Gruntz/WarpStoneFragment.h>
 #include <Ints.h>
 #include <Wwd/WwdAniDrawValue.h>
-
-GZ_ENUM_CONST_BEGIN(TmGridDim)
-    TM_UNITS_PER_PLAYER = 15,
-    TM_PLAYER_COUNT = 4,
-    TM_ALL_PLAYERS = 5
-GZ_ENUM_CONST_END(TmGridDim)
 
 class CGrunt;
 class CWarlord;
@@ -261,12 +257,12 @@ public:
     i32 LoadToyBoxIcon(i32 x, i32 y, i32 col, PickupType kind, i32 moveKind);
 
     CPtrList m_baseList;
-    CGrunt* m_units[TM_PLAYER_COUNT * TM_UNITS_PER_PLAYER];
-    i32 m_unitCountByPlayer[TM_PLAYER_COUNT];
-    i32 m_unitExited[TM_PLAYER_COUNT * TM_UNITS_PER_PLAYER];
+    CGrunt* m_units[PLAYER_SLOT_COUNT * TM_UNITS_PER_PLAYER];
+    i32 m_unitCountByPlayer[PLAYER_SLOT_COUNT];
+    i32 m_unitExited[PLAYER_SLOT_COUNT * TM_UNITS_PER_PLAYER];
 
-    i32 m_gruntzExitedByPlayer[TM_PLAYER_COUNT];
-    i32 m_gruntzLostByPlayer[TM_PLAYER_COUNT];
+    i32 m_gruntzExitedByPlayer[PLAYER_SLOT_COUNT];
+    i32 m_gruntzLostByPlayer[PLAYER_SLOT_COUNT];
 
     CDDrawSurfaceMgr* m_world;
 
