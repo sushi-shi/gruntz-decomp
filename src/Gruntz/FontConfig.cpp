@@ -7,6 +7,7 @@
 
 #include <Bute/ButeMgr.h>
 #include <Enums.h>
+#include <Gruntz/ColorTint.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Rez/FrameClock.h>
 
@@ -344,26 +345,6 @@ i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
     return 1;
 }
 
-typedef enum TextColorId {
-    TEXTCOLOR_ORANGE = 0,
-    TEXTCOLOR_GREEN = 1,
-    TEXTCOLOR_BLUE = 2,
-    TEXTCOLOR_RED = 3,
-    TEXTCOLOR_PURPLE = 4,
-    TEXTCOLOR_YELLOW = 5,
-    TEXTCOLOR_ROSE = 6,
-    TEXTCOLOR_BLACK = 7,
-    TEXTCOLOR_NAVY = 8,
-    TEXTCOLOR_DKGREEN = 9,
-    TEXTCOLOR_TEAL = 10,
-    TEXTCOLOR_MAROON = 11,
-    TEXTCOLOR_MAGENTA = 12,
-    TEXTCOLOR_OLIVE = 13,
-    TEXTCOLOR_GRAY = 14,
-    TEXTCOLOR_CYAN = 15,
-    TEXTCOLOR_WHITE = 16,
-} TextColorId;
-
 typedef enum TextColorRef {
     TCLR_ORANGE = 0x0080ff,
     TCLR_GREEN = 0x00ff00,
@@ -428,52 +409,52 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
             if (HAS(item->m_flags, FONT_ITEM_COLORED)) {
                 COLORREF color;
                 switch (item->m_payload) {
-                    case TEXTCOLOR_NAVY:
+                    case TINT_DKBLUE:
                         color = TCLR_NAVY;
                         break;
-                    case TEXTCOLOR_DKGREEN:
+                    case TINT_DKGREEN:
                         color = TCLR_DKGREEN;
                         break;
-                    case TEXTCOLOR_TEAL:
+                    case TINT_TURQ:
                         color = TCLR_TEAL;
                         break;
-                    case TEXTCOLOR_MAROON:
+                    case TINT_DKRED:
                         color = TCLR_MAROON;
                         break;
-                    case TEXTCOLOR_PURPLE:
+                    case TINT_PURPLE:
                         color = TCLR_PURPLE;
                         break;
-                    case TEXTCOLOR_OLIVE:
+                    case TINT_DKYELLOW:
                         color = TCLR_OLIVE;
                         break;
-                    case TEXTCOLOR_GRAY:
+                    case TINT_GREY:
                         color = TCLR_GRAY;
                         break;
-                    case TEXTCOLOR_BLUE:
+                    case TINT_BLUE:
                         color = TCLR_BLUE;
                         break;
-                    case TEXTCOLOR_GREEN:
+                    case TINT_GREEN:
                         color = TCLR_GREEN;
                         break;
-                    case TEXTCOLOR_CYAN:
+                    case TINT_CYAN:
                         color = TCLR_CYAN;
                         break;
-                    case TEXTCOLOR_RED:
+                    case TINT_RED:
                         color = TCLR_RED;
                         break;
-                    case TEXTCOLOR_MAGENTA:
+                    case TINT_PINK:
                         color = TCLR_MAGENTA;
                         break;
-                    case TEXTCOLOR_YELLOW:
+                    case TINT_YELLOW:
                         color = TCLR_YELLOW;
                         break;
-                    case TEXTCOLOR_WHITE:
+                    case TINT_WHITE:
                         color = TCLR_WHITE;
                         break;
-                    case TEXTCOLOR_ORANGE:
+                    case TINT_ORANGE:
                         color = TCLR_ORANGE;
                         break;
-                    case TEXTCOLOR_ROSE:
+                    case TINT_HOTPINK:
                         color = TCLR_ROSE;
                         break;
                     default:

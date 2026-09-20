@@ -8,6 +8,7 @@
 
 #include <Enums.h>
 #include <Ints.h>
+#include <Utils/AsyncKeyState.h>
 
 #include <Gruntz/FixedPtrArray32.h>
 #include <Mfc.h>

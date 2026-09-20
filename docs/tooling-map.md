@@ -43,6 +43,7 @@ all read).
 | `gruntz verify selftest` | `gruntz.verify.selftest` | the NEGATIVE controls: feed every gate a known violation, assert it fails |
 | `gruntz verify compiler-artifacts` | `gruntz.verify.compiler_artifacts` | reject explicit allocation/deallocation calls, forced-emission helpers, and unreviewed raw-storage or low-level lifetime seams; `--base-only` prints derived unpaired COFF definitions |
 | `gruntz verify constants` | `gruntz.verify.constants` | AST-backed bare numeric census; `--gate` fails on proven pointer/bool/enum spellings and writes the derived TSV under `build/gen/` |
+| `gruntz verify enum-reuse` | `gruntz.verify.enum_reuse` | evaluated enum-member census and equal-value review leads; cross-checks every source enum block against libclang, ranks overlapping domain pairs, and joins bare function literals into a derived collision report |
 
 `gruntz verify <gate>` runs one gate directly. The tiers
 (`gruntz.verify.tiers`) are:

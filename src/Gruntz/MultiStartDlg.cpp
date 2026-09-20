@@ -54,10 +54,6 @@ i32 g_latencyDisplayTick;
 DATA(0x0021243c)
 char g_usingCmdDelay[] = "Using CmdDelay of %d and ResendDelay of %d.";
 
-enum {
-    NUM_PLAYER_SLOTS = 4
-};
-
 DATA(0x001ea578)
 const AFX_MSGMAP CMultiStartDlg::s_messageMap = {
     &CDialog::messageMap,
@@ -293,7 +289,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
         i32 i;
 
         MsgParam item;
-        for (i = 0; i < NUM_PLAYER_SLOTS; i++) {
+        for (i = 0; i < PLAYER_SLOT_COUNT; i++) {
             CWnd* typeCombo = GetPlayerTypeControl(i);
             item.m_str = "None";
             typeCombo->SendMessageA(CB_ADDSTRING, 0, item.m_lparam);
@@ -310,7 +306,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
             item.m_str = "Human";
             typeCombo->SendMessageA(CB_ADDSTRING, 0, item.m_lparam);
         }
-        for (i = 0; i < NUM_PLAYER_SLOTS; i++) {
+        for (i = 0; i < PLAYER_SLOT_COUNT; i++) {
             CWnd* nameControl = GetPlayerNameControl(i);
             if (nameControl != NULL) {
                 nameControl->SendMessageA(EM_LIMITTEXT, 9, 0);
@@ -379,7 +375,7 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
             reg->Set("CustomMultiMap", IDX(m_customMapSelection));
         }
         GruntzPlayer* slots = m_gameManager->m_players;
-        for (i32 i = 0; i < NUM_PLAYER_SLOTS; i++) {
+        for (i32 i = 0; i < PLAYER_SLOT_COUNT; i++) {
             CWnd* nameControl = GetPlayerNameControl(i);
             if (nameControl != NULL) {
                 CString name;

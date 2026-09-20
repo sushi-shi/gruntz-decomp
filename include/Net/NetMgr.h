@@ -9,6 +9,7 @@
 #include <Gruntz/ColorTint.h>
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/ObList.h>
+#include <Gruntz/PlayerSlot.h>
 #include <Gruntz/String.h>
 #include <Ints.h>
 #include <Net/NetMsgId.h>
@@ -140,7 +141,7 @@ struct CNetCmdSlot {
     CMulti* m_owner;
 
     CPtrList m_records;
-    i32 m_drainAckFlags[NET_SLOT_COUNT];
+    i32 m_drainAckFlags[PLAYER_SLOT_COUNT];
     i32 m_receivedAhead[3];
     i32 m_peerReceivedAhead[3];
 
@@ -224,7 +225,7 @@ struct CNetSession {
     b32 m_batchBuilt;
     i32 m_sequence;
     i32 m_commandPeriod;
-    CNetCmdSlot m_slots[NET_SLOT_COUNT];
+    CNetCmdSlot m_slots[PLAYER_SLOT_COUNT];
     CGruntzCommand* m_commandByTick[0x80];
     GruntRec m_commandRecords[0x80];
 

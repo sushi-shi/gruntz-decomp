@@ -104,7 +104,7 @@ void CTriggerMgr::HudRect(RECT r, b32 selectionReset) {
     vp = &view->m_mainPlane->m_planeViewRect;
     r.right += vp->left - view->m_viewportRect.left;
     r.bottom += vp->top - view->m_viewportRect.top;
-    for (i32 i = 0; i < TM_PLAYER_COUNT; i++) {
+    for (i32 i = 0; i < PLAYER_SLOT_COUNT; i++) {
         for (i32 j = 0; j < TM_UNITS_PER_PLAYER; j++) {
             CGrunt* g = m_units[i * TM_UNITS_PER_PLAYER + j];
             if (g) {
@@ -459,7 +459,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     }
 
     i32 hitFlag = 0;
-    if (CellHitTest(x, y, NULL, NULL, TM_ALL_PLAYERS)) {
+    if (CellHitTest(x, y, NULL, NULL, PLAYER_SLOT_ALL)) {
         hitFlag = 1;
     }
 
@@ -730,7 +730,7 @@ i32 CTriggerMgr::HandleTargetSelection(
     if (m_groupFlag == false) {
         return 0;
     }
-    CGrunt* hit = CellHitTest(targetX, targetY, NULL, NULL, TM_ALL_PLAYERS);
+    CGrunt* hit = CellHitTest(targetX, targetY, NULL, NULL, PLAYER_SLOT_ALL);
     CGrunt* selectedGrunt;
     if (m_recList.GetCount() != 1) {
         selectedGrunt = NULL;
@@ -1217,7 +1217,7 @@ i32 CTriggerMgr::LoadToyBoxIcon(i32 x, i32 y, i32 col, PickupType kind, i32 move
 RVA(0x0007a510, 0x9e)
 i32 CTriggerMgr::StartPlayerDefeatSequence(i32 playerSelector) {
     i32 firstPlayerIndex, lastPlayerIndex;
-    if (playerSelector == TM_ALL_PLAYERS) {
+    if (playerSelector == PLAYER_SLOT_ALL) {
         firstPlayerIndex = 0;
         lastPlayerIndex = 3;
     } else {
@@ -1396,7 +1396,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
     m_rollingballWanted = false;
     m_teleportWanted = false;
 
-    for (i32 owner = 0; owner < TM_PLAYER_COUNT; owner++) {
+    for (i32 owner = 0; owner < PLAYER_SLOT_COUNT; owner++) {
         for (i32 i = 0; i < TM_UNITS_PER_PLAYER; i++) {
             i32 key;
             ar->Read(&key, sizeof(key));
@@ -1793,7 +1793,7 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
     i32 maxTileY = m_world->m_level->m_mainPlane->m_tileRows - 2;
 
     CGrunt** units = m_units;
-    for (i32 playerIndex = 0; playerIndex < TM_PLAYER_COUNT; playerIndex++) {
+    for (i32 playerIndex = 0; playerIndex < PLAYER_SLOT_COUNT; playerIndex++) {
         for (i32 unitIndex = 0; unitIndex < TM_UNITS_PER_PLAYER; unitIndex++, units++) {
             CGrunt* grunt = *units;
             if (grunt == NULL) {
@@ -2107,7 +2107,7 @@ RVA(0x0007c2e0, 0xb5)
 i32 CTriggerMgr::CycleMoveIcons(i32 skipPlayerIndex, b32 enable) {
     i32 playerIndex = 0;
     CGrunt** playerUnits = m_units;
-    for (; playerIndex < TM_PLAYER_COUNT; playerIndex++, playerUnits += TM_UNITS_PER_PLAYER) {
+    for (; playerIndex < PLAYER_SLOT_COUNT; playerIndex++, playerUnits += TM_UNITS_PER_PLAYER) {
         if (playerIndex != skipPlayerIndex) {
             CGrunt** units = playerUnits;
             i32 unitsRemaining = TM_UNITS_PER_PLAYER;
@@ -2628,7 +2628,7 @@ i32 CTriggerMgr::NearestOtherPlayerUnitDistSq(i32 skipPlayerIndex, i32 px, i32 p
         }
         playerIndex++;
         playerUnits += TM_UNITS_PER_PLAYER;
-    } while (playerIndex < TM_PLAYER_COUNT);
+    } while (playerIndex < PLAYER_SLOT_COUNT);
     return best;
 }
 

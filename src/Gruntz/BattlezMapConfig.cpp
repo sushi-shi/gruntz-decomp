@@ -374,8 +374,8 @@ i32 CBattlezMapConfig::StepBoard() {
     }
 
     i32 mn = BATTLEZ_QUEUE_POSITION_UNSET;
-    CGrunt** units = &m_triggerMgr->m_units[m_playerIndex * BATTLEZ_UNIT_SLOT_COUNT];
-    for (i32 s = BATTLEZ_UNIT_SLOT_COUNT; s != 0; s--) {
+    CGrunt** units = &m_triggerMgr->m_units[m_playerIndex * TM_UNITS_PER_PLAYER];
+    for (i32 s = TM_UNITS_PER_PLAYER; s != 0; s--) {
         CGrunt* u = *units;
         if (u != NULL && u->m_defenderState == AISTATE_RETURN && u->m_defenderQueuePosition < mn) {
             mn = u->m_defenderQueuePosition;
@@ -383,8 +383,8 @@ i32 CBattlezMapConfig::StepBoard() {
         units++;
     }
     if (mn != 0 && mn != BATTLEZ_QUEUE_POSITION_UNSET) {
-        for (i32 k = 0; k < BATTLEZ_UNIT_SLOT_COUNT; k++) {
-            CGrunt* u = m_triggerMgr->m_units[m_playerIndex * BATTLEZ_UNIT_SLOT_COUNT + k];
+        for (i32 k = 0; k < TM_UNITS_PER_PLAYER; k++) {
+            CGrunt* u = m_triggerMgr->m_units[m_playerIndex * TM_UNITS_PER_PLAYER + k];
             if (u != NULL && u->m_defenderState == AISTATE_RETURN) {
                 u->m_defenderQueuePosition -= mn;
             }

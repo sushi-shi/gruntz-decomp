@@ -60,7 +60,7 @@
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
-#include <Gruntz/SpellzEffect.h>
+#include <Gruntz/SpellId.h>
 #include <Gruntz/StaminaPct.h>
 #include <Gruntz/TileCoordMacros.h>
 #include <Gruntz/TraitorMode.h>
@@ -392,7 +392,7 @@ void CGrunt::ComputeFacing(double dt) {
 
 RVA(0x00057100, 0x590)
 i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
-    SpellzEffect idx = static_cast<SpellzEffect>(forced);
+    SpellId idx = static_cast<SpellId>(forced);
     if (forced == 0) {
         i32 m = 3;
         if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
@@ -400,9 +400,9 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         }
         if (m == 0) {
             i32 coin = static_cast<char>(rand());
-            idx = static_cast<SpellzEffect>(coin & 1);
+            idx = static_cast<SpellId>(coin & 1);
         } else {
-            idx = static_cast<SpellzEffect>(rand() % m + 1);
+            idx = static_cast<SpellId>(rand() % m + 1);
         }
     }
 
@@ -418,7 +418,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
     }
 
     switch (idx) {
-        case SPELLZ_FREEZE: {
+        case SPELL_FREEZE: {
             CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
                 m_lastTilePx.m_x,
@@ -438,7 +438,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 -1
             );
         }
-        case SPELLZ_HEALTH: {
+        case SPELL_HEALTH: {
             CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
                 m_lastTilePx.m_x,
@@ -458,7 +458,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 -1
             );
         }
-        case SPELLZ_RESURRECTION: {
+        case SPELL_RESURRECTION: {
             CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
                 m_lastTilePx.m_x,
@@ -476,7 +476,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 g_buteMgr.GetInt("Spellz", s_ressurectionRadius, 8)
             );
         }
-        case SPELLZ_TOYZ: {
+        case SPELL_RANDOM_TOYZ: {
             CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
                 m_lastTilePx.m_x,
@@ -496,7 +496,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 -1
             );
         }
-        case SPELLZ_TELEPORT: {
+        case SPELL_TELEPORT: {
             CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
                 m_lastTilePx.m_x,
@@ -516,7 +516,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 -1
             );
         }
-        case SPELLZ_ROLLINGBALL: {
+        case SPELL_ROLLING_BALLZ: {
             CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
                 m_lastTilePx.m_x,

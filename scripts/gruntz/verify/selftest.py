@@ -237,6 +237,132 @@ class EnumDomainControls(unittest.TestCase):
         self.assertTrue(any("names a MEMBER" in f for f in fatal))
 
 
+class EnumReuseControls(unittest.TestCase):
+    def _scan(self, files):
+        from gruntz.verify import enum_reuse
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            (root / "src").mkdir()
+            paths = []
+            entries = []
+            for name, source in files.items():
+                path = root / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(source)
+                paths.append(path)
+                if path.suffix == ".cpp":
+                    entries.append({
+                        "directory": str(root),
+                        "file": name,
+                        "arguments": ["clang-cl", "/c", name, "/TP"],
+                    })
+            blocks = enum_reuse.scan_blocks(repo=root, paths=paths)
+            raw, contexts, errors = enum_reuse.scan_entries(
+                entries, repo=root, jobs=1)
+            constants, uncovered_source, uncovered_ast = enum_reuse._join(
+                raw, contexts, blocks)
+            return constants, blocks, uncovered_source, uncovered_ast, errors
+
+    def test_evaluates_aliases_expressions_and_implicit_members(self):
+        constants, blocks, missing_source, missing_ast, errors = self._scan({
+            "src/Probe.cpp": (
+                "enum First { FIRST_ZERO = 0, FIRST_TEN = 5 * 2 };\n"
+                "enum Second { SECOND_TEN = FIRST_TEN, SECOND_NEXT };\n"
+            ),
+        })
+        self.assertEqual(errors, [])
+        self.assertEqual(missing_source, [])
+        self.assertEqual(missing_ast, [])
+        self.assertEqual(len(blocks), 2)
+        self.assertEqual(
+            [(row.name, row.value) for row in constants],
+            [("FIRST_ZERO", 0), ("FIRST_TEN", 10),
+             ("SECOND_TEN", 10), ("SECOND_NEXT", 11)],
+        )
+
+    def test_shared_header_declaration_is_deduplicated_with_both_contexts(self):
+        header = "enum Shared { SHARED_TEN = 10 };\n"
+        constants, _blocks, missing_source, missing_ast, errors = self._scan({
+            "include/Shared.h": header,
+            "src/A.cpp": '#include "../include/Shared.h"\n',
+            "src/B.cpp": '#include "../include/Shared.h"\n',
+        })
+        self.assertEqual(errors, [])
+        self.assertEqual(missing_source, [])
+        self.assertEqual(missing_ast, [])
+        self.assertEqual(len(constants), 1)
+        self.assertEqual(constants[0].contexts, ("src/A.cpp", "src/B.cpp"))
+
+    def test_member_comments_are_not_mistaken_for_enumerator_names(self):
+        constants, blocks, missing_source, missing_ast, errors = self._scan({
+            "src/Probe.cpp": (
+                "enum First { /* explanatory words */ FIRST = 10,\n"
+                "// another explanation\nSECOND = 11 };\n"
+            ),
+        })
+        self.assertEqual(errors, [])
+        self.assertEqual(missing_source, [])
+        self.assertEqual(missing_ast, [])
+        self.assertEqual(
+            [member.name for member in blocks[0].members],
+            ["FIRST", "SECOND"],
+        )
+        self.assertEqual(
+            [(row.name, row.value) for row in constants],
+            [("FIRST", 10), ("SECOND", 11)],
+        )
+
+    def test_ledger_rejects_pending_and_unclaimed_members(self):
+        from gruntz.verify import enum_reuse
+        constants, blocks, _missing_source, _missing_ast, _errors = self._scan({
+            "src/Probe.cpp": "enum First { FIRST = 10 };\n",
+        })
+        with tempfile.TemporaryDirectory() as td:
+            ledger = Path(td) / "review.tsv"
+            enum_reuse.init_ledger(ledger, constants, blocks)
+            findings = enum_reuse.check_ledger(ledger, constants)
+        self.assertTrue(any("review is pending" in row for row in findings))
+
+    def test_ledger_proves_removed_members_reuse_a_current_canonical(self):
+        from gruntz.verify import enum_reuse
+        constants, _blocks, _missing_source, _missing_ast, _errors = self._scan({
+            "src/Probe.cpp": "enum Canonical { CANONICAL_TEN = 10 };\n",
+        })
+        canonical = "src/Probe.cpp:Canonical"
+        removed = "src/Old.h:OldDomain"
+        with tempfile.TemporaryDirectory() as td:
+            ledger = Path(td) / "review.tsv"
+            ledger.write_text(
+                "\t".join(enum_reuse.LEDGER_FIELDS) + "\n"
+                f"{canonical}\tCANONICAL_TEN=10\tcanonical\t{canonical}\t\t"
+                "Owns the shared quantity.\n"
+                f"{removed}\tOLD_TEN=10\treuse\t{canonical}\t"
+                f"OLD_TEN={canonical}::CANONICAL_TEN\t"
+                "The old producer and canonical consumer carry one value.\n"
+            )
+            findings = enum_reuse.check_ledger(ledger, constants)
+        self.assertEqual(findings, [])
+
+    def test_ledger_rejects_a_current_member_without_starting_provenance(self):
+        from gruntz.verify import enum_reuse
+        constants, _blocks, _missing_source, _missing_ast, _errors = self._scan({
+            "src/Probe.cpp": (
+                "enum Canonical { CANONICAL_TEN = 10, CANONICAL_NEW = 11 };\n"
+            ),
+        })
+        canonical = "src/Probe.cpp:Canonical"
+        with tempfile.TemporaryDirectory() as td:
+            ledger = Path(td) / "review.tsv"
+            ledger.write_text(
+                "\t".join(enum_reuse.LEDGER_FIELDS) + "\n"
+                f"{canonical}\tCANONICAL_TEN=10\tcanonical\t{canonical}\t\t"
+                "Owns the shared quantity.\n"
+            )
+            findings = enum_reuse.check_ledger(ledger, constants)
+        self.assertTrue(any("no starting-ledger provenance" in row
+                            for row in findings))
+
+
 class ConstantControls(unittest.TestCase):
     def _scan(self, source, *, flags=None):
         from gruntz.verify import constants
