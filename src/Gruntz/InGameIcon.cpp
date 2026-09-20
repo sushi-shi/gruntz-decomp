@@ -5,11 +5,11 @@
 #include <Mfc.h>
 
 #include <Bute/ButeMgr.h>
-#include <Bute/ButeTree.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Enums.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/ActRegistry.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AnimationRegistry.h>
@@ -47,8 +47,8 @@
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/zBitVec.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/BitVec.h>
+#include <ZTools/ZDArray.h>
 
 #include <string.h>
 

@@ -1,11 +1,43 @@
-#ifndef SRC_BUTE_BUTETREE_H
-#define SRC_BUTE_BUTETREE_H
+#ifndef GRUNTZ_ZTOOLS_ERROR_H
+#define GRUNTZ_ZTOOLS_ERROR_H
 
 #include <rva.h>
 
-#include <AddrWord.h>
-#include <Bute/PTreeNode.h>
 #include <Enums.h>
+#include <Ints.h>
+
+struct CVariantSlot;
+
+extern CVariantSlot g_zBitSetErrorSlot;
+extern CVariantSlot g_globalErrorSlot;
+extern CVariantSlot g_dynamicArrayErrorSlot;
+extern CVariantSlot g_rezArchiveErrorSlot;
+extern void* g_retAddrBreadcrumb;
+extern i32 g_variantOverrideCount;
+
+extern char* g_errDataInvalid;
+extern char* g_errOverflow;
+extern char* g_errOutOfRange;
+extern char* g_errNullArg;
+extern char* g_errExists;
+extern char* g_errBadArg;
+extern char* g_errNoFile;
+extern char* g_errOutOfMem;
+
+void* GetRetAddr();
+void* GetCallerRetAddr();
+void TmErrorHandler(char* prefix, i32 errNum);
+
+class zErrHandling {
+public:
+    zErrHandling(CVariantSlot* errSink);
+    virtual ~zErrHandling();
+
+    void handle(const char* message, i32 code) const;
+    void Report(char* message, i32 code);
+
+    CVariantSlot* m_errSink;
+};
 
 typedef void(__cdecl* VariantCallback)(char* message, i32 value);
 
@@ -41,17 +73,4 @@ struct TypeKeyRec {
     short m_value;
 };
 
-extern zSymTab<i32> g_buteTree;
-
-static inline i32 ActFindId(const char* key) {
-    AddrWord<i32> v;
-    v.m_addr = g_buteTree.lookup(key);
-    return v.m_word;
-}
-static inline void ActInsertId(const char* key, i32 id) {
-    AddrWord<i32> v;
-    v.m_word = id;
-    g_buteTree.add(key, v.m_addr);
-}
-
-#endif // SRC_BUTE_BUTETREE_H
+#endif // GRUNTZ_ZTOOLS_ERROR_H

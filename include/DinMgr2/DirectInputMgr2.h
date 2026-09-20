@@ -8,8 +8,9 @@
 
 #include <Enums.h>
 #include <Ints.h>
+#include <Utils/AsyncKeyState.h>
 
-#include <Gruntz/InputDeviceGroup.h>
+#include <DinMgr2/InputDeviceGroup.h>
 #include <Mfc.h>
 #include <dinput.h>
 

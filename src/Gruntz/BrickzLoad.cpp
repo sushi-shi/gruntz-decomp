@@ -7,7 +7,7 @@
 #include <Gruntz/BrickTileId.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/BridgeTileId.h>
-#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameObjectLogicTypes.h>

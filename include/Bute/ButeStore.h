@@ -3,7 +3,7 @@
 
 #include <rva.h>
 
-#include <Bute/PTreeNode.h>
 #include <Ints.h>
+#include <ZTools/PTree.h>
 
 #endif // SRC_BUTE_BUTESTORE_H

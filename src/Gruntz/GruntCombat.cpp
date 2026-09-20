@@ -7,7 +7,6 @@
 #include <MfcWin.h>
 
 #include <Bute/ButeMgr.h>
-#include <Bute/ButeTree.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/LogicRecordRegistryFindInline.h>
@@ -15,13 +14,14 @@
 #include <Enums.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/ActRegistry.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/ArrivalFlagsPreset.h>
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/Brickz.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/EnemyAiType.h>
-#include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameObjectLogicTypes.h>
@@ -60,7 +60,7 @@
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
-#include <Gruntz/SpellzEffect.h>
+#include <Gruntz/SpellId.h>
 #include <Gruntz/StaminaPct.h>
 #include <Gruntz/TileCoordMacros.h>
 #include <Gruntz/TraitorMode.h>
@@ -367,7 +367,7 @@ void CGrunt::ComputeFacing(double dt) {
 
 RVA(0x00057100, 0x590)
 i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
-    SpellzEffect idx = static_cast<SpellzEffect>(forced);
+    SpellId idx = static_cast<SpellId>(forced);
     if (forced == 0) {
         i32 m = 3;
         if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
@@ -375,9 +375,9 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         }
         if (m == 0) {
             i32 coin = static_cast<char>(rand());
-            idx = static_cast<SpellzEffect>(coin & 1);
+            idx = static_cast<SpellId>(coin & 1);
         } else {
-            idx = static_cast<SpellzEffect>(rand() % m + 1);
+            idx = static_cast<SpellId>(rand() % m + 1);
         }
     }
 
@@ -393,7 +393,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
     }
 
     switch (idx) {
-        case SPELLZ_FREEZE: {
+        case SPELL_FREEZE: {
             CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
                 m_lastTilePx.m_x,
@@ -413,7 +413,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 -1
             );
         }
-        case SPELLZ_HEALTH: {
+        case SPELL_HEALTH: {
             CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
                 m_lastTilePx.m_x,
@@ -433,7 +433,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 -1
             );
         }
-        case SPELLZ_RESURRECTION: {
+        case SPELL_RESURRECTION: {
             CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
                 m_lastTilePx.m_x,
@@ -451,7 +451,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 g_buteMgr.GetInt("Spellz", s_ressurectionRadius, 8)
             );
         }
-        case SPELLZ_TOYZ: {
+        case SPELL_RANDOM_TOYZ: {
             CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
                 m_lastTilePx.m_x,
@@ -471,7 +471,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 -1
             );
         }
-        case SPELLZ_TELEPORT: {
+        case SPELL_TELEPORT: {
             CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
                 m_lastTilePx.m_x,
@@ -491,7 +491,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 -1
             );
         }
-        case SPELLZ_ROLLINGBALL: {
+        case SPELL_ROLLING_BALLZ: {
             CGameObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
                 m_lastTilePx.m_x,
@@ -1195,6 +1195,164 @@ i32 CGrunt::HandleCombatContact(
     return 1;
 }
 
+inline void CGrunt::SelectCombatHitCue(
+    CGruntzMgr* reg,
+    SoundCue*& cue,
+    PickupType attackKind,
+    i32 struckPose,
+    PickupType attackerGruntKind
+) {
+    if (attackerGruntKind == GRUNT_DEATHTOUCH) {
+        LK(s_deathtouchhit);
+        return;
+    }
+    if (attackKind == PICKUP_NERFGUN || attackKind == PICKUP_GLOVEZ || attackKind == PICKUP_WINGZ) {
+        if (this->m_entranceReason == PICKUP_GRAVITYBOOTZ) {
+            LK(s_blockbody2);
+        } else {
+            LK(s_impactmm2);
+        }
+        return;
+    }
+    if (this->m_entranceReason == PICKUP_GUNHAT) {
+        if (attackKind == PICKUP_GAUNTLETZ || attackKind == PICKUP_SHOVEL
+            || attackKind == PICKUP_SPRING || attackKind == PICKUP_CLUB) {
+            LK(s_impactmm4);
+        } else {
+            LK("GRUNTZ_NORMALGRUNT_IMPACTMM3");
+        }
+        return;
+    }
+    if (this->m_entranceReason == PICKUP_SHIELD) {
+        LK(s_blockmetal1);
+        return;
+    }
+    if (this->m_entranceReason == PICKUP_SPRING) {
+        if (struckPose == 1) {
+            LK(s_spring2);
+        } else {
+            LK(s_spring1);
+        }
+        return;
+    }
+    if (this->m_entranceReason == PICKUP_TOOB && this->m_coordToggle != false) {
+        LK(s_toobz);
+        return;
+    }
+
+    switch (attackKind) {
+        case PICKUP_NONE:
+            if (struckPose == 0) {
+                LK(s_blockbody2);
+            } else {
+                LK(s_impactmm1);
+            }
+            break;
+        case PICKUP_BOOMERANG:
+            LK(s_impactmm1);
+            break;
+        case PICKUP_BRICK:
+            if (struckPose == 0) {
+                LK(s_blockbody2);
+            } else {
+                LK(s_impactmm4);
+            }
+            break;
+        case PICKUP_CLUB:
+            if (struckPose == 0) {
+                LK(s_blockbody2);
+            } else {
+                LK(s_impactmm4);
+            }
+            break;
+        case PICKUP_GAUNTLETZ:
+            if (struckPose == 0) {
+                LK(s_blockbody2);
+            } else {
+                LK("GRUNTZ_NORMALGRUNT_IMPACTMM3");
+            }
+            break;
+        case PICKUP_GOOBER:
+            if (struckPose == 0) {
+                LK(s_blockbody2);
+            } else {
+                LK(s_impactwm1);
+            }
+            break;
+        case PICKUP_GRAVITYBOOTZ:
+            if (struckPose == 0) {
+                LK(s_blockbody1);
+            } else {
+                LK(s_impactmm1);
+            }
+            break;
+        case PICKUP_GUNHAT:
+            LK(s_impactwm2);
+            break;
+        case PICKUP_ROCK:
+            LK(s_impactmm2);
+            break;
+        case PICKUP_SHIELD:
+            if (struckPose == 0) {
+                LK(s_blockbody1);
+            } else {
+                LK(s_impactmm4);
+            }
+            break;
+        case PICKUP_SHOVEL:
+            if (struckPose == 0) {
+                LK(s_blockmetal1);
+            } else {
+                LK(s_impactmm4);
+            }
+            break;
+        case PICKUP_SPRING:
+            if (struckPose == 0) {
+                LK(s_blockbody2);
+            } else {
+                LK(s_impactwm3);
+            }
+            break;
+        case PICKUP_SPY:
+            if (struckPose == 0) {
+                LK(s_blockbody2);
+            } else {
+                LK(s_impactmm1);
+            }
+            break;
+        case PICKUP_SWORD:
+            if (struckPose == 0) {
+                LK(s_blockbody2);
+            } else {
+                LK("GRUNTZ_NORMALGRUNT_IMPACTMM3");
+            }
+            break;
+        case PICKUP_TOOB:
+            if (struckPose == 0) {
+                LK(s_blockbody2);
+            } else {
+                LK(s_impactmm1);
+            }
+            break;
+        case PICKUP_WAND:
+            if (struckPose == 0) {
+                LK(s_blockbody2);
+            } else {
+                LK(s_impactmm1);
+            }
+            break;
+        case PICKUP_WARPSTONE:
+            LK(s_impactwm2);
+            break;
+        case PICKUP_WELDER:
+            LK(s_impactwm2);
+            break;
+        default:
+            LK("GRUNTZ_NORMALGRUNT_IMPACTMM3");
+            break;
+    }
+}
+
 RVA(0x000597a0, 0x13c0)
 i32 CGrunt::LoadGruntCombatAnimations(
     PickupType attackKind,
@@ -1280,157 +1438,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
     i32 vy = this->m_object->m_screenY;
     CGruntzMgr* reg = g_gameReg;
     if (::PtInRect(&reg->m_viewBounds, vx, vy)) {
-        if (attackerGruntKind == GRUNT_DEATHTOUCH) {
-            LK(s_deathtouchhit);
-            goto L_cue;
-        }
-        if (attackKind == PICKUP_NERFGUN || attackKind == PICKUP_GLOVEZ
-            || attackKind == PICKUP_WINGZ) {
-            if (this->m_entranceReason == PICKUP_GRAVITYBOOTZ) {
-                LK(s_blockbody2);
-            } else {
-                LK(s_impactmm2);
-            }
-            goto L_cue;
-        }
-        if (this->m_entranceReason == PICKUP_GUNHAT) {
-            if (attackKind == PICKUP_GAUNTLETZ || attackKind == PICKUP_SHOVEL
-                || attackKind == PICKUP_SPRING || attackKind == PICKUP_CLUB) {
-                LK(s_impactmm4);
-            } else {
-                LK("GRUNTZ_NORMALGRUNT_IMPACTMM3");
-            }
-            goto L_cue;
-        }
-        if (this->m_entranceReason == PICKUP_SHIELD) {
-            LK(s_blockmetal1);
-            goto L_cue;
-        }
-        if (this->m_entranceReason == PICKUP_SPRING) {
-            if (struckPose == 1) {
-                LK(s_spring2);
-            } else {
-                LK(s_spring1);
-            }
-            goto L_cue;
-        }
-        if (this->m_entranceReason == PICKUP_TOOB && this->m_coordToggle != false) {
-            LK(s_toobz);
-            goto L_cue;
-        }
-        switch (attackKind) {
-            case PICKUP_NONE:
-                if (struckPose == 0) {
-                    LK(s_blockbody2);
-                } else {
-                    LK(s_impactmm1);
-                }
-                break;
-            case PICKUP_BOOMERANG:
-                LK(s_impactmm1);
-                break;
-            case PICKUP_BRICK:
-                if (struckPose == 0) {
-                    LK(s_blockbody2);
-                } else {
-                    LK(s_impactmm4);
-                }
-                break;
-            case PICKUP_CLUB:
-                if (struckPose == 0) {
-                    LK(s_blockbody2);
-                } else {
-                    LK(s_impactmm4);
-                }
-                break;
-            case PICKUP_GAUNTLETZ:
-                if (struckPose == 0) {
-                    LK(s_blockbody2);
-                } else {
-                    LK("GRUNTZ_NORMALGRUNT_IMPACTMM3");
-                }
-                break;
-            case PICKUP_GOOBER:
-                if (struckPose == 0) {
-                    LK(s_blockbody2);
-                } else {
-                    LK(s_impactwm1);
-                }
-                break;
-            case PICKUP_GRAVITYBOOTZ:
-                if (struckPose == 0) {
-                    LK(s_blockbody1);
-                } else {
-                    LK(s_impactmm1);
-                }
-                break;
-            case PICKUP_GUNHAT:
-                LK(s_impactwm2);
-                break;
-            case PICKUP_ROCK:
-                LK(s_impactmm2);
-                break;
-            case PICKUP_SHIELD:
-                if (struckPose == 0) {
-                    LK(s_blockbody1);
-                } else {
-                    LK(s_impactmm4);
-                }
-                break;
-            case PICKUP_SHOVEL:
-                if (struckPose == 0) {
-                    LK(s_blockmetal1);
-                } else {
-                    LK(s_impactmm4);
-                }
-                break;
-            case PICKUP_SPRING:
-                if (struckPose == 0) {
-                    LK(s_blockbody2);
-                } else {
-                    LK(s_impactwm3);
-                }
-                break;
-            case PICKUP_SPY:
-                if (struckPose == 0) {
-                    LK(s_blockbody2);
-                } else {
-                    LK(s_impactmm1);
-                }
-                break;
-            case PICKUP_SWORD:
-                if (struckPose == 0) {
-                    LK(s_blockbody2);
-                } else {
-                    LK("GRUNTZ_NORMALGRUNT_IMPACTMM3");
-                }
-                break;
-            case PICKUP_TOOB:
-                if (struckPose == 0) {
-                    LK(s_blockbody2);
-                } else {
-                    LK(s_impactmm1);
-                }
-                break;
-            case PICKUP_WAND:
-                if (struckPose == 0) {
-                    LK(s_blockbody2);
-                } else {
-                    LK(s_impactmm1);
-                }
-                break;
-            case PICKUP_WARPSTONE:
-                LK(s_impactwm2);
-                break;
-            case PICKUP_WELDER:
-                LK(s_impactwm2);
-                break;
-            default:
-                LK("GRUNTZ_NORMALGRUNT_IMPACTMM3");
-                break;
-        }
-
-    L_cue:
+        SelectCombatHitCue(reg, cue, attackKind, struckPose, attackerGruntKind);
 
         if (cue != NULL) {
             b32 soundEnabled = g_soundEnabled;

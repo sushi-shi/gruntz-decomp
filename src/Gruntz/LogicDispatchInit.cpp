@@ -1,7 +1,7 @@
 #include <Gruntz/ActReg.h>
 #include <Gruntz/EyeCandyAni.h>
 #include <Gruntz/LogicFnTable.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/ZDArray.h>
 
 RVA_DYNINIT(0x000acb10, 0xa, CActRegPool<CEyeCandyAni>::s_table)
 RVA_DYNINIT(0x000acb30, 0x15, CActRegPool<CEyeCandyAni>::s_table)

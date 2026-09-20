@@ -2,14 +2,14 @@
 
 #include <Mfc.h>
 
-#include <Bute/ButeTree.h>
-#include <Bute/PTreeNode.h>
+#include <Gruntz/ActRegistry.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
 #include <Io/FileMem.h>
-#include <Wap32/ZDArray.h>
 #include <Wwd/WwdGameObjectFamily.h>
+#include <ZTools/PTree.h>
+#include <ZTools/ZDArray.h>
 
 #include <strstrea.h>
 

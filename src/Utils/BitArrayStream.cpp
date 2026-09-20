@@ -1,6 +1,6 @@
 #include <rva.h>
 
-#include <Wap32/zBitVec.h>
+#include <ZTools/BitVec.h>
 
 #include <ctype.h>
 #include <iostream.h>

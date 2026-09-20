@@ -14,8 +14,8 @@
 #include <Gruntz/TileTriggerTransition.h>
 #include <Gruntz/UserLogic.h>
 #include <Rez/FrameClock.h>
-#include <Wap32/ZVec.h>
 #include <Wwd/LogicRecordEvent.h>
+#include <ZTools/ZDArray.h>
 
 #include <stddef.h>
 

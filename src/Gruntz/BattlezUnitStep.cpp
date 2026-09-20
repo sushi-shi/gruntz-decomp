@@ -14,8 +14,8 @@
 #include <Gruntz/BrickTileId.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordNode.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/EnemyAiType.h>
-#include <Gruntz/FreeNodePool.h>
 #include <Gruntz/FreeNodePoolInline.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameObjectLogicTypes.h>
@@ -48,8 +48,8 @@
 #include <Io/FileMem.h>
 #include <Lith/BDefs.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/zBitVec.h>
 #include <Wwd/WwdFile.h>
+#include <ZTools/BitVec.h>
 
 #include <limits.h>
 #include <math.h>

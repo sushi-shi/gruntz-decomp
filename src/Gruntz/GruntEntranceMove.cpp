@@ -3,7 +3,6 @@
 #include <Gruntz/GruntEntranceMove.h>
 
 #include <Bute/ButeMgr.h>
-#include <Bute/ButeTree.h>
 #include <DDrawMgr/AniAdvance.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -11,13 +10,14 @@
 #include <Enums.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/ActRegistry.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AniElementInline.h>
 #include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/Brickz.h>
-#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
@@ -173,29 +173,20 @@ i32 CGrunt::RunEntranceMove() {
         return 0;
     }
     if (mode >= PICKUP_POWERUPZ_FIRST) {
-        goto clearMove;
+        return LoadTypeTableClearMove(mode);
     }
     if (mode >= PICKUP_BRICKZ_FIRST) {
-        goto brick;
+        m_brickPickupType = mode;
+        m_entrancePickup = PICKUP_INVALID;
+        return 1;
     }
     if (mode < PICKUP_BRICKZ_FIRST) {
-        goto toyCheck;
+        if (mode >= PICKUP_TOYZ_FIRST) {
+            return LoadVehicleGruntSprites(mode);
+        }
+        return LoadTypeTableClearMove(mode);
     }
     return 0;
-
-brick:
-    m_brickPickupType = mode;
-    m_entrancePickup = PICKUP_INVALID;
-    return 1;
-
-toyCheck:
-    if (mode >= PICKUP_TOYZ_FIRST) {
-        return LoadVehicleGruntSprites(mode);
-    }
-    goto clearMove;
-
-clearMove:
-    return LoadTypeTableClearMove(mode);
 }
 
 // @early-stop

@@ -14,7 +14,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/State.h>
 #include <Gruntz/TypeKeyColl.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/ZDArray.h>
 
 #include <new>
 #include <string.h>

@@ -16,8 +16,8 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Image/CImage.h>
 #include <Rez/FrameClock.h>
-#include <Wap32/zBitVec.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/BitVec.h>
+#include <ZTools/ZDArray.h>
 
 RVA(0x0000f930, 0x47)
 i32 CSimpleAnimation::SerializeDispatch(

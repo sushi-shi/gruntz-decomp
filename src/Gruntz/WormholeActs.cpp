@@ -5,10 +5,10 @@
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/ExitTrigger.h>
 #include <Gruntz/FontConfig.h>
-#include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameObjectLogicTypes.h>
@@ -28,8 +28,8 @@
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/ZVec.h>
 #include <Wwd/WwdGameObjectFamily.h>
+#include <ZTools/ZDArray.h>
 
 #include <stddef.h>
 
@@ -79,7 +79,7 @@ i32 CExitTrigger::AdvanceAnim() {
         if (hit != NULL) {
             i32 owningPlayer = m_object->m_smarts;
             if (hitPlayerIndex == owningPlayer) {
-                goto done;
+                return 0;
             }
             m_resolved = false;
             GruntzPlayer* loser = &g_gameReg->m_players[owningPlayer];
@@ -167,17 +167,17 @@ i32 CExitTrigger::AdvanceAnim() {
 
             i32 lostPlayer = m_object->m_smarts;
             if (lostPlayer == g_curPlayer) {
-                goto done;
+                return 0;
             }
             GruntzPlayer* slot = &g_gameReg->m_players[lostPlayer];
             if (slot->m_joined == false) {
-                goto done;
+                return 0;
             }
             if (slot->m_clearedRound != false) {
-                goto done;
+                return 0;
             }
             if (slot->m_doneFlag == false) {
-                goto done;
+                return 0;
             }
             slot->m_clearedRound = true;
             m_resolved = false;
@@ -217,7 +217,5 @@ i32 CExitTrigger::AdvanceAnim() {
             g_gameReg->m_triggerMgr->StartPlayerVictorySequence(m_object->m_smarts);
         }
     }
-
-done:
     return 0;
 }

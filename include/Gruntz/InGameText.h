@@ -9,7 +9,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/UserLogic.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/ZDArray.h>
 
 class CFileMemBase;
 

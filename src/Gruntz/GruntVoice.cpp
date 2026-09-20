@@ -4,12 +4,12 @@
 
 #include <Mfc.h>
 
-#include <Bute/ButeTree.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Dsndmgr/StreamVoice.h>
 #include <Gruntz/ActName.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/ActRegistry.h>
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameObjectLogicTypes.h>
@@ -35,9 +35,9 @@
 #include <Rez/RezSync.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/zBitVec.h>
-#include <Wap32/ZVec.h>
 #include <Wwd/LogicRecordEvent.h>
+#include <ZTools/BitVec.h>
+#include <ZTools/ZDArray.h>
 
 RVA_DYNINIT(0x00119350, 0x5, s_gruntDirNorth)
 RVA_DYNINIT(0x00119370, 0x1a, s_gruntDirNorth)

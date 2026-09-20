@@ -1,43 +1,13 @@
-#ifndef WAP32_ZBITVEC_H
-#define WAP32_ZBITVEC_H
+#ifndef GRUNTZ_ZTOOLS_BITVEC_H
+#define GRUNTZ_ZTOOLS_BITVEC_H
 
-#include <rva.h>
-
-#include <Ints.h>
 #include <Utils/BitArrayWord.h>
+#include <ZTools/Error.h>
 
-struct CVariantSlot;
 class istream;
 class ostream;
 
-extern CVariantSlot g_zBitSetErrorSlot;
-extern CVariantSlot g_globalErrorSlot;
-extern CVariantSlot g_dynamicArrayErrorSlot;
 extern i32 g_defaultProjActSize;
-extern void* g_retAddrBreadcrumb;
-
-extern char* g_errDataInvalid;
-extern char* g_errOverflow;
-extern char* g_errOutOfRange;
-extern char* g_errNullArg;
-extern char* g_errExists;
-extern char* g_errBadArg;
-extern char* g_errNoFile;
-extern char* g_errOutOfMem;
-
-void* GetRetAddr();
-void* GetCallerRetAddr();
-
-class zErrHandling {
-public:
-    zErrHandling(CVariantSlot* errSink);
-    virtual ~zErrHandling();
-
-    void handle(const char* message, i32 code) const;
-    void Report(char* message, i32 code);
-
-    CVariantSlot* m_errSink;
-};
 
 class zBitVec : public zErrHandling {
 public:
@@ -79,4 +49,4 @@ public:
 ostream& operator<<(ostream& accum, const zBitVec& bits);
 istream& operator>>(istream& accum, zBitVec& bits);
 
-#endif // WAP32_ZBITVEC_H
+#endif // GRUNTZ_ZTOOLS_BITVEC_H

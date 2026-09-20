@@ -4,8 +4,6 @@
 
 #include <AddrWord.h>
 #include <Bute/ButeStore.h>
-#include <Bute/ButeTree.h>
-#include <Bute/PTreeNode.h>
 #include <Enums.h>
 #include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/LogicEventDispatch.h>
@@ -14,8 +12,10 @@
 #include <Gruntz/TypeKeyCollStr.h>
 #include <Gruntz/UserLogic.h>
 #include <Utils/BitArrayWord.h>
-#include <Wap32/zBitVec.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/BitVec.h>
+#include <ZTools/Error.h>
+#include <ZTools/PTree.h>
+#include <ZTools/ZVec.h>
 
 #include <ctype.h>
 #include <iostream.h>

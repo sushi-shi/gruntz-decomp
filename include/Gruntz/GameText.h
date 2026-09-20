@@ -4,7 +4,7 @@
 #include <rva.h>
 
 #include <Gruntz/String.h>
-#include <Wap32/zBitVec.h>
+#include <ZTools/BitVec.h>
 
 extern CString g_areaNames[8];
 

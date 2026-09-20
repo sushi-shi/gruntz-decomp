@@ -94,9 +94,150 @@ class ReviewQueueTests(unittest.TestCase):
                 with self.assertRaisesRegex(SystemExit, 'changed since census'):
                     audit.write_queue(output, output / 'reviews.tsv')
 
+    def test_parser_change_invalidates_the_saved_census(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / 'scripts').mkdir()
+            parser = root / 'scripts/audit-template-models.py'
+            parser.write_text('parser version one\n')
+            with patch.object(audit, 'ROOT', root):
+                (root / 'functions.json').write_text('{"fn": {"source_hash": "abc"}}')
+                import json
+                (root / 'snapshot.json').write_text(json.dumps(audit.snapshot()))
+                parser.write_text('parser version two\n')
+                with self.assertRaisesRegex(SystemExit, 'changed since census'):
+                    audit.write_queue(root, root / 'reviews.tsv')
+
+    def test_implicit_member_remains_reviewable_without_a_coff_emission(self):
+        record = dict(owned=True, name='Widget', methods=[], source_hash='owner',
+            bases=[], fields=[], file=str(audit.ROOT / 'include/Widget.h'), line=1)
+        rows, issues = self.queue(records={'widget': record})
+        implicit = [r for r in rows if r['category'] == 'implicit-special-member']
+        self.assertFalse(issues)
+        self.assertEqual({r['key'] for r in implicit},
+            {'implicit:widget:constructor', 'implicit:widget:destructor'})
+        self.assertEqual({r['status'] for r in implicit}, {'implicit-declaration'})
+        ctor = next(r for r in implicit if r['key'].endswith(':constructor'))
+        review = dict(fingerprint=ctor['fingerprint'], disposition='recovered-implicit',
+            evidence='Actual caller omission control preserves the complete body.')
+        rows, issues = self.queue(records={'widget': record},
+            reviews={ctor['key']: review})
+        self.assertFalse(issues)
+        self.assertEqual(next(r for r in rows if r['key'] == ctor['key'])['status'],
+            'recovered-implicit')
+
+    def test_any_authored_constructor_suppresses_implicit_default_candidate(self):
+        record = dict(owned=True, name='Widget', methods=['Widget', '~Widget'],
+            source_hash='owner', bases=[], fields=[],
+            file=str(audit.ROOT / 'include/Widget.h'), line=1)
+        rows, _ = self.queue(records={'widget': record})
+        self.assertFalse(any(r['category'] == 'implicit-special-member' for r in rows))
+
 
 @unittest.skipUnless(importlib.util.find_spec('clang'), 'requires the pinned Nix clang environment')
 class AstFingerprintTests(unittest.TestCase):
+    def test_anonymous_union_is_not_an_independent_implicit_owner(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / 'src').mkdir()
+            source = root / 'src/probe.cpp'
+            source.write_text('struct Owner { union { int value; float alternate; }; '
+                'struct { int x; }; }; union Named { int value; };\n')
+            try:
+                with patch.object(audit, 'ROOT', root):
+                    audit.owned.cache_clear()
+                    records, templates, _, errors, functions, uses = audit.harvest(
+                        (str(source), ['/TP']))
+                    self.assertFalse(errors)
+                    self.assertEqual(sum(r['anonymous'] for r in records.values()), 2)
+                    rows, issues = audit.review_queue(records, templates, functions,
+                        [], {}, {}, uses, {})
+                    self.assertFalse(issues)
+                    implicit = [r for r in rows if r['category'] == 'implicit-special-member']
+                    self.assertEqual({r['name'] for r in implicit}, {
+                        'Owner::constructor', 'Owner::destructor',
+                        'Named::constructor', 'Named::destructor'})
+            finally:
+                audit.owned.cache_clear()
+
+    def test_union_conversion_body_has_a_complete_owner_fingerprint(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / 'src').mkdir()
+            source = root / 'src/probe.cpp'
+            try:
+                with patch.object(audit, 'ROOT', root):
+                    audit.owned.cache_clear()
+                    fingerprints = []
+                    for member in ('int value;', 'int value; long other;'):
+                        source.write_text('union Choice { ' + member +
+                            ' operator int() const { return value; } };\n')
+                        records, templates, _, errors, functions, uses = audit.harvest(
+                            (str(source), ['/TP']))
+                        self.assertFalse(errors)
+                        self.assertTrue(any(r['kind'] == 'UNION_DECL' for r in records.values()))
+                        for row in functions.values():
+                            row['bindings'] = []
+                        rows, issues = audit.review_queue(records, templates, functions,
+                            [], {}, {}, uses, {})
+                        self.assertFalse(issues)
+                        method = next(r for r in rows if r['category'] == 'source-definition')
+                        self.assertIn('operator int()', method['name'])
+                        fingerprints.append(method['fingerprint'])
+                    self.assertNotEqual(*fingerprints)
+            finally:
+                audit.owned.cache_clear()
+
+    def test_unused_template_bodies_are_in_the_complete_queue(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / 'src').mkdir()
+            source = root / 'src/probe.cpp'
+            source.write_text('template<class T> struct Holder { T* first; '
+                'T* Used() { return first; } T* Unused() { return first; } }; '
+                'template<class T> T NeverCalled(T a) { return a; } '
+                'Holder<int> h; int* caller() { return h.Used(); }\n')
+            try:
+                with patch.object(audit, 'ROOT', root):
+                    audit.owned.cache_clear()
+                    records, templates, _, errors, functions, uses = audit.harvest(
+                        (str(source), ['/TP', '-fdelayed-template-parsing']))
+                    self.assertFalse(errors)
+                    for row in functions.values():
+                        row['bindings'] = []  # The isolated fixture has no retail claims.
+                    rows, issues = audit.review_queue(records, templates, functions,
+                        [], {}, {}, uses, {})
+                    self.assertFalse(issues)
+                    names = {r['name'] for r in rows if r['category'] == 'source-definition'}
+                    self.assertTrue(any(n.endswith('::Unused()') for n in names), names)
+                    self.assertTrue(any(n.endswith('::NeverCalled(T)') for n in names), names)
+            finally:
+                audit.owned.cache_clear()
+
+    def test_actual_declarations_control_implicit_member_rows(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / 'src').mkdir()
+            source = root / 'src/probe.cpp'
+            try:
+                with patch.object(audit, 'ROOT', root):
+                    audit.owned.cache_clear()
+                    for declarations, expected in [('', {'constructor', 'destructor'}),
+                            ('Widget(int);', {'destructor'}),
+                            ('template<class T> Widget(T);', {'destructor'}),
+                            ('Widget(int); ~Widget();', set())]:
+                        source.write_text('struct Widget { ' + declarations + ' int value; };\n')
+                        records, templates, _, errors, functions, uses = audit.harvest(
+                            (str(source), ['/TP']))
+                        self.assertFalse(errors)
+                        rows, issues = audit.review_queue(records, templates, functions,
+                            [], {}, {}, uses, {})
+                        self.assertFalse(issues)
+                        self.assertEqual({r['key'].rsplit(':', 1)[1] for r in rows
+                            if r['category'] == 'implicit-special-member'}, expected)
+            finally:
+                audit.owned.cache_clear()
+
     def test_macro_extent_fallback_tracks_body_and_initializer(self):
         original_root = audit.ROOT
         original_tokens = audit.source_tokens

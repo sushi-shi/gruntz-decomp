@@ -18,12 +18,12 @@
 #include <Enums.h>
 #include <Gruntz/CheatMgr.h>
 #include <Gruntz/CoordNode.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/ErrorStringId.h>
 #include <Gruntz/FaderMgr.h>
 #include <Gruntz/FaderSettings.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/Fonts.h>
-#include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/GameRegMfcPtr.h>

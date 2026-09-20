@@ -26,12 +26,12 @@
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/CheatMgr.h>
 #include <Gruntz/ColorTint.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/DrawDebugStats.h>
 #include <Gruntz/EnemyAiType.h>
 #include <Gruntz/ErrorStringId.h>
 #include <Gruntz/FontConfig.h>
-#include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameObjectLogicTypes.h>

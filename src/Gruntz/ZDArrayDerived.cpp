@@ -1,7 +1,7 @@
 #include <rva.h>
 
 #include <Gruntz/ActReg.h>
-#include <Wap32/ZDArray.h>
+#include <ZTools/ZDArray.h>
 
 template class zDArray<CActHandler>;
 

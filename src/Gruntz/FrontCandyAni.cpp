@@ -19,7 +19,7 @@
 #include <Gruntz/SortKeyMacros.h>
 #include <Image/CImage.h>
 #include <Rez/FrameClock.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/ZDArray.h>
 
 #include <stddef.h>
 

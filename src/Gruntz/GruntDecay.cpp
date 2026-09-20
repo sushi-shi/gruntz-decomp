@@ -1,5 +1,5 @@
 #include <Bute/ButeMgr.h>
-#include <Bute/ButeTree.h>
+#include <Gruntz/ActRegistry.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/SpriteStateFlags.h>

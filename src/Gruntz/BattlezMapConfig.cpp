@@ -55,9 +55,9 @@
 #include <Io/FileMem.h>
 #include <Lith/BDefs.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/zBitVec.h>
-#include <Wap32/ZDArrayIndex.h>
 #include <Wwd/WwdFile.h>
+#include <ZTools/BitVec.h>
+#include <ZTools/ZDArray.h>
 
 #include <limits.h>
 #include <math.h>
@@ -374,8 +374,8 @@ i32 CBattlezMapConfig::StepBoard() {
     }
 
     i32 mn = BATTLEZ_QUEUE_POSITION_UNSET;
-    CGrunt** units = &m_triggerMgr->m_units[m_playerIndex * BATTLEZ_UNIT_SLOT_COUNT];
-    for (i32 s = BATTLEZ_UNIT_SLOT_COUNT; s != 0; s--) {
+    CGrunt** units = &m_triggerMgr->m_units[m_playerIndex * TM_UNITS_PER_PLAYER];
+    for (i32 s = TM_UNITS_PER_PLAYER; s != 0; s--) {
         CGrunt* u = *units;
         if (u != NULL && u->m_defenderState == AISTATE_RETURN && u->m_defenderQueuePosition < mn) {
             mn = u->m_defenderQueuePosition;
@@ -383,8 +383,8 @@ i32 CBattlezMapConfig::StepBoard() {
         units++;
     }
     if (mn != 0 && mn != BATTLEZ_QUEUE_POSITION_UNSET) {
-        for (i32 k = 0; k < BATTLEZ_UNIT_SLOT_COUNT; k++) {
-            CGrunt* u = m_triggerMgr->m_units[m_playerIndex * BATTLEZ_UNIT_SLOT_COUNT + k];
+        for (i32 k = 0; k < TM_UNITS_PER_PLAYER; k++) {
+            CGrunt* u = m_triggerMgr->m_units[m_playerIndex * TM_UNITS_PER_PLAYER + k];
             if (u != NULL && u->m_defenderState == AISTATE_RETURN) {
                 u->m_defenderQueuePosition -= mn;
             }
@@ -1258,7 +1258,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                 }
             }
         }
-        goto nexti;
+        continue;
     dispatch: {
         CMapMgr* bd2 = m_board;
         RECT a;
@@ -1346,16 +1346,16 @@ i32 CBattlezMapConfig::StepRowUnits() {
                 wingzGate: {
                     PickupType wp = ArrivalPickup(unit);
                     if (wp != PICKUP_WINGZ) {
-                        goto nexti;
+                        continue;
                     }
                 }
                     if ((cell & IDX(CELL_FLAG_SPECIAL)) == 0 && (cell & 0x100) == 0) {
-                        goto nexti;
+                        continue;
                     }
                     if ((cell & BRICKZ_CELL_OCCUPIED) == 0) {
                         goto tailArm2;
                     }
-                    goto nexti;
+                    continue;
                 dropCoords:
                     if (unit->CoordCount() != 0) {
                         RECYCLE_GRUNT_COORDS_EXPANDED(unit)
@@ -1364,7 +1364,6 @@ i32 CBattlezMapConfig::StepRowUnits() {
             }
         }
     }
-    nexti:;
     }
     return 1;
 

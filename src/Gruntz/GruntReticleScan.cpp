@@ -33,7 +33,7 @@
 #include <Gruntz/VoiceManager.h>
 #include <Ints.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/ZDArray.h>
 
 #include <limits.h>
 #include <new>

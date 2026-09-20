@@ -2,11 +2,11 @@
 
 #include <Gruntz/Warlord.h>
 
-#include <Bute/ButeTree.h>
 #include <DDrawMgr/AniAdvance.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Enums.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/ActRegistry.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/AniElement.h>
@@ -36,7 +36,7 @@
 #include <Io/FileMem.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/ZDArray.h>
 
 #include <stdlib.h>
 

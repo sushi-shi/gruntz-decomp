@@ -1,9 +1,6 @@
-#ifndef GRUNTZ_FREENODEPOOL_H
-#define GRUNTZ_FREENODEPOOL_H
+#ifndef GRUNTZ_UTILS_FREENODEPOOL_H
+#define GRUNTZ_UTILS_FREENODEPOOL_H
 
-#include <rva.h>
-
-#include <Gruntz/CoordNode.h>
 #include <Ints.h>
 
 #include <stddef.h>
@@ -67,7 +64,4 @@ template<class T> void FreeNodePool<T>::Push(void* p) {
     m_freeHead = node;
 }
 
-typedef FreeNodePool<Coord>::Node CoordPoolNode;
-extern FreeNodePool<Coord> g_coordPool;
-
-#endif // GRUNTZ_FREENODEPOOL_H
+#endif // GRUNTZ_UTILS_FREENODEPOOL_H

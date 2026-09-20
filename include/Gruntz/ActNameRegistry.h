@@ -6,13 +6,12 @@
 #include <Mfc.h>
 
 #include <Bute/ButeMgr.h>
-#include <Bute/ButeTree.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/ActRegistry.h>
 #include <Gruntz/TypeKeyColl.h>
-#include <Wap32/zBitVec.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/BitVec.h>
+#include <ZTools/ZDArray.h>
 
-class CVariantSlot;
 struct CString;
 
 #define ACT_NAME_ID(idvar, key)                                                                    \

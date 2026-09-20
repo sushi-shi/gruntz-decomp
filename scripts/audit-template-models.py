@@ -41,7 +41,8 @@ def snapshot():
     paths = [p for folder in ('src', 'include') for p in (ROOT / folder).rglob('*')
              if p.suffix in ('.c', '.cpp', '.h', '.hpp', '.inl')]
     paths += list((ROOT / 'build/objdiff/base').glob('*.obj'))
-    paths += [ROOT / name for name in ('build/gen/bindings.tsv', 'config/units.toml', 'flake.lock')]
+    paths += [ROOT / name for name in ('build/gen/bindings.tsv', 'config/units.toml', 'flake.lock',
+                                     'scripts/audit-template-models.py')]
     return {stable(str(p)): file_hash(p) for p in paths if p.is_file()}
 
 
@@ -117,7 +118,7 @@ def harvest(job):
     kinds = ci.CursorKind
     tu = ci.Index.create().parse(source, args=[
         '--driver-mode=cl', *[f for f in flags if f != '-fdelayed-template-parsing'],
-        *inc_cl(), '/DGRUNTZ_EMIT_META', '-ferror-limit=0',
+        *inc_cl(), '/DGRUNTZ_EMIT_META', '-fno-delayed-template-parsing', '-ferror-limit=0',
     ], options=ci.TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD)
     # Spelling tokens alone miss changes inside an invoked macro. Keep the
     # owned macro environment and compile flags in review fingerprints without
@@ -130,7 +131,7 @@ def harvest(job):
                         if owned(i.include.name)}
     errors = [str(d) for d in tu.diagnostics if d.severity >= ci.Diagnostic.Error]
 
-    function_kinds = (kinds.FUNCTION_DECL, kinds.CXX_METHOD, kinds.CONSTRUCTOR,
+    function_kinds = (kinds.FUNCTION_DECL, kinds.CXX_METHOD, kinds.CONVERSION_FUNCTION, kinds.CONSTRUCTOR,
                       kinds.DESTRUCTOR, kinds.FUNCTION_TEMPLATE)
 
     def walk(c, caller=None):
@@ -175,7 +176,7 @@ def harvest(job):
                     context_hash=context_hash,
                     parameters=parameters, initializers=initializers,
                     is_virtual=c.is_virtual_method() if c.kind in (
-                        kinds.CXX_METHOD, kinds.DESTRUCTOR) else False,
+                        kinds.CXX_METHOD, kinds.CONVERSION_FUNCTION, kinds.DESTRUCTOR) else False,
                     is_copy_constructor=c.is_copy_constructor() if c.kind == kinds.CONSTRUCTOR else False,
                     body_tokens=len(tokens), **site)
             if c.kind in (kinds.CALL_EXPR, kinds.CXX_NEW_EXPR):
@@ -184,19 +185,18 @@ def harvest(job):
                     type=c.type.get_canonical().spelling,
                     callee=ref.get_usr() if ref else None,
                     name=ref.displayname if ref else c.displayname, **site))
-        if (c.kind in (kinds.CLASS_DECL, kinds.STRUCT_DECL, kinds.CLASS_TEMPLATE,
+        if (c.kind in (kinds.CLASS_DECL, kinds.STRUCT_DECL, kinds.UNION_DECL, kinds.CLASS_TEMPLATE,
                        kinds.CLASS_TEMPLATE_PARTIAL_SPECIALIZATION)
                 and c.is_definition() and c.location.file):
             path = str(Path(c.location.file.name).resolve())
             children = list(c.get_children())
             bases = [x.type.spelling for x in children if x.kind == kinds.CXX_BASE_SPECIFIER]
-            methods = [x.spelling for x in children if x.kind in (
-                kinds.CXX_METHOD, kinds.CONSTRUCTOR, kinds.DESTRUCTOR)]
+            methods = [x.spelling for x in children if x.kind in function_kinds]
             fields = [{'name': x.spelling, 'type': x.type.get_canonical().spelling,
                        'offset': x.get_field_offsetof(), 'size': x.type.get_size()}
                       for x in children if x.kind == kinds.FIELD_DECL]
             row = dict(name=c.displayname, file=path, line=c.location.line,
-                       owned=owned(path), bases=bases, methods=methods, fields=fields,
+                       owned=owned(path), anonymous=c.is_anonymous(), bases=bases, methods=methods, fields=fields,
                        size=c.type.get_size(), kind=c.kind.name,
                        source_hash=digest(source_tokens(c)) if owned(path) else None,
                        type_dependencies=[x.type.get_declaration().get_usr() for x in children
@@ -279,6 +279,22 @@ def review_queue(records, templates, functions, candidates, emissions, bindings,
             name=row['name'], file=stable(row['file']), line=row['line'], rvas='',
             fingerprint=owner_hash(row['usr']), priority=2, signals=','.join(row['reasons']),
             status='pending', evidence='', callers=''))
+    # An omitted special member can expand everywhere and leave no COFF body.
+    # Keep its source declaration state independently reviewable after recovery.
+    for usr, row in sorted(records.items()):
+        if not row.get('owned') or row.get('anonymous') or not row['name'] or '<' in row['name']:
+            continue
+        for kind, spelling in [('constructor', row['name']), ('destructor', '~' + row['name'])]:
+            if spelling in row['methods']:
+                continue
+            queue.append(dict(key='implicit:' + stable(usr) + ':' + kind,
+                category='implicit-special-member', name=row['name'] + '::' + kind,
+                file=stable(row['file']), line=row['line'], rvas='',
+                fingerprint=digest([kind, owner_hash(usr)]), priority=8,
+                signals='no-authored-' + kind + '-declaration', status='implicit-declaration',
+                evidence='Complete source owner has no authored ' + kind +
+                    ' declaration. This does not assert an emitted body or authentic retail source.',
+                callers=''))
     # This independent surface catches generated/deleting members absent from
     # the AST, rather than silently dropping them from the search universe.
     source_symbols = {s for row in functions.values() for s in [row['symbol'], *row['variants']]}
@@ -389,7 +405,7 @@ def main():
                        if '<' in r['name'] and r['fields'] and r['size'] >= 0}
     candidates = []
     for usr, row in sorted(records.items()):
-        if not row['owned'] or '<' in row['name']:
+        if not row['owned'] or row.get('anonymous') or '<' in row['name']:
             continue
         reasons = []
         if any(b in template_bases for b in row['bases']):
@@ -429,6 +445,10 @@ def main():
                 if name.startswith(('??0', '??1', '??4', '??_')) or '@?$' in name:
                     if full_obj is None:
                         full_obj = Obj(str(path))
+                        # Obj is read-only. Reuse its per-section symbol scan
+                        # across method slices instead of rescanning all COFF
+                        # symbols for every section of every function.
+                        full_obj.section_members = lru_cache(maxsize=None)(full_obj.section_members)
                     body, relocations, size = _find_function(full_obj, name)
                     site['code_hash'] = digest([body.hex(), sorted(relocations.items()), size])
                 emissions.setdefault(name, []).append(site)

@@ -5,13 +5,13 @@
 
 #include <Bute/ButeStore.h>
 #include <Bute/ButeToken.h>
-#include <Bute/ButeTree.h>
 #include <Bute/ButeValue.h>
-#include <Bute/PTreeNode.h>
 #include <Crypto/CryptMgr.h>
 #include <Gruntz/String.h>
 #include <Rez/RezArchiveEntry.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/Error.h>
+#include <ZTools/PTree.h>
+#include <ZTools/ZDArray.h>
 
 GZ_ENUM_FORWARD(ButeLexAction);
 

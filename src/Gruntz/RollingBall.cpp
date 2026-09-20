@@ -31,7 +31,7 @@
 #include <Rez/FrameClock.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/ZDArray.h>
 
 #include <math.h>
 #include <string.h>

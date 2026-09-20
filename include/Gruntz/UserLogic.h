@@ -12,9 +12,9 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/WwdGridIter.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/zBitVec.h>
 #include <Wwd/WwdGameObjectFamily.h>
 #include <Wwd/WwdGameObjectFlags.h>
+#include <ZTools/BitVec.h>
 
 struct CGameObject;
 struct SoundCue;

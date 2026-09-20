@@ -1,5 +1,12 @@
 # Compiler-method review queue
 
+PR #79 now incorporates this #81 queue and the later census-coverage controls,
+but not the broader constructor/lifetime application branches. Current shared
+header ownership and verification commands are documented in
+[template-header-ownership.md](template-header-ownership.md). The stage-specific
+counts and decisions below are historical; a fresh census marks any affected
+review fingerprint stale rather than silently recertifying it.
+
 The ongoing audit searches all owned function definitions, including unclaimed
 and unannotated functions, and independently inventories actual VC5 special-member
 and template emissions. Collection names and empty bodies rank the review; they

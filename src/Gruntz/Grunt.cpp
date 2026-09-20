@@ -7,7 +7,6 @@
 #include <MfcWin.h>
 
 #include <Bute/ButeMgr.h>
-#include <Bute/ButeTree.h>
 #include <DDrawMgr/AniAdvance.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -15,6 +14,7 @@
 #include <Enums.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/ActRegistry.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AnimationRegistry.h>
@@ -22,10 +22,10 @@
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/BattlezTask.h>
 #include <Gruntz/Brickz.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/DirectionClassify.h>
 #include <Gruntz/EnemyAiType.h>
-#include <Gruntz/FreeNodePool.h>
 #include <Gruntz/FreeNodePoolInline.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
@@ -85,10 +85,10 @@
 #include <Wap32/Object.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/Wap32.h>
-#include <Wap32/zBitVec.h>
 #include <Wwd/MoveMode.h>
 #include <Wwd/WwdFile.h>
 #include <Wwd/WwdObjectType.h>
+#include <ZTools/BitVec.h>
 
 #include <math.h>
 #include <new>
@@ -1272,7 +1272,7 @@ i32 CGrunt::StepGruntMovement() {
         i32 lastX = m_lastTilePx.m_x;
         i32 entY = m_entrancePx.m_y;
         if (entX == lastX && m_lastTilePx.m_y == entY) {
-            goto label_ret1;
+            return 1;
         }
     }
     if (m_arrivalState == AI_BATTLEZ_PATH) {
@@ -1700,7 +1700,7 @@ label_4cb4b:
             }
         } else {
             if (m_coordToggle == false) {
-                goto label_ret1;
+                return 1;
             }
         }
         RunMoveConfig(tgtTileX, tgtTileY);
@@ -1708,7 +1708,7 @@ label_4cb4b:
     }
     if (reason16) {
         if (!(flagHead & 0xd02)) {
-            goto label_ret1;
+            return 1;
         }
         if (m_wingzEnabled != false) {
             goto label_ret1;
@@ -1720,7 +1720,7 @@ label_4cb4b:
         SwitchAnimation(m_poseWalk);
         return 1;
     }
-    goto label_ret1;
+    return 1;
 
 label_dropRet0:
     SetEntrancePos(1, 1);

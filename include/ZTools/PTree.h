@@ -1,16 +1,13 @@
-#ifndef SRC_BUTE_PTREENODE_H
-#define SRC_BUTE_PTREENODE_H
+#ifndef GRUNTZ_ZTOOLS_PTREE_H
+#define GRUNTZ_ZTOOLS_PTREE_H
 
 #include <rva.h>
 
 #include <Enums.h>
 #include <Ints.h>
-#include <Wap32/zBitVec.h>
+#include <ZTools/Error.h>
 
 #include <stddef.h>
-
-struct CVariantSlot;
-extern CVariantSlot g_rezArchiveErrorSlot;
 
 typedef void(__cdecl* dtorf_t)(void*);
 typedef void(__cdecl* stvf_t)(const char*, void*, void*);
@@ -193,4 +190,4 @@ private:
     zSymTab<T>& operator=(const zSymTab<T>&);
 };
 
-#endif // SRC_BUTE_PTREENODE_H
+#endif // GRUNTZ_ZTOOLS_PTREE_H

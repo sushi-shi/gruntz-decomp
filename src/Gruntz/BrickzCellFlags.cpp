@@ -263,21 +263,14 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 tileId) {
             if (down && left) {
                 dl = down - 1;
             }
-            if (up && down && !(up->m_flags & BRICKZ_BLOCKED_MASK)
-                && !(down->m_flags & BRICKZ_BLOCKED_MASK)) {
-                goto setbit;
-            }
-            if (right && left && !(right->m_flags & BRICKZ_BLOCKED_MASK)
-                && !(left->m_flags & BRICKZ_BLOCKED_MASK)) {
-                goto setbit;
-            }
-            if (ur && dl && !(ur->m_flags & BRICKZ_BLOCKED_MASK)
-                && !(dl->m_flags & BRICKZ_BLOCKED_MASK)) {
-                goto setbit;
-            }
-            if (ul && dr && !(ul->m_flags & BRICKZ_BLOCKED_MASK)
-                && !(dr->m_flags & BRICKZ_BLOCKED_MASK)) {
-            setbit:
+            if ((up && down && !(up->m_flags & BRICKZ_BLOCKED_MASK)
+                 && !(down->m_flags & BRICKZ_BLOCKED_MASK))
+                || (right && left && !(right->m_flags & BRICKZ_BLOCKED_MASK)
+                    && !(left->m_flags & BRICKZ_BLOCKED_MASK))
+                || (ur && dl && !(ur->m_flags & BRICKZ_BLOCKED_MASK)
+                    && !(dl->m_flags & BRICKZ_BLOCKED_MASK))
+                || (ul && dr && !(ul->m_flags & BRICKZ_BLOCKED_MASK)
+                    && !(dr->m_flags & BRICKZ_BLOCKED_MASK))) {
                 nc->m_flags = nf | 0x1000;
             }
         }
@@ -335,7 +328,7 @@ CGrunt* CTriggerMgr::FindNearestEnemy(CGrunt* w) {
     i32 tileY = lastTilePx.m_y >> TILE_SHIFT_PX;
     i32 i = 0;
     CGrunt** rowPtr = m_units;
-    for (; i < TM_PLAYER_COUNT; i++, rowPtr += TM_UNITS_PER_PLAYER) {
+    for (; i < PLAYER_SLOT_COUNT; i++, rowPtr += TM_UNITS_PER_PLAYER) {
         if (i != w->m_playerIndex) {
             CGrunt** colPtr = rowPtr;
             i32 j = TM_UNITS_PER_PLAYER;

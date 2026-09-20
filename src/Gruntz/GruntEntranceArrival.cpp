@@ -4,7 +4,6 @@
 
 #include <AddrWord.h>
 #include <Bute/ButeMgr.h>
-#include <Bute/ButeTree.h>
 #include <DDrawMgr/AniAdvance.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -12,14 +11,15 @@
 #include <Enums.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/ActRegistry.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AniElementInline.h>
 #include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/Brickz.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/EnemyAiType.h>
-#include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRand.h>
@@ -724,15 +724,14 @@ void CGrunt::ResetEntranceAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32
             applied = 1;
         } else {
 
-            if (m_wwdObject->m_animationCursor.m_animation == AT(m_poseIdle, GRUNT_IDLE1)) {
-                goto latch;
-            }
-            SwitchAnimation(AT(m_poseIdle, GRUNT_IDLE1));
-            {
-                i32 d = static_cast<i32>(g_buteMgr.GetDword("Grunt", "IdleDelay", 0x7530));
-                applied = 1;
-                m_idleDelay = static_cast<u32>(GetRandom(0x4e20, d));
-                m_idleAnchor = g_frameTime;
+            if (m_wwdObject->m_animationCursor.m_animation != AT(m_poseIdle, GRUNT_IDLE1)) {
+                SwitchAnimation(AT(m_poseIdle, GRUNT_IDLE1));
+                {
+                    i32 d = static_cast<i32>(g_buteMgr.GetDword("Grunt", "IdleDelay", 0x7530));
+                    applied = 1;
+                    m_idleDelay = static_cast<u32>(GetRandom(0x4e20, d));
+                    m_idleAnchor = g_frameTime;
+                }
             }
         }
     } else {
@@ -740,7 +739,6 @@ void CGrunt::ResetEntranceAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32
         SwitchAnimation(AT(m_poseIdle, GRUNT_IDLE1));
     }
 
-latch:
     SET_ANIMATION_ACT("A");
 
     if (!applied && refreshFrame == 0) {

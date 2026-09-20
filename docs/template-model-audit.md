@@ -1,5 +1,11 @@
 # Template-origin audit
 
+The consolidated PR #79 now includes the #80/#81 follow-ups and separates the
+shared headers by library ownership. See [shared template ownership](template-header-ownership.md)
+for the current public-header map, reproducible controls, and remaining questions.
+Measurements below describe their named historical build stages, not the final
+integrated-main snapshot.
+
 The audit starts at merged main `814e76985`, after naming/padding PR #77 and
 SDK-layout PR #78. It examines project-defined container-like records that may
 actually be instantiations of an existing template. The initial identity audit is followed below by a compiled application of the

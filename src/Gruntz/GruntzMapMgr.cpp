@@ -1,7 +1,7 @@
 #include <Gruntz/GruntzMapMgr.h>
 
 #include <DDrawMgr/DDrawWorkerHost.h>
-#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/ImageSets.h>
 #include <Gruntz/LogicTypeId.h>

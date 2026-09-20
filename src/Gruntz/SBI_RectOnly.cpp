@@ -13,8 +13,8 @@
 #include <Dsndmgr/StreamFeeder.h>
 #include <Enums.h>
 #include <Gruntz/ChatBoxOwner.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/CurPlayer.h>
-#include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameMenuMgrBuilders.h>
 #include <Gruntz/GameModeId.h>
@@ -2237,7 +2237,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 i32 gruntBarLeft = bx + 0x17;
                 i32 gruntBarRight = bx + 0x52;
                 i32 y = by + 0xd9;
-                for (i = 0; i < STATUSBAR_GRUNT_SLOT_COUNT; i++) {
+                for (i = 0; i < TM_UNITS_PER_PLAYER; i++) {
                     bar = new CSBI_StatzTabGruntBar;
                     if (!bar->BuildMultiplayerTabStatusBar(
                             this,
@@ -2286,7 +2286,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 i32 arrowL = bx + aOff;
                 i32 arrowR = bx + cOff;
                 i32 y = by + 0xd9;
-                for (i = 0; i < STATUSBAR_GRUNT_SLOT_COUNT; i++) {
+                for (i = 0; i < TM_UNITS_PER_PLAYER; i++) {
                     SbiCommandId id =
                         static_cast<SbiCommandId>(IDX(SBICMD_CURSOR_TARGET_FIRST) + i);
                     arrow = new CSBI_StatzTabArrow;
@@ -2504,7 +2504,7 @@ i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 idx, StatusSampleMode mode) {
         return 1;
     }
 
-    i32 slot = idx + STATUSBAR_GRUNT_SLOT_COUNT * g_curPlayer;
+    i32 slot = idx + TM_UNITS_PER_PLAYER * g_curPlayer;
     if (g_gameReg->m_triggerMgr->m_units[slot] == NULL) {
         return 0;
     }
@@ -2615,7 +2615,7 @@ i32 CStatusBarMgr::BuildSideTabs() {
 RVA(0x00105280, 0x61)
 i32 CStatusBarMgr::HitTest(i32 x, i32 y) {
     if (m_chatBoxDisabled == false) {
-        for (i32 i = 0; i < STATUSBAR_GRUNT_SLOT_COUNT; i++) {
+        for (i32 i = 0; i < TM_UNITS_PER_PLAYER; i++) {
             if (m_hitRects[i] && m_hitRects[i]->m_enabled) {
                 CSBI_SideTab* p = m_hitRects[i];
                 b32 hit = p->m_enabled ? ::PtInRect(&p->m_rect, x, y) : false;
@@ -3907,16 +3907,14 @@ i32 CStatusBarMgr::QueuePickupReward(i32 pickupValue, i32 score) {
         while (i < n) {
             Coord* e = static_cast<Coord*>(*t);
             if (e != NULL && score < e->m_y) {
-                goto insert;
+                m_rewardQueue.InsertAt(i, node, 1);
+                return 1;
             }
             i++;
             t++;
         }
     }
     m_rewardQueue.Add(node);
-    return 1;
-insert:
-    m_rewardQueue.InsertAt(i, node, 1);
     return 1;
 }
 
@@ -4147,7 +4145,7 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     s->Write(&m_tabCycle, sizeof(m_tabCycle));
 
     StatusSampleMode* p = m_statFlags;
-    for (i32 i = 0; i < STATUSBAR_GRUNT_SLOT_COUNT; i++) {
+    for (i32 i = 0; i < TM_UNITS_PER_PLAYER; i++) {
         s->Write(p, sizeof(*p));
         p += 1;
     }
@@ -4254,7 +4252,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     s->Read(&m_tabCycle, sizeof(m_tabCycle));
 
     StatusSampleMode* p = m_statFlags;
-    for (i32 i = 0; i < STATUSBAR_GRUNT_SLOT_COUNT; i++) {
+    for (i32 i = 0; i < TM_UNITS_PER_PLAYER; i++) {
         s->Read(p, sizeof(*p));
         p += 1;
     }

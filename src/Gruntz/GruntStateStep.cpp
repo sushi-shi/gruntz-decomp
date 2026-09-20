@@ -6,7 +6,7 @@
 
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/Brickz.h>
-#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntDirStatics.h>
@@ -17,7 +17,7 @@
 #include <Ints.h>
 #include <Lith/BDefs.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/ZDArray.h>
 
 #include <math.h>
 #include <stdlib.h>

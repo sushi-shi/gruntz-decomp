@@ -1,8 +1,8 @@
 #include <rva.h>
 
-#include <Bute/ButeTree.h>
 #include <Utils/BitArrayWord.h>
-#include <Wap32/zBitVec.h>
+#include <ZTools/BitVec.h>
+#include <ZTools/Error.h>
 
 #include <stdlib.h>
 #include <string.h>

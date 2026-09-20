@@ -25,6 +25,7 @@
 #include <Gruntz/StatusBarItem.h>
 #include <Gruntz/StatusBarTab.h>
 #include <Gruntz/StatusSampleMode.h>
+#include <Gruntz/TriggerGridDimensions.h>
 #include <Gruntz/WarpStoneFragment.h>
 #include <Ints.h>
 
@@ -133,10 +134,6 @@ GZ_ENUM_CONST_BEGIN(GruntWellPct)
     GRUNT_WELL_EMPTY = 0,
     GRUNT_WELL_FULL = 100
 GZ_ENUM_CONST_END(GruntWellPct)
-
-GZ_ENUM_CONST_BEGIN(StatusBarGruntSlots)
-    STATUSBAR_GRUNT_SLOT_COUNT = 15
-GZ_ENUM_CONST_END(StatusBarGruntSlots)
 
 class CStatusBarMgr {
     inline b32 ActivateReadySlot(i32 slot);
@@ -281,10 +278,10 @@ public:
     CPtrList m_tabLists[8];
     StatusBarTab m_activeTab;
     GameTabContent m_itemKind;
-    StatusSampleMode m_statFlags[STATUSBAR_GRUNT_SLOT_COUNT];
-    CSBI_SideTab* m_hitRects[STATUSBAR_GRUNT_SLOT_COUNT];
+    StatusSampleMode m_statFlags[TM_UNITS_PER_PLAYER];
+    CSBI_SideTab* m_hitRects[TM_UNITS_PER_PLAYER];
 
-    CSBI_StatzTabArrow* m_statObj[STATUSBAR_GRUNT_SLOT_COUNT];
+    CSBI_StatzTabArrow* m_statObj[TM_UNITS_PER_PLAYER];
     CSBI_MenuItem* m_statzTabButton;
     CSBI_MenuItem* m_resourceTabButton;
     CSBI_MenuItem* m_gruntzTabButton;

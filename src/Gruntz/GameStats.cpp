@@ -49,7 +49,7 @@ void CGameStats::Reset() {
     ClearKills();
     ClearFlagCaptures();
     i32 i;
-    for (i = 0; i < BZ_PLAYER_COUNT; i++) {
+    for (i = 0; i < PLAYER_SLOT_COUNT; i++) {
         m_gruntzByPlayer[i] = 0;
     }
     for (i = 0; i < 88; i++) {
@@ -85,28 +85,28 @@ void CGameStats::SetLevelNumber(i32 levelNumber) {
 
 RVA(0x000fcb50, 0x2b)
 void CGameStats::RecordFlagCapture(i32 capturingPlayerIndex, i32 flagOwnerPlayerIndex) {
-    if (capturingPlayerIndex >= 0 && capturingPlayerIndex <= BZ_PLAYER_COUNT
-        && flagOwnerPlayerIndex >= 0 && flagOwnerPlayerIndex <= BZ_PLAYER_COUNT) {
+    if (capturingPlayerIndex >= 0 && capturingPlayerIndex <= PLAYER_SLOT_COUNT
+        && flagOwnerPlayerIndex >= 0 && flagOwnerPlayerIndex <= PLAYER_SLOT_COUNT) {
         m_flagCapturesByPlayer[capturingPlayerIndex][flagOwnerPlayerIndex] = 1;
     }
 }
 
 RVA(0x000fcb90, 0x12)
 void CGameStats::ClearFlagCaptures() {
-    for (i32 i = 0; i < BZ_PLAYER_COUNT * BZ_PLAYER_COUNT; i++) {
+    for (i32 i = 0; i < PLAYER_SLOT_COUNT * PLAYER_SLOT_COUNT; i++) {
         (&m_flagCapturesByPlayer[0][0])[i] = 0;
     }
 }
 
 RVA(0x000fcbc0, 0x3a)
 i32 CGameStats::CountAllFlagCaptures(i32 validatedPlayerIndex) {
-    if (validatedPlayerIndex < 0 || validatedPlayerIndex > BZ_PLAYER_COUNT) {
+    if (validatedPlayerIndex < 0 || validatedPlayerIndex > PLAYER_SLOT_COUNT) {
         return 0;
     }
     i32 sum = 0;
     i32* capture = &m_flagCapturesByPlayer[0][0];
-    for (i32 playerIndex = 0; playerIndex < BZ_PLAYER_COUNT; playerIndex++) {
-        for (i32 flagOwnerIndex = 0; flagOwnerIndex < BZ_PLAYER_COUNT; flagOwnerIndex++) {
+    for (i32 playerIndex = 0; playerIndex < PLAYER_SLOT_COUNT; playerIndex++) {
+        for (i32 flagOwnerIndex = 0; flagOwnerIndex < PLAYER_SLOT_COUNT; flagOwnerIndex++) {
             sum += *capture++;
         }
     }
@@ -115,8 +115,8 @@ i32 CGameStats::CountAllFlagCaptures(i32 validatedPlayerIndex) {
 
 RVA(0x000fcc10, 0x2f)
 i32 CGameStats::GetFlagCapture(i32 capturingPlayerIndex, i32 flagOwnerPlayerIndex) {
-    if (capturingPlayerIndex >= 0 && capturingPlayerIndex <= BZ_PLAYER_COUNT
-        && flagOwnerPlayerIndex >= 0 && flagOwnerPlayerIndex <= BZ_PLAYER_COUNT) {
+    if (capturingPlayerIndex >= 0 && capturingPlayerIndex <= PLAYER_SLOT_COUNT
+        && flagOwnerPlayerIndex >= 0 && flagOwnerPlayerIndex <= PLAYER_SLOT_COUNT) {
         return m_flagCapturesByPlayer[capturingPlayerIndex][flagOwnerPlayerIndex];
     }
     return 0;
@@ -124,15 +124,15 @@ i32 CGameStats::GetFlagCapture(i32 capturingPlayerIndex, i32 flagOwnerPlayerInde
 
 RVA(0x000fcc50, 0x2a)
 void CGameStats::RecordKill(i32 killerPlayerIndex, i32 victimPlayerIndex) {
-    if (killerPlayerIndex >= 0 && killerPlayerIndex <= BZ_PLAYER_COUNT && victimPlayerIndex >= 0
-        && victimPlayerIndex <= BZ_PLAYER_COUNT && killerPlayerIndex != victimPlayerIndex) {
+    if (killerPlayerIndex >= 0 && killerPlayerIndex <= PLAYER_SLOT_COUNT && victimPlayerIndex >= 0
+        && victimPlayerIndex <= PLAYER_SLOT_COUNT && killerPlayerIndex != victimPlayerIndex) {
         m_killsByPlayer[killerPlayerIndex][victimPlayerIndex]++;
     }
 }
 
 RVA(0x000fcc90, 0xf)
 void CGameStats::ClearKills() {
-    for (i32 i = 0; i < BZ_PLAYER_COUNT * BZ_PLAYER_COUNT; i++) {
+    for (i32 i = 0; i < PLAYER_SLOT_COUNT * PLAYER_SLOT_COUNT; i++) {
         (&m_killsByPlayer[0][0])[i] = 0;
     }
 }
@@ -141,7 +141,7 @@ RVA(0x000fccb0, 0x21)
 i32 CGameStats::CountKillsForPlayer(i32 playerIndex) {
     i32 sum = 0;
     i32* kills = m_killsByPlayer[playerIndex];
-    for (i32 opponentIndex = 0; opponentIndex < BZ_PLAYER_COUNT; opponentIndex++) {
+    for (i32 opponentIndex = 0; opponentIndex < PLAYER_SLOT_COUNT; opponentIndex++) {
         sum += *kills++;
     }
     return sum;

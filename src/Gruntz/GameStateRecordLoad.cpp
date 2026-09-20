@@ -6,7 +6,7 @@
 
 #include <Bute/ButeMgr.h>
 #include <Gruntz/AnimationRegistry.h>
-#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>

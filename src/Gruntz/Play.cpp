@@ -30,12 +30,12 @@
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/CheatMgr.h>
 #include <Gruntz/ColorTint.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/DrawDebugStats.h>
 #include <Gruntz/EnemyAiType.h>
 #include <Gruntz/ErrorStringId.h>
 #include <Gruntz/FontConfig.h>
-#include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameObjectLogicTypes.h>
@@ -476,7 +476,7 @@ i32 CPlay::LeaveState(GameStateId nextState) {
         DrawTextToOverlaySurface(m_world, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
         RetireScene(0x50, 0x3e8, 0, true);
         if (m_mgr && m_mgr->m_triggerMgr) {
-            m_mgr->m_triggerMgr->RemovePlayerUnitsImmediately(TM_ALL_PLAYERS);
+            m_mgr->m_triggerMgr->RemovePlayerUnitsImmediately(PLAYER_SLOT_ALL);
         }
     }
     return 1;
@@ -676,7 +676,7 @@ i32 CPlay::Render() {
             if (left < 0) {
                 leftMs = 0;
             }
-            i32 secsLeft = static_cast<i32>(leftMs / MS_PER_SECOND) + 1;
+            i32 secsLeft = static_cast<i32>(leftMs / MILLIS_PER_SECOND) + 1;
             if (static_cast<i64>(g_frameTime) - m_defeatCountdownTiming.m_start.m_v
                 >= m_defeatCountdownTiming.m_interval.m_v) {
 
@@ -1667,7 +1667,7 @@ void CPlay::FreeListTeardown() {
         return;
     }
     if (m_mgr->m_triggerMgr != NULL) {
-        m_mgr->m_triggerMgr->RemovePlayerUnitsImmediately(TM_ALL_PLAYERS);
+        m_mgr->m_triggerMgr->RemovePlayerUnitsImmediately(PLAYER_SLOT_ALL);
     }
     ForwardReady();
     {
@@ -2443,7 +2443,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             this->m_cursorY,
             &playerIndex,
             &unitIndex,
-            TM_ALL_PLAYERS
+            PLAYER_SLOT_ALL
         );
         if (r == NULL) {
             return 1;
@@ -2990,7 +2990,7 @@ drag_box: {
     }
 
     CGrunt* picked = static_cast<CGrunt*>(
-        m_mgr->m_triggerMgr->ScreenToCell(xr, y, &eventArg, &x, TM_ALL_PLAYERS)
+        m_mgr->m_triggerMgr->ScreenToCell(xr, y, &eventArg, &x, PLAYER_SLOT_ALL)
     );
     if (picked != NULL) {
         m_mgr->m_triggerMgr
@@ -3089,7 +3089,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
     {
         i32 playerIndex;
         i32 unitIndex;
-        if (m_mgr->m_triggerMgr->ScreenToCell(x, y, &playerIndex, &unitIndex, TM_ALL_PLAYERS)
+        if (m_mgr->m_triggerMgr->ScreenToCell(x, y, &playerIndex, &unitIndex, PLAYER_SLOT_ALL)
             && g_curPlayer == playerIndex) {
             m_statusBar->ToggleStat(unitIndex);
             return 1;
@@ -4609,7 +4609,7 @@ i32 CPlay::ExecuteCommand(
 
             CGrunt* node =
                 m_mgr->m_triggerMgr
-                    ->CellHitTest(px, py, &hitPlayerIndex, &hitUnitIndex, TM_ALL_PLAYERS);
+                    ->CellHitTest(px, py, &hitPlayerIndex, &hitUnitIndex, PLAYER_SLOT_ALL);
             if (node != NULL && g->m_entranceActive == false) {
                 g->SetArrivalTarget(
                     hitPlayerIndex,
@@ -4733,7 +4733,7 @@ i32 CPlay::ExecuteCommand(
             i32 py = static_cast<u16>(targetYOrUnitIndex);
             CGrunt* node =
                 m_mgr->m_triggerMgr
-                    ->CellHitTest(px, py, &hitPlayerIndex, &hitUnitIndex, TM_ALL_PLAYERS);
+                    ->CellHitTest(px, py, &hitPlayerIndex, &hitUnitIndex, PLAYER_SLOT_ALL);
             if (node != NULL && g->m_entranceActive == false) {
                 g->SetArrivalTarget(
                     hitPlayerIndex,
@@ -5839,35 +5839,31 @@ i32 CPlay::PositionBridgeToggle(StatusBarDock mode, StatusBarDock) {
     if (mode == STATUSBAR_DOCK_LEFT) {
         m_chatBox->Configure(CHATBOX_WITH_LEFT_STATUSBAR);
         pt = m_levelTimer;
-        if (pt == NULL) {
-            goto done;
+        if (pt != NULL) {
+            ex -= 0x37;
+            ey -= 0x16;
+            pt->m_baseX = ex;
+            pt->m_baseY = ey;
         }
-        ex -= 0x37;
-        ey -= 0x16;
-        pt->m_baseX = ex;
-        pt->m_baseY = ey;
     } else if (mode == STATUSBAR_DOCK_RIGHT) {
         m_chatBox->Configure(CHATBOX_WITH_RIGHT_STATUSBAR);
         pt = m_levelTimer;
-        if (pt == NULL) {
-            goto done;
+        if (pt != NULL) {
+            ex -= 0xd7;
+            ey -= 0x16;
+            pt->m_baseX = ex;
+            pt->m_baseY = ey;
         }
-        ex -= 0xd7;
-        ey -= 0x16;
-        pt->m_baseX = ex;
-        pt->m_baseY = ey;
     } else {
         m_chatBox->Configure(CHATBOX_WITH_HIDDEN_STATUSBAR);
         pt = m_levelTimer;
-        if (pt == NULL) {
-            goto done;
+        if (pt != NULL) {
+            ex -= 0x37;
+            ey -= 0x16;
+            pt->m_baseX = ex;
+            pt->m_baseY = ey;
         }
-        ex -= 0x37;
-        ey -= 0x16;
-        pt->m_baseX = ex;
-        pt->m_baseY = ey;
     }
-done:
 
     if (m_mgr->m_triggerMgr->m_goal != NULL) {
         CTriggerMgr* g = m_mgr->m_triggerMgr;

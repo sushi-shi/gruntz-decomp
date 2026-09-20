@@ -2,9 +2,9 @@
 
 #include <Gruntz/MenuSparkle.h>
 
-#include <Bute/ButeTree.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/ActRegistry.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/LogicTypeId.h>

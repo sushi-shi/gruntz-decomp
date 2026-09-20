@@ -5,7 +5,7 @@
 #include <Mfc.h>
 
 #include <Gruntz/Brickz.h>
-#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/GameMode.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/LogicTypeId.h>

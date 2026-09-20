@@ -29,13 +29,12 @@ from gruntz.verify.srcscan import blank_comments, rel, source_files
 
 
 PLACEMENT_ALLOW = Counter({
-    ("include/Wap32/ZDArray.h", "T"): 1,
-    ("include/Wap32/ZDArrayIndex.h", "T"): 1,
+    ("include/ZTools/ZDArray.h", "T"): 2,
 })
 
 DTOR_CALL_ALLOW = Counter({
-    ("include/Wap32/ZDArray.h", "T"): 1,
-    ("include/Bute/PTreeNode.h", "T"): 1,
+    ("include/ZTools/ZDArray.h", "T"): 1,
+    ("include/ZTools/PTree.h", "T"): 1,
 })
 
 LOW_LEVEL_ALLOW = Counter({

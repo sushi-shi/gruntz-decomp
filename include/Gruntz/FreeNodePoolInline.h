@@ -1,7 +1,7 @@
 #ifndef GRUNTZ_FREENODEPOOLINLINE_H
 #define GRUNTZ_FREENODEPOOLINLINE_H
 
-#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/CoordPool.h>
 
 inline void PushFreeNode(FreeNodePool<Coord>* pool, void* p) {
     CoordPoolNode* node = pool->NodeOf(p);

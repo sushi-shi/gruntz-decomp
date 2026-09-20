@@ -62,6 +62,7 @@ _GATES = {"board": "gruntz.verify.board", "bans": "gruntz.verify.bans",
           "compiler-artifacts": "gruntz.verify.compiler_artifacts",
           "constants": "gruntz.verify.constants",
           "enum-domains": "gruntz.verify.enum_domains",
+          "enum-reuse": "gruntz.verify.enum_reuse",
           "label-style": "gruntz.verify.label_style",
           "include-order": "gruntz.verify.include_order",
           "unique-names": "gruntz.verify.unique_names",
@@ -96,7 +97,7 @@ _QUERY_ONLY = ("layout", "library-data-refs", "vtable-scan")
 
 #: Audits that are deliberately explicit because they parse the whole source
 #: tree and are not part of a normal build tier.
-_STANDALONE = ("constants",)
+_STANDALONE = ("constants", "enum-reuse")
 
 #: tier label -> verb, where the two spellings differ. gruntz.verify.tiers
 #: labels the bans row `vtable-bans` (so do docs/tooling-map.md and every

@@ -2,10 +2,10 @@
 
 #include <Gruntz/FortressFlag.h>
 
-#include <Bute/ButeTree.h>
 #include <Enums.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/ActRegistry.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/AnimSink.h>
@@ -27,9 +27,9 @@
 #include <Gruntz/WwdGameReg.h>
 #include <Image/CImage.h>
 #include <Rez/FrameClock.h>
-#include <Wap32/zBitVec.h>
-#include <Wap32/ZDArrayIndex.h>
 #include <Wwd/LogicRecordEvent.h>
+#include <ZTools/BitVec.h>
+#include <ZTools/ZDArray.h>
 
 #include <stddef.h>
 

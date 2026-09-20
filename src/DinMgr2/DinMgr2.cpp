@@ -1,7 +1,7 @@
 #include <rva.h>
 
 #include <DinMgr2/DirectInputMgr2.h>
-#include <Gruntz/InputDeviceGroup.h>
+#include <DinMgr2/InputDeviceGroup.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -9,7 +9,6 @@
 GZ_ENUM_CONST_BEGIN(DinInputConstants)
     KEYBOARD_STATE_BUFFER_SIZE = 0x100,
     DINPUT_STATE_PRESSED = 0x80,
-    ASYNC_KEY_PRESSED_SIGN_BIT = 0x80000000,
     JOYSTICK_AXIS_MIN = -1000,
     JOYSTICK_AXIS_MAX = 1000,
     JOYSTICK_DEADZONE_50_PERCENT = 5000
@@ -505,49 +504,40 @@ i32 CKeyboardDevice::Poll() {
         }
     }
     if (HAS(static_cast<DirectInputCreateFlags>(m_createFlags), DIN_CREATE_ASYNC_KEYBOARD)) {
-        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON0)])
-            & ASYNC_KEY_PRESSED_SIGN_BIT) {
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON0)]) & ASYNC_KEYSTATE_DOWN) {
             m_pressedButtons |= IDX(INPUT_BUTTON0);
         }
-        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON1)])
-            & ASYNC_KEY_PRESSED_SIGN_BIT) {
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON1)]) & ASYNC_KEYSTATE_DOWN) {
             m_pressedButtons |= IDX(INPUT_BUTTON1);
         }
-        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON2)])
-            & ASYNC_KEY_PRESSED_SIGN_BIT) {
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON2)]) & ASYNC_KEYSTATE_DOWN) {
             m_pressedButtons |= IDX(INPUT_BUTTON2);
         }
-        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON3)])
-            & ASYNC_KEY_PRESSED_SIGN_BIT) {
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON3)]) & ASYNC_KEYSTATE_DOWN) {
             m_pressedButtons |= IDX(INPUT_BUTTON3);
         }
-        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON4)])
-            & ASYNC_KEY_PRESSED_SIGN_BIT) {
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON4)]) & ASYNC_KEYSTATE_DOWN) {
             m_pressedButtons |= IDX(INPUT_BUTTON4);
         }
-        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON5)])
-            & ASYNC_KEY_PRESSED_SIGN_BIT) {
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON5)]) & ASYNC_KEYSTATE_DOWN) {
             m_pressedButtons |= IDX(INPUT_BUTTON5);
         }
-        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON6)])
-            & ASYNC_KEY_PRESSED_SIGN_BIT) {
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON6)]) & ASYNC_KEYSTATE_DOWN) {
             m_pressedButtons |= IDX(INPUT_BUTTON6);
         }
-        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON7)])
-            & ASYNC_KEY_PRESSED_SIGN_BIT) {
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_BUTTON7)]) & ASYNC_KEYSTATE_DOWN) {
             m_pressedButtons |= IDX(INPUT_BUTTON7);
         }
-        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_LEFT)]) & ASYNC_KEY_PRESSED_SIGN_BIT) {
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_LEFT)]) & ASYNC_KEYSTATE_DOWN) {
             m_pressedButtons |= IDX(INPUT_LEFT);
         }
-        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_RIGHT)])
-            & ASYNC_KEY_PRESSED_SIGN_BIT) {
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_RIGHT)]) & ASYNC_KEYSTATE_DOWN) {
             m_pressedButtons |= IDX(INPUT_RIGHT);
         }
-        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_UP)]) & ASYNC_KEY_PRESSED_SIGN_BIT) {
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_UP)]) & ASYNC_KEYSTATE_DOWN) {
             m_pressedButtons |= IDX(INPUT_UP);
         }
-        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_DOWN)]) & ASYNC_KEY_PRESSED_SIGN_BIT) {
+        if (GetAsyncKeyState(m_keyBindings[IDX(INPUT_BINDING_DOWN)]) & ASYNC_KEYSTATE_DOWN) {
             m_pressedButtons |= IDX(INPUT_DOWN);
         }
     } else {

@@ -43,8 +43,8 @@
 #include <Gruntz/VoiceManager.h>
 #include <Io/FileMem.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/zBitVec.h>
 #include <Wwd/WwdFile.h>
+#include <ZTools/BitVec.h>
 
 #include <limits.h>
 #include <math.h>

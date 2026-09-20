@@ -3,11 +3,11 @@
 
 #include <rva.h>
 
-#include <Bute/ButeTree.h>
 #include <Enums.h>
+#include <Gruntz/ActRegistry.h>
 #include <Gruntz/UserLogic.h>
-#include <Wap32/zBitVec.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/BitVec.h>
+#include <ZTools/ZDArray.h>
 
 GZ_ENUM_CONST_BEGIN(ActIdRange)
     ACT_ID_FIRST = 2000,

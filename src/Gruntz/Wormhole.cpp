@@ -37,8 +37,8 @@
 #include <Gruntz/UserLogic.h>
 #include <Io/FileMem.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/zBitVec.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/BitVec.h>
+#include <ZTools/ZDArray.h>
 
 RVA_DYNINIT(0x0003ffb0, 0xa, CActRegPool<CWormhole>::s_table)
 RVA_DYNINIT(0x0003ffd0, 0x15, CActRegPool<CWormhole>::s_table)

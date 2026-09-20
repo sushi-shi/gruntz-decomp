@@ -6,10 +6,10 @@
 #include <Bute/ButeStore.h>
 #include <Bute/ButeToken.h>
 #include <Bute/ButeValue.h>
-#include <Bute/PTreeNode.h>
 #include <Crypto/BitStreamBlowfish.h>
 #include <Crypto/BlowfishApi.h>
 #include <Wap32/CoordUnset.h>
+#include <ZTools/PTree.h>
 
 #include <float.h>
 #include <fstream.h>

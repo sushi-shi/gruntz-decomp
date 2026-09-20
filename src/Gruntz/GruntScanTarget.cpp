@@ -6,8 +6,8 @@
 #include <Enums.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordNode.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/EnemyAiType.h>
-#include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
@@ -31,7 +31,7 @@
 #include <Gruntz/VoiceManager.h>
 #include <Ints.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/ZDArray.h>
 
 #include <limits.h>
 #include <new>
@@ -48,7 +48,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
 
     CGrunt* best = NULL;
     i32 bestDist = INT_MAX;
-    for (i32 candidatePlayerIndex = 0; candidatePlayerIndex < TM_PLAYER_COUNT;
+    for (i32 candidatePlayerIndex = 0; candidatePlayerIndex < PLAYER_SLOT_COUNT;
          candidatePlayerIndex++) {
         if (candidatePlayerIndex == playerIndex) {
             continue;

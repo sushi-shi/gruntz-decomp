@@ -1,13 +1,12 @@
-#ifndef GRUNTZ_WAP32_ZVEC_H
-#define GRUNTZ_WAP32_ZVEC_H
+#ifndef GRUNTZ_ZTOOLS_ZVEC_H
+#define GRUNTZ_ZTOOLS_ZVEC_H
 
 #include <rva.h>
 
 #include <AddrWord.h>
-#include <Bute/ButeTree.h>
 #include <Enums.h>
 #include <Ints.h>
-#include <Wap32/zBitVec.h>
+#include <ZTools/Error.h>
 
 GZ_ENUM_CONST_BEGIN(ZVecSentinel)
     ZVEC_NO_SCRATCH_ADDRESS = 1
@@ -57,18 +56,4 @@ public:
     i32 m_grown;
 };
 
-template<class T> class zDArray : public _zdvec {
-public:
-    zDArray(i32 lo, i32 hi);
-    virtual ~zDArray() OVERRIDE;
-
-    T& operator[](i32 id);
-
-    static T* AsElem(char* p) {
-        return static_cast<T*>(static_cast<void*>(p));
-    }
-};
-
-#include <Wap32/ZDArrayIndex.h>
-
-#endif // GRUNTZ_WAP32_ZVEC_H
+#endif // GRUNTZ_ZTOOLS_ZVEC_H
