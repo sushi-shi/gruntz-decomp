@@ -31,6 +31,13 @@
 
 #include <ddraw.h>
 
+RVA_DYNINIT(0x000f96f0, 0xa, s_value)
+RVA_DYNINIT(0x000f9710, 0xa, s_value)
+RVA_DYNINIT(0x000f9730, 0xe, s_value)
+RVA_DYNINIT(0x000f9750, 0x1f, s_value)
+template<> DATA(0x0024e25c)
+CString CStringStaticPool<CAssetRootTag>::s_value;
+
 RVA(0x000f9780, 0x8c)
 i32 CSplashState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
     if (CAssetRootStorage::s_value.GetLength() == 0) {

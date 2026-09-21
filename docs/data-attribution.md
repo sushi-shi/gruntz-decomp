@@ -1088,6 +1088,12 @@ table while being entirely unscored. `logicdispatchinit` is the one today —
 though 72 other units do get `.bss` target sections. Recorded in
 `KNOWN_UNPAIRED_UNITS`; a new one fails the gate.
 
+**2026-09-21 update:** `KNOWN_UNPAIRED_UNITS` is now empty. PR #79 removes
+the LogicDispatchInit holding TU and places the registry with EyeCandyAni's
+real methods; its guard and complete teardown references have a retail-backed
+integration control. The same pass removes the arrayserialize emitter-only TU.
+See [static-template ownership](patterns/static-template-guards-constrain-tu-ownership.md).
+
 **Spelling divergence in paired data is essentially nil: 9806 of 9812 words carry
 the IDENTICAL symbol name on both sides.** So homm2's `canonicalize_relocs.py`
 paired-target pass — which fixes the nearest-symbol-plus-addend spelling in the

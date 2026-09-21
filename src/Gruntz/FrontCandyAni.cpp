@@ -6,12 +6,6 @@
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AnimSink.h>
-#include <Gruntz/BehindCandy.h>
-#include <Gruntz/BigAnimationMacros.h>
-#include <Gruntz/DoNothing.h>
-#include <Gruntz/EyeCandy.h>
-#include <Gruntz/EyeCandyAni.h>
-#include <Gruntz/FrontCandy.h>
 #include <Gruntz/LogicFnTable.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
@@ -30,19 +24,6 @@ RVA_DYNINIT(0x000ad180, 0x1f, CActRegPool<CFrontCandyAni>::s_table)
 template<> DATA(0x002460b0)
 CActReg CActRegPool<CFrontCandyAni>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
-RVA(0x0000fa60, 0x47)
-i32 CFrontCandy::SerializeDispatch(
-    CFileMemBase* ar,
-    SerialMode mode,
-    LogicTypeId typeId,
-    CGameObject* object
-) {
-    SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE(ar, mode, typeId, object)
-}
-
-RVA_COMPGEN(0x0000fad0, 0x1e, ??_GCFrontCandy@@UAEPAXI@Z)
-RVA_COMPGEN(0x0000fb00, 0x44, ??1CFrontCandy@@UAE@XZ)
-
 RVA(0x0000fdf0, 0x47)
 i32 CFrontCandyAni::SerializeDispatch(
     CFileMemBase* ar,
@@ -55,88 +36,6 @@ i32 CFrontCandyAni::SerializeDispatch(
 
 RVA_COMPGEN(0x0000fe60, 0x1e, ??_GCFrontCandyAni@@UAEPAXI@Z)
 RVA_COMPGEN(0x0000fe90, 0x44, ??1CFrontCandyAni@@UAE@XZ)
-
-RVA(0x0000ff20, 0x47)
-i32 CEyeCandyAni::SerializeDispatch(
-    CFileMemBase* ar,
-    SerialMode mode,
-    LogicTypeId typeId,
-    CGameObject* object
-) {
-    SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE(ar, mode, typeId, object)
-}
-
-RVA_COMPGEN(0x0000ff90, 0x1e, ??_GCEyeCandyAni@@UAEPAXI@Z)
-RVA_COMPGEN(0x0000ffc0, 0x44, ??1CEyeCandyAni@@UAE@XZ)
-
-// @early-stop
-RVA(0x000abfa0, 0x1b6)
-CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_OVERLAY)
-    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_frameImage)
-}
-
-// @early-stop
-RVA(0x000ac1d0, 0x1a5)
-CDoNothing::CDoNothing(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION));
-    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_frameImage)
-}
-
-// @early-stop
-RVA(0x000ac3f0, 0x1b1)
-CBehindCandy::CBehindCandy(CGameObject* obj)
-    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, 0)
-    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_frameImage)
-}
-
-// @early-stop
-RVA(0x000ac620, 0x1cf)
-CEyeCandy::CEyeCandy(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    CWwdSpriteObject* o = m_object;
-    if (o->m_sortKey == 0 && o->m_frameImage != NULL) {
-        i32 v = o->m_frameImage->m_anchorY + o->m_screenY + 0x186a0;
-        SET_SORT_KEY_IF_CHANGED(o, v)
-    }
-    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_frameImage)
-}
-
-// @early-stop
-RVA(0x000ac870, 0x20e)
-CEyeCandyAni::CEyeCandyAni(CGameObject* obj)
-    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    INITIALIZE_DEFAULT_CYCLE_ANIMATION
-    CWwdSpriteObject* o = m_object;
-    if (o->m_sortKey == 0 && o->m_frameImage != NULL) {
-        i32 v = o->m_frameImage->m_anchorY + o->m_screenY + 0x186a0;
-        SET_SORT_KEY_IF_CHANGED(o, v)
-    }
-    NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_frameImage)
-}
-
-RVA(0x000acbb0, 0x102)
-void CEyeCandyAni::FireActivation(i32 id) {
-    CActHandler* e = &CActRegPool<CEyeCandyAni>::s_table[id];
-    if ((*e) != NULL) {
-        (this->*(CActRegPool<CEyeCandyAni>::s_table[id]))();
-    }
-}
-
-RVA(0x000acd10, 0x18d)
-void CEyeCandyAni::RegisterActs() {
-    ACT_NAME_ID(id, "A")
-    (CActRegPool<CEyeCandyAni>::s_table[id]) =
-        static_cast<i32 (CUserLogic::*)()>(&CEyeCandyAni::AdvanceAnim);
-}
-
-RVA(0x000acf10, 0x17)
-i32 CEyeCandyAni::AdvanceAnim() {
-    m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
-    return 0;
-}
 
 RVA(0x000acf40, 0x16e)
 CFrontCandyAni::CFrontCandyAni(CGameObject* obj)

@@ -617,8 +617,10 @@ in retail (non-/GX shape) - see the @early-stop on Find (suspected retail TU
 split around it; /O1 disproven empirically - mass craters).
 
 ### frontcandyani
-ONE original TU (wave3-J): the 0x0abfa0-0x0ad527 text is an F-E-F sandwich
-(frontcandyani frag @0xad110 in the tail); absorbs the ex eyecandyani unit.
+The wave3-J one-TU conclusion is superseded. Its initial F is `CFrontCandy`,
+not `CFrontCandyAni`; EyeCandyAni also has its own registry and initializer
+family. Separate class owners preserve the measured initialization/teardown
+topology. See the [controlled guard audit](patterns/static-template-guards-constrain-tu-ownership.md).
 
 ### ddrawblterrthunk
 /GX: retail's RemoveAll CALLS ??_M (the `eh vector destructor iterator') and Construct

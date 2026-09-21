@@ -61,6 +61,19 @@ FORCE_HELPER_RE = re.compile(
 STATIC_INIT_RE = re.compile(r"\b(?:atexit|_atexit|_onexit)\s*\(")
 
 
+def instantiation_only(text: str) -> bool:
+    """Recognize emission-only source files, not instantiations beside real code.
+
+    Includes, address bindings and explicit class instantiations do not establish
+    an authored TU. Leave storage definitions and ordinary implementations alone.
+    """
+    text = blank_comments(text)
+    text = re.sub(r'^\s*#include\s*[<"][^>"\n]+[>"]\s*$', '', text, flags=re.M)
+    text = re.sub(r'\bRVA_COMPGEN\([^\n]*\)\s*;?', '', text)
+    text, count = re.subn(r'\btemplate\s+(?:class|struct)\s+[^;{}]+;', '', text)
+    return count > 0 and not text.strip()
+
+
 def _counter_findings(label: str, actual: Counter, allowed: Counter) -> list[str]:
     out = []
     for key in sorted(set(actual) | set(allowed)):
@@ -82,6 +95,8 @@ def source_findings(files=None, *, placement_allow=PLACEMENT_ALLOW,
     for path in paths:
         text = blank_comments(path.read_text(errors="replace"))
         site = rel(path)
+        if path.suffix in (".cpp", ".cc", ".cxx") and instantiation_only(text):
+            findings.append(f"instantiation-only translation unit: {site}")
         for match in OPERATOR_CALL_RE.finditer(text):
             line = text.count("\n", 0, match.start()) + 1
             findings.append(

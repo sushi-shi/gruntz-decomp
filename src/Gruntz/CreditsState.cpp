@@ -486,6 +486,10 @@ void CCreditsState::LoadCreditzAssets() {
     }
 }
 
+RVA_COMPGEN(0x00039f20, 0x51, ??1?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@UAE@XZ)
+RVA_COMPGEN(0x00039fa0, 0x188, ?Serialize@?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@UAEXAAVCArchive@@@Z)
+RVA_COMPGEN(0x0003a1a0, 0x1e, ??_G?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@UAEPAXI@Z)
+
 RVA(0x0003a1d0, 0x1d)
 void CDDrawSurfacePair::BltSelf(CDDrawSurfacePair* src) {
     BLT_SURFACE_PAIR_SELF(this, src);

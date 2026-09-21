@@ -1,5 +1,7 @@
 # Pattern index (MSVC 5.0 /O2 — Gruntz)
 
+- [Static-template teardown guards constrain TU ownership](static-template-guards-constrain-tu-ownership.md) — c10 — cpp:template cpp:static cpp:dtor | topic:ownership topic:mis-model — emitter-only TUs manufacture COMDATs; merging explicit static-member definitions shares teardown guard bits. Check the complete initializer/teardown topology and real consumer emission before moving ownership.
+
 One line per pattern: `- [title](file.md) — cN — tags — symptoms` (cN = confidence /10).
 Sorted by primary tag so families cluster. Grep this file by tag (`cpp:switch`,
 `cpp:eh`, `topic:wall`) or by symptom token, then read only the hits. Schema +

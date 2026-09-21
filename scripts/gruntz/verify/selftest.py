@@ -108,6 +108,30 @@ class CompilerArtifactControls(unittest.TestCase):
         self.assertTrue(any("compiler allocation call" in row for row in findings))
         self.assertTrue(any("forced-emission helper" in row for row in findings))
 
+    def test_instantiation_only_unit_reaches_gate(self):
+        from gruntz.verify import compiler_artifacts as ca
+        source = ('#include <Array.h>\n'
+                  '// Former class implementation, now only an emitter.\n'
+                  'RVA_COMPGEN(0x8710, 0x2b, ??0?$Array@H@@QAE@XZ)\n'
+                  'template class Array<int>;\n')
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / 'Probe.cpp'
+            path.write_text(source)
+            with mock.patch.object(ca, 'base_only_suspicious', return_value=[]):
+                findings = ca.gate_findings([path])
+        self.assertTrue(any('instantiation-only translation unit' in row
+                            for row in findings))
+
+    def test_instantiations_beside_real_code_or_storage_are_not_empty_units(self):
+        from gruntz.verify.compiler_artifacts import instantiation_only
+        instantiation = 'template class Array<int>;\n'
+        for source in (instantiation + 'Array<int> g_values;\n',
+                       instantiation + 'void Owner::Clear() { values.Clear(); }\n',
+                       'template<> Array<int> Registry<Tag>::values;\n',
+                       '#include <Array.h>\n'):
+            with self.subTest(source=source):
+                self.assertFalse(instantiation_only(source))
+
     def test_comments_and_normal_new_expressions_pass(self):
         findings = self._scan(
             "// ::operator delete(p); CThing* RealizeCThing() {}\n"

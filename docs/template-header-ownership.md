@@ -139,3 +139,41 @@ unreviewed or automatically classified, not certified complete. The new raw-MFC
 member inventory contains 49 declarations in 30 owners, representing 68 native
 subobjects including arrays; its records are candidates, not type verdicts.
 Thirty-five nonexact pool-caller reviews are explicitly open after this change.
+
+## Holding-TU removal (2026-09-21)
+
+The three explicit-instantiation-only sources `ZDArrayDerived.cpp`,
+`ArraySerialize.cpp` and `RezBufferObject.cpp` are removed. Eleven existing
+bindings move to natural ActionArea, CreditsState and Fader emitters. The
+playlist constructor (`0x94340`) and mesh `SetSize` (`0x17f390`) have no current
+standalone natural emitter: their forced claims are removed and their historical
+100% maxima are retained as absent. The playlist destructor remains open:
+natural emission lacks retail's EH frame. No dummy call, explicit instantiation
+or function respelling is retained to recover these bodies or scores.
+
+`LogicDispatchInit.cpp` and `StringStaticPool.cpp` are also removed. Their real
+storage lives with EyeCandyAni and SplashState. The animation classes remain
+separate because a naive registry merge shares teardown guard bits absent from
+retail. Four neighboring constructors return to their respective class owners,
+without body changes. The [controlled ownership audit](patterns/static-template-guards-constrain-tu-ownership.md)
+corrects the earlier interval-only TU inference and records the tested limits.
+Mesh element/container declarations now live with Fader, and asset-root storage
+declarations with AssetRoot, not the unrelated Rez and Net families.
+
+The project has 290 build units, down from 293. All 40 controls pass: 18 census,
+11 container/header, eight compiler-artifact and three ownership tests. The
+ownership controls check actual COFF emission and retail guard references, not
+only a textual recognizer. Twenty-two core functions still pass the simple raw
+instruction/relocation audit; four additional EH functions remain outside that
+resolver's coverage, not newly certified exact.
+
+The refreshed census covers 279 C++ TUs, 4,782 definitions and 31,553 uses, with
+zero parse errors, uncovered files or invalid/orphan reviews. Its 5,650-row queue
+has 13 reviews correctly marked stale after the owner/include-context changes;
+they are not blindly re-keyed into fresh certifications. Broader lifetime work
+remains in #83.
+
+The final full build passes MAX and all fast/normal gates. All 4,429 historical
+RVA maxima survive unchanged; the absent count is now five. Current started-unit
+results are 3,786/4,424 exact and 93.65% fuzzy. The regenerated README is included
+in this change rather than reverting its score block to the older checkpoint.
