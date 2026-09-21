@@ -157,9 +157,7 @@ void CStatusBarMgr::Teardown() {
     for (i32 i = 0; i < m_rewardQueue.GetSize(); i++) {
         Coord* p = static_cast<Coord*>(m_rewardQueue.GetData()[i]);
         if (p) {
-            CoordPoolNode* node = g_coordPool.NodeOf(p);
-            node->m_next = g_coordPool.m_freeHead;
-            g_coordPool.m_freeHead = node;
+            g_coordPool.Push(p);
         }
     }
 
@@ -3749,9 +3747,7 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     for (i32 j = 0; j < m_rewardQueue.GetSize(); j++) {
         Coord* p = static_cast<Coord*>(m_rewardQueue.GetData()[j]);
         if (p) {
-            CoordPoolNode* node = g_coordPool.NodeOf(p);
-            node->m_next = g_coordPool.m_freeHead;
-            g_coordPool.m_freeHead = node;
+            g_coordPool.Push(p);
         }
     }
     m_rewardQueue.SetSize(0, -1);
@@ -3768,7 +3764,6 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     m_destructButtonLocked = false;
     TryActivate();
 }
-// @early-stop
 RVA(0x00107d00, 0x591)
 i32 CStatusBarMgr::StartChipMachineCycle() {
     PickupType result;
@@ -3776,9 +3771,7 @@ i32 CStatusBarMgr::StartChipMachineCycle() {
         if (m_rewardQueue.GetSize() > 0) {
             Coord* p = static_cast<Coord*>(m_rewardQueue.GetData()[0]);
             result = static_cast<PickupType>(p->m_x);
-            CoordPoolNode* node = g_coordPool.NodeOf(p);
-            node->m_next = g_coordPool.m_freeHead;
-            g_coordPool.m_freeHead = node;
+            g_coordPool.Push(p);
             m_rewardQueue.RemoveAt(0, 1);
         } else {
             result = PICKUP_NONE;
@@ -4208,7 +4201,6 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     return 1;
 }
 
-// @early-stop
 RVA(0x00109520, 0x44c)
 i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     if (s == NULL) {
@@ -4308,9 +4300,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     for (i32 t = 0; t < m_rewardQueue.GetSize(); t++) {
         Coord* pp = static_cast<Coord*>(m_rewardQueue.GetData()[t]);
         if (pp) {
-            CoordPoolNode* node = g_coordPool.NodeOf(pp);
-            node->m_next = g_coordPool.m_freeHead;
-            g_coordPool.m_freeHead = node;
+            g_coordPool.Push(pp);
         }
     }
     m_rewardQueue.SetSize(0, -1);
@@ -5167,7 +5157,7 @@ i32 CStatusBarMgr::GetActiveValue() {
         return m_machineItem;
     }
     if (m_rewardQueue.GetSize() > 0 && m_rewardQueue.GetSize() > m_rezTick) {
-        return *static_cast<i32*>(m_rewardQueue.GetAt(m_rezTick));
+        return static_cast<Coord*>(m_rewardQueue.GetAt(m_rezTick))->m_x;
     }
     return 0;
 }

@@ -16,7 +16,6 @@
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/CoordPool.h>
 #include <Gruntz/EnemyAiType.h>
-#include <Gruntz/FreeNodePoolInline.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/GameRegistry.h>
@@ -286,7 +285,6 @@ static inline i32 AddBattlezTraversalFlags(CGrunt* unit, i32 flags) {
     return flags;
 }
 
-// @early-stop
 RVA(0x00031ca0, 0x2f2)
 i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
     if (unit->ArrivalCell().m_x != -1 && unit->ArrivalCell().m_y != -1) {
@@ -339,7 +337,7 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
         unit->m_defenderState = AISTATE_SEEK;
         unit->m_battleState = BZTASK_ADVANCE;
         if (unit->CoordCount() != 0) {
-            RECYCLE_GRUNT_COORDS_EXPANDED(unit)
+            RECYCLE_GRUNT_COORDS(unit)
         }
         return 1;
     }
@@ -356,7 +354,6 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
     return 1;
 }
 
-// @early-stop
 RVA(0x00032060, 0x7bd)
 i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
     i32 defenderState = unit->m_defenderState;
@@ -528,7 +525,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
 
         unit->m_defenderState = AISTATE_SEEK;
         if (unit->CoordCount() != 0) {
-            RECYCLE_GRUNT_COORDS_EXPANDED(unit)
+            RECYCLE_GRUNT_COORDS(unit)
         }
         Coord noPx;
         unit->m_defenderPx = *noPx.Set(-1, -1);
@@ -540,7 +537,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
     if (SquaredDistance(dx, dy) > 0x10) {
         return 1;
     }
-    RECYCLE_GRUNT_COORDS_EXPANDED(unit)
+    RECYCLE_GRUNT_COORDS(unit)
     unit->m_defenderState = AISTATE_BATTLEZ_FINAL_ROUTE;
     unit->m_routeBlockedMask = g_battlezRouteBlockedMask;
     unit->m_routePassableMask = BATTLEZ_ROUTE_WINGZ_SHOVEL_EXPANDED;

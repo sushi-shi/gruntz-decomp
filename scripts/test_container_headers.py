@@ -103,6 +103,71 @@ Item* use(CLTList<Item>& list, Item* item) {
 }
 ''')
 
+    def test_brickz_pools_have_distinct_storage_policies(self):
+        self.compile('''#include <Gruntz/MapMgr.h>
+#include <stddef.h>
+typedef char node_extent[sizeof(CBrickzNodePool) == 12 ? 1 : -1];
+typedef char cell_extent[sizeof(CBrickzCellNodePool) == 12 ? 1 : -1];
+typedef char node_storage[offsetof(CBrickzNodePool, m_storage) == 4 ? 1 : -1];
+typedef char node_head[offsetof(CBrickzNodePool, m_freeList) == 0 ? 1 : -1];
+typedef char cell_storage[offsetof(CBrickzCellNodePool, m_storage) == 0 ? 1 : -1];
+typedef char cell_head[offsetof(CBrickzCellNodePool, m_freeList) == 4 ? 1 : -1];
+''')
+
+    def test_sdk_typed_pointer_collections_change_vtable_identity(self):
+        from gruntz.tool import cl
+        from gruntz.delink.coffx import Obj
+        from gruntz.walls.pairscan import functions, fn_relocs
+        # Constructor calls alone cannot distinguish a typed SDK subclass:
+        # the typed constructor first calls the same native base constructor.
+        with tempfile.TemporaryDirectory(prefix='gruntz-mfc-identity-') as directory:
+            folder = Path(directory)
+            source = folder / 'probe.cpp'
+            source.write_text('''#include <Mfc.h>
+#include <afxtempl.h>
+CPtrArray* NativePtrArray() { return new CPtrArray; }
+CObArray* NativeObArray() { return new CObArray; }
+CPtrList* NativePtrList() { return new CPtrList; }
+CObList* NativeObList() { return new CObList; }
+CTypedPtrArray<CPtrArray, int*>* TypedPtrArray() { return new CTypedPtrArray<CPtrArray, int*>; }
+CTypedPtrArray<CObArray, CObject*>* TypedObArray() { return new CTypedPtrArray<CObArray, CObject*>; }
+CTypedPtrList<CPtrList, int*>* TypedPtrList() { return new CTypedPtrList<CPtrList, int*>; }
+CTypedPtrList<CObList, CObject*>* TypedObList() { return new CTypedPtrList<CObList, CObject*>; }
+CMapStringToPtr* NativeStringMap() { return new CMapStringToPtr; }
+CMapPtrToPtr* NativeIdMap() { return new CMapPtrToPtr; }
+CTypedPtrMap<CMapStringToPtr, CString, void*>* TypedStringMap() { return new CTypedPtrMap<CMapStringToPtr, CString, void*>; }
+CTypedPtrMap<CMapPtrToPtr, void*, void*>* TypedIdMap() { return new CTypedPtrMap<CMapPtrToPtr, void*, void*>; }
+''')
+            output = folder / 'probe.obj'
+            cl.compile(source, output, ['/nologo', '/c', '/O2', '/MT', '/GX'])
+            obj = Obj(output)
+            bodies = functions(obj)
+            for suffix in ('PtrArray', 'ObArray', 'PtrList', 'ObList', 'StringMap', 'IdMap'):
+                with self.subTest(collection=suffix):
+                    for kind in ('Native', 'Typed'):
+                        name = next(n for n in bodies if n.startswith('?' + kind + suffix + '@@'))
+                        section, start, end = bodies[name]
+                        refs = [r[1] for r in fn_relocs(obj, section, start, end)]
+                        derived = [r for r in refs if r.startswith('??_7?$CTypedPtr')]
+                        self.assertEqual(bool(derived), kind == 'Typed', refs)
+
+    def test_native_map_lookup_identities_reach_model(self):
+        from gruntz.model import resolve
+        from gruntz.sema.image import retail
+        functions = {b.rva: b for b in resolve().functions}
+        image = retail()
+        # The instructions distinguish the stored key at +8 from value at +12.
+        # Check the consumed Model, not just the label recognizer/input row.
+        for address, name, offset in (
+            (0x1b8438, '?Lookup@CMapStringToPtr@@QBEHPBDAAPAX@Z', 12),
+            (0x1b845a, '?LookupKey@CMapStringToPtr@@QBEHPBDAAPBD@Z', 8),
+        ):
+            with self.subTest(address=hex(address)):
+                self.assertEqual(functions[address].name, name)
+                body = image.read(address, functions[address].size)
+                self.assertEqual(body[0x16:0x19], bytes((0x8b, 0x40, offset)))
+                self.assertNotEqual(body[0x16:0x19], bytes((0x8b, 0x40, 20-offset)))
+
 
 if __name__ == '__main__':
     unittest.main()

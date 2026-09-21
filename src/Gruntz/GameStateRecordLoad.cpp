@@ -226,9 +226,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
             do {
                 Coord* buf = static_cast<Coord*>(m_coordList.GetNext(pos));
                 if (buf != NULL) {
-                    CoordPoolNode* n2 = g_coordPool.NodeOf(buf);
-                    n2->m_next = g_coordPool.m_freeHead;
-                    g_coordPool.m_freeHead = n2;
+                    g_coordPool.Push(buf);
                 }
             } while (pos != NULL);
         }

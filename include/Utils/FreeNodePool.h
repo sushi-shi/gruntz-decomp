@@ -44,7 +44,7 @@ public:
         return true;
     }
 
-    void Push(void* p);
+    inline void Push(void* p);
 
     Node* NodeOf(void* payload) {
 
@@ -58,7 +58,7 @@ public:
     i32 m_linkOffset;
 };
 
-template<class T> void FreeNodePool<T>::Push(void* p) {
+template<class T> inline void FreeNodePool<T>::Push(void* p) {
     Node* node = NodeOf(p);
     node->m_next = m_freeHead;
     m_freeHead = node;

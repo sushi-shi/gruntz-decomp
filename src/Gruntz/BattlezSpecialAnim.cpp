@@ -12,8 +12,8 @@
 #include <Gruntz/BrickTileId.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordNode.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/EnemyAiType.h>
-#include <Gruntz/FreeNodePoolInline.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/GameRegistry.h>
@@ -62,7 +62,7 @@ void CGrunt::RecycleCoords() {
             m_coordList.GetNext(n);
             Coord* coord = static_cast<Coord*>(m_coordList.GetAt(cur));
             if (coord != NULL) {
-                PushFreeNode(&g_coordPool, coord);
+                g_coordPool.Push(coord);
             }
         } while (n != NULL);
     }

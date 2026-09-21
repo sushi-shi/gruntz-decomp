@@ -155,7 +155,6 @@ static inline CGameObject* ListGetNext(CDDrawChildGroup* list) {
     return list->NextChild(list->m_walkCursor);
 }
 
-// @early-stop
 RVA(0x000810f0, 0xa80)
 i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
     m_attrMgr = g_gameReg->m_world;
@@ -520,9 +519,7 @@ i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
                     m_cellPool[elem->m_y * m_width + elem->m_x].m_flags = 0x10;
                     m_cellPool[elem->m_y * m_width + elem->m_x].m_tileId = 0;
 
-                    CoordPoolNode* node = g_coordPool.NodeOf(elem);
-                    node->m_next = g_coordPool.m_freeHead;
-                    g_coordPool.m_freeHead = node;
+                    g_coordPool.Push(elem);
                 }
             }
             m_arr.SetSize(0, -1);

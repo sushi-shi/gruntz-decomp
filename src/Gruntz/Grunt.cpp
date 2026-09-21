@@ -26,7 +26,6 @@
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/DirectionClassify.h>
 #include <Gruntz/EnemyAiType.h>
-#include <Gruntz/FreeNodePoolInline.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegistry.h>
@@ -456,9 +455,7 @@ void CGrunt::OnObjectRemoved() {
         while (pos != NULL) {
             Coord* buf = static_cast<Coord*>(m_coordList.GetNext(pos));
             if (buf) {
-                CoordPoolNode* slot = g_coordPool.NodeOf(buf);
-                slot->m_next = g_coordPool.m_freeHead;
-                g_coordPool.m_freeHead = slot;
+                g_coordPool.Push(buf);
             }
         }
         m_coordList.RemoveAll();
@@ -949,7 +946,7 @@ i32 CGrunt::StepArrivalDrop(
         )
         != 0) {
         if (CoordCount() != 0) {
-            PushFreeNode(&g_coordPool, m_coordList.RemoveHead());
+            g_coordPool.Push(m_coordList.RemoveHead());
         }
     pathGate:
         reinit = 1;
@@ -1002,17 +999,14 @@ i32 CGrunt::StepArrivalDrop(
                 ) != 0
                 && probe.GetCount() != 0) {
                 if (probe.GetCount() <= cnt + 3) {
-                    PushFreeNode(&g_coordPool, probe.RemoveHead());
+                    g_coordPool.Push(probe.RemoveHead());
                     if (CoordCount() != 0) {
                         n = CoordHead();
                         while (NULL != n) {
                             cur = n;
                             m_coordList.GetNext(n);
                             if (static_cast<Coord*>(m_coordList.GetAt(cur)) != NULL) {
-                                PushFreeNode(
-                                    &g_coordPool,
-                                    static_cast<Coord*>(m_coordList.GetAt(cur))
-                                );
+                                g_coordPool.Push(static_cast<Coord*>(m_coordList.GetAt(cur)));
                             }
                         }
                         m_coordList.RemoveAll();
@@ -1024,7 +1018,7 @@ i32 CGrunt::StepArrivalDrop(
                 } else {
                     pos = probe.GetHeadPosition();
                     while (pos != NULL) {
-                        PushFreeNode(&g_coordPool, probe.GetNext(pos));
+                        g_coordPool.Push(probe.GetNext(pos));
                     }
                 }
                 probe.RemoveAll();
@@ -1106,9 +1100,9 @@ i32 CGrunt::StepArrivalDrop(
             passableMask
         ) != 0
         && CoordCount() != 0) {
-        PushFreeNode(&g_coordPool, m_coordList.RemoveHead());
+        g_coordPool.Push(m_coordList.RemoveHead());
         if (CoordCount() != 0) {
-            PushFreeNode(&g_coordPool, m_coordList.RemoveTail());
+            g_coordPool.Push(m_coordList.RemoveTail());
             if (CoordCount() != 0) {
                 nudged = 1;
                 tail = static_cast<Coord*>(m_coordList.GetAt(CoordTail()));
@@ -1239,7 +1233,7 @@ reProbe:
         )
         != 0) {
         if (CoordCount() != 0) {
-            PushFreeNode(&g_coordPool, m_coordList.RemoveHead());
+            g_coordPool.Push(m_coordList.RemoveHead());
         }
         goto pathGate;
     }
@@ -1289,9 +1283,7 @@ i32 CGrunt::StepGruntMovement() {
         Coord* co = static_cast<Coord*>(m_coordList.RemoveHead());
         coordX = co->m_x;
         coordY = co->m_y;
-        CoordPoolNode* p = g_coordPool.NodeOf(co);
-        p->m_next = g_coordPool.m_freeHead;
-        g_coordPool.m_freeHead = p;
+        g_coordPool.Push(co);
     } else {
         Coord* co = static_cast<Coord*>(m_coordList.GetAt(CoordHead()));
         coordX = co->m_x;
@@ -1469,9 +1461,7 @@ i32 CGrunt::StepGruntMovement() {
                     return 0;
                 }
                 Coord* co2 = static_cast<Coord*>(m_coordList.RemoveHead());
-                CoordPoolNode* p = g_coordPool.NodeOf(co2);
-                p->m_next = g_coordPool.m_freeHead;
-                g_coordPool.m_freeHead = p;
+                g_coordPool.Push(co2);
                 goto label_4c6e4;
             }
         }
@@ -1496,9 +1486,7 @@ i32 CGrunt::StepGruntMovement() {
 label_4c6e4:
     if (m_arrivalState == AI_BATTLEZ_PATH && CoordCount() != 0) {
         Coord* co = static_cast<Coord*>(m_coordList.RemoveHead());
-        CoordPoolNode* p = g_coordPool.NodeOf(co);
-        p->m_next = g_coordPool.m_freeHead;
-        g_coordPool.m_freeHead = p;
+        g_coordPool.Push(co);
     }
     if (flagHead & 0x80) {
         m_entranceActive = true;
@@ -1549,9 +1537,7 @@ label_4c6e4:
         if (CoordCount() != 0 && m_arrivalState != AI_BATTLEZ_PATH) {
             Coord* co = static_cast<Coord*>(m_coordList.RemoveHead());
             if (co->m_x == btx && co->m_y == bty) {
-                CoordPoolNode* p = g_coordPool.NodeOf(co);
-                p->m_next = g_coordPool.m_freeHead;
-                g_coordPool.m_freeHead = p;
+                g_coordPool.Push(co);
             } else {
                 m_coordList.AddHead(co);
             }
@@ -1739,7 +1725,7 @@ void CGrunt::SetEntrancePos(i32 clearArrivalState, i32 recycleRoute) {
         m_arrivalActive = false;
     }
     if (recycleRoute && m_arrivalState != AI_BATTLEZ_PATH && CoordCount() != 0) {
-        RECYCLE_GRUNT_COORDS_EXPANDED(this)
+        RECYCLE_GRUNT_COORDS(this)
     }
 }
 

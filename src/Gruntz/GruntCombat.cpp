@@ -313,13 +313,6 @@ i32* CGrunt::EntranceTileOffset(i32* out) {
         (grid)->m_gridH = rd->bottom - rd->top;                                                    \
     }
 
-#define FREELIST_PUSH(elem)                                                                        \
-    {                                                                                              \
-        CoordPoolNode* node = g_coordPool.NodeOf((elem));                                          \
-        node->m_next = g_coordPool.m_freeHead;                                                     \
-        g_coordPool.m_freeHead = node;                                                             \
-    }
-
 RVA(0x00057060, 0x72)
 void CGrunt::ComputeFacing(double dt) {
     CWwdSpriteObject* h = m_object;
@@ -731,7 +724,6 @@ void CGrunt::DestroyAnims() {
     STOP_GRUNT_LOOP_SOUNDS;
 }
 
-// @early-stop
 RVA(0x00057db0, 0x8f8)
 i32 CGrunt::PathScan() {
     CMapMgr* grid = g_gameReg->m_tileGrid;
@@ -838,7 +830,7 @@ i32 CGrunt::PathScan() {
                         }
                         Coord* elem = static_cast<Coord*>(s.RemoveHead());
                         if (elem != NULL) {
-                            FREELIST_PUSH(elem);
+                            g_coordPool.Push(elem);
                         }
                         s.RemoveAll();
                         SCAN_BOUNDS_PLAINCLIP(grid);
@@ -914,7 +906,7 @@ i32 CGrunt::PathScan() {
                     if (s.GetCount() != 0) {
                         Coord* elem = static_cast<Coord*>(s.RemoveHead());
                         if (elem != NULL) {
-                            FREELIST_PUSH(elem);
+                            g_coordPool.Push(elem);
                         }
                         if (s.GetCount() != 0) {
 
@@ -953,7 +945,7 @@ i32 CGrunt::PathScan() {
                                 if (s.GetCount() != 0) {
                                     Coord* e2 = static_cast<Coord*>(s.RemoveHead());
                                     if (e2 != NULL) {
-                                        FREELIST_PUSH(e2);
+                                        g_coordPool.Push(e2);
                                     }
                                     if (s.GetCount() != 0) {
                                         POSITION q = s.GetHeadPosition();
@@ -1672,7 +1664,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         m_movePosY = static_cast<double>((this->m_object->m_screenY));
 
         if (m_coordList.GetCount() != 0) {
-            RECYCLE_GRUNT_COORDS_EXPANDED(this)
+            RECYCLE_GRUNT_COORDS(this)
         }
         this->m_arrivalPending = false;
     }

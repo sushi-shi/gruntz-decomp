@@ -6,8 +6,8 @@
 #include <Enums.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordNode.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/EnemyAiType.h>
-#include <Gruntz/FreeNodePoolInline.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -39,7 +39,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-// @early-stop
 RVA(0x000ed9f0, 0x900)
 i32 CGrunt::StepHitAndRunnerBehavior() {
     m_defenderPx = m_lastTilePx;
@@ -196,7 +195,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
             COMMIT_GRUNT_NEIGHBOR(slot);
             m_neighborScanEnabled = false;
             if (CoordCount() != 0) {
-                RECYCLE_GRUNT_COORDS_EXPANDED(this)
+                RECYCLE_GRUNT_COORDS(this)
             }
             m_defenderState = AISTATE_RETREAT;
             m_dwell = DWELL_REPATH_MS;

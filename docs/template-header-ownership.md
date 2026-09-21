@@ -39,13 +39,34 @@ and unused template bodies with delayed parsing disabled. It records implicit
 special-member declaration candidates independently of actual COFF emission.
 Record-name heuristics rank candidates; they do not prove completeness.
 
-The two Brickz pools still have opposite storage/free-list field roles, and no
-shared owner policy has been established. They remain open, not fabricated
-specializations. Typed MFC collection recovery is also a separate complete-family
-question; see [the queued audit](todos/recover-typed-mfc-pointer-collections.md).
-Typed pointer use alone does not prove a different concrete MFC container or
-justify changing its vptr/lifetime behavior. Existing pool recycling helper
-factoring and broader constructor visibility reviews are not closed by this PR.
+The coordinate-pool recycling family now has one inline template member. Its
+duplicate free helper/header, expanded recycle macro, local push macro and
+manual splices are removed from 51 callers. The remaining iterator APIs are
+not collapsed merely because some expansions look alike. Caller matching stays
+open; the [controlled source-family correction](patterns/comdat-home-adjudicates-inline-spelling.md#template-family-control-canonical-coordinate-recycling)
+supersedes the old missing-emitter and score-based reasons to keep duplication.
+
+The remaining candidate decisions are deliberately narrower than a claim that
+the missing original source has been recovered:
+
+| Question | Evidence-backed decision |
+| --- | --- |
+| Brickz pools as one ordinary primary | Reject: allocation/free and independent pop/recycle consumers prove opposite storage/head roles. Node pool storage/head are +4/+0; cell pool storage/head are +0/+4. Both are 12 bytes, unlike the 16-byte coordinate pool. The cell allocator also initializes its search pointer. |
+| Brickz specialization or layout-policy template | Unproven: such a policy can be invented to fit the layout, but no surviving declaration, second use family or debug/mangled witness selects it. Keep the two concrete declarations with `CMapMgr`; do not fabricate a generic `Utils` owner. |
+| SDK typed MFC wrappers | Reject for the audited native construction sites: actual VC5 adds derived-vptr stores absent from retail. The status-bar reward queue's stable `Coord*` payload does not turn its native `CPtrArray` into `CTypedPtrArray`. Keep append-via-`Add` and interior `InsertAt` as distinct SDK operations. |
+| Custom MFC composition/accessor layers | Original spelling remains unknown. Keep demonstrated owner accessors and native bulk/serialization calls; do not introduce a cast-hiding wrapper without source-family evidence. |
+| `PlayerLatency` as a generic accumulator | Unproven: only one eight-byte integer average/count family is observed. Its single sample-combine site and reset/read uses do not establish a template parameter or original generic owner. Preserve its explicit empty destructor and visible open identity review. |
+
+The pinned public game/source search supplies no matching pool, accumulator or
+typed-MFC owner declaration for these candidates. That absence is not negative
+proof of templates. New source/debug/type evidence can reopen the identities;
+layout-compatible specializations alone cannot settle them.
+
+The MFC map follow-up removes `MapOutRef<T>` and the unused concrete lookup
+overload, retaining the native `void*&` conversion in the existing generic
+forwarders. It also corrects the duplicate SDK `Lookup` identity to `LookupKey`.
+See [the constructor and key/value controls](patterns/native-mfc-map-identity-precedes-typed-adapters.md).
+The broader constructor/lifetime application work is reserved for a separate PR.
 
 ## Reproducible controls
 
@@ -65,7 +86,7 @@ headers into the shared families. The census tests include unused-template and
 parser-snapshot negative controls. This is coverage of the audit mechanism, not
 a claim that every row in the derived review queue is resolved.
 
-## Integrated validation (2026-09-21)
+## Consolidation checkpoint (2026-09-21, `f5c14f6d5`)
 
 The final full build passes MAX and every fast/normal gate. All 4,429 historical
 RVA maxima from main and the three input PR heads are preserved; none is lost or
@@ -88,3 +109,33 @@ with zero parse errors or uncovered files. Its derived queue has 5,689 rows and
 no orphan/invalid review entries. Thirty-three older method reviews are correctly
 marked stale after source/macro-context changes; they are not re-keyed into
 fresh certifications. The remaining unreviewed and stale rows stay visible.
+
+## Focused container follow-up (2026-09-21)
+
+The full build passes MAX and every fast/normal gate. All 4,429 historical RVA
+maxima from main and the input PR heads survive; none is lowered or lost, and
+the same three absent rows remain. `BuildCellAttributes` rises to 90.2473 and
+`RebuildSelectionList` to 89.3103 historical MAX. Current started-unit results
+are 3,789/4,426 exact and 93.65% fuzzy. The two fresh gate deltas belong to
+unchanged `CBoomerang::AdvanceMotion` and `CSpotLight::Update`; both were
+diagnosed and their ordered referents checked before banking the new context.
+Fourteen edited fingerprints reset their source-specific best values while
+retaining historical peaks. Correct source boundaries, not current aggregate
+scores, decide this integration.
+
+All 35 controls pass: 18 census tests, 11 real-VC5/header/retail-identity tests,
+and six compiler-artifact tests. Twenty-two core functions still pass the direct
+raw instruction and ordered-relocation audit. The 33 stale method reviews were
+revalidated, not blindly re-keyed: their complete definitions are unchanged and
+all normalized instruction/referent pairs match. Twenty-six also pass the simple
+raw resolver; five use canonical EH identities, and two one-byte destructors
+have fifteen bytes of retail NOP padding outside their decoded bodies.
+
+The refreshed 282-TU census has 4,782 definitions, 31,553 use sites and 22 template
+declarations, with no parse errors or uncovered files. Its 5,687-row queue has
+no stale, orphan or invalid reviews: 36 retained-authored, six recovered-implicit
+and thirteen explicit open-model-conflict decisions. The other rows remain
+unreviewed or automatically classified, not certified complete. The new raw-MFC
+member inventory contains 49 declarations in 30 owners, representing 68 native
+subobjects including arrays; its records are candidates, not type verdicts.
+Thirty-five nonexact pool-caller reviews are explicitly open after this change.

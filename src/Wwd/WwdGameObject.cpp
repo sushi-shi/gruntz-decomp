@@ -710,9 +710,7 @@ static inline BOOL LookupLinkedObject(CMapPtrToPtr& map, i32 id, CWwdGameObject*
     out = NULL;
     AddrWord<char> key;
     key.m_word = id;
-    MapOutRef<CWwdGameObject> dst;
-    dst.m_asTyped = &out;
-    return map.Lookup(key.m_addr, *dst.m_asVoid);
+    return map.Lookup(key.m_addr, reinterpret_cast<void*&>(out));
 }
 
 // @dead-code

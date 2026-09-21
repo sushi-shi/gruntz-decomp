@@ -11,6 +11,18 @@ spec.loader.exec_module(audit)
 
 
 class ReviewQueueTests(unittest.TestCase):
+    def test_mfc_member_inventory_keeps_arrays_and_does_not_certify_templates(self):
+        rows = audit.mfc_pointer_members({
+            'owner': dict(name='Owner', owned=True, file='Owner.h', fields=[
+                dict(name='items', type='CPtrList[8]', offset=352, size=224),
+                dict(name='values', type='CObArray', offset=2144, size=20),
+                dict(name='borrowed', type='CPtrList *', offset=2304, size=4)]),
+            'sdk': dict(name='SDK', owned=False, fields=[
+                dict(name='list', type='CPtrList', offset=0, size=28)])})
+        self.assertEqual([(r['member'], r['base'], r['count'], r['offset_bits']) for r in rows],
+                         [('items', 'CPtrList', 8, 352), ('values', 'CObArray', 1, 2144)])
+        self.assertTrue(all(r['status'] == 'requires-constructor-and-use-family-audit' for r in rows))
+
     def function(self, **changes):
         row = dict(kind='CXX_METHOD', owner='Widget', owner_usr='widget', name='Tick()',
             empty_body=False, definition_tokens=['void', 'Tick', '(', ')', '{', '}'],

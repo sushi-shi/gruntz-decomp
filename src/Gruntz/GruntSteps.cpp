@@ -992,7 +992,6 @@ void CGrunt::ConsiderArrival(i32 clearArrivalState) {
     SnapToLastTile(clearArrivalState);
 }
 
-// @early-stop
 RVA(0x00052fb0, 0x96e)
 i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spawnWormhole) {
     if (m_entranceCommitted == false) {
@@ -1168,7 +1167,7 @@ applyTail:
         }
         SetEntrancePos(1, 1);
         if (CoordCount() != 0) {
-            RECYCLE_GRUNT_COORDS_EXPANDED(this)
+            RECYCLE_GRUNT_COORDS(this)
         }
         if (m_arrivalState == AI_BATTLEZ_PATH) {
             m_defenderState = AISTATE_SEEK;

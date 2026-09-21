@@ -135,7 +135,6 @@ void CTriggerMgr::HudRect(RECT r, b32 selectionReset) {
     }
 }
 
-// @early-stop
 RVA(0x00078260, 0x165)
 i32 CTriggerMgr::RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelection) {
     if (fromSelection != 0) {
@@ -147,9 +146,7 @@ i32 CTriggerMgr::RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelect
                 POSITION cur = pos;
                 Coord* p = static_cast<Coord*>(list->GetNext(pos));
                 if (p->m_x == playerIndex && p->m_y == unitIndex) {
-                    CoordPoolNode* slot = g_coordPool.NodeOf(p);
-                    slot->m_next = g_coordPool.m_freeHead;
-                    g_coordPool.m_freeHead = slot;
+                    g_coordPool.Push(p);
                     list->RemoveAt(cur);
                 }
             }
@@ -188,9 +185,7 @@ i32 CTriggerMgr::RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelect
                     CloseActionOptionsMenu();
                 }
             }
-            CoordPoolNode* slot = g_coordPool.NodeOf(p);
-            slot->m_next = g_coordPool.m_freeHead;
-            g_coordPool.m_freeHead = slot;
+            g_coordPool.Push(p);
             m_recList.RemoveAt(cur);
             return 1;
         }
@@ -207,9 +202,7 @@ void CTriggerMgr::ResetAll() {
         CGrunt* cell = m_units[idx];
         if (cell != NULL) {
             (static_cast<CGrunt*>(cell))->ClearAllSprites();
-            CoordPoolNode* slot = g_coordPool.NodeOf(payload);
-            slot->m_next = g_coordPool.m_freeHead;
-            g_coordPool.m_freeHead = slot;
+            g_coordPool.Push(payload);
         }
     }
     m_recList.RemoveAll();
@@ -355,9 +348,7 @@ void CTriggerMgr::ClearRecords() {
     POSITION pos = m_recList.GetHeadPosition();
     if (pos != NULL) {
         do {
-            CoordPoolNode* slot = g_coordPool.NodeOf(m_recList.GetNext(pos));
-            slot->m_next = g_coordPool.m_freeHead;
-            g_coordPool.m_freeHead = slot;
+            g_coordPool.Push(m_recList.GetNext(pos));
         } while (pos != NULL);
     }
     m_recList.RemoveAll();
@@ -2400,19 +2391,14 @@ i32 CTriggerMgr::SpawnPowerupIcon(
     return 1;
 }
 
-// @early-stop
 RVA(0x0007cc60, 0xa7)
 i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
     POSITION pos = m_selLists[idx].GetHeadPosition();
     if (pos != NULL) {
-        CoordPoolNode* head = g_coordPool.m_freeHead;
         do {
             Coord* payload = static_cast<Coord*>(m_selLists[idx].GetNext(pos));
             if (payload != NULL) {
-                CoordPoolNode* slot = g_coordPool.NodeOf(payload);
-                slot->m_next = head;
-                head = slot;
-                g_coordPool.m_freeHead = head;
+                g_coordPool.Push(payload);
             }
         } while (pos != NULL);
     }
@@ -2478,9 +2464,7 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
                 }
             }
         } else {
-            CoordPoolNode* node = g_coordPool.NodeOf(payload);
-            node->m_next = g_coordPool.m_freeHead;
-            g_coordPool.m_freeHead = node;
+            g_coordPool.Push(payload);
             m_selLists[slot].RemoveAt(cur);
         }
     } while (pos != NULL);
@@ -2568,9 +2552,7 @@ void CTriggerMgr::ClearSelections() {
             do {
                 Coord* payload = static_cast<Coord*>(list->GetNext(pos));
                 if (payload != NULL) {
-                    CoordPoolNode* slot = g_coordPool.NodeOf(payload);
-                    slot->m_next = g_coordPool.m_freeHead;
-                    g_coordPool.m_freeHead = slot;
+                    g_coordPool.Push(payload);
                 }
             } while (pos != NULL);
         }

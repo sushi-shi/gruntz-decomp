@@ -19,7 +19,6 @@
 #include <Gruntz/Boomerang.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordPool.h>
-#include <Gruntz/FreeNodePoolInline.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -120,7 +119,7 @@ CProjectile::~CProjectile() {
         Coord* hitPoint = static_cast<Coord*>(m_hitList.GetNext(pos));
         if (hitPoint != NULL) {
 
-            PushFreeNode(&g_coordPool, hitPoint);
+            g_coordPool.Push(hitPoint);
         }
     }
     m_hitList.RemoveAll();
@@ -523,7 +522,6 @@ CBoomerang::CBoomerang(CGameObject* owner) : CProjectile(owner) {
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
 }
 
-// @early-stop
 RVA(0x000e0690, 0x1a9)
 i32 CBoomerang::LoadProjectileSprites(
     PickupType kind,
@@ -571,7 +569,7 @@ i32 CBoomerang::LoadProjectileSprites(
         g->m_holdAnchorLo = g_frameTime;
         g->m_holdAnchorHi = 0;
         if (g->CoordCount() != 0) {
-            RECYCLE_GRUNT_COORDS_EXPANDED(g)
+            RECYCLE_GRUNT_COORDS(g)
         }
     }
     m_launched = false;

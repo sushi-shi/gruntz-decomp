@@ -326,6 +326,22 @@ def review_queue(records, templates, functions, candidates, emissions, bindings,
     return sorted(queue, key=lambda r: (r['priority'], r['category'], r['name'], r['key'])), issues
 
 
+def mfc_pointer_members(records):
+    """Raw member storage candidates, including fixed arrays; never a type verdict."""
+    result = []
+    for usr, record in sorted(records.items()):
+        if not record.get('owned'):
+            continue
+        for field in record.get('fields', []):
+            match = re.fullmatch(r'(C(?:Ptr|Ob)(?:Array|List))(?:\[(\d+)\])?', field['type'])
+            if match:
+                result.append(dict(owner=record['name'], owner_usr=usr,
+                    file=record['file'], member=field['name'], base=match[1],
+                    count=int(match[2] or 1), offset_bits=field['offset'],
+                    size=field['size'], status='requires-constructor-and-use-family-audit'))
+    return result
+
+
 def write_queue(output, reviews_path):
     def read(name):
         return json.loads((output / (name + '.json')).read_text())
@@ -488,6 +504,7 @@ def main():
     for name, value in [('records', records), ('templates', templates),
                         ('candidates', candidates), ('parse-errors', errors), ('summary', summary),
                         ('functions', functions), ('uses', list(uses.values())),
+                        ('mfc-pointer-members', mfc_pointer_members(records)),
                         ('manual-methods', methods), ('emissions', emissions), ('bindings', bindings),
                         ('snapshot', initial_snapshot)]:
         (args.output / f'{name}.json').write_text(json.dumps(value, indent=2) + '\n')
