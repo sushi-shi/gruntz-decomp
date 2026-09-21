@@ -31,7 +31,6 @@ class CFileMemBase;
 
 class CUserBase {
 public:
-    CUserBase() {}
     virtual ~CUserBase() {}
     RVA(0x000087d0, 0x8)
     virtual i32 SerializeDispatch(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) {

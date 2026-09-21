@@ -110,7 +110,6 @@ public:
     virtual i32 EncodePacket(char* buffer, i32 capacity) OVERRIDE;
     virtual i32 Execute(CState* state) OVERRIDE;
     virtual void Recycle() OVERRIDE;
-    CGruntzSingleCommand() {}
     static CGruntzSingleCommand* Allocate();
     static void ReleasePool();
 };
@@ -128,7 +127,6 @@ public:
     virtual i32 EncodePacket(char* buffer, i32 capacity) OVERRIDE;
     virtual i32 Execute(CState* state) OVERRIDE;
     virtual void Recycle() OVERRIDE;
-    CGruntzMultiCommand() {}
     static CGruntzMultiCommand* Allocate();
     static void ReleasePool();
 };
