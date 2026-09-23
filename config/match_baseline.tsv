@@ -208,7 +208,7 @@ levelrezpath	3	2
 leveltime	1	1
 lightfx	11	9
 lightfxmgr	3	3
-lightfxrender	24	13
+lightfxrender	24	20
 loadgamemenu	4	3
 logicrecorddispatch	3	3
 mainmenubuilder	2	2
@@ -2851,14 +2851,14 @@ lightfxmgr	?Init@CLightFxMgr@@QAEHPAVCGruntzMgr@@0@Z	100.0000	100.0000	2	7edd586
 lightfxmgr	?Reset@CLightFxMgr@@QAEXXZ	100.0000	100.0000	18	806481473e67	0x9dc80	100.0000	
 lightfxrender	?AllocSurface@CMinimap@@QAEHXZ	100.0000	100.0000	4	c42fe34e1d65	0xa33e0	100.0000	
 lightfxrender	?BeginMinimapPan@CMinimap@@QAEHHHH@Z	100.0000	100.0000	4	70f6865dd4d6	0xa9480	100.0000	
-lightfxrender	?BuildGruntziclezPalette@CMinimap@@QAEHXZ	99.4872	99.4872	2	89836fa5ad49	0xa4890	99.4872	
-lightfxrender	?BuildHighOnSweetzPalette@CMinimap@@QAEHXZ	99.4797	99.4797	2	7dbb1e12b1d2	0xa5d90	99.4797	
-lightfxrender	?BuildHighRollerzPalette@CMinimap@@QAEHXZ	99.2388	99.2388	2	62ae7ac27ea8	0xa67d0	99.2388	
-lightfxrender	?BuildHoneyPalette@CMinimap@@QAEHXZ	98.8554	98.8554	2	5e2476e7c135	0xa7260	98.8554	
-lightfxrender	?BuildMiniatureMasterzPalette@CMinimap@@QAEHXZ	99.3794	99.3794	2	15d6a60e931e	0xa7d50	99.3794	
-lightfxrender	?BuildRockyRoadzPalette@CMinimap@@QAEHXZ	99.5031	99.5031	2	d597e8c92482	0xa3dc0	99.5031	
-lightfxrender	?BuildSpacePalette@CMinimap@@QAEHXZ	99.0831	99.0831	2	52d0648c3eab	0xa8900	99.0831	
-lightfxrender	?BuildTropiczPalette@CMinimap@@QAEHXZ	99.4984	99.4984	2	1e308e7543f4	0xa5310	99.4984	
+lightfxrender	?BuildGruntziclezPalette@CMinimap@@QAEHXZ	100.0000	100.0000	4	2f8b56845d72	0xa4890	100.0000	
+lightfxrender	?BuildHighOnSweetzPalette@CMinimap@@QAEHXZ	100.0000	100.0000	3	60a9641cac8f	0xa5d90	100.0000	
+lightfxrender	?BuildHighRollerzPalette@CMinimap@@QAEHXZ	99.9209	99.9209	3	4accf7a36a3a	0xa67d0	99.9209	
+lightfxrender	?BuildHoneyPalette@CMinimap@@QAEHXZ	100.0000	100.0000	3	fd36a952cee8	0xa7260	100.0000	
+lightfxrender	?BuildMiniatureMasterzPalette@CMinimap@@QAEHXZ	100.0000	100.0000	3	8b67b18f6f6b	0xa7d50	100.0000	
+lightfxrender	?BuildRockyRoadzPalette@CMinimap@@QAEHXZ	100.0000	100.0000	3	9b8375924680	0xa3dc0	100.0000	
+lightfxrender	?BuildSpacePalette@CMinimap@@QAEHXZ	100.0000	100.0000	3	41babcfa7e7b	0xa8900	100.0000	
+lightfxrender	?BuildTropiczPalette@CMinimap@@QAEHXZ	100.0000	100.0000	3	d97d9762661f	0xa5310	100.0000	
 lightfxrender	?ContinueMinimapPan@CMinimap@@QAEHHHH@Z	100.0000	100.0000	4	14898c556bcd	0xa95d0	100.0000	
 lightfxrender	?Draw@CMinimap@@QAEHPAVCDDrawSurfacePair@@PAUtagRECT@@@Z	76.3782	76.3782	9	f94ac147ae13	0xa3820	76.3782	
 lightfxrender	?DrawBorder@CMinimap@@QAEXPAUtagRECT@@PAVCDDrawSurfacePair@@H@Z	100.0000	100.0000	6	a11fd7a36969	0xa3b50	100.0000	
@@ -2902,7 +2902,7 @@ mapmgr	?InsertOpenNode@CMapMgr@@QAEHPAUBrickzNode@@@Z	100.0000	100.0000	2	1886e9
 mapmgr	?LinkClosedNode@CMapMgr@@QAEXPAUBrickzNode@@@Z	93.9535	93.9535	4	966e7ff01770	0x9f470	93.9535	
 mapmgr	?Load@CMapMgr@@UAEHPAVCFileMemBase@@@Z	100.0000	100.0000	3	1cc30c555bad	0x9f9a0	100.0000	
 mapmgr	?PopBestOpenNode@CMapMgr@@QAEPAUBrickzNode@@XZ	100.0000	100.0000	2	29ff82978a28	0x9f430	100.0000	
-mapmgr	?RecycleClosedNodes@CMapMgr@@QAEXXZ	99.3846	99.3077	3	9fc5e5d0ba23	0x9f5d0	99.3846	
+mapmgr	?RecycleClosedNodes@CMapMgr@@QAEXXZ	100.0000	99.9231	4	01543ea5230b	0x9f5d0	100.0000	
 mapmgr	?RecycleOpenNodes@CMapMgr@@QAEXXZ	100.0000	100.0000	3	582961149dae	0x9f590	100.0000	
 mapmgr	?Reset@CMapMgr@@UAEXXZ	100.0000	100.0000	2	16e653d5cc80	0x9ec30	100.0000	
 mapmgr	?Save@CMapMgr@@UAEHPAVCFileMemBase@@@Z	100.0000	100.0000	3	1371987414a2	0x9f840	100.0000	
@@ -3100,7 +3100,7 @@ multi	?OnPlayerLeft@CMulti@@QAEHH@Z	100.0000	100.0000	9	ff331f644b4f	0xba3b0	100
 multi	?Open@CMulti@@QAEHXZ	100.0000	100.0000	5	0f1eaa9f4374	0xb77a0	100.0000	
 multi	?PlayerName@CMulti@@QAE?AVCString@@XZ	100.0000	100.0000	1	cpp:a91121d9b9bb	0xb7ad0	100.0000	
 multi	?Poll@CMulti@@QAEHH@Z	100.0000	100.0000	8	c9cc1e590507	0xbba10	100.0000	
-multi	?PollSession@CMulti@@QAEHXZ	88.4078	88.4078	6	54241150d699	0xb95f0	88.4078	
+multi	?PollSession@CMulti@@QAEHXZ	88.4078	88.4078	8	54241150d699	0xb95f0	94.2330	
 multi	?PollSessionGated@CMulti@@QAEHHH@Z	100.0000	100.0000	3	cfc039f6c387	0xb9180	100.0000	
 multi	?RecordPlayerReady@CMulti@@QAEXPAVCNetPlayerNode@@H@Z	100.0000	100.0000	5	e5268bd71e99	0xbb5e0	100.0000	
 multi	?RefreshSessionSelection@@YAXPAUHWND__@@0@Z	100.0000	100.0000	2	ea5dfd9d277e	0xb8af0	100.0000	
@@ -3339,7 +3339,7 @@ netsessionmgr	?ScheduleCommand@CNetSession@@QAEXPAVCGruntzCommand@@E@Z	100.0000	
 netsessionmgr	?SendGruntRecord@CNetSession@@QAEHHPAUGruntRec@@EHH@Z	100.0000	100.0000	3	623bb5d4e672	0xbfc70	100.0000	
 netsessionmgr	?SendPendingRecords@CNetSession@@QAEHXZ	100.0000	100.0000	3	00e852840ef1	0xbfd40	100.0000	
 netsessionmgr	?SendRecord@CNetSession@@QAEHPAUCNetCmdSlot@@H@Z	88.7368	88.7368	4	5fd5a1a3b717	0xbfeb0	88.7368	
-netsessionmgr	?SendTick@CNetSession@@QAEHXZ	99.8710	99.8710	7	a1657996f53b	0xbf9e0	99.8710	
+netsessionmgr	?SendTick@CNetSession@@QAEHXZ	99.8710	99.8710	9	a1657996f53b	0xbf9e0	99.8710	
 netsessionmgr	?Shutdown@CNetSession@@QAEXXZ	99.7260	99.7260	6	a58e7d0bba7f	0xbf000	99.7260	
 netsessionmgr	?VerifyChecksums@CNetSession@@QAEHXZ	100.0000	100.0000	8	0e8fa62dd5d1	0xc04f0	100.0000	
 palettebmp	?InitBmp@CDibPal@@QAEHPBDI@Z	100.0000	100.0000	6	635bf6e341dc	0x177480	100.0000	
@@ -3846,7 +3846,7 @@ sbi_rectonly	?UnusedPointerAction@CStatusBarItem@@UAEHHHH@Z	100.0000	100.0000	1	
 sbi_rectonly	?UpdateChipGrinderStatusBar@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	16	d7e5a1f8bf8b	0x1076a0	100.0000	
 sbi_rectonly	?UpdateDestructWarningAnimation@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	8	4978e306fb49	0x10b320	100.0000	
 sbi_rectonly	?UpdateFallingItemStatusBar@CStatusBarMgr@@QAEHHHH@Z	97.9091	97.9091	8	300f75fe5587	0x107590	97.9091	
-sbi_rectonly	?UpdateGruntOvenStatusBar@CStatusBarMgr@@QAEXXZ	99.7895	99.7895	8	bcd42743674b	0x105310	99.7895	
+sbi_rectonly	?UpdateGruntOvenStatusBar@CStatusBarMgr@@QAEXXZ	99.7895	99.7895	10	bcd42743674b	0x105310	99.7895	
 sbi_rectonly	?UpdateRezConveyorStatusBar@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	13	095d8100807b	0x105990	100.0000	
 sbi_rectonly	?UpdateRezMachineSnoozeStatusBar@CStatusBarMgr@@QAEXXZ	100.0000	100.0000	5	e2f270bbe2e0	0x106660	100.0000	
 sbi_rectonly	?UpdateRezMachineWakeStatusBar@CStatusBarMgr@@QAEHXZ	100.0000	100.0000	5	af77137529e7	0x107a10	100.0000	
@@ -3864,7 +3864,7 @@ sbi_sidetab	?Refresh@CSBI_SideTab@@UAEHH@Z	100.0000	100.0000	1	359b97a7b4d7	0xe9
 sbi_sidetab	?Render@CSBI_SideTab@@UAEHXZ	100.0000	100.0000	1	95866f4e32a6	0xe99c0	100.0000	
 sbi_sidetab	?Reset@CSBI_SideTab@@UAEXXZ	100.0000	100.0000	1	f132d568c3b6	0xe9800	100.0000	
 sbi_sidetab	?SerializeFields@CSBI_SideTab@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	5	86a8ce7893ad	0xe9a30	100.0000	
-sbi_statztabarrow	?BuildMultiplayerTabStatusBar@CSBI_StatzTabGruntBar@@QAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDHHH@Z	97.2541	97.2541	6	33c2a4d9d381	0xea1f0	97.2541	
+sbi_statztabarrow	?BuildMultiplayerTabStatusBar@CSBI_StatzTabGruntBar@@QAEHPAVCStatusBarMgr@@PAVCDDrawSurfaceMgr@@W4SbiCommandId@@W4StatusBarTab@@UtagRECT@@PBDHHH@Z	97.2541	97.2541	8	33c2a4d9d381	0xea1f0	97.2541	
 sbi_statztabarrow	?SetSampledDirection@CSBI_StatzTabArrow@@QAEXW4StatusBarDock@@H@Z	100.0000	100.0000	3	149e60034936	0xea170	100.0000	
 sbi_statztabarrow	?SetUnsampledDirection@CSBI_StatzTabArrow@@QAEXW4StatusBarDock@@H@Z	100.0000	100.0000	3	1c75d2866f02	0xea0f0	100.0000	
 sbi_statztabgruntbar	??1CSBI_StatzTabGruntBar@@UAE@XZ	100.0000	100.0000	1	526d272501bb	0x104b00	100.0000	
