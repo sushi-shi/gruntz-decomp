@@ -42,9 +42,8 @@ i32 DispatchActionAreaLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CActionAre
 
 // @early-stop
 RVA(0x00007da0, 0x17e)
-CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_timestamp = 0;
-    m_duration = 0;
+CActionArea::CActionArea(CGameObject* obj)
+    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj), m_timestamp(0), m_duration(0) {
     SetImageSetByName("GAME_ACTIONAREA_RED");
     SET_ANIMATION_ACT("A");
     CWwdSpriteObject* o = m_object;
