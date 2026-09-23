@@ -119,15 +119,18 @@ i32 CDDrawWorkerRegistry::ProbeWorkerKey(CRezMgr* parser, const char* key) {
     return 0;
 }
 
-// @early-stop
+static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, const char* key) {
+    CObject* val = NULL;
+    map.Lookup(key, val);
+    return static_cast<CDDrawWorker*>(val);
+}
+
 RVA(0x00156ec0, 0x40)
 void CDDrawWorkerRegistry::RemoveByKey(const char* key) {
-    CObject* val = NULL;
-    m_workersByName.Lookup(key, val);
-    CDDrawWorker* w = static_cast<CDDrawWorker*>(val);
-    if (val != NULL) {
+    CDDrawWorker* worker = LookupWorker(m_workersByName, key);
+    if (worker != NULL) {
         m_workersByName.RemoveKey(key);
-        delete w;
+        delete worker;
     }
 }
 

@@ -2,6 +2,13 @@
 
 ## Symptom
 
+Another controlled case is `CNetSession::SendGruntRecord` (`0xbfc70`). Writing
+the packet flags before its sequence in C++ restored retail's *sequence-before-
+flags* store order: the byte argument must be loaded first, and that constraint
+keeps the sequence in ESI instead of ECX. The change alone closed 97.6316%
+to 100% (156 bytes, 57 instructions, eight exact ordered relocations).
+Transcribing the emitted order had hidden the earlier byte-value lifetime.
+
 `walls diagnose` says REGALLOC/SCHEDULING with **identical** byte length,
 instruction count, call count, branch count and relocation count, and the whole
 divergence is one straight-line run of `mov [this+off],<reg>` stores whose

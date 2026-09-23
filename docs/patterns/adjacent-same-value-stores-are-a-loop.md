@@ -6,6 +6,10 @@ offset, preceded by the word-duplication idiom `mov cx,ax / shl ecx,0x10 / mov c
 recompile emits one `mov WORD PTR [esi+N],bx` per element; long runs already agree (`rep stos`)
 confidence: 10/10
 
+Follow-up: the remaining singleton-store schedule in seven palette builders
+closed through a [typed inline setter](inline-singleton-setter-restores-store-call-interleaving.md).
+Their recovered fill loops stayed unchanged.
+
 `for (i=a; i<b; i++) buf[i] = c;` over a `u16*` is recognised by cl5 /O2 as a **fill**: it
 duplicates the 16-bit value into a dword (`mov cx,ax / shl ecx,0x10 / mov cx,ax`) and then
 writes the range with **DWORD** stores — `rep stos DWORD` for a long run, a short unrolled

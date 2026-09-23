@@ -61,6 +61,24 @@ at where the zero-store lands relative to that call's pushes. Two shortcuts:
 
 ## Evidence
 
+The same boundary closed three more functions in the 2026-09-23 pass:
+
+- `CCheatMgr::AddCheat` (`0x22be0`), 98.5714 -> 100%, 113 bytes,
+  50 instructions, three ordered relocations.
+- `CCheatMgr::CheckCode` (`0x23090`), 96.9595 -> 100%, 252 bytes,
+  80 instructions, seven ordered relocations.
+- `CDDrawWorkerRegistry::RemoveByKey` (`0x156ec0`), 95.7407 -> 100%,
+  64 bytes, 28 instructions, two ordered relocations.
+
+The cheat methods use one `FindCheat` member inline owning the initialized
+typed sink and lookup-result selector. `RemoveByKey` uses an inline returning
+the typed worker from a helper-local `CObject*` sink. Keeping the sink in the
+caller and deleting through that escaped local instead produced an extra
+null check/reload and 66.18%; a typed sink versus `CObject*` inside the helper
+was byte-flat. Returning the nonescaping result, not a cast or renamed local,
+is the important lifetime boundary. All three closures matched raw normalized
+bytes and complete relocation offset/identity/addend streams.
+
 | function | before | after |
 |---|---|---|
 | `CGameObject::AddLogicHit/Attack/Bump` 0x150f50/0x151030/0x151110 | 89.47 | **100.00** |

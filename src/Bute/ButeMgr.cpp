@@ -1684,7 +1684,6 @@ CString* CButeMgr::GetString(const char* tag, const char* key, CString* def) {
     return def;
 }
 
-// @early-stop
 RVA(0x001731d0, 0xb6)
 
 CString* CButeMgr::GetString(const char* tag, const char* key) {
@@ -1769,7 +1768,6 @@ ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key, ButeIntRect* de
     return def;
 }
 
-// @early-stop
 RVA(0x00173770, 0xc6)
 ButeIntRect* CButeMgr::GetRect(const char* tag, const char* key) {
     DATA(0x002bf6d0)
@@ -1851,7 +1849,6 @@ ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key, ButeIntPoint*
     return def;
 }
 
-// @early-stop
 RVA(0x00173d00, 0xbb)
 ButeIntPoint* CButeMgr::GetPoint(const char* tag, const char* key) {
     DATA(0x002bf690)
@@ -1932,7 +1929,6 @@ CAVector* CButeMgr::GetVector(const char* tag, const char* key, CAVector* def) {
     return def;
 }
 
-// @early-stop
 RVA(0x00174240, 0xe3)
 CAVector* CButeMgr::GetVector(const char* tag, const char* key) {
     DATA(0x002bf6a0)
@@ -2013,7 +2009,6 @@ CARange* CButeMgr::GetRange(const char* tag, const char* key, CARange* def) {
     return def;
 }
 
-// @early-stop
 RVA(0x001747c0, 0xcf)
 CARange* CButeMgr::GetRange(const char* tag, const char* key) {
     DATA(0x002bf6c0)

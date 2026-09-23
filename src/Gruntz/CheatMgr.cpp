@@ -88,11 +88,9 @@ void CCheatMgr::Empty() {
 
 
 
-// @early-stop
 RVA(0x00022be0, 0x71)
 BOOL CCheatMgr::AddCheat(const char* code, i32 cmdId, i32 flag) {
-    CheatEntry* existing = NULL;
-    CheatEntry* hit = MapLookup(m_map, code, existing) ? existing : NULL;
+    CheatEntry* hit = FindCheat(code);
     if (hit != NULL) {
         return false;
     }
@@ -177,7 +175,6 @@ void CCheatMgr::LoadCheatConfig() {
 
 
 
-// @early-stop
 RVA(0x00023090, 0xfc)
 BOOL CCheatMgr::CheckCode(CString code) {
     code.MakeUpper();
@@ -187,8 +184,7 @@ BOOL CCheatMgr::CheckCode(CString code) {
 
 
 
-    CheatEntry* value = NULL;
-    CheatEntry* found = MapLookup(m_map, static_cast<const char*>(code), value) ? value : NULL;
+    CheatEntry* found = FindCheat(static_cast<const char*>(code));
     if (found == NULL) {
         return false;
     }

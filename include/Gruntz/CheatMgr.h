@@ -6,6 +6,7 @@
 #include <Mfc.h>
 
 #include <Ints.h>
+#include <Utils/MapTyped.h>
 
 struct CheatEntry {
     i32 m_commandId;
@@ -24,6 +25,13 @@ public:
     BOOL Init(HWND owner);
     void Empty();
     BOOL AddCheat(const char* code, i32 cmdId, i32 flag);
+    CheatEntry* FindCheat(const char* code) {
+        CheatEntry* entry = NULL;
+        if (!MapLookup(m_map, code, entry)) {
+            return NULL;
+        }
+        return entry;
+    }
     void RegisterCheats();
     void LoadCheatConfig();
     BOOL CheckCode(CString code);

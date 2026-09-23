@@ -590,11 +590,10 @@ void CMapMgr::RecycleOpenNodes() {
     m_openList = NULL;
 }
 
-// @early-stop
 RVA(0x0009f5d0, 0x81)
 void CMapMgr::RecycleClosedNodes() {
     BrickzCell* cell = m_cellPool;
-    for (u32 i = 0; i < m_height * m_width; i++) {
+    for (u32 i = 0; i < m_width * m_height; i++) {
         BrickzCellNode* node = cell->m_head;
         while (node != NULL) {
             BrickzCellNode* cur = node;
@@ -605,8 +604,9 @@ void CMapMgr::RecycleClosedNodes() {
             child->m_openPrev = NULL;
             m_nodePool.m_freeList->m_openPrev = child;
             m_nodePool.m_freeList = child;
+            BrickzCellNode* freeHead = m_cellNodePool.m_freeList;
             cur->m_cellPrev = NULL;
-            *link = m_cellNodePool.m_freeList;
+            *link = freeHead;
             m_cellNodePool.m_freeList->m_cellPrev = cur;
             m_cellNodePool.m_freeList = cur;
         }
