@@ -17,24 +17,21 @@ file-scope fwd decls 2→4, pulled into the CSBI_MenuItem TU via GruntzMgr.h). I
 `mov edx,[this+0x18]; mov eax,[this+0x14]; … mov esi,[f+0x1c]` (retail) into the pointee-first
 order, 100→74%. Threshold was 3-total-OK / 4-breaks (2 in the block still matched).
 
-```cpp
-// SHED one forward decl to stay under the threshold: a peripheral cross-TU-payload param
-// whose concrete type is a .cpp-local view does not need a shared-header forward decl —
-// pass it as void* in the class declaration and cast in the .cpp definition.
-struct CGameObject;      // core, keep
-struct CGameObjChain;    // keep
-// (removed: struct EditSink;)
-i32 EditDispatch(void* sink, i32, i32, i32);   // was EditSink*; cast to EditSink in the .cpp
-```
+The historical experiment removed an `EditSink` forward declaration by erasing
+the parameter to `void*`. That is evidence of compiler-state sensitivity, **not
+a permissible source fix**: keep the real shared type and typed signature. Do
+not manufacture `.cpp`-local views, erase types, or retain unused declarations
+to reproduce a favorable state.
 ```asm
 ; retail (matched, this-operand-first):     ; recompile at count+1 (pointee-first, craters):
 mov edx,[eax+0x18]   ; this->m_18           mov edx,[ecx+0x1c]   ; f->anchorY
 mov eax,[eax+0x14]   ; this->m_14           mov esi,[eax+0x18]   ; this->m_18
 mov esi,[ecx+0x1c]   ; f->anchorY           add edx,esi
 ```
-STEERABLE: reduce the transitively-visible forward-decl count (type a peripheral param `void*`;
-a `.cpp`-local view never needs a header fwd decl). The count is chaotic per-consumer — verify
-the fix with a full build, since a DIFFERENT includer may have improved at the higher count
+DIAGNOSTIC: changing the transitively-visible declaration population can expose
+this residue. Such changes are disposable controls unless independently justified
+by the source model. The effect is consumer-dependent — verify a retained
+model correction with a full build, since a DIFFERENT includer may have improved at the higher count
 (here `teleporter` 3/5→4/5 held at the reduced count; confirm each affected unit). Sibling of
 [[fold-view-preserve-declaration-position]] (declaration-position variant of the same type-table
 sensitivity). Evidence: DecCounter 0x0e82a0 74.04→100 by shedding GameLevel.h's `EditSink` decl.
@@ -324,3 +321,39 @@ color from the eleventh firing. Therefore the remaining gap below the 73.7275
 MAX is older declaration-state butterfly churn, not a regression caused by the
 list model. The helper-specific reverse audit is documented in
 `msvc-static-object-e-helper-family.md`.
+
+## A used accessor needs a declaration-only control too
+
+At PR #79 recovery base `15d128876`, `CNetSession::ReadyForSequence`
+(0xc0290, formerly `Verify`) was again at 89.5349%. Its direct-field body
+had 101 bytes and 45 instructions against retail's 99 bytes and 43
+instructions. Both had one call, ten branches, two returns, and one ordered
+relocation to `CNetCmdSlot::DrainAcknowledged`. The first difference was the
+loop cursor: base anchored it at slot+0x14, retail at slot+4. The base also
+used two flag-load/test pairs where retail compared memory with zero.
+
+Controlled real-TU results:
+
+| Source form | Body result |
+| --- | --- |
+| Original scoped slot pointer and direct flag reads | 101 bytes, 45 instructions; nonexact |
+| Slot pointer declared before the loop | Byte-identical to baseline |
+| Local `const b32&` bound to the flag | Function byte-identical to baseline |
+| Local `const b32` snapshot of the flag | 95 bytes, 43 instructions; wrong row-base cursor and cached flag |
+| Inline `b32 IsDraining() const` returning the field, used twice | 99 bytes, 43 instructions; exact |
+| Same accessor declaration/body, but original direct flag reads | Also exact |
+
+The final control disproves the claim that an accessor's expansion was needed
+for this recovery. A changed declaration context is already sufficient. It
+does not disprove the accessor as a source abstraction: the retained version
+is a live, user-approved read-only API used in both predicates, not an unused
+probe. Its `b32` result preserves the full 32-bit flag and zero/nonzero
+semantics. Using `!slot->IsDraining()` and `slot->IsDraining()` instead of
+explicit comparisons with `false` leaves the normalized object unchanged.
+Exact bytes do not establish that this was the original API. The full build
+and MAX gate pass; the ordered call referent remains identical.
+
+Reverse-use rule: when adding an inline helper closes a register/cursor gap,
+hold its declaration and body fixed while switching the caller back to the
+original expression. If both match, report the declaration-state control;
+do not claim missing-inline causality or retain an unused helper for the score.

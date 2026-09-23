@@ -168,6 +168,9 @@ struct CNetCmdSlot {
     i32 ProcessPacket(i32 playerId, char* packet, i32 packetSize);
 
     i32 DrainAcknowledged();
+    b32 IsDraining() const {
+        return m_isDraining;
+    }
 };
 
 #pragma pack(push, 1)
