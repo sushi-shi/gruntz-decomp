@@ -78,7 +78,8 @@ CActReg CActRegPool<CWarlord>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 #define REGISTER_ACTION(key, handler)                                                              \
     do {                                                                                           \
         REGISTER_NAME(key)                                                                         \
-        CActRegPool<CWarlord>::s_table[id_] = static_cast<CActHandler>(handler);                   \
+        CActHandler& slot_ = CActRegPool<CWarlord>::s_table[id_];                                  \
+        slot_ = static_cast<CActHandler>(handler);                                                 \
     } while (0)
 
 RVA_COMPGEN(0x000107c0, 0x1e, ??_GCWarlord@@UAEPAXI@Z)

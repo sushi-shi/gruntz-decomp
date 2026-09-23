@@ -1,5 +1,7 @@
 # Pattern index (MSVC 5.0 /O2 — Gruntz)
 
+- [Nested error helper and direct template casts restore inline cuts](nested-error-helper-and-direct-template-casts-restore-inline-cuts.md) — c10 — cpp:template cpp:inline cpp:cast cpp:ternary | asm:call asm:coff | topic:source-oracle topic:inline-budget — restore the sourced error helper and conditional-expression accessor, then remove an invented conversion helper: RegisterIconActions 65.32 -> 80.50 -> 98.36 -> 100 without caller-specific expansion APIs; a named handler reference closes the six-action Warlord registrar.
+
 - [Static-template teardown guards constrain TU ownership](static-template-guards-constrain-tu-ownership.md) — c10 — cpp:template cpp:static cpp:dtor | topic:ownership topic:mis-model — emitter-only TUs manufacture COMDATs; merging explicit static-member definitions shares teardown guard bits. Check the complete initializer/teardown topology and real consumer emission before moving ownership.
 
 One line per pattern: `- [title](file.md) — cN — tags — symptoms` (cN = confidence /10).

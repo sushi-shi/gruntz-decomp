@@ -66,6 +66,11 @@ inline void zErrHandling::handle(const char* message, i32 code) const {
     m_errSink->Set(const_cast<zErrHandling*>(this), const_cast<char*>(message), code);
 }
 
+inline void zErrHandling::Report(char* message, i32 code) {
+    g_retAddrBreadcrumb = GetRetAddr();
+    m_errSink->Set(this, message, code);
+}
+
 struct TypeKeyRec {
     TypeKeyRec() {}
     i32 m_key;

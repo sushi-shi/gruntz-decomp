@@ -4599,4 +4599,4 @@ CGameObject* CDDrawChildGroup::Drain() {
     }
 }
 
-RVA_COMPGEN(0x000312a0, 0x74, ?IndexToPtr@_zdvec@@QAEPADH@Z)
+RVA_COMPGEN(0x000312a0, 0x74, ?IndexToPtr@_zdvec@@QAEPAXH@Z)

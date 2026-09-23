@@ -11,15 +11,11 @@ public:
     virtual ~zDArray() OVERRIDE;
 
     T& operator[](i32 id);
-
-    static T* AsElem(char* p) {
-        return static_cast<T*>(static_cast<void*>(p));
-    }
 };
 
 template<class T>
 inline zDArray<T>::zDArray(i32 lo, i32 hi) : _zdvec(sizeof(T), lo, hi, ZVecNoScratch()) {
-    T* p = AsElem(m_alloc);
+    T* p = static_cast<T*>(m_alloc);
     if (!p) {
         return;
     }
@@ -29,7 +25,7 @@ inline zDArray<T>::zDArray(i32 lo, i32 hi) : _zdvec(sizeof(T), lo, hi, ZVecNoScr
 }
 
 template<class T> inline zDArray<T>::~zDArray() {
-    T* p = AsElem(m_base);
+    T* p = static_cast<T*>(static_cast<void*>(m_base));
     if (!p) {
         return;
     }
@@ -40,8 +36,8 @@ template<class T> inline zDArray<T>::~zDArray() {
 
 template<class T> T& zDArray<T>::operator[](i32 i) {
     T* t;
-    T* rv = AsElem(IndexToPtr(i));
-    T* p = AsElem(m_alloc);
+    T* rv = static_cast<T*>(IndexToPtr(i));
+    T* p = static_cast<T*>(m_alloc);
     for (i32 j = m_grown; j--; ++p) {
         t = new (p) T;
     }

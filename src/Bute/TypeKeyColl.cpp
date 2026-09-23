@@ -490,7 +490,7 @@ void* _zdvec::GrowTo(i32 idx, i32 at) {
         i32 shift = m_lo - idx;
         m_grown = shift;
         m_alloc = p;
-        memcpy(m_alloc + shift * m_stride, p, oldbytes);
+        memcpy(static_cast<char*>(m_alloc) + shift * m_stride, p, oldbytes);
         memset(m_alloc, 0, m_grown * m_stride);
         m_lo = idx;
         m_base = p;
@@ -598,7 +598,7 @@ _zvec::_zvec(i32 stride, i32 lo, i32 hi, void* scratch)
       m_lo(lo),
       m_hi(hi),
       m_base(NULL),
-      m_spare(static_cast<char*>(scratch)),
+      m_spare(scratch),
       m_stride(stride) {
     if (lo > hi) {
         g_retAddrBreadcrumb = GetCallerRetAddr();
@@ -613,7 +613,7 @@ _zvec::_zvec(i32 stride, i32 lo, i32 hi, void* scratch)
         if (m_spare != NULL) {
             return;
         }
-        m_spare = static_cast<char*>(malloc(m_stride));
+        m_spare = malloc(m_stride);
         if (m_spare != NULL) {
             return;
         }

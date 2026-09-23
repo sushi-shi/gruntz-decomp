@@ -389,3 +389,39 @@ full `gruntz build` passes every gate with zero fresh MAX regressions. The
 template census parses 279 TUs with no errors or uncovered files. Its five
 open model conflicts are the already documented pool, accumulator, and
 constructor-visibility questions, not new missing emissions.
+
+## Exact-loss recovery (2026-09-23)
+
+The follow-up targets functions exact on main but below 100% on the prepared
+PR, not non-exact-to-non-exact movement. Of those 34 original losses, 14 are
+now exact: all nine two-action registrars, `RegisterWarlordActions`,
+`CNetSession::ReadyForSequence`, `CCheckpointTrigger::Act`,
+`CDDrawWorkerHost::ActivateVisibleObjects` and `CWwdDotObject::BltDirty`.
+`CSBI_MenuItem::Render` also becomes exact.
+
+The retained source work restores the nested error-helper boundary and
+conditional-expression accessor, removes the invented cast helper, completes
+the erased-pointer types, and binds the Warlord handler result to a named
+reference. Lineage decisions are in `nolf-zdarray-base-ownership` and
+`nolf-zdarray-call-boundaries`; controlled intermediate builds and unsuccessful
+Grunt registrar controls are in
+[the nested-helper pattern](patterns/nested-error-helper-and-direct-template-casts-restore-inline-cuts.md).
+Moving the fixed-array template definitions below callers in the existing
+owner was byte-flat and is not retained. No fake TUs, forced emission, per-site
+raw accessor APIs, or compiler-state probes are added.
+
+The net current-exact gain is ten: **3,819 -> 3,829 / 4,426**. Five unchanged
+functions dip from current exactness: `CDDrawWorkerHost::DeactivateDistantObjects`,
+`Load`, `Save`, `CMinimap::DrawBorder`, and `CDDrawWorker::GetMemoryUsage`.
+Their same-source 100% MAX proofs remain banked. Full-engine current fuzzy is
+93.54% versus the prepared PR's 93.74%; the correct source layers are retained
+without modifying unrelated bodies to steer current compiler state.
+Twenty original exact-loss functions still need recovery; this pass does not
+certify their residues as bounded or declare #79 fully recovered.
+
+The full `gruntz build` passes MAX and every fast/normal gate after banking
+the real source snapshot. The raw relocation audit checks 3,917 near-exact
+functions with zero fake or wrong targets. Both typed indexers, the raw
+accessor, and the emitted error helper remain exact. The extra nested-cast
+inspection found pre-existing semantic-floor drift elsewhere; restoring the
+source's pointer types leaves this change with no additional nested casts.

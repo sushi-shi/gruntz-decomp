@@ -138,8 +138,4 @@ fail:
     return 0;
 }
 
-RVA(0x00034960, 0x24)
-void zErrHandling::Report(char* message, i32 code) {
-    g_retAddrBreadcrumb = GetRetAddr();
-    m_errSink->Set(this, message, code);
-}
+RVA_COMPGEN(0x00034960, 0x24, ?Report@zErrHandling@@QAEXPADH@Z)
