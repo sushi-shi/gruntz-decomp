@@ -409,7 +409,6 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
     info->m_dirty.m_rect.bottom = dbottom;
 }
 
-// @early-stop
 RVA(0x00153790, 0x6a)
 void CImage::RenderFrame(CDDrawSurfacePair* target, i32 x, i32 y, i32 flags) {
     RVA_DYNINIT(0x00153800, 0x10, s_clip)
@@ -420,7 +419,6 @@ void CImage::RenderFrame(CDDrawSurfacePair* target, i32 x, i32 y, i32 flags) {
     }
 }
 
-// @early-stop
 RVA(0x00153810, 0x95)
 void CImage::RenderFrameClipped(
     CDDrawSurfacePair* target,

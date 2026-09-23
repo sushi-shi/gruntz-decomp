@@ -366,3 +366,26 @@ The reusable controls and interpretation are in
 The ongoing exhaustive method queue and subsequent compiler controls are in
 [compiler-method-audit.md](compiler-method-audit.md). They reopen method-level
 questions inside retained concrete owners as well as the unresolved pool models.
+
+## Integration with main (2026-09-23)
+
+The origin PR head was merged locally with main and rebuilt with VC5. Removing
+the two former holding TUs had left the playlist `CArray` constructor at
+0x94340 and the `RezElem40` array `SetSize` at 0x17f390 unclaimed. Their real
+consumers are `CGruntzMgr::PlayMovieEntry` and `CFaderMesh::ApplyInit`;
+instantiation in those owners restores both byte-exact bodies without a
+synthetic TU. A header-dependency audit also removed an unused `ZDArray.h`
+include from `ButeMgr.h`, restoring the exact Bute Set family; the controlled
+compiler-state mechanism is recorded in
+[the unused-template-include pattern](patterns/unused-template-include-can-rotate-vc5-tu-state.md).
+
+After those corrections, the full-engine current comparison is 3,819 / 4,426
+exact and 93.74% fuzzy, versus 3,786 exact and 93.50% fuzzy on the fetched PR
+head. The current percentage remains below main because typed accessor and
+value-helper visibility changes many caller inline cuts; it is not treated as
+proof of a different source identity. The function-level MAX ledger preserves
+the prior peaks, including the three PR-only historical maxima, and the final
+full `gruntz build` passes every gate with zero fresh MAX regressions. The
+template census parses 279 TUs with no errors or uncovered files. Its five
+open model conflicts are the already documented pool, accumulator, and
+constructor-visibility questions, not new missing emissions.

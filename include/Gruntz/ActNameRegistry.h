@@ -9,7 +9,6 @@
 #include <Gruntz/ActReg.h>
 #include <Gruntz/ActRegistry.h>
 #include <Gruntz/TypeKeyColl.h>
-#include <ZTools/BitVec.h>
 #include <ZTools/ZDArray.h>
 
 struct CString;

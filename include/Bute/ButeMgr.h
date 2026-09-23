@@ -11,7 +11,6 @@
 #include <Rez/RezArchiveEntry.h>
 #include <ZTools/Error.h>
 #include <ZTools/PTree.h>
-#include <ZTools/ZDArray.h>
 
 GZ_ENUM_FORWARD(ButeLexAction);
 

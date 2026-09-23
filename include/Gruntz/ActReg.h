@@ -6,7 +6,6 @@
 #include <Enums.h>
 #include <Gruntz/ActRegistry.h>
 #include <Gruntz/UserLogic.h>
-#include <ZTools/BitVec.h>
 #include <ZTools/ZDArray.h>
 
 GZ_ENUM_CONST_BEGIN(ActIdRange)

@@ -133,12 +133,12 @@ void CLightFx::Activate(
         object->m_frameImage = firstFrame;
         object->m_frameIndex = firstFrameIndex;
     }
-    CAniElement* node = NULL;
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
     m_shadeTableIndex = shadeTableIndex;
     m_deleteWhenComplete = deleteWhenComplete;
 
-    MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, animationName, node);
+    CAniElement* node =
+        LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, animationName);
     if (node != NULL) {
         SwitchAnimation(
             LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, animationName)

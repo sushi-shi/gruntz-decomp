@@ -425,7 +425,10 @@ i32 CMinimap::SetAreaPalette(LevelArea area) {
     return 1;
 }
 
-// @early-stop
+static inline void SetTileColor(u16* colors, u32 tile, u16 color) {
+    colors[tile] = color;
+}
+
 RVA(0x000a3dc0, 0x85f)
 i32 CMinimap::BuildRockyRoadzPalette() {
     u16* buf = m_tileColors;
@@ -457,16 +460,16 @@ i32 CMinimap::BuildRockyRoadzPalette() {
     for (i = 17; i < 37; i++) {
         buf[i] = c00;
     }
-    buf[90] = c00;
+    SetTileColor(buf, 90, c00);
     for (i = 195; i < 197; i++) {
         buf[i] = c00;
     }
-    buf[199] = c00;
-    buf[301] = c00;
+    SetTileColor(buf, 199, c00);
+    SetTileColor(buf, 301, c00);
     for (i = 9; i < 17; i++) {
         buf[i] = c01;
     }
-    buf[91] = c01;
+    SetTileColor(buf, 91, c01);
     for (i = 197; i < 199; i++) {
         buf[i] = c01;
     }
@@ -500,19 +503,19 @@ i32 CMinimap::BuildRockyRoadzPalette() {
     for (i = 165; i < 167; i++) {
         buf[i] = c03;
     }
-    buf[258] = c03;
-    buf[264] = c03;
+    SetTileColor(buf, 258, c03);
+    SetTileColor(buf, 264, c03);
     for (i = 117; i < 119; i++) {
         buf[i] = c05;
     }
     FillSpan(0x7d, 0x7e, c05);
-    buf[260] = c05;
-    buf[266] = c05;
+    SetTileColor(buf, 260, c05);
+    SetTileColor(buf, 266, c05);
     FillSpan(0x11a, 0x11d, c07);
-    buf[257] = c07;
-    buf[259] = c07;
+    SetTileColor(buf, 257, c07);
+    SetTileColor(buf, 259, c07);
     FillSpan(0x105, 0x107, c07);
-    buf[265] = c07;
+    SetTileColor(buf, 265, c07);
     FillSpan(0x4d, 0x54, c08);
     FillSpan(0x11e, 0x126, c08);
     FillSpan(0xc9, 0xd1, c09);
@@ -547,7 +550,6 @@ void CMinimap::FillSpan(u32 x1, u32 x2, u16 color) {
     }
 }
 
-// @early-stop
 RVA(0x000a4890, 0x852)
 i32 CMinimap::BuildGruntziclezPalette() {
     u16* buf = m_tileColors;
@@ -578,16 +580,16 @@ i32 CMinimap::BuildGruntziclezPalette() {
     for (i = 17; i < 37; i++) {
         buf[i] = c00;
     }
-    buf[90] = c00;
+    SetTileColor(buf, 90, c00);
     for (i = 195; i < 197; i++) {
         buf[i] = c00;
     }
-    buf[199] = c00;
-    buf[301] = c00;
+    SetTileColor(buf, 199, c00);
+    SetTileColor(buf, 301, c00);
     for (i = 9; i < 17; i++) {
         buf[i] = c01;
     }
-    buf[91] = c01;
+    SetTileColor(buf, 91, c01);
     for (i = 197; i < 199; i++) {
         buf[i] = c01;
     }
@@ -621,19 +623,19 @@ i32 CMinimap::BuildGruntziclezPalette() {
     for (i = 165; i < 167; i++) {
         buf[i] = c03;
     }
-    buf[258] = c03;
-    buf[264] = c03;
+    SetTileColor(buf, 258, c03);
+    SetTileColor(buf, 264, c03);
     for (i = 117; i < 119; i++) {
         buf[i] = c05;
     }
     FillSpan(0x7d, 0x7e, c05);
-    buf[260] = c05;
-    buf[266] = c05;
+    SetTileColor(buf, 260, c05);
+    SetTileColor(buf, 266, c05);
     FillSpan(0x11a, 0x11d, c00);
-    buf[257] = c00;
-    buf[259] = c00;
+    SetTileColor(buf, 257, c00);
+    SetTileColor(buf, 259, c00);
     FillSpan(0x105, 0x107, c00);
-    buf[265] = c00;
+    SetTileColor(buf, 265, c00);
     FillSpan(0x4d, 0x54, c07);
     FillSpan(0x11e, 0x126, c07);
     FillSpan(0xc9, 0xd1, c08);
@@ -657,7 +659,6 @@ i32 CMinimap::BuildGruntziclezPalette() {
     FillSpan(0x5c, 0x5f, c00);
     return 1;
 }
-// @early-stop
 RVA(0x000a5310, 0x855)
 i32 CMinimap::BuildTropiczPalette() {
     u16* buf = m_tileColors;
@@ -689,16 +690,16 @@ i32 CMinimap::BuildTropiczPalette() {
     for (i = 17; i < 37; i++) {
         buf[i] = c00;
     }
-    buf[90] = c00;
+    SetTileColor(buf, 90, c00);
     for (i = 195; i < 197; i++) {
         buf[i] = c00;
     }
-    buf[199] = c00;
-    buf[301] = c00;
+    SetTileColor(buf, 199, c00);
+    SetTileColor(buf, 301, c00);
     for (i = 9; i < 17; i++) {
         buf[i] = c01;
     }
-    buf[91] = c01;
+    SetTileColor(buf, 91, c01);
     for (i = 197; i < 199; i++) {
         buf[i] = c01;
     }
@@ -732,19 +733,19 @@ i32 CMinimap::BuildTropiczPalette() {
     for (i = 165; i < 167; i++) {
         buf[i] = c03;
     }
-    buf[258] = c03;
-    buf[264] = c03;
+    SetTileColor(buf, 258, c03);
+    SetTileColor(buf, 264, c03);
     for (i = 117; i < 119; i++) {
         buf[i] = c05;
     }
     FillSpan(0x7d, 0x7e, c05);
-    buf[260] = c05;
-    buf[266] = c05;
+    SetTileColor(buf, 260, c05);
+    SetTileColor(buf, 266, c05);
     FillSpan(0x11a, 0x11d, c07);
-    buf[257] = c07;
-    buf[259] = c07;
+    SetTileColor(buf, 257, c07);
+    SetTileColor(buf, 259, c07);
     FillSpan(0x105, 0x107, c07);
-    buf[265] = c07;
+    SetTileColor(buf, 265, c07);
     FillSpan(0x4d, 0x54, c08);
     FillSpan(0x11e, 0x126, c08);
     FillSpan(0xc9, 0xd1, c09);
@@ -768,7 +769,6 @@ i32 CMinimap::BuildTropiczPalette() {
     FillSpan(0x5c, 0x5f, c00);
     return 1;
 }
-// @early-stop
 RVA(0x000a5d90, 0x825)
 i32 CMinimap::BuildHighOnSweetzPalette() {
     u16* buf = m_tileColors;
@@ -799,16 +799,16 @@ i32 CMinimap::BuildHighOnSweetzPalette() {
     for (i = 17; i < 37; i++) {
         buf[i] = c00;
     }
-    buf[90] = c00;
+    SetTileColor(buf, 90, c00);
     for (i = 195; i < 197; i++) {
         buf[i] = c00;
     }
-    buf[199] = c00;
-    buf[301] = c00;
+    SetTileColor(buf, 199, c00);
+    SetTileColor(buf, 301, c00);
     for (i = 9; i < 17; i++) {
         buf[i] = c01;
     }
-    buf[91] = c01;
+    SetTileColor(buf, 91, c01);
     for (i = 197; i < 199; i++) {
         buf[i] = c01;
     }
@@ -842,19 +842,19 @@ i32 CMinimap::BuildHighOnSweetzPalette() {
     for (i = 165; i < 167; i++) {
         buf[i] = c03;
     }
-    buf[258] = c03;
-    buf[264] = c03;
+    SetTileColor(buf, 258, c03);
+    SetTileColor(buf, 264, c03);
     for (i = 117; i < 119; i++) {
         buf[i] = c05;
     }
     FillSpan(0x7d, 0x7e, c05);
-    buf[260] = c05;
-    buf[266] = c05;
+    SetTileColor(buf, 260, c05);
+    SetTileColor(buf, 266, c05);
     FillSpan(0x11a, 0x11d, c06);
-    buf[257] = c06;
-    buf[259] = c06;
+    SetTileColor(buf, 257, c06);
+    SetTileColor(buf, 259, c06);
     FillSpan(0x105, 0x107, c06);
-    buf[265] = c06;
+    SetTileColor(buf, 265, c06);
     FillSpan(0x4d, 0x54, c07);
     FillSpan(0x11e, 0x126, c07);
     FillSpan(0xc9, 0xd1, c08);
@@ -909,16 +909,16 @@ i32 CMinimap::BuildHighRollerzPalette() {
     for (i = 17; i < 37; i++) {
         buf[i] = c00;
     }
-    buf[90] = c00;
+    SetTileColor(buf, 90, c00);
     for (i = 195; i < 197; i++) {
         buf[i] = c00;
     }
-    buf[199] = c00;
-    buf[301] = c00;
+    SetTileColor(buf, 199, c00);
+    SetTileColor(buf, 301, c00);
     for (i = 9; i < 17; i++) {
         buf[i] = c01;
     }
-    buf[91] = c01;
+    SetTileColor(buf, 91, c01);
     for (i = 197; i < 199; i++) {
         buf[i] = c01;
     }
@@ -952,19 +952,19 @@ i32 CMinimap::BuildHighRollerzPalette() {
     for (i = 165; i < 167; i++) {
         buf[i] = c03;
     }
-    buf[258] = c03;
-    buf[264] = c03;
+    SetTileColor(buf, 258, c03);
+    SetTileColor(buf, 264, c03);
     for (i = 114; i < 116; i++) {
         buf[i] = c05;
     }
     FillSpan(0x7a, 0x7b, c05);
-    buf[260] = c05;
-    buf[266] = c05;
+    SetTileColor(buf, 260, c05);
+    SetTileColor(buf, 266, c05);
     FillSpan(0x11a, 0x11d, c06);
-    buf[257] = c06;
-    buf[259] = c06;
+    SetTileColor(buf, 257, c06);
+    SetTileColor(buf, 259, c06);
     FillSpan(0x105, 0x107, c06);
-    buf[265] = c06;
+    SetTileColor(buf, 265, c06);
     FillSpan(0x4d, 0x54, c07);
     FillSpan(0x11e, 0x126, c07);
     FillSpan(0xc9, 0xd1, c08);
@@ -988,7 +988,6 @@ i32 CMinimap::BuildHighRollerzPalette() {
     FillSpan(0x5c, 0x5f, c00);
     return 1;
 }
-// @early-stop
 RVA(0x000a7260, 0x8c0)
 i32 CMinimap::BuildHoneyPalette() {
     u16* buf = m_tileColors;
@@ -1020,16 +1019,16 @@ i32 CMinimap::BuildHoneyPalette() {
     for (i = 17; i < 37; i++) {
         buf[i] = c00;
     }
-    buf[90] = c00;
+    SetTileColor(buf, 90, c00);
     for (i = 195; i < 197; i++) {
         buf[i] = c00;
     }
-    buf[199] = c00;
-    buf[301] = c00;
+    SetTileColor(buf, 199, c00);
+    SetTileColor(buf, 301, c00);
     for (i = 9; i < 17; i++) {
         buf[i] = c01;
     }
-    buf[91] = c01;
+    SetTileColor(buf, 91, c01);
     for (i = 197; i < 199; i++) {
         buf[i] = c01;
     }
@@ -1063,21 +1062,21 @@ i32 CMinimap::BuildHoneyPalette() {
     for (i = 165; i < 167; i++) {
         buf[i] = c03;
     }
-    buf[258] = c03;
-    buf[264] = c03;
+    SetTileColor(buf, 258, c03);
+    SetTileColor(buf, 264, c03);
     for (i = 114; i < 116; i++) {
         buf[i] = c05;
     }
     for (i = 122; i < 124; i++) {
         buf[i] = c05;
     }
-    buf[260] = c05;
-    buf[266] = c05;
+    SetTileColor(buf, 260, c05);
+    SetTileColor(buf, 266, c05);
     FillSpan(0x11a, 0x11d, c07);
-    buf[257] = c07;
-    buf[259] = c07;
+    SetTileColor(buf, 257, c07);
+    SetTileColor(buf, 259, c07);
     FillSpan(0x105, 0x107, c07);
-    buf[265] = c07;
+    SetTileColor(buf, 265, c07);
     FillSpan(0x4d, 0x54, c08);
     FillSpan(0x11e, 0x126, c08);
     FillSpan(0xc9, 0xd1, c09);
@@ -1098,12 +1097,11 @@ i32 CMinimap::BuildHoneyPalette() {
     FillSpan(0x12e, 0x143, c18);
     FillSpan(0xd5, 0xd6, c19);
     FillSpan(0xd7, 0xd8, c20);
-    buf[259] = c01;
-    buf[265] = c00;
+    SetTileColor(buf, 259, c01);
+    SetTileColor(buf, 265, c00);
     FillSpan(0x5c, 0x5f, c00);
     return 1;
 }
-// @early-stop
 RVA(0x000a7d50, 0x94f)
 i32 CMinimap::BuildMiniatureMasterzPalette() {
     u16* buf = m_tileColors;
@@ -1138,16 +1136,16 @@ i32 CMinimap::BuildMiniatureMasterzPalette() {
     for (i = 17; i < 37; i++) {
         buf[i] = c00;
     }
-    buf[90] = c00;
+    SetTileColor(buf, 90, c00);
     for (i = 195; i < 197; i++) {
         buf[i] = c00;
     }
-    buf[199] = c00;
-    buf[301] = c00;
+    SetTileColor(buf, 199, c00);
+    SetTileColor(buf, 301, c00);
     for (i = 9; i < 17; i++) {
         buf[i] = c01;
     }
-    buf[91] = c01;
+    SetTileColor(buf, 91, c01);
     for (i = 197; i < 199; i++) {
         buf[i] = c01;
     }
@@ -1181,21 +1179,21 @@ i32 CMinimap::BuildMiniatureMasterzPalette() {
     for (i = 165; i < 167; i++) {
         buf[i] = c03;
     }
-    buf[258] = c03;
-    buf[264] = c03;
+    SetTileColor(buf, 258, c03);
+    SetTileColor(buf, 264, c03);
     for (i = 114; i < 116; i++) {
         buf[i] = c05;
     }
     for (i = 122; i < 124; i++) {
         buf[i] = c05;
     }
-    buf[260] = c05;
-    buf[266] = c05;
+    SetTileColor(buf, 260, c05);
+    SetTileColor(buf, 266, c05);
     FillSpan(0x11a, 0x11d, c07);
-    buf[257] = c07;
-    buf[259] = c07;
+    SetTileColor(buf, 257, c07);
+    SetTileColor(buf, 259, c07);
     FillSpan(0x105, 0x107, c07);
-    buf[265] = c07;
+    SetTileColor(buf, 265, c07);
     FillSpan(0x4d, 0x54, c08);
     FillSpan(0x11e, 0x126, c08);
     FillSpan(0xc9, 0xd1, c09);
@@ -1216,15 +1214,14 @@ i32 CMinimap::BuildMiniatureMasterzPalette() {
     FillSpan(0x12e, 0x143, c18);
     FillSpan(0xd5, 0xd6, c19);
     FillSpan(0xd7, 0xd8, c20);
-    buf[257] = c21;
-    buf[259] = c21;
+    SetTileColor(buf, 257, c21);
+    SetTileColor(buf, 259, c21);
     FillSpan(0x105, 0x106, c22);
-    buf[263] = c23;
-    buf[265] = c23;
+    SetTileColor(buf, 263, c23);
+    SetTileColor(buf, 265, c23);
     FillSpan(0x5c, 0x5f, c00);
     return 1;
 }
-// @early-stop
 RVA(0x000a8900, 0x926)
 i32 CMinimap::BuildSpacePalette() {
     u16* buf = m_tileColors;
@@ -1258,16 +1255,16 @@ i32 CMinimap::BuildSpacePalette() {
     for (i = 17; i < 37; i++) {
         buf[i] = c00;
     }
-    buf[90] = c00;
+    SetTileColor(buf, 90, c00);
     for (i = 195; i < 197; i++) {
         buf[i] = c00;
     }
-    buf[199] = c00;
-    buf[301] = c00;
+    SetTileColor(buf, 199, c00);
+    SetTileColor(buf, 301, c00);
     for (i = 9; i < 17; i++) {
         buf[i] = c01;
     }
-    buf[91] = c01;
+    SetTileColor(buf, 91, c01);
     for (i = 197; i < 199; i++) {
         buf[i] = c01;
     }
@@ -1301,21 +1298,21 @@ i32 CMinimap::BuildSpacePalette() {
     for (i = 165; i < 167; i++) {
         buf[i] = c03;
     }
-    buf[258] = c03;
-    buf[264] = c03;
+    SetTileColor(buf, 258, c03);
+    SetTileColor(buf, 264, c03);
     for (i = 114; i < 116; i++) {
         buf[i] = c05;
     }
     for (i = 122; i < 124; i++) {
         buf[i] = c05;
     }
-    buf[260] = c05;
-    buf[266] = c05;
+    SetTileColor(buf, 260, c05);
+    SetTileColor(buf, 266, c05);
     FillSpan(0x11a, 0x11d, c06);
-    buf[257] = c06;
-    buf[259] = c06;
+    SetTileColor(buf, 257, c06);
+    SetTileColor(buf, 259, c06);
     FillSpan(0x105, 0x107, c06);
-    buf[265] = c06;
+    SetTileColor(buf, 265, c06);
     FillSpan(0x4d, 0x54, c07);
     FillSpan(0x11e, 0x126, c07);
     FillSpan(0xc9, 0xd1, c08);
@@ -1336,11 +1333,11 @@ i32 CMinimap::BuildSpacePalette() {
     FillSpan(0x12e, 0x143, c17);
     FillSpan(0xd5, 0xd6, c18);
     FillSpan(0xd7, 0xd8, c19);
-    buf[257] = c20;
-    buf[259] = c20;
+    SetTileColor(buf, 257, c20);
+    SetTileColor(buf, 259, c20);
     FillSpan(0x105, 0x106, c21);
-    buf[263] = c22;
-    buf[265] = c22;
+    SetTileColor(buf, 263, c22);
+    SetTileColor(buf, 265, c22);
     FillSpan(0x5c, 0x5f, c00);
     return 1;
 }

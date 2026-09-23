@@ -104,8 +104,7 @@ i32 CAttract::EnterState(GameStateId previousState) {
     char buf[0x40];
     wsprintfA(buf, "ATTRACT_TITLE%s", pick);
 
-    SoundCue* found = NULL;
-    MapLookup(menuRoot()->m_soundRegistry->m_cues, buf, found);
+    SoundCue* found = menuRoot()->m_soundRegistry->FindCue(buf);
     m_titleCue = found;
     if (found != NULL && m_titleCueEnabled != false) {
         if (g_soundEnabled) {

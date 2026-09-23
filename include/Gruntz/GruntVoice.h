@@ -9,8 +9,6 @@
 #include <Gruntz/ActReg.h>
 #include <Gruntz/InGameIcon.h>
 #include <Gruntz/UserLogic.h>
-#include <ZTools/BitVec.h>
-#include <ZTools/ZDArray.h>
 
 struct StreamVoice;
 

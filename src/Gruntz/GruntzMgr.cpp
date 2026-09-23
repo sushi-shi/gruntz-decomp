@@ -3461,3 +3461,6 @@ i32 CGruntzMgr::IsBattlezMapFile(CString path) {
     }
     return 0;
 }
+
+RVA_COMPGEN(0x00094340, 0x17, ??0?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@QAE@XZ)
+template class CArray<PLAYLISTINFOSTRUCT*, PLAYLISTINFOSTRUCT*>;

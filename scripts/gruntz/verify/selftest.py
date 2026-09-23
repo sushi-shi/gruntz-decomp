@@ -89,6 +89,49 @@ class BansControls(unittest.TestCase):
         self.assertEqual(hits, [])
 
 
+class StaticDestructorAttributionControls(unittest.TestCase):
+    """The real COFF/retail pair must reach the PDB record consumer."""
+
+    def test_pinned_callbacks_reach_function_records(self):
+        from gruntz.delink import pdb_synth, static_dtors
+        from gruntz.delink.image import retail
+        from gruntz.model import resolve
+
+        model = resolve()
+        names = pdb_synth.unit_names(model)
+        if not pdb_synth.BASE_DIR.joinpath("butemgr.obj").is_file():
+            self.skipTest("base objects absent (unbuilt tree)")
+        derived = static_dtors.provision(model, names, pdb_synth.BASE_DIR, retail())
+        expected = (0x153800, 0x1538B0, 0x173290, 0x173840,
+                    0x173DC0, 0x174330, 0x174890)
+        for rva in expected:
+            self.assertIn(rva, derived)
+            self.assertRegex(derived[rva][0], r"^_\$E[0-9]+$")
+
+        names.update(derived)
+        records = pdb_synth.function_records(
+            model, names, {}, {}, [], lambda _message: None)
+        by_rva = {rva: name for rva, _size, name in records}
+        for rva in expected:
+            self.assertEqual(by_rva[rva], derived[rva][0])
+
+    def test_missing_retail_relocation_cannot_be_attributed(self):
+        from types import SimpleNamespace
+        from gruntz.delink import pdb_synth, static_dtors
+        from gruntz.delink.image import retail
+        from gruntz.model import resolve
+
+        model = resolve()
+        if not pdb_synth.BASE_DIR.joinpath("butemgr.obj").is_file():
+            self.skipTest("base objects absent (unbuilt tree)")
+        real = retail()
+        no_relocs = SimpleNamespace(
+            pe=real.pe, image_base=real.image_base, reloc_sites=[])
+        derived = static_dtors.provision(
+            model, pdb_synth.unit_names(model), pdb_synth.BASE_DIR, no_relocs)
+        self.assertEqual(derived, {})
+
+
 class CompilerArtifactControls(unittest.TestCase):
     def _scan(self, text):
         from gruntz.verify import compiler_artifacts as ca
