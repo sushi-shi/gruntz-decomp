@@ -92,11 +92,13 @@ void CWwdDotObject::BltDirtyRegions(
     CDDrawSurfacePair* restoreSrc
 ) {
     if (m_dirty.m_armed != -1 && m_shadow.m_armed != -1) {
+        i32* dirtyPos = &m_dirty.m_lastX;
+        i32* shadowPos = &m_shadow.m_lastX;
         i32 dx = abs(m_dirty.m_lastX - m_shadow.m_lastX) + 1;
         i32 dy = abs(m_dirty.m_lastY - m_shadow.m_lastY) + 1;
         if (dx > 0x20 || dy > 0x20) {
-            dst->BlitDirtyRect(src, &m_dirty.m_lastX, &m_dirty.m_w);
-            dst->BlitDirtyRect(src, &m_shadow.m_lastX, &m_shadow.m_w);
+            dst->BlitDirtyRect(src, dirtyPos, &m_dirty.m_w);
+            dst->BlitDirtyRect(src, shadowPos, &m_shadow.m_w);
         } else {
             i32 left = m_dirty.m_lastX < m_shadow.m_lastX ? m_dirty.m_lastX : m_shadow.m_lastX;
             i32 top = m_dirty.m_lastY < m_shadow.m_lastY ? m_dirty.m_lastY : m_shadow.m_lastY;

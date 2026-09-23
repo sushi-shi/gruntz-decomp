@@ -324,11 +324,16 @@ void CGrunt::ComputeFacing(double dt) {
     m_movePosY = static_cast<double>(h->m_screenY);
 }
 
+#define CONVERT_GRUNT_ACT_PMF(result, handler)                                                     \
+    GruntActPmf result;                                                                            \
+    result.m_pmf = (handler)
+
+#define STORE_GRUNT_ACT(id, handler) CActRegPool<CGrunt>::s_table[id] = (handler)
+
 #define BIND_GRUNT_ACT(id, handler)                                                                \
     {                                                                                              \
-        GruntActPmf _p;                                                                            \
-        _p.m_pmf = (handler);                                                                      \
-        CActRegPool<CGrunt>::s_table[id] = _p.m_h;                                                 \
+        CONVERT_GRUNT_ACT_PMF(converted, handler);                                                 \
+        STORE_GRUNT_ACT(id, converted.m_h);                                                        \
     }
 
 #define REGISTER_GRUNT_ACT_KEY_IMPL(key, handler, bind)                                            \
@@ -2013,6 +2018,11 @@ void CGrunt::Activate() {
 }
 
 #undef REGISTER_GRUNT_ACT_KEY
+#undef REGISTER_GRUNT_ACT_KEY_DERIVED
+#undef REGISTER_GRUNT_ACT_KEY_IMPL
+#undef BIND_GRUNT_ACT
+#undef STORE_GRUNT_ACT
+#undef CONVERT_GRUNT_ACT_PMF
 
 DATA(0x001e999c)
 const float g_quarterScale = 0.25f;

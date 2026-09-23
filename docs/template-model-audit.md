@@ -425,3 +425,37 @@ functions with zero fake or wrong targets. Both typed indexers, the raw
 accessor, and the emitted error helper remain exact. The extra nested-cast
 inspection found pre-existing semantic-floor drift elsewhere; restoring the
 source's pointer types leaves this change with no additional nested casts.
+
+### Continued exact recovery
+
+Three more original losses now reach strict 100% in the full build:
+`SoundDevice::TickVolumeRamps` preserves the typed list result instead of
+round-tripping through its base; `CWwdDotObject::BltDirtyRegions` names its two
+position arguments; and `CBoomerang::AdvanceMotion` preserves paired
+function-scope sine/cosine locals. Controlled evidence is in the
+[typed-list](patterns/typed-list-result-removes-base-round-trip.md),
+[argument-pointer](patterns/call-argument-pointer-locals-preserve-base-addressing.md)
+and [x87-lifetime](patterns/x87-spill-slots-are-compiler-temps.md) patterns.
+
+The unchanged `CWwdDotObject::BltDirty` moves from current 100% to 99.80645%
+while retaining its same-source 100% MAX. Thus the net current gain is two:
+**3,829 -> 3,831 / 4,426**, with rounded fuzzy still 93.54% and fuzzy MAX
+94.47%. Of the 34 original losses, 16 are currently exact and 18 remain;
+17 distinct losses have reached exact during the recovery. The prior five
+new current-exact dips remain unchanged.
+
+The Grunt PMF conversion and typed table binding remain separate reusable
+macro helpers. Function-form and composed inline experiments changed the
+wrong nested cuts; macro composition preserves the complete normalized object
+and introduces no unused function declarations. The matching checklist also
+tested palette member/free ownership with a declaration-only control, health
+lookup cv/reference boundaries, and the menu's existing typed getter plus
+parameter reuse. None recovered those functions, so those experimental edits
+are not retained. These results do not certify all remaining alternatives as
+exhausted or claim the remaining losses are bounded.
+
+Final validation includes the macro helpers: full `gruntz build` passes every
+fast/normal gate with zero fresh MAX regressions; all 4,429 historical RVA
+maxima are preserved. The relocation audit checks 3,918 near-exact functions
+with zero fake or wrong targets. The final bank refresh is a no-op, confirming
+the ledger and README describe that build.

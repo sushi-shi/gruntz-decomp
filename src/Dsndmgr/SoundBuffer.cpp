@@ -1297,8 +1297,7 @@ i32 SoundDevice::TickVolumeRamps(i32 timestampMs) {
     if (m_initialized == false) {
         return 0;
     }
-    CBaseListItem* head = m_volumeRamps.GetFirst();
-    SoundVolumeRamp* ramp = static_cast<SoundVolumeRamp*>(head);
+    SoundTask* ramp = m_volumeRamps.GetFirst();
     if (ramp == NULL) {
         return 0;
     }
@@ -1311,7 +1310,7 @@ i32 SoundDevice::TickVolumeRamps(i32 timestampMs) {
     m_lastRampTickMs = timestampMs;
     do {
         CBaseListItem* nextLink = ramp->Next();
-        SoundVolumeRamp* next = static_cast<SoundVolumeRamp*>(nextLink);
+        SoundTask* next = static_cast<SoundTask*>(nextLink);
         if (ramp->Tick(timestampMs) == 0) {
             m_volumeRamps.Delete(ramp);
             if (ramp) {

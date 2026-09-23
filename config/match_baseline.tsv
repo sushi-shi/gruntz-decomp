@@ -96,7 +96,7 @@ dialogs	64	63
 dircellmethods	20	20
 directdrawmgr	71	71
 directinputmgr2	45	42
-directsoundmgr	84	82
+directsoundmgr	84	83
 donothing	3	2
 droppedobject	29	26
 engstrrendertext	2	2
@@ -235,7 +235,7 @@ palettebmp	2	2
 pathhazard	24	21
 play	105	80
 playassetload	17	17
-projectile	28	20
+projectile	28	21
 registryhelper	11	11
 rezarchive	72	72
 rezcoll	13	9
@@ -1555,7 +1555,7 @@ directsoundmgr	?StopAllBuffers@SoundDevice@@QAEXXZ	100.0000	100.0000	5	c78fd345f
 directsoundmgr	?StopAllInstances@SoundSample@@QAEXXZ	100.0000	100.0000	6	c40ca58ab84d	0x136150	100.0000	
 directsoundmgr	?StopAndRewind@SoundBuffer@@QAEHXZ	100.0000	100.0000	3	f830e229249b	0x135380	100.0000	
 directsoundmgr	?Tick@SoundVolumeRamp@@UAEHH@Z	100.0000	100.0000	5	782defc5e4f0	0x137060	100.0000	
-directsoundmgr	?TickVolumeRamps@SoundDevice@@QAEHH@Z	100.0000	86.6667	6	b7017e19aeb3	0x136e20	100.0000	
+directsoundmgr	?TickVolumeRamps@SoundDevice@@QAEHH@Z	100.0000	100.0000	7	0badf25b9de2	0x136e20	100.0000	
 directsoundmgr	?Unlock@SoundBuffer@@QAEHPAEI0I@Z	100.0000	100.0000	4	d13e8df06e33	0x1359c0	100.0000	
 directsoundmgr	?UpdateDuration@SoundBuffer@@QAEXXZ	100.0000	100.0000	3	a0bfbd175d86	0x1359a0	100.0000	
 directsoundmgr	?ValidateRestore@SoundDevice@@QAEHPAVSoundBuffer@@PAUtWAVEFORMATEX@@I@Z	100.0000	100.0000	6	5b5afd52fe99	0x136ab0	100.0000	
@@ -3518,7 +3518,7 @@ projectile	??_GCBoomerang@@UAEPAXI@Z	100.0000	100.0000	1	cpp:90cf51d207de	0x129d
 projectile	??_GCProjectile@@UAEPAXI@Z	100.0000	100.0000	1	cpp:90cf51d207de	0x12980	100.0000	
 projectile	??_GCTimeBomb@@UAEPAXI@Z	100.0000	100.0000	1	cpp:90cf51d207de	0x12a40	100.0000	
 projectile	?AdvanceAnimationAndDeleteWhenComplete@CProjectile@@QAEHXZ	100.0000	100.0000	5	afdbb0a53a7c	0xe05e0	100.0000	
-projectile	?AdvanceMotion@CBoomerang@@UAEXXZ	100.0000	99.9535	9	85cb01e894f9	0xe08b0	100.0000	
+projectile	?AdvanceMotion@CBoomerang@@UAEXXZ	100.0000	100.0000	10	b9ddc1f3b8c5	0xe08b0	100.0000	
 projectile	?AdvanceMotion@CProjectile@@UAEXXZ	97.0043	97.0043	17	45d15b8e0105	0xdfd00	97.0043	
 projectile	?FireActivation@CProjectile@@UAEXH@Z	100.0000	100.0000	2	44a943aed59a	0xdf9a0	100.0000	
 projectile	?FireActivation@CTimeBomb@@UAEXH@Z	100.0000	100.0000	2	ec9d0f6cd568	0xe1830	100.0000	
@@ -4662,11 +4662,11 @@ wwdgameobject	?ValidateFramesFromArchive@CDDrawWorker@@UAEHPAVCRezDir@@@Z	100.00
 wwdgameobject	?WriteSnapshot@CGameObject@@QAEHPAVCFileMemBase@@W4LogicTypeId@@@Z	100.0000	100.0000	3	91739a7952d9	0x151c00	100.0000	
 wwdgameobject	?WriteSpriteState@CWwdSpriteObject@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	4	831e3a0fe4cc	0x150b00	100.0000	
 wwdgameobjectrender	?AddChild@CWwdGameObject@@QAEHPAUCGameObject@@@Z	100.0000	100.0000	1	e6a7ea556154	0x1667e0	100.0000	
-wwdgameobjectrender	?BltDirty@CWwdDotObject@@UAEXPAVCDDrawSurfacePair@@0@Z	100.0000	100.0000	3	ef71280dde95	0x1661d0	100.0000	
+wwdgameobjectrender	?BltDirty@CWwdDotObject@@UAEXPAVCDDrawSurfacePair@@0@Z	100.0000	99.8064	3	ef71280dde95	0x1661d0	100.0000	
 wwdgameobjectrender	?BltDirty@CWwdGameObject@@UAEXPAVCDDrawSurfacePair@@0@Z	100.0000	100.0000	2	436a3eecb01b	0x1668e0	100.0000	
 wwdgameobjectrender	?BltDirtyEx@CWwdDotObject@@UAEXPAVCDrawSubWorker@@PAVCDDrawSurfacePair@@1@Z	84.0578	84.0578	6	121c0d66ba15	0x1662a0	84.0578	
 wwdgameobjectrender	?BltDirtyEx@CWwdGameObject@@UAEXPAVCDrawSubWorker@@PAVCDDrawSurfacePair@@1@Z	100.0000	100.0000	4	d2fbe3d2f5cd	0x166910	100.0000	
-wwdgameobjectrender	?BltDirtyRegions@CWwdDotObject@@UAEXPAVCDDrawSurfacePair@@00@Z	100.0000	99.6983	3	f53e09cb3b57	0x1664a0	100.0000	
+wwdgameobjectrender	?BltDirtyRegions@CWwdDotObject@@UAEXPAVCDDrawSurfacePair@@00@Z	100.0000	100.0000	4	8f1c99fb589c	0x1664a0	100.0000	
 wwdgameobjectrender	?BltDirtyRegions@CWwdGameObject@@UAEXPAVCDDrawSurfacePair@@00@Z	100.0000	100.0000	3	9c1a3578675f	0x166950	100.0000	
 wwdgameobjectrender	?Clear@CWwdGameObject@@QAEXXZ	100.0000	100.0000	2	da94c201af22	0x166810	100.0000	
 wwdgameobjectrender	?CreateNamed@CWwdGameObject@@QAEPAV1@HHHHPBDH@Z	100.0000	100.0000	5	5a7e176e1648	0x166780	100.0000	

@@ -1,5 +1,9 @@
 # Pattern index (MSVC 5.0 /O2 — Gruntz)
 
+- [Keep a typed intrusive-list result typed](typed-list-result-removes-base-round-trip.md) — c10 — cpp:template cpp:cast cpp:inheritance cpp:local | asm:lea asm:test asm:jcc | topic:correctness topic:cfg — an obsolete base-pointer round trip adds nullable adjustments after GetFirst becomes typed; SoundDevice::TickVolumeRamps 86.67 -> 100 with SoundTask pointers and unchanged ownership.
+
+- [Name the call-argument pointers, not an entire aggregate alias](call-argument-pointer-locals-preserve-base-addressing.md) — c10 — cpp:local cpp:pointer cpp:call cpp:member | asm:lea asm:push | topic:regalloc topic:codegen-idiom — dirty-region position locals restore the saved-register pair and close BltDirtyRegions 99.6983 -> 100; whole-aggregate pointer/reference controls instead lose this-relative addressing and merge a retail call tail.
+
 - [Nested error helper and direct template casts restore inline cuts](nested-error-helper-and-direct-template-casts-restore-inline-cuts.md) — c10 — cpp:template cpp:inline cpp:cast cpp:ternary | asm:call asm:coff | topic:source-oracle topic:inline-budget — restore the sourced error helper and conditional-expression accessor, then remove an invented conversion helper: RegisterIconActions 65.32 -> 80.50 -> 98.36 -> 100 without caller-specific expansion APIs; a named handler reference closes the six-action Warlord registrar.
 
 - [Static-template teardown guards constrain TU ownership](static-template-guards-constrain-tu-ownership.md) — c10 — cpp:template cpp:static cpp:dtor | topic:ownership topic:mis-model — emitter-only TUs manufacture COMDATs; merging explicit static-member definitions shares teardown guard bits. Check the complete initializer/teardown topology and real consumer emission before moving ownership.

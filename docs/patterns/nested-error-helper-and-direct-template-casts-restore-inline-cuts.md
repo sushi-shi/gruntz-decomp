@@ -62,6 +62,24 @@ wrong call set. Those unsuccessful caller edits are not retained. Neither
 this result nor a lower fuzzy score certifies that registrar's remaining
 inline-boundary question as bounded.
 
+A further uniform PMF-conversion helper reduces that registrar from 777 to
+749 instructions (retail: 734), but all 38 raw accessor calls remain; retail
+instead calls 35 raw accessors and three typed accessors. Composing a named
+handler reference returns to 777 instructions. Wrapping the complete bind
+operation leaves 13 typed-handler calls (14 when conversion is separated from
+the four-byte setter), versus retail's two, and grows to 872 instructions.
+These are real nested-boundary effects, but none reproduces the retail call
+topology. The function-form experiments do not establish their inline cuts.
+
+The conversion and typed table-write abstractions are retained as
+`CONVERT_GRUNT_ACT_PMF` and `STORE_GRUNT_ACT`, composed uniformly by
+`BIND_GRUNT_ACT`. The macro form evaluates each input once and preserves the
+original union-local/assignment sequence without an additional callable
+boundary. Its complete normalized GruntCombat object is unchanged. This keeps
+both useful source operations without unused shadowed function definitions,
+new emitted symbols or caller-specific expansion selectors. Their function
+forms can be revisited when the remaining inline topology is understood.
+
 The first nested-helper-only test did not emit `Report` in its annotated
 owner, `BattlezSpecialAnim.cpp`. Composing the surviving accessor expression
 restored natural emission there. Do not add a dummy caller or force emission

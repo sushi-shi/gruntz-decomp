@@ -579,6 +579,7 @@ i32 CBoomerang::LoadProjectileSprites(
 RVA(0x000e08b0, 0x1de)
 void CBoomerang::AdvanceMotion() {
     double s;
+    double c;
     if (m_launched == false && m_phase > g_boomerangHalfTurnRadians) {
         m_object->m_screenX = m_targetPxX;
         m_object->m_screenY = m_targetPxY;
@@ -599,7 +600,7 @@ void CBoomerang::AdvanceMotion() {
     ScanTargets(0);
 
     s = sin(m_phase);
-    double c = cos(m_phase);
+    c = cos(m_phase);
     double vx = m_dirX;
     double vy = -m_dirY;
     double phaseDelta = static_cast<double>(g_frameDelta) * m_velScale;

@@ -79,3 +79,14 @@ should declaration scope be used to select the final spill coloring.
 
 A flat declaration-order or TU-state search proves only that the current source
 family cannot reach retail. It is not evidence that x87 source locals are inert.
+
+## Recovery after the template-header restoration
+
+On PR #79 the retained product-local source returned to the 99.95349% spill
+permutation without a call, CFG, constant or precision change. Declaring both
+`double s;` and `double c;` at function entry, then assigning each at its
+original `sin`/`cos` call site, restores strict 100%: 478 bytes, 132 instructions
+and all nine ordered relocations. No additional products, scratch variables,
+math types or TU-state probes are introduced. The earlier single-early-local
+closure was specific to its declaration environment; preserve the paired
+source values rather than assigning fixed meanings to their spill offsets.
