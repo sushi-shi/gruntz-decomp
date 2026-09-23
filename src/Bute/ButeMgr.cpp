@@ -1293,7 +1293,7 @@ bool CButeMgr::Save() {
 
     ifstream input(m_sAttributeFilename, ios::nocreate | ios::binary);
     input.seekg(0, ios::end);
-    i32 length = input.tellg();
+    long length = input.tellg();
     input.clear();
     input.seekg(0);
 
