@@ -14,7 +14,7 @@
 #include <Enums.h>
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/CurPlayer.h>
-#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/FreeNodePoolInline.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameMenuMgrBuilders.h>
 #include <Gruntz/GameModeId.h>
@@ -3892,13 +3892,10 @@ i32 CStatusBarMgr::StartChipMachineCycle() {
 // @early-stop
 RVA(0x00108410, 0x8e)
 i32 CStatusBarMgr::QueuePickupReward(i32 pickupValue, i32 score) {
-    CoordPoolNode* head = g_coordPool.m_freeHead;
-    Coord* node = NULL;
-    if (head->m_next != NULL) {
-        node = &head->m_coord;
+    Coord* node = g_coordPool.Pop();
+    if (node != NULL) {
         node->m_x = pickupValue;
         node->m_y = score;
-        g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
     }
     i32 n = m_rewardQueue.GetSize();
     i32 i = 0;
@@ -4319,12 +4316,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     s->Read(&cnt, sizeof(cnt));
     m_rewardQueue.SetSize(cnt, -1);
     for (u32 n = 0; n < static_cast<u32>(cnt); n++) {
-        CoordPoolNode* head = g_coordPool.m_freeHead;
-        Coord* node = NULL;
-        if (head->m_next != NULL) {
-            node = &head->m_coord;
-            g_coordPool.m_freeHead = head->m_next;
-        }
+        Coord* node = g_coordPool.Pop();
         s->Read(node, 8);
         m_rewardQueue.GetData()[n] = node;
     }

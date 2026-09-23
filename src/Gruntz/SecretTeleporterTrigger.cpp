@@ -113,11 +113,7 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj)
 
 RVA(0x00042150, 0x102)
 void CSecretTeleporterTrigger::FireActivation(i32 coord) {
-    CActHandler* e = ActLookup(coord);
-    if ((*e) != NULL) {
-        CActHandler* e2 = ActLookup(coord);
-        (this->*((*e2)))();
-    }
+    DispatchRegisteredAct(this, coord);
 }
 
 RVA(0x000422b0, 0x18d)
@@ -145,11 +141,7 @@ CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj)
 
 RVA(0x00042760, 0x102)
 void CSecretLevelTrigger::FireActivation(i32 coord) {
-    CActHandler* e = (CActRegPool<CSecretLevelTrigger>::s_table.ResolveEntry(coord));
-    if ((*e) != NULL) {
-        CActHandler* e2 = (CActRegPool<CSecretLevelTrigger>::s_table.ResolveEntry(coord));
-        (this->*((*e2)))();
-    }
+    DispatchRegisteredAct(this, coord);
 }
 
 RVA(0x000428c0, 0x18d)

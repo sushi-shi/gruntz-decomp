@@ -58,11 +58,7 @@ RVA_COMPGEN(0x00007fd0, 0x44, ??1CActionArea@@UAE@XZ)
 
 RVA(0x000080e0, 0x102)
 void CActionArea::FireActivation(i32 coord) {
-    CActHandler* e = ResolveActionAreaAct(coord);
-    if ((*e) != NULL) {
-        CActHandler* e2 = ResolveActionAreaAct(coord);
-        (this->*((*e2)))();
-    }
+    DispatchRegisteredAct(this, coord);
 }
 
 RVA(0x00008240, 0x18d)

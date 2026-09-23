@@ -184,12 +184,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
          cur = ListGetNext(mgr->m_world->m_childGroup)) {
         if (cur->m_logicRecord->m_dispatch == &DispatchGruntCreationPointLogic
             && cur->m_smarts == playerIndex) {
-            CoordPoolNode* p = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
-            Coord* slot = NULL;
-            if (p->m_next != NULL) {
-                slot = &p->m_coord;
-                g_coordPool.m_freeHead = p->m_next;
-            }
+            Coord* slot = g_coordPool.Pop();
             slot->m_x = cur->m_screenX / TILE_SIZE_PX;
             slot->m_y = cur->m_screenY / TILE_SIZE_PX;
             m_candArray.SetAtGrow(m_candArray.GetSize(), slot);
@@ -210,12 +205,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
          cur3 = ListGetNext(mgr->m_world->m_childGroup)) {
         if (cur3->m_logicRecord->m_dispatch == &DispatchWayPointLogic
             && cur3->m_smarts == playerIndex) {
-            CoordPoolNode* p = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
-            Coord* slot = NULL;
-            if (p->m_next != NULL) {
-                slot = &p->m_coord;
-                g_coordPool.m_freeHead = p->m_next;
-            }
+            Coord* slot = g_coordPool.Pop();
             slot->m_x = cur3->m_screenX >> TILE_SHIFT_PX;
             slot->m_y = cur3->m_screenY >> TILE_SHIFT_PX;
             m_attackWaypoints.SetAtGrow(m_attackWaypoints.GetSize(), slot);
@@ -2464,12 +2454,7 @@ i32 CBattlezMapConfig::Deserialize(CFileMemBase* ar) {
     ar->Read(&count, sizeof(count));
     m_attackWaypoints.SetSize(count, -1);
     for (i = 0; i < static_cast<u32>(count); i++) {
-        CoordPoolNode* node = g_coordPool.m_freeHead;
-        Coord* payload = NULL;
-        if (node->m_next != NULL) {
-            payload = &node->m_coord;
-            g_coordPool.m_freeHead = node->m_next;
-        }
+        Coord* payload = g_coordPool.Pop();
         ar->Read(payload, 8);
         m_attackWaypoints[i] = payload;
     }
@@ -2486,12 +2471,7 @@ i32 CBattlezMapConfig::Deserialize(CFileMemBase* ar) {
     ar->Read(&count, sizeof(count));
     m_candArray.SetSize(count, -1);
     for (i = 0; i < static_cast<u32>(count); i++) {
-        CoordPoolNode* node = g_coordPool.m_freeHead;
-        Coord* payload = NULL;
-        if (node->m_next != NULL) {
-            payload = &node->m_coord;
-            g_coordPool.m_freeHead = node->m_next;
-        }
+        Coord* payload = g_coordPool.Pop();
         ar->Read(payload, 8);
         m_candArray[i] = payload;
     }

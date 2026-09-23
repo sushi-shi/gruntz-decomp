@@ -42,11 +42,7 @@ static inline CActHandler* ResolveGruntStartingPointAct(i32 coord) {
 
 RVA(0x0003e1a0, 0x102)
 void CGruntStartingPoint::FireActivation(i32 coord) {
-    CActHandler* e = ResolveGruntStartingPointAct(coord);
-    if ((*e) != NULL) {
-        CActHandler* e2 = ResolveGruntStartingPointAct(coord);
-        (this->*((*e2)))();
-    }
+    DispatchRegisteredAct(this, coord);
 }
 
 RVA(0x0003e300, 0x18d)

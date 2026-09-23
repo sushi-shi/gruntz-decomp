@@ -49,6 +49,8 @@ public:
 
     void Push(void* p);
 
+    inline Coord* Pop();
+
     CoordPoolNode* NodeOf(void* payload) {
 
         // Language-forced container-of adjustment; a union spelling changes codegen.

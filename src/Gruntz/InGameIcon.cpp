@@ -475,9 +475,7 @@ i32 CInGameIcon::HandleInput() {
 
 RVA(0x00097880, 0x102)
 void CInGameIcon::FireActivation(i32 id) {
-    if (*CActRegPool<CInGameIcon>::s_table.ResolveEntry(id) != NULL) {
-        (this->*(*CActRegPool<CInGameIcon>::s_table.ResolveEntry(id)))();
-    }
+    DispatchRegisteredAct(this, id);
 }
 
 RVA(0x000979e0, 0x2ac)
@@ -493,9 +491,7 @@ void RegisterIconActions() {
 
 RVA(0x00097de0, 0x102)
 void CToyPeek::FireActivation(i32 id) {
-    if (*CActRegPool<CToyPeek>::s_table.ResolveEntry(id) != NULL) {
-        (this->*(*CActRegPool<CToyPeek>::s_table.ResolveEntry(id)))();
-    }
+    DispatchRegisteredAct(this, id);
 }
 
 RVA(0x00097f40, 0x18d)
@@ -948,10 +944,7 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
 
 RVA(0x00099460, 0x102)
 void CInGameText::FireActivation(i32 idx) {
-    if (*CActRegPool<CInGameText>::s_table.ResolveEntry(idx) != NULL) {
-        CActHandler fn = *CActRegPool<CInGameText>::s_table.ResolveEntry(idx);
-        (this->*fn)();
-    }
+    DispatchRegisteredAct(this, idx);
 }
 
 RVA(0x000995c0, 0x18d)

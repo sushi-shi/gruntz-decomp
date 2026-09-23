@@ -6,7 +6,7 @@
 
 #include <Bute/ButeMgr.h>
 #include <Gruntz/AnimationRegistry.h>
-#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/FreeNodePoolInline.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
@@ -238,13 +238,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     i32 count;
     ar->Read(&count, sizeof(count));
     for (i32 a = 0; a < count; ++a) {
-        CoordPoolNode* slot = g_coordPool.m_freeHead;
-        CoordPoolNode* nf = slot->m_next;
-        Coord* item = NULL;
-        if (nf != NULL) {
-            item = &slot->m_coord;
-            g_coordPool.m_freeHead = nf;
-        }
+        Coord* item = g_coordPool.Pop();
         ar->Read(item, 8);
         (&m_coordList)->AddTail(item);
     }

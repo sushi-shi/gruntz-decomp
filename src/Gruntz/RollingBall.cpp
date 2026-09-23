@@ -108,10 +108,7 @@ CRollingBall::CRollingBall(CGameObject* obj)
 
 RVA(0x000afde0, 0x102)
 void CRollingBall::FireActivation(i32 id) {
-    CActHandler* e = (CActRegPool<CRollingBall>::s_table.ResolveEntry(id));
-    if ((*e) != NULL) {
-        (this->*(*((CActRegPool<CRollingBall>::s_table.ResolveEntry(id)))))();
-    }
+    DispatchRegisteredAct(this, id);
 }
 
 RVA(0x000aff40, 0x18d)

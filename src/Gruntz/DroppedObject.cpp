@@ -72,10 +72,6 @@ CActReg CActRegPool<CDroppedObjectShadow>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 struct CString;
 
-static inline CActHandler* DropLookup(i32 coord) {
-    return (CActRegPool<CDroppedObject>::s_table.ResolveEntry(coord));
-}
-
 RVA_COMPGEN(0x000124c0, 0x1e, ??_GCObjectDropper@@UAEPAXI@Z)
 RVA_COMPGEN(0x000124f0, 0x44, ??1CObjectDropper@@UAE@XZ)
 
@@ -254,9 +250,7 @@ CObjectDropper::CObjectDropper(CGameObject* obj)
 
 RVA(0x000c5f80, 0x102)
 void CObjectDropper::FireActivation(i32 actId) {
-    if ((*((CActRegPool<CObjectDropper>::s_table.ResolveEntry(actId)))) != NULL) {
-        (this->*((*((CActRegPool<CObjectDropper>::s_table.ResolveEntry(actId))))))();
-    }
+    DispatchRegisteredAct(this, actId);
 }
 
 RVA(0x000c60e0, 0x18d)
@@ -427,11 +421,7 @@ CDroppedObject::CDroppedObject(CGameObject* obj)
 
 RVA(0x000c6bd0, 0x102)
 void CDroppedObject::FireActivation(i32 coord) {
-    CActHandler* e = DropLookup(coord);
-    if ((*e) != NULL) {
-        CActHandler* e2 = DropLookup(coord);
-        (this->*((*e2)))();
-    }
+    DispatchRegisteredAct(this, coord);
 }
 
 RVA(0x000c6d30, 0x2ac)
@@ -566,9 +556,7 @@ CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj)
 
 RVA(0x000c7750, 0x102)
 void CDroppedObjectShadow::FireActivation(i32 coord) {
-    if ((*((CActRegPool<CDroppedObjectShadow>::s_table.ResolveEntry(coord)))) != NULL) {
-        (this->*((*((CActRegPool<CDroppedObjectShadow>::s_table.ResolveEntry(coord))))))();
-    }
+    DispatchRegisteredAct(this, coord);
 }
 
 RVA(0x000c78b0, 0x18d)

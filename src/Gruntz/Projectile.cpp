@@ -291,10 +291,7 @@ static inline CActHandler* ProjActLookup(i32 coord) {
 
 RVA(0x000df9a0, 0x102)
 void CProjectile::FireActivation(i32 coord) {
-    CActHandler* e = ProjActLookup(coord);
-    if ((*e) != NULL) {
-        (this->*((*ProjActLookup(coord))))();
-    }
+    DispatchRegisteredAct(this, coord);
 }
 
 RVA(0x000dfb00, 0x18d)
@@ -907,11 +904,7 @@ static inline CActHandler* TBombLookup(i32 coord) {
 
 RVA(0x000e1830, 0x102)
 void CTimeBomb::FireActivation(i32 coord) {
-    CActHandler* e = TBombLookup(coord);
-    if ((*e) != NULL) {
-        CActHandler* e2 = TBombLookup(coord);
-        (this->*((*e2)))();
-    }
+    DispatchRegisteredAct(this, coord);
 }
 
 RVA(0x000e1990, 0x18d)

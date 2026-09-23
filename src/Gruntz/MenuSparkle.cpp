@@ -38,12 +38,7 @@ typedef i32 (CUserLogic::*CActHandler)();
 
 RVA(0x000ade60, 0x102)
 void CMenuSparkle::FireActivation(i32 coord) {
-    CActHandler* e = CActRegPool<CMenuSparkle>::s_table.ResolveEntry(coord);
-    if (*e != NULL) {
-        CActHandler* e2 = CActRegPool<CMenuSparkle>::s_table.ResolveEntry(coord);
-        CActHandler h = *e2;
-        (this->*h)();
-    }
+    DispatchRegisteredAct(this, coord);
 }
 
 RVA(0x000adfc0, 0x18d)
