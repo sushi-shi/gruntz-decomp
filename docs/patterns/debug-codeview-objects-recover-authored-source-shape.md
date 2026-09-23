@@ -69,3 +69,28 @@ hashes; they did not bound an untested source family.
 
 The source-specific adoption state is recorded by the `nolf-zptree-*` rows in
 `config/lithtech_lineage.tsv`.
+
+## Reproducible reader and absence controls
+
+`gruntz lineage objects --debug PATH --release PATH` now performs the archive
+census; `--member NAME` decodes all C11 symbol contributions and preserves raw
+type records. See [the paired-library audit](../paired-library-source-audit.md)
+for provenance, commands, coverage, and source decisions.
+
+The AVP2 corpus supplies two important negative controls. First, only the first
+`.debug$S` contribution carries the C11 signature: subsequent header-helper
+COMDAT contributions contain bare records. A reader that insists on a signature
+for every section silently loses inline-boundary evidence. CryptMgr's emitted
+stream helpers exercise this case through the real COFF consumer.
+
+Second, local symbols can survive while complex types remain external. An
+`LF_TYPESERVER_ST` record points to a PDB; it is not a class definition at index
+0x1000. Primitive local types can still be read, but unresolved complex IDs
+cannot license a new class or aggregate. Report the missing authority. Unknown
+record payloads and malformed input must likewise remain visible, not become
+claims that the source contained no such entity.
+
+Local record order is evidence of emitted debug order, not by itself proof of
+source declaration order. The earlier zPTree reconstruction uses the paired
+source/topology evidence as a composition; do not generalize its recovered
+census into an unconditional ordering rule for other compilers or revisions.

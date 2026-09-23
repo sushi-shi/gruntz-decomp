@@ -12,6 +12,10 @@
         Validate the ledger. With --source, also verify source blob identities
         and candidate coverage. --complete additionally refuses pending rows.
 
+    gruntz lineage objects --debug PATH --release PATH [--member NAME]
+        Read-only paired .lib census (paths may also be directories). Emit JSON
+        with artifact hashes, baseline candidates and legacy CodeView records.
+
 config/lithtech_lineage.tsv is the ONE source of truth for decisions. Other
 documentation may explain the general source-oracle method or cite a row id;
 it must not restate why a particular surviving source fact was not adopted.
@@ -47,7 +51,15 @@ def main(argv=None) -> int:
     v.add_argument("--commit", default="845119c", help="discovery revision")
     v.add_argument("--complete", action="store_true", help="also reject pending decisions")
 
+    from gruntz.lineage.objects import add_parser
+
+    add_parser(sub)
+
     args = ap.parse_args(argv)
+    if args.verb == "objects":
+        from gruntz.lineage.objects import main as objects_main
+
+        return objects_main(args)
     if args.verb == "discover":
         from gruntz.lineage.discovery import main as discover_main
 
