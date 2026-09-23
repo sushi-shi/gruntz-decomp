@@ -9,9 +9,7 @@
 struct WwdRegion;
 
 struct CWwdGridShell : public CWwdGrid {
-    virtual ~CWwdGridShell() OVERRIDE {}
     virtual void OnFound(WwdRegion* r) OVERRIDE;
-    CWwdGridShell() {}
 };
 
 #endif // GRUNTZ_WWD_WWDGRIDSHELL_H

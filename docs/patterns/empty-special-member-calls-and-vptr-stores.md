@@ -81,3 +81,51 @@ with 28 instructions, one call, two branches and one return on both sides;
 allocation/scheduling starts to differ at +0x8. This is a measured declaration
 context effect, not evidence of altered renderer logic. No IL-tap experiment
 was performed, so this control does not identify a particular C1/C2 mechanism.
+
+## Inline leaf and base controls
+
+The follow-up at `d6cddd606` reviews authored header bodies that already carry
+`RVA_COMPGEN` labels. A label can identify an emitted copy of an authored inline;
+it does not certify that the source declaration is implicit.
+
+| Omitted inline destructor | Retail RVA | Bytes preserved |
+| --- | --- | ---: |
+| `CAmbientPosSound` | 0xb940 | 15 |
+| `CRandomAmbientSound` | 0xbb40 | 15 |
+| `CMovingLogic` | 0x13bd0 | 68 |
+| `CUniformTileImageSet` | 0x161370 | 7 |
+| `CRectTileImageSet` | 0x161460 | 7 |
+| `CWwdGridIter` | 0x163a10 | 7 |
+| `CWwdGridShell` | 0x1682a0 | 70 |
+
+All seven actual owner objects preserve the complete bodies and ordered
+relocations. The final retail audit also resolves EH registration stubs and
+vtable targets. In the independent base control, omitting `CUserLogic`'s
+destructor loses its vptr store before `zBitVec` cleanup: 68 bytes become 62.
+Restore that authored inline. `CUserBase` and `CGruntzCommand` separately require
+authored declarations because they introduce their virtual destructor slots.
+`CMotionState`'s trivial fields cannot generate its retail one-byte EH destructor;
+its authored empty destructor remains.
+
+Nine empty constructor wrappers also add no source initialization and have no
+alternate constructor overloads: `CAmbientPosSound`, `CRandomAmbientSound`,
+`CDemo`, `CGruntzSingleCommand`, `CGruntzMultiCommand`, `CInputDevBase`, `CUserBase`,
+`CWwdGridShell`, and `StreamVoiceFeeder`. Removing them leaves 431 code bodies
+identical across their seven actual caller TUs, changes four unrelated bodies,
+and adds or removes no emitted symbol. Every construction caller is unchanged;
+implicit base/member construction supplies the same initialization. The broad
+comparison and before/after objects live in
+`build/audits/implicit-boundaries/empty-inline-ctors/`.
+
+Do not apply this to an empty constructor with a parameterized sibling: an
+implicit default constructor is then suppressed. Do not apply it to
+`TypeKeyRec`, either: its authored empty constructor supplies the retail
+[static-initializer slot](crt-xc-table-is-the-static-initializer-census.md)
+even though the initializer body reduces to `ret`.
+
+These controls correct two older explanations. An authored empty destructor
+does **not** invariably retain its own vptr store; the seven leaf controls
+above have no such store in either form. The sound bodies are also real
+destructors, disproving the former
+[manual BaseInit model](vptr-stamp-void-init-not-ctor.md). Use the complete
+lifetime and caller family to recover source identity.

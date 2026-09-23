@@ -166,8 +166,6 @@ public:
 
 class CInputDevBase : public CInputDevRoot {
 public:
-    CInputDevBase();
-
     virtual ~CInputDevBase() OVERRIDE {
         CInputDevBase::ReleaseDevices();
     }
@@ -255,8 +253,6 @@ inline CInputDevRoot::CInputDevRoot() {
     m_pressedButtons = 0;
     m_heldButtons = 0;
 }
-inline CInputDevBase::CInputDevBase() {}
-
 inline CKeyboardDevice::CKeyboardDevice() {
     m_keyBindings.Clear();
     m_createFlags = 0;

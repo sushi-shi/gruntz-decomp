@@ -96,9 +96,6 @@ public:
 
 class CAmbientPosSound : public CAmbientSound {
 public:
-    CAmbientPosSound() {}
-
-    virtual ~CAmbientPosSound() OVERRIDE {}
     virtual void Update(i32 x, i32 y, b32 immediate) OVERRIDE;
 
     i32 InitFromKey(

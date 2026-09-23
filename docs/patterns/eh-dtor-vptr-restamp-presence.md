@@ -1,5 +1,4 @@
-# Extra `mov [esi],&??_7Class` in a dtor = A MIS-MODEL (not a codegen wall): the class
-# isn't polymorphic (A), or retail's dtor is compiler-generated and yours isn't (B)
+# An extra destructor vptr store requires a complete lifetime and owner audit
 tags: cpp:dtor cpp:eh cpp:virtual cpp:layout cpp:implicit-member | asm:mov | topic:mis-model topic:phantom-wall topic:codegen-idiom
 symptoms: ~Class body byte-identical except ONE extra `mov [esi],&??_7Class` re-stamp right after `mov [esp+N],this`, before the trylevel write; recompile caps ~92-93% with the /GX frame + base-dtor call already exact
 confidence: 10/10 (both causes MEASURED with cl 5.0 both ways; was 6/10 while the diagnosis was wrong — see HISTORY)
@@ -14,16 +13,16 @@ that retail simply does not have:
 ; our recompile inserts `mov [esi],&??_7Class@@6B@` between 701 and 705.
 ```
 
-**It is always a MIS-MODEL, never a compiler quirk — and there are TWO of them.** Run the
-vtable scan FIRST; it tells you which cause you have:
+Two measured source-model defects can produce this symptom. Inspect vtable
+and lifetime evidence first, then compile the proposed correction in the real TU:
 
 | `gruntz verify vtable-scan` says | cause | fix |
 |---|---|---|
-| **no vtable / no RTTI** for the class | **CAUSE A** — retail's class isn't polymorphic; you declared it so | de-inherit: the "base" is really a MEMBER at +0x00 |
-| **a real RTTI-backed vtable** exists | **CAUSE B** — the class IS polymorphic, but retail's dtor is **compiler-generated**; yours is user-declared | delete the destructor declaration; pin the body with `RVA_COMPGEN` |
+| **no vtable / no RTTI** for the class | **CAUSE A candidate** — the inferred inheritance may be a member relationship | prove composition from complete allocation, calls and layout before de-inheriting |
+| **a real RTTI-backed vtable** exists | **CAUSE B candidate** — an unnecessary authored destructor may cause the extra store | test omission against both the complete destructor and its callers |
 
-Cause B is the common one for MFC dialog / engine leaf classes, and the vtable scan alone
-distinguishes them in one command. **Do not stop at "it has a vtable, so the wall stands."**
+The vtable scan does not by itself distinguish authored from implicit cleanup.
+**Do not stop at "it has a vtable, so the wall stands."**
 
 ---
 
@@ -31,12 +30,16 @@ distinguishes them in one command. **Do not stop at "it has a vtable, so the wal
 
 **Diagnose** — check the binary, not the codegen:
 1. Does `Class` have a vtable in the RTTI/vtable scan (`gruntz verify vtable-scan`)? Any RTTI name?
-2. Does retail's `~Class` restamp at all? (If it never does, it isn't polymorphic.)
-If both say no: **the "base" is really a MEMBER at +0x00.**
+2. Does retail's `~Class` restamp, and which base/member cleanup supplies its stores?
+If both say no, investigate whether the inferred base is a member at +0x00.
+Absence of RTTI or a retained vtable alone is not proof. Corroborate composition
+from complete allocation, direct/deleting calls, storage, and layout before
+changing the owner.
 
 **Why it hides:** a polymorphic base at +0x00 and that same class as a *member* at +0x00 have
-**identical layout AND identical codegen** (`mov ecx,esi; call ~CPtrList` either way). Nothing in
-the bytes distinguishes them — only the vtable's existence does.
+**identical layout AND identical codegen** (`mov ecx,esi; call ~CPtrList` either way).
+Those bytes alone cannot settle ownership; combine complete allocation, deleting
+calls, layouts and vtable identity before choosing inheritance or composition.
 
 **FIX:** de-inherit; hold the base as a member; drop `virtual` from the dtor.
 ```cpp
@@ -66,10 +69,16 @@ to the ~50-60% plateau of eh-dtor-needs-base-subobject.md) — a *member* suppli
 
 ## CAUSE B — the class IS polymorphic, but retail's dtor is COMPILER-GENERATED
 
-**cl 5.0 elides the most-derived vptr store in an IMPLICIT (compiler-generated) destructor, and
-always emits it for a user-declared one — even an empty `~Class() {}`.** With no user body, cl
-knows nothing can observe the vptr between the stamp and the base dtor's own stamp, so it never
-emits it. This is the whole difference; nothing else about the two dtors differs.
+In the measured dialog/member-cleanup cases below, omitting the authored
+destructor removes the extra most-derived vptr store. The previous claim that
+VC5 *always* emits that store for an authored empty destructor was too broad.
+Seven further real-TU controls at `d6cddd606` preserve identical complete bodies
+when authored inline leaf destructors become implicit; none of those bodies
+stores the leaf vptr in either form. Their visible base cleanup supplies the
+retail stores. Conversely, omitting `CUserLogic::~CUserLogic` removes its retail
+store before `zBitVec` destruction (68 to 62 bytes), so that authored boundary
+must remain. The full positive/negative controls are in
+[empty-special-member-calls-and-vptr-stores.md](empty-special-member-calls-and-vptr-stores.md).
 
 **MEASURED** (cl 5.0 `/nologo /c /O2 /MT /GX`, identical class both ways):
 
