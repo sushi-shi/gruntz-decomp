@@ -12,6 +12,7 @@ The broader constructor-family and SDK-adapter branches are not included.
 | `zDArray<T>`, `_zvec`, `_zdvec` | `ZTools/ZDArray.h`, `ZTools/ZVec.h` | `Gruntz/ActReg.h` and `Gruntz/TypeKeyColl.h` |
 | `zSymTab<T>`, `zPTree`, `zPtrColl` | `ZTools/PTree.h` | `Gruntz/ActRegistry.h` for the integer action-ID registry; Bute retains its own typed consumers |
 | Error handling and bit vector | `ZTools/Error.h`, `ZTools/BitVec.h` | No game registry declaration in the library headers |
+| Authored placement-new overload | `ZTools/PlacementNew.h` | Included by the typed array's constructor/indexing implementation |
 | `CFixedPtrArray<T, Capacity>` | `Utils/FixedPtrArray.h` | `DinMgr2/InputDeviceGroup.h` for the alias; `Gruntz/InputDeviceGroup.h` for the game global |
 | `FreeNodePool<T>` and nested node | `Utils/FreeNodePool.h` | `Gruntz/CoordPool.h` for the coordinate specialization/node alias and global |
 | `CLTList<T>` over the erased list | `Lith/TypedList.h` | WWD region, sound sample/node/task, and stream-voice consumers; task filtering remains with the sound owner |

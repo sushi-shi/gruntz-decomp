@@ -140,7 +140,7 @@ class CompilerArtifactControls(unittest.TestCase):
             path.write_text(text)
             return ca.source_findings(
                 [path], placement_allow=Counter(), dtor_allow=Counter(),
-                low_level_allow=Counter()
+                low_level_allow=Counter(), allocation_definition_allow=Counter()
             )
 
     def test_allocator_calls_and_realizers_fail(self):
@@ -204,7 +204,7 @@ class CompilerArtifactControls(unittest.TestCase):
             allowed = Counter({(str(path), "T"): 1})
             findings = ca.source_findings(
                 [path], placement_allow=Counter(), dtor_allow=allowed,
-                low_level_allow=Counter()
+                low_level_allow=Counter(), allocation_definition_allow=Counter()
             )
         self.assertEqual(findings, [])
 
@@ -213,6 +213,34 @@ class CompilerArtifactControls(unittest.TestCase):
         rows = [("probe", "?RealizeCThing@@YAPAVCThing@@XZ"),
                 ("probe", "??_GCThing@@UAEPAXI@Z")]
         self.assertEqual(len(ca.base_only_suspicious(rows)), 1)
+
+    def test_authored_placement_definition_and_negative_controls_reach_gate(self):
+        from gruntz.verify import compiler_artifacts as ca
+        from gruntz.core.paths import REPO
+
+        owner = REPO / 'include/ZTools/PlacementNew.h'
+        original = owner.read_text()
+        read_text = Path.read_text
+        cases = (
+            ('original', original, False),
+            ('explicit call', original + '\nvoid* F(void* p) { '
+             'return ::operator new(4, p, 0, 0); }\n', True),
+            ('duplicate', original + original, True),
+            ('altered body', original.replace('return ptr;', 'return 0;'), True),
+            ('missing', '', True),
+        )
+        for name, source, rejected in cases:
+            with self.subTest(case=name):
+                def substituted(path, *args, **kwargs):
+                    return source if path == owner else read_text(path, *args, **kwargs)
+                with mock.patch.object(Path, 'read_text', substituted):
+                    findings = ca.gate_findings()
+                self.assertEqual(bool(findings), rejected, findings)
+
+        definition = ('inline void* operator new(size_t size, void* ptr, '
+                      'int dummy1, int dummy2) { return ptr; }')
+        self.assertTrue(any('allocation definition' in row
+                            for row in self._scan(definition)))
 
 
 class CastControls(unittest.TestCase):

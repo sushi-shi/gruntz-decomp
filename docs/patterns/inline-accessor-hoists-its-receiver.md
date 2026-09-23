@@ -45,6 +45,14 @@ CGrunt* e = FindGruntByIdentity(g_gameReg, m_gruntIdentity);
 
 ## The reference parameter is the load-bearing half
 
+The boundary is not a guarantee of current exactness under every TU state.
+In the PR #79 recovery the unchanged helper and caller occupied the 95.07%
+island again. Removing unnecessary scalar-union adapters elsewhere in the
+shared headers restored exactness without changing this lookup. See the
+[controlled adapter comparison](scalar-union-adapter-changes-unrelated-codegen.md).
+Do not flatten the proven accessor merely because a later declaration state
+recreates its old scheduling symptom.
+
 Measured on that one function, every variant from the same 95.07 base:
 
 | spelling | score |

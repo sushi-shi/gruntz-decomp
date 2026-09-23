@@ -7,13 +7,18 @@
 #include <Gruntz/ActRegistry.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniAdvanceCursorInline.h>
+#include <Gruntz/GameRand.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MenuSparkleSerial.h>
 #include <Gruntz/SerialArchive.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
 
-#include <stdlib.h>
+DATA(0x001ea3d4)
+const i32 g_menuSparkleLo = 1000;
+
+DATA(0x001ea3d8)
+const i32 g_menuSparkleHi = 5000;
 
 RVA_DYNINIT(0x000addc0, 0xa, CActRegPool<CMenuSparkle>::s_table)
 RVA_DYNINIT(0x000adde0, 0x15, CActRegPool<CMenuSparkle>::s_table)
@@ -31,7 +36,7 @@ CMenuSparkle::CMenuSparkle(CGameObject* obj)
     SetImageSetByName("MENU_SPARKLE");
     SwitchAnimationByName("MENU_FORWARD100", 0);
     SET_ANIMATION_ACT("A");
-    m_logicRecord->m_sparkleDelay = rand() % 0xfa1 + 0x3e8;
+    m_logicRecord->m_sparkleDelay = GetRandom(g_menuSparkleLo, g_menuSparkleHi);
 }
 
 typedef i32 (CUserLogic::*CActHandler)();
@@ -99,12 +104,7 @@ i32 CMenuSparkle::AdvanceAnim() {
         if (anim != NULL) {
             anim->RestartAnimation(1);
         }
-        m_ownerLogicRecord->m_timeDelay = rand() % 0xfa1 + 0x3e8;
+        m_ownerLogicRecord->m_timeDelay = GetRandom(g_menuSparkleLo, g_menuSparkleHi);
     }
     return 0;
 }
-DATA(0x001ea3d4)
-const i32 g_menuSparkleLo = 1000;
-
-DATA(0x001ea3d8)
-const i32 g_menuSparkleHi = 5000;

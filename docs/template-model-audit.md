@@ -459,3 +459,41 @@ fast/normal gate with zero fresh MAX regressions; all 4,429 historical RVA
 maxima are preserved. The relocation audit checks 3,918 near-exact functions
 with zero fake or wrong targets. The final bank refresh is a no-op, confirming
 the ledger and README describe that build.
+
+### Preserved helpers and authored placement construction
+
+The conversion and typed table-store macros remain intact. The action-ID
+lookup/insert helpers also remain inline; their unnecessary union temporaries
+are replaced by reviewed integer/pointer conversions. The unchanged
+`HealthUpdate` returns to exact. `CMenuSparkle` now uses the existing
+`GetRandom` helper and its real constant bounds at both delay sites; this
+recovers its constructor after the shared-header change. The equivalent
+Warlord random-selection sites use the same helper.
+
+The complete ZTools placement-new helper and its template call sites are
+restored under lineage entry `nolf-zdarray-typed-family`. Both typed indexers
+and their checked lifetime bodies remain exact. The Grunt registrar improves
+from 89.1757% to 92.8406%, but its call set still differs. Composed inline
+conversion/binding forms do not close it; the retained macro abstractions
+avoid both erased operations and unused function declarations. Controlled
+evidence is in the [placement-new](patterns/authored-placement-new-changes-nested-inline-cuts.md),
+[scalar-adapter](patterns/scalar-union-adapter-changes-unrelated-codegen.md), and
+[random-helper](patterns/constant-range-helper-changes-constructor-zero-carrier.md)
+patterns.
+
+Compared with `aa4441788`, five functions become current-exact and eight lose
+current exactness: **3,831 -> 3,828 / 4,426**. Full-engine fuzzy rises from
+93.54% to 93.55%; fuzzy MAX remains 94.47%. `HealthUpdate` and
+`OpenActionOptionsMenu` are newly recovered original losses, while
+`ReadyForSequence` and `CheckpointTrigger::Act` move below current exactness.
+Thus 16 of the original 34 losses are currently exact, 18 remain, and 19
+distinct original losses have reached exact during recovery. This is a source
+restoration checkpoint, not a claim of net exact recovery or exhausted options.
+
+All 4,429 prior retail-RVA historical maxima survive. The full build passes
+MAX and every fast/normal gate after banking the measured source snapshot;
+the 17 fresh gate deltas are retained as current-score movement, not erased
+historical evidence. The raw relocation audit covers 3,918 near-exact functions
+with zero fake or wrong targets. Twelve public-header and nine compiler-artifact
+controls pass, including real-VC5 overload coexistence and full-gate negative
+controls for explicit allocation calls and altered placement definitions.

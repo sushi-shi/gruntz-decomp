@@ -17,6 +17,7 @@
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
+#include <Gruntz/GameRand.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LogicTypeId.h>
@@ -808,7 +809,7 @@ i32 CWarlord::ResolveIdleAnimation() {
         return 0;
     }
 
-    i32 idx = rand() % 3 + 1;
+    i32 idx = GetRandom(1, 3);
 
     CGruntzMgr* g = g_gameReg;
     if (g->m_gameMode == GAMEMODE_QUESTZ) {
@@ -841,7 +842,7 @@ i32 CWarlord::ResolveBattlecryAnimation() {
         return 0;
     }
 
-    i32 idx = rand() % 3;
+    i32 idx = GetRandom(0, 2);
 
     CGruntzMgr* g = g_gameReg;
     if (g->m_gameMode == GAMEMODE_QUESTZ) {

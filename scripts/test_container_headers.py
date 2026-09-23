@@ -64,6 +64,18 @@ int* use(int* value) {
 }
 ''')
 
+    def test_ztools_placement_new_coexists_with_standard_placement(self):
+        for headers in (('#include <new>', '#include <ZTools/ZDArray.h>'),
+                        ('#include <ZTools/ZDArray.h>', '#include <new>')):
+            with self.subTest(headers=headers):
+                self.compile('\n'.join(headers) + '''
+struct Item { Item(); ~Item(); };
+Item* custom(void* storage) { return new (storage, 0, 0) Item; }
+Item* standard(void* storage) { return new (storage) Item; }
+Item& index(zDArray<Item>& values, int i) { return values[i]; }
+void lifetime() { zDArray<Item> values(0, 3); }
+''')
+
     def test_bit_vector_header_is_self_contained(self):
         self.compile('''#include <ZTools/BitVec.h>
 int use(zBitVec& bits) { return bits.GetBit(3); }

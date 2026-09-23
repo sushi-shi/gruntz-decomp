@@ -3,8 +3,9 @@
 The compiler owns allocation calls, deleting destructors, vtables/RTTI, static
 initialization helpers and EH/vector helpers.  A few source-level lifetime
 operations remain real: placement construction, destructor-only calls over raw
-storage, and an original typed collection's destructor callback before the
-collection separately deallocates the object.  Their path/type/count signatures
+storage, the source-proven ZTools placement allocation overload, and an original
+typed collection's destructor callback before the collection separately
+deallocates the object. Their path/type/count signatures
 are closed here so a new site is reviewed instead of silently joining that
 exception.
 
@@ -31,6 +32,19 @@ from gruntz.verify.srcscan import blank_comments, rel, source_files
 PLACEMENT_ALLOW = Counter({
     ("include/ZTools/ZDArray.h", "T"): 2,
 })
+
+ALLOCATION_DEFINITION_ALLOW = Counter({
+    ("include/ZTools/PlacementNew.h", "ZTools placement new"): 1,
+})
+
+# The complete authored definition, not a call or arbitrary allocator override.
+# Source evidence: nolf-zdarray-typed-family in lithtech_lineage.tsv.
+ZTOOLS_PLACEMENT_DEFINITION_RE = re.compile(
+    r"\binline\s+void\s*\*\s*operator\s+new\s*\(\s*"
+    r"size_t\s+size\s*,\s*void\s*\*\s*ptr\s*,\s*"
+    r"int\s+dummy1\s*,\s*int\s+dummy2\s*\)\s*"
+    r"\{\s*return\s+ptr\s*;\s*\}"
+)
 
 DTOR_CALL_ALLOW = Counter({
     ("include/ZTools/ZDArray.h", "T"): 1,
@@ -86,8 +100,10 @@ def _counter_findings(label: str, actual: Counter, allowed: Counter) -> list[str
 
 def source_findings(files=None, *, placement_allow=PLACEMENT_ALLOW,
                     dtor_allow=DTOR_CALL_ALLOW,
-                    low_level_allow=LOW_LEVEL_ALLOW) -> list[str]:
+                    low_level_allow=LOW_LEVEL_ALLOW,
+                    allocation_definition_allow=ALLOCATION_DEFINITION_ALLOW) -> list[str]:
     placements: Counter = Counter()
+    allocation_definitions: Counter = Counter()
     dtor_calls: Counter = Counter()
     low_level: Counter = Counter()
     findings: list[str] = []
@@ -97,7 +113,12 @@ def source_findings(files=None, *, placement_allow=PLACEMENT_ALLOW,
         site = rel(path)
         if path.suffix in (".cpp", ".cc", ".cxx") and instantiation_only(text):
             findings.append(f"instantiation-only translation unit: {site}")
+        definitions = list(ZTOOLS_PLACEMENT_DEFINITION_RE.finditer(text))
+        allocation_definitions[(site, "ZTools placement new")] += len(definitions)
         for match in OPERATOR_CALL_RE.finditer(text):
+            if any(definition.start() <= match.start() < definition.end()
+                   for definition in definitions):
+                continue
             line = text.count("\n", 0, match.start()) + 1
             findings.append(
                 f"compiler allocation call: {site}:{line}: {match.group(0).strip()}"
@@ -120,6 +141,8 @@ def source_findings(files=None, *, placement_allow=PLACEMENT_ALLOW,
         low_level[(site, "naked")] += len(re.findall(r"__declspec\s*\(\s*naked\s*\)", text))
         low_level[(site, "asm")] += len(re.findall(r"\b__asm\b", text))
     findings += _counter_findings("placement construction", placements, placement_allow)
+    findings += _counter_findings("allocation definition", allocation_definitions,
+                                  allocation_definition_allow)
     findings += _counter_findings("explicit destructor call", dtor_calls, dtor_allow)
     findings += _counter_findings("low-level compiler seam", low_level, low_level_allow)
     return findings

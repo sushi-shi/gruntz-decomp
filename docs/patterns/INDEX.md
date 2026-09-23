@@ -1,5 +1,9 @@
 # Pattern index (MSVC 5.0 /O2 — Gruntz)
 
+- [A constant-range helper changes an earlier constructor zero carrier](constant-range-helper-changes-constructor-zero-carrier.md) — c10 — cpp:inline cpp:constructor cpp:rand | asm:xor asm:test asm:mov | topic:regalloc — CMenuSparkle's existing GetRandom helper restores immediate zeros across the base/derived chain, 97.04211 -> 100; named bounds and an include-only control do not.
+
+- [A scalar union adapter changes unrelated code generation](scalar-union-adapter-changes-unrelated-codegen.md) — c10 — cpp:inline cpp:cast cpp:union | asm:mov asm:lea | topic:tu-state — direct action-ID conversions preserve the typed helpers and recover unchanged HealthUpdate; macro adapters instead over-expand the larger registrars.
+
 - [Keep a typed intrusive-list result typed](typed-list-result-removes-base-round-trip.md) — c10 — cpp:template cpp:cast cpp:inheritance cpp:local | asm:lea asm:test asm:jcc | topic:correctness topic:cfg — an obsolete base-pointer round trip adds nullable adjustments after GetFirst becomes typed; SoundDevice::TickVolumeRamps 86.67 -> 100 with SoundTask pointers and unchanged ownership.
 
 - [Name the call-argument pointers, not an entire aggregate alias](call-argument-pointer-locals-preserve-base-addressing.md) — c10 — cpp:local cpp:pointer cpp:call cpp:member | asm:lea asm:push | topic:regalloc topic:codegen-idiom — dirty-region position locals restore the saved-register pair and close BltDirtyRegions 99.6983 -> 100; whole-aggregate pointer/reference controls instead lose this-relative addressing and merge a retail call tail.
@@ -7,6 +11,8 @@
 - [Nested error helper and direct template casts restore inline cuts](nested-error-helper-and-direct-template-casts-restore-inline-cuts.md) — c10 — cpp:template cpp:inline cpp:cast cpp:ternary | asm:call asm:coff | topic:source-oracle topic:inline-budget — restore the sourced error helper and conditional-expression accessor, then remove an invented conversion helper: RegisterIconActions 65.32 -> 80.50 -> 98.36 -> 100 without caller-specific expansion APIs; a named handler reference closes the six-action Warlord registrar.
 
 - [Static-template teardown guards constrain TU ownership](static-template-guards-constrain-tu-ownership.md) — c10 — cpp:template cpp:static cpp:dtor | topic:ownership topic:mis-model — emitter-only TUs manufacture COMDATs; merging explicit static-member definitions shares teardown guard bits. Check the complete initializer/teardown topology and real consumer emission before moving ownership.
+
+- [Authored placement new can change nested inline cuts](authored-placement-new-changes-nested-inline-cuts.md) — c10 — cpp:template cpp:inline cpp:new | asm:call | topic:source-oracle topic:inline-budget — the original ZTools allocation overload leaves both typed indexers exact but changes the large registrar's expansion; same-declaration controls distinguish the call boundary from TU-state noise.
 
 One line per pattern: `- [title](file.md) — cN — tags — symptoms` (cN = confidence /10).
 Sorted by primary tag so families cluster. Grep this file by tag (`cpp:switch`,

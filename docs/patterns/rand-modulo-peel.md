@@ -59,6 +59,13 @@ Both forms reproduce retail's instruction sequence exactly (verified in
 
 ## The one arm that still differs
 
+Constant bounds can fold the peel away completely without erasing the helper's
+effect on the caller. The [CMenuSparkle constructor control](constant-range-helper-changes-constructor-zero-carrier.md)
+restores exactness through `GetRandom(1000, 5000)` even though both versions
+contain the same single CRT random call and remainder arithmetic. An
+include-only control is byte-flat; the actual inline call changes an earlier
+zero carrier in the constructor chain.
+
 `GetRandom(1, count)` folds: `n = count - 1 + 1 == count`, so inside the degenerate arm our
 cl *proves* `count == 0` and substitutes the literal, collapsing `(rand() & 1) ? 1 : count`
 to `movsx edi,al; and edi,1`. Retail keeps `mov edi,1` against a live `count`. Same helper,
