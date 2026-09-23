@@ -21,6 +21,14 @@ template<class Tag> struct CActRegPool {
     static CActReg s_table;
 };
 
+template<class Logic> inline void DispatchRegisteredAct(Logic* logic, i32 id) {
+    CActReg& acts = CActRegPool<Logic>::s_table;
+    if (*acts.ResolveEntry(id) != NULL) {
+        CActHandler handler = *acts.ResolveEntry(id);
+        (logic->*handler)();
+    }
+}
+
 template<class T> inline T* zDArray<T>::ResolveEntry(i32 id) {
     m_grown = 0;
     if (id >= m_lo && id <= m_hi) {

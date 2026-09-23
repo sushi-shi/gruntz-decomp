@@ -232,11 +232,7 @@ CWarpStonePad::CWarpStonePad(CGameObject* obj)
 
 RVA(0x0010d8c0, 0x102)
 void CWarpStonePad::FireActivation(i32 coord) {
-    CActHandler* e = (CActRegPool<CWarpStonePad>::s_table.ResolveEntry(coord));
-    if ((*e) != NULL) {
-        CActHandler* e2 = (CActRegPool<CWarpStonePad>::s_table.ResolveEntry(coord));
-        (this->*((*e2)))();
-    }
+    DispatchRegisteredAct(this, coord);
 }
 
 RVA(0x0010da20, 0x18d)
@@ -263,11 +259,7 @@ CTileTriggerSwitch::CTileTriggerSwitch(CGameObject* obj)
 
 RVA(0x0010dea0, 0x102)
 void CTileTriggerSwitch::FireActivation(i32 coord) {
-    CActHandler* e = (CActRegPool<CTileTriggerSwitch>::s_table.ResolveEntry(coord));
-    if ((*e) != NULL) {
-        CActHandler* e2 = (CActRegPool<CTileTriggerSwitch>::s_table.ResolveEntry(coord));
-        (this->*((*e2)))();
-    }
+    DispatchRegisteredAct(this, coord);
 }
 
 RVA(0x0010e000, 0x18d)
@@ -300,11 +292,7 @@ CTileTrigger::CTileTrigger(CGameObject* obj)
 
 RVA(0x0010e4a0, 0x102)
 void CTileTrigger::FireActivation(i32 coord) {
-    CActHandler* e = (CActRegPool<CTileTrigger>::s_table.ResolveEntry(coord));
-    if ((*e) != NULL) {
-        CActHandler* e2 = (CActRegPool<CTileTrigger>::s_table.ResolveEntry(coord));
-        (this->*((*e2)))();
-    }
+    DispatchRegisteredAct(this, coord);
 }
 
 RVA(0x0010e600, 0x18d)
@@ -331,11 +319,7 @@ CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), C
 
 RVA(0x0010ea80, 0x102)
 void CBrickz::FireActivation(i32 coord) {
-    CActHandler* e = (CActRegPool<CBrickz>::s_table.ResolveEntry(coord));
-    if ((*e) != NULL) {
-        CActHandler* e2 = (CActRegPool<CBrickz>::s_table.ResolveEntry(coord));
-        (this->*((*e2)))();
-    }
+    DispatchRegisteredAct(this, coord);
 }
 
 RVA(0x0010ebe0, 0x18d)
@@ -409,11 +393,7 @@ CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj)
 
 RVA(0x0010f1e0, 0x102)
 void CCheckpointTrigger::FireActivation(i32 coord) {
-    CActHandler* e = (CActRegPool<CCheckpointTrigger>::s_table.ResolveEntry(coord));
-    if ((*e) != NULL) {
-        CActHandler* e2 = (CActRegPool<CCheckpointTrigger>::s_table.ResolveEntry(coord));
-        (this->*((*e2)))();
-    }
+    DispatchRegisteredAct(this, coord);
 }
 
 RVA(0x0010f340, 0x2ac)
@@ -576,11 +556,7 @@ CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj)
 
 RVA(0x0010fd10, 0x102)
 void CTileTriggerTransition::FireActivation(i32 coord) {
-    CActHandler* e = (CActRegPool<CTileTriggerTransition>::s_table.ResolveEntry(coord));
-    if ((*e) != NULL) {
-        CActHandler* e2 = (CActRegPool<CTileTriggerTransition>::s_table.ResolveEntry(coord));
-        (this->*((*e2)))();
-    }
+    DispatchRegisteredAct(this, coord);
 }
 
 RVA(0x0010fe70, 0x18d)

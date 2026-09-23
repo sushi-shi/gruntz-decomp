@@ -73,10 +73,6 @@ CActReg CActRegPool<CVoiceTrigger>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 struct CString;
 
-static inline CActHandler* VActLookup(i32 coord) {
-    return (CActRegPool<CGruntVoice>::s_table.ResolveEntry(coord));
-}
-
 RVA(0x00013470, 0x4b)
 CVoiceTrigger::CVoiceTrigger() : CUserLogic(CUserLogic::INLINE_BASE) {}
 
@@ -205,11 +201,7 @@ CVoiceTrigger::CVoiceTrigger(CGameObject* obj)
 
 RVA(0x00119e40, 0x102)
 void CGruntVoice::FireActivation(i32 actionId) {
-    CActHandler* e = VActLookup(actionId);
-    if ((*e) != NULL) {
-        CActHandler* e2 = VActLookup(actionId);
-        (this->*((*e2)))();
-    }
+    DispatchRegisteredAct(this, actionId);
 }
 
 RVA(0x00119fa0, 0x2ac)
@@ -225,11 +217,7 @@ void RegisterGruntVoiceActions() {
 
 RVA(0x0011a3a0, 0x102)
 void CVoiceTrigger::FireActivation(i32 actionId) {
-    CActHandler* e = (CActRegPool<CVoiceTrigger>::s_table.ResolveEntry(actionId));
-    if ((*e) != NULL) {
-        CActHandler* e2 = (CActRegPool<CVoiceTrigger>::s_table.ResolveEntry(actionId));
-        (this->*((*e2)))();
-    }
+    DispatchRegisteredAct(this, actionId);
 }
 
 RVA(0x0011a500, 0x18d)

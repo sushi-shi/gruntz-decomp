@@ -58,10 +58,6 @@ RVA_COMPGEN(0x00012b30, 0x44, ??1CStaticHazard@@UAE@XZ)
 
 struct CString;
 
-static inline CActHandler* HaznLookup(i32 coord) {
-    return (CActRegPool<CStaticHazard>::s_table.ResolveEntry(coord));
-}
-
 inline void DispatchUnhandledLogicEvent(CUserLogic* sub) {
     DispatchLogicEvent(sub);
 }
@@ -154,11 +150,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj)
 
 RVA(0x000fbbf0, 0x102)
 void CStaticHazard::FireActivation(i32 coord) {
-    CActHandler* e = HaznLookup(coord);
-    if ((*e) != NULL) {
-        CActHandler* e2 = HaznLookup(coord);
-        (this->*((*e2)))();
-    }
+    DispatchRegisteredAct(this, coord);
 }
 
 RVA(0x000fbd50, 0x2ac)

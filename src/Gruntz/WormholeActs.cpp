@@ -8,7 +8,7 @@
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/ExitTrigger.h>
 #include <Gruntz/FontConfig.h>
-#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/FreeNodePoolInline.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameObjectLogicTypes.h>
@@ -42,11 +42,7 @@ CActReg CActRegPool<CExitTrigger>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 RVA(0x0003f290, 0x102)
 void CExitTrigger::FireActivation(i32 coord) {
-    CActHandler* e = (CActRegPool<CExitTrigger>::s_table.ResolveEntry(coord));
-    if ((*e) != NULL) {
-        CActHandler* e2 = (CActRegPool<CExitTrigger>::s_table.ResolveEntry(coord));
-        (this->*((*e2)))();
-    }
+    DispatchRegisteredAct(this, coord);
 }
 
 RVA(0x0003f3f0, 0x18d)
@@ -131,13 +127,7 @@ i32 CExitTrigger::AdvanceAnim() {
                     );
                     SET_DRAW_FILL(cur, SHADE_PAL_16, tbl);
                     if (hitPlayerIndex == g_curPlayer) {
-                        CoordPoolNode* head = g_coordPool.m_freeHead;
-                        Coord* mark = NULL;
-                        if (head->m_next != NULL) {
-                            mark = &head->m_coord;
-                            head = head->m_next;
-                            g_coordPool.m_freeHead = head;
-                        }
+                        Coord* mark = g_coordPool.Pop();
                         mark->m_x = (cur->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
                         mark->m_y = (cur->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
                         CPtrArray& marks =

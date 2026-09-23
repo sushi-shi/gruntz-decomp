@@ -119,10 +119,7 @@ CEyeCandyAni::CEyeCandyAni(CGameObject* obj)
 
 RVA(0x000acbb0, 0x102)
 void CEyeCandyAni::FireActivation(i32 id) {
-    CActHandler* e = (CActRegPool<CEyeCandyAni>::s_table.ResolveEntry(id));
-    if ((*e) != NULL) {
-        (this->*(*((CActRegPool<CEyeCandyAni>::s_table.ResolveEntry(id)))))();
-    }
+    DispatchRegisteredAct(this, id);
 }
 
 RVA(0x000acd10, 0x18d)
@@ -148,11 +145,7 @@ CFrontCandyAni::CFrontCandyAni(CGameObject* obj)
 
 RVA(0x000ad1b0, 0x102)
 void CFrontCandyAni::FireActivation(i32 coord) {
-    CActHandler* e = (CActRegPool<CFrontCandyAni>::s_table.ResolveEntry(coord));
-    if ((*e) != NULL) {
-        CActHandler* e2 = (CActRegPool<CFrontCandyAni>::s_table.ResolveEntry(coord));
-        (this->*((*e2)))();
-    }
+    DispatchRegisteredAct(this, coord);
 }
 
 RVA(0x000ad310, 0x18d)

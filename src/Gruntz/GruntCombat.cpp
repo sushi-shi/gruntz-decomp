@@ -21,7 +21,7 @@
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/EnemyAiType.h>
-#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/FreeNodePoolInline.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameObjectLogicTypes.h>
@@ -827,12 +827,9 @@ i32 CGrunt::PathScan() {
 
                         while (node != NULL) {
                             Coord* src = static_cast<Coord*>(coordz->GetNext(node));
-                            Coord* fresh = NULL;
-                            CoordPoolNode* free = g_coordPool.m_freeHead;
-                            if (free->m_next != NULL) {
-                                fresh = &free->m_coord;
+                            Coord* fresh = g_coordPool.Pop();
+                            if (fresh != NULL) {
                                 *fresh = *src;
-                                g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
                             }
                             s.AddTail(fresh);
                         }
@@ -1964,10 +1961,7 @@ i32 DispatchGruntLogic(CGameObject* owner) {
 
 RVA(0x0005bcd0, 0x102)
 void CGrunt::FireActivation(i32 id) {
-    CActHandler* e = CActRegPool<CGrunt>::s_table.ResolveEntry(id);
-    if (*e != NULL) {
-        (this->*(*CActRegPool<CGrunt>::s_table.ResolveEntry(id)))();
-    }
+    DispatchRegisteredAct(this, id);
 }
 
 // @early-stop
