@@ -20,4 +20,12 @@ template<class Tag> struct CActRegPool {
     static CActReg s_table;
 };
 
+template<class Logic> inline void DispatchRegisteredAct(Logic* logic, i32 id) {
+    CActReg& acts = CActRegPool<Logic>::s_table;
+    if (acts[id] != NULL) {
+        CActHandler handler = acts[id];
+        (logic->*handler)();
+    }
+}
+
 #endif // GRUNTZ_GRUNTZ_ACTREG_H

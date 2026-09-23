@@ -120,10 +120,7 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
 
 RVA(0x000b3b60, 0x102)
 void CPathHazard::FireActivation(i32 id) {
-    CActHandler* e = &CActRegPool<CPathHazard>::s_table[id];
-    if ((*e) != NULL) {
-        (this->*(CActRegPool<CPathHazard>::s_table[id]))();
-    }
+    DispatchRegisteredAct(this, id);
 }
 
 RVA(0x000b3cc0, 0x2ac)

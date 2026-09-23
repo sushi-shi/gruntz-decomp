@@ -47,11 +47,7 @@ CFrontCandyAni::CFrontCandyAni(CGameObject* obj)
 
 RVA(0x000ad1b0, 0x102)
 void CFrontCandyAni::FireActivation(i32 coord) {
-    CActHandler* e = &CActRegPool<CFrontCandyAni>::s_table[coord];
-    if ((*e) != NULL) {
-        CActHandler* e2 = &CActRegPool<CFrontCandyAni>::s_table[coord];
-        (this->*((*e2)))();
-    }
+    DispatchRegisteredAct(this, coord);
 }
 
 RVA(0x000ad310, 0x18d)

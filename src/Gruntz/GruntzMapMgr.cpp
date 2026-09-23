@@ -37,12 +37,7 @@ i32 CGruntzMapMgr::SerializeDispatch(
             m_arr.SetSize(0, -1);
             m_arr.SetSize(count, -1);
             for (u32 ri = 0; ri < static_cast<u32>(count); ri++) {
-                CoordPoolNode* node = g_coordPool.m_freeHead;
-                Coord* elem = NULL;
-                if (node->m_next != NULL) {
-                    elem = &node->m_value;
-                    g_coordPool.m_freeHead = node->m_next;
-                }
+                Coord* elem = g_coordPool.Pop();
                 ar->Read(elem, 8);
                 m_arr.GetData()[ri] = elem;
             }

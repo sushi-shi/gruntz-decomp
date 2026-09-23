@@ -45,9 +45,7 @@ CGruntToySprite::CGruntToySprite(CGameObject* obj)
 
 RVA(0x0007f5c0, 0x102)
 void CGruntToySprite::FireActivation(i32 id) {
-    if ((CActRegPool<CGruntToySprite>::s_table[id]) != NULL) {
-        (this->*(CActRegPool<CGruntToySprite>::s_table[id]))();
-    }
+    DispatchRegisteredAct(this, id);
 }
 
 RVA(0x0007f720, 0x18d)

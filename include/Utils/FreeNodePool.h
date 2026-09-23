@@ -46,6 +46,8 @@ public:
 
     inline void Push(void* p);
 
+    inline T* Pop();
+
     Node* NodeOf(void* payload) {
 
         // Language-forced container-of adjustment; a union spelling changes codegen.
@@ -57,6 +59,16 @@ public:
     i32 m_count;
     i32 m_linkOffset;
 };
+
+template<class T> inline T* FreeNodePool<T>::Pop() {
+    Node* node = m_freeHead;
+    T* result = NULL;
+    if (node->m_next != NULL) {
+        result = &node->m_value;
+        m_freeHead = node->m_next;
+    }
+    return result;
+}
 
 template<class T> inline void FreeNodePool<T>::Push(void* p) {
     Node* node = NodeOf(p);

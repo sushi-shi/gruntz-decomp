@@ -2137,14 +2137,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             i32 bookmarkScrollY = obj->m_scrollPixelY;
             Coord* slot;
             if (this->CameraBookmarkCount() < 4) {
-                CoordPoolNode* head = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
-                CoordPoolNode* nx = head->m_next;
-                if (nx != NULL) {
-                    slot = &head->m_value;
-                    g_coordPool.m_freeHead = nx;
-                } else {
-                    slot = NULL;
-                }
+                slot = g_coordPool.Pop();
             } else {
 
                 slot = this->CameraBookmarkAt(0);
@@ -5529,12 +5522,7 @@ i32 CPlay::ValidateLevelTiles() {
             }
         } else if (dispatch == DispatchGruntCreationPointLogic) {
             if (obj->m_smarts == g_curPlayer) {
-                CoordPoolNode* cell = g_coordPool.m_freeHead;
-                Coord* slot = NULL;
-                if (cell->m_next != NULL) {
-                    slot = &cell->m_value;
-                    g_coordPool.m_freeHead = cell->m_next;
-                }
+                Coord* slot = g_coordPool.Pop();
                 slot->m_x = (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
                 slot->m_y = (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
                 m_startMarkers.SetAtGrow(StartMarkerCount(), slot);
@@ -5621,12 +5609,7 @@ i32 CPlay::ValidateLevelTiles() {
             }
         } else if (dispatch == DispatchWarpStonePadLogic) {
             if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
-                CoordPoolNode* cell = g_coordPool.m_freeHead;
-                Coord* slot = NULL;
-                if (cell->m_next != NULL) {
-                    slot = &cell->m_value;
-                    g_coordPool.m_freeHead = cell->m_next;
-                }
+                Coord* slot = g_coordPool.Pop();
                 slot->m_x = obj->m_screenX >> TILE_SHIFT_PX;
                 slot->m_y = obj->m_screenY >> TILE_SHIFT_PX;
                 CPtrArray* cells = &m_placedObjectCells[obj->m_score];
@@ -6778,13 +6761,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         i32 n;
         ar->Read(&n, sizeof(n));
         for (u32 j = 0; j < static_cast<u32>(n); j++) {
-            Coord* node = NULL;
-            CoordPoolNode* head = g_coordPool.m_freeHead;
-            CoordPoolNode* next = head->m_next;
-            if (next) {
-                node = &head->m_value;
-                g_coordPool.m_freeHead = next;
-            }
+            Coord* node = g_coordPool.Pop();
             ar->Read(node, sizeof(*node));
             markers->SetAtGrow(markers->GetSize(), node);
         }
@@ -6812,13 +6789,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
             i32 n;
             ar->Read(&n, sizeof(n));
             for (u32 j = 0; j < static_cast<u32>(n); j++) {
-                Coord* node = NULL;
-                CoordPoolNode* head = g_coordPool.m_freeHead;
-                CoordPoolNode* next = head->m_next;
-                if (next) {
-                    node = &head->m_value;
-                    g_coordPool.m_freeHead = next;
-                }
+                Coord* node = g_coordPool.Pop();
                 ar->Read(node, sizeof(*node));
                 m_placedObjectCells[k].SetAtGrow(PlacedObjectCellCount(k), node);
             }
@@ -6933,13 +6904,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         m_cameraBookmarks.SetSize(0, -1);
         m_cameraBookmarks.SetSize(cameraBookmarkCount, -1);
         for (u32 j = 0; j < static_cast<u32>(cameraBookmarkCount); j++) {
-            Coord* node = NULL;
-            CoordPoolNode* head = g_coordPool.m_freeHead;
-            CoordPoolNode* next = head->m_next;
-            if (next) {
-                node = &head->m_value;
-                g_coordPool.m_freeHead = next;
-            }
+            Coord* node = g_coordPool.Pop();
             ar->Read(node, 8);
             SetCameraBookmarkAt(j, node);
         }

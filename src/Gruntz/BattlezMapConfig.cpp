@@ -184,12 +184,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
          cur = ListGetNext(mgr->m_world->m_childGroup)) {
         if (cur->m_logicRecord->m_dispatch == &DispatchGruntCreationPointLogic
             && cur->m_smarts == playerIndex) {
-            CoordPoolNode* p = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
-            Coord* slot = NULL;
-            if (p->m_next != NULL) {
-                slot = &p->m_value;
-                g_coordPool.m_freeHead = p->m_next;
-            }
+            Coord* slot = g_coordPool.Pop();
             slot->m_x = cur->m_screenX / TILE_SIZE_PX;
             slot->m_y = cur->m_screenY / TILE_SIZE_PX;
             m_candArray.SetAtGrow(m_candArray.GetSize(), slot);
@@ -210,12 +205,7 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
          cur3 = ListGetNext(mgr->m_world->m_childGroup)) {
         if (cur3->m_logicRecord->m_dispatch == &DispatchWayPointLogic
             && cur3->m_smarts == playerIndex) {
-            CoordPoolNode* p = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
-            Coord* slot = NULL;
-            if (p->m_next != NULL) {
-                slot = &p->m_value;
-                g_coordPool.m_freeHead = p->m_next;
-            }
+            Coord* slot = g_coordPool.Pop();
             slot->m_x = cur3->m_screenX >> TILE_SHIFT_PX;
             slot->m_y = cur3->m_screenY >> TILE_SHIFT_PX;
             m_attackWaypoints.SetAtGrow(m_attackWaypoints.GetSize(), slot);
@@ -630,6 +620,16 @@ candidateFound:
     return 1;
 }
 
+static inline bool HasAnimationActName(CGrunt* unit, const char* name) {
+    return strcmp(g_typeColl[unit->m_logicRecord->m_eventCode], name) == 0;
+}
+
+#define BATTLEZ_ACT_DIFFERS_FROM_IGLPJCR(unit, result)                                             \
+    (!(result = HasAnimationActName(unit, "I")) && !(result = HasAnimationActName(unit, "G"))      \
+     && !(result = HasAnimationActName(unit, "L")) && !(result = HasAnimationActName(unit, "P"))   \
+     && !(result = HasAnimationActName(unit, "J")) && !(result = HasAnimationActName(unit, "C"))   \
+     && !(result = HasAnimationActName(unit, "R")))
+
 RVA(0x000267c0, 0x2850)
 i32 CBattlezMapConfig::StepRowUnits() {
     m_roundRobinTick++;
@@ -687,41 +687,14 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         if (unit->IsAtSavedScreenPos() != 0 && unit->m_entranceCommitted != false
                             && unit->m_deathAnimStarted == false && unit->m_entranceActive == false
                             && unit->m_poweredUp == false) {
-                            eq = (ANIMATION_ACT_EQUALS_FOR(unit, "I"));
-                            if (!eq) {
-                                eq = (ANIMATION_ACT_EQUALS_FOR(unit, "G"));
-                                if (!eq) {
-                                    eq = (ANIMATION_ACT_EQUALS_FOR(unit, "L"));
-                                    if (!eq) {
-                                        eq = (ANIMATION_ACT_EQUALS_FOR(unit, "P"));
-                                        if (!eq) {
-                                            eq = (ANIMATION_ACT_EQUALS_FOR(unit, "J"));
-                                            if (!eq) {
-                                                eq = (ANIMATION_ACT_EQUALS_FOR(unit, "C"));
-                                                if (!eq) {
-                                                    eq = (ANIMATION_ACT_EQUALS_FOR(unit, "R"));
-                                                    if (!eq) {
-                                                        PickupType st2 = unit->m_entranceReason;
-                                                        if (st2 > PICKUP_EQUIPPABLE_LAST) {
-                                                            st2 = unit->m_toolId;
-                                                        }
-                                                        if (st2 == PICKUP_BRICK
-                                                            && unit->m_arrivalState == AI_DEFENDER
-                                                            && unit->m_defenderState
-                                                                   == AISTATE_BATTLEZ_ROUTE_TARGET) {
-                                                            unit->LoadPickupSprites(
-                                                                PICKUP_NONE,
-                                                                1,
-                                                                0,
-                                                                0,
-                                                                1
-                                                            );
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
+                            if (BATTLEZ_ACT_DIFFERS_FROM_IGLPJCR(unit, eq)) {
+                                PickupType st2 = unit->m_entranceReason;
+                                if (st2 > PICKUP_EQUIPPABLE_LAST) {
+                                    st2 = unit->m_toolId;
+                                }
+                                if (st2 == PICKUP_BRICK && unit->m_arrivalState == AI_DEFENDER
+                                    && unit->m_defenderState == AISTATE_BATTLEZ_ROUTE_TARGET) {
+                                    unit->LoadPickupSprites(PICKUP_NONE, 1, 0, 0, 1);
                                 }
                             }
                         }
@@ -801,118 +774,73 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         }
                         {
                             char ne;
-                            ne = (ANIMATION_ACT_DIFFERS_FOR(unit, "C"));
-                            if (ne) {
-                                ne = (ANIMATION_ACT_DIFFERS_FOR(unit, "R"));
-                                if (ne) {
-                                    ne = (ANIMATION_ACT_DIFFERS_FOR(unit, "C"));
-                                    if (ne) {
-                                        ne = (ANIMATION_ACT_DIFFERS_FOR(unit, "G"));
-                                        if (ne) {
-                                            ne = (ANIMATION_ACT_DIFFERS_FOR(unit, "L"));
-                                            if (ne) {
-                                                ne = (ANIMATION_ACT_DIFFERS_FOR(unit, "P"));
-                                                if (ne) {
-                                                    ne = (ANIMATION_ACT_DIFFERS_FOR(unit, "J"));
-                                                    if (ne) {
-                                                        if (unit->m_object->m_screenX
-                                                                == unit->m_lastTilePx.m_x
-                                                            && unit->m_object->m_screenY
-                                                                   == unit->m_lastTilePx.m_y
-                                                            && unit->m_entranceCommitted != false
-                                                            && unit->m_deathAnimStarted == false
-                                                            && unit->m_entranceActive == false) {
-                                                            RECT box;
-                                                            Coord c1;
-                                                            (static_cast<CUserLogic*>(unit))
-                                                                ->GetScreenPos((&c1));
-                                                            c1.m_y >>= 5;
-                                                            c1.m_x >>= 5;
-                                                            Coord c2;
-                                                            (static_cast<CUserLogic*>(unit))
-                                                                ->GetScreenTile((&c2));
-                                                            Coord c3;
-                                                            (static_cast<CUserLogic*>(unit))
-                                                                ->GetScreenPos((&c3));
-                                                            c3.m_y >>= 5;
-                                                            c3.m_x >>= 5;
-                                                            Coord c4;
-                                                            (static_cast<CUserLogic*>(unit))
-                                                                ->GetScreenTile((&c4));
-                                                            box.left = c4.m_x - 4;
-                                                            box.top = c3.m_y - 4;
-                                                            box.right = c2.m_x + 4;
-                                                            box.bottom = c1.m_y + 4;
-                                                            Coord c5;
-                                                            (static_cast<CUserLogic*>(unit))
-                                                                ->GetScreenTile((&c5));
-                                                            Coord c6;
-                                                            (static_cast<CUserLogic*>(unit))
-                                                                ->GetScreenTile((&c6));
-                                                            Coord c7;
-                                                            (static_cast<CUserLogic*>(unit))
-                                                                ->GetScreenPos((&c7));
-                                                            c7.m_y >>= 5;
-                                                            c7.m_x >>= 5;
-                                                            Coord c8;
-                                                            (static_cast<CUserLogic*>(unit))
-                                                                ->GetScreenTile((&c8));
-                                                            i32 rowEnd = c5.m_y + 2;
-                                                            i32 colEnd = c6.m_x + 2;
-                                                            i32 rowBeg = c7.m_y - 1;
-                                                            i32 colBeg = c8.m_x - 1;
-                                                            CMapMgr* board = m_board;
-                                                            CRect bounds(
-                                                                0,
-                                                                0,
-                                                                board->m_width,
-                                                                board->m_height
-                                                            );
-                                                            RECT clamp;
-                                                            RECT* pb = &box;
-                                                            if (pb != NULL) {
-                                                                clamp.left = pb->left;
-                                                                clamp.top = pb->top;
-                                                                clamp.right = pb->right + 1;
-                                                                clamp.bottom = pb->bottom + 1;
-                                                            } else {
-                                                                clamp = CRect(
-                                                                    0,
-                                                                    0,
-                                                                    board->m_width,
-                                                                    board->m_height
-                                                                );
-                                                            }
-                                                            if (!IntersectRect(
-                                                                    &board->m_bounds,
-                                                                    &clamp,
-                                                                    &bounds
-                                                                )) {
-                                                                board->m_bounds = clamp;
-                                                            }
-                                                            board->m_gridW = board->m_bounds.right
-                                                                             - board->m_bounds.left;
-                                                            board->m_gridH = board->m_bounds.bottom
-                                                                             - board->m_bounds.top;
-                                                            for (i32 row = rowBeg; row < rowEnd;
-                                                                 row++) {
-                                                                CMapMgr* b = m_board;
-                                                                for (i32 col = colBeg; col < colEnd;
-                                                                     col++) {
-                                                                    if (static_cast<u32>(col)
-                                                                            < b->m_width
-                                                                        && static_cast<u32>(row)
-                                                                               < b->m_height) {
-                                                                        if (b->m_rows[row][col]
-                                                                                .m_flags
-                                                                            & 0x1000000) {
-                                                                            goto perimSweep;
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
+                            if ((ne = ANIMATION_ACT_DIFFERS_FOR(unit, "C"))
+                                && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "R"))
+                                && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "C"))
+                                && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "G"))
+                                && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "L"))
+                                && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "P"))
+                                && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "J"))) {
+                                if (unit->m_object->m_screenX == unit->m_lastTilePx.m_x
+                                    && unit->m_object->m_screenY == unit->m_lastTilePx.m_y
+                                    && unit->m_entranceCommitted != false
+                                    && unit->m_deathAnimStarted == false
+                                    && unit->m_entranceActive == false) {
+                                    RECT box;
+                                    Coord c1;
+                                    (static_cast<CUserLogic*>(unit))->GetScreenPos((&c1));
+                                    c1.m_y >>= 5;
+                                    c1.m_x >>= 5;
+                                    Coord c2;
+                                    (static_cast<CUserLogic*>(unit))->GetScreenTile((&c2));
+                                    Coord c3;
+                                    (static_cast<CUserLogic*>(unit))->GetScreenPos((&c3));
+                                    c3.m_y >>= 5;
+                                    c3.m_x >>= 5;
+                                    Coord c4;
+                                    (static_cast<CUserLogic*>(unit))->GetScreenTile((&c4));
+                                    box.left = c4.m_x - 4;
+                                    box.top = c3.m_y - 4;
+                                    box.right = c2.m_x + 4;
+                                    box.bottom = c1.m_y + 4;
+                                    Coord c5;
+                                    (static_cast<CUserLogic*>(unit))->GetScreenTile((&c5));
+                                    Coord c6;
+                                    (static_cast<CUserLogic*>(unit))->GetScreenTile((&c6));
+                                    Coord c7;
+                                    (static_cast<CUserLogic*>(unit))->GetScreenPos((&c7));
+                                    c7.m_y >>= 5;
+                                    c7.m_x >>= 5;
+                                    Coord c8;
+                                    (static_cast<CUserLogic*>(unit))->GetScreenTile((&c8));
+                                    i32 rowEnd = c5.m_y + 2;
+                                    i32 colEnd = c6.m_x + 2;
+                                    i32 rowBeg = c7.m_y - 1;
+                                    i32 colBeg = c8.m_x - 1;
+                                    CMapMgr* board = m_board;
+                                    CRect bounds(0, 0, board->m_width, board->m_height);
+                                    RECT clamp;
+                                    RECT* pb = &box;
+                                    if (pb != NULL) {
+                                        clamp.left = pb->left;
+                                        clamp.top = pb->top;
+                                        clamp.right = pb->right + 1;
+                                        clamp.bottom = pb->bottom + 1;
+                                    } else {
+                                        clamp = CRect(0, 0, board->m_width, board->m_height);
+                                    }
+                                    if (!IntersectRect(&board->m_bounds, &clamp, &bounds)) {
+                                        board->m_bounds = clamp;
+                                    }
+                                    board->m_gridW = board->m_bounds.right - board->m_bounds.left;
+                                    board->m_gridH = board->m_bounds.bottom - board->m_bounds.top;
+                                    for (i32 row = rowBeg; row < rowEnd; row++) {
+                                        CMapMgr* b = m_board;
+                                        for (i32 col = colBeg; col < colEnd; col++) {
+                                            if (static_cast<u32>(col) < b->m_width
+                                                && static_cast<u32>(row) < b->m_height) {
+                                                if (b->m_rows[row][col].m_flags & 0x1000000) {
+                                                    goto perimSweep;
                                                 }
                                             }
                                         }
@@ -989,63 +917,32 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         if (unit->IsAtSavedScreenPos() != 0 && unit->m_entranceCommitted != false
                             && unit->m_deathAnimStarted == false && unit->m_entranceActive == false
                             && unit->m_poweredUp == false) {
-                            eq = (ANIMATION_ACT_EQUALS_FOR(unit, "I"));
-                            if (!eq) {
-                                eq = (ANIMATION_ACT_EQUALS_FOR(unit, "G"));
-                                if (!eq) {
-                                    eq = (ANIMATION_ACT_EQUALS_FOR(unit, "L"));
-                                    if (!eq) {
-                                        eq = (ANIMATION_ACT_EQUALS_FOR(unit, "P"));
-                                        if (!eq) {
-                                            eq = (ANIMATION_ACT_EQUALS_FOR(unit, "J"));
-                                            if (!eq) {
-                                                eq = (ANIMATION_ACT_EQUALS_FOR(unit, "C"));
-                                                if (!eq) {
-                                                    eq = (ANIMATION_ACT_EQUALS_FOR(unit, "R"));
-                                                    if (!eq) {
-                                                        for (i32 j = 0; j < 4; j++) {
-                                                            if (j != m_playerIndex) {
-                                                                for (i32 k = 0;
-                                                                     k < TM_UNITS_PER_PLAYER;
-                                                                     k++) {
-                                                                    CGrunt* other =
-                                                                        m_triggerMgr->m_units
-                                                                            [j * TM_UNITS_PER_PLAYER
-                                                                             + k];
-                                                                    if (other != NULL) {
-                                                                        if (unit->RectContains(
-                                                                                other->m_object
-                                                                                    ->m_screenX,
-                                                                                other->m_object
-                                                                                    ->m_screenY
-                                                                            )
-                                                                            != 0) {
-                                                                            if (unit->m_gruntKind
-                                                                                != PICKUP_GHOST) {
-                                                                                if (other
-                                                                                        ->m_poweredUp
-                                                                                    == false) {
-                                                                                    if (HandleUnitContact(
-                                                                                            unit,
-                                                                                            other
-                                                                                        )
-                                                                                        != 0) {
-                                                                                        return 1;
-                                                                                    }
-                                                                                }
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }
+                            if (BATTLEZ_ACT_DIFFERS_FROM_IGLPJCR(unit, eq)) {
+                                for (i32 j = 0; j < 4; j++) {
+                                    if (j != m_playerIndex) {
+                                        for (i32 k = 0; k < TM_UNITS_PER_PLAYER; k++) {
+                                            CGrunt* other =
+                                                m_triggerMgr->m_units[j * TM_UNITS_PER_PLAYER + k];
+                                            if (other != NULL) {
+                                                if (unit->RectContains(
+                                                        other->m_object->m_screenX,
+                                                        other->m_object->m_screenY
+                                                    )
+                                                    != 0) {
+                                                    if (unit->m_gruntKind != PICKUP_GHOST) {
+                                                        if (other->m_poweredUp == false) {
+                                                            if (HandleUnitContact(unit, other)
+                                                                != 0) {
+                                                                return 1;
                                                             }
                                                         }
-                                                        hit = 0;
                                                     }
                                                 }
                                             }
                                         }
                                     }
                                 }
+                                hit = 0;
                             }
                         }
                     }
@@ -1060,29 +957,16 @@ i32 CBattlezMapConfig::StepRowUnits() {
                     if (unit->m_entranceCommitted != false && unit->m_deathAnimStarted == false
                         && unit->m_entranceActive == false && unit->m_poweredUp == false) {
                         char ne;
-                        ne = (ANIMATION_ACT_DIFFERS_FOR(unit, "I"));
-                        if (ne) {
-                            ne = (ANIMATION_ACT_DIFFERS_FOR(unit, "G"));
-                            if (ne) {
-                                ne = (ANIMATION_ACT_DIFFERS_FOR(unit, "L"));
-                                if (ne) {
-                                    ne = (ANIMATION_ACT_DIFFERS_FOR(unit, "P"));
-                                    if (ne) {
-                                        ne = (ANIMATION_ACT_DIFFERS_FOR(unit, "J"));
-                                        if (ne) {
-                                            ne = (ANIMATION_ACT_DIFFERS_FOR(unit, "C"));
-                                            if (ne) {
-                                                ne = (ANIMATION_ACT_DIFFERS_FOR(unit, "R"));
-                                                if (ne) {
-                                                    if (unit->m_battleState != BZTASK_UNASSIGNED) {
-                                                        if (RouteToNearbyEnemy(unit) != 0) {
-                                                            hit = 1;
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
+                        if ((ne = ANIMATION_ACT_DIFFERS_FOR(unit, "I"))
+                            && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "G"))
+                            && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "L"))
+                            && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "P"))
+                            && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "J"))
+                            && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "C"))
+                            && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "R"))) {
+                            if (unit->m_battleState != BZTASK_UNASSIGNED) {
+                                if (RouteToNearbyEnemy(unit) != 0) {
+                                    hit = 1;
                                 }
                             }
                         }
@@ -1094,158 +978,66 @@ i32 CBattlezMapConfig::StepRowUnits() {
             if (GRUNT_AT_SAVED_SCREEN_POS(unit) && unit->m_entranceCommitted != false
                 && unit->m_deathAnimStarted == false && unit->m_entranceActive == false
                 && unit->m_poweredUp == false) {
-                eq = (ANIMATION_ACT_EQUALS_FOR(unit, "I"));
-                if (!eq) {
-                    eq = (ANIMATION_ACT_EQUALS_FOR(unit, "G"));
-                    if (!eq) {
-                        eq = (ANIMATION_ACT_EQUALS_FOR(unit, "L"));
-                        if (!eq) {
-                            eq = (ANIMATION_ACT_EQUALS_FOR(unit, "P"));
-                            if (!eq) {
-                                eq = (ANIMATION_ACT_EQUALS_FOR(unit, "J"));
-                                if (!eq) {
-                                    eq = (ANIMATION_ACT_EQUALS_FOR(unit, "C"));
-                                    if (!eq) {
-                                        eq = (ANIMATION_ACT_EQUALS_FOR(unit, "R"));
-                                        if (!eq) {
-                                            if (static_cast<u32>(m_roundRobinTick)
-                                                    % TM_UNITS_PER_PLAYER
-                                                == static_cast<u32>(i)) {
-                                                {
-                                                    PickupType st3 = unit->m_entranceReason;
-                                                    if (st3 > PICKUP_EQUIPPABLE_LAST) {
-                                                        st3 = unit->m_toolId;
-                                                    }
-                                                    if (st3 == PICKUP_WAND
-                                                        && unit->m_health > 0x1a) {
-                                                        if (rand() % g_diffTier == 0) {
-                                                            i32 r = g_buteMgr.GetInt(
-                                                                "Spellz",
-                                                                "SpellRadius",
-                                                                8
-                                                            );
-                                                            RECT spell;
-                                                            i32 px = unit->m_object->m_screenX;
-                                                            i32 py = unit->m_object->m_screenY;
-                                                            spell.left = (px >> TILE_SHIFT_PX) - r;
-                                                            spell.top = (py >> TILE_SHIFT_PX) - r;
-                                                            spell.right = (px >> TILE_SHIFT_PX) + r;
-                                                            spell.bottom =
-                                                                (py >> TILE_SHIFT_PX) + r;
-                                                            for (i32 j2 = 0; j2 < 4; j2++) {
-                                                                if (j2 != m_playerIndex) {
-                                                                    for (i32 k2 = 0;
-                                                                         k2 < TM_UNITS_PER_PLAYER;
-                                                                         k2++) {
-                                                                        CGrunt* o =
-                                                                            m_triggerMgr->m_units
-                                                                                [j2 * TM_UNITS_PER_PLAYER
-                                                                                 + k2];
-                                                                        if (o != NULL) {
-                                                                            POINT pt;
-                                                                            pt.x = o->m_object
-                                                                                       ->m_screenX
-                                                                                   >> TILE_SHIFT_PX;
-                                                                            pt.y = o->m_object
-                                                                                       ->m_screenY
-                                                                                   >> TILE_SHIFT_PX;
-                                                                            if (PtInRect(&spell, pt)
-                                                                                != false) {
-                                                                                goto spellHit;
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                                if (PathToNearbyUnit(unit) != 0) {
-                                                    return 1;
-                                                }
-                                                if (unit->CoordCount() == 0
-                                                    && unit->m_defenderState == AISTATE_COOLDOWN) {
-                                                    Coord none;
-                                                    unit->m_unusedBattleCell = *none.Set(-1, -1);
-                                                    unit->m_defenderState = AISTATE_SEEK;
-                                                }
-                                                {
-                                                    char nd;
-                                                    nd = (ANIMATION_ACT_DIFFERS_FOR(unit, "D"));
-                                                    if (nd) {
-                                                        ResolveArrival(unit);
-                                                    }
-                                                }
-                                                if (unit->m_object->m_screenX
-                                                        == unit->m_lastTilePx.m_x
-                                                    && unit->m_object->m_screenY
-                                                           == unit->m_lastTilePx.m_y
-                                                    && unit->m_entranceCommitted != false
-                                                    && unit->m_deathAnimStarted == false
-                                                    && unit->m_entranceActive == false
-                                                    && unit->m_poweredUp == false) {
-                                                    eq = (ANIMATION_ACT_EQUALS_FOR(unit, "I"));
-                                                    if (!eq) {
-                                                        eq = (ANIMATION_ACT_EQUALS_FOR(unit, "G"));
-                                                        if (!eq) {
-                                                            eq = (ANIMATION_ACT_EQUALS_FOR(
-                                                                unit,
-                                                                "L"
-                                                            ));
-                                                            if (!eq) {
-                                                                eq =
-                                                                    (strcmp(
-                                                                         (g_typeColl
-                                                                              [unit->m_logicRecord
-                                                                                   ->m_eventCode]),
-                                                                         "P"
-                                                                     )
-                                                                     == 0);
-                                                                if (!eq) {
-                                                                    eq =
-                                                                        (strcmp(
-                                                                             (g_typeColl
-                                                                                  [unit->m_logicRecord
-                                                                                       ->m_eventCode]),
-                                                                             "J"
-                                                                         )
-                                                                         == 0);
-                                                                    if (!eq) {
-                                                                        eq =
-                                                                            (strcmp(
-                                                                                 (
-                                                                                     g_typeColl
-                                                                                         [unit->m_logicRecord
-                                                                                              ->m_eventCode]
-                                                                                 ),
-                                                                                 "C"
-                                                                             )
-                                                                             == 0);
-                                                                        if (!eq) {
-                                                                            eq =
-                                                                                (strcmp(
-                                                                                     (
-                                                                                         g_typeColl
-                                                                                             [unit->m_logicRecord
-                                                                                                  ->m_eventCode]
-                                                                                     ),
-                                                                                     "R"
-                                                                                 )
-                                                                                 == 0);
-                                                                            if (!eq) {
-                                                                                goto dispatch;
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
+                if (BATTLEZ_ACT_DIFFERS_FROM_IGLPJCR(unit, eq)) {
+                    if (static_cast<u32>(m_roundRobinTick) % TM_UNITS_PER_PLAYER
+                        == static_cast<u32>(i)) {
+                        {
+                            PickupType st3 = unit->m_entranceReason;
+                            if (st3 > PICKUP_EQUIPPABLE_LAST) {
+                                st3 = unit->m_toolId;
+                            }
+                            if (st3 == PICKUP_WAND && unit->m_health > 0x1a) {
+                                if (rand() % g_diffTier == 0) {
+                                    i32 r = g_buteMgr.GetInt("Spellz", "SpellRadius", 8);
+                                    RECT spell;
+                                    i32 px = unit->m_object->m_screenX;
+                                    i32 py = unit->m_object->m_screenY;
+                                    spell.left = (px >> TILE_SHIFT_PX) - r;
+                                    spell.top = (py >> TILE_SHIFT_PX) - r;
+                                    spell.right = (px >> TILE_SHIFT_PX) + r;
+                                    spell.bottom = (py >> TILE_SHIFT_PX) + r;
+                                    for (i32 j2 = 0; j2 < 4; j2++) {
+                                        if (j2 != m_playerIndex) {
+                                            for (i32 k2 = 0; k2 < TM_UNITS_PER_PLAYER; k2++) {
+                                                CGrunt* o =
+                                                    m_triggerMgr
+                                                        ->m_units[j2 * TM_UNITS_PER_PLAYER + k2];
+                                                if (o != NULL) {
+                                                    POINT pt;
+                                                    pt.x = o->m_object->m_screenX >> TILE_SHIFT_PX;
+                                                    pt.y = o->m_object->m_screenY >> TILE_SHIFT_PX;
+                                                    if (PtInRect(&spell, pt) != false) {
+                                                        goto spellHit;
                                                     }
                                                 }
                                             }
                                         }
                                     }
                                 }
+                            }
+                        }
+                        if (PathToNearbyUnit(unit) != 0) {
+                            return 1;
+                        }
+                        if (unit->CoordCount() == 0 && unit->m_defenderState == AISTATE_COOLDOWN) {
+                            Coord none;
+                            unit->m_unusedBattleCell = *none.Set(-1, -1);
+                            unit->m_defenderState = AISTATE_SEEK;
+                        }
+                        {
+                            char nd;
+                            nd = (ANIMATION_ACT_DIFFERS_FOR(unit, "D"));
+                            if (nd) {
+                                ResolveArrival(unit);
+                            }
+                        }
+                        if (unit->m_object->m_screenX == unit->m_lastTilePx.m_x
+                            && unit->m_object->m_screenY == unit->m_lastTilePx.m_y
+                            && unit->m_entranceCommitted != false
+                            && unit->m_deathAnimStarted == false && unit->m_entranceActive == false
+                            && unit->m_poweredUp == false) {
+                            if (BATTLEZ_ACT_DIFFERS_FROM_IGLPJCR(unit, eq)) {
+                                goto dispatch;
                             }
                         }
                     }
@@ -2449,12 +2241,7 @@ i32 CBattlezMapConfig::Deserialize(CFileMemBase* ar) {
     ar->Read(&count, sizeof(count));
     m_attackWaypoints.SetSize(count, -1);
     for (i = 0; i < static_cast<u32>(count); i++) {
-        CoordPoolNode* node = g_coordPool.m_freeHead;
-        Coord* payload = NULL;
-        if (node->m_next != NULL) {
-            payload = &node->m_value;
-            g_coordPool.m_freeHead = node->m_next;
-        }
+        Coord* payload = g_coordPool.Pop();
         ar->Read(payload, 8);
         m_attackWaypoints[i] = payload;
     }
@@ -2469,12 +2256,7 @@ i32 CBattlezMapConfig::Deserialize(CFileMemBase* ar) {
     ar->Read(&count, sizeof(count));
     m_candArray.SetSize(count, -1);
     for (i = 0; i < static_cast<u32>(count); i++) {
-        CoordPoolNode* node = g_coordPool.m_freeHead;
-        Coord* payload = NULL;
-        if (node->m_next != NULL) {
-            payload = &node->m_value;
-            g_coordPool.m_freeHead = node->m_next;
-        }
+        Coord* payload = g_coordPool.Pop();
         ar->Read(payload, 8);
         m_candArray[i] = payload;
     }

@@ -113,10 +113,7 @@ CActReg CActRegPool<CSpotLight>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 RVA(0x000b1630, 0x102)
 void CSpotLight::FireActivation(i32 id) {
-    CActHandler* e = &CActRegPool<CSpotLight>::s_table[id];
-    if ((*e) != NULL) {
-        (this->*(CActRegPool<CSpotLight>::s_table[id]))();
-    }
+    DispatchRegisteredAct(this, id);
 }
 
 RVA(0x000b1790, 0x2ac)

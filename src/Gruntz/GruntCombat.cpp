@@ -799,12 +799,9 @@ i32 CGrunt::PathScan() {
 
                         while (node != NULL) {
                             Coord* src = static_cast<Coord*>(coordz->GetNext(node));
-                            Coord* fresh = NULL;
-                            CoordPoolNode* free = g_coordPool.m_freeHead;
-                            if (free->m_next != NULL) {
-                                fresh = &free->m_value;
+                            Coord* fresh = g_coordPool.Pop();
+                            if (fresh != NULL) {
                                 *fresh = *src;
-                                g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
                             }
                             s.AddTail(fresh);
                         }
@@ -1898,10 +1895,7 @@ i32 DispatchGruntLogic(CGameObject* owner) {
 
 RVA(0x0005bcd0, 0x102)
 void CGrunt::FireActivation(i32 id) {
-    CActHandler* e = &CActRegPool<CGrunt>::s_table[id];
-    if (*e != NULL) {
-        (this->*(CActRegPool<CGrunt>::s_table[id]))();
-    }
+    DispatchRegisteredAct(this, id);
 }
 
 RVA(0x0005be30, 0x9e5)

@@ -46,10 +46,7 @@ CEyeCandyAni::CEyeCandyAni(CGameObject* obj)
 
 RVA(0x000acbb0, 0x102)
 void CEyeCandyAni::FireActivation(i32 id) {
-    CActHandler* e = &CActRegPool<CEyeCandyAni>::s_table[id];
-    if ((*e) != NULL) {
-        (this->*(CActRegPool<CEyeCandyAni>::s_table[id]))();
-    }
+    DispatchRegisteredAct(this, id);
 }
 
 RVA(0x000acd10, 0x18d)

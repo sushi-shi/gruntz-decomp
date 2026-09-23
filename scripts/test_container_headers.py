@@ -87,6 +87,7 @@ typedef char pool_size[sizeof(FreeNodePool<Payload>) == 16 ? 1 : -1];
 typedef char node_size[sizeof(FreeNodePool<Payload>::Node) == 12 ? 1 : -1];
 typedef char payload_offset[offsetof(FreeNodePool<Payload>::Node, m_value) == 4 ? 1 : -1];
 void use(FreeNodePool<Payload>& pool, Payload* value) { pool.Push(value); }
+Payload* pop(FreeNodePool<Payload>& pool) { return pool.Pop(); }
 ''')
 
     def test_input_array_layout(self):

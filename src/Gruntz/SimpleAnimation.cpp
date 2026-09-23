@@ -49,10 +49,7 @@ CSimpleAnimation::CSimpleAnimation(CGameObject* obj)
 
 RVA(0x000abc10, 0x102)
 void CSimpleAnimation::FireActivation(i32 idx) {
-    if (CActRegPool<CSimpleAnimation>::s_table[idx] != NULL) {
-        CActHandler fn = CActRegPool<CSimpleAnimation>::s_table[idx];
-        (this->*fn)();
-    }
+    DispatchRegisteredAct(this, idx);
 }
 
 RVA(0x000abd70, 0x18d)

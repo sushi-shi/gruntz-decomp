@@ -562,3 +562,40 @@ exact, sixteen remain, and the recovery goal is still open.
 The staged source snapshot passes the full build after that explicit
 adjudication and bank. All 15 public-header controls pass. The raw relocation
 audit checks 3,921 near-exact functions with zero fake or wrong targets.
+
+### Merge of main's shared helpers (#86)
+
+The conflict resolution incorporates main `b3c9fc341` without undoing either
+branch's abstractions. `DispatchRegisteredAct` keeps two typed indexer accesses
+and all 51 call sites; all 52 scored activation functions remain exact.
+`FreeNodePool<T>::Pop` lives beside `Push` in the generic owner and preserves
+all 20 incoming call sites. The Battlez one-name helper and whole-chain macro
+use the recovered typed name table while retaining the `char` comparison
+locals and lookup order. The moved EyeCandy owner receives its dispatch change
+without reintroducing duplicate definitions in FrontCandyAni.
+
+Both parent banks are joined by retail RVA before measuring the merged tree.
+This retains main's higher `QueuePickupReward` historical maximum, 83.9434%,
+as well as all 4,429 maxima from the PR parent. README and current-score rows
+are generated from the real merged build, not selected from either parent's
+headline.
+
+The merged build has **3,830 / 4,426 exact**, unchanged from `98cfbc773`, with
+full-engine fuzzy 93.71%. Boomerang's `AdvanceMotion` returns to exact while
+unchanged `ScreenToCell` returns to 84.60714%; its instructions, operand
+inventory and ordered referent agree except for allocation/scheduling. The
+six other fresh gate deltas are `StepGruntMovement`, `PathScan`,
+`StepCompassMove`, `ExpandNeighbor`, `FindPath`, and `CSpotLight::Update`.
+Only the first two bodies change, adopting main's `Pop` boundary. These
+non-exact deltas are retained with the source-proven helpers; neither the
+pre-existing call/CFG walls nor their historical headroom are declared closed.
+
+All 15 public-header controls pass, including a non-Coord `Pop` consumer. The
+raw relocation audit checks 3,920 near-exact functions with zero fake or wrong
+targets. All fast/normal semantic gates pass; the seven fresh score deltas are
+explicitly adjudicated for the merged-source bank, with historical maxima
+preserved. The broader exact-match recovery remains open.
+
+The final full build passes the MAX gate and every fast/normal gate after
+banking. Comparison against both parents preserves all 4,429 historical RVA
+maxima. Nineteen of the original 34 losses are currently exact; fifteen remain.

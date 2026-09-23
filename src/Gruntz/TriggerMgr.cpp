@@ -1430,12 +1430,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
     ar->Read(&count, sizeof(count));
     CPtrList* rec = &m_recList;
     for (ci = 0; ci < static_cast<u32>(count); ci++) {
-        CoordPoolNode* fl = g_coordPool.m_freeHead;
-        Coord* node = NULL;
-        if (fl->m_next != NULL) {
-            node = &fl->m_value;
-            g_coordPool.m_freeHead = fl->m_next;
-        }
+        Coord* node = g_coordPool.Pop();
         ar->Read(node, 8);
         rec->AddTail(node);
     }
@@ -1445,12 +1440,7 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
     do {
         ar->Read(&count, sizeof(count));
         for (ci = 0; ci < static_cast<u32>(count); ci++) {
-            CoordPoolNode* fl = g_coordPool.m_freeHead;
-            Coord* node = NULL;
-            if (fl->m_next != NULL) {
-                node = &fl->m_value;
-                g_coordPool.m_freeHead = fl->m_next;
-            }
+            Coord* node = g_coordPool.Pop();
             ar->Read(node, 8);
             sel->AddTail(node);
         }
@@ -2407,12 +2397,7 @@ i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
     pos = m_recList.GetHeadPosition();
     while (pos != NULL) {
         Coord* src = static_cast<Coord*>(m_recList.GetNext(pos));
-        CoordPoolNode* fhNode = g_coordPool.m_freeHead;
-        Coord* dst = NULL;
-        if (fhNode->m_next != NULL) {
-            dst = &fhNode->m_value;
-            g_coordPool.m_freeHead = fhNode->m_next;
-        }
+        Coord* dst = g_coordPool.Pop();
         *dst = *src;
         sel->AddTail(dst);
     }

@@ -538,11 +538,7 @@ fail:
 
 RVA(0x00044640, 0x102)
 void CWarlord::FireActivation(i32 key) {
-
-    if (CActRegPool<CWarlord>::s_table[key] != NULL) {
-        CActHandler h = CActRegPool<CWarlord>::s_table[key];
-        (this->*h)();
-    }
+    DispatchRegisteredAct(this, key);
 }
 
 RVA(0x000447a0, 0x333)

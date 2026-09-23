@@ -41,9 +41,7 @@ CGruntSelectedSprite::CGruntSelectedSprite(CGameObject* obj)
 
 RVA(0x0007e660, 0x102)
 void CGruntSelectedSprite::FireActivation(i32 id) {
-    if ((CActRegPool<CGruntSelectedSprite>::s_table[id]) != NULL) {
-        (this->*(CActRegPool<CGruntSelectedSprite>::s_table[id]))();
-    }
+    DispatchRegisteredAct(this, id);
 }
 
 RVA(0x0007e7c0, 0x18d)

@@ -119,10 +119,7 @@ i32 CWormhole::SerializeDispatch(
 
 RVA(0x00040050, 0x102)
 void CWormhole::FireActivation(i32 idx) {
-    if (CActRegPool<CWormhole>::s_table[idx] != NULL) {
-        CActHandler fn = CActRegPool<CWormhole>::s_table[idx];
-        (this->*fn)();
-    }
+    DispatchRegisteredAct(this, idx);
 }
 
 RVA(0x000401b0, 0x18d)
@@ -187,11 +184,7 @@ CGruntPuddle::CGruntPuddle(CGameObject* obj)
 
 RVA(0x00040750, 0x102)
 void CGruntPuddle::FireActivation(i32 id) {
-    CActHandler* e = &CActRegPool<CGruntPuddle>::s_table[id];
-    if ((*e) != NULL) {
-        CActHandler* e2 = &CActRegPool<CGruntPuddle>::s_table[id];
-        (this->*((*e2)))();
-    }
+    DispatchRegisteredAct(this, id);
 }
 
 RVA(0x000408b0, 0x2ac)
@@ -390,11 +383,7 @@ i32 CTeleporter::SerializeDispatch(
 
 RVA(0x00041520, 0x102)
 void CTeleporter::FireActivation(i32 coord) {
-    CActHandler* e = &CActRegPool<CTeleporter>::s_table[coord];
-    if ((*e) != NULL) {
-        CActHandler* e2 = &CActRegPool<CTeleporter>::s_table[coord];
-        (this->*((*e2)))();
-    }
+    DispatchRegisteredAct(this, coord);
 }
 
 RVA(0x00041680, 0x2ac)

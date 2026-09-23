@@ -1386,12 +1386,7 @@ i32 CGrunt::StepGruntMovement() {
                 goto label_4c6e4;
             }
             {
-                Coord* node = NULL;
-                CoordPoolNode* head = g_coordPool.m_freeHead;
-                if (head->m_next != NULL) {
-                    node = &head->m_value;
-                    g_coordPool.m_freeHead = head->m_next;
-                }
+                Coord* node = g_coordPool.Pop();
                 node->m_x = tgtTileX;
                 node->m_y = tgtTileY;
                 m_coordList.AddHead(node);

@@ -26,6 +26,10 @@ line here, SAME commit.
 
 - [An inline singleton setter restores stores interleaved with the next call's arguments](inline-singleton-setter-restores-store-call-interleaving.md) — c10 — cpp:inline cpp:array cpp:call | asm:mov asm:push | topic:codegen-idiom topic:scheduling — seven palette builders reach strict 100% after restoring typed singleton setters; declaration-only and chained-assignment controls exclude TU noise and direct-store grouping.
 
+- [Shared inline dispatch and pool pop preserve their sites while moving other TU code](shared-inline-dispatch-and-pool-pop.md) - c9 - cpp:inline cpp:template cpp:class | asm:call asm:jcc | topic:codegen-idiom topic:tu-state - one two-lookup activation helper leaves all 51 converted overrides byte-exact; the single-exit pool pop preserves RebuildSelectionList's six-branch baseline, while early return adds a branch. Five unchanged-source functions move after the shared-header composition; preserve their historical MAX and bank the reviewed TU state.
+
+- [Inline one comparison; macro the repeated short-circuit chain](preserve-comparison-local-in-short-circuit-guards.md) - c9 - cpp:inline cpp:local cpp:branch cpp:macro | asm:call asm:jcc | topic:codegen-idiom topic:regalloc - six seven-name guards in StepRowUnits flatten without changing its 86.7956% base when their char assignments remain. A one-name function expands directly; nesting it inside a whole-chain inline function leaves a retail-absent call, while a whole-chain macro restores the base topology.
+
 WALL vs STEERABLE: `topic:codegen-idiom`/`topic:flags` = a source spelling closes the
 diff; `topic:wall`/`topic:scoring-artifact` = code already correct / no source form —
 stop chasing (orchestration §2a).
