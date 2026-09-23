@@ -913,14 +913,6 @@ union LogicDispatchWord {
     u32 m_bits;
 };
 
-union GruntActPmf {
-    i32 (CGrunt::*m_pmf)();
-    struct {
-        CActHandler m_h;
-        i32 m_adjust;
-    };
-};
-
 typedef i32 (CGrunt::*GruntActHandler)();
 
 bool SameCellTag(const GruntDirectionCell* a, const GruntDirectionCell* b);

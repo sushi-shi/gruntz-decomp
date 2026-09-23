@@ -4215,14 +4215,17 @@ i32 CPlay::RestoreCursorSaveUnder() {
     return 1;
 }
 
-// @early-stop
+static inline i32 ReadScrollSpeedRange() {
+    i32 maxSpeed = g_buteMgr.GetInt("Optionz", "MaxScrollSpeed");
+    return maxSpeed - g_buteMgr.GetInt("Optionz", "MinScrollSpeed");
+}
+
 RVA(0x000d12b0, 0x2d5)
 i32 CPlay::LoadScrollSpeedOptions() {
     DATA(0x0024c274)
     static i32 s_minScrollSpeed = g_buteMgr.GetInt("Optionz", "MinScrollSpeed");
     DATA(0x0024c270)
-    static i32 s_scrollSpeedRange = g_buteMgr.GetInt("Optionz", "MaxScrollSpeed")
-                                    - g_buteMgr.GetInt("Optionz", "MinScrollSpeed");
+    static i32 s_scrollSpeedRange = ReadScrollSpeedRange();
 
     CPlay* self = this;
     CGruntzMgr* w = m_mgr;

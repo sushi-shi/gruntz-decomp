@@ -529,3 +529,36 @@ same retail RVAs across the five renamed signatures.
 The independent comparison preserves all 4,429 prior RVA maxima. The raw
 relocation audit checks 3,921 near-exact functions with zero fake or wrong
 targets.
+
+### Typed action conversion and sequenced scroll initialization
+
+The real VC5 compiler accepts the zero-adjustment `CGrunt::*` to
+`CUserLogic::*` conversion with `static_cast`; the former union was not
+required. The live `ToActHandler` inline helper is restored, and the table
+store remains a macro. Real-header tests check both PMF widths, constant and
+parameter code bytes, the direct method relocation, and rejection of an
+unrelated owner. See the [PMF conversion controls](patterns/pmf-si-base-4byte-under-mi.md).
+`RegisterGruntActions` improves from 92.8406% to 97.79973%, but its remaining
+name/handler inline cuts are still open.
+
+`ReadScrollSpeedRange` preserves retail's maximum-then-minimum lookup order
+inside the second function-local static initializer. The old single
+subtraction expression called the lookups in the opposite order. The complete
+initializer and all 24 ordered references now agree; an unsequenced helper
+reproduces the defect. The function still scores 98.75% because one member
+load is scheduled differently. See the [initializer controls](patterns/function-local-static-dynamic-init-guard.md#an-exact-guard-does-not-prove-the-initializers-evaluation-order).
+Neither reopened function retains an exhausted-review marker.
+
+Compared with `7f4c0adff`, `ScreenToCell` becomes current-exact while
+`ReadyForSequence`, `CBoomerang::AdvanceMotion` and `CSBI_GruntMachine::Render`
+lose current exactness: **3,832 -> 3,830 / 4,426**. These bodies are unchanged.
+The four fresh MAX-gate deltas, including `LoadMainStatusBarSprite`, are
+adjudicated as shared-declaration codegen movement: their calls, control-flow
+structure, constants and ordered referents agree, with register/scheduling
+residue. No unused union is retained to steer them, and their same-source
+MAX proofs must remain banked. Eighteen of the 34 original losses are currently
+exact, sixteen remain, and the recovery goal is still open.
+
+The staged source snapshot passes the full build after that explicit
+adjudication and bank. All 15 public-header controls pass. The raw relocation
+audit checks 3,921 near-exact functions with zero fake or wrong targets.

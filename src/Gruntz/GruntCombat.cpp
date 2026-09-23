@@ -324,16 +324,16 @@ void CGrunt::ComputeFacing(double dt) {
     m_movePosY = static_cast<double>(h->m_screenY);
 }
 
-#define CONVERT_GRUNT_ACT_PMF(result, handler)                                                     \
-    GruntActPmf result;                                                                            \
-    result.m_pmf = (handler)
+static inline CActHandler ToActHandler(GruntActHandler handler) {
+    // Registered methods have zero adjustment to the primary CUserLogic base.
+    return static_cast<CActHandler>(handler);
+}
 
 #define STORE_GRUNT_ACT(id, handler) CActRegPool<CGrunt>::s_table[id] = (handler)
 
 #define BIND_GRUNT_ACT(id, handler)                                                                \
     {                                                                                              \
-        CONVERT_GRUNT_ACT_PMF(converted, handler);                                                 \
-        STORE_GRUNT_ACT(id, converted.m_h);                                                        \
+        STORE_GRUNT_ACT(id, ToActHandler(handler));                                                \
     }
 
 #define REGISTER_GRUNT_ACT_KEY_IMPL(key, handler, bind)                                            \
@@ -1904,7 +1904,6 @@ void CGrunt::FireActivation(i32 id) {
     }
 }
 
-// @early-stop
 RVA(0x0005be30, 0x9e5)
 void RegisterGruntActions() {
     REGISTER_GRUNT_ACT_KEY("A", &CGrunt::ResolveEntranceArrival);
@@ -2022,7 +2021,6 @@ void CGrunt::Activate() {
 #undef REGISTER_GRUNT_ACT_KEY_IMPL
 #undef BIND_GRUNT_ACT
 #undef STORE_GRUNT_ACT
-#undef CONVERT_GRUNT_ACT_PMF
 
 DATA(0x001e999c)
 const float g_quarterScale = 0.25f;

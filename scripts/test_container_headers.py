@@ -97,6 +97,52 @@ typedef char slots_offset[offsetof(CInputDeviceGroup, m_items) == 8 ? 1 : -1];
 int use(CInputDeviceGroup& group, CInputDevBase* value) { return group.Add(value); }
 ''')
 
+    def test_action_pmf_cast_preserves_primary_base_method_identity(self):
+        from gruntz.tool import cl
+        from gruntz.delink.coffx import Obj
+        from gruntz.walls.pairscan import functions, fn_relocs
+        with tempfile.TemporaryDirectory(prefix='gruntz-action-pmf-') as directory:
+            folder = Path(directory)
+            source = folder / 'probe.cpp'
+            source.write_text('''#include <Gruntz/Grunt.h>
+typedef char base_width[sizeof(CActHandler) == 4 ? 1 : -1];
+typedef char derived_width[sizeof(GruntActHandler) == 8 ? 1 : -1];
+CActHandler constant() {
+    return static_cast<CActHandler>(&CGrunt::FinishEntranceMove);
+}
+CActHandler parameter(GruntActHandler handler) {
+    return static_cast<CActHandler>(handler);
+}
+''')
+            output = folder / 'probe.obj'
+            cl.compile(source, output, ['/nologo', '/c', '/O2', '/MT', '/GX'])
+            obj = Obj(output)
+            bodies = functions(obj)
+            for caller, code, refs in (
+                ('constant', bytes.fromhex('b8 00 00 00 00 c3'),
+                 [(1, '?FinishEntranceMove@CGrunt@@QAEHXZ', 6, 0)]),
+                ('parameter', bytes.fromhex('8b 44 24 04 c3'), []),
+            ):
+                with self.subTest(caller=caller):
+                    name = next(n for n in bodies if n.startswith('?' + caller + '@@'))
+                    section, start, end = bodies[name]
+                    body = obj.section_payload(section)[start:end]
+                    self.assertEqual(body[:len(code)], code)
+                    self.assertTrue(all(b == 0x90 for b in body[len(code):]))
+                    actual = [(offset-start, name, kind, addend)
+                              for offset, name, kind, addend
+                              in fn_relocs(obj, section, start, end)]
+                    self.assertEqual(actual, refs)
+
+    def test_action_pmf_cast_rejects_an_unrelated_owner(self):
+        from gruntz.tool import ToolError
+        with self.assertRaisesRegex(ToolError, 'cannot convert'):
+            self.compile('''#include <Gruntz/Grunt.h>
+CActHandler unrelated(i32 (CString::*handler)()) {
+    return static_cast<CActHandler>(handler);
+}
+''')
+
     def test_input_array_rejects_a_different_element_type(self):
         from gruntz.tool import ToolError
         with self.assertRaisesRegex(ToolError, 'cannot convert'):
