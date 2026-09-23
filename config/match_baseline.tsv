@@ -66,7 +66,7 @@ butetree	2	2
 bzkinddispatch	1	1
 chainforward	2	2
 chatboxowner	14	12
-cheatmgr	7	4
+cheatmgr	7	6
 checkpointdlg	6	6
 cimage	20	11
 cmdscrollapply	3	2
@@ -81,7 +81,7 @@ ddpagemgr	23	22
 ddpalette	25	25
 ddrawptrcollections	10	10
 ddrawshadeblit	22	11
-ddrawsubmgr	88	86
+ddrawsubmgr	88	87
 ddrawsubmgrpages	34	33
 ddrawsurfacemgr	22	20
 ddrawsurfacepair	54	45
@@ -220,7 +220,7 @@ menusparkle	8	7
 menustate	18	18
 menutree	29	27
 movinglogic	5	1
-multi	105	87
+multi	105	89
 multihelpdlg	5	5
 multistartdlg	64	58
 namerecord	5	5
@@ -229,7 +229,7 @@ netlobbydialogs	20	20
 netmgr	54	50
 netmgrerror	2	2
 netsession	1	1
-netsessionmgr	31	25
+netsessionmgr	31	26
 palettebmp	2	2
 pathhazard	24	21
 play	105	80
@@ -486,7 +486,7 @@ attract	?ShadeScreen@CState@@QAEHH@Z	100.0000	100.0000	7	a724730e9f47	0xfaf50	10
 attractstate	??1CAttract@@UAE@XZ	100.0000	100.0000	1	b2b974d351ac	0x8cd90	100.0000	
 attractstate	??_GCAttract@@UAEPAXI@Z	100.0000	100.0000	1	cpp:8bef3a64de37	0x8cd60	100.0000	
 attractstate	?CompleteLevel@CState@@UAEHXZ	100.0000	100.0000	1	cpp:a91121d9b9bb	0x8c690	100.0000	
-attractstate	?EnterState@CAttract@@UAEHW4GameStateId@@@Z	98.5821	98.5821	10	071f4c017b74	0x14120	98.5821	
+attractstate	?EnterState@CAttract@@UAEHW4GameStateId@@@Z	99.9254	99.9254	11	52ef3d347973	0x14120	99.9254	
 attractstate	?EnterState@CState@@UAEHW4GameStateId@@@Z	100.0000	100.0000	1	cpp:a91121d9b9bb	0x8c510	100.0000	
 attractstate	?InputVirtual@CAttract@@UAEHXZ	100.0000	100.0000	3	514cf18602f2	0x14520	100.0000	
 attractstate	?IsActive@CState@@UAEHXZ	100.0000	100.0000	1	cpp:a91121d9b9bb	0x8c490	100.0000	
@@ -759,8 +759,8 @@ chatboxowner	?HitTest@CChatBoxOwner@@QAEHHH@Z	100.0000	100.0000	1	5ad7961eb46a	0
 chatboxowner	?LoadChatBoxSprite@CChatBoxOwner@@QAEHPAVCDDrawSurfacePair@@@Z	89.0357	89.0357	4	35ff179e1196	0x20f40	89.0357	
 chatboxowner	?clear@zPTree@@QAEXXZ	100.0000	100.0000	2	e20644bf79bc	0x212a0	100.0000	
 cheatmgr	??1CCheatMgr@@QAE@XZ	100.0000	100.0000	1	98260a187bb1	0x85e60	100.0000	
-cheatmgr	?AddCheat@CCheatMgr@@QAEHPBDHH@Z	98.5714	98.5714	5	ad4a15e36a18	0x22be0	98.5714	
-cheatmgr	?CheckCode@CCheatMgr@@QAEHVCString@@@Z	96.9595	96.9595	5	909eae12c3a5	0x23090	96.9595	
+cheatmgr	?AddCheat@CCheatMgr@@QAEHPBDHH@Z	100.0000	100.0000	6	dfddb7bcc6d9	0x22be0	100.0000	
+cheatmgr	?CheckCode@CCheatMgr@@QAEHVCString@@@Z	100.0000	100.0000	6	d1b79dcf0dc2	0x23090	100.0000	
 cheatmgr	?Empty@CCheatMgr@@QAEXXZ	100.0000	100.0000	3	081c4b07935b	0x22b00	100.0000	
 cheatmgr	?Init@CCheatMgr@@QAEHPAUHWND__@@@Z	100.0000	100.0000	3	1126830deeea	0x22ad0	100.0000	
 cheatmgr	?LoadCheatConfig@CCheatMgr@@QAEXXZ	98.1048	98.1048	2	f8f1aa0ff025	0x22e60	98.1048	
@@ -1010,7 +1010,7 @@ ddrawsubmgr	?PlacePixel@CDDrawPixelWorker@@UAEHHHH@Z	100.0000	100.0000	4	2d5d881
 ddrawsubmgr	?PlaySpatialized@SoundCue@@QAEHHHHH@Z	100.0000	100.0000	7	dcb21d38533e	0x1587f0	100.0000	
 ddrawsubmgr	?PlaySpatializedCue@SoundCueRegistry@@QAEHPBDHHH@Z	100.0000	100.0000	6	7409000a1034	0x1581b0	100.0000	
 ddrawsubmgr	?ProbeWorkerKey@CDDrawWorkerRegistry@@UAEHPAVCRezMgr@@PBD@Z	100.0000	100.0000	4	85bb4094fad0	0x156e80	100.0000	
-ddrawsubmgr	?RemoveByKey@CDDrawWorkerRegistry@@UAEXPBD@Z	95.7407	95.7407	2	6835719f191f	0x156ec0	95.7407	
+ddrawsubmgr	?RemoveByKey@CDDrawWorkerRegistry@@UAEXPBD@Z	100.0000	100.0000	3	c2f68d19d735	0x156ec0	100.0000	
 ddrawsubmgr	?RemoveCue@SoundCueRegistry@@QAEXPAUSoundCue@@@Z	99.8545	99.8545	4	b4600f49ecc4	0x157b00	99.8545	
 ddrawsubmgr	?RemoveWithPrefix@SoundCueRegistry@@QAEHPBD0@Z	100.0000	100.0000	4	2f5b16c4f645	0x157c70	100.0000	
 ddrawsubmgr	?Reset@CFileMemBase@@UAEXXZ	100.0000	100.0000	2	be2eef15035c	0x157a40	100.0000	
@@ -3068,7 +3068,7 @@ multi	?Close@CMulti@@QAEXXZ	100.0000	100.0000	1	6e22fe26f927	0xb7890	100.0000
 multi	?CompleteLevel@CMulti@@UAEHXZ	100.0000	100.0000	1	a79763baa6d8	0xb6560	100.0000	
 multi	?Connect@CMulti@@QAEHH@Z	100.0000	100.0000	4	6dfdc24ad015	0xb67f0	100.0000	
 multi	?CreateHostPlayer@CMulti@@QAEHPAXPBDW4ColorTint@@HHHHH@Z	100.0000	100.0000	6	ca68c05a121e	0xbc910	100.0000	
-multi	?CreateHostSessionAndPlayer@CMulti@@QAEPAVCNetSessionListNode@@XZ	93.1982	93.1982	7	b0b0f89898af	0xb8b10	93.1982	
+multi	?CreateHostSessionAndPlayer@CMulti@@QAEPAVCNetSessionListNode@@XZ	100.0000	100.0000	8	e00acfcfd0b9	0xb8b10	100.0000	
 multi	?CreateLocalPlayer@CMulti@@QAEHXZ	91.4907	91.4907	8	d7ca21ad8042	0xbc750	93.8426	
 multi	?CreateSession@CMulti@@QAEHXZ	97.6241	97.6241	6	4b34b3ed31d9	0xbbc90	97.6241	
 multi	?CustomLevelName@CMulti@@QAE?AVCString@@XZ	100.0000	100.0000	1	cpp:08064dd2c3eb	0xb60d0	100.0000	
@@ -3077,7 +3077,7 @@ multi	?DetectConnectionConfig@CMulti@@QAEHXZ	100.0000	100.0000	6	783e9f388520	0x
 multi	?DispatchRecvMsg@CMulti@@QAEHHPADH@Z	99.9740	99.9740	14	0f6abf666b96	0xb9750	99.9740	
 multi	?DropLobbyPlayer@CMulti@@QAEHH@Z	97.8814	97.8814	9	14d012d8fe9b	0xbb510	97.8814	
 multi	?EnterState@CMulti@@UAEHW4GameStateId@@@Z	100.0000	100.0000	6	8b191e689cd6	0xb6330	100.0000	
-multi	?FillSessionList@@YAXPAUHWND__@@PAVCNetMgr@@@Z	95.4225	95.4225	3	1d1d5226f4cb	0xb89e0	95.4225	
+multi	?FillSessionList@@YAXPAUHWND__@@PAVCNetMgr@@@Z	100.0000	100.0000	4	8ab9bd155646	0xb89e0	100.0000	
 multi	?FrameSyncWait@CMulti@@QAEIXZ	91.9750	91.9750	4	8fab19a2f315	0xbc070	100.0000	
 multi	?GameName@CMulti@@QAE?AVCString@@XZ	100.0000	100.0000	2	acf471046627	0xb7a90	100.0000	
 multi	?GetMaxAckLatency@CMulti@@QAEIXZ	100.0000	100.0000	4	596a7c8f0468	0xbd030	100.0000	
@@ -3336,7 +3336,7 @@ netsessionmgr	?RelayDrainingRecords@CNetSession@@QAEHXZ	100.0000	100.0000	4	5a31
 netsessionmgr	?ResetLatencies@CNetSession@@QAEXXZ	100.0000	100.0000	2	f0a7b646577c	0xc0070	100.0000	
 netsessionmgr	?ResetRound@CNetSession@@QAEXXZ	100.0000	100.0000	3	ffabc0a5aeb1	0xbf150	100.0000	
 netsessionmgr	?ScheduleCommand@CNetSession@@QAEXPAVCGruntzCommand@@E@Z	100.0000	100.0000	3	b09fdc956a48	0xc03f0	100.0000	
-netsessionmgr	?SendGruntRecord@CNetSession@@QAEHHPAUGruntRec@@EHH@Z	97.6316	97.6316	2	c1a4d8780088	0xbfc70	97.6316	
+netsessionmgr	?SendGruntRecord@CNetSession@@QAEHHPAUGruntRec@@EHH@Z	100.0000	100.0000	3	623bb5d4e672	0xbfc70	100.0000	
 netsessionmgr	?SendPendingRecords@CNetSession@@QAEHXZ	100.0000	100.0000	3	00e852840ef1	0xbfd40	100.0000	
 netsessionmgr	?SendRecord@CNetSession@@QAEHPAUCNetCmdSlot@@H@Z	88.7368	88.7368	4	5fd5a1a3b717	0xbfeb0	88.7368	
 netsessionmgr	?SendTick@CNetSession@@QAEHXZ	99.8710	99.8710	7	a1657996f53b	0xbf9e0	99.8710	
@@ -3427,7 +3427,7 @@ play	?OnExit@CPlay@@UAEXXZ	94.7917	94.7917	3	e850cc1d6444	0xcb400	94.7917
 play	?OnKeyDown@CPlay@@UAEHHH@Z	90.2977	90.2977	24	2f5b5cde99fd	0xcbcc0	90.9441	
 play	?OnKeyUp@CPlay@@UAEHHH@Z	100.0000	100.0000	1	baee31c307a3	0xcda70	100.0000	
 play	?OnLButtonDblClk@CPlay@@UAEHHHH@Z	98.6481	98.6481	18	4cc13a1084be	0xce660	98.6481	
-play	?OnLButtonDown@CPlay@@UAEHHHH@Z	88.8247	88.8247	25	822270a6eb15	0xcdb10	90.1826	
+play	?OnLButtonDown@CPlay@@UAEHHHH@Z	89.5773	89.5773	25	822270a6eb15	0xcdb10	90.1826	
 play	?OnLButtonUp@CPlay@@UAEHHHH@Z	100.0000	100.0000	7	7cf544c93867	0xce530	100.0000	
 play	?OnRButtonDblClk@CPlay@@UAEHHHH@Z	100.0000	100.0000	2	0decb6895e82	0xceab0	100.0000	
 play	?OnRButtonDown@CPlay@@UAEHHHH@Z	89.9850	89.9850	12	d32ec9bad511	0xceae0	89.9850	

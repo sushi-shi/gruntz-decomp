@@ -375,7 +375,6 @@ i32 CNetSession::RelayDrainingRecords() {
     return count;
 }
 
-// @early-stop
 RVA(0x000bfc70, 0x9c)
 i32 CNetSession::SendGruntRecord(
     i32 sequence,
@@ -390,8 +389,8 @@ i32 CNetSession::SendGruntRecord(
     if (sequence < 0) {
         return 1;
     }
-    g_netGruntRecMsg.m_sequence = sequence;
     g_netGruntRecMsg.m_flags = flags;
+    g_netGruntRecMsg.m_sequence = sequence;
     g_netGruntRecMsg.m_slot = static_cast<unsigned char>(sourceSlot);
     g_netGruntRecMsg.m_checksum = record->m_checksum;
     g_netGruntRecMsg.m_entryCount = record->m_entryCount;

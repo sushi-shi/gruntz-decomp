@@ -1264,7 +1264,6 @@ i32 CMulti::ShowMultiStartDlg() {
 
 RVA_COMPGEN(0x000b8960, 0x59, ??1CMultiStartDlg@@UAE@XZ)
 
-// @early-stop
 RVA(0x000b89e0, 0xc8)
 void FillSessionList(HWND hList, CNetMgr* manager) {
     char buf[256];
@@ -1300,10 +1299,11 @@ void FillSessionList(HWND hList, CNetMgr* manager) {
         }
 
         if (manager->m_sessionCursor != NULL) {
-            listing = static_cast<CNetSessionListNode*>(
+            CNetSessionListNode* next = static_cast<CNetSessionListNode*>(
                 manager->m_sessionListings.GetAt(manager->m_sessionCursor)
             );
             manager->m_sessionListings.GetNext(manager->m_sessionCursor);
+            listing = next;
         } else {
             listing = NULL;
         }
@@ -1313,12 +1313,9 @@ void FillSessionList(HWND hList, CNetMgr* manager) {
 RVA(0x000b8af0, 0x1)
 void RefreshSessionSelection(HWND hDlg, HWND hList) {}
 
-// @early-stop
 RVA(0x000b8b10, 0x175)
 CNetSessionListNode* CMulti::CreateHostSessionAndPlayer() {
-    char buf[0x100];
-    buf[0] = ""[0];
-    memset(&buf[1], 0, 0xff);
+    char buf[0x100] = "";
     MakeButeSectionKey(buf, "NAME", m_gameName);
     AppendInt(buf, "CMDDELAY", m_commandDelay);
     AppendInt(buf, "RESEND", m_resendInterval);
@@ -1341,7 +1338,7 @@ CNetSessionListNode* CMulti::CreateHostSessionAndPlayer() {
     GruntzPlayer* hostPlayer = NetGameMgr()->m_players;
     ColorTint hostColor = static_cast<ColorTint>(hostPlayer->m_color);
 
-    b32 failed = RegisterLocalPlayer(hostPlayer->GetName(), hostColor, -1, m_localPlayerId) == 0;
+    bool failed = RegisterLocalPlayer(hostPlayer->GetName(), hostColor, -1, m_localPlayerId) == 0;
     return failed ? NULL : enumResult;
 }
 
