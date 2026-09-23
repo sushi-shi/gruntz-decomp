@@ -95,7 +95,7 @@ destructbutton	1	1
 dialogs	64	63
 dircellmethods	20	20
 directdrawmgr	71	71
-directinputmgr2	45	42
+directinputmgr2	45	45
 directsoundmgr	84	83
 donothing	3	2
 droppedobject	29	26
@@ -1441,8 +1441,8 @@ directinputmgr2	??_GCInputDevRoot@@UAEPAXI@Z	100.0000	100.0000	1	cpp:686c0ed6a10
 directinputmgr2	??_GCJoystickDevice@@UAEPAXI@Z	100.0000	100.0000	1	cpp:686c0ed6a102	0x133440	100.0000	
 directinputmgr2	??_GCKeyboardDevice@@UAEPAXI@Z	100.0000	100.0000	1	cpp:686c0ed6a102	0x1332e0	100.0000	
 directinputmgr2	??_GCMouseDevice@@UAEPAXI@Z	100.0000	100.0000	1	cpp:686c0ed6a102	0x1334d0	100.0000	
-directinputmgr2	?Add@?$CFixedPtrArray@VCInputDevBase@@$0CA@@@QAEHPAVCInputDevBase@@@Z	100.0000	100.0000	1	22d8501caabc	0x134c80	100.0000	
-directinputmgr2	?Clear@?$CFixedPtrArray@VCInputDevBase@@$0CA@@@QAEXXZ	100.0000	100.0000	1	e09eb9d0079a	0x134c60	100.0000	
+directinputmgr2	?Add@CInputDeviceGroup@@QAEHPAVCInputDevBase@@@Z	100.0000	100.0000	2	47a36d209c2f	0x134c80	100.0000	
+directinputmgr2	?Clear@CInputDeviceGroup@@QAEXXZ	100.0000	100.0000	2	6f6a21ca75d1	0x134c60	100.0000	
 directinputmgr2	?ConfigureAxes@CJoystickDevice@@QAEHXZ	100.0000	100.0000	4	eb9c9e8a26dd	0x134710	100.0000	
 directinputmgr2	?ConfigureDefaultBindings@CKeyboardDevice@@QAEXXZ	100.0000	100.0000	3	4692fc0d8cc9	0x133c30	100.0000	
 directinputmgr2	?Create@CInputDevBase@@UAEHPAUIDirectInputA@@PBU_GUID@@PAUHWND__@@@Z	100.0000	100.0000	2	b3534a3b00eb	0x134260	100.0000	
@@ -1450,12 +1450,12 @@ directinputmgr2	?Create@DirectInputMgr2@@QAEHPAUHWND__@@PAUHINSTANCE__@@I@Z	100.
 directinputmgr2	?CreateDevice@CJoystickDevice@@QAEHPAUIDirectInputA@@PBU_GUID@@PAUHWND__@@I@Z	100.0000	100.0000	5	30de69d83e26	0x134630	100.0000	
 directinputmgr2	?CreateDevice@CKeyboardDevice@@QAEHPAUIDirectInputA@@PBU_GUID@@PAUHWND__@@I@Z	100.0000	100.0000	5	d7e16da11443	0x133b50	100.0000	
 directinputmgr2	?CreateDevice@CMouseDevice@@QAEHPAUIDirectInputA@@PBU_GUID@@PAUHWND__@@I@Z	100.0000	100.0000	5	efcb0477475a	0x1342c0	100.0000	
-directinputmgr2	?CreateDeviceGroup@DirectInputMgr2@@QAEPAV?$CFixedPtrArray@VCInputDevBase@@$0CA@@@PAPAVCInputDevBase@@HH@Z	100.0000	19.9608	5	5f559bbd6915	0x1331e0	100.0000	
-directinputmgr2	?CreateDeviceGroup@DirectInputMgr2@@QAEPAV?$CFixedPtrArray@VCInputDevBase@@$0CA@@@PAVCInputDevBase@@00000H@Z	100.0000	100.0000	4	5f559bbd6915	0x133260	100.0000	
+directinputmgr2	?CreateDeviceGroup@DirectInputMgr2@@QAEPAVCInputDeviceGroup@@PAPAVCInputDevBase@@HH@Z	100.0000	100.0000	5	5f559bbd6915	0x1331e0	100.0000	
+directinputmgr2	?CreateDeviceGroup@DirectInputMgr2@@QAEPAVCInputDeviceGroup@@PAVCInputDevBase@@00000H@Z	100.0000	100.0000	4	5f559bbd6915	0x133260	100.0000	
 directinputmgr2	?DinEnumJoystickCallback@@YGHPBUDIDEVICEINSTANCEA@@PAX@Z	100.0000	100.0000	9	6073895943a3	0x132fc0	100.0000	
 directinputmgr2	?EnumerateJoysticks@DirectInputMgr2@@QAEHI@Z	100.0000	100.0000	2	b3dcb173f56e	0x132f80	100.0000	
-directinputmgr2	?FillFrom@?$CFixedPtrArray@VCInputDevBase@@$0CA@@@QAEHPAPAVCInputDevBase@@HH@Z	100.0000	76.1111	1	369e79309d31	0x134be0	100.0000	
-directinputmgr2	?FreeDeviceGroups@DirectInputMgr2@@QAEXXZ	100.0000	65.0000	3	c553844381e6	0x1331a0	100.0000	
+directinputmgr2	?FillFrom@CInputDeviceGroup@@QAEHPAPAVCInputDevBase@@HH@Z	100.0000	100.0000	2	f67436f81c14	0x134be0	100.0000	
+directinputmgr2	?FreeDeviceGroups@DirectInputMgr2@@QAEXXZ	100.0000	100.0000	3	c553844381e6	0x1331a0	100.0000	
 directinputmgr2	?GetErrorString@DirectInputMgr2@@SAXPADHH@Z	100.0000	100.0000	2	885fdc7d7126	0x133590	100.0000	
 directinputmgr2	?InitializeKeyboard@DirectInputMgr2@@QAEHI@Z	100.0000	100.0000	2	15717e985c55	0x132e20	100.0000	
 directinputmgr2	?InitializeMouse@DirectInputMgr2@@QAEHI@Z	100.0000	100.0000	2	41bd5e795496	0x132ee0	100.0000	
@@ -3464,7 +3464,7 @@ play	?RegionEnter@CPlay@@QAEXXZ	100.0000	100.0000	3	8d5c4c1ebcab	0xd88f0	100.000
 play	?RegionLeave@CPlay@@QAEXXZ	100.0000	100.0000	4	a613be6d96c0	0xd8960	100.0000	
 play	?RegisterInputBindings@CPlay@@QAEHXZ	100.0000	100.0000	1	993b54aa05a0	0xd9160	100.0000	
 play	?ReleaseResources@CPlay@@UAEXXZ	100.0000	100.0000	8	9944057039de	0xc8700	100.0000	
-play	?Render@CPlay@@UAEHXZ	96.4002	96.4002	30	2eea183f9191	0xc8cf0	96.4002	
+play	?Render@CPlay@@UAEHXZ	96.4002	96.3980	30	2eea183f9191	0xc8cf0	96.4002	
 play	?ResetGoals@CPlay@@QAEHHH@Z	100.0000	100.0000	5	f47e3242a828	0xd5f00	100.0000	
 play	?ResetPlayState@CPlay@@QAEHXZ	96.5300	96.5300	12	9dee7ff34320	0xd60b0	96.6250	
 play	?ResetRightClickState@CPlay@@QAEXXZ	100.0000	100.0000	1	6d119bff1a05	0xcee50	100.0000	

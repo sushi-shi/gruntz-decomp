@@ -4,8 +4,9 @@ tags: cpp:template cpp:array cpp:constructor cpp:destructor cpp:inline | asm:cal
 
 Audit the complete declaration/use family when a concrete container owns
 methods that also look like emitted template or member-lifetime operations.
-Use-site types select template arguments even where several arguments would
-produce identical erased code. Names used for a recovered primary remain
+For an independently established template family, use-site types select
+arguments even where several arguments would produce identical erased code.
+Typed uses alone do not establish a generic primary. Names used for a recovered primary remain
 reconstruction names unless surviving source establishes their spelling.
 
 The action registry already used the recovered `zDArray<CString>` and
@@ -18,12 +19,13 @@ to 97.792915%; overall current fuzzy moved from 94.77745% to 93.98467%.
 A per-caller raw/typed/report variant was a reconstruction of an inline cut,
 not evidence for another authored API.
 
-The input array provides a second control: its complete layout and users give
-`CFixedPtrArray<CInputDevBase,32>`. The emitted `Clear` and `Add` are exact;
-`FillFrom` expands the formerly external `Add` and changes from 126 bytes,
-one call and six branches to 122 bytes, zero calls and seven branches. This
-is expected template visibility evidence, not a reason to erase its element
-type. The compiler rejects passing `Coord*` to this specialization's `Add`.
+The original input-array application was an overclaim: complete layout and
+typed users establish its payload, not `CFixedPtrArray<CInputDevBase,32>`.
+The inferred template kept `Clear` and `Add` exact but expanded retail's
+retained calls. A single typed `CInputDeviceGroup` with ordinary out-of-line
+helpers recovers all three affected functions without erasing its element
+type. The compiler still rejects an unrelated pointer. See the
+[identity correction and controls](typed-payload-does-not-prove-a-template-owner.md).
 
 Four list heads share the existing erased `CLTBaseList` implementation but
 recover different element types from insertion and traversal: `WwdRegion`,
@@ -59,7 +61,7 @@ For reverse use:
 3. Compare vptr transitions, vector-helper arguments, raw bytes and ordered
    relocations. Keep authored empty special members where omission loses a
    retail operation. Preserve real virtual declarations and owner behavior.
-4. Bind the actual emitted specialization with `RVA_COMPGEN`. Explicit
+4. For an established template, bind its actual emitted specialization with `RVA_COMPGEN`. Explicit
    instantiation of the used primary/member is sufficient; no unused
    realization functions or volatile compiler ordinals are needed.
 

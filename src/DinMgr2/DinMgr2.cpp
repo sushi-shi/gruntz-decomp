@@ -966,7 +966,43 @@ i32 CJoystickDevice::Poll() {
     return 1;
 }
 
-template class CFixedPtrArray<CInputDevBase, 32>;
-RVA_COMPGEN(0x00134be0, 0x7e, ?FillFrom@?$CFixedPtrArray@VCInputDevBase@@$0CA@@@QAEHPAPAVCInputDevBase@@HH@Z)
-RVA_COMPGEN(0x00134c60, 0x14, ?Clear@?$CFixedPtrArray@VCInputDevBase@@$0CA@@@QAEXXZ)
-RVA_COMPGEN(0x00134c80, 0x24, ?Add@?$CFixedPtrArray@VCInputDevBase@@$0CA@@@QAEHPAVCInputDevBase@@@Z)
+RVA(0x00134be0, 0x7e)
+i32 CInputDeviceGroup::FillFrom(CInputDevBase** src, i32 n, i32 unused) {
+    if (!src) {
+        return 0;
+    }
+    if (n >= 32) {
+        return 0;
+    }
+    m_reserved00 = 0;
+    m_count = 0;
+    for (i32 j = 0; j < 32; j++) {
+        m_items[j] = NULL;
+    }
+    for (i32 i = 0; i < n; i++) {
+        if (src[i]) {
+            if (!Add(src[i])) {
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
+RVA(0x00134c60, 0x14)
+void CInputDeviceGroup::Clear() {
+    for (i32 j = 0; j < 32; j++) {
+        m_items[j] = NULL;
+    }
+    m_count = 0;
+}
+
+RVA(0x00134c80, 0x24)
+i32 CInputDeviceGroup::Add(CInputDevBase* item) {
+    if (m_count >= 32) {
+        return 0;
+    }
+    m_items[m_count] = item;
+    m_count++;
+    return 1;
+}

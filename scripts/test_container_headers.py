@@ -15,7 +15,6 @@ class ContainerHeaderOwnershipTests(unittest.TestCase):
     def test_shared_headers_do_not_import_consumers(self):
         roots = [*sorted((INCLUDE / 'ZTools').glob('*.h')),
                  INCLUDE / 'Utils/FreeNodePool.h',
-                 INCLUDE / 'Utils/FixedPtrArray.h',
                  INCLUDE / 'Lith/TypedList.h',
                  INCLUDE / 'DinMgr2/InputDeviceGroup.h']
         self.assertTrue(list((INCLUDE / 'ZTools').glob('*.h')))
@@ -92,6 +91,7 @@ void use(FreeNodePool<Payload>& pool, Payload* value) { pool.Push(value); }
 
     def test_input_array_layout(self):
         self.compile('''#include <DinMgr2/InputDeviceGroup.h>
+#include <stddef.h>
 typedef char array_size[sizeof(CInputDeviceGroup) == 136 ? 1 : -1];
 typedef char slots_offset[offsetof(CInputDeviceGroup, m_items) == 8 ? 1 : -1];
 int use(CInputDeviceGroup& group, CInputDevBase* value) { return group.Add(value); }
@@ -104,6 +104,34 @@ int use(CInputDeviceGroup& group, CInputDevBase* value) { return group.Add(value
 struct Unrelated {};
 int use(CInputDeviceGroup& group, Unrelated* value) { return group.Add(value); }
 ''')
+
+    def test_input_group_header_preserves_out_of_line_helpers(self):
+        from gruntz.tool import cl
+        from gruntz.delink.coffx import Obj
+        from gruntz.walls.pairscan import functions, fn_relocs
+        with tempfile.TemporaryDirectory(prefix='gruntz-input-group-') as directory:
+            folder = Path(directory)
+            source = folder / 'probe.cpp'
+            source.write_text('''#include <DinMgr2/InputDeviceGroup.h>
+int fill(CInputDeviceGroup& g, CInputDevBase** values, int n) {
+    return g.FillFrom(values, n, 0);
+}
+void clear(CInputDeviceGroup& g) { g.Clear(); }
+int add(CInputDeviceGroup& g, CInputDevBase* value) { return g.Add(value); }
+''')
+            output = folder / 'probe.obj'
+            cl.compile(source, output, ['/nologo', '/c', '/O2', '/MT'])
+            obj = Obj(output)
+            bodies = functions(obj)
+            for caller, callee in (('fill', 'FillFrom'), ('clear', 'Clear'),
+                                   ('add', 'Add')):
+                with self.subTest(helper=callee):
+                    name = next(n for n in bodies if n.startswith('?' + caller + '@@'))
+                    section, start, end = bodies[name]
+                    refs = [r[1] for r in fn_relocs(obj, section, start, end)]
+                    self.assertEqual(len(refs), 1, refs)
+                    self.assertTrue(refs[0].startswith('?' + callee + '@CInputDeviceGroup@@'),
+                                    refs)
 
     def test_list_keeps_its_erased_base_and_typed_access(self):
         self.compile('''#include <Lith/TypedList.h>

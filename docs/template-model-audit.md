@@ -293,12 +293,14 @@ compiler-artifact verifier now also rejects explicit constructor expressions
 such as `p->CString::CString()`, which previously bypassed its placement-new
 check. Only the two reviewed typed placement-construction sites remain.
 
-Seven of the nine remaining container candidates now use recovered templates,
-with the coordinate node recovered as part of its pool:
+At this stage, seven of the nine remaining container candidates were converted
+to templates, with the coordinate node recovered as part of its pool. The
+input-array primary was subsequently found to be an overclaim and is superseded
+by the [typed-owner correction below](#fixed-input-owner-correction):
 
 | Previous records | Kept model | Evidence |
 | --- | --- | --- |
-| `CFixedPtrArray32`, `CInputDeviceGroup` | `CFixedPtrArray<CInputDevBase,32>` and a domain alias | Complete inline storage/count API, all insertion/indexing users, 136-byte extent and slots at +8. |
+| `CFixedPtrArray32`, `CInputDeviceGroup` | Originally `CFixedPtrArray<CInputDevBase,32>`; now one typed `CInputDeviceGroup` | The 136-byte layout and slots at +8 establish the typed owner, not a generic primary; the ordinary helper boundaries recover all three affected functions. |
 | `FreeNodePool`, `CoordPoolNode` | `FreeNodePool<Coord>` and its nested node | Contiguous 12-byte nodes, four-byte link, eight-byte coordinate payload, offset parameter and complete allocation/recycling use. |
 | `BucketHead` | `CLTList<WwdRegion>` | Region insertion, typed traversal and bucket backlink over the shared erased list. |
 | `SoundSampleList` | `CLTList<SoundSample>` | Sample allocation, insertion and traversal. |
@@ -306,8 +308,9 @@ with the coordinate node recovered as part of its pool:
 | `SoundTaskList` | Domain owner over `CLTList<SoundTask>` | Retains buffer/tag filtering and the erased polymorphic-node adjustment. |
 
 These primary names are reconstructions from complete layout and usage, not
-claims of recovered original identifiers. No second specialization or unique
-machine-code spelling of `T` is required. The shared erased list API remains
+claims of recovered original identifiers. For an independently established
+template, a unique machine-code spelling of `T` is not required; typed uses
+alone do not establish that template. The shared erased list API remains
 intact, including removal through a `SoundBuffer*` in `DestroyBuffer`.
 
 The two Brickz pools retain their owners. Their element types are known:
@@ -317,11 +320,13 @@ A common owner/node policy is still missing; introducing arbitrary layout
 specializations would preserve the duplicated modeling. The review table now
 records that concrete discrepancy rather than calling the element type unknown.
 
-Ten manually annotated method bodies become `RVA_COMPGEN` bindings: three
+At that checkpoint, ten manually annotated method bodies became `RVA_COMPGEN` bindings: three
 fixed-array operations, pool `Push`, four list destructors, and the two
 `CGruntCellRec` lifetimes. The grid head's already-pinned constructor also
 becomes implicit. `CGruntCellRec` keeps its actual CString array, rectangles
 and motion members; their types now generate its lifetime code directly.
+The three input-array operations have since returned to ordinary `RVA`-bound
+methods on the single typed input-device owner.
 
 The sound destructor experiment is a negative control. Omitting
 `SoundBufferInstance::~SoundBufferInstance` emits a five-byte base-destructor
@@ -497,3 +502,30 @@ historical evidence. The raw relocation audit covers 3,918 near-exact functions
 with zero fake or wrong targets. Twelve public-header and nine compiler-artifact
 controls pass, including real-VC5 overload coexistence and full-gate negative
 controls for explicit allocation calls and altered placement definitions.
+
+### Fixed input owner correction
+
+The single input-device payload and hardcoded capacity did not prove the
+inferred generic primary. One typed `CInputDeviceGroup` now owns the proven
+layout and all three helpers; no caller body changes. This removes the
+unsupported `Utils/FixedPtrArray.h` primary, not the typed payload or helper
+APIs. Its original spelling and possible generic ancestry remain unproven.
+The [controlled ownership pattern](patterns/typed-payload-does-not-prove-a-template-owner.md)
+corrects the earlier template claim and records the historical negative
+visibility controls.
+
+`CreateDeviceGroup`, `FreeDeviceGroups`, and `FillFrom` all recover strict
+100%, including ordered referents. `Clear` and `Add` remain exact. The full
+build has **3,831 / 4,426 exact**, up three with no current-exact losses;
+full-engine fuzzy is 93.56%. DinMgr2 is 45/45 exact. Nineteen of the original
+34 losses are currently recovered, leaving fifteen; 22 distinct original
+losses have reached exact during recovery. The goal remains incomplete.
+
+The full build passes MAX and all fast/normal gates without adjudicating any
+fresh regression. Thirteen public-header controls pass, including the new
+real-VC5 consumer call-boundary check, the existing wrong-element rejection,
+and the unchanged object extent/slot offset. Historical maxima follow the
+same retail RVAs across the five renamed signatures.
+The independent comparison preserves all 4,429 prior RVA maxima. The raw
+relocation audit checks 3,921 near-exact functions with zero fake or wrong
+targets.

@@ -14,6 +14,8 @@
 
 - [Authored placement new can change nested inline cuts](authored-placement-new-changes-nested-inline-cuts.md) — c10 — cpp:template cpp:inline cpp:new | asm:call | topic:source-oracle topic:inline-budget — the original ZTools allocation overload leaves both typed indexers exact but changes the large registrar's expansion; same-declaration controls distinguish the call boundary from TU-state noise.
 
+- [A typed payload does not prove a template owner](typed-payload-does-not-prove-a-template-owner.md) — c10 — cpp:template cpp:class cpp:array | asm:call | topic:source-model topic:mis-model — one payload/capacity did not prove the inferred fixed-array primary; a single typed input-device owner preserves the three real helper boundaries and recovers CreateDeviceGroup, FreeDeviceGroups and FillFrom exactly.
+
 One line per pattern: `- [title](file.md) — cN — tags — symptoms` (cN = confidence /10).
 Sorted by primary tag so families cluster. Grep this file by tag (`cpp:switch`,
 `cpp:eh`, `topic:wall`) or by symptom token, then read only the hits. Schema +
