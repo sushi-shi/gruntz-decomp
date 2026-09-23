@@ -6,6 +6,8 @@ Sorted by primary tag so families cluster. Grep this file by tag (`cpp:switch`,
 how-to-search: [`README.md`](README.md). Authoring: new pattern = new file + one
 line here, SAME commit.
 
+- [An inline singleton setter restores stores interleaved with the next call's arguments](inline-singleton-setter-restores-store-call-interleaving.md) — c10 — cpp:inline cpp:array cpp:call | asm:mov asm:push | topic:codegen-idiom topic:scheduling — seven palette builders reach strict 100% after restoring typed singleton setters; declaration-only and chained-assignment controls exclude TU noise and direct-store grouping.
+
 WALL vs STEERABLE: `topic:codegen-idiom`/`topic:flags` = a source spelling closes the
 diff; `topic:wall`/`topic:scoring-artifact` = code already correct / no source form —
 stop chasing (orchestration §2a).

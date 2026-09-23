@@ -6,6 +6,11 @@ operator emitted in the opposite order (`mov r,[p+A]; imul r,[p+B]` vs `[p+B]` t
 or the 1st and 4th term of an n-term `+` chain swapped) — and NO source spelling moves it
 confidence: 9/10
 
+Palette follow-up: the RGB order/frame residue described historically below
+is absent from seven current builders. Their final singleton-store scheduling
+differences closed through an [inline setter](inline-singleton-setter-restores-store-call-interleaving.md),
+with a declaration-only control excluding TU state as that setter's mechanism.
+
 cl5 CANONICALISES the operand order of a commutative integer operator over member loads.
 The order it picks is a property of the operands, not of the source, so every spelling of
 the expression emits the identical bytes. Measured on `CDDrawWorker::GetMemoryUsage`
@@ -52,6 +57,18 @@ the vptr-stamp transposition in the `CWayPoint`/`CGuardPoint` ctor family, and t
 scratch-register rotation in `SaveVideoCheckboxes`.
 
 ## The parity is NARROW — measured
+
+`CMapMgr::RecycleClosedNodes` (`0x9f5d0`) provides a composed control. Its
+initial 99.30769% state also had a free-list load/store scheduling difference.
+Moving the next-link assignment before the previous-link reset dipped to
+97.61539%, but introduced retail's earlier free-head load. Giving that value
+a real `BrickzCellNode* freeHead` local, then resetting the previous link and
+assigning the saved head, reached 99.92308%. Only the two width/height product
+orders remained. Mixed forest trial 2 (seed 1196579412, horizon 32) reproduced
+all 129 bytes and 52 instructions exactly; there are no relocations. The exact
+state was replayed and banked for unchanged source, then every probe removed.
+The source local and the disposable canonical-order test solve independent
+differences; neither score alone would have identified both.
 
 The probe was run against 28 sub-100 functions across 22 TUs. It flipped exactly two
 (`GetMemoryUsage`, `Save`) and was **codegen-neutral on the other 26** — not one diff line
