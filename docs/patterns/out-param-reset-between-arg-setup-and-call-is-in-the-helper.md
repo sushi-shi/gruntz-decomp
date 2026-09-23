@@ -52,10 +52,26 @@ placement ripples 40+ TUs).
 
 ## Measured
 
-`CPlay::SetEffectSpriteDurations` 0xdc060: 67.07 -> **98.95** in one change. Residue: a
-3-cycle scratch-pair rotation (retail rotates ecx/eax -> edx/ecx -> eax/edx across
-consecutive sites, ours pins eax/edx, so every third site matches) — regalloc class,
-not reachable from this lever.
+`CPlay::SetEffectSpriteDurations` 0xdc060: 67.07 -> **98.95** with an out-ref
+helper, then **100.00 exact** with the helper returning `SoundCue*` and the
+caller assigning it to its existing result local at all 32 sites:
+
+```cpp
+static inline SoundCue* LookupCue(CMapStringToPtr& cues, const char* name) {
+    SoundCue* out = NULL;
+    MapLookup(cues, name, out);
+    return out;
+}
+
+d = LookupCue(m_world->m_soundRegistry->m_cues, "GAME_PYRAMIDMOVE");
+```
+
+The out-ref spelling left a three-cycle scratch-pair rotation between sites;
+the return-value boundary changes the caller's result lifetime and closes it.
+The earlier verdict that this residue was not source-steerable was wrong.
+The complete 0x51b-byte body now has 401 identical instructions and 64
+identical ordered relocations. When an out-ref helper fixes the reset but leaves
+a repeated register rotation, test the typed-return boundary before parking it.
 
 ### An independent CFG wall can remain after the reset moves (2026-08-21)
 

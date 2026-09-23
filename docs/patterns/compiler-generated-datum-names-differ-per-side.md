@@ -1,14 +1,15 @@
-# A compiler-generated datum the two sides NAME differently caps a 99.8-99.9% row
+# Compiler-generated referents need owner and content proof, not an ordinal pin
 
 tags: cpp:static cpp:dtor cpp:const | asm:push asm:call | topic:scoring-artifact topic:wall topic:tooling
-symptoms: `gruntz walls diagnose` says `class: REFERENT - masked bytes identical; the relocation TARGETS differ`, the two names are obviously the SAME object (`$anon_data_<sha>` vs `__ehreg$<fn>`, or one name with two different `$Sdata_rdata_<sha>` suffixes), and the function sits a few hundredths below 100 with nothing in the body to fix
+symptoms: `gruntz walls diagnose` says `REFERENT` with masked bytes identical, and a `push <callback>` before `call atexit` names a base `$anon_data_<sha>` but a target `FUN_...` or `__ehreg$...`
 confidence: 9/10
 variants: folded-base-address-names-the-neighbour.md
 
-`REFERENT` is normally an identity question you fix in the source. Two sub-classes
-are NOT: the referent is a datum **cl generated**, and the base side and the
-delinked target side name it by different rules, so no source spelling can make
-them agree. Recognize and park; the code bytes already match.
+`REFERENT` remains an identity question even for compiler-generated code. A
+base/target name difference alone does not prove a wall. First recover the
+emitting owner and the callback's real body, then let normal relocation/content
+comparison decide whether they match. The earlier advice to park these rows was
+falsified by the controlled callback attribution below.
 
 ## A. cl's `atexit` static-destructor thunk in its own COMDAT
 
@@ -20,23 +21,26 @@ base:    push $0x0   ->  $anon_data_e08e34e1..._0
 target:  push $0x0   ->  __ehreg$?GetRect@CButeMgr@@QAEPAUButeIntRect@@PBD0@Z
 ```
 
-The thunk itself is real and correct - for a POD-with-empty-dtor it is a bare
-`c3` (`sema disasm 0x173840` => 1 byte `ret`); for a class it is
-`mov ecx,<obj>; jmp <dtor>`. It diverges only in NAMING: `gruntz.delink.eh_band`
-carves it into the EH band as `__ehreg$<owner>`, while
-`gruntz.compare.canonicalize` classifies the base's separate COMDAT as anonymous
-DATA and content-hashes it. When cl instead emits the thunk as a `$L` LABEL
-inside the owning function's own COMDAT, canonicalize renames it and the row
-matches - which is why sibling functions of identical shape score differently
-(`CButeMgr::SetRect`/`SetPoint`/`SetVector` match; `GetRect`/`GetPoint`/
-`GetVector`/`GetRange`/`GetString` and `CImage::RenderFrame`/`RenderFrameClipped`
-do not).
+The thunk is real code: either `c3` or `mov ecx,<object>; jmp <destructor>`.
+`RVA_DYNINIT` at the owning local static gives a semantic source/retail owner
+without pinning cl's volatile `_$E<n>` ordinal. The delinker now derives that
+ordinal from the current base COFF only when its named owner has exactly one
+`_atexit` call whose pushed argument relocates to a defined executable `_$E<n>`
+callback. The corresponding named retail owner must have one call to `atexit`
+(possibly through an ILT thunk); the pushed pointer must have a real HIGHLOW
+relocation to a same-unit `src_dyninit` pin and a valid callback body. Only then
+is the transient name provisioned in the synthetic PDB, *before* EH-band and
+static-library labels. Ordinary strict normalization still compares callback
+payload and ordered relocations; no byte equivalence is asserted by the pin.
 
-`RVA_DYNINIT` does NOT fix it. `sema rva <thunk>` reports the row `unclaimed -
-structure only` with the `src_dyninit` claim LOSING, and where no census row
-exists at all `verify unique-names` rejects the pin outright
-(`model violation: func claim <owner> (src_dyninit) at <rva> is not an admitted
-census row`).
+Controlled A/B: without attribution, `CButeMgr::GetString/GetRect/GetPoint/
+GetVector/GetRange` and `CImage::RenderFrame/RenderFrameClipped` each had
+byte-identical caller instructions but one mismatched callback referent.
+Provisioning the ten proved callback names made all seven callers **100% exact**;
+each now has identical raw bytes and identical ordered relocations. A full-path
+control checks the derived names reach `function_records`; removing the retail
+relocation sites suppresses every attribution. Keep the `RVA_DYNINIT` owner pin,
+not a numeric ordinal or an invented source function.
 
 ## B. a NAMED static's canonical suffix embeds its physical EXTENT
 
@@ -68,8 +72,10 @@ function's body.
 
 ## Detection
 
-`walls diagnose <rva>` prints the pair. Confirm sub-class A by the `push` site
-sitting between a guard-byte test and `call atexit`; confirm B by the two names
-being equal up to the `$S…` suffix. Read the retail bytes directly before
-believing a value differs - a same-name/different-digest pair is an extent
-question, never a value question.
+`walls diagnose <rva>` prints the pair. Confirm A by the guard, callback push,
+`atexit` call, COFF callback definition and retail HIGHLOW site; a missing pin,
+different owner, second `atexit` call or unrecognized callback must remain
+unattributed. Confirm B by the two names being equal up to the `$S…` suffix.
+Read the retail bytes directly before believing a value differs: a
+same-name/different-digest pair is an extent question, not necessarily a value
+question.
