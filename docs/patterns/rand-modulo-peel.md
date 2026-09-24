@@ -58,7 +58,7 @@ Read `lo` off the `add edx,<imm>` in the join block and `hi` off the `lea` that 
 Both forms reproduce retail's instruction sequence exactly (verified in
 `CGrunt::ResetEntranceAnimation`, 0x62e10).
 
-## The one arm that still differs
+## Constant and variable bounds need separate controls
 
 Constant bounds can fold the peel away completely without erasing the helper's
 effect on the caller. The [CMenuSparkle constructor control](constant-range-helper-changes-constructor-zero-carrier.md)
@@ -67,10 +67,47 @@ contain the same single CRT random call and remainder arithmetic. An
 include-only control is byte-flat; the actual inline call changes an earlier
 zero carrier in the constructor chain.
 
-`GetRandom(1, count)` folds: `n = count - 1 + 1 == count`, so inside the degenerate arm our
-cl *proves* `count == 0` and substitutes the literal, collapsing `(rand() & 1) ? 1 : count`
-to `movsx edi,al; and edi,1`. Retail keeps `mov edi,1` against a live `count`. Same helper,
-different constant propagation; not a source difference we have been able to name.
+`GetRandom(1, count)` can fold the width back to `count`, and the zero arm can
+collapse to `movsx edx,al; and edx,1`. Check the particular retail caller:
+the former claim that retail necessarily keeps a live endpoint is not a family
+exclusion. The three brick-color sites below already use the collapsed parity
+form in retail.
+
+## A complete variable-bound wrapper can preserve the signed divisor
+
+The three color-selection paths in `BuildCellAttributes` (0x810f0) repeat one
+protocol: test the full signed total, draw parity if zero, otherwise draw a
+signed remainder and increment it. Restoring the complete existing range helper
+inside `RollBrickColor` gives this controlled real-TU result:
+
+| Source state | Normalized bytes | Instructions | Calls / branches / returns | References |
+| --- | ---: | ---: | --- | ---: |
+| Expanded zero/remainder body | 2,666 | 753 | 23 / 127 / 2 | 122 |
+| `return GetRandom(1, totalWeight)` | 2,666 | 753 | 23 / 127 / 2 | 122 |
+| Same, redundant direct CRT include removed | 2,666 | 753 | 23 / 127 / 2 | 122 |
+
+All three states have identical complete normalized bytes and ordered
+relocation offsets, targets and kinds. Switch-table data is excluded from the
+instruction census. Current fuzzy remains 90.2473%; the unrelated caller CFG
+residue is still open. This is source restoration, not an exact closure.
+
+At each actual site, VC5 uses the original full-dword total in `TEST` and
+`IDIV`; no subtract-one instruction or narrowed divisor remains. Thus the
+emitted sequence works at `INT_MIN` too: CRT `rand()` yields 0..32767, so this
+division cannot encounter the signed division overflow case. The zero path
+still executes exactly one draw and chooses odd→1/even→0. This proof is about
+the pinned compiler's emitted program. It does **not** make `hi-lo+1` portable
+signed arithmetic at every endpoint, nor prove callers supply positive bounds.
+
+Reverse-use rule: test the complete sourced helper before excluding it from an
+expanded remainder signature. Audit the full bound-producing dataflow, both
+draw referents and guard destinations, and arithmetic extremes—not just the
+nominal probability or current score. `scripts/test_brick_color_rng.py` checks
+the three original/production local protocols and rejects changed divisors,
+parity masks, signed comparisons, guard edges and either RNG referent. Whole
+caller before/after equality is a separate control; these tests do not certify
+the entire game-mode/switch/loop CFG. The specific adoption and domain-review
+dispositions live in `brick-rng-color-range` and `brick-color-*`.
 
 ## Preserve the sampled integer before choosing a predicate abstraction
 

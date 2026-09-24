@@ -5,18 +5,8 @@
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GameRand.h>
 
-#include <stdlib.h>
-
 static inline i32 RollBrickColor(i32 totalWeight) {
-    i32 colorRoll;
-    if (totalWeight == 0) {
-        colorRoll = static_cast<i8>(rand());
-        colorRoll &= 1;
-    } else {
-        colorRoll = rand() % totalWeight;
-        colorRoll++;
-    }
-    return colorRoll;
+    return GetRandom(1, totalWeight);
 }
 
 static __inline BrickTileId PickOneBrickStack(
