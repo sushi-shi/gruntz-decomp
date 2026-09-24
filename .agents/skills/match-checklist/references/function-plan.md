@@ -99,7 +99,8 @@ Kept source and why it is humane/authentic:
 Historical-MAX movement:
 Exact or remaining class:
 Calls/CFG/constants/referents final verdict:
-Negative controls:
-Full-build/MAX result:
+Compiler A/B and raw-evidence controls:
+Compilation/comparison/MAX result:
+Test suites deferred to authorized squash merge:
 Commit:
 ```

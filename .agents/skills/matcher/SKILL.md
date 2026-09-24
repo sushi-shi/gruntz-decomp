@@ -27,6 +27,22 @@ evidence-backed disposition for every family.
    decompiler on `GRUNTZ.EXE`; use static assembly, xrefs, RTTI, vtables, data,
    and relocations.
 
+## Validation cadence
+
+Run test suites only at the authorized PR squash-merge stage, not during
+matching, before ordinary commits, or before pushes. This includes focused
+unit/regression tests, selftests, and compiler-backed test harnesses; do not
+invoke them indirectly through an umbrella validation command.
+
+During matching, compile the actual affected TUs and compare their instructions,
+constants, call/CFG structure, and ordered references against retail. Source A/B
+compiler experiments are matching work, not test-suite runs. Use
+`gruntz build base compare` for a full compilation/comparison refresh without
+the default verification target; keep MAX banking tied to actual compiler
+output. Defer the full gated `gruntz build` and test suites until squash merge.
+Do not change or disable the gates themselves. Report deferred tests honestly;
+an earlier green run does not certify later edits or authorize merging.
+
 ## Choose work by historical MAX
 
 - Work the lowest `hist_pct` rows first from `gruntz walls inventory`. A
@@ -166,13 +182,16 @@ Before committing:
 1. Recheck the target's branch structure, raw constants, and ordered
    relocations/referents.
 2. Run `gruntz format` only on the intended tree; never format `vendor/`.
-3. Stage only the focused source and documentation before the full build so a
+3. Stage only the focused source and documentation before compiling so a
    new MAX is banked against the intended fingerprint.
-4. Run full `gruntz build`.
-5. Require every gate green and `git diff --check` clean.
+4. Refresh compilation/comparison with `gruntz build base compare`; follow the
+   validation cadence above, without running test suites on commits or pushes.
+5. Inspect matching/MAX results and require `git diff --check` clean. At the
+   authorized squash merge, run full `gruntz build` and the relevant test suites
+   against the final candidate, and require every gate green before merging.
 6. Commit source, focused durable documentation, and the relevant
    `config/match_baseline.tsv` updates; never commit generated build state.
 
 Report the historical-MAX change, the structural correction, evidence and
-negative controls, raw referent verdict, remaining bounded wall, full-build
-result, and commit.
+compiler controls, raw referent verdict, remaining wall, compilation/comparison
+result, deferred squash-merge tests, and commit. Do not imply deferred tests ran.

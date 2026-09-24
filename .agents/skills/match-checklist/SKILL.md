@@ -10,6 +10,11 @@ current pair. This skill governs **what must be considered before and during one
 function campaign**. It does not replace the repository's lowest-MAX queue,
 source-model rules, or verification gates.
 
+Follow `matcher`'s validation cadence: run test suites only at authorized PR
+squash merge, never during matching, ordinary commits, or pushes. Here,
+`tested` means a measured source A/B compilation and retail comparison; it
+does not require running a unit/regression or compiler-backed test suite.
+
 ## Non-negotiable deliverable
 
 Before the first source edit, publish a concise **Function Match Plan** using
@@ -107,11 +112,13 @@ mixes several independent levers.
 
 A function campaign may end only when one of these is true:
 
-- it is exact and a full `gruntz build` banks the intended fingerprint; or
+- it is exact and actual compilation/comparison banks the intended fingerprint; or
 - the complete checklist has evidence-backed dispositions, the residue is
   reproducibly bounded, and the report identifies the remaining wall class and
   the tested negative controls.
 
-Before commit, re-audit raw constants and ordered referents, run the full build
-and MAX gate, and stage only the focused source, reusable pattern documentation,
-and focused baseline rows.
+Before commit, re-audit raw constants and ordered referents, refresh compilation
+and comparison with `gruntz build base compare`, inspect MAX results, and stage
+only the focused source, reusable pattern documentation, and focused baseline
+rows. Defer full gated builds and test suites until authorized squash merge;
+record that deferral rather than claiming the final candidate is fully tested.
