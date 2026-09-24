@@ -305,18 +305,18 @@ i32 CGrunt::LoadEntranceConfig() {
         CGruntzMgr* g = g_gameReg;
         CWwdSpriteObject* h = m_object;
         CMapMgr* grid = g->m_tileGrid;
-        Coord tile;
-        GetScreenTile(&tile);
+        i32 tx = h->m_screenPosition.m_x >> TILE_SHIFT_PX;
+        i32 ty = h->m_screenPosition.m_y >> TILE_SHIFT_PX;
 
-        i32 flags = grid->CellFlagsAt(tile.m_x, tile.m_y);
+        i32 flags = grid->CellFlagsAt(tx, ty);
 
         if (flags & BRICKZ_CELL_OCCUPIED) {
             i32 owner;
-            if (static_cast<u32>(tile.m_x) >= static_cast<u32>(grid->m_width)
-                || static_cast<u32>(tile.m_y) >= static_cast<u32>(grid->m_height)) {
+            if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width)
+                || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
                 owner = -1;
             } else {
-                owner = grid->m_rows[tile.m_y][tile.m_x].m_occupantId;
+                owner = grid->m_rows[ty][tx].m_occupantId;
             }
             i32 occupantPlayerIndex =
                 (owner >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK;
@@ -332,30 +332,32 @@ i32 CGrunt::LoadEntranceConfig() {
         }
 
         h = m_object;
+        i32 oldX = m_lastTilePx.m_x;
         m_entranceArmed = false;
-        Coord oldPixel = m_lastTilePx;
-        Coord newPixel = h->ScreenPos();
-        Coord oldTile = oldPixel;
-        ScreenTile(&oldTile);
-        Coord newTile = newPixel;
-        ScreenTile(&newTile);
+        i32 newPxX = h->m_screenPosition.m_x;
+        i32 newPxY = h->m_screenPosition.m_y;
+        i32 oldTileX = oldX >> TILE_SHIFT_PX;
+        i32 oldTileY = m_lastTilePx.m_y >> TILE_SHIFT_PX;
+        i32 newTileX = newPxX >> TILE_SHIFT_PX;
+        i32 newTileY = newPxY >> TILE_SHIFT_PX;
 
-        if (oldPixel.m_x != -1 && oldPixel.m_y != -1) {
+        if (oldX != -1 && m_lastTilePx.m_y != -1) {
             CMapMgr* og = g_gameReg->m_tileGrid;
 
-            BrickzCell* oc = &og->m_rows[oldTile.m_y][oldTile.m_x];
+            BrickzCell* oc = &og->m_rows[oldTileY][oldTileX];
             oc->m_flags &= BRICKZ_CELL_UNOCCUPIED_MASK;
             oc->m_occupantId = -1;
         }
         {
             CMapMgr* ng = static_cast<CMapMgr*>(g_gameReg->m_tileGrid);
 
-            BrickzCell* nc = &ng->m_rows[newTile.m_y][newTile.m_x];
+            BrickzCell* nc = &ng->m_rows[newTileY][newTileX];
             nc->m_flags |= BRICKZ_CELL_OCCUPIED;
             nc->m_occupantId = (m_playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | m_unitIndex;
         }
-        m_lastTilePx = newPixel;
-        m_triggerMgr->WireTileSwitchLogic(this, newPixel.m_x, newPixel.m_y);
+        m_lastTilePx.m_x = newPxX;
+        m_lastTilePx.m_y = newPxY;
+        m_triggerMgr->WireTileSwitchLogic(this, newPxX, newPxY);
 
         h = m_object;
         m_entranceCommitted = true;
@@ -1043,10 +1045,10 @@ i32 CGrunt::FinishActiveAction() {
 
     eq = ANIMATION_ACT_EQUALS("N");
     if (eq) {
-        Coord pixel = m_object->ScreenPos();
-        SnapTileCenter(&pixel);
+        DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(m_object, px, py)
         i32 redo = 1;
-        if (pixel != m_lastTilePx && IsDropReady(1)) {
+        if (PIXEL_PAIR_NOT_AT_POSITION(px, py, m_lastTilePx.m_x, m_lastTilePx.m_y)
+            && IsDropReady(1)) {
             m_coordToggle = (m_coordToggle == false);
             redo = 0;
         }
@@ -1065,18 +1067,17 @@ i32 CGrunt::FinishActiveAction() {
 
     {
         CMapMgr* grid = g_gameReg->m_tileGrid;
-        Coord newPixel = m_object->ScreenPos();
-        Coord newTile = newPixel;
-        ScreenTile(&newTile);
-        i32 flags = grid->CellFlagsAt(newTile.m_x, newTile.m_y);
+        i32 tx = m_object->m_screenPosition.m_x >> TILE_SHIFT_PX;
+        i32 ty = m_object->m_screenPosition.m_y >> TILE_SHIFT_PX;
+        i32 flags = grid->CellFlagsAt(tx, ty);
 
         if (flags & BRICKZ_CELL_OCCUPIED) {
             i32 owner;
-            if (static_cast<u32>(newTile.m_x) >= static_cast<u32>(grid->m_width)
-                || static_cast<u32>(newTile.m_y) >= static_cast<u32>(grid->m_height)) {
+            if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width)
+                || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
                 owner = -1;
             } else {
-                owner = grid->m_rows[newTile.m_y][newTile.m_x].m_occupantId;
+                owner = grid->m_rows[ty][tx].m_occupantId;
             }
             i32 playerIndex =
                 (owner >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK;
@@ -1087,20 +1088,25 @@ i32 CGrunt::FinishActiveAction() {
         }
 
         m_entranceArmed = false;
-        Coord oldTile = m_lastTilePx;
-        ScreenTile(&oldTile);
-        if (oldTile.m_x != -1 && oldTile.m_y != -1) {
+        i32 newX = m_object->m_screenPosition.m_x;
+        i32 newY = m_object->m_screenPosition.m_y;
+        i32 oldTx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+        i32 oldTy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
+        i32 newTx = newX >> TILE_SHIFT_PX;
+        i32 newTy = newY >> TILE_SHIFT_PX;
+        if (oldTx != -1 && oldTy != -1) {
             CMapMgr* oldGrid = g_gameReg->m_tileGrid;
-            BrickzCell* oc = &oldGrid->m_rows[oldTile.m_y][oldTile.m_x];
+            BrickzCell* oc = &oldGrid->m_rows[oldTy][oldTx];
             oc->m_flags &= BRICKZ_CELL_UNOCCUPIED_MASK;
             oc->m_occupantId = -1;
         }
         CMapMgr* newGrid = g_gameReg->m_tileGrid;
-        BrickzCell* nc = &newGrid->m_rows[newTile.m_y][newTile.m_x];
+        BrickzCell* nc = &newGrid->m_rows[newTy][newTx];
         nc->m_flags |= BRICKZ_CELL_OCCUPIED;
         nc->m_occupantId = (m_playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | m_unitIndex;
-        m_lastTilePx = newPixel;
-        m_triggerMgr->WireTileSwitchLogic(this, newPixel.m_x, newPixel.m_y);
+        m_lastTilePx.m_x = newX;
+        m_lastTilePx.m_y = newY;
+        m_triggerMgr->WireTileSwitchLogic(this, newX, newY);
 
         m_entranceCommitted = true;
         i32 sortKey = m_object->m_screenPosition.m_y + 0x186a0;

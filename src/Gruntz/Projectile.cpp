@@ -529,10 +529,17 @@ i32 CBoomerang::LoadProjectileSprites(
     double d =
         g_boomerangHalfTurnRadians / (duration * (g_boomerangPixelToTileScale * m_flightDist));
     CWwdSpriteObject* owner = m_object;
-    m_launchPosition = owner->ScreenPos();
-    DoubleVector2 launchPosition(m_launchPosition);
-    m_origin = (DoubleVector2(m_targetPx) + launchPosition) * g_boomerangMidpointScale;
-    m_direction = m_origin - launchPosition;
+    m_launchPosition.m_x = owner->m_screenPosition.m_x;
+    m_launchPosition.m_y = owner->m_screenPosition.m_y;
+    double originY =
+        (static_cast<double>(m_targetPx.m_y) + static_cast<double>(owner->m_screenPosition.m_y))
+        * g_boomerangMidpointScale;
+    m_origin.m_x =
+        (static_cast<double>(m_targetPx.m_x) + static_cast<double>(owner->m_screenPosition.m_x))
+        * g_boomerangMidpointScale;
+    m_origin.m_y = originY;
+    m_direction.m_x = m_origin.m_x - static_cast<double>(m_launchPosition.m_x);
+    m_direction.m_y = originY - static_cast<double>(m_launchPosition.m_y);
     m_phase = 0.0;
     m_velScale = d;
     CGrunt* g =

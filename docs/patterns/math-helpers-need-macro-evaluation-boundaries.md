@@ -55,6 +55,9 @@ the following examples without removing their typed APIs:
 | `CGruntCreationPoint` constructor 0x3e520 | 55.3022% | original object snap macro with typed screen-position fields | 81.9712% |
 | `CVoiceTrigger` constructor 0x119b50 | 63.8167% | object snap macro and direct area-edge stores | 92.5083% |
 | `CStatusBarMgr::UpdateFallingItemStatusBar` 0x107590 | 35.8545% | four scalar edge locals and direct native `RECT` stores | 97.9091% |
+| `CGrunt::LoadEntranceConfig` 0x67f80 | 72.0614% | separate scalar screen tiles and old/new pixel lifetimes | 77.6316% |
+| `CGrunt::FinishActiveAction` 0x6a6d0 | 81.6941% | snapped pixel-pair macro and scalar arrival tile locals | 84.9912% |
+| `CBoomerang::LoadProjectileSprites` 0xe0690 | 42.2927% | scalar launch and FP midpoint/direction stores in typed vectors | 82.7155% |
 | `CGrunt::RectContains` 0x51850 | 46.2177% | tile component conversion, native rectangle copy, offset/extent macros | 100% |
 | `CGrunt::VehicleContactContains` 0x51a20 | 58.6220% | same rectangle family | 100% |
 | `CGrunt::SetArrivalTarget` 0x52ed0 | 59.6000% | component stores and snap expressions | 100% |
@@ -276,6 +279,23 @@ retail. Four edge locals and direct native `RECT` stores restore the earlier
 97.9091% while the coordinate and rectangle helpers remain available to other
 callers. The later chip-grinder update also becomes exact in the local TU
 comparison, consistent with a changed VC5 compiler state.
+
+The entrance movement unit has two independent aggregate-to-scalar controls.
+`LoadEntranceConfig` removes one extra `GetScreenPos` call by reading typed
+screen-position components into separate tile and pixel locals. In
+`FinishActiveAction`, the snapped-pixel pair macro restores the two component
+comparisons, while scalar tile locals keep the branch-local lifetimes. Both
+improve but remain below their prior peaks, so the remaining codegen residue
+stays open. A direct expansion of `EntranceCell()` was byte-flat and was not
+retained.
+
+`CBoomerang::LoadProjectileSprites` keeps the typed `Coord` and
+`DoubleVector2` members, but restores independent stores into their X/Y
+components. The aggregate midpoint and direction expressions changed local
+FP lifetimes from the first few instructions, with no call or CFG difference.
+A separate `originY` local and launch-position component stores recover the
+earlier 82.7155%. The shared `RecycleGruntCoords` inline remains in use;
+restoring its old macro was unnecessary for this method.
 
 `CMovingLogic::InitOwner` gives a counterexample to adding an aggregate merely
 because the component values are related. Its four min/max record reads have
