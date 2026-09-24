@@ -2079,7 +2079,8 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     if (vk == VK_SPACE) {
         if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON5)) {
             CDDrawWorkerHost* obj = this->m_world->m_level->m_mainPlane;
-            Coord scrollPosition = obj->m_scrollPixel;
+            i32 bookmarkScrollX = obj->m_scrollPixel.m_x;
+            i32 bookmarkScrollY = obj->m_scrollPixel.m_y;
             Coord* slot;
             if (this->CameraBookmarkCount() < 4) {
                 slot = g_coordPool.Pop();
@@ -2093,7 +2094,8 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                     this->m_cameraBookmarkIndex = this->CameraBookmarkCount() - 1;
                 }
             }
-            *slot = scrollPosition;
+            slot->m_x = bookmarkScrollX;
+            slot->m_y = bookmarkScrollY;
             if (this->m_cameraBookmarkIndex != this->CameraBookmarkCount() - 1) {
                 this->m_cameraBookmarks.InsertAt(this->m_cameraBookmarkIndex + 1, slot, 1);
                 this->m_cameraBookmarkIndex = this->m_cameraBookmarkIndex + 1;
@@ -2257,21 +2259,21 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         return 1;
     }
 
-    if (HIWORD(lparam) & KF_EXTENDED) {
+    if (lparam & 0x1000000) {
         if (vk == VK_LEFT) {
-            this->m_scrollEdgeLock |= SCROLL_EDGE_LEFT;
+            this->m_scrollEdgeLock |= 1;
             return 1;
         }
         if (vk == VK_RIGHT) {
-            this->m_scrollEdgeLock |= SCROLL_EDGE_RIGHT;
+            this->m_scrollEdgeLock |= 4;
             return 1;
         }
         if (vk == VK_UP) {
-            this->m_scrollEdgeLock |= SCROLL_EDGE_UP;
+            this->m_scrollEdgeLock |= 2;
             return 1;
         }
         if (vk == VK_DOWN) {
-            this->m_scrollEdgeLock |= SCROLL_EDGE_DOWN;
+            this->m_scrollEdgeLock |= 8;
             return 1;
         }
         if (vk == VK_INSERT || vk == VK_DELETE || vk == VK_HOME || vk == VK_END || vk == VK_PRIOR
@@ -2301,13 +2303,17 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             return 1;
         }
         CGruntzMgr* h = this->m_mgr;
-        Coord cursor = this->m_cursorPosition;
+        i32 my = this->m_cursorPosition.m_y;
         LevelCoordRect* r = &h->m_world->m_level->m_viewportRect;
-        if (!::PtInRect(r, cursor.m_x, cursor.m_y)) {
+        i32 x0 = r->left;
+        i32 y0 = r->top;
+        i32 x1 = r->right;
+        i32 y1 = r->bottom;
+        i32 mx = this->m_cursorPosition.m_x;
+        if (mx >= x1 || mx < x0 || my >= y1 || my < y0) {
             return 1;
         }
-        h->m_commandMgr
-            ->EnqueuePlaceGruntAtScreenPoint(true, g_curPlayer, cursor.m_x, cursor.m_y, 0);
+        h->m_commandMgr->EnqueuePlaceGruntAtScreenPoint(true, g_curPlayer, mx, my, 0);
         return 1;
     }
 
@@ -2319,18 +2325,20 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             return 1;
         }
         CGruntzMgr* h = this->m_mgr;
-        Coord cursor = this->m_cursorPosition;
+        i32 mx = this->m_cursorPosition.m_x;
         CGameLevel* q = h->m_world->m_level;
         LevelCoordRect* r = &q->m_viewportRect;
-        if (::PtInRect(r, cursor.m_x, cursor.m_y)) {
+        i32 x0 = r->left;
+        i32 y0 = r->top;
+        i32 x1 = r->right;
+        i32 y1 = r->bottom;
+        i32 my = this->m_cursorPosition.m_y;
+        if (!(mx >= x1 || mx < x0 || my >= y1 || my < y0)) {
             CDDrawWorkerHost* g = q->m_mainPlane;
             RECT* view = &g->m_planeViewRect;
-            Coord viewportOffset(
-                view->left - q->m_viewportRect.left,
-                view->top - q->m_viewportRect.top
-            );
-            Coord worldPosition = viewportOffset + cursor;
-            mgr->m_triggerMgr->SpawnPuddle(worldPosition.m_x, worldPosition.m_y, 0, 0, true, 0x19);
+            i32 by = view->top - q->m_viewportRect.top + my;
+            i32 bx = view->left - q->m_viewportRect.left + mx;
+            mgr->m_triggerMgr->SpawnPuddle(bx, by, 0, 0, true, 0x19);
         }
     }
 
@@ -2339,14 +2347,15 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             return 1;
         }
         CGruntzMgr* h = this->m_mgr;
-        Coord worldPosition = this->m_cursorPosition;
+        i32 my = this->m_cursorPosition.m_y;
         CGameLevel* q = h->m_world->m_level;
         CDDrawWorkerHost* g = q->m_mainPlane;
         RECT* view = &g->m_planeViewRect;
-        worldPosition +=
-            Coord(view->left - q->m_viewportRect.left, view->top - q->m_viewportRect.top);
-        SnapTileCenter(&worldPosition);
-        g_gameReg->m_triggerMgr->LoadExplosionSprites(worldPosition.m_x, worldPosition.m_y, -1, 1);
+        i32 by = ((view->top - q->m_viewportRect.top + my) & ~TILE_MASK_PX) + TILE_HALF_PX;
+        i32 bx =
+            ((this->m_cursorPosition.m_x - q->m_viewportRect.left + view->left) & ~TILE_MASK_PX)
+            + TILE_HALF_PX;
+        g_gameReg->m_triggerMgr->LoadExplosionSprites(bx, by, -1, 1);
         return 1;
     }
 
