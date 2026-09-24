@@ -580,15 +580,15 @@ void CFaderLight::RenderFrame(i32 frame) {
                 i32 right;
                 i32 left;
                 ComputeSpan(row, rr, 1, right, left);
-                CRange<i32> oldSpan(span[0], span[FADER_LIGHT_SPAN_CAPACITY]);
-                u8* clrL =
-                    m_targetBits + m_targetSurface->m_apiDesc.lPitch * row + oldSpan.GetMin() * bpp;
-                i32 n1 = (left - oldSpan.GetMin()) * bpp;
+                i32 oldStart = span[0];
+                u8* clrL = m_targetBits + m_targetSurface->m_apiDesc.lPitch * row + oldStart * bpp;
+                i32 n1 = (left - oldStart) * bpp;
                 if (n1 > 0) {
                     memset(clrL, 0, n1);
                 }
                 u8* clrR = m_targetBits + m_targetSurface->m_apiDesc.lPitch * row + right * bpp;
-                i32 n2 = (oldSpan.GetMax() - right) * bpp;
+                i32 oldEnd = span[FADER_LIGHT_SPAN_CAPACITY];
+                i32 n2 = (oldEnd - right) * bpp;
                 if (n2 > 0) {
                     memset(clrR, 0, n2);
                 }
@@ -626,16 +626,14 @@ void CFaderLight::RenderFrame(i32 frame) {
                 i32 right;
                 i32 left;
                 ComputeSpan(row, fr2, -1, right, left);
-                CRange<i32> oldSpan(span[-FADER_LIGHT_SPAN_CAPACITY], span[0]);
-                i32 n1 = (oldSpan.GetMin() - left) * bpp;
+                i32 n1 = (span[-FADER_LIGHT_SPAN_CAPACITY] - left) * bpp;
                 u8* src = m_restoreBits + m_restoreSurface->m_apiDesc.lPitch * row + left * bpp;
                 u8* dst = m_targetBits + m_targetSurface->m_apiDesc.lPitch * row + left * bpp;
                 CopyBytes(dst, src, n1);
-                i32 n2 = (right - oldSpan.GetMax()) * bpp;
-                src = m_restoreBits + m_restoreSurface->m_apiDesc.lPitch * row
-                      + oldSpan.GetMax() * bpp;
-                dst =
-                    m_targetBits + m_targetSurface->m_apiDesc.lPitch * row + oldSpan.GetMax() * bpp;
+                i32 oldEnd = span[0];
+                i32 n2 = (right - oldEnd) * bpp;
+                src = m_restoreBits + m_restoreSurface->m_apiDesc.lPitch * row + oldEnd * bpp;
+                dst = m_targetBits + m_targetSurface->m_apiDesc.lPitch * row + oldEnd * bpp;
                 CopyBytes(dst, src, n2);
                 span[-FADER_LIGHT_SPAN_CAPACITY] = left;
                 span[0] = right;

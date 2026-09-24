@@ -104,7 +104,7 @@ engstrrendertext	2	2
 exittrigger	5	3
 eyecandy	1	1
 fader	23	18
-fadereffects	39	28
+fadereffects	39	27
 fadermgr	13	13
 feccrypt	11	10
 fileimage	19	12
@@ -1648,14 +1648,14 @@ fadereffects	?GetFrameCount@CFaderFlat@@UAEHXZ	100.0000	100.0000	3	f8719f9d149e	
 fadereffects	?GetFrameCount@CFaderLight@@UAEHXZ	100.0000	100.0000	5	4a3f49ea3504	0x1814f0	100.0000	
 fadereffects	?GetFrameCount@CFaderRadial@@UAEHXZ	100.0000	100.0000	1	681a3ab7e243	0x17fda0	100.0000	
 fadereffects	?GetFrameCount@CFaderShape@@UAEHXZ	100.0000	100.0000	3	8c533ea19f1f	0x182900	100.0000	
-fadereffects	?GetFrameCount@CFaderSine@@UAEHXZ	100.0000	100.0000	2	2c7080e3990f	0x180400	100.0000	
+fadereffects	?GetFrameCount@CFaderSine@@UAEHXZ	100.0000	99.5000	2	2c7080e3990f	0x180400	100.0000	
 fadereffects	?PrepareFrame@CFaderFlat@@QAEXXZ	100.0000	100.0000	1	6e2d2e824b3a	0x17f980	100.0000	
 fadereffects	?ReleaseBuffers@CFaderLight@@QAEXXZ	100.0000	100.0000	3	a3436fa98633	0x180630	100.0000	
-fadereffects	?Render@CFaderLight@@QAEXHHHPAE00@Z	98.8538	90.9443	4	16d693c5ff8a	0x180fb0	98.8538	
+fadereffects	?Render@CFaderLight@@QAEXHHHPAE00@Z	98.8538	98.8538	4	16d693c5ff8a	0x180fb0	98.8538	
 fadereffects	?RenderFrame@CFaderFlat@@UAEXH@Z	93.3855	93.3855	7	28b00ec96217	0x17f660	93.4691	
-fadereffects	?RenderFrame@CFaderLight@@UAEXH@Z	74.8360	74.8360	9	5de7b08bd7e8	0x180640	91.1627	
+fadereffects	?RenderFrame@CFaderLight@@UAEXH@Z	90.8721	90.8721	10	1116e26fb104	0x180640	91.1627	
 fadereffects	?RenderFrame@CFaderRadial@@UAEXH@Z	98.6111	98.6111	5	9d5a2922ebbd	0x17fc60	99.7222	
-fadereffects	?RenderFrame@CFaderShape@@UAEXH@Z	99.9080	99.9080	11	2b9ee7856c00	0x181b00	99.9080	
+fadereffects	?RenderFrame@CFaderShape@@UAEXH@Z	99.9080	99.6626	11	2b9ee7856c00	0x181b00	99.9080	
 fadereffects	?RenderFrame@CFaderSine@@UAEXH@Z	95.6406	95.6406	10	1df5bc0a2c2c	0x17ff30	95.6406	
 fadereffects	?RenderTile@CFaderShape@@QAEXHH@Z	100.0000	100.0000	5	505e65f28bf7	0x182610	100.0000	
 fadereffects	?RenderWarpTile@CFaderShape@@QAEXHH@Z	91.2869	91.2869	9	ab18afad6c73	0x181e50	91.2869	
@@ -4684,8 +4684,8 @@ wwdgrid	?GetNext@CWwdGridIter@@QAEPAUWwdRegion@@XZ	100.0000	100.0000	8	e67e830f9
 wwdgrid	?Init@CWwdGridIter@@QAEPAUWwdRegion@@PAVCWwdGrid@@UWwdRect@@H@Z	95.5000	95.5000	5	f8eb1d23c075	0x191b10	95.5000	
 wwdgrid	?Query@CWwdGrid@@QAEHUWwdRect@@H@Z	99.9250	99.9250	5	b60d1d5cf2c1	0x1918c0	99.9250	
 wwdgrid	?Remove@CWwdGrid@@QAEXPAUWwdRegion@@@Z	100.0000	100.0000	2	2bfab4d73e6a	0x191890	100.0000	
-wwdgrid	?Setup@CWwdGrid@@QAEHUtagRECT@@@Z	100.0000	100.0000	8	4b8615ee9dff	0x191770	100.0000	
-wwdgrid	?Setup@CWwdGrid@@QAEHUtagRECT@@HH@Z	99.9658	99.9658	8	4b8615ee9dff	0x1915c0	99.9658	
+wwdgrid	?Setup@CWwdGrid@@QAEHUtagRECT@@@Z	100.0000	100.0000	9	5080ec9ccd41	0x191770	100.0000	
+wwdgrid	?Setup@CWwdGrid@@QAEHUtagRECT@@HH@Z	99.9658	99.9658	9	5080ec9ccd41	0x1915c0	99.9658	
 wwdgrid	?Start@CWwdGridIter@@QAEPAUWwdRegion@@PAVCWwdGrid@@H@Z	100.0000	100.0000	3	ac8c5c9f0e52	0x191ad0	100.0000	
 wwdobjmgr	??0CLogicRecord@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	3	dd30650e02f1	0x15b300	100.0000	
 wwdobjmgr	??0CResolveNode@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	3	c2257678bc58	0x15b2c0	100.0000	

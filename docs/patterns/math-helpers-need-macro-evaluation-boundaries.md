@@ -19,6 +19,7 @@ the following examples without removing their typed APIs:
 | `CWwdGrid::Setup` 0x1915c0 | 58.1966% | `NORMALIZE_RECT_COMPONENTS` and size-component macros | 99.9658% |
 | `CWwdGrid::Query` 0x1918c0 | 68.8938% | four-exit disjoint and ordered clamp macros | 99.9250% |
 | `CWwdGridIter::Init` 0x191b10 | 55.3966% | same disjoint/clamp macros | 95.5000% |
+| `CFaderLight::RenderFrame` 0x180640 | 74.8360% | scalar `FADER_DISTANCE` in its inline `Render` callee, separate old-span locals | 90.8721% |
 | `CGrunt::RectContains` 0x51850 | 46.2177% | tile component conversion, native rectangle copy, offset/extent macros | 100% |
 | `CGrunt::VehicleContactContains` 0x51a20 | 58.6220% | same rectangle family | 100% |
 | `CGrunt::SetArrivalTarget` 0x52ed0 | 59.6000% | component stores and snap expressions | 100% |
@@ -107,6 +108,18 @@ member methods remain available. In `Setup`, `CRect::NormalizeRect` and a
 `CopyRect` import are absent from retail; `NORMALIZE_RECT_COMPONENTS` and
 `SET_SIZE_COMPONENTS` recover its earlier call set. The macro forms are
 byte-identical to the direct historical component controls in the real VC5 TU.
+
+The light-fader caller gives a direct call-set control. Replacing four scalar
+`FADER_DISTANCE` expansions in its inline `Render` body with `Coord::Mag` added
+three `Coord::Dot`/`__ftol` call pairs to `RenderFrame`; retail has none. Restoring
+the distance macro raises the caller from 74.8360% to 90.1292% and the emitted
+`Render` from 90.9443% to 98.8538%. Separating the old span's start and end
+locals instead of constructing a `CRange<i32>` raises the caller to 90.8721%.
+The `Coord` and `CRange` APIs remain in the shared headers. The same TU's exact
+`CFaderSine::GetFrameCount` moves to 99.5% after the inline change despite
+unchanged source and call set; reversing its operands or introducing a local
+does not restore its earlier compiler state. Its historical exact MAX remains
+the correct record of that source shape.
 
 `LoadChipMachineConfig` has two independent edge-offset reads. The second key is
 `"(FallingItemSpeed"`, including its opening parenthesis. Computing one offset and
