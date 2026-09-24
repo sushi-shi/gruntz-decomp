@@ -74,7 +74,11 @@ The broader constructor/lifetime application work is reserved for a separate PR.
 
 ## Reproducible controls
 
-Run in the pinned environment:
+At the authorized PR squash-merge stage, run these controls in the pinned
+environment. Do not run test suites or the default gated build while matching,
+committing or pushing; use `nix develop -c gruntz build base compare` for actual
+production compilation and retail comparison during that work. The results in
+the dated checkpoints below are historical, not certification of later edits.
 
 ```sh
 nix develop -c python3 -m unittest discover -s scripts -p test_audit_template_models.py -v
