@@ -12,7 +12,7 @@ The broader constructor-family and SDK-adapter branches are not included.
 | `zDArray<T>`, `_zvec`, `_zdvec` | `ZTools/ZDArray.h`, `ZTools/ZVec.h` | `Gruntz/ActReg.h` and `Gruntz/TypeKeyColl.h` |
 | `zSymTab<T>`, `zPTree`, `zPtrColl` | `ZTools/PTree.h` | `Gruntz/ActRegistry.h` for the integer action-ID registry; Bute retains its own typed consumers |
 | Error handling and bit vector | `ZTools/Error.h`, `ZTools/BitVec.h` | No game registry declaration in the library headers |
-| Authored placement-new overload | `ZTools/PlacementNew.h` | Included by the typed array's constructor/indexing implementation |
+| Authored placement-new overload | `ZTools/PlacementNew.h` | Included by the typed array's constructor/indexing/extension implementation |
 | Typed input-device group (generic origin unproven) | `DinMgr2/InputDeviceGroup.h` | `Gruntz/InputDeviceGroup.h` for the game global; ordinary helpers in `DinMgr2.cpp` |
 | `FreeNodePool<T>` and nested node | `Utils/FreeNodePool.h` | `Gruntz/CoordPool.h` for the coordinate specialization/node alias and global |
 | `CLTList<T>` over the erased list | `Lith/TypedList.h` | WWD region, sound sample/node/task, and stream-voice consumers; task filtering remains with the sound owner |
@@ -23,8 +23,11 @@ owns the error, bit-set, vector and symbol-table layers together and names
 `ztools.lib`. Revision-specific adoption decisions remain solely in the
 `nolf-zdarray-*` and `nolf-zsymtab-*` lineage-ledger rows.
 
-The public array header now provides its complete declaration, lifetime and
-indexing definitions. Consumers do not select an implementation fragment or
+The public array header provides declaration, lifetime, indexing and extension
+definitions, with default bounds and public const bounds accessors above the
+protected erased base API. Fresh source decisions are recorded under
+`reassess-zvec-*`, `reassess-zdvec-*` and `reassess-zdarray-*`; these narrow
+adoptions do not close the broad consumer reassessment. Consumers do not select an implementation fragment or
 include a game registry to instantiate an array. Generic headers are independent
 of `Gruntz`, `Bute` and `Wap32`. The recovered `Utils` names are reconstruction
 names, not a claim about an original library path.

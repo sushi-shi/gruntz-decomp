@@ -15,6 +15,7 @@ Per-candidate adoption/rejection evidence belongs in
 | `hs-bitset-error-tail` | Same constructor | Existing error-helper boundary at three expanded error tails |
 | `bute-vector-range-reference-api` | Six Bute getters/setters, two item constructors, parser | Reference API and ordinary bound temporaries |
 | `hs-error-owner-identity`, `reassess-zerrhandling-all-error-sites` | Error, tree, array and bitset family | Original typed error owners, const helpers and static storage scope |
+| `reassess-zvec-*`, `reassess-zdvec-*`, `reassess-zdarray-*` | Shared array base and typed declaration family | Protected API, source widths/names, bounds and extension helpers |
 
 The one-bound candidate reopens the broad omitted-overload conclusion in
 `blood2-getrandom-range`: actual one-bound consumers exist. The implementation
@@ -146,6 +147,22 @@ unmatched; their unresolved source ownership must not be concealed by a
 classification or invented constructor. Further source work starts with the
 complete array declarations and typed consumers, not a blanket exemption for
 helpers that were previously considered.
+
+The complete array declaration/API checkpoint is applied in `3c4eec033`.
+Its eight narrow adoption decisions are in the corresponding wave-16 rows;
+`reassess-zdarray` itself remains pending. Fourteen selected real-TU controls
+retain their scores, including both exact typed indexers, the exact raw accessor
+and the exact lifetime family. Growth remains 91.8584%, and the three large
+consumers still retain 45/52, 2/11 and 4/10 required typed calls. No matching gain
+is claimed for this source restoration.
+
+All 22 real-VC5 header tests pass, including negative access checks and the
+extension's two construction bands. The full verifier ran 464 tests successfully
+with two skips; the full build passes, and the raw near-exact audit still reports
+zero defects across 3,915 functions. Banking retains all 4,429 RVA-keyed historical
+proofs and all unchanged-source MAX values. Rejected return-API inferences remain
+recheckable under `reassess-zdvec-normalized-success` and
+`reassess-zdvec-pointer-api-inference`.
 
 ## Coverage and remaining work
 
