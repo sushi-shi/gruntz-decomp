@@ -224,7 +224,8 @@ _MODEL_SCRATCH = BUILD / "inline-model"
 
 def measure_cb(src: Path, callee: str, caller: str, n_sites: int):
     """Compile the harness TU; return (expanded, rejected, lo, hi) where
-    cb in [lo, hi] (lo=None => cb <= 40; hi=None => not a candidate)."""
+    cb in [lo, hi] under the floor-budget assumption. Both bounds None means
+    saturation: no cost bound was measured. Only hi=None means no expansion."""
     from gruntz.tool import ToolError, cl
     _MODEL_SCRATCH.mkdir(parents=True, exist_ok=True)
     out = _MODEL_SCRATCH / (src.stem + ".obj")
@@ -256,8 +257,7 @@ def measure_cb(src: Path, callee: str, caller: str, n_sites: int):
             f"(or check the mangled name - a tail `jmp` to the callee counts "
             f"as a rejection too).")
     if expanded == n_sites:
-        lo, hi = None, SMALL_FREE       # never rejected: cb <= 40 (or the
-        #                                 budget never bound - use more sites)
+        lo, hi = None, None  # never rejected: the budget may never have bound
     elif expanded == 0:
         lo, hi = CANDIDACY_CB, None     # not a candidate (or cb > budget)
     else:
@@ -558,7 +558,8 @@ def main(argv=None) -> int:
             die("--measure-cb needs --fn CALLEE --caller CALLER --sites N")
         ex, rej, lo, hi = measure_cb(src, args.fn, args.caller, args.sites)
         if lo is None:
-            verdict = f"cb <= {SMALL_FREE} (never rejected; budget-exempt)"
+            verdict = ("SATURATED: no cb bound measured; increase the site count "
+                       "and confirm the caller remains at the budget floor")
         elif hi is None:
             verdict = f"NOT an inline candidate (ineligible body, or cb >= {CANDIDACY_CB})"
         else:

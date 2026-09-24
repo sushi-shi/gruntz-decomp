@@ -63,6 +63,14 @@ which can expand without the keyword under `/Ob1`.
 
 ## The rule (ported from the homm3 VC6 back-end RE, re-validated on cl 5.0)
 
+Measurement caution: an all-expanded harness is saturated; it does not prove
+`cb <= 0x28`. The palette span control expands all 12 sites yet rejects 12 of
+25 identical sites in the larger harness. `--measure-cb` now reports the
+saturated case as unbounded rather than claiming budget exemption. See the
+[complete span composition and real-compiler regression control](inline-result-local-changes-later-span-expansion.md#composition-with-the-helpers-real-loop-cursor).
+Numeric brackets from a partially rejecting harness still require the stated
+1000-floor caller assumption; increasing caller size is not free evidence.
+
 The sibling homm3 project reverse-engineered this decision out of its pinned
 back end (C2.DLL 12.00.8447) and published it as a model spec + address ledger
 + executable predictor: `homm3-decomp/docs/vc6/inliner.md`, `predict()` in

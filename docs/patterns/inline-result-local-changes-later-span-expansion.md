@@ -61,16 +61,94 @@ irrelevant. The observed expansion decisions are evidence; this experiment
 does **not** measure `cb` or distinguish a cost change from another front-end
 decision mechanism. Use the inline-model titration before assigning numbers.
 
-None of these variants is exact. In particular, 26 calls is not the required
+None of those initial variants is exact. In particular, 26 calls is not the required
 24, and none repairs the original first divergence. Uniform `FillSpan` use
 therefore remains a hypothesis, not recovered source provenance. The uniform
-member-inlining experiments were removed. The user-approved range abstraction
-is retained separately: every previously expanded range uses the typed free
+member-inlining experiments were initially removed. The user-approved range abstraction
+was first retained separately: every previously expanded range used the typed free
 `FillTileColors` helper beside `SetTileColor`, while the existing standalone
 member calls remain. This uniformly represents buffer fills without claiming
 that VC5 originally selected these sites from one member-inline population.
 Do not retain probes, hand-select per-site helper spellings, or claim a
 recovered match from this control.
+
+## Composition with the helper's real loop cursor
+
+The follow-up at `96a42aa0d` closes the call-boundary question without selecting
+different APIs for different sites. Keep the named `u16` packed-colour result
+and let the existing by-value `FillSpan` parameter own its loop cursor:
+
+```cpp
+inline void CMinimap::FillSpan(u32 x1, u32 x2, u16 color) {
+    if (x1 > x2) {
+        return;
+    }
+    for (; x1 <= x2; x1++) {
+        m_tileColors[x1] = color;
+    }
+}
+```
+
+The controlled Sweetz results on this source state are:
+
+| Pack result | FillSpan cursor | Instructions | Span calls | Standalone FillSpan |
+| --- | --- | ---: | ---: | --- |
+| Direct return | Separate `u32 i` | 633 | 13 | Exact |
+| Direct return | Parameter `x1` | 637 | 10 | Exact |
+| Named `u16` | Parameter `x1` | 613 | **24** | **Exact** |
+
+The first cursor change goes away from the desired call count. Composing the
+independently supported result local then restores retail's 24-call boundary.
+There are no inert declarations, extra operations, per-site overrides or
+forced calls. Using the same member at all range sites works across all eight
+palettes: seven have 24 calls and Honey has 23, exactly as retail. All eight
+also have the retail branch, return and relocation counts. The standalone
+helper remains 50 bytes / 20 instructions, including its `rep stosd/stosw`
+fill implementation. All 131 formerly separate free-helper sites are now
+ordinary member calls; the redundant free helper is removed.
+
+An independent source audit compares all eight 500-entry symbolic colour
+tables and their complete ordered write traces; every RGB constant, inclusive
+range and singleton write agrees. This composition removes an arbitrary
+source-level split, but is **not** a whole-palette exact closure: Sweetz still
+has 613 instructions against retail's 615, and its first difference remains
+in packed-colour scheduling. The other seven retain scheduling/register
+residues as well. Do not confuse a complete call-boundary recovery with 100%.
+
+Negative controls narrow the mechanism. A guarded `do/while` emits ten caller
+calls but loses the standalone `rep` fill (37 bytes / 14 instructions and two
+branches), so it is not an equivalent compiled helper. Reusing `first` in the
+former free range helper does not repair Sweetz. Byte-sized RGB arguments
+retain `sar` through integer promotion but produce 25 calls; a three-statement
+packed-colour accumulation produces 26. Neither fixes the first divergence.
+
+Real-compiler 25-site harnesses using the canonical `CMinimap` declaration
+measure 13 expansions for the separate-index body and 15 for the parameter-
+cursor body: under the model's floor-budget assumption, `cb` brackets are
+72–76 and 63–66 respectively. The smaller 12-site harness expands everything
+for the former body; that is saturation, **not** evidence of budget exemption.
+The CLI's previous `cb <= 40` claim for that case is corrected and covered
+through its complete compiler/measurement/reporting path by
+`scripts/test_inline_model_measure.py`. These are callee measurements, not a
+measurement of Sweetz's caller cost or proof of every nested budget value.
+
+Definition-order control: the member body stays at its original TU position,
+after Rocky Roadz and before Gruntziclez. VC5 still expands it in Rocky Roadz;
+an explicit `inline` on the earlier class declaration is byte-flat and is not
+needed. Moving the definition ahead of the first palette was also byte-flat
+but violated the repository's retail TU-order gate, so that move is not kept.
+Do not reorder real function owners merely to make source visibility look
+more convenient.
+
+The final family audit finds no exclusive semantic keys in any palette:
+immediate and store multisets agree in all eight. The remaining ordered-
+referent differences in Gruntziclez and Space are shift-global load scheduling,
+not a different callee or datum. The near-exact raw-referent audit covers 3,919
+functions with zero defects. `Refresh`, which uses none of these palette-build
+helpers and retains its source fingerprint, moves from 69.2227% to 69.0882%;
+its six calls, constants and ordered referents remain the same. This current
+TU-state movement is adjudicated without lowering its bank or changing its
+existing unresolved control-flow reconstruction.
 
 See also [the inline-budget controls](inline-budget-emits-ool-comdat.md) and
 [the exact singleton-setter closure](inline-singleton-setter-restores-store-call-interleaving.md).

@@ -1,5 +1,7 @@
 # Pattern index (MSVC 5.0 /O2 — Gruntz)
 
+- [A packed-result local plus the span's parameter cursor recovers all palette call boundaries](inline-result-local-changes-later-span-expansion.md#composition-with-the-helpers-real-loop-cursor) — c10 — cpp:inline cpp:local cpp:loop | asm:call asm:rep | topic:inline-budget topic:source-model — a one-lever dip from 13 to 10 calls composes to retail's 24; all eight palettes use one FillSpan API and the standalone helper stays exact. A saturated 12-site cost probe is not budget exemption; the 25-site negative control exposes the difference.
+
 - [Sequence the real pixel offset inside its inline helper](inline-pixel-offset-statements-select-product-carriers.md) — c10 — cpp:inline cpp:local cpp:expression | asm:imul asm:mov | topic:regalloc topic:codegen-idiom — GetPixel's offset accumulation restores BltDirty's two product carriers without flattening the helper or undoing the recovered neighboring argument pointers; the complete 194-byte normalized caller agrees.
 
 - [Registrar local ownership selects nested inline cuts](registrar-local-ownership-selects-inline-cuts.md) — c10 — cpp:macro cpp:local cpp:reference cpp:template | asm:call asm:push | topic:inline-budget topic:evaluation-order — the 19-action Grunt registrar reaches exact with a macro conversion, caller-owned registry, converted value and handler destination; a name-slot reference gets the call set right but sequences the final literal too late. Uniform typed APIs replace the old per-site selectors.
