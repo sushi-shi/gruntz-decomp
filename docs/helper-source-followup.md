@@ -12,7 +12,7 @@ fresh declaration-and-known-use review: `reassess-cavector` and
 remain recheckable in the ledger. The other 14 families remain pending. Earlier
 checkpoint counts below describe their own state, not a blanket exemption.
 
-The next scalar-math reassessment restores the missing FlashTable dark-ramp
+Scalar-math checkpoint `f8e3f6e5f` restores the missing FlashTable dark-ramp
 uses of `INTERPOLATE`, composed with its existing `HSV_MIN`. Both separately
 compiled forms preserve the 99.2032% body; this is an applied source cleanup,
 not a new exact match. The original-backed regression covers the complete dark
