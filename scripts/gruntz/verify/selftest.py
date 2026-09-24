@@ -1006,6 +1006,56 @@ class AssertRelocsControls(unittest.TestCase):
 
 
 class DataRelocsControls(unittest.TestCase):
+    def test_compiler_literal_does_not_borrow_named_static_relocations(self):
+        """Exercise Obj -> canon -> Resolver -> retail/paired oracle routing."""
+        from types import SimpleNamespace
+
+        from gruntz.verify import data_relocs as dr
+
+        def data_object(name):
+            payload = b"literal\0"
+            strings = name.encode("ascii") + b"\0"
+            header = struct.pack("<HHIIIHH", 0x14c, 1, 0,
+                                 60 + len(payload), 1, 0, 0)
+            section = struct.pack("<8sIIIIIIHHI", b".data", 0, 0,
+                                  len(payload), 60, 0, 0, 0, 0, 0xc0300040)
+            symbol = struct.pack("<IIIhHBB", 0, 4, 0, 1, 0, 3, 0)
+            return (header + section + payload + symbol
+                    + struct.pack("<I", 4 + len(strings)) + strings)
+
+        model = SimpleNamespace(functions=[], data=[SimpleNamespace(
+            name="__$S", aliases=[], rva=0x1000, size=24)])
+        image = SimpleNamespace(
+            jmp_target=mock.Mock(return_value=None),
+            relocs_in=mock.Mock(return_value=[(0x1000, 0x2000)]))
+        with tempfile.TemporaryDirectory() as td:
+            base, target = Path(td, "base.obj"), Path(td, "target.obj")
+            with mock.patch("gruntz.model.resolve", return_value=model), \
+                 mock.patch("gruntz.sema.image.retail", return_value=image), \
+                 mock.patch.object(dr, "clean_units", return_value=set()), \
+                 mock.patch.object(dr.pairscan, "pairs",
+                                   return_value={"probe": (base, target)}):
+                for name in ("_$S56", "$S56"):
+                    with self.subTest(name=name):
+                        base.write_bytes(data_object(name))
+                        target.write_bytes(data_object(name))
+                        image.relocs_in.reset_mock()
+                        rows, unpaired, unresolved, stats, _dropped, eh = dr.scan()
+                        self.assertEqual((rows, unpaired, unresolved, eh),
+                                         ([], [], [], []))
+                        self.assertEqual(stats["data symbols paired"], 1)
+                        self.assertEqual(stats["data symbols pinned"], 0)
+                        image.relocs_in.assert_not_called()
+
+                # A genuinely named static must still use the retail oracle,
+                # which catches its missing relocation in this negative control.
+                base.write_bytes(data_object("__$S123"))
+                target.write_bytes(data_object("__$S123"))
+                rows, _unpaired, _unresolved, stats, _dropped, _eh = dr.scan()
+                self.assertEqual([(r.verdict, r.oracle) for r in rows],
+                                 [("MISSING", "retail")])
+                self.assertEqual(stats["data symbols pinned"], 1)
+
     def test_an_any_comdat_number_is_not_an_associative_ordinal(self):
         """Integration control for the section-manifest consumer.
 
@@ -1934,8 +1984,36 @@ class PairscanControls(unittest.TestCase):
     def test_canon_folds_static_suffix_and_vector_dtor(self):
         from gruntz.walls.pairscan import canon
         self.assertEqual(canon("_s_QUESTZ$Sdata_data_87db2c_0"), "_s_QUESTZ")
+        self.assertEqual(canon("__$S"), "__")
+        self.assertEqual(canon("__$S123"), "__")
+        for name in ("_$S56", "$S56", "_$S0", "$S0"):
+            self.assertEqual(canon(name), name)
         self.assertEqual(canon("??_EzPTree@@UAEPAXI@Z"),
                          "??_GzPTree@@UAEPAXI@Z")
+
+    def test_resolver_keeps_compiler_ordinals_distinct_from_named_statics(self):
+        from types import SimpleNamespace
+
+        from gruntz.verify.assert_relocs import Resolver
+        from gruntz.walls.pairscan import DIR32
+
+        model = SimpleNamespace(functions=[], data=[
+            SimpleNamespace(name="__$S", aliases=[], rva=0x1000, size=24),
+            SimpleNamespace(name="_named$S123", aliases=[], rva=0x2000, size=4),
+        ])
+        image = SimpleNamespace(jmp_target=lambda rva: None)
+        with mock.patch("gruntz.model.resolve", return_value=model), \
+             mock.patch("gruntz.sema.image.retail", return_value=image):
+            resolver = Resolver()
+        for name in ("_$S56", "$S56", "_$S0", "$S0"):
+            with self.subTest(name=name):
+                self.assertEqual(resolver.rva_of(name), set())
+                self.assertEqual(resolver.resolve_base(name, DIR32, 4), set())
+        for name in ("_", "__", "__$S", "__$S123", "__$Sdata_data_abcd_0"):
+            self.assertEqual(resolver.rva_of(name), {0x1000})
+        for name in ("named", "_named", "_named$S", "_named$S456"):
+            self.assertEqual(resolver.rva_of(name), {0x2000})
+        self.assertEqual(resolver.resolve_base("__$S123", DIR32, 4), {0x1004})
 
 
 class EhFrameControls(unittest.TestCase):

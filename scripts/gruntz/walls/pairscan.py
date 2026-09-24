@@ -39,9 +39,15 @@ def is_local_label(name: str) -> bool:
 
 
 def canon(name: str) -> str:
-    """One canonical spelling: content-address suffixes stripped, the weak
-    vector-deleting alias folded onto the scalar form."""
-    return _VDTOR.sub("??_G", LOCAL_STATIC_SUFFIX.sub("", anonymous_namespaces(name)))
+    """Strip named-static suffixes and fold the weak vector-deleting alias.
+
+    A bare compiler ordinal is an identity, not a named static's suffix:
+    stripping ``_$S56`` to ``_`` aliases a real source datum named ``_``.
+    """
+    name = anonymous_namespaces(name)
+    if COMPGEN.fullmatch(name):
+        return name
+    return _VDTOR.sub("??_G", LOCAL_STATIC_SUFFIX.sub("", name))
 
 
 def pairs(units=None) -> dict[str, tuple[Path, Path]]:
