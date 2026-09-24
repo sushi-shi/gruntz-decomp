@@ -26,6 +26,7 @@
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SpriteStateFlags.h>
+#include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TileTriggerTransition.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -33,7 +34,6 @@
 #include <Gruntz/VoiceManager.h>
 #include <Gruntz/VoiceTrigger.h>
 #include <Image/CImage.h>
-#include <MakeRect.h>
 #include <Rez/RezSync.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/TileGeometry.h>
@@ -123,17 +123,15 @@ CVoiceTrigger::CVoiceTrigger(CGameObject* obj)
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
     Hide();
     SET_ANIMATION_ACT("A");
-    Coord position = m_object->ScreenPos();
-    SnapTileCenter(&position);
-    m_object->SetScreenPos(position);
-    Coord nearExtent(m_object->m_extent.left, m_object->m_extent.top);
-    nearExtent *= TILE_SIZE_PX;
-    Coord farExtent(m_object->m_extent.right, m_object->m_extent.bottom);
-    farExtent *= TILE_SIZE_PX;
-    Coord margin(7, 7);
-    Coord low = position - nearExtent - margin;
-    Coord high = position + farExtent + margin;
-    m_object->m_area = MakeRect(low.m_x, low.m_y, high.m_x, high.m_y);
+    SNAP_OBJECT_TO_TILE_CENTER(m_object)
+    m_object->m_area.left =
+        m_object->m_screenPosition.m_x - (m_object->m_extent.left << TILE_SHIFT_PX) - 7;
+    m_object->m_area.right =
+        m_object->m_screenPosition.m_x + (m_object->m_extent.right << TILE_SHIFT_PX) + 7;
+    m_object->m_area.top =
+        m_object->m_screenPosition.m_y - (m_object->m_extent.top << TILE_SHIFT_PX) - 7;
+    m_object->m_area.bottom =
+        m_object->m_screenPosition.m_y + (m_object->m_extent.bottom << TILE_SHIFT_PX) + 7;
 }
 
 RVA(0x00119e40, 0x102)

@@ -17,6 +17,7 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SpriteRefTable.h>
+#include <Gruntz/TileSnapMacros.h>
 #include <Rez/FrameClock.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/ZVec.h>
@@ -55,9 +56,7 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj)
     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(idx, 0);
 
     SET_DRAW_FILL(m_object, SHADE_PAL_16, sel);
-    Coord position = m_object->ScreenPos();
-    SnapTileCenter(&position);
-    m_object->SetScreenPos(position);
+    SNAP_OBJECT_TO_TILE_CENTER(m_object)
     SET_ANIMATION_ACT("A");
 }
 

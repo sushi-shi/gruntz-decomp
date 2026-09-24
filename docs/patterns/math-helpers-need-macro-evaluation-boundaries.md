@@ -52,6 +52,8 @@ the following examples without removing their typed APIs:
 | `CInGameIcon::Reposition` 0x98a90 | 59.9549% | scalar screen tiles and typed cell writes | 97.4286% |
 | `CInGameText` constructor 0x99110 | 94.0138% | object snap macro | 97.0138% |
 | `CInGameText::Update` 0x997c0 | 94.1317% | scalar screen position locals | 96.7066% |
+| `CGruntCreationPoint` constructor 0x3e520 | 55.3022% | original object snap macro with typed screen-position fields | 81.9712% |
+| `CVoiceTrigger` constructor 0x119b50 | 63.8167% | object snap macro and direct area-edge stores | 92.5083% |
 | `CGrunt::RectContains` 0x51850 | 46.2177% | tile component conversion, native rectangle copy, offset/extent macros | 100% |
 | `CGrunt::VehicleContactContains` 0x51a20 | 58.6220% | same rectangle family | 100% |
 | `CGrunt::SetArrivalTarget` 0x52ed0 | 59.6000% | component stores and snap expressions | 100% |
@@ -256,6 +258,16 @@ The InGameIcon unit retains typed `BrickzCell` fields and the same shared
 coordinate helpers. Scalar screen tile locals remove the extra
 `CUserLogic::GetScreenPos` calls in `PeekCycle` and `Reposition`; the existing
 object snap macro and scalar screen locals recover both InGameText methods.
+
+Two placement constructors show the same expansion boundary. Replacing the
+object snap macro with a `Coord` copy and setter adds a branch in
+`CGruntCreationPoint`, although its call and relocation counts stay equal.
+Restoring the macro recovers its previous 81.9712% without changing the named
+flag or typed screen-position storage. `CVoiceTrigger` also needs four direct
+area-edge stores in place of aggregate `Coord` rectangle arithmetic. That
+restores its previous 92.5083%; the diagnosed reciprocal call-target difference
+between `BuildLogicTypeTable` and `RegisterLogicTypesOnce` disappears from the
+constructor's changed C1 state. Other source methods in both units are flat.
 
 `CMovingLogic::InitOwner` gives a counterexample to adding an aggregate merely
 because the component values are related. Its four min/max record reads have

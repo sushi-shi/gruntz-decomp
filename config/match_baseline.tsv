@@ -2067,7 +2067,7 @@ gruntcombat	?StepBehavior@CGrunt@@UAEXPAD@Z	87.1010	87.1010	44	ec45da89ba87	0x5d
 gruntcombat	?StopPowerupLoopSound@CGrunt@@QAEXXZ	100.0000	100.0000	3	1aa1e3145753	0x57ce0	100.0000	
 gruntcombat	?StopVehicleLoopSound@CGrunt@@QAEXXZ	100.0000	100.0000	3	da602215f904	0x57c10	100.0000	
 gruntcombat	?TryPowerupAtTile@CGrunt@@QAEHXZ	100.0000	100.0000	7	fe52e6c3f692	0x57aa0	100.0000	
-gruntcreationpoint	??0CGruntCreationPoint@@QAE@PAUCGameObject@@@Z	55.3022	55.3022	11	f1899a76c292	0x3e520	81.9712	
+gruntcreationpoint	??0CGruntCreationPoint@@QAE@PAUCGameObject@@@Z	81.9712	81.9712	12	c1b5948f7f60	0x3e520	81.9712	
 gruntcreationpoint	??1CGruntCreationPoint@@UAE@XZ	100.0000	100.0000	1	cpp:3fb5fe31d052	0x10730	100.0000	
 gruntcreationpoint	??_GCGruntCreationPoint@@UAEPAXI@Z	100.0000	100.0000	1	cpp:3fb5fe31d052	0x10700	100.0000	
 gruntcreationpoint	?AdvanceAnim@CGruntCreationPoint@@QAEHXZ	100.0000	100.0000	2	47dd4a04a856	0x3ecc0	100.0000	
@@ -2234,8 +2234,8 @@ grunttoytimesprite	?GetDisplayedValue@CGruntToyTimeSprite@@UAEHPAVCGrunt@@@Z	100
 grunttoytimesprite	?GetTypeTag@CGruntToyTimeSprite@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:281810d27b94	0x120e0	100.0000	
 grunttubeanim	?SetupTubeAnim@CGrunt@@QAEHH@Z	98.8247	98.8247	25	2c39e97bebab	0x50a50	98.8247	
 gruntvoice	??0CGruntVoice@@QAE@PAUCGameObject@@@Z	99.6429	99.6429	9	d55422cd170d	0x1198a0	99.6429	
-gruntvoice	??0CVoiceTrigger@@QAE@PAUCGameObject@@@Z	63.8167	63.8167	6	d783a9f06010	0x119b50	98.3167	
-gruntvoice	??0CVoiceTrigger@@QAE@XZ	100.0000	100.0000	6	d783a9f06010	0x13470	100.0000	
+gruntvoice	??0CVoiceTrigger@@QAE@PAUCGameObject@@@Z	92.5083	92.5083	7	fd30f5411521	0x119b50	98.3167	
+gruntvoice	??0CVoiceTrigger@@QAE@XZ	100.0000	100.0000	7	fd30f5411521	0x13470	100.0000	
 gruntvoice	??1CGruntVoice@@UAE@XZ	100.0000	100.0000	1	cpp:1cfecf45469b	0x119ae0	100.0000	
 gruntvoice	??1CVoiceTrigger@@UAE@XZ	100.0000	100.0000	1	cpp:1cfecf45469b	0x135a0	100.0000	
 gruntvoice	??_GCGruntVoice@@UAEPAXI@Z	100.0000	100.0000	1	cpp:1cfecf45469b	0x119ab0	100.0000	
@@ -2760,7 +2760,7 @@ ingameicon	?SerializeDispatch@CInGameIcon@@UAEHPAVCFileMemBase@@W4SerialMode@@W4
 ingameicon	?SerializeDispatch@CInGameText@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	5	29ea54ac30bb	0x99a30	100.0000	
 ingameicon	?SerializeDispatch@CToyPeek@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	4	e7402b8bad5b	0x983e0	100.0000	
 ingameicon	?SetupSprite@CInGameIcon@@QAEXPBD@Z	100.0000	100.0000	3	14f41ee491fe	0x99b10	100.0000	
-ingameicon	?Update@CInGameText@@QAEHXZ	96.7066	96.7066	21	f776ebd21387	0x997c0	96.7066	
+ingameicon	?Update@CInGameText@@QAEHXZ	96.7066	96.7066	22	c1ef73495a8c	0x997c0	96.7066	
 ingameuilogicdispatch	?DispatchInGameIconLogic@@YAHPAUCGameObject@@@Z	100.0000	100.0000	5	1adea72e64a0	0x95750	100.0000	
 ingameuilogicdispatch	?DispatchInGameTextLogic@@YAHPAUCGameObject@@@Z	100.0000	100.0000	5	2e4c4c1e7e5d	0x95890	100.0000	
 ingameuilogicdispatch	?DispatchToyPeekLogic@@YAHPAUCGameObject@@@Z	100.0000	100.0000	8	7d5e9d6b8786	0x959d0	100.0000	
