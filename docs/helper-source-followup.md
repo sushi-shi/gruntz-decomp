@@ -12,7 +12,24 @@ fresh declaration-and-known-use review: `reassess-cavector` and
 remain recheckable in the ledger. The other 14 families remain pending. Earlier
 checkpoint counts below describe their own state, not a blanket exemption.
 
-Latest source checkpoint `3f886df9b` restores the two nested `SQR` uses in
+The Projectile checkpoint applies all four square uses through the sourced
+const-reference `Sqr` template in the shared `Utils/Square.h` utility header,
+the signed Wingz `Max` selection, and all four directional `Min`/`Max` clamps.
+Launch improves **95.41684% to 99.505135%** and motion **97.00427% to 97.74786%**;
+both raise historical MAX without a new exact match. All other **7,474 scored
+bodies** remain unchanged. Current README: **3,844/4,428 exact, 94.89% fuzzy,
+95.22% fuzzy MAX**. The canonical ledger has **850 records, 127 pending**;
+overlapping entries are not independent fixes, and 14 broad families remain open.
+The [composed helper controls](patterns/macro-origin-changes-vc5-x87-cse.md)
+record the separate macro, selector, result-ownership and const-reference
+compilations, including the intermediate dips. Canonical decisions and
+reopening criteria are `reassess-sqr-projectile`, `projectile-*` and
+`reassess-selector-screen-projectile-goal`. Production compilation/comparison
+and MAX banking completed; test suites remain deferred to authorized squash
+merge. The next prepared consumer cohort is Smart Chaser; no exact or bounded
+closure is claimed for either Projectile function.
+
+Earlier source checkpoint `3f886df9b` restores the two nested `SQR` uses in
 shared `SquaredDistance`, serving eleven calls in eight functions. The macro
 change preserves all 290 normalized objects against the include-only control;
 all eight consumer bodies and ordered references remain baseline-identical.

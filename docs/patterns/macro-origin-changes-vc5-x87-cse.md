@@ -132,6 +132,52 @@ arguments. It is a reverse-use clue for a proved historical macro whose exact
 body survives: preserve its expression grouping, and let the FP payload plus
 opcode adjudicate adaptations that are mathematically equivalent.
 
+## Compose independently supported helpers before judging a dip
+
+The Projectile cohort at `321ac0613` supplies a source-composition control,
+not another exact closure. Its launch owner initially scored 95.41684% at
+1,769 bytes/476 instructions versus retail's 1,773/478. Required `BDefs` and
+`Globals` includes were each compiled separately and were byte-flat. Four
+double-square macro uses alone moved launch to 92.13552% without changing its
+extent, calls, branches, returns or 92 relocation offsets/identities. The first
+new difference was at `+0x491`: duration multiplication and unsigned conversion
+moved relative to the square products and square root.
+
+Composing the independently supported `Max(ddx, ddy)` tile-count selector
+restored the two missing transfer instructions and retail extent, producing
+96.223816%. All 92 ordered relocation identities and addends, including internal
+switch destinations, then agreed. The initial square dip was therefore not a
+valid reason to discard the sourced base.
+
+A complete four-site `Sqr(const T&)` template profile, without an added
+`inline` specifier, then restored retail's launch product/IMUL/conversion/FSQRT
+schedule and reached 99.505135%. Genuine shared-header placement preserved all
+scored bodies. The double homes still exchange `+0x14` and `+0x1c`, and an early
+integer scheduling difference remains; this does not prove exact provenance or
+bound the entire owner. In the companion motion owner, macro and const-reference
+squares emit identical bodies on the same composed clamp base.
+
+That clamp composition is an independent result-ownership control. Assigning
+`localX = Min(xRes, target); xRes = localX;` in both directed X arms made motion
+1,812 bytes/466 instructions at 95.8141%. Assigning the actual updated result
+first, `xRes = Min(xRes, target); localX = xRes;`, removed redundant stack copies
+and recovered retail's 1,804 bytes/464 instructions and EBX result at 97.74786%.
+The negative-velocity arm uses `Max`; both Y arms use the corresponding helper.
+The complete composition keeps 20 calls, 73 branches, three returns and all 49
+ordered identities/addends. It also emits the shadow X snapshot before the
+second integer conversion, as retail does. Merely moving that snapshot's source
+declaration earlier is byte-flat: the feature was already present after the
+result-ownership correction.
+
+Reverse use: separate header context, arithmetic boundary, selector boundary,
+and result ownership. Compare the first divergence and the actual desired
+feature against the original baseline before composing. Neither a flat helper
+nor a temporary dip disproves its source family. These controls use production
+VC5 compilation and direct object/image reads; test suites remain deferred to
+authorized squash merge. Per-option dispositions and reopening conditions live
+only under `reassess-sqr-projectile`, `projectile-*`, and
+`reassess-selector-screen-projectile-goal` in the lineage ledger.
+
 ## Reverse-use rule
 
 When retail repeatedly relocates the same constant/global but the base keeps a

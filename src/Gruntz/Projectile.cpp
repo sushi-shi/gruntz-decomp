@@ -8,6 +8,7 @@
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Dsndmgr/SoundBuffer.h>
+#include <Globals.h>
 #include <Gruntz/ActName.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
@@ -49,6 +50,7 @@
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
+#include <Utils/Square.h>
 #include <Wap32/TileGeometry.h>
 #include <Wwd/MoveMode.h>
 #include <ZTools/BitVec.h>
@@ -127,7 +129,6 @@ CProjectile::~CProjectile() {
     m_hitList.RemoveAll();
 }
 
-// @early-stop
 RVA(0x000df050, 0x6ed)
 i32 CProjectile::LoadProjectileSprites(
     PickupType kind,
@@ -185,10 +186,7 @@ i32 CProjectile::LoadProjectileSprites(
             m_isArcing = false;
             i32 ddx = abs((m_targetPxX >> TILE_SHIFT_PX) - (m_object->m_screenX >> TILE_SHIFT_PX));
             i32 ddy = abs((m_targetPxY >> TILE_SHIFT_PX) - (m_object->m_screenY >> TILE_SHIFT_PX));
-            count = ddx;
-            if (ddx <= ddy) {
-                count = ddy;
-            }
+            count = Max(ddx, ddy);
             break;
         }
         default:
@@ -219,7 +217,7 @@ i32 CProjectile::LoadProjectileSprites(
     SetImageSetByName(key + "_OBJECT");
 
     u32 totalTime = static_cast<u32>((count * m_timePerTile));
-    double len = sqrt(dx * dx + dy * dy);
+    double len = sqrt(Sqr(dx) + Sqr(dy));
     double t = static_cast<double>(totalTime);
     double vx = dx / len;
     m_flightDist = len;
@@ -285,7 +283,6 @@ void CProjectile::RegisterType() {
         static_cast<CActHandler>(&CProjectile::AdvanceAnimationAndDeleteWhenComplete);
 }
 
-// @early-stop
 RVA(0x000dfd00, 0x70c)
 void CProjectile::AdvanceMotion() {
     if (m_arrived != false) {
@@ -311,27 +308,19 @@ void CProjectile::AdvanceMotion() {
         m_posX = m_posX + static_cast<double>(g_frameDelta) * m_velX * m_velScale;
         m_posY = m_posY + static_cast<double>(g_frameDelta) * m_velY * m_velScale;
         i32 xRes = static_cast<i32>((m_roundX + m_posX));
-        i32 yRes = static_cast<i32>((m_roundY + m_posY));
         i32 localX = xRes;
+        i32 yRes = static_cast<i32>((m_roundY + m_posY));
         if (m_velX > 0.0) {
-            if (xRes > m_targetPxX) {
-                localX = m_targetPxX;
-                xRes = m_targetPxX;
-            }
+            xRes = Min(xRes, m_targetPxX);
+            localX = xRes;
         } else if (m_velX < 0.0) {
-            if (xRes < m_targetPxX) {
-                localX = m_targetPxX;
-                xRes = m_targetPxX;
-            }
+            xRes = Max(xRes, m_targetPxX);
+            localX = xRes;
         }
         if (m_velY > 0.0) {
-            if (yRes > m_targetPxY) {
-                yRes = m_targetPxY;
-            }
+            yRes = Min(yRes, m_targetPxY);
         } else if (m_velY < 0.0) {
-            if (yRes < m_targetPxY) {
-                yRes = m_targetPxY;
-            }
+            yRes = Max(yRes, m_targetPxY);
         }
         m_curX = xRes;
         m_curY = yRes;
@@ -340,7 +329,7 @@ void CProjectile::AdvanceMotion() {
         if (m_isArcing != false) {
             double dx = fabs(static_cast<double>(m_targetPxX) - m_posX);
             double dy = fabs(static_cast<double>(m_targetPxY) - m_posY);
-            double dist = sqrt(dx * dx + dy * dy);
+            double dist = sqrt(Sqr(dx) + Sqr(dy));
             if (dist >= m_flightDist * 0.9 || dist < m_flightDist * 0.1) {
                 offX = 0x4;
                 offY = -0x4;
