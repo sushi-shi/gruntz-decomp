@@ -26,6 +26,7 @@ from pathlib import Path
 from unittest import mock
 
 from gruntz.retail_labels.test_message_maps import MessageMapControls
+from gruntz.walls.test_inline_measure import InlineMeasureControls
 
 
 # --------------------------------------------------------------------------- #

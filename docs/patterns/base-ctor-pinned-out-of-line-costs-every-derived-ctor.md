@@ -3,6 +3,11 @@
 - **confidence** c10
 - **tags** `cpp:ctor` `cpp:inline` `cpp:class` | `asm:call` `asm:mov` | `topic:codegen-idiom`
 
+The tagged alternatives described below are tested models, not proof of the
+original overloads. A single header-inline constructor can produce both forms.
+See [the per-class constructor controls](constructor-call-census-needs-a-calibrated-harness.md) for the current per-class and composed
+family experiments before treating any historical no-budget conclusion as settled.
+
 ## Symptom
 
 A whole FAMILY of leaf constructors sits at 40-55% with the same diff shape: the base's
