@@ -6,6 +6,7 @@
 
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorker.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/WorkerLookup.h>
 #include <Dsndmgr/SoundBuffer.h>
@@ -83,7 +84,7 @@ i32 CSBI_MenuItem::ResolveFrame(const char* key, i32 frameIndex) {
     }
 
     if (frameIndex == -1) {
-        SetFrame(static_cast<CImage*>(rec->m_items.GetAt(rec->m_minIndex)));
+        SetFrame(DDRAW_WORKER_FRAME_AT_UNCHECKED(rec, rec->m_minIndex));
     } else {
         SetFrame(rec->GetAt(frameIndex));
     }

@@ -25,6 +25,7 @@
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/TileActionEvent.h>
+#include <Gruntz/TileCoordMacros.h>
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/TileTriggerLogic.h>
 #include <Gruntz/TileTriggerTransition.h>
@@ -108,8 +109,7 @@ i32 CTileTriggerSwitchLogic::SwitchDown() {
     SET_WORKER_HOST_CELL(layer2, tileX, tileY, v);
     reg->m_tileGrid->ComputeCellFlags(tileX, tileY, v);
 
-    i32 px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
-    i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
+    DECLARE_TILE_CENTER_PIXEL_PAIR(px, py, m_tileX, m_tileY)
     if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
         SoundCueRegistry* h = g_gameReg->m_world->m_soundRegistry;
         if (h->m_silentMode == false) {
@@ -146,8 +146,7 @@ i32 CTileTriggerSwitchLogic::SwitchUp() {
     SET_WORKER_HOST_CELL(layer2, tileX, tileY, v);
     reg->m_tileGrid->ComputeCellFlags(tileX, tileY, v);
 
-    i32 px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
-    i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
+    DECLARE_TILE_CENTER_PIXEL_PAIR(px, py, m_tileX, m_tileY)
     if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
         SoundCueRegistry* h = g_gameReg->m_world->m_soundRegistry;
         if (h->m_silentMode == false) {
@@ -342,8 +341,7 @@ i32 CTileTriggerLogic::Tick() {
     TileCollisionKind srcId = PbResolveCell(world->m_level, m_tileX, m_tileY);
 
     {
-        i32 sy = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
-        i32 sx = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
+        DECLARE_TILE_CENTER_PIXEL_PAIR_Y_FIRST(sy, sx, m_tileY, m_tileX)
         POINT pt;
         pt.x = sx;
         pt.y = sy;
@@ -853,8 +851,7 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
         }
     }
 
-    i32 cx = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
-    i32 cy = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
+    DECLARE_TILE_CENTER_PIXEL_PAIR(cx, cy, m_tileX, m_tileY)
     g_gameReg->m_triggerMgr
         ->SpawnPowerupIcon(m_powerupType, cx, cy, static_cast<i32>(m_dutyOffSpan), 1, 0);
 
@@ -873,8 +870,7 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
         txt->m_smarts = m_textId;
     }
 
-    i32 by = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
-    i32 bx = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
+    DECLARE_TILE_CENTER_PIXEL_PAIR_Y_FIRST(by, bx, m_tileY, m_tileX)
     if (!::PtInRect(&g_gameReg->m_viewBounds, bx, by)) {
         return 0;
     }
@@ -945,8 +941,7 @@ i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
         }
     }
     CGruntzMgr* reg = g_gameReg;
-    i32 px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
-    i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
+    DECLARE_TILE_CENTER_PIXEL_PAIR(px, py, m_tileX, m_tileY)
     reg->m_triggerMgr
         ->SpawnPowerupIcon(static_cast<PickupType>(m_dutyOnSpan), px, py, m_dutyOffSpan, 1, 0);
     if (m_leadInSpan != 0) {
@@ -1088,8 +1083,7 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
     if (ok == false) {
         return 0;
     }
-    i32 px = (tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
-    i32 py = (tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
+    DECLARE_TILE_CENTER_PIXEL_PAIR(px, py, tileX, tileY)
     if (checkpointType != 0) {
         CWwdSpriteObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
             0,
@@ -1364,8 +1358,7 @@ i32 CTileActionEvent::BreakTopBrick(CGrunt* grunt) {
                 -1
             );
         } else if (brickEffect == BRICKTILE_GOLD_1) {
-            i32 px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
-            i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
+            DECLARE_TILE_CENTER_PIXEL_PAIR(px, py, m_tileX, m_tileY)
             if (::PtInRect(&g_gameReg->m_viewBounds, px, py)
                 && g_gameReg->m_world->m_soundRegistry->m_silentMode == false) {
                 SoundCue* snd = static_cast<SoundCue*>(
@@ -1398,8 +1391,7 @@ i32 CTileActionEvent::BreakTopBrick(CGrunt* grunt) {
         }
     }
 
-    i32 px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
-    i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
+    DECLARE_TILE_CENTER_PIXEL_PAIR(px, py, m_tileX, m_tileY)
     if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
         CWwdSpriteObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
             0,

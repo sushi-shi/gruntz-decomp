@@ -1,5 +1,6 @@
 #include <rva.h>
 
+#include <DDrawMgr/DDrawWorker.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/LogicRecordRegistry.h>
 #include <DDrawMgr/WorkerLookup.h>
@@ -49,7 +50,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
         CDDrawWorker* tt = LookupWorker(reg->m_imageRegistry->m_workersByName, buf);
         CImage* r;
         if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = static_cast<CImage*>(tt->m_items.GetAt(i));
+            r = DDRAW_WORKER_FRAME_AT_UNCHECKED(tt, i);
         } else {
             r = NULL;
         }
@@ -66,7 +67,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
         CDDrawWorker* tt = LookupWorker(reg->m_imageRegistry->m_workersByName, buf);
         CImage* r;
         if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = static_cast<CImage*>(tt->m_items.GetAt(i));
+            r = DDRAW_WORKER_FRAME_AT_UNCHECKED(tt, i);
         } else {
             r = NULL;
         }
@@ -83,7 +84,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
         CDDrawWorker* tt = LookupWorker(reg->m_imageRegistry->m_workersByName, buf);
         CImage* r;
         if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = static_cast<CImage*>(tt->m_items.GetAt(i));
+            r = DDRAW_WORKER_FRAME_AT_UNCHECKED(tt, i);
         } else {
             r = NULL;
         }
@@ -100,7 +101,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
         CDDrawWorker* tt = LookupWorker(reg->m_imageRegistry->m_workersByName, buf);
         CImage* r;
         if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = static_cast<CImage*>(tt->m_items.GetAt(i));
+            r = DDRAW_WORKER_FRAME_AT_UNCHECKED(tt, i);
         } else {
             r = NULL;
         }
@@ -117,7 +118,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
         CDDrawWorker* tt = LookupWorker(reg->m_imageRegistry->m_workersByName, buf);
         CImage* r;
         if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = static_cast<CImage*>(tt->m_items.GetAt(i));
+            r = DDRAW_WORKER_FRAME_AT_UNCHECKED(tt, i);
         } else {
             r = NULL;
         }

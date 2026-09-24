@@ -9,6 +9,7 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDrawWorker.h>
 #include <DDrawMgr/DDrawWorkerHost.h>
 #include <DDrawMgr/DDrawWorkerList.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
@@ -50,6 +51,7 @@
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
@@ -161,17 +163,6 @@ GZ_ENUM_BEGIN(ToolCursorId)
     CURSOR_TOOL_SQUEAKTOYZ = 0xe7,
     CURSOR_TOOL_YOYOZ = 0xe8
 GZ_ENUM_END(ToolCursorId)
-
-#define CLEAR_TAB_HINT(sndHost)                                                                    \
-    do {                                                                                           \
-        SoundCueRegistry* _s = (sndHost);                                                      \
-        if (_s->m_silentMode == false) {                                                                 \
-            SoundCue* found = NULL;                                                                 \
-            MapLookup(_s->m_cues, "GAME_TABHIGHLIGHT1", found);                                    \
-            if (found != NULL)                                                                     \
-                found->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);                                       \
-        }                                                                                          \
-    } while (0)
 
 DATA(0x002bf3bc)
 u32 g_engineFrameDelta = 0;
@@ -3985,7 +3976,7 @@ i32 CPlay::AdvanceCursorAnimation(i32 elapsedMs) {
         }
         m_cursorImage = frame;
         if (frame == NULL) {
-            m_cursorImage = static_cast<CImage*>(g->m_items.GetAt(g->m_minIndex));
+            m_cursorImage = DDRAW_WORKER_FRAME_AT_UNCHECKED(g, g->m_minIndex);
             m_cursorFrameIndex = g->m_minIndex;
         }
     }
@@ -4968,8 +4959,7 @@ b32 CPlay::PlaceStartGruntz() {
 
             LogicRecordDispatchFn dispatch = record->m_dispatch;
             if (dispatch == DispatchGruntStartingPointLogic) {
-                i32 x = (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-                i32 y = (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+                DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(obj, x, y)
                 i32 idx = m_mgr->m_triggerMgr->PlaceObject(
                     obj->m_smarts,
                     x,
@@ -4998,8 +4988,7 @@ b32 CPlay::PlaceStartGruntz() {
 
                 GruntzPlayer* e = &g_gameReg->m_players[g_curPlayer];
                 if (e != NULL && counter < e->m_maxGruntz) {
-                    i32 x = (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-                    i32 y = (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+                    DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(obj, x, y)
                     m_mgr->m_commandMgr->EnqueueSingle(
                         true,
                         static_cast<char>(obj->m_smarts),

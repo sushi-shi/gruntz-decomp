@@ -20,6 +20,7 @@
 #include <Gruntz/GruntAreaEffectKind.h>
 #include <Gruntz/GruntCombatClockInline.h>
 #include <Gruntz/GruntDeathType.h>
+#include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPickupInline.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntzCmdMgr.h>
@@ -418,10 +419,6 @@ void CTriggerMgr::CloseActionOptionsMenu() {
     if (ov) {
         ov->Deactivate();
     }
-}
-
-static inline u16 PackRgb16(i32 r, i32 g, i32 b) {
-    return static_cast<u16>(((r >> g_rDown) << g_rUp) | ((g >> g_gDown) << g_gUp) | (b >> g_bDown));
 }
 
 // @early-stop
@@ -2049,8 +2046,7 @@ i32 CTriggerMgr::SpawnGrunt(
         return 0;
     }
     CGameObject* o = src->m_object;
-    i32 sx = (o->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-    i32 sy = (o->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+    DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(o, sx, sy)
     PickupType k = ARRIVAL_PICKUP_TERNARY_GT(src);
     PickupType vis = src->m_vehiclePickupType;
     this->StartUnitDeath(srcPlayerIndex, srcUnitIndex, DEATH_DROP, dstPlayerIndex);

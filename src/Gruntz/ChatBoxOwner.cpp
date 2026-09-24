@@ -9,6 +9,7 @@
 #include <Crypto/Blowfish.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDrawWorker.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/WorkerLookup.h>
@@ -165,13 +166,13 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
     }
 
     if (self->m_mode == CHATBOX_WITH_HIDDEN_STATUSBAR) {
-        CImage* frame = static_cast<CImage*>(spr->m_items.GetAt(spr->m_maxIndex));
+        CImage* frame = DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, spr->m_maxIndex);
         if (!frame) {
             return 0;
         }
         frame->RenderFrame(target, self->m_originX + 0x140, self->m_originY + 0x20, 0);
     } else {
-        CImage* frame = static_cast<CImage*>(spr->m_items.GetAt(spr->m_minIndex));
+        CImage* frame = DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, spr->m_minIndex);
         if (!frame) {
             return 0;
         }

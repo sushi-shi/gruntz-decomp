@@ -271,7 +271,7 @@ i32 CMenuPage::Draw(CDDrawSurfacePair* target) {
     CDDrawWorker* headerAnimation = m_headerAnimation;
     if (headerAnimation) {
         CImage* headerFrame =
-            static_cast<CImage*>(headerAnimation->m_items.GetAt(headerAnimation->m_minIndex));
+            DDRAW_WORKER_FRAME_AT_UNCHECKED(headerAnimation, headerAnimation->m_minIndex);
         if (headerFrame) {
             drawY += headerFrame->m_anchorY;
             headerFrame->RenderFrame(target, centerX, drawY, 0);
@@ -460,7 +460,7 @@ i32 CMenuPage::DrawMultiColumn(CDDrawSurfacePair* target) {
     CDDrawWorker* headerAnimation = m_headerAnimation;
     if (headerAnimation) {
         CImage* headerFrame =
-            static_cast<CImage*>(headerAnimation->m_items.GetAt(headerAnimation->m_minIndex));
+            DDRAW_WORKER_FRAME_AT_UNCHECKED(headerAnimation, headerAnimation->m_minIndex);
         if (headerFrame) {
             drawY += headerFrame->m_anchorY;
             headerFrame->RenderFrame(target, centerX, drawY, 0);

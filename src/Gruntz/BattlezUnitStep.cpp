@@ -58,19 +58,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MOVE_RECYCLE(g)                                                                            \
-    {                                                                                              \
-        POSITION nd = (g)->CoordHead();                                                            \
-        while (nd != 0) {                                                                          \
-            POSITION cur = nd;                                                                     \
-            (g)->m_coordList.GetNext(nd);                                                          \
-            if (static_cast<Coord*>((g)->m_coordList.GetAt(cur)) != 0) {                           \
-                g_coordPool.Push(static_cast<Coord*>((g)->m_coordList.GetAt(cur)));                \
-            }                                                                                      \
-        }                                                                                          \
-        (g)->m_coordList.RemoveAll();                                                              \
-    }
-
 DATA(0x0022b7ec)
 i32 g_battlezRoutePassableMask;
 
@@ -148,7 +135,7 @@ inflight: {
     }
     if (nb != NULL && cur != nb) {
         if (g->CoordCount() != 0) {
-            MOVE_RECYCLE(g);
+            RECYCLE_GRUNT_COORDS(g);
         }
         g->m_arrivalCell.m_x = nb->m_playerIndex;
         g->m_arrivalCell.m_y = nb->m_unitIndex;
@@ -177,7 +164,7 @@ inflight: {
             if (g->RectContains(s->m_screenX, s->m_screenY) != 0) {
 
                 if (g->CoordCount() != 0) {
-                    MOVE_RECYCLE(g);
+                    RECYCLE_GRUNT_COORDS(g);
                 }
                 Coord none;
                 g->m_arrivalCell = *none.Set(-1, -1);
@@ -204,12 +191,12 @@ inflight: {
             i32 dist = static_cast<i32>(sqrt(static_cast<double>(SquaredDistance(adx, ady))));
             if (dist > m_assignedTargetMaxDistance) {
                 if (g->CoordCount() != 0) {
-                    MOVE_RECYCLE(g);
+                    RECYCLE_GRUNT_COORDS(g);
                 }
                 goto L_clearAt;
             }
             if (g->CoordCount() != 0) {
-                MOVE_RECYCLE(g);
+                RECYCLE_GRUNT_COORDS(g);
             }
             CGameObject* s = cur->m_object;
             if (g->TileSwitch(

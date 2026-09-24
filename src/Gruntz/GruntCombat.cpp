@@ -53,6 +53,7 @@
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/ScanGridMacros.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/SortKeyLayer.h>
@@ -284,19 +285,6 @@ i32* CGrunt::EntranceTileOffset(i32* out) {
     return out;
 }
 
-#define SCAN_BOUNDS(grid)                                                                          \
-    {                                                                                              \
-        CRect rb(0, 0, (grid)->m_width, (grid)->m_height);                                         \
-        RECT ra;                                                                                   \
-        ra = CRect(0, 0, (grid)->m_width, (grid)->m_height);                                       \
-        RECT* rd = &(grid)->m_bounds;                                                              \
-        if (!IntersectRect(rd, &ra, &rb)) {                                                        \
-            *rd = ra;                                                                              \
-        }                                                                                          \
-        (grid)->m_gridW = rd->right - rd->left;                                                    \
-        (grid)->m_gridH = rd->bottom - rd->top;                                                    \
-    }
-
 #define SCAN_BOUNDS_PLAINCLIP(grid)                                                                \
     {                                                                                              \
         RECT rb;                                                                                   \
@@ -312,13 +300,6 @@ i32* CGrunt::EntranceTileOffset(i32* out) {
         }                                                                                          \
         (grid)->m_gridW = rd->right - rd->left;                                                    \
         (grid)->m_gridH = rd->bottom - rd->top;                                                    \
-    }
-
-#define FREELIST_PUSH(elem)                                                                        \
-    {                                                                                              \
-        CoordPoolNode* node = g_coordPool.NodeOf((elem));                                          \
-        node->m_next = g_coordPool.m_freeHead;                                                     \
-        g_coordPool.m_freeHead = node;                                                             \
     }
 
 RVA(0x00057060, 0x72)
@@ -860,7 +841,7 @@ i32 CGrunt::PathScan() {
                         }
                         Coord* elem = static_cast<Coord*>(s.RemoveHead());
                         if (elem != NULL) {
-                            FREELIST_PUSH(elem);
+                            PushFreeNode(&g_coordPool, elem);
                         }
                         s.RemoveAll();
                         SCAN_BOUNDS_PLAINCLIP(grid);
@@ -873,12 +854,12 @@ i32 CGrunt::PathScan() {
         }
 
         if (hits == GRUNT_COMBAT_FULL_SCAN_HITS) {
-            SCAN_BOUNDS(grid);
+            GRID_CLIP_NULL(grid);
             break;
         }
     }
 
-    SCAN_BOUNDS(grid);
+    GRID_CLIP_NULL(grid);
 
     RECT nb;
     nb.left = target.m_x - 4;
@@ -936,7 +917,7 @@ i32 CGrunt::PathScan() {
                     if (s.GetCount() != 0) {
                         Coord* elem = static_cast<Coord*>(s.RemoveHead());
                         if (elem != NULL) {
-                            FREELIST_PUSH(elem);
+                            PushFreeNode(&g_coordPool, elem);
                         }
                         if (s.GetCount() != 0) {
 
@@ -975,7 +956,7 @@ i32 CGrunt::PathScan() {
                                 if (s.GetCount() != 0) {
                                     Coord* e2 = static_cast<Coord*>(s.RemoveHead());
                                     if (e2 != NULL) {
-                                        FREELIST_PUSH(e2);
+                                        PushFreeNode(&g_coordPool, e2);
                                     }
                                     if (s.GetCount() != 0) {
                                         POSITION q = s.GetHeadPosition();
@@ -988,7 +969,7 @@ i32 CGrunt::PathScan() {
                                     }
                                 }
                             }
-                            SCAN_BOUNDS(grid);
+                            GRID_CLIP_NULL(grid);
                             return 1;
                         }
                     }
@@ -1922,42 +1903,7 @@ CObject* SoundCueRegistry::Lookup(const char* key) {
 }
 
 RVA(0x0005baf0, 0xf4)
-i32 DispatchGruntLogic(CGameObject* owner) {
-    CLogicRecord* record = owner->m_logicRecord;
-    switch (record->LogicEvent()) {
-        case ACT_UNINITIALISED: {
-            record->SetLogicEvent(ACT_LIVE);
-            CUserLogic* sub = new CGrunt(owner);
-            sub->Activate();
-            record->m_userLogic = sub;
-            break;
-        }
-        case ACT_OBJECT_REMOVED:
-            record->m_userLogic->OnObjectRemoved();
-            break;
-        case ACT_LEAVE_ACTIVE_REGION:
-            record->m_userLogic->OnLeaveActiveRegion();
-            break;
-        case ACT_PREPARE_SAVE:
-            record->m_userLogic->PrepareSave();
-            break;
-        case ACT_AFTER_LOAD_REFERENCES:
-            record->m_userLogic->AfterLoadReferences();
-            break;
-        case ACT_AFTER_LOAD:
-            record->m_userLogic->AfterLoad();
-            break;
-        case ACT_AFTER_SAVE:
-            record->m_userLogic->AfterSave();
-            break;
-        case ACT_LIVE:
-            break;
-        default:
-            DispatchUnhandledLogicEvent(record->m_userLogic);
-            break;
-    }
-    return 1;
-}
+i32 DispatchGruntLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CGrunt)}
 
 RVA(0x0005bcd0, 0x102)
 void CGrunt::FireActivation(i32 id) {

@@ -19,6 +19,7 @@
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntVoiceActReg.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicRecordHandler.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
@@ -87,80 +88,10 @@ void ButeParseErrorSink(const char* msg) {
 }
 
 RVA(0x00119620, 0xf1)
-i32 DispatchGruntVoiceLogic(CGameObject* obj) {
-    CLogicRecord* record = obj->m_logicRecord;
-    switch (record->LogicEvent()) {
-        case ACT_UNINITIALISED: {
-            record->SetLogicEvent(ACT_LIVE);
-            CGruntVoice* t = new CGruntVoice(obj);
-            t->Activate();
-            record->m_userLogic = t;
-            break;
-        }
-        case ACT_OBJECT_REMOVED:
-            record->m_userLogic->OnObjectRemoved();
-            break;
-        case ACT_LEAVE_ACTIVE_REGION:
-            record->m_userLogic->OnLeaveActiveRegion();
-            break;
-        case ACT_PREPARE_SAVE:
-            record->m_userLogic->PrepareSave();
-            break;
-        case ACT_AFTER_SAVE:
-            record->m_userLogic->AfterSave();
-            break;
-        case ACT_AFTER_LOAD:
-            record->m_userLogic->AfterLoad();
-            break;
-        case ACT_AFTER_LOAD_REFERENCES:
-            record->m_userLogic->AfterLoadReferences();
-            break;
-        case ACT_LIVE:
-            break;
-        default:
-            DispatchLogicEvent(record->m_userLogic);
-            break;
-    }
-    return 1;
-}
+i32 DispatchGruntVoiceLogic(CGameObject* obj){TILE_LOGIC_RECORD_DISPATCH(CGruntVoice)}
 
 RVA(0x00119760, 0xf1)
-i32 DispatchVoiceTriggerLogic(CGameObject* obj) {
-    CLogicRecord* record = obj->m_logicRecord;
-    switch (record->LogicEvent()) {
-        case ACT_UNINITIALISED: {
-            record->SetLogicEvent(ACT_LIVE);
-            CVoiceTrigger* t = new CVoiceTrigger(obj);
-            t->Activate();
-            record->m_userLogic = t;
-            break;
-        }
-        case ACT_OBJECT_REMOVED:
-            record->m_userLogic->OnObjectRemoved();
-            break;
-        case ACT_LEAVE_ACTIVE_REGION:
-            record->m_userLogic->OnLeaveActiveRegion();
-            break;
-        case ACT_PREPARE_SAVE:
-            record->m_userLogic->PrepareSave();
-            break;
-        case ACT_AFTER_SAVE:
-            record->m_userLogic->AfterSave();
-            break;
-        case ACT_AFTER_LOAD:
-            record->m_userLogic->AfterLoad();
-            break;
-        case ACT_AFTER_LOAD_REFERENCES:
-            record->m_userLogic->AfterLoadReferences();
-            break;
-        case ACT_LIVE:
-            break;
-        default:
-            DispatchLogicEvent(record->m_userLogic);
-            break;
-    }
-    return 1;
-}
+i32 DispatchVoiceTriggerLogic(CGameObject* obj){TILE_LOGIC_RECORD_DISPATCH(CVoiceTrigger)}
 
 // @early-stop
 RVA(0x001198a0, 0x195)

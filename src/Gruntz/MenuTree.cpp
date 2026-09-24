@@ -5,6 +5,7 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSubMgrPagesInline.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDrawWorker.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/WorkerLookup.h>
@@ -185,7 +186,7 @@ i32 CMenuTree::ConfigureLeftCursorAnimation(
     if (!animation) {
         return 0;
     }
-    m_leftCursorFrame = static_cast<CImage*>(animation->m_items.GetAt(animation->m_minIndex));
+    m_leftCursorFrame = DDRAW_WORKER_FRAME_AT_UNCHECKED(animation, animation->m_minIndex);
     m_leftCursorFrameIndex = animation->m_minIndex;
     m_leftCursorFramePeriodMs = framePeriodMs;
     m_leftCursorFrameTimerMs = framePeriodMs;
@@ -207,7 +208,7 @@ i32 CMenuTree::ConfigureRightCursorAnimation(
     if (!animation) {
         return 0;
     }
-    m_rightCursorFrame = static_cast<CImage*>(animation->m_items.GetAt(animation->m_minIndex));
+    m_rightCursorFrame = DDRAW_WORKER_FRAME_AT_UNCHECKED(animation, animation->m_minIndex);
     m_rightCursorFrameIndex = animation->m_minIndex;
     m_rightCursorFramePeriodMs = framePeriodMs;
     m_rightCursorFrameTimerMs = framePeriodMs;
@@ -230,7 +231,7 @@ i32 CMenuTree::UpdateCursorAnimations(i32 deltaMs) {
             m_leftCursorFrame = frame;
             if (frame == NULL) {
                 m_leftCursorFrame =
-                    static_cast<CImage*>(leftAnimation->m_items.GetAt(leftAnimation->m_minIndex));
+                    DDRAW_WORKER_FRAME_AT_UNCHECKED(leftAnimation, leftAnimation->m_minIndex);
                 m_leftCursorFrameIndex = leftAnimation->m_minIndex;
             }
         }
@@ -248,7 +249,7 @@ i32 CMenuTree::UpdateCursorAnimations(i32 deltaMs) {
         m_rightCursorFrame = frame;
         if (frame == NULL) {
             m_rightCursorFrame =
-                static_cast<CImage*>(rightAnimation->m_items.GetAt(rightAnimation->m_minIndex));
+                DDRAW_WORKER_FRAME_AT_UNCHECKED(rightAnimation, rightAnimation->m_minIndex);
             m_rightCursorFrameIndex = rightAnimation->m_minIndex;
         }
     }

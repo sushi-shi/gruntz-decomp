@@ -887,8 +887,7 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
     u16* scratch = new u16[width * 2];
     i32 off = pct << CLUT_LEVEL_BYTE_SHIFT;
 
-    if (g_rDown == PIXEL16_RED_DOWN && g_gDown == RGB555_GREEN_DOWN && g_bDown == PIXEL16_BLUE_DOWN
-        && g_rUp == RGB555_RED_UP && g_gUp == PIXEL16_GREEN_UP) {
+    if (PIXEL_FORMAT_IS_RGB555) {
         for (; height > 0; height--) {
             memcpy(scratch, srcPix, width * 2);
             if (width > 0) {

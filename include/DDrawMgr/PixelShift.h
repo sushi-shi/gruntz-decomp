@@ -49,4 +49,8 @@ inline u16 PackPixel16(u8 red, u8 green, u8 blue) {
     return value;
 }
 
+inline u16 PackRgb16(i32 r, i32 g, i32 b) {
+    return static_cast<u16>(((r >> g_rDown) << g_rUp) | ((g >> g_gDown) << g_gUp) | (b >> g_bDown));
+}
+
 #endif // INCLUDE_DDRAWMGR_PIXELSHIFT_H

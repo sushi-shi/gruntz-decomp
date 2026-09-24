@@ -12,6 +12,7 @@
 #include <DDrawMgr/DDrawShadeBlit.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorker.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/PixelShift.h>
@@ -2204,7 +2205,7 @@ i32 CGruntzMgr::LoadMonologoSprite() {
         return 0;
     }
     i32 savedIdx = rec->m_minIndex;
-    CImage* e = static_cast<CImage*>(rec->m_items.GetAt(savedIdx));
+    CImage* e = DDRAW_WORKER_FRAME_AT_UNCHECKED(rec, savedIdx);
     if (e == NULL) {
         return 0;
     }
@@ -2295,7 +2296,7 @@ i32 CGruntzMgr::SetGruntColor(CDDrawWorker* sink, const char* key, i32 idx) {
         m_world->m_imageRegistry->m_workersByName.Lookup(key, out);
         CDDrawWorker* row = static_cast<CDDrawWorker*>(out);
         if (row) {
-            CImage* dst = static_cast<CImage*>(row->m_items.GetAt(row->m_minIndex));
+            CImage* dst = DDRAW_WORKER_FRAME_AT_UNCHECKED(row, row->m_minIndex);
             if (dst) {
                 CImage* src = sink->GetAt(idx);
                 if (src != NULL) {
@@ -2350,7 +2351,7 @@ void CGruntzMgr::CheatSkeletonToggle() {
             set = static_cast<CDDrawWorker*>(found);
         }
         if (set) {
-            CImage* fr = static_cast<CImage*>(set->m_items.GetAt(set->m_minIndex));
+            CImage* fr = DDRAW_WORKER_FRAME_AT_UNCHECKED(set, set->m_minIndex);
             if (fr) {
                 CDDrawShadeBlit* fmt = fr->m_owned;
                 if (fmt) {
@@ -2400,7 +2401,7 @@ void CGruntzMgr::CheatEclipseToggle() {
             set = static_cast<CDDrawWorker*>(found);
         }
         if (set) {
-            CImage* fr = static_cast<CImage*>(set->m_items.GetAt(set->m_minIndex));
+            CImage* fr = DDRAW_WORKER_FRAME_AT_UNCHECKED(set, set->m_minIndex);
             if (fr) {
                 CDDrawShadeBlit* fmt = fr->m_owned;
                 if (fmt) {

@@ -10,123 +10,20 @@
 #include <Gruntz/GruntToyTimeSprite.h>
 #include <Gruntz/GruntWingzTimeSprite.h>
 #include <Gruntz/LogicEventDispatch.h>
+#include <Gruntz/LogicRecordHandler.h>
 #include <Gruntz/UserLogic.h>
 #include <Wwd/LogicRecordEvent.h>
 
-#define LOGIC_RECORD_DISPATCH(LEAF)                                                                \
-    CLogicRecord* record = owner->m_logicRecord;                                                   \
-    switch (record->LogicEvent()) {                                                                \
-        case ACT_UNINITIALISED: {                                                                  \
-            record->SetLogicEvent(ACT_LIVE);                                                       \
-            CUserLogic* sub = new LEAF(owner);                                                     \
-            sub->Activate();                                                                       \
-            record->m_userLogic = sub;                                                             \
-            break;                                                                                 \
-        }                                                                                          \
-        case ACT_OBJECT_REMOVED:                                                                   \
-            record->m_userLogic->OnObjectRemoved();                                                \
-            break;                                                                                 \
-        case ACT_LEAVE_ACTIVE_REGION:                                                              \
-            record->m_userLogic->OnLeaveActiveRegion();                                            \
-            break;                                                                                 \
-        case ACT_PREPARE_SAVE:                                                                     \
-            record->m_userLogic->PrepareSave();                                                    \
-            break;                                                                                 \
-        case ACT_AFTER_LOAD_REFERENCES:                                                            \
-            record->m_userLogic->AfterLoadReferences();                                            \
-            break;                                                                                 \
-        case ACT_AFTER_LOAD:                                                                       \
-            record->m_userLogic->AfterLoad();                                                      \
-            break;                                                                                 \
-        case ACT_AFTER_SAVE:                                                                       \
-            record->m_userLogic->AfterSave();                                                      \
-            break;                                                                                 \
-        case ACT_LIVE:                                                                             \
-            break;                                                                                 \
-        default:                                                                                   \
-            DispatchUnhandledLogicEvent(record->m_userLogic);                                      \
-            break;                                                                                 \
-    }                                                                                              \
-    return 1;
-
 RVA(0x0007db20, 0xf1)
-i32 DispatchGruntSelectedSpriteLogic(CGameObject* owner) {
-    CLogicRecord* record = owner->m_logicRecord;
-    switch (record->LogicEvent()) {
-        case ACT_UNINITIALISED: {
-            record->SetLogicEvent(ACT_LIVE);
-            CUserLogic* sub = new CGruntSelectedSprite(owner);
-            sub->Activate();
-            record->m_userLogic = sub;
-            break;
-        }
-        case ACT_OBJECT_REMOVED:
-            record->m_userLogic->OnObjectRemoved();
-            break;
-        case ACT_LEAVE_ACTIVE_REGION:
-            record->m_userLogic->OnLeaveActiveRegion();
-            break;
-        case ACT_PREPARE_SAVE:
-            record->m_userLogic->PrepareSave();
-            break;
-        case ACT_AFTER_LOAD_REFERENCES:
-            record->m_userLogic->AfterLoadReferences();
-            break;
-        case ACT_AFTER_LOAD:
-            record->m_userLogic->AfterLoad();
-            break;
-        case ACT_AFTER_SAVE:
-            record->m_userLogic->AfterSave();
-            break;
-        case ACT_LIVE:
-            break;
-        default:
-            DispatchUnhandledLogicEvent(record->m_userLogic);
-            break;
-    }
-    return 1;
+i32 DispatchGruntSelectedSpriteLogic(CGameObject* owner){
+    LOGIC_RECORD_DISPATCH(CGruntSelectedSprite)
 }
 
 RVA(0x0007dc60, 0xf1)
 i32 DispatchGruntHealthSpriteLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CGruntHealthSprite)}
 
 RVA(0x0007dda0, 0xf1)
-i32 DispatchGruntToySpriteLogic(CGameObject* owner) {
-    CLogicRecord* record = owner->m_logicRecord;
-    switch (record->LogicEvent()) {
-        case ACT_UNINITIALISED: {
-            record->SetLogicEvent(ACT_LIVE);
-            CUserLogic* sub = new CGruntToySprite(owner);
-            sub->Activate();
-            record->m_userLogic = sub;
-            break;
-        }
-        case ACT_OBJECT_REMOVED:
-            record->m_userLogic->OnObjectRemoved();
-            break;
-        case ACT_LEAVE_ACTIVE_REGION:
-            record->m_userLogic->OnLeaveActiveRegion();
-            break;
-        case ACT_PREPARE_SAVE:
-            record->m_userLogic->PrepareSave();
-            break;
-        case ACT_AFTER_LOAD_REFERENCES:
-            record->m_userLogic->AfterLoadReferences();
-            break;
-        case ACT_AFTER_LOAD:
-            record->m_userLogic->AfterLoad();
-            break;
-        case ACT_AFTER_SAVE:
-            record->m_userLogic->AfterSave();
-            break;
-        case ACT_LIVE:
-            break;
-        default:
-            DispatchUnhandledLogicEvent(record->m_userLogic);
-            break;
-    }
-    return 1;
-}
+i32 DispatchGruntToySpriteLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CGruntToySprite)}
 
 RVA(0x0007dee0, 0xf1)
 i32 DispatchGruntStaminaSpriteLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CGruntStaminaSprite)}

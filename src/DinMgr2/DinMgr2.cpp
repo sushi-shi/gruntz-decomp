@@ -15,7 +15,6 @@ GZ_ENUM_CONST_BEGIN(DinInputConstants)
 GZ_ENUM_CONST_END(DinInputConstants)
 
 #define DINMGR2_FILE "C:\\Proj\\DinMgr2\\DinMgr2.cpp"
-#define INPUTDEVICE_FILE "C:\\Proj\\DinMgr2\\InputDevice.cpp"
 
 DATA(0x00253aa4)
 b32 g_dinputLogEnabled;

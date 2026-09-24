@@ -277,7 +277,7 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
             if (found) {
 
                 CDDrawWorker* cfg = static_cast<CDDrawWorker*>(found);
-                CImage* entry = static_cast<CImage*>(cfg->m_items.GetAt(cfg->m_minIndex));
+                CImage* entry = DDRAW_WORKER_FRAME_AT_UNCHECKED(cfg, cfg->m_minIndex);
                 if (entry) {
                     CDDrawSubMgrPages* l1 = g_gameReg->m_world->m_drawTarget;
                     entry->RenderFrame(

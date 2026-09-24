@@ -41,6 +41,4 @@ public:
     };
 };
 
-typedef i32 (CUserLogic::*CActHandler)();
-
 #endif // GRUNTZ_CACTIONAREA_H

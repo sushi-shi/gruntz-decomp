@@ -269,10 +269,6 @@ i32 CProjectile::LoadProjectileSprites(
     return 1;
 }
 
-static inline CActHandler* ProjActLookup(i32 coord) {
-    return (CActRegPool<CProjectile>::s_table.ResolveEntry(coord));
-}
-
 RVA(0x000df9a0, 0x102)
 void CProjectile::FireActivation(i32 coord) {
     DispatchRegisteredAct(this, coord);
@@ -281,7 +277,7 @@ void CProjectile::FireActivation(i32 coord) {
 RVA(0x000dfb00, 0x18d)
 void CProjectile::RegisterType() {
     ACT_NAME_ID(id, "A")
-    *ProjActLookup(id) =
+    *ResolveRegisteredAct<CProjectile>(id) =
         static_cast<CActHandler>(&CProjectile::AdvanceAnimationAndDeleteWhenComplete);
 }
 
@@ -883,10 +879,6 @@ i32 CBoomerang::SerializeDispatch(
     return CProjectile::SerializeDispatch(ar, mode, typeId, object) ? 1 : 0;
 }
 
-static inline CActHandler* TBombLookup(i32 coord) {
-    return (CActRegPool<CTimeBomb>::s_table.ResolveEntry(coord));
-}
-
 RVA(0x000e1830, 0x102)
 void CTimeBomb::FireActivation(i32 coord) {
     DispatchRegisteredAct(this, coord);
@@ -895,7 +887,7 @@ void CTimeBomb::FireActivation(i32 coord) {
 RVA(0x000e1990, 0x18d)
 void CTimeBomb::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    *(TBombLookup(id)) = static_cast<CActHandler>(&CTimeBomb::UpdateCountdown);
+    *(ResolveRegisteredAct<CTimeBomb>(id)) = static_cast<CActHandler>(&CTimeBomb::UpdateCountdown);
 }
 
 // @early-stop

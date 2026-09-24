@@ -24,6 +24,7 @@
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntIdentity.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicRecordHandler.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/Play.h>
@@ -91,42 +92,6 @@ RVA_DYNINIT(0x0010fce0, 0x1f, CActRegPool<CTileTriggerTransition>::s_table)
 template<> DATA(0x0024e720)
 CActReg CActRegPool<CTileTriggerTransition>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
-#define TILE_LOGIC_RECORD_DISPATCH(LEAF)                                                           \
-    CLogicRecord* record = obj->m_logicRecord;                                                     \
-    switch (record->LogicEvent()) {                                                                \
-        case ACT_UNINITIALISED: {                                                                  \
-            record->SetLogicEvent(ACT_LIVE);                                                       \
-            LEAF* t = new LEAF(obj);                                                               \
-            t->Activate();                                                                         \
-            record->m_userLogic = t;                                                               \
-            break;                                                                                 \
-        }                                                                                          \
-        case ACT_OBJECT_REMOVED:                                                                   \
-            record->m_userLogic->OnObjectRemoved();                                                \
-            break;                                                                                 \
-        case ACT_LEAVE_ACTIVE_REGION:                                                              \
-            record->m_userLogic->OnLeaveActiveRegion();                                            \
-            break;                                                                                 \
-        case ACT_PREPARE_SAVE:                                                                     \
-            record->m_userLogic->PrepareSave();                                                    \
-            break;                                                                                 \
-        case ACT_AFTER_SAVE:                                                                       \
-            record->m_userLogic->AfterSave();                                                      \
-            break;                                                                                 \
-        case ACT_AFTER_LOAD:                                                                       \
-            record->m_userLogic->AfterLoad();                                                      \
-            break;                                                                                 \
-        case ACT_AFTER_LOAD_REFERENCES:                                                            \
-            record->m_userLogic->AfterLoadReferences();                                            \
-            break;                                                                                 \
-        case ACT_LIVE:                                                                             \
-            break;                                                                                 \
-        default:                                                                                   \
-            DispatchLogicEvent(record->m_userLogic);                                               \
-            break;                                                                                 \
-    }                                                                                              \
-    return 1;
-
 RVA_COMPGEN(0x00010f90, 0x1e, ??_GCWarpStonePad@@UAEPAXI@Z)
 RVA_COMPGEN(0x00010fc0, 0x44, ??1CWarpStonePad@@UAE@XZ)
 
@@ -175,42 +140,7 @@ i32 DispatchTileTriggerTransitionLogic(CGameObject* obj){
 }
 
 RVA(0x0010d290, 0xf4)
-i32 DispatchCheckpointTriggerLogic(CGameObject* obj) {
-    CLogicRecord* record = obj->m_logicRecord;
-    switch (record->LogicEvent()) {
-        case ACT_UNINITIALISED: {
-            record->SetLogicEvent(ACT_LIVE);
-            CCheckpointTrigger* t = new CCheckpointTrigger(obj);
-            t->Activate();
-            record->m_userLogic = t;
-            break;
-        }
-        case ACT_OBJECT_REMOVED:
-            record->m_userLogic->OnObjectRemoved();
-            break;
-        case ACT_LEAVE_ACTIVE_REGION:
-            record->m_userLogic->OnLeaveActiveRegion();
-            break;
-        case ACT_PREPARE_SAVE:
-            record->m_userLogic->PrepareSave();
-            break;
-        case ACT_AFTER_SAVE:
-            record->m_userLogic->AfterSave();
-            break;
-        case ACT_AFTER_LOAD:
-            record->m_userLogic->AfterLoad();
-            break;
-        case ACT_AFTER_LOAD_REFERENCES:
-            record->m_userLogic->AfterLoadReferences();
-            break;
-        case ACT_LIVE:
-            break;
-        default:
-            DispatchLogicEvent(record->m_userLogic);
-            break;
-    }
-    return 1;
-}
+i32 DispatchCheckpointTriggerLogic(CGameObject* obj){TILE_LOGIC_RECORD_DISPATCH(CCheckpointTrigger)}
 
 RVA(0x0010d3d0, 0xf1)
 i32 DispatchBrickzLogic(CGameObject* obj){TILE_LOGIC_RECORD_DISPATCH(CBrickz)}

@@ -135,12 +135,7 @@ i32 CDDSurface::DecodeBmp(CDDrawDeviceManager* manager, BmpFileImage* image, u32
             PALETTEENTRY* palette = NULL;
             if (remap && bitcount == BPP_PALETTED_8) {
                 RGBQUAD* src = image->m_info.m_bmiColors;
-                for (i32 i = 0; i < 0x100; i++) {
-                    s_palBmp[i].peRed = src[i].rgbRed;
-                    s_palBmp[i].peGreen = src[i].rgbGreen;
-                    s_palBmp[i].peBlue = src[i].rgbBlue;
-                    s_palBmp[i].peFlags = 0;
-                }
+                COPY_BGRX_PALETTE(s_palBmp, src, i, 0x100)
                 palette = s_palBmp;
             } else if (remap && palBpp == BPP_PALETTED_8) {
                 if (manager->m_hasPalette != false) {
