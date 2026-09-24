@@ -103,17 +103,17 @@ i32 CTileTriggerSwitchLogic::Setup(
 
 RVA(0x00110570, 0xfb)
 i32 CTileTriggerSwitchLogic::SwitchDown() {
-    Coord tile = m_tile;
+    i32 tileY = m_tile.m_y;
     CGruntzMgr* reg = g_gameReg;
     CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
-    i32 v = layer->m_tileHandles[tile.m_x + layer->m_tileRowOffsets[tile.m_y]] + 1;
+    i32 tileX = m_tile.m_x;
+    i32 v = layer->m_tileHandles[tileX + layer->m_tileRowOffsets[tileY]] + 1;
     CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
-    SET_WORKER_HOST_CELL(layer2, tile.m_x, tile.m_y, v);
-    reg->m_tileGrid->ComputeCellFlags(tile.m_x, tile.m_y, v);
+    SET_WORKER_HOST_CELL(layer2, tileX, tileY, v);
+    reg->m_tileGrid->ComputeCellFlags(tileX, tileY, v);
 
-    Coord position = tile;
-    TileCenter(&position);
-    if (::PtInRect(&g_gameReg->m_viewBounds, position.m_x, position.m_y)) {
+    DECLARE_TILE_CENTER_PIXEL_PAIR(px, py, m_tile.m_x, m_tile.m_y)
+    if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
         SoundCueRegistry* h = g_gameReg->m_world->m_soundRegistry;
         if (h->m_silentMode == false) {
             SoundCue* found = h->FindCue("GAME_SWITCHDOWN");
@@ -139,17 +139,17 @@ i32 CTileTriggerSwitchLogic::SwitchDown() {
 
 RVA(0x001106b0, 0xf4)
 i32 CTileTriggerSwitchLogic::SwitchUp() {
-    Coord tile = m_tile;
+    i32 tileY = m_tile.m_y;
     CGruntzMgr* reg = g_gameReg;
     CDDrawWorkerHost* layer = reg->m_world->m_level->m_mainPlane;
-    i32 v = layer->m_tileHandles[tile.m_x + layer->m_tileRowOffsets[tile.m_y]] - 1;
+    i32 tileX = m_tile.m_x;
+    i32 v = layer->m_tileHandles[tileX + layer->m_tileRowOffsets[tileY]] - 1;
     CDDrawWorkerHost* layer2 = g_gameReg->m_world->m_level->m_mainPlane;
-    SET_WORKER_HOST_CELL(layer2, tile.m_x, tile.m_y, v);
-    reg->m_tileGrid->ComputeCellFlags(tile.m_x, tile.m_y, v);
+    SET_WORKER_HOST_CELL(layer2, tileX, tileY, v);
+    reg->m_tileGrid->ComputeCellFlags(tileX, tileY, v);
 
-    Coord position = tile;
-    TileCenter(&position);
-    if (::PtInRect(&g_gameReg->m_viewBounds, position.m_x, position.m_y)) {
+    DECLARE_TILE_CENTER_PIXEL_PAIR(px, py, m_tile.m_x, m_tile.m_y)
+    if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
         SoundCueRegistry* h = g_gameReg->m_world->m_soundRegistry;
         if (h->m_silentMode == false) {
             SoundCue* found = h->FindCue("GAME_SWITCHUP");
@@ -854,36 +854,43 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
 // @early-stop
 RVA(0x00112590, 0x166)
 i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
-    Coord tile = m_tile;
     i32 tok = m_tileToken;
     if (tok != 0) {
         CGruntzMgr* reg = g_gameReg;
+        i32 ty = m_tile.m_y;
+        i32 tx = m_tile.m_x;
         CDDrawWorkerHost* L = reg->m_world->m_level->m_mainPlane;
-        SET_WORKER_HOST_CELL(L, tile.m_x, tile.m_y, tok);
-        (reg->m_tileGrid)->ComputeCellFlags(tile.m_x, tile.m_y, tok);
+        SET_WORKER_HOST_CELL(L, tx, ty, tok);
+        (reg->m_tileGrid)->ComputeCellFlags(tx, ty, tok);
     } else {
         switch (verb) {
             case TILEKIND_COVERED_POWERUP: {
+                i32 ty = m_tile.m_y;
                 CGruntzMgr* reg = g_gameReg;
                 CDDrawWorkerHost* L = reg->m_world->m_level->m_mainPlane;
-                i32 v = L->m_tileHandles[tile.m_x + L->m_tileRowOffsets[tile.m_y]] + 1;
+                i32 tx = m_tile.m_x;
+                i32 v = L->m_tileHandles[tx + L->m_tileRowOffsets[ty]] + 1;
                 CDDrawWorkerHost* L2 = g_gameReg->m_world->m_level->m_mainPlane;
-                SET_WORKER_HOST_CELL(L2, tile.m_x, tile.m_y, v);
-                (reg->m_tileGrid)->ComputeCellFlags(tile.m_x, tile.m_y, v);
+                SET_WORKER_HOST_CELL(L2, tx, ty, v);
+                (reg->m_tileGrid)->ComputeCellFlags(tx, ty, v);
                 break;
             }
             case TILEKIND_GAUNTLET_ROCK_B: {
                 CGruntzMgr* reg = g_gameReg;
+                i32 ty = m_tile.m_y;
+                i32 tx = m_tile.m_x;
                 CDDrawWorkerHost* L = reg->m_world->m_level->m_mainPlane;
-                SET_WORKER_HOST_CELL(L, tile.m_x, tile.m_y, 0x5b);
-                (reg->m_tileGrid)->ComputeCellFlags(tile.m_x, tile.m_y, 0x5b);
+                SET_WORKER_HOST_CELL(L, tx, ty, 0x5b);
+                (reg->m_tileGrid)->ComputeCellFlags(tx, ty, 0x5b);
                 break;
             }
             case TILEKIND_GAUNTLET_ROCK_A: {
                 CGruntzMgr* reg = g_gameReg;
+                i32 ty = m_tile.m_y;
+                i32 tx = m_tile.m_x;
                 CDDrawWorkerHost* L = reg->m_world->m_level->m_mainPlane;
-                SET_WORKER_HOST_CELL(L, tile.m_x, tile.m_y, 0x5a);
-                (reg->m_tileGrid)->ComputeCellFlags(tile.m_x, tile.m_y, 0x5a);
+                SET_WORKER_HOST_CELL(L, tx, ty, 0x5a);
+                (reg->m_tileGrid)->ComputeCellFlags(tx, ty, 0x5a);
                 break;
             }
             default:
@@ -891,25 +898,13 @@ i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
         }
     }
     CGruntzMgr* reg = g_gameReg;
-    Coord position = tile;
-    TileCenter(&position);
-    reg->m_triggerMgr->SpawnPowerupIcon(
-        static_cast<PickupType>(m_dutyOnSpan),
-        position.m_x,
-        position.m_y,
-        m_dutyOffSpan,
-        1,
-        0
-    );
+    DECLARE_TILE_CENTER_PIXEL_PAIR(px, py, m_tile.m_x, m_tile.m_y)
+    reg->m_triggerMgr
+        ->SpawnPowerupIcon(static_cast<PickupType>(m_dutyOnSpan), px, py, m_dutyOffSpan, 1, 0);
     if (m_leadInSpan != 0) {
-        CGameObject* rec = g_gameReg->m_world->m_childGroup->CreateSprite(
-            0,
-            position.m_x,
-            position.m_y,
-            95000,
-            "InGameText",
-            WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
-        );
+        CGameObject* rec =
+            g_gameReg->m_world->m_childGroup
+                ->CreateSprite(0, px, py, 95000, "InGameText", WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE);
         if (rec == NULL) {
             return 0;
         }
@@ -1201,8 +1196,6 @@ RVA(0x00112ee0, 0x42b)
 i32 CTileActionEvent::BreakTopBrick(CGrunt* grunt) {
     BrickTileId newCode = m_actionCode;
     i32 effect = 0;
-    Coord position = m_tile;
-    TileCenter(&position);
     switch (m_actionCode) {
         case BRICKTILE_RED_1:
             effect = IDX(BRICKTILE_RED_1);
@@ -1312,14 +1305,15 @@ i32 CTileActionEvent::BreakTopBrick(CGrunt* grunt) {
             grunt->m_entranceActive = false;
         } else if (brickEffect == BRICKTILE_BLUE_1) {
             g_gameReg->m_triggerMgr->ApplyGruntAreaEffect(
-                position.m_x,
-                position.m_y,
+                TILE_CENTER_COMPONENT(m_tile.m_x),
+                TILE_CENTER_COMPONENT(m_tile.m_y),
                 1,
                 GRUNT_AREA_EFFECT_TELEPORT,
                 -1
             );
         } else if (brickEffect == BRICKTILE_GOLD_1) {
-            if (::PtInRect(&g_gameReg->m_viewBounds, position.m_x, position.m_y)
+            DECLARE_TILE_CENTER_PIXEL_PAIR(px, py, m_tile.m_x, m_tile.m_y)
+            if (::PtInRect(&g_gameReg->m_viewBounds, px, py)
                 && g_gameReg->m_world->m_soundRegistry->m_silentMode == false) {
                 SoundCue* snd = static_cast<SoundCue*>(
                     g_gameReg->m_world->m_soundRegistry->Lookup("GRUNTZ_NORMALGRUNT_IMPACTMM3")
@@ -1338,15 +1332,21 @@ i32 CTileActionEvent::BreakTopBrick(CGrunt* grunt) {
             SetActionCode(m_actionCode);
             return 0;
         } else if (brickEffect == BRICKTILE_BLACK_1) {
-            g_gameReg->m_triggerMgr->LoadExplosionSprites(position.m_x, position.m_y, -1, 2);
+            g_gameReg->m_triggerMgr->LoadExplosionSprites(
+                TILE_CENTER_COMPONENT(m_tile.m_x),
+                TILE_CENTER_COMPONENT(m_tile.m_y),
+                -1,
+                2
+            );
         }
     }
 
-    if (::PtInRect(&g_gameReg->m_viewBounds, position.m_x, position.m_y)) {
+    DECLARE_TILE_CENTER_PIXEL_PAIR(px, py, m_tile.m_x, m_tile.m_y)
+    if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
         CWwdSpriteObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
             0,
-            position.m_x,
-            position.m_y,
+            px,
+            py,
             SORTKEY_ACTOR_BEHIND,
             "Particlez",
             WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE

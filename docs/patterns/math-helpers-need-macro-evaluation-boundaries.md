@@ -27,6 +27,10 @@ the following examples without removing their typed APIs:
 | `CGrunt::StepCompassMove` 0x51c00 | 54.8401% | scalar `CanCommitMove` tile locals and `RETURN_IF_DIAGONAL_ROUTE_BLOCKED` | 63.0219% |
 | `CGrunt::StepHitAndRunnerBehavior` 0xed9f0 | 79.4196% | restored screen-position, recycle, random-extent macros and scalar tile locals | 88.6250% |
 | `CPlay::OnKeyDown` 0xcbcc0 | 85.9785% | scalar bookmark, cursor, viewport, and tile expressions at the call sites | 90.3267% |
+| `CTileTriggerSwitchLogic::SwitchDown` 0x110570 | 80.7471% | branch-local tile/pixel scalars and tile-center macro | 93.5977% |
+| `CTileTriggerSwitchLogic::SwitchUp` 0x1106b0 | 83.2759% | same local scalar and macro boundary | 93.5977% |
+| `CTileTriggerLogic::ApplyMove` 0x112590 | 68.24% | branch-local tile scalars and tile-center macro | 97.1496% |
+| `CTileActionEvent::BreakTopBrick` 0x112ee0 | 79.3173% | tile-center expressions at each branch and two local pixel-pair macros | 97.9808% |
 | `CGrunt::RectContains` 0x51850 | 46.2177% | tile component conversion, native rectangle copy, offset/extent macros | 100% |
 | `CGrunt::VehicleContactContains` 0x51a20 | 58.6220% | same rectangle family | 100% |
 | `CGrunt::SetArrivalTarget` 0x52ed0 | 59.6000% | component stores and snap expressions | 100% |
@@ -181,6 +185,13 @@ without changing the shared coordinate APIs. The same-unit
 current score from 97.4950% to 97.3700%; its historical MAX remains banked.
 This is a caller-order compiler-state perturbation, so the recovery is judged
 by the edited caller and the unchanged function retains its best evidence.
+
+The four tile-switch methods show the lifetime effect directly. Hoisting a
+`Coord` and applying `TileCenter` before the branch tree retained the same
+call and control-flow counts but shifted register allocation from the first
+instruction. Restoring branch-local scalar tile coordinates and the existing
+`DECLARE_TILE_CENTER_PIXEL_PAIR` macro recovered each method to its earlier
+score while keeping the typed `m_tile` member and all coordinate helpers.
 
 `CMovingLogic::InitOwner` gives a counterexample to adding an aggregate merely
 because the component values are related. Its four min/max record reads have
