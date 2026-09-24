@@ -3339,7 +3339,6 @@ i32 CBattlezMapConfig::PathToNearbyUnit(CGrunt*) {
     return 0;
 }
 
-// @early-stop
 RVA(0x0002edb0, 0x6b4)
 i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, i32 ay) {
     if (unit->CoordCount() == 0) {
@@ -3357,8 +3356,8 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
             if (c != NULL) {
                 BrickzCell* row = m_board->m_rows[c->m_y];
                 if (row[c->m_x].m_flags & 4) {
-                    target = *c;
                     found = true;
+                    target = *c;
                     break;
                 }
             }
@@ -3406,8 +3405,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
     for (i32 scanned = 0; scanned < TM_UNITS_PER_PLAYER; scanned++) {
         CGrunt* cand = m_triggerMgr->m_units[m_playerIndex * TM_UNITS_PER_PLAYER + r];
         if (cand != NULL) {
-            CGameObject* lvl = cand->m_object;
-            if (GRUNT_OBJECT_AT_SAVED_SCREEN_POS(lvl, cand) && cand->m_entranceCommitted != false
+            if (IsGruntAtSavedScreenPos(cand) && cand->m_entranceCommitted != false
                 && cand->m_deathAnimStarted == false && cand->m_entranceActive == false
                 && cand->m_poweredUp == false) {
                 bool eq;
@@ -3443,21 +3441,21 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
                     if (SquaredDistance(dx, dy) <= 0x190) {
 
                         i32 flags = BATTLEZ_ROUTE_OTHER_TOOLS_TRIGGER;
-                        PickupType cer = cand->m_entranceReason;
-                        if (cand->ArrivalPickupOf(cer) == PICKUP_WINGZ) {
+                        PickupType entranceReason = unit->m_entranceReason;
+                        if (unit->ArrivalPickupOf(entranceReason) == PICKUP_WINGZ) {
                             flags = BATTLEZ_ROUTE_OTHER_TOOLS_TRIGGER_WINGZ;
                         }
-                        if (cand->ArrivalPickupOf(cer) == PICKUP_TOOB) {
+                        if (unit->ArrivalPickupOf(entranceReason) == PICKUP_TOOB) {
                             flags |= BATTLEZ_ROUTE_TOOB_TRAVERSAL;
                         }
                         CPtrList list(10);
                         Coord oc;
-                        (static_cast<CUserLogic*>(unit))->GetScreenPos((&oc));
+                        GET_SCREEN_TILE_Y_FIRST(static_cast<CUserLogic*>(cand), oc)
                         if ((m_board)->FindPathWithEndpointOverrides(
-                                oc.m_x >> TILE_SHIFT_PX,
-                                oc.m_y >> TILE_SHIFT_PX,
-                                cx,
-                                cy,
+                                oc.m_x,
+                                oc.m_y,
+                                target.m_x,
+                                target.m_y,
                                 &list,
                                 1,
                                 0x98b,
@@ -3471,18 +3469,18 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
                                 }
                             }
                             if (list.GetHeadPosition() != NULL) {
-                                if (cand->CoordCount() != 0) {
-                                    RECYCLE_GRUNT_COORDS(cand)
-                                }
                                 if (unit->CoordCount() != 0) {
                                     RECYCLE_GRUNT_COORDS(unit)
                                 }
+                                if (cand->CoordCount() != 0) {
+                                    RECYCLE_GRUNT_COORDS(cand)
+                                }
                                 POSITION pp = list.GetHeadPosition();
                                 while (pp != NULL) {
-                                    unit->m_coordList.AddTail(list.GetNext(pp));
+                                    cand->m_coordList.AddTail(list.GetNext(pp));
                                 }
-                                cand->m_defenderState = AISTATE_SEEK;
-                                unit->m_defenderState = AISTATE_RETREAT;
+                                unit->m_defenderState = AISTATE_SEEK;
+                                cand->m_defenderState = AISTATE_RETREAT;
                             }
                             return 1;
                         }

@@ -15,6 +15,7 @@
 #include <Gruntz/EnemyAiType.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
+#include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStateRecord.h>
 #include <Gruntz/Grunt.h>
@@ -635,13 +636,7 @@ i32 CGrunt::StepCompassMove() {
         bag.SetAtGrow(bag.GetSize(), 8);
         while (bag.GetSize() > 0) {
             i32 last = bag.GetUpperBound();
-            i32 count = last + 1;
-            i32 idx;
-            if (count == 0) {
-                idx = (rand() & 1) != 0 ? 0 : last;
-            } else {
-                idx = rand() % count;
-            }
+            i32 idx = GetRandom(0, last);
             i32 dir = bag.GetAt(idx);
             moveX = x;
             moveY = y;
@@ -728,7 +723,7 @@ commit:
 // @early-stop
 RVA(0x00052c70, 0x1e0)
 i32 CGrunt::ClaimSwitchTile() {
-    Coord tile = m_lastTilePx;
+    Coord tile = LastTilePx();
     i32 nextX;
     i32 nextY;
     switch (m_entranceCell.m_direction) {
@@ -766,7 +761,7 @@ i32 CGrunt::ClaimSwitchTile() {
             break;
     }
 
-    CGruntzMapMgr* b = g_gameReg->m_tileGrid;
+    CGruntzMapMgr* b = g_gameReg->GetTileGrid();
     i32 tx = nextX >> TILE_SHIFT_PX;
     i32 ty = nextY >> TILE_SHIFT_PX;
     i32 flags = b->CellFlagsAt(tx, ty);
@@ -777,13 +772,13 @@ i32 CGrunt::ClaimSwitchTile() {
     m_triggerMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
 
     m_commitPx = m_lastTilePx;
-    CGruntzMapMgr* gb = g_gameReg->m_tileGrid;
+    CGruntzMapMgr* gb = g_gameReg->GetTileGrid();
     i32 oldTx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
     i32 oldTy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
     gb->m_rows[oldTy][oldTx].m_flags &= BRICKZ_CELL_UNOCCUPIED_MASK;
     gb->m_rows[oldTy][oldTx].m_occupantId = -1;
 
-    CGruntzMapMgr* nb = g_gameReg->m_tileGrid;
+    CGruntzMapMgr* nb = g_gameReg->GetTileGrid();
     i32 owner = (m_playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | m_unitIndex;
     nb->m_rowBytes[ty][tx * 7 * 4 + 3] |= 0x20;
     nb->m_rowInts[ty][tx * 7 + 1] = owner;

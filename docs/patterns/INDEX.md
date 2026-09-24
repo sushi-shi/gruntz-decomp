@@ -775,3 +775,6 @@ Full old→new table: [`../tooling-map.md`](../tooling-map.md).
 - [SDK record copies cross member widths](sdk-record-copies-cross-member-widths.md): decoded complete GUID argument copies expose a false field-width finding; full-consumer negative controls protect the gate.
 
 - [Typed lookup templates and real member helpers preserve caller boundaries](typed-lookup-and-member-helpers-preserve-caller-boundaries.md) - c9 - cpp:inline cpp:template cpp:member cpp:macro | asm:call asm:mov | topic:source-shape - typed map templates and natural members preserve helper-local reset and receiver evaluation; pixel, memcpy, registration-emission and nested fader controls distinguish sharing an operation from changing its compilation boundary.
+
+- [An inline guard snapshot can flip the caller's zero/one register roles](inline-guard-snapshot-flips-caller-constant-roles.md) — A shared typed registration snapshot removes the extra constructor guard branch; reproduced at 97.6942% with the same source fingerprint.
+- [Equal call and CFG counts do not prove receiver identity](receiver-identity-can-hide-behind-equal-call-and-cfg-counts.md) — Trace each same-typed receiver through calls, route ownership and state stores; equal operation histograms hid a reversed Battlez route.
