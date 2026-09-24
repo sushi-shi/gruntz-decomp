@@ -18,10 +18,11 @@
     (((result) = IsAnimationAct("G")) || ((result) = IsAnimationAct("L"))                          \
      || ((result) = IsAnimationAct("P")))
 
-#define RESTORE_ACTIVE_ENTRANCE_APPEARANCE()                                                       \
-    (IsAnimationAct("J") && (RestorePreviousAppearance(), true))
+#define APPLY_ACTIVE_ENTRANCE_PICKUP(result)                                                       \
+    (((result) = IsAnimationAct("J")) && (RestorePreviousAppearance(), ApplyEntrancePickup(), true))
 
-#define SETTLE_ACTIVE_TUBE_MOVE() (IsAnimationAct("N") && (SettleTubeMove(), true))
+#define SETTLE_ACTIVE_TUBE_MOVE(result)                                                            \
+    (((result) = IsAnimationAct("N")) && (SettleTubeMove(), true))
 
 #define TERMINATE_ACTIVE_BOMB_RUN(result)                                                          \
     (((result) = (strcmp(GetAnimationActName(), "M") == 0))                                        \

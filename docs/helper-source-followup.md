@@ -228,3 +228,19 @@ retain individual provenance, incompatible transfers and deferred alternatives;
 the `grunt-*-conditional-control`/`grunt-*-nested-pickup-control` rows retain
 the tested source-form exclusions and reopening criteria. This is narrower than
 complete consumer-family adoption and does not close the broad reassessments.
+
+Fresh entrance reassessment adds the `fk-*` queue, including independent
+collision, postcommit, occupancy, identity, safety-timer and configuration
+responsibilities. Its pending candidates and narrow exclusions retain source
+provenance and reopening criteria in the canonical ledger. The actual tree now
+shares collision and postcommit operations, preserves the complete interrupted
+drop and conditional pickup as macros, and repairs the natural current-player
+guard. The real-owner/original-executable guard test also exercises unchanged-
+count negative controls.
+
+This composition moves Finish from 78.4463 to 83.1934 with J recovered and N/K
+still open; Arrival retains its complete lookup topology at 91.4676. Natural
+entrance is 88.3289 after the corrected guard and complete helper composition,
+with its retail-sized frame restored. These are partial source/matching changes,
+not whole-family closure or an exact-match claim. The sixteen broad reassessment
+rows remain pending, including every family named in the original correction.

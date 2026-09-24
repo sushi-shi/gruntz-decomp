@@ -362,6 +362,79 @@ The action-header test passes, the raw audit still reports 3,917 functions and
 zero defects, and all historical maxima are preserved. No other current score
 changes in this control.
 
+### Complete entrance collision and commit responsibilities
+
+The control is `19c1b9013`: Finish 78.4463%, Arrival 91.4820%, natural
+LoadEntranceConfig 89.0307%. The fresh source/retail queue is `fk-*` in the
+lineage ledger. The two entrance owners share a complete 130-byte masked
+collision phase with the same ordered death-call relocation. The complete
+postcommit phase also shares ownership, conditions, stores and call order.
+These are reconstructed responsibility names, not surviving original names.
+
+| Sequential real-TU control | Finish | Arrival | Natural entrance |
+| --- | ---: | ---: | ---: |
+| J macro preserves caller comparison result | 78.4336 | 91.4676 | 89.0307 |
+| Compose N result ownership | 78.4336 | 91.4676 | 89.0307 |
+| Complete J pickup macro | 78.4336 | 91.4676 | 89.0307 |
+| Complete J member inline | 69.1454 | 78.3410 | 89.0307 |
+| Correct natural current-player guard | 69.1454 | 78.3410 | 89.0526 |
+| Shared collision member | 74.1454 | 78.3410 | 88.1360 |
+| Compose complete postcommit member | 71.5107 | 78.3410 | 88.3289 |
+| Complete J macro on composed base | 81.9532 | 91.4676 | 88.3289 |
+| Complete postcommit macro | **83.1934** | **91.4676** | **88.3289** |
+| Whole interrupted K effect member | 66.2174 | 91.4676 | 88.3289 |
+| Whole interrupted K effect macro | **83.1934** | **91.4676** | **88.3289** |
+
+The dipped J-member base was composed through both independently evidenced
+K responsibilities before selecting macro forms. Intermediate Finish states
+with all eleven typed lookups still contained unsupported out-of-line game
+calls: inspect the entire ordered sequence, not just template-call totals.
+The scoped member-form controls and reopening conditions are recorded only
+in `grunt-j-complete-nested-control`, `fk-postcommit-inline-control` and
+`fk-effect-inline-control`.
+
+The selected composition preserves all phase abstractions. The collision
+member is same-TU inline; the complete postcommit and interrupted-drop macros
+stay in that TU, where the actual entrance animation-key datum lives. Shared
+J/N operations remain in the action header. No copied static key, visibility
+restriction, unused declaration or forced emitter is introduced.
+
+Finish now has 9/11 typed calls: J is restored, N/K remain expanded. It is
+0x97b bytes, 823 instructions, 44 calls, 103 branches, ten returns and 86
+relocations against retail 0x936/792/42/97/10/80. Its frame is now the retail
+0x14, including the complete direction-copy third-field spill at +0x24.
+All 31 non-array calls remain in retail order; the only ordered-reference
+replacements are the two expanded array sites. Arrival retains all ten typed
+calls, terminal M get/construction and all 28 non-array calls in order, with
+identical FP, displacement, store and immediate multisets. Natural entrance
+retains 13 calls, 19 branches, one return and 24 relocations, and now has the
+retail 0x0c frame. None of these functions is declared exact or bounded.
+
+The guard correction is an important negative control on the diagnostic
+method: equal counts and ordered referents did not establish reachability.
+See [the branch-edge control](equal-counts-can-hide-a-side-effect-guard-defect.md).
+All sixteen broad helper reassessment families remain open.
+
+The fresh unchanged-source Spotlight Tick movement was isolated by compiling
+its real TU with the exact `19c1b9013` Grunt header in a disposable include
+overlay. That restores 84.2097 versus 83.2984 with the new declaration. Calls,
+branches, returns and ordered references agree between the old/new objects;
+displacement, store and immediate multisets agree too. The extent changes
+0x2ec to 0x2ee and the instruction count 234 to 235; the only added opcode is
+one x87 `fxch`. No overlay or inert declaration is retained. The natural
+entrance store-multiset difference is separately accounted for: its sort-key
+flag update is a memory `or [object+8],0x20000`, while retail uses load/or/store.
+The update is present; it is not a missing field store.
+
+Validation: the full pinned build and MAX/fast/normal gates pass after the
+adjudicated bank. All 23 action/container header controls and both real-owner
+guard tests pass. The raw referent audit finds zero defects in 3,917 near-exact
+functions. All 4,429 historical maxima and 4,426 unchanged-source maxima are
+preserved. Overall current exact count remains 3,838/4,428, fuzzy 94.79%, MAX
+95.18%; this pass creates no new historical exact match. The canonical ledger
+contains 470 rows, including 32 freshly source-verified candidates/decisions;
+all sixteen broad reassessment rows remain pending.
+
 ### Applying the evidence
 
 When shared-template restoration causes repeated constructor/error expansions

@@ -20,8 +20,8 @@ class GruntActionHeaderTests(unittest.TestCase):
 class ActionProbe : public CGrunt {
 public:
     bool ToyUse() { bool result; return GRUNT_IS_USING_TOY(result); }
-    bool TubeMove() { return SETTLE_ACTIVE_TUBE_MOVE(); }
-    bool EntranceAppearance() { return RESTORE_ACTIVE_ENTRANCE_APPEARANCE(); }
+    bool TubeMove() { bool result; return SETTLE_ACTIVE_TUBE_MOVE(result); }
+    bool EntranceAppearance() { bool result; return APPLY_ACTIVE_ENTRANCE_PICKUP(result); }
     bool BombRun() { bool result; return TERMINATE_ACTIVE_BOMB_RUN(result); }
 };
 bool use(ActionProbe* grunt, int defer) {
@@ -53,7 +53,8 @@ bool use(ActionProbe* grunt, int defer) {
                 '?SettleTubeMove@CGrunt@@QAEXXZ'])
             self.assertEqual(calls('?EntranceAppearance@ActionProbe@@QAE_NXZ'), [
                 '?IsAnimationAct@CUserLogic@@QBE_NPBD@Z',
-                '?RestorePreviousAppearance@CGrunt@@QAEXXZ'])
+                '?RestorePreviousAppearance@CGrunt@@QAEXXZ',
+                '?ApplyEntrancePickup@CGrunt@@QAEXXZ'])
             self.assertEqual(calls('?SettleActiveKnockback@CGrunt@@QAE_NXZ'), [
                 '?IsAnimationAct@CUserLogic@@QBE_NPBD@Z',
                 '?SettleKnockback@CGrunt@@QAEXXZ'])

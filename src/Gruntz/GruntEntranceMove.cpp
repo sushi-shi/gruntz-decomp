@@ -300,40 +300,65 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
     return 0;
 }
 
-// @early-stop
+inline void CGrunt::ResolveEntranceOccupant() {
+    CMapMgr* grid = g_gameReg->m_tileGrid;
+    i32 tx = m_object->m_screenX >> TILE_SHIFT_PX;
+    i32 ty = m_object->m_screenY >> TILE_SHIFT_PX;
+    i32 flags = grid->CellFlagsAt(tx, ty);
+    if (flags & BRICKZ_CELL_OCCUPIED) {
+        i32 owner;
+        if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width)
+            || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
+            owner = -1;
+        } else {
+            owner = grid->m_rowInts[ty][tx * 7 + 1];
+        }
+        i32 playerIndex = (owner >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK;
+        i32 unitIndex = owner & GRUNT_IDENTITY_COMPONENT_MASK;
+        if (m_playerIndex != playerIndex || m_unitIndex != unitIndex) {
+            m_triggerMgr->StartUnitDeath(playerIndex, unitIndex, DEATH_SQUASH, m_playerIndex);
+        }
+    }
+}
+
+#define COMPLETE_ENTRANCE_COMMIT()                                                                 \
+    do {                                                                                           \
+        m_entranceCommitted = true;                                                                \
+        i32 sortKey = m_object->m_screenY + 0x186a0;                                               \
+        SET_SORT_KEY_IF_CHANGED(m_object, sortKey)                                                 \
+        CAniElement* found = NULL;                                                                 \
+        CAniElement* cached = m_wwdObject->m_animationCursor.m_animation;                          \
+        MapLookup(                                                                                 \
+            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,                                 \
+            s_gruntzEntrancezDrop,                                                                 \
+            found                                                                                  \
+        );                                                                                         \
+        if (found == cached) {                                                                     \
+            if (m_playerIndex == g_curPlayer) {                                                    \
+                g_gameReg->m_voiceManager->PlayVoice(this, 0x33f, -1, 0, -1, -1);                  \
+                m_triggerMgr->ResetCell(m_playerIndex, m_unitIndex, 0, 0);                         \
+            }                                                                                      \
+            m_entranceDropActive = true;                                                           \
+            m_entranceSafeTimeLo = g_buteMgr.GetDword("Grunt", "EntranceSafeTime", 5000);          \
+            m_entranceSafeTimeHi = 0;                                                              \
+            m_entranceClockLo = g_frameTime;                                                       \
+            m_entranceClockHi = 0;                                                                 \
+            m_flashWindowLo = 0;                                                                   \
+            m_flashWindowHi = 0;                                                                   \
+        } else if (m_triggerMgr->RecordListHas(m_playerIndex, m_unitIndex)) {                      \
+            CommitArrival();                                                                       \
+        }                                                                                          \
+        m_entranceActive = false;                                                                  \
+        ReadConfigFromButeMgr();                                                                   \
+        LoadCellAnimNames(0, 0);                                                                   \
+        LoadAnimNameTable(0, 0);                                                                   \
+    } while (0)
+
 RVA(0x00067f80, 0x313)
 i32 CGrunt::LoadEntranceConfig() {
     if (m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta)) == 1) {
-        CGruntzMgr* g = g_gameReg;
+        ResolveEntranceOccupant();
         CWwdSpriteObject* h = m_object;
-        CMapMgr* grid = g->m_tileGrid;
-        i32 tx = h->m_screenX >> TILE_SHIFT_PX;
-        i32 ty = h->m_screenY >> TILE_SHIFT_PX;
-
-        i32 flags = grid->CellFlagsAt(tx, ty);
-
-        if (flags & BRICKZ_CELL_OCCUPIED) {
-            i32 owner;
-            if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width)
-                || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
-                owner = -1;
-            } else {
-                owner = ((grid->m_rowInts[ty]))[tx * 7 + 1];
-            }
-            i32 occupantPlayerIndex =
-                (owner >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK;
-            i32 occupantUnitIndex = owner & GRUNT_IDENTITY_COMPONENT_MASK;
-            if (m_playerIndex != occupantPlayerIndex || m_unitIndex != occupantUnitIndex) {
-                m_triggerMgr->StartUnitDeath(
-                    occupantPlayerIndex,
-                    occupantUnitIndex,
-                    DEATH_SQUASH,
-                    m_playerIndex
-                );
-            }
-        }
-
-        h = m_object;
         i32 oldX = m_lastTilePx.m_x;
         m_entranceArmed = false;
         i32 newPxX = h->m_screenX;
@@ -362,35 +387,7 @@ i32 CGrunt::LoadEntranceConfig() {
         m_lastTilePx.m_y = newPxY;
         m_triggerMgr->WireTileSwitchLogic(this, newPxX, newPxY);
 
-        h = m_object;
-        m_entranceCommitted = true;
-        SET_SORT_KEY_IF_CHANGED(h, h->m_screenY + 0x186a0)
-
-        CWwdSpriteObject* p = m_wwdObject;
-        CAniElement* found = NULL;
-        CAniElement* cached = p->m_animationCursor.m_animation;
-        MapLookup(p->OwnerMgr()->m_animRegistry->m_animations, s_gruntzEntrancezDrop, found);
-        if (cached == found) {
-            if (m_playerIndex == g_curPlayer) {
-                g_gameReg->m_voiceManager->PlayVoice(this, 0x33f, -1, 0, -1, -1);
-            }
-            m_triggerMgr->ResetCell(m_playerIndex, m_unitIndex, 0, 0);
-            m_entranceDropActive = true;
-            m_entranceSafeTimeLo = g_buteMgr.GetDword("Grunt", "EntranceSafeTime", 5000);
-            m_entranceSafeTimeHi = 0;
-            m_entranceClockLo = g_frameTime;
-            m_entranceClockHi = 0;
-            m_flashWindowLo = 0;
-            m_flashWindowHi = 0;
-        } else {
-            if (m_triggerMgr->RecordListHas(m_playerIndex, m_unitIndex)) {
-                CommitArrival();
-            }
-        }
-        m_entranceActive = false;
-        ReadConfigFromButeMgr();
-        LoadCellAnimNames(0, 0);
-        LoadAnimNameTable(0, 0);
+        COMPLETE_ENTRANCE_COMMIT();
     }
 
     CAniAdvanceCursor* cur = &m_wwdObject->m_animationCursor;
@@ -696,20 +693,16 @@ i32 CGrunt::StepArrivalCommit() {
     if (SettleActiveKnockback()) {
         goto finalize;
     }
-    if (RESTORE_ACTIVE_ENTRANCE_APPEARANCE()) {
-        goto modeDispatch;
+    if (APPLY_ACTIVE_ENTRANCE_PICKUP(eq)) {
+        goto finalize;
     }
 
-    if (SETTLE_ACTIVE_TUBE_MOVE()) {
+    if (SETTLE_ACTIVE_TUBE_MOVE(eq)) {
         goto finalize;
     }
     if (TERMINATE_ACTIVE_BOMB_RUN(eq)) {
         return 0;
     }
-    goto finalize;
-
-modeDispatch:
-    ApplyEntrancePickup();
     goto finalize;
 
 idleReseed:
@@ -933,6 +926,33 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
     return 1;
 }
 
+#define FINISH_ENTRANCE_DROP()                                                                     \
+    do {                                                                                           \
+        ResolveEntranceOccupant();                                                                 \
+        m_entranceArmed = false;                                                                   \
+        i32 newX = m_object->m_screenX;                                                            \
+        i32 newY = m_object->m_screenY;                                                            \
+        i32 oldTx = m_lastTilePx.m_x >> TILE_SHIFT_PX;                                             \
+        i32 oldTy = m_lastTilePx.m_y >> TILE_SHIFT_PX;                                             \
+        i32 newTx = newX >> TILE_SHIFT_PX;                                                         \
+        i32 newTy = newY >> TILE_SHIFT_PX;                                                         \
+        if (oldTx != -1 && oldTy != -1) {                                                          \
+            CMapMgr* oldGrid = g_gameReg->m_tileGrid;                                              \
+            BrickzCell* oc = &oldGrid->m_rows[oldTy][oldTx];                                       \
+            oc->m_flags &= BRICKZ_CELL_UNOCCUPIED_MASK;                                            \
+            oldGrid->m_rowInts[oldTy][oldTx * 7 + 1] = -1;                                         \
+        }                                                                                          \
+        CMapMgr* newGrid = g_gameReg->m_tileGrid;                                                  \
+        BrickzCell* nc = &newGrid->m_rows[newTy][newTx];                                           \
+        nc->m_flags |= BRICKZ_CELL_OCCUPIED;                                                       \
+        newGrid->m_rowInts[newTy][newTx * 7 + 1] =                                                 \
+            (m_playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | m_unitIndex;                          \
+        m_lastTilePx.m_x = newX;                                                                   \
+        m_lastTilePx.m_y = newY;                                                                   \
+        m_triggerMgr->WireTileSwitchLogic(this, newX, newY);                                       \
+        COMPLETE_ENTRANCE_COMMIT();                                                                \
+    } while (0)
+
 RVA(0x0006a6d0, 0x936)
 i32 CGrunt::FinishActiveAction() {
     bool ne;
@@ -966,11 +986,11 @@ i32 CGrunt::FinishActiveAction() {
     if (SettleActiveKnockback()) {
         return 1;
     }
-    if (RESTORE_ACTIVE_ENTRANCE_APPEARANCE()) {
-        goto modeDispatch;
+    if (APPLY_ACTIVE_ENTRANCE_PICKUP(eq)) {
+        return 1;
     }
 
-    if (SETTLE_ACTIVE_TUBE_MOVE()) {
+    if (SETTLE_ACTIVE_TUBE_MOVE(eq)) {
         return 1;
     }
 
@@ -979,86 +999,7 @@ i32 CGrunt::FinishActiveAction() {
         goto retZero;
     }
 
-    {
-        CMapMgr* grid = g_gameReg->m_tileGrid;
-        i32 tx = m_object->m_screenX >> TILE_SHIFT_PX;
-        i32 ty = m_object->m_screenY >> TILE_SHIFT_PX;
-        i32 flags = grid->CellFlagsAt(tx, ty);
-
-        if (flags & BRICKZ_CELL_OCCUPIED) {
-            i32 owner;
-            if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width)
-                || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
-                owner = -1;
-            } else {
-                owner = grid->m_rowInts[ty][tx * 7 + 1];
-            }
-            i32 playerIndex =
-                (owner >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK;
-            i32 unitIndex = owner & GRUNT_IDENTITY_COMPONENT_MASK;
-            if (m_playerIndex != playerIndex || m_unitIndex != unitIndex) {
-                m_triggerMgr->StartUnitDeath(playerIndex, unitIndex, DEATH_SQUASH, m_playerIndex);
-            }
-        }
-
-        m_entranceArmed = false;
-        i32 newX = m_object->m_screenX;
-        i32 newY = m_object->m_screenY;
-        i32 oldTx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
-        i32 oldTy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
-        i32 newTx = newX >> TILE_SHIFT_PX;
-        i32 newTy = newY >> TILE_SHIFT_PX;
-        if (oldTx != -1 && oldTy != -1) {
-            CMapMgr* oldGrid = g_gameReg->m_tileGrid;
-            BrickzCell* oc = &oldGrid->m_rows[oldTy][oldTx];
-            oc->m_flags &= BRICKZ_CELL_UNOCCUPIED_MASK;
-            oldGrid->m_rowInts[oldTy][oldTx * 7 + 1] = -1;
-        }
-        CMapMgr* newGrid = g_gameReg->m_tileGrid;
-        BrickzCell* nc = &newGrid->m_rows[newTy][newTx];
-        nc->m_flags |= BRICKZ_CELL_OCCUPIED;
-        newGrid->m_rowInts[newTy][newTx * 7 + 1] =
-            (m_playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | m_unitIndex;
-        m_lastTilePx.m_x = newX;
-        m_lastTilePx.m_y = newY;
-        m_triggerMgr->WireTileSwitchLogic(this, newX, newY);
-
-        m_entranceCommitted = true;
-        i32 sortKey = m_object->m_screenY + 0x186a0;
-        SET_SORT_KEY_IF_CHANGED(m_object, sortKey)
-
-        CAniElement* found = NULL;
-        CAniElement* cached = m_wwdObject->m_animationCursor.m_animation;
-        MapLookup(
-            m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
-            s_gruntzEntrancezDrop,
-            found
-        );
-        if (found == cached) {
-            if (m_playerIndex == g_curPlayer) {
-                g_gameReg->m_voiceManager->PlayVoice(this, 0x33f, -1, 0, -1, -1);
-                m_triggerMgr->ResetCell(m_playerIndex, m_unitIndex, 0, 0);
-            }
-            m_entranceDropActive = true;
-            m_entranceSafeTimeLo = g_buteMgr.GetDword("Grunt", "EntranceSafeTime", 5000);
-            m_entranceSafeTimeHi = 0;
-            m_entranceClockLo = g_frameTime;
-            m_entranceClockHi = 0;
-            m_flashWindowLo = 0;
-            m_flashWindowHi = 0;
-        } else if (m_triggerMgr->RecordListHas(m_playerIndex, m_unitIndex)) {
-            CommitArrival();
-        }
-
-        m_entranceActive = false;
-        ReadConfigFromButeMgr();
-        LoadCellAnimNames(0, 0);
-        LoadAnimNameTable(0, 0);
-        return 1;
-    }
-
-modeDispatch:
-    ApplyEntrancePickup();
+    FINISH_ENTRANCE_DROP();
     return 1;
 
 idleReseed:
@@ -1068,6 +1009,9 @@ idleReseed:
 retZero:
     return 0;
 }
+
+#undef FINISH_ENTRANCE_DROP
+#undef COMPLETE_ENTRANCE_COMMIT
 
 RVA(0x0006b260, 0x5)
 i32 CGrunt::StepAttackAction() {
