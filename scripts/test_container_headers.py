@@ -144,6 +144,56 @@ void lifetime() { zDArray<Item> values(0, 3); }
 int use(zBitVec& bits) { return bits.GetBit(3); }
 ''')
 
+    def test_bute_value_headers_expose_complete_scalar_and_copy_apis(self):
+        self.compile('''#include <Bute/AVector.h>
+#include <Bute/ARange.h>
+typedef char vector_size[sizeof(CAVector) == 24 ? 1 : -1];
+typedef char range_size[sizeof(CARange) == 16 ? 1 : -1];
+CAVector vector_copy(CAVector& input) {
+    CAVector value;
+    value.Set(input.Geti(), input.Getj(), input.Getk());
+    CAVector copy(value);
+    value = copy;
+    return value.Get();
+}
+CARange range_copy(CARange& input) {
+    CARange value;
+    value.Set(input.GetMin(), input.GetMax());
+    CARange copy(value);
+    value = copy;
+    return value.Get();
+}
+''')
+
+    def test_bute_manager_value_boundaries_preserve_references(self):
+        self.compile('''#include <Mfc.h>
+#include <Bute/ButeMgr.h>
+typedef CAVector& (CButeMgr::*VectorGet)(const char*, const char*);
+typedef CAVector& (CButeMgr::*VectorDefault)(const char*, const char*, CAVector&);
+typedef void (CButeMgr::*VectorSet)(const char*, const char*, const CAVector&);
+typedef CARange& (CButeMgr::*RangeGet)(const char*, const char*);
+typedef CARange& (CButeMgr::*RangeDefault)(const char*, const char*, CARange&);
+typedef void (CButeMgr::*RangeSet)(const char*, const char*, const CARange&);
+VectorGet vector_get = &CButeMgr::GetVector;
+VectorDefault vector_default = &CButeMgr::GetVector;
+VectorSet vector_set = &CButeMgr::SetVector;
+RangeGet range_get = &CButeMgr::GetRange;
+RangeDefault range_default = &CButeMgr::GetRange;
+RangeSet range_set = &CButeMgr::SetRange;
+void copy_items(const CAVector& vector, const CARange& range) {
+    CButeMgr::CSymTabItem v(CButeMgr::VECTOR_TYPE, vector);
+    CButeMgr::CSymTabItem r(CButeMgr::RANGE_TYPE, range);
+}
+''')
+
+    def test_bute_value_components_remain_protected(self):
+        from gruntz.tool import ToolError
+        for header, owner, member in (('AVector', 'CAVector', 'm_i'),
+                                      ('ARange', 'CARange', 'm_min')):
+            with self.subTest(owner=owner), self.assertRaisesRegex(ToolError, 'protected'):
+                self.compile(f'#include <Bute/{header}.h>\n'
+                             f'double use({owner}& value) {{ return value.{member}; }}')
+
     def test_animation_names_expose_const_references_from_public_headers(self):
         self.compile('''#include <Gruntz/TypeKeyColl.h>
 const CString& use(i32 id) { return GetAnimationActName(id); }

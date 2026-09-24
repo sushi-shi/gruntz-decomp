@@ -5,6 +5,13 @@ apply evidence-backed source layers, not to count an audit as a matching win.
 Per-candidate adoption/rejection evidence belongs in
 `config/lithtech_lineage.tsv`; this document references the stable IDs.
 
+Current reassessment status: two of the 16 reopened families have completed
+fresh declaration-and-known-use review: `reassess-cavector` and
+`reassess-carange`. Their new source adoption is
+`reassess-bute-value-save-chains`; individually excluded/deferred alternatives
+remain recheckable in the ledger. The other 14 families remain pending. Earlier
+checkpoint counts below describe their own state, not a blanket exemption.
+
 ## Applied-candidate queue
 
 | Candidate IDs | Gruntz targets | Source layer |
@@ -117,8 +124,9 @@ correct or fully modeled. Preserve old tests and reasoning, but record a fresh
 disposition with evidence for each candidate; do not reject a composed source
 layer merely because an isolated earlier trial lowered a score.
 
-The fresh source review has identified concrete execution targets without
-completing those four broad value/initialization reviews:
+The fresh source review identified these concrete execution targets. The two
+Bute value-type reviews are now complete; vector/rectangle initialization is
+still open:
 
 - Complete Bute vector/range API: `bute-vector-range-reference-api`,
   `nolf-bute-private-getters`, `nolf-bute-boundary-revisions`.
@@ -168,8 +176,8 @@ not 45 new matches. The full build passes and the raw referent audit finds zero
 defects across 3,915 near-exact functions. The verifier regression suite ran
 463 tests successfully, with two skipped.
 
-The complete container reviews remain open, as do all 16 broad reassessment
-families. In particular, `reassess-zerrhandler-set-debug-locals` is an applied
+The complete container reviews remain open. At that checkpoint all 16 broad
+families were pending. In particular, `reassess-zerrhandler-set-debug-locals` is an applied
 source layer, not an exact-match or exhausted-search claim. The two genuine
 retail startup functions tracked by `reassess-dhandler-startup-owner` remain
 unmatched; their unresolved source ownership must not be concealed by a
@@ -240,7 +248,7 @@ unreviewed sibling applications and larger conditional operation. Narrow
 incompatible replacements and their reopening criteria are recorded only under
 `grunt-glp-*` and `grunt-tube-*`. These are Gruntz sibling-source hypotheses,
 not claims that externally released source contained these helper names.
-All sixteen broad helper families remain open.
+All sixteen broad helper families remained open at that checkpoint.
 
 The next composition adds complete pickup and knockback helpers plus named
 conditional action macros. It restores Arrival's complete ordered lookup
@@ -277,8 +285,8 @@ This composition moves Finish from 78.4463 to 83.1934 with J recovered and N/K
 still open; Arrival retains its complete lookup topology at 91.4676. Natural
 entrance is 88.3289 after the corrected guard and complete helper composition,
 with its retail-sized frame restored. These are partial source/matching changes,
-not whole-family closure or an exact-match claim. The sixteen broad reassessment
-rows remain pending, including every family named in the original correction.
+not whole-family closure or an exact-match claim. At that checkpoint the sixteen
+broad rows remained pending, including every family named in the original correction.
 
 The next scoped implementation, `684215cdc`, reuses the existing typed occupant
 getter and adds complete release/acquire helpers to both entrance owners.
