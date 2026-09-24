@@ -150,7 +150,7 @@ i32 CNetCmdSlot::ProcessPacket(i32 playerId, char* packet, i32 packetSize) {
     }
     RemoveSequence(m_peerReceivedAhead, windowBase + 1);
 
-    if (m_contiguousSequence >= sequence) {
+    if (HasReceivedThrough(sequence)) {
         return 1;
     }
     if (ContainsSequence(m_receivedAhead, sequence)) {

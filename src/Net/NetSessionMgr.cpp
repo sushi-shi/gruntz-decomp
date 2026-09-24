@@ -600,7 +600,7 @@ i32 CNetSession::ReadyForSequence(i32 sequence) {
         CNetCmdSlot* slot = &m_slots[i];
         if (slot != NULL) {
             if (slot->m_state == NETSLOT_ACTIVE && !slot->IsDraining()) {
-                if (slot->m_contiguousSequence < sequence) {
+                if (!slot->HasReceivedThrough(sequence)) {
                     return 0;
                 }
             } else if (slot->m_state == NETSLOT_ACTIVE && slot->IsDraining()) {
