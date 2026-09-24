@@ -25,6 +25,7 @@ the following examples without removing their typed APIs:
 | `CGrunt::StepGruntMovement` 0x4c170 | 66.4355% | earlier CFG and tile-center macros, with typed `BrickzCell` reads | 76.5600% |
 | `CGrunt::FinalizeStep` 0x5ecd0 | 72.9091% | separate direction/move/next locals and existing sort-key macro | 96.0983% |
 | `CGrunt::StepCompassMove` 0x51c00 | 54.8401% | scalar `CanCommitMove` tile locals and `RETURN_IF_DIAGONAL_ROUTE_BLOCKED` | 63.0219% |
+| `CGrunt::ClaimSwitchTile` 0x52c70 | 55.1857% | eight-case direction switch and separate scalar destination coordinates | 70.3143% |
 | `CGrunt::StepHitAndRunnerBehavior` 0xed9f0 | 79.4196% | restored screen-position, recycle, random-extent macros and scalar tile locals | 88.6250% |
 | `CPlay::OnKeyDown` 0xcbcc0 | 85.9785% | scalar bookmark, cursor, viewport, and tile expressions at the call sites | 90.3267% |
 | `CTileTriggerSwitchLogic::SwitchDown` 0x110570 | 80.7471% | branch-local tile/pixel scalars and tile-center macro | 93.5977% |
@@ -201,6 +202,17 @@ Wrapping the four checks in `RETURN_IF_DIAGONAL_ROUTE_BLOCKED` is byte-flat
 against their direct spelling in the VC5 unit. The helper function and the
 `Coord` API remain defined; the macro chooses the caller's expansion and early
 return structure.
+
+`ClaimSwitchTile` needs the same caller-level distinction. The shared
+`GruntDirectionPixelOffset` helper remains defined, but adding its `Coord`
+result to the current tile erased retail's direction jump table and reduced
+the caller from 13 to 5 branches and 14 to 5 relocations. Restoring the
+historical eight-case switch with separate `nextX`/`nextY` outputs raises
+55.1857% to 70.3143% in the real `gruntsteps` unit. Every live case assigns
+both outputs; the default keeps retail's uninitialised-path behavior. The
+typed `BrickzCell` access remains. Replacing the later `Coord oldTile` plus
+`ScreenTile` with scalar shifts was byte-flat, so the aggregate helper stays
+at that site.
 
 `StepHitAndRunnerBehavior` has the same source-shape issue across several nested
 helpers. The new typed helpers remain defined, while the caller uses the earlier

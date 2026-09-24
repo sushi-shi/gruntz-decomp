@@ -709,12 +709,47 @@ commit:
 RVA(0x00052c70, 0x1e0)
 i32 CGrunt::ClaimSwitchTile() {
     Coord tile = LastTilePx();
-    Coord next = tile + GruntDirectionPixelOffset(m_entranceCell);
+    i32 nextX;
+    i32 nextY;
+    switch (m_entranceCell.m_direction) {
+        case DIR_NORTH:
+            nextX = tile.m_x;
+            nextY = tile.m_y - 0x20;
+            break;
+        case DIR_NORTHEAST:
+            nextX = tile.m_x + 0x20;
+            nextY = tile.m_y - 0x20;
+            break;
+        case DIR_EAST:
+            nextX = tile.m_x + 0x20;
+            nextY = tile.m_y;
+            break;
+        case DIR_SOUTHEAST:
+            nextX = tile.m_x + 0x20;
+            nextY = tile.m_y + 0x20;
+            break;
+        case DIR_SOUTH:
+            nextX = tile.m_x;
+            nextY = tile.m_y + 0x20;
+            break;
+        case DIR_SOUTHWEST:
+            nextX = tile.m_x - 0x20;
+            nextY = tile.m_y + 0x20;
+            break;
+        case DIR_WEST:
+            nextX = tile.m_x - 0x20;
+            nextY = tile.m_y;
+            break;
+        case DIR_NORTHWEST:
+            nextX = tile.m_x - 0x20;
+            nextY = tile.m_y - 0x20;
+            break;
+    }
 
     CGruntzMapMgr* b = g_gameReg->GetTileGrid();
-    Coord nextTile = next;
-    ScreenTile(&nextTile);
-    i32 flags = b->CellFlagsAt(nextTile.m_x, nextTile.m_y);
+    i32 nextTileX = nextX >> TILE_SHIFT_PX;
+    i32 nextTileY = nextY >> TILE_SHIFT_PX;
+    i32 flags = b->CellFlagsAt(nextTileX, nextTileY);
     if ((flags
          & (BRICKZ_CELL_OCCUPIED
             | IDX(
@@ -736,10 +771,11 @@ i32 CGrunt::ClaimSwitchTile() {
 
     CGruntzMapMgr* nb = g_gameReg->GetTileGrid();
     i32 owner = (m_playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | m_unitIndex;
-    nb->m_rows[nextTile.m_y][nextTile.m_x].m_flags |= BRICKZ_CELL_OCCUPIED;
-    nb->m_rows[nextTile.m_y][nextTile.m_x].m_occupantId = owner;
+    nb->m_rows[nextTileY][nextTileX].m_flags |= BRICKZ_CELL_OCCUPIED;
+    nb->m_rows[nextTileY][nextTileX].m_occupantId = owner;
 
-    m_lastTilePx = next;
+    m_lastTilePx.m_x = nextX;
+    m_lastTilePx.m_y = nextY;
     ComputeFacing(1.0);
     m_arrivalPending = true;
     return 1;
