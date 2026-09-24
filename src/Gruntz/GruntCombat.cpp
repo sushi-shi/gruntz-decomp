@@ -50,6 +50,7 @@
 #include <Gruntz/LogicRecordHandler.h>
 #include <Gruntz/LogicTypeTableInline.h>
 #include <Gruntz/MapCellFlags.h>
+#include <Gruntz/MapCellInline.h>
 #include <Gruntz/MotionState.h>
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/PickupType.h>
@@ -1549,16 +1550,17 @@ i32 CGrunt::LoadGruntCombatAnimations(
         if (this->m_arrivalPending == false) {
             m_triggerMgr->ApplySwitch(this, this->m_lastTilePx.m_x, this->m_lastTilePx.m_y);
         }
-        CMapMgr* oldGrid = static_cast<CMapMgr*>(g_gameReg->m_tileGrid);
+        CGruntzMapMgr* oldGrid = g_gameReg->m_tileGrid;
         i32 ox = this->m_lastTilePx.m_x >> TILE_SHIFT_PX;
         i32 oy = this->m_lastTilePx.m_y >> TILE_SHIFT_PX;
-        oldGrid->m_rows[oy][ox].m_flagBytes[3] &= 0xdf;
-        oldGrid->m_rows[oy][ox].m_occupantId = -1;
+        oldGrid->ReleaseCellOccupancy(ox, oy);
 
-        CMapMgr* newGrid = static_cast<CMapMgr*>(g_gameReg->m_tileGrid);
-        newGrid->m_rows[nyt][nxt].m_flagBytes[3] |= 0x20;
-        newGrid->m_rows[nyt][nxt].m_occupantId =
-            (this->m_playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | this->m_unitIndex;
+        CGruntzMapMgr* newGrid = g_gameReg->m_tileGrid;
+        newGrid->AcquireCellOccupancy(
+            nxt,
+            nyt,
+            (this->m_playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | this->m_unitIndex
+        );
 
         if (m_coordList.GetCount() != 0) {
             Coord* node = NULL;
@@ -1577,7 +1579,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         SET_ANIMATION_ACT("O");
         double ddx = static_cast<double>(this->m_lastTilePx.m_x) - this->m_object->m_screenX;
         double ddy = static_cast<double>(this->m_lastTilePx.m_y) - this->m_object->m_screenY;
-        double dist = sqrt(ddx * ddx + ddy * ddy);
+        double dist = sqrt(SQR(ddx) + SQR(ddy));
         m_moveSpeed = dist / static_cast<double>(g_buteMgr.GetDword("Grunt", s_knockKey, 200));
         m_movePosX = static_cast<double>((this->m_object->m_screenX));
         m_movePosY = static_cast<double>((this->m_object->m_screenY));
@@ -1998,7 +2000,7 @@ void CGrunt::StepBehavior(char*) {
                 double span =
                     static_cast<double>(g_buteMgr.GetDword("Grunt", "EntranceSafeTime", 0x1388));
                 double frac = static_cast<double>(elapsed) / span - 1.0;
-                flash = static_cast<i32>(frac * frac * DATA_COMPGEN(0x001e9a40, 750.0));
+                flash = static_cast<i32>(SQR(frac) * DATA_COMPGEN(0x001e9a40, 750.0));
             }
             if (flash < 0x1e) {
                 flash = 0x1e;
