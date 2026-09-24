@@ -200,6 +200,8 @@ matching-flat; report that honestly rather than call it a score improvement.
 
 The next caller composition restores shared action-phase helpers in
 `Gruntz/GruntActionInline.h` for FinishActiveAction and StepArrivalCommit.
+Commit `5dd7fe288` records the implementation; the four `grunt-two-callers-*`
+ledger rows identify only these fresh, tested adoptions, not whole-family closure.
 Real-TU controls move them from 57.1871/66.9022 to 69.6296/83.0360, respectively,
 without altering the complete ZTools array implementation. The controlled
 [phase composition](patterns/animation-name-accessors-restore-template-call-cuts.md#complete-action-phases-after-the-sourced-array-api)
