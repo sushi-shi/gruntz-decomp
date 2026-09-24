@@ -16,6 +16,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPuddle.h>
@@ -65,9 +66,9 @@ i32 CGrunt::StepSmartChaserBehavior() {
                 i32 pb;
                 PRIO(pb, cand->m_entranceReason);
                 if (pa <= pb) {
-                    i32 dx = (cand->m_object->m_screenX >> TILE_SHIFT_PX) - cx;
-                    i32 dy = (cand->m_object->m_screenY >> TILE_SHIFT_PX) - cy;
-                    i32 d = dx * dx + dy * dy;
+                    i32 dx = cand->GetScreenTileX() - cx;
+                    i32 dy = cand->GetScreenTileY() - cy;
+                    i32 d = SquaredDistance(dx, dy);
                     if (d < bestDist) {
                         best = cand;
                         bestDist = d;
