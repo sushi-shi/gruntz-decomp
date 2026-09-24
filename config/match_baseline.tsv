@@ -4528,7 +4528,7 @@ worldsoundset	?Stop@CWorldSoundSet@@QAEXXZ	100.0000	100.0000	7	86e36bc184d3	0xbc
 worldsoundset	?Teardown@CWorldSoundSet@@QAEXXZ	100.0000	100.0000	2	c04f7b07080c	0xb660	100.0000	
 worldsoundset	?Update@CAmbientPosSound@@UAEXHHH@Z	100.0000	100.0000	9	4c4d67b5258c	0xc5b0	100.0000	
 worldsoundset	?Update@CAmbientSound@@UAEXHHH@Z	100.0000	100.0000	5	0867794924ff	0xc090	100.0000	
-worldsoundset	?Update@CRandomAmbientSound@@UAEXHHH@Z	92.8188	92.8188	6	7e47eff5e528	0xcb30	95.0362	
+worldsoundset	?Update@CRandomAmbientSound@@UAEXHHH@Z	95.0362	95.0362	7	97acabe777d0	0xcb30	95.0362	
 wormhole	??0CGruntPuddle@@QAE@PAUCGameObject@@@Z	56.1653	56.1653	9	8d7c16b3c71c	0x40490	56.1653	
 wormhole	??0CTeleporter@@QAE@PAUCGameObject@@@Z	96.0291	96.0291	6	e487697c23e8	0x41020	96.0291	
 wormhole	??0CWormhole@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	10	d1a9abd14268	0x3fc70	100.0000	
