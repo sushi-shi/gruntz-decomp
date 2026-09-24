@@ -121,6 +121,20 @@ unchanged source and call set; reversing its operands or introducing a local
 does not restore its earlier compiler state. Its historical exact MAX remains
 the correct record of that source shape.
 
+`CMovingLogic::InitOwner` gives a counterexample to adding an aggregate merely
+because the component values are related. Its four min/max record reads have
+distinct local lifetimes and conditional stores into the typed vectors. A pair
+of `Coord` temporaries followed by `DoubleVector3::Init` preserves the values
+but changes the earlier inline helper's C1 state. Restoring the four scalar
+locals and stores leaves both affected `CGrunt`/`CProjectile` constructors at
+their current scores, yet raises `CGrunt::StepArrivalDrop` from 0% to 60.3640%
+and makes three other functions exact in the full VC5 build. A named macro
+wrapping the same statements was byte-flat in the three direct consumer TUs,
+so the simpler direct spelling is retained. The coordinate and vector APIs
+remain available. This is a TU-wide optimizer-state effect: inspect the full
+owner family after changing an inline header even when the intended caller is
+flat.
+
 `LoadChipMachineConfig` has two independent edge-offset reads. The second key is
 `"(FallingItemSpeed"`, including its opening parenthesis. Computing one offset and
 applying it to the whole rectangle changes both the key and read count.
