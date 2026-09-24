@@ -90,6 +90,25 @@ correct or fully modeled. Preserve old tests and reasoning, but record a fresh
 disposition with evidence for each candidate; do not reject a composed source
 layer merely because an isolated earlier trial lowered a score.
 
+The first fresh source review has identified concrete execution targets, not
+completed those four broad value/initialization reviews:
+
+- Complete Bute vector/range API: `bute-vector-range-reference-api`,
+  `nolf-bute-private-getters`, `nolf-bute-boundary-revisions`.
+- Vector initialization sites: `reassess-vector-activate-sites`,
+  `reassess-vector-bound-pairs`.
+- Complete constructor/operator/copy compositions: `sdk-vector-constructors`,
+  `sdk-vector-spotlight-minus`, `sdk-vector-spotlight-plus-equals`,
+  `sdk-vector-assignment`, `reassess-older-vector-copy`,
+  `reassess-older-vector-byvalue`.
+- Rectangle construction and consumers: `sdk-ltrect-constructors`,
+  `reassess-rectangle-query-cell`, `stdlith-morect-grid-setup`.
+
+The wave-16 entity rows separately retain scoped no-evidence findings and
+deferred vector/rectangle APIs. The earlier rejection rows retain their actual
+tests with reopening qualifications. No fresh compiler trial is claimed by this
+source-only review; the pending families still require complete use-site tests.
+
 ## Coverage and remaining work
 
 The search combined header inline/function-like-macro/template/in-class-method
