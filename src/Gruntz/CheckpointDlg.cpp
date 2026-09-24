@@ -20,17 +20,6 @@ RVA_DYNINIT(0x000239a0, 0x1f, s_freeList)
 template<> DATA(0x0022b640)
 CPtrList CPtrListPool<CGruntzMultiCommand>::s_freeList(0xa);
 
-DATA(0x001e94b8)
-const AFX_MSGMAP CCheckpointDlg::s_messageMap = {
-    &CDialog::messageMap,
-    &CCheckpointDlg::s_messageEntries[0],
-};
-
-DATA(0x001e94c0)
-const AFX_MSGMAP_ENTRY CCheckpointDlg::s_messageEntries[] = {
-    ON_BN_CLICKED(0x53a, CCheckpointDlg::OnToggleCheckpointPrompts){0, 0, 0, 0, AfxSig_end, 0},
-};
-
 RVA(0x000234a0, 0x1e)
 CCheckpointDlg::CCheckpointDlg(CWnd* pParent) : CDialog(0xcd, pParent) {}
 
@@ -47,9 +36,10 @@ void CCheckpointDlg::DoDataExchange(CDataExchange* pDX) {
 }
 
 RVA(0x00023570, 0x6)
-const AFX_MSGMAP* CCheckpointDlg::GetMessageMap() const {
-    return &s_messageMap;
-}
+DATA_MESSAGE_MAP(0x001e94b8, 0x001e94c0)
+BEGIN_MESSAGE_MAP(CCheckpointDlg, CDialog)
+    ON_BN_CLICKED(0x53a, CCheckpointDlg::OnToggleCheckpointPrompts)
+END_MESSAGE_MAP()
 
 RVA(0x00023590, 0x31)
 void CCheckpointDlg::OnToggleCheckpointPrompts() {

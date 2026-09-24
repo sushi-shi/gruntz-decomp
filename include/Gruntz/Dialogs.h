@@ -67,7 +67,6 @@ class CBattlezDlg : public CDialog {
 public:
     CBattlezDlg(class CGruntzMgr* gameManager, CWnd* pParent);
 
-    virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE;
     virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE;
     virtual i32 OnInitDialog() OVERRIDE;
     virtual void OnOK() OVERRIDE;
@@ -123,8 +122,6 @@ public:
 
     i32 UnusedMsgHandler();
 
-    void OnOkCommand();
-
     void OnPlayerNameChange0();
     void OnPlayerNameChange1();
     void OnPlayerNameChange2();
@@ -137,59 +134,49 @@ public:
     void OnPlayerNameKillFocus2();
     void OnPlayerNameKillFocus3();
 
-    long OnPaint();
+    void OnPaint();
 
-protected:
-    static const AFX_MSGMAP s_messageMap;
-
-private:
-    static const AFX_MSGMAP_ENTRY s_messageEntries[];
+    MFC_MESSAGE_MAP_CLASS(CBattlezDlg)
+    DECLARE_MESSAGE_MAP()
 };
 
 class CBattlezDlgCustom : public CDialog {
 public:
     CBattlezDlgCustom(CWnd* pParent);
 
-    static const AFX_MSGMAP s_messageMap;
-    virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE;
     virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE;
 
     void PickIfSelected();
 
     CString m_customName;
 
-protected:
-private:
-    static const AFX_MSGMAP_ENTRY s_messageEntries[];
+    DECLARE_MESSAGE_MAP()
 };
 
 class CBattlezDlgColors : public CDialog {
 public:
     CBattlezDlgColors(class CGruntzMgr* gameManager, i32 slotIndex, i32 networked, CWnd* pParent);
 
-    static const AFX_MSGMAP s_messageMap;
-    static const AFX_MSGMAP_ENTRY s_messageEntries[];
-
-    virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE;
     virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE;
 
     void OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis);
     void OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis);
 
+    void OnOkCommand();
+
     class CGruntzMgr* m_gameManager;
     i32 m_slotIndex;
     ColorTint m_pickedColor;
     i32 m_networked;
+
+    MFC_MESSAGE_MAP_CLASS(CBattlezDlgColors)
+    DECLARE_MESSAGE_MAP()
 };
 
 class CMultiStartDlg : public CDialog {
 public:
     CMultiStartDlg(class CGruntzMgr* gameManager, CWnd* pParent);
 
-    static const AFX_MSGMAP s_messageMap;
-    static const AFX_MSGMAP_ENTRY s_messageEntries[];
-
-    virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE;
     virtual i32 DestroyWindow() OVERRIDE;
     virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE;
     virtual i32 OnInitDialog() OVERRIDE;
@@ -275,21 +262,20 @@ public:
     CustomMapSelection m_customMapSelection;
     CString m_worldName;
     CStringList m_reserved74;
+
+    MFC_MESSAGE_MAP_CLASS(CMultiStartDlg)
+    DECLARE_MESSAGE_MAP()
 };
 
 class CCheckpointDlg : public CDialog {
 public:
     CCheckpointDlg(CWnd* pParent);
 
-    virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE;
     virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE;
 
     void OnToggleCheckpointPrompts();
 
-    static const AFX_MSGMAP s_messageMap;
-
-private:
-    static const AFX_MSGMAP_ENTRY s_messageEntries[];
+    DECLARE_MESSAGE_MAP()
 };
 
 class CMultiHelpDlg : public CDialog {
@@ -298,12 +284,7 @@ public:
 
     virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE;
 
-protected:
-    static const AFX_MSGMAP s_messageMap;
-    virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE;
-
-private:
-    static const AFX_MSGMAP_ENTRY s_messageEntries[];
+    DECLARE_MESSAGE_MAP()
 };
 
 extern CString g_defaultPlayerNames[4];

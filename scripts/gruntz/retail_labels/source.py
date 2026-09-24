@@ -12,6 +12,10 @@ Per TU (ported from the old labels pipeline, mechanisms unchanged):
                    text-scanned (comments blanked) and bound to the AST
                    VarDecl BELOW it; the exact extent and the declaration's
                    linkage come from pylibclang.
+  DATA_MESSAGE_MAP(map, entries)
+                   annotates BEGIN_MESSAGE_MAP's GetMessageMap definition.
+                   Its class scope selects the SDK's two actual VarDecls;
+                   names, storage and extents still come from clang.
   RVA_COMPGEN      verbatim regex - the name is given, no join, no IR.
   RVA_DYNINIT      the `$E` owner pins - regex; the pin's owner stands in for
                    the volatile ordinal.
@@ -66,8 +70,10 @@ BASE_OBJS = BUILD / "objdiff/base"
 
 # Presence test ONLY (never extraction): a TU with no rva.h macro at all is a
 # vendored TU whose claims are the functions_zlib/data_zlib tables - skip it.
-LABELED_TU_RE = re.compile(r"\b(?:RVA|DATA|RVA_COMPGEN|RVA_DYNINIT|DATA_COMPGEN)\s*\(")
+LABELED_TU_RE = re.compile(r"\b(?:RVA|DATA|RVA_COMPGEN|RVA_DYNINIT|DATA_COMPGEN|DATA_MESSAGE_MAP)\s*\(")
 DATA_MACRO_RE = re.compile(r"\bDATA\s*\(\s*(0x[0-9a-fA-F]+)\s*\)")
+DATA_MESSAGE_MAP_RE = re.compile(
+    r"\bDATA_MESSAGE_MAP\s*\(\s*(0x[0-9a-fA-F]+)\s*,\s*(0x[0-9a-fA-F]+)\s*\)")
 RVA_COMPGEN_RE = re.compile(
     r"\bRVA_COMPGEN\s*\(\s*(0x[0-9a-fA-F]+)\s*,\s*(0x[0-9a-fA-F]+|\d+)\s*,"
     r"\s*([^\s,)]+)\s*\)")
@@ -76,6 +82,8 @@ RVA_DYNINIT_RE = re.compile(
     r"\s*([A-Za-z_][A-Za-z0-9_:<>]*)\s*\)")
 ANN_RVA_RE = re.compile(r"^rva:(0x[0-9a-fA-F]+)(?:\s+size:(0x[0-9a-fA-F]+|\d+))?$")
 ANN_DATA_RE = re.compile(r"^data:(0x[0-9a-fA-F]+)$")
+ANN_MESSAGE_MAP_RE = re.compile(
+    r"^mfc-map:(0x[0-9a-fA-F]+) entries:(0x[0-9a-fA-F]+)$")
 
 DATA_COMPGEN_RE = re.compile(r"\bDATA_COMPGEN\s*\(")
 COMPGEN_ADDR_RE = re.compile(r"0x[0-9a-fA-F]{8}$")
@@ -136,6 +144,19 @@ def ir_linkage(ir: str) -> dict[str, bool]:
             for m in _IR_LINKAGE_RE.finditer(ir)}
 
 
+def ir_annotations(ir: str):
+    """Yield (IR reference, symbol, already decorated, annotation) with the IR's direct join."""
+    strings = {m.group(1): _unescape_ir_cstr(m.group(2))
+               for m in _STR_DEF_RE.finditer(ir)}
+    for line in ir.splitlines():
+        if "@llvm.global.annotations" not in line:
+            continue
+        for sym_ref, str_ref in _ANN_TUPLE_RE.findall(line):
+            if str_ref in strings:
+                name, decorated = _ir_symbol_name(sym_ref)
+                yield sym_ref, name, decorated, strings[str_ref]
+
+
 def ir_claims(ir: str) -> tuple[list[tuple[int, str, int | None]],
                                 list[tuple[int, str]]]:
     """(func, data) claims from @llvm.global.annotations, each name already in
@@ -145,33 +166,67 @@ def ir_claims(ir: str) -> tuple[list[tuple[int, str, int | None]],
     name. `data:` tuples cover every annotated DEFINITION; only extern-only
     declarations and constant-folded statics drop from IR and need the AST
     fallback."""
-    strings = {m.group(1): _unescape_ir_cstr(m.group(2))
-               for m in _STR_DEF_RE.finditer(ir)}
     linkage = ir_linkage(ir)
     funcs, datas = [], []
-    for line in ir.splitlines():
-        if "@llvm.global.annotations" not in line:
+    for sym_ref, name, decorated, ann in ir_annotations(ir):
+        m = ANN_RVA_RE.match(ann)
+        if m:
+            size = None
+            if m.group(2):
+                v = m.group(2)
+                size = int(v, 16) if v.lower().startswith("0x") else int(v)
+            funcs.append((int(m.group(1), 16),
+                          msvc_names.func(name, decorated=decorated), size))
             continue
-        for sym_ref, str_ref in _ANN_TUPLE_RE.findall(line):
-            ann = strings.get(str_ref)
-            if ann is None:
-                continue
-            name, decorated = _ir_symbol_name(sym_ref)
-            m = ANN_RVA_RE.match(ann)
-            if m:
-                size = None
-                if m.group(2):
-                    v = m.group(2)
-                    size = int(v, 16) if v.lower().startswith("0x") else int(v)
-                funcs.append((int(m.group(1), 16),
-                              msvc_names.func(name, decorated=decorated), size))
-                continue
-            m = ANN_DATA_RE.match(ann)
-            if m:
-                datas.append((int(m.group(1), 16),
-                              msvc_names.data(name, decorated=decorated,
-                                              internal=linkage.get(sym_ref, False))))
+        m = ANN_DATA_RE.match(ann)
+        if m:
+            datas.append((int(m.group(1), 16),
+                          msvc_names.data(name, decorated=decorated,
+                                          internal=linkage.get(sym_ref, False))))
     return funcs, datas
+
+
+def message_map_claims(ir: str, facts: dict) -> tuple[list[tuple], list[str]]:
+    """Bind the two SDK-generated definitions, never invent mangled names.
+
+    The annotation belongs to the generated getter, so another map or an
+    intervening header inline cannot steal its data RVAs. Only static MFC's
+    actual map and entry-array types are admitted; an absent/ambiguous member
+    is fatal rather than a partial map claim.
+    """
+    out, problems = [], []
+    for _ref, getter, _decorated, ann in ir_annotations(ir):
+        pin = ANN_MESSAGE_MAP_RE.fullmatch(ann)
+        if not pin:
+            continue
+        owner = re.fullmatch(r"\?GetMessageMap@(.+?)@@[EMU]BEPBUAFX_MSGMAP@@XZ", getter)
+        if owner is None:
+            problems.append(f"DATA_MESSAGE_MAP annotates {getter}, not an MFC GetMessageMap")
+            continue
+        scope = re.escape(owner[1])
+        expected = (
+            (int(pin[1], 16), rf"\?messageMap@{scope}@@[012]UAFX_MSGMAP@@B", 8),
+            (int(pin[2], 16), rf"\?_messageEntries@{scope}@@[012]QBUAFX_MSGMAP_ENTRY@@B", None),
+        )
+        pair = []
+        for rva, pattern, size in expected:
+            candidates = [(name, fact) for name, fact in facts.items()
+                          if re.fullmatch(pattern, name)]
+            if len(candidates) != 1:
+                problems.append(f"DATA_MESSAGE_MAP {getter}: expected one defined member "
+                                f"matching {pattern}, found {len(candidates)}")
+                continue
+            name, fact = candidates[0]
+            valid_size = (fact["size"] == size if size is not None
+                          else fact["size"] >= 24 and fact["size"] % 24 == 0)
+            if not fact.get("defined") or fact["internal"] or not valid_size:
+                problems.append(f"DATA_MESSAGE_MAP {getter}: invalid definition/extent for {name}")
+                continue
+            pair.append((rva, fact["size"], msvc_names.data(
+                name, decorated=True, internal=False)))
+        if len(pair) == 2:
+            out.extend(pair)
+    return out, problems
 
 
 def blank_comments(text: str) -> str:
@@ -488,7 +543,7 @@ def extract_unit(unit: str, source: str, compdb: dict) -> tuple[list[list[str]],
     # declarations IR drops - an extern-only one, or a constant-folded static.
     # pylibclang gives every extent and, for that fallback, the linkage the
     # spelling depends on.
-    if DATA_MACRO_RE.search(blanked) or ir_datas:
+    if DATA_MACRO_RE.search(blanked) or DATA_MESSAGE_MAP_RE.search(blanked) or ir_datas:
         facts = clang.var_facts(str(src_path), cl_flags)
         if facts is None:
             problems.append(f"{unit}: pylibclang could not lay this TU out - "
@@ -496,6 +551,13 @@ def extract_unit(unit: str, source: str, compdb: dict) -> tuple[list[list[str]],
             facts = {}
         sizes = {msvc_names.data(name, decorated=True, internal=f["internal"]):
                  f["size"] for name, f in facts.items()}
+
+        map_claims, map_problems = message_map_claims(ir, facts)
+        problems.extend(f"{unit}: {p}" for p in map_problems)
+        if len(map_claims) != 2 * len(DATA_MESSAGE_MAP_RE.findall(blanked)):
+            problems.append(f"{unit}: DATA_MESSAGE_MAP did not bind both SDK data definitions")
+        for rva, size, name in map_claims:
+            emit(rva, size, name, "data", "src")
 
         covered = set()
         for rva, name in ir_datas:
@@ -556,6 +618,11 @@ def sweep_sites() -> dict[str, dict[int, str]]:
                 out.setdefault(m.group(1), {}).setdefault(
                     int(m.group(2), 16), []).append(
                     f"{path.relative_to(REPO)}:{lineno}")
+            for m in DATA_MESSAGE_MAP_RE.finditer(text):
+                lineno = text.count("\n", 0, m.start()) + 1
+                for addr in m.groups():
+                    out.setdefault("DATA_MESSAGE_MAP", {}).setdefault(
+                        int(addr, 16), []).append(f"{path.relative_to(REPO)}:{lineno}")
     return out
 
 
@@ -574,6 +641,7 @@ def check_completeness() -> list[str]:
     checks = [("RVA", "src", "func"), ("RVA_COMPGEN", "src_compgen", "func"),
               ("RVA_DYNINIT", "src_dyninit", "func"), ("DATA", "src", "data"),
               ("DATA_COMPGEN", "src_data_compgen", "data")]
+    checks.append(("DATA_MESSAGE_MAP", "src", "data"))
     for macro, channel, kind in checks:
         for rva, wheres in sorted(sites.get(macro, {}).items()):
             if macro == "DATA" and all(".h:" in w for w in wheres):

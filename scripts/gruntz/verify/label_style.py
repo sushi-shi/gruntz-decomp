@@ -33,6 +33,7 @@ VOLATILE_COMPGEN_RE = re.compile(r"\bRVA_COMPGEN\([^)]*,\s*_?\$E[0-9]+\s*\)")
 CANON = {
     "RVA": rf"RVA\({ADDR}, {HEXN}\)",
     "DATA": rf"DATA\({ADDR}\)",
+    "DATA_MESSAGE_MAP": rf"DATA_MESSAGE_MAP\({ADDR}, {ADDR}\)",
     "RVA_COMPGEN": rf"RVA_COMPGEN\({ADDR}, {HEXN}, {MANGLED}\)",
     # the owner charset mirrors the LIVE extraction regex (retail_labels.source
     # RVA_DYNINIT_RE): template-id owners (CActRegPool<CGrunt>::s_table) are
@@ -43,7 +44,7 @@ CANON = {
 }
 CANON_RE = {k: re.compile(v) for k, v in CANON.items()}
 WRAPPABLE = {"RVA", "DATA"}   # StatementMacros clang-format arg-wraps past 100
-FIND_RE = re.compile(r"\b(RVA_COMPGEN|RVA_DYNINIT|DATA_COMPGEN|RVA|DATA)\s*\(")
+FIND_RE = re.compile(r"\b(RVA_COMPGEN|RVA_DYNINIT|DATA_COMPGEN|DATA_MESSAGE_MAP|RVA|DATA)\s*\(")
 COMMENT_ROW_RE = re.compile(r"@(?:rva|data)-symbol:\s*\S+\s+0x[0-9a-fA-F]+")
 ALLOWED_MARKERS = {"stub", "early-stop", "identity-TODO", "confidence",
                    "source", "interleaver", "dead-code"}

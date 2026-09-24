@@ -520,10 +520,10 @@ battlezdlgcolors	??0CBattlezDlgCustom@@QAE@PAVCWnd@@@Z	100.0000	100.0000	1	8a572
 battlezdlgcolors	??_GCBattlezDlgColors@@UAEPAXI@Z	100.0000	100.0000	1	cpp:a33260ab9b76	0x17980	100.0000	
 battlezdlgcolors	??_GCBattlezDlgCustom@@UAEPAXI@Z	100.0000	100.0000	1	cpp:a33260ab9b76	0x180b0	100.0000	
 battlezdlgcolors	?DoDataExchange@CBattlezDlgColors@@UAEXPAVCDataExchange@@@Z	100.0000	100.0000	7	0db66c82cae1	0x179b0	100.0000	
-battlezdlgcolors	?GetMessageMap@CBattlezDlgColors@@UBEPBUAFX_MSGMAP@@XZ	100.0000	100.0000	2	7dc27455768e	0x17ac0	100.0000	
+battlezdlgcolors	?GetMessageMap@CBattlezDlgColors@@MBEPBUAFX_MSGMAP@@XZ	100.0000	100.0000	3	ce7afa1277a3	0x17ac0	100.0000	
 battlezdlgcolors	?OnDrawItem@CBattlezDlgColors@@QAEXHPAUtagDRAWITEMSTRUCT@@@Z	100.0000	100.0000	3	b026af56d578	0x17b10	100.0000	
 battlezdlgcolors	?OnMeasureItem@CBattlezDlgColors@@QAEXHPAUtagMEASUREITEMSTRUCT@@@Z	100.0000	100.0000	1	da9c57ff6ba2	0x17ae0	100.0000	
-battlezdlgcolors	?OnOkCommand@CBattlezDlg@@QAEXXZ	100.0000	100.0000	2	e73da1f69b76	0x17d40	100.0000	
+battlezdlgcolors	?OnOkCommand@CBattlezDlgColors@@QAEXXZ	100.0000	100.0000	3	aa646e1e3a95	0x17d40	100.0000	
 battlezmapconfig	??0CBattlezMapConfig@@QAE@XZ	93.3108	93.3108	2	d89805ac8990	0x24dc0	93.3108	
 battlezmapconfig	??1CBattlezMapConfig@@QAE@XZ	100.0000	100.0000	1	fb1156cf80c5	0x24f80	100.0000	
 battlezmapconfig	?AcceptAlways@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	100.0000	100.0000	1	a19768c02ed6	0x2c080	100.0000	
@@ -775,7 +775,7 @@ checkpointdlg	??0CCheckpointDlg@@QAE@PAVCWnd@@@Z	100.0000	100.0000	1	410f9276b58
 checkpointdlg	??1CCheckpointDlg@@UAE@XZ	100.0000	100.0000	1	cpp:249003fe119e	0x23500	100.0000	
 checkpointdlg	??_GCCheckpointDlg@@UAEPAXI@Z	100.0000	100.0000	1	cpp:249003fe119e	0x234d0	100.0000	
 checkpointdlg	?DoDataExchange@CCheckpointDlg@@UAEXPAVCDataExchange@@@Z	100.0000	100.0000	3	d7ba5d820659	0x23520	100.0000	
-checkpointdlg	?GetMessageMap@CCheckpointDlg@@UBEPBUAFX_MSGMAP@@XZ	100.0000	100.0000	2	c761a756052e	0x23570	100.0000	
+checkpointdlg	?GetMessageMap@CCheckpointDlg@@MBEPBUAFX_MSGMAP@@XZ	100.0000	100.0000	3	097f05bc9ca5	0x23570	100.0000	
 checkpointdlg	?OnToggleCheckpointPrompts@CCheckpointDlg@@QAEXXZ	100.0000	100.0000	6	fe5ca7a584f0	0x23590	100.0000	
 cimage	$anon_data_cf50ae9c4a9e49df02fc2ae2da337ac76b0f2cd30e4aa866a189f4ffd43bc32d_0	100.0000	100.0000	1	cpp:9c430ea5f670		100.0000	
 cimage	$anon_data_f8efa41188c799faca11abf8507cd484d04b4f96638a3009a41c039e5e794ba6_0	100.0000	100.0000	1	cpp:9c430ea5f670		100.0000	
@@ -843,7 +843,7 @@ cursorsnapsprite	?SerializeDispatch@CCursorSnapSprite@@UAEHPAVCFileMemBase@@W4Se
 customleveldlg	$anon_data_1a620ebe81bb069a13ed6d47be513d777635f8811a386bd4fbb925d3d82eb5b8_0	100.0000	100.0000	1	cpp:27283211aa28		100.0000	
 customleveldlg	??1CWaitCursorScope@@QAE@XZ	100.0000	100.0000	1	cpp:d25d271def18	0x18430	100.0000	
 customleveldlg	?DoDataExchange@CBattlezDlgCustom@@UAEXPAVCDataExchange@@@Z	100.0000	100.0000	5	8408827ad6fd	0x180e0	100.0000	
-customleveldlg	?GetMessageMap@CBattlezDlgCustom@@UBEPBUAFX_MSGMAP@@XZ	100.0000	100.0000	2	94e7c6103903	0x183d0	100.0000	
+customleveldlg	?GetMessageMap@CBattlezDlgCustom@@MBEPBUAFX_MSGMAP@@XZ	100.0000	100.0000	3	8b40a46944ec	0x183d0	100.0000	
 customleveldlg	?PickIfSelected@CBattlezDlgCustom@@QAEXXZ	100.0000	100.0000	4	da71231fe079	0x183f0	100.0000	
 customworlddialog	?BuildCustomWwdPath@@YA?AVCString@@V1@@Z	100.0000	100.0000	1	fec5c196466c	0x3b940	100.0000	
 customworlddialog	?CustomWorldDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	10	8cbc373ab957	0x3ae60	100.0000	
@@ -1295,7 +1295,7 @@ dialogs	?Dump@CObject@@UBEXAAVCDumpContext@@@Z	100.0000	100.0000	1	cpp:7bf06e010
 dialogs	?EndModalState@CWnd@@UAEXXZ	100.0000	100.0000	1	cpp:7bf06e010bf3	0x14c40	100.0000	
 dialogs	?GetMaxGruntzControl@CBattlezDlg@@QAEPAVCWnd@@H@Z	100.0000	100.0000	3	8a7633041fda	0x15bc0	100.0000	
 dialogs	?GetMaxGruntzSelection@CBattlezDlg@@QAEHH@Z	100.0000	100.0000	3	57865cf86652	0x15d30	100.0000	
-dialogs	?GetMessageMap@CBattlezDlg@@UBEPBUAFX_MSGMAP@@XZ	100.0000	100.0000	2	2f6f01d3e7fb	0x15aa0	100.0000	
+dialogs	?GetMessageMap@CBattlezDlg@@MBEPBUAFX_MSGMAP@@XZ	100.0000	100.0000	3	f57802e3a162	0x15aa0	100.0000	
 dialogs	?GetPlayerColorControl@CBattlezDlg@@QAEPAVCWnd@@H@Z	100.0000	100.0000	3	ab8926e42062	0x15c40	100.0000	
 dialogs	?GetPlayerNameControl@CBattlezDlg@@QAEPAVCWnd@@H@Z	100.0000	100.0000	3	fdc54d3d00b8	0x15b40	100.0000	
 dialogs	?GetPlayerTypeControl@CBattlezDlg@@QAEPAVCWnd@@H@Z	100.0000	100.0000	3	0de56e710005	0x15ac0	100.0000	
@@ -1309,7 +1309,7 @@ dialogs	?OnMaxGruntzSelection2@CBattlezDlg@@QAEHXZ	100.0000	100.0000	4	9bb4d4ccb
 dialogs	?OnMaxGruntzSelection3@CBattlezDlg@@QAEHXZ	100.0000	100.0000	4	1dfa11db6d8a	0x17620	100.0000	
 dialogs	?OnMeasureItem@CBattlezDlg@@QAEXHPAUtagMEASUREITEMSTRUCT@@@Z	100.0000	100.0000	1	b21f0f4203a3	0x16570	100.0000	
 dialogs	?OnOK@CBattlezDlg@@UAEXXZ	100.0000	100.0000	1	c81fd7abc780	0x174a0	100.0000	
-dialogs	?OnPaint@CBattlezDlg@@QAEJXZ	100.0000	100.0000	1	bc9d1928594f	0x14b10	100.0000	
+dialogs	?OnPaint@CBattlezDlg@@QAEXXZ	100.0000	100.0000	2	10a7c4bd9e00	0x14b10	100.0000	
 dialogs	?OnPlayerColor0@CBattlezDlg@@QAEXXZ	100.0000	100.0000	4	e37b813bcb0e	0x16cd0	100.0000	
 dialogs	?OnPlayerColor1@CBattlezDlg@@QAEXXZ	100.0000	100.0000	4	466984147b60	0x16dc0	100.0000	
 dialogs	?OnPlayerColor2@CBattlezDlg@@QAEXXZ	100.0000	100.0000	4	ef6cc1b9ff77	0x16e90	100.0000	
@@ -3155,7 +3155,7 @@ multihelpdlg	??0CMultiHelpDlg@@QAE@PAVCWnd@@@Z	100.0000	100.0000	1	0563c1c8aa56	
 multihelpdlg	??1CMultiHelpDlg@@UAE@XZ	100.0000	100.0000	1	cpp:1efa94aa90cb	0xbebc0	100.0000	
 multihelpdlg	??_GCMultiHelpDlg@@UAEPAXI@Z	100.0000	100.0000	1	cpp:1efa94aa90cb	0xbeb90	100.0000	
 multihelpdlg	?DoDataExchange@CMultiHelpDlg@@UAEXPAVCDataExchange@@@Z	100.0000	100.0000	1	5acd501384d4	0xbebe0	100.0000	
-multihelpdlg	?GetMessageMap@CMultiHelpDlg@@MBEPBUAFX_MSGMAP@@XZ	100.0000	100.0000	2	397441a17143	0xbec00	100.0000	
+multihelpdlg	?GetMessageMap@CMultiHelpDlg@@MBEPBUAFX_MSGMAP@@XZ	100.0000	100.0000	3	533dea31efe2	0xbec00	100.0000	
 multistartdlg	??0CMultiStartDlg@@QAE@PAVCGruntzMgr@@PAVCWnd@@@Z	100.0000	100.0000	3	d07816181818	0xc1750	100.0000	
 multistartdlg	??1CKeyedList@@QAE@XZ	100.0000	100.0000	1	7b927a0d8463	0xc5280	100.0000	
 multistartdlg	??_GCMultiStartDlg@@UAEPAXI@Z	100.0000	100.0000	1	cpp:e06363042fb8	0xc1810	100.0000	
@@ -3174,7 +3174,7 @@ multistartdlg	?GetCommandDelay@CMulti@@QAEHXZ	100.0000	100.0000	1	8069b8908e2d	0
 multistartdlg	?GetLocalPlayerSlotIndex@CMultiStartDlg@@QAEHXZ	100.0000	100.0000	4	68ba77546900	0xc4b30	100.0000	
 multistartdlg	?GetMaxGruntzControl@CMultiStartDlg@@QAEPAVCWnd@@H@Z	100.0000	100.0000	3	dda4d8164b78	0xc27c0	100.0000	
 multistartdlg	?GetMaxGruntzSelection@CMultiStartDlg@@QAEHH@Z	100.0000	100.0000	3	0a406da5597b	0xc2940	100.0000	
-multistartdlg	?GetMessageMap@CMultiStartDlg@@UBEPBUAFX_MSGMAP@@XZ	100.0000	100.0000	2	f881a2e272b8	0xc2620	100.0000	
+multistartdlg	?GetMessageMap@CMultiStartDlg@@MBEPBUAFX_MSGMAP@@XZ	100.0000	100.0000	3	2a0fce259262	0xc2620	100.0000	
 multistartdlg	?GetPlayerColorControl@CMultiStartDlg@@QAEPAVCWnd@@H@Z	100.0000	100.0000	3	9f1012bdce44	0xc2840	100.0000	
 multistartdlg	?GetPlayerNameControl@CMultiStartDlg@@QAEPAVCWnd@@H@Z	100.0000	100.0000	3	5fc5a71e87a0	0xc2740	100.0000	
 multistartdlg	?GetPlayerTypeControl@CMultiStartDlg@@QAEPAVCWnd@@H@Z	100.0000	100.0000	3	967a0fe8a2c0	0xc2640	100.0000	
