@@ -28,6 +28,27 @@ byte-flat. Small changes to macro grouping and earlier declarations can still
 perturb C1 state; see
 [macro-origin-can-perturb-later-c1-state.md](macro-origin-can-perturb-later-c1-state.md).
 
+The shared `Coord::Clamp` boundary has a second, larger control. Retail and the
+earlier source use component `if`/`else if` clamps in level-tile lookups, while a
+`Coord` temporary followed by `Clamp` adds nested `Min`/`Max` candidates. Keeping
+the `Coord` API and expanding `CLAMP_PIXEL_TO_PLANE` or `CLAMP_TILE_TO_PLANE` at
+the lookup sites gave these real-TU results:
+
+| Caller | `Coord::Clamp` | Component macro |
+| --- | ---: | ---: |
+| `CPlay::ValidateLevelTiles` | 77.4235% | 89.7939% |
+| `CTileTriggerLogic::Tick` | 76.5396% | 90.4371% |
+| `CMapMgr::ComputeCellFlags` | 87.5152% | 97.6586% |
+| `CPlay::ScanBuildTiles` | 86.201% | 97.930% |
+| `CTileTriggerContainer::DeserializeLogic` | 83.5079% | 91.0582% |
+| `CTriggerMgr::LoadTileArrivalFx` | 76.8545% | 78.2998% |
+
+The first five recover their earlier caller score or most of its gap; the last
+remains dominated by independent sound-call and branch differences. Compiling
+all affected TUs also left their other scored functions unchanged. The macro
+restores scalar input mutation before coordinate construction, which changes
+the inliner candidate set and local census without removing the typed helper.
+
 ## Distinguish three different failures
 
 1. **A nested call no longer expands.** Classify with `walls diagnose` and inspect

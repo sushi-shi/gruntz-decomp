@@ -3,6 +3,7 @@
 #include <Mfc.h>
 
 #include <Gruntz/Brickz.h>
+#include <Gruntz/CoordClampMacros.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/Grunt.h>
@@ -24,14 +25,10 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 tileId) {
     BrickzCell* cell = &m_rows[y][x];
     CGameLevel* level = m_attrMgr->m_level;
 
-    Coord position(x, y);
-    Coord clamped = position;
-    clamped.Clamp(
-        Coord(0, 0),
-        Coord(level->m_mainPlane->m_tileGridSize.cx - 1, level->m_mainPlane->m_tileGridSize.cy - 1)
-    );
-    i32 id = level->m_mainPlane
-                 ->m_tileHandles[level->m_mainPlane->m_tileRowOffsets[clamped.m_y] + clamped.m_x];
+    i32 cx = x;
+    i32 cy = y;
+    CLAMP_TILE_TO_PLANE(cx, cy, level->m_mainPlane);
+    i32 id = level->m_mainPlane->m_tileHandles[level->m_mainPlane->m_tileRowOffsets[cy] + cx];
     TileCollisionKind typeCode;
     if (id == UNINIT_FILL || id == -1) {
         typeCode = TILEKIND_PASSABLE;

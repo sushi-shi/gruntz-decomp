@@ -5643,13 +5643,7 @@ i32 CPlay::ScanBuildTiles() {
         } else if (dispatch == DispatchCoveredPowerupLogic) {
             CGameLevel* ds = m_world->m_level;
             Coord position = p->ScreenPos();
-            position.Clamp(
-                Coord(0, 0),
-                Coord(
-                    ds->m_mainPlane->m_planePixelSize.cx - 1,
-                    ds->m_mainPlane->m_planePixelSize.cy - 1
-                )
-            );
+            CLAMP_PIXEL_TO_PLANE(position.m_x, position.m_y, ds->m_mainPlane);
             CDDrawWorkerHost* g = ds->m_mainPlane;
             Coord shift = g->m_tileShift;
             Coord cellPosition(position.m_x >> shift.m_x, position.m_y >> shift.m_y);

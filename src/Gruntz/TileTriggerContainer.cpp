@@ -9,6 +9,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDSurface.h>
+#include <Gruntz/CoordClampMacros.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -903,15 +904,10 @@ void* CTileTriggerContainer::DeserializeLogic(
             obj->m_typeTag = id;
 
             CGameLevel* level = g_gameReg->m_world->m_level;
-            Coord tilePosition = obj->m_tile;
-            tilePosition.Clamp(
-                Coord(0, 0),
-                Coord(
-                    level->m_mainPlane->m_tileGridSize.cx - 1,
-                    level->m_mainPlane->m_tileGridSize.cy - 1
-                )
-            );
-            i32 cell = level->m_mainPlane->m_tileRowOffsets[tilePosition.m_y] + tilePosition.m_x;
+            i32 x = obj->m_tile.m_x;
+            i32 y = obj->m_tile.m_y;
+            CLAMP_TILE_TO_PLANE(x, y, level->m_mainPlane);
+            i32 cell = level->m_mainPlane->m_tileRowOffsets[y] + x;
             i32 tile = level->m_mainPlane->m_tileHandles[cell];
             TileCollisionKind tileKind;
             if (tile == UNINIT_FILL || tile == -1) {

@@ -8,6 +8,7 @@
 #include <DDrawMgr/LogicRecord.h>
 #include <Gruntz/BrickTileId.h>
 #include <Gruntz/Brickz.h>
+#include <Gruntz/CoordClampMacros.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -46,16 +47,12 @@ i32 CTriggerMgr::LoadTileArrivalFx(
     CPlay* state = static_cast<CPlay*>(g_gameReg->m_curState);
     CGameLevel* grid = m_world->m_level;
 
-    Coord tile(tileX, tileY);
-    Coord clamped = tile;
-    clamped.Clamp(
-        Coord(0, 0),
-        Coord(grid->m_mainPlane->m_tileGridSize.cx - 1, grid->m_mainPlane->m_tileGridSize.cy - 1)
-    );
+    i32 cx = tileX;
+    i32 cy = tileY;
+    CLAMP_TILE_TO_PLANE(cx, cy, grid->m_mainPlane);
 
     TileCollisionKind cellType;
-    i32 cell = grid->m_mainPlane
-                   ->m_tileHandles[grid->m_mainPlane->m_tileRowOffsets[clamped.m_y] + clamped.m_x];
+    i32 cell = grid->m_mainPlane->m_tileHandles[grid->m_mainPlane->m_tileRowOffsets[cy] + cx];
     if (cell == UNINIT_FILL || cell == -1) {
         cellType = TILEKIND_PASSABLE;
     } else {
@@ -65,6 +62,7 @@ i32 CTriggerMgr::LoadTileArrivalFx(
         cellType = tc->GetCollisionAt(0, 0);
     }
 
+    Coord tile(tileX, tileY);
     Coord pixel = tile;
     TileCenter(&pixel);
 
