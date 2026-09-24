@@ -121,3 +121,30 @@ conversion), `GetAmbientId` 0xda200 100.00 EXACT, `CSpotLight::Tick` 0xb1af0 78.
 advance-restoration half: `StepArrivalReroll` 0x63b60 63.98 -> 85.04, `PeekCycle` 0x984b0 69.74 ->
 88.18, `StartChipMachineCycle` 0x107d00 90.95 -> 96.27, `UpdateBootyWalkingGruntz` 0x1b690 90.03 ->
 95.25.
+
+## An exact guard does not prove the initializer's evaluation order
+
+The `LoadScrollSpeedOptions` conversion's unchanged 98.75 score did not prove
+its whole initializer correct. Retail calls `GetInt("Optionz", "MaxScrollSpeed")`
+before the matching `MinScrollSpeed` lookup, then subtracts the second result
+from the first. A single `GetInt(Max) - GetInt(Min)` expression lets VC5 call
+the minimum lookup first. The arithmetic agrees, but the ordered calls do not;
+the lookup also has error-reporting behavior.
+
+Keep the two real function-local statics and their compiler-generated guard.
+Give the range initializer a small `static inline` helper which first binds
+the maximum result to an `i32`, then returns that value minus the minimum
+lookup. In the real Play TU this reproduces the complete initializer, including
+`sub edi,eax` and the store from EDI. All 24 ordered references agree. The
+negative control keeps the helper but returns the unsequenced subtraction:
+it restores the wrong call order, proving that sequencing, not merely the
+helper declaration, is responsible.
+
+The corrected function is 725 bytes / 200 instructions, matching retail's
+16 calls, 31 branches and one return. One level-pointer load remains scheduled
+after rather than before the two FP multiplies. A plane reference, an explicit
+level-pointer local, moving the fraction initializer earlier, and a scalar
+speed-calculation helper are byte-flat. Removing the fraction temporary or
+splitting all arithmetic into compound assignments changes the FP instruction
+sequence away from retail. These controls do not close or bound the remaining
+scheduling question; do not restore fake guard globals to chase it.

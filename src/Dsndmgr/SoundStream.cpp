@@ -177,8 +177,7 @@ i32 SoundStream::InitializeDevice(HWND hwnd, i32 cooperativeLevel) {
 
 RVA(0x00137740, 0x3e)
 void SoundStream::ShutdownStreams() {
-    for (StreamVoice* voice = static_cast<StreamVoice*>(m_voices.GetFirst()); voice != NULL;
-         voice = static_cast<StreamVoice*>(m_voices.GetFirst())) {
+    for (StreamVoice* voice = m_voices.GetFirst(); voice != NULL; voice = m_voices.GetFirst()) {
         DestroyVoice(voice);
     }
     Shutdown();
@@ -301,7 +300,7 @@ SoundStream::PlayStream(CRezItm* source, i32 bufferBytes, i32 refillThresholdByt
 
 RVA(0x00137a80, 0x3d)
 void SoundStream::StopAllStreams() {
-    StreamVoice* node = static_cast<StreamVoice*>(m_voices.GetFirst());
+    StreamVoice* node = m_voices.GetFirst();
     while (node != NULL) {
         node->m_feeder.Pause();
         node = static_cast<StreamVoice*>(node->Next());
@@ -314,8 +313,7 @@ i32 SoundStream::TickStreams(i32 timestampMs) {
     if (timestampMs == -1) {
         timestampMs = static_cast<i32>(timeGetTime());
     }
-    CBaseListItem* head = m_voices.GetFirst();
-    StreamVoice* voice = static_cast<StreamVoice*>(head);
+    StreamVoice* voice = m_voices.GetFirst();
     while (voice) {
         StreamVoice* next = static_cast<StreamVoice*>(voice->Next());
         voice->m_feeder.Tick(timestampMs);

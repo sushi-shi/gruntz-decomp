@@ -4,13 +4,14 @@
 #include <rva.h>
 
 #include <Ints.h>
-#include <Lith/BaseList.h>
+#include <Lith/TypedList.h>
 #include <Wap32/Object.h>
 
 #include <stddef.h>
 
 class CWwdGrid;
-struct BucketHead;
+struct WwdRegion;
+typedef CLTList<WwdRegion> BucketHead;
 struct WwdGridNode;
 
 struct WwdRect {
@@ -77,8 +78,6 @@ struct WwdRegion : WwdGridNode {
 
 class CWwdGridIter : public CObject {
 public:
-    virtual ~CWwdGridIter() OVERRIDE;
-
     CWwdGridIter();
     WwdRegion* Start(CWwdGrid* grid, i32 remove);
     WwdRegion* Init(CWwdGrid* grid, WwdRect rect, i32 remove);
@@ -103,6 +102,5 @@ inline CWwdGridIter::CWwdGridIter() {
     m_grid = NULL;
     m_cur = NULL;
 }
-inline CWwdGridIter::~CWwdGridIter() {}
 
 #endif // GRUNTZ_WWDGRIDITER_H

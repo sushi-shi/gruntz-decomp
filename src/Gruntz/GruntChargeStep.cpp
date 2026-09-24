@@ -4,10 +4,11 @@
 #include <MfcWin.h>
 
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordNode.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/EnemyAiType.h>
-#include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
@@ -31,14 +32,13 @@
 #include <Gruntz/VoiceManager.h>
 #include <Ints.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/ZDArray.h>
 
 #include <limits.h>
 #include <new>
 #include <stdlib.h>
 #include <string.h>
 
-// @early-stop
 RVA(0x000ef6b0, 0x61d)
 i32 CGrunt::StepDumbChaserBehavior() {
     m_defenderPx = m_lastTilePx;
@@ -142,9 +142,7 @@ i32 CGrunt::StepDumbChaserBehavior() {
                     TileSwitch(baseX, baseY, 0, m_arrivalFlags, 1, 0);
                 }
                 if (m_coordList.GetCount() != 0) {
-                    if (spanX <= spanY) {
-                        spanX = spanY;
-                    }
+                    spanX = Max(spanX, spanY);
                     if (m_coordList.GetCount() > spanX) {
                         SetEntrancePos(1, 1);
                     }

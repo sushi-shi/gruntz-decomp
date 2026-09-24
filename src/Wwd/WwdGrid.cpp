@@ -41,7 +41,7 @@ i32 CWwdGrid::Setup(RECT rect, i32 cellW, i32 cellH) {
     m_allocated = true;
     return 1;
 }
-RVA_COMPGEN(0x00191720, 0x50, ??_EBucketHead@@QAEPAXI@Z)
+RVA_COMPGEN(0x00191720, 0x50, ??_E?$CLTList@UWwdRegion@@@@QAEPAXI@Z)
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
@@ -256,6 +256,5 @@ WwdRegion* CWwdGridIter::GetNext() {
     }
 }
 
-RVA_COMPGEN(0x00191d00, 0x10, ??0BucketHead@@QAE@XZ)
-RVA(0x00191d10, 0x1)
-BucketHead::~BucketHead() {}
+RVA_COMPGEN(0x00191d00, 0x10, ??0?$CLTList@UWwdRegion@@@@QAE@XZ)
+RVA_COMPGEN(0x00191d10, 0x1, ??1?$CLTList@UWwdRegion@@@@QAE@XZ)

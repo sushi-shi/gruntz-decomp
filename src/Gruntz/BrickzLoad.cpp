@@ -8,8 +8,7 @@
 #include <Gruntz/BrickTileId.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/BridgeTileId.h>
-#include <Gruntz/FreeNodePool.h>
-#include <Gruntz/FreeNodePoolInline.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameObjectLogicTypes.h>
@@ -26,7 +25,6 @@
 
 #include <stdlib.h>
 
-// @early-stop
 RVA(0x000810f0, 0xa80)
 i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
     m_attrMgr = g_gameReg->m_world;
@@ -376,7 +374,7 @@ i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
 
                     Coord* elem = NULL;
                     if (g_coordPool.m_freeHead->m_next != NULL) {
-                        elem = &g_coordPool.m_freeHead->m_coord;
+                        elem = &g_coordPool.m_freeHead->m_value;
                         elem->m_x = cx;
                         elem->m_y = tileY + yo;
                         g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
@@ -391,7 +389,7 @@ i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
                     m_cellPool[elem->m_y * m_width + elem->m_x].m_flags = 0x10;
                     m_cellPool[elem->m_y * m_width + elem->m_x].m_tileId = 0;
 
-                    PushFreeNode(&g_coordPool, elem);
+                    g_coordPool.Push(elem);
                 }
             }
             m_arr.SetSize(0, -1);

@@ -10,7 +10,7 @@
 #include <Ints.h>
 #include <Utils/AsyncKeyState.h>
 
-#include <Gruntz/FixedPtrArray32.h>
+#include <DinMgr2/InputDeviceGroup.h>
 #include <Mfc.h>
 #include <dinput.h>
 
@@ -65,13 +65,6 @@ GZ_ENUM_END(InputBindingSlot)
 GZ_ENUM_CONST_BEGIN(InputBindingConstants)
     INPUT_BINDING_COUNT = 0x20
 GZ_ENUM_CONST_END(InputBindingConstants)
-
-struct CInputDeviceGroup : public CFixedPtrArray32 {
-    CInputDeviceGroup() {
-        m_reserved00 = 0;
-        m_count = 0;
-    }
-};
 
 class DirectInputMgr2 {
 public:
@@ -173,8 +166,6 @@ public:
 
 class CInputDevBase : public CInputDevRoot {
 public:
-    CInputDevBase();
-
     virtual ~CInputDevBase() OVERRIDE {
         CInputDevBase::ReleaseDevices();
     }
@@ -262,8 +253,6 @@ inline CInputDevRoot::CInputDevRoot() {
     m_pressedButtons = 0;
     m_heldButtons = 0;
 }
-inline CInputDevBase::CInputDevBase() {}
-
 inline CKeyboardDevice::CKeyboardDevice() {
     m_keyBindings.Clear();
     m_createFlags = 0;

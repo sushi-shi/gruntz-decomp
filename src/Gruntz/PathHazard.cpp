@@ -37,7 +37,7 @@
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/ZDArray.h>
 
 #include <math.h>
 #include <stddef.h>
@@ -126,12 +126,11 @@ void CPathHazard::FireActivation(i32 id) {
 
 RVA(0x000b3cc0, 0x2ac)
 void RegisterPathHazardActions() {
-    ACT_NAME_ID_CALL_REPORT(id, "A")
-    *CActRegPool<CPathHazard>::s_table.ResolveEntryCallReport(id) =
-        static_cast<CActHandler>(&CPathHazard::ForwardTick);
+    ACT_NAME_ID(id, "A")
+    CActRegPool<CPathHazard>::s_table[id] = static_cast<CActHandler>(&CPathHazard::ForwardTick);
 
     ACT_NAME_ID(id2, "B")
-    *CActRegPool<CPathHazard>::s_table.ResolveEntryCallReport(id2) =
+    CActRegPool<CPathHazard>::s_table[id2] =
         static_cast<CActHandler>(&CPathHazard::ForwardSiblingTick);
 }
 

@@ -6,7 +6,7 @@
 
 #include <Bute/ButeMgr.h>
 #include <Gruntz/AnimationRegistry.h>
-#include <Gruntz/FreeNodePoolInline.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
@@ -188,7 +188,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
             do {
                 Coord* buf = static_cast<Coord*>(m_coordList.GetNext(pos));
                 if (buf != NULL) {
-                    PushFreeNode(&g_coordPool, buf);
+                    g_coordPool.Push(buf);
                 }
             } while (pos != NULL);
         }

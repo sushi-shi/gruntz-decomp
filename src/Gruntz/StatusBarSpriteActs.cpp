@@ -15,8 +15,8 @@
 #include <Gruntz/TileTriggerTransition.h>
 #include <Gruntz/UserLogic.h>
 #include <Rez/FrameClock.h>
-#include <Wap32/ZVec.h>
 #include <Wwd/LogicRecordEvent.h>
+#include <ZTools/ZDArray.h>
 
 #include <stddef.h>
 
@@ -51,7 +51,7 @@ void CStatusBarSprite::FireActivation(i32 coord) {
 RVA(0x0010c610, 0x18d)
 void CStatusBarSprite::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CStatusBarSprite>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CStatusBarSprite>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CStatusBarSprite::AdvanceAnim);
 }
 

@@ -32,12 +32,12 @@
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/CheatMgr.h>
 #include <Gruntz/ColorTint.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/DrawDebugStats.h>
 #include <Gruntz/EnemyAiType.h>
 #include <Gruntz/ErrorStringId.h>
 #include <Gruntz/FontConfig.h>
-#include <Gruntz/FreeNodePoolInline.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameObjectLogicTypes.h>
@@ -333,7 +333,7 @@ void CPlay::ReleaseResources() {
     for (i = 0; i < StartMarkerCount(); i++) {
         Coord* node = StartMarkerAt(i);
         if (node != NULL) {
-            PushFreeNode(&g_coordPool, node);
+            g_coordPool.Push(node);
         }
     }
     m_startMarkers.SetSize(0, -1);
@@ -341,7 +341,7 @@ void CPlay::ReleaseResources() {
         for (i = 0; i < PlacedObjectCellCount(k); i++) {
             Coord* node = PlacedObjectCellAt(k, i);
             if (node != NULL) {
-                PushFreeNode(&g_coordPool, node);
+                g_coordPool.Push(node);
             }
         }
         m_placedObjectCells[k].SetSize(0, -1);
@@ -349,7 +349,7 @@ void CPlay::ReleaseResources() {
     for (i = 0; i < CameraBookmarkCount(); i++) {
         Coord* node = CameraBookmarkAt(i);
         if (node != NULL) {
-            PushFreeNode(&g_coordPool, node);
+            g_coordPool.Push(node);
         }
     }
     m_cameraBookmarkIndex = -1;
@@ -1646,7 +1646,7 @@ void CPlay::FreeListTeardown() {
     for (i = 0; i < StartMarkerCount(); i++) {
         Coord* node = StartMarkerAt(i);
         if (node != NULL) {
-            PushFreeNode(&g_coordPool, node);
+            g_coordPool.Push(node);
         }
     }
     m_startMarkers.SetSize(0, -1);
@@ -1654,7 +1654,7 @@ void CPlay::FreeListTeardown() {
         for (i = 0; i < PlacedObjectCellCount(k); i++) {
             Coord* node = PlacedObjectCellAt(k, i);
             if (node != NULL) {
-                PushFreeNode(&g_coordPool, node);
+                g_coordPool.Push(node);
             }
         }
         m_placedObjectCells[k].SetSize(0, -1);
@@ -1662,7 +1662,7 @@ void CPlay::FreeListTeardown() {
     for (i = 0; i < CameraBookmarkCount(); i++) {
         Coord* node = CameraBookmarkAt(i);
         if (node != NULL) {
-            PushFreeNode(&g_coordPool, node);
+            g_coordPool.Push(node);
         }
     }
     m_cameraBookmarks.SetSize(0, -1);
@@ -1854,7 +1854,6 @@ i32 CPlay::OnChar(i32 charCode, i32 keyData) {
     return 0;
 }
 
-// @early-stop
 RVA(0x000cbcc0, 0x17c0)
 i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
     if (this->m_hudSuppressed != false) {
@@ -2137,10 +2136,9 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         if (cur < 0) {
             return 1;
         }
-        CoordPoolNode* node = g_coordPool.NodeOf(this->CameraBookmarkAt(cur));
+        Coord* coord = this->CameraBookmarkAt(cur);
         this->m_cameraBookmarks.RemoveAt(cur, 1);
-        node->m_next = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
-        g_coordPool.m_freeHead = node;
+        g_coordPool.Push(coord);
         i32 c = this->m_cameraBookmarkIndex - 1;
         this->m_cameraBookmarkIndex = c;
         if (c != -1) {
@@ -4142,14 +4140,17 @@ i32 CPlay::RestoreCursorSaveUnder() {
     return 1;
 }
 
-// @early-stop
+static inline i32 ReadScrollSpeedRange() {
+    i32 maxSpeed = g_buteMgr.GetInt("Optionz", "MaxScrollSpeed");
+    return maxSpeed - g_buteMgr.GetInt("Optionz", "MinScrollSpeed");
+}
+
 RVA(0x000d12b0, 0x2d5)
 i32 CPlay::LoadScrollSpeedOptions() {
     DATA(0x0024c274)
     static i32 s_minScrollSpeed = g_buteMgr.GetInt("Optionz", "MinScrollSpeed");
     DATA(0x0024c270)
-    static i32 s_scrollSpeedRange = g_buteMgr.GetInt("Optionz", "MaxScrollSpeed")
-                                    - g_buteMgr.GetInt("Optionz", "MinScrollSpeed");
+    static i32 s_scrollSpeedRange = ReadScrollSpeedRange();
 
     CPlay* self = this;
     CGruntzMgr* w = m_mgr;
@@ -6597,7 +6598,6 @@ i32 CPlay::SavePlayState(CFileMemBase* s) {
     return 1;
 }
 
-// @early-stop
 RVA(0x000d8060, 0x6ce)
 i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     if (ar == NULL) {
@@ -6626,7 +6626,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         for (i32 i = 0; i < StartMarkerCount(); i++) {
             Coord* node = StartMarkerAt(i);
             if (node) {
-                PushFreeNode(&g_coordPool, node);
+                g_coordPool.Push(node);
             }
         }
         CPtrArray* markers = &m_startMarkers;
@@ -6655,7 +6655,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
             for (i32 i = 0; i < PlacedObjectCellCount(k); i++) {
                 Coord* node = PlacedObjectCellAt(k, i);
                 if (node) {
-                    PushFreeNode(&g_coordPool, node);
+                    g_coordPool.Push(node);
                 }
             }
             m_placedObjectCells[k].SetSize(0, -1);
@@ -6769,7 +6769,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         for (i32 i = 0; i < CameraBookmarkCount(); i++) {
             Coord* node = CameraBookmarkAt(i);
             if (node) {
-                PushFreeNode(&g_coordPool, node);
+                g_coordPool.Push(node);
             }
         }
         m_cameraBookmarks.SetSize(0, -1);
@@ -7053,7 +7053,6 @@ i32 CPlay::SetDefeatCountdown(b32 active, i32 durationMs) {
     return 1;
 }
 
-// @early-stop
 RVA(0x000d9290, 0x2a7)
 i32 CPlay::ScanShuffleQuads() {
     CDDrawSurfaceMgr* v = m_world;
@@ -7070,34 +7069,14 @@ i32 CPlay::ScanShuffleQuads() {
     arr.SetAtGrow(arr.GetSize(), 1);
     arr.SetAtGrow(arr.GetSize(), 2);
     arr.SetAtGrow(arr.GetSize(), 3);
-    i32 last;
-    i32 count;
     i32 r;
-    last = arr.GetUpperBound();
-    count = last + 1;
-    if (count == 0) {
-        r = (rand() & 1) != 0 ? 0 : last;
-    } else {
-        r = rand() % count;
-    }
+    r = GetRandom(0, arr.GetUpperBound());
     perm[0] = arr.GetAt(r);
     arr.RemoveAt(r, 1);
-    last = arr.GetUpperBound();
-    count = last + 1;
-    if (count == 0) {
-        r = (rand() & 1) != 0 ? 0 : last;
-    } else {
-        r = rand() % count;
-    }
+    r = GetRandom(0, arr.GetUpperBound());
     perm[1] = arr.GetAt(r);
     arr.RemoveAt(r, 1);
-    last = arr.GetUpperBound();
-    count = last + 1;
-    if (count == 0) {
-        r = (rand() & 1) != 0 ? 0 : last;
-    } else {
-        r = rand() % count;
-    }
+    r = GetRandom(0, arr.GetUpperBound());
     perm[2] = arr.GetAt(r);
     arr.RemoveAt(r, 1);
     perm[3] = arr.GetAt(0);
@@ -7368,7 +7347,6 @@ i32 CPlay::DrawLevelInfoText() {
     return 1;
 }
 
-// @early-stop
 RVA(0x000da030, 0x169)
 i32 CPlay::ClearPlacedObjects() {
     for (i32 blockIdx = 0; blockIdx < 4; ++blockIdx) {
@@ -7411,7 +7389,7 @@ i32 CPlay::ClearPlacedObjects() {
                         }
                         m_placedObjectCells[blockIdx].RemoveAt(i, 1);
 
-                        PushFreeNode(&g_coordPool, obj);
+                        g_coordPool.Push(obj);
                         return -1;
                     }
                     if (result->m_smarts != IDX(PICKUP_WARPSTONE)) {

@@ -4,10 +4,11 @@
 #include <MfcWin.h>
 
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordNode.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/EnemyAiType.h>
-#include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
@@ -31,7 +32,7 @@
 #include <Ints.h>
 #include <Lith/ObjectUtilities.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/ZDArray.h>
 
 #include <limits.h>
 #include <new>
@@ -186,7 +187,7 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
                     }
                     i32 coordCount = CoordCount();
                     if (coordCount != 0) {
-                        i32 mx = spanX > spanY ? spanX : spanY;
+                        i32 mx = Max(spanX, spanY);
                         if (coordCount > mx) {
                             SetEntrancePos(1, 1);
                         }

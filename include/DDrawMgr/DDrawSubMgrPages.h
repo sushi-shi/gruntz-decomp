@@ -102,7 +102,6 @@ public:
         m_surface = NULL;
     }
 
-    virtual ~CDDrawFrontSurface() OVERRIDE;
     virtual i32 IsLoaded() OVERRIDE;
     virtual void Unload() OVERRIDE;
     virtual LoadableClassId GetClassId() OVERRIDE;

@@ -49,7 +49,11 @@
 - Per class, the proven levers:
   * inline/call-set: `gruntz walls inline-model --gap <rva>` FIRST names the
     differing callees and reports the base object's symbol evidence. `/O2`
-    implies `/Ob1`, so an unmarked function cannot expand; however, an
+    implies `/Ob1`, so an unmarked ordinary non-template function cannot
+    expand. Instantiated template members are an exception: an out-of-class
+    body without `inline` expands under `/Ob1` and stays a call under `/Ob0`
+    (docs/patterns/vc5-template-members-inline-without-inline-keyword.md).
+    Do not reject template candidacy from the missing keyword. However, an
     UNDEFINED or absent COFF symbol does NOT prove the body was unavailable.
     Header inlines can expand at one site while a nested or declined site
     remains external, and delinking can also erase the provider distinction.

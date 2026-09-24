@@ -4,10 +4,10 @@
 
 #include <Mfc.h>
 
-#include <Bute/ButeTree.h>
 #include <Gruntz/ActionAreaOwner.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/ActRegistry.h>
 #include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/HaznColl.h>
@@ -23,8 +23,8 @@
 #include <Gruntz/UserLogic.h>
 #include <Image/ImageSet.h>
 #include <Io/FileMem.h>
-#include <Wap32/zBitVec.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/BitVec.h>
+#include <ZTools/ZDArray.h>
 
 RVA_DYNINIT(0x00008040, 0xa, CActRegPool<CActionArea>::s_table)
 RVA_DYNINIT(0x00008060, 0x15, CActRegPool<CActionArea>::s_table)
@@ -135,6 +135,10 @@ i32 CActionArea::SerializeDispatch(
     }
     return 1;
 }
+
+RVA_COMPGEN(0x00008710, 0x2b, ??0?$zDArray@P8CUserLogic@@AEHXZ@@QAE@HH@Z)
+RVA_COMPGEN(0x00008750, 0x15, ??1?$zDArray@P8CUserLogic@@AEHXZ@@UAE@XZ)
+RVA_COMPGEN(0x00008780, 0x1e, ??_G?$zDArray@P8CUserLogic@@AEHXZ@@UAEPAXI@Z)
 
 RVA_COMPGEN(0x000087b0, 0x7, ??1CUserBase@@UAE@XZ)
 RVA_COMPGEN(0x00008810, 0x20, ??_GCUserBase@@UAEPAXI@Z)

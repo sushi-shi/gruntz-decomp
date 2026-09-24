@@ -10,11 +10,12 @@
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/WwdGridIter.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/zBitVec.h>
 #include <Wwd/WwdGameObjectFamily.h>
 #include <Wwd/WwdGameObjectFlags.h>
+#include <ZTools/BitVec.h>
 
 struct CGameObject;
 struct SoundCue;
@@ -31,7 +32,6 @@ class CFileMemBase;
 
 class CUserBase {
 public:
-    CUserBase() {}
     virtual ~CUserBase() {}
     RVA(0x000087d0, 0x8)
     virtual i32 SerializeDispatch(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) {
@@ -104,6 +104,18 @@ public:
 
     void LoadGruntTuningConstants(i32);
 
+    const CString& GetAnimationActName() const {
+        return ::GetAnimationActName(m_logicRecord->EventCode());
+    }
+
+    bool IsAnimationAct(const char* name) const {
+        return GetAnimationActName() == name;
+    }
+
+    bool IsNotAnimationAct(const char* name) const {
+        return GetAnimationActName() != name;
+    }
+
     typedef i32 (CUserLogic::*ActCallback)();
     ActCallback m_deferredCallback;
     ActCallback m_gatedCallback;
@@ -125,17 +137,13 @@ typedef i32 (CUserLogic::*CActHandler)();
     m_previousAnimationActId = m_logicRecord->m_eventCode;                                         \
     m_logicRecord->m_eventCode = ActFindId(key)
 
-#define ANIMATION_ACT_EQUALS(key)                                                                  \
-    (strcmp(*g_typeColl.GetNameRecord(m_logicRecord->m_eventCode), key) == 0)
+#define ANIMATION_ACT_EQUALS(key) (IsAnimationAct(key))
 
-#define ANIMATION_ACT_DIFFERS(key)                                                                 \
-    (strcmp(*g_typeColl.GetNameRecord(m_logicRecord->m_eventCode), key) != 0)
+#define ANIMATION_ACT_DIFFERS(key) (IsNotAnimationAct(key))
 
-#define ANIMATION_ACT_EQUALS_FOR(logic, key)                                                       \
-    (strcmp(*g_typeColl.GetNameRecord(logic->m_logicRecord->m_eventCode), key) == 0)
+#define ANIMATION_ACT_EQUALS_FOR(logic, key) ((logic)->IsAnimationAct(key))
 
-#define ANIMATION_ACT_DIFFERS_FOR(logic, key)                                                      \
-    (strcmp(*g_typeColl.GetNameRecord(logic->m_logicRecord->m_eventCode), key) != 0)
+#define ANIMATION_ACT_DIFFERS_FOR(logic, key) ((logic)->IsNotAnimationAct(key))
 
 #define APPLY_NAME_INLINE(name) m_wwdObject->SetImageSetByName(name)
 

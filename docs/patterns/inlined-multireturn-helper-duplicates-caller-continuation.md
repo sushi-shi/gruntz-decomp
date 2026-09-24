@@ -28,7 +28,7 @@ store. Restoring a TU-local `RandRange(i32 lo, i32 hi)` overload using
 `GetRandomNumber()`, then spelling the caller as a named result followed by the
 two stores, reached 79.6795% and 77 instructions/0xe1 bytes against retail's
 78/0xe5. Calls, branches, returns, ordered relocations, and all ten stores are
-now exact; semantic diff retains only retail's `lea; test` versus base `inc`
+exact in that control; semantic diff retained retail's `lea; test` versus base `inc`
 and the associated whole-body register rotation.
 
 ## Why the abstraction matters
@@ -50,6 +50,37 @@ This is the control set on the same function:
   byte-flat on the restored range-helper state;
 - a 34-state target-adjacent C1 forest found one compiler island, all at
   79.6795%.
+
+## Follow-up: range accessor arguments change the entire inlined suffix
+
+A fresh complete-use review replaced the initializer's raw parameter arguments
+with `RandRange(m_playDuration.GetMin(), m_playDuration.GetMax())`, after the
+existing two range `Set` calls. The authored getters return by value; no new
+declaration, local, overload, or RNG body was introduced. The owner mapping and
+its limits are recorded in lineage row `reassess-crange-ambient-getter-init`.
+
+In the actual `worldsoundset` TU this moved 79.6795% to 82.128204%, from
+225 bytes/77 instructions to 231 bytes/79 instructions (retail: 229/78).
+The complete 179-byte suffix at base +0x34 now equals retail +0x32, including
+all eight suffix relocations. The unchanged helper now receives the retail
+register roles: ESI receiver, EDI span, and the same ECX/EDX LCG rotation.
+All nine whole-function referents agree, and the other 35 compared TU bodies
+are byte/reference/extent-identical. The baseline suffix at +0x2e did **not**
+already have this property; this is a baseline-delta control, not a feature
+inferred only from the changed state.
+
+The entry remains different: two endpoint reloads appear after the stores,
+and `inc` still replaces retail's `lea; test`. This is partial recovery, not
+an exact or bounded function. The earlier flat setter/local/forest controls
+do not exclude a complete range-use composition on a different source hash.
+
+Reverse-audit signature: a caller stores scalar inputs through an existing
+value-type setter but bypasses that type's accessors for the next helper call.
+Test the complete sourced accessor boundary before treating the downstream
+register rotation as irreducible. Do not infer that getter calls always fold
+back to parameters: this control adds real reloads. Preserve ownership and
+inspect the full function from its first divergence, not just the improved
+suffix.
 
 ## Reverse use
 

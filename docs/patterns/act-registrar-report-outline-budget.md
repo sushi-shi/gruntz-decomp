@@ -6,6 +6,17 @@ second accessor also outlines); `gruntz walls diagnose --asm` shows three 9-inst
 6-instruction target blocks; the diff is always the same six lines
 confidence: 10/10
 
+## Historical reconstruction, not current source guidance
+
+The per-site API prescription below is withdrawn. It described an incomplete
+shared template/error model, not separate original APIs. The complete sourced
+family closes the [two-action and Warlord registrars](nested-error-helper-and-direct-template-casts-restore-inline-cuts.md),
+and [local ownership closes the nineteen-action Grunt registrar](registrar-local-ownership-selects-inline-cuts.md),
+all with uniform typed accessors. Retained calls versus expansions remain
+useful evidence; copying the old `CallReport` selectors is not a valid fix.
+
+## Earlier controls
+
 The grow-on-miss tail of `_zvec::IndexToPtr` / `zDArray<T>::ResolveEntry` is a real out-of-line
 function - **`zErrHandling::Report`** (`0x34960`, `?Report@zErrHandling@@QAEXPAXH@Z`), whose body is
 exactly

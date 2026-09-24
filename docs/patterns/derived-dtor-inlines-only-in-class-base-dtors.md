@@ -9,7 +9,7 @@ confidence: 9/10
 
 ## Mechanism
 
-`/O2` implies `/Ob1`: cl 5.0 inlines only functions the source marked `inline` — which
+`/O2` implies `/Ob1`: the non-template controls inline only functions the source marked `inline` — which
 includes any member function *defined inside its class body*. A destructor declared
 `virtual ~CFoo() OVERRIDE;` in the header and defined out-of-line in a `.cpp` is NOT
 inline, even when its definition precedes the use in the same TU. So the compiler-generated
@@ -53,3 +53,5 @@ The budget is finite and one-directional: making a member dtor inline can push a
 `CGameObject::Unload` reverted to a `call` once `~CAniAdvanceCursor` was spliced in). Each
 level is an independent decision — read the retail dtor and match the levels it actually
 inlined rather than assuming all-or-nothing.
+
+This non-template result does not cover [unmarked instantiated template members](vc5-template-members-inline-without-inline-keyword.md).

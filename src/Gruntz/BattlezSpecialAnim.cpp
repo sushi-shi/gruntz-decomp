@@ -12,8 +12,8 @@
 #include <Gruntz/BrickTileId.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordNode.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/EnemyAiType.h>
-#include <Gruntz/FreeNodePoolInline.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/GameRegistry.h>
@@ -42,12 +42,11 @@
 #include <Gruntz/VoiceManager.h>
 #include <Io/FileMem.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/zBitVec.h>
 #include <Wwd/WwdFile.h>
+#include <ZTools/BitVec.h>
 
 #include <limits.h>
 #include <math.h>
-#include <new>
 #include <stdlib.h>
 #include <string.h>
 
@@ -63,14 +62,13 @@ void CGrunt::RecycleCoords() {
             m_coordList.GetNext(n);
             Coord* coord = static_cast<Coord*>(m_coordList.GetAt(cur));
             if (coord != NULL) {
-                PushFreeNode(&g_coordPool, coord);
+                g_coordPool.Push(coord);
             }
         } while (n != NULL);
     }
     m_coordList.RemoveAll();
 }
 
-// @early-stop
 RVA(0x00034460, 0x3fc)
 i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
     if (unit == NULL) {
@@ -111,80 +109,33 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
     }
 
     CString* recs;
-    CString* slot;
     CString* sel;
-    i32 cnt;
     i32 ci;
 
-    recs = g_typeColl.ScratchResolve(unit->m_logicRecord->m_eventCode);
-    slot = g_typeColl.Slots();
-    cnt = g_typeColl.m_grown;
-    while (cnt-- != 0) {
-        if (slot != NULL) {
-            new (slot) CString();
-        }
-        slot++;
-    }
-    eq = (strcmp(*recs, "P") == 0);
+    recs = &g_typeColl[unit->m_logicRecord->m_eventCode];
+    eq = (*recs == "P");
     if (eq) {
         return 0;
     }
 
-    recs = g_typeColl.ScratchResolve(unit->m_logicRecord->m_eventCode);
-    slot = g_typeColl.Slots();
-    cnt = g_typeColl.m_grown;
-    while (cnt-- != 0) {
-        if (slot != NULL) {
-            new (slot) CString();
-        }
-        slot++;
-    }
-    eq = (strcmp(*recs, "J") == 0);
+    recs = &g_typeColl[unit->m_logicRecord->m_eventCode];
+    eq = (*recs == "J");
     if (eq) {
         return 0;
     }
 
-    recs = g_typeColl.ScratchResolve(unit->m_logicRecord->m_eventCode);
-    slot = g_typeColl.Slots();
-    cnt = g_typeColl.m_grown;
-    while (cnt-- != 0) {
-        if (slot != NULL) {
-            new (slot) CString();
-        }
-        slot++;
-    }
-    eq = (strcmp(*recs, "C") == 0);
+    recs = &g_typeColl[unit->m_logicRecord->m_eventCode];
+    eq = (*recs == "C");
     if (eq) {
         goto fail;
     }
 
     ci = unit->m_logicRecord->EventCode();
-    g_typeColl.m_grown = 0;
-    if (ci >= g_typeColl.m_lo && ci <= g_typeColl.m_hi) {
-        sel = g_typeColl.Elem(ci);
-    } else if (g_typeColl.GrowTo(ci, 0) != NULL) {
-        sel = g_typeColl.Elem(ci);
-    } else {
-        g_typeColl.Report(g_errOutOfMem, 0xc);
-        sel = g_typeColl.Scratch();
-    }
-
-    slot = g_typeColl.Slots();
-    cnt = g_typeColl.m_grown;
-    while (cnt-- != 0) {
-        if (slot != NULL) {
-            new (slot) CString();
-        }
-        slot++;
-    }
-    eq = (strcmp(*sel, "R") == 0);
+    sel = &g_typeColl[ci];
+    eq = (*sel == "R");
     return !eq;
 fail:
     return 0;
 }
 
-RVA(0x00034960, 0x24)
-void zErrHandling::Report(char* message, i32 code) {
-    g_retAddrBreadcrumb = GetRetAddr();
-    m_errSink->Set(this, message, code);
-}
+RVA_COMPGEN(0x00034960, 0x24, ?handle_inl@zErrHandling@@QBEXPBDH@Z)

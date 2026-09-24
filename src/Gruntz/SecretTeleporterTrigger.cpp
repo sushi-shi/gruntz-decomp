@@ -2,10 +2,10 @@
 
 #include <Gruntz/SecretTeleporterTrigger.h>
 
-#include <Bute/ButeTree.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/ActRegistry.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegistry.h>
@@ -24,7 +24,7 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/VoiceManager.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/ZDArray.h>
 
 #include <stddef.h>
 
@@ -143,7 +143,7 @@ void CSecretLevelTrigger::FireActivation(i32 coord) {
 RVA(0x000428c0, 0x18d)
 void CSecretLevelTrigger::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CSecretLevelTrigger>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CSecretLevelTrigger>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CSecretLevelTrigger::Tick);
 }
 

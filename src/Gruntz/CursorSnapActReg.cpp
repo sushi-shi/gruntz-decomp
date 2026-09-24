@@ -19,7 +19,7 @@ RVA(0x0003a710, 0x18d)
 void RegisterCursorSnapActions() {
     ACT_NAME_ID(id, "A")
 
-    *CActRegPool<CCursorSnapSprite>::s_table.ResolveEntry(id) =
+    CActRegPool<CCursorSnapSprite>::s_table[id] =
         static_cast<CActHandler>(&CCursorSnapSprite::AdvanceAnim);
 }
 

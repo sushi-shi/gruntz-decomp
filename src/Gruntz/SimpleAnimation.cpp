@@ -16,8 +16,8 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Image/CImage.h>
 #include <Rez/FrameClock.h>
-#include <Wap32/zBitVec.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/BitVec.h>
+#include <ZTools/ZDArray.h>
 
 RVA(0x0000f930, 0x47)
 i32 CSimpleAnimation::SerializeDispatch(
@@ -55,7 +55,7 @@ void CSimpleAnimation::FireActivation(i32 idx) {
 RVA(0x000abd70, 0x18d)
 void RegisterSimpleAnimLogic() {
     ACT_NAME_ID(idx, "A")
-    CActHandler* dslot = CActRegPool<CSimpleAnimation>::s_table.ResolveEntry(idx);
+    CActHandler* dslot = &CActRegPool<CSimpleAnimation>::s_table[idx];
     *dslot = static_cast<CActHandler>(&CSimpleAnimation::AdvanceAnim);
 }
 

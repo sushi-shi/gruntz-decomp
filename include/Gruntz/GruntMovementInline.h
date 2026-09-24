@@ -1,7 +1,7 @@
 #ifndef GRUNTZ_GRUNTMOVEMENTINLINE_H
 #define GRUNTZ_GRUNTMOVEMENTINLINE_H
 
-#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/Grunt.h>
 
 inline i32 IsGruntAtSavedScreenPos(CGrunt* grunt) {

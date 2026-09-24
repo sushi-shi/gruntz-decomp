@@ -12,8 +12,8 @@
 #include <Gruntz/BrickTileId.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordNode.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/EnemyAiType.h>
-#include <Gruntz/FreeNodePoolInline.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/GameRegistry.h>
@@ -43,8 +43,8 @@
 #include <Gruntz/VoiceManager.h>
 #include <Io/FileMem.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/zBitVec.h>
 #include <Wwd/WwdFile.h>
+#include <ZTools/BitVec.h>
 
 #include <limits.h>
 #include <math.h>
@@ -52,7 +52,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-// @early-stop
 RVA(0x000358a0, 0x2d6)
 i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
     GruntzPlayer* recA = NULL;
@@ -146,6 +145,6 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
     if (unit->CoordCount() == 0) {
         return 1;
     }
-    RECYCLE_GRUNT_COORDS_EXPANDED(unit)
+    RECYCLE_GRUNT_COORDS(unit)
     return 1;
 }

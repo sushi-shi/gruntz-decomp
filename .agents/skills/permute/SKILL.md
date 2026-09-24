@@ -16,7 +16,7 @@ Work in `nix develop .#build`. Build first when current objects may be stale, th
 derive candidates rather than keeping a manual list:
 
 ```sh
-gruntz build
+gruntz build base compare
 gruntz permute candidates --output /tmp/permute-candidates.json
 ```
 
@@ -79,8 +79,12 @@ ordered relocation identity all pass. A sub-100 improvement is a clue, not a
 commit criterion. Keep correct modeling changes even if unrelated current fuzzy
 moves, subject to the MAX gate.
 
-Before handoff, run the focused permuter tests and a full build. Document a newly
-reproducible compiler mechanism under `docs/patterns/` and update its index.
+Follow `matcher`'s validation cadence: no test suites during matching, ordinary
+commits, or pushes. Before handoff, refresh compilation/comparison and inspect
+MAX and raw matching evidence. Run focused permuter tests and the full gated
+build only at the authorized PR squash-merge stage; report them as deferred
+until then. Document a newly reproducible compiler mechanism under
+`docs/patterns/` and update its index.
 Commit tooling, documentation/skill work, and reconstructed source changes in
 separate focused batches. See `docs/permuter.md` for command details and artifact
 contracts.

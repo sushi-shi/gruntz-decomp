@@ -54,12 +54,22 @@ Two boundaries matter and both are measured:
   The plateau at 9 is the 1000 floor; it breaks at ~36-40 caller statements,
   which is where `2 x cb(caller)` first exceeds 1000. See § "The rule".
 
-`/O2` is `/Ob1` here: cl 5.0 does **not** auto-inline a function that is not
-marked `inline`, at any definition position (before, after, or interleaved with
+`/O2` is `/Ob1` here: cl 5.0 does **not** auto-inline an ordinary non-template
+function that is not marked `inline`, at any definition position (before, after, or interleaved with
 its callers — all three measured, all emit 2/2 calls). So a plain out-of-line
-member never gives you the inline half.
+member never gives you the inline half. This control does not cover
+[instantiated template members](vc5-template-members-inline-without-inline-keyword.md),
+which can expand without the keyword under `/Ob1`.
 
 ## The rule (ported from the homm3 VC6 back-end RE, re-validated on cl 5.0)
+
+Measurement caution: an all-expanded harness is saturated; it does not prove
+`cb <= 0x28`. The palette span control expands all 12 sites yet rejects 12 of
+25 identical sites in the larger harness. `--measure-cb` now reports the
+saturated case as unbounded rather than claiming budget exemption. See the
+[complete span composition and real-compiler regression control](inline-result-local-changes-later-span-expansion.md#composition-with-the-helpers-real-loop-cursor).
+Numeric brackets from a partially rejecting harness still require the stated
+1000-floor caller assumption; increasing caller size is not free evidence.
 
 The sibling homm3 project reverse-engineered this decision out of its pinned
 back end (C2.DLL 12.00.8447) and published it as a model spec + address ledger

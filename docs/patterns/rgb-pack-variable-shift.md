@@ -25,10 +25,10 @@ mov ebp,0x14 ; mov ecx,ds:0x683eb0 ; sar ebp,cl ; mov ecx,ds:0x683ea4 ; shl ebp,
 or  edi,ebp                                                                            ; R|G (u16 temp)
 mov ebp,0x01 ; mov ecx,ds:0x683eb4 ; sar ebp,cl ; or ecx,ebp                           ; |B
 ```
-**Per-channel term is steerable** (the `(c>>down)<<up` spelling reproduces it). But
-in the 8 CMinimap shape generators (0xa3dc0…0xa8900, ~2KB each) ~22 such
-packs share the 5 globals and the optimizer heavily CSEs the global loads and
-schedules the 22 expressions + their u16-temp spills across the frame — that
-inter-color scheduling/regalloc is a **wall** no uniform `Pack()` source
-reproduces byte-for-byte (~70% plateau on a complete, correct body). Evidence:
-CMinimap::Shape1..Shape8; the standalone DrawBorder/FillSpan u16 fills match.
+**Per-channel term is steerable** (the `(c>>down)<<up` spelling reproduces it).
+The original ~70% palette plateau was not a bounded register-allocation wall:
+the caller source was missing [the fill-loop structure](adjacent-same-value-stores-are-a-loop.md)
+and [singleton setter boundaries](inline-singleton-setter-restores-store-call-interleaving.md).
+Restoring those layers closed seven palette builders while retaining the
+uniform `Pack()` helper. Global-load CSE and temporary scheduling are real,
+but their presence alone does not establish that the source is complete.

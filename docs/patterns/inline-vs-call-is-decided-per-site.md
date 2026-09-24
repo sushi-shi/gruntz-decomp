@@ -8,9 +8,10 @@
 
 ## Symptom
 
-A tiny out-of-line member exists in retail (so cl did NOT inline it everywhere), but a
-matcher who converts every site to a call — or every site to the inlined body — gets
-both right and wrong at once. `CBattlezMapConfig::ResolveArrival` calls `Push` seven
+A tiny out-of-line member exists in retail, so cl did not inline it everywhere.
+One canonical inline/template member can still produce both emitted forms.
+Do not encode the compiler's decision with duplicated source bodies or a
+call-versus-expansion macro selector. `CBattlezMapConfig::ResolveArrival` calls `Push` seven
 times *and* inlines the splice once; `CGrunt::StepDefenderBehavior` calls it twice and
 inlines it four times. A shared statement macro (`DRAIN_COORDS()`) is a **call** in
 `StepBrickLayerBehavior` / `StepGooSuckerBehavior` and **inlined** in
@@ -26,15 +27,19 @@ Count, per function, both halves of the evidence and compare against the base ob
 - **retail inlined bodies** — the inlined splice cannot use the helper's `this`, so it
   references the global **absolutely**. Search `.text` for the little-endian VA of the
   global and of each member offset it touches (`g_coordPool`, `+0x4`, `+0xc`); one
-  push-splice is three references, one call is one (`mov ecx, offset g_coordPool`).
+  splice can expose three references, while a call can use
+  `mov ecx, offset g_coordPool`. Hoisted loads and shared tails can change those
+  counts; identify the operations and their data flow before classifying them.
 - **our side** — `llvm-objdump -dr --section=.text build/objdiff/base/<unit>.obj`:
   `IMAGE_REL_I386_REL32 ?Push@...` is a call, `IMAGE_REL_I386_DIR32 ?g_coordPool@...`
   is an inlined reference. Attribute `$L…` labels to the last non-`$L` symbol above
   them — llvm-objdump splits at every label, so a naive bucketing loses call sites.
 
-Agreement on **both** counts per function is the acceptance test. When they disagree,
-read which one: `Rcall != Bcall` is a wrong inline-vs-call decision (fix the source);
-`Rcall == Bcall` with fewer refs is an **incomplete body**, not a spelling problem.
+Counts direct the audit; complete instructions, ordered referents and event
+topology decide acceptance. A call-count difference requires an inline/call-set
+diagnosis after resolving aliases and tail sharing. Equal call counts with
+fewer absolute references may reflect hoisting or shared loads; it does not
+alone prove an incomplete body.
 
 ## Placement, not just counts
 
@@ -45,5 +50,6 @@ a call is wrong even though it moves the count toward 7.
 
 ## Related
 
+- [Canonical coordinate-pool template control](comdat-home-adjudicates-inline-spelling.md#template-family-control-canonical-coordinate-recycling)
 - [`static-helper-must-be-inline`](static-helper-must-be-inline.md)
 - [`reloc-sequence-diff-finds-wrong-referents`](reloc-sequence-diff-finds-wrong-referents.md)

@@ -17,7 +17,7 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/VoiceManager.h>
 #include <Utils/MapTyped.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/ZDArray.h>
 
 #include <string.h>
 
@@ -37,12 +37,11 @@ i32 CGrunt::LoadPickupSprites(
             return 0;
         }
 
-        bool eqA = (strcmp(*g_typeColl.GetNameRecord(m_logicRecord->EventCode()), "A") == 0);
+        bool eqA = (strcmp(g_typeColl[m_logicRecord->EventCode()], "A") == 0);
         if (!eqA) {
-            bool eqD = (strcmp(*g_typeColl.GetNameRecord(m_logicRecord->EventCode()), "D") == 0);
+            bool eqD = (strcmp(g_typeColl[m_logicRecord->EventCode()], "D") == 0);
             if (!eqD) {
-                bool eqE =
-                    (strcmp(*g_typeColl.GetNameRecord(m_logicRecord->EventCode()), "E") == 0);
+                bool eqE = (strcmp(g_typeColl[m_logicRecord->EventCode()], "E") == 0);
                 if (!eqE) {
                     return 0;
                 }

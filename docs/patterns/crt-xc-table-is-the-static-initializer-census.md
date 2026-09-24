@@ -112,13 +112,14 @@ list spelling (`P() : a(0), b(0) {}`) emits the same bytes as assignment.
 constructor and then deletes the empty loop, so an ARRAY and a single object are
 byte-indistinguishable in `.text`. Only the `.bss` extent separates them.
 
-The rule that survives is narrower: a bare-`ret` body means the object's class has a
-*declared* constructor (which is what put it in XC at all) whose body optimises to
-nothing. Worked case - typekeycoll's fifth initializer `0x0016e190` (thunk
-`0x0016e180`, delta `+0x10`) is `TypeKeyRec g_variantOverrides[32]` at `0x002bf498` plus
-`i32 g_variantOverrideCount`, `0x184 B`, which is exactly the `.bss` the probe measures; giving
-`TypeKeyRec` its constructor reproduces retail's five-slot `.CRT$XCU` in the base obj
-slot for slot, the fifth being `c3`.
+This probe proves sufficiency, not a unique source declaration or datum owner.
+A bare `ret` proves an initializer with no surviving effects; it cannot identify
+which source object caused it. The former `TypeKeyRec` example overclaimed an
+authored constructor from the matching slot count and `.bss` extent. Its complete
+source-family control and unresolved startup attribution are tracked by
+`reassess-dhandler-implicit-startup` and `reassess-dhandler-startup-owner` in the
+lineage ledger. Do not add an empty constructor solely to reproduce an otherwise
+unexplained startup slot.
 
 Tooling, not a wall. Decode XC before inventing an owner for an unreferenced `.text` body
 or an unclaimed `.bss` triple.

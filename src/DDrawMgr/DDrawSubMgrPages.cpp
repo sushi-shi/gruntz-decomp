@@ -449,8 +449,7 @@ LoadableClassId CDDrawFrontSurface::GetClassId() {
 }
 
 RVA_COMPGEN(0x00159190, 0x1e, ??_GCDDrawFrontSurface@@UAEPAXI@Z)
-RVA(0x001591b0, 0x19)
-CDDrawFrontSurface::~CDDrawFrontSurface() {}
+RVA_COMPGEN(0x001591b0, 0x19, ??1CDDrawFrontSurface@@UAE@XZ)
 RVA(0x001591d0, 0x8)
 void CDDrawFrontSurface::Unload() {
     m_width = 0;

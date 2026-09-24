@@ -39,7 +39,7 @@ Verdict summary:
 | `0x0e3690-0x0e579e` | savegame+levelinfodlg (+savegamemenu stray) | **ONE TU** (SaveGame.cpp) | strong |
 | `0x0dec60-0x0e2213` | projectile+timebomb | **ONE TU** (Projectile.cpp) | strong |
 | `0x095b10-0x099b46` | ingameicon+ingametext | **ONE TU** (InGameIcon.cpp) | strong |
-| `0x0abfa0-0x0ad527` | frontcandyani+eyecandyani | **ONE TU** (FrontCandyAni.cpp) | strong |
+| `0x0abfa0-0x0ad527` | candy class families | **Separate class owners**; old sandwich argument superseded by registry/guard audit | see control |
 | `0x041e90-0x042cd3` | secretteleportertrigger+secretleveltrigger | **ONE TU** (SecretTeleporterTrigger.cpp) | strong |
 | `0x147390-0x148837` | ddpalette+dirpal+palettelerp (+PalLoad stray) | **ONE TU** (DirPal.cpp, DIRPAL.CPP anchored) | anchored |
 | `0x1396f0-0x145e00` | engine-resource mega-region (15 units) | **SEVEN TUs** + 2 ambiguous pockets (§14): sym `0x1396f0` / hash `0x13c240` / rez `0x13c4e0` / GameWnd `0x13cf00` / GameApp `0x13d590` / DIRSURF `0x13e060` / DDRAWMGR `0x1413d0` / codec `0x143cf0` | anchored (G/H) / strong |
@@ -614,11 +614,11 @@ tail pending the 0xea990-0xf8800 partition package.
   private extents. The duplicated static-inline ResolveNameSlot/ResolveSlot
   helpers deduped; g_textRegCounter/s_textLogicKey unified onto
   g_iconRegCounter/s_iconKeyA (same 0x61aea8/0x60a454 cells).
-* `0x0abfa0-0x0ad527` -> **ONE TU** (FrontCandyAni.cpp): text F-E-F sandwich
-  (front @0xabfa0 | eye 0xac870..0xacf10 | front 0xacf40..0xad510); the
-  frontcandyani init frag @0xad110 sits in the front tail; eyecandyani has no
-  frags/private cells. Both sides already used the shared
-  ActNameRegistry/ActReg headers - clean fold.
+* `0x0abfa0-0x0ad527`: the old **ONE TU** assertion is superseded. The initial
+  constructor belongs to `CFrontCandy`, not `CFrontCandyAni`. EyeCandyAni has
+  private registry storage and four initialization/teardown helpers, formerly
+  hidden in LogicDispatchInit.cpp. The [controlled guard audit](../patterns/static-template-guards-constrain-tu-ownership.md)
+  supports separate class owners and explains the limits of that inference.
 * `0x041e90-0x042cd3` -> **ONE TU** (SecretTeleporterTrigger.cpp): text T-L-T
   sandwich (teleporter x4 | level x5 | SpawnTeleporter @0x42b80, a real 0x153-B
   method); the two init frags (i40 @0x420b0 / i41 @0x426c0) are one adjacent

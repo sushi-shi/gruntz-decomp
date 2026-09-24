@@ -1,5 +1,30 @@
 # Recover MFC pointer-collection API boundaries
 
+## September 21 template-pass result
+
+`audit-template-models.py` now derives `mfc-pointer-members.json` from every owned
+record, including arrays of raw collections. This inventories member storage,
+not global/static objects or a recovered template identity; records remain
+explicitly unclassified until their constructor and complete use family are read.
+
+The actual VC5 controls reject a blanket conversion to SDK typed wrappers:
+`CTypedPtrArray`, `CTypedPtrList` and `CTypedPtrMap` introduce derived-vptr
+stores. The reward queue's retail construction at 0xb59e7 supplies the native
+`CPtrArray` identity without that store, while the tab-list vector construction
+at 0xb58f3 supplies native list lifetime adapters. Its consumer reads now name
+the proven `Coord` payload consistently; no fabricated collection wrapper is
+needed. The map family also remains native, with its output seam expressed
+directly rather than hidden in a union.
+
+See [native MFC identity](../patterns/native-mfc-map-identity-precedes-typed-adapters.md)
+for the constructor controls, the SDK key-lifetime distinction, and the corrected
+`LookupKey` label. This closes those concrete replacement hypotheses, not the
+possibility of an unknown source-level composition or helper. The inventory's
+other owners still require their own complete-family evidence; similarity to
+the status-bar example is not a type verdict.
+
+## Original question and reverse-use checklist
+
 Several class members are currently modeled as raw `CPtrArray` or `CPtrList`
 objects even though every known consumer treats the collection as holding one
 stable pointer type. This exposes storage details throughout the owning class:

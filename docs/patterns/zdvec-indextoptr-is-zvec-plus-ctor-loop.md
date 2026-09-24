@@ -1,53 +1,35 @@
-# `call _zvec::IndexToPtr` + an inline ctor loop IS `_zdvec::IndexToPtr`
+# An erased dynamic-vector fetch plus a construction loop is typed indexing
 
-tags: cpp:inline cpp:container | asm:call | topic:codegen-idiom
-symptoms: `insn_seq --seq` shows the target calling
-`?IndexToPtr@_zvec@@QAEPADH@Z` where we call `?IndexToPtr@_zdvec@@QAEPADH@Z`;
-elsewhere in the same function the target has no call at all but a run of
-`g_typeColl` loads, an `imul` by `m_stride`, a `GrowTo` call and a
-`??0CString@@QAE@XZ` loop; a hand-written copy of the grow logic next to the
-real fetch compiles to nothing because its result is unused
-confidence: 9/10
+tags: cpp:inline cpp:template cpp:container | asm:call | topic:codegen-idiom topic:identity
 
-`_zdvec::IndexToPtr` is `_zvec::IndexToPtr` **plus** a trailing loop that
-placement-news a `CString` into each newly grown slot:
+The earlier version correctly recognized two inline cuts of one operation,
+but assigned both methods to the wrong owners. The old `_zvec::IndexToPtr`
+at 0x312a0 is the erased dynamic-vector fetch owned by `_zdvec`. The old
+`_zdvec::IndexToPtr` at 0x310f0 constructs CString elements and belongs to
+`zDArray<CString>::operator[]`. The source and adoption decisions are recorded
+by `nolf-zdarray-*` in `config/lithtech_lineage.tsv`.
 
-```cpp
-char* _zdvec::IndexToPtr(i32 i) {
-    char* r = _zvec::IndexToPtr(i);           // bounds check / GrowTo / Report
-    char* slot = m_alloc;
-    i32 n = m_grown;
-    while (n-- != 0) { if (slot) new (slot) CString(); slot += 4; }
-    return r;
-}
-```
+A typed array operation first obtains a slot through the erased dynamic base,
+then placement-constructs the newly grown elements and returns the slot by
+reference. Retail callers show both an out-of-line erased fetch followed by
+an expanded constructor loop and a complete expansion of the same operation.
+Those cuts do not require different source-level operations or different
+container identities.
 
-Both halves are inline-visible, so cl expands the outer one at every site but
-decides **per site** whether to expand the inner one. In `CGrunt::ArrivalRecycle`
-(0x59230) the FIRST of three identical probes keeps `call _zvec::IndexToPtr`
-and inlines only the ctor loop, while the second and third expand the whole
-thing (`mov m_grown,0`, the `m_lo`/`m_hi` compares, `imul m_stride`, the
-`GrowTo` / error arms). All three are ONE source statement -
-`*g_typeColl.GetNameRecord(key)`.
+The earlier `ArrivalRecycle` experiment (0x59230, 68.46 -> 93.19) recovered a
+missing use/side-effect boundary: writing a second unused fetch beside the
+real operation let `/O2` delete its address arithmetic while retaining side
+effects. The countdown loop also matters: `while (n-- != 0)` and a separate
+end-of-loop decrement are different compiler inputs. These observations
+survive the owner correction; the invented class and raw/typed accessor
+names do not.
 
-## The trap
+Both recovered typed indexing bodies now come from one template definition.
+They remain exact at 0x310f0 and 0x464e0. Restoring header visibility changes
+caller call cuts and reopens earlier reviews; it does not prove those callers
+closed. In particular, a visible template body can expand under `/Ob1` even
+without the `inline` keyword. See
+[the measured template exception](vc5-template-members-inline-without-inline-keyword.md).
 
-Reading the first site as "a raw `_zvec` resolve" and then writing the
-expansion out by hand as a SECOND statement produces neither shape: the
-hand-written block's `rec` is unused, so /O2 deletes all of its address
-arithmetic (no `imul`, no `lea`) and keeps only the side effects. The function
-then looks 48 instructions short with a reloc sequence that has the right calls
-in the wrong places.
-
-`CTypeCollRuntime::GetNameRecordRaw()` names the first form (`ScratchResolve` +
-an explicit `ConstructGrownSlots()`); `GetNameRecord()` names the fully inlined
-one. Whichever you use, the ctor loop counts with `while (n-- != 0)`
-(`mov ecx,eax; dec eax; test ecx,ecx; je; lea edi,[eax+1]`), never
-`while (n != 0) { ...; n--; }` - that spelling costs one `lea` and one `dec`
-per site.
-
-CGrunt::ArrivalRecycle 0x59230: 68.46 -> 93.19, insn delta -48 -> -1.
-
-related:
-[reloc-sequence-diff-names-the-missing-statement.md](reloc-sequence-diff-names-the-missing-statement.md),
-[inline-depth-splits-one-body-into-two-shapes.md](inline-depth-splits-one-body-into-two-shapes.md)
+Related: [relocation sequence and missing statements](reloc-sequence-diff-names-the-missing-statement.md),
+[inline depth and body cuts](inline-depth-splits-one-body-into-two-shapes.md).

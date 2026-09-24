@@ -1,7 +1,15 @@
-"""Canonical LithTech lineage ledger reader, validator and queue renderer."""
+"""Canonical LithTech lineage ledger reader, validator and queue renderer.
+
+Git source identities use a revision and blob id. Released archives instead use
+``archive-sha256:<digest>`` and ``sha256:<file-digest>``. For those rows,
+``verify_blobs`` treats its source directory as the extraction root and checks
+the named file payload only. An extraction cannot authenticate the archive's
+digest; that provenance must be verified against the original archive separately.
+"""
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import subprocess
@@ -53,6 +61,24 @@ REASONS = {
 TERMINAL = DECISIONS - {"pending"}
 HEX_RE = re.compile(r"^[0-9a-f]{7,40}$")
 SHA1_RE = re.compile(r"^[0-9a-f]{40}$")
+ARCHIVE_RE = re.compile(r"^archive-sha256:[0-9a-f]{64}$")
+FILE_SHA256_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
+
+
+def _source_identity_errors(commit: str, blob: str) -> list[str]:
+    if commit.startswith("archive-sha256:") or blob.startswith("sha256:"):
+        errors = []
+        if not ARCHIVE_RE.fullmatch(commit):
+            errors.append("archive source_commit must be archive-sha256:<64 lowercase hex digits>")
+        if not FILE_SHA256_RE.fullmatch(blob):
+            errors.append("archive source_blob must be sha256:<64 lowercase hex digits>")
+        return errors
+    errors = []
+    if not HEX_RE.fullmatch(commit):
+        errors.append("source_commit must be a 7-40 digit lowercase git id or tagged archive SHA256")
+    if not SHA1_RE.fullmatch(blob):
+        errors.append("Git source_blob must be a full lowercase git blob id")
+    return errors
 
 
 def load(path: Path = LEDGER) -> list[dict[str, str]]:
@@ -87,10 +113,7 @@ def validate_rows(rows: list[dict[str, str]], complete: bool = False) -> list[st
 
         commit = row.get("source_commit", "")
         blob = row.get("source_blob", "")
-        if not HEX_RE.fullmatch(commit):
-            errors.append(f"{prefix}: source_commit must be a 7-40 digit lowercase git id")
-        if not SHA1_RE.fullmatch(blob):
-            errors.append(f"{prefix}: source_blob must be a full lowercase git blob id")
+        errors.extend(f"{prefix}: {error}" for error in _source_identity_errors(commit, blob))
         if not row.get("source_path") or not row.get("source_symbol"):
             errors.append(f"{prefix}: source_path and source_symbol are required")
 
@@ -152,8 +175,38 @@ def _git(source: Path, *args: str) -> str:
 
 
 def verify_blobs(source: Path, rows: list[dict[str, str]]) -> list[str]:
+    """Check Git blobs or extracted file payloads, not original archive digests."""
     errors: list[str] = []
     for row in rows:
+        identity_errors = _source_identity_errors(row['source_commit'], row['source_blob'])
+        if identity_errors:
+            errors.extend(f"{row['id']}: {error}" for error in identity_errors)
+            continue
+        if ARCHIVE_RE.fullmatch(row['source_commit']):
+            root = source.resolve()
+            relative = Path(row['source_path'])
+            path = (root / relative).resolve()
+            if relative.is_absolute() or not path.is_relative_to(root):
+                errors.append(
+                    f"{row['id']}: archive source_path must stay relative to extraction root "
+                    f"{root}: {row['source_path']}"
+                )
+                continue
+            try:
+                actual = "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+            except OSError as exc:
+                errors.append(
+                    f"{row['id']}: cannot read extracted archive payload {path}: {exc}; "
+                    "provide the extraction root containing source_path"
+                )
+                continue
+            if actual != row['source_blob']:
+                errors.append(
+                    f"{row['id']}: extracted payload drift for {path}: "
+                    f"ledger {row['source_blob']}, source {actual}; "
+                    "check the release and extraction root (archive digest not verified here)"
+                )
+            continue
         spec = f"{row['source_commit']}:{row['source_path']}"
         try:
             actual = _git(source, "rev-parse", spec)

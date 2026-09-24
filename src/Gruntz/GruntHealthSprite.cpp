@@ -19,7 +19,7 @@
 #include <Image/CImage.h>
 #include <Io/FileMem.h>
 #include <Lith/BDefs.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/ZDArray.h>
 
 #include <stddef.h>
 
@@ -51,7 +51,7 @@ void CGruntHealthSprite::FireActivation(i32 id) {
 RVA(0x0007eed0, 0x18d)
 void CGruntHealthSprite::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CGruntHealthSprite>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CGruntHealthSprite>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CGruntHealthSprite::HealthUpdate);
 }
 

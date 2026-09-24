@@ -8,7 +8,6 @@
 
 class CDemo : public CPlay {
 public:
-    CDemo() {}
     virtual ~CDemo() OVERRIDE;
 
     virtual i32 LoadGameAssetNamespaces(CGruntzMgr*, i32, i32) OVERRIDE;

@@ -64,7 +64,6 @@ struct StreamFeeder {
 };
 
 struct StreamVoiceFeeder : StreamFeeder {
-    StreamVoiceFeeder() {}
     virtual i32 Feed(u8* dst1, u32 bytes1, u32* filled1, u8* dst2, u32 bytes2, u32* filled2)
         OVERRIDE;
     virtual i32 ResetSource() OVERRIDE;

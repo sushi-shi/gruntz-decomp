@@ -4,10 +4,11 @@
 #include <MfcWin.h>
 
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordNode.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/EnemyAiType.h>
-#include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
@@ -31,17 +32,16 @@
 #include <Gruntz/VoiceManager.h>
 #include <Ints.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/ZDArray.h>
 
 #include <limits.h>
 #include <new>
 #include <stdlib.h>
 #include <string.h>
 
-// @early-stop
 RVA(0x000f0130, 0x7c0)
 i32 CGrunt::StepGauntletGruntBehavior() {
-    const char* name = *g_typeColl.GetNameRecord(m_logicRecord->m_eventCode);
+    const char* name = g_typeColl[m_logicRecord->m_eventCode];
     bool eqI = (strcmp(name, "I") == 0);
     if (eqI) {
         return 1;
@@ -154,9 +154,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                         );
                     }
                     if (this->CoordCount() != 0) {
-                        if (ax <= ay) {
-                            ax = ay;
-                        }
+                        ax = Max(ax, ay);
                         if (this->CoordCount() > ax) {
                             SetEntrancePos(1, 1);
                         }
@@ -245,7 +243,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
         if ((gc.m_flagBytes[0] & 0x20) != 0) {
             SetEntrancePos(1, 1);
             if (this->CoordCount() != 0) {
-                RECYCLE_GRUNT_COORDS_EXPANDED(this)
+                RECYCLE_GRUNT_COORDS(this)
             }
             g_gameReg->m_triggerMgr->UseEquippedToolAt(
                 m_playerIndex,

@@ -67,19 +67,22 @@ makes all nine callers exact. The old `&Temporary()` cell remains a useful
 negative control, not the retained setter source; see
 [`inline-callee-frontend-cost-drives-ob1-budget`](inline-callee-frontend-cost-drives-ob1-budget.md).
 
-## Pointer-taking aggregate constructors still use the MSVC extension
+## Address passing does not prove pointer-taking aggregate constructors
 
-Gruntz retail's RECT/POINT/VECTOR/RANGE constructor ABI takes pointers, unlike
-the later surviving reference boundary. `CButeMgr::Statement` therefore still
-uses `&Temporary()` for those pointer-taking aggregate constructors. Clang's
-annotation, variant, and compdb paths retain `-Wno-address-of-temporary`; clang
-does not produce the retail object code.
+The earlier claim that Gruntz retail proves pointer-taking
+RECT/POINT/VECTOR/RANGE constructors was too strong. Restoring the sourced
+vector/range const-reference constructors, reference Get/Set APIs and parser
+temporaries leaves all nine affected bodies exact, including their EH actions.
+The vector/range parser no longer needs `&Temporary()`. The remaining point/rect
+spellings need their own complete-family audit; reconstructed mangling is not
+independent evidence. See
+[`generated-symbols-do-not-prove-reference-api`](generated-symbols-do-not-prove-reference-api.md).
 
 ## The other half: a payload struct built as a stack temporary
 
 The same idiom shows up wherever retail assembles an aggregate argument. In
 `CButeMgr::Statement` (0x170750) the RECT/POINT/VECTOR/RANGE arms build the
-payload **on the stack** and hand its address to the ordinary pointer constructor:
+payload **on the stack** and pass its address across the constructor boundary:
 
 ```asm
 push 0x18                 ; sizeof(CAVector)
@@ -93,10 +96,10 @@ je   ...
 mov  ecx,0x6
 lea  esi,[esp+0x34]       ; src = that temporary
 mov  edi,eax
-rep movsd                 ; the pointer ctor's own bitwise copy
+rep movsd                 ; the value constructor's own bitwise copy
 ```
 
-so the arm is `new CSymTabItem(VECTOR_TYPE, &CAVector(x, y, z))`, **not** a
+The surviving spelling is `new CSymTabItem(VECTOR_TYPE, CAVector(x, y, z))`, **not** a
 `CSymTabItem(SymTypes, double, double, double)` overload. Four such overloads had been
 invented (allocating `new i32[2]` / `new i32[4]` / `new double[2]` / `new double[3]`),
 which also contradicted the destructor and assignment arms - those delete and copy

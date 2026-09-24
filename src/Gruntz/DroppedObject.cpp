@@ -2,12 +2,12 @@
 
 #include <Gruntz/DroppedObject.h>
 
-#include <Bute/ButeTree.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Enums.h>
 #include <Gruntz/ActName.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/ActRegistry.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/Brickz.h>
@@ -40,9 +40,9 @@
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/zBitVec.h>
-#include <Wap32/ZVec.h>
 #include <Wwd/LogicRecordEvent.h>
+#include <ZTools/BitVec.h>
+#include <ZTools/ZDArray.h>
 
 #include <string.h>
 
@@ -256,7 +256,7 @@ void CObjectDropper::FireActivation(i32 actId) {
 RVA(0x000c60e0, 0x18d)
 void CObjectDropper::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CObjectDropper>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CObjectDropper>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CObjectDropper::Update);
 }
 
@@ -426,13 +426,13 @@ void CDroppedObject::FireActivation(i32 coord) {
 
 RVA(0x000c6d30, 0x2ac)
 void CDroppedObject::RegisterActs() {
-    ACT_NAME_ID_CALL_REPORT(id, "A")
-    *(CActRegPool<CDroppedObject>::s_table.ResolveEntryCallReport(id)) =
+    ACT_NAME_ID(id, "A")
+    CActRegPool<CDroppedObject>::s_table[id] =
 
         static_cast<i32 (CUserLogic::*)()>(&CDroppedObject::AdvanceFall);
 
     ACT_NAME_ID(id2, "B")
-    *(CActRegPool<CDroppedObject>::s_table.ResolveEntryCallReport(id2)) =
+    CActRegPool<CDroppedObject>::s_table[id2] =
         static_cast<i32 (CUserLogic::*)()>(&CDroppedObject::AdvanceImpactAnimation);
 }
 
@@ -562,7 +562,7 @@ void CDroppedObjectShadow::FireActivation(i32 coord) {
 RVA(0x000c78b0, 0x18d)
 void CDroppedObjectShadow::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CDroppedObjectShadow>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CDroppedObjectShadow>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CDroppedObjectShadow::Advance);
 }
 

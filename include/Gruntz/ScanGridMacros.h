@@ -4,7 +4,7 @@
 #include <MfcWin.h>
 
 #include <Gruntz/CoordNode.h>
-#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/CoordPool.h>
 
 #define GRID_CLIP(grid, srcRect)                                                                   \
     {                                                                                              \

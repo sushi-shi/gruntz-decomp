@@ -63,3 +63,47 @@ Reverse-audit rule: when a two-object operation has a natural semantic owner and
 only a commutative operand-load pair differs, try the owner as an inline member
 receiver before scheduling permutations. Require the member form to explain the
 ownership as well as the bytes; an invented receiver is not a register lever.
+
+## Named-result control in the later helper-rich TU
+
+The member boundary is not a context-independent guarantee of load order.
+At `4a4cbe25d`, the same direct-return member and both caller sites remain,
+but both attack-mask load pairs are reversed. The function still has exactly
+558 bytes, 168 instructions, six calls, 33 branches, one return, a 48-byte
+frame, and three ordered relocations. Its first difference is at byte `+0x84`;
+constants, stores, displacements, and ordered referents agree.
+
+Giving the existing member a real result local repairs the first pair:
+
+```cpp
+inline i32 CGameObject::AttackBits(CGameObject* target) const {
+    i32 bits = static_cast<i32>(target->m_objectType) & m_attackTypeMask;
+    return bits;
+}
+```
+
+The first remaining difference moves to `+0x1c1`, the second attack-mask load
+pair. All the counts above remain unchanged. Restoring the direct return in
+the same real TU reproduces both incorrect pairs. Initializing `bits` with the
+target type and then applying `&=` emits the same caller as the named complete
+expression: the useful distinction is the result-local boundary, not that
+compound assignment spelling.
+
+Negative composition controls leave the same second pair: a separate target
+type local, a separate attack-mask local, a const-pointer target parameter,
+a const-reference target parameter with both caller arguments dereferenced,
+and a named result in the adjacent `ObjectTypeBits` helper. None closes the
+remaining difference, and those additional changes are not retained.
+
+Reverse use: preserve a historically proven member receiver, then distinguish
+its expression return from a named real result before changing caller control
+flow. A recovered operand pair is partial progress, not an exact closure or
+proof that the remaining source families are exhausted.
+
+The shared-header edit also recovers the unchanged `CTimer::AddTime` at
+`0x9c0e0`: 99.8214 to exact, 163 bytes, 57 instructions, no calls or
+relocations, five branches and one return. This is a TU-state consequence,
+not evidence that the timer uses the attack-mask helper. Conversely,
+`CSpotLight::Tick`, which also does not use it, moves from 84.2097 to 83.2984
+with its existing CFG mismatch and unchanged source fingerprint; its banked
+84.2097 remains preserved. Neither movement licenses unrelated source edits.

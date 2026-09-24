@@ -3,6 +3,7 @@
 
 #include <Enums.h>
 #include <Ints.h>
+#include <Lith/BDefs.h>
 
 GZ_ENUM_CONST_BEGIN(TileGeometry)
     TILE_SIZE_PX = 32,
@@ -12,7 +13,7 @@ GZ_ENUM_CONST_BEGIN(TileGeometry)
 GZ_ENUM_CONST_END(TileGeometry)
 
 inline i32 SquaredDistance(i32 dx, i32 dy) {
-    return dx * dx + dy * dy;
+    return SQR(dx) + SQR(dy);
 }
 
 #endif // WAP32_TILEGEOMETRY_H

@@ -1,6 +1,6 @@
 # Exact-match lever catalog from Gruntz history
 
-This catalog is the required memory aid for a Function Match Plan. It was
+This catalog is a reasoning aid for matching, not a requirement to write a plan. It was
 derived from checked-in exact closures, hard-wall commit history, AGENTS.md's
 HoMM3/LithTech campaigns, and `docs/patterns/INDEX.md`. It is not a menu of blind
 mutations: use each entry only when retail/source evidence licenses it, and mark
@@ -229,5 +229,5 @@ arithmetic was handwritten.
   history investigation.
 
 When a new controlled exact closure is not represented above, document it in
-`docs/patterns/` plus `INDEX.md`, then update this catalog so the next function's
-plan cannot miss it.
+`docs/patterns/` plus `INDEX.md`, then update this catalog so later matching
+can use that evidence.

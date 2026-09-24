@@ -40,3 +40,19 @@ not evidence that the unchanged function bodies should be rewritten. Keep the
 retail-supported shared boundaries, bank the reviewed current state while
 preserving historical MAX, and return to those functions through the derived
 wall inventory.
+
+## Integration with the complete container owners
+
+PR #79 replaces the inferred `ResolveEntry` family with the surviving typed
+`zDArray<T>::operator[]`. The shared dispatcher uses that accessor twice: once
+for the null test and again for the invoked handler. All 51 helper call sites
+are retained and all 52 scored `FireActivation` functions remain exact in the
+combined tree. `CEyeCandyAni`'s site belongs in `EyeCandyAni.cpp`, where #79
+restored its owner, not in the old combined `FrontCandyAni.cpp`.
+
+`Pop` belongs alongside `Push` in `Utils/FreeNodePool.h`, on the canonical
+`FreeNodePool<T>`. Its result is `T*`, its local node is the nested `Node`, and
+the payload is `m_value`. The single-exit form and reserved last-node rule are
+unchanged at all 20 adopted sites. There is no need to revive the deleted
+game-specific `FreeNodePoolInline.h`; the public-header control compiles a
+non-`Coord` payload consumer as well.

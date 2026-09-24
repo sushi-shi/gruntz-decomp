@@ -1,9 +1,9 @@
 #include <rva.h>
 
 #include <Bute/ButeMgr.h>
-#include <Bute/ButeTree.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/ActNameRegistry.h>
+#include <Gruntz/ActRegistry.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/EnemyAiType.h>

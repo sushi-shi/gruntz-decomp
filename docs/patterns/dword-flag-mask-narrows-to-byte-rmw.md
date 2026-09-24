@@ -36,5 +36,51 @@ spelling was a transcription of the narrowed OUTPUT, not the source.
   instruction-exact (residue elsewhere in the fn).
 - CGrunt::ClaimSwitchTile 0x52c70: retail bytes confirmed the same
   `and byte [ecx+eax+3],-0x21` / `or byte [ebp+eax+3],0x20` forms.
-- Sweep candidates: the same `m_flagBytes[3] &= 0xdf` spelling survives in
-  Grunt.cpp, GruntCombat.cpp, GruntEntranceMove.cpp, TriggerMgr.cpp.
+- Search remaining consumers for `m_flagBytes[3] &= 0xdf`; the original
+  inventory is not a current exclusion or completion list.
+
+## Compose the existing occupancy API
+
+At source checkpoint `2e88f8b7b`, `CGrunt::LoadGruntCombatAnimations`
+(`0x597a0`) still transcribed both operations through `m_flagBytes[3]` and
+narrowed the actual `CGruntzMapMgr*` receiver to its base. Reusing the existing
+`ReleaseCellOccupancy` and `AcquireCellOccupancy` header methods preserves the
+two separate row expressions and names their ownership operation. No new
+helper, cached cell reference, out-of-line call or bounds guard is needed.
+
+Controlled real-TU sequence (current fuzzy, not historical MAX):
+
+| State | LoadGruntCombatAnimations | StepBehavior |
+|---|---:|---:|
+| Baseline | 66.33637% | 66.79507% |
+| Three scalar `SQR` uses | 66.33637% | 66.79507% |
+| Required occupancy header only | 66.33637% | 66.79389% |
+| Release helper composed | 66.35839% | 66.79389% |
+| Both helpers composed | 66.87775% | 66.79272% |
+
+The square-only normalized COFF is byte-identical to baseline. The other 44
+scored TU records remain unchanged through the complete composition. The final
+load body remains 5,272 bytes, but loses one instruction (1,355 to 1,354);
+its 59 calls, 190 branches, six returns and 242 references are unchanged.
+It still differs from retail's 57 calls and 184 branches: this is an applied
+source correction, not a closed caller or a proven inline-budget repair.
+
+Retail release `0x5a940` and acquire `0x5a989` each perform the narrowed byte
+memory operation, reload `m_rows`, and then store the occupant at cell offset
+four. The final production body restores that protocol at offsets `0x126b`
+and `0x12c0`. Keep the separate old/new grid receiver loads. Do not infer
+complete indexing or register equivalence merely from this local signature.
+
+`scripts/test_combat_helper_consumers.py` exercises both actual production and
+original phases, rejecting changed masks and missing row reloads. It also
+compares the complete entrance-flash phase, allowing only six independently
+constrained stack displacement changes; four named reference identities and
+four emitted literal payloads are checked, not final literal placement.
+Guard, square, high-word, reference, multiplicity and addend negative controls
+prevent the matcher from accepting a superficially similar phase. Full helper
+semantics and member layout remain covered by `test_map_occupancy_headers`.
+
+Reverse-use rule: inspect the full receiver and existing helper before
+transcribing byte stores. A header-only control separates declaration-state
+movement from the actual helper composition; an unchanged call-set gap must
+remain open even when the memory access shape improves.
