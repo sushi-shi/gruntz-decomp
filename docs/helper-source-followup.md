@@ -12,6 +12,15 @@ fresh declaration-and-known-use review: `reassess-cavector` and
 remain recheckable in the ledger. The other 14 families remain pending. Earlier
 checkpoint counts below describe their own state, not a blanket exemption.
 
+Vector checkpoint `eb4ea780e` applies `reassess-vector-activate-macro` and
+`reassess-vector-motion-init-macro`: eighteen Activate uses preserve its exact
+body, and six motion initializer uses recover three historically exact
+constructors. Current exact total is 3,844/4,428 with 94.85% fuzzy and 95.19%
+source-specific MAX. Full build/MAX gates and 72 focused tests pass; all 4,429
+historical maxima are preserved. The
+[macro composition](patterns/vector-set-macro-preserves-repeated-receiver-and-copy-boundaries.md)
+records the controlled mechanism. Both broad initialization reviews remain open.
+
 Ambient checkpoint `e1235c9be` applies two narrow adoptions: FadePlayback
 recovers 88.1250% to its 91.8056% historical best, while all four existing scaler
 owners remain exact. Full build/MAX gates and 62 focused tests pass; all 4,429
@@ -33,6 +42,7 @@ neither this checkpoint nor the earlier exact callers close the broad clamp row.
 | `reassess-ambient-min` | `CRandomAmbientSound::Update`,0xcb30 | Both half-duration caps through authored `Min`, composed with the retail integer phase toggle |
 | `reassess-max-span-*` | Seven Grunt reroll-span consumers | Existing signed by-value `Max` at all seven selections, retaining named/reused result locals |
 | `reassess-ambient-avp2-ltclamp`, `reassess-ambient-fade-scale-reuse` | Shared ambient scaler and both Fade start arms | Authored saturation macro and existing member-helper reuse |
+| `reassess-vector-activate-macro`, `reassess-vector-motion-init-macro` | Nine Grunt cells and motion constructor family | Twenty-four width-preserving SET macro uses, with existing member APIs retained |
 | `hs-bitset-body` | zBitVec string constructor,0x16d3a0 | Surviving zBitSet small-buffer pointer accessor |
 | `hs-bitset-error-tail` | Same constructor | Existing error-helper boundary at three expanded error tails |
 | `bute-vector-range-reference-api` | Six Bute getters/setters, two item constructors, parser | Reference API and ordinary bound temporaries |
