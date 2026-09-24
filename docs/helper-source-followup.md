@@ -12,6 +12,26 @@ fresh declaration-and-known-use review: `reassess-cavector` and
 remain recheckable in the ledger. The other 14 families remain pending. Earlier
 checkpoint counts below describe their own state, not a blanket exemption.
 
+Combat checkpoint `ec04092ac` applies the three remaining scalar square uses
+and reuses the existing occupancy release/acquire methods with their actual
+derived receivers. The isolated square change preserves the complete
+normalized object; the composed occupancy change moves
+`LoadGruntCombatAnimations` from 66.3364% to 66.8778%. Its larger call-set gap
+remains open; no exact or historical-MAX win is claimed.
+Full build/MAX gates, 100 focused tests and the 3,919-function near-exact audit
+pass. All 4,429 historical and 4,427 unchanged-source maxima are preserved;
+the two edited source hashes bank their actual output, not earlier hashes'
+scores. Rounded aggregate scores and the exact count are unchanged.
+The canonical adoptions are `reassess-sqr-grunt-combat` and
+`combat-occupancy-helper-composition`; alternatives remain under `combat-*`.
+The [occupancy composition control](patterns/dword-flag-mask-narrows-to-byte-rmw.md)
+records the measured mechanism and bounded original-backed negative tests.
+The next Fader cohort has 16 authored square sites and a paired SDK rectangle
+constructor proposal, under `reassess-sqr-fader`,
+`reassess-sqr-fader-effects` and `fader-mesh-rect-ctor-composition`.
+Those compiler trials have not run; their separately rejected/deferred options
+remain recheckable under `fader-*`. All 14 broad pending families remain open.
+
 Motion checkpoint `9e1e121fe` applies the complete three-site square-helper
 family, restores the original multiply grouping and shared zero references,
 and models the nine eagerly evaluated arrival targets. The retained source
@@ -28,8 +48,9 @@ The canonical adoptions are `reassess-sqr-motion`,
 individually recheckable. The [composed lifetime control](patterns/square-helper-compose-intermediate-product-lifetime.md)
 records the measured mechanism and corrects the former 65% stopping claim.
 The broader motion wall, SQR review and all 14 broad pending families remain
-open. The worker's next derived cohort and its per-option evidence are under
-`reassess-sqr-grunt-combat` and `combat-*`; those source trials are not yet run.
+open. The subsequent combat checkpoint above executes the worker's derived
+cohort; its per-option evidence remains under `reassess-sqr-grunt-combat` and
+`combat-*`.
 
 Scalar-math checkpoint `f8e3f6e5f` restores the missing FlashTable dark-ramp
 uses of `INTERPOLATE`, composed with its existing `HSV_MIN`. Both separately
