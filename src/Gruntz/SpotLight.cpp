@@ -49,7 +49,6 @@ RVA_COMPGEN(0x00013010, 0x1e, ??_GCSpotLight@@UAEPAXI@Z)
 
 RVA_COMPGEN(0x00013040, 0x44, ??1CSpotLight@@UAE@XZ)
 
-// @early-stop
 RVA(0x000b1200, 0x2cb)
 CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SET_ANIMATION_ACT("A");
@@ -124,7 +123,6 @@ void RegisterSpotLightActions() {
     CActRegPool<CSpotLight>::s_table[id2] = static_cast<CActHandler>(&CSpotLight::Update);
 }
 
-// @early-stop
 RVA(0x000b1af0, 0x318)
 i32 CSpotLight::Tick() {
     if (g_gameReg->m_isEasyMode == false || g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
@@ -184,8 +182,7 @@ i32 CSpotLight::Tick() {
     double rotatedY = ox * s - oy * c;
     m_position.Init(rotatedX, rotatedY);
     if (mv != NULL) {
-        m_center.m_x = static_cast<double>(mv->m_screenX);
-        m_center.m_y = static_cast<double>(mv->m_screenY);
+        VEC2_SET(m_center, static_cast<double>(mv->m_screenX), static_cast<double>(mv->m_screenY));
     }
     m_position.m_x = m_center.m_x + rotatedX;
     m_position.m_y = m_center.m_y + rotatedY;
@@ -205,11 +202,13 @@ int CSpotLight::Update() {
 
         double dAngle = static_cast<double>(g_frameDelta) * m_angularVelocity;
         CWwdSpriteObject* focus = m_focus;
-        m_position.m_x = oy * s - ox * c;
-        m_position.m_y = ox * s + oy * c;
+        VEC2_SET(m_position, oy * s - ox * c, ox * s + oy * c);
         if (focus) {
-            m_center.m_x = static_cast<double>(focus->m_screenX);
-            m_center.m_y = static_cast<double>(focus->m_screenY);
+            VEC2_SET(
+                m_center,
+                static_cast<double>(focus->m_screenX),
+                static_cast<double>(focus->m_screenY)
+            );
         }
         m_position.Init(m_center.m_x + m_position.m_x, m_center.m_y + m_position.m_y);
         m_angle = dAngle + m_angle;

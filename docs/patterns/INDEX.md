@@ -1,5 +1,7 @@
 # Pattern index (MSVC 5.0 /O2 — Gruntz)
 
+- [Vector macro parenthesization can change FP allocation](vector-macro-parenthesization-can-change-fp-allocation.md) — cpp:macro cpp:scope cpp:expression | asm:fxch asm:fstp | topic:codegen-idiom — Spotlight Update improves 73.26966 to 80.25843; a bare block is flat, while the parenthesized expansion reproduces the macro with or without its trailing semicolon. No bare steering scope retained; the larger vector-family review remains open.
+
 - [Vector SET macros preserve repeated receivers and raw double copies](vector-set-macro-preserves-repeated-receiver-and-copy-boundaries.md) — c10 — cpp:macro cpp:inline cpp:aggregate cpp:double | asm:lea asm:mov asm:fld asm:fstp | topic:source-shape topic:aliasing — eighteen member Init calls lose 36 original references in Activate; a width-adapted macro keeps its full exact body. Six macro initialization sites plus original alternating bound stores recover the complete motion constructor from 69.975 to 100.
 
 - [A late parser local reuses a dead argument home](late-parser-local-reuses-dead-argument-home.md) — c10 — cpp:local cpp:scope cpp:constructor cpp:inline | asm:mov asm:push | topic:regalloc topic:eh — zBitVec's string constructor closes 95.66782 -> 100 with its sourced helpers intact; initializing the maximum after entry guards restores both the receiver home and its unwind action, without changing frame size or call/CFG counts.
