@@ -60,6 +60,7 @@ the following examples without removing their typed APIs:
 | `CBoomerang::LoadProjectileSprites` 0xe0690 | 42.2927% | scalar launch and FP midpoint/direction stores in typed vectors | 82.7155% |
 | `CBattlezMapConfig::LoadConfig` 0x25020 | 89.1183% | shared pool pop plus separate screen-tile and configuration component stores | 95.2833% |
 | `CBattlezMapConfig::PickSpawnCoord` 0x30f20 | 64.2778% | direct screen-tile reads, separate result locals, component equality | 97.9048% |
+| `CBattlezMapConfig::IsCoordOccupied` 0x305b0 | 55.1735% | scalar current/entrance/path tile locals and component predicates | 92.1531% |
 | `CGrunt::RectContains` 0x51850 | 46.2177% | tile component conversion, native rectangle copy, offset/extent macros | 100% |
 | `CGrunt::VehicleContactContains` 0x51a20 | 58.6220% | same rectangle family | 100% |
 | `CGrunt::SetArrivalTarget` 0x52ed0 | 59.6000% | component stores and snap expressions | 100% |
@@ -307,6 +308,14 @@ Comparing the two coordinate components separately instead of invoking
 `Coord::operator==` restored the prior 97.9048% and retail's branch count.
 The shared `Coord` operators and screen-tile helper stay available to other
 callers.
+
+`IsCoordOccupied` in that unit independently confirms the same boundary at
+three lookup sites. Direct current-screen tile reads remove the extra
+`GetScreenPos` call (55.1735% to 65.2857%). Scalar entrance tile locals and
+component equality reach 78.0918%; doing the same for the current position
+reaches 86.1837%. Keeping a pointer to the path coordinate, then reading its
+two fields into distinct locals instead of copying a `Coord`, restores the
+prior 92.1531%. The named trigger-cell flag and typed fields remain intact.
 
 `CBattlezMapConfig::LoadConfig` shows that preserving a shared inline owner
 can coexist with scalar caller evaluation. Replacing two hand-expanded free-list

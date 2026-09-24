@@ -3942,7 +3942,6 @@ i32 CBattlezMapConfig::PathCrossesMarkedTile(CGrunt* unit) {
 // @early-stop
 RVA(0x000305b0, 0x121)
 i32 CBattlezMapConfig::IsCoordOccupied(CGrunt* selfUnit, i32 qx, i32 qy) {
-    Coord query(qx, qy);
     i32 i = 0;
     CGrunt** units = m_triggerMgr->m_units + m_playerIndex * TM_UNITS_PER_PLAYER;
     for (;;) {
@@ -3956,9 +3955,11 @@ i32 CBattlezMapConfig::IsCoordOccupied(CGrunt* selfUnit, i32 qx, i32 qy) {
                     for (;;) {
                         POSITION cur = node;
                         unit->m_coordList.GetNext(node);
-                        Coord pathCell = *static_cast<Coord*>(unit->m_coordList.GetAt(cur));
-                        i32 tile = board->CellFlagsAt(pathCell.m_x, pathCell.m_y);
-                        if ((tile & IDX(CELL_FLAG_TRIGGER)) && pathCell == query) {
+                        Coord* c = static_cast<Coord*>(unit->m_coordList.GetAt(cur));
+                        i32 x = c->m_x;
+                        i32 y = c->m_y;
+                        i32 tile = board->CellFlagsAt(x, y);
+                        if ((tile & IDX(CELL_FLAG_TRIGGER)) && x == qx && y == qy) {
                             return 1;
                         }
                         if (node == NULL) {
@@ -3967,14 +3968,15 @@ i32 CBattlezMapConfig::IsCoordOccupied(CGrunt* selfUnit, i32 qx, i32 qy) {
                     }
                 }
             }
-            Coord entrance = unit->m_entrancePx;
-            ScreenTile(&entrance);
-            if (entrance == query) {
+            i32 entranceX = unit->m_entrancePx.m_x >> TILE_SHIFT_PX;
+            i32 entranceY = unit->m_entrancePx.m_y >> TILE_SHIFT_PX;
+            if (entranceX == qx && entranceY == qy) {
                 return 1;
             }
-            Coord current;
-            unit->GetScreenTile(&current);
-            if (current == query) {
+            CGameObject* lvl = unit->m_object;
+            i32 currentX = lvl->m_screenPosition.m_x >> TILE_SHIFT_PX;
+            i32 currentY = lvl->m_screenPosition.m_y >> TILE_SHIFT_PX;
+            if (currentX == qx && currentY == qy) {
                 return 1;
             }
         }
