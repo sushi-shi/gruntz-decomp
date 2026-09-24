@@ -125,7 +125,7 @@ def ast_dump(tu: str, cl_flags: list[str] | None) -> dict | None:
 
 
 def var_facts(tu: str, cl_flags: list[str] | None) -> dict[str, dict] | None:
-    """{mangled VarDecl name: {'size': bytes, 'internal': bool}} for main-file
+    """{mangled VarDecl name: {'size': bytes, 'internal': bool, 'defined': bool}} for main-file
     globals - THE DATA-extent authority (laid out under the TU's real
     i386/MSVC flags) and the storage a claim's cl 5.0 spelling depends on.
 
@@ -160,10 +160,12 @@ def var_facts(tu: str, cl_flags: list[str] | None) -> dict[str, dict] | None:
         if not name or size < 0:
             continue
         internal = cursor.linkage != cidx.LinkageKind.EXTERNAL
-        if name in facts and facts[name] != {"size": size, "internal": internal}:
+        fact = {"size": size, "internal": internal, "defined": cursor.is_definition()}
+        if name in facts and any(facts[name][k] != fact[k] for k in ("size", "internal")):
             conflicts.add(name)
         else:
-            facts[name] = {"size": size, "internal": internal}
+            fact["defined"] |= facts.get(name, {}).get("defined", False)
+            facts[name] = fact
     for name in conflicts:
         facts.pop(name, None)
     return facts

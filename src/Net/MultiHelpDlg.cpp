@@ -18,17 +18,6 @@
 #include <stdio.h>
 #include <string.h>
 
-DATA(0x001ea448)
-const AFX_MSGMAP CMultiHelpDlg::s_messageMap = {
-    &CDialog::messageMap,
-    &CMultiHelpDlg::s_messageEntries[0],
-};
-
-DATA(0x001ea450)
-const AFX_MSGMAP_ENTRY CMultiHelpDlg::s_messageEntries[] = {
-    {0, 0, 0, 0, AfxSig_end, 0},
-};
-
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000beb60, 0x1e)
@@ -41,6 +30,6 @@ RVA(0x000bebe0, 0x3)
 void CMultiHelpDlg::DoDataExchange(CDataExchange*) {}
 
 RVA(0x000bec00, 0x6)
-const AFX_MSGMAP* CMultiHelpDlg::GetMessageMap() const {
-    return &s_messageMap;
-}
+DATA_MESSAGE_MAP(0x001ea448, 0x001ea450)
+BEGIN_MESSAGE_MAP(CMultiHelpDlg, CDialog)
+END_MESSAGE_MAP()

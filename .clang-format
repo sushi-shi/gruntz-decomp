@@ -65,9 +65,23 @@ AlignTrailingComments:
 SortIncludes: Never
 
 # --- project macros (include/rva.h) ----------------------------------------
+MacroBlockBegin: "^BEGIN_MESSAGE_MAP$"
+MacroBlockEnd: "^END_MESSAGE_MAP$"
 StatementMacros:
   - RVA
   - DATA
+  - DATA_MESSAGE_MAP
+  - DECLARE_MESSAGE_MAP
+  - MFC_MESSAGE_MAP_CLASS
+  - ON_BN_CLICKED
+  - ON_CBN_SELCHANGE
+  - ON_LBN_DBLCLK
+  - ON_EN_CHANGE
+  - ON_EN_KILLFOCUS
+  - ON_WM_PAINT
+  - ON_WM_TIMER
+  - ON_WM_MEASUREITEM
+  - ON_WM_DRAWITEM
   - VTBL
   - VTBL_ABSENT
   - SIZE # Win32 type name; retained for existing formatter behavior, not an rva.h macro.

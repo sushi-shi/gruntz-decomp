@@ -396,6 +396,7 @@ format-on-save leaves it alone.
 
    - `RVA(addr, size)` — a matched function;
    - `DATA(addr)` — on the definition of a matched global;
+   - `DATA_MESSAGE_MAP(map, entries)` — on `BEGIN_MESSAGE_MAP`, labels its two SDK-generated data objects (see [the pattern](patterns/mfc-message-map-real-static-data.md));
    - `RVA_COMPGEN(rva, size, mangled)` — a deterministically named
      compiler-generated function with no source body (such as a `??_G` deleting
      dtor) that cannot hold an attribute. Volatile ordinal names such as
