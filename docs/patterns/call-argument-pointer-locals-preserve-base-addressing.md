@@ -42,3 +42,8 @@ in the two pixel-offset multiply carriers inside `CDDSurface::GetPixel`;
 four calls, four branches, one return and both relocations agree. Its existing
 same-source 100% MAX remains valid. Do not remove the recovered pointer locals
 or introduce inert declarations to steer that sibling's current state.
+
+Follow-up: [sequencing the real offset inside the existing GetPixel helper](inline-pixel-offset-statements-select-product-carriers.md)
+recovers that sibling's complete normalized pair while retaining these pointer
+locals. The perturbation was real, but did not prove that the helper's source
+statement grouping was already complete.

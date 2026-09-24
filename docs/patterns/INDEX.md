@@ -1,5 +1,7 @@
 # Pattern index (MSVC 5.0 /O2 — Gruntz)
 
+- [Sequence the real pixel offset inside its inline helper](inline-pixel-offset-statements-select-product-carriers.md) — c10 — cpp:inline cpp:local cpp:expression | asm:imul asm:mov | topic:regalloc topic:codegen-idiom — GetPixel's offset accumulation restores BltDirty's two product carriers without flattening the helper or undoing the recovered neighboring argument pointers; the complete 194-byte normalized caller agrees.
+
 - [Registrar local ownership selects nested inline cuts](registrar-local-ownership-selects-inline-cuts.md) — c10 — cpp:macro cpp:local cpp:reference cpp:template | asm:call asm:push | topic:inline-budget topic:evaluation-order — the 19-action Grunt registrar reaches exact with a macro conversion, caller-owned registry, converted value and handler destination; a name-slot reference gets the call set right but sequences the final literal too late. Uniform typed APIs replace the old per-site selectors.
 
 - [A local-static initializer still needs the right call order](function-local-static-dynamic-init-guard.md#an-exact-guard-does-not-prove-the-initializers-evaluation-order) — c10 — cpp:static cpp:inline cpp:local | asm:call asm:sub | topic:correctness topic:evaluation-order — a sequenced range helper restores Max-before-Min lookups without fabricated guard globals; an unsequenced helper is the negative control. All 24 references agree; one independent load-scheduling difference remains.

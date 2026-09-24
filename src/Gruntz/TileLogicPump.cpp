@@ -5,6 +5,7 @@
 #include <DDrawMgr/AniAdvance.h>
 #include <DDrawMgr/DDrawWorkerHost.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
@@ -21,6 +22,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntCellInline.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntIdentity.h>
 #include <Gruntz/GruntzMgr.h>
@@ -484,26 +486,19 @@ i32 CCheckpointTrigger::Act() {
         return 0;
     }
 
-    i32 ownerCol = (owner >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK;
+    GruntIdentity identity;
+    identity.m_playerIndex = (owner >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK;
     owner &= GRUNT_IDENTITY_COMPONENT_MASK;
-    CGrunt* g = g_gameReg->m_triggerMgr->m_units[ownerCol * TM_UNITS_PER_PLAYER + owner];
+    identity.m_unitIndex = owner;
+    CGrunt* g = FindGruntByIdentity(g_gameReg, identity);
     if (g == NULL) {
         return 0;
     }
 
     i32 sy = g->m_object->m_screenY;
     i32 sx = g->m_object->m_screenX;
-    RECT* view = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
-    if (sx >= view->right) {
-        return 0;
-    }
-    if (sx < view->left) {
-        return 0;
-    }
-    if (sy >= view->bottom) {
-        return 0;
-    }
-    if (sy < view->top) {
+    const RECT* view = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
+    if (!PtInRect(view, sx, sy)) {
         return 0;
     }
     g_gameReg->m_voiceManager->PlayVoice(g, 0x334, -1, 0, -1, -1);
