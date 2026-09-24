@@ -93,7 +93,50 @@ with the inline control on another island is evidence of authentic macro origin,
 not permission to wrap arbitrary expressions for score. Retain it only when the
 macro names a reusable operation and simplifies the reconstructed source.
 
-## Related
+## Nested scalar-wrapper control
+
+The shared `SquaredDistance(i32, i32)` in `Wap32/TileGeometry.h` provides a
+different measured signature. Its four earlier TU-local implementations used
+`SQR`; shared-owner consolidation in `e17fa3f05` flattened the inner products.
+At `8a4002bca`, restoring the existing `BDefs.h` dependency and then restoring
+`SQR(dx) + SQR(dy)` preserved the outer by-value inline boundary. The two
+authored macro uses serve eleven calls in eight owners across four arithmetic
+TUs. Original low-32-bit products, sums, signed guards and the one signed
+integer-to-square-root conversion were inspected at all eleven sites.
+
+The real production graph was compiled separately for the include-only and
+complete nested-macro states. Macro-only versus include-only yields **290/290
+identical normalized objects**, with all **7,476 scored records** unchanged.
+All eight complete consumer bodies, extents and ordered fixups are identical
+to the original baseline too. This restores the omitted inner abstraction; it
+does not repair or certify their larger array/pool-call and control-flow gaps.
+
+The required include alone changes ten scored bodies elsewhere; 7,466 remain
+identical. It recovers historical exactness for `ActivateVisibleObjects` and
+`CSBI_GruntMachine::Render`, and moves `CSpotLight::Update`'s historical best
+from 80.2584% to 81.3820%. These are dependency-context effects, not effects of
+the square expressions. Three current-score dips retain their old maxima;
+all 4,429 historical and same-fingerprint maxima survive banking. The header
+body is outside the current TU-only fingerprint census, so direct complete
+object equality is recorded rather than inferred from unchanged fingerprints.
+No unused include is retained as a compiler-state device.
+
+Raw operand comparisons cover the eight references in the two recovered exact
+owners, Spotlight Update's four named references plus the original pooled
+string payload, and the single RouteUnitTo/PtInRect references in Repath and
+FindNearestEnemy. Pooled-string content agreement does not prove final linked
+placement. Tests and the default gated build remain deferred to squash merge;
+these results come from production compilation and direct object/image reads.
+
+Reverse-use rule: distinguish the inner macro, the enclosing value wrapper,
+and required header visibility. Macro-versus-inline differences in the exact
+palette witness above are not a universal law. Compile each source layer and
+record a flat result as scoped evidence; do not discard authentic helpers or
+flatten their caller argument/lifetime boundary merely because a score stays
+unchanged. Canonical options and reopening conditions live under
+`reassess-sqr-tile-geometry` and `tile-sqr-*` in the lineage ledger.
+
+## Related patterns
 
 - [`macro-origin-changes-vc5-x87-cse.md`](macro-origin-changes-vc5-x87-cse.md)
 - [`scalar-byte-copy-is-an-inline-helper.md`](scalar-byte-copy-is-an-inline-helper.md)
