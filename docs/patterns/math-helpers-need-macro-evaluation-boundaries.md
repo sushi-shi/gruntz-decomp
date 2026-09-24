@@ -24,6 +24,7 @@ the following examples without removing their typed APIs:
 | `CMinimap::DrawBorderRaw` 0xa3a20 | 74.0460% | separate width/height locals and `RECT_WIDTH`/`RECT_HEIGHT` | 96.7931% |
 | `CGrunt::StepGruntMovement` 0x4c170 | 66.4355% | earlier CFG and tile-center macros, with typed `BrickzCell` reads | 76.5600% |
 | `CGrunt::FinalizeStep` 0x5ecd0 | 72.9091% | separate direction/move/next locals and existing sort-key macro | 96.0983% |
+| `CGrunt::StepCompassMove` 0x51c00 | 54.8401% | scalar `CanCommitMove` tile locals and `RETURN_IF_DIAGONAL_ROUTE_BLOCKED` | 63.0219% |
 | `CGrunt::RectContains` 0x51850 | 46.2177% | tile component conversion, native rectangle copy, offset/extent macros | 100% |
 | `CGrunt::VehicleContactContains` 0x51a20 | 58.6220% | same rectangle family | 100% |
 | `CGrunt::SetArrivalTarget` 0x52ed0 | 59.6000% | component stores and snap expressions | 100% |
@@ -152,6 +153,17 @@ scalar local census in both movement arms, while using the current typed
 members, recovers 72.9091% to 96.0983%. The existing
 `SET_SORT_KEY_IF_CHANGED` macro remains at the call site. The shared vector
 and coordinate operations are retained for their other users.
+
+`StepCompassMove` exposes a nested call-budget boundary. The new
+`DiagonalRouteBlocked` inline function remains a valid helper, but its four
+`Coord` temporaries and `CellFlagsAt` calls leave one out-of-line call in the
+large caller that retail lacks. Restoring scalar tile locals and pointer-based
+directional checks inside the existing `CanCommitMove` inline member removes
+that call and raises 54.8401% to 63.0219%, beyond the pre-rewrite 62.65%.
+Wrapping the four checks in `RETURN_IF_DIAGONAL_ROUTE_BLOCKED` is byte-flat
+against their direct spelling in the VC5 unit. The helper function and the
+`Coord` API remain defined; the macro chooses the caller's expansion and early
+return structure.
 
 `CMovingLogic::InitOwner` gives a counterexample to adding an aggregate merely
 because the component values are related. Its four min/max record reads have

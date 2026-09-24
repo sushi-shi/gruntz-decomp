@@ -24,20 +24,51 @@ static inline i32 DiagonalRouteBlocked(CMapMgr* board, const Coord& source, cons
                & BRICKZ_CELL_ROUTE_MASKB);
 }
 
+#define RETURN_IF_DIAGONAL_ROUTE_BLOCKED(board, cur, tg, dx, dy)                                   \
+    if (dx > 0 && dy > 0) {                                                                        \
+        if (((cur + 1)->m_flags & BRICKZ_CELL_ROUTE_MASKB)                                         \
+            || ((cur + board->m_width)->m_flags & BRICKZ_CELL_ROUTE_MASKB)                         \
+            || ((tg - 1)->m_flags & BRICKZ_CELL_ROUTE_MASKB)                                       \
+            || ((tg - board->m_width)->m_flags & BRICKZ_CELL_ROUTE_MASKB)) {                       \
+            return 0;                                                                              \
+        }                                                                                          \
+    } else if (dx < 0 && dy > 0) {                                                                 \
+        if (((cur - 1)->m_flags & BRICKZ_CELL_ROUTE_MASKB)                                         \
+            || ((cur + board->m_width)->m_flags & BRICKZ_CELL_ROUTE_MASKB)                         \
+            || ((tg + 1)->m_flags & BRICKZ_CELL_ROUTE_MASKB)                                       \
+            || ((tg - board->m_width)->m_flags & BRICKZ_CELL_ROUTE_MASKB)) {                       \
+            return 0;                                                                              \
+        }                                                                                          \
+    } else if (dx > 0 && dy < 0) {                                                                 \
+        if (((cur + 1)->m_flags & BRICKZ_CELL_ROUTE_MASKB)                                         \
+            || ((cur - board->m_width)->m_flags & BRICKZ_CELL_ROUTE_MASKB)                         \
+            || ((tg - 1)->m_flags & BRICKZ_CELL_ROUTE_MASKB)                                       \
+            || ((tg + board->m_width)->m_flags & BRICKZ_CELL_ROUTE_MASKB)) {                       \
+            return 0;                                                                              \
+        }                                                                                          \
+    } else if (dx < 0 && dy < 0) {                                                                 \
+        if (((cur - 1)->m_flags & BRICKZ_CELL_ROUTE_MASKB)                                         \
+            || ((cur - board->m_width)->m_flags & BRICKZ_CELL_ROUTE_MASKB)                         \
+            || ((tg + 1)->m_flags & BRICKZ_CELL_ROUTE_MASKB)                                       \
+            || ((tg + board->m_width)->m_flags & BRICKZ_CELL_ROUTE_MASKB)) {                       \
+            return 0;                                                                              \
+        }                                                                                          \
+    }
+
 inline i32 CGrunt::CanCommitMove(i32 moveX, i32 moveY, i32 sourceX, i32 sourceY) const {
     CGruntzMapMgr* board = g_gameReg->m_tileGrid;
-    Coord source(sourceX, sourceY);
-    ScreenTile(&source);
-    Coord move(moveX, moveY);
-    ScreenTile(&move);
+    i32 tx = sourceX >> TILE_SHIFT_PX;
+    i32 ty = sourceY >> TILE_SHIFT_PX;
+    i32 mtx = moveX >> TILE_SHIFT_PX;
+    i32 mty = moveY >> TILE_SHIFT_PX;
     i32 arr = m_arrivalFlags | BRICKZ_CELL_OCCUPIED;
-    if (source != move) {
-        if (static_cast<u32>(move.m_x) >= static_cast<u32>(board->m_width)
-            || static_cast<u32>(move.m_y) >= static_cast<u32>(board->m_height)) {
+    if (tx != mtx || ty != mty) {
+        if (static_cast<u32>(mtx) >= static_cast<u32>(board->m_width)
+            || static_cast<u32>(mty) >= static_cast<u32>(board->m_height)) {
             return 0;
         }
-        BrickzCell* targetCell = &board->m_rows[move.m_y][move.m_x];
-        i32 tflags = targetCell->m_flags;
+        BrickzCell* tgt = &board->m_rows[mty][mtx];
+        i32 tflags = tgt->m_flags;
         i32 hit = arr & tflags;
         if (hit & BRICKZ_CELL_OCCUPIED) {
             return 0;
@@ -52,13 +83,14 @@ inline i32 CGrunt::CanCommitMove(i32 moveX, i32 moveY, i32 sourceX, i32 sourceY)
                 return 0;
             }
         }
-        Coord delta = move - source;
-        if (delta.m_x == 0 || delta.m_y == 0) {
+        i32 dx = mtx - tx;
+        i32 dy = mty - ty;
+        if (dx == 0 || dy == 0) {
             return 1;
         }
-        if (DiagonalRouteBlocked(board, source, move)) {
-            return 0;
-        }
+        BrickzCell* cur = &board->m_rows[ty][tx];
+        BrickzCell* tg = tgt;
+        RETURN_IF_DIAGONAL_ROUTE_BLOCKED(board, cur, tg, dx, dy);
     }
     return 1;
 }
