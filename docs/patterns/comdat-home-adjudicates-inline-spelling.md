@@ -241,6 +241,17 @@ named for the inline expansion each produced** (`..._POSITION_INLINE_POOL_IF_ANY
 and friends) across 50 sites in 15 TUs. Same audit method as the headers: fold
 each pair, full build, read the per-function rows.
 
+`CGrunt::StepArrivalDrop` supplies a later per-site control. Retail calls
+`FreeNodePool::Push` at 0x4b42f inside its first coordinate-recycle loop; the
+shared `RecycleGruntCoords` inline expanded `PushFreeNode` there instead. Keeping
+the explicit nonempty guard and using the existing `RECYCLE_GRUNT_COORDS` macro
+restores the call and the loop's node-next/data sequence. The real `grunt` TU
+moves from 60.3640 to 60.6360 for this function, with no other function-score
+movement. Replacing its adjacent `ScreenTile` inline with the equivalent
+`SCREEN_TILE_INPLACE` macro, or with component shifts, was byte-flat. The
+remaining divergence begins after the recycle loop; the old review that named
+`CPtrList::RemoveHead` as the sole call-set delta describes an older source hash.
+
 **Four axes; only two were real.** The census is the whole finding:
 
 | axis | fold | measured | verdict |

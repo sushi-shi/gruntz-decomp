@@ -886,6 +886,8 @@ i32 CGrunt::TileSwitch(
     );
 }
 
+#include <Gruntz/GruntCoordRecycleMacros.h>
+
 RVA(0x0004b370, 0xb30)
 i32 CGrunt::StepArrivalDrop(
     i32 pxX,
@@ -921,7 +923,9 @@ i32 CGrunt::StepArrivalDrop(
         goto commitPhase;
     }
 
-    RecycleGruntCoords(this);
+    if (CoordCount() != 0) {
+        RECYCLE_GRUNT_COORDS(this);
+    }
     lastTile = m_lastTilePx;
     ScreenTile(&lastTile);
     tile = pixel;
