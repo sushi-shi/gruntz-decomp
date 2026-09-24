@@ -530,7 +530,7 @@ i32 CFontConfig::Draw3DText(
         return 0;
     }
     HGDIOBJ selPrev = NULL;
-    CRect rc = *dst;
+    RECT rc = *dst;
     if (fontFlag == 0) {
         if (m_trainingFont) {
             selPrev = SelectObject(hdc, m_trainingFont);
@@ -545,13 +545,22 @@ i32 CFontConfig::Draw3DText(
     CString text(*strSrc);
     DrawTextA(hdc, text, strlen(text), &rc, DT_CALCRECT | DT_WORDBREAK | DT_CENTER);
     i32 hoff = (dst->right + rc.left - dst->left - rc.right) / 2;
-    i32 voff = (CRect(*dst).Height() - rc.Height()) / 2;
-    rc.OffsetRect(hoff, voff);
+    i32 voff = (dst->bottom - dst->top + rc.top - rc.bottom) / 2;
+    rc.left += hoff;
+    rc.right += hoff;
+    rc.top += voff;
+    rc.bottom += voff;
     if (shadow) {
         SetTextColor(hdc, 0);
-        rc.OffsetRect(dx, dy);
+        rc.left += dx;
+        rc.top += dy;
+        rc.right += dx;
+        rc.bottom += dy;
         DrawTextA(hdc, text, strlen(text), &rc, DT_WORDBREAK | DT_CENTER);
-        rc.OffsetRect(-dx, -dy);
+        rc.right -= dx;
+        rc.left -= dx;
+        rc.bottom -= dy;
+        rc.top -= dy;
     }
     SetTextColor(hdc, RGB(r, g, b));
     DrawTextA(hdc, text, strlen(text), &rc, DT_WORDBREAK | DT_CENTER);

@@ -416,7 +416,6 @@ void CTriggerMgr::CloseActionOptionsMenu() {
 
 RVA(0x00078a50, 0x8a0)
 i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
-    Coord position(x, y);
 
     CGrunt* cell;
     if (m_recList.GetCount() != 1) {
@@ -449,16 +448,22 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     }
 
     CGameLevel* level = m_world->m_level;
-    Coord tile = position;
-    ScreenTile(&tile);
-    Coord clampedTile = tile;
-    clampedTile.Clamp(
-        Coord(0, 0),
-        Coord(level->m_mainPlane->m_tileGridSize.cx - 1, level->m_mainPlane->m_tileGridSize.cy - 1)
-    );
+    i32 tx = x >> TILE_SHIFT_PX;
+    i32 ty = y >> TILE_SHIFT_PX;
+    i32 cx = tx;
+    if (tx < 0) {
+        cx = 0;
+    } else if (tx >= level->m_mainPlane->m_tileGridSize.cx) {
+        cx = level->m_mainPlane->m_tileGridSize.cx - 1;
+    }
+    i32 cy = ty;
+    if (ty < 0) {
+        cy = 0;
+    } else if (ty >= level->m_mainPlane->m_tileGridSize.cy) {
+        cy = level->m_mainPlane->m_tileGridSize.cy - 1;
+    }
     TileCollisionKind collision;
-    i32 cval = level->m_mainPlane->m_tileHandles
-                   [level->m_mainPlane->m_tileRowOffsets[clampedTile.m_y] + clampedTile.m_x];
+    i32 cval = level->m_mainPlane->m_tileHandles[level->m_mainPlane->m_tileRowOffsets[cy] + cx];
     if (cval != UNINIT_FILL && cval != -1) {
         CTileImageSet* tc = static_cast<CTileImageSet*>(
             level->m_imageSets.GetAt(cval & WWD_TILE_IMAGE_SET_INDEX_MASK)
@@ -475,7 +480,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
             world->LoadCursorSprites(IDX(alt) + kPendingFxIdBase, true);
         } else {
             CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
-            i32 attr = plane->CellFlagsAt(tile.m_x, tile.m_y);
+            i32 attr = plane->CellFlagsAt(tx, ty);
             if ((attr & BRICKZ_BLOCKED_MASK) != 0 || (attr & IDX(CELL_FLAG_SPECIAL)) != 0) {
                 world->LoadCursorSprites(pfk, false);
             } else {
@@ -485,7 +490,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         return 1;
     }
 
-    PickupType gruntKind = cell->ArrivalPickup();
+    PickupType gruntKind = ARRIVAL_PICKUP_TERNARY_GT(cell);
 
     if (hitFlag != 0) {
         if (pfk == 0) {
@@ -500,15 +505,17 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                 return 1;
             }
 
-            CPoint source(
+            POINT source = {
                 cell->m_object->m_screenPosition.m_x,
                 cell->m_object->m_screenPosition.m_y
-            );
+            };
             m_world->m_level->m_mainPlane->WorldToViewport(&source.x, &source.y);
-            CPoint destination(position.m_x, position.m_y);
-            m_world->m_level->m_mainPlane->WorldToViewport(&destination.x, &destination.y);
+            m_world->m_level->m_mainPlane->WorldToViewport(
+                reinterpret_cast<LONG*>(&x), // PROVEN: i32/LONG argument-slot alias.
+                reinterpret_cast<LONG*>(&y)  // PROVEN: i32/LONG argument-slot alias.
+            );
             u16 color;
-            if (cell->RectContains(destination.x, destination.y)) {
+            if (cell->RectContains(x, y)) {
                 color = PackRgb16(0xff, 0, 0);
                 world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, true);
             } else {
@@ -516,7 +523,8 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                 world->LoadCursorSprites(pfk, false);
             }
             world->m_pathPreviewSource = source;
-            world->m_pathPreviewDestination = destination;
+            world->m_pathPreviewDestination.x = x;
+            world->m_pathPreviewDestination.y = y;
             world->m_pathPreviewColor = color;
             world->m_drewThisFrame = true;
             return 1;
@@ -545,7 +553,8 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                 POSITION pos = m_baseList.GetHeadPosition();
                 while (pos != NULL) {
                     CGruntPuddle* cand = static_cast<CGruntPuddle*>(m_baseList.GetNext(pos));
-                    if (cand->m_tile == tile && cand->m_pending == false) {
+                    if (cand->m_tile.m_x == tx && cand->m_tile.m_y == ty
+                        && cand->m_pending == false) {
                         world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, true);
                         return 1;
                     }
@@ -596,18 +605,18 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                     return 1;
                 }
                 CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
-                i32 objectId;
-                if (static_cast<u32>(tile.m_x) >= static_cast<u32>(plane->m_width)
-                    || static_cast<u32>(tile.m_y) >= static_cast<u32>(plane->m_height)) {
-                    objectId = 0;
+                i32 occupantId;
+                if (static_cast<u32>(tx) >= static_cast<u32>(plane->m_width)
+                    || static_cast<u32>(ty) >= static_cast<u32>(plane->m_height)) {
+                    occupantId = 0;
                 } else {
-                    objectId = plane->m_rows[tile.m_y][tile.m_x].m_objectId;
+                    occupantId = plane->m_rows[ty][tx].m_objectId;
                 }
-                if (objectId != 0) {
+                if (occupantId != 0) {
                     CMapPtrToPtr* map =
                         &g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById;
                     CGameObject* occupant = NULL;
-                    MapLookupById(*map, objectId, occupant);
+                    MapLookupById(*map, occupantId, occupant);
                     if (occupant != NULL) {
                         CUserLogic* logic = occupant->m_logicRecord->m_userLogic;
                         if (logic != NULL && logic->m_object->m_smarts == IDX(PICKUP_TOYBOX)) {
@@ -626,43 +635,41 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
             case PICKUP_WELDER:
             case PICKUP_WINGZ:
                 if (pfk != 0) {
-                    CPoint source(
+                    POINT source = {
                         cell->m_object->m_screenPosition.m_x,
                         cell->m_object->m_screenPosition.m_y
-                    );
+                    };
                     m_world->m_level->m_mainPlane->WorldToViewport(&source.x, &source.y);
                     CDDrawWorkerHost* plane = m_world->m_level->m_mainPlane;
-                    CPoint destination(position.m_x, position.m_y);
+                    i32 dx = x;
+                    i32 dy = y;
                     WwdPlaneFlags wflags = static_cast<WwdPlaneFlags>(plane->m_flags);
-                    CSize planeSize = plane->m_planePixelSize;
                     if (HAS(wflags, WWD_PLANE_FLAG_WRAP_X)) {
-                        if (destination.x < 0) {
-                            destination.x += planeSize.cx;
-                        } else if (destination.x >= planeSize.cx) {
-                            destination.x -= planeSize.cx;
+                        i32 w = plane->m_planePixelSize.cx;
+                        if (dx < 0) {
+                            dx = dx + w;
+                        } else if (dx >= w) {
+                            dx = dx - w;
                         }
-                        if (plane->m_planeViewRect.right >= planeSize.cx
-                            && destination.x < plane->m_planeViewRect.left
-                            && destination.x <= plane->m_planeViewRect.right - planeSize.cx) {
-                            destination.x += planeSize.cx;
+                        if (plane->m_planeViewRect.right >= w && dx < plane->m_planeViewRect.left
+                            && dx <= plane->m_planeViewRect.right - w) {
+                            dx = dx + w;
                         }
                     }
                     if (HAS(wflags, WWD_PLANE_FLAG_WRAP_Y)) {
-                        if (destination.y < 0) {
-                            destination.y += planeSize.cy;
-                        } else if (destination.y >= planeSize.cy) {
-                            destination.y -= planeSize.cy;
+                        i32 h = plane->m_planePixelSize.cy;
+                        if (dy < 0) {
+                            dy = dy + h;
+                        } else if (dy >= h) {
+                            dy = dy - h;
                         }
-                        if (plane->m_planeViewRect.bottom >= planeSize.cy
-                            && destination.y < plane->m_planeViewRect.top
-                            && destination.y <= plane->m_planeViewRect.bottom - planeSize.cy) {
-                            destination.y += planeSize.cy;
+                        if (plane->m_planeViewRect.bottom >= h && dy < plane->m_planeViewRect.top
+                            && dy <= plane->m_planeViewRect.bottom - h) {
+                            dy = dy + h;
                         }
                     }
-                    destination.Offset(
-                        plane->m_viewportRect.left - plane->m_planeViewRect.left,
-                        plane->m_viewportRect.top - plane->m_planeViewRect.top
-                    );
+                    dx += plane->m_viewportRect.left - plane->m_planeViewRect.left;
+                    dy += plane->m_viewportRect.top - plane->m_planeViewRect.top;
                     u16 color;
                     if (cell->RectContains(x, y)) {
                         color = PackRgb16(0xff, 0, 0);
@@ -672,7 +679,8 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                         world->LoadCursorSprites(m_pendingFxKind, false);
                     }
                     world->m_pathPreviewSource = source;
-                    world->m_pathPreviewDestination = destination;
+                    world->m_pathPreviewDestination.x = dx;
+                    world->m_pathPreviewDestination.y = dy;
                     world->m_pathPreviewColor = color;
                     world->m_drewThisFrame = true;
                     return 1;
@@ -684,7 +692,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                     break;
                 }
                 CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
-                i32 attr = plane->CellFlagsAt(tile.m_x, tile.m_y);
+                i32 attr = plane->CellFlagsAt(tx, ty);
                 if ((attr & BRICKZ_BLOCKED_MASK) == 0 && (attr & IDX(CELL_FLAG_SPECIAL)) == 0) {
                     world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, true);
                     return 1;
@@ -1625,33 +1633,32 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
     ApplyGruntAreaEffect(cx, cy, r, GRUNT_AREA_EFFECT_EXPLODE, flag);
 
     CPlay* root = static_cast<CPlay*>(g_gameReg->m_curState);
-    Coord center(cx, cy);
-    Coord centerTile = center;
-    ScreenTile(&centerTile);
-    for (i32 tx = centerTile.m_x - r; tx <= centerTile.m_x + r; tx++) {
-        for (i32 ty = centerTile.m_y - r; ty <= centerTile.m_y + r; ty++) {
-            Coord tile(tx, ty);
-            Coord pixel = tile;
-            TileCenter(&pixel);
-            if (pixel.m_x < TILE_HALF_PX || pixel.m_y < TILE_HALF_PX) {
+    i32 tileCx = cx >> TILE_SHIFT_PX;
+    i32 tileCy = cy >> TILE_SHIFT_PX;
+    for (i32 tx = tileCx - r; tx <= tileCx + r; tx++) {
+        i32 pxX = (tx << TILE_SHIFT_PX) + TILE_HALF_PX;
+        for (i32 ty = tileCy - r; ty <= tileCy + r; ty++) {
+            i32 pxY = (ty << TILE_SHIFT_PX) + TILE_HALF_PX;
+            if (pxX < 0x10 || pxY < 0x10) {
                 continue;
             }
             CGameLevel* board = m_world->m_level;
-            if (pixel.m_x >= board->m_mainPlane->m_planePixelSize.cx
-                || pixel.m_y >= board->m_mainPlane->m_planePixelSize.cy) {
+            if (tx >= board->m_mainPlane->m_planePixelSize.cx
+                || ty >= board->m_mainPlane->m_planePixelSize.cy) {
                 continue;
             }
-            Coord clampedTile = tile;
-            clampedTile.Clamp(
-                Coord(0, 0),
-                Coord(
-                    board->m_mainPlane->m_tileGridSize.cx - 1,
-                    board->m_mainPlane->m_tileGridSize.cy - 1
-                )
-            );
+            i32 col = tx;
+            i32 row = ty;
+            if (pxX < 0x10) {
+                col = 0;
+            } else if (tx >= board->m_mainPlane->m_tileGridSize.cx) {
+                col = board->m_mainPlane->m_tileGridSize.cx - 1;
+            }
+            if (ty >= board->m_mainPlane->m_tileGridSize.cy) {
+                row = board->m_mainPlane->m_tileGridSize.cy - 1;
+            }
             i32 cell =
-                board->m_mainPlane->m_tileHandles
-                    [board->m_mainPlane->m_tileRowOffsets[clampedTile.m_y] + clampedTile.m_x];
+                board->m_mainPlane->m_tileHandles[board->m_mainPlane->m_tileRowOffsets[row] + col];
             TileCollisionKind type;
             if (cell == UNINIT_FILL || cell == -1) {
                 type = TILEKIND_PASSABLE;
@@ -1708,13 +1715,16 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
                 }
             }
 
-            if (!::PtInRect(&g_gameReg->m_viewBounds, pixel.m_x, pixel.m_y)) {
+            POINT pt;
+            pt.x = pxX;
+            pt.y = pxY;
+            if (!PtInRect(&g_gameReg->m_viewBounds, pt)) {
                 continue;
             }
             CWwdSpriteObject* spr = m_world->m_childGroup->CreateSprite(
                 0,
-                pixel.m_x,
-                pixel.m_y,
+                pxX,
+                pxY,
                 SORTKEY_ACTOR_BEHIND,
                 "Particlez",
                 WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE

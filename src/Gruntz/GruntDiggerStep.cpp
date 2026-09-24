@@ -15,6 +15,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
+#include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPuddle.h>
@@ -46,14 +47,16 @@ i32 CGrunt::StepDiggerBehavior() {
         return 1;
     }
     CMapMgr* grid = g_gameReg->m_tileGrid;
-    grid->Clip(NULL);
+    GRID_CLIP_NULL(grid);
 
-    Coord center;
-    GetScreenTile(&center);
-    Coord targetTile;
+    Coord c1;
+    GetScreenPos(&c1);
+    c1.m_x >>= TILE_SHIFT_PX;
+    Coord c2;
+    GetScreenPos(&c2);
+    c2.m_y >>= TILE_SHIFT_PX;
 
-    i32 atTarget;
-    CGrunt* g = FindNearestEnemyAtTarget(this, &atTarget);
+    FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget, x)
 
     m_defenderPx = m_lastTilePx;
 
@@ -111,7 +114,8 @@ i32 CGrunt::StepDiggerBehavior() {
     if (m_poweredUp != false) {
         goto L_tailc;
     }
-    if (m_stamina >= STAMINA_FULL && g->m_object->ScreenPos() == g->m_lastTilePx
+    if (m_stamina >= STAMINA_FULL && g->m_object->m_screenPosition.m_x == g->m_lastTilePx.m_x
+        && g->m_object->m_screenPosition.m_y == g->m_lastTilePx.m_y
         && RectContains(g->m_object->m_screenPosition.m_x, g->m_object->m_screenPosition.m_y)
                != 0) {
         COMMIT_GRUNT_NEIGHBOR(g);
@@ -124,12 +128,20 @@ i32 CGrunt::StepDiggerBehavior() {
     if (static_cast<u32>(m_dwell) <= DWELL_REPATH_MS) {
         goto L_tailc;
     }
-    g->GetScreenTile(&targetTile);
-    if (TileSwitch(targetTile.m_x, targetTile.m_y, 0, m_arrivalFlags, 1, 0) != 0) {
+    if (TileSwitch(
+            g->m_object->m_screenPosition.m_x >> TILE_SHIFT_PX,
+            g->m_object->m_screenPosition.m_y >> TILE_SHIFT_PX,
+            0,
+            m_arrivalFlags,
+            1,
+            0
+        )
+        != 0) {
         if (m_blockedVoicePending != false) {
             CCueRect* board = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
-            Coord voicePosition = m_object->ScreenPos();
-            if (::PtInRect(board, voicePosition.m_x, voicePosition.m_y)) {
+            i32 x = m_object->m_screenPosition.m_x;
+            i32 y = m_object->m_screenPosition.m_y;
+            if (::PtInRect(board, x, y)) {
                 g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
             }
             m_blockedVoicePending = false;
@@ -142,73 +154,75 @@ L_tailc:
         if ((m_poweredUp == false) & (static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS)) {
             i32 r = m_defenderRadius;
             RECT box;
-            SET_RECT_COMPONENTS(
-                box,
-                center.m_x - r,
-                center.m_y - r,
-                center.m_x + r,
-                center.m_y + r
-            );
-            RECT gridBounds;
-            SET_RECT_COMPONENTS(gridBounds, 0, 0, grid->m_width, grid->m_height);
+            box.left = c1.m_x - r;
+            box.right = c1.m_x + r;
+            box.top = c2.m_y - r;
+            box.bottom = c2.m_y + r;
+            RECT gb;
+            gb.left = 0;
+            gb.top = 0;
+            gb.right = grid->m_width;
+            gb.bottom = grid->m_height;
             RECT isect;
-            if (!::IntersectRect(&isect, &box, &gridBounds)) {
+            if (!IntersectRect(&isect, &box, &gb)) {
                 isect = box;
             }
             i32 best = INT_MAX;
-            Coord bestTile(-1, -1);
-            grid->Clip(&isect);
+            i32 bestCol = -1;
+            i32 bestRow = -1;
+            GRID_CLIP_INL(grid, &isect);
             for (i32 row = isect.top; row < isect.bottom; row++) {
                 BrickzCell* cell = &grid->m_rows[row][isect.left];
                 for (i32 col = isect.left; col < isect.right; col++) {
                     if ((cell->m_flags & IDX(CELL_FLAG_COVERED_POWERUP)) != 0) {
-                        Coord tile(col, row);
-                        Coord delta = tile - center;
-                        Coord distance = delta.GetAbs();
-                        i32 dist = distance.m_x + distance.m_y;
+                        i32 dr = row - c2.m_y;
+                        dr = abs(dr);
+                        i32 dc = col - c1.m_x;
+                        dc = abs(dc);
+                        i32 dist = dr + dc;
                         if (dist < best) {
                             best = dist;
-                            bestTile = tile;
+                            bestCol = col;
+                            bestRow = row;
                         }
                     }
                     cell++;
                 }
             }
             if (best != INT_MAX) {
-                Coord delta = bestTile - center;
-                Coord distance = delta.GetAbs();
-                if (distance.m_x <= 1 && distance.m_y <= 1) {
-                    Coord targetPosition = bestTile;
-                    TileCenter(&targetPosition);
+                i32 dc = bestCol - c1.m_x;
+                dc = abs(dc);
+                i32 dr = bestRow - c2.m_y;
+                dr = abs(dr);
+                if (dc <= 1 && dr <= 1) {
                     m_triggerMgr->UseEquippedToolAt(
                         m_playerIndex,
                         m_unitIndex,
-                        targetPosition.m_x,
-                        targetPosition.m_y
+                        (bestCol << TILE_SHIFT_PX) + TILE_HALF_PX,
+                        (bestRow << TILE_SHIFT_PX) + TILE_HALF_PX
                     );
                     SetEntrancePos(1, 1);
                 } else {
-                    TileSwitch(bestTile.m_x, bestTile.m_y, 0, m_arrivalFlags, 1, 0);
+                    TileSwitch(bestCol, bestRow, 0, m_arrivalFlags, 1, 0);
                 }
             }
-            grid->Clip(NULL);
+            GRID_RECT_INLINE(grid);
             m_dwell = 0;
         }
         return 1;
     }
     {
         Coord* coord = static_cast<Coord*>(m_coordList.GetHead());
-        Coord targetTile = *coord;
-        BrickzCell* cell = &grid->m_rows[targetTile.m_y][targetTile.m_x];
+        i32 col = coord->m_x;
+        i32 row = coord->m_y;
+        BrickzCell* cell = &grid->m_rows[row][col];
         if ((cell->m_flags & IDX(CELL_FLAG_REVEALED_POWERUP)) != 0
             || (cell->m_flags & IDX(CELL_FLAG_COVERED_POWERUP)) != 0) {
-            Coord targetPosition = targetTile;
-            TileCenter(&targetPosition);
             m_triggerMgr->UseEquippedToolAt(
                 m_playerIndex,
                 m_unitIndex,
-                targetPosition.m_x,
-                targetPosition.m_y
+                (col << TILE_SHIFT_PX) + TILE_HALF_PX,
+                (row << TILE_SHIFT_PX) + TILE_HALF_PX
             );
             SetEntrancePos(1, 1);
             m_dwell = 0;

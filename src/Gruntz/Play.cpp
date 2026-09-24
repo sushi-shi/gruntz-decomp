@@ -5467,14 +5467,9 @@ i32 CPlay::ValidateLevelTiles() {
             }
         } else if (dispatch == DispatchGruntCreationPointLogic) {
             if (obj->m_smarts == g_curPlayer) {
-                CoordPoolNode* cell = g_coordPool.m_freeHead;
-                Coord* slot = NULL;
-                if (cell->m_next != NULL) {
-                    slot = &cell->m_coord;
-                    g_coordPool.m_freeHead = cell->m_next;
-                }
-                *slot = obj->ScreenPos();
-                SnapTileCenter(slot);
+                Coord* slot = g_coordPool.Pop();
+                slot->m_x = (obj->m_screenPosition.m_x & ~TILE_MASK_PX) + TILE_HALF_PX;
+                slot->m_y = (obj->m_screenPosition.m_y & ~TILE_MASK_PX) + TILE_HALF_PX;
                 m_startMarkers.SetAtGrow(StartMarkerCount(), slot);
             }
         } else if (dispatch == DispatchBrickzLogic) {
@@ -5516,59 +5511,60 @@ i32 CPlay::ValidateLevelTiles() {
             m_mgr->m_triggerMgr->PlacePuddle(obj, false);
         } else if (dispatch == DispatchGuardPointLogic) {
 
-            Coord center = obj->ScreenPos();
-            ScreenTile(&center);
-            for (i32 dx = -1; dx < 2; dx++) {
-                for (i32 dy = -1; dy < 2; dy++) {
-                    Coord tile = center + Coord(dx, dy);
+            i32 col = obj->m_screenPosition.m_x >> TILE_SHIFT_PX;
+            i32 rowBase = obj->m_screenPosition.m_y >> TILE_SHIFT_PX;
+            i32 stride = (col << 3) - col;
+
+            i32 guardColumnOffset = stride - 7;
+            for (i32 dy = -1; dy < 2; dy++, guardColumnOffset += 7) {
+                i32 row = rowBase;
+                i32 ofs = rowBase - 1;
+                for (i32 k = 3; k != 0; k--, ofs++, row++) {
+                    i32 gx = dy + col;
+                    i32 gyy = row - 1;
                     CGruntzMapMgr* gg = g_gameReg->m_tileGrid;
-                    if (static_cast<u32>(tile.m_x) >= gg->m_width
-                        || static_cast<u32>(tile.m_y) >= gg->m_height) {
+                    if (static_cast<u32>(gx) >= gg->m_width
+                        || static_cast<u32>(gyy) >= gg->m_height) {
                         continue;
                     }
                     i32 kind = obj->m_smarts;
-                    u32 bit = 0;
+                    i32 bit = 0;
                     switch (static_cast<PlayerSlot>(kind)) {
                         case PLAYER_SLOT_0:
-                            bit = IDX(CELL_FLAG_PLAYER0_START);
+                            bit = 0x100000;
                             break;
                         case PLAYER_SLOT_1:
-                            bit = IDX(CELL_FLAG_PLAYER1_START);
+                            bit = 0x200000;
                             break;
                         case PLAYER_SLOT_2:
-                            bit = IDX(CELL_FLAG_PLAYER2_START);
+                            bit = 0x400000;
                             break;
                         case PLAYER_SLOT_3:
-                            bit = IDX(CELL_FLAG_PLAYER3_START);
+                            bit = 0x800000;
                             break;
                     }
                     counts[kind]++;
                     gg = g_gameReg->m_tileGrid;
-                    if (static_cast<u32>(tile.m_x) >= gg->m_width
-                        || static_cast<u32>(tile.m_y) >= gg->m_height) {
+                    if (static_cast<u32>(gx) >= gg->m_width
+                        || static_cast<u32>(gyy) >= gg->m_height) {
                         continue;
                     }
-                    gg->m_rows[tile.m_y][tile.m_x].m_flags |= bit;
+                    BrickzCell* cellRow = gg->m_rows[ofs];
+                    cellRow[gx].m_flags |= bit;
                 }
             }
         } else if (dispatch == DispatchToobSpikezLogic) {
             CGruntzMapMgr* gg = g_gameReg->m_tileGrid;
-            Coord tile = obj->ScreenPos();
-            ScreenTile(&tile);
-            if (static_cast<u32>(tile.m_x) < gg->m_width
-                && static_cast<u32>(tile.m_y) < gg->m_height) {
-                gg->m_rows[tile.m_y][tile.m_x].m_flags |= IDX(CELL_FLAG_TOOB_SPIKE);
+            i32 tileX = obj->m_screenPosition.m_x >> TILE_SHIFT_PX;
+            i32 tileY = obj->m_screenPosition.m_y >> TILE_SHIFT_PX;
+            if (static_cast<u32>(tileX) < gg->m_width && static_cast<u32>(tileY) < gg->m_height) {
+                gg->m_rows[tileY][tileX].m_flags |= 0x2000000;
             }
         } else if (dispatch == DispatchWarpStonePadLogic) {
             if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
-                CoordPoolNode* cell = g_coordPool.m_freeHead;
-                Coord* slot = NULL;
-                if (cell->m_next != NULL) {
-                    slot = &cell->m_coord;
-                    g_coordPool.m_freeHead = cell->m_next;
-                }
-                *slot = obj->ScreenPos();
-                ScreenTile(slot);
+                Coord* slot = g_coordPool.Pop();
+                slot->m_x = obj->m_screenPosition.m_x >> TILE_SHIFT_PX;
+                slot->m_y = obj->m_screenPosition.m_y >> TILE_SHIFT_PX;
                 CPtrArray* cells = &m_placedObjectCells[obj->m_score];
                 cells->SetAtGrow(cells->GetSize(), slot);
             }

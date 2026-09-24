@@ -49,49 +49,58 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(g);
             }
 
-            i32 arrivalMask =
-                IDX(CELL_FLAG_SOLID | CELL_FLAG_SPECIAL | CELL_FLAG_TRIGGER
-                    | CELL_FLAG_REVEALED_POWERUP | CELL_FLAG_ARROW | CELL_FLAG_WATER
-                    | CELL_FLAG_SPIKES | CELL_FLAG_SINK_HAZARD);
+            i32 arrivalMask = 0xdc7;
             i32 dist;
             {
-                Coord neighborTile;
-                nb->GetScreenTile(&neighborTile);
-                Coord gruntTile;
-                g->GetScreenTile(&gruntTile);
-                Coord delta = neighborTile - gruntTile;
-                Coord distance = delta.GetAbs();
-                dist = distance.m_x + distance.m_y;
+                Coord np;
+                nb->GetScreenTile(&np);
+                Coord gp;
+                g->GetScreenTile(&gp);
+                Coord np2;
+                nb->GetScreenTile(&np2);
+                Coord gp2;
+                g->GetScreenTile(&gp2);
+                dist = abs(np2.m_y - gp2.m_y) + abs(np.m_x - gp.m_x);
             }
             if (dist <= 0xa) {
 
-                Coord gruntTile;
-                g->GetScreenTile(&gruntTile);
+                Coord leftPos, topPos, rightPos, bottomPos;
+                g->GetScreenTile(&bottomPos);
+                g->GetScreenTile(&rightPos);
+                g->GetScreenTile(&topPos);
+                g->GetScreenPos(&leftPos);
+                leftPos.m_x = leftPos.m_x >> TILE_SHIFT_PX;
                 CMapMgr* grid = m_board;
-                CRect
-                    box(gruntTile.m_x - 5, gruntTile.m_y - 5, gruntTile.m_x + 5, gruntTile.m_y + 5);
-                arrivalMask |= BRICKZ_CELL_OCCUPIED;
-                grid->Clip(&box);
+                RECT box;
+                box.left = leftPos.m_x - 5;
+                box.top = topPos.m_y - 5;
+                box.right = rightPos.m_x + 5;
+                box.bottom = bottomPos.m_y + 5;
+                arrivalMask = 0x20000dc7;
+                GRID_CLIP(grid, &box);
             }
             {
                 Coord p;
                 nb->GetScreenTile(&p);
                 if (g->TileSwitch(p.m_x, p.m_y, 0, arrivalMask, 0, 0)) {
                     g->m_defenderState = AISTATE_ATTACK;
-                    g->m_arrivalCell.Set(nb->m_playerIndex, nb->m_unitIndex);
+                    g->m_arrivalCell.m_x = nb->m_playerIndex;
+                    g->m_arrivalCell.m_y = nb->m_unitIndex;
                     g->m_dwell = 0;
                 }
             }
             if (dist <= 0xa) {
-                m_board->Clip(NULL);
+                GRID_CLIP_NULL(m_board);
             }
         }
         goto tail;
     }
 
     {
-        Coord targetUnit = g->m_arrivalCell;
-        CGrunt* cur = m_triggerMgr->m_units[TM_UNITS_PER_PLAYER * targetUnit.m_x + targetUnit.m_y];
+        i32 targetPlayerIndex = g->m_arrivalCell.m_x;
+        i32 targetUnitIndex = g->m_arrivalCell.m_y;
+        CGrunt* cur =
+            m_triggerMgr->m_units[TM_UNITS_PER_PLAYER * targetPlayerIndex + targetUnitIndex];
         if (cur != NULL) {
             CGameObject* s = cur->m_object;
             if (g->RectContains(s->m_screenPosition.m_x, s->m_screenPosition.m_y) != 0) {
@@ -99,7 +108,8 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 if (g->CoordCount() != 0) {
                     RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(g);
                 }
-                g->m_arrivalCell.Set(-1, -1);
+                Coord none;
+                g->m_arrivalCell = *none.Set(-1, -1);
                 {
                     bool eq;
                     if (g == NULL) {
@@ -173,22 +183,17 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
             {
                 Coord here = g->GetTilePos();
                 Coord np = cur->GetTilePos();
-                dist = np.Dist(here);
+                i32 dx = np.m_x - here.m_x;
+                i32 dy = np.m_y - here.m_y;
+                dist = static_cast<i32>(sqrt(static_cast<double>((SQR(abs(dx)) + SQR(abs(dy))))));
             }
             if (dist > m_defenderTargetMaxDistance) {
                 if (m_attackWaypoints.GetSize() != 0) {
                     Coord* e = CoordAt(rand() % m_attackWaypoints.GetSize());
-                    g->TileSwitch(
-                        e->m_x,
-                        e->m_y,
-                        0,
-                        IDX(CELL_FLAG_SOLID | CELL_FLAG_SPECIAL | CELL_FLAG_ARROW | CELL_FLAG_WATER
-                            | CELL_FLAG_SINK_HAZARD),
-                        0,
-                        0
-                    );
+                    g->TileSwitch(e->m_x, e->m_y, 0, 0x983, 0, 0);
                 }
-                g->m_arrivalCell.Set(-1, -1);
+                Coord none;
+                g->m_arrivalCell = *none.Set(-1, -1);
                 g->m_dwell = 0;
                 g->m_defenderState = AISTATE_SEEK;
                 if (g->CoordCount() != 0) {
@@ -201,34 +206,48 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
             if (g->CoordCount() != 0) {
                 RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(g);
             }
-            i32 arrivalMask =
-                IDX(CELL_FLAG_SOLID | CELL_FLAG_SPECIAL | CELL_FLAG_TRIGGER
-                    | CELL_FLAG_REVEALED_POWERUP | CELL_FLAG_ARROW | CELL_FLAG_WATER
-                    | CELL_FLAG_SPIKES | CELL_FLAG_SINK_HAZARD);
+            i32 arrivalMask = 0xdc7;
             i32 dist2;
             {
-                Coord targetTile;
-                cur->GetScreenTile(&targetTile);
-                Coord gruntTile;
-                g->GetScreenTile(&gruntTile);
-                Coord delta = targetTile - gruntTile;
-                Coord distance = delta.GetAbs();
-                dist2 = distance.m_x + distance.m_y;
+                Coord targetPos1;
+                cur->GetScreenTile(&targetPos1);
+                Coord gruntPos1;
+                g->GetScreenTile(&gruntPos1);
+                Coord targetPos2;
+                cur->GetScreenTile(&targetPos2);
+                Coord gruntPos2;
+                g->GetScreenTile(&gruntPos2);
+                dist2 = abs(targetPos1.m_x - gruntPos1.m_x) + abs(targetPos2.m_y - gruntPos2.m_y);
             }
             if (dist2 <= 0xa) {
-                Coord gruntTile;
-                g->GetScreenTile(&gruntTile);
+                Coord leftPos, topPos, rightPos, bottomPos;
+                g->GetScreenTile(&bottomPos);
+                g->GetScreenTile(&rightPos);
+                g->GetScreenTile(&topPos);
+                g->GetScreenPos(&leftPos);
+                leftPos.m_x = leftPos.m_x >> TILE_SHIFT_PX;
                 CMapMgr* grid = m_board;
-                CRect
-                    box(gruntTile.m_x - 5, gruntTile.m_y - 5, gruntTile.m_x + 5, gruntTile.m_y + 5);
-                arrivalMask |= BRICKZ_CELL_OCCUPIED;
-                grid->Clip(&box);
+                RECT box;
+                box.left = leftPos.m_x - 5;
+                box.top = topPos.m_y - 5;
+                box.right = rightPos.m_x + 5;
+                box.bottom = bottomPos.m_y + 5;
+                arrivalMask = 0x20000dc7;
+                GRID_CLIP(grid, &box);
             }
             {
                 Coord cp;
-                cur->GetScreenTile(&cp);
-                if (!g->TileSwitch(cp.m_x, cp.m_y, 0, arrivalMask, 0, 0)) {
-                    g->m_arrivalCell.Set(-1, -1);
+                cur->GetScreenPos(&cp);
+                if (!g->TileSwitch(
+                        cp.m_x >> TILE_SHIFT_PX,
+                        cp.m_y >> TILE_SHIFT_PX,
+                        0,
+                        arrivalMask,
+                        0,
+                        0
+                    )) {
+                    Coord none;
+                    g->m_arrivalCell = *none.Set(-1, -1);
                     g->m_defenderState = AISTATE_SEEK;
                 }
             }
@@ -238,7 +257,8 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
             g->m_dwell = 0;
             goto tail;
         }
-        g->m_arrivalCell.Set(-1, -1);
+        Coord none;
+        g->m_arrivalCell = *none.Set(-1, -1);
         g->m_defenderState = AISTATE_SEEK;
         g->RecycleCoords();
     }
@@ -249,15 +269,7 @@ tail:
             && static_cast<u32>(g->m_dwell) > static_cast<u32>(m_idleAttackWaypointDelay)
             && m_attackWaypoints.GetSize() != 0) {
             Coord* e = CoordAt(rand() % m_attackWaypoints.GetSize());
-            g->TileSwitch(
-                e->m_x,
-                e->m_y,
-                0,
-                IDX(CELL_FLAG_SOLID | CELL_FLAG_SPECIAL | CELL_FLAG_ARROW | CELL_FLAG_WATER
-                    | CELL_FLAG_SINK_HAZARD),
-                0,
-                0
-            );
+            g->TileSwitch(e->m_x, e->m_y, 0, 0x983, 0, 0);
             g->m_dwell = 0;
         }
     }

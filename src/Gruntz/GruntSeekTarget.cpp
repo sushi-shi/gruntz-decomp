@@ -14,6 +14,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
+#include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntMovementMacros.h>
@@ -42,11 +43,11 @@
 // @early-stop
 RVA(0x000f71c0, 0x721)
 i32 CGrunt::StepToolThiefBehavior() {
-    CopyLastTileToDefender(this);
+    COPY_CURRENT_GRUNT_LAST_TILE_TO_DEFENDER
     if (this->CoordCount() != 0
         && g_gameReg->m_triggerMgr->m_units[0 * TM_UNITS_PER_PLAYER + this->m_arrivalCell.m_x]
                == NULL) {
-        RecycleGruntCoords(this);
+        RECYCLE_GRUNT_COORDS(this)
         this->m_arrivalCell.m_x = 0;
     }
 
@@ -58,22 +59,28 @@ i32 CGrunt::StepToolThiefBehavior() {
         CGrunt* slot = g_gameReg->m_triggerMgr->m_units[0 * TM_UNITS_PER_PLAYER + reason];
         if (slot == NULL || slot->m_entranceCommitted == false) {
             if (this->CoordCount() != 0) {
-                RecycleGruntCoords(this);
+                RECYCLE_GRUNT_COORDS(this)
             }
             this->m_arrivalCell.m_x = -1;
             return 1;
         }
 
         Coord slotTile;
-        Coord selfTile;
+        Coord selfTileX;
+        Coord selfTileY;
         slot->GetScreenTile(&slotTile);
-        this->GetScreenTile(&selfTile);
-        Coord distance = (slotTile - selfTile).GetAbs();
-        if (distance.m_x <= 1 && distance.m_y <= 1) {
-            PickupType r2 = slot->m_entranceReason;
-            if (r2 > PICKUP_EQUIPPABLE_LAST) {
-                r2 = slot->m_toolId;
-            }
+        i32 slotX = slotTile.m_x;
+        selfTileY.m_y = slotTile.m_y;
+        this->GetScreenPos(&selfTileX);
+        i32 selfX = selfTileX.m_x >> TILE_SHIFT_PX;
+        slot->GetScreenTile(&slotTile);
+        selfTileX = slotTile;
+        this->GetScreenPos(&selfTileY);
+        selfTileY.m_y >>= TILE_SHIFT_PX;
+        i32 dx = slotX - selfX;
+        i32 dy = selfTileX.m_y - selfTileY.m_y;
+        if (abs(dx) <= 1 && abs(dy) <= 1) {
+            PickupType r2 = slot->ArrivalPickup();
             if (r2 != PICKUP_WARPSTONE && r2 != PICKUP_BOMB) {
                 this->LoadGruntTypeTable(r2, 1, 0, 0);
                 slot->LoadGruntTypeTable(PICKUP_NONE, 1, 0, 0);
@@ -81,7 +88,7 @@ i32 CGrunt::StepToolThiefBehavior() {
                 if (this->CoordCount() == 0) {
                     return 1;
                 }
-                RecycleGruntCoords(this);
+                RECYCLE_GRUNT_COORDS(this)
                 return 1;
             }
         }
@@ -92,8 +99,7 @@ i32 CGrunt::StepToolThiefBehavior() {
         reason = IDX(this->m_toolId);
     }
     if (reason != 0) {
-        i32 atTarget;
-        CGrunt* g = FindNearestEnemyAtTarget(this, &atTarget);
+        FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget, x)
         b32 powered = this->m_poweredUp;
         if (powered != false) {
             b32 neighborValid = this->m_neighborValid;
@@ -134,23 +140,31 @@ i32 CGrunt::StepToolThiefBehavior() {
             }
             return 1;
         }
-        CopyLastTileToDefender(this);
+        COPY_CURRENT_GRUNT_LAST_TILE_TO_DEFENDER
         if (g == NULL || GruntInRadius(g->m_playerIndex, g->m_unitIndex) == 0) {
             this->m_blockedVoicePending = false;
             return 1;
         }
         if (this->m_poweredUp == false && this->m_stamina >= STAMINA_FULL) {
-            Coord position = g->m_object->ScreenPos();
-            if (position == g->m_lastTilePx && RectContains(position.m_x, position.m_y) != 0) {
+            i32 x = g->m_object->m_screenPosition.m_x;
+            if (GRUNT_X_AT_SAVED_POS(x, g) && GRUNT_SCREEN_Y_AT_SAVED_POS(g->m_object, g)
+
+                && RectContains(x, g->m_object->m_screenPosition.m_y) != 0) {
                 COMMIT_GRUNT_NEIGHBOR(g);
             }
         }
         if (static_cast<u32>(this->m_dwell) <= DWELL_REPATH_MS) {
             return 1;
         }
-        Coord targetTile;
-        g->GetScreenTile(&targetTile);
-        if (TileSwitch(targetTile.m_x, targetTile.m_y, 0, this->m_arrivalFlags, 1, 0) == 0) {
+        if (TileSwitch(
+                g->m_object->m_screenPosition.m_x >> TILE_SHIFT_PX,
+                g->m_object->m_screenPosition.m_y >> TILE_SHIFT_PX,
+                0,
+                this->m_arrivalFlags,
+                1,
+                0
+            )
+            == 0) {
             return 1;
         }
         if (this->m_blockedVoicePending != false) {
@@ -180,23 +194,22 @@ i32 CGrunt::StepToolThiefBehavior() {
                 CGrunt* sv = slots[i];
                 if (sv != NULL && sv->m_entranceCommitted != false) {
                     PickupType k = sv->m_entranceReason;
-                    if (sv->ArrivalPickupOf(k) != PICKUP_NONE
-                        && sv->ArrivalPickupOf(k) != PICKUP_WARPSTONE
-                        && sv->ArrivalPickupOf(k) != PICKUP_BOMB) {
+                    if (ARRIVAL_PICKUP_OF_TERNARY_LE(sv, k) != PICKUP_NONE
+                        && ARRIVAL_PICKUP_OF_TERNARY_LE(sv, k) != PICKUP_WARPSTONE
+                        && ARRIVAL_PICKUP_OF_TERNARY_LE(sv, k) != PICKUP_BOMB) {
                         i32 seekable = 1;
                         if (sv->m_gruntKind == GRUNT_GHOST) {
                             seekable = 0;
                         }
-                        if (sv->ArrivalPickupOf(k) == PICKUP_WARPSTONE) {
+                        if (ARRIVAL_PICKUP_OF_TERNARY_LE(sv, k) == PICKUP_WARPSTONE) {
                             seekable = 0;
                         }
                         if (seekable) {
-                            Coord candidateTile;
-                            sv->GetScreenTile(&candidateTile);
-                            Coord selfTile;
-                            GetScreenTile(&selfTile);
-                            Coord delta = (candidateTile - selfTile).GetAbs();
-                            i32 dist = delta.MagSqr();
+                            i32 ex = sv->m_object->m_screenPosition.m_x >> TILE_SHIFT_PX;
+                            i32 ddx = ex - (this->m_object->m_screenPosition.m_x >> TILE_SHIFT_PX);
+                            i32 ey = (sv->m_object->m_screenPosition.m_y >> TILE_SHIFT_PX)
+                                     - (this->m_object->m_screenPosition.m_y >> TILE_SHIFT_PX);
+                            i32 dist = abs(ddx * ddx) + abs(ey * ey);
                             if (dist < best
                                 && dist <= this->m_defenderRadius * this->m_defenderRadius) {
                                 best = dist;
@@ -209,13 +222,20 @@ i32 CGrunt::StepToolThiefBehavior() {
             } while (i < 0xf);
             if (bestIdx != -1) {
                 this->m_arrivalCell.m_x = bestIdx;
-                Coord targetTile;
-                slots[bestIdx]->GetScreenTile(&targetTile);
-                if (TileSwitch(targetTile.m_x, targetTile.m_y, 0, this->m_arrivalFlags, 1, 0)
+                CGameObject* base = slots[bestIdx]->m_object;
+                if (TileSwitch(
+                        base->m_screenPosition.m_x >> TILE_SHIFT_PX,
+                        base->m_screenPosition.m_y >> TILE_SHIFT_PX,
+                        0,
+                        this->m_arrivalFlags,
+                        1,
+                        0
+                    )
                     != 0) {
-                    Coord voicePosition = this->m_object->ScreenPos();
+                    i32 by = this->m_object->m_screenPosition.m_y;
+                    i32 bx = this->m_object->m_screenPosition.m_x;
                     CCueRect* board = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
-                    if (::PtInRect(board, voicePosition.m_x, voicePosition.m_y)) {
+                    if (::PtInRect(board, bx, by)) {
                         g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
                     }
                 }
@@ -229,11 +249,17 @@ i32 CGrunt::StepToolThiefBehavior() {
         if (static_cast<u32>(this->m_dwell) <= 0x3e8) {
             return 1;
         }
-        CGrunt* target =
-            g_gameReg->m_triggerMgr->m_units[0 * TM_UNITS_PER_PLAYER + this->m_arrivalCell.m_x];
-        Coord targetTile;
-        target->GetScreenTile(&targetTile);
-        TileSwitch(targetTile.m_x, targetTile.m_y, 0, this->m_arrivalFlags, 1, 0);
+        CGameObject* base =
+            g_gameReg->m_triggerMgr->m_units[0 * TM_UNITS_PER_PLAYER + this->m_arrivalCell.m_x]
+                ->m_object;
+        TileSwitch(
+            base->m_screenPosition.m_x >> TILE_SHIFT_PX,
+            base->m_screenPosition.m_y >> TILE_SHIFT_PX,
+            0,
+            this->m_arrivalFlags,
+            1,
+            0
+        );
     }
     this->m_dwell = 0;
     return 1;

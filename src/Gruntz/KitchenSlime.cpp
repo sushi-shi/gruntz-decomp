@@ -26,6 +26,7 @@
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/Sprite.h>
+#include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
@@ -62,25 +63,38 @@ CKitchenSlime::CKitchenSlime(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
 
-    Coord snappedPosition = m_object->ScreenPos();
-    SnapTileCenter(&snappedPosition);
-    m_object->SetScreenPos(snappedPosition);
-    m_position.Init(snappedPosition);
+    SNAP_OBJECT_TO_TILE_CENTER_DOUBLE_POS(m_object, snapX, snapY, m_position.m_x, m_position.m_y)
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_KITCHEN_SLIME);
-    m_tilePosition = snappedPosition;
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_KITCHEN_SLIME)
+    m_tilePosition.m_y = snapY;
+    m_tilePosition.m_x = snapX;
 
-    TileCenter(&m_object->m_speed);
-    Coord target = m_object->m_speed;
-    if (m_object->ScreenPos() == target) {
+    m_object->m_speed.m_x = (m_object->m_speed.m_x << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_object->m_speed.m_y = (m_object->m_speed.m_y << TILE_SHIFT_PX) + TILE_HALF_PX;
+    if (m_object->m_screenPosition.m_x == m_object->m_speed.m_x
+        && m_object->m_screenPosition.m_y == m_object->m_speed.m_y) {
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         return;
     }
-    Coord extentLo = snappedPosition;
-    extentLo.Min(target);
-    Coord extentHi = snappedPosition;
-    extentHi.Max(target);
-    m_object->m_extent = MakeRect(extentLo.m_x, extentLo.m_y, extentHi.m_x, extentHi.m_y);
+    m_object->m_extent.left = (m_object->m_screenPosition.m_x < m_object->m_speed.m_x)
+                                  ? m_object->m_screenPosition.m_x
+                                  : m_object->m_speed.m_x;
+
+    i32 exRight = m_object->m_speed.m_x;
+    if (m_object->m_screenPosition.m_x > exRight) {
+        exRight = m_object->m_screenPosition.m_x;
+    }
+    m_object->m_extent.right = exRight;
+    i32 exTop = m_object->m_speed.m_y;
+    if (m_object->m_screenPosition.m_y < exTop) {
+        exTop = m_object->m_screenPosition.m_y;
+    }
+    m_object->m_extent.top = exTop;
+    i32 exBottom = m_object->m_speed.m_y;
+    if (m_object->m_screenPosition.m_y > exBottom) {
+        exBottom = m_object->m_screenPosition.m_y;
+    }
+    m_object->m_extent.bottom = exBottom;
 
     CDDrawWorker* frameSet = Anim()->m_imageSet;
     if (frameSet != NULL) {
@@ -237,13 +251,42 @@ i32 CKitchenSlime::LoadSprites() {
     i32 i = 0;
     while (found == false) {
         CGameObject* lvl = Level();
-        CardinalDir direction = static_cast<CardinalDir>(lvl->m_smarts);
-        tile = m_tilePosition + CardinalDirectionOffset(direction, TILE_SIZE_PX);
+        i32 sw = lvl->m_smarts;
+        switch (static_cast<CardinalDir>(sw)) {
+            case CARDINAL_NORTH: {
+                Coord step;
+                step.m_x = m_tilePosition.m_x;
+                step.m_y = m_tilePosition.m_y - 0x20;
+                tile = step;
+                break;
+            }
+            case CARDINAL_EAST: {
+                Coord step;
+                step.m_x = m_tilePosition.m_x + 0x20;
+                step.m_y = m_tilePosition.m_y;
+                tile = step;
+                break;
+            }
+            case CARDINAL_SOUTH: {
+                Coord step;
+                step.m_x = m_tilePosition.m_x;
+                step.m_y = m_tilePosition.m_y + 0x20;
+                tile = step;
+                break;
+            }
+            case CARDINAL_WEST: {
+                Coord step;
+                step.m_x = m_tilePosition.m_x - 0x20;
+                step.m_y = m_tilePosition.m_y;
+                tile = step;
+                break;
+            }
+        }
 
-        Coord tileCell = tile;
-        ScreenTile(&tileCell);
+        i32 gx = tile.m_x >> TILE_SHIFT_PX;
+        i32 gy = tile.m_y >> TILE_SHIFT_PX;
         CMapMgr* map = g_gameReg->m_tileGrid;
-        i32 tileFlags = map->CellFlagsAt(tileCell.m_x, tileCell.m_y);
+        i32 tileFlags = map->CellFlagsAt(gx, gy);
 
         if (tile.m_y >= lvl->m_extent.top && tile.m_x <= lvl->m_extent.right
             && tile.m_y <= lvl->m_extent.bottom && tile.m_x >= lvl->m_extent.left
@@ -255,7 +298,7 @@ i32 CKitchenSlime::LoadSprites() {
             }
 
             if (lvl->m_direction == 1) {
-                lvl->m_smarts = IDX(direction) - 1;
+                lvl->m_smarts = sw - 1;
                 if (Level()->m_smarts <= 0) {
                     Level()->m_smarts = 4;
                 }
@@ -268,40 +311,46 @@ i32 CKitchenSlime::LoadSprites() {
         }
     }
 
-    m_position.Init();
+    m_position.m_x = 0;
+    m_position.m_y = 0;
     b32 changed = (Level()->m_smarts != savedDir);
-    CardinalDir direction = static_cast<CardinalDir>(Level()->m_smarts);
-    if (direction >= CARDINAL_FIRST && direction <= CARDINAL_LAST) {
-        Coord stepDirection = CardinalDirectionOffset(direction, 1);
-        m_direction = DoubleVector2(stepDirection);
-        m_position = m_direction * m_stepMag;
-    }
-    switch (direction) {
+    switch (static_cast<CardinalDir>(Level()->m_smarts)) {
         case CARDINAL_NORTH:
+            m_direction.m_x = 0.0;
+            m_direction.m_y = -1.0;
+            m_position.m_y = -m_stepMag;
             if (changed) {
                 Anim()->SetImageSetByName("LEVEL_KITCHENSLIME_NORTH");
             }
             break;
         case CARDINAL_EAST:
+            m_direction.m_x = 1.0;
+            m_direction.m_y = 0.0;
+            m_position.m_x = m_stepMag;
             if (changed) {
                 Anim()->SetImageSetByName("LEVEL_KITCHENSLIME_EAST");
             }
             break;
         case CARDINAL_SOUTH:
+            m_direction.m_x = 0.0;
+            m_direction.m_y = 1.0;
+            m_position.m_y = m_stepMag;
             if (changed) {
                 Anim()->SetImageSetByName("LEVEL_KITCHENSLIME_SOUTH");
             }
             break;
         case CARDINAL_WEST:
+            m_direction.m_x = -1.0;
+            m_direction.m_y = 0.0;
+            m_position.m_x = -m_stepMag;
             if (changed) {
                 Anim()->SetImageSetByName("LEVEL_KITCHENSLIME_WEST");
             }
             break;
     }
 
-    Coord screenPosition = Level()->ScreenPos();
-    DoubleVector2 origin(screenPosition);
-    m_position += origin;
+    m_position.m_x = static_cast<double>(Level()->m_screenPosition.m_x) + m_position.m_x;
+    m_position.m_y = static_cast<double>(Level()->m_screenPosition.m_y) + m_position.m_y;
 
     u32 time;
     if (Level()->m_logicRecord->m_speed != 0) {
@@ -317,8 +366,8 @@ i32 CKitchenSlime::LoadSprites() {
         CWwdSpriteObject* player = Anim();
         CDDrawWorker* spr = player->m_imageSet;
         if (spr != NULL) {
-            if (spr->ContainsFrame(1)) {
-                CImage* img = spr->FrameAtUnchecked(1);
+            if (DDRAW_WORKER_CONTAINS_FRAME(spr, 1)) {
+                CImage* img = DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, 1);
                 player->m_frameIndex = 1;
                 player->m_frameImage = img;
                 m_stepMag = 0.0;

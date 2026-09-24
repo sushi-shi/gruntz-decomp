@@ -15,6 +15,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
+#include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntMovementMacros.h>
@@ -70,13 +71,16 @@ i32 CGrunt::StepGooSuckerBehavior() {
     }
     m_defenderPx = m_lastTilePx;
     CMapMgr* grid = g_gameReg->m_tileGrid;
-    grid->Clip(NULL);
+    GRID_CLIP_NULL(grid);
 
-    Coord selfTile;
-    GetScreenTile(&selfTile);
+    Coord c1;
+    GetScreenPos(&c1);
+    c1.m_x >>= TILE_SHIFT_PX;
+    Coord c2;
+    GetScreenPos(&c2);
+    c2.m_y >>= TILE_SHIFT_PX;
 
-    i32 atTarget;
-    CGrunt* g = FindNearestEnemyAtTarget(this, &atTarget);
+    FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget, x)
 
     b32 powered = m_poweredUp;
     if (powered != false) {
@@ -106,7 +110,7 @@ i32 CGrunt::StepGooSuckerBehavior() {
             if (m_neighborValid != false) {
                 goto L_yes;
             }
-            RESET_GRUNT_POWERED_STATE(this);
+            RESET_GRUNT_POWERED_STATE(this)
         } else {
             m_neighborValid = false;
         }
@@ -122,14 +126,14 @@ i32 CGrunt::StepGooSuckerBehavior() {
             if (atTarget) {
                 COMMIT_GRUNT_NEIGHBOR(g);
                 if (CoordCount() != 0) {
-                    RecycleGruntCoords(this);
+                    RECYCLE_GRUNT_COORDS(this)
                 }
                 return 1;
             }
         } else {
             if (atTarget) {
                 if (CoordCount() != 0) {
-                    RecycleGruntCoords(this);
+                    RECYCLE_GRUNT_COORDS(this)
                 }
                 return 1;
             }
@@ -159,15 +163,17 @@ L_ed006b:
     }
     {
         Coord cc;
-        g->GetScreenTile(&cc);
-        if (TileSwitch(cc.m_x, cc.m_y, 0, m_arrivalFlags, 1, 0) != 0) {
+        g->GetScreenPos(&cc);
+        if (TileSwitch(cc.m_x >> TILE_SHIFT_PX, cc.m_y >> TILE_SHIFT_PX, 0, m_arrivalFlags, 1, 0)
+            != 0) {
             if (m_blockedVoicePending != false) {
-                Coord voicePosition = m_object->ScreenPos();
+                i32 x = m_object->m_screenPosition.m_x;
+                i32 y = m_object->m_screenPosition.m_y;
                 CGruntzMgr* game = g_gameReg;
                 if (CGameLevel::PointInBounds(
                         &game->m_world->m_level->m_mainPlane->m_planeViewRect,
-                        voicePosition.m_x,
-                        voicePosition.m_y
+                        x,
+                        y
                     )
                     != 0) {
                     game->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
@@ -186,78 +192,91 @@ L_scanb:
 
         i32 r = m_defenderRadius;
         RECT box;
-        SET_RECT_COMPONENTS(
-            box,
-            selfTile.m_x - r,
-            selfTile.m_y - r,
-            selfTile.m_x + r,
-            selfTile.m_y + r
-        );
-        RECT gridBounds;
-        SET_RECT_COMPONENTS(gridBounds, 0, 0, grid->m_width, grid->m_height);
+        box.left = c1.m_x - r;
+        box.right = c1.m_x + r;
+        box.top = c2.m_y - r;
+        box.bottom = c2.m_y + r;
+        RECT gb;
+        gb.left = 0;
+        gb.top = 0;
+        gb.right = grid->m_width;
+        gb.bottom = grid->m_height;
         RECT isect;
-        if (!::IntersectRect(&isect, &box, &gridBounds)) {
+        if (!IntersectRect(&isect, &box, &gb)) {
             isect = box;
         }
-        grid->Clip(&isect);
+        GRID_CLIP_INL(grid, &isect);
 
         i32 best = INT_MAX;
-        Coord bestTile(0, 0);
+        i32 bestX = 0;
+        i32 bestY = 0;
 
         POSITION pos = m_triggerMgr->m_baseList.GetHeadPosition();
         while (pos != NULL) {
             CGruntPuddle* gg = static_cast<CGruntPuddle*>(m_triggerMgr->m_baseList.GetNext(pos));
             if (gg->m_pending == false) {
-                Coord puddleTile = gg->m_tile;
-                Coord puddlePosition = puddleTile;
-                TileCenter(&puddlePosition);
-                if (RectContains(puddlePosition.m_x, puddlePosition.m_y) != 0) {
+                i32 gx = gg->m_tile.m_x;
+                i32 gy = gg->m_tile.m_y;
+                if (RectContains(
+                        (gx << TILE_SHIFT_PX) + TILE_HALF_PX,
+                        (gy << TILE_SHIFT_PX) + TILE_HALF_PX
+                    )
+                    != 0) {
                     m_triggerMgr->UseEquippedToolAt(
                         m_playerIndex,
                         m_unitIndex,
-                        puddlePosition.m_x,
-                        puddlePosition.m_y
+                        (gx << TILE_SHIFT_PX) + TILE_HALF_PX,
+                        (gy << TILE_SHIFT_PX) + TILE_HALF_PX
                     );
-                    grid->Clip(NULL);
+                    GRID_CLIP_INL(grid, NULL);
                     return 1;
                 }
-                Coord distance = (puddleTile - selfTile).GetAbs();
-                i32 dist = distance.m_x + distance.m_y;
+                i32 dx = gx - (m_object->m_screenPosition.m_x >> TILE_SHIFT_PX);
+                i32 dy = gy - (m_object->m_screenPosition.m_y >> TILE_SHIFT_PX);
+                i32 dist = abs(dx) + abs(dy);
                 if (dist < best) {
-                    if (::PtInRect(&isect, puddleTile.m_x, puddleTile.m_y)) {
+                    POINT pt;
+                    pt.x = gx;
+                    pt.y = gy;
+                    if (PtInRect(&isect, pt)) {
                         best = dist;
-                        bestTile = puddleTile;
+                        bestX = gx;
+                        bestY = gy;
                     }
                 }
             }
         }
         if (best != INT_MAX) {
-            Coord distance = (bestTile - selfTile).GetAbs();
-            if (distance.m_x <= 1 && distance.m_y <= 1) {
-                Coord bestPosition = bestTile;
-                TileCenter(&bestPosition);
+            i32 dx = bestX - c1.m_x;
+            dx = abs(dx);
+            i32 dy = bestY - c2.m_y;
+            dy = abs(dy);
+            if (dx <= 1 && dy <= 1) {
                 m_triggerMgr->UseEquippedToolAt(
                     m_playerIndex,
                     m_unitIndex,
-                    bestPosition.m_x,
-                    bestPosition.m_y
+                    (bestX << TILE_SHIFT_PX) + TILE_HALF_PX,
+                    (bestY << TILE_SHIFT_PX) + TILE_HALF_PX
                 );
                 SetEntrancePos(1, 1);
             } else {
-                TileSwitch(bestTile.m_x, bestTile.m_y, 0, m_arrivalFlags, 1, 0);
+                TileSwitch(bestX, bestY, 0, m_arrivalFlags, 1, 0);
             }
         }
-        grid->Clip(NULL);
+        GRID_RECT_INLINE(grid);
     } else {
         Coord* coord = static_cast<Coord*>(m_coordList.GetHead());
-        Coord targetTile = *coord;
-        if (CellTargetable(targetTile.m_x, targetTile.m_y) == 0) {
+        i32 col = coord->m_x;
+        i32 row = coord->m_y;
+        if (CellTargetable(col, row) == 0) {
             return 1;
         }
-        Coord targetPosition = targetTile;
-        TileCenter(&targetPosition);
-        m_triggerMgr
-            ->UseEquippedToolAt(m_playerIndex, m_unitIndex, targetPosition.m_x, targetPosition.m_y);
+        m_triggerMgr->UseEquippedToolAt(
+            m_playerIndex,
+            m_unitIndex,
+            (col << TILE_SHIFT_PX) + TILE_HALF_PX,
+            (row << TILE_SHIFT_PX) + TILE_HALF_PX
+        );
         SetEntrancePos(1, 1);
     }
     m_dwell = 0;

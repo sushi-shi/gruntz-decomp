@@ -56,23 +56,6 @@ inline i32 PickupPriority(PickupType pickup) {
     }
 }
 
-#define SCAN_BOUNDS_PLAINCLIP(grid)                                                                \
-    {                                                                                              \
-        RECT rb;                                                                                   \
-        rb.left = 0;                                                                               \
-        rb.top = 0;                                                                                \
-        rb.right = (grid)->m_width;                                                                \
-        rb.bottom = (grid)->m_height;                                                              \
-        RECT ra;                                                                                   \
-        ra = CRect(0, 0, (grid)->m_width, (grid)->m_height);                                       \
-        RECT* rd = &(grid)->m_bounds;                                                              \
-        if (!IntersectRect(rd, &ra, &rb)) {                                                        \
-            *rd = ra;                                                                              \
-        }                                                                                          \
-        (grid)->m_gridW = rd->right - rd->left;                                                    \
-        (grid)->m_gridH = rd->bottom - rd->top;                                                    \
-    }
-
 #define GRID_CLIP(grid, srcRect)                                                                   \
     {                                                                                              \
         const RECT* clipSrc = (srcRect);                                                           \

@@ -303,7 +303,8 @@ CGrunt* CTriggerMgr::FindNearestEnemy(CGrunt* w) {
     CGrunt* best = NULL;
     i32 bestDist = INT_MAX;
     Coord lastTilePx = w->LastTilePx();
-    ScreenTile(&lastTilePx);
+    i32 tileX = lastTilePx.m_x >> TILE_SHIFT_PX;
+    i32 tileY = lastTilePx.m_y >> TILE_SHIFT_PX;
     i32 i = 0;
     CGrunt** rowPtr = m_units;
     for (; i < PLAYER_SLOT_COUNT; i++, rowPtr += TM_UNITS_PER_PLAYER) {
@@ -314,9 +315,9 @@ CGrunt* CTriggerMgr::FindNearestEnemy(CGrunt* w) {
                 CGrunt* cell = *colPtr;
                 if (cell && cell->m_entranceCommitted != false
                     && cell->m_gruntKind != GRUNT_GHOST) {
-                    Coord cellTile;
-                    cell->GetScreenTile(&cellTile);
-                    i32 dist = cellTile.DistSqr(lastTilePx);
+                    i32 dx = (cell->m_object->m_screenPosition.m_x >> TILE_SHIFT_PX) - tileX;
+                    i32 dy = (cell->m_object->m_screenPosition.m_y >> TILE_SHIFT_PX) - tileY;
+                    i32 dist = SquaredDistance(dx, dy);
                     if (dist < bestDist) {
                         best = cell;
                         bestDist = dist;
@@ -326,11 +327,13 @@ CGrunt* CTriggerMgr::FindNearestEnemy(CGrunt* w) {
             } while (--j != 0);
         }
     }
-    CRect rc = AttackTileNeighborhood(w);
+    RECT rc = AttackTileNeighborhood(w);
     if (best) {
-        Coord bestPos;
-        best->GetScreenTile(&bestPos);
-        if (!::PtInRect(&rc, bestPos.m_x, bestPos.m_y)) {
+        Coord bestPos = ScreenPosition(best->m_object);
+        POINT pt;
+        pt.x = bestPos.m_x >> TILE_SHIFT_PX;
+        pt.y = bestPos.m_y >> TILE_SHIFT_PX;
+        if (!PtInRect(&rc, pt)) {
             best = NULL;
         }
     }

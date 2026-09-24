@@ -23,6 +23,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
+#include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntPickupInline.h>
@@ -250,23 +251,31 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
                     ->RectContains(lvl->m_screenPosition.m_x, lvl->m_screenPosition.m_y)
                 != 0) {
                 if (unit->CoordCount() != 0) {
-                    RecycleGruntCoords(unit);
+                    RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
                 }
-                unit->m_arrivalCell.Set(-1, -1);
+                Coord none;
+                unit->m_arrivalCell = *none.Set(-1, -1);
                 HandleUnitContact(unit, target);
                 return 1;
             }
 
             CMapMgr* board = m_board;
-            board->Clip(NULL);
+            CRect r1(0, 0, board->m_width, board->m_height);
+            RECT rc;
+            rc = CRect(0, 0, board->m_width, board->m_height);
+            RECT* rcDst = &board->m_bounds;
+            if (!IntersectRect(rcDst, &rc, &r1)) {
+                *rcDst = rc;
+            }
+            board->m_gridSize.cx = rcDst->right - rcDst->left;
+            board->m_gridSize.cy = rcDst->bottom - rcDst->top;
             if (static_cast<u32>(unit->m_dwell) > DWELL_REPATH_MS && unit->CoordCount() == 0) {
                 i32 flags = unit->m_routeBlockedMask;
                 unit->m_routePassableMask = BATTLEZ_ROUTE_ALL_TOOLS_TRIGGER;
-                Coord targetTile;
-                target->GetScreenTile(&targetTile);
+                CGameObject* tl = target->m_object;
                 unit->TileSwitch(
-                    targetTile.m_x,
-                    targetTile.m_y,
+                    tl->m_screenPosition.m_x >> TILE_SHIFT_PX,
+                    tl->m_screenPosition.m_y >> TILE_SHIFT_PX,
                     0,
                     flags,
                     0,
@@ -277,22 +286,26 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
             return 1;
         }
 
-        unit->m_arrivalCell.Set(-1, -1);
-        unit->m_defenderPx.Set(-1, -1);
+        Coord noCell;
+        unit->m_arrivalCell = *noCell.Set(-1, -1);
+        Coord noPx;
+        unit->m_defenderPx = *noPx.Set(-1, -1);
         unit->m_defenderState = AISTATE_SEEK;
         unit->m_battleState = BZTASK_ADVANCE;
         if (unit->CoordCount() != 0) {
-            RecycleGruntCoords(unit);
+            RECYCLE_GRUNT_COORDS_EXPANDED(unit)
         }
         return 1;
     }
 
-    unit->m_arrivalCell.Set(-1, -1);
-    unit->m_defenderPx.Set(-1, -1);
+    Coord noCell;
+    unit->m_arrivalCell = *noCell.Set(-1, -1);
+    Coord noPx;
+    unit->m_defenderPx = *noPx.Set(-1, -1);
     unit->m_defenderState = AISTATE_SEEK;
     unit->m_battleState = BZTASK_ADVANCE;
     if (unit->CoordCount() != 0) {
-        RecycleGruntCoords(unit);
+        RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
     }
     return 1;
 }
@@ -319,16 +332,19 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
             return 1;
         }
         unit->m_targetTeam = band;
-        unit->m_defenderPx.Set(-1, -1);
+        Coord noPx;
+        unit->m_defenderPx = *noPx.Set(-1, -1);
     } else {
         GruntzPlayer* slot = &m_ctx->m_players[band];
         if (slot->m_clearedRound != false || slot->m_active == false) {
 
             if (unit->CoordCount() != 0) {
-                RecycleGruntCoords(unit);
+                RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
             }
-            unit->m_arrivalCell.Set(-1, -1);
-            unit->m_defenderPx.Set(-1, -1);
+            Coord noCell;
+            unit->m_arrivalCell = *noCell.Set(-1, -1);
+            Coord noPx;
+            unit->m_defenderPx = *noPx.Set(-1, -1);
             unit->m_targetTeam = -1;
             unit->m_defenderState = AISTATE_SEEK;
             unit->m_routeBlockedMask = g_battlezRouteBlockedMask;
@@ -349,16 +365,22 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                 i32 gx = currentScreenPos.m_x;
                 if (gx == -1) {
                     if (bundle->m_attackWaypoints.GetSize() != 0) {
-                        PickSpawnCoord(&goal, unit, band);
+                        Coord out;
+                        goal = *PickSpawnCoord(&out, unit, band);
                     }
                     unit->m_defenderPx = goal;
                     unit->m_defenderState = AISTATE_BATTLEZ_ROUTE_TARGET;
                     return 1;
                 }
                 goal = unit->m_defenderPx;
-                unit->GetScreenTile(&currentScreenPos);
-                i32 currentDistanceSquared = marker.DistSqr(currentScreenPos);
-                i32 goalDistanceSquared = marker.DistSqr(goal);
+                (static_cast<CUserLogic*>(unit))->GetScreenPos((&currentScreenPos));
+                i32 currentDx = abs(marker.m_x - (currentScreenPos.m_x >> TILE_SHIFT_PX));
+                (static_cast<CUserLogic*>(unit))->GetScreenPos((&currentScreenPos));
+                i32 currentDy = abs(marker.m_y - (currentScreenPos.m_y >> TILE_SHIFT_PX));
+                i32 currentDistanceSquared = SquaredDistance(currentDx, currentDy);
+                i32 goalDx = abs(marker.m_x - goal.m_x);
+                i32 goalDy = abs(marker.m_y - goal.m_y);
+                i32 goalDistanceSquared = SquaredDistance(goalDx, goalDy);
                 if (currentDistanceSquared > goalDistanceSquared) {
                     unit->m_defenderState = AISTATE_BATTLEZ_ROUTE_TARGET;
                 } else {
@@ -372,19 +394,22 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                 if (static_cast<u32>(unit->m_dwell) <= static_cast<u32>(m_moveBudget)) {
                     return 1;
                 }
-                Coord target = unit->m_defenderPx;
-                if (target.m_x == -1 || target.m_y == -1) {
+                i32 gx = unit->m_defenderPx.m_x;
+                i32 gy = unit->m_defenderPx.m_y;
+                if (gx == -1 || gy == -1) {
 
                     unit->m_defenderState = AISTATE_SEEK;
                     if (unit->CoordCount() != 0) {
-                        RecycleGruntCoords(unit);
+                        RECYCLE_GRUNT_COORDS(unit)
                     }
-                    unit->m_defenderPx.Set(-1, -1);
+                    Coord noPx;
+                    unit->m_defenderPx = *noPx.Set(-1, -1);
                     return 1;
                 }
-                Coord current;
-                unit->GetScreenTile(&current);
-                if (target.DistSqr(current) > 0x10) {
+                CGameObject* lvl = unit->m_object;
+                i32 dx = abs(gx - (lvl->m_screenPosition.m_x >> TILE_SHIFT_PX));
+                i32 dy = abs(gy - (lvl->m_screenPosition.m_y >> TILE_SHIFT_PX));
+                if (SquaredDistance(dx, dy) > 0x10) {
                     i32 cfg = unit->m_routeBlockedMask;
                     i32 flags = unit->AddBattlezTraversalFlags(unit->m_routePassableMask);
                     Coord routeTarget = unit->m_defenderPx;
@@ -415,18 +440,22 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
             }
             case AISTATE_BATTLEZ_FINAL_ROUTE: {
                 CMapMgr* board = m_board;
-                board->Clip(NULL);
+                RECT box2;
+                box2.left = 0;
+                box2.top = 0;
+                i32 h = board->m_height;
+                i32 w = board->m_width;
+                box2.right = w;
+                box2.bottom = h;
+                RECT rc = CRect(0, 0, w, h);
+                RECT* rcDst = &board->m_bounds;
+                if (!IntersectRect(rcDst, &rc, &box2)) {
+                    *rcDst = rc;
+                }
+                board->m_gridSize.cx = rcDst->right - rcDst->left;
+                board->m_gridSize.cy = rcDst->bottom - rcDst->top;
                 i32 flags = unit->AddBattlezTraversalFlags(unit->m_routePassableMask);
-                if (unit->TileSwitch(
-                        marker.m_x,
-                        marker.m_y,
-                        0,
-                        IDX(CELL_FLAG_SOLID | CELL_FLAG_SPECIAL | CELL_FLAG_TRIGGER
-                            | CELL_FLAG_ARROW | CELL_FLAG_WATER | CELL_FLAG_SINK_HAZARD),
-                        1,
-                        flags
-                    )
-                    != 0) {
+                if (unit->TileSwitch(marker.m_x, marker.m_y, 0, 0x987, 1, flags) != 0) {
                     goto routeSuccess;
                 }
                 unit->m_dwell = 0;
@@ -447,22 +476,25 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
     if (unit->m_defenderState != AISTATE_BATTLEZ_ROUTE_TARGET) {
         return 1;
     }
-    Coord target = unit->m_defenderPx;
-    if (target.m_x == -1 || target.m_y == -1) {
+    i32 gx = unit->m_defenderPx.m_x;
+    i32 gy = unit->m_defenderPx.m_y;
+    if (gx == -1 || gy == -1) {
 
         unit->m_defenderState = AISTATE_SEEK;
         if (unit->CoordCount() != 0) {
-            RecycleGruntCoords(unit);
+            RECYCLE_GRUNT_COORDS_EXPANDED(unit)
         }
-        unit->m_defenderPx.Set(-1, -1);
+        Coord noPx;
+        unit->m_defenderPx = *noPx.Set(-1, -1);
         return 1;
     }
-    Coord current;
-    unit->GetScreenTile(&current);
-    if (target.DistSqr(current) > 0x10) {
+    CGameObject* lvl = unit->m_object;
+    i32 dx = abs(gx - (lvl->m_screenPosition.m_x >> TILE_SHIFT_PX));
+    i32 dy = abs(gy - (lvl->m_screenPosition.m_y >> TILE_SHIFT_PX));
+    if (SquaredDistance(dx, dy) > 0x10) {
         return 1;
     }
-    RecycleGruntCoords(unit);
+    RECYCLE_GRUNT_COORDS_EXPANDED(unit)
     unit->m_defenderState = AISTATE_BATTLEZ_FINAL_ROUTE;
     unit->m_routeBlockedMask = g_battlezRouteBlockedMask;
     unit->m_routePassableMask = BATTLEZ_ROUTE_WINGZ_SHOVEL_EXPANDED;

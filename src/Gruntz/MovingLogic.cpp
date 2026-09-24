@@ -100,13 +100,15 @@ void CMovingLogic::AdvanceMotion() {
 // @early-stop
 RVA(0x0016ecd0, 0x6e6)
 void CMotionState::Step(double dt) {
-    m_previousPosition = m_position;
+    m_previousPosition.m_x = m_position.m_x;
+    m_previousPosition.m_y = m_position.m_y;
+    m_previousPosition.m_z = m_position.m_z;
     m_deltaTime = dt;
     m_time = dt + m_time;
     if (m_stepDisabled != false) {
         return;
     }
-    StepMotionAxis(
+    STEP_AXIS(
         m_velocity.m_x,
         m_acceleration.m_x,
         m_position.m_x,
@@ -114,10 +116,9 @@ void CMotionState::Step(double dt) {
         m_minBounds.m_x,
         m_maxBounds.m_x,
         m_maxVelocity.m_x,
-        m_step.m_x,
-        dt
+        m_step.m_x
     );
-    StepMotionAxis(
+    STEP_AXIS(
         m_velocity.m_y,
         m_acceleration.m_y,
         m_position.m_y,
@@ -125,10 +126,9 @@ void CMotionState::Step(double dt) {
         m_minBounds.m_y,
         m_maxBounds.m_y,
         m_maxVelocity.m_y,
-        m_step.m_y,
-        dt
+        m_step.m_y
     );
-    StepMotionAxis(
+    STEP_AXIS(
         m_velocity.m_z,
         m_acceleration.m_z,
         m_position.m_z,
@@ -136,8 +136,7 @@ void CMotionState::Step(double dt) {
         m_minBounds.m_z,
         m_maxBounds.m_z,
         m_maxVelocity.m_z,
-        m_step.m_z,
-        dt
+        m_step.m_z
     );
 }
 

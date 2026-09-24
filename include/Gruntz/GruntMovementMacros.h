@@ -48,6 +48,14 @@
     m_lastTilePx.m_x -= 0x10;                                                                      \
     m_lastTilePx.m_y += 0x10
 
+#define COPY_LAST_TILE_TO_DEFENDER                                                                 \
+    m_defenderPx.m_x = m_lastTilePx.m_x;                                                           \
+    m_defenderPx.m_y = m_lastTilePx.m_y;
+
+#define COPY_CURRENT_GRUNT_LAST_TILE_TO_DEFENDER                                                   \
+    this->m_defenderPx.m_x = this->m_lastTilePx.m_x;                                               \
+    this->m_defenderPx.m_y = this->m_lastTilePx.m_y;
+
 #define REGION_INIT()                                                                              \
     do {                                                                                           \
         RECT a;                                                                                    \
@@ -62,6 +70,10 @@
         a.bottom = 0;                                                                              \
         m_vehicleContactExclusionRect = a;                                                         \
     } while (0)
+
+#define GRUNT_OBJECT_NOT_AT_SELF_SAVED_SCREEN_POS(object)                                          \
+    (object)->m_screenPosition.m_x != m_lastTilePx.m_x                                             \
+        || (object)->m_screenPosition.m_y != m_lastTilePx.m_y
 
 #define GRUNT_NOT_AT_SAVED_SCREEN_POS(grunt)                                                       \
     grunt->m_object->m_screenPosition.m_x != grunt->m_lastTilePx.m_x                               \
@@ -97,5 +109,24 @@
 
 #define GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(object, grunt)                                             \
     object->m_screenPosition.m_y != grunt->m_lastTilePx.m_y
+
+#define GRUNT_X_AT_SAVED_POS(x, grunt) ((x) == (grunt)->m_lastTilePx.m_x)
+#define GRUNT_SCREEN_Y_AT_SAVED_POS(object, grunt)                                                 \
+    ((object)->m_screenPosition.m_y == (grunt)->m_lastTilePx.m_y)
+
+#define FIND_NEAREST_ENEMY_AT_TARGET(grunt, atTarget, screenX)                                     \
+    CGrunt* grunt = m_triggerMgr->FindNearestEnemy(this);                                          \
+    i32 atTarget = 0;                                                                              \
+    MARK_NEAREST_ENEMY_AT_TARGET(grunt, atTarget, screenX)
+
+#define MARK_NEAREST_ENEMY_AT_TARGET(grunt, atTarget, screenX)                                     \
+    if ((grunt) != NULL) {                                                                         \
+        i32 screenX = (grunt)->m_object->m_screenPosition.m_x;                                     \
+        if (GRUNT_X_AT_SAVED_POS(screenX, grunt)                                                   \
+            && GRUNT_SCREEN_Y_AT_SAVED_POS((grunt)->m_object, grunt)                               \
+            && RectContains(screenX, (grunt)->m_object->m_screenPosition.m_y) != 0) {              \
+            atTarget = 1;                                                                          \
+        }                                                                                          \
+    }
 
 #endif // GRUNTZ_GRUNTMOVEMENTMACROS_H

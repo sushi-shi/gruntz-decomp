@@ -636,13 +636,43 @@ void CBootyState::MoveLettersByDir() {
     CWwdSpriteObject** p = m_sprintSprites;
     for (; i < 8; i++, p++) {
         CGameObject* e = *p;
-        Coord position = e->ScreenPos();
-        if (position.m_x < 0 || position.m_x > SCREEN_W_PX || position.m_y < 0
-            || position.m_y > SCREEN_H_PX) {
+        i32 x = e->m_screenPosition.m_x;
+        i32 y = e->m_screenPosition.m_y;
+        if (x < 0 || x > SCREEN_W_PX || y < 0 || y > SCREEN_H_PX) {
             e->m_stateFlags |= SPRITE_STATE_HIDDEN;
         } else {
-            position += DirectionRingOffset(static_cast<DirectionRingIndex>(i), 4);
-            (*p)->SetScreenPos(position);
+            switch (static_cast<DirectionRingIndex>(i)) {
+                case DIRECTION_RING_NORTH:
+                    y -= 4;
+                    break;
+                case DIRECTION_RING_NORTHEAST:
+                    y -= 4;
+                    x += 4;
+                    break;
+                case DIRECTION_RING_EAST:
+                    x += 4;
+                    break;
+                case DIRECTION_RING_SOUTHEAST:
+                    y += 4;
+                    x += 4;
+                    break;
+                case DIRECTION_RING_SOUTH:
+                    y += 4;
+                    break;
+                case DIRECTION_RING_SOUTHWEST:
+                    y += 4;
+                    x -= 4;
+                    break;
+                case DIRECTION_RING_WEST:
+                    x -= 4;
+                    break;
+                case DIRECTION_RING_NORTHWEST:
+                    y -= 4;
+                    x -= 4;
+                    break;
+            }
+            (*p)->m_screenPosition.m_x = x;
+            (*p)->m_screenPosition.m_y = y;
         }
     }
 }
@@ -1252,7 +1282,8 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
             for (i32 i = 0; i < WARPLETTER_COUNT; i++) {
                 if (i <= (g_gameReg->m_gameStats->m_levelNumber - 1) % 4) {
                     m_visSprites[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
-                    m_animSprites[i]->SetScreenPos(g_idleSpriteIds[i], 0xdc);
+                    m_animSprites[i]->m_screenPosition.m_x = g_idleSpriteIds[i];
+                    m_animSprites[i]->m_screenPosition.m_y = 0xdc;
                     m_animSprites[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
                     if ((g_gameReg->m_gameStats)->CurrentAreaHasWarpLetter(i) == 0) {
                         m_animSprites[i]->SetImageSetByName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
@@ -1277,7 +1308,8 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                         m_animSprites[i]->SetAnimationByName("GRUNTZ_PICKUPS_" + letter, 0);
                     }
                 } else {
-                    m_visSprites[i]->SetScreenPos(g_idleSpriteIds[i], 0xdc);
+                    m_visSprites[i]->m_screenPosition.m_x = g_idleSpriteIds[i];
+                    m_visSprites[i]->m_screenPosition.m_y = 0xdc;
                     m_visSprites[i]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
                     m_animSprites[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
                 }
@@ -1294,7 +1326,8 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
     }
     if (m_stepIndex == 0 && HAS(m_animSprites[0]->m_stateFlags, SPRITE_STATE_HIDDEN)) {
         m_animSprites[0]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
-        m_animSprites[0]->SetScreenPos(g_idleSpriteIds[0], 0x1f4);
+        m_animSprites[0]->m_screenPosition.m_x = g_idleSpriteIds[0];
+        m_animSprites[0]->m_screenPosition.m_y = 0x1f4;
     }
 
     if (m_soundStarted == false && m_animSprites[m_stepIndex]->m_screenPosition.m_y <= 0x195) {
@@ -1371,10 +1404,9 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     }
                     if (m_stepIndex < 4) {
                         m_animSprites[m_stepIndex]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
-                        m_animSprites[m_stepIndex]->SetScreenPos(
-                            g_idleSpriteIds[m_stepIndex],
-                            0x1f4
-                        );
+                        m_animSprites[m_stepIndex]->m_screenPosition.m_x =
+                            g_idleSpriteIds[m_stepIndex];
+                        m_animSprites[m_stepIndex]->m_screenPosition.m_y = 0x1f4;
                         m_soundStarted = false;
                         m_walkStarted = false;
                     }
@@ -1392,7 +1424,8 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
             }
             if (m_stepIndex < 4) {
                 m_animSprites[m_stepIndex]->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
-                m_animSprites[m_stepIndex]->SetScreenPos(g_idleSpriteIds[m_stepIndex], 0x1f4);
+                m_animSprites[m_stepIndex]->m_screenPosition.m_x = g_idleSpriteIds[m_stepIndex];
+                m_animSprites[m_stepIndex]->m_screenPosition.m_y = 0x1f4;
                 m_walkStarted = false;
                 m_soundStarted = false;
             }

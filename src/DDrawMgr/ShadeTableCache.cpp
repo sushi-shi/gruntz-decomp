@@ -127,42 +127,45 @@ CShadeTable* CShadeTableCache::FlashTable(
         }
 
         i32 br = static_cast<i32>(pal[i].peRed) + FLASH_SHADE_CHANNEL_BOOST;
-        pal[i].peRed = static_cast<u8>(Min(br, static_cast<i32>(FLASH_SHADE_CHANNEL_MAX)));
+        pal[i].peRed =
+            static_cast<u8>((br < FLASH_SHADE_CHANNEL_MAX ? br : FLASH_SHADE_CHANNEL_MAX));
         i32 bg = static_cast<i32>(pal[i].peGreen) + FLASH_SHADE_CHANNEL_BOOST;
-        pal[i].peGreen = static_cast<u8>(Min(bg, static_cast<i32>(FLASH_SHADE_CHANNEL_MAX)));
+        pal[i].peGreen =
+            static_cast<u8>((bg < FLASH_SHADE_CHANNEL_MAX ? bg : FLASH_SHADE_CHANNEL_MAX));
         i32 bb = static_cast<i32>(pal[i].peBlue) + FLASH_SHADE_CHANNEL_BOOST;
-        pal[i].peBlue = static_cast<u8>(Min(bb, static_cast<i32>(FLASH_SHADE_CHANNEL_MAX)));
+        pal[i].peBlue =
+            static_cast<u8>((bb < FLASH_SHADE_CHANNEL_MAX ? bb : FLASH_SHADE_CHANNEL_MAX));
 
         for (i32 k = darkRampSteps; k < total; k++) {
             float uu =
                 static_cast<float>((k - darkRampSteps)) / static_cast<float>(brightRampSteps);
-            u8 rn = static_cast<u8>(
-                Min(INTERPOLATE(
-                        static_cast<float>(pal[i].peRed),
-                        (static_cast<float>(endPct) * static_cast<float>(pal[i].peRed))
-                            * g_percentScale,
-                        uu
-                    ),
-                    g_colorChannelMax)
-            );
-            u8 gn = static_cast<u8>(
-                Min(INTERPOLATE(
-                        static_cast<float>(pal[i].peGreen),
-                        (static_cast<float>(endPct) * static_cast<float>(pal[i].peGreen))
-                            * g_percentScale,
-                        uu
-                    ),
-                    g_colorChannelMax)
-            );
-            u8 bn = static_cast<u8>(
-                Min(INTERPOLATE(
-                        static_cast<float>(pal[i].peBlue),
-                        (static_cast<float>(endPct) * static_cast<float>(pal[i].peBlue))
-                            * g_percentScale,
-                        uu
-                    ),
-                    g_colorChannelMax)
-            );
+            u8 rn = static_cast<u8>(HSV_MIN(
+                INTERPOLATE(
+                    static_cast<float>(pal[i].peRed),
+                    (static_cast<float>(endPct) * static_cast<float>(pal[i].peRed))
+                        * g_percentScale,
+                    uu
+                ),
+                g_colorChannelMax
+            ));
+            u8 gn = static_cast<u8>(HSV_MIN(
+                INTERPOLATE(
+                    static_cast<float>(pal[i].peGreen),
+                    (static_cast<float>(endPct) * static_cast<float>(pal[i].peGreen))
+                        * g_percentScale,
+                    uu
+                ),
+                g_colorChannelMax
+            ));
+            u8 bn = static_cast<u8>(HSV_MIN(
+                INTERPOLATE(
+                    static_cast<float>(pal[i].peBlue),
+                    (static_cast<float>(endPct) * static_cast<float>(pal[i].peBlue))
+                        * g_percentScale,
+                    uu
+                ),
+                g_colorChannelMax
+            ));
             ramp[k] = static_cast<u8>(FindNearestColor(pal, rn, gn, bn));
         }
     }

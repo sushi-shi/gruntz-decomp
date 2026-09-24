@@ -28,6 +28,7 @@
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/SpotLight.h>
+#include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/Ufo.h>
@@ -61,41 +62,36 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
 
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
 
-    Coord snappedPosition = m_object->ScreenPos();
-    SnapTileCenter(&snappedPosition);
-    m_object->SetScreenPos(snappedPosition);
-    m_position.Init(snappedPosition);
+    SNAP_OBJECT_TO_TILE_CENTER_DOUBLE_POS(m_object, snapX, snapY, m_position.m_x, m_position.m_y)
     CWwdSpriteObject* h = m_object;
-    SET_SORT_KEY_IF_CHANGED(h, SORTKEY_ACTOR);
+    SET_SORT_KEY_IF_CHANGED(h, SORTKEY_ACTOR)
 
-    m_wp[0] = m_object->ScreenPos();
-    m_wp[1].Set(m_object->m_extent.left, m_object->m_extent.top);
-    m_wp[2].Set(m_object->m_extent.right, m_object->m_extent.bottom);
-    m_wp[3].Set(m_object->m_area.left, m_object->m_area.top);
-    m_wp[4].Set(m_object->m_area.right, m_object->m_area.bottom);
-    m_wp[5].Set(m_object->m_switchRect.left, m_object->m_switchRect.top);
-    m_wp[6].Set(m_object->m_switchRect.right, m_object->m_switchRect.bottom);
-    m_wp[7].Set(m_object->m_clip.left, m_object->m_clip.top);
-    m_wp[8].Set(m_object->m_clip.right, m_object->m_clip.bottom);
-    m_wp[9].Set(
-        m_object->m_logicRecord->m_userRect1.left,
-        m_object->m_logicRecord->m_userRect1.top
-    );
-    m_wp[10].Set(
-        m_object->m_logicRecord->m_userRect1.right,
-        m_object->m_logicRecord->m_userRect1.bottom
-    );
-    m_wp[11].Set(
-        m_object->m_logicRecord->m_userRect2.left,
-        m_object->m_logicRecord->m_userRect2.top
-    );
-    m_wp[12].Set(
-        m_object->m_logicRecord->m_userRect2.right,
-        m_object->m_logicRecord->m_userRect2.bottom
-    );
-    for (i32 waypointIndex = 1; waypointIndex < 13; ++waypointIndex) {
-        TileCenter(&m_wp[waypointIndex]);
-    }
+    m_wp[0].m_x = m_object->m_screenPosition.m_x;
+    m_wp[0].m_y = m_object->m_screenPosition.m_y;
+    m_wp[1].m_x = (m_object->m_extent.left << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[1].m_y = (m_object->m_extent.top << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[2].m_x = (m_object->m_extent.right << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[2].m_y = (m_object->m_extent.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[3].m_x = (m_object->m_area.left << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[3].m_y = (m_object->m_area.top << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[4].m_x = (m_object->m_area.right << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[4].m_y = (m_object->m_area.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[5].m_x = (m_object->m_switchRect.left << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[5].m_y = (m_object->m_switchRect.top << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[6].m_x = (m_object->m_switchRect.right << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[6].m_y = (m_object->m_switchRect.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[7].m_x = (m_object->m_clip.left << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[7].m_y = (m_object->m_clip.top << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[8].m_x = (m_object->m_clip.right << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[8].m_y = (m_object->m_clip.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[9].m_x = (m_object->m_logicRecord->m_userRect1.left << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[9].m_y = (m_object->m_logicRecord->m_userRect1.top << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[10].m_x = (m_object->m_logicRecord->m_userRect1.right << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[10].m_y = (m_object->m_logicRecord->m_userRect1.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[11].m_x = (m_object->m_logicRecord->m_userRect2.left << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[11].m_y = (m_object->m_logicRecord->m_userRect2.top << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[12].m_x = (m_object->m_logicRecord->m_userRect2.right << TILE_SHIFT_PX) + TILE_HALF_PX;
+    m_wp[12].m_y = (m_object->m_logicRecord->m_userRect2.bottom << TILE_SHIFT_PX) + TILE_HALF_PX;
 
     i32 i = 1;
     b32 found = false;
@@ -103,8 +99,7 @@ CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
         if (found != false) {
             break;
         }
-        Coord emptyWaypoint(TILE_HALF_PX, TILE_HALF_PX);
-        if (m_wp[i] == emptyWaypoint) {
+        if (m_wp[i].m_x == TILE_HALF_PX && m_wp[i].m_y == TILE_HALF_PX) {
             found = true;
         } else {
             i++;
@@ -149,12 +144,11 @@ i32 CPathHazard::Tick() {
 
     CWwdSpriteObject* obj = m_object;
 
-    CRect rect(
-        obj->m_screenPosition.m_x - obj->m_frameImage->m_anchor.x + 7,
-        obj->m_screenPosition.m_y - obj->m_frameImage->m_anchor.y + 7,
-        obj->m_frameImage->m_anchor.x + obj->m_screenPosition.m_x - 7,
-        obj->m_frameImage->m_anchor.y + obj->m_screenPosition.m_y - 7
-    );
+    RECT rect;
+    rect.left = obj->m_screenPosition.m_x - obj->m_frameImage->m_anchor.x + 7;
+    rect.right = obj->m_frameImage->m_anchor.x + obj->m_screenPosition.m_x - 7;
+    rect.top = obj->m_screenPosition.m_y - obj->m_frameImage->m_anchor.y + 7;
+    rect.bottom = obj->m_frameImage->m_anchor.y + obj->m_screenPosition.m_y - 7;
 
     CGruntzMgr* reg = g_gameReg;
     if (reg->m_isEasyMode == false || reg->m_gameMode != GAMEMODE_QUESTZ) {
@@ -177,46 +171,54 @@ i32 CPathHazard::Tick() {
         }
     }
 
-    CWwdSpriteObject* m10 = m_object;
-    if (m10->ScreenPos() == m_waypoint) {
-        m_position.Init(m_waypoint);
-        this->Arrive();
-        i32 segs = m_object->m_damage;
-        if (segs > 0) {
-            m_leg.m_window = static_cast<u32>(segs);
-            m_leg.m_deadline = static_cast<u32>(g_frameTime);
-            SET_ANIMATION_ACT("B");
+    CWwdSpriteObject* sprite = m_object;
+    if (sprite->m_screenPosition.m_x == m_waypoint.m_x) {
+        i32 wy = m_waypoint.m_y;
+        if (sprite->m_screenPosition.m_y == wy) {
+
+            m_position.m_x = static_cast<double>(m_waypoint.m_x);
+            m_position.m_y = static_cast<double>(wy);
+            this->Arrive();
+            i32 segs = m_object->m_damage;
+            if (segs > 0) {
+                m_leg.m_window = static_cast<u32>(segs);
+                m_leg.m_deadline = static_cast<u32>(g_frameTime);
+                SET_ANIMATION_ACT("B");
+                return 0;
+            }
+            this->BeginLeg();
             return 0;
         }
-        this->BeginLeg();
-        return 0;
     }
 
     double step = static_cast<double>(g_frameDelta) * m_speed;
-    m_position += m_unit * step;
-    Coord next = (m_roundBias + m_position).ToCoord();
+    m_position.m_x = m_position.m_x + step * m_unit.m_x;
+    m_position.m_y = m_position.m_y + static_cast<double>(g_frameDelta) * m_unit.m_y * m_speed;
+    i32 newX = static_cast<i32>((m_roundBias.m_x + m_position.m_x));
+    i32 newY = static_cast<i32>((m_roundBias.m_y + m_position.m_y));
 
     if (m_unit.m_x > 0.0) {
-        if (next.m_x > m_waypoint.m_x) {
-            next.m_x = m_waypoint.m_x;
+        if (newX > m_waypoint.m_x) {
+            newX = m_waypoint.m_x;
         }
     } else if (m_unit.m_x < 0.0) {
-        if (next.m_x < m_waypoint.m_x) {
-            next.m_x = m_waypoint.m_x;
+        if (newX < m_waypoint.m_x) {
+            newX = m_waypoint.m_x;
         }
     }
 
     if (m_unit.m_y > 0.0) {
-        if (next.m_y > m_waypoint.m_y) {
-            next.m_y = m_waypoint.m_y;
+        if (newY > m_waypoint.m_y) {
+            newY = m_waypoint.m_y;
         }
     } else if (m_unit.m_y < 0.0) {
-        if (next.m_y < m_waypoint.m_y) {
-            next.m_y = m_waypoint.m_y;
+        if (newY < m_waypoint.m_y) {
+            newY = m_waypoint.m_y;
         }
     }
 
-    m_object->SetScreenPos(next);
+    m_object->m_screenPosition.m_x = newX;
+    m_object->m_screenPosition.m_y = newY;
     return 0;
 }
 
