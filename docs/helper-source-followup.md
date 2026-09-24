@@ -13,6 +13,7 @@ Per-candidate adoption/rejection evidence belongs in
 | `hs-rng-shuffle` | `CPlay::ScanShuffleQuads`,0xd9290 | Existing two-bound helper at three expanded selection sites |
 | `chance-ghost-range-preserve`, `chance-brick-range-preserve`, `brick-rng-three-stack-range` | Ghost search and two/three-brick layer selection | Nine actual uses of the existing inclusive-range helper |
 | `chance-defender-range-preserve`, `chance-toy-range-preserve` | Defender and toy selection | Two existing range-helper uses preserving caller-owned integer samples |
+| `brick-rng-color-range` | All three stack-height color selections | Complete shared color-roll forwarding to the existing range helper |
 | `hs-bitset-body` | zBitVec string constructor,0x16d3a0 | Surviving zBitSet small-buffer pointer accessor |
 | `hs-bitset-error-tail` | Same constructor | Existing error-helper boundary at three expanded error tails |
 | `bute-vector-range-reference-api` | Six Bute getters/setters, two item constructors, parser | Reference API and ordinary bound temporaries |
@@ -47,8 +48,11 @@ The reconsidered alternatives remain individually recoverable under `chance-x-*`
 The defender/toy range consumers are applied in `df4e6d5a3`: both complete
 normalized function bodies and ordered references are unchanged, not newly
 exact. Full build/MAX gates and 38 focused tests pass; the raw near-exact audit
-reports 3,918 functions and no defects. The variable-bound color helper remains
-pending, with thirteen individually recheckable alternatives added to the ledger.
+reports 3,918 functions and no defects. The variable-bound color helper is now
+applied in `13b55b5fd`, with all three complete-family controls byte-flat; the
+final full build and 42 focused tests pass. Its signed-domain adjudication and
+thirteen individually recheckable alternatives remain in `brick-rng-color-range`
+and `brick-color-*`, not a blanket portability or input-domain claim.
 This does not close
 `reassess-israndomchance` or any of the 16 broad family reassessments.
 
