@@ -29,6 +29,7 @@
 #include <Image/ImageSet.h>
 #include <Ints.h>
 #include <Io/FileMem.h>
+#include <Utils/MapTyped.h>
 
 #include <string.h>
 
@@ -117,7 +118,7 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
 
     CImage* val;
     if (selMode != 0) {
-        CDDrawWorker* sel = LookupWorker(
+        CDDrawWorker* sel = MapFind<CDDrawWorker>(
             m_host->m_imageRegistry->m_workersByName,
             "GAME_STATUSBAR_TABZ_STATZTAB_SELECTEDBAR"
         );
@@ -132,7 +133,7 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
         }
         val = m_glyphMap->GetAt(0x22);
     } else {
-        CDDrawWorker* sel = LookupWorker(
+        CDDrawWorker* sel = MapFind<CDDrawWorker>(
             m_host->m_imageRegistry->m_workersByName,
             "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_SELECTEDBAR"
         );

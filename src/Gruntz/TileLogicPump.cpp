@@ -509,6 +509,6 @@ i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
 RVA(0x00110110, 0x39)
 i32 CTileTriggerTransition::TransitionAct() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
-    MARK_OBJECT_COMPLETE_IF(IsAniCursorComplete(&m_wwdObject->m_animationCursor))
+    MARK_OBJECT_COMPLETE_IF(m_wwdObject->m_animationCursor.IsComplete())
     return 0;
 }

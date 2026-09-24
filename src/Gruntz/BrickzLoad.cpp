@@ -364,8 +364,8 @@ i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
     }
 
     CDDrawChildGroup* childGroup = g_gameReg->m_world->m_childGroup;
-    for (CGameObject* obj = ListGetFirst(childGroup); obj != NULL;
-         obj = ListGetNext(g_gameReg->m_world->m_childGroup)) {
+    for (CGameObject* obj = childGroup->FirstChild(); obj != NULL;
+         obj = g_gameReg->m_world->m_childGroup->NextChild()) {
 
         if (obj->m_logicRecord->m_dispatch == &DispatchExitTriggerLogic) {
             i32 tileX = obj->m_screenX / TILE_SIZE_PX;

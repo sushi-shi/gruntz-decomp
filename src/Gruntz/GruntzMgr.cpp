@@ -1582,10 +1582,10 @@ void CGruntzMgr::DelayedQuit() {
         return;
     }
     m_delayedQuitPending = true;
-    SoundCue* out = LookupSoundCue(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
+    SoundCue* out = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
     i32 base;
     if (out != NULL) {
-        out = LookupSoundCue(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
+        out = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
         base = out->m_sound->m_durationMs + 0x1f4;
     } else {
         base = 0;
@@ -2197,7 +2197,7 @@ i32 CGruntzMgr::LoadMonologoSprite() {
 
     CDDrawWorker* rec;
     {
-        rec = LookupWorker(m_world, "GAME_MONOLITH");
+        rec = m_world->FindWorker("GAME_MONOLITH");
     }
     if (rec == NULL) {
         return 0;
@@ -2262,7 +2262,7 @@ i32 CGruntzMgr::CheatRevealTreasures() {
     if (m_world == NULL) {
         return 0;
     }
-    CDDrawWorker* out = LookupWorker(m_world, "GAME_DEVHEADS");
+    CDDrawWorker* out = m_world->FindWorker("GAME_DEVHEADS");
     if (out == NULL) {
         return 0;
     }
@@ -2288,7 +2288,7 @@ i32 CGruntzMgr::CheatRevealTreasures() {
 RVA(0x000910d0, 0x75)
 i32 CGruntzMgr::SetGruntColor(CDDrawWorker* sink, const char* key, i32 idx) {
     if (sink && key) {
-        CDDrawWorker* row = LookupWorker(m_world, key);
+        CDDrawWorker* row = m_world->FindWorker(key);
         if (row) {
             CImage* dst = DDRAW_WORKER_FRAME_AT_UNCHECKED(row, row->m_minIndex);
             if (dst) {
@@ -2340,7 +2340,7 @@ void CGruntzMgr::CheatSkeletonToggle() {
 
         CDDrawWorker* set;
         {
-            set = LookupWorker(m_world, "Gruntz");
+            set = m_world->FindWorker("Gruntz");
         }
         if (set) {
             CImage* fr = DDRAW_WORKER_FRAME_AT_UNCHECKED(set, set->m_minIndex);
@@ -2387,7 +2387,7 @@ void CGruntzMgr::CheatEclipseToggle() {
 
         CDDrawWorker* set;
         {
-            set = LookupWorker(m_world, "Gruntz");
+            set = m_world->FindWorker("Gruntz");
         }
         if (set) {
             CImage* fr = DDRAW_WORKER_FRAME_AT_UNCHECKED(set, set->m_minIndex);

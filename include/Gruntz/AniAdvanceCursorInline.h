@@ -5,23 +5,22 @@
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElementInline.h>
 
-inline i32 IsAniCursorComplete(const CAniAdvanceCursor* cursor) {
-    return cursor->m_finished != false && cursor->m_frameTicksLeft == 0;
+inline i32 CAniAdvanceCursor::IsComplete() const {
+    return m_finished != false && m_frameTicksLeft == 0;
 }
 
-static inline void AdvanceToNextRecord(CAniAdvanceCursor* cursor) {
-    CAniElement* animation = cursor->m_animation;
-    cursor->m_index = cursor->m_index + 1;
-    CAniRecordView* record =
-        static_cast<CAniRecordView*>(GetAniElementAt(animation, cursor->m_index));
-    cursor->m_element = record;
+inline void CAniAdvanceCursor::AdvanceToNextRecord() {
+    CAniElement* animation = m_animation;
+    m_index = m_index + 1;
+    CAniRecordView* record = static_cast<CAniRecordView*>(animation->GetAt(m_index));
+    m_element = record;
     if (record == NULL) {
-        cursor->m_index = 0;
-        cursor->m_element = static_cast<CAniRecordView*>(animation->AtChecked(0));
+        m_index = 0;
+        m_element = static_cast<CAniRecordView*>(animation->AtChecked(0));
     }
-    if (cursor->m_element != NULL) {
-        cursor->m_curDraw = cursor->m_pendingDraw;
-        cursor->m_pendingDraw = cursor->m_element->m_drawValue;
+    if (m_element != NULL) {
+        m_curDraw = m_pendingDraw;
+        m_pendingDraw = m_element->m_drawValue;
     }
 }
 

@@ -8,9 +8,9 @@
 #include <Gruntz/SoundState.h>
 #include <Rez/FrameClock.h>
 
-inline void TickSoundVolumeRamps(SoundCueRegistry* registry) {
-    if (registry->m_soundStream != NULL) {
-        registry->m_soundStream->TickVolumeRamps(-1);
+inline void SoundCueRegistry::TickVolumeRamps() {
+    if (m_soundStream != NULL) {
+        m_soundStream->TickVolumeRamps(-1);
     }
 }
 

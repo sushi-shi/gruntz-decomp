@@ -127,9 +127,10 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     menuTree->m_activationSoundKey = "MENU_ACTIVATE";
 
     {
-        SoundCue* activationCue = LookupSoundCue(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
+        SoundCue* activationCue =
+            MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
         if (activationCue != NULL) {
-            activationCue = LookupSoundCue(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
+            activationCue = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
             m_activateCueDurationMs = activationCue->m_sound->m_durationMs;
         } else {
             m_activateCueDurationMs = 0;
@@ -140,7 +141,7 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
         return 0;
     }
 
-    SoundCue* menuMusicCue = LookupSoundCue(
+    SoundCue* menuMusicCue = MapFind<SoundCue>(
         (static_cast<SoundCueRegistry*>(g_gameReg->m_world->m_soundRegistry))->m_cues,
         "MENU_MENU"
     );
@@ -265,7 +266,7 @@ void CMenuState::StopMusicChain() {
         return;
     }
     do {
-        TickSoundVolumeRamps(m_world->m_soundRegistry);
+        m_world->m_soundRegistry->TickVolumeRamps();
     } while (m_menuMusicCue->m_sound->IsPlaying());
 }
 

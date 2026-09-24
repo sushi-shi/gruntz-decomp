@@ -22,6 +22,7 @@ GZ_ENUM_CONST_END(AniAdvanceValue)
 
 class CAniAdvanceCursor : public CWapObj {
 public:
+    inline i32 IsComplete() const;
     enum EInlineCursor {
         INLINE_CURSOR
     };
@@ -62,6 +63,7 @@ public:
     i32
     SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object);
     i32 Advance(u32 elapsed);
+    inline void AdvanceToNextRecord();
 
     CWwdSpriteObject* m_boundObject;
     CAniElement* m_animation;

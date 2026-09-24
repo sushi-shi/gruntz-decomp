@@ -104,7 +104,7 @@ i32 CPreviewState::Tick() {
             return 0;
         }
     }
-    TickSoundVolumeRamps(m_world->m_soundRegistry);
+    m_world->m_soundRegistry->TickVolumeRamps();
     if (static_cast<u32>(g_gameAppFrameDeltaMs) >= m_previewCountdownMs) {
         m_previewCountdownMs = 0;
     } else {

@@ -51,12 +51,12 @@ i32 CGrunt::StepTimeBomberBehavior() {
     m_defenderPx = LastTilePx();
 
     if (m_defenderState == AISTATE_PHASE_MIRROR_THEN_COOLDOWN) {
-        MirrorGruntAcrossArrival(this);
+        MirrorAcrossArrival();
         m_dwell = 0;
         m_defenderState = AISTATE_COOLDOWN;
     }
     if (m_defenderState == AISTATE_PHASE_MIRROR_THEN_SEEK) {
-        MirrorGruntAcrossArrival(this);
+        MirrorAcrossArrival();
         m_defenderState = AISTATE_SEEK;
         return 1;
     }

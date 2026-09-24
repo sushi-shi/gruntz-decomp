@@ -77,7 +77,7 @@ i32 CSBI_MenuItem::ResolveFrame(const char* key, i32 frameIndex) {
         return 0;
     }
 
-    CDDrawWorker* rec = LookupWorker(m_host->m_imageRegistry->m_workersByName, key);
+    CDDrawWorker* rec = MapFind<CDDrawWorker>(m_host->m_imageRegistry->m_workersByName, key);
     m_record = rec;
     if (rec == NULL) {
         return 0;
@@ -123,7 +123,7 @@ i32 CSBI_MenuItem::SetState(SbiMenuItemState state, i32 playHighlightSound) {
 
         SoundCueRegistry* mh = g_gameReg->m_world->m_soundRegistry;
         if (mh->m_silentMode == false) {
-            SoundCue* found = LookupSoundCue(mh->m_cues, "GAME_TABHIGHLIGHT2");
+            SoundCue* found = MapFind<SoundCue>(mh->m_cues, "GAME_TABHIGHLIGHT2");
             if (found) {
                 b32 soundEnabled = g_soundEnabled;
                 i32 volumePercent = g_soundVolumePercent;
@@ -190,7 +190,7 @@ i32 CSBI_MenuItem::SerializeFields(
             g_serialCounter++;
             ar->Read(tmp, SERIAL_NAME_LEN);
             if (strlen(tmp) != 0) {
-                m_record = LookupWorker(mgr, tmp);
+                m_record = mgr->FindWorker(tmp);
             } else {
                 m_record = NULL;
             }

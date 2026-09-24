@@ -77,11 +77,13 @@ and owning branch destinations.
 
 ## Boundaries retained
 
-`LookupWorker` still initializes its `CObject*` inside the helper. The map-taking
-and host-taking overloads each keep their own flat body: prior controlled tests
-proved that placing the owner chain inside the latter changes argument setup.
-See [the out-parameter reset pattern](out-param-reset-between-arg-setup-and-call-is-in-the-helper.md).
-Sharing definitions does not license flattening those distinct call boundaries.
+`LookupWorker` originally retained separate flat map-taking and host-taking
+bodies. A later controlled audit shares the lookup through `MapFind<T>` and
+keeps the host chain inside `CDDrawSurfaceMgr::FindWorker`; the isolated exact
+callers remain exact. The prior evidence proves the receiver boundary, not a
+requirement for duplicated flat bodies. See
+[the typed/member follow-up](typed-lookup-and-member-helpers-preserve-caller-boundaries.md).
+
 
 `PackPixel16` retains its by-value byte parameters, word intermediate/result,
 shift globals, and nesting inside `BlendPixel16`. `LookupSerialRef` retains the

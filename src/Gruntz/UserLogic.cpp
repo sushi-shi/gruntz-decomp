@@ -78,7 +78,7 @@ i32 CWapX::SerializeAnimationState(
             } else {
                 CMapStringToPtr* map =
                     &m_ownerLogicRecord->m_ownerCtx->m_animRegistry->m_animations;
-                CAniElement* value = LookupAnimation(*map, name);
+                CAniElement* value = MapFind<CAniElement>(*map, name);
                 m_value = value;
             }
             break;

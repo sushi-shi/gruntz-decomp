@@ -26,6 +26,8 @@ class CDrawSubWorker;
 
 class CDDrawChildGroup : public CWapObj {
 public:
+    inline CGameObject* NextChild();
+    inline CGameObject* FirstChild();
     CDDrawChildGroup(CDDrawSurfaceMgr* owner) : CWapObj(owner, 0, 0) {
         m_walkCursor = NULL;
         m_scanCursor = NULL;
@@ -159,19 +161,19 @@ public:
     CGameObject* Drain();
 };
 
-inline CGameObject* ListGetFirst(CDDrawChildGroup* list) {
-    list->m_walkCursor = list->m_list.GetHeadPosition();
-    if (list->m_walkCursor == NULL) {
+inline CGameObject* CDDrawChildGroup::FirstChild() {
+    m_walkCursor = m_list.GetHeadPosition();
+    if (m_walkCursor == NULL) {
         return NULL;
     }
-    return list->NextChild(list->m_walkCursor);
+    return NextChild(m_walkCursor);
 }
 
-inline CGameObject* ListGetNext(CDDrawChildGroup* list) {
-    if (list->m_walkCursor == NULL) {
+inline CGameObject* CDDrawChildGroup::NextChild() {
+    if (m_walkCursor == NULL) {
         return NULL;
     }
-    return list->NextChild(list->m_walkCursor);
+    return NextChild(m_walkCursor);
 }
 
 #endif // GRUNTZ_DDRAWMGR_CDDRAWCHILDGROUP_H

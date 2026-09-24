@@ -15,6 +15,7 @@
 #include <Gruntz/MenuPage.h>
 #include <Gruntz/MenuTree.h>
 #include <Image/CImage.h>
+#include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
 
 #include <stdio.h>
@@ -194,13 +195,16 @@ i32 CAnimatedMenuItem::Init(
     char animationName[0x80];
 
     sprintf(animationName, "%s_NORMAL", animationKey);
-    m_normalAnimation = LookupWorker(m_world->m_imageRegistry->m_workersByName, animationName);
+    m_normalAnimation =
+        MapFind<CDDrawWorker>(m_world->m_imageRegistry->m_workersByName, animationName);
 
     sprintf(animationName, "%s_SELECTED", animationKey);
-    m_selectedAnimation = LookupWorker(m_world->m_imageRegistry->m_workersByName, animationName);
+    m_selectedAnimation =
+        MapFind<CDDrawWorker>(m_world->m_imageRegistry->m_workersByName, animationName);
 
     sprintf(animationName, "%s_DISABLED", animationKey);
-    m_disabledAnimation = LookupWorker(m_world->m_imageRegistry->m_workersByName, animationName);
+    m_disabledAnimation =
+        MapFind<CDDrawWorker>(m_world->m_imageRegistry->m_workersByName, animationName);
 
     return 1;
 }

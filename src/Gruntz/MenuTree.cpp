@@ -182,7 +182,7 @@ i32 CMenuTree::ConfigureLeftCursorAnimation(
     if (!m_world) {
         return 0;
     }
-    CDDrawWorker* animation = LookupWorker(m_world, animationKey);
+    CDDrawWorker* animation = m_world->FindWorker(animationKey);
     m_leftCursorAnimation = animation;
     if (!animation) {
         return 0;
@@ -204,7 +204,7 @@ i32 CMenuTree::ConfigureRightCursorAnimation(
     if (!m_world) {
         return 0;
     }
-    CDDrawWorker* animation = LookupWorker(m_world, animationKey);
+    CDDrawWorker* animation = m_world->FindWorker(animationKey);
     m_rightCursorAnimation = animation;
     if (!animation) {
         return 0;

@@ -8,13 +8,13 @@
 #include <Gruntz/MapCellFlags.h>
 #include <Wap32/TileGeometry.h>
 
-static __inline i32 CanCommitMove(CGrunt* g, i32 moveX, i32 moveY, i32 sourceX, i32 sourceY) {
+inline i32 CGrunt::CanCommitMove(i32 moveX, i32 moveY, i32 sourceX, i32 sourceY) const {
     CGruntzMapMgr* board = g_gameReg->m_tileGrid;
     i32 tx = sourceX >> TILE_SHIFT_PX;
     i32 ty = sourceY >> TILE_SHIFT_PX;
     i32 mtx = moveX >> TILE_SHIFT_PX;
     i32 mty = moveY >> TILE_SHIFT_PX;
-    i32 arr = g->m_arrivalFlags | BRICKZ_CELL_OCCUPIED;
+    i32 arr = m_arrivalFlags | BRICKZ_CELL_OCCUPIED;
     if (tx != mtx || ty != mty) {
         if (static_cast<u32>(mtx) >= static_cast<u32>(board->m_width)
             || static_cast<u32>(mty) >= static_cast<u32>(board->m_height)) {
@@ -27,7 +27,7 @@ static __inline i32 CanCommitMove(CGrunt* g, i32 moveX, i32 moveY, i32 sourceX, 
             return 0;
         }
         if (hit != 0) {
-            i32 mask = g->m_passableMask | 0x18000482;
+            i32 mask = m_passableMask | 0x18000482;
             if ((tflags & mask) == 0) {
                 return 0;
             }

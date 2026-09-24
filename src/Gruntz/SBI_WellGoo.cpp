@@ -21,6 +21,7 @@
 #include <Image/CImage.h>
 #include <Ints.h>
 #include <Io/FileMem.h>
+#include <Utils/MapTyped.h>
 
 #include <string.h>
 
@@ -72,7 +73,7 @@ i32 CSBI_WellGoo::Setup(
         node = g_gameReg->m_spriteFactory->GetSel(1, 0);
     }
 
-    set = LookupWorker(m_host->m_imageRegistry->m_workersByName, key);
+    set = MapFind<CDDrawWorker>(m_host->m_imageRegistry->m_workersByName, key);
     SetFrame((set != NULL) ? set->GetAt(4) : NULL);
     if (m_frame == NULL) {
         goto fail;
@@ -89,7 +90,7 @@ i32 CSBI_WellGoo::Setup(
         goto fail;
     }
 
-    set = LookupWorker(m_host->m_imageRegistry->m_workersByName, key);
+    set = MapFind<CDDrawWorker>(m_host->m_imageRegistry->m_workersByName, key);
     m_baseFrame = (set != NULL) ? set->GetAt(2) : NULL;
     if (m_baseFrame == NULL) {
         goto fail;
@@ -102,7 +103,7 @@ i32 CSBI_WellGoo::Setup(
         f->m_owned->m_palDescr = node;
     }
 
-    set = LookupWorker(m_host->m_imageRegistry->m_workersByName, key);
+    set = MapFind<CDDrawWorker>(m_host->m_imageRegistry->m_workersByName, key);
     m_fgFrame = (set != NULL) ? set->GetAt(3) : NULL;
     if (m_fgFrame != NULL) {
         if (m_fgFrame->m_owned != NULL) {
@@ -218,7 +219,7 @@ i32 CSBI_WellGoo::SerializeFields(
             arc->Read(&idx, sizeof(idx));
             if (strlen(buf) != 0) {
                 i32 frameIndex = idx;
-                CDDrawWorker* set = LookupWorker(mgr, buf);
+                CDDrawWorker* set = mgr->FindWorker(buf);
                 if (set != NULL) {
                     m_fgFrame = set->GetAt(frameIndex);
                 } else {
@@ -232,7 +233,7 @@ i32 CSBI_WellGoo::SerializeFields(
             arc->Read(&idx, sizeof(idx));
             if (strlen(buf) != 0) {
                 i32 frameIndex = idx;
-                CDDrawWorker* set = LookupWorker(mgr, buf);
+                CDDrawWorker* set = mgr->FindWorker(buf);
                 if (set != NULL) {
                     m_baseFrame = set->GetAt(frameIndex);
                 } else {

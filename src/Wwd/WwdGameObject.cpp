@@ -52,7 +52,7 @@ b32 g_logicTypesRegistered;
 
 RVA(0x001504d0, 0x6c)
 void CWwdSpriteObject::SetImageFrameByName(const char* name, i32 frame) {
-    CDDrawWorker* spr = LookupWorker(OwnerMgr()->m_imageRegistry->m_workersByName, name);
+    CDDrawWorker* spr = MapFind<CDDrawWorker>(OwnerMgr()->m_imageRegistry->m_workersByName, name);
     m_imageSet = spr;
     if (spr) {
         CImage* f = spr->GetAt(frame);
@@ -63,7 +63,7 @@ void CWwdSpriteObject::SetImageFrameByName(const char* name, i32 frame) {
 
 RVA(0x00150540, 0x65)
 void CWwdSpriteObject::SetImageSetByName(const char* name) {
-    CDDrawWorker* spr = LookupWorker(OwnerMgr()->m_imageRegistry->m_workersByName, name);
+    CDDrawWorker* spr = MapFind<CDDrawWorker>(OwnerMgr()->m_imageRegistry->m_workersByName, name);
     m_imageSet = spr;
     if (spr) {
         i32 n = spr->m_minIndex;
@@ -74,7 +74,7 @@ void CWwdSpriteObject::SetImageSetByName(const char* name) {
 
 RVA(0x001505b0, 0x5e)
 i32 CWwdSpriteObject::SetAnimationByName(const char* name, i32 advanceImmediately) {
-    CAniElement* animation = LookupAnimation(OwnerMgr()->m_animRegistry->m_animations, name);
+    CAniElement* animation = MapFind<CAniElement>(OwnerMgr()->m_animRegistry->m_animations, name);
     if (!animation) {
         return 0;
     }
@@ -84,7 +84,7 @@ i32 CWwdSpriteObject::SetAnimationByName(const char* name, i32 advanceImmediatel
 
 RVA(0x00150610, 0x41)
 i32 CWwdSpriteObject::SetSoundCueByName(const char* name) {
-    SoundCue* cue = LookupSoundCue(OwnerMgr()->m_soundRegistry->m_cues, name);
+    SoundCue* cue = MapFind<SoundCue>(OwnerMgr()->m_soundRegistry->m_cues, name);
     if (cue == NULL) {
         return 0;
     }
@@ -377,7 +377,7 @@ i32 CGameObject::EnsureHitLogic(CLogicRecord* logicTemplate) {
 
 RVA(0x00150f50, 0x35)
 void CGameObject::AddLogicHit(char* key) {
-    EnsureHitLogic(LookupLogicTemplate(OwnerMgr()->m_logicRegistry->m_templatesByName, key));
+    EnsureHitLogic(MapFind<CLogicRecord>(OwnerMgr()->m_logicRegistry->m_templatesByName, key));
 }
 
 RVA(0x00150f90, 0x98)
@@ -399,7 +399,7 @@ i32 CGameObject::EnsureAttackLogic(CLogicRecord* logicTemplate) {
 
 RVA(0x00151030, 0x35)
 void CGameObject::AddLogicAttack(char* key) {
-    EnsureAttackLogic(LookupLogicTemplate(OwnerMgr()->m_logicRegistry->m_templatesByName, key));
+    EnsureAttackLogic(MapFind<CLogicRecord>(OwnerMgr()->m_logicRegistry->m_templatesByName, key));
 }
 
 RVA(0x00151070, 0x98)
@@ -421,7 +421,7 @@ i32 CGameObject::EnsureBumpLogic(CLogicRecord* logicTemplate) {
 
 RVA(0x00151110, 0x35)
 void CGameObject::AddLogicBump(char* key) {
-    EnsureBumpLogic(LookupLogicTemplate(OwnerMgr()->m_logicRegistry->m_templatesByName, key));
+    EnsureBumpLogic(MapFind<CLogicRecord>(OwnerMgr()->m_logicRegistry->m_templatesByName, key));
 }
 
 // @early-stop

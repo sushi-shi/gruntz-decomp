@@ -13,18 +13,18 @@ inline i32 IsGruntAtSavedScreenPos(CGrunt* grunt) {
     return 0;
 }
 
-inline void MirrorGruntAcrossArrival(CGrunt* grunt) {
+inline void CGrunt::MirrorAcrossArrival() {
     Coord pa;
-    grunt->GetScreenTile(&pa);
+    GetScreenTile(&pa);
     Coord pb;
     pb.m_y = pa.m_y;
-    grunt->GetScreenPos(&pb);
-    i32 gx = (pb.m_x >> TILE_SHIFT_PX) - grunt->m_arrivalCell.m_x + pa.m_x;
-    grunt->GetScreenTile(&pa);
+    GetScreenPos(&pb);
+    i32 gx = (pb.m_x >> TILE_SHIFT_PX) - m_arrivalCell.m_x + pa.m_x;
+    GetScreenTile(&pa);
     pb.m_x = pa.m_x;
-    grunt->GetScreenPos(&pb);
-    i32 gy = (pb.m_y >> TILE_SHIFT_PX) - grunt->m_arrivalCell.m_y + pa.m_y;
-    grunt->TileSwitch(gx, gy, 0, grunt->m_arrivalFlags, 1, 0);
+    GetScreenPos(&pb);
+    i32 gy = (pb.m_y >> TILE_SHIFT_PX) - m_arrivalCell.m_y + pa.m_y;
+    TileSwitch(gx, gy, 0, m_arrivalFlags, 1, 0);
 }
 
 inline void RecycleGruntCoords(CGrunt* grunt) {
@@ -58,17 +58,17 @@ inline Coord ScreenTile(CGrunt* unit) {
     return out;
 }
 
-static inline i32 ScreenTileX(CGrunt* unit) {
-    return unit->m_object->m_screenX >> TILE_SHIFT_PX;
+inline i32 CGrunt::GetScreenTileX() const {
+    return m_object->m_screenX >> TILE_SHIFT_PX;
 }
 
-static inline i32 ScreenTileY(CGrunt* unit) {
-    return unit->m_object->m_screenY >> TILE_SHIFT_PX;
+inline i32 CGrunt::GetScreenTileY() const {
+    return m_object->m_screenY >> TILE_SHIFT_PX;
 }
 
-static inline Coord ScanCell(CGrunt* g) {
+inline Coord CGrunt::ScanCell() {
     Coord t;
-    g->GetScreenTile(&t);
+    GetScreenTile(&t);
     return t;
 }
 

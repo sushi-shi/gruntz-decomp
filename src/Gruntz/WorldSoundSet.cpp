@@ -260,7 +260,7 @@ void CWorldSoundSet::Resume() {
         }
     }
 
-    TickSoundVolumeRamps(m_cueRegistry);
+    m_cueRegistry->TickVolumeRamps();
 }
 
 RVA(0x0000bd60, 0x4b)
@@ -275,7 +275,7 @@ void CWorldSoundSet::SetListenerPosition(i32 x, i32 y) {
         }
     }
 
-    TickSoundVolumeRamps(m_cueRegistry);
+    m_cueRegistry->TickVolumeRamps();
 }
 
 RVA(0x0000bdd0, 0x53)
