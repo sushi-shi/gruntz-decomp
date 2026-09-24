@@ -13,6 +13,7 @@ Per-candidate adoption/rejection evidence belongs in
 | `hs-rng-shuffle` | `CPlay::ScanShuffleQuads`,0xd9290 | Existing two-bound helper at three expanded selection sites |
 | `hs-bitset-body` | zBitVec string constructor,0x16d3a0 | Surviving zBitSet small-buffer pointer accessor |
 | `hs-bitset-error-tail` | Same constructor | Existing error-helper boundary at three expanded error tails |
+| `bute-vector-range-reference-api` | Six Bute getters/setters, two item constructors, parser | Reference API and ordinary bound temporaries |
 
 The one-bound candidate reopens the broad omitted-overload conclusion in
 `blood2-getrandom-range`: actual one-bound consumers exist. The implementation
@@ -90,8 +91,8 @@ correct or fully modeled. Preserve old tests and reasoning, but record a fresh
 disposition with evidence for each candidate; do not reject a composed source
 layer merely because an isolated earlier trial lowered a score.
 
-The first fresh source review has identified concrete execution targets, not
-completed those four broad value/initialization reviews:
+The fresh source review has identified concrete execution targets without
+completing those four broad value/initialization reviews:
 
 - Complete Bute vector/range API: `bute-vector-range-reference-api`,
   `nolf-bute-private-getters`, `nolf-bute-boundary-revisions`.
@@ -104,10 +105,24 @@ completed those four broad value/initialization reviews:
 - Rectangle construction and consumers: `sdk-ltrect-constructors`,
   `reassess-rectangle-query-cell`, `stdlith-morect-grid-setup`.
 
+The Bute reference API is now applied in `9e2264c1a`: all nine affected bodies
+remain exact, with unchanged ordered referents and 31 unwind actions. This is
+source fidelity, not nine new matching wins. Its canonical decision overturns
+the old pointer-only rejection. The pattern
+`generated-symbols-do-not-prove-reference-api.md` records the verification method.
+
 The wave-16 entity rows separately retain scoped no-evidence findings and
 deferred vector/rectangle APIs. The earlier rejection rows retain their actual
-tests with reopening qualifications. No fresh compiler trial is claimed by this
-source-only review; the pending families still require complete use-site tests.
+tests with reopening qualifications. Other pending families still require
+complete use-site tests.
+
+The math reverse-use pass adds concrete pending consumers under
+`reassess-sqr-*`, `reassess-ambient-clamp`, `reassess-ambient-min`,
+`reassess-scroll-clamp`, `reassess-motion-max`, `reassess-motion-min`,
+`reassess-flash-interpolate`, `reassess-flash-min`, `reassess-chance-*`,
+`reassess-crange-*`, and `reassess-round-*`. Scope-limited rejected mappings
+retain reopening criteria in those same canonical rows; they do not close
+their broad helper families. No new compiler result is claimed for that pass.
 
 ## Coverage and remaining work
 
