@@ -443,7 +443,6 @@ i32 CAmbientSound::SetVolumeLevel(i32 volumeLevel, i32 rampMs, b32 stopAndRewind
     return m_sound->RampVolumeTo(v, rampMs, stopAndRewind);
 }
 
-// @early-stop
 RVA(0x0000c2a0, 0x19e)
 void CAmbientSound::FadePlayback(b32 startPlaying, i32 volumeLevel, i32 rampMs) {
     if (m_sound == NULL) {
@@ -462,16 +461,8 @@ void CAmbientSound::FadePlayback(b32 startPlaying, i32 volumeLevel, i32 rampMs) 
         }
         if (rampMs == 0) {
             m_sound->ApplyAndPlay(1, m_panPercent, 0, true);
-            i32 t = m_masterVolume;
             m_volumeLevel = volumeLevel;
-            if (t > 5) {
-                t -= 0xf;
-            }
-            i32 v = (t * volumeLevel) / 100;
-            if (m_volumeScale > 0) {
-                v = (v * m_volumeScale) / 100;
-            }
-            v = Clamp(v, 0, 0x64);
+            i32 v = ScaleVolume(volumeLevel);
             m_sound->SetVolumePercent(v);
             m_volumeLevel = volumeLevel;
             m_isPlaying = true;
@@ -479,16 +470,8 @@ void CAmbientSound::FadePlayback(b32 startPlaying, i32 volumeLevel, i32 rampMs) 
         }
 
         m_sound->ApplyAndPlay(1, m_panPercent, 0, true);
-        i32 t = m_masterVolume;
         m_volumeLevel = volumeLevel;
-        if (t > 5) {
-            t -= 0xf;
-        }
-        i32 v = (t * volumeLevel) / 100;
-        if (m_volumeScale > 0) {
-            v = (v * m_volumeScale) / 100;
-        }
-        v = Clamp(v, 0, 0x64);
+        i32 v = ScaleVolume(volumeLevel);
         m_sound->RampVolumeTo(v, rampMs, false);
         m_volumeLevel = volumeLevel;
         m_isPlaying = true;

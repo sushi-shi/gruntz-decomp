@@ -189,6 +189,16 @@ generated source-specific fuzzy MAX moves 95.20% to 95.19% because three new
 source hashes bank their unchanged current output rather than inherit an older
 hash's higher bank.
 
+The next ambient pass tests both complete positional selectors and all five
+existing scaling expansions, with separately measured template, macro and
+helper-local forms. Its canonical decisions are `reassess-ambient-scale-clamp`,
+`reassess-ambient-clamp`, `reassess-ambient-pos-*`,
+`reassess-ambient-avp2-ltclamp`, and `reassess-ambient-fade-*`. The remaining
+arithmetic, ordering, lifetime and API alternatives are individually recorded
+under `reassess-ambient-clamp-*`; no broad Clamp-family completion is implied.
+The controlled source-shape mechanism is described in the
+[clamp expression-macro pattern](patterns/clamp-expression-macro-preserves-saturation-branches.md).
+
 The container review adds individual pending rows under `reassess-zminerr-*`,
 `reassess-zerrhandler-*`, `reassess-dhandler-typed-layout`,
 `reassess-zerrhandling-*`, `reassess-zvec-*`, `reassess-zdvec-*`,
