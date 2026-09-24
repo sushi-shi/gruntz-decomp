@@ -220,6 +220,8 @@ Implementation `2c5021e25` is recorded narrowly by
 `grunt-two-callers-pickup-application`, `grunt-two-callers-knockback-settlement`,
 `grunt-two-callers-conditional-action-macros` and
 `grunt-arrival-bomb-termination-macro`.
+Preserving the caller's M comparison result inside that complete macro raises
+Arrival further to 91.4820 without changing its recovered lookup topology.
 The [controlled follow-up](patterns/animation-name-accessors-restore-template-call-cuts.md#complete-pickup-knockback-and-bomb-phases-recover-arrivals-call-topology)
 records the real-TU sequence. `arrival-m-*`, `arrival-o-*` and `arrival-j-*`
 retain individual provenance, incompatible transfers and deferred alternatives;

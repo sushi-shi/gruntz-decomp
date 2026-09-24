@@ -342,6 +342,26 @@ Full-engine current fuzzy is 94.78%, MAX 95.17%, with 3,838/4,428 functions exac
 The net two current exact gains are recoveries of existing historical exact
 states, not two newly solved functions. This remains partial PR preparation.
 
+### Caller-owned M comparison result on the complete macro base
+
+After `2c5021e25`, the terminal M macro has the right get/construction cut but
+branches directly on strcmp's result. Retail materializes the equality result
+with `sete` and tests that byte. Passing the existing caller `eq` into the
+complete macro restores that assignment without changing the handled result:
+the manager's death-call return is still ignored. This raises Arrival from
+91.1094 to 91.4820 in the real TU, restoring three instructions while preserving
+all ordered referents, ten typed lookups, the M get/construction and every
+value-level operand multiset. Finish is unchanged. The caller is now 0x84a,
+694 instructions, 40 calls, 102 branches, three returns and 74 relocations;
+retail remains 0x850/698/40/101/3/74. Its early zero-register setup and one extra
+branch remain open. This control shows why the complete conditional macro must
+preserve comparison-result ownership as well as side effects.
+
+The full build and MAX gates pass with this follow-up banked at 91.4820.
+The action-header test passes, the raw audit still reports 3,917 functions and
+zero defects, and all historical maxima are preserved. No other current score
+changes in this control.
+
 ### Applying the evidence
 
 When shared-template restoration causes repeated constructor/error expansions

@@ -23,8 +23,8 @@
 
 #define SETTLE_ACTIVE_TUBE_MOVE() (IsAnimationAct("N") && (SettleTubeMove(), true))
 
-#define TERMINATE_ACTIVE_BOMB_RUN()                                                                \
-    ((strcmp(GetAnimationActName(), "M") == 0)                                                     \
+#define TERMINATE_ACTIVE_BOMB_RUN(result)                                                          \
+    (((result) = (strcmp(GetAnimationActName(), "M") == 0))                                        \
      && (m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1), true))
 
 inline void CGrunt::RestorePreviousAppearance() {

@@ -22,7 +22,7 @@ public:
     bool ToyUse() { bool result; return GRUNT_IS_USING_TOY(result); }
     bool TubeMove() { return SETTLE_ACTIVE_TUBE_MOVE(); }
     bool EntranceAppearance() { return RESTORE_ACTIVE_ENTRANCE_APPEARANCE(); }
-    bool BombRun() { return TERMINATE_ACTIVE_BOMB_RUN(); }
+    bool BombRun() { bool result; return TERMINATE_ACTIVE_BOMB_RUN(result); }
 };
 bool use(ActionProbe* grunt, int defer) {
     grunt->RestorePreviousAppearance();

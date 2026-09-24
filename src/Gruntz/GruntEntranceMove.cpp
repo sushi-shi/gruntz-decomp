@@ -703,7 +703,7 @@ i32 CGrunt::StepArrivalCommit() {
     if (SETTLE_ACTIVE_TUBE_MOVE()) {
         goto finalize;
     }
-    if (TERMINATE_ACTIVE_BOMB_RUN()) {
+    if (TERMINATE_ACTIVE_BOMB_RUN(eq)) {
         return 0;
     }
     goto finalize;
