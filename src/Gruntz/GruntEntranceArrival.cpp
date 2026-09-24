@@ -380,7 +380,6 @@ i32 CGrunt::StepAttackFire() {
     return 0;
 }
 
-// @early-stop
 RVA(0x00062110, 0x5bc)
 i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     if (commit != 0) {
@@ -502,7 +501,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     }
     i32 sel;
     if (toy1ExcessMs == 0 && toy2ExcessMs == 0) {
-        i32 r = rand() % 0x64 + 1;
+        i32 r = GetRandom(1, 100);
         sel = (r >= m_toyBlendPct) ? 1 : 0;
     } else if (toy1ExcessMs != 0 && toy2ExcessMs == 0) {
         sel = 0;

@@ -482,7 +482,6 @@ i32 CBattlezMapConfig::StepBoard() {
     return 1;
 }
 
-// @early-stop
 RVA(0x00026470, 0x29d)
 i32 CBattlezMapConfig::StepRowSpawn(b32 allowReserved) {
     i32 occupied = 0;
@@ -569,7 +568,7 @@ candidateFound:
         return 0;
     }
 
-    i32 roll = rand() % 100;
+    i32 roll = GetRandom(0, 99);
     i32 freeCount = 0;
     CGrunt** r2 = &m_triggerMgr->m_units[m_playerIndex * TM_UNITS_PER_PLAYER];
     for (i32 k = TM_UNITS_PER_PLAYER; k != 0; k--) {
