@@ -8,10 +8,6 @@
 #include <Wwd/LogicRecordEvent.h>
 #include <Wwd/WwdGameObjectFamily.h>
 
-inline void DispatchUnhandledLogicEvent(CUserLogic* sub) {
-    DispatchLogicEvent(sub);
-}
-
 #define LOGIC_RECORD_DISPATCH(LEAF)                                                                \
     CLogicRecord* record = owner->m_logicRecord;                                                   \
     switch (record->LogicEvent()) {                                                                \

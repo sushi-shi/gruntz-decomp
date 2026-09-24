@@ -722,12 +722,6 @@ i32 CAniAdvanceCursor::Serialize(CFileMemBase* ar) {
     return 1;
 }
 
-static inline CAniElement* LookupAnimation(CMapStringToPtr& map, LPCTSTR name) {
-    CAniElement* result = NULL;
-    MapLookup(map, name, result);
-    return result;
-}
-
 static inline CAniRecordView* RecordAt(CAniElement* anim, i32 index) {
     CAniRecordView* rec;
     if (index >= 0 && index < anim->m_records.GetSize()) {

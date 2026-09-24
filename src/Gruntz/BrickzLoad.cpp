@@ -140,21 +140,6 @@ static __inline BrickTileId PickThreeBrickStack(
                                                            : BRICKTILE_BLACK_3_MID;
 }
 
-static inline CGameObject* ListGetFirst(CDDrawChildGroup* list) {
-    list->m_walkCursor = list->m_list.GetHeadPosition();
-    if (list->m_walkCursor == NULL) {
-        return NULL;
-    }
-    return list->NextChild(list->m_walkCursor);
-}
-
-static inline CGameObject* ListGetNext(CDDrawChildGroup* list) {
-    if (list->m_walkCursor == NULL) {
-        return NULL;
-    }
-    return list->NextChild(list->m_walkCursor);
-}
-
 // @early-stop
 RVA(0x000810f0, 0xa80)
 i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {

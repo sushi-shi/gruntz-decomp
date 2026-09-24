@@ -9,6 +9,7 @@
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniAdvanceCursorInline.h>
+#include <Gruntz/AniElement.h>
 #include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/GameRegistry.h>
@@ -28,12 +29,6 @@
 #include <Wwd/LogicRecordEvent.h>
 
 #include <stddef.h>
-
-static inline CAniElement* LookupAnimation(CMapStringToPtr& map, LPCTSTR name) {
-    CAniElement* result = NULL;
-    MapLookup(map, name, result);
-    return result;
-}
 
 RVA_DYNINIT(0x0009d120, 0xa, CActRegPool<CLightFx>::s_table)
 RVA_DYNINIT(0x0009d140, 0x15, CActRegPool<CLightFx>::s_table)

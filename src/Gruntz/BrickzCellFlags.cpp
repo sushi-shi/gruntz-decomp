@@ -6,6 +6,7 @@
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/MapCellFlags.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/TriggerMgr.h>
@@ -285,11 +286,6 @@ static inline Coord ScreenPosition(CGameObject* object) {
     out.m_y = y;
     out.m_x = x;
     return out;
-}
-
-static inline void ScreenTile(Coord* pos) {
-    pos->m_x >>= TILE_SHIFT_PX;
-    pos->m_y >>= TILE_SHIFT_PX;
 }
 
 static inline RECT TileNeighborhood(CGrunt* grunt) {

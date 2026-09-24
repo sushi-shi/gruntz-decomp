@@ -4,6 +4,7 @@
 #include <Gruntz/Brickz.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/MapCellFlags.h>
 #include <Ints.h>
@@ -15,14 +16,6 @@ static inline Coord ScreenPosition(CGameObject* object) {
     i32 x = object->m_screenX;
     out.m_x = x;
     out.m_y = y;
-    return out;
-}
-
-static inline Coord ScreenTile(CGrunt* grunt) {
-    Coord out;
-    CGameObject* object = grunt->m_object;
-    out.m_x = object->m_screenX >> TILE_SHIFT_PX;
-    out.m_y = object->m_screenY >> TILE_SHIFT_PX;
     return out;
 }
 

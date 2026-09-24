@@ -84,21 +84,6 @@ RVA_DYNINIT(0x0002d7e0, 0x20, s_gruntDirSpare)
 DATA(0x0022b73c)
 static GruntDirectionCell s_gruntDirSpare[3];
 
-static inline CGameObject* ListGetFirst(CDDrawChildGroup* list) {
-    list->m_walkCursor = list->m_list.GetHeadPosition();
-    if (list->m_walkCursor == NULL) {
-        return NULL;
-    }
-    return list->NextChild(list->m_walkCursor);
-}
-
-static inline CGameObject* ListGetNext(CDDrawChildGroup* list) {
-    if (list->m_walkCursor == NULL) {
-        return NULL;
-    }
-    return list->NextChild(list->m_walkCursor);
-}
-
 static inline i32 ScreenTileX(CGrunt* unit) {
     return unit->m_object->m_screenX >> TILE_SHIFT_PX;
 }

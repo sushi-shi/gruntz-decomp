@@ -106,12 +106,6 @@ typedef enum WarlordBattleTag {
     WARLORD_TAG_VIKING = 0x445,
 } WarlordBattleTag;
 
-static inline CAniElement* LookupAnim(CMapStringToPtr& map, LPCTSTR name) {
-    CAniElement* found = NULL;
-    MapLookup(map, name, found);
-    return found;
-}
-
 // @early-stop
 RVA(0x00042d40, 0x750)
 CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
@@ -158,47 +152,47 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
 
     g_gameReg->m_curState->BuildAssetNamespacePrefixes(m_warlordName, 1, 0, NULL);
 
-    m_idleAnims[0] = LookupAnim(
+    m_idleAnims[0] = LookupAnimation(
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
         "GRUNTZ_" + m_warlordName + "_IDLE1"
     );
-    m_idleAnims[1] = LookupAnim(
+    m_idleAnims[1] = LookupAnimation(
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
         "GRUNTZ_" + m_warlordName + "_IDLE2"
     );
-    m_idleAnims[2] = LookupAnim(
+    m_idleAnims[2] = LookupAnimation(
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
         "GRUNTZ_" + m_warlordName + "_IDLE3"
     );
-    m_idleAnims[3] = LookupAnim(
+    m_idleAnims[3] = LookupAnimation(
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
         "GRUNTZ_" + m_warlordName + "_IDLE4"
     );
-    m_battlecryAnims[0] = LookupAnim(
+    m_battlecryAnims[0] = LookupAnimation(
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
         "GRUNTZ_" + m_warlordName + s_battleCry1Suffix
     );
-    m_battlecryAnims[1] = LookupAnim(
+    m_battlecryAnims[1] = LookupAnimation(
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
         "GRUNTZ_" + m_warlordName + s_battleCry2Suffix
     );
-    m_battlecryAnims[2] = LookupAnim(
+    m_battlecryAnims[2] = LookupAnimation(
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
         "GRUNTZ_" + m_warlordName + s_battleCry3Suffix
     );
-    m_animJoy = LookupAnim(
+    m_animJoy = LookupAnimation(
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
         "GRUNTZ_" + m_warlordName + s_joySuffix
     );
-    m_animDeath = LookupAnim(
+    m_animDeath = LookupAnimation(
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
         "GRUNTZ_" + m_warlordName + "_DEATH"
     );
-    m_animMoving = LookupAnim(
+    m_animMoving = LookupAnimation(
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
         "GRUNTZ_" + m_warlordName + s_movingSuffix
     );
-    m_animPanic = LookupAnim(
+    m_animPanic = LookupAnimation(
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
         "GRUNTZ_" + m_warlordName + s_panicSuffix
     );

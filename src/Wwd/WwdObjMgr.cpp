@@ -43,12 +43,6 @@ b32 g_soundEnabled = true;
 DATA(0x0021ab24)
 i32 g_soundVolumePercent = 100;
 
-inline CLogicRecord* LookupLogicTemplate(CMapStringToOb& map, LPCTSTR name) {
-    CObject* ob = NULL;
-    map.Lookup(name, ob);
-    return static_cast<CLogicRecord*>(ob);
-}
-
 inline void* WwdKey(CGameObject* o) {
     AddrWord<char> k;
     k.m_word = o->m_objectId;

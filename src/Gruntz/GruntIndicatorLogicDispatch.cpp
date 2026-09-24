@@ -9,7 +9,7 @@
 #include <Gruntz/GruntToySprite.h>
 #include <Gruntz/GruntToyTimeSprite.h>
 #include <Gruntz/GruntWingzTimeSprite.h>
-#include <Gruntz/LogicRecordDispatchInline.h>
+#include <Gruntz/LogicEventDispatch.h>
 #include <Gruntz/UserLogic.h>
 #include <Wwd/LogicRecordEvent.h>
 

@@ -19,6 +19,7 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/LogicRecordRegistry.h>
+#include <DDrawMgr/WorkerLookup.h>
 #include <Dsndmgr/SoundBuffer.h>
 #include <Dsndmgr/SoundDevice.h>
 #include <Dsndmgr/SoundStream.h>
@@ -117,12 +118,6 @@ i32 CDDrawWorkerRegistry::ProbeWorkerKey(CRezMgr* parser, const char* key) {
         return InstallTree(result, "", "_");
     }
     return 0;
-}
-
-static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, const char* key) {
-    CObject* val = NULL;
-    map.Lookup(key, val);
-    return static_cast<CDDrawWorker*>(val);
 }
 
 RVA(0x00156ec0, 0x40)

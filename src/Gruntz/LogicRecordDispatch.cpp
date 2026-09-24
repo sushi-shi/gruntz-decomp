@@ -11,10 +11,6 @@
 #include <Gruntz/UserLogic.h>
 #include <Ints.h>
 
-inline void DispatchUnhandledLogicEvent(CUserLogic* sub) {
-    DispatchLogicEvent(sub);
-}
-
 RVA(0x000de8a0, 0xf4)
 i32 DispatchProjectileLogic(CGameObject* owner) {
     CLogicRecord* record = owner->m_logicRecord;

@@ -3,6 +3,8 @@
 
 #include <rva.h>
 
+#include <Mfc.h>
+
 #include <Ints.h>
 #include <Wap32/WapObj.h>
 
@@ -42,5 +44,11 @@ struct CDDrawPaletteResource : public CWapObj {
     virtual i32 CreatePaletteFromTrailingData(void* data, i32 size, i32 flag);
     virtual i32 ApplyToFrontSurface();
 };
+
+inline CDDrawPaletteResource* LookupPaletteResource(CMapStringToOb& map, LPCTSTR name) {
+    CObject* found = NULL;
+    map.Lookup(name, found);
+    return static_cast<CDDrawPaletteResource*>(found);
+}
 
 #endif // GRUNTZ_DDRAWMGR_DDRAWPALETTERESOURCE_H

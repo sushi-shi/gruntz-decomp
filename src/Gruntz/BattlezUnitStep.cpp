@@ -25,6 +25,7 @@
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntPickupInline.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntzMgr.h>
@@ -242,11 +243,6 @@ L_clear: {
 }
 }
 #undef MOVE_RECYCLE
-
-static inline void ScreenTile(Coord* pos) {
-    pos->m_x >>= TILE_SHIFT_PX;
-    pos->m_y >>= TILE_SHIFT_PX;
-}
 
 RVA(0x00031c70, 0x1d)
 Coord CGrunt::GetTilePos() {

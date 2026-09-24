@@ -162,12 +162,6 @@ CWwdGameObject* CWwdGameObject::CreateObject(
     return static_cast<CWwdGameObject*>(result);
 }
 
-static inline CLogicRecord* LookupLogicTemplate(CMapStringToOb& map, LPCTSTR name) {
-    CObject* found = NULL;
-    map.Lookup(name, found);
-    return static_cast<CLogicRecord*>(found);
-}
-
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00166780, 0x57)

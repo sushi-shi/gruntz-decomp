@@ -28,12 +28,6 @@
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 
-static inline SoundCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
-    SoundCue* found = NULL;
-    MapLookup(cues, name, found);
-    return found;
-}
-
 // @early-stop
 RVA(0x000e80e0, 0x8c)
 i32 CSBI_MenuItem::SetupImage(
@@ -128,7 +122,7 @@ i32 CSBI_MenuItem::SetState(SbiMenuItemState state, i32 playHighlightSound) {
 
         SoundCueRegistry* mh = g_gameReg->m_world->m_soundRegistry;
         if (mh->m_silentMode == false) {
-            SoundCue* found = LookupCue(mh->m_cues, "GAME_TABHIGHLIGHT2");
+            SoundCue* found = LookupSoundCue(mh->m_cues, "GAME_TABHIGHLIGHT2");
             if (found) {
                 b32 soundEnabled = g_soundEnabled;
                 i32 volumePercent = g_soundVolumePercent;

@@ -209,12 +209,6 @@ i32 CGrunt::GruntInRadius(i32 playerIndex, i32 unitIndex) {
 }
 
 // @early-stop
-static inline CAniElement* LookupAnimation(CMapStringToPtr& map, LPCTSTR name) {
-    CAniElement* result = NULL;
-    MapLookup(map, name, result);
-    return result;
-}
-
 RVA(0x00067bd0, 0x2ef)
 i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
     SET_ANIMATION_ACT("K");

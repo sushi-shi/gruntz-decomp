@@ -127,12 +127,6 @@ CProjectile::~CProjectile() {
     m_hitList.RemoveAll();
 }
 
-static inline CAniElement* LookupAnim(CMapStringToPtr& map, LPCTSTR name) {
-    CAniElement* found = NULL;
-    MapLookup(map, name, found);
-    return found;
-}
-
 // @early-stop
 RVA(0x000df050, 0x6ed)
 i32 CProjectile::LoadProjectileSprites(
@@ -201,21 +195,21 @@ i32 CProjectile::LoadProjectileSprites(
             return 0;
     }
 
-    m_frames[0] = LookupAnim(
+    m_frames[0] = LookupAnimation(
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
         key + DATA_COMPGEN(0x00213658, "1")
         );
     if (m_frames[0] == NULL) {
         return 0;
     }
-    m_frames[1] = LookupAnim(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "2");
-    m_frames[2] = LookupAnim(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "3");
-    m_frames[3] = LookupAnim(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "4");
-    m_frames[4] = LookupAnim(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "5");
+    m_frames[1] = LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "2");
+    m_frames[2] = LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "3");
+    m_frames[3] = LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "4");
+    m_frames[4] = LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "5");
     m_frames[PF_IMPACT] =
-        LookupAnim(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "IMPACT");
+        LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "IMPACT");
     m_frames[PF_FALL] =
-        LookupAnim(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "FALL");
+        LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "FALL");
 
     SwitchAnimation(m_frames[0]);
     SetImageSetByName(key + "_OBJECT");
@@ -734,7 +728,7 @@ i32 CProjectile::SerializeDispatch(
                 g_serialCounter++;
                 s->Read(buf, SERIAL_NAME_LEN);
                 if (strlen(buf) != 0) {
-                    m_frames[ni] = LookupAnim(reg->m_animRegistry->m_animations, buf);
+                    m_frames[ni] = LookupAnimation(reg->m_animRegistry->m_animations, buf);
                 } else {
                     m_frames[ni] = NULL;
                 }
@@ -833,7 +827,8 @@ i32 CProjectile::SerializeDispatch(
                 m_value = NULL;
                 return 1;
             }
-            m_value = LookupAnim(m_ownerLogicRecord->m_ownerCtx->m_animRegistry->m_animations, buf);
+            m_value =
+                LookupAnimation(m_ownerLogicRecord->m_ownerCtx->m_animRegistry->m_animations, buf);
             return 1;
         }
         case SERIAL_SAVE: {

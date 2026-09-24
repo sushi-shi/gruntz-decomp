@@ -21,6 +21,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
@@ -51,14 +52,6 @@
 #include <new>
 #include <stdlib.h>
 #include <string.h>
-
-static inline Coord ScreenTile(CGrunt* unit) {
-    Coord out;
-    CGameObject* object = unit->m_object;
-    out.m_x = object->m_screenX >> TILE_SHIFT_PX;
-    out.m_y = object->m_screenY >> TILE_SHIFT_PX;
-    return out;
-}
 
 RVA(0x000350d0, 0xfa)
 i32 CBattlezMapConfig::RepathToFreeCell(CGrunt* unit) {

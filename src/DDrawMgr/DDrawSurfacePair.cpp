@@ -10,6 +10,7 @@
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DDrawPaletteRegistry.h>
+#include <DDrawMgr/DDrawPaletteResource.h>
 #include <DDrawMgr/DDrawPlacedWorker.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -1155,17 +1156,11 @@ i32 CDDrawPaletteRegistry::RemovePalette(CObject* obj) {
     return 0;
 }
 
-static inline CDDrawPaletteResource* LookupRecord(CMapStringToOb& map, LPCTSTR name) {
-    CObject* found = NULL;
-    map.Lookup(name, found);
-    return static_cast<CDDrawPaletteResource*>(found);
-}
-
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00165d30, 0x5f)
 i32 CDDrawPaletteRegistry::RemovePaletteByName(const char* key) {
-    CDDrawPaletteResource* w = LookupRecord(m_palettesByName, key);
+    CDDrawPaletteResource* w = LookupPaletteResource(m_palettesByName, key);
     if (w == NULL) {
         return 0;
     }

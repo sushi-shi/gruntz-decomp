@@ -16,11 +16,13 @@
 #include <DDrawMgr/WorkerLookup.h>
 #include <Enums.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/AniElement.h>
 #include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/Blk6c.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/UserLogic.h>
@@ -69,12 +71,6 @@ void CWwdSpriteObject::SetImageSetByName(const char* name) {
     }
 }
 
-static inline CAniElement* LookupAnimation(CMapStringToPtr& map, LPCTSTR name) {
-    CAniElement* result = NULL;
-    MapLookup(map, name, result);
-    return result;
-}
-
 RVA(0x001505b0, 0x5e)
 i32 CWwdSpriteObject::SetAnimationByName(const char* name, i32 advanceImmediately) {
     CAniElement* animation = LookupAnimation(OwnerMgr()->m_animRegistry->m_animations, name);
@@ -83,12 +79,6 @@ i32 CWwdSpriteObject::SetAnimationByName(const char* name, i32 advanceImmediatel
     }
     SET_ANIMATION_AND_MAYBE_ADVANCE(this, animation, advanceImmediately)
     return 1;
-}
-
-static inline SoundCue* LookupSoundCue(CMapStringToPtr& map, LPCTSTR name) {
-    SoundCue* result = NULL;
-    MapLookup(map, name, result);
-    return result;
 }
 
 RVA(0x00150610, 0x41)
@@ -382,12 +372,6 @@ i32 CGameObject::EnsureHitLogic(CLogicRecord* logicTemplate) {
     }
 
     return m_hitLogic->Init(logicTemplate->m_dispatch, 0);
-}
-
-static inline CLogicRecord* LookupLogicTemplate(CMapStringToOb& map, LPCTSTR name) {
-    CObject* result = NULL;
-    map.Lookup(name, result);
-    return static_cast<CLogicRecord*>(result);
 }
 
 RVA(0x00150f50, 0x35)

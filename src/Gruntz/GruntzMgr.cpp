@@ -1574,12 +1574,6 @@ void CGruntzMgr::ResetClockGlobals() {
     g_debugDisplayFlags = DEBUG_DISPLAY_NONE;
 }
 
-static inline SoundCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
-    SoundCue* found = NULL;
-    MapLookup(cues, name, found);
-    return found;
-}
-
 // @early-stop
 RVA(0x0008f530, 0xbd)
 void CGruntzMgr::DelayedQuit() {
@@ -1587,10 +1581,10 @@ void CGruntzMgr::DelayedQuit() {
         return;
     }
     m_delayedQuitPending = true;
-    SoundCue* out = LookupCue(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
+    SoundCue* out = LookupSoundCue(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
     i32 base;
     if (out != NULL) {
-        out = LookupCue(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
+        out = LookupSoundCue(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
         base = out->m_sound->m_durationMs + 0x1f4;
     } else {
         base = 0;

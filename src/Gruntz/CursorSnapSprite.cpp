@@ -4,7 +4,7 @@
 
 #include <Bute/ButeTree.h>
 #include <Gruntz/GameObjectLogicTypes.h>
-#include <Gruntz/LogicRecordDispatchInline.h>
+#include <Gruntz/LogicEventDispatch.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SpriteStateFlags.h>

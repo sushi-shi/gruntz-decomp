@@ -63,12 +63,6 @@ i32 g_versionMid = 0;
 DATA(0x00251610)
 i32 g_versionMinor = 0;
 
-static inline SoundCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
-    SoundCue* foundCue = NULL;
-    MapLookup(cues, name, foundCue);
-    return foundCue;
-}
-
 RVA(0x0008ce60, 0x55)
 CMenuState::~CMenuState() {
     ReleaseResources();
@@ -132,9 +126,9 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     menuTree->m_activationSoundKey = "MENU_ACTIVATE";
 
     {
-        SoundCue* activationCue = LookupCue(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
+        SoundCue* activationCue = LookupSoundCue(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
         if (activationCue != NULL) {
-            activationCue = LookupCue(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
+            activationCue = LookupSoundCue(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
             m_activateCueDurationMs = activationCue->m_sound->m_durationMs;
         } else {
             m_activateCueDurationMs = 0;
@@ -145,7 +139,7 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
         return 0;
     }
 
-    SoundCue* menuMusicCue = LookupCue(
+    SoundCue* menuMusicCue = LookupSoundCue(
         (static_cast<SoundCueRegistry*>(g_gameReg->m_world->m_soundRegistry))->m_cues,
         "MENU_MENU"
     );

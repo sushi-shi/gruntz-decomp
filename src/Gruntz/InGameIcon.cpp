@@ -82,18 +82,6 @@ RVA_COMPGEN(0x00011d00, 0x44, ??1CInGameIcon@@UAE@XZ)
 RVA_COMPGEN(0x00011d90, 0x1e, ??_GCInGameText@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011dc0, 0x44, ??1CInGameText@@UAE@XZ)
 
-static inline SoundCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
-    SoundCue* found = NULL;
-    MapLookup(cues, name, found);
-    return found;
-}
-
-static inline CAniElement* LookupAni(CMapStringToPtr& map, LPCTSTR name) {
-    CAniElement* found = NULL;
-    MapLookup(map, name, found);
-    return found;
-}
-
 // @early-stop
 RVA(0x00095b10, 0x15f0)
 CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
@@ -795,7 +783,7 @@ i32 CInGameIcon::SerializeDispatch(
             if (strlen(aniName) == 0) {
                 m_value = NULL;
             } else {
-                m_value = LookupAni(
+                m_value = LookupAnimation(
                     m_ownerLogicRecord->m_ownerCtx->m_animRegistry->m_animations,
                     aniName
                 );
@@ -869,7 +857,8 @@ i32 CInGameIcon::SerializeDispatch(
             ar->Read(name, SERIAL_NAME_LEN);
 
             if (strlen(name) != 0) {
-                m_cue = LookupCue(m_ownerLogicRecord->m_ownerCtx->m_soundRegistry->m_cues, name);
+                m_cue =
+                    LookupSoundCue(m_ownerLogicRecord->m_ownerCtx->m_soundRegistry->m_cues, name);
             } else {
                 m_cue = NULL;
             }
@@ -990,7 +979,7 @@ i32 CInGameText::Update() {
         if (::PtInRect(&reg->m_viewBounds, x, y)) {
             SoundCueRegistry* set = reg->m_world->m_soundRegistry;
             if (set->m_silentMode == false) {
-                SoundCue* res = LookupCue(set->m_cues, "GAME_HELPBOOK");
+                SoundCue* res = LookupSoundCue(set->m_cues, "GAME_HELPBOOK");
                 if (res != NULL) {
                     PlaySoundCueIfElapsed(res, g_soundVolumePercent, 0, 0, false);
                 }

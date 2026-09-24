@@ -420,12 +420,6 @@ void CTriggerMgr::CloseActionOptionsMenu() {
     }
 }
 
-static inline SoundCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
-    SoundCue* found = NULL;
-    MapLookup(cues, name, found);
-    return found;
-}
-
 static inline u16 PackRgb16(i32 r, i32 g, i32 b) {
     return static_cast<u16>(((r >> g_rDown) << g_rUp) | ((g >> g_gDown) << g_gUp) | (b >> g_bDown));
 }
@@ -2131,11 +2125,12 @@ void CTriggerMgr::LoadFinishLevelSprite(FinishLevelReason state) {
     switch (state) {
         case FINISH_REASON_WARPSTONE_EXIT:
             if (m_phase != FINISH_STATE_DEFEAT) {
-                SoundCue* p = LookupCue(m_world->m_soundRegistry->m_cues, "GAME_FINISHLEVEL");
+                SoundCue* p = LookupSoundCue(m_world->m_soundRegistry->m_cues, "GAME_FINISHLEVEL");
                 m_cueTimer.m_window = static_cast<u32>((p->m_sound->m_durationMs + 500));
                 m_cueTimer.m_base = g_frameTime;
                 if (m_world->m_soundRegistry->m_silentMode == false) {
-                    SoundCue* cue = LookupCue(m_world->m_soundRegistry->m_cues, "GAME_FINISHLEVEL");
+                    SoundCue* cue =
+                        LookupSoundCue(m_world->m_soundRegistry->m_cues, "GAME_FINISHLEVEL");
                     if (cue != NULL) {
                         i32 volumePercent = g_soundVolumePercent;
                         if (g_soundEnabled != false
