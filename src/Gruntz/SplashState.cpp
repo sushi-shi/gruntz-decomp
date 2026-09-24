@@ -23,6 +23,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundCueRegistryInline.h>
+#include <Gruntz/SplashStateInline.h>
 #include <Gruntz/State.h>
 #include <Gruntz/View.h>
 #include <Rez/RezArchive.h>
@@ -86,17 +87,6 @@ RVA(0x000f98f0, 0x16)
 i32 CSplashState::LeaveState(GameStateId nextState) {
     m_world->m_drawTarget->ClearAllPages(0);
     return 1;
-}
-
-inline b32 CSplashState::IsAdvanceRequested() {
-    CInputDeviceGroup* actors = g_actorList;
-    i32 count = actors->m_count;
-    for (i32 i = 0; i < count; i++) {
-        if (actors->m_items[i]->m_pressedButtons & IDX(INPUT_BUTTON0)) {
-            return true;
-        }
-    }
-    return false;
 }
 
 RVA(0x000f9920, 0x108)

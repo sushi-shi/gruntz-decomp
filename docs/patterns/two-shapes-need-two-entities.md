@@ -1,4 +1,4 @@
-# One helper with BOTH a `call` and an expansion is TWO source entities, not one inline
+# Separate modeled boundaries can preserve calls and expansions
 
 - **confidence** c10
 - **tags** `cpp:inline` `cpp:call` `cpp:ctor` `cpp:class` | `asm:call` | `topic:codegen-idiom` `topic:wall`
@@ -12,7 +12,7 @@ function. Modelling it as one in-class inline reproduces every expansion but con
 retail RVA silently leaves scoring. Modelling it as one out-of-line body reproduces the
 calls and loses every expansion.
 
-## cl 5 cannot produce both shapes from one definition. Probed, not assumed.
+## Historical probes of the selected small helpers
 
 | probe (`/nologo /c /O2 /MT /GX`) | expansions | COMDAT emitted? |
 |---|---|---|
@@ -25,20 +25,20 @@ calls and loses every expansion.
 | in-class inline + `/Ob0` | no | yes |
 | in-class inline + **address taken** | yes | yes |
 
-There is no inline BUDGET to exhaust: 60 expansions in one caller and cl still never
-declines. **NARROWED 2026-08-14** — that is a property of THESE callees, not of cl. A
-callee with `cb <= 0x28` is budget-EXEMPT, so no caller size can decline it and the
-60-site probe could never have rejected; `PointInRect` and `CLogicRecordRegistry::FindTemplate`
-are both under it. Content that emits NOTHING (a release `ASSERT`, an unused local)
-lifts `cb` over 0x28 with byte-identical output and the same callee then declines 8 of
-30 — so before concluding a split was per-TU visibility, titrate `cb`. See
-zero-emission-statements-cross-the-ob1-cb-exemption.md. `/Ob0` is per-TU and kills
-every other inline in it. Address-taking works but
-fabricates a global with a DIR32 reloc, and retail has **no** data reference to any of
-these bodies (scanned every section for the VA - zero hits), so it is not what retail did.
+The original blanket conclusion that cl 5 cannot produce calls and expansions
+from one inline definition was wrong. The
+[container-helper closure](repeated-container-call-is-an-inline-member.md)
+proves both forms. These historical probes establish only that the particular
+source and call populations tested did not reproduce the retail split.
 
-So when the retail image shows both shapes, **the retail source had two entities.** Model
-two.
+Before inferring an exemption or a visibility split, calibrate the caller and
+inspect nested candidates and allocation sites. A finite all-expanded census
+alone does not measure `cb`, and all-rejected sites do not disprove eligibility;
+see [the per-class constructor controls](constructor-call-census-needs-a-calibrated-harness.md).
+
+Separate wrappers or tagged constructors remain a tested representation for
+some families. Matching their bytes does not prove that the original source
+had two entities. Keep the single-inline hypothesis open to new source evidence.
 
 ## The recipe: an inline helper plus a one-line out-of-line wrapper
 
@@ -113,9 +113,9 @@ parameter costs nothing.
 
 `inline-visibility-splits-call-and-expansion.md` concluded that retail's `call` sites must
 have seen a declaration-only header and that "there is no single-body C++ spelling that
-yields both shapes". The first half is unprovable and the second is beside the point: there
-is no single-BODY spelling, but there is a two-ENTITY one, and it needs no per-TU include
-split and no `#ifdef` device.
+yields both shapes". Neither statement follows from call counts alone. The
+two-entity representation tested here needs no per-TU include split or `#ifdef`
+device; a calibrated single-inline explanation must still be considered.
 
 ## The tag split is what lets two neighbouring pins coexist
 

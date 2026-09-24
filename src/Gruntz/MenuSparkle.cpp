@@ -39,8 +39,6 @@ CMenuSparkle::CMenuSparkle(CGameObject* obj)
     m_logicRecord->m_sparkleDelay = GetRandom(g_menuSparkleLo, g_menuSparkleHi);
 }
 
-typedef i32 (CUserLogic::*CActHandler)();
-
 RVA(0x000ade60, 0x102)
 void CMenuSparkle::FireActivation(i32 coord) {
     DispatchRegisteredAct(this, coord);

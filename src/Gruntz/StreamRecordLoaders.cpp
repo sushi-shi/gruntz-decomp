@@ -1,7 +1,9 @@
 #include <rva.h>
 
+#include <DDrawMgr/DDrawWorker.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/LogicRecordRegistry.h>
+#include <DDrawMgr/WorkerLookup.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
@@ -13,12 +15,6 @@
 #include <Io/FileMem.h>
 
 #include <string.h>
-
-static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
-    CObject* found = NULL;
-    map.Lookup(name, found);
-    return static_cast<CDDrawWorker*>(found);
-}
 
 RVA(0x0009c650, 0x372)
 i32 CTimer::Deserialize(CFileMemBase* s) {
@@ -54,7 +50,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
         CDDrawWorker* tt = LookupWorker(reg->m_imageRegistry->m_workersByName, buf);
         CImage* r;
         if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = static_cast<CImage*>(tt->m_items.GetAt(i));
+            r = DDRAW_WORKER_FRAME_AT_UNCHECKED(tt, i);
         } else {
             r = NULL;
         }
@@ -71,7 +67,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
         CDDrawWorker* tt = LookupWorker(reg->m_imageRegistry->m_workersByName, buf);
         CImage* r;
         if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = static_cast<CImage*>(tt->m_items.GetAt(i));
+            r = DDRAW_WORKER_FRAME_AT_UNCHECKED(tt, i);
         } else {
             r = NULL;
         }
@@ -88,7 +84,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
         CDDrawWorker* tt = LookupWorker(reg->m_imageRegistry->m_workersByName, buf);
         CImage* r;
         if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = static_cast<CImage*>(tt->m_items.GetAt(i));
+            r = DDRAW_WORKER_FRAME_AT_UNCHECKED(tt, i);
         } else {
             r = NULL;
         }
@@ -105,7 +101,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
         CDDrawWorker* tt = LookupWorker(reg->m_imageRegistry->m_workersByName, buf);
         CImage* r;
         if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = static_cast<CImage*>(tt->m_items.GetAt(i));
+            r = DDRAW_WORKER_FRAME_AT_UNCHECKED(tt, i);
         } else {
             r = NULL;
         }
@@ -122,7 +118,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
         CDDrawWorker* tt = LookupWorker(reg->m_imageRegistry->m_workersByName, buf);
         CImage* r;
         if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = static_cast<CImage*>(tt->m_items.GetAt(i));
+            r = DDRAW_WORKER_FRAME_AT_UNCHECKED(tt, i);
         } else {
             r = NULL;
         }

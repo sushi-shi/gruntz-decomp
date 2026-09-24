@@ -7,6 +7,7 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/WorkerLookup.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntDirStatics.h>
@@ -127,9 +128,7 @@ i32 CSBI_ImageSet::SerializeFields(
             if (strlen(buf)) {
                 CDDrawWorker* out;
 
-                CObject* outOb = NULL;
-                reg->m_imageRegistry->m_workersByName.Lookup(buf, outOb);
-                out = static_cast<CDDrawWorker*>(outOb);
+                out = LookupWorker(reg, buf);
                 m_frameSet = out;
             } else {
                 m_frameSet = NULL;

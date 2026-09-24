@@ -95,12 +95,7 @@ i32 CDDPalette::LoadBmp(IDirectDraw2* dd, char* filename, u32 flags) {
     if (file.Read(info.m_bmiColors, sizeof(info.m_bmiColors)) != sizeof(info.m_bmiColors)) {
         return 0;
     }
-    for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
-        pe[i].peRed = info.m_bmiColors[i].rgbRed;
-        pe[i].peGreen = info.m_bmiColors[i].rgbGreen;
-        pe[i].peBlue = info.m_bmiColors[i].rgbBlue;
-        pe[i].peFlags = 0;
-    }
+    COPY_BGRX_PALETTE(pe, info.m_bmiColors, i, PALETTE_ENTRY_COUNT)
     return Create(dd, pe, flags);
 }
 
@@ -190,12 +185,7 @@ i32 CDDPalette::SetEntriesQuad(i32 start, i32 count, RGBQUAD* quads, i32 unused)
         return 0x80070057;
     }
 
-    for (i32 i = 0; i < count; i++) {
-        buf[i].peRed = quads[i].rgbRed;
-        buf[i].peGreen = quads[i].rgbGreen;
-        buf[i].peBlue = quads[i].rgbBlue;
-        buf[i].peFlags = 0;
-    }
+    COPY_BGRX_PALETTE(buf, quads, i, count)
     i32 hr = SetAndNotify(start, count, buf, unused);
     delete[] buf;
     return hr;

@@ -9,6 +9,7 @@
 #include <Gruntz/GameMode.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/MapCellInline.h>
 #include <Gruntz/SerialArchive.h>
 #include <Io/FileMem.h>
 
@@ -33,11 +34,6 @@ RVA_DYNINIT(0x0009fd50, 0x5, s_gruntDirNorthWest)
 RVA_DYNINIT(0x0009fd70, 0x17, s_gruntDirNorthWest)
 RVA_DYNINIT(0x0009fda0, 0x5, s_gruntDirCenter)
 RVA_DYNINIT(0x0009fdc0, 0x1a, s_gruntDirCenter)
-
-#define RESET_MAP_ARRAY_STORAGE                                                                    \
-    m_storage = NULL;                                                                              \
-    m_freeList = NULL;                                                                             \
-    m_count = 0
 
 RVA(0x0009e700, 0xd)
 CBrickzNodePool::CBrickzNodePool() {
@@ -511,17 +507,6 @@ BrickzNode* CMapMgr::PopBestOpenNode() {
         head->m_openPrev = NULL;
     }
     return head;
-}
-
-static inline BrickzCellNode* PopFreeCellNode(BrickzCellNode*& freeList) {
-    BrickzCellNode* node = freeList;
-    BrickzCellNode* next = node->m_cellNext;
-    if (next == NULL) {
-        return NULL;
-    }
-    freeList = next;
-    next->m_cellPrev = NULL;
-    return node;
 }
 
 // @early-stop

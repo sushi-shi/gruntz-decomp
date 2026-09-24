@@ -323,10 +323,17 @@ displacements, immediates, FP operands, and referent order. The remaining
 392-versus-394-instruction residue is only a two-instruction failure-tail CFG
 split, not grounds to reopen the recovered inline family.
 
-## Quantified PARK: `CGruntzMgr::TransitionState` 0x8b960
+## Historical budget hypothesis: `CGruntzMgr::TransitionState` 0x8b960
 
 Worked 2026-08-21 with `walls inline-model`, and the first case where the model
 was run end-to-end to REFUSE a lever rather than find one.
+
+**Measurement qualification (2026-09-24):** the recorded expansion counts below
+are observations, but their `cb` interval and numerical ceiling require an
+independently calibrated flat 1000-budget harness. The old command did not
+check that premise, and constructor controls now disprove its generality; see
+[the per-class constructor controls](constructor-call-census-needs-a-calibrated-harness.md). Re-establish that calibration before using the
+historical interval to declare this wall bounded.
 
 Retail expands three of the eight nested `CPlay::ClockInterval` constructors
 inside the inlined `CPlay` ctor; our compile expands none, and our standalone

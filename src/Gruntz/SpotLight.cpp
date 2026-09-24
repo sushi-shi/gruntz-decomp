@@ -16,6 +16,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDeathType.h>
+#include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LightFxMgr.h>
 #include <Gruntz/LogicTypeId.h>
@@ -51,12 +52,10 @@ RVA_COMPGEN(0x00013040, 0x44, ??1CSpotLight@@UAE@XZ)
 // @early-stop
 RVA(0x000b1200, 0x2cb)
 CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_previousAnimationActId = m_logicRecord->m_eventCode;
-    m_logicRecord->m_eventCode = ActFindId("A");
+    SET_ANIMATION_ACT("A");
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_KEEP_ACTIVE));
 
-    i32 ax = (m_object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-    i32 centerY = (m_object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+    DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(m_object, ax, centerY)
     m_center.m_x = static_cast<double>(ax);
     double cy = static_cast<double>(centerY);
     m_center.m_y = cy;
@@ -139,8 +138,7 @@ i32 CSpotLight::Tick() {
         );
         if (tgt != NULL && tgt->m_gruntKind != GRUNT_INVULNERABLE
             && !(m_storyMode != false && m_targetPlayerIndex != 0)) {
-            m_previousAnimationActId = m_logicRecord->m_eventCode;
-            m_logicRecord->m_eventCode = ActFindId("B");
+            SET_ANIMATION_ACT("B");
             m_object->m_screenX = tgt->m_object->m_screenX;
             m_object->m_screenY = tgt->m_object->m_screenY;
             if (m_object->m_score == 1) {
@@ -219,8 +217,7 @@ int CSpotLight::Update() {
     if (g_gameReg->m_triggerMgr
             ->m_units[m_targetUnitIndex + m_targetPlayerIndex * TM_UNITS_PER_PLAYER]
         == NULL) {
-        m_previousAnimationActId = m_logicRecord->m_eventCode;
-        m_logicRecord->m_eventCode = ActFindId("A");
+        SET_ANIMATION_ACT("A");
     }
     return 0;
 }

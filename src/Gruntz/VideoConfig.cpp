@@ -499,8 +499,7 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         if (registry->m_silentMode) {
             return;
         }
-        SoundCue* found = NULL;
-        MapLookup(registry->m_cues, "GAME_VOICE", found);
+        SoundCue* found = registry->FindCue("GAME_VOICE");
         SoundCue* cue = found;
         if (!cue) {
             return;
@@ -525,8 +524,7 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         if (registry->m_silentMode) {
             return;
         }
-        SoundCue* found = NULL;
-        MapLookup(registry->m_cues, "GAME_CHIPFALLOUT", found);
+        SoundCue* found = registry->FindCue("GAME_CHIPFALLOUT");
         SoundCue* cue = found;
         if (!cue) {
             return;

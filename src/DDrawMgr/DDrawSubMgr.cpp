@@ -19,6 +19,8 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/LogicRecordRegistry.h>
+#include <DDrawMgr/ResolveNodeMacros.h>
+#include <DDrawMgr/WorkerLookup.h>
 #include <Dsndmgr/SoundBuffer.h>
 #include <Dsndmgr/SoundDevice.h>
 #include <Dsndmgr/SoundStream.h>
@@ -119,12 +121,6 @@ i32 CDDrawWorkerRegistry::ProbeWorkerKey(CRezMgr* parser, const char* key) {
     return 0;
 }
 
-static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, const char* key) {
-    CObject* val = NULL;
-    map.Lookup(key, val);
-    return static_cast<CDDrawWorker*>(val);
-}
-
 RVA(0x00156ec0, 0x40)
 void CDDrawWorkerRegistry::RemoveByKey(const char* key) {
     CDDrawWorker* worker = LookupWorker(m_workersByName, key);
@@ -183,10 +179,6 @@ i32 CDDrawPixelWorker::IsLoaded() {
     }
     return 0;
 }
-
-#define SET_RESOLVE_POSITION_REFERENCED(x, y)                                                      \
-    m_refCount = 2;                                                                                \
-    return CResolveNode::SetPosition(x, y)
 
 RVA(0x00157080, 0x19)
 i32 CDDrawPlacedWorker::SetPosition(i32 x, i32 y) {
@@ -532,10 +524,6 @@ i32 SoundCueRegistry::RemoveWithPrefix(const char* prefix, const char* separator
     return removedCount;
 }
 
-#define ADD_SOUND_CUE_ENTRY(cue, key)                                                              \
-    m_cues[key] = cue;                                                                             \
-    cue->m_replayDelayMs = m_defaultReplayDelayMs
-
 RVA(0x00157d70, 0x90)
 SoundCue* SoundCueRegistry::LoadCueFromSource(const char* key, CRezItm* source) {
     if (m_silentMode != false) {
@@ -625,8 +613,7 @@ i32 SoundCueRegistry::LoadFromTree(CRezDir* tree, const char* prefix, const char
                     } else {
                         strcpy(cueKey, source->GetName());
                     }
-                    SoundCue* cue = NULL;
-                    MapLookup(m_cues, cueKey, cue);
+                    SoundCue* cue = FindCue(cueKey);
                     if (cue == NULL) {
                         if (LoadCueFromSource(cueKey, source) != NULL) {
                             ++count;
@@ -675,8 +662,7 @@ i32 SoundCueRegistry::PlaySpatializedCue(
 ) {
     CGameLevel* level = OwnerMgr()->m_level;
     if (level != NULL && level->m_mainPlane != NULL && m_silentMode == false) {
-        SoundCue* cue = NULL;
-        MapLookup(m_cues, key, cue);
+        SoundCue* cue = FindCue(key);
         if (cue != NULL) {
             return cue->PlaySpatialized(sourceX, -1, maxPanOffsetPx, fullPanOffsetPx);
         }

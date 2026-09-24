@@ -34,8 +34,9 @@ USAGE
                                       # delta + base-obj symbol evidence;
                                       # undefined/absent remains ambiguous
     gruntz walls inline-model --measure-cb h.cpp --fn CALLEE \\
-        --caller CALLER --sites N     # titrate cb with the real cl 5.0
-                                      # (harness: --gen-harness)
+        --caller CALLER --sites N     # count remaining calls with real cl 5.0
+        --flat-floor-budget           # optional, independently calibrated:
+                                      # flat leaf sites, caller budget = 1000
 
 spec JSON: {"caller_cb": N, "sites": [{"name": .., "cb": N, "sites": [..],
 "forceinline": false, "marked": false, "candidate": true}, ..]}
@@ -223,9 +224,14 @@ _MODEL_SCRATCH = BUILD / "inline-model"
 
 
 def measure_cb(src: Path, callee: str, caller: str, n_sites: int):
-    """Compile the harness TU; return (expanded, rejected, lo, hi) where
-    cb in [lo, hi] under the floor-budget assumption. Both bounds None means
-    saturation: no cost bound was measured. Only hi=None means no expansion."""
+    """Return observed call counts and provisional flat-floor model bounds.
+
+    Counts require an independently established site census. Bounds require a
+    calibrated 1000-budget caller with no nested candidates or site exclusions;
+    neither all-expanded nor all-rejected proves a numeric cb or eligibility.
+    """
+    if n_sites <= 0:
+        die("measure-cb: --sites must be positive")
     from gruntz.tool import ToolError, cl
     _MODEL_SCRATCH.mkdir(parents=True, exist_ok=True)
     out = _MODEL_SCRATCH / (src.stem + ".obj")
@@ -239,15 +245,17 @@ def measure_cb(src: Path, callee: str, caller: str, n_sites: int):
         asm = _MODEL_SCRATCH / (src.stem + ".asm")
     if not asm.is_file():
         die(f"measure-cb: no /FAs listing beside {out.name}")
-    body, inside = [], False
-    for line in asm.read_text(errors="replace").splitlines():
-        if not inside and caller in line and " PROC" in line:
-            inside = True
-        elif inside:
-            if " ENDP" in line:
-                break
-            body.append(line)
-    text = "\n".join(body)
+    lines = asm.read_text(errors="replace").splitlines()
+    starts = [i for i, line in enumerate(lines)
+              if " PROC" in line and caller in line.split()[0]]
+    if len(starts) != 1:
+        die(f"measure-cb: caller {caller!r} matched {len(starts)} procedures; "
+            "pass one emitted caller's exact mangled name")
+    start = starts[0] + 1
+    end = next((i for i in range(start, len(lines)) if " ENDP" in lines[i]), None)
+    if end is None:
+        die(f"measure-cb: unterminated procedure for {caller!r}")
+    text = "\n".join(lines[start:end])
     rejected = len(re.findall(r"\b(?:call|jmp)\s+[^\n;]*" + re.escape(callee),
                               text))
     expanded = n_sites - rejected
@@ -256,10 +264,8 @@ def measure_cb(src: Path, callee: str, caller: str, n_sites: int):
             f"{caller}, more than --sites {n_sites}. Pass --sites {rejected} "
             f"(or check the mangled name - a tail `jmp` to the callee counts "
             f"as a rejection too).")
-    if expanded == n_sites:
-        lo, hi = None, None  # never rejected: the budget may never have bound
-    elif expanded == 0:
-        lo, hi = CANDIDACY_CB, None     # not a candidate (or cb > budget)
+    if expanded in (0, n_sites):
+        lo, hi = None, None
     else:
         lo = BUDGET_FLOOR // (expanded + 1) + 1
         hi = BUDGET_FLOOR // expanded
@@ -526,6 +532,10 @@ def main(argv=None) -> int:
     ap.add_argument("--measure-cb", dest="measure_cb", metavar="TU",
                     help="titrate a callee's cb: compile TU, count rejected "
                     "sites in --caller")
+    ap.add_argument("--flat-floor-budget", action="store_true",
+                    help="interpret a partial cutoff only after independently "
+                    "establishing a 1000-budget caller, flat leaf sites, and "
+                    "no call-site eligibility restrictions")
     ap.add_argument("--fn", help="measure-cb: callee")
     ap.add_argument("--caller", help="measure-cb: harness caller function")
     ap.add_argument("--sites", type=int, help="measure-cb: site count")
@@ -557,13 +567,18 @@ def main(argv=None) -> int:
         if not (args.fn and args.caller and args.sites):
             die("--measure-cb needs --fn CALLEE --caller CALLER --sites N")
         ex, rej, lo, hi = measure_cb(src, args.fn, args.caller, args.sites)
-        if lo is None:
-            verdict = ("SATURATED: no cb bound measured; increase the site count "
-                       "and confirm the caller remains at the budget floor")
-        elif hi is None:
-            verdict = f"NOT an inline candidate (ineligible body, or cb >= {CANDIDACY_CB})"
+        if not args.flat_floor_budget:
+            verdict = ("cb not determined: caller budget, nested candidates, and "
+                       "site eligibility are not calibrated")
+        elif ex == 0:
+            verdict = "cb not determined: all calls remain; check site eligibility"
+        elif rej == 0:
+            verdict = "cb not determined: no cutoff observed; exemption is unproved"
+        elif lo is None or hi is None or hi <= SMALL_FREE or lo > hi:
+            die("measure-cb: observed cutoff contradicts the flat 1000-budget "
+                "model; audit caller mass, nested candidates, and site eligibility")
         else:
-            verdict = f"cb in [{lo},{hi}]"
+            verdict = f"conditional cb in [{lo},{hi}] (flat 1000-budget model)"
         print(f"[measure-cb] {args.fn}: {ex} expanded, {rej} rejected "
               f"(call+jmp) of {args.sites} -> {verdict}")
         return 0

@@ -44,4 +44,8 @@ public:
     i32 m_lastPicked;
 };
 
+inline CSpawnList::~CSpawnList() {
+    DeleteAllEntries();
+}
+
 #endif // GRUNTZ_GRUNTZ_SPAWNLIST_H

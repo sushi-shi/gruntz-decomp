@@ -1,11 +1,11 @@
 #ifndef GRUNTZ_MAKERECT_H
 #define GRUNTZ_MAKERECT_H
 
-#include <Win32.h>
+#include <Mfc.h>
 
 #include <Ints.h>
 
-static __inline RECT MakeRect(i32 l, i32 t, i32 r, i32 b) {
+inline RECT MakeRect(i32 l, i32 t, i32 r, i32 b) {
     RECT rc;
     rc.left = l;
     rc.top = t;

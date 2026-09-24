@@ -28,6 +28,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntActRegMacros.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntCombatClockInline.h>
 #include <Gruntz/GruntCombatDirection.h>
@@ -53,6 +54,7 @@
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/ScanGridMacros.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/SortKeyLayer.h>
@@ -236,13 +238,6 @@ CActReg CActRegPool<CGrunt>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
         cue = out;                                                                                 \
     } while (0)
 
-#define SETDIR(cell, nx, ny)                                                                       \
-    do {                                                                                           \
-        newPos.m_y = (ny);                                                                         \
-        newPos.m_x = (nx);                                                                         \
-        this->m_entranceCell = (cell);                                                             \
-    } while (0)
-
 // @early-stop
 RVA(0x00056f80, 0xb0)
 i32* CGrunt::EntranceTileOffset(i32* out) {
@@ -283,36 +278,6 @@ i32* CGrunt::EntranceTileOffset(i32* out) {
     return out;
 }
 
-#define SCAN_BOUNDS(grid)                                                                          \
-    {                                                                                              \
-        CRect rb(0, 0, (grid)->m_width, (grid)->m_height);                                         \
-        RECT ra;                                                                                   \
-        ra = CRect(0, 0, (grid)->m_width, (grid)->m_height);                                       \
-        RECT* rd = &(grid)->m_bounds;                                                              \
-        if (!IntersectRect(rd, &ra, &rb)) {                                                        \
-            *rd = ra;                                                                              \
-        }                                                                                          \
-        (grid)->m_gridW = rd->right - rd->left;                                                    \
-        (grid)->m_gridH = rd->bottom - rd->top;                                                    \
-    }
-
-#define SCAN_BOUNDS_PLAINCLIP(grid)                                                                \
-    {                                                                                              \
-        RECT rb;                                                                                   \
-        rb.left = 0;                                                                               \
-        rb.top = 0;                                                                                \
-        rb.right = (grid)->m_width;                                                                \
-        rb.bottom = (grid)->m_height;                                                              \
-        RECT ra;                                                                                   \
-        ra = CRect(0, 0, (grid)->m_width, (grid)->m_height);                                       \
-        RECT* rd = &(grid)->m_bounds;                                                              \
-        if (!IntersectRect(rd, &ra, &rb)) {                                                        \
-            *rd = ra;                                                                              \
-        }                                                                                          \
-        (grid)->m_gridW = rd->right - rd->left;                                                    \
-        (grid)->m_gridH = rd->bottom - rd->top;                                                    \
-    }
-
 RVA(0x00057060, 0x72)
 void CGrunt::ComputeFacing(double dt) {
     CWwdSpriteObject* h = m_object;
@@ -323,33 +288,6 @@ void CGrunt::ComputeFacing(double dt) {
     m_movePosX = static_cast<double>(h->m_screenX);
     m_movePosY = static_cast<double>(h->m_screenY);
 }
-
-// Registered methods have zero adjustment to the primary CUserLogic base.
-#define ToActHandler(handler) static_cast<CActHandler>(handler)
-
-#define STORE_GRUNT_ACT(registry, id, handler)                                                     \
-    {                                                                                              \
-        CActHandler& slot = (registry)[id];                                                        \
-        slot = (handler);                                                                          \
-    }
-
-#define BIND_GRUNT_ACT(registry, id, handler)                                                      \
-    {                                                                                              \
-        CActHandler converted = ToActHandler(handler);                                             \
-        STORE_GRUNT_ACT(registry, id, converted);                                                  \
-    }
-
-#define REGISTER_GRUNT_ACT_KEY(registry, key, handler)                                             \
-    {                                                                                              \
-        i32 id = ActFindId(key);                                                                   \
-        if (id == 0) {                                                                             \
-            ActInsertId(key, g_typeCounter);                                                       \
-            id = g_typeCounter;                                                                    \
-            g_typeColl[g_typeCounter] = (key);                                                     \
-            g_typeCounter++;                                                                       \
-        }                                                                                          \
-        BIND_GRUNT_ACT(registry, id, handler);                                                     \
-    }
 
 RVA(0x00057100, 0x590)
 i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
@@ -369,14 +307,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
 
     SoundCueRegistry* slot =
         (static_cast<CDDrawSurfaceMgr*>(m_ownerLogicRecord->m_ownerCtx))->m_soundRegistry;
-    if (slot->m_silentMode == false) {
-        SoundCue* sout = NULL;
-        MapLookup(slot->m_cues, s_gameAttack, sout);
-        if (sout != NULL) {
-
-            sout->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
-        }
-    }
+    slot->PlayCue(s_gameAttack);
 
     switch (idx) {
         case SPELL_FREEZE: {
@@ -641,8 +572,7 @@ void CGrunt::EnsureVehicleLoopSound(const char* key) {
         return;
     }
     CDDrawSurfaceMgr* world = g_gameReg->m_world;
-    SoundCue* cue = NULL;
-    MapLookup(world->m_soundRegistry->m_cues, key, cue);
+    SoundCue* cue = world->m_soundRegistry->FindCue(key);
     if (cue == NULL) {
         return;
     }
@@ -671,8 +601,7 @@ void CGrunt::EnsurePowerupLoopSound(const char* key) {
     if (sound != NULL) {
         return;
     }
-    SoundCue* cue = NULL;
-    MapLookup(g_gameReg->m_world->m_soundRegistry->m_cues, key, cue);
+    SoundCue* cue = g_gameReg->m_world->m_soundRegistry->FindCue(key);
     if (cue == NULL) {
         return;
     }
@@ -833,12 +762,12 @@ i32 CGrunt::PathScan() {
         }
 
         if (hits == GRUNT_COMBAT_FULL_SCAN_HITS) {
-            SCAN_BOUNDS(grid);
+            GRID_CLIP_NULL(grid);
             break;
         }
     }
 
-    SCAN_BOUNDS(grid);
+    GRID_CLIP_NULL(grid);
 
     RECT nb;
     nb.left = target.m_x - 4;
@@ -948,7 +877,7 @@ i32 CGrunt::PathScan() {
                                     }
                                 }
                             }
-                            SCAN_BOUNDS(grid);
+                            GRID_CLIP_NULL(grid);
                             return 1;
                         }
                     }
@@ -1844,42 +1773,7 @@ CObject* SoundCueRegistry::Lookup(const char* key) {
 }
 
 RVA(0x0005baf0, 0xf4)
-i32 DispatchGruntLogic(CGameObject* owner) {
-    CLogicRecord* record = owner->m_logicRecord;
-    switch (record->LogicEvent()) {
-        case ACT_UNINITIALISED: {
-            record->SetLogicEvent(ACT_LIVE);
-            CUserLogic* sub = new CGrunt(owner);
-            sub->Activate();
-            record->m_userLogic = sub;
-            break;
-        }
-        case ACT_OBJECT_REMOVED:
-            record->m_userLogic->OnObjectRemoved();
-            break;
-        case ACT_LEAVE_ACTIVE_REGION:
-            record->m_userLogic->OnLeaveActiveRegion();
-            break;
-        case ACT_PREPARE_SAVE:
-            record->m_userLogic->PrepareSave();
-            break;
-        case ACT_AFTER_LOAD_REFERENCES:
-            record->m_userLogic->AfterLoadReferences();
-            break;
-        case ACT_AFTER_LOAD:
-            record->m_userLogic->AfterLoad();
-            break;
-        case ACT_AFTER_SAVE:
-            record->m_userLogic->AfterSave();
-            break;
-        case ACT_LIVE:
-            break;
-        default:
-            DispatchUnhandledLogicEvent(record->m_userLogic);
-            break;
-    }
-    return 1;
-}
+i32 DispatchGruntLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CGrunt)}
 
 RVA(0x0005bcd0, 0x102)
 void CGrunt::FireActivation(i32 id) {

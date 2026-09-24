@@ -470,12 +470,6 @@ i32 RotateRasterize(
 
 // @early-stop
 
-static inline i16* Span16(u8* row) {
-    Pix16Ptr p;
-    p.m_bytes = row;
-    return p.m_swords;
-}
-
 RVA(0x00146a20, 0x5b7)
 i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mode, i32 colorkey) {
     i32 minY = 0x1001;

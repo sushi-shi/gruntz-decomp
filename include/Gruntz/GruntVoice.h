@@ -53,6 +53,4 @@ public:
     char m_pad74[0x78 - 0x74];
 };
 
-typedef i32 (CUserLogic::*CActHandler)();
-
 #endif // GRUNTZ_GRUNTZ_CGRUNTVOICE_H

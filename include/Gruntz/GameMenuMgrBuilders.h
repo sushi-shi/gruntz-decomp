@@ -5,7 +5,7 @@
 
 #include <Mfc.h>
 
-#include <Gruntz/SbGeom.h>
 #include <Ints.h>
+#include <MakeRect.h>
 
 #endif // GRUNTZ_CGAMEMENUMGR_BUILDERS_H

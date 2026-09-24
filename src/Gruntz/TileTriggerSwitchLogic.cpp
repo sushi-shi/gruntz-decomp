@@ -20,13 +20,16 @@
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LevelCollisionInline.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/TileActionEvent.h>
+#include <Gruntz/TileCoordMacros.h>
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/TileTriggerLogic.h>
+#include <Gruntz/TileTriggerSwitchInline.h>
 #include <Gruntz/TileTriggerTransition.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/UserLogic.h>
@@ -108,13 +111,11 @@ i32 CTileTriggerSwitchLogic::SwitchDown() {
     SET_WORKER_HOST_CELL(layer2, tileX, tileY, v);
     reg->m_tileGrid->ComputeCellFlags(tileX, tileY, v);
 
-    i32 px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
-    i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
+    DECLARE_TILE_CENTER_PIXEL_PAIR(px, py, m_tileX, m_tileY)
     if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
         SoundCueRegistry* h = g_gameReg->m_world->m_soundRegistry;
         if (h->m_silentMode == false) {
-            SoundCue* found = NULL;
-            MapLookup(h->m_cues, "GAME_SWITCHDOWN", found);
+            SoundCue* found = h->FindCue("GAME_SWITCHDOWN");
             SoundCue* spr = found;
             if (spr) {
                 b32 soundEnabled = g_soundEnabled;
@@ -146,13 +147,11 @@ i32 CTileTriggerSwitchLogic::SwitchUp() {
     SET_WORKER_HOST_CELL(layer2, tileX, tileY, v);
     reg->m_tileGrid->ComputeCellFlags(tileX, tileY, v);
 
-    i32 px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
-    i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
+    DECLARE_TILE_CENTER_PIXEL_PAIR(px, py, m_tileX, m_tileY)
     if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
         SoundCueRegistry* h = g_gameReg->m_world->m_soundRegistry;
         if (h->m_silentMode == false) {
-            SoundCue* found = NULL;
-            MapLookup(h->m_cues, "GAME_SWITCHUP", found);
+            SoundCue* found = h->FindCue("GAME_SWITCHUP");
             SoundCue* spr = found;
             if (spr) {
                 b32 soundEnabled = g_soundEnabled;
@@ -190,52 +189,6 @@ i32 CTileTriggerLogic::FindIndexByKey(i32 key) {
         }
     }
     return 0;
-}
-
-static __inline TileCollisionKind PbResolveCell(CGameLevel* level, i32 x, i32 y) {
-    if (x < 0) {
-        x = 0;
-    } else if (x >= level->m_mainPlane->m_tileColumns) {
-        x = level->m_mainPlane->m_tileColumns - 1;
-    }
-    if (y < 0) {
-        y = 0;
-    } else if (y >= level->m_mainPlane->m_tileRows) {
-        y = level->m_mainPlane->m_tileRows - 1;
-    }
-    CDDrawWorkerHost* plane = level->m_mainPlane;
-    i32 cell = plane->m_tileHandles[plane->m_tileRowOffsets[y] + x];
-    if (cell == UNINIT_FILL || cell == s_tileClear) {
-        return TILEKIND_PASSABLE;
-    }
-
-    CTileImageSet* set =
-        static_cast<CTileImageSet*>(level->m_imageSets[cell & WWD_TILE_IMAGE_SET_INDEX_MASK]);
-    return set->GetCollisionAt(0, 0);
-}
-
-static __inline TileCollisionKind PbResolveCellHandle(CGameLevel* level, i32 x, i32 y) {
-    if (x < 0) {
-        x = 0;
-    } else if (x >= level->m_mainPlane->m_tileColumns) {
-        x = level->m_mainPlane->m_tileColumns - 1;
-    }
-    if (y < 0) {
-        y = 0;
-    } else if (y >= level->m_mainPlane->m_tileRows) {
-        y = level->m_mainPlane->m_tileRows - 1;
-    }
-    i32 cell = level->m_mainPlane->GetTileHandle(x, y);
-    if (cell == UNINIT_FILL || cell == s_tileClear) {
-        return TILEKIND_PASSABLE;
-    }
-    CTileImageSet* set =
-        static_cast<CTileImageSet*>(level->m_imageSets[cell & WWD_TILE_IMAGE_SET_INDEX_MASK]);
-    return set->GetCollisionAt(0, 0);
-}
-
-static __inline char* PbStr(const CString& s) {
-    return const_cast<char*>(static_cast<const char*>(s));
 }
 
 RVA(0x00110860, 0x2e6)
@@ -342,8 +295,7 @@ i32 CTileTriggerLogic::Tick() {
     TileCollisionKind srcId = PbResolveCell(world->m_level, m_tileX, m_tileY);
 
     {
-        i32 sy = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
-        i32 sx = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
+        DECLARE_TILE_CENTER_PIXEL_PAIR_Y_FIRST(sy, sx, m_tileY, m_tileX)
         POINT pt;
         pt.x = sx;
         pt.y = sy;
@@ -853,8 +805,7 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
         }
     }
 
-    i32 cx = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
-    i32 cy = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
+    DECLARE_TILE_CENTER_PIXEL_PAIR(cx, cy, m_tileX, m_tileY)
     g_gameReg->m_triggerMgr
         ->SpawnPowerupIcon(m_powerupType, cx, cy, static_cast<i32>(m_dutyOffSpan), 1, 0);
 
@@ -873,15 +824,13 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
         txt->m_smarts = m_textId;
     }
 
-    i32 by = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
-    i32 bx = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
+    DECLARE_TILE_CENTER_PIXEL_PAIR_Y_FIRST(by, bx, m_tileY, m_tileX)
     if (!::PtInRect(&g_gameReg->m_viewBounds, bx, by)) {
         return 0;
     }
     SoundCueRegistry* sreg = g_gameReg->m_world->m_soundRegistry;
     if (sreg->m_silentMode == false) {
-        SoundCue* found = NULL;
-        MapLookup(sreg->m_cues, "LEVEL_ROCKBREAK", found);
+        SoundCue* found = sreg->FindCue("LEVEL_ROCKBREAK");
         SoundCue* out = found;
         if (out != NULL) {
             i32 volumePercent = g_soundVolumePercent;
@@ -945,8 +894,7 @@ i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
         }
     }
     CGruntzMgr* reg = g_gameReg;
-    i32 px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
-    i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
+    DECLARE_TILE_CENTER_PIXEL_PAIR(px, py, m_tileX, m_tileY)
     reg->m_triggerMgr
         ->SpawnPowerupIcon(static_cast<PickupType>(m_dutyOnSpan), px, py, m_dutyOffSpan, 1, 0);
     if (m_leadInSpan != 0) {
@@ -1088,8 +1036,7 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
     if (ok == false) {
         return 0;
     }
-    i32 px = (tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
-    i32 py = (tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
+    DECLARE_TILE_CENTER_PIXEL_PAIR(px, py, tileX, tileY)
     if (checkpointType != 0) {
         CWwdSpriteObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
             0,
@@ -1364,8 +1311,7 @@ i32 CTileActionEvent::BreakTopBrick(CGrunt* grunt) {
                 -1
             );
         } else if (brickEffect == BRICKTILE_GOLD_1) {
-            i32 px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
-            i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
+            DECLARE_TILE_CENTER_PIXEL_PAIR(px, py, m_tileX, m_tileY)
             if (::PtInRect(&g_gameReg->m_viewBounds, px, py)
                 && g_gameReg->m_world->m_soundRegistry->m_silentMode == false) {
                 SoundCue* snd = static_cast<SoundCue*>(
@@ -1398,8 +1344,7 @@ i32 CTileActionEvent::BreakTopBrick(CGrunt* grunt) {
         }
     }
 
-    i32 px = (m_tileX << TILE_SHIFT_PX) + TILE_HALF_PX;
-    i32 py = (m_tileY << TILE_SHIFT_PX) + TILE_HALF_PX;
+    DECLARE_TILE_CENTER_PIXEL_PAIR(px, py, m_tileX, m_tileY)
     if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
         CWwdSpriteObject* spr = g_gameReg->m_world->m_childGroup->CreateSprite(
             0,
@@ -1890,8 +1835,7 @@ i32 SoundCueRegistry::PlayCueIfElapsed(const char* key) {
     if (m_silentMode != false) {
         return 0;
     }
-    SoundCue* found = NULL;
-    MapLookup(m_cues, key, found);
+    SoundCue* found = FindCue(key);
     if (found == NULL) {
         return 0;
     }

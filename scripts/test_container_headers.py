@@ -99,6 +99,20 @@ bool macro_different(const CUserLogic* logic) { return ANIMATION_ACT_DIFFERS_FOR
 void use(i32 id) { GetAnimationActName(id).Empty(); }
 ''')
 
+    def test_shared_helpers_use_recovered_container_types(self):
+        self.compile('''#include <Gruntz/MenuStateInline.h>
+#include <Gruntz/SplashStateInline.h>
+''')
+        self.compile('''#include <Gruntz/ActReg.h>
+#include <Gruntz/Grunt.h>
+#include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/GruntActRegMacros.h>
+CActHandler* lookup(i32 id) { return ResolveRegisteredAct<CGrunt>(id); }
+void bind(CActReg& registry) {
+    REGISTER_GRUNT_ACT_KEY(registry, "A", &CGrunt::FinishEntranceMove);
+}
+''')
+
     def test_pool_layout_and_payload_are_independent_of_coord(self):
         self.compile('''#include <Utils/FreeNodePool.h>
 struct Payload { int x, y; };

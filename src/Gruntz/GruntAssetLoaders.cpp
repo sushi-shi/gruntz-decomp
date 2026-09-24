@@ -58,32 +58,6 @@ DATA(0x0020e158)
 static char s_deathzSquash[] = "GRUNTZ_DEATHZ_SQUASH";
 static const char s_normalgruntDeath[] = "GRUNTZ_NORMALGRUNT_DEATH";
 
-#define DEATH_FRAME()                                                                              \
-    (static_cast<CAniRecordView*>(                                                                 \
-         m_wwdObject->m_animationCursor.m_animation->m_records.GetSize() > 0                       \
-             ? m_wwdObject->m_animationCursor.m_animation->m_records.GetAt(0)                      \
-             : NULL                                                                                \
-    )                                                                                              \
-         ->m_param)
-
-#define DEATH_CUE(tag)                                                                             \
-    do {                                                                                           \
-        CGruntzMgr* _g = g_gameReg;                                                                \
-        if (CGameLevel::PointInBounds(                                                             \
-                &_g->m_world->m_level->m_mainPlane->m_planeViewRect,                               \
-                m_object->m_screenX,                                                               \
-                m_object->m_screenY                                                                \
-            )) {                                                                                   \
-            _g->m_voiceManager->PlayVoice(this, (tag), -1, 0, -1, -1);                             \
-        }                                                                                          \
-    } while (0)
-
-static inline CAniElement* LookupAnim(CMapStringToPtr& map, LPCTSTR name) {
-    CAniElement* found = NULL;
-    MapLookup(map, name, found);
-    return found;
-}
-
 // @early-stop
 RVA(0x00060150, 0xdd0)
 i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerIndex) {
@@ -226,7 +200,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
                 }
                 SNAP_OBJECT_TO_TILE_CENTER(m_object)
             } else {
-                m_poseDeath = LookupAnim(
+                m_poseDeath = LookupAnimation(
                     m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
                     s_deathzFall2
                 );
@@ -240,7 +214,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
         }
 
         case DEATH_ELECTROCUTE: {
-            m_poseDeath = LookupAnim(
+            m_poseDeath = LookupAnimation(
                 m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
                 s_deathzElectrocute
             );
@@ -252,7 +226,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
 
         case DEATH_MELT: {
             SnapToLastTile(1);
-            m_poseDeath = LookupAnim(
+            m_poseDeath = LookupAnimation(
                 m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
                 "GRUNTZ_DEATHZ_MELT"
             );
@@ -263,8 +237,10 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
         }
 
         case DEATH_KAROKE: {
-            m_poseDeath =
-                LookupAnim(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_deathzKaroke);
+            m_poseDeath = LookupAnimation(
+                m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+                s_deathzKaroke
+            );
             SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
             APPLY_LOOKUP_SPRITE_INLINE(s_deathzKaroke, DEATH_FRAME());
             DEATH_CUE(0x358);
@@ -276,8 +252,10 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
                 SwitchAnimation(m_poseDeath);
                 goto pathA;
             }
-            m_poseDeath =
-                LookupAnim(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_deathzExplode);
+            m_poseDeath = LookupAnimation(
+                m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+                s_deathzExplode
+            );
             SwitchAnimation(m_poseDeath);
             APPLY_LOOKUP_SPRITE_INLINE(s_deathzExplode, DEATH_FRAME());
             DEATH_CUE(0x354);
@@ -285,8 +263,10 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
         }
 
         case DEATH_DRAIN: {
-            m_poseDeath =
-                LookupAnim(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_exitzDrain);
+            m_poseDeath = LookupAnimation(
+                m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+                s_exitzDrain
+            );
             SwitchAnimation(m_poseDeath);
             APPLY_LOOKUP_SPRITE_INLINE("GRUNTZ_EXITZ", DEATH_FRAME());
             SET_ANIMATION_ACT("B");

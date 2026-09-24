@@ -19,7 +19,8 @@
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/InputDeviceGroup.h>
-#include <Gruntz/LogicRecordDispatchInline.h>
+#include <Gruntz/LogicEventDispatch.h>
+#include <Gruntz/LogicRecordHandler.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SecretLevelTrigger.h>
 #include <Gruntz/SecretTeleporterTrigger.h>
@@ -249,381 +250,35 @@ BOOL CALLBACK EditDwRectsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
 }
 
 RVA(0x0003d2b0, 0xf1)
-i32 DispatchGruntStartingPointLogic(CGameObject* owner) {
-    CLogicRecord* record = owner->m_logicRecord;
-    switch (record->LogicEvent()) {
-        case ACT_UNINITIALISED: {
-            record->SetLogicEvent(ACT_LIVE);
-            CUserLogic* sub = new CGruntStartingPoint(owner);
-            sub->Activate();
-            record->m_userLogic = sub;
-            break;
-        }
-        case ACT_OBJECT_REMOVED:
-            record->m_userLogic->OnObjectRemoved();
-            break;
-        case ACT_LEAVE_ACTIVE_REGION:
-            record->m_userLogic->OnLeaveActiveRegion();
-            break;
-        case ACT_PREPARE_SAVE:
-            record->m_userLogic->PrepareSave();
-            break;
-        case ACT_AFTER_LOAD_REFERENCES:
-            record->m_userLogic->AfterLoadReferences();
-            break;
-        case ACT_AFTER_LOAD:
-            record->m_userLogic->AfterLoad();
-            break;
-        case ACT_AFTER_SAVE:
-            record->m_userLogic->AfterSave();
-            break;
-        case ACT_LIVE:
-            break;
-        default:
-            DispatchUnhandledLogicEvent(record->m_userLogic);
-            break;
-    }
-    return 1;
-}
+i32 DispatchGruntStartingPointLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CGruntStartingPoint)}
 
 RVA(0x0003d3f0, 0xf1)
-i32 DispatchExitTriggerLogic(CGameObject* owner) {
-    CLogicRecord* record = owner->m_logicRecord;
-    switch (record->LogicEvent()) {
-        case ACT_UNINITIALISED: {
-            record->SetLogicEvent(ACT_LIVE);
-            CUserLogic* sub = new CExitTrigger(owner);
-            sub->Activate();
-            record->m_userLogic = sub;
-            break;
-        }
-        case ACT_OBJECT_REMOVED:
-            record->m_userLogic->OnObjectRemoved();
-            break;
-        case ACT_LEAVE_ACTIVE_REGION:
-            record->m_userLogic->OnLeaveActiveRegion();
-            break;
-        case ACT_PREPARE_SAVE:
-            record->m_userLogic->PrepareSave();
-            break;
-        case ACT_AFTER_LOAD_REFERENCES:
-            record->m_userLogic->AfterLoadReferences();
-            break;
-        case ACT_AFTER_LOAD:
-            record->m_userLogic->AfterLoad();
-            break;
-        case ACT_AFTER_SAVE:
-            record->m_userLogic->AfterSave();
-            break;
-        case ACT_LIVE:
-            break;
-        default:
-            DispatchUnhandledLogicEvent(record->m_userLogic);
-            break;
-    }
-    return 1;
-}
+i32 DispatchExitTriggerLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CExitTrigger)}
 
 RVA(0x0003d530, 0xf1)
-i32 DispatchGruntCreationPointLogic(CGameObject* owner) {
-    CLogicRecord* record = owner->m_logicRecord;
-    switch (record->LogicEvent()) {
-        case ACT_UNINITIALISED: {
-            record->SetLogicEvent(ACT_LIVE);
-            CUserLogic* sub = new CGruntCreationPoint(owner);
-            sub->Activate();
-            record->m_userLogic = sub;
-            break;
-        }
-        case ACT_OBJECT_REMOVED:
-            record->m_userLogic->OnObjectRemoved();
-            break;
-        case ACT_LEAVE_ACTIVE_REGION:
-            record->m_userLogic->OnLeaveActiveRegion();
-            break;
-        case ACT_PREPARE_SAVE:
-            record->m_userLogic->PrepareSave();
-            break;
-        case ACT_AFTER_LOAD_REFERENCES:
-            record->m_userLogic->AfterLoadReferences();
-            break;
-        case ACT_AFTER_LOAD:
-            record->m_userLogic->AfterLoad();
-            break;
-        case ACT_AFTER_SAVE:
-            record->m_userLogic->AfterSave();
-            break;
-        case ACT_LIVE:
-            break;
-        default:
-            DispatchUnhandledLogicEvent(record->m_userLogic);
-            break;
-    }
-    return 1;
-}
+i32 DispatchGruntCreationPointLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CGruntCreationPoint)}
 
 RVA(0x0003d670, 0xf1)
-i32 DispatchWormholeLogic(CGameObject* owner) {
-    CLogicRecord* record = owner->m_logicRecord;
-    switch (record->LogicEvent()) {
-        case ACT_UNINITIALISED: {
-            record->SetLogicEvent(ACT_LIVE);
-            CUserLogic* sub = new CWormhole(owner);
-            sub->Activate();
-            record->m_userLogic = sub;
-            break;
-        }
-        case ACT_OBJECT_REMOVED:
-            record->m_userLogic->OnObjectRemoved();
-            break;
-        case ACT_LEAVE_ACTIVE_REGION:
-            record->m_userLogic->OnLeaveActiveRegion();
-            break;
-        case ACT_PREPARE_SAVE:
-            record->m_userLogic->PrepareSave();
-            break;
-        case ACT_AFTER_LOAD_REFERENCES:
-            record->m_userLogic->AfterLoadReferences();
-            break;
-        case ACT_AFTER_LOAD:
-            record->m_userLogic->AfterLoad();
-            break;
-        case ACT_AFTER_SAVE:
-            record->m_userLogic->AfterSave();
-            break;
-        case ACT_LIVE:
-            break;
-        default:
-            DispatchUnhandledLogicEvent(record->m_userLogic);
-            break;
-    }
-    return 1;
-}
+i32 DispatchWormholeLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CWormhole)}
 
 RVA(0x0003d7b0, 0xf1)
-i32 DispatchGruntPuddleLogic(CGameObject* owner) {
-    CLogicRecord* record = owner->m_logicRecord;
-    switch (record->LogicEvent()) {
-        case ACT_UNINITIALISED: {
-            record->SetLogicEvent(ACT_LIVE);
-            CUserLogic* sub = new CGruntPuddle(owner);
-            sub->Activate();
-            record->m_userLogic = sub;
-            break;
-        }
-        case ACT_OBJECT_REMOVED:
-            record->m_userLogic->OnObjectRemoved();
-            break;
-        case ACT_LEAVE_ACTIVE_REGION:
-            record->m_userLogic->OnLeaveActiveRegion();
-            break;
-        case ACT_PREPARE_SAVE:
-            record->m_userLogic->PrepareSave();
-            break;
-        case ACT_AFTER_LOAD_REFERENCES:
-            record->m_userLogic->AfterLoadReferences();
-            break;
-        case ACT_AFTER_LOAD:
-            record->m_userLogic->AfterLoad();
-            break;
-        case ACT_AFTER_SAVE:
-            record->m_userLogic->AfterSave();
-            break;
-        case ACT_LIVE:
-            break;
-        default:
-            DispatchUnhandledLogicEvent(record->m_userLogic);
-            break;
-    }
-    return 1;
-}
+i32 DispatchGruntPuddleLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CGruntPuddle)}
 
 RVA(0x0003d8f0, 0xf1)
-i32 DispatchTeleporterLogic(CGameObject* owner) {
-    CLogicRecord* record = owner->m_logicRecord;
-    switch (record->LogicEvent()) {
-        case ACT_UNINITIALISED: {
-            record->SetLogicEvent(ACT_LIVE);
-            CUserLogic* sub = new CTeleporter(owner);
-            sub->Activate();
-            record->m_userLogic = sub;
-            break;
-        }
-        case ACT_OBJECT_REMOVED:
-            record->m_userLogic->OnObjectRemoved();
-            break;
-        case ACT_LEAVE_ACTIVE_REGION:
-            record->m_userLogic->OnLeaveActiveRegion();
-            break;
-        case ACT_PREPARE_SAVE:
-            record->m_userLogic->PrepareSave();
-            break;
-        case ACT_AFTER_LOAD_REFERENCES:
-            record->m_userLogic->AfterLoadReferences();
-            break;
-        case ACT_AFTER_LOAD:
-            record->m_userLogic->AfterLoad();
-            break;
-        case ACT_AFTER_SAVE:
-            record->m_userLogic->AfterSave();
-            break;
-        case ACT_LIVE:
-            break;
-        default:
-            DispatchUnhandledLogicEvent(record->m_userLogic);
-            break;
-    }
-    return 1;
-}
+i32 DispatchTeleporterLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CTeleporter)}
 
 RVA(0x0003da30, 0xf1)
-i32 DispatchSecretTeleporterTriggerLogic(CGameObject* owner) {
-    CLogicRecord* record = owner->m_logicRecord;
-    switch (record->LogicEvent()) {
-        case ACT_UNINITIALISED: {
-            record->SetLogicEvent(ACT_LIVE);
-            CUserLogic* sub = new CSecretTeleporterTrigger(owner);
-            sub->Activate();
-            record->m_userLogic = sub;
-            break;
-        }
-        case ACT_OBJECT_REMOVED:
-            record->m_userLogic->OnObjectRemoved();
-            break;
-        case ACT_LEAVE_ACTIVE_REGION:
-            record->m_userLogic->OnLeaveActiveRegion();
-            break;
-        case ACT_PREPARE_SAVE:
-            record->m_userLogic->PrepareSave();
-            break;
-        case ACT_AFTER_LOAD_REFERENCES:
-            record->m_userLogic->AfterLoadReferences();
-            break;
-        case ACT_AFTER_LOAD:
-            record->m_userLogic->AfterLoad();
-            break;
-        case ACT_AFTER_SAVE:
-            record->m_userLogic->AfterSave();
-            break;
-        case ACT_LIVE:
-            break;
-        default:
-            DispatchUnhandledLogicEvent(record->m_userLogic);
-            break;
-    }
-    return 1;
+i32 DispatchSecretTeleporterTriggerLogic(CGameObject* owner){
+    LOGIC_RECORD_DISPATCH(CSecretTeleporterTrigger)
 }
 
 RVA(0x0003db70, 0xf4)
-i32 DispatchWarlordLogic(CGameObject* owner) {
-    CLogicRecord* record = owner->m_logicRecord;
-    switch (record->LogicEvent()) {
-        case ACT_UNINITIALISED: {
-            record->SetLogicEvent(ACT_LIVE);
-            CUserLogic* sub = new CWarlord(owner);
-            sub->Activate();
-            record->m_userLogic = sub;
-            break;
-        }
-        case ACT_OBJECT_REMOVED:
-            record->m_userLogic->OnObjectRemoved();
-            break;
-        case ACT_LEAVE_ACTIVE_REGION:
-            record->m_userLogic->OnLeaveActiveRegion();
-            break;
-        case ACT_PREPARE_SAVE:
-            record->m_userLogic->PrepareSave();
-            break;
-        case ACT_AFTER_LOAD_REFERENCES:
-            record->m_userLogic->AfterLoadReferences();
-            break;
-        case ACT_AFTER_LOAD:
-            record->m_userLogic->AfterLoad();
-            break;
-        case ACT_AFTER_SAVE:
-            record->m_userLogic->AfterSave();
-            break;
-        case ACT_LIVE:
-            break;
-        default:
-            DispatchUnhandledLogicEvent(record->m_userLogic);
-            break;
-    }
-    return 1;
-}
+i32 DispatchWarlordLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CWarlord)}
 
 RVA(0x0003dcb0, 0xf1)
-i32 DispatchFortressFlagLogic(CGameObject* owner) {
-    CLogicRecord* record = owner->m_logicRecord;
-    switch (record->LogicEvent()) {
-        case ACT_UNINITIALISED: {
-            record->SetLogicEvent(ACT_LIVE);
-            CUserLogic* sub = new CFortressFlag(owner);
-            sub->Activate();
-            record->m_userLogic = sub;
-            break;
-        }
-        case ACT_OBJECT_REMOVED:
-            record->m_userLogic->OnObjectRemoved();
-            break;
-        case ACT_LEAVE_ACTIVE_REGION:
-            record->m_userLogic->OnLeaveActiveRegion();
-            break;
-        case ACT_PREPARE_SAVE:
-            record->m_userLogic->PrepareSave();
-            break;
-        case ACT_AFTER_LOAD_REFERENCES:
-            record->m_userLogic->AfterLoadReferences();
-            break;
-        case ACT_AFTER_LOAD:
-            record->m_userLogic->AfterLoad();
-            break;
-        case ACT_AFTER_SAVE:
-            record->m_userLogic->AfterSave();
-            break;
-        case ACT_LIVE:
-            break;
-        default:
-            DispatchUnhandledLogicEvent(record->m_userLogic);
-            break;
-    }
-    return 1;
-}
+i32 DispatchFortressFlagLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CFortressFlag)}
 
 RVA(0x0003ddf0, 0xf1)
 i32 DispatchSecretLevelTriggerLogic(CGameObject* owner) {
-    CLogicRecord* record = owner->m_logicRecord;
-    switch (record->LogicEvent()) {
-        case ACT_UNINITIALISED: {
-            record->SetLogicEvent(ACT_LIVE);
-            CUserLogic* sub = new CSecretLevelTrigger(owner);
-            sub->Activate();
-            record->m_userLogic = sub;
-            break;
-        }
-        case ACT_OBJECT_REMOVED:
-            record->m_userLogic->OnObjectRemoved();
-            break;
-        case ACT_LEAVE_ACTIVE_REGION:
-            record->m_userLogic->OnLeaveActiveRegion();
-            break;
-        case ACT_PREPARE_SAVE:
-            record->m_userLogic->PrepareSave();
-            break;
-        case ACT_AFTER_LOAD_REFERENCES:
-            record->m_userLogic->AfterLoadReferences();
-            break;
-        case ACT_AFTER_LOAD:
-            record->m_userLogic->AfterLoad();
-            break;
-        case ACT_AFTER_SAVE:
-            record->m_userLogic->AfterSave();
-            break;
-        case ACT_LIVE:
-            break;
-        default:
-            DispatchUnhandledLogicEvent(record->m_userLogic);
-            break;
-    }
-    return 1;
+    LOGIC_RECORD_DISPATCH(CSecretLevelTrigger)
 }

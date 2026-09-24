@@ -18,7 +18,9 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntVoiceActReg.h>
+#include <Gruntz/GruntVoiceInline.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LogicRecordHandler.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
@@ -87,80 +89,10 @@ void ButeParseErrorSink(const char* msg) {
 }
 
 RVA(0x00119620, 0xf1)
-i32 DispatchGruntVoiceLogic(CGameObject* obj) {
-    CLogicRecord* record = obj->m_logicRecord;
-    switch (record->LogicEvent()) {
-        case ACT_UNINITIALISED: {
-            record->SetLogicEvent(ACT_LIVE);
-            CGruntVoice* t = new CGruntVoice(obj);
-            t->Activate();
-            record->m_userLogic = t;
-            break;
-        }
-        case ACT_OBJECT_REMOVED:
-            record->m_userLogic->OnObjectRemoved();
-            break;
-        case ACT_LEAVE_ACTIVE_REGION:
-            record->m_userLogic->OnLeaveActiveRegion();
-            break;
-        case ACT_PREPARE_SAVE:
-            record->m_userLogic->PrepareSave();
-            break;
-        case ACT_AFTER_SAVE:
-            record->m_userLogic->AfterSave();
-            break;
-        case ACT_AFTER_LOAD:
-            record->m_userLogic->AfterLoad();
-            break;
-        case ACT_AFTER_LOAD_REFERENCES:
-            record->m_userLogic->AfterLoadReferences();
-            break;
-        case ACT_LIVE:
-            break;
-        default:
-            DispatchLogicEvent(record->m_userLogic);
-            break;
-    }
-    return 1;
-}
+i32 DispatchGruntVoiceLogic(CGameObject* obj){TILE_LOGIC_RECORD_DISPATCH(CGruntVoice)}
 
 RVA(0x00119760, 0xf1)
-i32 DispatchVoiceTriggerLogic(CGameObject* obj) {
-    CLogicRecord* record = obj->m_logicRecord;
-    switch (record->LogicEvent()) {
-        case ACT_UNINITIALISED: {
-            record->SetLogicEvent(ACT_LIVE);
-            CVoiceTrigger* t = new CVoiceTrigger(obj);
-            t->Activate();
-            record->m_userLogic = t;
-            break;
-        }
-        case ACT_OBJECT_REMOVED:
-            record->m_userLogic->OnObjectRemoved();
-            break;
-        case ACT_LEAVE_ACTIVE_REGION:
-            record->m_userLogic->OnLeaveActiveRegion();
-            break;
-        case ACT_PREPARE_SAVE:
-            record->m_userLogic->PrepareSave();
-            break;
-        case ACT_AFTER_SAVE:
-            record->m_userLogic->AfterSave();
-            break;
-        case ACT_AFTER_LOAD:
-            record->m_userLogic->AfterLoad();
-            break;
-        case ACT_AFTER_LOAD_REFERENCES:
-            record->m_userLogic->AfterLoadReferences();
-            break;
-        case ACT_LIVE:
-            break;
-        default:
-            DispatchLogicEvent(record->m_userLogic);
-            break;
-    }
-    return 1;
-}
+i32 DispatchVoiceTriggerLogic(CGameObject* obj){TILE_LOGIC_RECORD_DISPATCH(CVoiceTrigger)}
 
 // @early-stop
 RVA(0x001198a0, 0x195)
@@ -286,67 +218,6 @@ RVA(0x0011a8c0, 0xf)
 i32 CGruntVoice::HideIndicator() {
     m_object->m_stateFlags |= SPRITE_STATE_HIDDEN;
     return 0;
-}
-
-inline b32 CGruntVoice::PositionIndicatorAtLogicObject() {
-    CGameObject* out = NULL;
-    i32 sourceObjectId = m_sourceObjectId;
-    CGameObject* resolved;
-    if (MapLookupById(
-            g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
-            sourceObjectId,
-            out
-        )
-        == false) {
-        resolved = NULL;
-    } else if (out == NULL) {
-        resolved = NULL;
-    } else {
-        resolved = (out->GetClassId() == CLASSID_SERIALREF) ? out : NULL;
-    }
-    if (resolved == NULL) {
-        return false;
-    }
-    CUserLogic* logic = resolved->m_logicRecord->m_userLogic;
-    if (logic == NULL) {
-        return false;
-    }
-    m_object->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
-    m_object->m_screenX = logic->m_object->m_screenX;
-    m_object->m_screenY = logic->m_object->m_screenY - 0x32;
-    return true;
-}
-
-inline b32 CGruntVoice::PositionIndicatorAtSourceObject() {
-    CGameObject* out = NULL;
-    i32 sourceObjectId = m_sourceObjectId;
-    CGameObject* resolved;
-    if (MapLookupById(
-            g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
-            sourceObjectId,
-            out
-        )
-        == false) {
-        resolved = NULL;
-    } else if (out == NULL) {
-        resolved = NULL;
-    } else {
-        resolved = (out->GetClassId() == CLASSID_SERIALREF) ? out : NULL;
-    }
-
-    if (resolved != NULL) {
-        m_object->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
-        i32 dx = 0, dy = 0;
-        CImage* layer = static_cast<CWwdSpriteObject*>(resolved)->m_frameImage;
-        if (layer != NULL) {
-            dx = layer->m_originX;
-            dy = layer->m_originY;
-        }
-        m_object->m_screenX = resolved->m_screenX + dx;
-        m_object->m_screenY = resolved->m_screenY + dy - 0x32;
-        return true;
-    }
-    return false;
 }
 
 RVA(0x0011a8e0, 0x198)

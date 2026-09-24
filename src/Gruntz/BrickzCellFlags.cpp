@@ -6,6 +6,8 @@
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntMovementInline.h>
+#include <Gruntz/GruntNeighborhoodInline.h>
 #include <Gruntz/MapCellFlags.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/TriggerMgr.h>
@@ -14,10 +16,6 @@
 #include <Wap32/TileGeometry.h>
 
 #include <limits.h>
-
-static inline i32 SquaredDistance(i32 dx, i32 dy) {
-    return SQR(dx) + SQR(dy);
-}
 
 // @early-stop
 RVA(0x00077790, 0x4f0)
@@ -282,43 +280,6 @@ void CDDrawWorkerHost::SetCell(i32 x, i32 y, i32 id) {
     SET_WORKER_HOST_CELL(this, x, y, id);
 }
 
-static inline Coord ScreenPosition(CGameObject* object) {
-    Coord out;
-    i32 y = object->m_screenY;
-    i32 x = object->m_screenX;
-    out.m_y = y;
-    out.m_x = x;
-    return out;
-}
-
-static inline void ScreenTile(Coord* pos) {
-    pos->m_x >>= TILE_SHIFT_PX;
-    pos->m_y >>= TILE_SHIFT_PX;
-}
-
-static inline RECT TileNeighborhood(CGrunt* grunt) {
-    i32 halfBox = grunt->m_defenderRadius + grunt->m_reachRect.right + 1;
-    CGameObject* object = grunt->m_object;
-    Coord pt1 = ScreenPosition(object);
-    ScreenTile(&pt1);
-    i32 by = pt1.m_y;
-    Coord pt2 = ScreenPosition(object);
-    ScreenTile(&pt2);
-    i32 bx = pt2.m_x;
-    Coord pt3 = ScreenPosition(object);
-    ScreenTile(&pt3);
-    i32 topY = pt3.m_y;
-    Coord pt4 = ScreenPosition(object);
-    pt4.m_x >>= TILE_SHIFT_PX;
-    i32 leftX = pt4.m_x;
-    RECT box;
-    box.left = leftX - halfBox;
-    box.top = topY - halfBox;
-    box.right = bx + halfBox + 1;
-    box.bottom = by + halfBox + 1;
-    return box;
-}
-
 RVA(0x00077df0, 0x13d)
 CGrunt* CTriggerMgr::FindNearestEnemy(CGrunt* w) {
     CGrunt* best = NULL;
@@ -348,7 +309,7 @@ CGrunt* CTriggerMgr::FindNearestEnemy(CGrunt* w) {
             } while (--j != 0);
         }
     }
-    RECT rc = TileNeighborhood(w);
+    RECT rc = AttackTileNeighborhood(w);
     if (best) {
         Coord bestPos = ScreenPosition(best->m_object);
         POINT pt;

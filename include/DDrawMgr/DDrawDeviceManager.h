@@ -185,4 +185,8 @@ public:
 
 void BuildColorChannelTables();
 
+static inline i32 HasPalette(CDDrawDeviceManager* manager) {
+    return manager->m_hasPalette;
+}
+
 #endif // GRUNTZ_DDRAWMGR_DDRAWDEVICEMANAGER_H

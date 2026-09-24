@@ -7,6 +7,7 @@
 
 #include <Gruntz/AniRecordView.h>
 #include <Ints.h>
+#include <Utils/MapTyped.h>
 #include <Wap32/Object.h>
 
 struct CRezItm;
@@ -41,5 +42,24 @@ public:
     float m_scale;
     i32 m_durationMs;
 };
+
+inline CAniElement* LookupAnimation(CMapStringToPtr& map, LPCTSTR name) {
+    CAniElement* found = NULL;
+    MapLookup(map, name, found);
+    return found;
+}
+
+#define DELETE_ANI_ELEMENT_CONTENTS(index)                                                         \
+    for (index = 0; index < m_records.GetSize(); index++) {                                        \
+        CObject* item = m_records.GetAt(index);                                                    \
+        if (item != NULL) {                                                                        \
+            delete (static_cast<CAniRecordView*>(item));                                           \
+        }                                                                                          \
+    }                                                                                              \
+    if (m_name != NULL) {                                                                          \
+        delete[] m_name;                                                                           \
+        m_name = NULL;                                                                             \
+    }                                                                                              \
+    m_records.SetSize(0, -1)
 
 #endif // GRUNTZ_CANIELEMENT_H

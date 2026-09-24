@@ -126,4 +126,9 @@ public:
     CDDrawSurfaceMgr* m_attrMgr;
 };
 
+#define RESET_MAP_ARRAY_STORAGE                                                                    \
+    m_storage = NULL;                                                                              \
+    m_freeList = NULL;                                                                             \
+    m_count = 0
+
 #endif // SRC_GRUNTZ_MAPMGR_H

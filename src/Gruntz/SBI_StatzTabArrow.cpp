@@ -5,6 +5,7 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/WorkerLookup.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
@@ -30,12 +31,6 @@
 #include <Io/FileMem.h>
 
 #include <string.h>
-
-static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
-    CObject* found = NULL;
-    map.Lookup(name, found);
-    return static_cast<CDDrawWorker*>(found);
-}
 
 RVA(0x000ea0f0, 0x5c)
 void CSBI_StatzTabArrow::SetUnsampledDirection(StatusBarDock position, b32 animate) {

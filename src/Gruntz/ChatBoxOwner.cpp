@@ -9,11 +9,14 @@
 #include <Crypto/Blowfish.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDrawWorker.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/WorkerLookup.h>
 #include <Gruntz/CheatMgr.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegistryInline.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
@@ -27,12 +30,6 @@
 #include <ddraw.h>
 #include <string.h>
 #include <strstrea.h>
-
-inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
-    CObject* ob = NULL;
-    map.Lookup(name, ob);
-    return static_cast<CDDrawWorker*>(ob);
-}
 
 RVA(0x000204e0, 0x19)
 i32 CChatBoxOwner::Attach(CDDrawSurfaceMgr* world, CFontConfig* host) {
@@ -170,13 +167,13 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
     }
 
     if (self->m_mode == CHATBOX_WITH_HIDDEN_STATUSBAR) {
-        CImage* frame = static_cast<CImage*>(spr->m_items.GetAt(spr->m_maxIndex));
+        CImage* frame = DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, spr->m_maxIndex);
         if (!frame) {
             return 0;
         }
         frame->RenderFrame(target, self->m_originX + 0x140, self->m_originY + 0x20, 0);
     } else {
-        CImage* frame = static_cast<CImage*>(spr->m_items.GetAt(spr->m_minIndex));
+        CImage* frame = DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, spr->m_minIndex);
         if (!frame) {
             return 0;
         }
@@ -208,9 +205,6 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
     }
     surface->m_ddSurface->ReleaseDC(hdc);
     return 1;
-}
-static __inline tagSIZE ModeSize() {
-    return g_gameReg->m_modeSize;
 }
 
 RVA(0x00021140, 0xda)

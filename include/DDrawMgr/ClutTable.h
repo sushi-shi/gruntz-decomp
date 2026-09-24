@@ -35,4 +35,12 @@ static inline u16* ClutAtByteOffset(u32 byteOffset) {
     return cursor.m_words;
 }
 
+static inline u16 Clut16(u32 byteOffset) {
+    return *ClutAtByteOffset(byteOffset);
+}
+
+static inline void ClutStore16(u32 byteOffset, u16 v) {
+    *ClutAtByteOffset(byteOffset) = v;
+}
+
 #endif // DDRAWMGR_CLUTTABLE_H

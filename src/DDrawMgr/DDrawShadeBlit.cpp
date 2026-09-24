@@ -7,6 +7,7 @@
 #include <DDrawMgr/ClutTable.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/PaletteSize.h>
+#include <DDrawMgr/PixelFormatMacros.h>
 #include <DDrawMgr/PixelShift.h>
 #include <Enums.h>
 #include <Ints.h>
@@ -34,17 +35,6 @@ DATA(0x002bf21c)
 CShadeTable* g_dstBySrc16ShadeTable = NULL;
 DATA(0x002bf220)
 CShadeTable* g_palette16ShadeTable = NULL;
-
-static inline void Store16(u8* p, u16 v) {
-    Pix16Ptr c;
-    c.m_bytes = p;
-    *c.m_words = v;
-}
-static inline u16 Load16(const u8* p) {
-    Pix16CPtr c;
-    c.m_bytes = p;
-    return *c.m_words;
-}
 
 RVA(0x00148ce0, 0x2f)
 CDDrawShadeBlit::CDDrawShadeBlit() {
@@ -457,9 +447,7 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 
     i32 mode = src->m_bytesPerPixel;
     m_dstBpp = static_cast<u8>(mode);
     if (static_cast<u8>(mode) == PIXEL16_BYTES_PER_PIXEL) {
-        if (g_rDown == PIXEL16_RED_DOWN && g_gDown == RGB555_GREEN_DOWN
-            && g_bDown == PIXEL16_BLUE_DOWN && g_rUp == RGB555_RED_UP
-            && g_gUp == PIXEL16_GREEN_UP) {
+        if (PIXEL_FORMAT_IS_RGB555) {
             m_blendVariant = true;
         } else {
             m_blendVariant = false;

@@ -27,4 +27,19 @@ __inline i32 GetRandom(i32 lo, i32 hi) {
     return (rand() % (hi - lo + 1)) + lo;
 }
 
+static __inline i32 WapRand(i32 range) {
+    if (range == 0) {
+        return GetRandomNumber() & 1;
+    }
+    return GetRandomNumber() % range + 1;
+}
+
+static inline i32 RandRange(i32 lo, i32 hi) {
+    i32 range = hi - lo + 1;
+    if (range == 0) {
+        return (GetRandomNumber() & 1) ? lo : hi;
+    }
+    return GetRandomNumber() % range + lo;
+}
+
 #endif // GRUNTZ_GAMERAND_H

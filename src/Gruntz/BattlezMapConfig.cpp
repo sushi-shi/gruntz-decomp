@@ -11,6 +11,8 @@
 #include <DDrawMgr/DDrawWorkerHost.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/BattlezDifficulty.h>
+#include <Gruntz/BattlezGruntInline.h>
+#include <Gruntz/BattlezGruntMacros.h>
 #include <Gruntz/BattlezIntervalMs.h>
 #include <Gruntz/BattlezRouteMaskPreset.h>
 #include <Gruntz/BattlezTask.h>
@@ -39,6 +41,7 @@
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/ScanGridMacros.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/StaminaPct.h>
@@ -83,29 +86,6 @@ RVA_DYNINIT(0x0002d7c0, 0x5, s_gruntDirSpare)
 RVA_DYNINIT(0x0002d7e0, 0x20, s_gruntDirSpare)
 DATA(0x0022b73c)
 static GruntDirectionCell s_gruntDirSpare[3];
-
-static inline CGameObject* ListGetFirst(CDDrawChildGroup* list) {
-    list->m_walkCursor = list->m_list.GetHeadPosition();
-    if (list->m_walkCursor == NULL) {
-        return NULL;
-    }
-    return list->NextChild(list->m_walkCursor);
-}
-
-static inline CGameObject* ListGetNext(CDDrawChildGroup* list) {
-    if (list->m_walkCursor == NULL) {
-        return NULL;
-    }
-    return list->NextChild(list->m_walkCursor);
-}
-
-static inline i32 ScreenTileX(CGrunt* unit) {
-    return unit->m_object->m_screenX >> TILE_SHIFT_PX;
-}
-
-static inline i32 ScreenTileY(CGrunt* unit) {
-    return unit->m_object->m_screenY >> TILE_SHIFT_PX;
-}
 
 // @early-stop
 RVA(0x00024dc0, 0x158)
@@ -620,77 +600,6 @@ candidateFound:
     return 1;
 }
 
-static inline bool BattlezActDiffersFromIGLPJCR(CGrunt* unit) {
-    if (unit->IsAnimationAct("I")) {
-        return false;
-    }
-    if (unit->IsAnimationAct("G")) {
-        return false;
-    }
-    if (unit->IsAnimationAct("L")) {
-        return false;
-    }
-    if (unit->IsAnimationAct("P")) {
-        return false;
-    }
-    if (unit->IsAnimationAct("J")) {
-        return false;
-    }
-    if (unit->IsAnimationAct("C")) {
-        return false;
-    }
-    if (unit->IsAnimationAct("R")) {
-        return false;
-    }
-    return true;
-}
-
-static inline bool BattlezActDiffersFromCRCGLPJ(CGrunt* unit) {
-    if (!unit->IsNotAnimationAct("C")) {
-        return false;
-    }
-    if (!unit->IsNotAnimationAct("R")) {
-        return false;
-    }
-    if (!unit->IsNotAnimationAct("C")) {
-        return false;
-    }
-    if (!unit->IsNotAnimationAct("G")) {
-        return false;
-    }
-    if (!unit->IsNotAnimationAct("L")) {
-        return false;
-    }
-    if (!unit->IsNotAnimationAct("P")) {
-        return false;
-    }
-    if (!unit->IsNotAnimationAct("J")) {
-        return false;
-    }
-    return true;
-}
-
-static inline void ExcludeBattlezSpecialAct(CGrunt* unit, const char* name, i32& eligible) {
-    char equal = unit->IsAnimationAct(name);
-    if (equal) {
-        eligible = 0;
-    }
-}
-
-static inline bool UpdateBattlezSpecialEligibility(CGrunt* unit, i32& eligible) {
-    ExcludeBattlezSpecialAct(unit, "I", eligible);
-    ExcludeBattlezSpecialAct(unit, "G", eligible);
-    ExcludeBattlezSpecialAct(unit, "L", eligible);
-    char equal = unit->IsAnimationAct("P");
-    if (equal) {
-        return false;
-    }
-    ExcludeBattlezSpecialAct(unit, "J", eligible);
-    ExcludeBattlezSpecialAct(unit, "C", eligible);
-    ExcludeBattlezSpecialAct(unit, "R", eligible);
-    return true;
-}
-
 RVA(0x000267c0, 0x2850)
 i32 CBattlezMapConfig::StepRowUnits() {
     m_roundRobinTick++;
@@ -749,10 +658,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             && unit->m_deathAnimStarted == false && unit->m_entranceActive == false
                             && unit->m_poweredUp == false) {
                             if (BattlezActDiffersFromIGLPJCR(unit)) {
-                                PickupType st2 = unit->m_entranceReason;
-                                if (st2 > PICKUP_EQUIPPABLE_LAST) {
-                                    st2 = unit->m_toolId;
-                                }
+                                PickupType st2 = ArrivalPickup(unit);
                                 if (st2 == PICKUP_BRICK && unit->m_arrivalState == AI_DEFENDER
                                     && unit->m_defenderState == AISTATE_BATTLEZ_ROUTE_TARGET) {
                                     unit->LoadPickupSprites(PICKUP_NONE, 1, 0, 0, 1);
@@ -904,14 +810,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         }
                     reclampJoin: {
                         CMapMgr* bd = m_board;
-                        CRect r1(0, 0, bd->m_width, bd->m_height);
-                        RECT rc = CRect(0, 0, bd->m_width, bd->m_height);
-                        RECT* rcDst = &bd->m_bounds;
-                        if (!IntersectRect(rcDst, &rc, &r1)) {
-                            *rcDst = rc;
-                        }
-                        bd->m_gridW = rcDst->right - rcDst->left;
-                        bd->m_gridH = rcDst->bottom - rcDst->top;
+                        GRID_CLIP_NULL(bd)
                     }
                         {
                             i32 special = 1;
@@ -1004,10 +903,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                     if (static_cast<u32>(m_roundRobinTick) % TM_UNITS_PER_PLAYER
                         == static_cast<u32>(i)) {
                         {
-                            PickupType st3 = unit->m_entranceReason;
-                            if (st3 > PICKUP_EQUIPPABLE_LAST) {
-                                st3 = unit->m_toolId;
-                            }
+                            PickupType st3 = ArrivalPickup(unit);
                             if (st3 == PICKUP_WAND && unit->m_health > 0x1a) {
                                 if (rand() % g_diffTier == 0) {
                                     i32 r = g_buteMgr.GetInt("Spellz", "SpellRadius", 8);
@@ -1069,18 +965,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
         continue;
     dispatch: {
         CMapMgr* bd2 = m_board;
-        RECT a;
-        a.left = 0;
-        a.top = 0;
-        a.right = bd2->m_width;
-        a.bottom = bd2->m_height;
-        RECT fullBounds = CRect(0, 0, bd2->m_width, bd2->m_height);
-        RECT* clippedBounds = &bd2->m_bounds;
-        if (!IntersectRect(clippedBounds, &fullBounds, &a)) {
-            *clippedBounds = fullBounds;
-        }
-        bd2->m_gridW = clippedBounds->right - clippedBounds->left;
-        bd2->m_gridH = clippedBounds->bottom - clippedBounds->top;
+        SCAN_BOUNDS_PLAINCLIP(bd2)
         PickupType stX = unit->m_entranceReason;
         if (hit == 0) {
             switch (unit->m_battleState) {
@@ -2508,19 +2393,6 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
     return 0;
 }
 
-#define ARR_RECYCLE(g)                                                                             \
-    if ((g)->CoordCount() != 0) {                                                                  \
-        POSITION nd = (g)->CoordHead();                                                            \
-        while (nd != 0) {                                                                          \
-            POSITION cur = nd;                                                                     \
-            (g)->m_coordList.GetNext(nd);                                                          \
-            if (static_cast<Coord*>((g)->m_coordList.GetAt(cur)) != 0) {                           \
-                g_coordPool.Push(static_cast<Coord*>((g)->m_coordList.GetAt(cur)));                \
-            }                                                                                      \
-        }                                                                                          \
-        coordList->RemoveAll();                                                                    \
-    }
-
 // @identity-TODO BattlezMapConfigAcceptAlwaysArg - the surviving external
 // thunk and `ret 4` prove one callee-popped dword, but no use survives to prove
 // the original symbol name or whether this was a member.
@@ -3233,38 +3105,6 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
     return 1;
 }
 
-static inline i32 SquaredDistance(i32 dx, i32 dy) {
-    return SQR(dx) + SQR(dy);
-}
-
-static inline void BuildUnitSearchBox(CGrunt* unit, RECT* box, i32 radius) {
-    i32 bottom;
-    i32 right;
-    i32 top;
-    i32 left;
-    {
-        Coord bottomProbe;
-        Coord rightProbe;
-        Coord topProbe;
-        Coord leftProbe;
-        unit->GetScreenTile(&bottomProbe);
-        leftProbe.m_x = bottomProbe.m_x;
-        bottom = bottomProbe.m_y;
-        unit->GetScreenTile(&rightProbe);
-        leftProbe.m_y = rightProbe.m_y;
-        right = rightProbe.m_x;
-        unit->GetScreenTile(&topProbe);
-        leftProbe.m_x = topProbe.m_x;
-        top = topProbe.m_y;
-        unit->GetScreenTile(&leftProbe);
-        left = leftProbe.m_x;
-    }
-    box->left = left - radius;
-    box->top = top - radius;
-    box->right = right + radius;
-    box->bottom = bottom + radius;
-}
-
 // @early-stop
 RVA(0x0002e3a0, 0x7e1)
 i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
@@ -3767,10 +3607,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
             return 1;
         }
 
-        PickupType cur2 = unit->m_entranceReason;
-        if (cur2 > PICKUP_EQUIPPABLE_LAST) {
-            cur2 = unit->m_toolId;
-        }
+        PickupType cur2 = ArrivalPickup(unit);
         if (cur2 == PICKUP_NONE) {
             (static_cast<CGrunt*>(unit))->LoadPickupSprites(mode, 1, 0, 0, 1);
             return 1;

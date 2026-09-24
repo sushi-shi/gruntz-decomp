@@ -15,7 +15,6 @@ GZ_ENUM_CONST_BEGIN(DinInputConstants)
 GZ_ENUM_CONST_END(DinInputConstants)
 
 #define DINMGR2_FILE "C:\\Proj\\DinMgr2\\DinMgr2.cpp"
-#define INPUTDEVICE_FILE "C:\\Proj\\DinMgr2\\InputDevice.cpp"
 
 DATA(0x00253aa4)
 b32 g_dinputLogEnabled;
@@ -768,19 +767,6 @@ RVA(0x001343a0, 0xb)
 i32 CMouseDevice::IsReady() {
     return m_device2 != NULL;
 }
-
-#define UPDATE_BUTTON_EDGE(bit)                                                                    \
-    do {                                                                                           \
-        if (m_heldButtons & IDX(bit)) {                                                            \
-            if (m_buttonLatch & IDX(bit)) {                                                        \
-                m_pressedButtons &= ~IDX(bit);                                                     \
-            } else {                                                                               \
-                m_buttonLatch |= IDX(bit);                                                         \
-            }                                                                                      \
-        } else {                                                                                   \
-            m_buttonLatch &= ~IDX(bit);                                                            \
-        }                                                                                          \
-    } while (0)
 
 RVA(0x001343b0, 0x27e)
 i32 CMouseDevice::Poll() {

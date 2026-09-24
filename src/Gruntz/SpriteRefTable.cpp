@@ -273,16 +273,10 @@ i32 CSpriteRefTable::BuildToolToyColorTable(CRezMgr* src) {
     return 1;
 }
 
-static inline CDDrawPaletteResource* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
-    CObject* found = NULL;
-    map.Lookup(name, found);
-    return static_cast<CDDrawPaletteResource*>(found);
-}
-
 RVA(0x000e2890, 0xb6)
 CSpriteRef* CSpriteRefTable::Add(char* szName, ColorTint kind) {
     CDDrawPaletteResource* rec =
-        LookupWorker(m_spriteMgrHolder->m_paletteRegistry->m_palettesByName, szName);
+        LookupPaletteResource(m_spriteMgrHolder->m_paletteRegistry->m_palettesByName, szName);
     if (!rec) {
         return NULL;
     }
@@ -337,7 +331,7 @@ i32 CSpriteRefTable::LoadGruntzPalette(CRezMgr* src, const char* name) {
         return 0;
     }
 
-    if (LookupWorker(m_spriteMgrHolder->m_paletteRegistry->m_palettesByName, name)) {
+    if (LookupPaletteResource(m_spriteMgrHolder->m_paletteRegistry->m_palettesByName, name)) {
         return 1;
     }
 

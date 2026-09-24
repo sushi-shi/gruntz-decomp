@@ -20,7 +20,7 @@
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/InputDeviceGroup.h>
-#include <Gruntz/LogicRecordDispatchInline.h>
+#include <Gruntz/LogicEventDispatch.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SecretLevelTrigger.h>
 #include <Gruntz/SecretTeleporterTrigger.h>

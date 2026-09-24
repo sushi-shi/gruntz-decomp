@@ -19,7 +19,6 @@ extern char g_mapNameBuf[0x200];
 i32 LoadCustomWorldInfo(HWND hDlg);
 i32 FillLevelInfoDialog(HWND hDlg);
 i32 LoadCustomWorldSelection(HWND hWnd);
-i32 FileExists(const char* path);
 i32 FillCustomLevelList(HWND hWnd);
 
 BOOL CALLBACK CustomWorldInfoDlgProc(HWND, UINT, WPARAM, LPARAM);

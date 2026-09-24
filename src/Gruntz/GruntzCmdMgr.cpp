@@ -16,6 +16,7 @@
 #include <Gruntz/WwdGameReg.h>
 #include <Io/FileMem.h>
 #include <Rez/RezSync.h>
+#include <Utils/PackedReadWrite.h>
 #include <Wap32/TileGeometry.h>
 
 #include <string.h>
@@ -58,15 +59,6 @@ const u16 g_unitIndexBitTable[16] = {
     0x4000,
     0x8000
 };
-
-static inline i16 PeekI16(const char* p) {
-    i16 value;
-    memcpy(&value, p, sizeof(value));
-    return value;
-}
-static inline void PokeI16(char* p, i16 v) {
-    memcpy(p, &v, sizeof(v));
-}
 
 RVA(0x000239d0, 0xf)
 i32 CGruntzCmdMgr::SetManager(CGruntzMgr* manager) {

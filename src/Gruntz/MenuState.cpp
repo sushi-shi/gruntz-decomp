@@ -28,6 +28,7 @@
 #include <Gruntz/ImageState.h>
 #include <Gruntz/LevelPreview.h>
 #include <Gruntz/MainMenuBuilder.h>
+#include <Gruntz/MenuStateInline.h>
 #include <Gruntz/MenuTree.h>
 #include <Gruntz/MenuVersion.h>
 #include <Gruntz/Play.h>
@@ -62,12 +63,6 @@ DATA(0x0025160c)
 i32 g_versionMid = 0;
 DATA(0x00251610)
 i32 g_versionMinor = 0;
-
-static inline SoundCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
-    SoundCue* foundCue = NULL;
-    MapLookup(cues, name, foundCue);
-    return foundCue;
-}
 
 RVA(0x0008ce60, 0x55)
 CMenuState::~CMenuState() {
@@ -132,9 +127,9 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     menuTree->m_activationSoundKey = "MENU_ACTIVATE";
 
     {
-        SoundCue* activationCue = LookupCue(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
+        SoundCue* activationCue = LookupSoundCue(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
         if (activationCue != NULL) {
-            activationCue = LookupCue(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
+            activationCue = LookupSoundCue(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
             m_activateCueDurationMs = activationCue->m_sound->m_durationMs;
         } else {
             m_activateCueDurationMs = 0;
@@ -145,7 +140,7 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
         return 0;
     }
 
-    SoundCue* menuMusicCue = LookupCue(
+    SoundCue* menuMusicCue = LookupSoundCue(
         (static_cast<SoundCueRegistry*>(g_gameReg->m_world->m_soundRegistry))->m_cues,
         "MENU_MENU"
     );
@@ -283,50 +278,6 @@ i32 CMenuState::LeaveState(GameStateId) {
     while (timeGetTime() < start + m_activateCueDurationMs)
         ;
     return 1;
-}
-
-inline void CMenuState::HandleControllerInput() {
-    CInputDeviceGroup* actors = g_actorList;
-    i32 count = actors->m_count;
-    i32 i;
-    for (i = 0; i < count; i++) {
-        if (static_cast<u32>(actors->m_items[i]->m_pressedButtons) & IDX(INPUT_DOWN)) {
-            m_menuTree->MoveFocusDown();
-            return;
-        }
-    }
-    for (i = 0; i < count; i++) {
-        if (static_cast<u32>(actors->m_items[i]->m_pressedButtons) & IDX(INPUT_UP)) {
-            m_menuTree->MoveFocusUp();
-            return;
-        }
-    }
-    for (i = 0; i < count; i++) {
-        if (static_cast<u32>(actors->m_items[i]->m_pressedButtons) & IDX(INPUT_RIGHT)) {
-            m_menuTree->MoveFocusRight();
-            return;
-        }
-    }
-    for (i = 0; i < count; i++) {
-        if (static_cast<u32>(actors->m_items[i]->m_pressedButtons) & IDX(INPUT_LEFT)) {
-            m_menuTree->MoveFocusLeft();
-            return;
-        }
-    }
-    for (i = 0; i < count; i++) {
-        if (actors->m_items[i]->m_pressedButtons & IDX(INPUT_BUTTON0 | INPUT_BUTTON1)) {
-            m_menuTree->ActivateFocusedItem();
-            return;
-        }
-    }
-    for (i = 0; i < count; i++) {
-        if (actors->m_items[i]->m_pressedButtons & IDX(INPUT_BUTTON8)) {
-            if (!m_menuTree->ReturnToPreviousPage()) {
-                PostMessageA(owner()->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_NEXT_STATE), 0);
-            }
-            return;
-        }
-    }
 }
 
 RVA(0x000a0750, 0x1d0)

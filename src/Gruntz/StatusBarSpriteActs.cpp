@@ -6,6 +6,7 @@
 #include <Gruntz/ActReg.h>
 #include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/LogicRecordHandler.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
@@ -30,42 +31,7 @@ RVA_COMPGEN(0x00011b50, 0x1e, ??_GCStatusBarSprite@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011b80, 0x44, ??1CStatusBarSprite@@UAE@XZ)
 
 RVA(0x0010c0f0, 0xf1)
-i32 DispatchStatusBarSpriteLogic(CGameObject* obj) {
-    CLogicRecord* record = obj->m_logicRecord;
-    switch (record->LogicEvent()) {
-        case ACT_UNINITIALISED: {
-            record->SetLogicEvent(ACT_LIVE);
-            CStatusBarSprite* t = new CStatusBarSprite(obj);
-            t->Activate();
-            record->m_userLogic = t;
-            break;
-        }
-        case ACT_OBJECT_REMOVED:
-            record->m_userLogic->OnObjectRemoved();
-            break;
-        case ACT_LEAVE_ACTIVE_REGION:
-            record->m_userLogic->OnLeaveActiveRegion();
-            break;
-        case ACT_PREPARE_SAVE:
-            record->m_userLogic->PrepareSave();
-            break;
-        case ACT_AFTER_SAVE:
-            record->m_userLogic->AfterSave();
-            break;
-        case ACT_AFTER_LOAD:
-            record->m_userLogic->AfterLoad();
-            break;
-        case ACT_AFTER_LOAD_REFERENCES:
-            record->m_userLogic->AfterLoadReferences();
-            break;
-        case ACT_LIVE:
-            break;
-        default:
-            DispatchLogicEvent(record->m_userLogic);
-            break;
-    }
-    return 1;
-}
+i32 DispatchStatusBarSpriteLogic(CGameObject* obj){TILE_LOGIC_RECORD_DISPATCH(CStatusBarSprite)}
 
 RVA(0x0010c230, 0x178)
 CStatusBarSprite::CStatusBarSprite(CGameObject* obj)

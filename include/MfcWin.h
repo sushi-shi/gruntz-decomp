@@ -9,4 +9,11 @@
 #endif
 #include <afxwin.h>
 
+// Clang's header mirror qualifies VC5's implicit member-pointer addresses.
+#ifdef __clang__
+#define MFC_MESSAGE_MAP_CLASS(theClass) typedef theClass MfcMessageMapClass;
+#else
+#define MFC_MESSAGE_MAP_CLASS(theClass)
+#endif
+
 #endif // GRUNTZ_MFCWIN_H

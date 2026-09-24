@@ -40,4 +40,28 @@ static inline u16* Pix16(char* p) {
     return view.m_words;
 }
 
+static inline u16* Row16(u8* locked, i32 row, i32 pitch) {
+    Pix16Ptr p;
+    p.m_bytes = locked + row * pitch;
+    return p.m_words;
+}
+
+static inline void Store16(u8* p, u16 v) {
+    Pix16Ptr c;
+    c.m_bytes = p;
+    *c.m_words = v;
+}
+
+static inline u16 Load16(const u8* p) {
+    Pix16CPtr c;
+    c.m_bytes = p;
+    return *c.m_words;
+}
+
+static inline i16* Span16(u8* row) {
+    Pix16Ptr p;
+    p.m_bytes = row;
+    return p.m_swords;
+}
+
 #endif // GRUNTZ_PIX16_H

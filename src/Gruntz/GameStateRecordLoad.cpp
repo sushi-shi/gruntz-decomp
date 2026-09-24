@@ -12,51 +12,13 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialRecordMacros.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Io/FileMem.h>
 #include <Utils/MapTyped.h>
 #include <Wwd/WwdGameObjectFamily.h>
 
 #include <string.h>
-
-#define SERIALREF(field)                                                                           \
-    do {                                                                                           \
-        i32 id;                                                                                    \
-        CGameObject* obj;                                                                          \
-        ++g_serialCounter;                                                                         \
-        ar->Read(&id, 4);                                                                          \
-        obj = NULL;                                                                                \
-        CGameObject* r;                                                                            \
-        if (MapLookupById(dir->m_childGroup->m_registeredGameObjectsById, id, obj) == 0) {         \
-            r = NULL;                                                                              \
-        } else if (obj == NULL) {                                                                  \
-            r = NULL;                                                                              \
-        } else {                                                                                   \
-            r = (obj->GetClassId() == CLASSID_SERIALREF) ? obj : NULL;                             \
-        }                                                                                          \
-        (field) = static_cast<CWwdSpriteObject*>(r);                                               \
-        if (r == NULL && id != 0) {                                                                \
-            return 0;                                                                              \
-        }                                                                                          \
-    } while (0)
-#define READCSTR(field)                                                                            \
-    do {                                                                                           \
-        ++g_serialCounter;                                                                         \
-        ar->Read(buf, SERIAL_NAME_LEN);                                                            \
-        (field) = buf;                                                                             \
-    } while (0)
-#define NAMEREF(field)                                                                             \
-    do {                                                                                           \
-        ++g_serialCounter;                                                                         \
-        ar->Read(buf, SERIAL_NAME_LEN);                                                            \
-        if (strlen(buf) != 0) {                                                                    \
-            CAniElement* value = NULL;                                                             \
-            MapLookup(dir->m_animRegistry->m_animations, buf, value);                              \
-            (field) = value;                                                                       \
-        } else {                                                                                   \
-            (field) = NULL;                                                                        \
-        }                                                                                          \
-    } while (0)
 
 RVA(0x000555e0, 0x12f8)
 i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {

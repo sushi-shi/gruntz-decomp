@@ -7,6 +7,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorker.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/WorkerLookup.h>
 #include <Enums.h>
 #include <Gruntz/AnimatedMenuItem.h>
 #include <Gruntz/ChatBoxOwner.h>
@@ -17,12 +18,6 @@
 #include <Wap32/CoordUnset.h>
 
 #include <stdio.h>
-
-static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
-    CObject* foundObject = NULL;
-    map.Lookup(name, foundObject);
-    return static_cast<CDDrawWorker*>(foundObject);
-}
 
 RVA(0x00185460, 0xa9)
 i32 CMenuItem::Init(

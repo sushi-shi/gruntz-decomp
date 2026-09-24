@@ -21,25 +21,6 @@
 #include <stdio.h>
 #include <string.h>
 
-DATA(0x001e8d10)
-const AFX_MSGMAP CBattlezDlgColors::s_messageMap = {
-    &CDialog::messageMap,
-    &CBattlezDlgColors::s_messageEntries[0],
-};
-
-DATA(0x001e8d18)
-const AFX_MSGMAP_ENTRY CBattlezDlgColors::s_messageEntries[] = {
-    {WM_MEASUREITEM, 0, 0, 0, AfxSig_vOWNER, GZ_MFC_PMSG(&CBattlezDlgColors::OnMeasureItem)},
-    {WM_DRAWITEM, 0, 0, 0, AfxSig_vOWNER, GZ_MFC_PMSG(&CBattlezDlgColors::OnDrawItem)},
-    {WM_COMMAND,
-     CBN_DBLCLK,
-     CTRL_COLOR_LIST,
-     CTRL_COLOR_LIST,
-     AfxSig_vv,
-     GZ_MFC_PMSG(&CBattlezDlg::OnOkCommand)},
-    {0, 0, 0, 0, AfxSig_end, 0},
-};
-
 RVA(0x00017930, 0x3a)
 CBattlezDlgColors::CBattlezDlgColors(
     CGruntzMgr* gameManager,
@@ -89,9 +70,12 @@ void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
 }
 
 RVA(0x00017ac0, 0x6)
-const AFX_MSGMAP* CBattlezDlgColors::GetMessageMap() const {
-    return &s_messageMap;
-}
+DATA_MESSAGE_MAP(0x001e8d10, 0x001e8d18)
+BEGIN_MESSAGE_MAP(CBattlezDlgColors, CDialog)
+    ON_WM_MEASUREITEM()
+    ON_WM_DRAWITEM()
+    ON_LBN_DBLCLK(CTRL_COLOR_LIST, CBattlezDlgColors::OnOkCommand)
+END_MESSAGE_MAP()
 
 RVA(0x00017ae0, 0x20)
 void CBattlezDlgColors::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {
@@ -168,7 +152,7 @@ void CBattlezDlgColors::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
 }
 
 RVA(0x00017d40, 0x8)
-void CBattlezDlg::OnOkCommand() {
+void CBattlezDlgColors::OnOkCommand() {
     OnOK();
 }
 

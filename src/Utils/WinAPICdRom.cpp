@@ -8,6 +8,10 @@
 
 #include <stdio.h>
 
+namespace {
+#include <Utils/FileExists.h>
+} // namespace
+
 DATA(0x0022b25c)
 char g_cdDriveLetter;
 
@@ -17,18 +21,7 @@ i32 IsGruntzCDInAnyDrive() {
     return letter != 0;
 }
 
-RVA(0x0001fd70, 0x45)
-i32 FileExistsCopy(char* szPath) {
-    OFSTRUCT of;
-
-    if (!szPath) {
-        return 0;
-    }
-    if (!*szPath) {
-        return 0;
-    }
-    return OpenFile(szPath, &of, 0x4000) != -1;
-}
+RVA_COMPGEN(0x0001fd70, 0x45, ?FileExists@?A0xd84d0d674a5580a4@@YAHPBD@Z)
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
@@ -94,7 +87,7 @@ char GetGruntzDriveLetter() {
                 if (GetDriveTypeA(drivePath) == DRIVE_CDROM) {
                     letter = regLetter;
                     sprintf(exePath, "%c:\\GAME\\GRUNTZ.EXE", letter);
-                    if (FileExistsCopy(exePath)) {
+                    if (FileExists(exePath)) {
                         goto found;
                     }
                 }
@@ -105,7 +98,7 @@ char GetGruntzDriveLetter() {
             sprintf(drivePathScan, "%c:\\", letter);
             if (GetDriveTypeA(drivePathScan) == DRIVE_CDROM) {
                 sprintf(exePath, "%c:\\GAME\\GRUNTZ.EXE", letter);
-                if (FileExistsCopy(exePath)) {
+                if (FileExists(exePath)) {
                     goto found;
                 }
             }

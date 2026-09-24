@@ -19,4 +19,15 @@ extern i32 g_gameAppFrameDeltaMs;
 extern i32 g_framePacingEpochMs;
 extern i32 g_gameAppTimerRemainingMs;
 extern i32 g_gameAppTimerPeriodMs;
+
+#define FREE_GAME_MANAGER                                                                          \
+    if (m_gameMgr) {                                                                               \
+        delete m_gameMgr;                                                                          \
+        m_gameMgr = NULL;                                                                          \
+    }
+
+#define CLEAR_GAME_MANAGER_WINDOW                                                                  \
+    m_gameWnd = NULL;                                                                              \
+    m_owner = NULL
+
 #endif // GRUNTZ_WAP32_GAMEAPP_H

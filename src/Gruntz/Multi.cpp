@@ -1241,8 +1241,7 @@ i32 CMulti::ShowMultiStartDlg() {
     } else {
         SoundCueRegistry* reg = m_world->m_soundRegistry;
         if (reg->m_silentMode == false) {
-            SoundCue* found = NULL;
-            MapLookup(reg->m_cues, g_gameKey, found);
+            SoundCue* found = reg->FindCue(g_gameKey);
             SoundCue* rec = found;
             if (rec != NULL) {
                 b32 soundEnabled = g_soundEnabled;
@@ -1709,8 +1708,7 @@ i32 CMulti::DispatchRecvMsg(i32 senderId, char* packet, i32 packetSize) {
             if (registry->m_silentMode != false) {
                 break;
             }
-            SoundCue* cue = NULL;
-            MapLookup(registry->m_cues, "GAME_CHAT", cue);
+            SoundCue* cue = registry->FindCue("GAME_CHAT");
             if (cue == NULL) {
                 break;
             }
@@ -2091,8 +2089,7 @@ i32 CMulti::HandlePlayerCreated(LPDPMSG_CREATEPLAYERORGROUP message) {
         }
         SoundCueRegistry* registry = m_world->m_soundRegistry;
         if (registry->m_silentMode == false) {
-            SoundCue* found = NULL;
-            MapLookup(registry->m_cues, "GAME_MENUS_SELECT", found);
+            SoundCue* found = registry->FindCue("GAME_MENUS_SELECT");
             SoundCue* cue = found;
             if (cue != NULL) {
                 b32 soundEnabled = g_soundEnabled;

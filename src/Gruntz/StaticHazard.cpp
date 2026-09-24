@@ -40,12 +40,6 @@
 
 #include <stddef.h>
 
-static inline CAniElement* LookupAnimation(CMapStringToPtr& map, LPCTSTR name) {
-    CAniElement* found = NULL;
-    MapLookup(map, name, found);
-    return found;
-}
-
 RVA_DYNINIT(0x000fbb50, 0xa, CActRegPool<CStaticHazard>::s_table)
 RVA_DYNINIT(0x000fbb70, 0x15, CActRegPool<CStaticHazard>::s_table)
 RVA_DYNINIT(0x000fbba0, 0xe, CActRegPool<CStaticHazard>::s_table)
@@ -57,10 +51,6 @@ RVA_COMPGEN(0x00012b00, 0x1e, ??_GCStaticHazard@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012b30, 0x44, ??1CStaticHazard@@UAE@XZ)
 
 struct CString;
-
-inline void DispatchUnhandledLogicEvent(CUserLogic* sub) {
-    DispatchLogicEvent(sub);
-}
 
 RVA(0x000fb660, 0xf1)
 i32 DispatchStaticHazardLogic(CGameObject* owner) {

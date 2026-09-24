@@ -3,7 +3,10 @@
 
 #include <rva.h>
 
+#include <Mfc.h>
+
 #include <Ints.h>
+#include <Utils/MapTyped.h>
 #include <Wap32/WapObj.h>
 
 #include <stddef.h>
@@ -42,6 +45,12 @@ inline SoundCue::SoundCue(i32 cueId, CDDrawSurfaceMgr* owner)
     m_sound = NULL;
     m_replayDelayMs = 0;
     m_lastPlayTimeMs = 0;
+}
+
+inline SoundCue* LookupSoundCue(CMapStringToPtr& cues, LPCTSTR name) {
+    SoundCue* found = NULL;
+    MapLookup(cues, name, found);
+    return found;
 }
 
 #endif // GRUNTZ_SOUNDCUE_H

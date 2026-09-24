@@ -8,9 +8,6 @@
 #include <afx.h>
 #include <afxcoll.h>
 
-// API-forced message-map member-pointer seam.
-#define GZ_MFC_PMSG(method) reinterpret_cast<AFX_PMSG>(method)
-
 extern "C" __declspec(dllimport) unsigned long WINAPI timeGetTime(void);
 
 #endif // GRUNTZ_MFC_H

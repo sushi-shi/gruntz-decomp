@@ -13,13 +13,16 @@
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/LogicRecord.h>
 #include <DDrawMgr/LogicRecordRegistry.h>
+#include <DDrawMgr/WorkerLookup.h>
 #include <Enums.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/AniElement.h>
 #include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/Blk6c.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/UserLogic.h>
@@ -37,6 +40,7 @@
 #include <Wap32/WapObj.h>
 #include <Wwd/LogicRecordEvent.h>
 #include <Wwd/WwdGameObjectFamily.h>
+#include <Wwd/WwdGameObjectInline.h>
 #include <Wwd/WwdSpriteAnimationInline.h>
 
 #include <ddraw.h>
@@ -45,12 +49,6 @@
 
 DATA(0x002bf674)
 b32 g_logicTypesRegistered;
-
-static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
-    CObject* result = NULL;
-    map.Lookup(name, result);
-    return static_cast<CDDrawWorker*>(result);
-}
 
 RVA(0x001504d0, 0x6c)
 void CWwdSpriteObject::SetImageFrameByName(const char* name, i32 frame) {
@@ -74,12 +72,6 @@ void CWwdSpriteObject::SetImageSetByName(const char* name) {
     }
 }
 
-static inline CAniElement* LookupAnimation(CMapStringToPtr& map, LPCTSTR name) {
-    CAniElement* result = NULL;
-    MapLookup(map, name, result);
-    return result;
-}
-
 RVA(0x001505b0, 0x5e)
 i32 CWwdSpriteObject::SetAnimationByName(const char* name, i32 advanceImmediately) {
     CAniElement* animation = LookupAnimation(OwnerMgr()->m_animRegistry->m_animations, name);
@@ -88,12 +80,6 @@ i32 CWwdSpriteObject::SetAnimationByName(const char* name, i32 advanceImmediatel
     }
     SET_ANIMATION_AND_MAYBE_ADVANCE(this, animation, advanceImmediately)
     return 1;
-}
-
-static inline SoundCue* LookupSoundCue(CMapStringToPtr& map, LPCTSTR name) {
-    SoundCue* result = NULL;
-    MapLookup(map, name, result);
-    return result;
 }
 
 RVA(0x00150610, 0x41)
@@ -389,12 +375,6 @@ i32 CGameObject::EnsureHitLogic(CLogicRecord* logicTemplate) {
     return m_hitLogic->Init(logicTemplate->m_dispatch, 0);
 }
 
-static inline CLogicRecord* LookupLogicTemplate(CMapStringToOb& map, LPCTSTR name) {
-    CObject* result = NULL;
-    map.Lookup(name, result);
-    return static_cast<CLogicRecord*>(result);
-}
-
 RVA(0x00150f50, 0x35)
 void CGameObject::AddLogicHit(char* key) {
     EnsureHitLogic(LookupLogicTemplate(OwnerMgr()->m_logicRegistry->m_templatesByName, key));
@@ -442,20 +422,6 @@ i32 CGameObject::EnsureBumpLogic(CLogicRecord* logicTemplate) {
 RVA(0x00151110, 0x35)
 void CGameObject::AddLogicBump(char* key) {
     EnsureBumpLogic(LookupLogicTemplate(OwnerMgr()->m_logicRegistry->m_templatesByName, key));
-}
-
-static inline i32 NotifyLogicForEventCode(CGameObject* object, i32 eventCode) {
-    CLogicRecord* record = object->m_logicRecord;
-    if (!record) {
-        return 0;
-    }
-    i32 savedEventCode = record->m_eventCode;
-    record->SetEventCode(eventCode);
-    object->m_logicRecord->m_dispatch(object);
-    if (object->m_logicRecord->m_eventCode == eventCode) {
-        object->m_logicRecord->SetEventCode(savedEventCode);
-    }
-    return 1;
 }
 
 // @early-stop
@@ -706,13 +672,6 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     return 1;
 }
 
-static inline BOOL LookupLinkedObject(CMapPtrToPtr& map, i32 id, CWwdGameObject*& out) {
-    out = NULL;
-    AddrWord<char> key;
-    key.m_word = id;
-    return map.Lookup(key.m_addr, reinterpret_cast<void*&>(out));
-}
-
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00151b90, 0x70)
@@ -868,15 +827,6 @@ void CDDrawWorker::Unload() {
     m_minIndex = 99999;
     m_maxIndex = 0;
 }
-
-#define ADD_FRAME_AT(elem, index)                                                                  \
-    m_items.SetAtGrow(index, elem);                                                                \
-    if (index < m_minIndex) {                                                                      \
-        m_minIndex = index;                                                                        \
-    }                                                                                              \
-    if (index > m_maxIndex) {                                                                      \
-        m_maxIndex = index;                                                                        \
-    }
 
 RVA(0x00151f00, 0xa4)
 CImage* CDDrawWorker::InsertFrame(CRezItm* src, i32 n, i32 mode) {

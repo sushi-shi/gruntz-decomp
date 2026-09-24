@@ -98,4 +98,8 @@ inline CMinimap::CMinimap() {
     m_refreshRemaining = 0;
 }
 
+static inline void SetTileColor(u16* colors, u32 tile, u16 color) {
+    colors[tile] = color;
+}
+
 #endif

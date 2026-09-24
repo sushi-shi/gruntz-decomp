@@ -228,18 +228,6 @@ static char s_pose_ATTACK1[] = "_ATTACK1";
 DATA(0x002455b0)
 b32 g_traitorMode;
 
-static inline CAniElement* FindAnimElement(CMapStringToPtr& map, LPCTSTR key) {
-    CAniElement* out = NULL;
-    MapLookup(map, key, out);
-    return out;
-}
-
-#define LOAD_POSE(dst, sfx)                                                                        \
-    ((dst) = FindAnimElement(                                                                      \
-         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,                                    \
-         "GRUNTZ_" + m_animSetName + (sfx)                                                         \
-     ))
-
 RVA_COMPGEN(0x0000f2c0, 0x1e, ??_GCGrunt@@UAEPAXI@Z)
 RVA(0x0000f2f0, 0xc8)
 CGrunt::~CGrunt() {

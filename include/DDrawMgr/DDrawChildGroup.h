@@ -159,4 +159,19 @@ public:
     CGameObject* Drain();
 };
 
+inline CGameObject* ListGetFirst(CDDrawChildGroup* list) {
+    list->m_walkCursor = list->m_list.GetHeadPosition();
+    if (list->m_walkCursor == NULL) {
+        return NULL;
+    }
+    return list->NextChild(list->m_walkCursor);
+}
+
+inline CGameObject* ListGetNext(CDDrawChildGroup* list) {
+    if (list->m_walkCursor == NULL) {
+        return NULL;
+    }
+    return list->NextChild(list->m_walkCursor);
+}
+
 #endif // GRUNTZ_DDRAWMGR_CDDRAWCHILDGROUP_H

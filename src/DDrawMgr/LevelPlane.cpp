@@ -9,12 +9,14 @@
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorkerHost.h>
 #include <DDrawMgr/DDrawWorkerHostBuildInline.h>
+#include <DDrawMgr/DDrawWorkerHostDrawMacros.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/LogicRecordRegistry.h>
 #include <DDrawMgr/LogicRecordRegistryFindInline.h>
 #include <DDrawMgr/PixelShift.h>
+#include <DDrawMgr/WorkerLookup.h>
 #include <Enums.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GruntzMgr.h>
@@ -33,18 +35,6 @@
 #include <new>
 #include <stdio.h>
 #include <string.h>
-
-static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
-    CObject* found = NULL;
-    map.Lookup(name, found);
-    return static_cast<CDDrawWorker*>(found);
-}
-
-static inline CDDrawWorker* LookupWorker(CDDrawSurfaceMgr* host, LPCTSTR name) {
-    CObject* found = NULL;
-    host->m_imageRegistry->m_workersByName.Lookup(name, found);
-    return static_cast<CDDrawWorker*>(found);
-}
 
 RVA(0x001615a0, 0x9a)
 CDDrawWorkerHost::CDDrawWorkerHost(CDDrawSurfaceMgr* owner, i32 id, i32 flags)
@@ -392,23 +382,6 @@ void CDDrawWorkerHost::SetTileSizeFromImageSet(CDDrawWorker* set) {
     }
 }
 
-#define DRAW_CELL(handle, xp, yp, srcp)                                                            \
-    do {                                                                                           \
-        u32 h_ = static_cast<u32>(handle);                                                         \
-        if (h_ == UNINIT_FILL) {                                                                   \
-            dr.left = (xp);                                                                        \
-            dr.top = (yp);                                                                         \
-            dr.right = (xp) + ((srcp)->right - (srcp)->left);                                      \
-            dr.bottom = (yp) + ((srcp)->bottom - (srcp)->top);                                     \
-            surf->BltEx(&dr, 0, 0, DDBLT_WAIT | DDBLT_COLORFILL, &m_fillFx);                       \
-        } else if (h_ != static_cast<u32>(s_tileClear)) {                                          \
-            CDDrawWorker* fr_ = ImageSetAt(h_ >> 16);                                              \
-            i32 idx_ = static_cast<i32>(h_ & WWD_TILE_IMAGE_SET_INDEX_MASK);                       \
-            CImage* e_ = fr_->GetAt(idx_);                                                         \
-            surf->BltFast((xp), (yp), e_->m_surface, (srcp), e_->m_bltFastFlags);                  \
-        }                                                                                          \
-    } while (0)
-
 // @early-stop
 RVA(0x00162010, 0x8bd)
 void CDDrawWorkerHost::Draw(CDDrawSurfacePair* ctx) {
@@ -516,13 +489,6 @@ void CDDrawWorkerHost::Draw(CDDrawSurfacePair* ctx) {
     DRAW_CELL(m_tileHandles[rowBase + col], x, y, &corner);
 }
 #undef DRAW_CELL
-
-static inline u16 PackPalEntry16(u8 r, u8 g, u8 b) {
-    return static_cast<u16>(
-        (static_cast<u8>(r >> g_rDown) << g_rUp) | (static_cast<u8>(g >> g_gDown) << g_gUp)
-        | static_cast<u8>(b >> g_bDown)
-    );
-}
 
 RVA(0x001628d0, 0x12)
 i32 CDDrawWorkerHost::Prune() {

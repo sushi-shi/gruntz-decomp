@@ -266,4 +266,17 @@ inline CJoystickDevice::CJoystickDevice() {
     m_createFlags = 0;
 }
 
+#define UPDATE_BUTTON_EDGE(bit)                                                                    \
+    do {                                                                                           \
+        if (m_heldButtons & IDX(bit)) {                                                            \
+            if (m_buttonLatch & IDX(bit)) {                                                        \
+                m_pressedButtons &= ~IDX(bit);                                                     \
+            } else {                                                                               \
+                m_buttonLatch |= IDX(bit);                                                         \
+            }                                                                                      \
+        } else {                                                                                   \
+            m_buttonLatch &= ~IDX(bit);                                                            \
+        }                                                                                          \
+    } while (0)
+
 #endif // DINMGR2_DIRECTINPUTMGR2_H

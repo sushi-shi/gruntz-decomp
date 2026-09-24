@@ -87,4 +87,13 @@ public:
 #define DDRAW_WORKER_FRAME_AT_UNCHECKED(worker, index)                                             \
     static_cast<CImage*>(worker->m_items.GetAt(index))
 
+#define ADD_FRAME_AT(elem, index)                                                                  \
+    m_items.SetAtGrow(index, elem);                                                                \
+    if (index < m_minIndex) {                                                                      \
+        m_minIndex = index;                                                                        \
+    }                                                                                              \
+    if (index > m_maxIndex) {                                                                      \
+        m_maxIndex = index;                                                                        \
+    }
+
 #endif // GRUNTZ_CDDRAWWORKER_H

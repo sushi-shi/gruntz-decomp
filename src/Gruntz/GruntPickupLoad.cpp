@@ -2,6 +2,7 @@
 
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/AniElement.h>
 #include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -19,14 +20,6 @@
 #include <ZTools/ZDArray.h>
 
 #include <string.h>
-
-#define PICKUP(key, idv)                                                                           \
-    do {                                                                                           \
-        CAniElement* geo = NULL;                                                                   \
-        MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, (key), geo);              \
-        m_pickupGeoSrc = geo;                                                                      \
-        id = (idv);                                                                                \
-    } while (0)
 
 RVA(0x00065e80, 0x14a0)
 i32 CGrunt::LoadPickupSprites(
@@ -249,11 +242,9 @@ i32 CGrunt::LoadPickupSprites(
             break;
         case PICKUP_MEGAPHONE: {
             CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
-            CAniElement* geo = NULL;
-            MapLookup(
+            CAniElement* geo = LookupAnimation(
                 m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
-                "GRUNTZ_PICKUPS_MEGAPHONE",
-                geo
+                "GRUNTZ_PICKUPS_MEGAPHONE"
             );
             m_pickupGeoSrc = geo;
             PickupType n = static_cast<PickupType>(play->m_statusBar->GetActiveValue());

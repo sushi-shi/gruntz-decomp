@@ -19,8 +19,6 @@
 #include <Gruntz/StartUpPrompt.h>
 #include <Io/SaveGame.h>
 
-typedef u32 u32;
-
 RVA_DYNINIT(0x000a1190, 0x29, g_menuTextRect)
 DATA(0x00245d88)
 CRect g_menuTextRect(5, 453, 635, 478);

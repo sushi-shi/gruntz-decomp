@@ -5,12 +5,15 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSubMgrPagesInline.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDrawWorker.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DirectDrawMgr.h>
+#include <DDrawMgr/WorkerLookup.h>
 #include <Dsndmgr/SoundBuffer.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/MenuPage.h>
 #include <Gruntz/SoundCueRegistry.h>
+#include <Gruntz/SoundCueRegistryInline.h>
 #include <Gruntz/SoundState.h>
 #include <Image/CImage.h>
 #include <Image/ImageSet.h>
@@ -170,12 +173,6 @@ i32 CMenuTree::SetActivePageByKey(const char* pageKey) {
     return SetActivePage(FindPage(pageKey));
 }
 
-static inline CDDrawWorker* LookupWorker(CDDrawSurfaceMgr* world, LPCTSTR name) {
-    CObject* foundObject = NULL;
-    world->m_imageRegistry->m_workersByName.Lookup(name, foundObject);
-    return static_cast<CDDrawWorker*>(foundObject);
-}
-
 RVA(0x00182df0, 0x69)
 i32 CMenuTree::ConfigureLeftCursorAnimation(
     const char* animationKey,
@@ -190,7 +187,7 @@ i32 CMenuTree::ConfigureLeftCursorAnimation(
     if (!animation) {
         return 0;
     }
-    m_leftCursorFrame = static_cast<CImage*>(animation->m_items.GetAt(animation->m_minIndex));
+    m_leftCursorFrame = DDRAW_WORKER_FRAME_AT_UNCHECKED(animation, animation->m_minIndex);
     m_leftCursorFrameIndex = animation->m_minIndex;
     m_leftCursorFramePeriodMs = framePeriodMs;
     m_leftCursorFrameTimerMs = framePeriodMs;
@@ -212,7 +209,7 @@ i32 CMenuTree::ConfigureRightCursorAnimation(
     if (!animation) {
         return 0;
     }
-    m_rightCursorFrame = static_cast<CImage*>(animation->m_items.GetAt(animation->m_minIndex));
+    m_rightCursorFrame = DDRAW_WORKER_FRAME_AT_UNCHECKED(animation, animation->m_minIndex);
     m_rightCursorFrameIndex = animation->m_minIndex;
     m_rightCursorFramePeriodMs = framePeriodMs;
     m_rightCursorFrameTimerMs = framePeriodMs;
@@ -235,7 +232,7 @@ i32 CMenuTree::UpdateCursorAnimations(i32 deltaMs) {
             m_leftCursorFrame = frame;
             if (frame == NULL) {
                 m_leftCursorFrame =
-                    static_cast<CImage*>(leftAnimation->m_items.GetAt(leftAnimation->m_minIndex));
+                    DDRAW_WORKER_FRAME_AT_UNCHECKED(leftAnimation, leftAnimation->m_minIndex);
                 m_leftCursorFrameIndex = leftAnimation->m_minIndex;
             }
         }
@@ -253,7 +250,7 @@ i32 CMenuTree::UpdateCursorAnimations(i32 deltaMs) {
         m_rightCursorFrame = frame;
         if (frame == NULL) {
             m_rightCursorFrame =
-                static_cast<CImage*>(rightAnimation->m_items.GetAt(rightAnimation->m_minIndex));
+                DDRAW_WORKER_FRAME_AT_UNCHECKED(rightAnimation, rightAnimation->m_minIndex);
             m_rightCursorFrameIndex = rightAnimation->m_minIndex;
         }
     }
@@ -290,34 +287,12 @@ i32 CMenuTree::DrawFocusCursors(
     return 1;
 }
 
-static __inline i32 PlayMenuCue(SoundCueRegistry* soundRegistry, const char* cueKey) {
-    if (!soundRegistry->m_silentMode) {
-        SoundCue* foundCue = NULL;
-        MapLookup(soundRegistry->m_cues, cueKey, foundCue);
-        SoundCue* cue = foundCue;
-        if (cue != NULL) {
-            b32 soundEnabled = g_soundEnabled;
-            i32 volumePercent = g_soundVolumePercent;
-            if (soundEnabled != false) {
-                i32 cueTimeMs = g_soundCueTimeMs;
-                u32 elapsedMs =
-                    static_cast<u32>(cueTimeMs) - static_cast<u32>(cue->m_lastPlayTimeMs);
-                if (elapsedMs >= static_cast<u32>(cue->m_replayDelayMs)) {
-                    cue->m_lastPlayTimeMs = cueTimeMs;
-                    return cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                }
-            }
-        }
-    }
-    return 0;
-}
-
 RVA(0x00183030, 0x7b)
 i32 CMenuTree::PlayFocusSound() {
     if (m_focusSoundKey.GetLength() == 0) {
         return 0;
     }
-    return PlayMenuCue(m_world->m_soundRegistry, m_focusSoundKey);
+    return PlayRegistryCueIfElapsed(m_world->m_soundRegistry, m_focusSoundKey);
 }
 
 RVA(0x001830b0, 0x7b)
@@ -325,7 +300,7 @@ i32 CMenuTree::PlayActivationSound() {
     if (m_activationSoundKey.GetLength() == 0) {
         return 0;
     }
-    return PlayMenuCue(m_world->m_soundRegistry, m_activationSoundKey);
+    return PlayRegistryCueIfElapsed(m_world->m_soundRegistry, m_activationSoundKey);
 }
 
 RVA(0x00183130, 0x16)

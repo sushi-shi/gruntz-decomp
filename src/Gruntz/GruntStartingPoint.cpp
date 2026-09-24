@@ -36,10 +36,6 @@ CGruntStartingPoint::CGruntStartingPoint(CGameObject* obj)
     Hide();
 }
 
-static inline CActHandler* ResolveGruntStartingPointAct(i32 coord) {
-    return &CActRegPool<CGruntStartingPoint>::s_table[coord];
-}
-
 RVA(0x0003e1a0, 0x102)
 void CGruntStartingPoint::FireActivation(i32 coord) {
     DispatchRegisteredAct(this, coord);
@@ -49,7 +45,8 @@ RVA(0x0003e300, 0x18d)
 void RegisterGruntStartingPointActions() {
     ACT_NAME_ID(id, "A")
 
-    *ResolveGruntStartingPointAct(id) = static_cast<CActHandler>(&CGruntStartingPoint::Idle);
+    *ResolveRegisteredAct<CGruntStartingPoint>(id) =
+        static_cast<CActHandler>(&CGruntStartingPoint::Idle);
 }
 
 RVA(0x0003e500, 0x3)

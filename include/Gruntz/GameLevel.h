@@ -48,13 +48,7 @@ static const i32 s_tileClear = -1;
         i32 idx_ = pl_->m_tileRowOffsets[qy_] + col_;                                              \
         i32 subY_ = py_ - (qy_ << pl_->m_shiftY);                                                  \
         i32 tile_ = pl_->m_tileHandles[idx_];                                                      \
-        if (tile_ == UNINIT_FILL || tile_ == s_tileClear) {                                        \
-            (RESULT) = TILEKIND_PASSABLE;                                                          \
-        } else {                                                                                   \
-            CTileImageSet* set_ =                                                                  \
-                static_cast<CTileImageSet*>(m_imageSets[tile_ & WWD_TILE_IMAGE_SET_INDEX_MASK]);   \
-            (RESULT) = set_->GetCollisionAt(subX_, subY_);                                         \
-        }                                                                                          \
+        (RESULT) = (LVL)->CollisionAtHandle(tile_, subX_, subY_);                                  \
     } while (0)
 
 #define PROBE_TILE_VIA_HANDLE(LVL, X, Y, RESULT)                                                   \
@@ -82,13 +76,7 @@ static const i32 s_tileClear = -1;
         i32 subX_ = px_ - (qx_ << pl_->m_shiftX);                                                  \
         i32 subY_ = py_ - (qy_ << pl_->m_shiftY);                                                  \
         i32 tile_ = pl_->GetTileHandle(col_, qy_);                                                 \
-        if (tile_ == UNINIT_FILL || tile_ == s_tileClear) {                                        \
-            (RESULT) = TILEKIND_PASSABLE;                                                          \
-        } else {                                                                                   \
-            CTileImageSet* set_ =                                                                  \
-                static_cast<CTileImageSet*>(m_imageSets[tile_ & WWD_TILE_IMAGE_SET_INDEX_MASK]);   \
-            (RESULT) = set_->GetCollisionAt(subX_, subY_);                                         \
-        }                                                                                          \
+        (RESULT) = (LVL)->CollisionAtHandle(tile_, subX_, subY_);                                  \
     } while (0)
 
 #include <Gruntz/ImageSets.h>
@@ -111,6 +99,15 @@ GZ_ENUM_CONST_END(LevelPlaneLayout)
 
 class CGameLevel : public CWapObj {
 public:
+    TileCollisionKind CollisionAtHandle(i32 cell, i32 x, i32 y) {
+        if (cell == UNINIT_FILL || cell == s_tileClear) {
+            return TILEKIND_PASSABLE;
+        }
+        CTileImageSet* set =
+            static_cast<CTileImageSet*>(m_imageSets[cell & WWD_TILE_IMAGE_SET_INDEX_MASK]);
+        return set->GetCollisionAt(x, y);
+    }
+
     i32 IsValidWwd(const char* name, WwdHeader* headerBuf);
 
     i32 ReadWwdHeaderName(const char* name, char* nameOut);
@@ -292,5 +289,50 @@ public:
     LevelDims m_smallActiveRegionSize;
     WwdHeader m_header;
 };
+
+#define DRAW_PLANES_THROUGH_MAIN(visitor, index)                                                   \
+    i32 index = 0;                                                                                 \
+    if (m_mainIndex >= 0) {                                                                        \
+        do {                                                                                       \
+            (static_cast<CDDrawWorkerHost*>(m_planes.GetData()[index]))->Draw(visitor);            \
+            ++index;                                                                               \
+        } while (index <= m_mainIndex);                                                            \
+    }
+
+#define DRAW_PLANES_AFTER_MAIN(visitor, index)                                                     \
+    i32 index = m_mainIndex + 1;                                                                   \
+    if (index < m_planes.GetSize()) {                                                              \
+        do {                                                                                       \
+            (static_cast<CDDrawWorkerHost*>(m_planes.GetData()[index]))->Draw(visitor);            \
+            ++index;                                                                               \
+        } while (index < m_planes.GetSize());                                                      \
+    }
+
+#define RESET_MAIN_PLANE_SELECTION(index)                                                          \
+    m_mainIndex = -1;                                                                              \
+    m_mainPlane = NULL;                                                                            \
+    for (i32 index = 0; index < m_planes.GetSize(); index++) {                                     \
+        static_cast<CDDrawWorkerHost*>(m_planes.GetData()[index])->m_flags &=                      \
+            ~IDX(WWD_PLANE_FLAG_MAIN);                                                             \
+    }
+
+#define RELEASE_LEVEL_CHILDREN                                                                     \
+    i32 i;                                                                                         \
+    for (i = 0; i < m_planes.GetSize(); i++) {                                                     \
+        CDDrawWorkerHost* child = static_cast<CDDrawWorkerHost*>(m_planes.GetData()[i]);           \
+        if (child) {                                                                               \
+            delete child;                                                                          \
+        }                                                                                          \
+    }                                                                                              \
+    m_planes.SetSize(0, -1);                                                                       \
+    for (i = 0; i < m_imageSets.GetSize(); i++) {                                                  \
+        CTileImageSet* child = static_cast<CTileImageSet*>(m_imageSets.GetData()[i]);              \
+        if (child) {                                                                               \
+            delete child;                                                                          \
+        }                                                                                          \
+    }                                                                                              \
+    m_imageSets.SetSize(0, -1);                                                                    \
+    m_mainPlane = NULL;                                                                            \
+    m_mainIndex = -1
 
 #endif // SRC_GRUNTZ_GAMELEVEL_H
