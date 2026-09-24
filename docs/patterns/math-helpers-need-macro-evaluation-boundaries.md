@@ -22,7 +22,7 @@ the following examples without removing their typed APIs:
 | `CFaderLight::RenderFrame` 0x180640 | 74.8360% | scalar `FADER_DISTANCE` in its inline `Render` callee, separate old-span locals | 90.8721% |
 | `CMinimap::Draw` 0xa3820 | 40.1090% | scalar center/scale locals, component rectangle stores and `SET_RECT_COMPONENTS` | 76.3782% |
 | `CMinimap::DrawBorderRaw` 0xa3a20 | 74.0460% | separate width/height locals and `RECT_WIDTH`/`RECT_HEIGHT` | 96.7931% |
-| `CDDSurface::ShadeBlt` 0x13f020 | 66.1160% | width-first validation and separate loop bounds via `RECT_WIDTH`/`RECT_HEIGHT` | 68.5643% |
+| `CDDSurface::ShadeBlt` 0x13f020 | 66.1160% | width-first validation and separate loop bounds via `RECT_WIDTH`/`RECT_HEIGHT` | 72.4232% |
 | `CGrunt::StepGruntMovement` 0x4c170 | 66.4355% | earlier CFG and tile-center macros, with typed `BrickzCell` reads | 76.5600% |
 | `CGrunt::FinalizeStep` 0x5ecd0 | 72.9091% | separate direction/move/next locals and existing sort-key macro | 96.0983% |
 | `CGrunt::StepCompassMove` 0x51c00 | 54.8401% | scalar `CanCommitMove` tile locals and `RETURN_IF_DIAGONAL_ROUTE_BLOCKED` | 63.0219% |
@@ -83,8 +83,13 @@ while retail compares widths before computing heights. Separate ordered
 `RECT_WIDTH` and `RECT_HEIGHT` checks raise the score to 68.5423%; using the
 same macros for the later loop-bound locals reaches 68.5643%. Explicit
 `RECT`/`CopyRect` locals are byte-flat against the retained `CRect` locals,
-whereas `CRect::Width`/`Height` member calls score 67.4671%. The residual CFG
-wall remains open; the helper family stays available.
+whereas `CRect::Width`/`Height` member calls score 67.4671%. A separate semantic
+check then found that retail tests `sr.right > srcWidth` and
+`sr.bottom > srcHeight`, where those extents were just computed from `sr`;
+the aggregate rewrite had substituted the source surface dimensions. Restoring
+retail's comparisons raises the same real TU to 72.4232% with unchanged calls,
+constants, and ordered referents. The residual CFG wall remains open; the
+helper family stays available.
 
 The shared `Coord::Clamp` boundary has a second, larger control. Retail and the
 earlier source use component `if`/`else if` clamps in level-tile lookups, while a

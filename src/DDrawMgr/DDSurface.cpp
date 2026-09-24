@@ -712,10 +712,10 @@ i32 CDDSurface::ShadeBlt(
         if (sr.top < 0) {
             return 0;
         }
-        if (sr.right > src->m_apiDesc.dwWidth) {
+        if (sr.right > srcWidth) {
             return 0;
         }
-        if (sr.bottom > src->m_apiDesc.dwHeight) {
+        if (sr.bottom > srcHeight) {
             return 0;
         }
     }
