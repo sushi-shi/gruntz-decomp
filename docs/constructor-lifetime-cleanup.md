@@ -22,8 +22,11 @@ Authored base boundaries remain. A fresh real `SerialObjectFactory.cpp` control
 with its configured `/O2 /MT /GX /GR` flags confirms that omitting
 `CUserLogic::~CUserLogic` removes its vptr store and shrinks 68 bytes to 62.
 `CUserBase` and `CGruntzCommand` still declare the destructors introducing their
-virtual slots. Trivial EH-target destructors and the `TypeKeyRec` constructor
-needed by static initialization are not removed.
+virtual slots. Trivial EH-target destructors were not removed in this slice.
+The earlier claim that static initialization proves the `TypeKeyRec` constructor
+is superseded by the complete `_dhandler` source review; current dispositions
+are `reassess-dhandler-implicit-startup` and `reassess-dhandler-startup-owner`
+in the lineage ledger.
 
 The reusable lifetime rules and corrected historical claims live in
 [empty special members](patterns/empty-special-member-calls-and-vptr-stores.md),

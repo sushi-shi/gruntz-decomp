@@ -118,10 +118,12 @@ comparison and before/after objects live in
 `build/audits/implicit-boundaries/empty-inline-ctors/`.
 
 Do not apply this to an empty constructor with a parameterized sibling: an
-implicit default constructor is then suppressed. Do not apply it to
-`TypeKeyRec`, either: its authored empty constructor supplies the retail
-[static-initializer slot](crt-xc-table-is-the-static-initializer-census.md)
-even though the initializer body reduces to `ret`.
+implicit default constructor is then suppressed. The former `TypeKeyRec`
+exception is reopened: an empty constructor can supply a
+[static-initializer slot](crt-xc-table-is-the-static-initializer-census.md), but
+that sufficient spelling does not prove an authored declaration. See canonical
+lineage IDs `reassess-dhandler-implicit-startup` and
+`reassess-dhandler-startup-owner` before drawing a lifetime conclusion.
 
 These controls correct two older explanations. An authored empty destructor
 does **not** invariably retain its own vptr store; the seven leaf controls

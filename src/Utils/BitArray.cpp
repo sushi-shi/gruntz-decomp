@@ -64,8 +64,6 @@ i32 zBitVec::EnsureSize(i32 nbits) {
     m_capacity = ndwords * BITARRAY_WORD_BITS;
     return 1;
 fail:
-    char* msg = g_errOutOfMem;
-    g_retAddrBreadcrumb = GetCallerRetAddr();
-    m_errSink->Set(this, msg, 0xc);
+    handle(_nomem, 0xc);
     return 0;
 }

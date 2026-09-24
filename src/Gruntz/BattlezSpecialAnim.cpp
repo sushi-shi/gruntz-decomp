@@ -138,4 +138,4 @@ fail:
     return 0;
 }
 
-RVA_COMPGEN(0x00034960, 0x24, ?Report@zErrHandling@@QAEXPADH@Z)
+RVA_COMPGEN(0x00034960, 0x24, ?handle_inl@zErrHandling@@QBEXPBDH@Z)

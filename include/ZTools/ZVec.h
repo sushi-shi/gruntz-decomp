@@ -21,6 +21,10 @@ inline char* ZVecNoScratch() {
 
 class _zvec : public zErrHandling {
 public:
+    static ehm_t class_error_mode(ehm_t em) {
+        return ceh.setmode(em);
+    }
+
     _zvec(i32 stride, i32 lo, i32 hi, void* scratch);
 
     virtual ~_zvec() OVERRIDE;
@@ -30,6 +34,9 @@ public:
     char* m_base;
     void* m_spare;
     i32 m_stride;
+
+protected:
+    static zErrHandler ceh;
 };
 
 class _zdvec : public _zvec {
@@ -39,7 +46,7 @@ public:
     void* IndexToPtr(i32 i) {
         m_grown = 0;
         return (i < m_lo || i > m_hi) ? (GrowTo(i, 0) ? m_base + m_stride * (i - m_lo)
-                                                      : (Report(g_errOutOfMem, 0xc), m_spare))
+                                                      : (handle_inl(_nomem, 0xc), m_spare))
                                       : m_base + m_stride * (i - m_lo);
     }
 

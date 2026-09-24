@@ -39,7 +39,7 @@ void* zPTree::insert(const char* key, void* value) {
 
     m_preview = false;
     if (key == NULL || value == NULL) {
-        handle(g_errNullArg, 0x16);
+        handle(_nullparg, 0x16);
         return NULL;
     }
 
@@ -71,14 +71,14 @@ void* zPTree::insert(const char* key, void* value) {
     newbranch = m_q != NULL ? diffpos(key, m_q->m_symbol) : m_sbits - 1;
     t = new zPTreeNode;
     if (t == NULL) {
-        handle(g_errOutOfMem, 0xc);
+        handle(_nomem, 0xc);
         return NULL;
     }
     t->m_index = newbranch;
     t->m_body = value;
     t->m_symbol = new char[(m_sbits >> PTREE_BYTE_BIT_SHIFT) + 1];
     if (t->m_symbol == NULL) {
-        handle(g_errOutOfMem, 0xc);
+        handle(_nomem, 0xc);
         return NULL;
     }
     strcpy(t->m_symbol, key);

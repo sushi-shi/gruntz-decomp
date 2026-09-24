@@ -123,10 +123,15 @@ self-calls internally - so a raw-byte scan mixes decoder noise into the answer.
   `CGrunt::UpdateDecayFade` (1,1 vs 1,3), `CPlay::HandleDragMove` (4,4,4,4,4 vs
   1,4,4,4,4), `CVariantSlot::Add` (3,3,3,3,3 vs 2,3,3,3,3).
 
-**2026-08-26 correction.** The `CVariantSlot::Add` row belonged to the earlier typed
-callback signature. Restoring retail's generic `void* Add(void*, void*)` ABI makes both
-sides `(3,3,3,3,3)`, so it is no longer a shrink-wrap candidate. Its remaining residue
-is a whole-function EBX/EDI role rotation; return-count edits are not a lever there.
+**2026-09-24 correction.** The earlier `CVariantSlot::Add` interpretation did not
+prove a generic `void*` API: those names came from reconstructed source. The
+original library instead identifies `zErrHandler::set_ef(void*, erf_t)` with an
+`erf_t` result. Restoring that typed API and complete owner while retaining the
+old local census leaves the same `(3,3,3,3,3)` saved-register counts and 88.30%
+result. Thus the old isolated typed-signature shrink-wrap observation was
+context-specific, not a source-ABI disproof. See lineage IDs
+`hs-error-owner-identity` and `reassess-zerrhandler-set-debug-locals` for the
+complete-family reassessment.
 
 **Screen out TU state before searching the source.** On BuildLevelTitleString, moving the
 function to the head and to the tail of its TU, inserting a static definition immediately

@@ -109,6 +109,10 @@ private:
 
 class zPTree : public zErrHandling, public zPtrColl {
 public:
+    static ehm_t class_error_mode(ehm_t em) {
+        return ceh.setmode(em);
+    }
+
     RVA(0x000212a0, 0x21)
     void clear() {
         cleanup();
@@ -134,6 +138,8 @@ protected:
 
 private:
     void cleanup(zPTreeNode* node = NULL);
+
+    static zErrHandler ceh;
 
     static i32 bit(const char* s, i32 n) {
         return s[n >> PTREE_BYTE_BIT_SHIFT] & (1 << (n & PTREE_BYTE_BIT_MASK));

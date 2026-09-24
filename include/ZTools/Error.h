@@ -6,76 +6,178 @@
 #include <Enums.h>
 #include <Ints.h>
 
-struct CVariantSlot;
+#include <errno.h>
 
-extern CVariantSlot g_zBitSetErrorSlot;
-extern CVariantSlot g_globalErrorSlot;
-extern CVariantSlot g_dynamicArrayErrorSlot;
-extern CVariantSlot g_rezArchiveErrorSlot;
-extern void* g_retAddrBreadcrumb;
-extern i32 g_variantOverrideCount;
+typedef void(__cdecl* erf_t)(const char*, i32);
+unsigned long __caller_ip();
+unsigned long __ip();
 
-extern char* g_errDataInvalid;
-extern char* g_errOverflow;
-extern char* g_errOutOfRange;
-extern char* g_errNullArg;
-extern char* g_errExists;
-extern char* g_errBadArg;
-extern char* g_errNoFile;
-extern char* g_errOutOfMem;
+class zMinErr {
+    friend class zErrHandler;
+    friend class zErrHandling;
 
-void* GetRetAddr();
-void* GetCallerRetAddr();
-void TmErrorHandler(char* prefix, i32 errNum);
+public:
+    zMinErr();
+    static erf_t set_erf(erf_t f) {
+        erf_t t = ef;
+        ef = f;
+        return t;
+    }
+    static void quiet() {
+        _quiet = 1;
+    }
+    static void use_error_function() {
+        _quiet = 0;
+    }
+    static unsigned long caller() {
+        return caller_ip;
+    }
+
+protected:
+    static void handle(const char* s, i32 e) {
+        caller_ip = __caller_ip();
+        if (_quiet) {
+            errno = e;
+        } else {
+            ef(s, e);
+        }
+    }
+    static void handle_inl(const char* s, i32 e) {
+        caller_ip = __ip();
+        if (_quiet) {
+            errno = e;
+        } else {
+            ef(s, e);
+        }
+    }
+
+private:
+    static unsigned long caller_ip;
+    static erf_t ef;
+    static i32 _quiet;
+    static void catcher(const char*, i32);
+};
+
+const i32 MAX_DEDICATED = 32;
+
+class _dhandler {
+    friend class zErrHandler;
+    void* object;
+    erf_t handler;
+    short lasterr;
+};
+
+class zErrHandler {
+    friend class zErrHandling;
+    friend class zErrHandler_default;
+
+public:
+    GZ_ENUM_BEGIN(error_mode)
+        LOGGING = 1,
+        FCALL = 2,
+        QUICKEST = 4,
+        EXCEPTION = 8
+    GZ_ENUM_END(error_mode)
+
+    zErrHandler(const char*);
+    error_mode setmode(error_mode em) {
+        prevmode = mode;
+        mode = em;
+        return static_cast<error_mode>(prevmode);
+    }
+
+protected:
+    void log() {
+        prevmode = mode;
+        mode = LOGGING;
+    }
+    void callfunc() {
+        prevmode = mode;
+        mode = FCALL;
+    }
+    void fast() {
+        prevmode = mode;
+        mode = QUICKEST;
+    }
+    void prevstate() {
+        mode = prevmode;
+    }
+    void handle(void*, const char*, i32);
+    i32 geterr(void*, i32 = 0);
+    i32 ok_set_ef() {
+        return ndh < MAX_DEDICATED;
+    }
+    erf_t set_ef(void*, erf_t);
+    erf_t set_default_ef(erf_t);
+
+private:
+    i32 srch(void*);
+    static _dhandler dl[MAX_DEDICATED];
+    static i32 ndh;
+    erf_t default_ef;
+    i32 slot;
+    short evalue;
+    GZ_ENUM_STORAGE(error_mode, i32) mode;
+    GZ_ENUM_STORAGE(error_mode, i32) prevmode;
+    const char* id;
+};
+
+typedef zErrHandler::error_mode ehm_t;
 
 class zErrHandling {
 public:
-    zErrHandling(CVariantSlot* errSink);
     virtual ~zErrHandling();
+    void log() {
+        hp->log();
+    }
+    void callfunc() {
+        hp->callfunc();
+    }
+    void fast() {
+        hp->fast();
+    }
+    void prevstate() {
+        hp->prevstate();
+    }
+    void handle(const char* s, i32 e) const {
+        zMinErr::caller_ip = __caller_ip();
+        // PROVEN: the original const wrapper passes object identity to the void* error table.
+        hp->handle(const_cast<zErrHandling*>(this), s, e);
+    }
+    void handle_inl(const char* s, i32 e) const {
+        zMinErr::caller_ip = __ip();
+        // PROVEN: the original const wrapper passes object identity to the void* error table.
+        hp->handle(const_cast<zErrHandling*>(this), s, e);
+    }
+    i32 geterr() {
+        return hp->geterr(this);
+    }
+    void reseterr(i32 n = 0) {
+        hp->geterr(this, n);
+    }
+    i32 ok_set_ef() {
+        return hp->ok_set_ef();
+    }
+    erf_t set_ef(erf_t f) {
+        return hp->set_ef(this, f);
+    }
+    erf_t set_default_ef(erf_t f) {
+        return hp->set_default_ef(f);
+    }
 
-    void handle(const char* message, i32 code) const;
-    void Report(char* message, i32 code);
+protected:
+    zErrHandling(zErrHandler* p = 0);
+    static char* _nomem;
+    static char* _inval;
+    static char* _overflow;
+    static char* _nosuch;
+    static char* _range;
+    static char* _exists;
+    static char* _nullparg;
+    static char* _badarg;
 
-    CVariantSlot* m_errSink;
-};
-
-typedef void(__cdecl* VariantCallback)(char* message, i32 value);
-
-GZ_ENUM_BEGIN(VariantSlotKind)
-    VARIANT_SLOT_RECORD_VALUE = 1,
-    VARIANT_SLOT_CALLBACK = 2,
-    VARIANT_SLOT_DIRECT_VALUE = 4
-GZ_ENUM_END(VariantSlotKind)
-
-struct CVariantSlot {
-    CVariantSlot(char* label);
-    void Set(zErrHandling* obj, char* item, i32 b);
-    CVariantSlot* EnsureTmErrorCallback();
-    i32 Find(i32 key);
-    void* Add(void* key, void* value);
-    VariantCallback m_callback;
-    i32 m_searchIndex;
-    u16 m_valueWord;
-    VariantSlotKind m_typeTag;
-    i32 m_reserved10;
-    char* m_label;
-};
-
-inline void zErrHandling::handle(const char* message, i32 code) const {
-    g_retAddrBreadcrumb = GetCallerRetAddr();
-    m_errSink->Set(const_cast<zErrHandling*>(this), const_cast<char*>(message), code);
-}
-
-inline void zErrHandling::Report(char* message, i32 code) {
-    g_retAddrBreadcrumb = GetRetAddr();
-    m_errSink->Set(this, message, code);
-}
-
-struct TypeKeyRec {
-    TypeKeyRec() {}
-    i32 m_key;
-    VariantCallback m_callback;
-    short m_value;
+private:
+    zErrHandler* hp;
 };
 
 #endif // GRUNTZ_ZTOOLS_ERROR_H

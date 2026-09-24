@@ -11,6 +11,10 @@ extern i32 g_defaultProjActSize;
 
 class zBitVec : public zErrHandling {
 public:
+    static ehm_t class_error_mode(ehm_t em) {
+        return ceh.setmode(em);
+    }
+
     zBitVec();
     zBitVec(i32 idx, i32 sizehint);
     zBitVec(const char* tokens, i32 minSize);
@@ -46,6 +50,8 @@ public:
     }
 
 private:
+    static zErrHandler ceh;
+
     u32* body() const {
         return static_cast<u32>(m_capacity) > BITARRAY_WORD_BITS ? m_words
                                                                  : const_cast<u32*>(&m_inline);
