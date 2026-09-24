@@ -124,6 +124,16 @@ The math reverse-use pass adds concrete pending consumers under
 retain reopening criteria in those same canonical rows; they do not close
 their broad helper families. No new compiler result is claimed for that pass.
 
+The container review adds individual pending rows under `reassess-zminerr-*`,
+`reassess-zerrhandler-*`, `reassess-dhandler-typed-layout`,
+`reassess-zerrhandling-*`, `reassess-zvec-*`, `reassess-zdvec-*`,
+`reassess-zdarray-*`, `reassess-zptrcoll-*`, `reassess-zptree-*`,
+`reassess-zsymtab-dtf-placement`, and `reassess-zsilent-consumers`.
+The original-library controls and reader provenance are retained in
+`nolf-zptree-error-owner`. They provide positive owner evidence, not a completed
+source migration or new matching score. The next implementation target is the
+complete error-owner and forwarding family, followed by its container consumers.
+
 ## Coverage and remaining work
 
 The search combined header inline/function-like-macro/template/in-class-method
