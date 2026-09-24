@@ -2116,7 +2116,7 @@ gruntentrancemove	?BuildEntranceAnimation@CGrunt@@QAEHW4GruntEntranceMode@@@Z	99
 gruntentrancemove	?FindAnimation@AnimationRegistry@@QAEPAVCAniElement@@PBD@Z	100.0000	100.0000	5	0abe5e6796c5	0x6b2a0	100.0000	
 gruntentrancemove	?FinishActiveAction@CGrunt@@QAEHXZ	91.0935	91.0935	28	677f011b0afc	0x6a6d0	91.0935	
 gruntentrancemove	?FinishEntranceMove@CGrunt@@QAEHXZ	100.0000	100.0000	8	2fd58cf97333	0x69fd0	100.0000	
-gruntentrancemove	?GruntInRadius@CGrunt@@QAEHHH@Z	90.9592	90.7347	4	1e9d14588280	0x67b00	90.9592	
+gruntentrancemove	?GruntInRadius@CGrunt@@QAEHHH@Z	90.7347	90.7347	5	9c097fb9830c	0x67b00	90.9592	
 gruntentrancemove	?LoadEntranceConfig@CGrunt@@QAEHXZ	88.6316	88.6316	19	fe3b8efb3428	0x67f80	89.0307	
 gruntentrancemove	?LoadFreezeSpellAssets@CGrunt@@QAEHXZ	89.1269	89.1269	12	482f82434d92	0x69d60	89.1269	
 gruntentrancemove	?LoadGruntMovingDeathConfig@CGrunt@@QAEHXZ	100.0000	100.0000	8	384f99b3b739	0x6a060	100.0000	

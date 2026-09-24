@@ -43,6 +43,7 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/VoiceManager.h>
 #include <Ints.h>
+#include <Lith/BDefs.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/Object.h>
@@ -191,7 +192,6 @@ i32 CGrunt::RunEntranceMove() {
     return 0;
 }
 
-// @early-stop
 RVA(0x00067b00, 0x92)
 i32 CGrunt::GruntInRadius(i32 playerIndex, i32 unitIndex) {
     CGrunt* other = m_triggerMgr->m_units[playerIndex * TM_UNITS_PER_PLAYER + unitIndex];
@@ -203,8 +203,8 @@ i32 CGrunt::GruntInRadius(i32 playerIndex, i32 unitIndex) {
         i32 dx = ox - tx;
         i32 dy = oy - ty;
         i32 sum = m_defenderRadius + m_reachRect.right;
-        i32 dist2 = abs(dy * dy + dx * dx);
-        return dist2 < sum * sum ? 1 : 0;
+        i32 dist2 = abs(SquaredDistance(dy, dx));
+        return dist2 < SQR(sum) ? 1 : 0;
     }
     return 0;
 }
