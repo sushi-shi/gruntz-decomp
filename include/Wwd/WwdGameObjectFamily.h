@@ -173,7 +173,8 @@ public:
 };
 
 inline i32 CGameObject::AttackBits(CGameObject* target) const {
-    return static_cast<i32>(target->m_objectType) & m_attackTypeMask;
+    i32 bits = static_cast<i32>(target->m_objectType) & m_attackTypeMask;
+    return bits;
 }
 
 inline void CGameObject::AttachToOwner(CDDrawSurfaceMgr* owner, i32 id) {
