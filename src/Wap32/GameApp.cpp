@@ -22,16 +22,6 @@ i32 g_gameAppTimerRemainingMs = 0;
 DATA(0x00253c80)
 i32 g_gameAppTimerPeriodMs = 0;
 
-#define FREE_GAME_MANAGER                                                                          \
-    if (m_gameMgr) {                                                                               \
-        delete m_gameMgr;                                                                          \
-        m_gameMgr = NULL;                                                                          \
-    }
-
-#define CLEAR_GAME_MANAGER_WINDOW                                                                  \
-    m_gameWnd = NULL;                                                                              \
-    m_owner = NULL
-
 RVA(0x0013d590, 0x3c)
 CGameApp::CGameApp() {
     m_gameWnd = NULL;

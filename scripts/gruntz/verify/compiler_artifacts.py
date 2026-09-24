@@ -32,12 +32,12 @@ PLACEMENT_ALLOW = Counter({
     ("src/Gruntz/BattlezMapConfig.cpp", "CString"): 1,
     ("src/Gruntz/BattlezSpecialAnim.cpp", "CString"): 4,
     ("src/Gruntz/GruntCombat.cpp", "CString"): 1,
-    ("src/Gruntz/Warlord.cpp", "CString"): 1,
+    ("include/Gruntz/WarlordActRegMacros.h", "CString"): 1,
     ("src/Gruntz/ZDArrayDerived.cpp", "CActHandler"): 1,
 })
 
 DTOR_CALL_ALLOW = Counter({
-    ("src/Bute/ButeGlobals.cpp", "CString"): 1,
+    ("include/Gruntz/TypeCollRuntimeInline.h", "CString"): 1,
     ("include/Bute/PTreeNode.h", "T"): 1,
     ("src/Gruntz/ZDArrayDerived.cpp", "CActHandler"): 1,
 })

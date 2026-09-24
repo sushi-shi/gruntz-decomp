@@ -9,11 +9,13 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDrawWorker.h>
 #include <DDrawMgr/DDrawWorkerHost.h>
 #include <DDrawMgr/DDrawWorkerList.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DirectDrawMgr.h>
+#include <DDrawMgr/WorkerLookup.h>
 #include <DinMgr2/DirectInputMgr2.h>
 #include <DinMgr2/InputMgrPtr.h>
 #include <Dsndmgr/MidiManager.h>
@@ -49,6 +51,7 @@
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
@@ -56,6 +59,7 @@
 #include <Gruntz/ImageSets.h>
 #include <Gruntz/InputState.h>
 #include <Gruntz/LevelArea.h>
+#include <Gruntz/LevelCollisionInline.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MgrAutoScroll.h>
 #include <Gruntz/Minimap.h>
@@ -64,12 +68,15 @@
 #include <Gruntz/PickupType.h>
 #include <Gruntz/PlayerCommandKind.h>
 #include <Gruntz/PlayHudLayoutPx.h>
+#include <Gruntz/PlayInline.h>
 #include <Gruntz/PlayIntervalMs.h>
 #include <Gruntz/PlayStringId.h>
 #include <Gruntz/QuestLevel.h>
 #include <Gruntz/SBI_Image.h>
 #include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialClockMacros.h>
+#include <Gruntz/SerialRecordMacros.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
@@ -161,29 +168,6 @@ GZ_ENUM_BEGIN(ToolCursorId)
     CURSOR_TOOL_YOYOZ = 0xe8
 GZ_ENUM_END(ToolCursorId)
 
-#define CLEAR_TAB_HINT(sndHost)                                                                    \
-    do {                                                                                           \
-        SoundCueRegistry* _s = (sndHost);                                                      \
-        if (_s->m_silentMode == false) {                                                                 \
-            SoundCue* found = NULL;                                                                 \
-            MapLookup(_s->m_cues, "GAME_TABHIGHLIGHT1", found);                                    \
-            if (found != NULL)                                                                     \
-                found->PlayIfElapsed(g_soundVolumePercent, 0, 0, 0);                                       \
-        }                                                                                          \
-    } while (0)
-
-static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
-    CObject* ob = NULL;
-    map.Lookup(name, ob);
-    return static_cast<CDDrawWorker*>(ob);
-}
-
-static inline CDDrawWorker* LookupWorker(CDDrawSurfaceMgr* host, LPCTSTR name) {
-    CObject* ob = NULL;
-    host->m_imageRegistry->m_workersByName.Lookup(name, ob);
-    return static_cast<CDDrawWorker*>(ob);
-}
-
 DATA(0x002bf3bc)
 u32 g_engineFrameDelta = 0;
 DATA(0x002bf3c0)
@@ -211,42 +195,6 @@ b32 g_levelBias100 = false;
 
 DATA(0x0024c020)
 char g_customLevelText[0x200];
-
-static inline void ResetAssetLoadState(CPlay* play, GruntzPlayer* player) {
-    player->m_active = true;
-    player->m_humanControlled = true;
-    play->m_region0Gate = false;
-    play->m_region1Gate = false;
-    play->m_region2Gate = false;
-    play->m_region3Gate = false;
-    play->m_viewportResizeMode = VIEW_RESIZE_IDLE;
-    play->m_hudSuppressed = true;
-    play->m_cameraBookmarkIndex = -1;
-    play->m_defeatCountdownActive = false;
-    play->m_scrollEdgeActive = 0;
-    play->m_scrollEdgeLock = 0;
-    play->m_levelTimer = NULL;
-}
-
-static inline void SetInitialFramePending(CPlay* play, b32 pending) {
-    play->m_initialFramePending = pending;
-}
-
-static inline void SetNotifyLatch(CPlay* play, b32 notify) {
-    play->m_notifyLatch = notify;
-}
-
-static inline void SetCompletedFinalLevel(CPlay* play, b32 completed) {
-    play->m_completedFinalLevel = completed;
-}
-
-static inline void ClearSaveSlot(CPlay* play) {
-    memset(&play->m_saveSlot, 0, sizeof(play->m_saveSlot));
-}
-
-static inline void SetSavedClock(CPlay* play, u32 clock) {
-    play->m_savedClock = clock;
-}
 
 // @early-stop
 RVA(0x000c7ec0, 0x5f5)
@@ -385,9 +333,7 @@ void CPlay::ReleaseResources() {
     for (i = 0; i < StartMarkerCount(); i++) {
         Coord* node = StartMarkerAt(i);
         if (node != NULL) {
-            CoordPoolNode* p = g_coordPool.NodeOf(node);
-            p->m_next = g_coordPool.m_freeHead;
-            g_coordPool.m_freeHead = p;
+            PushFreeNode(&g_coordPool, node);
         }
     }
     m_startMarkers.SetSize(0, -1);
@@ -395,9 +341,7 @@ void CPlay::ReleaseResources() {
         for (i = 0; i < PlacedObjectCellCount(k); i++) {
             Coord* node = PlacedObjectCellAt(k, i);
             if (node != NULL) {
-                CoordPoolNode* p = g_coordPool.NodeOf(node);
-                p->m_next = g_coordPool.m_freeHead;
-                g_coordPool.m_freeHead = p;
+                PushFreeNode(&g_coordPool, node);
             }
         }
         m_placedObjectCells[k].SetSize(0, -1);
@@ -405,9 +349,7 @@ void CPlay::ReleaseResources() {
     for (i = 0; i < CameraBookmarkCount(); i++) {
         Coord* node = CameraBookmarkAt(i);
         if (node != NULL) {
-            CoordPoolNode* p = g_coordPool.NodeOf(node);
-            p->m_next = g_coordPool.m_freeHead;
-            g_coordPool.m_freeHead = p;
+            PushFreeNode(&g_coordPool, node);
         }
     }
     m_cameraBookmarkIndex = -1;
@@ -1704,9 +1646,7 @@ void CPlay::FreeListTeardown() {
     for (i = 0; i < StartMarkerCount(); i++) {
         Coord* node = StartMarkerAt(i);
         if (node != NULL) {
-            CoordPoolNode* p = g_coordPool.NodeOf(node);
-            p->m_next = g_coordPool.m_freeHead;
-            g_coordPool.m_freeHead = p;
+            PushFreeNode(&g_coordPool, node);
         }
     }
     m_startMarkers.SetSize(0, -1);
@@ -1714,9 +1654,7 @@ void CPlay::FreeListTeardown() {
         for (i = 0; i < PlacedObjectCellCount(k); i++) {
             Coord* node = PlacedObjectCellAt(k, i);
             if (node != NULL) {
-                CoordPoolNode* p = g_coordPool.NodeOf(node);
-                p->m_next = g_coordPool.m_freeHead;
-                g_coordPool.m_freeHead = p;
+                PushFreeNode(&g_coordPool, node);
             }
         }
         m_placedObjectCells[k].SetSize(0, -1);
@@ -1724,9 +1662,7 @@ void CPlay::FreeListTeardown() {
     for (i = 0; i < CameraBookmarkCount(); i++) {
         Coord* node = CameraBookmarkAt(i);
         if (node != NULL) {
-            CoordPoolNode* p = g_coordPool.NodeOf(node);
-            p->m_next = g_coordPool.m_freeHead;
-            g_coordPool.m_freeHead = p;
+            PushFreeNode(&g_coordPool, node);
         }
     }
     m_cameraBookmarks.SetSize(0, -1);
@@ -3052,13 +2988,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
 
     if (m_statusBar->m_position == STATUSBAR_HIDDEN && m_statusBar->HitTestLayer(x, y)) {
         SoundCueRegistry* registry = m_mgr->m_world->m_soundRegistry;
-        if (registry->m_silentMode == false) {
-            SoundCue* cue = NULL;
-            MapLookup(registry->m_cues, "GAME_TABHIGHLIGHT1", cue);
-            if (cue != NULL) {
-                cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
-            }
-        }
+        registry->PlayCue("GAME_TABHIGHLIGHT1");
         m_statusBar->RestoreStatusBar();
         if (m_statusBar->m_position == STATUSBAR_DOCK_LEFT) {
             m_chatBox->Configure(CHATBOX_WITH_LEFT_STATUSBAR);
@@ -3660,17 +3590,6 @@ void CPlay::PostSetup(HDC dc) {
     m_mgr->m_chatLog->DrawTextLines(8, dc, &dst, 0x10);
 }
 
-#define SYNC_PAIR(ar, mode, p)                                                                     \
-    if ((mode) != SERIAL_SAVE) {                                                                   \
-        if ((mode) == SERIAL_LOAD) {                                                               \
-            (ar)->Read((p), 8);                                                                    \
-            (ar)->Read((p) + 2, 8);                                                                \
-        }                                                                                          \
-    } else {                                                                                       \
-        (ar)->Write((p), 8);                                                                       \
-        (ar)->Write((p) + 2, 8);                                                                   \
-    }
-
 // @early-stop
 RVA(0x000d0120, 0x65c)
 i32 CPlay::LoadCursorSprites(i32 cursorId, b32 targetValid) {
@@ -3996,7 +3915,7 @@ i32 CPlay::AdvanceCursorAnimation(i32 elapsedMs) {
         }
         m_cursorImage = frame;
         if (frame == NULL) {
-            m_cursorImage = static_cast<CImage*>(g->m_items.GetAt(g->m_minIndex));
+            m_cursorImage = DDRAW_WORKER_FRAME_AT_UNCHECKED(g, g->m_minIndex);
             m_cursorFrameIndex = g->m_minIndex;
         }
     }
@@ -4901,64 +4820,6 @@ i32 CPlay::ExecuteCommand(
     return 1;
 }
 
-static inline CGameLevel* LevelOf(CDDrawSurfaceMgr* holder) {
-    return holder->m_level;
-}
-
-static inline TileCollisionKind LookupTileType(CGameLevel* level, i32 x, i32 y) {
-    CDDrawWorkerHost* g = level->m_mainPlane;
-    if (x < 0) {
-        x = 0;
-    } else if (x >= g->m_planePixelWidth) {
-        x = g->m_planePixelWidth - 1;
-    }
-    if (y < 0) {
-        y = 0;
-    } else if (y >= g->m_planePixelHeight) {
-        y = g->m_planePixelHeight - 1;
-    }
-    i32 tx = x >> g->m_shiftX;
-    i32 ty = y >> g->m_shiftY;
-    i32 subX = x - (tx << g->m_shiftX);
-    i32 subY = y - (ty << g->m_shiftY);
-    i32 cell = g->GetTileHandle(tx, ty);
-    if (cell == UNINIT_FILL || cell == -1) {
-        return TILEKIND_PASSABLE;
-    }
-
-    CUniformTileImageSet* tc = static_cast<CUniformTileImageSet*>(
-        level->m_imageSets.GetAt(cell & WWD_TILE_IMAGE_SET_INDEX_MASK)
-    );
-    return tc->GetCollisionAt(subX, subY);
-}
-
-static inline TileCollisionKind LookupTileTypeDirect(CGameLevel* level, i32 x, i32 y) {
-    CDDrawWorkerHost* g = level->m_mainPlane;
-    if (x < 0) {
-        x = 0;
-    } else if (x >= g->m_planePixelWidth) {
-        x = g->m_planePixelWidth - 1;
-    }
-    if (y < 0) {
-        y = 0;
-    } else if (y >= g->m_planePixelHeight) {
-        y = g->m_planePixelHeight - 1;
-    }
-    i32 tx = x >> g->m_shiftX;
-    i32 ty = y >> g->m_shiftY;
-    i32 subX = x - (tx << g->m_shiftX);
-    i32 subY = y - (ty << g->m_shiftY);
-    i32 cell = g->m_tileHandles[g->m_tileRowOffsets[ty] + tx];
-    if (cell == UNINIT_FILL || cell == -1) {
-        return TILEKIND_PASSABLE;
-    }
-
-    CUniformTileImageSet* tc = static_cast<CUniformTileImageSet*>(
-        level->m_imageSets.GetAt(cell & WWD_TILE_IMAGE_SET_INDEX_MASK)
-    );
-    return tc->GetCollisionAt(subX, subY);
-}
-
 RVA(0x000d2b20, 0x21f)
 b32 CPlay::PlaceStartGruntz() {
 
@@ -4979,8 +4840,7 @@ b32 CPlay::PlaceStartGruntz() {
 
             LogicRecordDispatchFn dispatch = record->m_dispatch;
             if (dispatch == DispatchGruntStartingPointLogic) {
-                i32 x = (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-                i32 y = (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+                DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(obj, x, y)
                 i32 idx = m_mgr->m_triggerMgr->PlaceObject(
                     obj->m_smarts,
                     x,
@@ -5009,8 +4869,7 @@ b32 CPlay::PlaceStartGruntz() {
 
                 GruntzPlayer* e = &g_gameReg->m_players[g_curPlayer];
                 if (e != NULL && counter < e->m_maxGruntz) {
-                    i32 x = (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-                    i32 y = (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+                    DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(obj, x, y)
                     m_mgr->m_commandMgr->EnqueueSingle(
                         true,
                         static_cast<char>(obj->m_smarts),
@@ -6573,35 +6432,34 @@ i32 CPlay::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId type
         }
     }
 
-    i32* p;
-    p = &m_syncTiming.m_start.m_lo;
-    SYNC_PAIR(ar, mode, p);
+    ClockInterval* p;
+    p = &m_syncTiming;
+    SERIALIZE_CLOCK_PAIR(ar, mode, p->m_start, p->m_interval);
     if (!m_statusBar->SerializeDispatch(ar, mode, typeId, payload)) {
         return 0;
     }
     if (!m_levelTimer->SerializeDispatch(ar, mode, typeId, payload)) {
         return 0;
     }
-    p = &m_cueTiming.m_start.m_lo;
-    SYNC_PAIR(ar, mode, p);
+    p = &m_cueTiming;
+    SERIALIZE_CLOCK_PAIR(ar, mode, p->m_start, p->m_interval);
     if (!m_tileTriggers->Serialize(ar, mode, typeId, payload)) {
         return 0;
     }
-    p = &m_region0Timing.m_start.m_lo;
-    SYNC_PAIR(ar, mode, p);
-    p = &m_region1Timing.m_start.m_lo;
-    SYNC_PAIR(ar, mode, p);
-    p = &m_defeatCountdownTiming.m_start.m_lo;
-    SYNC_PAIR(ar, mode, p);
-    p = &m_region2Timing.m_start.m_lo;
-    SYNC_PAIR(ar, mode, p);
-    p = &m_region3Timing.m_start.m_lo;
-    SYNC_PAIR(ar, mode, p);
-    p = &m_bootyTiming.m_start.m_lo;
-    SYNC_PAIR(ar, mode, p);
+    p = &m_region0Timing;
+    SERIALIZE_CLOCK_PAIR(ar, mode, p->m_start, p->m_interval);
+    p = &m_region1Timing;
+    SERIALIZE_CLOCK_PAIR(ar, mode, p->m_start, p->m_interval);
+    p = &m_defeatCountdownTiming;
+    SERIALIZE_CLOCK_PAIR(ar, mode, p->m_start, p->m_interval);
+    p = &m_region2Timing;
+    SERIALIZE_CLOCK_PAIR(ar, mode, p->m_start, p->m_interval);
+    p = &m_region3Timing;
+    SERIALIZE_CLOCK_PAIR(ar, mode, p->m_start, p->m_interval);
+    p = &m_bootyTiming;
+    SERIALIZE_CLOCK_PAIR(ar, mode, p->m_start, p->m_interval);
     return 1;
 }
-#undef SYNC_PAIR
 
 RVA(0x000d79d0, 0x537)
 i32 CPlay::SavePlayState(CFileMemBase* s) {
@@ -6765,9 +6623,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         for (i32 i = 0; i < StartMarkerCount(); i++) {
             Coord* node = StartMarkerAt(i);
             if (node) {
-                CoordPoolNode* q = g_coordPool.NodeOf(node);
-                q->m_next = g_coordPool.m_freeHead;
-                g_coordPool.m_freeHead = q;
+                PushFreeNode(&g_coordPool, node);
             }
         }
         CPtrArray* markers = &m_startMarkers;
@@ -6796,9 +6652,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
             for (i32 i = 0; i < PlacedObjectCellCount(k); i++) {
                 Coord* node = PlacedObjectCellAt(k, i);
                 if (node) {
-                    CoordPoolNode* q = g_coordPool.NodeOf(node);
-                    q->m_next = g_coordPool.m_freeHead;
-                    g_coordPool.m_freeHead = q;
+                    PushFreeNode(&g_coordPool, node);
                 }
             }
             m_placedObjectCells[k].SetSize(0, -1);
@@ -6829,9 +6683,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         i32 idx;
         ar->Read(&idx, sizeof(idx));
         if (strlen(nameBuf) != 0) {
-            CObject* found = NULL;
-            res->m_imageRegistry->m_workersByName.Lookup(static_cast<const char*>(nameBuf), found);
-            CDDrawWorker* set = static_cast<CDDrawWorker*>(found);
+            CDDrawWorker* set = LookupWorker(res, static_cast<const char*>(nameBuf));
             if (set == NULL || DDRAW_WORKER_FRAME_OUT_OF_RANGE(set, idx)) {
                 m_cursorImage = NULL;
             } else {
@@ -6914,9 +6766,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         for (i32 i = 0; i < CameraBookmarkCount(); i++) {
             Coord* node = CameraBookmarkAt(i);
             if (node) {
-                CoordPoolNode* q = g_coordPool.NodeOf(node);
-                q->m_next = g_coordPool.m_freeHead;
-                g_coordPool.m_freeHead = q;
+                PushFreeNode(&g_coordPool, node);
             }
         }
         m_cameraBookmarks.SetSize(0, -1);
@@ -7558,9 +7408,7 @@ i32 CPlay::ClearPlacedObjects() {
                         }
                         m_placedObjectCells[blockIdx].RemoveAt(i, 1);
 
-                        CoordPoolNode* node = g_coordPool.NodeOf(obj);
-                        node->m_next = g_coordPool.m_freeHead;
-                        g_coordPool.m_freeHead = node;
+                        PushFreeNode(&g_coordPool, obj);
                         return -1;
                     }
                     if (result->m_smarts != IDX(PICKUP_WARPSTONE)) {

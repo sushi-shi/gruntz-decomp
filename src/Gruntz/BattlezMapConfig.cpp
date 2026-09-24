@@ -11,6 +11,8 @@
 #include <DDrawMgr/DDrawWorkerHost.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/BattlezDifficulty.h>
+#include <Gruntz/BattlezGruntInline.h>
+#include <Gruntz/BattlezGruntMacros.h>
 #include <Gruntz/BattlezIntervalMs.h>
 #include <Gruntz/BattlezRouteMaskPreset.h>
 #include <Gruntz/BattlezTask.h>
@@ -39,6 +41,7 @@
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/ScanGridMacros.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/StaminaPct.h>
@@ -83,29 +86,6 @@ RVA_DYNINIT(0x0002d7c0, 0x5, s_gruntDirSpare)
 RVA_DYNINIT(0x0002d7e0, 0x20, s_gruntDirSpare)
 DATA(0x0022b73c)
 static GruntDirectionCell s_gruntDirSpare[3];
-
-static inline CGameObject* ListGetFirst(CDDrawChildGroup* list) {
-    list->m_walkCursor = list->m_list.GetHeadPosition();
-    if (list->m_walkCursor == NULL) {
-        return NULL;
-    }
-    return list->NextChild(list->m_walkCursor);
-}
-
-static inline CGameObject* ListGetNext(CDDrawChildGroup* list) {
-    if (list->m_walkCursor == NULL) {
-        return NULL;
-    }
-    return list->NextChild(list->m_walkCursor);
-}
-
-static inline i32 ScreenTileX(CGrunt* unit) {
-    return unit->m_object->m_screenX >> TILE_SHIFT_PX;
-}
-
-static inline i32 ScreenTileY(CGrunt* unit) {
-    return unit->m_object->m_screenY >> TILE_SHIFT_PX;
-}
 
 // @early-stop
 RVA(0x00024dc0, 0x158)
@@ -330,17 +310,13 @@ void CBattlezMapConfig::FreeArrays() {
     for (i = 0; i < m_candArray.GetSize(); i++) {
         Coord* p = static_cast<Coord*>(m_candArray[i]);
         if (p != NULL) {
-            CoordPoolNode* node = g_coordPool.NodeOf(p);
-            node->m_next = g_coordPool.m_freeHead;
-            g_coordPool.m_freeHead = node;
+            PushFreeNode(&g_coordPool, p);
         }
     }
     m_candArray.SetSize(0, -1);
 
     for (i = 0; i < m_attackWaypoints.GetSize(); i++) {
-        CoordPoolNode* node = g_coordPool.NodeOf(m_attackWaypoints[i]);
-        node->m_next = g_coordPool.m_freeHead;
-        g_coordPool.m_freeHead = node;
+        PushFreeNode(&g_coordPool, m_attackWaypoints[i]);
     }
     m_attackWaypoints.SetSize(0, -1);
 
@@ -625,16 +601,6 @@ candidateFound:
     return 1;
 }
 
-static inline bool HasAnimationActName(CGrunt* unit, const char* name) {
-    return strcmp(*g_typeColl.GetNameRecord(unit->m_logicRecord->m_eventCode), name) == 0;
-}
-
-#define BATTLEZ_ACT_DIFFERS_FROM_IGLPJCR(unit, result)                                             \
-    (!(result = HasAnimationActName(unit, "I")) && !(result = HasAnimationActName(unit, "G"))      \
-     && !(result = HasAnimationActName(unit, "L")) && !(result = HasAnimationActName(unit, "P"))   \
-     && !(result = HasAnimationActName(unit, "J")) && !(result = HasAnimationActName(unit, "C"))   \
-     && !(result = HasAnimationActName(unit, "R")))
-
 // @early-stop
 RVA(0x000267c0, 0x2850)
 i32 CBattlezMapConfig::StepRowUnits() {
@@ -694,10 +660,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             && unit->m_deathAnimStarted == false && unit->m_entranceActive == false
                             && unit->m_poweredUp == false) {
                             if (BATTLEZ_ACT_DIFFERS_FROM_IGLPJCR(unit, eq)) {
-                                PickupType st2 = unit->m_entranceReason;
-                                if (st2 > PICKUP_EQUIPPABLE_LAST) {
-                                    st2 = unit->m_toolId;
-                                }
+                                PickupType st2 = ArrivalPickup(unit);
                                 if (st2 == PICKUP_BRICK && unit->m_arrivalState == AI_DEFENDER
                                     && unit->m_defenderState == AISTATE_BATTLEZ_ROUTE_TARGET) {
                                     unit->LoadPickupSprites(PICKUP_NONE, 1, 0, 0, 1);
@@ -856,14 +819,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         }
                     reclampJoin: {
                         CMapMgr* bd = m_board;
-                        CRect r1(0, 0, bd->m_width, bd->m_height);
-                        RECT rc = CRect(0, 0, bd->m_width, bd->m_height);
-                        RECT* rcDst = &bd->m_bounds;
-                        if (!IntersectRect(rcDst, &rc, &r1)) {
-                            *rcDst = rc;
-                        }
-                        bd->m_gridW = rcDst->right - rcDst->left;
-                        bd->m_gridH = rcDst->bottom - rcDst->top;
+                        GRID_CLIP_NULL(bd)
                     }
                         {
                             i32 special = 1;
@@ -988,10 +944,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                     if (static_cast<u32>(m_roundRobinTick) % TM_UNITS_PER_PLAYER
                         == static_cast<u32>(i)) {
                         {
-                            PickupType st3 = unit->m_entranceReason;
-                            if (st3 > PICKUP_EQUIPPABLE_LAST) {
-                                st3 = unit->m_toolId;
-                            }
+                            PickupType st3 = ArrivalPickup(unit);
                             if (st3 == PICKUP_WAND && unit->m_health > 0x1a) {
                                 if (rand() % g_diffTier == 0) {
                                     i32 r = g_buteMgr.GetInt("Spellz", "SpellRadius", 8);
@@ -1053,18 +1006,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
         continue;
     dispatch: {
         CMapMgr* bd2 = m_board;
-        RECT a;
-        a.left = 0;
-        a.top = 0;
-        a.right = bd2->m_width;
-        a.bottom = bd2->m_height;
-        RECT fullBounds = CRect(0, 0, bd2->m_width, bd2->m_height);
-        RECT* clippedBounds = &bd2->m_bounds;
-        if (!IntersectRect(clippedBounds, &fullBounds, &a)) {
-            *clippedBounds = fullBounds;
-        }
-        bd2->m_gridW = clippedBounds->right - clippedBounds->left;
-        bd2->m_gridH = clippedBounds->bottom - clippedBounds->top;
+        SCAN_BOUNDS_PLAINCLIP(bd2)
         PickupType stX = unit->m_entranceReason;
         if (hit == 0) {
             switch (unit->m_battleState) {
@@ -1786,9 +1728,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
             && list.GetCount() != 0) {
             Coord* head = static_cast<Coord*>(list.RemoveHead());
             if (head != NULL) {
-                CoordPoolNode* n = g_coordPool.NodeOf(head);
-                n->m_next = g_coordPool.m_freeHead;
-                g_coordPool.m_freeHead = n;
+                PushFreeNode(&g_coordPool, head);
             }
             if (list.GetCount() != 0) {
                 while (node != NULL) {
@@ -2247,9 +2187,7 @@ i32 CBattlezMapConfig::Deserialize(CFileMemBase* ar) {
     for (j = 0; j < m_attackWaypoints.GetSize(); j++) {
         Coord* q = static_cast<Coord*>(m_attackWaypoints[j]);
         if (q != NULL) {
-            CoordPoolNode* node = g_coordPool.NodeOf(q);
-            node->m_next = g_coordPool.m_freeHead;
-            g_coordPool.m_freeHead = node;
+            PushFreeNode(&g_coordPool, q);
         }
     }
     m_attackWaypoints.SetSize(0, -1);
@@ -2264,9 +2202,7 @@ i32 CBattlezMapConfig::Deserialize(CFileMemBase* ar) {
     for (j = 0; j < m_candArray.GetSize(); j++) {
         Coord* q = static_cast<Coord*>(m_candArray[j]);
         if (q != NULL) {
-            CoordPoolNode* node = g_coordPool.NodeOf(q);
-            node->m_next = g_coordPool.m_freeHead;
-            g_coordPool.m_freeHead = node;
+            PushFreeNode(&g_coordPool, q);
         }
     }
     m_candArray.SetSize(0, -1);
@@ -2503,19 +2439,6 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
     return 0;
 }
 
-#define ARR_RECYCLE(g)                                                                             \
-    if ((g)->CoordCount() != 0) {                                                                  \
-        POSITION nd = (g)->CoordHead();                                                            \
-        while (nd != 0) {                                                                          \
-            POSITION cur = nd;                                                                     \
-            (g)->m_coordList.GetNext(nd);                                                          \
-            if (static_cast<Coord*>((g)->m_coordList.GetAt(cur)) != 0) {                           \
-                g_coordPool.Push(static_cast<Coord*>((g)->m_coordList.GetAt(cur)));                \
-            }                                                                                      \
-        }                                                                                          \
-        coordList->RemoveAll();                                                                    \
-    }
-
 // @identity-TODO BattlezMapConfigAcceptAlwaysArg - the surviving external
 // thunk and `ret 4` prove one callee-popped dword, but no use survives to prove
 // the original symbol name or whether this was a member.
@@ -2647,9 +2570,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                                 && path.GetCount() != 0) {
                                 Coord* head = static_cast<Coord*>(path.RemoveHead());
                                 if (head != NULL) {
-                                    CoordPoolNode* node = g_coordPool.NodeOf(head);
-                                    node->m_next = g_coordPool.m_freeHead;
-                                    g_coordPool.m_freeHead = node;
+                                    PushFreeNode(&g_coordPool, head);
                                 }
                                 if (path.GetCount() != 0) {
                                     ARR_RECYCLE(g);
@@ -2952,10 +2873,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
                     while (n != NULL) {
                         POSITION cur = n;
                         list.GetNext(n);
-                        CoordPoolNode* node =
-                            g_coordPool.NodeOf(static_cast<Coord*>(list.GetAt(cur)));
-                        node->m_next = g_coordPool.m_freeHead;
-                        g_coordPool.m_freeHead = node;
+                        PushFreeNode(&g_coordPool, static_cast<Coord*>(list.GetAt(cur)));
                     }
                 }
                 break;
@@ -2987,10 +2905,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
                             while (n != NULL) {
                                 POSITION cur = n;
                                 list2.GetNext(n);
-                                CoordPoolNode* node =
-                                    g_coordPool.NodeOf(static_cast<Coord*>(list2.GetAt(cur)));
-                                node->m_next = g_coordPool.m_freeHead;
-                                g_coordPool.m_freeHead = node;
+                                PushFreeNode(&g_coordPool, static_cast<Coord*>(list2.GetAt(cur)));
                             }
                         }
                     }
@@ -3036,10 +2951,10 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
                                 while (n != NULL) {
                                     POSITION cur = n;
                                     list3.GetNext(n);
-                                    CoordPoolNode* node =
-                                        g_coordPool.NodeOf(static_cast<Coord*>(list3.GetAt(cur)));
-                                    node->m_next = g_coordPool.m_freeHead;
-                                    g_coordPool.m_freeHead = node;
+                                    PushFreeNode(
+                                        &g_coordPool,
+                                        static_cast<Coord*>(list3.GetAt(cur))
+                                    );
                                 }
                             }
                         }
@@ -3238,38 +3153,6 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
         board->m_gridH = aDst->bottom - aDst->top;
     }
     return 1;
-}
-
-static inline i32 SquaredDistance(i32 dx, i32 dy) {
-    return SQR(dx) + SQR(dy);
-}
-
-static inline void BuildUnitSearchBox(CGrunt* unit, RECT* box, i32 radius) {
-    i32 bottom;
-    i32 right;
-    i32 top;
-    i32 left;
-    {
-        Coord bottomProbe;
-        Coord rightProbe;
-        Coord topProbe;
-        Coord leftProbe;
-        unit->GetScreenTile(&bottomProbe);
-        leftProbe.m_x = bottomProbe.m_x;
-        bottom = bottomProbe.m_y;
-        unit->GetScreenTile(&rightProbe);
-        leftProbe.m_y = rightProbe.m_y;
-        right = rightProbe.m_x;
-        unit->GetScreenTile(&topProbe);
-        leftProbe.m_x = topProbe.m_x;
-        top = topProbe.m_y;
-        unit->GetScreenTile(&leftProbe);
-        left = leftProbe.m_x;
-    }
-    box->left = left - radius;
-    box->top = top - radius;
-    box->right = right + radius;
-    box->bottom = bottom + radius;
 }
 
 // @early-stop
@@ -3584,9 +3467,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
                             if (list.GetHeadPosition() != NULL) {
                                 Coord* head = static_cast<Coord*>(list.RemoveHead());
                                 if (head != NULL) {
-                                    CoordPoolNode* node = g_coordPool.NodeOf(head);
-                                    node->m_next = g_coordPool.m_freeHead;
-                                    g_coordPool.m_freeHead = node;
+                                    PushFreeNode(&g_coordPool, head);
                                 }
                             }
                             if (list.GetHeadPosition() != NULL) {
@@ -3828,10 +3709,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
             return 1;
         }
 
-        PickupType cur2 = unit->m_entranceReason;
-        if (cur2 > PICKUP_EQUIPPABLE_LAST) {
-            cur2 = unit->m_toolId;
-        }
+        PickupType cur2 = ArrivalPickup(unit);
         if (cur2 == PICKUP_NONE) {
             (static_cast<CGrunt*>(unit))->LoadPickupSprites(mode, 1, 0, 0, 1);
             return 1;
@@ -3937,9 +3815,7 @@ i32 CBattlezMapConfig::RouteUnitTo(
             if (list.GetCount() != 0) {
                 Coord* head = static_cast<Coord*>(list.RemoveHead());
                 if (head != NULL) {
-                    CoordPoolNode* node = g_coordPool.NodeOf(head);
-                    node->m_next = g_coordPool.m_freeHead;
-                    g_coordPool.m_freeHead = node;
+                    PushFreeNode(&g_coordPool, head);
                 }
                 if (list.GetCount() != 0) {
                     if (unit->CoordCount() != 0) {

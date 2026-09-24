@@ -52,10 +52,6 @@ CActReg CActRegPool<CKitchenSlime>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 DATA(0x0021aea8)
 i32 g_typeCounter = ACT_ID_FIRST;
 
-static inline CActHandler* KSlimeLookup(i32 coord) {
-    return (CActRegPool<CKitchenSlime>::s_table.ResolveEntry(coord));
-}
-
 RVA_COMPGEN(0x000130d0, 0x1e, ??_GCKitchenSlime@@UAEPAXI@Z)
 RVA_COMPGEN(0x00013100, 0x44, ??1CKitchenSlime@@UAE@XZ)
 
@@ -130,7 +126,7 @@ RVA(0x000b2aa0, 0x18d)
 void CKitchenSlime::RegisterType() {
     ACT_NAME_ID(id, "A")
 
-    *KSlimeLookup(id) = static_cast<CActHandler>(&CKitchenSlime::Tick);
+    *ResolveRegisteredAct<CKitchenSlime>(id) = static_cast<CActHandler>(&CKitchenSlime::Tick);
 }
 
 // @early-stop

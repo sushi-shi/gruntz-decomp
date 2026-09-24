@@ -10,6 +10,7 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/MapCellFlags.h>
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/StaminaPct.h>
@@ -18,12 +19,6 @@
 #include <Wap32/TileGeometry.h>
 
 #include <stdlib.h>
-
-static inline Coord ScanCell(CGrunt* g) {
-    Coord t;
-    g->GetScreenTile(&t);
-    return t;
-}
 
 // @early-stop
 RVA(0x00032ce0, 0x448)

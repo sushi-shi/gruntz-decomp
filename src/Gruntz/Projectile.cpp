@@ -31,9 +31,11 @@
 #include <Gruntz/LightFx.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MapCellFlags.h>
+#include <Gruntz/MapCellInline.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
+#include <Gruntz/SerialRefLookup.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SoundCue.h>
@@ -126,23 +128,6 @@ CProjectile::~CProjectile() {
     m_hitList.RemoveAll();
 }
 
-static inline CAniElement* LookupAnim(CMapStringToPtr& map, LPCTSTR name) {
-    CAniElement* found = NULL;
-    MapLookup(map, name, found);
-    return found;
-}
-
-static inline CWwdSpriteObject* LookupSerialRef(CMapPtrToPtr& byId, i32 id) {
-    CGameObject* found = NULL;
-    if (MapLookupById(byId, id, found) == false) {
-        return NULL;
-    }
-    if (found == NULL) {
-        return NULL;
-    }
-    return found->GetClassId() == CLASSID_SERIALREF ? static_cast<CWwdSpriteObject*>(found) : NULL;
-}
-
 // @early-stop
 RVA(0x000df050, 0x6ed)
 i32 CProjectile::LoadProjectileSprites(
@@ -211,21 +196,21 @@ i32 CProjectile::LoadProjectileSprites(
             return 0;
     }
 
-    m_frames[0] = LookupAnim(
+    m_frames[0] = LookupAnimation(
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
         key + DATA_COMPGEN(0x00213658, "1")
         );
     if (m_frames[0] == NULL) {
         return 0;
     }
-    m_frames[1] = LookupAnim(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "2");
-    m_frames[2] = LookupAnim(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "3");
-    m_frames[3] = LookupAnim(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "4");
-    m_frames[4] = LookupAnim(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "5");
+    m_frames[1] = LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "2");
+    m_frames[2] = LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "3");
+    m_frames[3] = LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "4");
+    m_frames[4] = LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "5");
     m_frames[PF_IMPACT] =
-        LookupAnim(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "IMPACT");
+        LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "IMPACT");
     m_frames[PF_FALL] =
-        LookupAnim(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "FALL");
+        LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, key + "FALL");
 
     SwitchAnimation(m_frames[0]);
     SetImageSetByName(key + "_OBJECT");
@@ -285,10 +270,6 @@ i32 CProjectile::LoadProjectileSprites(
     return 1;
 }
 
-static inline CActHandler* ProjActLookup(i32 coord) {
-    return (CActRegPool<CProjectile>::s_table.ResolveEntry(coord));
-}
-
 RVA(0x000df9a0, 0x102)
 void CProjectile::FireActivation(i32 coord) {
     DispatchRegisteredAct(this, coord);
@@ -297,7 +278,7 @@ void CProjectile::FireActivation(i32 coord) {
 RVA(0x000dfb00, 0x18d)
 void CProjectile::RegisterType() {
     ACT_NAME_ID(id, "A")
-    *ProjActLookup(id) =
+    *ResolveRegisteredAct<CProjectile>(id) =
         static_cast<CActHandler>(&CProjectile::AdvanceAnimationAndDeleteWhenComplete);
 }
 
@@ -744,7 +725,7 @@ i32 CProjectile::SerializeDispatch(
                 g_serialCounter++;
                 s->Read(buf, SERIAL_NAME_LEN);
                 if (strlen(buf) != 0) {
-                    m_frames[ni] = LookupAnim(reg->m_animRegistry->m_animations, buf);
+                    m_frames[ni] = LookupAnimation(reg->m_animRegistry->m_animations, buf);
                 } else {
                     m_frames[ni] = NULL;
                 }
@@ -843,7 +824,8 @@ i32 CProjectile::SerializeDispatch(
                 m_value = NULL;
                 return 1;
             }
-            m_value = LookupAnim(m_ownerLogicRecord->m_ownerCtx->m_animRegistry->m_animations, buf);
+            m_value =
+                LookupAnimation(m_ownerLogicRecord->m_ownerCtx->m_animRegistry->m_animations, buf);
             return 1;
         }
         case SERIAL_SAVE: {
@@ -898,10 +880,6 @@ i32 CBoomerang::SerializeDispatch(
     return CProjectile::SerializeDispatch(ar, mode, typeId, object) ? 1 : 0;
 }
 
-static inline CActHandler* TBombLookup(i32 coord) {
-    return (CActRegPool<CTimeBomb>::s_table.ResolveEntry(coord));
-}
-
 RVA(0x000e1830, 0x102)
 void CTimeBomb::FireActivation(i32 coord) {
     DispatchRegisteredAct(this, coord);
@@ -910,7 +888,7 @@ void CTimeBomb::FireActivation(i32 coord) {
 RVA(0x000e1990, 0x18d)
 void CTimeBomb::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    *(TBombLookup(id)) = static_cast<CActHandler>(&CTimeBomb::UpdateCountdown);
+    *(ResolveRegisteredAct<CTimeBomb>(id)) = static_cast<CActHandler>(&CTimeBomb::UpdateCountdown);
 }
 
 // @early-stop
@@ -942,27 +920,6 @@ CTimeBomb::CTimeBomb(CGameObject* obj)
         g->m_rowInts[cy][cx * 7] |= 0x1000000;
     }
     m_object->m_smarts = -1;
-}
-
-static inline i32 TBombGridCell(CGameObject* obj) {
-    CMapMgr* g = g_gameReg->m_tileGrid;
-    i32 cx = obj->m_screenX >> TILE_SHIFT_PX;
-    i32 cy = obj->m_screenY >> TILE_SHIFT_PX;
-    if (static_cast<u32>(cx) < static_cast<u32>(g->m_width)
-        && static_cast<u32>(cy) < static_cast<u32>(g->m_height)) {
-        BrickzCell* row = g->m_rows[cy];
-        return row[cx].m_flags;
-    }
-    return 1;
-}
-static inline void TBombGridClear(CGameObject* obj) {
-    CMapMgr* g = g_gameReg->m_tileGrid;
-    i32 cx = obj->m_screenX >> TILE_SHIFT_PX;
-    i32 cy = obj->m_screenY >> TILE_SHIFT_PX;
-    if (static_cast<u32>(cx) < static_cast<u32>(g->m_width)
-        && static_cast<u32>(cy) < static_cast<u32>(g->m_height)) {
-        g->m_rowInts[cy][cx * 7] &= ~0x1000000;
-    }
 }
 
 // @early-stop

@@ -1,15 +1,17 @@
-# Two entities, continued: the split need not follow the class, and NESTED ctors need a TU split
+# Tested constructor visibility splits can differ within one class
 
 - **confidence** c10
 - **tags** `cpp:ctor` `cpp:inline` `cpp:class` | `asm:call` | `topic:codegen-idiom` `topic:wall`
 
-[two-shapes-need-two-entities.md](two-shapes-need-two-entities.md) establishes the recipe: a
-body retail both `call`s and expands is TWO source entities, separated for a ctor by a tag on
-the **inline** sibling. This is what applying it to the two remaining base ctors added -
-`??0CUserLogic@@QAE@PAUCGameObject@@@Z` (0x58cd0) and
-`??0CGameObject@@QAE@PAVCDDrawSurfaceMgr@@HH@Z` (0x15b390), both **0 -> 100.00 EXACT**, and the
-same split on `??0CMotionState@@QAE@XZ` (0x136d0) taking `CGrunt::CGrunt` 60.95 -> 90.40 and
-`CProjectile::CProjectile` 60.54 -> 86.23.
+The tagged/visibility split below reproduces the historical constructor call
+population. It is a tested representation, not proof that original source
+required two entities or a TU split. One header-inline constructor can produce
+both forms; [the per-class constructor controls](constructor-call-census-needs-a-calibrated-harness.md) retest this family individually
+and together, and explain the limits of uncalibrated budget measurements.
+
+The earlier implementation recovered `CUserLogic(CGameObject*)` (0x58cd0) and
+`CGameObject(owner,id,flags)` (0x15b390) at 100%, while the `CMotionState()` split
+restored the required calls in the Grunt and Projectile constructors.
 
 ## A big body needs a shared helper, because MSVC 5 has no delegating ctors
 
@@ -53,12 +55,12 @@ Read the call site to be sure it is the *base* and not the derived ctor: at 0x16
 `[ebx] = ??_7CWwdSpriteObject` stamp and the five +0x18c..+0x19c stores - the derived ctor is
 expanded *around* a called base.
 
-## The ctors NESTED inside the pinned body: a TU split, not an inline
+## The tested visibility split for nested constructors
 
 0x15b390 also **expands** `??0CResolveNode@@QAE@...` and `??0CLogicRecord@@QAE@...`, while the
 three factories that expand `CGameObject`'s own body still **call** both. The obvious reading is
 an inline-depth rule and the obvious fix - make those two ctors `inline` in their own headers -
-is **wrong**: cl 5 then expands them at *every* site, both COMDATs vanish from every base obj
+failed in that trial: cl 5 expanded them at every tested real site, both COMDATs vanish from every base obj
 (`llvm-nm build/objdiff/base/*.obj` finds zero emitters) and the labels ratchet fires with no
 unit gaining them.
 

@@ -6,6 +6,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorker.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/WorkerLookup.h>
 #include <Enums.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/MenuItemState.h>
@@ -20,18 +21,6 @@ RVA(0x001832d0, 0x20)
 CString CMenuPage::GetPageKey() {
     return m_pageKey;
 }
-
-static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
-    CObject* foundObject = NULL;
-    map.Lookup(name, foundObject);
-    return static_cast<CDDrawWorker*>(foundObject);
-}
-
-#define RESOLVE_MENU_HEADER_ANIMATION(animationKey, animation)                                     \
-    CDDrawWorker* animation =                                                                      \
-        LookupWorker(m_world->m_imageRegistry->m_workersByName, animationKey);                     \
-    m_headerAnimation = animation;                                                                 \
-    return animation != NULL
 
 RVA(0x001832f0, 0xa5)
 i32 CMenuPage::Configure(
@@ -276,7 +265,7 @@ i32 CMenuPage::Draw(CDDrawSurfacePair* target) {
     CDDrawWorker* headerAnimation = m_headerAnimation;
     if (headerAnimation) {
         CImage* headerFrame =
-            static_cast<CImage*>(headerAnimation->m_items.GetAt(headerAnimation->m_minIndex));
+            DDRAW_WORKER_FRAME_AT_UNCHECKED(headerAnimation, headerAnimation->m_minIndex);
         if (headerFrame) {
             drawY += headerFrame->m_anchorY;
             headerFrame->RenderFrame(target, centerX, drawY, 0);
@@ -465,7 +454,7 @@ i32 CMenuPage::DrawMultiColumn(CDDrawSurfacePair* target) {
     CDDrawWorker* headerAnimation = m_headerAnimation;
     if (headerAnimation) {
         CImage* headerFrame =
-            static_cast<CImage*>(headerAnimation->m_items.GetAt(headerAnimation->m_minIndex));
+            DDRAW_WORKER_FRAME_AT_UNCHECKED(headerAnimation, headerAnimation->m_minIndex);
         if (headerFrame) {
             drawY += headerFrame->m_anchorY;
             headerFrame->RenderFrame(target, centerX, drawY, 0);

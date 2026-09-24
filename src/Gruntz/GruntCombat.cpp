@@ -28,6 +28,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntActRegMacros.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntCombatClockInline.h>
 #include <Gruntz/GruntCombatDirection.h>
@@ -53,6 +54,7 @@
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/ScanGridMacros.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/SortKeyLayer.h>
@@ -237,13 +239,6 @@ CActReg CActRegPool<CGrunt>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
         cue = out;                                                                                 \
     } while (0)
 
-#define SETDIR(cell, nx, ny)                                                                       \
-    do {                                                                                           \
-        newPos.m_y = (ny);                                                                         \
-        newPos.m_x = (nx);                                                                         \
-        this->m_entranceCell = (cell);                                                             \
-    } while (0)
-
 // @early-stop
 RVA(0x00056f80, 0xb0)
 i32* CGrunt::EntranceTileOffset(i32* out) {
@@ -284,43 +279,6 @@ i32* CGrunt::EntranceTileOffset(i32* out) {
     return out;
 }
 
-#define SCAN_BOUNDS(grid)                                                                          \
-    {                                                                                              \
-        CRect rb(0, 0, (grid)->m_width, (grid)->m_height);                                         \
-        RECT ra;                                                                                   \
-        ra = CRect(0, 0, (grid)->m_width, (grid)->m_height);                                       \
-        RECT* rd = &(grid)->m_bounds;                                                              \
-        if (!IntersectRect(rd, &ra, &rb)) {                                                        \
-            *rd = ra;                                                                              \
-        }                                                                                          \
-        (grid)->m_gridW = rd->right - rd->left;                                                    \
-        (grid)->m_gridH = rd->bottom - rd->top;                                                    \
-    }
-
-#define SCAN_BOUNDS_PLAINCLIP(grid)                                                                \
-    {                                                                                              \
-        RECT rb;                                                                                   \
-        rb.left = 0;                                                                               \
-        rb.top = 0;                                                                                \
-        rb.right = (grid)->m_width;                                                                \
-        rb.bottom = (grid)->m_height;                                                              \
-        RECT ra;                                                                                   \
-        ra = CRect(0, 0, (grid)->m_width, (grid)->m_height);                                       \
-        RECT* rd = &(grid)->m_bounds;                                                              \
-        if (!IntersectRect(rd, &ra, &rb)) {                                                        \
-            *rd = ra;                                                                              \
-        }                                                                                          \
-        (grid)->m_gridW = rd->right - rd->left;                                                    \
-        (grid)->m_gridH = rd->bottom - rd->top;                                                    \
-    }
-
-#define FREELIST_PUSH(elem)                                                                        \
-    {                                                                                              \
-        CoordPoolNode* node = g_coordPool.NodeOf((elem));                                          \
-        node->m_next = g_coordPool.m_freeHead;                                                     \
-        g_coordPool.m_freeHead = node;                                                             \
-    }
-
 RVA(0x00057060, 0x72)
 void CGrunt::ComputeFacing(double dt) {
     CWwdSpriteObject* h = m_object;
@@ -331,64 +289,6 @@ void CGrunt::ComputeFacing(double dt) {
     m_movePosX = static_cast<double>(h->m_screenX);
     m_movePosY = static_cast<double>(h->m_screenY);
 }
-
-#define BIND_GRUNT_ACT_RAW(id, handler)                                                            \
-    {                                                                                              \
-        GruntActPmf _p;                                                                            \
-        _p.m_pmf = (handler);                                                                      \
-        /* The stored generic CUserLogic PMF is reached through retail's raw */                    \
-        /* _zvec accessor; the typed view exists only at this ABI seam. */                         \
-        *CActReg::AsElem(CActRegPool<CGrunt>::s_table._zvec::IndexToPtr(id)) = _p.m_h;             \
-    }
-
-#define BIND_GRUNT_ACT_TYPED(id, handler)                                                          \
-    {                                                                                              \
-        GruntActPmf _p;                                                                            \
-        _p.m_pmf = (handler);                                                                      \
-        *CActRegPool<CGrunt>::s_table.Resolve(id) = _p.m_h;                                        \
-    }
-
-#define REGISTER_GRUNT_ACT_KEY_IMPL(key, handler, bind)                                            \
-    {                                                                                              \
-        i32 id = ActFindId(key);                                                                   \
-        if (id == 0) {                                                                             \
-            ActInsertId(key, g_typeCounter);                                                       \
-            id = g_typeCounter;                                                                    \
-            /* Keep the global counter as the name-slot lookup's direct argument; */               \
-            /* using id changes MSVC's two-consumer CSE and register allocation. */                \
-            /* See docs/patterns/act-registrar-counter-cse-and-freeloop.md. */                     \
-            CString* slot = g_typeColl.ScratchResolve(g_typeCounter);                              \
-            i32 n = g_typeColl.m_grown;                                                            \
-            CString* list = ActNameSlots();                                                        \
-            while (n-- != 0) {                                                                     \
-                if (list != 0) {                                                                   \
-                    list->CString::CString();                                                      \
-                }                                                                                  \
-                list++;                                                                            \
-            }                                                                                      \
-            *slot = (key);                                                                         \
-            g_typeCounter++;                                                                       \
-        }                                                                                          \
-        bind(id, handler);                                                                         \
-    }
-
-#define REGISTER_GRUNT_ACT_KEY(key, handler)                                                       \
-    REGISTER_GRUNT_ACT_KEY_IMPL(key, handler, BIND_GRUNT_ACT_RAW)
-
-#define REGISTER_GRUNT_ACT_KEY_TYPED(key, handler)                                                 \
-    REGISTER_GRUNT_ACT_KEY_IMPL(key, handler, BIND_GRUNT_ACT_TYPED)
-
-#define REGISTER_GRUNT_ACT_KEY_DERIVED(key, handler)                                               \
-    {                                                                                              \
-        i32 id = ActFindId(key);                                                                   \
-        if (id == 0) {                                                                             \
-            ActInsertId(key, g_typeCounter);                                                       \
-            id = g_typeCounter;                                                                    \
-            *g_typeColl.SlotOf(id) = (key);                                                        \
-            g_typeCounter++;                                                                       \
-        }                                                                                          \
-        BIND_GRUNT_ACT_TYPED(id, handler);                                                         \
-    }
 
 RVA(0x00057100, 0x590)
 i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
@@ -408,14 +308,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
 
     SoundCueRegistry* slot =
         (static_cast<CDDrawSurfaceMgr*>(m_ownerLogicRecord->m_ownerCtx))->m_soundRegistry;
-    if (slot->m_silentMode == false) {
-        SoundCue* sout = NULL;
-        MapLookup(slot->m_cues, s_gameAttack, sout);
-        if (sout != NULL) {
-
-            sout->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
-        }
-    }
+    slot->PlayCue(s_gameAttack);
 
     switch (idx) {
         case SPELL_FREEZE: {
@@ -680,8 +573,7 @@ void CGrunt::EnsureVehicleLoopSound(const char* key) {
         return;
     }
     CDDrawSurfaceMgr* world = g_gameReg->m_world;
-    SoundCue* cue = NULL;
-    MapLookup(world->m_soundRegistry->m_cues, key, cue);
+    SoundCue* cue = world->m_soundRegistry->FindCue(key);
     if (cue == NULL) {
         return;
     }
@@ -710,8 +602,7 @@ void CGrunt::EnsurePowerupLoopSound(const char* key) {
     if (sound != NULL) {
         return;
     }
-    SoundCue* cue = NULL;
-    MapLookup(g_gameReg->m_world->m_soundRegistry->m_cues, key, cue);
+    SoundCue* cue = g_gameReg->m_world->m_soundRegistry->FindCue(key);
     if (cue == NULL) {
         return;
     }
@@ -860,7 +751,7 @@ i32 CGrunt::PathScan() {
                         }
                         Coord* elem = static_cast<Coord*>(s.RemoveHead());
                         if (elem != NULL) {
-                            FREELIST_PUSH(elem);
+                            PushFreeNode(&g_coordPool, elem);
                         }
                         s.RemoveAll();
                         SCAN_BOUNDS_PLAINCLIP(grid);
@@ -873,12 +764,12 @@ i32 CGrunt::PathScan() {
         }
 
         if (hits == GRUNT_COMBAT_FULL_SCAN_HITS) {
-            SCAN_BOUNDS(grid);
+            GRID_CLIP_NULL(grid);
             break;
         }
     }
 
-    SCAN_BOUNDS(grid);
+    GRID_CLIP_NULL(grid);
 
     RECT nb;
     nb.left = target.m_x - 4;
@@ -936,7 +827,7 @@ i32 CGrunt::PathScan() {
                     if (s.GetCount() != 0) {
                         Coord* elem = static_cast<Coord*>(s.RemoveHead());
                         if (elem != NULL) {
-                            FREELIST_PUSH(elem);
+                            PushFreeNode(&g_coordPool, elem);
                         }
                         if (s.GetCount() != 0) {
 
@@ -975,7 +866,7 @@ i32 CGrunt::PathScan() {
                                 if (s.GetCount() != 0) {
                                     Coord* e2 = static_cast<Coord*>(s.RemoveHead());
                                     if (e2 != NULL) {
-                                        FREELIST_PUSH(e2);
+                                        PushFreeNode(&g_coordPool, e2);
                                     }
                                     if (s.GetCount() != 0) {
                                         POSITION q = s.GetHeadPosition();
@@ -988,7 +879,7 @@ i32 CGrunt::PathScan() {
                                     }
                                 }
                             }
-                            SCAN_BOUNDS(grid);
+                            GRID_CLIP_NULL(grid);
                             return 1;
                         }
                     }
@@ -1922,42 +1813,7 @@ CObject* SoundCueRegistry::Lookup(const char* key) {
 }
 
 RVA(0x0005baf0, 0xf4)
-i32 DispatchGruntLogic(CGameObject* owner) {
-    CLogicRecord* record = owner->m_logicRecord;
-    switch (record->LogicEvent()) {
-        case ACT_UNINITIALISED: {
-            record->SetLogicEvent(ACT_LIVE);
-            CUserLogic* sub = new CGrunt(owner);
-            sub->Activate();
-            record->m_userLogic = sub;
-            break;
-        }
-        case ACT_OBJECT_REMOVED:
-            record->m_userLogic->OnObjectRemoved();
-            break;
-        case ACT_LEAVE_ACTIVE_REGION:
-            record->m_userLogic->OnLeaveActiveRegion();
-            break;
-        case ACT_PREPARE_SAVE:
-            record->m_userLogic->PrepareSave();
-            break;
-        case ACT_AFTER_LOAD_REFERENCES:
-            record->m_userLogic->AfterLoadReferences();
-            break;
-        case ACT_AFTER_LOAD:
-            record->m_userLogic->AfterLoad();
-            break;
-        case ACT_AFTER_SAVE:
-            record->m_userLogic->AfterSave();
-            break;
-        case ACT_LIVE:
-            break;
-        default:
-            DispatchUnhandledLogicEvent(record->m_userLogic);
-            break;
-    }
-    return 1;
-}
+i32 DispatchGruntLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CGrunt)}
 
 RVA(0x0005bcd0, 0x102)
 void CGrunt::FireActivation(i32 id) {

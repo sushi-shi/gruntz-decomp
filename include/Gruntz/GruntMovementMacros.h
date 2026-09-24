@@ -71,4 +71,64 @@
         }                                                                                          \
     }
 
+#define SETDIR(cell, nx, ny)                                                                       \
+    do {                                                                                           \
+        newPos.m_y = (ny);                                                                         \
+        newPos.m_x = (nx);                                                                         \
+        this->m_entranceCell = (cell);                                                             \
+    } while (0)
+
+#define MV_VEC(V) m_entranceCell = g_gruntDir##V
+
+#define MV_N                                                                                       \
+    MV_VEC(North);                                                                                 \
+    m_lastTilePx.m_y -= 0x10
+
+#define MV_S                                                                                       \
+    MV_VEC(South);                                                                                 \
+    m_lastTilePx.m_y += 0x10
+
+#define MV_E                                                                                       \
+    MV_VEC(East);                                                                                  \
+    m_lastTilePx.m_x += 0x10
+
+#define MV_W                                                                                       \
+    MV_VEC(West);                                                                                  \
+    m_lastTilePx.m_x -= 0x10
+
+#define MV_NE                                                                                      \
+    MV_VEC(NorthEast);                                                                             \
+    m_lastTilePx.m_x += 0x10;                                                                      \
+    m_lastTilePx.m_y -= 0x10
+
+#define MV_NW                                                                                      \
+    MV_VEC(NorthWest);                                                                             \
+    m_lastTilePx.m_x -= 0x10;                                                                      \
+    m_lastTilePx.m_y -= 0x10
+
+#define MV_SE                                                                                      \
+    MV_VEC(SouthEast);                                                                             \
+    m_lastTilePx.m_x += 0x10;                                                                      \
+    m_lastTilePx.m_y += 0x10
+
+#define MV_SW                                                                                      \
+    MV_VEC(SouthWest);                                                                             \
+    m_lastTilePx.m_x -= 0x10;                                                                      \
+    m_lastTilePx.m_y += 0x10
+
+#define REGION_INIT()                                                                              \
+    do {                                                                                           \
+        RECT a;                                                                                    \
+        a.left = -1;                                                                               \
+        a.top = -1;                                                                                \
+        a.right = 1;                                                                               \
+        a.bottom = 1;                                                                              \
+        m_vehicleContactRect = a;                                                                  \
+        a.left = 0;                                                                                \
+        a.top = 0;                                                                                 \
+        a.right = 0;                                                                               \
+        a.bottom = 0;                                                                              \
+        m_vehicleContactExclusionRect = a;                                                         \
+    } while (0)
+
 #endif // GRUNTZ_GRUNTMOVEMENTMACROS_H

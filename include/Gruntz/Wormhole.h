@@ -25,6 +25,4 @@ public:
     i32 SpawnPartners();
 };
 
-typedef i32 (CUserLogic::*CActHandler)();
-
 #endif // GRUNTZ_CWORMHOLE_H

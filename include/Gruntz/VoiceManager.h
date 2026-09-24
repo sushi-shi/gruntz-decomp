@@ -75,4 +75,6 @@ public:
     i32 m_voiceVolume;
 };
 
+#define CLEAR_VOICE_INDICATORS memset(m_indicators, 0, sizeof(m_indicators))
+
 #endif // GRUNTZ_VOICEMANAGER_H

@@ -209,12 +209,6 @@ i32 CGrunt::GruntInRadius(i32 playerIndex, i32 unitIndex) {
 }
 
 // @early-stop
-static inline CAniElement* LookupAnimation(CMapStringToPtr& map, LPCTSTR name) {
-    CAniElement* result = NULL;
-    MapLookup(map, name, result);
-    return result;
-}
-
 RVA(0x00067bd0, 0x2ef)
 i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
     SET_ANIMATION_ACT("K");
@@ -902,36 +896,6 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
 
     LevelArea area = state->m_levelType;
 
-#define MV_VEC(V) m_entranceCell = g_gruntDir##V
-#define MV_N                                                                                       \
-    MV_VEC(North);                                                                                 \
-    m_lastTilePx.m_y -= 0x10
-#define MV_S                                                                                       \
-    MV_VEC(South);                                                                                 \
-    m_lastTilePx.m_y += 0x10
-#define MV_E                                                                                       \
-    MV_VEC(East);                                                                                  \
-    m_lastTilePx.m_x += 0x10
-#define MV_W                                                                                       \
-    MV_VEC(West);                                                                                  \
-    m_lastTilePx.m_x -= 0x10
-#define MV_NE                                                                                      \
-    MV_VEC(NorthEast);                                                                             \
-    m_lastTilePx.m_x += 0x10;                                                                      \
-    m_lastTilePx.m_y -= 0x10
-#define MV_NW                                                                                      \
-    MV_VEC(NorthWest);                                                                             \
-    m_lastTilePx.m_x -= 0x10;                                                                      \
-    m_lastTilePx.m_y -= 0x10
-#define MV_SE                                                                                      \
-    MV_VEC(SouthEast);                                                                             \
-    m_lastTilePx.m_x += 0x10;                                                                      \
-    m_lastTilePx.m_y += 0x10
-#define MV_SW                                                                                      \
-    MV_VEC(SouthWest);                                                                             \
-    m_lastTilePx.m_x -= 0x10;                                                                      \
-    m_lastTilePx.m_y += 0x10
-
     if (area < AREA_TILESET_B_FIRST) {
         switch (static_cast<MovingDeathTileSetAId>(tileId)) {
             case MOVING_DEATH_A_S_1:
@@ -1260,8 +1224,7 @@ CObject* CAniElement::AtChecked(i32 i) const {
 
 RVA(0x0006b2a0, 0x23)
 CAniElement* AnimationRegistry::FindAnimation(const char* key) {
-    CAniElement* animation = NULL;
-    MapLookup(m_animations, key, animation);
+    CAniElement* animation = LookupAnimation(m_animations, key);
     return animation;
 }
 

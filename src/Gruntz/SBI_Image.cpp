@@ -7,6 +7,7 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/WorkerLookup.h>
 #include <Enums.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -44,9 +45,7 @@ i32 CSBI_Image::SetupImage(
         m_rect = rc;
         m_cmd = cmd;
         if (key != NULL) {
-            CObject* found = NULL;
-            host->m_imageRegistry->m_workersByName.Lookup(key, found);
-            CDDrawWorker* rec = static_cast<CDDrawWorker*>(found);
+            CDDrawWorker* rec = LookupWorker(host, key);
             CImage* val;
             if (rec == NULL || DDRAW_WORKER_MISSES_FRAME(rec, 1)) {
                 val = NULL;
@@ -111,9 +110,7 @@ i32 CSBI_Image::SerializeFields(
             ar->Read(&idx, sizeof(idx));
             if (strlen(name) != 0) {
                 i32 frameIndex = idx;
-                CObject* r_ob = NULL;
-                mgr->m_imageRegistry->m_workersByName.Lookup(name, r_ob);
-                CDDrawWorker* r = static_cast<CDDrawWorker*>(r_ob);
+                CDDrawWorker* r = LookupWorker(mgr, name);
                 if (r && DDRAW_WORKER_FRAME_IN_RANGE(r, frameIndex)) {
                     SetFrame(DDRAW_WORKER_FRAME_AT_UNCHECKED(r, frameIndex));
                 } else {

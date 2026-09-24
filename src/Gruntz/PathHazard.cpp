@@ -20,6 +20,7 @@
 #include <Gruntz/PickupType.h>
 #include <Gruntz/RainCloud.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialClockInline.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SoundCue.h>
@@ -320,8 +321,7 @@ i32 CRainCloud::HitTest(i32 playerIndex, i32 unitIndex) {
     if (::PtInRect(&reg->m_viewBounds, obj->m_screenX, obj->m_screenY)) {
         SoundCueRegistry* registry = reg->m_world->m_soundRegistry;
         if (registry->m_silentMode == false) {
-            SoundCue* found = NULL;
-            MapLookup(registry->m_cues, "LEVEL_CLOUDHAZARDKILL", found);
+            SoundCue* found = registry->FindCue("LEVEL_CLOUDHAZARDKILL");
             SoundCue* cue = found;
             if (cue != NULL) {
                 b32 soundEnabled = g_soundEnabled;
@@ -463,18 +463,6 @@ i32 CRainCloud::SerializeDispatch(
     return 1;
 }
 
-static inline void SerQuadPair(CFileMemBase* ar, SerialMode mode, CHazardTimer* timer) {
-    if (mode != SERIAL_SAVE) {
-        if (mode == SERIAL_LOAD) {
-            ar->Read(&timer->m_deadline, sizeof(timer->m_deadline));
-            ar->Read(&timer->m_window, sizeof(timer->m_window));
-        }
-    } else {
-        ar->Write(&timer->m_deadline, sizeof(timer->m_deadline));
-        ar->Write(&timer->m_window, sizeof(timer->m_window));
-    }
-}
-
 RVA(0x000b4d30, 0x287)
 i32 CPathHazard::SerializeDispatch(
     CFileMemBase* stream,
@@ -490,8 +478,8 @@ i32 CPathHazard::SerializeDispatch(
         typeId,
         object
     )
-    SerQuadPair(s, mode, &m_leg);
-    SerQuadPair(s, mode, &m_strike);
+    SerializeClockPair(s, mode, &m_leg);
+    SerializeClockPair(s, mode, &m_strike);
     if (mode != SERIAL_SAVE) {
         if (mode == SERIAL_LOAD) {
             s->Read(&m_speed, sizeof(m_speed));

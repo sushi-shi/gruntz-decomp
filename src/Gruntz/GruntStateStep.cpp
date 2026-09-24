@@ -9,6 +9,7 @@
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
+#include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/ScanGridMacros.h>
 #include <Gruntz/TriggerMgr.h>
@@ -22,20 +23,6 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-
-#define STEP_DRAIN(g)                                                                              \
-    {                                                                                              \
-        POSITION pos = (g)->m_coordList.GetHeadPosition();                                         \
-        if (pos != 0) {                                                                            \
-            do {                                                                                   \
-                Coord* d = static_cast<Coord*>((g)->m_coordList.GetNext(pos));                     \
-                if (d != 0) {                                                                      \
-                    g_coordPool.Push(d);                                                           \
-                }                                                                                  \
-            } while (pos != 0);                                                                    \
-        }                                                                                          \
-        (g)->m_coordList.RemoveAll();                                                              \
-    }
 
 RVA(0x00033520, 0xbc3)
 i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
@@ -58,7 +45,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
         }
         if (nb != NULL) {
             if (g->CoordCount() != 0) {
-                STEP_DRAIN(g);
+                RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(g);
             }
 
             i32 arrivalMask = 0xdc7;
@@ -118,7 +105,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
             if (g->RectContains(s->m_screenX, s->m_screenY) != 0) {
 
                 if (g->CoordCount() != 0) {
-                    STEP_DRAIN(g);
+                    RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(g);
                 }
                 Coord none;
                 g->m_arrivalCell = *none.Set(-1, -1);
@@ -209,14 +196,14 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 g->m_dwell = 0;
                 g->m_defenderState = AISTATE_SEEK;
                 if (g->CoordCount() != 0) {
-                    STEP_DRAIN(g);
+                    RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(g);
                 }
                 g->m_dwell = 0;
                 goto tail;
             }
 
             if (g->CoordCount() != 0) {
-                STEP_DRAIN(g);
+                RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(g);
             }
             i32 arrivalMask = 0xdc7;
             i32 dist2;

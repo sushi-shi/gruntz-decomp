@@ -5,7 +5,6 @@
 
 #include <Mfc.h>
 
-#include <Gruntz/SbGeom.h>
 #include <Gruntz/SBI_GruntMachine.h>
 #include <Gruntz/SBI_Image.h>
 #include <Gruntz/SBI_ImageSet.h>
@@ -16,5 +15,6 @@
 #include <Gruntz/SbiConfig.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Ints.h>
+#include <MakeRect.h>
 
 #endif // GRUNTZ_CSTATUSBARMGR_BUILDERS_H

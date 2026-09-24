@@ -14,7 +14,8 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/LogicRecordDispatchInline.h>
+#include <Gruntz/LogicEventDispatch.h>
+#include <Gruntz/LogicRecordHandler.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/Particlez.h>
 #include <Gruntz/SerialArchive.h>
@@ -70,10 +71,6 @@ RVA_DYNINIT(0x00047300, 0xe, CActRegPool<CExplosion>::s_table)
 RVA_DYNINIT(0x00047320, 0x1f, CActRegPool<CExplosion>::s_table)
 template<> DATA(0x002447f8)
 CActReg CActRegPool<CExplosion>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
-
-static inline CActHandler* PartLookup(i32 coord) {
-    return (CActRegPool<CParticlez>::s_table.ResolveEntry(coord));
-}
 
 RVA_COMPGEN(0x00010e60, 0x1e, ??_GCFortressFlag@@UAEPAXI@Z)
 RVA_COMPGEN(0x00010e90, 0x44, ??1CFortressFlag@@UAE@XZ)
@@ -177,80 +174,10 @@ CActHandler* zDArray<CActHandler>::Resolve(i32 id) {
 }
 
 RVA(0x00046850, 0xf1)
-i32 DispatchParticlezLogic(CGameObject* owner) {
-    CLogicRecord* record = owner->m_logicRecord;
-    switch (record->LogicEvent()) {
-        case ACT_UNINITIALISED: {
-            record->SetLogicEvent(ACT_LIVE);
-            CUserLogic* sub = new CParticlez(owner);
-            sub->Activate();
-            record->m_userLogic = sub;
-            break;
-        }
-        case ACT_OBJECT_REMOVED:
-            record->m_userLogic->OnObjectRemoved();
-            break;
-        case ACT_LEAVE_ACTIVE_REGION:
-            record->m_userLogic->OnLeaveActiveRegion();
-            break;
-        case ACT_PREPARE_SAVE:
-            record->m_userLogic->PrepareSave();
-            break;
-        case ACT_AFTER_LOAD_REFERENCES:
-            record->m_userLogic->AfterLoadReferences();
-            break;
-        case ACT_AFTER_LOAD:
-            record->m_userLogic->AfterLoad();
-            break;
-        case ACT_AFTER_SAVE:
-            record->m_userLogic->AfterSave();
-            break;
-        case ACT_LIVE:
-            break;
-        default:
-            DispatchUnhandledLogicEvent(record->m_userLogic);
-            break;
-    }
-    return 1;
-}
+i32 DispatchParticlezLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CParticlez)}
 
 RVA(0x00046990, 0xf1)
-i32 DispatchExplosionLogic(CGameObject* owner) {
-    CLogicRecord* record = owner->m_logicRecord;
-    switch (record->LogicEvent()) {
-        case ACT_UNINITIALISED: {
-            record->SetLogicEvent(ACT_LIVE);
-            CUserLogic* sub = new CExplosion(owner);
-            sub->Activate();
-            record->m_userLogic = sub;
-            break;
-        }
-        case ACT_OBJECT_REMOVED:
-            record->m_userLogic->OnObjectRemoved();
-            break;
-        case ACT_LEAVE_ACTIVE_REGION:
-            record->m_userLogic->OnLeaveActiveRegion();
-            break;
-        case ACT_PREPARE_SAVE:
-            record->m_userLogic->PrepareSave();
-            break;
-        case ACT_AFTER_LOAD_REFERENCES:
-            record->m_userLogic->AfterLoadReferences();
-            break;
-        case ACT_AFTER_LOAD:
-            record->m_userLogic->AfterLoad();
-            break;
-        case ACT_AFTER_SAVE:
-            record->m_userLogic->AfterSave();
-            break;
-        case ACT_LIVE:
-            break;
-        default:
-            DispatchUnhandledLogicEvent(record->m_userLogic);
-            break;
-    }
-    return 1;
-}
+i32 DispatchExplosionLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CExplosion)}
 
 // @early-stop
 RVA(0x00046ad0, 0x15e)
@@ -270,7 +197,8 @@ void CParticlez::FireActivation(i32 coord) {
 RVA(0x00046e90, 0x18d)
 void CParticlez::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((PartLookup(id)))) = static_cast<i32 (CUserLogic::*)()>(&CParticlez::Update);
+    (*((ResolveRegisteredAct<CParticlez>(id)))) =
+        static_cast<i32 (CUserLogic::*)()>(&CParticlez::Update);
 }
 
 RVA(0x00047090, 0x39)

@@ -25,6 +25,7 @@
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntPickupInline.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntzMgr.h>
@@ -56,23 +57,6 @@
 #include <new>
 #include <stdlib.h>
 #include <string.h>
-
-#define MOVE_RECYCLE(g)                                                                            \
-    {                                                                                              \
-        POSITION nd = (g)->CoordHead();                                                            \
-        while (nd != 0) {                                                                          \
-            POSITION cur = nd;                                                                     \
-            (g)->m_coordList.GetNext(nd);                                                          \
-            if (static_cast<Coord*>((g)->m_coordList.GetAt(cur)) != 0) {                           \
-                g_coordPool.Push(static_cast<Coord*>((g)->m_coordList.GetAt(cur)));                \
-            }                                                                                      \
-        }                                                                                          \
-        (g)->m_coordList.RemoveAll();                                                              \
-    }
-
-static inline i32 SquaredDistance(i32 dx, i32 dy) {
-    return SQR(dx) + SQR(dy);
-}
 
 DATA(0x0022b7ec)
 i32 g_battlezRoutePassableMask;
@@ -151,7 +135,7 @@ inflight: {
     }
     if (nb != NULL && cur != nb) {
         if (g->CoordCount() != 0) {
-            MOVE_RECYCLE(g);
+            RECYCLE_GRUNT_COORDS(g);
         }
         g->m_arrivalCell.m_x = nb->m_playerIndex;
         g->m_arrivalCell.m_y = nb->m_unitIndex;
@@ -180,7 +164,7 @@ inflight: {
             if (g->RectContains(s->m_screenX, s->m_screenY) != 0) {
 
                 if (g->CoordCount() != 0) {
-                    MOVE_RECYCLE(g);
+                    RECYCLE_GRUNT_COORDS(g);
                 }
                 Coord none;
                 g->m_arrivalCell = *none.Set(-1, -1);
@@ -207,12 +191,12 @@ inflight: {
             i32 dist = static_cast<i32>(sqrt(static_cast<double>(SquaredDistance(adx, ady))));
             if (dist > m_assignedTargetMaxDistance) {
                 if (g->CoordCount() != 0) {
-                    MOVE_RECYCLE(g);
+                    RECYCLE_GRUNT_COORDS(g);
                 }
                 goto L_clearAt;
             }
             if (g->CoordCount() != 0) {
-                MOVE_RECYCLE(g);
+                RECYCLE_GRUNT_COORDS(g);
             }
             CGameObject* s = cur->m_object;
             if (g->TileSwitch(
@@ -247,11 +231,6 @@ L_clear: {
 }
 #undef MOVE_RECYCLE
 
-static inline void ScreenTile(Coord* pos) {
-    pos->m_x >>= TILE_SHIFT_PX;
-    pos->m_y >>= TILE_SHIFT_PX;
-}
-
 RVA(0x00031c70, 0x1d)
 Coord CGrunt::GetTilePos() {
     Coord out;
@@ -260,30 +239,6 @@ Coord CGrunt::GetTilePos() {
     out.m_y = object->m_screenY;
     ScreenTile(&out);
     return out;
-}
-
-static inline i32 AddBattlezTraversalFlags(CGrunt* unit, i32 flags) {
-    PickupType prim = unit->m_entranceReason;
-    PickupType t = ArrivalPickupOf(unit, prim);
-    if (t == PICKUP_TOOB) {
-        flags |= BATTLEZ_ROUTE_TOOB_TRAVERSAL;
-    } else {
-        t = prim;
-        if (prim > PICKUP_EQUIPPABLE_LAST) {
-            t = unit->m_toolId;
-        }
-        if (t == PICKUP_SPRING) {
-            flags |= BATTLEZ_ROUTE_SPRING_TRAVERSAL;
-        } else {
-            if (prim > PICKUP_EQUIPPABLE_LAST) {
-                prim = unit->m_toolId;
-            }
-            if (prim == PICKUP_WINGZ) {
-                flags |= BATTLEZ_ROUTE_WINGZ_TRAVERSAL;
-            }
-        }
-    }
-    return flags;
 }
 
 // @early-stop

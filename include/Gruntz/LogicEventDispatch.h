@@ -5,6 +5,12 @@
 
 #include <Ints.h>
 
-i32 DispatchLogicEvent(class CUserLogic* logic);
+class CUserLogic;
+
+i32 DispatchLogicEvent(CUserLogic* logic);
+
+inline void DispatchUnhandledLogicEvent(CUserLogic* sub) {
+    DispatchLogicEvent(sub);
+}
 
 #endif // GRUNTZ_LOGICEVENTDISPATCH_H

@@ -1,6 +1,7 @@
 #ifndef INCLUDE_DDRAWMGR_PIXELSHIFT_H
 #define INCLUDE_DDRAWMGR_PIXELSHIFT_H
 
+#include <DDrawMgr/PixelFormatMacros.h>
 #include <Enums.h>
 #include <Ints.h>
 
@@ -41,5 +42,20 @@ extern i32 g_bUp;
 extern i32 g_rDown;
 extern i32 g_gDown;
 extern i32 g_bDown;
+
+inline u16 PackPixel16(u8 red, u8 green, u8 blue) {
+    u16 value = static_cast<u8>(blue >> g_bDown);
+    value |= static_cast<u16>(static_cast<u8>(red >> g_rDown) << g_rUp);
+    value |= static_cast<u16>(static_cast<u8>(green >> g_gDown) << g_gUp);
+    return value;
+}
+
+inline u16 PackRgb16(i32 r, i32 g, i32 b) {
+    return static_cast<u16>(((r >> g_rDown) << g_rUp) | ((g >> g_gDown) << g_gUp) | (b >> g_bDown));
+}
+
+static inline u16 PackPalEntry16(u8 r, u8 g, u8 b) {
+    return PACK_PIXEL16(r, g, b);
+}
 
 #endif // INCLUDE_DDRAWMGR_PIXELSHIFT_H

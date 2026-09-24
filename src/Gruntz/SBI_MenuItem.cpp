@@ -6,7 +6,9 @@
 
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <DDrawMgr/DDrawWorker.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/WorkerLookup.h>
 #include <Dsndmgr/SoundBuffer.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntDirStatics.h>
@@ -26,24 +28,6 @@
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
-
-static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
-    CObject* found = NULL;
-    map.Lookup(name, found);
-    return static_cast<CDDrawWorker*>(found);
-}
-
-static inline CDDrawWorker* LookupWorker(CDDrawSurfaceMgr* host, LPCTSTR name) {
-    CObject* found = NULL;
-    host->m_imageRegistry->m_workersByName.Lookup(name, found);
-    return static_cast<CDDrawWorker*>(found);
-}
-
-static inline SoundCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
-    SoundCue* found = NULL;
-    MapLookup(cues, name, found);
-    return found;
-}
 
 // @early-stop
 RVA(0x000e80e0, 0x8c)
@@ -100,7 +84,7 @@ i32 CSBI_MenuItem::ResolveFrame(const char* key, i32 frameIndex) {
     }
 
     if (frameIndex == -1) {
-        SetFrame(static_cast<CImage*>(rec->m_items.GetAt(rec->m_minIndex)));
+        SetFrame(DDRAW_WORKER_FRAME_AT_UNCHECKED(rec, rec->m_minIndex));
     } else {
         SetFrame(rec->GetAt(frameIndex));
     }
@@ -139,7 +123,7 @@ i32 CSBI_MenuItem::SetState(SbiMenuItemState state, i32 playHighlightSound) {
 
         SoundCueRegistry* mh = g_gameReg->m_world->m_soundRegistry;
         if (mh->m_silentMode == false) {
-            SoundCue* found = LookupCue(mh->m_cues, "GAME_TABHIGHLIGHT2");
+            SoundCue* found = LookupSoundCue(mh->m_cues, "GAME_TABHIGHLIGHT2");
             if (found) {
                 b32 soundEnabled = g_soundEnabled;
                 i32 volumePercent = g_soundVolumePercent;

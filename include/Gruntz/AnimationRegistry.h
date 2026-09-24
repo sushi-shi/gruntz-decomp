@@ -37,4 +37,6 @@ public:
     CMapStringToPtr m_animations;
 };
 
+#define REGISTER_ANIMATION(animation, key) m_animations[key] = animation
+
 #endif // GRUNTZ_ANIMATIONREGISTRY_H

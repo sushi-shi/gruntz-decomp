@@ -14,12 +14,15 @@ GZ_ENUM_CONST_BEGIN(ActIdRange)
     ACT_ID_LAST = 2010
 GZ_ENUM_CONST_END(ActIdRange)
 
-typedef i32 (CUserLogic::*CActHandler)();
 typedef zDArray<CActHandler> CActReg;
 
 template<class Tag> struct CActRegPool {
     static CActReg s_table;
 };
+
+template<class Logic> inline CActHandler* ResolveRegisteredAct(i32 id) {
+    return CActRegPool<Logic>::s_table.ResolveEntry(id);
+}
 
 template<class Logic> inline void DispatchRegisteredAct(Logic* logic, i32 id) {
     CActReg& acts = CActRegPool<Logic>::s_table;

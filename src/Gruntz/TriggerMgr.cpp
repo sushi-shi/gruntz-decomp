@@ -20,6 +20,7 @@
 #include <Gruntz/GruntAreaEffectKind.h>
 #include <Gruntz/GruntCombatClockInline.h>
 #include <Gruntz/GruntDeathType.h>
+#include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPickupInline.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntzCmdMgr.h>
@@ -148,9 +149,7 @@ i32 CTriggerMgr::RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelect
                 POSITION cur = pos;
                 Coord* p = static_cast<Coord*>(list->GetNext(pos));
                 if (p->m_x == playerIndex && p->m_y == unitIndex) {
-                    CoordPoolNode* slot = g_coordPool.NodeOf(p);
-                    slot->m_next = g_coordPool.m_freeHead;
-                    g_coordPool.m_freeHead = slot;
+                    PushFreeNode(&g_coordPool, p);
                     list->RemoveAt(cur);
                 }
             }
@@ -189,9 +188,7 @@ i32 CTriggerMgr::RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelect
                     CloseActionOptionsMenu();
                 }
             }
-            CoordPoolNode* slot = g_coordPool.NodeOf(p);
-            slot->m_next = g_coordPool.m_freeHead;
-            g_coordPool.m_freeHead = slot;
+            PushFreeNode(&g_coordPool, p);
             m_recList.RemoveAt(cur);
             return 1;
         }
@@ -208,9 +205,7 @@ void CTriggerMgr::ResetAll() {
         CGrunt* cell = m_units[idx];
         if (cell != NULL) {
             (static_cast<CGrunt*>(cell))->ClearAllSprites();
-            CoordPoolNode* slot = g_coordPool.NodeOf(payload);
-            slot->m_next = g_coordPool.m_freeHead;
-            g_coordPool.m_freeHead = slot;
+            PushFreeNode(&g_coordPool, payload);
         }
     }
     m_recList.RemoveAll();
@@ -356,9 +351,7 @@ void CTriggerMgr::ClearRecords() {
     POSITION pos = m_recList.GetHeadPosition();
     if (pos != NULL) {
         do {
-            CoordPoolNode* slot = g_coordPool.NodeOf(m_recList.GetNext(pos));
-            slot->m_next = g_coordPool.m_freeHead;
-            g_coordPool.m_freeHead = slot;
+            PushFreeNode(&g_coordPool, m_recList.GetNext(pos));
         } while (pos != NULL);
     }
     m_recList.RemoveAll();
@@ -420,16 +413,6 @@ void CTriggerMgr::CloseActionOptionsMenu() {
     }
 }
 
-static inline SoundCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
-    SoundCue* found = NULL;
-    MapLookup(cues, name, found);
-    return found;
-}
-
-static inline u16 PackRgb16(i32 r, i32 g, i32 b) {
-    return static_cast<u16>(((r >> g_rDown) << g_rUp) | ((g >> g_gDown) << g_gUp) | (b >> g_bDown));
-}
-
 // @early-stop
 RVA(0x00078a50, 0x8a0)
 i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
@@ -438,7 +421,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     if (m_recList.GetCount() != 1) {
         cell = NULL;
     } else {
-        Coord* rec = static_cast<Coord*>(m_recList.GetHead());
+        Coord* rec = HeadRec();
         cell = m_units[rec->m_y + rec->m_x * TM_UNITS_PER_PLAYER];
     }
     if (cell == NULL || cell->m_playerIndex != g_curPlayer) {
@@ -736,7 +719,7 @@ i32 CTriggerMgr::HandleTargetSelection(
     if (m_recList.GetCount() != 1) {
         selectedGrunt = NULL;
     } else {
-        Coord* rec = static_cast<Coord*>(m_recList.GetHead());
+        Coord* rec = HeadRec();
         selectedGrunt = m_units[rec->m_x * TM_UNITS_PER_PLAYER + rec->m_y];
     }
 
@@ -907,7 +890,7 @@ i32 CTriggerMgr::OpenActionOptionsMenu(
     if (m_recList.GetCount() != 1) {
         selectedGrunt = NULL;
     } else {
-        Coord* rec = static_cast<Coord*>(m_recList.GetHead());
+        Coord* rec = HeadRec();
         selectedGrunt = m_units[rec->m_y + rec->m_x * TM_UNITS_PER_PLAYER];
     }
     if (selectedGrunt == NULL) {
@@ -1571,7 +1554,7 @@ i32 CTriggerMgr::HandleActionOptionsPointer(i32 x, i32 y) {
     if (m_recList.GetCount() != 1) {
         cell = NULL;
     } else {
-        Coord* rec = static_cast<Coord*>(m_recList.GetHead());
+        Coord* rec = HeadRec();
         cell = m_units[rec->m_x * TM_UNITS_PER_PLAYER + rec->m_y];
     }
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
@@ -1745,8 +1728,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
             SoundCueRegistry* registry = m_world->m_soundRegistry;
             if (registry->m_silentMode == false) {
 
-                SoundCue* found = NULL;
-                MapLookup(registry->m_cues, "LEVEL_ROCKBREAK", found);
+                SoundCue* found = registry->FindCue("LEVEL_ROCKBREAK");
                 SoundCue* cue = found;
                 if (cue != NULL) {
                     b32 soundEnabled = g_soundEnabled;
@@ -2055,8 +2037,7 @@ i32 CTriggerMgr::SpawnGrunt(
         return 0;
     }
     CGameObject* o = src->m_object;
-    i32 sx = (o->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
-    i32 sy = (o->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
+    DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(o, sx, sy)
     PickupType k = ARRIVAL_PICKUP_TERNARY_GT(src);
     PickupType vis = src->m_vehiclePickupType;
     this->StartUnitDeath(srcPlayerIndex, srcUnitIndex, DEATH_DROP, dstPlayerIndex);
@@ -2131,11 +2112,12 @@ void CTriggerMgr::LoadFinishLevelSprite(FinishLevelReason state) {
     switch (state) {
         case FINISH_REASON_WARPSTONE_EXIT:
             if (m_phase != FINISH_STATE_DEFEAT) {
-                SoundCue* p = LookupCue(m_world->m_soundRegistry->m_cues, "GAME_FINISHLEVEL");
+                SoundCue* p = LookupSoundCue(m_world->m_soundRegistry->m_cues, "GAME_FINISHLEVEL");
                 m_cueTimer.m_window = static_cast<u32>((p->m_sound->m_durationMs + 500));
                 m_cueTimer.m_base = g_frameTime;
                 if (m_world->m_soundRegistry->m_silentMode == false) {
-                    SoundCue* cue = LookupCue(m_world->m_soundRegistry->m_cues, "GAME_FINISHLEVEL");
+                    SoundCue* cue =
+                        LookupSoundCue(m_world->m_soundRegistry->m_cues, "GAME_FINISHLEVEL");
                     if (cue != NULL) {
                         i32 volumePercent = g_soundVolumePercent;
                         if (g_soundEnabled != false
@@ -2464,9 +2446,7 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
                 }
             }
         } else {
-            CoordPoolNode* node = g_coordPool.NodeOf(payload);
-            node->m_next = g_coordPool.m_freeHead;
-            g_coordPool.m_freeHead = node;
+            PushFreeNode(&g_coordPool, payload);
             m_selLists[slot].RemoveAt(cur);
         }
     } while (pos != NULL);
@@ -2527,7 +2507,7 @@ i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
         if (m_recList.GetCount() != 1) {
             cell2 = NULL;
         } else {
-            Coord* head = static_cast<Coord*>(m_recList.GetHead());
+            Coord* head = HeadRec();
             cell2 = m_units[head->m_x * TM_UNITS_PER_PLAYER + head->m_y];
         }
         if (cell2 != NULL) {
@@ -2554,9 +2534,7 @@ void CTriggerMgr::ClearSelections() {
             do {
                 Coord* payload = static_cast<Coord*>(list->GetNext(pos));
                 if (payload != NULL) {
-                    CoordPoolNode* slot = g_coordPool.NodeOf(payload);
-                    slot->m_next = g_coordPool.m_freeHead;
-                    g_coordPool.m_freeHead = slot;
+                    PushFreeNode(&g_coordPool, payload);
                 }
             } while (pos != NULL);
         }
@@ -2711,7 +2689,7 @@ i32 CTriggerMgr::ToggleToolTargeting() {
     if (m_recList.GetCount() != 1) {
         cell = NULL;
     } else {
-        Coord* rec = static_cast<Coord*>(m_recList.GetHead());
+        Coord* rec = HeadRec();
         cell = m_units[rec->m_y + rec->m_x * TM_UNITS_PER_PLAYER];
     }
     if (cell != NULL && cell->m_playerIndex == g_curPlayer) {
@@ -2752,7 +2730,7 @@ i32 CTriggerMgr::ToggleToyTargeting() {
     if (m_recList.GetCount() != 1) {
         cell = NULL;
     } else {
-        Coord* rec = static_cast<Coord*>(m_recList.GetHead());
+        Coord* rec = HeadRec();
         cell = m_units[rec->m_y + rec->m_x * TM_UNITS_PER_PLAYER];
     }
     if (cell != NULL && cell->m_playerIndex == g_curPlayer) {

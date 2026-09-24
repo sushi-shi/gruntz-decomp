@@ -80,8 +80,6 @@ i32 AnimationRegistry::RemoveWithPrefix(const char* prefix, const char* separato
     return removedCount;
 }
 
-#define REGISTER_ANIMATION(animation, key) m_animations[key] = animation
-
 RVA(0x001528d0, 0xdd)
 CAniElement* AnimationRegistry::LoadAnimationFromSource(const char* key, CRezItm* source) {
     CAniElement* animation = new CAniElement;

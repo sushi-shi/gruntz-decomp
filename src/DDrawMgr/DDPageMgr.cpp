@@ -13,6 +13,7 @@
 #include <Ints.h>
 #include <Io/FileStream.h>
 #include <Io/MoviePlayer.h>
+#include <Io/MoviePlayerInline.h>
 #include <Wap32/ScreenGeometry.h>
 
 #include <ddraw.h>
@@ -455,30 +456,6 @@ void CMoviePlayer::ResetPalette() {
         m_palEntries[i].peBlue = 0;
     }
     m_palette->SetEntries(0, 0, PALETTE_ENTRY_COUNT, m_palEntries);
-}
-
-inline void CMoviePlayer::DecodeFrame() {
-    i32 hr = m_srcSurf->Lock(NULL, &m_srcDesc, 1, NULL);
-    while (hr == static_cast<i32>(DDERR_SURFACELOST)) {
-        if (m_srcSurf->Restore() != 0) {
-            return;
-        }
-        hr = m_srcSurf->Lock(NULL, &m_srcDesc, 1, NULL);
-    }
-    if (hr == 0) {
-        SmackToBuffer(
-            m_smackHandle,
-            0,
-            0,
-            m_srcDesc.lPitch,
-            m_smackHandle->Height,
-            m_srcDesc.lpSurface,
-            m_smackBufMode
-        );
-        SmackDoFrame(m_smackHandle);
-        m_frameDecoded = true;
-        m_srcSurf->Unlock(m_srcDesc.lpSurface);
-    }
 }
 
 RVA(0x0017caa0, 0x13b)

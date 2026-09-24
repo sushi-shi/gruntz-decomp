@@ -7,6 +7,7 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/WorkerLookup.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
@@ -69,12 +70,7 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
 
     if (onLeft != 0) {
         CDDrawWorker* worker;
-        CObject* found = NULL;
-        g_gameReg->m_world->m_imageRegistry->m_workersByName.Lookup(
-            "GAME_STATUSBAR_TABZ_STATZTAB_TABONLEFT",
-            found
-        );
-        worker = static_cast<CDDrawWorker*>(found);
+        worker = LookupWorker(g_gameReg->m_world, "GAME_STATUSBAR_TABZ_STATZTAB_TABONLEFT");
         CImage* frame;
         if (worker == NULL) {
             frame = NULL;
@@ -88,12 +84,7 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
         m_bottomFrameDy = 1;
     } else {
         CDDrawWorker* worker;
-        CObject* found = NULL;
-        g_gameReg->m_world->m_imageRegistry->m_workersByName.Lookup(
-            "GAME_STATUSBAR_TABZ_STATZTAB_TABONRIGHT",
-            found
-        );
-        worker = static_cast<CDDrawWorker*>(found);
+        worker = LookupWorker(g_gameReg->m_world, "GAME_STATUSBAR_TABZ_STATZTAB_TABONRIGHT");
         CImage* frame;
         if (worker == NULL) {
             frame = NULL;
@@ -128,12 +119,6 @@ RVA(0x000e9820, 0x11)
 i32 CSBI_SideTab::Refresh(i32 unused) {
     m_drawGate = BuildHandle();
     return 0;
-}
-
-static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
-    CObject* found = NULL;
-    map.Lookup(name, found);
-    return static_cast<CDDrawWorker*>(found);
 }
 
 // @early-stop

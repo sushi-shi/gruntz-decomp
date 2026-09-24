@@ -9,8 +9,12 @@
 #include <DDrawMgr/PixelShift.h>
 #include <DDrawMgr/ShadeTableCache.h>
 #include <Gruntz/Fader.h>
+#include <Gruntz/FaderBufferInline.h>
 #include <Gruntz/FaderConfig.h>
+#include <Gruntz/FaderCopyMacros.h>
+#include <Gruntz/FaderLightInline.h>
 #include <Gruntz/FaderMode.h>
+#include <Gruntz/FaderSineInline.h>
 #include <Gruntz/FaderSubtypes.h>
 #include <Gruntz/ShapeFaderConfig.h>
 #include <Ints.h>
@@ -50,41 +54,6 @@ DATA(0x001f0864)
 const float g_sineOne = 1.0f;
 DATA(0x001f0888)
 const double g_faderPowK = 2.0;
-
-static inline void CopyBytes(u8* dst, const u8* src, i32 count) {
-    while (count-- > 0) {
-        *dst++ = *src++;
-    }
-}
-
-static inline void ClearSample(u8* row, i32 sample, i32 bpp) {
-    if (bpp > 0) {
-        memset(row + sample * bpp, 0, bpp);
-    }
-}
-
-inline i32 CFaderSine::AccumulateSampleCount(i32 row, i32 delta, float step) {
-    i32 count = 0;
-    double wanted = delta * step;
-    i32 whole = static_cast<i32>(wanted);
-    if (whole < wanted) {
-        m_fractionalCounts[row] += wanted - whole;
-    }
-    if (m_fractionalCounts[row] >= g_sineOne) {
-        count = static_cast<i32>(m_fractionalCounts[row]);
-        m_fractionalCounts[row] -= count;
-    }
-    count += whole;
-    return count;
-}
-
-inline i32 CFaderSine::AdvanceSampleCursor(i32 row) {
-    ++m_sampleCursors[row];
-    if (m_sampleCursors[row] > m_width) {
-        m_sampleCursors[row] = 0;
-    }
-    return m_sampleOrder[m_sampleCursors[row]];
-}
 
 RVA(0x0017f530, 0x19)
 CFaderFlat::CFaderFlat() {
@@ -568,21 +537,6 @@ i32 CFaderLight::ApplyInit(CFaderConfig* desc) {
 RVA(0x00180630, 0x1)
 void CFaderLight::ReleaseBuffers() {}
 
-#define FADER_LIGHT_SPAN_CAPACITY 1024
-#define FADER_MAX0(v) ((v) < 0 ? 0 : (v))
-#define FADER_CLAMPW(v, w) (FADER_MAX0(v) < (w) ? FADER_MAX0(v) : (w))
-
-inline void CFaderLight::ComputeSpan(i32 row, i32 radiusSq, i32 edgeOffset, i32& right, i32& left) {
-    i32 dy = row - m_centerY;
-    i32 dx = -static_cast<i32>(sqrt(static_cast<double>(radiusSq - dy * dy)));
-    right = FADER_CLAMPW(m_centerX - dx, m_width);
-    i32 x = dx + m_centerX + edgeOffset;
-    left = (x < 0) ? 0 : x;
-    if (left >= m_width) {
-        left = m_width;
-    }
-}
-
 // @early-stop
 RVA(0x00180640, 0x96c)
 void CFaderLight::RenderFrame(i32 frame) {
@@ -696,153 +650,6 @@ void CFaderLight::RenderFrame(i32 frame) {
 }
 
 // @early-stop
-RVA(0x00180fb0, 0x534)
-
-inline void
-CFaderLight::Render(i32 row0, i32 radiusSq, i32 radius, u8* lut, u8* srcBits, u8* dstBits) {
-    if (m_spanCount <= 0) {
-        return;
-    }
-    i32 cx = m_centerY;
-    i32 dx = row0 - cx;
-    i32 dx2 = dx * dx;
-    i32 row = m_centerX - static_cast<i32>(sqrt(static_cast<double>((radiusSq - dx2)))) + 1;
-    i32 len =
-        static_cast<i32>(sqrt(static_cast<double>(((row - m_centerX) * (row - m_centerX) + dx2))));
-
-    i32 srcCol = row0 * m_targetSurface->m_apiDesc.lPitch;
-    u8* rowLsrc = srcBits + row + srcCol;
-    i32 dstCol = row0 * m_restoreSurface->m_apiDesc.lPitch;
-    u8* rowLdst = dstBits + row + dstCol;
-    u8* rowRsrc = srcBits - row;
-    rowRsrc += srcCol;
-    rowRsrc += 2 * m_centerX;
-    u8* rowRdst = dstBits - row;
-    rowRdst += dstCol;
-    rowRdst += 2 * m_centerX;
-
-    i32 mid = m_height / 2;
-    i32 mirSrc;
-    i32 mirDst;
-    if (cx >= mid && row0 <= cx) {
-        i32 mirCol = 2 * (cx - row0);
-        if (mirCol + row0 < m_height) {
-
-            mirSrc = mirCol * m_targetSurface->m_apiDesc.lPitch;
-            mirDst = mirCol * m_restoreSurface->m_apiDesc.lPitch;
-            while (len >= radius - m_spanCount) {
-                if (row > m_centerX) {
-                    return;
-                }
-                i32 cl = len - radius + m_spanCount;
-                if (row >= 0) {
-                    i32 p = *rowLdst;
-                    *rowLsrc = *(lut + p * m_spanCount + cl);
-                    i32 q = *(rowLdst + mirDst);
-                    *(rowLsrc + mirSrc) = *(lut + q * m_spanCount + cl);
-                }
-                rowLsrc++;
-                rowLdst++;
-                if (2 * m_centerX - row < m_width) {
-                    i32 p = *rowRdst;
-                    *rowRsrc = *(lut + p * m_spanCount + cl);
-                    i32 q = *(rowRdst + mirDst);
-                    *(rowRsrc + mirSrc) = *(lut + q * m_spanCount + cl);
-                }
-                rowRsrc--;
-                rowRdst--;
-                row++;
-                len = static_cast<i32>(
-                    sqrt(static_cast<double>(((row - m_centerX) * (row - m_centerX) + dx2)))
-                );
-            }
-            return;
-        }
-
-        while (len >= radius - m_spanCount) {
-            if (row > m_centerX) {
-                return;
-            }
-            i32 cl = len - radius + m_spanCount;
-            if (row >= 0) {
-                i32 p = *rowLdst;
-                *rowLsrc = *(lut + p * m_spanCount + cl);
-            }
-            rowLsrc++;
-            rowLdst++;
-            if (2 * m_centerX - row < m_width) {
-                i32 p = *rowRdst;
-                *rowRsrc = *(lut + p * m_spanCount + cl);
-            }
-            rowRsrc--;
-            rowRdst--;
-            row++;
-            len = static_cast<i32>(
-                sqrt(static_cast<double>(((row - m_centerX) * (row - m_centerX) + dx2)))
-            );
-        }
-        return;
-    }
-
-    if (cx >= mid || row0 < cx) {
-        return;
-    }
-
-    i32 mirCol = 2 * dx;
-    if (row0 - mirCol >= 0) {
-        mirSrc = mirCol * m_targetSurface->m_apiDesc.lPitch;
-        mirDst = mirCol * m_restoreSurface->m_apiDesc.lPitch;
-        while (len >= radius - m_spanCount) {
-            if (row > m_centerX) {
-                return;
-            }
-            i32 cl = len - radius + m_spanCount;
-            if (row >= 0) {
-                i32 p = *rowLdst;
-                *rowLsrc = *(lut + p * m_spanCount + cl);
-                i32 q = *(rowLdst - mirDst);
-                *(rowLsrc - mirSrc) = *(lut + q * m_spanCount + cl);
-            }
-            rowLsrc++;
-            rowLdst++;
-            if (2 * m_centerX - row < m_width) {
-                i32 p = *rowRdst;
-                *rowRsrc = *(lut + p * m_spanCount + cl);
-                i32 q = *(rowRdst - mirDst);
-                *(rowRsrc - mirSrc) = *(lut + q * m_spanCount + cl);
-            }
-            rowRsrc--;
-            rowRdst--;
-            row++;
-            len = static_cast<i32>(
-                sqrt(static_cast<double>(((row - m_centerX) * (row - m_centerX) + dx2)))
-            );
-        }
-    } else {
-        while (len >= radius - m_spanCount) {
-            if (row > m_centerX) {
-                return;
-            }
-            i32 cl = len - radius + m_spanCount;
-            if (row >= 0) {
-                i32 p = *rowLdst;
-                *rowLsrc = *(lut + p * m_spanCount + cl);
-            }
-            rowLsrc++;
-            rowLdst++;
-            if (2 * m_centerX - row < m_width) {
-                i32 p = *rowRdst;
-                *rowRsrc = *(lut + p * m_spanCount + cl);
-            }
-            rowRsrc--;
-            rowRdst--;
-            row++;
-            len = static_cast<i32>(
-                sqrt(static_cast<double>(((row - m_centerX) * (row - m_centerX) + dx2)))
-            );
-        }
-    }
-}
 
 RVA(0x001814f0, 0x16d)
 i32 CFaderLight::GetFrameCount() {
@@ -1162,101 +969,6 @@ void CFaderShape::RenderFrame(i32 frame) {
         m_warpSourceSurface->m_ddSurface->Unlock(NULL);
     }
 }
-
-#define COPY_STRAIGHT8(src, first, last)                                                           \
-    do {                                                                                           \
-        warpIndex = (first);                                                                       \
-        if (warpIndex < (last)) {                                                                  \
-            do {                                                                                   \
-                m_lineBuf[warpIndex] = (src)[warpIndex];                                           \
-                warpIndex++;                                                                       \
-            } while (warpIndex < (last));                                                          \
-        }                                                                                          \
-    } while (0)
-
-#define COPY_WARP8(src, first, last)                                                               \
-    do {                                                                                           \
-        warpIndex = (first);                                                                       \
-        if (warpIndex < (last)) {                                                                  \
-            do {                                                                                   \
-                m_lineBuf[warpIndex] = (src)[m_warpTable[warpIndex]];                              \
-                warpIndex++;                                                                       \
-            } while (warpIndex < (last));                                                          \
-        }                                                                                          \
-    } while (0)
-
-#define COPY_STRAIGHT16(src, first, last)                                                          \
-    do {                                                                                           \
-        warpIndex = (first);                                                                       \
-        if (warpIndex < (last)) {                                                                  \
-            do {                                                                                   \
-                m_lineBuf[warpIndex * 2] = (src)[warpIndex * 2];                                   \
-                m_lineBuf[warpIndex * 2 + 1] = (src)[warpIndex * 2 + 1];                           \
-                warpIndex++;                                                                       \
-            } while (warpIndex < (last));                                                          \
-        }                                                                                          \
-    } while (0)
-
-#define COPY_WARP16(src, first, last)                                                              \
-    do {                                                                                           \
-        warpIndex = (first);                                                                       \
-        if (warpIndex < (last)) {                                                                  \
-            do {                                                                                   \
-                m_lineBuf[warpIndex * 2] = (src)[m_warpTable[warpIndex] * 2];                      \
-                m_lineBuf[warpIndex * 2 + 1] = (src)[m_warpTable[warpIndex] * 2 + 1];              \
-                warpIndex++;                                                                       \
-            } while (warpIndex < (last));                                                          \
-        }                                                                                          \
-    } while (0)
-
-#define COPY_STRAIGHT24(src, first, last)                                                          \
-    do {                                                                                           \
-        i32 copyOffset = (first) * 3;                                                              \
-        u8* copySource = (src) + copyOffset;                                                       \
-        i32 copyCount = (last) - (first);                                                          \
-        if (copyCount > 0) {                                                                       \
-            do {                                                                                   \
-                m_lineBuf[copyOffset] = copySource[0];                                             \
-                m_lineBuf[copyOffset + 1] = copySource[1];                                         \
-                m_lineBuf[copyOffset + 2] = copySource[2];                                         \
-                copySource += 3;                                                                   \
-                copyOffset += 3;                                                                   \
-                copyCount--;                                                                       \
-            } while (copyCount != 0);                                                              \
-        }                                                                                          \
-    } while (0)
-
-#define COPY_WARP24(src, first, last)                                                              \
-    do {                                                                                           \
-        warpIndex = (first);                                                                       \
-        if (warpIndex < (last)) {                                                                  \
-            warpOffset = warpIndex * 3;                                                            \
-            do {                                                                                   \
-                m_lineBuf[warpOffset] = (src)[m_warpTable[warpIndex] * 3];                         \
-                m_lineBuf[warpOffset + 1] = (src)[m_warpTable[warpIndex] * 3 + 1];                 \
-                m_lineBuf[warpOffset + 2] = (src)[m_warpTable[warpIndex] * 3 + 2];                 \
-                warpIndex++;                                                                       \
-                warpOffset += 3;                                                                   \
-            } while (warpIndex < (last));                                                          \
-        }                                                                                          \
-    } while (0)
-
-#define COPY_PIXEL_OP_INNER(op, depth) COPY_##op##depth
-#define COPY_PIXEL_OP(op, depth) COPY_PIXEL_OP_INNER(op, depth)
-
-#define COPY_WARP_SEGMENTS(firstOp, firstSrc, secondOp, secondSrc, split, end)                     \
-    do {                                                                                           \
-        if (bpp == PIXEL8_BYTES_PER_PIXEL) {                                                       \
-            COPY_PIXEL_OP(firstOp, 8)(firstSrc, 0, split);                                         \
-            COPY_PIXEL_OP(secondOp, 8)(secondSrc, split, end);                                     \
-        } else if (bpp == PIXEL16_BYTES_PER_PIXEL) {                                               \
-            COPY_PIXEL_OP(firstOp, 16)(firstSrc, 0, split);                                        \
-            COPY_PIXEL_OP(secondOp, 16)(secondSrc, split, end);                                    \
-        } else if (bpp == PIXEL24_BYTES_PER_PIXEL) {                                               \
-            COPY_PIXEL_OP(firstOp, 24)(firstSrc, 0, split);                                        \
-            COPY_PIXEL_OP(secondOp, 24)(secondSrc, split, end);                                    \
-        }                                                                                          \
-    } while (0)
 
 RVA(0x00181e50, 0x7b9)
 

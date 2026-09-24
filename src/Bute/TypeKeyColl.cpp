@@ -11,6 +11,7 @@
 #include <Gruntz/LogicEventDispatch.h>
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/TypeKeyCollInline.h>
 #include <Gruntz/TypeKeyCollStr.h>
 #include <Gruntz/UserLogic.h>
 #include <Utils/BitArrayWord.h>
@@ -878,31 +879,6 @@ i32 DispatchLogicAttack(CGameObject* obj) {
 RVA(0x0016e4e0, 0xf)
 i32 DispatchLogicBump(CGameObject* obj) {
     return obj->m_logicRecord->m_userLogic->RecordFrameTick();
-}
-
-static inline CString* TypeResolve(i32 key) {
-    g_typeColl.m_grown = 0;
-    if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
-        return g_typeColl.Elem(key);
-    }
-    if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != NULL) {
-        return g_typeColl.Elem(key);
-    }
-    char* msg = g_errOutOfMem;
-    g_retAddrBreadcrumb = GetRetAddr();
-    g_typeColl.m_errSink->Set(&g_typeColl, msg, 0xc);
-    return g_typeColl.Scratch();
-}
-
-static inline void FreeNodes() {
-    CString* nodes = g_typeColl.Slots();
-    i32 cnt = g_typeColl.m_grown;
-    while (cnt-- != 0) {
-        if (nodes != NULL) {
-            nodes->CString::CString();
-        }
-        ++nodes;
-    }
 }
 
 RVA(0x0016e4f0, 0x19b)

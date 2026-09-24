@@ -9,6 +9,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/WorkerLookup.h>
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntDirStatics.h>
@@ -22,12 +23,6 @@
 #include <Io/FileMem.h>
 
 #include <string.h>
-
-static inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
-    CObject* found = NULL;
-    map.Lookup(name, found);
-    return static_cast<CDDrawWorker*>(found);
-}
 
 // @early-stop
 RVA(0x000e6020, 0x288)
@@ -223,9 +218,7 @@ i32 CSBI_WellGoo::SerializeFields(
             arc->Read(&idx, sizeof(idx));
             if (strlen(buf) != 0) {
                 i32 frameIndex = idx;
-                CObject* found = NULL;
-                mgr->m_imageRegistry->m_workersByName.Lookup(buf, found);
-                CDDrawWorker* set = static_cast<CDDrawWorker*>(found);
+                CDDrawWorker* set = LookupWorker(mgr, buf);
                 if (set != NULL) {
                     m_fgFrame = set->GetAt(frameIndex);
                 } else {
@@ -239,9 +232,7 @@ i32 CSBI_WellGoo::SerializeFields(
             arc->Read(&idx, sizeof(idx));
             if (strlen(buf) != 0) {
                 i32 frameIndex = idx;
-                CObject* found = NULL;
-                mgr->m_imageRegistry->m_workersByName.Lookup(buf, found);
-                CDDrawWorker* set = static_cast<CDDrawWorker*>(found);
+                CDDrawWorker* set = LookupWorker(mgr, buf);
                 if (set != NULL) {
                     m_baseFrame = set->GetAt(frameIndex);
                 } else {

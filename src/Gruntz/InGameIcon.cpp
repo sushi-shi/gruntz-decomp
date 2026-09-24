@@ -26,9 +26,11 @@
 #include <Gruntz/LogicFnTable.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MapCellFlags.h>
+#include <Gruntz/MapCellInline.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialRefLookup.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SoundCue.h>
@@ -80,29 +82,6 @@ RVA_COMPGEN(0x00011d00, 0x44, ??1CInGameIcon@@UAE@XZ)
 
 RVA_COMPGEN(0x00011d90, 0x1e, ??_GCInGameText@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011dc0, 0x44, ??1CInGameText@@UAE@XZ)
-
-static inline SoundCue* LookupCue(CMapStringToPtr& cues, LPCTSTR name) {
-    SoundCue* found = NULL;
-    MapLookup(cues, name, found);
-    return found;
-}
-
-static inline CAniElement* LookupAni(CMapStringToPtr& map, LPCTSTR name) {
-    CAniElement* found = NULL;
-    MapLookup(map, name, found);
-    return found;
-}
-
-static inline CWwdSpriteObject* LookupSerialRef(CMapPtrToPtr& byId, i32 id) {
-    CGameObject* found = NULL;
-    if (MapLookupById(byId, id, found) == false) {
-        return NULL;
-    }
-    if (found == NULL) {
-        return NULL;
-    }
-    return found->GetClassId() == CLASSID_SERIALREF ? static_cast<CWwdSpriteObject*>(found) : NULL;
-}
 
 // @early-stop
 RVA(0x00095b10, 0x15f0)
@@ -592,17 +571,6 @@ i32 CInGameIcon::PeekCycle() {
     return 0;
 }
 
-static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
-    CMapMgr* grid = reg->m_tileGrid;
-    i32 tileX = owner->m_screenX >> TILE_SHIFT_PX;
-    i32 tileY = owner->m_screenY >> TILE_SHIFT_PX;
-    if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
-        && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
-        grid->m_rows[tileY][tileX].m_objectId = 0;
-        grid->m_rows[tileY][tileX].m_flags &= ~0x40000;
-    }
-}
-
 // @early-stop
 RVA(0x000986b0, 0x30c)
 
@@ -805,7 +773,7 @@ i32 CInGameIcon::SerializeDispatch(
             if (strlen(aniName) == 0) {
                 m_value = NULL;
             } else {
-                m_value = LookupAni(
+                m_value = LookupAnimation(
                     m_ownerLogicRecord->m_ownerCtx->m_animRegistry->m_animations,
                     aniName
                 );
@@ -879,7 +847,8 @@ i32 CInGameIcon::SerializeDispatch(
             ar->Read(name, SERIAL_NAME_LEN);
 
             if (strlen(name) != 0) {
-                m_cue = LookupCue(m_ownerLogicRecord->m_ownerCtx->m_soundRegistry->m_cues, name);
+                m_cue =
+                    LookupSoundCue(m_ownerLogicRecord->m_ownerCtx->m_soundRegistry->m_cues, name);
             } else {
                 m_cue = NULL;
             }
@@ -1000,7 +969,7 @@ i32 CInGameText::Update() {
         if (::PtInRect(&reg->m_viewBounds, x, y)) {
             SoundCueRegistry* set = reg->m_world->m_soundRegistry;
             if (set->m_silentMode == false) {
-                SoundCue* res = LookupCue(set->m_cues, "GAME_HELPBOOK");
+                SoundCue* res = LookupSoundCue(set->m_cues, "GAME_HELPBOOK");
                 if (res != NULL) {
                     PlaySoundCueIfElapsed(res, g_soundVolumePercent, 0, 0, false);
                 }

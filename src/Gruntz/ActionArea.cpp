@@ -33,10 +33,6 @@ RVA_DYNINIT(0x000080b0, 0x1f, CActRegPool<CActionArea>::s_table)
 template<> DATA(0x00229388)
 CActReg CActRegPool<CActionArea>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
-static inline CActHandler* ResolveActionAreaAct(i32 coord) {
-    return (CActRegPool<CActionArea>::s_table.ResolveEntry(coord));
-}
-
 RVA(0x00007c60, 0xf1)
 i32 DispatchActionAreaLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CActionArea)}
 
@@ -65,7 +61,7 @@ RVA(0x00008240, 0x18d)
 void CProjActObj::RegisterType() {
     ACT_NAME_ID(id, "A")
 
-    *ResolveActionAreaAct(id) = static_cast<CActHandler>(&CActionArea::Tick);
+    *ResolveRegisteredAct<CActionArea>(id) = static_cast<CActHandler>(&CActionArea::Tick);
 }
 
 RVA(0x00008440, 0xfe)

@@ -19,6 +19,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/KitchenSlime.h>
 #include <Gruntz/LevelArea.h>
+#include <Gruntz/LevelCollisionInline.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MapCellFlags.h>
 #include <Gruntz/MovingDeathTileId.h>
@@ -45,10 +46,6 @@ CActReg CActRegPool<CRollingBall>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 DATA(0x001ea3e8)
 static const double s_rollingBallSpeedNum = 16.0;
-
-static __inline i32 VtblResolve(CTileImageSet* imageSet) {
-    return IDX(imageSet->GetCollisionAt(0, 0));
-}
 
 RVA_COMPGEN(0x00012f50, 0x1e, ??_GCRollingBall@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012f80, 0x44, ??1CRollingBall@@UAE@XZ)

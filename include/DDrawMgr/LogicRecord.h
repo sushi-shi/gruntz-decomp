@@ -3,6 +3,8 @@
 
 #include <rva.h>
 
+#include <Mfc.h>
+
 #include <DDrawMgr/LogicRecordFlags.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
@@ -150,5 +152,11 @@ struct CLogicRecord : public CWapObj {
     i32 m_targetId;
     u32 m_payloadSize;
 };
+
+inline CLogicRecord* LookupLogicTemplate(CMapStringToOb& map, LPCTSTR name) {
+    CObject* found = NULL;
+    map.Lookup(name, found);
+    return static_cast<CLogicRecord*>(found);
+}
 
 #endif // GRUNTZ_DDRAWMGR_LOGICRECORD_H

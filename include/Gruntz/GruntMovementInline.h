@@ -45,4 +45,31 @@ inline void RecycleGruntCoords(CGrunt* grunt) {
     grunt->m_coordList.RemoveAll();
 }
 
+inline void ScreenTile(Coord* pos) {
+    pos->m_x >>= TILE_SHIFT_PX;
+    pos->m_y >>= TILE_SHIFT_PX;
+}
+
+inline Coord ScreenTile(CGrunt* unit) {
+    Coord out;
+    CGameObject* object = unit->m_object;
+    out.m_x = object->m_screenX >> TILE_SHIFT_PX;
+    out.m_y = object->m_screenY >> TILE_SHIFT_PX;
+    return out;
+}
+
+static inline i32 ScreenTileX(CGrunt* unit) {
+    return unit->m_object->m_screenX >> TILE_SHIFT_PX;
+}
+
+static inline i32 ScreenTileY(CGrunt* unit) {
+    return unit->m_object->m_screenY >> TILE_SHIFT_PX;
+}
+
+static inline Coord ScanCell(CGrunt* g) {
+    Coord t;
+    g->GetScreenTile(&t);
+    return t;
+}
+
 #endif // GRUNTZ_GRUNTMOVEMENTINLINE_H

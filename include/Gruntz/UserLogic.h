@@ -119,6 +119,8 @@ public:
     i32 m_previousAnimationActId;
 };
 
+typedef i32 (CUserLogic::*CActHandler)();
+
 #define SET_ANIMATION_ACT(key)                                                                     \
     m_previousAnimationActId = m_logicRecord->m_eventCode;                                         \
     m_logicRecord->m_eventCode = ActFindId(key)

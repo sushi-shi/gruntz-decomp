@@ -379,4 +379,14 @@ inline CGameObject* CDDrawChildGroup::HeadChild() const {
     return static_cast<CGameObject*>(m_list.GetHead());
 }
 
+#define CLEAR_WWD_GAME_OBJECT_CHILDREN                                                             \
+    POSITION pos = m_children.GetHeadPosition();                                                   \
+    while (pos != NULL) {                                                                          \
+        CObject* child = m_children.GetNext(pos);                                                  \
+        if (child != NULL) {                                                                       \
+            delete child;                                                                          \
+        }                                                                                          \
+    }                                                                                              \
+    m_children.RemoveAll()
+
 #endif // GRUNTZ_WWD_WWDGAMEOBJECTFAMILY_H

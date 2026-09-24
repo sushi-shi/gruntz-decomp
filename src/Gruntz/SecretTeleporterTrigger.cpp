@@ -60,10 +60,6 @@ RVA_DYNINIT(0x00042730, 0x1f, CActRegPool<CSecretLevelTrigger>::s_table)
 template<> DATA(0x00244598)
 CActReg CActRegPool<CSecretLevelTrigger>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
-static inline CActHandler* ActLookup(i32 coord) {
-    return (CActRegPool<CSecretTeleporterTrigger>::s_table.ResolveEntry(coord));
-}
-
 RVA(0x00010a10, 0x47)
 i32 CSecretTeleporterTrigger::SerializeDispatch(
     CFileMemBase* ar,
@@ -119,7 +115,7 @@ void CSecretTeleporterTrigger::FireActivation(i32 coord) {
 RVA(0x000422b0, 0x18d)
 void CSecretTeleporterTrigger::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((ActLookup(id)))) =
+    (*((ResolveRegisteredAct<CSecretTeleporterTrigger>(id)))) =
         static_cast<i32 (CUserLogic::*)()>(&CSecretTeleporterTrigger::SpawnTeleporter);
 }
 

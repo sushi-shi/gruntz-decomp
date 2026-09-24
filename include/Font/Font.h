@@ -66,4 +66,6 @@ public:
     i32 m_clip;
 };
 
+#define SET_FONT_GLYPH(c, glyph) m_glyphs[c] = glyph
+
 #endif // SRC_FONT_FONT_H

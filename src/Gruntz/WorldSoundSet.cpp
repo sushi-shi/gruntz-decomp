@@ -12,6 +12,8 @@
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/RandomAmbientSound.h>
+#include <Gruntz/RandomRange.h>
+#include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundCueRegistryInline.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/UserLogic.h>
@@ -285,8 +287,7 @@ i32 CAmbientSound::InitFromKey(
     RECT* region,
     i32 volumeScale
 ) {
-    SoundCue* cue = NULL;
-    MapLookup(cueRegistry->m_cues, key, cue);
+    SoundCue* cue = cueRegistry->FindCue(key);
     if (cue == NULL) {
         return 0;
     }
@@ -516,8 +517,7 @@ i32 CAmbientPosSound::InitFromKey(
     AmbientPoint* position,
     i32 volumeScale
 ) {
-    SoundCue* cue = NULL;
-    MapLookup(cueRegistry->m_cues, key, cue);
+    SoundCue* cue = cueRegistry->FindCue(key);
     if (cue == NULL) {
         return 0;
     }
@@ -722,22 +722,6 @@ i32 DispatchSpotAmbientSoundLogic(CGameObject* obj) {
     }
     record->SetEventCode(5);
     return 1;
-}
-
-static inline i32 RandRange(CGruntzMgr* mgr, i32 lo, i32 hi) {
-    i32 range = hi - lo + 1;
-    if (range == 0) {
-        return (mgr->Rand() & 1) ? lo : hi;
-    }
-    return mgr->Rand() % range + lo;
-}
-
-static inline i32 RandRange(i32 lo, i32 hi) {
-    i32 range = hi - lo + 1;
-    if (range == 0) {
-        return (GetRandomNumber() & 1) ? lo : hi;
-    }
-    return GetRandomNumber() % range + lo;
 }
 
 // @early-stop
