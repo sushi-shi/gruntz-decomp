@@ -1625,7 +1625,7 @@ fader	??1CFaderMesh@@UAE@XZ	100.0000	100.0000	1	cab10c5a209d	0x17e990	100.0000
 fader	??_G?$CArray@URezElem40@@ABU1@@@UAEPAXI@Z	100.0000	100.0000	1	cpp:1c066a76ec37	0x17f310	100.0000	
 fader	??_GCFader@@UAEPAXI@Z	100.0000	100.0000	1	cpp:1c066a76ec37	0x17e480	100.0000	
 fader	??_GCFaderMesh@@UAEPAXI@Z	100.0000	100.0000	1	cpp:1c066a76ec37	0x17e970	100.0000	
-fader	?ApplyInit@CFaderMesh@@QAEHPAVCFaderConfig@@@Z	62.5570	62.5570	8	cd40ffb6369f	0x17ea00	82.3038	
+fader	?ApplyInit@CFaderMesh@@QAEHPAVCFaderConfig@@@Z	86.7418	86.7418	9	6461f791d054	0x17ea00	86.7418	
 fader	?BeginFade@CFader@@UAEXXZ	100.0000	100.0000	1	08a171d5cd43	0x17e790	100.0000	
 fader	?ConstructElements@@YGXPAURezElem40@@H@Z	100.0000	100.0000	1	82bc3969e03d	0x17f500	100.0000	
 fader	?EndFade@CFader@@UAEXXZ	100.0000	100.0000	1	45c905d996ca	0x17e7a0	100.0000	
@@ -1655,7 +1655,7 @@ fadereffects	??_GCFaderShape@@UAEPAXI@Z	100.0000	100.0000	1	cpp:0d8102634e10	0x1
 fadereffects	??_GCFaderSine@@UAEPAXI@Z	100.0000	100.0000	1	cpp:0d8102634e10	0x17fdd0	100.0000	
 fadereffects	?ApplyInit@CFaderFlat@@QAEHPAVCFaderConfig@@@Z	100.0000	100.0000	4	cdf83d8d7ea3	0x17f5e0	100.0000	
 fadereffects	?ApplyInit@CFaderLight@@QAEHPAVCFaderConfig@@@Z	95.7887	95.7887	7	c75b3aac6777	0x1804a0	95.7887	
-fadereffects	?ApplyInit@CFaderRadial@@QAEHPAVCFaderConfig@@@Z	100.0000	99.8070	7	214975b9badf	0x17fa40	100.0000	
+fadereffects	?ApplyInit@CFaderRadial@@QAEHPAVCFaderConfig@@@Z	99.8070	99.8070	8	66f2e3a805bb	0x17fa40	100.0000	
 fadereffects	?ApplyInit@CFaderShape@@QAEHPAVCFaderConfig@@@Z	91.8740	91.8740	6	a41c0518a64d	0x1817e0	91.8740	
 fadereffects	?ApplyInit@CFaderSine@@QAEHPAVCFaderConfig@@@Z	98.4608	98.4608	8	ff866dfd74ac	0x17fe00	98.4608	
 fadereffects	?BeginFade@CFaderLight@@UAEXXZ	100.0000	100.0000	5	2f5d093b94dc	0x181660	100.0000	
@@ -1670,10 +1670,10 @@ fadereffects	?GetFrameCount@CFaderSine@@UAEHXZ	100.0000	100.0000	2	2c7080e3990f	
 fadereffects	?PrepareFrame@CFaderFlat@@QAEXXZ	100.0000	100.0000	1	6e2d2e824b3a	0x17f980	100.0000	
 fadereffects	?ReleaseBuffers@CFaderLight@@QAEXXZ	100.0000	100.0000	3	a3436fa98633	0x180630	100.0000	
 fadereffects	?Render@CFaderLight@@QAEXHHHPAE00@Z	98.8538	97.9257	4	16d693c5ff8a	0x180fb0	98.8538	
-fadereffects	?RenderFrame@CFaderFlat@@UAEXH@Z	93.4691	93.4691	6	2109805767c0	0x17f660	93.4691	
-fadereffects	?RenderFrame@CFaderLight@@UAEXH@Z	91.1627	91.1627	8	eedccfa3cb7a	0x180640	91.1627	
+fadereffects	?RenderFrame@CFaderFlat@@UAEXH@Z	93.4691	91.4655	6	2109805767c0	0x17f660	93.4691	
+fadereffects	?RenderFrame@CFaderLight@@UAEXH@Z	91.1627	91.1627	9	146aa29eed59	0x180640	91.1627	
 fadereffects	?RenderFrame@CFaderRadial@@UAEXH@Z	99.7222	99.7222	4	854ba4ba9303	0x17fc60	99.7222	
-fadereffects	?RenderFrame@CFaderShape@@UAEXH@Z	99.9080	99.6626	10	1074224dcdd4	0x181b00	99.9080	
+fadereffects	?RenderFrame@CFaderShape@@UAEXH@Z	99.9080	99.9080	10	1074224dcdd4	0x181b00	99.9080	
 fadereffects	?RenderFrame@CFaderSine@@UAEXH@Z	95.6406	95.6406	10	1df5bc0a2c2c	0x17ff30	95.6406	
 fadereffects	?RenderTile@CFaderShape@@QAEXHH@Z	100.0000	100.0000	4	2d045e1be471	0x182610	100.0000	
 fadereffects	?RenderWarpTile@CFaderShape@@QAEXHH@Z	91.2869	91.0211	8	4add459398a7	0x181e50	91.2869	
@@ -2059,7 +2059,7 @@ gruntcombat	?FindGridNeighbor@CGrunt@@QAEPAV1@H@Z	100.0000	100.0000	7	13577b2588
 gruntcombat	?FireActivation@CGrunt@@UAEXH@Z	100.0000	100.0000	4	a551b1c6a238	0x5bcd0	100.0000	
 gruntcombat	?HandleCombatContact@CGrunt@@QAEHHHHHH@Z	88.3162	88.3162	14	6108dad3f991	0x59230	97.0228	
 gruntcombat	?LoadGruntAbilityTuning@CGrunt@@QAEHH@Z	100.0000	100.0000	17	95761fd056a6	0x57100	100.0000	
-gruntcombat	?LoadGruntCombatAnimations@CGrunt@@QAEHW4PickupType@@HHHHHH0@Z	66.8778	66.8778	30	1824decb6757	0x597a0	75.8557	
+gruntcombat	?LoadGruntCombatAnimations@CGrunt@@QAEHW4PickupType@@HHHHHH0@Z	66.8778	66.8778	31	0ea35fef2e5c	0x597a0	75.8557	
 gruntcombat	?Lookup@SoundCueRegistry@@QAEPAVCObject@@PBD@Z	100.0000	100.0000	3	2d2eb61ed13a	0x5b7e0	100.0000	
 gruntcombat	?OnStruck@CGrunt@@QAEXH@Z	90.5000	90.5000	6	e82288eb70e3	0x588f0	90.5000	
 gruntcombat	?PathScan@CGrunt@@QAEHXZ	87.0954	87.0954	14	c1217dfbfbe9	0x57db0	90.5849	

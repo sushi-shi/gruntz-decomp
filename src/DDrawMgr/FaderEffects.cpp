@@ -18,6 +18,7 @@
 #include <Gruntz/FaderSubtypes.h>
 #include <Gruntz/ShapeFaderConfig.h>
 #include <Ints.h>
+#include <Lith/BDefs.h>
 #include <Wap32/ScreenGeometry.h>
 
 #include <ddraw.h>
@@ -232,7 +233,7 @@ i32 CFaderRadial::ApplyInit(CFaderConfig* desc) {
 
     i32 cx = m_centerX;
     i32 cy = m_centerY;
-    m_maxRadius = static_cast<i32>((sqrt(static_cast<double>((cx * cx + cy * cy))) * g_faderScale));
+    m_maxRadius = static_cast<i32>((sqrt(static_cast<double>((SQR(cx) + SQR(cy)))) * g_faderScale));
 
     for (i32 y = 0; y < static_cast<i32>(m_srcSurface->m_apiDesc.dwHeight); y++) {
         for (i32 x = 0; x < static_cast<i32>(m_srcSurface->m_apiDesc.dwWidth); x++) {
@@ -241,7 +242,7 @@ i32 CFaderRadial::ApplyInit(CFaderConfig* desc) {
             CFaderRadialCell cell;
             cell.m_radius = static_cast<float>(
                 (static_cast<double>(m_maxRadius)
-                 - sqrt(static_cast<double>((dx * dx + dy * dy))) * g_faderScale - g_faderBiasR)
+                 - sqrt(static_cast<double>((SQR(dx) + SQR(dy)))) * g_faderScale - g_faderBiasR)
             );
             float fade = cell.m_radius / m_fadeDivisor - g_faderBiasFade;
             cell.m_vx = static_cast<float>(dx) * fade;
@@ -558,7 +559,7 @@ void CFaderLight::RenderFrame(i32 frame) {
             ovlBits = static_cast<u8*>(m_overlay->Lock(NULL));
         }
         i32 r = m_frameCount - frame;
-        i32 rr = r * r;
+        i32 rr = SQR(r);
         i32 v = m_centerY - r - delta;
         i32 row = (v < 0) ? 0 : v;
         i32* span = &m_spanStarts[row];
@@ -604,7 +605,7 @@ void CFaderLight::RenderFrame(i32 frame) {
             m_overlay->m_ddSurface->Unlock(NULL);
         }
     } else {
-        i32 fr2 = frame * frame;
+        i32 fr2 = SQR(frame);
         i32 v = m_centerY - frame - delta - m_spanCount;
         i32 row = (v < 0) ? 0 : v;
         i32* span = &m_spanEnds[row];
@@ -634,7 +635,7 @@ void CFaderLight::RenderFrame(i32 frame) {
             }
             if (row > m_centerY - frame - m_spanCount && row < frame + m_spanCount + m_centerY) {
                 i32 rad = frame + m_spanCount - 1;
-                Render(row, rad * rad, rad, lut, m_targetBits, m_restoreBits);
+                Render(row, SQR(rad), rad, lut, m_targetBits, m_restoreBits);
             }
             row++;
             span++;
