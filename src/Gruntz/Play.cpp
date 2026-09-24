@@ -3923,8 +3923,8 @@ i32 CPlay::AdvanceCursorAnimation(i32 elapsedMs) {
 // @early-stop
 RVA(0x000d0b30, 0x200)
 i32 CPlay::SaveUnderAndDrawCursor(CDDrawSurfacePair* pair) {
-    Coord cursor = m_cursorPosition;
-    cursor += m_cursorOffset;
+    i32 x = m_cursorPosition.m_x + m_cursorOffset.m_x;
+    i32 y = m_cursorPosition.m_y + m_cursorOffset.m_y;
 
     CDDSurface* savedPixels;
     RECT* screenRect;
@@ -3939,14 +3939,11 @@ i32 CPlay::SaveUnderAndDrawCursor(CDDrawSurfacePair* pair) {
         savedRect = &m_cursorSavedRects[1];
     }
 
-    SetRect(
-        screenRect,
-        cursor.m_x - m_cursorImage->m_anchor.x,
-        cursor.m_y - m_cursorImage->m_anchor.y,
-        cursor.m_x - m_cursorImage->m_anchor.x + m_cursorImage->m_width,
-        cursor.m_y - m_cursorImage->m_anchor.y + m_cursorImage->m_height
-    );
-    CSize mode = m_mgr->GetModeSize();
+    screenRect->left = x - m_cursorImage->m_anchor.x;
+    screenRect->right = m_cursorImage->m_width + screenRect->left;
+    screenRect->top = y - m_cursorImage->m_anchor.y;
+    screenRect->bottom = m_cursorImage->m_height + screenRect->top;
+    tagSIZE mode = m_mgr->GetModeSize();
     if (screenRect->left < 0) {
         screenRect->left = 0;
     }
@@ -3959,8 +3956,8 @@ i32 CPlay::SaveUnderAndDrawCursor(CDDrawSurfacePair* pair) {
     if (screenRect->bottom > mode.cy) {
         screenRect->bottom = mode.cy;
     }
-    CSize savedSize = CRect(*screenRect).Size();
-    *savedRect = CRect(CPoint(0, 0), savedSize);
+    savedRect->right = screenRect->right - screenRect->left;
+    savedRect->bottom = screenRect->bottom - screenRect->top;
 
     CDDSurface* target = pair->m_surface;
     if (target == NULL) {
@@ -3973,8 +3970,9 @@ i32 CPlay::SaveUnderAndDrawCursor(CDDrawSurfacePair* pair) {
     }
 
     if (m_drewThisFrame != false) {
-        CRect vp = m_world->m_level->m_viewportRect;
-        CRect clip = vp;
+        RECT vp = m_world->m_level->m_viewportRect;
+        RECT clip;
+        CopyRect((&clip), (&vp));
         target->DecodeThunk(
             m_pathPreviewSource.x,
             m_pathPreviewSource.y,
@@ -3986,7 +3984,7 @@ i32 CPlay::SaveUnderAndDrawCursor(CDDrawSurfacePair* pair) {
         );
     }
 
-    m_cursorImage->RenderFrame(pair, cursor.m_x, cursor.m_y, 0);
+    m_cursorImage->RenderFrame(pair, x, y, 0);
 
     DDSCAPS caps;
     i32 inSysMem;
@@ -4039,12 +4037,14 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
         if (m_worldReady != false) {
 
             {
-                Coord anchor = m_dragClampMax;
-                Coord low = m_cursorPosition;
-                Coord high = low;
-                low.Min(anchor);
-                high.Max(anchor);
-                m_hudRect = MakeRect(low.m_x, low.m_y, high.m_x, high.m_y);
+                i32 anchorX = m_dragClampMax.m_x;
+                i32 curX = m_cursorPosition.m_x;
+                m_hudRect.left = curX < anchorX ? curX : anchorX;
+                m_hudRect.right = curX <= anchorX ? anchorX : curX;
+                i32 anchorY = m_dragClampMax.m_y;
+                i32 curY = m_cursorPosition.m_y;
+                m_hudRect.top = curY < anchorY ? curY : anchorY;
+                m_hudRect.bottom = curY <= anchorY ? anchorY : curY;
             }
         rearm:
             CWwdSpriteObject* s = m_cursorSnapSprite;
@@ -4069,11 +4069,9 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
             }
             CGameLevel* v = m_world->m_level;
             LevelCoordRect* vr = &v->m_mainPlane->m_planeViewRect;
-            Coord worldPosition(
-                vr->left - v->m_viewportRect.left + x,
-                vr->top - v->m_viewportRect.top + y
-            );
-            m_mgr->m_triggerMgr->PlaceObjectFull(worldPosition.m_x, worldPosition.m_y);
+            i32 wx = vr->left - v->m_viewportRect.left + x;
+            i32 wy = vr->top - v->m_viewportRect.top + y;
+            m_mgr->m_triggerMgr->PlaceObjectFull(wx, wy);
             return 1;
         }
         if (m_cursorSnapSprite != NULL) {
@@ -4088,11 +4086,17 @@ i32 CPlay::HandleDragMove(i32 keyFlags, i32 x, i32 y) {
     m_dragInProgress = true;
     m_statusBar->HandlePointerDrag(keyFlags, x, y);
     if (m_worldReady != false) {
-        Coord boxMin(static_cast<i32>(box.left), static_cast<i32>(box.top));
-        Coord boxMax(static_cast<i32>(box.right), static_cast<i32>(box.bottom));
-        Coord topLeft = m_cursorPosition.GetMax(boxMin).GetMin(m_dragClampMax);
-        Coord bottomRight = m_cursorPosition.GetMax(m_dragClampMax).GetMin(boxMax);
-        m_hudRect = MakeRect(topLeft.m_x, topLeft.m_y, bottomRight.m_x, bottomRight.m_y);
+
+        m_hudRect.left = m_cursorPosition.m_x > box.left ? m_cursorPosition.m_x : box.left;
+        m_hudRect.left = m_hudRect.left < m_dragClampMax.m_x ? m_hudRect.left : m_dragClampMax.m_x;
+        m_hudRect.right = m_cursorPosition.m_x < box.right ? m_cursorPosition.m_x : box.right;
+        m_hudRect.right =
+            m_hudRect.right > m_dragClampMax.m_x ? m_hudRect.right : m_dragClampMax.m_x;
+        m_hudRect.top = m_cursorPosition.m_y <= box.top ? box.top : m_cursorPosition.m_y;
+        m_hudRect.top = m_hudRect.top < m_dragClampMax.m_y ? m_hudRect.top : m_dragClampMax.m_y;
+        m_hudRect.bottom = m_cursorPosition.m_y < box.bottom ? m_cursorPosition.m_y : box.bottom;
+        m_hudRect.bottom =
+            m_hudRect.bottom > m_dragClampMax.m_y ? m_hudRect.bottom : m_dragClampMax.m_y;
     }
     if (m_cursorTargetValid != false && m_mgr->m_triggerMgr->m_pendingFxKind == 0) {
         FlushPendingOps();
@@ -4424,8 +4428,9 @@ i32 CPlay::ExecuteCommand(
                     g->m_arrivalRerollWindowLo = 0;
                     g->m_arrivalRerollHi = 0;
                     g->m_arrivalRerollWindowHi = 0;
-                    g->m_defenderPx = g->m_lastTilePx;
+                    g->m_defenderPx.m_x = g->m_lastTilePx.m_x;
                     g->m_tileClaimed = true;
+                    g->m_defenderPx.m_y = g->m_lastTilePx.m_y;
 
                     switch (g->m_entranceReason) {
                         case PICKUP_BOOMERANG:
@@ -4447,11 +4452,15 @@ i32 CPlay::ExecuteCommand(
                     g->m_arrivalFlags |=
                         IDX(CELL_FLAG_SPECIAL | CELL_FLAG_SPIKES | CELL_FLAG_IN_GAME_ICON
                             | CELL_FLAG_STATIC_HAZARD | CELL_FLAG_ROLLING_BALL);
-                    g->m_arrivalCell = Coord(-1, -1);
+                    g->m_arrivalCell.m_x = -1;
                     g->m_arrivalState = AI_DEFENDER;
                     g->m_defenderState = AISTATE_SEEK;
+                    g->m_arrivalCell.m_y = -1;
                     g->m_arrivalActive = false;
-                    SetRectEmpty(&g->m_object->m_extent);
+                    g->m_object->m_extent.left = 0;
+                    g->m_object->m_extent.right = 0;
+                    g->m_object->m_extent.top = 0;
+                    g->m_object->m_extent.bottom = 0;
                     g->SetEntrancePos(1, 1);
                 }
                 g->m_arrivalNotified = false;
@@ -4501,18 +4510,12 @@ i32 CPlay::ExecuteCommand(
                 );
                 g->SetEntrancePos(1, 1);
             }
-            Coord target(
-                static_cast<u16>(targetXOrPlayerIndex),
-                static_cast<u16>(targetYOrUnitIndex)
-            );
+            i32 px = static_cast<u16>(targetXOrPlayerIndex);
+            i32 py = static_cast<u16>(targetYOrUnitIndex);
 
-            CGrunt* node = m_mgr->m_triggerMgr->CellHitTest(
-                target.m_x,
-                target.m_y,
-                &hitPlayerIndex,
-                &hitUnitIndex,
-                PLAYER_SLOT_ALL
-            );
+            CGrunt* node =
+                m_mgr->m_triggerMgr
+                    ->CellHitTest(px, py, &hitPlayerIndex, &hitUnitIndex, PLAYER_SLOT_ALL);
             if (node != NULL && g->m_entranceActive == false) {
                 g->SetArrivalTarget(
                     hitPlayerIndex,
@@ -4523,7 +4526,7 @@ i32 CPlay::ExecuteCommand(
             } else {
                 g->m_arrivalActive = false;
             }
-            res = m_mgr->m_triggerMgr->UseEquippedToolAt(player, gi, target.m_x, target.m_y);
+            res = m_mgr->m_triggerMgr->UseEquippedToolAt(player, gi, px, py);
             if (res == 0) {
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
                     return 0;
@@ -4532,7 +4535,7 @@ i32 CPlay::ExecuteCommand(
                 return 0;
             }
             if (res == -1) {
-                if (!m_mgr->m_triggerMgr->ClearCell(player, gi, target.m_x, target.m_y, 2)) {
+                if (!m_mgr->m_triggerMgr->ClearCell(player, gi, px, py, 2)) {
                     if (player != static_cast<u32>(g_curPlayer)
                         || g->m_entranceCommitted == false) {
                         return 0;
@@ -4581,15 +4584,10 @@ i32 CPlay::ExecuteCommand(
                 g->m_arrivalActive = false;
                 return 0;
             }
-            Coord targetPosition = g2->m_object->ScreenPos();
-            g->SetArrivalTarget(
-                targetPlayerIndex,
-                targetUnitIndex,
-                targetPosition.m_x,
-                targetPosition.m_y
-            );
-            res = m_mgr->m_triggerMgr
-                      ->UseEquippedToolAt(player, gi, targetPosition.m_x, targetPosition.m_y);
+            i32 sx = g2->m_object->m_screenPosition.m_x;
+            i32 sy = g2->m_object->m_screenPosition.m_y;
+            g->SetArrivalTarget(targetPlayerIndex, targetUnitIndex, sx, sy);
+            res = m_mgr->m_triggerMgr->UseEquippedToolAt(player, gi, sx, sy);
             if (res == 0) {
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
                     return 0;
@@ -4598,8 +4596,7 @@ i32 CPlay::ExecuteCommand(
                 return 0;
             }
             if (res == -1) {
-                if (!m_mgr->m_triggerMgr
-                         ->ClearCell(player, gi, targetPosition.m_x, targetPosition.m_y, 2)) {
+                if (!m_mgr->m_triggerMgr->ClearCell(player, gi, sx, sy, 2)) {
                     if (player != static_cast<u32>(g_curPlayer)
                         || g->m_entranceCommitted == false) {
                         return 0;
@@ -4644,17 +4641,11 @@ i32 CPlay::ExecuteCommand(
                 );
                 g->SetEntrancePos(1, 1);
             }
-            Coord target(
-                static_cast<u16>(targetXOrPlayerIndex),
-                static_cast<u16>(targetYOrUnitIndex)
-            );
-            CGrunt* node = m_mgr->m_triggerMgr->CellHitTest(
-                target.m_x,
-                target.m_y,
-                &hitPlayerIndex,
-                &hitUnitIndex,
-                PLAYER_SLOT_ALL
-            );
+            i32 px = static_cast<u16>(targetXOrPlayerIndex);
+            i32 py = static_cast<u16>(targetYOrUnitIndex);
+            CGrunt* node =
+                m_mgr->m_triggerMgr
+                    ->CellHitTest(px, py, &hitPlayerIndex, &hitUnitIndex, PLAYER_SLOT_ALL);
             if (node != NULL && g->m_entranceActive == false) {
                 g->SetArrivalTarget(
                     hitPlayerIndex,
@@ -4665,7 +4656,7 @@ i32 CPlay::ExecuteCommand(
             } else {
                 g->m_arrivalActive = false;
             }
-            res = m_mgr->m_triggerMgr->UseToyAt(player, gi, target.m_x, target.m_y);
+            res = m_mgr->m_triggerMgr->UseToyAt(player, gi, px, py);
             if (res == 0) {
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
                     return 0;
@@ -4674,7 +4665,7 @@ i32 CPlay::ExecuteCommand(
                 return 0;
             }
             if (res == -1) {
-                if (!m_mgr->m_triggerMgr->ClearCell(player, gi, target.m_x, target.m_y, 3)) {
+                if (!m_mgr->m_triggerMgr->ClearCell(player, gi, px, py, 3)) {
                     if (player != static_cast<u32>(g_curPlayer)
                         || g->m_entranceCommitted == false) {
                         return 0;
@@ -4723,14 +4714,10 @@ i32 CPlay::ExecuteCommand(
                 g->m_arrivalActive = false;
                 return 0;
             }
-            Coord targetPosition = g2->m_object->ScreenPos();
-            g->SetArrivalTarget(
-                targetPlayerIndex,
-                targetUnitIndex,
-                targetPosition.m_x,
-                targetPosition.m_y
-            );
-            res = m_mgr->m_triggerMgr->UseToyAt(player, gi, targetPosition.m_x, targetPosition.m_y);
+            i32 sx = g2->m_object->m_screenPosition.m_x;
+            i32 sy = g2->m_object->m_screenPosition.m_y;
+            g->SetArrivalTarget(targetPlayerIndex, targetUnitIndex, sx, sy);
+            res = m_mgr->m_triggerMgr->UseToyAt(player, gi, sx, sy);
             if (res == 0) {
                 if (player != static_cast<u32>(g_curPlayer) || g->m_entranceCommitted == false) {
                     return 0;
@@ -4739,8 +4726,7 @@ i32 CPlay::ExecuteCommand(
                 return 0;
             }
             if (res == -1) {
-                if (!m_mgr->m_triggerMgr
-                         ->ClearCell(player, gi, targetPosition.m_x, targetPosition.m_y, 3)) {
+                if (!m_mgr->m_triggerMgr->ClearCell(player, gi, sx, sy, 3)) {
                     if (player != static_cast<u32>(g_curPlayer)
                         || g->m_entranceCommitted == false) {
                         return 0;
@@ -7022,22 +7008,35 @@ i32 CPlay::ExpandViewport(i32 step) {
     CStatusBarMgr* statusBar = m_statusBar;
 
     LevelCoordRect* viewport = &world->m_level->m_viewportRect;
-    CRect resized = *viewport;
+    RECT resized = *viewport;
 
-    CSize modeSize = manager->m_modeSize;
+    SIZE
+    modeSize;
+    modeSize.cx = manager->m_modeSize.cx;
+    modeSize.cy = manager->m_modeSize.cy;
 
-    if (resized.Width()
+    if (resized.right - resized.left
         < (statusBar->m_position == STATUSBAR_HIDDEN ? modeSize.cx
                                                      : modeSize.cx - STATUSBAR_WIDTH_PX)) {
-        resized.InflateRect(step, 0);
-        resized.left = Max(resized.left, 0L);
-        resized.right = Min(resized.right, static_cast<LONG>(modeSize.cx - 1));
+        resized.left -= step;
+        resized.right += step;
+        if (resized.left < 0) {
+            resized.left = 0;
+        }
+        if (resized.right >= modeSize.cx) {
+            resized.right = modeSize.cx - 1;
+        }
         changed = true;
     }
-    if (resized.Height() < modeSize.cy) {
-        resized.InflateRect(0, step);
-        resized.top = Max(resized.top, 0L);
-        resized.bottom = Min(resized.bottom, static_cast<LONG>(modeSize.cy - 1));
+    if (resized.bottom - resized.top < modeSize.cy) {
+        resized.top -= step;
+        resized.bottom += step;
+        if (resized.top < 0) {
+            resized.top = 0;
+        }
+        if (resized.bottom >= modeSize.cy) {
+            resized.bottom = modeSize.cy - 1;
+        }
         changed = true;
     }
 

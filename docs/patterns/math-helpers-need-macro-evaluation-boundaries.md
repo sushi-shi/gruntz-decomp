@@ -39,6 +39,10 @@ the following examples without removing their typed APIs:
 | `CTriggerMgr::SpawnGrunt` 0x7c110 | 83.5938% | snapped pixel-pair and pickup macros | 94.3750% |
 | `CGrunt::LoadGruntDeathAnimations` 0x60150 | 91.4915% | restored snap macro and scalar screen locals with typed tile reads | 97.1129% |
 | `CGrunt::TryTeleportToCell` 0x52fb0 | 85.8178% | snapped pixel-pair, recycle, and tile-center macros with typed cell writes | 93.6778% |
+| `CPlay::SaveUnderAndDrawCursor` 0xd0b30 | 67.9018% | scalar cursor and direct RECT locals | 99.9632% |
+| `CPlay::HandleDragMove` 0xd0db0 | 78.0153% | scalar drag clamp and world-position locals | 97.4138% |
+| `CPlay::ExecuteCommand` 0xd1b60 | 76.1651% | scalar target and component-store order with named flags | 80.9374% |
+| `CPlay::ExpandViewport` 0xd8ed0 | 48.5000% | direct RECT and SIZE operations | 91.2653% |
 | `CGrunt::RectContains` 0x51850 | 46.2177% | tile component conversion, native rectangle copy, offset/extent macros | 100% |
 | `CGrunt::VehicleContactContains` 0x51a20 | 58.6220% | same rectangle family | 100% |
 | `CGrunt::SetArrivalTarget` 0x52ed0 | 59.6000% | component stores and snap expressions | 100% |
@@ -219,6 +223,14 @@ the source restores its prior 93.6778% while retaining every shared helper.
 The same-unit `StepCompassMove` body is unchanged but moves from 63.0219%
 to 62.6506% under this compiler state. Its historical 63.0219% MAX stays
 banked, and the whole-engine score rises.
+
+Four Play callers retain the typed coordinate and rectangle APIs while
+restoring direct scalar and Win32 struct operations where retail's call set
+and local lifetimes require them. `SaveUnderAndDrawCursor` removes surplus
+`SetRect`/`CopyRect` calls; `HandleDragMove` reaches 97.4138%, above its
+pre-rewrite 93.58%. In the same owner unit, unchanged
+`LoadScrollSpeedOptions` returns from 97.3700% to 97.4950%, demonstrating
+that a neighboring authentic source restoration can recover C1 state.
 
 `CMovingLogic::InitOwner` gives a counterexample to adding an aggregate merely
 because the component values are related. Its four min/max record reads have

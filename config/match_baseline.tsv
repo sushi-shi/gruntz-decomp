@@ -3403,8 +3403,8 @@ play	?DrawStateMessage@CPlay@@UAEHXZ	100.0000	100.0000	4	3121a7852e59	0xcfef0	10
 play	?DrawWorldPresent@CPlay@@QAEHXZ	100.0000	100.0000	2	6053758aeb8c	0xcefc0	100.0000	
 play	?EnterMode@CPlay@@QAEHW4GameStateId@@@Z	100.0000	100.0000	10	751b1837d5f3	0xd6fa0	100.0000	
 play	?EnterState@CPlay@@UAEHW4GameStateId@@@Z	100.0000	100.0000	9	7d43316988b1	0xc8a10	100.0000	
-play	?ExecuteCommand@CPlay@@QAEHEDDFFDE@Z	76.1650	76.1650	23	031b2651c171	0xd1b60	80.9374	
-play	?ExpandViewport@CPlay@@QAEHH@Z	48.5000	48.5000	7	772bff30231c	0xd8ed0	91.2653	
+play	?ExecuteCommand@CPlay@@QAEHEDDFFDE@Z	80.9374	80.9374	24	882c49ee6c9a	0xd1b60	80.9374	
+play	?ExpandViewport@CPlay@@QAEHH@Z	91.2653	91.2653	8	f02d5c182f06	0xd8ed0	91.2653	
 play	?FindStartPointAt@CPlay@@QAEHHHPAH0@Z	100.0000	100.0000	5	27cabe9786e3	0xd5f90	100.0000	
 play	?FlipBoth@CImage@@UAEXPAX@Z	100.0000	100.0000	1	c59c57547a67	0xd5e20	100.0000	
 play	?FlipHorizontal@CImage@@UAEXPAX@Z	100.0000	100.0000	1	943780ed0842	0xd5e00	100.0000	
@@ -3414,7 +3414,7 @@ play	?FreeListTeardown@CPlay@@UAEXXZ	100.0000	100.0000	16	4263c1cb1b44	0xcb480	1
 play	?GetAmbientId@CPlay@@QAEHXZ	100.0000	100.0000	4	bd039923980f	0xda200	100.0000	
 play	?GetClassId@CImage@@UAE?AW4LoadableClassId@@XZ	100.0000	100.0000	1	28b6fdb30070	0xd5de0	100.0000	
 play	?GetTileHandle@CDDrawWorkerHost@@QAEHHH@Z	100.0000	100.0000	3	5014ee547511	0xd53a0	100.0000	
-play	?HandleDragMove@CPlay@@UAEHHHH@Z	78.0153	78.0153	10	5bf688eeeb29	0xd0db0	97.4138	
+play	?HandleDragMove@CPlay@@UAEHHHH@Z	97.4138	97.4138	11	afbf84e6b306	0xd0db0	97.4138	
 play	?InputVirtual@CPlay@@UAEHXZ	100.0000	100.0000	8	391ae3764e75	0xcb800	100.0000	
 play	?IsLoaded@CImage@@UAEHXZ	100.0000	100.0000	1	5b02a6fa2d76	0xd5dc0	100.0000	
 play	?IsReady@CWapObj@@UAEHXZ	100.0000	100.0000	1	56d7de4182c2	0xd5da0	100.0000	
@@ -3427,7 +3427,7 @@ play	?LoadImageBanks@CPlay@@UAEHXZ	100.0000	100.0000	4	2795e0276fc5	0xcffe0	100.
 play	?LoadLoadingBarSprite@CPlay@@QAEHXZ	100.0000	100.0000	6	afd5b455d4f1	0xd7440	100.0000	
 play	?LoadPlayState@CPlay@@QAEHPAVCFileMemBase@@@Z	97.1069	97.1069	20	1b96abb7bf0d	0xd8060	97.1069	
 play	?LoadSBITextEdges@CPlay@@QAEXH@Z	100.0000	100.0000	4	230a36ebb31e	0xd1710	100.0000	
-play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	97.4950	97.3700	7	d6d062ac0625	0xd12b0	98.7500	
+play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	97.4950	97.4950	7	d6d062ac0625	0xd12b0	98.7500	
 play	?LoadWarlordSprites@CPlay@@QAEHPAVCMulti@@PAH@Z	99.4069	99.4069	8	8abf47048539	0xd65d0	99.4069	
 play	?ModeCleanup@CPlay@@UAEXXZ	100.0000	100.0000	6	6717287f91d7	0xcb740	100.0000	
 play	?NotifyVisibleEntities@CPlay@@QAEHXZ	100.0000	100.0000	6	8fee4bb21cf8	0xd9050	100.0000	
@@ -3465,7 +3465,7 @@ play	?RestoreCursorSaveUnder@CPlay@@QAEHXZ	100.0000	100.0000	5	0f83a753c8e7	0xd1
 play	?RestoreDisplay@CPlay@@UAEHXZ	100.0000	100.0000	7	7e5e9dc0b5c8	0xcba10	100.0000	
 play	?ResumeGame@CPlay@@UAEHXZ	100.0000	100.0000	3	c55cd0968853	0xcef00	100.0000	
 play	?SavePlayState@CPlay@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	6	02aa73311485	0xd79d0	100.0000	
-play	?SaveUnderAndDrawCursor@CPlay@@QAEHPAVCDDrawSurfacePair@@@Z	67.9018	67.9018	9	4617603cda28	0xd0b30	99.9877	
+play	?SaveUnderAndDrawCursor@CPlay@@QAEHPAVCDDrawSurfacePair@@@Z	99.9632	99.9632	10	a9d281ec92b7	0xd0b30	99.9877	
 play	?ScanBuildTiles@CPlay@@QAEHXZ	97.9299	97.9299	36	49bcfa47090d	0xd53d0	99.5915	
 play	?ScanShuffleQuads@CPlay@@QAEHXZ	89.8223	89.8223	6	af2f0a84c0d1	0xd9290	99.8477	
 play	?SerializeDispatch@CPlay@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	13	9236535cfa98	0xd7520	100.0000	
