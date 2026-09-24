@@ -122,6 +122,13 @@ restoration of preceding source can move the canonical phase in either direction
 current-score dip in a later, unchanged function is not by itself evidence against that
 restoration. Its historical exact MAX remains banked while the source family is completed.
 
+Restoring `ReadPlaneObjects`' packed-record walk after `Read` adds another such
+control: that reader rises from 70.8123% to 95.0877%, while the unchanged
+`Save` returns from exact to 99.9833%. `Save` keeps its 0x134 bytes, 120
+instructions, 13 calls, one branch, two returns, and no relocations; its sole
+residue begins at +0xb6 in the order of a two-member integer product. The
+historical exact MAX is retained while the preceding source is reconstructed.
+
 1. If the residue is an `imul`/`add` pair of member loads on ONE object, stop editing the
    body — it is canonical. Run the probe (a throwaway `static` definition placed before
    the function) to confirm the parity, then delete it.

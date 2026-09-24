@@ -557,13 +557,15 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
         return 0;
     }
 
-    i32 nameLen = src->m_nameLen;
-    i32 logicLen = src->m_logicLen;
-    i32 imageSetLen = src->m_imageSetLen;
-    i32 soundLen = src->m_soundLen;
-    CPoint position(src->m_x, src->m_y);
-    i32 z = src->m_z;
-    i32 gridIndex = src->m_gridIndex;
+    const i32* p = src->m_fields;
+    i32 nameLen = *p++;
+    i32 logicLen = *p++;
+    i32 imageSetLen = *p++;
+    i32 soundLen = *p++;
+    i32 x = *p++;
+    i32 y = *p++;
+    i32 z = *p++;
+    i32 gridIndex = *p++;
     i32 id = src->m_id;
 
     CWwdSpriteObject* obj = new CWwdSpriteObject(OwnerMgr(), id, 0);
@@ -610,8 +612,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
     buf[n] = 0;
     CString sound(buf);
 
-    if (position.x < 0 || position.x >= m_planePixelSize.cx || position.y < 0
-        || position.y >= m_planePixelSize.cy) {
+    if (x < 0 || x >= m_planePixelSize.cx || y < 0 || y >= m_planePixelSize.cy) {
         i32 used = static_cast<i32>((strCursor - src->m_strings)) + 0x11c;
         delete obj;
         return used;
@@ -631,7 +632,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
         return used;
     }
 
-    if (obj->Setup(position.x, position.y, z, logicTemplate) == 0) {
+    if (obj->Setup(x, y, z, logicTemplate) == 0) {
         delete obj;
         return 0;
     }
@@ -661,20 +662,34 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
         obj->m_name = static_cast<const char*>(name);
     }
 
-    obj->m_flags |= static_cast<u32>(src->m_dynamicFlags);
-    obj->m_stateFlags = static_cast<SpriteStateFlags>(src->m_stateFlags);
-    anim->m_userFlags = src->m_userFlags;
+    p++;
 
-    obj->m_score = src->m_score;
-    obj->m_points = src->m_points;
-    obj->m_powerup = src->m_powerup;
-    obj->m_damage = src->m_damage;
-    obj->m_smarts = src->m_smarts;
-    obj->m_health = src->m_health;
-    obj->m_extent = src->m_extent;
-    obj->m_area = src->m_area;
-    obj->m_switchRect = src->m_switchRect;
-    obj->m_clip = src->m_clip;
+    obj->m_flags |= static_cast<u32>(*p++);
+    obj->m_stateFlags = static_cast<SpriteStateFlags>(*p++);
+    anim->m_userFlags = *p++;
+
+    obj->m_score = *p++;
+    obj->m_points = *p++;
+    obj->m_powerup = *p++;
+    obj->m_damage = *p++;
+    obj->m_smarts = *p++;
+    obj->m_health = *p++;
+    obj->m_extent.left = *p++;
+    obj->m_extent.top = *p++;
+    obj->m_extent.right = *p++;
+    obj->m_extent.bottom = *p++;
+    obj->m_area.left = *p++;
+    obj->m_area.top = *p++;
+    obj->m_area.right = *p++;
+    obj->m_area.bottom = *p++;
+    obj->m_switchRect.left = *p++;
+    obj->m_switchRect.top = *p++;
+    obj->m_switchRect.right = *p++;
+    obj->m_switchRect.bottom = *p++;
+    obj->m_clip.left = *p++;
+    obj->m_clip.top = *p++;
+    obj->m_clip.right = *p++;
+    obj->m_clip.bottom = *p++;
 
     if (obj->m_area.left == 0 && obj->m_area.right == 0) {
         obj->m_area.left = COORD_UNSET;
@@ -689,42 +704,49 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
         obj->m_switchRect.left = COORD_UNSET;
     }
 
-    anim->m_userRect1 = src->m_userRect1;
-    anim->m_userRect2 = src->m_userRect2;
-    anim->m_user1 = src->m_user[0];
-    anim->m_user2 = src->m_user[1];
-    anim->m_user3 = src->m_user[2];
-    anim->m_user4 = src->m_user[3];
-    anim->m_user5 = src->m_user[4];
-    anim->m_user6 = src->m_user[5];
-    anim->m_user7 = src->m_user[6];
-    anim->m_user8 = src->m_user[7];
-    anim->m_minX = src->m_minX;
-    anim->m_minY = src->m_minY;
-    anim->m_maxX = src->m_maxX;
-    anim->m_maxY = src->m_maxY;
-    obj->m_speed = Coord(src->m_speedX, src->m_speedY);
-    anim->m_tweak = Coord(src->m_tweakX, src->m_tweakY);
-    anim->m_counter = src->m_counter;
-    anim->m_speed = src->m_speed;
-    anim->m_size = CSize(src->m_width, src->m_height);
-    obj->m_direction = src->m_direction;
-    obj->m_faceDirection = src->m_faceDirection;
-    anim->m_timeDelay = src->m_timeDelay;
-    anim->m_frameDelay = src->m_frameDelay;
-    obj->m_objectType = src->m_objectType;
-    obj->m_hitTypeFlags = src->m_hitTypeFlags;
+    anim->m_userRect1.left = *p++;
+    anim->m_userRect1.top = *p++;
+    anim->m_userRect1.right = *p++;
+    anim->m_userRect1.bottom = *p++;
+    anim->m_userRect2.left = *p++;
+    anim->m_userRect2.top = *p++;
+    anim->m_userRect2.right = *p++;
+    anim->m_userRect2.bottom = *p++;
+    anim->m_user1 = *p++;
+    anim->m_user2 = *p++;
+    anim->m_user3 = *p++;
+    anim->m_user4 = *p++;
+    anim->m_user5 = *p++;
+    anim->m_user6 = *p++;
+    anim->m_user7 = *p++;
+    anim->m_user8 = *p++;
+    anim->m_minX = *p++;
+    anim->m_minY = *p++;
+    anim->m_maxX = *p++;
+    anim->m_maxY = *p++;
+    obj->m_speed.m_x = *p++;
+    obj->m_speed.m_y = *p++;
+    anim->m_tweak.m_x = *p++;
+    anim->m_tweak.m_y = *p++;
+    anim->m_counter = *p++;
+    anim->m_speed = *p++;
+    anim->m_size.cx = *p++;
+    anim->m_size.cy = *p++;
+    obj->m_direction = *p++;
+    obj->m_faceDirection = *p++;
+    anim->m_timeDelay = *p++;
+    anim->m_frameDelay = *p++;
+    obj->m_objectType = *p++;
+    obj->m_hitTypeFlags = *p++;
 
-    Coord stride = obj->m_stride;
-    u32 strideX = static_cast<u32>(src->m_strideX);
-    if (strideX > 0) {
-        stride.m_x = static_cast<i32>(strideX);
+    u32 w = static_cast<u32>(*p++);
+    if (w > 0) {
+        obj->m_stride.m_x = static_cast<i32>(w);
     }
-    u32 strideY = static_cast<u32>(src->m_strideY);
-    if (strideY > 0) {
-        stride.m_y = static_cast<i32>(strideY);
+    u32 h = static_cast<u32>(*p++);
+    if (h > 0) {
+        obj->m_stride.m_y = static_cast<i32>(h);
     }
-    obj->m_stride = stride;
 
     m_spatialMgr->ParkObject(static_cast<CWwdGameObject*>(obj));
 

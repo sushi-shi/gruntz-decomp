@@ -86,6 +86,13 @@ the earlier component stores and `APPLY_WORKER_HOST_BOUNDS` while retaining the
 typed fields and all helper APIs gave 97.3555%; the retail call set has `CopyRect`
 and a second `UpdatePlaneViewRect` where the aggregate form had `SetRect` and
 `SetViewportRect`. The sibling `Save` also became exact without a source edit.
+In the same TU, `ReadPlaneObjects` recovers its historical score when the packed
+record is walked from its `m_fields` array and its coordinates, rectangle edges,
+and sprite components are assigned directly. The record still retains its named
+semantic fields and fixed layout; the pointer walk expresses the serialized
+source order. A prior trial labelled "historical body" was invalid: it copied a
+snapshot containing the current body, so its flat score was no evidence against
+the pointer walk. The actual old-body A/B raises 70.8123% to 95.0877%.
 
 `LoadChipMachineConfig` has two independent edge-offset reads. The second key is
 `"(FallingItemSpeed"`, including its opening parenthesis. Computing one offset and

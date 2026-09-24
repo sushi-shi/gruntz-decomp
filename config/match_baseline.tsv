@@ -202,7 +202,7 @@ inputdeviceconfig	2	2
 keyedlist	3	3
 kitchenslime	9	6
 latencylist	9	8
-levelplane	28	20
+levelplane	28	19
 levelpreview	11	11
 levelrezpath	3	2
 leveltime	1	1
@@ -2815,10 +2815,10 @@ levelplane	?InitGeometry@CDDrawWorkerHost@@UAEHHHHHHHPAUtagRECT@@PAD@Z	97.7143	9
 levelplane	?Load@CDDrawWorkerHost@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	4	38fc3b95cef6	0x1638c0	100.0000	
 levelplane	?Prune@CDDrawWorkerHost@@QAEHXZ	100.0000	100.0000	2	3da5d8fb5dc3	0x1628d0	100.0000	
 levelplane	?Read@CDDrawWorkerHost@@UAEHPBUWwdPlaneHeader@@PBDPAUtagRECT@@@Z	97.3555	97.3555	11	2ee113193297	0x161640	97.3555	
-levelplane	?ReadPlaneObjects@CDDrawWorkerHost@@QAEHPBUPlaneObjectRecord@@@Z	70.8123	70.8123	11	38a1df6d2838	0x162af0	95.0877	
+levelplane	?ReadPlaneObjects@CDDrawWorkerHost@@QAEHPBUPlaneObjectRecord@@@Z	95.0877	95.0877	12	04f3cff24596	0x162af0	95.0877	
 levelplane	?RebuildPlanes@CDDrawWorkerHost@@QAEHPBDH@Z	89.6267	89.6267	5	2275ec538537	0x1628f0	96.8533	
 levelplane	?ResolveColorKey@CDDrawWorkerHost@@QAEXXZ	100.0000	100.0000	3	cba1c8d0031f	0x163670	100.0000	
-levelplane	?Save@CDDrawWorkerHost@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	4	ebac3d9a784b	0x163780	100.0000	
+levelplane	?Save@CDDrawWorkerHost@@QAEHPAVCFileMemBase@@@Z	100.0000	99.9833	4	ebac3d9a784b	0x163780	100.0000	
 levelplane	?SerializeDispatch@CDDrawWorkerHost@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	3	c7268ed956ce	0x163710	100.0000	
 levelplane	?SetImageSetByName@CDDrawWorkerHost@@QAEXDPBD@Z	100.0000	100.0000	4	6e2143884570	0x161c50	100.0000	
 levelplane	?SetTileSize@CDDrawWorkerHost@@QAEXHH@Z	100.0000	100.0000	4	96c345921a2f	0x161f00	100.0000	
