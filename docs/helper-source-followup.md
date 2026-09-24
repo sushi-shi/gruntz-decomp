@@ -26,11 +26,31 @@ The canonical adoptions are `reassess-sqr-grunt-combat` and
 `combat-occupancy-helper-composition`; alternatives remain under `combat-*`.
 The [occupancy composition control](patterns/dword-flag-mask-narrows-to-byte-rmw.md)
 records the measured mechanism and bounded original-backed negative tests.
-The next Fader cohort has 16 authored square sites and a paired SDK rectangle
-constructor proposal, under `reassess-sqr-fader`,
-`reassess-sqr-fader-effects` and `fader-mesh-rect-ctor-composition`.
-Those compiler trials have not run; their separately rejected/deferred options
-remain recheckable under `fader-*`. All 14 broad pending families remain open.
+Fader checkpoint `28306209a` applies all 16 authored square sites and composes
+the existing SDK rectangle constructors, `OffsetRect`, and `RemoveAll` APIs.
+Mesh improves **62.55696% to 86.741776%**, exceeding its previous historical
+best of 82.3038%. The final composition restores the retail call set; it does
+not close the remaining local/FP-lifetime and allocation questions. The
+[SDK composition pattern](patterns/sdk-member-constructors-explain-template-helpers.md)
+records the separate real-TU controls, including the intermediate dip.
+All 48 scoped ordered references agree with original operands. Across the two
+TUs, 82 of 85 scored bodies remain identical; the other two changes arise from
+the required include-only control. All 4,429 historical and 4,425 same-fingerprint
+maxima survive banking. Three Fader body fingerprints change; banking also
+refreshes the prior combat fingerprint without changing its score or source.
+The header-inline Render body is not separately fingerprinted by the current
+TU-only mechanism, so its complete byte/reference-flat comparison is explicit.
+README now reports 3,842/4,428 exact, 94.88% fuzzy and 95.21% fuzzy MAX.
+Production compilation/comparison completed; under the latest user ruling,
+test suites and the default gated build are deferred to authorized squash merge.
+Earlier checkpoint test results above are historical, not final certification.
+Canonical adoptions are `reassess-sqr-fader`, `reassess-sqr-fader-effects`,
+`fader-mesh-rect-ctor-composition`, `fader-mesh-offset-adapters`, and
+`fader-mesh-removeall-adapter`. Intermediate/rejected/deferred options remain
+recheckable under `fader-*`; the const-reference square profile remains pending.
+The next prepared cohort restores nested square macros in the existing shared
+`SquaredDistance`, covering eleven calls in eight functions across four TUs.
+All 14 broad pending families remain open.
 
 Motion checkpoint `9e1e121fe` applies the complete three-site square-helper
 family, restores the original multiply grouping and shared zero references,
