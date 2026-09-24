@@ -6,13 +6,7 @@
 
 #include <stdlib.h>
 
-static __inline BrickTileId PickOneBrickStack(
-    i32 totalWeight,
-    i32 brownThreshold,
-    i32 redThreshold,
-    i32 blueThreshold,
-    i32 goldThreshold
-) {
+static inline i32 RollBrickColor(i32 totalWeight) {
     i32 colorRoll;
     if (totalWeight == 0) {
         colorRoll = static_cast<i8>(rand());
@@ -21,6 +15,17 @@ static __inline BrickTileId PickOneBrickStack(
         colorRoll = rand() % totalWeight;
         colorRoll++;
     }
+    return colorRoll;
+}
+
+static __inline BrickTileId PickOneBrickStack(
+    i32 totalWeight,
+    i32 brownThreshold,
+    i32 redThreshold,
+    i32 blueThreshold,
+    i32 goldThreshold
+) {
+    i32 colorRoll = RollBrickColor(totalWeight);
     if (colorRoll <= brownThreshold) {
         return BRICKTILE_BROWN_1;
     }
@@ -43,14 +48,7 @@ static __inline BrickTileId PickTwoBrickStack(
     i32 blueThreshold,
     i32 goldThreshold
 ) {
-    i32 colorRoll;
-    if (totalWeight == 0) {
-        colorRoll = static_cast<i8>(rand());
-        colorRoll &= 1;
-    } else {
-        colorRoll = rand() % totalWeight;
-        colorRoll++;
-    }
+    i32 colorRoll = RollBrickColor(totalWeight);
     if (colorRoll <= brownThreshold) {
         return BRICKTILE_BROWN_2;
     }
@@ -81,14 +79,7 @@ static __inline BrickTileId PickThreeBrickStack(
     i32 blueThreshold,
     i32 goldThreshold
 ) {
-    i32 colorRoll;
-    if (totalWeight == 0) {
-        colorRoll = static_cast<i8>(rand());
-        colorRoll &= 1;
-    } else {
-        colorRoll = rand() % totalWeight;
-        colorRoll++;
-    }
+    i32 colorRoll = RollBrickColor(totalWeight);
     if (colorRoll <= brownThreshold) {
         return BRICKTILE_BROWN_3;
     }

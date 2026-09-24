@@ -1,22 +1,15 @@
 #ifndef GRUNTZ_GRUNTZ_SERIALRECORDMACROS_H
 #define GRUNTZ_GRUNTZ_SERIALRECORDMACROS_H
 
+#include <Gruntz/SerialRefLookup.h>
+
 #define SERIALREF(field)                                                                           \
     do {                                                                                           \
         i32 id;                                                                                    \
-        CGameObject* obj;                                                                          \
         ++g_serialCounter;                                                                         \
         ar->Read(&id, 4);                                                                          \
-        obj = NULL;                                                                                \
-        CGameObject* r;                                                                            \
-        if (MapLookupById(dir->m_childGroup->m_registeredGameObjectsById, id, obj) == 0) {         \
-            r = NULL;                                                                              \
-        } else if (obj == NULL) {                                                                  \
-            r = NULL;                                                                              \
-        } else {                                                                                   \
-            r = (obj->GetClassId() == CLASSID_SERIALREF) ? obj : NULL;                             \
-        }                                                                                          \
-        (field) = static_cast<CWwdSpriteObject*>(r);                                               \
+        CWwdSpriteObject* r = LookupSerialRef(dir->m_childGroup->m_registeredGameObjectsById, id); \
+        (field) = r;                                                                               \
         if (r == NULL && id != 0) {                                                                \
             return 0;                                                                              \
         }                                                                                          \
@@ -76,17 +69,6 @@
         field = static_cast<CDDrawWorker*>(out);                                                   \
     } else {                                                                                       \
         field = 0;                                                                                 \
-    }
-
-#define SYNC_PAIR(ar, mode, p)                                                                     \
-    if ((mode) != SERIAL_SAVE) {                                                                   \
-        if ((mode) == SERIAL_LOAD) {                                                               \
-            (ar)->Read((p), 8);                                                                    \
-            (ar)->Read((p) + 2, 8);                                                                \
-        }                                                                                          \
-    } else {                                                                                       \
-        (ar)->Write((p), 8);                                                                       \
-        (ar)->Write((p) + 2, 8);                                                                   \
     }
 
 #endif // GRUNTZ_GRUNTZ_SERIALRECORDMACROS_H

@@ -75,6 +75,7 @@
 #include <Gruntz/SBI_Image.h>
 #include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialClockMacros.h>
 #include <Gruntz/SerialRecordMacros.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
@@ -6431,35 +6432,34 @@ i32 CPlay::SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId type
         }
     }
 
-    i32* p;
-    p = &m_syncTiming.m_start.m_lo;
-    SYNC_PAIR(ar, mode, p);
+    ClockInterval* p;
+    p = &m_syncTiming;
+    SERIALIZE_CLOCK_PAIR(ar, mode, p->m_start, p->m_interval);
     if (!m_statusBar->SerializeDispatch(ar, mode, typeId, payload)) {
         return 0;
     }
     if (!m_levelTimer->SerializeDispatch(ar, mode, typeId, payload)) {
         return 0;
     }
-    p = &m_cueTiming.m_start.m_lo;
-    SYNC_PAIR(ar, mode, p);
+    p = &m_cueTiming;
+    SERIALIZE_CLOCK_PAIR(ar, mode, p->m_start, p->m_interval);
     if (!m_tileTriggers->Serialize(ar, mode, typeId, payload)) {
         return 0;
     }
-    p = &m_region0Timing.m_start.m_lo;
-    SYNC_PAIR(ar, mode, p);
-    p = &m_region1Timing.m_start.m_lo;
-    SYNC_PAIR(ar, mode, p);
-    p = &m_defeatCountdownTiming.m_start.m_lo;
-    SYNC_PAIR(ar, mode, p);
-    p = &m_region2Timing.m_start.m_lo;
-    SYNC_PAIR(ar, mode, p);
-    p = &m_region3Timing.m_start.m_lo;
-    SYNC_PAIR(ar, mode, p);
-    p = &m_bootyTiming.m_start.m_lo;
-    SYNC_PAIR(ar, mode, p);
+    p = &m_region0Timing;
+    SERIALIZE_CLOCK_PAIR(ar, mode, p->m_start, p->m_interval);
+    p = &m_region1Timing;
+    SERIALIZE_CLOCK_PAIR(ar, mode, p->m_start, p->m_interval);
+    p = &m_defeatCountdownTiming;
+    SERIALIZE_CLOCK_PAIR(ar, mode, p->m_start, p->m_interval);
+    p = &m_region2Timing;
+    SERIALIZE_CLOCK_PAIR(ar, mode, p->m_start, p->m_interval);
+    p = &m_region3Timing;
+    SERIALIZE_CLOCK_PAIR(ar, mode, p->m_start, p->m_interval);
+    p = &m_bootyTiming;
+    SERIALIZE_CLOCK_PAIR(ar, mode, p->m_start, p->m_interval);
     return 1;
 }
-#undef SYNC_PAIR
 
 RVA(0x000d79d0, 0x537)
 i32 CPlay::SavePlayState(CFileMemBase* s) {

@@ -27,14 +27,7 @@ static inline TileCollisionKind LookupTileType(CGameLevel* level, i32 x, i32 y) 
     i32 subX = x - (tx << g->m_shiftX);
     i32 subY = y - (ty << g->m_shiftY);
     i32 cell = g->GetTileHandle(tx, ty);
-    if (cell == UNINIT_FILL || cell == -1) {
-        return TILEKIND_PASSABLE;
-    }
-
-    CUniformTileImageSet* tc = static_cast<CUniformTileImageSet*>(
-        level->m_imageSets.GetAt(cell & WWD_TILE_IMAGE_SET_INDEX_MASK)
-    );
-    return tc->GetCollisionAt(subX, subY);
+    return level->CollisionAtHandle(cell, subX, subY);
 }
 
 static inline TileCollisionKind LookupTileTypeDirect(CGameLevel* level, i32 x, i32 y) {
@@ -54,14 +47,7 @@ static inline TileCollisionKind LookupTileTypeDirect(CGameLevel* level, i32 x, i
     i32 subX = x - (tx << g->m_shiftX);
     i32 subY = y - (ty << g->m_shiftY);
     i32 cell = g->m_tileHandles[g->m_tileRowOffsets[ty] + tx];
-    if (cell == UNINIT_FILL || cell == -1) {
-        return TILEKIND_PASSABLE;
-    }
-
-    CUniformTileImageSet* tc = static_cast<CUniformTileImageSet*>(
-        level->m_imageSets.GetAt(cell & WWD_TILE_IMAGE_SET_INDEX_MASK)
-    );
-    return tc->GetCollisionAt(subX, subY);
+    return level->CollisionAtHandle(cell, subX, subY);
 }
 
 static __inline i32 VtblResolve(CTileImageSet* imageSet) {
@@ -81,13 +67,7 @@ static __inline TileCollisionKind PbResolveCell(CGameLevel* level, i32 x, i32 y)
     }
     CDDrawWorkerHost* plane = level->m_mainPlane;
     i32 cell = plane->m_tileHandles[plane->m_tileRowOffsets[y] + x];
-    if (cell == UNINIT_FILL || cell == s_tileClear) {
-        return TILEKIND_PASSABLE;
-    }
-
-    CTileImageSet* set =
-        static_cast<CTileImageSet*>(level->m_imageSets[cell & WWD_TILE_IMAGE_SET_INDEX_MASK]);
-    return set->GetCollisionAt(0, 0);
+    return level->CollisionAtHandle(cell, 0, 0);
 }
 
 static __inline TileCollisionKind PbResolveCellHandle(CGameLevel* level, i32 x, i32 y) {
@@ -102,12 +82,7 @@ static __inline TileCollisionKind PbResolveCellHandle(CGameLevel* level, i32 x, 
         y = level->m_mainPlane->m_tileRows - 1;
     }
     i32 cell = level->m_mainPlane->GetTileHandle(x, y);
-    if (cell == UNINIT_FILL || cell == s_tileClear) {
-        return TILEKIND_PASSABLE;
-    }
-    CTileImageSet* set =
-        static_cast<CTileImageSet*>(level->m_imageSets[cell & WWD_TILE_IMAGE_SET_INDEX_MASK]);
-    return set->GetCollisionAt(0, 0);
+    return level->CollisionAtHandle(cell, 0, 0);
 }
 
 #endif // GRUNTZ_GRUNTZ_LEVELCOLLISIONINLINE_H

@@ -14,13 +14,7 @@ inline CObject* GetAniElementAt(const CAniElement* animation, i32 i) {
 }
 
 static inline CAniRecordView* RecordAt(CAniElement* anim, i32 index) {
-    CAniRecordView* rec;
-    if (index >= 0 && index < anim->m_records.GetSize()) {
-        rec = static_cast<CAniRecordView*>(anim->m_records.GetAt(index));
-    } else {
-        rec = NULL;
-    }
-    return rec;
+    return static_cast<CAniRecordView*>(GetAniElementAt(anim, index));
 }
 
 #endif // GRUNTZ_ANIELEMENTINLINE_H

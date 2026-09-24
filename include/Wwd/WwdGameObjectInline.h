@@ -22,11 +22,7 @@ static inline i32 NotifyLogicForEventCode(CGameObject* object, i32 eventCode) {
 
 static inline BOOL LookupLinkedObject(CMapPtrToPtr& map, i32 id, CWwdGameObject*& out) {
     out = NULL;
-    AddrWord<char> key;
-    key.m_word = id;
-    MapOutRef<CWwdGameObject> dst;
-    dst.m_asTyped = &out;
-    return map.Lookup(key.m_addr, *dst.m_asVoid);
+    return MapLookupById(map, id, out);
 }
 
 #endif // GRUNTZ_WWD_WWDGAMEOBJECTINLINE_H

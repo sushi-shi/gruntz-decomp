@@ -48,13 +48,7 @@ static const i32 s_tileClear = -1;
         i32 idx_ = pl_->m_tileRowOffsets[qy_] + col_;                                              \
         i32 subY_ = py_ - (qy_ << pl_->m_shiftY);                                                  \
         i32 tile_ = pl_->m_tileHandles[idx_];                                                      \
-        if (tile_ == UNINIT_FILL || tile_ == s_tileClear) {                                        \
-            (RESULT) = TILEKIND_PASSABLE;                                                          \
-        } else {                                                                                   \
-            CTileImageSet* set_ =                                                                  \
-                static_cast<CTileImageSet*>(m_imageSets[tile_ & WWD_TILE_IMAGE_SET_INDEX_MASK]);   \
-            (RESULT) = set_->GetCollisionAt(subX_, subY_);                                         \
-        }                                                                                          \
+        (RESULT) = (LVL)->CollisionAtHandle(tile_, subX_, subY_);                                  \
     } while (0)
 
 #define PROBE_TILE_VIA_HANDLE(LVL, X, Y, RESULT)                                                   \
@@ -82,13 +76,7 @@ static const i32 s_tileClear = -1;
         i32 subX_ = px_ - (qx_ << pl_->m_shiftX);                                                  \
         i32 subY_ = py_ - (qy_ << pl_->m_shiftY);                                                  \
         i32 tile_ = pl_->GetTileHandle(col_, qy_);                                                 \
-        if (tile_ == UNINIT_FILL || tile_ == s_tileClear) {                                        \
-            (RESULT) = TILEKIND_PASSABLE;                                                          \
-        } else {                                                                                   \
-            CTileImageSet* set_ =                                                                  \
-                static_cast<CTileImageSet*>(m_imageSets[tile_ & WWD_TILE_IMAGE_SET_INDEX_MASK]);   \
-            (RESULT) = set_->GetCollisionAt(subX_, subY_);                                         \
-        }                                                                                          \
+        (RESULT) = (LVL)->CollisionAtHandle(tile_, subX_, subY_);                                  \
     } while (0)
 
 #include <Gruntz/ImageSets.h>
@@ -111,6 +99,15 @@ GZ_ENUM_CONST_END(LevelPlaneLayout)
 
 class CGameLevel : public CWapObj {
 public:
+    TileCollisionKind CollisionAtHandle(i32 cell, i32 x, i32 y) {
+        if (cell == UNINIT_FILL || cell == s_tileClear) {
+            return TILEKIND_PASSABLE;
+        }
+        CTileImageSet* set =
+            static_cast<CTileImageSet*>(m_imageSets[cell & WWD_TILE_IMAGE_SET_INDEX_MASK]);
+        return set->GetCollisionAt(x, y);
+    }
+
     i32 IsValidWwd(const char* name, WwdHeader* headerBuf);
 
     i32 ReadWwdHeaderName(const char* name, char* nameOut);

@@ -10,6 +10,7 @@
 #include <Gruntz/SBI_ImageSet.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
+#include <Gruntz/SoundCueRegistryInline.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/StatusBarMgr.h>
 
@@ -24,32 +25,11 @@ static __inline void HiCueFind() {
 }
 
 static __inline void HiCueLookup() {
-    SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-    if (registry->m_silentMode == false) {
-        SoundCue* out = registry->FindCue("GAME_TABHIGHLIGHT1");
-        if (out) {
-            out->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
-        }
-    }
+    g_gameReg->m_world->m_soundRegistry->PlayCue("GAME_TABHIGHLIGHT1");
 }
 
 static __inline void HiCueTimed() {
-    SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-    if (registry->m_silentMode == false) {
-        SoundCue* found = registry->FindCue("GAME_TABHIGHLIGHT1");
-        if (found) {
-            b32 soundEnabled = g_soundEnabled;
-            i32 volumePercent = g_soundVolumePercent;
-            if (soundEnabled != false) {
-                SoundCue* p = found;
-                if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
-                    >= static_cast<u32>(p->m_replayDelayMs)) {
-                    p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                    p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                }
-            }
-        }
-    }
+    PlayRegistryCueIfElapsed(g_gameReg->m_world->m_soundRegistry, "GAME_TABHIGHLIGHT1");
 }
 
 static __inline void HiPost(i32 cmdId) {

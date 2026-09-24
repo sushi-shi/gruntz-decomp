@@ -478,8 +478,8 @@ i32 CPathHazard::SerializeDispatch(
         typeId,
         object
     )
-    SerQuadPair(s, mode, &m_leg);
-    SerQuadPair(s, mode, &m_strike);
+    SerializeClockPair(s, mode, &m_leg);
+    SerializeClockPair(s, mode, &m_strike);
     if (mode != SERIAL_SAVE) {
         if (mode == SERIAL_LOAD) {
             s->Read(&m_speed, sizeof(m_speed));

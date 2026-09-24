@@ -6,6 +6,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntVoice.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/SerialRefLookup.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/UserLogic.h>
 #include <Image/CImage.h>
@@ -13,21 +14,10 @@
 #include <Wwd/WwdGameObjectFamily.h>
 
 inline b32 CGruntVoice::PositionIndicatorAtLogicObject() {
-    CGameObject* out = NULL;
-    i32 sourceObjectId = m_sourceObjectId;
-    CGameObject* resolved;
-    if (MapLookupById(
-            g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
-            sourceObjectId,
-            out
-        )
-        == false) {
-        resolved = NULL;
-    } else if (out == NULL) {
-        resolved = NULL;
-    } else {
-        resolved = (out->GetClassId() == CLASSID_SERIALREF) ? out : NULL;
-    }
+    CGameObject* resolved = LookupSerialRef(
+        g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
+        m_sourceObjectId
+    );
     if (resolved == NULL) {
         return false;
     }
@@ -42,21 +32,10 @@ inline b32 CGruntVoice::PositionIndicatorAtLogicObject() {
 }
 
 inline b32 CGruntVoice::PositionIndicatorAtSourceObject() {
-    CGameObject* out = NULL;
-    i32 sourceObjectId = m_sourceObjectId;
-    CGameObject* resolved;
-    if (MapLookupById(
-            g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
-            sourceObjectId,
-            out
-        )
-        == false) {
-        resolved = NULL;
-    } else if (out == NULL) {
-        resolved = NULL;
-    } else {
-        resolved = (out->GetClassId() == CLASSID_SERIALREF) ? out : NULL;
-    }
+    CGameObject* resolved = LookupSerialRef(
+        g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
+        m_sourceObjectId
+    );
 
     if (resolved != NULL) {
         m_object->m_stateFlags &= ~SPRITE_STATE_HIDDEN;

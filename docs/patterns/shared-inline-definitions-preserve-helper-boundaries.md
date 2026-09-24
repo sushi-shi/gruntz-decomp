@@ -158,9 +158,8 @@ including its Y-before-X stores to the returned `Coord`. Their callers retain
 the same one-call topology. The two different `TileNeighborhood` operations
 remain separate functions, named `AttackTileNeighborhood` (reach-dependent)
 and `AdjacentTileNeighborhood` (the neighboring 3-by-3 cells). Similar names
-were not evidence of interchangeable behavior. Likewise, the clock serializers,
-tile lookup variants, sound lookup layers, and RNG adapters retain their distinct
-source bodies and boundaries.
+were not evidence of interchangeable behavior. The clock serializers, tile lookup variants and sound layers were candidates
+for the follow-up audit below; RNG adapters retain their distinct random sources.
 
 Only these 16 definitions remain in implementation files:
 
@@ -213,3 +212,81 @@ definition a semantic owner or an evidence-backed reason to remain private.
 Compile headers on their own and their complete consumer family. Check emitted
 symbols and ordered relocations as well as scores: header visibility can change
 which body is emitted or expanded even when the moved text is unchanged.
+
+## Near-duplicate audit after the complete TU census
+
+The follow-up starts at `fd4eb7198`. Inspecting all 192 moved definitions,
+token-similarity pairs, and their existing header counterparts finds shared
+operations beyond identical complete bodies. Test the complete real consumer
+TUs, including callers of the older header definitions. These are structural
+consolidations, not claims that the surrounding matching walls are closed.
+
+| Family | Shared operation and preserved boundary |
+|---|---|
+| Clock serializers | One `SERIALIZE_CLOCK_PAIR` macro supplies the two reads/writes. `SerializeClockPair` retains pointer and `CHazardTimer*` overloads. `CPlay` uses its real `ClockInterval*` and named members instead of walking from an `i32` member. |
+| Tile collision | `CGameLevel::CollisionAtHandle` owns sentinel handling, image-set lookup and virtual collision dispatch for four inline adapters and both `PROBE_TILE` macros. Pixel-coordinate and tile-coordinate clamping remain distinct, as do direct array access and the retail out-of-line `GetTileHandle` calls. |
+| Sound playback | Menu and status-bar playback share `PlayRegistryCueIfElapsed`, which calls the existing `PlaySoundCueIfElapsed`. The lookup-only highlight path forwards to `SoundCueRegistry::PlayCue`; the path that calls `Lookup` keeps that out-of-line boundary. |
+| Movement collision | Toy and bag checks become one `CanCommitMove`. The apparent difference, testing byte 1 with `0x20` versus the flags word with `0x2000`, is the same mask. Access now uses `BrickzCell` and its members rather than byte offsets and a pixel-pointer union. |
+| Pixel pack | The flat by-value `PackPalEntry16` wrapper expands the existing `PACK_PIXEL16` macro. The separately sequenced `PackPixel16` retains its proven expression order. |
+| Map and animation adapters | `LookupLinkedObject` keeps its internal out-pointer reset and delegates the key/type adaptation to `MapLookupById`. `RecordAt` keeps the typed result boundary around `GetAniElementAt`. |
+| Serial-reference resolution | Both voice-position helpers and `SERIALREF` use the existing `LookupSerialRef`, including its failed-lookup, null and virtual class-id checks. The two positioning operations remain different. |
+| Brick stacks | All three stack-selection helpers share their initial CRT colour roll. Stack-specific layer rolls, thresholds, tile identities and random-call counts stay distinct. |
+
+The focused VC5 controls distinguish an operation from its expansion boundary:
+
+* Sharing the clock macro leaves the exact `CGrunt`, `CPathHazard` and `CPlay`
+  serializer bodies byte/relocation-identical in the isolated trials. A single
+  helper taking two separate `i64&` arguments changes the instruction census
+  and loses those exact controls. Sharing the statements does not require
+  replacing the established aggregate/pointer binding.
+* Forwarding `PackPalEntry16` to the sequenced `PackPixel16` changes
+  `ResolveColorKey`'s first channel load from red to blue and shortens its real
+  body from `0x95` to `0x94`. Expanding `PACK_PIXEL16` inside the existing
+  by-value wrapper preserves the exact `0x95` body and all five referents.
+  This composes the macro prior with the existing inline boundary rather than
+  choosing one globally.
+* The complete save-loading function is byte/relocation-identical when
+  `SERIALREF` delegates to `LookupSerialRef`. Nested map and animation adapters
+  also preserve their directly affected callers. Sound, tile, brick and voice
+  trials preserve call-target multisets and call/branch/return counts without
+  introducing an out-of-line helper emission.
+* The first shared movement trial retains the raw row views and changes
+  `StepCompassMove` from 131 to retail's 129 branches. Composing the real typed
+  cell accesses produces 131 again in isolation. The final shared-header
+  composition emits 129 with typed accesses and improves current fuzzy from
+  62.0438 to 63.0219. Keep the typed model, not raw offsets to preserve a
+  transient count; the existing whole-function CFG question is not settled
+  by this helper audit.
+
+Other high-similarity pairs are different operations: occupant versus tile-id
+lookups have different fields and failure values; load/store helpers have
+opposite effects or different widths; straight versus warped fader copies have
+different source indices and pixel widths; min/max have opposite comparisons;
+the two restart macros differ in cursor-visibility calls; plane traversal has
+different ranges; action registration has different receiver types and
+raw-versus-typed accessor calls. RNG adapters preserve their CRT, header-static
+LCG, or manager-owned source and their different zero-range behavior. The
+attack and adjacent neighborhoods retain their previously established extents.
+Do not collapse these with a boolean template parameter or an erased type.
+
+For reverse use, compare complete operations with their existing shared
+counterparts, then test nested composition and macro-inside-inline separately.
+Preserve out-parameter reset ownership, signed/unsigned widths, repeated RNG
+calls, virtual dispatch and out-of-line calls. A token match is a candidate;
+the real caller's instructions and ordered referents decide which boundary can
+be shared. Current-score perturbations alone do not justify restoring duplicate
+source or retaining untyped accesses.
+
+The final full-build comparison covers 8,339 common emitted functions:
+8,293 retain identical bytes and ordered relocation offsets, targets, types
+and embedded addends; 44 others keep call/branch/return counts. The two branch
+count changes are `StepCompassMove` (131 to 129) and the unchanged
+`LoadTileArrivalFx` (152 to 153). All call-target multisets are preserved, with
+no added or removed function emissions. All 13 changed headers compile alone
+with VC5; seven existing compiler-artifact/include-order controls pass. The
+approved baseline refresh records 11 current-score dips, preserves all 4,439
+historical maxima and every unchanged-source maximum, and retains all rows. Six caller
+fingerprints change; the typed movement caller's new-source best is 0.2771 below
+its historical 63.2990, while improving on its previous current state. This is
+an adjudicated structural correction, not a reduction of the historical matching
+objective.
