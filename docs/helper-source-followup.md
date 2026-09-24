@@ -165,6 +165,17 @@ The math reverse-use pass adds concrete pending consumers under
 retain reopening criteria in those same canonical rows; they do not close
 their broad helper families. No new compiler result is claimed for that pass.
 
+The fresh scalar-selector search adds the complete seven-owner reroll-span
+family (`reassess-max-span-*`), `reassess-ambient-scale-clamp`,
+`reassess-addtable-integer-min`, `reassess-dirtyrect-min`,
+`reassess-spatial-pan-min`, `reassess-fader-span-clamp`, and
+`reassess-fader-max-distance`. The 25 `reassess-selector-screen-*` groups are
+source-screen leads still requiring complete owner and retail review, not
+adoption claims. Individually excluded or deferred alternatives are recorded
+under `reassess-selector-*` with their evidence limits and reopening criteria.
+None of these narrow dispositions closes `reassess-min`, `reassess-max`, or
+`reassess-clamp`.
+
 The container review adds individual pending rows under `reassess-zminerr-*`,
 `reassess-zerrhandler-*`, `reassess-dhandler-typed-layout`,
 `reassess-zerrhandling-*`, `reassess-zvec-*`, `reassess-zdvec-*`,

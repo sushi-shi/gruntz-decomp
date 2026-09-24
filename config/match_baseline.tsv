@@ -2035,13 +2035,13 @@ grunt	?StepArrivalDrop@CGrunt@@QAEHHHHHHH@Z	32.5713	0.0000	18	94760f207dfb	0x4b3
 grunt	?StepGruntMovement@CGrunt@@QAEHXZ	74.0606	74.0606	28	428ceb832ba3	0x4c170	76.5825	
 grunt	?TileSwitch@CGrunt@@QAEHHHHHHH@Z	100.0000	100.0000	4	f6ef204884b1	0x4b320	100.0000	
 gruntarrivalneighbor	?StepPostGuardBehavior@CGrunt@@QAEHXZ	100.0000	100.0000	14	78d7a623a2a5	0xf26f0	100.0000	
-gruntarrivalscan	?StepBomberBehavior@CGrunt@@QAEHXZ	96.3112	96.3112	31	1f62401c5e97	0xec670	96.3112	
-gruntarrivalupdate	?StepGauntletGruntBehavior@CGrunt@@QAEHXZ	86.9102	86.8363	53	cd504dd7d203	0xf0130	94.1989	
+gruntarrivalscan	?StepBomberBehavior@CGrunt@@QAEHXZ	96.3112	96.3112	32	08420ccc8576	0xec670	96.3112	
+gruntarrivalupdate	?StepGauntletGruntBehavior@CGrunt@@QAEHXZ	86.8363	86.8363	54	b11f65fb72fd	0xf0130	94.1989	
 gruntassetloaders	?LoadGruntDeathAnimations@CGrunt@@QAEHW4GruntDeathType@@H@Z	97.1129	97.1129	38	fe18cfc10ae2	0x60150	97.1129	
 gruntbehaviorleaf	?UpdateDeathAnimation@CGrunt@@QAEHXZ	95.2638	95.2638	16	b91a98e94b2b	0x612a0	95.2638	
 gruntbehaviorleaf	?UpdateDecayFade@CGrunt@@QAEHXZ	83.6098	83.6098	11	22da1267517f	0x61570	83.6098	
 gruntbricklayerstep	?StepBrickLayerBehavior@CGrunt@@QAEHXZ	87.6818	80.1788	24	bece72260065	0xecc90	87.6818	
-gruntchargestep	?StepDumbChaserBehavior@CGrunt@@QAEHXZ	90.1462	90.1462	23	daec93fb9585	0xef6b0	90.1462	
+gruntchargestep	?StepDumbChaserBehavior@CGrunt@@QAEHXZ	90.1462	90.1462	24	a341de845bbf	0xef6b0	90.1462	
 gruntcombat	??0CUserLogic@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	1	22d8db5e69d9	0x58cd0	100.0000	
 gruntcombat	?Activate@CGrunt@@UAEXXZ	100.0000	100.0000	5	a473d62d3257	0x5caa0	100.0000	
 gruntcombat	?AdvanceMotion@CGrunt@@UAEXXZ	77.7991	77.7991	19	85b6d5a64868	0x5f310	92.2460	
@@ -2085,8 +2085,8 @@ gruntcreationpoint	?SerializeDispatch@CGruntCreationPoint@@UAEHPAVCFileMemBase@@
 gruntdatarecord	?DeserializeStrings@CGruntCellRec@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	1	82e6a13b8a6d	0x56eb0	100.0000	
 gruntdatarecord	?SerializeStrings@CGruntCellRec@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	5	6aa69d4e50cb	0x56da0	100.0000	
 gruntdefensealt	?StepObjectGuardBehavior@CGrunt@@QAEHXZ	84.2845	84.2845	33	a743c210ddf9	0xf1c70	84.3794	
-gruntdefenselean	?StepMagicWandGruntBehavior@CGrunt@@QAEHXZ	89.7111	82.4785	44	003b10d06ef2	0xf8240	91.9458	
-gruntdefensestep	?StepScrollGruntBehavior@CGrunt@@QAEHXZ	91.6680	91.6680	41	0a212683da42	0xf2b20	91.6680	
+gruntdefenselean	?StepMagicWandGruntBehavior@CGrunt@@QAEHXZ	82.4785	82.4785	45	2a711e27537c	0xf8240	91.9458	
+gruntdefensestep	?StepScrollGruntBehavior@CGrunt@@QAEHXZ	91.6680	91.6680	42	ecba9387ed20	0xf2b20	91.6680	
 gruntdiggerstep	?StepDiggerBehavior@CGrunt@@QAEHXZ	90.0266	66.9018	24	aa685369b8b7	0xf36a0	90.0266	
 gruntentrancearrival	?BuildGruntExitAnimation@CGrunt@@QAEHXZ	100.0000	100.0000	16	ccfa24580b73	0x641b0	100.0000	
 gruntentrancearrival	?FinishKnockbackAnimation@CGrunt@@QAEHXZ	100.0000	100.0000	9	cdcbc76d7782	0x654b0	100.0000	
@@ -2161,7 +2161,7 @@ gruntpowerupsprite	?SerializeDispatch@CGruntPowerupSprite@@UAEHPAVCFileMemBase@@
 gruntpowerupsprite	?Update@CGruntPowerupSprite@@QAEHXZ	100.0000	89.8214	19	082561096993	0x80410	100.0000	
 gruntpuddle	?SetBute@CGruntPuddle@@QAEXPAD@Z	100.0000	100.0000	6	e5d356855c9b	0x7d810	100.0000	
 gruntreticlescan	?StepDefenderBehavior@CGrunt@@QAEHXZ	87.4735	87.4735	28	8fbe12a8a039	0xee800	91.2327	
-gruntscantarget	?StepSmartChaserBehavior@CGrunt@@QAEHXZ	95.7603	95.5799	30	9fae680e9f9e	0xf42f0	95.7603	
+gruntscantarget	?StepSmartChaserBehavior@CGrunt@@QAEHXZ	95.5799	95.5799	31	6d44f388761a	0xf42f0	95.7603	
 gruntseektarget	?StepToolThiefBehavior@CGrunt@@QAEHXZ	93.4097	90.3166	40	2593ba7ee8ab	0xf71c0	93.4186	
 gruntselectedsprite	??0CGruntSelectedSprite@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	6	5e4d6e53b886	0x7e3e0	100.0000	
 gruntselectedsprite	??1CGruntSelectedSprite@@UAE@XZ	100.0000	100.0000	1	cpp:fce6a4e44737	0x11e80	100.0000	
@@ -2261,7 +2261,7 @@ gruntvoice	?ResetPlayback@CGruntVoice@@QAEXXZ	100.0000	100.0000	3	079423bb4c01	0
 gruntvoice	?SerializeDispatch@CVoiceTrigger@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	cpp:1cfecf45469b	0x134e0	100.0000	
 gruntvoice	?Tick@CVoiceTrigger@@QAEHXZ	100.0000	100.0000	8	f8bb37e4e829	0x11a700	100.0000	
 gruntvoice	?UpdateIndicator@CGruntVoice@@QAEHXZ	100.0000	100.0000	11	baf61399f84f	0x11a8e0	100.0000	
-gruntwanderstep	?StepHitAndRunnerBehavior@CGrunt@@QAEHXZ	88.6875	88.6875	43	c5d16e2f31bc	0xed9f0	89.9881	
+gruntwanderstep	?StepHitAndRunnerBehavior@CGrunt@@QAEHXZ	88.6875	88.6875	44	a5f73809978a	0xed9f0	89.9881	
 gruntwingztimesprite	??0CGruntWingzTimeSprite@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	6	720097c63990	0x7fcc0	100.0000	
 gruntwingztimesprite	??1CGruntWingzTimeSprite@@UAE@XZ	100.0000	100.0000	1	cpp:a7d6d84651ab	0x121f0	100.0000	
 gruntwingztimesprite	??_GCGruntWingzTimeSprite@@UAEPAXI@Z	100.0000	100.0000	1	cpp:a7d6d84651ab	0x121c0	100.0000	

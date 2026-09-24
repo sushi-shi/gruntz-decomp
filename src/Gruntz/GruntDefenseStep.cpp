@@ -4,6 +4,7 @@
 #include <MfcWin.h>
 
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/CoordPool.h>
@@ -37,7 +38,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-// @early-stop
 RVA(0x000f2b20, 0x6e1)
 i32 CGrunt::StepScrollGruntBehavior() {
     m_defenderPx = m_lastTilePx;
@@ -219,7 +219,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
                 }
                 i32 coordCount = CoordCount();
                 if (coordCount != 0) {
-                    i32 mx = spanX > spanY ? spanX : spanY;
+                    i32 mx = Max(spanX, spanY);
                     if (coordCount > mx) {
                         SetEntrancePos(1, 1);
                     }

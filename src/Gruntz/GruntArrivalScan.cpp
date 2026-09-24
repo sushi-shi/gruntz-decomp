@@ -4,6 +4,7 @@
 #include <MfcWin.h>
 
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/CoordPool.h>
@@ -35,8 +36,6 @@
 #include <new>
 #include <stdlib.h>
 #include <string.h>
-
-// @early-stop
 
 RVA(0x000ec670, 0x298)
 i32 CGrunt::StepBomberBehavior() {
@@ -94,7 +93,7 @@ i32 CGrunt::StepBomberBehavior() {
                 TileSwitch(outX, outY, 0, m_arrivalFlags, 1, 0);
                 i32 coordCount = CoordCount();
                 if (coordCount != 0) {
-                    i32 mx = spanX > spanY ? spanX : spanY;
+                    i32 mx = Max(spanX, spanY);
                     if (coordCount > mx) {
                         SetEntrancePos(1, 1);
                     }

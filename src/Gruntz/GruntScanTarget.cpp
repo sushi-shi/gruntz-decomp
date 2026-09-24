@@ -4,6 +4,7 @@
 #include <MfcWin.h>
 
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/CoordPool.h>
@@ -38,7 +39,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-// @early-stop
 RVA(0x000f42f0, 0x15c0)
 i32 CGrunt::StepSmartChaserBehavior() {
     i32 playerIndex = m_playerIndex;
@@ -235,7 +235,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
                     }
                     i32 steps = CoordCount();
                     if (steps != 0) {
-                        i32 maxSpan = spanX > spanY ? spanX : spanY;
+                        i32 maxSpan = Max(spanX, spanY);
                         if (steps > maxSpan) {
                             SetEntrancePos(1, 1);
                         }

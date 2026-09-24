@@ -4,6 +4,7 @@
 #include <MfcWin.h>
 
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/CoordPool.h>
@@ -271,9 +272,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                 TileSwitch(static_cast<i32>(lx), static_cast<i32>(ly), 0, m_arrivalFlags, 1, 0);
             }
             if (CoordCount() != 0) {
-                if (ax <= ay) {
-                    ax = ay;
-                }
+                ax = Max(ax, ay);
                 if (CoordCount() > ax) {
                     SetEntrancePos(1, 1);
                     m_dwell = 0;

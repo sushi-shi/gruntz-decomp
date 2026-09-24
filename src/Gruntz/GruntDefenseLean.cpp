@@ -4,6 +4,7 @@
 #include <MfcWin.h>
 
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/CoordPool.h>
@@ -186,7 +187,7 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
                     }
                     i32 coordCount = CoordCount();
                     if (coordCount != 0) {
-                        i32 mx = spanX > spanY ? spanX : spanY;
+                        i32 mx = Max(spanX, spanY);
                         if (coordCount > mx) {
                             SetEntrancePos(1, 1);
                         }

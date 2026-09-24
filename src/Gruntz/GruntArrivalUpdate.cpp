@@ -4,6 +4,7 @@
 #include <MfcWin.h>
 
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/CoordPool.h>
@@ -153,9 +154,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                         );
                     }
                     if (this->CoordCount() != 0) {
-                        if (ax <= ay) {
-                            ax = ay;
-                        }
+                        ax = Max(ax, ay);
                         if (this->CoordCount() > ax) {
                             SetEntrancePos(1, 1);
                         }
