@@ -12,7 +12,7 @@ fresh declaration-and-known-use review: `reassess-cavector` and
 remain recheckable in the ledger. The other 14 families remain pending. Earlier
 checkpoint counts below describe their own state, not a blanket exemption.
 
-The Projectile checkpoint applies all four square uses through the sourced
+Projectile checkpoint `b8b19692f` applies all four square uses through the sourced
 const-reference `Sqr` template in the shared `Utils/Square.h` utility header,
 the signed Wingz `Max` selection, and all four directional `Min`/`Max` clamps.
 Launch improves **95.41684% to 99.505135%** and motion **97.00427% to 97.74786%**;
@@ -25,7 +25,8 @@ record the separate macro, selector, result-ownership and const-reference
 compilations, including the intermediate dips. Canonical decisions and
 reopening criteria are `reassess-sqr-projectile`, `projectile-*` and
 `reassess-selector-screen-projectile-goal`. Production compilation/comparison
-and MAX banking completed; test suites remain deferred to authorized squash
+and MAX banking completed, preserving all 4,429 historical maxima and all
+4,427 unchanged-source maxima; test suites remain deferred to authorized squash
 merge. The next prepared consumer cohort is Smart Chaser; no exact or bounded
 closure is claimed for either Projectile function.
 
