@@ -2851,16 +2851,15 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
 
 RVA(0x0002d800, 0x605)
 void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 requireUnoccupied) {
-    Coord unitTile;
-    unit->GetScreenTile(&unitTile);
     while (g_stepRun != false) {
 
         i32 word = m_board->m_rows[row][col].m_flags;
         if (word & IDX(CELL_FLAG_HIDDEN_POWERUP)) {
             CPtrList list(10);
+            CGameObject* lvl = unit->m_object;
             if ((m_board)->FindPathWithEndpointOverrides(
-                    unitTile.m_x,
-                    unitTile.m_y,
+                    lvl->m_screenPosition.m_x >> TILE_SHIFT_PX,
+                    lvl->m_screenPosition.m_y >> TILE_SHIFT_PX,
                     col,
                     row,
                     &list,
@@ -2890,9 +2889,10 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
             if (requireUnoccupied != 0) {
                 if (cell != NULL && cell->m_playerFlags[m_playerIndex] == 0) {
                     CPtrList list2(10);
+                    CGameObject* lvl = unit->m_object;
                     if ((m_board)->FindPathWithEndpointOverrides(
-                            unitTile.m_x,
-                            unitTile.m_y,
+                            lvl->m_screenPosition.m_x >> TILE_SHIFT_PX,
+                            lvl->m_screenPosition.m_y >> TILE_SHIFT_PX,
                             col,
                             row,
                             &list2,
@@ -2934,9 +2934,10 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
                 }
                 if (special != 0) {
                     CPtrList list3(10);
+                    CGameObject* lvl = unit->m_object;
                     if ((m_board)->FindPathWithEndpointOverrides(
-                            unitTile.m_x,
-                            unitTile.m_y,
+                            lvl->m_screenPosition.m_x >> TILE_SHIFT_PX,
+                            lvl->m_screenPosition.m_y >> TILE_SHIFT_PX,
                             col,
                             row,
                             &list3,

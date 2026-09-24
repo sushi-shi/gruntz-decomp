@@ -417,6 +417,14 @@ retain the geometry without adding unavailable SDK member calls. The
 `undefined-closure` gate excludes known library classes; it does not replace
 this actual link check.
 
+`CBattlezMapConfig::ClaimTilesAround` provides a repeated-read control. The
+math rewrite cached one `GetScreenTile` result before the traversal, adding a
+`GetScreenPos` call and a larger frame. Retail reads the object's typed screen
+coordinates at each of the three path checks. Restoring those block-local reads
+removes the extra call and raises the function from 71.2247% to its historical
+74.0925%. Caching the tile across these path-search calls also changes when
+the object's position is observed.
+
 ## Reverse-use procedure
 
 - Compare the complete caller and the supplying helper against their prior
