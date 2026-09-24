@@ -12,6 +12,14 @@ fresh declaration-and-known-use review: `reassess-cavector` and
 remain recheckable in the ledger. The other 14 families remain pending. Earlier
 checkpoint counts below describe their own state, not a blanket exemption.
 
+Ambient checkpoint `e1235c9be` applies two narrow adoptions: FadePlayback
+recovers 88.1250% to its 91.8056% historical best, while all four existing scaler
+owners remain exact. Full build/MAX gates and 62 focused tests pass; all 4,429
+historical maxima are preserved. The
+[controlled clamp composition](patterns/clamp-expression-macro-preserves-saturation-branches.md)
+records the compiler mechanism. Fade still has an open repeated-call/exit gap;
+neither this checkpoint nor the earlier exact callers close the broad clamp row.
+
 ## Applied-candidate queue
 
 | Candidate IDs | Gruntz targets | Source layer |
@@ -24,6 +32,7 @@ checkpoint counts below describe their own state, not a blanket exemption.
 | `reassess-crange-ambient-getter-init` | `CRandomAmbientSound::InitCycleTiming`,0xcd70 | Initial draw through the initialized range's existing accessors |
 | `reassess-ambient-min` | `CRandomAmbientSound::Update`,0xcb30 | Both half-duration caps through authored `Min`, composed with the retail integer phase toggle |
 | `reassess-max-span-*` | Seven Grunt reroll-span consumers | Existing signed by-value `Max` at all seven selections, retaining named/reused result locals |
+| `reassess-ambient-avp2-ltclamp`, `reassess-ambient-fade-scale-reuse` | Shared ambient scaler and both Fade start arms | Authored saturation macro and existing member-helper reuse |
 | `hs-bitset-body` | zBitVec string constructor,0x16d3a0 | Surviving zBitSet small-buffer pointer accessor |
 | `hs-bitset-error-tail` | Same constructor | Existing error-helper boundary at three expanded error tails |
 | `bute-vector-range-reference-api` | Six Bute getters/setters, two item constructors, parser | Reference API and ordinary bound temporaries |
