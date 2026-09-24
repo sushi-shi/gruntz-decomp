@@ -454,39 +454,41 @@ zErrHandling::~zErrHandling() {
 }
 
 RVA(0x0016da80, 0x10b)
-void* _zdvec::GrowTo(i32 idx, i32 at) {
+i32 _zdvec::realloc(i32 idx, i32 at) {
     char* p;
-    if (idx < m_lo) {
+    if (idx < lo) {
         idx -= at;
-        p = static_cast<char*>(realloc(m_base, (m_hi - idx + 1) * m_stride));
+        p = static_cast<char*>(::realloc(vec, (hi - idx + 1) * size));
         if (!p) {
             handle(g_out_of_memory, 0x22);
-            return NULL;
+            return 0;
         }
-        i32 oldbytes = (m_hi - m_lo + 1) * m_stride;
-        i32 shift = m_lo - idx;
-        m_grown = shift;
-        m_alloc = p;
-        memcpy(static_cast<char*>(m_alloc) + shift * m_stride, p, oldbytes);
-        memset(m_alloc, 0, m_grown * m_stride);
-        m_lo = idx;
-        m_base = p;
-        return p;
+        i32 oldbytes = (hi - lo + 1) * size;
+        i32 shift = lo - idx;
+        initcount = shift;
+        init = p;
+        memcpy(static_cast<char*>(init) + shift * size, p, oldbytes);
+        memset(init, 0, initcount * size);
+        lo = idx;
+        vec = p;
+        // PROVEN: the integer status preserves the allocated-address bits on success.
+        return reinterpret_cast<i32>(p);
     }
     idx += at;
-    p = static_cast<char*>(realloc(m_base, (idx - m_lo + 1) * m_stride));
+    p = static_cast<char*>(::realloc(vec, (idx - lo + 1) * size));
     if (!p) {
         handle(g_out_of_memory, 0x22);
-        return NULL;
+        return 0;
     }
-    i32 oldbytes = (m_hi - m_lo + 1) * m_stride;
+    i32 oldbytes = (hi - lo + 1) * size;
     char* fill = p + oldbytes;
-    m_grown = idx - m_hi;
-    m_alloc = fill;
-    memset(fill, 0, m_grown * m_stride);
-    m_hi = idx;
-    m_base = p;
-    return p;
+    initcount = idx - hi;
+    init = fill;
+    memset(fill, 0, initcount * size);
+    hi = idx;
+    vec = p;
+    // PROVEN: the integer status preserves the allocated-address bits on success.
+    return reinterpret_cast<i32>(p);
 }
 
 RVA(0x0016db90, 0x206)
@@ -552,9 +554,9 @@ void* zPTree::add(const char* key, void* value) {
 }
 
 RVA(0x0016dda0, 0x3c)
-_zdvec::_zdvec(i32 stride, i32 lo, i32 hi, void* scratch) : _zvec(stride, lo, hi, scratch) {
-    m_alloc = m_base;
-    m_grown = m_hi - m_lo + 1;
+_zdvec::_zdvec(size_t s, i32 l, i32 h, void* overflow) : _zvec(s, l, h, overflow) {
+    init = vec;
+    initcount = hi - lo + 1;
 }
 
 RVA_COMPGEN(0x0016dde0, 0x1e, ??_G_zdvec@@UAEPAXI@Z)
@@ -562,38 +564,33 @@ RVA_COMPGEN(0x0016dde0, 0x1e, ??_G_zdvec@@UAEPAXI@Z)
 RVA_COMPGEN(0x0016de00, 0x5, ??1_zdvec@@UAE@XZ)
 
 RVA(0x0016de30, 0xe7)
-_zvec::_zvec(i32 stride, i32 lo, i32 hi, void* scratch)
-    : zErrHandling(&_zvec::ceh),
-      m_lo(lo),
-      m_hi(hi),
-      m_base(NULL),
-      m_spare(scratch),
-      m_stride(stride) {
+_zvec::_zvec(size_t s, i32 l, i32 h, void* overflow)
+    : zErrHandling(&_zvec::ceh), lo(l), hi(h), vec(NULL), ovf(overflow), size(s) {
     if (lo > hi) {
         handle("Inconsistent bounds", 0x16);
         return;
     }
-    i32 total = (hi - lo + 1) * stride;
+    i32 total = (hi - lo + 1) * s;
     char* buf = static_cast<char*>(malloc(total));
-    m_base = buf;
+    vec = buf;
     if (buf != NULL) {
         memset(buf, 0, total);
-        if (m_spare != NULL) {
+        if (ovf != NULL) {
             return;
         }
-        m_spare = malloc(m_stride);
-        if (m_spare != NULL) {
+        ovf = malloc(size);
+        if (ovf != NULL) {
             return;
         }
     }
     handle(g_out_of_memory, 0xc);
 }
 
-RVA_COMPGEN(0x0016df20, 0x1e, ??_G_zvec@@UAEPAXI@Z)
+RVA_COMPGEN(0x0016df20, 0x1e, ??_G_zvec@@MAEPAXI@Z)
 
 RVA(0x0016df40, 0x22)
 _zvec::~_zvec() {
-    char* p = m_base;
+    char* p = vec;
     if (p) {
         free(p);
     }

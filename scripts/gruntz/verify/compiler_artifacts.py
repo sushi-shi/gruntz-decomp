@@ -30,7 +30,8 @@ from gruntz.verify.srcscan import blank_comments, rel, source_files
 
 
 PLACEMENT_ALLOW = Counter({
-    ("include/ZTools/ZDArray.h", "T"): 2,
+    # Constructor, subscript, and the two sourced extend bands.
+    ("include/ZTools/ZDArray.h", "T"): 4,
 })
 
 ALLOCATION_DEFINITION_ALLOW = Counter({

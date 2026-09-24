@@ -63,6 +63,70 @@ int* use(int* value) {
 }
 ''')
 
+    def test_array_bounds_defaults_and_extension_are_public(self):
+        self.compile('''#include <ZTools/ZDArray.h>
+struct Item { Item(); ~Item(); };
+int bounds(const zDArray<Item>& values) { return values.high() - values.low(); }
+void use() {
+    zDArray<Item> values;
+    values.extend(-2, 4);
+    Item& result = values[3];
+}
+''')
+
+    def test_array_erased_api_preserves_widths_and_integer_status(self):
+        self.compile('''#include <ZTools/ZDArray.h>
+struct Probe : _zdvec {
+    Probe(size_t stride) : _zdvec(stride, 0, 3, 0) {}
+    void widths() {
+        size_t* stride = &size;
+        int* lower = &lo;
+        int* upper = &hi;
+        int* count = &initcount;
+        char** bytes = &vec;
+        void** overflow = &ovf;
+        void** initialized = &init;
+    }
+    int (_zdvec::*growth())(int, int) { return &_zdvec::realloc; }
+    void* dynamic(int i) { return get(i); }
+    void* fixed(int i) { return _zvec::get(i); }
+};
+''')
+
+    def test_array_erased_storage_and_construction_are_not_public(self):
+        from gruntz.tool import ToolError
+        for body in (
+            'void use() { _zvec value(4, 0, 3, 0); }',
+            'void use() { _zdvec value(4, 0, 3, 0); }',
+            'void* use(zDArray<int>& value) { return value.vec; }',
+            'void* use(zDArray<int>& value) { return value.get(0); }',
+            'int use(zDArray<int>& value) { return value.realloc(0); }',
+        ):
+            with self.subTest(body=body), self.assertRaisesRegex(ToolError, 'protected'):
+                self.compile('#include <ZTools/ZDArray.h>\n' + body)
+
+    def test_array_extension_constructs_both_new_bands(self):
+        from gruntz.tool import cl
+        from gruntz.delink.coffx import Obj
+        from gruntz.walls.pairscan import functions, fn_relocs
+        with tempfile.TemporaryDirectory(prefix='gruntz-array-extend-') as directory:
+            folder = Path(directory)
+            source = folder / 'probe.cpp'
+            source.write_text('''#include <ZTools/ZDArray.h>
+struct Item { Item(); ~Item(); };
+void expand(zDArray<Item>& values, int low, int high) { values.extend(low, high); }
+''')
+            output = folder / 'probe.obj'
+            cl.compile(source, output, ['/nologo', '/c', '/O2', '/MT', '/GX', '/Ob0'])
+            obj = Obj(output)
+            bodies = functions(obj)
+            name = next(n for n in bodies if n.startswith('?extend@?$zDArray@'))
+            section, start, end = bodies[name]
+            refs = [r[1] for r in fn_relocs(obj, section, start, end)]
+            self.assertEqual(refs.count('?realloc@_zdvec@@IAEHHH@Z'), 2, refs)
+            self.assertEqual(refs.count('??0Item@@QAE@XZ'), 2, refs)
+            self.assertIn('?handle@zErrHandling@@QBEXPBDH@Z', refs)
+
     def test_ztools_placement_new_coexists_with_standard_placement(self):
         for headers in (('#include <new>', '#include <ZTools/ZDArray.h>'),
                         ('#include <ZTools/ZDArray.h>', '#include <new>')):

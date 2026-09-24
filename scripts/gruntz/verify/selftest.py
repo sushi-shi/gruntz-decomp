@@ -245,6 +245,28 @@ class CompilerArtifactControls(unittest.TestCase):
         self.assertTrue(any('allocation definition' in row
                             for row in self._scan(definition)))
 
+    def test_complete_array_placement_population_reaches_gate(self):
+        from gruntz.verify import compiler_artifacts as ca
+        from gruntz.core.paths import REPO
+
+        owner = REPO / 'include/ZTools/ZDArray.h'
+        original = owner.read_text()
+        read_text = Path.read_text
+        self.assertEqual(len(ca.PLACEMENT_RE.findall(original)), 4)
+        for name, source, rejected in (
+            ('complete family', original, False),
+            ('missing construction', original.replace('new (p, 0, 0) T', 'p', 1), True),
+            ('extra construction', original + '\ntemplate<class T> void extra(T* p) '
+             '{ new (p, 0, 0) T; }\n', True),
+            ('wrong element', original.replace('new (p, 0, 0) T', 'new (p, 0, 0) Item', 1), True),
+        ):
+            with self.subTest(case=name):
+                def substituted(path, *args, **kwargs):
+                    return source if path == owner else read_text(path, *args, **kwargs)
+                with mock.patch.object(Path, 'read_text', substituted):
+                    findings = ca.gate_findings()
+                self.assertEqual(bool(findings), rejected, findings)
+
 
 class CastControls(unittest.TestCase):
     def test_seam_self_recursion_is_caught(self):
