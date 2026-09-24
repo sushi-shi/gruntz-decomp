@@ -122,6 +122,11 @@ completing those four broad value/initialization reviews:
 
 - Complete Bute vector/range API: `bute-vector-range-reference-api`,
   `nolf-bute-private-getters`, `nolf-bute-boundary-revisions`.
+- Fresh vector/range getter-chain adoption: `reassess-bute-value-save-chains`.
+  The separately rechecked alternatives are `reassess-value-*`,
+  `reassess-cavector-extra-operators`, `reassess-carange-extra-operators`,
+  `reassess-avector-get-sites`, `reassess-arange-get-sites`,
+  `reassess-avector-set-sites`, and `reassess-arange-set-sites`.
 - Vector initialization sites: `reassess-vector-activate-sites`,
   `reassess-vector-bound-pairs`.
 - Complete constructor/operator/copy compositions: `sdk-vector-constructors`,

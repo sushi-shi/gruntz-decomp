@@ -45,6 +45,24 @@ relocations, mnemonics and ordered referents. The only residue was the receiver 
 the recompile used the original stream in ESI while retail used the preceding insertion result in
 EAX. Naming those returned references made the normalized function byte-identical and 100%.
 
+### Scope control: direct value-accessor chains can already be exact
+
+A fresh real-TU control of the same callback (now `CButeMgr::AuxTabItemsSave`)
+compared its vector/range arms with two cached payload pointers and five scalar
+snapshots against direct chained component-getter expressions. The complete
+callback remained byte/reference/extent-identical at 100% (0x228 bytes and 60
+normalized references); all 203 compared Bute functions were unchanged. The
+source adoption and original Debug local-census evidence are recorded in
+`reassess-bute-value-save-chains` in the lineage ledger.
+
+In retail, vector loads k/j/i and range loads max/min prepare the outer QWORD
+arguments before the first stream insertion. The vector arm then joins the
+range-form insertion tail. A direct accessor chain therefore does not imply
+loads interleaved with calls. Nor does this pattern prove that scalar snapshots
+in other arms were authored: its evidence concerns the specific delimiter and
+returned-stream boundaries above. Preserve those boundaries without freezing
+unrelated local transcriptions merely because the whole function was exact.
+
 A natural full inline formatter for each value was the abstraction-level negative control. VC5
 flattened both helpers back into the original monolithic island: 0x220 bytes, 167 instructions and
 87.7283%. The exact named-result form therefore overrules the inline-helper prior for this case.

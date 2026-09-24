@@ -1204,22 +1204,16 @@ void CButeMgr::AuxTabItemsSave(const char* key, CSymTabItem* value, void* ctx) {
             break;
         }
 
-        case VECTOR_TYPE: {
-            CAVector* ref = value->m_data.m_v;
-            double x = ref->Geti();
-            double y = ref->Getj();
-            double z = ref->Getk();
-            output << s_strLt << x << s_strComma << y << s_strComma << z << s_strGt;
+        case VECTOR_TYPE:
+            output << s_strLt << value->m_data.m_v->Geti() << s_strComma
+                   << value->m_data.m_v->Getj() << s_strComma << value->m_data.m_v->Getk()
+                   << s_strGt;
             break;
-        }
 
-        case RANGE_TYPE: {
-            CARange* ref = value->m_data.m_range;
-            double x = ref->GetMin();
-            double y = ref->GetMax();
-            output << "[" << x << s_strComma << y << "]";
+        case RANGE_TYPE:
+            output << "[" << value->m_data.m_range->GetMin() << s_strComma
+                   << value->m_data.m_range->GetMax() << "]";
             break;
-        }
     }
 }
 
