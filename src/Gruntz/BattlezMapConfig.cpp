@@ -23,6 +23,7 @@
 #include <Gruntz/EnemyAiType.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameObjectLogicTypes.h>
+#include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
@@ -1756,7 +1757,6 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
     return 0;
 }
 
-// @early-stop
 RVA(0x0002ab80, 0x15e)
 CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 halfH) {
     RECT rect;
@@ -1787,7 +1787,7 @@ CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 hal
             }
             i32 keep = 1;
             if (u->m_gruntKind == GRUNT_GHOST) {
-                if (rand() % 100 > 5) {
+                if (GetRandom(0, 99) > 5) {
                     keep = 0;
                 }
             }
