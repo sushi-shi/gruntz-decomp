@@ -17,11 +17,14 @@ __inline i32 GetRandomNumber(i32 lo, i32 hi) {
 }
 
 __inline i32 GetRandom(i32 lo, i32 hi) {
-    i32 n = hi - lo + 1;
-    if (n == 0) {
-        return (rand() & 1) ? lo : hi;
+    if ((hi - lo + 1) == 0) {
+        if (rand() & 1) {
+            return lo;
+        } else {
+            return hi;
+        }
     }
-    return lo + rand() % n;
+    return (rand() % (hi - lo + 1)) + lo;
 }
 
 #endif // GRUNTZ_GAMERAND_H
