@@ -121,3 +121,18 @@ that `msvc_names.anonymous_namespaces` produces. The namespace has to open in th
 `.cpp`: VC5 names it after the file that opens it, and only source-file identities
 are canonicalized. All three pins stay 100.00 exact.
 
+## Negative control: identical members of two classes are two definitions
+
+`CBattlezDlg` and `CMultiStartDlg` carry five text-identical members
+(`GetPlayerTypeControl`, `GetPlayerNameControl`, `GetMaxGruntzControl`,
+`GetPlayerColorControl`, `OnDrawItem`), and retail keeps a separate copy of
+each. A plain shared base would leave one copy. A CRTP base
+`CPlayerSlotDlg<Dlg> : CDialog` would give two, but a VC5 trial on both TUs
+emits a vtable `??_7?$CPlayerSlotDlg@...@@6B@`, its `??_R0`-`??_R4` RTTI and an
+out-of-line `??1`/`??_G` destructor pair per dialog. Retail has one vtable per
+dialog, no locator before it, and no intermediate destructor. Both message maps
+also chain straight to `&CDialog::messageMap`, the immediate-base convention. The
+members stay as two written definitions. Recognize the refutation by an
+intermediate class's vtable, RTTI or destructor appearing in the base obj with no
+retail counterpart.
+
