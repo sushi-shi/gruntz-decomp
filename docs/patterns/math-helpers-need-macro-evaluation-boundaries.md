@@ -61,6 +61,7 @@ the following examples without removing their typed APIs:
 | `CBattlezMapConfig::LoadConfig` 0x25020 | 89.1183% | shared pool pop plus separate screen-tile and configuration component stores | 95.2833% |
 | `CBattlezMapConfig::PickSpawnCoord` 0x30f20 | 64.2778% | direct screen-tile reads, separate result locals, component equality | 97.9048% |
 | `CBattlezMapConfig::IsCoordOccupied` 0x305b0 | 55.1735% | scalar current/entrance/path tile locals and component predicates | 92.1531% |
+| `CBattlezMapConfig::ClaimCellFromRow` 0x30730 | 71.5577% | direct screen tile locals, repeated scalar comparisons, explicit distance, interleaved stores | 94.4359% |
 | `CGrunt::RectContains` 0x51850 | 46.2177% | tile component conversion, native rectangle copy, offset/extent macros | 100% |
 | `CGrunt::VehicleContactContains` 0x51a20 | 58.6220% | same rectangle family | 100% |
 | `CGrunt::SetArrivalTarget` 0x52ed0 | 59.6000% | component stores and snap expressions | 100% |
@@ -316,6 +317,14 @@ component equality reach 78.0918%; doing the same for the current position
 reaches 86.1837%. Keeping a pointer to the path coordinate, then reading its
 two fields into distinct locals instead of copying a `Coord`, restores the
 prior 92.1531%. The named trigger-cell flag and typed fields remain intact.
+
+`ClaimCellFromRow` restores another caller's source statement order. Direct
+screen-position reads remove an extra `GetScreenPos` call and raise 71.5577%
+to 75.7949%. Repeated scalar arrival-cell comparisons reach 86.6923%, and
+separate absolute X/Y distance locals reach 93.6987%. Storing arrival X,
+battle state, arrival Y, then defender state recovers 94.4359%; grouping both
+coordinate stores in `Coord::Set` erased that authored interleaving. The
+named route mask and shared `Coord` methods remain in place.
 
 `CBattlezMapConfig::LoadConfig` shows that preserving a shared inline owner
 can coexist with scalar caller evaluation. Replacing two hand-expanded free-list

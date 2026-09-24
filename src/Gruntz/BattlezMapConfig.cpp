@@ -4010,7 +4010,6 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
             return 0;
         }
     }
-    Coord targetUnit(cellX, cellY);
     for (i32 i = 0; i < TM_UNITS_PER_PLAYER; i++) {
         CGrunt* u = m_triggerMgr->m_units[m_playerIndex * TM_UNITS_PER_PLAYER + i];
         if (u == NULL) {
@@ -4018,33 +4017,41 @@ i32 CBattlezMapConfig::ClaimCellFromRow(i32 cellX, i32 cellY, i32, i32) {
         }
         b32 ok = true;
         if (u->m_battleState == BZTASK_ASSIGNED_TARGET) {
-            Coord assigned = u->m_arrivalCell;
-            if (assigned == targetUnit) {
+            i32 ux = u->m_arrivalCell.m_x;
+            i32 uy = u->m_arrivalCell.m_y;
+            if (ux == cellX && uy == cellY) {
                 ok = false;
             }
         }
         if (u->m_battleState == BZTASK_ASSIGNED_TARGET) {
-            Coord assigned = u->m_arrivalCell;
-            if (assigned != targetUnit && (rand() % 3) != 0) {
+            i32 ux = u->m_arrivalCell.m_x;
+            i32 uy = u->m_arrivalCell.m_y;
+            if (!(ux == cellX && uy == cellY) && (rand() % 3) != 0) {
                 ok = false;
             }
         }
         if (ok == false) {
             continue;
         }
-        Coord current;
-        u->GetScreenTile(&current);
+        CGameObject* lvl = u->m_object;
+        i32 lx = lvl->m_screenPosition.m_x >> TILE_SHIFT_PX;
+        i32 ly = lvl->m_screenPosition.m_y >> TILE_SHIFT_PX;
         if (u->m_battleState == BZTASK_ADVANCE && u->m_targetTeam != -1) {
             CBattlezMapConfig* bundle = &m_ctx->m_players[u->m_targetTeam].m_battlezConfig;
-            if (bundle->m_marker.DistSqr(current) <= 0x19) {
+            i32 dx = bundle->m_marker.m_x - lx;
+            i32 dy = bundle->m_marker.m_y - ly;
+            dx = abs(dx);
+            dy = abs(dy);
+            if (SquaredDistance(dx, dy) <= 0x19) {
                 ok = false;
             }
         }
         if (ok == false) {
             continue;
         }
-        u->m_arrivalCell.Set(cellX, cellY);
+        u->m_arrivalCell.m_x = cellX;
         u->m_battleState = BZTASK_ASSIGNED_TARGET;
+        u->m_arrivalCell.m_y = cellY;
         u->m_defenderState = AISTATE_ATTACK;
         u->m_routeBlockedMask =
             IDX(CELL_FLAG_SOLID | CELL_FLAG_SPECIAL | CELL_FLAG_TRIGGER | CELL_FLAG_ARROW
