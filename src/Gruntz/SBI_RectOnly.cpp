@@ -3670,17 +3670,22 @@ i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 item, i32 x, i32 y) {
     clock[1] = g_buteMgr.GetDword("StatusBar", "FallingItemDelay", 0x32);
     clock[0] = static_cast<u32>(g_frameTime);
     CSBI_ImageSet* n = m_fallingItemSprite;
-    Coord center(x, y);
-    SetRect(
-        &m_fallingItemRect,
-        center.m_x - 0xc,
-        center.m_y - 0xc,
-        center.m_x + 0xc,
-        center.m_y + 0xc
-    );
+    i32 l = x - 0xc;
+    i32 t = y - 0xc;
+    i32 rr = x + 0xc;
+    i32 b = y + 0xc;
+    m_fallingItemRect.left = l;
+    m_fallingItemRect.top = t;
+    m_fallingItemRect.right = rr;
+    m_fallingItemRect.bottom = b;
     if (n) {
-        CRect rc = m_fallingItemRect;
-        rc.OffsetRect(m_barRect.left, m_barRect.top);
+        RECT rc;
+        i32 x = m_barRect.left;
+        rc.left = l + x;
+        i32 y = m_barRect.top;
+        rc.top = t + y;
+        rc.bottom = y + b;
+        rc.right = x + rr;
         n->m_rect = rc;
     }
     NotifyAllSlots();
