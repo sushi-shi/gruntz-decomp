@@ -38,7 +38,7 @@
 #include <string.h>
 
 namespace {
-#include <Utils/RandomNumber.inl>
+#include <Gruntz/GameRand.h>
 }
 
 RVA(0x0015b340, 0x2b)

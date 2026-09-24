@@ -21,11 +21,7 @@
 #include <string.h>
 
 namespace {
-#include <Utils/RandomNumber.inl>
-
-    inline i32 GetRandom(i32 lo, i32 hi) {
-        return lo + GetRandomNumber() % (hi - lo + 1);
-    }
+#include <Gruntz/GameRand.h>
 } // namespace
 
 DATA(0x001f07ec)
@@ -379,7 +375,7 @@ i32 CFaderSine::ApplyInit(CFaderConfig* desc) {
         m_appliedCounts[i] = 0;
         m_fractionalCounts[i] = 0;
         m_sampleOrder[i] = 0;
-        m_sampleCursors[i] = GetRandom(0, m_width - 1);
+        m_sampleCursors[i] = GetRandomNumber(0, m_width - 1);
     }
     ScatterSamples(m_sampleOrder, 0, m_width, 1);
     return 1;
@@ -423,7 +419,7 @@ void CFaderSine::RenderFrame(i32 frame) {
                 m_appliedCounts[row] += delta;
                 n = static_cast<i32>(step + step);
                 while (n > 0) {
-                    i32 pick = GetRandom(0, m_width - 1);
+                    i32 pick = GetRandomNumber(0, m_width - 1);
                     ClearSample(targetRow, pick, bpp);
                     n--;
                 }
@@ -440,7 +436,7 @@ void CFaderSine::RenderFrame(i32 frame) {
                 m_appliedCounts[row] += delta;
                 n = static_cast<i32>(step + step);
                 while (n > 0) {
-                    i32 pick = GetRandom(0, m_width - 1);
+                    i32 pick = GetRandomNumber(0, m_width - 1);
                     for (i32 j = 0; j < bpp; j++) {
                         targetRow[pick * bpp + j] = restoreRow[pick * bpp + j];
                     }

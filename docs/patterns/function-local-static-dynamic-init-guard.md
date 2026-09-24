@@ -102,7 +102,7 @@ file, and these live in a header), and `DATA_COMPGEN` cannot either (it wraps a 
 a use site; the guard byte has no source expression). Pin both in
 **`config/retail/data_compgen.tsv`** — the manifest form of `RVA_COMPGEN`, used because a
 COMMON has no owning TU for a source pin to sit in. One shared
-`Utils/RandomNumber.inl` definition supplies three states through its include scopes:
+`GameRand.h` definition supplies three states through its include scopes:
 
 | emitter | guard | seed |
 | :-- | --: | --: |

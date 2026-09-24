@@ -8,13 +8,27 @@ confidence: 10/10 for the retained compiler/linker behavior; original include sc
 
 ## Retained implementation
 
-`include/Utils/RandomNumber.inl` contains the only `GetRandomNumber` definition,
-with the credits body unchanged. `GameRand.h` includes it at global scope.
-`WwdFactoryObject.cpp` and `FaderEffects.cpp` each include it inside an anonymous
-namespace. Both invented RNG member definitions were removed. The fader's range
-wrapper is a free inline function in that private scope; it has no instance
-state and no reason to claim a `CFaderSine` receiver. Moving it out of the
-class preserves both callers' instruction bytes and ordered referents.
+`include/Gruntz/GameRand.h` holds the only `GetRandomNumber` definition, with
+the credits body unchanged. Game TUs include it at global scope;
+`WwdFactoryObject.cpp` and `FaderEffects.cpp` each include the same header inside
+an anonymous namespace. Both invented RNG member definitions were removed.
+
+The header also carries the two range helpers, named by their source:
+`GetRandomNumber(lo, hi)` draws from the credits LCG with no zero-range test
+(retail fader ApplyInit 0x17fe00: guard 0x6c279c, seed 0x6c27a8, `inc`/`idiv`
+with no branch), and `GetRandom(lo, hi)` draws from CRT `rand()` with the
+`n == 0` coin. They are different functions, so the fader's helper cannot fold
+into `GetRandom`; before it moved into the header, the fader's private
+`GetRandom` collided with GameRand's (C2084) under the anonymous-scope include.
+The helper has no instance state and no reason to claim a `CFaderSine`
+receiver.
+
+Moving the RNG into the full header changes front-end state in the including
+TUs: `CFaderSine::GetFrameCount` (unchanged source) swaps its two commutative
+loads (100 -> 99.50) and `CGrunt::UpdateArrival` drops 95.05 -> 93.39,
+REGALLOC/SCHEDULING by `walls diagnose`. Grouping the two `GetRandomNumber`
+overloads before or after `GetRandom` moves neither; both are banked as
+adjudicated keeps with MAX preserved.
 
 This models the observed shared/private state boundary without assigning RNG
 ownership to the animation or fader class. The local scopes are a reconstruction
@@ -40,7 +54,7 @@ their 96.5000/94.6626 MAX and their existing register/scheduling residues.
 ## Receiver-independent wrappers still need a caller ABI audit
 
 The fader range adapter uses only its two integer arguments and the private
-RNG. Converting it from `CFaderSine::GetRandom` to a free inline `GetRandom`
+RNG. Converting it from `CFaderSine::GetRandom` to a free inline range helper
 in the same private scope preserves ApplyInit's 300 bytes/8 relocations and
 RenderFrame's 1224 bytes/24 relocations exactly after namespace normalization.
 There is no emitted range-helper body or receiver-bearing call to preserve.

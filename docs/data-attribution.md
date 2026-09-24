@@ -635,8 +635,8 @@ and it mis-read COMMON as an unresolved external — see its `defined_syms`, now
 The first claims were the three `GetRandomNumber` guard/seed pairs:
 0x2c127d/0x2c1288 (shared game state), 0x2c278c/0x2c2798 (animation TU state),
 and 0x2c279c/0x2c27a8 (fader TU state). They now arise from one shared
-`Utils/RandomNumber.inl` definition, globally included by GameRand.h and locally
-included inside the two library TUs. The former class-member identities were
+`GameRand.h` definition, included globally by game TUs and inside an anonymous
+namespace by the two library TUs. The former class-member identities were
 inferred and have been removed. Source-file anonymous-namespace COMMONs use
 source-path identities with the compiler nonce and checkout prefix removed;
 header-declared anonymous namespaces are not generalized this way. See
