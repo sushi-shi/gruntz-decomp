@@ -44,6 +44,12 @@ public:
         words[idx >> BITARRAY_WORD_SHIFT] |= 1 << (idx & BITARRAY_BIT_MASK);
         return this;
     }
+
+private:
+    u32* body() const {
+        return static_cast<u32>(m_capacity) > BITARRAY_WORD_BITS ? m_words
+                                                                 : const_cast<u32*>(&m_inline);
+    }
 };
 
 ostream& operator<<(ostream& accum, const zBitVec& bits);

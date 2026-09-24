@@ -1917,7 +1917,6 @@ const double g_wingzBias = -0.5;
 DATA(0x001e9a68)
 const double s_fpZero = 0.0;
 
-// @early-stop
 RVA(0x0005d210, 0x1554)
 void CGrunt::StepBehavior(char*) {
     if (static_cast<i64>(g_frameTime) - m_struckClock64 >= m_struckTimer64) {
@@ -2221,8 +2220,7 @@ void CGrunt::StepBehavior(char*) {
             m_entranceClockHi = 0;
         } else if (flags & 0x2000000) {
             if (m_entranceReason == PICKUP_TOOB) {
-                CString* node = &g_typeColl[m_logicRecord->m_eventCode];
-                bool nameDiffers = (strcmp(*node, "N") != 0);
+                bool nameDiffers = IsNotAnimationAct("N");
                 if (nameDiffers) {
                     BuildGruntLoseItemAnimation();
                 }
@@ -2419,12 +2417,10 @@ afterArrival:
         if (m_poweredUp != false && m_stamina >= STAMINA_FULL) {
             bool eq;
             {
-                CString* node = &g_typeColl[m_logicRecord->m_eventCode];
-                eq = (strcmp(*node, "E") == 0);
+                eq = IsAnimationAct("E");
             }
             if (!eq) {
-                CString* node = &g_typeColl[m_logicRecord->m_eventCode];
-                eq = (strcmp(*node, "A") == 0);
+                eq = IsAnimationAct("A");
             }
             if (eq) {
                 if (m_poweredUp != false && m_neighborValid == false) {

@@ -7050,7 +7050,6 @@ i32 CPlay::SetDefeatCountdown(b32 active, i32 durationMs) {
     return 1;
 }
 
-// @early-stop
 RVA(0x000d9290, 0x2a7)
 i32 CPlay::ScanShuffleQuads() {
     CDDrawSurfaceMgr* v = m_world;
@@ -7067,34 +7066,14 @@ i32 CPlay::ScanShuffleQuads() {
     arr.SetAtGrow(arr.GetSize(), 1);
     arr.SetAtGrow(arr.GetSize(), 2);
     arr.SetAtGrow(arr.GetSize(), 3);
-    i32 last;
-    i32 count;
     i32 r;
-    last = arr.GetUpperBound();
-    count = last + 1;
-    if (count == 0) {
-        r = (rand() & 1) != 0 ? 0 : last;
-    } else {
-        r = rand() % count;
-    }
+    r = GetRandom(0, arr.GetUpperBound());
     perm[0] = arr.GetAt(r);
     arr.RemoveAt(r, 1);
-    last = arr.GetUpperBound();
-    count = last + 1;
-    if (count == 0) {
-        r = (rand() & 1) != 0 ? 0 : last;
-    } else {
-        r = rand() % count;
-    }
+    r = GetRandom(0, arr.GetUpperBound());
     perm[1] = arr.GetAt(r);
     arr.RemoveAt(r, 1);
-    last = arr.GetUpperBound();
-    count = last + 1;
-    if (count == 0) {
-        r = (rand() & 1) != 0 ? 0 : last;
-    } else {
-        r = rand() % count;
-    }
+    r = GetRandom(0, arr.GetUpperBound());
     perm[2] = arr.GetAt(r);
     arr.RemoveAt(r, 1);
     perm[3] = arr.GetAt(0);

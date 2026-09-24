@@ -12,6 +12,7 @@
 #include <Gruntz/FortressFlag.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameObjectLogicTypes.h>
+#include <Gruntz/GameRand.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntCreationPoint.h>
 #include <Gruntz/GruntDirStatics.h>
@@ -113,7 +114,6 @@ i32 CDemo::Render() {
     return 1;
 }
 
-// @early-stop
 RVA(0x0003c300, 0x183)
 i32 DispatchDemoMoverLogic(CGameObject* owner) {
     CLogicRecord* st = owner->m_logicRecord;
@@ -153,10 +153,10 @@ i32 DispatchDemoMoverLogic(CGameObject* owner) {
         }
         case DEMO_MOVER_CHOOSE_TARGET: {
 
-            i32 rx = st->m_ownerCtx->m_level->m_mainPlane->m_planePixelWidth;
-            st->m_scrollTargetX = (rx == -1) ? (rand() % 2 - 1) : (rand() % (rx + 1));
-            i32 ry = st->m_ownerCtx->m_level->m_mainPlane->m_planePixelHeight;
-            st->m_scrollTargetY = (ry == -1) ? (rand() % 2 - 1) : (rand() % (ry + 1));
+            st->m_scrollTargetX =
+                GetRandom(st->m_ownerCtx->m_level->m_mainPlane->m_planePixelWidth);
+            st->m_scrollTargetY =
+                GetRandom(st->m_ownerCtx->m_level->m_mainPlane->m_planePixelHeight);
             st->SetEventCode(IDX(DEMO_MOVER_SCROLL_TO_TARGET));
             break;
         }

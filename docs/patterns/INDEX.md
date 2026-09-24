@@ -1,5 +1,7 @@
 # Pattern index (MSVC 5.0 /O2 — Gruntz)
 
+- [A late parser local reuses a dead argument home](late-parser-local-reuses-dead-argument-home.md) — c10 — cpp:local cpp:scope cpp:constructor cpp:inline | asm:mov asm:push | topic:regalloc topic:eh — zBitVec's string constructor closes 95.66782 -> 100 with its sourced helpers intact; initializing the maximum after entry guards restores both the receiver home and its unwind action, without changing frame size or call/CFG counts.
+
 - [A packed-result local plus the span's parameter cursor recovers all palette call boundaries](inline-result-local-changes-later-span-expansion.md#composition-with-the-helpers-real-loop-cursor) — c10 — cpp:inline cpp:local cpp:loop | asm:call asm:rep | topic:inline-budget topic:source-model — a one-lever dip from 13 to 10 calls composes to retail's 24; all eight palettes use one FillSpan API and the standalone helper stays exact. A saturated 12-site cost probe is not budget exemption; the 25-site negative control exposes the difference.
 
 - [Sequence the real pixel offset inside its inline helper](inline-pixel-offset-statements-select-product-carriers.md) — c10 — cpp:inline cpp:local cpp:expression | asm:imul asm:mov | topic:regalloc topic:codegen-idiom — GetPixel's offset accumulation restores BltDirty's two product carriers without flattening the helper or undoing the recovered neighboring argument pointers; the complete 194-byte normalized caller agrees.

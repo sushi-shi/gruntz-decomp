@@ -227,22 +227,19 @@ zBitVec& zBitVec::operator=(const zBitVec& that) {
     return *this;
 }
 
-// @early-stop
 RVA(0x0016d3a0, 0x344)
 zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&g_zBitSetErrorSlot) {
-    i32 maxv = 0;
     const char* start;
     const char* q;
     if (tokens == NULL) {
-        char* msg = g_errNullArg;
-        g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errSink->Set(this, msg, 0x16);
+        handle(g_errNullArg, 0x16);
         return;
     }
     if (minSize == 0) {
         minSize = g_defaultProjActSize;
     }
 
+    i32 maxv = 0;
     const char* p = tokens;
     if (isspace(*p)) {
         do {
@@ -305,7 +302,7 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&g_zBitSetError
             ++q;
         }
         {
-            u32* band = (static_cast<u32>(m_capacity) > 0x20) ? m_words : &m_inline;
+            u32* band = body();
             band[static_cast<u32>(v) >> BITARRAY_WORD_SHIFT] |= 1u << (v & BITARRAY_BIT_MASK);
         }
         if (*q == 0) {
@@ -338,7 +335,7 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&g_zBitSetError
                 rangeEnd = t;
             }
             for (++v; static_cast<u32>(v) <= static_cast<u32>(rangeEnd); ++v) {
-                u32* band = (static_cast<u32>(m_capacity) > 0x20) ? m_words : &m_inline;
+                u32* band = body();
                 band[static_cast<u32>(v) >> BITARRAY_WORD_SHIFT] |= 1u << (v & BITARRAY_BIT_MASK);
             }
             if (*q == 0) {
@@ -352,15 +349,11 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&g_zBitSetError
     return;
 
 oom: {
-    char* msg = g_errOutOfMem;
-    g_retAddrBreadcrumb = GetCallerRetAddr();
-    m_errSink->Set(this, msg, 0xc);
+    handle(g_errOutOfMem, 0xc);
     return;
 }
 badchar: {
-    char* msg = g_errBadArg;
-    g_retAddrBreadcrumb = GetCallerRetAddr();
-    m_errSink->Set(this, msg, 0x16);
+    handle(g_errBadArg, 0x16);
     return;
 }
 }

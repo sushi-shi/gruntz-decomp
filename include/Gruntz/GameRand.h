@@ -16,6 +16,13 @@ __inline i32 GetRandomNumber(i32 lo, i32 hi) {
     return lo + GetRandomNumber() % (hi - lo + 1);
 }
 
+__inline i32 GetRandom(i32 range) {
+    if (range == -1) {
+        return rand() % 2 - 1;
+    }
+    return rand() % (range + 1);
+}
+
 __inline i32 GetRandom(i32 lo, i32 hi) {
     if ((hi - lo + 1) == 0) {
         if (rand() & 1) {
