@@ -85,6 +85,10 @@ public:
     virtual i32 BlitIntoDesc(CDDrawDeviceManager* manager);
 
     void* Lock(RECT* rect);
+    i32 PixelOffset(i32 x, i32 y) const {
+        return y * m_apiDesc.lPitch + x * m_bytesPerPixel;
+    }
+
     u8 GetPixel(i32 x, i32 y);
     void PutPixel(i32 x, i32 y, u8 color);
     i32 SetPalette(CDDPalette* palette, i32 unused);

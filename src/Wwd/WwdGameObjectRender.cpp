@@ -11,6 +11,7 @@
 #include <Enums.h>
 #include <Gruntz/WwdGameObject.h>
 #include <Ints.h>
+#include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
 #include <Wwd/WwdGameObjectFamily.h>
 
@@ -160,7 +161,7 @@ RVA(0x00166780, 0x57)
 CWwdGameObject*
 CWwdGameObject::CreateNamed(int id, int x, int y, int sortKey, const char* name, int objectFlags) {
     CLogicRecord* logicTemplate =
-        LookupLogicTemplate(OwnerMgr()->m_logicRegistry->m_templatesByName, name);
+        MapFind<CLogicRecord>(OwnerMgr()->m_logicRegistry->m_templatesByName, name);
     if (logicTemplate == NULL) {
         return NULL;
     }

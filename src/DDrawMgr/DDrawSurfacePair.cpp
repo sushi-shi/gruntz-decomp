@@ -586,7 +586,7 @@ i32 CResolveNode::SetPosition(i32 x, i32 y) {
     m_flashCountdown = 0;
     m_screenY = y;
     m_flashInterval = 0x32;
-    ResetResolveDrawFill(this);
+    ResetDrawFill();
     m_level = OwnerMgr()->m_level;
     return 1;
 }
@@ -603,7 +603,7 @@ i32 CResolveNode::Init(
     m_ownerCtx = owner;
     m_id = id;
     m_flags = flags;
-    ResetResolveDrawFill(this);
+    ResetDrawFill();
     SetPosition(resolveX, resolveY);
     m_stateFlags = stateFlags;
     return 1;
@@ -1143,7 +1143,7 @@ i32 CDDrawPaletteRegistry::RemovePalette(CObject* obj) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00165d30, 0x5f)
 i32 CDDrawPaletteRegistry::RemovePaletteByName(const char* key) {
-    CDDrawPaletteResource* w = LookupPaletteResource(m_palettesByName, key);
+    CDDrawPaletteResource* w = MapFind<CDDrawPaletteResource>(m_palettesByName, key);
     if (w == NULL) {
         return 0;
     }
@@ -1258,7 +1258,8 @@ void CDDrawPixelWorker::RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurface
 
 RVA(0x00166040, 0x66)
 i32 CDDrawFrameWorker::ResolveFrame(const char* workerName, i32 frameIndex) {
-    CDDrawWorker* p = LookupWorker(OwnerMgr()->m_imageRegistry->m_workersByName, workerName);
+    CDDrawWorker* p =
+        MapFind<CDDrawWorker>(OwnerMgr()->m_imageRegistry->m_workersByName, workerName);
     CImage* v = p != NULL ? p->GetAt(frameIndex) : NULL;
     m_frame = v;
     return v != NULL;

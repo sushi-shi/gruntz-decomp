@@ -105,7 +105,7 @@ void CLightFx::Activate(
     i32 shadeTableIndex,
     b32 deleteWhenComplete
 ) {
-    CDDrawWorker* imageSet = LookupWorker(
+    CDDrawWorker* imageSet = MapFind<CDDrawWorker>(
         m_ownerLogicRecord->m_ownerCtx->m_imageRegistry->m_workersByName,
         imageSetName
     );
@@ -125,10 +125,13 @@ void CLightFx::Activate(
     m_deleteWhenComplete = deleteWhenComplete;
 
     CAniElement* node =
-        LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, animationName);
+        MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, animationName);
     if (node != NULL) {
         SwitchAnimation(
-            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, animationName)
+            MapFind<CAniElement>(
+                m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
+                animationName
+            )
         );
         RebindNode();
     }
@@ -170,8 +173,6 @@ i32 CLightFx::RebindNode() {
 RVA(0x0009d7b0, 0x40)
 i32 CLightFx::AdvanceAnim() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
-    MARK_OBJECT_COMPLETE_IF(
-        IsAniCursorComplete(&m_wwdObject->m_animationCursor) && m_deleteWhenComplete
-    )
+    MARK_OBJECT_COMPLETE_IF(m_wwdObject->m_animationCursor.IsComplete() && m_deleteWhenComplete)
     return 0;
 }

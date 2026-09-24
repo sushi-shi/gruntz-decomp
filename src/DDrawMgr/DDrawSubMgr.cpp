@@ -123,7 +123,7 @@ i32 CDDrawWorkerRegistry::ProbeWorkerKey(CRezMgr* parser, const char* key) {
 
 RVA(0x00156ec0, 0x40)
 void CDDrawWorkerRegistry::RemoveByKey(const char* key) {
-    CDDrawWorker* worker = LookupWorker(m_workersByName, key);
+    CDDrawWorker* worker = MapFind<CDDrawWorker>(m_workersByName, key);
     if (worker != NULL) {
         m_workersByName.RemoveKey(key);
         delete worker;

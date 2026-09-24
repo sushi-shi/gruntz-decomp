@@ -185,7 +185,7 @@ RVA(0x00047090, 0x39)
 i32 CParticlez::Update() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     CWwdSpriteObject* o = m_wwdObject;
-    if (IsAniCursorComplete(&o->m_animationCursor)) {
+    if (o->m_animationCursor.IsComplete()) {
         o->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
     }
     return 0;

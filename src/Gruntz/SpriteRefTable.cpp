@@ -10,6 +10,7 @@
 #include <Enums.h>
 #include <Gruntz/ColorTint.h>
 #include <Rez/RezArchive.h>
+#include <Utils/MapTyped.h>
 
 #include <stdio.h>
 
@@ -275,8 +276,10 @@ i32 CSpriteRefTable::BuildToolToyColorTable(CRezMgr* src) {
 
 RVA(0x000e2890, 0xb6)
 CSpriteRef* CSpriteRefTable::Add(char* szName, ColorTint kind) {
-    CDDrawPaletteResource* rec =
-        LookupPaletteResource(m_spriteMgrHolder->m_paletteRegistry->m_palettesByName, szName);
+    CDDrawPaletteResource* rec = MapFind<CDDrawPaletteResource>(
+        m_spriteMgrHolder->m_paletteRegistry->m_palettesByName,
+        szName
+    );
     if (!rec) {
         return NULL;
     }
@@ -331,7 +334,10 @@ i32 CSpriteRefTable::LoadGruntzPalette(CRezMgr* src, const char* name) {
         return 0;
     }
 
-    if (LookupPaletteResource(m_spriteMgrHolder->m_paletteRegistry->m_palettesByName, name)) {
+    if (MapFind<CDDrawPaletteResource>(
+            m_spriteMgrHolder->m_paletteRegistry->m_palettesByName,
+            name
+        )) {
         return 1;
     }
 

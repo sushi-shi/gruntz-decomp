@@ -125,8 +125,10 @@ CStaticHazard::CStaticHazard(CGameObject* obj)
     m_activeWindow = 0;
     m_idleWindow = m_object->m_damage;
     m_pulseEpoch = g_frameTime;
-    CAniElement* entry =
-        LookupAnimation(g_gameReg->m_world->m_animRegistry->m_animations, "LEVEL_STATICHAZARDGO");
+    CAniElement* entry = MapFind<CAniElement>(
+        g_gameReg->m_world->m_animRegistry->m_animations,
+        "LEVEL_STATICHAZARDGO"
+    );
     if (entry != NULL) {
         i32 durationMs = entry->m_durationMs;
         m_activeWindow = g_buteMgr.GetInt("Hazardz", "AniPad", 0x64) + durationMs;
@@ -255,7 +257,7 @@ i32 CStaticHazard::UpdateActiveState() {
     }
     {
         CAniAdvanceCursor* sub = &m_wwdObject->m_animationCursor;
-        if (IsAniCursorComplete(sub)) {
+        if (sub->IsComplete()) {
             SwitchAnimationByName("LEVEL_STATICHAZARDIDLE", 0);
             {APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)} CMapMgr* grid =
                 g_gameReg->m_tileGrid;

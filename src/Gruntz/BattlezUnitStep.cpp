@@ -409,7 +409,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                 i32 dy = abs(gy - (lvl->m_screenY >> TILE_SHIFT_PX));
                 if (SquaredDistance(dx, dy) > 0x10) {
                     i32 cfg = unit->m_routeBlockedMask;
-                    i32 flags = AddBattlezTraversalFlags(unit, unit->m_routePassableMask);
+                    i32 flags = unit->AddBattlezTraversalFlags(unit->m_routePassableMask);
                     Coord routeTarget = unit->m_defenderPx;
                     if (unit->TileSwitch(routeTarget.m_x, routeTarget.m_y, 0, cfg, 0, flags) != 0) {
                         goto routeSuccess;
@@ -452,7 +452,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
                 }
                 board->m_gridW = rcDst->right - rcDst->left;
                 board->m_gridH = rcDst->bottom - rcDst->top;
-                i32 flags = AddBattlezTraversalFlags(unit, unit->m_routePassableMask);
+                i32 flags = unit->AddBattlezTraversalFlags(unit->m_routePassableMask);
                 if (unit->TileSwitch(marker.m_x, marker.m_y, 0, 0x987, 1, flags) != 0) {
                     goto routeSuccess;
                 }

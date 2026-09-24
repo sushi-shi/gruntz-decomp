@@ -93,7 +93,7 @@ i32 CMenuSparkle::AdvanceAnim() {
         m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     }
     CAniAdvanceCursor* anim = &m_wwdObject->m_animationCursor;
-    if (IsAniCursorComplete(anim)) {
+    if (anim->IsComplete()) {
         if (anim != NULL) {
             anim->RestartAnimation(1);
         }

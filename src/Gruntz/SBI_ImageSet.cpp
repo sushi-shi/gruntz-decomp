@@ -128,7 +128,7 @@ i32 CSBI_ImageSet::SerializeFields(
             if (strlen(buf)) {
                 CDDrawWorker* out;
 
-                out = LookupWorker(reg, buf);
+                out = reg->FindWorker(buf);
                 m_frameSet = out;
             } else {
                 m_frameSet = NULL;

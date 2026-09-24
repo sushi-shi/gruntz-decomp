@@ -200,7 +200,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
                 }
                 SNAP_OBJECT_TO_TILE_CENTER(m_object)
             } else {
-                m_poseDeath = LookupAnimation(
+                m_poseDeath = MapFind<CAniElement>(
                     m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
                     s_deathzFall2
                 );
@@ -214,7 +214,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
         }
 
         case DEATH_ELECTROCUTE: {
-            m_poseDeath = LookupAnimation(
+            m_poseDeath = MapFind<CAniElement>(
                 m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
                 s_deathzElectrocute
             );
@@ -226,7 +226,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
 
         case DEATH_MELT: {
             SnapToLastTile(1);
-            m_poseDeath = LookupAnimation(
+            m_poseDeath = MapFind<CAniElement>(
                 m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
                 "GRUNTZ_DEATHZ_MELT"
             );
@@ -237,7 +237,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
         }
 
         case DEATH_KAROKE: {
-            m_poseDeath = LookupAnimation(
+            m_poseDeath = MapFind<CAniElement>(
                 m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
                 s_deathzKaroke
             );
@@ -252,7 +252,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
                 SwitchAnimation(m_poseDeath);
                 goto pathA;
             }
-            m_poseDeath = LookupAnimation(
+            m_poseDeath = MapFind<CAniElement>(
                 m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
                 s_deathzExplode
             );
@@ -263,7 +263,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
         }
 
         case DEATH_DRAIN: {
-            m_poseDeath = LookupAnimation(
+            m_poseDeath = MapFind<CAniElement>(
                 m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
                 s_exitzDrain
             );

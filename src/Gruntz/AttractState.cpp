@@ -135,7 +135,7 @@ i32 CAttract::LeaveState(GameStateId nextState) {
         return 1;
     }
     do {
-        TickSoundVolumeRamps(menuRoot()->m_soundRegistry);
+        (menuRoot()->m_soundRegistry)->TickVolumeRamps();
     } while (m_titleCue->m_sound->IsPlaying());
     return 1;
 }
@@ -150,7 +150,7 @@ i32 CAttract::Render() {
         }
     }
 
-    TickSoundVolumeRamps(menuRoot()->m_soundRegistry);
+    (menuRoot()->m_soundRegistry)->TickVolumeRamps();
 
     if (g_frameDelta >= m_titleCountdownMs) {
         m_titleCountdownMs = 0;

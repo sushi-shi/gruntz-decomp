@@ -124,47 +124,47 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
 
     g_gameReg->m_curState->BuildAssetNamespacePrefixes(m_warlordName, 1, 0, NULL);
 
-    m_idleAnims[0] = LookupAnimation(
+    m_idleAnims[0] = MapFind<CAniElement>(
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
         "GRUNTZ_" + m_warlordName + "_IDLE1"
     );
-    m_idleAnims[1] = LookupAnimation(
+    m_idleAnims[1] = MapFind<CAniElement>(
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
         "GRUNTZ_" + m_warlordName + "_IDLE2"
     );
-    m_idleAnims[2] = LookupAnimation(
+    m_idleAnims[2] = MapFind<CAniElement>(
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
         "GRUNTZ_" + m_warlordName + "_IDLE3"
     );
-    m_idleAnims[3] = LookupAnimation(
+    m_idleAnims[3] = MapFind<CAniElement>(
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
         "GRUNTZ_" + m_warlordName + "_IDLE4"
     );
-    m_battlecryAnims[0] = LookupAnimation(
+    m_battlecryAnims[0] = MapFind<CAniElement>(
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
         "GRUNTZ_" + m_warlordName + s_battleCry1Suffix
     );
-    m_battlecryAnims[1] = LookupAnimation(
+    m_battlecryAnims[1] = MapFind<CAniElement>(
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
         "GRUNTZ_" + m_warlordName + s_battleCry2Suffix
     );
-    m_battlecryAnims[2] = LookupAnimation(
+    m_battlecryAnims[2] = MapFind<CAniElement>(
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
         "GRUNTZ_" + m_warlordName + s_battleCry3Suffix
     );
-    m_animJoy = LookupAnimation(
+    m_animJoy = MapFind<CAniElement>(
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
         "GRUNTZ_" + m_warlordName + s_joySuffix
     );
-    m_animDeath = LookupAnimation(
+    m_animDeath = MapFind<CAniElement>(
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
         "GRUNTZ_" + m_warlordName + "_DEATH"
     );
-    m_animMoving = LookupAnimation(
+    m_animMoving = MapFind<CAniElement>(
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
         "GRUNTZ_" + m_warlordName + s_movingSuffix
     );
-    m_animPanic = LookupAnimation(
+    m_animPanic = MapFind<CAniElement>(
         m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
         "GRUNTZ_" + m_warlordName + s_panicSuffix
     );
@@ -205,7 +205,7 @@ i32 CWarlord::SerializeDispatch(
             } else {
                 CMapStringToPtr* map =
                     &m_ownerLogicRecord->m_ownerCtx->m_animRegistry->m_animations;
-                CAniElement* v = LookupAnimation(*map, hdr);
+                CAniElement* v = MapFind<CAniElement>(*map, hdr);
                 m_value = v;
             }
             break;
@@ -365,7 +365,7 @@ i32 CWarlord::SerializeDispatch(
             g_serialCounter++;
             ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
-                CAniElement* value = LookupAnimation(world->m_animRegistry->m_animations, buf);
+                CAniElement* value = MapFind<CAniElement>(world->m_animRegistry->m_animations, buf);
                 m_idleAnims[0] = value;
             } else {
                 m_idleAnims[0] = NULL;
@@ -373,7 +373,7 @@ i32 CWarlord::SerializeDispatch(
             g_serialCounter++;
             ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
-                CAniElement* value = LookupAnimation(world->m_animRegistry->m_animations, buf);
+                CAniElement* value = MapFind<CAniElement>(world->m_animRegistry->m_animations, buf);
                 m_idleAnims[1] = value;
             } else {
                 m_idleAnims[1] = NULL;
@@ -381,7 +381,7 @@ i32 CWarlord::SerializeDispatch(
             g_serialCounter++;
             ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
-                CAniElement* value = LookupAnimation(world->m_animRegistry->m_animations, buf);
+                CAniElement* value = MapFind<CAniElement>(world->m_animRegistry->m_animations, buf);
                 m_idleAnims[2] = value;
             } else {
                 m_idleAnims[2] = NULL;
@@ -389,7 +389,7 @@ i32 CWarlord::SerializeDispatch(
             g_serialCounter++;
             ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
-                CAniElement* value = LookupAnimation(world->m_animRegistry->m_animations, buf);
+                CAniElement* value = MapFind<CAniElement>(world->m_animRegistry->m_animations, buf);
                 m_idleAnims[3] = value;
             } else {
                 m_idleAnims[3] = NULL;
@@ -397,7 +397,7 @@ i32 CWarlord::SerializeDispatch(
             g_serialCounter++;
             ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
-                CAniElement* value = LookupAnimation(world->m_animRegistry->m_animations, buf);
+                CAniElement* value = MapFind<CAniElement>(world->m_animRegistry->m_animations, buf);
                 m_battlecryAnims[0] = value;
             } else {
                 m_battlecryAnims[0] = NULL;
@@ -405,7 +405,7 @@ i32 CWarlord::SerializeDispatch(
             g_serialCounter++;
             ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
-                CAniElement* value = LookupAnimation(world->m_animRegistry->m_animations, buf);
+                CAniElement* value = MapFind<CAniElement>(world->m_animRegistry->m_animations, buf);
                 m_battlecryAnims[1] = value;
             } else {
                 m_battlecryAnims[1] = NULL;
@@ -413,7 +413,7 @@ i32 CWarlord::SerializeDispatch(
             g_serialCounter++;
             ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
-                CAniElement* value = LookupAnimation(world->m_animRegistry->m_animations, buf);
+                CAniElement* value = MapFind<CAniElement>(world->m_animRegistry->m_animations, buf);
                 m_battlecryAnims[2] = value;
             } else {
                 m_battlecryAnims[2] = NULL;
@@ -421,7 +421,7 @@ i32 CWarlord::SerializeDispatch(
             g_serialCounter++;
             ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
-                CAniElement* value = LookupAnimation(world->m_animRegistry->m_animations, buf);
+                CAniElement* value = MapFind<CAniElement>(world->m_animRegistry->m_animations, buf);
                 m_animJoy = value;
             } else {
                 m_animJoy = NULL;
@@ -429,7 +429,7 @@ i32 CWarlord::SerializeDispatch(
             g_serialCounter++;
             ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
-                CAniElement* value = LookupAnimation(world->m_animRegistry->m_animations, buf);
+                CAniElement* value = MapFind<CAniElement>(world->m_animRegistry->m_animations, buf);
                 m_animDeath = value;
             } else {
                 m_animDeath = NULL;
@@ -437,7 +437,7 @@ i32 CWarlord::SerializeDispatch(
             g_serialCounter++;
             ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
-                CAniElement* value = LookupAnimation(world->m_animRegistry->m_animations, buf);
+                CAniElement* value = MapFind<CAniElement>(world->m_animRegistry->m_animations, buf);
                 m_animMoving = value;
             } else {
                 m_animMoving = NULL;
@@ -445,7 +445,7 @@ i32 CWarlord::SerializeDispatch(
             g_serialCounter++;
             ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
-                CAniElement* value = LookupAnimation(world->m_animRegistry->m_animations, buf);
+                CAniElement* value = MapFind<CAniElement>(world->m_animRegistry->m_animations, buf);
                 m_animPanic = value;
             } else {
                 m_animPanic = NULL;
@@ -525,7 +525,7 @@ void RegisterWarlordActions() {
 RVA(0x00044bb0, 0x38)
 i32 CWarlord::FinishIdleAnimation() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(sub, g_engineFrameDelta)
-    if (IsAniCursorComplete(sub)) {
+    if (sub->IsComplete()) {
         ResolveMovingAnimation();
     }
     return 0;
@@ -590,7 +590,7 @@ i32 CWarlord::UpdatePanicState() {
 RVA(0x00044e70, 0x87)
 i32 CWarlord::FinishJoyAnimation() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(sub, g_engineFrameDelta)
-    if (IsAniCursorComplete(sub)) {
+    if (sub->IsComplete()) {
         CTriggerMgr* h = g_gameReg->m_triggerMgr;
         if (h->m_phase != FINISH_STATE_ACTIVE && m_object->m_smarts == g_curPlayer) {
             h->m_pendingFx = NULL;
@@ -606,7 +606,7 @@ i32 CWarlord::FinishJoyAnimation() {
 RVA(0x00044f30, 0x38)
 i32 CWarlord::FinishBattlecryAnimation() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(sub, g_engineFrameDelta)
-    if (IsAniCursorComplete(sub)) {
+    if (sub->IsComplete()) {
         ResolveMovingAnimation();
     }
     return 0;
@@ -615,7 +615,7 @@ i32 CWarlord::FinishBattlecryAnimation() {
 RVA(0x00044f80, 0x127)
 i32 CWarlord::BuildFortSplashParticles() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(sub, g_engineFrameDelta)
-    if (IsAniCursorComplete(sub)) {
+    if (sub->IsComplete()) {
         CWwdSpriteObject* o = m_object;
         i32 y = o->m_screenY;
         i32 x = o->m_screenX;

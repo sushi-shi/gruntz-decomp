@@ -831,7 +831,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
             if (sw->m_checkpointType == 0) {
                 sw->SwitchDown();
             } else {
-                PickupType gruntKind = ArrivalPickup(g);
+                PickupType gruntKind = g->ArrivalPickup();
                 if (IDX(gruntKind) == sw->m_checkpointType
                     || sw->m_checkpointType == IDX(g->m_vehiclePickupType)) {
                     sw->SwitchDown();
@@ -1108,7 +1108,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
         if (o->m_screenY != cell->m_lastTilePx.m_y) {
             return -1;
         }
-        PickupType k = ArrivalPickup(cell);
+        PickupType k = cell->ArrivalPickup();
         if (k == PICKUP_WAND && cell->CanShowStamina() != 0) {
             if (cellTileX != argTileX || cellTileY != argTileY) {
                 return 0;
@@ -1117,7 +1117,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
             return 1;
         }
         if (cellTileX == argTileX && cellTileY == argTileY) {
-            PickupType kSame = ArrivalPickup(cell);
+            PickupType kSame = cell->ArrivalPickup();
             if (kSame != PICKUP_SPY) {
                 return 0;
             }
@@ -1127,7 +1127,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
             cell->RunMoveConfig(cellTileX, cellTileY);
             return 1;
         }
-        PickupType kDiag = ArrivalPickup(cell);
+        PickupType kDiag = cell->ArrivalPickup();
         if (kDiag == PICKUP_BOMB) {
 
             if (cellTileY != argTileY && cellTileX != argTileX) {
@@ -1159,7 +1159,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
         }
         CGruntzMapMgr* map = g_gameReg->m_tileGrid;
         TileCollisionKind bute = map->m_rows[by >> TILE_SHIFT_PX][bx >> TILE_SHIFT_PX].m_typeCode;
-        PickupType kind = ArrivalPickup(cell);
+        PickupType kind = cell->ArrivalPickup();
 
         switch (kind) {
             case PICKUP_GAUNTLETZ:
@@ -1437,7 +1437,7 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
     if (!differ) {
         return;
     }
-    PickupType k = ArrivalPickup(cell);
+    PickupType k = cell->ArrivalPickup();
     if (k != PICKUP_WARPSTONE) {
         return;
     }

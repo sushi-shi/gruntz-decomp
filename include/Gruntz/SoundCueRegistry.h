@@ -17,6 +17,7 @@ struct CRezItm;
 
 class SoundCueRegistry : public CWapObj {
 public:
+    inline void TickVolumeRamps();
     SoundCueRegistry(CDDrawSurfaceMgr* owner) : CWapObj(owner, 0, 0, CWapObj::NO_SEED) {
         m_soundStream = NULL;
         m_defaultReplayDelayMs = 0;

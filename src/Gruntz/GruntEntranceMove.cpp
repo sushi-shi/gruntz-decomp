@@ -249,7 +249,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
 
         i32 r = rand() % 0x1e1;
         if (r > 0x140) {
-            found = LookupAnimation(
+            found = MapFind<CAniElement>(
                 m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
                 s_gruntzEntrancezOne
             );
@@ -258,7 +258,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
             }
             key = "GRUNTZ_ENTRANCEZ";
         } else if (r > 0xa0) {
-            found = LookupAnimation(
+            found = MapFind<CAniElement>(
                 m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
                 s_gruntzEntrancezTwo
             );
@@ -267,7 +267,7 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
             }
             key = "GRUNTZ_ENTRANCEZ";
         } else {
-            found = LookupAnimation(
+            found = MapFind<CAniElement>(
                 m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
                 s_gruntzEntrancezThree
             );
@@ -277,13 +277,13 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
             key = "GRUNTZ_ENTRANCEZ";
         }
     } else if (mode == GRUNT_ENTRANCE_DROP) {
-        found = LookupAnimation(
+        found = MapFind<CAniElement>(
             m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
             s_gruntzEntrancezDrop
         );
         key = s_gruntzEntrancezDrop;
     } else {
-        found = LookupAnimation(
+        found = MapFind<CAniElement>(
             m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
             s_gruntzEntrancezRessurect
         );
@@ -403,7 +403,7 @@ i32 CGrunt::LoadEntranceConfig() {
 RVA(0x00068370, 0x14c)
 i32 CGrunt::RearmEntranceDrop() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(cur, static_cast<u32>(g_engineFrameDelta))
-    if (IsAniCursorComplete(cur)) {
+    if (cur->IsComplete()) {
         m_bombRunActive = false;
         SwitchAnimation(AT(m_poseItem, GRUNT_ITEM2));
 
@@ -522,9 +522,9 @@ i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
         m_cells[8].WalkName() = s_seItem;
 
         m_poseWalk =
-            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgItem);
+            MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgItem);
         CAniElement* pose =
-            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgItem);
+            MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgItem);
         AT(m_poseIdle, GRUNT_IDLE3) = NULL;
         AT(m_poseIdle, GRUNT_IDLE1) = pose;
         AT(m_poseIdle, GRUNT_IDLE2) = pose;
@@ -564,17 +564,17 @@ i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
         m_cells[8].IdleName() = s_seIdle;
 
         m_poseWalk =
-            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgWalk);
+            MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgWalk);
         AT(m_poseIdle, GRUNT_IDLE1) =
-            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgIdle1);
+            MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgIdle1);
         AT(m_poseIdle, GRUNT_IDLE2) =
-            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgIdle2);
+            MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgIdle2);
         AT(m_poseIdle, GRUNT_IDLE3) =
-            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgIdle3);
+            MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgIdle3);
         AT(m_poseIdle, GRUNT_IDLE4) =
-            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgIdle4);
+            MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgIdle4);
         AT(m_poseIdle, GRUNT_IDLE5) =
-            LookupAnimation(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgIdle5);
+            MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgIdle5);
     }
 
     CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
@@ -605,7 +605,7 @@ i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
 RVA(0x000690a0, 0x1c5)
 i32 CGrunt::UpdateEntranceAnim() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(anim, static_cast<u32>(g_engineFrameDelta))
-    if (!IsAniCursorComplete(anim)) {
+    if (!anim->IsComplete()) {
         return 0;
     }
 
@@ -817,7 +817,7 @@ finalize:
 RVA(0x00069d60, 0x1e1)
 i32 CGrunt::LoadFreezeSpellAssets() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(cur, static_cast<u32>(g_engineFrameDelta))
-    if (IsAniCursorComplete(cur)) {
+    if (cur->IsComplete()) {
         if (m_freezeUnfrozen != false) {
             m_entranceActive = false;
             ReadConfigFromButeMgr();
@@ -859,7 +859,7 @@ RVA(0x00069fd0, 0x69)
 i32 CGrunt::FinishEntranceMove() {
 
     ADVANCE_CURRENT_ANIMATION_CURSOR(cur, static_cast<u32>(g_engineFrameDelta))
-    if (!IsAniCursorComplete(cur)) {
+    if (!cur->IsComplete()) {
         return 0;
     }
     if (m_cellRemovalNotified == false) {
@@ -1213,12 +1213,12 @@ i32 CGrunt::StepAttackAction() {
 
 RVA(0x0006b270, 0x1b)
 CObject* CAniElement::AtChecked(i32 i) const {
-    return GetAniElementAt(this, i);
+    return GetAt(i);
 }
 
 RVA(0x0006b2a0, 0x23)
 CAniElement* AnimationRegistry::FindAnimation(const char* key) {
-    CAniElement* animation = LookupAnimation(m_animations, key);
+    CAniElement* animation = MapFind<CAniElement>(m_animations, key);
     return animation;
 }
 

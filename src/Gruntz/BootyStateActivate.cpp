@@ -363,11 +363,11 @@ i32 CBootyState::EnterState(GameStateId previousState) {
 
 RVA(0x00018e40, 0x81)
 i32 CBootyState::LeaveState(GameStateId nextState) {
-    SoundCue* found = LookupSoundCue(m_world->m_soundRegistry->m_cues, "BOOTY_LOOP");
+    SoundCue* found = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "BOOTY_LOOP");
     if (found && found->m_sound->IsPlaying()) {
         found->m_sound->RampVolumeTo(0, 0x1f4, true);
         while (found->m_sound->IsPlaying()) {
-            TickSoundVolumeRamps(m_world->m_soundRegistry);
+            m_world->m_soundRegistry->TickVolumeRamps();
         }
     }
     return 1;
@@ -1014,7 +1014,7 @@ i32 CBootyState::LevelMsgHudDriver() {
 
             for (i32 i = 0; i < 8; i++) {
                 CWwdSpriteObject* e = m_expl[i];
-                if (IsAniCursorComplete(&e->m_animationCursor)) {
+                if (e->m_animationCursor.IsComplete()) {
                     e->m_stateFlags |= SPRITE_STATE_HIDDEN;
                 }
             }
@@ -1087,7 +1087,7 @@ i32 CBootyState::LevelMsgHudDriver() {
 
     for (i32 j = 0; j < m_slot; j++) {
         CWwdSpriteObject* e = m_expl[j];
-        if (IsAniCursorComplete(&e->m_animationCursor)) {
+        if (e->m_animationCursor.IsComplete()) {
             e->m_stateFlags |= SPRITE_STATE_HIDDEN;
         }
     }
@@ -1417,7 +1417,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
     } else if (m_walkStarted != false) {
 
         CWwdSpriteObject* spr = m_animSprites[m_stepIndex];
-        if (IsAniCursorComplete(&spr->m_animationCursor)) {
+        if (spr->m_animationCursor.IsComplete()) {
             m_stepIndex++;
             if (m_stepIndex == g_gameReg->m_gameStats->m_levelNumber % 4) {
                 m_stepIndex = 4;
@@ -1607,7 +1607,7 @@ i32 CBootyState::Render() {
     m_world->m_childGroup->RenderChildren(m_world->m_drawTarget->m_backPair);
     CDDrawSubMgrPages* dt = m_world->m_drawTarget;
     FlipFrontAndRestoreOverlay(dt);
-    TickSoundVolumeRamps(m_world->m_soundRegistry);
+    m_world->m_soundRegistry->TickVolumeRamps();
     return 1;
 }
 
@@ -1914,7 +1914,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         }
         m_puddleSprites[i]->SetImageSetByName("GRUNTZ_GRUNTPUDDLE");
         m_puddleSprites[i]->SetAnimationByName(g_puddleSpriteKey, 0);
-        setDrawFill(m_puddleSprites[i], SHADE_PAL_16, tint);
+        (m_puddleSprites[i])->SetDrawFill(SHADE_PAL_16, tint);
         m_puddleSprites[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
         if (i == QueryGruntSlots()) {
@@ -1931,7 +1931,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             }
             m_gruntSprites[i]->SetImageSetByName("GRUNTZ_EXITZ");
             m_gruntSprites[i]->SetAnimationByName("GAME_GRUNTFLEX", 0);
-            setDrawFillReversed(m_gruntSprites[i], SHADE_PAL_16, tint);
+            (m_gruntSprites[i])->SetDrawFillReversed(SHADE_PAL_16, tint);
         } else {
             key.Format("GRUNTZ_NORMALGRUNT_IDLE%d", (g_gameReg->Rand() % 2 != 0) ? 1 : 4);
             m_gruntSprites[i] = g_gameReg->m_world->m_childGroup->CreateSprite(
@@ -1947,7 +1947,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             }
             m_gruntSprites[i]->SetImageSetByName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
             m_gruntSprites[i]->SetAnimationByName(key, 0);
-            setDrawFill(m_gruntSprites[i], SHADE_PAL_16, tint);
+            (m_gruntSprites[i])->SetDrawFill(SHADE_PAL_16, tint);
         }
         m_gruntSprites[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
@@ -1968,7 +1968,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         }
         m_weaponIcons[i]->SetImageSetByName(key);
         m_weaponIcons[i]->SetAnimationByName("GAME_CYCLE100", 0);
-        setDrawFill(m_weaponIcons[i], SHADE_PAL_16, tint);
+        (m_weaponIcons[i])->SetDrawFill(SHADE_PAL_16, tint);
         m_weaponIcons[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
         {
@@ -1993,7 +1993,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             }
             m_toyIcons[i]->SetImageSetByName(key);
             m_toyIcons[i]->SetAnimationByName("GAME_CYCLE100", 0);
-            setDrawFill(m_toyIcons[i], SHADE_PAL_16, iconTint);
+            (m_toyIcons[i])->SetDrawFill(SHADE_PAL_16, iconTint);
             m_toyIcons[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
             BuildPowerupIconKeys(
@@ -2013,7 +2013,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             }
             m_powerupIcons[i]->SetImageSetByName(key);
             m_powerupIcons[i]->SetAnimationByName("GAME_CYCLE100", 0);
-            setDrawFill(m_powerupIcons[i], SHADE_PAL_16, iconTint);
+            (m_powerupIcons[i])->SetDrawFill(SHADE_PAL_16, iconTint);
             m_powerupIcons[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
             BuildPowerupIconKeys(
@@ -2033,7 +2033,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
             }
             m_miscIcons[i]->SetImageSetByName(key);
             m_miscIcons[i]->SetAnimationByName("GAME_CYCLE100", 0);
-            setDrawFill(m_miscIcons[i], SHADE_PAL_16, iconTint);
+            (m_miscIcons[i])->SetDrawFill(SHADE_PAL_16, iconTint);
             m_miscIcons[i]->m_stateFlags |= SPRITE_STATE_HIDDEN;
         }
 
@@ -2081,7 +2081,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         }
         m_tabSprites[t]->SetImageSetByName(tabKey);
         m_tabSprites[t]->SetAnimationByName("GAME_CYCLE100", 0);
-        setDrawFill(m_tabSprites[t], SHADE_PAL_16, tint);
+        (m_tabSprites[t])->SetDrawFill(SHADE_PAL_16, tint);
         m_tabSprites[t]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
         m_flagSprites[t] = g_gameReg->m_world->m_childGroup->CreateSprite(
@@ -2097,7 +2097,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
         }
         m_flagSprites[t]->SetImageSetByName(flagKey);
         m_flagSprites[t]->SetAnimationByName("GAME_CYCLE100", 0);
-        setDrawFill(m_flagSprites[t], SHADE_PAL_16, tint);
+        (m_flagSprites[t])->SetDrawFill(SHADE_PAL_16, tint);
         m_flagSprites[t]->m_stateFlags |= SPRITE_STATE_HIDDEN;
 
         m_tabSprites[t]->m_screenX = g_bootyTabPos[t].m_x;
@@ -2134,7 +2134,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
     }
     m_fortSprite->SetImageSetByName("LEVEL_FORT");
     m_fortSprite->SetAnimationByName("GAME_CYCLE100", 0);
-    setDrawFill(m_fortSprite, SHADE_PAL_16, tint);
+    m_fortSprite->SetDrawFill(SHADE_PAL_16, tint);
     m_fortSprite->m_stateFlags |= SPRITE_STATE_HIDDEN;
     m_fortSprite->m_screenX = 0x64;
     m_fortSprite->m_screenY = 0x64;
@@ -2163,7 +2163,7 @@ i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 
     }
     m_warlordBooty->SetImageSetByName(joyKey);
     m_warlordBooty->SetAnimationByName(bootyKey, 0);
-    setDrawFill(m_warlordBooty, SHADE_PAL_16, tint);
+    m_warlordBooty->SetDrawFill(SHADE_PAL_16, tint);
     m_warlordBooty->m_stateFlags |= SPRITE_STATE_HIDDEN;
     m_warlordBooty->m_screenX = 0x64;
     m_warlordBooty->m_screenY = 0x64;
@@ -2239,11 +2239,11 @@ i32 CMultiBootyState::EnterState(GameStateId previousState) {
 
 RVA(0x0001e660, 0x81)
 i32 CMultiBootyState::LeaveState(GameStateId nextState) {
-    SoundCue* found = LookupSoundCue(m_world->m_soundRegistry->m_cues, "BOOTY_LOOP");
+    SoundCue* found = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "BOOTY_LOOP");
     if (found && found->m_sound->IsPlaying()) {
         found->m_sound->RampVolumeTo(0, 0x1f4, true);
         while (found->m_sound->IsPlaying()) {
-            TickSoundVolumeRamps(m_world->m_soundRegistry);
+            m_world->m_soundRegistry->TickVolumeRamps();
         }
     }
     return 1;
@@ -2701,7 +2701,7 @@ i32 CMultiBootyState::Render() {
 
     CDDrawSubMgrPages* dt = m_world->m_drawTarget;
     FlipFrontAndRestoreOverlay(dt);
-    TickSoundVolumeRamps(m_world->m_soundRegistry);
+    m_world->m_soundRegistry->TickVolumeRamps();
     return 1;
 }
 

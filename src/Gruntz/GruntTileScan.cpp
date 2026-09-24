@@ -39,9 +39,9 @@ i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
         if (g->m_dwell > static_cast<u32>(m_nearbyRouteSearchDelay) && g->CoordCount() == 0) {
             CMapMgr* grid = m_board;
             RECT box;
-            box.left = ScanCell(g).m_x - 5;
-            box.top = ScanCell(g).m_y - 5;
-            box.right = ScanCell(g).m_x + 5;
+            box.left = g->ScanCell().m_x - 5;
+            box.top = g->ScanCell().m_y - 5;
+            box.right = g->ScanCell().m_x + 5;
             box.bottom = (g->m_object->m_screenY >> TILE_SHIFT_PX) + 5;
             RECT gb;
             gb.left = 0;

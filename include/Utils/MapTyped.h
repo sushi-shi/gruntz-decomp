@@ -13,6 +13,18 @@ template<class T> inline BOOL MapLookup(CMapStringToPtr& map, LPCTSTR key, T*& o
 template<class T> inline BOOL MapLookup(CMapPtrToPtr& map, void* key, T*& out) {
     return map.Lookup(key, reinterpret_cast<void*&>(out));
 }
+template<class T> inline T* MapFind(CMapStringToOb& map, LPCTSTR key) {
+    CObject* found = NULL;
+    map.Lookup(key, found);
+    return static_cast<T*>(found);
+}
+
+template<class T> inline T* MapFind(CMapStringToPtr& map, LPCTSTR key) {
+    T* found = NULL;
+    MapLookup(map, key, found);
+    return found;
+}
+
 template<class K, class T>
 inline void MapGetNext(CMapStringToPtr& map, POSITION& pos, K& key, T*& out) {
     map.GetNextAssoc(pos, key, reinterpret_cast<void*&>(out));

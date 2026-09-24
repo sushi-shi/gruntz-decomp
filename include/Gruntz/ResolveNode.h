@@ -46,6 +46,9 @@ struct WwdDirtyRect {
 
 class CResolveNode : public CWapObj {
 public:
+    inline void SetDrawFillReversed(ShadeMode mode, CShadeTable* table);
+    inline void SetDrawFill(ShadeMode mode, CShadeTable* table);
+    inline void ResetDrawFill();
     virtual i32 IsLoaded() OVERRIDE;
     RVA(0x00154a80, 0x13)
     virtual void Unload() OVERRIDE {

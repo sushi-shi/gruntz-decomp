@@ -120,7 +120,7 @@ i32 CRollingBall::Update() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
 
     CWwdSpriteObject* anim = m_wwdObject;
-    if (IsAniCursorComplete(&anim->m_animationCursor)) {
+    if (anim->m_animationCursor.IsComplete()) {
         anim->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
         return 0;
     }

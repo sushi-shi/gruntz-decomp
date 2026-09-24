@@ -79,7 +79,7 @@ i32 CGrunt::StepToolThiefBehavior() {
         i32 dx = slotX - selfX;
         i32 dy = selfTileX.m_y - selfTileY.m_y;
         if (abs(dx) <= 1 && abs(dy) <= 1) {
-            PickupType r2 = ArrivalPickup(slot);
+            PickupType r2 = slot->ArrivalPickup();
             if (r2 != PICKUP_WARPSTONE && r2 != PICKUP_BOMB) {
                 this->LoadGruntTypeTable(r2, 1, 0, 0);
                 slot->LoadGruntTypeTable(PICKUP_NONE, 1, 0, 0);

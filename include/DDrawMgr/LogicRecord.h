@@ -153,10 +153,4 @@ struct CLogicRecord : public CWapObj {
     u32 m_payloadSize;
 };
 
-inline CLogicRecord* LookupLogicTemplate(CMapStringToOb& map, LPCTSTR name) {
-    CObject* found = NULL;
-    map.Lookup(name, found);
-    return static_cast<CLogicRecord*>(found);
-}
-
 #endif // GRUNTZ_DDRAWMGR_LOGICRECORD_H

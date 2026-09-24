@@ -32,6 +32,7 @@ struct CSnapshotHeader {
 class CWapObj;
 class CDDrawSubMgrPages;
 class CDDrawWorkerList;
+class CDDrawWorker;
 class CDDrawChildGroup;
 class CDDrawWorkerRegistry;
 class CLogicRecordRegistry;
@@ -63,6 +64,7 @@ GZ_ENUM_FLAGS_OPS(DDrawSurfaceMgrFlags)
 
 class CDDrawSurfaceMgr : public CObject {
 public:
+    inline CDDrawWorker* FindWorker(LPCTSTR name);
     CDDrawSurfaceMgr();
 
     virtual ~CDDrawSurfaceMgr() OVERRIDE;

@@ -68,11 +68,27 @@ lower score.
   `hs-helpers-path-names`, `hs-helpers-path-next-dir`.
 - Name collision: `hs-blood-timebomb`.
 
-Previously adopted/rejected math, typed containers, direct library owners and
-game-class analogues remain their existing individual lineage rows. They were
-not counted again as new candidates. In particular, the vector/rectangle Init,
-CAVector/CARange, min/max/clamp, CRange, INTERPOLATE, IsRandomChance, SQR/ROUND,
-zDArray, zSymTab, zPtrColl, zPTree families already have durable decisions.
+## Reopened reassessment — required, not completed
+
+The earlier pass incorrectly treated existing ledger entries as sufficient to
+exclude families from fresh review. Their old conclusions are evidence to
+challenge, not settled decisions or proof that the helper search is complete.
+The following families are explicitly reopened in the wave-16 lineage queue:
+
+- Vector and rectangle initialization: `reassess-vector-init`, `reassess-rectangle-init`.
+- Complete value types: `reassess-cavector`, `reassess-carange`, `reassess-crange`.
+- Math/helper boundaries: `reassess-min`, `reassess-max`, `reassess-clamp`,
+  `reassess-interpolate`, `reassess-israndomchance`, `reassess-sqr`, `reassess-round`.
+- Complete container families: `reassess-zdarray`, `reassess-zsymtab`,
+  `reassess-zptrcoll`, `reassess-zptree`.
+
+Reassessment must revisit complete declarations and use families, excluded
+methods, constructor/initialization sites, widths and ownership, nested helper
+boundaries, and current retail evidence. Prior adoption, an old rejection, or an
+exact function does not by itself establish that the complete source family is
+correct or fully modeled. Preserve old tests and reasoning, but record a fresh
+disposition with evidence for each candidate; do not reject a composed source
+layer merely because an isolated earlier trial lowered a score.
 
 ## Coverage and remaining work
 

@@ -133,7 +133,7 @@ void CNetSession::BuildGruntzCrcInfo() {
             PRIO(wp, type);
             b32 da = grunt->m_daFlag;
             PickupType toy = grunt->m_vehiclePickupType;
-            PickupType tool = ArrivalPickupOf(grunt, type);
+            PickupType tool = grunt->ArrivalPickupOf(type);
             wsprintfA(
                 szLine,
                 "[p=%d][g=%d][health=%d][x=%d][y=%d][dir=%d][stm=%d][ttl=%d][tool=%d]"
@@ -722,7 +722,7 @@ i32 CNetSession::ComputeChecksum() {
                        + grunt->LastTilePx().m_y;
 
                 PickupType carried = grunt->m_entranceReason;
-                PickupType effective = ArrivalPickupOf(grunt, carried);
+                PickupType effective = grunt->ArrivalPickupOf(carried);
                 sum += IDX(grunt->m_vehiclePickupType) + grunt->m_entranceCommitted
                        + grunt->m_entranceActive + grunt->m_daFlag + IDX(effective);
 
