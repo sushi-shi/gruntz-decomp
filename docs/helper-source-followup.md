@@ -23,6 +23,7 @@ checkpoint counts below describe their own state, not a blanket exemption.
 | `brick-rng-color-range` | All three stack-height color selections | Complete shared color-roll forwarding to the existing range helper |
 | `reassess-crange-ambient-getter-init` | `CRandomAmbientSound::InitCycleTiming`,0xcd70 | Initial draw through the initialized range's existing accessors |
 | `reassess-ambient-min` | `CRandomAmbientSound::Update`,0xcb30 | Both half-duration caps through authored `Min`, composed with the retail integer phase toggle |
+| `reassess-max-span-*` | Seven Grunt reroll-span consumers | Existing signed by-value `Max` at all seven selections, retaining named/reused result locals |
 | `hs-bitset-body` | zBitVec string constructor,0x16d3a0 | Surviving zBitSet small-buffer pointer accessor |
 | `hs-bitset-error-tail` | Same constructor | Existing error-helper boundary at three expanded error tails |
 | `bute-vector-range-reference-api` | Six Bute getters/setters, two item constructors, parser | Reference API and ordinary bound temporaries |
@@ -175,6 +176,18 @@ adoption claims. Individually excluded or deferred alternatives are recorded
 under `reassess-selector-*` with their evidence limits and reopening criteria.
 None of these narrow dispositions closes `reassess-min`, `reassess-max`, or
 `reassess-clamp`.
+
+The seven reroll-span uses are applied in `83b046552`. Fresh baseline,
+include-only and full helper controls preserve all seven normalized owner
+bodies, extents and ordered references. The full build/MAX gates and 58 focused
+tests pass. The new production/original control exercises all seven signed
+selectors, count guards and actual entrance-call referents, with deliberately
+wrong conditions, transfers, edges and callees rejected. This is seven helper
+uses restored, not seven newly exact functions or complete caller closures.
+All historical maxima remain; current fuzzy/exact totals are unchanged. The
+generated source-specific fuzzy MAX moves 95.20% to 95.19% because three new
+source hashes bank their unchanged current output rather than inherit an older
+hash's higher bank.
 
 The container review adds individual pending rows under `reassess-zminerr-*`,
 `reassess-zerrhandler-*`, `reassess-dhandler-typed-layout`,
