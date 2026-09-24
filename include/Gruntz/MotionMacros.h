@@ -1,13 +1,17 @@
 #ifndef GRUNTZ_GRUNTZ_MOTIONMACROS_H
 #define GRUNTZ_GRUNTZ_MOTIONMACROS_H
 
+#include <Lith/BDefs.h>
+
 #define ARRIVAL_V(v, a, s, target)                                                                 \
     do {                                                                                           \
+        double targetPosition = (target);                                                          \
         double nv;                                                                                 \
         if (a == g_motionZero) {                                                                   \
             nv = v;                                                                                \
         } else {                                                                                   \
-            double disc = v * v - ((target) - (s)) * a * g_motionNegTwo;                           \
+            double delta = (targetPosition - (s)) * a;                                             \
+            double disc = SQR(v) - delta * g_motionNegTwo;                                         \
             if (g_motionZero > disc) {                                                             \
                 disc = g_motionZero;                                                               \
             }                                                                                      \

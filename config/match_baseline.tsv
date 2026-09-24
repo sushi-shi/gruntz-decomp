@@ -3050,10 +3050,10 @@ menutree	?SetActivePageByKey@CMenuTree@@QAEHPBD@Z	100.0000	100.0000	3	b58d7e79d0
 menutree	?Update@CMenuTree@@QAEHI@Z	100.0000	100.0000	13	acddb5f393e3	0x182c70	100.0000	
 menutree	?UpdateCursorAnimations@CMenuTree@@QAEHH@Z	88.9467	88.9467	4	9e649f49eb25	0x182ed0	88.9467	
 movinglogic	?AdvanceMotion@CMovingLogic@@UAEXXZ	98.5455	98.5455	4	629c791d6f97	0x16ea90	98.5455	
-movinglogic	?ArrivalVelX@CMotionState@@QAENN@Z	95.6250	95.6250	3	f21e8592dfb0	0x16f3c0	100.0000	
-movinglogic	?ArrivalVelY@CMotionState@@QAENN@Z	95.6250	95.6250	3	c7a3350ae556	0x16f430	100.0000	
+movinglogic	?ArrivalVelX@CMotionState@@QAENN@Z	93.7500	93.7500	4	d3af053dbbf6	0x16f3c0	100.0000	
+movinglogic	?ArrivalVelY@CMotionState@@QAENN@Z	93.7500	93.7500	4	33f5c2bd74c0	0x16f430	100.0000	
 movinglogic	?SerializeDispatch@CMovingLogic@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	3	fd9ba8c2f75d	0x16f4a0	100.0000	
-movinglogic	?Step@CMotionState@@QAEXN@Z	81.8007	80.6230	4	39be0676f4a3	0x16ecd0	82.9390	
+movinglogic	?Step@CMotionState@@QAEXN@Z	81.8007	81.0826	4	39be0676f4a3	0x16ecd0	82.9390	
 multi	??0CNetCmdSlot@@QAE@XZ	100.0000	100.0000	4	461b13706de5	0xbbec0	100.0000	
 multi	??1CMulti@@UAE@XZ	100.0000	100.0000	1	f6002d2fbb63	0x8d270	100.0000	
 multi	??1CMultiStartDlg@@UAE@XZ	100.0000	100.0000	1	cpp:a91121d9b9bb	0xb8960	100.0000	
