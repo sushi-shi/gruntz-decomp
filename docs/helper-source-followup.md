@@ -12,6 +12,19 @@ fresh declaration-and-known-use review: `reassess-cavector` and
 remain recheckable in the ledger. The other 14 families remain pending. Earlier
 checkpoint counts below describe their own state, not a blanket exemption.
 
+Spotlight checkpoint `c97b80255` applies three further vector macro uses under
+`reassess-spotlight-vector-macro-sites`. Update improves 73.2697% to 80.2584%,
+above its previous 78.9438% historical best; all other 17 scored TU records are
+unchanged. Full build/MAX gates and 78 focused tests pass, with all 4,429
+historical maxima preserved. The
+[parenthesized expansion control](patterns/vector-macro-parenthesization-can-change-fp-allocation.md)
+records the measured mechanism. Six new bounded tests compare actual production
+and original write phases, widths, unsigned frame delta and all five Update
+references, including wrong/missing/repeated-reference controls. They do not
+certify complete FP equivalence or Tick's unresolved exit topology. Complete
+constructor/operator and sound-helper compositions remain pending; their
+individual tested/deferred alternatives stay in the canonical ledger.
+
 Vector checkpoint `eb4ea780e` applies `reassess-vector-activate-macro` and
 `reassess-vector-motion-init-macro`: eighteen Activate uses preserve its exact
 body, and six motion initializer uses recover three historically exact
