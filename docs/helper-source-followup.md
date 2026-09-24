@@ -216,6 +216,10 @@ All sixteen broad helper families remain open.
 The next composition adds complete pickup and knockback helpers plus named
 conditional action macros. It restores Arrival's complete ordered lookup
 topology at 91.1094%; Finish reaches 78.4463% with J/N/K cuts still open.
+Implementation `2c5021e25` is recorded narrowly by
+`grunt-two-callers-pickup-application`, `grunt-two-callers-knockback-settlement`,
+`grunt-two-callers-conditional-action-macros` and
+`grunt-arrival-bomb-termination-macro`.
 The [controlled follow-up](patterns/animation-name-accessors-restore-template-call-cuts.md#complete-pickup-knockback-and-bomb-phases-recover-arrivals-call-topology)
 records the real-TU sequence. `arrival-m-*`, `arrival-o-*` and `arrival-j-*`
 retain individual provenance, incompatible transfers and deferred alternatives;
