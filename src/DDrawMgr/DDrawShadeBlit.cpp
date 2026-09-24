@@ -3,6 +3,7 @@
 #include <DDrawMgr/DDrawShadeBlit.h>
 
 #include <Mfc.h>
+#include <MfcWin.h>
 
 #include <DDrawMgr/ClutTable.h>
 #include <DDrawMgr/DDSurface.h>
@@ -12,6 +13,7 @@
 #include <Enums.h>
 #include <Ints.h>
 #include <Io/FileStream.h>
+#include <MakeRect.h>
 #include <Pix16.h>
 #include <Rez/RezMgr.h>
 
@@ -426,14 +428,8 @@ RVA(0x00149780, 0x69)
 i32 CDDrawShadeBlit::BlitAt(CDDSurface* dstSurf, i32 x, i32 y, i32 sel, i32 vflip) {
     ShadeRect clip;
     ShadeRect dst;
-    clip.left = 0;
-    clip.top = 0;
-    clip.right = m_width - 1;
-    clip.bottom = m_height - 1;
-    dst.left = x;
-    dst.top = y;
-    dst.right = x + m_width - 1;
-    dst.bottom = y + m_height - 1;
+    SET_RECT_COMPONENTS(clip, 0, 0, m_width - 1, m_height - 1);
+    SET_RECT_COMPONENTS(dst, x, y, x + m_width - 1, y + m_height - 1);
     return Blit(&dst, dstSurf, &clip, sel, vflip);
 }
 
@@ -447,7 +443,7 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 
     i32 mode = src->m_bytesPerPixel;
     m_dstBpp = static_cast<u8>(mode);
     if (static_cast<u8>(mode) == PIXEL16_BYTES_PER_PIXEL) {
-        if (PIXEL_FORMAT_IS_RGB555) {
+        if (PixelFormatIsRgb555()) {
             m_blendVariant = true;
         } else {
             m_blendVariant = false;

@@ -27,7 +27,6 @@
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/State.h>
-#include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/Timer.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -81,10 +80,12 @@ typedef enum WarlordBattleTag {
 // @early-stop
 RVA(0x00042d40, 0x750)
 CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    SNAP_OBJECT_TO_TILE_CENTER(m_object)
+    Coord position = m_object->ScreenPos();
+    SnapTileCenter(&position);
+    m_object->SetScreenPos(position);
 
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_WARLORD)
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_WARLORD);
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
 
     WarlordOwner owner = static_cast<WarlordOwner>(m_object->m_smarts);
@@ -540,8 +541,11 @@ i32 CWarlord::UpdateMovingState() {
     CGruntzMgr* reg = g_gameReg;
     if (reg->m_gameMode != GAMEMODE_QUESTZ) {
         CWwdSpriteObject* o = m_object;
-        i32 dist = reg->m_triggerMgr
-                       ->NearestOtherPlayerUnitDistSq(o->m_smarts, o->m_screenX, o->m_screenY);
+        i32 dist = reg->m_triggerMgr->NearestOtherPlayerUnitDistSq(
+            o->m_smarts,
+            o->m_screenPosition.m_x,
+            o->m_screenPosition.m_y
+        );
         if (dist < g_buteMgr.GetInt("Warlordz", "PanicRadius", 0x40)) {
             NotifyFortUnderAttack();
             return 0;
@@ -566,8 +570,11 @@ i32 CWarlord::UpdatePanicState() {
 
     if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
         CWwdSpriteObject* o = m_object;
-        i32 dist = g_gameReg->m_triggerMgr
-                       ->NearestOtherPlayerUnitDistSq(o->m_smarts, o->m_screenX, o->m_screenY);
+        i32 dist = g_gameReg->m_triggerMgr->NearestOtherPlayerUnitDistSq(
+            o->m_smarts,
+            o->m_screenPosition.m_x,
+            o->m_screenPosition.m_y
+        );
         if (dist >= g_buteMgr.GetInt("Warlordz", "PanicRadius", 0x40)) {
             ResolveJoyAnimation();
             return 0;
@@ -617,8 +624,8 @@ i32 CWarlord::BuildFortSplashParticles() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(sub, g_engineFrameDelta)
     if (sub->IsComplete()) {
         CWwdSpriteObject* o = m_object;
-        i32 y = o->m_screenY;
-        i32 x = o->m_screenX;
+        i32 y = o->m_screenPosition.m_y;
+        i32 x = o->m_screenPosition.m_x;
         if (::PtInRect(&g_gameReg->m_viewBounds, x, y)) {
             CWwdSpriteObject* fx = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
@@ -722,9 +729,8 @@ i32 CWarlord::ResolveDeathAnimation() {
     CGruntzMgr* g = g_gameReg;
     if (g->m_gameMode == GAMEMODE_QUESTZ) {
         CWwdSpriteObject* h = m_object;
-        i32 x = h->m_screenX;
-        i32 y = h->m_screenY;
-        if (::PtInRect(&g->m_viewBounds, x, y)) {
+        Coord position = h->ScreenPos();
+        if (::PtInRect(&g->m_viewBounds, position.m_x, position.m_y)) {
             g->m_voiceManager->PlayVoice(h->m_objectId, m_ownerTag, -1, -1, -1);
         }
     } else {
@@ -748,9 +754,8 @@ i32 CWarlord::ResolveJoyAnimation() {
     CGruntzMgr* g = g_gameReg;
     if (g->m_gameMode == GAMEMODE_QUESTZ) {
         CWwdSpriteObject* h = m_object;
-        i32 x = h->m_screenX;
-        i32 y = h->m_screenY;
-        if (::PtInRect(&g->m_viewBounds, x, y)) {
+        Coord position = h->ScreenPos();
+        if (::PtInRect(&g->m_viewBounds, position.m_x, position.m_y)) {
             g->m_voiceManager->PlayVoice(h->m_objectId, 0x435, -1, -1, -1);
         }
     } else {
@@ -779,9 +784,8 @@ i32 CWarlord::ResolveIdleAnimation() {
         CWwdSpriteObject* h = m_object;
 
         i32 cue = idx + 0x431;
-        i32 x = h->m_screenX;
-        i32 y = h->m_screenY;
-        if (::PtInRect(&g->m_viewBounds, x, y)) {
+        Coord position = h->ScreenPos();
+        if (::PtInRect(&g->m_viewBounds, position.m_x, position.m_y)) {
             g->m_voiceManager->PlayVoice(h->m_objectId, cue, -1, -1, -1);
         }
     } else {
@@ -811,9 +815,8 @@ i32 CWarlord::ResolveBattlecryAnimation() {
     if (g->m_gameMode == GAMEMODE_QUESTZ) {
         CWwdSpriteObject* h = m_object;
         i32 cue = idx + 0x42e;
-        i32 x = h->m_screenX;
-        i32 y = h->m_screenY;
-        if (::PtInRect(&g->m_viewBounds, x, y)) {
+        Coord position = h->ScreenPos();
+        if (::PtInRect(&g->m_viewBounds, position.m_x, position.m_y)) {
             g->m_voiceManager->PlayVoice(h->m_objectId, cue, -1, -1, -1);
         }
     } else {

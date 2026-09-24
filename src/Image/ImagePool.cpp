@@ -3,6 +3,7 @@
 #include <Image/ImagePool.h>
 
 #include <Mfc.h>
+#include <MfcWin.h>
 
 #include <ComOutRef.h>
 #include <DDrawMgr/ColorDepth.h>
@@ -12,11 +13,13 @@
 #include <DDrawMgr/PixelFormatMacros.h>
 #include <DDrawMgr/PixelShift.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Image/ByteRunEncoding.h>
 #include <Image/FileImageRecords.h>
 #include <Image/Image.h>
 #include <Image/ImagePaletteNode.h>
 #include <Image/RezDecodeKind.h>
+#include <MakeRect.h>
 #include <Pix16.h>
 #include <Rez/RezMgr.h>
 
@@ -477,15 +480,14 @@ i32 CDib::InitBmp(const char* name, HDC dc, u32 ctrl) {
         return 0;
     }
 
-    i32 height = ih.biHeight;
-    i32 width = ih.biWidth;
+    CSize imageSize(ih.biWidth, ih.biHeight);
     ColorDepth bitcount = static_cast<ColorDepth>(ih.biBitCount & 0xffff);
-    if (!Init(dc, width, height, bitcount, ctrl)) {
+    if (!Init(dc, imageSize.cx, imageSize.cy, bitcount, ctrl)) {
         return 0;
     }
 
     file.Seek(fh.bfOffBits, 0);
-    u32 size = (IDX(bitcount) / 8) * m_nPitch * height;
+    u32 size = (IDX(bitcount) / 8) * m_nPitch * imageSize.cy;
     if (file.Read(m_pBytes, size) != size) {
         return 0;
     }
@@ -497,15 +499,14 @@ RVA(0x00176000, 0x18f)
 i32 CDib::InitPcx(u8* buf, HDC dc, u32 ctrl) {
     u8* pStart = buf;
     PcxHeader* hdr = static_cast<PcxHeader*>(static_cast<void*>(pStart));
-    i32 width = hdr->m_xMax - hdr->m_xMin + 1;
-    i32 height = hdr->m_yMax - hdr->m_yMin + 1;
+    CSize imageSize(hdr->m_xMax - hdr->m_xMin + 1, hdr->m_yMax - hdr->m_yMin + 1);
     if (hdr->m_bitsPerPixel != PCX_BITS_PER_PLANE_8) {
         return 0;
     }
     if (!Init(
             dc,
-            width,
-            height,
+            imageSize.cx,
+            imageSize.cy,
             static_cast<ColorDepth>(IDX(hdr->m_planes) * IDX(hdr->m_bitsPerPixel)),
             ctrl
         )) {
@@ -524,11 +525,11 @@ i32 CDib::InitPcx(u8* buf, HDC dc, u32 ctrl) {
     u8* dst;
     u8* scan;
 
-    scan = new u8[(width * IDX(hdr->m_bitsPerPixel) * IDX(hdr->m_planes)) / 8];
+    scan = new u8[(imageSize.cx * IDX(hdr->m_bitsPerPixel) * IDX(hdr->m_planes)) / 8];
 
-    for (y = 0; y < height; y++) {
+    for (y = 0; y < imageSize.cy; y++) {
         dst = m_pBytes + m_pLines[y];
-        remaining = width * IDX(hdr->m_planes);
+        remaining = imageSize.cx * IDX(hdr->m_planes);
 
         while (remaining > 0) {
             value = *src++;
@@ -546,14 +547,14 @@ i32 CDib::InitPcx(u8* buf, HDC dc, u32 ctrl) {
         }
 
         if (hdr->m_planes == PCX_PLANES_PALETTED) {
-            for (i = width; i != 0; i--) {
+            for (i = imageSize.cx; i != 0; i--) {
                 *dst++ = scan[i - 1];
             }
         } else if (hdr->m_planes == PCX_PLANES_RGB) {
-            for (i = width; i != 0; i--) {
+            for (i = imageSize.cx; i != 0; i--) {
                 *dst++ = scan[i - 1];
-                *dst++ = scan[width + i - 1];
-                *dst++ = scan[2 * width + i - 1];
+                *dst++ = scan[imageSize.cx + i - 1];
+                *dst++ = scan[2 * imageSize.cx + i - 1];
             }
         }
     }
@@ -588,13 +589,14 @@ i32 CDib::InitRid(u8* buf, HDC dc, u32 ctrl) {
     RecordBytes<PidHeader> p;
     p.m_bytes = static_cast<u8*>(buf);
     p.m_bytes += 2 * sizeof(u32);
-    i32 width = *p.m_dwords;
+    CSize imageSize;
+    imageSize.cx = *p.m_dwords;
     p.m_bytes += sizeof(u32);
-    i32 height = *p.m_dwords;
+    imageSize.cy = *p.m_dwords;
     p.m_bytes += sizeof(u32);
     p.m_bytes += 4 * sizeof(u32);
-    i32 ok = Init(p.m_bytes, dc, width, height, BPP_PALETTED_8, ctrl);
-    if (!(ctrl & 1)) {
+    i32 ok = Init(p.m_bytes, dc, imageSize.cx, imageSize.cy, BPP_PALETTED_8, ctrl);
+    if (!(ctrl & IDX(DIB_INIT_KEEP_TRANSPARENCY))) {
         m_bTransparent = false;
     }
     return ok;
@@ -772,23 +774,22 @@ void CDib::Invert() {
     u32 destination;
 
     i32 j;
-    i32 width = GetWidth();
-    i32 height = GetHeight();
+    CSize imageSize(GetWidth(), GetHeight());
 
-    for (i32 i = 0; i < height / 2; i++) {
-        k = i * width;
-        for (j = 0; j < width; j++) {
+    for (i32 i = 0; i < imageSize.cy / 2; i++) {
+        k = i * imageSize.cx;
+        for (j = 0; j < imageSize.cx; j++) {
             scratch[j] = m_pBytes[k++];
         }
 
-        source = (height - 1 - i) * width;
-        destination = i * width;
-        for (j = 0; j < width; j++) {
+        source = (imageSize.cy - 1 - i) * imageSize.cx;
+        destination = i * imageSize.cx;
+        for (j = 0; j < imageSize.cx; j++) {
             m_pBytes[destination++] = m_pBytes[source++];
         }
 
-        destination = (height - 1 - i) * width;
-        for (j = 0; j < width; j++) {
+        destination = (imageSize.cy - 1 - i) * imageSize.cx;
+        for (j = 0; j < imageSize.cx; j++) {
             m_pBytes[destination++] = scratch[j];
         }
     }
@@ -931,7 +932,7 @@ i32 CDib::Save8(const char* filename, CDibPal* paletteObj) {
 
 RVA(0x00176d20, 0x71)
 void CDib::FillRect(RECT* r, u32 color) {
-    i32 width = r->right - r->left;
+    i32 width = RECT_WIDTH(*r);
     for (i32 y = r->top; y <= r->bottom; ++y) {
         i32 off = m_pLines[y] + r->left;
         memset(m_pBytes + off, color, width);
@@ -946,7 +947,7 @@ void CDib::FillRect(i32 dx, i32 dy, RECT* src, u32 color) {
     r.left = dx;
     r.top = dy;
     r.right = src->right + dx - src->left;
-    r.bottom = src->bottom - src->top + dy;
+    r.bottom = RECT_HEIGHT(*src) + dy;
     FillRect(&r, color);
 }
 

@@ -4,6 +4,7 @@
 #include <rva.h>
 
 #include <Mfc.h>
+#include <MfcWin.h>
 
 #include <Enums.h>
 #include <Ints.h>
@@ -26,8 +27,7 @@ public:
         m_fontConfig = NULL;
         m_attached = false;
         m_inputActive = false;
-        m_originX = 0;
-        m_originY = 0;
+        m_origin = CPoint(0, 0);
         m_mode = CHATBOX_WITH_RIGHT_STATUSBAR;
     }
 
@@ -43,8 +43,7 @@ public:
 
     i32 LoadChatBoxSprite(CDDrawSurfacePair* target);
 
-    i32 m_originX;
-    i32 m_originY;
+    POINT m_origin;
     ChatBoxLayout m_mode;
     b32 m_attached;
     b32 m_inputActive;

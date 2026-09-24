@@ -48,6 +48,7 @@
 #include <Gruntz/VoiceManager.h>
 #include <Gruntz/WorldSoundSet.h>
 #include <Io/FileStream.h>
+#include <MakeRect.h>
 #include <MsgParam.h>
 #include <Net/LobbyDialogs.h>
 #include <Net/NetCmdSlotInline.h>
@@ -521,7 +522,7 @@ i32 CMulti::Connect(i32 mode) {
 RVA(0x000b6890, 0x21b)
 i32 CMulti::Render() {
     m_drewThisFrame = false;
-    HandleDragMove(0, m_cursorX, m_cursorY);
+    HandleDragMove(0, m_cursorPosition.m_x, m_cursorPosition.m_y);
     i32 oldT = m_lastTime;
     i32 t = timeGetTime();
     m_lastTime = t;
@@ -721,8 +722,8 @@ void CMulti::RenderGameFrame() {
     }
     StepScroll();
     Mgr()->m_worldSounds->SetListenerPosition(
-        (m_world->m_level->m_mainPlane)->m_scrollPixelX,
-        (m_world->m_level->m_mainPlane)->m_scrollPixelY
+        (m_world->m_level->m_mainPlane)->m_scrollPixel.m_x,
+        (m_world->m_level->m_mainPlane)->m_scrollPixel.m_y
     );
     if (m_region1Gate != false) {
         NotifyVisibleEntities();
@@ -737,15 +738,15 @@ void CMulti::RenderGameFrame() {
     if (m_minimap != NULL) {
         CStatusBarMgr* statusBar = m_statusBar;
         if (statusBar->m_position != STATUSBAR_HIDDEN && statusBar->m_activeTab != TAB_GAME) {
-            RECT rc;
+            CRect rc;
             if (statusBar->m_position == STATUSBAR_DOCK_LEFT) {
-                SetRect(&rc, 20, 5, 140, 125);
+                rc.SetRect(20, 5, 140, 125);
             } else {
                 rc.top = g_gameReg->m_modeSize.cy;
                 i32 right = g_gameReg->m_modeSize.cx - 20;
                 i32 left = g_gameReg->m_modeSize.cx - 140;
                 rc.top = g_gameReg->m_modeSize.cy;
-                SetRect(&rc, left, 5, right, 125);
+                rc.SetRect(left, 5, right, 125);
             }
             m_minimap->Refresh(static_cast<i32>(g_frameDelta), false);
             m_minimap->Draw(

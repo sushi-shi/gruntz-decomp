@@ -73,7 +73,7 @@ RVA_COMPGEN(0x0000ffc0, 0x44, ??1CEyeCandyAni@@UAE@XZ)
 RVA(0x000abfa0, 0x1b6)
 CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_OVERLAY)
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_OVERLAY);
     NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_frameImage)
 }
 
@@ -89,7 +89,7 @@ RVA(0x000ac3f0, 0x1b1)
 CBehindCandy::CBehindCandy(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, 0)
+    o->SetSortKey(0);
     NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_frameImage)
 }
 
@@ -98,8 +98,8 @@ RVA(0x000ac620, 0x1cf)
 CEyeCandy::CEyeCandy(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     CWwdSpriteObject* o = m_object;
     if (o->m_sortKey == 0 && o->m_frameImage != NULL) {
-        i32 v = o->m_frameImage->m_anchorY + o->m_screenY + 0x186a0;
-        SET_SORT_KEY_IF_CHANGED(o, v)
+        i32 v = o->m_frameImage->m_anchor.y + o->m_screenPosition.m_y + 0x186a0;
+        SET_SORT_KEY_IF_CHANGED(o, v);
     }
     NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_frameImage)
 }
@@ -111,8 +111,8 @@ CEyeCandyAni::CEyeCandyAni(CGameObject* obj)
     INITIALIZE_DEFAULT_CYCLE_ANIMATION
     CWwdSpriteObject* o = m_object;
     if (o->m_sortKey == 0 && o->m_frameImage != NULL) {
-        i32 v = o->m_frameImage->m_anchorY + o->m_screenY + 0x186a0;
-        SET_SORT_KEY_IF_CHANGED(o, v)
+        i32 v = o->m_frameImage->m_anchor.y + o->m_screenPosition.m_y + 0x186a0;
+        SET_SORT_KEY_IF_CHANGED(o, v);
     }
     NORMALIZE_BIG_ANIMATION_WITH_AUX(m_object->m_frameImage)
 }
@@ -140,7 +140,7 @@ CFrontCandyAni::CFrontCandyAni(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     INITIALIZE_DEFAULT_CYCLE_ANIMATION
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_OVERLAY)
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_OVERLAY);
 }
 
 RVA(0x000ad1b0, 0x102)

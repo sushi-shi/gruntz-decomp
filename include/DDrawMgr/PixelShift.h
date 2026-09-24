@@ -43,6 +43,11 @@ extern i32 g_rDown;
 extern i32 g_gDown;
 extern i32 g_bDown;
 
+inline b32 PixelFormatIsRgb555() {
+    return g_rDown == PIXEL16_RED_DOWN && g_gDown == RGB555_GREEN_DOWN
+           && g_bDown == PIXEL16_BLUE_DOWN && g_rUp == RGB555_RED_UP && g_gUp == PIXEL16_GREEN_UP;
+}
+
 inline u16 PackPixel16(u8 red, u8 green, u8 blue) {
     u16 value = static_cast<u8>(blue >> g_bDown);
     value |= static_cast<u16>(static_cast<u8>(red >> g_rDown) << g_rUp);

@@ -94,6 +94,11 @@ class CGruntPuddle;
 
 class CArchive;
 
+struct GruntCellMotion {
+    DoubleVector2 m_direction;
+    DoubleVector2 m_step;
+};
+
 struct CGruntCellRec {
     GZ_ENUM_BEGIN(NameSlot)
         NAME_ATTACK = 0,
@@ -124,10 +129,7 @@ struct CGruntCellRec {
 
     RECT m_rects[3];
 
-    struct {
-        DoubleVector2 m_direction;
-        DoubleVector2 m_step;
-    } m_motion;
+    GruntCellMotion m_motion;
     CGruntCellRec();
     ~CGruntCellRec();
 
@@ -285,6 +287,11 @@ public:
     i32 LoadTypeTableClearMove(PickupType typeId);
 
     void FaceTowardTile(i32 tileX, i32 tileY);
+
+    void FaceTowardTile(Coord tile) {
+        FaceTowardTile(tile.m_x, tile.m_y);
+    }
+
     void SnapToLastTile(i32 clearArrivalState);
     i32 ClaimSwitchTile();
     i32 SetArrivalTarget(i32 targetPlayerIndex, i32 targetUnitIndex, i32 targetPxX, i32 targetPxY);
@@ -486,8 +493,7 @@ public:
     i32 m_wingzTime;
 
     double m_moveSpeed;
-    double m_movePosX;
-    double m_movePosY;
+    DoubleVector2 m_movePosition;
     i32 m_reserved418;
     u32 m_timePerTile;
     b32 m_tileClaimed;

@@ -15,8 +15,6 @@ GZ_ENUM_FORWARD(MenuItemState);
 
 class CMenuPage;
 
-#define SET_ANIMATED_MENU_ITEM_FRAME_PERIOD_INLINE(value) m_framePeriodMs = value
-
 class CAnimatedMenuItem : public CMenuItem {
 public:
     CAnimatedMenuItem();
@@ -82,5 +80,7 @@ inline CAnimatedMenuItem::CAnimatedMenuItem() {
     m_frameTimerMs = 0;
     SetFramePeriod(0x64);
 }
+
+#define SET_ANIMATED_MENU_ITEM_FRAME_PERIOD_INLINE(value) m_framePeriodMs = value
 
 #endif // GRUNTZ_ANIMATED_MENU_ITEM_H

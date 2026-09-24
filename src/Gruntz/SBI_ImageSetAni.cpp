@@ -83,10 +83,10 @@ i32 CSBI_ImageSetAni::Init(
     m_frameIndex = m_frameStart;
 
     CImage* cel;
-    if (DDRAW_WORKER_FRAME_OUT_OF_RANGE(tbl, m_frameStart)) {
+    if (!tbl->ContainsFrame(m_frameStart)) {
         cel = NULL;
     } else {
-        cel = DDRAW_WORKER_FRAME_AT_UNCHECKED(tbl, m_frameStart);
+        cel = tbl->FrameAtUnchecked(m_frameStart);
     }
     SetFrame(cel);
     return cel != NULL;
@@ -108,8 +108,8 @@ i32 CSBI_ImageSetAni::Render() {
             CDDrawSurfacePair* surfaceCtx = g_gameReg->m_world->m_drawTarget->m_backPair;
             cel->RenderFrame(
                 surfaceCtx,
-                cel->m_anchorX + m_rect.left,
-                cel->m_anchorY + m_rect.top,
+                cel->m_anchor.x + m_rect.left,
+                cel->m_anchor.y + m_rect.top,
                 0
             );
         }

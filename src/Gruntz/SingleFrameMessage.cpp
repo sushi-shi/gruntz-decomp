@@ -37,21 +37,16 @@ RVA_COMPGEN(0x0000f640, 0x44, ??1CSingleFrameMessage@@UAE@XZ)
 RVA(0x000ab310, 0x18d)
 CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    RECT r;
+    CRect r;
     SET_ANIMATION_ACT("A");
     m_object->SetImageFrameByName("GAME_MESSAGEZ", m_wwdObject->m_id);
     {
-        RECT bounds;
-        CopyRect(&r, g_gameReg->GetRect(&bounds));
+        CRect bounds;
+        r = *g_gameReg->GetRect(&bounds);
     }
-    POINT origin = {r.left, r.top};
-    i32 centerY = (r.bottom - origin.y) / 2;
-    i32 centerX = (r.right - origin.x) / 2;
-    centerY += origin.y;
-    centerX += origin.x;
+    CPoint center = r.CenterPoint();
     CWwdSpriteObject* object = m_object;
-    object->m_screenX = centerX;
-    object->m_screenY = centerY;
+    object->SetScreenPos(Coord(center.x, center.y));
 }
 
 RVA(0x000ab5b0, 0x102)

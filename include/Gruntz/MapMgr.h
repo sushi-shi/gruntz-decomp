@@ -3,7 +3,7 @@
 
 #include <rva.h>
 
-#include <Mfc.h>
+#include <MfcWin.h>
 
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/LogicTypeId.h>
@@ -66,7 +66,7 @@ public:
     );
     virtual i32 IsCellClear(i32 x, i32 y);
 
-    void Clip(const tagRECT* r);
+    void Clip(const tagRECT* src);
     void ComputeCellFlags(i32 x, i32 y, i32 tileId);
     i32 AllocGrid(i32 width, i32 height, void (*callback)());
     i32 FindPathWithEndpointOverrides(
@@ -98,11 +98,7 @@ public:
 
     BrickzCell* m_cellPool;
 
-    union {
-        BrickzCell** m_rows;
-        i32** m_rowInts;
-        char** m_rowBytes;
-    };
+    BrickzCell** m_rows;
     u32 m_width;
     u32 m_height;
     u32 m_cellCount;
@@ -121,8 +117,7 @@ public:
     b32 m_dirty;
 
     RECT m_bounds;
-    i32 m_gridW;
-    i32 m_gridH;
+    CSize m_gridSize;
     CDDrawSurfaceMgr* m_attrMgr;
 };
 

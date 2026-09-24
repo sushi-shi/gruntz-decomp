@@ -9,6 +9,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/MapCellFlags.h>
 #include <Ints.h>
+#include <MakeRect.h>
 #include <Wap32/TileGeometry.h>
 
 RVA(0x00035f10, 0x155)
@@ -31,12 +32,12 @@ i32 CBattlezMapConfig::RerouteSwitchSeeker(CGrunt* grunt) {
     }
 
     Coord center = ScreenPosition(grunt->m_object);
-    RECT box = AdjacentTileNeighborhood(grunt);
+    CRect box = AdjacentTileNeighborhood(grunt);
     for (i32 row = box.top; row < box.bottom; row++) {
         for (i32 col = box.left; col < box.right; col++) {
-            i32 tileX = center.m_x >> TILE_SHIFT_PX;
-            i32 tileY = center.m_y >> TILE_SHIFT_PX;
-            if (col == tileX && row == tileY) {
+            Coord tile = center;
+            ScreenTile(&tile);
+            if (col == tile.m_x && row == tile.m_y) {
                 continue;
             }
             if (static_cast<u32>(col) >= static_cast<u32>(m_board->m_width)
@@ -48,7 +49,15 @@ i32 CBattlezMapConfig::RerouteSwitchSeeker(CGrunt* grunt) {
                 continue;
             }
             if ((flags & IDX(CELL_FLAG_SPECIAL)) == 0) {
-                grunt->TileSwitch(col, row, 0, 0xd87, 0, 0);
+                grunt->TileSwitch(
+                    col,
+                    row,
+                    0,
+                    IDX(CELL_FLAG_SOLID | CELL_FLAG_SPECIAL | CELL_FLAG_TRIGGER | CELL_FLAG_ARROW
+                        | CELL_FLAG_WATER | CELL_FLAG_SPIKES | CELL_FLAG_SINK_HAZARD),
+                    0,
+                    0
+                );
                 grunt->m_dwell = 0;
                 return 1;
             }

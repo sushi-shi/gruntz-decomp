@@ -3,6 +3,7 @@
 #include <Gruntz/SBI_Image.h>
 
 #include <Mfc.h>
+#include <MfcWin.h>
 
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -47,10 +48,10 @@ i32 CSBI_Image::SetupImage(
         if (key != NULL) {
             CDDrawWorker* rec = host->FindWorker(key);
             CImage* val;
-            if (rec == NULL || DDRAW_WORKER_MISSES_FRAME(rec, 1)) {
+            if (rec == NULL || !rec->ContainsFrame(1)) {
                 val = NULL;
             } else {
-                val = DDRAW_WORKER_FRAME_AT_UNCHECKED(rec, 1);
+                val = rec->FrameAtUnchecked(1);
             }
             SetFrame(val);
             return val != NULL;
@@ -75,9 +76,13 @@ i32 CSBI_Image::Render() {
         m_redrawFrames--;
         CImage* cel = m_frame;
         if (cel != NULL) {
-            i32 y = m_rect.top + cel->m_anchorY;
-            i32 x = m_rect.left + cel->m_anchorX;
-            cel->RenderFrame(g_gameReg->m_world->m_drawTarget->m_backPair, x, y, 0);
+            CPoint position(m_rect.left + cel->m_anchor.x, m_rect.top + cel->m_anchor.y);
+            cel->RenderFrame(
+                g_gameReg->m_world->m_drawTarget->m_backPair,
+                position.x,
+                position.y,
+                0
+            );
         }
     }
     return 1;
@@ -111,8 +116,8 @@ i32 CSBI_Image::SerializeFields(
             if (strlen(name) != 0) {
                 i32 frameIndex = idx;
                 CDDrawWorker* r = mgr->FindWorker(name);
-                if (r && DDRAW_WORKER_FRAME_IN_RANGE(r, frameIndex)) {
-                    SetFrame(DDRAW_WORKER_FRAME_AT_UNCHECKED(r, frameIndex));
+                if (r && r->ContainsFrame(frameIndex)) {
+                    SetFrame(r->FrameAtUnchecked(frameIndex));
                 } else {
                     SetFrame(NULL);
                 }

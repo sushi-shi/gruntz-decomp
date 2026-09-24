@@ -4,6 +4,7 @@
 #include <rva.h>
 
 #include <DDrawMgr/ShadeTableCache.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Ints.h>
 #include <Wap32/CoordUnset.h>
@@ -36,11 +37,10 @@ struct WwdDirtyRect {
         m_rect.left = COORD_UNSET;
         m_armed = -1;
     }
-    i32 m_lastX;
-    i32 m_lastY;
+    POINT m_lastPosition;
     RECT m_rect;
-    i32 m_w;
-    i32 m_h;
+    SIZE
+    m_size;
     i32 m_armed;
 };
 
@@ -52,11 +52,29 @@ public:
     virtual i32 IsLoaded() OVERRIDE;
     RVA(0x00154a80, 0x13)
     virtual void Unload() OVERRIDE {
-        m_screenX = COORD_UNSET;
+        m_screenPosition.m_x = COORD_UNSET;
         m_dirty.Reset();
     }
 
     virtual i32 SetPosition(i32 x, i32 y);
+
+    Coord ScreenPos() const {
+        return m_screenPosition;
+    }
+
+    void SetScreenPos(Coord position) {
+        m_screenPosition = position;
+    }
+
+    void SetScreenPos(i32 x, i32 y) {
+        SetScreenPos(Coord(x, y));
+    }
+
+    inline void SetDrawFillFraction(ShadeMode mode, i32 fraction) {
+        m_drawActive = true;
+        m_drawFillCmd = mode;
+        m_fillFraction = fraction;
+    }
 
     CResolveNode();
 
@@ -81,12 +99,11 @@ public:
     );
 
     virtual ~CResolveNode() OVERRIDE {
-        m_screenX = COORD_UNSET;
+        m_screenPosition.m_x = COORD_UNSET;
         m_dirty.Reset();
     }
 
-    i32 m_plotDX;
-    i32 m_plotDY;
+    Coord m_plotOffset;
 
     WwdDirtyRect m_dirty;
 
@@ -98,9 +115,7 @@ public:
     ShadeMode m_drawFillCmd;
     i32 m_fillFraction;
     b32 m_drawActive;
-    i32 m_screenX;
-
-    i32 m_screenY;
+    Coord m_screenPosition;
 
     RECT m_clip;
 };

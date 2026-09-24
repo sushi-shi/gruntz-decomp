@@ -26,6 +26,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
@@ -63,18 +64,13 @@ i32 CBattlezMapConfig::RepathToFreeCell(CGrunt* unit) {
             CGruntPuddle* cand = static_cast<CGruntPuddle*>(m_triggerMgr->m_baseList.GetAt(pos));
             m_triggerMgr->m_baseList.GetNext(pos);
             if (cand->m_pending == false) {
-                i32 candX = cand->m_tileX;
-                i32 candY = cand->m_tileY;
+                Coord candidate = cand->m_tile;
                 CGameObject* object = unit->m_object;
-                i32 screenX = object->m_screenX;
-                i32 screenY = object->m_screenY;
+                Coord screen = object->ScreenPos();
                 Coord current = ScreenTile(unit);
-                if (candX != current.m_x || candY != current.m_y) {
-                    i32 dx = candX - (screenX >> TILE_SHIFT_PX);
-                    dx = abs(dx);
-                    i32 dy = candY - (screenY >> TILE_SHIFT_PX);
-                    dy = abs(dy);
-                    i32 dist = SquaredDistance(dx, dy);
+                if (candidate != current) {
+                    ScreenTile(&screen);
+                    i32 dist = candidate.DistSqr(screen);
                     if (dist < bestDist) {
                         bestDist = dist;
                         best = cand;
@@ -83,7 +79,15 @@ i32 CBattlezMapConfig::RepathToFreeCell(CGrunt* unit) {
             }
         }
         if (best != NULL) {
-            RouteUnitTo(unit, best->m_tileX, best->m_tileY, 0xd87, 0, 0);
+            RouteUnitTo(
+                unit,
+                best->m_tile.m_x,
+                best->m_tile.m_y,
+                IDX(CELL_FLAG_SOLID | CELL_FLAG_SPECIAL | CELL_FLAG_TRIGGER | CELL_FLAG_ARROW
+                    | CELL_FLAG_WATER | CELL_FLAG_SPIKES | CELL_FLAG_SINK_HAZARD),
+                0,
+                0
+            );
         }
         unit->m_dwell = 0;
     }
@@ -98,7 +102,8 @@ i32 CBattlezMapConfig::ProbeUnoccupiedAt(i32 x, i32 y) {
     POSITION pos = lst.GetHeadPosition();
     while (pos != NULL) {
         CGruntPuddle* cand = static_cast<CGruntPuddle*>(lst.GetNext(pos));
-        if (cand != NULL && cand->m_tileX == x && cand->m_tileY == y && cand->m_pending == false) {
+        if (cand != NULL && cand->m_tile.m_x == x && cand->m_tile.m_y == y
+            && cand->m_pending == false) {
             return 1;
         }
     }

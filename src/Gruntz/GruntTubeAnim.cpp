@@ -37,7 +37,7 @@ i32 CGrunt::SetupTubeAnim(b32 isWater) {
     LoadAnimNameTable(0, 0);
 
     if (m_poweredUp != false && m_neighborValid == false) {
-        RESET_GRUNT_POWERED_STATE(this)
+        RESET_GRUNT_POWERED_STATE(this);
     }
 
     CString* node = g_typeColl.ScratchResolve(m_logicRecord->EventCode());
@@ -46,10 +46,7 @@ i32 CGrunt::SetupTubeAnim(b32 isWater) {
     bool eq;
     eq = (strcmp(*node, "D") == 0);
     if (eq) {
-        GruntDirectionCell cell = m_entranceCell;
-        i32 col = cell.m_column + cell.m_row * 2;
-        i32 base = cell.m_row + col;
-        char* buf = m_cells[base].WalkName().GetBuffer(0);
+        char* buf = EntranceCell()->WalkName().GetBuffer(0);
         SetImageSetByName(buf);
         SwitchAnimation(m_poseWalk);
         return 1;

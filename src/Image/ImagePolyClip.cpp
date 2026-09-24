@@ -1,11 +1,14 @@
 #include <rva.h>
 
 #include <Mfc.h>
+#include <MfcWin.h>
 
 #include <DDrawMgr/DDrawPolyFill.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/WallProject.h>
+#include <Gruntz/CoordNode.h>
+#include <Gruntz/DoubleVector.h>
 #include <Image/PolygonWinding.h>
 #include <Image/RasterVtx.h>
 #include <Image/WarpTextureBlit.h>
@@ -84,18 +87,9 @@ i32 PolyIsConvexCW(ClipVtx* verts, i32 count) {
         ClipVtx* v0 = &verts[i % count];
         ClipVtx* v1 = &verts[(i + 1) % count];
         ClipVtx* v2 = &verts[(i + 2) % count];
-        float x0 = v0->m_x;
-        float y0 = v0->m_y;
-        float x1 = v1->m_x;
-        float y1 = v1->m_y;
-        float x2 = v2->m_x;
-        float y2 = v2->m_y;
-        float dy2, dx2, dy1, dx1;
-        dx1 = x1 - x0;
-        dy1 = y1 - y0;
-        dx2 = x2 - x0;
-        dy2 = y2 - y0;
-        float cross = (-dy1) * dx2 + dx1 * dy2;
+        FloatVector2 delta1(v1->m_x - v0->m_x, v1->m_y - v0->m_y);
+        FloatVector2 delta2(v2->m_x - v0->m_x, v2->m_y - v0->m_y);
+        float cross = (-delta1.m_y) * delta2.m_x + delta1.m_x * delta2.m_y;
         if (cross != g_rasterZero) {
             if (cross > g_rasterZero) {
                 sign = POLYGON_WINDING_COUNTERCLOCKWISE;
@@ -126,61 +120,44 @@ void ImageRotateBlit(
     i32 colorkey
 ) {
 
-    i32 w = src->m_apiDesc.dwWidth;
-    i32 h = src->m_apiDesc.dwHeight;
+    CSize imageSize(src->m_apiDesc.dwWidth, src->m_apiDesc.dwHeight);
 
-    i32 sq[4];
+    CRect sourceRect;
     if (pivot != NULL) {
-        sq[0] = pivot[0];
-        sq[1] = pivot[1];
-        sq[2] = pivot[2];
-        sq[3] = pivot[3];
+        sourceRect.SetRect(pivot[0], pivot[1], pivot[2], pivot[3]);
     } else {
-        sq[0] = 0;
-        sq[1] = 0;
-        sq[2] = w - 1;
-        sq[3] = h - 1;
+        sourceRect.SetRect(0, 0, imageSize.cx - 1, imageSize.cy - 1);
     }
 
     float rad = rot * s_degToRadNeg;
     float sn = static_cast<float>(sin(rad));
     float cs = static_cast<float>(cos(rad));
 
-    i32 cx = w >> 1;
-    i32 cy = h >> 1;
+    Coord center(imageSize.cx >> 1, imageSize.cy >> 1);
 
-    float ex0 = static_cast<float>(-cx) * scale;
-    float ey0 = static_cast<float>(-cy) * scale;
-    float ex1 = static_cast<float>(w - cx) * scale;
-    float ey1 = static_cast<float>(h - cy) * scale;
+    FloatVector2 extentMin = FloatVector2(-center) * scale;
+    FloatVector2 extentMax = FloatVector2(Coord(imageSize.cx, imageSize.cy) - center) * scale;
 
     ClipVtx prod[4];
-    prod[0].m_x = ex0;
-    prod[0].m_y = ey0;
-    prod[1].m_x = ex1;
-    prod[1].m_y = ey0;
-    prod[2].m_x = ex1;
-    prod[2].m_y = ey1;
-    prod[3].m_x = ex0;
-    prod[3].m_y = ey1;
+    prod[0].SetPosition(extentMin.m_x, extentMin.m_y);
+    prod[1].SetPosition(extentMax.m_x, extentMin.m_y);
+    prod[2].SetPosition(extentMax.m_x, extentMax.m_y);
+    prod[3].SetPosition(extentMin.m_x, extentMax.m_y);
 
-    float tx = static_cast<float>(destX);
-    float ty = static_cast<float>(destY);
+    FloatVector2 translation(Coord(destX, destY));
 
     ClipVtx mtx[4];
     for (i32 k = 0; k < 4; k++) {
-        mtx[k].m_y = prod[k].m_y * cs - prod[k].m_x * sn + ty;
-        mtx[k].m_x = prod[k].m_x * cs + prod[k].m_y * sn + tx;
+        mtx[k].SetPosition(
+            prod[k].m_x * cs + prod[k].m_y * sn + translation.m_x,
+            prod[k].m_y * cs - prod[k].m_x * sn + translation.m_y
+        );
     }
 
-    mtx[0].m_u = static_cast<float>(sq[0]);
-    mtx[0].m_v = static_cast<float>(sq[1]);
-    mtx[1].m_u = static_cast<float>(sq[2]);
-    mtx[1].m_v = static_cast<float>(sq[1]);
-    mtx[2].m_u = static_cast<float>(sq[2]);
-    mtx[2].m_v = static_cast<float>(sq[3]);
-    mtx[3].m_u = static_cast<float>(sq[0]);
-    mtx[3].m_v = static_cast<float>(sq[3]);
+    mtx[0].SetTexture(static_cast<float>(sourceRect.left), static_cast<float>(sourceRect.top));
+    mtx[1].SetTexture(static_cast<float>(sourceRect.right), static_cast<float>(sourceRect.top));
+    mtx[2].SetTexture(static_cast<float>(sourceRect.right), static_cast<float>(sourceRect.bottom));
+    mtx[3].SetTexture(static_cast<float>(sourceRect.left), static_cast<float>(sourceRect.bottom));
 
     RotateRasterize(mtx, 4, dst, src, mode, colorkey, -1, -1, -1, -1);
 }
@@ -195,10 +172,8 @@ i32 ImagePolyClipRect(
     i32 clipRight,
     i32 clipBottom
 ) {
-    float left = static_cast<float>(clipLeft);
-    float right = static_cast<float>(clipRight);
-    float top = static_cast<float>(clipTop);
-    float bottom = static_cast<float>(clipBottom);
+    FloatVector2 clipMin(static_cast<float>(clipLeft), static_cast<float>(clipTop));
+    FloatVector2 clipMax(static_cast<float>(clipRight), static_cast<float>(clipBottom));
     i32 i;
 
     ClipVtx* out = g_rasterOddClipPassBuffer;
@@ -206,14 +181,17 @@ i32 ImagePolyClipRect(
         ClipVtx* prev = &poly[n - 1];
         ClipVtx* cur = poly;
         for (i = n; i > 0; i--) {
-            if (!(prev->m_x < left)) {
+            if (!(prev->m_x < clipMin.m_x)) {
                 *out++ = *prev;
             }
-            if ((prev->m_x < left && !(cur->m_x < left))
-                || (!(prev->m_x < left) && cur->m_x < left)) {
-                out->m_x = left;
-                out->m_y = prev->m_y
-                           + (left - prev->m_x) * ((cur->m_y - prev->m_y) / (cur->m_x - prev->m_x));
+            if ((prev->m_x < clipMin.m_x && !(cur->m_x < clipMin.m_x))
+                || (!(prev->m_x < clipMin.m_x) && cur->m_x < clipMin.m_x)) {
+                out->SetPosition(
+                    clipMin.m_x,
+                    prev->m_y
+                        + (clipMin.m_x - prev->m_x)
+                              * ((cur->m_y - prev->m_y) / (cur->m_x - prev->m_x))
+                );
                 out++;
             }
             prev = cur;
@@ -230,15 +208,17 @@ i32 ImagePolyClipRect(
         ClipVtx* prev = &g_rasterOddClipPassBuffer[n1 - 1];
         ClipVtx* cur = g_rasterOddClipPassBuffer;
         for (i = n1; i > 0; i--) {
-            if (prev->m_x < right) {
+            if (prev->m_x < clipMax.m_x) {
                 *out++ = *prev;
             }
-            if ((prev->m_x < right && !(cur->m_x < right))
-                || (!(prev->m_x < right) && cur->m_x < right)) {
-                out->m_x = right;
-                out->m_y =
+            if ((prev->m_x < clipMax.m_x && !(cur->m_x < clipMax.m_x))
+                || (!(prev->m_x < clipMax.m_x) && cur->m_x < clipMax.m_x)) {
+                out->SetPosition(
+                    clipMax.m_x,
                     prev->m_y
-                    + (right - prev->m_x) * ((cur->m_y - prev->m_y) / (cur->m_x - prev->m_x));
+                        + (clipMax.m_x - prev->m_x)
+                              * ((cur->m_y - prev->m_y) / (cur->m_x - prev->m_x))
+                );
                 out++;
             }
             prev = cur;
@@ -255,13 +235,17 @@ i32 ImagePolyClipRect(
         ClipVtx* prev = &g_rasterEvenClipPassBuffer[n2 - 1];
         ClipVtx* cur = g_rasterEvenClipPassBuffer;
         for (i = n2; i > 0; i--) {
-            if (!(prev->m_y < top)) {
+            if (!(prev->m_y < clipMin.m_y)) {
                 *out++ = *prev;
             }
-            if ((!(prev->m_y < top) && cur->m_y < top) || (prev->m_y < top && !(cur->m_y < top))) {
-                out->m_y = top;
-                out->m_x = prev->m_x
-                           + (top - prev->m_y) * ((cur->m_x - prev->m_x) / (cur->m_y - prev->m_y));
+            if ((!(prev->m_y < clipMin.m_y) && cur->m_y < clipMin.m_y)
+                || (prev->m_y < clipMin.m_y && !(cur->m_y < clipMin.m_y))) {
+                out->SetPosition(
+                    prev->m_x
+                        + (clipMin.m_y - prev->m_y)
+                              * ((cur->m_x - prev->m_x) / (cur->m_y - prev->m_y)),
+                    clipMin.m_y
+                );
                 out++;
             }
             prev = cur;
@@ -278,15 +262,17 @@ i32 ImagePolyClipRect(
         ClipVtx* prev = &g_rasterOddClipPassBuffer[n3 - 1];
         ClipVtx* cur = g_rasterOddClipPassBuffer;
         for (i = n3; i > 0; i--) {
-            if (prev->m_y < bottom) {
+            if (prev->m_y < clipMax.m_y) {
                 *out++ = *prev;
             }
-            if ((prev->m_y < bottom && !(cur->m_y < bottom))
-                || (!(prev->m_y < bottom) && cur->m_y < bottom)) {
-                out->m_y = bottom;
-                out->m_x =
+            if ((prev->m_y < clipMax.m_y && !(cur->m_y < clipMax.m_y))
+                || (!(prev->m_y < clipMax.m_y) && cur->m_y < clipMax.m_y)) {
+                out->SetPosition(
                     prev->m_x
-                    + (bottom - prev->m_y) * ((cur->m_x - prev->m_x) / (cur->m_y - prev->m_y));
+                        + (clipMax.m_y - prev->m_y)
+                              * ((cur->m_x - prev->m_x) / (cur->m_y - prev->m_y)),
+                    clipMax.m_y
+                );
                 out++;
             }
             prev = cur;
@@ -315,17 +301,17 @@ i32 RotateRasterize(
     i32 clipTop,
     i32 clipBottom
 ) {
-    float leftBound, topBound, rightBound, bottomBound;
+    FloatVector2 clipMin;
+    FloatVector2 clipMax;
     if (clipLeft == -1) {
-        topBound = 0.0f;
-        rightBound = static_cast<float>(static_cast<i32>(dst->m_apiDesc.dwWidth));
-        bottomBound = static_cast<float>(static_cast<i32>(dst->m_apiDesc.dwHeight));
-        leftBound = g_rasterZero;
+        clipMin.Init(g_rasterZero, 0.0f);
+        clipMax.Init(
+            static_cast<float>(dst->m_apiDesc.dwWidth),
+            static_cast<float>(dst->m_apiDesc.dwHeight)
+        );
     } else {
-        leftBound = static_cast<float>(clipLeft);
-        rightBound = static_cast<float>(clipRight);
-        topBound = static_cast<float>(clipTop);
-        bottomBound = static_cast<float>(clipBottom);
+        clipMin.Init(static_cast<float>(clipLeft), static_cast<float>(clipTop));
+        clipMax.Init(static_cast<float>(clipRight), static_cast<float>(clipBottom));
     }
 
     ClipVtx* out = g_rasterOddClipPassBuffer;
@@ -335,21 +321,25 @@ i32 RotateRasterize(
         if (n > 0) {
             i32 j = n;
             do {
-                if (prev->m_x >= leftBound) {
+                if (prev->m_x >= clipMin.m_x) {
                     *out++ = *prev;
                 }
-                if ((prev->m_x < leftBound && cur->m_x >= leftBound)
-                    || (prev->m_x >= leftBound && cur->m_x < leftBound)) {
-                    out->m_x = leftBound;
-                    out->m_y = prev->m_y
-                               + ((cur->m_y - prev->m_y) / (cur->m_x - prev->m_x))
-                                     * (leftBound - prev->m_x);
-                    out->m_u = prev->m_u
-                               + ((cur->m_u - prev->m_u) / (cur->m_x - prev->m_x))
-                                     * (leftBound - prev->m_x);
-                    out->m_v = prev->m_v
-                               + ((cur->m_v - prev->m_v) / (cur->m_x - prev->m_x))
-                                     * (leftBound - prev->m_x);
+                if ((prev->m_x < clipMin.m_x && cur->m_x >= clipMin.m_x)
+                    || (prev->m_x >= clipMin.m_x && cur->m_x < clipMin.m_x)) {
+                    out->SetPosition(
+                        clipMin.m_x,
+                        prev->m_y
+                            + ((cur->m_y - prev->m_y) / (cur->m_x - prev->m_x))
+                                  * (clipMin.m_x - prev->m_x)
+                    );
+                    out->SetTexture(
+                        prev->m_u
+                            + ((cur->m_u - prev->m_u) / (cur->m_x - prev->m_x))
+                                  * (clipMin.m_x - prev->m_x),
+                        prev->m_v
+                            + ((cur->m_v - prev->m_v) / (cur->m_x - prev->m_x))
+                                  * (clipMin.m_x - prev->m_x)
+                    );
                     out++;
                 }
                 prev = cur;
@@ -369,21 +359,25 @@ i32 RotateRasterize(
         if (n > 0) {
             i32 j = n;
             do {
-                if (prev->m_x < rightBound) {
+                if (prev->m_x < clipMax.m_x) {
                     *out++ = *prev;
                 }
-                if ((prev->m_x < rightBound && cur->m_x >= rightBound)
-                    || (prev->m_x >= rightBound && cur->m_x < rightBound)) {
-                    out->m_x = rightBound;
-                    out->m_y = prev->m_y
-                               + ((cur->m_y - prev->m_y) / (cur->m_x - prev->m_x))
-                                     * (rightBound - prev->m_x);
-                    out->m_u = prev->m_u
-                               + ((cur->m_u - prev->m_u) / (cur->m_x - prev->m_x))
-                                     * (rightBound - prev->m_x);
-                    out->m_v = prev->m_v
-                               + ((cur->m_v - prev->m_v) / (cur->m_x - prev->m_x))
-                                     * (rightBound - prev->m_x);
+                if ((prev->m_x < clipMax.m_x && cur->m_x >= clipMax.m_x)
+                    || (prev->m_x >= clipMax.m_x && cur->m_x < clipMax.m_x)) {
+                    out->SetPosition(
+                        clipMax.m_x,
+                        prev->m_y
+                            + ((cur->m_y - prev->m_y) / (cur->m_x - prev->m_x))
+                                  * (clipMax.m_x - prev->m_x)
+                    );
+                    out->SetTexture(
+                        prev->m_u
+                            + ((cur->m_u - prev->m_u) / (cur->m_x - prev->m_x))
+                                  * (clipMax.m_x - prev->m_x),
+                        prev->m_v
+                            + ((cur->m_v - prev->m_v) / (cur->m_x - prev->m_x))
+                                  * (clipMax.m_x - prev->m_x)
+                    );
                     out++;
                 }
                 prev = cur;
@@ -403,21 +397,25 @@ i32 RotateRasterize(
             ClipVtx* cur = g_rasterEvenClipPassBuffer;
             i32 j = n;
             do {
-                if (prev->m_y >= topBound) {
+                if (prev->m_y >= clipMin.m_y) {
                     *out++ = *prev;
                 }
-                if ((prev->m_y >= topBound && cur->m_y < topBound)
-                    || (prev->m_y < topBound && cur->m_y >= topBound)) {
-                    out->m_y = topBound;
-                    out->m_x = prev->m_x
-                               + ((cur->m_x - prev->m_x) / (cur->m_y - prev->m_y))
-                                     * (topBound - prev->m_y);
-                    out->m_u = prev->m_u
-                               + ((cur->m_u - prev->m_u) / (cur->m_y - prev->m_y))
-                                     * (topBound - prev->m_y);
-                    out->m_v = prev->m_v
-                               + ((cur->m_v - prev->m_v) / (cur->m_y - prev->m_y))
-                                     * (topBound - prev->m_y);
+                if ((prev->m_y >= clipMin.m_y && cur->m_y < clipMin.m_y)
+                    || (prev->m_y < clipMin.m_y && cur->m_y >= clipMin.m_y)) {
+                    out->SetPosition(
+                        prev->m_x
+                            + ((cur->m_x - prev->m_x) / (cur->m_y - prev->m_y))
+                                  * (clipMin.m_y - prev->m_y),
+                        clipMin.m_y
+                    );
+                    out->SetTexture(
+                        prev->m_u
+                            + ((cur->m_u - prev->m_u) / (cur->m_y - prev->m_y))
+                                  * (clipMin.m_y - prev->m_y),
+                        prev->m_v
+                            + ((cur->m_v - prev->m_v) / (cur->m_y - prev->m_y))
+                                  * (clipMin.m_y - prev->m_y)
+                    );
                     out++;
                 }
                 prev = cur;
@@ -437,21 +435,25 @@ i32 RotateRasterize(
             ClipVtx* cur = g_rasterOddClipPassBuffer;
             i32 j = n;
             do {
-                if (prev->m_y < bottomBound) {
+                if (prev->m_y < clipMax.m_y) {
                     *out++ = *prev;
                 }
-                if ((prev->m_y < bottomBound && cur->m_y >= bottomBound)
-                    || (prev->m_y >= bottomBound && cur->m_y < bottomBound)) {
-                    out->m_y = bottomBound;
-                    out->m_x = prev->m_x
-                               + ((cur->m_x - prev->m_x) / (cur->m_y - prev->m_y))
-                                     * (bottomBound - prev->m_y);
-                    out->m_u = prev->m_u
-                               + ((cur->m_u - prev->m_u) / (cur->m_y - prev->m_y))
-                                     * (bottomBound - prev->m_y);
-                    out->m_v = prev->m_v
-                               + ((cur->m_v - prev->m_v) / (cur->m_y - prev->m_y))
-                                     * (bottomBound - prev->m_y);
+                if ((prev->m_y < clipMax.m_y && cur->m_y >= clipMax.m_y)
+                    || (prev->m_y >= clipMax.m_y && cur->m_y < clipMax.m_y)) {
+                    out->SetPosition(
+                        prev->m_x
+                            + ((cur->m_x - prev->m_x) / (cur->m_y - prev->m_y))
+                                  * (clipMax.m_y - prev->m_y),
+                        clipMax.m_y
+                    );
+                    out->SetTexture(
+                        prev->m_u
+                            + ((cur->m_u - prev->m_u) / (cur->m_y - prev->m_y))
+                                  * (clipMax.m_y - prev->m_y),
+                        prev->m_v
+                            + ((cur->m_v - prev->m_v) / (cur->m_y - prev->m_y))
+                                  * (clipMax.m_y - prev->m_y)
+                    );
                     out++;
                 }
                 prev = cur;
@@ -512,8 +514,10 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
                     table = g_rasterEdgeR;
                 }
 
-                i32 topU = static_cast<i32>(static_cast<double>(top->m_u) * g_rasterScale);
-                i32 topV = static_cast<i32>(static_cast<double>(top->m_v) * g_rasterScale);
+                Coord topTexture(
+                    static_cast<i32>(static_cast<double>(top->m_u) * g_rasterScale),
+                    static_cast<i32>(static_cast<double>(top->m_v) * g_rasterScale)
+                );
                 i32 topX = static_cast<i32>(static_cast<double>(top->m_x) * g_rasterScale);
                 i32 topYi = static_cast<i32>(static_cast<double>(top->m_y) * g_rasterScale)
                             >> WARP_TEXTURE_FRACTION_BITS;
@@ -525,23 +529,23 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
                 i32 dx =
                     (-topX - static_cast<i32>(static_cast<double>(bot->m_x) * g_rasterScaleNeg))
                     / h;
-                i32 du =
-                    (-topU - static_cast<i32>(static_cast<double>(bot->m_u) * g_rasterScaleNeg))
-                    / h;
-                i32 dv =
-                    (-topV - static_cast<i32>(static_cast<double>(bot->m_v) * g_rasterScaleNeg))
-                    / h;
+                Coord textureStep(
+                    (-topTexture.m_x
+                     - static_cast<i32>(static_cast<double>(bot->m_u) * g_rasterScaleNeg))
+                        / h,
+                    (-topTexture.m_y
+                     - static_cast<i32>(static_cast<double>(bot->m_v) * g_rasterScaleNeg))
+                        / h
+                );
 
                 i32 x = topX;
-                i32 u = topU;
-                i32 vv = topV;
+                Coord texture = topTexture;
                 for (i32 s = 0; s < h; s++) {
                     rec->m_fx = x;
-                    rec->m_fu = u;
-                    rec->m_fv = vv;
+                    rec->m_fu = texture.m_x;
+                    rec->m_fv = texture.m_y;
                     x += dx;
-                    u += du;
-                    vv += dv;
+                    texture += textureStep;
                     rec++;
                 }
             }
@@ -820,13 +824,13 @@ i32 ProjectWallQuad(
     i16 color,
     RECT clip
 ) {
-    i32 dx = x1 - x0;
-    i32 dy = y1 - y0;
-    double ang = atan2(static_cast<double>(dx), static_cast<double>(dy));
-    float adx = static_cast<float>(fabs(static_cast<float>(dx)));
-    float ady = static_cast<float>(fabs(static_cast<float>(dy)));
+    Coord start(x0, y0);
+    Coord end(x1, y1);
+    Coord delta = end - start;
+    double ang = atan2(static_cast<double>(delta.m_x), static_cast<double>(delta.m_y));
+    FloatVector2 floatDelta(delta);
     float turn = static_cast<float>(ang - g_negativePi);
-    float len = static_cast<float>(sqrt(SQR(adx) + SQR(ady)));
+    float len = floatDelta.Mag();
     double s = sin(turn);
     double c = cos(turn);
     float hw = static_cast<float>(halfWidth);
@@ -834,26 +838,22 @@ i32 ProjectWallQuad(
     ClipVtx* wall = g_rasterEvenClipPassBuffer;
     float xLeft = -(hw * g_wallHalf);
     float xRight = xLeft + hw;
-    wall[0].m_x = xLeft;
-    wall[0].m_y = len;
-    wall[1].m_x = xRight;
-    wall[1].m_y = len;
-    wall[2].m_x = xRight;
-    wall[2].m_y = g_rasterZero;
-    wall[3].m_x = xLeft;
-    wall[3].m_y = g_rasterZero;
+    wall[0].SetPosition(xLeft, len);
+    wall[1].SetPosition(xRight, len);
+    wall[2].SetPosition(xRight, g_rasterZero);
+    wall[3].SetPosition(xLeft, g_rasterZero);
 
     for (i32 i = 0; i < 4; i++) {
-        float bx = g_rasterEvenClipPassBuffer[i].m_x;
-        float by = -g_rasterEvenClipPassBuffer[i].m_y;
-        g_rasterEvenClipPassBuffer[i].m_x = static_cast<float>((by * s - bx * c));
-        g_rasterEvenClipPassBuffer[i].m_y = static_cast<float>((bx * s + by * c));
+        FloatVector2 base(g_rasterEvenClipPassBuffer[i].m_x, -g_rasterEvenClipPassBuffer[i].m_y);
+        g_rasterEvenClipPassBuffer[i].SetPosition(
+            static_cast<float>(base.m_y * s - base.m_x * c),
+            static_cast<float>(base.m_x * s + base.m_y * c)
+        );
     }
     for (i32 j = 0; j < 4; j++) {
-        g_rasterEvenClipPassBuffer[j].m_x =
-            static_cast<float>(x0) + g_rasterEvenClipPassBuffer[j].m_x;
-        g_rasterEvenClipPassBuffer[j].m_y =
-            static_cast<float>(y0) + g_rasterEvenClipPassBuffer[j].m_y;
+        ClipVtx& vertex = g_rasterEvenClipPassBuffer[j];
+        FloatVector2 translated = FloatVector2(start) + FloatVector2(vertex.m_x, vertex.m_y);
+        vertex.SetPosition(translated.m_x, translated.m_y);
     }
 
     if (ImagePolyClipRect(

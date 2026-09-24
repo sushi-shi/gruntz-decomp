@@ -17,6 +17,7 @@
 #include <Gruntz/SoundState.h>
 #include <Image/CImage.h>
 #include <Image/ImageSet.h>
+#include <MakeRect.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
@@ -45,10 +46,13 @@ i32 CMenuTree::Configure(
         CopyRect(&m_bounds, bounds);
         return 1;
     }
-    m_bounds.left = 0;
-    m_bounds.top = 0;
-    m_bounds.right = world->m_drawTarget->m_frontSurface->m_width - 1;
-    m_bounds.bottom = world->m_drawTarget->m_frontSurface->m_height - 1;
+    SET_RECT_COMPONENTS(
+        m_bounds,
+        0,
+        0,
+        world->m_drawTarget->m_frontSurface->m_width - 1,
+        world->m_drawTarget->m_frontSurface->m_height - 1
+    );
     return 1;
 }
 
@@ -268,21 +272,19 @@ i32 CMenuTree::DrawFocusCursors(
     if (!item) {
         return 0;
     }
-    i32 itemCenterX, itemCenterY;
-    if (item->m_fixedCenterX != UNINIT_FILL) {
-        itemCenterY = item->m_fixedCenterY;
-        itemCenterX = item->m_fixedCenterX;
+    Coord itemCenter;
+    if (item->m_fixedCenter.m_x != UNINIT_FILL) {
+        itemCenter = item->m_fixedCenter;
     } else {
-        itemCenterY = defaultCenterY;
-        itemCenterX = defaultCenterX;
+        itemCenter.Set(defaultCenterX, defaultCenterY);
     }
     if (m_leftCursorFrame) {
-        i32 cursorX = -(item->GetFrameWidth() / 2) - m_leftCursorOffsetX + itemCenterX;
-        m_leftCursorFrame->RenderFrame(target, cursorX, itemCenterY, 0);
+        i32 cursorX = -(item->GetFrameWidth() / 2) - m_leftCursorOffsetX + itemCenter.m_x;
+        m_leftCursorFrame->RenderFrame(target, cursorX, itemCenter.m_y, 0);
     }
     if (m_rightCursorFrame) {
-        i32 cursorX = item->GetFrameWidth() / 2 + m_rightCursorOffsetX + itemCenterX;
-        m_rightCursorFrame->RenderFrame(target, cursorX, itemCenterY, 0);
+        i32 cursorX = item->GetFrameWidth() / 2 + m_rightCursorOffsetX + itemCenter.m_x;
+        m_rightCursorFrame->RenderFrame(target, cursorX, itemCenter.m_y, 0);
     }
     return 1;
 }

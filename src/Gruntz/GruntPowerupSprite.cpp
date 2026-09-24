@@ -5,11 +5,13 @@
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LightFxMgr.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/ResolveNodeInline.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
@@ -37,7 +39,7 @@ CGruntPowerupSprite::CGruntPowerupSprite(CGameObject* obj)
     SetImageSetByName("GAME_LIGHTING_POWERUP");
     SwitchAnimationByName("GAME_CYCLE100", 0);
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_POWERUP)
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_POWERUP);
     Hide();
 }
 
@@ -73,8 +75,11 @@ i32 CGruntPowerupSprite::Update() {
         g_gameReg->m_triggerMgr->m_units
             [m_gruntIdentity.m_playerIndex * TM_UNITS_PER_PLAYER + m_gruntIdentity.m_unitIndex];
     if (e != NULL) {
-        m_object->m_screenX = e->m_object->m_screenX;
-        m_object->m_screenY = e->m_object->m_screenY;
+        SET_VECTOR2_COMPONENTS(
+            m_object->m_screenPosition,
+            e->m_object->m_screenPosition.m_x,
+            e->m_object->m_screenPosition.m_y
+        );
     }
     return 0;
 }
@@ -98,7 +103,7 @@ i32 CGruntPowerupSprite::SerializeDispatch(
             i32 id = m_powerupId;
             CWwdSpriteObject* r = m_object;
             CShadeTable* v = g_gameReg->m_lightFxMgr->m_tables[id];
-            SET_DRAW_FILL_REVERSED(r, SHADE_DST_BY_SRC_16, v);
+            r->SetDrawFill(SHADE_DST_BY_SRC_16, v);
             break;
         }
     }

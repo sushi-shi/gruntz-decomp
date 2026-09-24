@@ -8,7 +8,7 @@
 
 RVA(0x001549d0, 0x29)
 CResolveNode::CResolveNode() : m_dirty(WwdDirtyRect::INLINE_SEED) {
-    m_screenX = COORD_UNSET;
+    m_screenPosition.m_x = COORD_UNSET;
     m_clip.left = COORD_UNSET;
     m_level = NULL;
     m_stateFlags = SPRITE_STATE_NONE;

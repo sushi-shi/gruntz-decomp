@@ -143,9 +143,9 @@ i32 CNetCmdSlot::ProcessPacket(i32 playerId, char* packet, i32 packetSize) {
     }
 
     RecordPeerWindowBase(windowBase);
-    if (opcode & 0x10) {
+    if (opcode & IDX(NET_CMD_RECEIVED_WINDOW_BASE_PLUS_TWO)) {
         AddSequence(m_peerReceivedAhead, windowBase + 2);
-    } else if (opcode & 0x20) {
+    } else if (opcode & IDX(NET_CMD_RECEIVED_WINDOW_BASE_PLUS_THREE)) {
         AddSequence(m_peerReceivedAhead, windowBase + 3);
     }
     RemoveSequence(m_peerReceivedAhead, windowBase + 1);

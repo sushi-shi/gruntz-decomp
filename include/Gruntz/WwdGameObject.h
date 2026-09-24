@@ -7,6 +7,7 @@
 
 #include <DDrawMgr/LogicRecord.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/WwdGridIter.h>
@@ -22,8 +23,7 @@ struct WwdSnapshot {
     i32 m_serialTypeId;
     LogicTypeId m_logicTypeId;
     char m_logicTypeName[0x80];
-    i32 m_screenX;
-    i32 m_screenY;
+    Coord m_screenPosition;
     i32 m_sortKey;
 };
 

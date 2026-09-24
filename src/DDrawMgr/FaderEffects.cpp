@@ -1,6 +1,7 @@
 #include <rva.h>
 
 #include <Mfc.h>
+#include <MfcWin.h>
 
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawDeviceManager.h>
@@ -8,6 +9,8 @@
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/PixelShift.h>
 #include <DDrawMgr/ShadeTableCache.h>
+#include <Globals.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/Fader.h>
 #include <Gruntz/FaderBufferInline.h>
 #include <Gruntz/FaderConfig.h>
@@ -18,6 +21,7 @@
 #include <Gruntz/FaderSubtypes.h>
 #include <Gruntz/ShapeFaderConfig.h>
 #include <Ints.h>
+#include <Lith/BDefs.h>
 #include <Wap32/ScreenGeometry.h>
 
 #include <ddraw.h>
@@ -99,15 +103,14 @@ RVA(0x0017f660, 0x2e6)
 void CFaderFlat::RenderFrame(i32 frame) {
     u16* srcBits = static_cast<u16*>(m_srcSurface->Lock(NULL));
     u16* dstBits = static_cast<u16*>(m_dstSurface->Lock(NULL));
-    i32 h = m_srcSurface->m_apiDesc.dwHeight;
-    i32 w = m_srcSurface->m_apiDesc.dwWidth;
-    i32 base = h - frame - 1;
-    i32 span = m_durationPercent * h / 100;
-    if (span + base > h) {
-        span = h - base;
+    CSize surfaceSize(m_srcSurface->m_apiDesc.dwWidth, m_srcSurface->m_apiDesc.dwHeight);
+    i32 base = surfaceSize.cy - frame - 1;
+    i32 span = m_durationPercent * surfaceSize.cy / 100;
+    if (span + base > surfaceSize.cy) {
+        span = surfaceSize.cy - base;
     }
-    i32 half = (m_splitPercent * w / 100) / 2 + w / 2;
-    i32 rest = w - half;
+    i32 half = (m_splitPercent * surfaceSize.cx / 100) / 2 + surfaceSize.cx / 2;
+    i32 rest = surfaceSize.cx - half;
     i32 end = span + base;
     i32 y = (base < 0) ? 0 : base;
     while (y < end) {
@@ -120,7 +123,7 @@ void CFaderFlat::RenderFrame(i32 frame) {
             n1 * 2
         );
         memcpy(
-            dstBits + m_dstSurface->m_apiDesc.lPitch * y / 2 + w - n2,
+            dstBits + m_dstSurface->m_apiDesc.lPitch * y / 2 + surfaceSize.cx - n2,
             srcBits + m_srcSurface->m_apiDesc.lPitch * y / 2 + half,
             n2 * 2
         );
@@ -131,13 +134,13 @@ void CFaderFlat::RenderFrame(i32 frame) {
             n2 * 2
         );
         memcpy(
-            dstBits + m_dstSurface->m_apiDesc.lPitch * y / 2 + w - n1,
+            dstBits + m_dstSurface->m_apiDesc.lPitch * y / 2 + surfaceSize.cx - n1,
             srcBits + m_srcSurface->m_apiDesc.lPitch * y / 2 + rest,
             n1 * 2
         );
         y++;
     }
-    i32 lastRow = h - 1;
+    i32 lastRow = surfaceSize.cy - 1;
     i32 y0 = lastRow;
     if (y0 >= end) {
         y0 = end;
@@ -154,7 +157,7 @@ void CFaderFlat::RenderFrame(i32 frame) {
         memcpy(
             dstBits + m_dstSurface->m_apiDesc.lPitch * y2 / 2,
             srcBits + m_srcSurface->m_apiDesc.lPitch * y2 / 2,
-            w * 2
+            surfaceSize.cx * 2
         );
         y2++;
     }
@@ -226,26 +229,35 @@ i32 CFaderRadial::ApplyInit(CFaderConfig* desc) {
 
     CDDSurface* s = m_srcSurface;
     m_fadeDivisor = static_cast<float>(static_cast<i32>(s->m_apiDesc.dwWidth)) * g_faderHalf;
-    m_centerX = static_cast<i32>(s->m_apiDesc.dwWidth) / 2;
-    m_centerY = static_cast<i32>(s->m_apiDesc.dwHeight) / 2;
+    SET_VECTOR2_COMPONENTS(
+        m_center,
+        static_cast<i32>(s->m_apiDesc.dwWidth) / 2,
+        static_cast<i32>(s->m_apiDesc.dwHeight) / 2
+    );
     m_cells = new CFaderRadialCell[s->m_apiDesc.dwHeight * s->m_apiDesc.dwWidth];
 
-    i32 cx = m_centerX;
-    i32 cy = m_centerY;
-    m_maxRadius = static_cast<i32>((sqrt(static_cast<double>((cx * cx + cy * cy))) * g_faderScale));
+    i32 cx = m_center.m_x;
+    i32 cy = m_center.m_y;
+    m_maxRadius = static_cast<i32>(
+        (sqrt(static_cast<double>(SQUARED_DISTANCE_COMPONENTS(cx, cy))) * g_faderScale)
+    );
 
     for (i32 y = 0; y < static_cast<i32>(m_srcSurface->m_apiDesc.dwHeight); y++) {
         for (i32 x = 0; x < static_cast<i32>(m_srcSurface->m_apiDesc.dwWidth); x++) {
-            i32 dx = x - m_centerX;
-            i32 dy = y - m_centerY;
+            i32 dx = x - m_center.m_x;
+            i32 dy = y - m_center.m_y;
             CFaderRadialCell cell;
             cell.m_radius = static_cast<float>(
                 (static_cast<double>(m_maxRadius)
-                 - sqrt(static_cast<double>((dx * dx + dy * dy))) * g_faderScale - g_faderBiasR)
+                 - sqrt(static_cast<double>((SQUARED_DISTANCE_COMPONENTS(dx, dy)))) * g_faderScale
+                 - g_faderBiasR)
             );
             float fade = cell.m_radius / m_fadeDivisor - g_faderBiasFade;
-            cell.m_vx = static_cast<float>(dx) * fade;
-            cell.m_vy = static_cast<float>(m_centerY - y) * fade;
+            SET_VECTOR2_COMPONENTS(
+                cell.m_velocity,
+                static_cast<float>(dx) * fade,
+                static_cast<float>(m_center.m_y - y) * fade
+            );
             cell.m_pixel = m_srcSurface->GetPixel(x, y);
             m_cells[y * m_srcSurface->m_apiDesc.dwWidth + x] = cell;
         }
@@ -277,11 +289,13 @@ void CFaderRadial::RenderFrame(i32 frame) {
         float d = m_cells[i].m_radius - static_cast<float>(static_cast<u32>(frame));
         if (d > g_faderOne) {
             float sf = d / m_fadeDivisor - g_faderBiasFade;
-            i32 px = m_centerX + static_cast<i32>((m_cells[i].m_vx / sf));
-            i32 py = m_centerY - static_cast<i32>((m_cells[i].m_vy / sf));
-            if (px > 0 && px < static_cast<i32>(m_dstSurface->m_apiDesc.dwWidth) && py > 0
-                && py < static_cast<i32>(m_dstSurface->m_apiDesc.dwHeight)) {
-                base[py * m_dstSurface->m_apiDesc.lPitch + px] = m_cells[i].m_pixel;
+            Coord pixel(
+                m_center.m_x + static_cast<i32>((m_cells[i].m_velocity.m_x / sf)),
+                m_center.m_y - static_cast<i32>((m_cells[i].m_velocity.m_y / sf))
+            );
+            if (pixel.m_x > 0 && pixel.m_x < m_dstSurface->m_apiDesc.dwWidth && pixel.m_y > 0
+                && pixel.m_y < m_dstSurface->m_apiDesc.dwHeight) {
+                base[pixel.m_y * m_dstSurface->m_apiDesc.lPitch + pixel.m_x] = m_cells[i].m_pixel;
             }
         }
     }
@@ -476,8 +490,7 @@ i32 CFaderLight::ApplyInit(CFaderConfig* desc) {
         m_restoreSurface = d->m_sourceSurface;
     }
     m_clearMode = d->m_clearMode;
-    m_centerX = d->m_centerX;
-    m_centerY = d->m_centerY;
+    m_center = d->m_center;
     CDDPalette* pal = d->m_palette;
     m_palette = pal;
     i32 cnt = d->m_spanCount;
@@ -491,17 +504,11 @@ i32 CFaderLight::ApplyInit(CFaderConfig* desc) {
     if (m_restoreSurface == NULL && m_clearMode == false) {
         return 0;
     }
-    RECT rect;
     m_width = m_targetSurface->m_apiDesc.dwWidth;
-    rect.right = m_width;
     m_height = m_targetSurface->m_apiDesc.dwHeight;
-    rect.bottom = m_height;
-    rect.left = 0;
-    rect.top = 0;
-    POINT pt;
-    pt.x = m_centerX;
-    pt.y = m_centerY;
-    if (PtInRect(&rect, pt) == false) {
+    CRect rect(0, 0, m_width, m_height);
+    CPoint pt(m_center.m_x, m_center.m_y);
+    if (rect.PtInRect(pt) == false) {
         return 0;
     }
     if (m_clearMode != false) {
@@ -517,8 +524,8 @@ i32 CFaderLight::ApplyInit(CFaderConfig* desc) {
         i32 i = 0;
         if (m_height > 0) {
             do {
-                m_spanStarts[i] = m_centerX;
-                m_spanEnds[i] = m_centerX;
+                m_spanStarts[i] = m_center.m_x;
+                m_spanEnds[i] = m_center.m_x;
                 i++;
             } while (i < m_height);
         }
@@ -537,7 +544,6 @@ i32 CFaderLight::ApplyInit(CFaderConfig* desc) {
 RVA(0x00180630, 0x1)
 void CFaderLight::ReleaseBuffers() {}
 
-// @early-stop
 RVA(0x00180640, 0x96c)
 void CFaderLight::RenderFrame(i32 frame) {
     i32 delta = frame - m_previousFrame;
@@ -558,31 +564,31 @@ void CFaderLight::RenderFrame(i32 frame) {
             ovlBits = static_cast<u8*>(m_overlay->Lock(NULL));
         }
         i32 r = m_frameCount - frame;
-        i32 rr = r * r;
-        i32 v = m_centerY - r - delta;
+        i32 rr = SQR(r);
+        i32 v = m_center.m_y - r - delta;
         i32 row = (v < 0) ? 0 : v;
         i32* span = &m_spanStarts[row];
         for (;;) {
-            i32 stop = delta + r + m_centerY;
+            i32 stop = delta + r + m_center.m_y;
             if (stop >= m_height) {
                 stop = m_height;
             }
             if (row >= stop) {
                 break;
             }
-            if (row >= m_centerY - r + 1 && row <= r + m_centerY - 1) {
+            if (row >= m_center.m_y - r + 1 && row <= r + m_center.m_y - 1) {
                 i32 right;
                 i32 left;
                 ComputeSpan(row, rr, 1, right, left);
-                i32 oldStart = span[0];
-                u8* clrL = m_targetBits + m_targetSurface->m_apiDesc.lPitch * row + oldStart * bpp;
-                i32 n1 = (left - oldStart) * bpp;
+                CRange<i32> oldSpan(span[0], span[FADER_LIGHT_SPAN_CAPACITY]);
+                u8* clrL =
+                    m_targetBits + m_targetSurface->m_apiDesc.lPitch * row + oldSpan.GetMin() * bpp;
+                i32 n1 = (left - oldSpan.GetMin()) * bpp;
                 if (n1 > 0) {
                     memset(clrL, 0, n1);
                 }
-                i32 oldEnd = span[FADER_LIGHT_SPAN_CAPACITY];
                 u8* clrR = m_targetBits + m_targetSurface->m_apiDesc.lPitch * row + right * bpp;
-                i32 n2 = (oldEnd - right) * bpp;
+                i32 n2 = (oldSpan.GetMax() - right) * bpp;
                 if (n2 > 0) {
                     memset(clrR, 0, n2);
                 }
@@ -604,37 +610,40 @@ void CFaderLight::RenderFrame(i32 frame) {
             m_overlay->m_ddSurface->Unlock(NULL);
         }
     } else {
-        i32 fr2 = frame * frame;
-        i32 v = m_centerY - frame - delta - m_spanCount;
+        i32 fr2 = SQR(frame);
+        i32 v = m_center.m_y - frame - delta - m_spanCount;
         i32 row = (v < 0) ? 0 : v;
         i32* span = &m_spanEnds[row];
         for (;;) {
-            i32 stop = delta + frame + m_spanCount + m_centerY;
+            i32 stop = delta + frame + m_spanCount + m_center.m_y;
             if (stop >= m_height) {
                 stop = m_height;
             }
             if (row >= stop) {
                 break;
             }
-            if (row > m_centerY - frame && row < frame + m_centerY) {
+            if (row > m_center.m_y - frame && row < frame + m_center.m_y) {
                 i32 right;
                 i32 left;
                 ComputeSpan(row, fr2, -1, right, left);
-                i32 n1 = (span[-FADER_LIGHT_SPAN_CAPACITY] - left) * bpp;
+                CRange<i32> oldSpan(span[-FADER_LIGHT_SPAN_CAPACITY], span[0]);
+                i32 n1 = (oldSpan.GetMin() - left) * bpp;
                 u8* src = m_restoreBits + m_restoreSurface->m_apiDesc.lPitch * row + left * bpp;
                 u8* dst = m_targetBits + m_targetSurface->m_apiDesc.lPitch * row + left * bpp;
                 CopyBytes(dst, src, n1);
-                i32 oldEnd = span[0];
-                i32 n2 = (right - oldEnd) * bpp;
-                src = m_restoreBits + m_restoreSurface->m_apiDesc.lPitch * row + oldEnd * bpp;
-                dst = m_targetBits + m_targetSurface->m_apiDesc.lPitch * row + oldEnd * bpp;
+                i32 n2 = (right - oldSpan.GetMax()) * bpp;
+                src = m_restoreBits + m_restoreSurface->m_apiDesc.lPitch * row
+                      + oldSpan.GetMax() * bpp;
+                dst =
+                    m_targetBits + m_targetSurface->m_apiDesc.lPitch * row + oldSpan.GetMax() * bpp;
                 CopyBytes(dst, src, n2);
                 span[-FADER_LIGHT_SPAN_CAPACITY] = left;
                 span[0] = right;
             }
-            if (row > m_centerY - frame - m_spanCount && row < frame + m_spanCount + m_centerY) {
+            if (row > m_center.m_y - frame - m_spanCount
+                && row < frame + m_spanCount + m_center.m_y) {
                 i32 rad = frame + m_spanCount - 1;
-                Render(row, rad * rad, rad, lut, m_targetBits, m_restoreBits);
+                Render(row, SQR(rad), rad, lut, m_targetBits, m_restoreBits);
             }
             row++;
             span++;
@@ -650,18 +659,19 @@ void CFaderLight::RenderFrame(i32 frame) {
 }
 
 // @early-stop
-
 RVA(0x001814f0, 0x16d)
 i32 CFaderLight::GetFrameCount() {
-    double pLeft = pow(static_cast<double>(m_centerX), g_faderPowK);
-    double pTop = pow(static_cast<double>(m_centerY), g_faderPowK);
+    double pLeft = pow(static_cast<double>(m_center.m_x), g_faderPowK);
+    double pTop = pow(static_cast<double>(m_center.m_y), g_faderPowK);
     double dTopLeft = sqrt(pLeft + pTop);
-    double pBottom =
-        pow(static_cast<double>(static_cast<i32>(m_targetSurface->m_apiDesc.dwHeight) - m_centerY),
-            g_faderPowK);
-    double pRight =
-        pow(static_cast<double>(static_cast<i32>(m_targetSurface->m_apiDesc.dwWidth) - m_centerX),
-            g_faderPowK);
+    double pBottom = pow(
+        static_cast<double>(static_cast<i32>(m_targetSurface->m_apiDesc.dwHeight) - m_center.m_y),
+        g_faderPowK
+    );
+    double pRight = pow(
+        static_cast<double>(static_cast<i32>(m_targetSurface->m_apiDesc.dwWidth) - m_center.m_x),
+        g_faderPowK
+    );
     double dBottomRight = sqrt(pRight + pBottom);
     double dTopRight = sqrt(pRight + pTop);
     double dBottomLeft = sqrt(pLeft + pBottom);
@@ -759,28 +769,14 @@ i32 CFaderShape::ApplyInit(CFaderConfig* desc) {
         return 0;
     }
 
-    m_targetHeight = m_targetSurface->m_apiDesc.dwHeight;
-    m_targetWidth = m_targetSurface->m_apiDesc.dwWidth;
-    m_sourceHeight = m_sourceSurface->m_apiDesc.dwHeight;
-    m_sourceWidth = m_sourceSurface->m_apiDesc.dwWidth;
-    m_warpHeight = m_warpSourceSurface->m_apiDesc.dwHeight;
-    m_warpWidth = m_warpSourceSurface->m_apiDesc.dwWidth;
-    if (m_targetHeight != m_sourceHeight) {
-        return 0;
-    }
-    if (m_targetWidth != m_sourceWidth) {
-        return 0;
-    }
-    if (m_targetHeight != m_warpHeight) {
-        return 0;
-    }
-    if (m_targetWidth != m_warpWidth) {
-        return 0;
-    }
-    if (m_warpHeight != m_sourceHeight) {
-        return 0;
-    }
-    if (m_warpWidth != m_sourceWidth) {
+    m_targetSize = CSize(m_targetSurface->m_apiDesc.dwWidth, m_targetSurface->m_apiDesc.dwHeight);
+    m_sourceSize = CSize(m_sourceSurface->m_apiDesc.dwWidth, m_sourceSurface->m_apiDesc.dwHeight);
+    m_warpSize =
+        CSize(m_warpSourceSurface->m_apiDesc.dwWidth, m_warpSourceSurface->m_apiDesc.dwHeight);
+    CSize targetSize(m_targetSize);
+    CSize sourceSize(m_sourceSize);
+    CSize warpSize(m_warpSize);
+    if (targetSize != sourceSize || targetSize != warpSize || warpSize != sourceSize) {
         return 0;
     }
 
@@ -792,7 +788,7 @@ i32 CFaderShape::ApplyInit(CFaderConfig* desc) {
     m_halfWidth = pInit->m_halfWidth;
 
     if (m_mode == FADER_SWEEP_FORWARD || m_mode == FADER_SWEEP_REVERSE) {
-        if (m_targetWidth < static_cast<i32>((static_cast<double>(m_halfWidth) * 3.14159))) {
+        if (m_targetSize.cx < static_cast<i32>((static_cast<double>(m_halfWidth) * 3.14159))) {
             return 0;
         }
     }
@@ -843,18 +839,18 @@ i32 CFaderShape::ApplyInit(CFaderConfig* desc) {
         }
     }
 
-    m_targetRowOffsets = new i32[m_targetHeight];
-    m_sourceRowOffsets = new i32[m_sourceHeight];
-    m_warpRowOffsets = new i32[m_warpHeight];
-    for (i = 0; i < m_targetHeight; i++) {
+    m_targetRowOffsets = new i32[m_targetSize.cy];
+    m_sourceRowOffsets = new i32[m_sourceSize.cy];
+    m_warpRowOffsets = new i32[m_warpSize.cy];
+    for (i = 0; i < m_targetSize.cy; i++) {
         m_targetRowOffsets[i] = m_targetSurface->m_apiDesc.lPitch * i;
         m_sourceRowOffsets[i] = m_sourceSurface->m_apiDesc.lPitch * i;
         m_warpRowOffsets[i] = m_warpSourceSurface->m_apiDesc.lPitch * i;
     }
 
-    mx = m_targetWidth;
-    if (m_targetHeight > m_targetWidth) {
-        mx = m_targetHeight;
+    mx = m_targetSize.cx;
+    if (m_targetSize.cy > m_targetSize.cx) {
+        mx = m_targetSize.cy;
     }
     m_lineBuf = new u8[m_targetSurface->m_bytesPerPixel * mx];
     return 1;
@@ -875,14 +871,14 @@ void CFaderShape::RenderFrame(i32 frame) {
     i32 arc = static_cast<i32>(static_cast<double>(m_halfWidth) * 3.14159);
     u32 seam = 0;
     if (m_mode == FADER_SPLIT_FROM_CENTER && m_stripCopy != false) {
-        seam = m_targetWidth / 2;
+        seam = m_targetSize.cx / 2;
     }
     if (m_stripCopy == false && frame == 0) {
         i32 targetPitch = m_targetSurface->m_apiDesc.lPitch;
         i32 sourcePitch = m_sourceSurface->m_apiDesc.lPitch;
         i32 n = (targetPitch < sourcePitch) ? targetPitch : sourcePitch;
         i32 row = 0;
-        while (row < m_targetHeight) {
+        while (row < m_targetSize.cy) {
             u8* src = m_straightBase + m_sourceRowOffsets[row];
             u8* dst = m_dstBase + m_targetRowOffsets[row];
             CopyBytes(dst, src, n);
@@ -890,19 +886,19 @@ void CFaderShape::RenderFrame(i32 frame) {
         }
     }
     if (m_stripCopy != false) {
-        if (seam + frame <= static_cast<u32>(m_targetWidth - arc - m_halfWidth)) {
+        if (seam + frame <= static_cast<u32>(m_targetSize.cx - arc - m_halfWidth)) {
             switch (m_mode) {
                 case FADER_SWEEP_FORWARD:
                     RenderTile(frame, frame - m_previousFrame);
                     break;
                 case FADER_SWEEP_REVERSE:
-                    RenderTile(m_targetWidth - frame - stride, frame - m_previousFrame);
+                    RenderTile(m_targetSize.cx - frame - stride, frame - m_previousFrame);
                     break;
                 case FADER_SPLIT_FROM_CENTER:
                     m_mode = FADER_SWEEP_FORWARD;
-                    RenderTile(m_targetWidth / 2 + frame, frame - m_previousFrame);
+                    RenderTile(m_targetSize.cx / 2 + frame, frame - m_previousFrame);
                     m_mode = FADER_SWEEP_REVERSE;
-                    RenderTile(m_targetWidth / 2 - frame - stride, frame - m_previousFrame);
+                    RenderTile(m_targetSize.cx / 2 - frame - stride, frame - m_previousFrame);
                     m_mode = FADER_SPLIT_FROM_CENTER;
                     break;
             }
@@ -912,14 +908,14 @@ void CFaderShape::RenderFrame(i32 frame) {
                     RenderWarpTile(frame, frame - m_previousFrame);
                     break;
                 case FADER_SWEEP_REVERSE:
-                    RenderWarpTile(m_targetWidth - frame - stride, frame - m_previousFrame);
+                    RenderWarpTile(m_targetSize.cx - frame - stride, frame - m_previousFrame);
                     break;
                 case FADER_SPLIT_FROM_CENTER:
                     m_mode = FADER_SWEEP_FORWARD;
-                    RenderWarpTile(m_targetWidth / 2 + frame, frame - m_previousFrame);
+                    RenderWarpTile(m_targetSize.cx / 2 + frame, frame - m_previousFrame);
                     m_mode = FADER_SWEEP_REVERSE;
                     RenderWarpTile(
-                        m_targetWidth - m_targetWidth / 2 - frame - stride,
+                        m_targetSize.cx - m_targetSize.cx / 2 - frame - stride,
                         frame - m_previousFrame
                     );
                     m_mode = FADER_SPLIT_FROM_CENTER;
@@ -934,13 +930,13 @@ void CFaderShape::RenderFrame(i32 frame) {
                     RenderTile(frame, frame - m_previousFrame);
                     break;
                 case FADER_SWEEP_REVERSE:
-                    RenderTile(m_targetWidth - frame - stride, frame - m_previousFrame);
+                    RenderTile(m_targetSize.cx - frame - stride, frame - m_previousFrame);
                     break;
                 case FADER_SPLIT_FROM_CENTER:
                     m_mode = FADER_SWEEP_FORWARD;
                     RenderTile(frame, frame - m_previousFrame);
                     m_mode = FADER_SWEEP_REVERSE;
-                    RenderTile(m_targetWidth - frame - stride, frame - m_previousFrame);
+                    RenderTile(m_targetSize.cx - frame - stride, frame - m_previousFrame);
                     m_mode = FADER_SPLIT_FROM_CENTER;
                     break;
             }
@@ -950,13 +946,13 @@ void CFaderShape::RenderFrame(i32 frame) {
                     RenderWarpTile(frame, frame - m_previousFrame);
                     break;
                 case FADER_SWEEP_REVERSE:
-                    RenderWarpTile(m_targetWidth - frame - stride, frame - m_previousFrame);
+                    RenderWarpTile(m_targetSize.cx - frame - stride, frame - m_previousFrame);
                     break;
                 case FADER_SPLIT_FROM_CENTER:
                     m_mode = FADER_SWEEP_FORWARD;
                     RenderWarpTile(frame, frame - m_previousFrame);
                     m_mode = FADER_SWEEP_REVERSE;
-                    RenderWarpTile(m_targetWidth - frame - stride, frame - m_previousFrame);
+                    RenderWarpTile(m_targetSize.cx - frame - stride, frame - m_previousFrame);
                     m_mode = FADER_SPLIT_FROM_CENTER;
                     break;
             }
@@ -985,7 +981,7 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
     if ((m_mode == FADER_SWEEP_FORWARD && m_stripCopy != false)
         || (m_mode == FADER_SWEEP_REVERSE && m_stripCopy == false)) {
         arcSpan = arc - m_halfWidth;
-        i32 tail = m_targetWidth - col - stride;
+        i32 tail = m_targetSize.cx - col - stride;
         colBase = stride - static_cast<i32>(static_cast<double>(stride) / arcSpan * tail);
     } else {
         colBase = col;
@@ -1001,7 +997,7 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
     if ((m_mode == FADER_SWEEP_FORWARD && m_stripCopy != false)
         || (m_mode == FADER_SWEEP_REVERSE && m_stripCopy == false)) {
         i32 row = 0;
-        if (m_targetHeight > 0) {
+        if (m_targetSize.cy > 0) {
             base = bpp * col;
             do {
                 u8* dstLine = m_targetRowOffsets[row] + base + m_dstBase;
@@ -1037,12 +1033,12 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                     }
                 }
                 row++;
-            } while (row < m_targetHeight);
+            } while (row < m_targetSize.cy);
         }
     } else if ((m_mode == FADER_SWEEP_FORWARD && m_stripCopy == false)
                || (m_mode == FADER_SWEEP_REVERSE && m_stripCopy != false)) {
         i32 row = 0;
-        if (m_targetHeight > 0) {
+        if (m_targetSize.cy > 0) {
             base = bpp * col;
             do {
                 u8* dstLine = m_targetRowOffsets[row] + base + m_dstBase;
@@ -1078,7 +1074,7 @@ void CFaderShape::RenderWarpTile(i32 col, i32 stripWidth) {
                     }
                 }
                 row++;
-            } while (row < m_targetHeight);
+            } while (row < m_targetSize.cy);
         }
     }
 }
@@ -1123,7 +1119,7 @@ void CFaderShape::RenderTile(i32 col, i32 stripWidth) {
     u8* targetColumnBase = m_dstBase + (col - x0) * bpp;
     u8* warpColumnBase = m_gatherBase + (col - x0) * bpp;
 
-    for (i32 j = 0; j < m_targetHeight; j++) {
+    for (i32 j = 0; j < m_targetSize.cy; j++) {
         u8* targetRow = targetColumnBase + m_targetRowOffsets[j];
         u8* warpRow = warpColumnBase + m_warpRowOffsets[j];
 
@@ -1172,10 +1168,10 @@ RVA(0x00182900, 0x35)
 i32 CFaderShape::GetFrameCount() {
     GZ_ENUM_STORAGE(FaderMode, u32) mode = m_mode;
     if (mode == FADER_SWEEP_FORWARD || mode == FADER_SWEEP_REVERSE) {
-        return m_targetWidth - m_halfWidth * 2;
+        return m_targetSize.cx - m_halfWidth * 2;
     }
     if (mode == FADER_SPLIT_FROM_CENTER) {
-        return (m_targetWidth - m_halfWidth * 4) / 2;
+        return (m_targetSize.cx - m_halfWidth * 4) / 2;
     }
     return 0;
 }

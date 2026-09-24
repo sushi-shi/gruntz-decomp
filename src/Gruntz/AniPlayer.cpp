@@ -70,7 +70,12 @@ i32 CAniPlayer::RenderCel() {
     SetFrame(cel);
     if (cel != NULL) {
         CDDrawSurfacePair* surfaceCtx = g_gameReg->m_world->m_drawTarget->m_backPair;
-        cel->RenderFrame(surfaceCtx, cel->m_anchorX + m_rect.left, cel->m_anchorY + m_rect.top, 0);
+        cel->RenderFrame(
+            surfaceCtx,
+            cel->m_anchor.x + m_rect.left,
+            cel->m_anchor.y + m_rect.top,
+            0
+        );
     }
     return 1;
 }

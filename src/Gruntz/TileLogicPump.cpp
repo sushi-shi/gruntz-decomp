@@ -213,11 +213,10 @@ CTileTrigger::CTileTrigger(CGameObject* obj)
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION));
     Hide();
 
-    i32 tileX = m_object->m_screenX >> TILE_SHIFT_PX;
-    i32 tileY = m_object->m_screenY >> TILE_SHIFT_PX;
-    m_object->m_speedX = tileX;
-    m_object->m_speedY = tileY;
-    m_object->m_id = (tileX << 8) + tileY;
+    Coord tile;
+    GetScreenTile(&tile);
+    m_object->m_speed = tile;
+    m_object->m_id = (tile.m_x << 8) + tile.m_y;
 }
 
 RVA(0x0010e4a0, 0x102)
@@ -240,11 +239,10 @@ CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), C
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION));
     Hide();
 
-    i32 tileX = m_object->m_screenX >> TILE_SHIFT_PX;
-    i32 tileY = m_object->m_screenY >> TILE_SHIFT_PX;
-    m_object->m_speedX = tileX;
-    m_object->m_speedY = tileY;
-    m_object->m_id = (tileX << 8) + tileY;
+    Coord tile;
+    GetScreenTile(&tile);
+    m_object->m_speed = tile;
+    m_object->m_id = (tile.m_x << 8) + tile.m_y;
 }
 
 RVA(0x0010ea80, 0x102)
@@ -278,8 +276,8 @@ CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj)
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION));
 
     CWwdSpriteObject* o = m_object;
-    i32 zk = o->m_frameImage->m_anchorY + o->m_screenY + 0x186a0;
-    SET_SORT_KEY_IF_CHANGED(o, zk)
+    i32 zk = o->m_frameImage->m_anchor.y + o->m_screenPosition.m_y + 0x186a0;
+    SET_SORT_KEY_IF_CHANGED(o, zk);
     memset(m_state, 0, sizeof(m_state));
     if (m_object->m_extent.left == COORD_UNSET) {
         m_object->m_extent.left = 0;
@@ -402,12 +400,11 @@ i32 CCheckpointTrigger::Act() {
         return 0;
     }
 
-    i32 gy = pad->m_tileY;
-    i32 gx = pad->m_tileX;
+    Coord tile = pad->m_tile;
     CMapMgr* grid = g_gameReg->m_tileGrid;
     i32 owner;
-    if (static_cast<u32>(gx) < grid->m_width && static_cast<u32>(gy) < grid->m_height) {
-        owner = grid->m_rows[gy][gx].m_occupantId;
+    if (static_cast<u32>(tile.m_x) < grid->m_width && static_cast<u32>(tile.m_y) < grid->m_height) {
+        owner = grid->m_rows[tile.m_y][tile.m_x].m_occupantId;
     } else {
         owner = -1;
     }
@@ -422,19 +419,9 @@ i32 CCheckpointTrigger::Act() {
         return 0;
     }
 
-    i32 sy = g->m_object->m_screenY;
-    i32 sx = g->m_object->m_screenX;
+    Coord position = g->m_object->ScreenPos();
     RECT* view = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
-    if (sx >= view->right) {
-        return 0;
-    }
-    if (sx < view->left) {
-        return 0;
-    }
-    if (sy >= view->bottom) {
-        return 0;
-    }
-    if (sy < view->top) {
+    if (!::PtInRect(view, position.m_x, position.m_y)) {
         return 0;
     }
     g_gameReg->m_voiceManager->PlayVoice(g, 0x334, -1, 0, -1, -1);
@@ -481,7 +468,7 @@ CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj)
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_SMALL_ACTIVE_REGION));
 
     CGameObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, 0)
+    SET_SORT_KEY_IF_CHANGED(o, 0);
 }
 
 RVA(0x0010fd10, 0x102)

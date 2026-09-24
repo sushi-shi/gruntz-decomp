@@ -7,6 +7,8 @@
 
 #include <DDrawMgr/DDSurface.h>
 #include <Enums.h>
+#include <Gruntz/CoordNode.h>
+#include <Gruntz/DoubleVector.h>
 #include <Gruntz/Fader.h>
 #include <Gruntz/FaderConfig.h>
 #include <Ints.h>
@@ -18,8 +20,7 @@ class CDDSurface;
 struct CDDPalette;
 
 struct CFaderRadialCell {
-    float m_vx;
-    float m_vy;
+    FloatVector2 m_velocity;
     float m_radius;
     u8 m_pixel;
 };
@@ -113,8 +114,7 @@ public:
     CDDSurface* m_overlay;
     CDDPalette* m_palette;
     b32 m_clearMode;
-    i32 m_centerX;
-    i32 m_centerY;
+    Coord m_center;
 
     u8* m_targetBits;
     u8* m_restoreBits;
@@ -144,8 +144,7 @@ public:
     float m_fadeDivisor;
 
     CFaderRadialCell* m_cells;
-    i32 m_centerX;
-    i32 m_centerY;
+    Coord m_center;
 };
 
 class CFaderShape : public CFader {
@@ -170,12 +169,12 @@ public:
     b32 m_stripCopy;
     i32 m_halfWidth;
     b32 m_useLut;
-    i32 m_targetWidth;
-    i32 m_targetHeight;
-    i32 m_sourceWidth;
-    i32 m_sourceHeight;
-    i32 m_warpWidth;
-    i32 m_warpHeight;
+    SIZE
+    m_targetSize;
+    SIZE
+    m_sourceSize;
+    SIZE
+    m_warpSize;
     char m_pad78[0x478 - 0x78];
     i32* m_warpTable;
     u8* m_dstBase;

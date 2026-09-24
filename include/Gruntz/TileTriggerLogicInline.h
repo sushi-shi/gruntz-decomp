@@ -50,8 +50,8 @@ __inline i32 CTileTriggerLogic::Setup(
     if (m_initGate != false) {
         return 0;
     }
-    m_tileY = tileY;
-    m_tileX = tileX;
+    m_tile.m_y = tileY;
+    m_tile.m_x = tileX;
     m_owner = owner;
     m_typeTag = typeTag;
     m_cellKey = cellKey;

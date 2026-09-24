@@ -55,34 +55,31 @@ i32 CGrunt::StepToyerBehavior() {
     }
     CGameObject* a = p->m_object;
     if (GRUNT_OBJECT_AT_SAVED_SCREEN_POS(a, p)
-        && VehicleContactContains(a->m_screenX, a->m_screenY)) {
+        && VehicleContactContains(a->m_screenPosition.m_x, a->m_screenPosition.m_y)) {
         CGameObject* b = p->m_object;
-        g_gameReg->m_triggerMgr->UseToyAt(m_playerIndex, m_unitIndex, b->m_screenX, b->m_screenY);
+        g_gameReg->m_triggerMgr->UseToyAt(
+            m_playerIndex,
+            m_unitIndex,
+            b->m_screenPosition.m_x,
+            b->m_screenPosition.m_y
+        );
         return 1;
     }
     if (static_cast<u32>(m_dwell) <= DWELL_SEEK_PATH_MS) {
         return 1;
     }
     if (GruntInRadius(p->m_playerIndex, p->m_unitIndex)) {
-        CGameObject* b = p->m_object;
-        TileSwitch(
-            b->m_screenX >> TILE_SHIFT_PX,
-            b->m_screenY >> TILE_SHIFT_PX,
-            0,
-            m_arrivalFlags,
-            1,
-            0
-        );
+        Coord targetTile;
+        p->GetScreenTile(&targetTile);
+        TileSwitch(targetTile.m_x, targetTile.m_y, 0, m_arrivalFlags, 1, 0);
         m_dwell = 0;
         if (m_blockedVoicePending == false) {
             return 1;
         }
-        CWwdSpriteObject* c = m_object;
         CGruntzMgr* g = g_gameReg;
-        i32 y = c->m_screenY;
-        i32 x = c->m_screenX;
+        Coord voicePosition = m_object->ScreenPos();
         CDDrawWorkerHost* r = g->m_world->m_level->m_mainPlane;
-        if (::PtInRect(&r->m_planeViewRect, x, y)) {
+        if (::PtInRect(&r->m_planeViewRect, voicePosition.m_x, voicePosition.m_y)) {
             g->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
         }
     }

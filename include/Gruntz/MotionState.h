@@ -59,10 +59,39 @@ public:
     DoubleVector3 m_maxVelocity;
 };
 
+#define INITIALIZE_MOTION_BOUNDS(state)                                                            \
+    (state).m_position.m_x = 0.0;                                                                  \
+    (state).m_position.m_y = 0.0;                                                                  \
+    (state).m_position.m_z = 0.0;                                                                  \
+    (state).m_velocity.m_x = 0.0;                                                                  \
+    (state).m_velocity.m_y = 0.0;                                                                  \
+    (state).m_velocity.m_z = 0.0;                                                                  \
+    (state).m_acceleration.m_x = 0.0;                                                              \
+    (state).m_acceleration.m_y = 0.0;                                                              \
+    (state).m_acceleration.m_z = 0.0;                                                              \
+    (state).m_time = 0.0;                                                                          \
+    (state).m_deltaTime = 0.0;                                                                     \
+    (state).m_reservedc0.m_x = 0.0;                                                                \
+    (state).m_reservedc0.m_y = 0.0;                                                                \
+    (state).m_reservedc0.m_z = 0.0;                                                                \
+    (state).m_stepDisabled = false;                                                                \
+    SET_VECTOR3_BOUNDS(                                                                            \
+        (state).m_minBounds,                                                                       \
+        (state).m_maxBounds,                                                                       \
+        g_movingLogicMin,                                                                          \
+        g_movingLogicMax                                                                           \
+    );                                                                                             \
+    (state).m_maxStep.m_x = g_movingLogicMax;                                                      \
+    (state).m_maxStep.m_y = g_movingLogicMax;                                                      \
+    (state).m_maxStep.m_z = g_movingLogicMax;                                                      \
+    (state).m_maxVelocity.m_x = g_movingLogicMax;                                                  \
+    (state).m_maxVelocity.m_y = g_movingLogicMax;                                                  \
+    (state).m_maxVelocity.m_z = g_movingLogicMax;
+
 inline CMotionState::~CMotionState() {}
 
 inline CMotionState::CMotionState(EInlineBase) {
-    InitBounds();
+    INITIALIZE_MOTION_BOUNDS(*this);
 }
 
 inline void CMotionState::InitBounds() {
@@ -73,12 +102,7 @@ inline void CMotionState::InitBounds() {
     m_deltaTime = 0.0;
     m_reservedc0.Init();
     m_stepDisabled = false;
-    m_minBounds.m_x = g_movingLogicMin;
-    m_maxBounds.m_x = g_movingLogicMax;
-    m_minBounds.m_y = g_movingLogicMin;
-    m_maxBounds.m_y = g_movingLogicMax;
-    m_minBounds.m_z = g_movingLogicMin;
-    m_maxBounds.m_z = g_movingLogicMax;
+    SET_VECTOR3_BOUNDS(m_minBounds, m_maxBounds, g_movingLogicMin, g_movingLogicMax);
     m_maxStep.Init(g_movingLogicMax, g_movingLogicMax, g_movingLogicMax);
     m_maxVelocity.Init(g_movingLogicMax, g_movingLogicMax, g_movingLogicMax);
 }

@@ -72,5 +72,6 @@ The constructor still has source fingerprint `8d7c16b3c71c`; the shared guard
 snapshot again moves it from 56.1653% to 97.6942%, removes the extra branch,
 and preserves all eleven calls and 25 ordered referents. The isolated wormhole
 object has no other changed function and no added or removed function emission.
-This is evidence for keeping the used local in its shared owner; it is not a
-reason to import the PR's separate unvalidated math-type rewrite.
+This is evidence for keeping the used local in its shared owner. The separate
+math integration has its own caller and macro controls in
+[math-helpers-need-macro-evaluation-boundaries.md](math-helpers-need-macro-evaluation-boundaries.md).

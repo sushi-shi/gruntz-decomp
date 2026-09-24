@@ -5,6 +5,7 @@
 
 #include <Mfc.h>
 
+#include <Enums.h>
 #include <Ints.h>
 #include <Wap32/WapObj.h>
 
@@ -13,6 +14,11 @@
 class CDDrawSurfaceMgr;
 
 struct CDDPalette; // The class key is ABI-significant in MSVC mangling.
+
+GZ_ENUM_FLAGS_BEGIN(DDrawPaletteResourceFlags, i32)
+    PALETTE_RESOURCE_CAPTURE_SYSTEM_PALETTE = 0x1
+GZ_ENUM_FLAGS_END(DDrawPaletteResourceFlags, i32)
+GZ_ENUM_FLAGS_OPS(DDrawPaletteResourceFlags)
 
 struct CDDrawPaletteResource : public CWapObj {
     CDDPalette* m_palette;

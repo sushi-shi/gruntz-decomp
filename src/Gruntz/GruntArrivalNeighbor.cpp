@@ -74,13 +74,14 @@ i32 CGrunt::StepPostGuardBehavior() {
     if (m_stamina < STAMINA_FULL) {
         return 1;
     }
-    if (RectContains(occ->m_object->m_screenX, occ->m_object->m_screenY) == 0) {
+    if (RectContains(occ->m_object->m_screenPosition.m_x, occ->m_object->m_screenPosition.m_y)
+        == 0) {
         return 1;
     }
-    if (occ->GRUNT_SCREEN_X_NOT_AT_SAVED_POS(m_object, occ)) {
+    if (GRUNT_SCREEN_X_NOT_AT_SAVED_POS(occ->m_object, occ)) {
         return 1;
     }
-    if (occ->GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(m_object, occ)) {
+    if (GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(occ->m_object, occ)) {
         return 1;
     }
     COMMIT_GRUNT_NEIGHBOR(occ);

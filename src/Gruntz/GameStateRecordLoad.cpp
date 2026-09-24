@@ -136,8 +136,8 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     ar->Read(&m_moveTile, sizeof(m_moveTile));
     ar->Read(&m_arrivalPhase, sizeof(m_arrivalPhase));
     ar->Read(&m_timePerTile, sizeof(m_timePerTile));
-    ar->Read(&m_movePosX, sizeof(m_movePosX));
-    ar->Read(&m_movePosY, sizeof(m_movePosY));
+    ar->Read(&m_movePosition.m_x, sizeof(m_movePosition.m_x));
+    ar->Read(&m_movePosition.m_y, sizeof(m_movePosition.m_y));
     ar->Read(&m_reserved8d0, sizeof(m_reserved8d0));
     ar->Read(&m_coordToggle, sizeof(m_coordToggle));
     ar->Read(&m_wingzEnabled, sizeof(m_wingzEnabled));
@@ -238,7 +238,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     if (m_gruntKind == GRUNT_GHOST) {
         CWwdSpriteObject* cb2 = m_object;
         i32 v = g_buteMgr.GetInt("Powerupz", "GruntGhostTransparencyOn", 0xe0);
-        SET_DRAW_FILL_FRACTION(cb2, SHADE_PAL_ALPHA_16, v);
+        cb2->SetDrawFillFraction(SHADE_PAL_ALPHA_16, v);
     }
     return 1;
 }

@@ -1,8 +1,12 @@
 #include <rva.h>
 
+#include <MfcWin.h>
+
 #include <Bute/ButeMgr.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <Gruntz/CoordNode.h>
+#include <Gruntz/DoubleVector.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntDirStatics.h>
@@ -13,6 +17,7 @@
 #include <Gruntz/StatusBarDock.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Ints.h>
+#include <MakeRect.h>
 #include <Rez/FrameClock.h>
 #include <Wwd/WwdFile.h>
 
@@ -29,8 +34,8 @@ void Cmd_ResetScroll() {
 RVA(0x000ebd70, 0x366)
 void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
     CDDrawWorkerHost* v = pm->m_world->m_level->m_mainPlane;
-    i32 scrollX = v->m_scrollPixelX;
-    i32 scrollY = v->m_scrollPixelY;
+    i32 scrollX = v->m_scrollPixel.m_x;
+    i32 scrollY = v->m_scrollPixel.m_y;
 
     if (g_scrollClock > g_frameTime) {
         if (g_frameDelta >= g_scrollTimer) {
@@ -62,14 +67,14 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
         scrollX = cx - 1;
     }
     CDDrawWorkerHost* boundsPlane = pm->m_world->m_level->m_mainPlane;
-    if (scrollX > boundsPlane->m_planePixelWidth - cx) {
-        scrollX = boundsPlane->m_planePixelWidth - cx;
+    if (scrollX > boundsPlane->m_planePixelSize.cx - cx) {
+        scrollX = boundsPlane->m_planePixelSize.cx - cx;
     }
     if (scrollY < cy - 1) {
         scrollY = cy - 1;
     }
-    if (scrollY > boundsPlane->m_planePixelHeight - cy) {
-        scrollY = boundsPlane->m_planePixelHeight - cy;
+    if (scrollY > boundsPlane->m_planePixelSize.cy - cy) {
+        scrollY = boundsPlane->m_planePixelSize.cy - cy;
     }
 
     i32 deltaX = scrollX - g_lastScrollX;
@@ -82,11 +87,11 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
 
     CDDrawWorkerHost* gm = g_backView;
     if (gm != NULL) {
-        i32 nx = gm->m_scrollPixelX;
-        i32 ny = gm->m_scrollPixelY;
+        i32 nx = gm->m_scrollPixel.m_x;
+        i32 ny = gm->m_scrollPixel.m_y;
         if (deltaX != 0 || deltaY != 0) {
-            nx = static_cast<i32>((static_cast<float>(nx) - static_cast<float>(deltaX) * -0.05f));
-            ny = static_cast<i32>((static_cast<float>(ny) - static_cast<float>(deltaY) * -0.05f));
+            nx = VECTOR_SUBTRACT_SCALED_TO_I32(nx, deltaX, -0.05f);
+            ny = VECTOR_SUBTRACT_SCALED_TO_I32(ny, deltaY, -0.05f);
         }
         if (static_cast<i64>(g_frameTime) - g_scrollPace.m_lastTime >= g_scrollPace.m_period) {
             nx += g_buteMgr.GetDword("BackPlane", "ScrollDistX");

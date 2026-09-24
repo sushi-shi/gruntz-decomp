@@ -1,6 +1,7 @@
 #include <rva.h>
 
 #include <Mfc.h>
+#include <MfcWin.h>
 
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawDeviceManager.h>
@@ -14,6 +15,8 @@
 #include <Gruntz/FaderSubtypes.h>
 #include <Gruntz/ShapeFaderConfig.h>
 #include <Ints.h>
+#include <MakeRect.h>
+#include <RectInterpolation.h>
 #include <Wap32/ScreenGeometry.h>
 
 #include <ddraw.h>
@@ -160,13 +163,12 @@ CShapeFaderConfig::CShapeFaderConfig() {
 
 RVA(0x0017e840, 0x37)
 CLightFaderConfig::CLightFaderConfig() {
-    m_centerX = SCREEN_HALF_W_PX;
+    m_center.Set(SCREEN_HALF_W_PX, SCREEN_HALF_H_PX);
     m_kind = FADER_CONFIG_LIGHT;
     m_sourceSurface = NULL;
     m_targetSurface = NULL;
     m_clearMode = true;
     m_spanCount = 0;
-    m_centerY = SCREEN_HALF_H_PX;
     m_shadeTable = NULL;
 }
 
@@ -246,61 +248,49 @@ i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
     CRezBufferObject* mesh = &m_meshBuf;
     mesh->SetSize(0, -1);
 
-    i32 halfW = static_cast<i32>(m_dstSurface->m_apiDesc.dwWidth) / 2;
-    i32 halfH = static_cast<i32>(m_dstSurface->m_apiDesc.dwHeight) / 2;
-    i32 cellW = static_cast<i32>(m_sourceSurface->m_apiDesc.dwWidth) / m_cols;
-    i32 cellH = static_cast<i32>(m_sourceSurface->m_apiDesc.dwHeight) / m_rows;
-    float radius = static_cast<float>(sqrt(static_cast<double>((cellW * cellW + cellH * cellH))));
+    Coord halfSize(m_dstSurface->m_apiDesc.dwWidth / 2, m_dstSurface->m_apiDesc.dwHeight / 2);
+    Coord cellSize(
+        m_sourceSurface->m_apiDesc.dwWidth / m_cols,
+        m_sourceSurface->m_apiDesc.dwHeight / m_rows
+    );
+    Coord negativeCellSize = -cellSize;
+    float radius = static_cast<float>(DoubleVector2(cellSize).Mag());
     if (m_rows <= 0) {
         return 1;
     }
 
     RezElem40 elem;
     i32 y = 0;
-    i32 ay = halfH;
-    i32 negH = -cellH;
+    i32 ay = halfSize.m_y;
     i32 r = 0;
     do {
         if (m_cols > 0) {
             elem.m_reserved20 = 0;
             elem.m_scale = 1.0f;
-            i32 rowD2 = ay * ay;
-            float cellR = static_cast<float>(
-                sqrt(static_cast<double>(halfH * halfH + halfW * halfW)) + radius - g_fxBias
-            );
+            float cellR = static_cast<float>(DoubleVector2(halfSize).Mag() + radius - g_fxBias);
             i32 x = 0;
-            i32 bx = halfW;
-            i32 negW = -cellW;
+            i32 bx = halfSize.m_x;
             i32 i = 0;
             do {
-                CRect dispersedRect;
-                dispersedRect.left = 0;
-                dispersedRect.top = 0;
-                dispersedRect.right = cellW;
-                dispersedRect.bottom = cellH;
-                i32 d2 = bx * bx + rowD2;
-                double v = sqrt(static_cast<double>(d2));
-                float u, w;
-                if (v > g_fxEps) {
-                    u = static_cast<float>((x - halfW) / v);
-                    w = static_cast<float>((y - halfH) / v);
+                CRect dispersedRect(0, 0, cellSize.m_x, cellSize.m_y);
+                Coord radialOffset(bx, ay);
+                i32 radiusSqr = radialOffset.MagSqr();
+                double distance = DoubleVector2(radialOffset).Mag();
+                FloatVector2 spreadDirection;
+                if (distance > g_fxEps) {
+                    spreadDirection =
+                        FloatVector2(Coord(x, y) - halfSize) / static_cast<float>(distance);
                 } else {
-                    u = 0.0f;
-                    w = 1.0f;
+                    spreadDirection.Init(0.0f, 1.0f);
                 }
-                OffsetRect(&dispersedRect, x, y);
-                OffsetRect(
-                    &dispersedRect,
-                    static_cast<i32>((u * cellR)),
-                    static_cast<i32>((w * cellR))
+                dispersedRect.OffsetRect(x, y);
+                dispersedRect.OffsetRect(
+                    static_cast<i32>(spreadDirection.m_x * cellR),
+                    static_cast<i32>(spreadDirection.m_y * cellR)
                 );
 
-                CRect assembledRect;
-                assembledRect.left = 0;
-                assembledRect.top = 0;
-                assembledRect.right = d2;
-                assembledRect.bottom = cellH;
-                OffsetRect(&assembledRect, x, y);
+                CRect assembledRect(0, 0, radiusSqr, cellSize.m_y);
+                assembledRect.OffsetRect(x, y);
 
                 if (m_reverseOrder) {
                     elem.m_startRect = assembledRect;
@@ -312,19 +302,18 @@ i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
 
                 mesh->Add(elem);
 
-                x += cellW;
-                bx += negW;
+                x += cellSize.m_x;
+                bx += negativeCellSize.m_x;
                 i++;
             } while (i < m_cols);
         }
-        y += cellH;
-        ay += negH;
+        y += cellSize.m_y;
+        ay += negativeCellSize.m_y;
         r++;
     } while (r < m_rows);
     return 1;
 }
 
-// @early-stop
 RVA(0x0017ef00, 0x21c)
 void CFaderMesh::RenderFrame(i32 frame) {
     if (m_primeSurface != NULL) {
@@ -337,24 +326,9 @@ void CFaderMesh::RenderFrame(i32 frame) {
         u32 cur = frame;
         u32 total = GetFrameCount();
         float t = static_cast<float>(cur) / static_cast<float>(total);
-        RECT srcRect = elem.m_startRect;
-        RECT dstRect;
-        RECT boundRect = elem.m_endRect;
-
-        dstRect.left =
-            elem.m_startRect.left
-            + static_cast<i32>(static_cast<float>(elem.m_endRect.left - elem.m_startRect.left) * t);
-        dstRect.top =
-            elem.m_startRect.top
-            + static_cast<i32>(static_cast<float>(elem.m_endRect.top - elem.m_startRect.top) * t);
-        dstRect.right = elem.m_startRect.right
-                        + static_cast<i32>(
-                            static_cast<float>(elem.m_endRect.right - elem.m_startRect.right) * t
-                        );
-        dstRect.bottom = elem.m_startRect.bottom
-                         + static_cast<i32>(
-                             static_cast<float>(elem.m_endRect.bottom - elem.m_startRect.bottom) * t
-                         );
+        CRect srcRect = elem.m_startRect;
+        CRect dstRect = InterpolateRect(elem.m_startRect, elem.m_endRect, t);
+        CRect boundRect = elem.m_endRect;
 
         if (dstRect.left < 0 && dstRect.right > 0) {
             boundRect.left = elem.m_endRect.left - dstRect.left;

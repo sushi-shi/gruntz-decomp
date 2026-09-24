@@ -33,6 +33,12 @@ public:
     virtual TileCollisionKind GetCollisionAt(i32 x, i32 y);
     virtual i32 GetStride();
 
+    inline i32* ReadDimensions(WwdTileImageRecord* record) {
+        m_width = record->m_width;
+        m_height = record->m_height;
+        return record->m_fields;
+    }
+
     i32 m_width;
     i32 m_height;
 };

@@ -43,6 +43,7 @@
 #include <Gruntz/WwdGameReg.h>
 #include <Image/CImage.h>
 #include <Io/FileMem.h>
+#include <MakeRect.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezArchive.h>
 #include <Rez/RezArchiveDir.h>
@@ -109,10 +110,7 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     }
 
     RECT menuBounds;
-    menuBounds.left = 0;
-    menuBounds.top = 8;
-    menuBounds.right = 0x27f;
-    menuBounds.bottom = 0x1df;
+    SET_RECT_COMPONENTS(menuBounds, 0, 8, 0x27f, 0x1df);
     m_menuTree = new CMenuTree;
     if (!m_menuTree->Configure(m_world, m_mgr->m_gameWnd->m_hwnd, &menuBounds, 0x14, 0xa, 1)) {
         return 0;

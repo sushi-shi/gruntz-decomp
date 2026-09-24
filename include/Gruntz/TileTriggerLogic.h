@@ -4,6 +4,7 @@
 #include <rva.h>
 
 #include <Enums.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/PickupType.h>
@@ -117,8 +118,7 @@ public:
     i32 Deserialize(CFileMemBase* s);
 
     TrigLogicId m_typeTag;
-    i32 m_tileX;
-    i32 m_tileY;
+    Coord m_tile;
     i32 m_cellKey;
     i32 m_reserved14;
     i32 m_reserved18;

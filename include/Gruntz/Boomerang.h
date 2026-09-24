@@ -30,9 +30,9 @@ public:
         i32 sourcePxY
     ) OVERRIDE;
 
-    i32 m_launchX, m_launchY;
-    double m_dirX, m_dirY;
-    double m_originX, m_originY;
+    Coord m_launchPosition;
+    DoubleVector2 m_direction;
+    DoubleVector2 m_origin;
     double m_phase;
     b32 m_launched;
 };

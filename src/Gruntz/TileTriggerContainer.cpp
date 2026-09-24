@@ -3,6 +3,7 @@
 #include <Gruntz/TileTriggerContainer.h>
 
 #include <Mfc.h>
+#include <MfcWin.h>
 
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -205,7 +206,7 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogicDefaults(
     i32 leadInSpan,
     i32 dutyOffSpan
 ) {
-    RECT empty = {0, 0, 0, 0};
+    CRect empty(0, 0, 0, 0);
     return AddLogic(
         tileType,
         logicType,
@@ -236,8 +237,8 @@ void CTileTriggerContainer::AddLogicFromRecord(
     AddLogic(
         tileType,
         logicType,
-        object->m_speedX,
-        object->m_speedY,
+        object->m_speed.m_x,
+        object->m_speed.m_y,
         object->m_id,
         object->m_extent,
         object->m_area,
@@ -341,16 +342,13 @@ CTileActionEvent* CTileTriggerContainer::AddActionEvent(
         return NULL;
     }
     if (event->m_live == false) {
-        event->m_tileX = tileX;
-        event->m_tileY = tileY;
+        event->m_tile.Set(tileX, tileY);
         event->m_cellKey = cellKey;
-        event->m_playerFlags[0] = playerFlags.left;
-        event->m_playerFlags[1] = playerFlags.top;
-        event->m_playerFlags[3] = playerFlags.bottom;
+        event->m_playerFlags
+            .Init(playerFlags.left, playerFlags.top, playerFlags.right, playerFlags.bottom);
         event->m_actionCode = actionCode;
         event->m_owner = this;
         event->m_live = true;
-        event->m_playerFlags[2] = playerFlags.right;
         event->SetActionCode(actionCode);
         m_actionEvents.AddTail(event);
         return event;
@@ -371,39 +369,17 @@ CTileActionEvent* CTileTriggerContainer::AddSwitchActionEvent(
     if (event == NULL) {
         return NULL;
     }
-    RECT playerFlags;
-    playerFlags.left = 0;
+    PlayerSlotFlags playerFlags;
+    playerFlags.Clear();
     CTileActionEvent* result = NULL;
-    playerFlags.top = 0;
-    playerFlags.right = 0;
-    playerFlags.bottom = 0;
-    switch (static_cast<PlayerSlot>(playerSlot)) {
-        case PLAYER_SLOT_1:
-            playerFlags.top = 1;
-            break;
-        case PLAYER_SLOT_2:
-            playerFlags.right = 1;
-            break;
-        case PLAYER_SLOT_3:
-            playerFlags.bottom = 1;
-            break;
-        case PLAYER_SLOT_ALL:
-            playerFlags.top = playerFlags.right = playerFlags.bottom = 1;
-        case PLAYER_SLOT_0:
-            playerFlags.left = 1;
-            break;
-    }
+    playerFlags.EnableIfValid(playerSlot);
     if (event->m_live == false) {
-        event->m_tileX = tileX;
-        event->m_tileY = tileY;
+        event->m_tile.Set(tileX, tileY);
         event->m_cellKey = cellKey;
-        event->m_playerFlags[2] = playerFlags.right;
+        event->m_playerFlags = playerFlags;
         event->m_actionCode = actionCode;
         event->m_owner = this;
         event->m_live = true;
-        event->m_playerFlags[0] = playerFlags.left;
-        event->m_playerFlags[1] = playerFlags.top;
-        event->m_playerFlags[3] = playerFlags.bottom;
         event->SetActionCode(actionCode);
         m_actionEvents.AddTail(event);
         result = event;
@@ -432,8 +408,7 @@ CGiantRockLogic* CTileTriggerContainer::AddGiantRockLogic(
         e->m_powerupType = static_cast<PickupType>(powerupType);
         e->m_textId = textId;
         e->m_typeTag = TRIGID_GIANT_ROCK_22;
-        e->m_tileX = tileX;
-        e->m_tileY = tileY;
+        e->m_tile.Set(tileX, tileY);
         e->m_cellKey = cellKey;
         e->m_owner = this;
         e->m_initGate = true;
@@ -928,19 +903,15 @@ void* CTileTriggerContainer::DeserializeLogic(
             obj->m_typeTag = id;
 
             CGameLevel* level = g_gameReg->m_world->m_level;
-            i32 x = obj->m_tileX;
-            i32 y = obj->m_tileY;
-            if (x < 0) {
-                x = 0;
-            } else if (x >= level->m_mainPlane->m_tileColumns) {
-                x = level->m_mainPlane->m_tileColumns - 1;
-            }
-            if (y < 0) {
-                y = 0;
-            } else if (y >= level->m_mainPlane->m_tileRows) {
-                y = level->m_mainPlane->m_tileRows - 1;
-            }
-            i32 cell = level->m_mainPlane->m_tileRowOffsets[y] + x;
+            Coord tilePosition = obj->m_tile;
+            tilePosition.Clamp(
+                Coord(0, 0),
+                Coord(
+                    level->m_mainPlane->m_tileGridSize.cx - 1,
+                    level->m_mainPlane->m_tileGridSize.cy - 1
+                )
+            );
+            i32 cell = level->m_mainPlane->m_tileRowOffsets[tilePosition.m_y] + tilePosition.m_x;
             i32 tile = level->m_mainPlane->m_tileHandles[cell];
             TileCollisionKind tileKind;
             if (tile == UNINIT_FILL || tile == -1) {
@@ -1052,14 +1023,7 @@ RVA(0x00117f60, 0xa1)
 i32 CTileTriggerContainer::SetCell(i32 tileX, i32 tileY, i32 playerSlot) {
     CTileActionEvent* elem = FindActionByCellKey(CellKey(tileX, tileY));
     if (elem != NULL) {
-        if (playerSlot == IDX(PLAYER_SLOT_ALL)) {
-            i32* flags = elem->m_playerFlags;
-            for (i32 i = 0; i < 4; i++) {
-                flags[i] = 1;
-            }
-        } else {
-            elem->m_playerFlags[playerSlot] = 1;
-        }
+        ENABLE_PLAYER_SLOT_FLAGS(elem->m_playerFlags, playerSlot);
         elem->SetActionCode(elem->m_actionCode);
         return 1;
     }

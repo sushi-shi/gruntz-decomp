@@ -1,3 +1,4 @@
+#include <RectMacros.h>
 #define GRUNTZ_MENUITEM_TU
 
 #include <rva.h>
@@ -119,9 +120,9 @@ i32 CMenuItem::DrawAt(CDDrawSurfacePair* target, i32 centerX, i32 centerY) {
         return 0;
     }
 
-    if (m_fixedCenterX != UNINIT_FILL) {
-        centerX = m_fixedCenterX;
-        centerY = m_fixedCenterY;
+    if (m_fixedCenter.m_x != UNINIT_FILL) {
+        centerX = m_fixedCenter.m_x;
+        centerY = m_fixedCenter.m_y;
     }
     MenuItemState state = m_state;
     CImage* frame = animation->GetAt(IDX(state));
@@ -129,10 +130,13 @@ i32 CMenuItem::DrawAt(CDDrawSurfacePair* target, i32 centerX, i32 centerY) {
         return 0;
     }
     frame->RenderFrame(target, centerX, centerY, 0);
-    m_hitLeft = centerX - frame->m_anchorX;
-    m_hitRight = centerX + frame->m_anchorX;
-    m_hitTop = centerY - frame->m_anchorY;
-    m_hitBottom = centerY + frame->m_anchorY;
+    SET_RECT_XY_EXTENTS(
+        m_hitRect,
+        centerX - frame->m_anchor.x,
+        centerX + frame->m_anchor.x,
+        centerY - frame->m_anchor.y,
+        centerY + frame->m_anchor.y
+    );
     return 1;
 }
 RVA(0x00185690, 0x25)
@@ -158,19 +162,19 @@ i32 CMenuItem::Activate() {
 }
 RVA(0x00185700, 0x4b)
 i32 CMenuItem::HitTest(i32 screenX, i32 screenY) {
-    if (m_hitLeft == UNINIT_FILL) {
+    if (m_hitRect.left == UNINIT_FILL) {
         return 0;
     }
-    if (screenX < m_hitLeft) {
+    if (screenX < m_hitRect.left) {
         return 0;
     }
-    if (screenX > m_hitRight) {
+    if (screenX > m_hitRect.right) {
         return 0;
     }
-    if (screenY < m_hitTop) {
+    if (screenY < m_hitRect.top) {
         return 0;
     }
-    return screenY <= m_hitBottom;
+    return screenY <= m_hitRect.bottom;
 }
 
 RVA(0x00185750, 0x123)
@@ -240,19 +244,22 @@ i32 CAnimatedMenuItem::Update(u32 deltaMs) {
 RVA(0x001858d0, 0x72)
 i32 CAnimatedMenuItem::DrawAt(CDDrawSurfacePair* target, i32 centerX, i32 centerY) {
 
-    if (m_fixedCenterX != UNINIT_FILL) {
-        centerX = m_fixedCenterX;
-        centerY = m_fixedCenterY;
+    if (m_fixedCenter.m_x != UNINIT_FILL) {
+        centerX = m_fixedCenter.m_x;
+        centerY = m_fixedCenter.m_y;
     }
     CImage* frame = GetCurrentFrame();
     if (!frame) {
         return 0;
     }
     frame->RenderFrame(target, centerX, centerY, 0);
-    m_hitLeft = centerX - frame->m_anchorX;
-    m_hitRight = centerX + frame->m_anchorX;
-    m_hitTop = centerY - frame->m_anchorY;
-    m_hitBottom = centerY + frame->m_anchorY;
+    SET_RECT_XY_EXTENTS(
+        m_hitRect,
+        centerX - frame->m_anchor.x,
+        centerX + frame->m_anchor.x,
+        centerY - frame->m_anchor.y,
+        centerY + frame->m_anchor.y
+    );
     return 1;
 }
 RVA(0x00185950, 0x1b)

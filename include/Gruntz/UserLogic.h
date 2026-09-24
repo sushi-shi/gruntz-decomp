@@ -99,6 +99,14 @@ public:
 
     void GetScreenTile(Coord* out);
 
+    inline void SetObjectArea(i32 value) {
+        SetRect(&m_object->m_area, value, value, value, value);
+    }
+
+    inline void ClearObjectArea() {
+        SetRectEmpty(&m_object->m_area);
+    }
+
     void RegisterLogicTypesOnce();
     void BuildLogicTypeTable(CGameObject* obj);
 
@@ -145,11 +153,6 @@ typedef i32 (CUserLogic::*CActHandler)();
     m_wwdObject->m_animationCursor.Advance(elapsed);                                               \
     CAniAdvanceCursor* cursor = &m_wwdObject->m_animationCursor;
 
-#define GET_SCREEN_TILE_Y_FIRST(logic, out)                                                        \
-    (logic)->GetScreenPos((&out));                                                                 \
-    out.m_y >>= TILE_SHIFT_PX;                                                                     \
-    out.m_x >>= TILE_SHIFT_PX;
-
 #define DECLARE_CURRENT_ANIMATION_FRAME(frame, animation, record)                                  \
     CAniElement* animation = m_wwdObject->m_animationCursor.m_animation;                           \
     CAniRecordView* record = static_cast<CAniRecordView*>(animation->GetAt(0));                    \
@@ -178,18 +181,6 @@ typedef i32 (CUserLogic::*CActHandler)();
     CAniElement* animation = m_wwdObject->m_animationCursor.m_animation;                           \
     CAniRecordView* record = static_cast<CAniRecordView*>(animation->GetAt(0));                    \
     APPLY_LOOKUP_SPRITE_INLINE(name, record->m_param);
-
-#define SET_OBJECT_AREA(value)                                                                     \
-    m_object->m_area.left = value;                                                                 \
-    m_object->m_area.right = value;                                                                \
-    m_object->m_area.top = value;                                                                  \
-    m_object->m_area.bottom = value;
-
-#define CLEAR_OBJECT_AREA                                                                          \
-    m_object->m_area.left = 0;                                                                     \
-    m_object->m_area.right = 0;                                                                    \
-    m_object->m_area.top = 0;                                                                      \
-    m_object->m_area.bottom = 0;
 
 #define SERIALIZE_USER_LOGIC_OR_RETURN(ar, mode, typeId, object)                                   \
     if (!CUserLogic::SerializeDispatch(ar, mode, typeId, object)) {                                \
@@ -228,8 +219,7 @@ typedef i32 (CUserLogic::*CActHandler)();
 
 inline void CUserLogic::GetScreenTile(Coord* out) {
     GetScreenPos(out);
-    out->m_x >>= TILE_SHIFT_PX;
-    out->m_y >>= TILE_SHIFT_PX;
+    SCREEN_TILE_INPLACE(out);
 }
 
 inline void CUserLogic::RegisterLogicTypesOnce() {
@@ -341,5 +331,22 @@ public:
     static void RegisterActs();
     i32 AdvanceAnim();
 };
+
+#define GET_SCREEN_TILE_Y_FIRST(logic, out)                                                        \
+    (logic)->GetScreenPos((&out));                                                                 \
+    out.m_y >>= TILE_SHIFT_PX;                                                                     \
+    out.m_x >>= TILE_SHIFT_PX;
+
+#define SET_OBJECT_AREA(value)                                                                     \
+    m_object->m_area.left = value;                                                                 \
+    m_object->m_area.right = value;                                                                \
+    m_object->m_area.top = value;                                                                  \
+    m_object->m_area.bottom = value;
+
+#define CLEAR_OBJECT_AREA                                                                          \
+    m_object->m_area.left = 0;                                                                     \
+    m_object->m_area.right = 0;                                                                    \
+    m_object->m_area.top = 0;                                                                      \
+    m_object->m_area.bottom = 0;
 
 #endif // GRUNTZ_USERLOGIC_H

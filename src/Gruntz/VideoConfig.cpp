@@ -20,6 +20,7 @@
 #include <MsgParam.h>
 #include <Net/NetLobby.h>
 #include <Net/NetMgr.h>
+#include <RectMacros.h>
 #include <Rez/RezSync.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/ScreenGeometry.h>
@@ -74,12 +75,11 @@ HWND g_optHwndVoiceVolume = NULL;
 
 RVA(0x000363a0, 0x41)
 Resolution GetResolutionCode() {
-    i32 w = g_gameReg->m_savedModeSize.cx;
-    i32 h = g_gameReg->m_savedModeSize.cy;
-    if (w == DISPLAY_WIDTH_1024 && h == DISPLAY_HEIGHT_768) {
+    CSize modeSize = g_gameReg->m_savedModeSize;
+    if (modeSize == CSize(DISPLAY_WIDTH_1024, DISPLAY_HEIGHT_768)) {
         return RES_1024X768;
     }
-    if (w == DISPLAY_WIDTH_800 && h == DISPLAY_HEIGHT_600) {
+    if (modeSize == CSize(DISPLAY_WIDTH_800, DISPLAY_HEIGHT_600)) {
         return RES_800X600;
     }
     return RES_640X480;
@@ -132,8 +132,7 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                         h = SCREEN_H_PX;
                     }
                     CGruntzMgr* reg = g_gameReg;
-                    reg->m_savedModeSize.cx = w;
-                    reg->m_savedModeSize.cy = h;
+                    SET_SIZE_COMPONENTS(reg->m_savedModeSize, w, h);
                     if (g_gameReg->IsInPlayState()) {
                         g_gameReg->CheckSavedMode();
                     }

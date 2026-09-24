@@ -5,6 +5,7 @@
 #include <Enums.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
@@ -39,7 +40,7 @@ CGruntToySprite::CGruntToySprite(CGameObject* obj)
     SET_ANIMATION_ACT("A");
     Hide();
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_HUD)
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_HUD);
     m_lastLayer = PICKUP_NONE;
 }
 
@@ -83,8 +84,11 @@ i32 CGruntToySprite::Update() {
             r->m_frameIndex = layerIndex;
         }
     }
-    m_object->m_screenX = e->m_object->m_screenX;
-    m_object->m_screenY = e->m_object->m_screenY - 0x20;
+    SET_VECTOR2_COMPONENTS(
+        m_object->m_screenPosition,
+        e->m_object->m_screenPosition.m_x,
+        e->m_object->m_screenPosition.m_y - 0x20
+    );
     return 0;
 }
 

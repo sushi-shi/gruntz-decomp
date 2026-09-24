@@ -26,8 +26,11 @@ inline b32 CGruntVoice::PositionIndicatorAtLogicObject() {
         return false;
     }
     m_object->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
-    m_object->m_screenX = logic->m_object->m_screenX;
-    m_object->m_screenY = logic->m_object->m_screenY - 0x32;
+    SET_VECTOR2_COMPONENTS(
+        m_object->m_screenPosition,
+        logic->m_object->m_screenPosition.m_x,
+        logic->m_object->m_screenPosition.m_y - 0x32
+    );
     return true;
 }
 
@@ -42,11 +45,14 @@ inline b32 CGruntVoice::PositionIndicatorAtSourceObject() {
         i32 dx = 0, dy = 0;
         CImage* layer = static_cast<CWwdSpriteObject*>(resolved)->m_frameImage;
         if (layer != NULL) {
-            dx = layer->m_originX;
-            dy = layer->m_originY;
+            dx = layer->m_origin.x;
+            dy = layer->m_origin.y;
         }
-        m_object->m_screenX = resolved->m_screenX + dx;
-        m_object->m_screenY = resolved->m_screenY + dy - 0x32;
+        SET_VECTOR2_COMPONENTS(
+            m_object->m_screenPosition,
+            resolved->m_screenPosition.m_x + dx,
+            resolved->m_screenPosition.m_y + dy - 0x32
+        );
         return true;
     }
     return false;

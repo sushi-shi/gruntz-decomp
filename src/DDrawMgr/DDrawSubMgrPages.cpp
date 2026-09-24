@@ -35,6 +35,7 @@
 #include <Gruntz/StateId.h>
 #include <Image/CImage.h>
 #include <Io/FileMem.h>
+#include <MakeRect.h>
 #include <Pix16.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezArchive.h>

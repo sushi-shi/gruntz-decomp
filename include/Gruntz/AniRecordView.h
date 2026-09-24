@@ -6,6 +6,7 @@
 #include <Mfc.h>
 
 #include <Enums.h>
+#include <Gruntz/CoordNode.h>
 #include <Ints.h>
 #include <Wwd/WwdAnimStepMode.h>
 
@@ -57,8 +58,7 @@ struct CAniRecordView : public CObject {
     i32 m_param;
     i32 m_duration;
     i32 m_drawValue;
-    i32 m_positionDeltaX;
-    i32 m_positionDeltaY;
+    Coord m_positionDelta;
     u16 m_reserved28; // parsed from ANI frame record; never read
     i32 m_cueCount;
     SoundCue** m_cues;

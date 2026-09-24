@@ -4,6 +4,7 @@
 #include <rva.h>
 
 #include <Clock64.h>
+#include <Gruntz/CoordNode.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/Sprite.h>
@@ -25,8 +26,7 @@ public:
     i32 Serialize(CFileMemBase* ar);
     i32 Deserialize(CFileMemBase* ar);
 
-    i32 m_baseX;
-    i32 m_baseY;
+    Coord m_basePosition;
     CDDrawWorker* m_sprite;
     b32 m_active;
 

@@ -27,8 +27,7 @@ public:
     i32 m_activeWindow;
     i32 m_idleWindow;
     b32 m_fired;
-    i32 m_tileCol;
-    i32 m_tileRow;
+    Coord m_tile;
 };
 
 i32 DispatchStaticHazardLogic(CGameObject* obj);

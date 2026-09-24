@@ -224,11 +224,11 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         return;
     }
 
-    if (RunRightEdge(rc, x) > static_cast<i32>(surf->m_apiDesc.dwWidth)) {
-        rc.right = rc.right + rc.right - rc.left + x - surf->m_apiDesc.dwWidth;
+    if (RunRightEdge(rc, x) > surf->m_apiDesc.dwWidth) {
+        rc.right += rc.Width() + x - surf->m_apiDesc.dwWidth;
     }
-    if (y - rc.top + rc.bottom > static_cast<i32>(surf->m_apiDesc.dwHeight)) {
-        rc.bottom = rc.bottom + rc.bottom - rc.top + y - surf->m_apiDesc.dwHeight;
+    if (y - rc.top + rc.bottom > surf->m_apiDesc.dwHeight) {
+        rc.bottom += rc.Height() + y - surf->m_apiDesc.dwHeight;
     }
 
     CSize m = MeasureText(text);
@@ -353,7 +353,7 @@ void FontRenderer::DrawWrapped(
     i32 lineAdvance = m_font->GetMaxHeight() + spacing;
     if (hcenter) {
         CSize m = MeasureWrapped(text, rc);
-        rc.top = rc.top + (rc.bottom - rc.top) / 2 - m.cy / 2;
+        rc.top += rc.Height() / 2 - m.cy / 2;
     }
 
     i32 x = rc.left;
@@ -416,7 +416,7 @@ void FontRenderer::DrawWrapped(
             if (headW + x < rc.right) {
                 line += head;
                 x = headW + x;
-            } else if (headW < rc.right - rc.left) {
+            } else if (headW < rc.Width()) {
                 if (hcenter) {
                     CSize le = MeasureText(line);
                     i32 cx = rc.left + rc.Width() / 2 - le.cx / 2;
@@ -486,8 +486,6 @@ void FontRenderer::DrawWrapped(
 
 RVA(0x0017ac50, 0xbd)
 CSize FontRenderer::MeasureText(CString text) {
-    CSize ext;
-
     Glyph g;
     g.m_height = 0;
     i32 i = 0;
@@ -500,9 +498,7 @@ CSize FontRenderer::MeasureText(CString text) {
 
         width += m_font->GetGlyph(g, c).m_width;
     }
-    ext.cx = width;
-    ext.cy = m_font->GetMaxHeight();
-    return ext;
+    return CSize(width, m_font->GetMaxHeight());
 }
 
 // @early-stop

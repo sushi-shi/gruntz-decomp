@@ -4,6 +4,8 @@
 #include <rva.h>
 
 #include <Bute/ButeMgr.h>
+#include <Gruntz/CoordNode.h>
+#include <Gruntz/DoubleVector.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/LogicTypeId.h>
@@ -11,10 +13,7 @@
 #include <Gruntz/UserLogic.h>
 #include <Ints.h>
 
-struct CPathWaypoint {
-    i32 m_x;
-    i32 m_y;
-};
+typedef Coord CPathWaypoint;
 
 struct CHazardTimer {
     i64 m_deadline;
@@ -56,16 +55,12 @@ public:
     i32 ForwardSiblingTick();
 
     double m_speed;
-    double m_posX;
-    double m_posY;
-    double m_unitX;
-    double m_unitY;
-    double m_roundBiasX;
-    double m_roundBiasY;
+    DoubleVector2 m_position;
+    DoubleVector2 m_unit;
+    DoubleVector2 m_roundBias;
     CPathWaypoint m_wp[13];
     i32 m_wpIndex;
-    i32 m_wpX;
-    i32 m_wpY;
+    Coord m_waypoint;
     i32 m_wpCount;
 
     CHazardTimer m_leg;

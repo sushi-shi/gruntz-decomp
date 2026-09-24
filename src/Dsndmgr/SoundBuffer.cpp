@@ -241,9 +241,9 @@ void SoundBuffer::SetLooping(b32 enabled) {
         return;
     }
     if (enabled) {
-        m_playFlags |= 1;
+        m_playFlags |= DSBPLAY_LOOPING;
     } else {
-        m_playFlags &= ~1;
+        m_playFlags &= ~DSBPLAY_LOOPING;
     }
 }
 
@@ -254,7 +254,7 @@ i32 SoundBuffer::IsLoopingEnabled() {
     if (m_owner->m_initialized == false) {
         return 0;
     }
-    if ((m_playFlags & 1) == 1) {
+    if ((m_playFlags & DSBPLAY_LOOPING) == DSBPLAY_LOOPING) {
         return 1;
     }
     return 0;

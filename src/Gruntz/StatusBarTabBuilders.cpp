@@ -71,10 +71,10 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
         found
     );
     rec = static_cast<CDDrawWorker*>(found);
-    if (rec == NULL || DDRAW_WORKER_MISSES_FRAME(rec, 1)) {
+    if (rec == NULL || !rec->ContainsFrame(1)) {
         spr = NULL;
     } else {
-        spr = DDRAW_WORKER_FRAME_AT_UNCHECKED(rec, 1);
+        spr = rec->FrameAtUnchecked(1);
     }
     m_standaloneFrame = spr;
     if (spr == NULL) {
@@ -134,15 +134,15 @@ i32 CSBI_GruntMachine::Render() {
 
         CImage* f = m_standaloneFrame;
         if (f) {
-            f->RenderFrame(ctx, m_rect.left + f->m_anchorX, m_rect.top + f->m_anchorY, 0);
+            f->RenderFrame(ctx, m_rect.left + f->m_anchor.x, m_rect.top + f->m_anchor.y, 0);
         }
         f = m_rightFrame;
         if (f) {
-            f->RenderFrame(ctx, m_rect.left + f->m_anchorX + 0x2c, m_rect.top + f->m_anchorY, 0);
+            f->RenderFrame(ctx, m_rect.left + f->m_anchor.x + 0x2c, m_rect.top + f->m_anchor.y, 0);
         }
         f = m_leftFrame;
         if (f) {
-            f->RenderFrame(ctx, m_rect.left + f->m_anchorX, m_rect.top + f->m_anchorY, 0);
+            f->RenderFrame(ctx, m_rect.left + f->m_anchor.x, m_rect.top + f->m_anchor.y, 0);
         }
     }
     return 1;
@@ -245,8 +245,8 @@ i32 CSBI_GruntMachine::SerializeFields(
                     reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
                     CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
                     CImage* r;
-                    if (rec != NULL && DDRAW_WORKER_FRAME_IN_RANGE(rec, i)) {
-                        r = DDRAW_WORKER_FRAME_AT_UNCHECKED(rec, i);
+                    if (rec != NULL && rec->ContainsFrame(i)) {
+                        r = rec->FrameAtUnchecked(i);
                     } else {
                         r = NULL;
                     }
@@ -268,8 +268,8 @@ i32 CSBI_GruntMachine::SerializeFields(
                     reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
                     CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
                     CImage* r;
-                    if (rec != NULL && DDRAW_WORKER_FRAME_IN_RANGE(rec, i)) {
-                        r = DDRAW_WORKER_FRAME_AT_UNCHECKED(rec, i);
+                    if (rec != NULL && rec->ContainsFrame(i)) {
+                        r = rec->FrameAtUnchecked(i);
                     } else {
                         r = NULL;
                     }
@@ -290,8 +290,8 @@ i32 CSBI_GruntMachine::SerializeFields(
                     reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
                     CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
                     CImage* r;
-                    if (rec != NULL && DDRAW_WORKER_FRAME_IN_RANGE(rec, i)) {
-                        r = DDRAW_WORKER_FRAME_AT_UNCHECKED(rec, i);
+                    if (rec != NULL && rec->ContainsFrame(i)) {
+                        r = rec->FrameAtUnchecked(i);
                     } else {
                         r = NULL;
                     }

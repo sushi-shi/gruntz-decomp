@@ -5,17 +5,18 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/MapCellFlags.h>
 #include <Wap32/TileGeometry.h>
 #include <Wwd/WwdGameObjectFamily.h>
 
 static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
     CMapMgr* grid = reg->m_tileGrid;
-    i32 tileX = owner->m_screenX >> TILE_SHIFT_PX;
-    i32 tileY = owner->m_screenY >> TILE_SHIFT_PX;
-    if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
-        && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
-        grid->m_rows[tileY][tileX].m_objectId = 0;
-        grid->m_rows[tileY][tileX].m_flags &= ~0x40000;
+    Coord tile = owner->ScreenPos();
+    ScreenTile(&tile);
+    if (static_cast<u32>(tile.m_x) < static_cast<u32>(grid->m_width)
+        && static_cast<u32>(tile.m_y) < static_cast<u32>(grid->m_height)) {
+        grid->m_rows[tile.m_y][tile.m_x].m_objectId = 0;
+        grid->m_rows[tile.m_y][tile.m_x].m_flags &= ~IDX(CELL_FLAG_IN_GAME_ICON);
     }
 }
 
@@ -55,23 +56,23 @@ inline i32 CGruntzMapMgr::TileIdAt(u32 x, u32 y) const {
 
 static inline i32 TBombGridCell(CGameObject* obj) {
     CMapMgr* g = g_gameReg->m_tileGrid;
-    i32 cx = obj->m_screenX >> TILE_SHIFT_PX;
-    i32 cy = obj->m_screenY >> TILE_SHIFT_PX;
-    if (static_cast<u32>(cx) < static_cast<u32>(g->m_width)
-        && static_cast<u32>(cy) < static_cast<u32>(g->m_height)) {
-        BrickzCell* row = g->m_rows[cy];
-        return row[cx].m_flags;
+    Coord tile = obj->ScreenPos();
+    ScreenTile(&tile);
+    if (static_cast<u32>(tile.m_x) < static_cast<u32>(g->m_width)
+        && static_cast<u32>(tile.m_y) < static_cast<u32>(g->m_height)) {
+        BrickzCell* row = g->m_rows[tile.m_y];
+        return row[tile.m_x].m_flags;
     }
     return 1;
 }
 
 static inline void TBombGridClear(CGameObject* obj) {
     CMapMgr* g = g_gameReg->m_tileGrid;
-    i32 cx = obj->m_screenX >> TILE_SHIFT_PX;
-    i32 cy = obj->m_screenY >> TILE_SHIFT_PX;
-    if (static_cast<u32>(cx) < static_cast<u32>(g->m_width)
-        && static_cast<u32>(cy) < static_cast<u32>(g->m_height)) {
-        g->m_rowInts[cy][cx * 7] &= ~0x1000000;
+    Coord tile = obj->ScreenPos();
+    ScreenTile(&tile);
+    if (static_cast<u32>(tile.m_x) < static_cast<u32>(g->m_width)
+        && static_cast<u32>(tile.m_y) < static_cast<u32>(g->m_height)) {
+        g->m_rows[tile.m_y][tile.m_x].m_flags &= ~IDX(CELL_FLAG_TIME_BOMB);
     }
 }
 

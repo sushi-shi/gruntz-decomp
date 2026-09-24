@@ -220,7 +220,7 @@ GruntDirectionCell __stdcall TmDeflectStep(
 
     i32 sideY;
     Coord entrance = g->EntrancePx();
-    if (entrance.m_x == goalX && entrance.m_y == goalY) {
+    if (COORD_EQUALS_COMPONENTS(entrance, goalX, goalY)) {
         return s_gruntDirCenter;
     }
     i32 mask = g->m_arrivalFlags | BRICKZ_CELL_OCCUPIED;
@@ -236,20 +236,20 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
                         northEastGoalNorthWestNorthSide.Set(lastX, (lastY - TILE_SIZE_PX));
                         northEastGoalNorthWestWestSide.Set((lastX - TILE_SIZE_PX), lastY);
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            northEastGoalNorthWestNorthSide.m_x >> TILE_SHIFT_PX,
-                            northEastGoalNorthWestNorthSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(northEastGoalNorthWestNorthSide.m_x),
+                            SCREEN_TILE_COMPONENT(northEastGoalNorthWestNorthSide.m_y)
                         );
                         i32 sideX = g_gameReg->m_tileGrid->CellFlagsAt(
-                            northEastGoalNorthWestWestSide.m_x >> TILE_SHIFT_PX,
-                            northEastGoalNorthWestWestSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(northEastGoalNorthWestWestSide.m_x),
+                            SCREEN_TILE_COMPONENT(northEastGoalNorthWestWestSide.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -262,8 +262,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -276,20 +276,20 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->m_tileGrid->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
                         northEastGoalNorthEastNorthSide.Set(lastX, (lastY - TILE_SIZE_PX));
                         northEastGoalNorthEastEastSide.Set((lastX + TILE_SIZE_PX), lastY);
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            northEastGoalNorthEastNorthSide.m_x >> TILE_SHIFT_PX,
-                            northEastGoalNorthEastNorthSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(northEastGoalNorthEastNorthSide.m_x),
+                            SCREEN_TILE_COMPONENT(northEastGoalNorthEastNorthSide.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            northEastGoalNorthEastEastSide.m_x >> TILE_SHIFT_PX,
-                            northEastGoalNorthEastEastSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(northEastGoalNorthEastEastSide.m_x),
+                            SCREEN_TILE_COMPONENT(northEastGoalNorthEastEastSide.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -302,8 +302,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -318,20 +318,20 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
                         northWestGoalNorthEastNorthSide.Set(lastX, (lastY - TILE_SIZE_PX));
                         northWestGoalNorthEastEastSide.Set((lastX + TILE_SIZE_PX), lastY);
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            northWestGoalNorthEastNorthSide.m_x >> TILE_SHIFT_PX,
-                            northWestGoalNorthEastNorthSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(northWestGoalNorthEastNorthSide.m_x),
+                            SCREEN_TILE_COMPONENT(northWestGoalNorthEastNorthSide.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            northWestGoalNorthEastEastSide.m_x >> TILE_SHIFT_PX,
-                            northWestGoalNorthEastEastSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(northWestGoalNorthEastEastSide.m_x),
+                            SCREEN_TILE_COMPONENT(northWestGoalNorthEastEastSide.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -344,8 +344,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -358,20 +358,20 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
                         northWestGoalNorthWestNorthSide.Set(lastX, (lastY - TILE_SIZE_PX));
                         northWestGoalNorthWestWestSide.Set((lastX - TILE_SIZE_PX), lastY);
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            northWestGoalNorthWestNorthSide.m_x >> TILE_SHIFT_PX,
-                            northWestGoalNorthWestNorthSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(northWestGoalNorthWestNorthSide.m_x),
+                            SCREEN_TILE_COMPONENT(northWestGoalNorthWestNorthSide.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            northWestGoalNorthWestWestSide.m_x >> TILE_SHIFT_PX,
-                            northWestGoalNorthWestWestSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(northWestGoalNorthWestWestSide.m_x),
+                            SCREEN_TILE_COMPONENT(northWestGoalNorthWestWestSide.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -384,8 +384,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -402,20 +402,20 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
                         northAlignedGoalNorthWestNorthSide.Set(lastX, (lastY - TILE_SIZE_PX));
                         northAlignedGoalNorthWestWestSide.Set((lastX - TILE_SIZE_PX), lastY);
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            northAlignedGoalNorthWestNorthSide.m_x >> TILE_SHIFT_PX,
-                            northAlignedGoalNorthWestNorthSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(northAlignedGoalNorthWestNorthSide.m_x),
+                            SCREEN_TILE_COMPONENT(northAlignedGoalNorthWestNorthSide.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            northAlignedGoalNorthWestWestSide.m_x >> TILE_SHIFT_PX,
-                            northAlignedGoalNorthWestWestSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(northAlignedGoalNorthWestWestSide.m_x),
+                            SCREEN_TILE_COMPONENT(northAlignedGoalNorthWestWestSide.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -431,20 +431,20 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
                         northAlignedGoalNorthEastNorthSide.Set(lastX, (lastY - TILE_SIZE_PX));
                         northAlignedGoalNorthEastEastSide.Set((lastX + TILE_SIZE_PX), lastY);
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            northAlignedGoalNorthEastNorthSide.m_x >> TILE_SHIFT_PX,
-                            northAlignedGoalNorthEastNorthSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(northAlignedGoalNorthEastNorthSide.m_x),
+                            SCREEN_TILE_COMPONENT(northAlignedGoalNorthEastNorthSide.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            northAlignedGoalNorthEastEastSide.m_x >> TILE_SHIFT_PX,
-                            northAlignedGoalNorthEastEastSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(northAlignedGoalNorthEastEastSide.m_x),
+                            SCREEN_TILE_COMPONENT(northAlignedGoalNorthEastEastSide.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -457,8 +457,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -470,8 +470,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -489,20 +489,20 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
                         southEastGoalSouthWestSouthSide.Set(lastX, (lastY + TILE_SIZE_PX));
                         southEastGoalSouthWestWestSide.Set((lastX - TILE_SIZE_PX), lastY);
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            southEastGoalSouthWestSouthSide.m_x >> TILE_SHIFT_PX,
-                            southEastGoalSouthWestSouthSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(southEastGoalSouthWestSouthSide.m_x),
+                            SCREEN_TILE_COMPONENT(southEastGoalSouthWestSouthSide.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            southEastGoalSouthWestWestSide.m_x >> TILE_SHIFT_PX,
-                            southEastGoalSouthWestWestSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(southEastGoalSouthWestWestSide.m_x),
+                            SCREEN_TILE_COMPONENT(southEastGoalSouthWestWestSide.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -515,8 +515,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -529,20 +529,20 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
                         southEastGoalSouthEastSouthSide.Set(lastX, (lastY + TILE_SIZE_PX));
                         southEastGoalSouthEastEastSide.Set((lastX + TILE_SIZE_PX), lastY);
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            southEastGoalSouthEastSouthSide.m_x >> TILE_SHIFT_PX,
-                            southEastGoalSouthEastSouthSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(southEastGoalSouthEastSouthSide.m_x),
+                            SCREEN_TILE_COMPONENT(southEastGoalSouthEastSouthSide.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            southEastGoalSouthEastEastSide.m_x >> TILE_SHIFT_PX,
-                            southEastGoalSouthEastEastSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(southEastGoalSouthEastEastSide.m_x),
+                            SCREEN_TILE_COMPONENT(southEastGoalSouthEastEastSide.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -555,8 +555,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -571,20 +571,20 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
                         southWestGoalSouthEastSouthSide.Set(lastX, (lastY + TILE_SIZE_PX));
                         southWestGoalSouthEastEastSide.Set((lastX + TILE_SIZE_PX), lastY);
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            southWestGoalSouthEastSouthSide.m_x >> TILE_SHIFT_PX,
-                            southWestGoalSouthEastSouthSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(southWestGoalSouthEastSouthSide.m_x),
+                            SCREEN_TILE_COMPONENT(southWestGoalSouthEastSouthSide.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            southWestGoalSouthEastEastSide.m_x >> TILE_SHIFT_PX,
-                            southWestGoalSouthEastEastSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(southWestGoalSouthEastEastSide.m_x),
+                            SCREEN_TILE_COMPONENT(southWestGoalSouthEastEastSide.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -597,8 +597,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -611,20 +611,20 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
                         southWestGoalSouthWestSouthSide.Set(lastX, (lastY + TILE_SIZE_PX));
                         southWestGoalSouthWestWestSide.Set((lastX - TILE_SIZE_PX), lastY);
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            southWestGoalSouthWestSouthSide.m_x >> TILE_SHIFT_PX,
-                            southWestGoalSouthWestSouthSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(southWestGoalSouthWestSouthSide.m_x),
+                            SCREEN_TILE_COMPONENT(southWestGoalSouthWestSouthSide.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            southWestGoalSouthWestWestSide.m_x >> TILE_SHIFT_PX,
-                            southWestGoalSouthWestWestSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(southWestGoalSouthWestWestSide.m_x),
+                            SCREEN_TILE_COMPONENT(southWestGoalSouthWestWestSide.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -637,8 +637,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -654,20 +654,20 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
                         southAlignedGoalSouthWestSouthSide.Set(lastX, (lastY + TILE_SIZE_PX));
                         southAlignedGoalSouthWestWestSide.Set((lastX - TILE_SIZE_PX), lastY);
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            southAlignedGoalSouthWestSouthSide.m_x >> TILE_SHIFT_PX,
-                            southAlignedGoalSouthWestSouthSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(southAlignedGoalSouthWestSouthSide.m_x),
+                            SCREEN_TILE_COMPONENT(southAlignedGoalSouthWestSouthSide.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            southAlignedGoalSouthWestWestSide.m_x >> TILE_SHIFT_PX,
-                            southAlignedGoalSouthWestWestSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(southAlignedGoalSouthWestWestSide.m_x),
+                            SCREEN_TILE_COMPONENT(southAlignedGoalSouthWestWestSide.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -683,20 +683,20 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
                         southAlignedGoalSouthEastSouthSide.Set(lastX, (lastY + TILE_SIZE_PX));
                         southAlignedGoalSouthEastEastSide.Set((lastX + TILE_SIZE_PX), lastY);
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            southAlignedGoalSouthEastSouthSide.m_x >> TILE_SHIFT_PX,
-                            southAlignedGoalSouthEastSouthSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(southAlignedGoalSouthEastSouthSide.m_x),
+                            SCREEN_TILE_COMPONENT(southAlignedGoalSouthEastSouthSide.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            southAlignedGoalSouthEastEastSide.m_x >> TILE_SHIFT_PX,
-                            southAlignedGoalSouthEastEastSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(southAlignedGoalSouthEastEastSide.m_x),
+                            SCREEN_TILE_COMPONENT(southAlignedGoalSouthEastEastSide.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -709,8 +709,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -722,8 +722,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -740,20 +740,20 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
                         eastSouthGoalNorthEastNorthSide.Set(lastX, (lastY - TILE_SIZE_PX));
                         eastSouthGoalNorthEastEastSide.Set((lastX + TILE_SIZE_PX), lastY);
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            eastSouthGoalNorthEastNorthSide.m_x >> TILE_SHIFT_PX,
-                            eastSouthGoalNorthEastNorthSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(eastSouthGoalNorthEastNorthSide.m_x),
+                            SCREEN_TILE_COMPONENT(eastSouthGoalNorthEastNorthSide.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            eastSouthGoalNorthEastEastSide.m_x >> TILE_SHIFT_PX,
-                            eastSouthGoalNorthEastEastSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(eastSouthGoalNorthEastEastSide.m_x),
+                            SCREEN_TILE_COMPONENT(eastSouthGoalNorthEastEastSide.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -766,8 +766,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -780,20 +780,20 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
                         eastSouthGoalSouthEastSouthSide.Set(lastX, (lastY + TILE_SIZE_PX));
                         eastSouthGoalSouthEastEastSide.Set((lastX + TILE_SIZE_PX), lastY);
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            eastSouthGoalSouthEastSouthSide.m_x >> TILE_SHIFT_PX,
-                            eastSouthGoalSouthEastSouthSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(eastSouthGoalSouthEastSouthSide.m_x),
+                            SCREEN_TILE_COMPONENT(eastSouthGoalSouthEastSouthSide.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            eastSouthGoalSouthEastEastSide.m_x >> TILE_SHIFT_PX,
-                            eastSouthGoalSouthEastEastSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(eastSouthGoalSouthEastEastSide.m_x),
+                            SCREEN_TILE_COMPONENT(eastSouthGoalSouthEastEastSide.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -806,8 +806,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -822,20 +822,20 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
                         eastNorthGoalSouthEastSouthSide.Set(lastX, (lastY + TILE_SIZE_PX));
                         eastNorthGoalSouthEastEastSide.Set((lastX + TILE_SIZE_PX), lastY);
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            eastNorthGoalSouthEastSouthSide.m_x >> TILE_SHIFT_PX,
-                            eastNorthGoalSouthEastSouthSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(eastNorthGoalSouthEastSouthSide.m_x),
+                            SCREEN_TILE_COMPONENT(eastNorthGoalSouthEastSouthSide.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            eastNorthGoalSouthEastEastSide.m_x >> TILE_SHIFT_PX,
-                            eastNorthGoalSouthEastEastSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(eastNorthGoalSouthEastEastSide.m_x),
+                            SCREEN_TILE_COMPONENT(eastNorthGoalSouthEastEastSide.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -848,8 +848,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -862,20 +862,20 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
                         eastNorthGoalNorthEastNorthSide.Set(lastX, (lastY - TILE_SIZE_PX));
                         eastNorthGoalNorthEastEastSide.Set((lastX + TILE_SIZE_PX), lastY);
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            eastNorthGoalNorthEastNorthSide.m_x >> TILE_SHIFT_PX,
-                            eastNorthGoalNorthEastNorthSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(eastNorthGoalNorthEastNorthSide.m_x),
+                            SCREEN_TILE_COMPONENT(eastNorthGoalNorthEastNorthSide.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            eastNorthGoalNorthEastEastSide.m_x >> TILE_SHIFT_PX,
-                            eastNorthGoalNorthEastEastSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(eastNorthGoalNorthEastEastSide.m_x),
+                            SCREEN_TILE_COMPONENT(eastNorthGoalNorthEastEastSide.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -888,8 +888,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -906,20 +906,20 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
                         eastAlignedGoalNorthEastNorthSide.Set(lastX, (lastY - TILE_SIZE_PX));
                         eastAlignedGoalNorthEastEastSide.Set((lastX + TILE_SIZE_PX), lastY);
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            eastAlignedGoalNorthEastNorthSide.m_x >> TILE_SHIFT_PX,
-                            eastAlignedGoalNorthEastNorthSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(eastAlignedGoalNorthEastNorthSide.m_x),
+                            SCREEN_TILE_COMPONENT(eastAlignedGoalNorthEastNorthSide.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            eastAlignedGoalNorthEastEastSide.m_x >> TILE_SHIFT_PX,
-                            eastAlignedGoalNorthEastEastSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(eastAlignedGoalNorthEastEastSide.m_x),
+                            SCREEN_TILE_COMPONENT(eastAlignedGoalNorthEastEastSide.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -935,20 +935,20 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
                         eastAlignedGoalSouthEastSouthSide.Set(lastX, (lastY + TILE_SIZE_PX));
                         eastAlignedGoalSouthEastEastSide.Set((lastX + TILE_SIZE_PX), lastY);
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            eastAlignedGoalSouthEastSouthSide.m_x >> TILE_SHIFT_PX,
-                            eastAlignedGoalSouthEastSouthSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(eastAlignedGoalSouthEastSouthSide.m_x),
+                            SCREEN_TILE_COMPONENT(eastAlignedGoalSouthEastSouthSide.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            eastAlignedGoalSouthEastEastSide.m_x >> TILE_SHIFT_PX,
-                            eastAlignedGoalSouthEastEastSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(eastAlignedGoalSouthEastEastSide.m_x),
+                            SCREEN_TILE_COMPONENT(eastAlignedGoalSouthEastEastSide.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -961,8 +961,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -974,8 +974,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -993,20 +993,20 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
                         westSouthGoalNorthWestNorthSide.Set(lastX, (lastY - TILE_SIZE_PX));
                         westSouthGoalNorthWestWestSide.Set((lastX - TILE_SIZE_PX), lastY);
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            westSouthGoalNorthWestNorthSide.m_x >> TILE_SHIFT_PX,
-                            westSouthGoalNorthWestNorthSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(westSouthGoalNorthWestNorthSide.m_x),
+                            SCREEN_TILE_COMPONENT(westSouthGoalNorthWestNorthSide.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            westSouthGoalNorthWestWestSide.m_x >> TILE_SHIFT_PX,
-                            westSouthGoalNorthWestWestSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(westSouthGoalNorthWestWestSide.m_x),
+                            SCREEN_TILE_COMPONENT(westSouthGoalNorthWestWestSide.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -1019,8 +1019,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -1033,20 +1033,20 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
                         westSouthGoalSouthWestSouthSide.Set(lastX, (lastY + TILE_SIZE_PX));
                         westSouthGoalSouthWestWestSide.Set((lastX - TILE_SIZE_PX), lastY);
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            westSouthGoalSouthWestSouthSide.m_x >> TILE_SHIFT_PX,
-                            westSouthGoalSouthWestSouthSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(westSouthGoalSouthWestSouthSide.m_x),
+                            SCREEN_TILE_COMPONENT(westSouthGoalSouthWestSouthSide.m_y)
                         );
                         i32 sideX = g_gameReg->m_tileGrid->CellFlagsAt(
-                            westSouthGoalSouthWestWestSide.m_x >> TILE_SHIFT_PX,
-                            westSouthGoalSouthWestWestSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(westSouthGoalSouthWestWestSide.m_x),
+                            SCREEN_TILE_COMPONENT(westSouthGoalSouthWestWestSide.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -1059,8 +1059,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -1075,20 +1075,20 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
                         westNorthGoalSouthWestSouthSide.Set(lastX, (lastY + TILE_SIZE_PX));
                         westNorthGoalSouthWestWestSide.Set((lastX - TILE_SIZE_PX), lastY);
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            westNorthGoalSouthWestSouthSide.m_x >> TILE_SHIFT_PX,
-                            westNorthGoalSouthWestSouthSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(westNorthGoalSouthWestSouthSide.m_x),
+                            SCREEN_TILE_COMPONENT(westNorthGoalSouthWestSouthSide.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            westNorthGoalSouthWestWestSide.m_x >> TILE_SHIFT_PX,
-                            westNorthGoalSouthWestWestSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(westNorthGoalSouthWestWestSide.m_x),
+                            SCREEN_TILE_COMPONENT(westNorthGoalSouthWestWestSide.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -1101,8 +1101,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -1115,20 +1115,20 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
                         westNorthGoalNorthWestNorthSide.Set(lastX, (lastY - TILE_SIZE_PX));
                         westNorthGoalNorthWestWestSide.Set((lastX - TILE_SIZE_PX), lastY);
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            westNorthGoalNorthWestNorthSide.m_x >> TILE_SHIFT_PX,
-                            westNorthGoalNorthWestNorthSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(westNorthGoalNorthWestNorthSide.m_x),
+                            SCREEN_TILE_COMPONENT(westNorthGoalNorthWestNorthSide.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            westNorthGoalNorthWestWestSide.m_x >> TILE_SHIFT_PX,
-                            westNorthGoalNorthWestWestSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(westNorthGoalNorthWestWestSide.m_x),
+                            SCREEN_TILE_COMPONENT(westNorthGoalNorthWestWestSide.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -1141,8 +1141,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -1158,20 +1158,20 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
                         westAlignedGoalNorthWestNorthSide.Set(lastX, (lastY - TILE_SIZE_PX));
                         westAlignedGoalNorthWestWestSide.Set((lastX - TILE_SIZE_PX), lastY);
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            westAlignedGoalNorthWestNorthSide.m_x >> TILE_SHIFT_PX,
-                            westAlignedGoalNorthWestNorthSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(westAlignedGoalNorthWestNorthSide.m_x),
+                            SCREEN_TILE_COMPONENT(westAlignedGoalNorthWestNorthSide.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            westAlignedGoalNorthWestWestSide.m_x >> TILE_SHIFT_PX,
-                            westAlignedGoalNorthWestWestSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(westAlignedGoalNorthWestWestSide.m_x),
+                            SCREEN_TILE_COMPONENT(westAlignedGoalNorthWestWestSide.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -1187,20 +1187,20 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
                         westAlignedGoalSouthWestSouthSide.Set(lastX, (lastY + TILE_SIZE_PX));
                         westAlignedGoalSouthWestWestSide.Set((lastX - TILE_SIZE_PX), lastY);
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            westAlignedGoalSouthWestSouthSide.m_x >> TILE_SHIFT_PX,
-                            westAlignedGoalSouthWestSouthSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(westAlignedGoalSouthWestSouthSide.m_x),
+                            SCREEN_TILE_COMPONENT(westAlignedGoalSouthWestSouthSide.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            westAlignedGoalSouthWestWestSide.m_x >> TILE_SHIFT_PX,
-                            westAlignedGoalSouthWestWestSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(westAlignedGoalSouthWestWestSide.m_x),
+                            SCREEN_TILE_COMPONENT(westAlignedGoalSouthWestWestSide.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -1213,8 +1213,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -1226,8 +1226,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -1245,8 +1245,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -1261,20 +1261,20 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
                         northEastXDeltaLessNorthWestNorthSide.Set(lastX, (lastY - TILE_SIZE_PX));
                         northEastXDeltaLessNorthWestWestSide.Set((lastX - TILE_SIZE_PX), lastY);
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            northEastXDeltaLessNorthWestNorthSide.m_x >> TILE_SHIFT_PX,
-                            northEastXDeltaLessNorthWestNorthSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(northEastXDeltaLessNorthWestNorthSide.m_x),
+                            SCREEN_TILE_COMPONENT(northEastXDeltaLessNorthWestNorthSide.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            northEastXDeltaLessNorthWestWestSide.m_x >> TILE_SHIFT_PX,
-                            northEastXDeltaLessNorthWestWestSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(northEastXDeltaLessNorthWestWestSide.m_x),
+                            SCREEN_TILE_COMPONENT(northEastXDeltaLessNorthWestWestSide.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -1287,8 +1287,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -1303,20 +1303,20 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
                         northEastXDeltaLessSouthEastSouthSide.Set(lastX, (lastY + TILE_SIZE_PX));
                         northEastXDeltaLessSouthEastEastSide.Set((lastX + TILE_SIZE_PX), lastY);
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            northEastXDeltaLessSouthEastSouthSide.m_x >> TILE_SHIFT_PX,
-                            northEastXDeltaLessSouthEastSouthSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(northEastXDeltaLessSouthEastSouthSide.m_x),
+                            SCREEN_TILE_COMPONENT(northEastXDeltaLessSouthEastSouthSide.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            northEastXDeltaLessSouthEastEastSide.m_x >> TILE_SHIFT_PX,
-                            northEastXDeltaLessSouthEastEastSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(northEastXDeltaLessSouthEastEastSide.m_x),
+                            SCREEN_TILE_COMPONENT(northEastXDeltaLessSouthEastEastSide.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -1330,8 +1330,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -1346,20 +1346,20 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
                         northEastXDeltaGreaterSouthEastSouthSide.Set(lastX, (lastY + TILE_SIZE_PX));
                         northEastXDeltaGreaterSouthEastEastSide.Set((lastX + TILE_SIZE_PX), lastY);
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            northEastXDeltaGreaterSouthEastSouthSide.m_x >> TILE_SHIFT_PX,
-                            northEastXDeltaGreaterSouthEastSouthSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(northEastXDeltaGreaterSouthEastSouthSide.m_x),
+                            SCREEN_TILE_COMPONENT(northEastXDeltaGreaterSouthEastSouthSide.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            northEastXDeltaGreaterSouthEastEastSide.m_x >> TILE_SHIFT_PX,
-                            northEastXDeltaGreaterSouthEastEastSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(northEastXDeltaGreaterSouthEastEastSide.m_x),
+                            SCREEN_TILE_COMPONENT(northEastXDeltaGreaterSouthEastEastSide.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -1372,8 +1372,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -1388,20 +1388,20 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
                         northEastXDeltaGreaterNorthWestNorthSide.Set(lastX, (lastY - TILE_SIZE_PX));
                         northEastXDeltaGreaterNorthWestWestSide.Set((lastX - TILE_SIZE_PX), lastY);
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            northEastXDeltaGreaterNorthWestNorthSide.m_x >> TILE_SHIFT_PX,
-                            northEastXDeltaGreaterNorthWestNorthSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(northEastXDeltaGreaterNorthWestNorthSide.m_x),
+                            SCREEN_TILE_COMPONENT(northEastXDeltaGreaterNorthWestNorthSide.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            northEastXDeltaGreaterNorthWestWestSide.m_x >> TILE_SHIFT_PX,
-                            northEastXDeltaGreaterNorthWestWestSide.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(northEastXDeltaGreaterNorthWestWestSide.m_x),
+                            SCREEN_TILE_COMPONENT(northEastXDeltaGreaterNorthWestWestSide.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -1416,8 +1416,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -1429,8 +1429,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -1445,8 +1445,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -1459,12 +1459,12 @@ GruntDirectionCell __stdcall TmDeflectStep(
                             lastY
                         );
                         i32 sideY = g_gameReg->m_tileGrid->CellFlagsAt(
-                            sideYStep->m_x >> TILE_SHIFT_PX,
-                            sideYStep->m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideYStep->m_x),
+                            SCREEN_TILE_COMPONENT(sideYStep->m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideXStep->m_x >> TILE_SHIFT_PX,
-                            sideXStep->m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideXStep->m_x),
+                            SCREEN_TILE_COMPONENT(sideXStep->m_y)
                         );
 
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
@@ -1481,8 +1481,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -1495,12 +1495,12 @@ GruntDirectionCell __stdcall TmDeflectStep(
                             lastY
                         );
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideYStep.m_x >> TILE_SHIFT_PX,
-                            sideYStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideXStep.m_x >> TILE_SHIFT_PX,
-                            sideXStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -1520,8 +1520,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -1536,8 +1536,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -1550,12 +1550,12 @@ GruntDirectionCell __stdcall TmDeflectStep(
                             lastY
                         );
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideYStep.m_x >> TILE_SHIFT_PX,
-                            sideYStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideXStep.m_x >> TILE_SHIFT_PX,
-                            sideXStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -1568,8 +1568,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -1584,8 +1584,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -1598,12 +1598,12 @@ GruntDirectionCell __stdcall TmDeflectStep(
                             lastY
                         );
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideYStep.m_x >> TILE_SHIFT_PX,
-                            sideYStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideXStep.m_x >> TILE_SHIFT_PX,
-                            sideXStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -1618,8 +1618,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -1634,8 +1634,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -1648,12 +1648,12 @@ GruntDirectionCell __stdcall TmDeflectStep(
                             lastY
                         );
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideYStep.m_x >> TILE_SHIFT_PX,
-                            sideYStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideXStep.m_x >> TILE_SHIFT_PX,
-                            sideXStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -1666,8 +1666,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -1682,8 +1682,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -1696,12 +1696,12 @@ GruntDirectionCell __stdcall TmDeflectStep(
                             lastY
                         );
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideYStep.m_x >> TILE_SHIFT_PX,
-                            sideYStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideXStep.m_x >> TILE_SHIFT_PX,
-                            sideXStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -1716,8 +1716,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -1729,8 +1729,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -1745,8 +1745,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -1759,12 +1759,12 @@ GruntDirectionCell __stdcall TmDeflectStep(
                             lastY
                         );
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideYStep.m_x >> TILE_SHIFT_PX,
-                            sideYStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideXStep.m_x >> TILE_SHIFT_PX,
-                            sideXStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -1780,8 +1780,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -1794,12 +1794,12 @@ GruntDirectionCell __stdcall TmDeflectStep(
                             lastY
                         );
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideYStep.m_x >> TILE_SHIFT_PX,
-                            sideYStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideXStep.m_x >> TILE_SHIFT_PX,
-                            sideXStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -1819,8 +1819,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -1835,8 +1835,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -1849,12 +1849,12 @@ GruntDirectionCell __stdcall TmDeflectStep(
                             lastY
                         );
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideYStep.m_x >> TILE_SHIFT_PX,
-                            sideYStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideXStep.m_x >> TILE_SHIFT_PX,
-                            sideXStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -1867,8 +1867,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -1883,8 +1883,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -1897,12 +1897,12 @@ GruntDirectionCell __stdcall TmDeflectStep(
                             lastY
                         );
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideYStep.m_x >> TILE_SHIFT_PX,
-                            sideYStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideXStep.m_x >> TILE_SHIFT_PX,
-                            sideXStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -1916,8 +1916,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -1932,8 +1932,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -1946,12 +1946,12 @@ GruntDirectionCell __stdcall TmDeflectStep(
                             lastY
                         );
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideYStep.m_x >> TILE_SHIFT_PX,
-                            sideYStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideXStep.m_x >> TILE_SHIFT_PX,
-                            sideXStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -1964,8 +1964,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -1980,8 +1980,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -1994,12 +1994,12 @@ GruntDirectionCell __stdcall TmDeflectStep(
                             lastY
                         );
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideYStep.m_x >> TILE_SHIFT_PX,
-                            sideYStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideXStep.m_x >> TILE_SHIFT_PX,
-                            sideXStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -2014,8 +2014,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -2027,8 +2027,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -2043,8 +2043,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -2057,12 +2057,12 @@ GruntDirectionCell __stdcall TmDeflectStep(
                             lastY
                         );
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideYStep.m_x >> TILE_SHIFT_PX,
-                            sideYStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideXStep.m_x >> TILE_SHIFT_PX,
-                            sideXStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -2078,8 +2078,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -2092,12 +2092,12 @@ GruntDirectionCell __stdcall TmDeflectStep(
                             lastY
                         );
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideYStep.m_x >> TILE_SHIFT_PX,
-                            sideYStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideXStep.m_x >> TILE_SHIFT_PX,
-                            sideXStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -2118,8 +2118,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -2134,8 +2134,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -2148,12 +2148,12 @@ GruntDirectionCell __stdcall TmDeflectStep(
                             lastY
                         );
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideYStep.m_x >> TILE_SHIFT_PX,
-                            sideYStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideXStep.m_x >> TILE_SHIFT_PX,
-                            sideXStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -2166,8 +2166,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -2182,8 +2182,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -2196,12 +2196,12 @@ GruntDirectionCell __stdcall TmDeflectStep(
                             lastY
                         );
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideYStep.m_x >> TILE_SHIFT_PX,
-                            sideYStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideXStep.m_x >> TILE_SHIFT_PX,
-                            sideXStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -2216,8 +2216,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -2232,8 +2232,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -2246,12 +2246,12 @@ GruntDirectionCell __stdcall TmDeflectStep(
                             lastY
                         );
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideYStep.m_x >> TILE_SHIFT_PX,
-                            sideYStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideXStep.m_x >> TILE_SHIFT_PX,
-                            sideXStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -2264,8 +2264,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -2280,8 +2280,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -2294,12 +2294,12 @@ GruntDirectionCell __stdcall TmDeflectStep(
                             lastY
                         );
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideYStep.m_x >> TILE_SHIFT_PX,
-                            sideYStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideXStep.m_x >> TILE_SHIFT_PX,
-                            sideXStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -2314,8 +2314,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -2327,8 +2327,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -2343,8 +2343,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -2357,12 +2357,12 @@ GruntDirectionCell __stdcall TmDeflectStep(
                             lastY
                         );
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideYStep.m_x >> TILE_SHIFT_PX,
-                            sideYStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideXStep.m_x >> TILE_SHIFT_PX,
-                            sideXStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -2378,8 +2378,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        pCell->m_x >> TILE_SHIFT_PX,
-                        pCell->m_y >> TILE_SHIFT_PX
+                        SCREEN_TILE_COMPONENT(pCell->m_x),
+                        SCREEN_TILE_COMPONENT(pCell->m_y)
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -2392,12 +2392,12 @@ GruntDirectionCell __stdcall TmDeflectStep(
                             lastY
                         );
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideYStep.m_x >> TILE_SHIFT_PX,
-                            sideYStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            sideXStep.m_x >> TILE_SHIFT_PX,
-                            sideXStep.m_y >> TILE_SHIFT_PX
+                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
+                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -2417,14 +2417,15 @@ GruntDirectionCell __stdcall TmDeflectStep(
 // @early-stop
 RVA(0x00075af0, 0x111)
 CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outPlayerIndex, i32* outUnitIndex, i32 exact) {
-    i32 ix = x >> TILE_SHIFT_PX;
-    i32 iy = y >> TILE_SHIFT_PX;
+    Coord position(x, y);
+    Coord tile = position;
+    ScreenTile(&tile);
     CMapMgr* plane = g_gameReg->m_tileGrid;
     i32 attr;
-    if (ix >= plane->m_width || iy >= plane->m_height) {
+    if (tile.m_x >= plane->m_width || tile.m_y >= plane->m_height) {
         attr = -1;
     } else {
-        attr = plane->m_rowInts[iy][ix * 7 + 1];
+        attr = plane->m_rows[tile.m_y][tile.m_x].m_occupantId;
     }
     if (attr == -1) {
         return NULL;
@@ -2438,14 +2439,11 @@ CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outPlayerIndex, i32* outUnit
 
     if (exact == 0) {
         CGameObject* o = cell->m_object;
-        RECT box;
-        box.top = y - 7;
-        box.bottom = y + 7;
-        box.left = x - 7;
-        box.right = x + 7;
-        i32 ox = o->m_screenX - 7;
-        i32 oy = o->m_screenY - 7;
-        if (box.left > ox + 14 || box.right < ox || box.top > oy + 14 || box.bottom < oy) {
+        CRect box(position.m_x - 7, position.m_y - 7, position.m_x + 7, position.m_y + 7);
+        Coord objectLo = o->ScreenPos();
+        objectLo -= Coord(7, 7);
+        if (box.left > objectLo.m_x + 14 || box.right < objectLo.m_x || box.top > objectLo.m_y + 14
+            || box.bottom < objectLo.m_y) {
             return NULL;
         }
         *outPlayerIndex = playerIndex;
@@ -2453,7 +2451,7 @@ CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outPlayerIndex, i32* outUnit
         return cell;
     }
     CGameObject* o = cell->m_object;
-    if (o->m_screenX != x || o->m_screenY != y) {
+    if (o->ScreenPos() != position) {
         return NULL;
     }
     *outPlayerIndex = playerIndex;
@@ -2471,27 +2469,34 @@ CGrunt* CTriggerMgr::FindGruntAt(
     i32* outUnitIndex,
     RECT* src
 ) {
-    i32 tcol = px >> TILE_SHIFT_PX;
-    i32 trow = py >> TILE_SHIFT_PX;
-    RECT rc;
+    Coord position(px, py);
+    Coord tile = position;
+    ScreenTile(&tile);
+    CRect rc;
     if (src) {
-        CopyRect(&rc, src);
+        rc = *src;
     } else {
-        SetRect(
-            &rc,
-            px - span->left * TILE_SIZE_PX - 7,
-            py - span->top * TILE_SIZE_PX - 7,
-            span->right * TILE_SIZE_PX + px + 7,
-            span->bottom * TILE_SIZE_PX + py + 7
-        );
+        Coord nearExtent(span->left, span->top);
+        nearExtent *= TILE_SIZE_PX;
+        Coord farExtent(span->right, span->bottom);
+        farExtent *= TILE_SIZE_PX;
+        Coord margin(7, 7);
+        Coord low = position - nearExtent - margin;
+        Coord high = position + farExtent + margin;
+        rc.SetRect(low.m_x, low.m_y, high.m_x, high.m_y);
     }
-    i32 x = tcol - span->left - 1;
-    i32 xEnd = span->right + tcol + 1;
+    CRect tileBounds(
+        tile.m_x - span->left - 1,
+        tile.m_y - span->top - 1,
+        span->right + tile.m_x + 1,
+        span->bottom + tile.m_y + 1
+    );
+    i32 x = tileBounds.left;
 
-    if (static_cast<u32>(x) <= static_cast<u32>(xEnd)) {
+    if (static_cast<u32>(x) <= static_cast<u32>(tileBounds.right)) {
         do {
-            i32 yEnd = span->bottom + trow + 1;
-            for (i32 y = trow - span->top - 1; static_cast<u32>(y) <= static_cast<u32>(yEnd); y++) {
+            for (i32 y = tileBounds.top; static_cast<u32>(y) <= static_cast<u32>(tileBounds.bottom);
+                 y++) {
                 if (static_cast<u32>(x) >= static_cast<u32>(g_gameReg->m_tileGrid->m_width)) {
                     continue;
                 }
@@ -2519,18 +2524,18 @@ CGrunt* CTriggerMgr::FindGruntAt(
                 if (!g->m_entranceCommitted) {
                     continue;
                 }
-                i32 sx = g->m_object->m_screenX - 7;
-                i32 sy = g->m_object->m_screenY - 7;
-                i32 sx2 = sx + 0xe;
-                i32 sy2 = sy + 0xe;
-                if (rc.left <= sx2 && rc.right >= sx && rc.top <= sy2 && rc.bottom >= sy) {
+                Coord spriteLo = g->m_object->ScreenPos();
+                spriteLo -= Coord(7, 7);
+                Coord spriteHi = spriteLo + Coord(0xe, 0xe);
+                if (rc.left <= spriteHi.m_x && rc.right >= spriteLo.m_x && rc.top <= spriteHi.m_y
+                    && rc.bottom >= spriteLo.m_y) {
                     *outPlayerIndex = playerIndex;
                     *outUnitIndex = unitIndex;
                     return g;
                 }
             }
             x++;
-        } while (static_cast<u32>(x) <= static_cast<u32>(xEnd));
+        } while (static_cast<u32>(x) <= static_cast<u32>(tileBounds.right));
     }
     return NULL;
 }

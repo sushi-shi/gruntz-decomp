@@ -48,13 +48,13 @@ void CChatBoxOwner::Configure(ChatBoxLayout mode) {
     m_mode = mode;
 
     if (mode == CHATBOX_WITH_RIGHT_STATUSBAR || mode == CHATBOX_WITH_HIDDEN_STATUSBAR) {
-        m_originX = 0;
+        m_origin.x = 0;
         tagSIZE screenSize = g_gameReg->m_modeSize;
-        m_originY = screenSize.cy - 66;
+        m_origin.y = screenSize.cy - 66;
     } else if (mode == CHATBOX_WITH_LEFT_STATUSBAR) {
-        m_originX = 0xa0;
+        m_origin.x = 0xa0;
         tagSIZE screenSize = g_gameReg->m_modeSize;
-        m_originY = screenSize.cy - 66;
+        m_origin.y = screenSize.cy - 66;
     }
     m_fontConfig->m_reserved34 = 1;
 }
@@ -171,13 +171,17 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
         if (!frame) {
             return 0;
         }
-        frame->RenderFrame(target, self->m_originX + 0x140, self->m_originY + 0x20, 0);
+        CPoint framePosition = self->m_origin;
+        framePosition += CPoint(0x140, 0x20);
+        frame->RenderFrame(target, framePosition.x, framePosition.y, 0);
     } else {
         CImage* frame = DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, spr->m_minIndex);
         if (!frame) {
             return 0;
         }
-        frame->RenderFrame(target, self->m_originX + 0xf0, self->m_originY + 0x20, 0);
+        CPoint framePosition = self->m_origin;
+        framePosition += CPoint(0xf0, 0x20);
+        frame->RenderFrame(target, framePosition.x, framePosition.y, 0);
     }
 
     HDC hdc = NULL;
@@ -189,18 +193,22 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
     SetTextColor(hdc, 0);
     SetBkColor(hdc, 0);
 
-    RECT rect;
+    CRect rect;
     if (self->m_mode == CHATBOX_WITH_HIDDEN_STATUSBAR) {
-        rect.left = self->m_originX + 0x4c;
-        rect.right = self->m_originX + 0x267;
-        rect.top = self->m_originY + 0x2b;
-        rect.bottom = self->m_originY + 0x37;
+        rect.SetRect(
+            self->m_origin.x + 0x4c,
+            self->m_origin.y + 0x2b,
+            self->m_origin.x + 0x267,
+            self->m_origin.y + 0x37
+        );
         self->m_fontConfig->RenderInputText(hdc, 0x21b, &rect);
     } else {
-        rect.left = self->m_originX + 0x4c;
-        rect.right = self->m_originX + 0x1c7;
-        rect.top = self->m_originY + 0x2b;
-        rect.bottom = self->m_originY + 0x37;
+        rect.SetRect(
+            self->m_origin.x + 0x4c,
+            self->m_origin.y + 0x2b,
+            self->m_origin.x + 0x1c7,
+            self->m_origin.y + 0x37
+        );
         self->m_fontConfig->RenderInputText(hdc, 0x17b, &rect);
     }
     surface->m_ddSurface->ReleaseDC(hdc);
@@ -217,7 +225,7 @@ i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
             }
         } else {
             if ((x < 0x40 && y >= g_gameReg->GetModeSize().cy - 0x40)
-                || (x > m_originX + 0x40 && x < m_originX + 0x1e0
+                || (x > m_origin.x + 0x40 && x < m_origin.x + 0x1e0
                     && y >= g_gameReg->GetModeSize().cy - 0x20)) {
                 return 1;
             }

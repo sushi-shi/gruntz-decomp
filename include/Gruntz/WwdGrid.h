@@ -3,6 +3,8 @@
 
 #include <rva.h>
 
+#include <MfcWin.h>
+
 #include <Gruntz/WwdGridIter.h>
 #include <Ints.h>
 #include <Lith/BaseList.h>
@@ -38,17 +40,13 @@ public:
 
     b32 m_allocated;
     i32 m_count;
-    i32 m_cols;
-    i32 m_rows;
-    i32 m_shiftY;
-    i32 m_shiftX;
+    CSize m_gridSize;
+    CSize m_cellShift;
     i32 m_cellCount;
-    i32 m_width;
-    i32 m_height;
+    CSize m_extent;
 
     WwdRect m_bounds;
-    i32 m_cellH;
-    i32 m_cellW;
+    CSize m_cellSize;
     BucketHead* m_buckets;
 };
 
