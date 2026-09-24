@@ -726,7 +726,7 @@ i32 CStatusBarMgr::UpdateStatusBar(i32 deltaMs) {
 
                 SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
                 CMapStringToPtr* map = &registry->m_cues;
-                SoundCue* found = LookupSoundCue(*map, "GAME_DESTRUCT");
+                SoundCue* found = MapFind<SoundCue>(*map, "GAME_DESTRUCT");
                 if (found) {
                     SoundSample* sample = found->m_sound;
                     if (sample) {
@@ -4279,7 +4279,7 @@ i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragm
     m_owner = owner;
 
     i32 n = IDX(fragment) + 1;
-    CDDrawWorker* spr = LookupWorker(
+    CDDrawWorker* spr = MapFind<CDDrawWorker>(
         g_gameReg->m_world->m_imageRegistry->m_workersByName,
         "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE"
     );
@@ -4380,7 +4380,7 @@ i32 CWarpStoneFly::SerializeDispatch(
             arc->Read(&index, sizeof(index));
             if (strlen(name) != 0) {
                 i32 i = index;
-                CDDrawWorker* rec = LookupWorker(lvl, name);
+                CDDrawWorker* rec = lvl->FindWorker(name);
                 CImage* r = rec != NULL ? rec->GetAt(i) : NULL;
                 m_sprite = r;
             } else {

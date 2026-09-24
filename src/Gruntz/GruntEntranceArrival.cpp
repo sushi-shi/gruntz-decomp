@@ -326,7 +326,7 @@ i32 CGrunt::StepAttackFire() {
                         0,
                         m_gruntKind
                     );
-                    PickupType t = ArrivalPickup(tgt);
+                    PickupType t = tgt->ArrivalPickup();
                     if (t == PICKUP_BOMB && m_gruntKind != GRUNT_INVULNERABLE) {
                         m_triggerMgr->StartUnitDeath(
                             m_playerIndex,
@@ -541,7 +541,7 @@ RVA(0x00062840, 0x25d)
 i32 CGrunt::UpdateToyUseAnimation() {
     b32 ready = m_wwdObject->m_animationCursor.Advance(static_cast<u32>(g_engineFrameDelta));
     CAniAdvanceCursor* sub = &m_wwdObject->m_animationCursor;
-    if (IsAniCursorComplete(sub)) {
+    if (sub->IsComplete()) {
         if (m_arrived != false) {
             CreateHealthSprite();
             CreateStaminaSprite();
@@ -847,7 +847,7 @@ i32 CGrunt::ResolveEntranceArrival() {
 tail:
     if (m_wwdObject->m_animationCursor.m_animation != AT(m_poseIdle, GRUNT_IDLE1)) {
 
-        if (IsAniCursorComplete(&m_wwdObject->m_animationCursor)) {
+        if (m_wwdObject->m_animationCursor.IsComplete()) {
             ResetEntranceAnimation(0, 0, 0);
         }
         return 0;
@@ -977,7 +977,7 @@ i32 CGrunt::StepArrivalReroll() {
 RVA(0x00063db0, 0x32f)
 i32 CGrunt::LoadVehicleGruntAnimations() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(sub, static_cast<u32>(g_engineFrameDelta))
-    if (IsAniCursorComplete(sub)) {
+    if (sub->IsComplete()) {
         if (m_arrived) {
             CreateHealthSprite();
             CreateStaminaSprite();
@@ -1132,7 +1132,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
 RVA(0x00064540, 0x11c)
 i32 CGrunt::StepWarpExit() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(sub, g_engineFrameDelta)
-    if (IsAniCursorComplete(sub)) {
+    if (sub->IsComplete()) {
         if (m_deathType == GRUNT_DEATH_WARPOUT) {
             CState* st = g_gameReg->m_curState;
             i32 lvl = st->m_levelIndex + 0x64;
@@ -1346,7 +1346,7 @@ tail:
     i32 frame;
     {
         CAniElement* desc = m_wwdObject->m_animationCursor.m_animation;
-        CAniRecordView* elem = static_cast<CAniRecordView*>(GetAniElementAt(desc, 0));
+        CAniRecordView* elem = static_cast<CAniRecordView*>(desc->GetAt(0));
         frame = elem->m_param;
     }
     {
@@ -1371,7 +1371,7 @@ tail:
 RVA(0x00065300, 0x148)
 i32 CGrunt::FinishStruckAnimation() {
     ADVANCE_CURRENT_ANIMATION_CURSOR(sub, static_cast<u32>(g_engineFrameDelta))
-    if (!IsAniCursorComplete(sub)) {
+    if (!sub->IsComplete()) {
         return 0;
     }
     if (m_health <= 0) {
@@ -1406,7 +1406,7 @@ RVA(0x000654b0, 0x130)
 i32 CGrunt::FinishKnockbackAnimation() {
 
     ADVANCE_CURRENT_ANIMATION_CURSOR(sub, static_cast<u32>(g_engineFrameDelta))
-    if (!IsAniCursorComplete(sub)) {
+    if (!sub->IsComplete()) {
         return 0;
     }
     m_entranceActive = false;
@@ -1565,7 +1565,7 @@ i32 CGrunt::LoadWandGruntItemConfig() {
         );
     }
     CAniAdvanceCursor* sub = &m_wwdObject->m_animationCursor;
-    if (IsAniCursorComplete(sub)) {
+    if (sub->IsComplete()) {
         m_entranceActive = false;
         ResetEntranceAnimation(1, 0, 0);
     }
@@ -1588,7 +1588,7 @@ i32 CGrunt::FinishToobMoveAnimation() {
         );
     }
     CAniAdvanceCursor* sub = &m_wwdObject->m_animationCursor;
-    if (!IsAniCursorComplete(sub)) {
+    if (!sub->IsComplete()) {
         return 0;
     }
     m_entranceActive = false;

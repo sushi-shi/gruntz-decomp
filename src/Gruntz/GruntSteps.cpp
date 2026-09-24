@@ -611,7 +611,7 @@ i32 CGrunt::StepCompassMove() {
                     moveY = y;
                     break;
             }
-            result = CanCommitMove(this, moveX, moveY, x, y);
+            result = CanCommitMove(moveX, moveY, x, y);
             if (result == 0) {
                 m_toyTileIndex = 0;
             }
@@ -687,7 +687,7 @@ i32 CGrunt::StepCompassMove() {
                     moveY = y - 0x20;
                     break;
             }
-            result = CanCommitMove(this, moveX, moveY, x, y);
+            result = CanCommitMove(moveX, moveY, x, y);
             if (result != 0) {
                 break;
             }

@@ -171,7 +171,7 @@ i32 CCreditsState::Render() {
         }
     }
 
-    TickSoundVolumeRamps(m_world->m_soundRegistry);
+    m_world->m_soundRegistry->TickVolumeRamps();
 
     {
         CFixedPtrArray32* L = g_actorList;

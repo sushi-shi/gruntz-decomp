@@ -135,7 +135,7 @@ i32 CWormhole::SpawnPartners() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
 
     CWwdSpriteObject* g = m_wwdObject;
-    if (!IsAniCursorComplete(&g->m_animationCursor)) {
+    if (!g->m_animationCursor.IsComplete()) {
         return 0;
     }
     g->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
@@ -247,7 +247,7 @@ i32 CGruntPuddle::Remove() {
     }
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     CWwdSpriteObject* o = m_wwdObject;
-    if (IsAniCursorComplete(&o->m_animationCursor)) {
+    if (o->m_animationCursor.IsComplete()) {
         if (m_placed == false) {
             SwitchAnimationByName(g_puddleSpriteKey, 0);
             m_placed = true;
@@ -420,7 +420,7 @@ RVA(0x00041aa0, 0x312)
 i32 CTeleporter::Update() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     CWwdSpriteObject* a = m_wwdObject;
-    if (IsAniCursorComplete(&a->m_animationCursor)) {
+    if (a->m_animationCursor.IsComplete()) {
         if (static_cast<TeleporterKind>(m_object->m_smarts) == TELEPORTER_SINGLE_USE) {
             a->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
         } else {

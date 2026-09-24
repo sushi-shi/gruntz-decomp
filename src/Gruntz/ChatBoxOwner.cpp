@@ -16,7 +16,6 @@
 #include <Gruntz/CheatMgr.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/GameRegistry.h>
-#include <Gruntz/GameRegistryInline.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
@@ -26,6 +25,7 @@
 #include <Rez/RezArchive.h>
 #include <Rez/RezArchiveEntry.h>
 #include <Rez/RezTypeTag.h>
+#include <Utils/MapTyped.h>
 
 #include <ddraw.h>
 #include <string.h>
@@ -161,7 +161,7 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
     }
 
     CDDrawWorker* spr =
-        LookupWorker(self->m_world->m_imageRegistry->m_workersByName, "GAME_CHATBOX");
+        MapFind<CDDrawWorker>(self->m_world->m_imageRegistry->m_workersByName, "GAME_CHATBOX");
     if (!spr) {
         return 0;
     }
@@ -211,13 +211,14 @@ RVA(0x00021140, 0xda)
 i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
     if (m_inputActive) {
         if (m_mode == CHATBOX_WITH_HIDDEN_STATUSBAR) {
-            if ((x < 0x40 && y >= ModeSize().cy - 0x40)
-                || (x > 0x40 && y >= ModeSize().cy - 0x20)) {
+            if ((x < 0x40 && y >= g_gameReg->GetModeSize().cy - 0x40)
+                || (x > 0x40 && y >= g_gameReg->GetModeSize().cy - 0x20)) {
                 return 1;
             }
         } else {
-            if ((x < 0x40 && y >= ModeSize().cy - 0x40)
-                || (x > m_originX + 0x40 && x < m_originX + 0x1e0 && y >= ModeSize().cy - 0x20)) {
+            if ((x < 0x40 && y >= g_gameReg->GetModeSize().cy - 0x40)
+                || (x > m_originX + 0x40 && x < m_originX + 0x1e0
+                    && y >= g_gameReg->GetModeSize().cy - 0x20)) {
                 return 1;
             }
         }

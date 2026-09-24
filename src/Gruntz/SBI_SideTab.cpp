@@ -29,6 +29,7 @@
 #include <Image/ImageSet.h>
 #include <Ints.h>
 #include <Io/FileMem.h>
+#include <Utils/MapTyped.h>
 
 #include <string.h>
 
@@ -70,7 +71,7 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
 
     if (onLeft != 0) {
         CDDrawWorker* worker;
-        worker = LookupWorker(g_gameReg->m_world, "GAME_STATUSBAR_TABZ_STATZTAB_TABONLEFT");
+        worker = g_gameReg->m_world->FindWorker("GAME_STATUSBAR_TABZ_STATZTAB_TABONLEFT");
         CImage* frame;
         if (worker == NULL) {
             frame = NULL;
@@ -84,7 +85,7 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
         m_bottomFrameDy = 1;
     } else {
         CDDrawWorker* worker;
-        worker = LookupWorker(g_gameReg->m_world, "GAME_STATUSBAR_TABZ_STATZTAB_TABONRIGHT");
+        worker = g_gameReg->m_world->FindWorker("GAME_STATUSBAR_TABZ_STATZTAB_TABONRIGHT");
         CImage* frame;
         if (worker == NULL) {
             frame = NULL;
@@ -166,7 +167,7 @@ i32 CSBI_SideTab::BuildHandle() {
     if (m_sampledValue == val) {
         return 1;
     }
-    CDDrawWorker* gm = LookupWorker(
+    CDDrawWorker* gm = MapFind<CDDrawWorker>(
         g_gameReg->m_world->m_imageRegistry->m_workersByName,
         "GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ"
     );

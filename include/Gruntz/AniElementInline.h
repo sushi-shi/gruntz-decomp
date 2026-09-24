@@ -6,15 +6,15 @@
 
 #include <stddef.h>
 
-inline CObject* GetAniElementAt(const CAniElement* animation, i32 i) {
-    if (i >= 0 && i < animation->m_records.GetSize()) {
-        return animation->m_records.GetAt(i);
+inline CObject* CAniElement::GetAt(i32 i) const {
+    if (i >= 0 && i < m_records.GetSize()) {
+        return m_records.GetAt(i);
     }
     return NULL;
 }
 
-static inline CAniRecordView* RecordAt(CAniElement* anim, i32 index) {
-    return static_cast<CAniRecordView*>(GetAniElementAt(anim, index));
+inline CAniRecordView* CAniElement::RecordAt(i32 index) const {
+    return static_cast<CAniRecordView*>(GetAt(index));
 }
 
 #endif // GRUNTZ_ANIELEMENTINLINE_H

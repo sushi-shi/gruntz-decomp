@@ -4,17 +4,10 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorker.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <Utils/MapTyped.h>
 
-inline CDDrawWorker* LookupWorker(CMapStringToOb& map, LPCTSTR name) {
-    CObject* found = NULL;
-    map.Lookup(name, found);
-    return static_cast<CDDrawWorker*>(found);
-}
-
-inline CDDrawWorker* LookupWorker(CDDrawSurfaceMgr* host, LPCTSTR name) {
-    CObject* found = NULL;
-    host->m_imageRegistry->m_workersByName.Lookup(name, found);
-    return static_cast<CDDrawWorker*>(found);
+inline CDDrawWorker* CDDrawSurfaceMgr::FindWorker(LPCTSTR name) {
+    return MapFind<CDDrawWorker>(m_imageRegistry->m_workersByName, name);
 }
 
 #endif // DDRAWMGR_WORKERLOOKUP_H

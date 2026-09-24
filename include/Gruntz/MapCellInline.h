@@ -3,6 +3,7 @@
 
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Wap32/TileGeometry.h>
 #include <Wwd/WwdGameObjectFamily.h>
@@ -29,25 +30,25 @@ static inline BrickzCellNode* PopFreeCellNode(BrickzCellNode*& freeList) {
     return node;
 }
 
-static inline SIZE
-GridSize(const CGruntzMapMgr* mapMgr) {
+inline SIZE
+CGruntzMapMgr::GetGridSize() const {
     SIZE
     size;
-    size.cx = mapMgr->m_width;
-    size.cy = mapMgr->m_height;
+    size.cx = m_width;
+    size.cy = m_height;
     return size;
 }
 
-static inline i32 OccupantAt(const CGruntzMapMgr* mapMgr, u32 x, u32 y) {
-    if (x < mapMgr->m_width && y < mapMgr->m_height) {
-        return mapMgr->m_rows[y][x].m_occupantId;
+inline i32 CGruntzMapMgr::OccupantAt(u32 x, u32 y) const {
+    if (x < m_width && y < m_height) {
+        return m_rows[y][x].m_occupantId;
     }
     return -1;
 }
 
-static inline i32 TileIdAt(const CGruntzMapMgr* mapMgr, u32 x, u32 y) {
-    if (x < mapMgr->m_width && y < mapMgr->m_height) {
-        return mapMgr->m_rows[y][x].m_tileId;
+inline i32 CGruntzMapMgr::TileIdAt(u32 x, u32 y) const {
+    if (x < m_width && y < m_height) {
+        return m_rows[y][x].m_tileId;
     }
     return 0;
 }

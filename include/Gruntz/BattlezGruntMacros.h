@@ -2,10 +2,10 @@
 #define GRUNTZ_GRUNTZ_BATTLEZGRUNTMACROS_H
 
 #define BATTLEZ_ACT_DIFFERS_FROM_IGLPJCR(unit, result)                                             \
-    (!(result = HasAnimationActName(unit, "I")) && !(result = HasAnimationActName(unit, "G"))      \
-     && !(result = HasAnimationActName(unit, "L")) && !(result = HasAnimationActName(unit, "P"))   \
-     && !(result = HasAnimationActName(unit, "J")) && !(result = HasAnimationActName(unit, "C"))   \
-     && !(result = HasAnimationActName(unit, "R")))
+    (!(result = unit->HasAnimationActName("I")) && !(result = unit->HasAnimationActName("G"))      \
+     && !(result = unit->HasAnimationActName("L")) && !(result = unit->HasAnimationActName("P"))   \
+     && !(result = unit->HasAnimationActName("J")) && !(result = unit->HasAnimationActName("C"))   \
+     && !(result = unit->HasAnimationActName("R")))
 
 #define ARR_RECYCLE(g)                                                                             \
     if ((g)->CoordCount() != 0) {                                                                  \

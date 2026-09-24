@@ -28,6 +28,7 @@
 #include <Image/ImageSet.h>
 #include <Io/FileMem.h>
 #include <MakeRect.h>
+#include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/WapObj.h>
 #include <Wwd/WwdSpatialMgr.h>
@@ -77,7 +78,7 @@ i32 CDDrawWorkerHost::Read(
         nameBuf[len] = 0;
         if (len > 0) {
 
-            m_imageSets.SetAtGrow(static_cast<char>(n), LookupWorker(OwnerMgr(), nameBuf));
+            m_imageSets.SetAtGrow(static_cast<char>(n), (OwnerMgr())->FindWorker(nameBuf));
         }
     }
 
@@ -240,7 +241,10 @@ void CDDrawWorkerHost::Unload() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00161c50, 0x3f)
 void CDDrawWorkerHost::SetImageSetByName(char index, const char* key) {
-    m_imageSets.SetAtGrow(index, LookupWorker(OwnerMgr()->m_imageRegistry->m_workersByName, key));
+    m_imageSets.SetAtGrow(
+        index,
+        MapFind<CDDrawWorker>(OwnerMgr()->m_imageRegistry->m_workersByName, key)
+    );
 }
 
 // @early-stop

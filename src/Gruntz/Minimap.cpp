@@ -7,7 +7,6 @@
 #include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDSurface.h>
-#include <DDrawMgr/DDSurfaceInline.h>
 #include <DDrawMgr/PixelShift.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GameLevel.h>
@@ -89,7 +88,7 @@ i32 CMinimap::AllocSurface() {
     CDDrawSurfaceMgr* world = m_world;
 
     SIZE
-    size = GridSize(mapMgr);
+    size = mapMgr->GetGridSize();
     m_surface = world->m_deviceManager->CreateOffscreenSurface(size.cx, size.cy, BPP_UNSET, 0, -1);
     if (m_surface == NULL) {
         return 0;
@@ -132,7 +131,7 @@ i32 CMinimap::Refresh(i32 elapsedMs, b32 forceRefresh) {
         for (u32 x = 0; x < m_mapMgr->m_width; x++) {
             u16* pixel =
                 Pix16(pixels + y * m_surface->m_apiDesc.lPitch + x * m_surface->m_bytesPerPixel);
-            i32 occupantId = OccupantAt(m_mapMgr, x, y);
+            i32 occupantId = m_mapMgr->OccupantAt(x, y);
 
             if (occupantId != -1) {
 
@@ -176,7 +175,7 @@ i32 CMinimap::Refresh(i32 elapsedMs, b32 forceRefresh) {
                 } else if (static_cast<u32>(g_period100CountdownMs)
                            < MINIMAP_COMBAT_BLINK_PHASE_MS) {
 
-                    i32 tileId = TileIdAt(m_mapMgr, x, y);
+                    i32 tileId = m_mapMgr->TileIdAt(x, y);
                     if (static_cast<u32>(tileId) >= MINIMAP_TILE_COLOR_COUNT) {
                         *pixel = 0;
                     } else {
@@ -192,7 +191,7 @@ i32 CMinimap::Refresh(i32 elapsedMs, b32 forceRefresh) {
                     *pixel = spriteRef->m_teamColor2;
                 }
             } else {
-                i32 tileId = TileIdAt(m_mapMgr, x, y);
+                i32 tileId = m_mapMgr->TileIdAt(x, y);
                 u16 color;
                 if (static_cast<u32>(tileId) >= MINIMAP_TILE_COLOR_COUNT) {
                     color = 0;
@@ -275,19 +274,19 @@ RVA(0x000a3a20, 0xe2)
 void CMinimap::DrawBorderRaw(RECT* rect, char* pixels, i32 color) {
     i32 width = rect->right - rect->left + 1;
 
-    u16* topPixels = Pix16(pixels + PixOffset(m_surface, rect->left, rect->top));
+    u16* topPixels = Pix16(pixels + m_surface->PixelOffset(rect->left, rect->top));
     for (i32 topX = 0; topX < width; topX++) {
         topPixels[topX] = static_cast<u16>(color);
     }
 
-    u16* bottomPixels = Pix16(pixels + PixOffset(m_surface, rect->left, rect->bottom));
+    u16* bottomPixels = Pix16(pixels + m_surface->PixelOffset(rect->left, rect->bottom));
     for (i32 bottomX = 0; bottomX < width; bottomX++) {
         bottomPixels[bottomX] = static_cast<u16>(color);
     }
 
     i32 height = rect->bottom - rect->top + 1;
-    i32 leftOffset = PixOffset(m_surface, rect->left, rect->top);
-    i32 rightOffset = PixOffset(m_surface, rect->right, rect->top);
+    i32 leftOffset = m_surface->PixelOffset(rect->left, rect->top);
+    i32 rightOffset = m_surface->PixelOffset(rect->right, rect->top);
     i32 rowStride = m_surface->m_apiDesc.lPitch;
 
     if (height > 0) {

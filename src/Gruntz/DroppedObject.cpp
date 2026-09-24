@@ -513,7 +513,7 @@ i32 CDroppedObject::AdvanceFall() {
 RVA(0x000c7350, 0x39)
 i32 CDroppedObject::AdvanceAnimation() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
-    MARK_OBJECT_COMPLETE_IF(IsAniCursorComplete(&m_wwdObject->m_animationCursor))
+    MARK_OBJECT_COMPLETE_IF(m_wwdObject->m_animationCursor.IsComplete())
     return 0;
 }
 
@@ -580,7 +580,7 @@ i32 CDroppedObjectShadow::Advance() {
             WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
         );
     }
-    MARK_OBJECT_COMPLETE_IF(IsAniCursorComplete(&m_wwdObject->m_animationCursor))
+    MARK_OBJECT_COMPLETE_IF(m_wwdObject->m_animationCursor.IsComplete())
     return 0;
 }
 

@@ -773,3 +773,5 @@ Full old→new table: [`../tooling-map.md`](../tooling-map.md).
 - [SDK members explain template constructor helpers](sdk-member-constructors-explain-template-helpers.md): real CArray/CRect restoration replaces a fake initializer while reproducing the exact retail serializer.
 
 - [SDK record copies cross member widths](sdk-record-copies-cross-member-widths.md): decoded complete GUID argument copies expose a false field-width finding; full-consumer negative controls protect the gate.
+
+- [Typed lookup templates and real member helpers preserve caller boundaries](typed-lookup-and-member-helpers-preserve-caller-boundaries.md) - c9 - cpp:inline cpp:template cpp:member cpp:macro | asm:call asm:mov | topic:source-shape - typed map templates and natural members preserve helper-local reset and receiver evaluation; pixel, memcpy, registration-emission and nested fader controls distinguish sharing an operation from changing its compilation boundary.

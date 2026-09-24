@@ -40,7 +40,7 @@ CTimer::CTimer() {
 RVA(0x0009bb00, 0x119)
 i32 CTimer::LoadTimerSprite(i32 originX, i32 originY) {
     CDDrawWorker* spr =
-        LookupWorker(g_gameReg->m_world->m_imageRegistry->m_workersByName, "GAME_TIMER");
+        MapFind<CDDrawWorker>(g_gameReg->m_world->m_imageRegistry->m_workersByName, "GAME_TIMER");
     m_sprite = spr;
     if (!spr) {
         return 0;

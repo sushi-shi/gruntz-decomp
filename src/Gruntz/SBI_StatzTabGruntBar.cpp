@@ -156,7 +156,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
         overrideVal = -1;
         selectVal = 0;
 
-        PickupType cap = ArrivalPickupOf(unit, level);
+        PickupType cap = unit->ArrivalPickupOf(level);
         if (cap != PICKUP_NONE) {
             abilityVal = IDX(level);
             if (level > PICKUP_EQUIPPABLE_LAST) {

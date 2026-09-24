@@ -91,7 +91,7 @@ CAniElement* AnimationRegistry::LoadAnimationFromSource(const char* key, CRezItm
         delete animation;
         return NULL;
     }
-    REGISTER_ANIMATION(animation, key);
+    RegisterAnimation(animation, key);
     return animation;
 }
 
@@ -108,7 +108,7 @@ CAniElement* AnimationRegistry::LoadAnimationFromFile(const char* key, const cha
         delete animation;
         return NULL;
     }
-    REGISTER_ANIMATION(animation, key);
+    RegisterAnimation(animation, key);
     return animation;
 }
 
@@ -126,7 +126,7 @@ CAniElement* AnimationRegistry::LoadNamedAnimation(CRezItm* source) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00152ab0, 0x16)
 void AnimationRegistry::AddAnimation(CAniElement* animation, const char* key) {
-    REGISTER_ANIMATION(animation, key);
+    RegisterAnimation(animation, key);
 }
 
 RVA(0x00152ad0, 0x17f)

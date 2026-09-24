@@ -48,8 +48,16 @@ class CImage;
 
 class CDDrawWorker;
 
+class GruntzPlayer;
+
 class CPlay : public CState {
 public:
+    inline void SetSavedClock(u32 clock);
+    inline void ClearSaveSlot();
+    inline void SetCompletedFinalLevel(b32 completed);
+    inline void SetNotifyLatch(b32 notify);
+    inline void SetInitialFramePending(b32 pending);
+    inline void ResetAssetLoadState(GruntzPlayer* player);
     struct ClockInterval {
         Clock64 m_start;
         Clock64 m_interval;

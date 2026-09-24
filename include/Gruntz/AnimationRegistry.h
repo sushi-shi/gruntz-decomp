@@ -35,8 +35,11 @@ public:
     i32 LoadFromTree(CRezDir* tree, const char* prefix, const char* separator);
 
     CMapStringToPtr m_animations;
-};
 
-#define REGISTER_ANIMATION(animation, key) m_animations[key] = animation
+private:
+    void RegisterAnimation(CAniElement* animation, const char* key) {
+        m_animations[key] = animation;
+    }
+};
 
 #endif // GRUNTZ_ANIMATIONREGISTRY_H

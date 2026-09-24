@@ -22,6 +22,15 @@ inline void CFaderLight::ComputeSpan(i32 row, i32 radiusSq, i32 edgeOffset, i32&
     }
 }
 
+#define FADER_SHADE_PIXEL(dst, src, lut, count, column)                                            \
+    do {                                                                                           \
+        i32 pixel = *(src);                                                                        \
+        *(dst) = (lut)[pixel * (count) + (column)];                                                \
+    } while (0)
+
+#define FADER_DISTANCE(x, center, dySquared)                                                       \
+    static_cast<i32>(sqrt(static_cast<double>(((x) - (center)) * ((x) - (center)) + (dySquared))))
+
 RVA(0x00180fb0, 0x534)
 inline void
 CFaderLight::Render(i32 row0, i32 radiusSq, i32 radius, u8* lut, u8* srcBits, u8* dstBits) {
@@ -32,8 +41,7 @@ CFaderLight::Render(i32 row0, i32 radiusSq, i32 radius, u8* lut, u8* srcBits, u8
     i32 dx = row0 - cx;
     i32 dx2 = dx * dx;
     i32 row = m_centerX - static_cast<i32>(sqrt(static_cast<double>((radiusSq - dx2)))) + 1;
-    i32 len =
-        static_cast<i32>(sqrt(static_cast<double>(((row - m_centerX) * (row - m_centerX) + dx2))));
+    i32 len = FADER_DISTANCE(row, m_centerX, dx2);
 
     i32 srcCol = row0 * m_targetSurface->m_apiDesc.lPitch;
     u8* rowLsrc = srcBits + row + srcCol;
@@ -61,25 +69,19 @@ CFaderLight::Render(i32 row0, i32 radiusSq, i32 radius, u8* lut, u8* srcBits, u8
                 }
                 i32 cl = len - radius + m_spanCount;
                 if (row >= 0) {
-                    i32 p = *rowLdst;
-                    *rowLsrc = *(lut + p * m_spanCount + cl);
-                    i32 q = *(rowLdst + mirDst);
-                    *(rowLsrc + mirSrc) = *(lut + q * m_spanCount + cl);
+                    FADER_SHADE_PIXEL(rowLsrc, rowLdst, lut, m_spanCount, cl);
+                    FADER_SHADE_PIXEL((rowLsrc + mirSrc), (rowLdst + mirDst), lut, m_spanCount, cl);
                 }
                 rowLsrc++;
                 rowLdst++;
                 if (2 * m_centerX - row < m_width) {
-                    i32 p = *rowRdst;
-                    *rowRsrc = *(lut + p * m_spanCount + cl);
-                    i32 q = *(rowRdst + mirDst);
-                    *(rowRsrc + mirSrc) = *(lut + q * m_spanCount + cl);
+                    FADER_SHADE_PIXEL(rowRsrc, rowRdst, lut, m_spanCount, cl);
+                    FADER_SHADE_PIXEL((rowRsrc + mirSrc), (rowRdst + mirDst), lut, m_spanCount, cl);
                 }
                 rowRsrc--;
                 rowRdst--;
                 row++;
-                len = static_cast<i32>(
-                    sqrt(static_cast<double>(((row - m_centerX) * (row - m_centerX) + dx2)))
-                );
+                len = FADER_DISTANCE(row, m_centerX, dx2);
             }
             return;
         }
@@ -90,21 +92,17 @@ CFaderLight::Render(i32 row0, i32 radiusSq, i32 radius, u8* lut, u8* srcBits, u8
             }
             i32 cl = len - radius + m_spanCount;
             if (row >= 0) {
-                i32 p = *rowLdst;
-                *rowLsrc = *(lut + p * m_spanCount + cl);
+                FADER_SHADE_PIXEL(rowLsrc, rowLdst, lut, m_spanCount, cl);
             }
             rowLsrc++;
             rowLdst++;
             if (2 * m_centerX - row < m_width) {
-                i32 p = *rowRdst;
-                *rowRsrc = *(lut + p * m_spanCount + cl);
+                FADER_SHADE_PIXEL(rowRsrc, rowRdst, lut, m_spanCount, cl);
             }
             rowRsrc--;
             rowRdst--;
             row++;
-            len = static_cast<i32>(
-                sqrt(static_cast<double>(((row - m_centerX) * (row - m_centerX) + dx2)))
-            );
+            len = FADER_DISTANCE(row, m_centerX, dx2);
         }
         return;
     }
@@ -123,25 +121,19 @@ CFaderLight::Render(i32 row0, i32 radiusSq, i32 radius, u8* lut, u8* srcBits, u8
             }
             i32 cl = len - radius + m_spanCount;
             if (row >= 0) {
-                i32 p = *rowLdst;
-                *rowLsrc = *(lut + p * m_spanCount + cl);
-                i32 q = *(rowLdst - mirDst);
-                *(rowLsrc - mirSrc) = *(lut + q * m_spanCount + cl);
+                FADER_SHADE_PIXEL(rowLsrc, rowLdst, lut, m_spanCount, cl);
+                FADER_SHADE_PIXEL((rowLsrc - mirSrc), (rowLdst - mirDst), lut, m_spanCount, cl);
             }
             rowLsrc++;
             rowLdst++;
             if (2 * m_centerX - row < m_width) {
-                i32 p = *rowRdst;
-                *rowRsrc = *(lut + p * m_spanCount + cl);
-                i32 q = *(rowRdst - mirDst);
-                *(rowRsrc - mirSrc) = *(lut + q * m_spanCount + cl);
+                FADER_SHADE_PIXEL(rowRsrc, rowRdst, lut, m_spanCount, cl);
+                FADER_SHADE_PIXEL((rowRsrc - mirSrc), (rowRdst - mirDst), lut, m_spanCount, cl);
             }
             rowRsrc--;
             rowRdst--;
             row++;
-            len = static_cast<i32>(
-                sqrt(static_cast<double>(((row - m_centerX) * (row - m_centerX) + dx2)))
-            );
+            len = FADER_DISTANCE(row, m_centerX, dx2);
         }
     } else {
         while (len >= radius - m_spanCount) {
@@ -150,21 +142,17 @@ CFaderLight::Render(i32 row0, i32 radiusSq, i32 radius, u8* lut, u8* srcBits, u8
             }
             i32 cl = len - radius + m_spanCount;
             if (row >= 0) {
-                i32 p = *rowLdst;
-                *rowLsrc = *(lut + p * m_spanCount + cl);
+                FADER_SHADE_PIXEL(rowLsrc, rowLdst, lut, m_spanCount, cl);
             }
             rowLsrc++;
             rowLdst++;
             if (2 * m_centerX - row < m_width) {
-                i32 p = *rowRdst;
-                *rowRsrc = *(lut + p * m_spanCount + cl);
+                FADER_SHADE_PIXEL(rowRsrc, rowRdst, lut, m_spanCount, cl);
             }
             rowRsrc--;
             rowRdst--;
             row++;
-            len = static_cast<i32>(
-                sqrt(static_cast<double>(((row - m_centerX) * (row - m_centerX) + dx2)))
-            );
+            len = FADER_DISTANCE(row, m_centerX, dx2);
         }
     }
 }

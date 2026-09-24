@@ -773,7 +773,7 @@ i32 CInGameIcon::SerializeDispatch(
             if (strlen(aniName) == 0) {
                 m_value = NULL;
             } else {
-                m_value = LookupAnimation(
+                m_value = MapFind<CAniElement>(
                     m_ownerLogicRecord->m_ownerCtx->m_animRegistry->m_animations,
                     aniName
                 );
@@ -847,8 +847,10 @@ i32 CInGameIcon::SerializeDispatch(
             ar->Read(name, SERIAL_NAME_LEN);
 
             if (strlen(name) != 0) {
-                m_cue =
-                    LookupSoundCue(m_ownerLogicRecord->m_ownerCtx->m_soundRegistry->m_cues, name);
+                m_cue = MapFind<SoundCue>(
+                    m_ownerLogicRecord->m_ownerCtx->m_soundRegistry->m_cues,
+                    name
+                );
             } else {
                 m_cue = NULL;
             }
@@ -969,7 +971,7 @@ i32 CInGameText::Update() {
         if (::PtInRect(&reg->m_viewBounds, x, y)) {
             SoundCueRegistry* set = reg->m_world->m_soundRegistry;
             if (set->m_silentMode == false) {
-                SoundCue* res = LookupSoundCue(set->m_cues, "GAME_HELPBOOK");
+                SoundCue* res = MapFind<SoundCue>(set->m_cues, "GAME_HELPBOOK");
                 if (res != NULL) {
                     PlaySoundCueIfElapsed(res, g_soundVolumePercent, 0, 0, false);
                 }

@@ -18,6 +18,7 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Image/CImage.h>
 #include <Io/FileMem.h>
+#include <Utils/MapTyped.h>
 #include <Wwd/WwdFile.h>
 
 #include <string.h>
@@ -37,7 +38,7 @@ CActionOptionsMenuBar::CActionOptionsMenuBar() {
 RVA(0x000090e0, 0x100)
 i32 CActionOptionsMenuBar::LoadAssets() {
     m_active = false;
-    CDDrawWorker* spr = LookupWorker(
+    CDDrawWorker* spr = MapFind<CDDrawWorker>(
         g_gameReg->m_world->m_imageRegistry->m_workersByName,
         "GAME_ACTIONOPTIONZMENUBAR"
     );
@@ -46,7 +47,7 @@ i32 CActionOptionsMenuBar::LoadAssets() {
         return 0;
     }
 
-    spr = LookupWorker(
+    spr = MapFind<CDDrawWorker>(
         g_gameReg->m_world->m_imageRegistry->m_workersByName,
         "GAME_INGAMEICONZ_NORMCHIPZ"
     );
@@ -55,7 +56,7 @@ i32 CActionOptionsMenuBar::LoadAssets() {
         return 0;
     }
 
-    spr = LookupWorker(
+    spr = MapFind<CDDrawWorker>(
         g_gameReg->m_world->m_imageRegistry->m_workersByName,
         "GAME_INGAMEICONZ_HIGHCHIPZ"
     );
@@ -64,7 +65,7 @@ i32 CActionOptionsMenuBar::LoadAssets() {
         return 0;
     }
 
-    spr = LookupWorker(
+    spr = MapFind<CDDrawWorker>(
         g_gameReg->m_world->m_imageRegistry->m_workersByName,
         "GAME_INGAMEICONZ_GREYCHIPZ"
     );
@@ -144,7 +145,7 @@ i32 CActionOptionsMenuBar::Refresh() {
         } else if (m_buttonState[1] == ACTIONOPTION_DISABLED) {
             m_buttonState[1] = ACTIONOPTION_NORMAL;
         }
-        PickupType prim = ArrivalPickup(grunt);
+        PickupType prim = grunt->ArrivalPickup();
         m_buttonIcon[0] = prim;
         if (prim == PICKUP_NONE) {
             m_buttonIcon[0] = PICKUP_BARE_HANDS_ICON;
@@ -392,7 +393,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     g_serialCounter++;
     s->Read(buf, SERIAL_NAME_LEN);
     if (strlen(buf) != 0) {
-        m_normChipSprite = LookupWorker(mgr->m_imageRegistry->m_workersByName, buf);
+        m_normChipSprite = MapFind<CDDrawWorker>(mgr->m_imageRegistry->m_workersByName, buf);
     } else {
         m_normChipSprite = NULL;
     }
@@ -400,7 +401,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     g_serialCounter++;
     s->Read(buf, SERIAL_NAME_LEN);
     if (strlen(buf) != 0) {
-        m_highChipSprite = LookupWorker(mgr->m_imageRegistry->m_workersByName, buf);
+        m_highChipSprite = MapFind<CDDrawWorker>(mgr->m_imageRegistry->m_workersByName, buf);
     } else {
         m_highChipSprite = NULL;
     }
@@ -408,7 +409,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     g_serialCounter++;
     s->Read(buf, SERIAL_NAME_LEN);
     if (strlen(buf) != 0) {
-        m_greyChipSprite = LookupWorker(mgr->m_imageRegistry->m_workersByName, buf);
+        m_greyChipSprite = MapFind<CDDrawWorker>(mgr->m_imageRegistry->m_workersByName, buf);
     } else {
         m_greyChipSprite = NULL;
     }
@@ -418,7 +419,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
         i32 i = idx;
-        CDDrawWorker* tt = LookupWorker(mgr->m_imageRegistry->m_workersByName, buf);
+        CDDrawWorker* tt = MapFind<CDDrawWorker>(mgr->m_imageRegistry->m_workersByName, buf);
         CImage* r = tt != NULL ? tt->GetAt(i) : NULL;
         m_frame = r;
     } else {
@@ -430,7 +431,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
         i32 i = idx;
-        CDDrawWorker* tt = LookupWorker(mgr->m_imageRegistry->m_workersByName, buf);
+        CDDrawWorker* tt = MapFind<CDDrawWorker>(mgr->m_imageRegistry->m_workersByName, buf);
         CImage* r = tt != NULL ? tt->GetAt(i) : NULL;
         m_buttonFrame[0] = r;
     } else {
@@ -442,7 +443,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
         i32 i = idx;
-        CDDrawWorker* tt = LookupWorker(mgr->m_imageRegistry->m_workersByName, buf);
+        CDDrawWorker* tt = MapFind<CDDrawWorker>(mgr->m_imageRegistry->m_workersByName, buf);
         CImage* r = tt != NULL ? tt->GetAt(i) : NULL;
         m_buttonFrame[1] = r;
     } else {

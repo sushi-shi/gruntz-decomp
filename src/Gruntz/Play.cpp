@@ -207,7 +207,7 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
         if (sub == NULL) {
             return 0;
         }
-        ResetAssetLoadState(this, sub);
+        ResetAssetLoadState(sub);
 
         if (!CState::LoadGameAssetNamespaces(mgr, areaArg, prevStateId)) {
             return 0;
@@ -257,12 +257,12 @@ i32 CPlay::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId
 
         while (ShowCursor(false) >= 0) {
         }
-        SetInitialFramePending(this, true);
-        SetNotifyLatch(this, false);
-        SetCompletedFinalLevel(this, false);
-        ClearSaveSlot(this);
+        SetInitialFramePending(true);
+        SetNotifyLatch(false);
+        SetCompletedFinalLevel(false);
+        ClearSaveSlot();
         mgr->ResetClockGlobals();
-        SetSavedClock(this, 0);
+        SetSavedClock(0);
         m_rngSeed = timeGetTime();
         m_minimap = NULL;
         if (m_mgr->m_loadingSaveGame == false) {
@@ -3528,7 +3528,8 @@ RVA(0x000cfef0, 0xbc)
 i32 CPlay::DrawStateMessage() {
     Present(0x3c);
 
-    CDDrawWorker* set = LookupWorker(m_world->m_imageRegistry->m_workersByName, "GAME_MESSAGEZ");
+    CDDrawWorker* set =
+        MapFind<CDDrawWorker>(m_world->m_imageRegistry->m_workersByName, "GAME_MESSAGEZ");
     if (set == NULL) {
         return 0;
     }
@@ -3861,7 +3862,7 @@ i32 CPlay::LoadCursorAnimation(
     if (m_world == NULL) {
         return 0;
     }
-    CDDrawWorker* grid = LookupWorker(m_world, spriteKey);
+    CDDrawWorker* grid = m_world->FindWorker(spriteKey);
     m_cursorSprite = grid;
     if (grid == NULL) {
         return 0;
@@ -4253,7 +4254,8 @@ i32 CPlay::LoadScrollSpeedOptions() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000d1650, 0x90)
 void CPlay::DrawMessageFrame(i32 index, b32 useFront) {
-    CDDrawWorker* set = LookupWorker(m_world->m_imageRegistry->m_workersByName, "GAME_MESSAGEZ");
+    CDDrawWorker* set =
+        MapFind<CDDrawWorker>(m_world->m_imageRegistry->m_workersByName, "GAME_MESSAGEZ");
     if (set != NULL) {
         CImage* frame = set->GetAt(index);
         if (frame != NULL) {
@@ -6374,7 +6376,8 @@ i32 CPlay::BuildHelpReveal(b32 final) {
 
 RVA(0x000d7440, 0xad)
 i32 CPlay::LoadLoadingBarSprite() {
-    CDDrawWorker* spr = LookupWorker(m_world->m_imageRegistry->m_workersByName, "GAME_LOADINGBAR");
+    CDDrawWorker* spr =
+        MapFind<CDDrawWorker>(m_world->m_imageRegistry->m_workersByName, "GAME_LOADINGBAR");
     if (!spr) {
         return 0;
     }
@@ -6683,7 +6686,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         i32 idx;
         ar->Read(&idx, sizeof(idx));
         if (strlen(nameBuf) != 0) {
-            CDDrawWorker* set = LookupWorker(res, static_cast<const char*>(nameBuf));
+            CDDrawWorker* set = res->FindWorker(static_cast<const char*>(nameBuf));
             if (set == NULL || DDRAW_WORKER_FRAME_OUT_OF_RANGE(set, idx)) {
                 m_cursorImage = NULL;
             } else {

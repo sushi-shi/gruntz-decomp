@@ -106,7 +106,7 @@ i32 CHelpState::Render() {
         }
     }
 
-    TickSoundVolumeRamps(m_world->m_soundRegistry);
+    m_world->m_soundRegistry->TickVolumeRamps();
 
     CFixedPtrArray32* list = g_actorList;
     i32 i;

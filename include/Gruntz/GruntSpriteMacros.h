@@ -10,7 +10,7 @@
     }
 
 #define LOAD_POSE(dst, sfx)                                                                        \
-    ((dst) = LookupAnimation(                                                                      \
+    ((dst) = MapFind<CAniElement>(                                                                 \
          m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,                                    \
          "GRUNTZ_" + m_animSetName + (sfx)                                                         \
      ))

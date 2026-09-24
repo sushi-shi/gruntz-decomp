@@ -1560,7 +1560,7 @@ i32 CTriggerMgr::HandleActionOptionsPointer(i32 x, i32 y) {
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
     ActionOptionHit kind = ov->HitHover(x, y);
     if (kind == ACTIONOPTION_HIT_PRIMARY) {
-        PickupType alt = ArrivalPickup(cell);
+        PickupType alt = cell->ArrivalPickup();
         if (alt == PICKUP_WAND) {
             g_gameReg->m_triggerMgr->HandleTargetSelection(
                 cell->LastTilePx().m_x,
@@ -2112,12 +2112,13 @@ void CTriggerMgr::LoadFinishLevelSprite(FinishLevelReason state) {
     switch (state) {
         case FINISH_REASON_WARPSTONE_EXIT:
             if (m_phase != FINISH_STATE_DEFEAT) {
-                SoundCue* p = LookupSoundCue(m_world->m_soundRegistry->m_cues, "GAME_FINISHLEVEL");
+                SoundCue* p =
+                    MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "GAME_FINISHLEVEL");
                 m_cueTimer.m_window = static_cast<u32>((p->m_sound->m_durationMs + 500));
                 m_cueTimer.m_base = g_frameTime;
                 if (m_world->m_soundRegistry->m_silentMode == false) {
                     SoundCue* cue =
-                        LookupSoundCue(m_world->m_soundRegistry->m_cues, "GAME_FINISHLEVEL");
+                        MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "GAME_FINISHLEVEL");
                     if (cue != NULL) {
                         i32 volumePercent = g_soundVolumePercent;
                         if (g_soundEnabled != false
@@ -2696,7 +2697,7 @@ i32 CTriggerMgr::ToggleToolTargeting() {
         if ((static_cast<CGrunt*>(cell))->CanShowStamina() == 0) {
             CloseActionOptionsMenu();
         } else {
-            PickupType v = ArrivalPickup(cell);
+            PickupType v = cell->ArrivalPickup();
             if (v == PICKUP_WAND) {
                 g_gameReg->m_triggerMgr->HandleTargetSelection(
                     cell->LastTilePx().m_x,

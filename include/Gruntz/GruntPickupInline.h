@@ -4,18 +4,18 @@
 #include <Gruntz/BattlezRouteMaskPreset.h>
 #include <Gruntz/Grunt.h>
 
-inline PickupType ArrivalPickup(CGrunt* grunt) {
-    PickupType pickup = grunt->m_entranceReason;
+inline PickupType CGrunt::ArrivalPickup() const {
+    PickupType pickup = m_entranceReason;
     if (pickup > PICKUP_EQUIPPABLE_LAST) {
-        pickup = grunt->m_toolId;
+        pickup = m_toolId;
     }
     return pickup;
 }
 
-inline PickupType ArrivalPickupOf(CGrunt* grunt, PickupType entranceReason) {
+inline PickupType CGrunt::ArrivalPickupOf(PickupType entranceReason) const {
     PickupType pickup = entranceReason;
     if (entranceReason > PICKUP_EQUIPPABLE_LAST) {
-        pickup = grunt->m_toolId;
+        pickup = m_toolId;
     }
     return pickup;
 }
@@ -30,21 +30,21 @@ inline PickupType ArrivalPickupOf(CGrunt* grunt, PickupType entranceReason) {
 #define ARRIVAL_PICKUP_OF_TERNARY_LE(grunt, entranceReason)                                        \
     ((entranceReason <= PICKUP_EQUIPPABLE_LAST) ? entranceReason : grunt->m_toolId)
 
-static inline i32 AddBattlezTraversalFlags(CGrunt* unit, i32 flags) {
-    PickupType prim = unit->m_entranceReason;
-    PickupType t = ArrivalPickupOf(unit, prim);
+inline i32 CGrunt::AddBattlezTraversalFlags(i32 flags) const {
+    PickupType prim = m_entranceReason;
+    PickupType t = ArrivalPickupOf(prim);
     if (t == PICKUP_TOOB) {
         flags |= BATTLEZ_ROUTE_TOOB_TRAVERSAL;
     } else {
         t = prim;
         if (prim > PICKUP_EQUIPPABLE_LAST) {
-            t = unit->m_toolId;
+            t = m_toolId;
         }
         if (t == PICKUP_SPRING) {
             flags |= BATTLEZ_ROUTE_SPRING_TRAVERSAL;
         } else {
             if (prim > PICKUP_EQUIPPABLE_LAST) {
-                prim = unit->m_toolId;
+                prim = m_toolId;
             }
             if (prim == PICKUP_WINGZ) {
                 flags |= BATTLEZ_ROUTE_WINGZ_TRAVERSAL;

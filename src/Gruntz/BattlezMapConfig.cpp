@@ -160,8 +160,8 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
     m_gruntRatio = g_buteMgr.GetDword("Battlez", "GruntRatio", 25);
     m_defenderChance = g_buteMgr.GetDword("Battlez", "DefenderChance", 50);
 
-    for (CGameObject* cur = ListGetFirst(mgr->m_world->m_childGroup); cur != NULL;
-         cur = ListGetNext(mgr->m_world->m_childGroup)) {
+    for (CGameObject* cur = mgr->m_world->m_childGroup->FirstChild(); cur != NULL;
+         cur = mgr->m_world->m_childGroup->NextChild()) {
         if (cur->m_logicRecord->m_dispatch == &DispatchGruntCreationPointLogic
             && cur->m_smarts == playerIndex) {
             Coord* slot = g_coordPool.Pop();
@@ -171,8 +171,8 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
         }
     }
 
-    for (CGameObject* cur2 = ListGetFirst(mgr->m_world->m_childGroup); cur2 != NULL;
-         cur2 = ListGetNext(mgr->m_world->m_childGroup)) {
+    for (CGameObject* cur2 = mgr->m_world->m_childGroup->FirstChild(); cur2 != NULL;
+         cur2 = mgr->m_world->m_childGroup->NextChild()) {
         if (cur2->m_logicRecord->m_dispatch == &DispatchExitTriggerLogic
             && cur2->m_smarts == playerIndex) {
             m_marker.m_x = cur2->m_screenX / TILE_SIZE_PX;
@@ -181,8 +181,8 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
         }
     }
 
-    for (CGameObject* cur3 = ListGetFirst(mgr->m_world->m_childGroup); cur3 != NULL;
-         cur3 = ListGetNext(mgr->m_world->m_childGroup)) {
+    for (CGameObject* cur3 = mgr->m_world->m_childGroup->FirstChild(); cur3 != NULL;
+         cur3 = mgr->m_world->m_childGroup->NextChild()) {
         if (cur3->m_logicRecord->m_dispatch == &DispatchWayPointLogic
             && cur3->m_smarts == playerIndex) {
             Coord* slot = g_coordPool.Pop();
@@ -648,7 +648,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             }
                         }
                         {
-                            PickupType st = ArrivalPickup(unit);
+                            PickupType st = unit->ArrivalPickup();
                             if (st == PICKUP_BRICK && unit->m_battleState == BZTASK_UNASSIGNED) {
                                 unit->m_battleState = BZTASK_CARRY_BRICK;
                                 if (unit->CoordCount() != 0) {
@@ -660,7 +660,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             && unit->m_deathAnimStarted == false && unit->m_entranceActive == false
                             && unit->m_poweredUp == false) {
                             if (BATTLEZ_ACT_DIFFERS_FROM_IGLPJCR(unit, eq)) {
-                                PickupType st2 = ArrivalPickup(unit);
+                                PickupType st2 = unit->ArrivalPickup();
                                 if (st2 == PICKUP_BRICK && unit->m_arrivalState == AI_DEFENDER
                                     && unit->m_defenderState == AISTATE_BATTLEZ_ROUTE_TARGET) {
                                     unit->LoadPickupSprites(PICKUP_NONE, 1, 0, 0, 1);
@@ -691,7 +691,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             }
                         }
                         {
-                            PickupType st = ArrivalPickup(unit);
+                            PickupType st = unit->ArrivalPickup();
                             if (st != PICKUP_SPY && unit->m_battleState == BZTASK_CARRY_SPY) {
                                 Coord none;
                                 unit->m_arrivalCell = *none.Set(-1, -1);
@@ -704,7 +704,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             }
                         }
                         {
-                            PickupType st = ArrivalPickup(unit);
+                            PickupType st = unit->ArrivalPickup();
                             if (st == PICKUP_GOOBER) {
                                 BattlezTask battleTask = unit->m_battleState;
                                 if (battleTask != BZTASK_CARRY_GOOBER
@@ -719,7 +719,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             }
                         }
                         {
-                            PickupType st = ArrivalPickup(unit);
+                            PickupType st = unit->ArrivalPickup();
                             if (st != PICKUP_GOOBER && unit->m_battleState == BZTASK_CARRY_GOOBER) {
                                 Coord none;
                                 unit->m_arrivalCell = *none.Set(-1, -1);
@@ -944,7 +944,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                     if (static_cast<u32>(m_roundRobinTick) % TM_UNITS_PER_PLAYER
                         == static_cast<u32>(i)) {
                         {
-                            PickupType st3 = ArrivalPickup(unit);
+                            PickupType st3 = unit->ArrivalPickup();
                             if (st3 == PICKUP_WAND && unit->m_health > 0x1a) {
                                 if (rand() % g_diffTier == 0) {
                                     i32 r = g_buteMgr.GetInt("Spellz", "SpellRadius", 8);
@@ -1078,7 +1078,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         goto flagsArm;
                     }
                 wingzGate: {
-                    PickupType wp = ArrivalPickup(unit);
+                    PickupType wp = unit->ArrivalPickup();
                     if (wp != PICKUP_WINGZ) {
                         continue;
                     }
@@ -1239,9 +1239,9 @@ flagsArm: {
     b32 ok = true;
     if (cell & 8) {
         PickupType er = unit->m_entranceReason;
-        PickupType held = ArrivalPickupOf(unit, er);
+        PickupType held = unit->ArrivalPickupOf(er);
         if (held != PICKUP_TOOB) {
-            PickupType held2 = ArrivalPickupOf(unit, er);
+            PickupType held2 = unit->ArrivalPickupOf(er);
             if (held2 != PICKUP_WINGZ) {
                 ok = false;
             }
@@ -1249,9 +1249,9 @@ flagsArm: {
     }
     if (cell & 0x200) {
         PickupType er = unit->m_entranceReason;
-        PickupType held = ArrivalPickupOf(unit, er);
+        PickupType held = unit->ArrivalPickupOf(er);
         if (held != PICKUP_TOOB) {
-            PickupType held2 = ArrivalPickupOf(unit, er);
+            PickupType held2 = unit->ArrivalPickupOf(er);
             if (held2 != PICKUP_WINGZ) {
                 ok = false;
             }
@@ -1452,7 +1452,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             }
         }
 
-        PickupType entranceMode = ArrivalPickup(unit);
+        PickupType entranceMode = unit->ArrivalPickup();
         if (entranceMode == PICKUP_TIMEBOMB && unit->CoordCount() >= 2) {
             POSITION node = unit->CoordHead();
             Coord* ca = static_cast<Coord*>(unit->m_coordList.GetAt(node));
@@ -1521,7 +1521,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         }
 
         if (pathHeadFlags & 0x200) {
-            PickupType p = ArrivalPickup(unit);
+            PickupType p = unit->ArrivalPickup();
             if (p != PICKUP_WINGZ) {
                 goto returnZero;
             }
@@ -1530,18 +1530,18 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             i32 wingzOrToobGate = pathHeadFlags & 0x100;
             if (wingzOrToobGate) {
                 PickupType er = unit->m_entranceReason;
-                PickupType p = ArrivalPickupOf(unit, er);
+                PickupType p = unit->ArrivalPickupOf(er);
                 if (p == PICKUP_WINGZ) {
                     goto returnOne;
                 }
-                PickupType entranceMode2 = ArrivalPickupOf(unit, er);
+                PickupType entranceMode2 = unit->ArrivalPickupOf(er);
                 if (entranceMode2 == PICKUP_TOOB) {
                     return 1;
                 }
             }
             i32 wingzGate = pathHeadFlags & IDX(CELL_FLAG_SPECIAL);
             if (wingzGate) {
-                PickupType p = ArrivalPickup(unit);
+                PickupType p = unit->ArrivalPickup();
                 if (p == PICKUP_WINGZ) {
                     return 1;
                 }
@@ -1579,7 +1579,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             return 0;
         }
         if (pathHeadFlags & IDX(CELL_FLAG_REVEALED_POWERUP)) {
-            PickupType p = ArrivalPickup(unit);
+            PickupType p = unit->ArrivalPickup();
             if (p != PICKUP_WINGZ) {
                 if (prim == PICKUP_SHOVEL) {
                     goto returnZero;
@@ -1592,7 +1592,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             }
         }
         if (pathHeadFlags & IDX(CELL_FLAG_SPECIAL)) {
-            PickupType p = ArrivalPickup(unit);
+            PickupType p = unit->ArrivalPickup();
             if (p != PICKUP_WINGZ) {
                 goto returnZero;
             }
@@ -1600,7 +1600,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
         if (pathHeadFlags & BRICKZ_CELL_OCCUPIED) {
             return RepathAroundBlockedTiles(unit);
         }
-        PickupType pk = ArrivalPickup(unit);
+        PickupType pk = unit->ArrivalPickup();
         if (pk == PICKUP_GOOBER) {
             POSITION opos = m_triggerMgr->m_baseList.GetHeadPosition();
             while (opos != NULL) {
@@ -1697,7 +1697,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
         CPtrList list(10);
         i32 flags = 0;
         PickupType er = unit->m_entranceReason;
-        PickupType prim = ArrivalPickupOf(unit, er);
+        PickupType prim = unit->ArrivalPickupOf(er);
         if (prim == PICKUP_TOOB) {
             flags = 0x100;
         }
@@ -1942,13 +1942,13 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
     CGameObject* ul3 = other->m_object;
     (static_cast<CGrunt*>(actor))
         ->CommitNeighbor(other->m_playerIndex, other->m_unitIndex, ul3->m_screenX, ul3->m_screenY);
-    PickupType prim = ArrivalPickup(actor);
+    PickupType prim = actor->ArrivalPickup();
     if (prim != PICKUP_TIMEBOMB) {
         return 1;
     }
 
-    i32 ycoord = ScreenTileY(actor);
-    i32 xcoord = ScreenTileX(actor);
+    i32 ycoord = actor->GetScreenTileY();
+    i32 xcoord = actor->GetScreenTileX();
     ycoord += rand() % 10 - 5;
     i32 r2 = rand() % 10;
     CGameObject* tl2 = actor->m_object;
@@ -2278,7 +2278,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
     if (unit->m_gruntKind != GRUNT_NORMAL) {
         return 0;
     }
-    PickupType prim = ArrivalPickup(unit);
+    PickupType prim = unit->ArrivalPickup();
     if (prim != PICKUP_NONE) {
         return 0;
     }
@@ -2403,7 +2403,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
                         return 1;
                     }
                 } else {
-                    PickupType entranceMode = ArrivalPickup(unit);
+                    PickupType entranceMode = unit->ArrivalPickup();
                     if (entranceMode == PICKUP_NONE) {
                         if (RouteUnitTo(unit, gx, gy, 0x2000098b, 0, 0) != 0) {
                             CMapMgr* bd = m_board;
@@ -2504,7 +2504,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     PickupType type = ARRIVAL_PICKUP_TERNARY_LE(g);
 
     if ((dest.m_flags & 0x400) && g->m_defenderState == AISTATE_RETURN
-        && ArrivalPickup(g) != PICKUP_GRAVITYBOOTZ) {
+        && g->ArrivalPickup() != PICKUP_GRAVITYBOOTZ) {
         if (ownFlags & 0x4000) {
             {
                 RECT box;
@@ -2680,8 +2680,8 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
 
     if (maskFlags & 0x20) {
         PickupType er = g->m_entranceReason;
-        if (ArrivalPickupOf(g, er) == PICKUP_BOMB || ArrivalPickupOf(g, er) == PICKUP_TIMEBOMB) {
-            if (ArrivalPickupOf(g, er) == PICKUP_BOMB) {
+        if (g->ArrivalPickupOf(er) == PICKUP_BOMB || g->ArrivalPickupOf(er) == PICKUP_TIMEBOMB) {
+            if (g->ArrivalPickupOf(er) == PICKUP_BOMB) {
                 m_triggerMgr->UseEquippedToolAt(
                     g->m_playerIndex,
                     g->m_unitIndex,
@@ -2690,7 +2690,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                 );
                 return 1;
             }
-            if (ArrivalPickupOf(g, er) == PICKUP_TIMEBOMB) {
+            if (g->ArrivalPickupOf(er) == PICKUP_TIMEBOMB) {
                 for (i32 row = fcy - 1; row < fcy + 2; row++) {
                     for (i32 col = fcx - 1; col < fcx + 2; col++) {
                         if (static_cast<u32>(col) < static_cast<u32>(m_board->m_width)
@@ -2793,8 +2793,8 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
 
     if (maskFlags & IDX(CELL_FLAG_REVEALED_POWERUP)) {
         PickupType er2 = g->m_entranceReason;
-        if (ArrivalPickupOf(g, er2) != PICKUP_WINGZ) {
-            if (ArrivalPickupOf(g, er2) == PICKUP_SHOVEL) {
+        if (g->ArrivalPickupOf(er2) != PICKUP_WINGZ) {
+            if (g->ArrivalPickupOf(er2) == PICKUP_SHOVEL) {
                 m_triggerMgr->UseEquippedToolAt(
                     g->m_playerIndex,
                     g->m_unitIndex,
@@ -3159,7 +3159,7 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
 RVA(0x0002e3a0, 0x7e1)
 i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
     RECT box;
-    BuildUnitSearchBox(unit, &box, 7);
+    unit->BuildUnitSearchBox(&box, 7);
 
     CGrunt* best = NULL;
     i32 bestDist = INT_MAX;
@@ -3258,7 +3258,7 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
 
             i32 flags = 0;
             PickupType prim = unit->m_entranceReason;
-            PickupType t = ArrivalPickupOf(unit, prim);
+            PickupType t = unit->ArrivalPickupOf(prim);
             if (t == PICKUP_TOOB) {
                 flags = 0x100;
             }
@@ -3444,10 +3444,10 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
 
                         i32 flags = BATTLEZ_ROUTE_OTHER_TOOLS_TRIGGER;
                         PickupType cer = cand->m_entranceReason;
-                        if (ArrivalPickupOf(cand, cer) == PICKUP_WINGZ) {
+                        if (cand->ArrivalPickupOf(cer) == PICKUP_WINGZ) {
                             flags = BATTLEZ_ROUTE_OTHER_TOOLS_TRIGGER_WINGZ;
                         }
-                        if (ArrivalPickupOf(cand, cer) == PICKUP_TOOB) {
+                        if (cand->ArrivalPickupOf(cer) == PICKUP_TOOB) {
                             flags |= BATTLEZ_ROUTE_TOOB_TRAVERSAL;
                         }
                         CPtrList list(10);
@@ -3617,7 +3617,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     band++;
     if (band <= m_toolzPct) {
 
-        PickupType cur = ArrivalPickup(unit);
+        PickupType cur = unit->ArrivalPickup();
         if (cur != PICKUP_NONE) {
             return 1;
         }
@@ -3709,7 +3709,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
             return 1;
         }
 
-        PickupType cur2 = ArrivalPickup(unit);
+        PickupType cur2 = unit->ArrivalPickup();
         if (cur2 == PICKUP_NONE) {
             (static_cast<CGrunt*>(unit))->LoadPickupSprites(mode, 1, 0, 0, 1);
             return 1;
@@ -3800,7 +3800,7 @@ i32 CBattlezMapConfig::RouteUnitTo(
     CPtrList list(10);
     CGameObject* lvl = unit->m_object;
     i32 screenX = lvl->m_screenX;
-    if (ScreenTileX(unit) != goalCol || ScreenTileY(unit) != goalRow) {
+    if (unit->GetScreenTileX() != goalCol || unit->GetScreenTileY() != goalRow) {
         if ((m_board)->FindPathWithEndpointOverrides(
                 screenX >> TILE_SHIFT_PX,
                 lvl->m_screenY >> TILE_SHIFT_PX,
@@ -4212,10 +4212,10 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
 
     i32 flags = BATTLEZ_ROUTE_ALL_TOOLS;
     PickupType er = unit->m_entranceReason;
-    if (ArrivalPickupOf(unit, er) == PICKUP_WINGZ) {
+    if (unit->ArrivalPickupOf(er) == PICKUP_WINGZ) {
         flags = BATTLEZ_ROUTE_ALL_TOOLS_WINGZ;
     }
-    if (ArrivalPickupOf(unit, er) == PICKUP_TOOB) {
+    if (unit->ArrivalPickupOf(er) == PICKUP_TOOB) {
         flags |= BATTLEZ_ROUTE_TOOB_TRAVERSAL;
     }
     CGameObject* lvl2 = unit->m_object;

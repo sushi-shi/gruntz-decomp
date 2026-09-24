@@ -24,12 +24,14 @@ struct CAniSource {
 
 class CAniElement : public CObject {
 public:
+    inline CObject* GetAt(i32 i) const;
     CAniElement() {
         m_flags = 0;
         m_name = NULL;
     }
     virtual ~CAniElement() OVERRIDE;
     CObject* AtChecked(i32 i) const;
+    inline CAniRecordView* RecordAt(i32 index) const;
     i32 Build(SoundCueRegistry* ctx, CAniSource* src, i32 flags);
     i32 Configure(SoundCueRegistry* ctx, CRezItm* entry, i32 flags);
     i32 LoadFile(SoundCueRegistry* ctx, const char* filename, i32 unused);
@@ -42,12 +44,6 @@ public:
     float m_scale;
     i32 m_durationMs;
 };
-
-inline CAniElement* LookupAnimation(CMapStringToPtr& map, LPCTSTR name) {
-    CAniElement* found = NULL;
-    MapLookup(map, name, found);
-    return found;
-}
 
 #define DELETE_ANI_ELEMENT_CONTENTS(index)                                                         \
     for (index = 0; index < m_records.GetSize(); index++) {                                        \

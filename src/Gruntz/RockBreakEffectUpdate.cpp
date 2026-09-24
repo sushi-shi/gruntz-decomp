@@ -20,6 +20,6 @@ i32 CExplosion::Update() {
                 ->BuildRockBreakParticles(t->m_screenX, t->m_screenY, 1, t->m_smarts);
         }
     }
-    MARK_OBJECT_COMPLETE_IF(IsAniCursorComplete(&m_wwdObject->m_animationCursor))
+    MARK_OBJECT_COMPLETE_IF(m_wwdObject->m_animationCursor.IsComplete())
     return 0;
 }

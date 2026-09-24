@@ -14,6 +14,10 @@ class CFileMemBase;
 
 class CGruntzMapMgr : public CMapMgr {
 public:
+    inline i32 TileIdAt(u32 x, u32 y) const;
+    inline i32 OccupantAt(u32 x, u32 y) const;
+    inline SIZE
+    GetGridSize() const;
     ~CGruntzMapMgr();
 
     virtual void Reset() OVERRIDE;
