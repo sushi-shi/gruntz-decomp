@@ -435,6 +435,70 @@ preserved. Overall current exact count remains 3,838/4,428, fuzzy 94.79%, MAX
 contains 470 rows, including 32 freshly source-verified candidates/decisions;
 all sixteen broad reassessment rows remain pending.
 
+## Typed occupancy operations restore Finish's remaining call boundaries
+
+Starting from `9f66bec59`, reusing the existing const/u32
+`CGruntzMapMgr::OccupantAt` in the shared collision phase is byte-flat. An
+include-only control is also flat. The actual grid receiver is already derived;
+there is no need for a duplicate accessor or a downcast.
+
+The next missing boundaries are complete two-write occupancy operations:
+release clears bit 29 then stores occupant -1; acquisition sets bit 29 then
+stores the supplied packed identity. Their declarations belong to the real
+shared map class and their inline definitions sit beside `OccupantAt` in
+`MapCellInline.h`. This is a reconstructed API, not an externally recovered
+original name. Canonical ownership alternatives, wider consumers and scoped
+exclusions are recorded under `grid-*` in the lineage ledger.
+
+| Real-TU control | Finish fuzzy | Typed lookups | Calls / branches / returns | Bytes |
+| --- | ---: | ---: | ---: | ---: |
+| Original complete entrance-phase base | 83.1934 | 9 | 44 / 103 / 10 | 0x97b |
+| Existing bounded occupant getter | 83.1934 | 9 | 44 / 103 / 10 | 0x97b |
+| Compose complete release member | 90.0493 | 11 | 42 / 97 / 10 | 0x924 |
+| Same header, flatten release callers again | 83.1934 | 9 | 44 / 103 / 10 | 0x97b |
+| Compose complete acquisition member | 91.0936 | 11 | 42 / 97 / 10 | 0x937 |
+| Retail | 100 | 11 | 42 / 97 / 10 | 0x936 |
+
+The declaration-only negative control is essential: the N/K recovery requires
+actual operation calls, not merely an extra declaration. All 31 non-array
+calls and the entire ordered reference sequence now agree with retail, with
+no unsupported out-of-line helper. The release helper preserves the row-table
+reload between stores and retail's add-before-AND shape. Acquisition likewise
+reloads the row and snapshots identity members before the flag write. The
+shift/OR still occurs earlier than retail, so this is not an exact scheduling
+claim. Natural entrance improves from 88.3289 to 88.6316; Arrival remains
+91.4676. Both callers retain their different pixel/tile sentinel guards.
+
+Finish's first divergence moves from +0x22 to +0x53: the zero register now
+agrees, but base tests the Boolean with `cmp cl,bl` where retail uses
+`test cl,cl`. The remaining constant -1 lifetime, return-tail placement and
+scheduling still need investigation. Equal call/branch/return counts do not
+close the semantic checklist or the broader helper reassessments.
+
+The release-only full build also provides an unchanged-source header control:
+exact old-header overlays reproduce all eight fresh score drops. Six have
+identical opcode/operand/reference multisets; Spotlight Update adds an x87
+exchange, and BuildCellAttributes moves its EBP reload from loop header to
+latch while removing the entry trampoline. Its jump-table offsets move with
+the code, not with class layout. The overlays are disposable; only the used
+member API is retained. Historical maxima are preserved by the real build.
+
+The acquisition declaration causes five further fresh unchanged-source drops.
+Release-only header overlays reproduce all five prior scores, including exact
+SBI Image Render and ToggleToolTargeting. Ordered references, stores and
+constants are identical in all five old/new pairs; four also have identical
+opcode counts. ToggleToolTargeting adds one register copy while preserving
+both coordinate arguments and all call/guard paths. WireTileSwitchLogic's
+existing extra retail-relative call is unchanged by this declaration. This
+separates a header-state perturbation from a new call-set defect.
+
+Validation: full pinned build, MAX, fast and normal gates pass; 30 focused
+action/container/guard/occupancy tests pass. The raw referent audit finds zero
+defects across 3,918 near-exact functions. All 4,429 historical maxima and
+4,428 unchanged-source maxima are preserved. Finish's historical best rises
+from 89.2642 to 91.0935. Overall current exact count is 3,841/4,428, fuzzy
+94.80%, MAX 95.20%. None of this closes the sixteen broad reassessments.
+
 ### Applying the evidence
 
 When shared-template restoration causes repeated constructor/error expansions

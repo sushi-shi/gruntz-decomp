@@ -30,6 +30,7 @@
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LevelArea.h>
+#include <Gruntz/MapCellInline.h>
 #include <Gruntz/MovingDeathTileId.h>
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/PickupType.h>
@@ -301,18 +302,12 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
 }
 
 inline void CGrunt::ResolveEntranceOccupant() {
-    CMapMgr* grid = g_gameReg->m_tileGrid;
+    CGruntzMapMgr* grid = g_gameReg->m_tileGrid;
     i32 tx = m_object->m_screenX >> TILE_SHIFT_PX;
     i32 ty = m_object->m_screenY >> TILE_SHIFT_PX;
     i32 flags = grid->CellFlagsAt(tx, ty);
     if (flags & BRICKZ_CELL_OCCUPIED) {
-        i32 owner;
-        if (static_cast<u32>(tx) >= static_cast<u32>(grid->m_width)
-            || static_cast<u32>(ty) >= static_cast<u32>(grid->m_height)) {
-            owner = -1;
-        } else {
-            owner = grid->m_rowInts[ty][tx * 7 + 1];
-        }
+        i32 owner = grid->OccupantAt(static_cast<u32>(tx), static_cast<u32>(ty));
         i32 playerIndex = (owner >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK;
         i32 unitIndex = owner & GRUNT_IDENTITY_COMPONENT_MASK;
         if (m_playerIndex != playerIndex || m_unitIndex != unitIndex) {
@@ -369,19 +364,16 @@ i32 CGrunt::LoadEntranceConfig() {
         i32 newTileY = newPxY >> TILE_SHIFT_PX;
 
         if (oldX != -1 && m_lastTilePx.m_y != -1) {
-            CMapMgr* og = g_gameReg->m_tileGrid;
-
-            BrickzCell* oc = &og->m_rows[oldTileY][oldTileX];
-            oc->m_flags &= BRICKZ_CELL_UNOCCUPIED_MASK;
-            og->m_rowInts[oldTileY][oldTileX * 7 + 1] = -1;
+            CGruntzMapMgr* og = g_gameReg->m_tileGrid;
+            og->ReleaseCellOccupancy(oldTileX, oldTileY);
         }
         {
-            CMapMgr* ng = static_cast<CMapMgr*>(g_gameReg->m_tileGrid);
-
-            BrickzCell* nc = &ng->m_rows[newTileY][newTileX];
-            nc->m_flags |= BRICKZ_CELL_OCCUPIED;
-            ng->m_rowInts[newTileY][newTileX * 7 + 1] =
-                (m_playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | m_unitIndex;
+            CGruntzMapMgr* ng = g_gameReg->m_tileGrid;
+            ng->AcquireCellOccupancy(
+                newTileX,
+                newTileY,
+                (m_playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | m_unitIndex
+            );
         }
         m_lastTilePx.m_x = newPxX;
         m_lastTilePx.m_y = newPxY;
@@ -937,16 +929,15 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
         i32 newTx = newX >> TILE_SHIFT_PX;                                                         \
         i32 newTy = newY >> TILE_SHIFT_PX;                                                         \
         if (oldTx != -1 && oldTy != -1) {                                                          \
-            CMapMgr* oldGrid = g_gameReg->m_tileGrid;                                              \
-            BrickzCell* oc = &oldGrid->m_rows[oldTy][oldTx];                                       \
-            oc->m_flags &= BRICKZ_CELL_UNOCCUPIED_MASK;                                            \
-            oldGrid->m_rowInts[oldTy][oldTx * 7 + 1] = -1;                                         \
+            CGruntzMapMgr* oldGrid = g_gameReg->m_tileGrid;                                        \
+            oldGrid->ReleaseCellOccupancy(oldTx, oldTy);                                           \
         }                                                                                          \
-        CMapMgr* newGrid = g_gameReg->m_tileGrid;                                                  \
-        BrickzCell* nc = &newGrid->m_rows[newTy][newTx];                                           \
-        nc->m_flags |= BRICKZ_CELL_OCCUPIED;                                                       \
-        newGrid->m_rowInts[newTy][newTx * 7 + 1] =                                                 \
-            (m_playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | m_unitIndex;                          \
+        CGruntzMapMgr* newGrid = g_gameReg->m_tileGrid;                                            \
+        newGrid->AcquireCellOccupancy(                                                             \
+            newTx,                                                                                 \
+            newTy,                                                                                 \
+            (m_playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | m_unitIndex                           \
+        );                                                                                         \
         m_lastTilePx.m_x = newX;                                                                   \
         m_lastTilePx.m_y = newY;                                                                   \
         m_triggerMgr->WireTileSwitchLogic(this, newX, newY);                                       \
