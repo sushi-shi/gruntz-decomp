@@ -65,7 +65,6 @@
 DATA(0x00244ca4)
 i32 g_groupSentinel;
 
-// @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00077f80, 0xab)
@@ -83,7 +82,7 @@ CGrunt* CTriggerMgr::FindNearestUnitForPlayer(CGrunt* g) {
             CGameObject* o = candidate->m_object;
             i32 dx = (o->m_screenX >> TILE_SHIFT_PX) - tx;
             i32 dy = (o->m_screenY >> TILE_SHIFT_PX) - ty;
-            i32 d = dx * dx + dy * dy;
+            i32 d = SquaredDistance(dx, dy);
             if (d < bestDist && d < g->m_defenderRadius * 2) {
                 best = candidate;
                 bestDist = d;
@@ -2575,7 +2574,7 @@ i32 CTriggerMgr::NearestOtherPlayerUnitDistSq(i32 skipPlayerIndex, i32 px, i32 p
                     CGameObject* o = g->m_object;
                     i32 dx = (o->m_screenX >> TILE_SHIFT_PX) - tx;
                     i32 dy = (o->m_screenY >> TILE_SHIFT_PX) - ty;
-                    i32 d = abs(dx * dx + dy * dy);
+                    i32 d = abs(SquaredDistance(dx, dy));
                     if (d < best) {
                         best = d;
                     }
