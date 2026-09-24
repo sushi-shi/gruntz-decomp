@@ -12,6 +12,7 @@ Per-candidate adoption/rejection evidence belongs in
 | `hs-rng-one-bound` | `DispatchDemoMoverLogic`,0x3c300 | Missing signed one-bound random overload and two actual consumers |
 | `hs-rng-shuffle` | `CPlay::ScanShuffleQuads`,0xd9290 | Existing two-bound helper at three expanded selection sites |
 | `chance-ghost-range-preserve`, `chance-brick-range-preserve`, `brick-rng-three-stack-range` | Ghost search and two/three-brick layer selection | Nine actual uses of the existing inclusive-range helper |
+| `chance-defender-range-preserve`, `chance-toy-range-preserve` | Defender and toy selection | Two existing range-helper uses preserving caller-owned integer samples |
 | `hs-bitset-body` | zBitVec string constructor,0x16d3a0 | Surviving zBitSet small-buffer pointer accessor |
 | `hs-bitset-error-tail` | Same constructor | Existing error-helper boundary at three expanded error tails |
 | `bute-vector-range-reference-api` | Six Bute getters/setters, two item constructors, parser | Reference API and ordinary bound temporaries |
@@ -42,8 +43,13 @@ remain, and no new exact function is claimed. Controlled source forms are in the
 is in the three adoption rows above and `brick-rng-shogo-fifty-oracle`.
 
 The reconsidered alternatives remain individually recoverable under `chance-x-*`,
-`chance-deferred-*`, `reassess-chance-*`, and `brick-rng-*`. The defender/toy range
-consumers and variable-bound color helper remain pending. This does not close
+`chance-deferred-*`, `reassess-chance-*`, `brick-rng-*`, and `brick-color-*`.
+The defender/toy range consumers are applied in `df4e6d5a3`: both complete
+normalized function bodies and ordered references are unchanged, not newly
+exact. Full build/MAX gates and 38 focused tests pass; the raw near-exact audit
+reports 3,918 functions and no defects. The variable-bound color helper remains
+pending, with thirteen individually recheckable alternatives added to the ledger.
+This does not close
 `reassess-israndomchance` or any of the 16 broad family reassessments.
 
 For the bitset constructor, the accessor-only A/B remained 95.66782, and composing
