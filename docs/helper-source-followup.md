@@ -11,6 +11,7 @@ Per-candidate adoption/rejection evidence belongs in
 | --- | --- | --- |
 | `hs-rng-one-bound` | `DispatchDemoMoverLogic`,0x3c300 | Missing signed one-bound random overload and two actual consumers |
 | `hs-rng-shuffle` | `CPlay::ScanShuffleQuads`,0xd9290 | Existing two-bound helper at three expanded selection sites |
+| `chance-ghost-range-preserve`, `chance-brick-range-preserve`, `brick-rng-three-stack-range` | Ghost search and two/three-brick layer selection | Nine actual uses of the existing inclusive-range helper |
 | `hs-bitset-body` | zBitVec string constructor,0x16d3a0 | Surviving zBitSet small-buffer pointer accessor |
 | `hs-bitset-error-tail` | Same constructor | Existing error-helper boundary at three expanded error tails |
 | `bute-vector-range-reference-api` | Six Bute getters/setters, two item constructors, parser | Reference API and ordinary bound temporaries |
@@ -31,6 +32,19 @@ Real-TU results: the RNG include-only,
 named-bound, direct-bound and helper-use controls remained flat at 97.207146 for
 Demo and 99.84772 for Play, with unchanged topology. The authentic helpers are
 kept as source restoration, not advertised as matching wins.
+
+The fresh constant-range checkpoint `8c9d03e92` preserves the ghost search's
+complete normalized body and ordered references. The brick caller recovers its
+current 90.2473% historical bank; composing all four three-stack samples is then
+byte-flat. Full build/MAX gates pass with no fresh failures, all historical maxima
+remain, and no new exact function is claimed. Controlled source forms are in the
+[range-helper pattern](patterns/rand-modulo-peel.md); canonical candidate evidence
+is in the three adoption rows above and `brick-rng-shogo-fifty-oracle`.
+
+The reconsidered alternatives remain individually recoverable under `chance-x-*`,
+`chance-deferred-*`, `reassess-chance-*`, and `brick-rng-*`. The defender/toy range
+consumers and variable-bound color helper remain pending. This does not close
+`reassess-israndomchance` or any of the 16 broad family reassessments.
 
 For the bitset constructor, the accessor-only A/B remained 95.66782, and composing
 the existing error helper at all three error tails also remained 95.66782. Moving

@@ -42,8 +42,9 @@ __inline i32 GetRandom(i32 lo, i32 hi) {
 ```
 
 `n == 0` means `hi == lo - 1` (an inverted/empty range), and the helper answers it with a
-coin flip between the two endpoints. Every site's guard is dead at run time — which is
-exactly the signature of an inlined helper rather than a hand-written check.
+coin flip between the two endpoints. The guard is not necessarily dead at run time:
+that requires a proven domain for the particular caller. Constant nonempty bounds
+can erase it, while variable-bound callers must retain the exceptional path.
 
 ## Writing a site
 
@@ -70,6 +71,41 @@ zero carrier in the constructor chain.
 cl *proves* `count == 0` and substitutes the literal, collapsing `(rand() & 1) ? 1 : count`
 to `movsx edi,al; and edi,1`. Retail keeps `mov edi,1` against a live `count`. Same helper,
 different constant propagation; not a source difference we have been able to name.
+
+## Preserve the sampled integer before choosing a predicate abstraction
+
+PR #79's fresh RNG reassessment tested the actual VC5 translation units, not
+isolated replacements for their callers. Two different authored boundaries are
+available: `GetRandom(lo, hi)` returns the integer sample, whereas
+`IsRandomChance(percent)` returns `char`. Equivalent outcomes do not make their
+expanded intermediate values identical.
+
+| Actual consumer | Controlled source form | Current fuzzy | Observed result |
+| --- | --- | ---: | --- |
+| `FindIdleGruntInBox`,0x2ab80 | Existing direct remainder | 83.1071 | Conditional clear of caller-owned integer `keep` |
+| Same | Existing chance helper in the nested negative guard | 79.8839 | Additional `setl al` and byte test |
+| Same | Assign chance result to `keep` | 81.0446 | `movsx` and one fewer branch |
+| Same | Existing integer range helper, original caller statements | 83.1071 | Entire normalized body and ordered references identical to baseline |
+| `BuildCellAttributes`,0x810f0 | Original four two-stack remainder ternaries | 89.3672 | Four one-based `inc / cmp 50 / setle / add enum` sequences already present |
+| Same | Include-only control | 90.2473 | Declaration-context movement before actual helper use |
+| Same | Four chance-helper ternaries | 87.7073 | Byte-to-condition conversion adds `neg al / sbb eax,eax / neg eax` |
+| Same | Four inclusive-range ternaries; only used header retained | 90.2473 | All four original local sequences and ordered references preserved |
+| Same | Compose all four three-stack range initializers | 90.2473 | Entire normalized body and references identical to the preceding range state |
+
+The reverse-use signature is a materialized integer sample: inspect its offset,
+signed comparisons, reuse, and subsequent enum construction before selecting a
+boolean-returning helper. A folded exceptional branch does not disprove an
+inclusive-range inline. Conversely, an aggregate improvement already reproduced
+by include-only control is not evidence that the new call boundary improved
+instruction scheduling. No unused include is retained as a steering device.
+
+These are scoped source restorations, not exact closures or bounded whole-caller
+verdicts. The ghost frame/allocation difference and brick caller CFG remain open.
+Canonical dispositions and reopening criteria are `chance-ghost-range-preserve`,
+`chance-brick-range-preserve`, `brick-rng-three-stack-range`,
+`brick-rng-shogo-fifty-oracle`, and `brick-rng-include-only`; the broad
+`reassess-israndomchance` family remains pending. Production-object/original-PE
+negative controls live in `scripts/test_rng_helper_consumers.py`.
 
 ## History
 
