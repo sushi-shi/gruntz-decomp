@@ -105,6 +105,23 @@ matrix constrains the KIND of the missing definition, not just its existence - h
 evidence says retail defined a struct/class between the twins (zero bytes emitted, content
 unrecoverable; the .text is gapless, functions.tsv confirms 0x163300+0x70 abuts 0x163370).
 
+The math-helper restoration supplied a real, earlier LevelPlane source-state change rather
+than a probe. Replacing aggregate constructors and helper calls in `InitGeometry` with its
+previously measured component stores and bounds macros raised it from 45.1543% to 97.7143%.
+Restoring `Draw`'s scalar tile traversal and native `RECT` locals raised it from 53.2197%
+to 87.1238%. Both changes preserve the typed class layout and the helper definitions.
+With `InitGeometry`'s two explicit shift loops reusing one local, the first restoration
+leaves `ActivateVisibleObjects` exact and makes `Load` exact. Adding the restored `Draw`
+flips the later phase: `DeactivateDistantObjects` and `Load` become exact, while
+`ActivateVisibleObjects` moves from 100% to 99.9286%. Its first difference is only the
+order of two loads from `m_planeViewRect`; its calls, branches, returns, constants, and
+ordered relocation targets still agree with retail. Replacing the two shift loops with
+the existing `TILE_SHIFT_INTO` macro also swaps which activation twin is exact. A hybrid
+with one loop and one macro leaves both twins below 100%. These A/Bs show that a real
+restoration of preceding source can move the canonical phase in either direction; a tiny
+current-score dip in a later, unchanged function is not by itself evidence against that
+restoration. Its historical exact MAX remains banked while the source family is completed.
+
 1. If the residue is an `imul`/`add` pair of member loads on ONE object, stop editing the
    body — it is canonical. Run the probe (a throwaway `static` definition placed before
    the function) to confirm the parity, then delete it.
