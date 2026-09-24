@@ -35,9 +35,12 @@ Keep the comparison-result local and storage width where the compiler uses
 them; do not cache the lookup or remove a repeated comparison without retail
 evidence.
 
-When combining this helper with #79's recovered container, the name access is
-`g_typeColl[unit->m_logicRecord->m_eventCode]`, not the removed inferred
-`GetNameRecord` API. The one-name inline, whole-chain macro, repeated lookup
-order, and `char` comparison locals are retained. The table's complete typed
-construction/error layer changes the inliner population, so the older table's
-86.7956% control is not a score guarantee for the combined source.
+These measurements used the older opaque container model. Restoring the complete
+typed construction/error layer changes the inliner population: this table does
+not establish a permanent requirement for caller-owned `char` results or a
+whole-chain macro. The [typed-template follow-up](animation-name-accessors-restore-template-call-cuts.md#steprowunits-follow-up-complete-comparison-phases)
+explicitly tests that assumption. Removing the unused result coupling and
+composing whole-guard and flag-update inlines recovers 45/52 typed calls at
+85.3681%. Lookup order and short-circuit behavior remain required, but the
+source spelling must be re-tested against the complete family. Neither pass
+reaches exact, so neither proves that its retained spelling is original.

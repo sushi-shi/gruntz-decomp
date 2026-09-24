@@ -105,11 +105,15 @@ public:
     void LoadGruntTuningConstants(i32);
 
     const CString& GetAnimationActName() const {
-        return ::GetAnimationActName(m_logicRecord->m_eventCode);
+        return ::GetAnimationActName(m_logicRecord->EventCode());
     }
 
     bool IsAnimationAct(const char* name) const {
         return GetAnimationActName() == name;
+    }
+
+    bool IsNotAnimationAct(const char* name) const {
+        return GetAnimationActName() != name;
     }
 
     typedef i32 (CUserLogic::*ActCallback)();
@@ -133,11 +137,11 @@ public:
 
 #define ANIMATION_ACT_EQUALS(key) (IsAnimationAct(key))
 
-#define ANIMATION_ACT_DIFFERS(key) (!IsAnimationAct(key))
+#define ANIMATION_ACT_DIFFERS(key) (IsNotAnimationAct(key))
 
 #define ANIMATION_ACT_EQUALS_FOR(logic, key) ((logic)->IsAnimationAct(key))
 
-#define ANIMATION_ACT_DIFFERS_FOR(logic, key) (!(logic)->IsAnimationAct(key))
+#define ANIMATION_ACT_DIFFERS_FOR(logic, key) ((logic)->IsNotAnimationAct(key))
 
 #define APPLY_NAME_INLINE(name) m_wwdObject->SetImageSetByName(name)
 

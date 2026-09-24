@@ -82,13 +82,84 @@ guards; FinishActiveAction has ten predicates and one previous-ID lookup;
 StepArrivalCommit has nine predicates plus previous-ID and final name lookups.
 No `/Ob0` object participates in the production score.
 
-The final callers still differ in inline/call set: they retain only 26/52,
+The first-pass callers still differ in inline/call set: they retain only 26/52,
 2/11, and 4/10 of the target's typed-name calls. Ordered referents therefore
 do not yet agree. These are partial structural recoveries, not exact matches,
 proof of the original spelling, or exhausted walls. Do not steer register
 allocation while these call boundaries remain unresolved.
 
-## Whole-tree control
+## StepRowUnits follow-up: complete comparison phases
+
+The next control is `4b03391e9`: 69.9400%, 26/52 typed-name calls, 3,780
+instructions. Map each lookup by its following single-letter string relocation,
+not just by the total number of calls. All 52 ordered keys agree with retail,
+including the repeated C in the C/R/C/G/L/P/J chain. The missing calls comprise
+three complete seven-check groups, three terminal R checks, and standalone D
+and A checks.
+
+Two distinctions matter beyond the name getter:
+
+- SDK inequality is its own source boundary. `IsNotAnimationAct` uses
+  `GetAnimationActName() != name`; spelling it as `!IsAnimationAct(name)`
+  instead leaves equality materialization where retail has `setne`.
+- The special-eligibility phase is not another short-circuit guard. Six checks
+  clear an existing flag, but P exits StepRowUnits with zero. Later checks must
+  still run after an earlier check clears the flag. Keep those operations and
+  their order when extracting the complete phase.
+
+| Controlled composition | StepRowUnits | Typed calls |
+| --- | ---: | ---: |
+| SDK inequality predicate | 72.2727 | 27/52 |
+| Reuse the seven-key guard at its fifth site | 74.0600 | 32/52 |
+| Remove unused comparison out-parameter/local | 77.0033 | 32/52 |
+| Extract complete CRCGLPJ guard, without an unused char local | 79.0273 | 38/52 |
+| IGLPJCR guard uses separate early exits | 80.1411 | 38/52 |
+| Compose flag-update helper with complete eligibility phase | 84.1667 | 45/52 |
+| CRCGLPJ guard also uses separate early exits | **85.3681** | **45/52** |
+
+The flag-update helper alone is byte-flat. Composing it with the whole phase
+restores all seven of that phase's typed calls. Flattening the same phase into
+one helper with a reused char comparison local loses its final R call again
+(44/52, 83.4340%). This is evidence for testing complete nested operations,
+not for adding forwarding layers with no source-level responsibility.
+
+The retained object has 3,417 instructions, 140 calls, 550 branches and seven
+returns; retail has 3,370, 145, 529 and eight. No new game helper survives as an
+out-of-line call. Seven typed lookups still expand: the CRC guard's final J,
+four IGL guards' final R, and the standalone D and A. Six coordinate-list
+GetNext and pool Push calls also remain expanded. These are still open
+inline/call-set differences, not a bounded register-allocation wall.
+
+Negative controls on this composition:
+
+- A whole coordinate-recycle inline and a typed CoordNext accessor are flat;
+  neither is retained.
+- Char versus bool predicate returns is flat; bool stays the public domain.
+- A named negative-predicate result adds no desired call and scores 85.1073%.
+- A shared result/exit in the IGL guard is flat relative to its early exits.
+- Including the five guards' common entrance/death/power flags introduces an
+  out-of-line flag-update helper absent from retail (44/52, 83.7201%); reject it.
+- The existing EventCode accessor is flat here and replaces the direct field
+  read. That does not invalidate the first pass's different-context result.
+
+The old caller-owned-char result is therefore not a universal requirement
+after restoring the complete template family. Conversely, the fifth IGL guard
+now shares an equality-based helper while retail materializes inequality at
+that site. Equivalent conditions and a higher score do not prove that remaining
+source spelling. Preserve this distinction when reopening the call-set work.
+
+The follow-up full build reports 3,837 exact functions, 94.77% overall fuzzy
+and 95.12% MAX. FinishActiveAction also moves to 57.1871%, StepArrivalCommit to
+66.9022%. All 17 public-header controls pass; the raw near-exact audit covers
+3,921 functions with no relocation defect. Banking preserves all 4,429
+RVA-joined historical maxima and all 4,428 unchanged-source maxima. The shared
+typed accessor and action registrar remain exact. Three fresh current-score
+dips are adjudicated without lowering those banks: two unchanged functions
+have matching semantic multisets and skeletons with register/schedule residue;
+UseEquippedToolAt moves only 88.1407→88.1297 with unchanged ordered call
+referents and store multisets. Its separate return-tail residue remains open.
+
+## First-pass whole-tree control
 
 The full build moves overall fuzzy from 93.71% to 94.52% and current exact
 count from 3,830 to 3,835 (nine gains, four losses). All 16 fresh below-bank

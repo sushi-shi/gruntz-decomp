@@ -87,6 +87,7 @@ const CString& use(i32 id) { return GetAnimationActName(id); }
         self.compile('''#include <Gruntz/UserLogic.h>
 const CString& name(const CUserLogic& logic) { return logic.GetAnimationActName(); }
 bool equal(const CUserLogic& logic) { return logic.IsAnimationAct("I"); }
+bool different(const CUserLogic& logic) { return logic.IsNotAnimationAct("I"); }
 bool macro_equal(const CUserLogic* logic) { return ANIMATION_ACT_EQUALS_FOR(logic, "I"); }
 bool macro_different(const CUserLogic* logic) { return ANIMATION_ACT_DIFFERS_FOR(logic, "I"); }
 ''')

@@ -620,11 +620,75 @@ candidateFound:
     return 1;
 }
 
-static inline bool BattlezActDiffersFromIGLPJCR(CGrunt* unit, char& result) {
-    return !(result = unit->IsAnimationAct("I")) && !(result = unit->IsAnimationAct("G"))
-           && !(result = unit->IsAnimationAct("L")) && !(result = unit->IsAnimationAct("P"))
-           && !(result = unit->IsAnimationAct("J")) && !(result = unit->IsAnimationAct("C"))
-           && !(result = unit->IsAnimationAct("R"));
+static inline bool BattlezActDiffersFromIGLPJCR(CGrunt* unit) {
+    if (unit->IsAnimationAct("I")) {
+        return false;
+    }
+    if (unit->IsAnimationAct("G")) {
+        return false;
+    }
+    if (unit->IsAnimationAct("L")) {
+        return false;
+    }
+    if (unit->IsAnimationAct("P")) {
+        return false;
+    }
+    if (unit->IsAnimationAct("J")) {
+        return false;
+    }
+    if (unit->IsAnimationAct("C")) {
+        return false;
+    }
+    if (unit->IsAnimationAct("R")) {
+        return false;
+    }
+    return true;
+}
+
+static inline bool BattlezActDiffersFromCRCGLPJ(CGrunt* unit) {
+    if (!unit->IsNotAnimationAct("C")) {
+        return false;
+    }
+    if (!unit->IsNotAnimationAct("R")) {
+        return false;
+    }
+    if (!unit->IsNotAnimationAct("C")) {
+        return false;
+    }
+    if (!unit->IsNotAnimationAct("G")) {
+        return false;
+    }
+    if (!unit->IsNotAnimationAct("L")) {
+        return false;
+    }
+    if (!unit->IsNotAnimationAct("P")) {
+        return false;
+    }
+    if (!unit->IsNotAnimationAct("J")) {
+        return false;
+    }
+    return true;
+}
+
+static inline void ExcludeBattlezSpecialAct(CGrunt* unit, const char* name, i32& eligible) {
+    char equal = unit->IsAnimationAct(name);
+    if (equal) {
+        eligible = 0;
+    }
+}
+
+static inline bool UpdateBattlezSpecialEligibility(CGrunt* unit, i32& eligible) {
+    ExcludeBattlezSpecialAct(unit, "I", eligible);
+    ExcludeBattlezSpecialAct(unit, "G", eligible);
+    ExcludeBattlezSpecialAct(unit, "L", eligible);
+    char equal = unit->IsAnimationAct("P");
+    if (equal) {
+        return false;
+    }
+    ExcludeBattlezSpecialAct(unit, "J", eligible);
+    ExcludeBattlezSpecialAct(unit, "C", eligible);
+    ExcludeBattlezSpecialAct(unit, "R", eligible);
+    return true;
 }
 
 RVA(0x000267c0, 0x2850)
@@ -684,7 +748,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         if (unit->IsAtSavedScreenPos() != 0 && unit->m_entranceCommitted != false
                             && unit->m_deathAnimStarted == false && unit->m_entranceActive == false
                             && unit->m_poweredUp == false) {
-                            if (BattlezActDiffersFromIGLPJCR(unit, eq)) {
+                            if (BattlezActDiffersFromIGLPJCR(unit)) {
                                 PickupType st2 = unit->m_entranceReason;
                                 if (st2 > PICKUP_EQUIPPABLE_LAST) {
                                     st2 = unit->m_toolId;
@@ -770,14 +834,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             }
                         }
                         {
-                            char ne;
-                            if ((ne = ANIMATION_ACT_DIFFERS_FOR(unit, "C"))
-                                && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "R"))
-                                && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "C"))
-                                && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "G"))
-                                && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "L"))
-                                && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "P"))
-                                && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "J"))) {
+                            if (BattlezActDiffersFromCRCGLPJ(unit)) {
                                 if (unit->m_object->m_screenX == unit->m_lastTilePx.m_x
                                     && unit->m_object->m_screenY == unit->m_lastTilePx.m_y
                                     && unit->m_entranceCommitted != false
@@ -870,33 +927,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             if (unit->m_entranceActive != false) {
                                 special = 0;
                             }
-                            eq = (ANIMATION_ACT_EQUALS_FOR(unit, "I"));
-                            if (eq) {
-                                special = 0;
-                            }
-                            eq = (ANIMATION_ACT_EQUALS_FOR(unit, "G"));
-                            if (eq) {
-                                special = 0;
-                            }
-                            eq = (ANIMATION_ACT_EQUALS_FOR(unit, "L"));
-                            if (eq) {
-                                special = 0;
-                            }
-                            eq = (ANIMATION_ACT_EQUALS_FOR(unit, "P"));
-                            if (eq) {
+                            if (!UpdateBattlezSpecialEligibility(unit, special)) {
                                 return 0;
-                            }
-                            eq = (ANIMATION_ACT_EQUALS_FOR(unit, "J"));
-                            if (eq) {
-                                special = 0;
-                            }
-                            eq = (ANIMATION_ACT_EQUALS_FOR(unit, "C"));
-                            if (eq) {
-                                special = 0;
-                            }
-                            eq = (ANIMATION_ACT_EQUALS_FOR(unit, "R"));
-                            if (eq) {
-                                special = 0;
                             }
                             if (unit->m_gruntKind == GRUNT_GHOST) {
                                 special = 0;
@@ -914,7 +946,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         if (unit->IsAtSavedScreenPos() != 0 && unit->m_entranceCommitted != false
                             && unit->m_deathAnimStarted == false && unit->m_entranceActive == false
                             && unit->m_poweredUp == false) {
-                            if (BattlezActDiffersFromIGLPJCR(unit, eq)) {
+                            if (BattlezActDiffersFromIGLPJCR(unit)) {
                                 for (i32 j = 0; j < 4; j++) {
                                     if (j != m_playerIndex) {
                                         for (i32 k = 0; k < TM_UNITS_PER_PLAYER; k++) {
@@ -953,14 +985,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                 if (battleTask != BZTASK_ASSIGNED_TARGET && battleTask != BZTASK_SEEK_SWITCH) {
                     if (unit->m_entranceCommitted != false && unit->m_deathAnimStarted == false
                         && unit->m_entranceActive == false && unit->m_poweredUp == false) {
-                        char ne;
-                        if ((ne = ANIMATION_ACT_DIFFERS_FOR(unit, "I"))
-                            && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "G"))
-                            && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "L"))
-                            && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "P"))
-                            && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "J"))
-                            && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "C"))
-                            && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "R"))) {
+                        if (BattlezActDiffersFromIGLPJCR(unit)) {
                             if (unit->m_battleState != BZTASK_UNASSIGNED) {
                                 if (RouteToNearbyEnemy(unit) != 0) {
                                     hit = 1;
@@ -975,7 +1000,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
             if (GRUNT_AT_SAVED_SCREEN_POS(unit) && unit->m_entranceCommitted != false
                 && unit->m_deathAnimStarted == false && unit->m_entranceActive == false
                 && unit->m_poweredUp == false) {
-                if (BattlezActDiffersFromIGLPJCR(unit, eq)) {
+                if (BattlezActDiffersFromIGLPJCR(unit)) {
                     if (static_cast<u32>(m_roundRobinTick) % TM_UNITS_PER_PLAYER
                         == static_cast<u32>(i)) {
                         {
@@ -1033,7 +1058,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             && unit->m_entranceCommitted != false
                             && unit->m_deathAnimStarted == false && unit->m_entranceActive == false
                             && unit->m_poweredUp == false) {
-                            if (BattlezActDiffersFromIGLPJCR(unit, eq)) {
+                            if (BattlezActDiffersFromIGLPJCR(unit)) {
                                 goto dispatch;
                             }
                         }
