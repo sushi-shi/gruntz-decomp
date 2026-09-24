@@ -238,6 +238,12 @@ drop and conditional pickup as macros, and repairs the natural current-player
 guard. The real-owner/original-executable guard test also exercises unchanged-
 count negative controls.
 
+Implementation `dc7394d28` is recorded only by the narrow adoption rows
+`fk-reset-current-player`, `fk-resolve-entrance-occupant`,
+`fk-postcommit-entrance`, `fk-interrupted-k-effect` and
+`grunt-two-callers-complete-j`. They do not resolve the broader conditional K,
+grid/identity/timer/configuration or other J-consumer queues.
+
 This composition moves Finish from 78.4463 to 83.1934 with J recovered and N/K
 still open; Arrival retains its complete lookup topology at 91.4676. Natural
 entrance is 88.3289 after the corrected guard and complete helper composition,
