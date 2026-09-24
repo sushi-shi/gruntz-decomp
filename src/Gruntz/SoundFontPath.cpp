@@ -10,6 +10,10 @@
 #include <stdio.h>
 #include <string.h>
 
+namespace {
+#include <Utils/FileExists.h>
+} // namespace
+
 RVA(0x000f8e20, 0x56)
 void CloseSoundFontDevice() {
     if (g_sfReady != false && g_sfDevice != NULL && g_sfDeviceCount != 0) {
@@ -75,7 +79,7 @@ i32 BuildSoundFontPath(char drive) {
         hiVer = 1;
     }
     g_sfBufferObject.m_Buffer = hiVer ? g_sfLocal4 : g_sfLocal;
-    if (SoundFontFileExists(g_sfBufferObject.m_Buffer)) {
+    if (FileExists(g_sfBufferObject.m_Buffer)) {
         res = g_sfDevice->SF_LoadBank(g_sfDeviceId, &g_sfMidiLocation, &g_sfBufferObject);
     }
     if (res != 0) {
@@ -85,15 +89,4 @@ i32 BuildSoundFontPath(char drive) {
     return res == 0;
 }
 
-RVA(0x000f90f0, 0x45)
-i32 SoundFontFileExists(char* szPath) {
-    OFSTRUCT of;
-
-    if (!szPath) {
-        return 0;
-    }
-    if (!*szPath) {
-        return 0;
-    }
-    return OpenFile(szPath, &of, 0x4000) != -1;
-}
+RVA_COMPGEN(0x000f90f0, 0x45, ?FileExists@?A0xcdbc6048e09ac61a@@YAHPBD@Z)

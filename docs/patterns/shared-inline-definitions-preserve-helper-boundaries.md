@@ -103,3 +103,21 @@ state; do not restore `.cpp` copies solely to recover current scores.
 The experiment proves a working shared-definition structure. It does not recover
 the original header filename, original linkage spelling, or whether a developer
 ever copied a helper between libraries.
+
+## Separate retail copies of one function: an anonymous-namespace include
+
+Retail holds three byte-identical 0x45-byte `FileExists` bodies: the extern one at
+0x1189c0 that game TUs call, and private copies at 0xf90f0 (sound-font path) and
+0x1fd70 (CD-ROM probe), each called only inside its own TU. `Utils/FileExists.h`
+now holds the single definition. `HeapDiag.cpp` includes it at file scope; the two
+private users include it inside `namespace { }`, which gives each copy a distinct
+symbol and its own address. Unlike an `inline` helper, the definition is an
+ordinary out-of-line function, so no caller expands it.
+
+`RVA()` in the header would give all three copies one address, so each TU pins its
+copy with `RVA_COMPGEN(rva, 0x45, <symbol>)` instead. For the private copies the
+symbol spells the canonical source-file namespace `?A0x<sha256("src/...")[:16]>`
+that `msvc_names.anonymous_namespaces` produces. The namespace has to open in the
+`.cpp`: VC5 names it after the file that opens it, and only source-file identities
+are canonicalized. All three pins stay 100.00 exact.
+

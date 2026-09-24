@@ -394,7 +394,6 @@ i32 FindProcessByName(const char* name, i32 flag, HANDLE* out);
 i32 __stdcall LaunchPortalExe(char* outPath);
 
 char GetGruntzDriveLetter();
-i32 FileExists(const char* szPath);
 void ResetPlayerColorAvailability();
 
 BOOL CALLBACK SetSkillLevelDialogProc(HWND, UINT, WPARAM, LPARAM);

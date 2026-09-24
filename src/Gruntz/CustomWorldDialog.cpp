@@ -13,6 +13,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/HeapDiag.h>
 #include <Gruntz/PortalPath.h>
 #include <Gruntz/WaitCursorScope.h>
 #include <Ints.h>

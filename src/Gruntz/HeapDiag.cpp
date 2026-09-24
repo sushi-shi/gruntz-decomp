@@ -7,6 +7,7 @@
 #include <Enums.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <ProcAddr.h>
+#include <Utils/FileExists.h>
 
 #include <malloc.h>
 #include <stdio.h>
@@ -39,18 +40,7 @@ void ClearTopmostStyle(HWND hWnd) {
     }
 }
 
-RVA(0x001189c0, 0x45)
-i32 FileExists(const char* szPath) {
-    OFSTRUCT of;
-
-    if (!szPath) {
-        return 0;
-    }
-    if (!*szPath) {
-        return 0;
-    }
-    return OpenFile(szPath, &of, 0x4000) != -1;
-}
+RVA_COMPGEN(0x001189c0, 0x45, ?FileExists@@YAHPBD@Z)
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
