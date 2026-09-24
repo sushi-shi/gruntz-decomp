@@ -25,4 +25,17 @@ struct DoubleVector3 {
     double m_z;
 };
 
+#define VEC2_SET(v, a, b)                                                                          \
+    {                                                                                              \
+        (v).m_x = (a);                                                                             \
+        (v).m_y = (b);                                                                             \
+    }
+
+#define VEC3_SET(v, a, b, c)                                                                       \
+    {                                                                                              \
+        (v).m_x = (a);                                                                             \
+        (v).m_y = (b);                                                                             \
+        (v).m_z = (c);                                                                             \
+    }
+
 #endif // GRUNTZ_DOUBLEVECTOR_H

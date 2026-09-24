@@ -263,7 +263,7 @@ sbi_wellgoo	6	5
 scattersamples	2	2
 secretteleportertrigger	17	15
 serializesyncmarker	1	1
-serialobjectfactory	55	51
+serialobjectfactory	55	54
 sfselectdevice	1	1
 shadetablecache	26	16
 simpleanimation	7	6
@@ -2043,7 +2043,7 @@ gruntbehaviorleaf	?UpdateDecayFade@CGrunt@@QAEHXZ	83.6098	83.6098	11	22da1267517
 gruntbricklayerstep	?StepBrickLayerBehavior@CGrunt@@QAEHXZ	87.6818	80.1788	24	bece72260065	0xecc90	87.6818	
 gruntchargestep	?StepDumbChaserBehavior@CGrunt@@QAEHXZ	90.1462	90.1462	24	a341de845bbf	0xef6b0	90.1462	
 gruntcombat	??0CUserLogic@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	1	22d8db5e69d9	0x58cd0	100.0000	
-gruntcombat	?Activate@CGrunt@@UAEXXZ	100.0000	100.0000	5	a473d62d3257	0x5caa0	100.0000	
+gruntcombat	?Activate@CGrunt@@UAEXXZ	100.0000	100.0000	6	ae746851e02b	0x5caa0	100.0000	
 gruntcombat	?AdvanceMotion@CGrunt@@UAEXXZ	77.7991	77.7991	19	85b6d5a64868	0x5f310	92.2460	
 gruntcombat	?BeginAttack@CGrunt@@QAEHHH@Z	67.9167	67.9167	8	ac60c0f7515f	0x5b570	97.8125	
 gruntcombat	?BuildGruntLoseItemAnimation@CGrunt@@QAEHXZ	100.0000	100.0000	7	55f15051b1b6	0x57890	100.0000	
@@ -3918,10 +3918,10 @@ secretteleportertrigger	?SpawnTeleporter@CSecretTeleporterTrigger@@QAEHXZ	100.00
 secretteleportertrigger	?Tick@CSecretLevelTrigger@@QAEHXZ	100.0000	100.0000	14	c87fb7e81324	0x42ac0	100.0000	
 serializesyncmarker	?SerializeSyncMarker@@YAHPAVCFileMemBase@@HPBDH@Z	100.0000	100.0000	4	c3e2ebee5535	0x13610	100.0000	
 serialobjectfactory	??0CGruntHealthSprite@@QAE@XZ	100.0000	100.0000	1	c101188e904e	0x11ef0	100.0000	
-serialobjectfactory	??0CMotionState@@QAE@XZ	100.0000	69.9750	1	b4f30b6337df	0x136d0	100.0000	
-serialobjectfactory	??0CMovingLogic@@QAE@XZ	100.0000	76.8317	1	a9a6fbf9edc9	0x13940	100.0000	
+serialobjectfactory	??0CMotionState@@QAE@XZ	100.0000	100.0000	1	b4f30b6337df	0x136d0	100.0000	
+serialobjectfactory	??0CMovingLogic@@QAE@XZ	100.0000	100.0000	1	a9a6fbf9edc9	0x13940	100.0000	
 serialobjectfactory	??0CPathHazard@@QAE@XZ	100.0000	100.0000	1	c5294a0cd9a8	0x13170	100.0000	
-serialobjectfactory	??0CProjectile@@QAE@XZ	100.0000	47.1132	1	914addbe6169	0x126e0	100.0000	
+serialobjectfactory	??0CProjectile@@QAE@XZ	100.0000	100.0000	1	914addbe6169	0x126e0	100.0000	
 serialobjectfactory	??0CTileTrigger@@QAE@XZ	100.0000	100.0000	1	8b171792cfbe	0x11160	100.0000	
 serialobjectfactory	??0CUserLogic@@QAE@XZ	100.0000	100.0000	1	c3177ea0b93d	0x138d0	100.0000	
 serialobjectfactory	??1CBehindCandy@@UAE@XZ	100.0000	100.0000	1	cpp:bc0783caa395	0xfc30	100.0000	

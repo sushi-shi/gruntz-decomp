@@ -1810,62 +1810,100 @@ void CGrunt::Activate() {
 
     double s = 1.0 / diag;
 
-    m_cells[3 * g_gruntDirNorth.m_row + g_gruntDirNorth.m_column].m_motion.m_direction.m_x = 0.0;
-    m_cells[3 * g_gruntDirNorth.m_row + g_gruntDirNorth.m_column].m_motion.m_direction.m_y = -1.0;
-    m_cells[3 * g_gruntDirNorth.m_row + g_gruntDirNorth.m_column].m_motion.m_step.m_x = 0.0;
-    m_cells[3 * g_gruntDirNorth.m_row + g_gruntDirNorth.m_column].m_motion.m_step.m_y = -0.5;
+    VEC2_SET(
+        m_cells[3 * g_gruntDirNorth.m_row + g_gruntDirNorth.m_column].m_motion.m_direction,
+        0.0,
+        -1.0
+    );
+    VEC2_SET(
+        m_cells[3 * g_gruntDirNorth.m_row + g_gruntDirNorth.m_column].m_motion.m_step,
+        0.0,
+        -0.5
+    );
 
-    m_cells[3 * g_gruntDirNorthEast.m_row + g_gruntDirNorthEast.m_column].m_motion.m_direction.m_x =
-        s;
-    m_cells[3 * g_gruntDirNorthEast.m_row + g_gruntDirNorthEast.m_column].m_motion.m_direction.m_y =
-        -1.0 / diag;
-    m_cells[3 * g_gruntDirNorthEast.m_row + g_gruntDirNorthEast.m_column].m_motion.m_step.m_x = 0.5;
-    m_cells[3 * g_gruntDirNorthEast.m_row + g_gruntDirNorthEast.m_column].m_motion.m_step.m_y =
-        -0.5;
+    VEC2_SET(
+        m_cells[3 * g_gruntDirNorthEast.m_row + g_gruntDirNorthEast.m_column].m_motion.m_direction,
+        s,
+        -1.0 / diag
+    );
+    VEC2_SET(
+        m_cells[3 * g_gruntDirNorthEast.m_row + g_gruntDirNorthEast.m_column].m_motion.m_step,
+        0.5,
+        -0.5
+    );
 
-    m_cells[3 * g_gruntDirEast.m_row + g_gruntDirEast.m_column].m_motion.m_direction.m_x = 1.0;
-    m_cells[3 * g_gruntDirEast.m_row + g_gruntDirEast.m_column].m_motion.m_direction.m_y = 0.0;
-    m_cells[3 * g_gruntDirEast.m_row + g_gruntDirEast.m_column].m_motion.m_step.m_x = 0.5;
-    m_cells[3 * g_gruntDirEast.m_row + g_gruntDirEast.m_column].m_motion.m_step.m_y = 0.0;
+    VEC2_SET(
+        m_cells[3 * g_gruntDirEast.m_row + g_gruntDirEast.m_column].m_motion.m_direction,
+        1.0,
+        0.0
+    );
+    VEC2_SET(m_cells[3 * g_gruntDirEast.m_row + g_gruntDirEast.m_column].m_motion.m_step, 0.5, 0.0);
 
-    m_cells[3 * g_gruntDirSouthEast.m_row + g_gruntDirSouthEast.m_column].m_motion.m_direction.m_x =
-        s;
-    m_cells[3 * g_gruntDirSouthEast.m_row + g_gruntDirSouthEast.m_column].m_motion.m_direction.m_y =
-        s;
-    m_cells[3 * g_gruntDirSouthEast.m_row + g_gruntDirSouthEast.m_column].m_motion.m_step.m_x = 0.5;
-    m_cells[3 * g_gruntDirSouthEast.m_row + g_gruntDirSouthEast.m_column].m_motion.m_step.m_y = 0.5;
+    VEC2_SET(
+        m_cells[3 * g_gruntDirSouthEast.m_row + g_gruntDirSouthEast.m_column].m_motion.m_direction,
+        s,
+        s
+    );
+    VEC2_SET(
+        m_cells[3 * g_gruntDirSouthEast.m_row + g_gruntDirSouthEast.m_column].m_motion.m_step,
+        0.5,
+        0.5
+    );
 
-    m_cells[3 * g_gruntDirSouth.m_row + g_gruntDirSouth.m_column].m_motion.m_direction.m_x = 0.0;
-    m_cells[3 * g_gruntDirSouth.m_row + g_gruntDirSouth.m_column].m_motion.m_direction.m_y = 1.0;
-    m_cells[3 * g_gruntDirSouth.m_row + g_gruntDirSouth.m_column].m_motion.m_step.m_x = 0.0;
-    m_cells[3 * g_gruntDirSouth.m_row + g_gruntDirSouth.m_column].m_motion.m_step.m_y = 0.5;
+    VEC2_SET(
+        m_cells[3 * g_gruntDirSouth.m_row + g_gruntDirSouth.m_column].m_motion.m_direction,
+        0.0,
+        1.0
+    );
+    VEC2_SET(
+        m_cells[3 * g_gruntDirSouth.m_row + g_gruntDirSouth.m_column].m_motion.m_step,
+        0.0,
+        0.5
+    );
 
-    m_cells[3 * g_gruntDirSouthWest.m_row + g_gruntDirSouthWest.m_column].m_motion.m_direction.m_x =
-        -1.0 / diag;
-    m_cells[3 * g_gruntDirSouthWest.m_row + g_gruntDirSouthWest.m_column].m_motion.m_direction.m_y =
-        s;
-    m_cells[3 * g_gruntDirSouthWest.m_row + g_gruntDirSouthWest.m_column].m_motion.m_step.m_x =
-        -0.5;
-    m_cells[3 * g_gruntDirSouthWest.m_row + g_gruntDirSouthWest.m_column].m_motion.m_step.m_y = 0.5;
+    VEC2_SET(
+        m_cells[3 * g_gruntDirSouthWest.m_row + g_gruntDirSouthWest.m_column].m_motion.m_direction,
+        -1.0 / diag,
+        s
+    );
+    VEC2_SET(
+        m_cells[3 * g_gruntDirSouthWest.m_row + g_gruntDirSouthWest.m_column].m_motion.m_step,
+        -0.5,
+        0.5
+    );
 
-    m_cells[3 * g_gruntDirWest.m_row + g_gruntDirWest.m_column].m_motion.m_direction.m_x = -1.0;
-    m_cells[3 * g_gruntDirWest.m_row + g_gruntDirWest.m_column].m_motion.m_direction.m_y = 0.0;
-    m_cells[3 * g_gruntDirWest.m_row + g_gruntDirWest.m_column].m_motion.m_step.m_x = -0.5;
-    m_cells[3 * g_gruntDirWest.m_row + g_gruntDirWest.m_column].m_motion.m_step.m_y = 0.0;
+    VEC2_SET(
+        m_cells[3 * g_gruntDirWest.m_row + g_gruntDirWest.m_column].m_motion.m_direction,
+        -1.0,
+        0.0
+    );
+    VEC2_SET(
+        m_cells[3 * g_gruntDirWest.m_row + g_gruntDirWest.m_column].m_motion.m_step,
+        -0.5,
+        0.0
+    );
 
-    m_cells[3 * g_gruntDirNorthWest.m_row + g_gruntDirNorthWest.m_column].m_motion.m_direction.m_x =
-        -1.0 / diag;
-    m_cells[3 * g_gruntDirNorthWest.m_row + g_gruntDirNorthWest.m_column].m_motion.m_direction.m_y =
-        -1.0 / diag;
-    m_cells[3 * g_gruntDirNorthWest.m_row + g_gruntDirNorthWest.m_column].m_motion.m_step.m_x =
-        -0.5;
-    m_cells[3 * g_gruntDirNorthWest.m_row + g_gruntDirNorthWest.m_column].m_motion.m_step.m_y =
-        -0.5;
+    VEC2_SET(
+        m_cells[3 * g_gruntDirNorthWest.m_row + g_gruntDirNorthWest.m_column].m_motion.m_direction,
+        -1.0 / diag,
+        -1.0 / diag
+    );
+    VEC2_SET(
+        m_cells[3 * g_gruntDirNorthWest.m_row + g_gruntDirNorthWest.m_column].m_motion.m_step,
+        -0.5,
+        -0.5
+    );
 
-    m_cells[3 * g_gruntDirCenter.m_row + g_gruntDirCenter.m_column].m_motion.m_direction.m_x = 0.0;
-    m_cells[3 * g_gruntDirCenter.m_row + g_gruntDirCenter.m_column].m_motion.m_direction.m_y = 0.0;
-    m_cells[3 * g_gruntDirCenter.m_row + g_gruntDirCenter.m_column].m_motion.m_step.m_x = 0.0;
-    m_cells[3 * g_gruntDirCenter.m_row + g_gruntDirCenter.m_column].m_motion.m_step.m_y = 0.0;
+    VEC2_SET(
+        m_cells[3 * g_gruntDirCenter.m_row + g_gruntDirCenter.m_column].m_motion.m_direction,
+        0.0,
+        0.0
+    );
+    VEC2_SET(
+        m_cells[3 * g_gruntDirCenter.m_row + g_gruntDirCenter.m_column].m_motion.m_step,
+        0.0,
+        0.0
+    );
 
     CWwdSpriteObject* h = m_object;
     i32 px = h->m_screenX;

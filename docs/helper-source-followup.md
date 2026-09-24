@@ -91,6 +91,18 @@ class renaming, unsigned/ref ABI changes or extra methods into a helper test.
 
 ## Recheck index
 
+The fresh initialization pass adds `reassess-vector-spotlight-center-init` and
+`reassess-vector-spotlight-result-init` to the concrete consumer queue. The
+`reassess-vector-*-sites` and `reassess-older-vector-*` rows retain the separately
+reviewed arithmetic/API alternatives. `reassess-rectangle-exclusive-overlaps`
+and `stdlith-morect-grid-setup` now include original-executable evidence.
+The member/macro and named-conversion controls are recorded separately under
+`reassess-vector-activate-sites`, `reassess-vector-bound-pairs`,
+`reassess-rectangle-query-init-direct` and `reassess-rectangle-query-init-locals`.
+Both broad initialization reviews remain open; their existing constructors,
+complete arithmetic/copy families and remaining actual consumers are not
+exempted by these narrower results.
+
 All screened-out decisions are revisitable. Their reasons, evidence, tests and
 reopening criteria live in the following canonical candidate rows. A provisional
 lack of evidence is not disproof, and no candidate is rejected merely for a

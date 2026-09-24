@@ -1,5 +1,7 @@
 # Pattern index (MSVC 5.0 /O2 — Gruntz)
 
+- [Vector SET macros preserve repeated receivers and raw double copies](vector-set-macro-preserves-repeated-receiver-and-copy-boundaries.md) — c10 — cpp:macro cpp:inline cpp:aggregate cpp:double | asm:lea asm:mov asm:fld asm:fstp | topic:source-shape topic:aliasing — eighteen member Init calls lose 36 original references in Activate; a width-adapted macro keeps its full exact body. Six macro initialization sites plus original alternating bound stores recover the complete motion constructor from 69.975 to 100.
+
 - [A late parser local reuses a dead argument home](late-parser-local-reuses-dead-argument-home.md) — c10 — cpp:local cpp:scope cpp:constructor cpp:inline | asm:mov asm:push | topic:regalloc topic:eh — zBitVec's string constructor closes 95.66782 -> 100 with its sourced helpers intact; initializing the maximum after entry guards restores both the receiver home and its unwind action, without changing frame size or call/CFG counts.
 
 - [A packed-result local plus the span's parameter cursor recovers all palette call boundaries](inline-result-local-changes-later-span-expansion.md#composition-with-the-helpers-real-loop-cursor) — c10 — cpp:inline cpp:local cpp:loop | asm:call asm:rep | topic:inline-budget topic:source-model — a one-lever dip from 13 to 10 calls composes to retail's 24; all eight palettes use one FillSpan API and the standalone helper stays exact. A saturated 12-site cost probe is not budget exemption; the 25-site negative control exposes the difference.
