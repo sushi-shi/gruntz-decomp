@@ -1957,6 +1957,23 @@ const double g_wingzBias = -0.5;
 DATA(0x001e9a68)
 const double s_fpZero = 0.0;
 
+static inline void ExpireBattlezPoweredState(CGrunt* grunt) {
+    if (grunt->m_poweredUp != false && grunt->m_stamina >= STAMINA_FULL) {
+        bool eq;
+        {
+            eq = grunt->IsAnimationAct("E");
+        }
+        if (!eq) {
+            eq = grunt->IsAnimationAct("A");
+        }
+        if (eq) {
+            if (grunt->m_poweredUp != false && grunt->m_neighborValid == false) {
+                RESET_GRUNT_POWERED_STATE(grunt)
+            }
+        }
+    }
+}
+
 RVA(0x0005d210, 0x1554)
 void CGrunt::StepBehavior(char*) {
     if (static_cast<i64>(g_frameTime) - m_struckClock64 >= m_struckTimer64) {
@@ -2302,32 +2319,12 @@ afterTile:
             i32 reach = m_defenderRadius + m_reachRect.right;
             CMapMgr* grid = g_gameReg->m_tileGrid;
 
-            RECT gb;
             RECT rs;
-            RECT box;
             rs.left = col5 - reach;
             rs.top = row5 - reach;
             rs.right = reach + col5 + 1;
             rs.bottom = reach + row5 + 1;
-            gb.left = 0;
-            gb.top = 0;
-            gb.right = grid->m_width;
-            gb.bottom = grid->m_height;
-            const RECT* pr = &rs;
-            if (pr != NULL) {
-                box = *pr;
-                box.right++;
-                box.bottom++;
-            } else {
-                box = CRect(0, 0, grid->m_width, grid->m_height);
-            }
-
-            RECT* bounds = &grid->m_bounds;
-            if (!IntersectRect(bounds, &box, &gb)) {
-                *bounds = box;
-            }
-            grid->m_gridW = bounds->right - bounds->left;
-            grid->m_gridH = bounds->bottom - bounds->top;
+            GRID_CLIP_INL(grid, &rs)
         }
         if (m_arrivalState != AI_NONE) {
             if (!IsHoldPending()) {
@@ -2389,19 +2386,7 @@ afterTile:
         {
 
             CMapMgr* grid = g_gameReg->m_tileGrid;
-            RECT ra;
-            RECT rb;
-            rb.left = 0;
-            rb.top = 0;
-            rb.right = grid->m_width;
-            rb.bottom = grid->m_height;
-            ra = CRect(0, 0, grid->m_width, grid->m_height);
-            RECT* bounds = &grid->m_bounds;
-            if (!IntersectRect(bounds, &ra, &rb)) {
-                *bounds = ra;
-            }
-            grid->m_gridW = bounds->right - bounds->left;
-            grid->m_gridH = bounds->bottom - bounds->top;
+            SCAN_BOUNDS_PLAINCLIP(grid)
         }
     }
 
@@ -2454,20 +2439,7 @@ afterArrival:
     }
 
     if (m_arrivalState == AI_BATTLEZ_PATH) {
-        if (m_poweredUp != false && m_stamina >= STAMINA_FULL) {
-            bool eq;
-            {
-                eq = IsAnimationAct("E");
-            }
-            if (!eq) {
-                eq = IsAnimationAct("A");
-            }
-            if (eq) {
-                if (m_poweredUp != false && m_neighborValid == false) {
-                    RESET_GRUNT_POWERED_STATE(this)
-                }
-            }
-        }
+        ExpireBattlezPoweredState(this);
     } else {
         if (static_cast<i64>(g_frameTime) - m_combatClock64 >= m_combatTimeout64) {
             if (m_poweredUp != false && m_neighborValid == false) {

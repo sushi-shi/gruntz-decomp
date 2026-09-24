@@ -15,6 +15,7 @@
 #include <Gruntz/CoordPool.h>
 #include <Gruntz/EnemyAiType.h>
 #include <Gruntz/GameLevel.h>
+#include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStateRecord.h>
 #include <Gruntz/Grunt.h>
@@ -30,6 +31,7 @@
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/MapCellInline.h>
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/ScanGridMacros.h>
@@ -527,13 +529,7 @@ i32 CGrunt::StepCompassMove() {
         i32 tflags = board->CellFlagsAt(mtx, mty);
         if ((tflags & BRICKZ_CELL_OCCUPIED) && !(tflags & 0x80)) {
 
-            i32 owner;
-            if (static_cast<u32>(mtx) >= static_cast<u32>(board->m_width)
-                || static_cast<u32>(mty) >= static_cast<u32>(board->m_height)) {
-                owner = -1;
-            } else {
-                owner = board->m_rowInts[mty][mtx * 7 + 1];
-            }
+            i32 owner = board->OccupantAt(mtx, mty);
             m_triggerMgr->StartUnitDeath(
                 (owner >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK,
                 owner & GRUNT_IDENTITY_COMPONENT_MASK,
@@ -634,14 +630,7 @@ i32 CGrunt::StepCompassMove() {
         bag.SetAtGrow(bag.GetSize(), 7);
         bag.SetAtGrow(bag.GetSize(), 8);
         while (bag.GetSize() > 0) {
-            i32 last = bag.GetUpperBound();
-            i32 count = last + 1;
-            i32 idx;
-            if (count == 0) {
-                idx = (rand() & 1) != 0 ? 0 : last;
-            } else {
-                idx = rand() % count;
-            }
+            i32 idx = GetRandom(0, bag.GetUpperBound());
             i32 dir = bag.GetAt(idx);
             moveX = x;
             moveY = y;
@@ -706,16 +695,14 @@ commit:
         CGruntzMapMgr* b = g_gameReg->m_tileGrid;
         i32 ox = m_lastTilePx.m_x >> TILE_SHIFT_PX;
         i32 oy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
-        b->m_rowBytes[oy][ox * 7 * 4 + 3] &= 0xdf;
-        b->m_rowInts[oy][ox * 7 + 1] = -1;
+        b->ReleaseCellOccupancy(ox, oy);
     }
     {
         CGruntzMapMgr* b = g_gameReg->m_tileGrid;
         i32 nx = moveX >> TILE_SHIFT_PX;
         i32 ny = moveY >> TILE_SHIFT_PX;
         i32 owner = (m_playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | m_unitIndex;
-        b->m_rowBytes[ny][nx * 7 * 4 + 3] |= 0x20;
-        b->m_rowInts[ny][nx * 7 + 1] = owner;
+        b->AcquireCellOccupancy(nx, ny, owner);
     }
     m_lastTilePx.m_x = moveX;
     m_lastTilePx.m_y = moveY;

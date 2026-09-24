@@ -4,6 +4,7 @@
 #include <MfcNoInline.h>
 #include <MfcWin.h>
 
+#include <Gruntz/BattlezGruntInline.h>
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordPool.h>
@@ -63,18 +64,9 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
             }
             if (dist <= 0xa) {
 
-                Coord leftPos, topPos, rightPos, bottomPos;
-                g->GetScreenTile(&bottomPos);
-                g->GetScreenTile(&rightPos);
-                g->GetScreenTile(&topPos);
-                g->GetScreenPos(&leftPos);
-                leftPos.m_x = leftPos.m_x >> TILE_SHIFT_PX;
-                CMapMgr* grid = m_board;
                 RECT box;
-                box.left = leftPos.m_x - 5;
-                box.top = topPos.m_y - 5;
-                box.right = rightPos.m_x + 5;
-                box.bottom = bottomPos.m_y + 5;
+                g->BuildUnitSearchBox(&box, 5);
+                CMapMgr* grid = m_board;
                 arrivalMask = 0x20000dc7;
                 GRID_CLIP(grid, &box);
             }
@@ -110,7 +102,6 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 Coord none;
                 g->m_arrivalCell = *none.Set(-1, -1);
                 {
-                    bool eq;
                     if (g == NULL) {
                         goto seek;
                     }
@@ -129,32 +120,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                     if (g->m_poweredUp != false) {
                         goto seek;
                     }
-                    eq = (strcmp(g_typeColl[g->m_logicRecord->EventCode()], "I") == 0);
-                    if (eq) {
-                        goto seek;
-                    }
-                    eq = (strcmp(g_typeColl[g->m_logicRecord->EventCode()], "G") == 0);
-                    if (eq) {
-                        goto seek;
-                    }
-                    eq = (strcmp(g_typeColl[g->m_logicRecord->EventCode()], "L") == 0);
-                    if (eq) {
-                        goto seek;
-                    }
-                    eq = (strcmp(g_typeColl[g->m_logicRecord->EventCode()], "P") == 0);
-                    if (eq) {
-                        goto seek;
-                    }
-                    eq = (strcmp(g_typeColl[g->m_logicRecord->EventCode()], "J") == 0);
-                    if (eq) {
-                        goto seek;
-                    }
-                    eq = (strcmp(g_typeColl[g->m_logicRecord->EventCode()], "C") == 0);
-                    if (eq) {
-                        goto seek;
-                    }
-                    eq = (strcmp(g_typeColl[g->m_logicRecord->EventCode()], "R") == 0);
-                    if (eq) {
+                    if (!BattlezActDiffersFromIGLPJCR(g)) {
                         goto seek;
                     }
                     HandleUnitContact(g, cur);
@@ -205,18 +171,9 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 dist2 = abs(targetPos1.m_x - gruntPos1.m_x) + abs(targetPos2.m_y - gruntPos2.m_y);
             }
             if (dist2 <= 0xa) {
-                Coord leftPos, topPos, rightPos, bottomPos;
-                g->GetScreenTile(&bottomPos);
-                g->GetScreenTile(&rightPos);
-                g->GetScreenTile(&topPos);
-                g->GetScreenPos(&leftPos);
-                leftPos.m_x = leftPos.m_x >> TILE_SHIFT_PX;
-                CMapMgr* grid = m_board;
                 RECT box;
-                box.left = leftPos.m_x - 5;
-                box.top = topPos.m_y - 5;
-                box.right = rightPos.m_x + 5;
-                box.bottom = bottomPos.m_y + 5;
+                g->BuildUnitSearchBox(&box, 5);
+                CMapMgr* grid = m_board;
                 arrivalMask = 0x20000dc7;
                 GRID_CLIP(grid, &box);
             }

@@ -10,9 +10,10 @@ classes, types, ownership, control flow, storage, calls, and referents outrank a
 temporary score. The objective is per-function historical MAX fuzzy = 100%.
 
 Before editing any function below historical MAX, use the repository's
-`match-checklist` skill to publish and execute its evidence-backed Function
-Match Plan. A wall may not be declared bounded until that checklist has an
-evidence-backed disposition for every family.
+`match-checklist` skill for evidence-backed source-shape checks. Do not write
+per-function plan files or publish formal matching plans unless explicitly
+requested by the user. A wall may not be declared bounded until applicable
+families have evidence-backed dispositions; a short batch may leave them open.
 
 ## Establish the environment
 

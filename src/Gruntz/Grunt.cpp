@@ -891,8 +891,6 @@ i32 CGrunt::StepArrivalDrop(
     i32 clearEndpointFlags,
     i32 extraPassableMask
 ) {
-    POSITION n;
-    POSITION cur;
     Coord* tail;
     POSITION pos;
     i32 lastX, lastY, tileX, tileY;
@@ -988,17 +986,7 @@ i32 CGrunt::StepArrivalDrop(
                 && probe.GetCount() != 0) {
                 if (probe.GetCount() <= cnt + 3) {
                     g_coordPool.Push(probe.RemoveHead());
-                    if (CoordCount() != 0) {
-                        n = CoordHead();
-                        while (NULL != n) {
-                            cur = n;
-                            m_coordList.GetNext(n);
-                            if (static_cast<Coord*>(m_coordList.GetAt(cur)) != NULL) {
-                                g_coordPool.Push(static_cast<Coord*>(m_coordList.GetAt(cur)));
-                            }
-                        }
-                        m_coordList.RemoveAll();
-                    }
+                    RecycleGruntCoords(this);
                     pos = probe.GetHeadPosition();
                     while (pos != NULL) {
                         m_coordList.AddTail(probe.GetNext(pos));
@@ -2059,9 +2047,9 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         if (m_entranceActive != false) {
             goto fail;
         }
-        eq = (strcmp((g_typeColl[m_logicRecord->m_eventCode]), "A") != 0);
+        eq = IsNotAnimationAct("A");
         if (eq) {
-            eq = (strcmp((g_typeColl[m_logicRecord->m_eventCode]), "D") != 0);
+            eq = IsNotAnimationAct("D");
             if (eq) {
                 goto fail;
             }
@@ -2607,8 +2595,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "BABYWALKERGRUNT";
-            CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
-            eq = (strcmp(*rec, "D") == 0);
+            eq = IsAnimationAct("D");
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -2629,8 +2616,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "BEACHBALLGRUNT";
-            CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
-            eq = (strcmp(*rec, "D") == 0);
+            eq = IsAnimationAct("D");
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -2650,8 +2636,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "BIGWHEELGRUNT";
-            CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
-            eq = (strcmp(*rec, "D") == 0);
+            eq = IsAnimationAct("D");
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -2672,8 +2657,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "GOKARTGRUNT";
-            CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
-            eq = (strcmp(*rec, "D") == 0);
+            eq = IsAnimationAct("D");
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -2694,8 +2678,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "JACKINTHEBOXGRUNT";
-            CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
-            eq = (strcmp(*rec, "D") == 0);
+            eq = IsAnimationAct("D");
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -2715,8 +2698,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "JUMPROPEGRUNT";
-            CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
-            eq = (strcmp(*rec, "D") == 0);
+            eq = IsAnimationAct("D");
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -2736,8 +2718,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "POGOSTICKGRUNT";
-            CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
-            eq = (strcmp(*rec, "D") == 0);
+            eq = IsAnimationAct("D");
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -2759,8 +2740,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_moveVariant = variant;
             m_passableMask = 0;
             m_animSetName = "SCROLLGRUNT";
-            CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
-            eq = (strcmp(*rec, "D") == 0);
+            eq = IsAnimationAct("D");
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -2780,8 +2760,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "SQUEAKTOYGRUNT";
-            CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
-            eq = (strcmp(*rec, "D") == 0);
+            eq = IsAnimationAct("D");
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -2801,8 +2780,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "YOYOGRUNT";
-            CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
-            eq = (strcmp(*rec, "D") == 0);
+            eq = IsAnimationAct("D");
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -3068,13 +3046,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
     LoadCellAnimNames(fresh, defer);
     LoadAnimNameTable(fresh, defer);
     if (fresh == 0) {
-        CString* rec;
-        {
-            i32 key = m_logicRecord->EventCode();
-            rec = &g_typeColl[key];
-        }
-
-        eq = (strcmp(*rec, "H") == 0);
+        eq = IsAnimationAct("H");
         if (eq) {
             CAniElement* el = m_wwdObject->m_animationCursor.m_animation;
             CAniRecordView* first;
@@ -3093,13 +3065,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (m_poweredUp != false && m_neighborValid == false) {
                 RESET_GRUNT_POWERED_STATE(this)
             }
-            CString* rec2;
-            {
-                i32 key2 = m_logicRecord->EventCode();
-                rec2 = &g_typeColl[key2];
-            }
-
-            eq = (strcmp(*rec2, "D") == 0);
+            eq = IsAnimationAct("D");
             if (eq) {
                 GruntDirectionCell cell2 = m_entranceCell;
                 SetImageSetByName(

@@ -747,22 +747,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                     && unit->m_deathAnimStarted == false
                                     && unit->m_entranceActive == false) {
                                     RECT box;
-                                    Coord c1;
-                                    (static_cast<CUserLogic*>(unit))->GetScreenPos((&c1));
-                                    c1.m_y >>= 5;
-                                    c1.m_x >>= 5;
-                                    Coord c2;
-                                    (static_cast<CUserLogic*>(unit))->GetScreenTile((&c2));
-                                    Coord c3;
-                                    (static_cast<CUserLogic*>(unit))->GetScreenPos((&c3));
-                                    c3.m_y >>= 5;
-                                    c3.m_x >>= 5;
-                                    Coord c4;
-                                    (static_cast<CUserLogic*>(unit))->GetScreenTile((&c4));
-                                    box.left = c4.m_x - 4;
-                                    box.top = c3.m_y - 4;
-                                    box.right = c2.m_x + 4;
-                                    box.bottom = c1.m_y + 4;
+                                    unit->BuildUnitSearchBox(&box, 4);
                                     Coord c5;
                                     (static_cast<CUserLogic*>(unit))->GetScreenTile((&c5));
                                     Coord c6;
@@ -3460,45 +3445,31 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     }
 
     bool eq;
-    eq = (ANIMATION_ACT_EQUALS_FOR(unit, "I"));
+    eq = unit->IsAnimationAct("I");
     if (eq) {
         return 0;
     }
-
-    CString* recs;
-
-    recs = &g_typeColl[unit->m_logicRecord->m_eventCode];
-    eq = (strcmp(*recs, "G") == 0);
+    eq = unit->IsAnimationAct("G");
     if (eq) {
         return 0;
     }
-
-    recs = &g_typeColl[unit->m_logicRecord->m_eventCode];
-    eq = (strcmp(*recs, "L") == 0);
+    eq = unit->IsAnimationAct("L");
     if (eq) {
         return 0;
     }
-
-    recs = &g_typeColl[unit->m_logicRecord->m_eventCode];
-    eq = (strcmp(*recs, "P") == 0);
+    eq = unit->IsAnimationAct("P");
     if (eq) {
         return 0;
     }
-
-    recs = &g_typeColl[unit->m_logicRecord->m_eventCode];
-    eq = (strcmp(*recs, "J") == 0);
+    eq = unit->IsAnimationAct("J");
     if (eq) {
         return 0;
     }
-
-    recs = &g_typeColl[unit->m_logicRecord->m_eventCode];
-    eq = (strcmp(*recs, "C") == 0);
+    eq = unit->IsAnimationAct("C");
     if (eq) {
         return 0;
     }
-
-    recs = &g_typeColl[unit->m_logicRecord->m_eventCode];
-    eq = (strcmp(*recs, "R") == 0);
+    eq = unit->IsAnimationAct("R");
     if (eq) {
         return 0;
     }
@@ -3510,8 +3481,8 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         band &= 1;
     } else {
         band = rand() % bandPct;
+        band++;
     }
-    band++;
     if (band <= m_toolzPct) {
 
         PickupType cur = unit->ArrivalPickup();
@@ -3525,8 +3496,8 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
             roll &= 1;
         } else {
             roll = rand() % rollPct;
+            roll++;
         }
-        roll++;
         PickupType mode = PICKUP_WINGZ;
         if (roll <= m_bombzPct) {
             mode = PICKUP_BOMB;
@@ -3633,8 +3604,8 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
             roll &= 1;
         } else {
             roll = rand() % rollPct;
+            roll++;
         }
-        roll++;
         PickupType mode;
         if (roll <= m_babyWalkerzPct) {
             mode = PICKUP_BABYWALKER;
@@ -3666,8 +3637,8 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
             roll &= 1;
         } else {
             roll = rand() % rollPct;
+            roll++;
         }
-        roll++;
         PickupType mode = PICKUP_BLACKBRICK;
         if (roll <= m_redBrickPct) {
             mode = PICKUP_REDBRICK;

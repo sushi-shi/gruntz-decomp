@@ -1,6 +1,6 @@
 ---
 name: match-checklist
-description: Build and execute an evidence-backed hypothesis plan for every Gruntz function-matching attempt. Use before editing any function below historical MAX, revisiting a hard wall, recovering lost headroom, or declaring a residue bounded; it mines exact-match history and requires every applicable source-shape family—including inline helpers—to be considered and recorded.
+description: Apply evidence-backed source-shape checks to Gruntz function matching without writing per-function plans. Use before editing below historical MAX, revisiting a hard wall, recovering lost headroom, or declaring a residue bounded; mine exact-match history and consider applicable helpers and source families.
 ---
 
 # Gruntz per-function match checklist
@@ -15,39 +15,31 @@ squash merge, never during matching, ordinary commits, or pushes. Here,
 `tested` means a measured source A/B compilation and retail comparison; it
 does not require running a unit/regression or compiler-backed test suite.
 
-## Non-negotiable deliverable
+## Evidence checks, not plan documents
 
-Before the first source edit, publish a concise **Function Match Plan** using
-the template in [references/function-plan.md](references/function-plan.md).
-Read and copy the applicable rows from
-[references/attempt-matrix.md](references/attempt-matrix.md) into that plan.
-The matrix is executable: every row must end as `tested`, `proved`,
-`checked — no evidence`, or `proved inapplicable`; merely naming a family is
-not completion.
-The plan is specific to the selected function, not a generic list. It must:
+Do not create per-function plan files, including arrival plans or temporary
+`*-plan.md` files, or publish a formal Function Match Plan unless the user
+explicitly asks for one. Matching work should produce source changes and measured
+results, not planning paperwork. A brief commentary update naming the target,
+evidence-backed hypothesis, and next compiler control is enough.
 
-1. state the current/bank/historical score, size, owner TU, source fingerprint,
-   wall class, first real divergence, call/branch/return/relocation counts, and
-   ordered-referent verdict;
-2. include the function's own history and the closest exact historical
-   precedents;
-3. give a prioritized queue of concrete source A/Bs, each with the evidence
-   that licenses it and the machine-code feature it is expected to move;
-4. mark every checklist family `candidate`, `checked — no evidence`, `tested`,
-   or `proved inapplicable`, with a short reason. No family may be silently
-   skipped; and
-5. enumerate the concrete source forms to compile within every candidate
-   family. In particular, “checked inlining” is invalid unless the plan records
-   the distinct helper/macro/visibility forms from the attempt matrix and their
-   individual verdicts.
+Use [references/attempt-matrix.md](references/attempt-matrix.md) as a reasoning
+aid; do not copy it into a document or fill a ceremonial matrix before editing.
+Still inspect the current/bank/historical scores, source fingerprint, complete
+owner and history, first divergence, call/CFG structure, constants, and ordered
+referents. Consider the applicable source-shape families, especially real inline
+helpers, and distinguish measured controls from untried hypotheses.
 
-Keep the live plan in commentary/task notes. Do not create a hand-maintained wall
-ledger. Persist only reusable compiler findings in `docs/patterns/` and durable
-lineage decisions in their designated ledger.
+Keep concise results in the handoff. Persist reusable compiler findings only in
+`docs/patterns/` and durable adoption/rejection/defer decisions, their evidence,
+and reopening conditions only in the canonical lineage ledger. Do not create a
+hand-maintained wall ledger. The optional
+[plan template](references/function-plan.md) is only for an explicitly requested
+written plan.
 
 ## Required evidence pass
 
-Do this before planning edits:
+Inspect this evidence before source edits:
 
 ```sh
 gruntz walls diagnose <rva> --asm
@@ -76,7 +68,7 @@ wall-class tags. Read the selected pattern files completely. Use the historical
 catalog in [references/exact-match-levers.md](references/exact-match-levers.md)
 to ensure the search is not limited to the first familiar explanation.
 
-## Plan and execute
+## Match and compare
 
 Prioritize hypotheses by evidence, not convenience:
 
@@ -89,15 +81,16 @@ Prioritize hypotheses by evidence, not convenience:
 6. classified compiler-state experiments only after semantics, call set, CFG,
    constants, and referents are credible.
 
-For each candidate, record the exact source change and predicted emitted delta.
-Compile the real TU, compare from the first real divergence, and update the plan
-with score, size/frame, call/branch/return/relocation counts, semantic diff, and
-verdict. A single dip does not reject a sourced or structurally convergent base:
-apply exploratory descent and compose the next independently evidenced lever.
+For each candidate, identify the exact source change and expected emitted delta.
+Compile the real TU and compare from the first real divergence. Report the
+measured score and relevant size/frame, call/CFG, semantic, and referent changes
+concisely; no separate plan file is required. A single dip does not reject a
+sourced or structurally convergent base: apply exploratory descent and compose
+the next independently evidenced lever.
 Before composing, confirm the desired feature was absent from the original
 baseline.
 
-Do not run a Cartesian/permutation campaign until the plan shows that all
+Do not run a Cartesian/permutation campaign until the evidence shows that all
 applicable structural families were checked and the current wall is genuinely
 register/schedule or TU-state. Do not retain probes, unused declarations,
 artificial locals, or distorted source.
@@ -110,12 +103,14 @@ mixes several independent levers.
 
 ## Exit criteria
 
-A function campaign may end only when one of these is true:
+Distinguish completion from a short batch:
 
-- it is exact and actual compilation/comparison banks the intended fingerprint; or
-- the complete checklist has evidence-backed dispositions, the residue is
-  reproducibly bounded, and the report identifies the remaining wall class and
-  the tested negative controls.
+- Claim exact closure only from actual compilation/comparison of the intended
+  fingerprint; bank only when authorized.
+- Claim a bounded residue only after applicable families have evidence-backed
+  dispositions and the remaining wall and negative controls are identified.
+- A user-directed short batch or target switch may stop sooner. Mark remaining
+  hypotheses open, give a concise handoff, and move on without a plan document.
 
 Before commit, re-audit raw constants and ordered referents, refresh compilation
 and comparison with `gruntz build base compare`, inspect MAX results, and stage

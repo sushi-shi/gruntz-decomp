@@ -113,26 +113,26 @@ i32 CBattlezMapConfig::CanPlaySpecialAnim(CGrunt* unit) {
     i32 ci;
 
     recs = &g_typeColl[unit->m_logicRecord->m_eventCode];
-    eq = (strcmp(*recs, "P") == 0);
+    eq = (*recs == "P");
     if (eq) {
         return 0;
     }
 
     recs = &g_typeColl[unit->m_logicRecord->m_eventCode];
-    eq = (strcmp(*recs, "J") == 0);
+    eq = (*recs == "J");
     if (eq) {
         return 0;
     }
 
     recs = &g_typeColl[unit->m_logicRecord->m_eventCode];
-    eq = (strcmp(*recs, "C") == 0);
+    eq = (*recs == "C");
     if (eq) {
         goto fail;
     }
 
     ci = unit->m_logicRecord->EventCode();
     sel = &g_typeColl[ci];
-    eq = (strcmp(*sel, "R") == 0);
+    eq = (*sel == "R");
     return !eq;
 fail:
     return 0;

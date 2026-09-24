@@ -1,7 +1,9 @@
-# Function Match Plan template
+# Optional Function Match Plan template
 
-Fill this in before editing. Keep it concise but concrete; replace prompts with
-evidence. A naked checklist without function-specific hypotheses is not a plan.
+Use this only when the user explicitly requests a written per-function plan.
+Ordinary matching must not create plan files (including temporary arrival plans)
+or fill this template before editing. Use the evidence checks directly instead.
+For an explicitly requested plan, keep it concise and replace prompts with evidence.
 
 ## Evidence snapshot
 
