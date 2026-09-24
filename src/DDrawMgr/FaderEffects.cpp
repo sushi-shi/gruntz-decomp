@@ -20,6 +20,10 @@
 #include <math.h>
 #include <string.h>
 
+namespace {
+#include <Gruntz/GameRand.h>
+} // namespace
+
 DATA(0x001f07ec)
 const float g_fxBias = -50.0f;
 DATA(0x001f07f4)
@@ -371,7 +375,7 @@ i32 CFaderSine::ApplyInit(CFaderConfig* desc) {
         m_appliedCounts[i] = 0;
         m_fractionalCounts[i] = 0;
         m_sampleOrder[i] = 0;
-        m_sampleCursors[i] = GetRandom(0, m_width - 1);
+        m_sampleCursors[i] = GetRandomNumber(0, m_width - 1);
     }
     ScatterSamples(m_sampleOrder, 0, m_width, 1);
     return 1;
@@ -415,7 +419,7 @@ void CFaderSine::RenderFrame(i32 frame) {
                 m_appliedCounts[row] += delta;
                 n = static_cast<i32>(step + step);
                 while (n > 0) {
-                    i32 pick = GetRandom(0, m_width - 1);
+                    i32 pick = GetRandomNumber(0, m_width - 1);
                     ClearSample(targetRow, pick, bpp);
                     n--;
                 }
@@ -432,7 +436,7 @@ void CFaderSine::RenderFrame(i32 frame) {
                 m_appliedCounts[row] += delta;
                 n = static_cast<i32>(step + step);
                 while (n > 0) {
-                    i32 pick = GetRandom(0, m_width - 1);
+                    i32 pick = GetRandomNumber(0, m_width - 1);
                     for (i32 j = 0; j < bpp; j++) {
                         targetRow[pick * bpp + j] = restoreRow[pick * bpp + j];
                     }

@@ -17,6 +17,7 @@ import struct
 from pathlib import Path
 
 from gruntz.core.paths import BUILD
+from gruntz.core.msvc_names import anonymous_namespaces
 from gruntz.delink.coffx import Obj
 
 NORM = BUILD / "objdiff/compare-new"
@@ -40,7 +41,7 @@ def is_local_label(name: str) -> bool:
 def canon(name: str) -> str:
     """One canonical spelling: content-address suffixes stripped, the weak
     vector-deleting alias folded onto the scalar form."""
-    return _VDTOR.sub("??_G", LOCAL_STATIC_SUFFIX.sub("", name))
+    return _VDTOR.sub("??_G", LOCAL_STATIC_SUFFIX.sub("", anonymous_namespaces(name)))
 
 
 def pairs(units=None) -> dict[str, tuple[Path, Path]]:
