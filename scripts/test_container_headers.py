@@ -45,6 +45,48 @@ class Vc5ContainerHeaderTests(unittest.TestCase):
             path.write_text(source)
             return cl.compile(path, folder / 'probe.obj', ['/nologo', '/c', '/O2', '/MT', '/GX'])
 
+    def test_crange_complete_api_keeps_nonconst_value_getters(self):
+        self.compile('''#include <Globals.h>
+typedef char range_size[sizeof(CRange<int>) == 8 ? 1 : -1];
+typedef int (CRange<int>::*Getter)();
+typedef void (CRange<int>::*Setter)(int, int);
+Getter low = &CRange<int>::GetMin;
+Getter high = &CRange<int>::GetMax;
+Setter set = &CRange<int>::Set;
+CRange<int> use(CRange<int>& input) {
+    CRange<int> empty;
+    CRange<int> inverted(99999, 0);
+    empty.Set(input.GetMin(), input.GetMax());
+    inverted = empty;
+    return inverted;
+}
+''')
+
+    def test_crange_bounds_are_not_public_or_reference_results(self):
+        from gruntz.tool import ToolError
+        for body in (
+            'int use(CRange<int>& value) { return value.m_fMin; }',
+            'int use(CRange<int>& value) { return value.m_fMax; }',
+        ):
+            with self.subTest(body=body), self.assertRaisesRegex(ToolError, 'protected'):
+                self.compile('#include <Globals.h>\n' + body)
+        with self.assertRaises(ToolError):
+            self.compile('''#include <Globals.h>
+typedef int& (CRange<int>::*Getter)();
+Getter low = &CRange<int>::GetMin;
+''')
+
+    def test_ambient_range_layout_preserves_all_timing_members(self):
+        self.compile('''#include <Mfc.h>
+#include <Gruntz/RandomAmbientSound.h>
+#include <stddef.h>
+typedef char owner_size[sizeof(CRandomAmbientSound) == 0x58 ? 1 : -1];
+typedef char play_offset[offsetof(CRandomAmbientSound, m_playDuration) == 0x40 ? 1 : -1];
+typedef char silence_offset[offsetof(CRandomAmbientSound, m_silenceDuration) == 0x48 ? 1 : -1];
+typedef char countdown_offset[offsetof(CRandomAmbientSound, m_countdownMs) == 0x50 ? 1 : -1];
+typedef char phase_offset[offsetof(CRandomAmbientSound, m_playPhase) == 0x54 ? 1 : -1];
+''')
+
     def test_array_header_exposes_the_complete_template(self):
         self.compile('''#include <ZTools/ZDArray.h>
 typedef char base_size[sizeof(_zvec) == 28 ? 1 : -1];

@@ -800,7 +800,7 @@ void CRandomAmbientSound::InitCycleTiming(
 ) {
     m_playDuration.Set(playDurationMin, playDurationMax);
     m_silenceDuration.Set(silenceDurationMin, silenceDurationMax);
-    i32 countdown = RandRange(playDurationMin, playDurationMax);
+    i32 countdown = RandRange(m_playDuration.GetMin(), m_playDuration.GetMax());
     m_playPhase = true;
     m_countdownMs = countdown;
 }
