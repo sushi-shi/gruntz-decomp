@@ -21,6 +21,7 @@
 #include <Gruntz/GameStateRecord.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
+#include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntDirection.h>
 #include <Gruntz/GruntDirectionOffset.h>
@@ -43,6 +44,7 @@
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/StaminaPct.h>
 #include <Gruntz/TileCollisionKind.h>
+#include <Gruntz/TileCoordMacros.h>
 #include <Gruntz/TileGrid.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -784,8 +786,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spaw
     if (m_entranceCommitted == false) {
         return 1;
     }
-    Coord tile(tileX, tileY);
-    i32 flags = g_gameReg->m_tileGrid->CellFlagsAt(tile.m_x, tile.m_y);
+    i32 flags = g_gameReg->m_tileGrid->CellFlagsAt(tileX, tileY);
     if ((flags
          & IDX(
              CELL_FLAG_SOLID | CELL_FLAG_BRIDGE | CELL_FLAG_GRUNT_ENTRANCE_AREA
@@ -849,13 +850,16 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spaw
                     eq = (strcmp(*g_typeColl.GetNameRecord(m_previousAnimationActId), "D") == 0);
                     if (eq) {
                         if (m_poweredUp != false && m_neighborValid == false) {
-                            RESET_GRUNT_POWERED_STATE(this);
+                            RESET_GRUNT_POWERED_STATE(this)
                         }
                         m_tileMoveCommitted = false;
                         SET_ANIMATION_ACT("D");
                         SwitchAnimation(m_poseWalk);
 
-                        char* nm = EntranceCell()->WalkName().GetBuffer(0);
+                        GruntDirectionCell cell = m_entranceCell;
+                        i32 col = cell.m_column + cell.m_row * 2;
+                        i32 base = cell.m_row + col;
+                        char* nm = m_cells[base].WalkName().GetBuffer(0);
                         SetImageSetByName(nm);
                     } else {
                         ResetEntranceAnimation(1, 0, 0);
@@ -889,11 +893,11 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spaw
                 if (eq) {
 
                     CWwdSpriteObject* h = m_object;
-                    Coord saved = m_lastTilePx;
-                    Coord pixel = h->ScreenPos();
-                    SnapTileCenter(&pixel);
+                    i32 savedX = m_lastTilePx.m_x;
+                    i32 savedY = m_lastTilePx.m_y;
+                    DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(h, px, py)
                     i32 redo = 1;
-                    if (pixel != saved) {
+                    if (PIXEL_PAIR_NOT_AT_POSITION(px, py, savedX, savedY)) {
                         if (IsDropReady(1)) {
                             m_coordToggle = (m_coordToggle == false);
                             redo = 0;
@@ -930,7 +934,7 @@ idleReseed:
     {
         i32 z = m_object->m_screenPosition.m_y + 0x186a0;
         CWwdSpriteObject* o = m_object;
-        SET_SORT_KEY_IF_CHANGED(o, z);
+        SET_SORT_KEY_IF_CHANGED(o, z)
     }
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
     m_toyTime = 0;
@@ -942,25 +946,25 @@ applyTail:
         LoadWingzGruntSprites(false);
     }
     if (m_poweredUp != false && m_neighborValid == false) {
-        RESET_GRUNT_POWERED_STATE(this);
+        RESET_GRUNT_POWERED_STATE(this)
     }
     m_triggerMgr->ApplySwitch(this, m_object->m_screenPosition.m_x, m_object->m_screenPosition.m_y);
     {
-        Coord spawn = tile;
-        TileCenter(&spawn);
-        m_object->SetScreenPos(spawn);
+        DECLARE_TILE_CENTER_PIXEL_PAIR(spawnPx, spawnPy, tileX, tileY)
+        m_object->m_screenPosition.m_x = spawnPx;
+        m_object->m_screenPosition.m_y = spawnPy;
         {
             CGruntzMapMgr* board = g_gameReg->m_tileGrid;
-            Coord oldTile = m_lastTilePx;
-            ScreenTile(&oldTile);
-            BrickzCell& oldCell = board->m_rows[oldTile.m_y][oldTile.m_x];
-            oldCell.m_flags &= BRICKZ_CELL_UNOCCUPIED_MASK;
-            oldCell.m_occupantId = -1;
-            m_lastTilePx.Set(-1, -1);
+            i32 gx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+            i32 gy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
+            board->m_rows[gy][gx].m_flags &= BRICKZ_CELL_UNOCCUPIED_MASK;
+            board->m_rows[gy][gx].m_occupantId = -1;
+            m_lastTilePx.m_x = -1;
+            m_lastTilePx.m_y = -1;
         }
         SetEntrancePos(1, 1);
         if (CoordCount() != 0) {
-            RecycleGruntCoords(this);
+            RECYCLE_GRUNT_COORDS_EXPANDED(this)
         }
         if (m_arrivalState == AI_BATTLEZ_PATH) {
             m_defenderState = AISTATE_SEEK;
@@ -969,8 +973,8 @@ applyTail:
         if (spawnWormhole != false) {
             CWwdSpriteObject* spawned = g_gameReg->m_world->m_childGroup->CreateSprite(
                 0,
-                spawn.m_x,
-                spawn.m_y,
+                spawnPx,
+                spawnPy,
                 0,
                 "Wormhole",
                 WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE

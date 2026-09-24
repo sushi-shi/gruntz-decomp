@@ -114,6 +114,9 @@
 #define GRUNT_SCREEN_Y_AT_SAVED_POS(object, grunt)                                                 \
     ((object)->m_screenPosition.m_y == (grunt)->m_lastTilePx.m_y)
 
+#define PIXEL_PAIR_NOT_AT_POSITION(pixelX, pixelY, savedX, savedY)                                 \
+    pixelX != savedX || pixelY != savedY
+
 #define FIND_NEAREST_ENEMY_AT_TARGET(grunt, atTarget, screenX)                                     \
     CGrunt* grunt = m_triggerMgr->FindNearestEnemy(this);                                          \
     i32 atTarget = 0;                                                                              \

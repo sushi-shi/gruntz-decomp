@@ -2030,7 +2030,7 @@ grunt	?TileSwitch@CGrunt@@QAEHHHHHHH@Z	100.0000	100.0000	5	a1e8ab94e1ad	0x4b320	
 gruntarrivalneighbor	?StepPostGuardBehavior@CGrunt@@QAEHXZ	100.0000	100.0000	15	cbec563d9124	0xf26f0	100.0000	
 gruntarrivalscan	?StepBomberBehavior@CGrunt@@QAEHXZ	85.5255	85.5255	32	e3ac8e1d5929	0xec670	96.3112	
 gruntarrivalupdate	?StepGauntletGruntBehavior@CGrunt@@QAEHXZ	88.3961	88.3961	53	0e2c1615c6bc	0xf0130	94.1989	
-gruntassetloaders	?LoadGruntDeathAnimations@CGrunt@@QAEHW4GruntDeathType@@H@Z	97.1129	97.1129	40	30a3af54d79e	0x60150	97.1129	
+gruntassetloaders	?LoadGruntDeathAnimations@CGrunt@@QAEHW4GruntDeathType@@H@Z	97.1129	97.1129	41	03161bb5bf78	0x60150	97.1129	
 gruntbehaviorleaf	?UpdateDeathAnimation@CGrunt@@QAEHXZ	95.2638	95.2638	17	439e3f818460	0x612a0	95.2638	
 gruntbehaviorleaf	?UpdateDecayFade@CGrunt@@QAEHXZ	83.6098	83.6098	12	2ab45342605d	0x61570	83.6098	
 gruntbricklayerstep	?StepBrickLayerBehavior@CGrunt@@QAEHXZ	86.1848	86.1848	26	f99ad387fa5e	0xecc90	87.6818	
@@ -2214,8 +2214,8 @@ gruntsteps	?Save@CGrunt@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	8	8bda812b90a
 gruntsteps	?SerializeDispatch@CGrunt@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	6	da6785025c9c	0x53b80	100.0000	
 gruntsteps	?SetArrivalTarget@CGrunt@@QAEHHHHH@Z	100.0000	100.0000	4	c521a62afa10	0x52ed0	100.0000	
 gruntsteps	?SnapToLastTile@CGrunt@@QAEXH@Z	100.0000	100.0000	7	a3c27b3b737c	0x517b0	100.0000	
-gruntsteps	?StepCompassMove@CGrunt@@QAEHXZ	63.0219	63.0219	24	229f68d7f0a8	0x51c00	63.4973	
-gruntsteps	?TryTeleportToCell@CGrunt@@QAEHHHHH@Z	85.8178	85.8178	29	ccd8da16820b	0x52fb0	94.2627	
+gruntsteps	?StepCompassMove@CGrunt@@QAEHXZ	63.0219	62.6506	24	229f68d7f0a8	0x51c00	63.4973	
+gruntsteps	?TryTeleportToCell@CGrunt@@QAEHHHHH@Z	93.6778	93.6778	30	90eddfd11337	0x52fb0	94.2627	
 gruntsteps	?VehicleContactContains@CGrunt@@QAEHHH@Z	100.0000	100.0000	5	90a9ce40dd4e	0x51a20	100.0000	
 grunttilescan	?ScanRegion@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	81.9104	81.9104	17	33ed1acbbb2d	0x32ce0	83.2773	
 grunttoysprite	??0CGruntToySprite@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	6	2ee8d1d59ec1	0x7f350	100.0000	

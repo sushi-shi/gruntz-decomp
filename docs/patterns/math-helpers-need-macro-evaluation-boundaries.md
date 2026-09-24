@@ -38,6 +38,7 @@ the following examples without removing their typed APIs:
 | `CTriggerMgr::LoadGruntResurrectTuning` 0x7be60 | 61.0939% | scalar tile/pixel locals and Win32 `POINT`/`RECT` | 91.9724% |
 | `CTriggerMgr::SpawnGrunt` 0x7c110 | 83.5938% | snapped pixel-pair and pickup macros | 94.3750% |
 | `CGrunt::LoadGruntDeathAnimations` 0x60150 | 91.4915% | restored snap macro and scalar screen locals with typed tile reads | 97.1129% |
+| `CGrunt::TryTeleportToCell` 0x52fb0 | 85.8178% | snapped pixel-pair, recycle, and tile-center macros with typed cell writes | 93.6778% |
 | `CGrunt::RectContains` 0x51850 | 46.2177% | tile component conversion, native rectangle copy, offset/extent macros | 100% |
 | `CGrunt::VehicleContactContains` 0x51a20 | 58.6220% | same rectangle family | 100% |
 | `CGrunt::SetArrivalTarget` 0x52ed0 | 59.6000% | component stores and snap expressions | 100% |
@@ -210,6 +211,14 @@ fields and all shared math helpers remain in place.
 the earlier object snap macro and scalar screen locals. The restored caller
 recovers its prior 97.1129% and the retail nested animation call set, showing
 that the tiled data model and caller macro boundary can coexist.
+
+`TryTeleportToCell` restores one branch by keeping scalar tile and snap-pixel
+locals at their earlier call sites. The existing recycle and tile-center macros
+can expand beside typed `BrickzCell` flag/occupant writes and named cell flags;
+the source restores its prior 93.6778% while retaining every shared helper.
+The same-unit `StepCompassMove` body is unchanged but moves from 63.0219%
+to 62.6506% under this compiler state. Its historical 63.0219% MAX stays
+banked, and the whole-engine score rises.
 
 `CMovingLogic::InitOwner` gives a counterexample to adding an aggregate merely
 because the component values are related. Its four min/max record reads have
