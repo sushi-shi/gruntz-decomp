@@ -499,14 +499,15 @@ RVA(0x00176000, 0x18f)
 i32 CDib::InitPcx(u8* buf, HDC dc, u32 ctrl) {
     u8* pStart = buf;
     PcxHeader* hdr = static_cast<PcxHeader*>(static_cast<void*>(pStart));
-    CSize imageSize(hdr->m_xMax - hdr->m_xMin + 1, hdr->m_yMax - hdr->m_yMin + 1);
+    i32 width = hdr->m_xMax - hdr->m_xMin + 1;
+    i32 height = hdr->m_yMax - hdr->m_yMin + 1;
     if (hdr->m_bitsPerPixel != PCX_BITS_PER_PLANE_8) {
         return 0;
     }
     if (!Init(
             dc,
-            imageSize.cx,
-            imageSize.cy,
+            width,
+            height,
             static_cast<ColorDepth>(IDX(hdr->m_planes) * IDX(hdr->m_bitsPerPixel)),
             ctrl
         )) {
@@ -525,11 +526,11 @@ i32 CDib::InitPcx(u8* buf, HDC dc, u32 ctrl) {
     u8* dst;
     u8* scan;
 
-    scan = new u8[(imageSize.cx * IDX(hdr->m_bitsPerPixel) * IDX(hdr->m_planes)) / 8];
+    scan = new u8[(width * IDX(hdr->m_bitsPerPixel) * IDX(hdr->m_planes)) / 8];
 
-    for (y = 0; y < imageSize.cy; y++) {
+    for (y = 0; y < height; y++) {
         dst = m_pBytes + m_pLines[y];
-        remaining = imageSize.cx * IDX(hdr->m_planes);
+        remaining = width * IDX(hdr->m_planes);
 
         while (remaining > 0) {
             value = *src++;
@@ -547,14 +548,14 @@ i32 CDib::InitPcx(u8* buf, HDC dc, u32 ctrl) {
         }
 
         if (hdr->m_planes == PCX_PLANES_PALETTED) {
-            for (i = imageSize.cx; i != 0; i--) {
+            for (i = width; i != 0; i--) {
                 *dst++ = scan[i - 1];
             }
         } else if (hdr->m_planes == PCX_PLANES_RGB) {
-            for (i = imageSize.cx; i != 0; i--) {
+            for (i = width; i != 0; i--) {
                 *dst++ = scan[i - 1];
-                *dst++ = scan[imageSize.cx + i - 1];
-                *dst++ = scan[2 * imageSize.cx + i - 1];
+                *dst++ = scan[width + i - 1];
+                *dst++ = scan[2 * width + i - 1];
             }
         }
     }
@@ -774,22 +775,23 @@ void CDib::Invert() {
     u32 destination;
 
     i32 j;
-    CSize imageSize(GetWidth(), GetHeight());
+    i32 width = GetWidth();
+    i32 height = GetHeight();
 
-    for (i32 i = 0; i < imageSize.cy / 2; i++) {
-        k = i * imageSize.cx;
-        for (j = 0; j < imageSize.cx; j++) {
+    for (i32 i = 0; i < height / 2; i++) {
+        k = i * width;
+        for (j = 0; j < width; j++) {
             scratch[j] = m_pBytes[k++];
         }
 
-        source = (imageSize.cy - 1 - i) * imageSize.cx;
-        destination = i * imageSize.cx;
-        for (j = 0; j < imageSize.cx; j++) {
+        source = (height - 1 - i) * width;
+        destination = i * width;
+        for (j = 0; j < width; j++) {
             m_pBytes[destination++] = m_pBytes[source++];
         }
 
-        destination = (imageSize.cy - 1 - i) * imageSize.cx;
-        for (j = 0; j < imageSize.cx; j++) {
+        destination = (height - 1 - i) * width;
+        for (j = 0; j < width; j++) {
             m_pBytes[destination++] = scratch[j];
         }
     }
