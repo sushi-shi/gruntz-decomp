@@ -84,16 +84,26 @@ i32 CDDrawWorkerHost::Read(
     }
 
     m_flags = IDX(pd->m_flags);
-    m_movementPercent.Set(pd->m_movementXPercent, pd->m_movementYPercent);
-    m_scrollCenter.Init(0.0f, 0.0f);
+    m_movementPercent.m_x = pd->m_movementXPercent;
+    m_movementPercent.m_y = pd->m_movementYPercent;
+    m_scrollCenter.m_x = 0;
+    m_scrollCenter.m_y = 0;
     m_zCoord = -999999;
-    m_tileGridSize = CSize(pd->m_tilesWide, pd->m_tilesHigh);
-    m_tilePixelSize = CSize(pd->m_tilePixelWidth, pd->m_tilePixelHeight);
+    m_tileGridSize.cx = pd->m_tilesWide;
+    m_tileGridSize.cy = pd->m_tilesHigh;
+    m_tilePixelSize.cx = pd->m_tilePixelWidth;
+    m_tilePixelSize.cy = pd->m_tilePixelHeight;
     m_zCoord = pd->m_zCoord;
-    m_viewportRect = *bounds;
-    SetRect(&m_tileRect, 0, 0, m_tilePixelSize.cx, m_tilePixelSize.cy);
-    m_planePixelSize =
-        CSize(m_tilePixelSize.cx * m_tileGridSize.cx, m_tilePixelSize.cy * m_tileGridSize.cy);
+    m_viewportRect.left = bounds->left;
+    m_viewportRect.top = bounds->top;
+    m_viewportRect.right = bounds->right;
+    m_viewportRect.bottom = bounds->bottom;
+    m_tileRect.left = 0;
+    m_tileRect.top = 0;
+    m_tileRect.right = m_tilePixelSize.cx;
+    m_tileRect.bottom = m_tilePixelSize.cy;
+    m_planePixelSize.cx = m_tilePixelSize.cx * m_tileGridSize.cx;
+    m_planePixelSize.cy = m_tilePixelSize.cy * m_tileGridSize.cy;
 
     if (m_flags & IDX(WWD_PLANE_FLAG_AUTO_TILE_SIZE)) {
 
@@ -113,7 +123,7 @@ i32 CDDrawWorkerHost::Read(
     m_fillFx.dwFillColor = pd->m_fillColor;
     m_flags = IDX(pd->m_flags);
 
-    SetViewportRect(bounds);
+    APPLY_WORKER_HOST_BOUNDS(bounds);
 
     m_scrollScale.m_x = static_cast<float>(m_movementPercent.m_x) * 0.01f;
     m_scrollScale.m_y = static_cast<float>(m_movementPercent.m_y) * 0.01f;
@@ -132,12 +142,16 @@ i32 CDDrawWorkerHost::Read(
         m_tileRowOffsets[c] = c * m_tileGridSize.cx;
     }
 
-    FloatVector2 scrollCenter(Coord(pd->m_scrollX, pd->m_scrollY));
+    i32 originY = pd->m_scrollY;
+    i32 originX = pd->m_scrollX;
+    float sy = static_cast<float>(originY);
+    float sx = static_cast<float>(originX);
     if ((m_flags & IDX(WWD_PLANE_FLAG_MAIN)) == 0) {
-        scrollCenter.m_x *= m_scrollScale.m_x;
-        scrollCenter.m_y *= m_scrollScale.m_y;
+        sx *= m_scrollScale.m_x;
+        sy *= m_scrollScale.m_y;
     }
-    m_scrollCenter = scrollCenter;
+    m_scrollCenter.m_x = sx;
+    m_scrollCenter.m_y = sy;
     UpdatePlaneViewRect();
 
     if (pd->m_objectsOffset != 0) {

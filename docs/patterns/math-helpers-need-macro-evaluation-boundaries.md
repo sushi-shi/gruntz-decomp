@@ -15,6 +15,7 @@ the following examples without removing their typed APIs:
 | --- | ---: | --- | ---: |
 | `CGrunt::ComputeFacing` 0x57060 | 22.1515% | double subtraction, existing scalar locals, `VECTOR2_MAG_COMPONENTS` | 100% |
 | `CDDrawWorkerHost::SetTileSize` 0x161f00 | 24.4615% | rectangle stores and `TILE_SHIFT_INTO` loops | 100% |
+| `CDDrawWorkerHost::Read` 0x161640 | 72.3841% | component stores and `APPLY_WORKER_HOST_BOUNDS` | 97.3555% |
 | `CGrunt::RectContains` 0x51850 | 46.2177% | tile component conversion, native rectangle copy, offset/extent macros | 100% |
 | `CGrunt::VehicleContactContains` 0x51a20 | 58.6220% | same rectangle family | 100% |
 | `CGrunt::SetArrivalTarget` 0x52ed0 | 59.6000% | component stores and snap expressions | 100% |
@@ -78,6 +79,13 @@ the function. The full vector API remains available.
 `SetTileSize` uses the width in **both** retail shift loops. The candidate used
 height in the Y loop and added a `SetRect` import. The shared loop macro and
 component rectangle stores recover the retail behavior, including that asymmetry.
+
+`CDDrawWorkerHost::Read` exposed a separate call-set boundary. Constructing
+`CSize` values and invoking `SetRect`/`SetViewportRect` gave 72.3841%. Restoring
+the earlier component stores and `APPLY_WORKER_HOST_BOUNDS` while retaining the
+typed fields and all helper APIs gave 97.3555%; the retail call set has `CopyRect`
+and a second `UpdatePlaneViewRect` where the aggregate form had `SetRect` and
+`SetViewportRect`. The sibling `Save` also became exact without a source edit.
 
 `LoadChipMachineConfig` has two independent edge-offset reads. The second key is
 `"(FallingItemSpeed"`, including its opening parenthesis. Computing one offset and
