@@ -37,6 +37,7 @@ the following examples without removing their typed APIs:
 | `CTriggerMgr::ApplyGruntAreaEffect` 0x7b930 | 74.9078% | scalar radius, bounds, per-Grunt tiles, and branch-local positions | 94.5674% |
 | `CTriggerMgr::LoadGruntResurrectTuning` 0x7be60 | 61.0939% | scalar tile/pixel locals and Win32 `POINT`/`RECT` | 91.9724% |
 | `CTriggerMgr::SpawnGrunt` 0x7c110 | 83.5938% | snapped pixel-pair and pickup macros | 94.3750% |
+| `CGrunt::LoadGruntDeathAnimations` 0x60150 | 91.4915% | restored snap macro and scalar screen locals with typed tile reads | 97.1129% |
 | `CGrunt::RectContains` 0x51850 | 46.2177% | tile component conversion, native rectangle copy, offset/extent macros | 100% |
 | `CGrunt::VehicleContactContains` 0x51a20 | 58.6220% | same rectangle family | 100% |
 | `CGrunt::SetArrivalTarget` 0x52ed0 | 59.6000% | component stores and snap expressions | 100% |
@@ -204,6 +205,11 @@ Their aggregate rewrites changed the source-visible local census, point and
 rectangle call identities, or the branches from component tests. Restoring
 the earlier scalar and macro boundaries recovers each prior score; the typed
 fields and all shared math helpers remain in place.
+
+`LoadGruntDeathAnimations` retains typed `BrickzCell` reads while restoring
+the earlier object snap macro and scalar screen locals. The restored caller
+recovers its prior 97.1129% and the retail nested animation call set, showing
+that the tiled data model and caller macro boundary can coexist.
 
 `CMovingLogic::InitOwner` gives a counterexample to adding an aggregate merely
 because the component values are related. Its four min/max record reads have

@@ -21,6 +21,7 @@
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/TileCollisionKind.h>
+#include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/VoiceManager.h>
@@ -82,7 +83,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_selectedSprite)
 
     if (m_poweredUp != false && m_neighborValid == false) {
-        RESET_GRUNT_POWERED_STATE(this);
+        RESET_GRUNT_POWERED_STATE(this)
     }
     m_triggerMgr->RemoveCellRecord(m_playerIndex, m_unitIndex, 1);
 
@@ -91,7 +92,7 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_SKIP_COLLISION));
     {
         CWwdSpriteObject* o = m_object;
-        SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_DEATH);
+        SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_DEATH)
     }
 
     if (killerPlayerIndex != -1) {
@@ -146,26 +147,23 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
             DEATH_CUE(0x352);
             goto finalize;
 
-        case DEATH_QUICKFALL: {
-            Coord position = m_object->ScreenPos();
-            SnapTileCenter(&position);
-            m_object->SetScreenPos(position);
-        }
+        case DEATH_QUICKFALL:
+            SNAP_OBJECT_TO_TILE_CENTER(m_object)
             m_poseDeath = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_deathzQuickfall);
             SwitchAnimationAndMaybeAdvance(m_poseDeath, 0);
             APPLY_LOOKUP_SPRITE_INLINE(s_deathzFall, DEATH_FRAME());
             {
                 CWwdSpriteObject* o = m_object;
-                SET_SORT_KEY_IF_CHANGED(o, -1);
+                SET_SORT_KEY_IF_CHANGED(o, -1)
             }
             DEATH_CUE(0x357);
             goto finalize;
 
         case DEATH_FALL: {
             CMapMgr* grid = g_gameReg->m_tileGrid;
-            Coord tile;
-            GetScreenTile(&tile);
-            TileCollisionKind attr = grid->m_rows[tile.m_y][tile.m_x].m_typeCode;
+            TileCollisionKind attr = grid->m_rows[m_object->m_screenPosition.m_y >> TILE_SHIFT_PX]
+                                                 [m_object->m_screenPosition.m_x >> TILE_SHIFT_PX]
+                                                     .m_typeCode;
             i32 tag = 0x355;
             if (attr == TILEKIND_DEATHBRIDGE_UP || attr == TILEKIND_TOGGLEDEATHBRIDGE_UP) {
                 m_poseDeath =
@@ -173,11 +171,9 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
                 tag = 0x357;
                 {
                     CWwdSpriteObject* o = m_object;
-                    SET_SORT_KEY_IF_CHANGED(o, -1);
+                    SET_SORT_KEY_IF_CHANGED(o, -1)
                 }
-                Coord position = m_object->ScreenPos();
-                SnapTileCenter(&position);
-                m_object->SetScreenPos(position);
+                SNAP_OBJECT_TO_TILE_CENTER(m_object)
             } else {
                 m_poseDeath = m_wwdObject->OwnerMgr()->m_animRegistry->FindAnimation(s_deathzFall);
             }
@@ -191,9 +187,9 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
 
         case DEATH_FALL2: {
             CMapMgr* grid = g_gameReg->m_tileGrid;
-            Coord tile;
-            GetScreenTile(&tile);
-            TileCollisionKind attr = grid->m_rows[tile.m_y][tile.m_x].m_typeCode;
+            TileCollisionKind attr = grid->m_rows[m_object->m_screenPosition.m_y >> TILE_SHIFT_PX]
+                                                 [m_object->m_screenPosition.m_x >> TILE_SHIFT_PX]
+                                                     .m_typeCode;
             i32 tag = 0x355;
             if (attr == TILEKIND_DEATHBRIDGE_UP || attr == TILEKIND_TOGGLEDEATHBRIDGE_UP) {
                 m_poseDeath =
@@ -201,11 +197,9 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
                 tag = 0x357;
                 {
                     CWwdSpriteObject* o = m_object;
-                    SET_SORT_KEY_IF_CHANGED(o, -1);
+                    SET_SORT_KEY_IF_CHANGED(o, -1)
                 }
-                Coord position = m_object->ScreenPos();
-                SnapTileCenter(&position);
-                m_object->SetScreenPos(position);
+                SNAP_OBJECT_TO_TILE_CENTER(m_object)
             } else {
                 m_poseDeath = MapFind<CAniElement>(
                     m_wwdObject->OwnerMgr()->m_animRegistry->m_animations,
@@ -286,8 +280,9 @@ i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerI
             {
                 CGruntzMgr* g = g_gameReg;
                 CCueRect* r = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
-                Coord position = m_object->ScreenPos();
-                if (::PtInRect(r, position.m_x, position.m_y)) {
+                i32 x = m_object->m_screenPosition.m_x;
+                i32 y = m_object->m_screenPosition.m_y;
+                if (::PtInRect(r, x, y)) {
                     g->m_voiceManager->PlayGruntVoiceCue(this, 3, -1, -1, -1);
                 }
             }
