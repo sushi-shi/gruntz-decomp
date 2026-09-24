@@ -89,8 +89,7 @@ inline i32 CGrunt::CanCommitMove(i32 moveX, i32 moveY, i32 sourceX, i32 sourceY)
             return 1;
         }
         BrickzCell* cur = &board->m_rows[ty][tx];
-        BrickzCell* tg = tgt;
-        RETURN_IF_DIAGONAL_ROUTE_BLOCKED(board, cur, tg, dx, dy);
+        RETURN_IF_DIAGONAL_ROUTE_BLOCKED(board, cur, tgt, dx, dy);
     }
     return 1;
 }

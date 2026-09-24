@@ -2214,7 +2214,7 @@ gruntsteps	?Save@CGrunt@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	8	8bda812b90a
 gruntsteps	?SerializeDispatch@CGrunt@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	6	da6785025c9c	0x53b80	100.0000	
 gruntsteps	?SetArrivalTarget@CGrunt@@QAEHHHHH@Z	100.0000	100.0000	4	c521a62afa10	0x52ed0	100.0000	
 gruntsteps	?SnapToLastTile@CGrunt@@QAEXH@Z	100.0000	100.0000	7	a3c27b3b737c	0x517b0	100.0000	
-gruntsteps	?StepCompassMove@CGrunt@@QAEHXZ	63.0219	62.6506	24	229f68d7f0a8	0x51c00	63.4973	
+gruntsteps	?StepCompassMove@CGrunt@@QAEHXZ	63.0219	63.0219	24	229f68d7f0a8	0x51c00	63.4973	
 gruntsteps	?TryTeleportToCell@CGrunt@@QAEHHHHH@Z	93.6778	93.6778	30	90eddfd11337	0x52fb0	94.2627	
 gruntsteps	?VehicleContactContains@CGrunt@@QAEHHH@Z	100.0000	100.0000	5	90a9ce40dd4e	0x51a20	100.0000	
 grunttilescan	?ScanRegion@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	81.9104	81.9104	17	33ed1acbbb2d	0x32ce0	83.2773	
