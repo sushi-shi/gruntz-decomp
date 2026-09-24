@@ -684,9 +684,14 @@ i32 CDDSurface::ShadeBlt(
         return 0;
     }
     {
-        CSize srcSize = sr.Size();
-        CSize dstSize = dr.Size();
-        if (dstSize != srcSize) {
+        i32 srcWidth = RECT_WIDTH(sr);
+        i32 dstWidth = RECT_WIDTH(dr);
+        if (dstWidth != srcWidth) {
+            return 0;
+        }
+        i32 srcHeight = RECT_HEIGHT(sr);
+        i32 dstHeight = RECT_HEIGHT(dr);
+        if (dstHeight != srcHeight) {
             return 0;
         }
         if (dr.left < 0) {
@@ -721,21 +726,22 @@ i32 CDDSurface::ShadeBlt(
     i32 srcStride = src->m_apiDesc.lPitch / 2;
     srcPtr += sr.top * srcStride + sr.left;
     i32 dstRowAdv = dstStride + dr.left - dr.right;
-    CSize blitSize = dr.Size();
+    i32 width = RECT_WIDTH(dr);
     i32 srcRowAdv = srcStride + sr.left - sr.right;
-    u16* temp = new u16[blitSize.cx * 2];
+    i32 height = RECT_HEIGHT(dr);
+    u16* temp = new u16[width * 2];
     i32 bank = static_cast<u8>(shade) / 8 * CLUT_ALPHA_BANK_ENTRY_COUNT * sizeof(u16);
     i32 redDown = g_rDown;
 
     if (redDown == PIXEL16_RED_DOWN && g_gDown == redDown && g_bDown == redDown
         && g_rUp == RGB555_RED_UP && g_gUp == PIXEL16_GREEN_UP) {
 
-        if (blitSize.cy > 0) {
-            i32 rows = blitSize.cy;
+        if (height > 0) {
+            i32 rows = height;
             do {
-                memcpy(temp, dstPtr, blitSize.cx * 2);
-                if (blitSize.cx > 0) {
-                    i32 n = blitSize.cx;
+                memcpy(temp, dstPtr, width * 2);
+                if (width > 0) {
+                    i32 n = width;
                     u16* t = temp;
                     do {
                         u32 tp = *t;
@@ -773,12 +779,12 @@ i32 CDDSurface::ShadeBlt(
     } else if (redDown == PIXEL16_RED_DOWN && g_gDown == RGB565_GREEN_DOWN && g_bDown == redDown
                && g_rUp == RGB565_RED_UP && g_gUp == PIXEL16_GREEN_UP) {
 
-        if (blitSize.cy > 0) {
-            i32 rows = blitSize.cy;
+        if (height > 0) {
+            i32 rows = height;
             do {
-                memcpy(temp, dstPtr, blitSize.cx * 2);
-                if (blitSize.cx > 0) {
-                    i32 n = blitSize.cx;
+                memcpy(temp, dstPtr, width * 2);
+                if (width > 0) {
+                    i32 n = width;
                     u16* t = temp;
                     do {
                         u32 tp = *t;
