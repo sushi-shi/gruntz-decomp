@@ -40,6 +40,7 @@
 #include <Gruntz/SpellId.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/SpriteStateFlags.h>
+#include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/ToyPeek.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -529,15 +530,15 @@ i32 CInGameIcon::PeekCycle() {
     CWwdSpriteObject* obj = m_object;
     PickupType cmd = static_cast<PickupType>(obj->m_smarts);
     if (cmd == PICKUP_TOYBOX) {
-        Coord tile;
-        GetScreenTile(&tile);
+        i32 tileY = obj->m_screenPosition.m_y >> TILE_SHIFT_PX;
         CMapMgr* grid = g_gameReg->m_tileGrid;
-        i32 cell = grid->CellFlagsAt(tile.m_x, tile.m_y);
+        i32 tileX = obj->m_screenPosition.m_x >> TILE_SHIFT_PX;
+        i32 cell = grid->CellFlagsAt(tileX, tileY);
         if ((cell & BRICKZ_BLOCKED_MASK) != 0 || (cell & IDX(CELL_FLAG_SPECIAL)) != 0) {
-            if (static_cast<u32>(tile.m_x) < static_cast<u32>(grid->m_width)
-                && static_cast<u32>(tile.m_y) < static_cast<u32>(grid->m_height)) {
-                grid->m_rows[tile.m_y][tile.m_x].m_objectId = 0;
-                grid->m_rows[tile.m_y][tile.m_x].m_flags &= ~IDX(CELL_FLAG_IN_GAME_ICON);
+            if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
+                && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
+                grid->m_rows[tileY][tileX].m_objectId = 0;
+                grid->m_rows[tileY][tileX].m_flags &= ~IDX(CELL_FLAG_IN_GAME_ICON);
             }
             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         }
@@ -689,13 +690,13 @@ i32 CInGameIcon::Reposition() {
 
         CGruntzMgr* reg = g_gameReg;
         CWwdSpriteObject* obj = m_object;
-        Coord tile;
-        GetScreenTile(&tile);
+        i32 tileX = obj->m_screenPosition.m_x >> TILE_SHIFT_PX;
+        i32 tileY = obj->m_screenPosition.m_y >> TILE_SHIFT_PX;
         CMapMgr* grid = reg->m_tileGrid;
         i32 cellVal;
-        if (static_cast<u32>(tile.m_x) < static_cast<u32>(grid->m_width)
-            && static_cast<u32>(tile.m_y) < static_cast<u32>(grid->m_height)) {
-            cellVal = grid->m_rows[tile.m_y][tile.m_x].m_objectId;
+        if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
+            && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
+            cellVal = grid->m_rows[tileY][tileX].m_objectId;
         } else {
             cellVal = 0;
         }
@@ -713,25 +714,23 @@ i32 CInGameIcon::Reposition() {
         }
         reg = g_gameReg;
         grid = reg->m_tileGrid;
-        if (static_cast<u32>(tile.m_x) < static_cast<u32>(grid->m_width)
-            && static_cast<u32>(tile.m_y) < static_cast<u32>(grid->m_height)) {
-            BrickzCell& cell = grid->m_rows[tile.m_y][tile.m_x];
-            cell.m_objectId = 0;
-            cell.m_flags &= ~IDX(CELL_FLAG_IN_GAME_ICON);
+        if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
+            && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
+            grid->m_rows[tileY][tileX].m_objectId = 0;
+            grid->m_rows[tileY][tileX].m_flags &= ~IDX(CELL_FLAG_IN_GAME_ICON);
         }
         obj = m_object;
         grid = g_gameReg->m_tileGrid;
-        Coord currentTile;
-        GetScreenTile(&currentTile);
+        i32 tileX2 = obj->m_screenPosition.m_x >> TILE_SHIFT_PX;
+        i32 tileY2 = obj->m_screenPosition.m_y >> TILE_SHIFT_PX;
         i32 mv = obj->m_objectId;
-        if (static_cast<u32>(currentTile.m_x) < static_cast<u32>(grid->m_width)
-            && static_cast<u32>(currentTile.m_y) < static_cast<u32>(grid->m_height)) {
-            BrickzCell& cell = grid->m_rows[currentTile.m_y][currentTile.m_x];
-            cell.m_objectId = mv;
+        if (static_cast<u32>(tileX2) < static_cast<u32>(grid->m_width)
+            && static_cast<u32>(tileY2) < static_cast<u32>(grid->m_height)) {
+            grid->m_rows[tileY2][tileX2].m_objectId = mv;
             if (mv != 0) {
-                cell.m_flags |= IDX(CELL_FLAG_IN_GAME_ICON);
+                grid->m_rows[tileY2][tileX2].m_flags |= IDX(CELL_FLAG_IN_GAME_ICON);
             } else {
-                cell.m_flags &= ~IDX(CELL_FLAG_IN_GAME_ICON);
+                grid->m_rows[tileY2][tileX2].m_flags &= ~IDX(CELL_FLAG_IN_GAME_ICON);
             }
         }
     }
@@ -898,11 +897,9 @@ CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
         }
     }
 
-    Coord position = m_object->ScreenPos();
-    SnapTileCenter(&position);
-    m_object->SetScreenPos(position);
+    SNAP_OBJECT_TO_TILE_CENTER(m_object)
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_INGAME_INFO);
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_INGAME_INFO)
     m_cachedPlayerIndex = -1;
     m_cachedUnitIndex = -1;
 }
@@ -962,9 +959,11 @@ i32 CInGameText::Update() {
             return 0;
         }
 
-        Coord position = m_object->ScreenPos();
+        CWwdSpriteObject* o = m_object;
+        i32 y = o->m_screenPosition.m_y;
+        i32 x = o->m_screenPosition.m_x;
         CGruntzMgr* reg = g_gameReg;
-        if (::PtInRect(&reg->m_viewBounds, position.m_x, position.m_y)) {
+        if (::PtInRect(&reg->m_viewBounds, x, y)) {
             SoundCueRegistry* set = reg->m_world->m_soundRegistry;
             if (set->m_silentMode == false) {
                 SoundCue* res = MapFind<SoundCue>(set->m_cues, "GAME_HELPBOOK");

@@ -48,6 +48,10 @@ the following examples without removing their typed APIs:
 | `ImageRotateBlit` 0x145f60 | 53.7126% | scalar image, source-rectangle, and vertex position locals | 79.4671% |
 | `ImagePolyClipRect` 0x1461b0 | 92.8471% | four scalar edge locals and direct vertex component stores | 99.2814% |
 | `WarpTextureBlit` 0x146a20 | 68.6506% | scalar texture coordinate and step locals | 68.6703% |
+| `CInGameIcon::PeekCycle` 0x984b0 | 71.3802% | scalar screen tile locals with typed cell flags | 93.7190% |
+| `CInGameIcon::Reposition` 0x98a90 | 59.9549% | scalar screen tiles and typed cell writes | 97.4286% |
+| `CInGameText` constructor 0x99110 | 94.0138% | object snap macro | 97.0138% |
+| `CInGameText::Update` 0x997c0 | 94.1317% | scalar screen position locals | 96.7066% |
 | `CGrunt::RectContains` 0x51850 | 46.2177% | tile component conversion, native rectangle copy, offset/extent macros | 100% |
 | `CGrunt::VehicleContactContains` 0x51a20 | 58.6220% | same rectangle family | 100% |
 | `CGrunt::SetArrivalTarget` 0x52ed0 | 59.6000% | component stores and snap expressions | 100% |
@@ -247,6 +251,11 @@ call-set difference. Restoring distinct delta, clip-edge, and vertex component
 locals raises three methods substantially. `WarpTextureBlit` changes only
 68.6506% to 68.6703% in the current TU state, so its pre-rewrite 74.45%
 remains historical headroom rather than a claim of present recovery.
+
+The InGameIcon unit retains typed `BrickzCell` fields and the same shared
+coordinate helpers. Scalar screen tile locals remove the extra
+`CUserLogic::GetScreenPos` calls in `PeekCycle` and `Reposition`; the existing
+object snap macro and scalar screen locals recover both InGameText methods.
 
 `CMovingLogic::InitOwner` gives a counterexample to adding an aggregate merely
 because the component values are related. Its four min/max record reads have
