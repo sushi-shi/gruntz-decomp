@@ -20,6 +20,8 @@ the following examples without removing their typed APIs:
 | `CWwdGrid::Query` 0x1918c0 | 68.8938% | four-exit disjoint and ordered clamp macros | 99.9250% |
 | `CWwdGridIter::Init` 0x191b10 | 55.3966% | same disjoint/clamp macros | 95.5000% |
 | `CFaderLight::RenderFrame` 0x180640 | 74.8360% | scalar `FADER_DISTANCE` in its inline `Render` callee, separate old-span locals | 90.8721% |
+| `CMinimap::Draw` 0xa3820 | 40.1090% | scalar center/scale locals, component rectangle stores and `SET_RECT_COMPONENTS` | 76.3782% |
+| `CMinimap::DrawBorderRaw` 0xa3a20 | 74.0460% | separate width/height locals and `RECT_WIDTH`/`RECT_HEIGHT` | 96.7931% |
 | `CGrunt::RectContains` 0x51850 | 46.2177% | tile component conversion, native rectangle copy, offset/extent macros | 100% |
 | `CGrunt::VehicleContactContains` 0x51a20 | 58.6220% | same rectangle family | 100% |
 | `CGrunt::SetArrivalTarget` 0x52ed0 | 59.6000% | component stores and snap expressions | 100% |
@@ -120,6 +122,17 @@ The `Coord` and `CRange` APIs remain in the shared headers. The same TU's exact
 unchanged source and call set; reversing its operands or introducing a local
 does not restore its earlier compiler state. Its historical exact MAX remains
 the correct record of that source shape.
+
+The minimap has two more local controls. `Draw` gained four nonretail calls
+(`CRect::MulDiv`, `CRect::InflateRect`, `OffsetRect`, and `SetRect`) when scalar
+center/scale locals and rectangle component stores became CPoint/CSize/CRect
+operations. Restoring its earlier local census and component stores recovers
+the retail call set and raises 40.1090% to 76.3782%. `DrawBorderRaw`'s single
+`CSize`/`CRect` temporary replaced separately timed width and height locals;
+restoring those locals raises 74.0460% to 96.7931%. `SET_RECT_COMPONENTS`,
+`RECT_WIDTH`, and `RECT_HEIGHT` are byte-flat against direct component stores
+in the controlled VC5 unit. The typed classes stay available elsewhere, and
+the unchanged palette siblings' dips do not move with these caller fixes.
 
 `CMovingLogic::InitOwner` gives a counterexample to adding an aggregate merely
 because the component values are related. Its four min/max record reads have

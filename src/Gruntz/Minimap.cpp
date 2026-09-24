@@ -208,18 +208,19 @@ i32 CMinimap::Draw(CDDrawSurfacePair* target, RECT* bounds) {
         return 0;
     }
     m_boundsRect = *bounds;
-    CPoint origin(bounds->left, bounds->top);
-    CSize size(bounds->right - origin.x + 1, bounds->bottom - origin.y + 1);
+    i32 left = bounds->left;
+    i32 width = bounds->right - left + 1;
+    i32 top = bounds->top;
+    i32 height = bounds->bottom - top + 1;
 
-    CPoint center = origin + CSize(size.cx / 2, size.cy / 2);
-    CSize scaleSize(
-        size.cx / m_surface->m_apiDesc.dwWidth,
-        size.cy / m_surface->m_apiDesc.dwHeight
-    );
+    i32 centerX = left + width / 2;
+    i32 centerY = top + height / 2;
+    i32 scaleX = width / static_cast<i32>(m_surface->m_apiDesc.dwWidth);
+    i32 scaleY = height / static_cast<i32>(m_surface->m_apiDesc.dwHeight);
 
-    i32 scale = scaleSize.cy;
-    if (scaleSize.cx < scaleSize.cy) {
-        scale = scaleSize.cx;
+    i32 scale = scaleY;
+    if (scaleX < scaleY) {
+        scale = scaleX;
     }
 
     i32 cellScale = MINIMAP_MAX_CELL_SCALE;
@@ -227,34 +228,43 @@ i32 CMinimap::Draw(CDDrawSurfacePair* target, RECT* bounds) {
         cellScale = scale;
     }
     m_cellScale = cellScale;
-    CPoint drawOrigin(
-        center.x - m_surface->m_apiDesc.dwWidth * cellScale / 2,
-        center.y - m_surface->m_apiDesc.dwHeight * cellScale / 2
-    );
+    i32 drawLeft = centerX - static_cast<i32>(m_surface->m_apiDesc.dwWidth) * cellScale / 2;
+    i32 drawTop = centerY - static_cast<i32>(m_surface->m_apiDesc.dwHeight) * cellScale / 2;
     RECT* dstRect = &m_drawRect;
-    SetRect(
-        dstRect,
-        drawOrigin.x,
-        drawOrigin.y,
-        m_surface->m_apiDesc.dwWidth * cellScale + drawOrigin.x,
-        m_surface->m_apiDesc.dwHeight * cellScale + drawOrigin.y
+    SET_RECT_COMPONENTS(
+        *dstRect,
+        drawLeft,
+        drawTop,
+        m_surface->m_apiDesc.dwWidth * cellScale + drawLeft,
+        m_surface->m_apiDesc.dwHeight * cellScale + drawTop
     );
     if (target->m_surface->BltEx(dstRect, m_surface, NULL, DDBLT_WAIT, NULL) != 0) {
         return 0;
     }
 
     RECT* vr = &m_world->m_level->m_mainPlane->m_planeViewRect;
-    Coord viewLow(vr->left, vr->top);
-    ScreenTile(&viewLow);
-    Coord viewHigh(vr->right, vr->bottom);
-    ScreenTile(&viewHigh);
-    CRect box(viewLow.m_x, viewLow.m_y, viewHigh.m_x, viewHigh.m_y);
+    RECT box;
+    SET_RECT_COMPONENTS(
+        box,
+        vr->left >> TILE_SHIFT_PX,
+        vr->top >> TILE_SHIFT_PX,
+        vr->right >> TILE_SHIFT_PX,
+        vr->bottom >> TILE_SHIFT_PX
+    );
     if (m_cellScale != 1) {
-        box = box.MulDiv(m_cellScale, 1);
+
+        box.left *= m_cellScale;
+        box.top *= m_cellScale;
+        box.right *= m_cellScale;
+        box.bottom *= m_cellScale;
         i32 extension = m_cellScale - 1;
-        box.InflateRect(0, 0, extension, extension);
+        box.right += extension;
+        box.bottom += extension;
     }
-    box.OffsetRect(dstRect->left, dstRect->top);
+    box.left += dstRect->left;
+    box.right += dstRect->left;
+    box.top += dstRect->top;
+    box.bottom += dstRect->top;
     DrawBorder(&box, target, MINIMAP_BORDER_COLOR_16);
     return 1;
 }
@@ -264,26 +274,27 @@ i32 CMinimap::Draw(CDDrawSurfacePair* target, RECT* bounds) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000a3a20, 0xe2)
 void CMinimap::DrawBorderRaw(RECT* rect, char* pixels, i32 color) {
-    CSize borderSize = CRect(*rect).Size() + CSize(1, 1);
+    i32 width = RECT_WIDTH(*rect) + 1;
 
     u16* topPixels = Pix16(pixels + m_surface->PixelOffset(rect->left, rect->top));
-    for (i32 topX = 0; topX < borderSize.cx; topX++) {
+    for (i32 topX = 0; topX < width; topX++) {
         topPixels[topX] = static_cast<u16>(color);
     }
 
     u16* bottomPixels = Pix16(pixels + m_surface->PixelOffset(rect->left, rect->bottom));
-    for (i32 bottomX = 0; bottomX < borderSize.cx; bottomX++) {
+    for (i32 bottomX = 0; bottomX < width; bottomX++) {
         bottomPixels[bottomX] = static_cast<u16>(color);
     }
 
+    i32 height = RECT_HEIGHT(*rect) + 1;
     i32 leftOffset = m_surface->PixelOffset(rect->left, rect->top);
     i32 rightOffset = m_surface->PixelOffset(rect->right, rect->top);
     i32 rowStride = m_surface->m_apiDesc.lPitch;
 
-    if (borderSize.cy > 0) {
+    if (height > 0) {
         char* leftPixel = pixels + leftOffset;
         char* rightPixel = pixels + rightOffset;
-        i32 rowsRemaining = borderSize.cy;
+        i32 rowsRemaining = height;
         while (rowsRemaining != 0) {
             *Pix16(leftPixel) = static_cast<u16>(color);
             leftPixel += rowStride;
