@@ -324,19 +324,22 @@ void CGrunt::ComputeFacing(double dt) {
     m_movePosY = static_cast<double>(h->m_screenY);
 }
 
-static inline CActHandler ToActHandler(GruntActHandler handler) {
-    // Registered methods have zero adjustment to the primary CUserLogic base.
-    return static_cast<CActHandler>(handler);
-}
+// Registered methods have zero adjustment to the primary CUserLogic base.
+#define ToActHandler(handler) static_cast<CActHandler>(handler)
 
-#define STORE_GRUNT_ACT(id, handler) CActRegPool<CGrunt>::s_table[id] = (handler)
-
-#define BIND_GRUNT_ACT(id, handler)                                                                \
+#define STORE_GRUNT_ACT(registry, id, handler)                                                     \
     {                                                                                              \
-        STORE_GRUNT_ACT(id, ToActHandler(handler));                                                \
+        CActHandler& slot = (registry)[id];                                                        \
+        slot = (handler);                                                                          \
     }
 
-#define REGISTER_GRUNT_ACT_KEY_IMPL(key, handler, bind)                                            \
+#define BIND_GRUNT_ACT(registry, id, handler)                                                      \
+    {                                                                                              \
+        CActHandler converted = ToActHandler(handler);                                             \
+        STORE_GRUNT_ACT(registry, id, converted);                                                  \
+    }
+
+#define REGISTER_GRUNT_ACT_KEY(registry, key, handler)                                             \
     {                                                                                              \
         i32 id = ActFindId(key);                                                                   \
         if (id == 0) {                                                                             \
@@ -345,22 +348,7 @@ static inline CActHandler ToActHandler(GruntActHandler handler) {
             g_typeColl[g_typeCounter] = (key);                                                     \
             g_typeCounter++;                                                                       \
         }                                                                                          \
-        bind(id, handler);                                                                         \
-    }
-
-#define REGISTER_GRUNT_ACT_KEY(key, handler)                                                       \
-    REGISTER_GRUNT_ACT_KEY_IMPL(key, handler, BIND_GRUNT_ACT)
-
-#define REGISTER_GRUNT_ACT_KEY_DERIVED(key, handler)                                               \
-    {                                                                                              \
-        i32 id = ActFindId(key);                                                                   \
-        if (id == 0) {                                                                             \
-            ActInsertId(key, g_typeCounter);                                                       \
-            id = g_typeCounter;                                                                    \
-            g_typeColl[id] = (key);                                                                \
-            g_typeCounter++;                                                                       \
-        }                                                                                          \
-        BIND_GRUNT_ACT(id, handler);                                                               \
+        BIND_GRUNT_ACT(registry, id, handler);                                                     \
     }
 
 RVA(0x00057100, 0x590)
@@ -1900,25 +1888,26 @@ void CGrunt::FireActivation(i32 id) {
 
 RVA(0x0005be30, 0x9e5)
 void RegisterGruntActions() {
-    REGISTER_GRUNT_ACT_KEY("A", &CGrunt::ResolveEntranceArrival);
-    REGISTER_GRUNT_ACT_KEY("B", &CGrunt::StepWarpExit);
-    REGISTER_GRUNT_ACT_KEY("C", &CGrunt::UpdateDeathAnimation);
-    REGISTER_GRUNT_ACT_KEY("D", &CGrunt::StepArrivalReroll);
-    REGISTER_GRUNT_ACT_KEY("E", &CGrunt::UpdateGruntStatus);
-    REGISTER_GRUNT_ACT_KEY("F", &CGrunt::StepAttackAction);
-    REGISTER_GRUNT_ACT_KEY("G", &CGrunt::UpdateToyUseAnimation);
-    REGISTER_GRUNT_ACT_KEY("H", &CGrunt::FinishStruckAnimation);
-    REGISTER_GRUNT_ACT_KEY("I", &CGrunt::LoadWandGruntItemConfig);
-    REGISTER_GRUNT_ACT_KEY("J", &CGrunt::RunEntranceMove);
-    REGISTER_GRUNT_ACT_KEY("K", &CGrunt::LoadEntranceConfig);
-    REGISTER_GRUNT_ACT_KEY("L", &CGrunt::LoadVehicleGruntAnimations);
-    REGISTER_GRUNT_ACT_KEY("M", &CGrunt::RearmEntranceDrop);
-    REGISTER_GRUNT_ACT_KEY("N", &CGrunt::FinishToobMoveAnimation);
-    REGISTER_GRUNT_ACT_KEY("O", &CGrunt::FinishKnockbackAnimation);
-    REGISTER_GRUNT_ACT_KEY("P", &CGrunt::UpdateEntranceAnim);
-    REGISTER_GRUNT_ACT_KEY("Q", &CGrunt::LoadFreezeSpellAssets);
-    REGISTER_GRUNT_ACT_KEY("R", &CGrunt::UpdateDecayFade);
-    REGISTER_GRUNT_ACT_KEY_DERIVED("S", &CGrunt::FinishEntranceMove);
+    CActReg& registry = CActRegPool<CGrunt>::s_table;
+    REGISTER_GRUNT_ACT_KEY(registry, "A", &CGrunt::ResolveEntranceArrival);
+    REGISTER_GRUNT_ACT_KEY(registry, "B", &CGrunt::StepWarpExit);
+    REGISTER_GRUNT_ACT_KEY(registry, "C", &CGrunt::UpdateDeathAnimation);
+    REGISTER_GRUNT_ACT_KEY(registry, "D", &CGrunt::StepArrivalReroll);
+    REGISTER_GRUNT_ACT_KEY(registry, "E", &CGrunt::UpdateGruntStatus);
+    REGISTER_GRUNT_ACT_KEY(registry, "F", &CGrunt::StepAttackAction);
+    REGISTER_GRUNT_ACT_KEY(registry, "G", &CGrunt::UpdateToyUseAnimation);
+    REGISTER_GRUNT_ACT_KEY(registry, "H", &CGrunt::FinishStruckAnimation);
+    REGISTER_GRUNT_ACT_KEY(registry, "I", &CGrunt::LoadWandGruntItemConfig);
+    REGISTER_GRUNT_ACT_KEY(registry, "J", &CGrunt::RunEntranceMove);
+    REGISTER_GRUNT_ACT_KEY(registry, "K", &CGrunt::LoadEntranceConfig);
+    REGISTER_GRUNT_ACT_KEY(registry, "L", &CGrunt::LoadVehicleGruntAnimations);
+    REGISTER_GRUNT_ACT_KEY(registry, "M", &CGrunt::RearmEntranceDrop);
+    REGISTER_GRUNT_ACT_KEY(registry, "N", &CGrunt::FinishToobMoveAnimation);
+    REGISTER_GRUNT_ACT_KEY(registry, "O", &CGrunt::FinishKnockbackAnimation);
+    REGISTER_GRUNT_ACT_KEY(registry, "P", &CGrunt::UpdateEntranceAnim);
+    REGISTER_GRUNT_ACT_KEY(registry, "Q", &CGrunt::LoadFreezeSpellAssets);
+    REGISTER_GRUNT_ACT_KEY(registry, "R", &CGrunt::UpdateDecayFade);
+    REGISTER_GRUNT_ACT_KEY(registry, "S", &CGrunt::FinishEntranceMove);
 }
 
 RVA(0x0005caa0, 0x5e4)
@@ -2011,10 +2000,9 @@ void CGrunt::Activate() {
 }
 
 #undef REGISTER_GRUNT_ACT_KEY
-#undef REGISTER_GRUNT_ACT_KEY_DERIVED
-#undef REGISTER_GRUNT_ACT_KEY_IMPL
 #undef BIND_GRUNT_ACT
 #undef STORE_GRUNT_ACT
+#undef ToActHandler
 
 DATA(0x001e999c)
 const float g_quarterScale = 0.25f;

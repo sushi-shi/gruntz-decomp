@@ -56,8 +56,9 @@ registrar's **zero-adjustment primary-base** conversions only: VC5's emitted
 parameter conversion discards the adjustment word, so it is not a general
 adapter for secondary-base method pointers.
 
-The retained `ToActHandler` is the ordinary one-return inline cast, and the
-table-store macro remains a separate operation. No union, raw pointer view,
+The typed `ToActHandler` was first restored as an ordinary one-return inline
+cast. The exact registrar composition now retains it as a cast macro, with
+conversion and table-store macros as separate operations. No union, raw pointer view,
 class-layout lie or compiler forcing flag is needed. In the complete
 registrar, all nineteen ordered handler targets remain unchanged.
 
@@ -70,5 +71,5 @@ union. The inline binder composition has 846. Value and const-reference
 conversion parameters are byte-flat; removing the unused union declaration
 does not change this registrar's 749-instruction body. These are controlled
 call-boundary differences, not proof that the highest one-step score selects
-the original source. Preserve the typed helper while investigating the
-remaining name/handler indexer cuts.
+the original source. The [local-ownership composition](registrar-local-ownership-selects-inline-cuts.md)
+closes those cuts while preserving the typed conversion helper as a macro.

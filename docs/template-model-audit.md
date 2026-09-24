@@ -599,3 +599,23 @@ preserved. The broader exact-match recovery remains open.
 The final full build passes the MAX gate and every fast/normal gate after
 banking. Comparison against both parents preserves all 4,429 historical RVA
 maxima. Nineteen of the original 34 losses are currently exact; fifteen remain.
+
+### Exact Grunt registrar with uniform typed accessors
+
+`RegisterGruntActions` now reaches **100%** for source fingerprint
+`184f42342c0f`. The conversion helper remains as the user's permitted macro;
+the caller owns the registry reference, and the binding macros name the
+converted value and typed handler destination. All nineteen registrations
+use one macro, including the formerly special final site. No shared helper,
+constructor loop or typed accessor is removed or replaced with a per-site
+raw API. The [controlled composition](patterns/registrar-local-ownership-selects-inline-cuts.md)
+records the failed standalone forms, the converging intermediate state and
+the final name-assignment scheduling correction.
+
+The 2,533-byte body has all 734 retail instructions and all 340 semantic
+referents in order. The full build passes every gate without a fresh MAX
+regression. All 15 public-header controls pass, and the raw relocation audit
+checks 3,921 near-exact functions with zero defects. README is regenerated
+from that build: **3,831 / 4,426 current-exact**, full-engine fuzzy 93.71%.
+Twenty of the original 34 current-exact losses are recovered; fourteen remain.
+This is one recovery, not a claim that the broader recovery goal is complete.

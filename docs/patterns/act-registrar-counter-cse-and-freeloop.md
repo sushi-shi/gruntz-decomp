@@ -25,9 +25,10 @@ Earlier controlled builds of the hand-expanded body showed that replacing
 the lookup's global argument with `id` could remove the scratch-register to
 callee-saved-register copy. That observation describes two-consumer CSE in
 that source family; it is not a blanket instruction to replace every local
-argument with a global. The final registration block in `RegisterGruntActions`
-uses the captured ID. Both source expressions remain meaningful after the
-typed accessor restoration.
+argument with a global. The formerly special final registration block in
+`RegisterGruntActions` no longer needs a captured-ID spelling: the
+[exact local-ownership composition](registrar-local-ownership-selects-inline-cuts.md)
+uses the global argument uniformly at all nineteen sites.
 
 ## The repeated loop constructs array elements
 

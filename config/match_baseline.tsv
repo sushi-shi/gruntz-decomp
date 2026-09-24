@@ -137,7 +137,7 @@ gruntassetloaders	1	0
 gruntbehaviorleaf	2	0
 gruntbricklayerstep	1	0
 gruntchargestep	1	0
-gruntcombat	32	21
+gruntcombat	32	22
 gruntcreationpoint	8	7
 gruntdatarecord	2	2
 gruntdefensealt	1	0
@@ -376,7 +376,7 @@ anicycle	??_GCAniCycle@@UAEPAXI@Z	100.0000	100.0000	1	cpp:36054ccd6060	0xf4e0	10
 anicycle	?AdvanceAnim@CAniCycle@@QAEHXZ	100.0000	100.0000	2	c09eb3d66863	0xab2e0	100.0000	
 anicycle	?FireActivation@CAniCycle@@UAEXH@Z	100.0000	100.0000	4	3a3e45308c41	0xaaf80	100.0000	
 anicycle	?GetTypeTag@CAniCycle@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:281810d27b94	0xf450	100.0000	
-anicycle	?RegisterActs@CAniCycle@@SAXXZ	100.0000	100.0000	14	df8b59e551b6	0xab0e0	100.0000	
+anicycle	?RegisterActs@CAniCycle@@SAXXZ	100.0000	100.0000	15	e8b3fb07b5a0	0xab0e0	100.0000	
 anicycle	?SerializeDispatch@CAniCycle@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	1	cpp:281810d27b94	0xf470	100.0000	
 animationregistry	??1CAniElement@@UAE@XZ	100.0000	100.0000	1	57ad0ee91e33	0x152e30	100.0000	
 animationregistry	??_GCAniElement@@UAEPAXI@Z	100.0000	100.0000	1	cpp:be51a774de74	0x152e10	100.0000	
@@ -2064,13 +2064,13 @@ gruntcombat	?Lookup@SoundCueRegistry@@QAEPAVCObject@@PBD@Z	100.0000	100.0000	3	2
 gruntcombat	?OnStruck@CGrunt@@QAEXH@Z	90.5000	90.5000	6	e82288eb70e3	0x588f0	90.5000	
 gruntcombat	?PathScan@CGrunt@@QAEHXZ	87.0954	87.0954	13	37fbf2ea3be2	0x57db0	90.5849	
 gruntcombat	?ReapplyLoopSoundParams@CGrunt@@QAEXXZ	100.0000	100.0000	4	51a437cd4a39	0x57d10	100.0000	
-gruntcombat	?RegisterGruntActions@@YAXXZ	97.7997	97.7997	4	8b1f5e20545e	0x5be30	100.0000	
+gruntcombat	?RegisterGruntActions@@YAXXZ	100.0000	100.0000	5	184f42342c0f	0x5be30	100.0000	
 gruntcombat	?SelectMoveIcon@CGrunt@@QAEXH@Z	100.0000	100.0000	4	e6465d0fb877	0x57800	100.0000	
 gruntcombat	?Serialize@CPairRecord@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	3	729a416cdd86	0x58ee0	100.0000	
 gruntcombat	?SetAnimation@CWwdSpriteObject@@QAEXPAVCAniElement@@H@Z	100.0000	100.0000	4	7edcd46dd11b	0x58b60	100.0000	
 gruntcombat	?SetParams@CMotionState@@QAEHNNNNNNNNNNN@Z	100.0000	100.0000	2	51a80694a3bf	0x58bc0	100.0000	
 gruntcombat	?SetZ@CMotionState@@QAEXN@Z	100.0000	100.0000	3	3080bed9f1ad	0x58ca0	100.0000	
-gruntcombat	?StepBehavior@CGrunt@@UAEXPAD@Z	66.7951	66.7951	43	856f2d13bcab	0x5d210	87.2766	
+gruntcombat	?StepBehavior@CGrunt@@UAEXPAD@Z	66.7951	66.7939	43	856f2d13bcab	0x5d210	87.2766	
 gruntcombat	?StopPowerupLoopSound@CGrunt@@QAEXXZ	100.0000	100.0000	3	1aa1e3145753	0x57ce0	100.0000	
 gruntcombat	?StopVehicleLoopSound@CGrunt@@QAEXXZ	100.0000	100.0000	3	da602215f904	0x57c10	100.0000	
 gruntcombat	?TryPowerupAtTile@CGrunt@@QAEHXZ	100.0000	100.0000	6	49cb5c31b0d1	0x57aa0	100.0000	
