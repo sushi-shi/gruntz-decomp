@@ -620,15 +620,12 @@ candidateFound:
     return 1;
 }
 
-static inline bool HasAnimationActName(CGrunt* unit, const char* name) {
-    return strcmp(g_typeColl[unit->m_logicRecord->m_eventCode], name) == 0;
+static inline bool BattlezActDiffersFromIGLPJCR(CGrunt* unit, char& result) {
+    return !(result = unit->IsAnimationAct("I")) && !(result = unit->IsAnimationAct("G"))
+           && !(result = unit->IsAnimationAct("L")) && !(result = unit->IsAnimationAct("P"))
+           && !(result = unit->IsAnimationAct("J")) && !(result = unit->IsAnimationAct("C"))
+           && !(result = unit->IsAnimationAct("R"));
 }
-
-#define BATTLEZ_ACT_DIFFERS_FROM_IGLPJCR(unit, result)                                             \
-    (!(result = HasAnimationActName(unit, "I")) && !(result = HasAnimationActName(unit, "G"))      \
-     && !(result = HasAnimationActName(unit, "L")) && !(result = HasAnimationActName(unit, "P"))   \
-     && !(result = HasAnimationActName(unit, "J")) && !(result = HasAnimationActName(unit, "C"))   \
-     && !(result = HasAnimationActName(unit, "R")))
 
 RVA(0x000267c0, 0x2850)
 i32 CBattlezMapConfig::StepRowUnits() {
@@ -687,7 +684,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         if (unit->IsAtSavedScreenPos() != 0 && unit->m_entranceCommitted != false
                             && unit->m_deathAnimStarted == false && unit->m_entranceActive == false
                             && unit->m_poweredUp == false) {
-                            if (BATTLEZ_ACT_DIFFERS_FROM_IGLPJCR(unit, eq)) {
+                            if (BattlezActDiffersFromIGLPJCR(unit, eq)) {
                                 PickupType st2 = unit->m_entranceReason;
                                 if (st2 > PICKUP_EQUIPPABLE_LAST) {
                                     st2 = unit->m_toolId;
@@ -917,7 +914,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         if (unit->IsAtSavedScreenPos() != 0 && unit->m_entranceCommitted != false
                             && unit->m_deathAnimStarted == false && unit->m_entranceActive == false
                             && unit->m_poweredUp == false) {
-                            if (BATTLEZ_ACT_DIFFERS_FROM_IGLPJCR(unit, eq)) {
+                            if (BattlezActDiffersFromIGLPJCR(unit, eq)) {
                                 for (i32 j = 0; j < 4; j++) {
                                     if (j != m_playerIndex) {
                                         for (i32 k = 0; k < TM_UNITS_PER_PLAYER; k++) {
@@ -978,7 +975,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
             if (GRUNT_AT_SAVED_SCREEN_POS(unit) && unit->m_entranceCommitted != false
                 && unit->m_deathAnimStarted == false && unit->m_entranceActive == false
                 && unit->m_poweredUp == false) {
-                if (BATTLEZ_ACT_DIFFERS_FROM_IGLPJCR(unit, eq)) {
+                if (BattlezActDiffersFromIGLPJCR(unit, eq)) {
                     if (static_cast<u32>(m_roundRobinTick) % TM_UNITS_PER_PLAYER
                         == static_cast<u32>(i)) {
                         {
@@ -1036,7 +1033,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             && unit->m_entranceCommitted != false
                             && unit->m_deathAnimStarted == false && unit->m_entranceActive == false
                             && unit->m_poweredUp == false) {
-                            if (BATTLEZ_ACT_DIFFERS_FROM_IGLPJCR(unit, eq)) {
+                            if (BattlezActDiffersFromIGLPJCR(unit, eq)) {
                                 goto dispatch;
                             }
                         }

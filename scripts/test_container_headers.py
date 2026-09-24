@@ -80,6 +80,24 @@ void lifetime() { zDArray<Item> values(0, 3); }
 int use(zBitVec& bits) { return bits.GetBit(3); }
 ''')
 
+    def test_animation_names_expose_const_references_from_public_headers(self):
+        self.compile('''#include <Gruntz/TypeKeyColl.h>
+const CString& use(i32 id) { return GetAnimationActName(id); }
+''')
+        self.compile('''#include <Gruntz/UserLogic.h>
+const CString& name(const CUserLogic& logic) { return logic.GetAnimationActName(); }
+bool equal(const CUserLogic& logic) { return logic.IsAnimationAct("I"); }
+bool macro_equal(const CUserLogic* logic) { return ANIMATION_ACT_EQUALS_FOR(logic, "I"); }
+bool macro_different(const CUserLogic* logic) { return ANIMATION_ACT_DIFFERS_FOR(logic, "I"); }
+''')
+
+    def test_animation_name_lookup_does_not_expose_mutation(self):
+        from gruntz.tool import ToolError
+        with self.assertRaisesRegex(ToolError, 'const'):
+            self.compile('''#include <Gruntz/TypeKeyColl.h>
+void use(i32 id) { GetAnimationActName(id).Empty(); }
+''')
+
     def test_pool_layout_and_payload_are_independent_of_coord(self):
         self.compile('''#include <Utils/FreeNodePool.h>
 struct Payload { int x, y; };

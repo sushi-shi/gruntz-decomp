@@ -660,7 +660,6 @@ i32 CGrunt::UpdateEntranceAnim() {
     return 0;
 }
 
-// @early-stop
 RVA(0x000692f0, 0x850)
 i32 CGrunt::StepArrivalCommit() {
     if (m_entranceCommitted == false) {
@@ -710,7 +709,7 @@ i32 CGrunt::StepArrivalCommit() {
     if (eq) {
 
         m_entranceActive = false;
-        eq = (strcmp(g_typeColl[m_previousAnimationActId], "D") == 0);
+        eq = (::GetAnimationActName(m_previousAnimationActId) == "D");
         if (eq) {
             if (m_poweredUp != false && m_neighborValid == false) {
                 RESET_GRUNT_POWERED_STATE(this)
@@ -747,7 +746,7 @@ i32 CGrunt::StepArrivalCommit() {
         goto finalize;
     }
     {
-        const char* prev = g_typeColl[m_logicRecord->m_eventCode];
+        const char* prev = GetAnimationActName();
         eq = (strcmp(prev, "M") == 0);
         if (eq) {
             m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);
@@ -1041,7 +1040,6 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
     return 1;
 }
 
-// @early-stop
 RVA(0x0006a6d0, 0x936)
 i32 CGrunt::FinishActiveAction() {
     bool ne;
@@ -1082,7 +1080,7 @@ i32 CGrunt::FinishActiveAction() {
     eq = ANIMATION_ACT_EQUALS("J");
     if (eq) {
         m_entranceActive = false;
-        eq = (strcmp(g_typeColl[m_previousAnimationActId], "D") == 0);
+        eq = (::GetAnimationActName(m_previousAnimationActId) == "D");
         if (eq) {
             if (m_poweredUp != false && m_neighborValid == false) {
                 RESET_GRUNT_POWERED_STATE(this)

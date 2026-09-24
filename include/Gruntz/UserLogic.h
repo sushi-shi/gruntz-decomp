@@ -10,6 +10,7 @@
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/WwdGridIter.h>
 #include <Wap32/TileGeometry.h>
 #include <Wwd/WwdGameObjectFamily.h>
@@ -103,6 +104,14 @@ public:
 
     void LoadGruntTuningConstants(i32);
 
+    const CString& GetAnimationActName() const {
+        return ::GetAnimationActName(m_logicRecord->m_eventCode);
+    }
+
+    bool IsAnimationAct(const char* name) const {
+        return GetAnimationActName() == name;
+    }
+
     typedef i32 (CUserLogic::*ActCallback)();
     ActCallback m_deferredCallback;
     ActCallback m_gatedCallback;
@@ -122,15 +131,13 @@ public:
     m_previousAnimationActId = m_logicRecord->m_eventCode;                                         \
     m_logicRecord->m_eventCode = ActFindId(key)
 
-#define ANIMATION_ACT_EQUALS(key) (strcmp(g_typeColl[m_logicRecord->m_eventCode], key) == 0)
+#define ANIMATION_ACT_EQUALS(key) (IsAnimationAct(key))
 
-#define ANIMATION_ACT_DIFFERS(key) (strcmp(g_typeColl[m_logicRecord->m_eventCode], key) != 0)
+#define ANIMATION_ACT_DIFFERS(key) (!IsAnimationAct(key))
 
-#define ANIMATION_ACT_EQUALS_FOR(logic, key)                                                       \
-    (strcmp(g_typeColl[logic->m_logicRecord->m_eventCode], key) == 0)
+#define ANIMATION_ACT_EQUALS_FOR(logic, key) ((logic)->IsAnimationAct(key))
 
-#define ANIMATION_ACT_DIFFERS_FOR(logic, key)                                                      \
-    (strcmp(g_typeColl[logic->m_logicRecord->m_eventCode], key) != 0)
+#define ANIMATION_ACT_DIFFERS_FOR(logic, key) (!(logic)->IsAnimationAct(key))
 
 #define APPLY_NAME_INLINE(name) m_wwdObject->SetImageSetByName(name)
 
