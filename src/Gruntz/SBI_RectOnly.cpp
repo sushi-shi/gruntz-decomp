@@ -47,6 +47,7 @@
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
+#include <Gruntz/SoundCueRegistryInline.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/SpriteRefTable.h>
@@ -75,6 +76,7 @@
 #include <Utils/MapTyped.h>
 #include <Utils/RegMgr.h>
 #include <Wap32/ScreenGeometry.h>
+#include <Wap32/TileGeometry.h>
 
 #include <limits.h>
 #include <math.h>
@@ -4271,7 +4273,6 @@ CWarpStoneFly::CWarpStoneFly() {
     m_owner = NULL;
 }
 
-// @early-stop
 RVA(0x00109bd0, 0x1b5)
 i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragment fragment) {
     m_owner = owner;
@@ -4289,35 +4290,31 @@ i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragm
     }
 
     m_arrivalMode = fragment;
-    i32 cx, dy;
+    Coord targetOffset;
     switch (fragment) {
         case WARPSTONE_FRAGMENT_SECOND:
-            cx = 0x69;
-            dy = 0x26;
+            targetOffset.Set(0x69, 0x26);
             break;
         case WARPSTONE_FRAGMENT_THIRD:
-            cx = 0x65;
-            dy = 0x50;
+            targetOffset.Set(0x65, 0x50);
             break;
         case WARPSTONE_FRAGMENT_FOURTH:
-            cx = 0x69;
-            dy = 0x54;
+            targetOffset.Set(0x69, 0x54);
             break;
         default:
-            cx = 0x34;
-            dy = 0x29;
+            targetOffset.Set(0x34, 0x29);
             break;
     }
 
     CStatusBarMgr* base = m_owner;
-    i32 tx = base->m_barRect.left + cx;
+    i32 tx = base->m_barRect.left + targetOffset.m_x;
     m_targetX = tx;
-    i32 ty = base->m_barRect.top + dy;
+    i32 ty = base->m_barRect.top + targetOffset.m_y;
     m_targetY = ty;
 
     i32 deltaX = tx - srcX;
     i32 dyv = ty - srcY;
-    i32 dist2 = deltaX * deltaX + dyv * dyv;
+    i32 dist2 = SquaredDistance(deltaX, dyv);
     double dist = sqrt(static_cast<double>(dist2));
     u32 flyTime = g_buteMgr.GetDword("WarpStone", "FlyTime", 0x5dc);
 
@@ -4326,19 +4323,7 @@ i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragm
     m_yDirection = static_cast<double>(dyv) / dist;
 
     SoundCueRegistry* h = g_gameReg->m_world->m_soundRegistry;
-    if (h->m_silentMode == false) {
-        SoundCue* found = h->FindCue("GAME_WARPSTONEFLY");
-        if (found) {
-            SoundCue* fly = found;
-            b32 soundEnabled = g_soundEnabled;
-            i32 volumePercent = g_soundVolumePercent;
-            if (soundEnabled != false
-                && g_soundCueTimeMs - fly->m_lastPlayTimeMs >= fly->m_replayDelayMs) {
-                fly->m_lastPlayTimeMs = g_soundCueTimeMs;
-                fly->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-            }
-        }
-    }
+    PlayRegistryCueIfElapsed(h, "GAME_WARPSTONEFLY");
 
     m_currentX = static_cast<double>(srcX);
     m_currentY = static_cast<double>(srcY);

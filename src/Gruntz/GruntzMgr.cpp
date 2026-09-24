@@ -89,6 +89,7 @@
 #include <Io/FileStream.h>
 #include <Io/MoviePlayer.h>
 #include <Io/SaveGame.h>
+#include <Lith/BDefs.h>
 #include <Net/NetLobby.h>
 #include <Net/NetMgr.h>
 #include <Pix16.h>
@@ -2800,7 +2801,7 @@ i32 CGruntzMgr::ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, ScanCb c
     if (cb == NULL) {
         return 0;
     }
-    i32 r2 = radius * radius;
+    i32 r2 = SQR(radius);
     i32 count = 0;
     CDDrawChildGroup* children = m_world->m_childGroup;
     POSITION pos = children->m_list.GetHeadPosition();
@@ -2809,7 +2810,7 @@ i32 CGruntzMgr::ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, ScanCb c
         if (obj->m_objectType & mask) {
             i32 adx = abs(obj->m_screenX - x);
             i32 ady = abs(obj->m_screenY - y);
-            if (adx * adx + ady + ady < r2) {
+            if (SQR(adx) + ady + ady < r2) {
                 count++;
                 if (cb(obj, user) == 0) {
                     return count;
