@@ -104,7 +104,7 @@ exittrigger	5	3
 eyecandy	2	1
 eyecandyani	8	7
 fader	29	24
-fadereffects	39	28
+fadereffects	39	27
 fadermgr	13	13
 feccrypt	11	10
 fileimage	19	15
@@ -1657,7 +1657,7 @@ fadereffects	?ApplyInit@CFaderFlat@@QAEHPAVCFaderConfig@@@Z	100.0000	100.0000	4	
 fadereffects	?ApplyInit@CFaderLight@@QAEHPAVCFaderConfig@@@Z	95.7887	95.7887	7	c75b3aac6777	0x1804a0	95.7887	
 fadereffects	?ApplyInit@CFaderRadial@@QAEHPAVCFaderConfig@@@Z	99.8070	99.8070	7	214975b9badf	0x17fa40	100.0000	
 fadereffects	?ApplyInit@CFaderShape@@QAEHPAVCFaderConfig@@@Z	91.8740	91.8740	6	a41c0518a64d	0x1817e0	91.8740	
-fadereffects	?ApplyInit@CFaderSine@@QAEHPAVCFaderConfig@@@Z	98.4608	98.4608	7	1acc8391027d	0x17fe00	98.4608	
+fadereffects	?ApplyInit@CFaderSine@@QAEHPAVCFaderConfig@@@Z	98.4608	98.4608	8	ff866dfd74ac	0x17fe00	98.4608	
 fadereffects	?BeginFade@CFaderLight@@UAEXXZ	100.0000	100.0000	5	2f5d093b94dc	0x181660	100.0000	
 fadereffects	?EndFade@CFaderLight@@UAEXXZ	100.0000	100.0000	2	7dd6455e66a9	0x1816a0	100.0000	
 fadereffects	?FinishFrame@CFaderFlat@@QAEXXZ	100.0000	100.0000	1	803a40ccb768	0x17f990	100.0000	
@@ -1666,17 +1666,17 @@ fadereffects	?GetFrameCount@CFaderFlat@@UAEHXZ	100.0000	100.0000	3	f8719f9d149e	
 fadereffects	?GetFrameCount@CFaderLight@@UAEHXZ	100.0000	100.0000	4	1d53c988f92d	0x1814f0	100.0000	
 fadereffects	?GetFrameCount@CFaderRadial@@UAEHXZ	100.0000	100.0000	1	681a3ab7e243	0x17fda0	100.0000	
 fadereffects	?GetFrameCount@CFaderShape@@UAEHXZ	100.0000	100.0000	2	709d45785e33	0x182900	100.0000	
-fadereffects	?GetFrameCount@CFaderSine@@UAEHXZ	100.0000	100.0000	2	2c7080e3990f	0x180400	100.0000	
+fadereffects	?GetFrameCount@CFaderSine@@UAEHXZ	100.0000	99.5000	2	2c7080e3990f	0x180400	100.0000	
 fadereffects	?PrepareFrame@CFaderFlat@@QAEXXZ	100.0000	100.0000	1	6e2d2e824b3a	0x17f980	100.0000	
 fadereffects	?ReleaseBuffers@CFaderLight@@QAEXXZ	100.0000	100.0000	3	a3436fa98633	0x180630	100.0000	
 fadereffects	?Render@CFaderLight@@QAEXHHHPAE00@Z	98.8538	98.8538	4	16d693c5ff8a	0x180fb0	98.8538	
 fadereffects	?RenderFrame@CFaderFlat@@UAEXH@Z	93.4691	93.4691	6	2109805767c0	0x17f660	93.4691	
-fadereffects	?RenderFrame@CFaderLight@@UAEXH@Z	91.1627	91.1627	8	eedccfa3cb7a	0x180640	91.1627	
+fadereffects	?RenderFrame@CFaderLight@@UAEXH@Z	91.1627	91.1565	8	eedccfa3cb7a	0x180640	91.1627	
 fadereffects	?RenderFrame@CFaderRadial@@UAEXH@Z	99.7222	99.7222	4	854ba4ba9303	0x17fc60	99.7222	
 fadereffects	?RenderFrame@CFaderShape@@UAEXH@Z	99.9080	99.9080	10	1074224dcdd4	0x181b00	99.9080	
-fadereffects	?RenderFrame@CFaderSine@@UAEXH@Z	95.6406	95.6406	9	b1cf1c519152	0x17ff30	95.6406	
+fadereffects	?RenderFrame@CFaderSine@@UAEXH@Z	95.6406	95.6406	10	1df5bc0a2c2c	0x17ff30	95.6406	
 fadereffects	?RenderTile@CFaderShape@@QAEXHH@Z	100.0000	100.0000	4	2d045e1be471	0x182610	100.0000	
-fadereffects	?RenderWarpTile@CFaderShape@@QAEXHH@Z	91.2869	91.0211	8	4add459398a7	0x181e50	91.2869	
+fadereffects	?RenderWarpTile@CFaderShape@@QAEXHH@Z	91.2869	91.2869	8	4add459398a7	0x181e50	91.2869	
 fadermgr	??0CFaderMgr@@QAE@XZ	100.0000	100.0000	3	248c552f0c07	0x17d8f0	100.0000	
 fadermgr	??1?$CArray@PAVCFader@@PAV1@@@UAE@XZ	100.0000	100.0000	1	cpp:9ac6b7adcf3b	0x17e240	100.0000	
 fadermgr	??1CFaderMgr@@QAE@XZ	100.0000	100.0000	1	b7d521a26e4e	0x17d910	100.0000	
@@ -2032,7 +2032,7 @@ grunt	?ReadConfigFromButeMgr@CGrunt@@QAEXXZ	100.0000	100.0000	2	f19d28fc085f	0x4
 grunt	?SetEntrancePos@CGrunt@@QAEXHH@Z	100.0000	100.0000	7	5f844004f31a	0x4d060	100.0000	
 grunt	?SetFacing@CGrunt@@QAEXHUGruntDirectionCell@@@Z	95.3966	60.0170	8	753806b5187a	0x4ac10	95.3966	
 grunt	?StepArrivalDrop@CGrunt@@QAEHHHHHHH@Z	27.8033	27.8033	18	94760f207dfb	0x4b370	32.8881	
-grunt	?StepGruntMovement@CGrunt@@QAEHXZ	73.7767	73.7767	28	428ceb832ba3	0x4c170	76.5825	
+grunt	?StepGruntMovement@CGrunt@@QAEHXZ	74.0606	74.0606	28	428ceb832ba3	0x4c170	76.5825	
 grunt	?TileSwitch@CGrunt@@QAEHHHHHHH@Z	100.0000	100.0000	4	f6ef204884b1	0x4b320	100.0000	
 gruntarrivalneighbor	?StepPostGuardBehavior@CGrunt@@QAEHXZ	100.0000	100.0000	14	78d7a623a2a5	0xf26f0	100.0000	
 gruntarrivalscan	?StepBomberBehavior@CGrunt@@QAEHXZ	96.3112	96.3112	31	1f62401c5e97	0xec670	96.3112	
@@ -2040,7 +2040,7 @@ gruntarrivalupdate	?StepGauntletGruntBehavior@CGrunt@@QAEHXZ	86.9102	86.9102	53	
 gruntassetloaders	?LoadGruntDeathAnimations@CGrunt@@QAEHW4GruntDeathType@@H@Z	97.1129	97.1129	35	993cd01a9e00	0x60150	97.1129	
 gruntbehaviorleaf	?UpdateDeathAnimation@CGrunt@@QAEHXZ	95.2638	95.2638	16	b91a98e94b2b	0x612a0	95.2638	
 gruntbehaviorleaf	?UpdateDecayFade@CGrunt@@QAEHXZ	83.6098	83.6098	11	22da1267517f	0x61570	83.6098	
-gruntbricklayerstep	?StepBrickLayerBehavior@CGrunt@@QAEHXZ	87.6818	72.2788	24	bece72260065	0xecc90	87.6818	
+gruntbricklayerstep	?StepBrickLayerBehavior@CGrunt@@QAEHXZ	87.6818	72.2636	24	bece72260065	0xecc90	87.6818	
 gruntchargestep	?StepDumbChaserBehavior@CGrunt@@QAEHXZ	90.1462	90.0559	23	daec93fb9585	0xef6b0	90.1462	
 gruntcombat	??0CUserLogic@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	1	22d8db5e69d9	0x58cd0	100.0000	
 gruntcombat	?Activate@CGrunt@@UAEXXZ	100.0000	100.0000	5	a473d62d3257	0x5caa0	100.0000	
@@ -2070,7 +2070,7 @@ gruntcombat	?Serialize@CPairRecord@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTy
 gruntcombat	?SetAnimation@CWwdSpriteObject@@QAEXPAVCAniElement@@H@Z	100.0000	100.0000	4	7edcd46dd11b	0x58b60	100.0000	
 gruntcombat	?SetParams@CMotionState@@QAEHNNNNNNNNNNN@Z	100.0000	100.0000	2	51a80694a3bf	0x58bc0	100.0000	
 gruntcombat	?SetZ@CMotionState@@QAEXN@Z	100.0000	100.0000	3	3080bed9f1ad	0x58ca0	100.0000	
-gruntcombat	?StepBehavior@CGrunt@@UAEXPAD@Z	66.7951	66.7939	43	856f2d13bcab	0x5d210	87.2766	
+gruntcombat	?StepBehavior@CGrunt@@UAEXPAD@Z	66.7951	66.7951	43	856f2d13bcab	0x5d210	87.2766	
 gruntcombat	?StopPowerupLoopSound@CGrunt@@QAEXXZ	100.0000	100.0000	3	1aa1e3145753	0x57ce0	100.0000	
 gruntcombat	?StopVehicleLoopSound@CGrunt@@QAEXXZ	100.0000	100.0000	3	da602215f904	0x57c10	100.0000	
 gruntcombat	?TryPowerupAtTile@CGrunt@@QAEHXZ	100.0000	100.0000	6	49cb5c31b0d1	0x57aa0	100.0000	
@@ -2221,7 +2221,7 @@ gruntsteps	?Save@CGrunt@@QAEHPAVCFileMemBase@@@Z	100.0000	100.0000	7	bd6775f6ba4
 gruntsteps	?SerializeDispatch@CGrunt@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	6	da6785025c9c	0x53b80	100.0000	
 gruntsteps	?SetArrivalTarget@CGrunt@@QAEHHHHH@Z	100.0000	100.0000	3	988aad1374d4	0x52ed0	100.0000	
 gruntsteps	?SnapToLastTile@CGrunt@@QAEXH@Z	100.0000	100.0000	6	f5d4c2db8764	0x517b0	100.0000	
-gruntsteps	?StepCompassMove@CGrunt@@QAEHXZ	63.2990	62.0438	19	c28486512099	0x51c00	63.2990	
+gruntsteps	?StepCompassMove@CGrunt@@QAEHXZ	63.2990	63.2990	19	c28486512099	0x51c00	63.2990	
 gruntsteps	?TryTeleportToCell@CGrunt@@QAEHHHHH@Z	61.0843	44.4052	29	5808bc545baf	0x52fb0	94.2627	
 gruntsteps	?VehicleContactContains@CGrunt@@QAEHHH@Z	100.0000	100.0000	4	cc38175da6ad	0x51a20	100.0000	
 grunttilescan	?ScanRegion@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	81.9104	80.2577	14	a4affa62ec04	0x32ce0	83.2773	
@@ -3464,7 +3464,7 @@ play	?RegionEnter@CPlay@@QAEXXZ	100.0000	100.0000	3	8d5c4c1ebcab	0xd88f0	100.000
 play	?RegionLeave@CPlay@@QAEXXZ	100.0000	100.0000	4	a613be6d96c0	0xd8960	100.0000	
 play	?RegisterInputBindings@CPlay@@QAEHXZ	100.0000	100.0000	1	993b54aa05a0	0xd9160	100.0000	
 play	?ReleaseResources@CPlay@@UAEXXZ	100.0000	100.0000	8	9944057039de	0xc8700	100.0000	
-play	?Render@CPlay@@UAEHXZ	96.4002	96.4002	30	2eea183f9191	0xc8cf0	96.4002	
+play	?Render@CPlay@@UAEHXZ	96.4002	96.3980	30	2eea183f9191	0xc8cf0	96.4002	
 play	?ResetGoals@CPlay@@QAEHHH@Z	100.0000	100.0000	5	f47e3242a828	0xd5f00	100.0000	
 play	?ResetPlayState@CPlay@@QAEHXZ	96.5300	96.5300	12	9dee7ff34320	0xd60b0	96.6250	
 play	?ResetRightClickState@CPlay@@QAEXXZ	100.0000	100.0000	1	6d119bff1a05	0xcee50	100.0000	

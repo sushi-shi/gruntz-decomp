@@ -33,6 +33,7 @@ from gruntz.delink import eh_band
 
 _MODULE_MTIME = max(
     Path(canon.__file__).stat().st_mtime,
+    Path(canon.msvc_names.__file__).stat().st_mtime,
     Path(eh_band.__file__).stat().st_mtime,
     Path(__file__).stat().st_mtime,
 )

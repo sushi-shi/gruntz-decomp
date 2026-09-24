@@ -12,6 +12,10 @@ __inline i32 GetRandomNumber() {
     return (((s_holdrand = s_holdrand * 214013L + 2531011L) >> 16) & 0x7fff);
 }
 
+__inline i32 GetRandomNumber(i32 lo, i32 hi) {
+    return lo + GetRandomNumber() % (hi - lo + 1);
+}
+
 __inline i32 GetRandom(i32 lo, i32 hi) {
     i32 n = hi - lo + 1;
     if (n == 0) {
