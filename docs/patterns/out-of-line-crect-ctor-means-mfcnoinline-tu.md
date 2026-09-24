@@ -1,4 +1,4 @@
-# A retail `call ??0CRect@@QAE@HHHH@Z` proves the TU compiled with MFC inlines OFF
+# Out-of-line `CRect` calls can expose an MFC inline include leak
 
 tags: cpp:header cpp:local | asm:call asm:lea | topic:codegen-idiom topic:tooling
 
@@ -8,20 +8,23 @@ symptoms: a function that builds a `CRect(0, 0, w, h)` plateaus 15-20 points bel
 
 confidence: 9/10
 
-## The test — one grep, no guessing
+## The test — compare calls and include timing
 
 `??0CRect@@QAE@HHHH@Z` lives at **0x00029ac0** (32 bytes, `ret 0x10`), reached through
 the ILT thunk **0x000034a4**. MFC defines that constructor in `afxwin1.inl` behind
-`_AFX_ENABLE_INLINES`, so a call to the LIB copy can only happen in a TU that was
-compiled with the inlines suppressed. Therefore:
+`_AFX_ENABLE_INLINES`. A retail call proves the constructor was not expanded at
+that site; it does **not** by itself prove the TU lacked the inline definition,
+because `/Ob1` can decline an eligible expansion. First count the calls, then
+inspect both the source sites and the complete include path:
 
 ```
-gruntz sema xref 0x00029ac0 --raw     # every unit that compiled without MFC inlines
+gruntz sema xref 0x00029ac0 --raw     # sites that called the library copy
 gruntz sema disasm <rva> --lite | grep -c '0x34a4\|0x29ac0'
 ```
 
-Any unit in that caller list whose source includes `<Mfc.h>`/`<MfcWin.h>` but **not**
-`<MfcNoInline.h>` is mis-configured. The fix is one include:
+When retail calls constructors that the base expands, verify that
+`<MfcNoInline.h>` appears before the first transitive `<MfcWin.h>` include. In a
+TU without such a transitive path, the fix is one include:
 
 ```cpp
 #include <Mfc.h>
@@ -30,7 +33,33 @@ Any unit in that caller list whose source includes `<Mfc.h>`/`<MfcWin.h>` but **
 ```
 
 (`<Mfc.h>` must precede it — `_AFX_ENABLE_INLINES` is *defined* by `<afx.h>`, so
-undefining it earlier is a silent no-op.)
+undefining it earlier is a silent no-op. If the owning header brings in
+`<MfcWin.h>` first, move an unnecessary complete-type dependency out of that
+header or use another authentic declaration boundary; the later switch cannot
+undo definitions already seen.)
+
+## A transitive include can bypass an existing switch
+
+The September 2026 math-helper integration changed `MapMgr.h` from `Mfc.h` to
+`MfcWin.h` because its typed `CSize m_gridSize` needs a complete definition.
+`BattlezMapConfig.h` included `MapMgr.h` even though it stores only a
+`CMapMgr*`. Thus `BattlezMapConfig.cpp` saw MFC inline definitions through its
+own header before reaching its existing `MfcNoInline.h` include. The
+`RepathAroundBlockedTiles` body changed only in typed grid-field accesses, yet
+its five retail `CRect(int,int,int,int)` calls all expanded in the base: calls
+18/13, relocations 26/21, score 73.6805/64.4078.
+
+Forward-declaring `CMapMgr` in the Battlez header and keeping the `.cpp`'s full
+include after `MfcNoInline.h` restored that function to **73.6805%** with all
+five ctor calls. The same real-TU A/B raised `RouteToNearbyPickup` 68.6483 to
+91.9651, `ResolveTileClaim` 73.9925 to 83.9588, and four other methods, while
+retaining typed `m_rows`, `m_gridSize`, and every math helper. Two methods then
+exposed independent aggregate caller defects: native `RECT`/`POINT` and direct
+screen-position reads restored `FindIdleGruntInBox` 63.3214 to 83.1071; scalar
+tile locals plus the shared `GRID_CLIP_INL` macro restored `HandleUnitContact`
+74.3744 to 87.5099. Full-engine fuzzy moved 94.70 to 94.82 (started-unit fuzzy 94.74 to 94.87) with no fresh MAX
+regressions. The reverse-use signature is an existing `MfcNoInline.h` in a TU
+that nevertheless expands every `CRect` site after a transitive header change.
 
 ## Evidence
 
@@ -52,7 +81,7 @@ Overall project fuzzy rose 86.28 -> 86.40 across nine units (`grunt`, `gruntcomb
 
 ## Why it is worth more than the ctor itself
 
-`_AFX_ENABLE_INLINES` is a whole-TU switch: it also un-inlines `CString`, `CPoint`,
+`_AFX_ENABLE_INLINES` is an include-time switch: it also controls `CString`, `CPoint`,
 `CSize` and the `CObject`/`CObList` accessors. So one wrongly-inlined TU misprices
 EVERY MFC expression in it, and the residue reads as diffuse regalloc noise rather
 than a header bug. The `CRect(int,int,int,int)` call is just the cheapest detector
@@ -60,8 +89,9 @@ because it is the one MFC inline that is big enough to be obvious in a diff.
 
 ## Corollary for reading the disasm
 
-Inside such a TU, an INLINE four-store rect construction is therefore **not** a
-`CRect` — it is a plain `RECT` (or a `RECT` built by a project-local inline). And a
+Inside a TU whose MFC inline definitions are proven absent, an INLINE four-store
+rect construction is therefore **not** a `CRect` — it is a plain `RECT` (or a
+`RECT` built by a project-local inline). And a
 `CRect ra(...)` whose value is immediately overwritten is a source bug: retail's
 `SCAN_RECT_BOUNDS`-style clip block constructs TWO live `CRect`s and copies one into a
 third plain `RECT` (`RECT full = CRect(0,0,w,h);` — temporary + copy-init), which is

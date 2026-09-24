@@ -62,6 +62,8 @@ the following examples without removing their typed APIs:
 | `CBoomerang::LoadProjectileSprites` 0xe0690 | 42.2927% | scalar launch and FP midpoint/direction stores in typed vectors | 82.7155% |
 | `CBattlezMapConfig::LoadConfig` 0x25020 | 89.1183% | shared pool pop plus separate screen-tile and configuration component stores | 95.2833% |
 | `CBattlezMapConfig::PickSpawnCoord` 0x30f20 | 64.2778% | direct screen-tile reads, separate result locals, component equality | 97.9048% |
+| `CBattlezMapConfig::FindIdleGruntInBox` 0x2ab80 | 63.3214% | native RECT/POINT and separate direct screen-tile reads | 83.1071% |
+| `CBattlezMapConfig::HandleUnitContact` 0x2ae00 | 74.3744% | scalar tile and random locals, native RECT, shared `GRID_CLIP_INL` | 87.5099% |
 | `CBattlezMapConfig::IsCoordOccupied` 0x305b0 | 55.1735% | scalar current/entrance/path tile locals and component predicates | 92.1531% |
 | `CBattlezMapConfig::ClaimCellFromRow` 0x30730 | 71.5577% | direct screen tile locals, repeated scalar comparisons, explicit distance, interleaved stores | 94.4359% |
 | `CGrunt::RectContains` 0x51850 | 46.2177% | tile component conversion, native rectangle copy, offset/extent macros | 100% |
@@ -327,6 +329,20 @@ FP lifetimes from the first few instructions, with no call or CFG difference.
 A separate `originY` local and launch-position component stores recover the
 earlier 82.7155%. The shared `RecycleGruntCoords` inline remains in use;
 restoring its old macro was unnecessary for this method.
+
+The Battlez header's `CMapMgr*` forward declaration also restored the owning
+TU's intended `MfcNoInline.h` boundary after `MapMgr.h` began including
+`MfcWin.h`. That exposed two independent caller source-shape defects.
+`FindIdleGruntInBox` had surplus `CRect(RECT const&)`, `CPoint(int,int)`, and
+`GetScreenPos` calls: native RECT/POINT stores and direct typed screen-position
+reads remove all three while retaining the coordinate helpers. In
+`HandleUnitContact`, an aggregate screen-tile/rand result and `Clip(&box)`
+replaced retail's separate scalar locals and caller-side `IntersectRect`.
+Restoring those locals and the shared `GRID_CLIP_INL` macro raises the caller
+above its historical peak without removing the typed `m_gridSize` or the
+out-of-line `CMapMgr::Clip` used by the final reset. The include-path control
+and constructor-call census are in
+[out-of-line-crect-ctor-means-mfcnoinline-tu.md](out-of-line-crect-ctor-means-mfcnoinline-tu.md).
 
 `PickSpawnCoord` in the same Battlez unit required three independent caller
 boundaries. Direct typed screen-position reads removed two extra

@@ -537,10 +537,10 @@ battlezmapconfig	?Clip@CMapMgr@@QAEXPBUtagRECT@@@Z	98.2167	98.2167	4	c9a904283cf
 battlezmapconfig	?Deserialize@CBattlezMapConfig@@QAEHPAVCFileMemBase@@@Z	99.5079	99.5079	7	62033d38205f	0x2b950	99.5079	
 battlezmapconfig	?Drain@CDDrawChildGroup@@QAEPAUCGameObject@@XZ	100.0000	100.0000	6	f64290b14e40	0x31250	100.0000	
 battlezmapconfig	?EnterDefenderMode@CBattlezMapConfig@@QAEHPAVCGrunt@@H@Z	100.0000	100.0000	3	7f578f2ed0ab	0x2c0a0	100.0000	
-battlezmapconfig	?FindIdleGruntInBox@CBattlezMapConfig@@QAEPAVCGrunt@@HHHH@Z	65.0446	65.0446	6	f6e3a004a23f	0x2ab80	83.1161	
+battlezmapconfig	?FindIdleGruntInBox@CBattlezMapConfig@@QAEPAVCGrunt@@HHHH@Z	83.1071	83.1071	7	d20ca9c02fac	0x2ab80	83.1161	
 battlezmapconfig	?FreeArrays@CBattlezMapConfig@@QAEXXZ	100.0000	100.0000	4	0b94f7340dfb	0x25ca0	100.0000	
 battlezmapconfig	?GetScreenPos@CUserLogic@@QAEXPAUCoord@@@Z	100.0000	100.0000	3	0204f68923eb	0x29a50	100.0000	
-battlezmapconfig	?HandleUnitContact@CBattlezMapConfig@@QAEHPAVCGrunt@@0@Z	75.5172	75.5172	14	8df68d9f158a	0x2ae00	86.5862	
+battlezmapconfig	?HandleUnitContact@CBattlezMapConfig@@QAEHPAVCGrunt@@0@Z	87.5099	87.5099	15	7c3b614f4b8f	0x2ae00	87.5099	
 battlezmapconfig	?IndexToPtr@_zdvec@@QAEPADH@Z	100.0000	100.0000	1	74efa4d8d470	0x310f0	100.0000	
 battlezmapconfig	?IndexToPtr@_zvec@@QAEPADH@Z	100.0000	100.0000	2	4c4c3fb5418a	0x312a0	100.0000	
 battlezmapconfig	?IsAtSavedScreenPos@CGrunt@@QAEHXZ	100.0000	100.0000	2	dd4c6c4b9519	0x29a80	100.0000	
@@ -553,12 +553,12 @@ battlezmapconfig	?PathToNearestGoal@CBattlezMapConfig@@QAEHPAVCGrunt@@HH@Z	75.68
 battlezmapconfig	?PickRandomIdleUnit@CBattlezMapConfig@@QAEPAVCGrunt@@H@Z	100.0000	100.0000	6	b4f853ab9891	0x2ad40	100.0000	
 battlezmapconfig	?PickSpawnCoord@CBattlezMapConfig@@QAEPAUCoord@@PAU2@PAVCGrunt@@H@Z	97.9048	97.9048	10	1f075c103210	0x30f20	97.9048	
 battlezmapconfig	?Push@FreeNodePool@@QAEXPAX@Z	100.0000	100.0000	4	760c822fd49d	0x311b0	100.0000	
-battlezmapconfig	?RepathAroundBlockedTiles@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	64.4078	64.4078	16	68433fa6043d	0x2a570	73.6805	
+battlezmapconfig	?RepathAroundBlockedTiles@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	73.6805	73.6805	16	68433fa6043d	0x2a570	73.6805	
 battlezmapconfig	?RerouteIdleUnit@CBattlezMapConfig@@QAEXPAVCGrunt@@HHHHH@Z	100.0000	100.0000	4	d53f28ac813a	0x29af0	100.0000	
-battlezmapconfig	?ResolveArrival@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	84.0306	84.0306	19	ad8dffaf266b	0x2c690	88.0250	
-battlezmapconfig	?ResolveTileClaim@CBattlezMapConfig@@QAEHPAVCGrunt@@HHH@Z	73.9925	73.9925	9	b439d52d39d2	0x2dfa0	84.0000	
-battlezmapconfig	?RouteToNearbyEnemy@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	79.3486	79.3486	20	41d9245e30fe	0x2e3a0	85.0284	
-battlezmapconfig	?RouteToNearbyPickup@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	68.6483	68.6483	9	dfd6b16ea609	0x2c140	92.5930	
+battlezmapconfig	?ResolveArrival@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	88.0250	88.0250	19	ad8dffaf266b	0x2c690	88.0250	
+battlezmapconfig	?ResolveTileClaim@CBattlezMapConfig@@QAEHPAVCGrunt@@HHH@Z	83.9588	83.9588	9	b439d52d39d2	0x2dfa0	84.0000	
+battlezmapconfig	?RouteToNearbyEnemy@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	84.3186	84.3186	20	41d9245e30fe	0x2e3a0	85.0284	
+battlezmapconfig	?RouteToNearbyPickup@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	91.9651	91.9651	9	dfd6b16ea609	0x2c140	92.5930	
 battlezmapconfig	?RouteUnitTo@CBattlezMapConfig@@QAEHPAVCGrunt@@HHHHH@Z	66.8197	66.8197	10	df759a560434	0x300c0	89.3852	
 battlezmapconfig	?RouteUnitToGoal@CBattlezMapConfig@@QAEHPAVCGrunt@@UCoord@@HH@Z	74.2452	74.2452	11	d7a12269f198	0x302c0	91.7548	
 battlezmapconfig	?STUB_2d7e0@@YAXXZ	100.0000	100.0000	1	a0d376cffe95	0x2d7e0	100.0000	absent
@@ -568,7 +568,7 @@ battlezmapconfig	?SnapToTileCenter@CDDrawWorkerHost@@QAEXPAUCoord@@HH@Z	100.0000
 battlezmapconfig	?StepAllRowSpawns@CBattlezMapConfig@@QAEHXZ	100.0000	100.0000	4	5ba429a36073	0x25c20	100.0000	
 battlezmapconfig	?StepBoard@CBattlezMapConfig@@QAEHXZ	93.8344	93.8344	14	2b3e455bfeec	0x25d90	95.4948	
 battlezmapconfig	?StepRowSpawn@CBattlezMapConfig@@QAEHH@Z	88.8080	88.8080	12	85a872fbeff9	0x26470	88.8080	
-battlezmapconfig	?StepRowUnits@CBattlezMapConfig@@QAEHXZ	81.4388	81.4388	31	a37276b2fcc0	0x267c0	88.2172	
+battlezmapconfig	?StepRowUnits@CBattlezMapConfig@@QAEHXZ	87.0086	87.0086	31	a37276b2fcc0	0x267c0	88.2172	
 battlezmapconfig	?TrySeedSpawnAt@CBattlezMapConfig@@QAEHHH@Z	91.8980	91.8980	8	4b282e33c207	0x30990	94.5918	
 battlezmapconfig	?ValidateUnitPath@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	92.1414	92.1414	28	64d4f39d63ae	0x29b40	92.1414	
 battlezrepath	?ProbeUnoccupiedAt@CBattlezMapConfig@@QAEHHH@Z	100.0000	100.0000	4	0bb8d9d810ed	0x35210	100.0000	

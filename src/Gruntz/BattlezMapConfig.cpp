@@ -1813,7 +1813,11 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
 // @early-stop
 RVA(0x0002ab80, 0x15e)
 CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 halfH) {
-    CRect rect = MakeRect(cx - halfW, cy - halfH, cx + halfW, cy + halfH);
+    RECT rect;
+    rect.left = cx - halfW;
+    rect.top = cy - halfH;
+    rect.right = cx + halfW;
+    rect.bottom = cy + halfH;
     CGrunt* best = NULL;
     i32 bestDist = INT_MAX;
     for (i32 band = 0; band < 4; band++) {
@@ -1828,9 +1832,10 @@ CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 hal
             if (u->m_entranceDropActive != false) {
                 continue;
             }
-            Coord unitTile;
-            u->GetScreenTile(&unitTile);
-            CPoint wpt(unitTile.m_x, unitTile.m_y);
+            CGameObject* lvl = u->m_object;
+            POINT wpt;
+            wpt.y = lvl->m_screenPosition.m_y >> TILE_SHIFT_PX;
+            wpt.x = lvl->m_screenPosition.m_x >> TILE_SHIFT_PX;
             if (!PtInRect(&rect, wpt)) {
                 continue;
             }
@@ -1843,10 +1848,10 @@ CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 hal
             if (keep == 0) {
                 continue;
             }
-            Coord center(cx, cy);
-            Coord delta = unitTile - center;
-            Coord distance = delta.GetAbs();
-            i32 dist = distance.m_x + distance.m_y;
+            lvl = u->m_object;
+            i32 dx = abs((lvl->m_screenPosition.m_x >> TILE_SHIFT_PX) - cx);
+            i32 dy = abs((lvl->m_screenPosition.m_y >> TILE_SHIFT_PX) - cy);
+            i32 dist = dx + dy;
             if (dist >= bestDist) {
                 continue;
             }
@@ -1957,19 +1962,24 @@ i32 CBattlezMapConfig::HandleUnitContact(CGrunt* actor, CGrunt* other) {
         return 1;
     }
 
-    Coord center;
-    actor->GetScreenTile(&center);
-    Coord randomOffset;
-    randomOffset.m_y = rand() % 10 - 5;
-    randomOffset.m_x = rand() % 10 - 5;
-    Coord target = center + randomOffset;
+    i32 ycoord = actor->GetScreenTileY();
+    i32 xcoord = actor->GetScreenTileX();
+    ycoord += rand() % 10 - 5;
+    i32 r2 = rand() % 10;
+    CGameObject* tl2 = actor->m_object;
+    RECT box;
+    box.left = (tl2->m_screenPosition.m_x >> TILE_SHIFT_PX) - 5;
+    xcoord += r2 - 5;
+    box.right = (tl2->m_screenPosition.m_x >> TILE_SHIFT_PX) + 5;
     CMapMgr* board = m_board;
-    CRect box(center.m_x - 5, center.m_y - 5, center.m_x + 5, center.m_y + 5);
-    board->Clip(&box);
+    box.bottom = (tl2->m_screenPosition.m_y >> TILE_SHIFT_PX) + 5;
+    box.top = (tl2->m_screenPosition.m_y >> TILE_SHIFT_PX) - 5;
+
+    GRID_CLIP_INL(board, &box)
     RouteUnitTo(
         actor,
-        target.m_x,
-        target.m_y,
+        xcoord,
+        ycoord,
         BRICKZ_CELL_OCCUPIED
             | IDX(
                 CELL_FLAG_SOLID | CELL_FLAG_SPECIAL | CELL_FLAG_TRIGGER | CELL_FLAG_ARROW
