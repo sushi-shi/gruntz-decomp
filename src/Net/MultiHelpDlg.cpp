@@ -30,5 +30,6 @@ RVA(0x000bebe0, 0x3)
 void CMultiHelpDlg::DoDataExchange(CDataExchange*) {}
 
 RVA(0x000bec00, 0x6)
+DATA_MESSAGE_MAP(0x001ea448, 0x001ea450)
 BEGIN_MESSAGE_MAP(CMultiHelpDlg, CDialog)
 END_MESSAGE_MAP()

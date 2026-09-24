@@ -1,7 +1,7 @@
 # Comment markers — the blessed vocabulary
 
 Every ADDRESS/SYMBOL binding is a macro from `include/rva.h` (`RVA`, `DATA`,
-`RVA_COMPGEN`, `DATA_COMPGEN`, `RVA_DYNINIT`) — no label ever lives in a
+`RVA_COMPGEN`, `DATA_COMPGEN`, `DATA_MESSAGE_MAP`, `RVA_DYNINIT`) — no label ever lives in a
 comment. (`VTBL_ABSENT` is RETIRED: a class whose vtable retail never emitted
 simply has no `data_vtables.tsv` row.) Bindings with no source site to sit on
 are TRACKED TABLES instead, never a comment and never a new macro:

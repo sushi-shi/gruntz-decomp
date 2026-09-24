@@ -70,13 +70,14 @@ void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
 }
 
 RVA(0x00017ac0, 0x6)
+DATA_MESSAGE_MAP(0x001e8d10, 0x001e8d18)
 BEGIN_MESSAGE_MAP(CBattlezDlgColors, CDialog)
-// ON_WM_* take unqualified member addresses, which clang rejects.
-{WM_MEASUREITEM, 0, 0, 0, AfxSig_vOWNER, GZ_MFC_PMSG(&CBattlezDlgColors::OnMeasureItem)},
-    {WM_DRAWITEM, 0, 0, 0, AfxSig_vOWNER, GZ_MFC_PMSG(&CBattlezDlgColors::OnDrawItem)},
-    ON_CBN_DBLCLK(CTRL_COLOR_LIST, CBattlezDlg::OnOkCommand) END_MESSAGE_MAP()
+    ON_WM_MEASUREITEM()
+    ON_WM_DRAWITEM()
+    ON_LBN_DBLCLK(CTRL_COLOR_LIST, CBattlezDlgColors::OnOkCommand)
+END_MESSAGE_MAP()
 
-        RVA(0x00017ae0, 0x20)
+RVA(0x00017ae0, 0x20)
 void CBattlezDlgColors::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {
     lpmis->itemWidth = 0xc8;
     lpmis->itemHeight = 0x1e;
@@ -151,7 +152,7 @@ void CBattlezDlgColors::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
 }
 
 RVA(0x00017d40, 0x8)
-void CBattlezDlg::OnOkCommand() {
+void CBattlezDlgColors::OnOkCommand() {
     OnOK();
 }
 

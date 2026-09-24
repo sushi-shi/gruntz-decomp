@@ -36,8 +36,9 @@ void CCheckpointDlg::DoDataExchange(CDataExchange* pDX) {
 }
 
 RVA(0x00023570, 0x6)
+DATA_MESSAGE_MAP(0x001e94b8, 0x001e94c0)
 BEGIN_MESSAGE_MAP(CCheckpointDlg, CDialog)
-ON_BN_CLICKED(0x53a, CCheckpointDlg::OnToggleCheckpointPrompts)
+    ON_BN_CLICKED(0x53a, CCheckpointDlg::OnToggleCheckpointPrompts)
 END_MESSAGE_MAP()
 
 RVA(0x00023590, 0x31)

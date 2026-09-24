@@ -78,8 +78,9 @@ void CBattlezDlgCustom::DoDataExchange(CDataExchange* pDX) {
 }
 
 RVA(0x000183d0, 0x6)
+DATA_MESSAGE_MAP(0x001e8e98, 0x001e8ea0)
 BEGIN_MESSAGE_MAP(CBattlezDlgCustom, CDialog)
-ON_LBN_DBLCLK(0x516, CBattlezDlgCustom::PickIfSelected)
+    ON_LBN_DBLCLK(0x516, CBattlezDlgCustom::PickIfSelected)
 END_MESSAGE_MAP()
 
 RVA(0x000183f0, 0x2e)

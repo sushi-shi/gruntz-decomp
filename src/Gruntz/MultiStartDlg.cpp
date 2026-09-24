@@ -54,10 +54,6 @@ i32 g_latencyDisplayTick;
 DATA(0x0021243c)
 char g_usingCmdDelay[] = "Using CmdDelay of %d and ResendDelay of %d.";
 
-DATA(0x001ea580)
-// clang-format off
-// clang-format on
-
 RVA(0x000c1750, 0x88)
 CMultiStartDlg::CMultiStartDlg(CGruntzMgr* gameManager, CWnd* pParent)
     : CDialog(0xc5, pParent), m_reserved74(0xa) {
@@ -351,23 +347,40 @@ void CMultiStartDlg::DoDataExchange(CDataExchange* pDX) {
 }
 
 RVA(0x000c2620, 0x6)
+DATA_MESSAGE_MAP(0x001ea578, 0x001ea580)
 BEGIN_MESSAGE_MAP(CMultiStartDlg, CDialog)
-// ON_WM_* take unqualified member addresses, which clang rejects.
-ON_CBN_SELCHANGE(CTRL_PLAYER_TYPE0, CMultiStartDlg::OnPlayerTypeSelection0)
-ON_CBN_SELCHANGE(CTRL_PLAYER_TYPE1, CMultiStartDlg::OnPlayerTypeSelection1)
-ON_CBN_SELCHANGE(CTRL_PLAYER_TYPE2, CMultiStartDlg::OnPlayerTypeSelection2)
-ON_CBN_SELCHANGE(
-    CTRL_PLAYER_TYPE3,
-    CMultiStartDlg::OnPlayerTypeSelection3
-){WM_TIMER, 0, 0, 0, AfxSig_vw, GZ_MFC_PMSG(&CMultiStartDlg::OnTimer)},
-    {WM_MEASUREITEM, 0, 0, 0, AfxSig_vOWNER, GZ_MFC_PMSG(&CMultiStartDlg::OnMeasureItem)},
-    {WM_DRAWITEM, 0, 0, 0, AfxSig_vOWNER, GZ_MFC_PMSG(&CMultiStartDlg::OnDrawItem)},
-    ON_BN_CLICKED(CTRL_PLAYER_COLOR0, CMultiStartDlg::OnPlayerColor0) ON_BN_CLICKED(CTRL_PLAYER_COLOR1, CMultiStartDlg::OnPlayerColor1) ON_BN_CLICKED(CTRL_PLAYER_COLOR2, CMultiStartDlg::OnPlayerColor2) ON_BN_CLICKED(CTRL_PLAYER_COLOR3, CMultiStartDlg::OnPlayerColor3) ON_BN_CLICKED(IDC_MULTI_CUSTOM_WORLD, CMultiStartDlg::OnCustomWorld) ON_CBN_SELCHANGE(IDC_MULTI_WORLD, CMultiStartDlg::CommitWorldSelection) ON_BN_CLICKED(0x4c6, CMultiStartDlg::OnChatSend) ON_EN_CHANGE(CTRL_PLAYER_NAME1, CMultiStartDlg::OnPlayerNameChange1) ON_EN_CHANGE(CTRL_PLAYER_NAME0, CMultiStartDlg::OnPlayerNameChange0) ON_EN_CHANGE(CTRL_PLAYER_NAME2, CMultiStartDlg::OnPlayerNameChange2) ON_EN_CHANGE(
-        CTRL_PLAYER_NAME3,
-        CMultiStartDlg::OnPlayerNameChange3
-    ) ON_CBN_SELCHANGE(CTRL_PLAYER_MAX_GRUNTZ0, CMultiStartDlg::OnMaxGruntzSelection0) ON_CBN_SELCHANGE(CTRL_PLAYER_MAX_GRUNTZ1, CMultiStartDlg::OnMaxGruntzSelection1) ON_CBN_SELCHANGE(CTRL_PLAYER_MAX_GRUNTZ2, CMultiStartDlg::OnMaxGruntzSelection2) ON_CBN_SELCHANGE(CTRL_PLAYER_MAX_GRUNTZ3, CMultiStartDlg::OnMaxGruntzSelection3) ON_CBN_SELCHANGE(IDC_MULTI_LATENCY, CMultiStartDlg::CommitLatencySelection) ON_BN_CLICKED(CTRL_PLAYER_READY0, CMultiStartDlg::OnReadyToggle0) ON_BN_CLICKED(CTRL_PLAYER_READY1, CMultiStartDlg::OnReadyToggle1) ON_BN_CLICKED(CTRL_PLAYER_READY2, CMultiStartDlg::OnReadyToggle2) ON_BN_CLICKED(CTRL_PLAYER_READY3, CMultiStartDlg::OnReadyToggle3) ON_BN_CLICKED(IDC_MULTI_ECHO_LATENCY, CMultiStartDlg::EchoLatencySettings) ON_CBN_SELCHANGE(IDC_MULTI_WORLD, CMultiStartDlg::CommitWorldSelection) END_MESSAGE_MAP()
+    ON_CBN_SELCHANGE(CTRL_PLAYER_TYPE0, CMultiStartDlg::OnPlayerTypeSelection0)
+    ON_CBN_SELCHANGE(CTRL_PLAYER_TYPE1, CMultiStartDlg::OnPlayerTypeSelection1)
+    ON_CBN_SELCHANGE(CTRL_PLAYER_TYPE2, CMultiStartDlg::OnPlayerTypeSelection2)
+    ON_CBN_SELCHANGE(CTRL_PLAYER_TYPE3, CMultiStartDlg::OnPlayerTypeSelection3)
+    ON_WM_TIMER()
+    ON_WM_MEASUREITEM()
+    ON_WM_DRAWITEM()
+    ON_BN_CLICKED(CTRL_PLAYER_COLOR0, CMultiStartDlg::OnPlayerColor0)
+    ON_BN_CLICKED(CTRL_PLAYER_COLOR1, CMultiStartDlg::OnPlayerColor1)
+    ON_BN_CLICKED(CTRL_PLAYER_COLOR2, CMultiStartDlg::OnPlayerColor2)
+    ON_BN_CLICKED(CTRL_PLAYER_COLOR3, CMultiStartDlg::OnPlayerColor3)
+    ON_BN_CLICKED(IDC_MULTI_CUSTOM_WORLD, CMultiStartDlg::OnCustomWorld)
+    ON_CBN_SELCHANGE(IDC_MULTI_WORLD, CMultiStartDlg::CommitWorldSelection)
+    ON_BN_CLICKED(0x4c6, CMultiStartDlg::OnChatSend)
+    ON_EN_CHANGE(CTRL_PLAYER_NAME1, CMultiStartDlg::OnPlayerNameChange1)
+    ON_EN_CHANGE(CTRL_PLAYER_NAME0, CMultiStartDlg::OnPlayerNameChange0)
+    ON_EN_CHANGE(CTRL_PLAYER_NAME2, CMultiStartDlg::OnPlayerNameChange2)
+    ON_EN_CHANGE(CTRL_PLAYER_NAME3, CMultiStartDlg::OnPlayerNameChange3)
+    ON_CBN_SELCHANGE(CTRL_PLAYER_MAX_GRUNTZ0, CMultiStartDlg::OnMaxGruntzSelection0)
+    ON_CBN_SELCHANGE(CTRL_PLAYER_MAX_GRUNTZ1, CMultiStartDlg::OnMaxGruntzSelection1)
+    ON_CBN_SELCHANGE(CTRL_PLAYER_MAX_GRUNTZ2, CMultiStartDlg::OnMaxGruntzSelection2)
+    ON_CBN_SELCHANGE(CTRL_PLAYER_MAX_GRUNTZ3, CMultiStartDlg::OnMaxGruntzSelection3)
+    ON_CBN_SELCHANGE(IDC_MULTI_LATENCY, CMultiStartDlg::CommitLatencySelection)
+    ON_BN_CLICKED(CTRL_PLAYER_READY0, CMultiStartDlg::OnReadyToggle0)
+    ON_BN_CLICKED(CTRL_PLAYER_READY1, CMultiStartDlg::OnReadyToggle1)
+    ON_BN_CLICKED(CTRL_PLAYER_READY2, CMultiStartDlg::OnReadyToggle2)
+    ON_BN_CLICKED(CTRL_PLAYER_READY3, CMultiStartDlg::OnReadyToggle3)
+    ON_BN_CLICKED(IDC_MULTI_ECHO_LATENCY, CMultiStartDlg::EchoLatencySettings)
+    ON_CBN_SELCHANGE(IDC_MULTI_WORLD, CMultiStartDlg::CommitWorldSelection)
+END_MESSAGE_MAP()
 
-        RVA(0x000c2640, 0x60)
+RVA(0x000c2640, 0x60)
 CWnd* CMultiStartDlg::GetPlayerTypeControl(i32 slot) {
     CWnd* result = NULL;
     switch (static_cast<PlayerSlot>(slot)) {

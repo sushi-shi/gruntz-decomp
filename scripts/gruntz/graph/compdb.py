@@ -42,6 +42,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -156,12 +157,32 @@ def base_flags(msvc_inc: Path, dx_inc: Path,
     ]
 
 
+def adapt_mfc_message_macros(real: Path, mirror: Path) -> None:
+    """Qualify VC5's implicit &OnFoo in the CLANG-ONLY SDK mirror.
+
+    VC5 accepts the enclosing class's member name without qualification;
+    Clang does not. Keep every SDK message/signature/cast token intact and
+    supply the class via MFC_MESSAGE_MAP_CLASS. Never modify the pinned SDK
+    or the headers read by the matching compiler.
+    """
+    original = (real / "AFXMSG_.H").read_text()
+    adapted, count = re.subn(r"&(?=On[A-Z]\w*\b)", "&MfcMessageMapClass::", original)
+    if not count:
+        raise RuntimeError("AFXMSG_.H has no expected VC5 member-pointer expressions")
+    dest = mirror / "afxmsg_.h"
+    if dest.is_symlink():
+        dest.unlink()
+    if not dest.exists() or dest.read_text() != adapted:
+        dest.write_text(adapted)
+
+
 def generate(quiet: bool = False) -> bool:
     """(Re)write the compdb from config/units.toml. Returns True if changed."""
     from gruntz.manifest import units
     msvc_inc, dx_inc, provenance = resolve_include_dirs()
     msvc_low = build_lowercase_mirror(msvc_inc, MIRROR_DIR / "msvc")
     dx_low = build_lowercase_mirror(dx_inc, MIRROR_DIR / "dx")
+    adapt_mfc_message_macros(msvc_inc, msvc_low)
     shared = base_flags(msvc_inc, dx_inc, msvc_low, dx_low)
 
     entries = [{

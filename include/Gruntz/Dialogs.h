@@ -122,8 +122,6 @@ public:
 
     i32 UnusedMsgHandler();
 
-    void OnOkCommand();
-
     void OnPlayerNameChange0();
     void OnPlayerNameChange1();
     void OnPlayerNameChange2();
@@ -136,8 +134,9 @@ public:
     void OnPlayerNameKillFocus2();
     void OnPlayerNameKillFocus3();
 
-    long OnPaint();
+    void OnPaint();
 
+    MFC_MESSAGE_MAP_CLASS(CBattlezDlg)
     DECLARE_MESSAGE_MAP()
 };
 
@@ -163,11 +162,14 @@ public:
     void OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis);
     void OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis);
 
+    void OnOkCommand();
+
     class CGruntzMgr* m_gameManager;
     i32 m_slotIndex;
     ColorTint m_pickedColor;
     i32 m_networked;
 
+    MFC_MESSAGE_MAP_CLASS(CBattlezDlgColors)
     DECLARE_MESSAGE_MAP()
 };
 
@@ -261,6 +263,7 @@ public:
     CString m_worldName;
     CStringList m_reserved74;
 
+    MFC_MESSAGE_MAP_CLASS(CMultiStartDlg)
     DECLARE_MESSAGE_MAP()
 };
 

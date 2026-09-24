@@ -642,18 +642,6 @@ source-path identities with the compiler nonce and checkout prefix removed;
 header-declared anonymous namespaces are not generalized this way. See
 [the compiler, linker, and consumer controls](patterns/header-inline-local-static-three-copies.md).
 
-### 3b-v. `data_compgen.tsv (class=macro)` — data a library macro defines
-
-MFC's `BEGIN_MESSAGE_MAP(theClass, baseClass)` defines `GetMessageMap()`,
-`messageMap` and `_messageEntries[]` in one expansion. `RVA()` placed before the
-invocation binds to `GetMessageMap`, the first declaration; nothing in source can
-precede the two data definitions inside the macro. A `class=macro` row names each by
-its mangled symbol with the expanding TU as owner, and its census row stays an
-ordinary datum. The six Gruntz dialogs use it; each `GetMessageMap` stays exact,
-which strict relocation scoring would refuse if `messageMap` failed to bind. The
-map's `ON_WM_*` entries stay qualified tuples: those macros take an unqualified
-member address that cl accepts and the clang label extractor rejects.
-
 ### 3c. `.bss` was capped by an objdiff INFERENCE artifact — FIXED in the CLI
 
 **Historical statement of the problem** (kept for the mechanism): `.bss` was 212211 of

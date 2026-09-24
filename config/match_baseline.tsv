@@ -523,7 +523,7 @@ battlezdlgcolors	?DoDataExchange@CBattlezDlgColors@@UAEXPAVCDataExchange@@@Z	100
 battlezdlgcolors	?GetMessageMap@CBattlezDlgColors@@MBEPBUAFX_MSGMAP@@XZ	100.0000	100.0000	3	ce7afa1277a3	0x17ac0	100.0000	
 battlezdlgcolors	?OnDrawItem@CBattlezDlgColors@@QAEXHPAUtagDRAWITEMSTRUCT@@@Z	100.0000	100.0000	3	b026af56d578	0x17b10	100.0000	
 battlezdlgcolors	?OnMeasureItem@CBattlezDlgColors@@QAEXHPAUtagMEASUREITEMSTRUCT@@@Z	100.0000	100.0000	1	da9c57ff6ba2	0x17ae0	100.0000	
-battlezdlgcolors	?OnOkCommand@CBattlezDlg@@QAEXXZ	100.0000	100.0000	2	e73da1f69b76	0x17d40	100.0000	
+battlezdlgcolors	?OnOkCommand@CBattlezDlgColors@@QAEXXZ	100.0000	100.0000	3	aa646e1e3a95	0x17d40	100.0000	
 battlezmapconfig	??0CBattlezMapConfig@@QAE@XZ	93.3108	93.3108	2	d89805ac8990	0x24dc0	93.3108	
 battlezmapconfig	??1CBattlezMapConfig@@QAE@XZ	100.0000	100.0000	1	fb1156cf80c5	0x24f80	100.0000	
 battlezmapconfig	?AcceptAlways@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	100.0000	100.0000	1	a19768c02ed6	0x2c080	100.0000	
@@ -1309,7 +1309,7 @@ dialogs	?OnMaxGruntzSelection2@CBattlezDlg@@QAEHXZ	100.0000	100.0000	4	9bb4d4ccb
 dialogs	?OnMaxGruntzSelection3@CBattlezDlg@@QAEHXZ	100.0000	100.0000	4	1dfa11db6d8a	0x17620	100.0000	
 dialogs	?OnMeasureItem@CBattlezDlg@@QAEXHPAUtagMEASUREITEMSTRUCT@@@Z	100.0000	100.0000	1	b21f0f4203a3	0x16570	100.0000	
 dialogs	?OnOK@CBattlezDlg@@UAEXXZ	100.0000	100.0000	1	c81fd7abc780	0x174a0	100.0000	
-dialogs	?OnPaint@CBattlezDlg@@QAEJXZ	100.0000	100.0000	1	bc9d1928594f	0x14b10	100.0000	
+dialogs	?OnPaint@CBattlezDlg@@QAEXXZ	100.0000	100.0000	2	10a7c4bd9e00	0x14b10	100.0000	
 dialogs	?OnPlayerColor0@CBattlezDlg@@QAEXXZ	100.0000	100.0000	4	e37b813bcb0e	0x16cd0	100.0000	
 dialogs	?OnPlayerColor1@CBattlezDlg@@QAEXXZ	100.0000	100.0000	4	466984147b60	0x16dc0	100.0000	
 dialogs	?OnPlayerColor2@CBattlezDlg@@QAEXXZ	100.0000	100.0000	4	ef6cc1b9ff77	0x16e90	100.0000	
