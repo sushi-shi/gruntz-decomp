@@ -12,6 +12,21 @@ fresh declaration-and-known-use review: `reassess-cavector` and
 remain recheckable in the ledger. The other 14 families remain pending. Earlier
 checkpoint counts below describe their own state, not a blanket exemption.
 
+Vector-value checkpoint `e78b5e48f` applies
+`reassess-vector2-cell-nested-motion` and
+`reassess-vector2-ctor-minus-init-composition`: named motion ownership, empty and
+scalar vector constructors, and subtraction composed with the existing Init
+boundary. The Spotlight constructor improves 91.8883% to 92.1755%, still below
+its 96.4574% historical best. Other Spotlight records retain their prior output.
+Full build/MAX gates, 86 focused tests and the 3,919-function near-exact raw
+audit pass. All 4,429 historical maxima and 4,428 unchanged-source maxima are
+preserved. Current exact count is 3,842/4,428; aggregate fuzzy remains 94.85%
+and MAX 95.19%. The
+[named-owner control](patterns/named-value-subobject-admits-empty-construction.md)
+corrects the earlier constructor exclusion. Every scoped non-retained trial and
+unused-API decision remains recheckable under `reassess-vector2-*`; the complete
+three-owner arithmetic composition and all 14 broad pending families remain open.
+
 Spotlight checkpoint `c97b80255` applies three further vector macro uses under
 `reassess-spotlight-vector-macro-sites`. Update improves 73.2697% to 80.2584%,
 above its previous 78.9438% historical best; all other 17 scored TU records are
