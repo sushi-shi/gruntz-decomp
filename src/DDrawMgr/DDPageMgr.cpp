@@ -684,12 +684,11 @@ i32 CMoviePlayer::Configure(MovieLayout mode, MovieOpenFlags openFlags, POINT* o
                 if (!origin) {
                     return 0;
                 }
-                m_origin = *origin;
+                m_origin.x = origin->x;
+                m_origin.y = origin->y;
             } else {
-                m_origin = CPoint(
-                    (m_screenWidth - m_tilesAcross * m_smackHandle->Width) >> 1,
-                    (m_screenHeight - m_tilesDown * m_smackHandle->Height) >> 1
-                );
+                m_origin.x = (m_screenWidth - m_tilesAcross * m_smackHandle->Width) >> 1;
+                m_origin.y = (m_screenHeight - m_tilesDown * m_smackHandle->Height) >> 1;
             }
             break;
         case MOVIE_SINGLE:
@@ -699,12 +698,11 @@ i32 CMoviePlayer::Configure(MovieLayout mode, MovieOpenFlags openFlags, POINT* o
                 if (!origin) {
                     return 0;
                 }
-                m_origin = *origin;
+                m_origin.x = origin->x;
+                m_origin.y = origin->y;
             } else {
-                m_origin = CPoint(
-                    (m_screenWidth - m_smackHandle->Width) >> 1,
-                    (m_screenHeight - m_smackHandle->Height) >> 1
-                );
+                m_origin.x = (m_screenWidth - m_smackHandle->Width) >> 1;
+                m_origin.y = (m_screenHeight - m_smackHandle->Height) >> 1;
             }
             break;
         case MOVIE_TILE_OR_STRETCH:
@@ -716,32 +714,39 @@ i32 CMoviePlayer::Configure(MovieLayout mode, MovieOpenFlags openFlags, POINT* o
                     if (!origin) {
                         return 0;
                     }
-                    m_origin = *origin;
+                    m_origin.x = origin->x;
+                    m_origin.y = origin->y;
                 } else {
-                    m_origin = CPoint(
-                        (m_screenWidth - m_tilesAcross * m_smackHandle->Width) >> 1,
-                        (m_screenHeight - m_tilesDown * m_smackHandle->Height) >> 1
-                    );
+                    m_origin.x = (m_screenWidth - m_tilesAcross * m_smackHandle->Width) >> 1;
+                    m_origin.y = (m_screenHeight - m_tilesDown * m_smackHandle->Height) >> 1;
                 }
             } else {
                 m_tilesAcross = 1;
                 m_tilesDown = 1;
-                m_origin = CPoint(0, 0);
+                m_origin.x = 0;
+                m_origin.y = 0;
                 m_destRect = new RECT;
-                SetRect(m_destRect, 0, 0, m_screenWidth, m_screenHeight);
+                m_destRect->top = 0;
+                m_destRect->left = 0;
+                m_destRect->bottom = m_screenHeight;
+                m_destRect->right = m_screenWidth;
                 m_blitMode = MOVIE_SINGLE;
             }
             break;
         case MOVIE_DEST_RECT: {
             m_tilesAcross = 1;
             m_tilesDown = 1;
-            m_origin = CPoint(0, 0);
+            m_origin.x = 0;
+            m_origin.y = 0;
             if (!rect) {
                 return 0;
             }
             RECT* r = new RECT;
             m_destRect = r;
-            *r = *rect;
+            r->left = rect->left;
+            r->top = rect->top;
+            r->right = rect->right;
+            r->bottom = rect->bottom;
             break;
         }
         default:

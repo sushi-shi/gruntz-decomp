@@ -43,6 +43,7 @@ the following examples without removing their typed APIs:
 | `CPlay::HandleDragMove` 0xd0db0 | 78.0153% | scalar drag clamp and world-position locals | 97.4138% |
 | `CPlay::ExecuteCommand` 0xd1b60 | 76.1651% | scalar target and component-store order with named flags | 80.9374% |
 | `CPlay::ExpandViewport` 0xd8ed0 | 48.5000% | direct RECT and SIZE operations | 91.2653% |
+| `CMoviePlayer::Configure` 0x17cfc0 | 79.3618% | direct origin and destination RECT stores | 99.9246% |
 | `CGrunt::RectContains` 0x51850 | 46.2177% | tile component conversion, native rectangle copy, offset/extent macros | 100% |
 | `CGrunt::VehicleContactContains` 0x51a20 | 58.6220% | same rectangle family | 100% |
 | `CGrunt::SetArrivalTarget` 0x52ed0 | 59.6000% | component stores and snap expressions | 100% |
@@ -231,6 +232,11 @@ and local lifetimes require them. `SaveUnderAndDrawCursor` removes surplus
 pre-rewrite 93.58%. In the same owner unit, unchanged
 `LoadScrollSpeedOptions` returns from 97.3700% to 97.4950%, demonstrating
 that a neighboring authentic source restoration can recover C1 state.
+
+`CMoviePlayer::Configure` recovers its earlier 99.9246% by assigning the
+typed origin point's components and destination rectangle fields directly.
+The aggregate APIs remain defined; removing the extra `SetRect` call restores
+the retail call set.
 
 `CMovingLogic::InitOwner` gives a counterexample to adding an aggregate merely
 because the component values are related. Its four min/max record reads have
