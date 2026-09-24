@@ -197,3 +197,16 @@ Before declaring a candidate accepted: compile the real owner TU, inspect the
 first real divergence and raw ordered referents, preserve semantics and helpers,
 then run the full pinned build and MAX gates. A helper restoration may be
 matching-flat; report that honestly rather than call it a score improvement.
+
+The next caller composition restores shared action-phase helpers in
+`Gruntz/GruntActionInline.h` for FinishActiveAction and StepArrivalCommit.
+Real-TU controls move them from 57.1871/66.9022 to 69.6296/83.0360, respectively,
+without altering the complete ZTools array implementation. The controlled
+[phase composition](patterns/animation-name-accessors-restore-template-call-cuts.md#complete-action-phases-after-the-sourced-array-api)
+records intermediate dips, source forms and remaining call-set gaps.
+The `reassess-grunt-glp-*` and `reassess-grunt-tube-*` ledger queues retain the
+unreviewed sibling applications and larger conditional operation. Narrow
+incompatible replacements and their reopening criteria are recorded only under
+`grunt-glp-*` and `grunt-tube-*`. These are Gruntz sibling-source hypotheses,
+not claims that externally released source contained these helper names.
+All sixteen broad helper families remain open.

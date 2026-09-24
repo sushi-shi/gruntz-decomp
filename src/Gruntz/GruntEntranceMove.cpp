@@ -21,6 +21,7 @@
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntActionInline.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntIdentity.h>
 #include <Gruntz/GruntMovementMacros.h>
@@ -689,8 +690,7 @@ i32 CGrunt::StepArrivalCommit() {
         m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);
         return 0;
     }
-    if ((eq = ANIMATION_ACT_EQUALS("G")) || (eq = ANIMATION_ACT_EQUALS("L"))
-        || (eq = ANIMATION_ACT_EQUALS("P"))) {
+    if (GRUNT_IS_USING_TOY(eq)) {
         goto idleReseed;
     }
     eq = ANIMATION_ACT_EQUALS("O");
@@ -701,42 +701,11 @@ i32 CGrunt::StepArrivalCommit() {
     }
     eq = ANIMATION_ACT_EQUALS("J");
     if (eq) {
-
-        m_entranceActive = false;
-        eq = (::GetAnimationActName(m_previousAnimationActId) == "D");
-        if (eq) {
-            if (m_poweredUp != false && m_neighborValid == false) {
-                RESET_GRUNT_POWERED_STATE(this)
-            }
-            m_tileMoveCommitted = false;
-            SET_ANIMATION_ACT("D");
-            SwitchAnimation(m_poseWalk);
-            GruntDirectionCell cell = m_entranceCell;
-            i32 colv = cell.m_column + cell.m_row * 2;
-            i32 base = cell.m_row + colv;
-            char* nm = m_cells[base].WalkName().GetBuffer(0);
-            APPLY_NAME_INLINE(nm);
-        } else {
-            ResetEntranceAnimation(1, 0, 0);
-        }
+        RestorePreviousAppearance();
         goto modeDispatch;
     }
 
-    eq = ANIMATION_ACT_EQUALS("N");
-    if (eq) {
-        DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(m_object, px, py)
-        i32 redo = 1;
-        if (PIXEL_PAIR_NOT_AT_POSITION(px, py, m_lastTilePx.m_x, m_lastTilePx.m_y)) {
-            if (IsDropReady(1)) {
-                m_coordToggle = (m_coordToggle == false);
-                redo = 0;
-            }
-        }
-        SnapToLastTile(1);
-        if (redo) {
-            SET_ANIMATION_ACT("D");
-            SetupTubeAnim(m_coordToggle);
-        }
+    if (SettleActiveTubeMove()) {
         goto finalize;
     }
     {
@@ -750,18 +719,7 @@ i32 CGrunt::StepArrivalCommit() {
     }
 
 idleReseed:
-    if (m_entranceReason == PICKUP_SCROLL) {
-        g_gameReg->m_voiceManager->StopVoice(m_object->m_objectId);
-    }
-    LoadGruntTypeTable(m_toolId, 1, 0, 0);
-    {
-        i32 z = m_object->m_screenY + 0x186a0;
-        CWwdSpriteObject* o = m_object;
-        SET_SORT_KEY_IF_CHANGED(o, z)
-    }
-    HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
-    m_toyTime = 0;
-    StopVehicleLoopSound();
+    RestoreToolAfterToyUse(0);
     goto finalize;
 
 modeDispatch: {
@@ -1031,8 +989,7 @@ i32 CGrunt::FinishActiveAction() {
         );
         return 1;
     }
-    if ((eq = ANIMATION_ACT_EQUALS("G")) || (eq = ANIMATION_ACT_EQUALS("L"))
-        || (eq = ANIMATION_ACT_EQUALS("P"))) {
+    if (GRUNT_IS_USING_TOY(eq)) {
         goto idleReseed;
     }
     eq = ANIMATION_ACT_EQUALS("O");
@@ -1043,41 +1000,11 @@ i32 CGrunt::FinishActiveAction() {
     }
     eq = ANIMATION_ACT_EQUALS("J");
     if (eq) {
-        m_entranceActive = false;
-        eq = (::GetAnimationActName(m_previousAnimationActId) == "D");
-        if (eq) {
-            if (m_poweredUp != false && m_neighborValid == false) {
-                RESET_GRUNT_POWERED_STATE(this)
-            }
-            m_tileMoveCommitted = false;
-            SET_ANIMATION_ACT("D");
-            SwitchAnimation(m_poseWalk);
-
-            GruntDirectionCell cell = m_entranceCell;
-            i32 col = cell.m_column + cell.m_row * 2;
-            i32 base = cell.m_row + col;
-            char* nm = m_cells[base].WalkName().GetBuffer(0);
-            SetImageSetByName(nm);
-        } else {
-            ResetEntranceAnimation(1, 0, 0);
-        }
+        RestorePreviousAppearance();
         goto modeDispatch;
     }
 
-    eq = ANIMATION_ACT_EQUALS("N");
-    if (eq) {
-        DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(m_object, px, py)
-        i32 redo = 1;
-        if (PIXEL_PAIR_NOT_AT_POSITION(px, py, m_lastTilePx.m_x, m_lastTilePx.m_y)
-            && IsDropReady(1)) {
-            m_coordToggle = (m_coordToggle == false);
-            redo = 0;
-        }
-        SnapToLastTile(1);
-        if (redo) {
-            SET_ANIMATION_ACT("D");
-            SetupTubeAnim(m_coordToggle);
-        }
+    if (SettleActiveTubeMove()) {
         return 1;
     }
 
@@ -1165,18 +1092,7 @@ i32 CGrunt::FinishActiveAction() {
     }
 
 idleReseed:
-    if (m_entranceReason == PICKUP_SCROLL) {
-        g_gameReg->m_voiceManager->StopVoice(m_object->m_objectId);
-    }
-    LoadGruntTypeTable(m_toolId, 1, 0, 1);
-    {
-        i32 sortKey = m_object->m_screenY + 0x186a0;
-        CWwdSpriteObject* o = m_object;
-        SET_SORT_KEY_IF_CHANGED(o, sortKey)
-    }
-    HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
-    m_toyTime = 0;
-    StopVehicleLoopSound();
+    RestoreToolAfterToyUse(1);
     return 1;
 
 modeDispatch: {

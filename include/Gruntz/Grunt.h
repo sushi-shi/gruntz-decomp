@@ -828,6 +828,10 @@ public:
 
     i32 FinishActiveAction();
 
+    void RestoreToolAfterToyUse(i32 defer);
+
+    void RestorePreviousAppearance();
+
     i32 StepEntranceReinit();
 
     i32 RunEntranceMove();
@@ -835,6 +839,9 @@ public:
     i32 StepWarpExit();
 
     i32 IsDropReady(i32 clearArrivalState = 0);
+
+    void SettleTubeMove();
+    bool SettleActiveTubeMove();
 
     i32 BeginAttack(i32 targetPxX, i32 targetPxY);
 

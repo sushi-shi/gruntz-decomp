@@ -192,6 +192,73 @@ of mutation through the returned name view.
 
 ## Safe reverse use
 
+### Complete action phases after the sourced array API
+
+The next control is `0620b63b9`, after the complete array/error API restoration.
+FinishActiveAction starts at 57.1871%, with 2/11 typed lookups; StepArrivalCommit
+at 66.9022%, with 4/10. This is a fresh review, not an exemption derived from the
+older tables. The reconstructed game helper names below are not original-source
+identities.
+
+Repeated retail consumers license three complete operations: restoring the
+previous appearance, settling interrupted tube movement, and restoring the tool
+after toy/vehicle use. Definitions belong in `Gruntz/GruntActionInline.h`, with
+declarations on the real CGrunt class. None changes ZTools visibility or layout.
+The applicable source/rejection queue is in `config/lithtech_lineage.tsv` under
+`reassess-grunt-glp-*`, `reassess-grunt-tube-*`, and `grunt-glp-*`/`grunt-tube-*`.
+
+| Real-TU composition | FinishActiveAction | StepArrivalCommit | Typed calls (Finish / Arrival) |
+| --- | ---: | ---: | --- |
+| Complete previous-appearance member | 62.4602 | 71.1036 | 1/11, 4/10 |
+| Add early-return GLP predicate | 54.5398 | 0.0000 | 3/11, 4/10 |
+| Compose complete tube-settle member | 58.4172 | 0.0000 | 3/11, 6/10 |
+| GLP predicate owns a shared result | 58.4501 | 0.0000 | 3/11, 6/10 |
+| Compose complete toy cleanup | 60.4412 | 0.0000 | 4/11, 8/10 |
+| GLP macro retains caller result assignments | 69.1745 | 82.2345 | 4/11, 8/10 |
+| Compose conditional tube-settle operation | **69.6296** | **83.0360** | **4/11, 8/10** |
+
+The zero-score states are a useful composition example: actual instructions
+shrink from 853 to 728 and desired typed calls grow from four to eight, but
+the GLP predicate lets C2 place Arrival's final Q block before the O test.
+Composing the complete cleanup first and then using the macro restores that
+block's retail order without discarding the new phase helpers. A source-visible
+macro is a legitimate boundary here; retaining a previously higher number by
+removing the array API would not explain the caller.
+
+The existing SetImageSetByName forwarding member versus the raw sprite-call
+macro is flat in the first composition. Reusing EntranceCell, which owns the
+complete direction copy, is also flat. Both final callers still load all three
+direction fields and spill the otherwise unused third field. Moving the helper
+bodies from the class header to the dedicated action header is flat. A
+caller-owned GLP result assignment around the inline predicate is flat relative
+to the shared-result predicate; it does not itself restore block order.
+
+Final Finish/retail counts are 913/792 instructions, 49/42 calls, 118/97 branches,
+10/10 returns and 101/80 relocations; Arrival is 759/698, 43/40, 112/101, 3/3 and
+90/74. No new game helper or EntranceCell call survives out of line. The
+conditional tube operation retains N's typed lookup, while another earlier
+lookup expands instead: counts alone are insufficient. Finish still expands
+I/G/L/P/O/J/K, Arrival O/J, and Arrival's final M expands get too far. These are
+open inline/call-set walls, not exhausted register-allocation residue.
+
+The sibling consumers remain separate required controls, including
+RunEntranceMove's shallower lookup boundary and ambiguous D literal. The
+whole toy predicate-plus-effect operation also remains open. This pass does not
+close any of the sixteen broader source-helper reassessment families.
+
+The full pinned build passes after auditing and banking three fresh
+unchanged-fingerprint movements. GruntMachine Render and Boomerang AdvanceMotion
+retain identical call/CFG, semantic multisets and ordered references; SpotLight
+Update retains its calls, branches, stores and five references, with only FP
+stack/load-store scheduling differences. All 4,429 historical RVA banks and
+4,427 unchanged-fingerprint banks are preserved. The 23 real-VC5 header controls
+pass, and the raw relocation audit covers 3,916 near-exact functions with no
+defects. Overall current exact count stays 3,836; full-engine fuzzy moves from
+94.69% to 94.74%, with 95.14% source-scoped MAX. This is partial recovery, not
+merge readiness or a new historical high for either target.
+
+### Applying the evidence
+
 When shared-template restoration causes repeated constructor/error expansions
 inside readers, inspect the semantic name/value accessor and SDK comparison
 layers before altering the template's visibility. Compare the retained call
