@@ -12,6 +12,23 @@ fresh declaration-and-known-use review: `reassess-cavector` and
 remain recheckable in the ledger. The other 14 families remain pending. Earlier
 checkpoint counts below describe their own state, not a blanket exemption.
 
+Latest source checkpoint `3f886df9b` restores the two nested `SQR` uses in
+shared `SquaredDistance`, serving eleven calls in eight functions. The macro
+change preserves all 290 normalized objects against the include-only control;
+all eight consumer bodies and ordered references remain baseline-identical.
+The required header dependency alone recovers two historical exact matches and
+raises Spotlight Update's historical best from 80.2584% to 81.3820%.
+All 4,429 historical and same-fingerprint maxima are preserved. Current README:
+**3,844/4,428 exact, 94.88% fuzzy, 95.21% fuzzy MAX**. This is actual source
+restoration, not an exact closure of the eight distance callers.
+The [nested-square control](patterns/integer-square-macro-preserves-expression-origin.md)
+separates dependency-context movement from macro use and records scoped raw
+reference evidence. Production compilation/comparison and banking completed;
+test suites remain deferred to authorized squash merge. Canonical adoption is
+`reassess-sqr-tile-geometry`; individually rejected/deferred options remain
+under `tile-sqr-*`. TriggerMgr's two-owner square cohort is the next prepared
+lead; no broad family is declared complete by these narrow source adoptions.
+
 Combat checkpoint `ec04092ac` applies the three remaining scalar square uses
 and reuses the existing occupancy release/acquire methods with their actual
 derived receivers. The isolated square change preserves the complete
@@ -48,8 +65,7 @@ Canonical adoptions are `reassess-sqr-fader`, `reassess-sqr-fader-effects`,
 `fader-mesh-rect-ctor-composition`, `fader-mesh-offset-adapters`, and
 `fader-mesh-removeall-adapter`. Intermediate/rejected/deferred options remain
 recheckable under `fader-*`; the const-reference square profile remains pending.
-The next prepared cohort restores nested square macros in the existing shared
-`SquaredDistance`, covering eleven calls in eight functions across four TUs.
+The subsequent shared `SquaredDistance` composition is recorded above.
 All 14 broad pending families remain open.
 
 Motion checkpoint `9e1e121fe` applies the complete three-site square-helper
