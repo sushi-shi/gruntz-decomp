@@ -14,6 +14,7 @@ Per-candidate adoption/rejection evidence belongs in
 | `hs-bitset-body` | zBitVec string constructor,0x16d3a0 | Surviving zBitSet small-buffer pointer accessor |
 | `hs-bitset-error-tail` | Same constructor | Existing error-helper boundary at three expanded error tails |
 | `bute-vector-range-reference-api` | Six Bute getters/setters, two item constructors, parser | Reference API and ordinary bound temporaries |
+| `hs-error-owner-identity`, `reassess-zerrhandling-all-error-sites` | Error, tree, array and bitset family | Original typed error owners, const helpers and static storage scope |
 
 The one-bound candidate reopens the broad omitted-overload conclusion in
 `blood2-getrandom-range`: actual one-bound consumers exist. The implementation
@@ -130,9 +131,21 @@ The container review adds individual pending rows under `reassess-zminerr-*`,
 `reassess-zdarray-*`, `reassess-zptrcoll-*`, `reassess-zptree-*`,
 `reassess-zsymtab-dtf-placement`, and `reassess-zsilent-consumers`.
 The original-library controls and reader provenance are retained in
-`nolf-zptree-error-owner`. They provide positive owner evidence, not a completed
-source migration or new matching score. The next implementation target is the
-complete error-owner and forwarding family, followed by its container consumers.
+`nolf-zptree-error-owner`. The error-owner and forwarding restoration is now
+applied in `a57322345`, with fresh decisions in the individual candidate rows.
+All 45 exact primary/EH rows in TypeKeyColl remain exact; this is source fidelity,
+not 45 new matches. The full build passes and the raw referent audit finds zero
+defects across 3,915 near-exact functions. The verifier regression suite ran
+463 tests successfully, with two skipped.
+
+The complete container reviews remain open, as do all 16 broad reassessment
+families. In particular, `reassess-zerrhandler-set-debug-locals` is an applied
+source layer, not an exact-match or exhausted-search claim. The two genuine
+retail startup functions tracked by `reassess-dhandler-startup-owner` remain
+unmatched; their unresolved source ownership must not be concealed by a
+classification or invented constructor. Further source work starts with the
+complete array declarations and typed consumers, not a blanket exemption for
+helpers that were previously considered.
 
 ## Coverage and remaining work
 
