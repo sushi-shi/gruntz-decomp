@@ -81,6 +81,32 @@ only 34/36 raw relocations and 85.529880%. The retail rematerialization therefor
 supports a macro boundary, while the operation's proper abstraction supports
 the general `INTERPOLATE` spelling rather than `FLASH_BRIGHT_TERM`.
 
+## Dark-phase negative control (PR #79 reassessment)
+
+At `ea8b34a71`, the dark RGB phase still expanded the weighted operation by
+hand. Replacing all six comparison/selected-arm expressions with the existing
+`INTERPOLATE`, removing the unused complementary-weight local, and then
+separately composing `HSV_MIN` are both byte-flat in the real VC5 TU:
+99.203186%, 1,528 bytes, 507 instructions, 15 calls, 40 branches and one return.
+The two surplus exchanges remain in the bright phase. Thus the older positive
+macro witness does **not** imply that every hand-expanded use changes codegen;
+it also did not establish complete consumer adoption.
+
+The complete dark region at offsets `0x1c8..0x3b5` agrees with the original
+instructions and fixup offsets. Independently resolving the raw original
+stream proves all **35 non-EH** references, including two `g_one`, twelve
+channel-limit and six percentage-scale references. The semantic-diff tool's
+32-entry summary is not that raw census. The first EH-table reference and
+three compiled FS:0 references are separately scoped, not silently counted as
+ordinary data references.
+
+`scripts/test_flash_interpolation_consumers.py` covers the complete dark
+region and raw stream, rejecting changed signed division, clamp branches,
+missing/repeated/wrong references and DIR32 addends. It does not certify the
+whole bright body or compiler-generated EH owner. Canonical adoption and
+remaining alternatives are `reassess-flash-interpolate`,
+`reassess-flash-min` and `reassess-interpolate-literal-token-profile`.
+
 ## Parentheses around a macro argument can reverse the FP-pool constant
 
 The surviving LithTech `ROUND` macro provides a second, smaller witness where

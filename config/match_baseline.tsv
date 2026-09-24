@@ -3986,7 +3986,7 @@ shadetablecache	?CompareLuma@CShadeTableCache@@SAHPBX0@Z	100.0000	99.8095	1	558d
 shadetablecache	?FindByKey@CShadeTableCache@@QAEPAUCShadeTable@@H@Z	100.0000	100.0000	3	79d23dc82899	0x14fb40	100.0000	
 shadetablecache	?FindNearestColor@CShadeTableCache@@SAHPAUtagPALETTEENTRY@@EEE@Z	100.0000	100.0000	5	19fe5a4d36ae	0x14fbf0	100.0000	
 shadetablecache	?FindRemove@CShadeTableCache@@QAEXPAUCShadeTable@@@Z	100.0000	100.0000	3	bc96d3076435	0x14fb80	100.0000	
-shadetablecache	?FlashTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEENTRY@@HHHH@Z	99.2032	99.2032	11	1f95536784bd	0x14df40	99.2032	
+shadetablecache	?FlashTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEENTRY@@HHHH@Z	99.2032	99.2032	12	05bc375445cf	0x14df40	99.2032	
 shadetablecache	?FreeNodes@CShadeTableCache@@QAEXXZ	100.0000	100.0000	3	07317cfb7ad9	0x14ded0	100.0000	
 shadetablecache	?GammaTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEENTRY@@HH@Z	95.0571	95.0571	5	742beec58eed	0x14e9f0	95.0571	
 shadetablecache	?GreyTable@CShadeTableCache@@QAEPAUCShadeTable@@XZ	92.8636	92.8636	7	26fe716642ff	0x14eef0	92.8636	

@@ -12,6 +12,25 @@ fresh declaration-and-known-use review: `reassess-cavector` and
 remain recheckable in the ledger. The other 14 families remain pending. Earlier
 checkpoint counts below describe their own state, not a blanket exemption.
 
+The next scalar-math reassessment restores the missing FlashTable dark-ramp
+uses of `INTERPOLATE`, composed with its existing `HSV_MIN`. Both separately
+compiled forms preserve the 99.2032% body; this is an applied source cleanup,
+not a new exact match. The original-backed regression covers the complete dark
+phase and all 35 non-EH ordered references. The canonical adoption row is
+`reassess-flash-interpolate`; the broader selector and interpolation reviews
+remain open. Full build/MAX gates, 89 focused tests and the 3,919-function
+near-exact raw audit pass. All 4,429 historical maxima and 4,428 unchanged-source
+maxima remain intact; aggregate scores and the exact count are unchanged.
+The fresh worker search expands `reassess-sqr-motion` to all three
+owners and corrects `reassess-round-blend` to its actual containing function.
+Other accepted/deferred alternatives are individually recorded under the
+`reassess-interpolate-*`, `reassess-sqr-*` and `reassess-round-*` IDs.
+
+Five further Spotlight result-lifetime controls are recorded under
+`reassess-vector2-update-result-*`. They did not resolve the original temporary
+homes and are not retained. Existing vector helpers remain intact; neither the
+function nor its complete arithmetic family is declared exhausted.
+
 Vector-value checkpoint `e78b5e48f` applies
 `reassess-vector2-cell-nested-motion` and
 `reassess-vector2-ctor-minus-init-composition`: named motion ownership, empty and
