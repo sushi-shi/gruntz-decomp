@@ -169,7 +169,6 @@ CShadeTable* CShadeTableCache::FlashTable(
     return t;
 }
 
-// @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0014e540, 0x2ea)
@@ -217,7 +216,6 @@ CShadeTableCache::HsvShiftTable(PALETTEENTRY* pal, i32 steps, i32 pct, i32 gamma
     return t;
 }
 
-// @early-stop
 RVA(0x0014e830, 0x1b9)
 CShadeTable* CShadeTableCache::HueRampTable(PALETTEENTRY* pal, i32 steps, i32 packedColor) {
     CShadeTable* t = new CShadeTable;
@@ -250,7 +248,6 @@ CShadeTable* CShadeTableCache::HueRampTable(PALETTEENTRY* pal, i32 steps, i32 pa
     return t;
 }
 
-// @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0014e9f0, 0x208)

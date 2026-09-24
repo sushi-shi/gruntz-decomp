@@ -1,5 +1,7 @@
 # Pattern index (MSVC 5.0 /O2 — Gruntz)
 
+- [A palette helper's template body makes an unchanged table builder exact](integer-square-macro-preserves-expression-origin.md#a-nested-palette-boundary-can-change-a-different-table-builder) — cpp:inline cpp:template cpp:macro | asm:mov | topic:tu-state — include-only is flat for GammaTable; the uncalled global helper's Sqr body closes 95.0571 to 100. Bank the audited unchanged fingerprint and remove disposable context. Nested macro composition separately improves Blit824; neither Blit is declared bounded.
+
 - [A named value subobject admits empty construction](named-value-subobject-admits-empty-construction.md) — cpp:aggregate cpp:constructor cpp:scope | asm:call asm:fstp | topic:source-shape — the minimal named-motion/empty-vector-constructor composition preserves all 396 checked records, cell layout and CString lifetime callbacks; anonymous-member rejection does not exclude a complete sourced value family.
 
 - [Vector macro parenthesization can change FP allocation](vector-macro-parenthesization-can-change-fp-allocation.md) — cpp:macro cpp:scope cpp:expression | asm:fxch asm:fstp | topic:codegen-idiom — Spotlight Update improves 73.26966 to 80.25843; a bare block is flat, while the parenthesized expansion reproduces the macro with or without its trailing semicolon. No bare steering scope retained; the larger vector-family review remains open.
