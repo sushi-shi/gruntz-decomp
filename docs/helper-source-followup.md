@@ -250,3 +250,15 @@ entrance is 88.3289 after the corrected guard and complete helper composition,
 with its retail-sized frame restored. These are partial source/matching changes,
 not whole-family closure or an exact-match claim. The sixteen broad reassessment
 rows remain pending, including every family named in the original correction.
+
+The next scoped implementation, `684215cdc`, reuses the existing typed occupant
+getter and adds complete release/acquire helpers to both entrance owners.
+Canonical adoptions are `grid-entrance-occupant-use` and
+`grid-entrance-occupancy-mutators`; the `grid-*` queue retains the wider owner,
+consumer and source-form questions and every scoped exclusion. Finish now has
+all eleven retail typed lookups and a new historical best of 91.0935, with no
+extra game calls. The real-TU declaration-only negative control and remaining
+residue are recorded in the
+[occupancy composition](patterns/animation-name-accessors-restore-template-call-cuts.md#typed-occupancy-operations-restore-finishs-remaining-call-boundaries).
+Full build/MAX gates and 30 focused tests pass. This still does not close any
+of the sixteen broad reassessment families or make the PR merge-ready by itself.
