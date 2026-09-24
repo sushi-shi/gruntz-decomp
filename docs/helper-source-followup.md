@@ -21,6 +21,7 @@ checkpoint counts below describe their own state, not a blanket exemption.
 | `chance-ghost-range-preserve`, `chance-brick-range-preserve`, `brick-rng-three-stack-range` | Ghost search and two/three-brick layer selection | Nine actual uses of the existing inclusive-range helper |
 | `chance-defender-range-preserve`, `chance-toy-range-preserve` | Defender and toy selection | Two existing range-helper uses preserving caller-owned integer samples |
 | `brick-rng-color-range` | All three stack-height color selections | Complete shared color-roll forwarding to the existing range helper |
+| `reassess-crange-ambient-getter-init` | `CRandomAmbientSound::InitCycleTiming`,0xcd70 | Initial draw through the initialized range's existing accessors |
 | `hs-bitset-body` | zBitVec string constructor,0x16d3a0 | Surviving zBitSet small-buffer pointer accessor |
 | `hs-bitset-error-tail` | Same constructor | Existing error-helper boundary at three expanded error tails |
 | `bute-vector-range-reference-api` | Six Bute getters/setters, two item constructors, parser | Reference API and ordinary bound temporaries |
