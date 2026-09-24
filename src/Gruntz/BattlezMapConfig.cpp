@@ -4225,13 +4225,16 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
 RVA(0x00030f20, 0x16d)
 Coord* CBattlezMapConfig::PickSpawnCoord(Coord* o, CGrunt* unit, i32 kind) {
     if (kind < 0 || kind >= 4) {
-        Coord result;
-        unit->GetScreenTile(&result);
-        *o = result;
+        CGameObject* lvl = unit->m_object;
+        i32 sx = lvl->m_screenPosition.m_x >> TILE_SHIFT_PX;
+        i32 sy = lvl->m_screenPosition.m_y >> TILE_SHIFT_PX;
+        o->m_x = sx;
+        o->m_y = sy;
         return o;
     }
-    Coord result;
-    unit->GetScreenTile(&result);
+    CGameObject* lvl = unit->m_object;
+    i32 rx = lvl->m_screenPosition.m_x >> TILE_SHIFT_PX;
+    i32 ry = lvl->m_screenPosition.m_y >> TILE_SHIFT_PX;
     CPtrArray* coords = &m_ctx->m_players[kind].m_battlezConfig.m_attackWaypoints;
     i32 count = coords->GetSize();
     if (count != 0) {
@@ -4246,7 +4249,7 @@ Coord* CBattlezMapConfig::PickSpawnCoord(Coord* o, CGrunt* unit, i32 kind) {
                 CGrunt* u = grid->m_units[cell * TM_UNITS_PER_PLAYER + j];
                 if (u != NULL && u->CoordCount() != 0) {
                     Coord node = *static_cast<Coord*>(u->m_coordList.GetAt(u->CoordTail()));
-                    if (node == cand) {
+                    if (node.m_x == cand.m_x && node.m_y == cand.m_y) {
                         ok = false;
                     }
                 }
@@ -4259,9 +4262,11 @@ Coord* CBattlezMapConfig::PickSpawnCoord(Coord* o, CGrunt* unit, i32 kind) {
         }
         r = rand() % count;
         Coord* cand = static_cast<Coord*>(coords->GetAt(r));
-        result = *cand;
+        rx = cand->m_x;
+        ry = cand->m_y;
     }
-    *o = result;
+    o->m_x = rx;
+    o->m_y = ry;
     return o;
 }
 

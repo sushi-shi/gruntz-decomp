@@ -59,6 +59,7 @@ the following examples without removing their typed APIs:
 | `CGrunt::FinishActiveAction` 0x6a6d0 | 81.6941% | snapped pixel-pair macro and scalar arrival tile locals | 84.9912% |
 | `CBoomerang::LoadProjectileSprites` 0xe0690 | 42.2927% | scalar launch and FP midpoint/direction stores in typed vectors | 82.7155% |
 | `CBattlezMapConfig::LoadConfig` 0x25020 | 89.1183% | shared pool pop plus separate screen-tile and configuration component stores | 95.2833% |
+| `CBattlezMapConfig::PickSpawnCoord` 0x30f20 | 64.2778% | direct screen-tile reads, separate result locals, component equality | 97.9048% |
 | `CGrunt::RectContains` 0x51850 | 46.2177% | tile component conversion, native rectangle copy, offset/extent macros | 100% |
 | `CGrunt::VehicleContactContains` 0x51a20 | 58.6220% | same rectangle family | 100% |
 | `CGrunt::SetArrivalTarget` 0x52ed0 | 59.6000% | component stores and snap expressions | 100% |
@@ -297,6 +298,15 @@ FP lifetimes from the first few instructions, with no call or CFG difference.
 A separate `originY` local and launch-position component stores recover the
 earlier 82.7155%. The shared `RecycleGruntCoords` inline remains in use;
 restoring its old macro was unnecessary for this method.
+
+`PickSpawnCoord` in the same Battlez unit required three independent caller
+boundaries. Direct typed screen-position reads removed two extra
+`GetScreenPos` calls and raised 64.2778% to 77.7302%. Separate scalar result
+locals, copied into the `Coord` out parameter at the exit, reached 88.0317%.
+Comparing the two coordinate components separately instead of invoking
+`Coord::operator==` restored the prior 97.9048% and retail's branch count.
+The shared `Coord` operators and screen-tile helper stay available to other
+callers.
 
 `CBattlezMapConfig::LoadConfig` shows that preserving a shared inline owner
 can coexist with scalar caller evaluation. Replacing two hand-expanded free-list
