@@ -44,6 +44,10 @@ the following examples without removing their typed APIs:
 | `CPlay::ExecuteCommand` 0xd1b60 | 76.1651% | scalar target and component-store order with named flags | 80.9374% |
 | `CPlay::ExpandViewport` 0xd8ed0 | 48.5000% | direct RECT and SIZE operations | 91.2653% |
 | `CMoviePlayer::Configure` 0x17cfc0 | 79.3618% | direct origin and destination RECT stores | 99.9246% |
+| `PolyIsConvexCW` 0x145e30 | 83.3153% | separate scalar FP deltas and cross-product locals | 98.1982% |
+| `ImageRotateBlit` 0x145f60 | 53.7126% | scalar image, source-rectangle, and vertex position locals | 79.4671% |
+| `ImagePolyClipRect` 0x1461b0 | 92.8471% | four scalar edge locals and direct vertex component stores | 99.2814% |
+| `WarpTextureBlit` 0x146a20 | 68.6506% | scalar texture coordinate and step locals | 68.6703% |
 | `CGrunt::RectContains` 0x51850 | 46.2177% | tile component conversion, native rectangle copy, offset/extent macros | 100% |
 | `CGrunt::VehicleContactContains` 0x51a20 | 58.6220% | same rectangle family | 100% |
 | `CGrunt::SetArrivalTarget` 0x52ed0 | 59.6000% | component stores and snap expressions | 100% |
@@ -237,6 +241,12 @@ that a neighboring authentic source restoration can recover C1 state.
 typed origin point's components and destination rectangle fields directly.
 The aggregate APIs remain defined; removing the extra `SetRect` call restores
 the retail call set.
+
+The image polygon unit shows that scalar FP lifetimes matter even without a
+call-set difference. Restoring distinct delta, clip-edge, and vertex component
+locals raises three methods substantially. `WarpTextureBlit` changes only
+68.6506% to 68.6703% in the current TU state, so its pre-rewrite 74.45%
+remains historical headroom rather than a claim of present recovery.
 
 `CMovingLogic::InitOwner` gives a counterexample to adding an aggregate merely
 because the component values are related. Its four min/max record reads have
