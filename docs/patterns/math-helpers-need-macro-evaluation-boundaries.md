@@ -23,6 +23,7 @@ the following examples without removing their typed APIs:
 | `CMinimap::Draw` 0xa3820 | 40.1090% | scalar center/scale locals, component rectangle stores and `SET_RECT_COMPONENTS` | 76.3782% |
 | `CMinimap::DrawBorderRaw` 0xa3a20 | 74.0460% | separate width/height locals and `RECT_WIDTH`/`RECT_HEIGHT` | 96.7931% |
 | `CGrunt::StepGruntMovement` 0x4c170 | 66.4355% | earlier CFG and tile-center macros, with typed `BrickzCell` reads | 76.5600% |
+| `CGrunt::FinalizeStep` 0x5ecd0 | 72.9091% | separate direction/move/next locals and existing sort-key macro | 96.0983% |
 | `CGrunt::RectContains` 0x51850 | 46.2177% | tile component conversion, native rectangle copy, offset/extent macros | 100% |
 | `CGrunt::VehicleContactContains` 0x51a20 | 58.6220% | same rectangle family | 100% |
 | `CGrunt::SetArrivalTarget` 0x52ed0 | 59.6000% | component stores and snap expressions | 100% |
@@ -143,6 +144,14 @@ scored function in its owner TU. The two historical flat-array cell reads map
 to `BrickzCell::m_flags` and `m_occupantId`, preserving the typed 28-byte cell
 layout. This is a complete source-shape control; replacing only arithmetic
 fragments cannot prove the CFG.
+
+`FinalizeStep` has equal call, branch, and return counts in both objects, but
+the rewrite's aggregate `DoubleVector2` direction/position and `Coord` next
+position change the FP local homes and store order. Restoring the earlier
+scalar local census in both movement arms, while using the current typed
+members, recovers 72.9091% to 96.0983%. The existing
+`SET_SORT_KEY_IF_CHANGED` macro remains at the call site. The shared vector
+and coordinate operations are retained for their other users.
 
 `CMovingLogic::InitOwner` gives a counterexample to adding an aggregate merely
 because the component values are related. Its four min/max record reads have

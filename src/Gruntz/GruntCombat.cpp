@@ -2702,8 +2702,9 @@ void CGrunt::FinalizeStep(char* name) {
             StopPowerupLoopSound();
         } else {
             CGruntzMgr* g = g_gameReg;
-            Coord position = m_object->ScreenPos();
-            if (!::PtInRect(&g->m_viewBounds, position.m_x, position.m_y)) {
+            i32 y = m_object->m_screenPosition.m_y;
+            i32 x = m_object->m_screenPosition.m_x;
+            if (!::PtInRect(&g->m_viewBounds, x, y)) {
                 StopPowerupLoopSound();
             }
         }
@@ -2711,48 +2712,56 @@ void CGrunt::FinalizeStep(char* name) {
     bool eqO = ANIMATION_ACT_EQUALS("O");
     if (eqO && (GRUNT_NOT_AT_SAVED_SCREEN_POS(this))) {
         GruntDirectionCell c = m_entranceCell;
-        switch (c.m_row) {
+        i32 row = c.m_row;
+        switch (row) {
             case GRUNT_DIRECTION_GRID_LOW:
-                c.m_row = GRUNT_DIRECTION_GRID_HIGH;
+                row = GRUNT_DIRECTION_GRID_HIGH;
                 break;
             case GRUNT_DIRECTION_GRID_HIGH:
-                c.m_row = GRUNT_DIRECTION_GRID_LOW;
+                row = GRUNT_DIRECTION_GRID_LOW;
                 break;
             default:
                 break;
         }
-        switch (c.m_column) {
+        i32 column = c.m_column;
+        switch (column) {
             case GRUNT_DIRECTION_GRID_LOW:
-                c.m_column = GRUNT_DIRECTION_GRID_HIGH;
+                column = GRUNT_DIRECTION_GRID_HIGH;
                 break;
             case GRUNT_DIRECTION_GRID_HIGH:
-                c.m_column = GRUNT_DIRECTION_GRID_LOW;
+                column = GRUNT_DIRECTION_GRID_LOW;
                 break;
             default:
                 break;
         }
-        i32 base = GRUNT_DIRECTION_GRID_WIDTH * c.m_row + c.m_column;
-        DoubleVector2 direction = m_cells[base].m_motion.m_direction;
-        m_movePosition += direction * (static_cast<double>(g_frameDelta) * m_moveSpeed);
-        Coord next = (m_cells[base].m_motion.m_step + m_movePosition).ToCoord();
-        if (direction.m_x > s_fpZero) {
-            if (next.m_x > m_lastTilePx.m_x) {
-                next.m_x = m_lastTilePx.m_x;
+        i32 base = GRUNT_DIRECTION_GRID_WIDTH * row + column;
+        double moveDirectionX = m_cells[base].m_motion.m_direction.m_x;
+        double moveDirectionY = m_cells[base].m_motion.m_direction.m_y;
+        m_movePosition.m_x =
+            static_cast<double>(g_frameDelta) * moveDirectionX * m_moveSpeed + m_movePosition.m_x;
+        m_movePosition.m_y =
+            static_cast<double>(g_frameDelta) * moveDirectionY * m_moveSpeed + m_movePosition.m_y;
+        i32 nx = static_cast<i32>((m_cells[base].m_motion.m_step.m_x + m_movePosition.m_x));
+        i32 ny = static_cast<i32>((m_cells[base].m_motion.m_step.m_y + m_movePosition.m_y));
+        if (moveDirectionX > s_fpZero) {
+            if (nx > m_lastTilePx.m_x) {
+                nx = m_lastTilePx.m_x;
             }
-        } else if (direction.m_x < s_fpZero && next.m_x < m_lastTilePx.m_x) {
-            next.m_x = m_lastTilePx.m_x;
+        } else if (moveDirectionX < s_fpZero && nx < m_lastTilePx.m_x) {
+            nx = m_lastTilePx.m_x;
         }
-        if (direction.m_y > s_fpZero) {
-            if (next.m_y > m_lastTilePx.m_y) {
-                next.m_y = m_lastTilePx.m_y;
+        if (moveDirectionY > s_fpZero) {
+            if (ny > m_lastTilePx.m_y) {
+                ny = m_lastTilePx.m_y;
             }
-        } else if (direction.m_y < s_fpZero && next.m_y < m_lastTilePx.m_y) {
-            next.m_y = m_lastTilePx.m_y;
+        } else if (moveDirectionY < s_fpZero && ny < m_lastTilePx.m_y) {
+            ny = m_lastTilePx.m_y;
         }
-        m_object->SetScreenPos(next);
+        m_object->m_screenPosition.m_x = nx;
+        m_object->m_screenPosition.m_y = ny;
         CWwdSpriteObject* h = m_object;
         i32 v = h->m_screenPosition.m_y + 0x186a0;
-        SET_SORT_KEY_IF_CHANGED(h, v);
+        SET_SORT_KEY_IF_CHANGED(h, v)
         return;
     }
 
@@ -2763,24 +2772,30 @@ void CGrunt::FinalizeStep(char* name) {
         if (GRUNT_AT_SAVED_SCREEN_POS(this)) {
             return;
         }
-        DoubleVector2 direction = EntranceCell()->m_motion.m_direction;
-        m_movePosition += direction * (static_cast<double>(g_frameDelta) * m_moveSpeed);
-        Coord next = (EntranceCell()->m_motion.m_step + m_movePosition).ToCoord();
-        if (direction.m_x > s_fpZero) {
-            if (next.m_x > m_lastTilePx.m_x) {
-                next.m_x = m_lastTilePx.m_x;
+        double moveDirectionX = EntranceCell()->m_motion.m_direction.m_x;
+        double moveDirectionY = EntranceCell()->m_motion.m_direction.m_y;
+        m_movePosition.m_x =
+            static_cast<double>(g_frameDelta) * moveDirectionX * m_moveSpeed + m_movePosition.m_x;
+        m_movePosition.m_y =
+            static_cast<double>(g_frameDelta) * moveDirectionY * m_moveSpeed + m_movePosition.m_y;
+        i32 nx = static_cast<i32>((EntranceCell()->m_motion.m_step.m_x + m_movePosition.m_x));
+        i32 ny = static_cast<i32>((EntranceCell()->m_motion.m_step.m_y + m_movePosition.m_y));
+        if (moveDirectionX > s_fpZero) {
+            if (nx > m_lastTilePx.m_x) {
+                nx = m_lastTilePx.m_x;
             }
-        } else if (direction.m_x < s_fpZero && next.m_x < m_lastTilePx.m_x) {
-            next.m_x = m_lastTilePx.m_x;
+        } else if (moveDirectionX < s_fpZero && nx < m_lastTilePx.m_x) {
+            nx = m_lastTilePx.m_x;
         }
-        if (direction.m_y > s_fpZero) {
-            if (next.m_y > m_lastTilePx.m_y) {
-                next.m_y = m_lastTilePx.m_y;
+        if (moveDirectionY > s_fpZero) {
+            if (ny > m_lastTilePx.m_y) {
+                ny = m_lastTilePx.m_y;
             }
-        } else if (direction.m_y < s_fpZero && next.m_y < m_lastTilePx.m_y) {
-            next.m_y = m_lastTilePx.m_y;
+        } else if (moveDirectionY < s_fpZero && ny < m_lastTilePx.m_y) {
+            ny = m_lastTilePx.m_y;
         }
-        m_object->SetScreenPos(next);
+        m_object->m_screenPosition.m_x = nx;
+        m_object->m_screenPosition.m_y = ny;
     }
     return;
 }
