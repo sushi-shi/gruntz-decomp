@@ -31,6 +31,12 @@ the following examples without removing their typed APIs:
 | `CTileTriggerSwitchLogic::SwitchUp` 0x1106b0 | 83.2759% | same local scalar and macro boundary | 93.5977% |
 | `CTileTriggerLogic::ApplyMove` 0x112590 | 68.24% | branch-local tile scalars and tile-center macro | 97.1496% |
 | `CTileActionEvent::BreakTopBrick` 0x112ee0 | 79.3173% | tile-center expressions at each branch and two local pixel-pair macros | 97.9808% |
+| `CTriggerMgr::FindNearestUnitForPlayer` 0x77f80 | 76.8772% | scalar tile and distance locals | 89.5263% |
+| `CTriggerMgr::HudRect` 0x78060 | 63.5772% | scalar rectangle offset and Win32 `SetRect` | 90.2439% |
+| `CTriggerMgr::RemoveCellRecord` 0x78260 | 69.8960% | component identity checks | 93.5840% |
+| `CTriggerMgr::ApplyGruntAreaEffect` 0x7b930 | 74.9078% | scalar radius, bounds, per-Grunt tiles, and branch-local positions | 94.5674% |
+| `CTriggerMgr::LoadGruntResurrectTuning` 0x7be60 | 61.0939% | scalar tile/pixel locals and Win32 `POINT`/`RECT` | 91.9724% |
+| `CTriggerMgr::SpawnGrunt` 0x7c110 | 83.5938% | snapped pixel-pair and pickup macros | 94.3750% |
 | `CGrunt::RectContains` 0x51850 | 46.2177% | tile component conversion, native rectangle copy, offset/extent macros | 100% |
 | `CGrunt::VehicleContactContains` 0x51a20 | 58.6220% | same rectangle family | 100% |
 | `CGrunt::SetArrivalTarget` 0x52ed0 | 59.6000% | component stores and snap expressions | 100% |
@@ -192,6 +198,12 @@ call and control-flow counts but shifted register allocation from the first
 instruction. Restoring branch-local scalar tile coordinates and the existing
 `DECLARE_TILE_CENTER_PIXEL_PAIR` macro recovered each method to its earlier
 score while keeping the typed `m_tile` member and all coordinate helpers.
+
+Six TriggerMgr methods confirm the same rule across CFG and call-set walls.
+Their aggregate rewrites changed the source-visible local census, point and
+rectangle call identities, or the branches from component tests. Restoring
+the earlier scalar and macro boundaries recovers each prior score; the typed
+fields and all shared math helpers remain in place.
 
 `CMovingLogic::InitOwner` gives a counterexample to adding an aggregate merely
 because the component values are related. Its four min/max record reads have
