@@ -119,6 +119,10 @@
     i32 atTarget = 0;                                                                              \
     MARK_NEAREST_ENEMY_AT_TARGET(grunt, atTarget, screenX)
 
+#define FIND_NEAREST_ENEMY_AT_TARGET_WITH_FLAG(grunt, atTarget, screenX)                           \
+    CGrunt* grunt = m_triggerMgr->FindNearestEnemy(this);                                          \
+    MARK_NEAREST_ENEMY_AT_TARGET(grunt, atTarget, screenX)
+
 #define MARK_NEAREST_ENEMY_AT_TARGET(grunt, atTarget, screenX)                                     \
     if ((grunt) != NULL) {                                                                         \
         i32 screenX = (grunt)->m_object->m_screenPosition.m_x;                                     \
