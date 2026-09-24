@@ -4,13 +4,21 @@
 #include <rva.h>
 
 struct DoubleVector2 {
-    void Init(double a = 0.0, double b = 0.0) {
+    double m_x;
+    double m_y;
+
+    DoubleVector2() {}
+
+    DoubleVector2(const double a, const double b) : m_x(a), m_y(b) {}
+
+    void Init(const double a = 0.0, const double b = 0.0) {
         m_x = a;
         m_y = b;
     }
 
-    double m_x;
-    double m_y;
+    const DoubleVector2 operator-(const DoubleVector2& other) const {
+        return DoubleVector2(m_x - other.m_x, m_y - other.m_y);
+    }
 };
 
 struct DoubleVector3 {

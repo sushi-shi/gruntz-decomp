@@ -122,7 +122,7 @@ struct CGruntCellRec {
 
     RECT m_rects[3];
 
-    struct {
+    struct Motion {
         DoubleVector2 m_direction;
         DoubleVector2 m_step;
     } m_motion;

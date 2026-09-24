@@ -1,5 +1,7 @@
 # Pattern index (MSVC 5.0 /O2 — Gruntz)
 
+- [A named value subobject admits empty construction](named-value-subobject-admits-empty-construction.md) — cpp:aggregate cpp:constructor cpp:scope | asm:call asm:fstp | topic:source-shape — the minimal named-motion/empty-vector-constructor composition preserves all 396 checked records, cell layout and CString lifetime callbacks; anonymous-member rejection does not exclude a complete sourced value family.
+
 - [Vector macro parenthesization can change FP allocation](vector-macro-parenthesization-can-change-fp-allocation.md) — cpp:macro cpp:scope cpp:expression | asm:fxch asm:fstp | topic:codegen-idiom — Spotlight Update improves 73.26966 to 80.25843; a bare block is flat, while the parenthesized expansion reproduces the macro with or without its trailing semicolon. No bare steering scope retained; the larger vector-family review remains open.
 
 - [Vector SET macros preserve repeated receivers and raw double copies](vector-set-macro-preserves-repeated-receiver-and-copy-boundaries.md) — c10 — cpp:macro cpp:inline cpp:aggregate cpp:double | asm:lea asm:mov asm:fld asm:fstp | topic:source-shape topic:aliasing — eighteen member Init calls lose 36 original references in Activate; a width-adapted macro keeps its full exact body. Six macro initialization sites plus original alternating bound stores recover the complete motion constructor from 69.975 to 100.

@@ -67,10 +67,12 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
     m_object->m_screenX = nx;
     m_object->m_screenY = centerY;
     double px = static_cast<double>(nx);
-    m_position.Init(px, cy);
+    const DoubleVector2 position(px, cy);
+    m_position.Init(position.m_x, position.m_y);
     CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR)
-    m_offset.Init(m_center.m_x - px, m_center.m_y - cy);
+    const DoubleVector2 offset = m_center - position;
+    m_offset.Init(offset.m_x, offset.m_y);
 
     double period;
     if (m_object->m_damage == 0) {

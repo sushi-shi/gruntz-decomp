@@ -247,8 +247,17 @@ typedef char V3Layout[(sizeof(DoubleVector3) == 24
     && offsetof(DoubleVector3, m_x) == 0
     && offsetof(DoubleVector3, m_y) == 8
     && offsetof(DoubleVector3, m_z) == 16) ? 1 : -1];
-void (DoubleVector2::*init2)(double, double) = &DoubleVector2::Init;
+void (DoubleVector2::*init2)(const double, const double) = &DoubleVector2::Init;
 void (DoubleVector3::*init3)(double, double, double) = &DoubleVector3::Init;
+typedef const DoubleVector2 (DoubleVector2::*Difference)(const DoubleVector2&) const;
+Difference difference = &DoubleVector2::operator-;
+DoubleVector2 use_values(const DoubleVector2& input) {
+    DoubleVector2 empty;
+    DoubleVector2 position(12.0, 34.0);
+    DoubleVector2 copy(position);
+    empty = copy;
+    return input - empty;
+}
 void use_macro(DoubleVector2* value, double x, double y) {
     VEC2_SET(*value, x, y)
 }
@@ -261,6 +270,29 @@ void use_defaults(DoubleVector2* a, DoubleVector3* b) {
 }
 ''')
             cl.compile(source, root / 'probe.obj', ['/nologo', '/c', '/O2', '/Ob0', '/MT'])
+
+    def test_named_motion_preserves_complete_cell_layout(self):
+        from gruntz.tool import cl
+
+        with tempfile.TemporaryDirectory(prefix='gruntz-cell-vector-layout-') as directory:
+            root = Path(directory)
+            source = root / 'probe.cpp'
+            source.write_text('''#include <Mfc.h>
+#include <Gruntz/Grunt.h>
+#include <stddef.h>
+typedef char MotionLayout[(sizeof(CGruntCellRec::Motion) == 32
+    && offsetof(CGruntCellRec::Motion, m_direction) == 0
+    && offsetof(CGruntCellRec::Motion, m_step) == 16) ? 1 : -1];
+typedef char CellLayout[(sizeof(CGruntCellRec) == 104
+    && offsetof(CGruntCellRec, m_names) == 0
+    && offsetof(CGruntCellRec, m_rects) == 20
+    && offsetof(CGruntCellRec, m_motion) == 72) ? 1 : -1];
+void use_cell(CGruntCellRec& cell) {
+    cell.m_motion.m_direction.Init(1.0, 0.0);
+    cell.m_motion.m_step.Init(32.0, 0.0);
+}
+''')
+            cl.compile(source, root / 'probe.obj', ['/nologo', '/c', '/O2', '/MT', '/GX'])
 
 
 if __name__ == '__main__':
