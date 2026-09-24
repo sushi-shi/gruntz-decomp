@@ -58,4 +58,18 @@ inline Coord ScreenTile(CGrunt* unit) {
     return out;
 }
 
+static inline i32 ScreenTileX(CGrunt* unit) {
+    return unit->m_object->m_screenX >> TILE_SHIFT_PX;
+}
+
+static inline i32 ScreenTileY(CGrunt* unit) {
+    return unit->m_object->m_screenY >> TILE_SHIFT_PX;
+}
+
+static inline Coord ScanCell(CGrunt* g) {
+    Coord t;
+    g->GetScreenTile(&t);
+    return t;
+}
+
 #endif // GRUNTZ_GRUNTMOVEMENTINLINE_H

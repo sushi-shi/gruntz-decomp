@@ -7,11 +7,10 @@
 
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/PixelShift.h>
+#include <Font/FontBlendInline.h>
 
 #include <ddraw.h>
 #include <limits.h>
-
-#define SET_FONT_GLYPH(c, glyph) m_glyphs[c] = glyph
 
 RVA(0x00179700, 0x10)
 Font::Font() {
@@ -205,25 +204,6 @@ void FontRenderer::DrawLineClipped(CString text, CDDSurface* surf, CRect rc, i32
     }
     SetColor(savedColor);
     DrawGlyphRun(text, surf, rc, x, y, z);
-}
-
-static inline LONG RunRightEdge(const CRect& rc, i32 x) {
-    return x - rc.left + rc.right;
-}
-
-static inline u8 BlendChannel(u8 dest, i32 source, u8 cover) {
-    return static_cast<u8>((dest * (255 - cover)) / 256 + (source * cover) / 256);
-}
-
-static inline u16 BlendPixel16(u16 pixel, u8 cover, i32 red, i32 green, i32 blue) {
-    u8 dr = static_cast<u8>((static_cast<u8>((pixel >> g_rUp)) << g_rDown));
-    u8 dg = static_cast<u8>((static_cast<u8>((pixel >> g_gUp)) << g_gDown));
-    u8 db = static_cast<u8>((static_cast<u8>(pixel) << g_bDown));
-    return PackPixel16(
-        BlendChannel(dr, red, cover),
-        BlendChannel(dg, green, cover),
-        BlendChannel(db, blue, cover)
-    );
 }
 
 RVA(0x00179e70, 0x5ec)

@@ -20,6 +20,7 @@
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LevelCollisionInline.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
@@ -28,6 +29,7 @@
 #include <Gruntz/TileCoordMacros.h>
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/TileTriggerLogic.h>
+#include <Gruntz/TileTriggerSwitchInline.h>
 #include <Gruntz/TileTriggerTransition.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/UserLogic.h>
@@ -187,52 +189,6 @@ i32 CTileTriggerLogic::FindIndexByKey(i32 key) {
         }
     }
     return 0;
-}
-
-static __inline TileCollisionKind PbResolveCell(CGameLevel* level, i32 x, i32 y) {
-    if (x < 0) {
-        x = 0;
-    } else if (x >= level->m_mainPlane->m_tileColumns) {
-        x = level->m_mainPlane->m_tileColumns - 1;
-    }
-    if (y < 0) {
-        y = 0;
-    } else if (y >= level->m_mainPlane->m_tileRows) {
-        y = level->m_mainPlane->m_tileRows - 1;
-    }
-    CDDrawWorkerHost* plane = level->m_mainPlane;
-    i32 cell = plane->m_tileHandles[plane->m_tileRowOffsets[y] + x];
-    if (cell == UNINIT_FILL || cell == s_tileClear) {
-        return TILEKIND_PASSABLE;
-    }
-
-    CTileImageSet* set =
-        static_cast<CTileImageSet*>(level->m_imageSets[cell & WWD_TILE_IMAGE_SET_INDEX_MASK]);
-    return set->GetCollisionAt(0, 0);
-}
-
-static __inline TileCollisionKind PbResolveCellHandle(CGameLevel* level, i32 x, i32 y) {
-    if (x < 0) {
-        x = 0;
-    } else if (x >= level->m_mainPlane->m_tileColumns) {
-        x = level->m_mainPlane->m_tileColumns - 1;
-    }
-    if (y < 0) {
-        y = 0;
-    } else if (y >= level->m_mainPlane->m_tileRows) {
-        y = level->m_mainPlane->m_tileRows - 1;
-    }
-    i32 cell = level->m_mainPlane->GetTileHandle(x, y);
-    if (cell == UNINIT_FILL || cell == s_tileClear) {
-        return TILEKIND_PASSABLE;
-    }
-    CTileImageSet* set =
-        static_cast<CTileImageSet*>(level->m_imageSets[cell & WWD_TILE_IMAGE_SET_INDEX_MASK]);
-    return set->GetCollisionAt(0, 0);
-}
-
-static __inline char* PbStr(const CString& s) {
-    return const_cast<char*>(static_cast<const char*>(s));
 }
 
 RVA(0x00110860, 0x2e6)

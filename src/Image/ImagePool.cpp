@@ -9,6 +9,7 @@
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DirPal.h>
 #include <DDrawMgr/PaletteSize.h>
+#include <DDrawMgr/PixelFormatMacros.h>
 #include <DDrawMgr/PixelShift.h>
 #include <Enums.h>
 #include <Image/ByteRunEncoding.h>
@@ -20,13 +21,6 @@
 #include <Rez/RezMgr.h>
 
 #include <string.h>
-
-#define RGB_TO_16(entry)                                                                           \
-    static_cast<u16>(                                                                              \
-        ((static_cast<u16>((entry).peRed) >> 3) << 10)                                             \
-        | ((static_cast<u16>((entry).peGreen) >> 3) << 5)                                          \
-        | (static_cast<u16>((entry).peBlue) >> 3)                                                  \
-    )
 
 DATA(0x002bf6e0)
 HINSTANCE CDibMgr::s_hInst = NULL;

@@ -136,3 +136,80 @@ members stay as two written definitions. Recognize the refutation by an
 intermediate class's vtable, RTTI or destructor appearing in the base obj with no
 retail counterpart.
 
+## Third sweep: every TU-local inline and macro is a candidate
+
+Duplicate detection did not finish the ownership audit. Against `15815a1f7`, a
+comment-aware scan of every C/C++ source under `src/` found 208 definitions in
+73 files: 108 inline functions and 100 macros. Include `__inline`, `_inline`,
+and `__forceinline` in this scan: searching only for the token `inline` missed
+23 definitions. Inspect object-like statement macros as well as function-like
+macros. There are no `.cpp`-local class definitions hiding implicit inline
+members in this tree.
+
+192 definitions (106 inline functions and 86 macros) moved to 76 owner or
+focused inline/macro headers. This includes single-consumer helpers: a single
+current caller does not prove a `.cpp` definition. Complete class definitions
+remain in their existing owner headers; focused inline headers include the
+complete types they use. No storage definition or data address moved. The
+`CFaderLight::Render` RVA annotation travels with its definition.
+
+The two `ScreenPosition` definitions now share the original Brickz spelling,
+including its Y-before-X stores to the returned `Coord`. Their callers retain
+the same one-call topology. The two different `TileNeighborhood` operations
+remain separate functions, named `AttackTileNeighborhood` (reach-dependent)
+and `AdjacentTileNeighborhood` (the neighboring 3-by-3 cells). Similar names
+were not evidence of interchangeable behavior. Likewise, the clock serializers,
+tile lookup variants, sound lookup layers, and RNG adapters retain their distinct
+source bodies and boundaries.
+
+Only these 16 definitions remain in implementation files:
+
+| Definitions | Evidence for retaining the location |
+|---|---|
+| `bf_N`, `S`, `bf_F`, `ROUND` | Surviving source; see lineage ledger ID `blowfish-authentic-source-layer`. |
+| `CRezDir::IsGoodChar` | Surviving source; see lineage ledger ID `rezdir-isgoodchar-helper`. |
+| `CGrunt::SelectCombatHitCue`, `LK` | The helper selects the owning TU's unique, address-pinned `static` sound-name arrays. Moving those arrays into a header would create different storage; changing their linkage would expose private data. Keep this inline implementation with its data. |
+| `GRUNTZ_MENUITEM_TU` | A pre-include configuration switch for the separately emitted constructor, not an operation helper. |
+| `INPUTDEVICE_FILE`, `DINMGR2_FILE`, `DSNDMGSR_FILE`, `DSNDMGR_FILE`, `DIRPAL_FILE`, `DIRSURF_FILE`, `DDRAWMGR_FILE`, `DDRAWMGR_H_FILE` | Diagnostic source-path literals, not operation helpers. |
+
+Reproduce the remaining lexical census with:
+
+```sh
+rg -n '\b(inline|__inline|_inline|__forceinline)\b|^\s*#\s*define\b' src
+```
+
+Read the hits rather than treating comments, configuration, or literals as
+helpers. The source-lineage decisions remain in `config/lithtech_lineage.tsv`;
+this census is not a wall worklist or proof that open-coded inline expansions
+have all been recovered.
+
+All 76 changed headers compile independently with VC5 `/O2 /MT`. The full
+build's source/data gates pass, including label extraction with zero violations.
+The two existing lifetime-operation audit entries merely follow their source
+definitions to the new headers; their allowed types and counts are unchanged.
+Seven existing compiler-artifact and include-order controls also pass.
+
+Across all normalized before/after objects, 8,270 of 8,338 common function
+bodies retain identical raw bytes and relocation offsets, targets, types, and
+embedded addends. Another 64 retain their call-target multisets and
+call/branch/return counts. Four unchanged caller bodies show compiler movement:
+`StepArrivalDrop` declines one `CPtrList::RemoveHead` expansion;
+`HandleTargetSelection` declines one `CLightFx::Activate` expansion;
+`StepCompassMove` and `LoadTileArrivalFx` change branch counts with unchanged
+call sets. These are observed consequences of the new TU declaration/definition
+environment, not newly reconstructed caller logic. Keep the owner-header source
+and preserve its banked MAX rather than adding inert declarations to restore a
+current score. The baseline refresh records this adjudicated current state;
+historical maxima remain intact.
+
+The only additional function emission is `CSpawnList::~CSpawnList` in the voice
+manager TU, where the shared class is used. Its bytes and typed relocations are
+identical to the existing AreaMgr copy; both are ordinary selection-2 COMDATs.
+This is a natural duplicate emission of the same inline definition, unlike the
+additional class artifacts in the rejected dialog-base experiment.
+
+For future audits, first establish the complete lexical census, then assign each
+definition a semantic owner or an evidence-backed reason to remain private.
+Compile headers on their own and their complete consumer family. Check emitted
+symbols and ordered relocations as well as scores: header visibility can change
+which body is emitted or expanded even when the moved text is unchanged.

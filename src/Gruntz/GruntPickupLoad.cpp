@@ -21,14 +21,6 @@
 
 #include <string.h>
 
-#define PICKUP(key, idv)                                                                           \
-    do {                                                                                           \
-        CAniElement* geo = NULL;                                                                   \
-        MapLookup(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, (key), geo);              \
-        m_pickupGeoSrc = geo;                                                                      \
-        id = (idv);                                                                                \
-    } while (0)
-
 RVA(0x00065e80, 0x14a0)
 i32 CGrunt::LoadPickupSprites(
     PickupType type,

@@ -115,16 +115,6 @@ void CWwdDotObject::BltDirtyRegions(
     }
 }
 
-#define CLEAR_WWD_GAME_OBJECT_CHILDREN                                                             \
-    POSITION pos = m_children.GetHeadPosition();                                                   \
-    while (pos != NULL) {                                                                          \
-        CObject* child = m_children.GetNext(pos);                                                  \
-        if (child != NULL) {                                                                       \
-            delete child;                                                                          \
-        }                                                                                          \
-    }                                                                                              \
-    m_children.RemoveAll()
-
 RVA(0x001665e0, 0x55)
 i32 CWwdGameObject::Setup(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTemplate) {
     CLEAR_WWD_GAME_OBJECT_CHILDREN;

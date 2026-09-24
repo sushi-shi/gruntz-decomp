@@ -16,6 +16,7 @@
 #include <Gruntz/CheatMgr.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/GameRegistryInline.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
@@ -204,9 +205,6 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
     }
     surface->m_ddSurface->ReleaseDC(hdc);
     return 1;
-}
-static __inline tagSIZE ModeSize() {
-    return g_gameReg->m_modeSize;
 }
 
 RVA(0x00021140, 0xda)

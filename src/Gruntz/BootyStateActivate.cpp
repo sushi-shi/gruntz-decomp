@@ -24,7 +24,9 @@
 #include <Gruntz/BootyCheatState.h>
 #include <Gruntz/BootyMessages.h>
 #include <Gruntz/BootySeqPhase.h>
+#include <Gruntz/BootyStateMacros.h>
 #include <Gruntz/BootyStatRow.h>
+#include <Gruntz/BootyStatsInline.h>
 #include <Gruntz/BootyWalkAnim.h>
 #include <Gruntz/BzState.h>
 #include <Gruntz/ColorTint.h>
@@ -53,6 +55,7 @@
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/QuestLevel.h>
+#include <Gruntz/ResolveNodeInline.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SoundCue.h>
@@ -672,11 +675,6 @@ void CBootyState::MoveLettersByDir() {
         }
     }
 }
-
-#define STAT(getter, field)                                                                        \
-    ((m_initOnce != false && g_gameReg->m_gameStats->m_currentAreaComplete != false)               \
-         ? g_gameReg->m_gameStats->getter()                                                        \
-         : g_gameReg->m_gameStats->field)
 
 DATA(0x0020b8b8)
 Coord g_levelMsgIconPos[8] = {
@@ -1849,26 +1847,6 @@ i32 CBootyState::OnKeyDown(i32, i32) {
     return BuildBootyGruntIdleAnimation();
 }
 
-static __inline i32 maxRunIndex(const i32* values, i32 count) {
-    i32 best = -1;
-    i32 bestIndex = 0;
-    for (i32 i = 0; i < count; i++) {
-        if (values[i] > best) {
-            best = values[i];
-            bestIndex = i;
-        }
-    }
-    return bestIndex;
-}
-
-static __inline void setDrawFill(CResolveNode* node, ShadeMode mode, CShadeTable* table) {
-    SET_DRAW_FILL(node, mode, table);
-}
-
-static __inline void setDrawFillReversed(CResolveNode* node, ShadeMode mode, CShadeTable* table) {
-    SET_DRAW_FILL_REVERSED(node, mode, table);
-}
-
 // @early-stop
 RVA(0x0001d440, 0xd7d)
 i32 CMultiBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
@@ -2546,15 +2524,6 @@ i32 CMultiBootyState::QueryGruntSlots() {
         i++;
     }
     return 0;
-}
-
-static __inline i32 sumRun(i32* p, i32 n) {
-    i32 s = 0;
-    i32 k;
-    for (k = 0; k < n; k++) {
-        s += p[k];
-    }
-    return s;
 }
 
 // @early-stop

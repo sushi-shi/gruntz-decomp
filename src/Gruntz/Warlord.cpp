@@ -32,6 +32,7 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/VoiceManager.h>
+#include <Gruntz/WarlordActRegMacros.h>
 #include <Gruntz/WarlordOwner.h>
 #include <Io/FileMem.h>
 #include <Utils/MapTyped.h>
@@ -66,35 +67,6 @@ RVA_DYNINIT(0x000445f0, 0xe, CActRegPool<CWarlord>::s_table)
 RVA_DYNINIT(0x00044610, 0x1f, CActRegPool<CWarlord>::s_table)
 template<> DATA(0x00244610)
 CActReg CActRegPool<CWarlord>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
-
-#define REGISTER_NAME(key)                                                                         \
-    i32 id_ = ActFindId(key);                                                                      \
-    if (id_ == 0) {                                                                                \
-        ActInsertId(key, g_typeCounter);                                                           \
-        id_ = g_typeCounter;                                                                       \
-        CString* slot_ = g_typeColl.ScratchResolve(g_typeCounter);                                 \
-        CString* p_ = g_typeColl.Slots();                                                          \
-        for (i32 n_ = g_typeColl.m_grown; n_--; p_++) {                                            \
-            ::new (static_cast<void*>(p_)) CString;                                                \
-        }                                                                                          \
-        *slot_ = key;                                                                              \
-        ++g_typeCounter;                                                                           \
-    }
-
-#define REGISTER_ACTION(key, handler)                                                              \
-    do {                                                                                           \
-        REGISTER_NAME(key)                                                                         \
-        /* Language-forced member-function representation seam; the byte accessor */               \
-        /* returns to CActHandler only here. */                                                    \
-        *reinterpret_cast<CActHandler*>(CActRegPool<CWarlord>::s_table._zvec::IndexToPtr(id_)) =   \
-            static_cast<CActHandler>(handler);                                                     \
-    } while (0)
-
-#define REGISTER_ACTION_TYPED(key, handler)                                                        \
-    do {                                                                                           \
-        REGISTER_NAME(key)                                                                         \
-        *CActRegPool<CWarlord>::s_table.Resolve(id_) = static_cast<CActHandler>(handler);          \
-    } while (0)
 
 RVA_COMPGEN(0x000107c0, 0x1e, ??_GCWarlord@@UAEPAXI@Z)
 RVA_COMPGEN(0x000107f0, 0x55, ??1CWarlord@@UAE@XZ)

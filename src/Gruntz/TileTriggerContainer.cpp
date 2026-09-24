@@ -17,6 +17,7 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/TileActionEvent.h>
 #include <Gruntz/TileTriggerLogic.h>
+#include <Gruntz/TileTriggerLogicInline.h>
 #include <Gruntz/TileTriggerSwitchLogic.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
@@ -24,10 +25,6 @@
 #include <Wwd/WwdGameObjectFamily.h>
 
 #include <new>
-
-static inline i32 CellKey(i32 tileX, i32 tileY) {
-    return (tileX << 8) + tileY;
-}
 
 RVA_DYNINIT(0x00115c30, 0x5, s_gruntDirNorth)
 RVA_DYNINIT(0x00115c50, 0x1a, s_gruntDirNorth)
@@ -253,68 +250,6 @@ void CTileTriggerContainer::AddLogicFromRecord(
         object->m_points,
         object->m_health
     );
-}
-
-__inline i32 CTileTriggerLogic::Build(
-    CTileTriggerContainer* owner,
-    TrigLogicId typeTag,
-    i32 tileX,
-    i32 tileY,
-    i32 cellKey,
-    const RECT* rects,
-    i32 tileToken,
-    i32 dutyOnSpan,
-    i32 leadInSpan,
-    i32 dutyOffSpan
-) {
-    if (m_initGate != false) {
-        return 0;
-    }
-    memcpy(m_linkKeys, rects, sizeof(m_linkKeys));
-    return Setup(
-        owner,
-        typeTag,
-        tileX,
-        tileY,
-        cellKey,
-        tileToken,
-        dutyOnSpan,
-        leadInSpan,
-        dutyOffSpan
-    );
-}
-
-__inline i32 CTileTriggerLogic::Setup(
-    CTileTriggerContainer* owner,
-    TrigLogicId typeTag,
-    i32 tileX,
-    i32 tileY,
-    i32 cellKey,
-    i32 tileToken,
-    i32 dutyOnSpan,
-    i32 leadInSpan,
-    i32 dutyOffSpan
-) {
-    if (m_initGate != false) {
-        return 0;
-    }
-    m_tileY = tileY;
-    m_tileX = tileX;
-    m_owner = owner;
-    m_typeTag = typeTag;
-    m_cellKey = cellKey;
-    m_initGate = true;
-    m_tileToken = tileToken;
-    m_startClock = g_frameTime;
-    m_leadInSpan = leadInSpan;
-    m_dutyOn = false;
-    m_dutyOnSpan = dutyOnSpan;
-    m_dutyOffSpan = dutyOffSpan;
-    if (typeTag != TRIGID_COVERED_POWERUP_26 && dutyOffSpan == 0) {
-        m_dutyOffSpan = dutyOnSpan;
-        m_startClock = g_frameTime;
-    }
-    return 1;
 }
 
 // @early-stop

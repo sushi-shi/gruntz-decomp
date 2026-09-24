@@ -140,4 +140,10 @@ public:
     CMenuItem* m_focusedItem;
 };
 
+#define RESOLVE_MENU_HEADER_ANIMATION(animationKey, animation)                                     \
+    CDDrawWorker* animation =                                                                      \
+        LookupWorker(m_world->m_imageRegistry->m_workersByName, animationKey);                     \
+    m_headerAnimation = animation;                                                                 \
+    return animation != NULL
+
 #endif // GRUNTZ_MENUPAGE_H

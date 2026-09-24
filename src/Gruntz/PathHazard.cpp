@@ -20,6 +20,7 @@
 #include <Gruntz/PickupType.h>
 #include <Gruntz/RainCloud.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialClockInline.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SoundCue.h>
@@ -460,18 +461,6 @@ i32 CRainCloud::SerializeDispatch(
         SET_DRAW_FILL(o, SHADE_DST_BY_SRC_16, x);
     }
     return 1;
-}
-
-static inline void SerQuadPair(CFileMemBase* ar, SerialMode mode, CHazardTimer* timer) {
-    if (mode != SERIAL_SAVE) {
-        if (mode == SERIAL_LOAD) {
-            ar->Read(&timer->m_deadline, sizeof(timer->m_deadline));
-            ar->Read(&timer->m_window, sizeof(timer->m_window));
-        }
-    } else {
-        ar->Write(&timer->m_deadline, sizeof(timer->m_deadline));
-        ar->Write(&timer->m_window, sizeof(timer->m_window));
-    }
 }
 
 RVA(0x000b4d30, 0x287)

@@ -28,6 +28,7 @@
 #include <Gruntz/ImageState.h>
 #include <Gruntz/LevelPreview.h>
 #include <Gruntz/MainMenuBuilder.h>
+#include <Gruntz/MenuStateInline.h>
 #include <Gruntz/MenuTree.h>
 #include <Gruntz/MenuVersion.h>
 #include <Gruntz/Play.h>
@@ -277,50 +278,6 @@ i32 CMenuState::LeaveState(GameStateId) {
     while (timeGetTime() < start + m_activateCueDurationMs)
         ;
     return 1;
-}
-
-inline void CMenuState::HandleControllerInput() {
-    CFixedPtrArray32* actors = g_actorList;
-    i32 count = actors->m_count;
-    i32 i;
-    for (i = 0; i < count; i++) {
-        if (static_cast<u32>(actors->m_items[i]->m_pressedButtons) & IDX(INPUT_DOWN)) {
-            m_menuTree->MoveFocusDown();
-            return;
-        }
-    }
-    for (i = 0; i < count; i++) {
-        if (static_cast<u32>(actors->m_items[i]->m_pressedButtons) & IDX(INPUT_UP)) {
-            m_menuTree->MoveFocusUp();
-            return;
-        }
-    }
-    for (i = 0; i < count; i++) {
-        if (static_cast<u32>(actors->m_items[i]->m_pressedButtons) & IDX(INPUT_RIGHT)) {
-            m_menuTree->MoveFocusRight();
-            return;
-        }
-    }
-    for (i = 0; i < count; i++) {
-        if (static_cast<u32>(actors->m_items[i]->m_pressedButtons) & IDX(INPUT_LEFT)) {
-            m_menuTree->MoveFocusLeft();
-            return;
-        }
-    }
-    for (i = 0; i < count; i++) {
-        if (actors->m_items[i]->m_pressedButtons & IDX(INPUT_BUTTON0 | INPUT_BUTTON1)) {
-            m_menuTree->ActivateFocusedItem();
-            return;
-        }
-    }
-    for (i = 0; i < count; i++) {
-        if (actors->m_items[i]->m_pressedButtons & IDX(INPUT_BUTTON8)) {
-            if (!m_menuTree->ReturnToPreviousPage()) {
-                PostMessageA(owner()->m_gameWnd->m_hwnd, WM_COMMAND, IDX(CMD_NEXT_STATE), 0);
-            }
-            return;
-        }
-    }
 }
 
 RVA(0x000a0750, 0x1d0)

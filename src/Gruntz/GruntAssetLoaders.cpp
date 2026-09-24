@@ -58,26 +58,6 @@ DATA(0x0020e158)
 static char s_deathzSquash[] = "GRUNTZ_DEATHZ_SQUASH";
 static const char s_normalgruntDeath[] = "GRUNTZ_NORMALGRUNT_DEATH";
 
-#define DEATH_FRAME()                                                                              \
-    (static_cast<CAniRecordView*>(                                                                 \
-         m_wwdObject->m_animationCursor.m_animation->m_records.GetSize() > 0                       \
-             ? m_wwdObject->m_animationCursor.m_animation->m_records.GetAt(0)                      \
-             : NULL                                                                                \
-    )                                                                                              \
-         ->m_param)
-
-#define DEATH_CUE(tag)                                                                             \
-    do {                                                                                           \
-        CGruntzMgr* _g = g_gameReg;                                                                \
-        if (CGameLevel::PointInBounds(                                                             \
-                &_g->m_world->m_level->m_mainPlane->m_planeViewRect,                               \
-                m_object->m_screenX,                                                               \
-                m_object->m_screenY                                                                \
-            )) {                                                                                   \
-            _g->m_voiceManager->PlayVoice(this, (tag), -1, 0, -1, -1);                             \
-        }                                                                                          \
-    } while (0)
-
 // @early-stop
 RVA(0x00060150, 0xdd0)
 i32 CGrunt::LoadGruntDeathAnimations(GruntDeathType deathType, i32 killerPlayerIndex) {

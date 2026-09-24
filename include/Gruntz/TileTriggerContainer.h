@@ -147,4 +147,8 @@ public:
     b32 m_initialized;
 };
 
+static inline i32 CellKey(i32 tileX, i32 tileY) {
+    return (tileX << 8) + tileY;
+}
+
 #endif // SRC_GRUNTZ_TILETRIGGERCONTAINER_H

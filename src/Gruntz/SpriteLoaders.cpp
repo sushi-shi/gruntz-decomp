@@ -23,15 +23,6 @@
 
 #include <string.h>
 
-#define RESET_TIMER_SPRITES                                                                        \
-    m_sprite = NULL;                                                                               \
-    m_frameMinTens = NULL;                                                                         \
-    m_frameMinOnes = NULL;                                                                         \
-    m_frameColon = NULL;                                                                           \
-    m_frameSecTens = NULL;                                                                         \
-    m_frameSecOnes = NULL;                                                                         \
-    m_active = false
-
 RVA(0x0009bab0, 0x35)
 CTimer::CTimer() {
     m_baseTime.m_lo = 0;

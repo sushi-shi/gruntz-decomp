@@ -77,4 +77,19 @@ public:
     char m_pad234[0x238 - 0x234];
 };
 
+#define CLEAR_GRUNTZ_PLAYER                                                                        \
+    m_playerIndex = -1;                                                                            \
+    m_networkPlayerId = -2;                                                                        \
+    m_active = false;                                                                              \
+    m_humanControlled = true;                                                                      \
+    m_name = "";                                                                                   \
+    m_color = TINT_ORANGE;                                                                         \
+    m_difficulty = BZDIFF_EASY;                                                                    \
+    m_focusX = 0;                                                                                  \
+    m_focusY = 0;                                                                                  \
+    m_maxGruntz = 0xf;                                                                             \
+    m_doneFlag = false;                                                                            \
+    m_optionsPresenceCounted = false;                                                              \
+    m_latency.Clear()
+
 #endif

@@ -22,12 +22,6 @@ CString CMenuPage::GetPageKey() {
     return m_pageKey;
 }
 
-#define RESOLVE_MENU_HEADER_ANIMATION(animationKey, animation)                                     \
-    CDDrawWorker* animation =                                                                      \
-        LookupWorker(m_world->m_imageRegistry->m_workersByName, animationKey);                     \
-    m_headerAnimation = animation;                                                                 \
-    return animation != NULL
-
 RVA(0x001832f0, 0xa5)
 i32 CMenuPage::Configure(
     CMenuTree* menuTree,

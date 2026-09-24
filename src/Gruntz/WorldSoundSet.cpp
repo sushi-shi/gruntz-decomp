@@ -724,14 +724,6 @@ i32 DispatchSpotAmbientSoundLogic(CGameObject* obj) {
     return 1;
 }
 
-static inline i32 RandRange(i32 lo, i32 hi) {
-    i32 range = hi - lo + 1;
-    if (range == 0) {
-        return (GetRandomNumber() & 1) ? lo : hi;
-    }
-    return GetRandomNumber() % range + lo;
-}
-
 // @early-stop
 RVA(0x0000cb30, 0x168)
 void CRandomAmbientSound::Update(i32 x, i32 y, b32 immediate) {

@@ -100,4 +100,8 @@ public:
         }                                                                                          \
     } while (0)
 
+#define ADD_SOUND_CUE_ENTRY(cue, key)                                                              \
+    m_cues[key] = cue;                                                                             \
+    cue->m_replayDelayMs = m_defaultReplayDelayMs
+
 #endif // GRUNTZ_SOUNDCUEREGISTRY_H

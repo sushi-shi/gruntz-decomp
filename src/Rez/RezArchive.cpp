@@ -14,6 +14,7 @@
 #include <Rez/RezFile.h>
 #include <Rez/RezMgr.h>
 #include <Rez/RezTypeTag.h>
+#include <Utils/PackedReadWrite.h>
 
 #include <io.h>
 #include <new>
@@ -45,11 +46,6 @@ inline i32 CRezDir::IsGoodChar(char character) {
 static const i32 s_rezScanPathMax = 0x308;
 
 // Byte-forced view of packed serialized storage.
-static inline u32 ReadPackedDWORD(const u8* bytes) {
-    u32 value;
-    memcpy(&value, bytes, sizeof(value));
-    return value;
-}
 
 RVA(0x001396f0, 0x1a)
 CRezItm::CRezItm() {

@@ -19,6 +19,7 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/LogicRecordRegistry.h>
+#include <DDrawMgr/ResolveNodeMacros.h>
 #include <DDrawMgr/WorkerLookup.h>
 #include <Dsndmgr/SoundBuffer.h>
 #include <Dsndmgr/SoundDevice.h>
@@ -178,10 +179,6 @@ i32 CDDrawPixelWorker::IsLoaded() {
     }
     return 0;
 }
-
-#define SET_RESOLVE_POSITION_REFERENCED(x, y)                                                      \
-    m_refCount = 2;                                                                                \
-    return CResolveNode::SetPosition(x, y)
 
 RVA(0x00157080, 0x19)
 i32 CDDrawPlacedWorker::SetPosition(i32 x, i32 y) {
@@ -526,10 +523,6 @@ i32 SoundCueRegistry::RemoveWithPrefix(const char* prefix, const char* separator
     }
     return removedCount;
 }
-
-#define ADD_SOUND_CUE_ENTRY(cue, key)                                                              \
-    m_cues[key] = cue;                                                                             \
-    cue->m_replayDelayMs = m_defaultReplayDelayMs
 
 RVA(0x00157d70, 0x90)
 SoundCue* SoundCueRegistry::LoadCueFromSource(const char* key, CRezItm* source) {

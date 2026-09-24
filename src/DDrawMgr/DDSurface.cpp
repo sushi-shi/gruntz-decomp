@@ -7,6 +7,7 @@
 #include <DDrawMgr/ColorDepth.h>
 #include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DirectDrawMgr.h>
+#include <DDrawMgr/PaletteColorInline.h>
 #include <DDrawMgr/PaletteSize.h>
 #include <DDrawMgr/PixelFormatMacros.h>
 #include <DDrawMgr/PixelShift.h>
@@ -52,24 +53,6 @@ DATA(0x00283eb0)
 i32 g_gDown;
 DATA(0x00283eb4)
 i32 g_bDown;
-
-static inline u16* Row16(u8* locked, i32 row, i32 pitch) {
-    Pix16Ptr p;
-    p.m_bytes = locked + row * pitch;
-    return p.m_words;
-}
-
-#define PACK_PIXEL16(r, g, b)                                                                      \
-    static_cast<u16>(                                                                              \
-        ((static_cast<u8>((r) >> g_rDown) << g_rUp)                                                \
-         | ((static_cast<u8>((g) >> g_gDown) << g_gUp) | static_cast<u8>((b) >> g_bDown)))         \
-    )
-static inline u16 Clut16(u32 byteOffset) {
-    return *ClutAtByteOffset(byteOffset);
-}
-static inline void ClutStore16(u32 byteOffset, u16 v) {
-    *ClutAtByteOffset(byteOffset) = v;
-}
 
 RVA(0x0013e0a0, 0x27)
 i32 CDDSurface::CreateFromDesc(CDDrawDeviceManager* manager, const DDSURFACEDESC* desc) {
@@ -1271,22 +1254,6 @@ i32 CDDSurface::Blit2416(u8* srcv, RasterRowOrder rowOrder) {
     }
     this->m_ddSurface->Unlock(NULL);
     return 1;
-}
-
-static inline i32 FindNearestColor(PALETTEENTRY* pal, u8 red, u8 green, u8 blue) {
-    i32 best = 0;
-    i32 bestd = SQR(red - pal->peRed) + SQR(green - pal->peGreen) + SQR(blue - pal->peBlue);
-    for (i32 k = 1; k < PALETTE_ENTRY_COUNT; k++) {
-        i32 d = SQR(red - pal[k].peRed) + SQR(green - pal[k].peGreen) + SQR(blue - pal[k].peBlue);
-        if (d < bestd) {
-            bestd = d;
-            best = k;
-            if (bestd == 0) {
-                break;
-            }
-        }
-    }
-    return best;
 }
 
 RVA(0x00140110, 0x30b)

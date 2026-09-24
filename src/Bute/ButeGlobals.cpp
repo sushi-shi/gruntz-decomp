@@ -6,6 +6,7 @@
 #include <Bute/PTreeNode.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/TypeCollRuntime.h>
+#include <Gruntz/TypeCollRuntimeInline.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
 #include <Io/FileMem.h>
@@ -13,32 +14,6 @@
 #include <Wwd/WwdGameObjectFamily.h>
 
 #include <strstrea.h>
-
-inline CTypeCollRuntime::CTypeCollRuntime()
-
-    : _zdvec(sizeof(CString), 0x7d0, 0x7da, ZVecNoScratch()) {
-    CString* slot = Slots();
-    if (slot != NULL) {
-        i32 cnt = m_grown;
-        while (cnt-- != 0) {
-            if (slot != NULL) {
-                slot->CString::CString();
-            }
-            ++slot;
-        }
-    }
-}
-
-inline CTypeCollRuntime::~CTypeCollRuntime() {
-    CString* item = Elem(m_lo);
-    if (item != NULL) {
-        i32 count = m_hi - m_lo + 1;
-        while (count-- != 0) {
-            item->CString::~CString();
-            ++item;
-        }
-    }
-}
 
 RVA_DYNINIT(0x0016e720, 0xa, g_typeColl)
 RVA_DYNINIT(0x0016e730, 0x51, g_typeColl)

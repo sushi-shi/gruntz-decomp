@@ -7,6 +7,7 @@
 #include <DDrawMgr/DDrawDeviceManager.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/DDSurfaceInline.h>
 #include <DDrawMgr/PixelShift.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GameLevel.h>
@@ -17,6 +18,7 @@
 #include <Gruntz/GruntIdentity.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LevelArea.h>
+#include <Gruntz/MapCellInline.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Gruntz/SpriteTeamColorVariant.h>
@@ -26,33 +28,6 @@
 #include <Wap32/TileGeometry.h>
 
 #include <ddraw.h>
-
-static inline SIZE
-GridSize(const CGruntzMapMgr* mapMgr) {
-    SIZE
-    size;
-    size.cx = mapMgr->m_width;
-    size.cy = mapMgr->m_height;
-    return size;
-}
-
-static inline i32 PixOffset(const CDDSurface* surface, i32 x, i32 y) {
-    return y * surface->m_apiDesc.lPitch + x * surface->m_bytesPerPixel;
-}
-
-static inline i32 OccupantAt(const CGruntzMapMgr* mapMgr, u32 x, u32 y) {
-    if (x < mapMgr->m_width && y < mapMgr->m_height) {
-        return mapMgr->m_rows[y][x].m_occupantId;
-    }
-    return -1;
-}
-
-static inline i32 TileIdAt(const CGruntzMapMgr* mapMgr, u32 x, u32 y) {
-    if (x < mapMgr->m_width && y < mapMgr->m_height) {
-        return mapMgr->m_rows[y][x].m_tileId;
-    }
-    return 0;
-}
 
 RVA(0x000a32c0, 0x72)
 i32 CMinimap::Init(CGruntzMgr* gameMgr, i32 refreshIntervalMs) {
@@ -417,10 +392,6 @@ i32 CMinimap::SetAreaPalette(LevelArea area) {
     }
     m_refreshRemaining = 0;
     return 1;
-}
-
-static inline void SetTileColor(u16* colors, u32 tile, u16 color) {
-    colors[tile] = color;
 }
 
 RVA(0x000a3dc0, 0x85f)

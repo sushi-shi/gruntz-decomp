@@ -114,10 +114,6 @@ i32 CDDSurface::CreateFromBmpFile(CDDrawDeviceManager* manager, const char* path
     return result;
 }
 
-static inline i32 HasPalette(CDDrawDeviceManager* manager) {
-    return manager->m_hasPalette;
-}
-
 RVA(0x00143fc0, 0x142)
 i32 CDDSurface::DecodeBmp(CDDrawDeviceManager* manager, BmpFileImage* image, u32 dataSize) {
     BITMAPINFOHEADER* ih = &image->m_info.m_bmiHeader;

@@ -20,8 +20,6 @@
 #include <Rez/RezArchive.h>
 #include <Rez/RezTypeTag.h>
 
-#define CLEAR_VOICE_INDICATORS memset(m_indicators, 0, sizeof(m_indicators))
-
 RVA(0x00085df0, 0x4a)
 CVoiceManager::~CVoiceManager() {
     Clear();

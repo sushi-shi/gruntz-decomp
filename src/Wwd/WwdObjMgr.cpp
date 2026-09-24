@@ -33,6 +33,8 @@
 #include <Wwd/WwdFactoryObject.h>
 #include <Wwd/WwdFile.h>
 #include <Wwd/WwdGameObjectFamily.h>
+#include <Wwd/WwdObjMgrInline.h>
+#include <Wwd/WwdObjMgrMacros.h>
 
 #include <new>
 
@@ -42,12 +44,6 @@ DATA(0x0021ab20)
 b32 g_soundEnabled = true;
 DATA(0x0021ab24)
 i32 g_soundVolumePercent = 100;
-
-inline void* WwdKey(CGameObject* o) {
-    AddrWord<char> k;
-    k.m_word = o->m_objectId;
-    return k.m_addr;
-}
 
 RVA(0x001591e0, 0x5)
 void CDDrawChildGroup::Unload() {
@@ -451,8 +447,6 @@ void CDDrawChildGroup::ReinsertUnflagged(CWwdGameObject* obj) {
     InsertSorted(obj, 0);
 }
 
-#define REGISTER_CHILD_OBJECT_ID(obj) m_registeredGameObjectsById[WwdKey(obj)] = obj
-
 RVA(0x00159e40, 0xaa)
 void CDDrawChildGroup::InsertSorted(CGameObject* obj, i32 addToMaps) {
     if (HAS(static_cast<WwdGameObjectFlags>(obj->m_flags), WWD_GAME_OBJECT_FLAG_UNREGISTERED)) {
@@ -484,20 +478,6 @@ RVA(0x00159ef0, 0x5)
 void CDDrawChildGroup::ClearChildren() {
     DestroyChildren();
 }
-
-static inline i32 WorldSpaceDifference(i32 leftFlags, i32 rightFlags) {
-    return (leftFlags ^ rightFlags) & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE);
-}
-
-static inline i32 ObjectTypeBits(u32 objectType, i32 mask) {
-    return static_cast<i32>(objectType) & mask;
-}
-
-#define PLACE_OBJECT_RECT(dst, object, rect)                                                       \
-    (dst).left = (object)->rect.left + (object)->m_screenX;                                        \
-    (dst).top = (object)->rect.top + (object)->m_screenY;                                          \
-    (dst).right = (object)->rect.right + (object)->m_screenX;                                      \
-    (dst).bottom = (object)->rect.bottom + (object)->m_screenY
 
 // @early-stop
 RVA(0x00159f00, 0x22e)
@@ -613,24 +593,6 @@ DATA(0x0021ab2c)
 static char s_dbgVid[] = "VID";
 DATA(0x0021ab28)
 static char s_dbgSys[] = "SYS";
-
-static inline void DrawObjectDebugRect(
-    CWwdGameObject* obj,
-    const RECT& objectRect,
-    CDDrawWorkerHost* view,
-    CDDrawSurfacePair* drawHost
-) {
-    i32 ox = obj->m_screenX;
-    RECT rc;
-    rc.left = objectRect.left + ox;
-    i32 oy = obj->m_screenY;
-    rc.top = objectRect.top + oy;
-    rc.right = objectRect.right + ox;
-    rc.bottom = objectRect.bottom + oy;
-    view->WorldToViewport(&rc.left, &rc.top);
-    view->WorldToViewport(&rc.right, &rc.bottom);
-    drawHost->DrawBox(&rc, 0xff);
-}
 
 // @early-stop
 // @dead-code
@@ -1054,10 +1016,6 @@ i32 CDDrawChildGroup::SumWeighted() {
     return sum;
 }
 
-#define REMOVE_ACTIVE_OBJECT_AT(pos, obj)                                                          \
-    m_list.RemoveAt(pos);                                                                          \
-    m_activeGameObjectsById.RemoveKey(WwdKey(obj))
-
 RVA(0x0015ab30, 0x38)
 void CDDrawChildGroup::RemoveAll(POSITION pos, CGameObject* obj) {
     REMOVE_ACTIVE_OBJECT_AT(pos, obj);
@@ -1301,14 +1259,6 @@ i32 CDDrawChildGroup::SerializeObjects(CFileMemBase* ar, LogicTypeId typeId) {
     return 1;
 }
 
-static inline CWwdGameObject* LookupObjectById(CMapPtrToPtr& byId, i32 id) {
-    CWwdGameObject* found = NULL;
-    if (MapLookupById(byId, id, found) == false) {
-        found = NULL;
-    }
-    return found;
-}
-
 RVA(0x0015b0e0, 0xec)
 i32 CDDrawChildGroup::DeserializeObjects(CFileMemBase* ar, u32 count, LogicTypeId typeId) {
     if (ar == NULL) {
@@ -1335,14 +1285,6 @@ i32 CDDrawChildGroup::DeserializeObjects(CFileMemBase* ar, u32 count, LogicTypeI
         }
     }
     return 1;
-}
-
-inline CWwdGameObject* LookupActiveObject(CMapPtrToPtr& map, void* key) {
-    CWwdGameObject* found = NULL;
-    if (MapLookup(map, key, found) == false) {
-        found = NULL;
-    }
-    return found;
 }
 
 RVA(0x0015b1d0, 0x9b)

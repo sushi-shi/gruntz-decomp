@@ -11,6 +11,8 @@
 #include <DDrawMgr/DDrawWorkerHost.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/BattlezDifficulty.h>
+#include <Gruntz/BattlezGruntInline.h>
+#include <Gruntz/BattlezGruntMacros.h>
 #include <Gruntz/BattlezIntervalMs.h>
 #include <Gruntz/BattlezRouteMaskPreset.h>
 #include <Gruntz/BattlezTask.h>
@@ -84,14 +86,6 @@ RVA_DYNINIT(0x0002d7c0, 0x5, s_gruntDirSpare)
 RVA_DYNINIT(0x0002d7e0, 0x20, s_gruntDirSpare)
 DATA(0x0022b73c)
 static GruntDirectionCell s_gruntDirSpare[3];
-
-static inline i32 ScreenTileX(CGrunt* unit) {
-    return unit->m_object->m_screenX >> TILE_SHIFT_PX;
-}
-
-static inline i32 ScreenTileY(CGrunt* unit) {
-    return unit->m_object->m_screenY >> TILE_SHIFT_PX;
-}
 
 // @early-stop
 RVA(0x00024dc0, 0x158)
@@ -606,16 +600,6 @@ candidateFound:
     unit->m_blockedVoicePending = true;
     return 1;
 }
-
-static inline bool HasAnimationActName(CGrunt* unit, const char* name) {
-    return strcmp(*g_typeColl.GetNameRecord(unit->m_logicRecord->m_eventCode), name) == 0;
-}
-
-#define BATTLEZ_ACT_DIFFERS_FROM_IGLPJCR(unit, result)                                             \
-    (!(result = HasAnimationActName(unit, "I")) && !(result = HasAnimationActName(unit, "G"))      \
-     && !(result = HasAnimationActName(unit, "L")) && !(result = HasAnimationActName(unit, "P"))   \
-     && !(result = HasAnimationActName(unit, "J")) && !(result = HasAnimationActName(unit, "C"))   \
-     && !(result = HasAnimationActName(unit, "R")))
 
 // @early-stop
 RVA(0x000267c0, 0x2850)
@@ -2455,19 +2439,6 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
     return 0;
 }
 
-#define ARR_RECYCLE(g)                                                                             \
-    if ((g)->CoordCount() != 0) {                                                                  \
-        POSITION nd = (g)->CoordHead();                                                            \
-        while (nd != 0) {                                                                          \
-            POSITION cur = nd;                                                                     \
-            (g)->m_coordList.GetNext(nd);                                                          \
-            if (static_cast<Coord*>((g)->m_coordList.GetAt(cur)) != 0) {                           \
-                g_coordPool.Push(static_cast<Coord*>((g)->m_coordList.GetAt(cur)));                \
-            }                                                                                      \
-        }                                                                                          \
-        coordList->RemoveAll();                                                                    \
-    }
-
 // @identity-TODO BattlezMapConfigAcceptAlwaysArg - the surviving external
 // thunk and `ret 4` prove one callee-popped dword, but no use survives to prove
 // the original symbol name or whether this was a member.
@@ -3182,34 +3153,6 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
         board->m_gridH = aDst->bottom - aDst->top;
     }
     return 1;
-}
-
-static inline void BuildUnitSearchBox(CGrunt* unit, RECT* box, i32 radius) {
-    i32 bottom;
-    i32 right;
-    i32 top;
-    i32 left;
-    {
-        Coord bottomProbe;
-        Coord rightProbe;
-        Coord topProbe;
-        Coord leftProbe;
-        unit->GetScreenTile(&bottomProbe);
-        leftProbe.m_x = bottomProbe.m_x;
-        bottom = bottomProbe.m_y;
-        unit->GetScreenTile(&rightProbe);
-        leftProbe.m_y = rightProbe.m_y;
-        right = rightProbe.m_x;
-        unit->GetScreenTile(&topProbe);
-        leftProbe.m_x = topProbe.m_x;
-        top = topProbe.m_y;
-        unit->GetScreenTile(&leftProbe);
-        left = leftProbe.m_x;
-    }
-    box->left = left - radius;
-    box->top = top - radius;
-    box->right = right + radius;
-    box->bottom = bottom + radius;
 }
 
 // @early-stop

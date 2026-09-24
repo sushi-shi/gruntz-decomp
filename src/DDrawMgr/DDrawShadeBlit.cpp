@@ -36,17 +36,6 @@ CShadeTable* g_dstBySrc16ShadeTable = NULL;
 DATA(0x002bf220)
 CShadeTable* g_palette16ShadeTable = NULL;
 
-static inline void Store16(u8* p, u16 v) {
-    Pix16Ptr c;
-    c.m_bytes = p;
-    *c.m_words = v;
-}
-static inline u16 Load16(const u8* p) {
-    Pix16CPtr c;
-    c.m_bytes = p;
-    return *c.m_words;
-}
-
 RVA(0x00148ce0, 0x2f)
 CDDrawShadeBlit::CDDrawShadeBlit() {
     m_rleData = NULL;

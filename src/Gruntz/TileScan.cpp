@@ -5,30 +5,11 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntMovementInline.h>
+#include <Gruntz/GruntNeighborhoodInline.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/MapCellFlags.h>
 #include <Ints.h>
 #include <Wap32/TileGeometry.h>
-
-static inline Coord ScreenPosition(CGameObject* object) {
-    Coord out;
-    i32 y = object->m_screenY;
-    i32 x = object->m_screenX;
-    out.m_x = x;
-    out.m_y = y;
-    return out;
-}
-
-static inline RECT TileNeighborhood(CGrunt* grunt) {
-    Coord high = ScreenTile(grunt);
-    Coord low = ScreenTile(grunt);
-    RECT box;
-    box.top = low.m_y - 1;
-    box.bottom = high.m_y + 2;
-    box.left = low.m_x - 1;
-    box.right = high.m_x + 2;
-    return box;
-}
 
 RVA(0x00035f10, 0x155)
 i32 CBattlezMapConfig::RerouteSwitchSeeker(CGrunt* grunt) {
@@ -50,7 +31,7 @@ i32 CBattlezMapConfig::RerouteSwitchSeeker(CGrunt* grunt) {
     }
 
     Coord center = ScreenPosition(grunt->m_object);
-    RECT box = TileNeighborhood(grunt);
+    RECT box = AdjacentTileNeighborhood(grunt);
     for (i32 row = box.top; row < box.bottom; row++) {
         for (i32 col = box.left; col < box.right; col++) {
             i32 tileX = center.m_x >> TILE_SHIFT_PX;

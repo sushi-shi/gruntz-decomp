@@ -40,6 +40,7 @@
 #include <Wap32/WapObj.h>
 #include <Wwd/LogicRecordEvent.h>
 #include <Wwd/WwdGameObjectFamily.h>
+#include <Wwd/WwdGameObjectInline.h>
 #include <Wwd/WwdSpriteAnimationInline.h>
 
 #include <ddraw.h>
@@ -423,20 +424,6 @@ void CGameObject::AddLogicBump(char* key) {
     EnsureBumpLogic(LookupLogicTemplate(OwnerMgr()->m_logicRegistry->m_templatesByName, key));
 }
 
-static inline i32 NotifyLogicForEventCode(CGameObject* object, i32 eventCode) {
-    CLogicRecord* record = object->m_logicRecord;
-    if (!record) {
-        return 0;
-    }
-    i32 savedEventCode = record->m_eventCode;
-    record->SetEventCode(eventCode);
-    object->m_logicRecord->m_dispatch(object);
-    if (object->m_logicRecord->m_eventCode == eventCode) {
-        object->m_logicRecord->SetEventCode(savedEventCode);
-    }
-    return 1;
-}
-
 // @early-stop
 RVA(0x00151150, 0x190)
 i32 CGameObject::SerializeDispatch(
@@ -685,15 +672,6 @@ i32 CGameObject::SerializeObjectState(CFileMemBase* arParam) {
     return 1;
 }
 
-static inline BOOL LookupLinkedObject(CMapPtrToPtr& map, i32 id, CWwdGameObject*& out) {
-    out = NULL;
-    AddrWord<char> key;
-    key.m_word = id;
-    MapOutRef<CWwdGameObject> dst;
-    dst.m_asTyped = &out;
-    return map.Lookup(key.m_addr, *dst.m_asVoid);
-}
-
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00151b90, 0x70)
@@ -849,15 +827,6 @@ void CDDrawWorker::Unload() {
     m_minIndex = 99999;
     m_maxIndex = 0;
 }
-
-#define ADD_FRAME_AT(elem, index)                                                                  \
-    m_items.SetAtGrow(index, elem);                                                                \
-    if (index < m_minIndex) {                                                                      \
-        m_minIndex = index;                                                                        \
-    }                                                                                              \
-    if (index > m_maxIndex) {                                                                      \
-        m_maxIndex = index;                                                                        \
-    }
 
 RVA(0x00151f00, 0xa4)
 CImage* CDDrawWorker::InsertFrame(CRezItm* src, i32 n, i32 mode) {

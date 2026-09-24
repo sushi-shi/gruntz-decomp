@@ -47,6 +47,7 @@
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzDebugDialog.h>
+#include <Gruntz/GruntzMgrMacros.h>
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/HeapDiag.h>
 #include <Gruntz/HelpState.h>
@@ -902,8 +903,6 @@ i32 CDDrawDeviceManager::GetCapsChecked() {
     }
     return hr;
 }
-
-#define IS_STANDARD_VIDEO_MODE (m_modeSize.cx == SCREEN_W_PX && m_modeSize.cy == SCREEN_H_PX)
 
 RVA(0x0008ddd0, 0x7e)
 i32 CGruntzMgr::RestoreVideoMode(b32 save) {

@@ -11,6 +11,7 @@
 #include <DDrawMgr/LogicRecord.h>
 #include <DDrawMgr/LogicRecordCtorInline.h>
 #include <Gruntz/AniAdvanceCursor.h>
+#include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AniElementInline.h>
 #include <Gruntz/AnimationRegistry.h>
@@ -305,22 +306,6 @@ void CAniAdvanceCursor::RestartAnimation(i32 resetElapsedTime) {
     m_curDraw = v;
     if (resetElapsedTime != 0) {
         m_frameTicksLeft = 0;
-    }
-}
-
-static inline void AdvanceToNextRecord(CAniAdvanceCursor* cursor) {
-    CAniElement* animation = cursor->m_animation;
-    cursor->m_index = cursor->m_index + 1;
-    CAniRecordView* record =
-        static_cast<CAniRecordView*>(GetAniElementAt(animation, cursor->m_index));
-    cursor->m_element = record;
-    if (record == NULL) {
-        cursor->m_index = 0;
-        cursor->m_element = static_cast<CAniRecordView*>(animation->AtChecked(0));
-    }
-    if (cursor->m_element != NULL) {
-        cursor->m_curDraw = cursor->m_pendingDraw;
-        cursor->m_pendingDraw = cursor->m_element->m_drawValue;
     }
 }
 
@@ -720,16 +705,6 @@ i32 CAniAdvanceCursor::Serialize(CFileMemBase* ar) {
     }
     ar->Write(buf, SERIAL_NAME_LEN);
     return 1;
-}
-
-static inline CAniRecordView* RecordAt(CAniElement* anim, i32 index) {
-    CAniRecordView* rec;
-    if (index >= 0 && index < anim->m_records.GetSize()) {
-        rec = static_cast<CAniRecordView*>(anim->m_records.GetAt(index));
-    } else {
-        rec = NULL;
-    }
-    return rec;
 }
 
 // @early-stop

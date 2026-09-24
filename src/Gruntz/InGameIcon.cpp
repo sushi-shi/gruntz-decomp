@@ -26,6 +26,7 @@
 #include <Gruntz/LogicFnTable.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MapCellFlags.h>
+#include <Gruntz/MapCellInline.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SerialArchive.h>
@@ -568,17 +569,6 @@ i32 CInGameIcon::PeekCycle() {
         m_peekTimer.m_hi = 0;
     }
     return 0;
-}
-
-static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
-    CMapMgr* grid = reg->m_tileGrid;
-    i32 tileX = owner->m_screenX >> TILE_SHIFT_PX;
-    i32 tileY = owner->m_screenY >> TILE_SHIFT_PX;
-    if (static_cast<u32>(tileX) < static_cast<u32>(grid->m_width)
-        && static_cast<u32>(tileY) < static_cast<u32>(grid->m_height)) {
-        grid->m_rows[tileY][tileX].m_objectId = 0;
-        grid->m_rows[tileY][tileX].m_flags &= ~0x40000;
-    }
 }
 
 // @early-stop

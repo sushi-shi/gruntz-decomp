@@ -45,4 +45,13 @@ public:
     i32 m_currentMs;
 };
 
+#define RESET_TIMER_SPRITES                                                                        \
+    m_sprite = NULL;                                                                               \
+    m_frameMinTens = NULL;                                                                         \
+    m_frameMinOnes = NULL;                                                                         \
+    m_frameColon = NULL;                                                                           \
+    m_frameSecTens = NULL;                                                                         \
+    m_frameSecOnes = NULL;                                                                         \
+    m_active = false
+
 #endif // GRUNTZ_GRUNTZ_TIMER_H

@@ -5,6 +5,8 @@
 #include <Mfc.h>
 
 #include <DDrawMgr/ColorHsv.h>
+#include <DDrawMgr/ColorHsvMacros.h>
+#include <DDrawMgr/PaletteColorInline.h>
 #include <DDrawMgr/PaletteSize.h>
 #include <DDrawMgr/PixelFormatMacros.h>
 #include <DDrawMgr/PixelShift.h>
@@ -17,10 +19,6 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-
-#define HSV_MAX(a, b) ((a) > (b) ? (a) : (b))
-#define HSV_MIN(a, b) ((a) < (b) ? (a) : (b))
-#define INTERPOLATE(start, end, amount) ((start) * (g_one - (amount)) + (end) * (amount))
 
 DATA(0x002bf224)
 PALETTEENTRY* g_pal = NULL;
@@ -252,11 +250,6 @@ CShadeTable* CShadeTableCache::HueRampTable(PALETTEENTRY* pal, i32 steps, i32 pa
         }
     }
     return t;
-}
-
-static inline u8
-WeightedPaletteChannel(u8 row, u8 column, i32 rowWeight, i32 columnWeight, i32 divisor) {
-    return static_cast<u8>((column * columnWeight / 100 + row * rowWeight / 100) / divisor);
 }
 
 // @early-stop

@@ -110,21 +110,6 @@
 
 class CImage;
 
-#define CLEAR_GRUNTZ_PLAYER                                                                        \
-    m_playerIndex = -1;                                                                            \
-    m_networkPlayerId = -2;                                                                        \
-    m_active = false;                                                                              \
-    m_humanControlled = true;                                                                      \
-    m_name = "";                                                                                   \
-    m_color = TINT_ORANGE;                                                                         \
-    m_difficulty = BZDIFF_EASY;                                                                    \
-    m_focusX = 0;                                                                                  \
-    m_focusY = 0;                                                                                  \
-    m_maxGruntz = 0xf;                                                                             \
-    m_doneFlag = false;                                                                            \
-    m_optionsPresenceCounted = false;                                                              \
-    m_latency.Clear()
-
 RVA(0x000da790, 0xb0)
 GruntzPlayer::GruntzPlayer() {
     m_playerIndex = -1;

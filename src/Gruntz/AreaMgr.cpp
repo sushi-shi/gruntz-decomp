@@ -10,6 +10,7 @@
 #include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/QuestLevel.h>
 #include <Gruntz/SoundCueRegistry.h>
+#include <Gruntz/SpawnList.h>
 #include <Image/CImage.h>
 #include <Rez/RezArchiveDir.h>
 #include <Utils/MapTyped.h>
@@ -30,10 +31,6 @@ CAreaMgr g_areaMgr;
 RVA(0x00099ba0, 0x29)
 CAreaMgr::CAreaMgr() {
     m_currentLevelIndex = 0;
-}
-
-inline CSpawnList::~CSpawnList() {
-    DeleteAllEntries();
 }
 
 RVA(0x00099c20, 0x5f)

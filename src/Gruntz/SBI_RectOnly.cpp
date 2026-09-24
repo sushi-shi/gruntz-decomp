@@ -42,6 +42,7 @@
 #include <Gruntz/SbiMachineState.h>
 #include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialClockInline.h>
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SoundCue.h>
@@ -54,6 +55,8 @@
 #include <Gruntz/StatusBarItem.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/StatusBarMgrBuilders.h>
+#include <Gruntz/StatusBarMgrInline.h>
+#include <Gruntz/StatusBarSerialMacros.h>
 #include <Gruntz/StatusBarTab.h>
 #include <Gruntz/StatusBarTabWidgets.h>
 #include <Gruntz/TileTriggerContainer.h>
@@ -317,49 +320,6 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
         }
     }
     return 1;
-}
-
-static __inline void HiCueFind() {
-    SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-    if (registry->m_silentMode == false) {
-        CObject* obj = registry->Lookup("GAME_TABHIGHLIGHT1");
-        if (obj) {
-            static_cast<SoundCue*>(obj)->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
-        }
-    }
-}
-
-static __inline void HiCueLookup() {
-    SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-    if (registry->m_silentMode == false) {
-        SoundCue* out = registry->FindCue("GAME_TABHIGHLIGHT1");
-        if (out) {
-            out->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
-        }
-    }
-}
-
-static __inline void HiCueTimed() {
-    SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-    if (registry->m_silentMode == false) {
-        SoundCue* found = registry->FindCue("GAME_TABHIGHLIGHT1");
-        if (found) {
-            b32 soundEnabled = g_soundEnabled;
-            i32 volumePercent = g_soundVolumePercent;
-            if (soundEnabled != false) {
-                SoundCue* p = found;
-                if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
-                    >= static_cast<u32>(p->m_replayDelayMs)) {
-                    p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                    p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                }
-            }
-        }
-    }
-}
-
-static __inline void HiPost(i32 cmdId) {
-    PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, cmdId, 0);
 }
 
 // @early-stop
@@ -1023,13 +983,6 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     }
     m_tabsBuilt = true;
     return 1;
-}
-
-static __inline i32 WapRand(i32 range) {
-    if (range == 0) {
-        return GetRandomNumber() & 1;
-    }
-    return GetRandomNumber() % range + 1;
 }
 
 RVA(0x00100510, 0x6)
@@ -3902,18 +3855,6 @@ i32 CStatusBarMgr::QueuePickupReward(i32 pickupValue, i32 score) {
     return 1;
 }
 
-static inline void SyncClockPair(CFileMemBase* s, SerialMode mode, i64* pair) {
-    if (mode != SERIAL_SAVE) {
-        if (mode == SERIAL_LOAD) {
-            s->Read(pair, sizeof(*pair));
-            s->Read(pair + 1, sizeof(*pair));
-        }
-    } else {
-        s->Write(pair, sizeof(*pair));
-        s->Write(pair + 1, sizeof(*pair));
-    }
-}
-
 // @early-stop
 RVA(0x001084d0, 0x96c)
 i32 CStatusBarMgr::SerializeDispatch(
@@ -4008,12 +3949,6 @@ i32 CStatusBarMgr::SerializeDispatch(
     SyncClockPair(s, mode, &m_reserved2b0.m_last);
     if (mode == SERIAL_LOAD && m_position != STATUSBAR_HIDDEN) {
         BuildStatusBarTabs();
-    }
-
-#define SER(field)                                                                                 \
-    if (field) {                                                                                   \
-        if ((field)->SerializeFields(s, mode, typeId, payload) == 0)                               \
-            return 0;                                                                              \
     }
 
     {
@@ -5073,30 +5008,6 @@ i32 CStatusBarMgr::SelectBrickResource(StatusBarHighlightRow row) {
         }
     }
     return 0;
-}
-
-inline b32 CStatusBarMgr::ActivateReadySlot(i32 slot) {
-    const i32 slotCount = static_cast<i32>(sizeof(m_slots) / sizeof(m_slots[0]));
-    if (slot == -1) {
-        for (slot = 0; slot < slotCount; slot++) {
-            if (m_slots[slot].m_state == SLOT_READY) {
-                break;
-            }
-        }
-        if (slot == slotCount) {
-            return false;
-        }
-    }
-    if (!(static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(0x66)) {
-        return false;
-    }
-    HiCueTimed();
-    m_activeSlot = slot;
-    m_slots[slot].m_value = 1;
-    if (m_slotNotify[slot]) {
-        m_slotNotify[slot]->Notify(1);
-    }
-    return true;
 }
 
 RVA(0x0010b930, 0x1a7)

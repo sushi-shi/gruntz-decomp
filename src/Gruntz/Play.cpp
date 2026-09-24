@@ -59,6 +59,7 @@
 #include <Gruntz/ImageSets.h>
 #include <Gruntz/InputState.h>
 #include <Gruntz/LevelArea.h>
+#include <Gruntz/LevelCollisionInline.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MgrAutoScroll.h>
 #include <Gruntz/Minimap.h>
@@ -67,12 +68,14 @@
 #include <Gruntz/PickupType.h>
 #include <Gruntz/PlayerCommandKind.h>
 #include <Gruntz/PlayHudLayoutPx.h>
+#include <Gruntz/PlayInline.h>
 #include <Gruntz/PlayIntervalMs.h>
 #include <Gruntz/PlayStringId.h>
 #include <Gruntz/QuestLevel.h>
 #include <Gruntz/SBI_Image.h>
 #include <Gruntz/SbiMenuItemState.h>
 #include <Gruntz/SerialArchive.h>
+#include <Gruntz/SerialRecordMacros.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
@@ -191,42 +194,6 @@ b32 g_levelBias100 = false;
 
 DATA(0x0024c020)
 char g_customLevelText[0x200];
-
-static inline void ResetAssetLoadState(CPlay* play, GruntzPlayer* player) {
-    player->m_active = true;
-    player->m_humanControlled = true;
-    play->m_region0Gate = false;
-    play->m_region1Gate = false;
-    play->m_region2Gate = false;
-    play->m_region3Gate = false;
-    play->m_viewportResizeMode = VIEW_RESIZE_IDLE;
-    play->m_hudSuppressed = true;
-    play->m_cameraBookmarkIndex = -1;
-    play->m_defeatCountdownActive = false;
-    play->m_scrollEdgeActive = 0;
-    play->m_scrollEdgeLock = 0;
-    play->m_levelTimer = NULL;
-}
-
-static inline void SetInitialFramePending(CPlay* play, b32 pending) {
-    play->m_initialFramePending = pending;
-}
-
-static inline void SetNotifyLatch(CPlay* play, b32 notify) {
-    play->m_notifyLatch = notify;
-}
-
-static inline void SetCompletedFinalLevel(CPlay* play, b32 completed) {
-    play->m_completedFinalLevel = completed;
-}
-
-static inline void ClearSaveSlot(CPlay* play) {
-    memset(&play->m_saveSlot, 0, sizeof(play->m_saveSlot));
-}
-
-static inline void SetSavedClock(CPlay* play, u32 clock) {
-    play->m_savedClock = clock;
-}
 
 // @early-stop
 RVA(0x000c7ec0, 0x5f5)
@@ -3622,17 +3589,6 @@ void CPlay::PostSetup(HDC dc) {
     m_mgr->m_chatLog->DrawTextLines(8, dc, &dst, 0x10);
 }
 
-#define SYNC_PAIR(ar, mode, p)                                                                     \
-    if ((mode) != SERIAL_SAVE) {                                                                   \
-        if ((mode) == SERIAL_LOAD) {                                                               \
-            (ar)->Read((p), 8);                                                                    \
-            (ar)->Read((p) + 2, 8);                                                                \
-        }                                                                                          \
-    } else {                                                                                       \
-        (ar)->Write((p), 8);                                                                       \
-        (ar)->Write((p) + 2, 8);                                                                   \
-    }
-
 // @early-stop
 RVA(0x000d0120, 0x65c)
 i32 CPlay::LoadCursorSprites(i32 cursorId, b32 targetValid) {
@@ -4861,64 +4817,6 @@ i32 CPlay::ExecuteCommand(
     }
 
     return 1;
-}
-
-static inline CGameLevel* LevelOf(CDDrawSurfaceMgr* holder) {
-    return holder->m_level;
-}
-
-static inline TileCollisionKind LookupTileType(CGameLevel* level, i32 x, i32 y) {
-    CDDrawWorkerHost* g = level->m_mainPlane;
-    if (x < 0) {
-        x = 0;
-    } else if (x >= g->m_planePixelWidth) {
-        x = g->m_planePixelWidth - 1;
-    }
-    if (y < 0) {
-        y = 0;
-    } else if (y >= g->m_planePixelHeight) {
-        y = g->m_planePixelHeight - 1;
-    }
-    i32 tx = x >> g->m_shiftX;
-    i32 ty = y >> g->m_shiftY;
-    i32 subX = x - (tx << g->m_shiftX);
-    i32 subY = y - (ty << g->m_shiftY);
-    i32 cell = g->GetTileHandle(tx, ty);
-    if (cell == UNINIT_FILL || cell == -1) {
-        return TILEKIND_PASSABLE;
-    }
-
-    CUniformTileImageSet* tc = static_cast<CUniformTileImageSet*>(
-        level->m_imageSets.GetAt(cell & WWD_TILE_IMAGE_SET_INDEX_MASK)
-    );
-    return tc->GetCollisionAt(subX, subY);
-}
-
-static inline TileCollisionKind LookupTileTypeDirect(CGameLevel* level, i32 x, i32 y) {
-    CDDrawWorkerHost* g = level->m_mainPlane;
-    if (x < 0) {
-        x = 0;
-    } else if (x >= g->m_planePixelWidth) {
-        x = g->m_planePixelWidth - 1;
-    }
-    if (y < 0) {
-        y = 0;
-    } else if (y >= g->m_planePixelHeight) {
-        y = g->m_planePixelHeight - 1;
-    }
-    i32 tx = x >> g->m_shiftX;
-    i32 ty = y >> g->m_shiftY;
-    i32 subX = x - (tx << g->m_shiftX);
-    i32 subY = y - (ty << g->m_shiftY);
-    i32 cell = g->m_tileHandles[g->m_tileRowOffsets[ty] + tx];
-    if (cell == UNINIT_FILL || cell == -1) {
-        return TILEKIND_PASSABLE;
-    }
-
-    CUniformTileImageSet* tc = static_cast<CUniformTileImageSet*>(
-        level->m_imageSets.GetAt(cell & WWD_TILE_IMAGE_SET_INDEX_MASK)
-    );
-    return tc->GetCollisionAt(subX, subY);
 }
 
 RVA(0x000d2b20, 0x21f)

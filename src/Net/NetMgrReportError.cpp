@@ -36,11 +36,6 @@ void CNetMgr::SetReportMode(b32 log, b32 msgBox, b32 beep, b32 debugOutput) {
     g_debugOutputEnabled = debugOutput;
 }
 
-inline static void SetError(const char* szCode, const char* szDesc) {
-    strcpy(g_szCode, szCode);
-    strcpy(g_szMsg, szDesc);
-}
-
 RVA(0x001776a0, 0xa01)
 void CNetMgr::ReportError(const char* file, i32 line, HRESULT hr, HWND hWnd) {
     char szLine[512];
