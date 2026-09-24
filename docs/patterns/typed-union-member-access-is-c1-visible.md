@@ -19,9 +19,12 @@ with `break` in every switch arm and one shared trailing return. This is direct
 source evidence, not a union inferred from layout.
 
 Gruntz retail proves revision differences within that layer: it has nine values
-numbered 0 through 8, no later Null/Byte/Bool arms, and pointer-taking aggregate
-constructors. Those differences were retained while the nested owner, typed
-union, and assignment boundary were restored.
+numbered 0 through 8 and no later Null/Byte/Bool arms. Those differences were
+retained while the nested owner, typed union, and assignment boundary were
+restored. The earlier claim that retail also proved pointer-taking aggregate
+constructors was unsupported: the complete vector/range reference API is
+byte-identical. See
+[`generated-symbols-do-not-prove-reference-api`](generated-symbols-do-not-prove-reference-api.md).
 
 Applying only the typed union produced a genuine exploratory descent:
 

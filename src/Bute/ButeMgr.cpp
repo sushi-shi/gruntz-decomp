@@ -1063,11 +1063,11 @@ bool CButeMgr::Statement() {
                 if (!bDup) {
                     m_pCurrTabOfItems->add(
                         m_sAttribute,
-                        new CSymTabItem(VECTOR_TYPE, &CAVector(x, y, z))
+                        new CSymTabItem(VECTOR_TYPE, CAVector(x, y, z))
                     );
                 }
             } else {
-                CAVector v = *GetVector(m_sTagName, m_sAttribute);
+                CAVector v = GetVector(m_sTagName, m_sAttribute);
                 (*m_pSaveData) << s_strLt << v.Geti() << s_strComma << v.Getj() << s_strComma
                                << v.Getk() << s_strGt;
             }
@@ -1078,11 +1078,11 @@ bool CButeMgr::Statement() {
                 if (!bDup) {
                     m_pCurrTabOfItems->add(
                         m_sAttribute,
-                        new CSymTabItem(RANGE_TYPE, &CARange(x, y))
+                        new CSymTabItem(RANGE_TYPE, CARange(x, y))
                     );
                 }
             } else {
-                CARange range = *GetRange(m_sTagName, m_sAttribute);
+                CARange range = GetRange(m_sTagName, m_sAttribute);
                 (*m_pSaveData) << "[" << range.GetMin() << s_strComma << range.GetMax() << "]";
             }
             break;
@@ -1915,13 +1915,13 @@ RVA_COMPGEN(0x001741b0, 0x39, ??0CSymTabItem@CButeMgr@@QAE@W4SymTypes@1@PAUButeI
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001741f0, 0x4e)
-CAVector* CButeMgr::GetVector(const char* tag, const char* key, CAVector* def) {
+CAVector& CButeMgr::GetVector(const char* tag, const char* key, CAVector& def) {
     TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
         CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
             if (rec->m_symType == VECTOR_TYPE) {
-                return rec->m_data.m_v;
+                return *rec->m_data.m_v;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
         }
@@ -1930,7 +1930,7 @@ CAVector* CButeMgr::GetVector(const char* tag, const char* key, CAVector* def) {
 }
 
 RVA(0x00174240, 0xe3)
-CAVector* CButeMgr::GetVector(const char* tag, const char* key) {
+CAVector& CButeMgr::GetVector(const char* tag, const char* key) {
     DATA(0x002bf6a0)
     RVA_DYNINIT(0x00174330, 0x1, s_default)
     static CAVector s_default(0, 0, 0);
@@ -1940,20 +1940,20 @@ CAVector* CButeMgr::GetVector(const char* tag, const char* key) {
         CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
             if (rec->m_symType == VECTOR_TYPE) {
-                return rec->m_data.m_v;
+                return *rec->m_data.m_v;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
-            return &s_default;
+            return s_default;
         }
         DisplayMessage(s_fmtNotFound, tag, key);
-        return &s_default;
+        return s_default;
     }
     DisplayMessage(s_fmtInvalidTag, tag);
-    return &s_default;
+    return s_default;
 }
 
 RVA(0x00174340, 0x3e8)
-void CButeMgr::SetVector(const char* tag, const char* key, CAVector* val) {
+void CButeMgr::SetVector(const char* tag, const char* key, const CAVector& val) {
     TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag));
     if (grp) {
         CSymTabItem* hit = static_cast<CSymTabItem*>(grp->lookup(key));
@@ -1990,18 +1990,18 @@ void CButeMgr::SetVector(const char* tag, const char* key, CAVector* val) {
     TableOfItems* newAddedTag = static_cast<TableOfItems*>(m_newTagTab.add(tag, new TableOfItems));
     newAddedTag->insert(key, new CSymTabItem(VECTOR_TYPE, val));
 }
-RVA_COMPGEN(0x00174730, 0x3c, ??0CSymTabItem@CButeMgr@@QAE@W4SymTypes@1@PAVCAVector@@@Z)
+RVA_COMPGEN(0x00174730, 0x3c, ??0CSymTabItem@CButeMgr@@QAE@W4SymTypes@1@ABVCAVector@@@Z)
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00174770, 0x4e)
-CARange* CButeMgr::GetRange(const char* tag, const char* key, CARange* def) {
+CARange& CButeMgr::GetRange(const char* tag, const char* key, CARange& def) {
     TableOfItems* grp = static_cast<TableOfItems*>(Tags()->lookup(tag));
     if (grp) {
         CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
             if (rec->m_symType == RANGE_TYPE) {
-                return rec->m_data.m_range;
+                return *rec->m_data.m_range;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
         }
@@ -2010,7 +2010,7 @@ CARange* CButeMgr::GetRange(const char* tag, const char* key, CARange* def) {
 }
 
 RVA(0x001747c0, 0xcf)
-CARange* CButeMgr::GetRange(const char* tag, const char* key) {
+CARange& CButeMgr::GetRange(const char* tag, const char* key) {
     DATA(0x002bf6c0)
     RVA_DYNINIT(0x00174890, 0x1, s_default)
     static CARange s_default(0, 0);
@@ -2020,20 +2020,20 @@ CARange* CButeMgr::GetRange(const char* tag, const char* key) {
         CSymTabItem* rec = static_cast<CSymTabItem*>((grp)->lookup(key));
         if (rec) {
             if (rec->m_symType == RANGE_TYPE) {
-                return rec->m_data.m_range;
+                return *rec->m_data.m_range;
             }
             DisplayMessage(s_fmtTypeMismatch, tag, key);
-            return &s_default;
+            return s_default;
         }
         DisplayMessage(s_fmtNotFound, tag, key);
-        return &s_default;
+        return s_default;
     }
     DisplayMessage(s_fmtInvalidTag, tag);
-    return &s_default;
+    return s_default;
 }
 
 RVA(0x001748a0, 0x404)
-void CButeMgr::SetRange(const char* tag, const char* key, CARange* val) {
+void CButeMgr::SetRange(const char* tag, const char* key, const CARange& val) {
     TableOfItems* grp = static_cast<TableOfItems*>(m_tagTab.lookup(tag));
     if (grp) {
         CSymTabItem* hit = static_cast<CSymTabItem*>(grp->lookup(key));
@@ -2071,7 +2071,7 @@ void CButeMgr::SetRange(const char* tag, const char* key, CARange* val) {
     newAddedTag->insert(key, new CSymTabItem(RANGE_TYPE, val));
 }
 
-RVA_COMPGEN(0x00174cb0, 0x49, ??0CSymTabItem@CButeMgr@@QAE@W4SymTypes@1@PAVCARange@@@Z)
+RVA_COMPGEN(0x00174cb0, 0x49, ??0CSymTabItem@CButeMgr@@QAE@W4SymTypes@1@ABVCARange@@@Z)
 
 RVA_COMPGEN(0x00174d00, 0x25, ??0?$zSymTab@VCSymTabItem@CButeMgr@@@@QAE@W4cleanup_behaviour@zPtrColl@@@Z)
 
