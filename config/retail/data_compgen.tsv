@@ -10,6 +10,11 @@
 #           device, docs/data-attribution.md): owner is the emitting TU, decided
 #           by its $E static initializer's position. Several rows may share one
 #           rva (each TU's copy folds onto the same retail byte).
+#   macro   ordinary storage a LIBRARY macro defines (MFC BEGIN_MESSAGE_MAP's
+#           messageMap/_messageEntries): DATA() annotates only the declaration
+#           it precedes, and the macro's first declaration is the function
+#           GetMessageMap, which takes the RVA() pin. Owner is the expanding TU;
+#           the census row is an ordinary datum (kind "").
 # labels.py folds both classes into build/gen/symbol_names.csv.
 rva	size	name	owner	class
 0x001f0868	0x8	$T2033768	fadereffects	copy
@@ -1031,3 +1036,15 @@ rva	size	name	owner	class
 0x002c27a8	0x4	?s_holdrand@?1??GetRandomNumber@?A0xfcce57fbce9073f9@@YAHXZ@4JA	src/DDrawMgr/FaderEffects.cpp:GetRandomNumber	common
 0x001e9738	0x8	$T2004792	grunt	fppool
 0x001eaa88	0x8	$T2009736	projectile	fppool
+0x001e94b8	0x8	?messageMap@CCheckpointDlg@@1UAFX_MSGMAP@@B	checkpointdlg	macro
+0x001e94c0	0x30	?_messageEntries@CCheckpointDlg@@0PBUAFX_MSGMAP_ENTRY@@B	checkpointdlg	macro
+0x001e88b0	0x8	?messageMap@CBattlezDlg@@1UAFX_MSGMAP@@B	dialogs	macro
+0x001e88b8	0x270	?_messageEntries@CBattlezDlg@@0PBUAFX_MSGMAP_ENTRY@@B	dialogs	macro
+0x001e8d10	0x8	?messageMap@CBattlezDlgColors@@1UAFX_MSGMAP@@B	battlezdlgcolors	macro
+0x001e8d18	0x60	?_messageEntries@CBattlezDlgColors@@0PBUAFX_MSGMAP_ENTRY@@B	battlezdlgcolors	macro
+0x001e8e98	0x8	?messageMap@CBattlezDlgCustom@@1UAFX_MSGMAP@@B	customleveldlg	macro
+0x001e8ea0	0x30	?_messageEntries@CBattlezDlgCustom@@0PBUAFX_MSGMAP_ENTRY@@B	customleveldlg	macro
+0x001ea578	0x8	?messageMap@CMultiStartDlg@@1UAFX_MSGMAP@@B	multistartdlg	macro
+0x001ea580	0x2d0	?_messageEntries@CMultiStartDlg@@0PBUAFX_MSGMAP_ENTRY@@B	multistartdlg	macro
+0x001ea448	0x8	?messageMap@CMultiHelpDlg@@1UAFX_MSGMAP@@B	multihelpdlg	macro
+0x001ea450	0x18	?_messageEntries@CMultiHelpDlg@@0PBUAFX_MSGMAP_ENTRY@@B	multihelpdlg	macro

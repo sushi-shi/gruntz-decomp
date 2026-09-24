@@ -24,55 +24,6 @@
 #include <stdio.h>
 #include <string.h>
 
-DATA(0x001e88b0)
-const AFX_MSGMAP CBattlezDlg::s_messageMap = {
-    &CDialog::messageMap,
-    &CBattlezDlg::s_messageEntries[0],
-};
-
-DATA(0x001e88b8)
-const AFX_MSGMAP_ENTRY CBattlezDlg::s_messageEntries[] = {
-
-    ON_CBN_SELCHANGE(CTRL_PLAYER_TYPE0, CBattlezDlg::OnPlayerTypeSelection0)
-        ON_CBN_SELCHANGE(CTRL_PLAYER_TYPE1, CBattlezDlg::OnPlayerTypeSelection1)
-            ON_CBN_SELCHANGE(CTRL_PLAYER_TYPE2, CBattlezDlg::OnPlayerTypeSelection2)
-                ON_CBN_SELCHANGE(CTRL_PLAYER_TYPE3, CBattlezDlg::OnPlayerTypeSelection3)
-
-                    {WM_MEASUREITEM,
-                     0,
-                     0,
-                     0,
-                     AfxSig_vOWNER,
-
-                     GZ_MFC_PMSG(&CBattlezDlg::OnMeasureItem)},
-    {WM_DRAWITEM, 0, 0, 0, AfxSig_vOWNER, GZ_MFC_PMSG(&CBattlezDlg::OnDrawItem)},
-    ON_BN_CLICKED(CTRL_PLAYER_COLOR0, CBattlezDlg::OnPlayerColor0) ON_BN_CLICKED(
-        CTRL_PLAYER_COLOR1,
-        CBattlezDlg::OnPlayerColor1
-    ) ON_BN_CLICKED(CTRL_PLAYER_COLOR2, CBattlezDlg::OnPlayerColor2)
-        ON_BN_CLICKED(CTRL_PLAYER_COLOR3, CBattlezDlg::OnPlayerColor3) ON_BN_CLICKED(
-            0x42b,
-            CBattlezDlg::ShowCustomDlg
-        ) ON_CBN_SELCHANGE(0x4ff, CBattlezDlg::OnWorldSelectionChange)
-
-            ON_CONTROL(0x200, 0x50a, CBattlezDlg::OnPlayerNameKillFocus0)
-                ON_CONTROL(0x200, 0x50b, CBattlezDlg::OnPlayerNameKillFocus1)
-                    ON_CONTROL(0x200, 0x50c, CBattlezDlg::OnPlayerNameKillFocus2)
-                        ON_CONTROL(0x200, 0x50d, CBattlezDlg::OnPlayerNameKillFocus3)
-                            ON_CONTROL(0x300, 0x50b, CBattlezDlg::OnPlayerNameChange1)
-                                ON_CONTROL(0x300, 0x50a, CBattlezDlg::OnPlayerNameChange0)
-                                    ON_CONTROL(0x300, 0x50c, CBattlezDlg::OnPlayerNameChange2)
-                                        ON_CONTROL(0x300, 0x50d, CBattlezDlg::OnPlayerNameChange3)
-    // API-forced MFC message-map representation seam.
-    {WM_PAINT, 0, 0, 0, AfxSig_vv, GZ_MFC_PMSG(&CBattlezDlg::OnPaint)},
-    ON_CBN_SELCHANGE(CTRL_PLAYER_MAX_GRUNTZ0, CBattlezDlg::OnMaxGruntzSelection0)
-        ON_CBN_SELCHANGE(CTRL_PLAYER_MAX_GRUNTZ1, CBattlezDlg::OnMaxGruntzSelection1)
-            ON_CBN_SELCHANGE(CTRL_PLAYER_MAX_GRUNTZ2, CBattlezDlg::OnMaxGruntzSelection2)
-                ON_CBN_SELCHANGE(
-                    CTRL_PLAYER_MAX_GRUNTZ3,
-                    CBattlezDlg::OnMaxGruntzSelection3
-                ){0, 0, 0, 0, AfxSig_end, 0},
-};
 DATA(0x00229c50)
 i32 g_battlezLastColors[4];
 DATA(0x00229cf0)
@@ -377,11 +328,22 @@ i32 CALLBACK BattlezMapComboEditProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM 
 }
 
 RVA(0x00015aa0, 0x6)
-const AFX_MSGMAP* CBattlezDlg::GetMessageMap() const {
-    return &s_messageMap;
-}
+BEGIN_MESSAGE_MAP(CBattlezDlg, CDialog)
+// ON_WM_* take unqualified member addresses, which clang rejects.
+ON_CBN_SELCHANGE(CTRL_PLAYER_TYPE0, CBattlezDlg::OnPlayerTypeSelection0)
+ON_CBN_SELCHANGE(CTRL_PLAYER_TYPE1, CBattlezDlg::OnPlayerTypeSelection1)
+ON_CBN_SELCHANGE(CTRL_PLAYER_TYPE2, CBattlezDlg::OnPlayerTypeSelection2)
+ON_CBN_SELCHANGE(
+    CTRL_PLAYER_TYPE3,
+    CBattlezDlg::OnPlayerTypeSelection3
+){WM_MEASUREITEM, 0, 0, 0, AfxSig_vOWNER, GZ_MFC_PMSG(&CBattlezDlg::OnMeasureItem)},
+    {WM_DRAWITEM, 0, 0, 0, AfxSig_vOWNER, GZ_MFC_PMSG(&CBattlezDlg::OnDrawItem)}, ON_BN_CLICKED(CTRL_PLAYER_COLOR0, CBattlezDlg::OnPlayerColor0) ON_BN_CLICKED(CTRL_PLAYER_COLOR1, CBattlezDlg::OnPlayerColor1) ON_BN_CLICKED(CTRL_PLAYER_COLOR2, CBattlezDlg::OnPlayerColor2) ON_BN_CLICKED(CTRL_PLAYER_COLOR3, CBattlezDlg::OnPlayerColor3) ON_BN_CLICKED(0x42b, CBattlezDlg::ShowCustomDlg) ON_CBN_SELCHANGE(0x4ff, CBattlezDlg::OnWorldSelectionChange) ON_EN_KILLFOCUS(0x50a, CBattlezDlg::OnPlayerNameKillFocus0) ON_EN_KILLFOCUS(0x50b, CBattlezDlg::OnPlayerNameKillFocus1) ON_EN_KILLFOCUS(0x50c, CBattlezDlg::OnPlayerNameKillFocus2) ON_EN_KILLFOCUS(0x50d, CBattlezDlg::OnPlayerNameKillFocus3) ON_EN_CHANGE(0x50b, CBattlezDlg::OnPlayerNameChange1) ON_EN_CHANGE(0x50a, CBattlezDlg::OnPlayerNameChange0) ON_EN_CHANGE(0x50c, CBattlezDlg::OnPlayerNameChange2) ON_EN_CHANGE(0x50d, CBattlezDlg::OnPlayerNameChange3){WM_PAINT, 0, 0, 0, AfxSig_vv, GZ_MFC_PMSG(&CBattlezDlg::OnPaint)},
+    ON_CBN_SELCHANGE(CTRL_PLAYER_MAX_GRUNTZ0, CBattlezDlg::OnMaxGruntzSelection0) ON_CBN_SELCHANGE(CTRL_PLAYER_MAX_GRUNTZ1, CBattlezDlg::OnMaxGruntzSelection1) ON_CBN_SELCHANGE(
+        CTRL_PLAYER_MAX_GRUNTZ2,
+        CBattlezDlg::OnMaxGruntzSelection2
+    ) ON_CBN_SELCHANGE(CTRL_PLAYER_MAX_GRUNTZ3, CBattlezDlg::OnMaxGruntzSelection3) END_MESSAGE_MAP()
 
-RVA(0x00015ac0, 0x60)
+        RVA(0x00015ac0, 0x60)
 CWnd* CBattlezDlg::GetPlayerTypeControl(i32 slot) {
     CWnd* result = NULL;
     switch (static_cast<PlayerSlot>(slot)) {

@@ -227,7 +227,10 @@ def _disambiguate(data: list[Binding], violations: list[str]) -> list[Binding]:
 
 def _data_expected_kind(claim: Claim) -> str | None:
     if claim.channel == "data_compgen":
-        return claim.meta.get("class")            # 'common' | 'copy'
+        # 'common' | 'copy' name compiler-owned census kinds; a 'macro' row is
+        # ordinary storage a library macro defines where DATA() cannot precede it
+        cls = claim.meta.get("class")
+        return "" if cls == "macro" else cls
     if claim.channel == "src_data_compgen":
         # the pinned VALUE decides the storage cl generated: a float constant
         # is an FP-pool slot, a narrow string literal a pooled `??_C@` datum

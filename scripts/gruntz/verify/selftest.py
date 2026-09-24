@@ -68,6 +68,23 @@ class BoardControls(unittest.TestCase):
         self.assertEqual(kept.get("nested static_casts"), 25)
 
 
+class DataCompgenClassControls(unittest.TestCase):
+    """A data_compgen class decides the census kind its row may bind."""
+
+    def kind(self, cls):
+        from gruntz.model import _data_expected_kind
+        from gruntz.retail_labels import Claim
+        return _data_expected_kind(Claim(0x1e94b8, "?messageMap@C@@1UAFX_MSGMAP@@B",
+                                         "data", "data_compgen", 8, "u", {"class": cls}))
+
+    def test_macro_rows_bind_ordinary_data(self):
+        self.assertEqual(self.kind("macro"), "")
+
+    def test_compiler_owned_classes_keep_their_kind(self):
+        self.assertEqual(self.kind("common"), "common")
+        self.assertEqual(self.kind("copy"), "copy")
+
+
 class BansControls(unittest.TestCase):
     def _scan(self, text):
         from gruntz.verify import bans
