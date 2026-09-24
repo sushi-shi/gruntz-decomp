@@ -164,14 +164,9 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
          cur = mgr->m_world->m_childGroup->NextChild()) {
         if (cur->m_logicRecord->m_dispatch == &DispatchGruntCreationPointLogic
             && cur->m_smarts == playerIndex) {
-            CoordPoolNode* p = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
-            Coord* slot = NULL;
-            if (p->m_next != NULL) {
-                slot = &p->m_coord;
-                g_coordPool.m_freeHead = p->m_next;
-            }
-            *slot = cur->ScreenPos();
-            *slot /= TILE_SIZE_PX;
+            Coord* slot = g_coordPool.Pop();
+            slot->m_x = cur->m_screenPosition.m_x / TILE_SIZE_PX;
+            slot->m_y = cur->m_screenPosition.m_y / TILE_SIZE_PX;
             m_candArray.SetAtGrow(m_candArray.GetSize(), slot);
         }
     }
@@ -180,8 +175,8 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
          cur2 = mgr->m_world->m_childGroup->NextChild()) {
         if (cur2->m_logicRecord->m_dispatch == &DispatchExitTriggerLogic
             && cur2->m_smarts == playerIndex) {
-            m_marker = cur2->ScreenPos();
-            m_marker /= TILE_SIZE_PX;
+            m_marker.m_x = cur2->m_screenPosition.m_x / TILE_SIZE_PX;
+            m_marker.m_y = cur2->m_screenPosition.m_y / TILE_SIZE_PX;
             break;
         }
     }
@@ -190,14 +185,9 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
          cur3 = mgr->m_world->m_childGroup->NextChild()) {
         if (cur3->m_logicRecord->m_dispatch == &DispatchWayPointLogic
             && cur3->m_smarts == playerIndex) {
-            CoordPoolNode* p = static_cast<CoordPoolNode*>(g_coordPool.m_freeHead);
-            Coord* slot = NULL;
-            if (p->m_next != NULL) {
-                slot = &p->m_coord;
-                g_coordPool.m_freeHead = p->m_next;
-            }
-            *slot = cur3->ScreenPos();
-            ScreenTile(slot);
+            Coord* slot = g_coordPool.Pop();
+            slot->m_x = cur3->m_screenPosition.m_x >> TILE_SHIFT_PX;
+            slot->m_y = cur3->m_screenPosition.m_y >> TILE_SHIFT_PX;
             m_attackWaypoints.SetAtGrow(m_attackWaypoints.GetSize(), slot);
             cur3->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
         }
@@ -246,10 +236,13 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
         m_reserved144 = ((rv % 4) + 5) * 125 * 8;
     }
     m_claimTimer = 0;
-    m_defenderSearchRadius.Set(6, 6);
-    m_idleRouteLimit.Set(6, 6);
+    m_defenderSearchRadius.m_x = 6;
+    m_defenderSearchRadius.m_y = 6;
+    m_idleRouteLimit.m_x = 6;
+    m_idleRouteLimit.m_y = 6;
     m_defenderTargetMaxDistance = 8;
-    m_idleBurnRand.Set(m_board->m_width / 3, m_board->m_width / 3);
+    m_idleBurnRand.m_x = m_board->m_width / 3;
+    m_idleBurnRand.m_y = m_board->m_width / 3;
     m_assignedTargetMaxDistance = m_board->m_width >> 2;
     m_roundRobinTick = 0;
 

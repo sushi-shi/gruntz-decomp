@@ -58,6 +58,7 @@ the following examples without removing their typed APIs:
 | `CGrunt::LoadEntranceConfig` 0x67f80 | 72.0614% | separate scalar screen tiles and old/new pixel lifetimes | 77.6316% |
 | `CGrunt::FinishActiveAction` 0x6a6d0 | 81.6941% | snapped pixel-pair macro and scalar arrival tile locals | 84.9912% |
 | `CBoomerang::LoadProjectileSprites` 0xe0690 | 42.2927% | scalar launch and FP midpoint/direction stores in typed vectors | 82.7155% |
+| `CBattlezMapConfig::LoadConfig` 0x25020 | 89.1183% | shared pool pop plus separate screen-tile and configuration component stores | 95.2833% |
 | `CGrunt::RectContains` 0x51850 | 46.2177% | tile component conversion, native rectangle copy, offset/extent macros | 100% |
 | `CGrunt::VehicleContactContains` 0x51a20 | 58.6220% | same rectangle family | 100% |
 | `CGrunt::SetArrivalTarget` 0x52ed0 | 59.6000% | component stores and snap expressions | 100% |
@@ -296,6 +297,16 @@ FP lifetimes from the first few instructions, with no call or CFG difference.
 A separate `originY` local and launch-position component stores recover the
 earlier 82.7155%. The shared `RecycleGruntCoords` inline remains in use;
 restoring its old macro was unnecessary for this method.
+
+`CBattlezMapConfig::LoadConfig` shows that preserving a shared inline owner
+can coexist with scalar caller evaluation. Replacing two hand-expanded free-list
+splices with `FreeNodePool::Pop()` is byte-flat. Keeping those member calls while
+restoring separate X/Y writes for three screen-to-tile sites raises the method
+to 92.2967%. Replacing three `Coord::Set` calls at the configuration tail with
+separate member writes recovers its pre-math 95.2833%. The typed `Coord`
+members and their shared APIs remain available; the full TU comparison changed
+only this method. Retail has three `__ftol` calls where the aggregate form had
+four, and the restored component lifetimes remove that repeated-site delta.
 
 `CMovingLogic::InitOwner` gives a counterexample to adding an aggregate merely
 because the component values are related. Its four min/max record reads have
