@@ -16,6 +16,9 @@ the following examples without removing their typed APIs:
 | `CGrunt::ComputeFacing` 0x57060 | 22.1515% | double subtraction, existing scalar locals, `VECTOR2_MAG_COMPONENTS` | 100% |
 | `CDDrawWorkerHost::SetTileSize` 0x161f00 | 24.4615% | rectangle stores and `TILE_SHIFT_INTO` loops | 100% |
 | `CDDrawWorkerHost::Read` 0x161640 | 72.3841% | component stores and `APPLY_WORKER_HOST_BOUNDS` | 97.3555% |
+| `CWwdGrid::Setup` 0x1915c0 | 58.1966% | `NORMALIZE_RECT_COMPONENTS` and size-component macros | 99.9658% |
+| `CWwdGrid::Query` 0x1918c0 | 68.8938% | four-exit disjoint and ordered clamp macros | 99.9250% |
+| `CWwdGridIter::Init` 0x191b10 | 55.3966% | same disjoint/clamp macros | 95.5000% |
 | `CGrunt::RectContains` 0x51850 | 46.2177% | tile component conversion, native rectangle copy, offset/extent macros | 100% |
 | `CGrunt::VehicleContactContains` 0x51a20 | 58.6220% | same rectangle family | 100% |
 | `CGrunt::SetArrivalTarget` 0x52ed0 | 59.6000% | component stores and snap expressions | 100% |
@@ -93,6 +96,17 @@ semantic fields and fixed layout; the pointer walk expresses the serialized
 source order. A prior trial labelled "historical body" was invalid: it copied a
 snapshot containing the current body, so its flat score was no evidence against
 the pointer walk. The actual old-body A/B raises 70.8123% to 95.0877%.
+
+The WwdGrid family shows why a boolean inline helper cannot always replace a
+macro expansion. `WwdRect::Intersects` groups four independent early exits into
+one result, changing `Query` and iterator `Init` from retail's five returns to
+two. `WwdRect::Intersect` also tests the bounds in a different order. Shared
+`WWD_RECT_RETURN_IF_DISJOINT` and `WWD_RECT_CLAMP_COMPONENTS` expand the four
+guards and four stores in their measured order at both sites, while the inline
+member methods remain available. In `Setup`, `CRect::NormalizeRect` and a
+`CopyRect` import are absent from retail; `NORMALIZE_RECT_COMPONENTS` and
+`SET_SIZE_COMPONENTS` recover its earlier call set. The macro forms are
+byte-identical to the direct historical component controls in the real VC5 TU.
 
 `LoadChipMachineConfig` has two independent edge-offset reads. The second key is
 `"(FallingItemSpeed"`, including its opening parenthesis. Computing one offset and

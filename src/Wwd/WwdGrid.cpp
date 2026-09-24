@@ -14,21 +14,26 @@
 RVA(0x001915c0, 0x15d)
 i32 CWwdGrid::Setup(RECT rect, i32 cellW, i32 cellH) {
     m_count = 0;
-    m_bounds.Init(rect.left, rect.top, rect.right, rect.bottom);
-    CRect normalized = rect;
-    normalized.NormalizeRect();
-    m_extent = normalized.Size();
-    m_cellShift = CSize(
+    memcpy(&m_bounds, &rect, sizeof(m_bounds));
+    NORMALIZE_RECT_COMPONENTS(rect)
+    SET_SIZE_COMPONENTS(m_extent, rect.right - rect.left, rect.bottom - rect.top);
+    SET_SIZE_COMPONENTS(
+        m_cellShift,
         static_cast<i32>((log(static_cast<double>(cellW)) / log(2.0))),
         static_cast<i32>((log(static_cast<double>(cellH)) / log(2.0)))
     );
-    m_cellSize = CSize(
+    SET_SIZE_COMPONENTS(
+        m_cellSize,
         static_cast<i32>(
             pow(DATA_COMPGEN(0x001f0ab0, 2.0), static_cast<double>(m_cellShift.cx))
             ),
             static_cast<i32>(pow(2.0, static_cast<double>(m_cellShift.cy)))
+        );
+    SET_SIZE_COMPONENTS(
+        m_gridSize,
+        m_extent.cx / m_cellSize.cx + 1,
+        m_extent.cy / m_cellSize.cy + 1
     );
-    m_gridSize = CSize(m_extent.cx / m_cellSize.cx + 1, m_extent.cy / m_cellSize.cy + 1);
     m_cellCount = m_gridSize.cy * m_gridSize.cx;
     BucketHead* arr = new BucketHead[m_cellCount];
     m_buckets = arr;
@@ -91,23 +96,19 @@ RVA(0x001918c0, 0x1a2)
 
 i32 CWwdGrid::Query(WwdRect q, i32 doRemove) {
     i32 fired = 0;
-    if (!q.Intersects(m_bounds)) {
-        return 0;
-    }
-    q.Intersect(m_bounds);
+    WWD_RECT_RETURN_IF_DISJOINT(q, m_bounds, 0)
+    WWD_RECT_CLAMP_COMPONENTS(q, m_bounds)
     WwdRect cell;
-    cell.Init(
-        (q.m_minX - m_bounds.m_minX) >> m_cellShift.cx,
-        (q.m_minY - m_bounds.m_minY) >> m_cellShift.cy,
-        (q.m_maxX - m_bounds.m_minX) >> m_cellShift.cx,
-        (q.m_maxY - m_bounds.m_minY) >> m_cellShift.cy
-    );
+    cell.m_minY = (q.m_minY - m_bounds.m_minY) >> m_cellShift.cy;
+    cell.m_minX = (q.m_minX - m_bounds.m_minX) >> m_cellShift.cx;
+    cell.m_maxY = (q.m_maxY - m_bounds.m_minY) >> m_cellShift.cy;
+    cell.m_maxX = (q.m_maxX - m_bounds.m_minX) >> m_cellShift.cx;
     i32 base = cell.m_minY * m_gridSize.cx + cell.m_minX;
     if (cell.m_minY <= cell.m_maxY) {
-        i32 rowCount = cell.m_maxY - cell.m_minY + 1;
+        i32 colN = cell.m_maxY - cell.m_minY + 1;
         do {
             if (cell.m_minX <= cell.m_maxX) {
-                i32 colCount = cell.m_maxX - cell.m_minX + 1;
+                i32 rowN = cell.m_maxX - cell.m_minX + 1;
                 i32 idx = base;
                 do {
                     WwdRegion* r = static_cast<WwdRegion*>(m_buckets[idx].GetFirst());
@@ -125,10 +126,10 @@ i32 CWwdGrid::Query(WwdRect q, i32 doRemove) {
                         r = next;
                     }
                     ++idx;
-                } while (--colCount);
+                } while (--rowN);
             }
             base += m_gridSize.cx;
-        } while (--rowCount);
+        } while (--colN);
     }
     return fired;
 }
@@ -162,10 +163,8 @@ WwdRegion* CWwdGridIter::Init(CWwdGrid* grid, WwdRect rect, i32 remove) {
     m_grid = grid;
     m_rect = rect;
     m_remove = remove;
-    if (!m_rect.Intersects(grid->m_bounds)) {
-        return NULL;
-    }
-    m_rect.Intersect(grid->m_bounds);
+    WWD_RECT_RETURN_IF_DISJOINT(m_rect, grid->m_bounds, NULL)
+    WWD_RECT_CLAMP_COMPONENTS(m_rect, grid->m_bounds)
     m_rowStart = (m_rect.m_minY - grid->m_bounds.m_minY) >> grid->m_cellShift.cy;
     m_colStart = (m_rect.m_minX - grid->m_bounds.m_minX) >> grid->m_cellShift.cx;
     m_rowEnd = (m_rect.m_maxY - grid->m_bounds.m_minY) >> grid->m_cellShift.cy;

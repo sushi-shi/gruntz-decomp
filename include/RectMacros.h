@@ -8,6 +8,17 @@
     (rect).bottom = (b)
 #define RECT_WIDTH(rect) ((rect).right - (rect).left)
 #define RECT_HEIGHT(rect) ((rect).bottom - (rect).top)
+#define NORMALIZE_RECT_COMPONENTS(rect)                                                            \
+    if ((rect).right < (rect).left) {                                                              \
+        i32 t = (rect).left;                                                                       \
+        (rect).left = (rect).right;                                                                \
+        (rect).right = t;                                                                          \
+    }                                                                                              \
+    if ((rect).bottom < (rect).top) {                                                              \
+        i32 t = (rect).top;                                                                        \
+        (rect).top = (rect).bottom;                                                                \
+        (rect).bottom = t;                                                                         \
+    }
 #define SET_RECT_XY_EXTENTS(rect, l, r, t, b)                                                      \
     (rect).left = (l);                                                                             \
     (rect).right = (r);                                                                            \

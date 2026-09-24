@@ -4681,11 +4681,11 @@ wwdgrid	?Add@CWwdGrid@@QAEHPAUWwdRegion@@@Z	100.0000	100.0000	3	3fdaeeeac128	0x1
 wwdgrid	?Clear@CWwdGrid@@QAEHXZ	100.0000	100.0000	2	ddc0b5d5e97c	0x191a70	100.0000	
 wwdgrid	?FreeBuckets@CWwdGrid@@QAEXXZ	100.0000	100.0000	2	b0863f893baa	0x191800	100.0000	
 wwdgrid	?GetNext@CWwdGridIter@@QAEPAUWwdRegion@@XZ	100.0000	100.0000	8	e67e830f9d12	0x191c30	100.0000	
-wwdgrid	?Init@CWwdGridIter@@QAEPAUWwdRegion@@PAVCWwdGrid@@UWwdRect@@H@Z	55.3966	55.3966	4	f8273dcc9164	0x191b10	95.5000	
-wwdgrid	?Query@CWwdGrid@@QAEHUWwdRect@@H@Z	68.8937	68.8937	4	1fe666d66fcf	0x1918c0	99.9250	
+wwdgrid	?Init@CWwdGridIter@@QAEPAUWwdRegion@@PAVCWwdGrid@@UWwdRect@@H@Z	95.5000	95.5000	5	f8eb1d23c075	0x191b10	95.5000	
+wwdgrid	?Query@CWwdGrid@@QAEHUWwdRect@@H@Z	99.9250	99.9250	5	b60d1d5cf2c1	0x1918c0	99.9250	
 wwdgrid	?Remove@CWwdGrid@@QAEXPAUWwdRegion@@@Z	100.0000	100.0000	2	2bfab4d73e6a	0x191890	100.0000	
-wwdgrid	?Setup@CWwdGrid@@QAEHUtagRECT@@@Z	100.0000	100.0000	7	9db45c158e2e	0x191770	100.0000	
-wwdgrid	?Setup@CWwdGrid@@QAEHUtagRECT@@HH@Z	58.1966	58.1966	7	9db45c158e2e	0x1915c0	99.9658	
+wwdgrid	?Setup@CWwdGrid@@QAEHUtagRECT@@@Z	100.0000	100.0000	8	4b8615ee9dff	0x191770	100.0000	
+wwdgrid	?Setup@CWwdGrid@@QAEHUtagRECT@@HH@Z	99.9658	99.9658	8	4b8615ee9dff	0x1915c0	99.9658	
 wwdgrid	?Start@CWwdGridIter@@QAEPAUWwdRegion@@PAVCWwdGrid@@H@Z	100.0000	100.0000	3	ac8c5c9f0e52	0x191ad0	100.0000	
 wwdobjmgr	??0CLogicRecord@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	3	dd30650e02f1	0x15b300	100.0000	
 wwdobjmgr	??0CResolveNode@@QAE@PAVCDDrawSurfaceMgr@@HH@Z	100.0000	100.0000	3	c2257678bc58	0x15b2c0	100.0000	
