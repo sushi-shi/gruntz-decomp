@@ -12,6 +12,25 @@ fresh declaration-and-known-use review: `reassess-cavector` and
 remain recheckable in the ledger. The other 14 families remain pending. Earlier
 checkpoint counts below describe their own state, not a blanket exemption.
 
+Motion checkpoint `9e1e121fe` applies the complete three-site square-helper
+family, restores the original multiply grouping and shared zero references,
+and models the nine eagerly evaluated arrival targets. The retained source
+restores six missing x87 cleanup pops; `Step` moves 80.6230% to 81.0826%.
+The two arrival helpers move 95.6250% to 93.7500%; neither is exact, and their
+historical 100% remains recorded. Their remaining 14-byte scheduling window
+is explicitly bounded by the new tests, not hidden by the score gate.
+Full build/MAX gates, 95 focused tests and the 3,919-function near-exact audit
+pass. All 4,429 historical and 4,427 unchanged-source maxima are preserved.
+The exact count and rounded aggregate scores are unchanged.
+The canonical adoptions are `reassess-sqr-motion`,
+`reassess-sqr-motion-zero-referents` and
+`motion-arrival-target-distinct-product`; all tested alternatives remain
+individually recheckable. The [composed lifetime control](patterns/square-helper-compose-intermediate-product-lifetime.md)
+records the measured mechanism and corrects the former 65% stopping claim.
+The broader motion wall, SQR review and all 14 broad pending families remain
+open. The worker's next derived cohort and its per-option evidence are under
+`reassess-sqr-grunt-combat` and `combat-*`; those source trials are not yet run.
+
 Scalar-math checkpoint `f8e3f6e5f` restores the missing FlashTable dark-ramp
 uses of `INTERPOLATE`, composed with its existing `HSV_MIN`. Both separately
 compiled forms preserve the 99.2032% body; this is an applied source cleanup,
