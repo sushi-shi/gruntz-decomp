@@ -8,6 +8,7 @@
 #include <Gruntz/Brickz.h>
 #include <Gruntz/BridgeTileId.h>
 #include <Gruntz/FreeNodePool.h>
+#include <Gruntz/FreeNodePoolInline.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameObjectLogicTypes.h>
@@ -505,9 +506,7 @@ i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
                     m_cellPool[elem->m_y * m_width + elem->m_x].m_flags = 0x10;
                     m_cellPool[elem->m_y * m_width + elem->m_x].m_tileId = 0;
 
-                    CoordPoolNode* node = g_coordPool.NodeOf(elem);
-                    node->m_next = g_coordPool.m_freeHead;
-                    g_coordPool.m_freeHead = node;
+                    PushFreeNode(&g_coordPool, elem);
                 }
             }
             m_arr.SetSize(0, -1);

@@ -620,8 +620,7 @@ i32 SoundCueRegistry::LoadFromTree(CRezDir* tree, const char* prefix, const char
                     } else {
                         strcpy(cueKey, source->GetName());
                     }
-                    SoundCue* cue = NULL;
-                    MapLookup(m_cues, cueKey, cue);
+                    SoundCue* cue = FindCue(cueKey);
                     if (cue == NULL) {
                         if (LoadCueFromSource(cueKey, source) != NULL) {
                             ++count;
@@ -670,8 +669,7 @@ i32 SoundCueRegistry::PlaySpatializedCue(
 ) {
     CGameLevel* level = OwnerMgr()->m_level;
     if (level != NULL && level->m_mainPlane != NULL && m_silentMode == false) {
-        SoundCue* cue = NULL;
-        MapLookup(m_cues, key, cue);
+        SoundCue* cue = FindCue(key);
         if (cue != NULL) {
             return cue->PlaySpatialized(sourceX, -1, maxPanOffsetPx, fullPanOffsetPx);
         }

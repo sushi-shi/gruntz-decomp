@@ -1254,8 +1254,7 @@ CObject* CAniElement::AtChecked(i32 i) const {
 
 RVA(0x0006b2a0, 0x23)
 CAniElement* AnimationRegistry::FindAnimation(const char* key) {
-    CAniElement* animation = NULL;
-    MapLookup(m_animations, key, animation);
+    CAniElement* animation = LookupAnimation(m_animations, key);
     return animation;
 }
 

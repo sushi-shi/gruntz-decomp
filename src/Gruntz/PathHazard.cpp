@@ -320,8 +320,7 @@ i32 CRainCloud::HitTest(i32 playerIndex, i32 unitIndex) {
     if (::PtInRect(&reg->m_viewBounds, obj->m_screenX, obj->m_screenY)) {
         SoundCueRegistry* registry = reg->m_world->m_soundRegistry;
         if (registry->m_silentMode == false) {
-            SoundCue* found = NULL;
-            MapLookup(registry->m_cues, "LEVEL_CLOUDHAZARDKILL", found);
+            SoundCue* found = registry->FindCue("LEVEL_CLOUDHAZARDKILL");
             SoundCue* cue = found;
             if (cue != NULL) {
                 b32 soundEnabled = g_soundEnabled;

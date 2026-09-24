@@ -17,6 +17,7 @@
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/PixelShift.h>
 #include <DDrawMgr/ShadeTableCache.h>
+#include <DDrawMgr/WorkerLookup.h>
 #include <DinMgr2/DirectInputMgr2.h>
 #include <Dsndmgr/SoundBuffer.h>
 #include <Dsndmgr/SoundStream.h>
@@ -2197,9 +2198,7 @@ i32 CGruntzMgr::LoadMonologoSprite() {
 
     CDDrawWorker* rec;
     {
-        CObject* out = NULL;
-        m_world->m_imageRegistry->m_workersByName.Lookup("GAME_MONOLITH", out);
-        rec = static_cast<CDDrawWorker*>(out);
+        rec = LookupWorker(m_world, "GAME_MONOLITH");
     }
     if (rec == NULL) {
         return 0;
@@ -2264,9 +2263,7 @@ i32 CGruntzMgr::CheatRevealTreasures() {
     if (m_world == NULL) {
         return 0;
     }
-    CObject* found = NULL;
-    m_world->m_imageRegistry->m_workersByName.Lookup("GAME_DEVHEADS", found);
-    CDDrawWorker* out = static_cast<CDDrawWorker*>(found);
+    CDDrawWorker* out = LookupWorker(m_world, "GAME_DEVHEADS");
     if (out == NULL) {
         return 0;
     }
@@ -2292,9 +2289,7 @@ i32 CGruntzMgr::CheatRevealTreasures() {
 RVA(0x000910d0, 0x75)
 i32 CGruntzMgr::SetGruntColor(CDDrawWorker* sink, const char* key, i32 idx) {
     if (sink && key) {
-        CObject* out = NULL;
-        m_world->m_imageRegistry->m_workersByName.Lookup(key, out);
-        CDDrawWorker* row = static_cast<CDDrawWorker*>(out);
+        CDDrawWorker* row = LookupWorker(m_world, key);
         if (row) {
             CImage* dst = DDRAW_WORKER_FRAME_AT_UNCHECKED(row, row->m_minIndex);
             if (dst) {
@@ -2346,9 +2341,7 @@ void CGruntzMgr::CheatSkeletonToggle() {
 
         CDDrawWorker* set;
         {
-            CObject* found = NULL;
-            m_world->m_imageRegistry->m_workersByName.Lookup("Gruntz", found);
-            set = static_cast<CDDrawWorker*>(found);
+            set = LookupWorker(m_world, "Gruntz");
         }
         if (set) {
             CImage* fr = DDRAW_WORKER_FRAME_AT_UNCHECKED(set, set->m_minIndex);
@@ -2368,8 +2361,7 @@ void CGruntzMgr::CheatSkeletonToggle() {
                     SoundCueRegistry* registry = m_world->m_soundRegistry;
                     if (registry->m_silentMode == false) {
 
-                        SoundCue* found = NULL;
-                        MapLookup(registry->m_cues, "GAME_MINORCHEAT", found);
+                        SoundCue* found = registry->FindCue("GAME_MINORCHEAT");
                         SoundCue* cue = found;
                         if (cue) {
                             i32 volumePercent = g_soundVolumePercent;
@@ -2396,9 +2388,7 @@ void CGruntzMgr::CheatEclipseToggle() {
 
         CDDrawWorker* set;
         {
-            CObject* found = NULL;
-            m_world->m_imageRegistry->m_workersByName.Lookup("Gruntz", found);
-            set = static_cast<CDDrawWorker*>(found);
+            set = LookupWorker(m_world, "Gruntz");
         }
         if (set) {
             CImage* fr = DDRAW_WORKER_FRAME_AT_UNCHECKED(set, set->m_minIndex);
@@ -2417,8 +2407,7 @@ void CGruntzMgr::CheatEclipseToggle() {
                     SoundCueRegistry* registry = m_world->m_soundRegistry;
                     if (registry->m_silentMode == false) {
 
-                        SoundCue* found = NULL;
-                        MapLookup(registry->m_cues, "GAME_MINORCHEAT", found);
+                        SoundCue* found = registry->FindCue("GAME_MINORCHEAT");
                         SoundCue* cue = found;
                         if (cue) {
                             i32 volumePercent = g_soundVolumePercent;

@@ -180,8 +180,7 @@ void CPreviewState::LoadLevelPreviewScreen() {
     } else {
         SoundCueRegistry* h = m_world->m_soundRegistry;
         if (h->m_silentMode == false) {
-            SoundCue* found = NULL;
-            MapLookup(h->m_cues, "GAME_TELEPORTEROPEN", found);
+            SoundCue* found = h->FindCue("GAME_TELEPORTEROPEN");
             SoundCue* p = found;
             if (p != NULL) {
                 i32 volumePercent = g_soundVolumePercent;

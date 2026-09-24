@@ -149,9 +149,7 @@ i32 CTriggerMgr::RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelect
                 POSITION cur = pos;
                 Coord* p = static_cast<Coord*>(list->GetNext(pos));
                 if (p->m_x == playerIndex && p->m_y == unitIndex) {
-                    CoordPoolNode* slot = g_coordPool.NodeOf(p);
-                    slot->m_next = g_coordPool.m_freeHead;
-                    g_coordPool.m_freeHead = slot;
+                    PushFreeNode(&g_coordPool, p);
                     list->RemoveAt(cur);
                 }
             }
@@ -190,9 +188,7 @@ i32 CTriggerMgr::RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelect
                     CloseActionOptionsMenu();
                 }
             }
-            CoordPoolNode* slot = g_coordPool.NodeOf(p);
-            slot->m_next = g_coordPool.m_freeHead;
-            g_coordPool.m_freeHead = slot;
+            PushFreeNode(&g_coordPool, p);
             m_recList.RemoveAt(cur);
             return 1;
         }
@@ -209,9 +205,7 @@ void CTriggerMgr::ResetAll() {
         CGrunt* cell = m_units[idx];
         if (cell != NULL) {
             (static_cast<CGrunt*>(cell))->ClearAllSprites();
-            CoordPoolNode* slot = g_coordPool.NodeOf(payload);
-            slot->m_next = g_coordPool.m_freeHead;
-            g_coordPool.m_freeHead = slot;
+            PushFreeNode(&g_coordPool, payload);
         }
     }
     m_recList.RemoveAll();
@@ -357,9 +351,7 @@ void CTriggerMgr::ClearRecords() {
     POSITION pos = m_recList.GetHeadPosition();
     if (pos != NULL) {
         do {
-            CoordPoolNode* slot = g_coordPool.NodeOf(m_recList.GetNext(pos));
-            slot->m_next = g_coordPool.m_freeHead;
-            g_coordPool.m_freeHead = slot;
+            PushFreeNode(&g_coordPool, m_recList.GetNext(pos));
         } while (pos != NULL);
     }
     m_recList.RemoveAll();
@@ -429,7 +421,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     if (m_recList.GetCount() != 1) {
         cell = NULL;
     } else {
-        Coord* rec = static_cast<Coord*>(m_recList.GetHead());
+        Coord* rec = HeadRec();
         cell = m_units[rec->m_y + rec->m_x * TM_UNITS_PER_PLAYER];
     }
     if (cell == NULL || cell->m_playerIndex != g_curPlayer) {
@@ -727,7 +719,7 @@ i32 CTriggerMgr::HandleTargetSelection(
     if (m_recList.GetCount() != 1) {
         selectedGrunt = NULL;
     } else {
-        Coord* rec = static_cast<Coord*>(m_recList.GetHead());
+        Coord* rec = HeadRec();
         selectedGrunt = m_units[rec->m_x * TM_UNITS_PER_PLAYER + rec->m_y];
     }
 
@@ -898,7 +890,7 @@ i32 CTriggerMgr::OpenActionOptionsMenu(
     if (m_recList.GetCount() != 1) {
         selectedGrunt = NULL;
     } else {
-        Coord* rec = static_cast<Coord*>(m_recList.GetHead());
+        Coord* rec = HeadRec();
         selectedGrunt = m_units[rec->m_y + rec->m_x * TM_UNITS_PER_PLAYER];
     }
     if (selectedGrunt == NULL) {
@@ -1562,7 +1554,7 @@ i32 CTriggerMgr::HandleActionOptionsPointer(i32 x, i32 y) {
     if (m_recList.GetCount() != 1) {
         cell = NULL;
     } else {
-        Coord* rec = static_cast<Coord*>(m_recList.GetHead());
+        Coord* rec = HeadRec();
         cell = m_units[rec->m_x * TM_UNITS_PER_PLAYER + rec->m_y];
     }
     CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
@@ -1736,8 +1728,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
             SoundCueRegistry* registry = m_world->m_soundRegistry;
             if (registry->m_silentMode == false) {
 
-                SoundCue* found = NULL;
-                MapLookup(registry->m_cues, "LEVEL_ROCKBREAK", found);
+                SoundCue* found = registry->FindCue("LEVEL_ROCKBREAK");
                 SoundCue* cue = found;
                 if (cue != NULL) {
                     b32 soundEnabled = g_soundEnabled;
@@ -2455,9 +2446,7 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
                 }
             }
         } else {
-            CoordPoolNode* node = g_coordPool.NodeOf(payload);
-            node->m_next = g_coordPool.m_freeHead;
-            g_coordPool.m_freeHead = node;
+            PushFreeNode(&g_coordPool, payload);
             m_selLists[slot].RemoveAt(cur);
         }
     } while (pos != NULL);
@@ -2518,7 +2507,7 @@ i32 CTriggerMgr::CenterOnGroup(i32 doSelect) {
         if (m_recList.GetCount() != 1) {
             cell2 = NULL;
         } else {
-            Coord* head = static_cast<Coord*>(m_recList.GetHead());
+            Coord* head = HeadRec();
             cell2 = m_units[head->m_x * TM_UNITS_PER_PLAYER + head->m_y];
         }
         if (cell2 != NULL) {
@@ -2545,9 +2534,7 @@ void CTriggerMgr::ClearSelections() {
             do {
                 Coord* payload = static_cast<Coord*>(list->GetNext(pos));
                 if (payload != NULL) {
-                    CoordPoolNode* slot = g_coordPool.NodeOf(payload);
-                    slot->m_next = g_coordPool.m_freeHead;
-                    g_coordPool.m_freeHead = slot;
+                    PushFreeNode(&g_coordPool, payload);
                 }
             } while (pos != NULL);
         }
@@ -2702,7 +2689,7 @@ i32 CTriggerMgr::ToggleToolTargeting() {
     if (m_recList.GetCount() != 1) {
         cell = NULL;
     } else {
-        Coord* rec = static_cast<Coord*>(m_recList.GetHead());
+        Coord* rec = HeadRec();
         cell = m_units[rec->m_y + rec->m_x * TM_UNITS_PER_PLAYER];
     }
     if (cell != NULL && cell->m_playerIndex == g_curPlayer) {
@@ -2743,7 +2730,7 @@ i32 CTriggerMgr::ToggleToyTargeting() {
     if (m_recList.GetCount() != 1) {
         cell = NULL;
     } else {
-        Coord* rec = static_cast<Coord*>(m_recList.GetHead());
+        Coord* rec = HeadRec();
         cell = m_units[rec->m_y + rec->m_x * TM_UNITS_PER_PLAYER];
     }
     if (cell != NULL && cell->m_playerIndex == g_curPlayer) {

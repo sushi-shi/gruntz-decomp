@@ -12,7 +12,6 @@
 #include <Gruntz/GameTabContent.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/LogicTypeId.h>
-#include <Gruntz/SbGeom.h>
 #include <Gruntz/SbiBeltPhase.h>
 #include <Gruntz/SbiConfig.h>
 #include <Gruntz/SbiFallingItemState.h>
@@ -28,6 +27,7 @@
 #include <Gruntz/TriggerGridDimensions.h>
 #include <Gruntz/WarpStoneFragment.h>
 #include <Ints.h>
+#include <MakeRect.h>
 
 class CSBI_ImageSet;
 class CSBI_WellGoo;

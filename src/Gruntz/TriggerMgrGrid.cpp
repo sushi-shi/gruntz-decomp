@@ -581,13 +581,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
                 g_gameReg->m_gameStats->m_secretsFound++;
                 {
                     SoundCueRegistry* set = m_world->m_soundRegistry;
-                    if (set->m_silentMode == false) {
-                        SoundCue* found = NULL;
-                        MapLookup(set->m_cues, "GAME_SECRETSWITCH", found);
-                        if (found != NULL) {
-                            found->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
-                        }
-                    }
+                    set->PlayCue("GAME_SECRETSWITCH");
                 }
                 if (g != NULL) {
                     i32 cueX = g->m_object->m_screenX;

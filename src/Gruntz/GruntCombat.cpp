@@ -285,23 +285,6 @@ i32* CGrunt::EntranceTileOffset(i32* out) {
     return out;
 }
 
-#define SCAN_BOUNDS_PLAINCLIP(grid)                                                                \
-    {                                                                                              \
-        RECT rb;                                                                                   \
-        rb.left = 0;                                                                               \
-        rb.top = 0;                                                                                \
-        rb.right = (grid)->m_width;                                                                \
-        rb.bottom = (grid)->m_height;                                                              \
-        RECT ra;                                                                                   \
-        ra = CRect(0, 0, (grid)->m_width, (grid)->m_height);                                       \
-        RECT* rd = &(grid)->m_bounds;                                                              \
-        if (!IntersectRect(rd, &ra, &rb)) {                                                        \
-            *rd = ra;                                                                              \
-        }                                                                                          \
-        (grid)->m_gridW = rd->right - rd->left;                                                    \
-        (grid)->m_gridH = rd->bottom - rd->top;                                                    \
-    }
-
 RVA(0x00057060, 0x72)
 void CGrunt::ComputeFacing(double dt) {
     CWwdSpriteObject* h = m_object;
@@ -389,14 +372,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
 
     SoundCueRegistry* slot =
         (static_cast<CDDrawSurfaceMgr*>(m_ownerLogicRecord->m_ownerCtx))->m_soundRegistry;
-    if (slot->m_silentMode == false) {
-        SoundCue* sout = NULL;
-        MapLookup(slot->m_cues, s_gameAttack, sout);
-        if (sout != NULL) {
-
-            sout->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
-        }
-    }
+    slot->PlayCue(s_gameAttack);
 
     switch (idx) {
         case SPELL_FREEZE: {
@@ -661,8 +637,7 @@ void CGrunt::EnsureVehicleLoopSound(const char* key) {
         return;
     }
     CDDrawSurfaceMgr* world = g_gameReg->m_world;
-    SoundCue* cue = NULL;
-    MapLookup(world->m_soundRegistry->m_cues, key, cue);
+    SoundCue* cue = world->m_soundRegistry->FindCue(key);
     if (cue == NULL) {
         return;
     }
@@ -691,8 +666,7 @@ void CGrunt::EnsurePowerupLoopSound(const char* key) {
     if (sound != NULL) {
         return;
     }
-    SoundCue* cue = NULL;
-    MapLookup(g_gameReg->m_world->m_soundRegistry->m_cues, key, cue);
+    SoundCue* cue = g_gameReg->m_world->m_soundRegistry->FindCue(key);
     if (cue == NULL) {
         return;
     }

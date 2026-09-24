@@ -233,8 +233,7 @@ i32 CWarlord::SerializeDispatch(
             } else {
                 CMapStringToPtr* map =
                     &m_ownerLogicRecord->m_ownerCtx->m_animRegistry->m_animations;
-                CAniElement* v = NULL;
-                MapLookup(*map, hdr, v);
+                CAniElement* v = LookupAnimation(*map, hdr);
                 m_value = v;
             }
             break;
@@ -394,8 +393,7 @@ i32 CWarlord::SerializeDispatch(
             g_serialCounter++;
             ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
-                CAniElement* value = NULL;
-                MapLookup(world->m_animRegistry->m_animations, buf, value);
+                CAniElement* value = LookupAnimation(world->m_animRegistry->m_animations, buf);
                 m_idleAnims[0] = value;
             } else {
                 m_idleAnims[0] = NULL;
@@ -403,8 +401,7 @@ i32 CWarlord::SerializeDispatch(
             g_serialCounter++;
             ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
-                CAniElement* value = NULL;
-                MapLookup(world->m_animRegistry->m_animations, buf, value);
+                CAniElement* value = LookupAnimation(world->m_animRegistry->m_animations, buf);
                 m_idleAnims[1] = value;
             } else {
                 m_idleAnims[1] = NULL;
@@ -412,8 +409,7 @@ i32 CWarlord::SerializeDispatch(
             g_serialCounter++;
             ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
-                CAniElement* value = NULL;
-                MapLookup(world->m_animRegistry->m_animations, buf, value);
+                CAniElement* value = LookupAnimation(world->m_animRegistry->m_animations, buf);
                 m_idleAnims[2] = value;
             } else {
                 m_idleAnims[2] = NULL;
@@ -421,8 +417,7 @@ i32 CWarlord::SerializeDispatch(
             g_serialCounter++;
             ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
-                CAniElement* value = NULL;
-                MapLookup(world->m_animRegistry->m_animations, buf, value);
+                CAniElement* value = LookupAnimation(world->m_animRegistry->m_animations, buf);
                 m_idleAnims[3] = value;
             } else {
                 m_idleAnims[3] = NULL;
@@ -430,8 +425,7 @@ i32 CWarlord::SerializeDispatch(
             g_serialCounter++;
             ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
-                CAniElement* value = NULL;
-                MapLookup(world->m_animRegistry->m_animations, buf, value);
+                CAniElement* value = LookupAnimation(world->m_animRegistry->m_animations, buf);
                 m_battlecryAnims[0] = value;
             } else {
                 m_battlecryAnims[0] = NULL;
@@ -439,8 +433,7 @@ i32 CWarlord::SerializeDispatch(
             g_serialCounter++;
             ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
-                CAniElement* value = NULL;
-                MapLookup(world->m_animRegistry->m_animations, buf, value);
+                CAniElement* value = LookupAnimation(world->m_animRegistry->m_animations, buf);
                 m_battlecryAnims[1] = value;
             } else {
                 m_battlecryAnims[1] = NULL;
@@ -448,8 +441,7 @@ i32 CWarlord::SerializeDispatch(
             g_serialCounter++;
             ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
-                CAniElement* value = NULL;
-                MapLookup(world->m_animRegistry->m_animations, buf, value);
+                CAniElement* value = LookupAnimation(world->m_animRegistry->m_animations, buf);
                 m_battlecryAnims[2] = value;
             } else {
                 m_battlecryAnims[2] = NULL;
@@ -457,8 +449,7 @@ i32 CWarlord::SerializeDispatch(
             g_serialCounter++;
             ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
-                CAniElement* value = NULL;
-                MapLookup(world->m_animRegistry->m_animations, buf, value);
+                CAniElement* value = LookupAnimation(world->m_animRegistry->m_animations, buf);
                 m_animJoy = value;
             } else {
                 m_animJoy = NULL;
@@ -466,8 +457,7 @@ i32 CWarlord::SerializeDispatch(
             g_serialCounter++;
             ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
-                CAniElement* value = NULL;
-                MapLookup(world->m_animRegistry->m_animations, buf, value);
+                CAniElement* value = LookupAnimation(world->m_animRegistry->m_animations, buf);
                 m_animDeath = value;
             } else {
                 m_animDeath = NULL;
@@ -475,8 +465,7 @@ i32 CWarlord::SerializeDispatch(
             g_serialCounter++;
             ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
-                CAniElement* value = NULL;
-                MapLookup(world->m_animRegistry->m_animations, buf, value);
+                CAniElement* value = LookupAnimation(world->m_animRegistry->m_animations, buf);
                 m_animMoving = value;
             } else {
                 m_animMoving = NULL;
@@ -484,8 +473,7 @@ i32 CWarlord::SerializeDispatch(
             g_serialCounter++;
             ar->Read(buf, SERIAL_NAME_LEN);
             if (strlen(buf) != 0) {
-                CAniElement* value = NULL;
-                MapLookup(world->m_animRegistry->m_animations, buf, value);
+                CAniElement* value = LookupAnimation(world->m_animRegistry->m_animations, buf);
                 m_animPanic = value;
             } else {
                 m_animPanic = NULL;

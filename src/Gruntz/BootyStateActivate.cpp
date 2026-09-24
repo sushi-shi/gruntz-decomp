@@ -350,8 +350,7 @@ i32 CBootyState::EnterState(GameStateId previousState) {
     SoundCueRegistry* set = reg->m_world->m_soundRegistry;
     i32 token = reg->m_soundVolume;
     if (set->m_silentMode == false) {
-        SoundCue* found = NULL;
-        MapLookup(set->m_cues, "BOOTY_LOOP", found);
+        SoundCue* found = set->FindCue("BOOTY_LOOP");
         if (found != NULL) {
             PlaySoundCueIfElapsed(found, token, 0, 0, true);
         }
@@ -1049,13 +1048,7 @@ i32 CBootyState::LevelMsgHudDriver() {
                 if (shown == 0) {
 
                     SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-                    if (registry->m_silentMode == false) {
-                        SoundCue* cue = NULL;
-                        MapLookup(registry->m_cues, "GAME_EXPLOSION1", cue);
-                        if (cue != NULL) {
-                            cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
-                        }
-                    }
+                    registry->PlayCue("GAME_EXPLOSION1");
                     shown = 1;
                 }
             }
@@ -1119,8 +1112,7 @@ i32 CBootyState::LevelMsgHudDriver() {
             m_slot++;
             SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
             if (registry->m_silentMode == false) {
-                SoundCue* found = NULL;
-                MapLookup(registry->m_cues, "GAME_EXPLOSION1", found);
+                SoundCue* found = registry->FindCue("GAME_EXPLOSION1");
                 SoundCue* cue = found;
                 if (cue != NULL) {
                     b32 soundEnabled = g_soundEnabled;
@@ -1346,20 +1338,13 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
         if ((g_gameReg->m_gameStats)->CurrentAreaHasWarpLetter(m_stepIndex) == 0) {
             m_soundStarted = true;
             SoundCueRegistry* ss = g_gameReg->m_world->m_soundRegistry;
-            if (ss->m_silentMode == false) {
-                SoundCue* res = NULL;
-                MapLookup(ss->m_cues, "GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D", res);
-                if (res != NULL) {
-                    res->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
-                }
-            }
+            ss->PlayCue("GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D");
         }
     }
 
     if (m_soundStarted != false) {
         SoundCueRegistry* ss = g_gameReg->m_world->m_soundRegistry;
-        SoundCue* res = NULL;
-        MapLookup(ss->m_cues, "GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D", res);
+        SoundCue* res = ss->FindCue("GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D");
         if (res == NULL) {
             return 1;
         }
@@ -1392,8 +1377,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                 if ((g_gameReg->m_gameStats)->CurrentAreaHasWarpLetter(m_stepIndex) != 0) {
                     SoundCueRegistry* ss = g_gameReg->m_world->m_soundRegistry;
                     if (ss->m_silentMode == false) {
-                        SoundCue* res = NULL;
-                        MapLookup(ss->m_cues, "GAME_FLAGRISE", res);
+                        SoundCue* res = ss->FindCue("GAME_FLAGRISE");
                         if (res != NULL) {
                             PlaySoundCueIfElapsed(res, g_soundVolumePercent, 0, 0, false);
                         }
@@ -1486,8 +1470,7 @@ i32 CBootyState::CheckPerfectBonus() {
         i32 item = g_gameReg->m_soundVolume;
         SoundCueRegistry* cueRegistry = host->m_soundRegistry;
         if (cueRegistry->m_silentMode == false) {
-            SoundCue* found = NULL;
-            MapLookup(cueRegistry->m_cues, "BOOTY_PERFECT", found);
+            SoundCue* found = cueRegistry->FindCue("BOOTY_PERFECT");
             if (found) {
                 PlaySoundCueIfElapsed(found, item, 0, 0, false);
             }
@@ -1531,13 +1514,7 @@ i32 CBootyState::Render() {
         case BOOTYSEQ_WARP_CUE: {
             m_activation = BOOTYSEQ_GLITTER;
             SoundCueRegistry* set = g_gameReg->m_world->m_soundRegistry;
-            if (set->m_silentMode == false) {
-                SoundCue* cue = NULL;
-                MapLookup(set->m_cues, "BOOTY_WARP", cue);
-                if (cue != NULL) {
-                    cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
-                }
-            }
+            set->PlayCue("BOOTY_WARP");
         }
             // FALL THROUGH
 
@@ -1547,13 +1524,7 @@ i32 CBootyState::Render() {
             }
             m_activation = BOOTYSEQ_LETTERS;
             SoundCueRegistry* set = g_gameReg->m_world->m_soundRegistry;
-            if (set->m_silentMode == false) {
-                SoundCue* cue = NULL;
-                MapLookup(set->m_cues, "BOOTY_BOOM", cue);
-                if (cue != NULL) {
-                    cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
-                }
-            }
+            set->PlayCue("BOOTY_BOOM");
             if (m_initOnce != false && g_gameReg->m_gameStats->m_currentAreaComplete != false
                 && g_levelBias100 == false) {
                 RECT rc;
@@ -1770,13 +1741,7 @@ i32 CBootyState::BuildBootyGruntIdleAnimation() {
             if (gameStats->m_currentAreaComplete != false) {
                 m_initOnce = true;
                 SoundCueRegistry* ss = g_gameReg->m_world->m_soundRegistry;
-                if (ss->m_silentMode == false) {
-                    SoundCue* res = NULL;
-                    MapLookup(ss->m_cues, "GRUNTZ_WANDGRUNT_WANDZGRUNTI3A", res);
-                    if (res != NULL) {
-                        res->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
-                    }
-                }
+                ss->PlayCue("GRUNTZ_WANDGRUNT_WANDZGRUNTI3A");
                 if (g_gameReg->m_gameStats->m_levelNumber < 0x24) {
                     for (i32 p = 0; p < 4; p++) {
                         m_visSprites[p]->m_stateFlags |= SPRITE_STATE_HIDDEN;
@@ -2286,8 +2251,7 @@ i32 CMultiBootyState::EnterState(GameStateId previousState) {
     i32 item = g_gameReg->m_soundVolume;
     SoundCueRegistry* cueRegistry = host->m_soundRegistry;
     if (cueRegistry->m_silentMode == false) {
-        SoundCue* found = NULL;
-        MapLookup(cueRegistry->m_cues, "BOOTY_LOOP", found);
+        SoundCue* found = cueRegistry->FindCue("BOOTY_LOOP");
         if (found) {
             PlaySoundCueIfElapsed(found, item, 0, 0, true);
         }

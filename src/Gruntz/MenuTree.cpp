@@ -288,8 +288,7 @@ i32 CMenuTree::DrawFocusCursors(
 
 static __inline i32 PlayMenuCue(SoundCueRegistry* soundRegistry, const char* cueKey) {
     if (!soundRegistry->m_silentMode) {
-        SoundCue* foundCue = NULL;
-        MapLookup(soundRegistry->m_cues, cueKey, foundCue);
+        SoundCue* foundCue = soundRegistry->FindCue(cueKey);
         SoundCue* cue = foundCue;
         if (cue != NULL) {
             b32 soundEnabled = g_soundEnabled;

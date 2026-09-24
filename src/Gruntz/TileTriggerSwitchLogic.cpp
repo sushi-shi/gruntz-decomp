@@ -113,8 +113,7 @@ i32 CTileTriggerSwitchLogic::SwitchDown() {
     if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
         SoundCueRegistry* h = g_gameReg->m_world->m_soundRegistry;
         if (h->m_silentMode == false) {
-            SoundCue* found = NULL;
-            MapLookup(h->m_cues, "GAME_SWITCHDOWN", found);
+            SoundCue* found = h->FindCue("GAME_SWITCHDOWN");
             SoundCue* spr = found;
             if (spr) {
                 b32 soundEnabled = g_soundEnabled;
@@ -150,8 +149,7 @@ i32 CTileTriggerSwitchLogic::SwitchUp() {
     if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
         SoundCueRegistry* h = g_gameReg->m_world->m_soundRegistry;
         if (h->m_silentMode == false) {
-            SoundCue* found = NULL;
-            MapLookup(h->m_cues, "GAME_SWITCHUP", found);
+            SoundCue* found = h->FindCue("GAME_SWITCHUP");
             SoundCue* spr = found;
             if (spr) {
                 b32 soundEnabled = g_soundEnabled;
@@ -876,8 +874,7 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
     }
     SoundCueRegistry* sreg = g_gameReg->m_world->m_soundRegistry;
     if (sreg->m_silentMode == false) {
-        SoundCue* found = NULL;
-        MapLookup(sreg->m_cues, "LEVEL_ROCKBREAK", found);
+        SoundCue* found = sreg->FindCue("LEVEL_ROCKBREAK");
         SoundCue* out = found;
         if (out != NULL) {
             i32 volumePercent = g_soundVolumePercent;
@@ -1882,8 +1879,7 @@ i32 SoundCueRegistry::PlayCueIfElapsed(const char* key) {
     if (m_silentMode != false) {
         return 0;
     }
-    SoundCue* found = NULL;
-    MapLookup(m_cues, key, found);
+    SoundCue* found = FindCue(key);
     if (found == NULL) {
         return 0;
     }

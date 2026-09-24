@@ -4,12 +4,12 @@
 #include <rva.h>
 
 #include <Gruntz/LogicTypeId.h>
-#include <Gruntz/SbGeom.h>
 #include <Gruntz/SbiCommandId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/StatusBarItemKind.h>
 #include <Gruntz/StatusBarTab.h>
 #include <Ints.h>
+#include <MakeRect.h>
 
 #include <stddef.h>
 

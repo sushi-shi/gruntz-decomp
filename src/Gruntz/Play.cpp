@@ -365,9 +365,7 @@ void CPlay::ReleaseResources() {
     for (i = 0; i < StartMarkerCount(); i++) {
         Coord* node = StartMarkerAt(i);
         if (node != NULL) {
-            CoordPoolNode* p = g_coordPool.NodeOf(node);
-            p->m_next = g_coordPool.m_freeHead;
-            g_coordPool.m_freeHead = p;
+            PushFreeNode(&g_coordPool, node);
         }
     }
     m_startMarkers.SetSize(0, -1);
@@ -375,9 +373,7 @@ void CPlay::ReleaseResources() {
         for (i = 0; i < PlacedObjectCellCount(k); i++) {
             Coord* node = PlacedObjectCellAt(k, i);
             if (node != NULL) {
-                CoordPoolNode* p = g_coordPool.NodeOf(node);
-                p->m_next = g_coordPool.m_freeHead;
-                g_coordPool.m_freeHead = p;
+                PushFreeNode(&g_coordPool, node);
             }
         }
         m_placedObjectCells[k].SetSize(0, -1);
@@ -385,9 +381,7 @@ void CPlay::ReleaseResources() {
     for (i = 0; i < CameraBookmarkCount(); i++) {
         Coord* node = CameraBookmarkAt(i);
         if (node != NULL) {
-            CoordPoolNode* p = g_coordPool.NodeOf(node);
-            p->m_next = g_coordPool.m_freeHead;
-            g_coordPool.m_freeHead = p;
+            PushFreeNode(&g_coordPool, node);
         }
     }
     m_cameraBookmarkIndex = -1;
@@ -1684,9 +1678,7 @@ void CPlay::FreeListTeardown() {
     for (i = 0; i < StartMarkerCount(); i++) {
         Coord* node = StartMarkerAt(i);
         if (node != NULL) {
-            CoordPoolNode* p = g_coordPool.NodeOf(node);
-            p->m_next = g_coordPool.m_freeHead;
-            g_coordPool.m_freeHead = p;
+            PushFreeNode(&g_coordPool, node);
         }
     }
     m_startMarkers.SetSize(0, -1);
@@ -1694,9 +1686,7 @@ void CPlay::FreeListTeardown() {
         for (i = 0; i < PlacedObjectCellCount(k); i++) {
             Coord* node = PlacedObjectCellAt(k, i);
             if (node != NULL) {
-                CoordPoolNode* p = g_coordPool.NodeOf(node);
-                p->m_next = g_coordPool.m_freeHead;
-                g_coordPool.m_freeHead = p;
+                PushFreeNode(&g_coordPool, node);
             }
         }
         m_placedObjectCells[k].SetSize(0, -1);
@@ -1704,9 +1694,7 @@ void CPlay::FreeListTeardown() {
     for (i = 0; i < CameraBookmarkCount(); i++) {
         Coord* node = CameraBookmarkAt(i);
         if (node != NULL) {
-            CoordPoolNode* p = g_coordPool.NodeOf(node);
-            p->m_next = g_coordPool.m_freeHead;
-            g_coordPool.m_freeHead = p;
+            PushFreeNode(&g_coordPool, node);
         }
     }
     m_cameraBookmarks.SetSize(0, -1);
@@ -3032,13 +3020,7 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
 
     if (m_statusBar->m_position == STATUSBAR_HIDDEN && m_statusBar->HitTestLayer(x, y)) {
         SoundCueRegistry* registry = m_mgr->m_world->m_soundRegistry;
-        if (registry->m_silentMode == false) {
-            SoundCue* cue = NULL;
-            MapLookup(registry->m_cues, "GAME_TABHIGHLIGHT1", cue);
-            if (cue != NULL) {
-                cue->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
-            }
-        }
+        registry->PlayCue("GAME_TABHIGHLIGHT1");
         m_statusBar->RestoreStatusBar();
         if (m_statusBar->m_position == STATUSBAR_DOCK_LEFT) {
             m_chatBox->Configure(CHATBOX_WITH_LEFT_STATUSBAR);
@@ -6743,9 +6725,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         for (i32 i = 0; i < StartMarkerCount(); i++) {
             Coord* node = StartMarkerAt(i);
             if (node) {
-                CoordPoolNode* q = g_coordPool.NodeOf(node);
-                q->m_next = g_coordPool.m_freeHead;
-                g_coordPool.m_freeHead = q;
+                PushFreeNode(&g_coordPool, node);
             }
         }
         CPtrArray* markers = &m_startMarkers;
@@ -6774,9 +6754,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
             for (i32 i = 0; i < PlacedObjectCellCount(k); i++) {
                 Coord* node = PlacedObjectCellAt(k, i);
                 if (node) {
-                    CoordPoolNode* q = g_coordPool.NodeOf(node);
-                    q->m_next = g_coordPool.m_freeHead;
-                    g_coordPool.m_freeHead = q;
+                    PushFreeNode(&g_coordPool, node);
                 }
             }
             m_placedObjectCells[k].SetSize(0, -1);
@@ -6807,9 +6785,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         i32 idx;
         ar->Read(&idx, sizeof(idx));
         if (strlen(nameBuf) != 0) {
-            CObject* found = NULL;
-            res->m_imageRegistry->m_workersByName.Lookup(static_cast<const char*>(nameBuf), found);
-            CDDrawWorker* set = static_cast<CDDrawWorker*>(found);
+            CDDrawWorker* set = LookupWorker(res, static_cast<const char*>(nameBuf));
             if (set == NULL || DDRAW_WORKER_FRAME_OUT_OF_RANGE(set, idx)) {
                 m_cursorImage = NULL;
             } else {
@@ -6892,9 +6868,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         for (i32 i = 0; i < CameraBookmarkCount(); i++) {
             Coord* node = CameraBookmarkAt(i);
             if (node) {
-                CoordPoolNode* q = g_coordPool.NodeOf(node);
-                q->m_next = g_coordPool.m_freeHead;
-                g_coordPool.m_freeHead = q;
+                PushFreeNode(&g_coordPool, node);
             }
         }
         m_cameraBookmarks.SetSize(0, -1);
@@ -7536,9 +7510,7 @@ i32 CPlay::ClearPlacedObjects() {
                         }
                         m_placedObjectCells[blockIdx].RemoveAt(i, 1);
 
-                        CoordPoolNode* node = g_coordPool.NodeOf(obj);
-                        node->m_next = g_coordPool.m_freeHead;
-                        g_coordPool.m_freeHead = node;
+                        PushFreeNode(&g_coordPool, obj);
                         return -1;
                     }
                     if (result->m_smarts != IDX(PICKUP_WARPSTONE)) {

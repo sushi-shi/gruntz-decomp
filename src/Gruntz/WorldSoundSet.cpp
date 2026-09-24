@@ -13,6 +13,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/RandomAmbientSound.h>
 #include <Gruntz/RandomRange.h>
+#include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundCueRegistryInline.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/UserLogic.h>
@@ -286,8 +287,7 @@ i32 CAmbientSound::InitFromKey(
     RECT* region,
     i32 volumeScale
 ) {
-    SoundCue* cue = NULL;
-    MapLookup(cueRegistry->m_cues, key, cue);
+    SoundCue* cue = cueRegistry->FindCue(key);
     if (cue == NULL) {
         return 0;
     }
@@ -517,8 +517,7 @@ i32 CAmbientPosSound::InitFromKey(
     AmbientPoint* position,
     i32 volumeScale
 ) {
-    SoundCue* cue = NULL;
-    MapLookup(cueRegistry->m_cues, key, cue);
+    SoundCue* cue = cueRegistry->FindCue(key);
     if (cue == NULL) {
         return 0;
     }

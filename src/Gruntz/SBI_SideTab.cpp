@@ -70,12 +70,7 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
 
     if (onLeft != 0) {
         CDDrawWorker* worker;
-        CObject* found = NULL;
-        g_gameReg->m_world->m_imageRegistry->m_workersByName.Lookup(
-            "GAME_STATUSBAR_TABZ_STATZTAB_TABONLEFT",
-            found
-        );
-        worker = static_cast<CDDrawWorker*>(found);
+        worker = LookupWorker(g_gameReg->m_world, "GAME_STATUSBAR_TABZ_STATZTAB_TABONLEFT");
         CImage* frame;
         if (worker == NULL) {
             frame = NULL;
@@ -89,12 +84,7 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
         m_bottomFrameDy = 1;
     } else {
         CDDrawWorker* worker;
-        CObject* found = NULL;
-        g_gameReg->m_world->m_imageRegistry->m_workersByName.Lookup(
-            "GAME_STATUSBAR_TABZ_STATZTAB_TABONRIGHT",
-            found
-        );
-        worker = static_cast<CDDrawWorker*>(found);
+        worker = LookupWorker(g_gameReg->m_world, "GAME_STATUSBAR_TABZ_STATZTAB_TABONRIGHT");
         CImage* frame;
         if (worker == NULL) {
             frame = NULL;
