@@ -212,3 +212,13 @@ incompatible replacements and their reopening criteria are recorded only under
 `grunt-glp-*` and `grunt-tube-*`. These are Gruntz sibling-source hypotheses,
 not claims that externally released source contained these helper names.
 All sixteen broad helper families remain open.
+
+The next composition adds complete pickup and knockback helpers plus named
+conditional action macros. It restores Arrival's complete ordered lookup
+topology at 91.1094%; Finish reaches 78.4463% with J/N/K cuts still open.
+The [controlled follow-up](patterns/animation-name-accessors-restore-template-call-cuts.md#complete-pickup-knockback-and-bomb-phases-recover-arrivals-call-topology)
+records the real-TU sequence. `arrival-m-*`, `arrival-o-*` and `arrival-j-*`
+retain individual provenance, incompatible transfers and deferred alternatives;
+the `grunt-*-conditional-control`/`grunt-*-nested-pickup-control` rows retain
+the tested source-form exclusions and reopening criteria. This is narrower than
+complete consumer-family adoption and does not close the broad reassessments.

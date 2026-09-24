@@ -257,6 +257,91 @@ defects. Overall current exact count stays 3,836; full-engine fuzzy moves from
 94.69% to 94.74%, with 95.14% source-scoped MAX. This is partial recovery, not
 merge readiness or a new historical high for either target.
 
+### Complete pickup, knockback and bomb phases recover Arrival's call topology
+
+The control is `747b1575d`: Finish 69.6296%, Arrival 83.0360%.
+Fresh repeated-owner evidence licenses the pickup application, conditional
+knockback settlement and conditional bomb termination. Canonical provenance,
+scope and exclusions are under `arrival-j-*`, `arrival-o-*` and `arrival-m-*`
+in the lineage ledger. The game-facing names remain reconstructed, not sourced
+original names. All sixteen broad reassessments remain pending.
+
+These are sequential real-TU controls, not independent percentage comparisons:
+
+| Composition | Finish | Arrival | Important emitted feature |
+| --- | ---: | ---: | --- |
+| Complete conditional toy-use member | 63.2554 | 0.0000 | 5/11 and 9/10 typed calls; Q tail moves early |
+| Add conditional J appearance member | 64.0657 | 0.3511 | EntranceCell survives as an extra call |
+| Add complete knockback effect | 64.0657 | 75.5468 | Arrival gets ten typed calls; M still grows inline |
+| Compose conditional knockback | 68.5752 | 68.6000 | Arrival's appearance helper declines |
+| Compose complete bomb termination | 68.5752 | 79.0518 | Correct M get/construction; EntranceCell still a call |
+| Conditional J macro | 65.4046 | 2.0763 | No extra game calls, but J/M lookup cuts swap |
+| Shared-result conditional toy member | 65.0228 | 13.4561 | Q tail between O and J |
+| Complete conditional toy macro | 65.7661 | 0.0000 | Correct M cut; Q still early |
+| Separate toy guard and late cleanup tail | 74.1024 | 88.3957 | Only Arrival J lookup still expands |
+| Complete pickup application member | 78.3451 | 80.8647 | Arrival tube effect declines; M becomes typed |
+| Raw-name bomb predicate control | 78.3451 | 80.7050 | Same boundaries, different compare scheduling |
+| Conditional tube macro | 78.4463 | 86.5410 | No extra game calls; Arrival M still typed |
+| Complete conditional bomb macro | **78.4463** | **91.1094** | Arrival has every lookup at its correct depth |
+
+The raw-name versus SDK predicate control is byte-flat on the earlier complete
+bomb-member base, but not after the pickup composition. Do not transfer a
+negative control across a changed caller/helper population without rebuilding.
+Likewise, matching call totals can hide a wrong site: an intermediate Arrival
+has ten typed calls and one get/construction, but expands J instead of M.
+Pair by the ordered key and call topology, not just the multiset.
+
+The selected source keeps the complete appearance, pickup, tube, toy and
+knockback operations. Conditional J/N/M macros avoid adding another nested
+member boundary; toy cleanup remains a late shared tail. No source visibility
+restriction, template erasure, forced emitter or inert declaration is retained.
+The inline-to-macro choices are scoped compiler controls, not proof that the
+original authors used these exact spellings. Their reopening records are
+`grunt-j-nested-conditional-control`, `grunt-n-nested-pickup-control`,
+`grunt-m-nested-pickup-control` and `grunt-glp-complete-conditional-control`.
+
+Arrival is now 0x843 versus retail 0x850 bytes, 691/698 instructions,
+40/40 calls, 102/101 branches, 3/3 returns and 74/74 relocations. All ordered
+references agree; FP, member-displacement, store and immediate multisets agree.
+All ten typed lookups and the terminal M get/CString-construction are in the
+retail positions. Its first divergence is an early zero-register setup at +8;
+the remaining branch/predicate materialization difference still needs review.
+This is a CFG wall, not an exact or bounded result.
+
+Finish has 854/792 instructions, 45/42 calls, 106/97 branches, 10/10 returns
+and 89/80 relocations. Eight typed calls remain; J, N and K still expand.
+All 31 non-array calls agree in order, as do Arrival's 28. Both preserve the
+three-field direction copy and the third-field stack spill; Arrival uses the
+same +0x1c home, while Finish uses +0x28 against retail +0x24. The extra Finish
+array expansions explain its three additional get/construction pairs, not a
+new game operation. Sibling consumers and the complete conditional J operation
+remain pending.
+
+The three fresh unchanged-source gate movements were isolated with a disposable
+include overlay containing the exact `747b1575d` Grunt class header, compiling
+the same real TUs with `/O2 /MT /GX /GR`. It reproduces the previous scores:
+UseEquippedToolAt 88.1407 versus new 88.1297, StepCompassMove 63.0219 versus
+62.6506, and Timer AddTime 100 versus 99.8214. After normalizing compiler-local
+symbols, each old/new pair has identical ordered references and identical FP,
+displacement, store and immediate multisets. UseEquippedToolAt has the same
+0x511 extent and 434/20/52/16 instruction/call/branch/return counts; its first
+masked difference is +0x163. Timer retains 0xa3 and 57/0/5/1, first +0x73.
+Compass changes 0xcf0 to 0xd08 and 866/22/129/2 to 874/22/131/2, first +0x242;
+its decoded mnemonic delta is four moves and two jumps. This demonstrates
+that a fresh branch-count change in an unchanged caller can follow class
+declaration state. It does not resolve that caller's older retail CFG residue
+or justify speculative source changes there. No overlay is in the build tree
+or retained source, and no historical maximum is lowered.
+
+Validation: full pinned build and every fast/normal gate pass after the
+adjudicated bank. The raw audit checks 3,917 near-exact functions with zero
+defects; all 23 action/container public-header tests pass. All 4,429 historical
+RVA maxima and 4,427 unchanged-source maxima are preserved. Arrival's historical
+maximum rises from 90.9914 to 91.1094; Finish's older 89.2642 high remains intact.
+Full-engine current fuzzy is 94.78%, MAX 95.17%, with 3,838/4,428 functions exact.
+The net two current exact gains are recoveries of existing historical exact
+states, not two newly solved functions. This remains partial PR preparation.
+
 ### Applying the evidence
 
 When shared-template restoration causes repeated constructor/error expansions

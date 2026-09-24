@@ -20,11 +20,16 @@ class GruntActionHeaderTests(unittest.TestCase):
 class ActionProbe : public CGrunt {
 public:
     bool ToyUse() { bool result; return GRUNT_IS_USING_TOY(result); }
+    bool TubeMove() { return SETTLE_ACTIVE_TUBE_MOVE(); }
+    bool EntranceAppearance() { return RESTORE_ACTIVE_ENTRANCE_APPEARANCE(); }
+    bool BombRun() { return TERMINATE_ACTIVE_BOMB_RUN(); }
 };
 bool use(ActionProbe* grunt, int defer) {
     grunt->RestorePreviousAppearance();
     grunt->RestoreToolAfterToyUse(defer);
-    return grunt->ToyUse() || grunt->SettleActiveTubeMove();
+    grunt->ApplyEntrancePickup();
+    return grunt->ToyUse() || grunt->TubeMove() || grunt->EntranceAppearance()
+        || grunt->SettleActiveKnockback() || grunt->BombRun();
 }
 ''')
             obj_path = root / 'probe.obj'
@@ -43,9 +48,27 @@ bool use(ActionProbe* grunt, int defer) {
                         '?SetupTubeAnim@CGrunt@@QAEHH@Z']
             # Check the actual emitted signature as well as source ordering.
             self.assertEqual([name for name in settle if name in required], required)
-            self.assertEqual(calls('?SettleActiveTubeMove@CGrunt@@QAE_NXZ'), [
+            self.assertEqual(calls('?TubeMove@ActionProbe@@QAE_NXZ'), [
                 '?IsAnimationAct@CUserLogic@@QBE_NPBD@Z',
                 '?SettleTubeMove@CGrunt@@QAEXXZ'])
+            self.assertEqual(calls('?EntranceAppearance@ActionProbe@@QAE_NXZ'), [
+                '?IsAnimationAct@CUserLogic@@QBE_NPBD@Z',
+                '?RestorePreviousAppearance@CGrunt@@QAEXXZ'])
+            self.assertEqual(calls('?SettleActiveKnockback@CGrunt@@QAE_NXZ'), [
+                '?IsAnimationAct@CUserLogic@@QBE_NPBD@Z',
+                '?SettleKnockback@CGrunt@@QAEXXZ'])
+            self.assertEqual(calls('?SettleKnockback@CGrunt@@QAEXXZ'), [
+                '?SnapToLastTile@CGrunt@@QAEXH@Z',
+                '?WireTileSwitchLogic@CTriggerMgr@@QAEHPAVCGrunt@@HH@Z'])
+            bomb = calls('?BombRun@ActionProbe@@QAE_NXZ')
+            self.assertIn('?GetAnimationActName@CUserLogic@@QBEABVCString@@XZ', bomb)
+            self.assertEqual(bomb[-1],
+                '?StartUnitDeath@CTriggerMgr@@QAEHHHW4GruntDeathType@@H@Z')
+            pickup = calls('?ApplyEntrancePickup@CGrunt@@QAEXXZ')
+            self.assertEqual(pickup, [
+                '?LoadGruntTypeTable@CGrunt@@QAEHW4PickupType@@HHH@Z',
+                '?LoadVehicleGruntSprites@CGrunt@@QAEHW4PickupType@@@Z',
+                '?LoadGruntTypeTable@CGrunt@@QAEHW4PickupType@@HHH@Z'])
             self.assertEqual(calls('?ToyUse@ActionProbe@@QAE_NXZ'), [
                 '?IsAnimationAct@CUserLogic@@QBE_NPBD@Z'] * 3)
             appearance = calls('?RestorePreviousAppearance@CGrunt@@QAEXXZ')

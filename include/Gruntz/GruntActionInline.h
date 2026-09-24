@@ -2,17 +2,30 @@
 #define GRUNTZ_GRUNTACTIONINLINE_H
 
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SortKeyMacros.h>
+#include <Gruntz/TriggerMgr.h>
 #include <Gruntz/VoiceManager.h>
 #include <Wap32/TileGeometry.h>
+
+#include <string.h>
 
 #define GRUNT_IS_USING_TOY(result)                                                                 \
     (((result) = IsAnimationAct("G")) || ((result) = IsAnimationAct("L"))                          \
      || ((result) = IsAnimationAct("P")))
+
+#define RESTORE_ACTIVE_ENTRANCE_APPEARANCE()                                                       \
+    (IsAnimationAct("J") && (RestorePreviousAppearance(), true))
+
+#define SETTLE_ACTIVE_TUBE_MOVE() (IsAnimationAct("N") && (SettleTubeMove(), true))
+
+#define TERMINATE_ACTIVE_BOMB_RUN()                                                                \
+    ((strcmp(GetAnimationActName(), "M") == 0)                                                     \
+     && (m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1), true))
 
 inline void CGrunt::RestorePreviousAppearance() {
     m_entranceActive = false;
@@ -29,6 +42,27 @@ inline void CGrunt::RestorePreviousAppearance() {
     } else {
         ResetEntranceAnimation(1, 0, 0);
     }
+}
+
+inline void CGrunt::ApplyEntrancePickup() {
+    PickupType mode = m_entrancePickup;
+    if (mode >= PICKUP_POWERUPZ_FIRST) {
+        LoadGruntTypeTable(mode, 1, 0, 1);
+        m_entrancePickup = PICKUP_INVALID;
+        m_helpCueId = 0;
+        return;
+    }
+    if (mode >= PICKUP_BRICKZ_FIRST) {
+        m_brickPickupType = mode;
+        m_entrancePickup = PICKUP_INVALID;
+        return;
+    }
+    if (mode >= PICKUP_TOYZ_FIRST) {
+        LoadVehicleGruntSprites(mode);
+        return;
+    }
+    LoadGruntTypeTable(mode, 1, 0, 1);
+    m_entrancePickup = PICKUP_INVALID;
 }
 
 inline void CGrunt::SettleTubeMove() {
@@ -50,11 +84,16 @@ inline void CGrunt::SettleTubeMove() {
     }
 }
 
-inline bool CGrunt::SettleActiveTubeMove() {
-    if (!IsAnimationAct("N")) {
+inline void CGrunt::SettleKnockback() {
+    SnapToLastTile(1);
+    m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
+}
+
+inline bool CGrunt::SettleActiveKnockback() {
+    if (!IsAnimationAct("O")) {
         return false;
     }
-    SettleTubeMove();
+    SettleKnockback();
     return true;
 }
 

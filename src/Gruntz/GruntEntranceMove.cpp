@@ -693,56 +693,27 @@ i32 CGrunt::StepArrivalCommit() {
     if (GRUNT_IS_USING_TOY(eq)) {
         goto idleReseed;
     }
-    eq = ANIMATION_ACT_EQUALS("O");
-    if (eq) {
-        SnapToLastTile(1);
-        m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
+    if (SettleActiveKnockback()) {
         goto finalize;
     }
-    eq = ANIMATION_ACT_EQUALS("J");
-    if (eq) {
-        RestorePreviousAppearance();
+    if (RESTORE_ACTIVE_ENTRANCE_APPEARANCE()) {
         goto modeDispatch;
     }
 
-    if (SettleActiveTubeMove()) {
+    if (SETTLE_ACTIVE_TUBE_MOVE()) {
         goto finalize;
     }
-    {
-        const char* prev = GetAnimationActName();
-        eq = (strcmp(prev, "M") == 0);
-        if (eq) {
-            m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);
-            return 0;
-        }
-        goto finalize;
+    if (TERMINATE_ACTIVE_BOMB_RUN()) {
+        return 0;
     }
+    goto finalize;
+
+modeDispatch:
+    ApplyEntrancePickup();
+    goto finalize;
 
 idleReseed:
     RestoreToolAfterToyUse(0);
-    goto finalize;
-
-modeDispatch: {
-    PickupType mode = m_entrancePickup;
-    if (mode >= PICKUP_POWERUPZ_FIRST) {
-        LoadGruntTypeTable(mode, 1, 0, 1);
-        m_entrancePickup = PICKUP_INVALID;
-        m_helpCueId = 0;
-        goto finalize;
-    }
-    if (mode >= PICKUP_BRICKZ_FIRST) {
-        m_brickPickupType = mode;
-        m_entrancePickup = PICKUP_INVALID;
-        goto finalize;
-    }
-    if (mode >= PICKUP_TOYZ_FIRST) {
-        LoadVehicleGruntSprites(mode);
-        goto finalize;
-    }
-    LoadGruntTypeTable(mode, 1, 0, 1);
-    m_entrancePickup = PICKUP_INVALID;
-    goto finalize;
-}
 
 finalize:
     ConsiderArrival(1);
@@ -992,19 +963,14 @@ i32 CGrunt::FinishActiveAction() {
     if (GRUNT_IS_USING_TOY(eq)) {
         goto idleReseed;
     }
-    eq = ANIMATION_ACT_EQUALS("O");
-    if (eq) {
-        SnapToLastTile(1);
-        m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
+    if (SettleActiveKnockback()) {
         return 1;
     }
-    eq = ANIMATION_ACT_EQUALS("J");
-    if (eq) {
-        RestorePreviousAppearance();
+    if (RESTORE_ACTIVE_ENTRANCE_APPEARANCE()) {
         goto modeDispatch;
     }
 
-    if (SettleActiveTubeMove()) {
+    if (SETTLE_ACTIVE_TUBE_MOVE()) {
         return 1;
     }
 
@@ -1091,31 +1057,13 @@ i32 CGrunt::FinishActiveAction() {
         return 1;
     }
 
+modeDispatch:
+    ApplyEntrancePickup();
+    return 1;
+
 idleReseed:
     RestoreToolAfterToyUse(1);
     return 1;
-
-modeDispatch: {
-    PickupType mode = m_entrancePickup;
-    if (mode >= PICKUP_POWERUPZ_FIRST) {
-        LoadGruntTypeTable(mode, 1, 0, 1);
-        m_entrancePickup = PICKUP_INVALID;
-        m_helpCueId = 0;
-        return 1;
-    }
-    if (mode >= PICKUP_BRICKZ_FIRST) {
-        m_brickPickupType = mode;
-        m_entrancePickup = PICKUP_INVALID;
-        return 1;
-    }
-    if (mode >= PICKUP_TOYZ_FIRST) {
-        LoadVehicleGruntSprites(mode);
-        return 1;
-    }
-    LoadGruntTypeTable(mode, 1, 0, 1);
-    m_entrancePickup = PICKUP_INVALID;
-    return 1;
-}
 
 retZero:
     return 0;
