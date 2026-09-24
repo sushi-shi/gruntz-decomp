@@ -28,6 +28,38 @@ changed. The four `SQR(dx) + SQR(dy)` bodies use the identical `dx * dx + dy * d
 arithmetic without acquiring a macro dependency. All five headers compile
 independently with VC5 `/O2 /MT`.
 
+## Second sweep: owner headers and open-coded macros
+
+After rebasing onto `37ace99bd`, a tree-wide scan (exact, alpha-renamed and
+type-erased body hashes over every `.cpp` and header) found the rest:
+
+| Family | Copies | Shared owner |
+|---|---:|---|
+| `LookupAnimation` (was `LookupAnim`/`LookupAni`/`FindAnimElement`) | 10 | `Gruntz/AniElement.h` |
+| `LookupSoundCue` (was `LookupCue`) | 8 | `Gruntz/SoundCue.h` |
+| `ResolveRegisteredAct<Logic>` (seven named wrappers) | 7 | `Gruntz/ActReg.h` |
+| `typedef CActHandler` | 5 | `Gruntz/UserLogic.h` |
+| `DispatchUnhandledLogicEvent` (two headers, two TUs) | 4 | `Gruntz/LogicEventDispatch.h` |
+| `LookupLogicTemplate` | 3 | `DDrawMgr/LogicRecord.h` |
+| `CLEAR_TAB_HINT` | 3 | `Gruntz/SoundCueRegistry.h` |
+| `LookupPaletteResource` (was `LookupWorker`/`LookupRecord`) | 2 | `DDrawMgr/DDrawPaletteResource.h` |
+| `ListGetFirst`, `ListGetNext` | 2 + 2 | `DDrawMgr/DDrawChildGroup.h` |
+| `ScreenTile(Coord*)`, `ScreenTile(CGrunt*)` | 2 + 2 | `Gruntz/GruntMovementInline.h` |
+| `PackRgb16` | 2 | `DDrawMgr/PixelShift.h` |
+
+TU-local macro copies of header macros (`SCAN_BOUNDS`, `MOVE_RECYCLE`,
+`STEP_DRAIN`, `FREELIST_PUSH`, a second `LOGIC_RECORD_DISPATCH`) now use the
+header form. Among these, the `if`/`do`-`while` drain compiles byte-identically to the
+header's `while`. 64 open-coded sites whose token stream equals an existing
+macro's expansion now invoke the macro. Being textual, that swap cannot move
+code; the only object changes came from includes added to five functions'
+TUs. No shared helper gained an out-of-line body.
+
+Deliberately left alone: open-coded bodies of inline *functions* (a call
+boundary can change allocation), near-duplicates whose store order, control
+spelling, RNG source or type differs, and identical bodies that are separate
+retail functions.
+
 The real before/after objects preserve all 3,808 recorded function source
 fingerprints. After the existing fail-closed COFF normalizer resolves compiler
 labels by their data and ownership, 4,399 of 4,427 compared function bodies retain

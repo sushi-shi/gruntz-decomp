@@ -12,7 +12,7 @@ line here, SAME commit.
 
 - [Inline one comparison; macro the repeated short-circuit chain](preserve-comparison-local-in-short-circuit-guards.md) - c9 - cpp:inline cpp:local cpp:branch cpp:macro | asm:call asm:jcc | topic:codegen-idiom topic:regalloc - six seven-name guards in StepRowUnits flatten without changing its 86.7956% base when their char assignments remain. A one-name function expands directly; nesting it inside a whole-chain inline function leaves a retail-absent call, while a whole-chain macro restores the base topology.
 
-- [Shared inline definitions preserve helper boundaries](shared-inline-definitions-preserve-helper-boundaries.md) - c9 - cpp:inline cpp:header cpp:call cpp:local | asm:call asm:mov | topic:codegen-idiom - 30 duplicate helper definitions become six shared definitions across 27 TUs; all recorded caller hashes and call/branch/return counts survive, and canonical object evidence separates label-counter churn from 28 actual compiler-state movements.
+- [Shared inline definitions preserve helper boundaries](shared-inline-definitions-preserve-helper-boundaries.md) - c9 - cpp:inline cpp:header cpp:call cpp:local | asm:call asm:mov | topic:codegen-idiom - 30 duplicate helper definitions become six shared definitions across 27 TUs; a second tree-wide sweep moves another 50+ copies to owner headers and 64 open-coded macro expansions back to their macros; all recorded caller hashes and call/branch/return counts survive, and canonical object evidence separates label-counter churn from 28 actual compiler-state movements.
 
 WALL vs STEERABLE: `topic:codegen-idiom`/`topic:flags` = a source spelling closes the
 diff; `topic:wall`/`topic:scoring-artifact` = code already correct / no source form —
