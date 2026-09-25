@@ -10,7 +10,7 @@ Short observations, not a wall database. [Scope and admission rules](README.md).
 - [Local-static guards](function-local-static-dynamic-init-guard.md) — recognize dynamic initialization without inventing flag globals.
 - [Scopes and stack slots](switch-arm-locals-overlay-only-when-scoped.md) — sibling scopes can change stack reuse.
 - [Store scheduling](emitted-store-order-is-not-the-source-order.md) — emitted order need not be source order.
-- [Translation-unit context](tu-state-probe-family-decides-reachability.md) — unchanged function text can emit different code.
+- [Translation-unit context](tu-state-probe-family-decides-reachability.md) — unchanged function text can emit different code after a legitimate header/type change.
 - [Signed remainder](signed-modulo-pow2-abs-restore.md) — sign correction around a power-of-two mask.
 
 ## Limits of external evidence

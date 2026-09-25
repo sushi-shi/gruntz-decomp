@@ -209,7 +209,7 @@ levelrezpath	3	2
 leveltime	1	1
 lightfx	11	9
 lightfxmgr	3	3
-lightfxrender	24	12
+lightfxrender	24	14
 loadgamemenu	4	3
 logicrecorddispatch	3	3
 mainmenubuilder	2	2
@@ -2866,27 +2866,27 @@ lightfx	?SerializeDispatch@CLightFx@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicT
 lightfxmgr	?ApplyShadeTable@CLightFxMgr@@QAEHPAVCDDrawWorker@@HW4ShadeMode@@@Z	100.0000	100.0000	2	3ae7d02a7b9a	0x9dcb0	100.0000	
 lightfxmgr	?Init@CLightFxMgr@@QAEHPAVCGruntzMgr@@0@Z	100.0000	100.0000	2	7edd586f2c2e	0x9dad0	100.0000	
 lightfxmgr	?Reset@CLightFxMgr@@QAEXXZ	100.0000	100.0000	18	806481473e67	0x9dc80	100.0000	
-lightfxrender	?AllocSurface@CMinimap@@QAEHXZ	100.0000	100.0000	5	e0df77e16f93	0xa33e0	100.0000	
+lightfxrender	?AllocSurface@CMinimap@@QAEHXZ	100.0000	100.0000	6	842f84b3b5d8	0xa33e0	100.0000	
 lightfxrender	?BeginMinimapPan@CMinimap@@QAEHHHH@Z	100.0000	100.0000	4	70f6865dd4d6	0xa9480	100.0000	
-lightfxrender	?BuildGruntziclezPalette@CMinimap@@QAEHXZ	97.3926	96.7965	7	ea3446516582	0xa4890	100.0000	
-lightfxrender	?BuildHighOnSweetzPalette@CMinimap@@QAEHXZ	96.0569	96.0569	6	c26e09e7bd00	0xa5d90	100.0000	
-lightfxrender	?BuildHighRollerzPalette@CMinimap@@QAEHXZ	97.5628	97.5287	6	b0adf7a1690b	0xa67d0	99.9209	
-lightfxrender	?BuildHoneyPalette@CMinimap@@QAEHXZ	97.9081	97.8419	6	f0c1ae147943	0xa7260	100.0000	
-lightfxrender	?BuildMiniatureMasterzPalette@CMinimap@@QAEHXZ	99.9154	99.8843	6	43c94ba5b13c	0xa7d50	100.0000	
-lightfxrender	?BuildRockyRoadzPalette@CMinimap@@QAEHXZ	97.1320	97.1320	6	f59b416f4b93	0xa3dc0	100.0000	
-lightfxrender	?BuildSpacePalette@CMinimap@@QAEHXZ	99.4785	99.4785	6	394e0478c17e	0xa8900	100.0000	
-lightfxrender	?BuildTropiczPalette@CMinimap@@QAEHXZ	97.1991	97.1991	6	841815ba128b	0xa5310	100.0000	
+lightfxrender	?BuildGruntziclezPalette@CMinimap@@QAEHXZ	99.3077	99.3077	7	ea3446516582	0xa4890	100.0000	
+lightfxrender	?BuildHighOnSweetzPalette@CMinimap@@QAEHXZ	100.0000	100.0000	6	c26e09e7bd00	0xa5d90	100.0000	
+lightfxrender	?BuildHighRollerzPalette@CMinimap@@QAEHXZ	99.8558	99.8558	6	b0adf7a1690b	0xa67d0	99.9209	
+lightfxrender	?BuildHoneyPalette@CMinimap@@QAEHXZ	99.8705	99.8705	6	f0c1ae147943	0xa7260	100.0000	
+lightfxrender	?BuildMiniatureMasterzPalette@CMinimap@@QAEHXZ	99.9690	99.9690	6	43c94ba5b13c	0xa7d50	100.0000	
+lightfxrender	?BuildRockyRoadzPalette@CMinimap@@QAEHXZ	99.3509	99.3509	6	f59b416f4b93	0xa3dc0	100.0000	
+lightfxrender	?BuildSpacePalette@CMinimap@@QAEHXZ	100.0000	100.0000	6	394e0478c17e	0xa8900	100.0000	
+lightfxrender	?BuildTropiczPalette@CMinimap@@QAEHXZ	99.3448	99.3448	6	841815ba128b	0xa5310	100.0000	
 lightfxrender	?ContinueMinimapPan@CMinimap@@QAEHHHH@Z	100.0000	100.0000	4	14898c556bcd	0xa95d0	100.0000	
 lightfxrender	?Draw@CMinimap@@QAEHPAVCDDrawSurfacePair@@PAUtagRECT@@@Z	76.3782	76.3782	9	f94ac147ae13	0xa3820	76.3782	
 lightfxrender	?DrawBorder@CMinimap@@QAEXPAUtagRECT@@PAVCDDrawSurfacePair@@H@Z	100.0000	88.0968	6	a11fd7a36969	0xa3b50	100.0000	
-lightfxrender	?DrawBorderRaw@CMinimap@@QAEXPAUtagRECT@@PADH@Z	98.4483	96.7931	6	76442873d54b	0xa3a20	98.4483	
+lightfxrender	?DrawBorderRaw@CMinimap@@QAEXPAUtagRECT@@PADH@Z	96.7931	96.7931	7	4ac0e58ec5da	0xa3a20	98.4483	
 lightfxrender	?EndMinimapPan@CMinimap@@QAEHHHH@Z	100.0000	100.0000	3	048203793f88	0xa9500	100.0000	
 lightfxrender	?FillSpan@CMinimap@@QAEXIIG@Z	100.0000	100.0000	3	273db1d85d38	0xa4840	100.0000	
 lightfxrender	?FreeSurface@CMinimap@@QAEXXZ	100.0000	100.0000	3	3b306ccbcfd3	0xa33a0	100.0000	
 lightfxrender	?IgnoreMinimapEvent@CMinimap@@QAEHHHH@Z	100.0000	100.0000	2	16707e91702a	0xa9530	100.0000	
 lightfxrender	?Init@CMinimap@@QAEHPAVCGruntzMgr@@H@Z	100.0000	100.0000	2	23797effb68b	0xa32c0	100.0000	
 lightfxrender	?IssueMinimapCommand@CMinimap@@QAEHHHH@Z	100.0000	100.0000	5	a7ff97fbfd39	0xa9550	100.0000	
-lightfxrender	?Refresh@CMinimap@@QAEHHH@Z	69.2227	69.1933	25	86ffef0b24ce	0xa3460	69.2227	
+lightfxrender	?Refresh@CMinimap@@QAEHHH@Z	69.2227	68.1849	25	86ffef0b24ce	0xa3460	69.2227	
 lightfxrender	?Reset@CMinimap@@QAEXXZ	100.0000	100.0000	3	7ac342f90d26	0xa3360	100.0000	
 lightfxrender	?ScreenPointToCell@CMinimap@@QAEHHHPAHH@Z	100.0000	100.0000	3	3184632ac55e	0xa9660	100.0000	
 lightfxrender	?SetAreaPalette@CMinimap@@QAEHW4LevelArea@@@Z	100.0000	100.0000	2	3aea66fd5b17	0xa3c90	100.0000	
