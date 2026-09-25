@@ -288,7 +288,8 @@ def print_unit_functions(units: list[str], before: dict, after: dict) -> None:
     """MAX movement only. An unchanged function keeps its banked MAX, so a CUR
     dip is noise and stays silent; it is listed only when it rises above MAX.
     An edited function's MAX becomes its new score, so it is listed with the
-    MAX it replaces."""
+    MAX it replaces: `drop` when the edit moved its CUR down, `reset` when CUR
+    held and only the new source hash lowered MAX (HIST keeps the old peak)."""
     from contextlib import redirect_stdout
     from io import StringIO
 
@@ -299,6 +300,7 @@ def print_unit_functions(units: list[str], before: dict, after: dict) -> None:
         regenerate()
     fp, _cpp_of, _stale = fingerprinter()
     bank = baseline.load()
+    resets = []
     for unit in units:
         rows = sorted((name, pct) for (u, name), pct in after.items() if u == unit)
         if not rows:
@@ -314,9 +316,16 @@ def print_unit_functions(units: list[str], before: dict, after: dict) -> None:
             edited = real_edit(row["fp"], fp(unit, name))
             new_max = pct if edited else max(row["best"], pct)
             at_max += new_max >= 100.0
-            if edited and abs(pct - row["best"]) > EPS:
+            was = before.get((unit, name))
+            if edited and pct > row["best"] + EPS:
+                shown.append((pct, row["best"], name, "up"))
+            elif edited and row["best"] - pct > EPS:
+                held = was is not None and abs(pct - was) <= EPS
+                if held:
+                    resets.append((row.get("addr"), unit, name, row["best"], pct))
                 shown.append((pct, row["best"], name,
-                              "up" if pct > row["best"] else "drop"))
+                              "reset: CUR held, recorded for syntactic recovery"
+                              if held else "drop"))
             elif edited and pct < 100.0:
                 shown.append((pct, row["best"], name, "edited"))
             elif not edited and pct > row["best"] + EPS:
@@ -325,10 +334,39 @@ def print_unit_functions(units: list[str], before: dict, after: dict) -> None:
         if not shown:
             print("  no MAX change")
             continue
-        print(f"  {'now':>8} {'max':>8}  function")
+        print(f"  {'now':>8} {'max':>8}  function  [kind]")
         for pct, best, name, kind in sorted(shown, key=lambda r: (r[0], r[2])):
             print(f"  {pct:8.2f} {'' if best is None else f'{best:8.2f}':>8}  "
                   f"{name}  [{kind}]")
+    record_resets(resets)
+
+
+#: Functions whose MAX an edit lowered while their CUR held: a later
+#: fuzzy syntactic recovery pass looks for a spelling that regains the peak.
+RECOVERY_TODO = REPO / "docs/todos/syntactic-recovery.tsv"
+
+
+def record_resets(resets: list) -> None:
+    """Add or update one row per reset function, keeping the highest lost MAX."""
+    if not resets:
+        return
+    header = "rva\tunit\tfunction\tlost_max\tcur\n"
+    rows: dict[tuple[str, str], list[str]] = {}
+    if RECOVERY_TODO.exists():
+        for line in RECOVERY_TODO.read_text().splitlines()[1:]:
+            cols = line.split("\t")
+            if len(cols) == 5:
+                rows[(cols[1], cols[2])] = cols
+    for addr, unit, name, lost_max, pct in resets:
+        old = rows.get((unit, name))
+        peak = max(lost_max, float(old[3])) if old else lost_max
+        rows[(unit, name)] = ["" if addr is None else f"0x{addr:06x}", unit,
+                              name, f"{peak:.4f}", f"{pct:.4f}"]
+    text = header + "".join("\t".join(r) + "\n" for r in sorted(
+        rows.values(), key=lambda r: (r[1], r[2])))
+    if not RECOVERY_TODO.exists() or RECOVERY_TODO.read_text() != text:
+        RECOVERY_TODO.parent.mkdir(parents=True, exist_ok=True)
+        RECOVERY_TODO.write_text(text)
 
 
 def match_main(argv: list[str] | None = None) -> int:
