@@ -11,7 +11,6 @@
 #include <DDrawMgr/PixelFormatMacros.h>
 #include <DDrawMgr/PixelShift.h>
 #include <Enums.h>
-#include <Globals.h>
 #include <Ints.h>
 #include <Lith/BDefs.h>
 #include <Pix16.h>
