@@ -37,17 +37,6 @@ static __inline void HiPost(i32 cmdId) {
 }
 
 inline b32 CStatusBarMgr::ActivateReadySlot(i32 slot) {
-    const i32 slotCount = static_cast<i32>(sizeof(m_slots) / sizeof(m_slots[0]));
-    if (slot == -1) {
-        for (slot = 0; slot < slotCount; slot++) {
-            if (m_slots[slot].m_state == SLOT_READY) {
-                break;
-            }
-        }
-        if (slot == slotCount) {
-            return false;
-        }
-    }
     if (!(static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(0x66)) {
         return false;
     }

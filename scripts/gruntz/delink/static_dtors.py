@@ -1,8 +1,10 @@
 """Provision pinned function-local static destructors in their owning TU.
 
 The pin gives retail extent/ownership, not a volatile cl `$E<n>` name. Recover
-that build's name from the argument to the same named function's sole atexit
-call. The callback is emitted as real target code: ordinary content/relocation
+that build's name from the argument to the same named function's atexit call.
+An owner with several local statics is paired call-by-call in code order, and
+only when both sides have the same number of calls and every call is proved.
+The callback is emitted as real target code: ordinary content/relocation
 canonicalization still compares its body, receiver and destructor target.
 Nothing here asserts byte equivalence or renames an undefined callback.
 """
@@ -65,7 +67,8 @@ def callback_size(code: bytes) -> int | None:
     return None
 
 
-def _base_callbacks(obj: Obj, owners: set[str]) -> dict[str, tuple[str, int]]:
+def _base_callbacks(obj: Obj, owners: set[str]) -> dict[str, list[tuple[str, int]]]:
+    """Each owner's proved callbacks in atexit-call order; any unproved call drops it."""
     definitions = defaultdict(list)
     for index, value, section in obj.iter_symbols():
         if section > 0:
@@ -82,29 +85,34 @@ def _base_callbacks(obj: Obj, owners: set[str]) -> dict[str, tuple[str, int]]:
         following = [offset for offset, _name in obj.defined_symbols(section) if offset > start]
         end = min(following, default=len(payload))
         relocs = obj.typed_relocations(section)
-        calls = [site for site, target in relocs.items()
-                 if start < site < end and target == ("_atexit", 0x14)]
-        if len(calls) != 1:
-            continue
-        operand = argument_site(payload[start:end], calls[0] - start - 1)
-        if operand is None:
-            continue
-        operand += start
-        name, typ = relocs.get(operand, ("", 0))
-        if typ != 6 or not _HELPER.fullmatch(name):
-            continue
-        if struct.unpack_from("<I", payload, operand)[0] != 0:
-            continue
-        helpers = definitions.get(name, ())
-        if len(helpers) != 1:
-            continue
-        offset, helper_section = helpers[0]
-        if not obj.section_table[helper_section - 1]["characteristics"] & _EXECUTE:
-            continue
-        extent = callback_size(obj.section_payload(helper_section)[offset:])
-        if extent is not None:
-            result[owner] = (name, extent)
+        calls = sorted(site for site, target in relocs.items()
+                       if start < site < end and target == ("_atexit", 0x14))
+        callbacks = [_base_callback(obj, definitions, payload, relocs, start, end, call)
+                     for call in calls]
+        if callbacks and None not in callbacks:
+            result[owner] = callbacks
     return result
+
+
+def _base_callback(obj: Obj, definitions, payload: bytes, relocs, start: int,
+                   end: int, call: int) -> tuple[str, int] | None:
+    operand = argument_site(payload[start:end], call - start - 1)
+    if operand is None:
+        return None
+    operand += start
+    name, typ = relocs.get(operand, ("", 0))
+    if typ != 6 or not _HELPER.fullmatch(name):
+        return None
+    if struct.unpack_from("<I", payload, operand)[0] != 0:
+        return None
+    helpers = definitions.get(name, ())
+    if len(helpers) != 1:
+        return None
+    offset, helper_section = helpers[0]
+    if not obj.section_table[helper_section - 1]["characteristics"] & _EXECUTE:
+        return None
+    extent = callback_size(obj.section_payload(helper_section)[offset:])
+    return None if extent is None else (name, extent)
 
 
 def provision(model, names_map: dict, base_dir: Path, image) -> dict[int, tuple[str, str, int]]:
@@ -136,7 +144,7 @@ def provision(model, names_map: dict, base_dir: Path, image) -> dict[int, tuple[
         if not path.is_file():
             continue
         callbacks = _base_callbacks(Obj(path), set(owners))
-        for owner, (name, _base_size) in callbacks.items():
+        for owner, helpers in callbacks.items():
             rva, size = owners[owner]
             code = image.pe.read(rva, size)
             if not code:
@@ -144,21 +152,29 @@ def provision(model, names_map: dict, base_dir: Path, image) -> dict[int, tuple[
             calls = [i for i in range(len(code) - 4)
                      if code[i] == 0xE8 and is_atexit(
                          rva + i + 5 + struct.unpack_from("<i", code, i + 1)[0])]
-            if len(calls) != 1:
+            if len(calls) != len(helpers):
                 continue
-            operand = argument_site(code, calls[0])
-            if operand is None or rva + operand not in image.reloc_sites:
+            paired = [_retail_callback(image, pins, names_map, unit, rva, code, call)
+                      for call in calls]
+            if None in paired:
                 continue
-            target = struct.unpack_from("<I", code, operand)[0] - image.image_base
-            pin = pins.get(target)
-            if pin is None or pin.unit != unit or target in names_map:
-                continue
-            body = image.pe.read(target, pin.size)
-            extent = callback_size(body) if body else None
-            if extent is None:
-                continue
-            entry = (name, unit, extent)
-            if target in result and result[target] != entry:
-                raise ValueError(f"ambiguous pinned static destructor at 0x{target:x}")
-            result[target] = entry
+            for (name, _base_size), (target, extent) in zip(helpers, paired):
+                entry = (name, unit, extent)
+                if target in result and result[target] != entry:
+                    raise ValueError(f"ambiguous pinned static destructor at 0x{target:x}")
+                result[target] = entry
     return result
+
+
+def _retail_callback(image, pins, names_map, unit: str, rva: int, code: bytes,
+                     call: int) -> tuple[int, int] | None:
+    operand = argument_site(code, call)
+    if operand is None or rva + operand not in image.reloc_sites:
+        return None
+    target = struct.unpack_from("<I", code, operand)[0] - image.image_base
+    pin = pins.get(target)
+    if pin is None or pin.unit != unit or target in names_map:
+        return None
+    body = image.pe.read(target, pin.size)
+    extent = callback_size(body) if body else None
+    return None if extent is None else (target, extent)

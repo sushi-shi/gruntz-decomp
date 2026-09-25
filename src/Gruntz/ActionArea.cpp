@@ -61,7 +61,7 @@ RVA(0x00008240, 0x18d)
 void CProjActObj::RegisterType() {
     ACT_NAME_ID(id, "A")
 
-    *ResolveRegisteredAct<CActionArea>(id) = static_cast<CActHandler>(&CActionArea::Tick);
+    CActRegPool<CActionArea>::s_table[id] = static_cast<CActHandler>(&CActionArea::Tick);
 }
 
 RVA(0x00008440, 0xfe)

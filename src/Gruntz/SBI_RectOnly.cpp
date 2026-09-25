@@ -4997,9 +4997,15 @@ RVA(0x0010b930, 0x1a7)
 i32 CStatusBarMgr::ActivateSlot(i32 idx) {
     if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_playerCommandPending == false) {
         if (idx == -1) {
+            for (i32 slot = 0; slot < 5; slot++) {
+                if (m_slots[slot].m_state == SLOT_READY) {
+                    return ActivateReadySlot(slot);
+                }
+            }
+            return 0;
+        }
+        if (m_slots[idx].m_state == SLOT_READY) {
             return ActivateReadySlot(idx);
-        } else if (m_slots[idx].m_state == SLOT_READY && ActivateReadySlot(idx)) {
-            return 1;
         }
     }
     return 0;

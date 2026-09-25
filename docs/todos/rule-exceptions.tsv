@@ -1,1 +1,2 @@
 rva	function	rule	deviation	note
+0x021d80	?Scroll@CFontConfig@@QAEXH@Z	compiler_artifacts: no explicit destructor or ::operator delete call	after RemoveHead and a null check, calls item->~FontItem() then ::operator delete(item)	retail has no second null check before ~FontItem/??3, which any delete-expression emits under cl 5; a rule-clean form needs a spelling that drops that check (delete item scores 95.65)

@@ -177,8 +177,7 @@ void CParticlez::FireActivation(i32 coord) {
 RVA(0x00046e90, 0x18d)
 void CParticlez::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((ResolveRegisteredAct<CParticlez>(id)))) =
-        static_cast<i32 (CUserLogic::*)()>(&CParticlez::Update);
+    CActRegPool<CParticlez>::s_table[id] = static_cast<i32 (CUserLogic::*)()>(&CParticlez::Update);
 }
 
 RVA(0x00047090, 0x39)

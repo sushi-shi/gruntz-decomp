@@ -115,7 +115,7 @@ void CSecretTeleporterTrigger::FireActivation(i32 coord) {
 RVA(0x000422b0, 0x18d)
 void CSecretTeleporterTrigger::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((ResolveRegisteredAct<CSecretTeleporterTrigger>(id)))) =
+    CActRegPool<CSecretTeleporterTrigger>::s_table[id] =
         static_cast<i32 (CUserLogic::*)()>(&CSecretTeleporterTrigger::SpawnTeleporter);
 }
 
