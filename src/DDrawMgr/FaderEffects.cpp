@@ -29,11 +29,6 @@ namespace {
 #include <Gruntz/GameRand.h>
 } // namespace
 
-DATA(0x001f07ec)
-const float g_fxBias = -50.0f;
-DATA(0x001f07f4)
-const float g_fxEps = 1.0f;
-
 DATA(0x001f080c)
 const float g_faderHalfPi = 1.570795f;
 DATA(0x001f0828)

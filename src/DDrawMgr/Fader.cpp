@@ -242,75 +242,50 @@ i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
     m_cols = cfg->m_cols;
     m_rows = cfg->m_rows;
 
-    CRezBufferObject* mesh = &m_meshBuf;
-    mesh->RemoveAll();
+    m_meshBuf.RemoveAll();
 
     i32 halfW = static_cast<i32>(m_dstSurface->m_apiDesc.dwWidth) / 2;
     i32 halfH = static_cast<i32>(m_dstSurface->m_apiDesc.dwHeight) / 2;
     i32 cellW = static_cast<i32>(m_sourceSurface->m_apiDesc.dwWidth) / m_cols;
     i32 cellH = static_cast<i32>(m_sourceSurface->m_apiDesc.dwHeight) / m_rows;
     float radius = static_cast<float>(sqrt(static_cast<double>((SQR(cellW) + SQR(cellH)))));
-    if (m_rows <= 0) {
-        return 1;
-    }
-
     RezElem40 elem;
-    i32 y = 0;
-    i32 ay = halfH;
-    i32 negH = -cellH;
-    i32 r = 0;
-    do {
-        if (m_cols > 0) {
+    for (i32 r = 0; r < m_rows; r++) {
+        for (i32 c = 0; c < m_cols; c++) {
+            i32 x = c * cellW;
+            i32 y = r * cellH;
             elem.m_reserved20 = 0;
             elem.m_scale = 1.0f;
-            i32 rowD2 = SQR(ay);
-            float cellR = static_cast<float>(
-                sqrt(static_cast<double>(SQR(halfH) + SQR(halfW))) + radius - g_fxBias
-            );
-            i32 x = 0;
-            i32 bx = halfW;
-            i32 negW = -cellW;
-            i32 i = 0;
-            do {
-                CRect dispersedRect(0, 0, cellW, cellH);
-                i32 d2 = SQR(bx) + rowD2;
-                double v = sqrt(static_cast<double>(d2));
-                float u, w;
-                if (v > g_fxEps) {
-                    u = static_cast<float>((x - halfW) / v);
-                    w = static_cast<float>((y - halfH) / v);
-                } else {
-                    u = 0.0f;
-                    w = 1.0f;
-                }
-                dispersedRect.OffsetRect(x, y);
-                dispersedRect.OffsetRect(
-                    static_cast<i32>((u * cellR)),
-                    static_cast<i32>((w * cellR))
-                );
+            CRect dispersedRect(0, 0, cellW, cellH);
+            float v =
+                static_cast<float>(sqrt(static_cast<double>(SQR(halfW - x) + SQR(halfH - y))));
+            float cellR = static_cast<float>(sqrt(static_cast<double>(SQR(halfH) + SQR(halfW))))
+                          + radius + 50.0f;
+            float u, w;
+            if (v > 1.0f) {
+                u = (x - halfW) / v;
+                w = (y - halfH) / v;
+            } else {
+                u = 0.0f;
+                w = 1.0f;
+            }
+            dispersedRect.OffsetRect(x, y);
+            dispersedRect.OffsetRect(static_cast<i32>((u * cellR)), static_cast<i32>((w * cellR)));
 
-                CRect assembledRect(0, 0, d2, cellH);
-                assembledRect.OffsetRect(x, y);
+            CRect assembledRect(0, 0, cellW, cellH);
+            assembledRect.OffsetRect(x, y);
 
-                if (m_reverseOrder) {
-                    elem.m_startRect = assembledRect;
-                    elem.m_endRect = dispersedRect;
-                } else {
-                    elem.m_startRect = dispersedRect;
-                    elem.m_endRect = assembledRect;
-                }
+            if (m_reverseOrder) {
+                elem.m_startRect = assembledRect;
+                elem.m_endRect = dispersedRect;
+            } else {
+                elem.m_startRect = dispersedRect;
+                elem.m_endRect = assembledRect;
+            }
 
-                mesh->Add(elem);
-
-                x += cellW;
-                bx += negW;
-                i++;
-            } while (i < m_cols);
+            m_meshBuf.Add(elem);
         }
-        y += cellH;
-        ay += negH;
-        r++;
-    } while (r < m_rows);
+    }
     return 1;
 }
 
