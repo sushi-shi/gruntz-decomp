@@ -37,14 +37,14 @@ i32 Font::AllocateMemory(i32 count) {
     }
 
     m_surfaces = new u8*[m_count];
-    m_glyphs = new Glyph[m_count];
+    m_glyphs = new CSize[m_count];
 
     for (i32 i = 0; i < m_count; i++) {
         m_surfaces[i] = NULL;
 
-        Glyph g;
-        g.m_width = 0;
-        g.m_height = 0;
+        CSize g;
+        g.cx = 0;
+        g.cy = 0;
         SET_FONT_GLYPH(i, g);
     }
 
@@ -88,9 +88,9 @@ i32 Font::LoadFont(CString szFileName) {
     AllocateMemory(m_count);
 
     for (i32 i = 0; i < m_count; i++) {
-        ar.Read(&m_glyphs[i], sizeof(Glyph));
-        m_surfaces[i] = new u8[m_glyphs[i].m_width * m_glyphs[i].m_height];
-        ar.Read(m_surfaces[i], m_glyphs[i].m_width * m_glyphs[i].m_height);
+        ar.Read(&m_glyphs[i], sizeof(CSize));
+        m_surfaces[i] = new u8[m_glyphs[i].cx * m_glyphs[i].cy];
+        ar.Read(m_surfaces[i], m_glyphs[i].cx * m_glyphs[i].cy);
     }
 
     ar.Close();
@@ -98,8 +98,8 @@ i32 Font::LoadFont(CString szFileName) {
 
     i32 maxHeight = 0;
     for (i32 j = 0; j < m_count; j++) {
-        if (maxHeight <= m_glyphs[j].m_height) {
-            maxHeight = m_glyphs[j].m_height;
+        if (maxHeight <= m_glyphs[j].cy) {
+            maxHeight = m_glyphs[j].cy;
         }
     }
     m_maxHeight = maxHeight;
@@ -121,9 +121,9 @@ i32 Font::SaveFont(CString szFileName) {
     ar << m_count;
 
     for (i32 i = 0; i < m_count; i++) {
-        Glyph g = m_glyphs[i];
-        ar.Write(&g, sizeof(Glyph));
-        ar.Write(m_surfaces[i], m_glyphs[i].m_width * m_glyphs[i].m_height);
+        CSize g = m_glyphs[i];
+        ar.Write(&g, sizeof(CSize));
+        ar.Write(m_surfaces[i], m_glyphs[i].cx * m_glyphs[i].cy);
     }
 
     ar.Close();
@@ -138,7 +138,7 @@ u8** Font::GetSurface(u8 c) {
 }
 
 RVA(0x00179b80, 0x22)
-Glyph& Font::GetGlyph(Glyph& out, u8 c) {
+CSize& Font::GetGlyph(CSize& out, u8 c) {
     out = m_glyphs[c];
     return out;
 }
@@ -146,7 +146,7 @@ Glyph& Font::GetGlyph(Glyph& out, u8 c) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00179bb0, 0x1e)
-void Font::SetGlyph(u8 c, Glyph glyph) {
+void Font::SetGlyph(u8 c, CSize glyph) {
     SET_FONT_GLYPH(c, glyph);
 }
 
@@ -266,9 +266,9 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         i32 prev = 0;
         startChar = 0;
         while (acc < rc.left) {
-            Glyph g;
+            CSize g;
             prev = acc;
-            acc += m_font->GetGlyph(g, text[startChar]).m_width;
+            acc += m_font->GetGlyph(g, text[startChar]).cx;
             startChar++;
         }
         --startChar;
@@ -285,8 +285,8 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         endChar = 0;
         if (rc.right >= 0) {
             do {
-                Glyph g;
-                acc += m_font->GetGlyph(g, text[j]).m_width;
+                CSize g;
+                acc += m_font->GetGlyph(g, text[j]).cx;
                 j++;
             } while (acc <= rc.right);
             endChar = j;
@@ -297,20 +297,20 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
     }
 
     for (i32 ci = startChar; ci < endChar; ci++) {
-        Glyph g;
-        Glyph gm = m_font->GetGlyph(g, text[ci]);
+        CSize g;
+        m = m_font->GetGlyph(g, text[ci]);
         i32 clippedW;
         if (ci == endChar - 1) {
-            clippedW = gm.m_width - rightPartial;
+            clippedW = m.cx - rightPartial;
         } else {
-            clippedW = g.m_width;
+            clippedW = m.cx;
         }
         u8* glyphBuf = m_font->GetSurface(text[ci])[0];
         if (blend) {
             for (i32 row = rc.top; row < rc.bottom; row++) {
                 u16* dst = bits + ((row - rc.top + y) * pitch) / 2 + destX;
                 for (i32 col = firstCol; col < clippedW; col++) {
-                    u8 cover = glyphBuf[row * g.m_width + col];
+                    u8 cover = glyphBuf[row * m.cx + col];
 
                     if (cover == 0) {
                     } else if (cover != UCHAR_MAX) {
@@ -325,7 +325,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
             for (i32 row = rc.top; row < rc.bottom; row++) {
                 u16* dst = bits + ((row - rc.top + y) * pitch) / 2 + destX;
                 for (i32 col = firstCol; col < clippedW; col++) {
-                    if (glyphBuf[row * g.m_width + col] != 0) {
+                    if (glyphBuf[row * m.cx + col] != 0) {
                         *dst = packedColor;
                     }
                     dst++;
@@ -480,8 +480,8 @@ RVA(0x0017ac50, 0xbd)
 CSize FontRenderer::MeasureText(CString text) {
     CSize ext;
 
-    Glyph g;
-    g.m_height = 0;
+    CSize g;
+    g.cy = 0;
     i32 i = 0;
     i32 width = 0;
     if (m_font == NULL) {
@@ -490,7 +490,7 @@ CSize FontRenderer::MeasureText(CString text) {
     for (; i < text.GetLength(); i++) {
         u8 c = text[i];
 
-        width += m_font->GetGlyph(g, c).m_width;
+        width += m_font->GetGlyph(g, c).cx;
     }
     SET_SIZE_COMPONENTS(ext, width, m_font->GetMaxHeight());
     return ext;
