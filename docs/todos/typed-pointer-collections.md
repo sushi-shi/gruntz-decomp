@@ -71,6 +71,11 @@ source layer the original developers wrote around each collection.
   open-coded drain loops (OnObjectRemoved, LoadStateRecord,
   LoadGruntTypeTable). Serialization walks stay raw.
 
+- `CAniElement::m_records`: the existing checked `RecordAt(i)` replaces the
+  open-coded `GetSize() > 0 ? GetAt(0) : NULL` and cast-around-`GetAt`
+  forms at 13 sites (CGrunt, CAniAdvanceCursor, the `UserLogic.h` and
+  `DEATH_FRAME` macros).
+
 ## Open
 
 For each collection, decide which of these the source was:

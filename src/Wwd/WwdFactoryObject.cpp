@@ -269,11 +269,7 @@ void CAniAdvanceCursor::SetAnimation(CAniElement* src) {
         return;
     }
     m_index = 0;
-    if (src->m_records.GetSize() > 0) {
-        e = static_cast<CAniRecordView*>(src->m_records.GetAt(0));
-    } else {
-        e = NULL;
-    }
+    e = src->RecordAt(0);
     m_element = e;
     m_frameTicksLeft = 0;
     m_finished = false;
@@ -295,11 +291,7 @@ void CAniAdvanceCursor::RestartAnimation(i32 resetElapsedTime) {
     }
     m_index = 0;
     CAniRecordView* e;
-    if (src->m_records.GetSize() > 0) {
-        e = static_cast<CAniRecordView*>(src->m_records.GetAt(0));
-    } else {
-        e = NULL;
-    }
+    e = src->RecordAt(0);
     m_element = e;
     m_finished = false;
     i32 v = e->m_drawValue;
@@ -603,18 +595,11 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                     if (rd->m_loopMode != WWDLOOP_FINISH) {
                         CAniElement* a = m_animation;
                         m_index = m_index + 1;
-                        CAniRecordView* p = static_cast<CAniRecordView*>(a->GetAt(m_index));
+                        CAniRecordView* p = a->RecordAt(m_index);
                         m_element = p;
                         if (p == NULL) {
                             m_index = 0;
-                            i32 cnt = a->m_records.GetSize();
-                            CAniRecordView* first;
-                            if (cnt > 0) {
-                                first = static_cast<CAniRecordView*>(a->m_records.GetAt(0));
-                            } else {
-                                first = NULL;
-                            }
-                            m_element = first;
+                            m_element = a->RecordAt(0);
                         }
                         if (m_element != NULL) {
                             m_curDraw = m_pendingDraw;
@@ -731,7 +716,7 @@ i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
     }
     CAniElement* w = m_animation;
     if (w != NULL) {
-        CAniRecordView* e = static_cast<CAniRecordView*>(w->GetAt(m_index));
+        CAniRecordView* e = w->RecordAt(m_index);
         m_element = e;
         if (e == NULL) {
             m_index = 0;

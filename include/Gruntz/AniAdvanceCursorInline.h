@@ -12,7 +12,7 @@ inline i32 CAniAdvanceCursor::IsComplete() const {
 inline void CAniAdvanceCursor::AdvanceToNextRecord() {
     CAniElement* animation = m_animation;
     m_index = m_index + 1;
-    CAniRecordView* record = static_cast<CAniRecordView*>(animation->GetAt(m_index));
+    CAniRecordView* record = animation->RecordAt(m_index);
     m_element = record;
     if (record == NULL) {
         m_index = 0;

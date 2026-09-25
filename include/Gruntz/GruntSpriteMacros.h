@@ -15,13 +15,7 @@
          "GRUNTZ_" + m_animSetName + (sfx)                                                         \
      ))
 
-#define DEATH_FRAME()                                                                              \
-    (static_cast<CAniRecordView*>(                                                                 \
-         m_wwdObject->m_animationCursor.m_animation->m_records.GetSize() > 0                       \
-             ? m_wwdObject->m_animationCursor.m_animation->m_records.GetAt(0)                      \
-             : NULL                                                                                \
-    )                                                                                              \
-         ->m_param)
+#define DEATH_FRAME() (m_wwdObject->m_animationCursor.m_animation->RecordAt(0)->m_param)
 
 #define DEATH_CUE(tag)                                                                             \
     do {                                                                                           \

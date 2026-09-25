@@ -17,6 +17,7 @@
 #include <Gruntz/ActRegistry.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
+#include <Gruntz/AniElementInline.h>
 #include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/ArrivalFlagsPreset.h>
 #include <Gruntz/BattlezMapConfig.h>
@@ -720,10 +721,7 @@ void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
                     SwitchAnimation(m_poseAttackIdle);
                     {
                         CAniElement* desc = m_wwdObject->m_animationCursor.m_animation;
-                        CAniRecordView* elem =
-                            desc->m_records.GetSize() > 0
-                                ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0))
-                                : NULL;
+                        CAniRecordView* elem = desc->RecordAt(0);
                         i32 frame = elem->m_param;
                         const char* nm = EntranceCell()->AttackName().GetBuffer(0);
                         SetImageFrameByName(nm, frame);
@@ -748,9 +746,7 @@ void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
         SwitchAnimationAndMaybeAdvance(AT(m_poseIdle, GRUNT_IDLE1), 0);
         {
             CAniElement* desc = m_wwdObject->m_animationCursor.m_animation;
-            CAniRecordView* elem = desc->m_records.GetSize() > 0
-                                       ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0))
-                                       : NULL;
+            CAniRecordView* elem = desc->RecordAt(0);
             i32 frame = elem->m_param;
             i32 row = facing.m_row;
             i32 column = facing.m_column;
@@ -3016,11 +3012,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         if (eq) {
             CAniElement* el = m_wwdObject->m_animationCursor.m_animation;
             CAniRecordView* first;
-            if (el->m_records.GetSize() > 0) {
-                first = static_cast<CAniRecordView*>(el->m_records[0]);
-            } else {
-                first = NULL;
-            }
+            first = el->RecordAt(0);
             i32 handle = first->m_param;
             GruntDirectionCell cell = m_entranceCell;
             SetImageFrameByName(

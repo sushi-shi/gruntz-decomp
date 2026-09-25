@@ -1276,7 +1276,7 @@ tail:
     i32 frame;
     {
         CAniElement* desc = m_wwdObject->m_animationCursor.m_animation;
-        CAniRecordView* elem = static_cast<CAniRecordView*>(desc->GetAt(0));
+        CAniRecordView* elem = desc->RecordAt(0);
         frame = elem->m_param;
     }
     {
