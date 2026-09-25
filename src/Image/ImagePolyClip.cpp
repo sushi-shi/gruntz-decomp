@@ -554,13 +554,12 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
             i32 lx = lrow->m_fx >> WARP_TEXTURE_FRACTION_BITS;
             i32 span = lx - rx;
             if (span > 0) {
-                i32 u = rrow->m_fu;
-                g_warpU = u;
+                g_warpU = rrow->m_fu;
                 g_warpV = rrow->m_fv;
-                g_warpUStep = (lrow->m_fu - u) / span;
-                i32 dv = (lrow->m_fv - g_warpV) / span;
-                g_warpV = g_warpV << shift;
-                g_warpVStep = dv << shift;
+                g_warpUStep = (lrow->m_fu - g_warpU) / span;
+                g_warpVStep = (lrow->m_fv - g_warpV) / span;
+                g_warpV <<= shift;
+                g_warpVStep <<= shift;
 
                 g_rasterDestPtr = Span16(g_rasterDestRow) + rx;
                 __asm {
@@ -595,13 +594,12 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
             i32 lx = lrow->m_fx >> WARP_TEXTURE_FRACTION_BITS;
             i32 span = lx - rx;
             if (span > 0) {
-                i32 u = rrow->m_fu;
-                g_warpU = u;
+                g_warpU = rrow->m_fu;
                 g_warpV = rrow->m_fv;
-                g_warpUStep = (lrow->m_fu - u) / span;
-                i32 dv = (lrow->m_fv - g_warpV) / span;
-                g_warpV = g_warpV << shift;
-                g_warpVStep = dv << shift;
+                g_warpUStep = (lrow->m_fu - g_warpU) / span;
+                g_warpVStep = (lrow->m_fv - g_warpV) / span;
+                g_warpV <<= shift;
+                g_warpVStep <<= shift;
 
                 g_rasterDestPtr = Span16(g_rasterDestRow) + rx;
                 __asm {
@@ -639,13 +637,12 @@ i32 WarpTextureBlit(ClipVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
             i32 lx = lrow->m_fx >> WARP_TEXTURE_FRACTION_BITS;
             i32 span = lx - rx;
             if (span > 0) {
-                i32 u = rrow->m_fu;
-                g_warpU = u;
+                g_warpU = rrow->m_fu;
                 g_warpV = rrow->m_fv;
-                g_warpUStep = (lrow->m_fu - u) / span;
-                i32 dv = (lrow->m_fv - g_warpV) / span;
-                g_warpV = g_warpV << shift;
-                g_warpVStep = dv << shift;
+                g_warpUStep = (lrow->m_fu - g_warpU) / span;
+                g_warpVStep = (lrow->m_fv - g_warpV) / span;
+                g_warpV <<= shift;
+                g_warpVStep <<= shift;
 
                 g_rasterDestPtr = Span16(g_rasterDestRow) + rx;
                 __asm {
