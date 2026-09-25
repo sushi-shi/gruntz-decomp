@@ -1111,11 +1111,11 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
     }
     for (u32 i = 0; i < count; i++) {
         WwdSnapshot desc;
+        CUserLogic* child;
         reader->Read(&desc, sizeof(desc));
 
         CGameObject* createdObj = NULL;
-        CWwdGameObject* found = NULL;
-        if (MapLookupById(m_registeredGameObjectsById, desc.m_objectId, found) && found != NULL) {
+        if (LookupObjectById(m_registeredGameObjectsById, desc.m_objectId) != NULL) {
             return 0;
         }
 
@@ -1213,7 +1213,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
         }
         if (desc.m_logicTypeId != LOGIC_UNSET) {
 
-            CUserLogic* child = NULL;
+            child = NULL;
             if (OwnerMgr()->DispatchSerializationCallback(
                     reader,
                     SERIAL_CREATE,
