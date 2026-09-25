@@ -51,7 +51,6 @@ i32 SfDeviceInitKeys() {
     return 1;
 }
 
-// @early-stop
 RVA(0x000f8f30, 0x160)
 i32 BuildSoundFontPath(char drive) {
     if (g_sfReady == false) {
