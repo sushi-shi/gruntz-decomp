@@ -71,54 +71,38 @@ i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags) {
     m_soundStream = new SoundStream();
 
     if (!m_childGroup->IsReady()) {
-        if (m_lastError == WORLDERR_NONE) {
-            m_lastError = WORLDERR_CHILD_GROUP;
-        }
+        SetInitError(WORLDERR_CHILD_GROUP);
         return 0;
     }
     if (!m_workerList->IsReady()) {
-        if (m_lastError == WORLDERR_NONE) {
-            m_lastError = WORLDERR_WORKER_LIST;
-        }
+        SetInitError(WORLDERR_WORKER_LIST);
         return 0;
     }
     if (!m_imageRegistry->IsReady()) {
-        if (m_lastError == WORLDERR_NONE) {
-            m_lastError = WORLDERR_IMAGE_REGISTRY;
-        }
+        SetInitError(WORLDERR_IMAGE_REGISTRY);
         return 0;
     }
     if (!m_logicRegistry->IsReady()) {
-        if (m_lastError == WORLDERR_NONE) {
-            m_lastError = WORLDERR_WORKER_CACHE;
-        }
+        SetInitError(WORLDERR_WORKER_CACHE);
         return 0;
     }
     if (!m_paletteRegistry->IsReady()) {
-        if (m_lastError == WORLDERR_NONE) {
-            m_lastError = WORLDERR_WORKER_MAP;
-        }
+        SetInitError(WORLDERR_WORKER_MAP);
         return 0;
     }
     if (!m_animRegistry->IsReady()) {
-        if (m_lastError == WORLDERR_NONE) {
-            m_lastError = WORLDERR_ANIM_REGISTRY;
-        }
+        SetInitError(WORLDERR_ANIM_REGISTRY);
         return 0;
     }
     if (!m_level->SetViewportSize(w, h)) {
-        if (m_lastError == WORLDERR_NONE) {
-            m_lastError = WORLDERR_LEVEL_EXTENTS;
-        }
+        SetInitError(WORLDERR_LEVEL_EXTENTS);
         return 0;
     }
     if (HAS(static_cast<DDrawSurfaceMgrFlags>(flags), SURFACEMGR_DIRECT_OBJECT_MOVEMENT)) {
         m_level->m_flags |= 4;
     }
     if (!m_drawTarget->CreateChildren(w, h, bpp, flags)) {
-        if (m_lastError == WORLDERR_NONE) {
-            m_lastError = WORLDERR_CREATE_PAGES;
-        }
+        SetInitError(WORLDERR_CREATE_PAGES);
         return 0;
     }
 
@@ -130,9 +114,7 @@ i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags) {
         delete m_soundStream;
         m_soundStream = NULL;
         if (HAS(static_cast<DDrawSurfaceMgrFlags>(flags), SURFACEMGR_REQUIRE_SOUND)) {
-            if (m_lastError == WORLDERR_NONE) {
-                m_lastError = WORLDERR_SOUND_OUTPUT;
-            }
+            SetInitError(WORLDERR_SOUND_OUTPUT);
             return 0;
         }
     }
@@ -142,9 +124,7 @@ i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags) {
         m_soundStream = NULL;
     }
     if (!m_soundRegistry->BindSoundStream(true)) {
-        if (m_lastError == WORLDERR_NONE) {
-            m_lastError = WORLDERR_SOUND_REGISTRY;
-        }
+        SetInitError(WORLDERR_SOUND_REGISTRY);
         return 0;
     }
     return 1;

@@ -58,22 +58,16 @@ i32 CDDrawSubMgrPages::CreateChildren(i32 w, i32 h, ColorDepth bpp, i32 flags) {
     m_overlayPair = new CDDrawSurfacePair(m_ownerCtx, IDX(DDRAW_PAGE_OVERLAY), 0);
 
     if (m_frontSurface->SetGeometry(w, h, bpp) == BPP_UNSET) {
-        if (OwnerMgr()->m_lastError == WORLDERR_NONE) {
-            OwnerMgr()->m_lastError = WORLDERR_FRONT_SURFACE;
-        }
+        OwnerMgr()->SetInitError(WORLDERR_FRONT_SURFACE);
         return 0;
     }
     if (m_backPair->Create(w, h, bpp, 0) == BPP_UNSET) {
-        if (OwnerMgr()->m_lastError == WORLDERR_NONE) {
-            OwnerMgr()->m_lastError = WORLDERR_BACK_SURFACE;
-        }
+        OwnerMgr()->SetInitError(WORLDERR_BACK_SURFACE);
         return 0;
     }
     if (!HAS(static_cast<DDrawSurfaceMgrFlags>(flags), SURFACEMGR_SKIP_OVERLAY)) {
         if (m_overlayPair->Create(w, h, bpp, 0) == BPP_UNSET) {
-            if (OwnerMgr()->m_lastError == WORLDERR_NONE) {
-                OwnerMgr()->m_lastError = WORLDERR_OVERLAY_SURFACE;
-            }
+            OwnerMgr()->SetInitError(WORLDERR_OVERLAY_SURFACE);
             return 0;
         }
     }

@@ -100,13 +100,9 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
     if (w <= 0 || h <= 0) {
 
         if (m_id == IDX(DDRAW_PAGE_BACK)) {
-            if (OwnerMgr()->m_lastError == WORLDERR_NONE) {
-                OwnerMgr()->m_lastError = WORLDERR_FRONT_DIMENSIONS;
-            }
+            OwnerMgr()->SetInitError(WORLDERR_FRONT_DIMENSIONS);
         } else {
-            if (OwnerMgr()->m_lastError == WORLDERR_NONE) {
-                OwnerMgr()->m_lastError = WORLDERR_BACK_DIMENSIONS;
-            }
+            OwnerMgr()->SetInitError(WORLDERR_BACK_DIMENSIONS);
         }
         return 0;
     }
@@ -124,9 +120,7 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
             DDSCAPS_BACKBUFFER
         );
         if (m_surface == NULL) {
-            if (OwnerMgr()->m_lastError == WORLDERR_NONE) {
-                OwnerMgr()->m_lastError = WORLDERR_FRONT_SURFACE_COPY;
-            }
+            OwnerMgr()->SetInitError(WORLDERR_FRONT_SURFACE_COPY);
             return 0;
         }
     }
@@ -137,9 +131,7 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
             m_surface = OwnerMgr()->m_deviceManager->CreateKeyedSurface(w, h, BPP_UNSET, 0, -1);
         }
         if (m_surface == NULL) {
-            if (OwnerMgr()->m_lastError == WORLDERR_NONE) {
-                OwnerMgr()->m_lastError = WORLDERR_BACK_SURFACE_CREATE;
-            }
+            OwnerMgr()->SetInitError(WORLDERR_BACK_SURFACE_CREATE);
             return 0;
         }
     }
@@ -448,54 +440,27 @@ i32 CDDrawFrontSurface::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
         DDrawDeviceError err = deviceManager->m_lastError;
         if (err != DDRAWERR_NONE) {
             switch (err) {
-                case DDRAWERR_CREATE: {
-                    CDDrawSurfaceMgr* m = OwnerMgr();
-                    if (m->m_lastError == WORLDERR_NONE) {
-                        m->m_lastError = WORLDERR_DDRAW_CREATE;
-                    }
+                case DDRAWERR_CREATE:
+                    OwnerMgr()->SetInitError(WORLDERR_DDRAW_CREATE);
                     return 0;
-                }
-                case DDRAWERR_COOPERATIVE_LEVEL: {
-                    CDDrawSurfaceMgr* m = OwnerMgr();
-                    if (m->m_lastError == WORLDERR_NONE) {
-                        m->m_lastError = WORLDERR_DDRAW_COOPERATIVE_LEVEL;
-                    }
+                case DDRAWERR_COOPERATIVE_LEVEL:
+                    OwnerMgr()->SetInitError(WORLDERR_DDRAW_COOPERATIVE_LEVEL);
                     return 0;
-                }
-                case DDRAWERR_CAPABILITIES: {
-                    CDDrawSurfaceMgr* m = OwnerMgr();
-                    if (m->m_lastError == WORLDERR_NONE) {
-                        m->m_lastError = WORLDERR_DDRAW_CAPABILITIES;
-                    }
+                case DDRAWERR_CAPABILITIES:
+                    OwnerMgr()->SetInitError(WORLDERR_DDRAW_CAPABILITIES);
                     return 0;
-                }
-                case DDRAWERR_DISPLAY_MODE: {
-                    CDDrawSurfaceMgr* m = OwnerMgr();
-                    if (m->m_lastError == WORLDERR_NONE) {
-                        m->m_lastError = WORLDERR_DDRAW_DISPLAY_MODE;
-                    }
+                case DDRAWERR_DISPLAY_MODE:
+                    OwnerMgr()->SetInitError(WORLDERR_DDRAW_DISPLAY_MODE);
                     return 0;
-                }
-                case DDRAWERR_COLOR_MASKS: {
-                    CDDrawSurfaceMgr* m = OwnerMgr();
-                    if (m->m_lastError == WORLDERR_NONE) {
-                        m->m_lastError = WORLDERR_DDRAW_COLOR_MASKS;
-                    }
+                case DDRAWERR_COLOR_MASKS:
+                    OwnerMgr()->SetInitError(WORLDERR_DDRAW_COLOR_MASKS);
                     return 0;
-                }
-                default: {
-                    CDDrawSurfaceMgr* m = OwnerMgr();
-                    if (m->m_lastError == WORLDERR_NONE) {
-                        m->m_lastError = WORLDERR_CREATE_DEVICE;
-                    }
+                default:
+                    OwnerMgr()->SetInitError(WORLDERR_CREATE_DEVICE);
                     return 0;
-                }
             }
         }
-        CDDrawSurfaceMgr* md = OwnerMgr();
-        if (md->m_lastError == WORLDERR_NONE) {
-            md->m_lastError = WORLDERR_CREATE_DEVICE;
-        }
+        OwnerMgr()->SetInitError(WORLDERR_CREATE_DEVICE);
         return 0;
     }
     CDDrawSurfaceMgr* m2 = OwnerMgr();
@@ -508,10 +473,7 @@ i32 CDDrawFrontSurface::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
     if (surf != NULL && surf->IsValid()) {
         return 1;
     }
-    CDDrawSurfaceMgr* m3 = OwnerMgr();
-    if (m3->m_lastError == WORLDERR_NONE) {
-        m3->m_lastError = WORLDERR_CREATE_PALETTE_SURFACE;
-    }
+    OwnerMgr()->SetInitError(WORLDERR_CREATE_PALETTE_SURFACE);
     return 0;
 }
 
