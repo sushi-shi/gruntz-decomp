@@ -453,10 +453,7 @@ i32 CGrunt::StartBombGruntRun() {
         }
     }
     SwitchAnimation(AT(m_poseItem, GRUNT_ITEM1));
-    GruntDirectionCell cell = m_entranceCell;
-    i32 col = cell.m_column + cell.m_row * 2;
-    i32 base = cell.m_row + col;
-    char* cn = m_cells[base].ItemName().GetBuffer(0);
+    char* cn = EntranceCell()->ItemName().GetBuffer(0);
     SetImageSetByName(cn);
     return 0;
 }

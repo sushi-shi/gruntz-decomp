@@ -1281,10 +1281,7 @@ tail:
         frame = elem->m_param;
     }
     {
-        GruntDirectionCell cell = m_entranceCell;
-        i32 col = cell.m_column + cell.m_row * 2;
-        i32 base = cell.m_row + col;
-        char* cn = m_cells[base].StruckName().GetBuffer(0);
+        char* cn = EntranceCell()->StruckName().GetBuffer(0);
         SetImageFrameByName(cn, frame);
     }
     {
@@ -1447,10 +1444,7 @@ i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
 
     SwitchAnimation(m_poseItem[poseIdx]);
 
-    GruntDirectionCell cell = m_entranceCell;
-    i32 col = cell.m_column + cell.m_row * 2;
-    i32 base = cell.m_row + col;
-    char* name = m_cells[base].ItemName().GetBuffer(0);
+    char* name = EntranceCell()->ItemName().GetBuffer(0);
     SetImageSetByName(name);
     return 0;
 }
