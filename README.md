@@ -35,8 +35,8 @@ _CUR / MAX / HIST: 3,867 / 3,898 / 3,925 exact &middot; 95.14% / 95.38% / 96.28%
 ## Requirements
 
 Linux (x86_64) with [Nix](https://nixos.org/download) and flakes enabled
-(`experimental-features = nix-command flakes`). The flake fetches `GRUNTZ.EXE`,
-its `CLAW.EXE`/`MEDIEVAL.EXE` siblings, and the MSVC 5.0 toolchain.
+(`experimental-features = nix-command flakes`). The flake fetches `GRUNTZ.EXE`
+and the MSVC 5.0 toolchain.
 
 ## Quickstart
 
