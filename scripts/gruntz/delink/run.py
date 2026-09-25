@@ -38,7 +38,9 @@ def units(model: Model) -> list[str]:
 
 
 def run(model: Model | None = None, target_dir: Path = TARGET_DIR,
-        delink_dir: Path = DELINK_DIR) -> dict:
+        delink_dir: Path = DELINK_DIR, only: list[str] | None = None) -> dict:
+    """Delink the whole image and collect every unit's target object, or,
+    with `only`, replace just those units' objects and leave the rest."""
     import shutil
     model = model or resolve()
 
@@ -54,8 +56,8 @@ def run(model: Model | None = None, target_dir: Path = TARGET_DIR,
     if out.strip():
         print(out.strip().splitlines()[-1])
 
-    wanted = units(model)
-    if target_dir.exists():
+    wanted = units(model) if only is None else list(only)
+    if only is None and target_dir.exists():
         shutil.rmtree(target_dir)
     target_dir.mkdir(parents=True, exist_ok=True)
     collected, missing = [], []

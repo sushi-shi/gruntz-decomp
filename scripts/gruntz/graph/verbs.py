@@ -2,6 +2,9 @@
 
     gruntz build [targets...] [-j N] [--force-delink] [-v]
     gruntz link  [--engine-lib] [--order F] ...     -> `ninja candidate`
+    gruntz match <unit|source>...                   -> the fast loop: compile,
+                                                       label, delink, compare
+                                                       only those units
     gruntz match [--reference R] [--all]            -> build, then the deltas
     gruntz play  [--retail]                         -> build + link, install
                                                        into the game env, run
@@ -9,10 +12,12 @@
 
 `build` configures if the manifest is missing (after that ninja's generator
 edge owns it) and runs the default target. `link` is the same graph with the
-opt-in phase-2 target. `match` is the agent-facing one: it runs the build, then
-reports the compare summary for exactly the units whose objects CHANGED - which
-is the question a matcher actually asks, and the reason the report is an in-graph
-edge rather than an unconditional call (a no-op build has nothing to report).
+opt-in phase-2 target. `match <unit>` is the matching loop: it rebuilds only the
+named units (an edited header is not propagated to other TUs), re-delinks only
+when their labels changed, and prints their functions against the banked MAX;
+everything else keeps its last build until `gruntz build`. Bare `match` builds
+the compare target and reports the units whose objects CHANGED. Gates run only
+for `gruntz build verify`, when preparing a merge.
 
 "Changed" is decided by CONTENT, not mtime: gruntz.graph.cc writes objects
 if-changed with the COFF timestamp stabilised, so a hash census before and
@@ -209,10 +214,106 @@ def print_changed(report: dict, units: list[str], *, functions: bool = True,
           f"units {m.get('total_units', 0)}")
 
 
+def resolve_units(specs: list[str]) -> list[str]:
+    """Unit stems from stems or source paths (`fader`, `src/DDrawMgr/Fader.cpp`)."""
+    from gruntz.manifest import units as manifest_units
+    rows = manifest_units()
+    by_stem = {u["unit"]: u for u in rows}
+    by_source = {str(Path(u["source"])): u["unit"] for u in rows}
+    out = []
+    for spec in specs:
+        if spec in by_stem:
+            out.append(spec)
+            continue
+        path = Path(spec)
+        if path.is_absolute():
+            try:
+                path = path.resolve().relative_to(REPO)
+            except ValueError:
+                pass
+        unit = by_source.get(str(path))
+        if unit is None:
+            raise SystemExit(f"gruntz match: {spec!r} is not a unit stem or a "
+                             "unit source in config/units.toml")
+        out.append(unit)
+    return list(dict.fromkeys(out))
+
+
+def match_units(units: list[str], *, jobs: int | None, verbose: bool) -> int:
+    """The fast loop: compile, label, delink, and compare only `units`.
+
+    Every other unit keeps its last-built objects, claims, and scores, even
+    when an edited header would change them; `gruntz build` refreshes them.
+    No fingerprints, no gates.
+    """
+    import time
+
+    from gruntz.compare import normalize, project
+    from gruntz.delink import run as delink
+    from gruntz.manifest import units as manifest_units
+    from gruntz.model import resolve, serialize
+    from gruntz.tool import objdiff
+    from gruntz.verify import scores
+
+    started = time.monotonic()
+    report_path = REPO / graph.REPORT_JSON
+    before = scores.functions(scores.load(report_path)) if report_path.exists() else {}
+
+    targets = [f"{graph.BASE_DIR}/{u}.obj" for u in units]
+    targets += [f"{graph.CLAIMS_DIR}/{u}.tsv" for u in units]
+    rc = ninja(targets, jobs=jobs, verbose=verbose)
+    if rc:
+        return rc
+
+    model = resolve()
+    bindings_changed, _ = serialize(model)
+    target_dir = REPO / graph.TARGET_DIR
+    missing = [u for u in units if not (target_dir / f"{u}.c.obj").exists()]
+    if bindings_changed or missing:
+        delink.run(model, target_dir=target_dir, only=units)
+        project.project(manifest_units(), target_dir, REPO / graph.COMPARE_DIR)
+    normalize.normalize(REPO / graph.BASE_DIR, target_dir,
+                        REPO / graph.COMPARE_DIR, units)
+    objdiff.report(REPO / graph.COMPARE_DIR, report_path)
+
+    after = scores.functions(scores.load(report_path))
+    print_unit_functions(units, before, after)
+    print(f"\n[match] {', '.join(units)} in {time.monotonic() - started:.1f}s"
+          + (" (labels changed: delinked)" if bindings_changed else ""))
+    return 0
+
+
+def print_unit_functions(units: list[str], before: dict, after: dict) -> None:
+    """Every function of `units`: previous, current, and banked MAX."""
+    from gruntz.verify import baseline
+    bank = baseline.load()
+    for unit in units:
+        rows = sorted((name, pct) for (u, name), pct in after.items() if u == unit)
+        if not rows:
+            print(f"\n{unit}: no paired functions in the report")
+            continue
+        exact = sum(1 for _n, pct in rows if pct >= 100.0)
+        print(f"\n{unit}: {exact}/{len(rows)} exact")
+        print(f"  {'now':>8} {'was':>8} {'hist':>8}  function")
+        for name, pct in sorted(rows, key=lambda r: (r[1], r[0])):
+            was = before.get((unit, name))
+            hist = bank.get((unit, name), {}).get("hist")
+            if pct >= 100.0 and was is not None and was >= 100.0:
+                continue
+            mark = ("" if was is None or abs(pct - was) < 1e-4
+                    else "  +" if pct > was else "  -")
+            print(f"  {pct:8.2f} {'' if was is None else f'{was:8.2f}':>8} "
+                  f"{'' if hist is None else f'{hist:8.2f}':>8}  {name}{mark}")
+
+
 def match_main(argv: list[str] | None = None) -> int:
-    """Build, then print the compare summary for the units that changed."""
+    """Fast loop for named units; with none, build everything and summarise
+    the units whose objects changed."""
     import argparse
     ap = argparse.ArgumentParser(prog="gruntz match", description=match_main.__doc__)
+    ap.add_argument("units", nargs="*",
+                    help="unit stems or source paths: compile, delink and "
+                         "compare only these")
     ap.add_argument("-j", "--jobs", type=int)
     ap.add_argument("-v", "--verbose", action="store_true")
     ap.add_argument("--reference", type=Path,
@@ -229,8 +330,12 @@ def match_main(argv: list[str] | None = None) -> int:
     a = ap.parse_args(argv)
 
     configure_if_needed()
+    if a.units:
+        return match_units(resolve_units(a.units), jobs=a.jobs, verbose=a.verbose)
+
     before = object_census()
-    rc = ninja(jobs=a.jobs, verbose=a.verbose, keep_going=a.keep_going)
+    rc = ninja(["compare"], jobs=a.jobs, verbose=a.verbose,
+               keep_going=a.keep_going)
     if rc and not a.keep_going:
         return rc
     after = object_census()

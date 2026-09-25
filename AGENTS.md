@@ -31,10 +31,13 @@ storage, control flow, calling conventions, referents) outranks any score.
 3. Reconstruct with the `matcher` skill; classify plateaus with
    `wall-identifier`; use `gruntz permute` (the `permute` skill) only for a
    diagnosed register/schedule residue with `hist` < 100.
-4. Build with `gruntz build`: it is incremental and runs compile, compare,
-   the MAX gate, and every default gate in one pass. One build after an edit
-   is enough; no separate verification rebuilds.
-5. Mark a complete body whose residue is bounded by evidence `@early-stop`.
+4. Iterate with `gruntz match <unit|source>`: it compiles, labels, delinks,
+   and compares only that TU (a few seconds), even after a header edit other
+   TUs include, and prints its functions against the banked MAX. Run
+   `gruntz build` (every TU, no gates) when the change spans units.
+5. Gates run only when preparing a merge: `gruntz build verify` (MAX gate plus
+   the fast and normal tiers).
+6. Mark a complete body whose residue is bounded by evidence `@early-stop`.
 
 Matching rules that are easy to get wrong:
 
@@ -53,8 +56,8 @@ Matching rules that are easy to get wrong:
 
 ## Tests
 
-- Matching and modeling work runs no test suites; compare and the MAX gate
-  are the verification.
+- Matching and modeling work runs no test suites; compare is the
+  verification, and the MAX gate runs at merge preparation.
 - Tooling changes run only the touched package's `test_*.py`
   (`python3 -m unittest gruntz.<pkg>.test_<name>` from `scripts/`) and
   `gruntz verify selftest -k <gate>` for a changed gate.

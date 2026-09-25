@@ -18,7 +18,8 @@ The loop is one directed graph, emitted into `build/build.ninja` and run by
 | :-- | :-- | :-- |
 | `gruntz configure` | `gruntz.graph.emit` | `config/units.toml` → `build/build.ninja` (self-regenerating edge) |
 | `gruntz build` | `gruntz.graph.verbs` | configure-if-needed, then ninja's default target |
-| `gruntz match` | `gruntz.graph.verbs` | the same build, then the compare summary for the units whose **objects changed** |
+| `gruntz match <unit\|source>...` | `gruntz.graph.verbs` | the fast matching loop: compile, label, delink (only when labels changed), and compare **only** the named units, then print their functions against the banked MAX; no gates |
+| `gruntz match` | `gruntz.graph.verbs` | without units: the full build, then the compare summary for the units whose **objects changed** |
 | `gruntz link` | `gruntz.graph.link` | PHASE 2, opt-in: base objs (+ `.res`) → `GRUNTZ.candidate.EXE` + `.map` |
 | `gruntz labels` | `gruntz.retail_labels.source` | `src/` label macros → per-unit claim fragments + the tree-wide completeness sweep |
 | `gruntz model` | `gruntz.model` | THE join: claims × censuses × providers → `build/gen/bindings.tsv` + violations |
@@ -55,7 +56,8 @@ all read).
 | **full** — binary evidence | `vtables` `alloc-size` `assert-relocs` `caller-callee` |
 | **link** — the candidate image | `link-tier` (link defects + section census + reloc-masked image diff) |
 
-`fast,normal` is the default and is what the graph's `verify_check` edge runs;
+`fast,normal` is the default and is what the graph's `verify_check` edge runs
+(`gruntz build verify`, merge preparation only);
 `full` and `link` opt in. Every gate returns findings and writes nothing —
 blessing a baseline is always a separate manual verb (`board --update`,
 `verify bank`).

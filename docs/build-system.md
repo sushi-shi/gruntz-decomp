@@ -21,12 +21,14 @@ build/build.ninja
         +-- report    objdiff-cli -> build/objdiff/compare-new/report.json
         +-- verify_fp the per-function source-fingerprint cache
         +-- verify_check  the MAX gate + the fast and normal gate tiers
+                          (only for the `verify` target)
         v
 per-unit + roll-up match % (`gruntz verify status`)
 ```
 
 Phony aliases stop the graph early: `ninja -f build/build.ninja base` (objects
-only), `claims`, `target`, `compare`, `verify`. `all` is the default.
+only), `claims`, `target`, `compare`, `verify`. `all` (everything except the
+gates) is the default; `verify` adds the gates.
 `candidate` is phase 2 and is never in `all`.
 
 Everything runs inside `nix develop` — the one dev shell (`.#build` is a kept
@@ -39,8 +41,10 @@ entry (idempotent).
 ```sh
 nix develop                     # the dev shell: analysis tools + MSVC 5.0 under Wine
 gruntz init                     # once: the build wine prefix
-gruntz build                    # cl -> labels -> model -> delink -> compare -> verify check
-gruntz match                    # the same build, then the summary for the CHANGED units
+gruntz match <unit|source>...   # fast loop: only these units, no gates
+gruntz build                    # cl -> labels -> model -> delink -> compare
+gruntz build verify             # + MAX gate and gate tiers (merge preparation)
+gruntz match                    # the full build, then the summary for the CHANGED units
 ```
 
 Pass ninja arguments straight through: `gruntz build -j8 -v`, or name a phony
@@ -274,14 +278,15 @@ measure with zero totals.
 
 ## Gates: `gruntz verify check --tier`
 
-The graph's `verify_check` edge runs the MAX gate plus the **fast** and
-**normal** tiers; `full` and `link` opt in. The full roster is in
+The graph's `verify_check` edge (`gruntz build verify`, run when preparing a
+merge) runs the MAX gate plus the **fast** and **normal** tiers; `full` and
+`link` opt in. The full roster is in
 [`docs/tooling-map.md`](tooling-map.md#the-verify-slice--scores-the-max-gate-and-every-ported-gate).
 
 | tier | question it answers | when |
 | --- | --- | --- |
-| **fast** | is the source text within its committed ledgers? (board, cast ledger, vtable bans, enum devices, label style, include order) | every build |
-| **normal** | is this change structurally safe? (name uniqueness, library overlap, TU order, data TU order, undefined closure) | every build |
+| **fast** | is the source text within its committed ledgers? (board, cast ledger, vtable bans, enum devices, label style, include order) | merge preparation |
+| **normal** | is this change structurally safe? (name uniqueness, library overlap, TU order, data TU order, undefined closure) | merge preparation |
 | **full** | what reconstruction debt remains? (vtable tier, alloc-size sizeof oracle, reloc multisets, data relocs, caller/callee, the retail data-access map + the claim-side coverage census) | periodic, or to build a work plan |
 | **link** | does it link, land where retail landed, and reach the same referents? | after `gruntz link` |
 
