@@ -250,33 +250,49 @@ BOOL CALLBACK EditDwRectsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
 }
 
 RVA(0x0003d2b0, 0xf1)
-i32 DispatchGruntStartingPointLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CGruntStartingPoint)}
+i32 DispatchGruntStartingPointLogic(CGameObject* owner) {
+    LOGIC_RECORD_DISPATCH(CGruntStartingPoint)
+}
 
 RVA(0x0003d3f0, 0xf1)
-i32 DispatchExitTriggerLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CExitTrigger)}
+i32 DispatchExitTriggerLogic(CGameObject* owner) {
+    LOGIC_RECORD_DISPATCH(CExitTrigger)
+}
 
 RVA(0x0003d530, 0xf1)
-i32 DispatchGruntCreationPointLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CGruntCreationPoint)}
+i32 DispatchGruntCreationPointLogic(CGameObject* owner) {
+    LOGIC_RECORD_DISPATCH(CGruntCreationPoint)
+}
 
 RVA(0x0003d670, 0xf1)
-i32 DispatchWormholeLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CWormhole)}
+i32 DispatchWormholeLogic(CGameObject* owner) {
+    LOGIC_RECORD_DISPATCH(CWormhole)
+}
 
 RVA(0x0003d7b0, 0xf1)
-i32 DispatchGruntPuddleLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CGruntPuddle)}
+i32 DispatchGruntPuddleLogic(CGameObject* owner) {
+    LOGIC_RECORD_DISPATCH(CGruntPuddle)
+}
 
 RVA(0x0003d8f0, 0xf1)
-i32 DispatchTeleporterLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CTeleporter)}
+i32 DispatchTeleporterLogic(CGameObject* owner) {
+    LOGIC_RECORD_DISPATCH(CTeleporter)
+}
 
 RVA(0x0003da30, 0xf1)
-i32 DispatchSecretTeleporterTriggerLogic(CGameObject* owner){
+i32 DispatchSecretTeleporterTriggerLogic(CGameObject* owner) {
     LOGIC_RECORD_DISPATCH(CSecretTeleporterTrigger)
 }
 
 RVA(0x0003db70, 0xf4)
-i32 DispatchWarlordLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CWarlord)}
+i32 DispatchWarlordLogic(CGameObject* owner) {
+    LOGIC_RECORD_DISPATCH(CWarlord)
+}
 
 RVA(0x0003dcb0, 0xf1)
-i32 DispatchFortressFlagLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CFortressFlag)}
+i32 DispatchFortressFlagLogic(CGameObject* owner) {
+    LOGIC_RECORD_DISPATCH(CFortressFlag)
+}
 
 RVA(0x0003ddf0, 0xf1)
 i32 DispatchSecretLevelTriggerLogic(CGameObject* owner) {

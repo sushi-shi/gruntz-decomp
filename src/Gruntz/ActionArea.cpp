@@ -34,7 +34,9 @@ template<> DATA(0x00229388)
 CActReg CActRegPool<CActionArea>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 RVA(0x00007c60, 0xf1)
-i32 DispatchActionAreaLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CActionArea)}
+i32 DispatchActionAreaLogic(CGameObject* owner) {
+    LOGIC_RECORD_DISPATCH(CActionArea)
+}
 
 // @early-stop
 RVA(0x00007da0, 0x17e)

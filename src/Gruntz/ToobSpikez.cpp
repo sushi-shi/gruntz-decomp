@@ -22,14 +22,15 @@ RVA_COMPGEN(0x00012c30, 0x1e, ??_GCToobSpikez@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012c60, 0x44, ??1CToobSpikez@@UAE@XZ)
 
 RVA(0x00114480, 0xf1)
-i32 DispatchToobSpikezLogic(CGameObject* obj){TILE_LOGIC_RECORD_DISPATCH(CToobSpikez)}
+i32 DispatchToobSpikezLogic(CGameObject* obj) {
+    TILE_LOGIC_RECORD_DISPATCH(CToobSpikez)
+}
 
-RVA_DYNINIT(0x001147c0, 0xa, CActRegPool<CToobSpikez>::s_table) RVA_DYNINIT(0x001147e0, 0x15, CActRegPool<CToobSpikez>::s_table) RVA_DYNINIT(
-    0x00114810,
-    0xe,
-    CActRegPool<CToobSpikez>::s_table
-) RVA_DYNINIT(0x00114830, 0x1f, CActRegPool<CToobSpikez>::s_table) template<>
-DATA(0x0024e978)
+RVA_DYNINIT(0x001147c0, 0xa, CActRegPool<CToobSpikez>::s_table)
+RVA_DYNINIT(0x001147e0, 0x15, CActRegPool<CToobSpikez>::s_table)
+RVA_DYNINIT(0x00114810, 0xe, CActRegPool<CToobSpikez>::s_table)
+RVA_DYNINIT(0x00114830, 0x1f, CActRegPool<CToobSpikez>::s_table)
+template<> DATA(0x0024e978)
 CActReg CActRegPool<CToobSpikez>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 // @early-stop

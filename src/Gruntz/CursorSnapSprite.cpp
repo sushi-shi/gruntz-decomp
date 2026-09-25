@@ -26,7 +26,9 @@ RVA_COMPGEN(0x000118f0, 0x1e, ??_GCCursorSnapSprite@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011920, 0x44, ??1CCursorSnapSprite@@UAE@XZ)
 
 RVA(0x0003a200, 0xf1)
-i32 DispatchCursorSnapSpriteLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CCursorSnapSprite)}
+i32 DispatchCursorSnapSpriteLogic(CGameObject* owner) {
+    LOGIC_RECORD_DISPATCH(CCursorSnapSprite)
+}
 
 RVA(0x0003a340, 0x16e)
 CCursorSnapSprite::CCursorSnapSprite(CGameObject* obj)

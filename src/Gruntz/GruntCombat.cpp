@@ -1775,7 +1775,9 @@ CObject* SoundCueRegistry::Lookup(const char* key) {
 }
 
 RVA(0x0005baf0, 0xf4)
-i32 DispatchGruntLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CGrunt)}
+i32 DispatchGruntLogic(CGameObject* owner) {
+    LOGIC_RECORD_DISPATCH(CGrunt)
+}
 
 RVA(0x0005bcd0, 0x102)
 void CGrunt::FireActivation(i32 id) {

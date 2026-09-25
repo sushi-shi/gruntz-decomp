@@ -81,13 +81,17 @@ RVA_COMPGEN(0x00012640, 0x1e, ??_GCDroppedObjectShadow@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012670, 0x44, ??1CDroppedObjectShadow@@UAE@XZ)
 
 RVA(0x000c5630, 0xf4)
-i32 DispatchObjectDropperLogic(CGameObject* obj){TILE_LOGIC_RECORD_DISPATCH(CObjectDropper)}
+i32 DispatchObjectDropperLogic(CGameObject* obj) {
+    TILE_LOGIC_RECORD_DISPATCH(CObjectDropper)
+}
 
 RVA(0x000c5770, 0xf1)
-i32 DispatchDroppedObjectLogic(CGameObject* obj){TILE_LOGIC_RECORD_DISPATCH(CDroppedObject)}
+i32 DispatchDroppedObjectLogic(CGameObject* obj) {
+    TILE_LOGIC_RECORD_DISPATCH(CDroppedObject)
+}
 
 RVA(0x000c58b0, 0xf1)
-i32 DispatchDroppedObjectShadowLogic(CGameObject* obj){
+i32 DispatchDroppedObjectShadowLogic(CGameObject* obj) {
     TILE_LOGIC_RECORD_DISPATCH(CDroppedObjectShadow)
 }
 

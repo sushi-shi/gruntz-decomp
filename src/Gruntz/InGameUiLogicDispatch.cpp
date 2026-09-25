@@ -9,10 +9,14 @@
 #include <Wwd/LogicRecordEvent.h>
 
 RVA(0x00095750, 0xf4)
-i32 DispatchInGameIconLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CInGameIcon)}
+i32 DispatchInGameIconLogic(CGameObject* owner) {
+    LOGIC_RECORD_DISPATCH(CInGameIcon)
+}
 
 RVA(0x00095890, 0xf1)
-i32 DispatchInGameTextLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CInGameText)}
+i32 DispatchInGameTextLogic(CGameObject* owner) {
+    LOGIC_RECORD_DISPATCH(CInGameText)
+}
 
 RVA(0x000959d0, 0xf1)
 i32 DispatchToyPeekLogic(CGameObject* owner) {
