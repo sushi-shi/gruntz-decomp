@@ -109,7 +109,7 @@ feccrypt	11	10
 fileimage	19	15
 filestream	5	5
 font	22	20
-fontconfig	15	9
+fontconfig	15	10
 fonts	2	2
 fortressflag	26	23
 frontcandy	5	4
@@ -1745,7 +1745,7 @@ fontconfig	??1CFontConfig@@QAE@XZ	100.0000	100.0000	1	5d3b273e09e9	0x85f40	100.0
 fontconfig	??1CPen@@UAE@XZ	100.0000	100.0000	1	cpp:f25ad3dca3dc	0x220f0	100.0000	
 fontconfig	??1FontItem@@QAE@XZ	100.0000	100.0000	1	cpp:1c54d09168ac	0x21c40	100.0000	
 fontconfig	?AddItem@CFontConfig@@QAEHPBDHH@Z	100.0000	100.0000	3	77a55bf8eb8a	0x21c60	100.0000	
-fontconfig	?Draw3DText@CFontConfig@@QAEHPBVCString@@PAUHDC__@@PAUtagRECT@@HHHHHHH@Z	94.0260	94.0260	4	e021b13de38d	0x22810	94.0260	
+fontconfig	?Draw3DText@CFontConfig@@QAEHPBVCString@@PAUHDC__@@PAUtagRECT@@HHHHHHH@Z	94.0260	93.4010	4	e021b13de38d	0x22810	94.0260	
 fontconfig	?DrawTextLines@CFontConfig@@QAEHHPAUHDC__@@PAUtagRECT@@I@Z	93.3010	93.3010	6	d0523e47ea3a	0x22360	93.3010	
 fontconfig	?DrawWithFont@CFontConfig@@QAEHPBDPAUHDC__@@PAUtagRECT@@I@Z	100.0000	100.0000	2	f0a92227d6b1	0x22770	100.0000	
 fontconfig	?EndInput@CFontConfig@@QAEXXZ	100.0000	100.0000	2	ad808bb50e1b	0x21ef0	100.0000	
@@ -1755,7 +1755,7 @@ fontconfig	?LoadFontConfig@CFontConfig@@QAEHHH@Z	100.0000	100.0000	5	9255653b83c
 fontconfig	?MeasureLabel@CFontConfig@@QAEHPAUHDC__@@PAUtagRECT@@@Z	99.5536	99.5536	2	8a8b4b8b6de2	0x21f20	99.5536	
 fontconfig	?RenderInputText@CFontConfig@@QAEHPAUHDC__@@HPAUtagRECT@@@Z	87.2836	87.2836	5	c343a079c01c	0x22160	95.2761	
 fontconfig	?Reset@CFontConfig@@QAEXXZ	100.0000	100.0000	1	5a59128ee9b0	0x21b60	100.0000	
-fontconfig	?Scroll@CFontConfig@@QAEXH@Z	95.6522	95.6522	3	0e629508d7ba	0x21d80	100.0000	
+fontconfig	?Scroll@CFontConfig@@QAEXH@Z	100.0000	100.0000	4	b6a328e59871	0x21d80	100.0000	
 fonts	?FreeFontsMemory@@YAHXZ	100.0000	100.0000	1	1164e8ea8f1a	0x1158f0	100.0000	
 fonts	?InitializeFonts@@YAHXZ	100.0000	100.0000	11	4f87da58066b	0x115810	100.0000	
 fortressflag	??0CExplosion@@QAE@PAUCGameObject@@@Z	95.7653	95.7653	6	cb9803d2045e	0x470e0	95.7653	

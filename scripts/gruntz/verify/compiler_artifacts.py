@@ -7,7 +7,8 @@ storage, the source-proven ZTools placement allocation overload, and an original
 typed collection's destructor callback before the collection separately
 deallocates the object. Their path/type/count signatures
 are closed here so a new site is reviewed instead of silently joining that
-exception.
+exception. Recorded rule exceptions (docs/todos/rule-exceptions.tsv) are
+admitted the same way, by exact path and count.
 
 ``gruntz verify compiler-artifacts`` also prints external code definitions that
 exist only in base objects.  That list is derived from the current COFFs and
@@ -50,6 +51,13 @@ ZTOOLS_PLACEMENT_DEFINITION_RE = re.compile(
 DTOR_CALL_ALLOW = Counter({
     ("include/ZTools/ZDArray.h", "T"): 1,
     ("include/ZTools/PTree.h", "T"): 1,
+    # Rule exception (docs/todos/rule-exceptions.tsv): CFontConfig::Scroll.
+    ("src/Gruntz/FontConfig.cpp", "FontItem"): 1,
+})
+
+# Rule exceptions only; each entry has a row in docs/todos/rule-exceptions.tsv.
+ALLOCATION_CALL_ALLOW = Counter({
+    ("src/Gruntz/FontConfig.cpp", "::operator delete("): 1,
 })
 
 LOW_LEVEL_ALLOW = Counter({
@@ -102,9 +110,11 @@ def _counter_findings(label: str, actual: Counter, allowed: Counter) -> list[str
 def source_findings(files=None, *, placement_allow=PLACEMENT_ALLOW,
                     dtor_allow=DTOR_CALL_ALLOW,
                     low_level_allow=LOW_LEVEL_ALLOW,
-                    allocation_definition_allow=ALLOCATION_DEFINITION_ALLOW) -> list[str]:
+                    allocation_definition_allow=ALLOCATION_DEFINITION_ALLOW,
+                    allocation_call_allow=ALLOCATION_CALL_ALLOW) -> list[str]:
     placements: Counter = Counter()
     allocation_definitions: Counter = Counter()
+    allocation_calls: dict[tuple[str, str], list[int]] = {}
     dtor_calls: Counter = Counter()
     low_level: Counter = Counter()
     findings: list[str] = []
@@ -121,9 +131,8 @@ def source_findings(files=None, *, placement_allow=PLACEMENT_ALLOW,
                    for definition in definitions):
                 continue
             line = text.count("\n", 0, match.start()) + 1
-            findings.append(
-                f"compiler allocation call: {site}:{line}: {match.group(0).strip()}"
-            )
+            key = (site, re.sub(r"\s+", "", match.group(0)).replace("operator", "operator "))
+            allocation_calls.setdefault(key, []).append(line)
         for match in CTOR_CALL_RE.finditer(text):
             line = text.count("\n", 0, match.start()) + 1
             findings.append(f"explicit constructor call: {site}:{line}: {match.group(1)}")
@@ -141,6 +150,15 @@ def source_findings(files=None, *, placement_allow=PLACEMENT_ALLOW,
         dtor_calls.update((site, match.group(1)) for match in DTOR_CALL_RE.finditer(text))
         low_level[(site, "naked")] += len(re.findall(r"__declspec\s*\(\s*naked\s*\)", text))
         low_level[(site, "asm")] += len(re.findall(r"\b__asm\b", text))
+    for key in sorted(set(allocation_calls) | set(allocation_call_allow)):
+        lines = allocation_calls.get(key, [])
+        if len(lines) == allocation_call_allow[key]:
+            continue
+        if not lines:
+            findings.append(f"compiler allocation call: {key[0]}: {key[1]}: found 0, "
+                            f"expected {allocation_call_allow[key]}")
+        for line in lines:
+            findings.append(f"compiler allocation call: {key[0]}:{line}: {key[1]}")
     findings += _counter_findings("placement construction", placements, placement_allow)
     findings += _counter_findings("allocation definition", allocation_definitions,
                                   allocation_definition_allow)

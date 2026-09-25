@@ -144,7 +144,8 @@ class CompilerArtifactControls(unittest.TestCase):
             path.write_text(text)
             return ca.source_findings(
                 [path], placement_allow=Counter(), dtor_allow=Counter(),
-                low_level_allow=Counter(), allocation_definition_allow=Counter()
+                low_level_allow=Counter(), allocation_definition_allow=Counter(),
+                allocation_call_allow=Counter()
             )
 
     def test_allocator_calls_and_realizers_fail(self):
@@ -154,6 +155,27 @@ class CompilerArtifactControls(unittest.TestCase):
         )
         self.assertTrue(any("compiler allocation call" in row for row in findings))
         self.assertTrue(any("forced-emission helper" in row for row in findings))
+
+    def test_allocation_call_allow_is_exact(self):
+        from gruntz.verify import compiler_artifacts as ca
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / "Probe.cpp"
+            one = "void F(T* p) { ::operator delete(p); }\n"
+            path.write_text(one)
+            site = ca.rel(path)
+            allow = Counter({(site, "::operator delete("): 1})
+
+            def scan():
+                return ca.source_findings(
+                    [path], placement_allow=Counter(), dtor_allow=Counter(),
+                    low_level_allow=Counter(), allocation_definition_allow=Counter(),
+                    allocation_call_allow=allow)
+
+            self.assertEqual(scan(), [])
+            path.write_text(one + "void G(T* p) { ::operator delete(p); }\n")
+            self.assertTrue(any("compiler allocation call" in row for row in scan()))
+            path.write_text("void F() {}\n")
+            self.assertTrue(any("found 0, expected 1" in row for row in scan()))
 
     def test_instantiation_only_unit_reaches_gate(self):
         from gruntz.verify import compiler_artifacts as ca
@@ -208,7 +230,8 @@ class CompilerArtifactControls(unittest.TestCase):
             allowed = Counter({(str(path), "T"): 1})
             findings = ca.source_findings(
                 [path], placement_allow=Counter(), dtor_allow=allowed,
-                low_level_allow=Counter(), allocation_definition_allow=Counter()
+                low_level_allow=Counter(), allocation_definition_allow=Counter(),
+                allocation_call_allow=Counter()
             )
         self.assertEqual(findings, [])
 

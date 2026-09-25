@@ -214,7 +214,9 @@ void CFontConfig::Scroll(i32 delta) {
         }
     }
     item->m_name.Empty();
-    delete item;
+    // Retail destroys and frees without a delete-expression null check.
+    item->~FontItem();
+    ::operator delete(item);
     m_scrollOffset = 0;
 }
 
