@@ -280,6 +280,15 @@ def refresh_readme_block(report=None) -> bool:
     return rm.write_block(block)
 
 
+def cmd_readme(argv) -> int:
+    """Re-render README's score block from the current report and ledger."""
+    argparse.ArgumentParser(prog="gruntz verify readme",
+                            description=cmd_readme.__doc__).parse_args(argv)
+    changed = refresh_readme_block()
+    print(f"README score block {'refreshed' if changed else 'unchanged'}")
+    return 0
+
+
 def cmd_check(argv) -> int:
     ap = argparse.ArgumentParser(prog="gruntz verify check",
                                  description="the MAX gate + the tiered gates")

@@ -40,6 +40,7 @@ all read).
 | `gruntz verify status` | `gruntz.verify.verbs` | current summary + the rva-keyed regression report; always exit 0 |
 | `gruntz verify check` | `gruntz.verify.verbs` | the same computation as a GATE; `--tier fast\|normal\|full\|link` runs the gate tiers |
 | `gruntz verify bank` | `gruntz.verify.verbs` | MANUAL: update `config/match_baseline.tsv` + the README score block |
+| `gruntz verify readme` | `gruntz.verify.verbs` | re-render the README score block from the current report + ledger; a default `gruntz build` edge |
 | `gruntz verify fingerprints` | `gruntz.verify.fingerprints` | refresh the per-function source-fingerprint cache |
 | `gruntz verify selftest` | `gruntz.verify.selftest` | the NEGATIVE controls: feed every gate a known violation, assert it fails |
 | `gruntz verify compiler-artifacts` | `gruntz.verify.compiler_artifacts` | reject explicit allocation/deallocation calls, forced-emission helpers, and unreviewed raw-storage or low-level lifetime seams; `--base-only` prints derived unpaired COFF definitions |

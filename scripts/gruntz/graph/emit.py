@@ -19,6 +19,7 @@ is the DEFAULT target; `verify_check` runs only for the `verify` target
     project     the delinked directory -> compare-new/objdiff.json
     report      comparison copies + pairing -> compare-new/report.json
     verify_fp   sources x bindings -> the per-function fingerprint cache
+    verify_readme report x ledger -> README's score block (write-if-changed)
     verify_check the MAX gate + the fast+normal tiers -> a stamp; FATAL;
                 opt-in (`gruntz build verify`)
     rc / link   PHASE 2, opt-in (`ninja candidate`): base objs + .res ->
@@ -130,6 +131,7 @@ VERIFY_BASELINES = [
 ]
 FINGERPRINTS = "build/gen/func_fingerprints.tsv"
 VERIFY_STAMP = "build/objdiff/.verify.stamp"
+README_STAMP = "build/gen/readme.stamp"
 CONFIGURE_MODS = _mods("graph/", "manifest.py", "core/paths.py")
 
 
@@ -534,6 +536,14 @@ def emit(out: Path | None = None) -> tuple[int, int]:
         w.rule("verify_check",
                command="$py -m gruntz.verify check && touch $out",
                description="verify check (MAX gate + fast+normal tiers)")
+        # The README score block is a pure function of the report and the
+        # ledger, so the default build keeps it current (write-if-changed).
+        w.rule("verify_readme",
+               command="$py -m gruntz.verify readme && touch $out",
+               description="verify readme (score block)")
+        w.build(README_STAMP, "verify_readme",
+                inputs=[graph.REPORT_JSON, FINGERPRINTS],
+                implicit=[MANIFEST, "config/match_baseline.tsv", *VERIFY_MODS])
         w.build(VERIFY_STAMP, "verify_check",
                 inputs=[graph.REPORT_JSON, FINGERPRINTS],
                 implicit=[MANIFEST, *VERIFY_BASELINES, *VERIFY_MODS])
@@ -548,7 +558,7 @@ def emit(out: Path | None = None) -> tuple[int, int]:
         w.build("all", "phony",
                 inputs=base_objs + [graph.BINDINGS, graph.DELINK_STAMP,
                                     graph.OBJDIFF_JSON, graph.REPORT_JSON,
-                                    FINGERPRINTS])
+                                    FINGERPRINTS, README_STAMP])
         w.default(["all"])
         w.newline()
 
