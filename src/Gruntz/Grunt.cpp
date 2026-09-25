@@ -2869,7 +2869,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         case PICKUP_GHOST: {
             m_gruntKind = GRUNT_GHOST;
             i32 t = g_buteMgr.GetInt("Powerupz", "GruntGhostTransparencyOn", 0xe0);
-            m_object->SetDrawFillFraction(SHADE_PAL_ALPHA_16, t);
+            SET_DRAW_FILL_FRACTION(m_object, SHADE_PAL_ALPHA_16, t);
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "GhostTime", 0x4e20);
             }

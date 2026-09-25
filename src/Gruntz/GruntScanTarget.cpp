@@ -95,7 +95,10 @@ i32 CGrunt::StepSmartChaserBehavior() {
         GetScreenPos(&pt4);
         pt4.m_x >>= TILE_SHIFT_PX;
         i32 t4x = pt4.m_x;
-        SET_RECT_COMPONENTS(box, t4x - halfBox, t3y - halfBox, bx + halfBox + 1, by + halfBox + 1);
+        box.left = t4x - halfBox;
+        box.top = t3y - halfBox;
+        box.right = bx + halfBox + 1;
+        box.bottom = by + halfBox + 1;
     }
     if (best != NULL) {
         Coord bp;

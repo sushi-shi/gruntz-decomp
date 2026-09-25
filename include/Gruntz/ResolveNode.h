@@ -103,12 +103,6 @@ public:
     i32 m_screenY;
 
     RECT m_clip;
-
-    inline void SetDrawFillFraction(ShadeMode mode, i32 fraction) {
-        m_drawActive = true;
-        m_drawFillCmd = mode;
-        m_fillFraction = fraction;
-    }
 };
 
 #define SET_DRAW_FILL(node, mode, table)                                                           \
