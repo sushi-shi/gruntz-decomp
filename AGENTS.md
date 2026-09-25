@@ -53,6 +53,10 @@ Matching rules that are easy to get wrong:
   (`gruntz lineage`).
 - If unchanged source reaches exact under a disposable TU-state experiment,
   bank it while exact, then remove the experiment.
+- A 100% match is a match: keep it even if its source breaks a project rule.
+  Admit a gate violation through that gate's allow entry, and record the
+  function, the rule, and the deviation in `docs/todos/rule-exceptions.tsv`
+  (schema in `docs/todos/README.md`).
 
 ## Tests
 
