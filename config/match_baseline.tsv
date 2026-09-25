@@ -844,7 +844,7 @@ customleveldlg	?PickIfSelected@CBattlezDlgCustom@@QAEXXZ	100.0000	100.0000	4	da7
 customworlddialog	?BuildCustomWwdPath@@YA?AVCString@@V1@@Z	100.0000	100.0000	1	fec5c196466c	0x3b940	100.0000	
 customworlddialog	?CustomWorldDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	10	8cbc373ab957	0x3ae60	100.0000	
 customworlddialog	?CustomWorldInfoDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	5	47bc08fef871	0x3b600	100.0000	
-customworlddialog	?FillCustomLevelList@@YAHPAUHWND__@@@Z	100.0000	100.0000	2	47ad66be6ce6	0x3af90	100.0000	
+customworlddialog	?FillCustomLevelList@@YAHPAUHWND__@@@Z	100.0000	100.0000	3	be5b4a9bc039	0x3af90	100.0000	
 customworlddialog	?FillLevelInfoDialog@@YAHPAUHWND__@@@Z	100.0000	100.0000	3	ffdf9c28d419	0x3b1a0	100.0000	
 customworlddialog	?GetMapBaseName@WwdFile@@SA?AVCString@@V2@@Z	88.2371	88.2371	1	a8e2acdd7cd2	0x3bb50	88.2371	
 customworlddialog	?LoadCustomWorldInfo@@YAHPAUHWND__@@@Z	100.0000	100.0000	1	0d6cf19d8f5b	0x3b7c0	100.0000	

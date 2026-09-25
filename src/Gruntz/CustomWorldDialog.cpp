@@ -128,21 +128,21 @@ BOOL CALLBACK CustomWorldDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
 
 RVA(0x0003af90, 0x194)
 i32 FillCustomLevelList(HWND hWnd) {
-    HWND lb = GetDlgItem(hWnd, CTRL_CUSTOM_WORLD_LIST);
-    if (!lb) {
+    HWND hList = GetDlgItem(hWnd, CTRL_CUSTOM_WORLD_LIST);
+    if (!hList) {
         return 0;
     }
-    SendMessageA(lb, LB_RESETCONTENT, 0, 0);
+    SendMessageA(hList, LB_RESETCONTENT, 0, 0);
     if (_chdir("Custom")) {
         return 0;
     }
     char pattern[256];
     strcpy(pattern, g_customGlob);
     _finddata_t fd;
-    i32 h = _findfirst(pattern, &fd);
-    b32 found = (h != -1);
+    i32 hFile = _findfirst(pattern, &fd);
+    b32 bContinue = (hFile != -1);
     CWaitCursorScope wait;
-    while (found) {
+    while (bContinue) {
         char disp[256];
         sprintf(disp, "%s", fd.name);
         if (!g_gameReg->IsBattlezMapFile(CString(disp))) {
@@ -152,10 +152,10 @@ i32 FillCustomLevelList(HWND hWnd) {
             }
             MsgParam name;
             name.m_str = disp;
-            SendMessageA(lb, LB_ADDSTRING, 0, name.m_lparam);
+            SendMessageA(hList, LB_ADDSTRING, 0, name.m_lparam);
         }
-        if (_findnext(h, &fd) == -1) {
-            found = false;
+        if (_findnext(hFile, &fd) == -1) {
+            bContinue = false;
         }
     }
     _chdir(g_dotDot);
