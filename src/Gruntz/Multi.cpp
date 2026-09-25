@@ -1273,13 +1273,7 @@ void FillSessionList(HWND hList, CNetMgr* manager) {
         return;
     }
     SendMessageA(hList, LB_RESETCONTENT, 0, 0);
-    manager->m_sessionCursor = manager->m_sessionListings.GetHeadPosition();
-    CNetSessionListNode* listing =
-        manager->m_sessionCursor != NULL
-            ? static_cast<CNetSessionListNode*>(
-                  manager->m_sessionListings.GetNext(manager->m_sessionCursor)
-              )
-            : NULL;
+    CNetSessionListNode* listing = manager->GetFirstSession();
     while (listing) {
 
         MsgParam name;
@@ -1297,15 +1291,7 @@ void FillSessionList(HWND hList, CNetMgr* manager) {
             SendMessageA(hList, LB_SETITEMDATA, itemIndex, cookie.m_lparam);
         }
 
-        if (manager->m_sessionCursor != NULL) {
-            CNetSessionListNode* next = static_cast<CNetSessionListNode*>(
-                manager->m_sessionListings.GetAt(manager->m_sessionCursor)
-            );
-            manager->m_sessionListings.GetNext(manager->m_sessionCursor);
-            listing = next;
-        } else {
-            listing = NULL;
-        }
+        listing = manager->GetNextSession();
     }
 }
 
