@@ -433,9 +433,7 @@ i32 CUFO::SerializeDispatch(
     }
     if (mode == SERIAL_POSTLOAD) {
         CWwdSpriteObject* o = m_object;
-        o->m_drawActive = true;
-        o->m_drawFillCmd = static_cast<ShadeMode>(mode);
-        o->m_fillFraction = 0x80;
+        o->SetDrawFillFraction(static_cast<ShadeMode>(mode), 0x80);
     }
     return 1;
 }
