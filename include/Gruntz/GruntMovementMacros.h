@@ -48,10 +48,6 @@
     m_arrivalCell.m_x = target->m_playerIndex;                                                     \
     m_arrivalCell.m_y = target->m_unitIndex
 
-#define BEGIN_GRUNT_ENTRANCE_AND_RELEASE_CELL                                                      \
-    m_entranceActive = true;                                                                       \
-    m_triggerMgr->RemoveCellRecord(m_playerIndex, m_unitIndex, 1);
-
 #define FIND_NEAREST_ENEMY_AT_TARGET(grunt, atTarget, screenX)                                     \
     CGrunt* grunt = m_triggerMgr->FindNearestEnemy(this);                                          \
     i32 atTarget = 0;                                                                              \

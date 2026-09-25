@@ -31,6 +31,7 @@
 #include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntDirection.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPickupInline.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
@@ -1082,7 +1083,7 @@ i32 CGrunt::BuildGruntExitAnimation() {
         RESET_GRUNT_POWERED_STATE(this)
     }
 
-    BEGIN_GRUNT_ENTRANCE_AND_RELEASE_CELL
+    BeginGruntEntranceAndReleaseCell(this);
 
     SET_ANIMATION_ACT("B");
 
