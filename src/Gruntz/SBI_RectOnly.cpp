@@ -2760,7 +2760,6 @@ void CStatusBarMgr::SetGruntWell(i32 value) {
     m_gruntWellLevel = value;
 }
 
-// @early-stop
 RVA(0x00105800, 0x9e)
 i32 CStatusBarMgr::PlaceCursorTarget(i32 unitIndex, i32 activateCamera) {
     i32 playerIndex = g_curPlayer;
@@ -2774,8 +2773,8 @@ i32 CStatusBarMgr::PlaceCursorTarget(i32 unitIndex, i32 activateCamera) {
             if (activateCamera != 0) {
                 CTriggerMgr* obj = g_gameReg->m_triggerMgr;
                 if (obj->RecordListHas(playerIndex, unitIndex)) {
-                    obj->m_cameraTargetIdentity.m_x = playerIndex;
-                    obj->m_cameraTargetIdentity.m_y = unitIndex;
+                    Coord target = {playerIndex, unitIndex};
+                    obj->m_cameraTargetIdentity = target;
                     obj->m_armed = true;
                     obj->LoadCameraSprite();
                 }
