@@ -14,7 +14,6 @@
 
 #include <dplay.h>
 #include <dplobby.h>
-#include <new>
 #include <string.h>
 
 DATA(0x002bf840)
