@@ -1,17 +1,10 @@
-# Exact-match lever catalog from Gruntz history
+# Exact-match lever catalog
 
-This catalog is a reasoning aid for matching, not a requirement to write a plan. It was
-derived from checked-in exact closures, hard-wall commit history, AGENTS.md's
-HoMM3/LithTech campaigns, and `docs/patterns/INDEX.md`. It is not a menu of blind
-mutations: use each entry only when retail/source evidence licenses it, and mark
-the family checked when it does not apply.
-
-The pattern index is authoritative and continues to grow. Search and read it
-from the repository root:
-
-```sh
-rg -n '<mechanism|symptom>' docs/patterns/INDEX.md
-```
+A reasoning aid, not a plan template or a menu of blind mutations: use an entry
+only when retail/source evidence licenses it, and mark the family checked when
+it does not apply. Derived from checked-in exact closures, hard-wall history,
+and the HoMM3/LithTech source-shape campaigns. Compiler mechanisms live in
+`docs/patterns/INDEX.md`.
 
 ## 1. Recover source before steering the compiler
 

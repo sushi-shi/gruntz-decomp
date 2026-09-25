@@ -2,7 +2,7 @@
 
     gruntz walls diagnose <rva|mangled|CClass::Member> [--asm]
 
-The ladder (CLAUDE.md): the FIRST divergence class decides the wall.
+The ladder (AGENTS.md): the FIRST divergence class decides the wall.
 
   referent   masked instruction bytes identical, only relocation TARGETS
              differ - an identity/aliasing question, not codegen. Lever:

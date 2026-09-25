@@ -28,8 +28,26 @@
 - Objdiff uses strict relocation scoring: target name/address, pointed-to data,
   and absolute DIR32 addends participate in the score. Linked-image referent
   audits remain authoritative for aliases, indirect calls, and final placement.
-- Run a full `gruntz build` before hand-off or commit. A generated report
-  alone is not authoritative.
+- Never run, launch, replay, or capture the game. Do not use the Ghidra
+  decompiler on `GRUNTZ.EXE`; use static assembly, xrefs, RTTI, vtables, data,
+  and relocations.
+
+## Validation Cadence
+
+- While iterating on source, `gruntz build base compare` compiles and compares
+  without the gates. Treat `ninja 0.0s` as no verification.
+- Run a full `gruntz build` (compile, compare, MAX gate, `fast,normal` gate
+  tiers) before hand-off or commit. A generated report alone is not
+  authoritative.
+- Matching and modeling work runs NO test suites: the compare report and the
+  MAX gate are the verification. Do not re-run `gruntz verify selftest` or
+  package unit tests to re-certify functions or gates you did not change.
+- Tooling work runs only the tests of what it touched: the package's own
+  `test_*.py` (`python3 -m unittest gruntz.<package>.test_<name>` from
+  `scripts/`), and `gruntz verify selftest -k <gate>` when a gate changed.
+- Do not add tests that re-certify a function's bytes against retail. The
+  compare report already measures every function on every build; a
+  per-function test only duplicates it and goes stale.
 
 ## The Wall Campaign
 
@@ -53,261 +71,90 @@
     expand. Instantiated template members are an exception: an out-of-class
     body without `inline` expands under `/Ob1` and stays a call under `/Ob0`
     (docs/patterns/vc5-template-members-inline-without-inline-keyword.md).
-    Do not reject template candidacy from the missing keyword. However, an
-    UNDEFINED or absent COFF symbol does NOT prove the body was unavailable.
-    Header inlines can expand at one site while a nested or declined site
-    remains external, and delinking can also erase the provider distinction.
-    A locally defined COMDAT positively proves inline visibility; otherwise
-    inspect the source declaration, `/Ob0` census, nested helper boundary, and
-    ordered call-site topology before choosing budget versus duplicated-site
-    work. PlaceObjectFull 0x78a50's `LoadCursorSprites` delta was proved to be
-    a tail merge by its caller block layout, not by the undefined symbol.
-    After candidacy is independently established, `--measure-cb` titrates it
-    with the real compiler. The verb refuses to invent `cb`: a guessed deficit
-    printed as model output is indistinguishable from a measured one.
+    An UNDEFINED or absent COFF symbol does NOT prove the body was
+    unavailable: header inlines can expand at one site while a nested or
+    declined site stays external, and delinking can erase the provider
+    distinction. A locally defined COMDAT positively proves inline visibility;
+    otherwise inspect the source declaration, `/Ob0` census, nested helper
+    boundary, and ordered call-site topology before choosing budget versus
+    duplicated-site (tail-merge) work. After candidacy is independently
+    established, `--measure-cb` titrates it with the real compiler; the verb
+    refuses to invent `cb`.
   * front-end TU-state: the cl 5.0 IL tap (capture `/d1il`, feed `/d2il`;
     see docs/patterns/tu-state-probe-family-decides-reachability.md). Compare
     controlled inputs and replay before attributing a difference to handle
     state. Historical probe strides are not universal compiler constants.
   * regalloc: test authentic widths, helper boundaries, locals, and lifetimes
-    with controlled compiler inputs. The historical first-post-call-use/EBX
-    recipe was contradicted by later controls; do not treat it or a register
-    table alone as a universal source-order rule.
+    with controlled compiler inputs. Do not treat a register table or a
+    first-post-call-use recipe as a universal source-order rule.
 - Levers are applied as disposable A/B tests. Never retain unused includes,
   declarations, fake locals, manual `STATE` probes, volatile carriers, or
   source distortions to steer codegen. Blind random hill-climbing stays
   removed. `gruntz permute state|variants` is a bounded evidence generator:
-  the public command first requires a regalloc/scheduling diagnosis and a
-  historical MAX below 100; variants are deterministic, source-hash scoped,
-  syntax-aware or exact-span reviewed, and stop at audited exact closure.
-- EXPLORATORY DESCENT (user ruling 2026-08-22): a single-lever dip is not a
+  it first requires a regalloc/scheduling diagnosis and a historical MAX
+  below 100; variants are deterministic, source-hash scoped, and stop at
+  audited exact closure (docs/permuter.md).
+- EXPLORATORY DESCENT (user ruling): a single-lever dip is not a
   falsification of the path - it may be the right BASE for a second lever.
   When a spelling drops the score but moves the codegen TOWARD retail's
   texture (structure, addressing shape, register roles), keep it applied,
   diff the DIPPED state against retail, and compose the next lever on top;
-  iterate a few levels before concluding. A % drop is never problematic
-  while it is exploratory. The MAX gate governs what is COMMITTED, not what
-  may be tried mid-session: the final kept state must be humane source
-  (no-sane-dev test) and either >= the bank or an adjudicated, documented
-  keep. One-step hill-climbing that reverts at the first dip prunes every
-  composed path and only finds local maxima.
-- BASELINE-DELTA CHECK (2026-08-23): before composing levers toward a
-  structural feature you read off a DIPPED state, confirm that feature is
-  actually ABSENT from the baseline. Blit1624 cost four composed levers chasing
-  retail's spilled byte temp (`mov BYTE PTR [esp+0x1c],cl` / `mov bl,...`)
-  that the 95.15 baseline was already emitting identically - the feature was
-  read from the dipped disassembly and assumed new. Diff the FEATURE against
-  the baseline, not just the dip against retail; a dip is only a base when it
-  moves something the baseline did not already have.
-- CROSS-PROJECT SOURCE-SHAPE PRIOR (HoMM3 debug-symbol campaign, 2026-08-28):
-  debug locals, scopes, line groups, and authentic source from a sibling
-  contemporary MSVC project proved that many apparent regalloc walls were
-  earlier source-shape defects. Gruntz has no equivalent symbol corpus, but
-  those wins define a bounded checklist of hypotheses to test before declaring
-  a residue irreducible:
-  * recover exact parameter and local storage widths across the complete call
-    family; in particular, distinguish `u8` from `bool` and do not insert bool
-    normalization when dirty upper bytes or the callee ABI support a byte.
-    Recover cv/ref and overload boundaries across the family too: a const
-    source-facing wrapper, by-value argument, const-reference result, or
-    receiver-qualified overload can be folded completely while still deciding
-    the caller's temporaries and evaluation order. The emitted implementation
-    ABI alone does not disprove such an inline adapter. Do not infer references
-    only from mutation: a non-const inline accessor returning `T&` can make a
-    caller's read-only `const T&` lifetime authentic. Test that boundary against
-    the same collection's by-value getter and raw-data pointer rather than
-    flattening all three to identical address arithmetic;
-  * test the authentic local census and lifetimes: distinct old/new/result
-    locals, deliberate parameter or local reuse, overwrite versus a new result,
-    declaration and first-use order, removal of unjustified cached member
-    locals, and pointer/base locals used by symmetric blocks. Treat scope
-    topology as separate evidence: multiple sibling block locals can share one
-    retail stack slot while one reused function-scope local stays live and
-    enlarges the frame. Also test whether initialization belongs in a `for`
-    header rather than at the declaration;
-  * preserve abstraction boundaries before transcribing their bodies: inline
-    helpers/macros, accessors, constructors, by-value min/max or selectors, and
-    same-TU candidates all change statement count, pseudo-register lifetime,
-    EH state, and the inliner candidate set even when their arithmetic is
-    equivalent. This includes one-field setters/getters and const forwarding
-    wrappers whose entire machine body disappears. Assignment order inside an
-    expanded helper can also recolor caller locals and move the first
-    divergence to before the expansion; after every helper-order A/B compare
-    from the function's first real divergence, and use semantic/member-layout
-    order before transcribing emitted stores. Do not replace an attested helper
-    call with its arithmetic merely because the expansion is obvious: the call
-    boundary can create the retail FP or integer temporary homes;
-  * test source statement grouping and evaluation order: ternary versus split
-    `if`, one expression versus sequenced assignments, constructor/member-init
-    order, stores before ownership changes, independent operand order, and one
-    reused result local passed through successive setters versus direct member
-    assignments. An explicit state flag plus one shared exit tail is a distinct
-    source shape from duplicated early-return arms even when both implement the
-    same logic. For symmetric arms, reproduce equal-value store order in BOTH
-    arms: changing only one can prevent VC5's cross-jumper from merging the
-    common tail;
-  * test loop and exit spelling, including post-decrement/count-down loops,
-    `while (1)` plus `break`, separate `continue` paths, `goto` into a shared
-    guard or exit, and duplicated symmetric arms whose textual statement order
-    enables a retail tail merge. Read comparison order before choosing the
-    construct: non-value-order tests can prove an `if` chain where a compiler
-    would sort a `switch`, and equivalent arms may intentionally use different
-    statement orders;
-  * when equal operations appear in a different order, consider repeated
-    inline-helper calls or source-line groups rather than assuming a scheduler
-    permutation; statement count can also move unrelated inline-budget edges;
-  * preserve semantic identity as well as layout. Two same-shaped help tables,
-    fields, accessors, or folded overloads are not interchangeable merely
-    because the masked bytes agree. Ordered relocations, addends, consumers,
-    and source ownership decide whether they are the same entity;
-  * when an older source oracle and retail assign an operation to different
-    layers, inspect the caller/callee pair before rejecting the oracle. A later
-    revision can move work from an inner handler to its outer dispatcher, or
-    replace one field/accessor while retaining the surrounding source shape.
-    Keep the shared positive structure and take the moved operation from retail;
-    absence in the older body is never negative evidence for retail.
-  The first bounded HoMM3 pass closed functions through four independent facts:
-  a helper boundary plus its store order, the original local census/lifetimes,
-  a post-decrement loop statement, and a byte parameter propagated across its
-  call boundary. The follow-up closures added an explicit exit-state carrier
-  and shared tail, const forwarding/accessor boundaries, separate FP/result
-  temporaries, and source-visible setter/min-max statements. One authentic
-  abstraction restoration deliberately moved a 99.987% local maximum down to
-  95.88% before composition reached 100%; this is direct evidence for applying
-  EXPLORATORY DESCENT and the INLINE/MACRO PRIOR together, not treating the
-  first score dip as rejection.
-  These are hypotheses, not imported ground truth. SH4/Dreamcast instruction
-  order, an absent call, VC6 register choices, STL internals, EH lowering, and
-  `/Ob2` budget behavior do not transfer directly to x86 VC5. Revision-skewed
-  source may also be older than retail. Use such evidence in its positive
-  direction to propose an A/B, then let Gruntz retail instructions, relocations,
-  and the pinned VC5 build decide. Diagnose the inliner before attributing its
-  downstream register texture, but apply caller-size/budget reasoning only to
-  a callee proven eligible under Gruntz's `/Ob1` model. Pair call sets by
-  resolved target identity rather than raw synthetic labels; equal call totals
-  with reciprocal unmatched aliases indicate an attribution defect, not two
-  opposite inline decisions. After the checklist is genuinely exhausted,
-  a same-call-set/same-CFG residue is a useful stop signal rather than a reason
-  for unbounded spelling churn.
-- SURVIVING SOURCE LINEAGE PRIOR (LithTech campaign, 2026-08-28):
-  the pinned public revision `845119c` is presumptively authentic source for
-  matching Gruntz families. Start from its complete owner, class, declaration,
-  helper, local-census, statement-order, and loop layer; adopt it unless retail
-  instructions, ordered relocations, ABI/layout evidence, or the absence of a
-  retail owner specifically disproves that fact. A lower first score is not a
-  rejection: keep the sourced base and compose independently evidenced facts.
-  ButeMgr portability commit `458a14f` is comparison evidence only.
+  iterate a few levels before concluding. The MAX gate governs what is
+  COMMITTED, not what may be tried mid-session: the final kept state must be
+  humane source (no-sane-dev test) and either >= the bank or an adjudicated,
+  documented keep. One-step hill-climbing that reverts at the first dip only
+  finds local maxima.
+- BASELINE-DELTA CHECK: before composing levers toward a structural feature
+  read off a DIPPED state, confirm that feature is actually ABSENT from the
+  baseline. Diff the FEATURE against the baseline, not just the dip against
+  retail; a dip is only a base when it moves something the baseline did not
+  already have.
+- INLINE/MACRO PRIOR (user ruling): the era devs DID write inline functions
+  and macros, so an inline/macro spelling is a priori MORE likely to be the
+  real source than a hand-expanded transcription. Overrule it only with
+  evidence. When a candidate scores LOWER than the tree, "ours wins" is
+  decisive ONLY if ours is at 100%. If both are below 100, take the
+  inline/macro form as a BASE and compose further levers on it. Record which
+  base you explored from, so a later session does not redo it.
+- SOURCE-SHAPE CHECKLIST: many apparent regalloc walls are earlier
+  source-shape defects. Before declaring a residue bounded, dispose of the
+  applicable families in the matcher skill's lever catalog
+  (`.agents/skills/matcher/references/levers.md`): storage widths and cv/ref
+  boundaries across the call family, local census and lifetimes, helper and
+  macro boundaries, statement grouping and evaluation order, loop and exit
+  spelling, and semantic identity beyond masked bytes. Evidence from sibling
+  projects (HoMM3, VC6, SH4, `/Ob2`) proposes A/Bs; Gruntz retail and the
+  pinned VC5 build decide. A same-call-set/same-CFG residue after the
+  checklist is exhausted is a stop signal, not a reason for unbounded churn.
+- SURVIVING SOURCE LINEAGE PRIOR: the pinned public LithTech revision
+  `845119c` is presumptively authentic source for matching Gruntz families.
+  Adopt its complete owner, class, declaration, helper, local-census,
+  statement-order, and loop layer unless retail instructions, ordered
+  relocations, ABI/layout evidence, or the absence of a retail owner
+  specifically disproves a fact. A lower first score is not a rejection: keep
+  the sourced base and compose independently evidenced facts. ButeMgr
+  portability commit `458a14f` is comparison evidence only.
   * `gruntz lineage discover|inventory|verify` and
-    `config/lithtech_lineage.tsv` define the complete derived adoption queue.
-    Every candidate must become `take`, `take-adapted`, or `do-not-take`;
-    every retained divergence and its retail evidence live ONLY in that ledger.
-    Other documentation cites ledger IDs and must not duplicate exception
-    explanations.
-  * repeated complete-layout and API evidence outrank layout-compatible
-    shortcuts. The surviving typed hash-node hierarchy, inline wrappers, and
-    authored declaration/order layers closed the Rez hash/archive family; a
-    trailing union with the same complete size was not an authentic substitute.
-    The same rule applies to local byte/word overlays: the surviving
-    `CCryptMgr` uses two ordinary `char[8]` buffers, typed cipher-boundary
-    conversions, and `memcpy`; that source is byte-exact, so the inferred
-    `BlowfishBlock` union was removed.
-  * source statement order, helper boundaries, local census/lifetimes, parameter
-    reuse, and element-indexed loop spelling are first-class evidence even when
-    C2 reorders or strength-reduces the emitted operations. The typed DIB and
-    dprintf families closed walls that wide searches inside hand-transcribed
-    source families had misclassified as irreducible allocation residue.
-  * matching bytes do not justify inferred source identities when the complete
-    surviving owner exists. Restoring the 17-function `dprintf.cpp` family
-    replaced invented class, function, and global names while keeping every
-    function and the TU's text/data model byte-exact. Accept the authentic
-    source layer even when it creates no percentage movement.
-  * import a small value type as a complete declaration/use family. Restoring
-    `CARange`/`CAVector` removed a fabricated inheritance layer and replaced
-    direct field reads with the surviving accessors. Their empty default
-    constructors initially dipped the two default getters; composing the
-    surviving explicit `(0,0)`/`(0,0,0)` static initializers recovered both
-    baselines. Do not judge a constructor without its authored initialization
-    sites.
-  * import a standard algorithm at its surviving abstraction level, not merely
-    its arithmetic. The public Blowfish body restores the `aword` byte/word
-    view, `S`/`bf_F`/`ROUND` macro family, paired round source-line groups,
-    original local census, and key-schedule expressions. Applied together it
-    replaced a hand-expanded macro state at 60.3505/100 with an authentic base
-    that first landed at 99.9357/61.4969; composing the already-proven real
-    declaration boundary between the mirror functions then made encipher,
-    decipher, and initialization all byte-exact. The reciprocal dip exposed a
-    TU-state split; it did not disprove the surviving body.
-  * restore semantic identities and storage scope together. In ButeMgr, the
-    surviving `ClassMap` plus typed `TranType` table replaced a flat
-    three-dimensional short array and its invented slot enum; the scanner's
-    `Pos` became the authored function-local static instead of an inferred TU
-    global. Restoring the parser/scanner method names, overloaded getter names,
-    member names, and the inline checksum accessor preserved the retail owners
-    while removing decompiler-era structure from both code and data.
-  * mine games and samples as well as engine libraries. Repeated Shogo/Blood2
-    implementations preserve source layers that a later runtime analogue may
-    obscure; repeated sibling copies are stronger evidence than one later body.
-  * a retail sibling binary can prove a shared compiled-source family even when
-    neither game shipped source or a PDB. Require a source-path/library anchor,
-    the complete decoded extent and CFG, and an explanation for every differing
-    byte. The 1997 Claw demo's `DIRSURF.CPP` `Blit824` and Gruntz retail are both
-    `0x30b` bytes/265 instructions; 768 bytes agree and the only 11 differences
-    are the `Lock` rel32 displacement or nine independently explained +4 class-
-    member offsets. This proves Gruntz retail's `pal=EBX`/`this=ESI` allocation
-    belongs to the shared DDrawMgr implementation and rules out different pixel
-    logic. It does NOT recover a byte-flat spelling: direct loops, row/search
-    macros, postincrement, and the retained inline `FindNearestColor` helper all
-    emit the same current object. Use sibling binaries positively for family,
-    topology, widths, and compiler texture; never import negative absence or
-    pretend binary identity supplies source text. The controlled method is in
-    `docs/patterns/cross-game-binary-oracle-proves-shared-source-family.md`.
-  * an authentic complete body invalidates a bounded review of a different
-    source hash. Apply the complete sourced family, reopen the diagnosis, and
-    bank any exact unchanged-source state before removing disposable C1 probes.
-  * an original Debug `.obj` or `.lib` can retain source evidence even when its
-    PDB and `.cpp` are absent. Pair it with the same Release archive member:
-    CodeView source-path, local/type, `BPREL32`, and lexical-block records
-    recover the authored local census and scopes, while the Release member
-    corroborates optimized topology. Old CodeView streams may make current
-    LLVM readers stop partway; decode the length-prefixed records rather than
-    treating that failure as absence. The paired `ptins`/`ptadd` members plus
-    `ztools.h` overturned bounded reviews and made Gruntz `zPTree::insert`
-    and `zPTree::add` exact. Debug stack offsets and register choices do not
-    transfer; compile the recovered family in the real VC5 TU.
-  * do not classify every explicit destructor expression as compiler debris.
-    The surviving `zSymTab<T>` owns an authored typed teardown adapter and the
-    pointer collection separately deallocates the storage. Gruntz retail proves
-    a revision-specific qualified `p->T::~T()` spelling: under VC5 it emits the
-    direct destructor tail jump at 0x174de0, whereas surviving `p->~T()` and its
-    Release object both use virtual dispatch. The function-pointer erasure at
-    the collection boundary is a reviewed ABI cast; keep unexplained casts at
-    zero without rejecting a source-proven seam merely because TOTAL rises.
-  * a typed union is a real fix when surviving source proves the semantic arms;
-    layout compatibility and a higher one-step score do not select `void*`.
-    Restoring NOLF's nested `CButeMgr::CSymTabItem` union alone made all nine
-    Set callers dip because ctor expansions crossed `/Ob1`; nesting itself was
-    codegen-flat. Composing the same source's `const CSymTabItem& operator=`
-    boundary then made the 0x172040 assignment and all nine Set callers exact.
-    This falsifies the old direct-erased-payload and per-arm-return `CopyValue`
-    conclusions: C2 duplicated the authored shared return into the same eight
-    epilogues. Apply a surviving semantic layer as a complete composition before
-    ranking its intermediate compiler states.
-  * complete API/layout agreement can replace an inferred owner even when all
-    affected bodies are already exact. The surviving `CRegMgr` family did so
-    while preserving all eleven retail matches.
-  The controlled closures and reverse-use procedure live in
-  `docs/patterns/surviving-source-lineage-restores-typed-layers-and-order.md`.
-- INLINE/MACRO PRIOR (user ruling 2026-08-22): the era devs DID write inline
-  functions and macros, so an inline/macro spelling is a priori MORE likely to
-  be the real source than a hand-expanded transcription. We may still overrule
-  it, but only with evidence, and the question stays OPEN rather than settled.
-  The resolution rule that follows: when a candidate spelling scores LOWER than
-  the one in the tree, "ours wins" is decisive ONLY if ours is at 100%. If
-  BOTH are below 100 neither is proven, so do not stop at the higher number -
-  take the inline/macro form as a BASE and compose further levers on it (see
-  EXPLORATORY DESCENT above); it may be the shape that reaches 100 while the
-  higher-scoring transcription is a local maximum. Record which base you
-  explored from, so a later session does not redo it.
+    `config/lithtech_lineage.tsv` define the derived adoption queue. Every
+    candidate becomes `take`, `take-adapted`, or `do-not-take`; retained
+    divergences and their retail evidence live ONLY in that ledger.
+  * Apply a surviving layer as a complete composition (types, unions,
+    operators, helpers, macros, initializers, storage scope, names) before
+    ranking its intermediate compiler states. Layout-compatible shortcuts
+    (`void*`, overlays, flattened arrays) do not substitute for the typed
+    family, and matching bytes do not justify invented identities when the
+    surviving owner exists.
+  * Mine games and samples as well as engine libraries; repeated sibling
+    copies outrank one later body. Retail sibling binaries and paired
+    Debug/Release objects can prove a shared family, widths, locals, and
+    scopes, but never supply source text or negative absence
+    (docs/patterns/cross-game-binary-oracle-proves-shared-source-family.md,
+    docs/patterns/surviving-source-lineage-restores-typed-layers-and-order.md).
+  * When an older source and retail place an operation in different layers,
+    keep the shared structure and take the moved operation from retail;
+    absence in the older body is never negative evidence for retail.
+  * An authentic complete body invalidates a bounded review of a different
+    source hash: reopen the diagnosis.
 - Historical MAX is banked only by a real build against the same per-function
   source fingerprint. If an unchanged function reaches exact under a
   disposable TU-state experiment, bank while exact, remove the experiment,
@@ -337,8 +184,18 @@
 - Avoid C-style casts. Prefer correct types; when a conversion is genuinely
   required, use the appropriate C++ named cast. Preserve authentic SDK/ABI
   types at external boundaries.
-- Use `<Mfc.h>` for MFC translation units and `<Win32.h>` for pure Win32/DirectX
-  units. Do not hand-roll Windows typedefs, imports, or calling conventions.
+- Platform preludes come from four headers and nothing else - never an
+  `<afx*.h>` or `<windows.h>` directly. `<Win32.h>` is the pure Win32/DirectX
+  root; `<Mfc.h>` is the MFC root, and `<MfcWin.h>` (the `<afxwin.h>` surface)
+  and `<MfcNoInline.h>` (MFC's accessors parsed OUT OF LINE, a per-TU codegen
+  device) are supersets that pull `<Mfc.h>` themselves. The two MFC roots are
+  mutually exclusive with `<Win32.h>` as a TU's first include. Their relative
+  order is a real contract: `<Mfc.h>` then `<MfcNoInline.h>` then
+  `<MfcWin.h>`, because `_AFX_ENABLE_INLINES` must be defined by `<afx.h>`
+  before it can be undefined and `<afxwin.h>` must be parsed after that.
+- Do not hand-roll Windows typedefs, imports, or calling conventions: take the
+  SDK's own declaration. Where cl 5.0 provably cannot take the SDK header,
+  state the measurement at the declaration instead of inventing a spelling.
 - Use named, typed enums for proven numeric domains instead of magic macros.
   Enumerate only values supported by evidence. Changing a function parameter
   or return type to an enum changes MSVC mangling, so verify such signature
@@ -373,24 +230,19 @@
   (pooled `??_C@` strings, `$T` FP-pool constants) are written bare — the
   string content oracle and the retail-reloc FP oracle re-prove them every
   build. A `DATA_COMPGEN(rva, value)` wrap is kept only for an ambiguous
-  string payload or an FP slot with no reloc-corroborated referrer — all 17
-  current pins are measured load-bearing. The pins extract as the
-  `src_data_compgen` channel: a pin is admitted only when the TU's own base
-  obj emitted that exact payload AND the retail image holds those bytes at
-  the pinned address; a site that fails to bind is FATAL. Removing a
-  load-bearing pin is adjudicated by compare (the identity degrades to a
-  `$gap_`/`DAT_` referent and the referencing functions' scores dip).
-  Separately — and disjointly —
-  `config/retail/data_compgen.tsv` is a manifest, not a macro, in two classes:
-  `class=common` names the COFF COMMONs cl emits from a header-inline's local
-  static (plus the `??_B` guard byte beside it, which has no source spelling at
-  all) — no owning TU exists, so only the retail address is stated and
-  `gruntz delink` re-proves the rest against the base objs' COMMON tables
-  (a row with no emitting base obj is an error);
-  `class=copy` names the per-TU copies of header statics (the GruntDirStatics
-  device), whose owner is the emitting TU. Details:
-  `docs/data-attribution.md`, "Header statics and COMMONs".
-
+  string payload or an FP slot with no reloc-corroborated referrer. The pins
+  extract as the `src_data_compgen` channel: a pin is admitted only when the
+  TU's own base obj emitted that exact payload AND the retail image holds
+  those bytes at the pinned address; a site that fails to bind is FATAL.
+  Removing a load-bearing pin is adjudicated by compare (the identity degrades
+  to a `$gap_`/`DAT_` referent and the referencing functions' scores dip).
+  Separately, `config/retail/data_compgen.tsv` is a manifest, not a macro, in
+  two classes: `class=common` names the COFF COMMONs cl emits from a
+  header-inline's local static (plus the `??_B` guard byte beside it) — only
+  the retail address is stated and `gruntz delink` re-proves the rest against
+  the base objs' COMMON tables; `class=copy` names the per-TU copies of header
+  statics, whose owner is the emitting TU. Details: `docs/data-attribution.md`,
+  "Header statics and COMMONs".
 - The marker vocabulary is closed by `docs/comment-markers.md`. `@early-stop`
   means a complete, evidence-bounded body, not missing logic or unresolved
   relocation work. Re-derive its residue instead of trusting an old source comment.
@@ -415,6 +267,9 @@
   generated reports in ignored `build/`, and old investigations in Git history.
   Keep useful format diagrams beside parsers; do not duplicate field maps or
   maintain PR diaries, score snapshots, or mirrored references in `docs/`.
+- This file is the one agent guide: `CLAUDE.md` is a symlink to it, and the
+  skills live once in `.agents/skills/` (`.claude/skills` links there). Edit
+  the canonical file, never a copy.
 - Keep every build gate green. Cleanliness work removes the underlying modeling
   debt rather than hiding its textual signature.
 - Update an existing compiler-pattern entry when new evidence changes its

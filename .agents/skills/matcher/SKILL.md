@@ -1,199 +1,136 @@
 ---
 name: matcher
-description: Reconstruct and byte-match Gruntz C++ functions, translation units, classes, globals, and referents against retail GRUNTZ.EXE with MSVC 5.0 SP3. Use for function matching, low historical-MAX work, TU reconstruction, stub completion, class/type recovery, vtable or calling-convention recovery, relocation/referent correction, data modeling, and diagnosing a plateau before using the permuter.
+description: Reconstruct and byte-match Gruntz C++ functions, translation units, classes, globals, and referents against retail GRUNTZ.EXE with MSVC 5.0 SP3. Use for function matching, low historical-MAX work, TU reconstruction, class/type recovery, vtable or calling-convention recovery, relocation/referent correction, data modeling, and diagnosing a plateau before declaring it bounded or using the permuter.
 ---
 
 # Gruntz matcher
 
-Recover the original source structure that explains retail bytes. Correct
-classes, types, ownership, control flow, storage, calls, and referents outrank a
-temporary score. The objective is per-function historical MAX fuzzy = 100%.
+Recover the source structure that explains retail bytes. `AGENTS.md` holds the
+authority, modeling rules, and validation cadence; this skill is the working
+loop. Use `wall-identifier` to classify a plateau and `permute` only for a
+diagnosed register/schedule residue.
 
-Before editing any function below historical MAX, use the repository's
-`match-checklist` skill for evidence-backed source-shape checks. Do not write
-per-function plan files or publish formal matching plans unless explicitly
-requested by the user. A wall may not be declared bounded until applicable
-families have evidence-backed dispositions; a short batch may leave them open.
+Do not write per-function plan files or formal matching plans unless the user
+asks. A brief note of target, hypothesis, and next compiler control is enough.
 
-## Establish the environment
+## Choose work
 
-1. Work in the pinned `nix develop` environment.
-2. Verify `vostok-delinker` and `objdiff-cli` resolve to the flake outputs when
-   tool provenance is uncertain.
-3. DATA extents come from the current TU through pylibclang. A full build
-   refreshes `structs.json` before layout audits.
-4. Treat `ninja 0.0s` as no verification. Rebuild the affected object before
-   interpreting a result.
-5. Never run, launch, replay, or capture the game. Do not use the Ghidra
-   decompiler on `GRUNTZ.EXE`; use static assembly, xrefs, RTTI, vtables, data,
-   and relocations.
-
-## Validation cadence
-
-Run test suites only at the authorized PR squash-merge stage, not during
-matching, before ordinary commits, or before pushes. This includes focused
-unit/regression tests, selftests, and compiler-backed test harnesses; do not
-invoke them indirectly through an umbrella validation command.
-
-During matching, compile the actual affected TUs and compare their instructions,
-constants, call/CFG structure, and ordered references against retail. Source A/B
-compiler experiments are matching work, not test-suite runs. Use
-`gruntz build base compare` for a full compilation/comparison refresh without
-the default verification target; keep MAX banking tied to actual compiler
-output. Defer the full gated `gruntz build` and test suites until squash merge.
-Do not change or disable the gates themselves. Report deferred tests honestly;
-an earlier green run does not certify later edits or authorize merging.
-
-## Choose work by historical MAX
-
-- Work the lowest `hist_pct` rows first from `gruntz walls inventory`. A
-  reproducibly bounded `@early-stop` remains in that derived queue; there is no
-  hand-kept exclusion ledger.
-- `hist_pct` is the campaign objective. Current fuzzy, current exact count, and
-  aggregate fuzzy are navigation signals, not acceptance gates.
-- `best_pct` belongs to the current per-function source fingerprint. A source
-  edit may reset it; `hist_pct` preserves the all-time proof.
+- Work the lowest `hist_pct` rows first from `gruntz walls inventory --todo`
+  (default output is truncated; pass `--limit N`). A bounded `@early-stop`
+  stays in that derived queue; there is no hand-kept exclusion ledger.
+- `hist_pct` is the objective. `best_pct` belongs to the current source
+  fingerprint and resets on edit. Current and aggregate fuzzy are navigation.
 - Do not revisit a function whose historical MAX is 100%. Do not investigate an
-  unrelated current-score dip when the MAX gate remains green.
+  unrelated current-score dip while the MAX gate is green.
+- Before inventing a spelling, run `gruntz walls priors <rva>`: many rows
+  already carry a written verdict in the source comment or review ledger.
 
-## Reconstruct before steering
+## Evidence pass (before editing)
 
-For each target:
+```sh
+gruntz walls diagnose <rva> --asm   # first divergence class, counts, both sides
+gruntz walls semdiff <rva>          # operands, FP opcodes, constants, ordered referents
+gruntz sema disasm <rva>            # retail assembly (never a decompile)
+gruntz sema xref <rva>              # callers/callees, identity
+gruntz sema class <Class>           # vtable slots, hierarchy
+```
 
-1. Read its source claim, retail disassembly, callers, callees, strings, class
-   hierarchy, vtable slots, and data references.
-2. Establish the real owner TU, signature, calling convention, class identity,
-   member layout, local entities, control flow, inline boundaries, constants,
-   and ordered referents.
-3. Implement the cleanest evidence-backed C++ shape.
-4. Build incrementally and compare from the first genuine divergence. Inspect
-   both candidate and retail assembly; fuzzy diff alone is insufficient.
-5. Audit raw constants and ordered relocations. Objdiff scores target
-   name/address, pointed-to data, and absolute DIR32 addends; use the linked-image
-   referent audit for aliases, indirect calls, and final placement.
-6. Iterate on a source-level cause: type or signedness, aggregate identity,
-   lifetime/scope, condition polarity, loop form, tail sharing, declaration
-   order, calling convention, or inline/out-of-line shape.
-7. Use compiler-state search only after semantics and CFG are established.
+Also read the whole source function, declaration, callers, callees, adjacent
+family members, class layout, and any lineage candidate
+(`gruntz lineage inventory`). Resolve identity or layout doubts before calling
+a row codegen residue. Mine history every time:
 
-Prefer semantic tools over lexical guesses. Use `gruntz sema xref` for call
-identity, `gruntz sema class` or `vtable_hierarchy` for polymorphism, and
-`gruntz sema disasm` views for code shape. RVA proximity and names alone do not
-prove ownership.
+```sh
+git log -S'<function-name>' -- src include config/match_baseline.tsv
+git log -G'<mangled-name>.*100\.0000' -- config/match_baseline.tsv
+```
 
-## Classify the first divergence
+For `hist_pct > best_pct`, recover the exact source-hash transition before
+inventing new forms.
 
-Route a plateau in this order:
+## Reconstruct, then compare
 
-1. **Inline/call set:** compare out-of-line callees and ordered relocations. A
-   missing or extra call is usually an inline-boundary or incomplete-body issue.
-2. **CFG:** compare block, conditional-branch, and return counts. A branch-count
-   mismatch is structural. Matching symbolic branch sequences narrow the
-   residue to instruction selection, lifetime, scheduling, or allocation.
-3. **Registers/frame:** compare entity creation order, live ranges, stack
-   extents, saved registers, partial-register widths, and spill placement.
-4. **Masked cosmetic:** prove raw instruction bytes and referents before calling
-   a relocation-name difference harmless.
+Prioritize hypotheses by evidence:
 
-Do not label a low-score function a register wall while its call set or CFG is
-still different.
+1. surviving/source-oracle body and complete family;
+2. identity, ABI, ownership, type, layout, referent, or missing-body defects;
+3. authentic inline/helper/macro/operator/constructor boundaries;
+4. local census, scope, lifetime, initialization, parameter reuse, and
+   statement/control-flow shape;
+5. expression, loop, library/MFC idiom, and evaluation order;
+6. classified compiler-state experiments, only after semantics, call set,
+   CFG, constants, and referents are credible.
 
-## Model real source entities
+[references/levers.md](references/levers.md) catalogs the levers that have
+produced exact closures; scan it so the search is not limited to the first
+familiar explanation. `docs/patterns/INDEX.md` lists compiler mechanisms.
 
-- Give each class one canonical shared definition. Never create a `.cpp`-local
-  view, layout shell, or fake base to make an access compile.
-- Recover an uncertain receiver from both directions: callers, allocation and
-  storage sites, callees, mangled signatures, vptr stores, RTTI, vtable slots,
-  and member offsets. Use `@identity-TODO` only after the applicable evidence
-  genuinely dead-ends.
-- Express access through typed members. Raw offset casts, offset macros, casts of
-  `this`, and arithmetic such as `*(static_cast<i32*>(p) + N)` are modeling
-  defects, not solutions.
-- Treat casts as symptoms. Retype the member or canonical class so placeholder
-  casts disappear. Keep only conversions proven authentic at an SDK boundary,
-  numeric conversion, heterogeneous container, or pointer/DWORD storage seam.
-- Use real MFC and Win32 umbrella headers. Do not hand-roll platform typedefs,
-  imports, or calling conventions.
-- Use typed enums for proven domains and magic values. Enumerate only evidenced
-  values. Retyping a function parameter or return changes MSVC mangling, so do
-  it only when the retail signature supports it.
-- Use semantic names. Do not introduce address-derived identifiers, compiler
-  ordinals, or contextless stack names such as `local_10`.
-- Treat adjacent scalars as a possible aggregate, not a conclusion. Prove
-  `RECT`/`CRect`, `Coord`/`POINT`, strings, arrays, or records from complete-
-  object calls, copies, field order, serialization, and storage extents. Do not
-  split one retail object into overlapping globals or invent an aggregate for a
-  score change.
+For each candidate, name the source change and the expected emitted delta,
+compile the real TU (`gruntz build base compare`), and compare from the first
+real divergence: instructions, constants, call/CFG structure, and ordered
+relocations. Fuzzy alone is insufficient. A single dip does not reject a
+sourced or structurally convergent base (EXPLORATORY DESCENT), but confirm the
+feature you are chasing was absent from the baseline first.
 
-## Recover vtables mechanically
+"Checked" means a real-TU A/B was compiled, or retail/source evidence proves
+the form inapplicable. Do not mix several independent levers in one
+experiment. Do not retain probes, unused declarations, artificial locals, or
+distorted source.
 
-Use the generated slot map; never hand-pad a vtable.
+## Classify the plateau
 
-- `inherited`: declare nothing.
-- `override`: declare the real method with `OVERRIDE`.
-- `new`: declare the real method as plain `virtual`.
+Route in this order; do not call a wall class N while class N-1 still diverges:
 
-Never add dummy virtuals. One class has one real `??_7`. Absence of RTTI does not
-prove a class is non-polymorphic because RTTI is module-scoped. A manual vptr
-stamp is transitional reconstruction debt, not original source.
+1. **Referent:** masked bytes identical, relocation targets differ — fix the
+   claim or identity (`gruntz verify assert-relocs <rva>`).
+2. **Inline/call set:** out-of-line callee multiset or ordered relocations
+   differ — incomplete body, inline boundary, or duplicated call tail.
+3. **CFG:** block, branch, or return counts differ — structural source work.
+4. **Register/schedule:** same calls and skeleton — widths, lifetimes, helper
+   boundaries, then classified `gruntz permute state|variants`.
 
-## Preserve data and annotation truth
+Details and proven exceptions: the `wall-identifier` skill.
 
-- A datum is a real definition with `DATA(rva)`; `DATA_SYMBOL` is retired.
-- A `DATA_COMPGEN` pin is last-resort: only for a datum the automatic oracles
-  cannot identify (an ambiguous string payload, an FP slot with no
-  reloc-corroborated referrer). Oracle-covered pins are removable noise; the
-  header-inline COFF COMMONs live in `config/retail/compiler-generated-data.tsv`.
-  Never bind compiler emission ordinals as semantic names; a `$E` helper is
-  pinned at its owner with `RVA_DYNINIT`.
-- `DATA(...)` identifies and audits storage; it does not force linker placement.
-- Do not infer initialized-data correctness from aggregate objdiff data or from
-  synthesized target sections. Keep `.bss` separate from initialized data.
-- Do not model an interior address as independent overlapping storage. Refine
-  the owner and access its real field or element.
-- Never add source padding to fit a final-image gap.
+## Model real entities
 
-## Use walls and permutation correctly
+`AGENTS.md` "Source Modeling Rules" governs. In practice:
 
-Use `gruntz permute state|variants` only when the body is complete and the call
-set, CFG, types, constants, and referents are credible. Classify the wall first
-with the project `wall-identifier` skill (`gruntz walls diagnose <rva>`); every lever
-it does not list as cl 5.0-proven must be re-proved here before use.
+- Casts are symptoms: retype the member or canonical class until placeholder
+  casts disappear. Raw offsets, casts of `this`, and `.cpp`-local views are
+  defects.
+- Recover vtables mechanically from `gruntz sema class`: `inherited` declares
+  nothing, `override` uses `OVERRIDE`, `new` is plain `virtual`. Never add
+  dummy virtuals (placeholder slots once shipped a live crash by truncating a
+  vtable); one class has one real `??_7`. RTTI is module-scoped (`/GR` only
+  for the Gruntz project), so missing RTTI does not prove a class
+  non-polymorphic.
+- Pin `__thiscall`/`__stdcall`/`__cdecl` from the disassembly (callee `ret N`
+  versus caller `add esp,N`). A destructible stack local forces the `/GX` EH
+  frame; unwind states are evidence of the local census.
+- External engine, DirectX, Win32, and COM callees are modeled as declarations
+  with no body; their `rel32`/`DIR32` referents must still be the right names.
+- A datum is a real definition with `DATA(rva)`. `DATA_COMPGEN` is a last
+  resort for payloads the automatic oracles cannot identify; header-inline
+  COMMONs live in `config/retail/data_compgen.tsv`. A `$E` helper is pinned
+  at its owner with `RVA_DYNINIT`.
+- Never model an interior address as independent storage, and never add
+  source padding to fit a final-image gap.
 
-- Use source permutations and TU-state changes as disposable A/B experiments.
-- Never retain unused includes, declarations, fake locals, volatile carriers,
-  manual `STATE` probes, or contorted spellings to steer codegen.
-- State experiments are rarely justified below 90%; fix structure first.
-- If unchanged function source reaches exact under a disposable TU state, bank
-  MAX while exact, remove the perturbation, rebuild, and retain the historical
-  proof.
-- Stop grinding once controlled evidence bounds a residue. Keep the state in
-  the derived report/MAX ledger and use `@early-stop` only when the body is
-  complete. Consolidate reusable mechanisms under `docs/patterns/README.md`;
-  do not add a pattern per closure, a hand-kept wall ledger, or reconstruction-
-  history C++ comments.
+## Stop and hand off
 
-`@early-stop` is permitted only for a complete reconstruction with a reproducible
-bounded residue. It never excuses missing logic, wrong referents, or an unresolved
-identity.
+- Claim exact closure only from an actual compile of the intended
+  fingerprint. If an unchanged function reaches exact under a disposable TU
+  state, bank MAX while exact, remove the perturbation, rebuild.
+- Claim a bounded residue only after the applicable lever families have
+  evidence-backed dispositions; then mark the complete body `@early-stop`.
+  It never excuses missing logic, wrong referents, or an unresolved identity.
+- A short or user-directed batch may stop sooner: mark remaining hypotheses
+  open in the handoff.
 
-## Verify and hand off
+Before committing: re-audit raw constants and ordered referents, stage only
+the focused source, reusable pattern docs, and baseline rows, run the full
+`gruntz build`, and require `git diff --check` clean. Matching work runs no
+test suites (`AGENTS.md` "Validation Cadence").
 
-Before committing:
-
-1. Recheck the target's branch structure, raw constants, and ordered
-   relocations/referents.
-2. Run `gruntz format` only on the intended tree; never format `vendor/`.
-3. Stage only the focused source and documentation before compiling so a
-   new MAX is banked against the intended fingerprint.
-4. Refresh compilation/comparison with `gruntz build base compare`; follow the
-   validation cadence above, without running test suites on commits or pushes.
-5. Inspect matching/MAX results and require `git diff --check` clean. At the
-   authorized squash merge, run full `gruntz build` and the relevant test suites
-   against the final candidate, and require every gate green before merging.
-6. Commit source, focused durable documentation, and the relevant
-   `config/match_baseline.tsv` updates; never commit generated build state.
-
-Report the historical-MAX change, the structural correction, evidence and
-compiler controls, raw referent verdict, remaining wall, compilation/comparison
-result, deferred squash-merge tests, and commit. Do not imply deferred tests ran.
+Report the historical-MAX change, the structural correction, its evidence and
+compiler controls, the referent verdict, and any remaining wall.
