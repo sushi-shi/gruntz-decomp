@@ -2,7 +2,7 @@
 
 #include <Gruntz/Utils.h>
 
-#include <Win32.h>
+#include <Mfc.h>
 
 #include <Enums.h>
 #include <Gruntz/GruntDirStatics.h>
@@ -318,4 +318,57 @@ BOOL GetProcessModule(DWORD dwPID, DWORD dwModuleID, LPMODULEENTRY32 lpMe32, DWO
     CloseHandle(hModuleSnap);
 
     return (bRet);
+}
+
+RVA(0x001190f0, 0xda)
+CString TimeToString(DWORD dwTime) {
+    int nHours = dwTime / 3600000;
+    dwTime -= nHours * 3600000;
+
+    int nMinutes = dwTime / 60000;
+    dwTime -= nMinutes * 60000;
+
+    int nSeconds = dwTime / 1000;
+
+    char buf[64];
+    sprintf(buf, "%i:%02i:%02i", nHours, nMinutes, nSeconds);
+
+    CString str(buf);
+    return (str);
+}
+
+RVA(0x00119210, 0x66)
+void DissectTime(DWORD dwTime, int* pHour, int* pMin, int* pSec) {
+    *pHour = dwTime / 3600000;
+    dwTime -= *pHour * 3600000;
+
+    *pMin = dwTime / 60000;
+    dwTime -= *pMin * 60000;
+
+    *pSec = dwTime / 1000;
+}
+
+// @dead-code
+// Zero-ref: retail has no caller or address-taking reference.
+RVA(0x001192a0, 0x1d)
+void TerminateString(char* text, i32 limit) {
+    i32 i = 0;
+    while (i < limit && *text != 0) {
+        text++;
+        i++;
+    }
+    *text = 0;
+}
+
+RVA(0x001192d0, 0x39)
+BOOL BlockScreenSaver(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    if (msg == WM_SYSCOMMAND) {
+        i32 sc = wParam & 0xfff0;
+        if (sc == SC_SCREENSAVE || sc == SC_MONITORPOWER) {
+            if (!IsIconic(hWnd)) {
+                return 1;
+            }
+        }
+    }
+    return 0;
 }

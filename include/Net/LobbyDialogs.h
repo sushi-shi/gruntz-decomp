@@ -9,7 +9,6 @@
 
 class CMulti;
 
-i32 BlockScreenSaver(void*, UINT, WPARAM, LPARAM);
 namespace NetLobby {
 
     BOOL CALLBACK HostWaitDlgProc(HWND, UINT, WPARAM, LPARAM);

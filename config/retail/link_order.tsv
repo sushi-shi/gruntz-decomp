@@ -217,9 +217,7 @@
 213	tiletriggercontainer	0x00115b60	0x00118001	cmdline	Gruntz	27	thunk(27)
 214	namerecord	0x00118040	0x001182c3	cmdline	Gruntz	4	thunk(4)
 215	gameinfostring	0x001182f0	0x001185c1	cmdline	Gruntz	4	thunk(4)
-216	utils	0x00118930	0x00119094	cmdline	Gruntz	9	thunk(9)
-218	timestring	0x001190f0	0x001191ca	cmdline	Gruntz	1	thunk(1)
-219	timesplit	0x00119210	0x00119309	cmdline	Utils	2	thunk(2)
+216	utils	0x00118930	0x00119309	cmdline	Gruntz	12	thunk(12)
 220	gruntvoice	0x00119320	0x0011aa78	cmdline	Gruntz	14	thunk(14),xcu:1450
 221	gruntspawnconfig	0x0011adc0	0x0011c842	cmdline	Gruntz	19	thunk(19)
 222	winmain	0x0011c860	0x0011cb87	cmdline	Gruntz	1	thunk(1)

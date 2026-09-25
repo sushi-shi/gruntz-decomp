@@ -1,29 +1,28 @@
 #ifndef GRUNTZ_GRUNTZ_UTILS_H
 #define GRUNTZ_GRUNTZ_UTILS_H
 
-#include <Ints.h>
+#include <Mfc.h>
 
-#include <stddef.h>
+#include <Ints.h>
 
 struct tagMODULEENTRY32;
 
-// Utils.cpp builds on <Win32.h> without STRICT, where HWND is void*.
-void SetActiveAndFocus(void* hWnd);
-void SetTopmostStyle(void* hWnd);
-void ClearTopmostStyle(void* hWnd);
+void SetActiveAndFocus(HWND hWnd);
+void SetTopmostStyle(HWND hWnd);
+void ClearTopmostStyle(HWND hWnd);
 
 i32 FileExists(const char* path);
 
-i32 CheckHeap(i32 bWalkIfErr);
-void OutputHeapReturnValue(i32 val);
-i32 HeapStats();
+int CheckHeap(BOOL bWalkIfErr);
+void OutputHeapReturnValue(int val);
+int HeapStats();
 
-i32 ExistProcess(const char* sExe, i32 thresh = 0, void** phProcess = NULL);
-i32 GetProcessModule(
-    unsigned long dwPID,
-    unsigned long dwModuleID,
-    tagMODULEENTRY32* lpMe32,
-    unsigned long cbMe32
-);
+BOOL ExistProcess(const char* sExe, int thresh = 0, HANDLE* phProcess = NULL);
+BOOL GetProcessModule(DWORD dwPID, DWORD dwModuleID, tagMODULEENTRY32* lpMe32, DWORD cbMe32);
+
+CString TimeToString(DWORD dwTime);
+void DissectTime(DWORD dwTime, int* pHour, int* pMin, int* pSec);
+void TerminateString(char* text, i32 limit);
+BOOL BlockScreenSaver(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 #endif // GRUNTZ_GRUNTZ_UTILS_H

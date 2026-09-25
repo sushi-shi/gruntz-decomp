@@ -1395,10 +1395,6 @@ source = "src/Gruntz/CustomWorldDialog.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "timesplit"
-source = "src/Utils/TimeSplit.cpp"
-flags = "cpp"
-[[unit]]
 unit = "chainforward"
 source = "src/Gruntz/ChainForward.cpp"
 flags = "cpp-rtti"
@@ -1430,11 +1426,6 @@ flags = "cpp"
 [[unit]]
 unit = "levelpreview"
 source = "src/Gruntz/LevelPreview.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
-unit = "timestring"
-source = "src/Gruntz/TimeString.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
