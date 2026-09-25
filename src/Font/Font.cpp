@@ -37,14 +37,14 @@ i32 Font::AllocateMemory(i32 count) {
     }
 
     m_surfaces = new u8*[m_count];
-    m_glyphs = new Glyph[m_count];
+    m_glyphs = new CSize[m_count];
 
     for (i32 i = 0; i < m_count; i++) {
         m_surfaces[i] = NULL;
 
-        Glyph g;
-        g.m_width = 0;
-        g.m_height = 0;
+        CSize g;
+        g.cx = 0;
+        g.cy = 0;
         SET_FONT_GLYPH(i, g);
     }
 
@@ -88,9 +88,9 @@ i32 Font::LoadFont(CString szFileName) {
     AllocateMemory(m_count);
 
     for (i32 i = 0; i < m_count; i++) {
-        ar.Read(&m_glyphs[i], sizeof(Glyph));
-        m_surfaces[i] = new u8[m_glyphs[i].m_width * m_glyphs[i].m_height];
-        ar.Read(m_surfaces[i], m_glyphs[i].m_width * m_glyphs[i].m_height);
+        ar.Read(&m_glyphs[i], sizeof(CSize));
+        m_surfaces[i] = new u8[m_glyphs[i].cx * m_glyphs[i].cy];
+        ar.Read(m_surfaces[i], m_glyphs[i].cx * m_glyphs[i].cy);
     }
 
     ar.Close();
@@ -98,8 +98,8 @@ i32 Font::LoadFont(CString szFileName) {
 
     i32 maxHeight = 0;
     for (i32 j = 0; j < m_count; j++) {
-        if (maxHeight <= m_glyphs[j].m_height) {
-            maxHeight = m_glyphs[j].m_height;
+        if (maxHeight <= m_glyphs[j].cy) {
+            maxHeight = m_glyphs[j].cy;
         }
     }
     m_maxHeight = maxHeight;
@@ -121,9 +121,9 @@ i32 Font::SaveFont(CString szFileName) {
     ar << m_count;
 
     for (i32 i = 0; i < m_count; i++) {
-        Glyph g = m_glyphs[i];
-        ar.Write(&g, sizeof(Glyph));
-        ar.Write(m_surfaces[i], m_glyphs[i].m_width * m_glyphs[i].m_height);
+        CSize g = m_glyphs[i];
+        ar.Write(&g, sizeof(CSize));
+        ar.Write(m_surfaces[i], m_glyphs[i].cx * m_glyphs[i].cy);
     }
 
     ar.Close();
@@ -138,7 +138,7 @@ u8** Font::GetSurface(u8 c) {
 }
 
 RVA(0x00179b80, 0x22)
-Glyph& Font::GetGlyph(Glyph& out, u8 c) {
+CSize& Font::GetGlyph(CSize& out, u8 c) {
     out = m_glyphs[c];
     return out;
 }
@@ -146,7 +146,7 @@ Glyph& Font::GetGlyph(Glyph& out, u8 c) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00179bb0, 0x1e)
-void Font::SetGlyph(u8 c, Glyph glyph) {
+void Font::SetGlyph(u8 c, CSize glyph) {
     SET_FONT_GLYPH(c, glyph);
 }
 
@@ -249,26 +249,26 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         return;
     }
 
-    i32 destX = x;
+    CPoint dest(x, y);
+    i32 acc = 0;
     i32 red = GetRValue(m_color);
     i32 green = GetGValue(m_color);
     i32 blue = GetBValue(m_color);
-    i32 rightPartial = 0;
-    i32 firstCol = 0;
     u16 packedColor =
         (static_cast<u8>((static_cast<u8>(red) >> static_cast<u8>(g_rDown))) << g_rUp)
         | (static_cast<u8>((static_cast<u8>(green) >> static_cast<u8>(g_gDown))) << g_gUp)
         | (static_cast<u8>(blue) >> static_cast<u8>(g_bDown));
 
+    i32 rightPartial = 0;
+    i32 firstCol = 0;
     i32 startChar;
-    i32 acc = 0;
     if (rc.left != 0) {
         i32 prev = 0;
         startChar = 0;
         while (acc < rc.left) {
-            Glyph g;
+            CSize g;
             prev = acc;
-            acc += m_font->GetGlyph(g, text[startChar]).m_width;
+            acc += m_font->GetGlyph(g, text[startChar]).cx;
             startChar++;
         }
         --startChar;
@@ -285,8 +285,8 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         endChar = 0;
         if (rc.right >= 0) {
             do {
-                Glyph g;
-                acc += m_font->GetGlyph(g, text[j]).m_width;
+                CSize g;
+                acc += m_font->GetGlyph(g, text[j]).cx;
                 j++;
             } while (acc <= rc.right);
             endChar = j;
@@ -297,20 +297,22 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
     }
 
     for (i32 ci = startChar; ci < endChar; ci++) {
-        Glyph g;
-        Glyph gm = m_font->GetGlyph(g, text[ci]);
+        CSize g;
+        m = m_font->GetGlyph(g, text[ci]);
+        i32 row;
+        i32 col;
         i32 clippedW;
         if (ci == endChar - 1) {
-            clippedW = gm.m_width - rightPartial;
+            clippedW = m.cx - rightPartial;
         } else {
-            clippedW = g.m_width;
+            clippedW = m.cx;
         }
         u8* glyphBuf = m_font->GetSurface(text[ci])[0];
         if (blend) {
-            for (i32 row = rc.top; row < rc.bottom; row++) {
-                u16* dst = bits + ((row - rc.top + y) * pitch) / 2 + destX;
-                for (i32 col = firstCol; col < clippedW; col++) {
-                    u8 cover = glyphBuf[row * g.m_width + col];
+            for (row = rc.top; row < rc.bottom; row++) {
+                u16* dst = bits + ((row - rc.top + dest.y) * pitch) / 2 + dest.x;
+                for (col = firstCol; col < clippedW; col++) {
+                    u8 cover = glyphBuf[row * m.cx + col];
 
                     if (cover == 0) {
                     } else if (cover != UCHAR_MAX) {
@@ -322,17 +324,17 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
                 }
             }
         } else {
-            for (i32 row = rc.top; row < rc.bottom; row++) {
-                u16* dst = bits + ((row - rc.top + y) * pitch) / 2 + destX;
-                for (i32 col = firstCol; col < clippedW; col++) {
-                    if (glyphBuf[row * g.m_width + col] != 0) {
+            for (row = rc.top; row < rc.bottom; row++) {
+                u16* dst = bits + ((row - rc.top + dest.y) * pitch) / 2 + dest.x;
+                for (col = firstCol; col < clippedW; col++) {
+                    if (glyphBuf[row * m.cx + col] != 0) {
                         *dst = packedColor;
                     }
                     dst++;
                 }
             }
         }
-        destX += clippedW - firstCol;
+        dest.x += clippedW - firstCol;
         firstCol = 0;
     }
 
@@ -354,10 +356,11 @@ void FontRenderer::DrawWrapped(
         rc.top = rc.top + (rc.bottom - rc.top) / 2 - m.cy / 2;
     }
 
+    i32 y = rc.top;
     i32 x = rc.left;
 
     CString line;
-    while (rc.top < rc.bottom) {
+    while (y < rc.bottom) {
         i32 len = text.GetLength();
         if (len <= 0) {
             break;
@@ -371,19 +374,18 @@ void FontRenderer::DrawWrapped(
             }
         }
 
-        CSize e;
-        e = MeasureText(text);
-        if (e.cx + x <= rc.right && !nl) {
+        CSize size;
+        size = MeasureText(text);
+        if (size.cx + x <= rc.right && !nl) {
             line += text;
             text = "";
-            if (rc.top + lineAdvance <= rc.bottom) {
+            if (y + lineAdvance <= rc.bottom) {
                 if (hcenter) {
                     CSize le = MeasureText(line);
-                    i32 cx = rc.left + rc.Width() / 2 - le.cx / 2;
-                    DrawLine(line, surf, cx, rc.top, z);
-                    x = cx;
+                    DrawLine(line, surf, rc.left + rc.Width() / 2 - le.cx / 2, y, z);
+                    x = rc.left + rc.Width() / 2 - le.cx;
                 } else {
-                    DrawLine(line, surf, rc.left, rc.top, z);
+                    DrawLine(line, surf, rc.left, y, z);
                 }
             }
             line = "";
@@ -407,50 +409,46 @@ void FontRenderer::DrawWrapped(
             } else {
                 head = text.Left(i + 1);
             }
-            CSize he;
-            he = MeasureText(head);
-            i32 headW = he.cx;
-            text = text.Right(len - i - 1);
+            size = MeasureText(head);
+            i32 headW = size.cx;
+            text = text.Right(text.GetLength() - i - 1);
             if (headW + x < rc.right) {
                 line += head;
                 x = headW + x;
             } else if (headW < rc.right - rc.left) {
                 if (hcenter) {
                     CSize le = MeasureText(line);
-                    i32 cx = rc.left + rc.Width() / 2 - le.cx / 2;
-                    DrawLine(line, surf, cx, rc.top, z);
+                    DrawLine(line, surf, rc.left + rc.Width() / 2 - le.cx / 2, y, z);
                 } else {
-                    DrawLine(line, surf, rc.left, rc.top, z);
+                    DrawLine(line, surf, rc.left, y, z);
                 }
-                rc.top = rc.top + lineAdvance;
+                y = y + lineAdvance;
                 x = rc.left;
                 line = "";
-                if (lineAdvance + rc.top < rc.bottom) {
+                if (lineAdvance + y < rc.bottom) {
                     line += head;
-                    x = headW + rc.left;
+                    x += headW;
                 }
             } else {
 
                 while (head.GetLength() > 0) {
-                    if (rc.top >= rc.bottom) {
+                    if (y >= rc.bottom) {
                         break;
                     }
-                    CSize ce;
-                    ce = MeasureText(CString(head.GetAt(0), 1));
-                    i32 chW = ce.cx;
+                    size = MeasureText(CString(head.GetAt(0), 1));
+                    i32 chW = size.cx;
                     if (chW + x > rc.right) {
+                        y = y + lineAdvance;
+                        x = rc.left;
                         if (hcenter) {
                             CSize le = MeasureText(line);
-                            i32 cx = rc.left + rc.Width() / 2 - le.cx / 2;
-                            DrawLine(line, surf, cx, rc.top, z);
+                            DrawLine(line, surf, rc.left + rc.Width() / 2 - le.cx / 2, y, z);
                         } else {
-                            DrawLine(line, surf, rc.left, rc.top, z);
+                            DrawLine(line, surf, x, y, z);
                         }
-                        rc.top = rc.top + lineAdvance;
-                        x = rc.left;
                         line = "";
                     }
-                    if (lineAdvance + rc.top >= rc.bottom) {
+                    if (lineAdvance + y >= rc.bottom) {
                         break;
                     }
                     line += head[0];
@@ -460,24 +458,22 @@ void FontRenderer::DrawWrapped(
             if (breakNL) {
                 if (hcenter) {
                     CSize le = MeasureText(line);
-                    i32 cx = rc.left + rc.Width() / 2 - le.cx / 2;
-                    DrawLine(line, surf, cx, rc.top, z);
+                    DrawLine(line, surf, rc.left + rc.Width() / 2 - le.cx / 2, y, z);
                 } else {
-                    DrawLine(line, surf, rc.left, rc.top, z);
+                    DrawLine(line, surf, rc.left, y, z);
                 }
-                rc.top = rc.top + lineAdvance;
+                y = y + lineAdvance;
                 x = rc.left;
                 line = "";
             }
         }
     }
-    if (rc.top + lineAdvance <= rc.bottom && line.GetLength() > 0) {
+    if (y + lineAdvance <= rc.bottom && line.GetLength() > 0) {
         if (hcenter) {
             CSize le = MeasureText(line);
-            i32 cx = rc.left + rc.Width() / 2 - le.cx / 2;
-            DrawLine(line, surf, cx, rc.top, z);
+            DrawLine(line, surf, rc.left + rc.Width() / 2 - le.cx / 2, y, z);
         } else {
-            DrawLine(line, surf, rc.left, rc.top, z);
+            DrawLine(line, surf, rc.left, y, z);
         }
     }
 }
@@ -486,8 +482,8 @@ RVA(0x0017ac50, 0xbd)
 CSize FontRenderer::MeasureText(CString text) {
     CSize ext;
 
-    Glyph g;
-    g.m_height = 0;
+    CSize g;
+    g.cy = 0;
     i32 i = 0;
     i32 width = 0;
     if (m_font == NULL) {
@@ -496,7 +492,7 @@ CSize FontRenderer::MeasureText(CString text) {
     for (; i < text.GetLength(); i++) {
         u8 c = text[i];
 
-        width += m_font->GetGlyph(g, c).m_width;
+        width += m_font->GetGlyph(g, c).cx;
     }
     SET_SIZE_COMPONENTS(ext, width, m_font->GetMaxHeight());
     return ext;

@@ -218,7 +218,6 @@ void CGameApp::InitializeDefaultWindowClass() {
     m_wc.lpszClassName = m_gameInfo.m_szWindowClassName;
 }
 
-// @early-stop
 RVA(0x0013da50, 0x10b)
 void CGameApp::InitializeDefaultCreateStruct() {
 
@@ -260,15 +259,15 @@ void CGameApp::InitializeDefaultCreateStruct() {
         exStyle = WS_EX_APPWINDOW | WS_EX_TOPMOST;
     }
 
-    m_createStruct.style = style;
+    m_createStruct.lpCreateParams = NULL;
     m_createStruct.hInstance = m_hInstance;
     m_createStruct.hMenu = hMenu;
-    m_createStruct.y = y;
-    m_createStruct.cx = cx;
-    m_createStruct.lpCreateParams = NULL;
     m_createStruct.hwndParent = NULL;
     m_createStruct.x = x;
+    m_createStruct.y = y;
+    m_createStruct.cx = cx;
     m_createStruct.cy = cy;
+    m_createStruct.style = style;
     m_createStruct.lpszName = m_gameInfo.m_szWindowName;
     m_createStruct.lpszClass = m_gameInfo.m_szWindowClassName;
     m_createStruct.dwExStyle = exStyle;
