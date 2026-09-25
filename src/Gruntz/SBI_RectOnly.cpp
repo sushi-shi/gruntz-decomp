@@ -1041,12 +1041,7 @@ RVA_COMPGEN(0x00100900, 0x1e, ??_GCSBI_Image@@UAEPAXI@Z)
 RVA(0x00100930, 0x16c)
 void CStatusBarMgr::ResetWidgets(b32 keepHost) {
     for (i32 t = 0; t < 8; t++) {
-        POSITION n = m_tabLists[t].GetHeadPosition();
-        while (n) {
-            CStatusBarItem* cur = static_cast<CStatusBarItem*>(m_tabLists[t].GetNext(n));
-            delete cur;
-        }
-        m_tabLists[t].RemoveAll();
+        DELETE_STATUS_ITEMS(m_tabLists[t])
     }
     if (keepHost) {
         if (m_barSprite) {
@@ -1096,13 +1091,7 @@ void CStatusBarMgr::ClearTabGroup() {
     if (m_activeTab == TAB_NONE) {
         return;
     }
-    CPtrList& tab = m_tabLists[IDX(m_activeTab)];
-    POSITION n = tab.GetHeadPosition();
-    while (n) {
-        CStatusBarItem* cur = static_cast<CStatusBarItem*>(tab.GetNext(n));
-        delete cur;
-    }
-    m_tabLists[IDX(m_activeTab)].RemoveAll();
+    DELETE_STATUS_ITEMS(m_tabLists[IDX(m_activeTab)])
     switch (m_activeTab) {
         case TAB_GAME:
             m_gameResumePauseButton = NULL;
@@ -1595,12 +1584,7 @@ i32 CStatusBarMgr::SetTab(GameTabContent tab, b32 forceReload) {
     if (tab == m_itemKind && forceReload == false) {
         return 1;
     }
-    POSITION n = m_tabLists[5].GetHeadPosition();
-    while (n) {
-        CStatusBarItem* cur = static_cast<CStatusBarItem*>(m_tabLists[5].GetNext(n));
-        delete cur;
-    }
-    m_tabLists[5].RemoveAll();
+    DELETE_STATUS_ITEMS(m_tabLists[5])
     m_gameResumePauseButton = NULL;
     m_gameLoadButton = NULL;
     m_gameSaveButton = NULL;
@@ -4763,12 +4747,7 @@ void CStatusBarMgr::ExitMode() {
     if (m_levelOverlayActive == false) {
         return;
     }
-    POSITION n = m_tabLists[6].GetHeadPosition();
-    while (n) {
-        CStatusBarItem* cur = static_cast<CStatusBarItem*>(m_tabLists[6].GetNext(n));
-        delete cur;
-    }
-    m_tabLists[6].RemoveAll();
+    DELETE_STATUS_ITEMS(m_tabLists[6])
     b32 wasQuitConfirmation = m_quitConfirmationActive;
     m_endPrimaryButton = NULL;
     m_endSecondaryButton = NULL;

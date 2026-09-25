@@ -136,6 +136,15 @@ GZ_ENUM_CONST_BEGIN(GruntWellPct)
     GRUNT_WELL_FULL = 100
 GZ_ENUM_CONST_END(GruntWellPct)
 
+#define DELETE_STATUS_ITEMS(list)                                                                  \
+    {                                                                                              \
+        POSITION pos = (list).GetHeadPosition();                                                   \
+        while (pos) {                                                                              \
+            delete static_cast<CStatusBarItem*>((list).GetNext(pos));                              \
+        }                                                                                          \
+        (list).RemoveAll();                                                                        \
+    }
+
 class CStatusBarMgr {
     inline b32 ActivateReadySlot(i32 slot);
 
