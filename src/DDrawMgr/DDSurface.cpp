@@ -26,6 +26,7 @@
 #include <Lith/BDefs.h>
 #include <MakeRect.h>
 #include <Pix16.h>
+#include <RectMacros.h>
 
 #include <ddraw.h>
 #include <stdio.h>
@@ -1111,7 +1112,6 @@ i32 CDDSurface::Blit(u8* src, ColorDepth bitcount, PALETTEENTRY* palette, Raster
     return 0;
 }
 
-// @early-stop
 RVA(0x0013fbb0, 0x126)
 i32 CDDSurface::Blit168(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
     if (pal == NULL) {

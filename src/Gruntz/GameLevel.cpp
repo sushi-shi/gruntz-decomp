@@ -18,9 +18,11 @@
 #include <Io/FileStream.h>
 #include <MakeRect.h>
 #include <Pix16.h>
+#include <RectMacros.h>
 #include <Rez/RezArchiveEntry.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/Object.h>
+#include <Wap32/TileGeometry.h>
 #include <Wap32/WapCompress.h>
 #include <Wwd/MoveFlags.h>
 #include <Wwd/MoveMode.h>

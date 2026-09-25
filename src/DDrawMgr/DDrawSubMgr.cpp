@@ -206,12 +206,8 @@ i32 CDDrawPixelWorker::PlacePixel(i32 x, i32 y, i32 pixelValue) {
 
 RVA(0x00157130, 0x17)
 void CDDrawPixelWorker::Unload() {
-
-    i32 v = COORD_UNSET;
     m_pixelValue = 0;
-    m_screenPosition.m_x = v;
-    m_dirty.m_rect.left = v;
-    m_dirty.m_armed = -1;
+    CResolveNode::Unload();
 }
 
 RVA(0x00157150, 0xa5)
@@ -275,12 +271,8 @@ i32 CDDrawFrameWorker::PlaceFrame(i32 x, i32 y, CImage* frame) {
 
 RVA(0x00157310, 0x1a)
 void CDDrawPlacedWorker::Unload() {
-
-    i32 v = COORD_UNSET;
     m_contentValue = 0;
-    m_screenPosition.m_x = v;
-    m_dirty.m_rect.left = v;
-    m_dirty.m_armed = -1;
+    CResolveNode::Unload();
 }
 
 RVA(0x00157330, 0xa5)

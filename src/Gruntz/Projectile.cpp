@@ -186,8 +186,12 @@ i32 CProjectile::LoadProjectileSprites(
             m_timePerTile = g_buteMgr.GetDword("Projectile", "WingzProjectileTimePerTile", 0xbb8);
             LaunchSound("GRUNTZ_WINGZGRUNT_WINGZGRUNTLOOP");
             m_isArcing = false;
-            i32 ddx = abs((m_targetPx.m_x >> TILE_SHIFT_PX) - (m_object->m_screenPosition.m_x >> TILE_SHIFT_PX));
-            i32 ddy = abs((m_targetPx.m_y >> TILE_SHIFT_PX) - (m_object->m_screenPosition.m_y >> TILE_SHIFT_PX));
+            i32 ddx =
+                abs((m_targetPx.m_x >> TILE_SHIFT_PX)
+                    - (m_object->m_screenPosition.m_x >> TILE_SHIFT_PX));
+            i32 ddy =
+                abs((m_targetPx.m_y >> TILE_SHIFT_PX)
+                    - (m_object->m_screenPosition.m_y >> TILE_SHIFT_PX));
             count = Max(ddx, ddy);
             break;
         }
@@ -269,7 +273,7 @@ void CProjectile::FireActivation(i32 coord) {
 RVA(0x000dfb00, 0x18d)
 void CProjectile::RegisterType() {
     ACT_NAME_ID(id, "A")
-    *ResolveRegisteredAct<CProjectile>(id) =
+    CActRegPool<CProjectile>::s_table[id] =
         static_cast<CActHandler>(&CProjectile::AdvanceAnimationAndDeleteWhenComplete);
 }
 
@@ -299,8 +303,10 @@ void CProjectile::AdvanceMotion() {
         if (m_kind == PICKUP_WINGZ) {
             ScanTargets(0);
         }
-        m_position.m_x = m_position.m_x + static_cast<double>(g_frameDelta) * m_velocity.m_x * m_velScale;
-        m_position.m_y = m_position.m_y + static_cast<double>(g_frameDelta) * m_velocity.m_y * m_velScale;
+        m_position.m_x =
+            m_position.m_x + static_cast<double>(g_frameDelta) * m_velocity.m_x * m_velScale;
+        m_position.m_y =
+            m_position.m_y + static_cast<double>(g_frameDelta) * m_velocity.m_y * m_velScale;
         i32 xRes = static_cast<i32>((m_roundBias.m_x + m_position.m_x));
         i32 localX = xRes;
         i32 yRes = static_cast<i32>((m_roundBias.m_y + m_position.m_y));
@@ -887,7 +893,7 @@ void CTimeBomb::FireActivation(i32 coord) {
 RVA(0x000e1990, 0x18d)
 void CTimeBomb::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    *(ResolveRegisteredAct<CTimeBomb>(id)) = static_cast<CActHandler>(&CTimeBomb::UpdateCountdown);
+    CActRegPool<CTimeBomb>::s_table[id] = static_cast<CActHandler>(&CTimeBomb::UpdateCountdown);
 }
 
 // @early-stop

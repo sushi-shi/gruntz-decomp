@@ -12,18 +12,17 @@ source distortions.
 
 ## Establish the live population
 
-Work in `nix develop .#build`. Build first when current objects may be stale, then
-derive candidates rather than keeping a manual list:
+Work in `nix develop`. Derive candidates rather than keeping a manual list:
 
 ```sh
-gruntz build base compare
+gruntz build
 gruntz permute candidates --output /tmp/permute-candidates.json
 ```
 
 The command classifies normalized base/retail pairs by their first divergence.
 Exclude EH funclets unless explicitly investigating EH. Use proven-at-100 current
 dips for compiler-state replay, and high-current unproven functions for quick
-pattern discovery. This campaign priority does not replace the low-historical-MAX
+pattern discovery. This campaign priority does not replace the low-HIST
 order used for canonical reconstruction.
 
 ## Run N islands and retain M distinct states
@@ -70,22 +69,19 @@ Use permutation directly for a proven regalloc/scheduling residue. Follow the
 ## Apply one source A/B and repeat
 
 Implement only an evidence-backed, semantically defensible source change. Never
-copy an `exact-disposable.cpp` TU-state forest into source. Compile and compare
-the authored change, then rerun the campaign so the next frontier is conditioned
-on the improved reconstruction.
+copy an `exact-disposable.cpp` TU-state forest into source. Check the authored
+change with `gruntz match <unit>`, then rerun the campaign so the next frontier
+is conditioned on the improved reconstruction.
 
 An exact candidate closes the search only when score, extent, full decoding, and
 ordered relocation identity all pass. A sub-100 improvement is a clue, not a
 commit criterion. Keep correct modeling changes even if unrelated current fuzzy
-moves, subject to the MAX gate.
+moves; the MAX gate (`gruntz build verify`) judges them at merge preparation.
 
-Follow `matcher`'s validation cadence: no test suites during matching, ordinary
-commits, or pushes. Before handoff, refresh compilation/comparison and inspect
-MAX and raw matching evidence. Run focused permuter tests and the full gated
-build only at the authorized PR squash-merge stage; report them as deferred
-until then. Consolidate a genuinely reusable compiler mechanism under the
-admission rules in `docs/patterns/README.md`; do not add campaign logs or
-per-function closure entries.
-Commit tooling, documentation/skill work, and reconstructed source changes in
-separate focused batches. See `docs/permuter.md` for command details and artifact
-contracts.
+Campaigns run no test suites (`AGENTS.md` "Tests"); run `gruntz.permute`
+tests only when you change the permuter itself.
+Consolidate a genuinely reusable compiler mechanism under the admission rules
+in `docs/patterns/README.md`; do not add campaign logs or per-function closure
+entries. Commit tooling, documentation/skill work, and reconstructed source
+changes in separate focused batches. See `docs/permuter.md` for command details
+and artifact contracts.

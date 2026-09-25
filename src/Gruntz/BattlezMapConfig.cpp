@@ -738,7 +738,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         {
                             if (BattlezActDiffersFromCRCGLPJ(unit)) {
                                 if (unit->m_object->m_screenPosition.m_x == unit->m_lastTilePx.m_x
-                                    && unit->m_object->m_screenPosition.m_y == unit->m_lastTilePx.m_y
+                                    && unit->m_object->m_screenPosition.m_y
+                                           == unit->m_lastTilePx.m_y
                                     && unit->m_entranceCommitted != false
                                     && unit->m_deathAnimStarted == false
                                     && unit->m_entranceActive == false) {
@@ -763,10 +764,13 @@ i32 CBattlezMapConfig::StepRowUnits() {
                                     RECT clamp;
                                     RECT* pb = &box;
                                     if (pb != NULL) {
-                                        clamp.left = pb->left;
-                                        clamp.top = pb->top;
-                                        clamp.right = pb->right + 1;
-                                        clamp.bottom = pb->bottom + 1;
+                                        SET_RECT_COMPONENTS(
+                                            clamp,
+                                            pb->left,
+                                            pb->top,
+                                            pb->right + 1,
+                                            pb->bottom + 1
+                                        );
                                     } else {
                                         clamp = CRect(0, 0, board->m_width, board->m_height);
                                     }
@@ -1604,10 +1608,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
     {
         CRect bounds(0, 0, board->m_width, board->m_height);
         RECT box;
-        box.left = center.m_x - 6;
-        box.top = center.m_y - 6;
-        box.right = center.m_x + 6;
-        box.bottom = center.m_y + 6;
+        SET_RECT_COMPONENTS(box, center.m_x - 6, center.m_y - 6, center.m_x + 6, center.m_y + 6);
 
         const RECT* src = &box;
         RECT a;
@@ -1712,10 +1713,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
                 }
 
                 RECT hitFull;
-                hitFull.left = 0;
-                hitFull.top = 0;
-                hitFull.right = board->m_width;
-                hitFull.bottom = board->m_height;
+                SET_RECT_COMPONENTS(hitFull, 0, 0, board->m_width, board->m_height);
                 RECT hitBox = CRect(0, 0, board->m_width, board->m_height);
                 RECT* hitBoxDst = &board->m_bounds;
                 if (!IntersectRect(hitBoxDst, &hitBox, &hitFull)) {
@@ -1752,10 +1750,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
 RVA(0x0002ab80, 0x15e)
 CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 halfH) {
     RECT rect;
-    rect.left = cx - halfW;
-    rect.top = cy - halfH;
-    rect.right = cx + halfW;
-    rect.bottom = cy + halfH;
+    SET_RECT_COMPONENTS(rect, cx - halfW, cy - halfH, cx + halfW, cy + halfH);
     CGrunt* best = NULL;
     i32 bestDist = INT_MAX;
     for (i32 band = 0; band < 4; band++) {
@@ -1935,19 +1930,13 @@ void CMapMgr::Clip(const RECT* src) {
     RECT a, b;
     i32 w = m_width;
     i32 h = m_height;
-    b.left = 0;
-    b.top = 0;
-    b.right = w;
-    b.bottom = h;
+    SET_RECT_COMPONENTS(b, 0, 0, w, h);
     if (src) {
         a = *src;
         a.right++;
         a.bottom++;
     } else {
-        a.left = 0;
-        a.top = 0;
-        a.right = w;
-        a.bottom = h;
+        SET_RECT_COMPONENTS(a, 0, 0, w, h);
     }
     RECT* dst = &m_bounds;
     if (!IntersectRect(dst, &a, &b)) {
@@ -2245,10 +2234,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
         left = c4.m_x >> TILE_SHIFT_PX;
     }
     RECT box;
-    box.left = left - 3;
-    box.top = top - 3;
-    box.right = right + 4;
-    box.bottom = bottom + 4;
+    SET_RECT_COMPONENTS(box, left - 3, top - 3, right + 4, bottom + 4);
     {
         const RECT* src = &box;
         CMapMgr* board = m_board;
@@ -2331,10 +2317,7 @@ i32 CBattlezMapConfig::RouteToNearbyPickup(CGrunt* unit) {
                     if (RouteUnitTo(unit, gx, gy, 0x2000098b, 0, 0) != 0) {
                         CMapMgr* bd = m_board;
                         RECT b;
-                        b.left = 0;
-                        b.top = 0;
-                        b.right = bd->m_width;
-                        b.bottom = bd->m_height;
+                        SET_RECT_COMPONENTS(b, 0, 0, bd->m_width, bd->m_height);
                         RECT a;
                         a = CRect(0, 0, bd->m_width, bd->m_height);
                         RECT* aDst = &bd->m_bounds;
@@ -2531,10 +2514,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                                     )
                                     CMapMgr* bd = m_board;
                                     RECT pathFull;
-                                    pathFull.left = 0;
-                                    pathFull.top = 0;
-                                    pathFull.right = bd->m_width;
-                                    pathFull.bottom = bd->m_height;
+                                    SET_RECT_COMPONENTS(pathFull, 0, 0, bd->m_width, bd->m_height);
                                     RECT pathBox;
                                     pathBox = CRect(0, 0, bd->m_width, bd->m_height);
                                     RECT* pathBoxDst = &bd->m_bounds;
@@ -3016,10 +2996,7 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
         left = g2.m_x;
     }
     RECT box;
-    box.left = left - 8;
-    box.top = top - 8;
-    box.right = right + 8;
-    box.bottom = bottom + 8;
+    SET_RECT_COMPONENTS(box, left - 8, top - 8, right + 8, bottom + 8);
     {
         const RECT* src = &box;
         CMapMgr* board = m_board;
@@ -3077,10 +3054,7 @@ i32 CBattlezMapConfig::ResolveTileClaim(CGrunt* unit, i32 col, i32 row, i32 requ
     {
         CMapMgr* board = m_board;
         RECT b;
-        b.left = 0;
-        b.top = 0;
-        b.right = board->m_width;
-        b.bottom = board->m_height;
+        SET_RECT_COMPONENTS(b, 0, 0, board->m_width, board->m_height);
         RECT a;
         a = b;
         RECT* aDst = &board->m_bounds;

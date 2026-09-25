@@ -50,6 +50,7 @@
 #include <Io/SaveGame.h>
 #include <MakeRect.h>
 #include <Net/NetMgr.h>
+#include <RectMacros.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezArchive.h>
 #include <Rez/RezArchiveEntry.h>

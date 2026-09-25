@@ -13,7 +13,6 @@
 #include <Gruntz/Timer.h>
 #include <Image/CImage.h>
 #include <Io/FileMem.h>
-#include <Utils/MapTyped.h>
 
 #include <string.h>
 
@@ -36,7 +35,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     g_serialCounter++;
     s->Read(buf, SERIAL_NAME_LEN);
     if (strlen(buf) != 0) {
-        m_sprite = MapFind<CDDrawWorker>(reg->m_imageRegistry->m_workersByName, buf);
+        m_sprite = reg->FindWorker(buf);
     } else {
         m_sprite = NULL;
     }
@@ -48,7 +47,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
         i32 i = idx;
-        CDDrawWorker* tt = MapFind<CDDrawWorker>(reg->m_imageRegistry->m_workersByName, buf);
+        CDDrawWorker* tt = reg->FindWorker(buf);
         CImage* r;
         if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
             r = DDRAW_WORKER_FRAME_AT_UNCHECKED(tt, i);
@@ -65,7 +64,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
         i32 i = idx;
-        CDDrawWorker* tt = MapFind<CDDrawWorker>(reg->m_imageRegistry->m_workersByName, buf);
+        CDDrawWorker* tt = reg->FindWorker(buf);
         CImage* r;
         if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
             r = DDRAW_WORKER_FRAME_AT_UNCHECKED(tt, i);
@@ -82,7 +81,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
         i32 i = idx;
-        CDDrawWorker* tt = MapFind<CDDrawWorker>(reg->m_imageRegistry->m_workersByName, buf);
+        CDDrawWorker* tt = reg->FindWorker(buf);
         CImage* r;
         if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
             r = DDRAW_WORKER_FRAME_AT_UNCHECKED(tt, i);
@@ -99,7 +98,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
         i32 i = idx;
-        CDDrawWorker* tt = MapFind<CDDrawWorker>(reg->m_imageRegistry->m_workersByName, buf);
+        CDDrawWorker* tt = reg->FindWorker(buf);
         CImage* r;
         if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
             r = DDRAW_WORKER_FRAME_AT_UNCHECKED(tt, i);
@@ -116,7 +115,7 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
         i32 i = idx;
-        CDDrawWorker* tt = MapFind<CDDrawWorker>(reg->m_imageRegistry->m_workersByName, buf);
+        CDDrawWorker* tt = reg->FindWorker(buf);
         CImage* r;
         if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
             r = DDRAW_WORKER_FRAME_AT_UNCHECKED(tt, i);

@@ -16,7 +16,6 @@
 #include <Gruntz/MenuPage.h>
 #include <Gruntz/MenuTree.h>
 #include <Image/CImage.h>
-#include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
 
 #include <stdio.h>
@@ -48,11 +47,8 @@ i32 CMenuItem::Init(
         m_state = MENUSTATE_NORMAL;
     }
     if (!UsesStateAnimations()) {
-        CObject* animationObject = NULL;
-
-        m_world->m_imageRegistry->m_workersByName.Lookup(animationKey, animationObject);
-        m_animation = animationObject;
-        if (!animationObject) {
+        m_animation = m_world->FindWorker(animationKey);
+        if (!m_animation) {
             return 0;
         }
     }
@@ -65,7 +61,7 @@ void CMenuItem::Cleanup() {
 
 RVA(0x00185520, 0x2c)
 i32 CMenuItem::GetFrameWidth() {
-    CDDrawWorker* animation = static_cast<CDDrawWorker*>(m_animation);
+    CDDrawWorker* animation = m_animation;
     if (!animation) {
         return 0;
     }
@@ -77,7 +73,7 @@ i32 CMenuItem::GetFrameWidth() {
 }
 RVA(0x00185550, 0x2c)
 i32 CMenuItem::GetFrameHeight() {
-    CDDrawWorker* animation = static_cast<CDDrawWorker*>(m_animation);
+    CDDrawWorker* animation = m_animation;
     if (!animation) {
         return 0;
     }
@@ -115,7 +111,7 @@ i32 CMenuItem::Update(u32) {
 
 RVA(0x001855f0, 0x94)
 i32 CMenuItem::DrawAt(CDDrawSurfacePair* target, i32 centerX, i32 centerY) {
-    CDDrawWorker* animation = static_cast<CDDrawWorker*>(m_animation);
+    CDDrawWorker* animation = m_animation;
     if (!animation) {
         return 0;
     }
@@ -199,16 +195,13 @@ i32 CAnimatedMenuItem::Init(
     char animationName[0x80];
 
     sprintf(animationName, "%s_NORMAL", animationKey);
-    m_normalAnimation =
-        MapFind<CDDrawWorker>(m_world->m_imageRegistry->m_workersByName, animationName);
+    m_normalAnimation = m_world->FindWorker(animationName);
 
     sprintf(animationName, "%s_SELECTED", animationKey);
-    m_selectedAnimation =
-        MapFind<CDDrawWorker>(m_world->m_imageRegistry->m_workersByName, animationName);
+    m_selectedAnimation = m_world->FindWorker(animationName);
 
     sprintf(animationName, "%s_DISABLED", animationKey);
-    m_disabledAnimation =
-        MapFind<CDDrawWorker>(m_world->m_imageRegistry->m_workersByName, animationName);
+    m_disabledAnimation = m_world->FindWorker(animationName);
 
     return 1;
 }

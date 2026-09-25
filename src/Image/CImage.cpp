@@ -471,12 +471,7 @@ void CImage::BlitNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
     dst->m_surface->BltEx(&d, m_surface, &s, DDBLT_DDFX | DDBLT_KEYSRC, &g_bltFx);
     d.right -= 1;
     d.bottom -= 1;
-    info->m_dirty.m_lastPosition.x = d.left;
-    info->m_dirty.m_lastPosition.y = d.top;
-    info->m_dirty.m_rect = *(&d);
-    info->m_dirty.m_size.cx = w;
-    info->m_dirty.m_size.cy = h;
-    info->m_dirty.m_armed = 0;
+    SET_DIRTY_RECT(info, &d, w, h);
 }
 
 // @early-stop
@@ -506,12 +501,7 @@ void CImage::BlitFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
     dst->m_surface->BltEx(&d, m_surface, &s, DDBLT_DDFX | DDBLT_KEYSRC, &g_bltFx);
     d.right -= 1;
     d.bottom -= 1;
-    info->m_dirty.m_lastPosition.x = d.left;
-    info->m_dirty.m_lastPosition.y = d.top;
-    info->m_dirty.m_rect = *(&d);
-    info->m_dirty.m_size.cx = w;
-    info->m_dirty.m_size.cy = h;
-    info->m_dirty.m_armed = 0;
+    SET_DIRTY_RECT(info, &d, w, h);
 }
 
 // @early-stop
@@ -536,12 +526,7 @@ void CImage::BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
     dst->m_surface->BltEx(&d, m_surface, &s, DDBLT_DDFX | DDBLT_KEYSRC, &g_bltFx);
     d.right -= 1;
     d.bottom -= 1;
-    info->m_dirty.m_lastPosition.x = d.left;
-    info->m_dirty.m_lastPosition.y = d.top;
-    info->m_dirty.m_rect = *(&d);
-    info->m_dirty.m_size.cx = w;
-    info->m_dirty.m_size.cy = h;
-    info->m_dirty.m_armed = 0;
+    SET_DIRTY_RECT(info, &d, w, h);
 }
 
 // @early-stop
@@ -592,12 +577,7 @@ void CImage::BlitShadeNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
         m_owned->Select(info->m_drawFillCmd, info->m_drawFillArg);
     }
     m_owned->Blit(&d, dst->m_surface, &s, 1, 1);
-    info->m_dirty.m_lastPosition.x = d.left;
-    info->m_dirty.m_lastPosition.y = d.top;
-    info->m_dirty.m_rect = *(&d);
-    info->m_dirty.m_size.cx = w;
-    info->m_dirty.m_size.cy = h;
-    info->m_dirty.m_armed = 0;
+    SET_DIRTY_RECT(info, &d, w, h);
 }
 
 // @early-stop
@@ -653,10 +633,5 @@ void CImage::BlitShadeFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
         m_owned->Select(info->m_drawFillCmd, info->m_drawFillArg);
     }
     m_owned->Blit(&d, dst->m_surface, &s, 0, 1);
-    info->m_dirty.m_lastPosition.x = d.left;
-    info->m_dirty.m_lastPosition.y = d.top;
-    info->m_dirty.m_rect = *(&d);
-    info->m_dirty.m_size.cx = w;
-    info->m_dirty.m_size.cy = h;
-    info->m_dirty.m_armed = 0;
+    SET_DIRTY_RECT(info, &d, w, h);
 }

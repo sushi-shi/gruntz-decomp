@@ -78,7 +78,7 @@ i32 CSBI_MenuItem::ResolveFrame(const char* key, i32 frameIndex) {
         return 0;
     }
 
-    CDDrawWorker* rec = MapFind<CDDrawWorker>(m_host->m_imageRegistry->m_workersByName, key);
+    CDDrawWorker* rec = m_host->FindWorker(key);
     m_record = rec;
     if (rec == NULL) {
         return 0;

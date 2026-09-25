@@ -34,7 +34,9 @@ template<> DATA(0x00229388)
 CActReg CActRegPool<CActionArea>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 RVA(0x00007c60, 0xf1)
-i32 DispatchActionAreaLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CActionArea)}
+i32 DispatchActionAreaLogic(CGameObject* owner) {
+    LOGIC_RECORD_DISPATCH(CActionArea)
+}
 
 // @early-stop
 RVA(0x00007da0, 0x17e)
@@ -61,7 +63,7 @@ RVA(0x00008240, 0x18d)
 void CProjActObj::RegisterType() {
     ACT_NAME_ID(id, "A")
 
-    *ResolveRegisteredAct<CActionArea>(id) = static_cast<CActHandler>(&CActionArea::Tick);
+    CActRegPool<CActionArea>::s_table[id] = static_cast<CActHandler>(&CActionArea::Tick);
 }
 
 RVA(0x00008440, 0xfe)

@@ -30,7 +30,7 @@
 #include <Image/ImageSet.h>
 #include <Io/FileMem.h>
 #include <MakeRect.h>
-#include <Utils/MapTyped.h>
+#include <RectMacros.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/WapObj.h>
 #include <Wwd/WwdSpatialMgr.h>
@@ -242,10 +242,7 @@ void CDDrawWorkerHost::Unload() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00161c50, 0x3f)
 void CDDrawWorkerHost::SetImageSetByName(char index, const char* key) {
-    m_imageSets.SetAtGrow(
-        index,
-        MapFind<CDDrawWorker>(OwnerMgr()->m_imageRegistry->m_workersByName, key)
-    );
+    m_imageSets.SetAtGrow(index, OwnerMgr()->FindWorker(key));
 }
 
 // @early-stop
@@ -674,22 +671,10 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
     obj->m_damage = *p++;
     obj->m_smarts = *p++;
     obj->m_health = *p++;
-    obj->m_extent.left = *p++;
-    obj->m_extent.top = *p++;
-    obj->m_extent.right = *p++;
-    obj->m_extent.bottom = *p++;
-    obj->m_area.left = *p++;
-    obj->m_area.top = *p++;
-    obj->m_area.right = *p++;
-    obj->m_area.bottom = *p++;
-    obj->m_switchRect.left = *p++;
-    obj->m_switchRect.top = *p++;
-    obj->m_switchRect.right = *p++;
-    obj->m_switchRect.bottom = *p++;
-    obj->m_clip.left = *p++;
-    obj->m_clip.top = *p++;
-    obj->m_clip.right = *p++;
-    obj->m_clip.bottom = *p++;
+    SET_RECT_COMPONENTS(obj->m_extent, *p++, *p++, *p++, *p++);
+    SET_RECT_COMPONENTS(obj->m_area, *p++, *p++, *p++, *p++);
+    SET_RECT_COMPONENTS(obj->m_switchRect, *p++, *p++, *p++, *p++);
+    SET_RECT_COMPONENTS(obj->m_clip, *p++, *p++, *p++, *p++);
 
     if (obj->m_area.left == 0 && obj->m_area.right == 0) {
         obj->m_area.left = COORD_UNSET;
@@ -704,14 +689,8 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
         obj->m_switchRect.left = COORD_UNSET;
     }
 
-    anim->m_userRect1.left = *p++;
-    anim->m_userRect1.top = *p++;
-    anim->m_userRect1.right = *p++;
-    anim->m_userRect1.bottom = *p++;
-    anim->m_userRect2.left = *p++;
-    anim->m_userRect2.top = *p++;
-    anim->m_userRect2.right = *p++;
-    anim->m_userRect2.bottom = *p++;
+    SET_RECT_COMPONENTS(anim->m_userRect1, *p++, *p++, *p++, *p++);
+    SET_RECT_COMPONENTS(anim->m_userRect2, *p++, *p++, *p++, *p++);
     anim->m_user1 = *p++;
     anim->m_user2 = *p++;
     anim->m_user3 = *p++;

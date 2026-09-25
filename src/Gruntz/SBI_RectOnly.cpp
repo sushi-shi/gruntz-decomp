@@ -72,6 +72,7 @@
 #include <Ints.h>
 #include <Io/FileMem.h>
 #include <MakeRect.h>
+#include <RectMacros.h>
 #include <Rez/RezList.h>
 #include <Rez/RezMgr.h>
 #include <Utils/MapTyped.h>
@@ -268,13 +269,8 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
                 CRect below = MakeRect(m_barRect.left, m_barRect.bottom, m_barRect.right, v);
                 tgt->Restore(&below, 0);
             }
-            CMapStringToOb* map = &m_world->m_imageRegistry->m_workersByName;
-            CObject* found = NULL;
-
-            map->Lookup("GAME_STATUSBAR_MAINBAR", found);
-            if (found) {
-
-                CDDrawWorker* cfg = static_cast<CDDrawWorker*>(found);
+            CDDrawWorker* cfg = m_world->FindWorker("GAME_STATUSBAR_MAINBAR");
+            if (cfg) {
                 CImage* entry = DDRAW_WORKER_FRAME_AT_UNCHECKED(cfg, cfg->m_minIndex);
                 if (entry) {
                     CDDrawSubMgrPages* l1 = g_gameReg->m_world->m_drawTarget;
@@ -3676,10 +3672,7 @@ i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 item, i32 x, i32 y) {
     i32 t = y - 0xc;
     i32 rr = x + 0xc;
     i32 b = y + 0xc;
-    m_fallingItemRect.left = l;
-    m_fallingItemRect.top = t;
-    m_fallingItemRect.right = rr;
-    m_fallingItemRect.bottom = b;
+    SET_RECT_COMPONENTS(m_fallingItemRect, l, t, rr, b);
     if (n) {
         RECT rc;
         i32 x = m_barRect.left;
@@ -3740,8 +3733,7 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
         i64* clock = &m_fallClock.m_last;
         i64 d = static_cast<i64>(g_frameTime) - clock[0];
         if (d >= clock[1]) {
-            m_fallingItemRect.top += speed;
-            m_fallingItemRect.bottom += speed;
+            OFFSET_RECT_Y_EDGES(m_fallingItemRect, speed, speed);
             CSBI_ImageSet* w = m_fallingItemSprite;
             if (w) {
                 RECT rc;
@@ -4431,10 +4423,7 @@ i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragm
     m_owner = owner;
 
     i32 n = IDX(fragment) + 1;
-    CDDrawWorker* spr = MapFind<CDDrawWorker>(
-        g_gameReg->m_world->m_imageRegistry->m_workersByName,
-        "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE"
-    );
+    CDDrawWorker* spr = g_gameReg->m_world->FindWorker("GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE");
     CImage* frame = spr ? spr->GetAt(n) : NULL;
     m_sprite = frame;
     if (frame == NULL) {
@@ -5135,9 +5124,15 @@ RVA(0x0010b930, 0x1a7)
 i32 CStatusBarMgr::ActivateSlot(i32 idx) {
     if ((static_cast<CPlay*>(g_gameReg->m_curState))->m_playerCommandPending == false) {
         if (idx == -1) {
+            for (i32 slot = 0; slot < 5; slot++) {
+                if (m_slots[slot].m_state == SLOT_READY) {
+                    return ActivateReadySlot(slot);
+                }
+            }
+            return 0;
+        }
+        if (m_slots[idx].m_state == SLOT_READY) {
             return ActivateReadySlot(idx);
-        } else if (m_slots[idx].m_state == SLOT_READY && ActivateReadySlot(idx)) {
-            return 1;
         }
     }
     return 0;

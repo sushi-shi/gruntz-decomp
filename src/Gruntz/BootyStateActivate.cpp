@@ -755,17 +755,16 @@ void CBootyState::GenMenuRandPos(GruntDirection sel, i32* outX, i32* outY) {
     }
 }
 
-// @early-stop
 RVA(0x00019f50, 0xb2)
 i32 CGruntzMgr::RandRange(i32 lo, i32 hi) {
-    i32 span = hi - lo + 1;
-    if (span == 0) {
-        if ((GetRandomNumber() & 1)) {
+    if ((hi - lo + 1) == 0) {
+        if (GetRandomNumber() & 1) {
             return lo;
+        } else {
+            return hi;
         }
-        return hi;
     }
-    return lo + (GetRandomNumber()) % span;
+    return (GetRandomNumber() % (hi - lo + 1)) + lo;
 }
 
 // @early-stop
@@ -1639,7 +1638,6 @@ i32 CBootyState::InputVirtual() {
     return 1;
 }
 
-// @early-stop
 RVA(0x0001c9d0, 0x351)
 void CBootyState::ShowLevelCompleteMessage() {
     for (i32 i = 0; i < 8; i++) {

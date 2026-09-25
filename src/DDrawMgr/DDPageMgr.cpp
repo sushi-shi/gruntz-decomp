@@ -743,10 +743,7 @@ i32 CMoviePlayer::Configure(MovieLayout mode, MovieOpenFlags openFlags, POINT* o
             }
             RECT* r = new RECT;
             m_destRect = r;
-            r->left = rect->left;
-            r->top = rect->top;
-            r->right = rect->right;
-            r->bottom = rect->bottom;
+            SET_RECT_COMPONENTS(*r, rect->left, rect->top, rect->right, rect->bottom);
             break;
         }
         default:

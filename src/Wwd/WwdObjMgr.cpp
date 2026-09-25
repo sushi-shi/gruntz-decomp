@@ -290,7 +290,6 @@ CWwdGameObject* CDDrawChildGroup::CreateNamedContainerObject(
     return CreateContainerObject(id, x, y, sortKey, logicTemplate, objectFlags);
 }
 
-// @early-stop
 RVA(0x00159a70, 0x200)
 void CDDrawChildGroup::TickKillCues(i32 advance) {
     RVA_DYNINIT(0x00159c80, 0xa, s_killQueue)

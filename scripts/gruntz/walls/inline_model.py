@@ -398,7 +398,7 @@ def _load_spec(path: Path):
 def gap_from_rva(token: str) -> int:
     """`--gap <rva>`: name the call-set delta and report candidacy evidence.
 
-    CLAUDE.md points every inline/call-set wall at this verb, but the only form
+    AGENTS.md points every inline/call-set wall at this verb, but the only form
     it had took a spec JSON of front-end `cb` estimates - numbers nobody has for
     a real row - so the documented lever could not be invoked at an address at
     all.  What IS exactly derivable from an address is the two questions that

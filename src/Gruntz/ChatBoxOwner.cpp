@@ -22,10 +22,10 @@
 #include <Gruntz/Multi.h>
 #include <Gruntz/Sprite.h>
 #include <Image/CImage.h>
+#include <RectMacros.h>
 #include <Rez/RezArchive.h>
 #include <Rez/RezArchiveEntry.h>
 #include <Rez/RezTypeTag.h>
-#include <Utils/MapTyped.h>
 
 #include <ddraw.h>
 #include <string.h>
@@ -160,8 +160,7 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
         return 0;
     }
 
-    CDDrawWorker* spr =
-        MapFind<CDDrawWorker>(self->m_world->m_imageRegistry->m_workersByName, "GAME_CHATBOX");
+    CDDrawWorker* spr = self->m_world->FindWorker("GAME_CHATBOX");
     if (!spr) {
         return 0;
     }

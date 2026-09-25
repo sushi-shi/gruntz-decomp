@@ -2,6 +2,9 @@
 
     gruntz build [targets...] [-j N] [--force-delink] [-v]
     gruntz link  [--engine-lib] [--order F] ...     -> `ninja candidate`
+    gruntz match <unit|source>...                   -> the fast loop: compile,
+                                                       label, delink, compare
+                                                       only those units
     gruntz match [--reference R] [--all]            -> build, then the deltas
     gruntz play  [--retail]                         -> build + link, install
                                                        into the game env, run
@@ -9,10 +12,12 @@
 
 `build` configures if the manifest is missing (after that ninja's generator
 edge owns it) and runs the default target. `link` is the same graph with the
-opt-in phase-2 target. `match` is the agent-facing one: it runs the build, then
-reports the compare summary for exactly the units whose objects CHANGED - which
-is the question a matcher actually asks, and the reason the report is an in-graph
-edge rather than an unconditional call (a no-op build has nothing to report).
+opt-in phase-2 target. `match <unit>` is the matching loop: it rebuilds only the
+named units (an edited header is not propagated to other TUs), re-delinks only
+when their labels changed, and prints their functions against the banked MAX;
+everything else keeps its last build until `gruntz build`. Bare `match` builds
+the compare target and reports the units whose objects CHANGED. Gates run only
+for `gruntz build verify`, when preparing a merge.
 
 "Changed" is decided by CONTENT, not mtime: gruntz.graph.cc writes objects
 if-changed with the COFF timestamp stabilised, so a hash census before and
@@ -71,7 +76,8 @@ def ninja(targets: list[str] = (), *, jobs: int | None = None,
     if keep_going:
         argv += ["-k", "0"]
     argv += [*extra, *targets]
-    return subprocess.run(argv, cwd=REPO).returncode
+    from gruntz.core.usage import run_process
+    return run_process(argv, cwd=REPO)
 
 
 def object_census() -> dict[str, str]:
@@ -209,10 +215,168 @@ def print_changed(report: dict, units: list[str], *, functions: bool = True,
           f"units {m.get('total_units', 0)}")
 
 
+def resolve_units(specs: list[str]) -> list[str]:
+    """Unit stems from stems or source paths (`fader`, `src/DDrawMgr/Fader.cpp`)."""
+    from gruntz.manifest import units as manifest_units
+    rows = manifest_units()
+    by_stem = {u["unit"]: u for u in rows}
+    by_source = {str(Path(u["source"])): u["unit"] for u in rows}
+    out = []
+    for spec in specs:
+        if spec in by_stem:
+            out.append(spec)
+            continue
+        path = Path(spec)
+        if path.is_absolute():
+            try:
+                path = path.resolve().relative_to(REPO)
+            except ValueError:
+                pass
+        unit = by_source.get(str(path))
+        if unit is None:
+            raise SystemExit(f"gruntz match: {spec!r} is not a unit stem or a "
+                             "unit source in config/units.toml")
+        out.append(unit)
+    return list(dict.fromkeys(out))
+
+
+def match_units(units: list[str], *, jobs: int | None, verbose: bool) -> int:
+    """The fast loop: compile, label, delink, and compare only `units`.
+
+    Every other unit keeps its last-built objects, claims, and scores, even
+    when an edited header would change them; `gruntz build` refreshes them.
+    No fingerprints, no gates.
+    """
+    import time
+
+    from gruntz.compare import normalize, project
+    from gruntz.delink import run as delink
+    from gruntz.manifest import units as manifest_units
+    from gruntz.model import resolve, serialize
+    from gruntz.tool import objdiff
+    from gruntz.verify import scores
+
+    started = time.monotonic()
+    report_path = REPO / graph.REPORT_JSON
+    before = scores.functions(scores.load(report_path)) if report_path.exists() else {}
+
+    targets = [f"{graph.BASE_DIR}/{u}.obj" for u in units]
+    targets += [f"{graph.CLAIMS_DIR}/{u}.tsv" for u in units]
+    rc = ninja(targets, jobs=jobs, verbose=verbose)
+    if rc:
+        return rc
+
+    model = resolve()
+    bindings_changed, _ = serialize(model)
+    target_dir = REPO / graph.TARGET_DIR
+    missing = [u for u in units if not (target_dir / f"{u}.c.obj").exists()]
+    if bindings_changed or missing:
+        delink.run(model, target_dir=target_dir, only=units)
+        project.project(manifest_units(), target_dir, REPO / graph.COMPARE_DIR)
+    normalize.normalize(REPO / graph.BASE_DIR, target_dir,
+                        REPO / graph.COMPARE_DIR, units)
+    objdiff.report(REPO / graph.COMPARE_DIR, report_path)
+
+    after = scores.functions(scores.load(report_path))
+    print_unit_functions(units, before, after)
+    print(f"\n[match] {', '.join(units)} in {time.monotonic() - started:.1f}s"
+          + (" (labels changed: delinked)" if bindings_changed else ""))
+    return 0
+
+
+def print_unit_functions(units: list[str], before: dict, after: dict) -> None:
+    """MAX movement only. An unchanged function keeps its banked MAX, so a CUR
+    dip is noise and stays silent; it is listed only when it rises above MAX.
+    An edited function's MAX becomes its new score, so it is listed with the
+    MAX it replaces: `drop` when the edit moved its CUR down, `reset` when CUR
+    held and only the new source hash lowered MAX (HIST keeps the old peak)."""
+    from contextlib import redirect_stdout
+    from io import StringIO
+
+    from gruntz.verify import baseline
+    from gruntz.verify.baseline import EPS
+    from gruntz.verify.fingerprints import fingerprinter, real_edit, regenerate
+    with redirect_stdout(StringIO()):
+        regenerate()
+    fp, _cpp_of, _stale = fingerprinter()
+    bank = baseline.load()
+    resets = []
+    for unit in units:
+        rows = sorted((name, pct) for (u, name), pct in after.items() if u == unit)
+        if not rows:
+            print(f"\n{unit}: no paired functions in the report")
+            continue
+        shown, at_max = [], 0
+        for name, pct in rows:
+            row = bank.get((unit, name))
+            if row is None:
+                shown.append((pct, None, name, "new"))
+                at_max += pct >= 100.0
+                continue
+            edited = real_edit(row["fp"], fp(unit, name))
+            new_max = pct if edited else max(row["best"], pct)
+            at_max += new_max >= 100.0
+            was = before.get((unit, name))
+            if edited and pct > row["best"] + EPS:
+                shown.append((pct, row["best"], name, "up"))
+            elif edited and row["best"] - pct > EPS:
+                held = was is not None and abs(pct - was) <= EPS
+                if held:
+                    resets.append((row.get("addr"), unit, name, row["best"], pct))
+                shown.append((pct, row["best"], name,
+                              "reset: CUR held, recorded for syntactic recovery"
+                              if held else "drop"))
+            elif edited and pct < 100.0:
+                shown.append((pct, row["best"], name, "edited"))
+            elif not edited and pct > row["best"] + EPS:
+                shown.append((pct, row["best"], name, "up"))
+        print(f"\n{unit}: {at_max}/{len(rows)} at MAX 100")
+        if not shown:
+            print("  no MAX change")
+            continue
+        print(f"  {'now':>8} {'max':>8}  function  [kind]")
+        for pct, best, name, kind in sorted(shown, key=lambda r: (r[0], r[2])):
+            print(f"  {pct:8.2f} {'' if best is None else f'{best:8.2f}':>8}  "
+                  f"{name}  [{kind}]")
+    record_resets(resets)
+
+
+#: Functions whose MAX an edit lowered while their CUR held: a later
+#: fuzzy syntactic recovery pass looks for a spelling that regains the peak.
+RECOVERY_TODO = REPO / "docs/todos/syntactic-recovery.tsv"
+
+
+def record_resets(resets: list) -> None:
+    """Add or update one row per reset function, keeping the highest lost MAX."""
+    if not resets:
+        return
+    header = "rva\tunit\tfunction\tlost_max\tcur\n"
+    rows: dict[tuple[str, str], list[str]] = {}
+    if RECOVERY_TODO.exists():
+        for line in RECOVERY_TODO.read_text().splitlines()[1:]:
+            cols = line.split("\t")
+            if len(cols) == 5:
+                rows[(cols[1], cols[2])] = cols
+    for addr, unit, name, lost_max, pct in resets:
+        old = rows.get((unit, name))
+        peak = max(lost_max, float(old[3])) if old else lost_max
+        rows[(unit, name)] = ["" if addr is None else f"0x{addr:06x}", unit,
+                              name, f"{peak:.4f}", f"{pct:.4f}"]
+    text = header + "".join("\t".join(r) + "\n" for r in sorted(
+        rows.values(), key=lambda r: (r[1], r[2])))
+    if not RECOVERY_TODO.exists() or RECOVERY_TODO.read_text() != text:
+        RECOVERY_TODO.parent.mkdir(parents=True, exist_ok=True)
+        RECOVERY_TODO.write_text(text)
+
+
 def match_main(argv: list[str] | None = None) -> int:
-    """Build, then print the compare summary for the units that changed."""
+    """Fast loop for named units; with none, build everything and summarise
+    the units whose objects changed."""
     import argparse
     ap = argparse.ArgumentParser(prog="gruntz match", description=match_main.__doc__)
+    ap.add_argument("units", nargs="*",
+                    help="unit stems or source paths: compile, delink and "
+                         "compare only these")
     ap.add_argument("-j", "--jobs", type=int)
     ap.add_argument("-v", "--verbose", action="store_true")
     ap.add_argument("--reference", type=Path,
@@ -229,8 +393,16 @@ def match_main(argv: list[str] | None = None) -> int:
     a = ap.parse_args(argv)
 
     configure_if_needed()
+    if a.units:
+        return match_units(resolve_units(a.units), jobs=a.jobs, verbose=a.verbose)
+
+    from gruntz.verify import scores
+    report_path = REPO / graph.REPORT_JSON
+    before_scores = (scores.functions(scores.load(report_path))
+                     if report_path.exists() else {})
     before = object_census()
-    rc = ninja(jobs=a.jobs, verbose=a.verbose, keep_going=a.keep_going)
+    rc = ninja(["compare"], jobs=a.jobs, verbose=a.verbose,
+               keep_going=a.keep_going)
     if rc and not a.keep_going:
         return rc
     after = object_census()
@@ -254,8 +426,11 @@ def match_main(argv: list[str] | None = None) -> int:
              if changed else " (nothing rebuilt)"))
     if a.all or not changed:
         print_summary(report, all_units=False)
+    elif a.functions:
+        print_unit_functions(changed, before_scores,
+                             scores.functions(scores.load(report_path)))
     else:
-        print_changed(report, changed, functions=a.functions)
+        print_changed(report, changed, functions=False)
     if a.reference is not None:
         try:
             reference = objdiff.load(a.reference)

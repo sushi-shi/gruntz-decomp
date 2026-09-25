@@ -74,7 +74,7 @@ i32 CSBI_WellGoo::Setup(
         node = g_gameReg->m_spriteFactory->GetSel(1, 0);
     }
 
-    set = MapFind<CDDrawWorker>(m_host->m_imageRegistry->m_workersByName, key);
+    set = m_host->FindWorker(key);
     SetFrame((set != NULL) ? set->GetAt(4) : NULL);
     if (m_frame == NULL) {
         goto fail;
@@ -91,7 +91,7 @@ i32 CSBI_WellGoo::Setup(
         goto fail;
     }
 
-    set = MapFind<CDDrawWorker>(m_host->m_imageRegistry->m_workersByName, key);
+    set = m_host->FindWorker(key);
     m_baseFrame = (set != NULL) ? set->GetAt(2) : NULL;
     if (m_baseFrame == NULL) {
         goto fail;
@@ -104,7 +104,7 @@ i32 CSBI_WellGoo::Setup(
         f->m_owned->m_palDescr = node;
     }
 
-    set = MapFind<CDDrawWorker>(m_host->m_imageRegistry->m_workersByName, key);
+    set = m_host->FindWorker(key);
     m_fgFrame = (set != NULL) ? set->GetAt(3) : NULL;
     if (m_fgFrame != NULL) {
         if (m_fgFrame->m_owned != NULL) {

@@ -25,6 +25,7 @@
 #include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntActionInline.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntCombatClockInline.h>
 #include <Gruntz/GruntDeathType.h>
@@ -54,6 +55,7 @@
 #include <Ints.h>
 #include <Lith/ObjectUtilities.h>
 #include <Pix16.h>
+#include <RectMacros.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezArchiveDir.h>
 #include <Rez/RezTypeTag.h>
@@ -1194,90 +1196,25 @@ i32 CGrunt::StepCombatReaction(
         );
         goto tail;
     }
-    eq = ANIMATION_ACT_EQUALS("G");
-    if (!eq) {
-        eq = ANIMATION_ACT_EQUALS("L");
-        if (!eq) {
-            eq = ANIMATION_ACT_EQUALS("P");
-            if (!eq) {
-                eq = ANIMATION_ACT_EQUALS("O");
-                if (eq) {
-                    SnapToLastTile(1);
-                    m_triggerMgr->WireTileSwitchLogic(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
-                    goto tail;
-                }
-                eq = ANIMATION_ACT_EQUALS("Q");
-                if (eq) {
-                    m_triggerMgr
-                        ->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_SHATTER, srcPlayerIndex);
-                    return 0;
-                }
-                eq = ANIMATION_ACT_EQUALS("J");
-                if (eq) {
-                    m_entranceActive = false;
-                    eq = (strcmp(g_typeColl[m_previousAnimationActId], "D") == 0);
-                    if (eq) {
-                        if (m_poweredUp != false && m_neighborValid == false) {
-                            RESET_GRUNT_POWERED_STATE(this);
-                        }
-                        m_tileMoveCommitted = false;
-                        SET_ANIMATION_ACT("D");
-                        SwitchAnimation(m_poseWalk);
-                        char* cn = EntranceCell()->WalkName().GetBuffer(0);
-                        SetImageSetByName(cn);
-                    } else {
-                        ResetEntranceAnimation(1, 0, 0);
-                    }
-                    PickupType mode = m_entrancePickup;
-                    if (mode >= PICKUP_POWERUPZ_FIRST) {
-                        LoadGruntTypeTable(mode, 1, 0, 1);
-                        m_entrancePickup = PICKUP_INVALID;
-                        m_helpCueId = 0;
-                    } else if (mode >= PICKUP_BRICKZ_FIRST) {
-                        m_brickPickupType = mode;
-                        m_entrancePickup = PICKUP_INVALID;
-                    } else if (mode >= PICKUP_TOYZ_FIRST) {
-                        LoadVehicleGruntSprites(mode);
-                    } else {
-                        LoadGruntTypeTable(mode, 1, 0, 1);
-                        m_entrancePickup = PICKUP_INVALID;
-                    }
-                    goto tail;
-                }
-                eq = ANIMATION_ACT_EQUALS("N");
-                if (eq) {
-                    CWwdSpriteObject* h = m_object;
-                    Coord snapped = h->ScreenPos();
-                    SnapTileCenter(&snapped);
-                    i32 flag = 1;
-                    if (snapped != m_lastTilePx) {
-                        if (IsDropReady(1)) {
-                            m_coordToggle = (m_coordToggle == false) ? 1 : 0;
-                            flag = 0;
-                        }
-                    }
-                    SnapToLastTile(1);
-                    if (flag != 0) {
-                        SET_ANIMATION_ACT("D");
-                        SetupTubeAnim(m_coordToggle);
-                    }
-                }
-                goto tail;
-            }
-        }
+    if (GRUNT_IS_USING_TOY(eq)) {
+        goto restoreTool;
     }
-    if (m_entranceReason == PICKUP_SCROLL) {
-        g_gameReg->m_voiceManager->StopVoice(m_object->m_objectId);
+    if (SettleActiveKnockback()) {
+        goto tail;
     }
-    LoadGruntTypeTable(m_toolId, 1, 0, 1);
-    {
-        CWwdSpriteObject* h = m_object;
-        i32 v = h->m_screenPosition.m_y + 0x186a0;
-        SET_SORT_KEY_IF_CHANGED(h, v);
+    eq = ANIMATION_ACT_EQUALS("Q");
+    if (eq) {
+        m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_SHATTER, srcPlayerIndex);
+        return 0;
     }
-    HIDE_AND_CLEAR_GRUNT_SPRITE(m_toyTimeSprite)
-    m_toyTime = 0;
-    StopVehicleLoopSound();
+    if (APPLY_ACTIVE_ENTRANCE_PICKUP(eq)) {
+        goto tail;
+    }
+    SETTLE_ACTIVE_TUBE_MOVE(eq);
+    goto tail;
+
+restoreTool:
+    RestoreToolAfterToyUse(1);
 
 tail:
     CreateHealthSprite();

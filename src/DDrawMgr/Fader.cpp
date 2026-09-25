@@ -48,7 +48,6 @@ void CFader::Wait(i32 delay) {
     }
 }
 
-// @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0017e540, 0xd8)
@@ -82,7 +81,6 @@ void CFader::RunFadeStepped(i32 step, i32 lead, i32 vsync) {
     EndFade();
 }
 
-// @early-stop
 RVA(0x0017e620, 0x13b)
 void CFader::RunFade(u32 dur, i32 lead, i32 vsync) {
     i32 frame = 0;

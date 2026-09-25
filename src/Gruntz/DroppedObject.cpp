@@ -25,7 +25,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LevelArea.h>
 #include <Gruntz/LightFxMgr.h>
-#include <Gruntz/LogicEventDispatch.h>
+#include <Gruntz/LogicRecordHandler.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MapCellFlags.h>
 #include <Gruntz/ObjectDropper.h>
@@ -41,7 +41,6 @@
 #include <RectMacros.h>
 #include <Rez/FrameClock.h>
 #include <Wap32/TileGeometry.h>
-#include <Wwd/LogicRecordEvent.h>
 #include <ZTools/BitVec.h>
 #include <ZTools/ZDArray.h>
 
@@ -84,116 +83,17 @@ RVA_COMPGEN(0x00012670, 0x44, ??1CDroppedObjectShadow@@UAE@XZ)
 
 RVA(0x000c5630, 0xf4)
 i32 DispatchObjectDropperLogic(CGameObject* obj) {
-    CLogicRecord* record = obj->m_logicRecord;
-    switch (record->LogicEvent()) {
-        case ACT_UNINITIALISED: {
-            record->SetLogicEvent(ACT_LIVE);
-            CObjectDropper* h = new CObjectDropper(obj);
-            h->Activate();
-            record->m_userLogic = h;
-            break;
-        }
-        case ACT_OBJECT_REMOVED:
-            record->m_userLogic->OnObjectRemoved();
-            break;
-        case ACT_LEAVE_ACTIVE_REGION:
-            record->m_userLogic->OnLeaveActiveRegion();
-            break;
-        case ACT_PREPARE_SAVE:
-            record->m_userLogic->PrepareSave();
-            break;
-        case ACT_AFTER_SAVE:
-            record->m_userLogic->AfterSave();
-            break;
-        case ACT_AFTER_LOAD:
-            record->m_userLogic->AfterLoad();
-            break;
-        case ACT_AFTER_LOAD_REFERENCES:
-            record->m_userLogic->AfterLoadReferences();
-            break;
-        case ACT_LIVE:
-            break;
-        default:
-            DispatchLogicEvent(record->m_userLogic);
-            break;
-    }
-    return 1;
+    TILE_LOGIC_RECORD_DISPATCH(CObjectDropper)
 }
 
 RVA(0x000c5770, 0xf1)
 i32 DispatchDroppedObjectLogic(CGameObject* obj) {
-    CLogicRecord* record = obj->m_logicRecord;
-    switch (record->LogicEvent()) {
-        case ACT_UNINITIALISED: {
-            record->SetLogicEvent(ACT_LIVE);
-            CDroppedObject* h = new CDroppedObject(obj);
-            h->Activate();
-            record->m_userLogic = h;
-            break;
-        }
-        case ACT_OBJECT_REMOVED:
-            record->m_userLogic->OnObjectRemoved();
-            break;
-        case ACT_LEAVE_ACTIVE_REGION:
-            record->m_userLogic->OnLeaveActiveRegion();
-            break;
-        case ACT_PREPARE_SAVE:
-            record->m_userLogic->PrepareSave();
-            break;
-        case ACT_AFTER_SAVE:
-            record->m_userLogic->AfterSave();
-            break;
-        case ACT_AFTER_LOAD:
-            record->m_userLogic->AfterLoad();
-            break;
-        case ACT_AFTER_LOAD_REFERENCES:
-            record->m_userLogic->AfterLoadReferences();
-            break;
-        case ACT_LIVE:
-            break;
-        default:
-            DispatchLogicEvent(record->m_userLogic);
-            break;
-    }
-    return 1;
+    TILE_LOGIC_RECORD_DISPATCH(CDroppedObject)
 }
 
 RVA(0x000c58b0, 0xf1)
 i32 DispatchDroppedObjectShadowLogic(CGameObject* obj) {
-    CLogicRecord* record = obj->m_logicRecord;
-    switch (record->LogicEvent()) {
-        case ACT_UNINITIALISED: {
-            record->SetLogicEvent(ACT_LIVE);
-            CDroppedObjectShadow* h = new CDroppedObjectShadow(obj);
-            h->Activate();
-            record->m_userLogic = h;
-            break;
-        }
-        case ACT_OBJECT_REMOVED:
-            record->m_userLogic->OnObjectRemoved();
-            break;
-        case ACT_LEAVE_ACTIVE_REGION:
-            record->m_userLogic->OnLeaveActiveRegion();
-            break;
-        case ACT_PREPARE_SAVE:
-            record->m_userLogic->PrepareSave();
-            break;
-        case ACT_AFTER_SAVE:
-            record->m_userLogic->AfterSave();
-            break;
-        case ACT_AFTER_LOAD:
-            record->m_userLogic->AfterLoad();
-            break;
-        case ACT_AFTER_LOAD_REFERENCES:
-            record->m_userLogic->AfterLoadReferences();
-            break;
-        case ACT_LIVE:
-            break;
-        default:
-            DispatchLogicEvent(record->m_userLogic);
-            break;
-    }
-    return 1;
+    TILE_LOGIC_RECORD_DISPATCH(CDroppedObjectShadow)
 }
 
 // @early-stop

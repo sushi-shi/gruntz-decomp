@@ -108,6 +108,7 @@
 #include <Io/SaveGame.h>
 #include <MakeRect.h>
 #include <Pix16.h>
+#include <RectMacros.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezArchive.h>
 #include <Rez/RezArchiveDir.h>
@@ -3527,8 +3528,7 @@ RVA(0x000cfef0, 0xbc)
 i32 CPlay::DrawStateMessage() {
     Present(0x3c);
 
-    CDDrawWorker* set =
-        MapFind<CDDrawWorker>(m_world->m_imageRegistry->m_workersByName, "GAME_MESSAGEZ");
+    CDDrawWorker* set = m_world->FindWorker("GAME_MESSAGEZ");
     if (set == NULL) {
         return 0;
     }
@@ -4252,8 +4252,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000d1650, 0x90)
 void CPlay::DrawMessageFrame(i32 index, b32 useFront) {
-    CDDrawWorker* set =
-        MapFind<CDDrawWorker>(m_world->m_imageRegistry->m_workersByName, "GAME_MESSAGEZ");
+    CDDrawWorker* set = m_world->FindWorker("GAME_MESSAGEZ");
     if (set != NULL) {
         CImage* frame = set->GetAt(index);
         if (frame != NULL) {
@@ -4458,10 +4457,7 @@ i32 CPlay::ExecuteCommand(
                     g->m_defenderState = AISTATE_SEEK;
                     g->m_arrivalCell.m_y = -1;
                     g->m_arrivalActive = false;
-                    g->m_object->m_extent.left = 0;
-                    g->m_object->m_extent.right = 0;
-                    g->m_object->m_extent.top = 0;
-                    g->m_object->m_extent.bottom = 0;
+                    SET_RECT_XY_EXTENTS(g->m_object->m_extent, 0, 0, 0, 0);
                     g->SetEntrancePos(1, 1);
                 }
                 g->m_arrivalNotified = false;
@@ -6436,8 +6432,7 @@ i32 CPlay::BuildHelpReveal(b32 final) {
 
 RVA(0x000d7440, 0xad)
 i32 CPlay::LoadLoadingBarSprite() {
-    CDDrawWorker* spr =
-        MapFind<CDDrawWorker>(m_world->m_imageRegistry->m_workersByName, "GAME_LOADINGBAR");
+    CDDrawWorker* spr = m_world->FindWorker("GAME_LOADINGBAR");
     if (!spr) {
         return 0;
     }
@@ -7012,8 +7007,7 @@ i32 CPlay::ExpandViewport(i32 step) {
 
     SIZE
     modeSize;
-    modeSize.cx = manager->m_modeSize.cx;
-    modeSize.cy = manager->m_modeSize.cy;
+    SET_SIZE_COMPONENTS(modeSize, manager->m_modeSize.cx, manager->m_modeSize.cy);
 
     if (resized.right - resized.left
         < (statusBar->m_position == STATUSBAR_HIDDEN ? modeSize.cx

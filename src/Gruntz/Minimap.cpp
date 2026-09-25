@@ -261,10 +261,8 @@ i32 CMinimap::Draw(CDDrawSurfacePair* target, RECT* bounds) {
         box.right += extension;
         box.bottom += extension;
     }
-    box.left += dstRect->left;
-    box.right += dstRect->left;
-    box.top += dstRect->top;
-    box.bottom += dstRect->top;
+    OFFSET_RECT_X_EDGES(box, dstRect->left, dstRect->left);
+    OFFSET_RECT_Y_EDGES(box, dstRect->top, dstRect->top);
     DrawBorder(&box, target, MINIMAP_BORDER_COLOR_16);
     return 1;
 }

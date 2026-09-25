@@ -21,6 +21,7 @@
 #include <Image/RezDecodeKind.h>
 #include <MakeRect.h>
 #include <Pix16.h>
+#include <RectMacros.h>
 #include <Rez/RezMgr.h>
 
 #include <string.h>

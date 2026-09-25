@@ -3,8 +3,9 @@
     python3 -m gruntz.graph            # (re)write build/build.ninja
     ninja -f build/build.ninja         # run the loop, from the repo root
 
-The rules, in the order the loop runs them. The first nine plus the two
-`verify` edges are the DEFAULT target; `rc`/`link` are phase 2, opt-in:
+The rules, in the order the loop runs them. Everything through `verify_fp`
+is the DEFAULT target; `verify_check` runs only for the `verify` target
+(merge preparation); `rc`/`link` are phase 2, opt-in:
 
     configure   the generator edge - re-emits this manifest when the unit
                 census, the emitter, or ANY file the include scan read changes
@@ -18,7 +19,8 @@ The rules, in the order the loop runs them. The first nine plus the two
     project     the delinked directory -> compare-new/objdiff.json
     report      comparison copies + pairing -> compare-new/report.json
     verify_fp   sources x bindings -> the per-function fingerprint cache
-    verify_check the MAX gate + the fast+normal tiers -> a stamp; FATAL
+    verify_check the MAX gate + the fast+normal tiers -> a stamp; FATAL;
+                opt-in (`gruntz build verify`)
     rc / link   PHASE 2, opt-in (`ninja candidate`): base objs + .res ->
                 the candidate image + .map for the link-order study
 
@@ -526,10 +528,9 @@ def emit(out: Path | None = None) -> tuple[int, int]:
         w.build(FINGERPRINTS, "verify_fp",
                 inputs=[u["source"] for u in units],
                 implicit=[graph.BINDINGS, MANIFEST, COMPDB, *VERIFY_MODS])
-        # The DEFAULT tiers only (fast+normal): the full/link tiers are
-        # opt-in (`gruntz verify check --tier full`). A failing gate fails
-        # the build - the gates are FATAL, and their committed baselines are
-        # how known debt is carried.
+        # The fast+normal tiers, opt-in via the `verify` target: gates run
+        # when preparing a merge, never in the matching loop. The full/link
+        # tiers stay behind `gruntz verify check --tier full`.
         w.rule("verify_check",
                command="$py -m gruntz.verify check && touch $out",
                description="verify check (MAX gate + fast+normal tiers)")
@@ -547,7 +548,7 @@ def emit(out: Path | None = None) -> tuple[int, int]:
         w.build("all", "phony",
                 inputs=base_objs + [graph.BINDINGS, graph.DELINK_STAMP,
                                     graph.OBJDIFF_JSON, graph.REPORT_JSON,
-                                    VERIFY_STAMP])
+                                    FINGERPRINTS])
         w.default(["all"])
         w.newline()
 

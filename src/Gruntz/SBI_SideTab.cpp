@@ -168,10 +168,7 @@ i32 CSBI_SideTab::BuildHandle() {
     if (m_sampledValue == val) {
         return 1;
     }
-    CDDrawWorker* gm = MapFind<CDDrawWorker>(
-        g_gameReg->m_world->m_imageRegistry->m_workersByName,
-        "GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ"
-    );
+    CDDrawWorker* gm = g_gameReg->m_world->FindWorker("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ");
     CImage* glyph;
     if (gm == NULL || !gm->ContainsFrame(val)) {
         glyph = NULL;

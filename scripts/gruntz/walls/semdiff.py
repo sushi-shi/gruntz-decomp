@@ -74,8 +74,7 @@ applied mechanically are applied, the rest are for the reader:
 FALSE-NEGATIVE LIMIT: identical operand multisets and ordered referents do
 not prove identical side-effect reachability. Moving ResetCell across the
 current-player guard in LoadEntranceConfig preserved both. Audit branch
-destinations and per-edge call traces; scripts/test_entrance_player_guard.py
-is a bounded real-owner control, not a general semantic CFG verifier.
+destinations and per-edge call traces.
 
     gruntz walls semdiff <rva|name> [--top N] [--all]
     gruntz walls semsweep <tsv> [--first N] [--last N] [--fp-only]

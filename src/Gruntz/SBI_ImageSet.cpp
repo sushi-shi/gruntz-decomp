@@ -34,7 +34,6 @@ i32 CSBI_ImageSet::SetupImage(
     i32 frame,
     i32 extra
 ) {
-    CObject* found;
     CDDrawWorker* rec;
 
     if (host == NULL) {
@@ -50,9 +49,7 @@ i32 CSBI_ImageSet::SetupImage(
     if (key == NULL) {
         return 0;
     }
-    found = NULL;
-    host->m_imageRegistry->m_workersByName.Lookup(key, found);
-    rec = static_cast<CDDrawWorker*>(found);
+    rec = host->FindWorker(key);
     m_frameSet = rec;
     if (rec == NULL) {
         goto fail;

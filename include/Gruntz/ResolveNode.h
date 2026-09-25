@@ -145,4 +145,12 @@ public:
     node->m_drawFillCmd = mode;                                                                    \
     node->m_fillFraction = fraction
 
+#define SET_DIRTY_RECT(node, rect, width, height)                                                  \
+    node->m_dirty.m_lastPosition.x = (rect)->left;                                                 \
+    node->m_dirty.m_lastPosition.y = (rect)->top;                                                  \
+    node->m_dirty.m_rect = *(rect);                                                                \
+    node->m_dirty.m_size.cx = width;                                                               \
+    node->m_dirty.m_size.cy = height;                                                              \
+    node->m_dirty.m_armed = 0
+
 #endif // GRUNTZ_GRUNTZ_RESOLVENODE_H

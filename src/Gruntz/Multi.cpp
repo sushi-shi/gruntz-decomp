@@ -2883,7 +2883,7 @@ u32 CMulti::FrameSyncWait() {
         ActiveWait(0x1f - m_accumTime);
         m_lastFrameSyncTime = (now - m_accumTime) + 0x1f;
     } else if (m_accumTime > 0x28 && m_syncGate) {
-        g_frameSkipToggle = !g_frameSkipToggle;
+        g_frameSkipToggle ^= 1;
         ret = g_frameSkipToggle;
     }
     return ret;
@@ -3298,15 +3298,14 @@ void CMulti::HandleVersionCheck(CNetVersionPacket* packet) {
     }
 }
 
-// @early-stop
 RVA(0x000bd180, 0x66)
 void CMulti::SendVersionCheck(CNetPlayerNode* recipient) {
     CNetVersionPacket packet;
     memset(&packet, 0, sizeof(packet));
 
     packet.m_flags |= NET_PACKET_APPLICATION;
-    packet.m_remoteVersion = g_remoteVersion;
     packet.m_cfgWord = g_cfgWord;
+    packet.m_remoteVersion = g_remoteVersion;
     packet.m_butePos = g_buteMgr.GetChecksum();
     packet.m_localVersion = g_localVersion;
     packet.m_messageId = STAT_VERSION_CHECK;

@@ -19,6 +19,7 @@
 #include <Ints.h>
 #include <MakeRect.h>
 #include <Rez/FrameClock.h>
+#include <Wap32/TileGeometry.h>
 #include <Wwd/WwdFile.h>
 
 #include <stddef.h>
@@ -30,7 +31,6 @@ void Cmd_ResetScroll() {
     g_scrollPace.m_lastTime = 0;
     g_scrollPace.m_period = 0;
 }
-// @early-stop
 RVA(0x000ebd70, 0x366)
 void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
     CDDrawWorkerHost* v = pm->m_world->m_level->m_mainPlane;
@@ -104,10 +104,13 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
     }
 
     CDDrawSurfaceMgr* o = pm->m_world;
-    pm->m_viewBounds.left = o->m_level->m_mainPlane->m_planeViewRect.left - 0x60;
-    pm->m_viewBounds.top = o->m_level->m_mainPlane->m_planeViewRect.top - 0x60;
-    pm->m_viewBounds.right = o->m_level->m_mainPlane->m_planeViewRect.right + 0x60;
-    pm->m_viewBounds.bottom = o->m_level->m_mainPlane->m_planeViewRect.bottom + 0x60;
+    SET_RECT_COMPONENTS(
+        pm->m_viewBounds,
+        o->m_level->m_mainPlane->m_planeViewRect.left - 0x60,
+        o->m_level->m_mainPlane->m_planeViewRect.top - 0x60,
+        o->m_level->m_mainPlane->m_planeViewRect.right + 0x60,
+        o->m_level->m_mainPlane->m_planeViewRect.bottom + 0x60
+    );
 }
 
 RVA(0x000ec1c0, 0x43)

@@ -68,8 +68,7 @@ public:
             m_collisionLogic = NULL;
         }
         m_shadow.Reset();
-        m_screenPosition.m_x = COORD_UNSET;
-        m_dirty.Reset();
+        CResolveNode::Unload();
     }
 
     virtual i32 Setup(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTemplate);

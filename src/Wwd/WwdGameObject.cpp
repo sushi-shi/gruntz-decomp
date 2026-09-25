@@ -55,7 +55,7 @@ b32 g_logicTypesRegistered;
 
 RVA(0x001504d0, 0x6c)
 void CWwdSpriteObject::SetImageFrameByName(const char* name, i32 frame) {
-    CDDrawWorker* spr = MapFind<CDDrawWorker>(OwnerMgr()->m_imageRegistry->m_workersByName, name);
+    CDDrawWorker* spr = OwnerMgr()->FindWorker(name);
     m_imageSet = spr;
     if (spr) {
         CImage* f = spr->GetAt(frame);
@@ -66,7 +66,7 @@ void CWwdSpriteObject::SetImageFrameByName(const char* name, i32 frame) {
 
 RVA(0x00150540, 0x65)
 void CWwdSpriteObject::SetImageSetByName(const char* name) {
-    CDDrawWorker* spr = MapFind<CDDrawWorker>(OwnerMgr()->m_imageRegistry->m_workersByName, name);
+    CDDrawWorker* spr = OwnerMgr()->FindWorker(name);
     m_imageSet = spr;
     if (spr) {
         i32 n = spr->m_minIndex;
@@ -274,15 +274,11 @@ i32 CWwdSpriteObject::ReadSpriteState(CFileMemBase* stream) {
     ar->Read(name, SERIAL_NAME_LEN);
     if (strlen(name) != 0) {
 
-        CDDrawWorker* found = NULL;
-        CObject* foundOb = NULL;
-        CDDrawSurfaceMgr* mgr = OwnerMgr();
-        mgr->m_imageRegistry->m_workersByName.Lookup(name, foundOb);
-        found = static_cast<CDDrawWorker*>(foundOb);
-        m_imageSet = found;
-        if (found != NULL && hasFrameImage == true) {
+        CDDrawWorker* imageSet = OwnerMgr()->FindWorker(name);
+        m_imageSet = imageSet;
+        if (imageSet != NULL && hasFrameImage == true) {
             i32 idx = m_frameIndex;
-            CImage* frame = found->GetAt(idx);
+            CImage* frame = imageSet->GetAt(idx);
             m_frameImage = frame;
         }
     }
