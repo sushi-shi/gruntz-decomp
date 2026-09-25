@@ -110,4 +110,10 @@ inline void SetMovingDeathDirection(CGrunt* grunt, const GruntDirectionCell& dir
     grunt->m_lastTilePx += GruntDirectionPixelOffset(direction) / 2;
 }
 
+inline void
+SetEntranceDirection(CGrunt* grunt, const GruntDirectionCell& direction, Coord* newPosition) {
+    grunt->m_entranceCell = direction;
+    *newPosition = grunt->m_lastTilePx - GruntDirectionPixelOffset(direction);
+}
+
 #endif // GRUNTZ_GRUNTMOVEMENTINLINE_H
