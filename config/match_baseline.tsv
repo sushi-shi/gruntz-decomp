@@ -292,7 +292,7 @@ trees	21	21
 triggermgr	48	30
 triggermgrgrid	18	10
 triggermgrhittest	8	5
-typekeycoll	39	35
+typekeycoll	39	38
 uncompr	1	1
 userlogic	5	4
 utils	13	13
@@ -717,7 +717,7 @@ butemgr	?NewTabsSave@CButeMgr@@CAXPBDPAV?$zSymTab@VCSymTabItem@CButeMgr@@@@PAX@Z
 butemgr	?NextState@CButeMgr@@QAEFFD@Z	100.0000	100.0000	5	a994e8d5169d	0x170430	100.0000	
 butemgr	?Reset@CButeMgr@@QAEXXZ	100.0000	100.0000	5	b8bdad74e64e	0x170330	100.0000	
 butemgr	?Save@CButeMgr@@QAE_NXZ	93.3913	93.3913	12	9043cb813533	0x171640	93.3913	
-butemgr	?ScanTok@CButeMgr@@QAE_NXZ	99.6644	99.6644	6	fe4c5af691bc	0x1704c0	100.0000	
+butemgr	?ScanTok@CButeMgr@@QAE_NXZ	100.0000	99.6644	6	fe4c5af691bc	0x1704c0	100.0000	
 butemgr	?SetDouble@CButeMgr@@QAEXPBD0N@Z	100.0000	100.0000	6	2ef431ed1911	0x172ce0	100.0000	
 butemgr	?SetDword@CButeMgr@@QAEXPBD0K@Z	100.0000	100.0000	6	915a9b2cd24a	0x1722c0	100.0000	
 butemgr	?SetFloat@CButeMgr@@QAEXPBD0M@Z	100.0000	100.0000	6	c81157e1ffcc	0x1727d0	100.0000	
@@ -3658,7 +3658,7 @@ rezlist	?InsertFirst@CVirtBaseList@@QAEXPAVCVirtBaseListItem@@@Z	100.0000	100.00
 rezlist	?InsertLast@CVirtBaseList@@QAEXPAVCVirtBaseListItem@@@Z	100.0000	100.0000	2	ece09ce92af8	0x185210	100.0000	
 rezmgr	?PerFrameTick@CGruntzMgr@@UAEHXZ	100.0000	100.0000	6	fc44eebe446e	0x8b740	100.0000	
 rezsync	?GetRezPath@CGruntzMgr@@QAE?AVCString@@XZ	100.0000	100.0000	1	6c4e5160b9ee	0x85500	100.0000	
-rezsync	?Run@CGruntzMgr@@UAEHPAVCGameWnd@@PAD@Z	91.6646	91.6646	68	5e3ec7d7a5dc	0x83450	91.6646	
+rezsync	?Run@CGruntzMgr@@UAEHPAVCGameWnd@@PAD@Z	96.4607	96.4607	69	86dc9d8367e0	0x83450	96.4607	
 rockbreakeffectupdate	?Update@CExplosion@@QAEHXZ	98.4848	98.4848	8	2f0c938903fd	0x476b0	98.4848	
 rollingball	??0CRollingBall@@QAE@PAUCGameObject@@@Z	86.3402	86.3402	14	afd82086b59f	0xaf820	86.3402	
 rollingball	??1CRollingBall@@UAE@XZ	100.0000	100.0000	1	cpp:7f8dd9fb487c	0x12f80	100.0000	
@@ -4401,9 +4401,9 @@ typekeycoll	?catcher@zMinErr@@CAXPBDH@Z	100.0000	100.0000	3	45f1035b6d8d	0x16e22
 typekeycoll	?cleanup@zPTree@@AAEXPAVzPTreeNode@@@Z	100.0000	100.0000	6	71b3d45c188d	0x16e070	100.0000	
 typekeycoll	?diffpos@zPTree@@CAHPBD0@Z	100.0000	100.0000	2	8d16668d5b71	0x16e480	100.0000	
 typekeycoll	?handle@zErrHandler@@IAEXPAXPBDH@Z	100.0000	100.0000	4	435bcca0b251	0x16d850	100.0000	
-typekeycoll	?lookup@zPTree@@IAEPAXPBD@Z	96.9340	96.9340	9	a928e9f70643	0x16d190	96.9340	
-typekeycoll	?realloc@_zdvec@@IAEHHH@Z	91.8584	91.8584	9	fc2a3c118eb0	0x16da80	91.8584	
-typekeycoll	?set_ef@zErrHandler@@IAEP6AXPBDH@ZPAXP6AX0H@Z@Z	88.3000	88.3000	6	23bc2bce1c99	0x16e360	88.3000	
+typekeycoll	?lookup@zPTree@@IAEPAXPBD@Z	100.0000	100.0000	10	757f55b65498	0x16d190	100.0000	
+typekeycoll	?realloc@_zdvec@@IAEHHH@Z	100.0000	100.0000	10	89984c4f9eb9	0x16da80	100.0000	
+typekeycoll	?set_ef@zErrHandler@@IAEP6AXPBDH@ZPAXP6AX0H@Z@Z	100.0000	100.0000	7	5bb6033f9c63	0x16e360	100.0000	
 typekeycoll	?srch@zErrHandler@@AAEHPAX@Z	100.0000	100.0000	3	fa36e653c82b	0x16e1d0	100.0000	
 uncompr	_uncompress	100.0000	100.0000	1	b40cccad8cc9	0x185320	100.0000	
 userlogic	?BuildLogicTypeTable@CUserLogic@@QAEXPAUCGameObject@@@Z	100.0000	100.0000	4	1f6bc3df24b2	0x8a40	100.0000	
