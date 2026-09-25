@@ -254,7 +254,9 @@ inline u8 CDDSurface::GetPixel(i32 x, i32 y) {
 inline void CDDSurface::PutPixel(i32 x, i32 y, u8 color) {
     u8* bits = static_cast<u8*>(Lock(NULL));
     if (bits != NULL) {
-        bits[m_bytesPerPixel * x + m_apiDesc.lPitch * y] = color;
+        i32 offset = m_bytesPerPixel * x;
+        offset += m_apiDesc.lPitch * y;
+        bits[offset] = color;
         m_ddSurface->Unlock(NULL);
     }
 }

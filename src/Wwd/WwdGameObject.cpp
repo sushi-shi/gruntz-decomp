@@ -683,11 +683,10 @@ i32 CGameObject::ResolveLinkedObject(b32 gate) {
                 m_carrierId,
                 found
             )
-            != false) {
-            m_carrier = found;
-            return 1;
+            == false) {
+            found = NULL;
         }
-        m_carrier = NULL;
+        m_carrier = found;
         return 1;
     }
     m_carrier = NULL;
