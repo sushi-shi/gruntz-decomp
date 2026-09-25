@@ -14,6 +14,7 @@
 #include <Io/FileStream.h>
 #include <Io/MoviePlayer.h>
 #include <Io/MoviePlayerInline.h>
+#include <RectMacros.h>
 #include <Wap32/ScreenGeometry.h>
 
 #include <ddraw.h>
@@ -574,20 +575,23 @@ RVA(0x0017cdf0, 0x1c6)
 i32 CMoviePlayer::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
     RECT dst, src;
     if (m_destRect) {
-        dst.left = m_destRect->left;
-        dst.top = m_destRect->top;
-        dst.right = m_destRect->right;
-        dst.bottom = m_destRect->bottom;
+        SET_RECT_COMPONENTS(
+            dst,
+            m_destRect->left,
+            m_destRect->top,
+            m_destRect->right,
+            m_destRect->bottom
+        );
     } else {
-        dst.left = col * m_tilesAcross + m_originX;
-        dst.top = row * m_tilesDown + m_originY;
-        dst.right = nCols * m_tilesAcross + dst.left;
-        dst.bottom = nRows * m_tilesDown + dst.top;
+        SET_RECT_COMPONENTS(
+            dst,
+            col * m_tilesAcross + m_originX,
+            row * m_tilesDown + m_originY,
+            nCols * m_tilesAcross + dst.left,
+            nRows * m_tilesDown + dst.top
+        );
     }
-    src.left = col;
-    src.top = row;
-    src.right = col + nCols;
-    src.bottom = row + nRows;
+    SET_RECT_COMPONENTS(src, col, row, col + nCols, row + nRows);
 
     for (;;) {
         i32 hr;
@@ -739,10 +743,7 @@ i32 CMoviePlayer::Configure(MovieLayout mode, MovieOpenFlags openFlags, POINT* o
             }
             RECT* r = new RECT;
             m_destRect = r;
-            r->left = rect->left;
-            r->top = rect->top;
-            r->right = rect->right;
-            r->bottom = rect->bottom;
+            SET_RECT_COMPONENTS(*r, rect->left, rect->top, rect->right, rect->bottom);
             break;
         }
         default:

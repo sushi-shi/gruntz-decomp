@@ -9,6 +9,7 @@
 #include <Gruntz/GameStateId.h>
 #include <Gruntz/LevelArea.h>
 #include <Ints.h>
+#include <RectMacros.h>
 
 class CDDrawSurfaceMgr;
 class CRezMgr;
@@ -237,22 +238,10 @@ inline CState::CState() {
     m_previousStateId = GAMESTATE_NONE;
     m_cursorSavedSurfaces[0] = NULL;
     m_cursorSavedSurfaces[1] = NULL;
-    m_cursorSavedRects[0].left = 0;
-    m_cursorSavedRects[0].right = 0x40;
-    m_cursorSavedRects[0].top = 0;
-    m_cursorSavedRects[0].bottom = 0x40;
-    m_cursorSavedRects[1].left = 0;
-    m_cursorSavedRects[1].right = 0x40;
-    m_cursorSavedRects[1].top = 0;
-    m_cursorSavedRects[1].bottom = 0x40;
-    m_cursorScreenRects[0].left = 0;
-    m_cursorScreenRects[0].right = 0;
-    m_cursorScreenRects[0].top = 0;
-    m_cursorScreenRects[0].bottom = 0;
-    m_cursorScreenRects[1].left = 0;
-    m_cursorScreenRects[1].right = 0;
-    m_cursorScreenRects[1].top = 0;
-    m_cursorScreenRects[1].bottom = 0;
+    SET_RECT_XY_EXTENTS(m_cursorSavedRects[0], 0, 0x40, 0, 0x40);
+    SET_RECT_XY_EXTENTS(m_cursorSavedRects[1], 0, 0x40, 0, 0x40);
+    SET_RECT_XY_EXTENTS(m_cursorScreenRects[0], 0, 0, 0, 0);
+    SET_RECT_XY_EXTENTS(m_cursorScreenRects[1], 0, 0, 0, 0);
     m_cursorX = 0;
     m_cursorY = 0;
 }

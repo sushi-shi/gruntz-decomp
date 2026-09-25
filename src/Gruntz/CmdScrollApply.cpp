@@ -13,7 +13,9 @@
 #include <Gruntz/StatusBarDock.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Ints.h>
+#include <RectMacros.h>
 #include <Rez/FrameClock.h>
+#include <Wap32/TileGeometry.h>
 #include <Wwd/WwdFile.h>
 
 #include <stddef.h>
@@ -61,15 +63,11 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
         scrollX = cx - 1;
     }
     CDDrawWorkerHost* boundsPlane = pm->m_world->m_level->m_mainPlane;
-    if (scrollX > boundsPlane->m_planePixelWidth - cx) {
-        scrollX = boundsPlane->m_planePixelWidth - cx;
-    }
+    CLAMP_UPPER_INPLACE(scrollX, boundsPlane->m_planePixelWidth - cx);
     if (scrollY < cy - 1) {
         scrollY = cy - 1;
     }
-    if (scrollY > boundsPlane->m_planePixelHeight - cy) {
-        scrollY = boundsPlane->m_planePixelHeight - cy;
-    }
+    CLAMP_UPPER_INPLACE(scrollY, boundsPlane->m_planePixelHeight - cy);
 
     i32 deltaX = scrollX - g_lastScrollX;
     i32 deltaY = scrollY - g_lastScrollY;
@@ -98,10 +96,13 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
     }
 
     CDDrawSurfaceMgr* o = pm->m_world;
-    pm->m_viewBounds.left = o->m_level->m_mainPlane->m_planeViewRect.left - 0x60;
-    pm->m_viewBounds.top = o->m_level->m_mainPlane->m_planeViewRect.top - 0x60;
-    pm->m_viewBounds.right = o->m_level->m_mainPlane->m_planeViewRect.right + 0x60;
-    pm->m_viewBounds.bottom = o->m_level->m_mainPlane->m_planeViewRect.bottom + 0x60;
+    SET_RECT_COMPONENTS(
+        pm->m_viewBounds,
+        o->m_level->m_mainPlane->m_planeViewRect.left - 0x60,
+        o->m_level->m_mainPlane->m_planeViewRect.top - 0x60,
+        o->m_level->m_mainPlane->m_planeViewRect.right + 0x60,
+        o->m_level->m_mainPlane->m_planeViewRect.bottom + 0x60
+    );
 }
 
 RVA(0x000ec1c0, 0x43)

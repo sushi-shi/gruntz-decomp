@@ -93,6 +93,7 @@
 #include <Net/NetLobby.h>
 #include <Net/NetMgr.h>
 #include <Pix16.h>
+#include <RectMacros.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezArchive.h>
 #include <Rez/RezMgr.h>
@@ -230,8 +231,7 @@ CGruntzMgr::CGruntzMgr() {
     m_numRuns = 0;
     m_numMovies = 0;
     m_reservedcc = 0x1e;
-    m_modeSize.cx = 0;
-    m_modeSize.cy = 0;
+    SET_SIZE_COMPONENTS(m_modeSize, 0, 0);
     m_colorDepth = BPP_RGB_16;
     m_inGameDir = true;
     m_haveRez = false;
@@ -978,12 +978,10 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, b32 saveMode) {
     }
     while (ShowCursor(false) >= 0) {
     }
-    m_modeSize.cx = w;
-    m_modeSize.cy = h;
+    SET_SIZE_COMPONENTS(m_modeSize, w, h);
     if (m_curState->Update() == GAMESTATE_PLAY || m_curState->Update() == GAMESTATE_MULTI) {
         if (saveMode) {
-            m_savedModeSize.cx = w;
-            m_savedModeSize.cy = h;
+            SET_SIZE_COMPONENTS(m_savedModeSize, w, h);
         }
         CPlay* st = static_cast<CPlay*>(m_curState);
         st->ResetViewport();
@@ -1708,10 +1706,13 @@ void CGruntzMgr::RecomputeViewScale() {
     if (v->m_mainPlane == NULL) {
         return;
     }
-    m_viewBounds.left = (v->m_mainPlane)->m_planeViewRect.left - 0x60;
-    m_viewBounds.top = (m_world->m_level->m_mainPlane)->m_planeViewRect.top - 0x60;
-    m_viewBounds.right = (m_world->m_level->m_mainPlane)->m_planeViewRect.right + 0x60;
-    m_viewBounds.bottom = (m_world->m_level->m_mainPlane)->m_planeViewRect.bottom + 0x60;
+    SET_RECT_COMPONENTS(
+        m_viewBounds,
+        (v->m_mainPlane)->m_planeViewRect.left - 0x60,
+        (m_world->m_level->m_mainPlane)->m_planeViewRect.top - 0x60,
+        (m_world->m_level->m_mainPlane)->m_planeViewRect.right + 0x60,
+        (m_world->m_level->m_mainPlane)->m_planeViewRect.bottom + 0x60
+    );
 }
 
 // @dead-code

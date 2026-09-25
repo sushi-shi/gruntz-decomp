@@ -54,6 +54,7 @@
 #include <Gruntz/VoiceManager.h>
 #include <Gruntz/Warlord.h>
 #include <Io/FileMem.h>
+#include <RectMacros.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/TileGeometry.h>
@@ -1755,10 +1756,13 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
 ) {
     i32 radiusPx = radiusTiles << TILE_SHIFT_PX;
     RECT area;
-    area.left = x - radiusPx - 7;
-    area.right = x + radiusPx + 7;
-    area.top = y - radiusPx - 7;
-    area.bottom = y + radiusPx + 7;
+    SET_RECT_XY_EXTENTS(
+        area,
+        x - radiusPx - 7,
+        x + radiusPx + 7,
+        y - radiusPx - 7,
+        y + radiusPx + 7
+    );
     i32 maxTileX = m_world->m_level->m_mainPlane->m_tileColumns - 2;
     i32 maxTileY = m_world->m_level->m_mainPlane->m_tileRows - 2;
 
@@ -1913,10 +1917,7 @@ i32 CTriggerMgr::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
     RECT rect;
     i32 hx = cx >> TILE_SHIFT_PX;
     i32 hy = cy >> TILE_SHIFT_PX;
-    rect.left = hx - r;
-    rect.top = hy - r;
-    rect.right = hx + r;
-    rect.bottom = hy + r;
+    SET_RECT_COMPONENTS(rect, hx - r, hy - r, hx + r, hy + r);
 
     POSITION pos = m_baseList.GetHeadPosition();
     while (pos != NULL) {

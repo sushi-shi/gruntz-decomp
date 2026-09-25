@@ -20,6 +20,7 @@
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 #include <Utils/MillisPer.h>
+#include <Wap32/TileGeometry.h>
 
 #include <string.h>
 
@@ -199,13 +200,9 @@ i32 CTimer::Draw(CDDrawSurfacePair* target, b32 forceVisible) {
 RVA(0x0009c090, 0x37)
 void CTimer::SetTime(i32 minutes, i32 seconds) {
     u32 clampedMinutes = static_cast<u32>(minutes);
-    if (clampedMinutes > 0x63) {
-        clampedMinutes = 0x63;
-    }
+    CLAMP_UPPER_INPLACE(clampedMinutes, 0x63);
     u32 clampedSeconds = static_cast<u32>(seconds);
-    if (clampedSeconds > 0x3b) {
-        clampedSeconds = 0x3b;
-    }
+    CLAMP_UPPER_INPLACE(clampedSeconds, 0x3b);
     m_currentMs = static_cast<i32>((clampedMinutes * 60 + clampedSeconds) * MILLIS_PER_SECOND);
 }
 

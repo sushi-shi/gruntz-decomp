@@ -195,9 +195,7 @@ i32 CPathHazard::Tick() {
     i32 newY = static_cast<i32>((m_roundBiasY + m_posY));
 
     if (m_unitX > 0.0) {
-        if (newX > m_wpX) {
-            newX = m_wpX;
-        }
+        CLAMP_UPPER_INPLACE(newX, m_wpX);
     } else if (m_unitX < 0.0) {
         if (newX < m_wpX) {
             newX = m_wpX;
@@ -205,9 +203,7 @@ i32 CPathHazard::Tick() {
     }
 
     if (m_unitY > 0.0) {
-        if (newY > m_wpY) {
-            newY = m_wpY;
-        }
+        CLAMP_UPPER_INPLACE(newY, m_wpY);
     } else if (m_unitY < 0.0) {
         if (newY < m_wpY) {
             newY = m_wpY;

@@ -16,4 +16,9 @@ inline i32 SquaredDistance(i32 dx, i32 dy) {
     return SQR(dx) + SQR(dy);
 }
 
+#define CLAMP_UPPER_INPLACE(value, upper)                                                          \
+    if ((value) > (upper)) {                                                                       \
+        (value) = (upper);                                                                         \
+    }
+
 #endif // WAP32_TILEGEOMETRY_H

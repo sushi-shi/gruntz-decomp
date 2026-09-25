@@ -74,6 +74,7 @@
 #include <Ints.h>
 #include <Io/FileMem.h>
 #include <Lith/BDefs.h>
+#include <RectMacros.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/Object.h>
@@ -664,15 +665,9 @@ i32 CGrunt::PathScan() {
 
     {
         RECT gb;
-        gb.left = 0;
-        gb.top = 0;
-        gb.right = grid->m_width;
-        gb.bottom = grid->m_height;
+        SET_RECT_COMPONENTS(gb, 0, 0, grid->m_width, grid->m_height);
         RECT rs;
-        rs.left = start.m_x - 2;
-        rs.top = start.m_y - 2;
-        rs.right = start.m_x + 2;
-        rs.bottom = start.m_y + 2;
+        SET_RECT_COMPONENTS(rs, start.m_x - 2, start.m_y - 2, start.m_x + 2, start.m_y + 2);
         RECT box;
         const RECT* pr = &rs;
         if (pr != NULL) {
@@ -771,10 +766,7 @@ i32 CGrunt::PathScan() {
     GRID_CLIP_NULL(grid);
 
     RECT nb;
-    nb.left = target.m_x - 4;
-    nb.top = target.m_y - 4;
-    nb.right = target.m_x + 4;
-    nb.bottom = target.m_y + 4;
+    SET_RECT_COMPONENTS(nb, target.m_x - 4, target.m_y - 4, target.m_x + 4, target.m_y + 4);
     if (::PtInRect(&nb, start.m_x, start.m_y)) {
 
         CRect rb(0, 0, grid->m_width, grid->m_height);
@@ -2906,16 +2898,12 @@ void CGrunt::AdvanceMotion() {
     i32 x = static_cast<i32>(EntranceCell()->m_motion.m_step.m_x + m_movePosX);
     i32 y = static_cast<i32>(EntranceCell()->m_motion.m_step.m_y + m_movePosY);
     if (dirX > s_fpZero) {
-        if (x > m_lastTilePx.m_x) {
-            x = m_lastTilePx.m_x;
-        }
+        CLAMP_UPPER_INPLACE(x, m_lastTilePx.m_x);
     } else if (dirX < s_fpZero && x < m_lastTilePx.m_x) {
         x = m_lastTilePx.m_x;
     }
     if (dirY > s_fpZero) {
-        if (y > m_lastTilePx.m_y) {
-            y = m_lastTilePx.m_y;
-        }
+        CLAMP_UPPER_INPLACE(y, m_lastTilePx.m_y);
     } else if (dirY < s_fpZero && y < m_lastTilePx.m_y) {
         y = m_lastTilePx.m_y;
     }

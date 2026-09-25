@@ -32,6 +32,7 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/VoiceManager.h>
 #include <Ints.h>
+#include <RectMacros.h>
 #include <Wap32/TileGeometry.h>
 #include <ZTools/ZDArray.h>
 

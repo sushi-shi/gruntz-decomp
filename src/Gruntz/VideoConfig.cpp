@@ -20,6 +20,7 @@
 #include <MsgParam.h>
 #include <Net/NetLobby.h>
 #include <Net/NetMgr.h>
+#include <RectMacros.h>
 #include <Rez/RezSync.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/ScreenGeometry.h>
@@ -132,8 +133,7 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                         h = SCREEN_H_PX;
                     }
                     CGruntzMgr* reg = g_gameReg;
-                    reg->m_savedModeSize.cx = w;
-                    reg->m_savedModeSize.cy = h;
+                    SET_SIZE_COMPONENTS(reg->m_savedModeSize, w, h);
                     if (g_gameReg->IsInPlayState()) {
                         g_gameReg->CheckSavedMode();
                     }

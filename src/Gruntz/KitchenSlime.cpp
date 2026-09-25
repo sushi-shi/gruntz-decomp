@@ -168,9 +168,7 @@ i32 CKitchenSlime::Tick() {
         i32 tx = m_tilePosition.m_x;
         m_stepMag = fabs(m_posX - static_cast<double>(tx));
 
-        if (newX > tx) {
-            newX = tx;
-        }
+        CLAMP_UPPER_INPLACE(newX, tx);
     } else if (m_dirX < 0.0) {
         double t = (m_posX = m_posX - step);
         newX = static_cast<i32>(ceil(t));

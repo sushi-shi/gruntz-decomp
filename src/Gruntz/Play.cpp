@@ -105,6 +105,7 @@
 #include <Io/FileMem.h>
 #include <Io/SaveGame.h>
 #include <Pix16.h>
+#include <RectMacros.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezArchive.h>
 #include <Rez/RezArchiveDir.h>
@@ -1537,10 +1538,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             self->m_inGame = true;
             self->m_hudSuppressed = false;
             RECT rect;
-            rect.left = 0;
-            rect.top = 0;
-            rect.right = SCREEN_W_PX;
-            rect.bottom = SCREEN_H_PX;
+            SET_RECT_COMPONENTS(rect, 0, 0, SCREEN_W_PX, SCREEN_H_PX);
             if (scr.LoadString(IDS_CONTINUE_PROMPT)) {
                 DrawTextToFrontSurface(self->m_world, &scr, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
             }
@@ -3515,10 +3513,7 @@ void CPlay::DrawCustomLevelBanner() {
     SetBkMode(hdc, TRANSPARENT);
     SetTextColor(hdc, 0);
     RECT rc;
-    rc.left = 0;
-    rc.top = 0x1b8;
-    rc.right = 0x27f;
-    rc.bottom = 0x1d6;
+    SET_RECT_COMPONENTS(rc, 0, 0x1b8, 0x27f, 0x1d6);
     DrawTextA(hdc, g_customLevelText, -1, &rc, DT_CENTER | DT_SINGLELINE);
     surface->m_ddSurface->ReleaseDC(hdc);
 }
@@ -4164,8 +4159,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
 
     SIZE
     extent;
-    extent.cx = w->m_modeSize.cx;
-    extent.cy = w->m_modeSize.cy;
+    SET_SIZE_COMPONENTS(extent, w->m_modeSize.cx, w->m_modeSize.cy);
 
     if (self->m_cursorX < 0xc || (self->m_scrollEdgeLock & 1)) {
         if (self->m_scrollEdgeActive & 1) {
@@ -4471,10 +4465,7 @@ i32 CPlay::ExecuteCommand(
                     g->m_defenderState = AISTATE_SEEK;
                     g->m_arrivalCell.m_y = -1;
                     g->m_arrivalActive = false;
-                    g->m_object->m_extent.left = 0;
-                    g->m_object->m_extent.right = 0;
-                    g->m_object->m_extent.top = 0;
-                    g->m_object->m_extent.bottom = 0;
+                    SET_RECT_XY_EXTENTS(g->m_object->m_extent, 0, 0, 0, 0);
                     g->SetEntrancePos(1, 1);
                 }
                 g->m_arrivalNotified = false;
@@ -6888,10 +6879,13 @@ i32 CPlay::ResetViewport() {
     if (m_region0Gate) {
         i32 halfW = (r.right - r.left) / 2;
         i32 halfH = (r.bottom - r.top) / 2;
-        r.left = r.left + halfW - 0x60;
-        r.top = r.top + halfH - 0x60;
-        r.right = r.right + (0x60 - halfW);
-        r.bottom = r.bottom + (0x60 - halfH);
+        SET_RECT_COMPONENTS(
+            r,
+            r.left + halfW - 0x60,
+            r.top + halfH - 0x60,
+            r.right + (0x60 - halfW),
+            r.bottom + (0x60 - halfH)
+        );
     }
     m_viewportResizeMode = VIEW_RESIZE_IDLE;
     m_world->m_level->UpdatePlaneViewports((&r));
@@ -6953,8 +6947,7 @@ i32 CPlay::ExpandViewport(i32 step) {
 
     SIZE
     modeSize;
-    modeSize.cx = manager->m_modeSize.cx;
-    modeSize.cy = manager->m_modeSize.cy;
+    SET_SIZE_COMPONENTS(modeSize, manager->m_modeSize.cx, manager->m_modeSize.cy);
 
     if (resized.right - resized.left
         < (statusBar->m_position == STATUSBAR_HIDDEN ? modeSize.cx
@@ -7109,10 +7102,7 @@ i32 CPlay::ScanShuffleQuads() {
             scatter[perm[1]] = p->m_extent.top;
             scatter[perm[2]] = p->m_extent.right;
             scatter[perm[3]] = p->m_extent.bottom;
-            p->m_extent.left = scatter[0];
-            p->m_extent.top = scatter[1];
-            p->m_extent.right = scatter[2];
-            p->m_extent.bottom = scatter[3];
+            SET_RECT_COMPONENTS(p->m_extent, scatter[0], scatter[1], scatter[2], scatter[3]);
         }
     }
     return 1;

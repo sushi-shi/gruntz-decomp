@@ -19,7 +19,7 @@
 #define GRUNT_OBJECT_NOT_AT_SELF_SAVED_SCREEN_POS(object)                                          \
     object->m_screenX != m_lastTilePx.m_x || object->m_screenY != m_lastTilePx.m_y
 
-#define GRUNT_X_AT_SAVED_POS(x, grunt) x == grunt->m_lastTilePx.m_x
+#define GRUNT_X_AT_SAVED_POS(x, grunt) ((x) == (grunt)->m_lastTilePx.m_x)
 #define DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(object, pixelX, pixelY)                                  \
     i32 pixelX = (object->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;                               \
     i32 pixelY = (object->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
@@ -47,10 +47,6 @@
     SetEntrancePos(1, 1);                                                                          \
     m_arrivalCell.m_x = target->m_playerIndex;                                                     \
     m_arrivalCell.m_y = target->m_unitIndex
-
-#define BEGIN_GRUNT_ENTRANCE_AND_RELEASE_CELL                                                      \
-    m_entranceActive = true;                                                                       \
-    m_triggerMgr->RemoveCellRecord(m_playerIndex, m_unitIndex, 1);
 
 #define FIND_NEAREST_ENEMY_AT_TARGET(grunt, atTarget, screenX)                                     \
     CGrunt* grunt = m_triggerMgr->FindNearestEnemy(this);                                          \

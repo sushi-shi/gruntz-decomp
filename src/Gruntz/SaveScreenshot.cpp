@@ -8,6 +8,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
+#include <RectMacros.h>
 #include <Utils/RegMgr.h>
 
 RVA(0x00114ff0, 0x1b3)
@@ -53,14 +54,8 @@ i32 SaveScreenshot(
     }
 
     CGruntzMgr* gameManager = g_gameReg;
-    srcRect.left = 0;
-    srcRect.top = 0;
-    srcRect.right = 0;
-    srcRect.bottom = 0;
-    dstRect.left = 0;
-    dstRect.top = 0;
-    dstRect.right = 0;
-    dstRect.bottom = 0;
+    SET_RECT_COMPONENTS(srcRect, 0, 0, 0, 0);
+    SET_RECT_COMPONENTS(dstRect, 0, 0, 0, 0);
     srcRect.right = gameManager->GetModeSize().cx;
     srcRect.bottom = gameManager->GetModeSize().cy;
     dstRect.right = width;

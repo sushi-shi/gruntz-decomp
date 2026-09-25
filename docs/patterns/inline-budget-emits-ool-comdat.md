@@ -24,3 +24,12 @@ An all-expanded harness is saturated, not proof of a zero-cost helper.
 Calibrate a partially rejecting case before inferring a budget; do not equate
 machine-code bytes with the compiler's internal size estimate. A missing call
 can also be tail merging or dead-code elimination.
+
+Member construction spends the same budget. Giving a member type a user-declared
+constructor, even an empty inline `T() {}`, adds a construction site for every
+such member of the enclosing class. Observed: with ctors on `Coord` and
+`DoubleVector3`, `CMotionState::InitBounds` stopped expanding into the
+`CProjectile` constructor, and `walls diagnose` reported an inline/call-set gap.
+When an exact constructor degrades that way right after a member type gains a
+constructor, suspect that retail's type is an aggregate. That is a clue for the
+type model, not proof that no constructor exists anywhere.

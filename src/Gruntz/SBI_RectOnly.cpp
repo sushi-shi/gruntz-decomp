@@ -71,6 +71,7 @@
 #include <Ints.h>
 #include <Io/FileMem.h>
 #include <MakeRect.h>
+#include <RectMacros.h>
 #include <Rez/RezList.h>
 #include <Rez/RezMgr.h>
 #include <Utils/MapTyped.h>
@@ -2427,9 +2428,7 @@ i32 CStatusBarMgr::Activate() {
     }
     i32 w = g_gameReg->m_modeSize.cx;
     i32 d = g_gameReg->m_modeSize.cy;
-    if (m_barX > w - 0x22) {
-        m_barX = w - 0x22;
-    }
+    CLAMP_UPPER_INPLACE(m_barX, w - 0x22);
     if (m_barY > d - 9) {
         m_barY = d - 0x22;
     }
@@ -3309,8 +3308,11 @@ void CStatusBarMgr::LoadChipMachineConfig() {
     switch (m_machinePhase) {
         case BELT_IN_MACHINE:
             if (static_cast<i64>(g_frameTime) - belt[0] >= belt[1]) {
-                m_machineItemRect.left += g_buteMgr.GetInt("StatusBar", "NextItemSpeed", 2);
-                m_machineItemRect.right += g_buteMgr.GetInt("StatusBar", "NextItemSpeed", 2);
+                OFFSET_RECT_X_EDGES(
+                    m_machineItemRect,
+                    g_buteMgr.GetInt("StatusBar", "NextItemSpeed", 2),
+                    g_buteMgr.GetInt("StatusBar", "NextItemSpeed", 2)
+                );
                 rectFlag = 1;
                 belt[1] = g_buteMgr.GetDword("StatusBar", "NextItemDelay", 0x64);
                 belt[0] = static_cast<u32>(g_frameTime);
@@ -3366,8 +3368,11 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             break;
         case BELT_FALLING:
             if (static_cast<i64>(g_frameTime) - belt[0] >= belt[1]) {
-                m_machineItemRect.top += g_buteMgr.GetInt("StatusBar", "FallingItemSpeed", 2);
-                m_machineItemRect.bottom += g_buteMgr.GetInt("StatusBar", "FallingItemSpeed", 2);
+                OFFSET_RECT_Y_EDGES(
+                    m_machineItemRect,
+                    g_buteMgr.GetInt("StatusBar", "FallingItemSpeed", 2),
+                    g_buteMgr.GetInt("StatusBar", "FallingItemSpeed", 2)
+                );
                 rectFlag = 1;
                 belt[1] = g_buteMgr.GetDword("StatusBar", "FallingItemDelay", 0x32);
                 belt[0] = static_cast<u32>(g_frameTime);
@@ -3412,8 +3417,11 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             break;
         case BELT_TRAVELLING:
             if (static_cast<i64>(g_frameTime) - belt[0] >= belt[1]) {
-                m_machineItemRect.left -= g_buteMgr.GetInt("StatusBar", "NextItemSpeed", 2);
-                m_machineItemRect.right -= g_buteMgr.GetInt("StatusBar", "NextItemSpeed", 2);
+                OFFSET_RECT_X_EDGES(
+                    m_machineItemRect,
+                    -g_buteMgr.GetInt("StatusBar", "NextItemSpeed", 2),
+                    -g_buteMgr.GetInt("StatusBar", "NextItemSpeed", 2)
+                );
                 rectFlag = 1;
                 belt[1] = g_buteMgr.GetDword("StatusBar", "NextItemDelay", 0x64);
                 belt[0] = static_cast<u32>(g_frameTime);
@@ -3434,8 +3442,11 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             break;
         case BELT_FALLING_OFF: {
             if (static_cast<i64>(g_frameTime) - belt[0] >= belt[1]) {
-                m_machineItemRect.top += g_buteMgr.GetInt("StatusBar", "FallingItemSpeed", 2);
-                m_machineItemRect.bottom += g_buteMgr.GetInt("StatusBar", "(FallingItemSpeed", 2);
+                OFFSET_RECT_Y_EDGES(
+                    m_machineItemRect,
+                    g_buteMgr.GetInt("StatusBar", "FallingItemSpeed", 2),
+                    g_buteMgr.GetInt("StatusBar", "(FallingItemSpeed", 2)
+                );
                 rectFlag = 1;
                 belt[1] = g_buteMgr.GetDword("StatusBar", "FallingItemDelay", 0x32);
                 belt[0] = static_cast<u32>(g_frameTime);
@@ -3489,10 +3500,13 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             RECT rc;
             i32 x = m_barRect.left;
             i32 y = m_barRect.top;
-            rc.left = m_machineItemRect.left + x;
-            rc.top = m_machineItemRect.top + y;
-            rc.right = m_machineItemRect.right + x;
-            rc.bottom = m_machineItemRect.bottom + y;
+            SET_RECT_COMPONENTS(
+                rc,
+                m_machineItemRect.left + x,
+                m_machineItemRect.top + y,
+                m_machineItemRect.right + x,
+                m_machineItemRect.bottom + y
+            );
             w->m_rect = rc;
         }
         if (refreshFlag) {
@@ -3514,10 +3528,7 @@ i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 item, i32 x, i32 y) {
     i32 t = y - 0xc;
     i32 rr = x + 0xc;
     i32 b = y + 0xc;
-    m_fallingItemRect.left = l;
-    m_fallingItemRect.top = t;
-    m_fallingItemRect.right = rr;
-    m_fallingItemRect.bottom = b;
+    SET_RECT_COMPONENTS(m_fallingItemRect, l, t, rr, b);
     if (n) {
 
         RECT rc;
@@ -3579,8 +3590,7 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
         i64* clock = &m_fallClock.m_last;
         i64 d = static_cast<i64>(g_frameTime) - clock[0];
         if (d >= clock[1]) {
-            m_fallingItemRect.top += speed;
-            m_fallingItemRect.bottom += speed;
+            OFFSET_RECT_Y_EDGES(m_fallingItemRect, speed, speed);
             CSBI_ImageSet* w = m_fallingItemSprite;
             if (w) {
                 RECT rc;
@@ -3809,10 +3819,13 @@ i32 CStatusBarMgr::StartChipMachineCycle() {
         RECT rc;
         i32 x = m_barRect.left;
         i32 y = m_barRect.top;
-        rc.left = m_machineItemRect.left + x;
-        rc.top = m_machineItemRect.top + y;
-        rc.right = m_machineItemRect.right + x;
-        rc.bottom = m_machineItemRect.bottom + y;
+        SET_RECT_COMPONENTS(
+            rc,
+            m_machineItemRect.left + x,
+            m_machineItemRect.top + y,
+            m_machineItemRect.right + x,
+            m_machineItemRect.bottom + y
+        );
         m_machineItemSprite->m_rect = rc;
     }
     NotifyAllSlots();

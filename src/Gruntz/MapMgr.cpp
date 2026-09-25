@@ -12,6 +12,7 @@
 #include <Gruntz/MapCellInline.h>
 #include <Gruntz/SerialArchive.h>
 #include <Io/FileMem.h>
+#include <RectMacros.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -180,14 +181,8 @@ i32 CMapMgr::AllocGrid(i32 width, i32 height, void (*callback)()) {
 
     RECT a;
     RECT b;
-    a.left = 0;
-    a.top = 0;
-    a.right = width;
-    a.bottom = height;
-    b.left = 0;
-    b.top = 0;
-    b.right = width;
-    b.bottom = height;
+    SET_RECT_COMPONENTS(a, 0, 0, width, height);
+    SET_RECT_COMPONENTS(b, 0, 0, width, height);
     RECT* out = &m_bounds;
     if (!IntersectRect(out, &a, &b)) {
         *out = a;

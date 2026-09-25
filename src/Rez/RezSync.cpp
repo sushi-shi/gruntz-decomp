@@ -49,6 +49,7 @@
 #include <Ints.h>
 #include <Io/SaveGame.h>
 #include <Net/NetMgr.h>
+#include <RectMacros.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezArchive.h>
 #include <Rez/RezArchiveEntry.h>
@@ -120,8 +121,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x406);
         return 0;
     }
-    m_savedModeSize.cx = SCREEN_W_PX;
-    m_savedModeSize.cy = SCREEN_H_PX;
+    SET_SIZE_COMPONENTS(m_savedModeSize, SCREEN_W_PX, SCREEN_H_PX);
     m_numRuns = m_settings->Get("Num Runs", 0);
     m_numMovies = m_settings->Get("Num Movies", 0);
     g_enableHqMovie = m_settings->Get("Disable High Quality Movie", 0) == 0;
@@ -162,14 +162,11 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     Resolution resolution =
         static_cast<Resolution>(m_settings->Get("Resolution", IDX(RES_640X480)));
     if (resolution == RES_1024X768) {
-        m_savedModeSize.cx = DISPLAY_WIDTH_1024;
-        m_savedModeSize.cy = DISPLAY_HEIGHT_768;
+        SET_SIZE_COMPONENTS(m_savedModeSize, DISPLAY_WIDTH_1024, DISPLAY_HEIGHT_768);
     } else if (resolution == RES_800X600) {
-        m_savedModeSize.cx = DISPLAY_WIDTH_800;
-        m_savedModeSize.cy = DISPLAY_HEIGHT_600;
+        SET_SIZE_COMPONENTS(m_savedModeSize, DISPLAY_WIDTH_800, DISPLAY_HEIGHT_600);
     } else {
-        m_savedModeSize.cx = SCREEN_W_PX;
-        m_savedModeSize.cy = SCREEN_H_PX;
+        SET_SIZE_COMPONENTS(m_savedModeSize, SCREEN_W_PX, SCREEN_H_PX);
     }
     i32 musicVolume = m_settings->Get("Music Volume", 0x64);
     i32 soundVolume = m_settings->Get("Sound Volume", 0x3c);
@@ -265,12 +262,8 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
     {
         LevelCoordRect rect;
-        rect.left = 0;
-        rect.top = 0;
-        rect.right = 0x1df;
-        rect.bottom = 0x1df;
-        m_modeSize.cx = SCREEN_W_PX;
-        m_modeSize.cy = SCREEN_H_PX;
+        SET_RECT_COMPONENTS(rect, 0, 0, 0x1df, 0x1df);
+        SET_SIZE_COMPONENTS(m_modeSize, SCREEN_W_PX, SCREEN_H_PX);
         world->m_level->UpdatePlaneViewports(&rect);
     }
     world->SetRestoreHandler(&PumpIdleFrame);

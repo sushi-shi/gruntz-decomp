@@ -17,6 +17,7 @@
 #include <Gruntz/SoundState.h>
 #include <Image/CImage.h>
 #include <Image/ImageSet.h>
+#include <RectMacros.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
@@ -45,10 +46,13 @@ i32 CMenuTree::Configure(
         CopyRect(&m_bounds, bounds);
         return 1;
     }
-    m_bounds.left = 0;
-    m_bounds.top = 0;
-    m_bounds.right = world->m_drawTarget->m_frontSurface->m_width - 1;
-    m_bounds.bottom = world->m_drawTarget->m_frontSurface->m_height - 1;
+    SET_RECT_COMPONENTS(
+        m_bounds,
+        0,
+        0,
+        world->m_drawTarget->m_frontSurface->m_width - 1,
+        world->m_drawTarget->m_frontSurface->m_height - 1
+    );
     return 1;
 }
 

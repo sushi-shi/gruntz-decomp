@@ -23,6 +23,7 @@
 #include <Gruntz/SpriteTeamColorVariant.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Pix16.h>
+#include <RectMacros.h>
 #include <Rez/FrameClock.h>
 #include <Wap32/TileGeometry.h>
 
@@ -43,14 +44,8 @@ i32 CMinimap::Init(CGruntzMgr* gameMgr, i32 refreshIntervalMs) {
     if (!AllocSurface()) {
         return 0;
     }
-    m_drawRect.left = 0;
-    m_drawRect.top = 0;
-    m_drawRect.right = 0;
-    m_drawRect.bottom = 0;
-    m_boundsRect.left = 0;
-    m_boundsRect.top = 0;
-    m_boundsRect.right = 0;
-    m_boundsRect.bottom = 0;
+    SET_RECT_COMPONENTS(m_drawRect, 0, 0, 0, 0);
+    SET_RECT_COMPONENTS(m_boundsRect, 0, 0, 0, 0);
     return 1;
 }
 
@@ -235,20 +230,26 @@ i32 CMinimap::Draw(CDDrawSurfacePair* target, RECT* bounds) {
     i32 drawLeft = centerX - static_cast<i32>(m_surface->m_apiDesc.dwWidth) * cellScale / 2;
     i32 drawTop = centerY - static_cast<i32>(m_surface->m_apiDesc.dwHeight) * cellScale / 2;
     RECT* dstRect = &m_drawRect;
-    dstRect->left = drawLeft;
-    dstRect->top = drawTop;
-    dstRect->right = m_surface->m_apiDesc.dwWidth * cellScale + drawLeft;
-    dstRect->bottom = m_surface->m_apiDesc.dwHeight * cellScale + drawTop;
+    SET_RECT_COMPONENTS(
+        *dstRect,
+        drawLeft,
+        drawTop,
+        m_surface->m_apiDesc.dwWidth * cellScale + drawLeft,
+        m_surface->m_apiDesc.dwHeight * cellScale + drawTop
+    );
     if (target->m_surface->BltEx(dstRect, m_surface, NULL, DDBLT_WAIT, NULL) != 0) {
         return 0;
     }
 
     RECT* vr = &m_world->m_level->m_mainPlane->m_planeViewRect;
     RECT box;
-    box.left = vr->left >> TILE_SHIFT_PX;
-    box.top = vr->top >> TILE_SHIFT_PX;
-    box.right = vr->right >> TILE_SHIFT_PX;
-    box.bottom = vr->bottom >> TILE_SHIFT_PX;
+    SET_RECT_COMPONENTS(
+        box,
+        vr->left >> TILE_SHIFT_PX,
+        vr->top >> TILE_SHIFT_PX,
+        vr->right >> TILE_SHIFT_PX,
+        vr->bottom >> TILE_SHIFT_PX
+    );
     if (m_cellScale != 1) {
 
         box.left *= m_cellScale;
@@ -259,10 +260,8 @@ i32 CMinimap::Draw(CDDrawSurfacePair* target, RECT* bounds) {
         box.right += extension;
         box.bottom += extension;
     }
-    box.left += dstRect->left;
-    box.right += dstRect->left;
-    box.top += dstRect->top;
-    box.bottom += dstRect->top;
+    OFFSET_RECT_X_EDGES(box, dstRect->left, dstRect->left);
+    OFFSET_RECT_Y_EDGES(box, dstRect->top, dstRect->top);
     DrawBorder(&box, target, MINIMAP_BORDER_COLOR_16);
     return 1;
 }

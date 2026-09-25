@@ -8,6 +8,8 @@
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/PixelShift.h>
 #include <Font/FontBlendInline.h>
+#include <RectMacros.h>
+#include <Wap32/TileGeometry.h>
 
 #include <ddraw.h>
 #include <limits.h>
@@ -238,12 +240,8 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
             return;
         }
     }
-    if (rc.right > m.cx) {
-        rc.right = m.cx;
-    }
-    if (rc.bottom > m.cy) {
-        rc.bottom = m.cy;
-    }
+    CLAMP_UPPER_INPLACE(rc.right, m.cx);
+    CLAMP_UPPER_INPLACE(rc.bottom, m.cy);
 
     u16* bits = static_cast<u16*>(surf->Lock(NULL));
     i32 pitch = surf->m_apiDesc.lPitch;
@@ -500,8 +498,7 @@ CSize FontRenderer::MeasureText(CString text) {
 
         width += m_font->GetGlyph(g, c).m_width;
     }
-    ext.cx = width;
-    ext.cy = m_font->GetMaxHeight();
+    SET_SIZE_COMPONENTS(ext, width, m_font->GetMaxHeight());
     return ext;
 }
 

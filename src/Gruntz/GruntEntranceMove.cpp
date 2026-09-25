@@ -24,6 +24,7 @@
 #include <Gruntz/GruntActionInline.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntIdentity.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntSpriteMacros.h>
@@ -419,7 +420,7 @@ i32 CGrunt::StartBombGruntRun() {
     if (m_poweredUp != false && m_neighborValid == false) {
         RESET_GRUNT_POWERED_STATE(this)
     }
-    BEGIN_GRUNT_ENTRANCE_AND_RELEASE_CELL
+    BeginGruntEntranceAndReleaseCell(this);
     SnapToLastTile(1);
     SetEntrancePos(1, 1);
     if (LoadGruntTypeTable(PICKUP_BOMB, 1, 0, 1) == 0) {
@@ -688,7 +689,7 @@ finalize:
     if (m_poweredUp != false && m_neighborValid == false) {
         RESET_GRUNT_POWERED_STATE(this)
     }
-    BEGIN_GRUNT_ENTRANCE_AND_RELEASE_CELL
+    BeginGruntEntranceAndReleaseCell(this);
     SET_ANIMATION_ACT("Q");
     {
         i32 z = m_object->m_screenY + 0x186a0;
