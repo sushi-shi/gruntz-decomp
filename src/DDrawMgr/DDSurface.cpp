@@ -279,15 +279,15 @@ i32 CDDSurface::Resolve(
 RVA(0x0013e5d0, 0xb1)
 i32 CDDSurface::MakeImageKey(CDDrawDeviceManager* manager, char* path, u32 colorKey) {
     char* ext = strrchr(path, '.');
-    if (ext && _strcmpi(ext, ".BMP") == 0) {
+    if (ext && stricmp(ext, ".BMP") == 0) {
         if (!LoadBmp(manager, path)) {
             return 0;
         }
-    } else if (ext && _strcmpi(ext, ".PCX") == 0) {
+    } else if (ext && stricmp(ext, ".PCX") == 0) {
         if (!LoadPcx(manager, path)) {
             return 0;
         }
-    } else if (ext && _strcmpi(ext, ".PID") == 0) {
+    } else if (ext && stricmp(ext, ".PID") == 0) {
         if (!LoadPid(manager, path, colorKey)) {
             return 0;
         }

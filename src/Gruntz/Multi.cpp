@@ -17,7 +17,6 @@
 #include <Enums.h>
 #include <Gruntz/Attract.h>
 #include <Gruntz/BattlezMapConfig.h>
-#include <Gruntz/BracketValueParse.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/CurPlayer.h>
@@ -39,12 +38,14 @@
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
+#include <Gruntz/Sparam.h>
 #include <Gruntz/StatusBarDock.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/StatusBarTab.h>
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/TileTriggerSwitchLogic.h>
 #include <Gruntz/TriggerMgr.h>
+#include <Gruntz/Utils.h>
 #include <Gruntz/VoiceManager.h>
 #include <Gruntz/WorldSoundSet.h>
 #include <Io/FileStream.h>
@@ -1284,7 +1285,7 @@ void FillSessionList(HWND hList, CNetMgr* manager) {
 
         MsgParam name;
         i32 itemIndex;
-        if (ExtractBracketValue(buf, listing->m_sessionDesc.lpszSessionNameA, "NAME")) {
+        if (Sparam_Get(buf, listing->m_sessionDesc.lpszSessionNameA, "NAME")) {
             name.m_str = buf;
             itemIndex = static_cast<i32>(SendMessageA(hList, LB_ADDSTRING, 0, name.m_lparam));
         } else {
@@ -1364,19 +1365,19 @@ i32 CMulti::OnJoinConfirm(HWND hDlg) {
 
     char buf[0x100];
 
-    if (ExtractBracketValue(buf, sel->m_sessionDesc.lpszSessionNameA, "CMDDELAY")) {
+    if (Sparam_Get(buf, sel->m_sessionDesc.lpszSessionNameA, "CMDDELAY")) {
         m_commandDelay = atoi(buf);
     }
-    if (ExtractBracketValue(buf, sel->m_sessionDesc.lpszSessionNameA, "RESEND")) {
+    if (Sparam_Get(buf, sel->m_sessionDesc.lpszSessionNameA, "RESEND")) {
         m_resendInterval = atoi(buf);
     }
-    if (ExtractBracketValue(buf, sel->m_sessionDesc.lpszSessionNameA, "NAME")) {
+    if (Sparam_Get(buf, sel->m_sessionDesc.lpszSessionNameA, "NAME")) {
         SetGameName(CString(buf));
     }
     m_syncGate = false;
     SelectedLevelIndex() = 1;
     m_localPlayerId = LocalPlayer()->m_playerId;
-    if (ExtractBracketValue(buf, sel->m_sessionDesc.lpszSessionNameA, "LEVEL")) {
+    if (Sparam_Get(buf, sel->m_sessionDesc.lpszSessionNameA, "LEVEL")) {
         SelectedLevelIndex() = atoi(buf);
     }
 

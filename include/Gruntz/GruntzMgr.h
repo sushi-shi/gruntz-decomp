@@ -390,7 +390,6 @@ extern i32 g_warpX;
 extern i32 g_warpY;
 
 CString RunCustomWorldDialog(HWND parent, CString* out);
-i32 FindProcessByName(const char* name, i32 flag, HANDLE* out);
 i32 __stdcall LaunchPortalExe(char* outPath);
 
 char GetGruntzDriveLetter();

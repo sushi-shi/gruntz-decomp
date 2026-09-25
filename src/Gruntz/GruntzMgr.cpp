@@ -49,7 +49,6 @@
 #include <Gruntz/GruntzDebugDialog.h>
 #include <Gruntz/GruntzMgrMacros.h>
 #include <Gruntz/GruntzPlayer.h>
-#include <Gruntz/HeapDiag.h>
 #include <Gruntz/HelpState.h>
 #include <Gruntz/InputDeviceSel.h>
 #include <Gruntz/InputState.h>
@@ -79,6 +78,7 @@
 #include <Gruntz/TraitorMode.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/UserLogic.h>
+#include <Gruntz/Utils.h>
 #include <Gruntz/VoiceManager.h>
 #include <Gruntz/WaitCursorScope.h>
 #include <Gruntz/WorldSoundSet.h>
@@ -1485,7 +1485,7 @@ i32 CGruntzMgr::LaunchWebBrowser(char* url) {
 
     _strupr(cmd);
     if (strstr(cmd, "IEXPLORE.EXE")) {
-        FindProcessByName("IEXPLORE.EXE", 1, &quoted);
+        ExistProcess("IEXPLORE.EXE", 1, &quoted);
     }
     char* dash = strchr(cmd, '-');
     i32 dn = dash - cmd + 1;

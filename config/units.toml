@@ -1053,11 +1053,6 @@ source = "src/Dsndmgr/MidiManager.cpp"
 flags = "cpp"
 
 [[unit]]
-unit = "winapimodule"
-source = "src/Utils/WinAPIModule.cpp"
-flags = "cpp"
-
-[[unit]]
 unit = "winapicdrom"
 source = "src/Utils/WinAPICdRom.cpp"
 flags = "cpp"
@@ -1382,8 +1377,8 @@ source = "src/Gruntz/GruntStateStep.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "heapdiag"
-source = "src/Gruntz/HeapDiag.cpp"
+unit = "utils"
+source = "src/Gruntz/Utils.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
@@ -1458,8 +1453,8 @@ source = "src/Gruntz/GameAssetNamespaces.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "bracketvalue"
-source = "src/Gruntz/BracketValueParse.cpp"
+unit = "sparam"
+source = "src/Gruntz/Sparam.cpp"
 flags = "cpp-rtti"
 
 [[unit]]

@@ -8,7 +8,6 @@
 #include <Enums.h>
 #include <Ints.h>
 
-i32 FindProcessByName(const char* name, i32 wantCount, HANDLE* pHandleOut);
 i32 StartUpPrompt(HWND__* parent);
 void ActiveWait(u32 milliseconds);
 

@@ -35,11 +35,11 @@ i32 CDDPalette::Create(IDirectDraw2* dd, PALETTEENTRY* entries, u32 flags) {
 RVA(0x00147410, 0xbc)
 i32 CDDPalette::LoadFromFile(IDirectDraw2* dd, char* filename, u32 flags) {
     char* ext = strrchr(filename, '.');
-    if (ext && _strcmpi(ext, ".BMP") == 0) {
+    if (ext && stricmp(ext, ".BMP") == 0) {
         return LoadBmp(dd, filename, flags);
-    } else if (ext && _strcmpi(ext, ".PCX") == 0) {
+    } else if (ext && stricmp(ext, ".PCX") == 0) {
         return LoadPcx(dd, filename, flags);
-    } else if (ext && _strcmpi(ext, ".PAL") == 0) {
+    } else if (ext && stricmp(ext, ".PAL") == 0) {
         return LoadPal(dd, filename, flags);
     }
     return LoadDefault(dd, filename, flags);
@@ -577,10 +577,9 @@ i32 BlackoutSystemPalette() {
         }
         HPALETTE hpal = CreatePalette(&lp.m_lp);
         if (hpal != NULL) {
-            HPALETTE(WINAPI * pSelect)(HDC, HPALETTE, BOOL) = SelectPalette;
-            HPALETTE old = pSelect(hdc, hpal, 0);
+            HPALETTE old = SelectPalette(hdc, hpal, FALSE);
             RealizePalette(hdc);
-            DeleteObject(pSelect(hdc, old, 0));
+            DeleteObject(SelectPalette(hdc, old, FALSE));
             ReleaseDC(NULL, hdc);
             return 1;
         }

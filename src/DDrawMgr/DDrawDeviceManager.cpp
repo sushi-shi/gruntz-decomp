@@ -95,15 +95,15 @@ i32 CFileImageSurface::LoadByExt(
     surfaceCaps |= DDSCAPS_OFFSCREENPLAIN;
     i32 applyColorKey = 1;
     char* ext = strrchr(path, '.');
-    if (ext != NULL && _strcmpi(ext, ".BMP") == 0) {
+    if (ext != NULL && stricmp(ext, ".BMP") == 0) {
         if (CreateFromBmpFile(manager, path, surfaceCaps) == 0) {
             return 0;
         }
-    } else if (ext != NULL && _strcmpi(ext, ".PCX") == 0) {
+    } else if (ext != NULL && stricmp(ext, ".PCX") == 0) {
         if (CreateFromPcxFile(manager, path, surfaceCaps) == 0) {
             return 0;
         }
-    } else if (ext != NULL && _strcmpi(ext, ".PID") == 0) {
+    } else if (ext != NULL && stricmp(ext, ".PID") == 0) {
         if (DecodePcxEx(manager, path, surfaceCaps, colorKey) == 0) {
             return 0;
         }
