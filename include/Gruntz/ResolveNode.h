@@ -10,7 +10,6 @@
 #include <Wap32/WapObj.h>
 
 #include <stddef.h>
-#include <Gruntz/CoordNode.h>
 
 class CDDrawSurfaceMgr;
 

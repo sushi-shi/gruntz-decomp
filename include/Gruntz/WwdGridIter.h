@@ -8,7 +8,6 @@
 #include <Wap32/Object.h>
 
 #include <stddef.h>
-#include <Gruntz/CoordNode.h>
 
 class CWwdGrid;
 struct WwdRegion;

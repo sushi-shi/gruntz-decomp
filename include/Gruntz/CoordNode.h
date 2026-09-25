@@ -2,7 +2,9 @@
 #define GRUNTZ_GRUNTZ_COORDNODE_H
 
 #include <rva.h>
+
 #include <Wap32/TileGeometry.h>
+
 #include <math.h>
 
 struct Coord {

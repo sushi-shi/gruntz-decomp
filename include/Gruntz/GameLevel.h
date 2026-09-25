@@ -81,7 +81,6 @@ static const i32 s_tileClear = -1;
 
 #include <Gruntz/ImageSets.h>
 #include <Wap32/CoordUnset.h>
-#include <Gruntz/CoordNode.h>
 
 struct CRezItm;
 
