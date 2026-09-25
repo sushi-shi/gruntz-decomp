@@ -56,8 +56,12 @@ worker prompt: checks run once, at merge.
 
 In the lane's slot:
 
-1. `git fetch origin && git rebase origin/main`. For conflicts in `README.md`
-   and `config/match_baseline.tsv`, take main's side; they are regenerated.
+1. `git fetch origin && git rebase origin/main`. For a `README.md` conflict,
+   take main's side; the build regenerates it. For a
+   `config/match_baseline.tsv` conflict, keep the lane's raised rows: a MAX
+   banked under a removed TU-state probe cannot be re-banked from the current
+   source. After the rebase, confirm the lane's reported MAX values are in the
+   baseline before banking.
    If another merge already landed the same fix, drop the duplicate commit
    (or cherry-pick only the lane's unique commits onto `origin/main`).
 2. `gruntz match <edited units>` records byte-neutral MAX resets into
