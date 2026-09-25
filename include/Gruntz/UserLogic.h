@@ -244,8 +244,7 @@ typedef i32 (CUserLogic::*CActHandler)();
 
 inline void CUserLogic::GetScreenTile(Coord* out) {
     GetScreenPos(out);
-    out->m_x >>= TILE_SHIFT_PX;
-    out->m_y >>= TILE_SHIFT_PX;
+    SCREEN_TILE_INPLACE(out);
 }
 
 inline void CUserLogic::RegisterLogicTypesOnce() {

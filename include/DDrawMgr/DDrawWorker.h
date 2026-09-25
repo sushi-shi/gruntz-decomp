@@ -57,7 +57,7 @@ public:
             return NULL;
         }
 
-        return static_cast<CImage*>(m_items.GetAt(index));
+        return FrameAtUnchecked(index);
     }
 
     CImage* GetFrame(i32 n);
