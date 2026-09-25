@@ -9,9 +9,6 @@ GZ_ENUM_CONST_BEGIN(WarpTextureFixedPoint)
     WARP_TEXTURE_FRACTION_BITS = 14
 GZ_ENUM_CONST_END(WarpTextureFixedPoint)
 
-extern const float g_rasterScale;
-extern const float g_rasterScaleNeg;
-
 i32 WarpIsPow2(i32 x);
 
 extern i32 g_warpU;
