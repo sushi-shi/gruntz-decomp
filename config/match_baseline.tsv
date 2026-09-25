@@ -234,7 +234,7 @@ playassetload	17	17
 projectile	28	20
 registryhelper	11	11
 rezarchive	72	72
-rezcoll	13	9
+rezcoll	13	12
 rezfile	36	36
 rezlist	5	5
 rezmgr	1	1
@@ -3610,10 +3610,10 @@ rezcoll	??1CHashBin@CBaseHash@@QAE@XZ	100.0000	100.0000	1	c32d4c1543e1	0x184a30	
 rezcoll	??_ECHashBin@CBaseHash@@QAEPAXI@Z	100.0000	100.0000	1	cpp:40001b4f0b5d	0x1849d0	100.0000	
 rezcoll	?Delete@CBaseHash@@QAEXPAVCBaseHashItem@@@Z	100.0000	100.0000	7	6f6ff939e654	0x184ab0	100.0000	
 rezcoll	?GetFirst@CBaseHash@@QAEPAVCBaseHashItem@@XZ	100.0000	100.0000	3	42dd7c6f9818	0x184ae0	100.0000	
-rezcoll	?GetFirstInBin@CBaseHash@@IAEPAVCBaseHashItem@@I@Z	99.0000	99.0000	3	f5716c10bf81	0x184b40	100.0000	
-rezcoll	?GetLast@CBaseHash@@QAEPAVCBaseHashItem@@XZ	99.4737	99.4737	5	95d2e18b8bee	0x184b10	100.0000	
-rezcoll	?Insert@CBaseHash@@QAEXPAVCBaseHashItem@@@Z	99.5455	99.5455	7	110fcdeab8f4	0x184a70	100.0000	
-rezcoll	?Next@CBaseHashItem@@QAEPAV1@XZ	99.6970	99.6970	5	52c5d36c945d	0x1848b0	100.0000	
+rezcoll	?GetFirstInBin@CBaseHash@@IAEPAVCBaseHashItem@@I@Z	100.0000	100.0000	3	f5716c10bf81	0x184b40	100.0000	
+rezcoll	?GetLast@CBaseHash@@QAEPAVCBaseHashItem@@XZ	100.0000	100.0000	5	95d2e18b8bee	0x184b10	100.0000	
+rezcoll	?Insert@CBaseHash@@QAEXPAVCBaseHashItem@@@Z	100.0000	100.0000	7	110fcdeab8f4	0x184a70	100.0000	
+rezcoll	?Next@CBaseHashItem@@QAEPAV1@XZ	100.0000	99.6970	5	52c5d36c945d	0x1848b0	100.0000	
 rezcoll	?Prev@CBaseHashItem@@QAEPAV1@XZ	100.0000	100.0000	6	f329f283ad92	0x184900	100.0000	
 rezfile	??0CBaseRezFile@@QAE@PAVCRezMgr@@@Z	100.0000	100.0000	5	ed8966967be0	0x13c4e0	100.0000	
 rezfile	??0CRezFile@@QAE@PAVCRezMgr@@@Z	100.0000	100.0000	5	33702e94a7fb	0x13c540	100.0000	
