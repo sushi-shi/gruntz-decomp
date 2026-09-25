@@ -36,7 +36,8 @@ struct FloatVector2 {
     }
 
     Coord ToCoord() const {
-        return Coord(static_cast<i32>(m_x), static_cast<i32>(m_y));
+        Coord result = {static_cast<i32>(m_x), static_cast<i32>(m_y)};
+        return result;
     }
 
     i32 operator==(const FloatVector2& other) const {
@@ -196,7 +197,8 @@ struct DoubleVector2 {
     }
 
     Coord ToCoord() const {
-        return Coord(static_cast<i32>(m_x), static_cast<i32>(m_y));
+        Coord result = {static_cast<i32>(m_x), static_cast<i32>(m_y)};
+        return result;
     }
 
     i32 operator==(const DoubleVector2& other) const {
@@ -327,17 +329,14 @@ struct DoubleVector2 {
 };
 
 struct DoubleVector3 {
-    DoubleVector3() {}
-
-    DoubleVector3(double a, double b, double c) : m_x(a), m_y(b), m_z(c) {}
-
     void SetXY(const Coord& value) {
         m_x = static_cast<double>(value.m_x);
         m_y = static_cast<double>(value.m_y);
     }
 
     Coord ToCoord() const {
-        return Coord(static_cast<i32>(m_x), static_cast<i32>(m_y));
+        Coord result = {static_cast<i32>(m_x), static_cast<i32>(m_y)};
+        return result;
     }
 
     void Init(double a = 0.0, double b = 0.0, double c = 0.0) {
@@ -439,11 +438,12 @@ struct DoubleVector3 {
     }
 
     DoubleVector3 Cross(const DoubleVector3& other) const {
-        return DoubleVector3(
+        DoubleVector3 result = {
             other.m_y * m_z - other.m_z * m_y,
             other.m_z * m_x - other.m_x * m_z,
             other.m_x * m_y - other.m_y * m_x
-        );
+        };
+        return result;
     }
 
     i32 operator==(const DoubleVector3& other) const {
@@ -476,7 +476,8 @@ struct DoubleVector3 {
     }
 
     DoubleVector3 operator-() const {
-        return DoubleVector3(-m_x, -m_y, -m_z);
+        DoubleVector3 result = {-m_x, -m_y, -m_z};
+        return result;
     }
 
     const DoubleVector3& operator=(const DoubleVector3& other) {
@@ -528,15 +529,18 @@ struct DoubleVector3 {
     }
 
     DoubleVector3 operator+(const DoubleVector3& other) const {
-        return DoubleVector3(m_x + other.m_x, m_y + other.m_y, m_z + other.m_z);
+        DoubleVector3 result = {m_x + other.m_x, m_y + other.m_y, m_z + other.m_z};
+        return result;
     }
 
     DoubleVector3 operator-(const DoubleVector3& other) const {
-        return DoubleVector3(m_x - other.m_x, m_y - other.m_y, m_z - other.m_z);
+        DoubleVector3 result = {m_x - other.m_x, m_y - other.m_y, m_z - other.m_z};
+        return result;
     }
 
     DoubleVector3 operator*(double scale) const {
-        return DoubleVector3(m_x * scale, m_y * scale, m_z * scale);
+        DoubleVector3 result = {m_x * scale, m_y * scale, m_z * scale};
+        return result;
     }
 
     friend DoubleVector3 operator*(double scale, const DoubleVector3& value) {
@@ -544,16 +548,19 @@ struct DoubleVector3 {
     }
 
     DoubleVector3 operator*(const DoubleVector3& other) const {
-        return DoubleVector3(m_x * other.m_x, m_y * other.m_y, m_z * other.m_z);
+        DoubleVector3 result = {m_x * other.m_x, m_y * other.m_y, m_z * other.m_z};
+        return result;
     }
 
     DoubleVector3 operator/(double scale) const {
         double inverse = 1.0 / scale;
-        return DoubleVector3(m_x * inverse, m_y * inverse, m_z * inverse);
+        DoubleVector3 result = {m_x * inverse, m_y * inverse, m_z * inverse};
+        return result;
     }
 
     DoubleVector3 operator/(const DoubleVector3& other) const {
-        return DoubleVector3(m_x / other.m_x, m_y / other.m_y, m_z / other.m_z);
+        DoubleVector3 result = {m_x / other.m_x, m_y / other.m_y, m_z / other.m_z};
+        return result;
     }
 
     double Dist(const DoubleVector3& other) const {

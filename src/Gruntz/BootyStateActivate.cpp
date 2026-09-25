@@ -91,48 +91,42 @@
 
 DATA(0x001e8fe8)
 const Coord g_bootyLetterCoords[16] = {
-    Coord(472, 101),
-    Coord(525, 98),
-    Coord(474, 146),
-    Coord(525, 144),
-    Coord(127, 170),
-    Coord(215, 262),
-    Coord(301, 345),
-    Coord(386, 427),
-    Coord(127, 170),
-    Coord(215, 262),
-    Coord(301, 345),
-    Coord(386, 427),
-    Coord(127, 170),
-    Coord(215, 262),
-    Coord(301, 345),
-    Coord(386, 427),
+    {472, 101},
+    {525, 98},
+    {474, 146},
+    {525, 144},
+    {127, 170},
+    {215, 262},
+    {301, 345},
+    {386, 427},
+    {127, 170},
+    {215, 262},
+    {301, 345},
+    {386, 427},
+    {127, 170},
+    {215, 262},
+    {301, 345},
+    {386, 427},
 };
 
 DATA(0x001e9068)
 const i32 g_idleSpriteIds[4] = {420, 475, 530, 585};
 DATA(0x001e9078)
-const Coord g_bootyMiscPos[4] =
-    {Coord(190, 437), Coord(306, 437), Coord(422, 437), Coord(538, 437)};
+const Coord g_bootyMiscPos[4] = {{190, 437}, {306, 437}, {422, 437}, {538, 437}};
 DATA(0x001e9098)
-const Coord g_bootyPowerupPos[4] =
-    {Coord(190, 394), Coord(306, 394), Coord(422, 394), Coord(538, 394)};
+const Coord g_bootyPowerupPos[4] = {{190, 394}, {306, 394}, {422, 394}, {538, 394}};
 DATA(0x001e90b8)
-const Coord g_bootyToyPos[4] = {Coord(190, 351), Coord(306, 351), Coord(422, 351), Coord(538, 351)};
+const Coord g_bootyToyPos[4] = {{190, 351}, {306, 351}, {422, 351}, {538, 351}};
 DATA(0x001e90d8)
-const Coord g_bootyWeaponPos[4] =
-    {Coord(190, 308), Coord(306, 308), Coord(422, 308), Coord(538, 308)};
+const Coord g_bootyWeaponPos[4] = {{190, 308}, {306, 308}, {422, 308}, {538, 308}};
 DATA(0x001e90f8)
-const Coord g_bootyGruntPos[4] =
-    {Coord(190, 265), Coord(306, 265), Coord(422, 265), Coord(538, 265)};
+const Coord g_bootyGruntPos[4] = {{190, 265}, {306, 265}, {422, 265}, {538, 265}};
 DATA(0x001e9118)
-const Coord g_bootyPuddlePos[4] =
-    {Coord(190, 222), Coord(306, 222), Coord(422, 222), Coord(538, 222)};
+const Coord g_bootyPuddlePos[4] = {{190, 222}, {306, 222}, {422, 222}, {538, 222}};
 DATA(0x001e9138)
-const Coord g_bootyFlagPos[4] =
-    {Coord(218, 180), Coord(334, 180), Coord(450, 180), Coord(566, 180)};
+const Coord g_bootyFlagPos[4] = {{218, 180}, {334, 180}, {450, 180}, {566, 180}};
 DATA(0x001e9158)
-const Coord g_bootyTabPos[4] = {Coord(218, 138), Coord(334, 138), Coord(450, 138), Coord(566, 138)};
+const Coord g_bootyTabPos[4] = {{218, 138}, {334, 138}, {450, 138}, {566, 138}};
 DATA(0x001e9178)
 const RECT s_col1Rects[4] =
     {{200, 415, 284, 465}, {316, 415, 400, 465}, {432, 415, 516, 465}, {548, 415, 632, 465}};
@@ -684,14 +678,14 @@ void CBootyState::MoveLettersByDir() {
 
 DATA(0x0020b8b8)
 Coord g_levelMsgIconPos[8] = {
-    Coord(0xea, 0x80),
-    Coord(0xec, 0xae),
-    Coord(0xeb, 0xe3),
-    Coord(0xe9, 0x10b),
-    Coord(0xe9, 0x12f),
-    Coord(0xe7, 0x159),
-    Coord(0xe8, 0x17c),
-    Coord(0xe9, 0x1a8),
+    {0xea, 0x80},
+    {0xec, 0xae},
+    {0xeb, 0xe3},
+    {0xe9, 0x10b},
+    {0xe9, 0x12f},
+    {0xe7, 0x159},
+    {0xe8, 0x17c},
+    {0xe9, 0x1a8},
 };
 
 // @early-stop

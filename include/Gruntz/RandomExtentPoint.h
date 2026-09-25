@@ -8,8 +8,9 @@
 
 template<class TObject>
 inline void SelectRandomExtentPoint(TObject* object, Coord* position, Coord* span) {
-    *position = Coord(object->m_extent.left, object->m_extent.top);
-    Coord farCorner(object->m_extent.right, object->m_extent.bottom);
+    position->m_x = object->m_extent.left;
+    position->m_y = object->m_extent.top;
+    Coord farCorner = {object->m_extent.right, object->m_extent.bottom};
     *span = (farCorner - *position).GetAbs();
     if (span->m_x != 0) {
         position->m_x += rand() % span->m_x;

@@ -1246,7 +1246,6 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
     bool isL;
     bool isP;
     bool isI2;
-    Coord hitTile;
     CGrunt* cell = m_units[playerIndex * TM_UNITS_PER_PLAYER + unitIndex];
     if (cell == NULL || cell->m_entranceCommitted == false || cell->m_entranceActive != false) {
         return 0;
@@ -1313,7 +1312,7 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
         return 1;
     }
 
-    hitTile = hit->m_lastTilePx;
+    Coord hitTile = hit->m_lastTilePx;
     if (hitTile.m_x != bx || hitTile.m_y != by) {
         Coord hitCommit = hit->m_commitPx;
         if (hitCommit.m_x != bx || hitCommit.m_y != by) {

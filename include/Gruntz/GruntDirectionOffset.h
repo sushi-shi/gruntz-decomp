@@ -6,7 +6,8 @@
 #include <Wap32/TileGeometry.h>
 
 inline Coord GruntDirectionPixelOffset(const GruntDirectionCell& direction) {
-    return Coord((direction.m_column - 1) * TILE_SIZE_PX, (direction.m_row - 1) * TILE_SIZE_PX);
+    Coord result = {(direction.m_column - 1) * TILE_SIZE_PX, (direction.m_row - 1) * TILE_SIZE_PX};
+    return result;
 }
 
 #endif // GRUNTZ_GRUNTZ_GRUNTDIRECTIONOFFSET_H

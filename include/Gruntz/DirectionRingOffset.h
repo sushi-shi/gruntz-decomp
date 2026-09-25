@@ -5,25 +5,38 @@
 #include <Gruntz/DirectionRingIndex.h>
 
 inline Coord DirectionRingOffset(DirectionRingIndex direction, i32 magnitude) {
+    Coord offset = {0, 0};
     switch (direction) {
         case DIRECTION_RING_NORTH:
-            return Coord(0, -magnitude);
+            offset.m_y = -magnitude;
+            break;
         case DIRECTION_RING_NORTHEAST:
-            return Coord(magnitude, -magnitude);
+            offset.m_x = magnitude;
+            offset.m_y = -magnitude;
+            break;
         case DIRECTION_RING_EAST:
-            return Coord(magnitude, 0);
+            offset.m_x = magnitude;
+            break;
         case DIRECTION_RING_SOUTHEAST:
-            return Coord(magnitude, magnitude);
+            offset.m_x = magnitude;
+            offset.m_y = magnitude;
+            break;
         case DIRECTION_RING_SOUTH:
-            return Coord(0, magnitude);
+            offset.m_y = magnitude;
+            break;
         case DIRECTION_RING_SOUTHWEST:
-            return Coord(-magnitude, magnitude);
+            offset.m_x = -magnitude;
+            offset.m_y = magnitude;
+            break;
         case DIRECTION_RING_WEST:
-            return Coord(-magnitude, 0);
+            offset.m_x = -magnitude;
+            break;
         case DIRECTION_RING_NORTHWEST:
-            return Coord(-magnitude, -magnitude);
+            offset.m_x = -magnitude;
+            offset.m_y = -magnitude;
+            break;
     }
-    return Coord(0, 0);
+    return offset;
 }
 
 #endif // GRUNTZ_GRUNTZ_DIRECTIONRINGOFFSET_H

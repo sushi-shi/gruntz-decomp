@@ -5,17 +5,22 @@
 #include <Gruntz/CoordNode.h>
 
 inline Coord CardinalDirectionOffset(CardinalDir direction, i32 magnitude) {
+    Coord offset = {0, 0};
     switch (direction) {
         case CARDINAL_NORTH:
-            return Coord(0, -magnitude);
+            offset.m_y = -magnitude;
+            break;
         case CARDINAL_EAST:
-            return Coord(magnitude, 0);
+            offset.m_x = magnitude;
+            break;
         case CARDINAL_SOUTH:
-            return Coord(0, magnitude);
+            offset.m_y = magnitude;
+            break;
         case CARDINAL_WEST:
-            return Coord(-magnitude, 0);
+            offset.m_x = -magnitude;
+            break;
     }
-    return Coord(0, 0);
+    return offset;
 }
 
 #endif // GRUNTZ_GRUNTZ_CARDINALDIRECTIONOFFSET_H

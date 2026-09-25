@@ -6,10 +6,6 @@
 #include <math.h>
 
 struct Coord {
-    Coord() {}
-
-    Coord(i32 x, i32 y) : m_x(x), m_y(y) {}
-
     i32 m_x;
     i32 m_y;
 
@@ -38,7 +34,8 @@ struct Coord {
     }
 
     Coord GetAbs() const {
-        return Coord(abs(m_x), abs(m_y));
+        Coord result = {abs(m_x), abs(m_y)};
+        return result;
     }
 
     Coord GetMax(const Coord& other) const {
@@ -97,7 +94,8 @@ struct Coord {
     }
 
     Coord operator*(i32 scale) const {
-        return Coord(m_x * scale, m_y * scale);
+        Coord result = {m_x * scale, m_y * scale};
+        return result;
     }
 
     friend Coord operator*(i32 scale, const Coord& value) {
@@ -111,7 +109,8 @@ struct Coord {
     }
 
     Coord operator+(const Coord& other) const {
-        return Coord(m_x + other.m_x, m_y + other.m_y);
+        Coord result = {m_x + other.m_x, m_y + other.m_y};
+        return result;
     }
 
     const Coord& operator+=(const Coord& other) {
@@ -121,11 +120,13 @@ struct Coord {
     }
 
     Coord operator-() const {
-        return Coord(-m_x, -m_y);
+        Coord result = {-m_x, -m_y};
+        return result;
     }
 
     Coord operator-(const Coord& other) const {
-        return Coord(m_x - other.m_x, m_y - other.m_y);
+        Coord result = {m_x - other.m_x, m_y - other.m_y};
+        return result;
     }
 
     const Coord& operator-=(const Coord& other) {
@@ -135,7 +136,8 @@ struct Coord {
     }
 
     Coord operator/(i32 scale) const {
-        return Coord(m_x / scale, m_y / scale);
+        Coord result = {m_x / scale, m_y / scale};
+        return result;
     }
 
     const Coord& operator/=(i32 scale) {

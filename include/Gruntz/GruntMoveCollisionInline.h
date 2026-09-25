@@ -75,8 +75,8 @@ inline i32 CGrunt::CanCommitMove(i32 moveX, i32 moveY, i32 sourceX, i32 sourceY)
 }
 
 static inline i32 DiagonalRouteBlocked(CMapMgr* board, const Coord& source, const Coord& target) {
-    Coord horizontalStep(target.m_x > source.m_x ? 1 : -1, 0);
-    Coord verticalStep(0, target.m_y > source.m_y ? 1 : -1);
+    Coord horizontalStep = {target.m_x > source.m_x ? 1 : -1, 0};
+    Coord verticalStep = {0, target.m_y > source.m_y ? 1 : -1};
     Coord sourceHorizontal = source + horizontalStep;
     Coord sourceVertical = source + verticalStep;
     Coord targetHorizontal = target - horizontalStep;
