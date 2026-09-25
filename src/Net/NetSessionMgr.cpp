@@ -42,7 +42,6 @@ i32 CNetSession::Initialize(CGruntzMgr* mgr, CMulti* owner, CNetMgr* netMgr) {
     return 1;
 }
 
-// @early-stop
 RVA(0x000bf000, 0xd5)
 void CNetSession::Shutdown() {
     m_mgr = NULL;
@@ -54,18 +53,19 @@ void CNetSession::Shutdown() {
     m_sequence = 0;
     m_commandPeriod = 1;
     for (i32 i = 0; i < 4; i++) {
-        m_slots[i].m_isDraining = false;
-        m_slots[i].m_drainSequence = 0;
-        m_slots[i].m_state = NETSLOT_EMPTY;
-        m_slots[i].m_player = NULL;
-        m_slots[i].m_latency = 0;
-        m_slots[i].m_contiguousSequence = 0;
-        m_slots[i].m_peerWindowBase = 0;
-        m_slots[i].m_owner = NULL;
-        m_slots[i].ClearRecords();
-        m_slots[i].ClearDrainAcks();
-        m_slots[i].ClearSequenceSet(m_slots[i].m_receivedAhead);
-        m_slots[i].ClearSequenceSet(m_slots[i].m_peerReceivedAhead);
+        CNetCmdSlot* slot = &m_slots[i];
+        slot->m_isDraining = false;
+        slot->m_drainSequence = 0;
+        slot->m_state = NETSLOT_EMPTY;
+        slot->m_player = NULL;
+        slot->m_latency = 0;
+        slot->m_contiguousSequence = 0;
+        slot->m_peerWindowBase = 0;
+        slot->m_owner = NULL;
+        slot->ClearRecords();
+        slot->ClearDrainAcks();
+        slot->ClearSequenceSet(slot->m_receivedAhead);
+        slot->ClearSequenceSet(slot->m_peerReceivedAhead);
     }
     for (i32 j = 0; j < 0x80; j++) {
         m_commandByTick[j] = NULL;
@@ -295,7 +295,6 @@ i32 CNetSession::DispatchSystemMessage(LPDPMSG_GENERIC message, i32 messageSize)
     }
 }
 
-// @early-stop
 RVA(0x000bf9e0, 0xfe)
 i32 CNetSession::SendTick() {
     if (m_batchBuilt == false && (m_commandTick + 1) % m_commandPeriod == 0) {
@@ -306,9 +305,9 @@ i32 CNetSession::SendTick() {
         record->m_entryCount = 0;
         record->m_checksum = ComputeChecksum();
         char* payload = record->m_payload;
-        i32 commandTick = batchSequence * m_commandPeriod;
-        batchSequence = batchSequence + 1;
-        for (; commandTick < batchSequence * m_commandPeriod; commandTick++) {
+        for (i32 commandTick = batchSequence * m_commandPeriod;
+             commandTick < (batchSequence + 1) * m_commandPeriod;
+             commandTick++) {
             CGruntzCommand* command = GetCommandAtTick(commandTick);
             if (command) {
                 NoopSync(command);
@@ -453,7 +452,6 @@ i32 CNetSession::SendPendingRecords() {
     return count;
 }
 
-// @early-stop
 RVA(0x000bfeb0, 0xfa)
 i32 CNetSession::SendRecord(CNetCmdSlot* slot, i32 sequence) {
     if (!slot) {
@@ -470,10 +468,9 @@ i32 CNetSession::SendRecord(CNetCmdSlot* slot, i32 sequence) {
     if (slot->ContainsSequence(slot->m_receivedAhead, baseSeq + 3)) {
         flags |= 0x20;
     }
+    GruntRec* entry = &m_commandRecords[sequence % 0x80];
     g_netCmdSendMsg.m_flags = flags;
     g_netCmdSendMsg.m_sequence = sequence;
-    i32 recordIndex = sequence % 0x80;
-    GruntRec* entry = &m_commandRecords[recordIndex];
     g_netCmdSendMsg.m_windowBase = slot->m_contiguousSequence;
     g_netCmdSendMsg.m_checksum = entry->m_checksum;
     g_netCmdSendMsg.m_entryCount = entry->m_entryCount;

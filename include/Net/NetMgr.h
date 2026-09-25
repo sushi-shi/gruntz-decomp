@@ -176,16 +176,6 @@ struct CNetCmdSlot {
     }
 };
 
-#pragma pack(push, 1)
-struct CNetCmdHdr {
-    i32 m_sequence;
-    i32 m_windowBase;
-    i32 m_checksum;
-
-    u8 m_entryCount;
-};
-#pragma pack(pop)
-
 struct GruntRec {
     i32 m_sequence;
     i32 m_checksum;
@@ -202,6 +192,7 @@ struct CNetChatPacket;
 
 union CNetWireMsg {
     char* m_bytes;
+    i32* m_dwords;
     CNetMsg* m_msg;
     CNetPacketPrefix* m_prefix;
     LPDPMSG_GENERIC m_system;
@@ -211,7 +202,6 @@ union CNetWireMsg {
     CNetPlayerUpdatePacket* m_playerUpdate;
     CNetPlayerTablePacket* m_playerTable;
     CNetVersionPacket* m_versionCheck;
-    CNetCmdHdr* m_cmdHdr;
     CNetGameConfigPacket* m_gameConfig;
     CNetChatPacket* m_chat;
 };
@@ -460,6 +450,13 @@ public:
     POSITION m_sessionCursor;
     POSITION m_playerCursor;
     i32 m_reserved88;
+
+    inline CNetProviderNode* GetFirstProvider();
+    inline CNetProviderNode* GetNextProvider();
+    inline CNetSessionListNode* GetFirstSession();
+    inline CNetSessionListNode* GetNextSession();
+    inline CNetPlayerNode* GetFirstPlayer();
+    inline CNetPlayerNode* GetNextPlayer();
 
     CNetMgr() {
         m_directPlayBase = NULL;

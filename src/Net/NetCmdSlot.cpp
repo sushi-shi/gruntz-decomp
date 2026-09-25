@@ -93,13 +93,12 @@ i32 CNetCmdSlot::ProcessPacket(i32 playerId, char* packet, i32 packetSize) {
     }
     u8 opcode = static_cast<u8>(*packet);
     b32 isDrainPacket = (opcode & 1) != 0;
-    char* packetStart = packet;
-    packet++;
+    char* cursor = packet + 1;
     if (m_state != NETSLOT_ACTIVE) {
         return 1;
     }
     if (opcode & 0x80) {
-        return m_owner->DispatchRecvMsg(m_player->m_networkPlayerId, packetStart, packetSize);
+        return m_owner->DispatchRecvMsg(m_player->m_networkPlayerId, packet, packetSize);
     }
     if (isDrainPacket == false) {
         if (m_isDraining != false) {
@@ -114,28 +113,35 @@ i32 CNetCmdSlot::ProcessPacket(i32 playerId, char* packet, i32 packetSize) {
 
     i32 remaining = packetSize - 1;
     if (isDrainPacket) {
-        packet++;
+        cursor++;
         remaining--;
     }
 
     CNetWireMsg wire;
-    wire.m_bytes = packet;
-    CNetCmdHdr* header = wire.m_cmdHdr;
-    i32 sequence = header->m_sequence;
-    i32 windowBase = header->m_windowBase;
-    i32 checksum = header->m_checksum;
-    u8 entryCount = header->m_entryCount;
-    char* cursor = packet + 13;
-    remaining -= 13;
+    wire.m_bytes = cursor;
+    i32 sequence = *wire.m_dwords;
+    cursor += 4;
+    remaining -= 4;
+    wire.m_bytes = cursor;
+    i32 windowBase = *wire.m_dwords;
+    cursor += 4;
+    remaining -= 4;
+    wire.m_bytes = cursor;
+    i32 checksum = *wire.m_dwords;
+    cursor += 4;
+    remaining -= 4;
+    u8 entryCount = *cursor;
+    cursor++;
+    remaining--;
 
     if (m_isDraining != false && isDrainPacket) {
         CNetCmdSlot* slot = m_owner->m_session->FindSlotByPlayerId(playerId);
         if (slot == NULL) {
             return 0;
         }
+        i32 ackPlayerIndex = slot->m_player->m_playerIndex;
         if (opcode & 2) {
-            i32 ackPlayerIndex = slot->m_player->m_playerIndex & 0xff;
-            m_drainAckFlags[ackPlayerIndex] = 1;
+            m_drainAckFlags[ackPlayerIndex & 0xff] = 1;
             if (sequence > m_drainSequence) {
                 m_drainSequence = sequence;
             }
@@ -248,20 +254,17 @@ void CNetCmdSlot::ClearSequenceSet(i32* sequences) {
     }
 }
 
-// @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000c10d0, 0x7c)
 char* __stdcall SequenceSetToString(i32* sequences) {
     g_sequenceListBuffer[0] = 0;
-    i32 remaining = 3;
-    do {
-        if (*sequences != -1) {
-            wsprintfA(g_sequenceScratch, "%d,", *sequences);
+    for (i32 i = 0; i < 3; i++) {
+        if (sequences[i] != -1) {
+            wsprintfA(g_sequenceScratch, "%d,", sequences[i]);
             strcat(g_sequenceListBuffer, g_sequenceScratch);
         }
-        sequences++;
-    } while (--remaining != 0);
+    }
     return g_sequenceListBuffer;
 }
 
