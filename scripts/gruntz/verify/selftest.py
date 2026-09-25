@@ -105,7 +105,8 @@ class StaticDestructorAttributionControls(unittest.TestCase):
         if not pdb_synth.BASE_DIR.joinpath("butemgr.obj").is_file():
             self.skipTest("base objects absent (unbuilt tree)")
         derived = static_dtors.provision(model, names, pdb_synth.BASE_DIR, retail())
-        expected = (0x153800, 0x1538B0, 0x173290, 0x173840,
+        # 0x159C70/0x159C80: one owner (TickKillCues) with two local statics.
+        expected = (0x153800, 0x1538B0, 0x159C70, 0x159C80, 0x173290, 0x173840,
                     0x173DC0, 0x174330, 0x174890)
         for rva in expected:
             self.assertIn(rva, derived)
