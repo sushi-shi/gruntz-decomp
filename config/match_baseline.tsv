@@ -58,7 +58,7 @@ brickz	4	1
 brickzcellflags	3	1
 brickzload	1	0
 buteglobals	4	4
-butemgr	73	71
+butemgr	73	72
 butetail	3	3
 butetree	2	2
 bzkinddispatch	1	1
@@ -717,7 +717,7 @@ butemgr	?NewTabsSave@CButeMgr@@CAXPBDPAV?$zSymTab@VCSymTabItem@CButeMgr@@@@PAX@Z
 butemgr	?NextState@CButeMgr@@QAEFFD@Z	100.0000	100.0000	5	a994e8d5169d	0x170430	100.0000	
 butemgr	?Reset@CButeMgr@@QAEXXZ	100.0000	100.0000	5	b8bdad74e64e	0x170330	100.0000	
 butemgr	?Save@CButeMgr@@QAE_NXZ	93.3913	93.3913	12	9043cb813533	0x171640	93.3913	
-butemgr	?ScanTok@CButeMgr@@QAE_NXZ	99.6644	99.6644	6	fe4c5af691bc	0x1704c0	100.0000	
+butemgr	?ScanTok@CButeMgr@@QAE_NXZ	100.0000	100.0000	6	fe4c5af691bc	0x1704c0	100.0000	
 butemgr	?SetDouble@CButeMgr@@QAEXPBD0N@Z	100.0000	100.0000	6	2ef431ed1911	0x172ce0	100.0000	
 butemgr	?SetDword@CButeMgr@@QAEXPBD0K@Z	100.0000	100.0000	6	915a9b2cd24a	0x1722c0	100.0000	
 butemgr	?SetFloat@CButeMgr@@QAEXPBD0M@Z	100.0000	100.0000	6	c81157e1ffcc	0x1727d0	100.0000	
