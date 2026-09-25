@@ -42,3 +42,28 @@ BOOL Sparam_Get(char* sDest, const char* sSource, const char* sId) {
 
     return (TRUE);
 }
+
+RVA(0x000f9280, 0xe4)
+BOOL Sparam_Add(char* sSource, const char* sId, const char* sParam) {
+    if (!sParam) {
+        return (FALSE);
+    }
+
+    strcat(sSource, "[");
+    strcat(sSource, sId);
+    strcat(sSource, ":");
+
+    strcat(sSource, sParam);
+
+    strcat(sSource, "]");
+
+    return (TRUE);
+}
+
+RVA(0x000f93b0, 0x41)
+BOOL Sparam_Add(char* sSource, const char* sId, int nParam) {
+    char sTmp[256];
+    sprintf(sTmp, "%i", nParam);
+
+    return (Sparam_Add(sSource, sId, sTmp));
+}

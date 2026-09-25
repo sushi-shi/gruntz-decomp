@@ -81,7 +81,7 @@ public:
 
     i32 LaunchPortal(i32 quitAfter);
 
-    i32 LaunchProcessInDir(char* exe, char* dir);
+    i32 LaunchProcessInDir(char* sApp, char* sPath);
 
     void Post(i32 code);
     i32 OpenBattlezSetup();

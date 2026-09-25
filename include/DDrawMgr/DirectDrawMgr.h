@@ -35,7 +35,7 @@ public:
         m_colorCount = 0;
     }
 
-    i32 LoadFromFile(IDirectDraw2* dd, char* filename, u32 flags);
+    i32 LoadFromFile(IDirectDraw2* dd, char* sFile, u32 flags);
 
     i32 Create(IDirectDraw2* dd, PALETTEENTRY* entries, u32 flags);
     i32 LoadBmp(IDirectDraw2* dd, char* filename, u32 flags);

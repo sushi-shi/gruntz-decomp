@@ -59,7 +59,6 @@
 #include <Net/NetMsgId.h>
 #include <Net/NetPackets.h>
 #include <Net/NetProviderNode.h>
-#include <Net/NetSession.h>
 #include <Net/NetSlotState.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezArchive.h>
@@ -1316,10 +1315,10 @@ void RefreshSessionSelection(HWND hDlg, HWND hList) {}
 RVA(0x000b8b10, 0x175)
 CNetSessionListNode* CMulti::CreateHostSessionAndPlayer() {
     char buf[0x100] = "";
-    MakeButeSectionKey(buf, "NAME", m_gameName);
-    AppendInt(buf, "CMDDELAY", m_commandDelay);
-    AppendInt(buf, "RESEND", m_resendInterval);
-    AppendInt(buf, "LEVEL", SelectedLevelIndex());
+    Sparam_Add(buf, "NAME", m_gameName);
+    Sparam_Add(buf, "CMDDELAY", m_commandDelay);
+    Sparam_Add(buf, "RESEND", m_resendInterval);
+    Sparam_Add(buf, "LEVEL", SelectedLevelIndex());
 
     CNetSessionListNode* enumResult = g_netMgr->CreateSession(4, buf, 0, "");
     if (enumResult == NULL) {

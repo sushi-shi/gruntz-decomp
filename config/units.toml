@@ -1151,11 +1151,6 @@ source = "src/DDrawMgr/FaderMgr.cpp"
 flags = "cpp"
 
 [[unit]]
-unit = "netsession"
-source = "src/Net/NetSession.cpp"
-flags = "cpp"
-
-[[unit]]
 unit = "helpstate"
 source = "src/Gruntz/HelpState.cpp"
 flags = "cpp-rtti"
@@ -1201,11 +1196,6 @@ flags = "cpp"
 unit = "engstrrendertext"
 source = "src/Wap32/EngStrRenderText.cpp"
 flags = "cpp"
-
-[[unit]]
-unit = "fxmodedesc"
-source = "src/Gruntz/ButeSectionKey.cpp"
-flags = "cpp-rtti"
 
 [[unit]]
 unit = "blowfish"

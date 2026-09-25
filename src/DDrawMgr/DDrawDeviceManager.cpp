@@ -88,27 +88,27 @@ i32 CFileImageSurface::ResolveEx(
 RVA(0x00148940, 0x102)
 i32 CFileImageSurface::LoadByExt(
     CDDrawDeviceManager* manager,
-    char* path,
+    char* sFile,
     i32 surfaceCaps,
     i32 colorKey
 ) {
     surfaceCaps |= DDSCAPS_OFFSCREENPLAIN;
     i32 applyColorKey = 1;
-    char* ext = strrchr(path, '.');
-    if (ext != NULL && stricmp(ext, ".BMP") == 0) {
-        if (CreateFromBmpFile(manager, path, surfaceCaps) == 0) {
+    char* pExt = strrchr(sFile, '.');
+    if (pExt && stricmp(pExt, ".BMP") == 0) {
+        if (CreateFromBmpFile(manager, sFile, surfaceCaps) == 0) {
             return 0;
         }
-    } else if (ext != NULL && stricmp(ext, ".PCX") == 0) {
-        if (CreateFromPcxFile(manager, path, surfaceCaps) == 0) {
+    } else if (pExt && stricmp(pExt, ".PCX") == 0) {
+        if (CreateFromPcxFile(manager, sFile, surfaceCaps) == 0) {
             return 0;
         }
-    } else if (ext != NULL && stricmp(ext, ".PID") == 0) {
-        if (DecodePcxEx(manager, path, surfaceCaps, colorKey) == 0) {
+    } else if (pExt && stricmp(pExt, ".PID") == 0) {
+        if (DecodePcxEx(manager, sFile, surfaceCaps, colorKey) == 0) {
             return 0;
         }
         applyColorKey = 0;
-    } else if (this->Load(manager, path, surfaceCaps) == 0) {
+    } else if (this->Load(manager, sFile, surfaceCaps) == 0) {
         return 0;
     }
     if (colorKey != -1 && applyColorKey != 0) {
