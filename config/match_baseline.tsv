@@ -2931,8 +2931,8 @@ menuitem	?Activate@CMenuItem@@UAEHXZ	100.0000	100.0000	8	ff7631b91894	0x1856d0	1
 menuitem	?AdvanceFrame@CAnimatedMenuItem@@QAEHXZ	100.0000	100.0000	4	d60c08dbca83	0x1859c0	100.0000	
 menuitem	?Cleanup@CMenuItem@@UAEXXZ	100.0000	100.0000	1	598ca9142828	0x185510	100.0000	
 menuitem	?Deselect@CMenuItem@@UAEHXZ	100.0000	100.0000	2	44cb2a2f88d2	0x1856c0	100.0000	
-menuitem	?DrawAt@CAnimatedMenuItem@@UAEHPAVCDDrawSurfacePair@@HH@Z	100.0000	100.0000	3	21e100e9f2c0	0x1858d0	100.0000	
-menuitem	?DrawAt@CMenuItem@@UAEHPAVCDDrawSurfacePair@@HH@Z	100.0000	100.0000	4	46b73d1edbc5	0x1855f0	100.0000	
+menuitem	?DrawAt@CAnimatedMenuItem@@UAEHPAVCDDrawSurfacePair@@HH@Z	100.0000	100.0000	4	1ee828004efd	0x1858d0	100.0000	
+menuitem	?DrawAt@CMenuItem@@UAEHPAVCDDrawSurfacePair@@HH@Z	100.0000	100.0000	5	d91a30f46ecf	0x1855f0	100.0000	
 menuitem	?GetCurrentFrame@CAnimatedMenuItem@@QAEPAVCImage@@XZ	100.0000	100.0000	3	13ce60ffc963	0x185970	100.0000	
 menuitem	?GetFrameHeight@CAnimatedMenuItem@@UAEHXZ	100.0000	100.0000	2	88ca46cd69fb	0x185890	100.0000	
 menuitem	?GetFrameHeight@CMenuItem@@UAEHXZ	100.0000	100.0000	2	6e5c69a25fa0	0x185550	100.0000	
@@ -3029,7 +3029,7 @@ menutree	?Configure@CMenuTree@@QAEHPAVCDDrawSurfaceMgr@@PAUHWND__@@PAUtagRECT@@H
 menutree	?ConfigureLeftCursorAnimation@CMenuTree@@QAEHPBDHH@Z	100.0000	100.0000	6	36b808eab808	0x182df0	100.0000	
 menutree	?ConfigureRightCursorAnimation@CMenuTree@@QAEHPBDHH@Z	100.0000	100.0000	6	6e0d02568347	0x182e60	100.0000	
 menutree	?DrawActivePage@CMenuTree@@QAEHXZ	100.0000	100.0000	2	51e820a7bdbe	0x182cb0	100.0000	
-menutree	?DrawFocusCursors@CMenuTree@@QAEHPAVCDDrawSurfacePair@@PAVCMenuItem@@HH@Z	94.3077	94.3077	3	bc2dc07b7f01	0x182f90	94.3077	
+menutree	?DrawFocusCursors@CMenuTree@@QAEHPAVCDDrawSurfacePair@@PAVCMenuItem@@HH@Z	99.5077	99.5077	4	f81b083f28a7	0x182f90	99.5077	
 menutree	?FindPage@CMenuTree@@QAEPAVCMenuPage@@PBD@Z	100.0000	100.0000	4	c21b8126c477	0x182be0	100.0000	
 menutree	?FocusItemAt@CMenuTree@@QAEHHH@Z	100.0000	100.0000	2	84bbe8190955	0x183170	100.0000	
 menutree	?MoveFocusDown@CMenuTree@@QAEHXZ	100.0000	100.0000	2	baa2996a95e5	0x182d40	100.0000	
@@ -3740,7 +3740,7 @@ sbi_imagesetani	?SetRange@CSBI_ImageSetAni@@UAEXHHHHH@Z	100.0000	100.0000	6	65ed
 sbi_menuitem	?Blit@CSBI_MenuItem@@QAEHXZ	100.0000	100.0000	1	52d039266205	0xe84f0	100.0000	
 sbi_menuitem	?ProbeState@CSBI_MenuItem@@QAEHW4SbiMenuItemState@@@Z	100.0000	100.0000	1	f6c93fdbb796	0xe8480	100.0000	
 sbi_menuitem	?Refresh@CSBI_MenuItem@@UAEHH@Z	100.0000	100.0000	1	f96c2003405f	0xe81c0	100.0000	
-sbi_menuitem	?Render@CSBI_MenuItem@@UAEHXZ	100.0000	100.0000	3	f2dcb13320ba	0xe82a0	100.0000	
+sbi_menuitem	?Render@CSBI_MenuItem@@UAEHXZ	100.0000	100.0000	4	df4854226f41	0xe82a0	100.0000	
 sbi_menuitem	?Reset@CSBI_MenuItem@@UAEXXZ	100.0000	100.0000	2	3b4d600759d4	0xe81a0	100.0000	
 sbi_menuitem	?Reset@CStatusBarItem@@UAEXXZ	100.0000	100.0000	1	3f65d1aef442	0x10bfa0	100.0000	
 sbi_menuitem	?ResolveFrame@CSBI_MenuItem@@QAEHPBDH@Z	100.0000	100.0000	7	6a4d5524b2ac	0xe81e0	100.0000	
@@ -3990,7 +3990,7 @@ shadetablecache	?FlashTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEEN
 shadetablecache	?FreeNodes@CShadeTableCache@@QAEXXZ	100.0000	100.0000	3	07317cfb7ad9	0x14ded0	100.0000	
 shadetablecache	?GammaTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEENTRY@@HH@Z	100.0000	100.0000	5	742beec58eed	0x14e9f0	100.0000	
 shadetablecache	?GreyTable@CShadeTableCache@@QAEPAUCShadeTable@@XZ	93.0152	93.0152	7	26fe716642ff	0x14eef0	93.0152	
-shadetablecache	?HsvShiftTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEENTRY@@HHHH@Z	72.9954	72.9954	10	100661600d15	0x14e540	99.5413	
+shadetablecache	?HsvShiftTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEENTRY@@HHHH@Z	72.9954	72.9954	11	354d69e8d355	0x14e540	99.5413	
 shadetablecache	?HueRampTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEENTRY@@HH@Z	27.6667	27.6667	6	e1d201edcb7d	0x14e830	98.1560	
 shadetablecache	?HueSortTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUtagPALETTEENTRY@@@Z	0.0000	0.0000	4	eef670ec5b5b	0x14ede0	100.0000	
 shadetablecache	?Init@CShadeTableCache@@QAEHXZ	100.0000	100.0000	2	c116298e3a0e	0x14dec0	100.0000	
