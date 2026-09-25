@@ -550,8 +550,7 @@ i32 CFontConfig::Draw3DText(
     i32 hoff = (dst->right + rc.left - dst->left - rc.right) / 2;
     i32 voff = (dst->bottom - dst->top + rc.top - rc.bottom) / 2;
     OFFSET_RECT_X_EDGES(rc, hoff, hoff);
-    rc.top += voff;
-    rc.bottom += voff;
+    OFFSET_RECT_Y_EDGES(rc, voff, voff);
     if (shadow) {
         SetTextColor(hdc, 0);
         rc.left += dx;

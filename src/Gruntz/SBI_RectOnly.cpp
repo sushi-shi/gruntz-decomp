@@ -3589,8 +3589,7 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
         i64* clock = &m_fallClock.m_last;
         i64 d = static_cast<i64>(g_frameTime) - clock[0];
         if (d >= clock[1]) {
-            m_fallingItemRect.top += speed;
-            m_fallingItemRect.bottom += speed;
+            OFFSET_RECT_Y_EDGES(m_fallingItemRect, speed, speed);
             CSBI_ImageSet* w = m_fallingItemSprite;
             if (w) {
                 RECT rc;
