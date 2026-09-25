@@ -4159,8 +4159,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
 
     SIZE
     extent;
-    extent.cx = w->m_modeSize.cx;
-    extent.cy = w->m_modeSize.cy;
+    SET_SIZE_COMPONENTS(extent, w->m_modeSize.cx, w->m_modeSize.cy);
 
     if (self->m_cursorX < 0xc || (self->m_scrollEdgeLock & 1)) {
         if (self->m_scrollEdgeActive & 1) {
@@ -6948,8 +6947,7 @@ i32 CPlay::ExpandViewport(i32 step) {
 
     SIZE
     modeSize;
-    modeSize.cx = manager->m_modeSize.cx;
-    modeSize.cy = manager->m_modeSize.cy;
+    SET_SIZE_COMPONENTS(modeSize, manager->m_modeSize.cx, manager->m_modeSize.cy);
 
     if (resized.right - resized.left
         < (statusBar->m_position == STATUSBAR_HIDDEN ? modeSize.cx

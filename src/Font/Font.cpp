@@ -8,6 +8,7 @@
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/PixelShift.h>
 #include <Font/FontBlendInline.h>
+#include <RectMacros.h>
 
 #include <ddraw.h>
 #include <limits.h>
@@ -500,8 +501,7 @@ CSize FontRenderer::MeasureText(CString text) {
 
         width += m_font->GetGlyph(g, c).m_width;
     }
-    ext.cx = width;
-    ext.cy = m_font->GetMaxHeight();
+    SET_SIZE_COMPONENTS(ext, width, m_font->GetMaxHeight());
     return ext;
 }
 

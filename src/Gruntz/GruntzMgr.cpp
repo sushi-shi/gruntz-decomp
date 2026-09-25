@@ -978,12 +978,10 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, b32 saveMode) {
     }
     while (ShowCursor(false) >= 0) {
     }
-    m_modeSize.cx = w;
-    m_modeSize.cy = h;
+    SET_SIZE_COMPONENTS(m_modeSize, w, h);
     if (m_curState->Update() == GAMESTATE_PLAY || m_curState->Update() == GAMESTATE_MULTI) {
         if (saveMode) {
-            m_savedModeSize.cx = w;
-            m_savedModeSize.cy = h;
+            SET_SIZE_COMPONENTS(m_savedModeSize, w, h);
         }
         CPlay* st = static_cast<CPlay*>(m_curState);
         st->ResetViewport();
