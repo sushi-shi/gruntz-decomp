@@ -20,6 +20,7 @@
 #include <Rez/RezArchiveEntry.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/Object.h>
+#include <Wap32/TileGeometry.h>
 #include <Wap32/WapCompress.h>
 #include <Wwd/MoveFlags.h>
 #include <Wwd/MoveMode.h>
@@ -1345,9 +1346,7 @@ i32 CGameLevel::CanLandOnPlatform(
         i32 cmpHi = tHi - destY + sy;
 
         i32 over = platform->m_deltaY;
-        if (over > 0) {
-            over = 0;
-        }
+        CLAMP_UPPER_INPLACE(over, 0);
         i32 ceil = boxT - over;
         if (cmpHi > ceil) {
             goto fail;

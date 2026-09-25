@@ -2895,16 +2895,12 @@ void CGrunt::AdvanceMotion() {
     i32 x = static_cast<i32>(EntranceCell()->m_motion.m_step.m_x + m_movePosX);
     i32 y = static_cast<i32>(EntranceCell()->m_motion.m_step.m_y + m_movePosY);
     if (dirX > s_fpZero) {
-        if (x > m_lastTilePx.m_x) {
-            x = m_lastTilePx.m_x;
-        }
+        CLAMP_UPPER_INPLACE(x, m_lastTilePx.m_x);
     } else if (dirX < s_fpZero && x < m_lastTilePx.m_x) {
         x = m_lastTilePx.m_x;
     }
     if (dirY > s_fpZero) {
-        if (y > m_lastTilePx.m_y) {
-            y = m_lastTilePx.m_y;
-        }
+        CLAMP_UPPER_INPLACE(y, m_lastTilePx.m_y);
     } else if (dirY < s_fpZero && y < m_lastTilePx.m_y) {
         y = m_lastTilePx.m_y;
     }

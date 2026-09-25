@@ -2425,9 +2425,7 @@ i32 CStatusBarMgr::Activate() {
     }
     i32 w = g_gameReg->m_modeSize.cx;
     i32 d = g_gameReg->m_modeSize.cy;
-    if (m_barX > w - 0x22) {
-        m_barX = w - 0x22;
-    }
+    CLAMP_UPPER_INPLACE(m_barX, w - 0x22);
     if (m_barY > d - 9) {
         m_barY = d - 0x22;
     }

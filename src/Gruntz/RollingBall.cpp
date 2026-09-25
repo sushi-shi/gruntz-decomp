@@ -506,9 +506,7 @@ i32 CRollingBall::Update() {
         m_subX = v;
         nx = static_cast<i32>(floor(v));
         m_moveDelta = fabs(static_cast<double>(nx) - static_cast<double>(m_target.m_x));
-        if (nx > m_target.m_x) {
-            nx = m_target.m_x;
-        }
+        CLAMP_UPPER_INPLACE(nx, m_target.m_x);
     } else if (m_stepDirX < 0) {
         double v = m_subX - dt;
         m_subX = v;
@@ -527,9 +525,7 @@ i32 CRollingBall::Update() {
         m_subY = v;
         ny = static_cast<i32>(floor(v));
         m_moveDelta = fabs(static_cast<double>(ny) - static_cast<double>(m_target.m_y));
-        if (ny > m_target.m_y) {
-            ny = m_target.m_y;
-        }
+        CLAMP_UPPER_INPLACE(ny, m_target.m_y);
     } else if (m_stepDirY < 0) {
         double v = m_subY - dt;
         m_subY = v;

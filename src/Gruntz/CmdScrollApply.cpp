@@ -15,6 +15,7 @@
 #include <Ints.h>
 #include <RectMacros.h>
 #include <Rez/FrameClock.h>
+#include <Wap32/TileGeometry.h>
 #include <Wwd/WwdFile.h>
 
 #include <stddef.h>
@@ -62,15 +63,11 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
         scrollX = cx - 1;
     }
     CDDrawWorkerHost* boundsPlane = pm->m_world->m_level->m_mainPlane;
-    if (scrollX > boundsPlane->m_planePixelWidth - cx) {
-        scrollX = boundsPlane->m_planePixelWidth - cx;
-    }
+    CLAMP_UPPER_INPLACE(scrollX, boundsPlane->m_planePixelWidth - cx);
     if (scrollY < cy - 1) {
         scrollY = cy - 1;
     }
-    if (scrollY > boundsPlane->m_planePixelHeight - cy) {
-        scrollY = boundsPlane->m_planePixelHeight - cy;
-    }
+    CLAMP_UPPER_INPLACE(scrollY, boundsPlane->m_planePixelHeight - cy);
 
     i32 deltaX = scrollX - g_lastScrollX;
     i32 deltaY = scrollY - g_lastScrollY;
