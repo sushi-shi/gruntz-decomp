@@ -295,7 +295,6 @@ i32 CNetSession::DispatchSystemMessage(LPDPMSG_GENERIC message, i32 messageSize)
     }
 }
 
-// @early-stop
 RVA(0x000bf9e0, 0xfe)
 i32 CNetSession::SendTick() {
     if (m_batchBuilt == false && (m_commandTick + 1) % m_commandPeriod == 0) {
@@ -306,9 +305,9 @@ i32 CNetSession::SendTick() {
         record->m_entryCount = 0;
         record->m_checksum = ComputeChecksum();
         char* payload = record->m_payload;
-        i32 commandTick = batchSequence * m_commandPeriod;
-        batchSequence = batchSequence + 1;
-        for (; commandTick < batchSequence * m_commandPeriod; commandTick++) {
+        for (i32 commandTick = batchSequence * m_commandPeriod;
+             commandTick < (batchSequence + 1) * m_commandPeriod;
+             commandTick++) {
             CGruntzCommand* command = GetCommandAtTick(commandTick);
             if (command) {
                 NoopSync(command);
