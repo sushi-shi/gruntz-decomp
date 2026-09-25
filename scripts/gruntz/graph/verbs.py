@@ -285,28 +285,50 @@ def match_units(units: list[str], *, jobs: int | None, verbose: bool) -> int:
 
 
 def print_unit_functions(units: list[str], before: dict, after: dict) -> None:
-    """Every function of `units`: now and previous CUR, banked MAX and HIST."""
+    """MAX movement only. An unchanged function keeps its banked MAX, so a CUR
+    dip is noise and stays silent; it is listed only when it rises above MAX.
+    An edited function's MAX becomes its new score, so it is listed with the
+    MAX it replaces."""
+    from contextlib import redirect_stdout
+    from io import StringIO
+
     from gruntz.verify import baseline
+    from gruntz.verify.baseline import EPS
+    from gruntz.verify.fingerprints import fingerprinter, real_edit, regenerate
+    with redirect_stdout(StringIO()):
+        regenerate()
+    fp, _cpp_of, _stale = fingerprinter()
     bank = baseline.load()
     for unit in units:
         rows = sorted((name, pct) for (u, name), pct in after.items() if u == unit)
         if not rows:
             print(f"\n{unit}: no paired functions in the report")
             continue
-        exact = sum(1 for _n, pct in rows if pct >= 100.0)
-        print(f"\n{unit}: {exact}/{len(rows)} exact")
-        print(f"  {'now':>8} {'was':>8} {'max':>8} {'hist':>8}  function")
-        for name, pct in sorted(rows, key=lambda r: (r[1], r[0])):
-            was = before.get((unit, name))
-            row = bank.get((unit, name), {})
-            best, hist = row.get("best"), row.get("hist")
-            if pct >= 100.0 and was is not None and was >= 100.0:
+        shown, at_max = [], 0
+        for name, pct in rows:
+            row = bank.get((unit, name))
+            if row is None:
+                shown.append((pct, None, name, "new"))
+                at_max += pct >= 100.0
                 continue
-            mark = ("" if was is None or abs(pct - was) < 1e-4
-                    else "  +" if pct > was else "  -")
-            print(f"  {pct:8.2f} {'' if was is None else f'{was:8.2f}':>8} "
-                  f"{'' if best is None else f'{best:8.2f}':>8} "
-                  f"{'' if hist is None else f'{hist:8.2f}':>8}  {name}{mark}")
+            edited = real_edit(row["fp"], fp(unit, name))
+            new_max = pct if edited else max(row["best"], pct)
+            at_max += new_max >= 100.0
+            if edited and abs(pct - row["best"]) > EPS:
+                shown.append((pct, row["best"], name,
+                              "up" if pct > row["best"] else "drop"))
+            elif edited and pct < 100.0:
+                shown.append((pct, row["best"], name, "edited"))
+            elif not edited and pct > row["best"] + EPS:
+                shown.append((pct, row["best"], name, "up"))
+        print(f"\n{unit}: {at_max}/{len(rows)} at MAX 100")
+        if not shown:
+            print("  no MAX change")
+            continue
+        print(f"  {'now':>8} {'max':>8}  function")
+        for pct, best, name, kind in sorted(shown, key=lambda r: (r[0], r[2])):
+            print(f"  {pct:8.2f} {'' if best is None else f'{best:8.2f}':>8}  "
+                  f"{name}  [{kind}]")
 
 
 def match_main(argv: list[str] | None = None) -> int:
@@ -336,6 +358,10 @@ def match_main(argv: list[str] | None = None) -> int:
     if a.units:
         return match_units(resolve_units(a.units), jobs=a.jobs, verbose=a.verbose)
 
+    from gruntz.verify import scores
+    report_path = REPO / graph.REPORT_JSON
+    before_scores = (scores.functions(scores.load(report_path))
+                     if report_path.exists() else {})
     before = object_census()
     rc = ninja(["compare"], jobs=a.jobs, verbose=a.verbose,
                keep_going=a.keep_going)
@@ -362,8 +388,11 @@ def match_main(argv: list[str] | None = None) -> int:
              if changed else " (nothing rebuilt)"))
     if a.all or not changed:
         print_summary(report, all_units=False)
+    elif a.functions:
+        print_unit_functions(changed, before_scores,
+                             scores.functions(scores.load(report_path)))
     else:
-        print_changed(report, changed, functions=a.functions)
+        print_changed(report, changed, functions=False)
     if a.reference is not None:
         try:
             reference = objdiff.load(a.reference)
