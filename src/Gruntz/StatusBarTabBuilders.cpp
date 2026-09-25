@@ -5,6 +5,7 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/WorkerLookup.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
@@ -45,7 +46,6 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
 ) {
 
     CDDrawSurfaceMgr* h;
-    CObject* found;
     CDDrawWorker* rec;
     CImage* spr;
     CDDrawWorker* cfg;
@@ -64,13 +64,8 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
 
     m_rect = g;
 
-    found = NULL;
     m_cmd = cmd;
-    h->m_imageRegistry->m_workersByName.Lookup(
-        "GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINEBACKGROUND",
-        found
-    );
-    rec = static_cast<CDDrawWorker*>(found);
+    rec = h->FindWorker("GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINEBACKGROUND");
     if (rec == NULL || DDRAW_WORKER_MISSES_FRAME(rec, 1)) {
         spr = NULL;
     } else {
@@ -80,9 +75,7 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     if (spr == NULL) {
         return 0;
     }
-    found = NULL;
-    m_host->m_imageRegistry->m_workersByName.Lookup(key, found);
-    cfg = static_cast<CDDrawWorker*>(found);
+    cfg = m_host->FindWorker(key);
     m_config = cfg;
     if (cfg == NULL) {
         return 0;

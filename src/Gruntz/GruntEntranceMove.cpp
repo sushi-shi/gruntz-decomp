@@ -144,26 +144,7 @@ i32 CGrunt::RunEntranceMove() {
         return 0;
     }
 
-    m_entranceActive = false;
-    CString* previousActName = &g_typeColl[m_previousAnimationActId];
-    const char* previousActNameText = *previousActName;
-    bool previousActWasD;
-    previousActWasD = (strcmp(previousActNameText, DATA_COMPGEN(0x0020cca4, "D")) == 0);
-    if (previousActWasD) {
-        if (m_poweredUp != false && m_neighborValid == false) {
-            RESET_GRUNT_POWERED_STATE(this)
-        }
-        m_tileMoveCommitted = false;
-        SET_ANIMATION_ACT("D");
-        SwitchAnimation(m_poseWalk);
-        GruntDirectionCell cell = m_entranceCell;
-        i32 col = cell.m_column + cell.m_row * 2;
-        i32 base = cell.m_row + col;
-        char* nm = m_cells[base].WalkName().GetBuffer(0);
-        SetImageSetByName(nm);
-    } else {
-        ResetEntranceAnimation(1, 0, 0);
-    }
+    RestorePreviousAppearance();
 
     if (m_arrived != false) {
         CreateHealthSprite();
@@ -472,10 +453,7 @@ i32 CGrunt::StartBombGruntRun() {
         }
     }
     SwitchAnimation(AT(m_poseItem, GRUNT_ITEM1));
-    GruntDirectionCell cell = m_entranceCell;
-    i32 col = cell.m_column + cell.m_row * 2;
-    i32 base = cell.m_row + col;
-    char* cn = m_cells[base].ItemName().GetBuffer(0);
+    char* cn = EntranceCell()->ItemName().GetBuffer(0);
     SetImageSetByName(cn);
     return 0;
 }

@@ -141,8 +141,7 @@ public:
 };
 
 #define RESOLVE_MENU_HEADER_ANIMATION(animationKey, animation)                                     \
-    CDDrawWorker* animation =                                                                      \
-        MapFind<CDDrawWorker>(m_world->m_imageRegistry->m_workersByName, animationKey);            \
+    CDDrawWorker* animation = m_world->FindWorker(animationKey);                                   \
     m_headerAnimation = animation;                                                                 \
     return animation != NULL
 

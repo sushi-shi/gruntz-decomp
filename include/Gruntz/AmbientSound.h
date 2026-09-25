@@ -24,7 +24,7 @@ struct AmbientPoint {
     i32 m_y;
 };
 
-struct SoundCueRegistry;
+class SoundCueRegistry;
 
 class CAmbientSound : public CUserBase {
 public:

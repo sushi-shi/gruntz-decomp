@@ -7,14 +7,13 @@
 #include <Gruntz/ActRegistry.h>
 #include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/GruntDirStatics.h>
-#include <Gruntz/LogicEventDispatch.h>
+#include <Gruntz/LogicRecordHandler.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
 #include <Rez/FrameClock.h>
 #include <Wap32/TileGeometry.h>
-#include <Wwd/LogicRecordEvent.h>
 #include <ZTools/ZDArray.h>
 
 #include <stddef.h>
@@ -24,40 +23,7 @@ RVA_COMPGEN(0x00012c60, 0x44, ??1CToobSpikez@@UAE@XZ)
 
 RVA(0x00114480, 0xf1)
 i32 DispatchToobSpikezLogic(CGameObject* obj) {
-    CLogicRecord* record = obj->m_logicRecord;
-    switch (record->LogicEvent()) {
-        case ACT_UNINITIALISED: {
-            record->SetLogicEvent(ACT_LIVE);
-            CToobSpikez* inst = new CToobSpikez(obj);
-            inst->Activate();
-            record->m_userLogic = inst;
-            break;
-        }
-        case ACT_OBJECT_REMOVED:
-            record->m_userLogic->OnObjectRemoved();
-            break;
-        case ACT_LEAVE_ACTIVE_REGION:
-            record->m_userLogic->OnLeaveActiveRegion();
-            break;
-        case ACT_PREPARE_SAVE:
-            record->m_userLogic->PrepareSave();
-            break;
-        case ACT_AFTER_SAVE:
-            record->m_userLogic->AfterSave();
-            break;
-        case ACT_AFTER_LOAD:
-            record->m_userLogic->AfterLoad();
-            break;
-        case ACT_AFTER_LOAD_REFERENCES:
-            record->m_userLogic->AfterLoadReferences();
-            break;
-        case ACT_LIVE:
-            break;
-        default:
-            DispatchLogicEvent(record->m_userLogic);
-            break;
-    }
-    return 1;
+    TILE_LOGIC_RECORD_DISPATCH(CToobSpikez)
 }
 
 RVA_DYNINIT(0x001147c0, 0xa, CActRegPool<CToobSpikez>::s_table)

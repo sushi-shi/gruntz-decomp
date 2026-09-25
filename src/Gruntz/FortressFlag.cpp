@@ -154,10 +154,14 @@ template CActHandler& zDArray<CActHandler>::operator[](i32 id);
 RVA_COMPGEN(0x000464e0, 0x74, ??A?$zDArray@P8CUserLogic@@AEHXZ@@QAEAAP8CUserLogic@@AEHXZH@Z)
 
 RVA(0x00046850, 0xf1)
-i32 DispatchParticlezLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CParticlez)}
+i32 DispatchParticlezLogic(CGameObject* owner) {
+    LOGIC_RECORD_DISPATCH(CParticlez)
+}
 
 RVA(0x00046990, 0xf1)
-i32 DispatchExplosionLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CExplosion)}
+i32 DispatchExplosionLogic(CGameObject* owner) {
+    LOGIC_RECORD_DISPATCH(CExplosion)
+}
 
 // @early-stop
 RVA(0x00046ad0, 0x15e)

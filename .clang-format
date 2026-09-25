@@ -69,6 +69,7 @@ MacroBlockBegin: "^BEGIN_MESSAGE_MAP$"
 MacroBlockEnd: "^END_MESSAGE_MAP$"
 StatementMacros:
   - RVA
+  - RVA_DYNINIT
   - DATA
   - DATA_MESSAGE_MAP
   - DECLARE_MESSAGE_MAP
@@ -84,6 +85,8 @@ StatementMacros:
   - ON_WM_DRAWITEM
   - VTBL
   - VTBL_ABSENT
+  - LOGIC_RECORD_DISPATCH
+  - TILE_LOGIC_RECORD_DISPATCH
   - SIZE # Win32 type name; retained for existing formatter behavior, not an rva.h macro.
 # The mangled-symbol carrier is whitespace-sensitive ONLY (one canonical
 # spelling, gated by `gruntz verify label-style`): clang-format must never re-space

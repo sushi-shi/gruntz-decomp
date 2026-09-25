@@ -49,7 +49,7 @@
     switch (record->LogicEvent()) {                                                                \
         case ACT_UNINITIALISED: {                                                                  \
             record->SetLogicEvent(ACT_LIVE);                                                       \
-            LEAF* t = new LEAF(obj);                                                               \
+            CUserLogic* t = new LEAF(obj);                                                         \
             t->Activate();                                                                         \
             record->m_userLogic = t;                                                               \
             break;                                                                                 \
