@@ -53,12 +53,12 @@ behindcandyani	8	7
 bitarray	3	2
 bitarraystream	2	2
 blowfish	6	6
-bootystateactivate	53	36
+bootystateactivate	53	37
 brickz	4	1
 brickzcellflags	3	1
 brickzload	1	0
 buteglobals	4	4
-butemgr	73	70
+butemgr	73	71
 butetail	3	3
 butetree	2	2
 bzkinddispatch	1	1
@@ -85,7 +85,7 @@ ddrawsurfacemgr	22	20
 ddrawsurfacepair	54	45
 ddrawworkerhost	5	5
 ddrawworkerregistry	26	26
-ddsurface	57	50
+ddsurface	57	51
 debugprintf	17	17
 debugtiming	2	2
 deflate	17	17
@@ -102,7 +102,7 @@ engstrrendertext	2	2
 exittrigger	5	3
 eyecandy	2	1
 eyecandyani	8	7
-fader	29	24
+fader	29	26
 fadereffects	39	28
 fadermgr	13	13
 feccrypt	11	10
@@ -265,7 +265,7 @@ shadetablecache	26	17
 simpleanimation	7	6
 singleanimation	7	7
 singleframemessage	7	6
-soundfontpath	5	4
+soundfontpath	5	5
 soundstream	36	36
 soundvoicelist	5	5
 sparam	3	3
@@ -622,7 +622,7 @@ bootystateactivate	?InputVirtual@CMultiBootyState@@UAEHXZ	100.0000	100.0000	7	06
 bootystateactivate	?LeaveState@CBootyState@@UAEHW4GameStateId@@@Z	89.7500	89.7500	11	13fb1919d9f8	0x18e40	89.7500	
 bootystateactivate	?LeaveState@CMultiBootyState@@UAEHW4GameStateId@@@Z	89.7500	89.7500	11	7fdf91d51eb8	0x1e660	89.7500	
 bootystateactivate	?LevelMsgHudDriver@CBootyState@@QAEHXZ	90.6874	90.6874	17	b5c43f97fe72	0x1a700	90.6915	
-bootystateactivate	?LoadGameAssetNamespaces@CBootyState@@UAEHPAVCGruntzMgr@@HH@Z	99.5265	99.5265	11	cf0261ca903b	0x18830	99.5265	
+bootystateactivate	?LoadGameAssetNamespaces@CBootyState@@UAEHPAVCGruntzMgr@@HH@Z	99.5455	99.5455	11	cf0261ca903b	0x18830	99.5455	
 bootystateactivate	?LoadGameAssetNamespaces@CMultiBootyState@@UAEHPAVCGruntzMgr@@HH@Z	88.6615	88.6615	19	053e1561d6ff	0x1d440	88.6615	
 bootystateactivate	?LoadGruntEffectSprites@CBootyState@@QAEHXZ	99.9547	99.9547	11	42f949d4aa85	0x1a040	99.9547	
 bootystateactivate	?MoveLettersByDir@CBootyState@@QAEXXZ	94.0341	94.0341	2	4d22068c93ca	0x19b90	94.0341	
@@ -644,7 +644,7 @@ bootystateactivate	?Render@CBootyState@@UAEHXZ	98.5478	98.5478	14	3d7ca3fdd04e	0
 bootystateactivate	?Render@CMultiBootyState@@UAEHXZ	100.0000	100.0000	8	1ac0556067f1	0x1f480	100.0000	
 bootystateactivate	?RestoreDisplay@CBootyState@@UAEHXZ	100.0000	100.0000	1	8663882ce876	0x1ce10	100.0000	
 bootystateactivate	?RestoreDisplay@CMultiBootyState@@UAEHXZ	100.0000	100.0000	1	95768a0e98a4	0x1f850	100.0000	
-bootystateactivate	?ShowLevelCompleteMessage@CBootyState@@QAEXXZ	99.9786	99.9786	5	b68a2e1fcc2c	0x1c9d0	99.9786	
+bootystateactivate	?ShowLevelCompleteMessage@CBootyState@@QAEXXZ	100.0000	100.0000	5	b68a2e1fcc2c	0x1c9d0	100.0000	
 bootystateactivate	?ShowSecretBonusMessage@CBootyState@@QAEHXZ	100.0000	100.0000	10	2deddc7ef8b9	0x18f00	100.0000	
 bootystateactivate	?StepGlitterAnim@CBootyState@@QAEHXZ	98.0597	98.0597	6	c24a4e96c31f	0x196c0	98.0597	
 bootystateactivate	?Update@CBootyState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	cpp:d8875af51935	0x8d3f0	100.0000	
@@ -696,7 +696,7 @@ butemgr	?GetDouble@CButeMgr@@QAENPBD0@Z	100.0000	100.0000	10	55932a8c1c60	0x172c
 butemgr	?GetDouble@CButeMgr@@QAENPBD0N@Z	100.0000	100.0000	10	55932a8c1c60	0x172bd0	100.0000	
 butemgr	?GetDword@CButeMgr@@QAEKPBD0@Z	100.0000	100.0000	10	35a324c40a05	0x172240	100.0000	
 butemgr	?GetDword@CButeMgr@@QAEKPBD0K@Z	100.0000	100.0000	10	35a324c40a05	0x1721e0	100.0000	
-butemgr	?GetFloat@CButeMgr@@QAEMPBD0@Z	99.7692	99.7692	10	c7adc59d6348	0x172730	100.0000	
+butemgr	?GetFloat@CButeMgr@@QAEMPBD0@Z	100.0000	100.0000	10	c7adc59d6348	0x172730	100.0000	
 butemgr	?GetFloat@CButeMgr@@QAEMPBD0M@Z	100.0000	100.0000	10	c7adc59d6348	0x1726c0	100.0000	
 butemgr	?GetInt@CButeMgr@@QAEHPBD0@Z	100.0000	100.0000	10	a96ea6a65d46	0x171af0	100.0000	
 butemgr	?GetInt@CButeMgr@@QAEHPBD0H@Z	100.0000	100.0000	10	a96ea6a65d46	0x171aa0	100.0000	
@@ -1171,7 +1171,7 @@ ddrawworkerregistry	?Unload@CWapObj@@UAEXXZ	100.0000	100.0000	2	8bf54a276ab5	0x1
 ddsurface	??1CDDSurface@@UAE@XZ	100.0000	100.0000	1	cpp:a1ea5528de92	0x141350	100.0000	
 ddsurface	??_GCDDSurface@@UAEPAXI@Z	100.0000	100.0000	1	cpp:a1ea5528de92	0x141330	100.0000	
 ddsurface	?Blit1624@CDDSurface@@QAEHPAEW4RasterRowOrder@@@Z	100.0000	95.1172	9	dd55d379638c	0x13fce0	100.0000	
-ddsurface	?Blit168@CDDSurface@@QAEHPAEPAUtagPALETTEENTRY@@W4RasterRowOrder@@@Z	99.9557	99.9557	8	94c7d4b01b57	0x13fbb0	99.9557	
+ddsurface	?Blit168@CDDSurface@@QAEHPAEPAUtagPALETTEENTRY@@W4RasterRowOrder@@@Z	100.0000	100.0000	8	94c7d4b01b57	0x13fbb0	100.0000	
 ddsurface	?Blit2416@CDDSurface@@QAEHPAEW4RasterRowOrder@@@Z	100.0000	100.0000	5	bb2f41b184d4	0x13ff80	100.0000	
 ddsurface	?Blit248@CDDSurface@@QAEHPAEPAUtagPALETTEENTRY@@W4RasterRowOrder@@@Z	100.0000	100.0000	7	fb0a56c085b6	0x13fe60	100.0000	
 ddsurface	?Blit816@CDDSurface@@QAEHPAEPAUtagPALETTEENTRY@@W4RasterRowOrder@@@Z	92.5259	85.9185	10	7fbb3f4c6bbd	0x140420	92.5259	
@@ -1625,8 +1625,8 @@ fader	?ConstructElements@@YGXPAURezElem40@@H@Z	100.0000	100.0000	1	82bc3969e03d	
 fader	?EndFade@CFader@@UAEXXZ	100.0000	100.0000	1	45c905d996ca	0x17e7a0	100.0000	
 fader	?GetFrameCount@CFaderMesh@@UAEHXZ	100.0000	100.0000	1	8f2b2fd363a3	0x17f120	100.0000	
 fader	?RenderFrame@CFaderMesh@@UAEXH@Z	90.8793	90.8793	8	392a5a8f9d0e	0x17ef00	90.8793	
-fader	?RunFade@CFader@@QAEXIHH@Z	99.9528	99.9528	4	ea23b76f518c	0x17e620	99.9528	
-fader	?RunFadeStepped@CFader@@QAEXHHH@Z	99.9375	99.9375	4	babe4c84470d	0x17e540	99.9375	
+fader	?RunFade@CFader@@QAEXIHH@Z	100.0000	100.0000	4	ea23b76f518c	0x17e620	100.0000	
+fader	?RunFadeStepped@CFader@@QAEXHHH@Z	100.0000	100.0000	4	babe4c84470d	0x17e540	100.0000	
 fader	?Serialize@?$CArray@URezElem40@@ABU1@@@UAEXAAVCArchive@@@Z	100.0000	100.0000	4	f22423b925e4	0x17f130	100.0000	
 fader	?SetDefaultSurfaces@CFader@@QAEXPAVCDDSurface@@0@Z	100.0000	100.0000	2	0716035ea24e	0x17e760	100.0000	
 fader	?SetDeviceManager@CFader@@QAEXPAVCDDrawDeviceManager@@@Z	100.0000	100.0000	3	762536b837e0	0x17e780	100.0000	
@@ -1695,7 +1695,7 @@ feccrypt	?Lookup@CFecFile@@QAEHI@Z	100.0000	100.0000	1	06702c305199	0x17b840	100
 feccrypt	?OnFail@CFecFile@@QAEHXZ	100.0000	100.0000	2	583838389c8b	0x17b5a0	100.0000	
 feccrypt	?Random@CFecFile@@QAEHXZ	100.0000	100.0000	1	f2e35da5a6f6	0x17bf60	100.0000	
 feccrypt	?ReadArchive@CFecFile@@QAEHPBD@Z	86.2571	86.2571	19	36f4dae9f2be	0x17b5f0	87.1314	
-fileimage	?CreateFromBmpData@CDDSurface@@QAEHPAVCDDrawDeviceManager@@PAUBmpFileImage@@HH@Z	99.8786	99.8786	12	9059ff1ff81b	0x143cf0	99.8786	
+fileimage	?CreateFromBmpData@CDDSurface@@QAEHPAVCDDrawDeviceManager@@PAUBmpFileImage@@HH@Z	99.9143	99.9143	12	9059ff1ff81b	0x143cf0	99.9143	
 fileimage	?CreateFromBmpFile@CDDSurface@@QAEHPAVCDDrawDeviceManager@@PBDH@Z	100.0000	100.0000	8	fdce3919b30a	0x143e60	100.0000	
 fileimage	?CreateFromPcxData@CDDSurface@@QAEHPAVCDDrawDeviceManager@@PAUPcxHeader@@HH@Z	100.0000	100.0000	11	43fb1629eb7f	0x144b30	100.0000	
 fileimage	?CreateFromPcxFile@CDDSurface@@QAEHPAVCDDrawDeviceManager@@PBDH@Z	100.0000	100.0000	6	10f98bd459b6	0x144d80	100.0000	
@@ -2618,11 +2618,11 @@ helpstate	?Update@CDemo@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	e46f1bf96ca2
 helpstate	?Update@CHelpState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	443521c6b2c3	0x8cee0	100.0000	
 helpstate	?Update@CSplashState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	6952c79e8d4a	0x8cfb0	100.0000	
 imagepolyclip	?FillPolygon@@YAHPAUClipVtx@@HPAVCDDSurface@@F@Z	76.5212	76.5212	7	ff65f0128526	0x146fe0	76.5212	
-imagepolyclip	?ImagePolyClipRect@@YAHPAUClipVtx@@HHHHH@Z	99.2814	99.2814	3	bbdaf68c59f9	0x1461b0	99.2814	
+imagepolyclip	?ImagePolyClipRect@@YAHPAUClipVtx@@HHHHH@Z	99.3272	99.3272	3	bbdaf68c59f9	0x1461b0	99.3272	
 imagepolyclip	?ImageRotateBlit@@YAXHHPAHPAVCDDSurface@@1MMHH@Z	79.4671	79.4671	3	c40e7e8d7a45	0x145f60	79.4671	
 imagepolyclip	?PolyIsConvexCW@@YAHPAUClipVtx@@H@Z	98.1982	93.0450	5	581241cabaa2	0x145e30	98.1982	
 imagepolyclip	?ProjectWallQuad@@YAHPAVCDDSurface@@HHHHHFUtagRECT@@@Z	78.9856	77.2230	9	a4fa149bc377	0x1471d0	78.9856	
-imagepolyclip	?RotateRasterize@@YAHPAUClipVtx@@HPAVCDDSurface@@1HHHHHH@Z	96.1696	96.1696	6	008c18ed1d85	0x146550	96.1696	
+imagepolyclip	?RotateRasterize@@YAHPAUClipVtx@@HPAVCDDSurface@@1HHHHHH@Z	96.2031	96.2031	6	008c18ed1d85	0x146550	96.2031	
 imagepolyclip	?WarpIsPow2@@YAHH@Z	100.0000	100.0000	1	64804376f3f0	0x145e00	100.0000	
 imagepolyclip	?WarpTextureBlit@@YAHPAUClipVtx@@HPAVCDDSurface@@1HH@Z	74.4484	74.4484	12	0029af4c01b6	0x146a20	74.4484	
 imagepool	?AddDib@CDibMgr@@QAEPAVCDib@@HHW4ColorDepth@@I@Z	100.0000	100.0000	7	6d28231b75c4	0x174fe0	100.0000	
@@ -4004,7 +4004,7 @@ singleframemessage	?AdvanceAnim@CSingleFrameMessage@@QAEHXZ	100.0000	100.0000	3	
 singleframemessage	?FireActivation@CSingleFrameMessage@@UAEXH@Z	100.0000	100.0000	4	f643efd48ca0	0xab5b0	100.0000	
 singleframemessage	?RegisterActs@CSingleFrameMessage@@SAXXZ	100.0000	100.0000	2	3a6fb57497c3	0xab710	100.0000	
 singleframemessage	?SerializeDispatch@CSingleFrameMessage@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	4	1226be3e2416	0xf5a0	100.0000	
-soundfontpath	?BuildSoundFontPath@@YAHD@Z	99.8901	99.8901	4	6ca13c1c325e	0xf8f30	99.8901	
+soundfontpath	?BuildSoundFontPath@@YAHD@Z	100.0000	100.0000	4	6ca13c1c325e	0xf8f30	100.0000	
 soundfontpath	?CloseSoundFontDevice@@YAXXZ	100.0000	100.0000	2	96b8af9bf948	0xf8e20	100.0000	
 soundfontpath	?FileExists@?A0xcdbc6048e09ac61a@@YAHPBD@Z	100.0000	100.0000	1	e5c9aa406338	0xf90f0	100.0000	
 soundfontpath	?SfDeviceInitKeys@@YAHXZ	100.0000	100.0000	2	0235f8a2abc1	0xf8ec0	100.0000	

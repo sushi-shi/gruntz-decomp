@@ -593,11 +593,34 @@ def _compiler_private_definition_aliases(
     return aliases
 
 
-def _identity_span(kind: str, physical_size: int, meaningful_size: int) -> int:
+#: The widest alignment gap either allocator leaves after a data definition.
+MAX_ALIGNMENT_PADDING = 7
+ALIGNMENT_PADDING_PROOF = "physical-span-less-alignment-padding"
+
+
+def _identity_span(kind: str, physical_size: int, meaningful_size: int,
+                   proof: str = "") -> int:
     # TEXT COMDATs and packed target text align the same helper differently.
     # Padding is not part of a function's identity. Data allocation spans remain
-    # significant because they are the only proven object extent.
-    return meaningful_size if kind == "text" else physical_size
+    # significant beyond the alignment gap, which neither side proves.
+    if kind == "text" or proof == ALIGNMENT_PADDING_PROOF:
+        return meaningful_size
+    return physical_size
+
+
+def _without_alignment_padding(raw: bytes, relocation_ends: list[int]) -> bytes:
+    """Drop the zero tail an allocator's alignment gap may have appended.
+
+    Both allocators pad before an aligned successor: cl packs `$T` doubles
+    after a 4-byte static, the delinker packs 8-aligned EH records after one,
+    so the same `static const float` spans 4 bytes on one side and 8 on the
+    other. At most MAX_ALIGNMENT_PADDING zero bytes go, never a relocated one.
+    """
+    floor = max([len(raw) - MAX_ALIGNMENT_PADDING, 1, *relocation_ends])
+    end = len(raw)
+    while end > floor and raw[end - 1] == 0:
+        end -= 1
+    return raw[:end]
 
 
 def _relocation_width(typ: int) -> int:
@@ -1283,6 +1306,12 @@ def canonicalize_coff(payload: bytes) -> CanonicalizedObject:
                 kind, meaningful = "f32", raw[:4]
             elif width == 8:
                 kind, meaningful = "f64", raw[:8]
+        if kind == "data" and proof == "physical-span":
+            meaningful = _without_alignment_padding(raw, [
+                row.site - definition.start + _relocation_width(row.typ)
+                for row in own_relocs])
+            if len(meaningful) != len(raw):
+                proof = ALIGNMENT_PADDING_PROOF
         kinds[definition.symbol.index] = (kind, meaningful, proof, _escaped_preview(meaningful))
 
     digest_records: dict[str, bytes] = {}
@@ -1383,7 +1412,7 @@ def canonicalize_coff(payload: bytes) -> CanonicalizedObject:
                 "kind": kind,
                 "storage": definition.storage,
                 "span": 0 if definition.storage == "bss"
-                else _identity_span(kind, physical_size, len(meaningful)),
+                else _identity_span(kind, physical_size, len(meaningful), proof),
                 "meaningful_size": len(meaningful),
                 "payload": bytes(masked).hex(),
                 "relocations": reloc_rows,

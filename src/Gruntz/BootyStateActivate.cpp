@@ -1647,7 +1647,6 @@ i32 CBootyState::InputVirtual() {
     return 1;
 }
 
-// @early-stop
 RVA(0x0001c9d0, 0x351)
 void CBootyState::ShowLevelCompleteMessage() {
     for (i32 i = 0; i < 8; i++) {

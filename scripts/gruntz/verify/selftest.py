@@ -4146,6 +4146,48 @@ class SourceNameRewriteControls(unittest.TestCase):
         self.assertEqual(m.mask(m.discriminate("_s_x$S", 0x244970)), "_s_x$S")
 
 
+class DataAlignmentPaddingControls(unittest.TestCase):
+    """A named static's identity survives either allocator's alignment gap."""
+
+    @staticmethod
+    def obj(payload: bytes, successor: int | None, name="_s_msToSeconds$S7"):
+        import struct
+        rawptr = 60
+        symptr = rawptr + len(payload)
+        strings = bytearray(bytes(4))
+        symbols = bytearray()
+        rows = [(name, 0)] + ([("_next$S9", successor)] if successor else [])
+        for symbol, value in rows:
+            symbols += struct.pack("<II", 0, len(strings))
+            strings += symbol.encode("latin1") + b"\0"
+            symbols += struct.pack("<IhHBB", value, 1, 0, 3, 0)
+        struct.pack_into("<I", strings, 0, len(strings))
+        header = struct.pack("<HHIIIHH", 0x14c, 1, 0, symptr, len(rows), 0, 0)
+        section = struct.pack("<8sIIIIIIHHI", b".rdata", 0, 0, len(payload),
+                              rawptr, 0, 0, 0, 0, 0x40400040)
+        return header + section + payload + symbols + strings
+
+    @staticmethod
+    def canonical(data: bytes) -> str:
+        from gruntz.compare.canonicalize import canonicalize_coff
+        rows = canonicalize_coff(data).rows
+        return next(row.canonical_name for row in rows
+                    if row.original_name.startswith("_s_msToSeconds"))
+
+    def test_padded_and_packed_spans_share_one_identity(self):
+        value = bytes.fromhex("6f12833a")
+        packed = self.obj(value + bytes.fromhex("0000803f"), 4)
+        padded = self.obj(value + bytes(4) + bytes(8), 8)
+        self.assertEqual(self.canonical(packed), self.canonical(padded))
+
+    def test_content_beyond_the_gap_still_decides_identity(self):
+        value = bytes.fromhex("6f12833a")
+        self.assertNotEqual(self.canonical(self.obj(value + bytes(4), None)),
+                            self.canonical(self.obj(value + bytes([0, 0, 0, 1]), None)))
+        self.assertNotEqual(self.canonical(self.obj(value + bytes(12), None)),
+                            self.canonical(self.obj(value, None)))
+
+
 class AnonymousNamespaceControls(unittest.TestCase):
     """Anonymous .cpp COMMON identities survive both consumers and rebuilds."""
 
