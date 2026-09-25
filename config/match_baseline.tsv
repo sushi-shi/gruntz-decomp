@@ -182,7 +182,7 @@ hash	10	10
 hazardlogicdispatch	6	6
 helpstate	14	14
 imagepolyclip	8	1
-imagepool	55	51
+imagepool	55	52
 imageset1	1	0
 imageset2	9	8
 imageset3	2	2
@@ -2620,8 +2620,8 @@ helpstate	?Update@CSplashState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	6952c
 imagepolyclip	?FillPolygon@@YAHPAUClipVtx@@HPAVCDDSurface@@F@Z	97.9091	97.9091	8	5f36159be102	0x146fe0	97.9091	
 imagepolyclip	?ImagePolyClipRect@@YAHPAUClipVtx@@HHHHH@Z	99.3272	99.3272	3	bbdaf68c59f9	0x1461b0	99.3272	
 imagepolyclip	?ImageRotateBlit@@YAXHHPAHPAVCDDSurface@@1MMHH@Z	79.4671	79.4671	3	c40e7e8d7a45	0x145f60	79.4671	
-imagepolyclip	?PolyIsConvexCW@@YAHPAUClipVtx@@H@Z	98.1982	93.0450	5	581241cabaa2	0x145e30	98.1982	
-imagepolyclip	?ProjectWallQuad@@YAHPAVCDDSurface@@HHHHHFUtagRECT@@@Z	78.9856	78.9856	9	a4fa149bc377	0x1471d0	78.9856	
+imagepolyclip	?PolyIsConvexCW@@YAHPAUClipVtx@@H@Z	98.1982	98.1982	5	581241cabaa2	0x145e30	98.1982	
+imagepolyclip	?ProjectWallQuad@@YAHPAVCDDSurface@@HHHHHFUtagRECT@@@Z	78.9856	77.2230	9	a4fa149bc377	0x1471d0	78.9856	
 imagepolyclip	?RotateRasterize@@YAHPAUClipVtx@@HPAVCDDSurface@@1HHHHHH@Z	96.2031	96.2031	6	008c18ed1d85	0x146550	96.2031	
 imagepolyclip	?WarpIsPow2@@YAHH@Z	100.0000	100.0000	1	64804376f3f0	0x145e00	100.0000	
 imagepolyclip	?WarpTextureBlit@@YAHPAUClipVtx@@HPAVCDDSurface@@1HH@Z	99.1604	99.1604	13	69c657688727	0x146a20	99.1604	
