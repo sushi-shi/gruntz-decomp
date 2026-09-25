@@ -3527,8 +3527,7 @@ RVA(0x000cfef0, 0xbc)
 i32 CPlay::DrawStateMessage() {
     Present(0x3c);
 
-    CDDrawWorker* set =
-        MapFind<CDDrawWorker>(m_world->m_imageRegistry->m_workersByName, "GAME_MESSAGEZ");
+    CDDrawWorker* set = m_world->FindWorker("GAME_MESSAGEZ");
     if (set == NULL) {
         return 0;
     }
@@ -4256,8 +4255,7 @@ i32 CPlay::LoadScrollSpeedOptions() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000d1650, 0x90)
 void CPlay::DrawMessageFrame(i32 index, b32 useFront) {
-    CDDrawWorker* set =
-        MapFind<CDDrawWorker>(m_world->m_imageRegistry->m_workersByName, "GAME_MESSAGEZ");
+    CDDrawWorker* set = m_world->FindWorker("GAME_MESSAGEZ");
     if (set != NULL) {
         CImage* frame = set->GetAt(index);
         if (frame != NULL) {
@@ -6378,8 +6376,7 @@ i32 CPlay::BuildHelpReveal(b32 final) {
 
 RVA(0x000d7440, 0xad)
 i32 CPlay::LoadLoadingBarSprite() {
-    CDDrawWorker* spr =
-        MapFind<CDDrawWorker>(m_world->m_imageRegistry->m_workersByName, "GAME_LOADINGBAR");
+    CDDrawWorker* spr = m_world->FindWorker("GAME_LOADINGBAR");
     if (!spr) {
         return 0;
     }

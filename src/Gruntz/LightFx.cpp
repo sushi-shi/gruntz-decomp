@@ -68,10 +68,7 @@ void CLightFx::Activate(
     i32 shadeTableIndex,
     b32 deleteWhenComplete
 ) {
-    CDDrawWorker* imageSet = MapFind<CDDrawWorker>(
-        m_ownerLogicRecord->m_ownerCtx->m_imageRegistry->m_workersByName,
-        imageSetName
-    );
+    CDDrawWorker* imageSet = m_ownerLogicRecord->m_ownerCtx->FindWorker(imageSetName);
     g_gameReg->m_lightFxMgr->ApplyShadeTable(imageSet, shadeTableIndex, SHADE_DST_BY_SRC_16);
     CWwdSpriteObject* object = m_wwdObject;
     if (imageSet != NULL) {

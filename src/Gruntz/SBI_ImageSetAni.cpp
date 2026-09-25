@@ -7,6 +7,7 @@
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
+#include <DDrawMgr/WorkerLookup.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntDirStatics.h>
@@ -35,7 +36,6 @@ i32 CSBI_ImageSetAni::Init(
     i32 loop,
     i32 step
 ) {
-    CObject* found;
     CDDrawWorker* tbl;
 
     if (host == NULL) {
@@ -51,9 +51,7 @@ i32 CSBI_ImageSetAni::Init(
     if (key == NULL) {
         return 0;
     }
-    found = NULL;
-    host->m_imageRegistry->m_workersByName.Lookup(key, found);
-    tbl = static_cast<CDDrawWorker*>(found);
+    tbl = host->FindWorker(key);
     m_frameSet = tbl;
     if (tbl == NULL) {
         goto fail;

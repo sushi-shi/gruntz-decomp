@@ -29,7 +29,6 @@
 #include <Image/ImageSet.h>
 #include <Ints.h>
 #include <Io/FileMem.h>
-#include <Utils/MapTyped.h>
 
 #include <string.h>
 
@@ -81,7 +80,6 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     i32 selMode
 ) {
     CDDrawSurfaceMgr* h;
-    CObject* found;
     CDDrawWorker* head;
 
     if (host == NULL) {
@@ -95,10 +93,8 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
 
     m_rect = g;
 
-    found = NULL;
     m_cmd = cmd;
-    h->m_imageRegistry->m_workersByName.Lookup(key, found);
-    head = static_cast<CDDrawWorker*>(found);
+    head = h->FindWorker(key);
     m_glyphMap = head;
     if (head == NULL) {
         return 0;
@@ -118,10 +114,7 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
 
     CImage* val;
     if (selMode != 0) {
-        CDDrawWorker* sel = MapFind<CDDrawWorker>(
-            m_host->m_imageRegistry->m_workersByName,
-            "GAME_STATUSBAR_TABZ_STATZTAB_SELECTEDBAR"
-        );
+        CDDrawWorker* sel = m_host->FindWorker("GAME_STATUSBAR_TABZ_STATZTAB_SELECTEDBAR");
         m_timerGlyphMap = sel;
         if (sel == NULL) {
             return 0;
@@ -133,10 +126,7 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
         }
         val = m_glyphMap->GetAt(0x22);
     } else {
-        CDDrawWorker* sel = MapFind<CDDrawWorker>(
-            m_host->m_imageRegistry->m_workersByName,
-            "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_SELECTEDBAR"
-        );
+        CDDrawWorker* sel = m_host->FindWorker("GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_SELECTEDBAR");
         m_timerGlyphMap = sel;
         if (sel == NULL) {
             return 0;

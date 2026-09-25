@@ -23,6 +23,7 @@ class CMenuPage;
 class CMenuItem;
 class CMenuTree;
 class CDDrawSurfacePair;
+class CDDrawWorker;
 
 class CDDrawSurfaceMgr;
 
@@ -101,7 +102,7 @@ public:
     i32 m_secondaryCommandId;
     MenuItemFlags m_flags;
     MenuItemState m_state;
-    CObject* m_animation;
+    CDDrawWorker* m_animation;
 
     POSITION m_listPosition;
 

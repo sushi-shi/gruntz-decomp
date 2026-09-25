@@ -29,7 +29,6 @@
 #include <Image/ImageSet.h>
 #include <Ints.h>
 #include <Io/FileMem.h>
-#include <Utils/MapTyped.h>
 
 #include <string.h>
 
@@ -167,10 +166,7 @@ i32 CSBI_SideTab::BuildHandle() {
     if (m_sampledValue == val) {
         return 1;
     }
-    CDDrawWorker* gm = MapFind<CDDrawWorker>(
-        g_gameReg->m_world->m_imageRegistry->m_workersByName,
-        "GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ"
-    );
+    CDDrawWorker* gm = g_gameReg->m_world->FindWorker("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ");
     CImage* glyph;
     if (gm == NULL || DDRAW_WORKER_FRAME_OUT_OF_RANGE(gm, val)) {
         glyph = NULL;

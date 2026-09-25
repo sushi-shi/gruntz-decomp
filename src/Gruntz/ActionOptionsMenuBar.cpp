@@ -18,7 +18,6 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Image/CImage.h>
 #include <Io/FileMem.h>
-#include <Utils/MapTyped.h>
 #include <Wwd/WwdFile.h>
 
 #include <string.h>
@@ -38,37 +37,25 @@ CActionOptionsMenuBar::CActionOptionsMenuBar() {
 RVA(0x000090e0, 0x100)
 i32 CActionOptionsMenuBar::LoadAssets() {
     m_active = false;
-    CDDrawWorker* spr = MapFind<CDDrawWorker>(
-        g_gameReg->m_world->m_imageRegistry->m_workersByName,
-        "GAME_ACTIONOPTIONZMENUBAR"
-    );
+    CDDrawWorker* spr = g_gameReg->m_world->FindWorker("GAME_ACTIONOPTIONZMENUBAR");
     m_frame = spr ? spr->GetAt(1) : NULL;
     if (!m_frame) {
         return 0;
     }
 
-    spr = MapFind<CDDrawWorker>(
-        g_gameReg->m_world->m_imageRegistry->m_workersByName,
-        "GAME_INGAMEICONZ_NORMCHIPZ"
-    );
+    spr = g_gameReg->m_world->FindWorker("GAME_INGAMEICONZ_NORMCHIPZ");
     m_normChipSprite = spr;
     if (!spr) {
         return 0;
     }
 
-    spr = MapFind<CDDrawWorker>(
-        g_gameReg->m_world->m_imageRegistry->m_workersByName,
-        "GAME_INGAMEICONZ_HIGHCHIPZ"
-    );
+    spr = g_gameReg->m_world->FindWorker("GAME_INGAMEICONZ_HIGHCHIPZ");
     m_highChipSprite = spr;
     if (!spr) {
         return 0;
     }
 
-    spr = MapFind<CDDrawWorker>(
-        g_gameReg->m_world->m_imageRegistry->m_workersByName,
-        "GAME_INGAMEICONZ_GREYCHIPZ"
-    );
+    spr = g_gameReg->m_world->FindWorker("GAME_INGAMEICONZ_GREYCHIPZ");
     m_greyChipSprite = spr;
     if (!spr) {
         return 0;
@@ -393,7 +380,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     g_serialCounter++;
     s->Read(buf, SERIAL_NAME_LEN);
     if (strlen(buf) != 0) {
-        m_normChipSprite = MapFind<CDDrawWorker>(mgr->m_imageRegistry->m_workersByName, buf);
+        m_normChipSprite = mgr->FindWorker(buf);
     } else {
         m_normChipSprite = NULL;
     }
@@ -401,7 +388,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     g_serialCounter++;
     s->Read(buf, SERIAL_NAME_LEN);
     if (strlen(buf) != 0) {
-        m_highChipSprite = MapFind<CDDrawWorker>(mgr->m_imageRegistry->m_workersByName, buf);
+        m_highChipSprite = mgr->FindWorker(buf);
     } else {
         m_highChipSprite = NULL;
     }
@@ -409,7 +396,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     g_serialCounter++;
     s->Read(buf, SERIAL_NAME_LEN);
     if (strlen(buf) != 0) {
-        m_greyChipSprite = MapFind<CDDrawWorker>(mgr->m_imageRegistry->m_workersByName, buf);
+        m_greyChipSprite = mgr->FindWorker(buf);
     } else {
         m_greyChipSprite = NULL;
     }
@@ -419,7 +406,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
         i32 i = idx;
-        CDDrawWorker* tt = MapFind<CDDrawWorker>(mgr->m_imageRegistry->m_workersByName, buf);
+        CDDrawWorker* tt = mgr->FindWorker(buf);
         CImage* r = tt != NULL ? tt->GetAt(i) : NULL;
         m_frame = r;
     } else {
@@ -431,7 +418,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
         i32 i = idx;
-        CDDrawWorker* tt = MapFind<CDDrawWorker>(mgr->m_imageRegistry->m_workersByName, buf);
+        CDDrawWorker* tt = mgr->FindWorker(buf);
         CImage* r = tt != NULL ? tt->GetAt(i) : NULL;
         m_buttonFrame[0] = r;
     } else {
@@ -443,7 +430,7 @@ i32 CActionOptionsMenuBar::Deserialize(CFileMemBase* s) {
     s->Read(&idx, sizeof(idx));
     if (strlen(buf) != 0) {
         i32 i = idx;
-        CDDrawWorker* tt = MapFind<CDDrawWorker>(mgr->m_imageRegistry->m_workersByName, buf);
+        CDDrawWorker* tt = mgr->FindWorker(buf);
         CImage* r = tt != NULL ? tt->GetAt(i) : NULL;
         m_buttonFrame[1] = r;
     } else {

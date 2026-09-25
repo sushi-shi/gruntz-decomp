@@ -273,13 +273,8 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
                 below.bottom = v;
                 tgt->Restore(&below, 0);
             }
-            CMapStringToOb* map = &m_world->m_imageRegistry->m_workersByName;
-            CObject* found = NULL;
-
-            map->Lookup("GAME_STATUSBAR_MAINBAR", found);
-            if (found) {
-
-                CDDrawWorker* cfg = static_cast<CDDrawWorker*>(found);
+            CDDrawWorker* cfg = m_world->FindWorker("GAME_STATUSBAR_MAINBAR");
+            if (cfg) {
                 CImage* entry = DDRAW_WORKER_FRAME_AT_UNCHECKED(cfg, cfg->m_minIndex);
                 if (entry) {
                     CDDrawSubMgrPages* l1 = g_gameReg->m_world->m_drawTarget;
@@ -4278,10 +4273,7 @@ i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragm
     m_owner = owner;
 
     i32 n = IDX(fragment) + 1;
-    CDDrawWorker* spr = MapFind<CDDrawWorker>(
-        g_gameReg->m_world->m_imageRegistry->m_workersByName,
-        "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE"
-    );
+    CDDrawWorker* spr = g_gameReg->m_world->FindWorker("GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE");
     CImage* frame = spr ? spr->GetAt(n) : NULL;
     m_sprite = frame;
     if (frame == NULL) {
