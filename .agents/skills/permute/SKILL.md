@@ -69,14 +69,14 @@ Use permutation directly for a proven regalloc/scheduling residue. Follow the
 ## Apply one source A/B and repeat
 
 Implement only an evidence-backed, semantically defensible source change. Never
-copy an `exact-disposable.cpp` TU-state forest into source. Compile and compare
-the authored change, then rerun the campaign so the next frontier is conditioned
-on the improved reconstruction.
+copy an `exact-disposable.cpp` TU-state forest into source. Check the authored
+change with `gruntz match <unit>`, then rerun the campaign so the next frontier
+is conditioned on the improved reconstruction.
 
 An exact candidate closes the search only when score, extent, full decoding, and
 ordered relocation identity all pass. A sub-100 improvement is a clue, not a
 commit criterion. Keep correct modeling changes even if unrelated current fuzzy
-moves, subject to the MAX gate.
+moves; the MAX gate (`gruntz build verify`) judges them at merge preparation.
 
 Campaigns run no test suites (`AGENTS.md` "Tests"); run `gruntz.permute`
 tests only when you change the permuter itself.

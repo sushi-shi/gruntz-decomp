@@ -21,7 +21,8 @@ asks. A brief note of target, hypothesis, and next compiler control is enough.
 - `hist_pct` is the objective. `best_pct` belongs to the current source
   fingerprint and resets on edit. Current and aggregate fuzzy are navigation.
 - Do not revisit a function whose historical MAX is 100%. Do not investigate an
-  unrelated current-score dip while the MAX gate is green.
+  unrelated current-score dip; the MAX gate decides regressions at merge
+  preparation (`gruntz build verify`).
 - Before inventing a spelling, run `gruntz walls priors <rva>`: many rows
   already carry a written verdict in the source comment or review ledger.
 
