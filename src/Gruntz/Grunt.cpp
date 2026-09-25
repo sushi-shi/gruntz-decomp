@@ -7,7 +7,6 @@
 #include <MfcWin.h>
 
 #include <Bute/ButeMgr.h>
-#include <Bute/ButeTree.h>
 #include <DDrawMgr/AniAdvance.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -15,6 +14,7 @@
 #include <Enums.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/ActRegistry.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AnimationRegistry.h>
@@ -22,11 +22,10 @@
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/BattlezTask.h>
 #include <Gruntz/Brickz.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/DirectionClassify.h>
 #include <Gruntz/EnemyAiType.h>
-#include <Gruntz/FreeNodePool.h>
-#include <Gruntz/FreeNodePoolInline.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRegistry.h>
@@ -83,10 +82,10 @@
 #include <Wap32/Object.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/Wap32.h>
-#include <Wap32/zBitVec.h>
 #include <Wwd/MoveMode.h>
 #include <Wwd/WwdFile.h>
 #include <Wwd/WwdObjectType.h>
+#include <ZTools/BitVec.h>
 
 #include <math.h>
 #include <new>
@@ -233,11 +232,9 @@ CGrunt::~CGrunt() {
     OnObjectRemoved();
 }
 
-RVA(0x0000f400, 0x1b)
-CGruntCellRec::CGruntCellRec() {}
+RVA_COMPGEN(0x0000f400, 0x1b, ??0CGruntCellRec@@QAE@XZ)
 
-RVA(0x0000f430, 0x10)
-CGruntCellRec::~CGruntCellRec() {}
+RVA_COMPGEN(0x0000f430, 0x10, ??1CGruntCellRec@@QAE@XZ)
 
 // @early-stop
 RVA(0x00047a10, 0x770)
@@ -444,7 +441,7 @@ void CGrunt::OnObjectRemoved() {
         while (pos != NULL) {
             Coord* buf = static_cast<Coord*>(m_coordList.GetNext(pos));
             if (buf) {
-                PushFreeNode(&g_coordPool, buf);
+                g_coordPool.Push(buf);
             }
         }
         m_coordList.RemoveAll();
@@ -728,7 +725,6 @@ i32 CGrunt::IntersectsTileObjectAxes() {
     return RectSegProbe(&r, &b, &a) != 0;
 }
 
-// @early-stop
 RVA(0x0004ac10, 0x402)
 void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
     static_cast<void>(unused);
@@ -897,8 +893,6 @@ i32 CGrunt::StepArrivalDrop(
     i32 clearEndpointFlags,
     i32 extraPassableMask
 ) {
-    POSITION n;
-    POSITION cur;
     Coord* tail;
     POSITION pos;
     Coord lastTile;
@@ -947,7 +941,7 @@ i32 CGrunt::StepArrivalDrop(
         )
         != 0) {
         if (CoordCount() != 0) {
-            PushFreeNode(&g_coordPool, m_coordList.RemoveHead());
+            g_coordPool.Push(m_coordList.RemoveHead());
         }
     pathGate:
         reinit = 1;
@@ -1000,21 +994,8 @@ i32 CGrunt::StepArrivalDrop(
                 ) != 0
                 && probe.GetCount() != 0) {
                 if (probe.GetCount() <= cnt + 3) {
-                    PushFreeNode(&g_coordPool, probe.RemoveHead());
-                    if (CoordCount() != 0) {
-                        n = CoordHead();
-                        while (NULL != n) {
-                            cur = n;
-                            m_coordList.GetNext(n);
-                            if (static_cast<Coord*>(m_coordList.GetAt(cur)) != NULL) {
-                                PushFreeNode(
-                                    &g_coordPool,
-                                    static_cast<Coord*>(m_coordList.GetAt(cur))
-                                );
-                            }
-                        }
-                        m_coordList.RemoveAll();
-                    }
+                    g_coordPool.Push(probe.RemoveHead());
+                    RecycleGruntCoords(this);
                     pos = probe.GetHeadPosition();
                     while (pos != NULL) {
                         m_coordList.AddTail(probe.GetNext(pos));
@@ -1022,7 +1003,7 @@ i32 CGrunt::StepArrivalDrop(
                 } else {
                     pos = probe.GetHeadPosition();
                     while (pos != NULL) {
-                        PushFreeNode(&g_coordPool, probe.GetNext(pos));
+                        g_coordPool.Push(probe.GetNext(pos));
                     }
                 }
                 probe.RemoveAll();
@@ -1108,9 +1089,9 @@ i32 CGrunt::StepArrivalDrop(
             passableMask
         ) != 0
         && CoordCount() != 0) {
-        PushFreeNode(&g_coordPool, m_coordList.RemoveHead());
+        g_coordPool.Push(m_coordList.RemoveHead());
         if (CoordCount() != 0) {
-            PushFreeNode(&g_coordPool, m_coordList.RemoveTail());
+            g_coordPool.Push(m_coordList.RemoveTail());
             if (CoordCount() != 0) {
                 nudged = 1;
                 tail = static_cast<Coord*>(m_coordList.GetAt(CoordTail()));
@@ -1241,7 +1222,7 @@ reProbe:
         )
         != 0) {
         if (CoordCount() != 0) {
-            PushFreeNode(&g_coordPool, m_coordList.RemoveHead());
+            g_coordPool.Push(m_coordList.RemoveHead());
         }
         goto pathGate;
     }
@@ -1297,7 +1278,7 @@ i32 CGrunt::StepGruntMovement() {
         Coord* co = static_cast<Coord*>(m_coordList.RemoveHead());
         coordX = co->m_x;
         coordY = co->m_y;
-        PushFreeNode(&g_coordPool, co);
+        g_coordPool.Push(co);
     } else {
         Coord* co = static_cast<Coord*>(m_coordList.GetAt(CoordHead()));
         coordX = co->m_x;
@@ -1470,7 +1451,7 @@ i32 CGrunt::StepGruntMovement() {
                     return 0;
                 }
                 Coord* co2 = static_cast<Coord*>(m_coordList.RemoveHead());
-                PushFreeNode(&g_coordPool, co2);
+                g_coordPool.Push(co2);
                 goto label_4c6e4;
             }
         }
@@ -1495,13 +1476,12 @@ i32 CGrunt::StepGruntMovement() {
 label_4c6e4:
     if (m_arrivalState == AI_BATTLEZ_PATH && CoordCount() != 0) {
         Coord* co = static_cast<Coord*>(m_coordList.RemoveHead());
-        PushFreeNode(&g_coordPool, co);
+        g_coordPool.Push(co);
     }
     if (flagHead & 0x80) {
         m_entranceActive = true;
     } else {
-        CString* r = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-        ActNameConstructGrownSlots();
+        CString* r = &g_typeColl[m_logicRecord->m_eventCode];
         bool ne;
         ne = (strcmp(*r, "L") != 0);
         if (ne) {
@@ -1547,7 +1527,7 @@ label_4c6e4:
         if (CoordCount() != 0 && m_arrivalState != AI_BATTLEZ_PATH) {
             Coord* co = static_cast<Coord*>(m_coordList.RemoveHead());
             if (co->m_x == btx && co->m_y == bty) {
-                PushFreeNode(&g_coordPool, co);
+                g_coordPool.Push(co);
             } else {
                 m_coordList.AddHead(co);
             }
@@ -1735,7 +1715,7 @@ void CGrunt::SetEntrancePos(i32 clearArrivalState, i32 recycleRoute) {
         m_arrivalActive = false;
     }
     if (recycleRoute && m_arrivalState != AI_BATTLEZ_PATH && CoordCount() != 0) {
-        RecycleGruntCoords(this);
+        RECYCLE_GRUNT_COORDS(this)
     }
 }
 
@@ -2090,9 +2070,9 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         if (m_entranceActive != false) {
             goto fail;
         }
-        eq = (strcmp((*g_typeColl.GetNameRecord(m_logicRecord->m_eventCode)), "A") != 0);
+        eq = IsNotAnimationAct("A");
         if (eq) {
-            eq = (strcmp((*g_typeColl.GetNameRecord(m_logicRecord->m_eventCode)), "D") != 0);
+            eq = IsNotAnimationAct("D");
             if (eq) {
                 goto fail;
             }
@@ -2639,9 +2619,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "BABYWALKERGRUNT";
-            CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-            ActNameConstructGrownSlots();
-            eq = (strcmp(*rec, "D") == 0);
+            eq = IsAnimationAct("D");
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -2662,9 +2640,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "BEACHBALLGRUNT";
-            CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-            ActNameConstructGrownSlots();
-            eq = (strcmp(*rec, "D") == 0);
+            eq = IsAnimationAct("D");
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -2684,9 +2660,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "BIGWHEELGRUNT";
-            CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-            ActNameConstructGrownSlots();
-            eq = (strcmp(*rec, "D") == 0);
+            eq = IsAnimationAct("D");
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -2707,9 +2681,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "GOKARTGRUNT";
-            CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-            ActNameConstructGrownSlots();
-            eq = (strcmp(*rec, "D") == 0);
+            eq = IsAnimationAct("D");
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -2730,9 +2702,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "JACKINTHEBOXGRUNT";
-            CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-            ActNameConstructGrownSlots();
-            eq = (strcmp(*rec, "D") == 0);
+            eq = IsAnimationAct("D");
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -2752,9 +2722,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "JUMPROPEGRUNT";
-            CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-            ActNameConstructGrownSlots();
-            eq = (strcmp(*rec, "D") == 0);
+            eq = IsAnimationAct("D");
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -2774,9 +2742,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "POGOSTICKGRUNT";
-            CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-            ActNameConstructGrownSlots();
-            eq = (strcmp(*rec, "D") == 0);
+            eq = IsAnimationAct("D");
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -2798,9 +2764,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             m_moveVariant = variant;
             m_passableMask = 0;
             m_animSetName = "SCROLLGRUNT";
-            CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-            ActNameConstructGrownSlots();
-            eq = (strcmp(*rec, "D") == 0);
+            eq = IsAnimationAct("D");
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -2820,9 +2784,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "SQUEAKTOYGRUNT";
-            CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-            ActNameConstructGrownSlots();
-            eq = (strcmp(*rec, "D") == 0);
+            eq = IsAnimationAct("D");
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -2842,9 +2804,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             }
             m_passableMask = 0;
             m_animSetName = "YOYOGRUNT";
-            CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-            ActNameConstructGrownSlots();
-            eq = (strcmp(*rec, "D") == 0);
+            eq = IsAnimationAct("D");
             if (eq) {
                 ConsiderArrival(0);
             }
@@ -3110,24 +3070,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
     LoadCellAnimNames(fresh, defer);
     LoadAnimNameTable(fresh, defer);
     if (fresh == 0) {
-        CString* rec;
-        {
-            i32 key = m_logicRecord->EventCode();
-            g_typeColl.m_grown = 0;
-            if (key >= g_typeColl.m_lo && key <= g_typeColl.m_hi) {
-                rec = g_typeColl.Elem(key);
-            } else if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key, 0) != NULL) {
-                rec = g_typeColl.Elem(key);
-            } else {
-                char* msg = g_errOutOfMem;
-                g_retAddrBreadcrumb = GetRetAddr();
-                g_typeColl.m_errSink->Set(&g_typeColl, msg, 0xc);
-                rec = g_typeColl.Scratch();
-            }
-            ActNameConstructGrownSlots();
-        }
-
-        eq = (strcmp(*rec, "H") == 0);
+        eq = IsAnimationAct("H");
         if (eq) {
             CAniElement* el = m_wwdObject->m_animationCursor.m_animation;
             CAniRecordView* first;
@@ -3142,24 +3085,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (m_poweredUp != false && m_neighborValid == false) {
                 RESET_GRUNT_POWERED_STATE(this);
             }
-            CString* rec2;
-            {
-                i32 key2 = m_logicRecord->EventCode();
-                g_typeColl.m_grown = 0;
-                if (key2 >= g_typeColl.m_lo && key2 <= g_typeColl.m_hi) {
-                    rec2 = g_typeColl.Elem(key2);
-                } else if ((static_cast<_zvec*>(&g_typeColl))->GrowTo(key2, 0) != NULL) {
-                    rec2 = g_typeColl.Elem(key2);
-                } else {
-                    char* msg2 = g_errOutOfMem;
-                    g_retAddrBreadcrumb = GetRetAddr();
-                    g_typeColl.m_errSink->Set(&g_typeColl, msg2, 0xc);
-                    rec2 = g_typeColl.Scratch();
-                }
-                ActNameConstructGrownSlots();
-            }
-
-            eq = (strcmp(*rec2, "D") == 0);
+            eq = IsAnimationAct("D");
             if (eq) {
                 SetImageSetByName(EntranceCell()->m_names[2].GetBuffer(0));
                 SwitchAnimation(m_poseWalk);

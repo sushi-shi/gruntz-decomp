@@ -7,7 +7,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Rez/FrameClock.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/ZDArray.h>
 
 #include <stddef.h>
 
@@ -38,8 +38,7 @@ void CAniCycle::FireActivation(i32 id) {
 RVA(0x000ab0e0, 0x18d)
 void CAniCycle::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    *CActRegPool<CAniCycle>::s_table.ResolveEntry(id) =
-        static_cast<CActHandler>(&CAniCycle::AdvanceAnim);
+    (CActRegPool<CAniCycle>::s_table[id]) = static_cast<CActHandler>(&CAniCycle::AdvanceAnim);
 }
 
 RVA(0x000ab2e0, 0x17)

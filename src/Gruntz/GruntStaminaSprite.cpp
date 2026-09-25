@@ -2,7 +2,7 @@
 
 #include <Gruntz/GruntStaminaSprite.h>
 
-#include <Bute/ButeTree.h>
+#include <Gruntz/ActRegistry.h>
 #include <Gruntz/HealthPct.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SortKeyLayer.h>

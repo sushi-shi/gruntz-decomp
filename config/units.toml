@@ -1,7 +1,7 @@
 # units.toml - the per-translation-unit build manifest (single source of truth).
 #
 # PURE DATA - no prose. Per-unit rationale (why a TU exists / was split / absorbed
-# another) lives in docs/tu-partition-brief.md; the compile-flag evidence lives in
+# another) lives in https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/tu-partition-brief.md; the compile-flag evidence lives in
 # docs/linker-flags.md. This file is machine-edited in bulk, so comments here both
 # rot and get eaten by sweeps.
 #
@@ -29,7 +29,7 @@ cpp-rtti = ["/nologo", "/c", "/O2", "/MT", "/GX", "/GR"]
 cpp-rtti-noeh = ["/nologo", "/c", "/O2", "/MT", "/GR"]
 # Bute's two container globals: retail's `$E` dynamic-init helpers carry the ctor and
 # dtor bodies INLINE, which MSVC 5 only does without /GX (proven by probe - see
-# docs/patterns/gx-blocks-ctor-inlining-into-e-helper.md).
+# https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/patterns/gx-blocks-ctor-inlining-into-e-helper.md).
 cpp-noeh = ["/nologo", "/c", "/O2", "/MT"]
 
 [[unit]]
@@ -1161,11 +1161,6 @@ source = "src/Net/NetSession.cpp"
 flags = "cpp"
 
 [[unit]]
-unit = "zdarrayderived"
-source = "src/Gruntz/ZDArrayDerived.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
 unit = "helpstate"
 source = "src/Gruntz/HelpState.cpp"
 flags = "cpp-rtti"
@@ -1234,8 +1229,18 @@ source = "src/Gruntz/BehindCandyAni.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
+unit = "frontcandy"
+source = "src/Gruntz/FrontCandy.cpp"
+flags = "cpp-rtti"
+
+[[unit]]
 unit = "frontcandyani"
 source = "src/Gruntz/FrontCandyAni.cpp"
+flags = "cpp-rtti"
+
+[[unit]]
+unit = "eyecandyani"
+source = "src/Gruntz/EyeCandyAni.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
@@ -1256,11 +1261,6 @@ flags = "cpp-rtti"
 [[unit]]
 unit = "gruntstaminasprite"
 source = "src/Gruntz/GruntStaminaSprite.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
-unit = "logicdispatchinit"
-source = "src/Gruntz/LogicDispatchInit.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
@@ -1362,11 +1362,6 @@ unit = "cursorsnapactreg"
 source = "src/Gruntz/CursorSnapActReg.cpp"
 flags = "cpp-rtti"
 [[unit]]
-unit = "arrayserialize"
-source = "src/Gruntz/ArraySerialize.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
 unit = "palettebmp"
 source = "src/Image/PaletteBmp.cpp"
 flags = "cpp"
@@ -1419,19 +1414,9 @@ unit = "timesplit"
 source = "src/Utils/TimeSplit.cpp"
 flags = "cpp"
 [[unit]]
-unit = "stringstaticpool"
-source = "src/Net/StringStaticPool.cpp"
-flags = "cpp"
-
-[[unit]]
 unit = "chainforward"
 source = "src/Gruntz/ChainForward.cpp"
 flags = "cpp-rtti"
-[[unit]]
-unit = "rezbufferobject"
-source = "src/Rez/RezBufferObject.cpp"
-flags = "cpp"
-
 [[unit]]
 unit = "bitarray"
 source = "src/Utils/BitArray.cpp"

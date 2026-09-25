@@ -25,8 +25,8 @@
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
-#include <Wap32/ZVec.h>
 #include <Wwd/LogicRecordEvent.h>
+#include <ZTools/ZDArray.h>
 
 #include <stddef.h>
 
@@ -93,7 +93,7 @@ void CLightFx::FireActivation(i32 id) {
 RVA(0x0009d320, 0x18d)
 void CLightFx::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CLightFx>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CLightFx>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CLightFx::AdvanceAnim);
 }
 

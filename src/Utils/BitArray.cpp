@@ -1,8 +1,8 @@
 #include <rva.h>
 
-#include <Bute/ButeTree.h>
 #include <Utils/BitArrayWord.h>
-#include <Wap32/zBitVec.h>
+#include <ZTools/BitVec.h>
+#include <ZTools/Error.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -64,8 +64,6 @@ i32 zBitVec::EnsureSize(i32 nbits) {
     m_capacity = ndwords * BITARRAY_WORD_BITS;
     return 1;
 fail:
-    char* msg = g_errOutOfMem;
-    g_retAddrBreadcrumb = GetCallerRetAddr();
-    m_errSink->Set(this, msg, 0xc);
+    handle(_nomem, 0xc);
     return 0;
 }

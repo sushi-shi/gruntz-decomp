@@ -4,6 +4,7 @@
 #include <rva.h>
 
 #include <Mfc.h>
+#include <MfcWin.h>
 
 #include <DDrawMgr/DDSurface.h>
 #include <Enums.h>
@@ -12,12 +13,22 @@
 #include <Gruntz/Fader.h>
 #include <Gruntz/FaderConfig.h>
 #include <Ints.h>
-#include <Rez/RezBufferObject.h>
+
+#include <afxtempl.h>
 
 GZ_ENUM_FORWARD(FaderMode);
 
 class CDDSurface;
 struct CDDPalette;
+
+struct RezElem40 {
+    CRect m_startRect;
+    CRect m_endRect;
+    i32 m_reserved20;
+    float m_scale;
+};
+
+typedef CArray<RezElem40, const RezElem40&> CRezBufferObject;
 
 struct CFaderRadialCell {
     FloatVector2 m_velocity;

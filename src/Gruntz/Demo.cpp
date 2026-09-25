@@ -9,10 +9,10 @@
 #include <Gruntz/DemoHelpers.h>
 #include <Gruntz/DemoMoverState.h>
 #include <Gruntz/ExitTrigger.h>
-#include <Gruntz/FixedPtrArray32.h>
 #include <Gruntz/FortressFlag.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameObjectLogicTypes.h>
+#include <Gruntz/GameRand.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntCreationPoint.h>
 #include <Gruntz/GruntDirStatics.h>
@@ -20,6 +20,7 @@
 #include <Gruntz/GruntStartingPoint.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/InputDeviceGroup.h>
 #include <Gruntz/LogicEventDispatch.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SecretLevelTrigger.h>
@@ -94,7 +95,7 @@ i32 CDemo::BuildWorldLevelPath(i32 unused) {
 RVA(0x0003c220, 0xa4)
 i32 CDemo::Render() {
     CPlay::Render();
-    CFixedPtrArray32* list = g_actorList;
+    CInputDeviceGroup* list = g_actorList;
     i32 n = list->m_count;
     for (i32 i = 0; i < n; i++) {
         if (list->m_items[i]->m_pressedButtons & IDX(INPUT_BUTTON8)) {
@@ -113,7 +114,6 @@ i32 CDemo::Render() {
     return 1;
 }
 
-// @early-stop
 RVA(0x0003c300, 0x183)
 i32 DispatchDemoMoverLogic(CGameObject* owner) {
     CLogicRecord* st = owner->m_logicRecord;
@@ -151,11 +151,10 @@ i32 DispatchDemoMoverLogic(CGameObject* owner) {
         }
         case DEMO_MOVER_CHOOSE_TARGET: {
 
-            CSize range = st->m_ownerCtx->m_level->m_mainPlane->m_planePixelSize;
-            Coord target;
-            target.m_x = (range.cx == -1) ? (rand() % 2 - 1) : (rand() % (range.cx + 1));
-            target.m_y = (range.cy == -1) ? (rand() % 2 - 1) : (rand() % (range.cy + 1));
-            st->m_scrollTarget = target;
+            st->m_scrollTarget.m_x =
+                GetRandom(st->m_ownerCtx->m_level->m_mainPlane->m_planePixelSize.cx);
+            st->m_scrollTarget.m_y =
+                GetRandom(st->m_ownerCtx->m_level->m_mainPlane->m_planePixelSize.cy);
             st->SetEventCode(IDX(DEMO_MOVER_SCROLL_TO_TARGET));
             break;
         }

@@ -185,7 +185,7 @@ class CanonicalizedObject:
     rows: tuple[CanonicalRow, ...]
 
 
-# SEH bookkeeping the two sides spell differently (docs/referent-debt-ddrawmgr.tsv
+# SEH bookkeeping the two sides spell differently (https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/referent-debt-ddrawmgr.tsv
 # classes b1/b2). Both funclet symbols are renamed to the OWNER-derived names the
 # EH band carve uses (`__ehreg$<owner>` / `__ehunwind$<owner>`, gruntz.delink.eh_band),
 # so the reference is compared against a named span rather than a shared placeholder;

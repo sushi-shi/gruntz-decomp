@@ -9,17 +9,20 @@ The ladder (CLAUDE.md): the FIRST divergence class decides the wall.
              the reloc-sequence diff below; fix the claim, not the source.
   inline     the call-target multisets differ - a callee was expanded on
              one side and called on the other (or a call-set member is
-             missing). Lever: `gruntz walls inline-model --gap` quantifies
-             the budget deficit; docs/patterns/ob1-budget-cutoff-*,
-             inline-visibility-splits-call-and-expansion.md.
+             missing). Inspect `gruntz walls inline-model --gap` and
+             docs/patterns/inline-budget-emits-ool-comdat.md; a call-set
+             difference alone does not establish a budget deficit.
   cfg        call sets agree but branch/return counts differ - control-flow
-             reconstruction (arm shape, tail merge, loop form). Levers:
-             docs/patterns/ tail/cross-jump/do-while family.
-  regalloc   same calls, same branch skeleton, different bytes - register
-             allocation / scheduling / instruction selection. Lever:
-             docs/relevations/cl5-callcrossing-ebx-first-by-use-schedule.md;
-             a TU-state probe (docs/patterns/tu-state-probe-family-*) as a
-             disposable A/B only.
+             reconstruction (arm shape, tail merge, loop form). Check actual
+             edges and source structure, not just branch totals.
+  regalloc   same call multiset and branch/return counts, different bytes -
+             provisional register/schedule candidate, NOT CFG equivalence.
+             The ladder does not compare branch destinations or which calls
+             each edge reaches. LoadEntranceConfig's misplaced ResetCell
+             passed this screen; audit semantic edges before steering. Lever:
+             https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/relevations/cl5-callcrossing-ebx-first-by-use-schedule.md;
+             a disposable A/B as described in
+             docs/patterns/tu-state-probe-family-decides-reachability.md.
 
 A `prior:` line follows the class when `config/codex_wall_reviews.tsv` already
 holds a verdict for the row.  The two labels answer DIFFERENT questions and it
@@ -253,10 +256,12 @@ def diagnose(token: str, show_asm: bool = False) -> int:
     elif wall == "regalloc":
         first = next((i for i, (x, y) in enumerate(zip(bmask, tmask))
                       if x != y), min(len(bmask), len(tmask)))
-        print(f"  class: REGALLOC/SCHEDULING - same calls and skeleton, "
+        print(f"  class: REGALLOC/SCHEDULING - same call multiset and branch/return counts, "
               f"bytes first differ at +{first:#x}; instruction selection, "
               f"lifetime or allocation "
-              f"(docs/relevations/cl5-callcrossing-ebx-*)")
+              f"(see docs/patterns/INDEX.md for evidence limits)")
+        print("  provisional: branch destinations and side-effect reachability are not "
+              "verified; audit semantic edges before compiler-state work")
     else:
         print("  class: NONE - the normalized pair is identical; the score "
               "gap is outside this function (pairing, data, or unit-level)")
@@ -409,7 +414,7 @@ def _duplicate_tail_probe(basm: str, tasm: str, wall: str) -> None:
               "/O2 build, so what merges here is value-based factoring: look "
               "for a join at the suffix head, a per-arm destructible local, "
               "or arm VALUES that differ where retail's agree. "
-              "docs/relevations/wall-reasons-layout.md")
+              "https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/relevations/wall-reasons-layout.md")
     elif ts and not bs:
         print("    -> only TARGET duplicates a long suffix: retail's arms "
               "carried something ours factored away (a per-arm scope is the "

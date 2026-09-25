@@ -2,11 +2,11 @@
 
 #include <Gruntz/Warlord.h>
 
-#include <Bute/ButeTree.h>
 #include <DDrawMgr/AniAdvance.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Enums.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/ActRegistry.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/AniElement.h>
@@ -17,6 +17,7 @@
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
+#include <Gruntz/GameRand.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LogicTypeId.h>
@@ -36,9 +37,8 @@
 #include <Io/FileMem.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/ZDArray.h>
 
-#include <new>
 #include <stdlib.h>
 
 DATA(0x0020d218)
@@ -516,7 +516,7 @@ void RegisterWarlordActions() {
     REGISTER_ACTION("C", &CWarlord::BuildFortSplashParticles);
     REGISTER_ACTION("D", &CWarlord::UpdatePanicState);
     REGISTER_ACTION("E", &CWarlord::FinishJoyAnimation);
-    REGISTER_ACTION_TYPED("F", &CWarlord::FinishBattlecryAnimation);
+    REGISTER_ACTION("F", &CWarlord::FinishBattlecryAnimation);
 }
 
 #undef REGISTER_ACTION
@@ -777,7 +777,7 @@ i32 CWarlord::ResolveIdleAnimation() {
         return 0;
     }
 
-    i32 idx = rand() % 3 + 1;
+    i32 idx = GetRandom(1, 3);
 
     CGruntzMgr* g = g_gameReg;
     if (g->m_gameMode == GAMEMODE_QUESTZ) {
@@ -809,7 +809,7 @@ i32 CWarlord::ResolveBattlecryAnimation() {
         return 0;
     }
 
-    i32 idx = rand() % 3;
+    i32 idx = GetRandom(0, 2);
 
     CGruntzMgr* g = g_gameReg;
     if (g->m_gameMode == GAMEMODE_QUESTZ) {

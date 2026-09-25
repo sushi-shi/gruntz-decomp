@@ -31,10 +31,10 @@
 #include <Gruntz/BzState.h>
 #include <Gruntz/ColorTint.h>
 #include <Gruntz/CoordNode.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/DirectionRingIndex.h>
 #include <Gruntz/DirectionRingOffset.h>
 #include <Gruntz/ErrorStringId.h>
-#include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameMode.h>
 #include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
@@ -2475,7 +2475,7 @@ RVA_DYNINIT(0x00082fa0, 0x17, g_coordPool)
 RVA_DYNINIT(0x00082fd0, 0xe, g_coordPool)
 RVA_DYNINIT(0x00082ff0, 0x2f, g_coordPool)
 DATA(0x00245540)
-FreeNodePool g_coordPool;
+FreeNodePool<Coord> g_coordPool;
 
 RVA(0x0001ec20, 0xa0)
 CString CMultiBootyState::GetWarlordName(i32 id) {

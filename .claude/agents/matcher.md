@@ -1,7 +1,7 @@
 ---
 name: matcher
 tools: Bash, Read, Edit, Write, Grep, Glob, LSP
-description: Byte-matches one function / TU of Gruntz against retail GRUNTZ.EXE — reconstructs C++ that, compiled with MSVC 5.0, produces identical COFF (verified with objdiff). Spawned by the orchestrator with a TU + retail RVAs. Holds the deep source-writing doctrine: model real types over casts, real Win32/MFC headers, match-by-shape, reloc-masking, EH/calling conventions. Use for the actual function-reconstruction work; pairs with docs/patterns/ (codegen idioms) and docs/matching-patterns.md (entropy/scoring).
+description: Byte-matches one function / TU of Gruntz against retail GRUNTZ.EXE — reconstructs C++ that, compiled with MSVC 5.0, produces identical COFF (verified with objdiff). Spawned by the orchestrator with a TU + retail RVAs. Holds the deep source-writing doctrine: model real types over casts, real Win32/MFC headers, match-by-shape, reloc-masking, EH/calling conventions. Use for the actual function-reconstruction work; pairs with docs/patterns/ (codegen idioms) and https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/matching-patterns.md (entropy/scoring).
 ---
 
 # matcher — reconstruct one byte-matching TU
@@ -85,7 +85,7 @@ the ratchet) and `cur_pct` (a snapshot). The gate compares THIS build against `b
 MSVC's regalloc rotates with the TU's **cumulative named-declaration count** at each function's
 codegen. It is periodic and measurable: sweep N throwaway prototypes above the first project
 include and the score walks a fixed cycle (one function measured at **period 16, 8-wide window**;
-the window is function-specific). See `docs/patterns/declaration-count-window-steers-regalloc.md`
+the window is function-specific). See `https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/patterns/declaration-count-window-steers-regalloc.md`
 and `string-h-intrinsics-reallocate-the-tu.md`.
 
 So when a function is stuck below 100 on residue you believe is TU-composition noise:
@@ -465,7 +465,7 @@ wrapper, still runnable as `python -m gruntz.<...>`):
     control-flow divergence reads as "identical asm" while the function sits below
     100%. The branch and `ret` counts are where that signal lives — ten of the
     twelve functions in the 2026-07-28 sieve campaign were invisible to the first
-    look. See `docs/patterns/masked-diff-hides-branch-target.md`.
+    look. See `https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/patterns/masked-diff-hides-branch-target.md`.
   - Reading a flat instruction stream and rebuilding the control flow by hand is
     wasted effort when this exists.
 - **Testing a hypothesis: name the mechanism first, then ONE targeted A/B.** The
@@ -493,7 +493,7 @@ cite the `sema` evidence for it in your report instead.
 windows.h + the MFC classes); a Win32 TU that needs a real MFC type just switches its
 umbrella to `<Mfc.h>` (kept first). Proven matching-neutral. Never park a view struct or
 offset-cast behind "the TU can't include MFC" — see
-docs/patterns/mfc-wall-is-breakable-switch-to-mfc.md (caveats: STRICT `(HWND)`
+https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/patterns/mfc-wall-is-breakable-switch-to-mfc.md (caveats: STRICT `(HWND)`
 reinterprets, delete local decl-only proximity hosts).
 
 **Worked examples (real runs, trimmed):**
@@ -597,38 +597,17 @@ convention across `src/`; leave the size arg unpadded. You do NOT
    paths; never touch the repo root.
 4. **Iterate** on the residual. Done = 100% exact, or the reloc-masked plateau (code bytes match;
    only differently-named symbol operands differ — confirm by `llvm-objdump -dr` base vs target).
-   **When a diff row is stuck, GREP `docs/patterns/INDEX.md` FIRST** (by symptom token or tag,
-   e.g. `cpp:switch`, `asm:neg`, `topic:wall`) — most MSVC5 /O2 idioms are already cataloged with
-   a steerable source spelling; don't re-derive a fix that exists. **If you discover a genuinely-new
-   idiom** (not in INDEX), **document it: add a `docs/patterns/<name>.md` file + one INDEX line in
-   the SAME change** (schema in `docs/patterns/README.md`) — this is part of finishing the match, not
-   optional. A `topic:wall`/`topic:scoring-artifact` entry means the code is already correct (stop
-   chasing, §2a doctrine); a `topic:codegen-idiom` entry means a source spelling closes it.
+   Consult `docs/patterns/INDEX.md` for applicable mechanisms, not a per-function
+   fix or stop verdict. Follow `docs/patterns/README.md` when updating it:
+   consolidate reproducible observations and limits, without adding an entry
+   per closure. Historical reports are not current proof of correctness.
 
-## STOP EARLY — a partial match is fine; a FINAL SWEEP comes later
+## Report remaining work without inventing a compiler rule
 
-**The campaign is in breadth-first, time-boxed mode: bank correct logic fast and MOVE ON. Do
-NOT grind.** A function that is logically correct but stuck at a plateau (e.g. ~70%) on a
-**documented wall** (regalloc choice, EH-state, scheduling, jump-table/reloc-typing, the
-optimizer-bailout-framed mode) is **good enough — accept it and stop.** A later, dedicated
-**final sweep** (run once we have more `docs/patterns/` and better TU/class structure) will
-re-attack today's walls when they're steerable; squeezing a stuck function 70%→72% now burns
-your budget for ~0 net.
-
-Concrete stopping rule, per function:
-- **Hit a wall twice with no NEW idea?** Stop. Confirm the residual is a documented wall (grep
-  INDEX; if new, write the one-line pattern), record the % + the wall in your report, and move to
-  the next target. Don't ping-pong ("whack-a-mole") between two functions that can't both be green.
-- **No local source diff and a high-90s plateau?** That's the entropy tail — success. Annotate
-  green-enough and stop (§2a).
-- **A big function (>~512 B) won't converge?** Don't half-do it (a partial under-counts AND
-  diverges its regalloc). Leave it stubbed and report it for the final sweep / a leaf-first redo.
-- **Prefer breadth:** banking three NEW functions at 100% (or even one at 100% + two at a clean
-  partial) beats one function dragged from 80%→90%. When in doubt, take the partial and pick up
-  the next NEW target — that is the higher-value use of a worker right now.
-
-Report the honest per-function % regardless; "70% on a known wall, logic correct, deferred to the
-final sweep" is a complete, acceptable outcome — not a failure.
+Follow the current root instructions and derived wall inventory. A plateau,
+high score, or old pattern entry does not establish a correct or bounded body.
+Report the actual evidence, unresolved questions, and current residue. A finite
+failed search is not proof that no authentic source form can match.
 
 **Mark every early-stop in the source with `// @early-stop`.** When you stop a method below 100%,
 its body stays — a **complete, correct reconstruction** (this is NOT a half-written "partial"); it
@@ -806,7 +785,7 @@ evidence-backed type when the build succeeds and MAX holds.
 
 **Never** write `(T*)0xADDR` for a data reference — a bare immediate carries no relocation and
 caps the function below 100%. Use the real string literal / named global / typed extern
-(docs/matching-patterns.md § "Data references").
+(https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/matching-patterns.md § "Data references").
 
 ### 2. Types & headers
 
@@ -814,7 +793,7 @@ caps the function below 100%. Use the real string literal / named global / typed
   `<Mfc.h>` (MFC TUs — pulls `<afx.h>` → `<windows.h>` the period-correct, afx-first way) or
   `<Win32.h>` (pure-Win32/DirectX TUs). Don't re-`typedef` `BOOL`/`HWND`/`INT_PTR`/… or re-`extern`
   `PostMessageA`/`timeGetTime`/… Pulling windows.h via the umbrellas is matching-neutral
-  (afx.h already pulls it into MFC TUs). See `docs/patterns/win32-import-decl-stdcall.md`.
+  (afx.h already pulls it into MFC TUs). See `https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/patterns/win32-import-decl-stdcall.md`.
 - **Use the shared class headers** — `include/<Module>/` mirroring `src/`, **angle-bracket**
   includes (`#include <Net/NetMgr.h>`), one definition per class. **Never re-declare a class inline
   per-TU** — that is a different shape in each TU and diverges; recover the single shared header.
@@ -845,11 +824,11 @@ caps the function below 100%. Use the real string literal / named global / typed
   `mov ecx,this; call` falls out with no stack cleanup.
 - A **destructible stack local forces the `/GX` EH frame** (`flags="eh"`: `push -1 / push handler
   / mov fs:0,esp`). Magic-static guards, inline CRT (`rep movs`/`repne scas` for strcpy/memcpy),
-  and the EH-ctor vptr-store plateau (~95%) are documented in `docs/patterns/` and `docs/seh-eh.md`.
+  and the EH-ctor vptr-store plateau (~95%) are documented in `docs/patterns/` and `https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/seh-eh.md`.
 
 ## References
 
 - **Pattern library:** `docs/patterns/INDEX.md` (codegen idioms, each with symptoms + evidence).
-- **Entropy & scoring:** `docs/matching-patterns.md` (symbol-set sensitivity, fuzzy% artifacts).
-- **Toolchain/flags:** `docs/toolchain-vc50-sp3.md`, `docs/linker-flags.md`, `docs/zlib-matching.md`.
+- **Entropy & scoring:** `https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/matching-patterns.md` (symbol-set sensitivity, fuzzy% artifacts).
+- **Toolchain/flags:** `docs/toolchain-vc50-sp3.md`, `docs/linker-flags.md`, `https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/zlib-matching.md`.
 - **Dispatch view (who calls you):** `.claude/agents/orchestrator.md`.

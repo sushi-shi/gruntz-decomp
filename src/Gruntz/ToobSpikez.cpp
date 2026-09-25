@@ -2,9 +2,9 @@
 
 #include <Gruntz/ToobSpikez.h>
 
-#include <Bute/ButeTree.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/ActRegistry.h>
 #include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/LogicEventDispatch.h>
@@ -14,8 +14,8 @@
 #include <Gruntz/SortKeyMacros.h>
 #include <Rez/FrameClock.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/ZVec.h>
 #include <Wwd/LogicRecordEvent.h>
+#include <ZTools/ZDArray.h>
 
 #include <stddef.h>
 
@@ -87,8 +87,7 @@ void CToobSpikez::FireActivation(i32 coord) {
 RVA(0x001149c0, 0x18d)
 void CToobSpikez::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    *CActRegPool<CToobSpikez>::s_table.ResolveEntry(id) =
-        static_cast<CActHandler>(&CToobSpikez::AdvanceAnim);
+    CActRegPool<CToobSpikez>::s_table[id] = static_cast<CActHandler>(&CToobSpikez::AdvanceAnim);
 }
 
 RVA(0x00114bc0, 0x17)

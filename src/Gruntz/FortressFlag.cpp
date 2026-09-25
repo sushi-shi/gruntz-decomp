@@ -2,10 +2,10 @@
 
 #include <Gruntz/FortressFlag.h>
 
-#include <Bute/ButeTree.h>
 #include <Enums.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/ActRegistry.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/AnimSink.h>
@@ -28,9 +28,9 @@
 #include <Gruntz/WwdGameReg.h>
 #include <Image/CImage.h>
 #include <Rez/FrameClock.h>
-#include <Wap32/zBitVec.h>
-#include <Wap32/ZVec.h>
 #include <Wwd/LogicRecordEvent.h>
+#include <ZTools/BitVec.h>
+#include <ZTools/ZDArray.h>
 
 #include <stddef.h>
 
@@ -122,7 +122,7 @@ void CFortressFlag::FireActivation(i32 coord) {
 RVA(0x000461e0, 0x18d)
 void CFortressFlag::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CFortressFlag>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CFortressFlag>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CFortressFlag::AdvanceAnim);
 }
 
@@ -150,28 +150,8 @@ i32 CFortressFlag::SerializeDispatch(
     return 1;
 }
 
-template<> RVA(0x000464e0, 0x74)
-CActHandler* zDArray<CActHandler>::Resolve(i32 id) {
-    char* r;
-    m_grown = 0;
-    if (id >= m_lo && id <= m_hi) {
-        r = m_base + (id - m_lo) * m_stride;
-    } else if (GrowTo(id, 0)) {
-        r = m_base + (id - m_lo) * m_stride;
-    } else {
-        char* msg = g_errOutOfMem;
-        g_retAddrBreadcrumb = GetRetAddr();
-        m_errSink->Set(this, msg, 0xc);
-        r = m_spare;
-    }
-
-    union {
-        char* m_bytes;
-        CActHandler* m_slot;
-    } band;
-    band.m_bytes = r;
-    return band.m_slot;
-}
+template CActHandler& zDArray<CActHandler>::operator[](i32 id);
+RVA_COMPGEN(0x000464e0, 0x74, ??A?$zDArray@P8CUserLogic@@AEHXZ@@QAEAAP8CUserLogic@@AEHXZH@Z)
 
 RVA(0x00046850, 0xf1)
 i32 DispatchParticlezLogic(CGameObject* owner){LOGIC_RECORD_DISPATCH(CParticlez)}
@@ -230,6 +210,5 @@ void CExplosion::FireActivation(i32 id) {
 RVA(0x000474b0, 0x18d)
 void RegisterExplosionActions() {
     ACT_NAME_ID(id, "A")
-    *CActRegPool<CExplosion>::s_table.ResolveEntry(id) =
-        static_cast<CActHandler>(&CExplosion::Update);
+    CActRegPool<CExplosion>::s_table[id] = static_cast<CActHandler>(&CExplosion::Update);
 }

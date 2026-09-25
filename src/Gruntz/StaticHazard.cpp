@@ -3,11 +3,11 @@
 #include <Gruntz/StaticHazard.h>
 
 #include <Bute/ButeMgr.h>
-#include <Bute/ButeTree.h>
 #include <Enums.h>
 #include <Gruntz/ActName.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/ActRegistry.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/AniElement.h>
@@ -37,8 +37,8 @@
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/zBitVec.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/BitVec.h>
+#include <ZTools/ZDArray.h>
 
 #include <stddef.h>
 
@@ -150,12 +150,12 @@ void CStaticHazard::FireActivation(i32 coord) {
 
 RVA(0x000fbd50, 0x2ac)
 void CStaticHazard::RegisterActs() {
-    ACT_NAME_ID_CALL_REPORT(id, "A")
-    (*CActRegPool<CStaticHazard>::s_table.ResolveEntryCallReport(id)) =
+    ACT_NAME_ID(id, "A")
+    (CActRegPool<CStaticHazard>::s_table[id]) =
         static_cast<CActHandler>(&CStaticHazard::UpdateIdleState);
 
     ACT_NAME_ID(id2, "B")
-    (*CActRegPool<CStaticHazard>::s_table.ResolveEntryCallReport(id2)) =
+    (CActRegPool<CStaticHazard>::s_table[id2]) =
         static_cast<CActHandler>(&CStaticHazard::UpdateActiveState);
 }
 

@@ -5,13 +5,12 @@
 
 #include <Bute/ButeStore.h>
 #include <Bute/ButeToken.h>
-#include <Bute/ButeTree.h>
 #include <Bute/ButeValue.h>
-#include <Bute/PTreeNode.h>
 #include <Crypto/CryptMgr.h>
 #include <Gruntz/String.h>
 #include <Rez/RezArchiveEntry.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/Error.h>
+#include <ZTools/PTree.h>
 
 GZ_ENUM_FORWARD(ButeLexAction);
 
@@ -71,13 +70,13 @@ public:
             m_symType = t;
             m_data.m_r = new ButeIntRect(*src);
         }
-        CSymTabItem(SymTypes t, CAVector* src) {
+        CSymTabItem(SymTypes t, const CAVector& src) {
             m_symType = t;
-            m_data.m_v = new CAVector(*src);
+            m_data.m_v = new CAVector(src);
         }
-        CSymTabItem(SymTypes t, CARange* src) {
+        CSymTabItem(SymTypes t, const CARange& src) {
             m_symType = t;
-            m_data.m_range = new CARange(*src);
+            m_data.m_range = new CARange(src);
         }
 
         ~CSymTabItem();
@@ -109,8 +108,8 @@ public:
 
     struct ButeIntRect* GetRect(const char* tag, const char* key, struct ButeIntRect* def);
     struct ButeIntPoint* GetPoint(const char* tag, const char* key, struct ButeIntPoint* def);
-    CAVector* GetVector(const char* tag, const char* key, CAVector* def);
-    CARange* GetRange(const char* tag, const char* key, CARange* def);
+    CAVector& GetVector(const char* tag, const char* key, CAVector& def);
+    CARange& GetRange(const char* tag, const char* key, CARange& def);
 
     bool Match(ButeToken expectType);
     bool ScanTok();
@@ -151,8 +150,8 @@ public:
     void SetDouble(const char* tag, const char* key, double val);
     void SetString(const char* tag, const char* key, const CString& val);
     void SetRect(const char* tag, const char* key, struct ButeIntRect* val);
-    void SetVector(const char* tag, const char* key, CAVector* val);
-    void SetRange(const char* tag, const char* key, CARange* val);
+    void SetVector(const char* tag, const char* key, const CAVector& val);
+    void SetRange(const char* tag, const char* key, const CARange& val);
 
     bool Exist(const char* tag, const char* key);
 
@@ -211,8 +210,8 @@ private:
 public:
     ButeIntRect* GetRect(const char* tag, const char* key);
     ButeIntPoint* GetPoint(const char* tag, const char* key);
-    CAVector* GetVector(const char* tag, const char* key);
-    CARange* GetRange(const char* tag, const char* key);
+    CAVector& GetVector(const char* tag, const char* key);
+    CARange& GetRange(const char* tag, const char* key);
 };
 
 RVA(0x00172040, 0x120)

@@ -1,23 +1,25 @@
-# Signed `% 2^k` lowers to abs-then-restore-sign (one cdq, two xor/sub around the mask)
-tags: cpp:modulo cpp:int | asm:cdq asm:xor asm:sub asm:and | topic:codegen-idiom
-symptoms: `and 0xff` (or any prep); `cdq`; `xor eax,edx`; `sub eax,edx`; `and eax,0x7f`; `xor eax,edx`; `sub eax,edx` — a SINGLE cdq whose edx is reused by two branchless-abs pairs straddling the `& (2^k-1)` mask; looks like a redundant double-abs
-confidence: 9/10
+# Signed remainder can include sign correction around a mask
 
-MSVC5 lowers signed `x % 128` (any `% 2^k`) to `sign*(abs(x) & (2^k-1))`: cdq once
-(edx = sign(x)), abs `(x^edx)-edx`, mask `& 0x7f`, then re-apply the SAME edx to
-restore the sign. Don't read the two xor/sub pairs as a nested `abs(abs(x)&0x7f)`
-— spelling that re-derives the sign (a second cdq, or `x>>31` → `sar`) and diverges.
-Note MSVC5 does NOT range-prove a non-negative operand (e.g. `c & 0xff`), so it
-emits the full signed-modulo even when the result can't be negative.
+A signed remainder by a positive power of two cannot generally be replaced by
+an unsigned mask: negative dividends require a negative or zero remainder.
 
-```cpp
-return m_table[(c & 0xff) % 128];        // not abs(...)&0x7f, not (...)>>31
-```
+A recorded VC5 sequence computes an unsigned magnitude, masks it, and restores
+the original sign:
+
 ```asm
-25 ff 00 00 00   and eax,0xff
-99               cdq
-33 c2 / 2b c2    xor eax,edx ; sub eax,edx     ; abs
-83 e0 7f         and eax,0x7f
-33 c2 / 2b c2    xor eax,edx ; sub eax,edx     ; restore sign (reuse edx)
+cdq
+xor eax, edx
+sub eax, edx
+and eax, 7fh
+xor eax, edx
+sub eax, edx
 ```
-STEERABLE → 100%. Evidence: CNetSession::GetCommandAtTick 0xc0430 / ScheduleCommand 0xc03f0 (`(m_commandTick+(tickOffset&0xff)) % 128`, src/Net/NetCmdSlot.cpp) — both 100%.
+
+With EDX retaining the original sign mask, this implements signed remainder
+modulo 128. The [historical example](https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/patterns/signed-modulo-pow2-abs-restore.md)
+reports this sequence even after a mask that made the input nonnegative.
+
+Recognize the data flow before introducing handwritten absolute-value logic.
+This does not prove a unique C++ expression or that VC5 always uses this
+lowering. Check operand width, signedness, preceding range constraints, and
+whether the sign mask is actually preserved through the sequence.

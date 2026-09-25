@@ -4,17 +4,19 @@
 #include <MfcWin.h>
 
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/BattlezRouteMaskPreset.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordNode.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/EnemyAiType.h>
-#include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
+#include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntMovementMacros.h>
@@ -33,17 +35,16 @@
 #include <Gruntz/VoiceManager.h>
 #include <Ints.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/ZDArray.h>
 
 #include <limits.h>
 #include <new>
 #include <stdlib.h>
 #include <string.h>
 
-// @early-stop
 RVA(0x000f0130, 0x7c0)
 i32 CGrunt::StepGauntletGruntBehavior() {
-    const char* name = *g_typeColl.GetNameRecord(m_logicRecord->m_eventCode);
+    const char* name = g_typeColl[m_logicRecord->m_eventCode];
     bool eqI = (strcmp(name, "I") == 0);
     if (eqI) {
         return 1;
@@ -152,7 +153,8 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                         TileSwitch(point.m_x, point.m_y, 0, this->m_arrivalFlags, 1, 0);
                     }
                     if (this->CoordCount() != 0) {
-                        if (this->CoordCount() > Max(span.m_x, span.m_y)) {
+                        span.m_x = Max(span.m_x, span.m_y);
+                        if (this->CoordCount() > span.m_x) {
                             SetEntrancePos(1, 1);
                         }
                     }
@@ -244,7 +246,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
         if ((gc.m_flags & IDX(CELL_FLAG_DESTRUCTIBLE_ROCK)) != 0) {
             SetEntrancePos(1, 1);
             if (this->CoordCount() != 0) {
-                RecycleGruntCoords(this);
+                RECYCLE_GRUNT_COORDS(this)
             }
             Coord position = *cell;
             TileCenter(&position);

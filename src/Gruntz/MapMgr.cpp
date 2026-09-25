@@ -5,7 +5,7 @@
 #include <Mfc.h>
 
 #include <Gruntz/Brickz.h>
-#include <Gruntz/FreeNodePool.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/GameMode.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/LogicTypeId.h>
@@ -305,8 +305,9 @@ reached:
         Coord cell(p->m_col, p->m_row);
         Coord* slot = NULL;
         if (rec->m_next != NULL) {
-            slot = &rec->m_coord;
-            *slot = cell;
+            slot = &rec->m_value;
+            slot->m_x = cell.m_x;
+            slot->m_y = cell.m_y;
             g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
         }
 

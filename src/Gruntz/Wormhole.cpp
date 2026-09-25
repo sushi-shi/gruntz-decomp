@@ -38,8 +38,8 @@
 #include <Gruntz/UserLogic.h>
 #include <Io/FileMem.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/zBitVec.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/BitVec.h>
+#include <ZTools/ZDArray.h>
 
 RVA_DYNINIT(0x0003ffb0, 0xa, CActRegPool<CWormhole>::s_table)
 RVA_DYNINIT(0x0003ffd0, 0x15, CActRegPool<CWormhole>::s_table)
@@ -126,7 +126,7 @@ void CWormhole::FireActivation(i32 idx) {
 RVA(0x000401b0, 0x18d)
 void RegisterWormholeLogic() {
     ACT_NAME_ID(idx, "A")
-    CActHandler* dslot = CActRegPool<CWormhole>::s_table.ResolveEntry(idx);
+    CActHandler* dslot = &CActRegPool<CWormhole>::s_table[idx];
     *dslot = static_cast<CActHandler>(&CWormhole::SpawnPartners);
 }
 
@@ -192,13 +192,11 @@ void CGruntPuddle::FireActivation(i32 id) {
 
 RVA(0x000408b0, 0x2ac)
 void RegisterLogic() {
-    ACT_NAME_ID_CALL_REPORT(id, "A")
-    *CActRegPool<CGruntPuddle>::s_table.ResolveEntryCallReport(id) =
-        static_cast<CActHandler>(&CGruntPuddle::Idle);
+    ACT_NAME_ID(id, "A")
+    CActRegPool<CGruntPuddle>::s_table[id] = static_cast<CActHandler>(&CGruntPuddle::Idle);
 
     ACT_NAME_ID(id2, "B")
-    *CActRegPool<CGruntPuddle>::s_table.ResolveEntryCallReport(id2) =
-        static_cast<CActHandler>(&CGruntPuddle::Remove);
+    CActRegPool<CGruntPuddle>::s_table[id2] = static_cast<CActHandler>(&CGruntPuddle::Remove);
 }
 
 RVA(0x00040c10, 0x3)
@@ -397,13 +395,11 @@ void CTeleporter::FireActivation(i32 coord) {
 
 RVA(0x00041680, 0x2ac)
 void CTeleporter_RegisterActs() {
-    ACT_NAME_ID_CALL_REPORT(id, "A")
-    *CActRegPool<CTeleporter>::s_table.ResolveEntryCallReport(id) =
-        static_cast<CActHandler>(&CTeleporter::Begin);
+    ACT_NAME_ID(id, "A")
+    CActRegPool<CTeleporter>::s_table[id] = static_cast<CActHandler>(&CTeleporter::Begin);
 
     ACT_NAME_ID(id2, "B")
-    *CActRegPool<CTeleporter>::s_table.ResolveEntryCallReport(id2) =
-        static_cast<CActHandler>(&CTeleporter::Update);
+    CActRegPool<CTeleporter>::s_table[id2] = static_cast<CActHandler>(&CTeleporter::Update);
 }
 
 RVA(0x000419e0, 0x81)

@@ -130,7 +130,7 @@ void CNetSession::BuildGruntzCrcInfo() {
             i32 rnd = rand();
             PickupType type = grunt->m_entranceReason;
             i32 wp;
-            wp = PickupPriority(type);
+            PRIO(wp, type);
             b32 da = grunt->m_daFlag;
             PickupType toy = grunt->m_vehiclePickupType;
             PickupType tool = grunt->ArrivalPickupOf(type);
@@ -598,11 +598,11 @@ i32 CNetSession::ReadyForSequence(i32 sequence) {
     for (i32 i = 0; i < 4; i++) {
         CNetCmdSlot* slot = &m_slots[i];
         if (slot != NULL) {
-            if (slot->m_state == NETSLOT_ACTIVE && slot->m_isDraining == false) {
-                if (slot->m_contiguousSequence < sequence) {
+            if (slot->m_state == NETSLOT_ACTIVE && !slot->IsDraining()) {
+                if (!slot->HasReceivedThrough(sequence)) {
                     return 0;
                 }
-            } else if (slot->m_state == NETSLOT_ACTIVE && slot->m_isDraining != false) {
+            } else if (slot->m_state == NETSLOT_ACTIVE && slot->IsDraining()) {
                 if (slot->DrainAcknowledged() == 0) {
                     return 0;
                 }

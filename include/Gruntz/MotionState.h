@@ -95,16 +95,7 @@ inline CMotionState::CMotionState(EInlineBase) {
 }
 
 inline void CMotionState::InitBounds() {
-    m_position.Init();
-    m_velocity.Init();
-    m_acceleration.Init();
-    m_time = 0.0;
-    m_deltaTime = 0.0;
-    m_reservedc0.Init();
-    m_stepDisabled = false;
-    SET_VECTOR3_BOUNDS(m_minBounds, m_maxBounds, g_movingLogicMin, g_movingLogicMax);
-    m_maxStep.Init(g_movingLogicMax, g_movingLogicMax, g_movingLogicMax);
-    m_maxVelocity.Init(g_movingLogicMax, g_movingLogicMax, g_movingLogicMax);
+    INITIALIZE_MOTION_BOUNDS(*this);
 }
 
 #endif // GRUNTZ_MOTIONSTATE_H

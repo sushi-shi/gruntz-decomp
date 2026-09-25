@@ -4,10 +4,11 @@
 #include <MfcWin.h>
 
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordNode.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/EnemyAiType.h>
-#include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
@@ -30,14 +31,13 @@
 #include <Gruntz/VoiceManager.h>
 #include <Ints.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/ZDArray.h>
 
 #include <limits.h>
 #include <new>
 #include <stdlib.h>
 #include <string.h>
 
-// @early-stop
 RVA(0x000f2b20, 0x6e1)
 i32 CGrunt::StepScrollGruntBehavior() {
     m_defenderPx = m_lastTilePx;
@@ -226,9 +226,10 @@ i32 CGrunt::StepScrollGruntBehavior() {
                     && static_cast<u32>(point.m_y) < g_gameReg->m_tileGrid->m_height) {
                     TileSwitch(point.m_x, point.m_y, 0, m_arrivalFlags, 1, 0);
                 }
-                i32 m328 = CoordCount();
-                if (m328 != 0) {
-                    if (m328 > Max(span.m_x, span.m_y)) {
+                i32 coordCount = CoordCount();
+                if (coordCount != 0) {
+                    i32 mx = Max(span.m_x, span.m_y);
+                    if (coordCount > mx) {
                         SetEntrancePos(1, 1);
                     }
                 }

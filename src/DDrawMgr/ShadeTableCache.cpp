@@ -72,7 +72,6 @@ void CShadeTableCache::FreeNodes() {
     m_arr.RemoveAll();
 }
 
-// @early-stop
 RVA(0x0014df40, 0x5f4)
 CShadeTable* CShadeTableCache::FlashTable(
     PALETTEENTRY* pal,
@@ -98,31 +97,30 @@ CShadeTable* CShadeTableCache::FlashTable(
 
         for (i32 j = 0; j < darkRampSteps; j++) {
             float tt = static_cast<float>(j) / static_cast<float>(darkRampSteps);
-            float inv = g_one - tt;
-            u8 rn = static_cast<u8>(
-                (static_cast<float>((startPct * static_cast<i32>(pal[i].peRed) / 100)) * inv
-                 + static_cast<float>(pal[i].peRed) * tt)
-                        < g_colorChannelMax
-                    ? static_cast<float>((startPct * static_cast<i32>(pal[i].peRed) / 100)) * inv
-                          + static_cast<float>(pal[i].peRed) * tt
-                    : g_colorChannelMax
-            );
-            u8 gn = static_cast<u8>(
-                (static_cast<float>((startPct * static_cast<i32>(pal[i].peGreen) / 100)) * inv
-                 + static_cast<float>(pal[i].peGreen) * tt)
-                        < g_colorChannelMax
-                    ? static_cast<float>((startPct * static_cast<i32>(pal[i].peGreen) / 100)) * inv
-                          + static_cast<float>(pal[i].peGreen) * tt
-                    : g_colorChannelMax
-            );
-            u8 bn = static_cast<u8>(
-                (static_cast<float>((startPct * static_cast<i32>(pal[i].peBlue) / 100)) * inv
-                 + static_cast<float>(pal[i].peBlue) * tt)
-                        < g_colorChannelMax
-                    ? static_cast<float>((startPct * static_cast<i32>(pal[i].peBlue) / 100)) * inv
-                          + static_cast<float>(pal[i].peBlue) * tt
-                    : g_colorChannelMax
-            );
+            u8 rn = static_cast<u8>(HSV_MIN(
+                INTERPOLATE(
+                    static_cast<float>((startPct * static_cast<i32>(pal[i].peRed) / 100)),
+                    static_cast<float>(pal[i].peRed),
+                    tt
+                ),
+                g_colorChannelMax
+            ));
+            u8 gn = static_cast<u8>(HSV_MIN(
+                INTERPOLATE(
+                    static_cast<float>((startPct * static_cast<i32>(pal[i].peGreen) / 100)),
+                    static_cast<float>(pal[i].peGreen),
+                    tt
+                ),
+                g_colorChannelMax
+            ));
+            u8 bn = static_cast<u8>(HSV_MIN(
+                INTERPOLATE(
+                    static_cast<float>((startPct * static_cast<i32>(pal[i].peBlue) / 100)),
+                    static_cast<float>(pal[i].peBlue),
+                    tt
+                ),
+                g_colorChannelMax
+            ));
             ramp[j] = static_cast<u8>(FindNearestColor(pal, rn, gn, bn));
         }
 
@@ -172,7 +170,6 @@ CShadeTable* CShadeTableCache::FlashTable(
     return t;
 }
 
-// @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0014e540, 0x2ea)
@@ -220,7 +217,6 @@ CShadeTableCache::HsvShiftTable(PALETTEENTRY* pal, i32 steps, i32 pct, i32 gamma
     return t;
 }
 
-// @early-stop
 RVA(0x0014e830, 0x1b9)
 CShadeTable* CShadeTableCache::HueRampTable(PALETTEENTRY* pal, i32 steps, i32 packedColor) {
     CShadeTable* t = new CShadeTable;
@@ -253,7 +249,6 @@ CShadeTable* CShadeTableCache::HueRampTable(PALETTEENTRY* pal, i32 steps, i32 pa
     return t;
 }
 
-// @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0014e9f0, 0x208)

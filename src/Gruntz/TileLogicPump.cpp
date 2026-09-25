@@ -5,6 +5,7 @@
 #include <DDrawMgr/AniAdvance.h>
 #include <DDrawMgr/DDrawWorkerHost.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/AniAdvanceCursor.h>
@@ -21,6 +22,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntCellInline.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntIdentity.h>
 #include <Gruntz/GruntzMgr.h>
@@ -49,8 +51,8 @@
 #include <Rez/FrameClock.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/ZVec.h>
 #include <Wwd/LogicRecordEvent.h>
+#include <ZTools/ZDArray.h>
 
 #include <string.h>
 
@@ -168,7 +170,7 @@ void CWarpStonePad::FireActivation(i32 coord) {
 RVA(0x0010da20, 0x18d)
 void CWarpStonePad::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CWarpStonePad>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CWarpStonePad>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CWarpStonePad::AdvanceAnim);
 }
 
@@ -195,7 +197,7 @@ void CTileTriggerSwitch::FireActivation(i32 coord) {
 RVA(0x0010e000, 0x18d)
 void CTileTriggerSwitch::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CTileTriggerSwitch>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CTileTriggerSwitch>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CTileTriggerSwitch::AdvanceAnim);
 }
 
@@ -227,7 +229,7 @@ void CTileTrigger::FireActivation(i32 coord) {
 RVA(0x0010e600, 0x18d)
 void CTileTrigger::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CTileTrigger>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CTileTrigger>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CTileTrigger::AdvanceAnim);
 }
 
@@ -253,8 +255,7 @@ void CBrickz::FireActivation(i32 coord) {
 RVA(0x0010ebe0, 0x18d)
 void CBrickz::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CBrickz>::s_table.ResolveEntry(id)))) =
-        static_cast<i32 (CUserLogic::*)()>(&CBrickz::Trigger);
+    (CActRegPool<CBrickz>::s_table[id]) = static_cast<i32 (CUserLogic::*)()>(&CBrickz::Trigger);
 }
 
 RVA(0x0010ede0, 0x3)
@@ -326,12 +327,12 @@ void CCheckpointTrigger::FireActivation(i32 coord) {
 
 RVA(0x0010f340, 0x2ac)
 void CCheckpointTrigger::RegisterActs() {
-    ACT_NAME_ID_CALL_REPORT(id, "A")
-    (*((CActRegPool<CCheckpointTrigger>::s_table.ResolveEntryCallReport(id)))) =
+    ACT_NAME_ID(id, "A")
+    (CActRegPool<CCheckpointTrigger>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CCheckpointTrigger::Act);
 
     ACT_NAME_ID(id2, "B")
-    (*((CActRegPool<CCheckpointTrigger>::s_table.ResolveEntryCallReport(id2)))) =
+    (CActRegPool<CCheckpointTrigger>::s_table[id2]) =
         static_cast<i32 (CUserLogic::*)()>(&CCheckpointTrigger::AdvanceCheckpointAnimation);
 }
 
@@ -412,16 +413,19 @@ i32 CCheckpointTrigger::Act() {
         return 0;
     }
 
-    i32 ownerCol = (owner >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK;
+    GruntIdentity identity;
+    identity.m_playerIndex = (owner >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK;
     owner &= GRUNT_IDENTITY_COMPONENT_MASK;
-    CGrunt* g = g_gameReg->m_triggerMgr->m_units[ownerCol * TM_UNITS_PER_PLAYER + owner];
+    identity.m_unitIndex = owner;
+    CGrunt* g = FindGruntByIdentity(g_gameReg, identity);
     if (g == NULL) {
         return 0;
     }
 
-    Coord position = g->m_object->ScreenPos();
-    RECT* view = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
-    if (!::PtInRect(view, position.m_x, position.m_y)) {
+    i32 sy = g->m_object->m_screenPosition.m_y;
+    i32 sx = g->m_object->m_screenPosition.m_x;
+    const RECT* view = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
+    if (!PtInRect(view, sx, sy)) {
         return 0;
     }
     g_gameReg->m_voiceManager->PlayVoice(g, 0x334, -1, 0, -1, -1);
@@ -479,7 +483,7 @@ void CTileTriggerTransition::FireActivation(i32 coord) {
 RVA(0x0010fe70, 0x18d)
 void CTileTriggerTransition::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CTileTriggerTransition>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CTileTriggerTransition>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CTileTriggerTransition::TransitionAct);
 }
 

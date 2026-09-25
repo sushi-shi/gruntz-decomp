@@ -143,7 +143,7 @@ class CompilerArtifactControls(unittest.TestCase):
             path.write_text(text)
             return ca.source_findings(
                 [path], placement_allow=Counter(), dtor_allow=Counter(),
-                low_level_allow=Counter()
+                low_level_allow=Counter(), allocation_definition_allow=Counter()
             )
 
     def test_allocator_calls_and_realizers_fail(self):
@@ -153,6 +153,30 @@ class CompilerArtifactControls(unittest.TestCase):
         )
         self.assertTrue(any("compiler allocation call" in row for row in findings))
         self.assertTrue(any("forced-emission helper" in row for row in findings))
+
+    def test_instantiation_only_unit_reaches_gate(self):
+        from gruntz.verify import compiler_artifacts as ca
+        source = ('#include <Array.h>\n'
+                  '// Former class implementation, now only an emitter.\n'
+                  'RVA_COMPGEN(0x8710, 0x2b, ??0?$Array@H@@QAE@XZ)\n'
+                  'template class Array<int>;\n')
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / 'Probe.cpp'
+            path.write_text(source)
+            with mock.patch.object(ca, 'base_only_suspicious', return_value=[]):
+                findings = ca.gate_findings([path])
+        self.assertTrue(any('instantiation-only translation unit' in row
+                            for row in findings))
+
+    def test_instantiations_beside_real_code_or_storage_are_not_empty_units(self):
+        from gruntz.verify.compiler_artifacts import instantiation_only
+        instantiation = 'template class Array<int>;\n'
+        for source in (instantiation + 'Array<int> g_values;\n',
+                       instantiation + 'void Owner::Clear() { values.Clear(); }\n',
+                       'template<> Array<int> Registry<Tag>::values;\n',
+                       '#include <Array.h>\n'):
+            with self.subTest(source=source):
+                self.assertFalse(instantiation_only(source))
 
     def test_comments_and_normal_new_expressions_pass(self):
         findings = self._scan(
@@ -165,6 +189,16 @@ class CompilerArtifactControls(unittest.TestCase):
         findings = self._scan("void F(CThing* p) { p->~CThing(); }\n")
         self.assertTrue(any("explicit destructor call" in row for row in findings))
 
+    def test_explicit_constructor_expression_reaches_gate(self):
+        from gruntz.verify import compiler_artifacts as ca
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / "Probe.cpp"
+            path.write_text("void F(CString* p) { p->CString::CString(); }\n")
+            with mock.patch.object(ca, "base_only_suspicious", return_value=[]):
+                findings = ca.gate_findings([path])
+        self.assertTrue(any("explicit constructor call" in row for row in findings))
+        self.assertEqual(self._scan("void F(CThing* p) { p->CThing::Reset(); }\n"), [])
+
     def test_reviewed_typed_teardown_callback_passes(self):
         from gruntz.verify import compiler_artifacts as ca
         with tempfile.TemporaryDirectory() as td:
@@ -173,7 +207,7 @@ class CompilerArtifactControls(unittest.TestCase):
             allowed = Counter({(str(path), "T"): 1})
             findings = ca.source_findings(
                 [path], placement_allow=Counter(), dtor_allow=allowed,
-                low_level_allow=Counter()
+                low_level_allow=Counter(), allocation_definition_allow=Counter()
             )
         self.assertEqual(findings, [])
 
@@ -182,6 +216,56 @@ class CompilerArtifactControls(unittest.TestCase):
         rows = [("probe", "?RealizeCThing@@YAPAVCThing@@XZ"),
                 ("probe", "??_GCThing@@UAEPAXI@Z")]
         self.assertEqual(len(ca.base_only_suspicious(rows)), 1)
+
+    def test_authored_placement_definition_and_negative_controls_reach_gate(self):
+        from gruntz.verify import compiler_artifacts as ca
+        from gruntz.core.paths import REPO
+
+        owner = REPO / 'include/ZTools/PlacementNew.h'
+        original = owner.read_text()
+        read_text = Path.read_text
+        cases = (
+            ('original', original, False),
+            ('explicit call', original + '\nvoid* F(void* p) { '
+             'return ::operator new(4, p, 0, 0); }\n', True),
+            ('duplicate', original + original, True),
+            ('altered body', original.replace('return ptr;', 'return 0;'), True),
+            ('missing', '', True),
+        )
+        for name, source, rejected in cases:
+            with self.subTest(case=name):
+                def substituted(path, *args, **kwargs):
+                    return source if path == owner else read_text(path, *args, **kwargs)
+                with mock.patch.object(Path, 'read_text', substituted):
+                    findings = ca.gate_findings()
+                self.assertEqual(bool(findings), rejected, findings)
+
+        definition = ('inline void* operator new(size_t size, void* ptr, '
+                      'int dummy1, int dummy2) { return ptr; }')
+        self.assertTrue(any('allocation definition' in row
+                            for row in self._scan(definition)))
+
+    def test_complete_array_placement_population_reaches_gate(self):
+        from gruntz.verify import compiler_artifacts as ca
+        from gruntz.core.paths import REPO
+
+        owner = REPO / 'include/ZTools/ZDArray.h'
+        original = owner.read_text()
+        read_text = Path.read_text
+        self.assertEqual(len(ca.PLACEMENT_RE.findall(original)), 4)
+        for name, source, rejected in (
+            ('complete family', original, False),
+            ('missing construction', original.replace('new (p, 0, 0) T', 'p', 1), True),
+            ('extra construction', original + '\ntemplate<class T> void extra(T* p) '
+             '{ new (p, 0, 0) T; }\n', True),
+            ('wrong element', original.replace('new (p, 0, 0) T', 'new (p, 0, 0) Item', 1), True),
+        ):
+            with self.subTest(case=name):
+                def substituted(path, *args, **kwargs):
+                    return source if path == owner else read_text(path, *args, **kwargs)
+                with mock.patch.object(Path, 'read_text', substituted):
+                    findings = ca.gate_findings()
+                self.assertEqual(bool(findings), rejected, findings)
 
 
 class CastControls(unittest.TestCase):
@@ -944,6 +1028,56 @@ class AssertRelocsControls(unittest.TestCase):
 
 
 class DataRelocsControls(unittest.TestCase):
+    def test_compiler_literal_does_not_borrow_named_static_relocations(self):
+        """Exercise Obj -> canon -> Resolver -> retail/paired oracle routing."""
+        from types import SimpleNamespace
+
+        from gruntz.verify import data_relocs as dr
+
+        def data_object(name):
+            payload = b"literal\0"
+            strings = name.encode("ascii") + b"\0"
+            header = struct.pack("<HHIIIHH", 0x14c, 1, 0,
+                                 60 + len(payload), 1, 0, 0)
+            section = struct.pack("<8sIIIIIIHHI", b".data", 0, 0,
+                                  len(payload), 60, 0, 0, 0, 0, 0xc0300040)
+            symbol = struct.pack("<IIIhHBB", 0, 4, 0, 1, 0, 3, 0)
+            return (header + section + payload + symbol
+                    + struct.pack("<I", 4 + len(strings)) + strings)
+
+        model = SimpleNamespace(functions=[], data=[SimpleNamespace(
+            name="__$S", aliases=[], rva=0x1000, size=24)])
+        image = SimpleNamespace(
+            jmp_target=mock.Mock(return_value=None),
+            relocs_in=mock.Mock(return_value=[(0x1000, 0x2000)]))
+        with tempfile.TemporaryDirectory() as td:
+            base, target = Path(td, "base.obj"), Path(td, "target.obj")
+            with mock.patch("gruntz.model.resolve", return_value=model), \
+                 mock.patch("gruntz.sema.image.retail", return_value=image), \
+                 mock.patch.object(dr, "clean_units", return_value=set()), \
+                 mock.patch.object(dr.pairscan, "pairs",
+                                   return_value={"probe": (base, target)}):
+                for name in ("_$S56", "$S56"):
+                    with self.subTest(name=name):
+                        base.write_bytes(data_object(name))
+                        target.write_bytes(data_object(name))
+                        image.relocs_in.reset_mock()
+                        rows, unpaired, unresolved, stats, _dropped, eh = dr.scan()
+                        self.assertEqual((rows, unpaired, unresolved, eh),
+                                         ([], [], [], []))
+                        self.assertEqual(stats["data symbols paired"], 1)
+                        self.assertEqual(stats["data symbols pinned"], 0)
+                        image.relocs_in.assert_not_called()
+
+                # A genuinely named static must still use the retail oracle,
+                # which catches its missing relocation in this negative control.
+                base.write_bytes(data_object("__$S123"))
+                target.write_bytes(data_object("__$S123"))
+                rows, _unpaired, _unresolved, stats, _dropped, _eh = dr.scan()
+                self.assertEqual([(r.verdict, r.oracle) for r in rows],
+                                 [("MISSING", "retail")])
+                self.assertEqual(stats["data symbols pinned"], 1)
+
     def test_an_any_comdat_number_is_not_an_associative_ordinal(self):
         """Integration control for the section-manifest consumer.
 
@@ -1872,8 +2006,36 @@ class PairscanControls(unittest.TestCase):
     def test_canon_folds_static_suffix_and_vector_dtor(self):
         from gruntz.walls.pairscan import canon
         self.assertEqual(canon("_s_QUESTZ$Sdata_data_87db2c_0"), "_s_QUESTZ")
+        self.assertEqual(canon("__$S"), "__")
+        self.assertEqual(canon("__$S123"), "__")
+        for name in ("_$S56", "$S56", "_$S0", "$S0"):
+            self.assertEqual(canon(name), name)
         self.assertEqual(canon("??_EzPTree@@UAEPAXI@Z"),
                          "??_GzPTree@@UAEPAXI@Z")
+
+    def test_resolver_keeps_compiler_ordinals_distinct_from_named_statics(self):
+        from types import SimpleNamespace
+
+        from gruntz.verify.assert_relocs import Resolver
+        from gruntz.walls.pairscan import DIR32
+
+        model = SimpleNamespace(functions=[], data=[
+            SimpleNamespace(name="__$S", aliases=[], rva=0x1000, size=24),
+            SimpleNamespace(name="_named$S123", aliases=[], rva=0x2000, size=4),
+        ])
+        image = SimpleNamespace(jmp_target=lambda rva: None)
+        with mock.patch("gruntz.model.resolve", return_value=model), \
+             mock.patch("gruntz.sema.image.retail", return_value=image):
+            resolver = Resolver()
+        for name in ("_$S56", "$S56", "_$S0", "$S0"):
+            with self.subTest(name=name):
+                self.assertEqual(resolver.rva_of(name), set())
+                self.assertEqual(resolver.resolve_base(name, DIR32, 4), set())
+        for name in ("_", "__", "__$S", "__$S123", "__$Sdata_data_abcd_0"):
+            self.assertEqual(resolver.rva_of(name), {0x1000})
+        for name in ("named", "_named", "_named$S", "_named$S456"):
+            self.assertEqual(resolver.rva_of(name), {0x2000})
+        self.assertEqual(resolver.resolve_base("__$S123", DIR32, 4), {0x1004})
 
 
 class EhFrameControls(unittest.TestCase):
@@ -2976,10 +3138,29 @@ class InlineModelFlagControls(unittest.TestCase):
             with self.assertRaises(SystemExit):
                 inline_model.main(["--gap", str(Path(td) / "absent.json")])
 
+    def test_unmarked_template_candidate_reaches_cli_prediction(self):
+        import contextlib
+        import io
+        import json
+        from gruntz.walls import inline_model
+        with tempfile.TemporaryDirectory() as td:
+            spec = Path(td) / "template.json"
+            spec.write_text(json.dumps({"caller_cb": 120, "sites": [
+                {"name": "Array<int>::operator[]", "cb": 20,
+                 "marked": False, "candidate": True},
+                {"name": "Plain::At", "cb": 20,
+                 "marked": False, "candidate": False},
+            ]}))
+            with contextlib.redirect_stdout(io.StringIO()) as out:
+                rc = inline_model.main(["--spec", str(spec)])
+        self.assertEqual(rc, 0)
+        self.assertIn("EXPAND Array<int>::operator[]", out.getvalue())
+        self.assertIn("call   Plain::At", out.getvalue())
+
 
 class ExeMapWriteControls(unittest.TestCase):
     """`python3 -m gruntz.sema.exe_map --help` ignored the flag and rewrote
-    docs/exe-map/ - a help request with a side effect on the tracked tree."""
+    the tracked docs tree. Generated maps now default to build/exe-map/."""
 
     def test_help_does_not_write(self):
         import contextlib
@@ -4999,7 +5180,7 @@ class ResidueClassifierControls(unittest.TestCase):
         self.assertEqual(classify(residual_of(mb, mt)[1], mb, mt)[0], "none")
 
     def test_a_missing_arm_temp_is_the_register_case(self):
-        """docs/patterns/arm-result-temp-controls-copies-and-shared-store.md:
+        """https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/patterns/arm-result-temp-controls-copies-and-shared-store.md:
         retail's arm ends in `mov <callee-saved>,<scratch>` and the base is
         exactly that many instructions short."""
         self.assertEqual(self._kind(

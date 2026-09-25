@@ -54,6 +54,16 @@ inline i32 CGruntzMapMgr::TileIdAt(u32 x, u32 y) const {
     return 0;
 }
 
+inline void CGruntzMapMgr::ReleaseCellOccupancy(i32 tileX, i32 tileY) {
+    m_rows[tileY][tileX].m_flags &= BRICKZ_CELL_UNOCCUPIED_MASK;
+    m_rows[tileY][tileX].m_occupantId = -1;
+}
+
+inline void CGruntzMapMgr::AcquireCellOccupancy(i32 tileX, i32 tileY, i32 packedOwner) {
+    m_rows[tileY][tileX].m_flags |= BRICKZ_CELL_OCCUPIED;
+    m_rows[tileY][tileX].m_occupantId = packedOwner;
+}
+
 static inline i32 TBombGridCell(CGameObject* obj) {
     CMapMgr* g = g_gameReg->m_tileGrid;
     Coord tile = obj->ScreenPos();

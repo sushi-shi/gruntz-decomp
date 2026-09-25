@@ -10,15 +10,6 @@
 #include <Lith/BaseList.h>
 #include <Wap32/Object.h>
 
-struct BucketHead;
-
-struct BucketHead : CLTBaseList {
-
-    BucketHead() {}
-
-    ~BucketHead();
-};
-
 class CWwdGrid : public CObject {
 public:
     CWwdGrid() {

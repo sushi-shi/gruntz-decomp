@@ -56,20 +56,20 @@
         # but a COMDAT is emitted into EVERY object that uses it and folded by the
         # linker onto one rva, so all owners are correct. The section manifest already
         # permits exactly this (`compatible_folded_comdat_alias`); the data manifest
-        # never got the same treatment. Mirrors it there. docs/data-attribution.md §3b.
+        # never got the same treatment. See docs/data-attribution.md (generated manifests).
         # ILT: link.exe /INCREMENTAL routes function-ADDRESS references (vtable
         # slots, fn-ptr tables) through a 5-byte `jmp rel32` thunk band at the
         # start of .text. The thunk is a link-time artifact - cl cannot name a
         # symbol that does not exist until link, so the original object's DIR32
         # named the BODY. Resolve through the thunk to reconstruct that, the same
-        # way an IAT slot is resolved back to its import. docs/patterns/ilt-thunk-
-        # indirection.md.
+        # way an IAT slot is resolved back to its import. Historical evidence:
+        # https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/patterns/ilt-thunk-indirection.md
         # COMDAT leader: `finish_data_comdats` demanded an external definition at
         # section offset 0, which is not what COFF means and not what cl emits.
         # Under /GR a class vtable COMDAT holds the `??_R4` complete-object-locator
         # POINTER (an unnamed word) at offset 0 and `??_7<class>@@6B@` at offset 4,
         # and the vtable symbol is that COMDAT's leader. Take the lowest-offset
-        # external definition instead. docs/data-attribution.md §3b-ii.
+        # external definition instead. See docs/data-attribution.md (COMDAT enrollment).
         # Grouped section names: the section manifest's storage check demanded an
         # exact `.rdata` / `.data` / `.bss`, with one hand-rolled exception for
         # `.CRT$`. A `$` suffix is COFF's grouped-section form (a linker ordering
@@ -145,7 +145,7 @@
       # extent must fit the span to its retail neighbour, or both rows are withheld).
       # Upstream cannot relax this globally: for a format that DOES state sizes the
       # comparison is real. Drop the patch if objdiff stops comparing INFERRED sizes.
-      # docs/patterns/bss-symbol-size-inference-hole.md.
+      # https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/patterns/bss-symbol-size-inference-hole.md.
       #
       # UPSTREAM-PENDING objdiff-score-reloc-addend: x86 COFF `DIR32` has no addend
       # field - the addend sits in the instruction's displacement, which is exactly
@@ -162,7 +162,7 @@
       # where the pointed-to VALUE is the trusted signal - nobody had noticed the
       # addend is a third signal that survives unreliable names. Drop the patch once
       # objdiff scores addends under `data_value` (or grows an addend knob).
-      # docs/patterns/reloc-addend-is-masked-diff-the-addends.md.
+      # https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/patterns/reloc-addend-is-masked-diff-the-addends.md.
       objdiff-cli = nightly-rustPlatform.buildRustPackage {
         pname = "objdiff-cli";
         version = objdiffVersion;

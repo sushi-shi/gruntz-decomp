@@ -1137,7 +1137,7 @@ rva	name	lib	confidence	source
 0x1b83b5	?FreeAssoc@CMapStringToPtr@@IAEXPAUCAssoc@1@@Z	NAFXCW	CRUNTIME	anchored
 0x1b83de	?GetAssocAt@CMapStringToPtr@@IBEPAUCAssoc@1@PBDAAI@Z	NAFXCW	CRUNTIME	anchored
 0x1b8438	?Lookup@CMapStringToPtr@@QBEHPBDAAPAX@Z	NAFXCW	CRUNTIME	anchored
-0x1b845a	?Lookup@CMapStringToPtr@@QBEHPBDAAPAX@Z	NAFXCW	CRUNTIME	anchored
+0x1b845a	?LookupKey@CMapStringToPtr@@QBEHPBDAAPBD@Z	NAFXCW	CRUNTIME	anchored
 0x1b847c	??ACMapStringToPtr@@QAEAAPAXPBD@Z	NAFXCW	AMBIG	anchored
 0x1b84de	?RemoveKey@CMapStringToPtr@@QAEHPBD@Z	NAFXCW	CRUNTIME	anchored
 0x1b8546	?GetNextAssoc@CMapStringToPtr@@QBEXAAPAU__POSITION@@AAVCString@@AAPAX@Z	NAFXCW	CRUNTIME	anchored

@@ -1,7 +1,7 @@
 #include <Gruntz/GruntzMapMgr.h>
 
 #include <DDrawMgr/DDrawWorkerHost.h>
-#include <Gruntz/FreeNodePoolInline.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/ImageSets.h>
 #include <Gruntz/LogicTypeId.h>
@@ -12,7 +12,6 @@
 
 #include <stddef.h>
 
-// @early-stop
 RVA(0x00082430, 0x161)
 i32 CGruntzMapMgr::SerializeDispatch(
     CFileMemBase* ar,
@@ -32,7 +31,7 @@ i32 CGruntzMapMgr::SerializeDispatch(
             for (i32 fi = 0; fi < m_arr.GetSize(); fi++) {
                 Coord* elem = static_cast<Coord*>(m_arr.GetData()[fi]);
                 if (elem != NULL) {
-                    PushFreeNode(&g_coordPool, elem);
+                    g_coordPool.Push(elem);
                 }
             }
             m_arr.SetSize(0, -1);
@@ -97,7 +96,7 @@ void CGruntzMapMgr::Reset() {
     for (i32 i = 0; i < m_arr.GetSize(); i++) {
         Coord* elem = static_cast<Coord*>(m_arr.GetData()[i]);
         if (elem != NULL) {
-            PushFreeNode(&g_coordPool, elem);
+            g_coordPool.Push(elem);
         }
     }
     m_arr.SetSize(0, -1);
@@ -109,7 +108,7 @@ CGruntzMapMgr::~CGruntzMapMgr() {
     for (i32 i = 0; i < m_arr.GetSize(); i++) {
         Coord* elem = static_cast<Coord*>(m_arr.GetAt(i));
         if (elem != NULL) {
-            PushFreeNode(&g_coordPool, elem);
+            g_coordPool.Push(elem);
         }
     }
     m_arr.SetSize(0, -1);

@@ -4,7 +4,6 @@
 
 #include <AddrWord.h>
 #include <Bute/ButeMgr.h>
-#include <Bute/ButeTree.h>
 #include <DDrawMgr/AniAdvance.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
@@ -12,14 +11,15 @@
 #include <Enums.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/ActRegistry.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AniElementInline.h>
 #include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/Brickz.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/EnemyAiType.h>
-#include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameRand.h>
@@ -370,7 +370,6 @@ i32 CGrunt::StepAttackFire() {
     return 0;
 }
 
-// @early-stop
 RVA(0x00062110, 0x5bc)
 i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     if (commit != 0) {
@@ -496,7 +495,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
     }
     i32 sel;
     if (toy1ExcessMs == 0 && toy2ExcessMs == 0) {
-        i32 r = rand() % 0x64 + 1;
+        i32 r = GetRandom(1, 100);
         sel = (r >= m_toyBlendPct) ? 1 : 0;
     } else if (toy1ExcessMs != 0 && toy2ExcessMs == 0) {
         sel = 0;
@@ -1216,7 +1215,7 @@ i32 CGrunt::StepCombatReaction(
                 eq = ANIMATION_ACT_EQUALS("J");
                 if (eq) {
                     m_entranceActive = false;
-                    eq = (strcmp(*g_typeColl.GetNameRecord(m_previousAnimationActId), "D") == 0);
+                    eq = (strcmp(g_typeColl[m_previousAnimationActId], "D") == 0);
                     if (eq) {
                         if (m_poweredUp != false && m_neighborValid == false) {
                             RESET_GRUNT_POWERED_STATE(this);
@@ -1301,8 +1300,7 @@ tail:
     }
 
     {
-        CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-        ActNameConstructGrownSlots();
+        CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
         eq = (strcmp(*rec, "F") == 0);
         if (eq) {
             if (m_entranceCommitted != false) {
@@ -1312,8 +1310,7 @@ tail:
     }
     m_entranceActive = true;
     {
-        CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-        ActNameConstructGrownSlots();
+        CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
         ne = (strcmp(*rec, "O") != 0);
         if (ne) {
             SET_ANIMATION_ACT("H");

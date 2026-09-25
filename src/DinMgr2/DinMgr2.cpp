@@ -1,7 +1,7 @@
 #include <rva.h>
 
 #include <DinMgr2/DirectInputMgr2.h>
-#include <Gruntz/FixedPtrArray32.h>
+#include <DinMgr2/InputDeviceGroup.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -953,7 +953,7 @@ i32 CJoystickDevice::Poll() {
 }
 
 RVA(0x00134be0, 0x7e)
-i32 CFixedPtrArray32::FillFrom(CInputDevBase** src, i32 n, i32 unused) {
+i32 CInputDeviceGroup::FillFrom(CInputDevBase** src, i32 n, i32 unused) {
     if (!src) {
         return 0;
     }
@@ -976,7 +976,7 @@ i32 CFixedPtrArray32::FillFrom(CInputDevBase** src, i32 n, i32 unused) {
 }
 
 RVA(0x00134c60, 0x14)
-void CFixedPtrArray32::Clear() {
+void CInputDeviceGroup::Clear() {
     for (i32 j = 0; j < 32; j++) {
         m_items[j] = NULL;
     }
@@ -984,7 +984,7 @@ void CFixedPtrArray32::Clear() {
 }
 
 RVA(0x00134c80, 0x24)
-i32 CFixedPtrArray32::Add(CInputDevBase* item) {
+i32 CInputDeviceGroup::Add(CInputDevBase* item) {
     if (m_count >= 32) {
         return 0;
     }

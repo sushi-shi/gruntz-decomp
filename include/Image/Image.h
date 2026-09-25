@@ -12,7 +12,7 @@
 
 class CDDrawDeviceManager;
 
-struct CDibPal;
+class CDibPal;
 
 struct DIB_BMI256 {
     BITMAPINFOHEADER m_hdr;
@@ -320,7 +320,6 @@ inline i32 CDib::StretchBlt(
 
 class CFileImageSurface : public CDDSurface {
 public:
-    virtual ~CFileImageSurface() OVERRIDE;
     virtual DDSurfacePoolKind GetPoolKind() OVERRIDE;
 
     virtual i32 ResolveEx(

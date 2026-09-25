@@ -14,7 +14,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/State.h>
 #include <Gruntz/TypeKeyColl.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/ZDArray.h>
 
 #include <new>
 #include <string.h>
@@ -40,8 +40,7 @@ i32 CGrunt::SetupTubeAnim(b32 isWater) {
         RESET_GRUNT_POWERED_STATE(this);
     }
 
-    CString* node = g_typeColl.ScratchResolve(m_logicRecord->EventCode());
-    ActNameConstructGrownSlots();
+    CString* node = &g_typeColl[m_logicRecord->EventCode()];
 
     bool eq;
     eq = (strcmp(*node, "D") == 0);

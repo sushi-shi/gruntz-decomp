@@ -5,7 +5,7 @@
 
 #include <Dsndmgr/SoundDevice.h>
 #include <Dsndmgr/StreamVoice.h>
-#include <Lith/BaseList.h>
+#include <Lith/TypedList.h>
 #include <Rez/RezArchiveEntry.h>
 
 class SoundStream;
@@ -45,7 +45,7 @@ public:
     i32 TickStreams(i32 timestampMs);
     i32 ParseWave(CRezItm* source, WAVEFORMATEX* outFormat, u32* outDataOffset, u32* outDataBytes);
 
-    CLTBaseList m_voices;
+    CLTList<StreamVoice> m_voices;
 };
 
 extern b32 g_dsoundDebugLog;

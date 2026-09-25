@@ -174,14 +174,14 @@ i32 CCreditsState::Render() {
     m_world->m_soundRegistry->TickVolumeRamps();
 
     {
-        CFixedPtrArray32* L = g_actorList;
+        CInputDeviceGroup* L = g_actorList;
         for (i32 i = 0; i < L->m_count; i++) {
             L->m_items[i]->Poll();
         }
     }
 
     {
-        CFixedPtrArray32* L = g_actorList;
+        CInputDeviceGroup* L = g_actorList;
         i32 n = L->m_count;
         for (i32 j = 0; j < n; j++) {
             if (L->m_items[j]->m_pressedButtons & IDX(INPUT_BUTTON_MASK)) {
@@ -484,6 +484,10 @@ void CCreditsState::LoadCreditzAssets() {
         }
     }
 }
+
+RVA_COMPGEN(0x00039f20, 0x51, ??1?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@UAE@XZ)
+RVA_COMPGEN(0x00039fa0, 0x188, ?Serialize@?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@UAEXAAVCArchive@@@Z)
+RVA_COMPGEN(0x0003a1a0, 0x1e, ??_G?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@UAEPAXI@Z)
 
 RVA(0x0003a1d0, 0x1d)
 void CDDrawSurfacePair::BltSelf(CDDrawSurfacePair* src) {

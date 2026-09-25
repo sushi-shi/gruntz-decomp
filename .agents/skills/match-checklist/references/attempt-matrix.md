@@ -1,8 +1,10 @@
 # Required source-form attempt matrix
 
 Use this as a per-function execution checklist, not a list of vague ideas.
-Copy the rows that can affect the selected body into its Function Match Plan;
-dispose every row individually. A real-TU compile is the default. Skip a
+Consider the rows that can affect the selected body without copying them into
+plan files or requiring a written matrix. Distinguish checked, measured, and
+still-open hypotheses; write a formal plan only when explicitly requested.
+A real-TU compile is the default. Skip a
 compile only when retail instructions, ordered referents, source lineage,
 historical source hashes, ABI/layout evidence, or call/CFG topology proves the
 form inapplicable.

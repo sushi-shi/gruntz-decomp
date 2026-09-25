@@ -20,8 +20,7 @@
 #include <Gruntz/TileSnapMacros.h>
 #include <Rez/FrameClock.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/ZVec.h>
-#include <Wwd/WwdGameObjectFlags.h>
+#include <ZTools/ZDArray.h>
 
 #include <stddef.h>
 
@@ -104,7 +103,7 @@ void CGruntCreationPoint::FireActivation(i32 coord) {
 RVA(0x0003eac0, 0x18d)
 void CGruntCreationPoint::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    *(CActRegPool<CGruntCreationPoint>::s_table.ResolveEntry(id)) =
+    CActRegPool<CGruntCreationPoint>::s_table[id] =
         static_cast<i32 (CUserLogic::*)()>(&CGruntCreationPoint::AdvanceAnim);
 }
 

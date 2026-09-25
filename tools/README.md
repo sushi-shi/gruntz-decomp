@@ -148,122 +148,16 @@ flag to the requested PNG. Other planes are written to a sibling
 camera. `wwd-all` preserves REZ paths, renders the complete archive, and writes
 `UNRESOLVED.tsv`; the retail corpus resolves every tile reference.
 
-## Results
+## Format layouts
 
-Corpus: `GRUNTDEM.REZ` (10 553 resources, 9 845 PID) and retail `Gruntz.REZ`
-(21 303 resources, 19 953 PID) — **29 798 sprites** — plus retail's loose FNT,
-FEC, and VRZ assets.
+The implementations own the format details:
+[REZ reader](gruntz-rez/src/lib.rs) and [writer](gruntz-rez/src/write.rs),
+[WWD](gruntz-codec/src/wwd.rs), and [ANI](gruntz-codec/src/ani.rs).
+The REZ writer and WWD parser include ASCII layout diagrams.
 
-| check | result |
-|---|---|
-| archive walks with exact-size validation | 100 % (both archives) |
-| sprites decode cleanly | **100 %** |
-| `decode -> encode` byte-exact | **100 %** |
-| our decoder vs **retail's own machine code** (9 821 `Rle` sprites) | **100 % identical pixels** |
-| retail's two decoders agree with each other | 100 % — no shipped sprite crosses a scanline |
-| PAL tables parse at exact size | **36 / 36** retail palettes |
-| ANI resources render with evidence-backed frame bindings | **645 / 660** resources, **677** GIFs; 15 generic/external controllers remain |
-| XMI parses and exports to MIDI | **37 / 37** retail music resources |
-| FNT parses exactly and renders an atlas | **4 / 4** retail bitmap fonts |
-| FEC validates and extracts Smacker payloads | **2 / 2** archives, **6 / 6** movies |
-| VRZ walks with exact-size validation | **1 517 / 1 517** retail voice WAVs |
-| REZ `decode -> encode -> decode` | **33 373 / 33 373** resources and **3 278 / 3 278** directories identical across all three archives |
-| the `is_sorted` contiguity predicate | holds for every directory of all three archives |
-| WWD maps render with resolved tile references | **54 / 54** levels, **72 / 72** plane PNGs |
-
-## What the container turned out to be
-
-Full write-up: [`docs/formats/rez-v1.md`](../docs/formats/rez-v1.md). The short
-version:
-
-* **The header is exactly 168 bytes at fixed offsets.** `CRezMgr::Open`
-  @0x13ad00 reads 0xa8 bytes at offset 0 and indexes them; a freshly created
-  archive gets `next_write_pos = 0xa8` @0x13af21. Retail validates three banner
-  bytes and no more.
-* **A resource entry ends with `u32 keys[num_keys]`** after the comment
-  (@0x13a856). Empty in every shipped archive, so what a key means is
-  undetermined.
-* **`is_sorted` is not an ordering claim and drives no search.** It asserts that
-  each directory's payloads tile ONE contiguous span — the precondition
-  `CRezDir::Load` @0x13a0f0 needs to preload a directory into one block and
-  serve resources from `blob + (pos - dir_min_pos)`. All three archives satisfy
-  it for every directory; only 290 / 0 / 171 have entries in
-  ascending-position or lexicographic order. The on-disk stride-19 sibling
-  order is retail's own resource-name hash, traceable end to end:
-  `CRezMgr::m_70 = 19` @0x13aa10 -> the `CRezTyp` ctor's 4th argument @0x13a95c
-  -> `Construct(typ->m_24, 19)` @0x139c38 -> every resource inserted there by
-  name @0x13a7e5. Lookup goes through the same hash, so order is free. In
-  `GRUNTZ.EXE` the flag is inert anyway: `CRezDir::Load` has no caller and no
-  vtable slot.
-* **`next_write_pos` is exactly `max(pos + size)`** — the end of the payload
-  region, not a pointer into a hole. What follows it is directory bodies plus
-  orphaned earlier copies of them, which is the whole reason a re-encode is
-  smaller than retail.
-* **`root_dir_time` is undetermined.** Not a `time_t` like `time` is; the three
-  archives carry 0x0012fd1c, 0x0040c9d8, 0x0040c9d8 — a stack address and an
-  image-base address, unchanged across builds three days apart.
-
-The doc's appendix carries the recovered field map for all four reader classes
-(`CRezMgr` 0x94, `CRezDir` 0x4c, `CRezTyp` 0x30, `CRezItm` 0x3c), marked proven
-/ inferred / unknown per field. None of them exists in `src/` yet; the container
-reader is unreconstructed retail at 0x138000-0x13c4cx.
-
-## What the codecs turned out to be
-
-See the module docs for the per-field disassembly citations; the short version:
-
-* **Two grammars, selected by `flags & 0x20`** (`CRezImage::DecodePidData`
-  @0x1764ce) — a PCX-style `0xC0|count` run grammar, and a `0x80|n` fill-skip
-  grammar with inline literal runs. Our `PidFlags` comment called `0x20`
-  "COMPRESSION"; it is a *grammar selector*, and the bit being **clear** is what
-  selects the RLE.
-* **Two exporters**, distinguished by one bit of the literal test. Tiles and
-  menus emit a bare literal whenever the decoder would accept one
-  (`(v & 0xC0) != 0xC0`); sprites and booty only when `(v & 0xC0) == 0`. Recovering
-  that is what took `roundtrip` from 85 % to 100 %.
-* **Two decoders that disagree**, on a run that would cross a scanline:
-  `CDDSurface::DecodeByteRun1Plane` clamps and carries, `CRezImage::DecodePidData` writes
-  the whole run and spills. They consume a *different number of tokens*, so one
-  such run desynchronises them permanently. No shipped sprite contains one.
-* **The RLE16 row-end split is unobservable.** `EncodeRle16` ends a scanline at
-  `x >= width - 1`, `DecodePidData` at `x >= width`. Only sprites with neither
-  `0x40` nor `0x200` reach `EncodeRle16` at all: **0 of 6 940** in the demo,
-  **5 of 13 037** in retail (`AREA8\IMAGEZ\UFO\FRAME001..005`), and on those
-  five both rules walk the stream identically. Neither is "the bug".
-* **Every flag bit has a reader.** An earlier pass called four of them
-  unverified; widening the search to `DecodePcxData`, `CDDrawShadeBlit::Build`
-  and `CImage::LoadDispatch` found one for each. `0x02`/`0x04` edit the
-  `DDSCAPS_VIDEOMEMORY`/`DDSCAPS_SYSTEMMEMORY` surface caps; `0x40`/`0x200` say
-  the payload is 8bpp indices (`0x40` also selects shade draw-type 2).
-* **The `0x0C` trailing byte** on 11 % of sprites is the PCX end-of-image palette
-  marker, left behind by the PCX->PID conversion. Harmless: retail addresses the
-  palette from EOF and stops the token loop when the last row fills.
-* **The fill-run cap is 126, not 127** — the exporter never emits the byte `0xFF`.
-
-### WWD and ANI
-
-Both now have a verified field/value map in `docs/formats/`, tiered per field:
-[`wwd-v1.md`](../docs/formats/wwd-v1.md) and
-[`ani-v1.md`](../docs/formats/ani-v1.md). Note that `wwd.rs`'s field names came
-from a [third-party spec](../docs/reference/wwd-spec-datashenanigans.md), not
-from this project's own recovery — so the write-up is a *verification* of that
-spec against retail's readers and all 63 shipped WWDs, not a transcription of
-it. Headlines:
-
-* **`+0x00` is a header size, not a signature.** Retail compares `<=` and then
-  does arithmetic with the value; the spec (and our `WwdFile.h`) call it
-  `signature`.
-* **Sixteen file-header slots and five plane-header slots are proven unread**,
-  including `width_px`/`height_px`
-  (redundant with `tilesWide * tilePixelWidth`) and every path/prefix string.
-  The object record's `flags_add` is stepped over without a load.
-* **The checksum runs over the *compressed* block.** The spec's formula matches
-  0 of 63 files; corrected, 52 of 63, the rest within one byte. Retail never
-  verifies it.
-* **ANI's four mode fields** now have their complete observed domains, over
-  1038 resources / 13 480 records — plus the two enumerators our `GZ_ENUM_*`
-  types are missing (`step_mode` 0 and `position_mode` 0, the latter being
-  13 478 of 13 480 values).
+Generate corpus results with the commands above instead of maintaining a second
+field map or a fixed score table here. Retail bytes and their consumers remain
+the comparison evidence; neither implementation is ground truth by itself.
 
 ## Conventions
 

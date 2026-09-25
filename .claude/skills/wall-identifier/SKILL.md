@@ -92,12 +92,13 @@ its mechanics. Do not use here without re-proving on cl 5.0:
   order) — nothing in this tree validates it for cl 5.0; hypothesis only;
 - `il-diff` / C1XX IL capture — the cl 5.0 recipe is PROVEN
   (`/d1il<prefix>` capture, `/d2il<prefix>` feed; normalization rules and the
-  probe-kind handle-stride table in `build/il-probe/REPORT.md` and the
-  quantified section of `tu-state-probe-family-decides-reachability.md`), but
+  historical measurements linked from
+  `docs/patterns/tu-state-probe-family-decides-reachability.md`), but
   the production `gruntz sema il-diff` verb is not built yet;
 - `/Ob2` semantics and the S=14 save-gate cliff (cl 5.0 is `/Ob1`, no cliff).
 
-A lever proven here goes in `docs/patterns/` + `INDEX.md` with the A/B evidence.
+Consolidate reusable levers under `docs/patterns/README.md` with bounded A/B
+evidence. A closure or failed search does not warrant a new pattern entry.
 A bounded wall is parked with `@early-stop` and REPORTED: before/after historical
 MAX, retail evidence, retained lever, negative controls, remaining mismatch class.
 There is no hand-kept wall ledger — `gruntz walls inventory` re-derives the

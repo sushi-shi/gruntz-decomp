@@ -32,7 +32,7 @@
 #include <Rez/FrameClock.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/ZDArray.h>
 
 #include <math.h>
 #include <string.h>
@@ -110,7 +110,7 @@ void CRollingBall::FireActivation(i32 id) {
 RVA(0x000aff40, 0x18d)
 void CRollingBall::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CRollingBall>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CRollingBall>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CRollingBall::Update);
 }
 

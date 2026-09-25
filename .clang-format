@@ -100,7 +100,7 @@ AttributeMacros:
 # --- enum-domain macros (include/Enums.h) ----------------------------------
 # Teach clang-format that the domain BEGIN macros open a brace block, or it
 # reflows every enumerator list onto one line. The END macros close it, so they
-# are statement macros. See docs/enum-modeling-plan.md.
+# are statement macros. See https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/enum-modeling-plan.md.
 Macros:
   - GZ_ENUM_BEGIN(name)=enum name {
   - GZ_ENUM_BEGIN_SPLIT(name, storage)=enum name {

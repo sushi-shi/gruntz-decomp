@@ -51,7 +51,6 @@ public:
 
     CMovingLogic(CGameObject* owner);
     CMovingLogic(CGameObject* owner, EGruntScale);
-    virtual ~CMovingLogic() OVERRIDE;
 
     virtual void AdvanceMotion();
 
@@ -134,8 +133,6 @@ inline void CMovingLogic::BeginMotion() {
     m_object->m_moveMode = MOVE_DIRECT;
     CMovingLogic::AdvanceMotion();
 }
-
-inline CMovingLogic::~CMovingLogic() {}
 
 extern const double g_motionTimeScale;
 #endif // GRUNTZ_CMOVINGLOGIC_H

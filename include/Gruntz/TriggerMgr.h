@@ -6,9 +6,9 @@
 #include <Mfc.h>
 
 #include <Gruntz/CoordNode.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/FinishLevelReason.h>
-#include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GruntAreaEffectKind.h>
 #include <Gruntz/GruntDeathType.h>
 #include <Gruntz/GruntEntranceMode.h>

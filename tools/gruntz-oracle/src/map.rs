@@ -7,8 +7,8 @@
 //! wrong idea about the layout shows up as a corrupt image or a missing-key
 //! row rather than as silence.
 //!
-//! The field map this walks is verified in `docs/formats/wwd-v1.md`; that
-//! document is the evidence, this module is one consumer of it.
+//! Field layouts and validation live in `gruntz_codec::wwd`. The retail
+//! consumers cited below, not a prose specification, are the comparison evidence.
 //!
 //! ## Pipeline, and what each step is imitating
 //!
@@ -71,9 +71,8 @@
 //! path, produce the key retail would have filed it under. The header *also*
 //! carries the same three `(directory, prefix)` pairs at 0x1d0/0x374/0x3f4 and
 //! 0x574/0x594, so [`registry_roots`] prefers those and falls back to the
-//! hardcoded triple — but retail never reads them (`docs/formats/wwd-v1.md`
-//! marks them proven-unread), so the fallback is the authoritative path and
-//! the header values are a cross-check that happens to agree on all 63 files.
+//! hardcoded triple. The cited retail loaders use the installed roots; header
+//! paths are an asset-tool convenience, not proof that the game consulted them.
 //!
 //! ## Missing references are data, not errors
 //!

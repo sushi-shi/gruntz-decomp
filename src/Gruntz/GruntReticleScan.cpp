@@ -7,8 +7,8 @@
 #include <Globals.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordNode.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/EnemyAiType.h>
-#include <Gruntz/FreeNodePoolInline.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
@@ -35,14 +35,13 @@
 #include <Ints.h>
 #include <MakeRect.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/ZDArray.h>
 
 #include <limits.h>
 #include <new>
 #include <stdlib.h>
 #include <string.h>
 
-// @early-stop
 RVA(0x000ee800, 0x971)
 i32 CGrunt::StepDefenderBehavior() {
     Coord defenderTile = m_defenderPx;
@@ -225,27 +224,27 @@ i32 CGrunt::StepDefenderBehavior() {
                                 i32 backDy = abs(previous->m_y - occTY);
                                 i32 backDist = Max(backDx, backDy);
                                 if (backDist <= m_reachRect.right) {
-                                    PushFreeNode(&g_coordPool, trimCoord);
+                                    g_coordPool.Push(trimCoord);
                                     m_coordList.RemoveAt(trimPos);
                                     while (pos != NULL) {
                                         POSITION nextPos = pos;
                                         Coord* coord =
                                             static_cast<Coord*>(m_coordList.GetNext(pos));
                                         if (coord != NULL) {
-                                            PushFreeNode(&g_coordPool, coord);
+                                            g_coordPool.Push(coord);
                                         }
                                         m_coordList.RemoveAt(nextPos);
                                     }
                                 } else {
                                     SetEntrancePos(1, 1);
                                     if (CoordCount() != 0) {
-                                        RECYCLE_GRUNT_COORDS_EXPANDED(this)
+                                        RECYCLE_GRUNT_COORDS(this)
                                     }
                                 }
                             } else {
                                 SetEntrancePos(1, 1);
                                 if (CoordCount() != 0) {
-                                    RECYCLE_GRUNT_COORDS_EXPANDED(this)
+                                    RECYCLE_GRUNT_COORDS(this)
                                 }
                             }
                             return 1;

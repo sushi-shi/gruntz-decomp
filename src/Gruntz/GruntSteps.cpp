@@ -1,7 +1,6 @@
 #include <rva.h>
 
 #include <Bute/ButeMgr.h>
-#include <Bute/ButeTree.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Dsndmgr/SoundBuffer.h>
@@ -9,12 +8,12 @@
 #include <Globals.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/ActRegistry.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/Brickz.h>
-#include <Gruntz/CoordNode.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/EnemyAiType.h>
-#include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -34,7 +33,7 @@
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LogicTypeId.h>
-#include <Gruntz/MapCellFlags.h>
+#include <Gruntz/MapCellInline.h>
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/ScanGridMacros.h>
@@ -275,8 +274,9 @@ i32 CGrunt::IsDropReady(i32 clearArrivalState) {
         Coord lastTile = m_lastTilePx;
         ScreenTile(&lastTile);
         if (node->m_next != NULL) {
-            coord = &node->m_coord;
-            *coord = lastTile;
+            coord = &node->m_value;
+            coord->m_x = lastTile.m_x;
+            coord->m_y = lastTile.m_y;
             g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
         }
         m_coordList.AddHead(coord);
@@ -514,13 +514,7 @@ i32 CGrunt::StepCompassMove() {
         i32 tflags = board->CellFlagsAt(mtx, mty);
         if ((tflags & BRICKZ_CELL_OCCUPIED) && !(tflags & 0x80)) {
 
-            i32 owner;
-            if (static_cast<u32>(mtx) >= static_cast<u32>(board->m_width)
-                || static_cast<u32>(mty) >= static_cast<u32>(board->m_height)) {
-                owner = -1;
-            } else {
-                owner = board->m_rows[mty][mtx].m_occupantId;
-            }
+            i32 owner = board->OccupantAt(mtx, mty);
             m_triggerMgr->StartUnitDeath(
                 (owner >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK,
                 owner & GRUNT_IDENTITY_COMPONENT_MASK,
@@ -621,8 +615,7 @@ i32 CGrunt::StepCompassMove() {
         bag.SetAtGrow(bag.GetSize(), 7);
         bag.SetAtGrow(bag.GetSize(), 8);
         while (bag.GetSize() > 0) {
-            i32 last = bag.GetUpperBound();
-            i32 idx = GetRandom(0, last);
+            i32 idx = GetRandom(0, bag.GetUpperBound());
             i32 dir = bag.GetAt(idx);
             moveX = x;
             moveY = y;
@@ -687,16 +680,14 @@ commit:
         CGruntzMapMgr* b = g_gameReg->m_tileGrid;
         i32 ox = m_lastTilePx.m_x >> TILE_SHIFT_PX;
         i32 oy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
-        b->m_rows[oy][ox].m_flagBytes[3] &= 0xdf;
-        b->m_rows[oy][ox].m_occupantId = -1;
+        b->ReleaseCellOccupancy(ox, oy);
     }
     {
         CGruntzMapMgr* b = g_gameReg->m_tileGrid;
         i32 nx = moveX >> TILE_SHIFT_PX;
         i32 ny = moveY >> TILE_SHIFT_PX;
         i32 owner = (m_playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | m_unitIndex;
-        b->m_rows[ny][nx].m_flagBytes[3] |= 0x20;
-        b->m_rows[ny][nx].m_occupantId = owner;
+        b->AcquireCellOccupancy(nx, ny, owner);
     }
     m_lastTilePx.m_x = moveX;
     m_lastTilePx.m_y = moveY;
@@ -747,16 +738,10 @@ i32 CGrunt::ClaimSwitchTile() {
     }
 
     CGruntzMapMgr* b = g_gameReg->GetTileGrid();
-    i32 nextTileX = nextX >> TILE_SHIFT_PX;
-    i32 nextTileY = nextY >> TILE_SHIFT_PX;
-    i32 flags = b->CellFlagsAt(nextTileX, nextTileY);
-    if ((flags
-         & (BRICKZ_CELL_OCCUPIED
-            | IDX(
-                CELL_FLAG_SOLID | CELL_FLAG_BRIDGE | CELL_FLAG_GRUNT_ENTRANCE_AREA
-                | CELL_FLAG_DESTRUCTIBLE_ROCK | CELL_FLAG_WATER | CELL_FLAG_SINK_HAZARD
-            )))
-        || (flags & IDX(CELL_FLAG_ARROW))) {
+    i32 tx = nextX >> TILE_SHIFT_PX;
+    i32 ty = nextY >> TILE_SHIFT_PX;
+    i32 flags = b->CellFlagsAt(tx, ty);
+    if ((flags & 0x20000939) || (flags & 0x80)) {
         return 0;
     }
 
@@ -764,15 +749,15 @@ i32 CGrunt::ClaimSwitchTile() {
 
     m_commitPx = m_lastTilePx;
     CGruntzMapMgr* gb = g_gameReg->GetTileGrid();
-    Coord oldTile = m_lastTilePx;
-    ScreenTile(&oldTile);
-    gb->m_rows[oldTile.m_y][oldTile.m_x].m_flags &= BRICKZ_CELL_UNOCCUPIED_MASK;
-    gb->m_rows[oldTile.m_y][oldTile.m_x].m_occupantId = -1;
+    i32 oldTx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+    i32 oldTy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
+    gb->m_rows[oldTy][oldTx].m_flags &= BRICKZ_CELL_UNOCCUPIED_MASK;
+    gb->m_rows[oldTy][oldTx].m_occupantId = -1;
 
     CGruntzMapMgr* nb = g_gameReg->GetTileGrid();
     i32 owner = (m_playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | m_unitIndex;
-    nb->m_rows[nextTileY][nextTileX].m_flags |= BRICKZ_CELL_OCCUPIED;
-    nb->m_rows[nextTileY][nextTileX].m_occupantId = owner;
+    nb->m_rows[ty][tx].m_flags |= BRICKZ_CELL_OCCUPIED;
+    nb->m_rows[ty][tx].m_occupantId = owner;
 
     m_lastTilePx.m_x = nextX;
     m_lastTilePx.m_y = nextY;
@@ -816,7 +801,6 @@ void CGrunt::ConsiderArrival(i32 clearArrivalState) {
     SnapToLastTile(clearArrivalState);
 }
 
-// @early-stop
 RVA(0x00052fb0, 0x96e)
 i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spawnWormhole) {
     if (m_entranceCommitted == false) {
@@ -883,7 +867,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spaw
                 if (eq) {
 
                     m_entranceActive = false;
-                    eq = (strcmp(*g_typeColl.GetNameRecord(m_previousAnimationActId), "D") == 0);
+                    eq = (strcmp(g_typeColl[m_previousAnimationActId], "D") == 0);
                     if (eq) {
                         if (m_poweredUp != false && m_neighborValid == false) {
                             RESET_GRUNT_POWERED_STATE(this)
@@ -922,8 +906,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spaw
                     goto applyTail;
                 }
                 {
-                    CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-                    ActNameConstructGrownSlots();
+                    CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
                     eq = (strcmp(*rec, "N") == 0);
                 }
                 if (eq) {
@@ -948,8 +931,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spaw
                     goto applyTail;
                 }
                 {
-                    CString* rec = g_typeColl.ScratchResolve(m_logicRecord->m_eventCode);
-                    ActNameConstructGrownSlots();
+                    CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
                     eq = (strcmp(*rec, "M") == 0);
                 }
                 if (eq) {
@@ -1000,7 +982,7 @@ applyTail:
         }
         SetEntrancePos(1, 1);
         if (CoordCount() != 0) {
-            RECYCLE_GRUNT_COORDS_EXPANDED(this)
+            RECYCLE_GRUNT_COORDS(this)
         }
         if (m_arrivalState == AI_BATTLEZ_PATH) {
             m_defenderState = AISTATE_SEEK;

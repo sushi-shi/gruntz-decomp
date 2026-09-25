@@ -5,11 +5,11 @@
 #include <Mfc.h>
 
 #include <Bute/ButeMgr.h>
-#include <Bute/ButeTree.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Enums.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/ActRegistry.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AnimationRegistry.h>
@@ -49,8 +49,8 @@
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/zBitVec.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/BitVec.h>
+#include <ZTools/ZDArray.h>
 
 #include <string.h>
 
@@ -450,12 +450,12 @@ void CInGameIcon::FireActivation(i32 id) {
 
 RVA(0x000979e0, 0x2ac)
 void RegisterIconActions() {
-    ACT_NAME_ID_CALL_REPORT(idxA, "A")
-    CActHandler* dslotA = CActRegPool<CInGameIcon>::s_table.ResolveEntryCallReport(idxA);
+    ACT_NAME_ID(idxA, "A")
+    CActHandler* dslotA = &CActRegPool<CInGameIcon>::s_table[idxA];
     *dslotA = static_cast<CActHandler>(&CInGameIcon::PeekCycle);
 
     ACT_NAME_ID(idxB, "B")
-    CActHandler* dslotB = CActRegPool<CInGameIcon>::s_table.ResolveEntryCallReport(idxB);
+    CActHandler* dslotB = &CActRegPool<CInGameIcon>::s_table[idxB];
     *dslotB = static_cast<CActHandler>(&CInGameIcon::Reposition);
 }
 
@@ -467,7 +467,7 @@ void CToyPeek::FireActivation(i32 id) {
 RVA(0x00097f40, 0x18d)
 void RegisterIconState() {
     ACT_NAME_ID(idx, "A")
-    CActHandler* dslot = CActRegPool<CToyPeek>::s_table.ResolveEntry(idx);
+    CActHandler* dslot = &CActRegPool<CToyPeek>::s_table[idx];
     *dslot = static_cast<CActHandler>(&CInGameIcon::RefreshCell);
 }
 
@@ -912,7 +912,7 @@ void CInGameText::FireActivation(i32 idx) {
 RVA(0x000995c0, 0x18d)
 void RegisterTextLogic() {
     ACT_NAME_ID(idx, "A")
-    CActHandler* dslot = CActRegPool<CInGameText>::s_table.ResolveEntry(idx);
+    CActHandler* dslot = &CActRegPool<CInGameText>::s_table[idx];
     *dslot = static_cast<CActHandler>(&CInGameText::Update);
 }
 
@@ -940,16 +940,8 @@ i32 CInGameText::Update() {
             return 0;
         }
 
-        CString* node = g_typeColl.ScratchResolve(found->m_logicRecord->EventCode());
+        CString* node = &g_typeColl[found->m_logicRecord->EventCode()];
 
-        CString* p = g_typeColl.Slots();
-        i32 n = g_typeColl.m_grown;
-        while (n-- != 0) {
-            if (p != NULL) {
-                p->CString::CString();
-            }
-            p++;
-        }
         bool eq = (strcmp(*node, "K") == 0);
         if (eq) {
             return 0;

@@ -48,8 +48,11 @@ separate scored records (`CKeyedList::AddNode`, `CFaderMesh::~CFaderMesh`, and
 
 ### inline / call-set
 
-`/O2` on cl 5.0 is `/Ob1`: an unmarked function is NEVER auto-inlined, and an
-`inline`-marked one is expanded under a per-CALLER budget that is measured and
+`/O2` on cl 5.0 is `/Ob1`: unmarked ordinary non-template functions stay calls.
+Instantiated template members can expand without the `inline` keyword; the
+controlled `/Ob1` versus `/Ob0` exception is documented in
+`docs/patterns/vc5-template-members-inline-without-inline-keyword.md`.
+Eligible bodies expand under a per-CALLER budget that is measured and
 modeled — `docs/patterns/inline-budget-emits-ool-comdat.md` re-validated the
 sibling HoMM3 formula (`budget = clamp(2*cb(caller), 1000, 35000)`, free below
 cb 0x28, nested expansions split the remainder) on our compiler, including where
@@ -98,7 +101,7 @@ whether global optimization factors the caller tail. That produces a branch-coun
 downstream of coloring with no authored CFG difference. Require the complete signature:
 same source guards, call set, constants and ordered referents; only the accessor-return
 tail is duplicated; and source-shaped result/receiver/scope controls are byte-flat. See
-`docs/patterns/range-guarded-array-get-is-an-inline-accessor.md`.
+`docs/patterns/inline-budget-emits-ool-comdat.md`.
 
 `CSBI_ImageSet::SetupImage` 0xe72f0 is the return-count twin: its first divergence is
 the instruction-zero host/`this` register rotation, and only later does retail give the
@@ -139,12 +142,13 @@ its mechanics. Do not use here without re-proving on cl 5.0:
   order) — nothing in this tree validates it for cl 5.0; hypothesis only;
 - `il-diff` / C1XX IL capture — the cl 5.0 recipe is PROVEN
   (`/d1il<prefix>` capture, `/d2il<prefix>` feed; normalization rules and the
-  probe-kind handle-stride table in `build/il-probe/REPORT.md` and the
-  quantified section of `tu-state-probe-family-decides-reachability.md`), but
+  historical measurements linked from
+  `docs/patterns/tu-state-probe-family-decides-reachability.md`), but
   the production `gruntz sema il-diff` verb is not built yet;
 - `/Ob2` semantics and the S=14 save-gate cliff (cl 5.0 is `/Ob1`, no cliff).
 
-A lever proven here goes in `docs/patterns/` + `INDEX.md` with the A/B evidence.
+Consolidate reusable levers under `docs/patterns/README.md` with bounded A/B
+evidence. A closure or failed search does not warrant a new pattern entry.
 A reproducibly bounded residue remains visible through the derived inventory,
 the current report/MAX ledger, and its valid `@early-stop` marker. Do not create
 or revive a hand-kept wall ledger. Walls get broken, not hidden: bound a residue

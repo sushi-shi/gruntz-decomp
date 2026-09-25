@@ -1,123 +1,29 @@
-# A byte tested-and-OR'd around a one-time init is `static T x = <dynamic>;`
-tags: cpp:static cpp:local cpp:branch cpp:data | asm:test asm:or asm:jne | topic:codegen-idiom topic:identity
+# A guarded initializer may be a function-local static
 
-symptoms: `mov al,ds:0xNNNN` / `test bl,al` / `jne` / `or al,bl` / `mov ds:0xNNNN,al` around an
-initializer; a file-scope `u8 g_xxxSeeded` / `g_xxxRolled` / `g_xxxLoadFlags` OR'd with a bit and
-tested with the same bit; two globals where one is a 1-byte flag and the other is the value it
-guards; `g_flag & 1` and `g_flag & 2` in the same function; `?<var>@?<n>??<fn>@@...@4HA` in an obj
-
-confidence: 10/10
-
-MSVC 5.0 compiles `static T x = <dynamic initializer>;` inside a function into a **one-time guard**:
-one flag BYTE per function, one BIT per static in it, tested and set around the initializer. Reading
-that expansion as source gives you two fabricated file-scope globals plus an `if` — the classic
-tell is a `u8`/`char` global whose only two uses are `& bit` and `|= bit`.
+A bit test and conditional branch around a bit update and one-time initializer
+can be the expansion of:
 
 ```cpp
-// WRONG - this is the compiler's OUTPUT transcribed as if it were source:
-i32 seed;
-if (!(g_randSeeded & 1)) { g_randSeeded |= 1; seed = timeGetTime(); }
-else                     { seed = g_randSeed; }
-g_randSeed = seed * 214013 + 2531011;
-return (g_randSeed >> 0x10) & 0x7fff;
-
-// RIGHT - Monolith's own source (the game's CREDITZ easter egg prints it verbatim):
-int GetRandomNumber() {
-    static long holdrand = timeGetTime();
-    return (((holdrand = holdrand * 214013L + 2531011L) >> 16) & 0x7fff);
+int Next() {
+    static long state = InitialSeed();
+    return Advance(state);
 }
 ```
-```asm
-mov    al,ds:0x64c01c        ; the guard BYTE
-test   al,0x1                ; this static's BIT
-jne    already_done
-mov    dl,al
-or     dl,0x1
-mov    BYTE PTR ds:0x64c01c,dl
-<initializer>
-mov    ds:0x64c274,eax       ; the static itself - a SEPARATE bss object
-already_done:
-```
 
-**Multi-bit variant.** One guard byte serves every static in the function, one bit each, in
-declaration order: `CPlay::LoadScrollSpeedOptions` (0xd12b0) tests `& 1` then `& 2` on 0x24c01c for
-two statics. `n` statics in one function = `n` `test`/`or` pairs on ONE address with distinct bits,
-not `n` flags.
+The [recorded VC5 examples](https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/patterns/function-local-static-dynamic-init-guard.md)
+include multiple local statics using distinct bits of a shared guard.
+The [game RNG](../../include/Gruntz/GameRand.h) is a concrete source example.
 
-**Recognition is by CODE SHAPE, never by data layout.** The conditional branch between the byte read
-and the byte OR-store is what separates a guard from an ordinary flags-byte update (`hdr.flags |=
-0x80` in `CMulti::AnnounceOptionsOpened` 0xbb0b0 reads/ORs/stores the same byte with no branch — not a
-guard). The guard and its datum are two INDEPENDENT bss objects: measured across all 71 guards in
-`GRUNTZ.EXE` the guard→datum delta ranges from -0x88 to +0x258, and the datum sometimes precedes the
-guard. A "+0xc / 0x10-byte slot" reading is a three-sample coincidence, not a rule; nothing in .text
-references the bytes between.
+Follow control flow and references to the initialized object. A read/OR/store
+without the conditional initialization path can simply update ordinary flags.
+The guard and value need not be adjacent. Bit operations alone do not uniquely
+prove a local static.
 
-**Linkage decides how many pairs exist.** `static __inline` in a header gives each TU its OWN
-guard+datum; a plain `__inline` gives the local static external linkage (emitted COMMON) so the whole
-module shares ONE when the enclosing identity agrees. Retail has three distinct pairs for
-`GetRandomNumber` — Gruntz 0x2c127d/0x2c1288, Wwd 0x2c278c/0x2c2798,
-DDrawMgr 0x2c279c/0x2c27a8. This does not prove duplicated source: one header in
-different scopes or compiled with different calling conventions can produce distinct COMMON
-identities. VC5 anonymous-namespace inlines also emit per-TU COMMON pairs. See the controlled
-counterexamples and the surrounding-ABI rejection in
-[One RNG definition with shared game state and private library states](header-inline-local-static-three-copies.md).
+Check enclosing linkage and all emitters before deciding whether state is
+shared or per-TU. Do not invent guard globals, pin volatile compiler ordinals,
+or infer source duplication from multiple emitted copies.
+Use [data attribution](../data-attribution.md) for the current naming rules.
 
-**Re-initialization hazard.** When one guard governs a value read several times later, hold it in a
-local; re-writing the initializer expression at each use silently re-runs it (for an RNG, that means
-an extra advance). Conversely, DELETING the advance and leaving a bare read of the datum is the
-opposite bug: `bcb6cb0cd` did that at six sites and four functions stopped calling the RNG at all.
-Count the initializer's fingerprint in retail (for the LCG, the `0x269ec3` addend) per function and
-match your call count to it.
-
-**Most guards are NOT a worklist.** Of the 71 guards in `GRUNTZ.EXE`, only 16 sit in a
-function `src/` reconstructs. 54 sit inside a compiler-private `_$E<n>` helper - cl emits
-those from the object definition itself (a file-scope or template-static object with a
-non-trivial dtor; see [[msvc-static-object-e-helper-family]]), and the ordinal is too
-volatile to pin, so they can never carry an `RVA()` and there is no body for anyone to
-write. The last one is MFC's four `CWnd` statics (`wndTop`/`wndBottom`/`wndTopMost`/
-`wndNoTopMost`, i.e. `HWND_TOP`/`BOTTOM`/`TOPMOST`/`NOTOPMOST` = 0/1/-1/-2 through
-`??0CWnd@@AAE@PAUHWND__@@@Z`), which is carved out. `a static-guard census (retired)
-buckets all four cases; `--verify` proves the `$E` bucket byte-for-byte against the base
-objs rather than assuming it. A guard whose `$E` body does NOT reproduce is a real defect -
-that check is what found the `/GX` inlining mismatch in
-[[gx-blocks-ctor-inlining-into-e-helper]].
-
-**Pinning — and it depends on the ENCLOSING function's linkage.**
-
-*Static (internal-linkage) enclosing function.* `DATA(rva)` goes on the local static itself — cl5
-spells it `_?s_x@?<n>??<Fn>@@...@4HA$S<m>` where clang reports `?s_x@?1??<Fn>@@...@4HA` (extra
-leading `_`, a scope ordinal cl counts by blocks already left, and the `$S` CodeView suffix).
-`core.msvc_names` derives the leading `_` and the `$S` from the declaration's storage and MASKS
-both volatile numbers to the canonical `?1` / bare `$S`, on the claim side and on cl's object side
-alike — no object is consulted to spell the name. The guard is a file-static too
-(`?$S55@?1??<Fn>@@...@4EA`, a compiler-assigned counter unspellable in source) and stays unnamed.
-That costs nothing measurable: `CPlay::GetAmbientId` 0xda200 is 100.00 EXACT with its guard unnamed.
-Never fabricate a file-scope stand-in to name it.
-
-*Header inline (external linkage).* Both objects become **COFF COMMONs** with clean, stable
-manglings and no `_`/`$S` decoration — `?holdrand@?1??GetRandomNumber@@YAHXZ@4JA` and
-`??_B?1??GetRandomNumber@@YAHXZ@51` — emitted into EVERY TU that instantiates the inline and merged
-by the linker into one bss slot. `DATA()` cannot reach either (it binds an AST VarDecl in the MAIN
-file, and these live in a header), and `DATA_COMPGEN` cannot either (it wraps a value expression at
-a use site; the guard byte has no source expression). Pin both in
-**`config/retail/data_compgen.tsv`** — the manifest form of `RVA_COMPGEN`, used because a
-COMMON has no owning TU for a source pin to sit in. One shared
-`GameRand.h` definition supplies three states through its include scopes:
-
-| emitter | guard | seed |
-| :-- | --: | --: |
-| `<Gruntz/GameRand.h>` free function | 0x2c127d | 0x2c1288 |
-| `WwdFactoryObject.cpp` anonymous scope | 0x2c278c | 0x2c2798 |
-| `FaderEffects.cpp` anonymous scope | 0x2c279c | 0x2c27a8 |
-
-Naming them is byte-neutral (objdiff masks relocations) and they were never a link defect — the real
-MSVC 5.0 link resolves all six as `<common>`. What the pins buy is *verifiability*: until they
-existed, `assert_relocs` could not resolve those reloc targets at all, so 26 references sat
-unchecked and were reported as fabricated.
-
-Steerable, and byte-exact: cl reproduces retail's guard expansion instruction-for-instruction
-including the register choice. Evidence: `LoadScrollSpeedOptions` 0xd12b0 98.75 (unchanged across the
-conversion), `GetAmbientId` 0xda200 100.00 EXACT, `CSpotLight::Tick` 0xb1af0 78.88 -> 79.79. The
-advance-restoration half: `StepArrivalReroll` 0x63b60 63.98 -> 85.04, `PeekCycle` 0x984b0 69.74 ->
-88.18, `StartChipMachineCycle` 0x107d00 90.95 -> 96.27, `UpdateBootyWalkingGruntz` 0x1b690 90.03 ->
-95.25.
+Matching the guard does not validate the initializer: preserve side effects,
+evaluation order, and the number of calls. An object's address is not its stored
+pointer value; in particular, a CString object is not its character buffer.

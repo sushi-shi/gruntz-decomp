@@ -98,17 +98,17 @@ Every profile is **recovered from the retail bytes, not chosen**:
   deflate excludes packing below 4 while default `/Zp8` matches; `/GF` is off
   because retail literals use writable `.data` COMDATs. Calibrated against the
   exact witness panels — see [`docs/compiler-flags.md`](compiler-flags.md) and
-  [`docs/zlib-matching.md`](zlib-matching.md).
+  [`https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/zlib-matching.md`](https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/zlib-matching.md).
 - `/GR` is on for the Gruntz project only: retail's Gruntz vtables carry a
   Complete Object Locator at `[-4]`, the engine libs' do not.
 - `cpp-rtti-noeh` exists because retail's `movinglogic` unit has zero EH frames
   while every sibling has them.
 - `cpp-noeh` exists because Bute's two container globals have their ctor/dtor
   bodies INLINE in the `$E` dynamic-init helper, which cl 5.0 only does without
-  `/GX` (`docs/patterns/gx-blocks-ctor-inlining-into-e-helper.md`).
+  `/GX` (`https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/patterns/gx-blocks-ctor-inlining-into-e-helper.md`).
 
 Per-unit rationale (why a TU exists, was split, or absorbed another) lives in
-[`docs/tu-partition-brief.md`](tu-partition-brief.md); the compile-flag evidence
+[`https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/tu-partition-brief.md`](https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/tu-partition-brief.md); the compile-flag evidence
 is in [`docs/compiler-flags.md`](compiler-flags.md).
 
 ## The `cl` rule (the wine compiler bridge)
@@ -396,7 +396,7 @@ format-on-save leaves it alone.
 
    - `RVA(addr, size)` — a matched function;
    - `DATA(addr)` — on the definition of a matched global;
-   - `DATA_MESSAGE_MAP(map, entries)` — on `BEGIN_MESSAGE_MAP`, labels its two SDK-generated data objects (see [the pattern](patterns/mfc-message-map-real-static-data.md));
+   - `DATA_MESSAGE_MAP(map, entries)` — on `BEGIN_MESSAGE_MAP`, labels its two SDK-generated data objects (see [the pattern](https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/patterns/mfc-message-map-real-static-data.md));
    - `RVA_COMPGEN(rva, size, mangled)` — a deterministically named
      compiler-generated function with no source body (such as a `??_G` deleting
      dtor) that cannot hold an attribute. Volatile ordinal names such as
@@ -409,7 +409,7 @@ format-on-save leaves it alone.
 
    The vendored zlib C TUs keep PRISTINE source — no labels in it; their
    rva→symbol map is the static `config/retail/functions_zlib.tsv` (+
-   `data_zlib.tsv`). See [`docs/zlib-matching.md`](zlib-matching.md).
+   `data_zlib.tsv`). See [`https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/zlib-matching.md`](https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/zlib-matching.md).
 3. `gruntz build`.
 
 ### Compiler-generated DATA with no source spelling
@@ -513,7 +513,7 @@ the DLL order exact required naming `nafxcw`/`libcmt` *first*, since 306 of the
 *within* each DLL — a resolution-history artifact of the linker's
 undefined-symbol worklist, not a link-line property; the mechanism and its
 bounded evidence are in
-`docs/patterns/idata-thunk-order-is-resolution-history.md`.
+`https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/patterns/idata-thunk-order-is-resolution-history.md`.
 
 The link carries a real **`.rsrc`**, compiled from source by the era resource
 compiler: toolchain r3's RC.EXE 5.00.1472.1, driven by `gruntz tool rc` over
@@ -524,7 +524,7 @@ byte-compares every payload against the retail image, in both directions, so the
 "this source produces those bytes" claim is re-proven on every gated run.
 
 The `.map` is the deliverable that feeds
-[`docs/link-order-investigation.md`](link-order-investigation.md): each
+[`https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/link-order-investigation.md`](https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/link-order-investigation.md): each
 function's link-assigned RVA and source object, which cross-referenced with the
 retail RVAs recovers the original build order (intra-TU order = source-definition
 order; cross-TU order = object link order).
@@ -553,6 +553,6 @@ and everything under `build/`.
 
 ## Current status
 
-**Run `gruntz verify status` for the live match %** — it is kept out of this doc
-so it cannot go stale, and the README's score block is the banked snapshot
-(`gruntz verify bank` writes it; never hand-edit between the markers).
+Run `gruntz verify status` for live scores. A normal build can refresh the
+README's derived score block; only explicit banking writes the match ledger.
+Do not maintain another score snapshot here or hand-edit between the markers.

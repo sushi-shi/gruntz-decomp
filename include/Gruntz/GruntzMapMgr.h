@@ -16,6 +16,8 @@ class CGruntzMapMgr : public CMapMgr {
 public:
     inline i32 TileIdAt(u32 x, u32 y) const;
     inline i32 OccupantAt(u32 x, u32 y) const;
+    inline void ReleaseCellOccupancy(i32 tileX, i32 tileY);
+    inline void AcquireCellOccupancy(i32 tileX, i32 tileY, i32 packedOwner);
     inline SIZE
     GetGridSize() const;
     ~CGruntzMapMgr();

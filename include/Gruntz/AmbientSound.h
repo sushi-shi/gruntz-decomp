@@ -17,6 +17,7 @@ GZ_ENUM_CONST_END(AmbientSoundActState)
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/UserLogic.h>
 #include <Ints.h>
+#include <Lith/BDefs.h>
 
 struct AmbientPoint {
     AmbientPoint() {}
@@ -52,13 +53,7 @@ public:
         if (m_volumeScale > 0) {
             volume = (volume * m_volumeScale) / 100;
         }
-        if (volume < 0) {
-            return 0;
-        }
-        if (volume > 0x64) {
-            return 0x64;
-        }
-        return volume;
+        return LTCLAMP(volume, 0, 0x64);
     }
 
     i32 SetVolumeLevel(i32 volumeLevel, i32 rampMs, b32 stopAndRewind);
@@ -100,9 +95,6 @@ public:
 
 class CAmbientPosSound : public CAmbientSound {
 public:
-    CAmbientPosSound() {}
-
-    virtual ~CAmbientPosSound() OVERRIDE {}
     virtual void Update(i32 x, i32 y, b32 immediate) OVERRIDE;
 
     i32 InitFromKey(

@@ -11,7 +11,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/WwdGameReg.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/ZDArray.h>
 
 RVA_DYNINIT(0x000ab510, 0xa, CActRegPool<CSingleFrameMessage>::s_table)
 RVA_DYNINIT(0x000ab530, 0x15, CActRegPool<CSingleFrameMessage>::s_table)
@@ -59,7 +59,7 @@ void CSingleFrameMessage::FireActivation(i32 id) {
 RVA(0x000ab710, 0x18d)
 void CSingleFrameMessage::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CSingleFrameMessage>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CSingleFrameMessage>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CSingleFrameMessage::AdvanceAnim);
 }
 

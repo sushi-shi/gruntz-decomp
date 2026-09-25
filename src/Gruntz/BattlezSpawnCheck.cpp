@@ -12,14 +12,15 @@
 #include <Gruntz/BrickTileId.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordNode.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/EnemyAiType.h>
-#include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
+#include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntPuddle.h>
@@ -44,8 +45,8 @@
 #include <Gruntz/VoiceManager.h>
 #include <Io/FileMem.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/zBitVec.h>
 #include <Wwd/WwdFile.h>
+#include <ZTools/BitVec.h>
 
 #include <limits.h>
 #include <math.h>
@@ -86,7 +87,7 @@ i32 CBattlezMapConfig::CheckQueuedSpawnTile(CGrunt* unit) {
     } else {
         unit->m_battleState = BZTASK_ADVANCE;
         if (unit->CoordCount() != 0) {
-            RecycleGruntCoords(unit);
+            RECYCLE_GRUNT_COORDS(unit)
         }
     }
     unit->m_arrivalCell.Set(-1, -1);

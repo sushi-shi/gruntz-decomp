@@ -2,16 +2,14 @@
 
 #include <Mfc.h>
 
-#include <Bute/ButeTree.h>
-#include <Bute/PTreeNode.h>
+#include <Gruntz/ActRegistry.h>
 #include <Gruntz/SerialArchive.h>
-#include <Gruntz/TypeCollRuntime.h>
-#include <Gruntz/TypeCollRuntimeInline.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
 #include <Io/FileMem.h>
-#include <Wap32/ZVec.h>
 #include <Wwd/WwdGameObjectFamily.h>
+#include <ZTools/PTree.h>
+#include <ZTools/ZDArray.h>
 
 #include <strstrea.h>
 
@@ -20,14 +18,14 @@ RVA_DYNINIT(0x0016e730, 0x51, g_typeColl)
 RVA_DYNINIT(0x0016e790, 0xe, g_typeColl)
 RVA_DYNINIT(0x0016e7a0, 0x48, g_typeColl)
 DATA(0x002bf650)
-CTypeCollRuntime g_typeColl;
+zDArray<CString> g_typeColl(0x7d0, 0x7da);
 
 RVA_DYNINIT(0x0016e690, 0xa, g_buteTree)
 RVA_DYNINIT(0x0016e6a0, 0x26, g_buteTree)
 RVA_DYNINIT(0x0016e6d0, 0xe, g_buteTree)
 RVA_DYNINIT(0x0016e6e0, 0x3e, g_buteTree)
 DATA(0x002bf620)
-CButeTree g_buteTree(&ButeTreeNopFree, zPtrColl::PASSIVE);
+zSymTab<i32> g_buteTree(zPtrColl::PASSIVE);
 
 RVA(0x0016e7f0, 0x1cf)
 i32 CUserLogic::SerializeDispatch(
@@ -81,8 +79,7 @@ i32 CUserLogic::SerializeDispatch(
     return 1;
 }
 
-RVA_COMPGEN(0x0016e9c0, 0x45, ??_GCButeTree@@UAEPAXI@Z)
-RVA(0x0016ea10, 0x1)
-void ButeTreeNopFree(void*) {}
+RVA_COMPGEN(0x0016e9c0, 0x45, ??_G?$zSymTab@H@@UAEPAXI@Z)
+RVA_COMPGEN(0x0016ea10, 0x1, ?dtf@?$zSymTab@H@@CAXPAH@Z)
 
-RVA_COMPGEN(0x0016ea20, 0x51, ??_GCTypeCollRuntime@@UAEPAXI@Z)
+RVA_COMPGEN(0x0016ea20, 0x51, ??_G?$zDArray@VCString@@@@UAEPAXI@Z)

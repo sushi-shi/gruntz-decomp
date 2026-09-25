@@ -238,9 +238,7 @@ i32 CFaderRadial::ApplyInit(CFaderConfig* desc) {
 
     i32 cx = m_center.m_x;
     i32 cy = m_center.m_y;
-    m_maxRadius = static_cast<i32>(
-        (sqrt(static_cast<double>(SQUARED_DISTANCE_COMPONENTS(cx, cy))) * g_faderScale)
-    );
+    m_maxRadius = static_cast<i32>((sqrt(static_cast<double>((SQR(cx) + SQR(cy)))) * g_faderScale));
 
     for (i32 y = 0; y < static_cast<i32>(m_srcSurface->m_apiDesc.dwHeight); y++) {
         for (i32 x = 0; x < static_cast<i32>(m_srcSurface->m_apiDesc.dwWidth); x++) {
@@ -249,8 +247,7 @@ i32 CFaderRadial::ApplyInit(CFaderConfig* desc) {
             CFaderRadialCell cell;
             cell.m_radius = static_cast<float>(
                 (static_cast<double>(m_maxRadius)
-                 - sqrt(static_cast<double>((SQUARED_DISTANCE_COMPONENTS(dx, dy)))) * g_faderScale
-                 - g_faderBiasR)
+                 - sqrt(static_cast<double>((SQR(dx) + SQR(dy)))) * g_faderScale - g_faderBiasR)
             );
             float fade = cell.m_radius / m_fadeDivisor - g_faderBiasFade;
             SET_VECTOR2_COMPONENTS(

@@ -36,7 +36,7 @@
 #include <Utils/MapTyped.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/WapObj.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/ZDArray.h>
 
 #include <math.h>
 
@@ -49,7 +49,6 @@ RVA_COMPGEN(0x00013010, 0x1e, ??_GCSpotLight@@UAEPAXI@Z)
 
 RVA_COMPGEN(0x00013040, 0x44, ??1CSpotLight@@UAE@XZ)
 
-// @early-stop
 RVA(0x000b1200, 0x2cb)
 CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SET_ANIMATION_ACT("A");
@@ -65,10 +64,12 @@ CSpotLight::CSpotLight(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BA
         position.m_x -= m_object->m_smarts * TILE_SIZE_PX;
     }
     m_object->SetScreenPos(position);
-    m_position.Init(position);
+    const DoubleVector2 positionVector(position);
+    m_position.Init(positionVector.m_x, positionVector.m_y);
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR);
-    m_offset = m_center - m_position;
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR)
+    const DoubleVector2 offset = m_center - positionVector;
+    m_offset.Init(offset.m_x, offset.m_y);
 
     double period;
     if (m_object->m_damage == 0) {
@@ -114,16 +115,13 @@ void CSpotLight::FireActivation(i32 id) {
 
 RVA(0x000b1790, 0x2ac)
 void RegisterSpotLightActions() {
-    ACT_NAME_ID_CALL_REPORT(id, "A")
-    *CActRegPool<CSpotLight>::s_table.ResolveEntryCallReport(id) =
-        static_cast<CActHandler>(&CSpotLight::Tick);
+    ACT_NAME_ID(id, "A")
+    CActRegPool<CSpotLight>::s_table[id] = static_cast<CActHandler>(&CSpotLight::Tick);
 
     ACT_NAME_ID(id2, "B")
-    *CActRegPool<CSpotLight>::s_table.ResolveEntryCallReport(id2) =
-        static_cast<CActHandler>(&CSpotLight::Update);
+    CActRegPool<CSpotLight>::s_table[id2] = static_cast<CActHandler>(&CSpotLight::Update);
 }
 
-// @early-stop
 RVA(0x000b1af0, 0x318)
 i32 CSpotLight::Tick() {
     if (g_gameReg->m_isEasyMode == false || g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
@@ -180,8 +178,7 @@ i32 CSpotLight::Tick() {
     CWwdSpriteObject* mv = m_focus;
     DoubleVector2 rotated(offset.m_x * c + offset.m_y * s, offset.m_x * s - offset.m_y * c);
     if (mv != NULL) {
-        Coord focusPosition = mv->ScreenPos();
-        m_center.Init(focusPosition);
+        VEC2_SET(m_center, static_cast<double>(mv->m_screenPosition.m_x), static_cast<double>(mv->m_screenPosition.m_y));
     }
     m_position = m_center + rotated;
     m_angle = dAngle + m_angle;
@@ -200,8 +197,11 @@ int CSpotLight::Update() {
         CWwdSpriteObject* focus = m_focus;
         DoubleVector2 rotated(offset.m_y * s - offset.m_x * c, offset.m_x * s + offset.m_y * c);
         if (focus) {
-            Coord focusPosition = focus->ScreenPos();
-            m_center.Init(focusPosition);
+            VEC2_SET(
+                m_center,
+                static_cast<double>(focus->m_screenPosition.m_x),
+                static_cast<double>(focus->m_screenPosition.m_y)
+            );
         }
         m_position = m_center + rotated;
         m_angle = dAngle + m_angle;

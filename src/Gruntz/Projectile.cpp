@@ -5,26 +5,26 @@
 #include <Mfc.h>
 
 #include <Bute/ButeMgr.h>
-#include <Bute/ButeTree.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Dsndmgr/SoundBuffer.h>
+#include <Globals.h>
 #include <Gruntz/ActName.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/ActRegistry.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/Boomerang.h>
 #include <Gruntz/Brickz.h>
-#include <Gruntz/CoordNode.h>
-#include <Gruntz/FreeNodePool.h>
-#include <Gruntz/FreeNodePoolInline.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/HaznColl.h>
@@ -52,10 +52,11 @@
 #include <MakeRect.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
+#include <Utils/Square.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/zBitVec.h>
-#include <Wap32/ZVec.h>
 #include <Wwd/MoveMode.h>
+#include <ZTools/BitVec.h>
+#include <ZTools/ZDArray.h>
 
 #include <math.h>
 #include <stdlib.h>
@@ -94,7 +95,7 @@ template<> DATA(0x0024c780)
 CActReg CActRegPool<CTimeBomb>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 // @interleaver ??_G/??1 COMDATs - retail's kept copies sit in serialobjectfactory.obj's
-// contribution (first obj on the link line realizing these vtables; docs/link-text-layout.md).
+// contribution (reviewed ownership in config/retail/link_order.tsv).
 RVA_COMPGEN(0x00012980, 0x1e, ??_GCProjectile@@UAEPAXI@Z)
 RVA_COMPGEN(0x000129d0, 0x1e, ??_GCBoomerang@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012a00, 0x5, ??1CBoomerang@@UAE@XZ)
@@ -124,13 +125,12 @@ CProjectile::~CProjectile() {
         Coord* hitPoint = static_cast<Coord*>(m_hitList.GetNext(pos));
         if (hitPoint != NULL) {
 
-            PushFreeNode(&g_coordPool, hitPoint);
+            g_coordPool.Push(hitPoint);
         }
     }
     m_hitList.RemoveAll();
 }
 
-// @early-stop
 RVA(0x000df050, 0x6ed)
 i32 CProjectile::LoadProjectileSprites(
     PickupType kind,
@@ -186,16 +186,9 @@ i32 CProjectile::LoadProjectileSprites(
             m_timePerTile = g_buteMgr.GetDword("Projectile", "WingzProjectileTimePerTile", 0xbb8);
             LaunchSound("GRUNTZ_WINGZGRUNT_WINGZGRUNTLOOP");
             m_isArcing = false;
-            i32 ddx =
-                abs((m_targetPx.m_x >> TILE_SHIFT_PX)
-                    - (m_object->m_screenPosition.m_x >> TILE_SHIFT_PX));
-            i32 ddy =
-                abs((m_targetPx.m_y >> TILE_SHIFT_PX)
-                    - (m_object->m_screenPosition.m_y >> TILE_SHIFT_PX));
-            count = ddx;
-            if (ddx <= ddy) {
-                count = ddy;
-            }
+            i32 ddx = abs((m_targetPx.m_x >> TILE_SHIFT_PX) - (m_object->m_screenPosition.m_x >> TILE_SHIFT_PX));
+            i32 ddy = abs((m_targetPx.m_y >> TILE_SHIFT_PX) - (m_object->m_screenPosition.m_y >> TILE_SHIFT_PX));
+            count = Max(ddx, ddy);
             break;
         }
         default:
@@ -226,7 +219,7 @@ i32 CProjectile::LoadProjectileSprites(
     SetImageSetByName(key + "_OBJECT");
 
     u32 totalTime = static_cast<u32>((count * m_timePerTile));
-    double len = VECTOR2_MAG_COMPONENTS(dx, dy);
+    double len = sqrt(Sqr(dx) + Sqr(dy));
     double t = static_cast<double>(totalTime);
     double vx = dx / len;
     m_flightDist = len;
@@ -280,7 +273,6 @@ void CProjectile::RegisterType() {
         static_cast<CActHandler>(&CProjectile::AdvanceAnimationAndDeleteWhenComplete);
 }
 
-// @early-stop
 RVA(0x000dfd00, 0x70c)
 void CProjectile::AdvanceMotion() {
     if (m_arrived != false) {
@@ -307,30 +299,22 @@ void CProjectile::AdvanceMotion() {
         if (m_kind == PICKUP_WINGZ) {
             ScanTargets(0);
         }
-        VECTOR_ADVANCE_COMPONENT(m_position.m_x, g_frameDelta, m_velocity.m_x, m_velScale);
-        VECTOR_ADVANCE_COMPONENT(m_position.m_y, g_frameDelta, m_velocity.m_y, m_velScale);
+        m_position.m_x = m_position.m_x + static_cast<double>(g_frameDelta) * m_velocity.m_x * m_velScale;
+        m_position.m_y = m_position.m_y + static_cast<double>(g_frameDelta) * m_velocity.m_y * m_velScale;
         i32 xRes = static_cast<i32>((m_roundBias.m_x + m_position.m_x));
-        i32 yRes = static_cast<i32>((m_roundBias.m_y + m_position.m_y));
         i32 localX = xRes;
+        i32 yRes = static_cast<i32>((m_roundBias.m_y + m_position.m_y));
         if (m_velocity.m_x > 0.0) {
-            if (xRes > m_targetPx.m_x) {
-                localX = m_targetPx.m_x;
-                xRes = m_targetPx.m_x;
-            }
+            xRes = Min(xRes, m_targetPx.m_x);
+            localX = xRes;
         } else if (m_velocity.m_x < 0.0) {
-            if (xRes < m_targetPx.m_x) {
-                localX = m_targetPx.m_x;
-                xRes = m_targetPx.m_x;
-            }
+            xRes = Max(xRes, m_targetPx.m_x);
+            localX = xRes;
         }
         if (m_velocity.m_y > 0.0) {
-            if (yRes > m_targetPx.m_y) {
-                yRes = m_targetPx.m_y;
-            }
+            yRes = Min(yRes, m_targetPx.m_y);
         } else if (m_velocity.m_y < 0.0) {
-            if (yRes < m_targetPx.m_y) {
-                yRes = m_targetPx.m_y;
-            }
+            yRes = Max(yRes, m_targetPx.m_y);
         }
         m_currentPx.m_x = xRes;
         m_currentPx.m_y = yRes;
@@ -339,7 +323,7 @@ void CProjectile::AdvanceMotion() {
         if (m_isArcing != false) {
             double dx = fabs(static_cast<double>(m_targetPx.m_x) - m_position.m_x);
             double dy = fabs(static_cast<double>(m_targetPx.m_y) - m_position.m_y);
-            double dist = VECTOR2_MAG_COMPONENTS(dx, dy);
+            double dist = sqrt(Sqr(dx) + Sqr(dy));
             if (dist >= m_flightDist * 0.9 || dist < m_flightDist * 0.1) {
                 offX = 0x4;
                 offY = -0x4;
@@ -552,7 +536,7 @@ i32 CBoomerang::LoadProjectileSprites(
         g->m_holdAnchorLo = g_frameTime;
         g->m_holdAnchorHi = 0;
         if (g->CoordCount() != 0) {
-            RecycleGruntCoords(g);
+            RECYCLE_GRUNT_COORDS(g)
         }
     }
     m_launched = false;
@@ -562,6 +546,7 @@ i32 CBoomerang::LoadProjectileSprites(
 RVA(0x000e08b0, 0x1de)
 void CBoomerang::AdvanceMotion() {
     double s;
+    double c;
     if (m_launched == false && m_phase > g_boomerangHalfTurnRadians) {
         SET_VECTOR2_COMPONENTS(m_object->m_screenPosition, m_targetPx.m_x, m_targetPx.m_y);
         if (m_shadow != NULL) {
@@ -580,7 +565,7 @@ void CBoomerang::AdvanceMotion() {
     ScanTargets(0);
 
     s = sin(m_phase);
-    double c = cos(m_phase);
+    c = cos(m_phase);
     double vx = m_direction.m_x;
     double vy = -m_direction.m_y;
     double phaseDelta = static_cast<double>(g_frameDelta) * m_velScale;
@@ -672,7 +657,7 @@ void CProjectile::ScanTargets(i32 impact) {
             Coord* slot = NULL;
             CoordPoolNode* p = g_coordPool.m_freeHead;
             if (p->m_next != NULL) {
-                slot = &p->m_coord;
+                slot = &p->m_value;
                 slot->m_x = hitPlayerIndex;
                 slot->m_y = hitUnitIndex;
                 g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
@@ -756,7 +741,7 @@ i32 CProjectile::SerializeDispatch(
                 CoordPoolNode* node = g_coordPool.m_freeHead;
                 Coord* payload = NULL;
                 if (node->m_next != NULL) {
-                    payload = &node->m_coord;
+                    payload = &node->m_value;
                     g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
                 }
                 s->Read(payload, 8);

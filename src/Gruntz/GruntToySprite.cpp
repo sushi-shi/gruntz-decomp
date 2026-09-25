@@ -20,7 +20,7 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Image/CImage.h>
 #include <Io/FileMem.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/ZDArray.h>
 
 #include <stddef.h>
 
@@ -52,7 +52,7 @@ void CGruntToySprite::FireActivation(i32 id) {
 RVA(0x0007f720, 0x18d)
 void CGruntToySprite::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CGruntToySprite>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CGruntToySprite>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CGruntToySprite::Update);
 }
 

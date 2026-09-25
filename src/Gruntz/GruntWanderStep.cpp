@@ -4,10 +4,11 @@
 #include <MfcWin.h>
 
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordNode.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/EnemyAiType.h>
-#include <Gruntz/FreeNodePoolInline.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -33,14 +34,13 @@
 #include <Gruntz/VoiceManager.h>
 #include <Ints.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/ZDArray.h>
 
 #include <limits.h>
 #include <new>
 #include <stdlib.h>
 #include <string.h>
 
-// @early-stop
 RVA(0x000ed9f0, 0x900)
 i32 CGrunt::StepHitAndRunnerBehavior() {
     m_defenderPx = m_lastTilePx;
@@ -208,7 +208,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
             COMMIT_GRUNT_NEIGHBOR(slot);
             m_neighborScanEnabled = false;
             if (CoordCount() != 0) {
-                RECYCLE_GRUNT_COORDS_EXPANDED(this)
+                RECYCLE_GRUNT_COORDS(this)
             }
             m_defenderState = AISTATE_RETREAT;
             m_dwell = DWELL_REPATH_MS;
@@ -284,9 +284,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
                 TileSwitch(static_cast<i32>(lx), static_cast<i32>(ly), 0, m_arrivalFlags, 1, 0);
             }
             if (CoordCount() != 0) {
-                if (ax <= ay) {
-                    ax = ay;
-                }
+                ax = Max(ax, ay);
                 if (CoordCount() > ax) {
                     SetEntrancePos(1, 1);
                     m_dwell = 0;

@@ -441,7 +441,6 @@ i32 CAmbientSound::SetVolumeLevel(i32 volumeLevel, i32 rampMs, b32 stopAndRewind
     return m_sound->RampVolumeTo(v, rampMs, stopAndRewind);
 }
 
-// @early-stop
 RVA(0x0000c2a0, 0x19e)
 void CAmbientSound::FadePlayback(b32 startPlaying, i32 volumeLevel, i32 rampMs) {
     if (m_sound == NULL) {
@@ -460,16 +459,8 @@ void CAmbientSound::FadePlayback(b32 startPlaying, i32 volumeLevel, i32 rampMs) 
         }
         if (rampMs == 0) {
             m_sound->ApplyAndPlay(1, m_panPercent, 0, true);
-            i32 t = m_masterVolume;
             m_volumeLevel = volumeLevel;
-            if (t > 5) {
-                t -= 0xf;
-            }
-            i32 v = (t * volumeLevel) / 100;
-            if (m_volumeScale > 0) {
-                v = (v * m_volumeScale) / 100;
-            }
-            v = Clamp(v, 0, 0x64);
+            i32 v = ScaleVolume(volumeLevel);
             m_sound->SetVolumePercent(v);
             m_volumeLevel = volumeLevel;
             m_isPlaying = true;
@@ -477,16 +468,8 @@ void CAmbientSound::FadePlayback(b32 startPlaying, i32 volumeLevel, i32 rampMs) 
         }
 
         m_sound->ApplyAndPlay(1, m_panPercent, 0, true);
-        i32 t = m_masterVolume;
         m_volumeLevel = volumeLevel;
-        if (t > 5) {
-            t -= 0xf;
-        }
-        i32 v = (t * volumeLevel) / 100;
-        if (m_volumeScale > 0) {
-            v = (v * m_volumeScale) / 100;
-        }
-        v = Clamp(v, 0, 0x64);
+        i32 v = ScaleVolume(volumeLevel);
         m_sound->RampVolumeTo(v, rampMs, false);
         m_volumeLevel = volumeLevel;
         m_isPlaying = true;
@@ -719,7 +702,6 @@ i32 DispatchSpotAmbientSoundLogic(CGameObject* obj) {
     return 1;
 }
 
-// @early-stop
 RVA(0x0000cb30, 0x168)
 void CRandomAmbientSound::Update(i32 x, i32 y, b32 immediate) {
 
@@ -760,16 +742,16 @@ void CRandomAmbientSound::Update(i32 x, i32 y, b32 immediate) {
         return;
     }
 
-    m_playPhase = !m_playPhase;
+    m_playPhase ^= 1;
     if (m_playPhase != false) {
         i32 r = RandRange(g_gameReg, m_playDuration.GetMin(), m_playDuration.GetMax());
         m_countdownMs = r;
-        i32 half = Min(static_cast<i32>(static_cast<u32>(r) >> 1), 0x3e8);
+        i32 half = Min(0x3e8, static_cast<i32>(static_cast<u32>(r) >> 1));
         FadePlayback(true, 0x64, half);
     } else {
         i32 r = RandRange(g_gameReg, m_silenceDuration.GetMin(), m_silenceDuration.GetMax());
         m_countdownMs = r;
-        i32 half = Min(static_cast<i32>(static_cast<u32>(r) >> 1), 0x3e8);
+        i32 half = Min(0x3e8, static_cast<i32>(static_cast<u32>(r) >> 1));
         FadePlayback(false, 0x64, half);
     }
 }
@@ -789,7 +771,7 @@ void CRandomAmbientSound::InitCycleTiming(
 ) {
     m_playDuration.Set(playDurationMin, playDurationMax);
     m_silenceDuration.Set(silenceDurationMin, silenceDurationMax);
-    i32 countdown = RandRange(playDurationMin, playDurationMax);
+    i32 countdown = RandRange(m_playDuration.GetMin(), m_playDuration.GetMax());
     m_playPhase = true;
     m_countdownMs = countdown;
 }

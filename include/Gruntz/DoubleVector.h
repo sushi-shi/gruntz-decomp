@@ -592,6 +592,10 @@ inline DoubleVector2 PixelRoundBias(const DoubleVector2& direction) {
         (out) = 0.0;                                                                               \
     }
 
+#define VEC2_SET(vector, x, y)                                                                     \
+    (vector).m_x = (x);                                                                            \
+    (vector).m_y = (y)
+
 #define VECTOR2_SCALE_TO_I32(outX, outY, x, y, scale)                                              \
     (outX) = static_cast<i32>((x) * (scale));                                                      \
     (outY) = static_cast<i32>((y) * (scale))

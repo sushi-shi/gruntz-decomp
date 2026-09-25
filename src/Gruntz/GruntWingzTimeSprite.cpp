@@ -2,7 +2,7 @@
 
 #include <Gruntz/GruntWingzTimeSprite.h>
 
-#include <Bute/ButeTree.h>
+#include <Gruntz/ActRegistry.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>

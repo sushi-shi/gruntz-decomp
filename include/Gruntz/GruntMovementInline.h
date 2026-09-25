@@ -1,8 +1,7 @@
 #ifndef GRUNTZ_GRUNTMOVEMENTINLINE_H
 #define GRUNTZ_GRUNTMOVEMENTINLINE_H
 
-#include <Gruntz/FreeNodePool.h>
-#include <Gruntz/FreeNodePoolInline.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDirectionOffset.h>
 #include <Gruntz/TriggerMgr.h>
@@ -85,7 +84,7 @@ inline void RecycleGruntCoords(CGrunt* grunt) {
             grunt->m_coordList.GetNext(node);
             Coord* coord = static_cast<Coord*>(grunt->m_coordList.GetAt(current));
             if (coord != NULL) {
-                PushFreeNode(&g_coordPool, coord);
+                g_coordPool.Push(coord);
             }
         } while (node != NULL);
     }

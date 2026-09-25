@@ -5,16 +5,16 @@
 #include <Mfc.h>
 
 #include <Bute/ButeMgr.h>
-#include <Bute/ButeTree.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/ActRegistry.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/TypeColl.h>
 #include <Gruntz/TypeKeyColl.h>
-#include <Wap32/zBitVec.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/BitVec.h>
+#include <ZTools/ZDArray.h>
 
 RVA_DYNINIT(0x0003e100, 0xa, CActRegPool<CGruntStartingPoint>::s_table)
 RVA_DYNINIT(0x0003e120, 0x15, CActRegPool<CGruntStartingPoint>::s_table)

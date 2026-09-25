@@ -15,7 +15,7 @@
 #include <Gruntz/FaderSubtypes.h>
 #include <Gruntz/ShapeFaderConfig.h>
 #include <Ints.h>
-#include <MakeRect.h>
+#include <Lith/BDefs.h>
 #include <RectInterpolation.h>
 #include <Wap32/ScreenGeometry.h>
 
@@ -246,13 +246,13 @@ i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
     m_rows = cfg->m_rows;
 
     CRezBufferObject* mesh = &m_meshBuf;
-    mesh->SetSize(0, -1);
+    mesh->RemoveAll();
 
     i32 halfW = static_cast<i32>(m_dstSurface->m_apiDesc.dwWidth) / 2;
     i32 halfH = static_cast<i32>(m_dstSurface->m_apiDesc.dwHeight) / 2;
     i32 cellW = static_cast<i32>(m_sourceSurface->m_apiDesc.dwWidth) / m_cols;
     i32 cellH = static_cast<i32>(m_sourceSurface->m_apiDesc.dwHeight) / m_rows;
-    float radius = static_cast<float>(sqrt(static_cast<double>((cellW * cellW + cellH * cellH))));
+    float radius = static_cast<float>(sqrt(static_cast<double>((SQR(cellW) + SQR(cellH)))));
     if (m_rows <= 0) {
         return 1;
     }
@@ -266,21 +266,17 @@ i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
         if (m_cols > 0) {
             elem.m_reserved20 = 0;
             elem.m_scale = 1.0f;
-            i32 rowD2 = ay * ay;
+            i32 rowD2 = SQR(ay);
             float cellR = static_cast<float>(
-                sqrt(static_cast<double>(halfH * halfH + halfW * halfW)) + radius - g_fxBias
+                sqrt(static_cast<double>(SQR(halfH) + SQR(halfW))) + radius - g_fxBias
             );
             i32 x = 0;
             i32 bx = halfW;
             i32 negW = -cellW;
             i32 i = 0;
             do {
-                CRect dispersedRect;
-                dispersedRect.left = 0;
-                dispersedRect.top = 0;
-                dispersedRect.right = cellW;
-                dispersedRect.bottom = cellH;
-                i32 d2 = bx * bx + rowD2;
+                CRect dispersedRect(0, 0, cellW, cellH);
+                i32 d2 = SQR(bx) + rowD2;
                 double v = sqrt(static_cast<double>(d2));
                 float u, w;
                 if (v > g_fxEps) {
@@ -290,19 +286,14 @@ i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
                     u = 0.0f;
                     w = 1.0f;
                 }
-                OffsetRect(&dispersedRect, x, y);
-                OffsetRect(
-                    &dispersedRect,
+                dispersedRect.OffsetRect(x, y);
+                dispersedRect.OffsetRect(
                     static_cast<i32>((u * cellR)),
                     static_cast<i32>((w * cellR))
                 );
 
-                CRect assembledRect;
-                assembledRect.left = 0;
-                assembledRect.top = 0;
-                assembledRect.right = d2;
-                assembledRect.bottom = cellH;
-                OffsetRect(&assembledRect, x, y);
+                CRect assembledRect(0, 0, d2, cellH);
+                assembledRect.OffsetRect(x, y);
 
                 if (m_reverseOrder) {
                     elem.m_startRect = assembledRect;
@@ -376,3 +367,11 @@ RVA(0x0017f120, 0x6)
 i32 CFaderMesh::GetFrameCount() {
     return 0x1f4;
 }
+
+RVA_COMPGEN(0x0017f130, 0x1ce, ?Serialize@?$CArray@URezElem40@@ABU1@@@UAEXAAVCArchive@@@Z)
+RVA_COMPGEN(0x0017f300, 0x3, ??0RezElem40@@QAE@XZ)
+RVA_COMPGEN(0x0017f310, 0x1e, ??_G?$CArray@URezElem40@@ABU1@@@UAEPAXI@Z)
+RVA_COMPGEN(0x0017f330, 0x51, ??1?$CArray@URezElem40@@ABU1@@@UAE@XZ)
+RVA_COMPGEN(0x0017f390, 0x164, ?SetSize@?$CArray@URezElem40@@ABU1@@@QAEXHH@Z)
+RVA_COMPGEN(0x0017f500, 0x23, ?ConstructElements@@YGXPAURezElem40@@H@Z)
+template void CArray<RezElem40, const RezElem40&>::SetSize(int, int);

@@ -1,6 +1,6 @@
 # Exact-match lever catalog from Gruntz history
 
-This catalog is the required memory aid for a Function Match Plan. It was
+This catalog is a reasoning aid for matching, not a requirement to write a plan. It was
 derived from checked-in exact closures, hard-wall commit history, AGENTS.md's
 HoMM3/LithTech campaigns, and `docs/patterns/INDEX.md`. It is not a menu of blind
 mutations: use each entry only when retail/source evidence licenses it, and mark
@@ -10,7 +10,7 @@ The pattern index is authoritative and continues to grow. Search and read it
 from the repository root:
 
 ```sh
-rg -n '<cpp-tag|asm mnemonic|symptom|function>' docs/patterns/INDEX.md
+rg -n '<mechanism|symptom>' docs/patterns/INDEX.md
 ```
 
 ## 1. Recover source before steering the compiler
@@ -228,6 +228,6 @@ arithmetic was handwritten.
   A source-hash change that lost historical exactness is, however, a mandatory
   history investigation.
 
-When a new controlled exact closure is not represented above, document it in
-`docs/patterns/` plus `INDEX.md`, then update this catalog so the next function's
-plan cannot miss it.
+An exact closure does not require a new pattern or catalog entry. Consolidate
+only distinct reusable mechanisms under `docs/patterns/README.md`; keep
+function-specific experiment history in the handoff and Git history.
