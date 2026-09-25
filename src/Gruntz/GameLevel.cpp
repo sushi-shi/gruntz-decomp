@@ -1846,12 +1846,7 @@ TileCollisionKind CGameLevel::AxisProbe(i32 coord, i32 limit) {
     i32 idx = pl->m_tileRowOffsets[qy] + col;
     i32 subY = py - (qy << pl->m_shiftY);
     i32 tile = pl->m_tileHandles[idx];
-    if (tile == UNINIT_FILL || tile == s_tileClear) {
-        return TILEKIND_PASSABLE;
-    }
-    CTileImageSet* set =
-        static_cast<CTileImageSet*>(m_imageSets[tile & WWD_TILE_IMAGE_SET_INDEX_MASK]);
-    return set->GetCollisionAt(subX, subY);
+    return CollisionAtHandle(tile, subX, subY);
 }
 
 RVA_COMPGEN(0x00161350, 0x1e, ??_GCUniformTileImageSet@@UAEPAXI@Z)

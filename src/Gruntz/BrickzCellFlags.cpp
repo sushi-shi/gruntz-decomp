@@ -37,15 +37,7 @@ void CMapMgr::ComputeCellFlags(i32 x, i32 y, i32 tileId) {
         cy = level->m_mainPlane->m_tileRows - 1;
     }
     i32 id = level->m_mainPlane->m_tileHandles[level->m_mainPlane->m_tileRowOffsets[cy] + cx];
-    TileCollisionKind typeCode;
-    if (id == UNINIT_FILL || id == -1) {
-        typeCode = TILEKIND_PASSABLE;
-    } else {
-        typeCode = (static_cast<CTileImageSet*>(
-                        level->m_imageSets.GetAt(id & WWD_TILE_IMAGE_SET_INDEX_MASK)
-                    ))
-                       ->GetCollisionAt(0, 0);
-    }
+    TileCollisionKind typeCode = level->CollisionAtHandle(id, 0, 0);
     i32 oldFlags = cell->m_flags;
     i32 edgeBit = oldFlags & BRICKZ_CELL_OCCUPIED;
     i32 keep = oldFlags & 0x1bf40000;

@@ -5574,16 +5574,7 @@ i32 CPlay::ScanBuildTiles() {
             i32 subX = x - (tileX << shX);
             i32 subY = y - (tileY << shY);
             i32 cell = g->m_tileHandles[g->m_tileRowOffsets[tileY] + tileX];
-            TileCollisionKind tile;
-            if (cell == UNINIT_FILL || cell == static_cast<i32>(0xffffffff)) {
-                tile = TILEKIND_PASSABLE;
-            } else {
-
-                tile = (static_cast<CUniformTileImageSet*>(
-                            ds->m_imageSets[cell & WWD_TILE_IMAGE_SET_INDEX_MASK]
-                        ))
-                           ->GetCollisionAt(subX, subY);
-            }
+            TileCollisionKind tile = ds->CollisionAtHandle(cell, subX, subY);
             if (m_tileTriggers->AddLogic(
                     tile,
                     TRIGID_COVERED_POWERUP_26,

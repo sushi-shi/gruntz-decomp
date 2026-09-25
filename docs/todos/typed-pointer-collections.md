@@ -52,6 +52,12 @@ source layer the original developers wrote around each collection.
   families. `CGameLevel::ReadPlane`/`ReadObjectPlane` keep the longhand:
   `Add` drops both from 100 to about 95.7.
 
+- `CGameLevel::m_imageSets`: the existing `CollisionAtHandle` now replaces
+  its open-coded clear-check and image-set lookup at 9 sites (TriggerMgr,
+  TriggerMgrGrid, BrickzCellFlags, TileTriggerContainer, Play, LookupTile,
+  AxisProbe). `CPlay`'s raw tile-token lookups (`GetAt(tcidx)`, unmasked)
+  stay raw.
+
 ## Open
 
 For each collection, decide which of these the source was:

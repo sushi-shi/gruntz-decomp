@@ -484,15 +484,7 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
     i32 subX = cx - (tx << level->m_mainPlane->m_shiftX);
     i32 subY = cy - (ty << level->m_mainPlane->m_shiftY);
     i32 raw = level->m_mainPlane->m_tileHandles[level->m_mainPlane->m_tileRowOffsets[ty] + tx];
-    TileCollisionKind tag;
-    if (raw == UNINIT_FILL || raw == -1) {
-        tag = TILEKIND_PASSABLE;
-    } else {
-        CTileImageSet* ts = static_cast<CTileImageSet*>(
-            level->m_imageSets.GetAt(raw & WWD_TILE_IMAGE_SET_INDEX_MASK)
-        );
-        tag = ts->GetCollisionAt(subX, subY);
-    }
+    TileCollisionKind tag = level->CollisionAtHandle(raw, subX, subY);
 
     if (static_cast<u32>((IDX(tag) - 0xb)) > 0x65) {
         return 0;
@@ -906,15 +898,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     i32 subX = x - (tx << sh);
     i32 subY = y - (ty << sw);
     i32 attr = scroll->m_tileHandles[scroll->m_tileRowOffsets[ty] + tx];
-    TileCollisionKind kind;
-    if (attr == UNINIT_FILL || attr == -1) {
-        kind = TILEKIND_PASSABLE;
-    } else {
-        CTileImageSet* ts = static_cast<CTileImageSet*>(
-            view->m_imageSets.GetAt(attr & WWD_TILE_IMAGE_SET_INDEX_MASK)
-        );
-        kind = ts->GetCollisionAt(subX, subY);
-    }
+    TileCollisionKind kind = view->CollisionAtHandle(attr, subX, subY);
     switch (kind) {
         case TILEKIND_TIME_SWITCH_UP: {
             CTileTriggerSwitchLogic* obj = state->m_tileTriggers->FindSwitchLogic(
