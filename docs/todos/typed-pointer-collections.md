@@ -44,6 +44,10 @@ source layer the original developers wrote around each collection.
 - `CMenuPage::m_items`: the existing `NextItem`/`PrevItem` now cover every
   walk, including the column moves.
 
+- `CDDrawDeviceManager::m_displayModes`: `GetModeDesc(i)` and
+  `FreeDisplayModes()` (Clear, EnumerateDisplayModes); the merge and the
+  enumeration callback use `CPtrArray::Add`, the sort swap `SetAt`.
+
 ## Open
 
 For each collection, decide which of these the source was:
