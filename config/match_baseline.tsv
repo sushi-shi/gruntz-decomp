@@ -1705,7 +1705,7 @@ fileimage	?DecodeByteRun3Planes@CDDSurface@@QAEHPAE0HH@Z	100.0000	100.0000	3	841
 fileimage	?DecodePcx@CDDSurface@@QAEHPAVCDDrawDeviceManager@@PAUPcxHeader@@I@Z	100.0000	100.0000	10	93aed3392c66	0x144ee0	100.0000	
 fileimage	?DecodePcxData@CDDSurface@@QAEHPAVCDDrawDeviceManager@@PAUPidHeader@@HHI@Z	100.0000	100.0000	9	3d1532437f3c	0x1457a0	100.0000	
 fileimage	?DecodePcxEx@CDDSurface@@QAEHPAVCDDrawDeviceManager@@PADHI@Z	100.0000	100.0000	3	81ac2059cdfe	0x1459d0	100.0000	
-fileimage	?DecodePid@CDDSurface@@QAEHPAVCDDrawDeviceManager@@PAUPidHeader@@II@Z	96.1019	96.1019	13	86867f421d17	0x145b10	96.1019	
+fileimage	?DecodePid@CDDSurface@@QAEHPAVCDDrawDeviceManager@@PAUPidHeader@@II@Z	96.1338	96.1338	13	86867f421d17	0x145b10	96.1338	
 fileimage	?Load@CDDSurface@@QAEHPAVCDDrawDeviceManager@@PADH@Z	100.0000	100.0000	5	dbee802a4c00	0x144270	100.0000	
 fileimage	?LoadBmp@CDDSurface@@QAEHPAVCDDrawDeviceManager@@PAD@Z	100.0000	100.0000	5	722b29b7c16e	0x144110	100.0000	
 fileimage	?LoadPcx@CDDSurface@@QAEHPAVCDDrawDeviceManager@@PAD@Z	100.0000	100.0000	3	867c3f97073e	0x145110	100.0000	
@@ -2617,14 +2617,14 @@ helpstate	?RestoreDisplay@CHelpState@@UAEHXZ	100.0000	100.0000	3	5d6d394618cb	0x
 helpstate	?Update@CDemo@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	e46f1bf96ca2	0x8d080	100.0000	
 helpstate	?Update@CHelpState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	443521c6b2c3	0x8cee0	100.0000	
 helpstate	?Update@CSplashState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	6952c79e8d4a	0x8cfb0	100.0000	
-imagepolyclip	?FillPolygon@@YAHPAUClipVtx@@HPAVCDDSurface@@F@Z	76.5212	76.5212	7	ff65f0128526	0x146fe0	76.5212	
+imagepolyclip	?FillPolygon@@YAHPAUClipVtx@@HPAVCDDSurface@@F@Z	97.9091	97.9091	8	5f36159be102	0x146fe0	97.9091	
 imagepolyclip	?ImagePolyClipRect@@YAHPAUClipVtx@@HHHHH@Z	99.3272	99.3272	3	bbdaf68c59f9	0x1461b0	99.3272	
 imagepolyclip	?ImageRotateBlit@@YAXHHPAHPAVCDDSurface@@1MMHH@Z	79.4671	79.4671	3	c40e7e8d7a45	0x145f60	79.4671	
 imagepolyclip	?PolyIsConvexCW@@YAHPAUClipVtx@@H@Z	98.1982	93.0450	5	581241cabaa2	0x145e30	98.1982	
 imagepolyclip	?ProjectWallQuad@@YAHPAVCDDSurface@@HHHHHFUtagRECT@@@Z	78.9856	78.9856	9	a4fa149bc377	0x1471d0	78.9856	
 imagepolyclip	?RotateRasterize@@YAHPAUClipVtx@@HPAVCDDSurface@@1HHHHHH@Z	96.2031	96.2031	6	008c18ed1d85	0x146550	96.2031	
 imagepolyclip	?WarpIsPow2@@YAHH@Z	100.0000	100.0000	1	64804376f3f0	0x145e00	100.0000	
-imagepolyclip	?WarpTextureBlit@@YAHPAUClipVtx@@HPAVCDDSurface@@1HH@Z	74.4484	74.4484	12	0029af4c01b6	0x146a20	74.4484	
+imagepolyclip	?WarpTextureBlit@@YAHPAUClipVtx@@HPAVCDDSurface@@1HH@Z	99.1604	99.1604	13	69c657688727	0x146a20	99.1604	
 imagepool	?AddDib@CDibMgr@@QAEPAVCDib@@HHW4ColorDepth@@I@Z	100.0000	100.0000	7	6d28231b75c4	0x174fe0	100.0000	
 imagepool	?AddDib@CDibMgr@@QAEPAVCDib@@PAEHHW4ColorDepth@@I@Z	100.0000	100.0000	8	6d28231b75c4	0x1750e0	100.0000	
 imagepool	?AddDib@CDibMgr@@QAEPAVCDib@@PAEW4RezDecodeKind@@I@Z	100.0000	100.0000	8	6d28231b75c4	0x1751f0	100.0000	
@@ -2668,7 +2668,7 @@ imagepool	?IsPaletteDevice@CDibPal@@SAHXZ	100.0000	100.0000	3	f5311a9916ae	0x177
 imagepool	?MakeIdentity@CDibPal@@AAEXXZ	100.0000	100.0000	6	46523d3f99ff	0x1770e0	100.0000	
 imagepool	?RemoveAllDibs@CDibMgr@@QAEXXZ	100.0000	100.0000	3	fc6b6b7cef5d	0x174f60	100.0000	
 imagepool	?RemoveAllPals@CDibMgr@@QAEXXZ	100.0000	100.0000	4	a8bf106dec30	0x174fa0	100.0000	
-imagepool	?RemoveDib@CDibMgr@@QAEXPAVCDib@@@Z	96.7647	96.7647	5	cf7eff0f4121	0x174ed0	100.0000	
+imagepool	?RemoveDib@CDibMgr@@QAEXPAVCDib@@@Z	100.0000	100.0000	6	484525259376	0x174ed0	100.0000	
 imagepool	?RemovePal@CDibMgr@@QAEXPAVCDibPal@@@Z	100.0000	100.0000	4	6654f0eebed5	0x174f30	100.0000	
 imagepool	?Resize@CDib@@QAEHPAUHDC__@@HHW4ColorDepth@@I@Z	100.0000	100.0000	2	685f4efb156a	0x175ce0	100.0000	
 imagepool	?ResizeDib@CDibMgr@@QAEHPAVCDib@@HHW4ColorDepth@@I@Z	100.0000	100.0000	4	480f2e4231a0	0x175710	100.0000	
