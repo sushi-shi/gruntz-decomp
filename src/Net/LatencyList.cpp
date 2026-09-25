@@ -144,30 +144,29 @@ i32 CLatencyList::FillCombo(HWND hDlg, i32 ctrlId) {
         return 0;
     }
     HWND combo = GetDlgItem(hDlg, ctrlId);
-    if (combo != NULL) {
-        SendMessageA(combo, CB_RESETCONTENT, 0, 0);
-        POSITION pos = m_list.GetHeadPosition();
-        while (pos != NULL) {
-            CKeyedNode* rec = static_cast<CKeyedNode*>(m_list.GetNext(pos));
-            i32 data =
-                ((rec->m_resendInterval & 0xffff) * 0x10000) | (rec->m_commandDelay & 0xffff);
-            i32 idx;
-            {
-                MsgParam name;
-                idx = SendMessageA(
-                    combo,
-                    CB_ADDSTRING,
-                    0,
-                    (name.m_str = static_cast<LPCTSTR>(rec->GetName()), name.m_lparam)
-                );
-            }
-            if (idx != -1) {
-                SendMessageA(combo, CB_SETITEMDATA, idx, data);
-            }
-        }
-        return m_list.GetCount();
+    if (combo == NULL) {
+        return 0;
     }
-    return 0;
+    SendMessageA(combo, CB_RESETCONTENT, 0, 0);
+    POSITION pos = m_list.GetHeadPosition();
+    while (pos != NULL) {
+        CKeyedNode* rec = static_cast<CKeyedNode*>(m_list.GetNext(pos));
+        i32 data = ((rec->m_resendInterval & 0xffff) * 0x10000) | (rec->m_commandDelay & 0xffff);
+        i32 idx;
+        {
+            MsgParam name;
+            idx = SendMessageA(
+                combo,
+                CB_ADDSTRING,
+                0,
+                (name.m_str = static_cast<LPCTSTR>(rec->GetName()), name.m_lparam)
+            );
+        }
+        if (idx != -1) {
+            SendMessageA(combo, CB_SETITEMDATA, idx, data);
+        }
+    }
+    return m_list.GetCount();
 }
 
 RVA(0x00038120, 0x1d)
