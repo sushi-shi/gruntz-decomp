@@ -86,6 +86,27 @@ void CNetCmdSlot::ClearSyncState() {
     ResetNetCmdSlotCommandWindow(this);
 }
 
+inline void CNetCmdSlot::QueueRecord(GruntRec* record, u8 entryCount, char* cursor, i32 remaining) {
+    AddRecord(record);
+
+    for (i32 i = entryCount & 0xff; i > 0; i--) {
+        u8 commandFlags = static_cast<u8>(*cursor);
+        CGruntzCommand* command;
+        if (commandFlags & 1) {
+            command = CGruntzSingleCommand::Allocate();
+        } else if (commandFlags & 2) {
+            command = CGruntzMultiCommand::Allocate();
+        } else {
+            continue;
+        }
+        i32 consumed = command->DecodePacket(cursor, remaining);
+        command->m_submitFlags = COMMAND_SUBMIT_SCHEDULED;
+        remaining -= consumed;
+        cursor += consumed;
+        m_owner->m_mgr->m_commandMgr->EnqueueCommand(false, command);
+    }
+}
+
 RVA(0x000c0c70, 0x20f)
 i32 CNetCmdSlot::ProcessPacket(i32 playerId, char* packet, i32 packetSize) {
     if (packet == NULL) {
@@ -135,7 +156,7 @@ i32 CNetCmdSlot::ProcessPacket(i32 playerId, char* packet, i32 packetSize) {
     remaining--;
 
     if (m_isDraining != false && isDrainPacket) {
-        CNetCmdSlot* slot = m_owner->m_session->FindSlotByPlayerId(playerId);
+        CNetCmdSlot* slot = m_owner->Session()->FindSlotByPlayerId(playerId);
         if (slot == NULL) {
             return 0;
         }
@@ -170,24 +191,7 @@ i32 CNetCmdSlot::ProcessPacket(i32 playerId, char* packet, i32 packetSize) {
     record->m_sequence = sequence;
     record->m_payloadLength = remaining;
     memcpy(record->m_payload, cursor, remaining);
-    AddRecord(record);
-
-    for (i32 i = entryCount & 0xff; i > 0; i--) {
-        u8 commandFlags = static_cast<u8>(*cursor);
-        CGruntzCommand* command;
-        if (commandFlags & 1) {
-            command = CGruntzSingleCommand::Allocate();
-        } else if (commandFlags & 2) {
-            command = CGruntzMultiCommand::Allocate();
-        } else {
-            continue;
-        }
-        i32 consumed = command->DecodePacket(cursor, remaining);
-        command->m_submitFlags = COMMAND_SUBMIT_SCHEDULED;
-        remaining -= consumed;
-        cursor += consumed;
-        m_owner->m_mgr->m_commandMgr->EnqueueCommand(false, command);
-    }
+    QueueRecord(record, entryCount, cursor, remaining);
     return 1;
 }
 
@@ -345,13 +349,11 @@ void CNetCmdSlot::ClearRecords() {
 
 RVA(0x000c1320, 0x4a)
 i32 CNetCmdSlot::DrainAcknowledged() {
-    CMulti* owner = m_owner;
-    if (owner == NULL) {
+    if (m_owner == NULL) {
         return 0;
     }
-    CNetSession* session = owner->m_session;
     for (i32 i = 0; i < 4; i++) {
-        CNetCmdSlot* slot = &session->m_slots[i];
+        CNetCmdSlot* slot = &m_owner->Session()->m_slots[i];
         if (slot != NULL && slot->m_state == NETSLOT_ACTIVE && slot->m_isDraining == false
             && m_drainAckFlags[i] == 0) {
             return 0;

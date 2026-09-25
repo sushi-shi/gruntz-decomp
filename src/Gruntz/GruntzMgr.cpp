@@ -1202,7 +1202,7 @@ i32 CGruntzMgr::FinishLevel(b32 pauseGame, b32 pauseMusic) {
     if (m_curState && m_curState->Update() == GAMESTATE_MULTI) {
 
         i32 activePlayers = 0;
-        CNetCmdSlot* slot = static_cast<CMulti*>(m_curState)->m_session->m_slots;
+        CNetCmdSlot* slot = static_cast<CMulti*>(m_curState)->Session()->m_slots;
         for (i32 remainingSlots = 4; remainingSlots != 0; remainingSlots--) {
             if (slot != NULL && slot->m_state == NETSLOT_ACTIVE) {
                 activePlayers++;

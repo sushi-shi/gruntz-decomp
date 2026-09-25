@@ -9,7 +9,6 @@
 #include <MsgParam.h>
 #include <Net/DPlaySessionFlags.h>
 #include <Net/NetGuids.h>
-#include <Net/NetMgrInline.h>
 #include <Net/NetProviderFindKind.h>
 #include <Net/NetProviderNode.h>
 
