@@ -44,7 +44,10 @@ storage, control flow, calling conventions, referents) outranks any score.
    and compares only that TU (a few seconds), even after a header edit other
    TUs include, and reports MAX changes only: an edited function against the
    MAX it replaces, an unchanged one only if it beats its MAX. CUR dips of
-   unchanged functions are not reported and need no attention. Run
+   unchanged functions are not reported and need no attention. An edit that
+   keeps CUR but lowers MAX through the new source hash is a `reset`: the loop
+   records it in `docs/todos/syntactic-recovery.tsv` for a later pass; do not
+   chase it while matching. Run
    `gruntz build` (every TU, no gates) when the change spans units.
 5. Gates run only when preparing a merge: `gruntz build verify` (MAX gate plus
    the fast and normal tiers).
