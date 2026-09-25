@@ -79,7 +79,7 @@ counts alone: follow the first divergence.
 ### register / schedule
 
 Reached by elimination only. First exhaust the source-shape checklist
-(`AGENTS.md`; matcher `references/levers.md`): widths, cv/ref boundaries,
+(matcher `references/levers.md`): widths, cv/ref boundaries,
 local census and lifetimes, helper boundaries, statement grouping. One
 misplaced register op can mean the TYPE is wrong (a member array modeled as
 scalars, a lost aggregate). Then use classified `gruntz permute state|variants`

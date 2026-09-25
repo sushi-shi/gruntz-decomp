@@ -80,7 +80,7 @@ commit criterion. Keep correct modeling changes even if unrelated current fuzzy
 moves, subject to the MAX gate.
 
 Before handoff, refresh compilation/comparison and inspect MAX and raw
-matching evidence (`AGENTS.md` "Validation Cadence"): campaigns run no test
+matching evidence (`AGENTS.md` "Tests"): campaigns run no test
 suites; run `gruntz.permute` tests only when you change the permuter itself.
 Consolidate a genuinely reusable compiler mechanism under the admission rules
 in `docs/patterns/README.md`; do not add campaign logs or per-function closure

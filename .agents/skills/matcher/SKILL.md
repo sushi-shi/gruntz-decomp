@@ -69,7 +69,7 @@ For each candidate, name the source change and the expected emitted delta,
 compile the real TU (`gruntz build base compare`), and compare from the first
 real divergence: instructions, constants, call/CFG structure, and ordered
 relocations. Fuzzy alone is insufficient. A single dip does not reject a
-sourced or structurally convergent base (EXPLORATORY DESCENT), but confirm the
+sourced or structurally convergent base, but confirm the
 feature you are chasing was absent from the baseline first.
 
 "Checked" means a real-TU A/B was compiled, or retail/source evidence proves
@@ -93,7 +93,7 @@ Details and proven exceptions: the `wall-identifier` skill.
 
 ## Model real entities
 
-`AGENTS.md` "Source Modeling Rules" governs. In practice:
+`AGENTS.md` "Source rules" governs. In practice:
 
 - Casts are symptoms: retype the member or canonical class until placeholder
   casts disappear. Raw offsets, casts of `this`, and `.cpp`-local views are
@@ -130,7 +130,7 @@ Details and proven exceptions: the `wall-identifier` skill.
 Before committing: re-audit raw constants and ordered referents, stage only
 the focused source, reusable pattern docs, and baseline rows, run the full
 `gruntz build`, and require `git diff --check` clean. Matching work runs no
-test suites (`AGENTS.md` "Validation Cadence").
+test suites (`AGENTS.md` "Tests").
 
 Report the historical-MAX change, the structural correction, its evidence and
 compiler controls, the referent verdict, and any remaining wall.
