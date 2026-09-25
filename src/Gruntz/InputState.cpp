@@ -54,51 +54,39 @@ i32 CInputState::SelectDevices(DirectInputMgr2* manager, InputDeviceSel selectio
             break;
         }
         case INPUTDEV_JOYSTICK1: {
-            CJoystickDevice* d = (manager->m_joysticks.GetSize() > 0)
-                                     ? static_cast<CJoystickDevice*>(manager->m_joysticks.GetAt(0))
-                                     : NULL;
+            CJoystickDevice* d = manager->GetJoystick(0);
             m_joystick = d;
             m_primaryDevice = d;
             break;
         }
         case INPUTDEV_JOYSTICK2: {
-            CJoystickDevice* d = (manager->m_joysticks.GetSize() > 1)
-                                     ? static_cast<CJoystickDevice*>(manager->m_joysticks.GetAt(1))
-                                     : NULL;
+            CJoystickDevice* d = manager->GetJoystick(1);
             m_joystick = d;
             m_primaryDevice = d;
             break;
         }
         case INPUTDEV_JOYSTICK3: {
-            CJoystickDevice* d = (manager->m_joysticks.GetSize() > 2)
-                                     ? static_cast<CJoystickDevice*>(manager->m_joysticks.GetAt(2))
-                                     : NULL;
+            CJoystickDevice* d = manager->GetJoystick(2);
             m_joystick = d;
             m_primaryDevice = d;
             break;
         }
         case INPUTDEV_JOYSTICK4: {
-            CJoystickDevice* d = (manager->m_joysticks.GetSize() > 3)
-                                     ? static_cast<CJoystickDevice*>(manager->m_joysticks.GetAt(3))
-                                     : NULL;
+            CJoystickDevice* d = manager->GetJoystick(3);
             m_joystick = d;
             m_primaryDevice = d;
             break;
         }
         case INPUTDEV_KEYBOARD_JOYSTICK1: {
             m_keyboard = manager->m_keyboard;
-            CJoystickDevice* d = (manager->m_joysticks.GetSize() > 0)
-                                     ? static_cast<CJoystickDevice*>(manager->m_joysticks.GetAt(0))
-                                     : NULL;
+            CJoystickDevice* d = manager->GetJoystick(0);
             m_joystick = d;
             m_deviceGroup = manager->CreateDeviceGroup(m_keyboard, d, NULL, NULL, NULL, NULL, 0);
             break;
         }
         case INPUTDEV_KEYBOARD_JOYSTICK1_MOUSE: {
             m_keyboard = manager->m_keyboard;
-            CJoystickDevice* d = (manager->m_joysticks.GetSize() > 0)
-                                     ? static_cast<CJoystickDevice*>(manager->m_joysticks.GetAt(0))
-                                     : NULL;
+            CJoystickDevice* d = manager->GetJoystick(0);
             m_joystick = d;
             m_mouse = manager->m_mouse;
             m_deviceGroup = manager->CreateDeviceGroup(m_keyboard, d, m_mouse, NULL, NULL, NULL, 0);

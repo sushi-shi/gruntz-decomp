@@ -361,12 +361,11 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         return 0;
     }
 
-    i32 joystickCount = g_inputMgr->m_joysticks.GetSize();
     g_actorList = g_inputMgr->CreateDeviceGroup(
-        joystickCount > 0 ? static_cast<CInputDevBase*>(g_inputMgr->m_joysticks[0]) : NULL,
-        joystickCount > 1 ? static_cast<CInputDevBase*>(g_inputMgr->m_joysticks[1]) : NULL,
-        joystickCount > 2 ? static_cast<CInputDevBase*>(g_inputMgr->m_joysticks[2]) : NULL,
-        joystickCount > 3 ? static_cast<CInputDevBase*>(g_inputMgr->m_joysticks[3]) : NULL,
+        g_inputMgr->GetJoystick(0),
+        g_inputMgr->GetJoystick(1),
+        g_inputMgr->GetJoystick(2),
+        g_inputMgr->GetJoystick(3),
         NULL,
         NULL,
         0

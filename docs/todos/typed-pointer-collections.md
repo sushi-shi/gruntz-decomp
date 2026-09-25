@@ -30,6 +30,11 @@ source layer the original developers wrote around each collection.
   (CGrunt and CBattlezMapConfig). `ValidateUnitPath` keeps its local head
   `POSITION` (converting it costs 0.7). Walks and `RemoveHead` stay raw.
 
+- `DirectInputMgr2::m_joysticks`: bounds-checked `GetJoystick(i)` (NULL out
+  of range), the shape `Shutdown` expands; `CInputState::SelectDevices` and
+  `CGruntzMgr::Run` call it. `PollJoysticks`/`ResetJoystickStates` index
+  without the check in retail and stay raw.
+
 ## Open
 
 For each collection, decide which of these the source was:

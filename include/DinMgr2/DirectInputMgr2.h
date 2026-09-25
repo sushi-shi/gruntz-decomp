@@ -115,6 +115,12 @@ public:
     CKeyboardDevice* m_keyboard;
     CPtrArray m_joysticks;
     CPtrList m_deviceGroups;
+
+    CJoystickDevice* GetJoystick(i32 index) {
+        return (index >= 0 && index < m_joysticks.GetSize())
+                   ? static_cast<CJoystickDevice*>(m_joysticks.GetAt(index))
+                   : NULL;
+    }
 };
 
 inline DirectInputMgr2::~DirectInputMgr2() {
