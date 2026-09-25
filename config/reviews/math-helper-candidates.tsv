@@ -1,0 +1,33 @@
+id	owner	candidate	status	evidence	reopen_when
+shade-min-hsv	DDrawMgr/ShadeTableCache.cpp	Globals::Min for HsvShiftTable channels	take-inline	0x14e540 42.821102 to 72.995415; unchanged GammaTable 95.057144 to 100; no ShadeTableCache exact losses	Recheck if full gated build disagrees
+shade-min-add-int	DDrawMgr/ShadeTableCache.cpp	Globals::Min for AddTable integer clamps	defer	AddTable 94.40659 to 89.31868 with both float and integer Min; float-only restores 94.40659	Retail-source or composed helper evidence that improves MAX
+shade-min-add-float	DDrawMgr/ShadeTableCache.cpp	Globals::Min for AddTable float channels	defer	Float-only is codegen-flat at 94.40659 with HsvShiftTable Min present	Sourced helper use or positive caller change
+menu-point	Gruntz/SBI_MenuItem.cpp	CPoint render-position local	take-type	0xe82a0 74.03571 to 100 using existing CImage anchor scalar layout; no exact loss in owner TU	Recheck if retail layout or full gated build disagrees
+cursor-target-coord	Gruntz/SBI_RectOnly.cpp	Coord target-identity Set instead of scalar stores	defer	0x105800 PlaceCursorTarget remains 97.818184 with existing Coord::Set; PR72 constructor assignment is a different boundary	Typed constructor evidence and a VC5 caller A/B without global POD breakage
+minimap-size	Gruntz/Minimap.cpp	CSize GetGridSize local	defer	0xa33e0 AllocSurface stays exact but both DrawBorder scores stay 88.09677 and 96.793106	Evidence that the type is authored or a composed Minimap TU win
+coord-construct	Gruntz/CoordNode.h	Coord constructors and indexing	pending	Default constructor makes main TriggerMgrGrid.cpp goto cross initialized hitTile; cannot import whole header	Review constructors at individual use sites without changing POD lifetime globally
+coord-set	Gruntz/CoordNode.h	Coord::Set	already-main	Main db135497c has the pinned 0x75a10 member	Reopen only on contradictory retail evidence
+coord-equality	Gruntz/CoordNode.h	COORD_EQUALS_COMPONENTS	defer	Full-header macro plus TmDeflectStep use leaves 0x6f2f0 at 99.45767; no positive source evidence yet	Sourced macro use or a caller where it improves MAX
+coord-arithmetic	Gruntz/CoordNode.h	Coord arithmetic and comparisons	pending	PR72 1b21b0a44; inspect operator use sites	Measured VC5 family comparison
+coord-magnitude	Gruntz/CoordNode.h	Coord dot, length, distance, absolute value	pending	PR72 1b21b0a44; inspect FP and integer widths	Measured VC5 family comparison
+coord-clamp	Gruntz/CoordNode.h	Coord min, max, clamp	pending	Isolated Min/Max at CenterOnGroup 0x7cf40: 91.90266 to 88.66372 and five unrelated exact drops; reverted	Positive source evidence and macro-boundary trial
+coord-tile	Gruntz/CoordNode.h	ScreenTile, TileCenter, SnapTileCenter	pending	PR72 1b21b0a44; compare inline and macro boundaries	Measured VC5 family comparison
+float2	Gruntz/DoubleVector.h	FloatVector2 value API	pending	PR72 1b21b0a44; layout and callers unreviewed	Positive retail owner and caller evidence
+double2	Gruntz/DoubleVector.h	DoubleVector2 value API	pending	PR72 1b21b0a44; inspect existing main type first	Measured VC5 family comparison
+double3	Gruntz/DoubleVector.h	DoubleVector3 value API	pending	PR72 1b21b0a44; inspect existing main type first	Measured VC5 family comparison
+tile-shift	Wap32/TileGeometry.h	TileShiftForSize and TILE_SHIFT_INTO	pending	PR72 1b21b0a44; compare loop boundaries	Measured VC5 family comparison
+tile-components	Wap32/TileGeometry.h	pixel-to-tile, tile-center and snapping expressions	pending	384 SCREEN_TILE_COMPONENT uses in TmDeflectStep are codegen-flat at 99.45767; full #72 still falls to 83.3681	Test other owners and source evidence before adopting
+tile-clamp-distance	Wap32/TileGeometry.h	component clamp and squared distance	pending	PR72 1b21b0a44; inspect evaluation count	Measured VC5 family comparison
+rect-construct	MakeRect.h;RectMacros.h	RECT/POINT/SIZE construction and ordered stores	pending	PR72 1b21b0a44; preserve native SDK widths	Measured VC5 family comparison
+rect-dimensions	RectMacros.h	dimensions, centers, edge offsets, translations	pending	RECT_WIDTH/HEIGHT at both Minimap DrawBorder functions are codegen-flat 88.09677 and 96.793106; PR72's exact gain needs another source-shape lever	Recheck earlier Minimap TU changes and source evidence
+rect-interpolate	RectInterpolation.h	scalar and rectangle interpolation	pending	PR72 1b21b0a44; inspect FP conversions	Measured VC5 family comparison
+direction-offset	Gruntz/CardinalDirectionOffset.h;Gruntz/DirectionRingOffset.h;Gruntz/GruntDirectionOffset.h	direction coordinate offsets	pending	PR72 1b21b0a44; inspect domain and branch spelling	Measured VC5 family comparison
+motion-bias	Gruntz/MotionInline.h	PixelRoundBias	pending	PR72 1b21b0a44; inspect FP scheduling	Measured VC5 family comparison
+motion-arrival	Gruntz/MotionInline.h	ArrivalVelocity	pending	PR72 1b21b0a44; inspect FP temporaries	Measured VC5 family comparison
+motion-axis	Gruntz/MotionInline.h	StepMotionAxis	pending	PR72 1b21b0a44; inspect control flow and state	Measured VC5 family comparison
+random-extent	Gruntz/RandomExtentPoint.h	SelectRandomExtentPoint	pending	PR72 1b21b0a44; inspect random call order	Measured VC5 family comparison
+flag-domains	Gruntz/PlayerSlotFlags.h;Gruntz/ScrollEdgeFlags.h	slot and scroll flag operations	pending	PR72 1b21b0a44; verify enum and ABI domains	Measured VC5 family comparison
+image-clip	Image/ImageClipMacros.h	image placement and clipping	pending	PR72 1b21b0a44; inspect rectangle ownership	Measured VC5 family comparison
+world-rect	Wwd/WwdObjMgrInline.h	world-space rectangle translation	pending	PR72 1b21b0a44; inspect object owner	Measured VC5 family comparison
+text-display	Gruntz/TextBounds.h;Gruntz/VideoModeInline.h	text bounds and video-mode geometry	pending	PR72 1b21b0a44; inspect consumers	Measured VC5 family comparison
+grunt-move	Gruntz/GruntMovementInline.h;Gruntz/GruntMovementMacros.h;Gruntz/GruntMoveCollisionInline.h	position, arrival and collision geometry	pending	PR72 1b21b0a44; inspect complete movement family	Measured VC5 family comparison
