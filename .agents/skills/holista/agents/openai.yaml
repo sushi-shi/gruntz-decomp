@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gruntz Holista"
+  short_description: "Recover inline helpers hidden inside functions"
+  default_prompt: "Use $holista to sample Gruntz functions, find statements below their abstraction level, and restore the original inline helpers across every site."

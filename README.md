@@ -118,7 +118,7 @@ flake.nix                     Nix dev environment (one shell: analysis + MSVC5/W
 .clang-format                 the Rust-like house style (applied by clang-format)
 .githooks/pre-commit          auto-formats staged src/+include/ on commit
 AGENTS.md                     the agent guide (CLAUDE.md is a symlink to it)
-.agents/skills/               agent skills: matcher, wall-identifier, permute
+.agents/skills/               agent skills: matcher, wall-identifier, permute, holista
                               (.claude/skills links here)
 build/           (gitignored) ALL generated/fetched state: base + target objs, the
                               synthetic PDB, claims + bindings.tsv, the clangd db,
