@@ -49,6 +49,7 @@
 #include <Ints.h>
 #include <Io/SaveGame.h>
 #include <Net/NetMgr.h>
+#include <RectMacros.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezArchive.h>
 #include <Rez/RezArchiveEntry.h>
@@ -265,10 +266,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
     {
         LevelCoordRect rect;
-        rect.left = 0;
-        rect.top = 0;
-        rect.right = 0x1df;
-        rect.bottom = 0x1df;
+        SET_RECT_COMPONENTS(rect, 0, 0, 0x1df, 0x1df);
         m_modeSize.cx = SCREEN_W_PX;
         m_modeSize.cy = SCREEN_H_PX;
         world->m_level->UpdatePlaneViewports(&rect);

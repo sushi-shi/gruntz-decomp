@@ -18,6 +18,7 @@
 #include <Image/ImagePaletteNode.h>
 #include <Image/RezDecodeKind.h>
 #include <Pix16.h>
+#include <RectMacros.h>
 #include <Rez/RezMgr.h>
 
 #include <string.h>
@@ -943,10 +944,7 @@ void CDib::FillRect(RECT* r, u32 color) {
 RVA(0x00176da0, 0x4b)
 void CDib::FillRect(i32 dx, i32 dy, RECT* src, u32 color) {
     RECT r;
-    r.left = dx;
-    r.top = dy;
-    r.right = src->right + dx - src->left;
-    r.bottom = src->bottom - src->top + dy;
+    SET_RECT_COMPONENTS(r, dx, dy, src->right + dx - src->left, src->bottom - src->top + dy);
     FillRect(&r, color);
 }
 

@@ -13,6 +13,7 @@
 #include <Gruntz/StatusBarDock.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Ints.h>
+#include <RectMacros.h>
 #include <Rez/FrameClock.h>
 #include <Wwd/WwdFile.h>
 
@@ -98,10 +99,13 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
     }
 
     CDDrawSurfaceMgr* o = pm->m_world;
-    pm->m_viewBounds.left = o->m_level->m_mainPlane->m_planeViewRect.left - 0x60;
-    pm->m_viewBounds.top = o->m_level->m_mainPlane->m_planeViewRect.top - 0x60;
-    pm->m_viewBounds.right = o->m_level->m_mainPlane->m_planeViewRect.right + 0x60;
-    pm->m_viewBounds.bottom = o->m_level->m_mainPlane->m_planeViewRect.bottom + 0x60;
+    SET_RECT_COMPONENTS(
+        pm->m_viewBounds,
+        o->m_level->m_mainPlane->m_planeViewRect.left - 0x60,
+        o->m_level->m_mainPlane->m_planeViewRect.top - 0x60,
+        o->m_level->m_mainPlane->m_planeViewRect.right + 0x60,
+        o->m_level->m_mainPlane->m_planeViewRect.bottom + 0x60
+    );
 }
 
 RVA(0x000ec1c0, 0x43)

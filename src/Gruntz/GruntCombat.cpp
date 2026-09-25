@@ -74,6 +74,7 @@
 #include <Ints.h>
 #include <Io/FileMem.h>
 #include <Lith/BDefs.h>
+#include <RectMacros.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/Object.h>
@@ -664,15 +665,9 @@ i32 CGrunt::PathScan() {
 
     {
         RECT gb;
-        gb.left = 0;
-        gb.top = 0;
-        gb.right = grid->m_width;
-        gb.bottom = grid->m_height;
+        SET_RECT_COMPONENTS(gb, 0, 0, grid->m_width, grid->m_height);
         RECT rs;
-        rs.left = start.m_x - 2;
-        rs.top = start.m_y - 2;
-        rs.right = start.m_x + 2;
-        rs.bottom = start.m_y + 2;
+        SET_RECT_COMPONENTS(rs, start.m_x - 2, start.m_y - 2, start.m_x + 2, start.m_y + 2);
         RECT box;
         const RECT* pr = &rs;
         if (pr != NULL) {
@@ -771,10 +766,7 @@ i32 CGrunt::PathScan() {
     GRID_CLIP_NULL(grid);
 
     RECT nb;
-    nb.left = target.m_x - 4;
-    nb.top = target.m_y - 4;
-    nb.right = target.m_x + 4;
-    nb.bottom = target.m_y + 4;
+    SET_RECT_COMPONENTS(nb, target.m_x - 4, target.m_y - 4, target.m_x + 4, target.m_y + 4);
     if (::PtInRect(&nb, start.m_x, start.m_y)) {
 
         CRect rb(0, 0, grid->m_width, grid->m_height);
@@ -2322,10 +2314,7 @@ afterTile:
             CMapMgr* grid = g_gameReg->m_tileGrid;
 
             RECT rs;
-            rs.left = col5 - reach;
-            rs.top = row5 - reach;
-            rs.right = reach + col5 + 1;
-            rs.bottom = reach + row5 + 1;
+            SET_RECT_COMPONENTS(rs, col5 - reach, row5 - reach, reach + col5 + 1, reach + row5 + 1);
             GRID_CLIP_INL(grid, &rs)
         }
         if (m_arrivalState != AI_NONE) {

@@ -28,6 +28,7 @@
 #include <Image/ImageSet.h>
 #include <Io/FileMem.h>
 #include <MakeRect.h>
+#include <RectMacros.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/WapObj.h>
 #include <Wwd/WwdSpatialMgr.h>
@@ -92,14 +93,8 @@ i32 CDDrawWorkerHost::Read(
     m_tileWidthPx = pd->m_tilePixelWidth;
     m_tileHeightPx = pd->m_tilePixelHeight;
     m_zCoord = pd->m_zCoord;
-    m_viewportRect.left = bounds->left;
-    m_viewportRect.top = bounds->top;
-    m_viewportRect.right = bounds->right;
-    m_viewportRect.bottom = bounds->bottom;
-    m_tileRect.left = 0;
-    m_tileRect.top = 0;
-    m_tileRect.right = m_tileWidthPx;
-    m_tileRect.bottom = m_tileHeightPx;
+    SET_RECT_COMPONENTS(m_viewportRect, bounds->left, bounds->top, bounds->right, bounds->bottom);
+    SET_RECT_COMPONENTS(m_tileRect, 0, 0, m_tileWidthPx, m_tileHeightPx);
     m_planePixelWidth = m_tileWidthPx * m_tileColumns;
     m_planePixelHeight = m_tileHeightPx * m_tileRows;
 
@@ -176,10 +171,13 @@ i32 CDDrawWorkerHost::InitGeometry(
     m_tileRows = tileRows;
     m_tileWidthPx = tileWidthPx;
     m_tileHeightPx = tileHeightPx;
-    m_viewportRect.left = viewportRect->left;
-    m_viewportRect.top = viewportRect->top;
-    m_viewportRect.right = viewportRect->right;
-    m_viewportRect.bottom = viewportRect->bottom;
+    SET_RECT_COMPONENTS(
+        m_viewportRect,
+        viewportRect->left,
+        viewportRect->top,
+        viewportRect->right,
+        viewportRect->bottom
+    );
     m_movementXPercent = movementXPercent;
     m_movementYPercent = movementYPercent;
     m_tileRect.left = 0;
@@ -342,10 +340,7 @@ RVA(0x00161f00, 0x75)
 void CDDrawWorkerHost::SetTileSize(i32 tileWidthPx, i32 tileHeightPx) {
     m_tileWidthPx = tileWidthPx;
     m_tileHeightPx = tileHeightPx;
-    m_tileRect.left = 0;
-    m_tileRect.top = 0;
-    m_tileRect.right = tileWidthPx;
-    m_tileRect.bottom = tileHeightPx;
+    SET_RECT_COMPONENTS(m_tileRect, 0, 0, tileWidthPx, tileHeightPx);
     m_planePixelWidth = m_tileColumns * tileWidthPx;
     m_planePixelHeight = m_tileRows * tileHeightPx;
     m_shiftX = 0;
@@ -512,10 +507,7 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
     }
 
     RECT rc;
-    rc.left = 0;
-    rc.top = 0;
-    rc.right = m_planePixelWidth - 1;
-    rc.bottom = m_planePixelHeight - 1;
+    SET_RECT_COMPONENTS(rc, 0, 0, m_planePixelWidth - 1, m_planePixelHeight - 1);
 
     CDDrawSurfaceMgr* reg = OwnerMgr();
     CDDrawChildGroup* activeGroup = reg->m_childGroup;
@@ -707,22 +699,10 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
     obj->m_damage = *p++;
     obj->m_smarts = *p++;
     obj->m_health = *p++;
-    obj->m_extent.left = *p++;
-    obj->m_extent.top = *p++;
-    obj->m_extent.right = *p++;
-    obj->m_extent.bottom = *p++;
-    obj->m_area.left = *p++;
-    obj->m_area.top = *p++;
-    obj->m_area.right = *p++;
-    obj->m_area.bottom = *p++;
-    obj->m_switchRect.left = *p++;
-    obj->m_switchRect.top = *p++;
-    obj->m_switchRect.right = *p++;
-    obj->m_switchRect.bottom = *p++;
-    obj->m_clip.left = *p++;
-    obj->m_clip.top = *p++;
-    obj->m_clip.right = *p++;
-    obj->m_clip.bottom = *p++;
+    SET_RECT_COMPONENTS(obj->m_extent, *p++, *p++, *p++, *p++);
+    SET_RECT_COMPONENTS(obj->m_area, *p++, *p++, *p++, *p++);
+    SET_RECT_COMPONENTS(obj->m_switchRect, *p++, *p++, *p++, *p++);
+    SET_RECT_COMPONENTS(obj->m_clip, *p++, *p++, *p++, *p++);
 
     if (obj->m_area.left == 0 && obj->m_area.right == 0) {
         obj->m_area.left = COORD_UNSET;
@@ -737,14 +717,8 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
         obj->m_switchRect.left = COORD_UNSET;
     }
 
-    anim->m_userRect1.left = *p++;
-    anim->m_userRect1.top = *p++;
-    anim->m_userRect1.right = *p++;
-    anim->m_userRect1.bottom = *p++;
-    anim->m_userRect2.left = *p++;
-    anim->m_userRect2.top = *p++;
-    anim->m_userRect2.right = *p++;
-    anim->m_userRect2.bottom = *p++;
+    SET_RECT_COMPONENTS(anim->m_userRect1, *p++, *p++, *p++, *p++);
+    SET_RECT_COMPONENTS(anim->m_userRect2, *p++, *p++, *p++, *p++);
     anim->m_user1 = *p++;
     anim->m_user2 = *p++;
     anim->m_user3 = *p++;
@@ -875,26 +849,17 @@ void CDDrawWorkerHost::UpdateActiveRegionSizes() {
     smallSize.m_h = level->m_smallActiveRegionSize.m_h;
 
     CWwdSpatialMgr* spatialMgr = m_spatialMgr;
-    spatialMgr->m_defaultRegionRect.left = 0;
-    spatialMgr->m_defaultRegionRect.top = 0;
-    spatialMgr->m_defaultRegionRect.right = defaultWidth - 1;
-    spatialMgr->m_defaultRegionRect.bottom = defaultHeight - 1;
+    SET_RECT_COMPONENTS(spatialMgr->m_defaultRegionRect, 0, 0, defaultWidth - 1, defaultHeight - 1);
     spatialMgr->m_defaultRegionHalfWidth = defaultWidth / 2;
     spatialMgr->m_defaultRegionHalfHeight = defaultHeight / 2;
 
     spatialMgr = m_spatialMgr;
-    spatialMgr->m_largeRegionRect.left = 0;
-    spatialMgr->m_largeRegionRect.top = 0;
-    spatialMgr->m_largeRegionRect.right = largeSize.m_w - 1;
-    spatialMgr->m_largeRegionRect.bottom = largeSize.m_h - 1;
+    SET_RECT_COMPONENTS(spatialMgr->m_largeRegionRect, 0, 0, largeSize.m_w - 1, largeSize.m_h - 1);
     spatialMgr->m_largeRegionHalfWidth = largeSize.m_w / 2;
     spatialMgr->m_largeRegionHalfHeight = largeSize.m_h / 2;
 
     spatialMgr = m_spatialMgr;
-    spatialMgr->m_smallRegionRect.left = 0;
-    spatialMgr->m_smallRegionRect.top = 0;
-    spatialMgr->m_smallRegionRect.right = smallSize.m_w - 1;
-    spatialMgr->m_smallRegionRect.bottom = smallSize.m_h - 1;
+    SET_RECT_COMPONENTS(spatialMgr->m_smallRegionRect, 0, 0, smallSize.m_w - 1, smallSize.m_h - 1);
     spatialMgr->m_smallRegionHalfWidth = smallSize.m_w / 2;
     spatialMgr->m_smallRegionHalfHeight = smallSize.m_h / 2;
 

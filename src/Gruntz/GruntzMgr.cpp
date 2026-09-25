@@ -1708,10 +1708,13 @@ void CGruntzMgr::RecomputeViewScale() {
     if (v->m_mainPlane == NULL) {
         return;
     }
-    m_viewBounds.left = (v->m_mainPlane)->m_planeViewRect.left - 0x60;
-    m_viewBounds.top = (m_world->m_level->m_mainPlane)->m_planeViewRect.top - 0x60;
-    m_viewBounds.right = (m_world->m_level->m_mainPlane)->m_planeViewRect.right + 0x60;
-    m_viewBounds.bottom = (m_world->m_level->m_mainPlane)->m_planeViewRect.bottom + 0x60;
+    SET_RECT_COMPONENTS(
+        m_viewBounds,
+        (v->m_mainPlane)->m_planeViewRect.left - 0x60,
+        (m_world->m_level->m_mainPlane)->m_planeViewRect.top - 0x60,
+        (m_world->m_level->m_mainPlane)->m_planeViewRect.right + 0x60,
+        (m_world->m_level->m_mainPlane)->m_planeViewRect.bottom + 0x60
+    );
 }
 
 // @dead-code

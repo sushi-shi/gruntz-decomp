@@ -268,10 +268,7 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
                 CDDSurface* tgt = (g_gameReg->m_world->m_drawTarget)->m_backPair->m_surface;
 
                 RECT below;
-                below.left = m_barRect.left;
-                below.top = m_barRect.bottom;
-                below.right = m_barRect.right;
-                below.bottom = v;
+                SET_RECT_COMPONENTS(below, m_barRect.left, m_barRect.bottom, m_barRect.right, v);
                 tgt->Restore(&below, 0);
             }
             CDDrawWorker* cfg = m_world->FindWorker("GAME_STATUSBAR_MAINBAR");
@@ -3530,10 +3527,7 @@ i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 item, i32 x, i32 y) {
     i32 t = y - 0xc;
     i32 rr = x + 0xc;
     i32 b = y + 0xc;
-    m_fallingItemRect.left = l;
-    m_fallingItemRect.top = t;
-    m_fallingItemRect.right = rr;
-    m_fallingItemRect.bottom = b;
+    SET_RECT_COMPONENTS(m_fallingItemRect, l, t, rr, b);
     if (n) {
 
         RECT rc;
@@ -3825,10 +3819,13 @@ i32 CStatusBarMgr::StartChipMachineCycle() {
         RECT rc;
         i32 x = m_barRect.left;
         i32 y = m_barRect.top;
-        rc.left = m_machineItemRect.left + x;
-        rc.top = m_machineItemRect.top + y;
-        rc.right = m_machineItemRect.right + x;
-        rc.bottom = m_machineItemRect.bottom + y;
+        SET_RECT_COMPONENTS(
+            rc,
+            m_machineItemRect.left + x,
+            m_machineItemRect.top + y,
+            m_machineItemRect.right + x,
+            m_machineItemRect.bottom + y
+        );
         m_machineItemSprite->m_rect = rc;
     }
     NotifyAllSlots();

@@ -32,6 +32,7 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/VoiceManager.h>
 #include <Ints.h>
+#include <RectMacros.h>
 #include <Wap32/TileGeometry.h>
 #include <ZTools/ZDArray.h>
 
@@ -49,10 +50,13 @@ i32 CGrunt::StepDefenderBehavior() {
     i32 scanRadius = m_defenderRadius + m_reachRect.right - 1;
     i32 trimRadius = m_defenderRadius - 1;
     RECT scanBounds;
-    scanBounds.left = defenderTile.m_x - scanRadius;
-    scanBounds.top = defenderTile.m_y - scanRadius;
-    scanBounds.right = defenderTile.m_x + scanRadius + 1;
-    scanBounds.bottom = defenderTile.m_y + scanRadius + 1;
+    SET_RECT_COMPONENTS(
+        scanBounds,
+        defenderTile.m_x - scanRadius,
+        defenderTile.m_y - scanRadius,
+        defenderTile.m_x + scanRadius + 1,
+        defenderTile.m_y + scanRadius + 1
+    );
 
     {
         Coord pt;

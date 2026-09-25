@@ -7,6 +7,7 @@
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/WwdGrid.h>
+#include <RectMacros.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/Object.h>
 #include <Wwd/MoveFlags.h>
@@ -405,22 +406,31 @@ i32 CWwdSpatialMgr::Init(
                    ->Setup(*levelBounds, defaultGridCellSize[0], defaultGridCellSize[1])
             && m_largeRegionGrid->Setup(*levelBounds, largeGridCellSize[0], largeGridCellSize[1])
             && m_smallRegionGrid->Setup(*levelBounds, smallGridCellSize[0], smallGridCellSize[1])) {
-            m_defaultRegionRect.left = 0;
-            m_defaultRegionRect.top = 0;
-            m_defaultRegionRect.right = defaultRegionSize[0] - 1;
-            m_defaultRegionRect.bottom = defaultRegionSize[1] - 1;
+            SET_RECT_COMPONENTS(
+                m_defaultRegionRect,
+                0,
+                0,
+                defaultRegionSize[0] - 1,
+                defaultRegionSize[1] - 1
+            );
             m_defaultRegionHalfWidth = defaultRegionSize[0] / 2;
             m_defaultRegionHalfHeight = defaultRegionSize[1] / 2;
-            m_largeRegionRect.left = 0;
-            m_largeRegionRect.top = 0;
-            m_largeRegionRect.right = largeRegionSize[0] - 1;
-            m_largeRegionRect.bottom = largeRegionSize[1] - 1;
+            SET_RECT_COMPONENTS(
+                m_largeRegionRect,
+                0,
+                0,
+                largeRegionSize[0] - 1,
+                largeRegionSize[1] - 1
+            );
             m_largeRegionHalfWidth = largeRegionSize[0] / 2;
             m_largeRegionHalfHeight = largeRegionSize[1] / 2;
-            m_smallRegionRect.left = 0;
-            m_smallRegionRect.top = 0;
-            m_smallRegionRect.right = smallRegionSize[0] - 1;
-            m_smallRegionRect.bottom = smallRegionSize[1] - 1;
+            SET_RECT_COMPONENTS(
+                m_smallRegionRect,
+                0,
+                0,
+                smallRegionSize[0] - 1,
+                smallRegionSize[1] - 1
+            );
             m_smallRegionHalfWidth = smallRegionSize[0] / 2;
             m_smallRegionHalfHeight = smallRegionSize[1] / 2;
             m_activeGroup = owner;

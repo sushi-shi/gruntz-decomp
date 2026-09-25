@@ -1538,10 +1538,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
             self->m_inGame = true;
             self->m_hudSuppressed = false;
             RECT rect;
-            rect.left = 0;
-            rect.top = 0;
-            rect.right = SCREEN_W_PX;
-            rect.bottom = SCREEN_H_PX;
+            SET_RECT_COMPONENTS(rect, 0, 0, SCREEN_W_PX, SCREEN_H_PX);
             if (scr.LoadString(IDS_CONTINUE_PROMPT)) {
                 DrawTextToFrontSurface(self->m_world, &scr, &rect, 0x78, 1, 0xff, 0xff, 0, 1);
             }
@@ -7110,10 +7107,7 @@ i32 CPlay::ScanShuffleQuads() {
             scatter[perm[1]] = p->m_extent.top;
             scatter[perm[2]] = p->m_extent.right;
             scatter[perm[3]] = p->m_extent.bottom;
-            p->m_extent.left = scatter[0];
-            p->m_extent.top = scatter[1];
-            p->m_extent.right = scatter[2];
-            p->m_extent.bottom = scatter[3];
+            SET_RECT_COMPONENTS(p->m_extent, scatter[0], scatter[1], scatter[2], scatter[3]);
         }
     }
     return 1;

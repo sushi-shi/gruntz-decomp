@@ -75,6 +75,7 @@
 #include <Gruntz/WwdGameReg.h>
 #include <Image/CImage.h>
 #include <Ints.h>
+#include <RectMacros.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezArchive.h>
 #include <Rez/RezArchiveDir.h>
@@ -2663,10 +2664,7 @@ void CMultiBootyState::DrawBattleStats() {
     }
 
     s.Format("BATTLE STATZ");
-    rc.left = 0x96;
-    rc.top = 0xf;
-    rc.right = SCREEN_W_PX;
-    rc.bottom = 0x73;
+    SET_RECT_COMPONENTS(rc, 0x96, 0xf, SCREEN_W_PX, 0x73);
     DrawTextToOverlaySurface(m_world, &s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
 }
 

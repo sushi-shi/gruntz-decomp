@@ -9,6 +9,7 @@
 #include <Enums.h>
 #include <Gruntz/ColorTint.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <RectMacros.h>
 #include <Rez/FrameClock.h>
 
 #include <string.h>
@@ -477,10 +478,7 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
             calc.top = measuredBottom;
             calc.bottom = rb;
             calc.right = rr;
-            cur.left = measuredLeft;
-            cur.top = measuredBottom;
-            cur.right = rr;
-            cur.bottom = rb;
+            SET_RECT_COMPONENTS(cur, measuredLeft, measuredBottom, rr, rb);
             SetTextColor(hdc, TCLR_WHITE);
         }
         if (savedFont) {
