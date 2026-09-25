@@ -6,6 +6,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/DrawSubWorkerInline.h>
 #include <DDrawMgr/LogicRecord.h>
 #include <DDrawMgr/LogicRecordRegistry.h>
 #include <Enums.h>
@@ -20,7 +21,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-// @early-stop
 RVA(0x001660f0, 0xd1)
 void CWwdDotObject::Render(CDDrawSurfacePair* dst) {
     if (m_clip.left == COORD_UNSET) {

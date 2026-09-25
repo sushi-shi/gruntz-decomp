@@ -11,6 +11,7 @@
 #include <DDrawMgr/DDrawWorker.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/DrawSubWorkerInline.h>
 #include <DDrawMgr/LogicRecord.h>
 #include <DDrawMgr/LogicRecordRegistry.h>
 #include <DDrawMgr/WorkerLookup.h>
@@ -682,11 +683,10 @@ i32 CGameObject::ResolveLinkedObject(b32 gate) {
                 m_carrierId,
                 found
             )
-            != false) {
-            m_carrier = found;
-            return 1;
+            == false) {
+            found = NULL;
         }
-        m_carrier = NULL;
+        m_carrier = found;
         return 1;
     }
     m_carrier = NULL;

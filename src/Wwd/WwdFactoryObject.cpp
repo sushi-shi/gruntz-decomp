@@ -247,7 +247,9 @@ void CAniAdvanceCursor::BindSprite(CWwdSpriteObject* src) {
     m_finished = true;
     m_animation = NULL;
     m_scale = 1.0f;
-    m_consumeDraw = src->OwnerMgr()->m_flags & 0x40;
+    m_consumeDraw =
+        HAS(static_cast<DDrawSurfaceMgrFlags>(src->OwnerMgr()->m_flags),
+            SURFACEMGR_CONSUME_ANIMATION_DRAW_VALUES);
     m_useElapsedTime = true;
 }
 

@@ -7,7 +7,6 @@
 #include <DDrawMgr/DDSurface.h>
 #include <Enums.h>
 #include <Ints.h>
-#include <MakeRect.h>
 #include <Wap32/WapObj.h>
 
 #include <stddef.h>
@@ -57,12 +56,6 @@ public:
 
     b32 m_ownsSurface;
 };
-
-inline void CDrawSubWorker::BlitDirtyRect(CDDrawSurfacePair* other, i32* pos, i32* size) {
-    RECT rc;
-    rc = MakeRect(pos[0], pos[1], pos[0] + size[0], pos[1] + size[1]);
-    m_surface->BltEx(&rc, other->m_surface, &rc, DDBLT_WAIT, NULL);
-}
 
 #define BLT_SURFACE_PAIR_SELF(dst, src)                                                            \
     (dst)->m_surface->BltFast(0, 0, (src)->m_surface, &(src)->m_srcRect, DDBLTFAST_WAIT)
