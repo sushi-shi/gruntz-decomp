@@ -86,6 +86,27 @@ void CNetCmdSlot::ClearSyncState() {
     ResetNetCmdSlotCommandWindow(this);
 }
 
+inline void CNetCmdSlot::QueueRecord(GruntRec* record, u8 entryCount, char* cursor, i32 remaining) {
+    AddRecord(record);
+
+    for (i32 i = entryCount & 0xff; i > 0; i--) {
+        u8 commandFlags = static_cast<u8>(*cursor);
+        CGruntzCommand* command;
+        if (commandFlags & 1) {
+            command = CGruntzSingleCommand::Allocate();
+        } else if (commandFlags & 2) {
+            command = CGruntzMultiCommand::Allocate();
+        } else {
+            continue;
+        }
+        i32 consumed = command->DecodePacket(cursor, remaining);
+        command->m_submitFlags = COMMAND_SUBMIT_SCHEDULED;
+        remaining -= consumed;
+        cursor += consumed;
+        m_owner->m_mgr->m_commandMgr->EnqueueCommand(false, command);
+    }
+}
+
 RVA(0x000c0c70, 0x20f)
 i32 CNetCmdSlot::ProcessPacket(i32 playerId, char* packet, i32 packetSize) {
     if (packet == NULL) {
@@ -170,24 +191,7 @@ i32 CNetCmdSlot::ProcessPacket(i32 playerId, char* packet, i32 packetSize) {
     record->m_sequence = sequence;
     record->m_payloadLength = remaining;
     memcpy(record->m_payload, cursor, remaining);
-    AddRecord(record);
-
-    for (i32 i = entryCount & 0xff; i > 0; i--) {
-        u8 commandFlags = static_cast<u8>(*cursor);
-        CGruntzCommand* command;
-        if (commandFlags & 1) {
-            command = CGruntzSingleCommand::Allocate();
-        } else if (commandFlags & 2) {
-            command = CGruntzMultiCommand::Allocate();
-        } else {
-            continue;
-        }
-        i32 consumed = command->DecodePacket(cursor, remaining);
-        command->m_submitFlags = COMMAND_SUBMIT_SCHEDULED;
-        remaining -= consumed;
-        cursor += consumed;
-        m_owner->m_mgr->m_commandMgr->EnqueueCommand(false, command);
-    }
+    QueueRecord(record, entryCount, cursor, remaining);
     return 1;
 }
 

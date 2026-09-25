@@ -168,6 +168,7 @@ struct CNetCmdSlot {
     i32 ProcessPacket(i32 playerId, char* packet, i32 packetSize);
 
     i32 DrainAcknowledged();
+    inline void QueueRecord(GruntRec* record, u8 entryCount, char* cursor, i32 remaining);
     b32 IsDraining() const {
         return m_isDraining;
     }
