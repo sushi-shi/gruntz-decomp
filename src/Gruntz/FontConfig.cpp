@@ -549,8 +549,7 @@ i32 CFontConfig::Draw3DText(
     DrawTextA(hdc, text, strlen(text), &rc, DT_CALCRECT | DT_WORDBREAK | DT_CENTER);
     i32 hoff = (dst->right + rc.left - dst->left - rc.right) / 2;
     i32 voff = (dst->bottom - dst->top + rc.top - rc.bottom) / 2;
-    rc.left += hoff;
-    rc.right += hoff;
+    OFFSET_RECT_X_EDGES(rc, hoff, hoff);
     rc.top += voff;
     rc.bottom += voff;
     if (shadow) {
