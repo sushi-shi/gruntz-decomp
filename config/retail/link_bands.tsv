@@ -14,7 +14,7 @@
 # static .LIBs, so no clean game/engine address split exists); static-libs
 # begins after the last pulled claim (0x193a20+0x78); the EH band and tail pad
 # are byte-measured. Data evidence: the MFC/lib/RTTI edges are the proven
-# contribution-group boundaries of docs/link-section-audit.md
+# contribution-group boundaries of https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/link-section-audit.md
 # (data_denominator MFC_LO/MFC_HI/LIB_RDATA_HI/RTTI_LO/RTTI_HI); the .bss
 # boundary is .data's raw size.
 lo	hi	band	note

@@ -59,7 +59,7 @@ SP3_LINK_VERSION   = "5.10.7303"
 SP3_CVTRES_VERSION = "5.00.1668"
 
 # Static libs that MUST be present for Function-ID signature generation
-# (docs/libraries-and-funcid.md): the static MT CRT and static release MFC 4.2.
+# (https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/libraries-and-funcid.md): the static MT CRT and static release MFC 4.2.
 REQUIRED_LIBS = ["LIBCMT.LIB", "NAFXCW.LIB"]
 
 

@@ -7,6 +7,24 @@
 //! image-set registry keys. A non-empty tile handle is split exactly as retail
 //! `CDDrawWorkerHost::Draw` @0x162010 does: high 16 bits select the image set
 //! and low 16 bits select its frame.
+//!
+//! ```text
+//! On disk
+//! +-------------------+------------------------------------+
+//! | header (0x5f4)    | main block (optionally zlib)       |
+//! +-------------------+------------------------------------+
+//!
+//! Parser input after decompression
+//! +-------------------+------------------------------------+
+//! | copied header     | uncompressed main block           |
+//! +-------------------+------------------------------------+
+//! ^                   ^
+//! byte 0              plane headers, tile grids, names,
+//!                     objects and tile attributes
+//! ```
+//!
+//! Offsets are relative to byte 0 of the complete uncompressed image,
+//! not to the start of the main block. Field accessors below own the layout.
 
 use core::{fmt, str};
 

@@ -33,7 +33,7 @@
 //! `Gruntz.REZ`), left behind because each rewrite appended a fresh body rather
 //! than overwriting in place. A one-pass writer has nothing to orphan, so its
 //! output is shorter and its `root_dir_pos` differs. See
-//! `docs/formats/rez-v1.md`.
+//! `https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/formats/rez-v1.md`.
 
 use alloc::string::String;
 use alloc::vec::Vec;

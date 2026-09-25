@@ -100,7 +100,7 @@ GAP_CAP_BSS = 0x4000
 
 def obj_align(kind: str, size: int, ratchet: int) -> int:
     """c2 per-object alignment (validated 41/41 on a blind TU - see
-    docs/compiler-data-layout.md). ratchet = section's max align so far."""
+    https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/compiler-data-layout.md). ratchet = section's max align so far."""
     if kind == "double":
         return 8
     if kind == "scalar":

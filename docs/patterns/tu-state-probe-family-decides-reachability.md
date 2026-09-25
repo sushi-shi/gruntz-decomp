@@ -1,138 +1,26 @@
-# A FLAT declaration-count sweep is evidence about the PROBE, not about the function — vary the declaration KIND
+# Translation-unit context can change an unchanged function
 
-tags: cpp:include cpp:class cpp:typedef cpp:enum | asm:mov asm:sar asm:shl | topic:wall topic:regalloc topic:codegen-idiom
-symptoms: a function whose residue is a canonical operand/term order or a register rotation
-sits at exactly the same fuzzy% across a whole sweep of N throwaway prototypes (N = 1..24,
-no digit of the score moves), so the wall is written off as unreachable — yet its `hist_pct`
-proves a much higher score once existed
-confidence: 9/10 (12 functions, 3 TUs, 81 measured TU states)
-variants: declaration-count-window-steers-regalloc.md, commutative-operand-order-is-canonical.md
+Recorded VC5 experiments changed unrelated declarations while leaving a target
+body unchanged and obtained different allocation or scheduling. Function text
+alone is therefore not a complete description of compiler input.
 
-[`declaration-count-window-steers-regalloc.md`](declaration-count-window-steers-regalloc.md)
-sweeps **N throwaway prototypes**. That is one probe FAMILY, and it only reaches the
-functions whose parse-state phase that family happens to step through. Three families over
-the same six TUs, 81 states, measured 2026-08-10:
+The [historical IL experiment](https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/patterns/tu-state-probe-family-decides-reachability.md#quantified-2026-08-13-the-input-mechanism-is-c1xx-symbol-handle-renumbering-and-each-probe-kind-has-a-measured-stride)
+used /d1il<prefix> to capture the ex/gl/in/sy streams and /d2il<prefix> to replay
+them. Its reported replay reproduced the changed output. This locates an input
+difference at the frontend/backend boundary; it does not prove the downstream
+decision is made by the frontend. See the separate
+[backend investigation](https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/relevations/cl5-globalopt-has-a-511-handle-phase.md).
 
-| probe family | where | `CMinimap::BuildRockyRoadzPalette` | `CShadeTableCache::HsvShiftTable` | `CSpriteRef::Build` |
-|---|---|---|---|---|
-| `int f_i(int);` x N, N=1..24 | after the includes | **97.58 flat, all 24** | **84.85 flat, all 24** | 83.2 - 99.82 |
-| `struct { int m_i; int f_i(int){...} }` x N, N=1..26 | above the includes | 96.8 - 97.52 | 83.1 - 86.52 | 96.47 flat |
-| **MIXED kinds, split across both points** | both | 96.7 - **99.50** | 83.1 - **94.31** | 83.0 - **100.00** |
+For a controlled comparison, keep compiler, flags, headers, and target source
+fixed; retain both objects and compare ordered referents as well as instructions.
+IL byte differences need interpretation, including source-line records.
 
-The mixed family draws each declaration from `typedef` / `enum` / `struct` / class-with-an-
-inline-member / `extern` / file-scope `static` datum / prototype / `static` function WITH A
-BODY, seeded by N, and splits them between the two insertion points. Each kind advances cl
-5.0's parse state differently (the same finding the probe matrix in
-[`commutative-operand-order-is-canonical.md`](commutative-operand-order-is-canonical.md)
-reports for a single slot), so a mixture visits states no uniform run reaches.
+A flat sweep means those probes did not move that input. Neither uniform nor
+mixed probes prove a function unreachable, a TU permanently insensitive, or a
+particular backend cause. Historical handle strides are measurements of those
+probes, not portable compiler constants.
 
-```python
-kind = rng.randrange(8)                  # the whole point: NOT one kind
-"typedef int T;" | "enum E { A=0 };" | "struct S { int a; };"
-"class C { public: int a; int f(int x){ return x + a; } };"
-"extern int x;" | "static int d = 1;" | "int p(int,int);"
-"static int fn(int x) { return x * 2; }"
-top = rng.randrange(0, n + 1)            # and NOT one insertion point
-```
-
-WALL-CLASSIFICATION rule, not a matching trick: **"the sweep was flat" is only a valid
-wall report when the sweep varied the declaration KIND.** Eight `CMinimap` palette
-builders, `HsvShiftTable`, `SubTable` and `CDDrawWorkerHost::Draw` all read as immovable
-under a uniform prototype run and every one of them moved 2-13 points under the mixed one;
-`CSpriteRef::Build` and `CShadeTableCache::AlphaTable` reached 100.00 under a
-mixed state and were parked as proven reachable. That historical result did not
-establish that AlphaTable's source expression was final: a later clean
-expression-tree A/B found that its flat `red | green | blue` form is exact
-without a probe (see
-[`sequenced-accumulator-beats-or-tree-canonicalization.md`](sequenced-accumulator-beats-or-tree-canonicalization.md)).
-The probes are diagnostics: bank the MAX, then delete them.
-
-`CGameLevel::ProbeFootSoft` provides a stronger calibration at the last few bytes. Its
-99.9863 residue was only the order of two independent member loads feeding one addition;
-its CFG, size, and zero-relocation multiset already agreed. Three local expression and
-statement forms compiled byte-identically, but **44 of 60** mixed TU states emitted the
-391-byte retail function exactly. Trial 1 was retained as a historical 100.00 MAX for the
-unchanged source hash `a7b2facaa76c`, then the declarations were discarded. Thus an
-almost-exact, relocation-free two-load rotation can still be a C1 handle-state wall, and
-a small local spelling matrix does not refute that classification.
-
-## Quantified (2026-08-13): the input mechanism is C1XX symbol-handle renumbering, and each probe kind has a measured stride
-
-The hypothesis above — "each kind advances cl 5.0's parse state differently" — is now a
-measured number, proven at the IL boundary. MSVC 5.0's front end can be tapped
-(`/d1il<prefix>` captures the four C1XX→C2 streams `ex`/`gl`/`in`/`sy`; `/d2il<prefix>`
-feeds them back), and an appended unused declaration renumbers every later symbol handle
-while the symbol NAME sequence stays identical — HoMM3's C1 signature, reproduced on our
-compiler. The codegen delta reproduces from the IL bytes alone through one unchanged C2
-(`fed(IL_B) == plain B`), proving that the perturbation enters through the C1XX streams.
-That does **not** by itself prove the target decision occurs in C1: `ProbeHeadSoft` now
-shows byte-identical target IL whose code changes in C2's `/Og` pass as later symbol
-records move through an exact 511-handle phase. See
-[`../relevations/cl5-globalopt-has-a-511-handle-phase.md`](../relevations/cl5-globalopt-has-a-511-handle-phase.md).
-
-Measured handle strides per appended probe kind (SpriteRef.cpp, cpp-rtti; the C front
-end differs — a C struct costs +1):
-
-| probe kind | handle Δ |
-|---|---|
-| `typedef` / `extern` datum | +1 |
-| `enum` | +2 |
-| prototype / `static` function with body | +3 |
-| `struct` | +7 |
-| class with an inline member | +11 |
-
-A uniform sweep of one kind steps the counter in a fixed stride and can only visit that
-residue class — that is WHY flat single-family sweeps stay flat. Mixing kinds is what
-changes the stride.
-
-## A real semantic enum partition can retain the reached state
-
-The handle stride is not limited to disposable probes. `CShadeTableCache::HsvShiftTable`
-provides a source-backed control: one six-value constant enum conflated flash-ramp defaults
-with per-channel clamp constants, while two enums express the actual domains. On the same
-function body, the one-enum state scored 87.3716%, the two-domain state scored 95.6422%,
-and adding a third enum selected an 86.98% island. Removing the enum also reached the high
-island, but destroys the named-domain model and is therefore not a valid retained spelling.
-Moving the declaration and renaming identifiers were flat controls; the extra enum's measured
-`+2` handle stride is the causal lever.
-
-This is a permanent source change only when the partition is independently semantic. A public
-header changes every including TU's handle sequence, so run a full build and preserve their
-historical MAX values; do not relocate a genuinely shared domain or invent an unused enum to
-protect current scores. In this case the split is ramp defaults versus channel clamps, and the
-later G/R/B carrier reconstruction raises Hsv further to 99.5413% in the full build.
-
-State-reachability is PER-TU, and the tap sorts a TU in ~8 minutes before any
-sweep is spent on it: run the five-kind probe panel through the causation leg
-(`causation.py <tu> <profile> "<probe>"`) and count .text diff bytes. Zero
-across the panel = the TU's residue is C2-ANCHORED (proven for
-gruntphasestep, font, grunt, playercommandstep on 2026-08-13 - every object
-delta was symbol-table text); the movers this pattern originally measured
-(the DDrawMgr palette TUs) are the reachable class. Panel FIRST, sweep only
-on reachable TUs. Full recipe, normalization rules (the `ex` stream carries u8/u16
-source-line records that must be masked), and the probe scripts: regenerate with the
-capture commands in `build/il-probe/REPORT.md` (evidence run 2026-08-13; scripts
-`ilcap.py` / `sweep.py` / `causation.py` beside it).
-
-## Boundary (2026-08-17): a mixed-kind sweep can still be flat, and then it is evidence about C2
-
-The rule above ("a flat sweep is a valid wall report only when it varied the
-declaration KIND") stands, but its converse does not: a flat MIXED sweep is not
-proof the probe was wrong. `CCheckpointTriggerSwitchLogic::SwitchDown` 0x00112b70
-is flat across 60 mixed-kind states AND across 12 declaration permutations, 10
-tail spellings, accessor/aggregate/inline-helper/address-tree forms, and 16 flag
-sets — and the IL tap shows why: C1 hands C2 a different tuple stream for two
-declaration orders and C2 emits byte-identical code. The residue is the C2
-register-picker's request order.
-[`../relevations/cl5-c2-register-picker-is-a-rotating-cursor.md`](../relevations/cl5-c2-register-picker-is-a-rotating-cursor.md)
-names the machinery (`FUN_0042b2c4`, the rotating cursor `DAT_004911a8`) and the
-one source lever that is real. Detection: if the pair is a scalar/scalar swap on
-values that live to the end of the body, the mixed sweep will be flat — skip it.
-
-The stronger 2026-08-18 control is a 129-state `CFaderShape::RenderTile` campaign:
-all states keep the same six-byte frame-home swap, while `ProbeHeadSoft` crosses
-repeatable boundaries exactly 511 handles apart. A one-island campaign is therefore a
-positive routing result: stop state permutation and search structure. The compiler RE
-and pass-disable evidence are in the 511-handle relevation linked above. That routing was
-later validated: a TU-local inline scalar-copy helper changed RenderTile's optimized graph
-and closed it exactly, while declaration-state forests could not move the old graph.
+Do not retain unused declarations, includes, or fake locals to select an output.
+Use the bounded [permuter workflow](../permuter.md), not an unbounded hunt for
+a favorable score. Source correctness and the current MAX policy still govern
+what is kept.

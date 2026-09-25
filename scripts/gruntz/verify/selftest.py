@@ -3160,7 +3160,7 @@ class InlineModelFlagControls(unittest.TestCase):
 
 class ExeMapWriteControls(unittest.TestCase):
     """`python3 -m gruntz.sema.exe_map --help` ignored the flag and rewrote
-    docs/exe-map/ - a help request with a side effect on the tracked tree."""
+    the tracked docs tree. Generated maps now default to build/exe-map/."""
 
     def test_help_does_not_write(self):
         import contextlib
@@ -5180,7 +5180,7 @@ class ResidueClassifierControls(unittest.TestCase):
         self.assertEqual(classify(residual_of(mb, mt)[1], mb, mt)[0], "none")
 
     def test_a_missing_arm_temp_is_the_register_case(self):
-        """docs/patterns/arm-result-temp-controls-copies-and-shared-store.md:
+        """https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/patterns/arm-result-temp-controls-copies-and-shared-store.md:
         retail's arm ends in `mov <callee-saved>,<scratch>` and the base is
         exactly that many instructions short."""
         self.assertEqual(self._kind(

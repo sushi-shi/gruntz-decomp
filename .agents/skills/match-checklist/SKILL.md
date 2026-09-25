@@ -30,8 +30,9 @@ owner and history, first divergence, call/CFG structure, constants, and ordered
 referents. Consider the applicable source-shape families, especially real inline
 helpers, and distinguish measured controls from untried hypotheses.
 
-Keep concise results in the handoff. Persist reusable compiler findings only in
-`docs/patterns/` and durable adoption/rejection/defer decisions, their evidence,
+Keep concise results in the handoff. Consolidate reusable compiler findings
+under the admission rules in `docs/patterns/README.md`; do not add one entry per
+closure. Keep durable adoption/rejection/defer decisions, their evidence,
 and reopening conditions only in the canonical lineage ledger. Do not create a
 hand-maintained wall ledger. The optional
 [plan template](references/function-plan.md) is only for an explicitly requested
@@ -63,8 +64,8 @@ git show <candidate-commit>
 
 For `hist_pct > best_pct`, inspect the exact source-hash transition and
 `gruntz walls priors` before inventing new forms. For other walls, search
-`docs/patterns/INDEX.md` by the observed instruction, CFG, C++ construct, and
-wall-class tags. Read the selected pattern files completely. Use the historical
+`docs/patterns/INDEX.md` for a relevant mechanism; it is not a per-function
+catalog or proof that a wall is bounded. Read selected entries completely. Use the historical
 catalog in [references/exact-match-levers.md](references/exact-match-levers.md)
 to ensure the search is not limited to the first familiar explanation.
 

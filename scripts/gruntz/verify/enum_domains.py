@@ -1,6 +1,6 @@
 """gruntz.verify.enum_domains - the enum-domain layer's structural gate (fast).
 
-Ported invariants (docs/enum-modeling-plan.md, docs/patterns/enum-domains.md):
+Ported invariants (https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/enum-modeling-plan.md, https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/patterns/enum-domains.md):
   1. SPLIT-WIDTH AGREEMENT (fatal): every GZ_ENUM_STORAGE(N, S) matches the
      domain's declared narrow storage.
   2. STORAGE NAMES A REAL DOMAIN (fatal).

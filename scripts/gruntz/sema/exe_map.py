@@ -1,13 +1,12 @@
 """gruntz.sema.exe_map - the retail .text layout map, generated from the Model.
 
-    python3 -m gruntz.sema.exe_map            # regenerate docs/exe-map/
+    python3 -m gruntz.sema.exe_map            # regenerate build/exe-map/
                                               # scatter_core.{json,html}
     python3 -m gruntz.sema.exe_map --out DIR  # write the pair somewhere else
     python3 -m gruntz.sema.exe_map --check    # report only, write nothing
 
-The one generator in the sema package (every other sema module is a read-only
-view; this one exists to WRITE the docs/exe-map site, superseding the frozen
-scripts/gruntz-old/core/exe_map.py + docs/exe-map/scatter.py pair).
+The generated map belongs in build/, not the tracked documentation tree.
+Use --out to select another output directory or --check for a read-only summary.
 
 What the scatter encodes
 ------------------------
@@ -29,9 +28,8 @@ names).  Their kept copies are the KEEPER unit's bytes (the Model's
 Linker bands (`kind` thunk/eh) are not TU rows at all.
 
 Inputs: build/gen/bindings.tsv (the Model), config/units.toml (unit -> source
-path).  Outputs: docs/exe-map/scatter_core.json (same row shape as the frozen
-generator) and docs/exe-map/scatter_core.html (self-contained, no external
-assets).
+path). Outputs: build/exe-map/scatter_core.json and scatter_core.html
+(self-contained, no external assets).
 """
 
 from __future__ import annotations
@@ -40,10 +38,10 @@ import json
 import re
 import statistics as st
 
-from gruntz.core.paths import BUILD, REPO
+from gruntz.core.paths import BUILD
 
 BINDINGS = BUILD / "gen/bindings.tsv"
-OUT_DIR = REPO / "docs/exe-map"
+OUT_DIR = BUILD / "exe-map"
 
 #: COMDAT-pooled name classes (verbatim port of the frozen scatter.py filter).
 _DTOR_RE = re.compile(

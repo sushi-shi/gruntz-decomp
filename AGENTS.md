@@ -66,15 +66,13 @@
     with the real compiler. The verb refuses to invent `cb`: a guessed deficit
     printed as model output is indistinguishable from a measured one.
   * front-end TU-state: the cl 5.0 IL tap (capture `/d1il`, feed `/d2il`;
-    recipe and normalization in the tu-state-probe pattern's quantified
-    section) - an inert-source A/B whose IL differs is C1 handle state, and
-    the probe-kind stride table (typedef +1 ... class +11) is the steering
-    lever.
-  * regalloc: one piece is proven on cl 5.0's `c2.exe` - the preference
-    table `{EAX,ECX,EDX,ESI,EDI,EBX,EBP}` is present, and the first
-    call-crossing value USED after the call takes EBX; reorder that value's
-    first post-call use to steer the pick
-    (docs/relevations/cl5-callcrossing-ebx-first-by-use-schedule.md).
+    see docs/patterns/tu-state-probe-family-decides-reachability.md). Compare
+    controlled inputs and replay before attributing a difference to handle
+    state. Historical probe strides are not universal compiler constants.
+  * regalloc: test authentic widths, helper boundaries, locals, and lifetimes
+    with controlled compiler inputs. The historical first-post-call-use/EBX
+    recipe was contradicted by later controls; do not treat it or a register
+    table alone as a universal source-order rule.
 - Levers are applied as disposable A/B tests. Never retain unused includes,
   declarations, fake locals, manual `STATE` probes, volatile carriers, or
   source distortions to steer codegen. Blind random hill-climbing stays
@@ -315,10 +313,10 @@
   disposable TU-state experiment, bank while exact, remove the experiment,
   rebuild, and keep the proof. Do not call a current dip a regression while
   the MAX gate remains green.
-- A broken wall's reusable mechanism goes to `docs/patterns/` (+ INDEX) with
-  the controlled A/B evidence and detection signature; a genuinely bounded
-  wall keeps its state in the derived inventory (the report and the MAX
-  ledger), never in a hand-kept ledger file or C++ comments.
+- Keep `docs/patterns/` a small mechanism reference, not a wall diary. Follow
+  its README admission rules; consolidate rather than add a file per closure.
+  Function state belongs in the derived report/MAX inventory, not a pattern
+  entry, hand-kept ledger, or reconstruction-history C++ comment.
 
 ## Source Modeling Rules
 
@@ -391,7 +389,7 @@
   (a row with no emitting base obj is an error);
   `class=copy` names the per-TU copies of header statics (the GruntDirStatics
   device), whose owner is the emitting TU. Details:
-  `docs/data-attribution.md` §3b-iii.
+  `docs/data-attribution.md`, "Header statics and COMMONs".
 
 - The marker vocabulary is closed by `docs/comment-markers.md`. `@early-stop`
   means a complete, evidence-bounded body, not missing logic or unresolved
@@ -413,20 +411,24 @@
 
 ## Quality And Change Discipline
 
+- Keep docs about ongoing usage and contracts. Tool inputs belong in `config/`,
+  generated reports in ignored `build/`, and old investigations in Git history.
+  Keep useful format diagrams beside parsers; do not duplicate field maps or
+  maintain PR diaries, score snapshots, or mirrored references in `docs/`.
 - Keep every build gate green. Cleanliness work removes the underlying modeling
   debt rather than hiding its textual signature.
-- Put a newly proven reusable MSVC idiom in `docs/patterns/` and its index rather
-  than leaving it only in a source comment or commit message.
+- Update an existing compiler-pattern entry when new evidence changes its
+  reusable mechanism. Add an entry only for a distinct, reproducible mechanism.
 - When a build refresh disproves matching doctrine, document both the failed
   assumption and the recognizable reverse-audit signature. Do not preserve an
   outdated explanation merely because an old cache or high-water score once
   appeared to support it.
-- Treat a reproducible matching surprise as a matching pattern, including
-  cross-function MSVC optimizer-state effects. Record the controlled A/B
-  evidence, detection signature, and safe reverse-use heuristic in
-  `docs/patterns/` plus `docs/patterns/INDEX.md`; correct older pattern claims
-  that the new evidence falsifies. Do not leave this knowledge only in a source
-  comment or commit message.
+- A matching surprise is an observation, not automatically a compiler rule.
+  Keep pattern entries short: signature, reproducible evidence, and limits.
+  Remove falsified claims rather than accumulating contradictory addenda.
+  Do not add score tables, campaign logs, confidence ratings, or universal
+  impossibility claims from a finite search. Historical links are provenance,
+  not current authority.
 - Do not investigate ordinary current-score or exact-count movement caused by a
   correctness fix. Codegen perturbation is expected and unrelated functions do
   not impose a cost. Investigate only evidence of a substantive modeling error,

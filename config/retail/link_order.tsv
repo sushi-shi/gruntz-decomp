@@ -3,7 +3,7 @@
 # arrival order): one row per unit's contiguous contribution band.
 # Regenerator: gruntz-old/audit/link_line.py (frozen) until the rebuild grows one.
 #
-# Mechanism (docs/link-text-layout.md): .text contributions append in arrival
+# Mechanism (https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/link-text-layout.md): .text contributions append in arrival
 # order, so ascending band-start RVA == the order the objects reached link.exe.
 # class=cmdline rows are the command line itself (evidence `thunk(n)` = proven by
 # n incremental-thunk targets; `position` = inferred from the boundary only).

@@ -169,8 +169,9 @@ it does not list as cl 5.0-proven must be re-proved here before use.
   proof.
 - Stop grinding once controlled evidence bounds a residue. Keep the state in
   the derived report/MAX ledger and use `@early-stop` only when the body is
-  complete; record reusable mechanisms in `docs/patterns/`, not in a hand-kept
-  wall ledger or reconstruction-history C++ comments.
+  complete. Consolidate reusable mechanisms under `docs/patterns/README.md`;
+  do not add a pattern per closure, a hand-kept wall ledger, or reconstruction-
+  history C++ comments.
 
 `@early-stop` is permitted only for a complete reconstruction with a reproducible
 bounded residue. It never excuses missing logic, wrong referents, or an unresolved

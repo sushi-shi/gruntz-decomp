@@ -2,7 +2,7 @@
 
 link.exe 5.10 lays each .obj's .text down as ONE CONTIGUOUS block, input
 sections in cl's emission order (== file order), objs in link-line order
-(docs/link-text-layout.md). A faithful reconstruction therefore satisfies:
+(https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/link-text-layout.md). A faithful reconstruction therefore satisfies:
 
   INTRA-TU  RVA() functions appear in FILE ORDER strictly increasing in
             retail RVA, spans non-overlapping;

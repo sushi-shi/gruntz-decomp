@@ -377,7 +377,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--workers', type=int, default=4)
     parser.add_argument('--output', type=Path, default=ROOT / 'build/audits/template-models')
-    parser.add_argument('--reviews', type=Path, default=ROOT / 'docs/compiler-method-review.tsv')
+    parser.add_argument('--reviews', type=Path, default=ROOT / 'config/reviews/compiler-methods.tsv')
     parser.add_argument('--queue-only', action='store_true', help='Apply reviews to an existing fingerprinted census')
     args = parser.parse_args()
     if args.queue_only:

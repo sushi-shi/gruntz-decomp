@@ -93,7 +93,7 @@ template<> DATA(0x0024c780)
 CActReg CActRegPool<CTimeBomb>::s_table(ACT_ID_FIRST, ACT_ID_LAST);
 
 // @interleaver ??_G/??1 COMDATs - retail's kept copies sit in serialobjectfactory.obj's
-// contribution (first obj on the link line realizing these vtables; docs/link-text-layout.md).
+// contribution (reviewed ownership in config/retail/link_order.tsv).
 RVA_COMPGEN(0x00012980, 0x1e, ??_GCProjectile@@UAEPAXI@Z)
 RVA_COMPGEN(0x000129d0, 0x1e, ??_GCBoomerang@@UAEPAXI@Z)
 RVA_COMPGEN(0x00012a00, 0x5, ??1CBoomerang@@UAE@XZ)

@@ -1,7 +1,7 @@
 """gruntz.sema.gaps - derive unclaimed code between adjacent same-file claims.
 
 This is the source-claim arithmetic oracle from
-docs/patterns/same-file-interior-gap-scan-finds-missing-bodies.md. It deliberately
+https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/patterns/same-file-interior-gap-scan-finds-missing-bodies.md. It deliberately
 does not depend on Ghidra's function carving: tiny accessors, thunks, and compiler-
 generated bodies are exactly what an analyzer tends to omit.
 
@@ -32,7 +32,7 @@ CHANNEL_MACRO = {
 
 # Bounds read from retail _cinit's push/push/call _initterm sequence. The table
 # is the authoritative census described by
-# docs/patterns/crt-xc-table-is-the-static-initializer-census.md.
+# https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/patterns/crt-xc-table-is-the-static-initializer-census.md.
 XC_START = 0x00208000
 XC_END = 0x002098A0
 

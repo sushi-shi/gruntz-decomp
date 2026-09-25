@@ -31,7 +31,7 @@ the classifier names it from the NET residual, most-actionable first:
     none           nothing survives the mask
 
 The arm-result classes implement the detection signature of
-docs/patterns/arm-result-temp-controls-copies-and-shared-store.md; `--arm`
+https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/patterns/arm-result-temp-controls-copies-and-shared-store.md; `--arm`
 answers the same question directly over the WHOLE stream (every member store
 and every callee-saved register copy, not just the ones inside a diff chunk),
 which is the sensitive form.
@@ -43,7 +43,7 @@ has a scratch or 8-bit destination and the callee-saved-copy signature is
 absent; 11 rows were hand-read against the retail bytes and 0 were an arm
 result. Read the printed evidence before believing the kind name -
 `target has []` is the tool saying it found nothing. Detail and the withdrawn
-"43 rows" claim: docs/patterns/equal-frame-residual-census.md.
+"43 rows" claim: https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/patterns/equal-frame-residual-census.md.
 
 Thirteen encoding mirrors are normalized away, because each was measured
 mislabelling real rows: the addend of a RELOCATED call or jump (position

@@ -1,7 +1,7 @@
 # units.toml - the per-translation-unit build manifest (single source of truth).
 #
 # PURE DATA - no prose. Per-unit rationale (why a TU exists / was split / absorbed
-# another) lives in docs/tu-partition-brief.md; the compile-flag evidence lives in
+# another) lives in https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/tu-partition-brief.md; the compile-flag evidence lives in
 # docs/linker-flags.md. This file is machine-edited in bulk, so comments here both
 # rot and get eaten by sweeps.
 #
@@ -29,7 +29,7 @@ cpp-rtti = ["/nologo", "/c", "/O2", "/MT", "/GX", "/GR"]
 cpp-rtti-noeh = ["/nologo", "/c", "/O2", "/MT", "/GR"]
 # Bute's two container globals: retail's `$E` dynamic-init helpers carry the ctor and
 # dtor bodies INLINE, which MSVC 5 only does without /GX (proven by probe - see
-# docs/patterns/gx-blocks-ctor-inlining-into-e-helper.md).
+# https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/patterns/gx-blocks-ctor-inlining-into-e-helper.md).
 cpp-noeh = ["/nologo", "/c", "/O2", "/MT"]
 
 [[unit]]

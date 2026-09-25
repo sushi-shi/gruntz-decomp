@@ -115,111 +115,17 @@ offsets/types/identities/addends. A state-bearing exact candidate is retained as
 `gruntz sema -` is batch mode (newline-delimited view commands on stdin,
 answered against one loaded Model and image).
 
-## Renames — reading old commits, old docs, old comments
+## Derived outputs and review inputs
 
-The 2026-08 rebuild replaced `scripts/gruntz-old/`. These are the retired
-spellings and what they mean now. A row marked *removed* has no successor:
-the mechanism is gone, not moved.
+`python3 -m gruntz.sema.exe_map` writes the layout visualization to
+`build/exe-map/`; `--check` reports without writing. The view is a model-based
+heuristic, not original debug information.
 
-| old spelling | today |
-| :-- | :-- |
-| `configure.py` | `gruntz configure` / `python3 -m gruntz.graph` |
-| `gruntz status`, `gruntz report`, `gruntz.match.status` | `gruntz verify status` / `check` / `bank` |
-| `gruntz.match.fingerprints` | `gruntz verify fingerprints` |
-| `gruntz.match.gate_selftest` | `gruntz verify selftest` |
-| `gruntz.match.verify_unique_names` | `gruntz verify unique-names` |
-| `gruntz.match.verify_library_overlap` | `gruntz verify library-overlap` |
-| `gruntz.match.residual_queue`, `gruntz.audit.max_divergence`, `gruntz match-queue`, `wall-break.md` | `gruntz walls inventory` (derived, never hand-kept) |
-| `gruntz.match.verify_stubs` | *removed* — zero `@stub` sites remain |
-| `gruntz.cleanliness.board` | `gruntz verify board` |
-| `gruntz.cleanliness.caller_callee` | `gruntz verify caller-callee` |
-| `gruntz.cleanliness.vtable_bans` | `gruntz verify bans` |
-| `gruntz.cleanliness.{vtable_coverage,vtable_slot_binding,vtable_virtuality,class_vtables,vtable_secondary}` | `gruntz verify vtables` (scan: `gruntz verify vtable-scan`) |
-| `gruntz.cleanliness.{declared_only,view_debt}` | `gruntz verify undefined-closure` |
-| `gruntz.cleanliness.foldable_views`, `gruntz.audit.{single_view,view_typedef}` | *removed* — the view-folding campaign closed at 0 |
-| `gruntz.audit.alloc_size` | `gruntz verify alloc-size` |
-| `gruntz.audit.assert_relocs` | `gruntz verify assert-relocs` |
-| `gruntz.audit.{cast_ledger,nested_static_casts,self_recursion}` | `gruntz verify casts` (`--nested`) |
-| `gruntz.audit.{label_style,compgen_order}` | `gruntz verify label-style` |
-| `gruntz.audit.data_access_map` | `gruntz verify data-access` (`--suppressed` re-proves every suppression) |
-| `gruntz.audit.data_coverage` | `gruntz verify data-coverage` |
-| pinned static-library data relocation audit | `gruntz verify library-data-refs` |
-| `gruntz.audit.data_relocs` | `gruntz verify data-relocs` |
-| `gruntz.audit.data_tu_order` | `gruntz verify data-tu-order` |
-| `gruntz.audit.tu_order_check` | `gruntz verify tu-order` |
-| `gruntz.audit.enum_domains` | `gruntz verify enum-domains` |
-| `gruntz.audit.include_order` | `gruntz verify include-order` |
-| `gruntz.audit.{image_diff,link_defects,link_sections,section_census}` | `gruntz verify link-tier` (`--census`) |
-| `gruntz.audit.aggregate_copies` | `gruntz walls aggregate-copies` |
-| `gruntz.audit.eh_frame` | `gruntz walls eh-frame` |
-| `gruntz.audit.global_refs` | `gruntz walls global-refs` |
-| `gruntz.audit.stale_markers` | `gruntz walls stale-markers` |
-| `gruntz.audit.insn_count`, `gruntz.core.branches`, `gruntz.audit.jcc_sieve`, `gruntz sema diagnose` | `gruntz walls diagnose` |
-| `gruntz.audit.jump_tables` | `gruntz sema disasm --switch` |
-| `gruntz.audit.{channels,rva_size,function_census,data_denominator,data_integrity,compgen_pins,compgen_data,eh_band}` | the Model's own violations + `gruntz delink`'s FATALs — the invariants are structural now, not a separate audit |
-| `gruntz.audit.rename_member` | `gruntz lsp rename` |
-| `gruntz.core.clangd_query`, `gruntz sema refs\|hover\|rename\|symbol\|def` | `gruntz lsp refs\|hover\|rename` |
-| `gruntz.core.inline_model` | `gruntz walls inline-model` |
-| `gruntz.core.vtable_scan` | `gruntz verify vtable-scan` |
-| `gruntz.core.{vtable_hierarchy,vtable_catalog}` | `gruntz sema class` (slots + derivation); the RTTI ancestor walk lives in `gruntz.verify.alloc_size` |
-| `gruntz.core.class_meta` | `gruntz.verify.srcscan` |
-| `gruntz.core.exe_map` | `gruntz.sema.exe_map` (`gruntz sema map`) |
-| `gruntz.core.report` | `gruntz.verify.scores` / `gruntz sema match` |
-| `gruntz.core.dyninit` | `gruntz labels` — the `src_dyninit` channel |
-| `gruntz.core.access_map` | `gruntz.verify.access_map` |
-| `gruntz.core.{symbols,manifest,ir,cc_wrap,codeview,function_universe,data_universe,retail_*}` | absorbed by `gruntz.model`, `gruntz.retail_labels`, `gruntz.tool.*`, `gruntz.verify.universe` |
-| `gruntz.build.delink` | `gruntz delink` (`gruntz.delink.run`) |
-| `gruntz.build.synth_pdb` | `gruntz.delink.pdb_synth` |
-| `gruntz.build.labels` | `gruntz labels` (`gruntz.retail_labels.source`) |
-| `gruntz.build.data_manifest` | `gruntz.delink.data_manifest` |
-| `gruntz.build.eh_band` | `gruntz.delink.eh_band` |
-| `gruntz.build.{normalize_objs,canonicalize_data_symbols}` | `gruntz.compare.normalize` / `gruntz.compare.canonicalize` |
-| `gruntz.build.import_lib` | `gruntz.graph.implib` |
-| `gruntz.build.link` | `gruntz link` (`gruntz.graph.link`) |
-| `gruntz.build.rescomp` | `gruntz rsrc check` + `gruntz tool rc` (the era RC.EXE) |
-| `gruntz.build.msdis_stub` | `gruntz.tool.wine` — it provisions `MSDIS100.DLL` for `link.exe` |
-| `gruntz.build.ninja_syntax` | `gruntz.graph.ninja_syntax` |
-| `gruntz.build.{harvest_locals,ghidra_metadata_generate,carve_tu,coff_oracle}` | *removed* — the `/Z7` locals harvest and the JSON metadata sidecars are gone; the Ghidra payload is the Model |
-| `gruntz.init.clangd`, `gruntz clangd` | `python3 -m gruntz.graph.compdb` |
-| `gruntz.init.toolchain` | `gruntz init` (`gruntz.tool.wine.init_prefix`) + `scripts/create-toolchain-release.py` |
-| old `gruntz permute fn|sweep` | *removed* — the random hill-climber and whole-unit grinder remain retired; use classified `state|variants` |
-| `gruntz ghidra-refresh` | `gruntz ghidra build` / `gruntz ghidra update` |
-| `gruntz format` | `clang-format` directly; `.githooks/pre-commit` applies it to staged files |
-| `gruntz data-audit` | `gruntz verify data-access` + `gruntz verify data-coverage` |
-| `build/gen/symbol_names.csv` | `build/gen/bindings.tsv` — the serialized Model |
-| `build/gruntz_sema.log` | *removed* — sema no longer logs invocations |
-| `config/retail/library_labels.csv` | `config/retail/functions_static_libs.tsv` |
-| `config/retail/rsrc/` | *deleted* — `src/Gruntz/Gruntz.rc` is the only carrier; `gruntz rsrc check` proves it |
-| `SYMBOL()`, `DATA_SYMBOL()`, `VTBL_ABSENT()` macros | *retired* — every datum is a real definition carrying `DATA(rva)` |
+The enum verifier reads `config/reviews/enum-reuse.tsv`.
+`scripts/audit-template-models.py` defaults to
+`config/reviews/compiler-methods.tsv` and writes its census under
+`build/audits/template-models/`. Reviews may become stale; their presence is not
+automatic certification of current source.
 
-## The frozen tree: what was not ported
-
-`scripts/gruntz-old/` was the pre-rebuild package, kept frozen while the new
-layers were proven and then deleted. Everything in it is recoverable from git
-history at `scripts/gruntz-old/<path>` (the deletion commit is its last
-appearance). Two classes did not come across, deliberately:
-
-**PARK — an evidence generator or campaign instrument, not a gate.** Nothing
-in the loop depends on these; resurrect the file from history if the campaign
-that needed it comes back.
-
-| frozen path | what it produced |
-| :-- | :-- |
-| `audit/bare_constants.py`, `audit/enum_case_labels.py` | the enum-modeling campaign's discovery scan + rewriter (`docs/enum-modeling-plan.md`) |
-| `audit/data_layout.py` | the MSVC 5.0 data-layout oracle behind `docs/compiler-data-layout.md` |
-| `audit/init_funclets.py` | the `.CRT$XC` XCU-walk oracle; the `src_dyninit` channel carries its result |
-| `audit/link_line.py`, `audit/link_order.py` | the link-order evidence generators behind `docs/link-order-investigation.md` and `config/retail/link_order.tsv` |
-| `audit/mask_immediates.py` | the REL32/immediate residue sieve (objdiff scores DIR32 addends itself now) |
-| `audit/thunk_oracle.py` | the incremental-thunk TU/library oracle (`docs/engine-modules-were-static-libs` evidence) |
-| `audit/image_diff.py`, `audit/link_sections.py` (exploratory modes) | the whole-image byte-budget partitions and runtime-defect worklists; only the gate-bearing checks were ported into `verify/link_tier.py` |
-| `audit/mfc_class.py`, `cleanliness/vtable_owner.py` | identity oracles (MFC container shape; dtor-fingerprint ownership) — investigation, not gates |
-| `core/library_labels.py` | the FLIRT label refresh that produced the static-lib carve-outs |
-| `core/exe_map.py`, `core/report.py` | the `docs/exe-map/` site generator (see `docs/exe-map/README.md`) |
-
-**DEAD — the campaign closed; the file has no remaining use.**
-`audit/foldable_views.py`, `audit/stale_walls.py`, `audit/strip_wall_prose.py`,
-`audit/tu_layout.py`, `audit/wall_reasons.py`, `match/verify_stubs.py`.
-
-One port remains open as a change request: `audit/unmatched_attribute.py`'s
-census-rows-with-no-claim mode wants to be a `--unclaimed` flag on
-`gruntz walls inventory`.
+Tool inputs belong in `config/`, generated artifacts in `build/`, and usage
+documentation here. Retired command mappings are available in Git history.

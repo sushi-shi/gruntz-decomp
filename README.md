@@ -69,7 +69,7 @@ resources against the retail image (see [Resources](#resources)).
 
 Size attribution and the region census are written up in
 [`docs/image-diff.md`](docs/image-diff.md) and
-[`docs/link-section-audit.md`](docs/link-section-audit.md).
+[`https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/link-section-audit.md`](https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/link-section-audit.md).
 
 
 ## Repo layout
@@ -108,17 +108,10 @@ vendor/                       third-party source (miles-6.0c, sfman-1.01, smacke
 config/                       units.toml (per-TU build manifest), match_baseline.tsv
   cleanliness/               tracked source-quality metrics and audit review state
   retail/                    labels and boundary evidence for the retail executable
-docs/                         build system, matching notes, gotchas, and the confirmed
-                              non-reconstructed-function inventory
-  patterns/                   THE campaign asset: one file per proven cl 5.0 codegen idiom,
-                              each with its controlled A/B and detection signature, indexed
-                              by INDEX.md — read this before opening a wall
-  relevations/                the cross-cutting mechanisms (allocation/spill catalogue,
-                              what a calibration can and cannot prove)
-  domain/                     game semantics: Toyz/Toolz/Powerupz/enemy-AI/logic classes
-  formats/                    the on-disk asset formats (REZ v1 container …), from the
-                              archived bytes + retail's own reader disassembly
-  reference/gooroosgruntz/    mirrored community WWD/level-editor docs (semantics source)
+  reviews/                   machine-consumed enum and compiler-method review ledgers
+docs/                         essential usage and contracts; start at docs/README.md
+  patterns/                   short cl 5.0 observations and their limits; INDEX.md
+                              groups mechanisms, not per-function campaigns
 editor/nvim/                  the :Gruntz nvim integration (auto-loaded inside the dev shell)
 nix/patches/                  vostok-delinker patches (ILT-thunk / folded-COMDAT data-manifest)
 flake.nix                     Nix dev environment (one shell: analysis + MSVC5/Wine)
@@ -195,9 +188,9 @@ Prefer `gruntz sema` over grep for any semantic question (who calls this, what t
 this member, which vtable slot). See
 [`docs/build-system.md`](docs/build-system.md#semantic-navigation--gruntz-sema).
 
-**Where to read next:** [`docs/build-system.md`](docs/build-system.md) (the build system
-+ CLI in depth), [`docs/tooling-map.md`](docs/tooling-map.md) (every verb → its module),
-[`.claude/agents/matcher.md`](.claude/agents/matcher.md) (the matching doctrine). Run
+**Where to read next:** [documentation index](docs/README.md),
+[`docs/build-system.md`](docs/build-system.md) (the pipeline), and
+[`docs/tooling-map.md`](docs/tooling-map.md) (verbs → modules). Run
 `gruntz verify status` for the live match state.
 
 ## Formatting

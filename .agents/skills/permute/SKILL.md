@@ -83,8 +83,9 @@ Follow `matcher`'s validation cadence: no test suites during matching, ordinary
 commits, or pushes. Before handoff, refresh compilation/comparison and inspect
 MAX and raw matching evidence. Run focused permuter tests and the full gated
 build only at the authorized PR squash-merge stage; report them as deferred
-until then. Document a newly reproducible compiler mechanism under
-`docs/patterns/` and update its index.
+until then. Consolidate a genuinely reusable compiler mechanism under the
+admission rules in `docs/patterns/README.md`; do not add campaign logs or
+per-function closure entries.
 Commit tooling, documentation/skill work, and reconstructed source changes in
 separate focused batches. See `docs/permuter.md` for command details and artifact
 contracts.

@@ -23,8 +23,9 @@ Where cl 5.0 diverges from the VC6 model (measured; do NOT port these back):
     NOT exist on cl 5.0 - the staircase continues (25,25,20,16,11,9,6,5 for
     S=1..13 agrees on both compilers, and cl 5.0 keeps going).
   * `#pragma inline_depth` is ignored by cl 5.0 at /O2 EXCEPT the one live
-    lever documented in docs/patterns/msvc5-inline-depth-zero-is-the-only-
-    live-lever.md - depth_allow below models the mechanism, not that pragma.
+    lever recorded in the historical probe below. depth_allow models the
+    mechanism, not that pragma:
+    https://github.com/sushi-shi/gruntz-decomp/blob/b27b05deb249e4cacbb29f55f17b469ecfe56f26/docs/patterns/msvc5-inline-depth-zero-is-the-only-live-lever.md
 
 USAGE
     gruntz walls inline-model --selftest
