@@ -27,43 +27,43 @@ RVA_COMPGEN(0x0001fd70, 0x45, ?FileExists@?A0xd84d0d674a5580a4@@YAHPBD@Z)
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0001fde0, 0x189)
 char CheckCdRomRegistry() {
-    DWORD valueSize;
-    char value[32];
+    DWORD bufsize;
+    char sDrive[32];
     char drivePath[32];
-    char cwdPath[256];
+    char sDir[256];
     CRegMgr reg;
-    char letter;
+    char cdDrive;
     i32 i;
 
     if (reg.Init("Monolith Productions", "Gruntz", "1.0", NULL, HKEY_LOCAL_MACHINE, NULL)) {
-        valueSize = 0x1e;
-        value[0] = 0;
-        if (reg.Get("CdRom Drive", value, valueSize, NULL) && static_cast<i8>(value[0]) > 0x14) {
-            letter = value[0];
-            sprintf(drivePath, "%c:\\", letter);
+        bufsize = 30;
+        sDrive[0] = '\0';
+        if (reg.Get("CdRom Drive", sDrive, bufsize, NULL) && sDrive[0] > 20) {
+            cdDrive = sDrive[0];
+            sprintf(drivePath, "%c:\\", cdDrive);
             if (GetDriveTypeA(drivePath) == DRIVE_CDROM) {
-                return letter;
+                return cdDrive;
             }
         }
     }
 
-    GetCurrentDirectoryA(0xff, cwdPath);
-    cwdPath[3] = 0;
-    if (GetDriveTypeA(cwdPath) == DRIVE_CDROM) {
-        letter = cwdPath[0];
-        return letter;
+    GetCurrentDirectoryA(255, sDir);
+    sDir[3] = '\0';
+    if (GetDriveTypeA(sDir) == DRIVE_CDROM) {
+        cdDrive = sDir[0];
+        return cdDrive;
     }
 
-    letter = 'A';
+    cdDrive = 'A';
     for (i = 0; i < 26; i++) {
-        sprintf(cwdPath, "%c:\\", letter);
-        if (GetDriveTypeA(cwdPath) == DRIVE_CDROM) {
-            return letter;
+        sprintf(sDir, "%c:\\", cdDrive);
+        if (GetDriveTypeA(sDir) == DRIVE_CDROM) {
+            return cdDrive;
         }
-        letter++;
+        cdDrive++;
     }
-    letter = 0;
-    return letter;
+    cdDrive = 0;
+    return cdDrive;
 }
 
 RVA(0x0001ffe0, 0x192)

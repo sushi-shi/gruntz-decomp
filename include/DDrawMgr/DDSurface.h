@@ -153,7 +153,7 @@ public:
     i32 LoadPcx(class CDDrawDeviceManager* manager, char* path);
     i32 LoadPid(class CDDrawDeviceManager* manager, char* path, u32 colorKey);
 
-    i32 MakeImageKey(class CDDrawDeviceManager* manager, char* path, u32 colorKey);
+    i32 MakeImageKey(class CDDrawDeviceManager* manager, char* sFile, u32 colorKey);
     i32 DecodePcxEx(class CDDrawDeviceManager* manager, char* path, i32 surfaceCaps, u32 colorKey);
 
     i32 CreateFromBmpData(

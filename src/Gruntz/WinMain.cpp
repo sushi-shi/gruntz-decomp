@@ -12,6 +12,7 @@
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/MenuVersion.h>
 #include <Gruntz/StartUpPrompt.h>
+#include <Gruntz/Utils.h>
 #include <Wap32/Wap32.h>
 
 #include <stdio.h>
@@ -29,7 +30,7 @@ i32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     char szModulePath[0xFE];
 
     if (GetModuleFileNameA(NULL, szModulePath, 0xFE) > 0
-        && FindProcessByName(szModulePath, 2, NULL) != 0) {
+        && ExistProcess(szModulePath, 2, NULL) != 0) {
 
         HWND hPrev = FindWindowA("GruntzClass", "Gruntz");
         if (hPrev != NULL) {

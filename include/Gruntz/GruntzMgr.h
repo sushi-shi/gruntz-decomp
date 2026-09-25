@@ -81,7 +81,7 @@ public:
 
     i32 LaunchPortal(i32 quitAfter);
 
-    i32 LaunchProcessInDir(char* exe, char* dir);
+    i32 LaunchProcessInDir(char* sApp, char* sPath);
 
     void Post(i32 code);
     i32 OpenBattlezSetup();
@@ -390,7 +390,6 @@ extern i32 g_warpX;
 extern i32 g_warpY;
 
 CString RunCustomWorldDialog(HWND parent, CString* out);
-i32 FindProcessByName(const char* name, i32 flag, HANDLE* out);
 i32 __stdcall LaunchPortalExe(char* outPath);
 
 char GetGruntzDriveLetter();

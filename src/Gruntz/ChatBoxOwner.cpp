@@ -70,7 +70,7 @@ void CChatBoxOwner::HandleTextInputKey(i32 charCode, i32 keyData) {
         char* input = const_cast<char*>(static_cast<const char*>(m_fontConfig->GetInputText()));
         static_cast<CMulti*>(g_gameReg->m_curState)->BroadcastChatLine(input, 1, 1, NULL);
     } else {
-        if (_strcmpi(m_fontConfig->GetInputText().Left(17), "Enable Cheatzfile") == 0) {
+        if (stricmp(m_fontConfig->GetInputText().Left(17), "Enable Cheatzfile") == 0) {
             CString args = m_fontConfig->GetInputText();
             args = args.Right(args.GetLength() - 18);
             i32 split = args.Find(' ');

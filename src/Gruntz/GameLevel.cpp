@@ -555,7 +555,7 @@ CDDrawWorkerHost* CGameLevel::FindPlaneByName(const char* name) {
     for (i32 i = 0; i < m_planes.GetSize(); i++) {
         CDDrawWorkerHost* p =
             (i >= 0 && i < m_planes.GetSize()) ? static_cast<CDDrawWorkerHost*>(m_planes[i]) : NULL;
-        if (_strcmpi(name, p->m_planeName) == 0) {
+        if (stricmp(name, p->m_planeName) == 0) {
             return static_cast<CDDrawWorkerHost*>(p);
         }
     }

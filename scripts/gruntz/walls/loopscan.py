@@ -4,7 +4,7 @@ An instruction that sits INSIDE a loop on one side and OUTSIDE it on the
 other is not a schedule coin: it runs N times instead of once.  That is a
 source difference - a declaration placed inside the body instead of above
 it, an invariant we recompute, a member re-read every iteration - and it is
-the shape `FindProcessByName` turned out to be, where a 548-byte
+the shape `ExistProcess` turned out to be, where a 548-byte
 `MODULEENTRY32 me = {0};` was re-zeroed on every step of the walk.
 
 A masked diff cannot show it.  Masking address operands cancels branch
@@ -27,7 +27,7 @@ than silently aligning it against its neighbour.
 
 A one-instruction delta is NOT noise here: `rep stos`, `rep movs` and a
 `call` each carry an unbounded amount of work in a single instruction, and
-the FindProcessByName hoist was exactly two.
+the ExistProcess hoist was exactly two.
 
 WHAT IT CANNOT SEE.  It counts instructions, not work or bytes, so it is
 blind to a body of the same LENGTH holding different instructions (we

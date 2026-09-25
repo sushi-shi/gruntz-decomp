@@ -357,13 +357,13 @@ RVA(0x00175a90, 0xee)
 i32 CDib::Init(const char* name, HDC dc, u32 ctrl) {
     const char* ext = strrchr(name, '.');
 
-    if (ext && _strcmpi(ext, ".BMP") == 0) {
+    if (ext && stricmp(ext, ".BMP") == 0) {
         return InitBmp(name, dc, ctrl);
-    } else if (ext && _strcmpi(ext, ".PCX") == 0) {
+    } else if (ext && stricmp(ext, ".PCX") == 0) {
         return InitPcx(name, dc, ctrl);
-    } else if (ext && _strcmpi(ext, ".RID") == 0) {
+    } else if (ext && stricmp(ext, ".RID") == 0) {
         return InitRid(name, dc, ctrl);
-    } else if (ext && _strcmpi(ext, ".PID") == 0) {
+    } else if (ext && stricmp(ext, ".PID") == 0) {
         return InitPid(name, dc, ctrl);
     }
 
@@ -1013,11 +1013,11 @@ RVA(0x00176f90, 0xa4)
 i32 CDibPal::Init(const char* path, u32 flags) {
     const char* ext = strrchr(path, '.');
 
-    if (ext && _strcmpi(ext, ".BMP") == 0) {
+    if (ext && stricmp(ext, ".BMP") == 0) {
         return InitBmp(path, flags);
-    } else if (ext && _strcmpi(ext, ".PCX") == 0) {
+    } else if (ext && stricmp(ext, ".PCX") == 0) {
         return InitPcx(path, flags);
-    } else if (ext && _strcmpi(ext, ".PAL") == 0) {
+    } else if (ext && stricmp(ext, ".PAL") == 0) {
         return InitPal(path, flags);
     }
 

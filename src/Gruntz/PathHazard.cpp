@@ -367,7 +367,7 @@ i32 CPathHazard::BeginLeg() {
         static_cast<double>(m_waypoint.m_x) - static_cast<double>(obj->m_screenPosition.m_x);
     double dy =
         static_cast<double>(m_waypoint.m_y) - static_cast<double>(obj->m_screenPosition.m_y);
-    double len = VECTOR2_MAG_COMPONENTS(dx, dy);
+    double len = sqrt(dx * dx + dy * dy);
     double ux = dx / len;
     double uy = dy / len;
 
