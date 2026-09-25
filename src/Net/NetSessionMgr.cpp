@@ -42,7 +42,6 @@ i32 CNetSession::Initialize(CGruntzMgr* mgr, CMulti* owner, CNetMgr* netMgr) {
     return 1;
 }
 
-// @early-stop
 RVA(0x000bf000, 0xd5)
 void CNetSession::Shutdown() {
     m_mgr = NULL;
@@ -54,18 +53,19 @@ void CNetSession::Shutdown() {
     m_sequence = 0;
     m_commandPeriod = 1;
     for (i32 i = 0; i < 4; i++) {
-        m_slots[i].m_isDraining = false;
-        m_slots[i].m_drainSequence = 0;
-        m_slots[i].m_state = NETSLOT_EMPTY;
-        m_slots[i].m_player = NULL;
-        m_slots[i].m_latency = 0;
-        m_slots[i].m_contiguousSequence = 0;
-        m_slots[i].m_peerWindowBase = 0;
-        m_slots[i].m_owner = NULL;
-        m_slots[i].ClearRecords();
-        m_slots[i].ClearDrainAcks();
-        m_slots[i].ClearSequenceSet(m_slots[i].m_receivedAhead);
-        m_slots[i].ClearSequenceSet(m_slots[i].m_peerReceivedAhead);
+        CNetCmdSlot* slot = &m_slots[i];
+        slot->m_isDraining = false;
+        slot->m_drainSequence = 0;
+        slot->m_state = NETSLOT_EMPTY;
+        slot->m_player = NULL;
+        slot->m_latency = 0;
+        slot->m_contiguousSequence = 0;
+        slot->m_peerWindowBase = 0;
+        slot->m_owner = NULL;
+        slot->ClearRecords();
+        slot->ClearDrainAcks();
+        slot->ClearSequenceSet(slot->m_receivedAhead);
+        slot->ClearSequenceSet(slot->m_peerReceivedAhead);
     }
     for (i32 j = 0; j < 0x80; j++) {
         m_commandByTick[j] = NULL;
