@@ -42,8 +42,9 @@ __inline i32 GetRandom(i32 lo, i32 hi) {
 ```
 
 `n == 0` means `hi == lo - 1` (an inverted/empty range), and the helper answers it with a
-coin flip between the two endpoints. Every site's guard is dead at run time — which is
-exactly the signature of an inlined helper rather than a hand-written check.
+coin flip between the two endpoints. The guard is not necessarily dead at run time:
+that requires a proven domain for the particular caller. Constant nonempty bounds
+can erase it, while variable-bound callers must retain the exceptional path.
 
 ## Writing a site
 
@@ -57,12 +58,91 @@ Read `lo` off the `add edx,<imm>` in the join block and `hi` off the `lea` that 
 Both forms reproduce retail's instruction sequence exactly (verified in
 `CGrunt::ResetEntranceAnimation`, 0x62e10).
 
-## The one arm that still differs
+## Constant and variable bounds need separate controls
 
-`GetRandom(1, count)` folds: `n = count - 1 + 1 == count`, so inside the degenerate arm our
-cl *proves* `count == 0` and substitutes the literal, collapsing `(rand() & 1) ? 1 : count`
-to `movsx edi,al; and edi,1`. Retail keeps `mov edi,1` against a live `count`. Same helper,
-different constant propagation; not a source difference we have been able to name.
+Constant bounds can fold the peel away completely without erasing the helper's
+effect on the caller. The [CMenuSparkle constructor control](constant-range-helper-changes-constructor-zero-carrier.md)
+restores exactness through `GetRandom(1000, 5000)` even though both versions
+contain the same single CRT random call and remainder arithmetic. An
+include-only control is byte-flat; the actual inline call changes an earlier
+zero carrier in the constructor chain.
+
+`GetRandom(1, count)` can fold the width back to `count`, and the zero arm can
+collapse to `movsx edx,al; and edx,1`. Check the particular retail caller:
+the former claim that retail necessarily keeps a live endpoint is not a family
+exclusion. The three brick-color sites below already use the collapsed parity
+form in retail.
+
+## A complete variable-bound wrapper can preserve the signed divisor
+
+The three color-selection paths in `BuildCellAttributes` (0x810f0) repeat one
+protocol: test the full signed total, draw parity if zero, otherwise draw a
+signed remainder and increment it. Restoring the complete existing range helper
+inside `RollBrickColor` gives this controlled real-TU result:
+
+| Source state | Normalized bytes | Instructions | Calls / branches / returns | References |
+| --- | ---: | ---: | --- | ---: |
+| Expanded zero/remainder body | 2,666 | 753 | 23 / 127 / 2 | 122 |
+| `return GetRandom(1, totalWeight)` | 2,666 | 753 | 23 / 127 / 2 | 122 |
+| Same, redundant direct CRT include removed | 2,666 | 753 | 23 / 127 / 2 | 122 |
+
+All three states have identical complete normalized bytes and ordered
+relocation offsets, targets and kinds. Switch-table data is excluded from the
+instruction census. Current fuzzy remains 90.2473%; the unrelated caller CFG
+residue is still open. This is source restoration, not an exact closure.
+
+At each actual site, VC5 uses the original full-dword total in `TEST` and
+`IDIV`; no subtract-one instruction or narrowed divisor remains. Thus the
+emitted sequence works at `INT_MIN` too: CRT `rand()` yields 0..32767, so this
+division cannot encounter the signed division overflow case. The zero path
+still executes exactly one draw and chooses odd→1/even→0. This proof is about
+the pinned compiler's emitted program. It does **not** make `hi-lo+1` portable
+signed arithmetic at every endpoint, nor prove callers supply positive bounds.
+
+Reverse-use rule: test the complete sourced helper before excluding it from an
+expanded remainder signature. Audit the full bound-producing dataflow, both
+draw referents and guard destinations, and arithmetic extremes—not just the
+nominal probability or current score. `scripts/test_brick_color_rng.py` checks
+the three original/production local protocols and rejects changed divisors,
+parity masks, signed comparisons, guard edges and either RNG referent. Whole
+caller before/after equality is a separate control; these tests do not certify
+the entire game-mode/switch/loop CFG. The specific adoption and domain-review
+dispositions live in `brick-rng-color-range` and `brick-color-*`.
+
+## Preserve the sampled integer before choosing a predicate abstraction
+
+PR #79's fresh RNG reassessment tested the actual VC5 translation units, not
+isolated replacements for their callers. Two different authored boundaries are
+available: `GetRandom(lo, hi)` returns the integer sample, whereas
+`IsRandomChance(percent)` returns `char`. Equivalent outcomes do not make their
+expanded intermediate values identical.
+
+| Actual consumer | Controlled source form | Current fuzzy | Observed result |
+| --- | --- | ---: | --- |
+| `FindIdleGruntInBox`,0x2ab80 | Existing direct remainder | 83.1071 | Conditional clear of caller-owned integer `keep` |
+| Same | Existing chance helper in the nested negative guard | 79.8839 | Additional `setl al` and byte test |
+| Same | Assign chance result to `keep` | 81.0446 | `movsx` and one fewer branch |
+| Same | Existing integer range helper, original caller statements | 83.1071 | Entire normalized body and ordered references identical to baseline |
+| `BuildCellAttributes`,0x810f0 | Original four two-stack remainder ternaries | 89.3672 | Four one-based `inc / cmp 50 / setle / add enum` sequences already present |
+| Same | Include-only control | 90.2473 | Declaration-context movement before actual helper use |
+| Same | Four chance-helper ternaries | 87.7073 | Byte-to-condition conversion adds `neg al / sbb eax,eax / neg eax` |
+| Same | Four inclusive-range ternaries; only used header retained | 90.2473 | All four original local sequences and ordered references preserved |
+| Same | Compose all four three-stack range initializers | 90.2473 | Entire normalized body and references identical to the preceding range state |
+
+The reverse-use signature is a materialized integer sample: inspect its offset,
+signed comparisons, reuse, and subsequent enum construction before selecting a
+boolean-returning helper. A folded exceptional branch does not disprove an
+inclusive-range inline. Conversely, an aggregate improvement already reproduced
+by include-only control is not evidence that the new call boundary improved
+instruction scheduling. No unused include is retained as a steering device.
+
+These are scoped source restorations, not exact closures or bounded whole-caller
+verdicts. The ghost frame/allocation difference and brick caller CFG remain open.
+Canonical dispositions and reopening criteria are `chance-ghost-range-preserve`,
+`chance-brick-range-preserve`, `brick-rng-three-stack-range`,
+`brick-rng-shogo-fifty-oracle`, and `brick-rng-include-only`; the broad
+`reassess-israndomchance` family remains pending. Production-object/original-PE
+negative controls live in `scripts/test_rng_helper_consumers.py`.
 
 ## History
 

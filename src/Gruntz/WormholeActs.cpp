@@ -5,10 +5,10 @@
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/ExitTrigger.h>
 #include <Gruntz/FontConfig.h>
-#include <Gruntz/FreeNodePoolInline.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameObjectLogicTypes.h>
@@ -28,8 +28,8 @@
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/ZVec.h>
 #include <Wwd/WwdGameObjectFamily.h>
+#include <ZTools/ZDArray.h>
 
 #include <stddef.h>
 
@@ -48,7 +48,7 @@ void CExitTrigger::FireActivation(i32 coord) {
 RVA(0x0003f3f0, 0x18d)
 void CExitTrigger::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    (*((CActRegPool<CExitTrigger>::s_table.ResolveEntry(id)))) =
+    (CActRegPool<CExitTrigger>::s_table[id]) =
         static_cast<i32 (CUserLogic::*)()>(&CExitTrigger::AdvanceAnim);
 }
 

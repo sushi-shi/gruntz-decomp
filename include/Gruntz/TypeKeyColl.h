@@ -3,15 +3,17 @@
 
 #include <rva.h>
 
-#include <Bute/ButeTree.h>
-#include <Gruntz/TypeCollRuntime.h>
+#include <Mfc.h>
 
-extern CTypeCollRuntime g_typeColl;
+#include <Gruntz/ActRegistry.h>
+#include <ZTools/ZDArray.h>
+
+extern zDArray<CString> g_typeColl;
 
 extern i32 g_typeCounter;
 
-extern i32 g_variantOverrideCount;
-
-void TmErrorHandler(char* prefix, i32 errNum);
+inline const CString& GetAnimationActName(i32 id) {
+    return g_typeColl[id];
+}
 
 #endif // GRUNTZ_GRUNTZ_TYPEKEYCOLL_H

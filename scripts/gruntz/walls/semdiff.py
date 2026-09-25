@@ -71,6 +71,12 @@ applied mechanically are applied, the rest are for the reader:
                             one side reads `foo+0x400` and the other
                             `bar+1` for the same address. FILTERED: no.
 
+FALSE-NEGATIVE LIMIT: identical operand multisets and ordered referents do
+not prove identical side-effect reachability. Moving ResetCell across the
+current-player guard in LoadEntranceConfig preserved both. Audit branch
+destinations and per-edge call traces; scripts/test_entrance_player_guard.py
+is a bounded real-owner control, not a general semantic CFG verifier.
+
     gruntz walls semdiff <rva|name> [--top N] [--all]
     gruntz walls semsweep <tsv> [--first N] [--last N] [--fp-only]
 

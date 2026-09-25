@@ -3,11 +3,10 @@
 
 #include <rva.h>
 
-#include <Bute/ButeTree.h>
 #include <Enums.h>
+#include <Gruntz/ActRegistry.h>
 #include <Gruntz/UserLogic.h>
-#include <Wap32/zBitVec.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/ZDArray.h>
 
 GZ_ENUM_CONST_BEGIN(ActIdRange)
     ACT_ID_FIRST = 2000,
@@ -21,43 +20,15 @@ template<class Tag> struct CActRegPool {
 };
 
 template<class Logic> inline CActHandler* ResolveRegisteredAct(i32 id) {
-    return CActRegPool<Logic>::s_table.ResolveEntry(id);
+    return &CActRegPool<Logic>::s_table[id];
 }
 
 template<class Logic> inline void DispatchRegisteredAct(Logic* logic, i32 id) {
     CActReg& acts = CActRegPool<Logic>::s_table;
-    if (*acts.ResolveEntry(id) != NULL) {
-        CActHandler handler = *acts.ResolveEntry(id);
+    if (acts[id] != NULL) {
+        CActHandler handler = acts[id];
         (logic->*handler)();
     }
-}
-
-template<class T> inline T* zDArray<T>::ResolveEntry(i32 id) {
-    m_grown = 0;
-    if (id >= m_lo && id <= m_hi) {
-        return AsElem(m_base + (id - m_lo) * m_stride);
-    }
-    if (GrowTo(id, 0)) {
-        return AsElem(m_base + (id - m_lo) * m_stride);
-    }
-    char* msg = g_errOutOfMem;
-    g_retAddrBreadcrumb = GetRetAddr();
-    m_errSink->Set(this, msg, 0xc);
-    return AsElem(m_spare);
-}
-
-template<class T> inline T* zDArray<T>::ResolveEntryCallReport(i32 id) {
-    char* r;
-    m_grown = 0;
-    if (id >= m_lo && id <= m_hi) {
-        r = m_base + (id - m_lo) * m_stride;
-    } else if (GrowTo(id, 0)) {
-        r = m_base + (id - m_lo) * m_stride;
-    } else {
-        Report(g_errOutOfMem, 0xc);
-        r = m_spare;
-    }
-    return AsElem(r);
 }
 
 #endif // GRUNTZ_GRUNTZ_ACTREG_H

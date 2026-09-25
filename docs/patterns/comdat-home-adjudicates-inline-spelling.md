@@ -225,12 +225,12 @@ line number as well as by TU. Hoisting all of them into the canonical include
 block moved exactly one function by +0.005 - the placement was lazy, not
 load-bearing.
 
-**`FreeNodePoolInline.h` is a different animal and should not be read as a
-visibility device.** Retail's Push split is per SITE: BattlezUnitStep.cpp calls
+**Historical interpretation, superseded by the template-family control below.**
+Retail's Push split is per SITE: BattlezUnitStep.cpp calls
 0x311b0 through `RECYCLE_GRUNT_COORDS_IF_ANY` and expands it through
 `RECYCLE_GRUNT_COORDS_INLINE_PUSH_IF_ANY` a few lines apart. A visibility header
-cannot express per-site at all; two spellings can, so two entities are what the
-evidence supports.
+cannot explain a per-site split. This does not prove two source entities: one
+eligible template member can be expanded at one site and called at another.
 
 ## 2026-08-22 AUDIT: the macro side of the same device, collapsed the same way
 
@@ -271,16 +271,55 @@ explicitly at other sites - one source construct with two appearances. Hoisting
 it is byte-free and makes the branch readable; check the call sites for
 dangling-`else` first (all 21 here were plain statements).
 
-**A spelling that is byte-identical at every site can still be blocked by the
-LEDGER.** The expanded arm can be written `PushFreeNode(&g_coordPool, ...)`
+**Historical perturbation, not a reason to retain duplicate source.** The
+expanded arm could be written `PushFreeNode(&g_coordPool, ...)`
 instead of the three-line splice; it is identical code at all 24 sites and
-*zero* macro-host functions move. But losing the `slot` local rotates cl 5.0's
-allocation cursor for the NEXT function in `Projectile.cpp`, so
-`CBoomerang::AdvanceMotion` goes 86.25 -> **84.58** - a fresh MAX regression on
+*zero* macro-host functions move. Removing the `slot` local perturbs the NEXT
+function in `Projectile.cpp`, so
+`CBoomerang::AdvanceMotion` went 86.25 -> **84.58** - a fresh MAX regression on
 a function whose source never changed, reproducible across two different TU
-states. The longhand stays with the measurement and a removal condition
-(break AdvanceMotion's regalloc wall first). Related: a single unused
+states. This establishes TU-state sensitivity, not an authored caller local or
+an allocation-cursor mechanism. The former condition to break that wall before
+removing the longhand is retracted. Related: a single unused
 `#include <Gruntz/FreeNodePoolInline.h>` in `GruntSteps.cpp` restores
 `CGrunt::StepCompassMove` to its banked 63.2990 from 62.0438 - a real
 declaration-count-window datum for that wall, and exactly the fitted artifact
 that must NOT be left in the tree.
+
+## Template-family control: canonical coordinate recycling
+
+The non-template August control cannot be inherited by the primary recovered
+in `8c76e8b5f`. The historical `a03a5d788` experiment, based on `c7fa5b443`,
+used an actual `/Ob0` census and an eight-TU inline A/B: all 179 complete
+emitted bodies and ordered symbolic relocations survived adding `inline` to
+the template's member. See also the
+[template eligibility exception](vc5-template-members-inline-without-inline-keyword.md).
+
+The September 21 integration retests that family against `f5c14f6d5`, including
+the intervening enum, goto and shared-header changes. One `Push` implementation
+in `Utils/FreeNodePool.h` replaces the free helper, expanded recycle macro,
+local push macro and manual splices across 51 callers. Guard placement, iterator
+APIs and next-before-head store order are preserved. The explicit instantiation
+still supplies the retail 20-byte member at 0x311b0. Mixed call/expansion sites
+remain an optimizer/source-shape question, not separate source identities.
+
+Two sites carry independent source-boundary evidence. `CPlay::OnKeyDown` retains
+the coordinate across `CPtrArray::RemoveAt`, then adjusts the pool payload
+pointer: retail performs that adjustment at 0xcc616, after removal. The old
+source computed the node before the call. `CTriggerMgr::RebuildSelectionList`
+no longer supplies a caller head cache; the template member permits the compiler
+to hoist the head load itself. Its remaining whole-function allocation mismatch
+is not certified bounded by this cleanup.
+
+The current control also reproduces a much smaller unrelated TU-state effect:
+the unchanged `CBoomerang::AdvanceMotion` moves from 100 to 99.95349. Both sides
+remain 478 bytes, 132 instructions, six calls, seven branches, two returns and
+nine relocations; semantic comparison finds no constant, displacement, store,
+FP or ordered-referent differences. Historical and same-source MAX are retained;
+no declaration probe or duplicate implementation is kept to steer this caller.
+
+Reverse-use rule: after recovering a template, recheck old missing-emitter and
+visibility claims against the complete declaration/instantiation family. Inspect
+the whole ordered call topology, not only absolute-global-reference counts,
+which can change through hoisting and tail sharing. Removing duplicate source
+does not by itself close the gameplay callers' matching questions.

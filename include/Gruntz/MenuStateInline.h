@@ -2,15 +2,15 @@
 #define GRUNTZ_GRUNTZ_MENUSTATEINLINE_H
 
 #include <DinMgr2/DirectInputMgr2.h>
-#include <Gruntz/FixedPtrArray32.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GruntzWnd.h>
+#include <Gruntz/InputDeviceGroup.h>
 #include <Gruntz/MenuState.h>
 #include <Gruntz/MenuTree.h>
 
 inline void CMenuState::HandleControllerInput() {
-    CFixedPtrArray32* actors = g_actorList;
+    CInputDeviceGroup* actors = g_actorList;
     i32 count = actors->m_count;
     i32 i;
     for (i = 0; i < count; i++) {

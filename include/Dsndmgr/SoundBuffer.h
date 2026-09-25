@@ -5,7 +5,7 @@
 
 #include <Mfc.h>
 
-#include <Lith/BaseList.h>
+#include <Lith/TypedList.h>
 
 #include <mmsystem.h>
 #include <stdio.h>
@@ -20,15 +20,7 @@ struct SoundBufferNode : public CBaseListItem {
     SoundBuffer* m_buffer;
 };
 
-struct SoundSampleList : public CLTBaseList {
-    RVA(0x001364e0, 0x1)
-    ~SoundSampleList() {}
-};
-
-struct SoundBufferInstanceList : public CLTBaseList {
-    RVA(0x00135ba0, 0x1)
-    ~SoundBufferInstanceList() {}
-};
+class SoundSample;
 
 class SoundBuffer : public CBaseListItem {
 public:
@@ -120,7 +112,7 @@ public:
     i32 Play();
     i32 AcquireAndPlay(i32 volumePct, i32 panPct, i32 frequencyOffsetPct, b32 looping);
 
-    SoundBufferInstanceList m_instances;
+    CLTList<SoundBufferNode> m_instances;
 };
 
 i32 ParseWaveChunks(

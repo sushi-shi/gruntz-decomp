@@ -4,7 +4,7 @@
 #include <rva.h>
 
 #include <Enums.h>
-#include <Lith/BaseList.h>
+#include <Lith/TypedList.h>
 
 GZ_ENUM_CONST_BEGIN(SoundTaskTag)
     SOUND_TASK_TAG_VOLUME_RAMP = 1,
@@ -28,10 +28,7 @@ struct SoundTask : public CBaseListItem {
     ~SoundTask() {}
 };
 
-struct SoundTaskList : public CLTBaseList {
-    RVA(0x001364f0, 0x1)
-    ~SoundTaskList() {}
-
+struct SoundTaskList : public CLTList<SoundTask> {
     void RemoveMatching(SoundBuffer* buffer, u32 tag);
 };
 

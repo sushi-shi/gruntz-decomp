@@ -6,16 +6,16 @@
 #include <Enums.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordNode.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/EnemyAiType.h>
-#include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
-#include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPickupInline.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
@@ -31,34 +31,31 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/VoiceManager.h>
 #include <Ints.h>
+#include <Lith/BDefs.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/ZDArray.h>
 
 #include <limits.h>
 #include <new>
 #include <stdlib.h>
 #include <string.h>
 
-// @early-stop
 RVA(0x000f71c0, 0x721)
 i32 CGrunt::StepToolThiefBehavior() {
     COPY_CURRENT_GRUNT_LAST_TILE_TO_DEFENDER
     if (this->CoordCount() != 0
         && g_gameReg->m_triggerMgr->m_units[0 * TM_UNITS_PER_PLAYER + this->m_arrivalCell.m_x]
                == NULL) {
-        RECYCLE_GRUNT_COORDS(this)
+        RecycleGruntCoords(this);
         this->m_arrivalCell.m_x = 0;
     }
 
-    i32 reason = IDX(this->m_entranceReason);
-    if (reason > 0x16) {
-        reason = IDX(this->m_toolId);
-    }
+    i32 reason = IDX(this->ArrivalPickup());
     if (reason == 0 && (reason = this->m_arrivalCell.m_x, reason >= 0) && reason < 0xf) {
         CGrunt* slot = g_gameReg->m_triggerMgr->m_units[0 * TM_UNITS_PER_PLAYER + reason];
         if (slot == NULL || slot->m_entranceCommitted == false) {
             if (this->CoordCount() != 0) {
-                RECYCLE_GRUNT_COORDS(this)
+                RecycleGruntCoords(this);
             }
             this->m_arrivalCell.m_x = -1;
             return 1;
@@ -87,16 +84,13 @@ i32 CGrunt::StepToolThiefBehavior() {
                 if (this->CoordCount() == 0) {
                     return 1;
                 }
-                RECYCLE_GRUNT_COORDS(this)
+                RecycleGruntCoords(this);
                 return 1;
             }
         }
     }
 
-    reason = IDX(this->m_entranceReason);
-    if (reason > 0x16) {
-        reason = IDX(this->m_toolId);
-    }
+    reason = IDX(this->ArrivalPickup());
     if (reason != 0) {
         FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget, x)
         b32 powered = this->m_poweredUp;
@@ -204,13 +198,12 @@ i32 CGrunt::StepToolThiefBehavior() {
                             seekable = 0;
                         }
                         if (seekable) {
-                            i32 ex = sv->m_object->m_screenX >> TILE_SHIFT_PX;
-                            i32 ddx = ex - (this->m_object->m_screenX >> TILE_SHIFT_PX);
-                            i32 ey = (sv->m_object->m_screenY >> TILE_SHIFT_PX)
-                                     - (this->m_object->m_screenY >> TILE_SHIFT_PX);
-                            i32 dist = abs(ddx * ddx) + abs(ey * ey);
+                            i32 ex = sv->GetScreenTileX();
+                            i32 ddx = ex - this->GetScreenTileX();
+                            i32 ey = sv->GetScreenTileY() - this->GetScreenTileY();
+                            i32 dist = abs(SQR(ddx)) + abs(SQR(ey));
                             if (dist < best
-                                && dist <= this->m_defenderRadius * this->m_defenderRadius) {
+                                && dist <= SQR(this->m_defenderRadius)) {
                                 best = dist;
                                 bestIdx = i;
                             }
@@ -221,7 +214,7 @@ i32 CGrunt::StepToolThiefBehavior() {
             } while (i < 0xf);
             if (bestIdx != -1) {
                 this->m_arrivalCell.m_x = bestIdx;
-                CGameObject* base = slots[bestIdx]->m_object;
+                CGameObject* base = g_gameReg->m_triggerMgr->m_units[bestIdx]->m_object;
                 if (TileSwitch(
                         base->m_screenX >> TILE_SHIFT_PX,
                         base->m_screenY >> TILE_SHIFT_PX,

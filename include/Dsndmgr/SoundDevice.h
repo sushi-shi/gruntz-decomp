@@ -49,7 +49,7 @@ public:
     static i32 VolumeToAttenuation(i32 volumePct);
     static void BuildVolumeTable();
 
-    SoundSampleList m_samples;
+    CLTList<SoundSample> m_samples;
     SoundTaskList m_volumeRamps;
     IDirectSound* m_device;
 

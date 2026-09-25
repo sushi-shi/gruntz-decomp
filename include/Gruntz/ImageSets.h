@@ -38,8 +38,6 @@ public:
 };
 
 struct CUniformTileImageSet : public CTileImageSet {
-    virtual ~CUniformTileImageSet() OVERRIDE {}
-
     virtual i32 Parse(WwdTileImageRecord* record) OVERRIDE;
     RVA(0x00161330, 0x1)
     virtual void FreePixels() OVERRIDE {}
@@ -97,8 +95,6 @@ struct CUniformTileImageSet : public CTileImageSet {
     i32 m_collisionValue;
 };
 struct CRectTileImageSet : public CTileImageSet {
-    virtual ~CRectTileImageSet() OVERRIDE {}
-
     virtual i32 Parse(WwdTileImageRecord* record) OVERRIDE;
     RVA(0x00161420, 0x1)
     virtual void FreePixels() OVERRIDE {}

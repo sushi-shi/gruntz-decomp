@@ -4,12 +4,12 @@
 
 #include <Mfc.h>
 
-#include <Bute/ButeTree.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Dsndmgr/StreamVoice.h>
 #include <Gruntz/ActName.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/ActRegistry.h>
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameObjectLogicTypes.h>
@@ -37,9 +37,9 @@
 #include <Rez/RezSync.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/zBitVec.h>
-#include <Wap32/ZVec.h>
 #include <Wwd/LogicRecordEvent.h>
+#include <ZTools/BitVec.h>
+#include <ZTools/ZDArray.h>
 
 RVA_DYNINIT(0x00119350, 0x5, s_gruntDirNorth)
 RVA_DYNINIT(0x00119370, 0x1a, s_gruntDirNorth)
@@ -138,12 +138,11 @@ void CGruntVoice::FireActivation(i32 actionId) {
 
 RVA(0x00119fa0, 0x2ac)
 void RegisterGruntVoiceActions() {
-    ACT_NAME_ID_CALL_REPORT(id, "A")
-    *CActRegPool<CGruntVoice>::s_table.ResolveEntryCallReport(id) =
-        static_cast<CActHandler>(&CGruntVoice::HideIndicator);
+    ACT_NAME_ID(id, "A")
+    CActRegPool<CGruntVoice>::s_table[id] = static_cast<CActHandler>(&CGruntVoice::HideIndicator);
 
     ACT_NAME_ID(id2, "B")
-    *CActRegPool<CGruntVoice>::s_table.ResolveEntryCallReport(id2) =
+    CActRegPool<CGruntVoice>::s_table[id2] =
         static_cast<CActHandler>(&CGruntVoice::UpdateIndicator);
 }
 
@@ -155,7 +154,7 @@ void CVoiceTrigger::FireActivation(i32 actionId) {
 RVA(0x0011a500, 0x18d)
 void CVoiceTrigger::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    *(CActRegPool<CVoiceTrigger>::s_table.ResolveEntry(id)) =
+    CActRegPool<CVoiceTrigger>::s_table[id] =
         static_cast<i32 (CUserLogic::*)()>(&CVoiceTrigger::Tick);
 }
 

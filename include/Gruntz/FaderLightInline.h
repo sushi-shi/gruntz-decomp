@@ -2,6 +2,7 @@
 #define GRUNTZ_GRUNTZ_FADERLIGHTINLINE_H
 
 #include <Gruntz/FaderSubtypes.h>
+#include <Lith/BDefs.h>
 
 #include <math.h>
 
@@ -13,7 +14,7 @@
 
 inline void CFaderLight::ComputeSpan(i32 row, i32 radiusSq, i32 edgeOffset, i32& right, i32& left) {
     i32 dy = row - m_centerY;
-    i32 dx = -static_cast<i32>(sqrt(static_cast<double>(radiusSq - dy * dy)));
+    i32 dx = -static_cast<i32>(sqrt(static_cast<double>(radiusSq - SQR(dy))));
     right = FADER_CLAMPW(m_centerX - dx, m_width);
     i32 x = dx + m_centerX + edgeOffset;
     left = (x < 0) ? 0 : x;
@@ -29,7 +30,7 @@ inline void CFaderLight::ComputeSpan(i32 row, i32 radiusSq, i32 edgeOffset, i32&
     } while (0)
 
 #define FADER_DISTANCE(x, center, dySquared)                                                       \
-    static_cast<i32>(sqrt(static_cast<double>(((x) - (center)) * ((x) - (center)) + (dySquared))))
+    static_cast<i32>(sqrt(static_cast<double>(SQR((x) - (center)) + (dySquared))))
 
 RVA(0x00180fb0, 0x534)
 inline void
@@ -39,7 +40,7 @@ CFaderLight::Render(i32 row0, i32 radiusSq, i32 radius, u8* lut, u8* srcBits, u8
     }
     i32 cx = m_centerY;
     i32 dx = row0 - cx;
-    i32 dx2 = dx * dx;
+    i32 dx2 = SQR(dx);
     i32 row = m_centerX - static_cast<i32>(sqrt(static_cast<double>((radiusSq - dx2)))) + 1;
     i32 len = FADER_DISTANCE(row, m_centerX, dx2);
 

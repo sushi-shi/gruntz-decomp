@@ -18,7 +18,6 @@ struct IDirectDraw2;
 
 class CDDrawOverlaySurface : public CDDSurface {
 public:
-    virtual ~CDDrawOverlaySurface() OVERRIDE;
     virtual DDSurfacePoolKind GetPoolKind() OVERRIDE;
     virtual i32 CreateOverlay(CDDrawDeviceManager* manager, i32 width, i32 height, i32 caps);
 
@@ -28,7 +27,6 @@ public:
 
 class CDDrawPrimarySurface : public CDDSurface {
 public:
-    virtual ~CDDrawPrimarySurface() OVERRIDE;
     virtual i32 CreateFromDesc(CDDrawDeviceManager*, const DDSURFACEDESC*) OVERRIDE;
     virtual DDSurfacePoolKind GetPoolKind() OVERRIDE;
     virtual i32
@@ -38,7 +36,6 @@ public:
 
 class CDDrawZBufferSurface : public CDDSurface {
 public:
-    virtual ~CDDrawZBufferSurface() OVERRIDE;
     virtual i32 CreateFromDesc(CDDrawDeviceManager*, const DDSURFACEDESC*) OVERRIDE;
     virtual DDSurfacePoolKind GetPoolKind() OVERRIDE;
 

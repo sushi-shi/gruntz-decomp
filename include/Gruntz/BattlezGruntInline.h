@@ -4,10 +4,75 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/TypeKeyColl.h>
 
-#include <string.h>
+static inline bool BattlezActDiffersFromIGLPJCR(CGrunt* unit) {
+    if (unit->IsAnimationAct("I")) {
+        return false;
+    }
+    if (unit->IsAnimationAct("G")) {
+        return false;
+    }
+    if (unit->IsAnimationAct("L")) {
+        return false;
+    }
+    if (unit->IsAnimationAct("P")) {
+        return false;
+    }
+    if (unit->IsAnimationAct("J")) {
+        return false;
+    }
+    if (unit->IsAnimationAct("C")) {
+        return false;
+    }
+    if (unit->IsAnimationAct("R")) {
+        return false;
+    }
+    return true;
+}
 
-inline bool CGrunt::HasAnimationActName(const char* name) const {
-    return strcmp(*g_typeColl.GetNameRecord(m_logicRecord->m_eventCode), name) == 0;
+static inline bool BattlezActDiffersFromCRCGLPJ(CGrunt* unit) {
+    if (!unit->IsNotAnimationAct("C")) {
+        return false;
+    }
+    if (!unit->IsNotAnimationAct("R")) {
+        return false;
+    }
+    if (!unit->IsNotAnimationAct("C")) {
+        return false;
+    }
+    if (!unit->IsNotAnimationAct("G")) {
+        return false;
+    }
+    if (!unit->IsNotAnimationAct("L")) {
+        return false;
+    }
+    if (!unit->IsNotAnimationAct("P")) {
+        return false;
+    }
+    if (!unit->IsNotAnimationAct("J")) {
+        return false;
+    }
+    return true;
+}
+
+static inline void ExcludeBattlezSpecialAct(CGrunt* unit, const char* name, i32& eligible) {
+    char equal = unit->IsAnimationAct(name);
+    if (equal) {
+        eligible = 0;
+    }
+}
+
+static inline bool UpdateBattlezSpecialEligibility(CGrunt* unit, i32& eligible) {
+    ExcludeBattlezSpecialAct(unit, "I", eligible);
+    ExcludeBattlezSpecialAct(unit, "G", eligible);
+    ExcludeBattlezSpecialAct(unit, "L", eligible);
+    char equal = unit->IsAnimationAct("P");
+    if (equal) {
+        return false;
+    }
+    ExcludeBattlezSpecialAct(unit, "J", eligible);
+    ExcludeBattlezSpecialAct(unit, "C", eligible);
+    ExcludeBattlezSpecialAct(unit, "R", eligible);
+    return true;
 }
 
 inline void CGrunt::BuildUnitSearchBox(RECT* box, i32 radius) {

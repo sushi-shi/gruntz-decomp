@@ -19,10 +19,11 @@
 #include <Gruntz/BrickTileId.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordNode.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/EnemyAiType.h>
-#include <Gruntz/FreeNodePoolInline.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameObjectLogicTypes.h>
+#include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
@@ -58,9 +59,9 @@
 #include <Io/FileMem.h>
 #include <Lith/BDefs.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/zBitVec.h>
-#include <Wap32/ZVec.h>
 #include <Wwd/WwdFile.h>
+#include <ZTools/BitVec.h>
+#include <ZTools/ZDArray.h>
 
 #include <limits.h>
 #include <math.h>
@@ -310,13 +311,13 @@ void CBattlezMapConfig::FreeArrays() {
     for (i = 0; i < m_candArray.GetSize(); i++) {
         Coord* p = static_cast<Coord*>(m_candArray[i]);
         if (p != NULL) {
-            PushFreeNode(&g_coordPool, p);
+            g_coordPool.Push(p);
         }
     }
     m_candArray.SetSize(0, -1);
 
     for (i = 0; i < m_attackWaypoints.GetSize(); i++) {
-        PushFreeNode(&g_coordPool, m_attackWaypoints[i]);
+        g_coordPool.Push(m_attackWaypoints[i]);
     }
     m_attackWaypoints.SetSize(0, -1);
 
@@ -325,7 +326,6 @@ void CBattlezMapConfig::FreeArrays() {
     m_reserved13c = 0;
 }
 
-// @early-stop
 RVA(0x00025d90, 0x580)
 i32 CBattlezMapConfig::StepBoard() {
     if (m_active == false) {
@@ -448,13 +448,13 @@ i32 CBattlezMapConfig::StepBoard() {
                 switch (mode) {
                     case PICKUP_WINGZ: {
                         if (unit->CoordCount() != 0) {
-                            RECYCLE_GRUNT_COORDS_EXPANDED(unit)
+                            RECYCLE_GRUNT_COORDS(unit)
                         }
                         break;
                     }
                     case PICKUP_TOOB: {
                         if (unit->CoordCount() != 0) {
-                            RECYCLE_GRUNT_COORDS_EXPANDED(unit)
+                            RECYCLE_GRUNT_COORDS(unit)
                         }
                         break;
                     }
@@ -482,7 +482,6 @@ i32 CBattlezMapConfig::StepBoard() {
     return 1;
 }
 
-// @early-stop
 RVA(0x00026470, 0x29d)
 i32 CBattlezMapConfig::StepRowSpawn(b32 allowReserved) {
     i32 occupied = 0;
@@ -569,7 +568,7 @@ candidateFound:
         return 0;
     }
 
-    i32 roll = rand() % 100;
+    i32 roll = GetRandom(0, 99);
     i32 freeCount = 0;
     CGrunt** r2 = &m_triggerMgr->m_units[m_playerIndex * TM_UNITS_PER_PLAYER];
     for (i32 k = TM_UNITS_PER_PLAYER; k != 0; k--) {
@@ -601,7 +600,6 @@ candidateFound:
     return 1;
 }
 
-// @early-stop
 RVA(0x000267c0, 0x2850)
 i32 CBattlezMapConfig::StepRowUnits() {
     m_roundRobinTick++;
@@ -659,7 +657,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         if (unit->IsAtSavedScreenPos() != 0 && unit->m_entranceCommitted != false
                             && unit->m_deathAnimStarted == false && unit->m_entranceActive == false
                             && unit->m_poweredUp == false) {
-                            if (BATTLEZ_ACT_DIFFERS_FROM_IGLPJCR(unit, eq)) {
+                            if (BattlezActDiffersFromIGLPJCR(unit)) {
                                 PickupType st2 = unit->ArrivalPickup();
                                 if (st2 == PICKUP_BRICK && unit->m_arrivalState == AI_DEFENDER
                                     && unit->m_defenderState == AISTATE_BATTLEZ_ROUTE_TARGET) {
@@ -742,36 +740,14 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             }
                         }
                         {
-                            char ne;
-                            if ((ne = ANIMATION_ACT_DIFFERS_FOR(unit, "C"))
-                                && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "R"))
-                                && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "C"))
-                                && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "G"))
-                                && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "L"))
-                                && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "P"))
-                                && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "J"))) {
+                            if (BattlezActDiffersFromCRCGLPJ(unit)) {
                                 if (unit->m_object->m_screenX == unit->m_lastTilePx.m_x
                                     && unit->m_object->m_screenY == unit->m_lastTilePx.m_y
                                     && unit->m_entranceCommitted != false
                                     && unit->m_deathAnimStarted == false
                                     && unit->m_entranceActive == false) {
                                     RECT box;
-                                    Coord c1;
-                                    (static_cast<CUserLogic*>(unit))->GetScreenPos((&c1));
-                                    c1.m_y >>= 5;
-                                    c1.m_x >>= 5;
-                                    Coord c2;
-                                    (static_cast<CUserLogic*>(unit))->GetScreenTile((&c2));
-                                    Coord c3;
-                                    (static_cast<CUserLogic*>(unit))->GetScreenPos((&c3));
-                                    c3.m_y >>= 5;
-                                    c3.m_x >>= 5;
-                                    Coord c4;
-                                    (static_cast<CUserLogic*>(unit))->GetScreenTile((&c4));
-                                    box.left = c4.m_x - 4;
-                                    box.top = c3.m_y - 4;
-                                    box.right = c2.m_x + 4;
-                                    box.bottom = c1.m_y + 4;
+                                    unit->BuildUnitSearchBox(&box, 4);
                                     Coord c5;
                                     (static_cast<CUserLogic*>(unit))->GetScreenTile((&c5));
                                     Coord c6;
@@ -835,33 +811,8 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             if (unit->m_entranceActive != false) {
                                 special = 0;
                             }
-                            eq = (ANIMATION_ACT_EQUALS_FOR(unit, "I"));
-                            if (eq) {
-                                special = 0;
-                            }
-                            eq = (ANIMATION_ACT_EQUALS_FOR(unit, "G"));
-                            if (eq) {
-                                special = 0;
-                            }
-                            eq = (ANIMATION_ACT_EQUALS_FOR(unit, "L"));
-                            if (eq) {
-                                special = 0;
-                            }
-                            eq = (ANIMATION_ACT_EQUALS_FOR(unit, "P"));
-                            if (eq) {
+                            if (!UpdateBattlezSpecialEligibility(unit, special)) {
                                 return 0;
-                            }
-                            eq = (ANIMATION_ACT_EQUALS_FOR(unit, "J"));
-                            if (eq) {
-                                special = 0;
-                            }
-                            eq = (ANIMATION_ACT_EQUALS_FOR(unit, "C"));
-                            if (eq) {
-                                special = 0;
-                            }
-                            eq = (ANIMATION_ACT_EQUALS_FOR(unit, "R"));
-                            if (eq) {
-                                special = 0;
                             }
                             if (unit->m_gruntKind == GRUNT_GHOST) {
                                 special = 0;
@@ -879,7 +830,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                         if (unit->IsAtSavedScreenPos() != 0 && unit->m_entranceCommitted != false
                             && unit->m_deathAnimStarted == false && unit->m_entranceActive == false
                             && unit->m_poweredUp == false) {
-                            if (BATTLEZ_ACT_DIFFERS_FROM_IGLPJCR(unit, eq)) {
+                            if (BattlezActDiffersFromIGLPJCR(unit)) {
                                 for (i32 j = 0; j < 4; j++) {
                                     if (j != m_playerIndex) {
                                         for (i32 k = 0; k < TM_UNITS_PER_PLAYER; k++) {
@@ -918,14 +869,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                 if (battleTask != BZTASK_ASSIGNED_TARGET && battleTask != BZTASK_SEEK_SWITCH) {
                     if (unit->m_entranceCommitted != false && unit->m_deathAnimStarted == false
                         && unit->m_entranceActive == false && unit->m_poweredUp == false) {
-                        char ne;
-                        if ((ne = ANIMATION_ACT_DIFFERS_FOR(unit, "I"))
-                            && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "G"))
-                            && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "L"))
-                            && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "P"))
-                            && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "J"))
-                            && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "C"))
-                            && (ne = ANIMATION_ACT_DIFFERS_FOR(unit, "R"))) {
+                        if (BattlezActDiffersFromIGLPJCR(unit)) {
                             if (unit->m_battleState != BZTASK_UNASSIGNED) {
                                 if (RouteToNearbyEnemy(unit) != 0) {
                                     hit = 1;
@@ -940,7 +884,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
             if (GRUNT_AT_SAVED_SCREEN_POS(unit) && unit->m_entranceCommitted != false
                 && unit->m_deathAnimStarted == false && unit->m_entranceActive == false
                 && unit->m_poweredUp == false) {
-                if (BATTLEZ_ACT_DIFFERS_FROM_IGLPJCR(unit, eq)) {
+                if (BattlezActDiffersFromIGLPJCR(unit)) {
                     if (static_cast<u32>(m_roundRobinTick) % TM_UNITS_PER_PLAYER
                         == static_cast<u32>(i)) {
                         {
@@ -995,7 +939,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                             && unit->m_entranceCommitted != false
                             && unit->m_deathAnimStarted == false && unit->m_entranceActive == false
                             && unit->m_poweredUp == false) {
-                            if (BATTLEZ_ACT_DIFFERS_FROM_IGLPJCR(unit, eq)) {
+                            if (BattlezActDiffersFromIGLPJCR(unit)) {
                                 goto dispatch;
                             }
                         }
@@ -1092,7 +1036,7 @@ i32 CBattlezMapConfig::StepRowUnits() {
                     continue;
                 dropCoords:
                     if (unit->CoordCount() != 0) {
-                        RECYCLE_GRUNT_COORDS_EXPANDED(unit)
+                        RECYCLE_GRUNT_COORDS(unit)
                     }
                 }
             }
@@ -1350,7 +1294,6 @@ void CBattlezMapConfig::RerouteIdleUnit(
     unit->TileSwitch(col, row, 0, 0x9c7, 0, 0);
 }
 
-// @early-stop
 RVA(0x00029b40, 0x813)
 i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
     CPtrList* coordList = &unit->m_coordList;
@@ -1508,10 +1451,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                         POSITION cur = n;
                         unit->m_coordList.GetNext(n);
                         if (static_cast<Coord*>(unit->m_coordList.GetAt(cur)) != NULL) {
-                            PushFreeNode(
-                                &g_coordPool,
-                                static_cast<Coord*>(unit->m_coordList.GetAt(cur))
-                            );
+                            g_coordPool.Push(static_cast<Coord*>(unit->m_coordList.GetAt(cur)));
                             coordList->RemoveAt(cur);
                         }
                     }
@@ -1619,7 +1559,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                             oy * 0x20 + 0x10
                         );
                         if (unit->CoordCount() != 0) {
-                            RECYCLE_GRUNT_COORDS_EXPANDED(unit)
+                            RECYCLE_GRUNT_COORDS(unit)
                         }
                         m_spawnTimer +=
                             static_cast<i32>((static_cast<u32>(m_gruntCreationTime) >> 2));
@@ -1728,7 +1668,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
             && list.GetCount() != 0) {
             Coord* head = static_cast<Coord*>(list.RemoveHead());
             if (head != NULL) {
-                PushFreeNode(&g_coordPool, head);
+                g_coordPool.Push(head);
             }
             if (list.GetCount() != 0) {
                 while (node != NULL) {
@@ -1736,7 +1676,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
                     unit->m_coordList.GetNext(node);
                     Coord* copy = NULL;
                     if (g_coordPool.m_freeHead->m_next != NULL) {
-                        copy = &g_coordPool.m_freeHead->m_coord;
+                        copy = &g_coordPool.m_freeHead->m_value;
                         *copy = *static_cast<Coord*>(unit->m_coordList.GetAt(remaining));
                         g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
                     }
@@ -1801,7 +1741,6 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
     return 0;
 }
 
-// @early-stop
 RVA(0x0002ab80, 0x15e)
 CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 halfH) {
     RECT rect;
@@ -1832,7 +1771,7 @@ CGrunt* CBattlezMapConfig::FindIdleGruntInBox(i32 cx, i32 cy, i32 halfW, i32 hal
             }
             i32 keep = 1;
             if (u->m_gruntKind == GRUNT_GHOST) {
-                if (rand() % 100 > 5) {
+                if (GetRandom(0, 99) > 5) {
                     keep = 0;
                 }
             }
@@ -2102,7 +2041,6 @@ i32 CBattlezMapConfig::Serialize(CFileMemBase* ar) {
     return 1;
 }
 
-// @early-stop
 RVA(0x0002b950, 0x513)
 i32 CBattlezMapConfig::Deserialize(CFileMemBase* ar) {
     if (ar == NULL) {
@@ -2187,7 +2125,7 @@ i32 CBattlezMapConfig::Deserialize(CFileMemBase* ar) {
     for (j = 0; j < m_attackWaypoints.GetSize(); j++) {
         Coord* q = static_cast<Coord*>(m_attackWaypoints[j]);
         if (q != NULL) {
-            PushFreeNode(&g_coordPool, q);
+            g_coordPool.Push(q);
         }
     }
     m_attackWaypoints.SetSize(0, -1);
@@ -2202,7 +2140,7 @@ i32 CBattlezMapConfig::Deserialize(CFileMemBase* ar) {
     for (j = 0; j < m_candArray.GetSize(); j++) {
         Coord* q = static_cast<Coord*>(m_candArray[j]);
         if (q != NULL) {
-            PushFreeNode(&g_coordPool, q);
+            g_coordPool.Push(q);
         }
     }
     m_candArray.SetSize(0, -1);
@@ -2449,7 +2387,6 @@ i32 __stdcall BattlezMapConfigAcceptAlwaysArg(i32) {
     return 1;
 }
 
-// @early-stop
 RVA(0x0002c690, 0xdb4)
 i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     CPtrList* coordList = &g->m_coordList;
@@ -2570,7 +2507,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                                 && path.GetCount() != 0) {
                                 Coord* head = static_cast<Coord*>(path.RemoveHead());
                                 if (head != NULL) {
-                                    PushFreeNode(&g_coordPool, head);
+                                    g_coordPool.Push(head);
                                 }
                                 if (path.GetCount() != 0) {
                                     ARR_RECYCLE(g);
@@ -2873,7 +2810,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
                     while (n != NULL) {
                         POSITION cur = n;
                         list.GetNext(n);
-                        PushFreeNode(&g_coordPool, static_cast<Coord*>(list.GetAt(cur)));
+                        g_coordPool.Push(static_cast<Coord*>(list.GetAt(cur)));
                     }
                 }
                 break;
@@ -2905,7 +2842,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
                             while (n != NULL) {
                                 POSITION cur = n;
                                 list2.GetNext(n);
-                                PushFreeNode(&g_coordPool, static_cast<Coord*>(list2.GetAt(cur)));
+                                g_coordPool.Push(static_cast<Coord*>(list2.GetAt(cur)));
                             }
                         }
                     }
@@ -2951,10 +2888,7 @@ void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 req
                                 while (n != NULL) {
                                     POSITION cur = n;
                                     list3.GetNext(n);
-                                    PushFreeNode(
-                                        &g_coordPool,
-                                        static_cast<Coord*>(list3.GetAt(cur))
-                                    );
+                                    g_coordPool.Push(static_cast<Coord*>(list3.GetAt(cur)));
                                 }
                             }
                         }
@@ -3465,7 +3399,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
                             if (list.GetHeadPosition() != NULL) {
                                 Coord* head = static_cast<Coord*>(list.RemoveHead());
                                 if (head != NULL) {
-                                    PushFreeNode(&g_coordPool, head);
+                                    g_coordPool.Push(head);
                                 }
                             }
                             if (list.GetHeadPosition() != NULL) {
@@ -3494,7 +3428,6 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
     return 0;
 }
 
-// @early-stop
 RVA(0x0002f620, 0x871)
 i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     if (unit->m_entranceCommitted == false) {
@@ -3511,95 +3444,31 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     }
 
     bool eq;
-    eq = (ANIMATION_ACT_EQUALS_FOR(unit, "I"));
+    eq = unit->IsAnimationAct("I");
     if (eq) {
         return 0;
     }
-
-    CString* recs;
-    CString* slot;
-    i32 cnt;
-
-    recs = g_typeColl.ScratchResolve(unit->m_logicRecord->m_eventCode);
-    slot = g_typeColl.Slots();
-    cnt = g_typeColl.m_grown;
-    while (cnt-- != 0) {
-        if (slot != NULL) {
-            slot->CString::CString();
-        }
-        slot++;
-    }
-    eq = (strcmp(*recs, "G") == 0);
+    eq = unit->IsAnimationAct("G");
     if (eq) {
         return 0;
     }
-
-    recs = g_typeColl.ScratchResolve(unit->m_logicRecord->m_eventCode);
-    slot = g_typeColl.Slots();
-    cnt = g_typeColl.m_grown;
-    while (cnt-- != 0) {
-        if (slot != NULL) {
-            slot->CString::CString();
-        }
-        slot++;
-    }
-    eq = (strcmp(*recs, "L") == 0);
+    eq = unit->IsAnimationAct("L");
     if (eq) {
         return 0;
     }
-
-    recs = g_typeColl.ScratchResolve(unit->m_logicRecord->m_eventCode);
-    slot = g_typeColl.Slots();
-    cnt = g_typeColl.m_grown;
-    while (cnt-- != 0) {
-        if (slot != NULL) {
-            slot->CString::CString();
-        }
-        slot++;
-    }
-    eq = (strcmp(*recs, "P") == 0);
+    eq = unit->IsAnimationAct("P");
     if (eq) {
         return 0;
     }
-
-    recs = g_typeColl.ScratchResolve(unit->m_logicRecord->m_eventCode);
-    slot = g_typeColl.Slots();
-    cnt = g_typeColl.m_grown;
-    while (cnt-- != 0) {
-        if (slot != NULL) {
-            slot->CString::CString();
-        }
-        slot++;
-    }
-    eq = (strcmp(*recs, "J") == 0);
+    eq = unit->IsAnimationAct("J");
     if (eq) {
         return 0;
     }
-
-    recs = g_typeColl.ScratchResolve(unit->m_logicRecord->m_eventCode);
-    slot = g_typeColl.Slots();
-    cnt = g_typeColl.m_grown;
-    while (cnt-- != 0) {
-        if (slot != NULL) {
-            slot->CString::CString();
-        }
-        slot++;
-    }
-    eq = (strcmp(*recs, "C") == 0);
+    eq = unit->IsAnimationAct("C");
     if (eq) {
         return 0;
     }
-
-    recs = g_typeColl.ScratchResolve(unit->m_logicRecord->m_eventCode);
-    slot = g_typeColl.Slots();
-    cnt = g_typeColl.m_grown;
-    while (cnt-- != 0) {
-        if (slot != NULL) {
-            slot->CString::CString();
-        }
-        slot++;
-    }
-    eq = (strcmp(*recs, "R") == 0);
+    eq = unit->IsAnimationAct("R");
     if (eq) {
         return 0;
     }
@@ -3611,8 +3480,8 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         band &= 1;
     } else {
         band = rand() % bandPct;
+        band++;
     }
-    band++;
     if (band <= m_toolzPct) {
 
         PickupType cur = unit->ArrivalPickup();
@@ -3626,8 +3495,8 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
             roll &= 1;
         } else {
             roll = rand() % rollPct;
+            roll++;
         }
-        roll++;
         PickupType mode = PICKUP_WINGZ;
         if (roll <= m_bombzPct) {
             mode = PICKUP_BOMB;
@@ -3701,7 +3570,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
                 (static_cast<CGrunt*>(u))->LoadPickupSprites(PICKUP_BRICK, 1, 0, 0, 1);
                 u->m_battleState = BZTASK_CARRY_BRICK;
                 if (u->CoordCount() != 0) {
-                    RECYCLE_GRUNT_COORDS_EXPANDED(u)
+                    RECYCLE_GRUNT_COORDS(u)
                 }
             }
             return 1;
@@ -3715,12 +3584,12 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         if (mode != PICKUP_TOOB) {
             if (mode == PICKUP_WINGZ) {
                 if (unit->CoordCount() != 0) {
-                    RECYCLE_GRUNT_COORDS_EXPANDED(unit)
+                    RECYCLE_GRUNT_COORDS(unit)
                 }
             }
         } else {
             if (unit->CoordCount() != 0) {
-                RECYCLE_GRUNT_COORDS_EXPANDED(unit)
+                RECYCLE_GRUNT_COORDS(unit)
             }
         }
     }
@@ -3734,8 +3603,8 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
             roll &= 1;
         } else {
             roll = rand() % rollPct;
+            roll++;
         }
-        roll++;
         PickupType mode;
         if (roll <= m_babyWalkerzPct) {
             mode = PICKUP_BABYWALKER;
@@ -3767,8 +3636,8 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
             roll &= 1;
         } else {
             roll = rand() % rollPct;
+            roll++;
         }
-        roll++;
         PickupType mode = PICKUP_BLACKBRICK;
         if (roll <= m_redBrickPct) {
             mode = PICKUP_REDBRICK;
@@ -3785,7 +3654,6 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
     }
 }
 
-// @early-stop
 RVA(0x000300c0, 0x190)
 i32 CBattlezMapConfig::RouteUnitTo(
     CGrunt* unit,
@@ -3813,7 +3681,7 @@ i32 CBattlezMapConfig::RouteUnitTo(
             if (list.GetCount() != 0) {
                 Coord* head = static_cast<Coord*>(list.RemoveHead());
                 if (head != NULL) {
-                    PushFreeNode(&g_coordPool, head);
+                    g_coordPool.Push(head);
                 }
                 if (list.GetCount() != 0) {
                     if (unit->CoordCount() != 0) {
@@ -3900,7 +3768,7 @@ i32 CBattlezMapConfig::RouteUnitToGoal(
     }
     head = static_cast<Coord*>(list.RemoveHead());
     if (head != NULL) {
-        PushFreeNode(&g_coordPool, head);
+        g_coordPool.Push(head);
     }
     if (list.GetCount() != 0) {
         if (n != NULL) {
@@ -3909,14 +3777,14 @@ i32 CBattlezMapConfig::RouteUnitToGoal(
                 do {
                     CPtrList* listPayload = &unit->m_coordList;
                     if (listPayload != NULL) {
-                        PushFreeNode(&g_coordPool, listPayload);
+                        g_coordPool.Push(listPayload);
                     }
                 } while (h != n);
             }
         }
 
         if (unit->CoordCount() != 0) {
-            RECYCLE_GRUNT_COORDS_EXPANDED(unit)
+            RECYCLE_GRUNT_COORDS(unit)
         }
 
         qp = list.GetHeadPosition();
@@ -4140,7 +4008,6 @@ i32 __stdcall BattlezMapConfigAcceptAlwaysSixArgs(i32, i32, i32, i32, i32, i32) 
     return 1;
 }
 
-// @early-stop
 RVA(0x00030b20, 0x328)
 i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
     CGameObject* lvl = unit->m_object;
@@ -4231,12 +4098,12 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
         if (list.GetCount() != 0) {
             Coord* head = static_cast<Coord*>(list.RemoveHead());
             if (head != NULL) {
-                PushFreeNode(&g_coordPool, head);
+                g_coordPool.Push(head);
             }
             if (list.GetCount() != 0) {
 
                 if (unit->CoordCount() != 0) {
-                    RECYCLE_GRUNT_COORDS_EXPANDED(unit)
+                    RECYCLE_GRUNT_COORDS(unit)
                 }
 
                 POSITION pp = list.GetHeadPosition();
@@ -4309,35 +4176,11 @@ Coord* CBattlezMapConfig::PickSpawnCoord(Coord* o, CGrunt* unit, i32 kind) {
     return o;
 }
 
-RVA(0x000310f0, 0x8d)
-char* _zdvec::IndexToPtr(i32 i) {
-    char* r;
-    m_grown = 0;
-    if (i >= m_lo && i <= m_hi) {
-        r = m_base + (i - m_lo) * m_stride;
-    } else if (GrowTo(i, 0)) {
-        r = m_base + (i - m_lo) * m_stride;
-    } else {
-        char* msg = g_errOutOfMem;
-        g_retAddrBreadcrumb = GetRetAddr();
-        m_errSink->Set(this, msg, 0xc);
-        r = m_spare;
-    }
-    char* slot = m_alloc;
-    i32 n = m_grown;
-    while (n-- != 0) {
-        if (slot) {
-            new (slot) CString();
-        }
-        slot += 4;
-    }
-    return r;
-}
+template CString& zDArray<CString>::operator[](i32 i);
+RVA_COMPGEN(0x000310f0, 0x8d, ??A?$zDArray@VCString@@@@QAEAAVCString@@H@Z)
 
-RVA(0x000311b0, 0x14)
-void FreeNodePool::Push(void* p) {
-    PushFreeNode(this, p);
-}
+template void FreeNodePool<Coord>::Push(void* p);
+RVA_COMPGEN(0x000311b0, 0x14, ?Push@?$FreeNodePool@UCoord@@@@QAEXPAX@Z)
 
 RVA(0x000311e0, 0x4c)
 void CDDrawWorkerHost::SnapToTileCenter(Coord* out, i32 x, i32 y) {
@@ -4366,19 +4209,4 @@ CGameObject* CDDrawChildGroup::Drain() {
     }
 }
 
-RVA(0x000312a0, 0x74)
-char* _zvec::IndexToPtr(i32 idx) {
-    char* r;
-    m_grown = 0;
-    if (idx >= m_lo && idx <= m_hi) {
-        r = m_base + (idx - m_lo) * m_stride;
-    } else if (GrowTo(idx, 0)) {
-        r = m_base + (idx - m_lo) * m_stride;
-    } else {
-        char* msg = g_errOutOfMem;
-        g_retAddrBreadcrumb = GetRetAddr();
-        m_errSink->Set(this, msg, 0xc);
-        r = m_spare;
-    }
-    return r;
-}
+RVA_COMPGEN(0x000312a0, 0x74, ?get@_zdvec@@IAEPAXH@Z)

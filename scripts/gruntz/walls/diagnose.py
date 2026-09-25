@@ -15,8 +15,11 @@ The ladder (CLAUDE.md): the FIRST divergence class decides the wall.
   cfg        call sets agree but branch/return counts differ - control-flow
              reconstruction (arm shape, tail merge, loop form). Levers:
              docs/patterns/ tail/cross-jump/do-while family.
-  regalloc   same calls, same branch skeleton, different bytes - register
-             allocation / scheduling / instruction selection. Lever:
+  regalloc   same call multiset and branch/return counts, different bytes -
+             provisional register/schedule candidate, NOT CFG equivalence.
+             The ladder does not compare branch destinations or which calls
+             each edge reaches. LoadEntranceConfig's misplaced ResetCell
+             passed this screen; audit semantic edges before steering. Lever:
              docs/relevations/cl5-callcrossing-ebx-first-by-use-schedule.md;
              a TU-state probe (docs/patterns/tu-state-probe-family-*) as a
              disposable A/B only.
@@ -253,10 +256,12 @@ def diagnose(token: str, show_asm: bool = False) -> int:
     elif wall == "regalloc":
         first = next((i for i, (x, y) in enumerate(zip(bmask, tmask))
                       if x != y), min(len(bmask), len(tmask)))
-        print(f"  class: REGALLOC/SCHEDULING - same calls and skeleton, "
+        print(f"  class: REGALLOC/SCHEDULING - same call multiset and branch/return counts, "
               f"bytes first differ at +{first:#x}; instruction selection, "
               f"lifetime or allocation "
               f"(docs/relevations/cl5-callcrossing-ebx-*)")
+        print("  provisional: branch destinations and side-effect reachability are not "
+              "verified; audit semantic edges before compiler-state work")
     else:
         print("  class: NONE - the normalized pair is identical; the score "
               "gap is outside this function (pairing, data, or unit-level)")

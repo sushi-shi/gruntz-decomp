@@ -10,7 +10,6 @@
 #include <Gruntz/Brickz.h>
 #include <Gruntz/EnemyAiType.h>
 #include <Gruntz/ErrorStringId.h>
-#include <Gruntz/FreeNodePoolInline.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameModeId.h>
 #include <Gruntz/GameObjectLogicTypes.h>
@@ -66,7 +65,6 @@
 DATA(0x00244ca4)
 i32 g_groupSentinel;
 
-// @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00077f80, 0xab)
@@ -84,7 +82,7 @@ CGrunt* CTriggerMgr::FindNearestUnitForPlayer(CGrunt* g) {
             CGameObject* o = candidate->m_object;
             i32 dx = (o->m_screenX >> TILE_SHIFT_PX) - tx;
             i32 dy = (o->m_screenY >> TILE_SHIFT_PX) - ty;
-            i32 d = dx * dx + dy * dy;
+            i32 d = SquaredDistance(dx, dy);
             if (d < bestDist && d < g->m_defenderRadius * 2) {
                 best = candidate;
                 bestDist = d;
@@ -137,7 +135,6 @@ void CTriggerMgr::HudRect(RECT r, b32 selectionReset) {
     }
 }
 
-// @early-stop
 RVA(0x00078260, 0x165)
 i32 CTriggerMgr::RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelection) {
     if (fromSelection != 0) {
@@ -149,7 +146,7 @@ i32 CTriggerMgr::RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelect
                 POSITION cur = pos;
                 Coord* p = static_cast<Coord*>(list->GetNext(pos));
                 if (p->m_x == playerIndex && p->m_y == unitIndex) {
-                    PushFreeNode(&g_coordPool, p);
+                    g_coordPool.Push(p);
                     list->RemoveAt(cur);
                 }
             }
@@ -188,7 +185,7 @@ i32 CTriggerMgr::RemoveCellRecord(i32 playerIndex, i32 unitIndex, i32 fromSelect
                     CloseActionOptionsMenu();
                 }
             }
-            PushFreeNode(&g_coordPool, p);
+            g_coordPool.Push(p);
             m_recList.RemoveAt(cur);
             return 1;
         }
@@ -205,7 +202,7 @@ void CTriggerMgr::ResetAll() {
         CGrunt* cell = m_units[idx];
         if (cell != NULL) {
             (static_cast<CGrunt*>(cell))->ClearAllSprites();
-            PushFreeNode(&g_coordPool, payload);
+            g_coordPool.Push(payload);
         }
     }
     m_recList.RemoveAll();
@@ -351,7 +348,7 @@ void CTriggerMgr::ClearRecords() {
     POSITION pos = m_recList.GetHeadPosition();
     if (pos != NULL) {
         do {
-            PushFreeNode(&g_coordPool, m_recList.GetNext(pos));
+            g_coordPool.Push(m_recList.GetNext(pos));
         } while (pos != NULL);
     }
     m_recList.RemoveAll();
@@ -2374,19 +2371,14 @@ i32 CTriggerMgr::SpawnPowerupIcon(
     return 1;
 }
 
-// @early-stop
 RVA(0x0007cc60, 0xa7)
 i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
     POSITION pos = m_selLists[idx].GetHeadPosition();
     if (pos != NULL) {
-        CoordPoolNode* head = g_coordPool.m_freeHead;
         do {
             Coord* payload = static_cast<Coord*>(m_selLists[idx].GetNext(pos));
             if (payload != NULL) {
-                CoordPoolNode* slot = g_coordPool.NodeOf(payload);
-                slot->m_next = head;
-                head = slot;
-                g_coordPool.m_freeHead = head;
+                g_coordPool.Push(payload);
             }
         } while (pos != NULL);
     }
@@ -2447,7 +2439,7 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
                 }
             }
         } else {
-            PushFreeNode(&g_coordPool, payload);
+            g_coordPool.Push(payload);
             m_selLists[slot].RemoveAt(cur);
         }
     } while (pos != NULL);
@@ -2535,7 +2527,7 @@ void CTriggerMgr::ClearSelections() {
             do {
                 Coord* payload = static_cast<Coord*>(list->GetNext(pos));
                 if (payload != NULL) {
-                    PushFreeNode(&g_coordPool, payload);
+                    g_coordPool.Push(payload);
                 }
             } while (pos != NULL);
         }
@@ -2582,7 +2574,7 @@ i32 CTriggerMgr::NearestOtherPlayerUnitDistSq(i32 skipPlayerIndex, i32 px, i32 p
                     CGameObject* o = g->m_object;
                     i32 dx = (o->m_screenX >> TILE_SHIFT_PX) - tx;
                     i32 dy = (o->m_screenY >> TILE_SHIFT_PX) - ty;
-                    i32 d = abs(dx * dx + dy * dy);
+                    i32 d = abs(SquaredDistance(dx, dy));
                     if (d < best) {
                         best = d;
                     }

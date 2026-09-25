@@ -1,21 +1,18 @@
-# A repeated FP block: copy-paste it (macro), don't `__inline` a helper
+# Repeated FP blocks: test the macro and inline boundaries
 tags: cpp:float cpp:inline cpp:macro | asm:fld asm:fxch asm:fmul | topic:codegen-idiom topic:scheduling
 symptoms: a function runs the SAME multi-statement `double` block N times down parallel member columns (per-axis X/Y/Z, per-channel R/G/B, …); reconstructing it as one `__inline` helper called N times plateaus far LOW (~35%) with a deep, over-scheduled FP stack — the recompile hoists several columns' constant `fld`s into the prologue and interleaves the iterations
-confidence: 7/10
+confidence: 5/10
 
-When retail emits N byte-identical copies of an x87 block (one per axis/column), the
-original source was almost certainly **N literal copy-pasted blocks** (or a
-function-like `#define` macro), NOT a helper inlined N times. The two are NOT
-equivalent at /O2:
+Repeated x87 blocks justify testing both a macro and an inline function with
+the complete parameter, result and local-lifetime boundaries. Their VC5 output
+can differ even when their arithmetic is equivalent. They do not, by
+themselves, identify which source spelling the original used.
 
-- An `__inline` helper gives MSVC 5.0's scheduler ONE big region spanning all N
-  iterations. It greedily floats independent loads (each column's `fld
-  [this+const]`) up into the prologue and **interleaves** the iterations on a deep
-  FP stack — diverging from retail's shallow, one-column-at-a-time stack where the
-  shared scalar (e.g. the frame `dt`) persists on `st0` across blocks.
-- A **macro** (or hand-copied blocks) gives the scheduler N SEPARATE regions with a
-  sequence point between them, so each block schedules locally with a shallow stack
-  — matching retail's copy-paste.
+An earlier `CMotionState::Step` experiment reported cross-axis load hoisting
+and a deeper FP stack with an inline helper, reduced by a macro expansion.
+That is evidence about those particular source states, not a universal
+scheduler rule. In particular, macro expansion adds **no C++ sequence point**
+and does not inherently partition scheduling into independent regions.
 
 Lever: write the repeated body as a `#define BLOCK(v,a,s,…) do { … } while (0)`
 taking the per-column member tokens, expanded once per column. (CMotionState::Step
@@ -35,10 +32,19 @@ void CMotionState::Step(double dt) {
 }
 ```
 
-This closes the cross-iteration interleave (the big DELETE/INSERT desync). The
-REMAINING residual inside each block — the `fld st(0)`-vs-`fld [mem]` operand choice
-and the `fxch` ordering of the quadratic-solve — is the per-block x87 stack-schedule
-wall and is NOT further steerable; see [[x87-fp-stack-schedule]]. Recognize the
-65%-ish plateau with byte-exact stores and stop.
+The historical 35% to 65% observation is not a stopping criterion. Subsequent
+Step history reached 82.9390%, directly contradicting this page's former
+claim that the remaining schedule was unsteerable. The fresh complete-family
+review is tracked by `reassess-sqr-motion` and
+`reassess-sqr-constref-template-profile` in `config/lithtech_lineage.tsv`.
+Those rows, not this pattern, own candidate dispositions and reopening evidence.
+
+Reverse-use signature: compare axis-local loads, spills and FP-stack exchanges
+from the first divergence, while independently checking all member offsets,
+guards and raw relocation identities. A changed helper boundary can move the
+first divergence before its arithmetic expansion. Compare the alleged improved
+feature with the baseline too; a dipped state is useful only if it introduces
+something the baseline lacked. Preserve source-backed abstractions and compose
+independent lifetime evidence before declaring a scheduling residue bounded.
 
 variants: [[x87-fp-stack-schedule]] (the per-block residual), [[inline-switch-serialize-record-unroll]] (the integer analogue: `__inline` vs unrolled records).

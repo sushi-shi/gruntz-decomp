@@ -7,8 +7,8 @@
 #include <Enums.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/CoordNode.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/EnemyAiType.h>
-#include <Gruntz/FreeNodePool.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRand.h>
 #include <Gruntz/GameRegistry.h>
@@ -33,14 +33,13 @@
 #include <Ints.h>
 #include <MakeRect.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/ZDArray.h>
 
 #include <limits.h>
 #include <new>
 #include <stdlib.h>
 #include <string.h>
 
-// @early-stop
 RVA(0x000f60f0, 0xb30)
 i32 CGrunt::StepTimeBomberBehavior() {
     m_neighborScanEnabled = false;
@@ -211,7 +210,7 @@ common: {
         i32 fy = nc->m_y;
         if ((g_gameReg->m_tileGrid->CellFlagsAt(fx, fy) & 0x20) != 0) {
             if (CoordCount() != 0) {
-                RECYCLE_GRUNT_COORDS_EXPANDED(this)
+                RECYCLE_GRUNT_COORDS(this)
             }
             g_gameReg->m_triggerMgr->UseEquippedToolAt(
                 m_playerIndex,
@@ -234,7 +233,7 @@ common: {
     }
     m_arrivalCell = *head;
     if (CoordCount() != 0) {
-        RECYCLE_GRUNT_COORDS_EXPANDED(this)
+        RECYCLE_GRUNT_COORDS(this)
     }
     m_defenderState = AISTATE_PHASE_MIRROR_THEN_SEEK;
     return 1;

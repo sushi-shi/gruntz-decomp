@@ -5,21 +5,21 @@
 #include <Mfc.h>
 
 #include <Bute/ButeMgr.h>
-#include <Bute/ButeTree.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Dsndmgr/SoundBuffer.h>
+#include <Globals.h>
 #include <Gruntz/ActName.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/ActRegistry.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniAdvanceCursorInline.h>
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/Boomerang.h>
 #include <Gruntz/Brickz.h>
-#include <Gruntz/FreeNodePool.h>
-#include <Gruntz/FreeNodePoolInline.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
@@ -50,10 +50,11 @@
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
+#include <Utils/Square.h>
 #include <Wap32/TileGeometry.h>
-#include <Wap32/zBitVec.h>
-#include <Wap32/ZVec.h>
 #include <Wwd/MoveMode.h>
+#include <ZTools/BitVec.h>
+#include <ZTools/ZDArray.h>
 
 #include <math.h>
 #include <stdlib.h>
@@ -122,13 +123,12 @@ CProjectile::~CProjectile() {
         Coord* hitPoint = static_cast<Coord*>(m_hitList.GetNext(pos));
         if (hitPoint != NULL) {
 
-            PushFreeNode(&g_coordPool, hitPoint);
+            g_coordPool.Push(hitPoint);
         }
     }
     m_hitList.RemoveAll();
 }
 
-// @early-stop
 RVA(0x000df050, 0x6ed)
 i32 CProjectile::LoadProjectileSprites(
     PickupType kind,
@@ -186,10 +186,7 @@ i32 CProjectile::LoadProjectileSprites(
             m_isArcing = false;
             i32 ddx = abs((m_targetPxX >> TILE_SHIFT_PX) - (m_object->m_screenX >> TILE_SHIFT_PX));
             i32 ddy = abs((m_targetPxY >> TILE_SHIFT_PX) - (m_object->m_screenY >> TILE_SHIFT_PX));
-            count = ddx;
-            if (ddx <= ddy) {
-                count = ddy;
-            }
+            count = Max(ddx, ddy);
             break;
         }
         default:
@@ -220,7 +217,7 @@ i32 CProjectile::LoadProjectileSprites(
     SetImageSetByName(key + "_OBJECT");
 
     u32 totalTime = static_cast<u32>((count * m_timePerTile));
-    double len = sqrt(dx * dx + dy * dy);
+    double len = sqrt(Sqr(dx) + Sqr(dy));
     double t = static_cast<double>(totalTime);
     double vx = dx / len;
     m_flightDist = len;
@@ -286,7 +283,6 @@ void CProjectile::RegisterType() {
         static_cast<CActHandler>(&CProjectile::AdvanceAnimationAndDeleteWhenComplete);
 }
 
-// @early-stop
 RVA(0x000dfd00, 0x70c)
 void CProjectile::AdvanceMotion() {
     if (m_arrived != false) {
@@ -312,27 +308,19 @@ void CProjectile::AdvanceMotion() {
         m_posX = m_posX + static_cast<double>(g_frameDelta) * m_velX * m_velScale;
         m_posY = m_posY + static_cast<double>(g_frameDelta) * m_velY * m_velScale;
         i32 xRes = static_cast<i32>((m_roundX + m_posX));
-        i32 yRes = static_cast<i32>((m_roundY + m_posY));
         i32 localX = xRes;
+        i32 yRes = static_cast<i32>((m_roundY + m_posY));
         if (m_velX > 0.0) {
-            if (xRes > m_targetPxX) {
-                localX = m_targetPxX;
-                xRes = m_targetPxX;
-            }
+            xRes = Min(xRes, m_targetPxX);
+            localX = xRes;
         } else if (m_velX < 0.0) {
-            if (xRes < m_targetPxX) {
-                localX = m_targetPxX;
-                xRes = m_targetPxX;
-            }
+            xRes = Max(xRes, m_targetPxX);
+            localX = xRes;
         }
         if (m_velY > 0.0) {
-            if (yRes > m_targetPxY) {
-                yRes = m_targetPxY;
-            }
+            yRes = Min(yRes, m_targetPxY);
         } else if (m_velY < 0.0) {
-            if (yRes < m_targetPxY) {
-                yRes = m_targetPxY;
-            }
+            yRes = Max(yRes, m_targetPxY);
         }
         m_curX = xRes;
         m_curY = yRes;
@@ -341,7 +329,7 @@ void CProjectile::AdvanceMotion() {
         if (m_isArcing != false) {
             double dx = fabs(static_cast<double>(m_targetPxX) - m_posX);
             double dy = fabs(static_cast<double>(m_targetPxY) - m_posY);
-            double dist = sqrt(dx * dx + dy * dy);
+            double dist = sqrt(Sqr(dx) + Sqr(dy));
             if (dist >= m_flightDist * 0.9 || dist < m_flightDist * 0.1) {
                 offX = 0x4;
                 offY = -0x4;
@@ -505,7 +493,6 @@ CBoomerang::CBoomerang(CGameObject* owner) : CProjectile(owner) {
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
 }
 
-// @early-stop
 RVA(0x000e0690, 0x1a9)
 i32 CBoomerang::LoadProjectileSprites(
     PickupType kind,
@@ -553,7 +540,7 @@ i32 CBoomerang::LoadProjectileSprites(
         g->m_holdAnchorLo = g_frameTime;
         g->m_holdAnchorHi = 0;
         if (g->CoordCount() != 0) {
-            RECYCLE_GRUNT_COORDS_EXPANDED(g)
+            RECYCLE_GRUNT_COORDS(g)
         }
     }
     m_launched = false;
@@ -563,6 +550,7 @@ i32 CBoomerang::LoadProjectileSprites(
 RVA(0x000e08b0, 0x1de)
 void CBoomerang::AdvanceMotion() {
     double s;
+    double c;
     if (m_launched == false && m_phase > g_boomerangHalfTurnRadians) {
         m_object->m_screenX = m_targetPxX;
         m_object->m_screenY = m_targetPxY;
@@ -583,7 +571,7 @@ void CBoomerang::AdvanceMotion() {
     ScanTargets(0);
 
     s = sin(m_phase);
-    double c = cos(m_phase);
+    c = cos(m_phase);
     double vx = m_dirX;
     double vy = -m_dirY;
     double phaseDelta = static_cast<double>(g_frameDelta) * m_velScale;
@@ -664,7 +652,7 @@ void CProjectile::ScanTargets(i32 impact) {
             Coord* slot = NULL;
             CoordPoolNode* p = g_coordPool.m_freeHead;
             if (p->m_next != NULL) {
-                slot = &p->m_coord;
+                slot = &p->m_value;
                 slot->m_x = hitPlayerIndex;
                 slot->m_y = hitUnitIndex;
                 g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
@@ -748,7 +736,7 @@ i32 CProjectile::SerializeDispatch(
                 CoordPoolNode* node = g_coordPool.m_freeHead;
                 Coord* payload = NULL;
                 if (node->m_next != NULL) {
-                    payload = &node->m_coord;
+                    payload = &node->m_value;
                     g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
                 }
                 s->Read(payload, 8);

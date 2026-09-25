@@ -34,3 +34,13 @@ helper boundary at the larger expression without forcing a retail-absent call.
 Keep the comparison-result local and storage width where the compiler uses
 them; do not cache the lookup or remove a repeated comparison without retail
 evidence.
+
+These measurements used the older opaque container model. Restoring the complete
+typed construction/error layer changes the inliner population: this table does
+not establish a permanent requirement for caller-owned `char` results or a
+whole-chain macro. The [typed-template follow-up](animation-name-accessors-restore-template-call-cuts.md#steprowunits-follow-up-complete-comparison-phases)
+explicitly tests that assumption. Removing the unused result coupling and
+composing whole-guard and flag-update inlines recovers 45/52 typed calls at
+85.3681%. Lookup order and short-circuit behavior remain required, but the
+source spelling must be re-tested against the complete family. Neither pass
+reaches exact, so neither proves that its retained spelling is original.

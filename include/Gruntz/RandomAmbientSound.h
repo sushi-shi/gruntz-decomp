@@ -13,11 +13,7 @@
 
 class CRandomAmbientSound : public CAmbientSound {
 public:
-    CRandomAmbientSound() {}
-
     virtual void Update(i32 x, i32 y, b32 immediate) OVERRIDE;
-
-    virtual ~CRandomAmbientSound() OVERRIDE {}
 
     void InitCycleTiming(
         i32 playDurationMin,

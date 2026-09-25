@@ -51,7 +51,9 @@ inline u16 PackPixel16(u8 red, u8 green, u8 blue) {
 }
 
 inline u16 PackRgb16(i32 r, i32 g, i32 b) {
-    return static_cast<u16>(((r >> g_rDown) << g_rUp) | ((g >> g_gDown) << g_gUp) | (b >> g_bDown));
+    u16 color =
+        static_cast<u16>(((r >> g_rDown) << g_rUp) | ((g >> g_gDown) << g_gUp) | (b >> g_bDown));
+    return color;
 }
 
 static inline u16 PackPalEntry16(u8 r, u8 g, u8 b) {

@@ -46,8 +46,6 @@ GZ_ENUM_CONST_END(GruntIdleVariant)
 
 class CAniElement;
 
-class FreeNodePool;
-
 class SoundSample;
 
 class SoundBuffer;
@@ -124,12 +122,10 @@ struct CGruntCellRec {
 
     RECT m_rects[3];
 
-    struct {
+    struct Motion {
         DoubleVector2 m_direction;
         DoubleVector2 m_step;
     } m_motion;
-    CGruntCellRec();
-    ~CGruntCellRec();
 
     i32 SerializeStrings(class CFileMemBase* ar);
 
@@ -185,7 +181,6 @@ public:
     inline PickupType ArrivalPickupOf(PickupType entranceReason) const;
     inline PickupType ArrivalPickup() const;
     inline void BuildUnitSearchBox(RECT* box, i32 radius);
-    inline bool HasAnimationActName(const char* name) const;
     inline Coord ScanCell();
     inline i32 GetScreenTileY() const;
     inline i32 GetScreenTileX() const;
@@ -833,6 +828,12 @@ public:
 
     i32 FinishActiveAction();
 
+    void RestoreToolAfterToyUse(i32 defer);
+
+    void RestorePreviousAppearance();
+    void ApplyEntrancePickup();
+    void ResolveEntranceOccupant();
+
     i32 StepEntranceReinit();
 
     i32 RunEntranceMove();
@@ -840,6 +841,10 @@ public:
     i32 StepWarpExit();
 
     i32 IsDropReady(i32 clearArrivalState = 0);
+
+    void SettleTubeMove();
+    void SettleKnockback();
+    bool SettleActiveKnockback();
 
     i32 BeginAttack(i32 targetPxX, i32 targetPxY);
 
@@ -925,14 +930,6 @@ union LogicDispatchWord {
     LogicRecordDispatchFn m_dispatch;
     void (CGrunt::*m_gruntMethod)();
     u32 m_bits;
-};
-
-union GruntActPmf {
-    i32 (CGrunt::*m_pmf)();
-    struct {
-        CActHandler m_h;
-        i32 m_adjust;
-    };
 };
 
 typedef i32 (CGrunt::*GruntActHandler)();

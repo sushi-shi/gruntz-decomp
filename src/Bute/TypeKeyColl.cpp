@@ -2,21 +2,19 @@
 
 #include <Mfc.h>
 
-#include <AddrWord.h>
 #include <Bute/ButeStore.h>
-#include <Bute/ButeTree.h>
-#include <Bute/PTreeNode.h>
 #include <Enums.h>
 #include <Gruntz/GameObjectLogicTypes.h>
 #include <Gruntz/LogicEventDispatch.h>
 #include <Gruntz/MovingLogicSerial.h>
 #include <Gruntz/TypeKeyColl.h>
-#include <Gruntz/TypeKeyCollInline.h>
 #include <Gruntz/TypeKeyCollStr.h>
 #include <Gruntz/UserLogic.h>
 #include <Utils/BitArrayWord.h>
-#include <Wap32/zBitVec.h>
-#include <Wap32/ZVec.h>
+#include <ZTools/BitVec.h>
+#include <ZTools/Error.h>
+#include <ZTools/PTree.h>
+#include <ZTools/ZVec.h>
 
 #include <ctype.h>
 #include <iostream.h>
@@ -28,7 +26,7 @@
 #pragma function(memcpy)
 
 DATA(0x002bf428)
-void* g_retAddrBreadcrumb;
+unsigned long zMinErr::caller_ip;
 
 // Interior fields of one CActReg; do not define overlapping globals.
 
@@ -38,52 +36,50 @@ i32 g_defaultProjActSize = 32;
 DATA(0x0021adf4)
 char g_out_of_memory[] = "out of memory";
 
-RVA_DYNINIT(0x0016d6f0, 0x5, g_zBitSetErrorSlot)
-RVA_DYNINIT(0x0016d700, 0x10, g_zBitSetErrorSlot)
+RVA_DYNINIT(0x0016d6f0, 0x5, zBitVec::ceh)
+RVA_DYNINIT(0x0016d700, 0x10, zBitVec::ceh)
 DATA(0x002bf408)
-CVariantSlot g_zBitSetErrorSlot("zBitSet: ");
+zErrHandler zBitVec::ceh("zBitSet: ");
 
 DATA(0x002bf420)
-void(__cdecl* g_tmErrorCallback)(char* buf, i32 v);
+erf_t zMinErr::ef;
 
-RVA_DYNINIT(0x0016d9a0, 0x5, g_globalErrorSlot)
-RVA_DYNINIT(0x0016d9b0, 0x10, g_globalErrorSlot)
+RVA_DYNINIT(0x0016d9a0, 0x5, _)
+RVA_DYNINIT(0x0016d9b0, 0x10, _)
 DATA(0x002bf430)
-CVariantSlot g_globalErrorSlot("Global Error: ");
+static zErrHandler _("Global Error: ");
 
 DATA(0x002bf448)
-char* g_errDataInvalid;
+char* zErrHandling::_inval;
 DATA(0x002bf44c)
-char* g_errOverflow;
+char* zErrHandling::_overflow;
 DATA(0x002bf450)
-char* g_errOutOfRange;
+char* zErrHandling::_range;
 DATA(0x002bf454)
-char* g_errNullArg;
+char* zErrHandling::_nullparg;
 DATA(0x002bf458)
-char* g_errExists;
+char* zErrHandling::_exists;
 DATA(0x002bf45c)
-char* g_errBadArg;
+char* zErrHandling::_badarg;
 DATA(0x002bf460)
-char* g_errNoFile;
+char* zErrHandling::_nosuch;
 DATA(0x002bf464)
-char* g_errOutOfMem;
+char* zErrHandling::_nomem;
 
-RVA_DYNINIT(0x0016de10, 0x5, g_dynamicArrayErrorSlot)
-RVA_DYNINIT(0x0016de20, 0x10, g_dynamicArrayErrorSlot)
+RVA_DYNINIT(0x0016de10, 0x5, _zvec::ceh)
+RVA_DYNINIT(0x0016de20, 0x10, _zvec::ceh)
 DATA(0x002bf468)
-CVariantSlot g_dynamicArrayErrorSlot("Dynamic Array: ");
+zErrHandler _zvec::ceh("Dynamic Array: ");
 
-RVA_DYNINIT(0x0016dfd0, 0x5, g_rezArchiveErrorSlot)
-RVA_DYNINIT(0x0016dfe0, 0x10, g_rezArchiveErrorSlot)
+RVA_DYNINIT(0x0016dfd0, 0x5, zPTree::ceh)
+RVA_DYNINIT(0x0016dfe0, 0x10, zPTree::ceh)
 DATA(0x002bf480)
-CVariantSlot g_rezArchiveErrorSlot("zSymTab: ");
+zErrHandler zPTree::ceh("zSymTab: ");
 
-RVA_DYNINIT(0x0016e180, 0x5, g_variantOverrides)
-RVA_DYNINIT(0x0016e190, 0x1, g_variantOverrides)
 DATA(0x002bf498)
-TypeKeyRec g_variantOverrides[32];
+_dhandler zErrHandler::dl[32];
 DATA(0x002bf618)
-i32 g_variantOverrideCount;
+i32 zErrHandler::ndh;
 
 RVA(0x0016cdd0, 0x22f)
 ostream& WriteCurve(ostream& accum, const CMotionState& c) {
@@ -159,9 +155,7 @@ istream& ReadCurve(istream& accum, CMotionState& c) {
 RVA(0x0016d190, 0x101)
 void* zPTree::lookup(const char* key) {
     if (key == NULL) {
-        char* msg = g_errNullArg;
-        g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errSink->Set(this, msg, 0x16);
+        handle(_nullparg, 0x16);
         return NULL;
     }
     m_p = m_root;
@@ -212,9 +206,7 @@ zBitVec& zBitVec::operator=(const zBitVec& that) {
                     malloc((static_cast<u32>(that.m_capacity) >> BITARRAY_WORD_SHIFT) * 4)
                 );
                 if (!m_words) {
-                    char* msg = g_errOutOfMem;
-                    g_retAddrBreadcrumb = GetCallerRetAddr();
-                    m_errSink->Set(this, msg, 0xc);
+                    handle(_nomem, 0xc);
                     m_capacity = 0x20;
                     return *this;
                 }
@@ -228,22 +220,19 @@ zBitVec& zBitVec::operator=(const zBitVec& that) {
     return *this;
 }
 
-// @early-stop
 RVA(0x0016d3a0, 0x344)
-zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&g_zBitSetErrorSlot) {
-    i32 maxv = 0;
+zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&zBitVec::ceh) {
     const char* start;
     const char* q;
     if (tokens == NULL) {
-        char* msg = g_errNullArg;
-        g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errSink->Set(this, msg, 0x16);
+        handle(_nullparg, 0x16);
         return;
     }
     if (minSize == 0) {
         minSize = g_defaultProjActSize;
     }
 
+    i32 maxv = 0;
     const char* p = tokens;
     if (isspace(*p)) {
         do {
@@ -306,7 +295,7 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&g_zBitSetError
             ++q;
         }
         {
-            u32* band = (static_cast<u32>(m_capacity) > 0x20) ? m_words : &m_inline;
+            u32* band = body();
             band[static_cast<u32>(v) >> BITARRAY_WORD_SHIFT] |= 1u << (v & BITARRAY_BIT_MASK);
         }
         if (*q == 0) {
@@ -339,7 +328,7 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&g_zBitSetError
                 rangeEnd = t;
             }
             for (++v; static_cast<u32>(v) <= static_cast<u32>(rangeEnd); ++v) {
-                u32* band = (static_cast<u32>(m_capacity) > 0x20) ? m_words : &m_inline;
+                u32* band = body();
                 band[static_cast<u32>(v) >> BITARRAY_WORD_SHIFT] |= 1u << (v & BITARRAY_BIT_MASK);
             }
             if (*q == 0) {
@@ -353,32 +342,26 @@ zBitVec::zBitVec(const char* tokens, i32 minSize) : zErrHandling(&g_zBitSetError
     return;
 
 oom: {
-    char* msg = g_errOutOfMem;
-    g_retAddrBreadcrumb = GetCallerRetAddr();
-    m_errSink->Set(this, msg, 0xc);
+    handle(_nomem, 0xc);
     return;
 }
 badchar: {
-    char* msg = g_errBadArg;
-    g_retAddrBreadcrumb = GetCallerRetAddr();
-    m_errSink->Set(this, msg, 0x16);
+    handle(_badarg, 0x16);
     return;
 }
 }
 
 RVA(0x0016d710, 0x76)
-zBitVec::zBitVec() : zErrHandling(&g_zBitSetErrorSlot) {
+zBitVec::zBitVec() : zErrHandling(&zBitVec::ceh) {
     if (!SetSize(g_defaultProjActSize)) {
-        char* msg = g_errOutOfMem;
-        g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errSink->Set(this, msg, 0xc);
+        handle(_nomem, 0xc);
     }
 }
 
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0016d790, 0xb1)
-zBitVec::zBitVec(i32 idx, i32 sizehint) : zErrHandling(&g_zBitSetErrorSlot) {
+zBitVec::zBitVec(i32 idx, i32 sizehint) : zErrHandling(&zBitVec::ceh) {
     u32 n = static_cast<u32>(sizehint);
     if (n == 0) {
         n = static_cast<u32>(g_defaultProjActSize);
@@ -387,9 +370,7 @@ zBitVec::zBitVec(i32 idx, i32 sizehint) : zErrHandling(&g_zBitSetErrorSlot) {
         n = static_cast<u32>(idx) + 1;
     }
     if (!SetSize(static_cast<i32>(n))) {
-        char* msg = g_errOutOfMem;
-        g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errSink->Set(this, msg, 0xc);
+        handle(_nomem, 0xc);
     } else {
         u32* base = (static_cast<u32>(m_capacity) > 0x20) ? m_words : &m_inline;
         u32* slot = base + (static_cast<u32>(idx) >> BITARRAY_WORD_SHIFT);
@@ -399,36 +380,33 @@ zBitVec::zBitVec(i32 idx, i32 sizehint) : zErrHandling(&g_zBitSetErrorSlot) {
 
 RVA(0x0016d850, 0x11e)
 
-void CVariantSlot::Set(zErrHandling* key, char* name, i32 value) {
-    if (m_typeTag == VARIANT_SLOT_DIRECT_VALUE) {
-        m_valueWord = static_cast<u16>(value);
+void zErrHandler::handle(void* key, const char* name, i32 value) {
+    i32 rv;
+    char buf[0xa0];
+    if (mode == QUICKEST) {
+        evalue = static_cast<short>(value);
         return;
     }
-    i32 idx;
-    if (g_variantOverrideCount != 0) {
-
-        AddrWord<zErrHandling> k;
-        k.m_addr = key;
-        idx = this->Find(k.m_word);
+    if (ndh != 0) {
+        rv = srch(key);
     } else {
-        idx = -1;
+        rv = -1;
     }
-    if (idx == -1) {
-        if (m_typeTag == VARIANT_SLOT_CALLBACK) {
+    if (rv == -1) {
+        if (mode == FCALL) {
 
-            char buf[0xa0];
-            strcpy(buf, m_label);
+            strcpy(buf, id);
 
             strncat(buf, name, 0x4f);
-            m_callback(buf, value);
-        } else if (m_typeTag == VARIANT_SLOT_RECORD_VALUE) {
-            m_valueWord = static_cast<u16>(value);
+            default_ef(buf, value);
+        } else if (mode == LOGGING) {
+            evalue = static_cast<short>(value);
         }
     } else {
-        if (m_typeTag == VARIANT_SLOT_CALLBACK) {
-            g_variantOverrides[idx].m_callback(name, value);
-        } else if (m_typeTag == VARIANT_SLOT_RECORD_VALUE) {
-            g_variantOverrides[idx].m_value = static_cast<short>(value);
+        if (mode == FCALL) {
+            dl[rv].handler(name, value);
+        } else if (mode == LOGGING) {
+            dl[rv].lasterr = static_cast<short>(value);
         }
     }
 }
@@ -436,15 +414,14 @@ void CVariantSlot::Set(zErrHandling* key, char* name, i32 value) {
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0016d970, 0x17)
-CVariantSlot* CVariantSlot::EnsureTmErrorCallback() {
-    if (g_tmErrorCallback == NULL) {
-        g_tmErrorCallback = TmErrorHandler;
+zMinErr::zMinErr() {
+    if (zMinErr::ef == NULL) {
+        ef = catcher;
     }
-    return this;
 }
 
 RVA(0x0016d990, 0x3)
-__declspec(naked) void* GetRetAddr() {
+__declspec(naked) unsigned long __ip() {
     __asm {
         pop  eax
         push eax
@@ -454,64 +431,64 @@ __declspec(naked) void* GetRetAddr() {
 
 RVA(0x0016d9c0, 0x75)
 RVA_COMPGEN(0x0016da40, 0x1e, ??_GzErrHandling@@UAEPAXI@Z)
-zErrHandling::zErrHandling(CVariantSlot* errSink)
+zErrHandling::zErrHandling(zErrHandler* errSink)
 
-    : m_errSink(errSink ? errSink : &g_globalErrorSlot) {
+    : hp(errSink ? errSink : &_) {
 
-    if (g_errOutOfMem == NULL) {
-        g_errOutOfMem = "Out of memory";
-        g_errDataInvalid = "Data structure is invalid";
-        g_errOverflow = "Overflow";
-        g_errNoFile = "No such file, handle or object";
-        g_errOutOfRange = "Out of range";
-        g_errExists = "Target alrready exisits";
-        g_errNullArg = "Null pointer argument";
-        g_errBadArg = "Bad argument value";
+    if (_nomem == NULL) {
+        _nomem = "Out of memory";
+        _inval = "Data structure is invalid";
+        _overflow = "Overflow";
+        _nosuch = "No such file, handle or object";
+        _range = "Out of range";
+        _exists = "Target alrready exisits";
+        _nullparg = "Null pointer argument";
+        _badarg = "Bad argument value";
     }
 }
 
 RVA(0x0016da60, 0x12)
 zErrHandling::~zErrHandling() {
 
-    m_errSink->Add(this, NULL);
+    hp->set_ef(this, NULL);
 }
 
 RVA(0x0016da80, 0x10b)
-void* _zvec::GrowTo(i32 idx, i32 at) {
+i32 _zdvec::realloc(i32 idx, i32 at) {
     char* p;
-    if (idx < m_lo) {
+    if (idx < lo) {
         idx -= at;
-        p = static_cast<char*>(realloc(m_base, (m_hi - idx + 1) * m_stride));
+        p = static_cast<char*>(::realloc(vec, (hi - idx + 1) * size));
         if (!p) {
-            g_retAddrBreadcrumb = GetCallerRetAddr();
-            m_errSink->Set(this, const_cast<char*>(g_out_of_memory), 0x22);
-            return NULL;
+            handle(g_out_of_memory, 0x22);
+            return 0;
         }
-        i32 oldbytes = (m_hi - m_lo + 1) * m_stride;
-        i32 shift = m_lo - idx;
-        m_grown = shift;
-        m_alloc = p;
-        memcpy(m_alloc + shift * m_stride, p, oldbytes);
-        memset(m_alloc, 0, m_grown * m_stride);
-        m_lo = idx;
-        m_base = p;
-        return p;
+        i32 oldbytes = (hi - lo + 1) * size;
+        i32 shift = lo - idx;
+        initcount = shift;
+        init = p;
+        memcpy(static_cast<char*>(init) + shift * size, p, oldbytes);
+        memset(init, 0, initcount * size);
+        lo = idx;
+        vec = p;
+        // PROVEN: the integer status preserves the allocated-address bits on success.
+        return reinterpret_cast<i32>(p);
     }
     idx += at;
-    p = static_cast<char*>(realloc(m_base, (idx - m_lo + 1) * m_stride));
+    p = static_cast<char*>(::realloc(vec, (idx - lo + 1) * size));
     if (!p) {
-        g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errSink->Set(this, const_cast<char*>(g_out_of_memory), 0x22);
-        return NULL;
+        handle(g_out_of_memory, 0x22);
+        return 0;
     }
-    i32 oldbytes = (m_hi - m_lo + 1) * m_stride;
+    i32 oldbytes = (hi - lo + 1) * size;
     char* fill = p + oldbytes;
-    m_grown = idx - m_hi;
-    m_alloc = fill;
-    memset(fill, 0, m_grown * m_stride);
-    m_hi = idx;
-    m_base = p;
-    return p;
+    initcount = idx - hi;
+    init = fill;
+    memset(fill, 0, initcount * size);
+    hi = idx;
+    vec = p;
+    // PROVEN: the integer status preserves the allocated-address bits on success.
+    return reinterpret_cast<i32>(p);
 }
 
 RVA(0x0016db90, 0x206)
@@ -521,34 +498,27 @@ void* zPTree::add(const char* key, void* value) {
     zPTreeNode* t;
 
     if (m_preview == false) {
-        g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errSink->Set(this, const_cast<char*>("No prior lookup"), 0x16);
+        handle("No prior lookup", 0x16);
         return NULL;
     }
     m_preview = false;
     m_sbits -= PTREE_BYTE_BIT_MASK;
     if (key == NULL || value == NULL) {
-        char* msg = g_errNullArg;
-        g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errSink->Set(this, msg, 0x16);
+        handle(_nullparg, 0x16);
         return NULL;
     }
 
     newbranch = m_q != NULL ? diffpos(key, m_q->m_symbol) : m_sbits - 1;
     t = new zPTreeNode;
     if (t == NULL) {
-        char* msg = g_errOutOfMem;
-        g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errSink->Set(this, msg, 0xc);
+        handle(_nomem, 0xc);
         return NULL;
     }
     t->m_index = newbranch;
     t->m_body = value;
     t->m_symbol = new char[(m_sbits >> PTREE_BYTE_BIT_SHIFT) + 1];
     if (t->m_symbol == NULL) {
-        char* msg = g_errOutOfMem;
-        g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errSink->Set(this, msg, 0xc);
+        handle(_nomem, 0xc);
         return NULL;
     }
     strcpy(t->m_symbol, key);
@@ -584,9 +554,9 @@ void* zPTree::add(const char* key, void* value) {
 }
 
 RVA(0x0016dda0, 0x3c)
-_zdvec::_zdvec(i32 stride, i32 lo, i32 hi, void* scratch) : _zvec(stride, lo, hi, scratch) {
-    m_alloc = m_base;
-    m_grown = m_hi - m_lo + 1;
+_zdvec::_zdvec(size_t s, i32 l, i32 h, void* overflow) : _zvec(s, l, h, overflow) {
+    init = vec;
+    initcount = hi - lo + 1;
 }
 
 RVA_COMPGEN(0x0016dde0, 0x1e, ??_G_zdvec@@UAEPAXI@Z)
@@ -594,40 +564,33 @@ RVA_COMPGEN(0x0016dde0, 0x1e, ??_G_zdvec@@UAEPAXI@Z)
 RVA_COMPGEN(0x0016de00, 0x5, ??1_zdvec@@UAE@XZ)
 
 RVA(0x0016de30, 0xe7)
-_zvec::_zvec(i32 stride, i32 lo, i32 hi, void* scratch)
-    : zErrHandling(&g_dynamicArrayErrorSlot),
-      m_lo(lo),
-      m_hi(hi),
-      m_base(NULL),
-      m_spare(static_cast<char*>(scratch)),
-      m_stride(stride) {
+_zvec::_zvec(size_t s, i32 l, i32 h, void* overflow)
+    : zErrHandling(&_zvec::ceh), lo(l), hi(h), vec(NULL), ovf(overflow), size(s) {
     if (lo > hi) {
-        g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errSink->Set(this, const_cast<char*>("Inconsistent bounds"), 0x16);
+        handle("Inconsistent bounds", 0x16);
         return;
     }
-    i32 total = (hi - lo + 1) * stride;
+    i32 total = (hi - lo + 1) * s;
     char* buf = static_cast<char*>(malloc(total));
-    m_base = buf;
+    vec = buf;
     if (buf != NULL) {
         memset(buf, 0, total);
-        if (m_spare != NULL) {
+        if (ovf != NULL) {
             return;
         }
-        m_spare = static_cast<char*>(malloc(m_stride));
-        if (m_spare != NULL) {
+        ovf = malloc(size);
+        if (ovf != NULL) {
             return;
         }
     }
-    g_retAddrBreadcrumb = GetCallerRetAddr();
-    m_errSink->Set(this, const_cast<char*>(g_out_of_memory), 0xc);
+    handle(g_out_of_memory, 0xc);
 }
 
-RVA_COMPGEN(0x0016df20, 0x1e, ??_G_zvec@@UAEPAXI@Z)
+RVA_COMPGEN(0x0016df20, 0x1e, ??_G_zvec@@MAEPAXI@Z)
 
 RVA(0x0016df40, 0x22)
 _zvec::~_zvec() {
-    char* p = m_base;
+    char* p = vec;
     if (p) {
         free(p);
     }
@@ -645,10 +608,7 @@ zPtrColl::~zPtrColl() {}
 RVA(0x0016dff0, 0x73)
 zPTree::zPTree(dtorf_t destructor, cleanup_behaviour cleanup)
 
-    : zErrHandling(&g_rezArchiveErrorSlot),
-      zPtrColl(cleanup, destructor),
-      m_root(NULL),
-      m_preview(false) {}
+    : zErrHandling(&zPTree::ceh), zPtrColl(cleanup, destructor), m_root(NULL), m_preview(false) {}
 
 RVA(0x0016e070, 0x7b)
 void zPTree::cleanup(zPTreeNode* node) {
@@ -674,7 +634,7 @@ void zPTree::cleanup(zPTreeNode* node) {
 }
 
 RVA(0x0016e0f0, 0x4)
-__declspec(naked) void* GetCallerRetAddr() {
+__declspec(naked) unsigned long __caller_ip() {
     __asm {
         mov eax, [ebp + 4]
         ret
@@ -702,40 +662,40 @@ i32 zBitVec::SetSize(i32 nbits) {
 }
 
 RVA(0x0016e1a0, 0x23)
-CVariantSlot::CVariantSlot(char* label) {
-    m_typeTag = VARIANT_SLOT_CALLBACK;
-    m_reserved10 = 2;
+zErrHandler::zErrHandler(const char* label) {
+    mode = FCALL;
+    prevmode = FCALL;
 
-    m_callback = TmErrorHandler;
-    m_valueWord = 0;
-    m_label = label;
+    default_ef = zMinErr::catcher;
+    evalue = 0;
+    id = label;
 }
 
 RVA(0x0016e1d0, 0x4b)
-i32 CVariantSlot::Find(i32 key) {
-
+i32 zErrHandler::srch(void* o) {
     i32 lo = 0;
-    i32 hi = g_variantOverrideCount - 1;
+    i32 hi = ndh - 1;
+    long cmp;
     if (hi >= 0) {
         do {
-            i32 mid = (hi + lo) / 2;
-            m_searchIndex = mid;
-            i32 d = g_variantOverrides[mid].m_key - key;
-            if (d < 0) {
-                lo = mid + 1;
-            } else if (d <= 0) {
-                return mid;
+            slot = (lo + hi) / 2;
+            // PROVEN: the table search compares signed 32-bit object-address differences.
+            cmp = reinterpret_cast<long>(dl[slot].object) - reinterpret_cast<long>(o);
+            if (cmp < 0) {
+                lo = slot + 1;
+            } else if (cmp <= 0) {
+                return slot;
             } else {
-                hi = mid - 1;
+                hi = slot - 1;
             }
         } while (lo <= hi);
     }
-    m_searchIndex = hi + 1;
+    slot = hi + 1;
     return -1;
 }
 
 RVA(0x0016e220, 0x139)
-void TmErrorHandler(char* prefix, i32 errNum) {
+void zMinErr::catcher(const char* prefix, i32 errNum) {
     char tmp[10];
     char* np = &tmp[9];
     *np = 0;
@@ -767,9 +727,7 @@ void TmErrorHandler(char* prefix, i32 errNum) {
         *q++ = *s++;
     }
 
-    AddrWord<char> bc;
-    bc.m_addr = static_cast<char*>(g_retAddrBreadcrumb);
-    u32 v = 0xffff & bc.m_uword;
+    u32 v = 0xffff & caller_ip;
     char* hp = &tmp[9];
     *hp = 0;
     i32 i;
@@ -784,9 +742,7 @@ void TmErrorHandler(char* prefix, i32 errNum) {
             break;
         }
     } while (i-- != 0);
-    AddrWord<char> back;
-    back.m_uword = v;
-    g_retAddrBreadcrumb = back.m_addr;
+    caller_ip = v;
     while (*hp != 0) {
         *q++ = *hp++;
     }
@@ -799,54 +755,35 @@ void TmErrorHandler(char* prefix, i32 errNum) {
     exit(1);
 }
 
-// @early-stop
 RVA(0x0016e360, 0x11a)
-void* CVariantSlot::Add(void* key, void* val) {
-    int count = g_variantOverrideCount;
-    if (val != NULL && count >= 0x20) {
+erf_t zErrHandler::set_ef(void* o, erf_t f) {
+    i32 rv;
+    if (f != NULL && ndh >= MAX_DEDICATED) {
         return NULL;
     }
-    int idx;
-    if (count != 0) {
-        AddrWord<void> keyWord;
-        keyWord.m_addr = key;
-        idx = Find(keyWord.m_word);
-    } else {
-        idx = -1;
-    }
-    if (idx == -1) {
-        if (val == NULL) {
+    rv = ndh ? srch(o) : -1;
+    if (rv == -1) {
+        if (f == NULL) {
             return NULL;
         }
-        if (g_variantOverrideCount != 0) {
-            memcpy(
-                &g_variantOverrides[m_searchIndex + 1],
-                &g_variantOverrides[m_searchIndex],
-                (g_variantOverrideCount - m_searchIndex) * sizeof(TypeKeyRec)
-            );
+        if (ndh != 0) {
+            memcpy(&dl[slot + 1], &dl[slot], (ndh - slot) * sizeof(_dhandler));
         }
-        g_variantOverrides[m_searchIndex].m_callback =
-            reinterpret_cast<VariantCallback>(val); // PROVEN: retail Add ABI is void*.
-        AddrWord<void> newKeyWord;
-        newKeyWord.m_addr = key;
-        g_variantOverrides[m_searchIndex].m_key = newKeyWord.m_word;
-        g_variantOverrideCount = g_variantOverrideCount + 1;
-        g_variantOverrides[m_searchIndex].m_value = 0;
+        dl[slot].handler = f;
+        dl[slot].object = o;
+        ndh = ndh + 1;
+        dl[slot].lasterr = 0;
         return NULL;
+    } else {
+        erf_t t = dl[rv].handler;
+        if (f != NULL) {
+            dl[rv].handler = f;
+            return t;
+        }
+        memcpy(&dl[slot], &dl[slot + 1], (ndh - slot - 1) * sizeof(_dhandler));
+        ndh = ndh - 1;
+        return t;
     }
-    VariantCallback old = g_variantOverrides[idx].m_callback;
-    if (val != NULL) {
-        g_variantOverrides[idx].m_callback =
-            reinterpret_cast<VariantCallback>(val); // PROVEN: retail Add ABI is void*.
-        return reinterpret_cast<void*>(old);        // PROVEN: retail Add ABI is void*.
-    }
-    memcpy(
-        &g_variantOverrides[m_searchIndex],
-        &g_variantOverrides[m_searchIndex + 1],
-        (g_variantOverrideCount - m_searchIndex - 1) * sizeof(TypeKeyRec)
-    );
-    g_variantOverrideCount = g_variantOverrideCount - 1;
-    return reinterpret_cast<void*>(old); // PROVEN: retail Add ABI is void*.
 }
 
 RVA(0x0016e480, 0x3e)
@@ -883,13 +820,11 @@ i32 DispatchLogicBump(CGameObject* obj) {
 
 RVA(0x0016e4f0, 0x19b)
 i32 DispatchLogicEvent(CUserLogic* ar) {
-    CString* entry = TypeResolve(ar->m_logicRecord->EventCode());
-    FreeNodes();
+    CString* entry = &g_typeColl[ar->m_logicRecord->EventCode()];
     ar->StepBehavior(entry->GetBuffer(0));
     ar->FireActivation(ar->m_logicRecord->EventCode());
 
-    entry = TypeResolve(ar->m_logicRecord->EventCode());
-    FreeNodes();
+    entry = &g_typeColl[ar->m_logicRecord->EventCode()];
     ar->FinalizeStep(entry->GetBuffer(0));
     return 1;
 }

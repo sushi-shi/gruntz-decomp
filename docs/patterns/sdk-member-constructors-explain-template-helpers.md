@@ -44,3 +44,54 @@ members, placement construction, and the complete template body. Absence of an
 out-of-line call at one site is not proof that its constructor was unavailable
 or that the element was POD. Do not force emission with fake references or keep
 hand-expanded SDK source to imitate one inlining decision.
+
+## Compose the caller's SDK boundaries
+
+A later real-TU comparison at `1cbca7964` separated the individual boundaries
+in `CFaderMesh::ApplyInit`. The existing SDK definitions provide the two
+four-int `CRect` constructors, three `CRect::OffsetRect(int,int)` adapters,
+and `CArray::RemoveAll()`, which delegates to `SetSize(0, -1)`.
+
+| Cumulative source state | Fuzzy | Bytes / instructions | Calls / branches / returns |
+| --- | ---: | --- | --- |
+| Baseline | 62.55696% | 1351 / 435 | 13 / 38 / 2 |
+| Required BDefs include and six Mesh `SQR` uses | 62.55696% | 1351 / 435 | 13 / 38 / 2 |
+| Both SDK rectangle constructors | 66.95696% | 1212 / 379 | 13 / 30 / 2 |
+| Three SDK offset adapters | 65.207596% | 1251 / 395 | 13 / 32 / 2 |
+| SDK `RemoveAll` adapter | 86.741776% | 1270 / 398 | 10 / 30 / 2 |
+| Retail | 100% | 1276 / 399 | 10 / 30 / 2 |
+
+The last composition restores the initially missing out-of-line `SetSize`
+call, eliminates the extra element-construction calls and extra delete, and
+restores the retail `0x9c` frame. Its historical best was 82.3038%, so this is
+new headroom, not recovery of an already exact source. The offset-only dip
+was a useful base for the next independently supported boundary, not evidence
+against the SDK API. No inlining pragma, fabricated statement cost, SDK body
+copy, or guessed compiler budget was used.
+
+The two production TUs contain 85 scored bodies. The complete sixteen-site
+square substitution is body/reference-flat after the required include control.
+That include alone changes allocation in Flat and Shape `RenderFrame`; the
+three subsequent SDK steps change only Mesh. Across baseline to final, 82 of
+the 85 bodies remain identical. The existing nested Light helpers and their
+inline/out-of-line call split are retained.
+
+All 48 ordered references in Mesh, Radial `ApplyInit`, Light `RenderFrame`,
+`Render`, and `GetFrameCount` agree with raw retail operands. This includes
+independent PE import-directory resolution of `OffsetRect`, and original
+payload checks for the named FP constants. Integer products and sums still
+precede signed DWORD-to-FP conversion; the four original `CIpow` calls remain.
+These are scoped object/reference comparisons, not a whole linked-image proof.
+
+The final first divergence is receiver allocation at `+0xf`. Equal call,
+branch and return counts do not prove complete CFG equivalence or exhaust
+local/FP lifetime hypotheses; the function is not declared exact or bounded.
+Compilation/comparison used `gruntz build base compare`; test suites and the
+default gated build are deferred to authorized squash merge.
+
+Reverse-use signature: a real SDK container and element family are already
+modeled, but a caller expands the reset while making extra element-constructor
+calls. Inspect the caller's complete constructor/member-adapter use layer
+before changing the container or forcing an inline decision. The canonical
+adoptions and separately recheckable alternatives are the `fader-*` and
+`reassess-sqr-fader*` rows in `config/lithtech_lineage.tsv`.

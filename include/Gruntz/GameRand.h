@@ -16,12 +16,22 @@ __inline i32 GetRandomNumber(i32 lo, i32 hi) {
     return lo + GetRandomNumber() % (hi - lo + 1);
 }
 
-__inline i32 GetRandom(i32 lo, i32 hi) {
-    i32 n = hi - lo + 1;
-    if (n == 0) {
-        return (rand() & 1) ? lo : hi;
+__inline i32 GetRandom(i32 range) {
+    if (range == -1) {
+        return rand() % 2 - 1;
     }
-    return lo + rand() % n;
+    return rand() % (range + 1);
+}
+
+__inline i32 GetRandom(i32 lo, i32 hi) {
+    if ((hi - lo + 1) == 0) {
+        if (rand() & 1) {
+            return lo;
+        } else {
+            return hi;
+        }
+    }
+    return (rand() % (hi - lo + 1)) + lo;
 }
 
 static __inline i32 WapRand(i32 range) {

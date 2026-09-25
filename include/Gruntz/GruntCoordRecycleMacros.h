@@ -14,22 +14,6 @@
         (grunt)->m_coordList.RemoveAll();                                                          \
     }
 
-#define RECYCLE_GRUNT_COORDS_EXPANDED(grunt)                                                       \
-    {                                                                                              \
-        POSITION node = (grunt)->CoordHead();                                                      \
-        while (node != NULL) {                                                                     \
-            POSITION current = node;                                                               \
-            (grunt)->m_coordList.GetNext(node);                                                    \
-            if (static_cast<Coord*>((grunt)->m_coordList.GetAt(current)) != NULL) {                \
-                CoordPoolNode* slot =                                                              \
-                    g_coordPool.NodeOf(static_cast<Coord*>((grunt)->m_coordList.GetAt(current)));  \
-                slot->m_next = g_coordPool.m_freeHead;                                             \
-                g_coordPool.m_freeHead = slot;                                                     \
-            }                                                                                      \
-        }                                                                                          \
-        (grunt)->m_coordList.RemoveAll();                                                          \
-    }
-
 #define RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(grunt)                                                   \
     {                                                                                              \
         POSITION position = (grunt)->m_coordList.GetHeadPosition();                                \

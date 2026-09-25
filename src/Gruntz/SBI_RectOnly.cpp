@@ -14,8 +14,8 @@
 #include <Dsndmgr/StreamFeeder.h>
 #include <Enums.h>
 #include <Gruntz/ChatBoxOwner.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/CurPlayer.h>
-#include <Gruntz/FreeNodePoolInline.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameMenuMgrBuilders.h>
 #include <Gruntz/GameModeId.h>
@@ -47,6 +47,7 @@
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
+#include <Gruntz/SoundCueRegistryInline.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/SpriteRefTable.h>
@@ -75,6 +76,7 @@
 #include <Utils/MapTyped.h>
 #include <Utils/RegMgr.h>
 #include <Wap32/ScreenGeometry.h>
+#include <Wap32/TileGeometry.h>
 
 #include <limits.h>
 #include <math.h>
@@ -161,7 +163,7 @@ void CStatusBarMgr::Teardown() {
     for (i32 i = 0; i < m_rewardQueue.GetSize(); i++) {
         Coord* p = static_cast<Coord*>(m_rewardQueue.GetData()[i]);
         if (p) {
-            PushFreeNode(&g_coordPool, p);
+            g_coordPool.Push(p);
         }
     }
 
@@ -3693,7 +3695,7 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     for (i32 j = 0; j < m_rewardQueue.GetSize(); j++) {
         Coord* p = static_cast<Coord*>(m_rewardQueue.GetData()[j]);
         if (p) {
-            PushFreeNode(&g_coordPool, p);
+            g_coordPool.Push(p);
         }
     }
     m_rewardQueue.SetSize(0, -1);
@@ -3710,7 +3712,6 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     m_destructButtonLocked = false;
     TryActivate();
 }
-// @early-stop
 RVA(0x00107d00, 0x591)
 i32 CStatusBarMgr::StartChipMachineCycle() {
     PickupType result;
@@ -3718,7 +3719,7 @@ i32 CStatusBarMgr::StartChipMachineCycle() {
         if (m_rewardQueue.GetSize() > 0) {
             Coord* p = static_cast<Coord*>(m_rewardQueue.GetData()[0]);
             result = static_cast<PickupType>(p->m_x);
-            PushFreeNode(&g_coordPool, p);
+            g_coordPool.Push(p);
             m_rewardQueue.RemoveAt(0, 1);
         } else {
             result = PICKUP_NONE;
@@ -4127,7 +4128,6 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     return 1;
 }
 
-// @early-stop
 RVA(0x00109520, 0x44c)
 i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     if (s == NULL) {
@@ -4227,7 +4227,7 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
     for (i32 t = 0; t < m_rewardQueue.GetSize(); t++) {
         Coord* pp = static_cast<Coord*>(m_rewardQueue.GetData()[t]);
         if (pp) {
-            PushFreeNode(&g_coordPool, pp);
+            g_coordPool.Push(pp);
         }
     }
     m_rewardQueue.SetSize(0, -1);
@@ -4273,7 +4273,6 @@ CWarpStoneFly::CWarpStoneFly() {
     m_owner = NULL;
 }
 
-// @early-stop
 RVA(0x00109bd0, 0x1b5)
 i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragment fragment) {
     m_owner = owner;
@@ -4291,35 +4290,31 @@ i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragm
     }
 
     m_arrivalMode = fragment;
-    i32 cx, dy;
+    Coord targetOffset;
     switch (fragment) {
         case WARPSTONE_FRAGMENT_SECOND:
-            cx = 0x69;
-            dy = 0x26;
+            targetOffset.Set(0x69, 0x26);
             break;
         case WARPSTONE_FRAGMENT_THIRD:
-            cx = 0x65;
-            dy = 0x50;
+            targetOffset.Set(0x65, 0x50);
             break;
         case WARPSTONE_FRAGMENT_FOURTH:
-            cx = 0x69;
-            dy = 0x54;
+            targetOffset.Set(0x69, 0x54);
             break;
         default:
-            cx = 0x34;
-            dy = 0x29;
+            targetOffset.Set(0x34, 0x29);
             break;
     }
 
     CStatusBarMgr* base = m_owner;
-    i32 tx = base->m_barRect.left + cx;
+    i32 tx = base->m_barRect.left + targetOffset.m_x;
     m_targetX = tx;
-    i32 ty = base->m_barRect.top + dy;
+    i32 ty = base->m_barRect.top + targetOffset.m_y;
     m_targetY = ty;
 
     i32 deltaX = tx - srcX;
     i32 dyv = ty - srcY;
-    i32 dist2 = deltaX * deltaX + dyv * dyv;
+    i32 dist2 = SquaredDistance(deltaX, dyv);
     double dist = sqrt(static_cast<double>(dist2));
     u32 flyTime = g_buteMgr.GetDword("WarpStone", "FlyTime", 0x5dc);
 
@@ -4328,19 +4323,7 @@ i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragm
     m_yDirection = static_cast<double>(dyv) / dist;
 
     SoundCueRegistry* h = g_gameReg->m_world->m_soundRegistry;
-    if (h->m_silentMode == false) {
-        SoundCue* found = h->FindCue("GAME_WARPSTONEFLY");
-        if (found) {
-            SoundCue* fly = found;
-            b32 soundEnabled = g_soundEnabled;
-            i32 volumePercent = g_soundVolumePercent;
-            if (soundEnabled != false
-                && g_soundCueTimeMs - fly->m_lastPlayTimeMs >= fly->m_replayDelayMs) {
-                fly->m_lastPlayTimeMs = g_soundCueTimeMs;
-                fly->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-            }
-        }
-    }
+    PlayRegistryCueIfElapsed(h, "GAME_WARPSTONEFLY");
 
     m_currentX = static_cast<double>(srcX);
     m_currentY = static_cast<double>(srcY);
@@ -5046,7 +5029,7 @@ i32 CStatusBarMgr::GetActiveValue() {
         return m_machineItem;
     }
     if (m_rewardQueue.GetSize() > 0 && m_rewardQueue.GetSize() > m_rezTick) {
-        return *static_cast<i32*>(m_rewardQueue.GetAt(m_rezTick));
+        return static_cast<Coord*>(m_rewardQueue.GetAt(m_rezTick))->m_x;
     }
     return 0;
 }
