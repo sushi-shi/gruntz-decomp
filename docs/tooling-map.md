@@ -131,3 +131,14 @@ automatic certification of current source.
 
 Tool inputs belong in `config/`, generated artifacts in `build/`, and usage
 documentation here. Retired command mappings are available in Git history.
+
+## Command log
+
+Every `gruntz` invocation appends a copyable line to `build/gruntz_usage.log`
+and a `gruntz.usage.v1` record to `build/gruntz_usage.jsonl` (implementation:
+`gruntz.core.usage`): command, rc, outcome (`success`, `difference` for an
+rc=1 answer from `sema`/`walls`/`lineage`, or `error`), duration, worktree,
+revision, and for failures an error category plus the last 16 KiB of
+stderr/stdout (ninja and cl output included). Successful output is not kept.
+Mark deliberate negative controls with `GRUNTZ_USAGE_TEST=<marker>`. The log
+lives in the disposable `build/`; copy it out before cleaning a worktree.

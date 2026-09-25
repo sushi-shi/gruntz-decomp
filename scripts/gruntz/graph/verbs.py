@@ -76,7 +76,8 @@ def ninja(targets: list[str] = (), *, jobs: int | None = None,
     if keep_going:
         argv += ["-k", "0"]
     argv += [*extra, *targets]
-    return subprocess.run(argv, cwd=REPO).returncode
+    from gruntz.core.usage import run_process
+    return run_process(argv, cwd=REPO)
 
 
 def object_census() -> dict[str, str]:
