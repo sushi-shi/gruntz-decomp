@@ -68,7 +68,7 @@ NEXT_ACTION = {
     "expression": "run semdiff, then test source origin before schedule/regalloc permutations",
     "pairing": "repair the normalized pair, report join, or source ownership before source edits",
     "state": "restore or replay the banked compiler/TU state; do not rewrite proven source",
-    "generated": "inspect the source-owned parent with eh-frame/ehactions; do not edit the funclet",
+    "generated": "inspect the source-owned parent with eh-frame; do not edit the funclet",
 }
 
 _RVA = r"RVA\s*\(\s*0x0*{rva:x}\s*,"

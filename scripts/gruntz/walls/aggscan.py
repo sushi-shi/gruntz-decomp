@@ -42,7 +42,7 @@ never moves ESP by a non-dword amount, so the filter costs nothing and removes
 that whole class.
 
 WHAT IS COUNTED APART: a reservation nothing is COPIED INTO is the frame,
-which is `framescan`'s channel and not an argument. That test is structural
+not an argument. That test is structural
 rather than positional - "the first reservation is the frame" both dropped six
 real callees whose only block sits in the prologue and, on
 `CGrunt::StepDefenderBehavior`, charged a 104-vs-92-byte frame delta to
@@ -299,7 +299,7 @@ def _hermetic() -> int:
              "block - that difference is the whole signature question"),
             ("frame", frame, [],
              "NEGATIVE: a reservation nothing is copied INTO is a frame, "
-             "which is framescan's channel and not an argument")):
+             "not an argument")):
         got = [n for _o, n, _r, _c in holes(payload, 0, len(payload),
                                             rel(payload))]
         ok = got == want
