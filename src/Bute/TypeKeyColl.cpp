@@ -767,17 +767,17 @@ erf_t zErrHandler::set_ef(void* o, erf_t f) {
         }
         dl[slot].handler = f;
         dl[slot].object = o;
-        ndh = ndh + 1;
         dl[slot].lasterr = 0;
+        ndh = ndh + 1;
         return NULL;
     } else {
         erf_t t = dl[rv].handler;
         if (f != NULL) {
             dl[rv].handler = f;
-            return t;
+        } else {
+            memcpy(&dl[slot], &dl[slot + 1], (ndh - slot - 1) * sizeof(_dhandler));
+            ndh = ndh - 1;
         }
-        memcpy(&dl[slot], &dl[slot + 1], (ndh - slot - 1) * sizeof(_dhandler));
-        ndh = ndh - 1;
         return t;
     }
 }
