@@ -249,7 +249,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         return;
     }
 
-    i32 destX = x;
+    CPoint dest(x, y);
     i32 red = GetRValue(m_color);
     i32 green = GetGValue(m_color);
     i32 blue = GetBValue(m_color);
@@ -308,7 +308,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         u8* glyphBuf = m_font->GetSurface(text[ci])[0];
         if (blend) {
             for (i32 row = rc.top; row < rc.bottom; row++) {
-                u16* dst = bits + ((row - rc.top + y) * pitch) / 2 + destX;
+                u16* dst = bits + ((row - rc.top + dest.y) * pitch) / 2 + dest.x;
                 for (i32 col = firstCol; col < clippedW; col++) {
                     u8 cover = glyphBuf[row * m.cx + col];
 
@@ -323,7 +323,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
             }
         } else {
             for (i32 row = rc.top; row < rc.bottom; row++) {
-                u16* dst = bits + ((row - rc.top + y) * pitch) / 2 + destX;
+                u16* dst = bits + ((row - rc.top + dest.y) * pitch) / 2 + dest.x;
                 for (i32 col = firstCol; col < clippedW; col++) {
                     if (glyphBuf[row * m.cx + col] != 0) {
                         *dst = packedColor;
@@ -332,7 +332,7 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
                 }
             }
         }
-        destX += clippedW - firstCol;
+        dest.x += clippedW - firstCol;
         firstCol = 0;
     }
 
