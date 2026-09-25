@@ -452,7 +452,6 @@ i32 CNetSession::SendPendingRecords() {
     return count;
 }
 
-// @early-stop
 RVA(0x000bfeb0, 0xfa)
 i32 CNetSession::SendRecord(CNetCmdSlot* slot, i32 sequence) {
     if (!slot) {
@@ -469,10 +468,9 @@ i32 CNetSession::SendRecord(CNetCmdSlot* slot, i32 sequence) {
     if (slot->ContainsSequence(slot->m_receivedAhead, baseSeq + 3)) {
         flags |= 0x20;
     }
+    GruntRec* entry = &m_commandRecords[sequence % 0x80];
     g_netCmdSendMsg.m_flags = flags;
     g_netCmdSendMsg.m_sequence = sequence;
-    i32 recordIndex = sequence % 0x80;
-    GruntRec* entry = &m_commandRecords[recordIndex];
     g_netCmdSendMsg.m_windowBase = slot->m_contiguousSequence;
     g_netCmdSendMsg.m_checksum = entry->m_checksum;
     g_netCmdSendMsg.m_entryCount = entry->m_entryCount;
