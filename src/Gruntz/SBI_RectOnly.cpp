@@ -161,14 +161,7 @@ RVA(0x000fe350, 0x6d)
 void CStatusBarMgr::Teardown() {
     (static_cast<CRegMgr*>(g_gameReg->m_settings))->Set("StatusBar Position", IDX(m_position));
     ResetWidgets(false);
-    for (i32 i = 0; i < m_rewardQueue.GetSize(); i++) {
-        Coord* p = static_cast<Coord*>(m_rewardQueue.GetData()[i]);
-        if (p) {
-            g_coordPool.Push(p);
-        }
-    }
-
-    m_rewardQueue.SetSize(0, -1);
+    ClearRewardQueue();
 }
 
 RVA(0x000fe3e0, 0x55)
@@ -3697,13 +3690,7 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
         }
     }
 
-    for (i32 j = 0; j < m_rewardQueue.GetSize(); j++) {
-        Coord* p = static_cast<Coord*>(m_rewardQueue.GetData()[j]);
-        if (p) {
-            g_coordPool.Push(p);
-        }
-    }
-    m_rewardQueue.SetSize(0, -1);
+    ClearRewardQueue();
     i64* clock = &m_reserved2b0.m_last;
     clock[0] = 0;
     clock[1] = 0;
@@ -3722,7 +3709,7 @@ i32 CStatusBarMgr::StartChipMachineCycle() {
     PickupType result;
     if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
         if (m_rewardQueue.GetSize() > 0) {
-            Coord* p = static_cast<Coord*>(m_rewardQueue.GetData()[0]);
+            Coord* p = GetReward(0);
             result = static_cast<PickupType>(p->m_x);
             g_coordPool.Push(p);
             m_rewardQueue.RemoveAt(0, 1);
@@ -3848,17 +3835,11 @@ i32 CStatusBarMgr::QueuePickupReward(i32 pickupValue, i32 score) {
         g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
     }
     i32 n = m_rewardQueue.GetSize();
-    i32 i = 0;
-    if (i < n) {
-        void** t = m_rewardQueue.GetData();
-        while (i < n) {
-            Coord* e = static_cast<Coord*>(*t);
-            if (e != NULL && score < e->m_y) {
-                m_rewardQueue.InsertAt(i, node, 1);
-                return 1;
-            }
-            i++;
-            t++;
+    for (i32 i = 0; i < n; i++) {
+        Coord* e = GetReward(i);
+        if (e != NULL && score < e->m_y) {
+            m_rewardQueue.InsertAt(i, node, 1);
+            return 1;
         }
     }
     m_rewardQueue.Add(node);
@@ -4132,7 +4113,7 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     i32 ptrCount = m_rewardQueue.GetSize();
     s->Write(&ptrCount, sizeof(ptrCount));
     for (u32 n = 0; n < static_cast<u32>(ptrCount); n++) {
-        s->Write(m_rewardQueue.GetData()[n], 8);
+        s->Write(GetReward(n), sizeof(Coord));
     }
     return 1;
 }
@@ -4233,21 +4214,15 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
         nb += 4;
     } while (--seq);
 
-    for (i32 t = 0; t < m_rewardQueue.GetSize(); t++) {
-        Coord* pp = static_cast<Coord*>(m_rewardQueue.GetData()[t]);
-        if (pp) {
-            g_coordPool.Push(pp);
-        }
-    }
-    m_rewardQueue.SetSize(0, -1);
+    ClearRewardQueue();
 
     i32 cnt;
     s->Read(&cnt, sizeof(cnt));
     m_rewardQueue.SetSize(cnt, -1);
     for (u32 n = 0; n < static_cast<u32>(cnt); n++) {
         Coord* node = g_coordPool.Pop();
-        s->Read(node, 8);
-        m_rewardQueue.GetData()[n] = node;
+        s->Read(node, sizeof(Coord));
+        m_rewardQueue.SetAt(n, node);
     }
     return 1;
 }
@@ -5041,7 +5016,7 @@ i32 CStatusBarMgr::GetActiveValue() {
         return m_machineItem;
     }
     if (m_rewardQueue.GetSize() > 0 && m_rewardQueue.GetSize() > m_rezTick) {
-        return static_cast<Coord*>(m_rewardQueue.GetAt(m_rezTick))->m_x;
+        return GetReward(m_rezTick)->m_x;
     }
     return 0;
 }

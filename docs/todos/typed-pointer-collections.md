@@ -20,6 +20,12 @@ source layer the original developers wrote around each collection.
   `CPtrArray::Add` (expanding to `SetAtGrow`) and its interior insertion is
   `CPtrArray::InsertAt`; a helper must not merge them.
 
+## Resolved families
+
+- `CStatusBarMgr::m_rewardQueue`: `GetReward(i)` plus `ClearRewardQueue()`
+  (recycle every `Coord` to `g_coordPool`, then `SetSize(0, -1)`); insertion
+  keeps `InsertAt`/`Add`, deserialization stores with `SetAt`.
+
 ## Open
 
 For each collection, decide which of these the source was:
