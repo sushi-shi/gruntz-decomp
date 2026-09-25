@@ -5177,6 +5177,47 @@ class ByValueAggregateControls(unittest.TestCase):
                          "?Real@@YAXXZ")
 
 
+class MaxGateClassificationControls(unittest.TestCase):
+    """MAX belongs to a function's own source hash, so only an edit can lower
+    it. An unedited CUR dip must never fail the gate: it used to, and that
+    pushed workers away from correct header changes."""
+
+    def _kinds(self, pct, prev_cur, prev_fp, cur_fp):
+        from gruntz.verify import classify as cl
+        base = {("u", "f"): {"best": 100.0, "cur": prev_cur, "fp": prev_fp,
+                             "addr": None, "hist": 100.0, "tries": 1,
+                             "state": ""}}
+        return [k for k, *_ in cl.classify({("u", "f"): pct}, base,
+                                           lambda *_: cur_fp, {})]
+
+    def test_an_unedited_dip_is_not_a_regression(self):
+        self.assertEqual(self._kinds(89.5, 100.0, "aaaa", "aaaa"), ["DIP"])
+
+    def test_an_edit_that_lowers_cur_is_a_regression(self):
+        self.assertEqual(self._kinds(89.5, 100.0, "aaaa", "bbbb"), ["REGRESS"])
+
+    def test_an_edit_that_keeps_cur_is_a_reset(self):
+        self.assertEqual(self._kinds(97.4, 97.4, "aaaa", "bbbb"), ["RESET"])
+
+    def test_a_changed_fallback_fingerprint_counts_as_an_edit(self):
+        from gruntz.verify.fingerprints import FALLBACK
+        self.assertEqual(
+            self._kinds(89.5, 100.0, FALLBACK + "1", FALLBACK + "2"), ["REGRESS"])
+
+    def test_only_regress_fails_the_gate(self):
+        from gruntz.verify import classify as cl
+        base = {("u", k): {"best": 100.0, "cur": c, "fp": "a", "addr": None,
+                           "hist": 100.0, "tries": 1, "state": ""}
+                for k, c in (("dip", 100.0), ("reset", 97.0), ("drop", 100.0))}
+        cur = {("u", "dip"): 90.0, ("u", "reset"): 97.0, ("u", "drop"): 90.0}
+        fps = {("u", "dip"): "a", ("u", "reset"): "b", ("u", "drop"): "b"}
+        buckets = cl.buckets_of(cur, base, lambda *k: fps[k], {})
+        regress = buckets.get("REGRESS", [])
+        self.assertEqual([r[1] for r in regress], ["drop"])
+        self.assertEqual([r[1] for r in cl.fresh_regressions(cur, base, regress)],
+                         ["drop"])
+
+
 def main(argv=None) -> int:
     import argparse
     ap = argparse.ArgumentParser(
