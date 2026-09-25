@@ -11,6 +11,7 @@
 #include <DDrawMgr/PixelFormatMacros.h>
 #include <DDrawMgr/PixelShift.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Ints.h>
 #include <Lith/BDefs.h>
 #include <Pix16.h>
@@ -198,18 +199,18 @@ CShadeTableCache::HsvShiftTable(PALETTEENTRY* pal, i32 steps, i32 pct, i32 gamma
             float scale = static_cast<float>(j) / static_cast<float>(steps)
                               * ((static_cast<float>((pct - 100)) * factor) * g_percentScale)
                           - s_negone;
-            u8 rn = static_cast<u8>(HSV_MIN(
-                static_cast<float>(((baseArg & PIXEL_BYTE_MASK) + pal[i].peRed)) * scale,
-                g_colorChannelMax
-            ));
-            u8 gn = static_cast<u8>(HSV_MIN(
-                static_cast<float>(((baseArg & PIXEL_BYTE_MASK) + pal[i].peGreen)) * scale,
-                g_colorChannelMax
-            ));
-            u8 bn = static_cast<u8>(HSV_MIN(
-                static_cast<float>(((baseArg & PIXEL_BYTE_MASK) + pal[i].peBlue)) * scale,
-                g_colorChannelMax
-            ));
+            u8 rn = static_cast<u8>(
+                Min(static_cast<float>(((baseArg & PIXEL_BYTE_MASK) + pal[i].peRed)) * scale,
+                    g_colorChannelMax)
+            );
+            u8 gn = static_cast<u8>(
+                Min(static_cast<float>(((baseArg & PIXEL_BYTE_MASK) + pal[i].peGreen)) * scale,
+                    g_colorChannelMax)
+            );
+            u8 bn = static_cast<u8>(
+                Min(static_cast<float>(((baseArg & PIXEL_BYTE_MASK) + pal[i].peBlue)) * scale,
+                    g_colorChannelMax)
+            );
             data[i * steps + j] = FindNearestColor(pal, rn, gn, bn);
         }
     }

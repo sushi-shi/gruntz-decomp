@@ -6,6 +6,7 @@
 #include <Mfc.h>
 
 #include <Enums.h>
+#include <Gruntz/CoordNode.h>
 #include <Ints.h>
 #include <Wap32/CoordUnset.h>
 
@@ -109,8 +110,7 @@ public:
     i32 m_hitTop;
     i32 m_hitRight;
     i32 m_hitBottom;
-    i32 m_fixedCenterX;
-    i32 m_fixedCenterY;
+    Coord m_fixedCenter;
     CString m_leftItemName;
     CString m_rightItemName;
     CString m_upItemName;
@@ -128,7 +128,7 @@ inline void CMenuItem::Reset() {
     m_world = NULL;
     m_listPosition = NULL;
     m_hitLeft = UNINIT_FILL;
-    m_fixedCenterX = UNINIT_FILL;
+    m_fixedCenter.m_x = UNINIT_FILL;
     m_leftItemName.Empty();
     m_rightItemName.Empty();
     m_upItemName.Empty();

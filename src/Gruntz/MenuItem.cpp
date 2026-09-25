@@ -119,9 +119,9 @@ i32 CMenuItem::DrawAt(CDDrawSurfacePair* target, i32 centerX, i32 centerY) {
         return 0;
     }
 
-    if (m_fixedCenterX != UNINIT_FILL) {
-        centerX = m_fixedCenterX;
-        centerY = m_fixedCenterY;
+    if (m_fixedCenter.m_x != UNINIT_FILL) {
+        centerX = m_fixedCenter.m_x;
+        centerY = m_fixedCenter.m_y;
     }
     MenuItemState state = m_state;
     CImage* frame = animation->GetAt(IDX(state));
@@ -240,9 +240,9 @@ i32 CAnimatedMenuItem::Update(u32 deltaMs) {
 RVA(0x001858d0, 0x72)
 i32 CAnimatedMenuItem::DrawAt(CDDrawSurfacePair* target, i32 centerX, i32 centerY) {
 
-    if (m_fixedCenterX != UNINIT_FILL) {
-        centerX = m_fixedCenterX;
-        centerY = m_fixedCenterY;
+    if (m_fixedCenter.m_x != UNINIT_FILL) {
+        centerX = m_fixedCenter.m_x;
+        centerY = m_fixedCenter.m_y;
     }
     CImage* frame = GetCurrentFrame();
     if (!frame) {
