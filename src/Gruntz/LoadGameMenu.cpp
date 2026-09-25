@@ -47,16 +47,86 @@ void FillGameInfoDialog(HWND hWnd, CSaveGame* sg) {
     if (hWnd == NULL || sg == NULL) {
         return;
     }
-    LabelGameInfoSlot(hWnd, sg->GetSlot(0), 0x435, 0x490, 0x49a, 0x4a4);
-    LabelGameInfoSlot(hWnd, sg->GetSlot(1), 0x436, 0x491, 0x49b, 0x4a5);
-    LabelGameInfoSlot(hWnd, sg->GetSlot(2), 0x437, 0x492, 0x49c, 0x4a6);
-    LabelGameInfoSlot(hWnd, sg->GetSlot(3), 0x438, 0x493, 0x49d, 0x4a7);
-    LabelGameInfoSlot(hWnd, sg->GetSlot(4), 0x439, 0x494, 0x49e, 0x4a8);
-    LabelGameInfoSlot(hWnd, sg->GetSlot(5), 0x43a, 0x495, 0x49f, 0x4a9);
-    LabelGameInfoSlot(hWnd, sg->GetSlot(6), 0x43b, 0x496, 0x4a0, 0x4aa);
-    LabelGameInfoSlot(hWnd, sg->GetSlot(7), 0x43c, 0x497, 0x4a1, 0x4ab);
-    LabelGameInfoSlot(hWnd, sg->GetSlot(8), 0x43d, 0x498, 0x4a2, 0x4ac);
-    LabelGameInfoSlot(hWnd, sg->GetSlot(9), 0x43e, 0x499, 0x4a3, 0x4ad);
+    LabelGameInfoSlot(
+        hWnd,
+        sg->GetSlot(0),
+        CTRL_SAVEDLG_SLOT0,
+        CTRL_SAVESLOT_LOAD0,
+        CTRL_SAVESLOT_INFO0,
+        CTRL_SAVESLOT_DELETE0
+    );
+    LabelGameInfoSlot(
+        hWnd,
+        sg->GetSlot(1),
+        CTRL_SAVEDLG_SLOT1,
+        CTRL_SAVESLOT_LOAD1,
+        CTRL_SAVESLOT_INFO1,
+        CTRL_SAVESLOT_DELETE1
+    );
+    LabelGameInfoSlot(
+        hWnd,
+        sg->GetSlot(2),
+        CTRL_SAVEDLG_SLOT2,
+        CTRL_SAVESLOT_LOAD2,
+        CTRL_SAVESLOT_INFO2,
+        CTRL_SAVESLOT_DELETE2
+    );
+    LabelGameInfoSlot(
+        hWnd,
+        sg->GetSlot(3),
+        CTRL_SAVEDLG_SLOT3,
+        CTRL_SAVESLOT_LOAD3,
+        CTRL_SAVESLOT_INFO3,
+        CTRL_SAVESLOT_DELETE3
+    );
+    LabelGameInfoSlot(
+        hWnd,
+        sg->GetSlot(4),
+        CTRL_SAVEDLG_SLOT4,
+        CTRL_SAVESLOT_LOAD4,
+        CTRL_SAVESLOT_INFO4,
+        CTRL_SAVESLOT_DELETE4
+    );
+    LabelGameInfoSlot(
+        hWnd,
+        sg->GetSlot(5),
+        CTRL_SAVEDLG_SLOT5,
+        CTRL_SAVESLOT_LOAD5,
+        CTRL_SAVESLOT_INFO5,
+        CTRL_SAVESLOT_DELETE5
+    );
+    LabelGameInfoSlot(
+        hWnd,
+        sg->GetSlot(6),
+        CTRL_SAVEDLG_SLOT6,
+        CTRL_SAVESLOT_LOAD6,
+        CTRL_SAVESLOT_INFO6,
+        CTRL_SAVESLOT_DELETE6
+    );
+    LabelGameInfoSlot(
+        hWnd,
+        sg->GetSlot(7),
+        CTRL_SAVEDLG_SLOT7,
+        CTRL_SAVESLOT_LOAD7,
+        CTRL_SAVESLOT_INFO7,
+        CTRL_SAVESLOT_DELETE7
+    );
+    LabelGameInfoSlot(
+        hWnd,
+        sg->GetSlot(8),
+        CTRL_SAVEDLG_SLOT8,
+        CTRL_SAVESLOT_LOAD8,
+        CTRL_SAVESLOT_INFO8,
+        CTRL_SAVESLOT_DELETE8
+    );
+    LabelGameInfoSlot(
+        hWnd,
+        sg->GetSlot(9),
+        CTRL_SAVEDLG_SLOT9,
+        CTRL_SAVESLOT_LOAD9,
+        CTRL_SAVESLOT_INFO9,
+        CTRL_SAVESLOT_DELETE9
+    );
 }
 
 RVA(0x0009e2d0, 0x84)
