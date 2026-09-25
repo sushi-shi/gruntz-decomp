@@ -254,20 +254,17 @@ void CNetCmdSlot::ClearSequenceSet(i32* sequences) {
     }
 }
 
-// @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x000c10d0, 0x7c)
 char* __stdcall SequenceSetToString(i32* sequences) {
     g_sequenceListBuffer[0] = 0;
-    i32 remaining = 3;
-    do {
-        if (*sequences != -1) {
-            wsprintfA(g_sequenceScratch, "%d,", *sequences);
+    for (i32 i = 0; i < 3; i++) {
+        if (sequences[i] != -1) {
+            wsprintfA(g_sequenceScratch, "%d,", sequences[i]);
             strcat(g_sequenceListBuffer, g_sequenceScratch);
         }
-        sequences++;
-    } while (--remaining != 0);
+    }
     return g_sequenceListBuffer;
 }
 
