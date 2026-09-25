@@ -31,8 +31,9 @@ storage, control flow, calling conventions, referents) outranks any score.
 3. Reconstruct with the `matcher` skill; classify plateaus with
    `wall-identifier`; use `gruntz permute` (the `permute` skill) only for a
    diagnosed register/schedule residue with `hist` < 100.
-4. Iterate with `gruntz build base compare`. Run a full `gruntz build`
-   (compare, MAX gate, gate tiers) before commit or hand-off.
+4. Build with `gruntz build`: it is incremental and runs compile, compare,
+   the MAX gate, and every default gate in one pass. One build after an edit
+   is enough; no separate verification rebuilds.
 5. Mark a complete body whose residue is bounded by evidence `@early-stop`.
 
 Matching rules that are easy to get wrong:
@@ -48,7 +49,7 @@ Matching rules that are easy to get wrong:
   Adoption decisions live only in `config/lithtech_lineage.tsv`
   (`gruntz lineage`).
 - If unchanged source reaches exact under a disposable TU-state experiment,
-  bank it while exact, then remove the experiment and rebuild.
+  bank it while exact, then remove the experiment.
 
 ## Tests
 

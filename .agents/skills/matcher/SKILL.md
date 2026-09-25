@@ -66,7 +66,7 @@ produced exact closures; scan it so the search is not limited to the first
 familiar explanation. `docs/patterns/INDEX.md` lists compiler mechanisms.
 
 For each candidate, name the source change and the expected emitted delta,
-compile the real TU (`gruntz build base compare`), and compare from the first
+build (`gruntz build`), and compare from the first
 real divergence: instructions, constants, call/CFG structure, and ordered
 relocations. Fuzzy alone is insufficient. A single dip does not reject a
 sourced or structurally convergent base, but confirm the
@@ -120,17 +120,16 @@ Details and proven exceptions: the `wall-identifier` skill.
 
 - Claim exact closure only from an actual compile of the intended
   fingerprint. If an unchanged function reaches exact under a disposable TU
-  state, bank MAX while exact, remove the perturbation, rebuild.
+  state, bank MAX while exact, then remove the perturbation.
 - Claim a bounded residue only after the applicable lever families have
   evidence-backed dispositions; then mark the complete body `@early-stop`.
   It never excuses missing logic, wrong referents, or an unresolved identity.
 - A short or user-directed batch may stop sooner: mark remaining hypotheses
   open in the handoff.
 
-Before committing: re-audit raw constants and ordered referents, stage only
-the focused source, reusable pattern docs, and baseline rows, run the full
-`gruntz build`, and require `git diff --check` clean. Matching work runs no
-test suites (`AGENTS.md` "Tests").
+Commit the focused source, reusable pattern docs, and baseline rows once
+`gruntz build` is green. Matching work runs no test suites (`AGENTS.md`
+"Tests").
 
 Report the historical-MAX change, the structural correction, its evidence and
 compiler controls, the referent verdict, and any remaining wall.
