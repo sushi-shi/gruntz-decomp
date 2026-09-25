@@ -70,7 +70,8 @@ Matching rules that are easy to get wrong:
 - A 100% match is a match: keep it even if its source breaks a project rule.
   Admit a gate violation through that gate's allow entry, and record the
   function, the rule, and the deviation in `docs/todos/rule-exceptions.tsv`
-  (schema in `docs/todos/README.md`).
+  (schema in `docs/todos/README.md`). A rule-breaking spelling that retail's
+  bytes require below 100% is recorded there too.
 
 ## Tests
 
