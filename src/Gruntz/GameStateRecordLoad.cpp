@@ -192,7 +192,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     for (i32 a = 0; a < count; ++a) {
         Coord* item = g_coordPool.Pop();
         ar->Read(item, 8);
-        (&m_coordList)->AddTail(item);
+        m_coordList.AddTail(item);
     }
 
     DeleteAllPayloads();
@@ -208,7 +208,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
             item = NULL;
         }
         ar->Read(item, 0x2c);
-        (&m_payloads)->AddTail(item);
+        m_payloads.AddTail(item);
     }
 
     b32 flag = (m_entranceReason >= PICKUP_TOYZ_FIRST);

@@ -1411,11 +1411,10 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
     ClearRecords();
 
     ar->Read(&count, sizeof(count));
-    CPtrList* rec = &m_recList;
     for (ci = 0; ci < static_cast<u32>(count); ci++) {
         Coord* node = g_coordPool.Pop();
         ar->Read(node, 8);
-        rec->AddTail(node);
+        m_recList.AddTail(node);
     }
 
     CPtrList* sel = m_selLists;
