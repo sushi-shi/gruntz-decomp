@@ -444,18 +444,7 @@ void CGrunt::OnObjectRemoved() {
         m_coordList.RemoveAll();
     }
 
-    while (true) {
-        i32 n = PayloadCount();
-        i32* head = (n == 0) ? NULL : static_cast<i32*>(m_payloads.GetHead());
-        if (head == NULL) {
-            return;
-        }
-        if (n == 0) {
-            continue;
-        }
-        i32* p = static_cast<i32*>(m_payloads.RemoveHead());
-        delete[] p;
-    }
+    DeleteAllPayloads();
 }
 
 RVA(0x00048400, 0x47)
@@ -2252,20 +2241,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                     if (this->CoordCount() != 0) {
                         RECYCLE_GRUNT_COORDS(this)
                     }
-                    for (;;) {
-                        i32* h;
-                        if (m_payloads.GetCount() != 0) {
-                            h = static_cast<i32*>(m_payloads.GetHead());
-                        } else {
-                            h = NULL;
-                        }
-                        if (h == NULL) {
-                            break;
-                        }
-                        if (m_payloads.GetCount() != 0) {
-                            delete[] static_cast<i32*>(m_payloads.RemoveHead());
-                        }
-                    }
+                    DeleteAllPayloads();
                     i32* mem = new i32[0xb];
                     i32* payload;
                     if (mem != NULL) {

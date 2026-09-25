@@ -203,18 +203,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
         (&m_coordList)->AddTail(item);
     }
 
-    while (true) {
-        i32 n = m_payloads.GetCount();
-        i32* head = (n == 0) ? NULL : static_cast<i32*>(m_payloads.GetHead());
-        if (head == NULL) {
-            break;
-        }
-        if (n == 0) {
-            continue;
-        }
-        i32* rem = static_cast<i32*>((&m_payloads)->RemoveHead());
-        delete[] rem;
-    }
+    DeleteAllPayloads();
 
     ar->Read(&count, sizeof(count));
     for (i32 b = 0; b < count; ++b) {

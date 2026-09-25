@@ -451,6 +451,19 @@ public:
     i32 PayloadCount() const {
         return m_payloads.GetCount();
     }
+    i32* HeadPayload() {
+        return PayloadCount() == 0 ? NULL : static_cast<i32*>(m_payloads.GetHead());
+    }
+    void DeleteHeadPayload() {
+        if (PayloadCount() != 0) {
+            delete[] static_cast<i32*>(m_payloads.RemoveHead());
+        }
+    }
+    void DeleteAllPayloads() {
+        while (HeadPayload() != NULL) {
+            DeleteHeadPayload();
+        }
+    }
 
     b32 m_toolConfigured; // set on every tool (re)config; never read
     b32 m_neighborScanEnabled;

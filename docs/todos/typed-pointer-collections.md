@@ -63,6 +63,11 @@ source layer the original developers wrote around each collection.
   the viewport between it and the main-plane reset. `GetPlane` stays the
   checked accessor; the unchecked plane walks stay raw.
 
+- `CGrunt::m_payloads`: `HeadPayload()` (NULL when empty),
+  `DeleteHeadPayload()` and `DeleteAllPayloads()` replace the three
+  open-coded drain loops (OnObjectRemoved, LoadStateRecord,
+  LoadGruntTypeTable). Serialization walks stay raw.
+
 ## Open
 
 For each collection, decide which of these the source was:
