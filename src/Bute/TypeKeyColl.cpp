@@ -470,22 +470,18 @@ i32 _zdvec::realloc(i32 idx, i32 at) {
         memcpy(static_cast<char*>(init) + shift * size, p, oldbytes);
         memset(init, 0, initcount * size);
         lo = idx;
-        vec = p;
-        // PROVEN: the integer status preserves the allocated-address bits on success.
-        return reinterpret_cast<i32>(p);
+    } else {
+        idx += at;
+        p = static_cast<char*>(::realloc(vec, (idx - lo + 1) * size));
+        if (!p) {
+            handle(g_out_of_memory, 0x22);
+            return 0;
+        }
+        init = p + (hi - lo + 1) * size;
+        initcount = idx - hi;
+        memset(init, 0, initcount * size);
+        hi = idx;
     }
-    idx += at;
-    p = static_cast<char*>(::realloc(vec, (idx - lo + 1) * size));
-    if (!p) {
-        handle(g_out_of_memory, 0x22);
-        return 0;
-    }
-    i32 oldbytes = (hi - lo + 1) * size;
-    char* fill = p + oldbytes;
-    initcount = idx - hi;
-    init = fill;
-    memset(fill, 0, initcount * size);
-    hi = idx;
     vec = p;
     // PROVEN: the integer status preserves the allocated-address bits on success.
     return reinterpret_cast<i32>(p);
