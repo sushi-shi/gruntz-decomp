@@ -22,6 +22,7 @@
 #include <Gruntz/Multi.h>
 #include <Gruntz/Sprite.h>
 #include <Image/CImage.h>
+#include <RectMacros.h>
 #include <Rez/RezArchive.h>
 #include <Rez/RezArchiveEntry.h>
 #include <Rez/RezTypeTag.h>
@@ -189,16 +190,22 @@ i32 CChatBoxOwner::LoadChatBoxSprite(CDDrawSurfacePair* target) {
 
     RECT rect;
     if (self->m_mode == CHATBOX_WITH_HIDDEN_STATUSBAR) {
-        rect.left = self->m_originX + 0x4c;
-        rect.right = self->m_originX + 0x267;
-        rect.top = self->m_originY + 0x2b;
-        rect.bottom = self->m_originY + 0x37;
+        SET_RECT_XY_EXTENTS(
+            rect,
+            self->m_originX + 0x4c,
+            self->m_originX + 0x267,
+            self->m_originY + 0x2b,
+            self->m_originY + 0x37
+        );
         self->m_fontConfig->RenderInputText(hdc, 0x21b, &rect);
     } else {
-        rect.left = self->m_originX + 0x4c;
-        rect.right = self->m_originX + 0x1c7;
-        rect.top = self->m_originY + 0x2b;
-        rect.bottom = self->m_originY + 0x37;
+        SET_RECT_XY_EXTENTS(
+            rect,
+            self->m_originX + 0x4c,
+            self->m_originX + 0x1c7,
+            self->m_originY + 0x2b,
+            self->m_originY + 0x37
+        );
         self->m_fontConfig->RenderInputText(hdc, 0x17b, &rect);
     }
     surface->m_ddSurface->ReleaseDC(hdc);

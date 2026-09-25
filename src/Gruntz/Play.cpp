@@ -4466,10 +4466,7 @@ i32 CPlay::ExecuteCommand(
                     g->m_defenderState = AISTATE_SEEK;
                     g->m_arrivalCell.m_y = -1;
                     g->m_arrivalActive = false;
-                    g->m_object->m_extent.left = 0;
-                    g->m_object->m_extent.right = 0;
-                    g->m_object->m_extent.top = 0;
-                    g->m_object->m_extent.bottom = 0;
+                    SET_RECT_XY_EXTENTS(g->m_object->m_extent, 0, 0, 0, 0);
                     g->SetEntrancePos(1, 1);
                 }
                 g->m_arrivalNotified = false;

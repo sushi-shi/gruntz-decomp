@@ -32,6 +32,7 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Io/FileMem.h>
+#include <RectMacros.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/TileGeometry.h>
@@ -114,10 +115,13 @@ CStaticHazard::CStaticHazard(CGameObject* obj)
         default:
             break;
     }
-    m_object->m_area.left = m_object->m_screenX - 7;
-    m_object->m_area.right = m_object->m_area.left + 14;
-    m_object->m_area.top = m_object->m_screenY - 7;
-    m_object->m_area.bottom = m_object->m_area.top + 14;
+    SET_RECT_XY_EXTENTS(
+        m_object->m_area,
+        m_object->m_screenX - 7,
+        m_object->m_area.left + 14,
+        m_object->m_screenY - 7,
+        m_object->m_area.top + 14
+    );
     SET_ANIMATION_ACT("A");
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
     m_object->m_animationCursor.m_consumeDraw = 0;

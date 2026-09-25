@@ -55,6 +55,7 @@
 #include <Ints.h>
 #include <Lith/ObjectUtilities.h>
 #include <Pix16.h>
+#include <RectMacros.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezArchiveDir.h>
 #include <Rez/RezTypeTag.h>
@@ -835,10 +836,7 @@ i32 CGrunt::ResolveEntranceArrival() {
                     m_defenderState = AISTATE_SEEK;
                     m_arrivalActive = false;
                     m_arrivalFlags |= 0x18040402;
-                    m_object->m_extent.left = 0;
-                    m_object->m_extent.right = 0;
-                    m_object->m_extent.top = 0;
-                    m_object->m_extent.bottom = 0;
+                    SET_RECT_XY_EXTENTS(m_object->m_extent, 0, 0, 0, 0);
                     SetEntrancePos(0, 0);
                 }
             }

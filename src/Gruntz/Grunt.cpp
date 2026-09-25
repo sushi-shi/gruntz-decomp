@@ -1967,10 +1967,13 @@ i32 CGrunt::Place(
     LoadVehicleGruntSprites(static_cast<PickupType>(vehicleKind));
     LoadGruntTypeTable(typeKind, 1, 0, 0);
     if (span != NULL) {
-        m_object->m_extent.left = (m_lastTilePx.m_x >> TILE_SHIFT_PX) - span->left;
-        m_object->m_extent.right = span->right + (m_lastTilePx.m_x >> TILE_SHIFT_PX);
-        m_object->m_extent.top = (m_lastTilePx.m_y >> TILE_SHIFT_PX) - span->top;
-        m_object->m_extent.bottom = span->bottom + (m_lastTilePx.m_y >> TILE_SHIFT_PX);
+        SET_RECT_XY_EXTENTS(
+            m_object->m_extent,
+            (m_lastTilePx.m_x >> TILE_SHIFT_PX) - span->left,
+            span->right + (m_lastTilePx.m_x >> TILE_SHIFT_PX),
+            (m_lastTilePx.m_y >> TILE_SHIFT_PX) - span->top,
+            span->bottom + (m_lastTilePx.m_y >> TILE_SHIFT_PX)
+        );
     }
     RECT reach;
     CopyRect(&reach, &m_object->m_extent);

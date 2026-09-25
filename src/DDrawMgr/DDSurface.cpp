@@ -22,6 +22,7 @@
 #include <Lith/BDefs.h>
 #include <MakeRect.h>
 #include <Pix16.h>
+#include <RectMacros.h>
 
 #include <ddraw.h>
 #include <stdio.h>
@@ -1703,10 +1704,7 @@ i32 CDDSurface::StretchBlit(CDDSurface* src, RECT* srcRect, RECT* dstRect, i32 m
     if (srcRect != NULL) {
         sr = *srcRect;
     } else {
-        sr.left = 0;
-        sr.right = srcW - 1;
-        sr.top = 0;
-        sr.bottom = srcH - 1;
+        SET_RECT_XY_EXTENTS(sr, 0, srcW - 1, 0, srcH - 1);
     }
     v[0].m_x = static_cast<float>(dstRect->left);
     v[0].m_y = static_cast<float>(dstRect->top);

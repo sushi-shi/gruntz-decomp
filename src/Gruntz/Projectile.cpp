@@ -48,6 +48,7 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Ints.h>
 #include <Io/FileMem.h>
+#include <RectMacros.h>
 #include <Rez/FrameClock.h>
 #include <Utils/MapTyped.h>
 #include <Utils/Square.h>
@@ -596,10 +597,13 @@ RVA(0x000e0b10, 0x1bd)
 void CProjectile::ScanTargets(i32 impact) {
     i32 playerIndex = 0;
     RECT box;
-    box.left = m_object->m_screenX - 0x10;
-    box.right = box.left + 0x20;
-    box.top = m_object->m_screenY - 0x10;
-    box.bottom = box.top + 0x20;
+    SET_RECT_XY_EXTENTS(
+        box,
+        m_object->m_screenX - 0x10,
+        box.left + 0x20,
+        m_object->m_screenY - 0x10,
+        box.top + 0x20
+    );
     i32 playerBase = 0;
     i32 gridIndex;
     i32 unitIndex;

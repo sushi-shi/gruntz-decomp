@@ -403,10 +403,7 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
         if (item != NULL) {
             if (HAS(item->m_flags, FONT_ITEM_SHADOW)) {
                 SetTextColor(hdc, TCLR_BLACK);
-                work.left = cur.left + 1;
-                work.right = cur.right + 1;
-                work.top = cur.top + 1;
-                work.bottom = cur.bottom + 1;
+                SET_RECT_XY_EXTENTS(work, cur.left + 1, cur.right + 1, cur.top + 1, cur.bottom + 1);
                 DrawTextA(hdc, item->m_name, strlen(item->m_name), &work, format);
             }
             if (HAS(item->m_flags, FONT_ITEM_COLORED)) {

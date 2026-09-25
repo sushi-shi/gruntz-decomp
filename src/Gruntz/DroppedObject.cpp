@@ -38,6 +38,7 @@
 #include <Gruntz/UserLogic.h>
 #include <Image/CImage.h>
 #include <Io/FileMem.h>
+#include <RectMacros.h>
 #include <Rez/FrameClock.h>
 #include <Wap32/TileGeometry.h>
 #include <ZTools/BitVec.h>
@@ -166,10 +167,13 @@ i32 CObjectDropper::Update() {
         if (g_gameReg->m_isEasyMode == false || g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
             CWwdSpriteObject* o = m_object;
             RECT box;
-            box.left = o->m_screenX - o->m_frameImage->m_anchorX + 7;
-            box.right = o->m_screenX + o->m_frameImage->m_anchorX - 7;
-            box.top = o->m_screenY - o->m_frameImage->m_anchorY + 7;
-            box.bottom = o->m_screenY + o->m_frameImage->m_anchorY - 7;
+            SET_RECT_XY_EXTENTS(
+                box,
+                o->m_screenX - o->m_frameImage->m_anchorX + 7,
+                o->m_screenX + o->m_frameImage->m_anchorX - 7,
+                o->m_screenY - o->m_frameImage->m_anchorY + 7,
+                o->m_screenY + o->m_frameImage->m_anchorY - 7
+            );
             i32 playerIndex;
             i32 unitIndex;
             CGrunt* found = g_gameReg->m_triggerMgr->FindGruntAt(

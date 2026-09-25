@@ -1756,10 +1756,13 @@ i32 CTriggerMgr::ApplyGruntAreaEffect(
 ) {
     i32 radiusPx = radiusTiles << TILE_SHIFT_PX;
     RECT area;
-    area.left = x - radiusPx - 7;
-    area.right = x + radiusPx + 7;
-    area.top = y - radiusPx - 7;
-    area.bottom = y + radiusPx + 7;
+    SET_RECT_XY_EXTENTS(
+        area,
+        x - radiusPx - 7,
+        x + radiusPx + 7,
+        y - radiusPx - 7,
+        y + radiusPx + 7
+    );
     i32 maxTileX = m_world->m_level->m_mainPlane->m_tileColumns - 2;
     i32 maxTileY = m_world->m_level->m_mainPlane->m_tileRows - 2;
 
