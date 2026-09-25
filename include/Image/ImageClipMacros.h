@@ -59,9 +59,4 @@
         return;                                                                                    \
     }
 
-#define IMAGE_MIRROR_COMPONENT(screen, origin, plot, anchor)                                       \
-    ((screen) - (origin) - (plot) - (anchor))
-#define IMAGE_POSITION_COMPONENT(origin, anchor, plot, screen)                                     \
-    ((origin) - (anchor) + (plot) + (screen))
-
 #endif // IMAGE_IMAGECLIPMACROS_H

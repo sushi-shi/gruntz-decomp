@@ -924,10 +924,6 @@ public:
         GruntEntranceMode entranceMode
     );
     i32 StepDefenderBehavior();
-
-    void FaceTowardTile(Coord tile) {
-        FaceTowardTile(tile.m_x, tile.m_y);
-    }
 };
 
 union LogicDispatchWord {

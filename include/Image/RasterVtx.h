@@ -11,16 +11,6 @@ struct ClipVtx {
     float m_x, m_y, m_u, m_v;
 
     i32 m_fx, m_fu, m_fv;
-
-    void SetPosition(float positionX, float positionY) {
-        m_x = positionX;
-        m_y = positionY;
-    }
-
-    void SetTexture(float textureU, float textureV) {
-        m_u = textureU;
-        m_v = textureV;
-    }
 };
 
 extern ClipVtx g_rasterOddClipPassBuffer[100];

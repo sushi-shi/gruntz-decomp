@@ -105,6 +105,7 @@
 #include <Io/FileMem.h>
 #include <Io/SaveGame.h>
 #include <Pix16.h>
+#include <RectMacros.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezArchive.h>
 #include <Rez/RezArchiveDir.h>
@@ -3515,10 +3516,7 @@ void CPlay::DrawCustomLevelBanner() {
     SetBkMode(hdc, TRANSPARENT);
     SetTextColor(hdc, 0);
     RECT rc;
-    rc.left = 0;
-    rc.top = 0x1b8;
-    rc.right = 0x27f;
-    rc.bottom = 0x1d6;
+    SET_RECT_COMPONENTS(rc, 0, 0x1b8, 0x27f, 0x1d6);
     DrawTextA(hdc, g_customLevelText, -1, &rc, DT_CENTER | DT_SINGLELINE);
     surface->m_ddSurface->ReleaseDC(hdc);
 }
@@ -6888,10 +6886,13 @@ i32 CPlay::ResetViewport() {
     if (m_region0Gate) {
         i32 halfW = (r.right - r.left) / 2;
         i32 halfH = (r.bottom - r.top) / 2;
-        r.left = r.left + halfW - 0x60;
-        r.top = r.top + halfH - 0x60;
-        r.right = r.right + (0x60 - halfW);
-        r.bottom = r.bottom + (0x60 - halfH);
+        SET_RECT_COMPONENTS(
+            r,
+            r.left + halfW - 0x60,
+            r.top + halfH - 0x60,
+            r.right + (0x60 - halfW),
+            r.bottom + (0x60 - halfH)
+        );
     }
     m_viewportResizeMode = VIEW_RESIZE_IDLE;
     m_world->m_level->UpdatePlaneViewports((&r));

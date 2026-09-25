@@ -91,11 +91,6 @@ class CDDrawSurfaceMgr;
 struct LevelDims {
     i32 m_w;
     i32 m_h;
-
-    void Init(i32 width, i32 height) {
-        m_w = width;
-        m_h = height;
-    }
 };
 
 GZ_ENUM_CONST_BEGIN(LevelPlaneLayout)
@@ -339,9 +334,5 @@ public:
     m_imageSets.SetSize(0, -1);                                                                    \
     m_mainPlane = NULL;                                                                            \
     m_mainIndex = -1
-
-#define SET_LEVEL_DIMS(dims, width, height)                                                        \
-    (dims).m_w = (width);                                                                          \
-    (dims).m_h = (height)
 
 #endif // SRC_GRUNTZ_GAMELEVEL_H

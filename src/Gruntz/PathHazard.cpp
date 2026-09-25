@@ -421,7 +421,7 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
         }
     }
     CWwdSpriteObject* o = m_object;
-    SET_DRAW_FILL_FRACTION(o, SHADE_ALPHA_16, 0x80);
+    o->SetDrawFillFraction(SHADE_ALPHA_16, 0x80);
     CLEAR_OBJECT_AREA
 }
 

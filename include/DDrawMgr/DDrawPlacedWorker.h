@@ -51,11 +51,6 @@ public:
         m_level = NULL;
         m_stateFlags = SPRITE_STATE_NONE;
     }
-
-    inline i32 SetReferencedPosition(i32 x, i32 y) {
-        m_refCount = 2;
-        return CResolveNode::SetPosition(x, y);
-    }
 };
 
 struct CDDrawPixelWorker : public CDDrawPlacedWorker {

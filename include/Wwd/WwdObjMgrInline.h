@@ -56,12 +56,4 @@ inline CWwdGameObject* LookupActiveObject(CMapPtrToPtr& map, void* key) {
     return found;
 }
 
-static inline void
-PlaceObjectRect(RECT& destination, const RECT& objectRect, const Coord& position) {
-    destination.left = objectRect.left + position.m_x;
-    destination.top = objectRect.top + position.m_y;
-    destination.right = objectRect.right + position.m_x;
-    destination.bottom = objectRect.bottom + position.m_y;
-}
-
 #endif // GRUNTZ_WWD_WWDOBJMGRINLINE_H

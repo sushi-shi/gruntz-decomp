@@ -71,6 +71,7 @@
 #include <Ints.h>
 #include <Io/FileMem.h>
 #include <MakeRect.h>
+#include <RectMacros.h>
 #include <Rez/RezList.h>
 #include <Rez/RezMgr.h>
 #include <Utils/MapTyped.h>
@@ -3309,8 +3310,11 @@ void CStatusBarMgr::LoadChipMachineConfig() {
     switch (m_machinePhase) {
         case BELT_IN_MACHINE:
             if (static_cast<i64>(g_frameTime) - belt[0] >= belt[1]) {
-                m_machineItemRect.left += g_buteMgr.GetInt("StatusBar", "NextItemSpeed", 2);
-                m_machineItemRect.right += g_buteMgr.GetInt("StatusBar", "NextItemSpeed", 2);
+                OFFSET_RECT_X_EDGES(
+                    m_machineItemRect,
+                    g_buteMgr.GetInt("StatusBar", "NextItemSpeed", 2),
+                    g_buteMgr.GetInt("StatusBar", "NextItemSpeed", 2)
+                );
                 rectFlag = 1;
                 belt[1] = g_buteMgr.GetDword("StatusBar", "NextItemDelay", 0x64);
                 belt[0] = static_cast<u32>(g_frameTime);
@@ -3366,8 +3370,11 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             break;
         case BELT_FALLING:
             if (static_cast<i64>(g_frameTime) - belt[0] >= belt[1]) {
-                m_machineItemRect.top += g_buteMgr.GetInt("StatusBar", "FallingItemSpeed", 2);
-                m_machineItemRect.bottom += g_buteMgr.GetInt("StatusBar", "FallingItemSpeed", 2);
+                OFFSET_RECT_Y_EDGES(
+                    m_machineItemRect,
+                    g_buteMgr.GetInt("StatusBar", "FallingItemSpeed", 2),
+                    g_buteMgr.GetInt("StatusBar", "FallingItemSpeed", 2)
+                );
                 rectFlag = 1;
                 belt[1] = g_buteMgr.GetDword("StatusBar", "FallingItemDelay", 0x32);
                 belt[0] = static_cast<u32>(g_frameTime);
@@ -3412,8 +3419,11 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             break;
         case BELT_TRAVELLING:
             if (static_cast<i64>(g_frameTime) - belt[0] >= belt[1]) {
-                m_machineItemRect.left -= g_buteMgr.GetInt("StatusBar", "NextItemSpeed", 2);
-                m_machineItemRect.right -= g_buteMgr.GetInt("StatusBar", "NextItemSpeed", 2);
+                OFFSET_RECT_X_EDGES(
+                    m_machineItemRect,
+                    -g_buteMgr.GetInt("StatusBar", "NextItemSpeed", 2),
+                    -g_buteMgr.GetInt("StatusBar", "NextItemSpeed", 2)
+                );
                 rectFlag = 1;
                 belt[1] = g_buteMgr.GetDword("StatusBar", "NextItemDelay", 0x64);
                 belt[0] = static_cast<u32>(g_frameTime);
@@ -3434,8 +3444,11 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             break;
         case BELT_FALLING_OFF: {
             if (static_cast<i64>(g_frameTime) - belt[0] >= belt[1]) {
-                m_machineItemRect.top += g_buteMgr.GetInt("StatusBar", "FallingItemSpeed", 2);
-                m_machineItemRect.bottom += g_buteMgr.GetInt("StatusBar", "(FallingItemSpeed", 2);
+                OFFSET_RECT_Y_EDGES(
+                    m_machineItemRect,
+                    g_buteMgr.GetInt("StatusBar", "FallingItemSpeed", 2),
+                    g_buteMgr.GetInt("StatusBar", "(FallingItemSpeed", 2)
+                );
                 rectFlag = 1;
                 belt[1] = g_buteMgr.GetDword("StatusBar", "FallingItemDelay", 0x32);
                 belt[0] = static_cast<u32>(g_frameTime);
@@ -3489,10 +3502,13 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             RECT rc;
             i32 x = m_barRect.left;
             i32 y = m_barRect.top;
-            rc.left = m_machineItemRect.left + x;
-            rc.top = m_machineItemRect.top + y;
-            rc.right = m_machineItemRect.right + x;
-            rc.bottom = m_machineItemRect.bottom + y;
+            SET_RECT_COMPONENTS(
+                rc,
+                m_machineItemRect.left + x,
+                m_machineItemRect.top + y,
+                m_machineItemRect.right + x,
+                m_machineItemRect.bottom + y
+            );
             w->m_rect = rc;
         }
         if (refreshFlag) {

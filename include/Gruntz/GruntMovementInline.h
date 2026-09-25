@@ -3,7 +3,6 @@
 
 #include <Gruntz/CoordPool.h>
 #include <Gruntz/Grunt.h>
-#include <Gruntz/GruntDirectionOffset.h>
 #include <Gruntz/TriggerMgr.h>
 
 inline i32 IsGruntAtSavedScreenPos(CGrunt* grunt) {
@@ -77,43 +76,6 @@ inline Coord CGrunt::ScanCell() {
 inline void BeginGruntEntranceAndReleaseCell(CGrunt* grunt) {
     grunt->m_entranceActive = true;
     grunt->m_triggerMgr->RemoveCellRecord(grunt->m_playerIndex, grunt->m_unitIndex, 1);
-}
-
-inline i32 CommitGruntNeighbor(CGrunt* grunt, CGrunt* target) {
-    return grunt->CommitNeighbor(
-        target->m_playerIndex,
-        target->m_unitIndex,
-        target->LastTilePx().m_x,
-        target->LastTilePx().m_y
-    );
-}
-
-inline void CopyLastTileToDefender(CGrunt* grunt) {
-    grunt->m_defenderPx = grunt->m_lastTilePx;
-}
-
-inline void ResetGruntPoweredState(CGrunt* grunt) {
-    grunt->m_entranceActive = false;
-    grunt->m_combatActive = false;
-    grunt->m_neighborValid = false;
-    grunt->m_poweredUp = false;
-    grunt->ResetEntranceAnimation(1, 0, 0);
-}
-
-inline void SetGruntArrivalTarget(CGrunt* grunt, CGrunt* target) {
-    grunt->SetEntrancePos(1, 1);
-    grunt->m_arrivalCell.Set(target->m_playerIndex, target->m_unitIndex);
-}
-
-inline void SetMovingDeathDirection(CGrunt* grunt, const GruntDirectionCell& direction) {
-    grunt->m_entranceCell = direction;
-    grunt->m_lastTilePx += GruntDirectionPixelOffset(direction) / 2;
-}
-
-inline void
-SetEntranceDirection(CGrunt* grunt, const GruntDirectionCell& direction, Coord* newPosition) {
-    grunt->m_entranceCell = direction;
-    *newPosition = grunt->m_lastTilePx - GruntDirectionPixelOffset(direction);
 }
 
 #endif // GRUNTZ_GRUNTMOVEMENTINLINE_H

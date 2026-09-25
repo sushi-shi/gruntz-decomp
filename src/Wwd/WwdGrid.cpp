@@ -94,30 +94,8 @@ RVA(0x001918c0, 0x1a2)
 
 i32 CWwdGrid::Query(WwdRect q, i32 doRemove) {
     i32 fired = 0;
-    if (q.m_minX > m_bounds.m_maxX) {
-        return 0;
-    }
-    if (q.m_maxX < m_bounds.m_minX) {
-        return 0;
-    }
-    if (q.m_minY > m_bounds.m_maxY) {
-        return 0;
-    }
-    if (q.m_maxY < m_bounds.m_minY) {
-        return 0;
-    }
-    if (q.m_minX < m_bounds.m_minX) {
-        q.m_minX = m_bounds.m_minX;
-    }
-    if (q.m_maxX > m_bounds.m_maxX) {
-        q.m_maxX = m_bounds.m_maxX;
-    }
-    if (q.m_minY < m_bounds.m_minY) {
-        q.m_minY = m_bounds.m_minY;
-    }
-    if (q.m_maxY > m_bounds.m_maxY) {
-        q.m_maxY = m_bounds.m_maxY;
-    }
+    WWD_RECT_RETURN_IF_DISJOINT(q, m_bounds, 0)
+    WWD_RECT_CLAMP_COMPONENTS(q, m_bounds)
     WwdRect cell;
     cell.m_minY = (q.m_minY - m_bounds.m_minY) >> m_shiftX;
     cell.m_minX = (q.m_minX - m_bounds.m_minX) >> m_shiftY;
@@ -183,30 +161,8 @@ WwdRegion* CWwdGridIter::Init(CWwdGrid* grid, WwdRect rect, i32 remove) {
     m_grid = grid;
     m_rect = rect;
     m_remove = remove;
-    if (m_rect.m_minX > grid->m_bounds.m_maxX) {
-        return NULL;
-    }
-    if (m_rect.m_maxX < grid->m_bounds.m_minX) {
-        return NULL;
-    }
-    if (m_rect.m_minY > grid->m_bounds.m_maxY) {
-        return NULL;
-    }
-    if (m_rect.m_maxY < grid->m_bounds.m_minY) {
-        return NULL;
-    }
-    if (m_rect.m_minX < grid->m_bounds.m_minX) {
-        m_rect.m_minX = grid->m_bounds.m_minX;
-    }
-    if (m_rect.m_maxX > grid->m_bounds.m_maxX) {
-        m_rect.m_maxX = grid->m_bounds.m_maxX;
-    }
-    if (m_rect.m_minY < grid->m_bounds.m_minY) {
-        m_rect.m_minY = grid->m_bounds.m_minY;
-    }
-    if (m_rect.m_maxY > grid->m_bounds.m_maxY) {
-        m_rect.m_maxY = grid->m_bounds.m_maxY;
-    }
+    WWD_RECT_RETURN_IF_DISJOINT(m_rect, grid->m_bounds, NULL)
+    WWD_RECT_CLAMP_COMPONENTS(m_rect, grid->m_bounds)
     m_colStart = (m_rect.m_minY - grid->m_bounds.m_minY) >> grid->m_shiftX;
     m_rowStart = (m_rect.m_minX - grid->m_bounds.m_minX) >> grid->m_shiftY;
     m_colEnd = (m_rect.m_maxY - grid->m_bounds.m_minY) >> grid->m_shiftX;

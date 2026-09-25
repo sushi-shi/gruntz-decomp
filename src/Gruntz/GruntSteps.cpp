@@ -791,8 +791,7 @@ i32 CGrunt::SetArrivalTarget(
     i32 targetPxY
 ) {
     Coord cell;
-    cell.m_x = targetPlayerIndex;
-    cell.m_y = targetUnitIndex;
+    cell.Set(targetPlayerIndex, targetUnitIndex);
     m_arrivalCell = cell;
     m_arrivalActive = true;
     m_defenderPx.m_x = (targetPxX & ~TILE_MASK_PX) + TILE_HALF_PX;

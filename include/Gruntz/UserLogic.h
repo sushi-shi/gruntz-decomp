@@ -129,14 +129,6 @@ public:
     i32 m_reserved2c;
 
     i32 m_previousAnimationActId;
-
-    inline void ClearObjectArea() {
-        SetRectEmpty(&m_object->m_area);
-    }
-
-    inline void SetObjectArea(i32 value) {
-        SetRect(&m_object->m_area, value, value, value, value);
-    }
 };
 
 typedef i32 (CUserLogic::*CActHandler)();
@@ -244,7 +236,8 @@ typedef i32 (CUserLogic::*CActHandler)();
 
 inline void CUserLogic::GetScreenTile(Coord* out) {
     GetScreenPos(out);
-    SCREEN_TILE_INPLACE(out);
+    out->m_x >>= TILE_SHIFT_PX;
+    out->m_y >>= TILE_SHIFT_PX;
 }
 
 inline void CUserLogic::RegisterLogicTypesOnce() {

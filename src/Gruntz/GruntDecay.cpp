@@ -66,7 +66,7 @@ i32 CGrunt::UpdateDeathAnimation() {
              / static_cast<double>(g_buteMgr.GetDword("Grunt", "DecayTime", 0xbb8)))
         );
         CWwdSpriteObject* o = m_object;
-        SET_DRAW_FILL_FRACTION(o, SHADE_PAL_ALPHA_16, r);
+        o->SetDrawFillFraction(SHADE_PAL_ALPHA_16, r);
         return 0;
     }
     if (m_cellRemovalNotified == false) {
@@ -96,6 +96,6 @@ i32 CGrunt::UpdateDecayFade() {
         (static_cast<double>(elapsed) * 256.0
          / static_cast<double>(g_buteMgr.GetDword("Grunt", "DecayTime", 0xbb8)))
     );
-    SET_DRAW_FILL_FRACTION(o, SHADE_PAL_ALPHA_16, r);
+    o->SetDrawFillFraction(SHADE_PAL_ALPHA_16, r);
     return 0;
 }

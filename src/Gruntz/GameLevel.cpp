@@ -16,6 +16,7 @@
 #include <Io/FileMem.h>
 #include <Io/FileStream.h>
 #include <Pix16.h>
+#include <RectMacros.h>
 #include <Rez/RezArchiveEntry.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/Object.h>
@@ -302,10 +303,7 @@ i32 CGameLevel::SetViewportSizeAndUpdatePlanes(i32 w, i32 h) {
     i32 maxX = w - 1;
     i32 maxY = h - 1;
     LevelCoordRect rect;
-    rect.left = 0;
-    rect.top = 0;
-    rect.right = maxX;
-    rect.bottom = maxY;
+    SET_RECT_COMPONENTS(rect, 0, 0, maxX, maxY);
     m_viewportRect = rect;
     i32 i = 0;
     if (m_planes.GetSize() > 0) {

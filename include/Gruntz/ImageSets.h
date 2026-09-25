@@ -35,12 +35,6 @@ public:
 
     i32 m_width;
     i32 m_height;
-
-    inline i32* ReadDimensions(WwdTileImageRecord* record) {
-        m_width = record->m_width;
-        m_height = record->m_height;
-        return record->m_fields;
-    }
 };
 
 struct CUniformTileImageSet : public CTileImageSet {

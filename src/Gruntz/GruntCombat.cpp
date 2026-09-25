@@ -2009,7 +2009,7 @@ void CGrunt::StepBehavior(char*) {
             } else {
                 i32 fade = g_buteMgr.GetInt("Grunt", s_fadeTransparency, 0xc0);
                 CWwdSpriteObject* o2 = m_object;
-                SET_DRAW_FILL_FRACTION(o2, SHADE_PAL_ALPHA_16, fade);
+                o2->SetDrawFillFraction(SHADE_PAL_ALPHA_16, fade);
             }
             i32 flash = g_buteMgr.GetInt("Grunt", s_safeFlashTime, 0x32);
             if (g_buteMgr.GetInt("Grunt", s_accelerateFlash, 0) == 1) {
@@ -2506,7 +2506,7 @@ kindDispatch:
                     * static_cast<double>(remMs) * DATA_COMPGEN(0x001e9a60, 0.0003333333333333333)
                     );
                 CWwdSpriteObject* obj = m_object;
-                SET_DRAW_FILL_FRACTION(obj, SHADE_PAL_ALPHA_16, frac);
+                obj->SetDrawFillFraction(SHADE_PAL_ALPHA_16, frac);
             } else {
                 CWwdSpriteObject* obj = m_object;
                 if (!HAS(obj->m_stateFlags, SPRITE_STATE_FLASHING)) {

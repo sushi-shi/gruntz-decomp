@@ -93,6 +93,7 @@
 #include <Net/NetLobby.h>
 #include <Net/NetMgr.h>
 #include <Pix16.h>
+#include <RectMacros.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezArchive.h>
 #include <Rez/RezMgr.h>
@@ -230,8 +231,7 @@ CGruntzMgr::CGruntzMgr() {
     m_numRuns = 0;
     m_numMovies = 0;
     m_reservedcc = 0x1e;
-    m_modeSize.cx = 0;
-    m_modeSize.cy = 0;
+    SET_SIZE_COMPONENTS(m_modeSize, 0, 0);
     m_colorDepth = BPP_RGB_16;
     m_inGameDir = true;
     m_haveRez = false;
