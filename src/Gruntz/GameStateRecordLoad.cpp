@@ -9,6 +9,7 @@
 #include <Gruntz/CoordPool.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
@@ -182,17 +183,8 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
         }
     }
 
-    if (m_coordList.GetCount() != 0) {
-        POSITION pos = m_coordList.GetHeadPosition();
-        if (pos != NULL) {
-            do {
-                Coord* buf = static_cast<Coord*>(m_coordList.GetNext(pos));
-                if (buf != NULL) {
-                    g_coordPool.Push(buf);
-                }
-            } while (pos != NULL);
-        }
-        (&m_coordList)->RemoveAll();
+    if (CoordCount() != 0) {
+        RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(this)
     }
 
     i32 count;

@@ -28,7 +28,10 @@ source layer the original developers wrote around each collection.
 - `CGrunt::m_coordList`: `GetHeadCoord()`/`GetTailCoord()` beside the
   existing `CoordHead()`/`CoordTail()` positions, at every head/tail read
   (CGrunt and CBattlezMapConfig). `ValidateUnitPath` keeps its local head
-  `POSITION` (converting it costs 0.7). Walks and `RemoveHead` stay raw.
+  `POSITION` (converting it costs 0.7). `OnObjectRemoved` and
+  `LoadStateRecord` now use `RECYCLE_GRUNT_COORDS_VIA_NEXTDATA`. The other
+  recycle shapes (`RecycleCoords`, `RecycleGruntCoords`, `ARR_RECYCLE`) are
+  measured variants left as they are; walks and `RemoveHead` stay raw.
 
 - `DirectInputMgr2::m_joysticks`: bounds-checked `GetJoystick(i)` (NULL out
   of range), the shape `Shutdown` expands; `CInputState::SelectDevices` and

@@ -433,15 +433,7 @@ CGrunt::CGrunt(CGameObject* owner)
 RVA(0x00048360, 0x7e)
 void CGrunt::OnObjectRemoved() {
     if (CoordCount() != 0) {
-
-        POSITION pos = m_coordList.GetHeadPosition();
-        while (pos != NULL) {
-            Coord* buf = static_cast<Coord*>(m_coordList.GetNext(pos));
-            if (buf) {
-                g_coordPool.Push(buf);
-            }
-        }
-        m_coordList.RemoveAll();
+        RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(this)
     }
 
     DeleteAllPayloads();
