@@ -19,6 +19,6 @@ targets and report the rest as not done.
    changes when the spawn prompt asks you to commit; otherwise leave the tree
    for the caller to integrate.
 
-Report per target: historical MAX before and after, the structural correction,
+Report per target: MAX before and after, the structural correction,
 its evidence and compiler controls, the referent verdict, and any remaining
 wall with its class.

@@ -15,12 +15,11 @@ asks. A brief note of target, hypothesis, and next compiler control is enough.
 
 ## Choose work
 
-- Work the lowest `hist_pct` rows first from `gruntz walls inventory --todo`
-  (default output is truncated; pass `--limit N`). A bounded `@early-stop`
+- Work the lowest HIST rows first from `gruntz walls inventory --todo`
+  (default output is truncated; pass `--limit N`), or recover `HIST > MAX`
+  rows (CUR/MAX/HIST are defined in `AGENTS.md`). A bounded `@early-stop`
   stays in that derived queue; there is no hand-kept exclusion ledger.
-- `hist_pct` is the objective. `best_pct` belongs to the current source
-  fingerprint and resets on edit. Current and aggregate fuzzy are navigation.
-- Do not revisit a function whose historical MAX is 100%. Do not investigate an
+- Do not revisit a function whose MAX is 100%. Do not investigate an
   unrelated current-score dip; the MAX gate decides regressions at merge
   preparation (`gruntz build verify`).
 - Before inventing a spelling, run `gruntz walls priors <rva>`: many rows
@@ -46,7 +45,7 @@ git log -S'<function-name>' -- src include config/match_baseline.tsv
 git log -G'<mangled-name>.*100\.0000' -- config/match_baseline.tsv
 ```
 
-For `hist_pct > best_pct`, recover the exact source-hash transition before
+For `HIST > MAX`, recover the exact source-hash transition before
 inventing new forms.
 
 ## Reconstruct, then compare
@@ -135,5 +134,5 @@ Commit the focused source, reusable pattern docs, and baseline rows once
 `gruntz build` is clean; `gruntz build verify` runs the gates at merge
 preparation. Matching work runs no test suites (`AGENTS.md` "Tests").
 
-Report the historical-MAX change, the structural correction, its evidence and
+Report the MAX change, the structural correction, its evidence and
 compiler controls, the referent verdict, and any remaining wall.
