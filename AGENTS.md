@@ -14,26 +14,35 @@ storage, control flow, calling conventions, referents) outranks any score.
 
 ## Objective and scores
 
-- The goal is per-function historical MAX fuzzy (`hist`) = 100%. MAX is banked
-  per function source fingerprint in `config/match_baseline.tsv`.
-- Current fuzzy, overall fuzzy, and exact counts are navigation only. Unrelated
-  functions may dip from TU-wide codegen perturbation; that is not a
-  regression while the MAX gate is green.
+- Every function has three scores in `config/match_baseline.tsv`, always
+  `CUR <= MAX <= HIST`:
+  * CUR (`cur_pct`): the score at the latest bank.
+  * MAX (`best_pct`): the best score of the function's current source hash.
+    It only rises while that source is unchanged; editing the function resets
+    it to the new CUR.
+  * HIST (`hist_pct`): the all-time peak across every source revision; it
+    never resets.
+- The goal is MAX = 100 for every function. `HIST > MAX` means an earlier
+  source matched better: a lost match to recover from Git history.
+- A CUR dip with MAX held (TU-wide codegen perturbation of an unchanged
+  function) is not a regression. Overall fuzzy and exact counts are
+  navigation only.
 - Raw instructions, constants, and ordered relocations decide correctness.
   Objdiff scores relocation targets strictly.
 
 ## Workflow
 
-1. Pick work from `gruntz walls inventory --todo --limit N`: lowest `hist`
-   first. Check `gruntz walls priors <rva>` for an existing verdict.
+1. Pick work from `gruntz walls inventory --todo --limit N` (ascending HIST:
+   never-matched functions first) or from the `HIST > MAX` rows (lost
+   matches). Check `gruntz walls priors <rva>` for an existing verdict.
 2. Classify with `gruntz walls diagnose <rva> --asm`: referent, then
    inline/call-set, then CFG, then register/schedule. Fix the earliest class.
 3. Reconstruct with the `matcher` skill; classify plateaus with
    `wall-identifier`; use `gruntz permute` (the `permute` skill) only for a
-   diagnosed register/schedule residue with `hist` < 100.
+   diagnosed register/schedule residue with HIST < 100.
 4. Iterate with `gruntz match <unit|source>`: it compiles, labels, delinks,
    and compares only that TU (a few seconds), even after a header edit other
-   TUs include, and prints its functions against the banked MAX. Run
+   TUs include, and prints each function's score against its banked MAX and HIST. Run
    `gruntz build` (every TU, no gates) when the change spans units.
 5. Gates run only when preparing a merge: `gruntz build verify` (MAX gate plus
    the fast and normal tiers).

@@ -285,7 +285,7 @@ def match_units(units: list[str], *, jobs: int | None, verbose: bool) -> int:
 
 
 def print_unit_functions(units: list[str], before: dict, after: dict) -> None:
-    """Every function of `units`: previous, current, and banked MAX."""
+    """Every function of `units`: now and previous CUR, banked MAX and HIST."""
     from gruntz.verify import baseline
     bank = baseline.load()
     for unit in units:
@@ -295,15 +295,17 @@ def print_unit_functions(units: list[str], before: dict, after: dict) -> None:
             continue
         exact = sum(1 for _n, pct in rows if pct >= 100.0)
         print(f"\n{unit}: {exact}/{len(rows)} exact")
-        print(f"  {'now':>8} {'was':>8} {'hist':>8}  function")
+        print(f"  {'now':>8} {'was':>8} {'max':>8} {'hist':>8}  function")
         for name, pct in sorted(rows, key=lambda r: (r[1], r[0])):
             was = before.get((unit, name))
-            hist = bank.get((unit, name), {}).get("hist")
+            row = bank.get((unit, name), {})
+            best, hist = row.get("best"), row.get("hist")
             if pct >= 100.0 and was is not None and was >= 100.0:
                 continue
             mark = ("" if was is None or abs(pct - was) < 1e-4
                     else "  +" if pct > was else "  -")
             print(f"  {pct:8.2f} {'' if was is None else f'{was:8.2f}':>8} "
+                  f"{'' if best is None else f'{best:8.2f}':>8} "
                   f"{'' if hist is None else f'{hist:8.2f}':>8}  {name}{mark}")
 
 

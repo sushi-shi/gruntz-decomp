@@ -22,7 +22,7 @@ gruntz permute candidates --output /tmp/permute-candidates.json
 The command classifies normalized base/retail pairs by their first divergence.
 Exclude EH funclets unless explicitly investigating EH. Use proven-at-100 current
 dips for compiler-state replay, and high-current unproven functions for quick
-pattern discovery. This campaign priority does not replace the low-historical-MAX
+pattern discovery. This campaign priority does not replace the low-HIST
 order used for canonical reconstruction.
 
 ## Run N islands and retain M distinct states
