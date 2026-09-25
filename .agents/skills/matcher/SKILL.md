@@ -125,6 +125,9 @@ Details and proven exceptions: the `wall-identifier` skill.
 - Claim a bounded residue only after the applicable lever families have
   evidence-backed dispositions; then mark the complete body `@early-stop`.
   It never excuses missing logic, wrong referents, or an unresolved identity.
+- A 100% match is kept even when its source breaks a project rule; record
+  it in `docs/todos/rule-exceptions.tsv` (with the gate's allow entry if a
+  gate objects).
 - A short or user-directed batch may stop sooner: mark remaining hypotheses
   open in the handoff.
 
