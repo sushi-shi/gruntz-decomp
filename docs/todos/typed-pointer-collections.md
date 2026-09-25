@@ -81,6 +81,13 @@ source layer the original developers wrote around each collection.
   `ClearStateStack` are the owner's real out-of-line operations, so element
   casts inside them stay.
 
+- `CPlay` coordinate arrays: `FreeStartMarkers()` and
+  `FreePlacedObjectCells(group)` (in `PlayInline.h`; `Play.h` cannot take
+  `CoordPool.h` without perturbing its includers) cover ReleaseResources,
+  FreeListTeardown and LoadPlayState; count-based appends are `Add`. The
+  camera bookmarks stay open-coded: ReleaseResources resets
+  `m_cameraBookmarkIndex` between the recycle loop and `SetSize`.
+
 ## Open
 
 For each collection, decide which of these the source was:
