@@ -377,7 +377,8 @@ CNetSessionListNode* CNetMgr::AddSessionListing(LPCDPSESSIONDESC2 sessionDesc) {
         return NULL;
     }
 
-    node->m_listPosition = static_cast<__POSITION*>(m_sessionListings.AddTail(static_cast<CObject*>(node)));
+    POSITION pos = m_sessionListings.AddTail(static_cast<CObject*>(node));
+    node->m_listPosition = pos;
     return node;
 }
 
