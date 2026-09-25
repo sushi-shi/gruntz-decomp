@@ -107,5 +107,22 @@ Method, per collection family:
    and keeps every exact function exact. Leave a field raw rather than invent
    a per-site wrapper; a byte-flat cast reduction alone is not proof.
 
-Scale at restoration: 54 raw collection members, no typed adapters, 288 casts
-around element access in 61 files.
+Surviving Monolith source linked into Gruntz (`libs/dibmgr`, and NOLF's
+`LtWnd`) walks raw `CPtrList`s with a cast at each `GetNext`, so a per-site
+cast in a plain walk is the era idiom, not missing API. Remaining leads:
+
+- `CTileTriggerContainer::m_idleLogics`: `WireTileSwitchLogic` repeats the
+  "record move on linked idle logics" walk per switch kind; an inline
+  `RecordLinkedMoves(key)` drops it 90.29 -> 88.85 (function-scope
+  `pos`/`anyHit` suggest copy-pasted cases).
+- Coordinate recycle-and-empty blocks also open-coded for
+  `CBattlezMapConfig::m_candArray` (FreeArrays, SerializeState; the
+  waypoint loop differs in its NULL check), `CGruntzMapMgr::m_arr`,
+  `CTriggerMgr::m_recList`, `CProjectile::m_hitList` and the
+  `CGrunt::m_coordList` variants; no single helper explains them yet.
+- Untouched owners (Wwd `CWwdGameObject::m_children`, Image `CDibMgr`,
+  `CFontConfig`, `CWorldSoundSet`, `CVoiceManager`, `CDDSurface`, `CNetMgr`,
+  `CGruntzCmdMgr`) walk or own their lists in out-of-line methods.
+
+Scale now: about 237 casts around element access in 54 files (from 314 by
+the same count).
