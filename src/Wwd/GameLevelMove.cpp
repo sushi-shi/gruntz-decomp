@@ -335,6 +335,18 @@ i32 CGameLevel::ResolveTopY(CGameObject* t, i32 x, i32 y) {
     return t->m_screenY;
 }
 
+static inline BOOL ExtentsOverlapAt(CGameObject* a, i32 x, i32 y, CGameObject* b) {
+    i32 aLeft = a->m_extent.left + x;
+    i32 aTop = a->m_extent.top + y;
+    i32 aRight = x + a->m_extent.right;
+    i32 aBottom = a->m_extent.bottom + y;
+    i32 bLeft = b->m_screenX + b->m_extent.left;
+    i32 bTop = b->m_extent.top + b->m_screenY;
+    i32 bBottom = b->m_screenY + b->m_extent.bottom;
+    i32 bRight = b->m_screenX + b->m_extent.right;
+    return aLeft <= bRight && aRight >= bLeft && aTop <= bBottom && aBottom >= bTop;
+}
+
 RVA(0x00167ea0, 0x1b9)
 i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
     if (!(t->m_flags & IDX(WWD_GAME_OBJECT_FLAG_COLLIDE_WITH_OBJECTS))) {
@@ -347,20 +359,8 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
         if (obj != t && (obj->m_flags & IDX(WWD_GAME_OBJECT_FLAG_COLLIDE_WITH_OBJECTS))
             && (t->m_collMask & obj->m_objectType) && t->m_extent.left != COORD_UNSET
             && obj->m_extent.left != COORD_UNSET) {
-            i32 tLeft = t->m_extent.left + t->m_screenX;
-            i32 tBot = t->m_extent.top + t->m_screenY;
-            i32 tRight = t->m_screenX + t->m_extent.right;
-            i32 tTop = t->m_extent.bottom + t->m_screenY;
-            i32 oLeft = obj->m_screenX + obj->m_extent.left;
-            i32 oBot = obj->m_extent.top + obj->m_screenY;
-            i32 oTop = obj->m_screenY + obj->m_extent.bottom;
-            i32 oRight = obj->m_screenX + obj->m_extent.right;
-            if (tLeft > oRight || tRight < oLeft || tBot > oTop || tTop < oBot) {
-                i32 cLeft = candX + t->m_extent.left;
-                i32 cRight = t->m_extent.right + candX;
-                i32 cBot = t->m_extent.top + candY;
-                i32 cTop = t->m_extent.bottom + candY;
-                if (cLeft <= oRight && cRight >= oLeft && cBot <= oTop && cTop >= oBot) {
+            if (!ExtentsOverlapAt(t, t->m_screenX, t->m_screenY, obj)) {
+                if (ExtentsOverlapAt(t, candX, candY, obj)) {
                     i32 fire;
                     if (t->m_collisionLogic != NULL) {
                         t->m_hitOther = obj;
