@@ -21,7 +21,7 @@ int WapCompress(
     s.zfree = NULL;
     s.opaque = NULL;
 
-    int err = deflateInit_(&s, Z_DEFAULT_COMPRESSION, "1.0.4", sizeof(z_stream));
+    int err = deflateInit(&s, Z_DEFAULT_COMPRESSION);
     if (err != Z_OK) {
         return err;
     }
