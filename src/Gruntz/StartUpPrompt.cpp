@@ -6,8 +6,8 @@
 #include <MfcWin.h>
 
 #include <Gruntz/GruntzMgr.h>
-#include <Gruntz/HeapDiag.h>
 #include <Gruntz/PathBuffer.h>
+#include <Gruntz/Utils.h>
 #include <Gruntz/WaitCursorScope.h>
 #include <Utils/WinAPICdRom.h>
 

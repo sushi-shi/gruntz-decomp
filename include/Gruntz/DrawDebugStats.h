@@ -7,6 +7,4 @@
 
 #include <Ints.h>
 
-CString FormatElapsedTime(u32 ms);
-
 #endif // GRUNTZ_DRAWDEBUGSTATS_H

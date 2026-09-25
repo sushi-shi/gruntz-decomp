@@ -33,16 +33,16 @@ i32 CDDPalette::Create(IDirectDraw2* dd, PALETTEENTRY* entries, u32 flags) {
 }
 
 RVA(0x00147410, 0xbc)
-i32 CDDPalette::LoadFromFile(IDirectDraw2* dd, char* filename, u32 flags) {
-    char* ext = strrchr(filename, '.');
-    if (ext && _strcmpi(ext, ".BMP") == 0) {
-        return LoadBmp(dd, filename, flags);
-    } else if (ext && _strcmpi(ext, ".PCX") == 0) {
-        return LoadPcx(dd, filename, flags);
-    } else if (ext && _strcmpi(ext, ".PAL") == 0) {
-        return LoadPal(dd, filename, flags);
+i32 CDDPalette::LoadFromFile(IDirectDraw2* dd, char* sFile, u32 flags) {
+    char* pExt = strrchr(sFile, '.');
+    if (pExt && stricmp(pExt, ".BMP") == 0) {
+        return LoadBmp(dd, sFile, flags);
+    } else if (pExt && stricmp(pExt, ".PCX") == 0) {
+        return LoadPcx(dd, sFile, flags);
+    } else if (pExt && stricmp(pExt, ".PAL") == 0) {
+        return LoadPal(dd, sFile, flags);
     }
-    return LoadDefault(dd, filename, flags);
+    return LoadDefault(dd, sFile, flags);
 }
 
 RVA(0x001474d0, 0x60)
@@ -521,30 +521,30 @@ void CDDPalette::FadeToPalette(i32 start, i32 count, PALETTEENTRY* target, i32 d
 
 RVA(0x001485b0, 0x162)
 i32 CDDPalette::CaptureSystemPalette() {
-    HDC hdc = CreateDCA("DISPLAY", NULL, NULL, NULL);
-    if (hdc) {
-        i32 sizePal = GetDeviceCaps(hdc, SIZEPALETTE);
-        i32 half = GetDeviceCaps(hdc, NUMRESERVED) / 2;
+    HDC hDC = CreateDCA("DISPLAY", NULL, NULL, NULL);
+    if (hDC) {
+        i32 nNumPalColors = GetDeviceCaps(hDC, SIZEPALETTE);
+        i32 nNumSysColors = GetDeviceCaps(hDC, NUMRESERVED);
         LogPal256 lp;
         lp.m_palVersion = LOGICAL_PALETTE_VERSION;
         lp.m_palNumEntries = PALETTE_ENTRY_COUNT;
-        if (GetSystemPaletteEntries(hdc, 0, half, lp.m_palPalEntry)
+        if (GetSystemPaletteEntries(hDC, 0, nNumSysColors / 2, lp.m_palPalEntry)
             && GetSystemPaletteEntries(
-                hdc,
-                sizePal - half,
-                half,
-                &lp.m_palPalEntry[lp.m_palNumEntries - half]
+                hDC,
+                nNumPalColors - nNumSysColors / 2,
+                nNumSysColors / 2,
+                &lp.m_palPalEntry[lp.m_palNumEntries - nNumSysColors / 2]
             )) {
-            DeleteDC(hdc);
+            DeleteDC(hDC);
             PALETTEENTRY* dest = m_entries;
             if (dest) {
                 i32 i;
-                for (i = 0; i < half; i++) {
+                for (i = 0; i < nNumSysColors / 2; i++) {
                     dest[i].peRed = lp.m_palPalEntry[i].peRed;
                     dest[i].peGreen = lp.m_palPalEntry[i].peGreen;
                     dest[i].peBlue = lp.m_palPalEntry[i].peBlue;
                 }
-                for (i = sizePal - half; i < sizePal; i++) {
+                for (i = nNumPalColors - nNumSysColors / 2; i < nNumPalColors; i++) {
                     dest[i].peRed = lp.m_palPalEntry[i].peRed;
                     dest[i].peGreen = lp.m_palPalEntry[i].peGreen;
                     dest[i].peBlue = lp.m_palPalEntry[i].peBlue;
@@ -564,27 +564,27 @@ i32 CDDPalette::CaptureSystemPalette() {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00148720, 0x9f)
 i32 BlackoutSystemPalette() {
-    HDC hdc = GetDC(NULL);
-    if (hdc != NULL) {
-        LogPal256 lp;
-        lp.m_palVersion = LOGICAL_PALETTE_VERSION;
-        lp.m_palNumEntries = PALETTE_ENTRY_COUNT;
-        for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
-            lp.m_palPalEntry[i].peRed = 0;
-            lp.m_palPalEntry[i].peGreen = 0;
-            lp.m_palPalEntry[i].peBlue = 0;
-            lp.m_palPalEntry[i].peFlags = PC_NOCOLLAPSE;
+    HDC hScreenDC = GetDC(NULL);
+    if (hScreenDC != NULL) {
+        LogPal256 sysPal;
+        sysPal.m_palVersion = LOGICAL_PALETTE_VERSION;
+        sysPal.m_palNumEntries = PALETTE_ENTRY_COUNT;
+        for (i32 iPal = 0; iPal < PALETTE_ENTRY_COUNT; iPal++) {
+            sysPal.m_palPalEntry[iPal].peRed = 0;
+            sysPal.m_palPalEntry[iPal].peGreen = 0;
+            sysPal.m_palPalEntry[iPal].peBlue = 0;
+            sysPal.m_palPalEntry[iPal].peFlags = PC_NOCOLLAPSE;
         }
-        HPALETTE hpal = CreatePalette(&lp.m_lp);
-        if (hpal != NULL) {
-            HPALETTE(WINAPI * pSelect)(HDC, HPALETTE, BOOL) = SelectPalette;
-            HPALETTE old = pSelect(hdc, hpal, 0);
-            RealizePalette(hdc);
-            DeleteObject(pSelect(hdc, old, 0));
-            ReleaseDC(NULL, hdc);
+        HPALETTE hScreenPal = CreatePalette(&sysPal.m_lp);
+        if (hScreenPal != NULL) {
+            hScreenPal = SelectPalette(hScreenDC, hScreenPal, FALSE);
+            RealizePalette(hScreenDC);
+            hScreenPal = SelectPalette(hScreenDC, hScreenPal, FALSE);
+            DeleteObject(hScreenPal);
+            ReleaseDC(NULL, hScreenDC);
             return 1;
         }
-        ReleaseDC(NULL, hdc);
+        ReleaseDC(NULL, hScreenDC);
     }
     return 0;
 }

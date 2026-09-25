@@ -93,6 +93,7 @@
 #include <Gruntz/Timer.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/UserLogic.h>
+#include <Gruntz/Utils.h>
 #include <Gruntz/View.h>
 #include <Gruntz/VoiceManager.h>
 #include <Gruntz/Warlord.h>
@@ -3299,7 +3300,7 @@ void CPlay::DrawDebugStatsFull() {
         strcat(buf, scratch);
     }
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_ELAPSED_TIME)) {
-        CString t = FormatElapsedTime(g_frameTime);
+        CString t = TimeToString(g_frameTime);
         t += DATA_COMPGEN(0x00212754, " ");
         strcat(buf, t);
         t += " ";
@@ -3400,7 +3401,7 @@ void CPlay::DrawDebugStats() {
         strcat(buf, " Timing = On ");
     }
     if (HAS(g_debugDisplayFlags, DEBUG_DISPLAY_ELAPSED_TIME)) {
-        CString t = FormatElapsedTime(g_frameTime);
+        CString t = TimeToString(g_frameTime);
         t += " ";
         strcat(buf, t);
         t += " ";

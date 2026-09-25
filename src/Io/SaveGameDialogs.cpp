@@ -493,7 +493,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
     if (slot != -1) {
         char name[0x24];
         GetDlgItemTextA(hDlg, nameId, name, 0x20);
-        if (_strcmpi(name, "(Empty)") == 0) {
+        if (stricmp(name, "(Empty)") == 0) {
             sprintf(name, "Saved Game #%i", slot + 1);
         }
         if (TempFileExists(obj->GetSlot(slot))) {

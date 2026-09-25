@@ -33,7 +33,7 @@ CRezItm* CRezItmHashTableByName::Find(const char* name, i32 ignoreCase) {
     CRezItmHashByName* item = GetFirstInBin(HashFunc(name));
     if (ignoreCase) {
         while (item != NULL) {
-            if (_strcmpi(item->GetRezItm()->GetName(), name) == 0) {
+            if (stricmp(item->GetRezItm()->GetName(), name) == 0) {
                 return item->GetRezItm();
             }
             item = item->NextInBin();
@@ -96,7 +96,7 @@ CRezDir* CRezDirHashTable::Find(const char* name, i32 ignoreCase) {
     CRezDirHash* item = GetFirstInBin(HashFunc(name));
     if (ignoreCase) {
         while (item != NULL) {
-            if (_strcmpi(item->GetRezDir()->GetDirName(), name) == 0) {
+            if (stricmp(item->GetRezDir()->GetDirName(), name) == 0) {
                 return item->GetRezDir();
             }
             item = item->NextInBin();

@@ -246,7 +246,7 @@ rva	name	lib	confidence	source
 0x11fc40	__getdcwd	LIBCMT	AMBIG	offstart-ghidra-missed
 0x11fc80	__getdcwd_lk	LIBCMT	HIGH	anchored
 0x11fdb0	__validdrive	LIBCMT	HIGH	anchored
-0x11fdf0	__strcmpi	LIBCMT	AMBIG	anchored
+0x11fdf0	_stricmp	LIBCMT	AMBIG	anchored
 0x11fec0	__purecall	LIBCMT	MEDIUM	anchored
 0x11fed0	_srand	LIBCMT	MEDIUM	anchored
 0x11fee0	_rand	LIBCMT	HIGH	anchored

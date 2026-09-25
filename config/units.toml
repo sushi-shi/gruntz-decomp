@@ -1053,11 +1053,6 @@ source = "src/Dsndmgr/MidiManager.cpp"
 flags = "cpp"
 
 [[unit]]
-unit = "winapimodule"
-source = "src/Utils/WinAPIModule.cpp"
-flags = "cpp"
-
-[[unit]]
 unit = "winapicdrom"
 source = "src/Utils/WinAPICdRom.cpp"
 flags = "cpp"
@@ -1156,11 +1151,6 @@ source = "src/DDrawMgr/FaderMgr.cpp"
 flags = "cpp"
 
 [[unit]]
-unit = "netsession"
-source = "src/Net/NetSession.cpp"
-flags = "cpp"
-
-[[unit]]
 unit = "helpstate"
 source = "src/Gruntz/HelpState.cpp"
 flags = "cpp-rtti"
@@ -1206,11 +1196,6 @@ flags = "cpp"
 unit = "engstrrendertext"
 source = "src/Wap32/EngStrRenderText.cpp"
 flags = "cpp"
-
-[[unit]]
-unit = "fxmodedesc"
-source = "src/Gruntz/ButeSectionKey.cpp"
-flags = "cpp-rtti"
 
 [[unit]]
 unit = "blowfish"
@@ -1382,8 +1367,8 @@ source = "src/Gruntz/GruntStateStep.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "heapdiag"
-source = "src/Gruntz/HeapDiag.cpp"
+unit = "utils"
+source = "src/Gruntz/Utils.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
@@ -1409,10 +1394,6 @@ unit = "customworlddialog"
 source = "src/Gruntz/CustomWorldDialog.cpp"
 flags = "cpp-rtti"
 
-[[unit]]
-unit = "timesplit"
-source = "src/Utils/TimeSplit.cpp"
-flags = "cpp"
 [[unit]]
 unit = "chainforward"
 source = "src/Gruntz/ChainForward.cpp"
@@ -1448,18 +1429,13 @@ source = "src/Gruntz/LevelPreview.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "timestring"
-source = "src/Gruntz/TimeString.cpp"
-flags = "cpp-rtti"
-
-[[unit]]
 unit = "gameassetnamespaces"
 source = "src/Gruntz/GameAssetNamespaces.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
-unit = "bracketvalue"
-source = "src/Gruntz/BracketValueParse.cpp"
+unit = "sparam"
+source = "src/Gruntz/Sparam.cpp"
 flags = "cpp-rtti"
 
 [[unit]]
