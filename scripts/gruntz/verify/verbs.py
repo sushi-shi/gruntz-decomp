@@ -268,15 +268,15 @@ def refresh_readme_block(report=None) -> bool:
     """
     from gruntz.model import resolve
     from gruntz.verify.universe import engine_universe
-    doc, cur, _base, _fp, _stale, _rvas = load_state(report)
+    doc, cur, base, fp, _stale, rvas = load_state(report)
     umeas = scores.unit_measures(doc)
-    mods, started_fzw, started_code = rm.collect_modules(umeas)
+    mods, started_fzw, _started_code = rm.collect_modules(umeas)
     model = resolve()
     sizes = {(b.unit, b.name): b.size for b in model.functions
              if b.name and b.size}
-    rm.churn_weights(cur, bl.load(), sizes, mods, rm.unit_modules())
-    block = rm.render_block(doc.get("measures", {}), mods, started_fzw,
-                            started_code, engine_universe(model))
+    ledger, *_ = bank_rows(cur, base, fp, rvas)
+    tot = rm.score_weights(cur, ledger, sizes, mods, rm.unit_modules())
+    block = rm.render_block(mods, started_fzw, engine_universe(model), tot)
     return rm.write_block(block)
 
 
@@ -535,8 +535,8 @@ def cmd_bank(argv) -> int:
         # `Fuzzy Max` reads the JUST-banked baseline, so the block and the
         # ledger describe the same tree state.
         banked = bl.load()
-        rm.churn_weights(cur, banked, sizes, mods, rm.unit_modules())
-        block = rm.render_block(overall, mods, started_fzw, started_code, eng)
+        tot = rm.score_weights(cur, banked, sizes, mods, rm.unit_modules())
+        block = rm.render_block(mods, started_fzw, eng, tot)
         changed_r = rm.write_block(block)
         print(f"README score block "
               f"{'UPDATED' if changed_r else 'unchanged'} "
