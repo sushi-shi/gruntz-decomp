@@ -508,7 +508,7 @@ i32 CMenuPage::MoveFocusRightColumn() {
         stepsRemaining++;
         do {
             if (position != NULL) {
-                candidateItem = static_cast<CMenuItem*>(m_items.GetNext(position));
+                candidateItem = NextItem(position);
             } else {
                 candidateItem = NULL;
             }
@@ -547,7 +547,7 @@ i32 CMenuPage::MoveFocusLeftColumn() {
         stepsRemaining++;
         do {
             if (position != NULL) {
-                candidateItem = static_cast<CMenuItem*>(m_items.GetPrev(position));
+                candidateItem = PrevItem(position);
             } else {
                 candidateItem = NULL;
             }

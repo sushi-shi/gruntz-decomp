@@ -25,7 +25,7 @@ RVA(0x00032ce0, 0x448)
 i32 CBattlezMapConfig::ScanRegion(CGrunt* g) {
     if (g->m_stamina >= STAMINA_FULL) {
         if (g->CoordCount() != 0) {
-            Coord* c = static_cast<Coord*>(g->m_coordList.GetTail());
+            Coord* c = g->GetTailCoord();
             i32 col = c->m_x;
             i32 row = c->m_y;
             CMapMgr* grid = m_board;

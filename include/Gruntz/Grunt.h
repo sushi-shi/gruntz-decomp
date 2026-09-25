@@ -438,12 +438,31 @@ public:
     i32 CoordCount() const {
         return m_coordList.GetCount();
     }
+    Coord* GetHeadCoord() {
+        return static_cast<Coord*>(m_coordList.GetAt(CoordHead()));
+    }
+    Coord* GetTailCoord() {
+        return static_cast<Coord*>(m_coordList.GetAt(CoordTail()));
+    }
     CGruntCellRec* EntranceCell() {
         GruntDirectionCell c = m_entranceCell;
         return &m_cells[3 * c.m_row + c.m_column];
     }
     i32 PayloadCount() const {
         return m_payloads.GetCount();
+    }
+    i32* HeadPayload() {
+        return PayloadCount() == 0 ? NULL : static_cast<i32*>(m_payloads.GetHead());
+    }
+    void DeleteHeadPayload() {
+        if (PayloadCount() != 0) {
+            delete[] static_cast<i32*>(m_payloads.RemoveHead());
+        }
+    }
+    void DeleteAllPayloads() {
+        while (HeadPayload() != NULL) {
+            DeleteHeadPayload();
+        }
     }
 
     b32 m_toolConfigured; // set on every tool (re)config; never read

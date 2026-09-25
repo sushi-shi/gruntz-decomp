@@ -17,6 +17,7 @@
 #include <Gruntz/ActRegistry.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/AniElement.h>
+#include <Gruntz/AniElementInline.h>
 #include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/ArrivalFlagsPreset.h>
 #include <Gruntz/BattlezMapConfig.h>
@@ -433,29 +434,10 @@ CGrunt::CGrunt(CGameObject* owner)
 RVA(0x00048360, 0x7e)
 void CGrunt::OnObjectRemoved() {
     if (CoordCount() != 0) {
-
-        POSITION pos = m_coordList.GetHeadPosition();
-        while (pos != NULL) {
-            Coord* buf = static_cast<Coord*>(m_coordList.GetNext(pos));
-            if (buf) {
-                g_coordPool.Push(buf);
-            }
-        }
-        m_coordList.RemoveAll();
+        RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(this)
     }
 
-    while (true) {
-        i32 n = PayloadCount();
-        i32* head = (n == 0) ? NULL : static_cast<i32*>(m_payloads.GetHead());
-        if (head == NULL) {
-            return;
-        }
-        if (n == 0) {
-            continue;
-        }
-        i32* p = static_cast<i32*>(m_payloads.RemoveHead());
-        delete[] p;
-    }
+    DeleteAllPayloads();
 }
 
 RVA(0x00048400, 0x47)
@@ -739,10 +721,7 @@ void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
                     SwitchAnimation(m_poseAttackIdle);
                     {
                         CAniElement* desc = m_wwdObject->m_animationCursor.m_animation;
-                        CAniRecordView* elem =
-                            desc->m_records.GetSize() > 0
-                                ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0))
-                                : NULL;
+                        CAniRecordView* elem = desc->RecordAt(0);
                         i32 frame = elem->m_param;
                         const char* nm = EntranceCell()->AttackName().GetBuffer(0);
                         SetImageFrameByName(nm, frame);
@@ -767,9 +746,7 @@ void CGrunt::SetFacing(i32 unused, GruntDirectionCell facing) {
         SwitchAnimationAndMaybeAdvance(AT(m_poseIdle, GRUNT_IDLE1), 0);
         {
             CAniElement* desc = m_wwdObject->m_animationCursor.m_animation;
-            CAniRecordView* elem = desc->m_records.GetSize() > 0
-                                       ? static_cast<CAniRecordView*>(desc->m_records.GetAt(0))
-                                       : NULL;
+            CAniRecordView* elem = desc->RecordAt(0);
             i32 frame = elem->m_param;
             i32 row = facing.m_row;
             i32 column = facing.m_column;
@@ -935,7 +912,7 @@ i32 CGrunt::StepArrivalDrop(
         if (cnt == 0) {
             goto commitEntrance;
         }
-        tail = static_cast<Coord*>(m_coordList.GetAt(CoordHead()));
+        tail = GetHeadCoord();
         headFlags = g_gameReg->m_tileGrid->CellFlagsAt(tail->m_x, tail->m_y);
         lastFlags = g_gameReg->m_tileGrid->CellFlagsAt(lastX, lastY);
         if ((lastFlags & 0x80) != 0) {
@@ -1076,7 +1053,7 @@ i32 CGrunt::StepArrivalDrop(
             g_coordPool.Push(m_coordList.RemoveTail());
             if (CoordCount() != 0) {
                 nudged = 1;
-                tail = static_cast<Coord*>(m_coordList.GetAt(CoordTail()));
+                tail = GetTailCoord();
                 pxX = tail->m_x * TILE_SIZE_PX + TILE_HALF_PX;
                 pxY = tail->m_y * TILE_SIZE_PX + TILE_HALF_PX;
             }
@@ -1256,7 +1233,7 @@ i32 CGrunt::StepGruntMovement() {
         coordY = co->m_y;
         g_coordPool.Push(co);
     } else {
-        Coord* co = static_cast<Coord*>(m_coordList.GetAt(CoordHead()));
+        Coord* co = GetHeadCoord();
         coordX = co->m_x;
         coordY = co->m_y;
     }
@@ -1372,7 +1349,7 @@ i32 CGrunt::StepGruntMovement() {
                 goto label_4cb2a;
             }
             {
-                Coord* co = static_cast<Coord*>(m_coordList.GetAt(CoordHead()));
+                Coord* co = GetHeadCoord();
                 i32 cx = co->m_x;
                 i32 cy = co->m_y;
                 SET_TILE_CENTER_PIXEL_PAIR(tgtPxX, tgtPxY, cx, cy)
@@ -2252,20 +2229,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
                     if (this->CoordCount() != 0) {
                         RECYCLE_GRUNT_COORDS(this)
                     }
-                    for (;;) {
-                        i32* h;
-                        if (m_payloads.GetCount() != 0) {
-                            h = static_cast<i32*>(m_payloads.GetHead());
-                        } else {
-                            h = NULL;
-                        }
-                        if (h == NULL) {
-                            break;
-                        }
-                        if (m_payloads.GetCount() != 0) {
-                            delete[] static_cast<i32*>(m_payloads.RemoveHead());
-                        }
-                    }
+                    DeleteAllPayloads();
                     i32* mem = new i32[0xb];
                     i32* payload;
                     if (mem != NULL) {
@@ -3048,11 +3012,7 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
         if (eq) {
             CAniElement* el = m_wwdObject->m_animationCursor.m_animation;
             CAniRecordView* first;
-            if (el->m_records.GetSize() > 0) {
-                first = static_cast<CAniRecordView*>(el->m_records[0]);
-            } else {
-                first = NULL;
-            }
+            first = el->RecordAt(0);
             i32 handle = first->m_param;
             GruntDirectionCell cell = m_entranceCell;
             SetImageFrameByName(

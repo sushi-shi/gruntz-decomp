@@ -74,9 +74,7 @@ void DirectInputMgr2::Shutdown() {
     }
     i32 n = m_joysticks.GetSize();
     for (i32 i = 0; i < n; i++) {
-        CInputDevBase* d = (i >= 0 && i < m_joysticks.GetSize())
-                               ? static_cast<CInputDevBase*>(m_joysticks.GetAt(i))
-                               : NULL;
+        CJoystickDevice* d = GetJoystick(i);
         if (d != NULL) {
             delete d;
         }

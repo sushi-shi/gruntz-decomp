@@ -2088,11 +2088,10 @@ i32 CGruntzMgr::LaunchProcessInDir(char* sApp, char* sPath) {
 
 RVA(0x00090980, 0x18)
 CState* CGruntzMgr::TopState() {
-    CPtrArray* st = &m_stateStack;
-    if (st->GetSize() <= 0) {
+    if (m_stateStack.GetSize() <= 0) {
         return NULL;
     }
-    return static_cast<CState*>(st->GetAt(st->GetSize() - 1));
+    return static_cast<CState*>(m_stateStack.GetAt(m_stateStack.GetSize() - 1));
 }
 
 RVA(0x000909b0, 0x1b)
@@ -2100,8 +2099,7 @@ void CGruntzMgr::PushState(CState* s) {
     if (!s) {
         return;
     }
-    CPtrArray* st = &m_stateStack;
-    st->SetAtGrow(st->GetSize(), s);
+    m_stateStack.Add(s);
 }
 
 RVA(0x000909e0, 0x46)
@@ -3012,9 +3010,8 @@ CState* CGruntzMgr::FindStateById(GameStateId id) {
     if (m_curState && m_curState->Update() == id) {
         return m_curState;
     }
-    CPtrArray* st = &m_stateStack;
-    for (i32 i = 0; i < st->GetSize(); i++) {
-        CState* s = static_cast<CState*>(st->GetAt(i));
+    for (i32 i = 0; i < m_stateStack.GetSize(); i++) {
+        CState* s = static_cast<CState*>(m_stateStack.GetAt(i));
         if (s && s->Update() == id) {
             return s;
         }

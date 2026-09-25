@@ -685,8 +685,7 @@ i32 CGrunt::PathScan() {
         grid->m_gridH = grid->m_bounds.bottom - grid->m_bounds.top;
     }
 
-    POSITION tail = CoordTail();
-    Coord target = *static_cast<Coord*>(m_coordList.GetAt(tail));
+    Coord target = *GetTailCoord();
     i32 hits = 0;
 
     while (node != NULL) {
@@ -2694,21 +2693,20 @@ void CGrunt::AdvanceMotion() {
         bool eq;
         eq = ANIMATION_ACT_EQUALS("A");
         if (eq && CoordCount() != 0) {
-            POSITION head = CoordHead();
-            Coord* co = static_cast<Coord*>(m_coordList.GetAt(head));
+            Coord* co = GetHeadCoord();
             i32 fl = g_gameReg->m_tileGrid->m_rowInts[co->m_y][co->m_x * 7];
             if (!(fl & BRICKZ_CELL_OCCUPIED) && !((m_arrivalFlags & fl) & BRICKZ_CELL_OCCUPIED)
                 && ((m_arrivalFlags & fl) == 0 || (m_passableMask & fl) != 0)) {
-                Coord* tc = static_cast<Coord*>(m_coordList.GetAt((CoordTail())));
+                Coord* tc = GetTailCoord();
                 SET_TILE_CENTER_PIXEL_PAIR(m_entrancePx.m_x, m_entrancePx.m_y, tc->m_x, tc->m_y)
                 m_coordRetryCount = 0;
                 StepEntranceReinit();
             } else if (static_cast<u32>(m_coordRetryCount) <= 5) {
                 if (PathScan() != 0) {
-                    Coord* h2 = static_cast<Coord*>(m_coordList.GetAt((CoordTail())));
+                    Coord* h2 = GetTailCoord();
                     SET_TILE_CENTER_PIXEL_PAIR(m_entrancePx.m_x, m_entrancePx.m_y, h2->m_x, h2->m_y)
                     if (CoordCount() != 0) {
-                        Coord* h3 = static_cast<Coord*>(m_coordList.GetAt((CoordHead())));
+                        Coord* h3 = GetHeadCoord();
                         i32 fl2 = g_gameReg->m_tileGrid->m_rowInts[h3->m_y][h3->m_x * 7];
                         if (!(fl2 & BRICKZ_CELL_OCCUPIED)) {
                             m_coordRetryCount = 0;

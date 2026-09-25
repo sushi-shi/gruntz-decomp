@@ -5,6 +5,7 @@
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActRegistry.h>
 #include <Gruntz/AniElement.h>
+#include <Gruntz/AniElementInline.h>
 #include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/EnemyAiType.h>
 #include <Gruntz/GameLevel.h>

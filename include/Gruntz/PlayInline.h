@@ -1,6 +1,7 @@
 #ifndef GRUNTZ_GRUNTZ_PLAYINLINE_H
 #define GRUNTZ_GRUNTZ_PLAYINLINE_H
 
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/Play.h>
 
@@ -20,6 +21,26 @@ inline void CPlay::ResetAssetLoadState(GruntzPlayer* player) {
     m_scrollEdgeActive = 0;
     m_scrollEdgeLock = 0;
     m_levelTimer = NULL;
+}
+
+inline void CPlay::FreeStartMarkers() {
+    for (i32 i = 0; i < StartMarkerCount(); i++) {
+        Coord* node = StartMarkerAt(i);
+        if (node != NULL) {
+            g_coordPool.Push(node);
+        }
+    }
+    m_startMarkers.SetSize(0, -1);
+}
+
+inline void CPlay::FreePlacedObjectCells(i32 group) {
+    for (i32 i = 0; i < PlacedObjectCellCount(group); i++) {
+        Coord* node = PlacedObjectCellAt(group, i);
+        if (node != NULL) {
+            g_coordPool.Push(node);
+        }
+    }
+    m_placedObjectCells[group].SetSize(0, -1);
 }
 
 inline void CPlay::SetInitialFramePending(b32 pending) {

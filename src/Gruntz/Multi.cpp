@@ -2596,7 +2596,7 @@ i32 CMulti::WaitForOtherPlayers() {
     CDWordArray* votes = &m_readyPlayerIds;
     votes->SetSize(0, -1);
     for (i32 k = 3; k != 0; k--) {
-        votes->SetAtGrow(votes->GetSize(), 0);
+        votes->Add(0);
     }
     if (Network()->m_players.GetCount() == 1) {
         goto ready;

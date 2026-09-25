@@ -170,6 +170,8 @@ public:
     i32 CameraBookmarkCount() {
         return m_cameraBookmarks.GetSize();
     }
+    inline void FreeStartMarkers();
+    inline void FreePlacedObjectCells(i32 group);
 
     i32 RestoreCursorSaveUnder();
 

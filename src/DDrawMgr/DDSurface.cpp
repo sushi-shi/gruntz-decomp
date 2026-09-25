@@ -426,7 +426,7 @@ HRESULT __stdcall EnumSurfacesCallback(IDirectDrawSurface* surf, DDSURFACEDESC* 
         if (item->Refresh(payload) == 0) {
             delete item;
         } else {
-            g_imageCache.SetAtGrow(g_imageCache.GetSize(), item);
+            g_imageCache.Add(item);
         }
     }
     return 1;

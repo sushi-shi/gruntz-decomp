@@ -209,7 +209,7 @@ L_tailc:
         return 1;
     }
     {
-        Coord* coord = static_cast<Coord*>(m_coordList.GetHead());
+        Coord* coord = GetHeadCoord();
         i32 col = coord->m_x;
         i32 row = coord->m_y;
         BrickzCell* cell = &grid->m_rows[row][col];

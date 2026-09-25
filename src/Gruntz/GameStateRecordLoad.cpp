@@ -9,6 +9,7 @@
 #include <Gruntz/CoordPool.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
@@ -182,17 +183,8 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
         }
     }
 
-    if (m_coordList.GetCount() != 0) {
-        POSITION pos = m_coordList.GetHeadPosition();
-        if (pos != NULL) {
-            do {
-                Coord* buf = static_cast<Coord*>(m_coordList.GetNext(pos));
-                if (buf != NULL) {
-                    g_coordPool.Push(buf);
-                }
-            } while (pos != NULL);
-        }
-        (&m_coordList)->RemoveAll();
+    if (CoordCount() != 0) {
+        RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(this)
     }
 
     i32 count;
@@ -200,21 +192,10 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
     for (i32 a = 0; a < count; ++a) {
         Coord* item = g_coordPool.Pop();
         ar->Read(item, 8);
-        (&m_coordList)->AddTail(item);
+        m_coordList.AddTail(item);
     }
 
-    while (true) {
-        i32 n = m_payloads.GetCount();
-        i32* head = (n == 0) ? NULL : static_cast<i32*>(m_payloads.GetHead());
-        if (head == NULL) {
-            break;
-        }
-        if (n == 0) {
-            continue;
-        }
-        i32* rem = static_cast<i32*>((&m_payloads)->RemoveHead());
-        delete[] rem;
-    }
+    DeleteAllPayloads();
 
     ar->Read(&count, sizeof(count));
     for (i32 b = 0; b < count; ++b) {
@@ -227,7 +208,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
             item = NULL;
         }
         ar->Read(item, 0x2c);
-        (&m_payloads)->AddTail(item);
+        m_payloads.AddTail(item);
     }
 
     b32 flag = (m_entranceReason >= PICKUP_TOYZ_FIRST);

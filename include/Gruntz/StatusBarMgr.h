@@ -7,6 +7,7 @@
 
 #include <Bute/ButeMgr.h>
 #include <Enums.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/DestructWarningState.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameTabContent.h>
@@ -134,6 +135,15 @@ GZ_ENUM_CONST_BEGIN(GruntWellPct)
     GRUNT_WELL_EMPTY = 0,
     GRUNT_WELL_FULL = 100
 GZ_ENUM_CONST_END(GruntWellPct)
+
+#define DELETE_STATUS_ITEMS(list)                                                                  \
+    {                                                                                              \
+        POSITION pos = (list).GetHeadPosition();                                                   \
+        while (pos) {                                                                              \
+            delete static_cast<CStatusBarItem*>((list).GetNext(pos));                              \
+        }                                                                                          \
+        (list).RemoveAll();                                                                        \
+    }
 
 class CStatusBarMgr {
     inline b32 ActivateReadySlot(i32 slot);
@@ -345,6 +355,19 @@ public:
 
     CPtrArray m_rewardQueue;
     i32 m_reserved544;
+
+    Coord* GetReward(i32 index) const {
+        return static_cast<Coord*>(m_rewardQueue.GetAt(index));
+    }
+    void ClearRewardQueue() {
+        for (i32 i = 0; i < m_rewardQueue.GetSize(); i++) {
+            Coord* reward = GetReward(i);
+            if (reward) {
+                g_coordPool.Push(reward);
+            }
+        }
+        m_rewardQueue.SetSize(0, -1);
+    }
 
     b32 m_hlBusy;
     CWarpStoneFly* m_retabNotify;

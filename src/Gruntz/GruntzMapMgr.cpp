@@ -83,12 +83,7 @@ TileCollisionKind CGameLevel::LookupTile(i32 x, i32 y) {
     }
     mp = m_mainPlane;
     i32 tile = mp->m_tileHandles[mp->m_tileRowOffsets[y] + x];
-    if (tile == UNINIT_FILL || tile == s_tileClear) {
-        return TILEKIND_PASSABLE;
-    }
-    CTileImageSet* set =
-        static_cast<CTileImageSet*>(m_imageSets[tile & WWD_TILE_IMAGE_SET_INDEX_MASK]);
-    return set->GetCollisionAt(0, 0);
+    return CollisionAtHandle(tile, 0, 0);
 }
 
 RVA(0x00085480, 0x52)

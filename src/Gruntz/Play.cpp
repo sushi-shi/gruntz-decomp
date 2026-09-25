@@ -332,21 +332,9 @@ void CPlay::ReleaseResources() {
         delete fm;
         m_levelTimer = NULL;
     }
-    for (i = 0; i < StartMarkerCount(); i++) {
-        Coord* node = StartMarkerAt(i);
-        if (node != NULL) {
-            g_coordPool.Push(node);
-        }
-    }
-    m_startMarkers.SetSize(0, -1);
+    FreeStartMarkers();
     for (i32 k = 0; k < 4; k++) {
-        for (i = 0; i < PlacedObjectCellCount(k); i++) {
-            Coord* node = PlacedObjectCellAt(k, i);
-            if (node != NULL) {
-                g_coordPool.Push(node);
-            }
-        }
-        m_placedObjectCells[k].SetSize(0, -1);
+        FreePlacedObjectCells(k);
     }
     for (i = 0; i < CameraBookmarkCount(); i++) {
         Coord* node = CameraBookmarkAt(i);
@@ -1642,21 +1630,9 @@ void CPlay::FreeListTeardown() {
     m_mgr->m_triggerMgr->m_baseList.RemoveAll();
     m_mgr->m_triggerMgr->m_pendingFx = NULL;
     (static_cast<CDDrawWorkerList*>(m_world->m_workerList))->ClearWorkers();
-    for (i = 0; i < StartMarkerCount(); i++) {
-        Coord* node = StartMarkerAt(i);
-        if (node != NULL) {
-            g_coordPool.Push(node);
-        }
-    }
-    m_startMarkers.SetSize(0, -1);
+    FreeStartMarkers();
     for (k = 0; k < 4; k++) {
-        for (i = 0; i < PlacedObjectCellCount(k); i++) {
-            Coord* node = PlacedObjectCellAt(k, i);
-            if (node != NULL) {
-                g_coordPool.Push(node);
-            }
-        }
-        m_placedObjectCells[k].SetSize(0, -1);
+        FreePlacedObjectCells(k);
     }
     for (i = 0; i < CameraBookmarkCount(); i++) {
         Coord* node = CameraBookmarkAt(i);
@@ -2102,7 +2078,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
                 this->m_cameraBookmarkIndex = this->m_cameraBookmarkIndex + 1;
                 return 1;
             }
-            this->m_cameraBookmarks.SetAtGrow(this->CameraBookmarkCount(), slot);
+            this->m_cameraBookmarks.Add(slot);
             this->m_cameraBookmarkIndex = this->m_cameraBookmarkIndex + 1;
             return 1;
         }
@@ -5388,7 +5364,7 @@ i32 CPlay::ValidateLevelTiles() {
                 Coord* slot = g_coordPool.Pop();
                 slot->m_x = (obj->m_screenX & ~TILE_MASK_PX) + TILE_HALF_PX;
                 slot->m_y = (obj->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
-                m_startMarkers.SetAtGrow(StartMarkerCount(), slot);
+                m_startMarkers.Add(slot);
             }
         } else if (dispatch == DispatchBrickzLogic) {
 
@@ -5476,7 +5452,7 @@ i32 CPlay::ValidateLevelTiles() {
                 slot->m_x = obj->m_screenX >> TILE_SHIFT_PX;
                 slot->m_y = obj->m_screenY >> TILE_SHIFT_PX;
                 CPtrArray* cells = &m_placedObjectCells[obj->m_score];
-                cells->SetAtGrow(cells->GetSize(), slot);
+                cells->Add(slot);
             }
         }
     } while (pos != NULL);
@@ -5574,16 +5550,7 @@ i32 CPlay::ScanBuildTiles() {
             i32 subX = x - (tileX << shX);
             i32 subY = y - (tileY << shY);
             i32 cell = g->m_tileHandles[g->m_tileRowOffsets[tileY] + tileX];
-            TileCollisionKind tile;
-            if (cell == UNINIT_FILL || cell == static_cast<i32>(0xffffffff)) {
-                tile = TILEKIND_PASSABLE;
-            } else {
-
-                tile = (static_cast<CUniformTileImageSet*>(
-                            ds->m_imageSets[cell & WWD_TILE_IMAGE_SET_INDEX_MASK]
-                        ))
-                           ->GetCollisionAt(subX, subY);
-            }
+            TileCollisionKind tile = ds->CollisionAtHandle(cell, subX, subY);
             if (m_tileTriggers->AddLogic(
                     tile,
                     TRIGID_COVERED_POWERUP_26,
@@ -6612,20 +6579,13 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
 
     {
 
-        for (i32 i = 0; i < StartMarkerCount(); i++) {
-            Coord* node = StartMarkerAt(i);
-            if (node) {
-                g_coordPool.Push(node);
-            }
-        }
-        CPtrArray* markers = &m_startMarkers;
-        markers->SetSize(0, -1);
+        FreeStartMarkers();
         i32 n;
         ar->Read(&n, sizeof(n));
         for (u32 j = 0; j < static_cast<u32>(n); j++) {
             Coord* node = g_coordPool.Pop();
             ar->Read(node, sizeof(*node));
-            markers->SetAtGrow(markers->GetSize(), node);
+            m_startMarkers.Add(node);
         }
     }
 
@@ -6641,19 +6601,13 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     {
 
         for (i32 k = 0; k < 4; k++) {
-            for (i32 i = 0; i < PlacedObjectCellCount(k); i++) {
-                Coord* node = PlacedObjectCellAt(k, i);
-                if (node) {
-                    g_coordPool.Push(node);
-                }
-            }
-            m_placedObjectCells[k].SetSize(0, -1);
+            FreePlacedObjectCells(k);
             i32 n;
             ar->Read(&n, sizeof(n));
             for (u32 j = 0; j < static_cast<u32>(n); j++) {
                 Coord* node = g_coordPool.Pop();
                 ar->Read(node, sizeof(*node));
-                m_placedObjectCells[k].SetAtGrow(PlacedObjectCellCount(k), node);
+                m_placedObjectCells[k].Add(node);
             }
         }
     }
@@ -7056,10 +7010,10 @@ i32 CPlay::ScanShuffleQuads() {
 
     i32 perm[4];
     CByteArray arr;
-    arr.SetAtGrow(arr.GetSize(), 0);
-    arr.SetAtGrow(arr.GetSize(), 1);
-    arr.SetAtGrow(arr.GetSize(), 2);
-    arr.SetAtGrow(arr.GetSize(), 3);
+    arr.Add(0);
+    arr.Add(1);
+    arr.Add(2);
+    arr.Add(3);
     i32 r;
     r = GetRandom(0, arr.GetUpperBound());
     perm[0] = arr.GetAt(r);

@@ -460,16 +460,8 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     } else if (ty >= level->m_mainPlane->m_tileRows) {
         cy = level->m_mainPlane->m_tileRows - 1;
     }
-    TileCollisionKind collision;
     i32 cval = level->m_mainPlane->m_tileHandles[level->m_mainPlane->m_tileRowOffsets[cy] + cx];
-    if (cval != UNINIT_FILL && cval != -1) {
-        CTileImageSet* tc = static_cast<CTileImageSet*>(
-            level->m_imageSets.GetAt(cval & WWD_TILE_IMAGE_SET_INDEX_MASK)
-        );
-        collision = tc->GetCollisionAt(0, 0);
-    } else {
-        collision = TILEKIND_PASSABLE;
-    }
+    TileCollisionKind collision = level->CollisionAtHandle(cval, 0, 0);
 
     i32 pfk = m_pendingFxKind;
     if (pfk >= 0xdf) {
@@ -1419,11 +1411,10 @@ i32 CTriggerMgr::Load(CFileMemBase* ar) {
     ClearRecords();
 
     ar->Read(&count, sizeof(count));
-    CPtrList* rec = &m_recList;
     for (ci = 0; ci < static_cast<u32>(count); ci++) {
         Coord* node = g_coordPool.Pop();
         ar->Read(node, 8);
-        rec->AddTail(node);
+        m_recList.AddTail(node);
     }
 
     CPtrList* sel = m_selLists;
@@ -1647,15 +1638,7 @@ i32 CTriggerMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 flag) {
             }
             i32 cell =
                 board->m_mainPlane->m_tileHandles[board->m_mainPlane->m_tileRowOffsets[row] + col];
-            TileCollisionKind type;
-            if (cell == UNINIT_FILL || cell == -1) {
-                type = TILEKIND_PASSABLE;
-            } else {
-                CTileImageSet* o = static_cast<CTileImageSet*>(
-                    board->m_imageSets.GetAt(cell & WWD_TILE_IMAGE_SET_INDEX_MASK)
-                );
-                type = o->GetCollisionAt(0, 0);
-            }
+            TileCollisionKind type = board->CollisionAtHandle(cell, 0, 0);
 
             if (type != TILEKIND_GAUNTLET_ROCK_A && type != TILEKIND_GAUNTLET_ROCK_B) {
                 if (type == TILEKIND_GIANT_ROCK) {

@@ -161,14 +161,7 @@ RVA(0x000fe350, 0x6d)
 void CStatusBarMgr::Teardown() {
     (static_cast<CRegMgr*>(g_gameReg->m_settings))->Set("StatusBar Position", IDX(m_position));
     ResetWidgets(false);
-    for (i32 i = 0; i < m_rewardQueue.GetSize(); i++) {
-        Coord* p = static_cast<Coord*>(m_rewardQueue.GetData()[i]);
-        if (p) {
-            g_coordPool.Push(p);
-        }
-    }
-
-    m_rewardQueue.SetSize(0, -1);
+    ClearRewardQueue();
 }
 
 RVA(0x000fe3e0, 0x55)
@@ -1048,12 +1041,7 @@ RVA_COMPGEN(0x00100900, 0x1e, ??_GCSBI_Image@@UAEPAXI@Z)
 RVA(0x00100930, 0x16c)
 void CStatusBarMgr::ResetWidgets(b32 keepHost) {
     for (i32 t = 0; t < 8; t++) {
-        POSITION n = m_tabLists[t].GetHeadPosition();
-        while (n) {
-            CStatusBarItem* cur = static_cast<CStatusBarItem*>(m_tabLists[t].GetNext(n));
-            delete cur;
-        }
-        m_tabLists[t].RemoveAll();
+        DELETE_STATUS_ITEMS(m_tabLists[t])
     }
     if (keepHost) {
         if (m_barSprite) {
@@ -1103,13 +1091,7 @@ void CStatusBarMgr::ClearTabGroup() {
     if (m_activeTab == TAB_NONE) {
         return;
     }
-    CPtrList& tab = m_tabLists[IDX(m_activeTab)];
-    POSITION n = tab.GetHeadPosition();
-    while (n) {
-        CStatusBarItem* cur = static_cast<CStatusBarItem*>(tab.GetNext(n));
-        delete cur;
-    }
-    m_tabLists[IDX(m_activeTab)].RemoveAll();
+    DELETE_STATUS_ITEMS(m_tabLists[IDX(m_activeTab)])
     switch (m_activeTab) {
         case TAB_GAME:
             m_gameResumePauseButton = NULL;
@@ -1602,12 +1584,7 @@ i32 CStatusBarMgr::SetTab(GameTabContent tab, b32 forceReload) {
     if (tab == m_itemKind && forceReload == false) {
         return 1;
     }
-    POSITION n = m_tabLists[5].GetHeadPosition();
-    while (n) {
-        CStatusBarItem* cur = static_cast<CStatusBarItem*>(m_tabLists[5].GetNext(n));
-        delete cur;
-    }
-    m_tabLists[5].RemoveAll();
+    DELETE_STATUS_ITEMS(m_tabLists[5])
     m_gameResumePauseButton = NULL;
     m_gameLoadButton = NULL;
     m_gameSaveButton = NULL;
@@ -3697,13 +3674,7 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
         }
     }
 
-    for (i32 j = 0; j < m_rewardQueue.GetSize(); j++) {
-        Coord* p = static_cast<Coord*>(m_rewardQueue.GetData()[j]);
-        if (p) {
-            g_coordPool.Push(p);
-        }
-    }
-    m_rewardQueue.SetSize(0, -1);
+    ClearRewardQueue();
     i64* clock = &m_reserved2b0.m_last;
     clock[0] = 0;
     clock[1] = 0;
@@ -3722,7 +3693,7 @@ i32 CStatusBarMgr::StartChipMachineCycle() {
     PickupType result;
     if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
         if (m_rewardQueue.GetSize() > 0) {
-            Coord* p = static_cast<Coord*>(m_rewardQueue.GetData()[0]);
+            Coord* p = GetReward(0);
             result = static_cast<PickupType>(p->m_x);
             g_coordPool.Push(p);
             m_rewardQueue.RemoveAt(0, 1);
@@ -3848,17 +3819,11 @@ i32 CStatusBarMgr::QueuePickupReward(i32 pickupValue, i32 score) {
         g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
     }
     i32 n = m_rewardQueue.GetSize();
-    i32 i = 0;
-    if (i < n) {
-        void** t = m_rewardQueue.GetData();
-        while (i < n) {
-            Coord* e = static_cast<Coord*>(*t);
-            if (e != NULL && score < e->m_y) {
-                m_rewardQueue.InsertAt(i, node, 1);
-                return 1;
-            }
-            i++;
-            t++;
+    for (i32 i = 0; i < n; i++) {
+        Coord* e = GetReward(i);
+        if (e != NULL && score < e->m_y) {
+            m_rewardQueue.InsertAt(i, node, 1);
+            return 1;
         }
     }
     m_rewardQueue.Add(node);
@@ -4132,7 +4097,7 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     i32 ptrCount = m_rewardQueue.GetSize();
     s->Write(&ptrCount, sizeof(ptrCount));
     for (u32 n = 0; n < static_cast<u32>(ptrCount); n++) {
-        s->Write(m_rewardQueue.GetData()[n], 8);
+        s->Write(GetReward(n), sizeof(Coord));
     }
     return 1;
 }
@@ -4233,21 +4198,15 @@ i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
         nb += 4;
     } while (--seq);
 
-    for (i32 t = 0; t < m_rewardQueue.GetSize(); t++) {
-        Coord* pp = static_cast<Coord*>(m_rewardQueue.GetData()[t]);
-        if (pp) {
-            g_coordPool.Push(pp);
-        }
-    }
-    m_rewardQueue.SetSize(0, -1);
+    ClearRewardQueue();
 
     i32 cnt;
     s->Read(&cnt, sizeof(cnt));
     m_rewardQueue.SetSize(cnt, -1);
     for (u32 n = 0; n < static_cast<u32>(cnt); n++) {
         Coord* node = g_coordPool.Pop();
-        s->Read(node, 8);
-        m_rewardQueue.GetData()[n] = node;
+        s->Read(node, sizeof(Coord));
+        m_rewardQueue.SetAt(n, node);
     }
     return 1;
 }
@@ -4412,7 +4371,7 @@ i32 CWarpStoneFly::Tick(u32 dt) {
     if (cellX == m_targetX && cellY == m_targetY) {
         i32 mode = m_arrivalMode;
         CByteArray* arr = &g_gameReg->m_triggerMgr->m_byteArr;
-        arr->SetAtGrow(arr->GetSize(), static_cast<BYTE>(mode));
+        arr->Add(static_cast<BYTE>(mode));
         m_owner->m_hlBusy = false;
         if (m_owner->m_position != STATUSBAR_HIDDEN && m_owner->m_activeTab == TAB_GAME) {
             m_owner->ResetWidgets(false);
@@ -4788,12 +4747,7 @@ void CStatusBarMgr::ExitMode() {
     if (m_levelOverlayActive == false) {
         return;
     }
-    POSITION n = m_tabLists[6].GetHeadPosition();
-    while (n) {
-        CStatusBarItem* cur = static_cast<CStatusBarItem*>(m_tabLists[6].GetNext(n));
-        delete cur;
-    }
-    m_tabLists[6].RemoveAll();
+    DELETE_STATUS_ITEMS(m_tabLists[6])
     b32 wasQuitConfirmation = m_quitConfirmationActive;
     m_endPrimaryButton = NULL;
     m_endSecondaryButton = NULL;
@@ -5041,7 +4995,7 @@ i32 CStatusBarMgr::GetActiveValue() {
         return m_machineItem;
     }
     if (m_rewardQueue.GetSize() > 0 && m_rewardQueue.GetSize() > m_rezTick) {
-        return static_cast<Coord*>(m_rewardQueue.GetAt(m_rezTick))->m_x;
+        return GetReward(m_rezTick)->m_x;
     }
     return 0;
 }

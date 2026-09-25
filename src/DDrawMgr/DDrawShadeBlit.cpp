@@ -98,9 +98,9 @@ i32 CDDrawShadeBlit::BuildRle(
                                && static_cast<i32>(src[i]) != keyVal) {
                             i++;
                         }
-                        ba.SetAtGrow(ba.GetSize(), static_cast<u8>((i - runStart)));
+                        ba.Add(static_cast<u8>((i - runStart)));
                         for (i32 j = runStart; j < i; j++) {
-                            ba.SetAtGrow(ba.GetSize(), src[j]);
+                            ba.Add(src[j]);
                         }
                         runStart = i;
                     } else {

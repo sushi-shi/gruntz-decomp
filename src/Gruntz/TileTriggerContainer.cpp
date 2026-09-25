@@ -942,16 +942,7 @@ void* CTileTriggerContainer::DeserializeLogic(
             }
             i32 cell = level->m_mainPlane->m_tileRowOffsets[y] + x;
             i32 tile = level->m_mainPlane->m_tileHandles[cell];
-            TileCollisionKind tileKind;
-            if (tile == UNINIT_FILL || tile == -1) {
-                tileKind = TILEKIND_PASSABLE;
-            } else {
-
-                CTileImageSet* rec = static_cast<CTileImageSet*>(
-                    level->m_imageSets.GetData()[tile & WWD_TILE_IMAGE_SET_INDEX_MASK]
-                );
-                tileKind = rec->GetCollisionAt(0, 0);
-            }
+            TileCollisionKind tileKind = level->CollisionAtHandle(tile, 0, 0);
             if (tileKind == TILEKIND_PYRAMID_LATCH_A || tileKind == TILEKIND_PYRAMID_LATCH_B) {
                 this->m_latchedLeaf = obj;
             }

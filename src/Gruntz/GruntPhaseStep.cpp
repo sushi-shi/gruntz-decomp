@@ -227,7 +227,7 @@ common: {
     if (CoordCount() == 0) {
         return 1;
     }
-    Coord* head = static_cast<Coord*>(m_coordList.GetAt(CoordHead()));
+    Coord* head = GetHeadCoord();
     if ((g_gameReg->m_tileGrid->CellFlagsAt(head->m_x, head->m_y) & 0x20) == 0) {
         return 1;
     }

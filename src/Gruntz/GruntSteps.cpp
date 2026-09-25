@@ -622,14 +622,14 @@ i32 CGrunt::StepCompassMove() {
 
     {
         CByteArray bag;
-        bag.SetAtGrow(bag.GetSize(), 1);
-        bag.SetAtGrow(bag.GetSize(), 2);
-        bag.SetAtGrow(bag.GetSize(), 3);
-        bag.SetAtGrow(bag.GetSize(), 4);
-        bag.SetAtGrow(bag.GetSize(), 5);
-        bag.SetAtGrow(bag.GetSize(), 6);
-        bag.SetAtGrow(bag.GetSize(), 7);
-        bag.SetAtGrow(bag.GetSize(), 8);
+        bag.Add(1);
+        bag.Add(2);
+        bag.Add(3);
+        bag.Add(4);
+        bag.Add(5);
+        bag.Add(6);
+        bag.Add(7);
+        bag.Add(8);
         while (bag.GetSize() > 0) {
             i32 idx = GetRandom(0, bag.GetUpperBound());
             i32 dir = bag.GetAt(idx);

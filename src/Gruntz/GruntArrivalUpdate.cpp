@@ -237,7 +237,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
 
     if (this->CoordCount() != 0) {
 
-        Coord* cell = static_cast<Coord*>(m_coordList.GetAt(this->CoordHead()));
+        Coord* cell = GetHeadCoord();
 
         BrickzCell& gc = g_gameReg->m_tileGrid->m_rows[cell->m_y][cell->m_x];
         if ((gc.m_flagBytes[0] & 0x20) != 0) {
