@@ -1407,7 +1407,6 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
     }
 }
 
-// @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0008efe0, 0x54)
@@ -1415,15 +1414,11 @@ i32 CGruntzMgr::ToggleObjectLayer() {
     if (IsActive() && m_world) {
         CGameLevel* view = m_world->m_level;
         if (view) {
-            i32 idx = view->m_planes.GetSize();
+            u32 idx = view->m_planes.GetSize();
             if (idx == LEVEL_EXTENDED_PLANE_COUNT) {
                 idx--;
             }
-            idx--;
-            i32 count = view->m_planes.GetSize();
-            CDDrawWorkerHost* layer = (idx < 0 || idx >= count)
-                                          ? NULL
-                                          : static_cast<CDDrawWorkerHost*>(view->m_planes[idx]);
+            CDDrawWorkerHost* layer = view->GetPlane(idx - 1);
             if (layer && !(layer->m_flags & IDX(WWD_PLANE_FLAG_MAIN))) {
                 layer->m_flags ^= IDX(WWD_PLANE_FLAG_NO_DRAW);
                 return 1;
@@ -1457,9 +1452,7 @@ i32 CGruntzMgr::ToggleBaseLayer() {
     if (IsActive() && m_world) {
         CGameLevel* view = m_world->m_level;
         if (view) {
-            CDDrawWorkerHost* layer = (view->m_planes.GetSize() > 0)
-                                          ? static_cast<CDDrawWorkerHost*>(view->m_planes[0])
-                                          : NULL;
+            CDDrawWorkerHost* layer = view->GetPlane(0);
             if (layer && !(layer->m_flags & IDX(WWD_PLANE_FLAG_MAIN))) {
                 layer->m_flags ^= IDX(WWD_PLANE_FLAG_NO_DRAW);
                 return 1;
