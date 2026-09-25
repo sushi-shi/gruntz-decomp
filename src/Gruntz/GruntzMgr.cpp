@@ -2101,7 +2101,7 @@ void CGruntzMgr::PushState(CState* s) {
         return;
     }
     CPtrArray* st = &m_stateStack;
-    st->SetAtGrow(st->GetSize(), s);
+    st->Add(s);
 }
 
 RVA(0x000909e0, 0x46)

@@ -48,6 +48,10 @@ source layer the original developers wrote around each collection.
   `FreeDisplayModes()` (Clear, EnumerateDisplayModes); the merge and the
   enumeration callback use `CPtrArray::Add`, the sort swap `SetAt`.
 
+- `SetAtGrow(GetSize(), x)` is `Add(x)` at 27 sites across the array
+  families. `CGameLevel::ReadPlane`/`ReadObjectPlane` keep the longhand:
+  `Add` drops both from 100 to about 95.7.
+
 ## Open
 
 For each collection, decide which of these the source was:

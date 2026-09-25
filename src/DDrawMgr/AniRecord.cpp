@@ -70,7 +70,7 @@ void CAniRecordView::ResolveIndices(SoundCueRegistry* owner, const char* str) {
         } else {
             tok[n] = 0;
             if (n > 0) {
-                tokens.SetAtGrow(tokens.GetSize(), tok);
+                tokens.Add(tok);
             }
             n = 0;
         }
@@ -78,7 +78,7 @@ void CAniRecordView::ResolveIndices(SoundCueRegistry* owner, const char* str) {
     }
     tok[n] = 0;
     if (n > 0) {
-        tokens.SetAtGrow(tokens.GetSize(), tok);
+        tokens.Add(tok);
     }
     m_cueCount = tokens.GetSize();
     if (m_cueCount > 0) {

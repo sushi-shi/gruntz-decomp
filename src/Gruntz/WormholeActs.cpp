@@ -132,7 +132,7 @@ i32 CExitTrigger::AdvanceAnim() {
                         mark->m_y = (cur->m_screenY & ~TILE_MASK_PX) + TILE_HALF_PX;
                         CPtrArray& marks =
                             static_cast<CPlay*>(g_gameReg->m_curState)->m_startMarkers;
-                        marks.SetAtGrow(marks.GetSize(), mark);
+                        marks.Add(mark);
                     }
                 }
                 if (cur->m_logicRecord->m_dispatch == DispatchFortressFlagLogic

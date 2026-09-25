@@ -4371,7 +4371,7 @@ i32 CWarpStoneFly::Tick(u32 dt) {
     if (cellX == m_targetX && cellY == m_targetY) {
         i32 mode = m_arrivalMode;
         CByteArray* arr = &g_gameReg->m_triggerMgr->m_byteArr;
-        arr->SetAtGrow(arr->GetSize(), static_cast<BYTE>(mode));
+        arr->Add(static_cast<BYTE>(mode));
         m_owner->m_hlBusy = false;
         if (m_owner->m_position != STATUSBAR_HIDDEN && m_owner->m_activeTab == TAB_GAME) {
             m_owner->ResetWidgets(false);

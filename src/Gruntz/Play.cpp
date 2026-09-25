@@ -5476,7 +5476,7 @@ i32 CPlay::ValidateLevelTiles() {
                 slot->m_x = obj->m_screenX >> TILE_SHIFT_PX;
                 slot->m_y = obj->m_screenY >> TILE_SHIFT_PX;
                 CPtrArray* cells = &m_placedObjectCells[obj->m_score];
-                cells->SetAtGrow(cells->GetSize(), slot);
+                cells->Add(slot);
             }
         }
     } while (pos != NULL);
@@ -6625,7 +6625,7 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         for (u32 j = 0; j < static_cast<u32>(n); j++) {
             Coord* node = g_coordPool.Pop();
             ar->Read(node, sizeof(*node));
-            markers->SetAtGrow(markers->GetSize(), node);
+            markers->Add(node);
         }
     }
 
@@ -7056,10 +7056,10 @@ i32 CPlay::ScanShuffleQuads() {
 
     i32 perm[4];
     CByteArray arr;
-    arr.SetAtGrow(arr.GetSize(), 0);
-    arr.SetAtGrow(arr.GetSize(), 1);
-    arr.SetAtGrow(arr.GetSize(), 2);
-    arr.SetAtGrow(arr.GetSize(), 3);
+    arr.Add(0);
+    arr.Add(1);
+    arr.Add(2);
+    arr.Add(3);
     i32 r;
     r = GetRandom(0, arr.GetUpperBound());
     perm[0] = arr.GetAt(r);

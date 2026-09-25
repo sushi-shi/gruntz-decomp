@@ -379,7 +379,7 @@ i32 CGruntzMapMgr::BuildCellAttributes(i32 width, i32 height) {
                         elem->m_y = tileY + yo;
                         g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
                     }
-                    m_arr.SetAtGrow(m_arr.GetSize(), elem);
+                    m_arr.Add(elem);
                 }
             }
             for (i32 k = 0; k < m_arr.GetSize(); k++) {
