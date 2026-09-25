@@ -268,7 +268,10 @@ i32 CStatusBarMgr::LoadMainStatusBarSprite() {
                 CDDSurface* tgt = (g_gameReg->m_world->m_drawTarget)->m_backPair->m_surface;
 
                 RECT below;
-                SET_RECT_COMPONENTS(below, m_barRect.left, m_barRect.bottom, m_barRect.right, v);
+                below.left = m_barRect.left;
+                below.top = m_barRect.bottom;
+                below.right = m_barRect.right;
+                below.bottom = v;
                 tgt->Restore(&below, 0);
             }
             CDDrawWorker* cfg = m_world->FindWorker("GAME_STATUSBAR_MAINBAR");
