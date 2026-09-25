@@ -81,6 +81,7 @@ static const i32 s_tileClear = -1;
 
 #include <Gruntz/ImageSets.h>
 #include <Wap32/CoordUnset.h>
+#include <Gruntz/CoordNode.h>
 
 struct CRezItm;
 
@@ -91,6 +92,11 @@ class CDDrawSurfaceMgr;
 struct LevelDims {
     i32 m_w;
     i32 m_h;
+
+    void Init(i32 width, i32 height) {
+        m_w = width;
+        m_h = height;
+    }
 };
 
 GZ_ENUM_CONST_BEGIN(LevelPlaneLayout)

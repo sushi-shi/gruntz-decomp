@@ -10,6 +10,7 @@
 #include <Wap32/WapObj.h>
 
 #include <stddef.h>
+#include <Gruntz/CoordNode.h>
 
 class CDDrawSurfaceMgr;
 
@@ -103,6 +104,12 @@ public:
     i32 m_screenY;
 
     RECT m_clip;
+
+    inline void SetDrawFillFraction(ShadeMode mode, i32 fraction) {
+        m_drawActive = true;
+        m_drawFillCmd = mode;
+        m_fillFraction = fraction;
+    }
 };
 
 #define SET_DRAW_FILL(node, mode, table)                                                           \

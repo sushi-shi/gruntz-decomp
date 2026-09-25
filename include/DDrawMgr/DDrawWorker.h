@@ -73,6 +73,14 @@ public:
 
     i32 m_minIndex;
     i32 m_maxIndex;
+
+    inline b32 ContainsFrame(i32 index) const {
+        return index >= m_minIndex && index <= m_maxIndex;
+    }
+
+    inline CImage* FrameAtUnchecked(i32 index) {
+        return static_cast<CImage*>(m_items.GetAt(index));
+    }
 };
 
 // Caller-shape fallbacks for sites where VC5 cannot preserve the GetAt expansion.

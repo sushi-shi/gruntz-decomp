@@ -103,4 +103,20 @@ inline i32 CGrunt::CanCommitMove(i32 moveX, i32 moveY, i32 sourceX, i32 sourceY)
         }                                                                                          \
     }
 
+static inline i32 DiagonalRouteBlocked(CMapMgr* board, const Coord& source, const Coord& target) {
+    Coord horizontalStep(target.m_x > source.m_x ? 1 : -1, 0);
+    Coord verticalStep(0, target.m_y > source.m_y ? 1 : -1);
+    Coord sourceHorizontal = source + horizontalStep;
+    Coord sourceVertical = source + verticalStep;
+    Coord targetHorizontal = target - horizontalStep;
+    Coord targetVertical = target - verticalStep;
+    return (board->CellFlagsAt(sourceHorizontal.m_x, sourceHorizontal.m_y)
+            & BRICKZ_CELL_ROUTE_MASKB)
+           || (board->CellFlagsAt(sourceVertical.m_x, sourceVertical.m_y) & BRICKZ_CELL_ROUTE_MASKB)
+           || (board->CellFlagsAt(targetHorizontal.m_x, targetHorizontal.m_y)
+               & BRICKZ_CELL_ROUTE_MASKB)
+           || (board->CellFlagsAt(targetVertical.m_x, targetVertical.m_y)
+               & BRICKZ_CELL_ROUTE_MASKB);
+}
+
 #endif // GRUNTZ_GRUNTZ_GRUNTMOVECOLLISIONINLINE_H

@@ -8,6 +8,7 @@
 #include <Wap32/Object.h>
 
 #include <stddef.h>
+#include <Gruntz/CoordNode.h>
 
 class CWwdGrid;
 struct WwdRegion;
@@ -28,6 +29,26 @@ struct WwdRect {
     i32 m_minY;
     i32 m_maxX;
     i32 m_maxY;
+
+    void Intersect(const WwdRect& other) {
+        if (m_minX < other.m_minX) {
+            m_minX = other.m_minX;
+        }
+        if (m_minY < other.m_minY) {
+            m_minY = other.m_minY;
+        }
+        if (m_maxX > other.m_maxX) {
+            m_maxX = other.m_maxX;
+        }
+        if (m_maxY > other.m_maxY) {
+            m_maxY = other.m_maxY;
+        }
+    }
+
+    i32 Intersects(const WwdRect& other) const {
+        return m_minX <= other.m_maxX && m_maxX >= other.m_minX && m_minY <= other.m_maxY
+               && m_maxY >= other.m_minY;
+    }
 };
 
 struct WwdGridNode : CBaseListItem {

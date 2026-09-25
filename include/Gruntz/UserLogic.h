@@ -129,6 +129,14 @@ public:
     i32 m_reserved2c;
 
     i32 m_previousAnimationActId;
+
+    inline void ClearObjectArea() {
+        SetRectEmpty(&m_object->m_area);
+    }
+
+    inline void SetObjectArea(i32 value) {
+        SetRect(&m_object->m_area, value, value, value, value);
+    }
 };
 
 typedef i32 (CUserLogic::*CActHandler)();

@@ -60,4 +60,9 @@ static inline u16 PackPalEntry16(u8 r, u8 g, u8 b) {
     return PACK_PIXEL16(r, g, b);
 }
 
+inline b32 PixelFormatIsRgb555() {
+    return g_rDown == PIXEL16_RED_DOWN && g_gDown == RGB555_GREEN_DOWN
+           && g_bDown == PIXEL16_BLUE_DOWN && g_rUp == RGB555_RED_UP && g_gUp == PIXEL16_GREEN_UP;
+}
+
 #endif // INCLUDE_DDRAWMGR_PIXELSHIFT_H

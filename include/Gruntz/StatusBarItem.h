@@ -55,6 +55,14 @@ public:
     class CDDrawSurfaceMgr* m_host;
     i32 m_redrawFrames;
     class CStatusBarMgr* m_owner;
+
+    inline void InitializeBase(CStatusBarMgr* owner, StatusBarTab tab, CDDrawSurfaceMgr* host) {
+        m_owner = owner;
+        m_tab = tab;
+        m_host = host;
+        m_redrawFrames = 0;
+        SetEnabled(1);
+    }
 };
 
 RVA(0x001005d0, 0x17)

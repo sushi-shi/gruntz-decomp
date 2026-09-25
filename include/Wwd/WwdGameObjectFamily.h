@@ -169,6 +169,13 @@ public:
     i32 m_reserved180;
     i32 m_carrierId;
     i32 m_objectId;
+
+    inline void SetSortKey(i32 sortKey) {
+        if (m_sortKey != sortKey) {
+            m_sortKey = sortKey;
+            m_flags |= IDX(WWD_GAME_OBJECT_FLAG_SORT_PENDING);
+        }
+    }
 };
 
 inline i32 CGameObject::AttackBits(CGameObject* target) const {

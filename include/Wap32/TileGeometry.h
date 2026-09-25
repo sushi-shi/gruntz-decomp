@@ -42,4 +42,13 @@ inline i32 SquaredDistance(i32 dx, i32 dy) {
         }                                                                                          \
     } while (0)
 
+inline i32 TileShiftForSize(i32 tileSize) {
+    i32 shift = 0;
+    while (tileSize > 1) {
+        tileSize >>= 1;
+        shift++;
+    }
+    return shift;
+}
+
 #endif // WAP32_TILEGEOMETRY_H
