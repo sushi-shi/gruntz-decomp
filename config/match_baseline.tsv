@@ -232,7 +232,7 @@ netmgrerror	2	2
 netsession	1	1
 netsessionmgr	31	26
 palettebmp	2	2
-pathhazard	24	21
+pathhazard	24	22
 play	105	80
 playassetload	17	17
 projectile	28	20
@@ -3369,7 +3369,7 @@ pathhazard	??1CRainCloud@@UAE@XZ	100.0000	100.0000	1	cpp:92f2e382e981	0x13340	10
 pathhazard	??_GCPathHazard@@UAEPAXI@Z	100.0000	100.0000	1	cpp:92f2e382e981	0x13250	100.0000	
 pathhazard	??_GCRainCloud@@UAEPAXI@Z	100.0000	100.0000	1	cpp:92f2e382e981	0x13310	100.0000	
 pathhazard	?Arrive@CPathHazard@@UAEHXZ	100.0000	100.0000	1	d95e49a4d78b	0xb47a0	100.0000	
-pathhazard	?BeginLeg@CPathHazard@@UAEHXZ	94.0566	94.0566	5	92ee3412e4a4	0xb47e0	100.0000	
+pathhazard	?BeginLeg@CPathHazard@@UAEHXZ	100.0000	100.0000	6	f7525c8a52c7	0xb47e0	100.0000	
 pathhazard	?FireActivation@CPathHazard@@UAEXH@Z	100.0000	100.0000	4	da97e7d9d47d	0xb3b60	100.0000	
 pathhazard	?ForwardSiblingTick@CPathHazard@@QAEHXZ	100.0000	100.0000	1	9256458c1b34	0xb5080	100.0000	
 pathhazard	?ForwardTick@CPathHazard@@QAEHXZ	100.0000	100.0000	1	a304183f803d	0xb5070	100.0000	

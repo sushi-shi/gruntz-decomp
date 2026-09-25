@@ -3,6 +3,8 @@
 
 #include <rva.h>
 
+#define VECTOR2_MAG_COMPONENTS(x, y) sqrt((x) * (x) + (y) * (y))
+
 struct DoubleVector2 {
     double m_x;
     double m_y;
