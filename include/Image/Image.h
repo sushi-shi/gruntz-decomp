@@ -324,7 +324,7 @@ public:
         i32 surfaceCaps,
         i32 colorKey
     );
-    virtual i32 LoadByExt(CDDrawDeviceManager* manager, char* path, i32 surfaceCaps, i32 colorKey);
+    virtual i32 LoadByExt(CDDrawDeviceManager* manager, char* sFile, i32 surfaceCaps, i32 colorKey);
     virtual i32 LoadKeyed(
         CDDrawDeviceManager* manager,
         i32 width,

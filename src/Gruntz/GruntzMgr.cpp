@@ -49,7 +49,6 @@
 #include <Gruntz/GruntzDebugDialog.h>
 #include <Gruntz/GruntzMgrMacros.h>
 #include <Gruntz/GruntzPlayer.h>
-#include <Gruntz/HeapDiag.h>
 #include <Gruntz/HelpState.h>
 #include <Gruntz/InputDeviceSel.h>
 #include <Gruntz/InputState.h>
@@ -79,6 +78,7 @@
 #include <Gruntz/TraitorMode.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/UserLogic.h>
+#include <Gruntz/Utils.h>
 #include <Gruntz/VoiceManager.h>
 #include <Gruntz/WaitCursorScope.h>
 #include <Gruntz/WorldSoundSet.h>
@@ -1485,7 +1485,7 @@ i32 CGruntzMgr::LaunchWebBrowser(char* url) {
 
     _strupr(cmd);
     if (strstr(cmd, "IEXPLORE.EXE")) {
-        FindProcessByName("IEXPLORE.EXE", 1, &quoted);
+        ExistProcess("IEXPLORE.EXE", 1, &quoted);
     }
     char* dash = strchr(cmd, '-');
     i32 dn = dash - cmd + 1;
@@ -2059,26 +2059,37 @@ i32 CGruntzMgr::LaunchPortal(i32 quitAfter) {
 }
 
 RVA(0x00090860, 0xd3)
-i32 CGruntzMgr::LaunchProcessInDir(char* exe, char* dir) {
-    char cmdline[256];
-    STARTUPINFOA si;
-    PROCESS_INFORMATION pi;
-    memset(&si, 0, sizeof(si));
-    si.cb = sizeof(si);
-    if (dir && *dir) {
-        i32 len = strlen(dir);
-        if (len > 0 && dir[len - 1] == '\\') {
-            wsprintfA(cmdline, "%s%s", dir, exe);
+i32 CGruntzMgr::LaunchProcessInDir(char* sApp, char* sPath) {
+    char sLaunch[256];
+    STARTUPINFOA startInfo;
+    PROCESS_INFORMATION processInfo;
+    memset(&startInfo, 0, sizeof(startInfo));
+    startInfo.cb = sizeof(startInfo);
+    if (sPath && *sPath) {
+        i32 len = strlen(sPath);
+        if (len > 0 && sPath[len - 1] == '\\') {
+            wsprintfA(sLaunch, "%s%s", sPath, sApp);
         } else {
-            wsprintfA(cmdline, "%s\\%s", dir, exe);
+            wsprintfA(sLaunch, "%s\\%s", sPath, sApp);
         }
     } else {
-        wsprintfA(cmdline, "%s", exe);
+        wsprintfA(sLaunch, "%s", sApp);
     }
-    if (dir && *dir == 0) {
-        dir = NULL;
+    if (sPath && *sPath == 0) {
+        sPath = NULL;
     }
-    return CreateProcessA(NULL, cmdline, NULL, NULL, false, 0, NULL, dir, &si, &pi);
+    return CreateProcessA(
+        NULL,
+        sLaunch,
+        NULL,
+        NULL,
+        false,
+        0,
+        NULL,
+        sPath,
+        &startInfo,
+        &processInfo
+    );
 }
 
 RVA(0x00090980, 0x18)

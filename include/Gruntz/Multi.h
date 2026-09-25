@@ -31,7 +31,6 @@ struct CNetGameConfigPacket;
 class GruntzPlayer;
 struct CNetSession;
 
-void SetActiveAndFocus(void* hWnd);
 void FillSessionList(HWND hList, CNetMgr* manager);
 BOOL CALLBACK MultiJoinDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 

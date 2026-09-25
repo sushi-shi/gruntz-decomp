@@ -5,7 +5,7 @@
 
 #include <Ints.h>
 
-// Defined, not declared: HeapDiag.cpp includes it at file scope for the shared
+// Defined, not declared: Gruntz/Utils.cpp includes it at file scope for the shared
 // copy; a TU that needs a private copy includes it inside `namespace {}`.
 i32 FileExists(const char* szPath) {
     OFSTRUCT of;

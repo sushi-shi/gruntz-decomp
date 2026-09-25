@@ -6,6 +6,7 @@
 
 #include <Enums.h>
 #include <Gruntz/GameInfo.h>
+#include <Gruntz/Utils.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -75,8 +76,8 @@ i32 CGameInfo::FormatGameInfoString() {
         memset(t, 0, 28);
     }
 
-    u32 a = 0, b = 0, c = 0;
-    SplitMillisToHMS(t->m_timeMs, &a, &b, &c);
+    int a = 0, b = 0, c = 0;
+    DissectTime(t->m_timeMs, &a, &b, &c);
     sprintf(g_infoScratch, "&S=%lu&H=%i&M=%02i&SE=%02i", t->m_score, a, b, c);
     strcat(g_infoMaster, g_infoScratch);
 
