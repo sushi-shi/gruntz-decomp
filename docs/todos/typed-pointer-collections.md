@@ -76,6 +76,11 @@ source layer the original developers wrote around each collection.
   forms at 13 sites (CGrunt, CAniAdvanceCursor, the `UserLogic.h` and
   `DEATH_FRAME` macros).
 
+- `CGruntzMgr::m_stateStack`: accessed directly (the `CPtrArray* st` alias
+  locals were byte-neutral); `TopState`/`PushState`/`PopTopIfMatches`/
+  `ClearStateStack` are the owner's real out-of-line operations, so element
+  casts inside them stay.
+
 ## Open
 
 For each collection, decide which of these the source was:
