@@ -785,8 +785,8 @@ CNetPlayerNode* CNetMgr::FindPlayerById(DPID playerId) {
 
 RVA(0x00178eb0, 0x3f)
 CNetPlayerNode* CNetMgr::GetPlayerNodeData(DPID playerId) {
-    DWORD dataSize = 4;
     CNetPlayerNode* player = NULL;
+    DWORD dataSize = 4;
     i32 hr = m_directPlay->GetPlayerData(playerId, &player, &dataSize, DPGET_LOCAL);
     return hr ? NULL : player;
 }

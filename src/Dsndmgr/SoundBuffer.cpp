@@ -67,13 +67,13 @@ i32 ConvertVolumeToPercent(i32 attenuation) {
     } else {
         decibels = static_cast<double>((attenuation / 100));
     }
-    double volumePct = g_volumePercentScale
-                       - (g_volumeCurveUnit - pow(g_attenuationBase, -decibels / g_decibelScale))
-                             * g_volumePercentScale;
+    double volume = g_volumePercentScale
+                    - (g_volumeCurveUnit - pow(g_attenuationBase, -decibels / g_decibelScale))
+                          * g_volumePercentScale;
     if (attenuation < 0) {
-        return static_cast<i32>(volumePct);
+        return static_cast<i32>(volume);
     }
-    return static_cast<i32>((-volumePct));
+    return static_cast<i32>((-volume));
 }
 
 #pragma optimize("", on)

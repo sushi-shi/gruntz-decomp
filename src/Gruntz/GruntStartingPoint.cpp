@@ -45,7 +45,7 @@ RVA(0x0003e300, 0x18d)
 void RegisterGruntStartingPointActions() {
     ACT_NAME_ID(id, "A")
 
-    *ResolveRegisteredAct<CGruntStartingPoint>(id) =
+    CActRegPool<CGruntStartingPoint>::s_table[id] =
         static_cast<CActHandler>(&CGruntStartingPoint::Idle);
 }
 

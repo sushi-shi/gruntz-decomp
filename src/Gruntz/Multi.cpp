@@ -2882,7 +2882,7 @@ u32 CMulti::FrameSyncWait() {
         ActiveWait(0x1f - m_accumTime);
         m_lastFrameSyncTime = (now - m_accumTime) + 0x1f;
     } else if (m_accumTime > 0x28 && m_syncGate) {
-        g_frameSkipToggle = !g_frameSkipToggle;
+        g_frameSkipToggle ^= 1;
         ret = g_frameSkipToggle;
     }
     return ret;

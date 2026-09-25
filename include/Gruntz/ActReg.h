@@ -19,10 +19,6 @@ template<class Tag> struct CActRegPool {
     static CActReg s_table;
 };
 
-template<class Logic> inline CActHandler* ResolveRegisteredAct(i32 id) {
-    return &CActRegPool<Logic>::s_table[id];
-}
-
 template<class Logic> inline void DispatchRegisteredAct(Logic* logic, i32 id) {
     CActReg& acts = CActRegPool<Logic>::s_table;
     if (acts[id] != NULL) {

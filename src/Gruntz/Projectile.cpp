@@ -279,7 +279,7 @@ void CProjectile::FireActivation(i32 coord) {
 RVA(0x000dfb00, 0x18d)
 void CProjectile::RegisterType() {
     ACT_NAME_ID(id, "A")
-    *ResolveRegisteredAct<CProjectile>(id) =
+    CActRegPool<CProjectile>::s_table[id] =
         static_cast<CActHandler>(&CProjectile::AdvanceAnimationAndDeleteWhenComplete);
 }
 
@@ -882,7 +882,7 @@ void CTimeBomb::FireActivation(i32 coord) {
 RVA(0x000e1990, 0x18d)
 void CTimeBomb::RegisterActs() {
     ACT_NAME_ID(id, "A")
-    *(ResolveRegisteredAct<CTimeBomb>(id)) = static_cast<CActHandler>(&CTimeBomb::UpdateCountdown);
+    CActRegPool<CTimeBomb>::s_table[id] = static_cast<CActHandler>(&CTimeBomb::UpdateCountdown);
 }
 
 // @early-stop
