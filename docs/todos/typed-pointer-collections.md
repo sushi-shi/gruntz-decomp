@@ -41,6 +41,9 @@ source layer the original developers wrote around each collection.
   inline taking the index drops (100 -> 66.5). Render/refresh/hit-test walks
   stay raw.
 
+- `CMenuPage::m_items`: the existing `NextItem`/`PrevItem` now cover every
+  walk, including the column moves.
+
 ## Open
 
 For each collection, decide which of these the source was:
