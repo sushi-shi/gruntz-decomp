@@ -151,7 +151,6 @@ istream& ReadCurve(istream& accum, CMotionState& c) {
     return accum;
 }
 
-// @early-stop
 RVA(0x0016d190, 0x101)
 void* zPTree::lookup(const char* key) {
     if (key == NULL) {
@@ -165,8 +164,11 @@ void* zPTree::lookup(const char* key) {
     if (m_p == NULL) {
         return NULL;
     }
-    i32 branch = m_p->m_index;
-    while (branch <= m_sbits) {
+    for (;;) {
+        i32 branch = m_p->m_index;
+        if (branch > m_sbits) {
+            break;
+        }
         m_q = m_p->ptr(bit(key, branch));
         if (m_q == NULL) {
             return NULL;
@@ -179,7 +181,6 @@ void* zPTree::lookup(const char* key) {
             return NULL;
         }
         m_p = m_q;
-        branch = m_p->m_index;
     }
     m_q = m_p;
     return NULL;
