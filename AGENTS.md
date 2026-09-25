@@ -42,7 +42,9 @@ storage, control flow, calling conventions, referents) outranks any score.
    diagnosed register/schedule residue with HIST < 100.
 4. Iterate with `gruntz match <unit|source>`: it compiles, labels, delinks,
    and compares only that TU (a few seconds), even after a header edit other
-   TUs include, and prints each function's score against its banked MAX and HIST. Run
+   TUs include, and reports MAX changes only: an edited function against the
+   MAX it replaces, an unchanged one only if it beats its MAX. CUR dips of
+   unchanged functions are not reported and need no attention. Run
    `gruntz build` (every TU, no gates) when the change spans units.
 5. Gates run only when preparing a merge: `gruntz build verify` (MAX gate plus
    the fast and normal tiers).
