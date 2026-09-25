@@ -438,6 +438,12 @@ public:
     i32 CoordCount() const {
         return m_coordList.GetCount();
     }
+    Coord* GetHeadCoord() {
+        return static_cast<Coord*>(m_coordList.GetAt(CoordHead()));
+    }
+    Coord* GetTailCoord() {
+        return static_cast<Coord*>(m_coordList.GetAt(CoordTail()));
+    }
     CGruntCellRec* EntranceCell() {
         GruntDirectionCell c = m_entranceCell;
         return &m_cells[3 * c.m_row + c.m_column];

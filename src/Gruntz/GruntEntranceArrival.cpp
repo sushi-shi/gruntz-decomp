@@ -896,7 +896,7 @@ i32 CGrunt::StepEntranceReinit() {
         return 0;
     }
 
-    Coord* targetCoord = static_cast<Coord*>(m_coordList.GetHead());
+    Coord* targetCoord = GetHeadCoord();
     CMapMgr* tileGrid = g_gameReg->m_tileGrid;
     i32 targetCellFlags = tileGrid->CellFlagsAt(targetCoord->m_x, targetCoord->m_y);
     GruntDirectionCell cell;

@@ -25,6 +25,10 @@ source layer the original developers wrote around each collection.
 - `CStatusBarMgr::m_rewardQueue`: `GetReward(i)` plus `ClearRewardQueue()`
   (recycle every `Coord` to `g_coordPool`, then `SetSize(0, -1)`); insertion
   keeps `InsertAt`/`Add`, deserialization stores with `SetAt`.
+- `CGrunt::m_coordList`: `GetHeadCoord()`/`GetTailCoord()` beside the
+  existing `CoordHead()`/`CoordTail()` positions, at every head/tail read
+  (CGrunt and CBattlezMapConfig). `ValidateUnitPath` keeps its local head
+  `POSITION` (converting it costs 0.7). Walks and `RemoveHead` stay raw.
 
 ## Open
 

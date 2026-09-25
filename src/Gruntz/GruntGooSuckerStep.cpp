@@ -262,7 +262,7 @@ L_scanb:
         }
         GRID_RECT_INLINE(grid);
     } else {
-        Coord* coord = static_cast<Coord*>(m_coordList.GetHead());
+        Coord* coord = GetHeadCoord();
         i32 col = coord->m_x;
         i32 row = coord->m_y;
         if (CellTargetable(col, row) == 0) {

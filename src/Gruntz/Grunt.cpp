@@ -935,7 +935,7 @@ i32 CGrunt::StepArrivalDrop(
         if (cnt == 0) {
             goto commitEntrance;
         }
-        tail = static_cast<Coord*>(m_coordList.GetAt(CoordHead()));
+        tail = GetHeadCoord();
         headFlags = g_gameReg->m_tileGrid->CellFlagsAt(tail->m_x, tail->m_y);
         lastFlags = g_gameReg->m_tileGrid->CellFlagsAt(lastX, lastY);
         if ((lastFlags & 0x80) != 0) {
@@ -1076,7 +1076,7 @@ i32 CGrunt::StepArrivalDrop(
             g_coordPool.Push(m_coordList.RemoveTail());
             if (CoordCount() != 0) {
                 nudged = 1;
-                tail = static_cast<Coord*>(m_coordList.GetAt(CoordTail()));
+                tail = GetTailCoord();
                 pxX = tail->m_x * TILE_SIZE_PX + TILE_HALF_PX;
                 pxY = tail->m_y * TILE_SIZE_PX + TILE_HALF_PX;
             }
@@ -1256,7 +1256,7 @@ i32 CGrunt::StepGruntMovement() {
         coordY = co->m_y;
         g_coordPool.Push(co);
     } else {
-        Coord* co = static_cast<Coord*>(m_coordList.GetAt(CoordHead()));
+        Coord* co = GetHeadCoord();
         coordX = co->m_x;
         coordY = co->m_y;
     }
@@ -1372,7 +1372,7 @@ i32 CGrunt::StepGruntMovement() {
                 goto label_4cb2a;
             }
             {
-                Coord* co = static_cast<Coord*>(m_coordList.GetAt(CoordHead()));
+                Coord* co = GetHeadCoord();
                 i32 cx = co->m_x;
                 i32 cy = co->m_y;
                 SET_TILE_CENTER_PIXEL_PAIR(tgtPxX, tgtPxY, cx, cy)
