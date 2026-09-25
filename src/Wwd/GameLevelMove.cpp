@@ -49,6 +49,51 @@ i32 CGameLevel::ApplyMove(CGameObject* target, i32 destX, i32 destY, i32 moveFla
     return result;
 }
 
+inline i32 CGameLevel::BacktrackRightX(CGameObject* t, i32 x, i32 y) {
+    i32 sx = t->m_screenX;
+    i32 limit = sx + t->m_extent.right;
+    for (x--; x > limit; x--) {
+        if (AxisProbe(x, y) == TILEKIND_PASSABLE) {
+            return x - t->m_extent.right;
+        }
+    }
+    return t->m_screenX;
+}
+
+inline i32 CGameLevel::BacktrackLeftX(CGameObject* t, i32 x, i32 y) {
+    i32 limit = t->m_screenX;
+    limit += t->m_extent.left;
+    for (x++; x < limit; x++) {
+        if (AxisProbe(x, y) == TILEKIND_PASSABLE) {
+            return x - t->m_extent.left;
+        }
+    }
+    return t->m_screenX;
+}
+
+inline i32 CGameLevel::BacktrackBottomY(CGameObject* t, i32 x, i32 y) {
+    i32 sy = t->m_screenY;
+    i32 limit = sy + t->m_extent.bottom;
+    for (y--; y > limit; y--) {
+        if (AxisProbe(x, y) == TILEKIND_PASSABLE) {
+            return y - t->m_extent.bottom;
+        }
+    }
+    return t->m_screenY;
+}
+
+inline i32 CGameLevel::BacktrackTopY(CGameObject* t, i32 x, i32 y) {
+    i32 sy = t->m_screenY;
+    i32 e = t->m_extent.top;
+    i32 limit = sy + e;
+    for (y++; y < limit; y++) {
+        if (AxisProbe(x, y) == TILEKIND_PASSABLE) {
+            return y - t->m_extent.top;
+        }
+    }
+    return t->m_screenY;
+}
+
 RVA(0x001671c0, 0x97)
 i32 CGameLevel::MoveAxisAligned(CGameObject* t, i32 x, i32 y, i32 flags) {
     i32 result = 0;
@@ -72,9 +117,9 @@ i32 CGameLevel::MoveAxisAligned(CGameObject* t, i32 x, i32 y, i32 flags) {
 // @early-stop
 RVA(0x00167260, 0x1ef)
 i32 CGameLevel::MoveStepXHi(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
-    i32 state = 0;
     i32 xEnd = x + t->m_extent.right;
     i32 yHi = t->m_extent.bottom + y;
+    i32 state = 0;
     i32 yLo = t->m_extent.top + y;
     while (yLo <= yHi) {
         TileCollisionKind result;
@@ -84,17 +129,8 @@ i32 CGameLevel::MoveStepXHi(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
             result = TILEKIND_PASSABLE;
         }
         if (result == TILEKIND_SOLID || result == TILEKIND_GROUND) {
-            i32 lo = t->m_screenX + t->m_extent.right;
-            x = xEnd - 1;
             state |= IDX(MOVE_RESULT_AXIS_BLOCKED | MOVE_RESULT_TILE_RIGHT);
-            for (; x > lo; x--) {
-                if (AxisProbe(x, yLo) == TILEKIND_PASSABLE) {
-                    x -= t->m_extent.right;
-                    goto have_x;
-                }
-            }
-            x = t->m_screenX;
-        have_x:
+            x = BacktrackRightX(t, xEnd, yLo);
             if (x == t->m_screenX) {
                 *px = t->m_screenX;
                 return state;
@@ -120,9 +156,9 @@ i32 CGameLevel::MoveStepXHi(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
 // @early-stop
 RVA(0x00167450, 0x1ef)
 i32 CGameLevel::MoveStepXLo(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
-    i32 state = 0;
     i32 xEnd = x + t->m_extent.left;
     i32 yHi = t->m_extent.bottom + y;
+    i32 state = 0;
     i32 yLo = t->m_extent.top + y;
     while (yLo <= yHi) {
         TileCollisionKind result;
@@ -132,17 +168,8 @@ i32 CGameLevel::MoveStepXLo(CGameObject* t, i32 x, i32 y, i32* px, i32 flags) {
             result = TILEKIND_PASSABLE;
         }
         if (result == TILEKIND_SOLID || result == TILEKIND_GROUND) {
-            i32 lo = t->m_screenX + t->m_extent.left;
-            x = xEnd + 1;
             state |= IDX(MOVE_RESULT_AXIS_BLOCKED | MOVE_RESULT_TILE_LEFT);
-            for (; x < lo; x++) {
-                if (AxisProbe(x, yLo) == TILEKIND_PASSABLE) {
-                    x -= t->m_extent.left;
-                    goto have_x;
-                }
-            }
-            x = t->m_screenX;
-        have_x:
+            x = BacktrackLeftX(t, xEnd, yLo);
             if (x == t->m_screenX) {
                 *px = t->m_screenX;
                 return state;
@@ -170,8 +197,8 @@ RVA(0x00167640, 0x1eb)
 i32 CGameLevel::MoveStepYHi(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
     i32 colHi = t->m_extent.right + x;
     i32 fixedY = y + t->m_extent.bottom;
-    i32 col = t->m_extent.left + x;
     i32 state = 0;
+    i32 col = t->m_extent.left + x;
     while (col <= colHi) {
         TileCollisionKind result;
         PROBE_TILE(this, col, fixedY, result);
@@ -180,17 +207,8 @@ i32 CGameLevel::MoveStepYHi(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
             result = TILEKIND_PASSABLE;
         }
         if (result == TILEKIND_SOLID || result == TILEKIND_GROUND) {
-            i32 lo = t->m_screenY + t->m_extent.bottom;
-            y = fixedY - 1;
             state |= IDX(MOVE_RESULT_AXIS_BLOCKED | MOVE_RESULT_TILE_BOTTOM);
-            for (; y > lo; y--) {
-                if (AxisProbe(col, y) == TILEKIND_PASSABLE) {
-                    y -= t->m_extent.bottom;
-                    goto have_y;
-                }
-            }
-            y = t->m_screenY;
-        have_y:
+            y = BacktrackBottomY(t, col, fixedY);
             if (y == t->m_screenY) {
                 *py = t->m_screenY;
                 return state;
@@ -218,8 +236,8 @@ RVA(0x00167830, 0x1eb)
 i32 CGameLevel::MoveStepYLo(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
     i32 colHi = t->m_extent.right + x;
     i32 fixedY = y + t->m_extent.top;
-    i32 col = t->m_extent.left + x;
     i32 state = 0;
+    i32 col = t->m_extent.left + x;
     while (col <= colHi) {
         TileCollisionKind result;
         PROBE_TILE(this, col, fixedY, result);
@@ -228,17 +246,8 @@ i32 CGameLevel::MoveStepYLo(CGameObject* t, i32 x, i32 y, i32* py, i32 flags) {
             result = TILEKIND_PASSABLE;
         }
         if (result == TILEKIND_SOLID || result == TILEKIND_GROUND) {
-            i32 lo = t->m_screenY + t->m_extent.top;
-            y = fixedY + 1;
             state |= IDX(MOVE_RESULT_AXIS_BLOCKED | MOVE_RESULT_TILE_TOP);
-            for (; y < lo; y++) {
-                if (AxisProbe(col, y) == TILEKIND_PASSABLE) {
-                    y -= t->m_extent.top;
-                    goto have_y;
-                }
-            }
-            y = t->m_screenY;
-        have_y:
+            y = BacktrackTopY(t, col, fixedY);
             if (y == t->m_screenY) {
                 *py = t->m_screenY;
                 return state;
