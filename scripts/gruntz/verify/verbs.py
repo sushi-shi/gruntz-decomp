@@ -184,12 +184,15 @@ def _report(args, gate: bool) -> int:
     total = int(m.get("total_functions") or 0)
     print(f"scored {total} function(s) (EH band carved) - {exact} exact, "
           f"overall fuzzy {float(m.get('fuzzy_match_percent') or 0.0):.2f}%")
-    print(f"below-bank: {len(regress)} beyond EPS={EPS} "
-          f"({len(carried)} carried in the snapshot, {len(fresh)} fresh) - "
-          f"strict-< count {strict_below} (the no-EPS reading; "
-          f"{jitter} of those are sub-EPS float jitter)")
+    print(f"below the banked MAX (beyond EPS={EPS}): "
+          f"{len(regress)} REGRESS ({len(carried)} carried, {len(fresh)} fresh), "
+          f"{len(buckets.get('RESET', []))} RESET, "
+          f"{len(buckets.get('DIP', []))} DIP (MAX held); "
+          f"strict-< count {strict_below} ({jitter} sub-EPS float jitter)")
 
-    for kind, note in (("REGRESS", " (cur < banked best)"),
+    for kind, note in (("REGRESS", " (edited, CUR fell below the banked MAX)"),
+                       ("RESET", " (edited, CUR held; the new hash lowers MAX)"),
+                       ("DIP", " (unedited, CUR dip; MAX held, no action)"),
                        ("LOST", " (rva no longer scored, not banked absent)"),
                        ("IMPROVE", " (bankable: cur > best)"),
                        ("MOVED", " (same rva, new unit - transfers)"),
@@ -197,7 +200,7 @@ def _report(args, gate: bool) -> int:
                        ("NEW", ""), ("REMOVED", " (rename/edit adjudicated)"),
                        ("KNOWN-ABSENT", " (banked absent, MAX preserved)")):
         rows = buckets.get(kind, [])
-        if kind in ("MOVED", "RENAMED", "REMOVED", "KNOWN-ABSENT") \
+        if kind in ("MOVED", "RENAMED", "REMOVED", "KNOWN-ABSENT", "DIP") \
                 and not getattr(args, "all", False):
             if rows:
                 print(f"\n{kind}: {len(rows)} row(s){note} (--all lists them)")
