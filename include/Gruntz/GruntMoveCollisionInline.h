@@ -72,4 +72,35 @@ inline i32 CGrunt::CanCommitMove(i32 moveX, i32 moveY, i32 sourceX, i32 sourceY)
     return 1;
 }
 
+#define RETURN_IF_DIAGONAL_ROUTE_BLOCKED(board, cur, tg, dx, dy)                                   \
+    if (dx > 0 && dy > 0) {                                                                        \
+        if (((cur + 1)->m_flags & BRICKZ_CELL_ROUTE_MASKB)                                         \
+            || ((cur + board->m_width)->m_flags & BRICKZ_CELL_ROUTE_MASKB)                         \
+            || ((tg - 1)->m_flags & BRICKZ_CELL_ROUTE_MASKB)                                       \
+            || ((tg - board->m_width)->m_flags & BRICKZ_CELL_ROUTE_MASKB)) {                       \
+            return 0;                                                                              \
+        }                                                                                          \
+    } else if (dx < 0 && dy > 0) {                                                                 \
+        if (((cur - 1)->m_flags & BRICKZ_CELL_ROUTE_MASKB)                                         \
+            || ((cur + board->m_width)->m_flags & BRICKZ_CELL_ROUTE_MASKB)                         \
+            || ((tg + 1)->m_flags & BRICKZ_CELL_ROUTE_MASKB)                                       \
+            || ((tg - board->m_width)->m_flags & BRICKZ_CELL_ROUTE_MASKB)) {                       \
+            return 0;                                                                              \
+        }                                                                                          \
+    } else if (dx > 0 && dy < 0) {                                                                 \
+        if (((cur + 1)->m_flags & BRICKZ_CELL_ROUTE_MASKB)                                         \
+            || ((cur - board->m_width)->m_flags & BRICKZ_CELL_ROUTE_MASKB)                         \
+            || ((tg - 1)->m_flags & BRICKZ_CELL_ROUTE_MASKB)                                       \
+            || ((tg + board->m_width)->m_flags & BRICKZ_CELL_ROUTE_MASKB)) {                       \
+            return 0;                                                                              \
+        }                                                                                          \
+    } else if (dx < 0 && dy < 0) {                                                                 \
+        if (((cur - 1)->m_flags & BRICKZ_CELL_ROUTE_MASKB)                                         \
+            || ((cur - board->m_width)->m_flags & BRICKZ_CELL_ROUTE_MASKB)                         \
+            || ((tg + 1)->m_flags & BRICKZ_CELL_ROUTE_MASKB)                                       \
+            || ((tg + board->m_width)->m_flags & BRICKZ_CELL_ROUTE_MASKB)) {                       \
+            return 0;                                                                              \
+        }                                                                                          \
+    }
+
 #endif // GRUNTZ_GRUNTZ_GRUNTMOVECOLLISIONINLINE_H

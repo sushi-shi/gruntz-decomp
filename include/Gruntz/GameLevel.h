@@ -335,4 +335,8 @@ public:
     m_mainPlane = NULL;                                                                            \
     m_mainIndex = -1
 
+#define SET_LEVEL_DIMS(dims, width, height)                                                        \
+    (dims).m_w = (width);                                                                          \
+    (dims).m_h = (height)
+
 #endif // SRC_GRUNTZ_GAMELEVEL_H

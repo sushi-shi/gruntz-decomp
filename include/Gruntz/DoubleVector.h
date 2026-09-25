@@ -46,4 +46,30 @@ struct DoubleVector3 {
         (v).m_z = (c);                                                                             \
     }
 
+#define SET_VECTOR3_BOUNDS(lower, upper, minimum, maximum)                                         \
+    (lower).m_x = (minimum);                                                                       \
+    (upper).m_x = (maximum);                                                                       \
+    (lower).m_y = (minimum);                                                                       \
+    (upper).m_y = (maximum);                                                                       \
+    (lower).m_z = (minimum);                                                                       \
+    (upper).m_z = (maximum)
+#define VECTOR2_MAG_COMPONENTS(x, y) sqrt((x) * (x) + (y) * (y))
+#define VECTOR2_SCALE_TO_I32(outX, outY, x, y, scale)                                              \
+    (outX) = static_cast<i32>((x) * (scale));                                                      \
+    (outY) = static_cast<i32>((y) * (scale))
+#define VECTOR_ADVANCE_COMPONENT(position, elapsed, velocity, scale)                               \
+    (position) = (position) + static_cast<double>(elapsed) * (velocity) * (scale)
+#define VECTOR_ADVANCE_VALUE(position, elapsed, firstScale, secondScale)                           \
+    ((position) + ((elapsed) * (firstScale)) * (secondScale))
+#define VECTOR_COMPONENT_ROUND_BIAS(out, value)                                                    \
+    if ((value) > 0.0) {                                                                           \
+        (out) = 0.5;                                                                               \
+    } else if ((value) < 0.0) {                                                                    \
+        (out) = -0.5;                                                                              \
+    } else {                                                                                       \
+        (out) = 0.0;                                                                               \
+    }
+#define VECTOR_SUBTRACT_SCALED_TO_I32(position, delta, scale)                                      \
+    static_cast<i32>(static_cast<float>(position) - static_cast<float>(delta) * (scale))
+
 #endif // GRUNTZ_DOUBLEVECTOR_H

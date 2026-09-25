@@ -15,4 +15,13 @@ struct Coord {
     }
 };
 
+#define SCREEN_TILE_INPLACE(pos)                                                                   \
+    (pos)->m_x >>= TILE_SHIFT_PX;                                                                  \
+    (pos)->m_y >>= TILE_SHIFT_PX
+
+#define COORD_EQUALS_COMPONENTS(coord, x, y) ((coord).m_x == (x) && (coord).m_y == (y))
+#define SET_VECTOR2_COMPONENTS(coord, x, y)                                                        \
+    (coord).m_x = (x);                                                                             \
+    (coord).m_y = (y)
+
 #endif // GRUNTZ_GRUNTZ_COORDNODE_H
