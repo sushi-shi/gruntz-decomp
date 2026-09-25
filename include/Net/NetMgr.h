@@ -14,7 +14,6 @@
 #include <Ints.h>
 #include <Net/NetMsgId.h>
 #include <Net/NetPacketLayout.h>
-#include <Net/NetProviderNode.h>
 #include <Net/NetSlotState.h>
 #include <Rez/RezMgr.h>
 #include <Utils/RegMgr.h>
@@ -452,50 +451,12 @@ public:
     POSITION m_playerCursor;
     i32 m_reserved88;
 
-    CNetProviderNode* GetFirstProvider() {
-        m_providerCursor = m_providers.GetHeadPosition();
-        return m_providerCursor != NULL
-                   ? static_cast<CNetProviderNode*>(m_providers.GetNext(m_providerCursor))
-                   : NULL;
-    }
-    CNetProviderNode* GetNextProvider() {
-        if (m_providerCursor != NULL) {
-            CNetProviderNode* next =
-                static_cast<CNetProviderNode*>(m_providers.GetAt(m_providerCursor));
-            m_providers.GetNext(m_providerCursor);
-            return next;
-        }
-        return NULL;
-    }
-    CNetSessionListNode* GetFirstSession() {
-        m_sessionCursor = m_sessionListings.GetHeadPosition();
-        return m_sessionCursor != NULL
-                   ? static_cast<CNetSessionListNode*>(m_sessionListings.GetNext(m_sessionCursor))
-                   : NULL;
-    }
-    CNetSessionListNode* GetNextSession() {
-        if (m_sessionCursor != NULL) {
-            CNetSessionListNode* next =
-                static_cast<CNetSessionListNode*>(m_sessionListings.GetAt(m_sessionCursor));
-            m_sessionListings.GetNext(m_sessionCursor);
-            return next;
-        }
-        return NULL;
-    }
-    CNetPlayerNode* GetFirstPlayer() {
-        m_playerCursor = m_players.GetHeadPosition();
-        return m_playerCursor != NULL
-                   ? static_cast<CNetPlayerNode*>(m_players.GetNext(m_playerCursor))
-                   : NULL;
-    }
-    CNetPlayerNode* GetNextPlayer() {
-        if (m_playerCursor != NULL) {
-            CNetPlayerNode* next = static_cast<CNetPlayerNode*>(m_players.GetAt(m_playerCursor));
-            m_players.GetNext(m_playerCursor);
-            return next;
-        }
-        return NULL;
-    }
+    inline CNetProviderNode* GetFirstProvider();
+    inline CNetProviderNode* GetNextProvider();
+    inline CNetSessionListNode* GetFirstSession();
+    inline CNetSessionListNode* GetNextSession();
+    inline CNetPlayerNode* GetFirstPlayer();
+    inline CNetPlayerNode* GetNextPlayer();
 
     CNetMgr() {
         m_directPlayBase = NULL;

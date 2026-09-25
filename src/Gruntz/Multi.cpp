@@ -55,6 +55,7 @@
 #include <Net/NetLobby.h>
 #include <Net/NetLobbyCtrlId.h>
 #include <Net/NetMgr.h>
+#include <Net/NetMgrInline.h>
 #include <Net/NetMgrReportError.h>
 #include <Net/NetMsgId.h>
 #include <Net/NetPackets.h>
