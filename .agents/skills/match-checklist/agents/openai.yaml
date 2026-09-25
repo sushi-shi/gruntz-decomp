@@ -1,4 +1,0 @@
-interface:
-  display_name: "Gruntz Match Checklist"
-  short_description: "Match Gruntz functions using proven source-shape evidence"
-  default_prompt: "Use $match-checklist to inspect this Gruntz function and execute evidence-backed matching changes without writing a plan file."

@@ -21,7 +21,7 @@ prose). Mid-line `@name` mentions are prose and stay free.
 | Marker | Read by | Meaning |
 |---|---|---|
 | `// @early-stop` | `gruntz walls stale-markers`; the final-sweep worklist is `rg '@early-stop' src` | A COMPLETE reconstruction parked below 100% match. Re-derive the current residue from disassembly; causal wall prose and percentages become stale. |
-| `// @identity-TODO` | doctrine in `CLAUDE.md` | An unproven class/owner identity — leave it, never fabricate. State what was tried / what would prove it. |
+| `// @identity-TODO` | doctrine in `AGENTS.md` | An unproven class/owner identity — leave it, never fabricate. State what was tried / what would prove it. |
 | `// @interleaver <sym> …` | none (structured record) | A linker-pooled out-of-line member emitted INSIDE another unit's contribution range (see `docs/` interleaver notes). Records the placement proof at the site. |
 | `// @dead-code` | `gruntz verify dead-code`; `gruntz verify board` (identity metric) | A PROVEN-zero-ref function — no effective rel32 caller, no data-slot, no `.text` address-taking anywhere in the image (verify with `gruntz sema xref --tree`, which follows incremental-link thunks and their relocated references). Retail kept it (no `/OPT:REF`) but nothing reaches it; an unreferenced linker thunk does not make its final body live. This is reachability evidence, never permission to omit, stub, or stop reconstructing the body: dead functions have the same structural and byte-matching objective as every other function. The identity metric blanks the marked function, excluding an evidence-bounded placeholder name like a library carve-out. MUST state the zero-ref proof — an unproven `@dead-code` is a lie. |
 
@@ -30,7 +30,7 @@ Rules of use:
 - A marker LEADS its comment line (`^\s*// @name`); everything after it on the
   line is free prose.
 - `@early-stop` and `@identity-TODO` are the FUNCTION-STATE markers
-  (`CLAUDE.md`): a reconstructed method is either ~100% (unmarked) or
+  (`AGENTS.md`): a reconstructed method is either ~100% (unmarked) or
   `@early-stop`; an unproven identity is `@identity-TODO`. (`@stub`, with its
   `@confidence:`/`@source:` tags, died with its campaign — zero `@stub` sites
   remain in `src/`.)

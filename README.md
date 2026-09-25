@@ -117,7 +117,9 @@ nix/patches/                  vostok-delinker patches (ILT-thunk / folded-COMDAT
 flake.nix                     Nix dev environment (one shell: analysis + MSVC5/Wine)
 .clang-format                 the Rust-like house style (applied by clang-format)
 .githooks/pre-commit          auto-formats staged src/+include/ on commit
-CLAUDE.md / AGENTS.md         working notes for coding agents (same text)
+AGENTS.md                     the agent guide (CLAUDE.md is a symlink to it)
+.agents/skills/               agent skills: matcher, wall-identifier, permute
+                              (.claude/skills links here)
 build/           (gitignored) ALL generated/fetched state: base + target objs, the
                               synthetic PDB, claims + bindings.tsv, the clangd db,
                               the wine prefix, Ghidra exports, the compare report …

@@ -1,7 +1,7 @@
 """gruntz.verify.label_style - label-macro representation ratchet (fast).
 
 Every label the pipeline reads is a MACRO with one canonical spelling
-(CLAUDE.md): 8-digit lowercase addresses, unpadded lowercase hex sizes, one
+(AGENTS.md): 8-digit lowercase addresses, unpadded lowercase hex sizes, one
 line per invocation (every label consumer is a single-line scan). Retired
 comment-form label rows are FATAL; comment @markers come from the closed
 vocabulary (docs/comment-markers.md); a volatile `_$E<n>` ordinal is

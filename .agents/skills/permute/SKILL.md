@@ -12,11 +12,10 @@ source distortions.
 
 ## Establish the live population
 
-Work in `nix develop .#build`. Build first when current objects may be stale, then
-derive candidates rather than keeping a manual list:
+Work in `nix develop`. Derive candidates rather than keeping a manual list:
 
 ```sh
-gruntz build base compare
+gruntz build
 gruntz permute candidates --output /tmp/permute-candidates.json
 ```
 
@@ -79,13 +78,10 @@ ordered relocation identity all pass. A sub-100 improvement is a clue, not a
 commit criterion. Keep correct modeling changes even if unrelated current fuzzy
 moves, subject to the MAX gate.
 
-Follow `matcher`'s validation cadence: no test suites during matching, ordinary
-commits, or pushes. Before handoff, refresh compilation/comparison and inspect
-MAX and raw matching evidence. Run focused permuter tests and the full gated
-build only at the authorized PR squash-merge stage; report them as deferred
-until then. Consolidate a genuinely reusable compiler mechanism under the
-admission rules in `docs/patterns/README.md`; do not add campaign logs or
-per-function closure entries.
-Commit tooling, documentation/skill work, and reconstructed source changes in
-separate focused batches. See `docs/permuter.md` for command details and artifact
-contracts.
+Campaigns run no test suites (`AGENTS.md` "Tests"); run `gruntz.permute`
+tests only when you change the permuter itself.
+Consolidate a genuinely reusable compiler mechanism under the admission rules
+in `docs/patterns/README.md`; do not add campaign logs or per-function closure
+entries. Commit tooling, documentation/skill work, and reconstructed source
+changes in separate focused batches. See `docs/permuter.md` for command details
+and artifact contracts.

@@ -65,6 +65,8 @@ def _include_order():
         out.append(f"header missing prelude {rel}: {', '.join(w)}")
     for rel in unordered:
         out.append(f"include block out of canonical order: {rel}")
+    for edge in include_order.layering_violations():
+        out.append(f"library header includes a consumer: {edge}")
     return out
 
 

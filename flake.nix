@@ -417,7 +417,7 @@
           echo "[gruntz] tools      : vostok-delinker, objdiff(-cli), llvm-pdbutil; ghidra is optional" >&2
           echo "[gruntz] clang      : $GRUNTZ_CLANG (unwrapped; ghidra_metadata_generate/gen_labels)" >&2
           echo "[gruntz] runtime    : $GRUNTZ_RUNTIME (MSS32/SMACKW32 DLLs)" >&2
-          echo "[gruntz] cli        : 'gruntz <cmd>' (init/build/clangd/format/status/labels/structs/ghidra-refresh/todo)" >&2
+          echo "[gruntz] cli        : 'gruntz <cmd>' (build/match/link/play/verify/walls/sema/lineage/permute; 'gruntz --help')" >&2
           echo "[gruntz] shell      : ONE shell - 'nix develop' (== '.#build'); everything (analysis + build/init) is here" >&2
           ${nvimShimHook}
           # `gruntz init` is idempotent and Ghidra-free; run it on startup.

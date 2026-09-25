@@ -56,9 +56,8 @@ confident one-directional census before they were fixed:
     the two sides, and every key on that side shifts at once.
 
 A frame-based destination is dropped rather than compared: the two sides do not
-agree on frame offsets. That is walls.storescan's rule and the taint tracking
-is shared with it in spirit - a register that received a frame address is a
-frame base however it is spelled.
+agree on frame offsets. A register that received a frame address is a frame
+base however it is spelled.
 
 `--reads` runs the READ side of the same question, and it is the more
 productive half. A whole-object copy loads BOTH halves before anything is
@@ -87,7 +86,7 @@ from gruntz.walls import pairscan
 MEM = re.compile(r"^(?:(?:BYTE|WORD|DWORD|QWORD|XMMWORD) PTR )?\[([^\]]+)\]$")
 REG32 = {"eax", "ecx", "edx", "ebx", "esp", "ebp", "esi", "edi"}
 
-#: a register loaded with a FRAME ADDRESS - the storescan rule
+#: a register loaded with a FRAME ADDRESS
 FRAME_ADDR = re.compile(
     r"^(?:lea|mov)\s+(e[a-z][a-z]),"
     r"(?:esp|\[esp(?:\+e[a-z]{2}(?:\*\d)?)?(?:[+-]0x[0-9a-f]+)?\])$")

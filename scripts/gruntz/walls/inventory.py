@@ -11,7 +11,7 @@ The worklist is a JOIN of three read-only inputs and nothing else:
   * the Model (gruntz.model.resolve) - rva/unit/size/channel per name;
   * config/match_baseline.tsv - best_pct (historical MAX) + src_hash per rva.
 
-Campaign order (CLAUDE.md): ascending historical MAX - the lowest bank is
+Campaign order (AGENTS.md): ascending historical MAX - the lowest bank is
 the biggest structural question. cur < best is a REGRESSION flag, not a
 wall class; best == 100 with cur < 100 means the implementation already
 proved the body and the current dip is TU-state, not structure.
