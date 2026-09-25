@@ -4209,8 +4209,8 @@ class ReadmeFreshnessControls(unittest.TestCase):
     It is a pure function of the current report + the banked ledger, but it
     used to move only at `bank` (a deliberate manual act), so ordinary builds
     left it describing an older tree and readers quoted numbers that were no
-    longer true - three times in one session. `check` runs on every build and
-    now re-renders it write-if-changed; the ledger stays manual.
+    longer true - three times in one session. `check` (merge preparation)
+    re-renders it write-if-changed; the ledger stays manual.
     """
 
     def test_check_rewrites_a_stale_block(self):
@@ -4222,7 +4222,7 @@ class ReadmeFreshnessControls(unittest.TestCase):
         # the `(unmatched)` row, which stopped existing the day the last
         # unclaimed reconstruction target got modelled - a freshness control
         # must not assert a row that only appears while work is outstanding.
-        anchor = "Overall (vs full engine)"
+        anchor = "CUR / MAX / HIST"
         self.assertIn(anchor, before, "the block lost its headline line")
         try:
             rm.README.write_text(before.replace(anchor, anchor + "-STALE", 1))
