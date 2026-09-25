@@ -269,6 +269,12 @@ private:
     i32 ResolveTopY(CGameObject* t, i32 x, i32 y);
 
 public:
+    CDDrawWorkerHost* GetPlane(i32 index) {
+        return (index >= 0 && index < m_planes.GetSize())
+                   ? static_cast<CDDrawWorkerHost*>(m_planes[index])
+                   : NULL;
+    }
+
     LevelCoordRect m_viewportRect;
     CObArray m_array20;
     CObArray m_planes;

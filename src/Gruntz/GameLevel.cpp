@@ -453,9 +453,7 @@ void CGameLevel::SyncAfterMainIndex(CDDrawSurfacePair* visitor){DRAW_PLANES_AFTE
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x0015db30, 0xae)
 i32 CGameLevel::RemovePlane(i32 index) {
-    CDDrawWorkerHost* p = (index >= 0 && index < m_planes.GetSize())
-                              ? static_cast<CDDrawWorkerHost*>(m_planes[index])
-                              : NULL;
+    CDDrawWorkerHost* p = GetPlane(index);
     if (p == NULL) {
         return 0;
     }
@@ -464,9 +462,7 @@ i32 CGameLevel::RemovePlane(i32 index) {
     m_planes.RemoveAt(index, 1);
     if (wasMain) {
         i32 last = m_planes.GetSize() - 1;
-        CDDrawWorkerHost* lp = (last >= 0 && last < m_planes.GetSize())
-                                   ? static_cast<CDDrawWorkerHost*>(m_planes[last])
-                                   : NULL;
+        CDDrawWorkerHost* lp = GetPlane(last);
         if (lp != NULL) {
             RESET_MAIN_PLANE_SELECTION(i)
             m_mainIndex = last;
@@ -485,8 +481,7 @@ i32 CGameLevel::MovePlane(i32 from, i32 to) {
         if (from == to) {
             return 1;
         }
-        CDDrawWorkerHost* el =
-            (from < m_planes.GetSize()) ? static_cast<CDDrawWorkerHost*>(m_planes[from]) : NULL;
+        CDDrawWorkerHost* el = GetPlane(from);
         if (el != NULL) {
             m_planes.RemoveAt(from, 1);
             m_planes.InsertAt(to, static_cast<CObject*>(el), 1);
@@ -509,18 +504,14 @@ void CGameLevel::VisitVisible(CDDrawSurfacePair* visitor, CDDrawChildGroup* ctx)
 
     CObList* chain = &ctx->m_list;
 
-    if ((m_flags & 1) && chain != NULL
-        && (m_planes.GetSize() > 0 ? m_planes.GetData()[0] : NULL) != NULL) {
-        (static_cast<CDDrawWorkerHost*>((m_planes.GetSize() > 0 ? m_planes.GetData()[0] : NULL)))
-            ->Draw(visitor);
+    if ((m_flags & 1) && chain != NULL && GetPlane(0) != NULL) {
+        GetPlane(0)->Draw(visitor);
         POSITION pos = chain->GetHeadPosition();
 
         i32 i = 1;
         if (m_planes.GetSize() > i) {
             do {
-                CDDrawWorkerHost* p = (i >= 0 && i < m_planes.GetSize())
-                                          ? static_cast<CDDrawWorkerHost*>(m_planes.GetData()[i])
-                                          : NULL;
+                CDDrawWorkerHost* p = GetPlane(i);
                 i32 zBound = p->m_zCoord;
                 i32 blocked = 0;
                 while (pos != NULL && blocked == 0) {
@@ -534,10 +525,7 @@ void CGameLevel::VisitVisible(CDDrawSurfacePair* visitor, CDDrawChildGroup* ctx)
                     }
                 }
 
-                (i >= 0 && i < m_planes.GetSize()
-                     ? static_cast<CDDrawWorkerHost*>(m_planes.GetData()[i])
-                     : NULL)
-                    ->Draw(visitor);
+                GetPlane(i)->Draw(visitor);
                 ++i;
             } while (i < m_planes.GetSize());
         }
@@ -556,8 +544,7 @@ void CGameLevel::VisitVisible(CDDrawSurfacePair* visitor, CDDrawChildGroup* ctx)
 RVA(0x0015dde0, 0x5c)
 CDDrawWorkerHost* CGameLevel::FindPlaneByName(const char* name) {
     for (i32 i = 0; i < m_planes.GetSize(); i++) {
-        CDDrawWorkerHost* p =
-            (i >= 0 && i < m_planes.GetSize()) ? static_cast<CDDrawWorkerHost*>(m_planes[i]) : NULL;
+        CDDrawWorkerHost* p = GetPlane(i);
         if (stricmp(name, p->m_planeName) == 0) {
             return static_cast<CDDrawWorkerHost*>(p);
         }
