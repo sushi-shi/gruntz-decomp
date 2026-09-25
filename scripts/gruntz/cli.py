@@ -48,8 +48,21 @@ TOOLS = ("wine", "cl", "link", "rc", "delinker", "pdbutil", "objdiff",
          "objdump", "ghidra", "clangd", "rez")
 
 
+#: Query families where rc=1 answers "different", not "failed".
+QUERY_COMMANDS = {"sema", "walls", "lineage"}
+
+
 def main(argv: list[str] | None = None) -> int:
+    """Run one command and record it in build/gruntz_usage.{log,jsonl}."""
+    from gruntz.core.paths import BUILD
+    from gruntz.core.usage import run_logged
     argv = list(sys.argv[1:] if argv is None else argv)
+    failure_rc = 2 if argv and argv[0] in QUERY_COMMANDS else 1
+    return run_logged(_dispatch, argv, BUILD / "gruntz_usage.log",
+                      failure_rc=failure_rc)
+
+
+def _dispatch(argv: list[str]) -> int:
     if not argv or argv[0] in ("-h", "--help"):
         print(__doc__.strip())
         print(f"\ntools: {', '.join(TOOLS)}")
