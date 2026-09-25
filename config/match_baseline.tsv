@@ -4726,7 +4726,7 @@ wwdobjmgr	?FindSerialRefByObjectId@CDDrawChildGroup@@QAEPAVCWwdGameObject@@H@Z	1
 wwdobjmgr	?InsertSorted@CDDrawChildGroup@@QAEXPAUCGameObject@@H@Z	100.0000	100.0000	6	0e6b87f830d5	0x159e40	100.0000	
 wwdobjmgr	?InvalidateChildShadows@CDDrawChildGroup@@UAEXXZ	100.0000	100.0000	1	2fd5f729183a	0x159d90	100.0000	
 wwdobjmgr	?IsKindUnique@CDDrawChildGroup@@QAEHH@Z	100.0000	100.0000	2	f0844ca1fe19	0x15aa20	100.0000	
-wwdobjmgr	?LoadObjects@CDDrawChildGroup@@QAEHPAVCFileMemBase@@IW4LogicTypeId@@@Z	96.8849	96.8849	11	c47328cb541c	0x15ad30	96.8849	
+wwdobjmgr	?LoadObjects@CDDrawChildGroup@@QAEHPAVCFileMemBase@@IW4LogicTypeId@@@Z	97.1627	97.1627	12	1e63d32d991a	0x15ad30	97.1627	
 wwdobjmgr	?PruneList@CDDrawChildGroup@@QAEXXZ	100.0000	100.0000	5	57b47bfbef13	0x15aa90	100.0000	
 wwdobjmgr	?PruneOrphans@CDDrawChildGroup@@QAEHXZ	100.0000	100.0000	6	9d0a0e26297a	0x15b1d0	100.0000	
 wwdobjmgr	?RegisterObjectId@CDDrawChildGroup@@QAEXPAVCWwdGameObject@@@Z	100.0000	100.0000	4	8f0ed020762a	0x15aba0	100.0000	
