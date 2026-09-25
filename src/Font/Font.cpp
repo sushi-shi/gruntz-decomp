@@ -354,10 +354,11 @@ void FontRenderer::DrawWrapped(
         rc.top = rc.top + (rc.bottom - rc.top) / 2 - m.cy / 2;
     }
 
+    i32 y = rc.top;
     i32 x = rc.left;
 
     CString line;
-    while (rc.top < rc.bottom) {
+    while (y < rc.bottom) {
         i32 len = text.GetLength();
         if (len <= 0) {
             break;
@@ -371,19 +372,18 @@ void FontRenderer::DrawWrapped(
             }
         }
 
-        CSize e;
-        e = MeasureText(text);
-        if (e.cx + x <= rc.right && !nl) {
+        CSize size;
+        size = MeasureText(text);
+        if (size.cx + x <= rc.right && !nl) {
             line += text;
             text = "";
-            if (rc.top + lineAdvance <= rc.bottom) {
+            if (y + lineAdvance <= rc.bottom) {
                 if (hcenter) {
                     CSize le = MeasureText(line);
-                    i32 cx = rc.left + rc.Width() / 2 - le.cx / 2;
-                    DrawLine(line, surf, cx, rc.top, z);
-                    x = cx;
+                    DrawLine(line, surf, rc.left + rc.Width() / 2 - le.cx / 2, y, z);
+                    x = rc.left + rc.Width() / 2 - le.cx;
                 } else {
-                    DrawLine(line, surf, rc.left, rc.top, z);
+                    DrawLine(line, surf, rc.left, y, z);
                 }
             }
             line = "";
@@ -407,50 +407,46 @@ void FontRenderer::DrawWrapped(
             } else {
                 head = text.Left(i + 1);
             }
-            CSize he;
-            he = MeasureText(head);
-            i32 headW = he.cx;
-            text = text.Right(len - i - 1);
+            size = MeasureText(head);
+            i32 headW = size.cx;
+            text = text.Right(text.GetLength() - i - 1);
             if (headW + x < rc.right) {
                 line += head;
                 x = headW + x;
             } else if (headW < rc.right - rc.left) {
                 if (hcenter) {
                     CSize le = MeasureText(line);
-                    i32 cx = rc.left + rc.Width() / 2 - le.cx / 2;
-                    DrawLine(line, surf, cx, rc.top, z);
+                    DrawLine(line, surf, rc.left + rc.Width() / 2 - le.cx / 2, y, z);
                 } else {
-                    DrawLine(line, surf, rc.left, rc.top, z);
+                    DrawLine(line, surf, rc.left, y, z);
                 }
-                rc.top = rc.top + lineAdvance;
+                y = y + lineAdvance;
                 x = rc.left;
                 line = "";
-                if (lineAdvance + rc.top < rc.bottom) {
+                if (lineAdvance + y < rc.bottom) {
                     line += head;
-                    x = headW + rc.left;
+                    x += headW;
                 }
             } else {
 
                 while (head.GetLength() > 0) {
-                    if (rc.top >= rc.bottom) {
+                    if (y >= rc.bottom) {
                         break;
                     }
-                    CSize ce;
-                    ce = MeasureText(CString(head.GetAt(0), 1));
-                    i32 chW = ce.cx;
+                    size = MeasureText(CString(head.GetAt(0), 1));
+                    i32 chW = size.cx;
                     if (chW + x > rc.right) {
+                        y = y + lineAdvance;
+                        x = rc.left;
                         if (hcenter) {
                             CSize le = MeasureText(line);
-                            i32 cx = rc.left + rc.Width() / 2 - le.cx / 2;
-                            DrawLine(line, surf, cx, rc.top, z);
+                            DrawLine(line, surf, rc.left + rc.Width() / 2 - le.cx / 2, y, z);
                         } else {
-                            DrawLine(line, surf, rc.left, rc.top, z);
+                            DrawLine(line, surf, x, y, z);
                         }
-                        rc.top = rc.top + lineAdvance;
-                        x = rc.left;
                         line = "";
                     }
-                    if (lineAdvance + rc.top >= rc.bottom) {
+                    if (lineAdvance + y >= rc.bottom) {
                         break;
                     }
                     line += head[0];
@@ -460,24 +456,22 @@ void FontRenderer::DrawWrapped(
             if (breakNL) {
                 if (hcenter) {
                     CSize le = MeasureText(line);
-                    i32 cx = rc.left + rc.Width() / 2 - le.cx / 2;
-                    DrawLine(line, surf, cx, rc.top, z);
+                    DrawLine(line, surf, rc.left + rc.Width() / 2 - le.cx / 2, y, z);
                 } else {
-                    DrawLine(line, surf, rc.left, rc.top, z);
+                    DrawLine(line, surf, rc.left, y, z);
                 }
-                rc.top = rc.top + lineAdvance;
+                y = y + lineAdvance;
                 x = rc.left;
                 line = "";
             }
         }
     }
-    if (rc.top + lineAdvance <= rc.bottom && line.GetLength() > 0) {
+    if (y + lineAdvance <= rc.bottom && line.GetLength() > 0) {
         if (hcenter) {
             CSize le = MeasureText(line);
-            i32 cx = rc.left + rc.Width() / 2 - le.cx / 2;
-            DrawLine(line, surf, cx, rc.top, z);
+            DrawLine(line, surf, rc.left + rc.Width() / 2 - le.cx / 2, y, z);
         } else {
-            DrawLine(line, surf, rc.left, rc.top, z);
+            DrawLine(line, surf, rc.left, y, z);
         }
     }
 }

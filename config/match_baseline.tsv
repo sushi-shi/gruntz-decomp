@@ -108,7 +108,7 @@ fadermgr	13	13
 feccrypt	11	10
 fileimage	19	15
 filestream	5	5
-font	22	20
+font	22	21
 fontconfig	15	10
 fonts	2	2
 fortressflag	26	23
@@ -1727,7 +1727,7 @@ font	?AllocateMemory@Font@@QAEHH@Z	100.0000	100.0000	5	093af1ad7385	0x179720	100
 font	?DrawGlyphRun@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	94.4653	94.4653	13	d8c763c1a451	0x179e70	94.4792	
 font	?DrawLine@FontRenderer@@QAEXVCString@@PAVCDDSurface@@HHH@Z	100.0000	100.0000	3	22e537d487b9	0x179c30	100.0000	
 font	?DrawLineClipped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	100.0000	100.0000	1	86e8144fd715	0x179d10	100.0000	
-font	?DrawWrapped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	76.8479	76.8479	4	913e57b201f8	0x17a460	76.8479	
+font	?DrawWrapped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@VCRect@@HHH@Z	100.0000	100.0000	5	411e923ffc49	0x17a460	100.0000	
 font	?FreeMemory@Font@@QAEXXZ	100.0000	100.0000	3	33e36809b370	0x1797b0	100.0000	
 font	?GetAt@CString@@QBEDH@Z	100.0000	100.0000	1	cpp:8c44cb1c6fc0	0x17b4f0	100.0000	
 font	?GetGlyph@Font@@QAEAAUGlyph@@AAU2@E@Z	100.0000	100.0000	1	aa81516dc6ec	0x179b80	100.0000	
