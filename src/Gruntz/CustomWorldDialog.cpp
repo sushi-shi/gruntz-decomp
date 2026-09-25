@@ -353,7 +353,6 @@ CString BuildCustomWwdPath(CString name) {
     return name;
 }
 
-// @early-stop
 RVA(0x0003bb50, 0x128)
 CString WwdFile::GetMapBaseName(CString path) {
     CString result = path;
@@ -366,19 +365,21 @@ CString WwdFile::GetMapBaseName(CString path) {
     }
     strcpy(g_mapNameBuf, path);
     i32 blen = strlen(g_mapNameBuf);
-    if (blen >= 5) {
-        g_mapNameBuf[blen - 4] = 0;
-        i32 blen2 = strlen(g_mapNameBuf);
-        if (blen2 >= 1) {
-            i32 i = blen2 - 1;
-            while (i >= 0) {
-                if (g_mapNameBuf[i] == '\\') {
-                    break;
-                }
-                i--;
-            }
-            result = &g_mapNameBuf[i + 1];
-        }
+    if (blen < 5) {
+        return result;
     }
+    g_mapNameBuf[blen - 4] = 0;
+    i32 blen2 = strlen(g_mapNameBuf);
+    if (blen2 < 1) {
+        return result;
+    }
+    i32 i = blen2 - 1;
+    while (i >= 0) {
+        if (g_mapNameBuf[i] == '\\') {
+            break;
+        }
+        i--;
+    }
+    result = &g_mapNameBuf[i + 1];
     return result;
 }
