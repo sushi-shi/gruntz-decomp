@@ -1312,8 +1312,13 @@ bool CButeMgr::Save() {
     m_pSaveData->clear();
 
     if (m_bCrypt) {
+#ifdef __clang__
+        // clang cannot bind the temporary below to ostream&; cl 5.0 accepts it.
         ofstream output(m_sAttributeFilename, ios::binary);
         m_cryptMgr.Encrypt(*m_pSaveData, output);
+#else
+        m_cryptMgr.Encrypt(*m_pSaveData, ofstream(m_sAttributeFilename, ios::binary));
+#endif
     }
 
     delete[] source.str();
