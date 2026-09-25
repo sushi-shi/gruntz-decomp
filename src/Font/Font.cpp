@@ -250,18 +250,18 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
     }
 
     CPoint dest(x, y);
+    i32 acc = 0;
     i32 red = GetRValue(m_color);
     i32 green = GetGValue(m_color);
     i32 blue = GetBValue(m_color);
-    i32 rightPartial = 0;
-    i32 firstCol = 0;
     u16 packedColor =
         (static_cast<u8>((static_cast<u8>(red) >> static_cast<u8>(g_rDown))) << g_rUp)
         | (static_cast<u8>((static_cast<u8>(green) >> static_cast<u8>(g_gDown))) << g_gUp)
         | (static_cast<u8>(blue) >> static_cast<u8>(g_bDown));
 
+    i32 rightPartial = 0;
+    i32 firstCol = 0;
     i32 startChar;
-    i32 acc = 0;
     if (rc.left != 0) {
         i32 prev = 0;
         startChar = 0;
@@ -299,6 +299,8 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
     for (i32 ci = startChar; ci < endChar; ci++) {
         CSize g;
         m = m_font->GetGlyph(g, text[ci]);
+        i32 row;
+        i32 col;
         i32 clippedW;
         if (ci == endChar - 1) {
             clippedW = m.cx - rightPartial;
@@ -307,9 +309,9 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
         }
         u8* glyphBuf = m_font->GetSurface(text[ci])[0];
         if (blend) {
-            for (i32 row = rc.top; row < rc.bottom; row++) {
+            for (row = rc.top; row < rc.bottom; row++) {
                 u16* dst = bits + ((row - rc.top + dest.y) * pitch) / 2 + dest.x;
-                for (i32 col = firstCol; col < clippedW; col++) {
+                for (col = firstCol; col < clippedW; col++) {
                     u8 cover = glyphBuf[row * m.cx + col];
 
                     if (cover == 0) {
@@ -322,9 +324,9 @@ void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x,
                 }
             }
         } else {
-            for (i32 row = rc.top; row < rc.bottom; row++) {
+            for (row = rc.top; row < rc.bottom; row++) {
                 u16* dst = bits + ((row - rc.top + dest.y) * pitch) / 2 + dest.x;
-                for (i32 col = firstCol; col < clippedW; col++) {
+                for (col = firstCol; col < clippedW; col++) {
                     if (glyphBuf[row * m.cx + col] != 0) {
                         *dst = packedColor;
                     }
