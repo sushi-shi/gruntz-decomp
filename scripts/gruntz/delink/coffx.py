@@ -89,17 +89,27 @@ class Obj:
             yield i, value, secnum
             i += 1 + naux
 
+    def _section_index(self) -> dict[int, list[tuple[int, str, int]]]:
+        """{secnum: sorted [(offset, name, storage_class)]} for class 2/3
+        symbols, built in one pass: per-section queries run once per section
+        of every object, and rescanning the symbol table each time was
+        quadratic."""
+        index = getattr(self, "_by_section", None)
+        if index is None:
+            index = {}
+            for idx, value, sn in self.iter_symbols():
+                scl = self.buf[self.symptr + idx * 18 + 16]
+                if scl in (2, 3):
+                    index.setdefault(sn, []).append((value, self.sym_name(idx), scl))
+            for rows in index.values():
+                rows.sort()
+            self._by_section = index
+        return index
+
     def defined_symbols(self, secnum: int):
         """[(offset, name)] of the class-EXTERNAL symbols defined in one section."""
-        out = []
-        for idx, value, sn in self.iter_symbols():
-            if sn != secnum:
-                continue
-            scl = struct.unpack_from("<B", self.buf, self.symptr + idx * 18 + 16)[0]
-            if scl == 2:                      # IMAGE_SYM_CLASS_EXTERNAL
-                out.append((value, self.sym_name(idx)))
-        out.sort()
-        return out
+        return [(value, name) for value, name, scl in
+                self._section_index().get(secnum, ()) if scl == 2]
 
     def section_members(self, secnum: int):
         """[(offset, name, storage_class)] of EVERY datum defined in one section.
@@ -108,19 +118,9 @@ class Obj:
         function-local `static` a file-scope `$S<id>` symbol with that class.
         The section-definition symbol itself is not a datum and is dropped.
         """
-        out = []
-        for idx, value, sn in self.iter_symbols():
-            if sn != secnum:
-                continue
-            scl = struct.unpack_from("<B", self.buf, self.symptr + idx * 18 + 16)[0]
-            if scl not in (2, 3):
-                continue
-            name = self.sym_name(idx)
-            if name == self.section_table[secnum - 1]["name"]:
-                continue
-            out.append((value, name, scl))
-        out.sort()
-        return out
+        own = self.section_table[secnum - 1]["name"]
+        return [row for row in self._section_index().get(secnum, ())
+                if row[1] != own]
 
     def section_payload(self, secnum: int) -> bytes:
         """The raw bytes of one section (b"" when it has none, e.g. .bss)."""

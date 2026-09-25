@@ -31,7 +31,8 @@ source correctness. Each island is a deterministic compiler-state sample crossed
 with class-appropriate source shapes. The batch retains the best representative
 of the M highest-scoring distinct normalized target states. An agent compares
 those states with retail, identifies a repeated source-level mechanism, makes one
-defensible source A/B, rebuilds, and starts another round. The live inventory is
+defensible source A/B, checks it with `gruntz match <unit>`, and starts another
+round. The live inventory is
 re-derived for every round; there is no hand-kept queue.
 
 `state` leaves the target body unchanged and inserts deterministic parser-visible
@@ -95,6 +96,6 @@ candidate for inspection, but it cannot satisfy the exact-closure gate.
 A source-only exact candidate is written as `exact.cpp` for review. A candidate
 containing disposable TU state is written as `exact-disposable.cpp`; never apply
 its probes. If unchanged source reaches exact, use `--record-max` with `state`
-only after auditing the retained manifest, then rebuild cleanly. Authentic
-source changes still require retail evidence, a full build, and ordinary focused
-commit discipline.
+only after auditing the retained manifest; the source stays unchanged. Authentic
+source changes still require retail evidence and ordinary focused commit
+discipline; the gates run with `gruntz build verify` at merge preparation.

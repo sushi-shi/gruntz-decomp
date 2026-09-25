@@ -13,8 +13,8 @@ targets and report the rest as not done.
    `permute` skill only for a diagnosed register/schedule residue.
 2. Work only in the worktree you were given and `export GRUNTZ_DIR=$PWD` before
    any `gruntz` command, so builds use that worktree's `build/`.
-3. Run no test suites for matching work. `gruntz build` after an edit is the
-   whole verification; do not rebuild again just to double-check.
+3. Run no test suites and no gates. Iterate with `gruntz match <unit>` (only
+   that TU); run `gruntz build` once when a change spans units.
 4. Commit only your focused source, pattern-doc, and `config/match_baseline.tsv`
    changes when the spawn prompt asks you to commit; otherwise leave the tree
    for the caller to integrate.

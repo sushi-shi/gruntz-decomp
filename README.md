@@ -163,15 +163,18 @@ viewer is useful.
 **3. Run the matching loop.**
 
 ```sh
-gruntz build         # cl → labels → model → delink → compare → verify check
-gruntz match         # the same build, then the summary for the units that CHANGED
+gruntz match fader   # fast loop: compile, label, delink, compare ONE unit (~5s)
+gruntz build         # everything: cl → labels → model → delink → compare
+gruntz build verify  # + the MAX gate and gate tiers, when preparing a merge
 ```
 
 This compiles the `src/` "base" objects (MSVC 5.0 under Wine), extracts the source
 labels, resolves the Model, delinks the retail EXE into "target" objects, and
-objdiffs them. The report lands at **`build/objdiff/compare-new/report.json`**. The
-default target ends in `verify check` — the MAX gate plus the `fast` and `normal`
-tiers. The heavier tiers are opt-in:
+objdiffs them. The report lands at **`build/objdiff/compare-new/report.json`**.
+`gruntz match <unit|source>` rebuilds only the named units, even after an edit to
+a header other units include; `gruntz build` refreshes the rest. Gates are not
+part of either: `gruntz build verify` runs the MAX gate plus the `fast` and
+`normal` tiers before a merge. The heavier tiers are opt-in:
 
 ```sh
 gruntz verify check --tier full   # binary-evidence audits (layouts, relocs, vtables,

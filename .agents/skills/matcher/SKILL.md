@@ -21,7 +21,8 @@ asks. A brief note of target, hypothesis, and next compiler control is enough.
 - `hist_pct` is the objective. `best_pct` belongs to the current source
   fingerprint and resets on edit. Current and aggregate fuzzy are navigation.
 - Do not revisit a function whose historical MAX is 100%. Do not investigate an
-  unrelated current-score dip while the MAX gate is green.
+  unrelated current-score dip; the MAX gate decides regressions at merge
+  preparation (`gruntz build verify`).
 - Before inventing a spelling, run `gruntz walls priors <rva>`: many rows
   already carry a written verdict in the source comment or review ledger.
 
@@ -66,7 +67,7 @@ produced exact closures; scan it so the search is not limited to the first
 familiar explanation. `docs/patterns/INDEX.md` lists compiler mechanisms.
 
 For each candidate, name the source change and the expected emitted delta,
-build (`gruntz build`), and compare from the first
+run `gruntz match <unit>`, and compare from the first
 real divergence: instructions, constants, call/CFG structure, and ordered
 relocations. Fuzzy alone is insufficient. A single dip does not reject a
 sourced or structurally convergent base, but confirm the
@@ -128,8 +129,8 @@ Details and proven exceptions: the `wall-identifier` skill.
   open in the handoff.
 
 Commit the focused source, reusable pattern docs, and baseline rows once
-`gruntz build` is green. Matching work runs no test suites (`AGENTS.md`
-"Tests").
+`gruntz build` is clean; `gruntz build verify` runs the gates at merge
+preparation. Matching work runs no test suites (`AGENTS.md` "Tests").
 
 Report the historical-MAX change, the structural correction, its evidence and
 compiler controls, the referent verdict, and any remaining wall.
