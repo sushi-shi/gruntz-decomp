@@ -58,6 +58,11 @@ source layer the original developers wrote around each collection.
   AxisProbe). `CPlay`'s raw tile-token lookups (`GetAt(tcidx)`, unmasked)
   stay raw.
 
+- `CGameLevel::m_planes`/`m_imageSets`: `RELEASE_LEVEL_CHILDREN` is now only
+  the delete-and-empty of both arrays and also covers `Unload`, which clears
+  the viewport between it and the main-plane reset. `GetPlane` stays the
+  checked accessor; the unchecked plane walks stay raw.
+
 ## Open
 
 For each collection, decide which of these the source was:

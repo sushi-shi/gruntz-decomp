@@ -337,8 +337,6 @@ public:
             delete child;                                                                          \
         }                                                                                          \
     }                                                                                              \
-    m_imageSets.SetSize(0, -1);                                                                    \
-    m_mainPlane = NULL;                                                                            \
-    m_mainIndex = -1
+    m_imageSets.SetSize(0, -1)
 
 #endif // SRC_GRUNTZ_GAMELEVEL_H
