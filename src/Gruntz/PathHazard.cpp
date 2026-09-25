@@ -360,7 +360,7 @@ i32 CPathHazard::BeginLeg() {
 
     double dx = static_cast<double>(m_wpX) - static_cast<double>(obj->m_screenX);
     double dy = static_cast<double>(m_wpY) - static_cast<double>(obj->m_screenY);
-    double len = VECTOR2_MAG_COMPONENTS(dx, dy);
+    double len = sqrt(SQR(dx) + SQR(dy));
     double ux = dx / len;
     double uy = dy / len;
 
