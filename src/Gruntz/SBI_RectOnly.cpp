@@ -3838,13 +3838,14 @@ i32 CStatusBarMgr::StartChipMachineCycle() {
     return 1;
 }
 
-// @early-stop
 RVA(0x00108410, 0x8e)
 i32 CStatusBarMgr::QueuePickupReward(i32 pickupValue, i32 score) {
-    Coord* node = g_coordPool.Pop();
-    if (node != NULL) {
-        node->m_x = pickupValue;
-        node->m_y = score;
+    Coord reward = {pickupValue, score};
+    Coord* node = NULL;
+    if (g_coordPool.m_freeHead->m_next != NULL) {
+        node = &g_coordPool.m_freeHead->m_value;
+        *node = reward;
+        g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
     }
     i32 n = m_rewardQueue.GetSize();
     i32 i = 0;
