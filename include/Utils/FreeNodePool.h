@@ -61,11 +61,10 @@ public:
 };
 
 template<class T> inline T* FreeNodePool<T>::Pop() {
-    Node* node = m_freeHead;
     T* result = NULL;
-    if (node->m_next != NULL) {
-        result = &node->m_value;
-        m_freeHead = node->m_next;
+    if (m_freeHead->m_next != NULL) {
+        result = &m_freeHead->m_value;
+        m_freeHead = m_freeHead->m_next;
     }
     return result;
 }
