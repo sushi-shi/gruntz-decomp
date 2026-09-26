@@ -253,8 +253,6 @@ i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
         for (i32 c = 0; c < m_cols; c++) {
             i32 x = c * cellW;
             i32 y = r * cellH;
-            elem.m_reserved20 = 0;
-            elem.m_scale = 1.0f;
             CRect dispersedRect(0, 0, cellW, cellH);
             float v =
                 static_cast<float>(sqrt(static_cast<double>(SQR(halfW - x) + SQR(halfH - y))));
@@ -281,6 +279,8 @@ i32 CFaderMesh::ApplyInit(CFaderConfig* descOpaque) {
                 elem.m_startRect = dispersedRect;
                 elem.m_endRect = assembledRect;
             }
+            elem.m_reserved20 = 0;
+            elem.m_scale = 1.0f;
 
             m_meshBuf.Add(elem);
         }
