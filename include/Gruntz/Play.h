@@ -5,7 +5,6 @@
 
 #include <Mfc.h>
 
-#include <Clock64.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/ClockInterval.h>
 #include <Gruntz/ColorTint.h>

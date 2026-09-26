@@ -5,7 +5,6 @@
 
 #include <Mfc.h>
 
-#include <Clock64.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Enums.h>
 #include <Gruntz/ActReg.h>
