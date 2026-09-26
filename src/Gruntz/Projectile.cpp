@@ -539,9 +539,11 @@ void CBoomerang::AdvanceMotion() {
     double s;
     double c;
     if (m_launched == false && m_phase > g_boomerangHalfTurnRadians) {
-        SET_SCREEN_POS(m_object, m_targetPxX, m_targetPxY);
+        m_object->m_screenX = m_targetPxX;
+        m_object->m_screenY = m_targetPxY;
         if (m_shadow != NULL) {
-            SET_SCREEN_POS(m_shadow, m_targetPxX, m_targetPxY);
+            m_shadow->m_screenX = m_targetPxX;
+            m_shadow->m_screenY = m_targetPxY;
         }
         m_launched = true;
     } else if (m_phase > g_boomerangFullTurnRadians && m_launched != false) {
@@ -569,9 +571,11 @@ void CBoomerang::AdvanceMotion() {
     m_posX = m_originX + m_posX;
     m_posY = m_originY + m_posY;
     m_phase = phaseDelta + m_phase;
-    SET_SCREEN_POS(m_object, static_cast<i32>(m_posX), static_cast<i32>(m_posY));
+    m_object->m_screenX = static_cast<i32>(m_posX);
+    m_object->m_screenY = static_cast<i32>(m_posY);
     if (m_shadow != NULL) {
-        SET_SCREEN_POS(m_shadow, static_cast<i32>(m_posX), static_cast<i32>(m_posY));
+        m_shadow->m_screenX = static_cast<i32>(m_posX);
+        m_shadow->m_screenY = static_cast<i32>(m_posY);
     }
 }
 
