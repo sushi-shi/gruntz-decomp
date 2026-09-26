@@ -222,8 +222,8 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
                 if (tm->m_recList.GetCount() != 1) {
                     focus = NULL;
                 } else {
-                    Coord rec = *tm->HeadRec();
-                    focus = tm->m_units[rec.m_x * TM_UNITS_PER_PLAYER + rec.m_y];
+                    Coord* rec = tm->HeadRec();
+                    focus = tm->m_units[rec->m_x * TM_UNITS_PER_PLAYER + rec->m_y];
                 }
                 if (this == focus && m_playerIndex == g_curPlayer) {
                     onScreen = 1;
