@@ -9,12 +9,13 @@ rva	unit	function	lost_max	cur
 0x031610	battlezunitstep	?Step@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	85.5000	78.4388
 0x14b770	ddrawshadeblit	?BlitShadedMirrored@CDDrawShadeBlit@@QAEXPAUtagRECT@@PAVCDDSurface@@0H@Z	77.4881	77.0728
 0x14c9f0	ddrawshadeblit	?ConvertRow@CDDrawShadeBlit@@QAEXPAE0H@Z	82.0433	80.9266
-0x14d5e0	ddrawshadeblit	?ConvertRowDoubleFwd@CDDrawShadeBlit@@QAEXPAE0HH@Z	72.0353	70.7115
-0x14cfc0	ddrawshadeblit	?ConvertRowFlip@CDDrawShadeBlit@@QAEXPAE0H@Z	77.1637	74.3058
+0x14d950	ddrawshadeblit	?ConvertRowDouble@CDDrawShadeBlit@@QAEXPAE0HH@Z	77.0518	72.0671
+0x14d5e0	ddrawshadeblit	?ConvertRowDoubleFwd@CDDrawShadeBlit@@QAEXPAE0HH@Z	72.0353	70.6314
+0x14cfc0	ddrawshadeblit	?ConvertRowFlip@CDDrawShadeBlit@@QAEXPAE0H@Z	77.1637	73.8327
 0x140420	ddsurface	?Blit816@CDDSurface@@QAEHPAEPAUtagPALETTEENTRY@@W4RasterRowOrder@@@Z	92.5259	85.9185
 0x13f460	ddsurface	?ShadeRect@CDDSurface@@QAEHHPAUtagRECT@@@Z	84.7773	78.1182
 0x0c68b0	droppedobject	??0CDroppedObject@@QAE@PAUCGameObject@@@Z	95.1716	94.7239
-0x180640	faderlight	?RenderFrame@CFaderLight@@UAEXH@Z	95.0099	94.9913
+0x180640	faderlight	?RenderFrame@CFaderLight@@UAEXH@Z	95.6062	93.3553
 0x17b5f0	feccrypt	?ReadArchive@CFecFile@@QAEHPBD@Z	86.2571	86.0114
 0x045d30	fortressflag	??0CFortressFlag@@QAE@PAUCGameObject@@@Z	97.0000	94.2786
 0x04c170	grunt	?StepGruntMovement@CGrunt@@QAEHXZ	74.0606	73.7003
@@ -35,6 +36,7 @@ rva	unit	function	lost_max	cur
 0x0cbcc0	play	?OnKeyDown@CPlay@@UAEHHH@Z	91.7547	91.3432
 0x0cdb10	play	?OnLButtonDown@CPlay@@UAEHHHH@Z	89.6613	89.4993
 0x0b0140	rollingball	?Update@CRollingBall@@QAEHXZ	89.6784	89.6660
+0x14eef0	shadetablecache	?GreyTable@CShadeTableCache@@QAEPAUCShadeTable@@XZ	97.5379	81.0985
 0x0b1af0	spotlight	?Tick@CSpotLight@@QAEHXZ	84.2097	83.2984
 0x075e90	terraintileloader	?LoadTileArrivalFx@CTriggerMgr@@QAEHHHHHW4PickupType@@W4WwdAniDrawValue@@@Z	84.1791	83.9946
 0x07cf40	triggermgr	?CenterOnGroup@CTriggerMgr@@QAEHH@Z	98.8053	93.6726

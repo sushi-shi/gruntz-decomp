@@ -1170,7 +1170,7 @@ RVA(0x0014c9f0, 0x5d0)
 void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
     switch (m_drawType) {
         case SHADE_DST_BY_SRC: {
-            u8* pal = m_palDescr->m_data;
+            u8* pal = m_palDescr->GetData();
             memcpy(g_scratch, dst, count);
             u8* sc = g_scratch;
             while (count-- > 0) {
@@ -1286,7 +1286,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
             break;
         }
         case SHADE_DST_BY_LEVEL: {
-            u8* base = m_palDescr->m_data;
+            u8* base = m_palDescr->GetData();
             memcpy(g_scratch, dst, count);
             u8* sc = g_scratch;
             while (count-- > 0) {
@@ -1295,7 +1295,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
             break;
         }
         case SHADE_SRC_BY_LEVEL: {
-            u8* base = m_palDescr->m_data;
+            u8* base = m_palDescr->GetData();
             while (count-- > 0) {
                 *dst++ = base[(*src++ << PALETTE_INDEX_BITS) + m_light];
             }
@@ -1308,7 +1308,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
             break;
         }
         case SHADE_LERP_LEVEL: {
-            u8* pal = m_palDescr->m_data;
+            u8* pal = m_palDescr->GetData();
             memcpy(g_scratch, dst, count);
             u8* sc = g_scratch;
             while (count-- > 0) {
@@ -1325,7 +1325,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
 
 RVA(0x0014cfc0, 0x620)
 void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
-    u8* base = m_palDescr ? m_palDescr->m_data : src;
+    u8* base = m_palDescr ? m_palDescr->GetData() : src;
     switch (m_drawType) {
         case SHADE_DST_BY_SRC: {
             memcpy(g_scratch, dst - count + 1, count);
@@ -1493,7 +1493,7 @@ RVA(0x0014d5e0, 0x370)
 void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDelta) {
     switch (m_drawType) {
         case SHADE_DST_BY_SRC: {
-            u8* base = m_palDescr->m_data;
+            u8* base = m_palDescr->GetData();
             memcpy(g_scratch, dst, count);
             u8* sc = g_scratch;
             while (count-- > 0) {
@@ -1506,7 +1506,7 @@ void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDe
             break;
         }
         case SHADE_DST_BY_LEVEL: {
-            u8* base = m_palDescr->m_data;
+            u8* base = m_palDescr->GetData();
             memcpy(g_scratch, dst, count);
             u8* sc = g_scratch;
             while (count-- > 0) {
@@ -1586,7 +1586,7 @@ RVA(0x0014d950, 0x3a0)
 void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta) {
     switch (m_drawType) {
         case SHADE_DST_BY_SRC: {
-            u8* base = m_palDescr->m_data;
+            u8* base = m_palDescr->GetData();
             memcpy(g_scratch, dst - count + 1, count);
             u8* sc = &g_scratch[count - 1];
             while (count-- > 0) {
@@ -1599,7 +1599,7 @@ void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta
             break;
         }
         case SHADE_DST_BY_LEVEL: {
-            u8* base = m_palDescr->m_data;
+            u8* base = m_palDescr->GetData();
             memcpy(g_scratch, dst - count + 1, count);
             u8* sc = &g_scratch[count - 1];
             while (count-- > 0) {

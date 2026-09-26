@@ -82,7 +82,7 @@ void CFaderLight::RenderFrame(i32 frame) {
     i32 bpp = m_targetSurface->m_bytesPerPixel;
     u8* lut = NULL;
     if (m_table != NULL) {
-        lut = m_table->m_data;
+        lut = m_table->GetData();
     }
     if (m_clearMode != false) {
         u8* ovlBits;

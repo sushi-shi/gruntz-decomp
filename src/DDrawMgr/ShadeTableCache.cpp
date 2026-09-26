@@ -376,7 +376,7 @@ CShadeTable* CShadeTableCache::GreyTable() {
 
     m_arr.Add(t);
     if (PIXEL_FORMAT_IS_RGB555) {
-        u16* out = Pix16(t->m_data);
+        u16* out = t->Lut16();
         for (i32 v = 0; v < PIXEL16_VALUE_COUNT; v++) {
             u8 r = static_cast<u8>(v >> RGB555_RED_TO_4_SHIFT);
             u8 g = static_cast<u8>((v >> RGB555_GREEN_TO_4_SHIFT) & PIXEL_NIBBLE_MASK);
@@ -388,7 +388,7 @@ CShadeTable* CShadeTableCache::GreyTable() {
             );
         }
     } else {
-        u16* out = Pix16(t->m_data);
+        u16* out = t->Lut16();
         for (i32 v = 0; v < PIXEL16_VALUE_COUNT; v++) {
             u8 r = static_cast<u8>(v >> RGB565_RED_TO_4_SHIFT);
             u8 g = static_cast<u8>((v >> RGB565_GREEN_TO_4_SHIFT) & PIXEL_NIBBLE_MASK);
@@ -417,7 +417,7 @@ CShadeTable* CShadeTableCache::AddTable(float scale) {
     }
 
     m_arr.Add(t);
-    u16* out = Pix16(t->m_data);
+    u16* out = t->Lut16();
 
     for (i32 v = 0; v < PALETTE_ENTRY_COUNT; v += PIXEL_NIBBLE_VALUE_COUNT) {
         i32 r = PIXEL_NIBBLE_MIDPOINT;
@@ -465,7 +465,7 @@ CShadeTable* CShadeTableCache::SubTable(i32 color) {
     }
 
     m_arr.Add(t);
-    u16* out = Pix16(t->m_data);
+    u16* out = t->Lut16();
     i32 subb = 0;
     i32 subg = 0;
     i32 subr = 0;
@@ -513,7 +513,7 @@ CShadeTable* CShadeTableCache::AlphaTable(PALETTEENTRY* pal) {
     }
 
     m_arr.Add(t);
-    u16* out = Pix16(t->m_data);
+    u16* out = t->Lut16();
     PALETTEENTRY* p = pal;
     for (i32 i = PALETTE_ENTRY_COUNT; i != 0; i--) {
         u16 v = static_cast<u16>(
