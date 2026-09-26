@@ -1270,7 +1270,6 @@ bool CButeMgr::TagList() {
     return true;
 }
 
-// @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00171640, 0x3f2)
@@ -1295,6 +1294,7 @@ bool CButeMgr::Save() {
     if (m_bCrypt) {
         m_cryptMgr.Decrypt(input, source);
         m_pSaveData = new iostream(new strstreambuf(length));
+        m_pSaveData->precision(100);
     } else {
         while (!input.eof()) {
             input.read(block, sizeof(block));
@@ -1302,8 +1302,8 @@ bool CButeMgr::Save() {
         }
         input.close();
         m_pSaveData = new fstream(m_sAttributeFilename, ios::in | ios::out | ios::binary);
+        m_pSaveData->precision(100);
     }
-    m_pSaveData->precision(100);
 
     source.clear();
     m_pData = &source;
