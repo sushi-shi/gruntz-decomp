@@ -83,6 +83,17 @@ RVA_COMPGEN(0x00011d00, 0x44, ??1CInGameIcon@@UAE@XZ)
 RVA_COMPGEN(0x00011d90, 0x1e, ??_GCInGameText@@UAEPAXI@Z)
 RVA_COMPGEN(0x00011dc0, 0x44, ??1CInGameText@@UAE@XZ)
 
+static inline void SetCellObject(CMapMgr* grid, u32 x, u32 y, i32 objectId) {
+    if (x < grid->m_width && y < grid->m_height) {
+        grid->m_rows[y][x].m_objectId = objectId;
+        if (objectId != 0) {
+            grid->m_rows[y][x].m_flags |= 0x40000;
+        } else {
+            grid->m_rows[y][x].m_flags &= ~0x40000;
+        }
+    }
+}
+
 // @early-stop
 RVA(0x00095b10, 0x15f0)
 CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {

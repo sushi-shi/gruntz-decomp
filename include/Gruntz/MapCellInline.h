@@ -26,17 +26,6 @@ static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
         (reg)->m_tileGrid->ComputeCellFlags(tileX, tileY, tile);                                   \
     }
 
-inline void SetCellObject(CMapMgr* grid, u32 x, u32 y, i32 objectId) {
-    if (x < grid->m_width && y < grid->m_height) {
-        grid->m_rows[y][x].m_objectId = objectId;
-        if (objectId != 0) {
-            grid->m_rows[y][x].m_flags |= 0x40000;
-        } else {
-            grid->m_rows[y][x].m_flags &= ~0x40000;
-        }
-    }
-}
-
 static inline BrickzCellNode* PopFreeCellNode(BrickzCellNode*& freeList) {
     BrickzCellNode* node = freeList;
     BrickzCellNode* next = node->m_cellNext;
