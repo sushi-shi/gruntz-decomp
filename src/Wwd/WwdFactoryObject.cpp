@@ -476,22 +476,12 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             CAniRecordView* dd = m_element;
             if (HAS(dd->m_flags, ANI_RECORD_FLAG_POSITIONAL_CUE)) {
                 i32 sourceX = c->m_screenX;
-                SoundCue* soundCue;
-                if (dd->m_cueCount == 0) {
-                    soundCue = NULL;
-                } else {
-                    soundCue = dd->m_cues[dd->Rng2Next() % dd->m_cueCount];
-                }
+                SoundCue* soundCue = dd->PickCue();
                 if (soundCue != NULL) {
                     soundCue->PlaySpatialized(sourceX, 0, 0, 0);
                 }
             } else {
-                SoundCue* soundCue;
-                if (dd->m_cueCount == 0) {
-                    soundCue = NULL;
-                } else {
-                    soundCue = dd->m_cues[dd->Rng2Next() % dd->m_cueCount];
-                }
+                SoundCue* soundCue = dd->PickCue();
                 if (soundCue != NULL) {
                     soundCue->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
                 }

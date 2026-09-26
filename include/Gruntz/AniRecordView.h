@@ -44,6 +44,13 @@ struct CAniRecordView : public CObject {
 
     i32 Rng2Next();
 
+    SoundCue* PickCue() {
+        if (m_cueCount == 0) {
+            return NULL;
+        }
+        return m_cues[Rng2Next() % m_cueCount];
+    }
+
     inline CAniRecordView() {
         m_cueCount = 0;
         m_cues = NULL;
