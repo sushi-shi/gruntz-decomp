@@ -29,4 +29,5 @@ rva	unit	function	lost_max	cur
 0x0a3460	lightfxrender	?Refresh@CMinimap@@QAEHHH@Z	69.2227	68.3193
 0x0e08b0	projectile	?AdvanceMotion@CBoomerang@@UAEXXZ	100.0000	99.9535
 0x0b1af0	spotlight	?Tick@CSpotLight@@QAEHXZ	84.2097	83.2984
+0x0798d0	triggermgr	?OpenActionOptionsMenu@CTriggerMgr@@QAEHHHHH@Z	100.0000	99.8507
 0x06c130	triggermgrgrid	?WireTileSwitchLogic@CTriggerMgr@@QAEHPAVCGrunt@@HH@Z	92.4317	90.2860
