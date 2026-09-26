@@ -726,36 +726,7 @@ i32 CDDSurface::DecodeByteRun1Plane(u8* dstBuf, u8* src, i32 width, i32 height) 
     for (y = 0; y < height; y++) {
         dstp = dstBuf + width * y;
         cols = width;
-        if (hold > 0) {
-            for (k = 0; k < hold; k++) {
-                *dstp = tok;
-                dstp++;
-            }
-            cols -= hold;
-            hold = 0;
-        }
-        while (cols > 0) {
-            tok = *sp;
-            sp++;
-            if ((tok & BYTE_RUN_CONTROL_MASK) == BYTE_RUN_MARKER) {
-                len = tok & BYTE_RUN_LENGTH_MASK;
-                tok = *sp;
-                sp++;
-                if (len > cols) {
-                    hold = len - cols;
-                    len = cols;
-                }
-                for (k = 0; k < len; k++) {
-                    *dstp = tok;
-                    dstp++;
-                }
-                cols -= len;
-            } else {
-                *dstp = tok;
-                dstp++;
-                cols--;
-            }
-        }
+        DECODE_BYTE_RUN_LINE(dstp, sp, cols, hold, tok, len, k, 1);
     }
     return 1;
 }
@@ -784,100 +755,13 @@ i32 CDDSurface::DecodeByteRun3Planes(u8* dstBuf, u8* src, i32 width, i32 height)
         base = y * width * 3;
         dstp = dstBuf + base;
         cols = width;
-        if (hold > 0) {
-            for (k = 0; k < hold; k++) {
-                *dstp = tok;
-                dstp += 3;
-            }
-            cols -= hold;
-            hold = 0;
-        }
-        while (cols > 0) {
-            tok = *sp;
-            sp++;
-            if ((tok & BYTE_RUN_CONTROL_MASK) == BYTE_RUN_MARKER) {
-                len = tok & BYTE_RUN_LENGTH_MASK;
-                tok = *sp;
-                sp++;
-                if (len > cols) {
-                    hold = len - cols;
-                    len = cols;
-                }
-                for (k = 0; k < len; k++) {
-                    *dstp = tok;
-                    dstp += 3;
-                }
-                cols -= len;
-            } else {
-                *dstp = tok;
-                dstp += 3;
-                cols--;
-            }
-        }
+        DECODE_BYTE_RUN_LINE(dstp, sp, cols, hold, tok, len, k, 3);
         dstp = dstBuf + base + 1;
         cols = width;
-        if (hold > 0) {
-            for (k = 0; k < hold; k++) {
-                *dstp = tok;
-                dstp += 3;
-            }
-            cols -= hold;
-            hold = 0;
-        }
-        while (cols > 0) {
-            tok = *sp;
-            sp++;
-            if ((tok & BYTE_RUN_CONTROL_MASK) == BYTE_RUN_MARKER) {
-                len = tok & BYTE_RUN_LENGTH_MASK;
-                tok = *sp;
-                sp++;
-                if (len > cols) {
-                    hold = len - cols;
-                    len = cols;
-                }
-                for (k = 0; k < len; k++) {
-                    *dstp = tok;
-                    dstp += 3;
-                }
-                cols -= len;
-            } else {
-                *dstp = tok;
-                dstp += 3;
-                cols--;
-            }
-        }
+        DECODE_BYTE_RUN_LINE(dstp, sp, cols, hold, tok, len, k, 3);
         dstp = dstBuf + base + 2;
         cols = width;
-        if (hold > 0) {
-            for (k = 0; k < hold; k++) {
-                *dstp = tok;
-                dstp += 3;
-            }
-            cols -= hold;
-            hold = 0;
-        }
-        while (cols > 0) {
-            tok = *sp;
-            sp++;
-            if ((tok & BYTE_RUN_CONTROL_MASK) == BYTE_RUN_MARKER) {
-                len = tok & BYTE_RUN_LENGTH_MASK;
-                tok = *sp;
-                sp++;
-                if (len > cols) {
-                    hold = len - cols;
-                    len = cols;
-                }
-                for (k = 0; k < len; k++) {
-                    *dstp = tok;
-                    dstp += 3;
-                }
-                cols -= len;
-            } else {
-                *dstp = tok;
-                dstp += 3;
-                cols--;
-            }
-        }
+        DECODE_BYTE_RUN_LINE(dstp, sp, cols, hold, tok, len, k, 3);
     }
     return 1;
 }
