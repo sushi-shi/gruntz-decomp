@@ -19,6 +19,8 @@ not permute problems at all.
   class, call/branch/return counts, and both sides' leading instructions.
 - `gruntz walls semdiff <rva>` — operand, FP-opcode, constant, and ordered
   referent comparison over that pair.
+- `gruntz walls switchmap <rva>` — switch jump tables: the cases whose arm
+  mapping differs from retail's (a permuted table scores near-exact).
 - `gruntz sema match <unit|rva>` — current % vs best-ever (proven headroom?).
 - `gruntz sema disasm <rva> --blocks` — retail-only basic-block view.
 - `gruntz verify assert-relocs <rva>` — the actual referent set, unmasked.

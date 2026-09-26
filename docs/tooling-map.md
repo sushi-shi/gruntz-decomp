@@ -80,6 +80,7 @@ certification (trading one cross-jump for another) raised it.
 | `gruntz walls inventory` | `gruntz.walls.inventory` | the DERIVED worklist (report × Model × baseline), ascending historical MAX |
 | `gruntz walls abstractions` | `gruntz.walls.abstractions` | source-aware semantic routing for every sub-100 row: identity/object/call/textual/algorithm/expression |
 | `gruntz walls diagnose <fn>` | `gruntz.walls.diagnose` | classify one wall: referent → inline/call-set → cfg → regalloc |
+| `gruntz walls switchmap <fn>` | `gruntz.walls.switchmap` | switch jump tables: cases whose arm mapping differs from retail (`--all`: every sub-100 row) |
 | `gruntz walls inline-model` | `gruntz.walls.inline_model` | the cl 5.0 inline-budget model (`--gap`, `--measure-cb`) |
 | `gruntz walls aggregate-copies` | `gruntz.walls.aggregate_copies` | `rep movs` count sieve — source/CFG lead; rule out merged duplicate blocks before inferring an object |
 | `gruntz walls eh-frame` | `gruntz.walls.eh_frame` | `/GX` frame-presence + unwind-state sieve, cause-tagged |

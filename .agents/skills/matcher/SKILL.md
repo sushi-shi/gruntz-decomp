@@ -30,6 +30,7 @@ asks. A brief note of target, hypothesis, and next compiler control is enough.
 ```sh
 gruntz walls diagnose <rva> --asm   # first divergence class, counts, both sides
 gruntz walls semdiff <rva>          # operands, FP opcodes, constants, ordered referents
+gruntz walls switchmap <rva>        # switch case -> arm mapping vs retail's tables
 gruntz sema disasm <rva>            # retail assembly (never a decompile)
 gruntz sema xref <rva>              # callers/callees, identity
 gruntz sema class <Class>           # vtable slots, hierarchy
