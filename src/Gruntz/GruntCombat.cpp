@@ -729,10 +729,7 @@ i32 CGrunt::PathScan() {
                                 }
                             } while (p != NULL);
                         }
-                        Coord* elem = static_cast<Coord*>(s.RemoveHead());
-                        if (elem != NULL) {
-                            g_coordPool.Push(elem);
-                        }
+                        RecycleHeadCoord(s);
                         s.RemoveAll();
                         SCAN_BOUNDS_PLAINCLIP(grid);
                         return 1;
@@ -787,10 +784,7 @@ i32 CGrunt::PathScan() {
                 if (res != 0) {
 
                     if (s.GetCount() != 0) {
-                        Coord* elem = static_cast<Coord*>(s.RemoveHead());
-                        if (elem != NULL) {
-                            g_coordPool.Push(elem);
-                        }
+                        RecycleHeadCoord(s);
                         if (s.GetCount() != 0) {
 
                             if (CoordCount() != 0) {
@@ -826,10 +820,7 @@ i32 CGrunt::PathScan() {
                                 )
                                 != 0) {
                                 if (s.GetCount() != 0) {
-                                    Coord* e2 = static_cast<Coord*>(s.RemoveHead());
-                                    if (e2 != NULL) {
-                                        g_coordPool.Push(e2);
-                                    }
+                                    RecycleHeadCoord(s);
                                     if (s.GetCount() != 0) {
                                         POSITION q = s.GetHeadPosition();
                                         if (q != NULL) {

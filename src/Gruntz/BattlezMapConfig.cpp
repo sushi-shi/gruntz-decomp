@@ -1596,10 +1596,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
                 flags
             ) != 0
             && list.GetCount() != 0) {
-            Coord* head = static_cast<Coord*>(list.RemoveHead());
-            if (head != NULL) {
-                g_coordPool.Push(head);
-            }
+            RecycleHeadCoord(list);
             if (list.GetCount() != 0) {
                 while (node != NULL) {
                     POSITION remaining = node;
@@ -2354,10 +2351,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                                     0
                                 ) != 0
                                 && path.GetCount() != 0) {
-                                Coord* head = static_cast<Coord*>(path.RemoveHead());
-                                if (head != NULL) {
-                                    g_coordPool.Push(head);
-                                }
+                                RecycleHeadCoord(path);
                                 if (path.GetCount() != 0) {
                                     ARR_RECYCLE(g);
                                     POSITION qp = path.GetHeadPosition();
@@ -3204,10 +3198,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
                             )
                             != 0) {
                             if (list.GetHeadPosition() != NULL) {
-                                Coord* head = static_cast<Coord*>(list.RemoveHead());
-                                if (head != NULL) {
-                                    g_coordPool.Push(head);
-                                }
+                                RecycleHeadCoord(list);
                             }
                             if (list.GetHeadPosition() != NULL) {
                                 if (unit->CoordCount() != 0) {
@@ -3486,10 +3477,7 @@ i32 CBattlezMapConfig::RouteUnitTo(
             )
             != 0) {
             if (list.GetCount() != 0) {
-                Coord* head = static_cast<Coord*>(list.RemoveHead());
-                if (head != NULL) {
-                    g_coordPool.Push(head);
-                }
+                RecycleHeadCoord(list);
                 if (list.GetCount() != 0) {
                     if (unit->CoordCount() != 0) {
                         RECYCLE_GRUNT_COORDS(unit)
@@ -3903,10 +3891,7 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
         )
         != 0) {
         if (list.GetCount() != 0) {
-            Coord* head = static_cast<Coord*>(list.RemoveHead());
-            if (head != NULL) {
-                g_coordPool.Push(head);
-            }
+            RecycleHeadCoord(list);
             if (list.GetCount() != 0) {
 
                 if (unit->CoordCount() != 0) {
