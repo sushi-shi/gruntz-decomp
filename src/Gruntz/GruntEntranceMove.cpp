@@ -401,7 +401,6 @@ i32 CGrunt::RearmEntranceDrop() {
     return 0;
 }
 
-// @early-stop
 RVA(0x00068520, 0x2a2)
 i32 CGrunt::StartBombGruntRun() {
     FinishActiveAction();
@@ -431,8 +430,8 @@ i32 CGrunt::StartBombGruntRun() {
     }
     {
         CWwdSpriteObject* h = m_object;
-        dy += h->m_screenY >> TILE_SHIFT_PX;
         dx += h->m_screenX >> TILE_SHIFT_PX;
+        dy += h->m_screenY >> TILE_SHIFT_PX;
     }
     FaceTowardTile(dx, dy);
     m_moveTile.m_x = dx;
