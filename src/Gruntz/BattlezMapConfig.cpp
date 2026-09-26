@@ -384,10 +384,7 @@ i32 CBattlezMapConfig::StepBoard() {
                     continue;
                 }
                 CGameObject* lvl = unit->m_object;
-                if (GRUNT_SCREEN_X_NOT_AT_SAVED_POS(lvl, unit)) {
-                    continue;
-                }
-                if (GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(lvl, unit)) {
+                if (!(GRUNT_OBJECT_AT_SAVED_SCREEN_POS(lvl, unit))) {
                     continue;
                 }
                 if (unit->m_entranceCommitted == false) {

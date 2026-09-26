@@ -195,10 +195,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
             if (RectContains(o->m_object->m_screenX, o->m_object->m_screenY) == 0) {
                 return 1;
             }
-            if (o->GRUNT_SCREEN_X_NOT_AT_SAVED_POS(m_object, o)) {
-                return 1;
-            }
-            if (o->GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(m_object, o)) {
+            if (!(GRUNT_AT_SAVED_SCREEN_POS(o))) {
                 return 1;
             }
             COMMIT_GRUNT_NEIGHBOR(o);

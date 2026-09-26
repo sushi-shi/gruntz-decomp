@@ -1718,10 +1718,7 @@ CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
         m_triggerMgr->m_units[m_neighborPlayerIndex * TM_UNITS_PER_PLAYER + m_neighborUnitIndex];
     if (n != NULL && n->m_entranceCommitted != false) {
         if (validate != 0) {
-            if (n->GRUNT_SCREEN_X_NOT_AT_SAVED_POS(m_object, n)) {
-                return NULL;
-            }
-            if (n->GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(m_object, n)) {
+            if (!(GRUNT_AT_SAVED_SCREEN_POS(n))) {
                 return NULL;
             }
         }
