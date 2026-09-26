@@ -91,6 +91,9 @@ public:
     }
 
     i32 AttackBits(CGameObject* target) const;
+    i32 CollisionBits(CGameObject* target) const {
+        return static_cast<i32>(target->m_objectType) & m_collMask;
+    }
     RECT ExtentAt(i32 x, i32 y) const {
         RECT bounds;
         bounds.left = m_extent.left + x;
