@@ -411,7 +411,7 @@ i32 CMenuPage::ActivateFocusedItem() {
 
 RVA(0x00183df0, 0x3d)
 i32 CMenuPage::ReturnToParentPage(i32 playActivationSound) {
-    if (m_parentPageKey.GetLength() == 0) {
+    if (m_parentPageKey.IsEmpty()) {
         return 0;
     }
     if (!m_menuTree->SetActivePageByKey(m_parentPageKey)) {

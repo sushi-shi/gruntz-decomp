@@ -341,7 +341,7 @@ GruntRec* CNetCmdSlot::FindRecord(i32 sequence) {
 
 RVA(0x000c12e0, 0x2c)
 void CNetCmdSlot::ClearRecords() {
-    while (m_records.GetCount() != 0) {
+    while (!m_records.IsEmpty()) {
         GruntRec* record = static_cast<GruntRec*>(m_records.RemoveHead());
         if (record != NULL) {
             RecycleGruntRecord(record);

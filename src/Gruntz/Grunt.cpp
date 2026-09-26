@@ -878,7 +878,7 @@ i32 CGrunt::StepArrivalDrop(
                     blockedMask | BRICKZ_CELL_OCCUPIED,
                     passableMask
                 ) != 0
-                && probe.GetCount() != 0) {
+                && !probe.IsEmpty()) {
                 if (probe.GetCount() <= cnt + 3) {
                     g_coordPool.Push(probe.RemoveHead());
                     RecycleGruntCoords(this);

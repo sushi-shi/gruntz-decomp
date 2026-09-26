@@ -230,7 +230,7 @@ void CDDSurface::FreeSurfaces() {
         CDDSurface* e = static_cast<CDDSurface*>(m_elements[i]);
         delete e;
     }
-    m_elements.SetSize(0, -1);
+    m_elements.RemoveAll();
     if (this->m_ddSurface != NULL) {
         if ((this->m_dontOwn & 1) == 0) {
             this->m_ddSurface->Release();
@@ -401,8 +401,8 @@ void CDDSurface::ReloadImageCache() {
             i++;
         } while (i < static_cast<u32>(m_elements.GetSize()));
     }
-    m_elements.SetSize(0, -1);
-    g_imageCache.SetSize(0, -1);
+    m_elements.RemoveAll();
+    g_imageCache.RemoveAll();
     i32 hr = m_ddSurface->EnumAttachedSurfaces(NULL, &EnumSurfacesCallback);
     if (hr != 0) {
         CDDrawDeviceManager::ReportError(DIRSURF_FILE, 0x2dd, hr);
@@ -415,7 +415,7 @@ void CDDSurface::ReloadImageCache() {
             j++;
         } while (j < static_cast<u32>(g_imageCache.GetSize()));
     }
-    g_imageCache.SetSize(0, -1);
+    g_imageCache.RemoveAll();
 }
 
 RVA(0x0013e9a0, 0xcc)

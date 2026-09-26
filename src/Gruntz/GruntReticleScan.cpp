@@ -145,10 +145,7 @@ i32 CGrunt::StepDefenderBehavior() {
                     for (i32 x = oldBounds.left; x < oldBounds.right + 1; x++) {
                         if (static_cast<u32>(x) < g_gameReg->m_tileGrid->m_width
                             && static_cast<u32>(y) < g_gameReg->m_tileGrid->m_height) {
-                            saved.SetAtGrow(
-                                saved.GetSize(),
-                                static_cast<DWORD>(g_gameReg->m_tileGrid->CellFlagsAt(x, y))
-                            );
+                            saved.Add(static_cast<DWORD>(g_gameReg->m_tileGrid->CellFlagsAt(x, y)));
                         }
                     }
                 }

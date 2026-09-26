@@ -19,7 +19,7 @@ i32 CFecFile::Init() {
     }
     m_readOpen = false;
     m_writeOpen = false;
-    m_index.SetSize(0, -1);
+    m_index.RemoveAll();
     memset(&m_header, 0, sizeof(m_header));
     memset(&m_entry, 0, sizeof(m_entry));
     m_nextIndex = 0;
@@ -33,7 +33,7 @@ void CFecFile::Close() {
         return;
     }
     OnFail();
-    m_index.SetSize(0, -1);
+    m_index.RemoveAll();
     m_openGate = false;
 }
 

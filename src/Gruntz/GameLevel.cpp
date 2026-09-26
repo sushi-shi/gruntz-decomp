@@ -375,7 +375,7 @@ CGameLevel::ReadPlane(const WwdPlaneHeader* planeData, const char* blockBase, RE
 
     if (HAS(static_cast<WwdPlaneFlags>(plane->m_flags), WWD_PLANE_FLAG_MAIN)) {
         m_mainPlane = plane;
-        m_mainIndex = m_planes.GetSize() - 1;
+        m_mainIndex = m_planes.GetUpperBound();
     }
 
     return plane;
@@ -414,7 +414,7 @@ CDDrawWorkerHost* CGameLevel::ReadObjectPlane(
 
     if (HAS(static_cast<WwdPlaneFlags>(plane->m_flags), WWD_PLANE_FLAG_MAIN)) {
         m_mainPlane = plane;
-        m_mainIndex = m_planes.GetSize() - 1;
+        m_mainIndex = m_planes.GetUpperBound();
     }
 
     return plane;
@@ -450,7 +450,7 @@ i32 CGameLevel::RemovePlane(i32 index) {
     delete p;
     m_planes.RemoveAt(index, 1);
     if (wasMain) {
-        i32 last = m_planes.GetSize() - 1;
+        i32 last = m_planes.GetUpperBound();
         CDDrawWorkerHost* lp = GetPlane(last);
         if (lp != NULL) {
             RESET_MAIN_PLANE_SELECTION(i)

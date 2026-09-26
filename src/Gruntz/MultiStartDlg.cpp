@@ -801,7 +801,7 @@ void CMultiStartDlg::OnCustomWorld() {
         return;
     }
     CBattlezDlgCustom dlg(NULL);
-    if (dlg.DoModal() == 1 && dlg.m_customName.GetLength() != 0) {
+    if (dlg.DoModal() == 1 && !dlg.m_customName.IsEmpty()) {
 
         CWnd* worldCombo = GetDlgItem(IDX(IDC_MULTI_WORLD));
         CWnd* worldEdit = worldCombo->GetWindow(GW_CHILD);
@@ -828,7 +828,7 @@ void CMultiStartDlg::CommitWorldSelection() {
             if (selection != -1) {
                 CString worldName;
                 (static_cast<CComboBox*>(worldCombo))->GetLBText(selection, worldName);
-                if (worldName.GetLength() != 0) {
+                if (!worldName.IsEmpty()) {
                     m_usesCustomMap = false;
                 }
                 g_multiState->m_usesCustomLevel = false;
@@ -850,7 +850,7 @@ void CMultiStartDlg::OnChatSend() {
     GetPlayerNameControl(GetLocalPlayerSlotIndex())->GetWindowTextA(message);
     message += " says: ";
     input->GetWindowTextA(inputText);
-    if (inputText.GetLength() != 0) {
+    if (!inputText.IsEmpty()) {
         message += inputText;
         AppendChatLine(const_cast<char*>(static_cast<const char*>(message)));
         input->SetWindowTextA("");

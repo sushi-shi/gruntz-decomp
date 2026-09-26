@@ -298,8 +298,8 @@ void CDDrawChildGroup::TickKillCues(i32 advance) {
     RVA_DYNINIT(0x00159c70, 0xa, s_sortQueue)
     DATA(0x002bf390)
     static CObArray s_sortQueue;
-    s_killQueue.SetSize(0, -1);
-    s_sortQueue.SetSize(0, -1);
+    s_killQueue.RemoveAll();
+    s_sortQueue.RemoveAll();
 
     if (advance != 0) {
         u32 now = timeGetTime();

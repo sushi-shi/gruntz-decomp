@@ -41,7 +41,7 @@ CString CStringStaticPool<CAssetRootTag>::s_value;
 
 RVA(0x000f9780, 0x8c)
 i32 CSplashState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
-    if (CAssetRootStorage::s_value.GetLength() == 0) {
+    if (CAssetRootStorage::s_value.IsEmpty()) {
         return 0;
     }
 

@@ -690,7 +690,7 @@ i32 CGrunt::PathScan() {
                     m_passableMask
                 );
                 if (res != 0) {
-                    if (s.GetCount() != 0) {
+                    if (!s.IsEmpty()) {
 
                         while (node != NULL) {
                             Coord* src = static_cast<Coord*>(coordz->GetNext(node));
@@ -779,9 +779,9 @@ i32 CGrunt::PathScan() {
                 );
                 if (res != 0) {
 
-                    if (s.GetCount() != 0) {
+                    if (!s.IsEmpty()) {
                         RECYCLE_HEAD_COORD(s)
-                        if (s.GetCount() != 0) {
+                        if (!s.IsEmpty()) {
 
                             if (CoordCount() != 0) {
                                 POSITION pos = m_coordList.GetHeadPosition();
@@ -815,9 +815,9 @@ i32 CGrunt::PathScan() {
                                     m_passableMask
                                 )
                                 != 0) {
-                                if (s.GetCount() != 0) {
+                                if (!s.IsEmpty()) {
                                     RECYCLE_HEAD_COORD(s)
-                                    if (s.GetCount() != 0) {
+                                    if (!s.IsEmpty()) {
                                         POSITION q = s.GetHeadPosition();
                                         if (q != NULL) {
                                             do {
@@ -1453,7 +1453,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         CGruntzMapMgr* newGrid = g_gameReg->m_tileGrid;
         newGrid->AcquireCellOccupancy(nxt, nyt, this->m_playerIndex, this->m_unitIndex);
 
-        if (m_coordList.GetCount() != 0) {
+        if (!m_coordList.IsEmpty()) {
             Coord tile;
             m_coordList.AddHead(g_coordPool.PopCopy(*tile.Set(
                 this->m_lastTilePx.m_x >> TILE_SHIFT_PX,
@@ -1470,7 +1470,7 @@ i32 CGrunt::LoadGruntCombatAnimations(
         m_movePosX = static_cast<double>((this->m_object->m_screenX));
         m_movePosY = static_cast<double>((this->m_object->m_screenY));
 
-        if (m_coordList.GetCount() != 0) {
+        if (!m_coordList.IsEmpty()) {
             RECYCLE_GRUNT_COORDS(this)
         }
         this->m_arrivalPending = false;

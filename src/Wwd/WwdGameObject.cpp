@@ -812,7 +812,7 @@ void CDDrawWorker::Unload() {
             delete el;
         }
     }
-    m_items.SetSize(0, -1);
+    m_items.RemoveAll();
 
     m_minIndex = 99999;
     m_maxIndex = 0;

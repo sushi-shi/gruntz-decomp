@@ -271,7 +271,7 @@ i32 CGrunt::IsDropReady(i32 clearArrivalState) {
         }
     }
 
-    if (m_coordList.GetCount() != 0) {
+    if (!m_coordList.IsEmpty()) {
         Coord* coord = NULL;
         CoordPoolNode* node = g_coordPool.m_freeHead;
         i32 coordX = m_lastTilePx.m_x >> TILE_SHIFT_PX;

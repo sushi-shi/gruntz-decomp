@@ -101,7 +101,7 @@ void CChatBoxOwner::HandleTextInputKey(i32 charCode, i32 keyData) {
                             continue;
                         }
                         code = *bute.GetString(text, "Text", &noText);
-                        if (code.GetLength() == 0) {
+                        if (code.IsEmpty()) {
                             continue;
                         }
                         if (bute.GetInt(text, "NonCheat", 0) == 1) {
