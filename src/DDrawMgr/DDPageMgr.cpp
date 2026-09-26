@@ -465,7 +465,7 @@ i32 CMoviePlayer::Frame() {
         UploadPalette();
     }
     DecodeFrame();
-    if (m_blitMode != MOVIE_SINGLE) {
+    if (m_blitMode != MOVIE_DEST_RECT) {
         while (SmackToBufferRect(m_smackHandle, 0) != 0) {
             BlitRegion(
                 m_smackHandle->LastRectx,
@@ -641,7 +641,6 @@ i32 CMoviePlayer::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
     }
 }
 
-// @early-stop
 RVA(0x0017cfc0, 0x2f0)
 i32 CMoviePlayer::Configure(MovieLayout mode, MovieOpenFlags openFlags, POINT* origin, RECT* rect) {
     if (origin) {
@@ -730,7 +729,7 @@ i32 CMoviePlayer::Configure(MovieLayout mode, MovieOpenFlags openFlags, POINT* o
                 m_destRect->left = 0;
                 m_destRect->bottom = m_screenHeight;
                 m_destRect->right = m_screenWidth;
-                m_blitMode = MOVIE_SINGLE;
+                m_blitMode = MOVIE_DEST_RECT;
             }
             break;
         case MOVIE_DEST_RECT: {
