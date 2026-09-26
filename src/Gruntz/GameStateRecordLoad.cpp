@@ -10,6 +10,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntCoordRecycleMacros.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
@@ -183,9 +184,7 @@ i32 CGrunt::LoadStateRecord(CFileMemBase* ar) {
         }
     }
 
-    if (CoordCount() != 0) {
-        RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(this)
-    }
+    RecycleGruntCoords(this);
 
     i32 count;
     ar->Read(&count, sizeof(count));

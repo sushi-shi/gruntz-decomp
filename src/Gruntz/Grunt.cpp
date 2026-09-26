@@ -371,9 +371,7 @@ CGrunt::CGrunt(CGameObject* owner) : CMovingLogic(owner, CMovingLogic::GRUNT_SCA
 
 RVA(0x00048360, 0x7e)
 void CGrunt::OnObjectRemoved() {
-    if (CoordCount() != 0) {
-        RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(this)
-    }
+    RecycleGruntCoords(this);
 
     DeleteAllPayloads();
 }

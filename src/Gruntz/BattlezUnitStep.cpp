@@ -234,9 +234,7 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
         if (target != NULL) {
             CGameObject* lvl = target->m_object;
             if ((static_cast<CGrunt*>(unit))->RectContains(lvl->m_screenX, lvl->m_screenY) != 0) {
-                if (unit->CoordCount() != 0) {
-                    RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
-                }
+                RecycleGruntCoords(unit);
                 UNSET_COORD(unit->m_arrivalCell);
                 HandleUnitContact(unit, target);
                 return 1;
@@ -273,9 +271,7 @@ i32 CBattlezMapConfig::TrackAssignedEnemy(CGrunt* unit) {
     UNSET_COORD(unit->m_defenderPx);
     unit->m_defenderState = AISTATE_SEEK;
     unit->m_battleState = BZTASK_ADVANCE;
-    if (unit->CoordCount() != 0) {
-        RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
-    }
+    RecycleGruntCoords(unit);
     return 1;
 }
 
@@ -305,9 +301,7 @@ i32 CBattlezMapConfig::AdvanceToEnemyBase(CGrunt* unit) {
         GruntzPlayer* slot = &m_ctx->m_players[band];
         if (slot->m_clearedRound != false || slot->m_active == false) {
 
-            if (unit->CoordCount() != 0) {
-                RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(unit)
-            }
+            RecycleGruntCoords(unit);
             UNSET_COORD(unit->m_arrivalCell);
             UNSET_COORD(unit->m_defenderPx);
             unit->m_targetTeam = -1;
