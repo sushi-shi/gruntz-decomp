@@ -22,13 +22,18 @@ struct CString;
         g_typeCounter++;                                                                           \
     }
 
+// clang-format off
 #define REGISTER_ACT(registry, key, handler)                                                       \
-    {ACT_NAME_ID(id, key){CActHandler converted = static_cast<CActHandler>(handler);               \
     {                                                                                              \
-        CActHandler& slot = (registry)[id];                                                        \
-        slot = converted;                                                                          \
-    }                                                                                              \
-    }                                                                                              \
+        ACT_NAME_ID(id, key)                                                                       \
+        {                                                                                          \
+            CActHandler converted = static_cast<CActHandler>(handler);                             \
+            {                                                                                      \
+                CActHandler& slot = (registry)[id];                                                \
+                slot = converted;                                                                  \
+            }                                                                                      \
+        }                                                                                          \
     }
+// clang-format on
 
 #endif // GRUNTZ_ACTNAMEREGISTRY_H
