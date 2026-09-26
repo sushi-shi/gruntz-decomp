@@ -219,7 +219,6 @@ SecretMsgRow g_secretMsgRows[25];
 DATA(0x0022af10)
 b32 g_bootyCheatBuilt = false;
 
-// @early-stop
 RVA(0x00018830, 0x380)
 i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevStateId) {
 
@@ -315,10 +314,9 @@ i32 CBootyState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevS
         return 0;
     }
 
-    m_frameIntervalLo = 0x21;
-    m_frameIntervalHi = 0;
-    m_frameStampLo = g_frameTime;
-    m_frameStampHi = 0;
+    i64* clock = &m_frameStamp64;
+    clock[1] = 0x21;
+    clock[0] = g_frameTime;
     return 1;
 }
 
@@ -1366,7 +1364,6 @@ i32 CBootyState::CheckPerfectBonus() {
     return 1;
 }
 
-// @early-stop
 RVA(0x0001c210, 0x540)
 i32 CBootyState::Render() {
     IDirectDrawSurface* frameSurf = m_world->m_drawTarget->m_frontSurface->m_surface->m_ddSurface;
@@ -1387,10 +1384,9 @@ i32 CBootyState::Render() {
     if (elapsed < m_frameInterval64) {
         return 0;
     }
-    m_frameIntervalLo = 0x21;
-    m_frameIntervalHi = 0;
-    m_frameStampLo = g_frameTime;
-    m_frameStampHi = 0;
+    i64* clock = &m_frameStamp64;
+    clock[1] = 0x21;
+    clock[0] = g_frameTime;
 
     switch (m_activation) {
         case BOOTYSEQ_WARP_CUE: {

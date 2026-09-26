@@ -300,6 +300,10 @@ public:
         m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
     }
 
+    void Show() {
+        m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+    }
+
     void SetObjectFlags(i32 bits) {
         m_wwdObject->m_flags |= bits;
     }

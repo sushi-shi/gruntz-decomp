@@ -9,6 +9,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Dsndmgr/SoundBuffer.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/ActNameRegistry.h>
 #include <Gruntz/ActReg.h>
 #include <Gruntz/ActRegistry.h>
@@ -63,6 +64,7 @@
 #include <Wap32/Object.h>
 #include <Wap32/TileGeometry.h>
 #include <Wap32/Wap32.h>
+#include <Wwd/WwdObjMgrInline.h>
 
 #include <math.h>
 #include <new>
@@ -202,7 +204,6 @@ i32 CGrunt::StartRangedAttackAnimation() {
     return 0;
 }
 
-// @early-stop
 RVA(0x00061cb0, 0x380)
 i32 CGrunt::StepAttackFire() {
     i32 advanced = m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
@@ -314,14 +315,13 @@ i32 CGrunt::StepAttackFire() {
         }
 
         m_entranceActive = true;
-        i32 dt = g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), "AttackDowntime");
+        u32 dt = g_buteMgr.GetDword(static_cast<const char*>(m_animSetName), "AttackDowntime");
         if (m_gruntKind == GRUNT_ROIDZ) {
             dt = 0;
         }
-        m_attackDowntimeLo = dt;
-        m_attackDowntimeHi = 0;
-        m_attackClockLo = static_cast<i32>(g_frameTime);
-        m_attackClockHi = 0;
+        i64* clock = &m_attackClock64;
+        clock[1] = dt;
+        clock[0] = g_frameTime;
         m_lowStaminaCued = false;
         m_stamina = 0;
         if (m_healthSprite != NULL) {
@@ -1302,7 +1302,6 @@ i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
     return 0;
 }
 
-// @early-stop
 RVA(0x00065a60, 0x159)
 i32 CGrunt::LoadWandGruntItemConfig() {
     i32 advanced = m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
@@ -1315,10 +1314,9 @@ i32 CGrunt::LoadWandGruntItemConfig() {
             if (m_gruntKind == GRUNT_ROIDZ) {
                 downtime = 0;
             }
-            m_attackDowntimeLo = downtime;
-            m_attackDowntimeHi = 0;
-            m_attackClockLo = g_frameTime;
-            m_attackClockHi = 0;
+            i64* clock = &m_attackClock64;
+            clock[1] = downtime;
+            clock[0] = g_frameTime;
             m_lowStaminaCued = false;
             m_stamina = 0;
             if (m_healthSprite != NULL) {
@@ -1327,7 +1325,7 @@ i32 CGrunt::LoadWandGruntItemConfig() {
             if (m_entranceReason == PICKUP_WAND) {
                 LoadGruntAbilityTuning(m_moveVariant);
                 i32 hp = m_health - g_buteMgr.GetInt("WANDGRUNT", "HealthLoss", 0x19);
-                m_health = hp < 0 ? 0 : hp;
+                m_health = Max(0, hp);
                 if (m_health <= 0) {
                     m_triggerMgr->StartUnitDeath(m_playerIndex, m_unitIndex, DEATH_NORMAL, -1);
                 }
@@ -1400,15 +1398,10 @@ i32 CGrunt::FinishToobMoveAnimation() {
     if (cellObj == NULL) {
         return 0;
     }
-    CGameObject* found = NULL;
-    if (MapLookup(
-            g->m_world->m_childGroup->m_registeredGameObjectsById,
-            static_cast<void*>(cellObj),
-            found
-        )
-        == false) {
-        found = NULL;
-    }
+    CGameObject* found = LookupActiveObject(
+        g->m_world->m_childGroup->m_registeredGameObjectsById,
+        static_cast<void*>(cellObj)
+    );
     if (found == NULL) {
         grid = g_gameReg->m_tileGrid;
         ReleaseCellObject(grid, tx, ty);

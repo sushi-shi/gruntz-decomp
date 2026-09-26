@@ -187,7 +187,6 @@ i32 CVoiceTrigger::Tick() {
     return 0;
 }
 
-// @early-stop
 RVA(0x0011a7e0, 0x6e)
 
 i32 CGruntVoice::BeginPlayback(
@@ -202,10 +201,11 @@ i32 CGruntVoice::BeginPlayback(
     m_sourceObjectId = sourceObjectId;
     m_positionMode = positionMode;
     m_stream = stream;
-    m_duration.m_v = stream->GetDurationMs();
-    m_startStamp.m_v = g_frameTime;
-    m_previousAnimationActId = m_logicRecord->m_eventCode;
+    i64* clock = &m_startStamp.m_v;
+    clock[1] = stream->GetDurationMs();
+    clock[0] = g_frameTime;
     m_priority = priority;
+    m_previousAnimationActId = m_logicRecord->m_eventCode;
     m_logicRecord->SetEventCode(ActFindId("B"));
     return 1;
 }

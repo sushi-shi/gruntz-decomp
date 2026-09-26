@@ -69,22 +69,10 @@ inline void CGruntzMapMgr::AcquireCellOccupancy(i32 tileX, i32 tileY, i32 packed
     m_rows[tileY][tileX].m_occupantId = packedOwner;
 }
 
-static inline i32 TBombGridCell(CGameObject* obj) {
-    CMapMgr* g = g_gameReg->m_tileGrid;
-    i32 cx = obj->m_screenX >> TILE_SHIFT_PX;
-    i32 cy = obj->m_screenY >> TILE_SHIFT_PX;
-    if (static_cast<u32>(cx) < static_cast<u32>(g->m_width)
-        && static_cast<u32>(cy) < static_cast<u32>(g->m_height)) {
-        BrickzCell* row = g->m_rows[cy];
-        return row[cx].m_flags;
-    }
-    return 1;
-}
-
 static inline void TBombGridClear(CGameObject* obj) {
     CMapMgr* g = g_gameReg->m_tileGrid;
-    i32 cx = obj->m_screenX >> TILE_SHIFT_PX;
     i32 cy = obj->m_screenY >> TILE_SHIFT_PX;
+    i32 cx = obj->m_screenX >> TILE_SHIFT_PX;
     if (static_cast<u32>(cx) < static_cast<u32>(g->m_width)
         && static_cast<u32>(cy) < static_cast<u32>(g->m_height)) {
         g->m_rowInts[cy][cx * 7] &= ~0x1000000;

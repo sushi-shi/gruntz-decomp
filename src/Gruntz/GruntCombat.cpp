@@ -842,13 +842,11 @@ i32 CGrunt::PathScan() {
     return 0;
 }
 
-// @early-stop
 RVA(0x000588f0, 0x1ea)
 void CGrunt::OnStruck(b32 wasHit) {
-    m_struckTimerLo = 0xfa0;
-    m_struckTimerHi = 0;
-    m_struckClockLo = static_cast<i32>(g_frameTime);
-    m_struckClockHi = 0;
+    i64* clock = &m_struckClock64;
+    clock[1] = 0xfa0;
+    clock[0] = g_frameTime;
     i32 c = ++m_struckCount;
 
     if (wasHit == false) {

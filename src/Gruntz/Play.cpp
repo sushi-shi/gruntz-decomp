@@ -126,6 +126,7 @@
 #include <Wap32/TileGeometry.h>
 #include <Wwd/WwdFile.h>
 #include <Wwd/WwdGameObjectFamily.h>
+#include <Wwd/WwdObjMgrInline.h>
 
 #include <ddraw.h>
 #include <new>
@@ -453,10 +454,9 @@ i32 CPlay::Render() {
             if (static_cast<i64>(g_frameTime) - m_cueTiming.m_start.m_v
                 >= m_cueTiming.m_interval.m_v) {
                 m_cueToggle = (m_cueToggle == false);
-                m_cueTiming.m_interval.m_lo = CUE_INTERVAL_MS;
-                m_cueTiming.m_interval.m_hi = 0;
-                m_cueTiming.m_start.m_lo = static_cast<i32>(g_frameTime);
-                m_cueTiming.m_start.m_hi = 0;
+                i64* clock = &m_cueTiming.m_start.m_v;
+                clock[1] = CUE_INTERVAL_MS;
+                clock[0] = g_frameTime;
             }
             if (m_cueToggle != false) {
                 PlayCueAt(0x8128, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
@@ -488,10 +488,9 @@ i32 CPlay::Render() {
             if (static_cast<i64>(g_frameTime) - m_bootyTiming.m_start.m_v
                 >= m_bootyTiming.m_interval.m_v) {
                 g_gameReg->m_voiceManager->PlayVoice(NULL, 0x33e, -1, 1, -1, -1);
-                m_bootyTiming.m_interval.m_lo = BOOTY_INTERVAL_MS;
-                m_bootyTiming.m_interval.m_hi = 0;
-                m_bootyTiming.m_start.m_lo = static_cast<i32>(g_frameTime);
-                m_bootyTiming.m_start.m_hi = 0;
+                i64* clock = &m_bootyTiming.m_start.m_v;
+                clock[1] = BOOTY_INTERVAL_MS;
+                clock[0] = g_frameTime;
             }
         }
 
@@ -566,8 +565,7 @@ i32 CPlay::Render() {
         }
 
         if (m_defeatCountdownActive != false) {
-            i64 deadline =
-                m_defeatCountdownTiming.m_interval.m_v + m_defeatCountdownTiming.m_start.m_v;
+            i64 deadline = m_defeatCountdownTiming.Deadline();
             i64 left = deadline - static_cast<i64>(g_frameTime);
             u32 leftMs = static_cast<u32>(left);
             if (left < 0) {
@@ -631,10 +629,9 @@ i32 CPlay::Render() {
             if (static_cast<i64>(g_frameTime) - m_cueTiming.m_start.m_v
                 >= m_cueTiming.m_interval.m_v) {
                 m_cueToggle = (m_cueToggle == false);
-                m_cueTiming.m_interval.m_lo = CUE_INTERVAL_MS;
-                m_cueTiming.m_interval.m_hi = 0;
-                m_cueTiming.m_start.m_lo = static_cast<i32>(g_frameTime);
-                m_cueTiming.m_start.m_hi = 0;
+                i64* clock = &m_cueTiming.m_start.m_v;
+                clock[1] = CUE_INTERVAL_MS;
+                clock[0] = g_frameTime;
             }
             if (m_cueToggle != false) {
                 PlayCueAt(0x8129, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
@@ -2881,8 +2878,8 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
         return m_statusBar->HandleDoubleClick(keyFlags, x, y);
     }
 
+    i32 playerIndex;
     {
-        i32 playerIndex;
         i32 unitIndex;
         if (m_mgr->m_triggerMgr->ScreenToCell(x, y, &playerIndex, &unitIndex, PLAYER_SLOT_ALL)
             && g_curPlayer == playerIndex) {
@@ -2899,9 +2896,10 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
     i32 px;
     i32 py;
     i32 i;
-    i32 area = g_curPlayer;
-    GruntzPlayer* cfg = &g_gameReg->m_players[area];
-    if (cfg == NULL || g_gameReg->m_triggerMgr->m_unitCountByPlayer[area] >= cfg->m_maxGruntz) {
+    playerIndex = g_curPlayer;
+    GruntzPlayer* cfg = &g_gameReg->m_players[playerIndex];
+    if (cfg == NULL
+        || g_gameReg->m_triggerMgr->m_unitCountByPlayer[playerIndex] >= cfg->m_maxGruntz) {
         return 0;
     }
 
@@ -7031,16 +7029,10 @@ i32 CPlay::ClearPlacedObjects() {
                 Coord* obj = PlacedObjectCellAt(blockIdx, i);
                 i32 occupantId = CellObjectIdAt(g_gameReg->m_tileGrid, obj->m_x, obj->m_y);
                 if (occupantId != 0) {
-                    CGameObject* out = NULL;
-                    b32 found = MapLookupById(
+                    CGameObject* result = LookupObjectById(
                         g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
-                        occupantId,
-                        out
+                        occupantId
                     );
-                    CGameObject* result = NULL;
-                    if (found) {
-                        result = out;
-                    }
                     if (result == NULL) {
 
                         ReleaseCellObject(g_gameReg->m_tileGrid, obj->m_x, obj->m_y);

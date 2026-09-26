@@ -69,13 +69,13 @@ i32 CTriggerMgr::UpdateFrame(i32 deltaMs) {
             count++;
         }
     }
-    if (count <= 1 && m_phase == FINISH_STATE_DEFEAT
-        && (static_cast<CPlay*>(g_gameReg->m_curState))->m_statusBar->m_levelOverlayActive == false
-        && (static_cast<CPlay*>(g_gameReg->m_curState))->m_statusBar->m_quitConfirmationActive
-               == false
-        && m_pendingFx == NULL) {
-        if (static_cast<i64>(g_frameTime) - m_cueTimer.m_base >= m_cueTimer.m_window) {
-            (static_cast<CPlay*>(g_gameReg->m_curState))->OpenLevelOverlay(false);
+    if (count <= 1) {
+        CPlay* play = static_cast<CPlay*>(g_gameReg->m_curState);
+        if (m_phase == FINISH_STATE_DEFEAT && play->m_statusBar->m_levelOverlayActive == false
+            && play->m_statusBar->m_quitConfirmationActive == false && m_pendingFx == NULL) {
+            if (static_cast<i64>(g_frameTime) - m_cueTimer.m_base >= m_cueTimer.m_window) {
+                play->OpenLevelOverlay(false);
+            }
         }
     }
 

@@ -2505,10 +2505,9 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             MarkQuestzArrival(this);
             m_passableMask = 0;
             m_gruntKind = GRUNT_CONVERSION;
-            m_convertTimeLo = g_buteMgr.GetDword("Powerupz", "ConversionTime", 0x1f4);
-            m_convertTimeHi = 0;
-            m_convertClockLo = g_frameTime;
-            m_convertClockHi = 0;
+            i64* clock = &m_convertClock64;
+            clock[1] = g_buteMgr.GetDword("Powerupz", "ConversionTime", 0x1f4);
+            clock[0] = g_frameTime;
             StopPowerupLoopSound();
             EnsurePowerupLoopSound("GAME_CONVERSIONLOOP");
             break;
@@ -2526,10 +2525,9 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "DeathTouchTime", 0x4e20);
             }
-            m_convertTimeLo = m_powerupDuration;
-            m_convertTimeHi = 0;
-            m_convertClockLo = g_frameTime;
-            m_convertClockHi = 0;
+            i64* clock = &m_convertClock64;
+            clock[1] = m_powerupDuration;
+            clock[0] = g_frameTime;
             m_shimmerWindowLo = 0;
             m_shimmerWindowHi = 0;
             StopPowerupLoopSound();
@@ -2543,10 +2541,9 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "GhostTime", 0x4e20);
             }
-            m_convertTimeLo = m_powerupDuration;
-            m_convertTimeHi = 0;
-            m_convertClockLo = g_frameTime;
-            m_convertClockHi = 0;
+            i64* clock = &m_convertClock64;
+            clock[1] = m_powerupDuration;
+            clock[0] = g_frameTime;
             m_shimmerWindowLo = 0;
             m_shimmerWindowHi = 0;
             StopPowerupLoopSound();
@@ -2558,10 +2555,9 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "InvulnerabilityTime", 0x4e20);
             }
-            m_convertTimeLo = m_powerupDuration;
-            m_convertTimeHi = 0;
-            m_convertClockLo = g_frameTime;
-            m_convertClockHi = 0;
+            i64* clock = &m_convertClock64;
+            clock[1] = m_powerupDuration;
+            clock[0] = g_frameTime;
             m_shimmerWindowLo = 0;
             m_shimmerWindowHi = 0;
             StopPowerupLoopSound();
@@ -2574,10 +2570,9 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "ReactiveArmorTime", 0x4e20);
             }
-            m_convertTimeLo = m_powerupDuration;
-            m_convertTimeHi = 0;
-            m_convertClockLo = g_frameTime;
-            m_convertClockHi = 0;
+            i64* clock = &m_convertClock64;
+            clock[1] = m_powerupDuration;
+            clock[0] = g_frameTime;
             m_shimmerWindowLo = 0;
             m_shimmerWindowHi = 0;
             StopPowerupLoopSound();
@@ -2590,10 +2585,9 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "RoidzTime", 0x4e20);
             }
-            m_convertTimeLo = m_powerupDuration;
-            m_convertTimeHi = 0;
-            m_convertClockLo = g_frameTime;
-            m_convertClockHi = 0;
+            i64* clock = &m_convertClock64;
+            clock[1] = m_powerupDuration;
+            clock[0] = g_frameTime;
             m_shimmerWindowLo = 0;
             m_shimmerWindowHi = 0;
             StopPowerupLoopSound();
@@ -2606,10 +2600,9 @@ i32 CGrunt::LoadGruntTypeTable(PickupType kind, i32 fresh, i32 variant, i32 defe
             if (m_powerupDuration == 0) {
                 m_powerupDuration = g_buteMgr.GetDword("Powerupz", "SuperSpeedTime", 0x4e20);
             }
-            m_convertTimeLo = m_powerupDuration;
-            m_convertTimeHi = 0;
-            m_convertClockLo = g_frameTime;
-            m_convertClockHi = 0;
+            i64* clock = &m_convertClock64;
+            clock[1] = m_powerupDuration;
+            clock[0] = g_frameTime;
             m_shimmerWindowLo = 0;
             m_shimmerWindowHi = 0;
             ReadConfigFromButeMgr();

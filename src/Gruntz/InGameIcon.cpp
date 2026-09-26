@@ -903,7 +903,6 @@ void RegisterTextLogic() {
     *dslot = static_cast<CActHandler>(&CInGameText::Update);
 }
 
-// @early-stop
 RVA(0x000997c0, 0x1e7)
 i32 CInGameText::Update() {
     m_wwdObject->m_animationCursor.Advance(static_cast<i32>(g_engineFrameDelta));
@@ -923,7 +922,7 @@ i32 CInGameText::Update() {
             return 0;
         }
 
-        if (ANIMATION_ACT_EQUALS_FOR(found, "K")) {
+        if (found->GetAnimationActName() == "K") {
             return 0;
         }
 
@@ -945,7 +944,7 @@ i32 CInGameText::Update() {
         return 0;
     }
     m_cachedUnitIndex = -1;
-    m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
+    Show();
     return 0;
 }
 
