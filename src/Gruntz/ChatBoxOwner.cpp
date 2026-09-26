@@ -67,24 +67,23 @@ void CChatBoxOwner::HandleTextInputKey(i32 charCode, i32 keyData) {
     }
 
     if (g_gameReg->m_curState->Update() == GAMESTATE_MULTI) {
+        CMulti* multi = static_cast<CMulti*>(g_gameReg->m_curState);
         char* input = const_cast<char*>(static_cast<const char*>(m_fontConfig->GetInputText()));
-        static_cast<CMulti*>(g_gameReg->m_curState)->BroadcastChatLine(input, 1, 1, NULL);
+        multi->BroadcastChatLine(input, 1, 1, NULL);
     } else {
-        if (stricmp(m_fontConfig->GetInputText().Left(17), "Enable Cheatzfile") == 0) {
+        if (m_fontConfig->GetInputText().Left(17).CompareNoCase("Enable Cheatzfile") == 0) {
             CString args = m_fontConfig->GetInputText();
             args = args.Right(args.GetLength() - 18);
+            i32 length = args.GetLength();
             i32 split = args.Find(' ');
             if (split != -1) {
                 CString resourceName = args.Left(split);
-                CString key = args.Right(args.GetLength() - split - 1);
-                CString qualified;
-                qualified.Format(
-                    "STATEZ_CREDITZ_PALETTEZ_%s",
-                    static_cast<const char*>(resourceName)
-                );
+                CString key = args.Right(length - split - 1);
+                CString text;
+                text.Format("STATEZ_CREDITZ_PALETTEZ_%s", static_cast<const char*>(resourceName));
 
                 CRezItm* source = g_gameReg->m_resourceArchive->GetRezFromPath(
-                    static_cast<const char*>(qualified),
+                    static_cast<const char*>(text),
                     REZ_TAG_TXT
                 );
                 CButeMgr bute;
@@ -92,31 +91,31 @@ void CChatBoxOwner::HandleTextInputKey(i32 charCode, i32 keyData) {
                 bool parsed = bute.Parse(source, static_cast<const char*>(key));
 
                 if (parsed) {
-                    CString group = "";
+                    CString noText = "";
                     CString code;
-                    b32 enabled = false;
+                    i32 enabled = 0;
                     i32 count = bute.GetInt("Cheatz", "NumCheatz", 0);
                     for (i32 i = 1; i <= count; i++) {
-                        group.Format("Cheat%i", i);
-                        if (!bute.Exist(group, NULL)) {
+                        text.Format("Cheat%i", i);
+                        if (!bute.Exist(text, NULL)) {
                             continue;
                         }
-                        code = *bute.GetString(group, "Text", &code);
+                        code = *bute.GetString(text, "Text", &noText);
                         if (code.GetLength() == 0) {
                             continue;
                         }
-                        if (bute.GetInt(group, "NonCheat", 0) == 1) {
-                            if (g_gameReg->m_cheatMgr->AddCheat(
+                        if (bute.GetInt(text, "NonCheat", 0) == 1) {
+                            if (g_gameReg->CheatMgr()->AddCheat(
                                     static_cast<const char*>(code),
-                                    bute.GetInt(group, "Value", 0x807b),
+                                    bute.GetInt(text, "Value", 0x807b),
                                     1
                                 )) {
                                 enabled++;
                             }
                         } else {
-                            if (g_gameReg->m_cheatMgr->AddCheat(
+                            if (g_gameReg->CheatMgr()->AddCheat(
                                     static_cast<const char*>(code),
-                                    bute.GetInt(group, "Value", 0x807b),
+                                    bute.GetInt(text, "Value", 0x807b),
                                     0
                                 )) {
                                 enabled++;
@@ -124,12 +123,12 @@ void CChatBoxOwner::HandleTextInputKey(i32 charCode, i32 keyData) {
                         }
                     }
                     if (enabled > 0) {
-                        code.Format(
+                        text.Format(
                             "Congratulations!  You have just enabled %d new cheats!\n",
                             enabled
                         );
                         g_gameReg->AppendChatMessage(
-                            const_cast<char*>(static_cast<const char*>(code))
+                            const_cast<char*>(static_cast<const char*>(text))
                         );
                     }
                 }
@@ -140,11 +139,6 @@ void CChatBoxOwner::HandleTextInputKey(i32 charCode, i32 keyData) {
     }
     m_fontConfig->EndInput();
     m_inputActive = false;
-}
-
-RVA(0x00020ef0, 0x20)
-CString CFontConfig::GetInputText() {
-    return m_inputText;
 }
 
 // @early-stop
