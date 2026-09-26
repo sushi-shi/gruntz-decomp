@@ -3134,7 +3134,7 @@ i32 CMulti::ResetPlayerCommands(i32 playerId) {
         slot->RemoveRecord(seq / static_cast<i32>(m_commandDelay));
     }
     slot->ClearSequenceSet(slot->m_receivedAhead);
-    slot->ClearSequenceSet(slot->m_peerReceivedAhead);
+    slot->ClearSequenceSet(slot->PeerReceivedAhead());
     return 1;
 }
 

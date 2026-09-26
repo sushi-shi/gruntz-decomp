@@ -91,11 +91,11 @@ i32 CFecFile::ReadArchive(const char* name) {
         goto fail;
     }
     {
-        if (m_stream.Seek(m_entry.m_scramble - FEC_SCRAMBLE_BASE, CFile::current)
-            != m_entry.m_scramble - FEC_FIRST_PAYLOAD_ADJUSTMENT) {
+        if (m_stream.Seek(m_entry.Scramble() - FEC_SCRAMBLE_BASE, CFile::current)
+            != m_entry.Scramble() - FEC_FIRST_PAYLOAD_ADJUSTMENT) {
             goto fail;
         }
-        m_index.Add(m_entry.m_scramble - FEC_FIRST_PAYLOAD_ADJUSTMENT);
+        m_index.Add(m_entry.Scramble() - FEC_FIRST_PAYLOAD_ADJUSTMENT);
 
         for (u16 i = 1; i < static_cast<u32>(m_header.m_fileCount); i++) {
             i32 stride = m_entry.PayloadLength();
@@ -107,7 +107,7 @@ i32 CFecFile::ReadArchive(const char* name) {
             if (m_stream.Read(&m_entry, sizeof(m_entry)) != sizeof(m_entry)) {
                 goto fail;
             }
-            u16 scr = m_entry.m_scramble;
+            u16 scr = m_entry.Scramble();
             if (m_stream.Seek(scr - FEC_SCRAMBLE_BASE, CFile::current)
                 != static_cast<i32>(EntryOffset(i - 1)) + stride + scr
                        - FEC_NEXT_PAYLOAD_ADJUSTMENT) {
@@ -214,11 +214,11 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
     m_stream.Seek(0, CFile::end);
     m_stream.Write(&m_entry, sizeof(m_entry));
 
-    char* pad = new char[m_entry.m_scramble - FEC_SCRAMBLE_BASE];
-    for (i = 0; i < m_entry.m_scramble - FEC_SCRAMBLE_BASE; i++) {
+    char* pad = new char[m_entry.Scramble() - FEC_SCRAMBLE_BASE];
+    for (i = 0; i < m_entry.Scramble() - FEC_SCRAMBLE_BASE; i++) {
         pad[i] = static_cast<char>((Random() % FEC_RANDOM_BYTE_MODULUS));
     }
-    m_stream.Write(pad, m_entry.m_scramble - FEC_SCRAMBLE_BASE);
+    m_stream.Write(pad, m_entry.Scramble() - FEC_SCRAMBLE_BASE);
     delete[] pad;
 
     memset(m_copyBuf, 0, sizeof(m_copyBuf));

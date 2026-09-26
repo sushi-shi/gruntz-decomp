@@ -9,7 +9,7 @@ inline void ResetNetCmdSlotCommandWindow(CNetCmdSlot* slot) {
         slot->m_drainAckFlags[i] = 0;
     }
     slot->ClearSequenceSet(slot->ReceivedAhead());
-    slot->ClearSequenceSet(slot->m_peerReceivedAhead);
+    slot->ClearSequenceSet(slot->PeerReceivedAhead());
 }
 
 #endif // GRUNTZ_NET_NETCMDSLOTINLINE_H

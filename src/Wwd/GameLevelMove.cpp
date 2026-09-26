@@ -334,15 +334,13 @@ i32 CGameLevel::ResolveTopY(CGameObject* t, i32 x, i32 y) {
 }
 
 static inline BOOL ExtentsOverlapAt(CGameObject* a, i32 x, i32 y, CGameObject* b) {
-    i32 aLeft = a->m_extent.left + x;
-    i32 aTop = a->m_extent.top + y;
-    i32 aRight = x + a->m_extent.right;
-    i32 aBottom = a->m_extent.bottom + y;
+    const RECT& aBounds = a->ExtentAt(x, y);
     i32 bLeft = b->m_screenX + b->m_extent.left;
     i32 bTop = b->m_extent.top + b->m_screenY;
     i32 bBottom = b->m_screenY + b->m_extent.bottom;
     i32 bRight = b->m_screenX + b->m_extent.right;
-    return aLeft <= bRight && aRight >= bLeft && aTop <= bBottom && aBottom >= bTop;
+    return aBounds.left <= bRight && aBounds.right >= bLeft && aBounds.top <= bBottom
+           && aBounds.bottom >= bTop;
 }
 
 RVA(0x00167ea0, 0x1b9)
@@ -355,22 +353,20 @@ i32 CGameLevel::BroadPhase(CGameObject* t, i32 candX, i32 candY) {
     while (pos != NULL) {
         CGameObject* obj = children->NextChild(pos);
         if (obj != t && (obj->m_flags & IDX(WWD_GAME_OBJECT_FLAG_COLLIDE_WITH_OBJECTS))
-            && (t->m_collMask & obj->m_objectType) && t->m_extent.left != COORD_UNSET
+            && (t->CollisionBits(obj)) && t->m_extent.left != COORD_UNSET
             && obj->m_extent.left != COORD_UNSET) {
             if (!ExtentsOverlapAt(t, t->m_screenX, t->m_screenY, obj)) {
                 if (ExtentsOverlapAt(t, candX, candY, obj)) {
                     i32 fire;
                     if (t->m_collisionLogic != NULL) {
-                        t->m_hitOther = obj;
-                        fire = t->m_collisionLogic->m_dispatch(t);
+                        fire = t->NotifyCollision(obj);
                     } else {
                         fire = 1;
                     }
                     if (fire != 0) {
-                        if (t->m_collMask & obj->m_objectType) {
+                        if (t->CollisionBits(obj)) {
                             if (obj->m_collisionLogic != NULL) {
-                                obj->m_hitOther = t;
-                                obj->m_collisionLogic->m_dispatch(obj);
+                                obj->NotifyCollision(t);
                             }
                         }
                         return 1;

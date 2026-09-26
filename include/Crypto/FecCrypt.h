@@ -16,6 +16,10 @@ GZ_ENUM_CONST_BEGIN(FecFormatSize)
 GZ_ENUM_CONST_END(FecFormatSize)
 
 struct FecEntry {
+    const u16& Scramble() const {
+        return m_scramble;
+    }
+
     i32 PayloadLength() const {
         return m_payloadLen;
     }

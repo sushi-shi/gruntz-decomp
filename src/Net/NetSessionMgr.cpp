@@ -67,7 +67,7 @@ void CNetSession::Shutdown() {
         slot->ClearRecords();
         slot->ClearDrainAcks();
         slot->ClearSequenceSet(slot->ReceivedAhead());
-        slot->ClearSequenceSet(slot->m_peerReceivedAhead);
+        slot->ClearSequenceSet(slot->PeerReceivedAhead());
     }
     for (i32 j = 0; j < 0x80; j++) {
         m_commandByTick[j] = NULL;
@@ -399,28 +399,28 @@ i32 CNetSession::SendPendingRecords() {
             }
             candidateSequence = m_sequence + 1;
             if (slot->m_peerWindowBase < candidateSequence
-                && slot->ContainsSequence(slot->m_peerReceivedAhead, candidateSequence) == 0) {
+                && slot->ContainsSequence(slot->PeerReceivedAhead(), candidateSequence) == 0) {
                 if (SendRecord(slot, candidateSequence)) {
                     count++;
                 }
             }
             candidateSequence = m_sequence;
             if (slot->m_peerWindowBase < candidateSequence
-                && slot->ContainsSequence(slot->m_peerReceivedAhead, candidateSequence) == 0) {
+                && slot->ContainsSequence(slot->PeerReceivedAhead(), candidateSequence) == 0) {
                 if (SendRecord(slot, candidateSequence)) {
                     count++;
                 }
             }
             candidateSequence = m_sequence - 1;
             if (slot->m_peerWindowBase < candidateSequence
-                && slot->ContainsSequence(slot->m_peerReceivedAhead, candidateSequence) == 0) {
+                && slot->ContainsSequence(slot->PeerReceivedAhead(), candidateSequence) == 0) {
                 if (SendRecord(slot, candidateSequence)) {
                     count++;
                 }
             }
             candidateSequence = m_sequence - 2;
             if (slot->m_peerWindowBase < candidateSequence
-                && slot->ContainsSequence(slot->m_peerReceivedAhead, candidateSequence) == 0) {
+                && slot->ContainsSequence(slot->PeerReceivedAhead(), candidateSequence) == 0) {
                 if (SendRecord(slot, candidateSequence)) {
                     count++;
                 }

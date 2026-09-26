@@ -19,6 +19,7 @@
 #include <Net/NetSlotState.h>
 #include <Pix16.h>
 #include <Rez/RezMgr.h>
+#include <Utils/PackedReadWrite.h>
 
 #include <dplay.h>
 #include <limits.h>
@@ -140,17 +141,13 @@ i32 CNetCmdSlot::ProcessPacket(i32 playerId, char* packet, i32 packetSize) {
         remaining--;
     }
 
-    CNetWireMsg wire;
-    wire.m_bytes = cursor;
-    i32 sequence = *wire.m_dwords;
+    i32 sequence = PeekI32(cursor);
     cursor += 4;
     remaining -= 4;
-    wire.m_bytes = cursor;
-    i32 windowBase = *wire.m_dwords;
+    i32 windowBase = PeekI32(cursor);
     cursor += 4;
     remaining -= 4;
-    wire.m_bytes = cursor;
-    i32 checksum = *wire.m_dwords;
+    i32 checksum = PeekI32(cursor);
     cursor += 4;
     remaining -= 4;
     u8 entryCount = *cursor;
@@ -173,11 +170,11 @@ i32 CNetCmdSlot::ProcessPacket(i32 playerId, char* packet, i32 packetSize) {
 
     RecordPeerWindowBase(windowBase);
     if (opcode & 0x10) {
-        AddSequence(m_peerReceivedAhead, windowBase + 2);
+        AddSequence(PeerReceivedAhead(), windowBase + 2);
     } else if (opcode & 0x20) {
-        AddSequence(m_peerReceivedAhead, windowBase + 3);
+        AddSequence(PeerReceivedAhead(), windowBase + 3);
     }
-    RemoveSequence(m_peerReceivedAhead, windowBase + 1);
+    RemoveSequence(PeerReceivedAhead(), windowBase + 1);
 
     if (HasReceivedThrough(sequence)) {
         return 1;

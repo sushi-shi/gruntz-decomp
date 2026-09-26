@@ -85,8 +85,23 @@ public:
     SerializeDispatch(CFileMemBase* ar, SerialMode mode, LogicTypeId typeId, CGameObject* object);
 
     void Notify(CGameObject* p);
+    i32 NotifyCollision(CGameObject* other) {
+        m_hitOther = other;
+        return m_collisionLogic->m_dispatch(this);
+    }
 
     i32 AttackBits(CGameObject* target) const;
+    i32 CollisionBits(CGameObject* target) const {
+        return static_cast<i32>(target->m_objectType) & m_collMask;
+    }
+    RECT ExtentAt(i32 x, i32 y) const {
+        RECT bounds;
+        bounds.left = m_extent.left + x;
+        bounds.top = m_extent.top + y;
+        bounds.right = x + m_extent.right;
+        bounds.bottom = m_extent.bottom + y;
+        return bounds;
+    }
 
     i32 PrepareSave(CFileMemBase* ar);
     i32 Serialize(CFileMemBase* ar);
