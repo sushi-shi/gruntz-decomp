@@ -29,6 +29,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntActRegMacros.h>
+#include <Gruntz/GruntActionInline.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntCombatClockInline.h>
 #include <Gruntz/GruntCombatDirection.h>
@@ -1535,21 +1536,7 @@ i32 CGrunt::CommitNeighbor(
     } else {
         eq = ANIMATION_ACT_EQUALS("N");
         if (eq) {
-            i32 lastX = m_lastTilePx.m_x;
-            i32 lastY = m_lastTilePx.m_y;
-            DECLARE_SNAPPED_SCREEN_PIXEL_PAIR(m_object, px, py)
-            i32 redo = 1;
-            if (PIXEL_PAIR_NOT_AT_POSITION(px, py, lastX, lastY)) {
-                if (IsDropReady(1)) {
-                    m_coordToggle = (m_coordToggle == false);
-                    redo = 0;
-                }
-            }
-            SnapToLastTile(1);
-            if (redo) {
-                SET_ANIMATION_ACT("D");
-                SetupTubeAnim(m_coordToggle);
-            }
+            SettleTubeMove();
         }
     }
 
@@ -1561,10 +1548,8 @@ i32 CGrunt::CommitNeighbor(
     nb->CreateHealthSprite();
     ArmGruntCombatTimeout(nb);
     HandleCombatContact(targetPxX, targetPxY, true, targetPlayerIndex, targetUnitIndex);
-    m_neighborPlayerIndex = targetPlayerIndex;
-    m_neighborUnitIndex = targetUnitIndex;
-    m_attackTargetPx.m_x = targetPxX;
-    m_attackTargetPx.m_y = targetPxY;
+    SetGruntNeighbor(this, targetPlayerIndex, targetUnitIndex);
+    m_attackTargetPx.Set(targetPxX, targetPxY);
     if (m_stamina < STAMINA_FULL || m_entranceActive != false) {
         m_neighborValid = true;
         return 1;

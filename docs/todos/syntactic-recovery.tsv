@@ -27,10 +27,14 @@ rva	unit	function	lost_max	cur
 0x057db0	gruntcombat	?PathScan@CGrunt@@QAEHXZ	87.0954	83.5442
 0x0f36a0	gruntdiggerstep	?StepDiggerBehavior@CGrunt@@QAEHXZ	90.0266	66.9018
 0x065630	gruntentrancearrival	?RunMoveConfig@CGrunt@@QAEHHH@Z	90.4314	89.9569
+0x061940	gruntentrancearrival	?StartNeighborAttackAnimation@CGrunt@@QAEHHH@Z	91.5951	91.5705
+0x067b00	gruntentrancemove	?GruntInRadius@CGrunt@@QAEHHH@Z	90.9592	90.9388
 0x0f0e20	gruntgoosuckerstep	?StepGooSuckerBehavior@CGrunt@@QAEHXZ	91.6483	85.3241
 0x051c00	gruntsteps	?StepCompassMove@CGrunt@@QAEHXZ	63.1106	62.6988
 0x032ce0	grunttilescan	?ScanRegion@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	81.9104	80.2577
+0x0ed9f0	gruntwanderstep	?StepHitAndRunnerBehavior@CGrunt@@QAEHXZ	89.5283	89.4658
 0x0a3b50	lightfxrender	?DrawBorder@CMinimap@@QAEXPAUtagRECT@@PAVCDDrawSurfacePair@@H@Z	100.0000	88.0968
+0x0c0590	netsessionmgr	?ComputeChecksum@CNetSession@@QAEHXZ	96.4527	96.4189
 0x0cdb10	play	?OnLButtonDown@CPlay@@UAEHHHH@Z	89.6613	89.4993
 0x0e08b0	projectile	?AdvanceMotion@CBoomerang@@UAEXXZ	100.0000	99.9535
 0x0b0140	rollingball	?Update@CRollingBall@@QAEHXZ	89.6784	89.6660

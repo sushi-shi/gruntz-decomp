@@ -137,8 +137,7 @@ i32 CGrunt::StartNeighborAttackAnimation(i32 targetPlayerIndex, i32 targetUnitIn
         return 0;
     }
 
-    m_neighborPlayerIndex = targetPlayerIndex;
-    m_neighborUnitIndex = targetUnitIndex;
+    SetGruntNeighbor(this, targetPlayerIndex, targetUnitIndex);
     SET_ANIMATION_ACT("F");
 
     m_combatActive = true;
