@@ -38,6 +38,14 @@ static inline i32 SurfaceColorKey(i32 keyed) {
     return (keyed != 0) ? g_surfaceColorKey : -1;
 }
 
+inline void CImage::SetBltFastFlags(CDDSurface* surface) {
+    if (surface->m_hasColorKey != false) {
+        m_bltFastFlags = DDBLTFAST_WAIT | DDBLTFAST_SRCCOLORKEY;
+    } else {
+        m_bltFastFlags = DDBLTFAST_WAIT;
+    }
+}
+
 RVA(0x00152e90, 0x8b)
 i32 CImage::Create(char* path, i32 keyed) {
     i32 colorKey = SurfaceColorKey(keyed);
@@ -55,11 +63,7 @@ i32 CImage::Create(char* path, i32 keyed) {
     m_height = item->m_apiDesc.dwHeight;
     m_anchorX = m_width >> 1;
     m_anchorY = m_height >> 1;
-    if (item->m_hasColorKey != false) {
-        m_bltFastFlags = DDBLTFAST_WAIT | DDBLTFAST_SRCCOLORKEY;
-    } else {
-        m_bltFastFlags = DDBLTFAST_WAIT;
-    }
+    SetBltFastFlags(item);
     m_originX = 0;
     m_originY = 0;
     return 1;
@@ -126,11 +130,7 @@ i32 CImage::LoadDispatch(PidHeader* desc, FileImageFormat mode, u32 size, i32 ke
     m_height = h;
     m_anchorX = w >> 1;
     m_anchorY = h >> 1;
-    if (item->m_hasColorKey != false) {
-        m_bltFastFlags = DDBLTFAST_WAIT | DDBLTFAST_SRCCOLORKEY;
-        return 1;
-    }
-    m_bltFastFlags = DDBLTFAST_WAIT;
+    SetBltFastFlags(item);
     return 1;
 }
 
@@ -153,11 +153,7 @@ i32 CImage::CreateBlankSurface(i32 width, i32 height, i32 keyed) {
     m_height = h;
     m_anchorX = w >> 1;
     m_anchorY = h >> 1;
-    if (item->m_hasColorKey != false) {
-        m_bltFastFlags = DDBLTFAST_WAIT | DDBLTFAST_SRCCOLORKEY;
-    } else {
-        m_bltFastFlags = DDBLTFAST_WAIT;
-    }
+    SetBltFastFlags(item);
     m_originX = 0;
     m_originY = 0;
     return 1;
