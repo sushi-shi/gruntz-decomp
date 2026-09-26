@@ -403,8 +403,7 @@ i32 CTeleporter::Begin() {
         return 0;
     }
 
-    m_armTiming.m_interval = static_cast<u32>(m_object->m_logicRecord->m_speed);
-    m_armTiming.m_start = static_cast<u32>(g_frameTime);
+    m_armTiming.Start(m_object->m_logicRecord->m_speed);
     SwitchAnimationByName("GAME_TELEPORTER", 0);
     SET_ANIMATION_ACT("B");
     return 0;

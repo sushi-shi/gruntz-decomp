@@ -199,9 +199,7 @@ i32 CGruntVoice::BeginPlayback(
     m_sourceObjectId = sourceObjectId;
     m_positionMode = positionMode;
     m_stream = stream;
-    i64* clock = &m_playbackTiming.m_start;
-    clock[1] = stream->GetDurationMs();
-    clock[0] = g_frameTime;
+    m_playbackTiming.Start(stream->GetDurationMs());
     m_priority = priority;
     m_previousAnimationActId = m_logicRecord->m_eventCode;
     m_logicRecord->SetEventCode(ActFindId("B"));

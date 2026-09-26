@@ -178,9 +178,7 @@ i32 CPathHazard::Tick() {
             this->Arrive();
             i32 segs = m_object->m_damage;
             if (segs > 0) {
-                i64* leg = &m_leg.m_start;
-                leg[1] = static_cast<u32>(segs);
-                leg[0] = static_cast<u32>(g_frameTime);
+                m_leg.Start(segs);
                 SET_ANIMATION_ACT("B");
                 return 0;
             }

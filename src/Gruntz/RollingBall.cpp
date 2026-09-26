@@ -94,8 +94,7 @@ CRollingBall::CRollingBall(CGameObject* obj)
         && m_object->m_smarts != 1) {
         time += 1000;
     }
-    m_explodeTiming.m_interval = static_cast<u32>(m_object->m_points);
-    m_explodeTiming.m_start = static_cast<u32>(g_frameTime);
+    m_explodeTiming.Start(m_object->m_points);
     m_target.Set(snapX, snapY);
     m_explodeLatch = false;
     m_fallLatch = 0;
