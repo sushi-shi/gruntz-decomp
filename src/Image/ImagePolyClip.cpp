@@ -677,44 +677,41 @@ i32 FillPolygon(ClipVtx* verts, i32 count, CDDSurface* surf, i16 color) {
     i32 maxYi = -1;
     ClipVtx* prev = &verts[count - 1];
     ClipVtx* cur = verts;
-    if (count > 0) {
-        i32 n = count;
-        do {
-            ClipVtx* top = prev;
-            ClipVtx* bottom = cur;
-            if (static_cast<i32>(bottom->m_y) != static_cast<i32>(top->m_y)) {
-                ClipVtx* table;
-                if (prev->m_y < cur->m_y) {
-                    table = g_rasterEdgeL;
-                } else {
-                    top = cur;
-                    bottom = prev;
-                    table = g_rasterEdgeR;
-                }
-                i32 topX = static_cast<i32>(top->m_x * 16384.0f);
-                i32 topYi = static_cast<i32>(top->m_y * 16384.0f);
-                i32 botYi = static_cast<i32>(bottom->m_y * 16384.0f);
-                i32 topRow = topYi >> WARP_TEXTURE_FRACTION_BITS;
-                i32 botRow = botYi >> WARP_TEXTURE_FRACTION_BITS;
-                i32 height = botRow - topRow;
-                ClipVtx* entry = &table[topRow];
-                i32 xSlope = (static_cast<i32>(bottom->m_x * 16384.0f) - topX) / height;
-                for (i32 y = topRow; y < botRow; y++) {
-                    entry->m_fx = topX;
-                    topX += xSlope;
-                    entry++;
-                }
+    for (i32 i = count; i > 0; i--) {
+        ClipVtx* top = prev;
+        ClipVtx* bottom = cur;
+        if (static_cast<i32>(bottom->m_y) != static_cast<i32>(top->m_y)) {
+            ClipVtx* table;
+            if (prev->m_y < cur->m_y) {
+                table = g_rasterEdgeL;
+            } else {
+                top = cur;
+                bottom = prev;
+                table = g_rasterEdgeR;
             }
-            i32 py = static_cast<i32>(prev->m_y);
-            if (py < minYi) {
-                minYi = py;
+            i32 topX = static_cast<i32>(top->m_x * 16384.0f);
+            i32 topYi = static_cast<i32>(top->m_y * 16384.0f);
+            i32 botYi = static_cast<i32>(bottom->m_y * 16384.0f);
+            i32 topRow = topYi >> WARP_TEXTURE_FRACTION_BITS;
+            i32 botRow = botYi >> WARP_TEXTURE_FRACTION_BITS;
+            i32 height = botRow - topRow;
+            ClipVtx* entry = &table[topRow];
+            i32 xSlope = (static_cast<i32>(bottom->m_x * 16384.0f) - topX) / height;
+            for (i32 y = topRow; y < botRow; y++) {
+                entry->m_fx = topX;
+                topX += xSlope;
+                entry++;
             }
-            if (py > maxYi) {
-                maxYi = py;
-            }
-            prev = cur;
-            cur++;
-        } while (--n != 0);
+        }
+        i32 py = static_cast<i32>(prev->m_y);
+        if (py < minYi) {
+            minYi = py;
+        }
+        if (py > maxYi) {
+            maxYi = py;
+        }
+        prev = cur;
+        cur++;
     }
     ClipVtx* pDesc = &g_rasterEdgeL[minYi];
     i32 stride = surf->m_apiDesc.lPitch;
