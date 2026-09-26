@@ -702,79 +702,12 @@ i32 CNetSession::ComputeChecksum() {
                 sum += IDX(grunt->m_vehiclePickupType) + grunt->m_entranceCommitted
                        + grunt->m_entranceActive + grunt->m_daFlag + IDX(effective);
 
-                PickupType next;
-                switch (carried) {
-                    case PICKUP_BOMB:
-                        next = PICKUP_BOOMERANG;
-                        break;
-                    case PICKUP_WELDER:
-                        next = PICKUP_BRICK;
-                        break;
-                    case PICKUP_SWORD:
-                        next = PICKUP_CLUB;
-                        break;
-                    case PICKUP_GUNHAT:
-                        next = PICKUP_GAUNTLETZ;
-                        break;
-                    case PICKUP_CLUB:
-                        next = PICKUP_GLOVEZ;
-                        break;
-                    case PICKUP_ROCK:
-                        next = PICKUP_GOOBER;
-                        break;
-                    case PICKUP_SHOVEL:
-                        next = PICKUP_GRAVITYBOOTZ;
-                        break;
-                    case PICKUP_BOOMERANG:
-                        next = PICKUP_GUNHAT;
-                        break;
-                    case PICKUP_SPRING:
-                        next = PICKUP_NERFGUN;
-                        break;
-                    case PICKUP_GAUNTLETZ:
-                        next = PICKUP_ROCK;
-                        break;
-                    case PICKUP_WINGZ:
-                        next = PICKUP_SHIELD;
-                        break;
-                    case PICKUP_SPY:
-                        next = PICKUP_SHOVEL;
-                        break;
-                    case PICKUP_BRICK:
-                        next = PICKUP_SPRING;
-                        break;
-                    case PICKUP_GRAVITYBOOTZ:
-                        next = PICKUP_SPY;
-                        break;
-                    case PICKUP_SHIELD:
-                        next = PICKUP_SWORD;
-                        break;
-                    case PICKUP_GOOBER:
-                        next = PICKUP_TIMEBOMB;
-                        break;
-                    case PICKUP_TOOB:
-                        next = PICKUP_TOOB;
-                        break;
-                    case PICKUP_GLOVEZ:
-                        next = PICKUP_WAND;
-                        break;
-                    case PICKUP_TIMEBOMB:
-                        next = PICKUP_WARPSTONE;
-                        break;
-                    case PICKUP_NERFGUN:
-                        next = PICKUP_WELDER;
-                        break;
-                    case PICKUP_WAND:
-                        next = PICKUP_WINGZ;
-                        break;
-                    default:
-                        next = PICKUP_BABYWALKER;
-                        break;
-                }
+                i32 priority;
+                PRIO(priority, carried);
 
                 sum += grunt->m_arrivalPhase + grunt->m_neighborScanEnabled + grunt->m_combatActive
                        + grunt->m_neighborValid + grunt->m_poweredUp + static_cast<i32>(g_frameTime)
-                       + IDX(next);
+                       + priority;
                 sum += rand();
             }
         }

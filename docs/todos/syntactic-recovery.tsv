@@ -32,7 +32,7 @@ rva	unit	function	lost_max	cur
 0x032ce0	grunttilescan	?ScanRegion@CBattlezMapConfig@@QAEHPAVCGrunt@@@Z	81.9104	80.2577
 0x0ed9f0	gruntwanderstep	?StepHitAndRunnerBehavior@CGrunt@@QAEHXZ	89.5283	89.4658
 0x0a3460	lightfxrender	?Refresh@CMinimap@@QAEHHH@Z	69.2227	68.2899
-0x0c0590	netsessionmgr	?ComputeChecksum@CNetSession@@QAEHXZ	96.4527	96.4189
+0x0c0590	netsessionmgr	?ComputeChecksum@CNetSession@@QAEHXZ	96.4527	96.4054
 0x0cbcc0	play	?OnKeyDown@CPlay@@UAEHHH@Z	91.7547	91.3432
 0x0cdb10	play	?OnLButtonDown@CPlay@@UAEHHHH@Z	89.6613	89.4993
 0x0b0140	rollingball	?Update@CRollingBall@@QAEHXZ	89.6784	89.6660
