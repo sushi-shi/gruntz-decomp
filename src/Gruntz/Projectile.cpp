@@ -37,6 +37,7 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/SerialRefLookup.h>
+#include <Gruntz/SerialWorkerRefMacros.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SoundCue.h>
@@ -690,13 +691,7 @@ i32 CProjectile::SerializeDispatch(
             s->Read(&m_sourcePxY, sizeof(m_sourcePxY));
 
             for (i32 ni = 0; ni < 7; ni++) {
-                g_serialCounter++;
-                s->Read(buf, SERIAL_NAME_LEN);
-                if (strlen(buf) != 0) {
-                    m_frames[ni] = MapFind<CAniElement>(reg->m_animRegistry->m_animations, buf);
-                } else {
-                    m_frames[ni] = NULL;
-                }
+                SERIAL_READ_ANIMATION(s, reg, buf, m_frames[ni]);
             }
 
             g_serialCounter++;
@@ -745,12 +740,7 @@ i32 CProjectile::SerializeDispatch(
 
             CAniElement** fp = m_frames;
             for (i32 fi = 0; fi < 7; fi++) {
-                g_serialCounter++;
-                memset(buf, 0, sizeof(buf));
-                if (*fp != NULL) {
-                    strcpy(buf, reg->m_animRegistry->FindAnimationKey(*fp));
-                }
-                s->Write(buf, SERIAL_NAME_LEN);
+                SERIAL_WRITE_ANIMATION(s, reg, buf, *fp);
                 fp++;
             }
 
