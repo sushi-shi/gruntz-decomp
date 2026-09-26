@@ -2604,9 +2604,7 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
     i64* clock = &m_slots[idx].m_startTime;
     clock[1] = INT_MAX;
     clock[0] = g_frameTime;
-    if (m_activeTab == TAB_GRUNTZ && m_position != STATUSBAR_HIDDEN) {
-        PlayRegistryCueIfElapsed(g_gameReg->m_world->m_soundRegistry, "GAME_GOOCOOKING1");
-    }
+    PlayTabCue(this, TAB_GRUNTZ, "GAME_GOOCOOKING1");
     return 1;
 }
 
@@ -2758,23 +2756,13 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                 break;
             case HLROW_HOLD_HIGH:
                 if (static_cast<i64>(g_frameTime) - clock[0] >= clock[1]) {
-                    if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
-                        PlayRegistryCueIfElapsed(
-                            g_gameReg->m_world->m_soundRegistry,
-                            "GAME_REZBELTRETURN"
-                        );
-                    }
+                    PlayTabCue(this, TAB_RESOURCE, "GAME_REZBELTRETURN");
                     m_conveyorSlots[i].m_state = IDX(HLROW_RAMP_DOWN_HIGH);
                 }
                 break;
             case HLROW_HOLD_LOW:
                 if (static_cast<i64>(g_frameTime) - clock[0] >= clock[1]) {
-                    if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
-                        PlayRegistryCueIfElapsed(
-                            g_gameReg->m_world->m_soundRegistry,
-                            "GAME_REZBELTBACKUP"
-                        );
-                    }
+                    PlayTabCue(this, TAB_RESOURCE, "GAME_REZBELTBACKUP");
                     m_conveyorSlots[i].m_state = IDX(HLROW_RAMP_DOWN_LOW);
                 }
                 break;
@@ -2855,12 +2843,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                     i64* belt = &m_beltClock.m_last;
                     belt[1] = g_buteMgr.GetDword("StatusBar", "NextItemDelay", 0x64);
                     belt[0] = static_cast<u32>(g_frameTime);
-                    if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
-                        PlayRegistryCueIfElapsed(
-                            g_gameReg->m_world->m_soundRegistry,
-                            "GAME_REZMACHINE"
-                        );
-                    }
+                    PlayTabCue(this, TAB_RESOURCE, "GAME_REZMACHINE");
                 } else {
                     leftMachine->m_interval =
                         g_buteMgr.GetDword("StatusBar", "LeftMachineWakingDelay", 0x64);
@@ -2908,21 +2891,11 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                     if (found) {
                         m_conveyorSlots[col].m_state = IDX(HLROW_RAMP_UP_HIGH);
                         m_conveyorSlots[col].m_counter = 0x13;
-                        if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
-                            PlayRegistryCueIfElapsed(
-                                g_gameReg->m_world->m_soundRegistry,
-                                "GAME_REZBELTRETRACT"
-                            );
-                        }
+                        PlayTabCue(this, TAB_RESOURCE, "GAME_REZBELTRETRACT");
                     } else {
                         m_conveyorSlots[col].m_state = IDX(HLROW_RAMP_UP_LOW);
                         m_conveyorSlots[col].m_counter = 0xa;
-                        if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
-                            PlayRegistryCueIfElapsed(
-                                g_gameReg->m_world->m_soundRegistry,
-                                "GAME_REZBELTDROP"
-                            );
-                        }
+                        PlayTabCue(this, TAB_RESOURCE, "GAME_REZBELTDROP");
                     }
                     i64* rowClock = &m_conveyorSlots[col].m_last;
                     rowClock[1] = g_buteMgr.GetDword("StatusBar", "ConveyorBeltDelay", 0x64);
@@ -3177,12 +3150,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
         case BELT_DROP_START:
             if (static_cast<i64>(g_frameTime) - belt[0] >= belt[1]) {
                 m_machinePhase = BELT_FALLING;
-                if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
-                    PlayRegistryCueIfElapsed(
-                        g_gameReg->m_world->m_soundRegistry,
-                        "GAME_CHIPFALLOUT"
-                    );
-                }
+                PlayTabCue(this, TAB_RESOURCE, "GAME_CHIPFALLOUT");
                 belt[1] = g_buteMgr.GetDword("StatusBar", "FallingItemDelay", 0x32);
                 belt[0] = static_cast<u32>(g_frameTime);
             }
@@ -3202,9 +3170,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                 m_machineItemRect.bottom = 0x11c;
                 m_machineItemRect.top = 0x104;
                 rectFlag = 1;
-                if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
-                    PlayRegistryCueIfElapsed(g_gameReg->m_world->m_soundRegistry, "GAME_CHIPLAND");
-                }
+                PlayTabCue(this, TAB_RESOURCE, "GAME_CHIPLAND");
                 m_machinePhase = BELT_TRAVELLING;
                 belt[1] = g_buteMgr.GetDword("StatusBar", "NextItemDelay", 0x64);
                 belt[0] = static_cast<u32>(g_frameTime);
@@ -3270,9 +3236,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                 }
             }
             if (m_machineItemRect.top >= row * 0x20 + 0x13e) {
-                if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
-                    PlayRegistryCueIfElapsed(g_gameReg->m_world->m_soundRegistry, "GAME_CHIPLAND");
-                }
+                PlayTabCue(this, TAB_RESOURCE, "GAME_CHIPLAND");
                 SetHlCell(col, m_machineItem, row);
                 StartChipMachineCycle();
             }
@@ -3348,12 +3312,7 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
             m_fallingItem = 0;
         } else if (m_fallingItemRect.bottom >= 0x1bf) {
             if (m_fallActive != FALLING_ITEM_GRINDING) {
-                if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
-                    PlayRegistryCueIfElapsed(
-                        g_gameReg->m_world->m_soundRegistry,
-                        "GAME_REZGRINDING"
-                    );
-                }
+                PlayTabCue(this, TAB_RESOURCE, "GAME_REZGRINDING");
                 m_fallActive = FALLING_ITEM_GRINDING;
             }
             delay = g_buteMgr.GetDword("StatusBar", "FallingItemShredderDelay", 0x64);
