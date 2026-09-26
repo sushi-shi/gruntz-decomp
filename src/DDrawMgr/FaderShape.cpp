@@ -287,10 +287,10 @@ void CFaderShape::RenderFrame(i32 frame) {
         }
     }
     m_previousFrame = frame;
-    m_targetSurface->m_ddSurface->Unlock(NULL);
-    m_sourceSurface->m_ddSurface->Unlock(NULL);
+    m_targetSurface->Unlock();
+    m_sourceSurface->Unlock();
     if (m_sourceSurface != m_warpSourceSurface) {
-        m_warpSourceSurface->m_ddSurface->Unlock(NULL);
+        m_warpSourceSurface->Unlock();
     }
 }
 
