@@ -503,21 +503,7 @@ i32 CPlay::Render() {
         RestoreCursorSaveUnder();
         StepViewportResize();
 
-        if (m_ambientInitDone == false) {
-            if (static_cast<i64>(g_frameTime) - m_ambientTiming.m_start.m_v
-                >= m_ambientTiming.m_interval.m_v) {
-                i32 ambientId = GetAmbientId();
-                char sequenceName[0x40];
-                wsprintfA(sequenceName, "AMBIENT%d", ambientId);
-                if (g_gameReg->m_musicEnabled != false) {
-                    m_mgr->m_midi->PlaySequence(sequenceName, true);
-                } else {
-                    m_mgr->m_midi->SelectSequence(sequenceName);
-                    m_mgr->m_midi->SetCurrentLooping(true);
-                }
-                m_ambientInitDone = true;
-            }
-        }
+        UpdateAmbientMusic();
 
         if (m_region0Gate != false) {
             m_world->m_drawTarget->m_backPair->m_surface->Fill(0);
@@ -741,21 +727,7 @@ i32 CPlay::Render() {
                 PlayCueAt(m_lastCueId, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
                 m_levelTimer->Draw(back, true);
             }
-            if (m_ambientInitDone == false) {
-                if (static_cast<i64>(g_frameTime) - m_ambientTiming.m_start.m_v
-                    >= m_ambientTiming.m_interval.m_v) {
-                    i32 ambientId = GetAmbientId();
-                    char sequenceName[0x40];
-                    wsprintfA(sequenceName, "AMBIENT%d", ambientId);
-                    if (g_gameReg->m_musicEnabled != false) {
-                        m_mgr->m_midi->PlaySequence(sequenceName, true);
-                    } else {
-                        m_mgr->m_midi->SelectSequence(sequenceName);
-                        m_mgr->m_midi->SetCurrentLooping(true);
-                    }
-                    m_ambientInitDone = true;
-                }
-            }
+            UpdateAmbientMusic();
         } else {
 
             m_world->m_level->VisitVisible(
