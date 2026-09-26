@@ -500,10 +500,9 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
         return 0;
     }
 
-    CWwdSpatialMgr*& spatialMgr = m_spatialMgr;
-    if (spatialMgr) {
-        delete spatialMgr;
-        spatialMgr = NULL;
+    if (m_spatialMgr) {
+        delete m_spatialMgr;
+        m_spatialMgr = NULL;
     }
 
     RECT rc;
@@ -545,7 +544,7 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
     };
 
     CWwdSpatialMgr* newSpatialMgr = new CWwdSpatialMgr;
-    spatialMgr = newSpatialMgr;
+    m_spatialMgr = newSpatialMgr;
     if (newSpatialMgr->Init(
             activeGroup,
             &rc,
@@ -558,7 +557,7 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
         )
         == 0) {
         delete m_spatialMgr;
-        spatialMgr = NULL;
+        m_spatialMgr = NULL;
         return 0;
     }
 
