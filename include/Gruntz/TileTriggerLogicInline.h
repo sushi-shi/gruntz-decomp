@@ -69,4 +69,37 @@ __inline i32 CTileTriggerLogic::Setup(
     return 1;
 }
 
+__inline i32 CGiantRockLogic::Build(
+    CTileTriggerContainer* owner,
+    i32 tileX,
+    i32 tileY,
+    i32 cellKey,
+    const i32* matrix,
+    PickupType powerupType,
+    i32 textId,
+    i32 dutyOffSpan
+) {
+    if (m_initGate != false) {
+        return 0;
+    }
+    memcpy(m_matrix, matrix, sizeof(m_matrix));
+    m_powerupType = powerupType;
+    m_textId = textId;
+    m_typeTag = TRIGID_GIANT_ROCK_22;
+    m_tileX = tileX;
+    m_tileY = tileY;
+    m_cellKey = cellKey;
+    m_owner = owner;
+    m_initGate = true;
+    m_startClock = g_frameTime;
+    m_dutyOn = false;
+    m_dutyOnSpan = 0;
+    m_tileToken = 0;
+    m_leadInSpan = 0;
+    m_dutyOffSpan = 0;
+    m_startClock = g_frameTime;
+    m_dutyOffSpan = dutyOffSpan;
+    return 1;
+}
+
 #endif // GRUNTZ_GRUNTZ_TILETRIGGERLOGICINLINE_H
