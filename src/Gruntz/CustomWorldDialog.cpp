@@ -69,11 +69,13 @@ CString RunCustomWorldDialog(HWND parent, CString* outSource) {
     if (parent == NULL) {
         v = g_gameReg->m_gameWnd->m_hwnd;
     }
+    CDDrawSurfaceMgr* world = g_gameReg->m_world;
     g_customWorldParent = v;
-    g_customWorldSurfaceMgr = g_gameReg->m_world;
+    g_customWorldSurfaceMgr = world;
 
     g_customWorldInst = g_gameReg->m_owner->m_hInstance;
-    if (g_gameReg->RunModalDialog("CUSTOM_WORLD", CustomWorldDlgProc, false) == 0) {
+    i32 accepted = g_gameReg->RunModalDialog("CUSTOM_WORLD", CustomWorldDlgProc, false);
+    if (accepted == 0) {
         g_pathStr.Empty();
     }
     g_customWorldSurfaceMgr = NULL;
