@@ -12,7 +12,6 @@
 #include <Gruntz/ActReg.h>
 #include <Gruntz/BattlezDifficulty.h>
 #include <Gruntz/BattlezGruntInline.h>
-#include <Gruntz/BattlezGruntMacros.h>
 #include <Gruntz/BattlezIntervalMs.h>
 #include <Gruntz/BattlezRouteMaskPreset.h>
 #include <Gruntz/BattlezTask.h>
@@ -2314,7 +2313,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                                 && path.GetCount() != 0) {
                                 RECYCLE_HEAD_COORD(path)
                                 if (path.GetCount() != 0) {
-                                    ARR_RECYCLE(g);
+                                    RecycleGruntCoords(g);
                                     POSITION qp = path.GetHeadPosition();
                                     while (qp != NULL) {
                                         Coord* step = static_cast<Coord*>(path.GetNext(qp));
@@ -2352,7 +2351,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
         CTileTriggerSwitchLogic* r = m_cellQuery->FindSwitchLogic(key, TRIGID_ANY);
         if (r->m_typeId == TRIGID_SWITCH_2) {
             g->m_defenderState = AISTATE_SEEK;
-            ARR_RECYCLE(g);
+            RecycleGruntCoords(g);
             g->m_battleState = BZTASK_SEEK_SWITCH;
             g->m_dwell = 0;
             return 0;
@@ -2367,7 +2366,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
             (fcx << TILE_SHIFT_PX) + TILE_HALF_PX,
             (fcy << TILE_SHIFT_PX) + TILE_HALF_PX
         );
-        ARR_RECYCLE(g);
+        RecycleGruntCoords(g);
         return 0;
     }
 
@@ -2380,10 +2379,10 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
                 (fcx << TILE_SHIFT_PX) + TILE_HALF_PX,
                 (fcy << TILE_SHIFT_PX) + TILE_HALF_PX
             );
-            ARR_RECYCLE(g);
+            RecycleGruntCoords(g);
             return 0;
         }
-        ARR_RECYCLE(g);
+        RecycleGruntCoords(g);
         return 0;
     }
 
@@ -2442,7 +2441,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
             CTileActionEvent* r = m_cellQuery->FindActionByCellKey((fcx << 8) + fcy);
             if (r != NULL) {
                 if (r->m_playerFlags[m_playerIndex] != 0) {
-                    ARR_RECYCLE(g);
+                    RecycleGruntCoords(g);
                     ResolveTileClaim(g, fcx, fcy, 1);
                     return 1;
                 }
@@ -2460,7 +2459,7 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     if (maskFlags & IDX(CELL_FLAG_HIDDEN_POWERUP)) {
         PickupType t = ARRIVAL_PICKUP_TERNARY_GT(g);
         if (t == PICKUP_SPY) {
-            ARR_RECYCLE(g);
+            RecycleGruntCoords(g);
             ResolveTileClaim(g, fcx, fcy, 1);
             return 1;
         }
@@ -2562,8 +2561,6 @@ i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     }
     return 1;
 }
-
-#undef ARR_RECYCLE
 
 RVA(0x0002d800, 0x605)
 void CBattlezMapConfig::ClaimTilesAround(CGrunt* unit, i32 col, i32 row, i32 requireUnoccupied) {
