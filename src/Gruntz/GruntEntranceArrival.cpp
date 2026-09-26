@@ -53,7 +53,6 @@
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/VoiceManager.h>
 #include <Ints.h>
-#include <Lith/ObjectUtilities.h>
 #include <Pix16.h>
 #include <RectMacros.h>
 #include <Rez/FrameClock.h>
@@ -1267,7 +1266,7 @@ i32 CGrunt::RunMoveConfig(i32 tileX, i32 tileY) {
         m_coordToggle = (m_coordToggle == false);
     } else if (m_entranceReason == PICKUP_WAND) {
         i32 base;
-        if (IsRandomChance(80)) {
+        if (rand() % 100 < 80) {
             poseIdx = 1;
             base = 0x41a;
         } else {

@@ -32,7 +32,6 @@
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/VoiceManager.h>
 #include <Ints.h>
-#include <Lith/ObjectUtilities.h>
 #include <Wap32/TileGeometry.h>
 #include <ZTools/ZDArray.h>
 
@@ -115,7 +114,7 @@ i32 CGrunt::StepMagicWandGruntBehavior() {
 
         case AISTATE_SEEK:
             occ = m_triggerMgr->FindNearestEnemy(this);
-            if (IsRandomChance(1) && m_health > 0x1a && occ != NULL && m_stamina >= STAMINA_FULL
+            if (rand() % 100 == 0 && m_health > 0x1a && occ != NULL && m_stamina >= STAMINA_FULL
                 && GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) != 0) {
                 m_triggerMgr->UseEquippedToolAt(
                     m_playerIndex,
