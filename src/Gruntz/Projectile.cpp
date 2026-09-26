@@ -25,6 +25,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntCoordRecycleMacros.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/HaznColl.h>
 #include <Gruntz/LevelArea.h>
@@ -516,9 +517,7 @@ i32 CBoomerang::LoadProjectileSprites(
                 (duration * m_flightDist * g_boomerangHoldScale - g_boomerangHoldBiasMs)
             )
         );
-        if (g->CoordCount() != 0) {
-            RECYCLE_GRUNT_COORDS(g)
-        }
+        RecycleGruntCoords(g);
     }
     m_launched = false;
     return 1;

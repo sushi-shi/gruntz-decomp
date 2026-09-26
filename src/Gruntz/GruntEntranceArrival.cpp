@@ -367,9 +367,7 @@ i32 CGrunt::UpdateArrival(i32 walking, i32 commit) {
         m_entranceActive = true;
         SetEntrancePos(1, 1);
 
-        if (CoordCount() != 0) {
-            RECYCLE_GRUNT_COORDS(this)
-        }
+        RecycleGruntCoords(this);
 
         m_entranceStamped = false;
         HIDE_AND_CLEAR_GRUNT_SPRITE(m_healthSprite)

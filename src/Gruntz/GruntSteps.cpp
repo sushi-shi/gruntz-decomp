@@ -859,9 +859,7 @@ applyTail:
         );
         m_lastTilePx.Set(-1, -1);
         SetEntrancePos(1, 1);
-        if (CoordCount() != 0) {
-            RECYCLE_GRUNT_COORDS(this)
-        }
+        RecycleGruntCoords(this);
         if (m_arrivalState == AI_BATTLEZ_PATH) {
             m_defenderState = AISTATE_SEEK;
             m_routePassableMask = 0;

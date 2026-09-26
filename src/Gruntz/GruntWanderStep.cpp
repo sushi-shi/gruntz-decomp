@@ -168,9 +168,7 @@ i32 CGrunt::StepHitAndRunnerBehavior() {
             }
             COMMIT_GRUNT_NEIGHBOR(slot);
             m_neighborScanEnabled = false;
-            if (CoordCount() != 0) {
-                RECYCLE_GRUNT_COORDS(this)
-            }
+            RecycleGruntCoords(this);
             m_defenderState = AISTATE_RETREAT;
             m_dwell = DWELL_REPATH_MS;
             return 1;

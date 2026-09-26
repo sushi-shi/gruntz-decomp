@@ -1326,9 +1326,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
             CTileTriggerSwitchLogic* rec = m_cellQuery->FindSwitchLogic((rx << 8) + ry, TRIGID_ANY);
             if (rec->m_typeId == TRIGID_SWITCH_2) {
                 unit->m_defenderState = AISTATE_SEEK;
-                if (unit->CoordCount() != 0) {
-                    RECYCLE_GRUNT_COORDS(unit)
-                }
+                RecycleGruntCoords(unit);
                 unit->m_battleState = BZTASK_SEEK_SWITCH;
                 unit->m_dwell = 0;
                 return 0;
@@ -1375,9 +1373,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                 cy * 0x20 + 0x10
             );
             unit->m_defenderState = AISTATE_SEEK;
-            if (unit->CoordCount() != 0) {
-                RECYCLE_GRUNT_COORDS(unit)
-            }
+            RecycleGruntCoords(unit);
             return 0;
         }
         if ((pathHeadFlags & IDX(CELL_FLAG_HIDDEN_POWERUP)) && PathCrossesMarkedTile(unit) == 0
@@ -1498,9 +1494,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
                             ox * 0x20 + 0x10,
                             oy * 0x20 + 0x10
                         );
-                        if (unit->CoordCount() != 0) {
-                            RECYCLE_GRUNT_COORDS(unit)
-                        }
+                        RecycleGruntCoords(unit);
                         m_spawnTimer +=
                             static_cast<i32>((static_cast<u32>(m_gruntCreationTime) >> 2));
                         return 1;
@@ -1514,9 +1508,7 @@ i32 CBattlezMapConfig::ValidateUnitPath(CGrunt* unit) {
 returnOne:
     return 1;
 recycleBail:
-    if (unit->CoordCount() != 0) {
-        RECYCLE_GRUNT_COORDS(unit)
-    }
+    RecycleGruntCoords(unit);
 returnZero:
     return 0;
 }
@@ -1587,9 +1579,7 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
                     ));
                 }
 
-                if (unit->CoordCount() != 0) {
-                    RECYCLE_GRUNT_COORDS(unit)
-                }
+                RecycleGruntCoords(unit);
 
                 POSITION qp = list.GetHeadPosition();
                 while (qp != NULL) {
@@ -3074,9 +3064,7 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
         if (found != false) {
             if (IsCoordOccupied(unit, target.m_x, target.m_y) != 0) {
 
-                if (unit->CoordCount() != 0) {
-                    RECYCLE_GRUNT_COORDS(unit)
-                }
+                RecycleGruntCoords(unit);
                 unit->m_defenderState = AISTATE_SEEK;
                 return 1;
             }
@@ -3169,12 +3157,8 @@ i32 CBattlezMapConfig::PathToNearestCandidate(CGrunt* unit, b32 useArg, i32 ax, 
                                 RECYCLE_HEAD_COORD(list)
                             }
                             if (list.GetHeadPosition() != NULL) {
-                                if (unit->CoordCount() != 0) {
-                                    RECYCLE_GRUNT_COORDS(unit)
-                                }
-                                if (cand->CoordCount() != 0) {
-                                    RECYCLE_GRUNT_COORDS(cand)
-                                }
+                                RecycleGruntCoords(unit);
+                                RecycleGruntCoords(cand);
                                 POSITION pp = list.GetHeadPosition();
                                 while (pp != NULL) {
                                     cand->m_coordList.AddTail(list.GetNext(pp));
@@ -3335,9 +3319,7 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
                 }
                 (static_cast<CGrunt*>(u))->LoadPickupSprites(PICKUP_BRICK, 1, 0, 0, 1);
                 u->m_battleState = BZTASK_CARRY_BRICK;
-                if (u->CoordCount() != 0) {
-                    RECYCLE_GRUNT_COORDS(u)
-                }
+                RecycleGruntCoords(u);
             }
             return 1;
         }
@@ -3349,14 +3331,10 @@ i32 CBattlezMapConfig::ChooseIdleBehavior(CGrunt* unit) {
         }
         if (mode != PICKUP_TOOB) {
             if (mode == PICKUP_WINGZ) {
-                if (unit->CoordCount() != 0) {
-                    RECYCLE_GRUNT_COORDS(unit)
-                }
+                RecycleGruntCoords(unit);
             }
         } else {
-            if (unit->CoordCount() != 0) {
-                RECYCLE_GRUNT_COORDS(unit)
-            }
+            RecycleGruntCoords(unit);
         }
     }
 
@@ -3447,9 +3425,7 @@ i32 CBattlezMapConfig::RouteUnitTo(
             if (list.GetCount() != 0) {
                 RECYCLE_HEAD_COORD(list)
                 if (list.GetCount() != 0) {
-                    if (unit->CoordCount() != 0) {
-                        RECYCLE_GRUNT_COORDS(unit)
-                    }
+                    RecycleGruntCoords(unit);
 
                     POSITION pp = list.GetHeadPosition();
                     while (pp != NULL) {
@@ -3546,9 +3522,7 @@ i32 CBattlezMapConfig::RouteUnitToGoal(
             }
         }
 
-        if (unit->CoordCount() != 0) {
-            RECYCLE_GRUNT_COORDS(unit)
-        }
+        RecycleGruntCoords(unit);
 
         qp = list.GetHeadPosition();
         while (qp != NULL) {
@@ -3862,9 +3836,7 @@ i32 CBattlezMapConfig::PathToNearestGoal(CGrunt* unit, i32 col, i32 row) {
             RECYCLE_HEAD_COORD(list)
             if (list.GetCount() != 0) {
 
-                if (unit->CoordCount() != 0) {
-                    RECYCLE_GRUNT_COORDS(unit)
-                }
+                RecycleGruntCoords(unit);
 
                 POSITION pp = list.GetHeadPosition();
                 while (pp != NULL) {

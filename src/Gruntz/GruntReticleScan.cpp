@@ -231,15 +231,11 @@ i32 CGrunt::StepDefenderBehavior() {
                                     }
                                 } else {
                                     SetEntrancePos(1, 1);
-                                    if (CoordCount() != 0) {
-                                        RECYCLE_GRUNT_COORDS(this)
-                                    }
+                                    RecycleGruntCoords(this);
                                 }
                             } else {
                                 SetEntrancePos(1, 1);
-                                if (CoordCount() != 0) {
-                                    RECYCLE_GRUNT_COORDS(this)
-                                }
+                                RecycleGruntCoords(this);
                             }
                             return 1;
                         }

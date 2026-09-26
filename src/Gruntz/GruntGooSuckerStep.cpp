@@ -17,6 +17,7 @@
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPuddle.h>
@@ -128,16 +129,12 @@ i32 CGrunt::StepGooSuckerBehavior() {
         if (m_combatActive == false && m_stamina >= STAMINA_FULL) {
             if (atTarget) {
                 COMMIT_GRUNT_NEIGHBOR(g);
-                if (CoordCount() != 0) {
-                    RECYCLE_GRUNT_COORDS(this)
-                }
+                RecycleGruntCoords(this);
                 return 1;
             }
         } else {
             if (atTarget) {
-                if (CoordCount() != 0) {
-                    RECYCLE_GRUNT_COORDS(this)
-                }
+                RecycleGruntCoords(this);
                 return 1;
             }
         }
