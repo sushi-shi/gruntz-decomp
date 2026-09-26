@@ -3,7 +3,7 @@
 #include <Mfc.h>
 
 #include <Gruntz/FaderBufferInline.h>
-#include <Gruntz/FaderSineInline.h>
+#include <Gruntz/FaderSubtypes.h>
 
 #include <math.h>
 
@@ -11,12 +11,28 @@ namespace {
 #include <Gruntz/GameRand.h>
 } // namespace
 
-DATA(0x001f085c)
-const float g_faderPercentToUnit = 0.01f;
-DATA(0x001f0860)
-const float g_sineHalfPi = 1.570795f;
-DATA(0x001f0864)
-const float g_sineOne = 1.0f;
+inline i32 CFaderSine::AccumulateSampleCount(i32 row, i32 delta, float step) {
+    i32 count = 0;
+    double wanted = delta * step;
+    i32 whole = static_cast<i32>(wanted);
+    if (whole < wanted) {
+        m_fractionalCounts[row] += wanted - whole;
+    }
+    if (m_fractionalCounts[row] >= 1.0f) {
+        count = static_cast<i32>(m_fractionalCounts[row]);
+        m_fractionalCounts[row] -= count;
+    }
+    count += whole;
+    return count;
+}
+
+inline i32 CFaderSine::AdvanceSampleCursor(i32 row) {
+    ++m_sampleCursors[row];
+    if (m_sampleCursors[row] > m_width) {
+        m_sampleCursors[row] = 0;
+    }
+    return m_sampleOrder[m_sampleCursors[row]];
+}
 
 RVA(0x0017fdb0, 0x1a)
 CFaderSine::CFaderSine() {
@@ -62,7 +78,7 @@ i32 CFaderSine::ApplyInit(CFaderConfig* desc) {
         goto fail;
     }
     m_intensityPercent = p;
-    m_fadeRowCount = static_cast<i32>(w * (static_cast<float>(p) * g_faderPercentToUnit));
+    m_fadeRowCount = static_cast<i32>(w * (static_cast<float>(p) * 0.01f));
     for (i = 0; i < 2000; i++) {
         m_appliedCounts[i] = 0;
         m_fractionalCounts[i] = 0;
@@ -95,8 +111,8 @@ void CFaderSine::RenderFrame(i32 frame) {
             u8* targetRow = m_targetBits + m_targetSurface->m_apiDesc.lPitch * row;
 
             i32 delta = static_cast<i32>(
-                            sin(static_cast<double>(static_cast<u32>(row + frame - m_height))
-                                / m_fadeRowCount * g_sineHalfPi)
+                            sin(static_cast<float>(static_cast<u32>(row + frame - m_height))
+                                / m_fadeRowCount * 1.570795f)
                             * m_width / step
                         )
                         - m_appliedCounts[row];
@@ -109,7 +125,7 @@ void CFaderSine::RenderFrame(i32 frame) {
                     n--;
                 }
                 m_appliedCounts[row] += delta;
-                n = static_cast<i32>(step + step);
+                n = static_cast<i32>(step * 2.0f);
                 while (n > 0) {
                     i32 pick = GetRandomNumber(0, m_width - 1);
                     ClearSample(targetRow, pick, bpp);
@@ -126,7 +142,7 @@ void CFaderSine::RenderFrame(i32 frame) {
                     n--;
                 }
                 m_appliedCounts[row] += delta;
-                n = static_cast<i32>(step + step);
+                n = static_cast<i32>(step * 2.0f);
                 while (n > 0) {
                     i32 pick = GetRandomNumber(0, m_width - 1);
                     for (i32 j = 0; j < bpp; j++) {

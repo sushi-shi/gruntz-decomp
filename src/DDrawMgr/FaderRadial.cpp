@@ -9,17 +9,6 @@
 
 #include <math.h>
 
-DATA(0x001f0828)
-const float g_faderHalf = 0.5f;
-DATA(0x001f0830)
-const double g_faderScale = 10000.0;
-DATA(0x001f0838)
-const double g_faderBiasR = -1.0;
-DATA(0x001f0840)
-const float g_faderBiasFade = -1.0f;
-DATA(0x001f0844)
-const float g_faderOne = 1.0f;
-
 RVA(0x0017f9a0, 0x24)
 CFaderRadial::CFaderRadial() {
     m_maxRadius = 0;
@@ -63,14 +52,14 @@ i32 CFaderRadial::ApplyInit(CFaderConfig* desc) {
     }
 
     CDDSurface* s = m_srcSurface;
-    m_fadeDivisor = static_cast<float>(static_cast<i32>(s->m_apiDesc.dwWidth)) * g_faderHalf;
+    m_fadeDivisor = static_cast<float>(static_cast<i32>(s->m_apiDesc.dwWidth)) * 0.5f;
     m_centerX = static_cast<i32>(s->m_apiDesc.dwWidth) / 2;
     m_centerY = static_cast<i32>(s->m_apiDesc.dwHeight) / 2;
     m_cells = new CFaderRadialCell[s->m_apiDesc.dwHeight * s->m_apiDesc.dwWidth];
 
     i32 cx = m_centerX;
     i32 cy = m_centerY;
-    m_maxRadius = static_cast<i32>((sqrt(static_cast<double>((SQR(cx) + SQR(cy)))) * g_faderScale));
+    m_maxRadius = static_cast<i32>((sqrt(static_cast<double>((SQR(cx) + SQR(cy)))) * 10000.0));
 
     for (i32 y = 0; y < static_cast<i32>(m_srcSurface->m_apiDesc.dwHeight); y++) {
         for (i32 x = 0; x < static_cast<i32>(m_srcSurface->m_apiDesc.dwWidth); x++) {
@@ -79,9 +68,9 @@ i32 CFaderRadial::ApplyInit(CFaderConfig* desc) {
             CFaderRadialCell cell;
             cell.m_radius = static_cast<float>(
                 (static_cast<double>(m_maxRadius)
-                 - sqrt(static_cast<double>((SQR(dx) + SQR(dy)))) * g_faderScale - g_faderBiasR)
+                 - sqrt(static_cast<double>((SQR(dx) + SQR(dy)))) * 10000.0 + 1.0)
             );
-            float fade = cell.m_radius / m_fadeDivisor - g_faderBiasFade;
+            float fade = cell.m_radius / m_fadeDivisor + 1.0f;
             cell.m_vx = static_cast<float>(dx) * fade;
             cell.m_vy = static_cast<float>(m_centerY - y) * fade;
             cell.m_pixel = m_srcSurface->GetPixel(x, y);
@@ -113,8 +102,8 @@ void CFaderRadial::RenderFrame(i32 frame) {
                             * static_cast<i32>(m_srcSurface->m_apiDesc.dwHeight);
          i++) {
         float d = m_cells[i].m_radius - static_cast<float>(static_cast<u32>(frame));
-        if (d > g_faderOne) {
-            float sf = d / m_fadeDivisor - g_faderBiasFade;
+        if (d > 1.0f) {
+            float sf = d / m_fadeDivisor + 1.0f;
             i32 px = m_centerX + static_cast<i32>((m_cells[i].m_vx / sf));
             i32 py = m_centerY - static_cast<i32>((m_cells[i].m_vy / sf));
             if (px > 0 && px < static_cast<i32>(m_dstSurface->m_apiDesc.dwWidth) && py > 0

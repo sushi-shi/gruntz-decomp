@@ -7,9 +7,6 @@
 #include <Gruntz/FaderBufferInline.h>
 #include <Gruntz/FaderLightInline.h>
 
-DATA(0x001f0888)
-const double g_faderPowK = 2.0;
-
 RVA(0x00180410, 0x19)
 CFaderLight::CFaderLight() {
     m_overlay = NULL;
@@ -189,15 +186,15 @@ void CFaderLight::RenderFrame(i32 frame) {
 
 RVA(0x001814f0, 0x16d)
 i32 CFaderLight::GetFrameCount() {
-    double pLeft = pow(static_cast<double>(m_center.x), g_faderPowK);
-    double pTop = pow(static_cast<double>(m_center.y), g_faderPowK);
+    double pLeft = pow(static_cast<double>(m_center.x), 2.0);
+    double pTop = pow(static_cast<double>(m_center.y), 2.0);
     double dTopLeft = sqrt(pLeft + pTop);
     double pBottom =
         pow(static_cast<double>(static_cast<i32>(m_targetSurface->m_apiDesc.dwHeight) - m_center.y),
-            g_faderPowK);
+            2.0);
     double pRight =
         pow(static_cast<double>(static_cast<i32>(m_targetSurface->m_apiDesc.dwWidth) - m_center.x),
-            g_faderPowK);
+            2.0);
     double dBottomRight = sqrt(pRight + pBottom);
     double dTopRight = sqrt(pRight + pTop);
     double dBottomLeft = sqrt(pLeft + pBottom);
