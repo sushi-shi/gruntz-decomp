@@ -14,7 +14,7 @@ rva	unit	function	lost_max	cur
 0x153ff0	cimage	?BlitShadeFlipHV@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	100.0000	99.9812
 0x1544d0	cimage	?BlitShadeFlipV@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	100.0000	99.2775
 0x154270	cimage	?BlitShadeNorm@CImage@@QAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	100.0000	99.8522
-0x153470	cimage	?RenderImage@CImage@@UAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	99.1333	97.1567
+0x153470	cimage	?RenderImage@CImage@@UAEXPAVCResolveNode@@PAVCDDrawSurfacePair@@@Z	99.1333	99.0500
 0x14b770	ddrawshadeblit	?BlitShadedMirrored@CDDrawShadeBlit@@QAEXPAUtagRECT@@PAVCDDSurface@@0H@Z	77.4881	77.0728
 0x14c9f0	ddrawshadeblit	?ConvertRow@CDDrawShadeBlit@@QAEXPAE0H@Z	82.0433	80.9266
 0x14d5e0	ddrawshadeblit	?ConvertRowDoubleFwd@CDDrawShadeBlit@@QAEXPAE0HH@Z	72.0353	70.7115

@@ -24,8 +24,8 @@
 RVA(0x001660f0, 0xd1)
 void CWwdDotObject::Render(CDDrawSurfacePair* dst) {
     if (m_clip.left == COORD_UNSET) {
-        if (m_screenX < 0 || m_screenY < 0 || m_screenX >= dst->m_width
-            || m_screenY >= dst->m_height) {
+        if (m_screenX < 0 || m_screenY < 0 || m_screenX >= dst->GetWidth()
+            || m_screenY >= dst->GetHeight()) {
             m_dirty.m_armed = -1;
             return;
         }

@@ -150,7 +150,7 @@ i32 CDDrawSubMgrPages::PagesReady() {
 RVA(0x00158bf0, 0x7f)
 i32 CDDrawSubMgrPages::ResizePages(i32 w, i32 h, ColorDepth bpp) {
     CDDrawFrontSurface* p = m_frontSurface;
-    if (p->m_width != w || p->m_height != h || p->m_bpp != bpp) {
+    if (p->GetWidth() != w || p->GetHeight() != h || p->m_bpp != bpp) {
         if (!m_frontSurface->SetGeom(w, h, bpp)) {
             return 0;
         }
@@ -189,8 +189,12 @@ i32 CDDrawSubMgrPages::CreateOverlay(i32 copyFromBack, i32 createFlag) {
         return 0;
     }
     CDDrawSurfacePair* backBuffer = m_backPair;
-    if (!m_overlayPair
-             ->Create(backBuffer->m_width, backBuffer->m_height, backBuffer->m_bpp, createFlag)) {
+    if (!m_overlayPair->Create(
+            backBuffer->GetWidth(),
+            backBuffer->GetHeight(),
+            backBuffer->m_bpp,
+            createFlag
+        )) {
         return 0;
     }
     if (copyFromBack) {

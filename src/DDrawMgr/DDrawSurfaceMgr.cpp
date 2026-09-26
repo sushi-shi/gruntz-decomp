@@ -165,7 +165,7 @@ RVA(0x00155f60, 0x56)
 i32 CDDrawSurfaceMgr::SetDimensions(i32 x, i32 y, ColorDepth bpp) {
     CDDrawFrontSurface* child = m_drawTarget->m_frontSurface;
 
-    if (child->m_width != x || child->m_height != y) {
+    if (child->GetWidth() != x || child->GetHeight() != y) {
         if (m_drawTarget->ResizePages(x, y, bpp) == BPP_UNSET) {
             return 0;
         }

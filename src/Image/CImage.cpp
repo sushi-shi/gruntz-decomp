@@ -360,14 +360,14 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
         if (x < 0) {
             dleft = 0;
         }
-        if (right >= dst->m_width) {
-            dright = dst->m_width - 1;
+        if (right >= dst->GetWidth()) {
+            dright = dst->GetWidth() - 1;
         }
         if (y < 0) {
             dtop = 0;
         }
-        if (bottom >= dst->m_height) {
-            dbottom = dst->m_height - 1;
+        if (bottom >= dst->GetHeight()) {
+            dbottom = dst->GetHeight() - 1;
         }
     } else {
         if (x < info->m_clip.left) {
