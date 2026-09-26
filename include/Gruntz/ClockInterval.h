@@ -41,6 +41,11 @@ struct ClockInterval {
         return static_cast<i64>(g_frameTime) - m_start >= m_interval;
     }
 
+    u32 Elapsed() const {
+        i64 elapsed = static_cast<i64>(g_frameTime) - m_start;
+        return elapsed < 0 ? 0 : static_cast<u32>(elapsed);
+    }
+
     i64 Deadline() const {
         return m_interval + m_start;
     }

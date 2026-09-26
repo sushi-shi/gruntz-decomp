@@ -1884,8 +1884,7 @@ void CGrunt::StepBehavior(char*) {
             }
             i32 flash = g_buteMgr.GetInt("Grunt", s_safeFlashTime, 0x32);
             if (g_buteMgr.GetInt("Grunt", s_accelerateFlash, 0) == 1) {
-                i64 el = static_cast<i64>(g_frameTime) - m_entranceTiming.m_start;
-                u32 elapsed = (el < 0 ? 0 : static_cast<u32>(el));
+                u32 elapsed = m_entranceTiming.Elapsed();
 
                 double span =
                     static_cast<double>(g_buteMgr.GetDword("Grunt", "EntranceSafeTime", 0x1388));
@@ -2235,9 +2234,8 @@ afterArrival:
         if (static_cast<u32>((left < 0 ? 0 : static_cast<u32>(left))) == 0) {
             m_stamina = STAMINA_FULL;
         } else {
-            i64 spent = static_cast<i64>(g_frameTime) - m_attackTiming.m_start;
             m_stamina = static_cast<i32>(
-                static_cast<double>((spent < 0 ? 0 : static_cast<u32>(spent)))
+                static_cast<double>(m_attackTiming.Elapsed())
                     / static_cast<double>(static_cast<u32>(m_attackTiming.m_intervalLo))
                     * g_wingzScale
                 - g_wingzBias

@@ -56,8 +56,7 @@ i32 CGrunt::UpdateDeathAnimation() {
             epoch = static_cast<i32>(g_frameTime);
             clock->m_start = static_cast<u32>(epoch);
         }
-        i64 e = static_cast<i64>(g_frameTime) - m_idleWindowTiming.m_start;
-        u32 elapsed = e < 0 ? 0 : static_cast<u32>(e);
+        u32 elapsed = m_idleWindowTiming.Elapsed();
         CWwdSpriteObject* o = m_object;
         i32 r = static_cast<i32>(
             (static_cast<double>(elapsed) * 256.0
