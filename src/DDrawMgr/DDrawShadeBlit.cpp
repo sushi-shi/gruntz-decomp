@@ -1368,44 +1368,46 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
         }
         case SHADE_ALPHA_16: {
             memcpy(g_scratch, dst - count * 2 - 2, count * 2);
-            u8* sc = &g_scratch[count * 2 - 2];
-            u8* sw = dst;
+            u16* sc = reinterpret_cast<u16*>(&g_scratch[count * 2 - 2]);
+            u16* d = reinterpret_cast<u16*>(dst);
+            u16* s = reinterpret_cast<u16*>(src);
             if (m_blendVariant) {
                 while (count-- > 0) {
-                    u32 d = Load16(sc);
-                    u32 a = Load16(src);
-                    u16 r = m_lutBank1
-                        [((a >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
-                         + (((d >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
-                            << RGB555_CHANNEL_BITS)];
-                    r |= m_lutBank0
-                        [(a >> RGB555_RED_UP) + ((d >> PIXEL16_GREEN_UP) & ~RGB555_CHANNEL_MASK)];
-                    r |= m_lutBank2
-                        [(a & RGB555_CHANNEL_MASK)
-                         + ((d & RGB555_CHANNEL_MASK) << RGB555_CHANNEL_BITS)];
-                    Store16(sw, r);
-                    sc -= 2;
-                    src += 2;
-                    sw -= 2;
+                    u32 b = *sc;
+                    u32 a = *s;
+                    u16 v = m_lutBank0
+                                [(a >> RGB555_RED_UP)
+                                 + ((b >> PIXEL16_GREEN_UP) & ~RGB555_CHANNEL_MASK)]
+                            | m_lutBank1
+                                [((a >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
+                                 + (((b >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
+                                    << RGB555_CHANNEL_BITS)]
+                            | m_lutBank2
+                                [(a & RGB555_CHANNEL_MASK)
+                                 + ((b & RGB555_CHANNEL_MASK) << RGB555_CHANNEL_BITS)];
+                    *d = v;
+                    d--;
+                    s++;
+                    sc--;
                 }
             } else {
                 while (count-- > 0) {
-                    u32 d = Load16(sc);
-                    u32 a = Load16(src);
-                    u16 r = m_lutBank1
-                        [((a >> RGB565_GREEN_TO_5_SHIFT) & RGB555_CHANNEL_MASK)
-                         + (((d >> RGB565_GREEN_TO_5_SHIFT) & RGB555_CHANNEL_MASK)
-                            << RGB555_CHANNEL_BITS)];
-                    r |= m_lutBank0
-                        [(a >> RGB565_RED_UP)
-                         + ((d >> RGB565_GREEN_TO_5_SHIFT) & ~RGB555_CHANNEL_MASK)];
-                    r |= m_lutBank2
-                        [(a & RGB555_CHANNEL_MASK)
-                         + ((d & RGB555_CHANNEL_MASK) << RGB555_CHANNEL_BITS)];
-                    Store16(sw, r);
-                    sc -= 2;
-                    src += 2;
-                    sw -= 2;
+                    u32 b = *sc;
+                    u32 a = *s;
+                    u16 v = m_lutBank0
+                                [(a >> RGB565_RED_UP)
+                                 + ((b >> RGB565_GREEN_TO_5_SHIFT) & ~RGB555_CHANNEL_MASK)]
+                            | m_lutBank1
+                                [((a >> RGB565_GREEN_TO_5_SHIFT) & RGB555_CHANNEL_MASK)
+                                 + (((b >> RGB565_GREEN_TO_5_SHIFT) & RGB555_CHANNEL_MASK)
+                                    << RGB555_CHANNEL_BITS)]
+                            | m_lutBank2
+                                [(a & RGB555_CHANNEL_MASK)
+                                 + ((b & RGB555_CHANNEL_MASK) << RGB555_CHANNEL_BITS)];
+                    *d = v;
+                    d--;
+                    s++;
+                    sc--;
                 }
             }
             break;
