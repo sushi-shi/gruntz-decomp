@@ -473,7 +473,11 @@ i32 CDDrawFrontSurface::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
 }
 
 RVA(0x00164650, 0x3)
-void CDDrawSurfacePair::BlitDirtyRect(CDDrawSurfacePair* other, i32* pos, i32* size) {}
+void CDDrawSurfacePair::BlitDirtyRect(
+    CDDrawSurfacePair* other,
+    const POINT& pos,
+    const SIZE& size
+) {}
 
 RVA(0x00164660, 0x46)
 i32 CDrawSubWorker::Probe() {

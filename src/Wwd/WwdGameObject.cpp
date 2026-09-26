@@ -116,22 +116,22 @@ void CWwdSpriteObject::BltDirtyEx(
         RECT ir;
         if (IntersectRect(&ir, &m_dirty.m_rect, &m_shadow.m_rect)) {
             UnionRect(&ir, &m_dirty.m_rect, &m_shadow.m_rect);
-            i32 pos[2];
-            i32 size[2];
+            CPoint pos;
+            CSize size;
 
-            pos[0] = ir.left;
-            pos[1] = ir.top;
-            size[0] = ir.right - ir.left + 1;
-            size[1] = ir.bottom - ir.top + 1;
+            pos.x = ir.left;
+            pos.y = ir.top;
+            size.cx = ir.right - ir.left + 1;
+            size.cy = ir.bottom - ir.top + 1;
             dst->BlitDirtyRect(src, pos, size);
         } else {
-            dst->BlitDirtyRect(src, &m_dirty.m_lastX, &m_dirty.m_w);
-            dst->BlitDirtyRect(src, &m_shadow.m_lastX, &m_shadow.m_w);
+            dst->BlitDirtyRect(src, m_dirty.m_position, m_dirty.m_size);
+            dst->BlitDirtyRect(src, m_shadow.m_position, m_shadow.m_size);
         }
     } else if (m_dirty.m_armed != -1) {
-        dst->BlitDirtyRect(src, &m_dirty.m_lastX, &m_dirty.m_w);
+        dst->BlitDirtyRect(src, m_dirty.m_position, m_dirty.m_size);
     } else if (m_shadow.m_armed != -1) {
-        dst->BlitDirtyRect(src, &m_shadow.m_lastX, &m_shadow.m_w);
+        dst->BlitDirtyRect(src, m_shadow.m_position, m_shadow.m_size);
     }
 }
 
@@ -145,22 +145,22 @@ void CWwdSpriteObject::BltDirtyRegions(
         RECT ir;
         if (IntersectRect(&ir, &m_dirty.m_rect, &m_shadow.m_rect)) {
             UnionRect(&ir, &m_dirty.m_rect, &m_shadow.m_rect);
-            i32 pos[2];
-            i32 size[2];
+            CPoint pos;
+            CSize size;
 
-            pos[0] = ir.left;
-            pos[1] = ir.top;
-            size[0] = ir.right - ir.left + 1;
-            size[1] = ir.bottom - ir.top + 1;
+            pos.x = ir.left;
+            pos.y = ir.top;
+            size.cx = ir.right - ir.left + 1;
+            size.cy = ir.bottom - ir.top + 1;
             dst->BlitDirtyRect(src, pos, size);
         } else {
-            dst->BlitDirtyRect(src, &m_dirty.m_lastX, &m_dirty.m_w);
-            dst->BlitDirtyRect(src, &m_shadow.m_lastX, &m_shadow.m_w);
+            dst->BlitDirtyRect(src, m_dirty.m_position, m_dirty.m_size);
+            dst->BlitDirtyRect(src, m_shadow.m_position, m_shadow.m_size);
         }
     } else if (m_dirty.m_armed != -1) {
-        dst->BlitDirtyRect(src, &m_dirty.m_lastX, &m_dirty.m_w);
+        dst->BlitDirtyRect(src, m_dirty.m_position, m_dirty.m_size);
     } else if (m_shadow.m_armed != -1) {
-        dst->BlitDirtyRect(src, &m_shadow.m_lastX, &m_shadow.m_w);
+        dst->BlitDirtyRect(src, m_shadow.m_position, m_shadow.m_size);
     }
 }
 
@@ -192,8 +192,8 @@ i32 CWwdSpriteObject::IntersectsViewport() {
 
         CDDrawFrontSurface* g = OwnerMgr()->m_drawTarget->m_frontSurface;
 
-        i32 gw = g->m_width;
-        i32 gh = g->m_height;
+        i32 gw = g->GetWidth();
+        i32 gh = g->GetHeight();
         if (right < 0) {
             return 0;
         }

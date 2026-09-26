@@ -9,8 +9,9 @@
 #include <ddraw.h>
 #include <stddef.h>
 
-inline void CDrawSubWorker::BlitDirtyRect(CDDrawSurfacePair* other, i32* pos, i32* size) {
-    CRect rc(CPoint(pos[0], pos[1]), CSize(size[0], size[1]));
+inline void
+CDrawSubWorker::BlitDirtyRect(CDDrawSurfacePair* other, const POINT& pos, const SIZE& size) {
+    CRect rc(CPoint(pos.x, pos.y), CSize(size.cx, size.cy));
     m_surface->BltEx(&rc, other->m_surface, &rc, DDBLT_WAIT, NULL);
 }
 

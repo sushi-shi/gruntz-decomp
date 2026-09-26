@@ -395,12 +395,12 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
     s.right = s.left + w;
     s.bottom = s.top + h;
     dst->m_surface->BltFast(dleft, dtop, m_surface, &s, m_bltFastFlags);
-    info->m_dirty.m_lastX = dleft;
+    info->m_dirty.m_position.x = dleft;
     info->m_dirty.m_rect.left = dleft;
-    info->m_dirty.m_lastY = dtop;
-    info->m_dirty.m_w = w;
+    info->m_dirty.m_position.y = dtop;
+    info->m_dirty.m_size.cx = w;
     info->m_dirty.m_rect.top = dtop;
-    info->m_dirty.m_h = h;
+    info->m_dirty.m_size.cy = h;
     info->m_dirty.m_armed = 0;
     info->m_dirty.m_rect.right = dright;
     info->m_dirty.m_rect.bottom = dbottom;
@@ -509,11 +509,11 @@ void CImage::BlitShadeFlipHV(CResolveNode* info, CDDrawSurfacePair* dst) {
         m_owned->m_light = info->m_fillFraction;
     }
     m_owned->Blit(&d, dst->m_surface, &s, 0, 0);
-    info->m_dirty.m_lastX = d.left;
-    info->m_dirty.m_lastY = d.top;
+    info->m_dirty.m_position.x = d.left;
+    info->m_dirty.m_position.y = d.top;
     info->m_dirty.m_rect = *(&d);
-    info->m_dirty.m_w = w;
-    info->m_dirty.m_h = h;
+    info->m_dirty.m_size.cx = w;
+    info->m_dirty.m_size.cy = h;
     info->m_dirty.m_armed = 0;
 }
 
@@ -551,11 +551,11 @@ void CImage::BlitShadeFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
         m_owned->Select(info->m_drawFillCmd, info->m_drawFillArg);
     }
     m_owned->Blit(&d, dst->m_surface, &s, 1, 0);
-    info->m_dirty.m_lastX = d.left;
-    info->m_dirty.m_lastY = d.top;
+    info->m_dirty.m_position.x = d.left;
+    info->m_dirty.m_position.y = d.top;
     info->m_dirty.m_rect = *(&d);
-    info->m_dirty.m_w = w;
-    info->m_dirty.m_h = h;
+    info->m_dirty.m_size.cx = w;
+    info->m_dirty.m_size.cy = h;
     info->m_dirty.m_armed = 0;
 }
 

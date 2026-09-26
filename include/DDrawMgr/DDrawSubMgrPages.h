@@ -89,7 +89,7 @@ public:
     }
 
     i32 Probe();
-    void BlitDirtyRect(CDDrawSurfacePair* other, i32* pos, i32* size);
+    void BlitDirtyRect(CDDrawSurfacePair* other, const POINT& pos, const SIZE& size);
 
     virtual ~CDrawSubWorker() OVERRIDE {
         m_width = 0;
