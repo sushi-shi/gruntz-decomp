@@ -25,6 +25,15 @@ Calibrate a partially rejecting case before inferring a budget; do not equate
 machine-code bytes with the compiler's internal size estimate. A missing call
 can also be tail merging or dead-code elimination.
 
+A later candidate site can decide a nested expansion without spending anything.
+Observed in `CShadeTableCache` (real MFC `CArray`): `m_arr.Add(t)` expands
+`SetAtGrow` and `SetSize` when `Add` is the caller's last candidate site, but
+keeps `SetSize` out of line, as retail does, once a one-line accessor
+(`u8* data = t->GetData()`) follows it. Removing only that accessor restores the
+expansion. Reverse-audit signature: an unrelated helper that "wins" by adding
+inline sites after the container call (three `Min<float>` sites did this in
+`HsvShiftTable`) can be standing in for the missing accessor.
+
 Member construction spends the same budget. Giving a member type a user-declared
 constructor, even an empty inline `T() {}`, adds a construction site for every
 such member of the enclosing class. Observed: with ctors on `Coord` and

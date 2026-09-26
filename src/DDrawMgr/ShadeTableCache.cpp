@@ -11,7 +11,6 @@
 #include <DDrawMgr/PixelFormatMacros.h>
 #include <DDrawMgr/PixelShift.h>
 #include <Enums.h>
-#include <Globals.h>
 #include <Ints.h>
 #include <Lith/BDefs.h>
 #include <Pix16.h>
@@ -91,7 +90,7 @@ CShadeTable* CShadeTableCache::FlashTable(
 
     m_arr.Add(t);
 
-    u8* data = t->m_data;
+    u8* data = t->GetData();
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         u8* ramp = &data[i * total];
 
@@ -184,7 +183,7 @@ CShadeTableCache::HsvShiftTable(PALETTEENTRY* pal, i32 steps, i32 pct, i32 gamma
     }
 
     m_arr.Add(t);
-    u8* data = t->m_data;
+    u8* data = t->GetData();
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         for (i32 j = 0; j < steps; j++) {
             i32 green = pal[i].peGreen;
@@ -199,18 +198,18 @@ CShadeTableCache::HsvShiftTable(PALETTEENTRY* pal, i32 steps, i32 pct, i32 gamma
             float scale = static_cast<float>(j) / static_cast<float>(steps)
                               * ((static_cast<float>((pct - 100)) * factor) * g_percentScale)
                           - s_negone;
-            u8 rn = static_cast<u8>(
-                Min(static_cast<float>(((baseArg & PIXEL_BYTE_MASK) + pal[i].peRed)) * scale,
-                    g_colorChannelMax)
-            );
-            u8 gn = static_cast<u8>(
-                Min(static_cast<float>(((baseArg & PIXEL_BYTE_MASK) + pal[i].peGreen)) * scale,
-                    g_colorChannelMax)
-            );
-            u8 bn = static_cast<u8>(
-                Min(static_cast<float>(((baseArg & PIXEL_BYTE_MASK) + pal[i].peBlue)) * scale,
-                    g_colorChannelMax)
-            );
+            u8 rn = static_cast<u8>(HSV_MIN(
+                static_cast<float>(((baseArg & PIXEL_BYTE_MASK) + pal[i].peRed)) * scale,
+                g_colorChannelMax
+            ));
+            u8 gn = static_cast<u8>(HSV_MIN(
+                static_cast<float>(((baseArg & PIXEL_BYTE_MASK) + pal[i].peGreen)) * scale,
+                g_colorChannelMax
+            ));
+            u8 bn = static_cast<u8>(HSV_MIN(
+                static_cast<float>(((baseArg & PIXEL_BYTE_MASK) + pal[i].peBlue)) * scale,
+                g_colorChannelMax
+            ));
             data[i * steps + j] = FindNearestColor(pal, rn, gn, bn);
         }
     }
@@ -228,21 +227,26 @@ CShadeTable* CShadeTableCache::HueRampTable(PALETTEENTRY* pal, i32 steps, i32 pa
     }
 
     m_arr.Add(t);
-    u8* data = t->m_data;
+    u8* data = t->GetData();
     u32 rgb = static_cast<u32>(packedColor);
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
-        PALETTEENTRY* p = &pal[i];
         for (i32 j = 0; j < steps; j++) {
             float t1 = static_cast<float>(j) / static_cast<float>(steps);
-            u8 bn = static_cast<u8>(
-                INTERPOLATE(static_cast<float>(p->peBlue), static_cast<float>(GetBValue(rgb)), t1)
-            );
-            u8 gn = static_cast<u8>(
-                INTERPOLATE(static_cast<float>(p->peGreen), static_cast<float>(GetGValue(rgb)), t1)
-            );
-            u8 rn = static_cast<u8>(
-                INTERPOLATE(static_cast<float>(p->peRed), static_cast<float>(GetRValue(rgb)), t1)
-            );
+            u8 rn = static_cast<u8>(INTERPOLATE(
+                static_cast<float>(pal[i].peRed),
+                static_cast<float>(GetRValue(rgb)),
+                t1
+            ));
+            u8 gn = static_cast<u8>(INTERPOLATE(
+                static_cast<float>(pal[i].peGreen),
+                static_cast<float>(GetGValue(rgb)),
+                t1
+            ));
+            u8 bn = static_cast<u8>(INTERPOLATE(
+                static_cast<float>(pal[i].peBlue),
+                static_cast<float>(GetBValue(rgb)),
+                t1
+            ));
             data[i * steps + j] = static_cast<u8>(FindNearestColor(pal, rn, gn, bn));
         }
     }
@@ -262,7 +266,7 @@ CShadeTable* CShadeTableCache::GammaTable(PALETTEENTRY* pal, i32 wRow, i32 wCol)
     }
 
     m_arr.Add(t);
-    u8* data = t->m_data;
+    u8* data = t->GetData();
     i32 div = (wRow + wCol) / 100;
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         for (i32 j = 0; j < PALETTE_ENTRY_COUNT; j++) {
@@ -288,7 +292,7 @@ CShadeTable* CShadeTableCache::LumaSortTable(PALETTEENTRY* pal) {
     }
 
     m_arr.Add(t);
-    u8* data = t->m_data;
+    u8* data = t->GetData();
     g_pal = pal;
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         data[i] = static_cast<u8>(i);
@@ -341,7 +345,7 @@ CShadeTable* CShadeTableCache::HueSortTable(PALETTEENTRY* pal) {
     }
 
     m_arr.Add(t);
-    u8* data = t->m_data;
+    u8* data = t->GetData();
     g_pal = pal;
     for (i32 i = 0; i < PALETTE_ENTRY_COUNT; i++) {
         data[i] = static_cast<u8>(i);

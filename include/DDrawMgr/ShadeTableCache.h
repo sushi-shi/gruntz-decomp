@@ -36,6 +36,10 @@ struct CShadeTable {
     };
     i32 m_key;
 
+    u8* GetData() const {
+        return m_data;
+    }
+
     u16* Lut16() const {
         return m_lut16;
     }
