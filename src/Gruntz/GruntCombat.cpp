@@ -1463,15 +1463,11 @@ i32 CGrunt::LoadGruntCombatAnimations(
         );
 
         if (m_coordList.GetCount() != 0) {
-            Coord* node = NULL;
-            i32 rx = this->m_lastTilePx.m_x >> TILE_SHIFT_PX;
-            i32 ry = this->m_lastTilePx.m_y >> TILE_SHIFT_PX;
-            if (g_coordPool.m_freeHead->m_next != NULL) {
-                node = &g_coordPool.m_freeHead->m_value;
-                node->Set(rx, ry);
-                g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
-            }
-            m_coordList.AddHead(node);
+            Coord tile;
+            m_coordList.AddHead(g_coordPool.PopCopy(*tile.Set(
+                this->m_lastTilePx.m_x >> TILE_SHIFT_PX,
+                this->m_lastTilePx.m_y >> TILE_SHIFT_PX
+            )));
         }
 
         this->m_lastTilePx = newPos;

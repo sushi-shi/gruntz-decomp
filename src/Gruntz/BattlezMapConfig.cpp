@@ -1555,30 +1555,20 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
         }
         i32 x = coord->m_x;
         i32 y = coord->m_y;
-        i32 tile = board->m_rowInts[y][x * 7];
-        if ((tile & 1) != 0 && (x != tx || y != ty)) {
+        if ((m_board->m_rows[y][x].m_flags & 1) != 0 && (x != tx || y != ty)) {
             continue;
         }
         CPtrList list(10);
         i32 flags = 0;
         PickupType er = unit->m_entranceReason;
-        PickupType prim = unit->ArrivalPickupOf(er);
-        if (prim == PICKUP_TOOB) {
-            flags = 0x100;
+        if (unit->ArrivalPickupOf(er) == PICKUP_TOOB) {
+            flags = BATTLEZ_ROUTE_TOOB_TRAVERSAL;
         }
-        prim = er;
-        if (er > PICKUP_EQUIPPABLE_LAST) {
-            prim = unit->m_toolId;
+        if (unit->ArrivalPickupOf(er) == PICKUP_WINGZ) {
+            flags = BATTLEZ_ROUTE_WINGZ_TRAVERSAL;
         }
-        if (prim == PICKUP_WINGZ) {
-            flags = 0x942;
-        }
-        prim = er;
-        if (er > PICKUP_EQUIPPABLE_LAST) {
-            prim = unit->m_toolId;
-        }
-        if (prim == PICKUP_SPRING) {
-            flags = 0x1000;
+        if (unit->ArrivalPickupOf(er) == PICKUP_SPRING) {
+            flags = BATTLEZ_ROUTE_SPRING_TRAVERSAL;
         }
         if (board->FindPathWithEndpointOverrides(
                 center.m_x,
@@ -1596,25 +1586,13 @@ i32 CBattlezMapConfig::RepathAroundBlockedTiles(CGrunt* unit) {
                 while (node != NULL) {
                     POSITION remaining = node;
                     unit->m_coordList.GetNext(node);
-                    Coord* copy = NULL;
-                    if (g_coordPool.m_freeHead->m_next != NULL) {
-                        copy = &g_coordPool.m_freeHead->m_value;
-                        *copy = *static_cast<Coord*>(unit->m_coordList.GetAt(remaining));
-                        g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
-                    }
-                    list.AddTail(copy);
+                    list.AddTail(g_coordPool.PopCopy(
+                        *static_cast<Coord*>(unit->m_coordList.GetAt(remaining))
+                    ));
                 }
 
-                if (coordList->GetCount() != 0) {
-                    POSITION p = unit->CoordHead();
-                    while (p != NULL) {
-                        POSITION c2 = p;
-                        unit->m_coordList.GetNext(p);
-                        if (static_cast<Coord*>(unit->m_coordList.GetAt(c2)) != NULL) {
-                            g_coordPool.Push(static_cast<Coord*>(unit->m_coordList.GetAt(c2)));
-                        }
-                    }
-                    coordList->RemoveAll();
+                if (unit->CoordCount() != 0) {
+                    RECYCLE_GRUNT_COORDS(unit)
                 }
 
                 POSITION qp = list.GetHeadPosition();
