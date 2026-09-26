@@ -469,13 +469,10 @@ i32 CFaderLight::ApplyInit(CFaderConfig* desc) {
         m_restoreSurface = d->m_sourceSurface;
     }
     m_clearMode = d->m_clearMode;
-    m_centerX = d->m_centerX;
-    m_centerY = d->m_centerY;
-    CDDPalette* pal = d->m_palette;
-    m_palette = pal;
-    i32 cnt = d->m_spanCount;
-    m_spanCount = cnt;
-    if (cnt > 0 && d->m_shadeTable == NULL && m_palette == NULL) {
+    m_center = d->m_center;
+    m_palette = d->m_palette;
+    m_spanCount = d->m_spanCount;
+    if (m_spanCount > 0 && d->m_shadeTable == NULL && m_palette == NULL) {
         return 0;
     }
     if (m_targetSurface == NULL) {
@@ -491,38 +488,27 @@ i32 CFaderLight::ApplyInit(CFaderConfig* desc) {
     rect.bottom = m_height;
     rect.left = 0;
     rect.top = 0;
-    POINT pt;
-    pt.x = m_centerX;
-    pt.y = m_centerY;
-    if (PtInRect(&rect, pt) == false) {
+    if (PtInRect(&rect, m_center) == false) {
         return 0;
     }
     if (m_clearMode != false) {
-        i32 i = 0;
-        if (m_height > 0) {
-            do {
-                m_spanStarts[i] = 0;
-                m_spanEnds[i] = m_width;
-                i++;
-            } while (i < m_height);
+        for (i32 i = 0; i < m_height; i++) {
+            m_spanStarts[i] = 0;
+            m_spanEnds[i] = m_width;
         }
     } else {
-        i32 i = 0;
-        if (m_height > 0) {
-            do {
-                m_spanStarts[i] = m_centerX;
-                m_spanEnds[i] = m_centerX;
-                i++;
-            } while (i < m_height);
+        for (i32 i = 0; i < m_height; i++) {
+            m_spanStarts[i] = m_center.x;
+            m_spanEnds[i] = m_center.x;
         }
     }
     if (m_spanCount > 0) {
         if (d->m_shadeTable == NULL) {
             m_table = m_cache.HueRampTable(m_palette->m_entries, m_spanCount, 0);
             m_ownsTable = true;
-            return 1;
+        } else {
+            m_table = d->m_shadeTable;
         }
-        m_table = d->m_shadeTable;
     }
     return 1;
 }
@@ -552,17 +538,17 @@ void CFaderLight::RenderFrame(i32 frame) {
         }
         i32 r = m_frameCount - frame;
         i32 rr = SQR(r);
-        i32 v = m_centerY - r - delta;
+        i32 v = m_center.y - r - delta;
         i32 row = (v < 0) ? 0 : v;
         for (;;) {
-            i32 stop = delta + r + m_centerY;
+            i32 stop = delta + r + m_center.y;
             if (stop >= m_height) {
                 stop = m_height;
             }
             if (row >= stop) {
                 break;
             }
-            if (row >= m_centerY - r + 1 && row <= r + m_centerY - 1) {
+            if (row >= m_center.y - r + 1 && row <= r + m_center.y - 1) {
                 i32 right;
                 i32 left;
                 ComputeSpan(row, rr, 1, right, left);
@@ -589,17 +575,17 @@ void CFaderLight::RenderFrame(i32 frame) {
         }
     } else {
         i32 fr2 = SQR(frame);
-        i32 v = m_centerY - frame - delta - m_spanCount;
+        i32 v = m_center.y - frame - delta - m_spanCount;
         i32 row = (v < 0) ? 0 : v;
         for (;;) {
-            i32 stop = delta + frame + m_spanCount + m_centerY;
+            i32 stop = delta + frame + m_spanCount + m_center.y;
             if (stop >= m_height) {
                 stop = m_height;
             }
             if (row >= stop) {
                 break;
             }
-            if (row > m_centerY - frame && row < frame + m_centerY) {
+            if (row > m_center.y - frame && row < frame + m_center.y) {
                 i32 right;
                 i32 left;
                 ComputeSpan(row, fr2, -1, right, left);
@@ -615,7 +601,7 @@ void CFaderLight::RenderFrame(i32 frame) {
                 m_spanStarts[row] = left;
                 m_spanEnds[row] = right;
             }
-            if (row > m_centerY - frame - m_spanCount && row < frame + m_spanCount + m_centerY) {
+            if (row > m_center.y - frame - m_spanCount && row < frame + m_spanCount + m_center.y) {
                 i32 rad = frame + m_spanCount - 1;
                 Render(row, SQR(rad), rad, lut, m_targetBits, m_restoreBits);
             }
@@ -635,14 +621,14 @@ void CFaderLight::RenderFrame(i32 frame) {
 
 RVA(0x001814f0, 0x16d)
 i32 CFaderLight::GetFrameCount() {
-    double pLeft = pow(static_cast<double>(m_centerX), g_faderPowK);
-    double pTop = pow(static_cast<double>(m_centerY), g_faderPowK);
+    double pLeft = pow(static_cast<double>(m_center.x), g_faderPowK);
+    double pTop = pow(static_cast<double>(m_center.y), g_faderPowK);
     double dTopLeft = sqrt(pLeft + pTop);
     double pBottom =
-        pow(static_cast<double>(static_cast<i32>(m_targetSurface->m_apiDesc.dwHeight) - m_centerY),
+        pow(static_cast<double>(static_cast<i32>(m_targetSurface->m_apiDesc.dwHeight) - m_center.y),
             g_faderPowK);
     double pRight =
-        pow(static_cast<double>(static_cast<i32>(m_targetSurface->m_apiDesc.dwWidth) - m_centerX),
+        pow(static_cast<double>(static_cast<i32>(m_targetSurface->m_apiDesc.dwWidth) - m_center.x),
             g_faderPowK);
     double dBottomRight = sqrt(pRight + pBottom);
     double dTopRight = sqrt(pRight + pTop);
@@ -741,28 +727,28 @@ i32 CFaderShape::ApplyInit(CFaderConfig* desc) {
         return 0;
     }
 
-    m_targetHeight = m_targetSurface->m_apiDesc.dwHeight;
     m_targetWidth = m_targetSurface->m_apiDesc.dwWidth;
-    m_sourceHeight = m_sourceSurface->m_apiDesc.dwHeight;
+    m_targetHeight = m_targetSurface->m_apiDesc.dwHeight;
     m_sourceWidth = m_sourceSurface->m_apiDesc.dwWidth;
-    m_warpHeight = m_warpSourceSurface->m_apiDesc.dwHeight;
+    m_sourceHeight = m_sourceSurface->m_apiDesc.dwHeight;
     m_warpWidth = m_warpSourceSurface->m_apiDesc.dwWidth;
-    if (m_targetHeight != m_sourceHeight) {
-        return 0;
-    }
+    m_warpHeight = m_warpSourceSurface->m_apiDesc.dwHeight;
     if (m_targetWidth != m_sourceWidth) {
         return 0;
     }
-    if (m_targetHeight != m_warpHeight) {
+    if (m_targetHeight != m_sourceHeight) {
         return 0;
     }
     if (m_targetWidth != m_warpWidth) {
         return 0;
     }
-    if (m_warpHeight != m_sourceHeight) {
+    if (m_targetHeight != m_warpHeight) {
         return 0;
     }
     if (m_warpWidth != m_sourceWidth) {
+        return 0;
+    }
+    if (m_warpHeight != m_sourceHeight) {
         return 0;
     }
 
@@ -1134,11 +1120,7 @@ void CFaderShape::RenderTile(i32 col, i32 stripWidth) {
             u8* d = src2base;
             CopyBytes(d, s, n);
         } else {
-            i32 n = bpp * stripWidth;
-            u8* d = src2base;
-            while (n-- > 0) {
-                *d++ = 0;
-            }
+            ClearBytes(src2base, bpp * stripWidth);
         }
 
         i32 n = bpp * rowBytes;

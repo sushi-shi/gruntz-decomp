@@ -124,8 +124,7 @@ public:
     CDDSurface* m_overlay;
     CDDPalette* m_palette;
     b32 m_clearMode;
-    i32 m_centerX;
-    i32 m_centerY;
+    CPoint m_center;
 
     u8* m_targetBits;
     u8* m_restoreBits;
