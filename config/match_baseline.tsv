@@ -204,7 +204,7 @@ inputdevice	14	14
 inputdeviceconfig	2	2
 keyedlist	3	3
 kitchenslime	9	6
-latencylist	9	8
+latencylist	9	9
 levelplane	28	18
 levelpreview	11	11
 levelrezpath	3	2
@@ -2791,7 +2791,7 @@ kitchenslime	?LoadSprites@CKitchenSlime@@QAEHXZ	99.0480	99.0480	10	eea13935cd03	
 kitchenslime	?RegisterType@CKitchenSlime@@SAXXZ	100.0000	100.0000	3	468365d385c9	0xb2aa0	100.0000	
 kitchenslime	?SerializeDispatch@CKitchenSlime@@UAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@PAUCGameObject@@@Z	100.0000	100.0000	4	c466ab71f9f4	0xb2ff0	100.0000	
 kitchenslime	?Tick@CKitchenSlime@@QAEHXZ	97.7150	97.7150	36	3bb1ef1bd1f4	0xb2ca0	97.7150	
-latencylist	?FillCombo@CLatencyList@@QAEHPAUHWND__@@H@Z	88.7500	88.7500	6	03fc74e73c9b	0x37ff0	88.7500	
+latencylist	?FillCombo@CLatencyList@@QAEHPAUHWND__@@H@Z	100.0000	100.0000	7	f1ab3d2c0e5e	0x37ff0	100.0000	
 latencylist	?GetName@CKeyedNode@@QAE?AVCString@@XZ	100.0000	100.0000	1	48be84f74af2	0x38120	100.0000	
 latencylist	?GetSelItemData@CLatencyList@@QAEHPAUHWND__@@HPAH1@Z	100.0000	100.0000	2	c5e68e610cf0	0x38220	100.0000	
 latencylist	?PopulateGenericOptions@CLatencyList@@QAEHXZ	100.0000	100.0000	1	829d3ed82ede	0x37f00	100.0000	
@@ -3353,7 +3353,7 @@ palettebmp	?InitBmp@CDibPal@@QAEHPBDI@Z	100.0000	100.0000	6	635bf6e341dc	0x17748
 palettebmp	?InitRes@CDibPal@@QAEHPBDI@Z	100.0000	100.0000	4	88dc0d9181ba	0x1775f0	100.0000	
 pathhazard	??0CPathHazard@@QAE@PAUCGameObject@@@Z	99.9248	99.9248	11	f2955f7e93b1	0xb35a0	99.9248	
 pathhazard	??0CRainCloud@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	6	1f9f4d7a6da3	0xb49b0	100.0000	
-pathhazard	??0CUFO@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	12	145178f4c714	0xb4a90	100.0000	
+pathhazard	??0CUFO@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	13	b8f6e92f0605	0xb4a90	100.0000	
 pathhazard	??1CPathHazard@@UAE@XZ	100.0000	100.0000	1	cpp:92f2e382e981	0x13280	100.0000	
 pathhazard	??1CRainCloud@@UAE@XZ	100.0000	100.0000	1	cpp:92f2e382e981	0x13340	100.0000	
 pathhazard	??_GCPathHazard@@UAEPAXI@Z	100.0000	100.0000	1	cpp:92f2e382e981	0x13250	100.0000	
@@ -4203,7 +4203,7 @@ tileswitchlogic	??0CTileTimeTriggerLogic@@QAE@XZ	100.0000	100.0000	1	37d9946b8a9
 tileswitchlogic	??0CTileTimeTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	1	9068e036337e	0x1127c0	100.0000	
 tileswitchlogic	??0CTileTriggerLogic@@QAE@XZ	100.0000	100.0000	2	1bc2bdb29063	0x1107f0	100.0000	
 tileswitchlogic	??0CTileTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	2	00d79f78254e	0x110430	100.0000	
-tileswitchlogic	?ApplyMove@CTileTriggerLogic@@QAEHW4TileCollisionKind@@@Z	97.1496	97.1496	16	bba620b53b49	0x112590	97.1496	
+tileswitchlogic	?ApplyMove@CTileTriggerLogic@@QAEHW4TileCollisionKind@@@Z	97.1496	97.1496	17	f4f864790a1c	0x112590	97.1496	
 tileswitchlogic	?AreCheckpointSwitchLinksActive@CTileTriggerSwitchLogic@@QAEHXZ	100.0000	100.0000	4	a1ff7ba858f8	0x112c70	100.0000	
 tileswitchlogic	?AreMultiSwitchLinksActive@CTileTriggerSwitchLogic@@QAEHXZ	100.0000	100.0000	15	1c466f12fd8c	0x111f40	100.0000	
 tileswitchlogic	?BreakTopBrick@CTileActionEvent@@QAEHPAVCGrunt@@@Z	97.9808	97.9808	17	b116026e9dd9	0x112ee0	97.9808	
@@ -4335,7 +4335,7 @@ triggermgr	?ScrollToActiveRecord@CTriggerMgr@@QAEHXZ	100.0000	100.0000	6	b095532
 triggermgr	?SelectionListFind@CTriggerMgr@@QAEHHH@Z	100.0000	100.0000	2	920260656b7c	0x7d2a0	100.0000	
 triggermgr	?Serialize@CTriggerMgr@@QAEHPAVCFileMemBase@@W4SerialMode@@W4LogicTypeId@@H@Z	100.0000	100.0000	4	a35bfe20b3a1	0x7a5e0	100.0000	
 triggermgr	?SpawnGrunt@CTriggerMgr@@QAEHHHHH@Z	94.3750	94.3750	15	16e49a9870ef	0x7c110	94.3750	
-triggermgr	?SpawnPowerupIcon@CTriggerMgr@@QAEHW4PickupType@@HHHHH@Z	100.0000	100.0000	12	e25819023473	0x7c620	100.0000	
+triggermgr	?SpawnPowerupIcon@CTriggerMgr@@QAEHW4PickupType@@HHHHH@Z	100.0000	100.0000	13	f79ffd7c0c43	0x7c620	100.0000	
 triggermgr	?SpawnPuddle@CTriggerMgr@@QAEHHHHHHH@Z	100.0000	100.0000	9	caf119e41e5e	0x7a180	100.0000	
 triggermgr	?SpawnTileFx@CTriggerMgr@@QAEHHHH@Z	100.0000	100.0000	5	8a2467af8561	0x79ea0	100.0000	
 triggermgr	?StartPlayerDefeatSequence@CTriggerMgr@@QAEHH@Z	100.0000	100.0000	11	2f2a3685dd0f	0x7a510	100.0000	
