@@ -1687,7 +1687,7 @@ fadersine	??_GCFaderSine@@UAEPAXI@Z	100.0000	100.0000	1	cpp:0d8102634e10	0x17fdd
 fadersine	?ApplyInit@CFaderSine@@QAEHPAVCFaderConfig@@@Z	100.0000	100.0000	11	83d7d1ab1dc7	0x17fe00	100.0000	
 fadersine	?GetFrameCount@CFaderSine@@UAEHXZ	100.0000	99.5000	2	2c7080e3990f	0x180400	100.0000	
 fadersine	?RenderFrame@CFaderSine@@UAEXH@Z	97.2543	97.2543	12	b6ac4d160203	0x17ff30	97.2543	
-feccrypt	?AddFile@CFecFile@@QAEHPBDPAHPAX@Z	100.0000	100.0000	10	33cda0131562	0x17b950	100.0000	
+feccrypt	?AddFile@CFecFile@@QAEHPBDPAHPAX@Z	100.0000	100.0000	11	8e5ffb0bf980	0x17b950	100.0000	
 feccrypt	?Close@CFecFile@@QAEXXZ	100.0000	100.0000	3	0de88ea92f68	0x17b570	100.0000	
 feccrypt	?CreateArchive@CFecFile@@QAEHPBD@Z	100.0000	100.0000	4	ad8bc440e3f6	0x17b8a0	100.0000	
 feccrypt	?ExtractArchive@CFecFile@@QAEHPBDPAHPAX@Z	100.0000	100.0000	7	3673519bf1fb	0x17bcd0	100.0000	
@@ -1697,7 +1697,7 @@ feccrypt	?Init@CFecFile@@QAEHXZ	100.0000	100.0000	3	a4d566bb2309	0x17b510	100.00
 feccrypt	?Lookup@CFecFile@@QAEHI@Z	100.0000	100.0000	1	06702c305199	0x17b840	100.0000	
 feccrypt	?OnFail@CFecFile@@QAEHXZ	100.0000	100.0000	2	583838389c8b	0x17b5a0	100.0000	
 feccrypt	?Random@CFecFile@@QAEHXZ	100.0000	100.0000	1	f2e35da5a6f6	0x17bf60	100.0000	
-feccrypt	?ReadArchive@CFecFile@@QAEHPBD@Z	86.0114	86.0114	21	5a1691220fa6	0x17b5f0	87.1314	
+feccrypt	?ReadArchive@CFecFile@@QAEHPBD@Z	86.0114	86.0114	22	1af3731264af	0x17b5f0	87.1314	
 fileimage	?CreateFromBmpData@CDDSurface@@QAEHPAVCDDrawDeviceManager@@PAUBmpFileImage@@HH@Z	100.0000	100.0000	13	76b060f0d431	0x143cf0	100.0000	
 fileimage	?CreateFromBmpFile@CDDSurface@@QAEHPAVCDDrawDeviceManager@@PBDH@Z	100.0000	100.0000	8	fdce3919b30a	0x143e60	100.0000	
 fileimage	?CreateFromPcxData@CDDSurface@@QAEHPAVCDDrawDeviceManager@@PAUPcxHeader@@HH@Z	100.0000	100.0000	12	2a893a117d08	0x144b30	100.0000	
