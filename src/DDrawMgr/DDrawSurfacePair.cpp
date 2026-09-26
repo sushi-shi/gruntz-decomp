@@ -870,28 +870,22 @@ i32 CAniElement::Build(SoundCueRegistry* ctx, CAniSource* src, i32 flags) {
         m_name = NULL;
     }
 
-    CAniRecordView* rec = NULL;
     i32 i;
     for (i = 0; i < src->m_count; i++) {
-        rec = new CAniRecordView;
+        CAniRecordView* rec = new CAniRecordView;
 
         Pix16CPtr head;
         head.m_chars = cursor;
         if (rec->Parse(ctx, head.m_swords) == 0) {
-            goto fail;
+            delete rec;
+            DELETE_ANI_ELEMENT_CONTENTS(i);
+            return 0;
         }
         m_records.Add(rec);
         cursor += g_aniParsedNameLen + 0x14;
         m_durationMs += rec->GetDurationMs();
     }
     return 1;
-
-fail:
-    if (rec != NULL) {
-        delete rec;
-    }
-    DELETE_ANI_ELEMENT_CONTENTS(i);
-    return 0;
 }
 
 RVA(0x001655c0, 0x53)
