@@ -14,6 +14,7 @@
 #include <DDrawMgr/DDrawWorkerList.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/DDSurfaceCaps.h>
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/WorkerLookup.h>
 #include <DinMgr2/DirectInputMgr2.h>
@@ -3902,14 +3903,7 @@ i32 CPlay::SaveUnderAndDrawCursor(CDDrawSurfacePair* pair) {
 
     m_cursorImage->RenderFrame(pair, x, y, 0);
 
-    DDSCAPS caps;
-    i32 inSysMem;
-    if (target->m_ddSurface->GetCaps(&caps) == 0) {
-        inSysMem = caps.dwCaps & DDSCAPS_SYSTEMMEMORY;
-    } else {
-        inSysMem = 0;
-    }
-    if (inSysMem == 0) {
+    if (SurfaceCaps(target, DDSCAPS_SYSTEMMEMORY) == 0) {
         m_cursorBufferIndex = m_cursorBufferIndex == 0;
     }
     return 1;
