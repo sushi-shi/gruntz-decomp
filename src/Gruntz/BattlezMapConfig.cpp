@@ -91,8 +91,7 @@ static GruntDirectionCell s_gruntDirSpare[3];
 
 // @early-stop
 RVA(0x00024dc0, 0x158)
-CBattlezMapConfig::CBattlezMapConfig()
-    : m_routeClockLo(0), m_routeClockHi(0), m_routeWindowLo(0), m_routeWindowHi(0) {
+CBattlezMapConfig::CBattlezMapConfig() {
     m_playerIndex = 0;
     m_reserved01c = 1;
     m_reserved020 = 0x40;
@@ -288,10 +287,10 @@ i32 CBattlezMapConfig::LoadConfig(CGruntzMgr* mgr, i32 playerIndex, BattlezDiffi
     m_welderzPct = m_wandzPct + g_buteMgr.GetInt("Battlez", "Welderz");
     m_wingzPct = m_welderzPct + g_buteMgr.GetInt("Battlez", "Wingz");
 
-    m_routeClockLo = 0;
-    m_routeWindowLo = 0;
-    m_routeClockHi = 0;
-    m_routeWindowHi = 0;
+    m_routeTiming.m_startLo = 0;
+    m_routeTiming.m_intervalLo = 0;
+    m_routeTiming.m_startHi = 0;
+    m_routeTiming.m_intervalHi = 0;
     return 1;
 }
 
@@ -2044,15 +2043,15 @@ i32 CBattlezMapConfig::SerializeState(CFileMemBase* arArg, SerialMode modeArg, L
             break;
     }
 
-    Clock64* p = m_routeTimers;
+    i64* p = &m_routeTiming.m_start;
     switch (mode) {
         case SERIAL_SAVE:
-            ar->Write(&p[0], sizeof(Clock64));
-            ar->Write(&p[1], sizeof(Clock64));
+            ar->Write(&p[0], sizeof(i64));
+            ar->Write(&p[1], sizeof(i64));
             break;
         case SERIAL_LOAD:
-            ar->Read(&p[0], sizeof(Clock64));
-            ar->Read(&p[1], sizeof(Clock64));
+            ar->Read(&p[0], sizeof(i64));
+            ar->Read(&p[1], sizeof(i64));
             break;
     }
     return 1;
@@ -2988,8 +2987,8 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
                     unit->m_routePassableMask = 0;
                 }
                 if (unit->m_blockedVoicePending != false) {
-                    __int64 elapsed = static_cast<__int64>(g_frameTime) - m_routeClock.m_v;
-                    if (elapsed >= m_routeWindow.m_v) {
+                    __int64 elapsed = static_cast<__int64>(g_frameTime) - m_routeTiming.m_start;
+                    if (elapsed >= m_routeTiming.m_interval) {
                         unit->m_blockedVoicePending = false;
                         CGameObject* lvl = unit->m_object;
 
@@ -2997,11 +2996,11 @@ i32 CBattlezMapConfig::RouteToNearbyEnemy(CGrunt* unit) {
                         if (::PtInRect(hit, lvl->m_screenX, lvl->m_screenY)) {
                             g_gameReg->m_voiceManager->PlayVoice(unit, 0x366, -1, 0, -1, -1);
                         }
-                        m_routeTimers[0].m_v = 0;
-                        m_routeTimers[1].m_v = 0;
-                        m_routeWindowLo = BLOCKED_VOICE_INTERVAL_MS;
-                        m_routeWindowHi = 0;
-                        m_routeClock.m_v = g_frameTime;
+                        m_routeTiming.m_start = 0;
+                        m_routeTiming.m_interval = 0;
+                        m_routeTiming.m_intervalLo = BLOCKED_VOICE_INTERVAL_MS;
+                        m_routeTiming.m_intervalHi = 0;
+                        m_routeTiming.m_start = g_frameTime;
                     }
                 }
 
