@@ -376,23 +376,28 @@ CShadeTable* CShadeTableCache::GreyTable() {
     }
 
     m_arr.Add(t);
-    u16* out = Pix16(t->m_data);
     if (PIXEL_FORMAT_IS_RGB555) {
+        u16* out = Pix16(t->m_data);
         for (i32 v = 0; v < PIXEL16_VALUE_COUNT; v++) {
-            i32 acc = static_cast<u8>((v >> RGB555_RED_TO_4_SHIFT)) << PIXEL_NIBBLE_BITS;
-            acc = (acc + static_cast<u8>((v >> RGB555_GREEN_TO_4_SHIFT) & PIXEL_NIBBLE_MASK))
-                  << PIXEL_NIBBLE_BITS;
+            u8 r = static_cast<u8>(v >> RGB555_RED_TO_4_SHIFT);
+            u8 g = static_cast<u8>((v >> RGB555_GREEN_TO_4_SHIFT) & PIXEL_NIBBLE_MASK);
+            u8 b = static_cast<u8>((v >> RGB16_BLUE_TO_4_SHIFT) & PIXEL_NIBBLE_MASK);
             *out++ = static_cast<u16>(
-                acc + static_cast<u8>((v >> RGB16_BLUE_TO_4_SHIFT) & PIXEL_NIBBLE_MASK)
+                (((static_cast<u16>(r) << PIXEL_NIBBLE_BITS) + static_cast<u16>(g))
+                 << PIXEL_NIBBLE_BITS)
+                + static_cast<u16>(b)
             );
         }
     } else {
+        u16* out = Pix16(t->m_data);
         for (i32 v = 0; v < PIXEL16_VALUE_COUNT; v++) {
-            i32 acc = static_cast<u8>((v >> RGB565_RED_TO_4_SHIFT)) << PIXEL_NIBBLE_BITS;
-            acc = (acc + static_cast<u8>((v >> RGB565_GREEN_TO_4_SHIFT) & PIXEL_NIBBLE_MASK))
-                  << PIXEL_NIBBLE_BITS;
+            u8 r = static_cast<u8>(v >> RGB565_RED_TO_4_SHIFT);
+            u8 g = static_cast<u8>((v >> RGB565_GREEN_TO_4_SHIFT) & PIXEL_NIBBLE_MASK);
+            u8 b = static_cast<u8>((v >> RGB16_BLUE_TO_4_SHIFT) & PIXEL_NIBBLE_MASK);
             *out++ = static_cast<u16>(
-                acc + static_cast<u8>((v >> RGB16_BLUE_TO_4_SHIFT) & PIXEL_NIBBLE_MASK)
+                (((static_cast<u16>(r) << PIXEL_NIBBLE_BITS) + static_cast<u16>(g))
+                 << PIXEL_NIBBLE_BITS)
+                + static_cast<u16>(b)
             );
         }
     }
