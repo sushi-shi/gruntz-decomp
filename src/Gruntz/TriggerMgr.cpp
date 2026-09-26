@@ -27,6 +27,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/HealthPct.h>
 #include <Gruntz/LightFx.h>
+#include <Gruntz/LevelCollisionInline.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MapCellFlags.h>
 #include <Gruntz/PickupType.h>
@@ -446,15 +447,9 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         hitFlag = 1;
     }
 
-    CGameLevel* level = m_world->m_level;
     i32 tx = x >> TILE_SHIFT_PX;
     i32 ty = y >> TILE_SHIFT_PX;
-    i32 cx = tx;
-    CLAMP_TO_EXTENT(cx, level->m_mainPlane->m_tileColumns);
-    i32 cy = ty;
-    CLAMP_TO_EXTENT(cy, level->m_mainPlane->m_tileRows);
-    i32 cval = level->m_mainPlane->m_tileHandles[level->m_mainPlane->m_tileRowOffsets[cy] + cx];
-    TileCollisionKind collision = level->CollisionAtHandle(cval, 0, 0);
+    TileCollisionKind collision = PbResolveCell(m_world->m_level, tx, ty);
 
     i32 pfk = m_pendingFxKind;
     if (pfk >= 0xdf) {

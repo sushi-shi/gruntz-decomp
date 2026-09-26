@@ -466,15 +466,8 @@ i32 CTriggerMgr::WireTileSwitchLogic(CGrunt* g, i32 x, i32 y) {
     }
 
     CGameLevel* level = m_world->m_level;
-    i32 cx = x;
-    i32 cy = y;
-    CLAMP_PIXEL_TO_PLANE(cx, cy, level->m_mainPlane);
-    i32 tx = cx >> level->m_mainPlane->m_shiftX;
-    i32 ty = cy >> level->m_mainPlane->m_shiftY;
-    i32 subX = cx - (tx << level->m_mainPlane->m_shiftX);
-    i32 subY = cy - (ty << level->m_mainPlane->m_shiftY);
-    i32 raw = level->m_mainPlane->m_tileHandles[level->m_mainPlane->m_tileRowOffsets[ty] + tx];
-    TileCollisionKind tag = level->CollisionAtHandle(raw, subX, subY);
+    TileCollisionKind tag;
+    PROBE_TILE(level, x, y, tag);
 
     if (static_cast<u32>((IDX(tag) - 0xb)) > 0x65) {
         return 0;
