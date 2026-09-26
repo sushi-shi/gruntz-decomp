@@ -42,3 +42,19 @@ such member of the enclosing class. Observed: with ctors on `Coord` and
 When an exact constructor degrades that way right after a member type gains a
 constructor, suspect that retail's type is an aggregate. That is a clue for the
 type model, not proof that no constructor exists anywhere.
+
+A caller that contains hand-expanded copies of a function which it also calls
+is the same signature seen from the source side. `CDDrawShadeBlit`'s two
+shaded blitters held transcribed bodies of the four row converters beside real
+calls to them; declaring the converters `inline` and calling them at every
+site reproduced retail's expanded/called split in both callers (VC5 expands a
+later-defined inline body). The split then acts as a size check on the callee:
+making one converter's source more compact moved an extra site from call to
+expansion, so a spelling change that flips the pattern changed the callee's
+cost, not only its bytes.
+
+Functions compiled under `#pragma optimize("", off)` call every inline
+out of line. A tiny method whose only callers are such functions, placed among
+the TU's other emitted inline copies, is a header inline: `CDDSurface::Unlock`,
+`GetWidth`, `GetHeight` and `Scale` are called only by the `/Od` RLE decoders,
+and the optimized sites expand them.
