@@ -56,6 +56,7 @@
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/GruntzMgrMacros.h>
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/ImageSets.h>
 #include <Gruntz/InputState.h>
@@ -4792,18 +4793,14 @@ i32 CPlay::ValidateLevelTiles() {
                     }
                 }
                 if (found == false) {
-                    CString s;
-                    s.Format("Bad switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    MODAL_REPORT_AT("Bad switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
                     return 0;
                 }
                 i32 rel = (obj->m_speedY - row) * 3 - col + obj->m_speedX;
 
                 i32 tcidx = (static_cast<CGiantRockLogic*>(hit))->m_matrix[rel + 4];
                 if (tcidx == 0) {
-                    CString s;
-                    s.Format("Bad switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    MODAL_REPORT_AT("Bad switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
                     return 0;
                 }
                 type =
@@ -4816,16 +4813,12 @@ i32 CPlay::ValidateLevelTiles() {
                 CTileTriggerLogic* r =
                     m_tileTriggers->FindLogic(obj->m_id, TRIGID_COVERED_POWERUP_26);
                 if (r == NULL) {
-                    CString s;
-                    s.Format("Bad switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    MODAL_REPORT_AT("Bad switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
                     return 0;
                 }
                 i32 tcidx = r->m_tileToken;
                 if (tcidx == 0) {
-                    CString s;
-                    s.Format("Bad switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    MODAL_REPORT_AT("Bad switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
                     return 0;
                 }
                 type =
@@ -4850,9 +4843,11 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_damage,
                             0
                         )) {
-                        CString s;
-                        s.Format("Bad multi switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
-                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                        MODAL_REPORT_AT(
+                            "Bad multi switch at: x=%d, y=%d",
+                            obj->m_screenX,
+                            obj->m_screenY
+                        );
                         return 0;
                     }
                     validCount++;
@@ -4875,13 +4870,11 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_damage,
                             0
                         )) {
-                        CString s;
-                        s.Format(
+                        MODAL_REPORT_AT(
                             "Bad up-down switch at: x=%d, y=%d",
                             obj->m_screenX,
                             obj->m_screenY
                         );
-                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                         return 0;
                     }
                     validCount++;
@@ -4906,13 +4899,11 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_damage,
                             0
                         )) {
-                        CString s;
-                        s.Format(
+                        MODAL_REPORT_AT(
                             "Bad secret switch at: x=%d, y=%d",
                             obj->m_screenX,
                             obj->m_screenY
                         );
-                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                         return 0;
                     }
                     validCount++;
@@ -4935,9 +4926,11 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_damage,
                             0
                         )) {
-                        CString s;
-                        s.Format("Bad time switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
-                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                        MODAL_REPORT_AT(
+                            "Bad time switch at: x=%d, y=%d",
+                            obj->m_screenX,
+                            obj->m_screenY
+                        );
                         return 0;
                     }
                     validCount++;
@@ -4960,13 +4953,11 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_damage,
                             obj->m_smarts
                         )) {
-                        CString s;
-                        s.Format(
+                        MODAL_REPORT_AT(
                             "Bad pressure plate at: x=%d, y=%d",
                             obj->m_screenX,
                             obj->m_screenY
                         );
-                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                         return 0;
                     }
                     validCount++;
@@ -4991,13 +4982,11 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_damage,
                             0
                         )) {
-                        CString s;
-                        s.Format(
+                        MODAL_REPORT_AT(
                             "Bad toggle switch at: x=%d, y=%d",
                             obj->m_screenX,
                             obj->m_screenY
                         );
-                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                         return 0;
                     }
                     validCount++;
@@ -5022,9 +5011,11 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_damage,
                             0
                         )) {
-                        CString s;
-                        s.Format("Bad hold switch at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
-                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                        MODAL_REPORT_AT(
+                            "Bad hold switch at: x=%d, y=%d",
+                            obj->m_screenX,
+                            obj->m_screenY
+                        );
                         return 0;
                     }
                     validCount++;
@@ -5049,26 +5040,22 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_damage,
                             0
                         )) {
-                        CString s;
-                        s.Format(
+                        MODAL_REPORT_AT(
                             "Bad once-only switch at: x=%d, y=%d",
                             obj->m_screenX,
                             obj->m_screenY
                         );
-                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                         return 0;
                     }
                     validCount++;
                     obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
                     break;
                 default: {
-                    CString s;
-                    s.Format(
+                    MODAL_REPORT_AT(
                         "Switch on an unknown tile at: x=%d, y=%d",
                         obj->m_screenX,
                         obj->m_screenY
                     );
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return 0;
                 }
             }
@@ -5099,18 +5086,14 @@ i32 CPlay::ValidateLevelTiles() {
                     }
                 }
                 if (found == false) {
-                    CString s;
-                    s.Format("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    MODAL_REPORT_AT("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
                     return 0;
                 }
                 i32 rel = (obj->m_speedX - col) * 3 - row + obj->m_speedY;
 
                 i32 tcidx = (static_cast<CGiantRockLogic*>(hit))->m_matrix[rel + 4];
                 if (tcidx == 0) {
-                    CString s;
-                    s.Format("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    MODAL_REPORT_AT("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
                     return 0;
                 }
                 type =
@@ -5122,16 +5105,12 @@ i32 CPlay::ValidateLevelTiles() {
                 CTileTriggerLogic* r =
                     m_tileTriggers->FindLogic(obj->m_id, TRIGID_COVERED_POWERUP_26);
                 if (r == NULL) {
-                    CString s;
-                    s.Format("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    MODAL_REPORT_AT("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
                     return 0;
                 }
                 i32 tcidx = r->m_tileToken;
                 if (tcidx == 0) {
-                    CString s;
-                    s.Format("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    MODAL_REPORT_AT("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
                     return 0;
                 }
                 type =
@@ -5156,13 +5135,11 @@ i32 CPlay::ValidateLevelTiles() {
                         obj->m_points,
                         obj->m_health
                     )) {
-                    CString s;
-                    s.Format(
+                    MODAL_REPORT_AT(
                         "Bad toggle-bridge trigger at: x=%d, y=%d",
                         obj->m_screenX,
                         obj->m_screenY
                     );
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return 0;
                 }
                 validCount++;
@@ -5185,9 +5162,7 @@ i32 CPlay::ValidateLevelTiles() {
                         obj->m_points,
                         0
                     )) {
-                    CString s;
-                    s.Format("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    MODAL_REPORT_AT("Bad trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
                     return 0;
                 }
                 validCount++;
@@ -5213,9 +5188,11 @@ i32 CPlay::ValidateLevelTiles() {
                     obj->m_points,
                     0
                 )) {
-                CString s;
-                s.Format("Bad secret trigger at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
-                g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                MODAL_REPORT_AT(
+                    "Bad secret trigger at: x=%d, y=%d",
+                    obj->m_screenX,
+                    obj->m_screenY
+                );
                 return 0;
             }
             validCount++;
@@ -5260,17 +5237,13 @@ i32 CPlay::ValidateLevelTiles() {
                         obj->m_extent
                     )
                     == NULL) {
-                    CString s;
-                    s.Format("Bad brickz at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                    MODAL_REPORT_AT("Bad brickz at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
                     return 0;
                 }
                 validCount++;
                 obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
             } else {
-                CString s;
-                s.Format("Bad brickz at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
-                g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
+                MODAL_REPORT_AT("Bad brickz at: x=%d, y=%d", obj->m_screenX, obj->m_screenY);
                 return 0;
             }
         } else if (dispatch == DispatchGruntPuddleLogic) {
@@ -5394,9 +5367,7 @@ i32 CPlay::ScanBuildTiles() {
                     p->m_faceDirection
                 )
                 == NULL) {
-                CString s;
-                s.Format("Bad rock at: x=%d, y=%d", p->m_screenX, p->m_screenY);
-                g_gameReg->EnterModalUI(s);
+                MODAL_REPORT_AT("Bad rock at: x=%d, y=%d", p->m_screenX, p->m_screenY);
                 return 0;
             }
             if (p->m_powerup == IDX(PICKUP_MEGAPHONE)) {
@@ -5450,9 +5421,7 @@ i32 CPlay::ScanBuildTiles() {
                     p->m_faceDirection
                 )
                 == NULL) {
-                CString s;
-                s.Format("Bad covered powerup at: x=%d, y=%d", p->m_screenX, p->m_screenY);
-                g_gameReg->EnterModalUI(s);
+                MODAL_REPORT_AT("Bad covered powerup at: x=%d, y=%d", p->m_screenX, p->m_screenY);
                 return 0;
             }
             if (p->m_powerup == IDX(PICKUP_MEGAPHONE)) {
