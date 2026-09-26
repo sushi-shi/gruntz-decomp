@@ -18,6 +18,7 @@
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/UserLogic.h>
 #include <Lith/BDefs.h>
+#include <Rez/FrameCountdown.h>
 #include <Rez/RezMgr.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
@@ -736,11 +737,7 @@ void CRandomAmbientSound::Update(i32 x, i32 y, b32 immediate) {
         return;
     }
 
-    if (g_frameDelta >= static_cast<u32>(m_countdownMs)) {
-        m_countdownMs = 0;
-    } else {
-        m_countdownMs = m_countdownMs - g_frameDelta;
-    }
+    CountDown(m_countdownMs, g_frameDelta);
     if (m_countdownMs != 0) {
         return;
     }

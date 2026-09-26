@@ -34,6 +34,7 @@
 #include <Gruntz/String.h>
 #include <Io/FileMem.h>
 #include <Io/MoviePlayer.h>
+#include <Rez/FrameCountdown.h>
 #include <Rez/RezArchive.h>
 #include <Rez/RezArchiveDir.h>
 #include <Rez/RezArchiveEntry.h>
@@ -314,22 +315,10 @@ i32 CCreditsState::DrawScrollingCredits() {
 
     CDDSurface* prov = m_world->m_drawTarget->m_backPair->m_surface;
 
-    if (g_frameDelta >= m_scrollReseedTimer) {
-        m_scrollReseedTimer = 0;
-    } else {
-        m_scrollReseedTimer -= g_frameDelta;
-    }
+    CountDown(m_scrollReseedTimer, g_frameDelta);
     if (m_fxEnabled != false) {
-        if (g_frameDelta >= m_flashTimer) {
-            m_flashTimer = 0;
-        } else {
-            m_flashTimer -= g_frameDelta;
-        }
-        if (g_frameDelta >= m_fadeCountdown) {
-            m_fadeCountdown = 0;
-        } else {
-            m_fadeCountdown -= g_frameDelta;
-        }
+        CountDown(m_flashTimer, g_frameDelta);
+        CountDown(m_fadeCountdown, g_frameDelta);
     }
 
     double step = static_cast<double>(g_frameDelta) * m_scrollStep;

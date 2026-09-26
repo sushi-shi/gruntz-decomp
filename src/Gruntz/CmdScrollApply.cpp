@@ -35,7 +35,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, class CStatusBarMgr* bar, b32 snapFlag) {
     i32 scrollY = v->m_scrollPixelY;
 
     if (g_scrollClock > g_frameTime) {
-        g_scrollTimer = CountdownRemaining(g_scrollTimer, g_frameDelta);
+        CountDown(g_scrollTimer, g_frameDelta);
         if (g_scrollTimer == 0) {
             g_scrollTimer = RandRange(pm, g_panMinX, g_panMaxX);
             i32 jitterX = RandRange(pm, -g_jitterX, g_jitterX);
