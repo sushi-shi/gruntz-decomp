@@ -365,21 +365,9 @@ i32 CPathHazard::BeginLeg() {
     m_unitX = ux;
     m_unitY = uy;
 
-    if (ux > 0.0) {
-        m_roundBiasX = 0.5;
-    } else if (ux < 0.0) {
-        m_roundBiasX = -0.5;
-    } else {
-        m_roundBiasX = 0.0;
-    }
+    ROUND_BIAS_FOR_SIGN(m_roundBiasX, ux);
 
-    if (uy > 0.0) {
-        m_roundBiasY = 0.5;
-    } else if (uy < 0.0) {
-        m_roundBiasY = -0.5;
-    } else {
-        m_roundBiasY = 0.0;
-    }
+    ROUND_BIAS_FOR_SIGN(m_roundBiasY, uy);
     return 1;
 }
 

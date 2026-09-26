@@ -21,4 +21,13 @@ inline i32 SquaredDistance(i32 dx, i32 dy) {
         (value) = (upper);                                                                         \
     }
 
+#define ROUND_BIAS_FOR_SIGN(bias, value)                                                           \
+    if ((value) > 0.0) {                                                                           \
+        (bias) = 0.5;                                                                              \
+    } else if ((value) < 0.0) {                                                                    \
+        (bias) = -0.5;                                                                             \
+    } else {                                                                                       \
+        (bias) = 0.0;                                                                              \
+    }
+
 #endif // WAP32_TILEGEOMETRY_H

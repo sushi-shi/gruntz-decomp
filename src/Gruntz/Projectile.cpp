@@ -229,20 +229,8 @@ i32 CProjectile::LoadProjectileSprites(
     dy /= len;
     m_velY = dy;
 
-    if (vx > 0.0) {
-        m_roundX = 0.5;
-    } else if (vx < 0.0) {
-        m_roundX = -0.5;
-    } else {
-        m_roundX = 0.0;
-    }
-    if (dy > 0.0) {
-        m_roundY = 0.5;
-    } else if (dy < 0.0) {
-        m_roundY = -0.5;
-    } else {
-        m_roundY = 0.0;
-    }
+    ROUND_BIAS_FOR_SIGN(m_roundX, vx);
+    ROUND_BIAS_FOR_SIGN(m_roundY, dy);
     m_flightDist = fabs(len);
     m_curX = m_object->m_screenX;
     m_curY = m_object->m_screenY;
