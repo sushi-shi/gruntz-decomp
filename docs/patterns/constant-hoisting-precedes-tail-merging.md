@@ -41,3 +41,9 @@ effect.
   changes that reach the optimized graph can move it.
 - This does not measure the weighing function itself. No threshold or unit is
   established.
+- The per-arm form is the exception. A mechanical pass over 280 join sites in
+  120 sub-100 functions (every statement after an if/else moved into each arm,
+  or a common arm tail moved after the join) raised 7 functions, left 86
+  unchanged and lowered 187. The winners were a `return`, a call, or a member
+  store whose retail copy sits inside each arm's scheduled block; the losers
+  were mostly cross-jumped tails that retail keeps shared.
