@@ -2094,7 +2094,7 @@ gruntentrancearrival	?LoadVehicleGruntAnimations@CGrunt@@QAEHXZ	100.0000	100.000
 gruntentrancearrival	?LoadWandGruntItemConfig@CGrunt@@QAEHXZ	100.0000	100.0000	12	ca15504b52e7	0x65a60	100.0000	
 gruntentrancearrival	?RecordFrameTick@CGrunt@@UAEHXZ	100.0000	100.0000	1	df67f0190319	0x62b40	100.0000	
 gruntentrancearrival	?RectSegProbe@CGrunt@@QAEHPAUtagRECT@@PAUtagPOINT@@1@Z	96.2475	90.8515	1	6ba6a28b5afc	0x62b70	96.2475	
-gruntentrancearrival	?ResetEntranceAnimation@CGrunt@@QAEXHHH@Z	95.9788	95.9788	19	443abf101952	0x62e10	95.9788	
+gruntentrancearrival	?ResetEntranceAnimation@CGrunt@@QAEXHHH@Z	96.0393	96.0393	20	f06f4852307c	0x62e10	96.0393	
 gruntentrancearrival	?ResetGeometry@CGrunt@@QAEHXZ	100.0000	100.0000	7	8fcd3c82281b	0x616e0	100.0000	
 gruntentrancearrival	?ResolveEntranceArrival@CGrunt@@QAEHXZ	92.5204	92.5204	15	e1557e7c3b9a	0x633e0	92.5204	
 gruntentrancearrival	?RunMoveConfig@CGrunt@@QAEHHH@Z	91.6000	91.6000	23	d4ea017bfe99	0x65630	92.0745	
@@ -3323,7 +3323,7 @@ netsessionmgr	?AllPeerWindowsReached@CNetSession@@QAEHH@Z	100.0000	100.0000	3	10
 netsessionmgr	?AllocateGruntRecord@@YAPAUGruntRec@@H@Z	100.0000	100.0000	3	e7e02eaa4041	0xbf530	100.0000	
 netsessionmgr	?BuildGruntzCrcInfo@CNetSession@@QAEXXZ	99.9198	99.9198	8	77117a7037b7	0xbf1d0	99.9198	
 netsessionmgr	?ClearDrainAcks@CNetCmdSlot@@QAEXXZ	100.0000	100.0000	3	f6c29a9dd696	0xbf120	100.0000	
-netsessionmgr	?ComputeChecksum@CNetSession@@QAEHXZ	95.7635	95.7297	11	d65155324ba9	0xc0590	95.7635	
+netsessionmgr	?ComputeChecksum@CNetSession@@QAEHXZ	96.4392	96.4392	12	edc37e0928b0	0xc0590	96.4392	
 netsessionmgr	?CreateSlot@CNetSession@@QAEPAUCNetCmdSlot@@HW4NetSlotState@@@Z	100.0000	100.0000	5	80e406ba893d	0xbfff0	100.0000	
 netsessionmgr	?Dispatch@CNetSession@@QAEHHPAUCNetPacketPrefix@@H@Z	100.0000	100.0000	3	c79e57b7eee5	0xbf700	100.0000	
 netsessionmgr	?DispatchSystemMessage@CNetSession@@QAEHPAUDPMSG_GENERIC@@H@Z	100.0000	100.0000	3	bf34d97947f2	0xbf7c0	100.0000	

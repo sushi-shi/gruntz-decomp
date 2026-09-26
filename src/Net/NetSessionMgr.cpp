@@ -705,68 +705,65 @@ i32 CNetSession::ComputeChecksum() {
                     case PICKUP_BOMB:
                         next = PICKUP_BOOMERANG;
                         break;
-                    case PICKUP_BOOMERANG:
+                    case PICKUP_WELDER:
                         next = PICKUP_BRICK;
                         break;
-                    case PICKUP_BRICK:
+                    case PICKUP_SWORD:
                         next = PICKUP_CLUB;
                         break;
-                    case PICKUP_CLUB:
+                    case PICKUP_GUNHAT:
                         next = PICKUP_GAUNTLETZ;
                         break;
-                    case PICKUP_GAUNTLETZ:
+                    case PICKUP_CLUB:
                         next = PICKUP_GLOVEZ;
                         break;
-                    case PICKUP_GLOVEZ:
+                    case PICKUP_ROCK:
                         next = PICKUP_GOOBER;
                         break;
-                    case PICKUP_GOOBER:
+                    case PICKUP_SHOVEL:
                         next = PICKUP_GRAVITYBOOTZ;
                         break;
-                    case PICKUP_GRAVITYBOOTZ:
+                    case PICKUP_BOOMERANG:
                         next = PICKUP_GUNHAT;
                         break;
-                    case PICKUP_GUNHAT:
+                    case PICKUP_SPRING:
                         next = PICKUP_NERFGUN;
                         break;
-                    case PICKUP_NERFGUN:
+                    case PICKUP_GAUNTLETZ:
                         next = PICKUP_ROCK;
                         break;
-                    case PICKUP_ROCK:
+                    case PICKUP_WINGZ:
                         next = PICKUP_SHIELD;
                         break;
-                    case PICKUP_SHIELD:
+                    case PICKUP_SPY:
                         next = PICKUP_SHOVEL;
                         break;
-                    case PICKUP_SHOVEL:
+                    case PICKUP_BRICK:
                         next = PICKUP_SPRING;
                         break;
-                    case PICKUP_SPRING:
+                    case PICKUP_GRAVITYBOOTZ:
                         next = PICKUP_SPY;
                         break;
-                    case PICKUP_SPY:
+                    case PICKUP_SHIELD:
                         next = PICKUP_SWORD;
                         break;
-                    case PICKUP_SWORD:
+                    case PICKUP_GOOBER:
                         next = PICKUP_TIMEBOMB;
                         break;
-                    case PICKUP_TIMEBOMB:
+                    case PICKUP_TOOB:
                         next = PICKUP_TOOB;
                         break;
-                    case PICKUP_TOOB:
+                    case PICKUP_GLOVEZ:
                         next = PICKUP_WAND;
                         break;
-                    case PICKUP_WAND:
+                    case PICKUP_TIMEBOMB:
                         next = PICKUP_WARPSTONE;
                         break;
-                    case PICKUP_WARPSTONE:
+                    case PICKUP_NERFGUN:
                         next = PICKUP_WELDER;
                         break;
-                    case PICKUP_WELDER:
+                    case PICKUP_WAND:
                         next = PICKUP_WINGZ;
-                        break;
-                    case PICKUP_WINGZ:
-                        next = PICKUP_BABYWALKER;
                         break;
                     default:
                         next = PICKUP_BABYWALKER;
