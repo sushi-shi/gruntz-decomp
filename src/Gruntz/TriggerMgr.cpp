@@ -577,14 +577,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
                     world->LoadCursorSprites(IDX(gruntKind) + kPendingFxIdBase, true);
                     return 1;
                 }
-                CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
-                i32 occupantId;
-                if (static_cast<u32>(tx) >= static_cast<u32>(plane->m_width)
-                    || static_cast<u32>(ty) >= static_cast<u32>(plane->m_height)) {
-                    occupantId = 0;
-                } else {
-                    occupantId = plane->m_rowInts[ty][tx * 7 + 2];
-                }
+                i32 occupantId = CellObjectIdAt(g_gameReg->m_tileGrid, tx, ty);
                 if (occupantId != 0) {
                     CMapPtrToPtr* map =
                         &g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById;

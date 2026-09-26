@@ -380,19 +380,12 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_
         return;
     }
 
-    i32 mv = m_object->m_objectId;
-    CMapMgr* grid = g_gameReg->m_tileGrid;
-    i32 col = m_object->m_screenX >> TILE_SHIFT_PX;
-    i32 row = m_object->m_screenY >> TILE_SHIFT_PX;
-    if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
-        && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
-        grid->m_rowInts[row][col * 7 + 2] = mv;
-        if (mv != 0) {
-            grid->m_rowInts[row][col * 7] |= 0x40000;
-        } else {
-            grid->m_rowInts[row][col * 7] &= ~0x40000;
-        }
-    }
+    SetCellObject(
+        g_gameReg->m_tileGrid,
+        m_object->m_screenX >> TILE_SHIFT_PX,
+        m_object->m_screenY >> TILE_SHIFT_PX,
+        m_object->m_objectId
+    );
     m_object->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
 }
 
@@ -707,19 +700,12 @@ i32 CInGameIcon::Reposition() {
         grid = reg->m_tileGrid;
         ReleaseCellObject(grid, tileX, tileY);
         obj = m_object;
-        grid = g_gameReg->m_tileGrid;
-        i32 tileX2 = obj->m_screenX >> TILE_SHIFT_PX;
-        i32 tileY2 = obj->m_screenY >> TILE_SHIFT_PX;
-        i32 mv = obj->m_objectId;
-        if (static_cast<u32>(tileX2) < static_cast<u32>(grid->m_width)
-            && static_cast<u32>(tileY2) < static_cast<u32>(grid->m_height)) {
-            grid->m_rowInts[tileY2][tileX2 * 7 + 2] = mv;
-            if (mv != 0) {
-                grid->m_rowInts[tileY2][tileX2 * 7] |= 0x40000;
-            } else {
-                grid->m_rowInts[tileY2][tileX2 * 7] &= ~0x40000;
-            }
-        }
+        SetCellObject(
+            g_gameReg->m_tileGrid,
+            obj->m_screenX >> TILE_SHIFT_PX,
+            obj->m_screenY >> TILE_SHIFT_PX,
+            obj->m_objectId
+        );
     }
     return 0;
 }
