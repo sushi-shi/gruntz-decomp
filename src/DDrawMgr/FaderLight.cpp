@@ -46,14 +46,10 @@ i32 CFaderLight::ApplyInit(CFaderConfig* desc) {
     if (m_restoreSurface == NULL && m_clearMode == false) {
         return 0;
     }
-    RECT rect;
-    m_width = m_targetSurface->m_apiDesc.dwWidth;
-    rect.right = m_width;
-    m_height = m_targetSurface->m_apiDesc.dwHeight;
-    rect.bottom = m_height;
-    rect.left = 0;
-    rect.top = 0;
-    if (PtInRect(&rect, m_center) == false) {
+    m_width = m_targetSurface->GetWidth();
+    m_height = m_targetSurface->GetHeight();
+    CRect rect(0, 0, m_width, m_height);
+    if (!rect.PtInRect(m_center)) {
         return 0;
     }
     if (m_clearMode != false) {
