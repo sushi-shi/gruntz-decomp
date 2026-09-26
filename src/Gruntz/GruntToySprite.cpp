@@ -67,8 +67,7 @@ i32 CGruntToySprite::BindToGrunt(i32 playerIndex, i32 unitIndex) {
 RVA(0x0007f960, 0x85)
 i32 CGruntToySprite::Update() {
     CGrunt* e =
-        g_gameReg->m_triggerMgr->m_units
-            [m_gruntIdentity.m_playerIndex * TM_UNITS_PER_PLAYER + m_gruntIdentity.m_unitIndex];
+        g_gameReg->m_triggerMgr->UnitAt(m_gruntIdentity.m_playerIndex, m_gruntIdentity.m_unitIndex);
     if (e == NULL) {
         return 0;
     }
@@ -84,8 +83,8 @@ i32 CGruntToySprite::Update() {
             r->m_frameIndex = layerIndex;
         }
     }
-    SET_VECTOR2_COMPONENTS(
-        m_object->m_screenPosition,
+    SET_SCREEN_POS(
+        m_object,
         e->m_object->m_screenPosition.m_x,
         e->m_object->m_screenPosition.m_y - 0x20
     );

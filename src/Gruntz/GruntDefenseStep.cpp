@@ -16,8 +16,11 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPuddle.h>
+#include <Gruntz/GruntRandomPointMacros.h>
+#include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
@@ -48,12 +51,8 @@ i32 CGrunt::StepScrollGruntBehavior() {
                 m_defenderState = AISTATE_CHASE;
                 return 1;
             }
-            occ =
-                m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
-            if (occ == NULL) {
-                goto seek;
-            }
-            if (GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) != 0
+            occ = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
+            if (occ != NULL && GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) != 0
                 && occ->m_entranceCommitted != false) {
                 if (m_neighborValid != false) {
                     return 1;
@@ -85,44 +84,21 @@ i32 CGrunt::StepScrollGruntBehavior() {
                 goto seek;
             }
             m_defenderState = AISTATE_CHASE;
-            {
-                Coord voicePosition = m_object->ScreenPos();
-                const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
-                if (::PtInRect(rect, voicePosition.m_x, voicePosition.m_y)) {
-                    g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
-                }
-            }
+            PLAY_VOICE_IN_VIEW(0x366);
             return 1;
 
         case AISTATE_CHASE: {
-            occ =
-                m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
+            occ = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
             CGrunt* g = m_triggerMgr->FindNearestEnemy(this);
             if (g != NULL && g != occ) {
-                m_arrivalCell.Set(-1, -1);
-                m_defenderState = AISTATE_SEEK;
+                ResetToSeek(this);
                 return 1;
             }
-            if (occ == NULL) {
+            if (occ == NULL || occ->m_entranceCommitted == false
+                || GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) == 0) {
                 goto seek;
             }
-            if (occ->m_entranceCommitted == false) {
-                goto seek;
-            }
-            if (GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) == 0) {
-                goto seek;
-            }
-            if (static_cast<u32>(m_dwell) > DWELL_REPATH_MS) {
-                StepArrivalDrop(
-                    occ->m_lastTilePx.m_x,
-                    occ->m_lastTilePx.m_y,
-                    0,
-                    m_arrivalFlags,
-                    1,
-                    0
-                );
-                m_dwell = 0;
-            }
+            RepathToward(this, occ);
             if (m_poweredUp != false) {
                 return 1;
             }
@@ -146,7 +122,7 @@ i32 CGrunt::StepScrollGruntBehavior() {
                 m_defenderState = AISTATE_ATTACK;
                 return 1;
             }
-            if (IsGruntAtSavedScreenPos(occ)) {
+            if (GRUNT_AT_SAVED_SCREEN_POS(occ)) {
                 COMMIT_GRUNT_NEIGHBOR(occ);
             }
             m_defenderState = AISTATE_ATTACK;
@@ -155,10 +131,8 @@ i32 CGrunt::StepScrollGruntBehavior() {
 
         case AISTATE_SEEK:
             occ = m_triggerMgr->FindNearestEnemy(this);
-            if (occ == NULL) {
-                goto L_f308a;
-            }
-            if (m_poweredUp == false && m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(occ)
+            if (occ != NULL && m_poweredUp == false && m_stamina >= STAMINA_FULL
+                && GRUNT_AT_SAVED_SCREEN_POS(occ)
                 && RectContains(
                        occ->m_object->m_screenPosition.m_x,
                        occ->m_object->m_screenPosition.m_y
@@ -172,42 +146,27 @@ i32 CGrunt::StepScrollGruntBehavior() {
                     );
                     return 1;
                 }
-                if (occ->m_object->ScreenPos() != occ->m_lastTilePx) {
+                if (!(GRUNT_AT_SAVED_SCREEN_POS(occ))) {
                     return 1;
                 }
                 COMMIT_GRUNT_NEIGHBOR(occ);
                 return 1;
             }
             if (occ != NULL && static_cast<u32>(m_dwell) > DWELL_SEEK_PATH_MS) {
-                if (GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) == 0) {
-                    goto L_f318a;
-                }
-                {
+                if (GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) != 0) {
                     Coord sp;
-                    occ->GetScreenTile(&sp);
-                    if (TileSwitch(sp.m_x, sp.m_y, 0, m_arrivalFlags, 1, 0) == 0) {
-                        goto L_f318a;
+                    occ->GetScreenPos(&sp);
+                    sp.m_x >>= TILE_SHIFT_PX;
+                    sp.m_y >>= TILE_SHIFT_PX;
+                    if (TileSwitch(sp.m_x, sp.m_y, 0, m_arrivalFlags, 1, 0) != 0) {
+                        SET_GRUNT_ARRIVAL_TARGET(occ);
+                        m_defenderState = AISTATE_CHASE;
+                        PLAY_VOICE_IF_VISIBLE(0x366);
                     }
-                    SET_GRUNT_ARRIVAL_TARGET(occ);
-                    m_defenderState = AISTATE_CHASE;
-                    CWwdSpriteObject* h = m_object;
-                    CGruntzMgr* reg = g_gameReg;
-                    const RECT* rect = &reg->m_world->m_level->m_mainPlane->m_planeViewRect;
-                    if (CGameLevel::PointInBounds(
-                            rect,
-                            h->m_screenPosition.m_x,
-                            h->m_screenPosition.m_y
-                        )
-                        == 0) {
-                        goto L_f318a;
-                    }
-                    reg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
                 }
-            L_f318a:
                 m_dwell = 0;
                 return 1;
             }
-        L_f308a:
             if (m_resetApplied != false) {
                 return 1;
             }
@@ -219,16 +178,14 @@ i32 CGrunt::StepScrollGruntBehavior() {
             }
             if (IsArrivalRerollPending() != 0) {
                 CWwdSpriteObject* h = m_object;
-                Coord point;
-                Coord span;
-                SelectRandomExtentPoint(h, &point, &span);
-                if (static_cast<u32>(point.m_x) < g_gameReg->m_tileGrid->m_width
-                    && static_cast<u32>(point.m_y) < g_gameReg->m_tileGrid->m_height) {
-                    TileSwitch(point.m_x, point.m_y, 0, m_arrivalFlags, 1, 0);
+                SELECT_RANDOM_EXTENT_POINT_SEPARATE_BASE(h, baseX, spanX, baseY, spanY, outX, outY)
+                if (outX < g_gameReg->m_tileGrid->m_width
+                    && outY < g_gameReg->m_tileGrid->m_height) {
+                    TileSwitch(outX, outY, 0, m_arrivalFlags, 1, 0);
                 }
                 i32 coordCount = CoordCount();
                 if (coordCount != 0) {
-                    i32 mx = Max(span.m_x, span.m_y);
+                    i32 mx = Max(spanX, spanY);
                     if (coordCount > mx) {
                         SetEntrancePos(1, 1);
                     }

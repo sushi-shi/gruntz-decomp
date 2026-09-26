@@ -258,7 +258,6 @@ def match_units(units: list[str], *, jobs: int | None, verbose: bool) -> int:
 
     started = time.monotonic()
     report_path = REPO / graph.REPORT_JSON
-    before = scores.functions(scores.load(report_path)) if report_path.exists() else {}
 
     targets = [f"{graph.BASE_DIR}/{u}.obj" for u in units]
     targets += [f"{graph.CLAIMS_DIR}/{u}.tsv" for u in units]
@@ -278,13 +277,13 @@ def match_units(units: list[str], *, jobs: int | None, verbose: bool) -> int:
     objdiff.report(REPO / graph.COMPARE_DIR, report_path)
 
     after = scores.functions(scores.load(report_path))
-    print_unit_functions(units, before, after)
+    print_unit_functions(units, after)
     print(f"\n[match] {', '.join(units)} in {time.monotonic() - started:.1f}s"
           + (" (labels changed: delinked)" if bindings_changed else ""))
     return 0
 
 
-def print_unit_functions(units: list[str], before: dict, after: dict) -> None:
+def print_unit_functions(units: list[str], after: dict) -> None:
     """MAX movement only. An unchanged function keeps its banked MAX, so a CUR
     dip is noise and stays silent; it is listed only when it rises above MAX.
     An edited function's MAX becomes its new score, so it is listed with the
@@ -316,11 +315,12 @@ def print_unit_functions(units: list[str], before: dict, after: dict) -> None:
             edited = real_edit(row["fp"], fp(unit, name))
             new_max = pct if edited else max(row["best"], pct)
             at_max += new_max >= 100.0
-            was = before.get((unit, name))
             if edited and pct > row["best"] + EPS:
                 shown.append((pct, row["best"], name, "up"))
             elif edited and row["best"] - pct > EPS:
-                held = was is not None and abs(pct - was) <= EPS
+                # CUR held against the bank, as the MAX gate classifies it: the
+                # worktree's previous report may already contain the edit.
+                held = abs(pct - row["cur"]) <= EPS
                 if held:
                     resets.append((row.get("addr"), unit, name, row["best"], pct))
                 shown.append((pct, row["best"], name,
@@ -397,9 +397,6 @@ def match_main(argv: list[str] | None = None) -> int:
         return match_units(resolve_units(a.units), jobs=a.jobs, verbose=a.verbose)
 
     from gruntz.verify import scores
-    report_path = REPO / graph.REPORT_JSON
-    before_scores = (scores.functions(scores.load(report_path))
-                     if report_path.exists() else {})
     before = object_census()
     rc = ninja(["compare"], jobs=a.jobs, verbose=a.verbose,
                keep_going=a.keep_going)
@@ -427,7 +424,7 @@ def match_main(argv: list[str] | None = None) -> int:
     if a.all or not changed:
         print_summary(report, all_units=False)
     elif a.functions:
-        print_unit_functions(changed, before_scores,
+        print_unit_functions(changed,
                              scores.functions(scores.load(report_path)))
     else:
         print_changed(report, changed, functions=False)

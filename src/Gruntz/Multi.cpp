@@ -35,7 +35,9 @@
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/Minimap.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/PlayInline.h>
 #include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueInline.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/Sparam.h>
@@ -64,6 +66,7 @@
 #include <Rez/FrameClock.h>
 #include <Rez/RezArchive.h>
 #include <Rez/RezSync.h>
+#include <SafeDelete.h>
 #include <Utils/DebugTiming.h>
 #include <Utils/MapTyped.h>
 #include <Utils/RegMgr.h>
@@ -354,10 +357,7 @@ void CMulti::ReleaseResources() {
         delete session;
         m_session = NULL;
     }
-    if (m_netMgr) {
-        delete m_netMgr;
-        m_netMgr = NULL;
-    }
+    SAFE_DELETE(m_netMgr)
 
     CMinimap* minimap = m_minimap;
     if (minimap) {
@@ -614,27 +614,7 @@ i32 CMulti::AdvanceGameFrame() {
     g_frameTime += 0x21;
     g_soundCueTimeMs = g_lastNow;
     g_engineFrameDelta = 0x21;
-    if (m_ambientInitDone == false) {
-        if (static_cast<i64>(g_frameTime) - m_ambientTiming.m_start.m_v
-            >= m_ambientTiming.m_interval.m_v) {
-            char name[0x40];
-            wsprintfA(name, "AMBIENT%d", GetAmbientId());
-            if (g_gameReg->m_musicEnabled != false) {
-                Mgr()->m_midi->PlaySequence(name, true);
-            } else {
-
-                MidiManager* midi = Mgr()->m_midi;
-                MidiSequence* sequence = midi->FindSequence(name);
-                if (sequence) {
-                    midi->m_currentSequence = sequence;
-                }
-                if (Mgr()->m_midi->m_currentSequence) {
-                    Mgr()->m_midi->m_currentSequence->SetLooping(true);
-                }
-            }
-            m_ambientInitDone = true;
-        }
-    }
+    UpdateAmbientMusic();
     Mgr()->m_commandMgr->ExecuteScheduledCommands(m_processedCommandTick % 128);
     m_session->ComputeChecksum();
     g_frameTicks++;
@@ -687,16 +667,11 @@ i32 CMulti::AdvanceGameFrame() {
     return 1;
 }
 
-// @early-stop
 RVA(0x000b6e90, 0x34d)
 void CMulti::RenderGameFrame() {
     if (m_roundComplete == false && Mgr()->m_frameGate != false) {
         RestoreCursorSaveUnder();
-        m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
-        m_world->m_workerList->RenderAndPruneWorkers(
-            m_world->m_drawTarget->m_backPair,
-            m_world->m_drawTarget->m_overlayPair
-        );
+        DrawVisibleWorld();
         m_statusBar->LoadMainStatusBarSprite();
         CDDrawSurfacePair* h = static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair);
         if (h == NULL) {
@@ -725,35 +700,24 @@ void CMulti::RenderGameFrame() {
         (m_world->m_level->m_mainPlane)->m_scrollPixel.m_x,
         (m_world->m_level->m_mainPlane)->m_scrollPixel.m_y
     );
-    if (m_region1Gate != false) {
-        NotifyVisibleEntities();
-    } else {
-        m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
-        m_world->m_workerList->RenderAndPruneWorkers(
-            m_world->m_drawTarget->m_backPair,
-            m_world->m_drawTarget->m_overlayPair
-        );
-    }
+    DrawWorldView();
     m_statusBar->LoadMainStatusBarSprite();
-    if (m_minimap != NULL) {
-        CStatusBarMgr* statusBar = m_statusBar;
-        if (statusBar->m_position != STATUSBAR_HIDDEN && statusBar->m_activeTab != TAB_GAME) {
-            CRect rc;
-            if (statusBar->m_position == STATUSBAR_DOCK_LEFT) {
-                rc.SetRect(20, 5, 140, 125);
-            } else {
-                rc.top = g_gameReg->m_modeSize.cy;
-                i32 right = g_gameReg->m_modeSize.cx - 20;
-                i32 left = g_gameReg->m_modeSize.cx - 140;
-                rc.top = g_gameReg->m_modeSize.cy;
-                rc.SetRect(left, 5, right, 125);
-            }
-            m_minimap->Refresh(static_cast<i32>(g_frameDelta), false);
-            m_minimap->Draw(
-                static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair),
-                &rc
+    if (m_minimap != NULL && m_statusBar->m_position != STATUSBAR_HIDDEN
+        && m_statusBar->m_activeTab != TAB_GAME) {
+        RECT rc;
+        if (m_statusBar->m_position == STATUSBAR_DOCK_LEFT) {
+            SetRect(&rc, 20, 5, 140, 125);
+        } else {
+            SetRect(
+                &rc,
+                g_gameReg->GetModeSize().cx - 140,
+                5,
+                g_gameReg->GetModeSize().cx - 20,
+                125
             );
         }
+        m_minimap->Refresh(static_cast<i32>(g_frameDelta), false);
+        m_minimap->Draw(static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair), &rc);
     }
     Mgr()->m_chatLog->Scroll(g_frameDelta);
     CDDrawSurfacePair* h = static_cast<CDDrawSurfacePair*>(m_world->m_drawTarget->m_backPair);
@@ -774,14 +738,12 @@ void CMulti::RenderGameFrame() {
         (m_world->m_level->m_mainPlane)->DeactivateDistantObjects();
     }
     if (m_region0Gate != false) {
-        if (static_cast<i64>(g_frameTime) - m_region0Timing.m_start.m_v
-            >= m_region0Timing.m_interval.m_v) {
+        if (m_region0Timing.Expired()) {
             SetTinyViewportCurse(false);
         }
     }
     if (m_region1Gate != false) {
-        if (static_cast<i64>(g_frameTime) - m_region1Timing.m_start.m_v
-            >= m_region1Timing.m_interval.m_v) {
+        if (m_region1Timing.Expired()) {
             SetDarknessCurse(false);
         }
     }
@@ -1240,23 +1202,7 @@ i32 CMulti::ShowMultiStartDlg() {
     if (m_isHost != false) {
         ApplyCmdDelayDefaults();
     } else {
-        SoundCueRegistry* reg = m_world->m_soundRegistry;
-        if (reg->m_silentMode == false) {
-            SoundCue* found = reg->FindCue(g_gameKey);
-            SoundCue* rec = found;
-            if (rec != NULL) {
-                b32 soundEnabled = g_soundEnabled;
-                i32 volumePercent = g_soundVolumePercent;
-                if (soundEnabled != false) {
-                    i32 cueTimeMs = g_soundCueTimeMs;
-                    if (static_cast<u32>((cueTimeMs - rec->m_lastPlayTimeMs))
-                        >= static_cast<u32>(rec->m_replayDelayMs)) {
-                        rec->m_lastPlayTimeMs = cueTimeMs;
-                        rec->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                    }
-                }
-            }
-        }
+        PlayRegistryCueIfElapsed(m_world->m_soundRegistry, g_gameKey);
         ActiveWait(0xfa);
     }
     return 1;
@@ -1274,13 +1220,7 @@ void FillSessionList(HWND hList, CNetMgr* manager) {
         return;
     }
     SendMessageA(hList, LB_RESETCONTENT, 0, 0);
-    manager->m_sessionCursor = manager->m_sessionListings.GetHeadPosition();
-    CNetSessionListNode* listing =
-        manager->m_sessionCursor != NULL
-            ? static_cast<CNetSessionListNode*>(
-                  manager->m_sessionListings.GetNext(manager->m_sessionCursor)
-              )
-            : NULL;
+    CNetSessionListNode* listing = manager->GetFirstSession();
     while (listing) {
 
         MsgParam name;
@@ -1298,15 +1238,7 @@ void FillSessionList(HWND hList, CNetMgr* manager) {
             SendMessageA(hList, LB_SETITEMDATA, itemIndex, cookie.m_lparam);
         }
 
-        if (manager->m_sessionCursor != NULL) {
-            CNetSessionListNode* next = static_cast<CNetSessionListNode*>(
-                manager->m_sessionListings.GetAt(manager->m_sessionCursor)
-            );
-            manager->m_sessionListings.GetNext(manager->m_sessionCursor);
-            listing = next;
-        } else {
-            listing = NULL;
-        }
+        listing = manager->GetNextSession();
     }
 }
 
@@ -1388,7 +1320,7 @@ i32 CMulti::OnJoinConfirm(HWND hDlg) {
 
     packet.m_networkPlayerId = m_localPlayerId;
     packet.m_active = true;
-    packet.m_color = TINT_BLACK;
+    packet.m_color = TINT_ORANGE;
     packet.m_humanControlled = true;
     packet.m_difficulty = BZDIFF_EASY;
     packet.m_preferredPlayerIndex = NET_PREFERRED_PLAYER_INDEX_ANY;
@@ -1566,16 +1498,7 @@ i32 CMulti::PollSession() {
         return 0;
     }
 
-    i32 count;
-    if (LocalPlayer() == NULL) {
-        count = 0;
-    } else {
-        IDirectPlay4A* directPlay = Network()->m_directPlay;
-
-        DWORD messageCount;
-        i32 hr = directPlay->GetMessageCount(LocalPlayer()->m_playerId, &messageCount);
-        count = hr ? 0 : messageCount;
-    }
+    i32 count = Network()->GetMessageCount(LocalPlayer());
     if (count <= 0) {
         return 0;
     }
@@ -1592,14 +1515,8 @@ i32 CMulti::PollSession() {
         }
 
         DWORD messageSize = sizeof(g_recvBuffer);
-        DPID recipient = LocalPlayer()->m_playerId;
-        IDirectPlay4A* directPlay = Network()->m_directPlay;
-
-        hr = directPlay->Receive(&sender, &recipient, DPRECEIVE_ALL, g_recvBuffer, &messageSize);
-
-        if (hr) {
-            CNetMgr::ReportError("c:\\proj\\incs\\netmgr.h", 0x141, hr, NULL);
-        } else {
+        hr = Network()->ReceiveMessage(&sender, LocalPlayer(), g_recvBuffer, &messageSize);
+        if (hr == 0) {
             count--;
             if (sender != LocalPlayer()->m_playerId) {
                 DispatchRecvMsg(sender, g_recvBuffer, messageSize);
@@ -2088,23 +2005,7 @@ i32 CMulti::HandlePlayerCreated(LPDPMSG_CREATEPLAYERORGROUP message) {
                 SendVersionCheck(player);
             }
         }
-        SoundCueRegistry* registry = m_world->m_soundRegistry;
-        if (registry->m_silentMode == false) {
-            SoundCue* found = registry->FindCue("GAME_MENUS_SELECT");
-            SoundCue* cue = found;
-            if (cue != NULL) {
-                b32 soundEnabled = g_soundEnabled;
-                i32 volumePercent = g_soundVolumePercent;
-                if (soundEnabled != false) {
-                    u32 cueTimeMs = g_soundCueTimeMs;
-                    if (static_cast<u32>((cueTimeMs - cue->m_lastPlayTimeMs))
-                        >= cue->m_replayDelayMs) {
-                        cue->m_lastPlayTimeMs = cueTimeMs;
-                        cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                    }
-                }
-            }
-        }
+        PlayRegistryCueIfElapsed(m_world->m_soundRegistry, "GAME_MENUS_SELECT");
         return 1;
     }
     SendPlayerIdMessageToId(message->dpId, NETMSG_GAME_CLOSED, DPSEND_GUARANTEED);
@@ -2611,7 +2512,7 @@ i32 CMulti::WaitForOtherPlayers() {
     CDWordArray* votes = &m_readyPlayerIds;
     votes->SetSize(0, -1);
     for (i32 k = 3; k != 0; k--) {
-        votes->SetAtGrow(votes->GetSize(), 0);
+        votes->Add(0);
     }
     if (Network()->m_players.GetCount() == 1) {
         goto ready;
@@ -3042,7 +2943,7 @@ i32 CMulti::CreateLocalPlayer() {
     pkt.m_flags |= NET_PACKET_APPLICATION;
     pkt.m_messageId = STAT_REGISTER_PLAYER;
     pkt.m_active = true;
-    pkt.m_color = TINT_BLACK;
+    pkt.m_color = TINT_ORANGE;
     pkt.m_humanControlled = true;
     pkt.m_difficulty = BZDIFF_EASY;
 

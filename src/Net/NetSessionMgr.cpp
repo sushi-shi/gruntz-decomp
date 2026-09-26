@@ -42,7 +42,6 @@ i32 CNetSession::Initialize(CGruntzMgr* mgr, CMulti* owner, CNetMgr* netMgr) {
     return 1;
 }
 
-// @early-stop
 RVA(0x000bf000, 0xd5)
 void CNetSession::Shutdown() {
     m_mgr = NULL;
@@ -54,18 +53,19 @@ void CNetSession::Shutdown() {
     m_sequence = 0;
     m_commandPeriod = 1;
     for (i32 i = 0; i < 4; i++) {
-        m_slots[i].m_isDraining = false;
-        m_slots[i].m_drainSequence = 0;
-        m_slots[i].m_state = NETSLOT_EMPTY;
-        m_slots[i].m_player = NULL;
-        m_slots[i].m_latency = 0;
-        m_slots[i].m_contiguousSequence = 0;
-        m_slots[i].m_peerWindowBase = 0;
-        m_slots[i].m_owner = NULL;
-        m_slots[i].ClearRecords();
-        m_slots[i].ClearDrainAcks();
-        m_slots[i].ClearSequenceSet(m_slots[i].m_receivedAhead);
-        m_slots[i].ClearSequenceSet(m_slots[i].m_peerReceivedAhead);
+        CNetCmdSlot* slot = &m_slots[i];
+        slot->m_isDraining = false;
+        slot->m_drainSequence = 0;
+        slot->m_state = NETSLOT_EMPTY;
+        slot->m_player = NULL;
+        slot->m_latency = 0;
+        slot->m_contiguousSequence = 0;
+        slot->m_peerWindowBase = 0;
+        slot->m_owner = NULL;
+        slot->ClearRecords();
+        slot->ClearDrainAcks();
+        slot->ClearSequenceSet(slot->m_receivedAhead);
+        slot->ClearSequenceSet(slot->m_peerReceivedAhead);
     }
     for (i32 j = 0; j < 0x80; j++) {
         m_commandByTick[j] = NULL;
@@ -123,7 +123,7 @@ void CNetSession::BuildGruntzCrcInfo() {
     for (i32 player = 0; player < 4; player++) {
         for (i32 g = 0; g < 0xf; g++) {
 
-            CGrunt* grunt = m_owner->Mgr()->m_triggerMgr->m_units[player * 0xf + g];
+            CGrunt* grunt = m_owner->Mgr()->m_triggerMgr->UnitAt(player, g);
             if (grunt == NULL) {
                 continue;
             }
@@ -191,37 +191,14 @@ i32 CNetSession::Poll(i32 elapsedMs) {
     }
 
     i32 status = 0;
-    i32 availableCount;
-    CNetPlayerNode* localPlayer = m_localPlayer;
-    CNetMgr* netMgr = m_netMgr;
-    if (localPlayer == NULL) {
-        availableCount = 0;
-    } else {
-        DWORD messageCount;
-
-        IDirectPlay4A* directPlay = netMgr->m_directPlay;
-        i32 result = directPlay->GetMessageCount(localPlayer->m_playerId, &messageCount);
-        availableCount = (result == 0) ? messageCount : 0;
-    }
+    i32 availableCount = m_netMgr->GetMessageCount(m_localPlayer);
 
     DPID senderId = 0;
     DWORD messageSize = sizeof(g_lobbyRecvBuf);
     i32 received = 0;
     while (status == 0 && availableCount > 0 && m_owner->m_pollAbort == false) {
         messageSize = sizeof(g_lobbyRecvBuf);
-        IDirectPlay4A* directPlay = m_netMgr->m_directPlay;
-        DPID recipientId = m_localPlayer->m_playerId;
-        status =
-            directPlay
-                ->Receive(&senderId, &recipientId, DPRECEIVE_ALL, g_lobbyRecvBuf, &messageSize);
-        if (status != 0) {
-            CNetMgr::ReportError(
-                const_cast<char*>("c:\\proj\\incs\\netmgr.h"),
-                0x141,
-                status,
-                NULL
-            );
-        }
+        status = m_netMgr->ReceiveMessage(&senderId, m_localPlayer, g_lobbyRecvBuf, &messageSize);
         if (status == 0) {
             availableCount--;
             received++;
@@ -295,7 +272,6 @@ i32 CNetSession::DispatchSystemMessage(LPDPMSG_GENERIC message, i32 messageSize)
     }
 }
 
-// @early-stop
 RVA(0x000bf9e0, 0xfe)
 i32 CNetSession::SendTick() {
     if (m_batchBuilt == false && (m_commandTick + 1) % m_commandPeriod == 0) {
@@ -306,9 +282,9 @@ i32 CNetSession::SendTick() {
         record->m_entryCount = 0;
         record->m_checksum = ComputeChecksum();
         char* payload = record->m_payload;
-        i32 commandTick = batchSequence * m_commandPeriod;
-        batchSequence = batchSequence + 1;
-        for (; commandTick < batchSequence * m_commandPeriod; commandTick++) {
+        for (i32 commandTick = batchSequence * m_commandPeriod;
+             commandTick < (batchSequence + 1) * m_commandPeriod;
+             commandTick++) {
             CGruntzCommand* command = GetCommandAtTick(commandTick);
             if (command) {
                 NoopSync(command);
@@ -461,18 +437,17 @@ i32 CNetSession::SendRecord(CNetCmdSlot* slot, i32 sequence) {
     if (sequence < 0) {
         return 1;
     }
-    NetCmdReceiptFlags flags = static_cast<NetCmdReceiptFlags>(0);
+    unsigned char flags = 0;
     i32 baseSeq = slot->m_contiguousSequence;
     if (slot->ContainsSequence(slot->m_receivedAhead, baseSeq + 2)) {
-        flags = NET_CMD_RECEIVED_WINDOW_BASE_PLUS_TWO;
+        flags = 0x10;
     }
     if (slot->ContainsSequence(slot->m_receivedAhead, baseSeq + 3)) {
-        flags |= NET_CMD_RECEIVED_WINDOW_BASE_PLUS_THREE;
+        flags |= 0x20;
     }
-    g_netCmdSendMsg.m_flags = static_cast<u8>(flags);
+    GruntRec* entry = &m_commandRecords[sequence % 0x80];
+    g_netCmdSendMsg.m_flags = flags;
     g_netCmdSendMsg.m_sequence = sequence;
-    i32 recordIndex = sequence % 0x80;
-    GruntRec* entry = &m_commandRecords[recordIndex];
     g_netCmdSendMsg.m_windowBase = slot->m_contiguousSequence;
     g_netCmdSendMsg.m_checksum = entry->m_checksum;
     g_netCmdSendMsg.m_entryCount = entry->m_entryCount;
@@ -713,7 +688,7 @@ i32 CNetSession::ComputeChecksum() {
     i32 sum = 0;
     for (i32 player = 0; player < PLAYER_SLOT_COUNT; player++) {
         for (i32 g = 0; g < TM_UNITS_PER_PLAYER; g++) {
-            CGrunt* grunt = m_owner->m_mgr->m_triggerMgr->m_units[player * TM_UNITS_PER_PLAYER + g];
+            CGrunt* grunt = m_owner->m_mgr->m_triggerMgr->UnitAt(player, g);
             if (grunt != NULL) {
                 sum += IDX(grunt->m_entranceCell.m_direction) + grunt->m_stamina + grunt->m_toyTime
                        + grunt->m_health + grunt->m_object->m_screenPosition.m_y
@@ -730,68 +705,65 @@ i32 CNetSession::ComputeChecksum() {
                     case PICKUP_BOMB:
                         next = PICKUP_BOOMERANG;
                         break;
-                    case PICKUP_BOOMERANG:
+                    case PICKUP_WELDER:
                         next = PICKUP_BRICK;
                         break;
-                    case PICKUP_BRICK:
+                    case PICKUP_SWORD:
                         next = PICKUP_CLUB;
                         break;
-                    case PICKUP_CLUB:
+                    case PICKUP_GUNHAT:
                         next = PICKUP_GAUNTLETZ;
                         break;
-                    case PICKUP_GAUNTLETZ:
+                    case PICKUP_CLUB:
                         next = PICKUP_GLOVEZ;
                         break;
-                    case PICKUP_GLOVEZ:
+                    case PICKUP_ROCK:
                         next = PICKUP_GOOBER;
                         break;
-                    case PICKUP_GOOBER:
+                    case PICKUP_SHOVEL:
                         next = PICKUP_GRAVITYBOOTZ;
                         break;
-                    case PICKUP_GRAVITYBOOTZ:
+                    case PICKUP_BOOMERANG:
                         next = PICKUP_GUNHAT;
                         break;
-                    case PICKUP_GUNHAT:
+                    case PICKUP_SPRING:
                         next = PICKUP_NERFGUN;
                         break;
-                    case PICKUP_NERFGUN:
+                    case PICKUP_GAUNTLETZ:
                         next = PICKUP_ROCK;
                         break;
-                    case PICKUP_ROCK:
+                    case PICKUP_WINGZ:
                         next = PICKUP_SHIELD;
                         break;
-                    case PICKUP_SHIELD:
+                    case PICKUP_SPY:
                         next = PICKUP_SHOVEL;
                         break;
-                    case PICKUP_SHOVEL:
+                    case PICKUP_BRICK:
                         next = PICKUP_SPRING;
                         break;
-                    case PICKUP_SPRING:
+                    case PICKUP_GRAVITYBOOTZ:
                         next = PICKUP_SPY;
                         break;
-                    case PICKUP_SPY:
+                    case PICKUP_SHIELD:
                         next = PICKUP_SWORD;
                         break;
-                    case PICKUP_SWORD:
+                    case PICKUP_GOOBER:
                         next = PICKUP_TIMEBOMB;
                         break;
-                    case PICKUP_TIMEBOMB:
+                    case PICKUP_TOOB:
                         next = PICKUP_TOOB;
                         break;
-                    case PICKUP_TOOB:
+                    case PICKUP_GLOVEZ:
                         next = PICKUP_WAND;
                         break;
-                    case PICKUP_WAND:
+                    case PICKUP_TIMEBOMB:
                         next = PICKUP_WARPSTONE;
                         break;
-                    case PICKUP_WARPSTONE:
+                    case PICKUP_NERFGUN:
                         next = PICKUP_WELDER;
                         break;
-                    case PICKUP_WELDER:
+                    case PICKUP_WAND:
                         next = PICKUP_WINGZ;
-                        break;
-                    case PICKUP_WINGZ:
-                        next = PICKUP_BABYWALKER;
                         break;
                     default:
                         next = PICKUP_BABYWALKER;

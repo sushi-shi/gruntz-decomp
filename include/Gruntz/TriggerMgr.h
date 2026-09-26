@@ -5,6 +5,7 @@
 
 #include <Mfc.h>
 
+#include <Gruntz/ClockInterval.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/CoordPool.h>
 #include <Gruntz/CurPlayer.h>
@@ -33,13 +34,6 @@ class CWwdSpriteObject;
 class CActionOptionsMenuBar;
 
 class CGruntPuddle;
-
-struct CueTimer {
-    i64 m_base;
-    i64 m_window;
-
-    CueTimer() : m_base(0), m_window(0) {}
-};
 
 class CTriggerMgr {
 public:
@@ -272,8 +266,21 @@ public:
 
     CPtrList m_recList;
 
+    CGrunt** PlayerUnits(i32 playerIndex) {
+        return &m_units[playerIndex * TM_UNITS_PER_PLAYER];
+    }
+    CGrunt* UnitAt(i32 playerIndex, i32 unitIndex) {
+        return PlayerUnits(playerIndex)[unitIndex];
+    }
     Coord* HeadRec() {
         return static_cast<Coord*>(m_recList.GetHead());
+    }
+    CGrunt* SoleSelectedGrunt() {
+        if (m_recList.GetCount() != 1) {
+            return NULL;
+        }
+        Coord* rec = HeadRec();
+        return UnitAt(rec->m_x, rec->m_y);
     }
     CActionOptionsMenuBar* m_overlay;
     CByteArray m_byteArr;
@@ -282,14 +289,14 @@ public:
 
     FinishLevelState m_phase;
 
-    CueTimer m_cueTimer;
+    ClockInterval m_cueTimer;
 
     CWarlord* m_pendingFx;
     b32 m_countdownActive;
     i32 m_pendingFxKind;
 
-    CueTimer m_gooTimer;
-    CueTimer m_resourceTimer;
+    ClockInterval m_gooTimer;
+    ClockInterval m_resourceTimer;
     CPtrList m_selLists[10];
     i32 m_selSentinel;
     FinishLevelReason m_finishReasonFrame;

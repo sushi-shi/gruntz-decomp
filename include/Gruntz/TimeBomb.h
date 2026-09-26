@@ -3,6 +3,7 @@
 
 #include <rva.h>
 
+#include <Gruntz/ClockInterval.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
@@ -17,10 +18,7 @@ public:
     }
 
 public:
-    CTimeBomb() {
-        m_startTime = 0;
-        m_duration = 0;
-    }
+    CTimeBomb() {}
     CTimeBomb(CGameObject* obj);
     virtual void FireActivation(i32 id) OVERRIDE;
     static void RegisterActs();
@@ -28,13 +26,7 @@ public:
     i32 UpdateCountdown();
 
     b32 m_fastPhase;
-    union {
-        struct {
-            i64 m_startTime;
-            i64 m_duration;
-        };
-        CPairRecord m_timing;
-    };
+    ClockInterval m_timing;
 };
 
 #endif // GRUNTZ_CTIMEBOMB_H

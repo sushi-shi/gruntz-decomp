@@ -8,6 +8,7 @@
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GameStats.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GruntPickupInline.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMgr.h>
@@ -37,11 +38,11 @@ i32 CGrunt::LoadPickupSprites(
             return 0;
         }
 
-        bool eqA = (strcmp(g_typeColl[m_logicRecord->EventCode()], "A") == 0);
+        bool eqA = ANIMATION_ACT_EQUALS("A");
         if (!eqA) {
-            bool eqD = (strcmp(g_typeColl[m_logicRecord->EventCode()], "D") == 0);
+            bool eqD = ANIMATION_ACT_EQUALS("D");
             if (!eqD) {
-                bool eqE = (strcmp(g_typeColl[m_logicRecord->EventCode()], "E") == 0);
+                bool eqE = ANIMATION_ACT_EQUALS("E");
                 if (!eqE) {
                     return 0;
                 }
@@ -53,11 +54,7 @@ i32 CGrunt::LoadPickupSprites(
         return 0;
     }
     if (type >= PICKUP_COLORBRICK_FIRST && type <= PICKUP_BRICKZ_LAST) {
-        PickupType st = m_entranceReason;
-        if (st > PICKUP_EQUIPPABLE_LAST) {
-            st = m_toolId;
-        }
-        if (st != PICKUP_BRICK) {
+        if (ArrivalPickup() != PICKUP_BRICK) {
             return 0;
         }
     }

@@ -12,6 +12,7 @@
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntCoordRecycleMacros.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/MapCellFlags.h>
 #include <Gruntz/ScanGridMacros.h>
 #include <Gruntz/TriggerMgr.h>
@@ -76,8 +77,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 nb->GetScreenTile(&p);
                 if (g->TileSwitch(p.m_x, p.m_y, 0, arrivalMask, 0, 0)) {
                     g->m_defenderState = AISTATE_ATTACK;
-                    g->m_arrivalCell.m_x = nb->m_playerIndex;
-                    g->m_arrivalCell.m_y = nb->m_unitIndex;
+                    g->m_arrivalCell.Set(nb->m_playerIndex, nb->m_unitIndex);
                     g->m_dwell = 0;
                 }
             }
@@ -91,8 +91,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
     {
         i32 targetPlayerIndex = g->m_arrivalCell.m_x;
         i32 targetUnitIndex = g->m_arrivalCell.m_y;
-        CGrunt* cur =
-            m_triggerMgr->m_units[TM_UNITS_PER_PLAYER * targetPlayerIndex + targetUnitIndex];
+        CGrunt* cur = m_triggerMgr->UnitAt(targetPlayerIndex, targetUnitIndex);
         if (cur != NULL) {
             CGameObject* s = cur->m_object;
             if (g->RectContains(s->m_screenPosition.m_x, s->m_screenPosition.m_y) != 0) {
@@ -100,33 +99,12 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                 if (g->CoordCount() != 0) {
                     RECYCLE_GRUNT_COORDS_VIA_NEXTDATA(g);
                 }
-                Coord none;
-                g->m_arrivalCell = *none.Set(-1, -1);
-                {
-                    if (g == NULL) {
-                        goto seek;
-                    }
-                    if (!g->IsAtSavedScreenPos()) {
-                        goto seek;
-                    }
-                    if (g->m_entranceCommitted == false) {
-                        goto seek;
-                    }
-                    if (g->m_deathAnimStarted != false) {
-                        goto seek;
-                    }
-                    if (g->m_entranceActive != false) {
-                        goto seek;
-                    }
-                    if (g->m_poweredUp != false) {
-                        goto seek;
-                    }
-                    if (!BattlezActDiffersFromIGLPJCR(g)) {
-                        goto seek;
-                    }
+                UNSET_COORD(g->m_arrivalCell);
+                if (g != NULL && g->IsAtSavedScreenPos() && g->m_entranceCommitted != false
+                    && g->m_deathAnimStarted == false && g->m_entranceActive == false
+                    && g->m_poweredUp == false && BattlezActDiffersFromIGLPJCR(g)) {
                     HandleUnitContact(g, cur);
                 }
-            seek:
                 g->m_defenderState = AISTATE_SEEK;
                 goto tail;
             }
@@ -144,8 +122,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                     Coord* e = CoordAt(rand() % m_attackWaypoints.GetSize());
                     g->TileSwitch(e->m_x, e->m_y, 0, 0x983, 0, 0);
                 }
-                Coord none;
-                g->m_arrivalCell = *none.Set(-1, -1);
+                UNSET_COORD(g->m_arrivalCell);
                 g->m_dwell = 0;
                 g->m_defenderState = AISTATE_SEEK;
                 if (g->CoordCount() != 0) {
@@ -189,9 +166,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
                         0,
                         0
                     )) {
-                    Coord none;
-                    g->m_arrivalCell = *none.Set(-1, -1);
-                    g->m_defenderState = AISTATE_SEEK;
+                    ResetToSeek(g);
                 }
             }
             if (dist2 <= 0xa) {
@@ -200,9 +175,7 @@ i32 CBattlezMapConfig::StepDefenderUnit(CGrunt* g) {
             g->m_dwell = 0;
             goto tail;
         }
-        Coord none;
-        g->m_arrivalCell = *none.Set(-1, -1);
-        g->m_defenderState = AISTATE_SEEK;
+        ResetToSeek(g);
         g->RecycleCoords();
     }
 

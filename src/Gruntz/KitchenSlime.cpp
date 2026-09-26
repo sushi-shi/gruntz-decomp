@@ -157,56 +157,54 @@ i32 CKitchenSlime::Tick() {
     }
 
     CGameObject* lvl = Level();
-    if (lvl->ScreenPos() == m_tilePosition && LoadSprites() == 0) {
+    if (lvl->m_screenPosition.m_x == m_tilePosition.m_x
+        && lvl->m_screenPosition.m_y == m_tilePosition.m_y && LoadSprites() == 0) {
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         return 0;
     }
 
     double step = static_cast<double>(g_frameDelta) * m_speed;
 
-    Coord next;
+    i32 newX;
     if (m_direction.m_x > 0.0) {
         double t = (m_position.m_x = m_position.m_x + step);
-        next.m_x = static_cast<i32>(floor(t));
-        m_stepMag = fabs(m_position.m_x - static_cast<double>(m_tilePosition.m_x));
+        newX = static_cast<i32>(floor(t));
+        i32 tx = m_tilePosition.m_x;
+        m_stepMag = fabs(m_position.m_x - static_cast<double>(tx));
 
-        if (next.m_x > m_tilePosition.m_x) {
-            next.m_x = m_tilePosition.m_x;
-        }
+        CLAMP_UPPER_INPLACE(newX, tx);
     } else if (m_direction.m_x < 0.0) {
         double t = (m_position.m_x = m_position.m_x - step);
-        next.m_x = static_cast<i32>(ceil(t));
-        m_stepMag = fabs(m_position.m_x - static_cast<double>(m_tilePosition.m_x));
-        if (next.m_x < m_tilePosition.m_x) {
-            next.m_x = m_tilePosition.m_x;
+        newX = static_cast<i32>(ceil(t));
+        i32 tx = m_tilePosition.m_x;
+        m_stepMag = fabs(m_position.m_x - static_cast<double>(tx));
+        if (newX < tx) {
+            newX = tx;
         }
     } else {
-        next.m_x = static_cast<i32>(floor(m_position.m_x));
+        newX = static_cast<i32>(floor(m_position.m_x));
     }
 
+    i32 newY;
     if (m_direction.m_y > 0.0) {
         double t = (m_position.m_y = m_position.m_y + step);
-        next.m_y = static_cast<i32>(floor(t));
-        m_stepMag = fabs(m_position.m_y - static_cast<double>(m_tilePosition.m_y));
-        if (next.m_y > m_tilePosition.m_y) {
-            next.m_y = m_tilePosition.m_y;
-            Level()->SetScreenPos(next);
-            return 0;
-        }
+        newY = static_cast<i32>(floor(t));
+        i32 ty = m_tilePosition.m_y;
+        m_stepMag = fabs(m_position.m_y - static_cast<double>(ty));
+        CLAMP_UPPER_INPLACE(newY, ty);
     } else if (m_direction.m_y < 0.0) {
         double t = (m_position.m_y = m_position.m_y - step);
-        next.m_y = static_cast<i32>(ceil(t));
-        m_stepMag = fabs(m_position.m_y - static_cast<double>(m_tilePosition.m_y));
-        if (next.m_y < m_tilePosition.m_y) {
-            next.m_y = m_tilePosition.m_y;
-            Level()->SetScreenPos(next);
-            return 0;
+        newY = static_cast<i32>(ceil(t));
+        i32 ty = m_tilePosition.m_y;
+        m_stepMag = fabs(m_position.m_y - static_cast<double>(ty));
+        if (newY < ty) {
+            newY = ty;
         }
     } else {
-        next.m_y = static_cast<i32>(floor(m_position.m_y));
+        newY = static_cast<i32>(floor(m_position.m_y));
     }
 
-    Level()->SetScreenPos(next);
+    SET_SCREEN_POS(Level(), newX, newY);
     return 0;
 }
 
@@ -255,29 +253,25 @@ i32 CKitchenSlime::LoadSprites() {
         switch (static_cast<CardinalDir>(sw)) {
             case CARDINAL_NORTH: {
                 Coord step;
-                step.m_x = m_tilePosition.m_x;
-                step.m_y = m_tilePosition.m_y - 0x20;
+                step.Set(m_tilePosition.m_x, m_tilePosition.m_y - 0x20);
                 tile = step;
                 break;
             }
             case CARDINAL_EAST: {
                 Coord step;
-                step.m_x = m_tilePosition.m_x + 0x20;
-                step.m_y = m_tilePosition.m_y;
+                step.Set(m_tilePosition.m_x + 0x20, m_tilePosition.m_y);
                 tile = step;
                 break;
             }
             case CARDINAL_SOUTH: {
                 Coord step;
-                step.m_x = m_tilePosition.m_x;
-                step.m_y = m_tilePosition.m_y + 0x20;
+                step.Set(m_tilePosition.m_x, m_tilePosition.m_y + 0x20);
                 tile = step;
                 break;
             }
             case CARDINAL_WEST: {
                 Coord step;
-                step.m_x = m_tilePosition.m_x - 0x20;
-                step.m_y = m_tilePosition.m_y;
+                step.Set(m_tilePosition.m_x - 0x20, m_tilePosition.m_y);
                 tile = step;
                 break;
             }
@@ -366,17 +360,9 @@ i32 CKitchenSlime::LoadSprites() {
         CWwdSpriteObject* player = Anim();
         CDDrawWorker* spr = player->m_imageSet;
         if (spr != NULL) {
-            if (DDRAW_WORKER_CONTAINS_FRAME(spr, 1)) {
-                CImage* img = DDRAW_WORKER_FRAME_AT_UNCHECKED(spr, 1);
-                player->m_frameIndex = 1;
-                player->m_frameImage = img;
-                m_stepMag = 0.0;
-                return 1;
-            }
+            CImage* img = spr->GetAt(1);
             player->m_frameIndex = 1;
-            player->m_frameImage = NULL;
-            m_stepMag = 0.0;
-            return 1;
+            player->m_frameImage = img;
         }
     }
     m_stepMag = 0.0;

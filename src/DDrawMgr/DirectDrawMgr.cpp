@@ -12,6 +12,7 @@
 #include <Dsndmgr/SoundBankLoad.h>
 #include <Image/Image.h>
 #include <Io/FileStream.h>
+#include <SafeDelete.h>
 
 #include <ddraw.h>
 #include <stdio.h>
@@ -432,21 +433,12 @@ void CDDrawDeviceManager::Clear(i32 restoreDisplayMode) {
     if (restoreDisplayMode && m_device) {
         m_device->RestoreDisplayMode();
     }
-    for (i32 i = 0; i < m_displayModes.GetSize(); i++) {
-        delete static_cast<DDSURFACEDESC*>(m_displayModes.GetData()[i]);
-    }
-    m_displayModes.SetSize(0, -1);
+    FreeDisplayModes();
     ClearSurfaces();
     ClearPalettes();
     g_directDrawMgr = NULL;
-    if (m_device) {
-        m_device->Release();
-        m_device = NULL;
-    }
-    if (m_directDraw1) {
-        m_directDraw1->Release();
-        m_directDraw1 = NULL;
-    }
+    SAFE_RELEASE(m_device);
+    SAFE_RELEASE(m_directDraw1);
     m_bankSwitchedCaps = 0;
 }
 
@@ -825,10 +817,7 @@ CDDPalette* CDDrawDeviceManager::LoadTrailingRgbPalette(const char* path, i32 z)
 
 RVA(0x00143240, 0x143)
 void CDDrawDeviceManager::EnumerateDisplayModes() {
-    for (i32 i = 0; i < m_displayModes.GetSize(); i++) {
-        delete static_cast<DDSURFACEDESC*>(m_displayModes.GetData()[i]);
-    }
-    m_displayModes.SetSize(0, -1);
+    FreeDisplayModes();
     g_modeArray.SetSize(0, -1);
     DdModeEnumFn modeCb;
     modeCb.m_body = DdEnumModesCallback;
@@ -837,9 +826,8 @@ void CDDrawDeviceManager::EnumerateDisplayModes() {
         CDDrawDeviceManager::ReportError(DDRAWMGR_FILE, 0x507, hr);
     }
 
-    CPtrArray* modes = &m_displayModes;
     for (i32 j = 0; j < g_modeArray.GetSize(); j++) {
-        modes->SetAtGrow(modes->GetSize(), g_modeArray.GetData()[j]);
+        m_displayModes.Add(g_modeArray.GetAt(j));
     }
     g_modeArray.SetSize(0, -1);
     i32 modeCount = m_displayModes.GetSize();
@@ -847,13 +835,11 @@ void CDDrawDeviceManager::EnumerateDisplayModes() {
         for (i32 firstIndex = 0; firstIndex < modeCount - 1; firstIndex++) {
             for (i32 secondIndex = firstIndex + 1; secondIndex < modeCount; secondIndex++) {
 
-                DDSURFACEDESC* first =
-                    static_cast<DDSURFACEDESC*>(m_displayModes.GetData()[firstIndex]);
-                DDSURFACEDESC* second =
-                    static_cast<DDSURFACEDESC*>(m_displayModes.GetData()[secondIndex]);
+                DDSURFACEDESC* first = GetModeDesc(firstIndex);
+                DDSURFACEDESC* second = GetModeDesc(secondIndex);
                 if (ShouldSwapDisplayModes(first, second)) {
-                    m_displayModes.GetData()[firstIndex] = static_cast<void*>(second);
-                    m_displayModes.GetData()[secondIndex] = static_cast<void*>(first);
+                    m_displayModes.SetAt(firstIndex, second);
+                    m_displayModes.SetAt(secondIndex, first);
                 }
             }
         }
@@ -864,7 +850,7 @@ RVA(0x00143390, 0x35)
 i32 __stdcall DdEnumModesCallback(DDSURFACEDESC* mode, i32 unused) {
     DDSURFACEDESC* copy = new DDSURFACEDESC;
     memcpy(copy, mode, sizeof(DDSURFACEDESC));
-    g_modeArray.SetAtGrow(g_modeArray.GetSize(), copy);
+    g_modeArray.Add(copy);
     return 1;
 }
 
@@ -897,7 +883,7 @@ CDDrawDeviceManager::FindSmallestFittingResolution(u32 minWidth, u32 minHeight, 
         none.m_height = -1;
         return none;
     }
-    DDSURFACEDESC* mode = static_cast<DDSURFACEDESC*>(m_displayModes.GetData()[idx]);
+    DDSURFACEDESC* mode = GetModeDesc(idx);
     DisplayResolution resolution;
     resolution.m_width = mode->dwWidth;
     resolution.m_height = mode->dwHeight;
@@ -912,7 +898,7 @@ i32 CDDrawDeviceManager::FindFirstFittingResolutionIndex(
 ) {
     i32 result = -1;
     for (i32 i = m_displayModes.GetSize() - 1; i >= 0; i--) {
-        DDSURFACEDESC* mode = static_cast<DDSURFACEDESC*>(m_displayModes.GetData()[i]);
+        DDSURFACEDESC* mode = GetModeDesc(i);
         if (mode->dwWidth >= minWidth && mode->dwHeight >= minHeight
             && mode->ddpfPixelFormat.dwRGBBitCount == colorDepth) {
             result = i;
@@ -924,7 +910,7 @@ i32 CDDrawDeviceManager::FindFirstFittingResolutionIndex(
 RVA(0x001434c0, 0x45)
 i32 CDDrawDeviceManager::FindResolutionIndex(i32 width, i32 height, ColorDepth colorDepth) {
     for (i32 i = 0; i < m_displayModes.GetSize(); i++) {
-        DDSURFACEDESC* mode = static_cast<DDSURFACEDESC*>(m_displayModes.GetData()[i]);
+        DDSURFACEDESC* mode = GetModeDesc(i);
         if (mode->dwWidth == static_cast<u32>(width) && mode->dwHeight == static_cast<u32>(height)
             && mode->ddpfPixelFormat.dwRGBBitCount == IDX(colorDepth)) {
             return i;
@@ -942,7 +928,7 @@ CDDrawDeviceManager::FindNextResolution(i32 width, i32 height, ColorDepth colorD
         idx++;
         if (idx < m_displayModes.GetSize()) {
             for (; idx < m_displayModes.GetSize(); idx++) {
-                DDSURFACEDESC* mode = static_cast<DDSURFACEDESC*>(m_displayModes.GetData()[idx]);
+                DDSURFACEDESC* mode = GetModeDesc(idx);
                 if (mode->ddpfPixelFormat.dwRGBBitCount == IDX(colorDepth)) {
                     resolution.m_width = mode->dwWidth;
                     resolution.m_height = mode->dwHeight;
@@ -965,7 +951,7 @@ CDDrawDeviceManager::FindPreviousResolution(i32 width, i32 height, ColorDepth co
         idx--;
         if (idx >= 0) {
             for (; idx >= 0; idx--) {
-                DDSURFACEDESC* mode = static_cast<DDSURFACEDESC*>(m_displayModes.GetData()[idx]);
+                DDSURFACEDESC* mode = GetModeDesc(idx);
                 if (mode->ddpfPixelFormat.dwRGBBitCount == IDX(colorDepth)) {
                     resolution.m_width = mode->dwWidth;
                     resolution.m_height = mode->dwHeight;

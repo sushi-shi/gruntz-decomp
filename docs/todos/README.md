@@ -3,8 +3,9 @@
 ## Rule exceptions
 
 A 100% match is kept even when its source breaks a project rule (a gate, a
-source-modeling rule). `rule-exceptions.tsv` records every such function so the
-deviation can be revisited deliberately later.
+source-modeling rule), and so is a rule-breaking spelling that retail's bytes
+positively require below 100%. `rule-exceptions.tsv` records every such
+function so the deviation can be revisited deliberately later.
 
 | column | meaning |
 | --- | --- |
@@ -14,9 +15,9 @@ deviation can be revisited deliberately later.
 | `deviation` | what the source does instead |
 | `note` | why it was kept and what a rule-clean form would need |
 
-Add the row in the same commit that lands the 100% source, together with any
-allow entry the gate needs. Remove the row when a rule-clean spelling also
-reaches 100%.
+Add the row in the same commit that lands the source, together with any
+allow entry the gate needs. Remove the row when a rule-clean spelling reaches
+the same score.
 
 ## Syntactic recovery
 

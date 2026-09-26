@@ -247,7 +247,9 @@ void CAniAdvanceCursor::BindSprite(CWwdSpriteObject* src) {
     m_finished = true;
     m_animation = NULL;
     m_scale = 1.0f;
-    m_consumeDraw = src->OwnerMgr()->m_flags & SURFACEMGR_CONSUME_ANIMATION_DRAW_VALUES;
+    m_consumeDraw =
+        HAS(static_cast<DDrawSurfaceMgrFlags>(src->OwnerMgr()->m_flags),
+            SURFACEMGR_CONSUME_ANIMATION_DRAW_VALUES);
     m_useElapsedTime = true;
 }
 
@@ -267,11 +269,7 @@ void CAniAdvanceCursor::SetAnimation(CAniElement* src) {
         return;
     }
     m_index = 0;
-    if (src->m_records.GetSize() > 0) {
-        e = static_cast<CAniRecordView*>(src->m_records.GetAt(0));
-    } else {
-        e = NULL;
-    }
+    e = src->RecordAt(0);
     m_element = e;
     m_frameTicksLeft = 0;
     m_finished = false;
@@ -293,11 +291,7 @@ void CAniAdvanceCursor::RestartAnimation(i32 resetElapsedTime) {
     }
     m_index = 0;
     CAniRecordView* e;
-    if (src->m_records.GetSize() > 0) {
-        e = static_cast<CAniRecordView*>(src->m_records.GetAt(0));
-    } else {
-        e = NULL;
-    }
+    e = src->RecordAt(0);
     m_element = e;
     m_finished = false;
     i32 v = e->m_drawValue;
@@ -434,28 +428,36 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
         }
 
         ctx = m_boundObject;
-        ctx->m_plotOffset.Set(0, 0);
+        ctx->m_plotOffset.m_x = 0;
+        ctx->m_plotOffset.m_y = 0;
         switch (m_element->m_positionMode) {
             case WWDPOS_PLOT_OFFSET: {
                 CAniRecordView* pd = m_element;
                 CWwdSpriteObject* c = m_boundObject;
-                c->m_plotOffset = pd->m_positionDelta;
+                c->m_plotOffset.m_x = pd->m_positionDelta.m_x;
+                c->m_plotOffset.m_y = pd->m_positionDelta.m_y;
                 break;
             }
             case WWDPOS_MOVE_RELATIVE: {
                 CAniRecordView* pd = m_element;
                 CWwdSpriteObject* c = m_boundObject;
-                Coord position = c->ScreenPos();
-                Coord delta = pd->m_positionDelta;
+                i32 x = c->m_screenPosition.m_x;
+                i32 dy = pd->m_positionDelta.m_y;
+                i32 dx = pd->m_positionDelta.m_x;
                 if (HAS(c->m_stateFlags, SPRITE_STATE_MIRROR_X)) {
-                    delta.m_x = -delta.m_x;
+                    c->m_screenPosition.m_x = x - dx;
+                } else {
+                    c->m_screenPosition.m_x = x + dx;
                 }
-                position += delta;
-                c->SetScreenPos(position);
+                c->m_screenPosition.m_y = c->m_screenPosition.m_y + dy;
                 break;
             }
             case WWDPOS_MOVE_ABSOLUTE:
-                m_boundObject->SetScreenPos(m_element->m_positionDelta);
+                SET_SCREEN_POS(
+                    m_boundObject,
+                    m_element->m_positionDelta.m_x,
+                    m_element->m_positionDelta.m_y
+                );
                 break;
             default:
                 break;
@@ -474,22 +476,12 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
             CAniRecordView* dd = m_element;
             if (HAS(dd->m_flags, ANI_RECORD_FLAG_POSITIONAL_CUE)) {
                 i32 sourceX = c->m_screenPosition.m_x;
-                SoundCue* soundCue;
-                if (dd->m_cueCount == 0) {
-                    soundCue = NULL;
-                } else {
-                    soundCue = dd->m_cues[dd->Rng2Next() % dd->m_cueCount];
-                }
+                SoundCue* soundCue = dd->PickCue();
                 if (soundCue != NULL) {
                     soundCue->PlaySpatialized(sourceX, 0, 0, 0);
                 }
             } else {
-                SoundCue* soundCue;
-                if (dd->m_cueCount == 0) {
-                    soundCue = NULL;
-                } else {
-                    soundCue = dd->m_cues[dd->Rng2Next() % dd->m_cueCount];
-                }
+                SoundCue* soundCue = dd->PickCue();
                 if (soundCue != NULL) {
                     soundCue->PlayIfElapsed(g_soundVolumePercent, 0, 0, false);
                 }
@@ -595,18 +587,11 @@ i32 CAniAdvanceCursor::Advance(u32 elapsed) {
                     if (rd->m_loopMode != WWDLOOP_FINISH) {
                         CAniElement* a = m_animation;
                         m_index = m_index + 1;
-                        CAniRecordView* p = static_cast<CAniRecordView*>(a->GetAt(m_index));
+                        CAniRecordView* p = a->RecordAt(m_index);
                         m_element = p;
                         if (p == NULL) {
                             m_index = 0;
-                            i32 cnt = a->m_records.GetSize();
-                            CAniRecordView* first;
-                            if (cnt > 0) {
-                                first = static_cast<CAniRecordView*>(a->m_records.GetAt(0));
-                            } else {
-                                first = NULL;
-                            }
-                            m_element = first;
+                            m_element = a->RecordAt(0);
                         }
                         if (m_element != NULL) {
                             m_curDraw = m_pendingDraw;
@@ -723,7 +708,7 @@ i32 CAniAdvanceCursor::Deserialize(CFileMemBase* ar) {
     }
     CAniElement* w = m_animation;
     if (w != NULL) {
-        CAniRecordView* e = static_cast<CAniRecordView*>(w->GetAt(m_index));
+        CAniRecordView* e = w->RecordAt(m_index);
         m_element = e;
         if (e == NULL) {
             m_index = 0;

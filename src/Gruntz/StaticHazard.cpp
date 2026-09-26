@@ -181,7 +181,6 @@ i32 CStaticHazard::UpdateIdleState() {
     return 0;
 }
 
-// @early-stop
 RVA(0x000fc1a0, 0x33b)
 i32 CStaticHazard::UpdateActiveState() {
     u32 phase = (g_frameTime - m_pulseEpoch) - static_cast<u32>(m_object->m_points);
@@ -196,7 +195,7 @@ i32 CStaticHazard::UpdateActiveState() {
                 {
                     APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)
                 } CWwdSpriteObject* o = m_object;
-                SET_SORT_KEY_IF_CHANGED(o, 0);
+                SET_SORT_KEY_IF_CHANGED(o, 0)
                 m_fired = false;
                 return 0;
             }
@@ -205,13 +204,14 @@ i32 CStaticHazard::UpdateActiveState() {
             SwitchAnimationByName("LEVEL_STATICHAZARDIDLE", 0);
             {APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)} CWwdSpriteObject* o =
                 m_object;
-            SET_SORT_KEY_IF_CHANGED(o, 0);
+            SET_SORT_KEY_IF_CHANGED(o, 0)
 
             CMapMgr* grid = g_gameReg->m_tileGrid;
-            Coord tile = m_tile;
-            if (static_cast<u32>(tile.m_x) < static_cast<u32>(grid->m_width)
-                && static_cast<u32>(tile.m_y) < static_cast<u32>(grid->m_height)) {
-                grid->m_rows[tile.m_y][tile.m_x].m_flags &= ~IDX(CELL_FLAG_STATIC_HAZARD);
+            i32 row = m_tile.m_y;
+            i32 col = m_tile.m_x;
+            if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
+                && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
+                grid->m_rows[row][col].m_flags &= 0xf7ffffff;
             }
             return 0;
         }
@@ -220,21 +220,21 @@ i32 CStaticHazard::UpdateActiveState() {
         SwitchAnimationByName("LEVEL_STATICHAZARDGO", 0);
         {APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)} CWwdSpriteObject* o =
             m_object;
-        SET_SORT_KEY_IF_CHANGED(o, 0);
+        SET_SORT_KEY_IF_CHANGED(o, 0)
         m_fired = true;
         return 0;
     }
 
     if (m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta) == WWDDRAW_EFFECT_FRAME) {
         i32 playerIndex, unitIndex;
-        if (g_gameReg->m_triggerMgr->HitTestCell(
-                m_object->m_screenPosition.m_x,
-                m_object->m_screenPosition.m_y,
-                &playerIndex,
-                &unitIndex,
-                0
-            )
-            != NULL) {
+        CGrunt* victim = g_gameReg->m_triggerMgr->HitTestCell(
+            m_object->m_screenPosition.m_x,
+            m_object->m_screenPosition.m_y,
+            &playerIndex,
+            &unitIndex,
+            0
+        );
+        if (victim != NULL) {
             g_gameReg->m_triggerMgr->StartUnitDeath(
                 playerIndex,
                 unitIndex,
@@ -243,22 +243,24 @@ i32 CStaticHazard::UpdateActiveState() {
             );
         }
         CWwdSpriteObject* o = m_object;
-        SET_SORT_KEY_IF_CHANGED(o, o->m_health);
+        SET_SORT_KEY_IF_CHANGED(o, o->m_health)
         CMapMgr* grid = g_gameReg->m_tileGrid;
-        Coord tile = m_tile;
-        if (static_cast<u32>(tile.m_x) < static_cast<u32>(grid->m_width)
-            && static_cast<u32>(tile.m_y) < static_cast<u32>(grid->m_height)) {
-            grid->m_rows[tile.m_y][tile.m_x].m_flags |= IDX(CELL_FLAG_STATIC_HAZARD);
+        i32 row = m_tile.m_y;
+        i32 col = m_tile.m_x;
+        if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
+            && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
+            grid->m_rows[row][col].m_flags |= 0x8000000;
         }
     } else {
         CMapMgr* grid = g_gameReg->m_tileGrid;
-        Coord tile = m_tile;
-        if (static_cast<u32>(tile.m_x) < static_cast<u32>(grid->m_width)
-            && static_cast<u32>(tile.m_y) < static_cast<u32>(grid->m_height)) {
-            grid->m_rows[tile.m_y][tile.m_x].m_flags &= ~IDX(CELL_FLAG_STATIC_HAZARD);
+        i32 row = m_tile.m_y;
+        i32 col = m_tile.m_x;
+        if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
+            && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
+            grid->m_rows[row][col].m_flags &= 0xf7ffffff;
         }
         CWwdSpriteObject* o = m_object;
-        SET_SORT_KEY_IF_CHANGED(o, 0);
+        SET_SORT_KEY_IF_CHANGED(o, 0)
     }
     {
         CAniAdvanceCursor* sub = &m_wwdObject->m_animationCursor;
@@ -266,10 +268,11 @@ i32 CStaticHazard::UpdateActiveState() {
             SwitchAnimationByName("LEVEL_STATICHAZARDIDLE", 0);
             {APPLY_CURRENT_ANIMATION_FRAME_SPRITE("LEVEL_STATICHAZARD", d, e)} CMapMgr* grid =
                 g_gameReg->m_tileGrid;
-            Coord tile = m_tile;
-            if (static_cast<u32>(tile.m_x) < static_cast<u32>(grid->m_width)
-                && static_cast<u32>(tile.m_y) < static_cast<u32>(grid->m_height)) {
-                grid->m_rows[tile.m_y][tile.m_x].m_flags &= ~IDX(CELL_FLAG_STATIC_HAZARD);
+            i32 row = m_tile.m_y;
+            i32 col = m_tile.m_x;
+            if (static_cast<u32>(col) < static_cast<u32>(grid->m_width)
+                && static_cast<u32>(row) < static_cast<u32>(grid->m_height)) {
+                grid->m_rows[row][col].m_flags &= 0xf7ffffff;
             }
         }
     }

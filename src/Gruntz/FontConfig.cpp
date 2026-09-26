@@ -7,7 +7,9 @@
 
 #include <Bute/ButeMgr.h>
 #include <Enums.h>
+#include <Globals.h>
 #include <Gruntz/ColorTint.h>
+#include <Gruntz/ColorTintRef.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <MakeRect.h>
 #include <Rez/FrameClock.h>
@@ -269,7 +271,6 @@ void CFontConfig::EndInput() {
     }
 }
 
-// @early-stop
 RVA(0x00021f20, 0x162)
 i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
     if (hdc == NULL) {
@@ -279,14 +280,11 @@ i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
     if (text.GetLength() == 0) {
         g_chatTextWidth = 0;
     } else {
-        CRect rc = *rect;
+        RECT rc = *rect;
         DrawTextA(hdc, text, text.GetLength(), &rc, DT_CALCRECT | DT_SINGLELINE);
-        i32 textW = rc.Width();
-        i32 provW = CRect(*rect).Width();
-        g_chatTextWidth = provW;
-        if (provW >= textW) {
-            g_chatTextWidth = textW;
-        }
+        i32 textW = rc.right - rc.left;
+        i32 provW = rect->right - rect->left;
+        g_chatTextWidth = Min(provW, textW);
     }
 
     CDC* dc = CDC::FromHandle(hdc);
@@ -323,7 +321,7 @@ i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
     g_caretBlinkMs = t;
     if (t == 0) {
         g_caretBlinkMs = 0xc8;
-        g_caretBlinkOn = !g_caretBlinkOn;
+        g_caretBlinkOn ^= 1;
     }
     if (g_caretBlinkOn != false && text.GetLength() == 0) {
         MeasureLabel(hdc, rect);
@@ -409,59 +407,7 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
             }
             if (HAS(item->m_flags, FONT_ITEM_COLORED)) {
                 COLORREF color;
-                switch (item->m_payload) {
-                    case TINT_DKBLUE:
-                        color = TCLR_NAVY;
-                        break;
-                    case TINT_DKGREEN:
-                        color = TCLR_DKGREEN;
-                        break;
-                    case TINT_TURQ:
-                        color = TCLR_TEAL;
-                        break;
-                    case TINT_DKRED:
-                        color = TCLR_MAROON;
-                        break;
-                    case TINT_PURPLE:
-                        color = TCLR_PURPLE;
-                        break;
-                    case TINT_DKYELLOW:
-                        color = TCLR_OLIVE;
-                        break;
-                    case TINT_GREY:
-                        color = TCLR_GRAY;
-                        break;
-                    case TINT_BLUE:
-                        color = TCLR_BLUE;
-                        break;
-                    case TINT_GREEN:
-                        color = TCLR_GREEN;
-                        break;
-                    case TINT_CYAN:
-                        color = TCLR_CYAN;
-                        break;
-                    case TINT_RED:
-                        color = TCLR_RED;
-                        break;
-                    case TINT_PINK:
-                        color = TCLR_MAGENTA;
-                        break;
-                    case TINT_YELLOW:
-                        color = TCLR_YELLOW;
-                        break;
-                    case TINT_WHITE:
-                        color = TCLR_WHITE;
-                        break;
-                    case TINT_ORANGE:
-                        color = TCLR_ORANGE;
-                        break;
-                    case TINT_HOTPINK:
-                        color = TCLR_ROSE;
-                        break;
-                    default:
-                        color = TCLR_BLACK;
-                        break;
-                }
+                color = TintColorRef(static_cast<ColorTint>(item->m_payload));
                 SetTextColor(hdc, color);
             } else {
                 SetTextColor(hdc, TCLR_WHITE);

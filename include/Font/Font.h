@@ -5,12 +5,6 @@
 
 #include <MfcWin.h>
 
-struct Glyph {
-    Glyph() {}
-    i32 m_width;
-    i32 m_height;
-};
-
 class Font {
 public:
     Font();
@@ -21,14 +15,14 @@ public:
     i32 SaveFont(CString szFileName);
 
     u8** GetSurface(u8 c);
-    Glyph& GetGlyph(Glyph& out, u8 c);
-    void SetGlyph(u8 c, Glyph glyph);
+    CSize& GetGlyph(CSize& out, u8 c);
+    void SetGlyph(u8 c, CSize glyph);
     i32 GetMaxHeight();
 
     b32 m_ready;
     i32 m_count;
     u8** m_surfaces;
-    Glyph* m_glyphs;
+    CSize* m_glyphs;
     i32 m_maxHeight;
 };
 

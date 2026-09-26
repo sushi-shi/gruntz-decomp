@@ -39,7 +39,7 @@ storage, control flow, calling conventions, referents) outranks any score.
    inline/call-set, then CFG, then register/schedule. Fix the earliest class.
 3. Reconstruct with the `matcher` skill; classify plateaus with
    `wall-identifier`; use `gruntz permute` (the `permute` skill) only for a
-   diagnosed register/schedule residue with HIST < 100.
+   diagnosed register/schedule residue with MAX < 100.
 4. Iterate with `gruntz match <unit|source>`: it compiles, labels, delinks,
    and compares only that TU (a few seconds), even after a header edit other
    TUs include, and reports MAX changes only: an edited function against the
@@ -70,7 +70,8 @@ Matching rules that are easy to get wrong:
 - A 100% match is a match: keep it even if its source breaks a project rule.
   Admit a gate violation through that gate's allow entry, and record the
   function, the rule, and the deviation in `docs/todos/rule-exceptions.tsv`
-  (schema in `docs/todos/README.md`).
+  (schema in `docs/todos/README.md`). A rule-breaking spelling that retail's
+  bytes require below 100% is recorded there too.
 
 ## Tests
 

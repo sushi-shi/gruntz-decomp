@@ -14,6 +14,7 @@
 #include <DDrawMgr/DDrawWorkerList.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/DDSurfaceCaps.h>
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/WorkerLookup.h>
 #include <DinMgr2/DirectInputMgr2.h>
@@ -24,6 +25,7 @@
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Gruntz/AnimationRegistry.h>
 #include <Gruntz/AreaMgr.h>
+#include <Gruntz/ArrivalFlagsPreset.h>
 #include <Gruntz/BankMgr.h>
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/BrickTileId.h>
@@ -55,6 +57,7 @@
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/GruntzMgrMacros.h>
 #include <Gruntz/GruntzPlayer.h>
 #include <Gruntz/ImageSets.h>
 #include <Gruntz/InputState.h>
@@ -78,6 +81,8 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialClockMacros.h>
 #include <Gruntz/SerialRecordMacros.h>
+#include <Gruntz/SerialRefLookup.h>
+#include <Gruntz/SerialWorkerRefMacros.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
@@ -114,6 +119,7 @@
 #include <Rez/RezArchiveDir.h>
 #include <Rez/RezArchiveEntry.h>
 #include <Rez/RezTypeTag.h>
+#include <SafeDelete.h>
 #include <Utils/MapTyped.h>
 #include <Utils/MillisPer.h>
 #include <Wap32/CoordUnset.h>
@@ -123,6 +129,7 @@
 #include <Wap32/TileGeometry.h>
 #include <Wwd/WwdFile.h>
 #include <Wwd/WwdGameObjectFamily.h>
+#include <Wwd/WwdObjMgrInline.h>
 
 #include <ddraw.h>
 #include <new>
@@ -315,41 +322,23 @@ void CPlay::ReleaseResources() {
     if (m_mgr && m_mgr->m_chatLog) {
         m_mgr->m_chatLog->FreeNodes();
     }
-    if (m_statusBar) {
-        delete m_statusBar;
-        m_statusBar = NULL;
-    }
+    SAFE_DELETE(m_statusBar)
     CChatBoxOwner* hit = m_chatBox;
     if (hit) {
         hit->Deactivate();
         delete hit;
         m_chatBox = NULL;
     }
-    if (m_tileTriggers) {
-        delete m_tileTriggers;
-        m_tileTriggers = NULL;
-    }
+    SAFE_DELETE(m_tileTriggers)
     CTimer* fm = m_levelTimer;
     if (fm) {
         fm->Reset();
         delete fm;
         m_levelTimer = NULL;
     }
-    for (i = 0; i < StartMarkerCount(); i++) {
-        Coord* node = StartMarkerAt(i);
-        if (node != NULL) {
-            g_coordPool.Push(node);
-        }
-    }
-    m_startMarkers.SetSize(0, -1);
+    FreeStartMarkers();
     for (i32 k = 0; k < 4; k++) {
-        for (i = 0; i < PlacedObjectCellCount(k); i++) {
-            Coord* node = PlacedObjectCellAt(k, i);
-            if (node != NULL) {
-                g_coordPool.Push(node);
-            }
-        }
-        m_placedObjectCells[k].SetSize(0, -1);
+        FreePlacedObjectCells(k);
     }
     for (i = 0; i < CameraBookmarkCount(); i++) {
         Coord* node = CameraBookmarkAt(i);
@@ -449,11 +438,7 @@ i32 CPlay::Render() {
         g_engineFrameDelta = g_frameDelta;
 
         m_world->m_childGroup->TickKillCues(0);
-        m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
-        m_world->m_workerList->RenderAndPruneWorkers(
-            m_world->m_drawTarget->m_backPair,
-            m_world->m_drawTarget->m_overlayPair
-        );
+        DrawVisibleWorld();
         m_mgr->m_worldSounds->SetListenerPosition(
             m_world->m_level->m_mainPlane->m_scrollPixel.m_x,
             m_world->m_level->m_mainPlane->m_scrollPixel.m_y
@@ -468,13 +453,9 @@ i32 CPlay::Render() {
         m_statusBar->LoadMainStatusBarSprite();
 
         {
-            if (static_cast<i64>(g_frameTime) - m_cueTiming.m_start.m_v
-                >= m_cueTiming.m_interval.m_v) {
+            if (m_cueTiming.Expired()) {
                 m_cueToggle = (m_cueToggle == false);
-                m_cueTiming.m_interval.m_lo = CUE_INTERVAL_MS;
-                m_cueTiming.m_interval.m_hi = 0;
-                m_cueTiming.m_start.m_lo = static_cast<i32>(g_frameTime);
-                m_cueTiming.m_start.m_hi = 0;
+                m_cueTiming.Start(CUE_INTERVAL_MS);
             }
             if (m_cueToggle != false) {
                 PlayCueAt(0x8128, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
@@ -503,40 +484,16 @@ i32 CPlay::Render() {
         m_mgr->m_commandMgr->ExecuteScheduledCommands(0);
 
         if (m_cursorId == IDX(CURSOR_FLAILINGGRUNT)) {
-            if (static_cast<i64>(g_frameTime) - m_bootyTiming.m_start.m_v
-                >= m_bootyTiming.m_interval.m_v) {
+            if (m_bootyTiming.Expired()) {
                 g_gameReg->m_voiceManager->PlayVoice(NULL, 0x33e, -1, 1, -1, -1);
-                m_bootyTiming.m_interval.m_lo = BOOTY_INTERVAL_MS;
-                m_bootyTiming.m_interval.m_hi = 0;
-                m_bootyTiming.m_start.m_lo = static_cast<i32>(g_frameTime);
-                m_bootyTiming.m_start.m_hi = 0;
+                m_bootyTiming.Start(BOOTY_INTERVAL_MS);
             }
         }
 
         RestoreCursorSaveUnder();
         StepViewportResize();
 
-        if (m_ambientInitDone == false) {
-            if (static_cast<i64>(g_frameTime) - m_ambientTiming.m_start.m_v
-                >= m_ambientTiming.m_interval.m_v) {
-                i32 ambientId = GetAmbientId();
-                char sequenceName[0x40];
-                wsprintfA(sequenceName, "AMBIENT%d", ambientId);
-                if (g_gameReg->m_musicEnabled != false) {
-                    m_mgr->m_midi->PlaySequence(sequenceName, true);
-                } else {
-                    MidiManager* midi = m_mgr->m_midi;
-                    MidiSequence* sequence = midi->FindSequence(sequenceName);
-                    if (sequence != NULL) {
-                        midi->m_currentSequence = sequence;
-                    }
-                    if (m_mgr->m_midi->m_currentSequence != NULL) {
-                        m_mgr->m_midi->m_currentSequence->SetLooping(true);
-                    }
-                }
-                m_ambientInitDone = true;
-            }
-        }
+        UpdateAmbientMusic();
 
         if (m_region0Gate != false) {
             m_world->m_drawTarget->m_backPair->m_surface->Fill(0);
@@ -573,18 +530,7 @@ i32 CPlay::Render() {
                 stream->TickStreams(t);
             }
         }
-        if (m_region1Gate != false) {
-            NotifyVisibleEntities();
-        } else {
-            m_world->m_level->VisitVisible(
-                m_world->m_drawTarget->m_backPair,
-                m_world->m_childGroup
-            );
-            m_world->m_workerList->RenderAndPruneWorkers(
-                m_world->m_drawTarget->m_backPair,
-                m_world->m_drawTarget->m_overlayPair
-            );
-        }
+        DrawWorldView();
         m_tileTriggers->UpdateTimedLogics(g_frameDelta);
         m_statusBar->LoadMainStatusBarSprite();
         m_mgr->m_tileGrid->UpdateDiagonals(m_mgr);
@@ -614,16 +560,14 @@ i32 CPlay::Render() {
         }
 
         if (m_defeatCountdownActive != false) {
-            i64 deadline =
-                m_defeatCountdownTiming.m_interval.m_v + m_defeatCountdownTiming.m_start.m_v;
+            i64 deadline = m_defeatCountdownTiming.Deadline();
             i64 left = deadline - static_cast<i64>(g_frameTime);
             u32 leftMs = static_cast<u32>(left);
             if (left < 0) {
                 leftMs = 0;
             }
             i32 secsLeft = static_cast<i32>(leftMs / MILLIS_PER_SECOND) + 1;
-            if (static_cast<i64>(g_frameTime) - m_defeatCountdownTiming.m_start.m_v
-                >= m_defeatCountdownTiming.m_interval.m_v) {
+            if (m_defeatCountdownTiming.Expired()) {
 
                 if (m_statusBar->m_destructButtonLocked != false) {
                     g_gameReg->m_triggerMgr->StartPlayerDefeatSequence(5);
@@ -632,13 +576,7 @@ i32 CPlay::Render() {
                     g_gameReg->m_triggerMgr->StartPlayerDefeatSequence(row);
                 }
 
-                CTimer* marker = m_levelTimer;
-                marker->m_unusedStamp.m_lo = 0;
-                marker->m_unusedStamp.m_hi = 0;
-                marker->m_accum.m_lo = 0;
-                marker->m_accum.m_hi = 0;
-                marker->m_running = false;
-                marker->m_currentMs = 0;
+                m_levelTimer->Stop();
                 m_statusBar->LockDestructButton(0);
                 m_defeatCountdownActive = false;
 
@@ -675,13 +613,9 @@ i32 CPlay::Render() {
         if (m_winLoseBanner != false && m_statusBar->m_levelOverlayActive == false
             && m_statusBar->m_quitConfirmationActive == false) {
 
-            if (static_cast<i64>(g_frameTime) - m_cueTiming.m_start.m_v
-                >= m_cueTiming.m_interval.m_v) {
+            if (m_cueTiming.Expired()) {
                 m_cueToggle = (m_cueToggle == false);
-                m_cueTiming.m_interval.m_lo = CUE_INTERVAL_MS;
-                m_cueTiming.m_interval.m_hi = 0;
-                m_cueTiming.m_start.m_lo = static_cast<i32>(g_frameTime);
-                m_cueTiming.m_start.m_hi = 0;
+                m_cueTiming.Start(CUE_INTERVAL_MS);
             }
             if (m_cueToggle != false) {
                 PlayCueAt(0x8129, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
@@ -703,26 +637,22 @@ i32 CPlay::Render() {
         }
 
         if (m_region0Gate != false) {
-            if (static_cast<i64>(g_frameTime) - m_region0Timing.m_start.m_v
-                >= m_region0Timing.m_interval.m_v) {
+            if (m_region0Timing.Expired()) {
                 SetTinyViewportCurse(false);
             }
         }
         if (m_region1Gate != false) {
-            if (static_cast<i64>(g_frameTime) - m_region1Timing.m_start.m_v
-                >= m_region1Timing.m_interval.m_v) {
+            if (m_region1Timing.Expired()) {
                 SetDarknessCurse(false);
             }
         }
         if (m_region2Gate != false) {
-            if (static_cast<i64>(g_frameTime) - m_region2Timing.m_start.m_v
-                >= m_region2Timing.m_interval.m_v) {
+            if (m_region2Timing.Expired()) {
                 SetMonitorCurse(false);
             }
         }
         if (m_region3Gate != false) {
-            if (static_cast<i64>(g_frameTime) - m_region3Timing.m_start.m_v
-                >= m_region3Timing.m_interval.m_v) {
+            if (m_region3Timing.Expired()) {
                 SetRandomMoveIconsCurse(false);
             }
         }
@@ -745,50 +675,16 @@ i32 CPlay::Render() {
 
             if (m_stepCountdown > 0) {
                 m_stepCountdown = m_stepCountdown - 1;
-                m_world->m_level->VisitVisible(
-                    m_world->m_drawTarget->m_backPair,
-                    m_world->m_childGroup
-                );
-                m_world->m_workerList->RenderAndPruneWorkers(
-                    m_world->m_drawTarget->m_backPair,
-                    m_world->m_drawTarget->m_overlayPair
-                );
+                DrawVisibleWorld();
                 m_statusBar->LoadMainStatusBarSprite();
                 back->m_surface->ShadeRect(0x32, NULL);
                 PlayCueAt(m_lastCueId, 0x78, 0, 0xff, 0xff, 0, 1, NULL);
                 m_levelTimer->Draw(back, true);
             }
-            if (m_ambientInitDone == false) {
-                if (static_cast<i64>(g_frameTime) - m_ambientTiming.m_start.m_v
-                    >= m_ambientTiming.m_interval.m_v) {
-                    i32 ambientId = GetAmbientId();
-                    char sequenceName[0x40];
-                    wsprintfA(sequenceName, "AMBIENT%d", ambientId);
-                    if (g_gameReg->m_musicEnabled != false) {
-                        m_mgr->m_midi->PlaySequence(sequenceName, true);
-                    } else {
-                        MidiManager* midi = m_mgr->m_midi;
-                        MidiSequence* sequence = midi->FindSequence(sequenceName);
-                        if (sequence != NULL) {
-                            midi->m_currentSequence = sequence;
-                        }
-                        if (m_mgr->m_midi->m_currentSequence != NULL) {
-                            m_mgr->m_midi->m_currentSequence->SetLooping(true);
-                        }
-                    }
-                    m_ambientInitDone = true;
-                }
-            }
+            UpdateAmbientMusic();
         } else {
 
-            m_world->m_level->VisitVisible(
-                m_world->m_drawTarget->m_backPair,
-                m_world->m_childGroup
-            );
-            m_world->m_workerList->RenderAndPruneWorkers(
-                m_world->m_drawTarget->m_backPair,
-                m_world->m_drawTarget->m_overlayPair
-            );
+            DrawVisibleWorld();
             m_statusBar->LoadMainStatusBarSprite();
             if (m_statusBar->m_levelOverlayActive == false
                 && m_statusBar->m_quitConfirmationActive == false) {
@@ -976,11 +872,7 @@ i32 CPlay::ProfileDeltaFrame() {
         m_world->m_level->m_mainPlane->m_scrollPixel.m_y
     );
     u32 t2 = tg();
-    m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
-    m_world->m_workerList->RenderAndPruneWorkers(
-        m_world->m_drawTarget->m_backPair,
-        m_world->m_drawTarget->m_overlayPair
-    );
+    DrawVisibleWorld();
     i32 presentMs = static_cast<i32>((tg() - t2));
     g_brickText1.Format(
         "Delta=%i, Update=%i, Draw=%i, NumUpdates=%i    ",
@@ -1024,12 +916,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
     CTimer* worker = self->m_levelTimer;
     if (worker != NULL) {
-        worker->m_unusedStamp.m_lo = 0;
-        worker->m_unusedStamp.m_hi = 0;
-        worker->m_accum.m_lo = 0;
-        worker->m_accum.m_hi = 0;
-        worker->m_running = false;
-        worker->m_currentMs = 0;
+        worker->Stop();
     }
 
     SoundStream* grid = self->m_world->m_soundRegistry->m_soundStream;
@@ -1045,7 +932,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     if (g_gameReg->m_gameMode != GAMEMODE_MULTIPLAYER) {
         g_curPlayer = 0;
         if (g_gameReg->m_frameGate != false) {
-            g_gameReg->m_frameGate = !g_gameReg->m_frameGate;
+            g_gameReg->m_frameGate ^= 1;
             g_gameReg->FinishLevel(g_gameReg->m_frameGate, true);
         }
     }
@@ -1183,35 +1070,32 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         LevelArea page = self->m_levelType;
         switch (page) {
             case AREA_ROCKY_ROADZ:
+            case AREA_GRUNTZICLEZ:
                 g_areaPitDeath = DEATH_SINK;
                 break;
-            case AREA_GRUNTZICLEZ:
-                g_areaPitDeath = DEATH_BURN;
-                g_areaHazardDeath = DEATH_BURN;
-                break;
             case AREA_TROUBLE_IN_THE_TROPICZ:
-                g_areaPitDeath = DEATH_FALL;
+                g_areaPitDeath = DEATH_BURN;
                 g_areaHazardDeath = DEATH_BURN;
                 break;
             case AREA_HIGH_ON_SWEETZ:
                 g_areaPitDeath = DEATH_FALL;
-                g_areaHazardDeath = DEATH_QUICKFALL;
+                g_areaHazardDeath = DEATH_BURN;
                 break;
             case AREA_HIGH_ROLLERZ:
+                g_areaPitDeath = DEATH_FALL;
+                g_areaHazardDeath = DEATH_QUICKFALL;
+                break;
+            case AREA_HONEY_I_SHRUNK_THE_GRUNTZ:
                 g_areaPitDeath = DEATH_MELT;
                 g_areaHazardDeath = DEATH_ELECTROCUTE;
                 break;
-            case AREA_HONEY_I_SHRUNK_THE_GRUNTZ:
-                g_areaPitDeath = DEATH_SINK;
-                g_areaHazardDeath = DEATH_EXPLODE;
-                break;
             case AREA_MINIATURE_MASTERZ:
-                g_areaPitDeath = DEATH_FALL2;
+                g_areaPitDeath = DEATH_SINK;
                 g_areaHazardDeath = DEATH_EXPLODE;
                 break;
             case AREA_GRUNTZ_IN_SPACE:
-                g_areaPitDeath = DEATH_SINK;
-                g_areaHazardDeath = DEATH_DROP;
+                g_areaPitDeath = DEATH_FALL2;
+                g_areaHazardDeath = DEATH_EXPLODE;
                 break;
             default:
                 g_areaPitDeath = DEATH_SINK;
@@ -1262,9 +1146,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
 
     {
-        i32 cached = g_lastLevelNum;
-        i32 eq = g_pAreaMgr->IsSameWorld(cached);
-        reload = !eq;
+        reload = !g_pAreaMgr->IsSameWorld(g_lastLevelNum);
         diff = (level != g_lastLevelNum) ? 1 : 0;
         if (g_pAreaMgr == NULL) {
             return 0;
@@ -1552,10 +1434,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         self->m_paused = false;
         self->m_playerCommandPending = false;
         self->m_winLoseBanner = false;
-        self->m_cueTiming.m_interval.m_lo = 0x1f4;
-        self->m_cueTiming.m_interval.m_hi = 0;
-        self->m_cueTiming.m_start.m_lo = g_frameTime;
-        self->m_cueTiming.m_start.m_hi = 0;
+        self->m_cueTiming.Start(0x1f4);
         self->m_cueToggle = true;
         self->m_cueText = "";
         self->m_lastCueId = 0;
@@ -1643,21 +1522,9 @@ void CPlay::FreeListTeardown() {
     m_mgr->m_triggerMgr->m_baseList.RemoveAll();
     m_mgr->m_triggerMgr->m_pendingFx = NULL;
     (static_cast<CDDrawWorkerList*>(m_world->m_workerList))->ClearWorkers();
-    for (i = 0; i < StartMarkerCount(); i++) {
-        Coord* node = StartMarkerAt(i);
-        if (node != NULL) {
-            g_coordPool.Push(node);
-        }
-    }
-    m_startMarkers.SetSize(0, -1);
+    FreeStartMarkers();
     for (k = 0; k < 4; k++) {
-        for (i = 0; i < PlacedObjectCellCount(k); i++) {
-            Coord* node = PlacedObjectCellAt(k, i);
-            if (node != NULL) {
-                g_coordPool.Push(node);
-            }
-        }
-        m_placedObjectCells[k].SetSize(0, -1);
+        FreePlacedObjectCells(k);
     }
     for (i = 0; i < CameraBookmarkCount(); i++) {
         Coord* node = CameraBookmarkAt(i);
@@ -1746,15 +1613,7 @@ i32 CPlay::InputVirtual() {
     m_world->m_drawTarget->m_backPair->m_surface->Fill(0);
     UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
 
-    if (m_region1Gate != false) {
-        NotifyVisibleEntities();
-    } else {
-        m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
-        m_world->m_workerList->RenderAndPruneWorkers(
-            m_world->m_drawTarget->m_backPair,
-            m_world->m_drawTarget->m_overlayPair
-        );
-    }
+    DrawWorldView();
 
     m_statusBar->Deactivate();
     m_statusBar->LoadMainStatusBarSprite();
@@ -1779,18 +1638,7 @@ i32 CPlay::RestoreDisplay() {
     }
     if (m_statusBar != NULL) {
         m_statusBar->Deactivate();
-        if (m_region1Gate != false) {
-            NotifyVisibleEntities();
-        } else {
-            m_world->m_level->VisitVisible(
-                m_world->m_drawTarget->m_backPair,
-                m_world->m_childGroup
-            );
-            m_world->m_workerList->RenderAndPruneWorkers(
-                m_world->m_drawTarget->m_backPair,
-                m_world->m_drawTarget->m_overlayPair
-            );
-        }
+        DrawWorldView();
         m_world->m_drawTarget->m_frontSurface->m_surface->Flip(NULL);
     }
     return 1;
@@ -1972,7 +1820,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         CLEAR_TAB_HINT(g_gameReg->m_world->m_soundRegistry);
         if (g_gameReg->m_frameGate != false) {
-            g_gameReg->m_frameGate = !g_gameReg->m_frameGate;
+            g_gameReg->m_frameGate ^= 1;
             g_gameReg->FinishLevel(g_gameReg->m_frameGate, true);
         }
         this->OpenLevelOverlay(true);
@@ -2046,7 +1894,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         }
         CGruntzMgr* h = this->m_mgr;
         if (h->m_frameGate != false) {
-            h->m_frameGate = !h->m_frameGate;
+            h->m_frameGate ^= 1;
             this->m_mgr->FinishLevel(h->m_frameGate, true);
         }
         CLEAR_TAB_HINT(this->m_mgr->m_world->m_soundRegistry);
@@ -2088,20 +1936,17 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
 
                 slot = this->CameraBookmarkAt(0);
                 this->m_cameraBookmarks.RemoveAt(0, 1);
-                i32 c = this->m_cameraBookmarkIndex - 1;
-                this->m_cameraBookmarkIndex = c;
-                if (c < 0) {
+                if (--this->m_cameraBookmarkIndex < 0) {
                     this->m_cameraBookmarkIndex = this->CameraBookmarkCount() - 1;
                 }
             }
-            slot->m_x = bookmarkScrollX;
-            slot->m_y = bookmarkScrollY;
+            slot->Set(bookmarkScrollX, bookmarkScrollY);
             if (this->m_cameraBookmarkIndex != this->CameraBookmarkCount() - 1) {
                 this->m_cameraBookmarks.InsertAt(this->m_cameraBookmarkIndex + 1, slot, 1);
                 this->m_cameraBookmarkIndex = this->m_cameraBookmarkIndex + 1;
                 return 1;
             }
-            this->m_cameraBookmarks.SetAtGrow(this->CameraBookmarkCount(), slot);
+            this->m_cameraBookmarks.Add(slot);
             this->m_cameraBookmarkIndex = this->m_cameraBookmarkIndex + 1;
             return 1;
         }
@@ -2109,15 +1954,11 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
             return 1;
         }
         if (g_gameplayInput->m_heldButtons & IDX(INPUT_BUTTON0)) {
-            i32 c = this->m_cameraBookmarkIndex - 1;
-            this->m_cameraBookmarkIndex = c;
-            if (c < 0) {
+            if (--this->m_cameraBookmarkIndex < 0) {
                 this->m_cameraBookmarkIndex = this->CameraBookmarkCount() - 1;
             }
         } else {
-            i32 c = this->m_cameraBookmarkIndex + 1;
-            this->m_cameraBookmarkIndex = c;
-            if (c >= this->CameraBookmarkCount()) {
+            if (++this->m_cameraBookmarkIndex >= this->CameraBookmarkCount()) {
                 this->m_cameraBookmarkIndex = 0;
             }
         }
@@ -2137,9 +1978,7 @@ i32 CPlay::OnKeyDown(i32 vk, i32 lparam) {
         Coord* coord = this->CameraBookmarkAt(cur);
         this->m_cameraBookmarks.RemoveAt(cur, 1);
         g_coordPool.Push(coord);
-        i32 c = this->m_cameraBookmarkIndex - 1;
-        this->m_cameraBookmarkIndex = c;
-        if (c != -1) {
+        if (--this->m_cameraBookmarkIndex != -1) {
             return 1;
         }
         if (this->CameraBookmarkCount() == 0) {
@@ -2914,7 +2753,7 @@ drag_box: {
             slot = NULL;
         } else {
             i32* sel = static_cast<i32*>(cg->m_recList.GetHead());
-            slot = cg->m_units[sel[0] * TM_UNITS_PER_PLAYER + sel[1]];
+            slot = cg->UnitAt(sel[0], sel[1]);
         }
         if (slot != NULL && slot->m_entranceCommitted != false) {
             g_gameReg->m_voiceManager->PlayVoice(slot, 0x324, -1, 0, -1, -1);
@@ -3014,8 +2853,8 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
         return m_statusBar->HandleDoubleClick(keyFlags, x, y);
     }
 
+    i32 playerIndex;
     {
-        i32 playerIndex;
         i32 unitIndex;
         if (m_mgr->m_triggerMgr->ScreenToCell(x, y, &playerIndex, &unitIndex, PLAYER_SLOT_ALL)
             && g_curPlayer == playerIndex) {
@@ -3031,9 +2870,10 @@ i32 CPlay::OnLButtonDblClk(i32 keyFlags, i32 x, i32 y) {
     RECT* vr;
     Coord position;
     i32 i;
-    i32 area = g_curPlayer;
-    GruntzPlayer* cfg = &g_gameReg->m_players[area];
-    if (cfg == NULL || g_gameReg->m_triggerMgr->m_unitCountByPlayer[area] >= cfg->m_maxGruntz) {
+    playerIndex = g_curPlayer;
+    GruntzPlayer* cfg = &g_gameReg->m_players[playerIndex];
+    if (cfg == NULL
+        || g_gameReg->m_triggerMgr->m_unitCountByPlayer[playerIndex] >= cfg->m_maxGruntz) {
         return 0;
     }
 
@@ -3258,11 +3098,7 @@ i32 CPlay::DrawWorldPresent() {
         }
     }
     m_world->m_childGroup->TickKillCues(1);
-    m_world->m_level->VisitVisible(m_world->m_drawTarget->m_backPair, m_world->m_childGroup);
-    m_world->m_workerList->RenderAndPruneWorkers(
-        m_world->m_drawTarget->m_backPair,
-        m_world->m_drawTarget->m_overlayPair
-    );
+    DrawVisibleWorld();
     m_mgr->RefreshGameClock();
     return 1;
 }
@@ -3345,8 +3181,9 @@ void CPlay::DrawDebugStatsFull() {
 
     {
         RECT* src = &m_world->m_level->m_viewportRect;
-        CRect lr = *src;
-        CRect dr = MakeRect(lr.left, lr.bottom - 0x1c, lr.right, lr.bottom);
+        RECT lr = *src;
+        RECT dr;
+        SET_RECT_COMPONENTS(dr, lr.left, lr.bottom - 0x1c, lr.right, lr.bottom);
         DrawTextA(hdc, buf, -1, &dr, DT_SINGLELINE);
     }
 
@@ -3634,10 +3471,10 @@ i32 CPlay::LoadCursorSprites(i32 cursorId, b32 targetValid) {
         this->m_dragInhibit1 = true;
         this->m_cursorTargetValid = false;
         g_gameReg->m_voiceManager->PlayVoice(NULL, 0x33e, -1, 1, -1, -1);
-        this->m_bootyTiming.m_interval.m_lo = BOOTY_INTERVAL_MS;
-        this->m_bootyTiming.m_interval.m_hi = 0;
-        this->m_bootyTiming.m_start.m_lo = g_frameTime;
-        this->m_bootyTiming.m_start.m_hi = 0;
+        this->m_bootyTiming.m_intervalLo = BOOTY_INTERVAL_MS;
+        this->m_bootyTiming.m_intervalHi = 0;
+        this->m_bootyTiming.m_startLo = g_frameTime;
+        this->m_bootyTiming.m_startHi = 0;
         this->m_cursorId = cursorId;
         return 1;
     }
@@ -3873,13 +3710,7 @@ i32 CPlay::LoadCursorAnimation(
         m_cursorSprite->SetAllTypes(SHADE_PAL_16);
         m_cursorSprite->SetAllFormats(spr);
     }
-    CDDrawWorker* g = m_cursorSprite;
-    CImage* frame;
-    if (g->ContainsFrame(initialFrame)) {
-        frame = g->FrameAtUnchecked(initialFrame);
-    } else {
-        frame = NULL;
-    }
+    CImage* frame = m_cursorSprite->GetAt(initialFrame);
     m_cursorImage = frame;
     if (frame == NULL) {
         return 0;
@@ -3903,12 +3734,7 @@ i32 CPlay::AdvanceCursorAnimation(i32 elapsedMs) {
         m_cursorFrameIndex = m_cursorFrameIndex + 1;
         i32 idx = m_cursorFrameIndex;
         CDDrawWorker* g = m_cursorSprite;
-        CImage* frame;
-        if (g->ContainsFrame(idx)) {
-            frame = g->FrameAtUnchecked(idx);
-        } else {
-            frame = NULL;
-        }
+        CImage* frame = g->GetAt(idx);
         m_cursorImage = frame;
         if (frame == NULL) {
             m_cursorImage = DDRAW_WORKER_FRAME_AT_UNCHECKED(g, g->m_minIndex);
@@ -3984,14 +3810,7 @@ i32 CPlay::SaveUnderAndDrawCursor(CDDrawSurfacePair* pair) {
 
     m_cursorImage->RenderFrame(pair, x, y, 0);
 
-    DDSCAPS caps;
-    i32 inSysMem;
-    if (target->m_ddSurface->GetCaps(&caps) == 0) {
-        inSysMem = caps.dwCaps & DDSCAPS_SYSTEMMEMORY;
-    } else {
-        inSysMem = 0;
-    }
-    if (inSysMem == 0) {
+    if (SurfaceCaps(target, DDSCAPS_SYSTEMMEMORY) == 0) {
         m_cursorBufferIndex = m_cursorBufferIndex == 0;
     }
     return 1;
@@ -4323,10 +4142,10 @@ void CPlay::StepScroll() {
     i32 y = m_cursorPosition.m_y + (vr->top - v->m_viewportRect.top);
     i32 x = vr->left + (m_cursorPosition.m_x - v->m_viewportRect.left);
 
-    y = SNAP_TILE_CENTER_COMPONENT(y);
-    x = SNAP_TILE_CENTER_COMPONENT(x);
+    y = (y & ~TILE_MASK_PX) + TILE_HALF_PX;
+    x = (x & ~TILE_MASK_PX) + TILE_HALF_PX;
 
-    SET_VECTOR2_COMPONENTS(m_cursorSnapSprite->m_screenPosition, x, y);
+    SET_SCREEN_POS(m_cursorSnapSprite, x, y);
 }
 
 RVA(0x000d1b30, 0x20)
@@ -4392,7 +4211,7 @@ i32 CPlay::ExecuteCommand(
         case PLAYERCMD_MOVE: {
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
-            CGrunt* g = mgr->m_triggerMgr->m_units[gi + player * 0xf];
+            CGrunt* g = mgr->m_triggerMgr->UnitAt(player, gi);
             if (g != NULL && g->m_entranceCommitted != false) {
                 g->m_arrivalActive = false;
             }
@@ -4420,14 +4239,13 @@ i32 CPlay::ExecuteCommand(
 
         case PLAYERCMD_GUARD_BEGIN: {
             CGrunt* g =
-                mgr->m_triggerMgr
-                    ->m_units[static_cast<u8>(playerIndex) * 0xf + static_cast<u8>(unitIndex)];
+                mgr->m_triggerMgr->UnitAt(static_cast<u8>(playerIndex), static_cast<u8>(unitIndex));
             if (g != NULL) {
                 if (g->m_tileClaimed != true) {
-                    g->m_arrivalRerollLo = 0;
-                    g->m_arrivalRerollWindowLo = 0;
-                    g->m_arrivalRerollHi = 0;
-                    g->m_arrivalRerollWindowHi = 0;
+                    g->m_arrivalRerollTiming.m_startLo = 0;
+                    g->m_arrivalRerollTiming.m_intervalLo = 0;
+                    g->m_arrivalRerollTiming.m_startHi = 0;
+                    g->m_arrivalRerollTiming.m_intervalHi = 0;
                     g->m_defenderPx.m_x = g->m_lastTilePx.m_x;
                     g->m_tileClaimed = true;
                     g->m_defenderPx.m_y = g->m_lastTilePx.m_y;
@@ -4449,9 +4267,7 @@ i32 CPlay::ExecuteCommand(
                             g->m_defenderRadius =
                                 g_buteMgr.GetInt("Grunt", "PlayerDefenderRadius", 3) + 1;
                     }
-                    g->m_arrivalFlags |=
-                        IDX(CELL_FLAG_SPECIAL | CELL_FLAG_SPIKES | CELL_FLAG_IN_GAME_ICON
-                            | CELL_FLAG_STATIC_HAZARD | CELL_FLAG_ROLLING_BALL);
+                    g->m_arrivalFlags |= 0x18040402;
                     g->m_arrivalCell.m_x = -1;
                     g->m_arrivalState = AI_DEFENDER;
                     g->m_defenderState = AISTATE_SEEK;
@@ -4468,44 +4284,23 @@ i32 CPlay::ExecuteCommand(
         case PLAYERCMD_GUARD_END: {
 
             CGrunt* g =
-                mgr->m_triggerMgr
-                    ->m_units[static_cast<u8>(playerIndex) * 0xf + static_cast<u8>(unitIndex)];
+                mgr->m_triggerMgr->UnitAt(static_cast<u8>(playerIndex), static_cast<u8>(unitIndex));
             if (g == NULL || g->m_tileClaimed == false) {
                 return 1;
             }
-            g->m_arrivalRerollLo = 0;
-            g->m_arrivalRerollWindowLo = 0;
-            g->m_arrivalRerollHi = 0;
-            g->m_arrivalRerollWindowHi = 0;
-            g->m_tileClaimed = false;
-            g->m_arrivalState = AI_NONE;
-            g->m_arrivalFlags &= ~IDX(
-                CELL_FLAG_SPECIAL | CELL_FLAG_SPIKES | CELL_FLAG_IN_GAME_ICON
-                | CELL_FLAG_STATIC_HAZARD | CELL_FLAG_ROLLING_BALL
-            );
-            g->SetEntrancePos(1, 1);
+            END_GUARD(g);
             return 1;
         }
 
         case PLAYERCMD_USE_TOOL_AT_POINT: {
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
-            CGrunt* g = mgr->m_triggerMgr->m_units[gi + player * 0xf];
+            CGrunt* g = mgr->m_triggerMgr->UnitAt(player, gi);
             if (g == NULL || g->m_entranceCommitted == false) {
                 return 0;
             }
             if (g->m_tileClaimed != false) {
-                g->m_arrivalRerollLo = 0;
-                g->m_arrivalRerollWindowLo = 0;
-                g->m_arrivalRerollHi = 0;
-                g->m_arrivalRerollWindowHi = 0;
-                g->m_tileClaimed = false;
-                g->m_arrivalState = AI_NONE;
-                g->m_arrivalFlags &= ~IDX(
-                    CELL_FLAG_SPECIAL | CELL_FLAG_SPIKES | CELL_FLAG_IN_GAME_ICON
-                    | CELL_FLAG_STATIC_HAZARD | CELL_FLAG_ROLLING_BALL
-                );
-                g->SetEntrancePos(1, 1);
+                END_GUARD(g);
             }
             i32 px = static_cast<u16>(targetXOrPlayerIndex);
             i32 py = static_cast<u16>(targetYOrUnitIndex);
@@ -4556,27 +4351,16 @@ i32 CPlay::ExecuteCommand(
         case PLAYERCMD_USE_TOOL_ON_GRUNT: {
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
-            CGrunt* g = mgr->m_triggerMgr->m_units[gi + player * 0xf];
+            CGrunt* g = mgr->m_triggerMgr->UnitAt(player, gi);
             if (g == NULL || g->m_entranceCommitted == false) {
                 return 0;
             }
             if (g->m_tileClaimed != false) {
-                g->m_arrivalRerollLo = 0;
-                g->m_arrivalRerollWindowLo = 0;
-                g->m_arrivalRerollHi = 0;
-                g->m_arrivalRerollWindowHi = 0;
-                g->m_tileClaimed = false;
-                g->m_arrivalState = AI_NONE;
-                g->m_arrivalFlags &= ~IDX(
-                    CELL_FLAG_SPECIAL | CELL_FLAG_SPIKES | CELL_FLAG_IN_GAME_ICON
-                    | CELL_FLAG_STATIC_HAZARD | CELL_FLAG_ROLLING_BALL
-                );
-                g->SetEntrancePos(1, 1);
+                END_GUARD(g);
             }
             i32 targetPlayerIndex = static_cast<u16>(targetXOrPlayerIndex);
             i32 targetUnitIndex = static_cast<u16>(targetYOrUnitIndex);
-            CGrunt* g2 = m_mgr->m_triggerMgr
-                             ->m_units[targetUnitIndex + targetPlayerIndex * TM_UNITS_PER_PLAYER];
+            CGrunt* g2 = m_mgr->m_triggerMgr->UnitAt(targetPlayerIndex, targetUnitIndex);
             if (g2 == NULL || g->m_entranceActive != false) {
                 g->m_arrivalActive = false;
                 return 0;
@@ -4621,22 +4405,12 @@ i32 CPlay::ExecuteCommand(
         case PLAYERCMD_USE_TOY_AT_POINT: {
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
-            CGrunt* g = mgr->m_triggerMgr->m_units[gi + player * 0xf];
+            CGrunt* g = mgr->m_triggerMgr->UnitAt(player, gi);
             if (g == NULL || g->m_entranceCommitted == false || g->m_entranceActive != false) {
                 return 0;
             }
             if (g->m_tileClaimed != false) {
-                g->m_arrivalRerollLo = 0;
-                g->m_arrivalRerollWindowLo = 0;
-                g->m_arrivalRerollHi = 0;
-                g->m_arrivalRerollWindowHi = 0;
-                g->m_tileClaimed = false;
-                g->m_arrivalState = AI_NONE;
-                g->m_arrivalFlags &= ~IDX(
-                    CELL_FLAG_SPECIAL | CELL_FLAG_SPIKES | CELL_FLAG_IN_GAME_ICON
-                    | CELL_FLAG_STATIC_HAZARD | CELL_FLAG_ROLLING_BALL
-                );
-                g->SetEntrancePos(1, 1);
+                END_GUARD(g);
             }
             i32 px = static_cast<u16>(targetXOrPlayerIndex);
             i32 py = static_cast<u16>(targetYOrUnitIndex);
@@ -4686,27 +4460,16 @@ i32 CPlay::ExecuteCommand(
         case PLAYERCMD_USE_TOY_ON_GRUNT: {
             u32 player = static_cast<u8>(playerIndex);
             u32 gi = static_cast<u8>(unitIndex);
-            CGrunt* g = mgr->m_triggerMgr->m_units[gi + player * 0xf];
+            CGrunt* g = mgr->m_triggerMgr->UnitAt(player, gi);
             if (g == NULL || g->m_entranceCommitted == false || g->m_entranceActive != false) {
                 return 0;
             }
             if (g->m_tileClaimed != false) {
-                g->m_arrivalRerollLo = 0;
-                g->m_arrivalRerollWindowLo = 0;
-                g->m_arrivalRerollHi = 0;
-                g->m_arrivalRerollWindowHi = 0;
-                g->m_tileClaimed = false;
-                g->m_arrivalState = AI_NONE;
-                g->m_arrivalFlags &= ~IDX(
-                    CELL_FLAG_SPECIAL | CELL_FLAG_SPIKES | CELL_FLAG_IN_GAME_ICON
-                    | CELL_FLAG_STATIC_HAZARD | CELL_FLAG_ROLLING_BALL
-                );
-                g->SetEntrancePos(1, 1);
+                END_GUARD(g);
             }
             i32 targetPlayerIndex = static_cast<u16>(targetXOrPlayerIndex);
             i32 targetUnitIndex = static_cast<u16>(targetYOrUnitIndex);
-            CGrunt* g2 = m_mgr->m_triggerMgr
-                             ->m_units[targetUnitIndex + targetPlayerIndex * TM_UNITS_PER_PLAYER];
+            CGrunt* g2 = m_mgr->m_triggerMgr->UnitAt(targetPlayerIndex, targetUnitIndex);
             if (g2 == NULL || g->m_entranceActive != false) {
                 g->m_arrivalActive = false;
                 return 0;
@@ -4754,24 +4517,13 @@ i32 CPlay::ExecuteCommand(
                 m_playerCommandPending = false;
             }
             u32 gi = static_cast<u8>(unitIndex);
-            i32 idx = gi + player * 0xf;
-            CGrunt* g = mgr->m_triggerMgr->m_units[idx];
+            CGrunt* g = mgr->m_triggerMgr->UnitAt(player, gi);
             if (g != NULL && g->m_entranceCommitted != false && g->m_tileClaimed != false) {
-                g->m_arrivalRerollLo = 0;
-                g->m_arrivalRerollWindowLo = 0;
-                g->m_arrivalRerollHi = 0;
-                g->m_arrivalRerollWindowHi = 0;
-                g->m_tileClaimed = false;
-                g->m_arrivalState = AI_NONE;
-                g->m_arrivalFlags &= ~IDX(
-                    CELL_FLAG_SPECIAL | CELL_FLAG_SPIKES | CELL_FLAG_IN_GAME_ICON
-                    | CELL_FLAG_STATIC_HAZARD | CELL_FLAG_ROLLING_BALL
-                );
-                g->SetEntrancePos(1, 1);
+                END_GUARD(g);
             }
             i32 sel = 0;
             b32 live = (g_gameReg->m_gameMode != GAMEMODE_QUESTZ);
-            CGrunt* g2 = m_mgr->m_triggerMgr->m_units[idx];
+            CGrunt* g2 = m_mgr->m_triggerMgr->UnitAt(player, gi);
             i32 r;
             if (g2 == NULL || g2->m_entranceCommitted == false) {
                 r = 0;
@@ -4800,24 +4552,13 @@ i32 CPlay::ExecuteCommand(
 
         case PLAYERCMD_STOP: {
             CGrunt* g =
-                mgr->m_triggerMgr
-                    ->m_units[static_cast<u8>(playerIndex) * 0xf + static_cast<u8>(unitIndex)];
+                mgr->m_triggerMgr->UnitAt(static_cast<u8>(playerIndex), static_cast<u8>(unitIndex));
             if (g == NULL || g->m_entranceCommitted == false || g->m_entranceActive != false) {
                 return 0;
             }
             g->SetEntrancePos(1, 1);
             if (g->m_tileClaimed != false) {
-                g->m_arrivalRerollLo = 0;
-                g->m_arrivalRerollWindowLo = 0;
-                g->m_arrivalRerollHi = 0;
-                g->m_arrivalRerollWindowHi = 0;
-                g->m_tileClaimed = false;
-                g->m_arrivalState = AI_NONE;
-                g->m_arrivalFlags &= ~IDX(
-                    CELL_FLAG_SPECIAL | CELL_FLAG_SPIKES | CELL_FLAG_IN_GAME_ICON
-                    | CELL_FLAG_STATIC_HAZARD | CELL_FLAG_ROLLING_BALL
-                );
-                g->SetEntrancePos(1, 1);
+                END_GUARD(g);
             }
             return 1;
         }
@@ -4951,26 +4692,22 @@ i32 CPlay::ValidateLevelTiles() {
                     }
                 }
                 if (found == false) {
-                    CString s;
-                    s.Format(
+                    MODAL_REPORT_AT(
                         "Bad switch at: x=%d, y=%d",
                         obj->m_screenPosition.m_x,
                         obj->m_screenPosition.m_y
                     );
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return 0;
                 }
                 i32 rel = (obj->m_speed.m_y - row) * 3 - col + obj->m_speed.m_x;
 
                 i32 tcidx = (static_cast<CGiantRockLogic*>(hit))->m_matrix[rel + 4];
                 if (tcidx == 0) {
-                    CString s;
-                    s.Format(
+                    MODAL_REPORT_AT(
                         "Bad switch at: x=%d, y=%d",
                         obj->m_screenPosition.m_x,
                         obj->m_screenPosition.m_y
                     );
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return 0;
                 }
                 type =
@@ -4983,24 +4720,20 @@ i32 CPlay::ValidateLevelTiles() {
                 CTileTriggerLogic* r =
                     m_tileTriggers->FindLogic(obj->m_id, TRIGID_COVERED_POWERUP_26);
                 if (r == NULL) {
-                    CString s;
-                    s.Format(
+                    MODAL_REPORT_AT(
                         "Bad switch at: x=%d, y=%d",
                         obj->m_screenPosition.m_x,
                         obj->m_screenPosition.m_y
                     );
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return 0;
                 }
                 i32 tcidx = r->m_tileToken;
                 if (tcidx == 0) {
-                    CString s;
-                    s.Format(
+                    MODAL_REPORT_AT(
                         "Bad switch at: x=%d, y=%d",
                         obj->m_screenPosition.m_x,
                         obj->m_screenPosition.m_y
                     );
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return 0;
                 }
                 type =
@@ -5025,13 +4758,11 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_damage,
                             0
                         )) {
-                        CString s;
-                        s.Format(
+                        MODAL_REPORT_AT(
                             "Bad multi switch at: x=%d, y=%d",
                             obj->m_screenPosition.m_x,
                             obj->m_screenPosition.m_y
                         );
-                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                         return 0;
                     }
                     validCount++;
@@ -5054,13 +4785,11 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_damage,
                             0
                         )) {
-                        CString s;
-                        s.Format(
+                        MODAL_REPORT_AT(
                             "Bad up-down switch at: x=%d, y=%d",
                             obj->m_screenPosition.m_x,
                             obj->m_screenPosition.m_y
                         );
-                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                         return 0;
                     }
                     validCount++;
@@ -5085,13 +4814,11 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_damage,
                             0
                         )) {
-                        CString s;
-                        s.Format(
+                        MODAL_REPORT_AT(
                             "Bad secret switch at: x=%d, y=%d",
                             obj->m_screenPosition.m_x,
                             obj->m_screenPosition.m_y
                         );
-                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                         return 0;
                     }
                     validCount++;
@@ -5114,13 +4841,11 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_damage,
                             0
                         )) {
-                        CString s;
-                        s.Format(
+                        MODAL_REPORT_AT(
                             "Bad time switch at: x=%d, y=%d",
                             obj->m_screenPosition.m_x,
                             obj->m_screenPosition.m_y
                         );
-                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                         return 0;
                     }
                     validCount++;
@@ -5143,13 +4868,11 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_damage,
                             obj->m_smarts
                         )) {
-                        CString s;
-                        s.Format(
+                        MODAL_REPORT_AT(
                             "Bad pressure plate at: x=%d, y=%d",
                             obj->m_screenPosition.m_x,
                             obj->m_screenPosition.m_y
                         );
-                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                         return 0;
                     }
                     validCount++;
@@ -5174,13 +4897,11 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_damage,
                             0
                         )) {
-                        CString s;
-                        s.Format(
+                        MODAL_REPORT_AT(
                             "Bad toggle switch at: x=%d, y=%d",
                             obj->m_screenPosition.m_x,
                             obj->m_screenPosition.m_y
                         );
-                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                         return 0;
                     }
                     validCount++;
@@ -5205,13 +4926,11 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_damage,
                             0
                         )) {
-                        CString s;
-                        s.Format(
+                        MODAL_REPORT_AT(
                             "Bad hold switch at: x=%d, y=%d",
                             obj->m_screenPosition.m_x,
                             obj->m_screenPosition.m_y
                         );
-                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                         return 0;
                     }
                     validCount++;
@@ -5236,26 +4955,22 @@ i32 CPlay::ValidateLevelTiles() {
                             obj->m_damage,
                             0
                         )) {
-                        CString s;
-                        s.Format(
+                        MODAL_REPORT_AT(
                             "Bad once-only switch at: x=%d, y=%d",
                             obj->m_screenPosition.m_x,
                             obj->m_screenPosition.m_y
                         );
-                        g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                         return 0;
                     }
                     validCount++;
                     obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
                     break;
                 default: {
-                    CString s;
-                    s.Format(
+                    MODAL_REPORT_AT(
                         "Switch on an unknown tile at: x=%d, y=%d",
                         obj->m_screenPosition.m_x,
                         obj->m_screenPosition.m_y
                     );
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return 0;
                 }
             }
@@ -5289,26 +5004,22 @@ i32 CPlay::ValidateLevelTiles() {
                     }
                 }
                 if (found == false) {
-                    CString s;
-                    s.Format(
+                    MODAL_REPORT_AT(
                         "Bad trigger at: x=%d, y=%d",
                         obj->m_screenPosition.m_x,
                         obj->m_screenPosition.m_y
                     );
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return 0;
                 }
                 i32 rel = (obj->m_speed.m_x - col) * 3 - row + obj->m_speed.m_y;
 
                 i32 tcidx = (static_cast<CGiantRockLogic*>(hit))->m_matrix[rel + 4];
                 if (tcidx == 0) {
-                    CString s;
-                    s.Format(
+                    MODAL_REPORT_AT(
                         "Bad trigger at: x=%d, y=%d",
                         obj->m_screenPosition.m_x,
                         obj->m_screenPosition.m_y
                     );
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return 0;
                 }
                 type =
@@ -5320,24 +5031,20 @@ i32 CPlay::ValidateLevelTiles() {
                 CTileTriggerLogic* r =
                     m_tileTriggers->FindLogic(obj->m_id, TRIGID_COVERED_POWERUP_26);
                 if (r == NULL) {
-                    CString s;
-                    s.Format(
+                    MODAL_REPORT_AT(
                         "Bad trigger at: x=%d, y=%d",
                         obj->m_screenPosition.m_x,
                         obj->m_screenPosition.m_y
                     );
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return 0;
                 }
                 i32 tcidx = r->m_tileToken;
                 if (tcidx == 0) {
-                    CString s;
-                    s.Format(
+                    MODAL_REPORT_AT(
                         "Bad trigger at: x=%d, y=%d",
                         obj->m_screenPosition.m_x,
                         obj->m_screenPosition.m_y
                     );
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return 0;
                 }
                 type =
@@ -5362,13 +5069,11 @@ i32 CPlay::ValidateLevelTiles() {
                         obj->m_points,
                         obj->m_health
                     )) {
-                    CString s;
-                    s.Format(
+                    MODAL_REPORT_AT(
                         "Bad toggle-bridge trigger at: x=%d, y=%d",
                         obj->m_screenPosition.m_x,
                         obj->m_screenPosition.m_y
                     );
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return 0;
                 }
                 validCount++;
@@ -5391,13 +5096,11 @@ i32 CPlay::ValidateLevelTiles() {
                         obj->m_points,
                         0
                     )) {
-                    CString s;
-                    s.Format(
+                    MODAL_REPORT_AT(
                         "Bad trigger at: x=%d, y=%d",
                         obj->m_screenPosition.m_x,
                         obj->m_screenPosition.m_y
                     );
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return 0;
                 }
                 validCount++;
@@ -5426,13 +5129,11 @@ i32 CPlay::ValidateLevelTiles() {
                     obj->m_points,
                     0
                 )) {
-                CString s;
-                s.Format(
+                MODAL_REPORT_AT(
                     "Bad secret trigger at: x=%d, y=%d",
                     obj->m_screenPosition.m_x,
                     obj->m_screenPosition.m_y
                 );
-                g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                 return 0;
             }
             validCount++;
@@ -5462,7 +5163,7 @@ i32 CPlay::ValidateLevelTiles() {
                 Coord* slot = g_coordPool.Pop();
                 slot->m_x = (obj->m_screenPosition.m_x & ~TILE_MASK_PX) + TILE_HALF_PX;
                 slot->m_y = (obj->m_screenPosition.m_y & ~TILE_MASK_PX) + TILE_HALF_PX;
-                m_startMarkers.SetAtGrow(StartMarkerCount(), slot);
+                m_startMarkers.Add(slot);
             }
         } else if (dispatch == DispatchBrickzLogic) {
 
@@ -5477,25 +5178,21 @@ i32 CPlay::ValidateLevelTiles() {
                         obj->m_extent
                     )
                     == NULL) {
-                    CString s;
-                    s.Format(
+                    MODAL_REPORT_AT(
                         "Bad brickz at: x=%d, y=%d",
                         obj->m_screenPosition.m_x,
                         obj->m_screenPosition.m_y
                     );
-                    g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                     return 0;
                 }
                 validCount++;
                 obj->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
             } else {
-                CString s;
-                s.Format(
+                MODAL_REPORT_AT(
                     "Bad brickz at: x=%d, y=%d",
                     obj->m_screenPosition.m_x,
                     obj->m_screenPosition.m_y
                 );
-                g_gameReg->EnterModalUI(static_cast<LPCSTR>(s));
                 return 0;
             }
         } else if (dispatch == DispatchGruntPuddleLogic) {
@@ -5558,7 +5255,7 @@ i32 CPlay::ValidateLevelTiles() {
                 slot->m_x = obj->m_screenPosition.m_x >> TILE_SHIFT_PX;
                 slot->m_y = obj->m_screenPosition.m_y >> TILE_SHIFT_PX;
                 CPtrArray* cells = &m_placedObjectCells[obj->m_score];
-                cells->SetAtGrow(cells->GetSize(), slot);
+                cells->Add(slot);
             }
         }
     } while (pos != NULL);
@@ -5619,13 +5316,11 @@ i32 CPlay::ScanBuildTiles() {
                     p->m_faceDirection
                 )
                 == NULL) {
-                CString s;
-                s.Format(
+                MODAL_REPORT_AT(
                     "Bad rock at: x=%d, y=%d",
                     p->m_screenPosition.m_x,
                     p->m_screenPosition.m_y
                 );
-                g_gameReg->EnterModalUI(s);
                 return 0;
             }
             if (p->m_powerup == IDX(PICKUP_MEGAPHONE)) {
@@ -5634,24 +5329,33 @@ i32 CPlay::ScanBuildTiles() {
             p->m_flags |= IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE);
         } else if (dispatch == DispatchCoveredPowerupLogic) {
             CGameLevel* ds = m_world->m_level;
-            Coord position = p->ScreenPos();
-            CLAMP_PIXEL_TO_PLANE(position.m_x, position.m_y, ds->m_mainPlane);
-            CDDrawWorkerHost* g = ds->m_mainPlane;
-            Coord shift = g->m_tileShift;
-            Coord cellPosition(position.m_x >> shift.m_x, position.m_y >> shift.m_y);
-            Coord tileOrigin(cellPosition.m_x << shift.m_x, cellPosition.m_y << shift.m_y);
-            Coord sub = position - tileOrigin;
-            i32 cell = g->m_tileHandles[g->m_tileRowOffsets[cellPosition.m_y] + cellPosition.m_x];
-            TileCollisionKind tile;
-            if (cell == UNINIT_FILL || cell == static_cast<i32>(0xffffffff)) {
-                tile = TILEKIND_PASSABLE;
+            i32 x = p->m_screenPosition.m_x;
+            i32 y = p->m_screenPosition.m_y;
+            if (x < 0) {
+                x = 0;
             } else {
-
-                tile = (static_cast<CUniformTileImageSet*>(
-                            ds->m_imageSets[cell & WWD_TILE_IMAGE_SET_INDEX_MASK]
-                        ))
-                           ->GetCollisionAt(sub.m_x, sub.m_y);
+                i32 lim = ds->m_mainPlane->m_planePixelSize.cx;
+                if (x >= lim) {
+                    x = lim - 1;
+                }
             }
+            if (y < 0) {
+                y = 0;
+            } else {
+                i32 lim = ds->m_mainPlane->m_planePixelSize.cy;
+                if (y >= lim) {
+                    y = lim - 1;
+                }
+            }
+            CDDrawWorkerHost* g = ds->m_mainPlane;
+            i32 shX = g->m_tileShift.m_x;
+            i32 tileX = x >> shX;
+            i32 shY = g->m_tileShift.m_y;
+            i32 tileY = y >> shY;
+            i32 subX = x - (tileX << shX);
+            i32 subY = y - (tileY << shY);
+            i32 cell = g->m_tileHandles[g->m_tileRowOffsets[tileY] + tileX];
+            TileCollisionKind tile = ds->CollisionAtHandle(cell, subX, subY);
             if (m_tileTriggers->AddLogic(
                     tile,
                     TRIGID_COVERED_POWERUP_26,
@@ -5670,13 +5374,11 @@ i32 CPlay::ScanBuildTiles() {
                     p->m_faceDirection
                 )
                 == NULL) {
-                CString s;
-                s.Format(
+                MODAL_REPORT_AT(
                     "Bad covered powerup at: x=%d, y=%d",
                     p->m_screenPosition.m_x,
                     p->m_screenPosition.m_y
                 );
-                g_gameReg->EnterModalUI(s);
                 return 0;
             }
             if (p->m_powerup == IDX(PICKUP_MEGAPHONE)) {
@@ -5851,10 +5553,7 @@ RVA(0x000d60b0, 0x2cd)
 i32 CPlay::ResetPlayState() {
     char sequenceName[0x40];
     if (m_mgr->m_musicEnabled != false && g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-        m_ambientTiming.m_interval.m_lo = AMBIENT_INTRO_INTERVAL_MS;
-        m_ambientTiming.m_interval.m_hi = 0;
-        m_ambientTiming.m_start.m_lo = g_frameTime;
-        m_ambientTiming.m_start.m_hi = 0;
+        m_ambientTiming.Start(AMBIENT_INTRO_INTERVAL_MS);
         wsprintfA(sequenceName, "INTRO%d", GetAmbientId());
         if (g_gameReg->m_musicEnabled != false) {
             m_mgr->m_midi->PlaySequence(sequenceName, false);
@@ -5862,22 +5561,16 @@ i32 CPlay::ResetPlayState() {
         m_ambientInitDone = false;
     } else {
         wsprintfA(sequenceName, "AMBIENT%d", GetAmbientId());
-        MidiManager* midi = m_mgr->m_midi;
-        MidiSequence* sequence = midi->FindSequence(sequenceName);
-        if (sequence != NULL) {
-            midi->m_currentSequence = sequence;
-        }
-        if (m_mgr->m_midi->m_currentSequence != NULL) {
-            m_mgr->m_midi->m_currentSequence->SetLooping(true);
-        }
+        m_mgr->m_midi->SelectSequence(sequenceName);
+        m_mgr->m_midi->SetCurrentLooping(true);
         CGruntzMgr* gameManager = g_gameReg;
         if (gameManager->m_musicEnabled != false && gameManager->m_gameMode == GAMEMODE_BATTLEZ) {
             m_mgr->m_midi->PlaySequence(sequenceName, true);
         }
-        m_ambientTiming.m_start.m_lo = 0;
-        m_ambientTiming.m_interval.m_lo = 0;
-        m_ambientTiming.m_start.m_hi = 0;
-        m_ambientTiming.m_interval.m_hi = 0;
+        m_ambientTiming.m_startLo = 0;
+        m_ambientTiming.m_intervalLo = 0;
+        m_ambientTiming.m_startHi = 0;
+        m_ambientTiming.m_intervalHi = 0;
         m_ambientInitDone = true;
     }
     if (m_mgr->m_gameMode == GAMEMODE_QUESTZ) {
@@ -5921,24 +5614,23 @@ i32 CPlay::ResetPlayState() {
     m_winLoseBanner = false;
     CTimer* fm = m_levelTimer;
     if (fm != NULL) {
-        fm->m_unusedStamp.m_v = 0xffffffff;
+        fm->m_stamp.m_interval = 0xffffffff;
         if (fm->m_currentMs != 0) {
             fm->m_running = true;
-            fm->m_startStamp.m_v = static_cast<u32>(g_frameTime);
-            fm->m_accum.m_v = static_cast<u32>(fm->m_currentMs);
-            fm->m_baseTime.m_v = static_cast<u32>(g_frameTime);
+            fm->m_stamp.m_start = static_cast<u32>(g_frameTime);
+            fm->m_countdown.Start(fm->m_currentMs);
         } else {
-            fm->m_startStamp.m_v = static_cast<u32>(g_frameTime);
+            fm->m_stamp.m_start = static_cast<u32>(g_frameTime);
         }
     }
     CTriggerMgr* tl = m_mgr->m_triggerMgr;
     tl->m_countdownActive = true;
     tl->m_phase = FINISH_STATE_ACTIVE;
     tl->m_pendingFxKind = 0;
-    tl->m_gooTimer.m_base = 0;
-    tl->m_gooTimer.m_window = 0;
-    tl->m_resourceTimer.m_base = 0;
-    tl->m_resourceTimer.m_window = 0;
+    tl->m_gooTimer.m_start = 0;
+    tl->m_gooTimer.m_interval = 0;
+    tl->m_resourceTimer.m_start = 0;
+    tl->m_resourceTimer.m_interval = 0;
     tl->m_finishReasonFrame = FINISH_REASON_NONE;
     tl->m_rollingballWanted = false;
     tl->m_teleportWanted = false;
@@ -6300,33 +5992,11 @@ i32 CPlay::EnterMode(GameStateId mode) {
         m_initialFramePending = false;
         m_world->m_drawTarget->m_backPair->m_surface->Fill(0);
         UpdateMgrScroll(g_gameReg, m_statusBar, m_region0Gate);
-        if (m_region1Gate != false) {
-            NotifyVisibleEntities();
-        } else {
-            m_world->m_level->VisitVisible(
-                m_world->m_drawTarget->m_backPair,
-                m_world->m_childGroup
-            );
-            m_world->m_workerList->RenderAndPruneWorkers(
-                m_world->m_drawTarget->m_backPair,
-                m_world->m_drawTarget->m_overlayPair
-            );
-        }
+        DrawWorldView();
         m_statusBar->Deactivate();
         m_statusBar->LoadMainStatusBarSprite();
     } else {
-        if (m_region1Gate != false) {
-            NotifyVisibleEntities();
-        } else {
-            m_world->m_level->VisitVisible(
-                m_world->m_drawTarget->m_backPair,
-                m_world->m_childGroup
-            );
-            m_world->m_workerList->RenderAndPruneWorkers(
-                m_world->m_drawTarget->m_backPair,
-                m_world->m_drawTarget->m_overlayPair
-            );
-        }
+        DrawWorldView();
         m_statusBar->Deactivate();
         m_statusBar->LoadMainStatusBarSprite();
         if (mode == GAMESTATE_HELP) {
@@ -6437,9 +6107,9 @@ i32 CPlay::LoadLoadingBarSprite() {
         return 0;
     }
 
-    m_revealCapStart = spr->ContainsFrame(1) ? spr->FrameAtUnchecked(1) : NULL;
-    m_revealCapMid = spr->ContainsFrame(2) ? spr->FrameAtUnchecked(2) : NULL;
-    m_revealCapEnd = spr->ContainsFrame(3) ? spr->FrameAtUnchecked(3) : NULL;
+    m_revealCapStart = spr->GetAt(1);
+    m_revealCapMid = spr->GetAt(2);
+    m_revealCapEnd = spr->GetAt(3);
     m_revealFrame = 1;
     return 1;
 }
@@ -6674,20 +6344,13 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
 
     {
 
-        for (i32 i = 0; i < StartMarkerCount(); i++) {
-            Coord* node = StartMarkerAt(i);
-            if (node) {
-                g_coordPool.Push(node);
-            }
-        }
-        CPtrArray* markers = &m_startMarkers;
-        markers->SetSize(0, -1);
+        FreeStartMarkers();
         i32 n;
         ar->Read(&n, sizeof(n));
         for (u32 j = 0; j < static_cast<u32>(n); j++) {
             Coord* node = g_coordPool.Pop();
             ar->Read(node, sizeof(*node));
-            markers->SetAtGrow(markers->GetSize(), node);
+            m_startMarkers.Add(node);
         }
     }
 
@@ -6703,19 +6366,13 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     {
 
         for (i32 k = 0; k < 4; k++) {
-            for (i32 i = 0; i < PlacedObjectCellCount(k); i++) {
-                Coord* node = PlacedObjectCellAt(k, i);
-                if (node) {
-                    g_coordPool.Push(node);
-                }
-            }
-            m_placedObjectCells[k].SetSize(0, -1);
+            FreePlacedObjectCells(k);
             i32 n;
             ar->Read(&n, sizeof(n));
             for (u32 j = 0; j < static_cast<u32>(n); j++) {
                 Coord* node = g_coordPool.Pop();
                 ar->Read(node, sizeof(*node));
-                m_placedObjectCells[k].SetAtGrow(PlacedObjectCellCount(k), node);
+                m_placedObjectCells[k].Add(node);
             }
         }
     }
@@ -6730,22 +6387,10 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
     ar->Read(&m_lastCueId, sizeof(m_lastCueId));
     ar->Read(&g_lastLevelNum, sizeof(g_lastLevelNum));
 
-    g_serialCounter++;
     char nameBuf[SERIAL_NAME_LEN];
-    ar->Read(nameBuf, SERIAL_NAME_LEN);
     {
         i32 idx;
-        ar->Read(&idx, sizeof(idx));
-        if (strlen(nameBuf) != 0) {
-            CDDrawWorker* set = res->FindWorker(static_cast<const char*>(nameBuf));
-            if (set == NULL || !set->ContainsFrame(idx)) {
-                m_cursorImage = NULL;
-            } else {
-                m_cursorImage = set->FrameAtUnchecked(idx);
-            }
-        } else {
-            m_cursorImage = NULL;
-        }
+        SERIAL_READ_FRAME(ar, res, nameBuf, idx, m_cursorImage);
     }
 
     g_serialCounter++;
@@ -6763,26 +6408,12 @@ i32 CPlay::LoadPlayState(CFileMemBase* ar) {
         ar->Read(&m_cursorFrameCountdownMs, sizeof(m_cursorFrameCountdownMs));
         ar->Read(&m_cursorFrameIndex, sizeof(m_cursorFrameIndex));
         g_serialCounter++;
-        ar->Read(&found, sizeof(found));
-
-        CGameObject* oe = NULL;
-        CWwdSpriteObject* sink;
-        if (MapLookup(
-                res->m_childGroup->m_registeredGameObjectsById,
-                static_cast<void*>(found),
-                oe
-            )) {
-            if (oe == NULL) {
-                sink = NULL;
-            } else {
-                sink = oe->GetClassId() == CLASSID_SERIALREF ? static_cast<CWwdSpriteObject*>(oe)
-                                                             : NULL;
-            }
-        } else {
-            sink = NULL;
-        }
+        i32 id;
+        ar->Read(&id, sizeof(id));
+        CWwdSpriteObject* sink =
+            LookupSerialRef(res->m_childGroup->m_registeredGameObjectsById, id);
         m_cursorSnapSprite = sink;
-        if (sink == NULL && found != NULL) {
+        if (sink == NULL && id != 0) {
             return 0;
         }
     }
@@ -6870,9 +6501,7 @@ i32 CPlay::SetTinyViewportCurse(b32 active) {
         RegionLeave();
         m_viewportResizeMode = VIEW_RESIZE_EXPAND;
     }
-    m_region0Timing.m_interval.m_lo = REGION_INTERVAL_MS;
-    m_region0Timing.m_interval.m_hi = 0;
-    m_region0Timing.m_start.m_v = g_frameTime;
+    m_region0Timing.Start(REGION_INTERVAL_MS);
     return 1;
 }
 
@@ -6885,9 +6514,7 @@ i32 CPlay::SetDarknessCurse(b32 active) {
         m_region1Gate = false;
         RegionLeave();
     }
-    m_region1Timing.m_interval.m_lo = REGION_INTERVAL_MS;
-    m_region1Timing.m_interval.m_hi = 0;
-    m_region1Timing.m_start.m_v = g_frameTime;
+    m_region1Timing.Start(REGION_INTERVAL_MS);
     return 1;
 }
 
@@ -6901,9 +6528,7 @@ i32 CPlay::SetMonitorCurse(b32 active) {
         m_region2Gate = false;
         RegionLeave();
     }
-    m_region2Timing.m_interval.m_lo = REGION_INTERVAL_MS;
-    m_region2Timing.m_interval.m_hi = 0;
-    m_region2Timing.m_start.m_v = g_frameTime;
+    m_region2Timing.Start(REGION_INTERVAL_MS);
     return 1;
 }
 
@@ -6917,9 +6542,7 @@ i32 CPlay::SetRandomMoveIconsCurse(b32 active) {
         RegionLeave();
         g_gameReg->m_triggerMgr->CycleMoveIcons(-1, false);
     }
-    m_region3Timing.m_interval.m_lo = REGION_INTERVAL_MS;
-    m_region3Timing.m_interval.m_hi = 0;
-    m_region3Timing.m_start.m_v = g_frameTime;
+    m_region3Timing.Start(REGION_INTERVAL_MS);
     return 1;
 }
 
@@ -7096,9 +6719,7 @@ RVA(0x000d9240, 0x3c)
 i32 CPlay::SetDefeatCountdown(b32 active, i32 durationMs) {
     if (active != false) {
 
-        m_defeatCountdownTiming.m_interval.m_lo = durationMs;
-        m_defeatCountdownTiming.m_interval.m_hi = 0;
-        m_defeatCountdownTiming.m_start.m_v = static_cast<u32>(g_frameTime);
+        m_defeatCountdownTiming.Start(durationMs);
     }
     m_defeatCountdownActive = active;
     return 1;
@@ -7116,10 +6737,10 @@ i32 CPlay::ScanShuffleQuads() {
 
     i32 perm[4];
     CByteArray arr;
-    arr.SetAtGrow(arr.GetSize(), 0);
-    arr.SetAtGrow(arr.GetSize(), 1);
-    arr.SetAtGrow(arr.GetSize(), 2);
-    arr.SetAtGrow(arr.GetSize(), 3);
+    arr.Add(0);
+    arr.Add(1);
+    arr.Add(2);
+    arr.Add(3);
     i32 r;
     r = GetRandom(0, arr.GetUpperBound());
     perm[0] = arr.GetAt(r);
@@ -7403,35 +7024,15 @@ i32 CPlay::ClearPlacedObjects() {
         while (!done) {
             if (i < PlacedObjectCellCount(blockIdx)) {
                 Coord* obj = PlacedObjectCellAt(blockIdx, i);
-                CMapMgr* grid = g_gameReg->m_tileGrid;
-
-                i32 occupantId;
-                Coord cell = *obj;
-                if (static_cast<u32>(cell.m_x) < static_cast<u32>(grid->m_width)
-                    && static_cast<u32>(cell.m_y) < static_cast<u32>(grid->m_height)) {
-                    occupantId = grid->m_rows[cell.m_y][cell.m_x].m_objectId;
-                } else {
-                    occupantId = 0;
-                }
+                i32 occupantId = CellObjectIdAt(g_gameReg->m_tileGrid, obj->m_x, obj->m_y);
                 if (occupantId != 0) {
-                    CGameObject* out = NULL;
-                    b32 found = MapLookupById(
+                    CGameObject* result = LookupObjectById(
                         g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
-                        occupantId,
-                        out
+                        occupantId
                     );
-                    CGameObject* result = NULL;
-                    if (found) {
-                        result = out;
-                    }
                     if (result == NULL) {
 
-                        CMapMgr* g = g_gameReg->m_tileGrid;
-                        if (static_cast<u32>(cell.m_x) < static_cast<u32>(g->m_width)
-                            && static_cast<u32>(cell.m_y) < static_cast<u32>(g->m_height)) {
-                            g->m_rows[cell.m_y][cell.m_x].m_objectId = 0;
-                            g->m_rows[cell.m_y][cell.m_x].m_flags &= ~IDX(CELL_FLAG_IN_GAME_ICON);
-                        }
+                        ReleaseCellObject(g_gameReg->m_tileGrid, obj->m_x, obj->m_y);
                         m_placedObjectCells[blockIdx].RemoveAt(i, 1);
 
                         g_coordPool.Push(obj);

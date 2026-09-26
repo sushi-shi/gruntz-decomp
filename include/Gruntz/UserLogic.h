@@ -163,7 +163,7 @@ typedef i32 (CUserLogic::*CActHandler)();
 
 #define DECLARE_CURRENT_ANIMATION_FRAME(frame, animation, record)                                  \
     CAniElement* animation = m_wwdObject->m_animationCursor.m_animation;                           \
-    CAniRecordView* record = static_cast<CAniRecordView*>(animation->GetAt(0));                    \
+    CAniRecordView* record = animation->RecordAt(0);                                               \
     i32 frame = record->m_param;
 
 #define SET_OBJECT_FLAGS_INLINE(bits) m_wwdObject->m_flags |= bits
@@ -187,7 +187,7 @@ typedef i32 (CUserLogic::*CActHandler)();
 
 #define APPLY_CURRENT_ANIMATION_FRAME_SPRITE(name, animation, record)                              \
     CAniElement* animation = m_wwdObject->m_animationCursor.m_animation;                           \
-    CAniRecordView* record = static_cast<CAniRecordView*>(animation->GetAt(0));                    \
+    CAniRecordView* record = animation->RecordAt(0);                                               \
     APPLY_LOOKUP_SPRITE_INLINE(name, record->m_param);
 
 #define SERIALIZE_USER_LOGIC_OR_RETURN(ar, mode, typeId, object)                                   \
@@ -289,6 +289,10 @@ public:
 
     void Hide() {
         m_wwdObject->m_stateFlags |= SPRITE_STATE_HIDDEN;
+    }
+
+    void Show() {
+        m_wwdObject->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
     }
 
     void SetObjectFlags(i32 bits) {

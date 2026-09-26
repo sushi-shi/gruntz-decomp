@@ -65,12 +65,7 @@ i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
     m_rect = g;
 
     m_cmd = cmd;
-    rec = h->FindWorker("GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINEBACKGROUND");
-    if (rec == NULL || DDRAW_WORKER_MISSES_FRAME(rec, 1)) {
-        spr = NULL;
-    } else {
-        spr = rec->FrameAtUnchecked(1);
-    }
+    spr = h->FindFrame("GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINEBACKGROUND", 1);
     m_standaloneFrame = spr;
     if (spr == NULL) {
         return 0;
@@ -237,12 +232,7 @@ i32 CSBI_GruntMachine::SerializeFields(
                     out = NULL;
                     reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
                     CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
-                    CImage* r;
-                    if (rec != NULL && rec->ContainsFrame(i)) {
-                        r = rec->FrameAtUnchecked(i);
-                    } else {
-                        r = NULL;
-                    }
+                    CImage* r = rec != NULL ? rec->GetAt(i) : NULL;
                     m_leftFrame = r;
                 } else {
                     m_leftFrame = NULL;
@@ -260,12 +250,7 @@ i32 CSBI_GruntMachine::SerializeFields(
                     out = NULL;
                     reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
                     CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
-                    CImage* r;
-                    if (rec != NULL && rec->ContainsFrame(i)) {
-                        r = rec->FrameAtUnchecked(i);
-                    } else {
-                        r = NULL;
-                    }
+                    CImage* r = rec != NULL ? rec->GetAt(i) : NULL;
                     m_rightFrame = r;
                 } else {
                     m_rightFrame = NULL;
@@ -282,12 +267,7 @@ i32 CSBI_GruntMachine::SerializeFields(
                     out = NULL;
                     reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
                     CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
-                    CImage* r;
-                    if (rec != NULL && rec->ContainsFrame(i)) {
-                        r = rec->FrameAtUnchecked(i);
-                    } else {
-                        r = NULL;
-                    }
+                    CImage* r = rec != NULL ? rec->GetAt(i) : NULL;
                     m_standaloneFrame = r;
                 } else {
                     m_standaloneFrame = NULL;

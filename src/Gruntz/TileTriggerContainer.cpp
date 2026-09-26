@@ -9,12 +9,13 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDSurface.h>
-#include <Gruntz/CoordClampMacros.h>
+#include <DDrawMgr/DDrawWorkerHost.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/LevelCollisionInline.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/TileActionEvent.h>
@@ -342,20 +343,12 @@ CTileActionEvent* CTileTriggerContainer::AddActionEvent(
     if (event == NULL) {
         return NULL;
     }
-    if (event->m_live == false) {
-        event->m_tile.Set(tileX, tileY);
-        event->m_cellKey = cellKey;
-        event->m_playerFlags
-            .Init(playerFlags.left, playerFlags.top, playerFlags.right, playerFlags.bottom);
-        event->m_actionCode = actionCode;
-        event->m_owner = this;
-        event->m_live = true;
-        event->SetActionCode(actionCode);
-        m_actionEvents.AddTail(event);
-        return event;
+    if (!event->Build(this, actionCode, tileX, tileY, cellKey, playerFlags)) {
+        delete event;
+        return NULL;
     }
-    delete event;
-    return NULL;
+    m_actionEvents.AddTail(event);
+    return event;
 }
 
 RVA(0x00116b80, 0x120)
@@ -370,24 +363,29 @@ CTileActionEvent* CTileTriggerContainer::AddSwitchActionEvent(
     if (event == NULL) {
         return NULL;
     }
-    PlayerSlotFlags playerFlags;
-    playerFlags.Clear();
-    CTileActionEvent* result = NULL;
-    playerFlags.EnableIfValid(playerSlot);
-    if (event->m_live == false) {
-        event->m_tile.Set(tileX, tileY);
-        event->m_cellKey = cellKey;
-        event->m_playerFlags = playerFlags;
-        event->m_actionCode = actionCode;
-        event->m_owner = this;
-        event->m_live = true;
-        event->SetActionCode(actionCode);
-        m_actionEvents.AddTail(event);
-        result = event;
-    } else {
-        delete event;
+    RECT playerFlags = {0, 0, 0, 0};
+    switch (static_cast<PlayerSlot>(playerSlot)) {
+        case PLAYER_SLOT_1:
+            playerFlags.top = 1;
+            break;
+        case PLAYER_SLOT_2:
+            playerFlags.right = 1;
+            break;
+        case PLAYER_SLOT_3:
+            playerFlags.bottom = 1;
+            break;
+        case PLAYER_SLOT_ALL:
+            playerFlags.top = playerFlags.right = playerFlags.bottom = 1;
+        case PLAYER_SLOT_0:
+            playerFlags.left = 1;
+            break;
     }
-    return result;
+    if (!event->Build(this, actionCode, tileX, tileY, cellKey, playerFlags)) {
+        delete event;
+        return NULL;
+    }
+    m_actionEvents.AddTail(event);
+    return event;
 }
 
 RVA(0x00116cf0, 0x111)
@@ -404,28 +402,21 @@ CGiantRockLogic* CTileTriggerContainer::AddGiantRockLogic(
     if (e == NULL) {
         return NULL;
     }
-    if (e->m_initGate == false) {
-        memcpy(e->m_matrix, block9, sizeof(e->m_matrix));
-        e->m_powerupType = static_cast<PickupType>(powerupType);
-        e->m_textId = textId;
-        e->m_typeTag = TRIGID_GIANT_ROCK_22;
-        e->m_tile.Set(tileX, tileY);
-        e->m_cellKey = cellKey;
-        e->m_owner = this;
-        e->m_initGate = true;
-        e->m_dutyOn = false;
-        e->m_startClock = g_frameTime;
-        e->m_dutyOnSpan = 0;
-        e->m_tileToken = 0;
-        e->m_leadInSpan = 0;
-        e->m_dutyOffSpan = 0;
-        e->m_startClock = g_frameTime;
-        e->m_dutyOffSpan = dutyOffSpan;
-        m_idleLogics.AddTail(e);
-        return e;
+    if (!e->Build(
+            this,
+            tileX,
+            tileY,
+            cellKey,
+            block9,
+            static_cast<PickupType>(powerupType),
+            textId,
+            dutyOffSpan
+        )) {
+        delete e;
+        return NULL;
     }
-    delete e;
-    return NULL;
+    m_idleLogics.AddTail(e);
+    return e;
 }
 
 RVA(0x00116e60, 0x59)
@@ -806,6 +797,17 @@ i32 CTileTriggerContainer::SerializeTriggerLogic(
     return 1;
 }
 
+#define DESERIALIZE_TRIGGER_LOGIC(base, derived, tagField)                                         \
+    {                                                                                              \
+        base* obj = new derived;                                                                   \
+        if (obj->SerializeDispatch(reader, SERIAL_LOAD, typeId, payload) == 0) {                   \
+            return NULL;                                                                           \
+        }                                                                                          \
+        obj->m_owner = this;                                                                       \
+        obj->tagField = id;                                                                        \
+        return obj;                                                                                \
+    }
+
 // @early-stop
 RVA(0x00117800, 0x4d6)
 void* CTileTriggerContainer::DeserializeLogic(
@@ -823,78 +825,42 @@ void* CTileTriggerContainer::DeserializeLogic(
     TrigLogicId id;
     reader->Read(&id, sizeof(id));
     switch (id) {
-        case TRIGID_SWITCH_1: {
-            CTileTriggerSwitchLogic* obj = new CTileTriggerSwitchLogic;
-            if (obj->SerializeDispatch(reader, SERIAL_LOAD, typeId, payload) == 0) {
-                return NULL;
-            }
-            obj->m_owner = this;
-            obj->m_typeId = id;
-            return obj;
-        }
-        case TRIGID_SWITCH_2: {
-            CTileTriggerSwitchLogic* obj = new CTileTriggerSwitchLogic;
-            if (obj->SerializeDispatch(reader, SERIAL_LOAD, typeId, payload) == 0) {
-                return NULL;
-            }
-            obj->m_owner = this;
-            obj->m_typeId = id;
-            return obj;
-        }
-        case TRIGID_MULTI_SWITCH_3: {
-            CTileTriggerSwitchLogic* obj = new CTileMultiTriggerSwitchLogic;
-            if (obj->SerializeDispatch(reader, SERIAL_LOAD, typeId, payload) == 0) {
-                return NULL;
-            }
-            obj->m_owner = this;
-            obj->m_typeId = id;
-            return obj;
-        }
-        case TRIGID_EXCLUSIVE_SWITCH_4: {
-            CTileTriggerSwitchLogic* obj = new CTileExclusiveTriggerSwitchLogic;
-            if (obj->SerializeDispatch(reader, SERIAL_LOAD, typeId, payload) == 0) {
-                return NULL;
-            }
-            obj->m_owner = this;
-            obj->m_typeId = id;
-            return obj;
-        }
-        case TRIGID_SWITCH_5: {
-            CTileTriggerSwitchLogic* obj = new CTileTriggerSwitchLogic;
-            if (obj->SerializeDispatch(reader, SERIAL_LOAD, typeId, payload) == 0) {
-                return NULL;
-            }
-            obj->m_owner = this;
-            obj->m_typeId = id;
-            return obj;
-        }
-        case TRIGID_SECRET_SWITCH_6: {
-            CTileTriggerSwitchLogic* obj = new CTileSecretTriggerSwitchLogic;
-            if (obj->SerializeDispatch(reader, SERIAL_LOAD, typeId, payload) == 0) {
-                return NULL;
-            }
-            obj->m_owner = this;
-            obj->m_typeId = id;
-            return obj;
-        }
-        case TRIGID_TIME_SWITCH_7: {
-            CTileTriggerSwitchLogic* obj = new CTileTimeTriggerSwitchLogic;
-            if (obj->SerializeDispatch(reader, SERIAL_LOAD, typeId, payload) == 0) {
-                return NULL;
-            }
-            obj->m_owner = this;
-            obj->m_typeId = id;
-            return obj;
-        }
-        case TRIGID_CHECKPOINT_SWITCH_8: {
-            CTileTriggerSwitchLogic* obj = new CCheckpointTriggerSwitchLogic;
-            if (obj->SerializeDispatch(reader, SERIAL_LOAD, typeId, payload) == 0) {
-                return NULL;
-            }
-            obj->m_owner = this;
-            obj->m_typeId = id;
-            return obj;
-        }
+        case TRIGID_SWITCH_1:
+            DESERIALIZE_TRIGGER_LOGIC(CTileTriggerSwitchLogic, CTileTriggerSwitchLogic, m_typeId);
+        case TRIGID_SWITCH_2:
+            DESERIALIZE_TRIGGER_LOGIC(CTileTriggerSwitchLogic, CTileTriggerSwitchLogic, m_typeId);
+        case TRIGID_MULTI_SWITCH_3:
+            DESERIALIZE_TRIGGER_LOGIC(
+                CTileTriggerSwitchLogic,
+                CTileMultiTriggerSwitchLogic,
+                m_typeId
+            );
+        case TRIGID_EXCLUSIVE_SWITCH_4:
+            DESERIALIZE_TRIGGER_LOGIC(
+                CTileTriggerSwitchLogic,
+                CTileExclusiveTriggerSwitchLogic,
+                m_typeId
+            );
+        case TRIGID_SWITCH_5:
+            DESERIALIZE_TRIGGER_LOGIC(CTileTriggerSwitchLogic, CTileTriggerSwitchLogic, m_typeId);
+        case TRIGID_SECRET_SWITCH_6:
+            DESERIALIZE_TRIGGER_LOGIC(
+                CTileTriggerSwitchLogic,
+                CTileSecretTriggerSwitchLogic,
+                m_typeId
+            );
+        case TRIGID_TIME_SWITCH_7:
+            DESERIALIZE_TRIGGER_LOGIC(
+                CTileTriggerSwitchLogic,
+                CTileTimeTriggerSwitchLogic,
+                m_typeId
+            );
+        case TRIGID_CHECKPOINT_SWITCH_8:
+            DESERIALIZE_TRIGGER_LOGIC(
+                CTileTriggerSwitchLogic,
+                CCheckpointTriggerSwitchLogic,
+                m_typeId
+            );
         case TRIGID_TILE_TRIGGER_21: {
             CTileTriggerLogic* obj = new CTileTriggerLogic;
             if (obj->SerializeDispatch(reader, SERIAL_LOAD, typeId, payload) == 0) {
@@ -904,71 +870,22 @@ void* CTileTriggerContainer::DeserializeLogic(
             obj->m_typeTag = id;
 
             CGameLevel* level = g_gameReg->m_world->m_level;
-            i32 x = obj->m_tile.m_x;
-            i32 y = obj->m_tile.m_y;
-            CLAMP_TILE_TO_PLANE(x, y, level->m_mainPlane);
-            i32 cell = level->m_mainPlane->m_tileRowOffsets[y] + x;
-            i32 tile = level->m_mainPlane->m_tileHandles[cell];
-            TileCollisionKind tileKind;
-            if (tile == UNINIT_FILL || tile == -1) {
-                tileKind = TILEKIND_PASSABLE;
-            } else {
-
-                CTileImageSet* rec = static_cast<CTileImageSet*>(
-                    level->m_imageSets.GetData()[tile & WWD_TILE_IMAGE_SET_INDEX_MASK]
-                );
-                tileKind = rec->GetCollisionAt(0, 0);
-            }
+            TileCollisionKind tileKind = PbResolveCell(level, obj->m_tile.m_x, obj->m_tile.m_y);
             if (tileKind == TILEKIND_PYRAMID_LATCH_A || tileKind == TILEKIND_PYRAMID_LATCH_B) {
                 this->m_latchedLeaf = obj;
             }
             return obj;
         }
-        case TRIGID_GIANT_ROCK_22: {
-            CGiantRockLogic* obj = new CGiantRockLogic;
-            if (obj->SerializeDispatch(reader, SERIAL_LOAD, typeId, payload) == 0) {
-                return NULL;
-            }
-            obj->m_owner = this;
-            obj->m_typeTag = id;
-            return obj;
-        }
-        case TRIGID_TIME_TRIGGER_23: {
-            CTileTriggerLogic* obj = new CTileTimeTriggerLogic;
-            if (obj->SerializeDispatch(reader, SERIAL_LOAD, typeId, payload) == 0) {
-                return NULL;
-            }
-            obj->m_owner = this;
-            obj->m_typeTag = id;
-            return obj;
-        }
-        case TRIGID_TILE_TRIGGER_24: {
-            CTileTriggerLogic* obj = new CTileTriggerLogic;
-            if (obj->SerializeDispatch(reader, SERIAL_LOAD, typeId, payload) == 0) {
-                return NULL;
-            }
-            obj->m_owner = this;
-            obj->m_typeTag = id;
-            return obj;
-        }
-        case TRIGID_SECRET_TRIGGER_25: {
-            CTileTriggerLogic* obj = new CTileSecretTriggerLogic;
-            if (obj->SerializeDispatch(reader, SERIAL_LOAD, typeId, payload) == 0) {
-                return NULL;
-            }
-            obj->m_owner = this;
-            obj->m_typeTag = id;
-            return obj;
-        }
-        case TRIGID_COVERED_POWERUP_26: {
-            CTileTriggerLogic* obj = new CCoveredPowerupLogic;
-            if (obj->SerializeDispatch(reader, SERIAL_LOAD, typeId, payload) == 0) {
-                return NULL;
-            }
-            obj->m_owner = this;
-            obj->m_typeTag = id;
-            return obj;
-        }
+        case TRIGID_GIANT_ROCK_22:
+            DESERIALIZE_TRIGGER_LOGIC(CGiantRockLogic, CGiantRockLogic, m_typeTag);
+        case TRIGID_TIME_TRIGGER_23:
+            DESERIALIZE_TRIGGER_LOGIC(CTileTriggerLogic, CTileTimeTriggerLogic, m_typeTag);
+        case TRIGID_TILE_TRIGGER_24:
+            DESERIALIZE_TRIGGER_LOGIC(CTileTriggerLogic, CTileTriggerLogic, m_typeTag);
+        case TRIGID_SECRET_TRIGGER_25:
+            DESERIALIZE_TRIGGER_LOGIC(CTileTriggerLogic, CTileSecretTriggerLogic, m_typeTag);
+        case TRIGID_COVERED_POWERUP_26:
+            DESERIALIZE_TRIGGER_LOGIC(CTileTriggerLogic, CCoveredPowerupLogic, m_typeTag);
         default:
             return NULL;
     }

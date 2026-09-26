@@ -23,7 +23,6 @@ void AnimationRegistry::Unload() {
     ClearAnimations();
 }
 
-// @early-stop
 RVA(0x00152660, 0xb2)
 void AnimationRegistry::RemoveAnimation(CAniElement* target) {
     if (target == NULL) {
@@ -37,7 +36,7 @@ void AnimationRegistry::RemoveAnimation(CAniElement* target) {
         if (target == animation) {
             m_animations.RemoveKey(key);
             delete target;
-            break;
+            return;
         }
     }
 }

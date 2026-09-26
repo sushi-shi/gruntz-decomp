@@ -6,18 +6,12 @@
 #include <Mfc.h>
 
 #include <Gruntz/ActReg.h>
+#include <Gruntz/ClockInterval.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/UserLogic.h>
-
-struct WarlordTimer {
-    i64 m_start;
-    i64 m_window;
-
-    WarlordTimer() : m_start(0), m_window(0) {}
-};
 
 class CWarlord : public CUserLogic, public CWapX {
 public:
@@ -61,8 +55,8 @@ public:
     CAniElement* m_animMoving;
     CAniElement* m_animPanic;
 
-    WarlordTimer m_cooldownTimer;
-    WarlordTimer m_notifyTimer;
+    ClockInterval m_cooldownTimer;
+    ClockInterval m_notifyTimer;
     b32 m_deathStarted;
 
     i32 m_ownerTag;

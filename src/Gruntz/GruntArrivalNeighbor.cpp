@@ -78,10 +78,7 @@ i32 CGrunt::StepPostGuardBehavior() {
         == 0) {
         return 1;
     }
-    if (GRUNT_SCREEN_X_NOT_AT_SAVED_POS(occ->m_object, occ)) {
-        return 1;
-    }
-    if (GRUNT_SCREEN_Y_NOT_AT_SAVED_POS(occ->m_object, occ)) {
+    if (!(GRUNT_AT_SAVED_SCREEN_POS(occ))) {
         return 1;
     }
     COMMIT_GRUNT_NEIGHBOR(occ);

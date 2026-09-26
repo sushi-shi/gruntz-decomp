@@ -29,10 +29,12 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MapCellFlags.h>
 #include <Gruntz/ObjectDropper.h>
+#include <Gruntz/Particlez.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/State.h>
+#include <Gruntz/TileSnapMacros.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/UserLogic.h>
@@ -100,18 +102,13 @@ i32 DispatchDroppedObjectShadowLogic(CGameObject* obj) {
 RVA(0x000c59f0, 0x3e3)
 CObjectDropper::CObjectDropper(CGameObject* obj)
     : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_lastDropTime = 0;
-    m_dropInterval = 0;
     SwitchAnimationByName("LEVEL_OBJECTDROPPER", 0);
     SET_ANIMATION_ACT("A");
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
 
-    Coord position = m_object->ScreenPos();
-    SnapTileCenter(&position);
-    m_object->SetScreenPos(position);
-    m_position.Init(position);
+    SNAP_OBJECT_TO_TILE_CENTER_DOUBLE_POS(m_object, snapX, snapY, m_position.m_x, m_position.m_y)
     CWwdSpriteObject* o = m_object;
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR_FRONT);
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR_FRONT)
 
     CDDrawWorker* frameSet = m_wwdObject->m_imageSet;
     if (frameSet != NULL) {
@@ -120,16 +117,20 @@ CObjectDropper::CObjectDropper(CGameObject* obj)
         const char* s = name;
         if (strcmp(s, "LEVEL_OBJECTDROPPER_NORTH") == 0) {
             m_object->m_direction = IDX(CARDINAL_NORTH);
-            m_travelDirection.Set(0, -1);
+            m_travelDirection.m_x = 0;
+            m_travelDirection.m_y = -1;
         } else if (strcmp(s, "LEVEL_OBJECTDROPPER_EAST") == 0) {
             m_object->m_direction = IDX(CARDINAL_EAST);
-            m_travelDirection.Set(1, 0);
+            m_travelDirection.m_x = 1;
+            m_travelDirection.m_y = 0;
         } else if (strcmp(s, "LEVEL_OBJECTDROPPER_SOUTH") == 0) {
             m_object->m_direction = IDX(CARDINAL_SOUTH);
-            m_travelDirection.Set(0, 1);
+            m_travelDirection.m_x = 0;
+            m_travelDirection.m_y = 1;
         } else if (strcmp(s, "LEVEL_OBJECTDROPPER_WEST") == 0) {
             m_object->m_direction = IDX(CARDINAL_WEST);
-            m_travelDirection.Set(-1, 0);
+            m_travelDirection.m_x = -1;
+            m_travelDirection.m_y = 0;
         }
     }
 
@@ -143,9 +144,9 @@ CObjectDropper::CObjectDropper(CGameObject* obj)
     }
     CShadeTable* sel = g_gameReg->m_lightFxMgr->m_tables[5];
     SET_DRAW_FILL(m_object, SHADE_DST_BY_SRC_16, sel);
-    m_lastDropTime = 0;
-    m_dropInterval = 0;
-    SET_OBJECT_AREA(1);
+    m_dropTiming.m_start = 0;
+    m_dropTiming.m_interval = 0;
+    SET_OBJECT_AREA(1)
 }
 
 RVA(0x000c5f80, 0x102)
@@ -162,7 +163,7 @@ void CObjectDropper::RegisterActs() {
 
 RVA(0x000c62e0, 0x2dd)
 i32 CObjectDropper::Update() {
-    if (static_cast<i64>(g_frameTime) - m_lastDropTime >= m_dropInterval) {
+    if (m_dropTiming.Expired()) {
         if (g_gameReg->m_isEasyMode == false || g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
             CWwdSpriteObject* o = m_object;
             RECT box;
@@ -190,8 +191,8 @@ i32 CObjectDropper::Update() {
                         i32 fx = fo->m_screenPosition.m_x;
                         i32 fy = fo->m_screenPosition.m_y;
                         CMapMgr* plane = g_gameReg->m_tileGrid;
-                        i32 cx = SCREEN_TILE_COMPONENT(fx);
-                        i32 cy = SCREEN_TILE_COMPONENT(fy);
+                        i32 cx = fx >> TILE_SHIFT_PX;
+                        i32 cy = fy >> TILE_SHIFT_PX;
                         u32 flags = plane->CellFlagsAt(cx, cy);
                         if ((flags & IDX(CELL_FLAG_SPECIAL)) == 0) {
                             g_gameReg->m_world->m_childGroup->CreateSprite(
@@ -204,9 +205,9 @@ i32 CObjectDropper::Update() {
                             );
                             m_lastDropPlayerIndex = playerIndex;
                             m_lastDropUnitIndex = unitIndex;
-                            m_dropInterval =
-                                g_buteMgr.GetDword("Hazardz", "ObjectDropperDelay", 1000);
-                            m_lastDropTime = g_frameTime;
+                            m_dropTiming.Start(
+                                g_buteMgr.GetDword("Hazardz", "ObjectDropperDelay", 1000)
+                            );
                         }
                     }
                 }
@@ -254,11 +255,7 @@ i32 CObjectDropper::Update() {
         }
     }
 
-    SET_VECTOR2_COMPONENTS(
-        m_object->m_screenPosition,
-        static_cast<i32>(m_position.m_x),
-        static_cast<i32>(m_position.m_y)
-    );
+    SET_SCREEN_POS(m_object, static_cast<i32>(m_position.m_x), static_cast<i32>(m_position.m_y));
     return 0;
 }
 
@@ -312,16 +309,17 @@ CDroppedObject::CDroppedObject(CGameObject* obj)
     SetImageSetByName("LEVEL_OBJECTDROPPER_OBJECT");
     SwitchAnimationByName("LEVEL_DROPPEDOBJECT", 0);
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
-    Coord adjusted = m_object->m_screenPosition;
-    SnapTileCenter(&adjusted);
-    m_landY = adjusted.m_y;
-    m_object->SetScreenPos(
-        adjusted.m_x,
-        adjusted.m_y - g_buteMgr.GetInt("Hazardz", "DroppedObjectYOffset", 0x140)
+    i32 adjY = (m_object->m_screenPosition.m_y & ~TILE_MASK_PX) + TILE_HALF_PX;
+    i32 adjX = (m_object->m_screenPosition.m_x & ~TILE_MASK_PX) + TILE_HALF_PX;
+    m_landY = adjY;
+    SET_SCREEN_POS(
+        m_object,
+        adjX,
+        adjY - g_buteMgr.GetInt("Hazardz", "DroppedObjectYOffset", 0x140)
     );
     CWwdSpriteObject* o = m_object;
     m_fallY = static_cast<double>(o->m_screenPosition.m_y);
-    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR_FRONT);
+    SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTOR_FRONT)
     m_timePerTile =
         g_objDropDiv
         / static_cast<double>(g_buteMgr.GetDword("Hazardz", "DroppedObjectTimePerTile", 0x3e8));
@@ -372,19 +370,13 @@ i32 CDroppedObject::AdvanceFall() {
                         case AREA_MINIATURE_MASTERZ:
                         default:
                             if (::PtInRect(&g_gameReg->m_viewBounds, x, m_landY)) {
-                                CWwdSpriteObject* s =
-                                    g_gameReg->m_world->m_childGroup->CreateSprite(
-                                        0,
-                                        x,
-                                        m_landY,
-                                        SORTKEY_ACTOR_BEHIND,
-                                        "Particlez",
-                                        WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
-                                    );
-                                if (s != NULL) {
-                                    s->SetImageSetByName("LEVEL_DEATHSPLASH");
-                                    s->SetAnimationByName("LEVEL_DEATHSPLASH", 0);
-                                }
+                                CreateParticlez(
+                                    g_gameReg->m_world->m_childGroup,
+                                    x,
+                                    m_landY,
+                                    "LEVEL_DEATHSPLASH",
+                                    "LEVEL_DEATHSPLASH"
+                                );
                             }
                             break;
                         case AREA_HONEY_I_SHRUNK_THE_GRUNTZ:
@@ -394,18 +386,13 @@ i32 CDroppedObject::AdvanceFall() {
             }
         } else {
             if (::PtInRect(&g_gameReg->m_viewBounds, x, m_landY)) {
-                CWwdSpriteObject* s = g_gameReg->m_world->m_childGroup->CreateSprite(
-                    0,
+                CreateParticlez(
+                    g_gameReg->m_world->m_childGroup,
                     x,
                     m_landY,
-                    SORTKEY_ACTOR_BEHIND,
-                    "Particlez",
-                    WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                    "GAME_WATER",
+                    "GAME_WATER"
                 );
-                if (s != NULL) {
-                    s->SetImageSetByName("GAME_WATER");
-                    s->SetAnimationByName("GAME_WATER", 0);
-                }
             }
         }
         SwitchAnimationByName("LEVEL_DROPPEDOBJECTHIT", 0);

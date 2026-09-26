@@ -37,20 +37,7 @@ public:
     i32 m_measuredFps;
 };
 
-extern const float g_faderPercentToUnit;
-extern const double g_faderPowK;
-extern const float g_faderHalf;
-extern const double g_faderScale;
-extern const double g_faderBiasR;
-extern const float g_faderBiasFade;
-extern const float g_faderOne;
-extern const float g_faderHalfPi;
-extern const float g_sineHalfPi;
-extern const float g_sineOne;
 #include <io.h>
-
-extern const float g_fxBias;
-extern const float g_fxEps;
 
 void ScatterSamples(i32* arr, i32, i32, i32);
 i32 IsPrime(i32 n);

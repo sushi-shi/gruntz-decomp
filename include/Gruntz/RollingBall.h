@@ -6,6 +6,7 @@
 #include <Mfc.h>
 
 #include <Gruntz/ActReg.h>
+#include <Gruntz/ClockInterval.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/DoubleVector.h>
 #include <Gruntz/LogicTypeId.h>
@@ -23,7 +24,7 @@ public:
     }
 
 public:
-    CRollingBall() : CUserLogic(CUserLogic::INLINE_BASE), m_explodeStart(0), m_explodeWindow(0) {}
+    CRollingBall() : CUserLogic(CUserLogic::INLINE_BASE) {}
     CRollingBall(CGameObject* obj);
 
     virtual void FireActivation(i32 id) OVERRIDE;
@@ -40,8 +41,7 @@ public:
     b32 m_explodeLatch;
     i32 m_fallLatch;
 
-    i64 m_explodeStart;
-    i64 m_explodeWindow;
+    ClockInterval m_explodeTiming;
     double m_moveDelta;
 };
 

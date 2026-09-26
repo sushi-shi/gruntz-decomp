@@ -21,6 +21,7 @@
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPuddle.h>
+#include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
@@ -99,6 +100,9 @@ i32 CGrunt::StepGooSuckerBehavior() {
                 if (m_poweredUp == false) {
                     goto L_yes;
                 }
+                if (m_neighborValid != false) {
+                    goto L_yes;
+                }
             } else {
                 if (atTarget) {
                     goto L_yes;
@@ -106,9 +110,9 @@ i32 CGrunt::StepGooSuckerBehavior() {
                 if (m_poweredUp == false) {
                     goto L_yes;
                 }
-            }
-            if (m_neighborValid != false) {
-                goto L_yes;
+                if (m_neighborValid != false) {
+                    goto L_yes;
+                }
             }
             RESET_GRUNT_POWERED_STATE(this)
         } else {
@@ -167,17 +171,7 @@ L_ed006b:
         if (TileSwitch(cc.m_x >> TILE_SHIFT_PX, cc.m_y >> TILE_SHIFT_PX, 0, m_arrivalFlags, 1, 0)
             != 0) {
             if (m_blockedVoicePending != false) {
-                i32 x = m_object->m_screenPosition.m_x;
-                i32 y = m_object->m_screenPosition.m_y;
-                CGruntzMgr* game = g_gameReg;
-                if (CGameLevel::PointInBounds(
-                        &game->m_world->m_level->m_mainPlane->m_planeViewRect,
-                        x,
-                        y
-                    )
-                    != 0) {
-                    game->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
-                }
+                PLAY_VOICE_IF_VISIBLE(0x366);
                 m_blockedVoicePending = false;
             }
             m_dwell = 0;
@@ -197,10 +191,7 @@ L_scanb:
         box.top = c2.m_y - r;
         box.bottom = c2.m_y + r;
         RECT gb;
-        gb.left = 0;
-        gb.top = 0;
-        gb.right = grid->m_width;
-        gb.bottom = grid->m_height;
+        SET_RECT_COMPONENTS(gb, 0, 0, grid->m_width, grid->m_height);
         RECT isect;
         if (!IntersectRect(&isect, &box, &gb)) {
             isect = box;
@@ -265,7 +256,7 @@ L_scanb:
         }
         GRID_RECT_INLINE(grid);
     } else {
-        Coord* coord = static_cast<Coord*>(m_coordList.GetHead());
+        Coord* coord = GetHeadCoord();
         i32 col = coord->m_x;
         i32 row = coord->m_y;
         if (CellTargetable(col, row) == 0) {

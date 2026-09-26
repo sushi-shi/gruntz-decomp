@@ -221,7 +221,6 @@ i32 CMenuTree::ConfigureRightCursorAnimation(
     return 1;
 }
 
-// @early-stop
 RVA(0x00182ed0, 0xbc)
 i32 CMenuTree::UpdateCursorAnimations(i32 deltaMs) {
     CDDrawWorker* leftAnimation = m_leftCursorAnimation;
@@ -230,9 +229,7 @@ i32 CMenuTree::UpdateCursorAnimations(i32 deltaMs) {
             m_leftCursorFrameTimerMs -= deltaMs;
         } else {
             m_leftCursorFrameTimerMs = m_leftCursorFramePeriodMs;
-            i32 frameIndex = m_leftCursorFrameIndex + 1;
-            m_leftCursorFrameIndex = frameIndex;
-            CImage* frame = leftAnimation->GetAt(frameIndex);
+            CImage* frame = leftAnimation->GetAt(++m_leftCursorFrameIndex);
             m_leftCursorFrame = frame;
             if (frame == NULL) {
                 m_leftCursorFrame =
@@ -248,9 +245,7 @@ i32 CMenuTree::UpdateCursorAnimations(i32 deltaMs) {
             return 1;
         }
         m_rightCursorFrameTimerMs = m_rightCursorFramePeriodMs;
-        i32 frameIndex = m_rightCursorFrameIndex + 1;
-        m_rightCursorFrameIndex = frameIndex;
-        CImage* frame = rightAnimation->GetAt(frameIndex);
+        CImage* frame = rightAnimation->GetAt(++m_rightCursorFrameIndex);
         m_rightCursorFrame = frame;
         if (frame == NULL) {
             m_rightCursorFrame =

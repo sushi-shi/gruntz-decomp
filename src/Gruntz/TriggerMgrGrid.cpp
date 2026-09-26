@@ -4,6 +4,7 @@
 #include <Globals.h>
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/ArrivalFlagsPreset.h>
 #include <Gruntz/BattlezUnitKind.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/EnemyAiType.h>
@@ -26,6 +27,7 @@
 #include <Gruntz/MapCellFlags.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/PlayDefeatCountdown.h>
 #include <Gruntz/PlayerCommandKind.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
@@ -297,7 +299,7 @@ i32 CTriggerMgr::StartUnitDeathForObject(
         lastPlayerIndex = playerSelector;
     }
     for (i32 playerIndex = playerSelector; playerIndex <= lastPlayerIndex; playerIndex++) {
-        CGrunt** units = &m_units[playerIndex * TM_UNITS_PER_PLAYER];
+        CGrunt** units = PlayerUnits(playerIndex);
         for (i32 unitIndex = 0; unitIndex < TM_UNITS_PER_PLAYER; unitIndex++) {
             if (units[unitIndex] == unit) {
                 return StartUnitDeath(playerIndex, unitIndex, deathType, deathParam);
@@ -314,7 +316,7 @@ i32 CTriggerMgr::StartUnitDeath(
     GruntDeathType deathType,
     i32 deathParam
 ) {
-    CGrunt* unit = m_units[playerIndex * TM_UNITS_PER_PLAYER + unitIndex];
+    CGrunt* unit = UnitAt(playerIndex, unitIndex);
     if (unit == NULL) {
         return 0;
     }
@@ -343,7 +345,7 @@ i32 CTriggerMgr::RemovePlayerUnitsImmediately(i32 playerSelector) {
     }
     ResetAll();
     for (i32 playerIndex = firstPlayerIndex; playerIndex <= lastPlayerIndex; playerIndex++) {
-        CGrunt** units = &m_units[playerIndex * TM_UNITS_PER_PLAYER];
+        CGrunt** units = PlayerUnits(playerIndex);
         for (i32 unitIndex = 0; unitIndex < TM_UNITS_PER_PLAYER; unitIndex++) {
             CGrunt* unit = units[unitIndex];
             if (unit != NULL) {
@@ -395,9 +397,8 @@ CGrunt* CTriggerMgr::CellHitTest(
 
     if (startPlayerIndex <= last) {
         do {
-            CGrunt** cell = &m_units[startPlayerIndex * TM_UNITS_PER_PLAYER];
             for (i32 unitIndex = 0; unitIndex < TM_UNITS_PER_PLAYER; unitIndex++) {
-                CGrunt* g = cell[unitIndex];
+                CGrunt* g = PlayerUnits(startPlayerIndex)[unitIndex];
                 if (g != NULL && g->m_entranceCommitted != false) {
                     CWwdSpriteObject* o = g->m_object;
                     if (o->m_frameImage != NULL) {
@@ -414,7 +415,7 @@ CGrunt* CTriggerMgr::CellHitTest(
                             if (outUnitIndex != NULL) {
                                 *outUnitIndex = unitIndex;
                             }
-                            return m_units[startPlayerIndex * TM_UNITS_PER_PLAYER + unitIndex];
+                            return PlayerUnits(startPlayerIndex)[unitIndex];
                         }
                     }
                 }
@@ -427,8 +428,7 @@ CGrunt* CTriggerMgr::CellHitTest(
 
 RVA(0x0006bfd0, 0x106)
 i32 CTriggerMgr::ResetCell(i32 playerIndex, i32 unitIndex, i32 force, i32 keep) {
-    i32 idx = playerIndex * TM_UNITS_PER_PLAYER + unitIndex;
-    CGrunt* cell = m_units[idx];
+    CGrunt* cell = UnitAt(playerIndex, unitIndex);
     if (cell == NULL || cell->m_entranceCommitted == false) {
         return 0;
     }
@@ -437,10 +437,7 @@ i32 CTriggerMgr::ResetCell(i32 playerIndex, i32 unitIndex, i32 force, i32 keep) 
         cell->CreateHealthSprite();
         cell->CreateStaminaSprite();
         cell->CreateToySprite();
-        cell->m_hudRetireWindowLo = g_buteMgr.GetDword("Grunt", "CombatTimeout", 0x1388);
-        cell->m_hudRetireWindowHi = 0;
-        cell->m_hudRetireClockLo = g_frameTime;
-        cell->m_hudRetireClockHi = 0;
+        cell->m_hudRetireTiming.Start(g_buteMgr.GetDword("Grunt", "CombatTimeout", 0x1388));
         return 0;
     }
     if (force == 0) {
@@ -455,8 +452,7 @@ i32 CTriggerMgr::ResetCell(i32 playerIndex, i32 unitIndex, i32 force, i32 keep) 
     Coord* slot = NULL;
     if (node->m_next != NULL) {
         slot = &node->m_value;
-        slot->m_x = playerIndex;
-        slot->m_y = unitIndex;
+        slot->Set(playerIndex, unitIndex);
         g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
     }
     m_recList.AddTail(slot);
@@ -914,15 +910,7 @@ i32 CTriggerMgr::ApplySwitch(CGrunt* g, i32 sx, i32 sy) {
     i32 subX = x - (tx << sh);
     i32 subY = y - (ty << sw);
     i32 attr = scroll->m_tileHandles[scroll->m_tileRowOffsets[ty] + tx];
-    TileCollisionKind kind;
-    if (attr == UNINIT_FILL || attr == -1) {
-        kind = TILEKIND_PASSABLE;
-    } else {
-        CTileImageSet* ts = static_cast<CTileImageSet*>(
-            view->m_imageSets.GetAt(attr & WWD_TILE_IMAGE_SET_INDEX_MASK)
-        );
-        kind = ts->GetCollisionAt(subX, subY);
-    }
+    TileCollisionKind kind = view->CollisionAtHandle(attr, subX, subY);
     switch (kind) {
         case TILEKIND_TIME_SWITCH_UP: {
             CTileTriggerSwitchLogic* obj = state->m_tileTriggers->FindSwitchLogic(
@@ -1103,7 +1091,7 @@ RVA(0x0006dae0, 0x4f9)
 i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY) {
     i32 hitPlayerIndex;
     i32 hitUnitIndex;
-    CGrunt* cell = m_units[playerIndex * TM_UNITS_PER_PLAYER + unitIndex];
+    CGrunt* cell = UnitAt(playerIndex, unitIndex);
     if (cell == NULL || cell->m_entranceCommitted == false) {
         return 0;
     }
@@ -1191,8 +1179,7 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
                     if (cand->m_pending == false && cand->m_tile.m_x == argTileX
                         && cand->m_tile.m_y == argTileY) {
                         cell->RunMoveConfig(argTileX, argTileY);
-                        cand->m_value = cand->m_wwdObject->m_animationCursor.m_animation;
-                        cand->m_wwdObject->SetAnimationByName("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE3", 0);
+                        cand->SwitchAnimationByName("GRUNTZ_GRUNTPUDDLE_GRUNTPUDDLE3", 0);
                         cand->m_pending = true;
                         return 1;
                     }
@@ -1242,39 +1229,53 @@ i32 CTriggerMgr::UseEquippedToolAt(i32 playerIndex, i32 unitIndex, i32 worldX, i
     return -1;
 }
 
+#define CANCEL_UNIT_ARRIVAL_FX(unit, player, index)                                                \
+    {                                                                                              \
+        if (ANIMATION_ACT_EQUALS_FOR((unit), "I")) {                                               \
+            LoadTileArrivalFx(                                                                     \
+                (player),                                                                          \
+                (index),                                                                           \
+                (unit)->MoveTile().m_x,                                                            \
+                (unit)->MoveTile().m_y,                                                            \
+                (unit)->m_entranceReason,                                                          \
+                WWDDRAW_NO_ANIMATION                                                               \
+            );                                                                                     \
+        }                                                                                          \
+    }
+
 // @early-stop
 RVA(0x0006e120, 0x552)
 i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY) {
+    i32 bx;
+    i32 by;
     CGrunt* hit;
     i32 moveKind;
-    CString* typeRec;
     bool isG;
     bool isL;
     bool isP;
-    bool isI2;
-    Coord snapped;
-    Coord hitTile;
-    CGrunt* cell = m_units[playerIndex * TM_UNITS_PER_PLAYER + unitIndex];
+    CGrunt* cell = UnitAt(playerIndex, unitIndex);
     if (cell == NULL || cell->m_entranceCommitted == false || cell->m_entranceActive != false) {
         return 0;
     }
-    Coord position(worldX, worldY);
-    Coord cellTile = cell->LastTilePx();
-    ScreenTile(&cellTile);
-    Coord argTile = position;
-    ScreenTile(&argTile);
+    i32 cellTileY = cell->LastTilePx().m_y >> TILE_SHIFT_PX;
+    i32 cellTileX = cell->LastTilePx().m_x >> TILE_SHIFT_PX;
+    i32 argTileX = worldX >> TILE_SHIFT_PX;
+    i32 argTileY = worldY >> TILE_SHIFT_PX;
     CGameObject* o = cell->m_object;
-    if (o->ScreenPos() != cell->LastTilePx()) {
+    if (o->m_screenPosition.m_x != cell->LastTilePx().m_x) {
         goto bad;
     }
+    if (o->m_screenPosition.m_y != cell->LastTilePx().m_y) {
+        return -1;
+    }
 
-    if (cellTile == argTile && cell->m_vehiclePickupType != PICKUP_SCROLL
+    if (cellTileX == argTileX && cellTileY == argTileY && cell->m_vehiclePickupType != PICKUP_SCROLL
         && g_traitorMode == false) {
         return 0;
     }
-    snapped = position;
-    SnapTileCenter(&snapped);
-    if (cell->VehicleContactContains(snapped.m_x, snapped.m_y) == 0) {
+    by = (worldY & ~TILE_MASK_PX) + TILE_HALF_PX;
+    bx = (worldX & ~TILE_MASK_PX) + TILE_HALF_PX;
+    if (cell->VehicleContactContains(bx, by) == 0) {
         goto bad;
     }
 
@@ -1284,9 +1285,8 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
     hit = CellHitTest(worldX, worldY, &hitPlayerIndex, &hitUnitIndex, PLAYER_SLOT_ALL);
     if (hit == NULL) {
         CGruntzMapMgr* map = g_gameReg->m_tileGrid;
-        i32 flags = map->CellFlagsAt(argTile.m_x, argTile.m_y);
-        if ((flags & (BRICKZ_BLOCKED_MASK | IDX(CELL_FLAG_IN_GAME_ICON))) != 0
-            || (flags & IDX(CELL_FLAG_SPECIAL | CELL_FLAG_ARROW)) != 0) {
+        i32 flags = map->CellFlagsAt(argTileX, argTileY);
+        if ((flags & 0x40939) != 0 || (flags & 0x82) != 0) {
             return 0;
         }
 
@@ -1295,35 +1295,26 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
         if (kind == PICKUP_SCROLL) {
             moveKind = cell->m_moveKind;
         }
-        if (LoadToyBoxIcon(snapped.m_x, snapped.m_y, playerIndex, kind, moveKind) == 0) {
+        if (LoadToyBoxIcon(bx, by, playerIndex, kind, moveKind) == 0) {
             return 0;
         }
 
-        const char* name = g_typeColl[cell->m_logicRecord->m_eventCode];
-        bool isI = (strcmp(name, "I") == 0);
-        if (isI) {
-            LoadTileArrivalFx(
-                playerIndex,
-                unitIndex,
-                cell->MoveTile().m_x,
-                cell->MoveTile().m_y,
-                cell->m_entranceReason,
-                WWDDRAW_NO_ANIMATION
-            );
-        }
-        cell->FaceTowardPixel(snapped.m_x, snapped.m_y);
+        CANCEL_UNIT_ARRIVAL_FX(cell, playerIndex, unitIndex);
+        cell->FaceTowardPixel(bx, by);
         if (cell->m_poweredUp != false && cell->m_neighborValid == false) {
-            RESET_GRUNT_POWERED_STATE(cell);
+            RESET_GRUNT_POWERED_STATE(cell)
         }
         cell->LoadVehicleGruntSprites(PICKUP_NONE);
         return 1;
     }
 
-    hitTile = hit->m_lastTilePx;
-    if (hitTile != snapped) {
-        Coord hitCommit = hit->m_commitPx;
-        if (hitCommit != snapped) {
-            return 0;
+    {
+        Coord hitTile = hit->m_lastTilePx;
+        if (hitTile.m_x != bx || hitTile.m_y != by) {
+            Coord hitCommit = hit->m_commitPx;
+            if (hitCommit.m_x != bx || hitCommit.m_y != by) {
+                return 0;
+            }
         }
     }
 
@@ -1344,32 +1335,22 @@ i32 CTriggerMgr::UseToyAt(i32 playerIndex, i32 unitIndex, i32 worldX, i32 worldY
     if (cell->m_vehiclePickupType == PICKUP_SCROLL) {
         moveKind = cell->m_moveKind;
     }
-    cell->FaceTowardPixel(snapped.m_x, snapped.m_y);
+    cell->FaceTowardPixel(bx, by);
     cell->m_neighborValid = false;
     if (cell->m_poweredUp != false) {
-        RESET_GRUNT_POWERED_STATE(cell);
+        RESET_GRUNT_POWERED_STATE(cell)
     }
 
-    typeRec = &g_typeColl[cell->m_logicRecord->m_eventCode];
-    isI2 = (strcmp(*typeRec, "I") == 0);
-    if (isI2) {
-        LoadTileArrivalFx(
-            playerIndex,
-            unitIndex,
-            cell->MoveTile().m_x,
-            cell->MoveTile().m_y,
-            cell->m_entranceReason,
-            WWDDRAW_NO_ANIMATION
-        );
-    }
+    CANCEL_UNIT_ARRIVAL_FX(cell, playerIndex, unitIndex);
     if (hit->LoadGruntTypeTable(cell->m_vehiclePickupType, 1, moveKind, 0) != 0) {
         cell->LoadVehicleGruntSprites(PICKUP_NONE);
 
         if (hit->m_playerIndex != playerIndex) {
             CGameObject* obj = cell->m_object;
-            Coord cuePosition = obj->ScreenPos();
+            i32 sy = obj->m_screenPosition.m_y;
+            i32 sx = obj->m_screenPosition.m_x;
             RECT* vr = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
-            if (::PtInRect(vr, cuePosition.m_x, cuePosition.m_y)) {
+            if (::PtInRect(vr, sx, sy)) {
                 g_gameReg->m_voiceManager->PlayVoice(cell, 0x38e, -1, 0, -1, -1);
             }
         }
@@ -1394,43 +1375,21 @@ i32 CTriggerMgr::ClearCell(
     i32 worldY,
     i32 arrivalPhase
 ) {
-    i32 idx = playerIndex * TM_UNITS_PER_PLAYER + unitIndex;
-    CGrunt* cell = m_units[idx];
+    CGrunt* cell = UnitAt(playerIndex, unitIndex);
     if (cell == NULL || cell->m_entranceCommitted == false) {
         return 0;
     }
     if (cell->m_tileClaimed != false) {
-        cell->m_arrivalRerollLo = 0;
-        cell->m_arrivalRerollWindowLo = 0;
-        cell->m_arrivalRerollHi = 0;
-        cell->m_arrivalRerollWindowHi = 0;
-        cell->m_arrivalFlags &= ~IDX(
-            CELL_FLAG_SPECIAL | CELL_FLAG_SPIKES | CELL_FLAG_IN_GAME_ICON | CELL_FLAG_STATIC_HAZARD
-            | CELL_FLAG_ROLLING_BALL
-        );
-        cell->m_tileClaimed = false;
-        cell->m_arrivalState = AI_NONE;
-        cell->SetEntrancePos(1, 1);
+        END_GUARD(cell);
     }
     if (cell->m_entranceActive != false) {
         return 0;
     }
-    CString* typeRec = &g_typeColl[cell->m_logicRecord->m_eventCode];
-    bool isI = (strcmp(*typeRec, "I") == 0);
-    if (isI) {
-        this->LoadTileArrivalFx(
-            playerIndex,
-            unitIndex,
-            cell->MoveTile().m_x,
-            cell->MoveTile().m_y,
-            cell->m_entranceReason,
-            WWDDRAW_NO_ANIMATION
-        );
-    }
-    Coord position(worldX, worldY);
-    SnapTileCenter(&position);
+    CANCEL_UNIT_ARRIVAL_FX(cell, playerIndex, unitIndex);
+    i32 by = (worldY & ~TILE_MASK_PX) + TILE_HALF_PX;
+    i32 bx = (worldX & ~TILE_MASK_PX) + TILE_HALF_PX;
     cell->m_coordRetryCount = 0;
-    return cell->StepArrivalDrop(position.m_x, position.m_y, arrivalPhase, -1, 1, 0) != 0;
+    return cell->StepArrivalDrop(bx, by, arrivalPhase, -1, 1, 0) != 0;
 }
 
 // @early-stop
@@ -1441,25 +1400,11 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, HitSpanArg span) {
     if (cell == NULL || span.m_outPlayerIndex != g_curPlayer) {
         return;
     }
-    const char* name = g_typeColl[cell->m_logicRecord->m_eventCode];
-    bool differ = strcmp(name, "B") != 0;
-    if (!differ) {
-        return;
+    if (ANIMATION_ACT_DIFFERS_FOR(cell, "B") && cell->ArrivalPickup() == PICKUP_WARPSTONE) {
+        CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
+        g_gameReg->m_gameStats->m_elapsedTimeMs += world->m_levelTimer->m_stamp.Elapsed();
+        world->m_levelTimer->Stop();
+        world->CancelDefeatCountdown();
+        StartPlayerVictorySequence(g_curPlayer);
     }
-    PickupType k = cell->ArrivalPickup();
-    if (k != PICKUP_WARPSTONE) {
-        return;
-    }
-    CPlay* world = static_cast<CPlay*>(g_gameReg->m_curState);
-
-    i64 diff = static_cast<i64>(g_frameTime) - world->m_levelTimer->m_startStamp.m_v;
-    g_gameReg->m_gameStats->m_elapsedTimeMs += (diff < 0) ? 0 : static_cast<i32>(diff);
-    CTimer* sub = world->m_levelTimer;
-    sub->m_unusedStamp.m_v = 0;
-    sub->m_accum.m_v = 0;
-    sub->m_running = false;
-    sub->m_currentMs = 0;
-    world->SetDefeatCountdown(false, 0xbb7);
-    world->m_statusBar->LockDestructButton(1);
-    this->StartPlayerVictorySequence(g_curPlayer);
 }

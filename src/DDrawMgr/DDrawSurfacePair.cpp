@@ -42,6 +42,7 @@
 #include <Rez/RezArchiveEntry.h>
 #include <Rez/RezTypeTag.h>
 #include <Utils/MapTyped.h>
+#include <Wwd/WwdObjMgrInline.h>
 
 #include <ddraw.h>
 #include <stdio.h>
@@ -103,32 +104,24 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
     if (w <= 0 || h <= 0) {
 
         if (m_id == IDX(DDRAW_PAGE_BACK)) {
-            if (OwnerMgr()->m_lastError == WORLDERR_NONE) {
-                OwnerMgr()->m_lastError = WORLDERR_FRONT_DIMENSIONS;
-            }
+            OwnerMgr()->SetInitError(WORLDERR_FRONT_DIMENSIONS);
         } else {
-            if (OwnerMgr()->m_lastError == WORLDERR_NONE) {
-                OwnerMgr()->m_lastError = WORLDERR_BACK_DIMENSIONS;
-            }
+            OwnerMgr()->SetInitError(WORLDERR_BACK_DIMENSIONS);
         }
         return 0;
     }
-    DDrawPageKind kind = static_cast<DDrawPageKind>(m_id);
-
     m_width = w;
     m_height = h;
     m_bpp = bpp;
-    m_srcRect = MakeRect(0, 0, w, h);
-    if (kind == DDRAW_PAGE_BACK) {
+    SET_RECT_COMPONENTS(m_srcRect, 0, 0, w, h);
+    if (m_id == IDX(DDRAW_PAGE_BACK)) {
         CDDrawSurfaceMgr* mgr = OwnerMgr();
         m_surface = mgr->m_deviceManager->WrapAttachedSurface(
             mgr->m_drawTarget->m_frontSurface->m_surface,
             DDSCAPS_BACKBUFFER
         );
         if (m_surface == NULL) {
-            if (OwnerMgr()->m_lastError == WORLDERR_NONE) {
-                OwnerMgr()->m_lastError = WORLDERR_FRONT_SURFACE_COPY;
-            }
+            OwnerMgr()->SetInitError(WORLDERR_FRONT_SURFACE_COPY);
             return 0;
         }
     }
@@ -139,9 +132,7 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, ColorDepth bpp, i32 flags) {
             m_surface = OwnerMgr()->m_deviceManager->CreateKeyedSurface(w, h, BPP_UNSET, 0, -1);
         }
         if (m_surface == NULL) {
-            if (OwnerMgr()->m_lastError == WORLDERR_NONE) {
-                OwnerMgr()->m_lastError = WORLDERR_BACK_SURFACE_CREATE;
-            }
+            OwnerMgr()->SetInitError(WORLDERR_BACK_SURFACE_CREATE);
             return 0;
         }
     }
@@ -282,10 +273,9 @@ void CDDrawSurfacePair::DrawBox(RECT* rect, i32 color) {
         }
     }
 
-    m_surface->m_ddSurface->Unlock(NULL);
+    m_surface->Unlock();
 }
 
-// @early-stop
 RVA(0x00164180, 0xcd)
 void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
     if (x - 4 < 0) {
@@ -329,7 +319,7 @@ void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
         down += m_surface->m_apiDesc.lPitch;
     }
 
-    m_surface->m_ddSurface->Unlock(NULL);
+    m_surface->Unlock();
 }
 
 RVA(0x00164250, 0x12b)
@@ -441,54 +431,27 @@ i32 CDDrawFrontSurface::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
         DDrawDeviceError err = deviceManager->m_lastError;
         if (err != DDRAWERR_NONE) {
             switch (err) {
-                case DDRAWERR_CREATE: {
-                    CDDrawSurfaceMgr* m = OwnerMgr();
-                    if (m->m_lastError == WORLDERR_NONE) {
-                        m->m_lastError = WORLDERR_DDRAW_CREATE;
-                    }
+                case DDRAWERR_CREATE:
+                    OwnerMgr()->SetInitError(WORLDERR_DDRAW_CREATE);
                     return 0;
-                }
-                case DDRAWERR_COOPERATIVE_LEVEL: {
-                    CDDrawSurfaceMgr* m = OwnerMgr();
-                    if (m->m_lastError == WORLDERR_NONE) {
-                        m->m_lastError = WORLDERR_DDRAW_COOPERATIVE_LEVEL;
-                    }
+                case DDRAWERR_COOPERATIVE_LEVEL:
+                    OwnerMgr()->SetInitError(WORLDERR_DDRAW_COOPERATIVE_LEVEL);
                     return 0;
-                }
-                case DDRAWERR_CAPABILITIES: {
-                    CDDrawSurfaceMgr* m = OwnerMgr();
-                    if (m->m_lastError == WORLDERR_NONE) {
-                        m->m_lastError = WORLDERR_DDRAW_CAPABILITIES;
-                    }
+                case DDRAWERR_CAPABILITIES:
+                    OwnerMgr()->SetInitError(WORLDERR_DDRAW_CAPABILITIES);
                     return 0;
-                }
-                case DDRAWERR_DISPLAY_MODE: {
-                    CDDrawSurfaceMgr* m = OwnerMgr();
-                    if (m->m_lastError == WORLDERR_NONE) {
-                        m->m_lastError = WORLDERR_DDRAW_DISPLAY_MODE;
-                    }
+                case DDRAWERR_DISPLAY_MODE:
+                    OwnerMgr()->SetInitError(WORLDERR_DDRAW_DISPLAY_MODE);
                     return 0;
-                }
-                case DDRAWERR_COLOR_MASKS: {
-                    CDDrawSurfaceMgr* m = OwnerMgr();
-                    if (m->m_lastError == WORLDERR_NONE) {
-                        m->m_lastError = WORLDERR_DDRAW_COLOR_MASKS;
-                    }
+                case DDRAWERR_COLOR_MASKS:
+                    OwnerMgr()->SetInitError(WORLDERR_DDRAW_COLOR_MASKS);
                     return 0;
-                }
-                default: {
-                    CDDrawSurfaceMgr* m = OwnerMgr();
-                    if (m->m_lastError == WORLDERR_NONE) {
-                        m->m_lastError = WORLDERR_CREATE_DEVICE;
-                    }
+                default:
+                    OwnerMgr()->SetInitError(WORLDERR_CREATE_DEVICE);
                     return 0;
-                }
             }
         }
-        CDDrawSurfaceMgr* md = OwnerMgr();
-        if (md->m_lastError == WORLDERR_NONE) {
-            md->m_lastError = WORLDERR_CREATE_DEVICE;
-        }
+        OwnerMgr()->SetInitError(WORLDERR_CREATE_DEVICE);
         return 0;
     }
     CDDrawSurfaceMgr* m2 = OwnerMgr();
@@ -501,10 +464,7 @@ i32 CDDrawFrontSurface::SetGeometry(i32 w, i32 h, ColorDepth bpp) {
     if (surf != NULL && surf->IsValid()) {
         return 1;
     }
-    CDDrawSurfaceMgr* m3 = OwnerMgr();
-    if (m3->m_lastError == WORLDERR_NONE) {
-        m3->m_lastError = WORLDERR_CREATE_PALETTE_SURFACE;
-    }
+    OwnerMgr()->SetInitError(WORLDERR_CREATE_PALETTE_SURFACE);
     return 0;
 }
 
@@ -600,7 +560,6 @@ i32 CResolveNode::Init(
     return 1;
 }
 
-// @early-stop
 RVA(0x00164830, 0xec)
 i32 CLogicRecord::SerializeDispatch(
     CFileMemBase* archive,
@@ -632,11 +591,10 @@ i32 CLogicRecord::SerializeDispatch(
             break;
         case SERIAL_POSTLOAD:
             if (m_targetId) {
-                CMapPtrToPtr* objectsById = &m_ownerCtx->m_childGroup->m_registeredGameObjectsById;
-                CWwdGameObject* target = NULL;
-                if (MapLookupById(*objectsById, m_targetId, target)) {
-                    m_target = target;
-                }
+                m_target = LookupObjectById(
+                    m_ownerCtx->m_childGroup->m_registeredGameObjectsById,
+                    m_targetId
+                );
             }
             break;
         default:
@@ -822,7 +780,6 @@ i32 CLogicRecord::Load(CFileMemBase* ar) {
     return 1;
 }
 
-// @early-stop
 // @dead-code
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x001651b0, 0x5d)
@@ -831,13 +788,8 @@ i32 CLogicRecord::ResolveTarget(void* context) {
         return 0;
     }
     if (m_targetId) {
-        CMapPtrToPtr* objectsById = &m_ownerCtx->m_childGroup->m_registeredGameObjectsById;
-        CWwdGameObject* target = NULL;
-        if (!MapLookupById(*objectsById, m_targetId, target)) {
-            m_target = NULL;
-        } else {
-            m_target = target;
-        }
+        m_target =
+            LookupObjectById(m_ownerCtx->m_childGroup->m_registeredGameObjectsById, m_targetId);
     }
     return 1;
 }
@@ -915,28 +867,22 @@ i32 CAniElement::Build(SoundCueRegistry* ctx, CAniSource* src, i32 flags) {
         m_name = NULL;
     }
 
-    CAniRecordView* rec = NULL;
     i32 i;
     for (i = 0; i < src->m_count; i++) {
-        rec = new CAniRecordView;
+        CAniRecordView* rec = new CAniRecordView;
 
         Pix16CPtr head;
         head.m_chars = cursor;
         if (rec->Parse(ctx, head.m_swords) == 0) {
-            goto fail;
+            delete rec;
+            DELETE_ANI_ELEMENT_CONTENTS(i);
+            return 0;
         }
-        m_records.SetAtGrow(m_records.GetSize(), static_cast<CObject*>(rec));
+        m_records.Add(rec);
         cursor += g_aniParsedNameLen + 0x14;
         m_durationMs += rec->GetDurationMs();
     }
     return 1;
-
-fail:
-    if (rec != NULL) {
-        delete rec;
-    }
-    DELETE_ANI_ELEMENT_CONTENTS(i);
-    return 0;
 }
 
 RVA(0x001655c0, 0x53)
@@ -1222,29 +1168,8 @@ i32 CFileMem::Write(const void* buf, i32 n) {
 
 RVA(0x00165fa0, 0x93)
 void CDDrawPixelWorker::RenderFrame(CDDrawSurfacePair* backBuffer, CDDrawSurfacePair* overlay) {
-    {
-
-        char c = m_pixelValue;
-        i32 y = m_screenPosition.m_y;
-        i32 x = m_screenPosition.m_x;
-        CDDSurface* s = overlay->m_surface;
-        char* base = static_cast<char*>(s->Lock(NULL));
-        if (base != NULL) {
-            base[s->m_bytesPerPixel * x + s->m_apiDesc.lPitch * y] = c;
-            s->m_ddSurface->Unlock(NULL);
-        }
-    }
-    {
-        char c = m_pixelValue;
-        i32 y = m_screenPosition.m_y;
-        i32 x = m_screenPosition.m_x;
-        CDDSurface* s = backBuffer->m_surface;
-        char* base = static_cast<char*>(s->Lock(NULL));
-        if (base != NULL) {
-            base[s->m_bytesPerPixel * x + y * s->m_apiDesc.lPitch] = c;
-            s->m_ddSurface->Unlock(NULL);
-        }
-    }
+    overlay->m_surface->PutPixel(m_screenPosition.m_x, m_screenPosition.m_y, m_pixelValue);
+    backBuffer->m_surface->PutPixel(m_screenPosition.m_x, m_screenPosition.m_y, m_pixelValue);
 }
 
 RVA(0x00166040, 0x66)

@@ -76,23 +76,15 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
             CBattlezMapConfig* b = &m_ctx->m_players[band].m_battlezConfig;
             if (b != NULL) {
                 i32 cnt = b->m_attackWaypoints.GetSize();
-                Coord target = b->m_marker;
+                i32 x = b->m_marker.m_x;
+                i32 y = b->m_marker.m_y;
                 if (cnt != 0) {
                     void** arr = b->m_attackWaypoints.GetData();
                     Coord* pair = static_cast<Coord*>(arr[rand() % cnt]);
-                    target = *pair;
+                    x = pair->m_x;
+                    y = pair->m_y;
                 }
-                if (unit->TileSwitch(
-                        target.m_x,
-                        target.m_y,
-                        0,
-                        IDX(CELL_FLAG_SOLID | CELL_FLAG_SPECIAL | CELL_FLAG_TRIGGER
-                            | CELL_FLAG_BRIDGE | CELL_FLAG_REVEALED_POWERUP | CELL_FLAG_ARROW
-                            | CELL_FLAG_WATER | CELL_FLAG_SINK_HAZARD),
-                        0,
-                        BATTLEZ_ROUTE_OTHER_TOOLS_TRIGGER
-                    )
-                    != 0) {
+                if (unit->TileSwitch(x, y, 0, 0x9cf, 0, 0x4020) != 0) {
                     unit->m_arrivalCell.Set(band, 0);
                     AcceptAlways(unit);
                 }
@@ -108,34 +100,27 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
             return 1;
         }
 
-        Coord target = recB->m_marker;
-        unit->TileSwitch(
-            target.m_x,
-            target.m_y,
-            0,
-            IDX(CELL_FLAG_SOLID | CELL_FLAG_SPECIAL | CELL_FLAG_TRIGGER | CELL_FLAG_ARROW
-                | CELL_FLAG_WATER | CELL_FLAG_SINK_HAZARD),
-            0,
-            IDX(CELL_FLAG_BRIDGE | CELL_FLAG_DESTRUCTIBLE_ROCK | CELL_FLAG_REVEALED_POWERUP
-                | CELL_FLAG_GAUNTLET_BRICK)
-        );
+        i32 y = recB->m_marker.m_y;
+        i32 x = recB->m_marker.m_x;
+        unit->TileSwitch(x, y, 0, 0x987, 0, 0x4068);
         unit->m_dwell = 0;
         return 1;
     }
     if (recA == NULL || cfgB == NULL) {
-        unit->m_arrivalCell.Set(-1, -1);
+        UNSET_COORD(unit->m_arrivalCell);
         return 1;
     }
     if (recA->m_humanControlled == false && cfgB->m_active == false) {
-        RecycleGruntCoords(unit);
-        unit->m_arrivalCell.Set(-1, -1);
+        RECYCLE_GRUNT_COORDS(unit)
+        UNSET_COORD(unit->m_arrivalCell);
         return 1;
     }
     if (unit->ArrivalCell().m_y == 1) {
         return 1;
     }
-    Coord position;
-    unit->GetScreenTile(&position);
+    CGameObject* lvl = unit->m_object;
+    i32 px = lvl->m_screenPosition.m_x >> TILE_SHIFT_PX;
+    i32 py = lvl->m_screenPosition.m_y >> TILE_SHIFT_PX;
     i32 nearBand = 0;
 
     i32 cnt2 = cfgB->m_attackWaypoints.GetSize();
@@ -143,8 +128,9 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
         void** vec = cfgB->m_attackWaypoints.GetData();
         for (i32 j = cnt2; j > 0; j--) {
             Coord* pair = static_cast<Coord*>(*vec);
-            Coord distance = (*pair - position).GetAbs();
-            if (distance.m_x + distance.m_y <= 6) {
+            i32 dy = abs(pair->m_y - py);
+            i32 dx = abs(pair->m_x - px);
+            if (dx + dy <= 6) {
                 nearBand = 1;
             }
             vec++;
@@ -153,7 +139,7 @@ i32 CBattlezMapConfig::RetargetIdleUnit(CGrunt* unit) {
     if (nearBand == 0) {
         return 1;
     }
-    unit->m_arrivalCell.m_y = 1;
+    unit->m_arrivalCell.Set(unit->m_arrivalCell.m_x, 1);
     if (unit->CoordCount() == 0) {
         return 1;
     }

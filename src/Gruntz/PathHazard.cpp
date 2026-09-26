@@ -25,6 +25,7 @@
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueInline.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/SpotLight.h>
@@ -136,7 +137,6 @@ void RegisterPathHazardActions() {
         static_cast<CActHandler>(&CPathHazard::ForwardSiblingTick);
 }
 
-// @early-stop
 RVA(0x000b4020, 0x26c)
 i32 CPathHazard::Tick() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
@@ -180,8 +180,7 @@ i32 CPathHazard::Tick() {
             this->Arrive();
             i32 segs = m_object->m_damage;
             if (segs > 0) {
-                m_leg.m_window = static_cast<u32>(segs);
-                m_leg.m_deadline = static_cast<u32>(g_frameTime);
+                m_leg.Start(segs);
                 SET_ANIMATION_ACT("B");
                 return 0;
             }
@@ -197,9 +196,7 @@ i32 CPathHazard::Tick() {
     i32 newY = static_cast<i32>((m_roundBias.m_y + m_position.m_y));
 
     if (m_unit.m_x > 0.0) {
-        if (newX > m_waypoint.m_x) {
-            newX = m_waypoint.m_x;
-        }
+        CLAMP_UPPER_INPLACE(newX, m_waypoint.m_x);
     } else if (m_unit.m_x < 0.0) {
         if (newX < m_waypoint.m_x) {
             newX = m_waypoint.m_x;
@@ -207,17 +204,14 @@ i32 CPathHazard::Tick() {
     }
 
     if (m_unit.m_y > 0.0) {
-        if (newY > m_waypoint.m_y) {
-            newY = m_waypoint.m_y;
-        }
+        CLAMP_UPPER_INPLACE(newY, m_waypoint.m_y);
     } else if (m_unit.m_y < 0.0) {
         if (newY < m_waypoint.m_y) {
             newY = m_waypoint.m_y;
         }
     }
 
-    m_object->m_screenPosition.m_x = newX;
-    m_object->m_screenPosition.m_y = newY;
+    SET_SCREEN_POS(m_object, newX, newY);
     return 0;
 }
 
@@ -231,7 +225,7 @@ RVA(0x000b4350, 0x7e)
 i32 CRainCloud::Tick() {
     if (m_strikeArmed != false) {
         i32 idx = 5;
-        if (static_cast<i64>(g_frameTime) - m_strike.m_deadline < m_strike.m_window) {
+        if (!m_strike.Expired()) {
             if (static_cast<u32>(g_period200CountdownMs) >= 0x64) {
                 idx = 0;
             }
@@ -250,9 +244,9 @@ RVA(0x000b43f0, 0x1c7)
 i32 CPathHazard::SiblingTick() {
     if (m_strikeArmed != false) {
         i32 sel = 5;
-        i64 elapsed = static_cast<i64>(g_frameTime) - m_strike.m_deadline;
+        i64 elapsed = static_cast<i64>(g_frameTime) - m_strike.m_start;
 
-        if (elapsed < m_strike.m_window) {
+        if (elapsed < m_strike.m_interval) {
             if (static_cast<u32>(g_period200CountdownMs) >= 0x64) {
                 sel = 0;
             }
@@ -300,8 +294,8 @@ i32 CPathHazard::SiblingTick() {
     }
 
     CGruntzMgr* tableReg = g_gameReg;
-    i64 legElapsed = static_cast<i64>(g_frameTime) - m_leg.m_deadline;
-    if (legElapsed >= m_leg.m_window) {
+    i64 legElapsed = static_cast<i64>(g_frameTime) - m_leg.m_start;
+    if (legElapsed >= m_leg.m_interval) {
         CShadeTable* frame = tableReg->m_lightFxMgr->m_tables[5];
         CWwdSpriteObject* o = m_object;
         SET_DRAW_FILL(o, SHADE_DST_BY_SRC_16, frame);
@@ -315,31 +309,15 @@ i32 CPathHazard::SiblingTick() {
 RVA(0x000b4640, 0x104)
 i32 CRainCloud::HitTest(i32 playerIndex, i32 unitIndex) {
     m_strikeArmed = true;
-    m_strike.m_window =
+    m_strike.m_interval =
         static_cast<i64>(g_buteMgr.GetDword("Hazardz", "RainCloudFlashTime", 0x7d0));
-    m_strike.m_deadline = static_cast<i64>(g_frameTime);
+    m_strike.m_start = static_cast<i64>(g_frameTime);
     g_gameReg->m_triggerMgr->StartUnitDeath(playerIndex, unitIndex, DEATH_ELECTROCUTE, -1);
 
     CWwdSpriteObject* obj = m_object;
     CGruntzMgr* reg = g_gameReg;
     if (::PtInRect(&reg->m_viewBounds, obj->m_screenPosition.m_x, obj->m_screenPosition.m_y)) {
-        SoundCueRegistry* registry = reg->m_world->m_soundRegistry;
-        if (registry->m_silentMode == false) {
-            SoundCue* found = registry->FindCue("LEVEL_CLOUDHAZARDKILL");
-            SoundCue* cue = found;
-            if (cue != NULL) {
-                b32 soundEnabled = g_soundEnabled;
-                i32 volumePercent = g_soundVolumePercent;
-                if (soundEnabled != false) {
-                    u32 cueTimeMs = g_soundCueTimeMs;
-                    if (static_cast<u32>((cueTimeMs - cue->m_lastPlayTimeMs))
-                        >= cue->m_replayDelayMs) {
-                        cue->m_lastPlayTimeMs = cueTimeMs;
-                        cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                    }
-                }
-            }
-        }
+        PlayRegistryCueIfElapsed(reg->m_world->m_soundRegistry, "LEVEL_CLOUDHAZARDKILL");
     }
     return 1;
 }
@@ -377,9 +355,9 @@ i32 CPathHazard::BeginLeg() {
     m_unit.m_x = ux;
     m_unit.m_y = uy;
 
-    VECTOR_COMPONENT_ROUND_BIAS(m_roundBias.m_x, ux);
+    ROUND_BIAS_FOR_SIGN(m_roundBias.m_x, ux);
 
-    VECTOR_COMPONENT_ROUND_BIAS(m_roundBias.m_y, uy);
+    ROUND_BIAS_FOR_SIGN(m_roundBias.m_y, uy);
     return 1;
 }
 

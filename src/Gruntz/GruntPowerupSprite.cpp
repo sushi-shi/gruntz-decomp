@@ -72,11 +72,10 @@ RVA(0x00080410, 0x51)
 i32 CGruntPowerupSprite::Update() {
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
     CGrunt* e =
-        g_gameReg->m_triggerMgr->m_units
-            [m_gruntIdentity.m_playerIndex * TM_UNITS_PER_PLAYER + m_gruntIdentity.m_unitIndex];
+        g_gameReg->m_triggerMgr->UnitAt(m_gruntIdentity.m_playerIndex, m_gruntIdentity.m_unitIndex);
     if (e != NULL) {
-        SET_VECTOR2_COMPONENTS(
-            m_object->m_screenPosition,
+        SET_SCREEN_POS(
+            m_object,
             e->m_object->m_screenPosition.m_x,
             e->m_object->m_screenPosition.m_y
         );

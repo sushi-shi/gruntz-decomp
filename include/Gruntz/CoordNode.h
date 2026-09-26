@@ -184,5 +184,10 @@ inline void SnapTileCenter(Coord* pos) {
 #define SET_VECTOR2_COMPONENTS(coord, x, y)                                                        \
     (coord).m_x = (x);                                                                             \
     (coord).m_y = (y)
+#define UNSET_COORD(dst)                                                                           \
+    {                                                                                              \
+        Coord none;                                                                                \
+        (dst) = *none.Set(-1, -1);                                                                 \
+    }
 
 #endif // GRUNTZ_GRUNTZ_COORDNODE_H

@@ -3,6 +3,7 @@
 #include <Wap32/GameApp.h>
 
 #include <Gruntz/GruntzCommandId.h>
+#include <SafeDelete.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/Wap32.h>
 
@@ -164,10 +165,7 @@ void CGameApp::CloseResources() {
         m_hAccel = NULL;
     }
     FREE_GAME_MANAGER
-    if (m_gameWnd) {
-        delete m_gameWnd;
-        m_gameWnd = NULL;
-    }
+    SAFE_DELETE(m_gameWnd);
 }
 
 RVA(0x0013d910, 0x9f)
@@ -218,7 +216,6 @@ void CGameApp::InitializeDefaultWindowClass() {
     m_wc.lpszClassName = m_gameInfo.m_szWindowClassName;
 }
 
-// @early-stop
 RVA(0x0013da50, 0x10b)
 void CGameApp::InitializeDefaultCreateStruct() {
 
@@ -229,23 +226,22 @@ void CGameApp::InitializeDefaultCreateStruct() {
         hMenu = LoadMenuA(m_hInstance, m_gameInfo.m_szGameIdentifier);
     }
 
-    POINT position;
+    i32 x, y;
     if (HAS(m_gameInfo.m_windowClassFlags, GAME_WINDOW_FLAG_WINDOWED)) {
-        position.x = COORD_UNSET;
-        position.y = COORD_UNSET;
+        x = COORD_UNSET;
+        y = COORD_UNSET;
     } else {
-        position.x = 0;
-        position.y = 0;
+        x = 0;
+        y = 0;
     }
 
-    SIZE
-    size;
+    i32 cx, cy;
     if (HAS(m_gameInfo.m_windowClassFlags, GAME_WINDOW_FLAG_WINDOWED)) {
-        size.cx = m_gameInfo.m_windowWidth;
-        size.cy = m_gameInfo.m_windowHeight;
+        cx = m_gameInfo.m_windowWidth;
+        cy = m_gameInfo.m_windowHeight;
     } else {
-        size.cx = GetSystemMetrics(SM_CXSCREEN);
-        size.cy = GetSystemMetrics(SM_CYSCREEN);
+        cx = GetSystemMetrics(SM_CXSCREEN);
+        cy = GetSystemMetrics(SM_CYSCREEN);
     }
 
     i32 style;
@@ -261,15 +257,15 @@ void CGameApp::InitializeDefaultCreateStruct() {
         exStyle = WS_EX_APPWINDOW | WS_EX_TOPMOST;
     }
 
-    m_createStruct.style = style;
+    m_createStruct.lpCreateParams = NULL;
     m_createStruct.hInstance = m_hInstance;
     m_createStruct.hMenu = hMenu;
-    m_createStruct.y = position.y;
-    m_createStruct.cx = size.cx;
-    m_createStruct.lpCreateParams = NULL;
     m_createStruct.hwndParent = NULL;
-    m_createStruct.x = position.x;
-    m_createStruct.cy = size.cy;
+    m_createStruct.x = x;
+    m_createStruct.y = y;
+    m_createStruct.cx = cx;
+    m_createStruct.cy = cy;
+    m_createStruct.style = style;
     m_createStruct.lpszName = m_gameInfo.m_szWindowName;
     m_createStruct.lpszClass = m_gameInfo.m_szWindowClassName;
     m_createStruct.dwExStyle = exStyle;

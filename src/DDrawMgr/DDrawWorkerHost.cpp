@@ -4,6 +4,7 @@
 
 #include <Mfc.h>
 
+#include <SafeDelete.h>
 #include <Wap32/WapObj.h>
 #include <Wwd/WwdSpatialMgr.h>
 
@@ -33,12 +34,6 @@ CDDrawWorkerHost::~CDDrawWorkerHost() {
         CWwdSpatialMgr* w = m_spatialMgr;
         delete w;
     }
-    if (m_tileHandles != NULL) {
-        delete[] m_tileHandles;
-        m_tileHandles = NULL;
-    }
-    if (m_tileRowOffsets != NULL) {
-        delete[] m_tileRowOffsets;
-        m_tileRowOffsets = NULL;
-    }
+    SAFE_DELETE_ARRAY(m_tileHandles);
+    SAFE_DELETE_ARRAY(m_tileRowOffsets);
 }

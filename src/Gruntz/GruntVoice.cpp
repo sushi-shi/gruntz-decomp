@@ -98,17 +98,16 @@ i32 DispatchVoiceTriggerLogic(CGameObject* obj) {
     TILE_LOGIC_RECORD_DISPATCH(CVoiceTrigger)
 }
 
-// @early-stop
 RVA(0x001198a0, 0x195)
 CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_startStamp.m_v = 0;
-    m_duration.m_v = 0;
     SetImageSetByName("GAME_EXCLAMATION");
     CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_GRUNT_VOICE);
     m_stream = NULL;
-    m_startStamp.m_v = 0;
-    m_duration.m_v = 0;
+    m_playbackTiming.m_startLo = 0;
+    m_playbackTiming.m_intervalLo = 0;
+    m_playbackTiming.m_startHi = 0;
+    m_playbackTiming.m_intervalHi = 0;
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_SKIP_ACTIVE_KEEP_ACTIVE);
     Hide();
     m_priority = 0;
@@ -190,7 +189,6 @@ i32 CVoiceTrigger::Tick() {
     return 0;
 }
 
-// @early-stop
 RVA(0x0011a7e0, 0x6e)
 
 i32 CGruntVoice::BeginPlayback(
@@ -205,10 +203,9 @@ i32 CGruntVoice::BeginPlayback(
     m_sourceObjectId = sourceObjectId;
     m_positionMode = positionMode;
     m_stream = stream;
-    m_duration.m_v = stream->GetDurationMs();
-    m_startStamp.m_v = g_frameTime;
-    m_previousAnimationActId = m_logicRecord->m_eventCode;
+    m_playbackTiming.Start(stream->GetDurationMs());
     m_priority = priority;
+    m_previousAnimationActId = m_logicRecord->m_eventCode;
     m_logicRecord->SetEventCode(ActFindId("B"));
     return 1;
 }
@@ -229,7 +226,7 @@ i32 CGruntVoice::HideIndicator() {
 
 RVA(0x0011a8e0, 0x198)
 i32 CGruntVoice::UpdateIndicator() {
-    if (m_stream == NULL || static_cast<i64>(g_frameTime) - m_startStamp.m_v >= m_duration.m_v) {
+    if (m_stream == NULL || m_playbackTiming.Expired()) {
         m_stream = NULL;
         m_sourceObjectId = 0;
         m_object->m_stateFlags |= SPRITE_STATE_HIDDEN;

@@ -69,6 +69,7 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueInline.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundFont.h>
 #include <Gruntz/SoundState.h>
@@ -100,6 +101,7 @@
 #include <Rez/RezArchive.h>
 #include <Rez/RezMgr.h>
 #include <Rez/RezSync.h>
+#include <SafeDelete.h>
 #include <Utils/MapTyped.h>
 #include <Utils/RegMgr.h>
 #include <Wap32/GameApp.h>
@@ -328,101 +330,33 @@ void CGruntzMgr::Close() {
         m_settings->Set("Enable TrueColor", static_cast<DWORD>(0));
     }
     ClearStateStack();
-    if (m_curState) {
-        delete m_curState;
-        m_curState = NULL;
-    }
-    if (m_spriteFactory) {
-        delete m_spriteFactory;
-        m_spriteFactory = NULL;
-    }
-    if (m_triggerMgr) {
-        delete m_triggerMgr;
-        m_triggerMgr = NULL;
-    }
-    if (m_tileGrid) {
-
-        delete m_tileGrid;
-        m_tileGrid = NULL;
-    }
+    SAFE_DELETE(m_curState)
+    SAFE_DELETE(m_spriteFactory)
+    SAFE_DELETE(m_triggerMgr)
+    SAFE_DELETE(m_tileGrid)
     CGameStats* gameStats = m_gameStats;
     if (gameStats) {
         delete gameStats;
         m_gameStats = NULL;
     }
-    if (m_commandMgr) {
-
-        delete m_commandMgr;
-        m_commandMgr = NULL;
-    }
-    if (g_gameplayInput) {
-        delete g_gameplayInput;
-        g_gameplayInput = NULL;
-    }
-    if (g_inputMgr) {
-
-        delete g_inputMgr;
-        g_inputMgr = NULL;
-    }
-    if (m_cheatMgr) {
-        delete m_cheatMgr;
-        m_cheatMgr = NULL;
-    }
-    if (m_midi) {
-        delete m_midi;
-        m_midi = NULL;
-    }
-    if (m_worldSounds) {
-        delete m_worldSounds;
-        m_worldSounds = NULL;
-    }
-    if (m_faderMgr) {
-        delete m_faderMgr;
-        m_faderMgr = NULL;
-    }
-    if (m_chatLog) {
-        delete m_chatLog;
-        m_chatLog = NULL;
-    }
-    if (m_voiceManager) {
-        delete m_voiceManager;
-        m_voiceManager = NULL;
-    }
-    if (m_world) {
-        delete m_world;
-        m_world = NULL;
-    }
-    if (m_resourceArchive) {
-        delete m_resourceArchive;
-        m_resourceArchive = NULL;
-    }
-    if (m_settings) {
-
-        delete m_settings;
-        m_settings = NULL;
-    }
-    if (m_reserved3c) {
-        delete m_reserved3c;
-        m_reserved3c = NULL;
-    }
-    if (m_shadeCache) {
-        delete m_shadeCache;
-        m_shadeCache = NULL;
-    }
-    if (m_saveGame) {
-
-        delete m_saveGame;
-        m_saveGame = NULL;
-    }
-    if (m_lightFxMgr) {
-        delete m_lightFxMgr;
-        m_lightFxMgr = NULL;
-    }
+    SAFE_DELETE(m_commandMgr)
+    SAFE_DELETE(g_gameplayInput)
+    SAFE_DELETE(g_inputMgr)
+    SAFE_DELETE(m_cheatMgr)
+    SAFE_DELETE(m_midi)
+    SAFE_DELETE(m_worldSounds)
+    SAFE_DELETE(m_faderMgr)
+    SAFE_DELETE(m_chatLog)
+    SAFE_DELETE(m_voiceManager)
+    SAFE_DELETE(m_world)
+    SAFE_DELETE(m_resourceArchive)
+    SAFE_DELETE(m_settings)
+    SAFE_DELETE(m_reserved3c)
+    SAFE_DELETE(m_shadeCache)
+    SAFE_DELETE(m_saveGame)
+    SAFE_DELETE(m_lightFxMgr)
     CloseSoundFontDevice();
-    if (m_lobby) {
-        m_lobby->Release();
-        m_lobby = NULL;
-    }
+    SAFE_RELEASE(m_lobby)
     if (m_connSettings) {
         RecordBytes<DPLCONNECTION> settings;
         settings.m_rec = m_connSettings;
@@ -484,10 +418,8 @@ void CGruntzMgr::FinalizeLevelAndShowResults() {
     g_gameReg->m_gameStats->SetLevelNumber(currentState->m_levelIndex);
     if (m_gameMode == GAMEMODE_BATTLEZ) {
 
-        CTimer* levelTimer = (static_cast<CPlay*>(currentState))->m_levelTimer;
-        i64 elapsedMs = static_cast<i64>(g_frameTime) - levelTimer->m_startStamp.m_v;
         g_gameReg->m_gameStats->m_elapsedTimeMs +=
-            (elapsedMs < 0) ? 0 : static_cast<i32>(elapsedMs);
+            static_cast<CPlay*>(currentState)->m_levelTimer->m_stamp.Elapsed();
         TransitionState(GAMESTATE_MULTIBOOTY, 1, false, 0);
         return;
     }
@@ -697,7 +629,6 @@ i32 CGruntzMgr::SwitchToNextState() {
     return 1;
 }
 
-// @early-stop
 RVA(0x0008d780, 0x95)
 i32 CGruntzMgr::PassClickToPlayState(i32 areaArg, b32 forceTransition, i32 unused) {
     b32 inPlay = false;
@@ -709,7 +640,7 @@ i32 CGruntzMgr::PassClickToPlayState(i32 areaArg, b32 forceTransition, i32 unuse
     }
     if (inPlay && forceTransition == false) {
         CState* st = m_curState;
-        m_curState->LeaveState(st->Update());
+        m_curState->LeaveState(m_curState->Update());
         if (static_cast<CPlay*>(st)->LoadByMode(areaArg, unused) == 0) {
             return 0;
         }
@@ -1200,7 +1131,7 @@ i32 CGruntzMgr::FinishLevel(b32 pauseGame, b32 pauseMusic) {
     if (m_curState && m_curState->Update() == GAMESTATE_MULTI) {
 
         i32 activePlayers = 0;
-        CNetCmdSlot* slot = static_cast<CMulti*>(m_curState)->m_session->m_slots;
+        CNetCmdSlot* slot = static_cast<CMulti*>(m_curState)->Session()->m_slots;
         for (i32 remainingSlots = 4; remainingSlots != 0; remainingSlots--) {
             if (slot != NULL && slot->m_state == NETSLOT_ACTIVE) {
                 activePlayers++;
@@ -1226,8 +1157,7 @@ i32 CGruntzMgr::FinishLevel(b32 pauseGame, b32 pauseMusic) {
                 sub->m_soundStream->StopAllStreams();
             }
         }
-        MidiManager* midi = m_midi;
-        if ((midi->m_currentSequence ? midi->m_currentSequence->IsPlaying() : 0) && pauseMusic) {
+        if (m_midi->IsCurrentPlaying() && pauseMusic) {
             m_midi->PauseCurrent();
         }
         m_curState->PauseGame();
@@ -1302,10 +1232,7 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
     m_lobbyProbed = true;
     m_lobbyResult = 0;
 
-    if (m_lobby) {
-        m_lobby->Release();
-        m_lobby = NULL;
-    }
+    SAFE_RELEASE(m_lobby)
 
     i32 hr = DirectPlayLobbyCreate(NULL, &m_lobby, NULL, NULL, 0);
     if (hr) {
@@ -1573,10 +1500,10 @@ void CGruntzMgr::DelayedQuit() {
         return;
     }
     m_delayedQuitPending = true;
-    SoundCue* out = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
+    SoundCue* out = m_world->m_soundRegistry->FindCue("MENU_ACTIVATE");
     i32 base;
     if (out != NULL) {
-        out = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
+        out = m_world->m_soundRegistry->FindCue("MENU_ACTIVATE");
         base = out->m_sound->m_durationMs + 0x1f4;
     } else {
         base = 0;
@@ -1635,7 +1562,7 @@ void CGruntzMgr::HandleAppActivation(b32 active, i32 unused) {
     if (m_musicEnabled == false) {
         return;
     }
-    if ((m_midi->m_currentSequence ? m_midi->m_currentSequence->IsPlaying() : 0) == false) {
+    if (m_midi->IsCurrentPlaying() == false) {
         return;
     }
     m_midi->PauseCurrent();
@@ -1652,8 +1579,7 @@ void CGruntzMgr::StopAudioPlayback() {
             }
         }
     }
-    MidiManager* midi = m_midi;
-    if (midi && (midi->m_currentSequence ? midi->m_currentSequence->IsPlaying() : 0)) {
+    if (m_midi && m_midi->IsCurrentPlaying()) {
         m_midi->EndCurrent();
     }
 }
@@ -2102,11 +2028,10 @@ i32 CGruntzMgr::LaunchProcessInDir(char* sApp, char* sPath) {
 
 RVA(0x00090980, 0x18)
 CState* CGruntzMgr::TopState() {
-    CPtrArray* st = &m_stateStack;
-    if (st->GetSize() <= 0) {
+    if (m_stateStack.GetSize() <= 0) {
         return NULL;
     }
-    return static_cast<CState*>(st->GetAt(st->GetSize() - 1));
+    return static_cast<CState*>(m_stateStack.GetAt(m_stateStack.GetSize() - 1));
 }
 
 RVA(0x000909b0, 0x1b)
@@ -2114,8 +2039,7 @@ void CGruntzMgr::PushState(CState* s) {
     if (!s) {
         return;
     }
-    CPtrArray* st = &m_stateStack;
-    st->SetAtGrow(st->GetSize(), s);
+    m_stateStack.Add(s);
 }
 
 RVA(0x000909e0, 0x46)
@@ -2376,22 +2300,7 @@ void CGruntzMgr::CheatSkeletonToggle() {
                             AppendChatMessage(const_cast<char*>("You're scaring me..."));
                             break;
                     }
-                    SoundCueRegistry* registry = m_world->m_soundRegistry;
-                    if (registry->m_silentMode == false) {
-
-                        SoundCue* found = registry->FindCue("GAME_MINORCHEAT");
-                        SoundCue* cue = found;
-                        if (cue) {
-                            i32 volumePercent = g_soundVolumePercent;
-                            if (g_soundEnabled) {
-                                if (static_cast<u32>((g_soundCueTimeMs - cue->m_lastPlayTimeMs))
-                                    >= static_cast<u32>(cue->m_replayDelayMs)) {
-                                    cue->m_lastPlayTimeMs = g_soundCueTimeMs;
-                                    cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                                }
-                            }
-                        }
-                    }
+                    PlayRegistryCueIfElapsed(m_world->m_soundRegistry, "GAME_MINORCHEAT");
                 }
             }
         }
@@ -2422,22 +2331,7 @@ void CGruntzMgr::CheatEclipseToggle() {
                         set->SetAllTypes(SHADE_COPY);
                         AppendChatMessage(const_cast<char*>("Where did the sun go?"));
                     }
-                    SoundCueRegistry* registry = m_world->m_soundRegistry;
-                    if (registry->m_silentMode == false) {
-
-                        SoundCue* found = registry->FindCue("GAME_MINORCHEAT");
-                        SoundCue* cue = found;
-                        if (cue) {
-                            i32 volumePercent = g_soundVolumePercent;
-                            if (g_soundEnabled) {
-                                if (static_cast<u32>((g_soundCueTimeMs - cue->m_lastPlayTimeMs))
-                                    >= static_cast<u32>(cue->m_replayDelayMs)) {
-                                    cue->m_lastPlayTimeMs = g_soundCueTimeMs;
-                                    cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                                }
-                            }
-                        }
-                    }
+                    PlayRegistryCueIfElapsed(m_world->m_soundRegistry, "GAME_MINORCHEAT");
                 }
             }
         }
@@ -2490,20 +2384,10 @@ void CGruntzMgr::MuteMusicIfActive(i32 durationMs) {
     if (m_musicEnabled == false) {
         return;
     }
-    b32 isPlaying;
-    if (m_midi->m_currentSequence != NULL) {
-        isPlaying = m_midi->m_currentSequence->IsPlaying();
-    } else {
-        isPlaying = false;
-    }
-    if (isPlaying == false) {
+    if (m_midi->IsCurrentPlaying() == false) {
         return;
     }
-
-    MidiManager* midi = m_midi;
-    if (midi->m_currentSequence) {
-        midi->m_currentSequence->SetVolumePercent(0, durationMs);
-    }
+    m_midi->SetCurrentVolumePercent(0, durationMs);
 }
 
 // @dead-code
@@ -2516,20 +2400,10 @@ void CGruntzMgr::RestoreMusicVolumeIfActive(i32 durationMs) {
     if (m_musicEnabled == false) {
         return;
     }
-    b32 isPlaying;
-    if (m_midi->m_currentSequence != NULL) {
-        isPlaying = m_midi->m_currentSequence->IsPlaying();
-    } else {
-        isPlaying = false;
-    }
-    if (isPlaying == false) {
+    if (m_midi->IsCurrentPlaying() == false) {
         return;
     }
-
-    MidiManager* midi = m_midi;
-    if (midi->m_currentSequence) {
-        midi->m_currentSequence->SetVolumePercent(kSoundVolumeMax, durationMs);
-    }
+    m_midi->SetCurrentVolumePercent(kSoundVolumeMax, durationMs);
 }
 
 RVA(0x00091670, 0x2ac)
@@ -2625,10 +2499,7 @@ i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
         return 0;
     }
 
-    if (m_worldSounds != NULL) {
-        delete m_worldSounds;
-        m_worldSounds = NULL;
-    }
+    SAFE_DELETE(m_worldSounds)
 
     CRezMgr* surf = m_resourceArchive;
     if (surf) {
@@ -2682,10 +2553,7 @@ i32 CGruntzMgr::LoadWorldMode(ColorDepth mode) {
 
     SetColorDepth(m_colorDepth);
 
-    if (m_worldSounds != NULL) {
-        delete m_worldSounds;
-        m_worldSounds = NULL;
-    }
+    SAFE_DELETE(m_worldSounds)
 
     CWorldSoundSet* ni = new CWorldSoundSet();
     m_worldSounds = ni;
@@ -3025,9 +2893,8 @@ CState* CGruntzMgr::FindStateById(GameStateId id) {
     if (m_curState && m_curState->Update() == id) {
         return m_curState;
     }
-    CPtrArray* st = &m_stateStack;
-    for (i32 i = 0; i < st->GetSize(); i++) {
-        CState* s = static_cast<CState*>(st->GetAt(i));
+    for (i32 i = 0; i < m_stateStack.GetSize(); i++) {
+        CState* s = static_cast<CState*>(m_stateStack.GetAt(i));
         if (s && s->Update() == id) {
             return s;
         }

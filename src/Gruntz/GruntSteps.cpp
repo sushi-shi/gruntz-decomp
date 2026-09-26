@@ -41,6 +41,7 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialClockInline.h>
 #include <Gruntz/SerialRecords.h>
+#include <Gruntz/SerialWorkerRefMacros.h>
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/StaminaPct.h>
 #include <Gruntz/TileCollisionKind.h>
@@ -249,12 +250,12 @@ RVA(0x00051510, 0x20f)
 i32 CGrunt::IsDropReady(i32 clearArrivalState) {
     {
         CGruntzMapMgr* board = g_gameReg->m_tileGrid;
-        Coord commit = m_commitPx;
-        ScreenTile(&commit);
+        i32 x = m_commitPx.m_x >> TILE_SHIFT_PX;
+        i32 y = m_commitPx.m_y >> TILE_SHIFT_PX;
         i32 owner;
-        if (static_cast<u32>(commit.m_x) < static_cast<u32>(board->m_width)
-            && static_cast<u32>(commit.m_y) < static_cast<u32>(board->m_height)) {
-            owner = board->m_rows[commit.m_y][commit.m_x].m_occupantId;
+        if (static_cast<u32>(x) < static_cast<u32>(board->m_width)
+            && static_cast<u32>(y) < static_cast<u32>(board->m_height)) {
+            owner = board->m_rows[y][x].m_occupantId;
         } else {
             owner = -1;
         }
@@ -264,26 +265,28 @@ i32 CGrunt::IsDropReady(i32 clearArrivalState) {
     }
 
     CWwdSpriteObject* object = m_object;
-    Coord position = object->ScreenPos();
-    if (position == m_lastTilePx) {
-        return 0;
+    i32 lastX = m_lastTilePx.m_x;
+    if (object->m_screenPosition.m_x == lastX) {
+        i32 lastY = m_lastTilePx.m_y;
+        if (object->m_screenPosition.m_y == lastY) {
+            return 0;
+        }
     }
 
     if (m_coordList.GetCount() != 0) {
         Coord* coord = NULL;
         CoordPoolNode* node = g_coordPool.m_freeHead;
-        Coord lastTile = m_lastTilePx;
-        ScreenTile(&lastTile);
+        i32 coordX = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+        i32 coordY = m_lastTilePx.m_y >> TILE_SHIFT_PX;
         if (node->m_next != NULL) {
             coord = &node->m_value;
-            coord->m_x = lastTile.m_x;
-            coord->m_y = lastTile.m_y;
+            coord->Set(coordX, coordY);
             g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
         }
         m_coordList.AddHead(coord);
     }
 
-    m_object->SetScreenPos(m_commitPx);
+    SET_SCREEN_POS(m_object, m_commitPx.m_x, m_commitPx.m_y);
     object = m_object;
     if (object->m_sortKey != object->m_screenPosition.m_y + 0x186a0) {
         object->m_sortKey = object->m_screenPosition.m_y + 0x186a0;
@@ -291,22 +294,12 @@ i32 CGrunt::IsDropReady(i32 clearArrivalState) {
         object->m_flags = flags | IDX(WWD_GAME_OBJECT_FLAG_SORT_PENDING);
     }
 
-    Coord oldTile = m_lastTilePx;
-    ScreenTile(&oldTile);
-    Coord newTile = m_commitPx;
-    ScreenTile(&newTile);
-    {
-        CGruntzMapMgr* board = g_gameReg->m_tileGrid;
-        board->m_rows[oldTile.m_y][oldTile.m_x].m_flags &= BRICKZ_CELL_UNOCCUPIED_MASK;
-        board->m_rows[oldTile.m_y][oldTile.m_x].m_occupantId = -1;
-    }
-    {
-        CGruntzMapMgr* board = g_gameReg->m_tileGrid;
-        i32 unitIndex = m_unitIndex;
-        i32 playerIndex = m_playerIndex;
-        board->m_rows[newTile.m_y][newTile.m_x].m_flags |= BRICKZ_CELL_OCCUPIED;
-        board->m_rows[newTile.m_y][newTile.m_x].m_occupantId = (playerIndex << 8) | unitIndex;
-    }
+    i32 oldY = m_lastTilePx.m_y >> TILE_SHIFT_PX;
+    i32 oldX = m_lastTilePx.m_x >> TILE_SHIFT_PX;
+    i32 newX = m_commitPx.m_x >> TILE_SHIFT_PX;
+    i32 newY = m_commitPx.m_y >> TILE_SHIFT_PX;
+    g_gameReg->m_tileGrid->ReleaseCellOccupancy(oldX, oldY);
+    g_gameReg->m_tileGrid->AcquireCellOccupancy(newX, newY, m_playerIndex, m_unitIndex);
 
     m_lastTilePx = m_commitPx;
     m_commitPx = m_entrancePx;
@@ -322,7 +315,7 @@ i32 CGrunt::IsDropReady(i32 clearArrivalState) {
 
 RVA(0x000517b0, 0x7d)
 void CGrunt::SnapToLastTile(i32 clearArrivalState) {
-    SET_VECTOR2_COMPONENTS(m_object->m_screenPosition, m_lastTilePx.m_x, m_lastTilePx.m_y);
+    SET_SCREEN_POS(m_object, m_lastTilePx.m_x, m_lastTilePx.m_y);
     CWwdSpriteObject* h = m_object;
     SET_SORT_KEY_IF_CHANGED(h, h->m_screenPosition.m_y + 0x186a0)
     SetEntrancePos(clearArrivalState, 1);
@@ -335,15 +328,16 @@ void CGrunt::SnapToLastTile(i32 clearArrivalState) {
 
 RVA(0x00051850, 0x165)
 i32 CGrunt::RectContains(i32 x, i32 y) {
-    i32 dx = SCREEN_TILE_COMPONENT(LastTilePx().m_x);
-    i32 dy = SCREEN_TILE_COMPONENT(LastTilePx().m_y);
+    i32 dx = LastTilePx().m_x >> TILE_SHIFT_PX;
+    i32 dy = LastTilePx().m_y >> TILE_SHIFT_PX;
     x >>= TILE_SHIFT_PX;
     y >>= TILE_SHIFT_PX;
 
     RECT r1 = m_reachRect;
     RECT r2 = m_reachExclusionRect;
     OFFSET_RECT_COMPONENTS(r1, dx, dy);
-    EXTEND_RECT_MAX(r1, 1, 1);
+    r1.right++;
+    r1.bottom++;
     OFFSET_RECT_COMPONENTS(r2, dx, dy);
 
     if (IsRectEmpty(&r1) || IsRectEmpty(&r2)) {
@@ -368,15 +362,16 @@ i32 CGrunt::RectContains(i32 x, i32 y) {
 
 RVA(0x00051a20, 0x17d)
 i32 CGrunt::VehicleContactContains(i32 x, i32 y) {
-    i32 dx = SCREEN_TILE_COMPONENT(LastTilePx().m_x);
-    i32 dy = SCREEN_TILE_COMPONENT(LastTilePx().m_y);
+    i32 dx = LastTilePx().m_x >> TILE_SHIFT_PX;
+    i32 dy = LastTilePx().m_y >> TILE_SHIFT_PX;
     x >>= TILE_SHIFT_PX;
     y >>= TILE_SHIFT_PX;
 
     RECT r1 = m_vehicleContactRect;
     RECT r2 = m_vehicleContactExclusionRect;
     OFFSET_RECT_COMPONENTS(r1, dx, dy);
-    EXTEND_RECT_MAX(r1, 1, 1);
+    r1.right++;
+    r1.bottom++;
     OFFSET_RECT_COMPONENTS(r2, dx, dy);
 
     if (m_vehiclePickupType == PICKUP_NONE) {
@@ -607,14 +602,14 @@ i32 CGrunt::StepCompassMove() {
 
     {
         CByteArray bag;
-        bag.SetAtGrow(bag.GetSize(), 1);
-        bag.SetAtGrow(bag.GetSize(), 2);
-        bag.SetAtGrow(bag.GetSize(), 3);
-        bag.SetAtGrow(bag.GetSize(), 4);
-        bag.SetAtGrow(bag.GetSize(), 5);
-        bag.SetAtGrow(bag.GetSize(), 6);
-        bag.SetAtGrow(bag.GetSize(), 7);
-        bag.SetAtGrow(bag.GetSize(), 8);
+        bag.Add(1);
+        bag.Add(2);
+        bag.Add(3);
+        bag.Add(4);
+        bag.Add(5);
+        bag.Add(6);
+        bag.Add(7);
+        bag.Add(8);
         while (bag.GetSize() > 0) {
             i32 idx = GetRandom(0, bag.GetUpperBound());
             i32 dir = bag.GetAt(idx);
@@ -687,8 +682,7 @@ commit:
         CGruntzMapMgr* b = g_gameReg->m_tileGrid;
         i32 nx = moveX >> TILE_SHIFT_PX;
         i32 ny = moveY >> TILE_SHIFT_PX;
-        i32 owner = (m_playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | m_unitIndex;
-        b->AcquireCellOccupancy(nx, ny, owner);
+        b->AcquireCellOccupancy(nx, ny, m_playerIndex, m_unitIndex);
     }
     m_lastTilePx.m_x = moveX;
     m_lastTilePx.m_y = moveY;
@@ -738,10 +732,9 @@ i32 CGrunt::ClaimSwitchTile() {
             break;
     }
 
-    CGruntzMapMgr* b = g_gameReg->GetTileGrid();
     i32 tx = nextX >> TILE_SHIFT_PX;
     i32 ty = nextY >> TILE_SHIFT_PX;
-    i32 flags = b->CellFlagsAt(tx, ty);
+    i32 flags = g_gameReg->GetTileGrid()->CellFlagsAt(tx, ty);
     if ((flags & 0x20000939) || (flags & 0x80)) {
         return 0;
     }
@@ -749,19 +742,13 @@ i32 CGrunt::ClaimSwitchTile() {
     m_triggerMgr->ApplySwitch(this, m_lastTilePx.m_x, m_lastTilePx.m_y);
 
     m_commitPx = m_lastTilePx;
-    CGruntzMapMgr* gb = g_gameReg->GetTileGrid();
-    i32 oldTx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
-    i32 oldTy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
-    gb->m_rows[oldTy][oldTx].m_flags &= BRICKZ_CELL_UNOCCUPIED_MASK;
-    gb->m_rows[oldTy][oldTx].m_occupantId = -1;
+    g_gameReg->GetTileGrid()->ReleaseCellOccupancy(
+        m_lastTilePx.m_x >> TILE_SHIFT_PX,
+        m_lastTilePx.m_y >> TILE_SHIFT_PX
+    );
+    g_gameReg->GetTileGrid()->AcquireCellOccupancy(tx, ty, m_playerIndex, m_unitIndex);
 
-    CGruntzMapMgr* nb = g_gameReg->GetTileGrid();
-    i32 owner = (m_playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | m_unitIndex;
-    nb->m_rows[ty][tx].m_flags |= BRICKZ_CELL_OCCUPIED;
-    nb->m_rows[ty][tx].m_occupantId = owner;
-
-    m_lastTilePx.m_x = nextX;
-    m_lastTilePx.m_y = nextY;
+    m_lastTilePx.Set(nextX, nextY);
     ComputeFacing(1.0);
     m_arrivalPending = true;
     return 1;
@@ -775,13 +762,12 @@ i32 CGrunt::SetArrivalTarget(
     i32 targetPxY
 ) {
     Coord cell;
-    SET_VECTOR2_COMPONENTS(cell, targetPlayerIndex, targetUnitIndex);
+    cell.Set(targetPlayerIndex, targetUnitIndex);
     m_arrivalCell = cell;
     m_arrivalActive = true;
-    SET_VECTOR2_COMPONENTS(
-        m_defenderPx,
-        SNAP_TILE_CENTER_COMPONENT(targetPxX),
-        SNAP_TILE_CENTER_COMPONENT(targetPxY)
+    m_defenderPx.Set(
+        (targetPxX & ~TILE_MASK_PX) + TILE_HALF_PX,
+        (targetPxY & ~TILE_MASK_PX) + TILE_HALF_PX
     );
     return 1;
 }
@@ -808,13 +794,7 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spaw
         return 1;
     }
     i32 flags = g_gameReg->m_tileGrid->CellFlagsAt(tileX, tileY);
-    if ((flags
-         & IDX(
-             CELL_FLAG_SOLID | CELL_FLAG_BRIDGE | CELL_FLAG_GRUNT_ENTRANCE_AREA
-             | CELL_FLAG_DESTRUCTIBLE_ROCK | CELL_FLAG_WATER | CELL_FLAG_SPIKES
-             | CELL_FLAG_SINK_HAZARD
-         ))
-        || (flags & IDX(CELL_FLAG_SPECIAL | CELL_FLAG_ARROW))) {
+    if ((flags & 0xd39) || (flags & 0x82)) {
         return 0;
     }
 
@@ -829,18 +809,10 @@ i32 CGrunt::TryTeleportToCell(i32 tileX, i32 tileY, b32 useSecretColor, b32 spaw
     }
     eq = ANIMATION_ACT_EQUALS("I");
     if (eq) {
-
         if (m_entranceReason == PICKUP_WAND) {
             g_gameReg->m_voiceManager->StopVoice(m_object->m_objectId);
         }
-        m_triggerMgr->LoadTileArrivalFx(
-            m_playerIndex,
-            m_unitIndex,
-            m_moveTile.m_x,
-            m_moveTile.m_y,
-            m_entranceReason,
-            WWDDRAW_NO_ANIMATION
-        );
+        ClearMoveTileFx(this);
         if (m_entranceReason != PICKUP_BOMB) {
             goto applyTail;
         }
@@ -882,17 +854,12 @@ applyTail:
     m_triggerMgr->ApplySwitch(this, m_object->m_screenPosition.m_x, m_object->m_screenPosition.m_y);
     {
         DECLARE_TILE_CENTER_PIXEL_PAIR(spawnPx, spawnPy, tileX, tileY)
-        m_object->m_screenPosition.m_x = spawnPx;
-        m_object->m_screenPosition.m_y = spawnPy;
-        {
-            CGruntzMapMgr* board = g_gameReg->m_tileGrid;
-            i32 gx = m_lastTilePx.m_x >> TILE_SHIFT_PX;
-            i32 gy = m_lastTilePx.m_y >> TILE_SHIFT_PX;
-            board->m_rows[gy][gx].m_flags &= BRICKZ_CELL_UNOCCUPIED_MASK;
-            board->m_rows[gy][gx].m_occupantId = -1;
-            m_lastTilePx.m_x = -1;
-            m_lastTilePx.m_y = -1;
-        }
+        SET_SCREEN_POS(m_object, spawnPx, spawnPy);
+        g_gameReg->m_tileGrid->ReleaseCellOccupancy(
+            m_lastTilePx.m_x >> TILE_SHIFT_PX,
+            m_lastTilePx.m_y >> TILE_SHIFT_PX
+        );
+        m_lastTilePx.Set(-1, -1);
         SetEntrancePos(1, 1);
         if (CoordCount() != 0) {
             RECYCLE_GRUNT_COORDS(this)
@@ -957,14 +924,14 @@ i32 CGrunt::SerializeDispatch(
             break;
     }
     m_entranceCell.Serialize(ar, mode, typeId, object);
-    SerializeClockPair(ar, mode, &m_toyClock);
-    SerializeClockPair(ar, mode, &m_idleAnchor);
-    SerializeClockPair(ar, mode, &m_idleTimer);
-    SerializeClockPair(ar, mode, &m_entranceClock64);
-    SerializeClockPair(ar, mode, &m_flashClock64);
-    SerializeClockPair(ar, mode, &m_attackClock64);
-    SerializeClockPair(ar, mode, &m_combatClock64);
-    SerializeClockPair(ar, mode, &m_hudRetireClock64);
+    SerializeClockPair(ar, mode, &m_toyTiming);
+    SerializeClockPair(ar, mode, &m_idleDelayTiming);
+    SerializeClockPair(ar, mode, &m_idleWindowTiming);
+    SerializeClockPair(ar, mode, &m_entranceTiming);
+    SerializeClockPair(ar, mode, &m_flashTiming);
+    SerializeClockPair(ar, mode, &m_attackTiming);
+    SerializeClockPair(ar, mode, &m_combatTiming);
+    SerializeClockPair(ar, mode, &m_hudRetireTiming);
     m_wingzTiming.Serialize(ar, mode, typeId, object);
     m_conversionTiming.Serialize(ar, mode, typeId, object);
     m_shimmerTiming.Serialize(ar, mode, typeId, object);
@@ -1061,168 +1028,24 @@ i32 CGrunt::Save(CFileMemBase* ar) {
     memset(nameBuffer, 0, SERIAL_NAME_LEN);
     strcpy(nameBuffer, m_deathFrameSetName);
     ar->Write(nameBuffer, SERIAL_NAME_LEN);
-    g_serialCounter++;
-    memset(nameBuffer, 0, SERIAL_NAME_LEN);
-    {
-        CAniElement* animation = m_poseWalk;
-        if (animation) {
-            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
-        }
-    }
-    ar->Write(nameBuffer, SERIAL_NAME_LEN);
-    g_serialCounter++;
-    memset(nameBuffer, 0, SERIAL_NAME_LEN);
-    {
-        CAniElement* animation = AT(m_poseAttack, GRUNT_ATTACK1);
-        if (animation) {
-            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
-        }
-    }
-    ar->Write(nameBuffer, SERIAL_NAME_LEN);
-    g_serialCounter++;
-    memset(nameBuffer, 0, SERIAL_NAME_LEN);
-    {
-        CAniElement* animation = AT(m_poseAttack, GRUNT_ATTACK2);
-        if (animation) {
-            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
-        }
-    }
-    ar->Write(nameBuffer, SERIAL_NAME_LEN);
-    g_serialCounter++;
-    memset(nameBuffer, 0, SERIAL_NAME_LEN);
-    {
-        CAniElement* animation = m_poseAttackIdle;
-        if (animation) {
-            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
-        }
-    }
-    ar->Write(nameBuffer, SERIAL_NAME_LEN);
-    g_serialCounter++;
-    memset(nameBuffer, 0, SERIAL_NAME_LEN);
-    {
-        CAniElement* animation = AT(m_poseStruck, GRUNT_STRUCK1);
-        if (animation) {
-            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
-        }
-    }
-    ar->Write(nameBuffer, SERIAL_NAME_LEN);
-    g_serialCounter++;
-    memset(nameBuffer, 0, SERIAL_NAME_LEN);
-    {
-        CAniElement* animation = AT(m_poseStruck, GRUNT_STRUCK2);
-        if (animation) {
-            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
-        }
-    }
-    ar->Write(nameBuffer, SERIAL_NAME_LEN);
-    g_serialCounter++;
-    memset(nameBuffer, 0, SERIAL_NAME_LEN);
-    {
-        CAniElement* animation = AT(m_poseIdle, GRUNT_IDLE1);
-        if (animation) {
-            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
-        }
-    }
-    ar->Write(nameBuffer, SERIAL_NAME_LEN);
-    g_serialCounter++;
-    memset(nameBuffer, 0, SERIAL_NAME_LEN);
-    {
-        CAniElement* animation = AT(m_poseIdle, GRUNT_IDLE2);
-        if (animation) {
-            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
-        }
-    }
-    ar->Write(nameBuffer, SERIAL_NAME_LEN);
-    g_serialCounter++;
-    memset(nameBuffer, 0, SERIAL_NAME_LEN);
-    {
-        CAniElement* animation = AT(m_poseIdle, GRUNT_IDLE3);
-        if (animation) {
-            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
-        }
-    }
-    ar->Write(nameBuffer, SERIAL_NAME_LEN);
-    g_serialCounter++;
-    memset(nameBuffer, 0, SERIAL_NAME_LEN);
-    {
-        CAniElement* animation = AT(m_poseIdle, GRUNT_IDLE4);
-        if (animation) {
-            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
-        }
-    }
-    ar->Write(nameBuffer, SERIAL_NAME_LEN);
-    g_serialCounter++;
-    memset(nameBuffer, 0, SERIAL_NAME_LEN);
-    {
-        CAniElement* animation = AT(m_poseIdle, GRUNT_IDLE5);
-        if (animation) {
-            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
-        }
-    }
-    ar->Write(nameBuffer, SERIAL_NAME_LEN);
-    g_serialCounter++;
-    memset(nameBuffer, 0, SERIAL_NAME_LEN);
-    {
-        CAniElement* animation = m_poseDeath;
-        if (animation) {
-            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
-        }
-    }
-    ar->Write(nameBuffer, SERIAL_NAME_LEN);
-    g_serialCounter++;
-    memset(nameBuffer, 0, SERIAL_NAME_LEN);
-    {
-        CAniElement* animation = AT(m_poseToy, GRUNT_TOY1);
-        if (animation) {
-            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
-        }
-    }
-    ar->Write(nameBuffer, SERIAL_NAME_LEN);
-    g_serialCounter++;
-    memset(nameBuffer, 0, SERIAL_NAME_LEN);
-    {
-        CAniElement* animation = AT(m_poseToy, GRUNT_TOY2);
-        if (animation) {
-            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
-        }
-    }
-    ar->Write(nameBuffer, SERIAL_NAME_LEN);
-    g_serialCounter++;
-    memset(nameBuffer, 0, SERIAL_NAME_LEN);
-    {
-        CAniElement* animation = AT(m_poseToy, GRUNT_TOY_BREAK);
-        if (animation) {
-            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
-        }
-    }
-    ar->Write(nameBuffer, SERIAL_NAME_LEN);
-    g_serialCounter++;
-    memset(nameBuffer, 0, SERIAL_NAME_LEN);
-    {
-        CAniElement* animation = AT(m_poseItem, GRUNT_ITEM1);
-        if (animation) {
-            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
-        }
-    }
-    ar->Write(nameBuffer, SERIAL_NAME_LEN);
-    g_serialCounter++;
-    memset(nameBuffer, 0, SERIAL_NAME_LEN);
-    {
-        CAniElement* animation = AT(m_poseItem, GRUNT_ITEM2);
-        if (animation) {
-            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
-        }
-    }
-    ar->Write(nameBuffer, SERIAL_NAME_LEN);
-    g_serialCounter++;
-    memset(nameBuffer, 0, SERIAL_NAME_LEN);
-    {
-        CAniElement* animation = m_pickupGeoSrc;
-        if (animation) {
-            strcpy(nameBuffer, world->m_animRegistry->FindAnimationKey(animation));
-        }
-    }
-    ar->Write(nameBuffer, SERIAL_NAME_LEN);
+    SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, m_poseWalk);
+    SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, AT(m_poseAttack, GRUNT_ATTACK1));
+    SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, AT(m_poseAttack, GRUNT_ATTACK2));
+    SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, m_poseAttackIdle);
+    SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, AT(m_poseStruck, GRUNT_STRUCK1));
+    SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, AT(m_poseStruck, GRUNT_STRUCK2));
+    SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, AT(m_poseIdle, GRUNT_IDLE1));
+    SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, AT(m_poseIdle, GRUNT_IDLE2));
+    SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, AT(m_poseIdle, GRUNT_IDLE3));
+    SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, AT(m_poseIdle, GRUNT_IDLE4));
+    SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, AT(m_poseIdle, GRUNT_IDLE5));
+    SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, m_poseDeath);
+    SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, AT(m_poseToy, GRUNT_TOY1));
+    SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, AT(m_poseToy, GRUNT_TOY2));
+    SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, AT(m_poseToy, GRUNT_TOY_BREAK));
+    SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, AT(m_poseItem, GRUNT_ITEM1));
+    SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, AT(m_poseItem, GRUNT_ITEM2));
+    SERIAL_WRITE_ANIMATION(ar, world, nameBuffer, m_pickupGeoSrc);
     ar->Write(&m_reserved18c, sizeof(m_reserved18c));
     ar->Write(&m_toyBlendPct, sizeof(m_toyBlendPct));
     ar->Write(&m_brickPickupType, sizeof(m_brickPickupType));

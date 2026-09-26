@@ -76,6 +76,8 @@ RVA_DYNINIT(0x0016dfe0, 0x10, zPTree::ceh)
 DATA(0x002bf480)
 zErrHandler zPTree::ceh("zSymTab: ");
 
+RVA_DYNINIT(0x0016e180, 0x5, zErrHandler::dl)
+RVA_DYNINIT(0x0016e190, 0x1, zErrHandler::dl)
 DATA(0x002bf498)
 _dhandler zErrHandler::dl[32];
 DATA(0x002bf618)
@@ -151,7 +153,6 @@ istream& ReadCurve(istream& accum, CMotionState& c) {
     return accum;
 }
 
-// @early-stop
 RVA(0x0016d190, 0x101)
 void* zPTree::lookup(const char* key) {
     if (key == NULL) {
@@ -165,8 +166,11 @@ void* zPTree::lookup(const char* key) {
     if (m_p == NULL) {
         return NULL;
     }
-    i32 branch = m_p->m_index;
-    while (branch <= m_sbits) {
+    for (;;) {
+        i32 branch = m_p->m_index;
+        if (branch > m_sbits) {
+            break;
+        }
         m_q = m_p->ptr(bit(key, branch));
         if (m_q == NULL) {
             return NULL;
@@ -179,7 +183,6 @@ void* zPTree::lookup(const char* key) {
             return NULL;
         }
         m_p = m_q;
-        branch = m_p->m_index;
     }
     m_q = m_p;
     return NULL;
@@ -470,22 +473,18 @@ i32 _zdvec::realloc(i32 idx, i32 at) {
         memcpy(static_cast<char*>(init) + shift * size, p, oldbytes);
         memset(init, 0, initcount * size);
         lo = idx;
-        vec = p;
-        // PROVEN: the integer status preserves the allocated-address bits on success.
-        return reinterpret_cast<i32>(p);
+    } else {
+        idx += at;
+        p = static_cast<char*>(::realloc(vec, (idx - lo + 1) * size));
+        if (!p) {
+            handle(g_out_of_memory, 0x22);
+            return 0;
+        }
+        init = p + (hi - lo + 1) * size;
+        initcount = idx - hi;
+        memset(init, 0, initcount * size);
+        hi = idx;
     }
-    idx += at;
-    p = static_cast<char*>(::realloc(vec, (idx - lo + 1) * size));
-    if (!p) {
-        handle(g_out_of_memory, 0x22);
-        return 0;
-    }
-    i32 oldbytes = (hi - lo + 1) * size;
-    char* fill = p + oldbytes;
-    initcount = idx - hi;
-    init = fill;
-    memset(fill, 0, initcount * size);
-    hi = idx;
     vec = p;
     // PROVEN: the integer status preserves the allocated-address bits on success.
     return reinterpret_cast<i32>(p);
@@ -771,17 +770,17 @@ erf_t zErrHandler::set_ef(void* o, erf_t f) {
         }
         dl[slot].handler = f;
         dl[slot].object = o;
-        ndh = ndh + 1;
         dl[slot].lasterr = 0;
+        ndh = ndh + 1;
         return NULL;
     } else {
         erf_t t = dl[rv].handler;
         if (f != NULL) {
             dl[rv].handler = f;
-            return t;
+        } else {
+            memcpy(&dl[slot], &dl[slot + 1], (ndh - slot - 1) * sizeof(_dhandler));
+            ndh = ndh - 1;
         }
-        memcpy(&dl[slot], &dl[slot + 1], (ndh - slot - 1) * sizeof(_dhandler));
-        ndh = ndh - 1;
         return t;
     }
 }

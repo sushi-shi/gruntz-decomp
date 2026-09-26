@@ -21,6 +21,7 @@
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPuddle.h>
+#include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/MapCellFlags.h>
@@ -51,10 +52,13 @@ i32 CGrunt::StepDefenderBehavior() {
     i32 scanRadius = m_defenderRadius + m_reachRect.right - 1;
     i32 trimRadius = m_defenderRadius - 1;
     RECT scanBounds;
-    scanBounds.left = defenderTile.m_x - scanRadius;
-    scanBounds.top = defenderTile.m_y - scanRadius;
-    scanBounds.right = defenderTile.m_x + scanRadius + 1;
-    scanBounds.bottom = defenderTile.m_y + scanRadius + 1;
+    SET_RECT_COMPONENTS(
+        scanBounds,
+        defenderTile.m_x - scanRadius,
+        defenderTile.m_y - scanRadius,
+        defenderTile.m_x + scanRadius + 1,
+        defenderTile.m_y + scanRadius + 1
+    );
 
     {
         Coord pt;
@@ -129,16 +133,7 @@ i32 CGrunt::StepDefenderBehavior() {
 
         if (radius < m_defenderRadius + m_reachRect.right) {
             if (m_blockedVoicePending != false) {
-                CGruntzMgr* gameMgr = g_gameReg;
-                const RECT* view = &gameMgr->m_world->m_level->m_mainPlane->m_planeViewRect;
-                if (CGameLevel::PointInBounds(
-                        view,
-                        m_object->m_screenPosition.m_x,
-                        m_object->m_screenPosition.m_y
-                    )
-                    != 0) {
-                    gameMgr->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
-                }
+                PLAY_VOICE_IF_VISIBLE(0x366);
                 m_blockedVoicePending = false;
             }
 

@@ -4,7 +4,9 @@
 #include <Gruntz/CoordPool.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDirectionOffset.h>
+#include <Gruntz/GruntAiState.h>
 #include <Gruntz/TriggerMgr.h>
+#include <Wwd/WwdAniDrawValue.h>
 
 inline i32 IsGruntAtSavedScreenPos(CGrunt* grunt) {
     return COORD_EQUALS_COMPONENTS(
@@ -64,6 +66,47 @@ inline CGrunt* FindNearestEnemyAtTarget(CGrunt* grunt, i32* atTarget) {
     *atTarget = 0;
     MarkNearestEnemyAtTarget(grunt, target, atTarget);
     return target;
+}
+
+inline void ClearMoveTileFx(CGrunt* grunt) {
+    grunt->m_triggerMgr->LoadTileArrivalFx(
+        grunt->m_playerIndex,
+        grunt->m_unitIndex,
+        grunt->m_moveTile.m_x,
+        grunt->m_moveTile.m_y,
+        grunt->m_entranceReason,
+        WWDDRAW_NO_ANIMATION
+    );
+}
+
+inline void UnregisterFromBoard(CGrunt* grunt, i32 exitedLevel) {
+    if (grunt->m_cellRemovalNotified == false) {
+        grunt->m_triggerMgr->UnregisterUnit(grunt->m_playerIndex, grunt->m_unitIndex, exitedLevel);
+    }
+}
+
+inline void SetGruntNeighbor(CGrunt* grunt, i32 playerIndex, i32 unitIndex) {
+    grunt->m_neighborPlayerIndex = playerIndex;
+    grunt->m_neighborUnitIndex = unitIndex;
+}
+
+inline void ResetToSeek(CGrunt* grunt) {
+    UNSET_COORD(grunt->m_arrivalCell);
+    grunt->m_defenderState = AISTATE_SEEK;
+}
+
+inline void RepathToward(CGrunt* grunt, CGrunt* target) {
+    if (static_cast<u32>(grunt->m_dwell) > DWELL_REPATH_MS) {
+        grunt->StepArrivalDrop(
+            target->m_lastTilePx.m_x,
+            target->m_lastTilePx.m_y,
+            0,
+            grunt->m_arrivalFlags,
+            1,
+            0
+        );
+        grunt->m_dwell = 0;
+    }
 }
 
 inline void CGrunt::MirrorAcrossArrival() {

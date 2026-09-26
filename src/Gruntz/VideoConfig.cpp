@@ -12,6 +12,7 @@
 #include <Gruntz/Play.h>
 #include <Gruntz/Resolution.h>
 #include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueInline.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/StartUpPrompt.h>
@@ -495,23 +496,12 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
             return;
         }
         SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-        if (registry->m_silentMode) {
-            return;
+        if (registry->m_silentMode == false) {
+            SoundCue* cue = registry->FindCue("GAME_VOICE");
+            if (cue != NULL) {
+                PlaySoundCueIfElapsed(cue, newpos, 0, 0, false);
+            }
         }
-        SoundCue* found = registry->FindCue("GAME_VOICE");
-        SoundCue* cue = found;
-        if (!cue) {
-            return;
-        }
-        if (!g_soundEnabled) {
-            return;
-        }
-        if (static_cast<u32>((g_soundCueTimeMs - cue->m_lastPlayTimeMs))
-            < static_cast<u32>(cue->m_replayDelayMs)) {
-            return;
-        }
-        cue->m_lastPlayTimeMs = g_soundCueTimeMs;
-        cue->m_sound->AcquireAndPlay(newpos, 0, 0, false);
         return;
     }
     if (hCtrl == GetDlgItem(hDlg, 0x470)) {
@@ -519,26 +509,7 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         if (code == SB_THUMBTRACK) {
             return;
         }
-        SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-        if (registry->m_silentMode) {
-            return;
-        }
-        SoundCue* found = registry->FindCue("GAME_CHIPFALLOUT");
-        SoundCue* cue = found;
-        if (!cue) {
-            return;
-        }
-        b32 soundEnabled = g_soundEnabled;
-        i32 volumePercent = g_soundVolumePercent;
-        if (!soundEnabled) {
-            return;
-        }
-        if (static_cast<u32>((g_soundCueTimeMs - cue->m_lastPlayTimeMs))
-            < static_cast<u32>(cue->m_replayDelayMs)) {
-            return;
-        }
-        cue->m_lastPlayTimeMs = g_soundCueTimeMs;
-        cue->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
+        PlayRegistryCueIfElapsed(g_gameReg->m_world->m_soundRegistry, "GAME_CHIPFALLOUT");
         return;
     }
 }

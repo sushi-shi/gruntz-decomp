@@ -62,6 +62,13 @@ public:
         return m_palette;
     }
 
+    PALETTEENTRY* GetActivePalette() {
+        if (m_hasPalette) {
+            return m_palette;
+        }
+        return NULL;
+    }
+
     ColorDepth GetDisplayColorDepth() const {
         return m_displayColorDepth;
     }
@@ -172,6 +179,16 @@ public:
     CPtrList m_surfaces;
     CPtrList m_palettes;
     CPtrArray m_displayModes;
+
+    DDSURFACEDESC* GetModeDesc(i32 index) {
+        return static_cast<DDSURFACEDESC*>(m_displayModes.GetAt(index));
+    }
+    void FreeDisplayModes() {
+        for (i32 i = 0; i < m_displayModes.GetSize(); i++) {
+            delete GetModeDesc(i);
+        }
+        m_displayModes.SetSize(0, -1);
+    }
     DDSURFACEDESC m_surfaceDesc;
     i32 m_bankSwitchedCaps;
 

@@ -40,6 +40,7 @@ all read).
 | `gruntz verify status` | `gruntz.verify.verbs` | current summary + the rva-keyed regression report; always exit 0 |
 | `gruntz verify check` | `gruntz.verify.verbs` | the same computation as a GATE; `--tier fast\|normal\|full\|link` runs the gate tiers |
 | `gruntz verify bank` | `gruntz.verify.verbs` | MANUAL: update `config/match_baseline.tsv` + the README score block |
+| `gruntz verify readme` | `gruntz.verify.verbs` | re-render the README score block from the current report + ledger; a default `gruntz build` edge |
 | `gruntz verify fingerprints` | `gruntz.verify.fingerprints` | refresh the per-function source-fingerprint cache |
 | `gruntz verify selftest` | `gruntz.verify.selftest` | the NEGATIVE controls: feed every gate a known violation, assert it fails |
 | `gruntz verify compiler-artifacts` | `gruntz.verify.compiler_artifacts` | reject explicit allocation/deallocation calls, forced-emission helpers, and unreviewed raw-storage or low-level lifetime seams; `--base-only` prints derived unpaired COFF definitions |
@@ -79,6 +80,7 @@ certification (trading one cross-jump for another) raised it.
 | `gruntz walls inventory` | `gruntz.walls.inventory` | the DERIVED worklist (report × Model × baseline), ascending historical MAX |
 | `gruntz walls abstractions` | `gruntz.walls.abstractions` | source-aware semantic routing for every sub-100 row: identity/object/call/textual/algorithm/expression |
 | `gruntz walls diagnose <fn>` | `gruntz.walls.diagnose` | classify one wall: referent → inline/call-set → cfg → regalloc |
+| `gruntz walls switchmap <fn>` | `gruntz.walls.switchmap` | switch jump tables: cases whose arm mapping differs from retail (`--all`: every sub-100 row) |
 | `gruntz walls inline-model` | `gruntz.walls.inline_model` | the cl 5.0 inline-budget model (`--gap`, `--measure-cb`) |
 | `gruntz walls aggregate-copies` | `gruntz.walls.aggregate_copies` | `rep movs` count sieve — source/CFG lead; rule out merged duplicate blocks before inferring an object |
 | `gruntz walls eh-frame` | `gruntz.walls.eh_frame` | `/GX` frame-presence + unwind-state sieve, cause-tagged |
@@ -97,7 +99,8 @@ classified bounded permutation is the evidence generator below.
 | `gruntz permute variants` | `gruntz.permute.match_variants` | reviewed exact-span axes × conservative libclang shapes × every requested TU state |
 
 Both public verbs first run `gruntz walls diagnose` and accept only a
-regalloc/scheduling wall whose historical MAX is below 100. Source is restored
+regalloc/scheduling wall whose MAX is below 100 (lost matches with HIST = 100
+are allowed). Source is restored
 after every compile and checked again byte-for-byte; `state` additionally checks
 the per-function fingerprint.
 Exact means unrounded 100%, retail size, and identical ordered relocation

@@ -144,8 +144,8 @@ double CMotionState::ArrivalVelX(double target) {
     if (m_acceleration.m_x == g_motionZero) {
         return m_velocity.m_x;
     }
-    double delta = (target - m_position.m_x) * m_acceleration.m_x;
-    double disc = SQR(m_velocity.m_x) - delta * g_motionNegTwo;
+    double disc = m_velocity.m_x * m_velocity.m_x
+                  - (target - m_position.m_x) * m_acceleration.m_x * g_motionNegTwo;
     if (g_motionZero > disc) {
         disc = g_motionZero;
     }
@@ -158,8 +158,8 @@ double CMotionState::ArrivalVelY(double target) {
     if (m_acceleration.m_y == g_motionZero) {
         return m_velocity.m_y;
     }
-    double delta = (target - m_position.m_y) * m_acceleration.m_y;
-    double disc = SQR(m_velocity.m_y) - delta * g_motionNegTwo;
+    double disc = m_velocity.m_y * m_velocity.m_y
+                  - (target - m_position.m_y) * m_acceleration.m_y * g_motionNegTwo;
     if (g_motionZero > disc) {
         disc = g_motionZero;
     }

@@ -5,6 +5,7 @@
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntIdentity.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/MapCellInline.h>
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/TileGrid.h>
 #include <Gruntz/TriggerMgr.h>
@@ -12,6 +13,77 @@
 #include <Wap32/TileGeometry.h>
 
 #include <stddef.h>
+
+#define TM_TRY_STEP(step, x, y, direction)                                                         \
+    {                                                                                              \
+        *pCell = *step.Set(x, y);                                                                  \
+    }                                                                                              \
+    {                                                                                              \
+        i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(                                          \
+            pCell->m_x >> TILE_SHIFT_PX,                                                           \
+            pCell->m_y >> TILE_SHIFT_PX                                                            \
+        );                                                                                         \
+        *pFlags = cell;                                                                            \
+        if (TmFlagsAllow(cell, mask, pass)) {                                                      \
+            return direction;                                                                      \
+        }                                                                                          \
+    }
+
+#define TM_TRY_DIAGONAL(step, ySide, xSide, x, y, direction)                                       \
+    {                                                                                              \
+        *pCell = *step.Set(x, y);                                                                  \
+    }                                                                                              \
+    {                                                                                              \
+        i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(                                          \
+            pCell->m_x >> TILE_SHIFT_PX,                                                           \
+            pCell->m_y >> TILE_SHIFT_PX                                                            \
+        );                                                                                         \
+        *pFlags = cell;                                                                            \
+        if (TmFlagsAllow(cell, mask, pass)) {                                                      \
+            ySide.Set(lastX, y);                                                                   \
+            xSide.Set(x, lastY);                                                                   \
+            sideY = g_gameReg->GetTileGrid()->CellFlagsAt(                                         \
+                ySide.m_x >> TILE_SHIFT_PX,                                                        \
+                ySide.m_y >> TILE_SHIFT_PX                                                         \
+            );                                                                                     \
+            i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(                                     \
+                xSide.m_x >> TILE_SHIFT_PX,                                                        \
+                xSide.m_y >> TILE_SHIFT_PX                                                         \
+            );                                                                                     \
+            if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0                                             \
+                && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {                                       \
+                return direction;                                                                  \
+            }                                                                                      \
+        }                                                                                          \
+    }
+
+#define TM_TRY_DIAGONAL_COPY(step, ySide, xSide, x, y, direction)                                  \
+    {                                                                                              \
+        *pCell = *step.Set(x, y);                                                                  \
+    }                                                                                              \
+    {                                                                                              \
+        i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(                                          \
+            pCell->m_x >> TILE_SHIFT_PX,                                                           \
+            pCell->m_y >> TILE_SHIFT_PX                                                            \
+        );                                                                                         \
+        *pFlags = cell;                                                                            \
+        if (TmFlagsAllow(cell, mask, pass)) {                                                      \
+            Coord sideYStep = *ySide.Set(lastX, y);                                                \
+            Coord sideXStep = *xSide.Set(x, lastY);                                                \
+            sideY = g_gameReg->GetTileGrid()->CellFlagsAt(                                         \
+                sideYStep.m_x >> TILE_SHIFT_PX,                                                    \
+                sideYStep.m_y >> TILE_SHIFT_PX                                                     \
+            );                                                                                     \
+            i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(                                     \
+                sideXStep.m_x >> TILE_SHIFT_PX,                                                    \
+                sideXStep.m_y >> TILE_SHIFT_PX                                                     \
+            );                                                                                     \
+            if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0                                             \
+                && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {                                       \
+                return direction;                                                                  \
+            }                                                                                      \
+        }                                                                                          \
+    }
 
 // @early-stop
 RVA(0x0006f2f0, 0x5227)
@@ -220,7 +292,7 @@ GruntDirectionCell __stdcall TmDeflectStep(
 
     i32 sideY;
     Coord entrance = g->EntrancePx();
-    if (COORD_EQUALS_COMPONENTS(entrance, goalX, goalY)) {
+    if (entrance.m_x == goalX && entrance.m_y == goalY) {
         return s_gruntDirCenter;
     }
     i32 mask = g->m_arrivalFlags | BRICKZ_CELL_OCCUPIED;
@@ -236,20 +308,20 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
+                        pCell->m_x >> TILE_SHIFT_PX,
+                        pCell->m_y >> TILE_SHIFT_PX
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
                         northEastGoalNorthWestNorthSide.Set(lastX, (lastY - TILE_SIZE_PX));
                         northEastGoalNorthWestWestSide.Set((lastX - TILE_SIZE_PX), lastY);
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(northEastGoalNorthWestNorthSide.m_x),
-                            SCREEN_TILE_COMPONENT(northEastGoalNorthWestNorthSide.m_y)
+                            northEastGoalNorthWestNorthSide.m_x >> TILE_SHIFT_PX,
+                            northEastGoalNorthWestNorthSide.m_y >> TILE_SHIFT_PX
                         );
                         i32 sideX = g_gameReg->m_tileGrid->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(northEastGoalNorthWestWestSide.m_x),
-                            SCREEN_TILE_COMPONENT(northEastGoalNorthWestWestSide.m_y)
+                            northEastGoalNorthWestWestSide.m_x >> TILE_SHIFT_PX,
+                            northEastGoalNorthWestWestSide.m_y >> TILE_SHIFT_PX
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -257,39 +329,27 @@ GruntDirectionCell __stdcall TmDeflectStep(
                         }
                     }
                 }
-                {
-                    *pCell = *northEastGoalWestStep.Set(lastX - TILE_SIZE_PX, lastY);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirWest;
-                    }
-                }
+                TM_TRY_STEP(northEastGoalWestStep, lastX - TILE_SIZE_PX, lastY, s_gruntDirWest);
                 {
                     *pCell =
                         *northEastGoalNorthEastStep.Set(lastX + TILE_SIZE_PX, lastY - TILE_SIZE_PX);
                 }
                 {
                     i32 cell = g_gameReg->m_tileGrid->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
+                        pCell->m_x >> TILE_SHIFT_PX,
+                        pCell->m_y >> TILE_SHIFT_PX
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
                         northEastGoalNorthEastNorthSide.Set(lastX, (lastY - TILE_SIZE_PX));
                         northEastGoalNorthEastEastSide.Set((lastX + TILE_SIZE_PX), lastY);
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(northEastGoalNorthEastNorthSide.m_x),
-                            SCREEN_TILE_COMPONENT(northEastGoalNorthEastNorthSide.m_y)
+                            northEastGoalNorthEastNorthSide.m_x >> TILE_SHIFT_PX,
+                            northEastGoalNorthEastNorthSide.m_y >> TILE_SHIFT_PX
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(northEastGoalNorthEastEastSide.m_x),
-                            SCREEN_TILE_COMPONENT(northEastGoalNorthEastEastSide.m_y)
+                            northEastGoalNorthEastEastSide.m_x >> TILE_SHIFT_PX,
+                            northEastGoalNorthEastEastSide.m_y >> TILE_SHIFT_PX
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -297,756 +357,205 @@ GruntDirectionCell __stdcall TmDeflectStep(
                         }
                     }
                 }
-                {
-                    *pCell = *northEastGoalEastStep.Set(lastX + TILE_SIZE_PX, lastY);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirEast;
-                    }
-                }
+                TM_TRY_STEP(northEastGoalEastStep, lastX + TILE_SIZE_PX, lastY, s_gruntDirEast);
                 return s_gruntDirCenter;
             } else if (g->EntrancePx().m_x > goalX) {
-                {
-                    *pCell =
-                        *northWestGoalNorthEastStep.Set(lastX + TILE_SIZE_PX, lastY - TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        northWestGoalNorthEastNorthSide.Set(lastX, (lastY - TILE_SIZE_PX));
-                        northWestGoalNorthEastEastSide.Set((lastX + TILE_SIZE_PX), lastY);
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(northWestGoalNorthEastNorthSide.m_x),
-                            SCREEN_TILE_COMPONENT(northWestGoalNorthEastNorthSide.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(northWestGoalNorthEastEastSide.m_x),
-                            SCREEN_TILE_COMPONENT(northWestGoalNorthEastEastSide.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirNorthEast;
-                        }
-                    }
-                }
-                {
-                    *pCell = *northWestGoalEastStep.Set(lastX + TILE_SIZE_PX, lastY);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirEast;
-                    }
-                }
-                {
-                    *pCell =
-                        *northWestGoalNorthWestStep.Set(lastX - TILE_SIZE_PX, lastY - TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        northWestGoalNorthWestNorthSide.Set(lastX, (lastY - TILE_SIZE_PX));
-                        northWestGoalNorthWestWestSide.Set((lastX - TILE_SIZE_PX), lastY);
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(northWestGoalNorthWestNorthSide.m_x),
-                            SCREEN_TILE_COMPONENT(northWestGoalNorthWestNorthSide.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(northWestGoalNorthWestWestSide.m_x),
-                            SCREEN_TILE_COMPONENT(northWestGoalNorthWestWestSide.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirNorthWest;
-                        }
-                    }
-                }
-                {
-                    *pCell = *northWestGoalWestStep.Set(lastX - TILE_SIZE_PX, lastY);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirWest;
-                    }
-                }
+                TM_TRY_DIAGONAL(
+                    northWestGoalNorthEastStep,
+                    northWestGoalNorthEastNorthSide,
+                    northWestGoalNorthEastEastSide,
+                    lastX + TILE_SIZE_PX,
+                    lastY - TILE_SIZE_PX,
+                    s_gruntDirNorthEast
+                );
+                TM_TRY_STEP(northWestGoalEastStep, lastX + TILE_SIZE_PX, lastY, s_gruntDirEast);
+                TM_TRY_DIAGONAL(
+                    northWestGoalNorthWestStep,
+                    northWestGoalNorthWestNorthSide,
+                    northWestGoalNorthWestWestSide,
+                    lastX - TILE_SIZE_PX,
+                    lastY - TILE_SIZE_PX,
+                    s_gruntDirNorthWest
+                );
+                TM_TRY_STEP(northWestGoalWestStep, lastX - TILE_SIZE_PX, lastY, s_gruntDirWest);
                 return s_gruntDirCenter;
             } else {
-                {
-                    *pCell = *northAlignedGoalNorthWestStep.Set(
-                        lastX - TILE_SIZE_PX,
-                        lastY - TILE_SIZE_PX
-                    );
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        northAlignedGoalNorthWestNorthSide.Set(lastX, (lastY - TILE_SIZE_PX));
-                        northAlignedGoalNorthWestWestSide.Set((lastX - TILE_SIZE_PX), lastY);
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(northAlignedGoalNorthWestNorthSide.m_x),
-                            SCREEN_TILE_COMPONENT(northAlignedGoalNorthWestNorthSide.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(northAlignedGoalNorthWestWestSide.m_x),
-                            SCREEN_TILE_COMPONENT(northAlignedGoalNorthWestWestSide.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirNorthWest;
-                        }
-                    }
-                }
-                {
-                    *pCell = *northAlignedGoalNorthEastStep.Set(
-                        lastX + TILE_SIZE_PX,
-                        lastY - TILE_SIZE_PX
-                    );
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        northAlignedGoalNorthEastNorthSide.Set(lastX, (lastY - TILE_SIZE_PX));
-                        northAlignedGoalNorthEastEastSide.Set((lastX + TILE_SIZE_PX), lastY);
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(northAlignedGoalNorthEastNorthSide.m_x),
-                            SCREEN_TILE_COMPONENT(northAlignedGoalNorthEastNorthSide.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(northAlignedGoalNorthEastEastSide.m_x),
-                            SCREEN_TILE_COMPONENT(northAlignedGoalNorthEastEastSide.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirNorthEast;
-                        }
-                    }
-                }
-                {
-                    *pCell = *northAlignedGoalWestStep.Set(lastX - TILE_SIZE_PX, lastY);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirWest;
-                    }
-                }
-                {
-                    *pCell = *northAlignedGoalEastStep.Set(lastX + TILE_SIZE_PX, lastY);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirEast;
-                    }
-                }
+                TM_TRY_DIAGONAL(
+                    northAlignedGoalNorthWestStep,
+                    northAlignedGoalNorthWestNorthSide,
+                    northAlignedGoalNorthWestWestSide,
+                    lastX - TILE_SIZE_PX,
+                    lastY - TILE_SIZE_PX,
+                    s_gruntDirNorthWest
+                );
+                TM_TRY_DIAGONAL(
+                    northAlignedGoalNorthEastStep,
+                    northAlignedGoalNorthEastNorthSide,
+                    northAlignedGoalNorthEastEastSide,
+                    lastX + TILE_SIZE_PX,
+                    lastY - TILE_SIZE_PX,
+                    s_gruntDirNorthEast
+                );
+                TM_TRY_STEP(northAlignedGoalWestStep, lastX - TILE_SIZE_PX, lastY, s_gruntDirWest);
+                TM_TRY_STEP(northAlignedGoalEastStep, lastX + TILE_SIZE_PX, lastY, s_gruntDirEast);
                 return s_gruntDirCenter;
             }
             break;
         case DIR_SOUTH:
             if (g->EntrancePx().m_x < goalX) {
-                {
-                    *pCell =
-                        *southEastGoalSouthWestStep.Set(lastX - TILE_SIZE_PX, lastY + TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        southEastGoalSouthWestSouthSide.Set(lastX, (lastY + TILE_SIZE_PX));
-                        southEastGoalSouthWestWestSide.Set((lastX - TILE_SIZE_PX), lastY);
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(southEastGoalSouthWestSouthSide.m_x),
-                            SCREEN_TILE_COMPONENT(southEastGoalSouthWestSouthSide.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(southEastGoalSouthWestWestSide.m_x),
-                            SCREEN_TILE_COMPONENT(southEastGoalSouthWestWestSide.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirSouthWest;
-                        }
-                    }
-                }
-                {
-                    *pCell = *southEastGoalWestStep.Set(lastX - TILE_SIZE_PX, lastY);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirWest;
-                    }
-                }
-                {
-                    *pCell =
-                        *southEastGoalSouthEastStep.Set(lastX + TILE_SIZE_PX, lastY + TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        southEastGoalSouthEastSouthSide.Set(lastX, (lastY + TILE_SIZE_PX));
-                        southEastGoalSouthEastEastSide.Set((lastX + TILE_SIZE_PX), lastY);
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(southEastGoalSouthEastSouthSide.m_x),
-                            SCREEN_TILE_COMPONENT(southEastGoalSouthEastSouthSide.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(southEastGoalSouthEastEastSide.m_x),
-                            SCREEN_TILE_COMPONENT(southEastGoalSouthEastEastSide.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirSouthEast;
-                        }
-                    }
-                }
-                {
-                    *pCell = *southEastGoalEastStep.Set(lastX + TILE_SIZE_PX, lastY);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirEast;
-                    }
-                }
+                TM_TRY_DIAGONAL(
+                    southEastGoalSouthWestStep,
+                    southEastGoalSouthWestSouthSide,
+                    southEastGoalSouthWestWestSide,
+                    lastX - TILE_SIZE_PX,
+                    lastY + TILE_SIZE_PX,
+                    s_gruntDirSouthWest
+                );
+                TM_TRY_STEP(southEastGoalWestStep, lastX - TILE_SIZE_PX, lastY, s_gruntDirWest);
+                TM_TRY_DIAGONAL(
+                    southEastGoalSouthEastStep,
+                    southEastGoalSouthEastSouthSide,
+                    southEastGoalSouthEastEastSide,
+                    lastX + TILE_SIZE_PX,
+                    lastY + TILE_SIZE_PX,
+                    s_gruntDirSouthEast
+                );
+                TM_TRY_STEP(southEastGoalEastStep, lastX + TILE_SIZE_PX, lastY, s_gruntDirEast);
                 return s_gruntDirCenter;
             } else if (g->EntrancePx().m_x > goalX) {
-                {
-                    *pCell =
-                        *southWestGoalSouthEastStep.Set(lastX + TILE_SIZE_PX, lastY + TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        southWestGoalSouthEastSouthSide.Set(lastX, (lastY + TILE_SIZE_PX));
-                        southWestGoalSouthEastEastSide.Set((lastX + TILE_SIZE_PX), lastY);
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(southWestGoalSouthEastSouthSide.m_x),
-                            SCREEN_TILE_COMPONENT(southWestGoalSouthEastSouthSide.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(southWestGoalSouthEastEastSide.m_x),
-                            SCREEN_TILE_COMPONENT(southWestGoalSouthEastEastSide.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirSouthEast;
-                        }
-                    }
-                }
-                {
-                    *pCell = *southWestGoalEastStep.Set(lastX + TILE_SIZE_PX, lastY);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirEast;
-                    }
-                }
-                {
-                    *pCell =
-                        *southWestGoalSouthWestStep.Set(lastX - TILE_SIZE_PX, lastY + TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        southWestGoalSouthWestSouthSide.Set(lastX, (lastY + TILE_SIZE_PX));
-                        southWestGoalSouthWestWestSide.Set((lastX - TILE_SIZE_PX), lastY);
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(southWestGoalSouthWestSouthSide.m_x),
-                            SCREEN_TILE_COMPONENT(southWestGoalSouthWestSouthSide.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(southWestGoalSouthWestWestSide.m_x),
-                            SCREEN_TILE_COMPONENT(southWestGoalSouthWestWestSide.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirSouthWest;
-                        }
-                    }
-                }
-                {
-                    *pCell = *southWestGoalWestStep.Set(lastX - TILE_SIZE_PX, lastY);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirWest;
-                    }
-                }
+                TM_TRY_DIAGONAL(
+                    southWestGoalSouthEastStep,
+                    southWestGoalSouthEastSouthSide,
+                    southWestGoalSouthEastEastSide,
+                    lastX + TILE_SIZE_PX,
+                    lastY + TILE_SIZE_PX,
+                    s_gruntDirSouthEast
+                );
+                TM_TRY_STEP(southWestGoalEastStep, lastX + TILE_SIZE_PX, lastY, s_gruntDirEast);
+                TM_TRY_DIAGONAL(
+                    southWestGoalSouthWestStep,
+                    southWestGoalSouthWestSouthSide,
+                    southWestGoalSouthWestWestSide,
+                    lastX - TILE_SIZE_PX,
+                    lastY + TILE_SIZE_PX,
+                    s_gruntDirSouthWest
+                );
+                TM_TRY_STEP(southWestGoalWestStep, lastX - TILE_SIZE_PX, lastY, s_gruntDirWest);
             } else {
-                {
-                    *pCell = *southAlignedGoalSouthWestStep.Set(
-                        lastX - TILE_SIZE_PX,
-                        lastY + TILE_SIZE_PX
-                    );
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        southAlignedGoalSouthWestSouthSide.Set(lastX, (lastY + TILE_SIZE_PX));
-                        southAlignedGoalSouthWestWestSide.Set((lastX - TILE_SIZE_PX), lastY);
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(southAlignedGoalSouthWestSouthSide.m_x),
-                            SCREEN_TILE_COMPONENT(southAlignedGoalSouthWestSouthSide.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(southAlignedGoalSouthWestWestSide.m_x),
-                            SCREEN_TILE_COMPONENT(southAlignedGoalSouthWestWestSide.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirSouthWest;
-                        }
-                    }
-                }
-                {
-                    *pCell = *southAlignedGoalSouthEastStep.Set(
-                        lastX + TILE_SIZE_PX,
-                        lastY + TILE_SIZE_PX
-                    );
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        southAlignedGoalSouthEastSouthSide.Set(lastX, (lastY + TILE_SIZE_PX));
-                        southAlignedGoalSouthEastEastSide.Set((lastX + TILE_SIZE_PX), lastY);
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(southAlignedGoalSouthEastSouthSide.m_x),
-                            SCREEN_TILE_COMPONENT(southAlignedGoalSouthEastSouthSide.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(southAlignedGoalSouthEastEastSide.m_x),
-                            SCREEN_TILE_COMPONENT(southAlignedGoalSouthEastEastSide.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirSouthEast;
-                        }
-                    }
-                }
-                {
-                    *pCell = *southAlignedGoalWestStep.Set(lastX - TILE_SIZE_PX, lastY);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirWest;
-                    }
-                }
-                {
-                    *pCell = *southAlignedGoalEastStep.Set(lastX + TILE_SIZE_PX, lastY);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirEast;
-                    }
-                }
+                TM_TRY_DIAGONAL(
+                    southAlignedGoalSouthWestStep,
+                    southAlignedGoalSouthWestSouthSide,
+                    southAlignedGoalSouthWestWestSide,
+                    lastX - TILE_SIZE_PX,
+                    lastY + TILE_SIZE_PX,
+                    s_gruntDirSouthWest
+                );
+                TM_TRY_DIAGONAL(
+                    southAlignedGoalSouthEastStep,
+                    southAlignedGoalSouthEastSouthSide,
+                    southAlignedGoalSouthEastEastSide,
+                    lastX + TILE_SIZE_PX,
+                    lastY + TILE_SIZE_PX,
+                    s_gruntDirSouthEast
+                );
+                TM_TRY_STEP(southAlignedGoalWestStep, lastX - TILE_SIZE_PX, lastY, s_gruntDirWest);
+                TM_TRY_STEP(southAlignedGoalEastStep, lastX + TILE_SIZE_PX, lastY, s_gruntDirEast);
             }
             break;
         case DIR_EAST:
             if (g->EntrancePx().m_y < goalY) {
-                {
-                    *pCell =
-                        *eastSouthGoalNorthEastStep.Set(lastX + TILE_SIZE_PX, lastY - TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        eastSouthGoalNorthEastNorthSide.Set(lastX, (lastY - TILE_SIZE_PX));
-                        eastSouthGoalNorthEastEastSide.Set((lastX + TILE_SIZE_PX), lastY);
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(eastSouthGoalNorthEastNorthSide.m_x),
-                            SCREEN_TILE_COMPONENT(eastSouthGoalNorthEastNorthSide.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(eastSouthGoalNorthEastEastSide.m_x),
-                            SCREEN_TILE_COMPONENT(eastSouthGoalNorthEastEastSide.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirNorthEast;
-                        }
-                    }
-                }
-                {
-                    *pCell = *eastSouthGoalNorthStep.Set(lastX, lastY - TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirNorth;
-                    }
-                }
-                {
-                    *pCell =
-                        *eastSouthGoalSouthEastStep.Set(lastX + TILE_SIZE_PX, lastY + TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        eastSouthGoalSouthEastSouthSide.Set(lastX, (lastY + TILE_SIZE_PX));
-                        eastSouthGoalSouthEastEastSide.Set((lastX + TILE_SIZE_PX), lastY);
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(eastSouthGoalSouthEastSouthSide.m_x),
-                            SCREEN_TILE_COMPONENT(eastSouthGoalSouthEastSouthSide.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(eastSouthGoalSouthEastEastSide.m_x),
-                            SCREEN_TILE_COMPONENT(eastSouthGoalSouthEastEastSide.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirSouthEast;
-                        }
-                    }
-                }
-                {
-                    *pCell = *eastSouthGoalSouthStep.Set(lastX, lastY + TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirSouth;
-                    }
-                }
+                TM_TRY_DIAGONAL(
+                    eastSouthGoalNorthEastStep,
+                    eastSouthGoalNorthEastNorthSide,
+                    eastSouthGoalNorthEastEastSide,
+                    lastX + TILE_SIZE_PX,
+                    lastY - TILE_SIZE_PX,
+                    s_gruntDirNorthEast
+                );
+                TM_TRY_STEP(eastSouthGoalNorthStep, lastX, lastY - TILE_SIZE_PX, s_gruntDirNorth);
+                TM_TRY_DIAGONAL(
+                    eastSouthGoalSouthEastStep,
+                    eastSouthGoalSouthEastSouthSide,
+                    eastSouthGoalSouthEastEastSide,
+                    lastX + TILE_SIZE_PX,
+                    lastY + TILE_SIZE_PX,
+                    s_gruntDirSouthEast
+                );
+                TM_TRY_STEP(eastSouthGoalSouthStep, lastX, lastY + TILE_SIZE_PX, s_gruntDirSouth);
                 return s_gruntDirCenter;
             } else if (g->EntrancePx().m_y > goalY) {
-                {
-                    *pCell =
-                        *eastNorthGoalSouthEastStep.Set(lastX + TILE_SIZE_PX, lastY + TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        eastNorthGoalSouthEastSouthSide.Set(lastX, (lastY + TILE_SIZE_PX));
-                        eastNorthGoalSouthEastEastSide.Set((lastX + TILE_SIZE_PX), lastY);
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(eastNorthGoalSouthEastSouthSide.m_x),
-                            SCREEN_TILE_COMPONENT(eastNorthGoalSouthEastSouthSide.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(eastNorthGoalSouthEastEastSide.m_x),
-                            SCREEN_TILE_COMPONENT(eastNorthGoalSouthEastEastSide.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirSouthEast;
-                        }
-                    }
-                }
-                {
-                    *pCell = *eastNorthGoalSouthStep.Set(lastX, lastY + TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirSouth;
-                    }
-                }
-                {
-                    *pCell =
-                        *eastNorthGoalNorthEastStep.Set(lastX + TILE_SIZE_PX, lastY - TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        eastNorthGoalNorthEastNorthSide.Set(lastX, (lastY - TILE_SIZE_PX));
-                        eastNorthGoalNorthEastEastSide.Set((lastX + TILE_SIZE_PX), lastY);
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(eastNorthGoalNorthEastNorthSide.m_x),
-                            SCREEN_TILE_COMPONENT(eastNorthGoalNorthEastNorthSide.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(eastNorthGoalNorthEastEastSide.m_x),
-                            SCREEN_TILE_COMPONENT(eastNorthGoalNorthEastEastSide.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirNorthEast;
-                        }
-                    }
-                }
-                {
-                    *pCell = *eastNorthGoalNorthStep.Set(lastX, lastY - TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirNorth;
-                    }
-                }
+                TM_TRY_DIAGONAL(
+                    eastNorthGoalSouthEastStep,
+                    eastNorthGoalSouthEastSouthSide,
+                    eastNorthGoalSouthEastEastSide,
+                    lastX + TILE_SIZE_PX,
+                    lastY + TILE_SIZE_PX,
+                    s_gruntDirSouthEast
+                );
+                TM_TRY_STEP(eastNorthGoalSouthStep, lastX, lastY + TILE_SIZE_PX, s_gruntDirSouth);
+                TM_TRY_DIAGONAL(
+                    eastNorthGoalNorthEastStep,
+                    eastNorthGoalNorthEastNorthSide,
+                    eastNorthGoalNorthEastEastSide,
+                    lastX + TILE_SIZE_PX,
+                    lastY - TILE_SIZE_PX,
+                    s_gruntDirNorthEast
+                );
+                TM_TRY_STEP(eastNorthGoalNorthStep, lastX, lastY - TILE_SIZE_PX, s_gruntDirNorth);
                 return s_gruntDirCenter;
             } else {
-                {
-                    *pCell = *eastAlignedGoalNorthEastStep.Set(
-                        lastX + TILE_SIZE_PX,
-                        lastY - TILE_SIZE_PX
-                    );
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        eastAlignedGoalNorthEastNorthSide.Set(lastX, (lastY - TILE_SIZE_PX));
-                        eastAlignedGoalNorthEastEastSide.Set((lastX + TILE_SIZE_PX), lastY);
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(eastAlignedGoalNorthEastNorthSide.m_x),
-                            SCREEN_TILE_COMPONENT(eastAlignedGoalNorthEastNorthSide.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(eastAlignedGoalNorthEastEastSide.m_x),
-                            SCREEN_TILE_COMPONENT(eastAlignedGoalNorthEastEastSide.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirNorthEast;
-                        }
-                    }
-                }
-                {
-                    *pCell = *eastAlignedGoalSouthEastStep.Set(
-                        lastX + TILE_SIZE_PX,
-                        lastY + TILE_SIZE_PX
-                    );
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        eastAlignedGoalSouthEastSouthSide.Set(lastX, (lastY + TILE_SIZE_PX));
-                        eastAlignedGoalSouthEastEastSide.Set((lastX + TILE_SIZE_PX), lastY);
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(eastAlignedGoalSouthEastSouthSide.m_x),
-                            SCREEN_TILE_COMPONENT(eastAlignedGoalSouthEastSouthSide.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(eastAlignedGoalSouthEastEastSide.m_x),
-                            SCREEN_TILE_COMPONENT(eastAlignedGoalSouthEastEastSide.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirSouthEast;
-                        }
-                    }
-                }
-                {
-                    *pCell = *eastAlignedGoalNorthStep.Set(lastX, lastY - TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirNorth;
-                    }
-                }
-                {
-                    *pCell = *eastAlignedGoalSouthStep.Set(lastX, lastY + TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirSouth;
-                    }
-                }
+                TM_TRY_DIAGONAL(
+                    eastAlignedGoalNorthEastStep,
+                    eastAlignedGoalNorthEastNorthSide,
+                    eastAlignedGoalNorthEastEastSide,
+                    lastX + TILE_SIZE_PX,
+                    lastY - TILE_SIZE_PX,
+                    s_gruntDirNorthEast
+                );
+                TM_TRY_DIAGONAL(
+                    eastAlignedGoalSouthEastStep,
+                    eastAlignedGoalSouthEastSouthSide,
+                    eastAlignedGoalSouthEastEastSide,
+                    lastX + TILE_SIZE_PX,
+                    lastY + TILE_SIZE_PX,
+                    s_gruntDirSouthEast
+                );
+                TM_TRY_STEP(eastAlignedGoalNorthStep, lastX, lastY - TILE_SIZE_PX, s_gruntDirNorth);
+                TM_TRY_STEP(eastAlignedGoalSouthStep, lastX, lastY + TILE_SIZE_PX, s_gruntDirSouth);
                 return s_gruntDirCenter;
             }
             break;
         case DIR_WEST:
             if (g->EntrancePx().m_y < goalY) {
-                {
-                    *pCell =
-                        *westSouthGoalNorthWestStep.Set(lastX - TILE_SIZE_PX, lastY - TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        westSouthGoalNorthWestNorthSide.Set(lastX, (lastY - TILE_SIZE_PX));
-                        westSouthGoalNorthWestWestSide.Set((lastX - TILE_SIZE_PX), lastY);
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(westSouthGoalNorthWestNorthSide.m_x),
-                            SCREEN_TILE_COMPONENT(westSouthGoalNorthWestNorthSide.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(westSouthGoalNorthWestWestSide.m_x),
-                            SCREEN_TILE_COMPONENT(westSouthGoalNorthWestWestSide.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirNorthWest;
-                        }
-                    }
-                }
-                {
-                    *pCell = *westSouthGoalNorthStep.Set(lastX, lastY - TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirNorth;
-                    }
-                }
+                TM_TRY_DIAGONAL(
+                    westSouthGoalNorthWestStep,
+                    westSouthGoalNorthWestNorthSide,
+                    westSouthGoalNorthWestWestSide,
+                    lastX - TILE_SIZE_PX,
+                    lastY - TILE_SIZE_PX,
+                    s_gruntDirNorthWest
+                );
+                TM_TRY_STEP(westSouthGoalNorthStep, lastX, lastY - TILE_SIZE_PX, s_gruntDirNorth);
                 {
                     *pCell =
                         *westSouthGoalSouthWestStep.Set(lastX - TILE_SIZE_PX, lastY + TILE_SIZE_PX);
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
+                        pCell->m_x >> TILE_SHIFT_PX,
+                        pCell->m_y >> TILE_SHIFT_PX
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
                         westSouthGoalSouthWestSouthSide.Set(lastX, (lastY + TILE_SIZE_PX));
                         westSouthGoalSouthWestWestSide.Set((lastX - TILE_SIZE_PX), lastY);
                         sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(westSouthGoalSouthWestSouthSide.m_x),
-                            SCREEN_TILE_COMPONENT(westSouthGoalSouthWestSouthSide.m_y)
+                            westSouthGoalSouthWestSouthSide.m_x >> TILE_SHIFT_PX,
+                            westSouthGoalSouthWestSouthSide.m_y >> TILE_SHIFT_PX
                         );
                         i32 sideX = g_gameReg->m_tileGrid->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(westSouthGoalSouthWestWestSide.m_x),
-                            SCREEN_TILE_COMPONENT(westSouthGoalSouthWestWestSide.m_y)
+                            westSouthGoalSouthWestWestSide.m_x >> TILE_SHIFT_PX,
+                            westSouthGoalSouthWestWestSide.m_y >> TILE_SHIFT_PX
                         );
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
                             && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
@@ -1054,389 +563,123 @@ GruntDirectionCell __stdcall TmDeflectStep(
                         }
                     }
                 }
-                {
-                    *pCell = *westSouthGoalSouthStep.Set(lastX, lastY + TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirSouth;
-                    }
-                }
+                TM_TRY_STEP(westSouthGoalSouthStep, lastX, lastY + TILE_SIZE_PX, s_gruntDirSouth);
                 return s_gruntDirCenter;
             } else if (g->EntrancePx().m_y > goalY) {
-                {
-                    *pCell =
-                        *westNorthGoalSouthWestStep.Set(lastX - TILE_SIZE_PX, lastY + TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        westNorthGoalSouthWestSouthSide.Set(lastX, (lastY + TILE_SIZE_PX));
-                        westNorthGoalSouthWestWestSide.Set((lastX - TILE_SIZE_PX), lastY);
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(westNorthGoalSouthWestSouthSide.m_x),
-                            SCREEN_TILE_COMPONENT(westNorthGoalSouthWestSouthSide.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(westNorthGoalSouthWestWestSide.m_x),
-                            SCREEN_TILE_COMPONENT(westNorthGoalSouthWestWestSide.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirSouthWest;
-                        }
-                    }
-                }
-                {
-                    *pCell = *westNorthGoalSouthStep.Set(lastX, lastY + TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirSouth;
-                    }
-                }
-                {
-                    *pCell =
-                        *westNorthGoalNorthWestStep.Set(lastX - TILE_SIZE_PX, lastY - TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        westNorthGoalNorthWestNorthSide.Set(lastX, (lastY - TILE_SIZE_PX));
-                        westNorthGoalNorthWestWestSide.Set((lastX - TILE_SIZE_PX), lastY);
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(westNorthGoalNorthWestNorthSide.m_x),
-                            SCREEN_TILE_COMPONENT(westNorthGoalNorthWestNorthSide.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(westNorthGoalNorthWestWestSide.m_x),
-                            SCREEN_TILE_COMPONENT(westNorthGoalNorthWestWestSide.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirNorthWest;
-                        }
-                    }
-                }
-                {
-                    *pCell = *westNorthGoalNorthStep.Set(lastX, lastY - TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirNorth;
-                    }
-                }
+                TM_TRY_DIAGONAL(
+                    westNorthGoalSouthWestStep,
+                    westNorthGoalSouthWestSouthSide,
+                    westNorthGoalSouthWestWestSide,
+                    lastX - TILE_SIZE_PX,
+                    lastY + TILE_SIZE_PX,
+                    s_gruntDirSouthWest
+                );
+                TM_TRY_STEP(westNorthGoalSouthStep, lastX, lastY + TILE_SIZE_PX, s_gruntDirSouth);
+                TM_TRY_DIAGONAL(
+                    westNorthGoalNorthWestStep,
+                    westNorthGoalNorthWestNorthSide,
+                    westNorthGoalNorthWestWestSide,
+                    lastX - TILE_SIZE_PX,
+                    lastY - TILE_SIZE_PX,
+                    s_gruntDirNorthWest
+                );
+                TM_TRY_STEP(westNorthGoalNorthStep, lastX, lastY - TILE_SIZE_PX, s_gruntDirNorth);
             } else {
-                {
-                    *pCell = *westAlignedGoalNorthWestStep.Set(
-                        lastX - TILE_SIZE_PX,
-                        lastY - TILE_SIZE_PX
-                    );
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        westAlignedGoalNorthWestNorthSide.Set(lastX, (lastY - TILE_SIZE_PX));
-                        westAlignedGoalNorthWestWestSide.Set((lastX - TILE_SIZE_PX), lastY);
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(westAlignedGoalNorthWestNorthSide.m_x),
-                            SCREEN_TILE_COMPONENT(westAlignedGoalNorthWestNorthSide.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(westAlignedGoalNorthWestWestSide.m_x),
-                            SCREEN_TILE_COMPONENT(westAlignedGoalNorthWestWestSide.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirNorthWest;
-                        }
-                    }
-                }
-                {
-                    *pCell = *westAlignedGoalSouthWestStep.Set(
-                        lastX - TILE_SIZE_PX,
-                        lastY + TILE_SIZE_PX
-                    );
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        westAlignedGoalSouthWestSouthSide.Set(lastX, (lastY + TILE_SIZE_PX));
-                        westAlignedGoalSouthWestWestSide.Set((lastX - TILE_SIZE_PX), lastY);
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(westAlignedGoalSouthWestSouthSide.m_x),
-                            SCREEN_TILE_COMPONENT(westAlignedGoalSouthWestSouthSide.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(westAlignedGoalSouthWestWestSide.m_x),
-                            SCREEN_TILE_COMPONENT(westAlignedGoalSouthWestWestSide.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirSouthWest;
-                        }
-                    }
-                }
-                {
-                    *pCell = *westAlignedGoalNorthStep.Set(lastX, lastY - TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirNorth;
-                    }
-                }
-                {
-                    *pCell = *westAlignedGoalSouthStep.Set(lastX, lastY + TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirSouth;
-                    }
-                }
+                TM_TRY_DIAGONAL(
+                    westAlignedGoalNorthWestStep,
+                    westAlignedGoalNorthWestNorthSide,
+                    westAlignedGoalNorthWestWestSide,
+                    lastX - TILE_SIZE_PX,
+                    lastY - TILE_SIZE_PX,
+                    s_gruntDirNorthWest
+                );
+                TM_TRY_DIAGONAL(
+                    westAlignedGoalSouthWestStep,
+                    westAlignedGoalSouthWestSouthSide,
+                    westAlignedGoalSouthWestWestSide,
+                    lastX - TILE_SIZE_PX,
+                    lastY + TILE_SIZE_PX,
+                    s_gruntDirSouthWest
+                );
+                TM_TRY_STEP(westAlignedGoalNorthStep, lastX, lastY - TILE_SIZE_PX, s_gruntDirNorth);
+                TM_TRY_STEP(westAlignedGoalSouthStep, lastX, lastY + TILE_SIZE_PX, s_gruntDirSouth);
             }
             break;
         case DIR_NORTHEAST: {
             i32 deltaY = goalY - g->EntrancePx().m_y;
             i32 deltaX = g->EntrancePx().m_x - goalX;
             if (deltaX < deltaY) {
-                {
-                    *pCell = *northEastXDeltaLessNorthStep.Set(lastX, lastY - TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirNorth;
-                    }
-                }
-                {
-                    *pCell = *northEastXDeltaLessNorthWestStep.Set(
-                        lastX - TILE_SIZE_PX,
-                        lastY - TILE_SIZE_PX
-                    );
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        northEastXDeltaLessNorthWestNorthSide.Set(lastX, (lastY - TILE_SIZE_PX));
-                        northEastXDeltaLessNorthWestWestSide.Set((lastX - TILE_SIZE_PX), lastY);
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(northEastXDeltaLessNorthWestNorthSide.m_x),
-                            SCREEN_TILE_COMPONENT(northEastXDeltaLessNorthWestNorthSide.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(northEastXDeltaLessNorthWestWestSide.m_x),
-                            SCREEN_TILE_COMPONENT(northEastXDeltaLessNorthWestWestSide.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirNorthWest;
-                        }
-                    }
-                }
-                {
-                    *pCell = *northEastXDeltaLessEastStep.Set(lastX + TILE_SIZE_PX, lastY);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirEast;
-                    }
-                }
-                {
-                    *pCell = *northEastXDeltaLessSouthEastStep.Set(
-                        lastX + TILE_SIZE_PX,
-                        lastY + TILE_SIZE_PX
-                    );
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        northEastXDeltaLessSouthEastSouthSide.Set(lastX, (lastY + TILE_SIZE_PX));
-                        northEastXDeltaLessSouthEastEastSide.Set((lastX + TILE_SIZE_PX), lastY);
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(northEastXDeltaLessSouthEastSouthSide.m_x),
-                            SCREEN_TILE_COMPONENT(northEastXDeltaLessSouthEastSouthSide.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(northEastXDeltaLessSouthEastEastSide.m_x),
-                            SCREEN_TILE_COMPONENT(northEastXDeltaLessSouthEastEastSide.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirSouthEast;
-                        }
-                    }
-                }
+                TM_TRY_STEP(
+                    northEastXDeltaLessNorthStep,
+                    lastX,
+                    lastY - TILE_SIZE_PX,
+                    s_gruntDirNorth
+                );
+                TM_TRY_DIAGONAL(
+                    northEastXDeltaLessNorthWestStep,
+                    northEastXDeltaLessNorthWestNorthSide,
+                    northEastXDeltaLessNorthWestWestSide,
+                    lastX - TILE_SIZE_PX,
+                    lastY - TILE_SIZE_PX,
+                    s_gruntDirNorthWest
+                );
+                TM_TRY_STEP(
+                    northEastXDeltaLessEastStep,
+                    lastX + TILE_SIZE_PX,
+                    lastY,
+                    s_gruntDirEast
+                );
+                TM_TRY_DIAGONAL(
+                    northEastXDeltaLessSouthEastStep,
+                    northEastXDeltaLessSouthEastSouthSide,
+                    northEastXDeltaLessSouthEastEastSide,
+                    lastX + TILE_SIZE_PX,
+                    lastY + TILE_SIZE_PX,
+                    s_gruntDirSouthEast
+                );
             } else if (deltaX > deltaY) {
-                {
-                    *pCell = *northEastXDeltaGreaterEastStep.Set(lastX + TILE_SIZE_PX, lastY);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirEast;
-                    }
-                }
-                {
-                    *pCell = *northEastXDeltaGreaterSouthEastStep.Set(
-                        lastX + TILE_SIZE_PX,
-                        lastY + TILE_SIZE_PX
-                    );
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        northEastXDeltaGreaterSouthEastSouthSide.Set(lastX, (lastY + TILE_SIZE_PX));
-                        northEastXDeltaGreaterSouthEastEastSide.Set((lastX + TILE_SIZE_PX), lastY);
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(northEastXDeltaGreaterSouthEastSouthSide.m_x),
-                            SCREEN_TILE_COMPONENT(northEastXDeltaGreaterSouthEastSouthSide.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(northEastXDeltaGreaterSouthEastEastSide.m_x),
-                            SCREEN_TILE_COMPONENT(northEastXDeltaGreaterSouthEastEastSide.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirSouthEast;
-                        }
-                    }
-                }
-                {
-                    *pCell = *northEastXDeltaGreaterNorthStep.Set(lastX, lastY - TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirNorth;
-                    }
-                }
-                {
-                    *pCell = *northEastXDeltaGreaterNorthWestStep.Set(
-                        lastX - TILE_SIZE_PX,
-                        lastY - TILE_SIZE_PX
-                    );
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        northEastXDeltaGreaterNorthWestNorthSide.Set(lastX, (lastY - TILE_SIZE_PX));
-                        northEastXDeltaGreaterNorthWestWestSide.Set((lastX - TILE_SIZE_PX), lastY);
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(northEastXDeltaGreaterNorthWestNorthSide.m_x),
-                            SCREEN_TILE_COMPONENT(northEastXDeltaGreaterNorthWestNorthSide.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(northEastXDeltaGreaterNorthWestWestSide.m_x),
-                            SCREEN_TILE_COMPONENT(northEastXDeltaGreaterNorthWestWestSide.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirNorthWest;
-                        }
-                    }
-                }
+                TM_TRY_STEP(
+                    northEastXDeltaGreaterEastStep,
+                    lastX + TILE_SIZE_PX,
+                    lastY,
+                    s_gruntDirEast
+                );
+                TM_TRY_DIAGONAL(
+                    northEastXDeltaGreaterSouthEastStep,
+                    northEastXDeltaGreaterSouthEastSouthSide,
+                    northEastXDeltaGreaterSouthEastEastSide,
+                    lastX + TILE_SIZE_PX,
+                    lastY + TILE_SIZE_PX,
+                    s_gruntDirSouthEast
+                );
+                TM_TRY_STEP(
+                    northEastXDeltaGreaterNorthStep,
+                    lastX,
+                    lastY - TILE_SIZE_PX,
+                    s_gruntDirNorth
+                );
+                TM_TRY_DIAGONAL(
+                    northEastXDeltaGreaterNorthWestStep,
+                    northEastXDeltaGreaterNorthWestNorthSide,
+                    northEastXDeltaGreaterNorthWestWestSide,
+                    lastX - TILE_SIZE_PX,
+                    lastY - TILE_SIZE_PX,
+                    s_gruntDirNorthWest
+                );
                 return s_gruntDirCenter;
             } else {
-                {
-                    *pCell = *northEastEqualDeltasNorthStep.Set(lastX, lastY - TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirNorth;
-                    }
-                }
-                {
-                    *pCell = *northEastEqualDeltasEastStep.Set(lastX + TILE_SIZE_PX, lastY);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirEast;
-                    }
-                }
+                TM_TRY_STEP(
+                    northEastEqualDeltasNorthStep,
+                    lastX,
+                    lastY - TILE_SIZE_PX,
+                    s_gruntDirNorth
+                );
+                TM_TRY_STEP(
+                    northEastEqualDeltasEastStep,
+                    lastX + TILE_SIZE_PX,
+                    lastY,
+                    s_gruntDirEast
+                );
                 {
                     *pCell = *northEastEqualDeltasNorthWestStep.Set(
                         lastX - TILE_SIZE_PX,
@@ -1445,8 +688,8 @@ GruntDirectionCell __stdcall TmDeflectStep(
                 }
                 {
                     i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
+                        pCell->m_x >> TILE_SHIFT_PX,
+                        pCell->m_y >> TILE_SHIFT_PX
                     );
                     *pFlags = cell;
                     if (TmFlagsAllow(cell, mask, pass)) {
@@ -1459,12 +702,12 @@ GruntDirectionCell __stdcall TmDeflectStep(
                             lastY
                         );
                         i32 sideY = g_gameReg->m_tileGrid->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideYStep->m_x),
-                            SCREEN_TILE_COMPONENT(sideYStep->m_y)
+                            sideYStep->m_x >> TILE_SHIFT_PX,
+                            sideYStep->m_y >> TILE_SHIFT_PX
                         );
                         i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideXStep->m_x),
-                            SCREEN_TILE_COMPONENT(sideXStep->m_y)
+                            sideXStep->m_x >> TILE_SHIFT_PX,
+                            sideXStep->m_y >> TILE_SHIFT_PX
                         );
 
                         if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
@@ -1473,41 +716,14 @@ GruntDirectionCell __stdcall TmDeflectStep(
                         }
                     }
                 }
-                {
-                    *pCell = *northEastEqualDeltasSouthEastStep.Set(
-                        lastX + TILE_SIZE_PX,
-                        lastY + TILE_SIZE_PX
-                    );
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        Coord sideYStep = *northEastEqualDeltasSouthEastSouthSide.Set(
-                            lastX,
-                            (lastY + TILE_SIZE_PX)
-                        );
-                        Coord sideXStep = *northEastEqualDeltasSouthEastEastSide.Set(
-                            (lastX + TILE_SIZE_PX),
-                            lastY
-                        );
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirSouthEast;
-                        }
-                    }
-                }
+                TM_TRY_DIAGONAL_COPY(
+                    northEastEqualDeltasSouthEastStep,
+                    northEastEqualDeltasSouthEastSouthSide,
+                    northEastEqualDeltasSouthEastEastSide,
+                    lastX + TILE_SIZE_PX,
+                    lastY + TILE_SIZE_PX,
+                    s_gruntDirSouthEast
+                );
             }
             break;
         }
@@ -1515,298 +731,94 @@ GruntDirectionCell __stdcall TmDeflectStep(
             i32 deltaY = g->EntrancePx().m_y - goalY;
             i32 deltaX = g->EntrancePx().m_x - goalX;
             if (deltaX < deltaY) {
-                {
-                    *pCell = *southEastXDeltaLessSouthStep.Set(lastX, lastY + TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirSouth;
-                    }
-                }
-                {
-                    *pCell = *southEastXDeltaLessSouthWestStep.Set(
-                        lastX - TILE_SIZE_PX,
-                        lastY + TILE_SIZE_PX
-                    );
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        Coord sideYStep = *southEastXDeltaLessSouthWestSouthSide.Set(
-                            lastX,
-                            (lastY + TILE_SIZE_PX)
-                        );
-                        Coord sideXStep = *southEastXDeltaLessSouthWestWestSide.Set(
-                            (lastX - TILE_SIZE_PX),
-                            lastY
-                        );
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirSouthWest;
-                        }
-                    }
-                }
-                {
-                    *pCell = *southEastXDeltaLessEastStep.Set(lastX + TILE_SIZE_PX, lastY);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirEast;
-                    }
-                }
-                {
-                    *pCell = *southEastXDeltaLessNorthEastStep.Set(
-                        lastX + TILE_SIZE_PX,
-                        lastY - TILE_SIZE_PX
-                    );
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        Coord sideYStep = *southEastXDeltaLessNorthEastNorthSide.Set(
-                            lastX,
-                            (lastY - TILE_SIZE_PX)
-                        );
-                        Coord sideXStep = *southEastXDeltaLessNorthEastEastSide.Set(
-                            (lastX + TILE_SIZE_PX),
-                            lastY
-                        );
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirNorthEast;
-                        }
-                    }
-                }
+                TM_TRY_STEP(
+                    southEastXDeltaLessSouthStep,
+                    lastX,
+                    lastY + TILE_SIZE_PX,
+                    s_gruntDirSouth
+                );
+                TM_TRY_DIAGONAL_COPY(
+                    southEastXDeltaLessSouthWestStep,
+                    southEastXDeltaLessSouthWestSouthSide,
+                    southEastXDeltaLessSouthWestWestSide,
+                    lastX - TILE_SIZE_PX,
+                    lastY + TILE_SIZE_PX,
+                    s_gruntDirSouthWest
+                );
+                TM_TRY_STEP(
+                    southEastXDeltaLessEastStep,
+                    lastX + TILE_SIZE_PX,
+                    lastY,
+                    s_gruntDirEast
+                );
+                TM_TRY_DIAGONAL_COPY(
+                    southEastXDeltaLessNorthEastStep,
+                    southEastXDeltaLessNorthEastNorthSide,
+                    southEastXDeltaLessNorthEastEastSide,
+                    lastX + TILE_SIZE_PX,
+                    lastY - TILE_SIZE_PX,
+                    s_gruntDirNorthEast
+                );
                 return s_gruntDirCenter;
             } else if (deltaX > deltaY) {
-                {
-                    *pCell = *southEastXDeltaGreaterEastStep.Set(lastX + TILE_SIZE_PX, lastY);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirEast;
-                    }
-                }
-                {
-                    *pCell = *southEastXDeltaGreaterNorthEastStep.Set(
-                        lastX + TILE_SIZE_PX,
-                        lastY - TILE_SIZE_PX
-                    );
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        Coord sideYStep = *southEastXDeltaGreaterNorthEastNorthSide.Set(
-                            lastX,
-                            (lastY - TILE_SIZE_PX)
-                        );
-                        Coord sideXStep = *southEastXDeltaGreaterNorthEastEastSide.Set(
-                            (lastX + TILE_SIZE_PX),
-                            lastY
-                        );
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirNorthEast;
-                        }
-                    }
-                }
-                {
-                    *pCell = *southEastXDeltaGreaterSouthStep.Set(lastX, lastY + TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirSouth;
-                    }
-                }
-                {
-                    *pCell = *southEastXDeltaGreaterSouthWestStep.Set(
-                        lastX - TILE_SIZE_PX,
-                        lastY + TILE_SIZE_PX
-                    );
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        Coord sideYStep = *southEastXDeltaGreaterSouthWestSouthSide.Set(
-                            lastX,
-                            (lastY + TILE_SIZE_PX)
-                        );
-                        Coord sideXStep = *southEastXDeltaGreaterSouthWestWestSide.Set(
-                            (lastX - TILE_SIZE_PX),
-                            lastY
-                        );
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirSouthWest;
-                        }
-                    }
-                }
+                TM_TRY_STEP(
+                    southEastXDeltaGreaterEastStep,
+                    lastX + TILE_SIZE_PX,
+                    lastY,
+                    s_gruntDirEast
+                );
+                TM_TRY_DIAGONAL_COPY(
+                    southEastXDeltaGreaterNorthEastStep,
+                    southEastXDeltaGreaterNorthEastNorthSide,
+                    southEastXDeltaGreaterNorthEastEastSide,
+                    lastX + TILE_SIZE_PX,
+                    lastY - TILE_SIZE_PX,
+                    s_gruntDirNorthEast
+                );
+                TM_TRY_STEP(
+                    southEastXDeltaGreaterSouthStep,
+                    lastX,
+                    lastY + TILE_SIZE_PX,
+                    s_gruntDirSouth
+                );
+                TM_TRY_DIAGONAL_COPY(
+                    southEastXDeltaGreaterSouthWestStep,
+                    southEastXDeltaGreaterSouthWestSouthSide,
+                    southEastXDeltaGreaterSouthWestWestSide,
+                    lastX - TILE_SIZE_PX,
+                    lastY + TILE_SIZE_PX,
+                    s_gruntDirSouthWest
+                );
                 return s_gruntDirCenter;
             } else {
-                {
-                    *pCell = *southEastEqualDeltasSouthStep.Set(lastX, lastY + TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirSouth;
-                    }
-                }
-                {
-                    *pCell = *southEastEqualDeltasEastStep.Set(lastX + TILE_SIZE_PX, lastY);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirEast;
-                    }
-                }
-                {
-                    *pCell = *southEastEqualDeltasSouthWestStep.Set(
-                        lastX - TILE_SIZE_PX,
-                        lastY + TILE_SIZE_PX
-                    );
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        Coord sideYStep = *southEastEqualDeltasSouthWestSouthSide.Set(
-                            lastX,
-                            (lastY + TILE_SIZE_PX)
-                        );
-                        Coord sideXStep = *southEastEqualDeltasSouthWestWestSide.Set(
-                            (lastX - TILE_SIZE_PX),
-                            lastY
-                        );
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirSouthWest;
-                        }
-                    }
-                }
-                {
-                    *pCell = *southEastEqualDeltasNorthEastStep.Set(
-                        lastX + TILE_SIZE_PX,
-                        lastY - TILE_SIZE_PX
-                    );
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        Coord sideYStep = *southEastEqualDeltasNorthEastNorthSide.Set(
-                            lastX,
-                            (lastY - TILE_SIZE_PX)
-                        );
-                        Coord sideXStep = *southEastEqualDeltasNorthEastEastSide.Set(
-                            (lastX + TILE_SIZE_PX),
-                            lastY
-                        );
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirNorthEast;
-                        }
-                    }
-                }
+                TM_TRY_STEP(
+                    southEastEqualDeltasSouthStep,
+                    lastX,
+                    lastY + TILE_SIZE_PX,
+                    s_gruntDirSouth
+                );
+                TM_TRY_STEP(
+                    southEastEqualDeltasEastStep,
+                    lastX + TILE_SIZE_PX,
+                    lastY,
+                    s_gruntDirEast
+                );
+                TM_TRY_DIAGONAL_COPY(
+                    southEastEqualDeltasSouthWestStep,
+                    southEastEqualDeltasSouthWestSouthSide,
+                    southEastEqualDeltasSouthWestWestSide,
+                    lastX - TILE_SIZE_PX,
+                    lastY + TILE_SIZE_PX,
+                    s_gruntDirSouthWest
+                );
+                TM_TRY_DIAGONAL_COPY(
+                    southEastEqualDeltasNorthEastStep,
+                    southEastEqualDeltasNorthEastNorthSide,
+                    southEastEqualDeltasNorthEastEastSide,
+                    lastX + TILE_SIZE_PX,
+                    lastY - TILE_SIZE_PX,
+                    s_gruntDirNorthEast
+                );
             }
             break;
         }
@@ -1814,297 +826,93 @@ GruntDirectionCell __stdcall TmDeflectStep(
             i32 deltaY = goalY - g->EntrancePx().m_y;
             i32 deltaX = goalX - g->EntrancePx().m_x;
             if (deltaX < deltaY) {
-                {
-                    *pCell = *northWestXDeltaLessNorthStep.Set(lastX, lastY - TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirNorth;
-                    }
-                }
-                {
-                    *pCell = *northWestXDeltaLessNorthEastStep.Set(
-                        lastX + TILE_SIZE_PX,
-                        lastY - TILE_SIZE_PX
-                    );
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        Coord sideYStep = *northWestXDeltaLessNorthEastNorthSide.Set(
-                            lastX,
-                            (lastY - TILE_SIZE_PX)
-                        );
-                        Coord sideXStep = *northWestXDeltaLessNorthEastEastSide.Set(
-                            (lastX + TILE_SIZE_PX),
-                            lastY
-                        );
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirNorthEast;
-                        }
-                    }
-                }
-                {
-                    *pCell = *northWestXDeltaLessWestStep.Set(lastX - TILE_SIZE_PX, lastY);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirWest;
-                    }
-                }
-                {
-                    *pCell = *northWestXDeltaLessSouthWestStep.Set(
-                        lastX - TILE_SIZE_PX,
-                        lastY + TILE_SIZE_PX
-                    );
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        Coord sideYStep = *northWestXDeltaLessSouthWestSouthSide.Set(
-                            lastX,
-                            (lastY + TILE_SIZE_PX)
-                        );
-                        Coord sideXStep = *northWestXDeltaLessSouthWestWestSide.Set(
-                            (lastX - TILE_SIZE_PX),
-                            lastY
-                        );
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirSouthWest;
-                        }
-                    }
-                }
+                TM_TRY_STEP(
+                    northWestXDeltaLessNorthStep,
+                    lastX,
+                    lastY - TILE_SIZE_PX,
+                    s_gruntDirNorth
+                );
+                TM_TRY_DIAGONAL_COPY(
+                    northWestXDeltaLessNorthEastStep,
+                    northWestXDeltaLessNorthEastNorthSide,
+                    northWestXDeltaLessNorthEastEastSide,
+                    lastX + TILE_SIZE_PX,
+                    lastY - TILE_SIZE_PX,
+                    s_gruntDirNorthEast
+                );
+                TM_TRY_STEP(
+                    northWestXDeltaLessWestStep,
+                    lastX - TILE_SIZE_PX,
+                    lastY,
+                    s_gruntDirWest
+                );
+                TM_TRY_DIAGONAL_COPY(
+                    northWestXDeltaLessSouthWestStep,
+                    northWestXDeltaLessSouthWestSouthSide,
+                    northWestXDeltaLessSouthWestWestSide,
+                    lastX - TILE_SIZE_PX,
+                    lastY + TILE_SIZE_PX,
+                    s_gruntDirSouthWest
+                );
             } else if (deltaX > deltaY) {
-                {
-                    *pCell = *northWestXDeltaGreaterWestStep.Set(lastX - TILE_SIZE_PX, lastY);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirWest;
-                    }
-                }
-                {
-                    *pCell = *northWestXDeltaGreaterSouthWestStep.Set(
-                        lastX - TILE_SIZE_PX,
-                        lastY + TILE_SIZE_PX
-                    );
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        Coord sideYStep = *northWestXDeltaGreaterSouthWestSouthSide.Set(
-                            lastX,
-                            (lastY + TILE_SIZE_PX)
-                        );
-                        Coord sideXStep = *northWestXDeltaGreaterSouthWestWestSide.Set(
-                            (lastX - TILE_SIZE_PX),
-                            lastY
-                        );
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirSouthWest;
-                        }
-                    }
-                }
-                {
-                    *pCell = *northWestXDeltaGreaterNorthStep.Set(lastX, lastY - TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirNorth;
-                    }
-                }
-                {
-                    *pCell = *northWestXDeltaGreaterNorthEastStep.Set(
-                        lastX + TILE_SIZE_PX,
-                        lastY - TILE_SIZE_PX
-                    );
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        Coord sideYStep = *northWestXDeltaGreaterNorthEastNorthSide.Set(
-                            lastX,
-                            (lastY - TILE_SIZE_PX)
-                        );
-                        Coord sideXStep = *northWestXDeltaGreaterNorthEastEastSide.Set(
-                            (lastX + TILE_SIZE_PX),
-                            lastY
-                        );
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirNorthEast;
-                        }
-                    }
-                }
+                TM_TRY_STEP(
+                    northWestXDeltaGreaterWestStep,
+                    lastX - TILE_SIZE_PX,
+                    lastY,
+                    s_gruntDirWest
+                );
+                TM_TRY_DIAGONAL_COPY(
+                    northWestXDeltaGreaterSouthWestStep,
+                    northWestXDeltaGreaterSouthWestSouthSide,
+                    northWestXDeltaGreaterSouthWestWestSide,
+                    lastX - TILE_SIZE_PX,
+                    lastY + TILE_SIZE_PX,
+                    s_gruntDirSouthWest
+                );
+                TM_TRY_STEP(
+                    northWestXDeltaGreaterNorthStep,
+                    lastX,
+                    lastY - TILE_SIZE_PX,
+                    s_gruntDirNorth
+                );
+                TM_TRY_DIAGONAL_COPY(
+                    northWestXDeltaGreaterNorthEastStep,
+                    northWestXDeltaGreaterNorthEastNorthSide,
+                    northWestXDeltaGreaterNorthEastEastSide,
+                    lastX + TILE_SIZE_PX,
+                    lastY - TILE_SIZE_PX,
+                    s_gruntDirNorthEast
+                );
                 return s_gruntDirCenter;
             } else {
-                {
-                    *pCell = *northWestEqualDeltasNorthStep.Set(lastX, lastY - TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirNorth;
-                    }
-                }
-                {
-                    *pCell = *northWestEqualDeltasWestStep.Set(lastX - TILE_SIZE_PX, lastY);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirWest;
-                    }
-                }
-                {
-                    *pCell = *northWestEqualDeltasNorthEastStep.Set(
-                        lastX + TILE_SIZE_PX,
-                        lastY - TILE_SIZE_PX
-                    );
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        Coord sideYStep = *northWestEqualDeltasNorthEastNorthSide.Set(
-                            lastX,
-                            (lastY - TILE_SIZE_PX)
-                        );
-                        Coord sideXStep = *northWestEqualDeltasNorthEastEastSide.Set(
-                            (lastX + TILE_SIZE_PX),
-                            lastY
-                        );
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirNorthEast;
-                        }
-                    }
-                }
-                {
-                    *pCell = *northWestEqualDeltasSouthWestStep.Set(
-                        lastX - TILE_SIZE_PX,
-                        lastY + TILE_SIZE_PX
-                    );
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        Coord sideYStep = *northWestEqualDeltasSouthWestSouthSide.Set(
-                            lastX,
-                            (lastY + TILE_SIZE_PX)
-                        );
-                        Coord sideXStep = *northWestEqualDeltasSouthWestWestSide.Set(
-                            (lastX - TILE_SIZE_PX),
-                            lastY
-                        );
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirSouthWest;
-                        }
-                    }
-                }
+                TM_TRY_STEP(
+                    northWestEqualDeltasNorthStep,
+                    lastX,
+                    lastY - TILE_SIZE_PX,
+                    s_gruntDirNorth
+                );
+                TM_TRY_STEP(
+                    northWestEqualDeltasWestStep,
+                    lastX - TILE_SIZE_PX,
+                    lastY,
+                    s_gruntDirWest
+                );
+                TM_TRY_DIAGONAL_COPY(
+                    northWestEqualDeltasNorthEastStep,
+                    northWestEqualDeltasNorthEastNorthSide,
+                    northWestEqualDeltasNorthEastEastSide,
+                    lastX + TILE_SIZE_PX,
+                    lastY - TILE_SIZE_PX,
+                    s_gruntDirNorthEast
+                );
+                TM_TRY_DIAGONAL_COPY(
+                    northWestEqualDeltasSouthWestStep,
+                    northWestEqualDeltasSouthWestSouthSide,
+                    northWestEqualDeltasSouthWestWestSide,
+                    lastX - TILE_SIZE_PX,
+                    lastY + TILE_SIZE_PX,
+                    s_gruntDirSouthWest
+                );
                 return s_gruntDirCenter;
             }
             break;
@@ -2113,298 +921,94 @@ GruntDirectionCell __stdcall TmDeflectStep(
             i32 deltaY = g->EntrancePx().m_y - goalY;
             i32 deltaX = goalX - g->EntrancePx().m_x;
             if (deltaX < deltaY) {
-                {
-                    *pCell = *southWestXDeltaLessSouthStep.Set(lastX, lastY + TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirSouth;
-                    }
-                }
-                {
-                    *pCell = *southWestXDeltaLessSouthEastStep.Set(
-                        lastX + TILE_SIZE_PX,
-                        lastY + TILE_SIZE_PX
-                    );
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        Coord sideYStep = *southWestXDeltaLessSouthEastSouthSide.Set(
-                            lastX,
-                            (lastY + TILE_SIZE_PX)
-                        );
-                        Coord sideXStep = *southWestXDeltaLessSouthEastEastSide.Set(
-                            (lastX + TILE_SIZE_PX),
-                            lastY
-                        );
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirSouthEast;
-                        }
-                    }
-                }
-                {
-                    *pCell = *southWestXDeltaLessWestStep.Set(lastX - TILE_SIZE_PX, lastY);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirWest;
-                    }
-                }
-                {
-                    *pCell = *southWestXDeltaLessNorthWestStep.Set(
-                        lastX - TILE_SIZE_PX,
-                        lastY - TILE_SIZE_PX
-                    );
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        Coord sideYStep = *southWestXDeltaLessNorthWestNorthSide.Set(
-                            lastX,
-                            (lastY - TILE_SIZE_PX)
-                        );
-                        Coord sideXStep = *southWestXDeltaLessNorthWestWestSide.Set(
-                            (lastX - TILE_SIZE_PX),
-                            lastY
-                        );
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirNorthWest;
-                        }
-                    }
-                }
+                TM_TRY_STEP(
+                    southWestXDeltaLessSouthStep,
+                    lastX,
+                    lastY + TILE_SIZE_PX,
+                    s_gruntDirSouth
+                );
+                TM_TRY_DIAGONAL_COPY(
+                    southWestXDeltaLessSouthEastStep,
+                    southWestXDeltaLessSouthEastSouthSide,
+                    southWestXDeltaLessSouthEastEastSide,
+                    lastX + TILE_SIZE_PX,
+                    lastY + TILE_SIZE_PX,
+                    s_gruntDirSouthEast
+                );
+                TM_TRY_STEP(
+                    southWestXDeltaLessWestStep,
+                    lastX - TILE_SIZE_PX,
+                    lastY,
+                    s_gruntDirWest
+                );
+                TM_TRY_DIAGONAL_COPY(
+                    southWestXDeltaLessNorthWestStep,
+                    southWestXDeltaLessNorthWestNorthSide,
+                    southWestXDeltaLessNorthWestWestSide,
+                    lastX - TILE_SIZE_PX,
+                    lastY - TILE_SIZE_PX,
+                    s_gruntDirNorthWest
+                );
                 return s_gruntDirCenter;
             } else if (deltaX > deltaY) {
-                {
-                    *pCell = *southWestXDeltaGreaterWestStep.Set(lastX - TILE_SIZE_PX, lastY);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirWest;
-                    }
-                }
-                {
-                    *pCell = *southWestXDeltaGreaterNorthWestStep.Set(
-                        lastX - TILE_SIZE_PX,
-                        lastY - TILE_SIZE_PX
-                    );
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        Coord sideYStep = *southWestXDeltaGreaterNorthWestNorthSide.Set(
-                            lastX,
-                            (lastY - TILE_SIZE_PX)
-                        );
-                        Coord sideXStep = *southWestXDeltaGreaterNorthWestWestSide.Set(
-                            (lastX - TILE_SIZE_PX),
-                            lastY
-                        );
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirNorthWest;
-                        }
-                    }
-                }
-                {
-                    *pCell = *southWestXDeltaGreaterSouthStep.Set(lastX, lastY + TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirSouth;
-                    }
-                }
-                {
-                    *pCell = *southWestXDeltaGreaterSouthEastStep.Set(
-                        lastX + TILE_SIZE_PX,
-                        lastY + TILE_SIZE_PX
-                    );
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        Coord sideYStep = *southWestXDeltaGreaterSouthEastSouthSide.Set(
-                            lastX,
-                            (lastY + TILE_SIZE_PX)
-                        );
-                        Coord sideXStep = *southWestXDeltaGreaterSouthEastEastSide.Set(
-                            (lastX + TILE_SIZE_PX),
-                            lastY
-                        );
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirSouthEast;
-                        }
-                    }
-                }
+                TM_TRY_STEP(
+                    southWestXDeltaGreaterWestStep,
+                    lastX - TILE_SIZE_PX,
+                    lastY,
+                    s_gruntDirWest
+                );
+                TM_TRY_DIAGONAL_COPY(
+                    southWestXDeltaGreaterNorthWestStep,
+                    southWestXDeltaGreaterNorthWestNorthSide,
+                    southWestXDeltaGreaterNorthWestWestSide,
+                    lastX - TILE_SIZE_PX,
+                    lastY - TILE_SIZE_PX,
+                    s_gruntDirNorthWest
+                );
+                TM_TRY_STEP(
+                    southWestXDeltaGreaterSouthStep,
+                    lastX,
+                    lastY + TILE_SIZE_PX,
+                    s_gruntDirSouth
+                );
+                TM_TRY_DIAGONAL_COPY(
+                    southWestXDeltaGreaterSouthEastStep,
+                    southWestXDeltaGreaterSouthEastSouthSide,
+                    southWestXDeltaGreaterSouthEastEastSide,
+                    lastX + TILE_SIZE_PX,
+                    lastY + TILE_SIZE_PX,
+                    s_gruntDirSouthEast
+                );
                 return s_gruntDirCenter;
             } else {
-                {
-                    *pCell = *southWestEqualDeltasSouthStep.Set(lastX, lastY + TILE_SIZE_PX);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirSouth;
-                    }
-                }
-                {
-                    *pCell = *southWestEqualDeltasWestStep.Set(lastX - TILE_SIZE_PX, lastY);
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        return s_gruntDirWest;
-                    }
-                }
-                {
-                    *pCell = *southWestEqualDeltasSouthEastStep.Set(
-                        lastX + TILE_SIZE_PX,
-                        lastY + TILE_SIZE_PX
-                    );
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        Coord sideYStep = *southWestEqualDeltasSouthEastSouthSide.Set(
-                            lastX,
-                            (lastY + TILE_SIZE_PX)
-                        );
-                        Coord sideXStep = *southWestEqualDeltasSouthEastEastSide.Set(
-                            (lastX + TILE_SIZE_PX),
-                            lastY
-                        );
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirSouthEast;
-                        }
-                    }
-                }
-                {
-                    *pCell = *southWestEqualDeltasNorthWestStep.Set(
-                        lastX - TILE_SIZE_PX,
-                        lastY - TILE_SIZE_PX
-                    );
-                }
-                {
-                    i32 cell = g_gameReg->GetTileGrid()->CellFlagsAt(
-                        SCREEN_TILE_COMPONENT(pCell->m_x),
-                        SCREEN_TILE_COMPONENT(pCell->m_y)
-                    );
-                    *pFlags = cell;
-                    if (TmFlagsAllow(cell, mask, pass)) {
-                        Coord sideYStep = *southWestEqualDeltasNorthWestNorthSide.Set(
-                            lastX,
-                            (lastY - TILE_SIZE_PX)
-                        );
-                        Coord sideXStep = *southWestEqualDeltasNorthWestWestSide.Set(
-                            (lastX - TILE_SIZE_PX),
-                            lastY
-                        );
-                        sideY = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideYStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideYStep.m_y)
-                        );
-                        i32 sideX = g_gameReg->GetTileGrid()->CellFlagsAt(
-                            SCREEN_TILE_COMPONENT(sideXStep.m_x),
-                            SCREEN_TILE_COMPONENT(sideXStep.m_y)
-                        );
-                        if ((sideY & BRICKZ_CELL_ROUTE_MASKB) != 0
-                            && (sideX & BRICKZ_CELL_ROUTE_MASKB) != 0) {
-                            return s_gruntDirNorthWest;
-                        }
-                    }
-                }
+                TM_TRY_STEP(
+                    southWestEqualDeltasSouthStep,
+                    lastX,
+                    lastY + TILE_SIZE_PX,
+                    s_gruntDirSouth
+                );
+                TM_TRY_STEP(
+                    southWestEqualDeltasWestStep,
+                    lastX - TILE_SIZE_PX,
+                    lastY,
+                    s_gruntDirWest
+                );
+                TM_TRY_DIAGONAL_COPY(
+                    southWestEqualDeltasSouthEastStep,
+                    southWestEqualDeltasSouthEastSouthSide,
+                    southWestEqualDeltasSouthEastEastSide,
+                    lastX + TILE_SIZE_PX,
+                    lastY + TILE_SIZE_PX,
+                    s_gruntDirSouthEast
+                );
+                TM_TRY_DIAGONAL_COPY(
+                    southWestEqualDeltasNorthWestStep,
+                    southWestEqualDeltasNorthWestNorthSide,
+                    southWestEqualDeltasNorthWestWestSide,
+                    lastX - TILE_SIZE_PX,
+                    lastY - TILE_SIZE_PX,
+                    s_gruntDirNorthWest
+                );
             }
             break;
         }
@@ -2432,7 +1036,7 @@ CGrunt* CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outPlayerIndex, i32* outUnit
     }
     i32 playerIndex = (attr >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK;
     i32 unitIndex = attr & GRUNT_IDENTITY_COMPONENT_MASK;
-    CGrunt* cell = m_units[unitIndex + playerIndex * TM_UNITS_PER_PLAYER];
+    CGrunt* cell = UnitAt(playerIndex, unitIndex);
     if (cell == NULL || cell->m_entranceCommitted == false) {
         return NULL;
     }
@@ -2503,21 +1107,14 @@ CGrunt* CTriggerMgr::FindGruntAt(
                 if (static_cast<u32>(y) >= static_cast<u32>(g_gameReg->m_tileGrid->m_height)) {
                     continue;
                 }
-                CMapMgr* grid = g_gameReg->m_tileGrid;
-                i32 val;
-                if (static_cast<u32>(x) < static_cast<u32>(grid->m_width)
-                    && static_cast<u32>(y) < static_cast<u32>(grid->m_height)) {
-                    val = grid->m_rows[y][x].m_occupantId;
-                } else {
-                    val = -1;
-                }
+                i32 val = g_gameReg->m_tileGrid->OccupantAt(x, y);
                 if (val == -1) {
                     continue;
                 }
                 i32 playerIndex =
                     (val >> GRUNT_IDENTITY_PLAYER_SHIFT) & GRUNT_IDENTITY_COMPONENT_MASK;
                 i32 unitIndex = val & GRUNT_IDENTITY_COMPONENT_MASK;
-                CGrunt* g = m_units[unitIndex + playerIndex * TM_UNITS_PER_PLAYER];
+                CGrunt* g = UnitAt(playerIndex, unitIndex);
                 if (!g) {
                     continue;
                 }

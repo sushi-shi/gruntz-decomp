@@ -20,6 +20,7 @@
 #include <Gruntz/GruntPickupInline.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPuddle.h>
+#include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
@@ -44,15 +45,14 @@ RVA(0x000f71c0, 0x721)
 i32 CGrunt::StepToolThiefBehavior() {
     COPY_CURRENT_GRUNT_LAST_TILE_TO_DEFENDER
     if (this->CoordCount() != 0
-        && g_gameReg->m_triggerMgr->m_units[0 * TM_UNITS_PER_PLAYER + this->m_arrivalCell.m_x]
-               == NULL) {
+        && g_gameReg->m_triggerMgr->UnitAt(0, this->m_arrivalCell.m_x) == NULL) {
         RecycleGruntCoords(this);
         this->m_arrivalCell.m_x = 0;
     }
 
     i32 reason = IDX(this->ArrivalPickup());
     if (reason == 0 && (reason = this->m_arrivalCell.m_x, reason >= 0) && reason < 0xf) {
-        CGrunt* slot = g_gameReg->m_triggerMgr->m_units[0 * TM_UNITS_PER_PLAYER + reason];
+        CGrunt* slot = g_gameReg->m_triggerMgr->UnitAt(0, reason);
         if (slot == NULL || slot->m_entranceCommitted == false) {
             if (this->CoordCount() != 0) {
                 RecycleGruntCoords(this);
@@ -161,15 +161,7 @@ i32 CGrunt::StepToolThiefBehavior() {
             return 1;
         }
         if (this->m_blockedVoicePending != false) {
-            CGruntzMgr* gameReg = g_gameReg;
-            i32 r = CGameLevel::PointInBounds(
-                &gameReg->m_world->m_level->m_mainPlane->m_planeViewRect,
-                this->m_object->m_screenPosition.m_x,
-                this->m_object->m_screenPosition.m_y
-            );
-            if (r != 0) {
-                gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
-            }
+            PLAY_VOICE_IF_VISIBLE(0x366);
             this->m_blockedVoicePending = false;
             this->m_dwell = 0;
             return 1;
@@ -202,8 +194,7 @@ i32 CGrunt::StepToolThiefBehavior() {
                             i32 ddx = ex - this->GetScreenTileX();
                             i32 ey = sv->GetScreenTileY() - this->GetScreenTileY();
                             i32 dist = abs(SQR(ddx)) + abs(SQR(ey));
-                            if (dist < best
-                                && dist <= SQR(this->m_defenderRadius)) {
+                            if (dist < best && dist <= SQR(this->m_defenderRadius)) {
                                 best = dist;
                                 bestIdx = i;
                             }
@@ -224,12 +215,7 @@ i32 CGrunt::StepToolThiefBehavior() {
                         0
                     )
                     != 0) {
-                    i32 by = this->m_object->m_screenPosition.m_y;
-                    i32 bx = this->m_object->m_screenPosition.m_x;
-                    CCueRect* board = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
-                    if (::PtInRect(board, bx, by)) {
-                        g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
-                    }
+                    PLAY_VOICE_IN_VIEW(0x366);
                 }
             }
             this->m_dwell = 0;
@@ -241,9 +227,7 @@ i32 CGrunt::StepToolThiefBehavior() {
         if (static_cast<u32>(this->m_dwell) <= 0x3e8) {
             return 1;
         }
-        CGameObject* base =
-            g_gameReg->m_triggerMgr->m_units[0 * TM_UNITS_PER_PLAYER + this->m_arrivalCell.m_x]
-                ->m_object;
+        CGameObject* base = g_gameReg->m_triggerMgr->UnitAt(0, this->m_arrivalCell.m_x)->m_object;
         TileSwitch(
             base->m_screenPosition.m_x >> TILE_SHIFT_PX,
             base->m_screenPosition.m_y >> TILE_SHIFT_PX,

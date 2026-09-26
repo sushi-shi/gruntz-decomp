@@ -7,6 +7,12 @@ comment-form label rows are FATAL; comment @markers come from the closed
 vocabulary (docs/comment-markers.md); a volatile `_$E<n>` ordinal is
 emission-order state, never a source label.
 
+RVA binding: an RVA(..) annotates the declaration after it, so the next
+declaration must be the labeled function's definition (reach `{` before
+`;`). A bare declaration in between rebinds the address to that function
+(a sweep once slid `inline b32 IsSelectable();` under SetState's label).
+A macro-generated definition (BEGIN_MESSAGE_MAP, ...) is accepted.
+
 MERGED (compgen_order.py): every RVA_COMPGEN invocation sits in RVA order
 among its TU's other labeled lines - the intra-file monotonic-walk property.
 (COMDAT copies are linker-pooled away from the TU's contiguous run, so this
@@ -83,6 +89,33 @@ def scan(path: Path):
     return out
 
 
+RVA_CALL_RE = re.compile(r"\bRVA\s*\([^)]*\)")
+MACRO_DEF_RE = re.compile(r"^\s*[A-Z][A-Z0-9_]*\s*\(", re.M)
+LABEL_MACRO_RE = re.compile(r"^\s*(?:RVA|DATA|DATA_MESSAGE_MAP)\s*\(", re.M)
+
+
+def rva_binding(path: Path):
+    """RVA(..) labels whose next declaration is not a definition."""
+    text = blank_comments(path.read_text(errors="replace"))
+    out = []
+    for m in RVA_CALL_RE.finditer(text):
+        bol = text.rfind("\n", 0, m.start()) + 1
+        if text[bol:m.start()].lstrip().startswith("#"):
+            continue                          # inside a macro definition
+        rest = text[m.end():]
+        semi, brace = rest.find(";"), rest.find("{")
+        if brace != -1 and (semi == -1 or brace < semi):
+            continue
+        head = rest[:semi if semi != -1 else len(rest)]
+        if MACRO_DEF_RE.search(LABEL_MACRO_RE.sub("", head)):
+            continue                          # macro-generated definition
+        decl = " ".join(head.split())[:80]
+        out.append((text.count("\n", 0, m.start()) + 1,
+                    f"RVA(..) is not followed by its function definition "
+                    f"(binds to the declaration `{decl};`)"))
+    return out
+
+
 def compgen_order(path: Path):
     """RVA_COMPGEN invocations out of RVA order among the TU's labeled lines."""
     seq = []
@@ -115,6 +148,8 @@ def violations() -> list[str]:
         r = path.relative_to(REPO)
         for line, why, text in scan(path):
             out.append(f"{r}:{line}: {why}\n    {text}")
+        for line, why in rva_binding(path):
+            out.append(f"{r}:{line}: {why}")
         if path.suffix == ".cpp":
             for line, why in compgen_order(path):
                 out.append(f"{r}:{line}: {why}")
@@ -125,7 +160,8 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="gruntz verify label-style",
                                  description=__doc__)
     ap.add_argument("--gate", action="store_true",
-                    help="exit 1 on any off-canon label, marker or out-of-order RVA_COMPGEN")
+                    help="exit 1 on any off-canon label, marker, unbound RVA or "
+                         "out-of-order RVA_COMPGEN")
     a = ap.parse_args(argv)
     viol = violations()
     for v in viol:
@@ -134,7 +170,7 @@ def main(argv=None) -> int:
         print(f"label-style: {len(viol)} off-canon label/marker finding(s)")
         return 1 if a.gate else 0
     print("label-style: OK - canonical macros, blessed markers, "
-          "RVA_COMPGEN in RVA order")
+          "RVA on definitions, RVA_COMPGEN in RVA order")
     return 0
 
 

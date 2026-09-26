@@ -21,6 +21,7 @@
 #include <Gruntz/SoundCueRegistry.h>
 #include <Io/FileMem.h>
 #include <Rez/FrameClock.h>
+#include <SafeDelete.h>
 #include <Wap32/Object.h>
 #include <Wap32/WapObj.h>
 #include <Wwd/WwdObjMgr.h>
@@ -71,54 +72,38 @@ i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags) {
     m_soundStream = new SoundStream();
 
     if (!m_childGroup->IsReady()) {
-        if (m_lastError == WORLDERR_NONE) {
-            m_lastError = WORLDERR_CHILD_GROUP;
-        }
+        SetInitError(WORLDERR_CHILD_GROUP);
         return 0;
     }
     if (!m_workerList->IsReady()) {
-        if (m_lastError == WORLDERR_NONE) {
-            m_lastError = WORLDERR_WORKER_LIST;
-        }
+        SetInitError(WORLDERR_WORKER_LIST);
         return 0;
     }
     if (!m_imageRegistry->IsReady()) {
-        if (m_lastError == WORLDERR_NONE) {
-            m_lastError = WORLDERR_IMAGE_REGISTRY;
-        }
+        SetInitError(WORLDERR_IMAGE_REGISTRY);
         return 0;
     }
     if (!m_logicRegistry->IsReady()) {
-        if (m_lastError == WORLDERR_NONE) {
-            m_lastError = WORLDERR_WORKER_CACHE;
-        }
+        SetInitError(WORLDERR_WORKER_CACHE);
         return 0;
     }
     if (!m_paletteRegistry->IsReady()) {
-        if (m_lastError == WORLDERR_NONE) {
-            m_lastError = WORLDERR_WORKER_MAP;
-        }
+        SetInitError(WORLDERR_WORKER_MAP);
         return 0;
     }
     if (!m_animRegistry->IsReady()) {
-        if (m_lastError == WORLDERR_NONE) {
-            m_lastError = WORLDERR_ANIM_REGISTRY;
-        }
+        SetInitError(WORLDERR_ANIM_REGISTRY);
         return 0;
     }
     if (!m_level->SetViewportSize(w, h)) {
-        if (m_lastError == WORLDERR_NONE) {
-            m_lastError = WORLDERR_LEVEL_EXTENTS;
-        }
+        SetInitError(WORLDERR_LEVEL_EXTENTS);
         return 0;
     }
     if (HAS(static_cast<DDrawSurfaceMgrFlags>(flags), SURFACEMGR_DIRECT_OBJECT_MOVEMENT)) {
         m_level->m_flags |= WWD_LEVEL_FLAG_DIRECT_MOVEMENT;
     }
     if (!m_drawTarget->CreateChildren(w, h, bpp, flags)) {
-        if (m_lastError == WORLDERR_NONE) {
-            m_lastError = WORLDERR_CREATE_PAGES;
-        }
+        SetInitError(WORLDERR_CREATE_PAGES);
         return 0;
     }
 
@@ -130,9 +115,7 @@ i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags) {
         delete m_soundStream;
         m_soundStream = NULL;
         if (HAS(static_cast<DDrawSurfaceMgrFlags>(flags), SURFACEMGR_REQUIRE_SOUND)) {
-            if (m_lastError == WORLDERR_NONE) {
-                m_lastError = WORLDERR_SOUND_OUTPUT;
-            }
+            SetInitError(WORLDERR_SOUND_OUTPUT);
             return 0;
         }
     }
@@ -142,9 +125,7 @@ i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags) {
         m_soundStream = NULL;
     }
     if (!m_soundRegistry->BindSoundStream(true)) {
-        if (m_lastError == WORLDERR_NONE) {
-            m_lastError = WORLDERR_SOUND_REGISTRY;
-        }
+        SetInitError(WORLDERR_SOUND_REGISTRY);
         return 0;
     }
     return 1;
@@ -152,50 +133,17 @@ i32 CDDrawSurfaceMgr::Init(HWND hWnd, i32 w, i32 h, ColorDepth bpp, i32 flags) {
 
 RVA(0x00155e20, 0xd1)
 void CDDrawSurfaceMgr::Cleanup() {
-    if (m_level) {
-        delete m_level;
-        m_level = NULL;
-    }
-    if (m_soundRegistry) {
-        delete m_soundRegistry;
-        m_soundRegistry = NULL;
-    }
-    if (m_soundStream) {
-        delete m_soundStream;
-        m_soundStream = NULL;
-    }
-    if (m_drawTarget) {
-        delete m_drawTarget;
-        m_drawTarget = NULL;
-    }
-    if (m_childGroup) {
-        delete m_childGroup;
-        m_childGroup = NULL;
-    }
-    if (m_workerList) {
-        delete m_workerList;
-        m_workerList = NULL;
-    }
-    if (m_imageRegistry) {
-        delete m_imageRegistry;
-        m_imageRegistry = NULL;
-    }
-    if (m_logicRegistry) {
-        delete m_logicRegistry;
-        m_logicRegistry = NULL;
-    }
-    if (m_paletteRegistry) {
-        delete m_paletteRegistry;
-        m_paletteRegistry = NULL;
-    }
-    if (m_animRegistry) {
-        delete m_animRegistry;
-        m_animRegistry = NULL;
-    }
-    if (m_deviceManager) {
-        delete m_deviceManager;
-        m_deviceManager = NULL;
-    }
+    SAFE_DELETE(m_level);
+    SAFE_DELETE(m_soundRegistry);
+    SAFE_DELETE(m_soundStream);
+    SAFE_DELETE(m_drawTarget);
+    SAFE_DELETE(m_childGroup);
+    SAFE_DELETE(m_workerList);
+    SAFE_DELETE(m_imageRegistry);
+    SAFE_DELETE(m_logicRegistry);
+    SAFE_DELETE(m_paletteRegistry);
+    SAFE_DELETE(m_animRegistry);
+    SAFE_DELETE(m_deviceManager);
     m_callback = NULL;
 }
 
@@ -266,10 +214,10 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, L
 
     CFileMem S;
 
-    if (S.SetName(path, 0, 0) == 0) {
+    if (!S.SetName(path, 0, 0)) {
         return 0;
     }
-    if (S.Open() == 0) {
+    if (!S.Open()) {
         return 0;
     }
 
@@ -278,46 +226,46 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, char* path, char* name, L
 
     CTime now = CTime::GetCurrentTime();
     header.m_version = 1;
-    header.m_month = now.GetLocalTm(NULL)->tm_mon + 1;
-    header.m_day = now.GetLocalTm(NULL)->tm_mday;
-    header.m_year = now.GetLocalTm(NULL)->tm_year + 0x76c;
+    header.m_month = now.GetMonth();
+    header.m_day = now.GetDay();
+    header.m_year = now.GetYear();
     strcpy(header.m_name, name);
     i32 probe = m_childGroup->CountActive();
     header.m_objIdCounter = g_wwdObjIdCounter;
     header.m_childCount = probe;
     S.Write(&header, sizeof(header));
 
-    if (InvokeCallbackInline(&S, SERIAL_SNAPSHOT_BEGIN, LOGIC_UNSET, NULL) == 0) {
+    if (!InvokeCallbackInline(&S, SERIAL_SNAPSHOT_BEGIN, LOGIC_UNSET, NULL)) {
         return 0;
     }
-    if (m_childGroup->WriteObjectSnapshots(&S, typeId) == LOGIC_UNSET) {
+    if (!m_childGroup->WriteObjectSnapshots(&S, typeId)) {
         return 0;
     }
-    if (InvokeCallbackInline(&S, SERIAL_PRESAVE, LOGIC_UNSET, NULL) == 0) {
+    if (!InvokeCallbackInline(&S, SERIAL_PRESAVE, LOGIC_UNSET, NULL)) {
         return 0;
     }
-    if (m_childGroup->DispatchSerializationToObjects(&S, SERIAL_PRESAVE, typeId) == 0) {
+    if (!m_childGroup->DispatchSerializationToObjects(&S, SERIAL_PRESAVE, typeId)) {
         return 0;
     }
-    if (m_level->SerializeDispatch(&S, SERIAL_PRESAVE, LOGIC_UNSET, 0) == 0) {
+    if (!m_level->SerializeDispatch(&S, SERIAL_PRESAVE, LOGIC_UNSET, 0)) {
         return 0;
     }
-    if (InvokeCallbackInline(&S, SERIAL_SAVE, LOGIC_UNSET, NULL) == 0) {
+    if (!InvokeCallbackInline(&S, SERIAL_SAVE, LOGIC_UNSET, NULL)) {
         return 0;
     }
-    if (m_childGroup->SerializeObjects(&S, typeId) == LOGIC_UNSET) {
+    if (!m_childGroup->SerializeObjects(&S, typeId)) {
         return 0;
     }
-    if (m_level->SerializeDispatch(&S, SERIAL_SAVE, LOGIC_UNSET, 0) == 0) {
+    if (!m_level->SerializeDispatch(&S, SERIAL_SAVE, LOGIC_UNSET, 0)) {
         return 0;
     }
-    if (InvokeCallbackInline(&S, SERIAL_POSTSAVE, LOGIC_UNSET, NULL) == 0) {
+    if (!InvokeCallbackInline(&S, SERIAL_POSTSAVE, LOGIC_UNSET, NULL)) {
         return 0;
     }
-    if (m_childGroup->DispatchSerializationToObjects(&S, SERIAL_POSTSAVE, typeId) == 0) {
+    if (!m_childGroup->DispatchSerializationToObjects(&S, SERIAL_POSTSAVE, typeId)) {
         return 0;
     }
-    if (m_level->SerializeDispatch(&S, SERIAL_POSTSAVE, LOGIC_UNSET, 0) == 0) {
+    if (!m_level->SerializeDispatch(&S, SERIAL_POSTSAVE, LOGIC_UNSET, 0)) {
         return 0;
     }
 
@@ -335,49 +283,49 @@ i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, LogicTypeId ty
 
     CFileMem S;
 
-    if (S.SetName(static_cast<const char*>(name), 1, 0) == 0) {
+    if (!S.SetName(name, 1, 0)) {
         return 0;
     }
-    if (S.Open() == 0) {
+    if (!S.Open()) {
         return 0;
     }
 
     CSnapshotHeader header;
     S.Read(&header, sizeof(header));
 
-    if (InvokeCallbackInline(&S, SERIAL_RESTORE_BEGIN, typeId, &header) == 0) {
+    if (!InvokeCallbackInline(&S, SERIAL_RESTORE_BEGIN, typeId, &header)) {
         return 0;
     }
     g_wwdObjIdCounter = header.m_objIdCounter;
     m_childGroup->ClearChildren();
-    if (m_childGroup->LoadObjects(&S, header.m_childCount, typeId) == LOGIC_UNSET) {
+    if (!m_childGroup->LoadObjects(&S, header.m_childCount, typeId)) {
         return 0;
     }
-    if (InvokeCallbackInline(&S, SERIAL_PRELOAD, typeId, &header) == 0) {
+    if (!InvokeCallbackInline(&S, SERIAL_PRELOAD, typeId, &header)) {
         return 0;
     }
-    if (m_childGroup->DispatchSerializationToObjects(&S, SERIAL_PRELOAD, typeId) == 0) {
+    if (!m_childGroup->DispatchSerializationToObjects(&S, SERIAL_PRELOAD, typeId)) {
         return 0;
     }
-    if (m_level->SerializeDispatch(&S, SERIAL_PRELOAD, LOGIC_UNSET, 0) == 0) {
+    if (!m_level->SerializeDispatch(&S, SERIAL_PRELOAD, LOGIC_UNSET, 0)) {
         return 0;
     }
-    if (InvokeCallbackInline(&S, SERIAL_LOAD, typeId, &header) == 0) {
+    if (!InvokeCallbackInline(&S, SERIAL_LOAD, typeId, &header)) {
         return 0;
     }
-    if (m_childGroup->DeserializeObjects(&S, header.m_childCount, typeId) == LOGIC_UNSET) {
+    if (!m_childGroup->DeserializeObjects(&S, header.m_childCount, typeId)) {
         return 0;
     }
-    if (m_level->SerializeDispatch(&S, SERIAL_LOAD, LOGIC_UNSET, 0) == 0) {
+    if (!m_level->SerializeDispatch(&S, SERIAL_LOAD, LOGIC_UNSET, 0)) {
         return 0;
     }
-    if (InvokeCallbackInline(&S, SERIAL_POSTLOAD, typeId, &header) == 0) {
+    if (!InvokeCallbackInline(&S, SERIAL_POSTLOAD, typeId, &header)) {
         return 0;
     }
-    if (m_childGroup->DispatchSerializationToObjects(&S, SERIAL_POSTLOAD, typeId) == 0) {
+    if (!m_childGroup->DispatchSerializationToObjects(&S, SERIAL_POSTLOAD, typeId)) {
         return 0;
     }
-    if (m_level->SerializeDispatch(&S, SERIAL_POSTLOAD, LOGIC_UNSET, 0) == 0) {
+    if (!m_level->SerializeDispatch(&S, SERIAL_POSTLOAD, LOGIC_UNSET, 0)) {
         return 0;
     }
 

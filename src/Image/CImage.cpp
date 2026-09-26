@@ -18,6 +18,7 @@
 #include <Image/ImageClipMacros.h>
 #include <MakeRect.h>
 #include <Pix16.h>
+#include <RectMacros.h>
 #include <Rez/FrameClock.h>
 #include <Rez/RezArchiveDir.h>
 #include <Rez/RezArchiveEntry.h>
@@ -335,11 +336,7 @@ void CImage::RenderImage(CResolveNode* info, CDDrawSurfacePair* dst) {
         info->m_plotOffset.m_y,
         info->m_screenPosition.m_y
     );
-    if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        info->m_level->m_mainPlane->WorldToViewport(&x, &y);
-    }
-    i32 right = m_width + x - 1;
-    i32 bottom = m_height + y - 1;
+    DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
     i32 dleft = x;
     i32 dtop = y;
     i32 dright = right;
@@ -454,11 +451,7 @@ void CImage::BlitNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
         info->m_plotOffset.m_y,
         m_anchor.y
     );
-    if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        info->m_level->m_mainPlane->WorldToViewport(&x, &y);
-    }
-    i32 right = m_width + x - 1;
-    i32 bottom = m_height + y - 1;
+    DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
     DECLARE_CLIPPED_IMAGE_RECT(RECT, d, info, dst, x, y, right, bottom, w, h)
     RECT s;
     s.left = right - d.right;
@@ -484,17 +477,10 @@ void CImage::BlitFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
         info->m_plotOffset.m_y,
         info->m_screenPosition.m_y
     );
-    if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        info->m_level->m_mainPlane->WorldToViewport(&x, &y);
-    }
-    i32 right = m_width + x - 1;
-    i32 bottom = m_height + y - 1;
+    DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
     DECLARE_CLIPPED_IMAGE_RECT(RECT, d, info, dst, x, y, right, bottom, w, h)
     RECT s;
-    s.left = right - d.right;
-    s.top = d.top - y;
-    s.right = s.left + w;
-    s.bottom = s.top + h;
+    SET_RECT_COMPONENTS(s, right - d.right, d.top - y, s.left + w, s.top + h);
     d.right += 1;
     d.bottom += 1;
     g_bltFx.dwDDFX = DDBLTFX_MIRRORLEFTRIGHT;
@@ -509,17 +495,10 @@ RVA(0x00153d90, 0x259)
 void CImage::BlitFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_plotOffset.m_x - m_anchor.x + m_origin.x + info->m_screenPosition.m_x;
     LONG y = info->m_screenPosition.m_y - m_origin.y - m_anchor.y - info->m_plotOffset.m_y;
-    if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        info->m_level->m_mainPlane->WorldToViewport(&x, &y);
-    }
-    i32 right = m_width + x - 1;
-    i32 bottom = m_height + y - 1;
+    DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
     DECLARE_CLIPPED_IMAGE_RECT(RECT, d, info, dst, x, y, right, bottom, w, h)
     RECT s;
-    s.left = d.left - x;
-    s.top = bottom - d.bottom;
-    s.right = s.left + w;
-    s.bottom = s.top + h;
+    SET_RECT_COMPONENTS(s, d.left - x, bottom - d.bottom, s.left + w, s.top + h);
     d.right += 1;
     d.bottom += 1;
     g_bltFx.dwDDFX = DDBLTFX_MIRRORUPDOWN;
@@ -534,11 +513,7 @@ RVA(0x00153ff0, 0x280)
 void CImage::BlitShadeFlipHV(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenPosition.m_x - m_anchor.x + m_origin.x + info->m_plotOffset.m_x;
     LONG y = info->m_screenPosition.m_y - m_anchor.y + m_origin.y + info->m_plotOffset.m_y;
-    if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        info->m_level->m_mainPlane->WorldToViewport(&x, &y);
-    }
-    i32 right = m_width + x - 1;
-    i32 bottom = m_height + y - 1;
+    DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
     DECLARE_CLIPPED_IMAGE_RECT(ShadeRect, d, info, dst, x, y, right, bottom, w, h)
     ShadeRect s;
     s.left = d.left - x;
@@ -562,11 +537,7 @@ RVA(0x00154270, 0x257)
 void CImage::BlitShadeNorm(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenPosition.m_x - m_origin.x - m_anchor.x - info->m_plotOffset.m_x;
     LONG y = info->m_screenPosition.m_y - m_origin.y - m_anchor.y - info->m_plotOffset.m_y;
-    if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        info->m_level->m_mainPlane->WorldToViewport(&x, &y);
-    }
-    i32 right = m_width + x - 1;
-    i32 bottom = m_height + y - 1;
+    DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
     DECLARE_CLIPPED_IMAGE_RECT(ShadeRect, d, info, dst, x, y, right, bottom, w, h)
     ShadeRect s;
     s.left = right - d.right;
@@ -585,11 +556,7 @@ RVA(0x001544d0, 0x275)
 void CImage::BlitShadeFlipV(CResolveNode* info, CDDrawSurfacePair* dst) {
     LONG x = info->m_screenPosition.m_x - m_anchor.x - info->m_plotOffset.m_x - m_origin.x;
     LONG y = m_origin.y + info->m_plotOffset.m_y + info->m_screenPosition.m_y - m_anchor.y;
-    if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        info->m_level->m_mainPlane->WorldToViewport(&x, &y);
-    }
-    i32 right = m_width + x - 1;
-    i32 bottom = m_height + y - 1;
+    DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
     DECLARE_CLIPPED_IMAGE_RECT(ShadeRect, d, info, dst, x, y, right, bottom, w, h)
     ShadeRect s;
     s.left = d.left - x;
@@ -618,11 +585,7 @@ void CImage::BlitShadeFlipH(CResolveNode* info, CDDrawSurfacePair* dst) {
         info->m_plotOffset.m_y,
         m_anchor.y
     );
-    if (info->m_flags & IDX(WWD_GAME_OBJECT_FLAG_WORLD_SPACE)) {
-        info->m_level->m_mainPlane->WorldToViewport(&x, &y);
-    }
-    i32 right = m_width + x - 1;
-    i32 bottom = m_height + y - 1;
+    DECLARE_IMAGE_DEST_EXTENTS(info, x, y, right, bottom);
     DECLARE_CLIPPED_IMAGE_RECT(ShadeRect, d, info, dst, x, y, right, bottom, w, h)
     ShadeRect s;
     s.left = d.left - x;

@@ -100,9 +100,9 @@ i32 CDDrawShadeBlit::BuildRle(
                                && static_cast<i32>(src[i]) != keyVal) {
                             i++;
                         }
-                        ba.SetAtGrow(ba.GetSize(), static_cast<u8>((i - runStart)));
+                        ba.Add(static_cast<u8>((i - runStart)));
                         for (i32 j = runStart; j < i; j++) {
-                            ba.SetAtGrow(ba.GetSize(), src[j]);
+                            ba.Add(src[j]);
                         }
                         runStart = i;
                     } else {
@@ -111,10 +111,7 @@ i32 CDDrawShadeBlit::BuildRle(
                                && static_cast<i32>(src[i]) == keyVal) {
                             i++;
                         }
-                        ba.SetAtGrow(
-                            ba.GetSize(),
-                            static_cast<u8>(((i - runStart) | SHADE_RLE_TRANSPARENT_FLAG))
-                        );
+                        ba.Add(static_cast<u8>(((i - runStart) | SHADE_RLE_TRANSPARENT_FLAG)));
                         runStart = i;
                     }
                 } while (i < m_width);
@@ -163,7 +160,7 @@ i32 CDDrawShadeBlit::BuildFromSurface(CDDSurface* surf, i32 keyVal, PALETTEENTRY
         keyVal,
         palette
     );
-    surf->m_ddSurface->Unlock(NULL);
+    surf->Unlock();
     return r;
 }
 
@@ -637,7 +634,22 @@ void CDDrawShadeBlit::BlitCopyForward(
         }
     }
 
-    surf->m_ddSurface->Unlock(NULL);
+    surf->Unlock();
+}
+
+inline void CDDrawShadeBlit::CopyRowFlip(u8* dst, u8* src, i32 bytes) {
+    if (m_srcBpp == 1) {
+        while (bytes-- > 0) {
+            *dst-- = *src++;
+        }
+    } else {
+        u16* d = Pix16(dst);
+        u16* s = Pix16(src);
+        while (bytes-- > 0) {
+            *d-- = *s++;
+            bytes--;
+        }
+    }
 }
 
 RVA(0x00149d00, 0x4f8)
@@ -687,22 +699,11 @@ void CDDrawShadeBlit::BlitCopyMirrored(
                 x += SHADE_RLE_TRANSPARENT_FLAG - static_cast<i32>(m_rleData[pos]);
                 pos++;
             } else {
-                i32 bytes = static_cast<i32>(m_rleData[pos]) * m_srcBpp;
-                u8* s = &m_rleData[pos + 1];
-                u8* dst0 = base + x * m_dstBpp;
-                if (m_srcBpp == 1) {
-                    u8* d = dst0;
-                    while (bytes-- > 0) {
-                        *d-- = *s++;
-                    }
-                } else {
-                    u16* d = Pix16(dst0);
-                    u16* sw = Pix16(s);
-                    while (bytes-- > 0) {
-                        *d-- = *sw++;
-                        bytes--;
-                    }
-                }
+                CopyRowFlip(
+                    base + x * m_dstBpp,
+                    &m_rleData[pos + 1],
+                    static_cast<i32>(m_rleData[pos]) * m_srcBpp
+                );
                 x -= m_rleData[pos];
                 pos += static_cast<i32>(m_rleData[pos]) * m_srcBpp + 1;
             }
@@ -726,37 +727,13 @@ void CDDrawShadeBlit::BlitCopyMirrored(
                 u8* sd = &m_rleData[pos + 1];
                 if (x - m_rleData[pos] <= clip->left) {
                     i32 vis = (x - clip->left) * m_srcBpp;
-                    i32 bytes = vis < 0 ? 0 : vis;
-                    u8* dbase = base + (x - clip->left) * m_dstBpp;
-                    if (m_srcBpp == 1) {
-                        u8* d = dbase;
-                        while (bytes-- > 0) {
-                            *d-- = *sd++;
-                        }
-                    } else {
-                        u16* d = Pix16(dbase);
-                        u16* sw = Pix16(sd);
-                        while (bytes-- > 0) {
-                            *d-- = *sw++;
-                            bytes--;
-                        }
-                    }
+                    CopyRowFlip(base + (x - clip->left) * m_dstBpp, sd, vis < 0 ? 0 : vis);
                 } else {
-                    i32 bytes = static_cast<i32>(m_rleData[pos]) * m_srcBpp;
-                    u8* dbase = base + (x - clip->left) * m_dstBpp;
-                    if (m_srcBpp == 1) {
-                        u8* d = dbase;
-                        while (bytes-- > 0) {
-                            *d-- = *sd++;
-                        }
-                    } else {
-                        u16* d = Pix16(dbase);
-                        u16* sw = Pix16(sd);
-                        while (bytes-- > 0) {
-                            *d-- = *sw++;
-                            bytes--;
-                        }
-                    }
+                    CopyRowFlip(
+                        base + (x - clip->left) * m_dstBpp,
+                        sd,
+                        static_cast<i32>(m_rleData[pos]) * m_srcBpp
+                    );
                 }
                 x -= m_rleData[pos];
                 pos += static_cast<i32>(m_rleData[pos]) * m_srcBpp + 1;
@@ -787,19 +764,7 @@ void CDDrawShadeBlit::BlitCopyMirrored(
                 if (x >= 0 && trans == false) {
                     i32 bytes = (clip->right - x) * m_srcBpp;
                     u8* s = &m_rleData[pos] - bytes;
-                    if (m_srcBpp == 1) {
-                        u8* d = base + clip->right * m_dstBpp;
-                        while (bytes-- > 0) {
-                            *d-- = *s++;
-                        }
-                    } else {
-                        u16* d = Pix16(base + clip->right * m_dstBpp);
-                        u16* sw = Pix16(s);
-                        while (bytes-- > 0) {
-                            *d-- = *sw++;
-                            bytes--;
-                        }
-                    }
+                    CopyRowFlip(base + clip->right * m_dstBpp, s, bytes);
                 }
             }
             if (x > 0) {
@@ -807,22 +772,11 @@ void CDDrawShadeBlit::BlitCopyMirrored(
                     x += SHADE_RLE_TRANSPARENT_FLAG - static_cast<i32>(m_rleData[pos]);
                     pos++;
                 } else {
-                    i32 bytes = static_cast<i32>(m_rleData[pos]) * m_srcBpp;
-                    u8* s = &m_rleData[pos + 1];
-                    u8* dst0 = base + x * m_dstBpp;
-                    if (m_srcBpp == 1) {
-                        u8* d = dst0;
-                        while (bytes-- > 0) {
-                            *d-- = *s++;
-                        }
-                    } else {
-                        u16* d = Pix16(dst0);
-                        u16* sw = Pix16(s);
-                        while (bytes-- > 0) {
-                            *d-- = *sw++;
-                            bytes--;
-                        }
-                    }
+                    CopyRowFlip(
+                        base + x * m_dstBpp,
+                        &m_rleData[pos + 1],
+                        static_cast<i32>(m_rleData[pos]) * m_srcBpp
+                    );
                     x -= m_rleData[pos];
                     pos += static_cast<i32>(m_rleData[pos]) * m_srcBpp + 1;
                 }
@@ -834,7 +788,7 @@ void CDDrawShadeBlit::BlitCopyMirrored(
         }
     }
 
-    surf->m_ddSurface->Unlock(NULL);
+    surf->Unlock();
 }
 
 RVA(0x0014a200, 0x1570)
@@ -888,279 +842,15 @@ void CDDrawShadeBlit::BlitShadedForward(
             } else {
                 if (m_doubleScanlines) {
                     if ((dst->top + row) % 2) {
-
-                        u8* d = base + x * m_dstBpp;
-                        u8* s = &m_rleData[pos + 1];
-                        i32 count = m_rleData[pos];
-                        switch (m_drawType) {
-                            case SHADE_DST_BY_SRC: {
-                                u8* pal = m_palDescr->m_data;
-                                memcpy(g_scratch, d, count);
-                                u8* sc = g_scratch;
-                                while (count-- > 0) {
-                                    d[0] = pal[(*sc << PALETTE_INDEX_BITS) + *s];
-                                    d[pitch] = pal[(*sc << PALETTE_INDEX_BITS) + *s];
-                                    d++;
-                                    sc++;
-                                    s++;
-                                }
-                                break;
-                            }
-                            case SHADE_DST_BY_LEVEL: {
-                                u8* pal = m_palDescr->m_data;
-                                memcpy(g_scratch, d, count);
-                                u8* sc = g_scratch;
-                                while (count-- > 0) {
-                                    d[0] = pal[(*sc << PALETTE_INDEX_BITS) + m_light];
-                                    d[pitch] = pal[(*sc << PALETTE_INDEX_BITS) + m_light];
-                                    d++;
-                                    sc++;
-                                }
-                                break;
-                            }
-                            case SHADE_DST_BY_SRC_16: {
-                                u16* pal1 = m_palDescr->Lut16();
-                                u16* pal2 = g_greyShadeTable->Lut16();
-                                memcpy(g_scratch, d, count * 2);
-                                i32 sc = g_scratch - d;
-                                while (count-- > 0) {
-                                    i32 rd = pitch / 2 * 2;
-                                    u32 idx = pal2[Load16(d + sc)];
-                                    u32 hi = *s++;
-                                    hi >>= CLUT_ALPHA_NIBBLE_SHIFT;
-                                    idx += hi << CLUT_ALPHA_INDEX_SHIFT;
-                                    u16 v = pal1[idx];
-                                    Store16(d, v);
-                                    Store16(d + rd, v);
-                                    d += 2;
-                                }
-                                break;
-                            }
-                            case SHADE_ALPHA_16: {
-                                memcpy(g_scratch, d, count * 2);
-                                if (m_blendVariant) {
-                                    u8* sc = g_scratch;
-                                    while (count-- > 0) {
-                                        i32 rd = pitch / 2 * 2;
-                                        i32 db = d - g_scratch;
-                                        i32 sb = s - g_scratch;
-                                        u32 dv = Load16(sc);
-                                        u32 a = Load16(sc + sb);
-                                        i32 v =
-                                            m_lutBank0
-                                                [(a >> RGB555_RED_UP)
-                                                 + ((dv >> PIXEL16_GREEN_UP)
-                                                    & ~RGB555_CHANNEL_MASK)]
-                                            | m_lutBank1
-                                                [((a >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
-                                                 + (((dv >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
-                                                    << RGB555_CHANNEL_BITS)]
-                                            | m_lutBank2
-                                                [(a & RGB555_CHANNEL_MASK)
-                                                 + ((dv & RGB555_CHANNEL_MASK)
-                                                    << RGB555_CHANNEL_BITS)];
-                                        u8* p = sc + db;
-                                        Store16(p, v);
-                                        Store16(p + rd, v);
-                                        sc += 2;
-                                    }
-                                } else {
-                                    u8* sc = g_scratch;
-                                    while (count-- > 0) {
-                                        i32 rd = pitch / 2 * 2;
-                                        i32 db = d - g_scratch;
-                                        i32 sb = s - g_scratch;
-                                        u32 dv = Load16(sc);
-                                        u32 a = Load16(sc + sb);
-                                        i32 v = m_lutBank0
-                                                    [(a >> RGB565_RED_UP)
-                                                     + ((dv >> RGB565_GREEN_TO_5_SHIFT)
-                                                        & ~RGB555_CHANNEL_MASK)]
-                                                | m_lutBank1
-                                                    [((a >> RGB565_GREEN_TO_5_SHIFT)
-                                                      & RGB555_CHANNEL_MASK)
-                                                     + (((dv >> RGB565_GREEN_TO_5_SHIFT)
-                                                         & RGB555_CHANNEL_MASK)
-                                                        << RGB555_CHANNEL_BITS)]
-                                                | m_lutBank2
-                                                    [(a & RGB555_CHANNEL_MASK)
-                                                     + ((dv & RGB555_CHANNEL_MASK)
-                                                        << RGB555_CHANNEL_BITS)];
-                                        u8* p = sc + db;
-                                        Store16(p, v);
-                                        Store16(p + rd, v);
-                                        sc += 2;
-                                    }
-                                }
-                                break;
-                            }
-                        }
+                        ConvertRowDoubleFwd(
+                            base + x * m_dstBpp,
+                            &m_rleData[pos + 1],
+                            m_rleData[pos],
+                            pitch
+                        );
                     }
                 } else {
-
-                    u8* d = base + x * m_dstBpp;
-                    u8* s = &m_rleData[pos + 1];
-                    i32 count = m_rleData[pos];
-                    switch (m_drawType) {
-                        case SHADE_DST_BY_SRC: {
-                            u8* pal = m_palDescr->m_data;
-                            memcpy(g_scratch, d, count);
-                            u8* sc = g_scratch;
-                            while (count-- > 0) {
-                                *d++ = pal[(*sc++ << PALETTE_INDEX_BITS) + *s++];
-                            }
-                            break;
-                        }
-                        case SHADE_DST_BY_SRC_16: {
-                            u16* pal1 = m_palDescr->Lut16();
-                            u16* pal2 = g_greyShadeTable->Lut16();
-                            memcpy(g_scratch, d, count * 2);
-                            i32 sc = g_scratch - d;
-                            while (count-- > 0) {
-                                u32 idx = pal2[Load16(d + sc)];
-                                d += 2;
-                                u32 hi = *s++;
-                                hi >>= CLUT_ALPHA_NIBBLE_SHIFT;
-                                idx += hi << CLUT_ALPHA_INDEX_SHIFT;
-                                Store16(d - 2, pal1[idx]);
-                            }
-                            break;
-                        }
-                        case SHADE_PAL_16: {
-                            u16* pal = m_palDescr->Lut16();
-                            while (count-- > 0) {
-                                Store16(d, static_cast<u16>(pal[*s++]));
-                                d += 2;
-                            }
-                            break;
-                        }
-                        case SHADE_ALPHA_16: {
-                            memcpy(g_scratch, d, count * 2);
-                            if (m_blendVariant) {
-                                u8* sd = g_scratch;
-                                while (count-- > 0) {
-                                    i32 db = d - g_scratch;
-                                    i32 sb = s - g_scratch;
-                                    u32 bb = Load16(sd);
-                                    u32 a = Load16(sd + sb);
-                                    u16 r = m_lutBank2
-                                        [(a & RGB555_CHANNEL_MASK)
-                                         + ((bb & RGB555_CHANNEL_MASK) << RGB555_CHANNEL_BITS)];
-                                    r |= m_lutBank0
-                                        [(a >> RGB555_RED_UP)
-                                         + ((bb >> PIXEL16_GREEN_UP) & ~RGB555_CHANNEL_MASK)];
-                                    r |= m_lutBank1
-                                        [((a >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
-                                         + (((bb >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
-                                            << RGB555_CHANNEL_BITS)];
-                                    Store16(sd + db, r);
-                                    sd += 2;
-                                }
-                            } else {
-                                u8* sd = g_scratch;
-                                while (count-- > 0) {
-                                    i32 db = d - g_scratch;
-                                    i32 sb = s - g_scratch;
-                                    u32 bb = Load16(sd);
-                                    u32 a = Load16(sd + sb);
-                                    u16 r = m_lutBank2
-                                        [(a & RGB555_CHANNEL_MASK)
-                                         + ((bb & RGB555_CHANNEL_MASK) << RGB555_CHANNEL_BITS)];
-                                    r |= m_lutBank1
-                                        [((a >> RGB565_GREEN_TO_5_SHIFT) & RGB555_CHANNEL_MASK)
-                                         + (((bb >> RGB565_GREEN_TO_5_SHIFT) & RGB555_CHANNEL_MASK)
-                                            << RGB555_CHANNEL_BITS)];
-                                    r |= m_lutBank0
-                                        [(a >> RGB565_RED_UP)
-                                         + ((bb >> RGB565_GREEN_TO_5_SHIFT)
-                                            & ~RGB555_CHANNEL_MASK)];
-                                    Store16(sd + db, r);
-                                    sd += 2;
-                                }
-                            }
-                            break;
-                        }
-                        case SHADE_PAL_ALPHA_16: {
-                            memcpy(g_scratch, d, count * 2);
-                            u16* pal = m_palDescr->Lut16();
-                            if (m_blendVariant) {
-                                u8* sd = g_scratch;
-                                while (count-- > 0) {
-                                    i32 db = d - g_scratch;
-                                    u32 a = pal[*s++];
-                                    u32 bb = Load16(sd);
-                                    u16 r = m_lutBank1
-                                        [((a >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
-                                         + (((bb >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
-                                            << RGB555_CHANNEL_BITS)];
-                                    r |= m_lutBank0
-                                        [(a >> RGB555_RED_UP)
-                                         + ((bb >> PIXEL16_GREEN_UP) & ~RGB555_CHANNEL_MASK)];
-                                    r |= m_lutBank2
-                                        [(a & RGB555_CHANNEL_MASK)
-                                         + ((bb & RGB555_CHANNEL_MASK) << RGB555_CHANNEL_BITS)];
-                                    Store16(sd + db, r);
-                                    sd += 2;
-                                }
-                            } else {
-                                u8* sd = g_scratch;
-                                while (count-- > 0) {
-                                    i32 db = d - g_scratch;
-                                    u32 a = pal[*s++];
-                                    u32 bb = Load16(sd);
-                                    u16 r = m_lutBank2
-                                        [(a & RGB555_CHANNEL_MASK)
-                                         + ((bb & RGB555_CHANNEL_MASK) << RGB555_CHANNEL_BITS)];
-                                    r |= m_lutBank1
-                                        [((a >> RGB565_GREEN_TO_5_SHIFT) & RGB555_CHANNEL_MASK)
-                                         + (((bb >> RGB565_GREEN_TO_5_SHIFT) & RGB555_CHANNEL_MASK)
-                                            << RGB555_CHANNEL_BITS)];
-                                    r |= m_lutBank0
-                                        [(a >> RGB565_RED_UP)
-                                         + ((bb >> RGB565_GREEN_TO_5_SHIFT)
-                                            & ~RGB555_CHANNEL_MASK)];
-                                    Store16(sd + db, r);
-                                    sd += 2;
-                                }
-                            }
-                            break;
-                        }
-                        case SHADE_DST_BY_LEVEL: {
-                            u8* pbase = m_palDescr->m_data;
-                            memcpy(g_scratch, d, count);
-                            u8* sc = g_scratch;
-                            while (count-- > 0) {
-                                *d++ = pbase[(*sc++ << PALETTE_INDEX_BITS) + m_light];
-                            }
-                            break;
-                        }
-                        case SHADE_SRC_BY_LEVEL: {
-                            u8* pbase = m_palDescr->m_data;
-                            while (count-- > 0) {
-                                *d++ = pbase[(*s++ << PALETTE_INDEX_BITS) + m_light];
-                            }
-                            break;
-                        }
-                        case SHADE_FILL_LEVEL: {
-                            while (count-- > 0) {
-                                *d++ = static_cast<u8>(m_light);
-                            }
-                            break;
-                        }
-                        case SHADE_LERP_LEVEL: {
-                            u8* pal = m_palDescr->m_data;
-                            memcpy(g_scratch, d, count);
-                            u8* sc = g_scratch;
-                            while (count-- > 0) {
-                                i32 sv = pal[*sc++ + PALETTE_ENTRY_COUNT];
-                                i32 dv = pal[*s + PALETTE_ENTRY_COUNT];
-                                i32 t = (dv - sv) * m_light / 255 + sv;
-                                *d++ = pal[t];
-                                s++;
-                            }
-                            break;
-                        }
-                    }
+                    ConvertRow(base + x * m_dstBpp, &m_rleData[pos + 1], m_rleData[pos]);
                 }
                 x += m_rleData[pos];
                 pos += static_cast<i32>(m_rleData[pos]) * m_srcBpp + 1;
@@ -1194,112 +884,7 @@ void CDDrawShadeBlit::BlitShadedForward(
                     if (m_doubleScanlines) {
                         if ((dst->top + row) % 2) {
                             i32 vis = x - clip->left;
-                            u8* d = base;
-                            u8* s = &m_rleData[pos] - vis * m_srcBpp;
-                            switch (m_drawType) {
-                                case SHADE_DST_BY_SRC: {
-                                    u8* pal = m_palDescr->m_data;
-                                    memcpy(g_scratch, d, vis);
-                                    u8* sc = g_scratch;
-                                    while (vis-- > 0) {
-                                        d[0] = pal[(*sc << PALETTE_INDEX_BITS) + *s];
-                                        d[pitch] = pal[(*sc << PALETTE_INDEX_BITS) + *s];
-                                        d++;
-                                        sc++;
-                                        s++;
-                                    }
-                                    break;
-                                }
-                                case SHADE_DST_BY_LEVEL: {
-                                    u8* pal = m_palDescr->m_data;
-                                    memcpy(g_scratch, d, vis);
-                                    u8* sc = g_scratch;
-                                    while (vis-- > 0) {
-                                        d[0] = pal[(*sc << PALETTE_INDEX_BITS) + m_light];
-                                        d[pitch] = pal[(*sc << PALETTE_INDEX_BITS) + m_light];
-                                        d++;
-                                        sc++;
-                                    }
-                                    break;
-                                }
-                                case SHADE_DST_BY_SRC_16: {
-                                    u16* pal1 = m_palDescr->Lut16();
-                                    u16* pal2 = g_greyShadeTable->Lut16();
-                                    memcpy(g_scratch, d, vis * 2);
-                                    u8* sc = g_scratch;
-                                    while (vis-- > 0) {
-                                        i32 rd = pitch / 2 * 2;
-                                        u32 idx = pal2[Load16(sc)];
-                                        u32 hi = *s++;
-                                        hi >>= CLUT_ALPHA_NIBBLE_SHIFT;
-                                        idx += hi << CLUT_ALPHA_INDEX_SHIFT;
-                                        u16 v = pal1[idx];
-                                        Store16(d, v);
-                                        Store16(d + rd, v);
-                                        d += 2;
-                                        sc += 2;
-                                    }
-                                    break;
-                                }
-                                case SHADE_ALPHA_16: {
-                                    memcpy(g_scratch, d, vis * 2);
-                                    u8* sc = g_scratch;
-                                    if (m_blendVariant) {
-                                        while (vis-- > 0) {
-                                            i32 rd = pitch / 2 * 2;
-                                            i32 db = d - g_scratch;
-                                            i32 sb = s - g_scratch;
-                                            u32 dv = Load16(sc);
-                                            u32 a = Load16(sc + sb);
-                                            i32 v =
-                                                m_lutBank0
-                                                    [(a >> RGB555_RED_UP)
-                                                     + ((dv >> PIXEL16_GREEN_UP)
-                                                        & ~RGB555_CHANNEL_MASK)]
-                                                | m_lutBank1
-                                                    [((a >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
-                                                     + (((dv >> PIXEL16_GREEN_UP)
-                                                         & RGB555_CHANNEL_MASK)
-                                                        << RGB555_CHANNEL_BITS)]
-                                                | m_lutBank2
-                                                    [(a & RGB555_CHANNEL_MASK)
-                                                     + ((dv & RGB555_CHANNEL_MASK)
-                                                        << RGB555_CHANNEL_BITS)];
-                                            u8* p = sc + db;
-                                            Store16(p, v);
-                                            Store16(p + rd, v);
-                                            sc += 2;
-                                        }
-                                    } else {
-                                        while (vis-- > 0) {
-                                            i32 rd = pitch / 2 * 2;
-                                            i32 db = d - g_scratch;
-                                            i32 sb = s - g_scratch;
-                                            u32 dv = Load16(sc);
-                                            u32 a = Load16(sc + sb);
-                                            i32 v = m_lutBank0
-                                                        [(a >> RGB565_RED_UP)
-                                                         + ((dv >> RGB565_GREEN_TO_5_SHIFT)
-                                                            & ~RGB555_CHANNEL_MASK)]
-                                                    | m_lutBank1
-                                                        [((a >> RGB565_GREEN_TO_5_SHIFT)
-                                                          & RGB555_CHANNEL_MASK)
-                                                         + (((dv >> RGB565_GREEN_TO_5_SHIFT)
-                                                             & RGB555_CHANNEL_MASK)
-                                                            << RGB555_CHANNEL_BITS)]
-                                                    | m_lutBank2
-                                                        [(a & RGB555_CHANNEL_MASK)
-                                                         + ((dv & RGB555_CHANNEL_MASK)
-                                                            << RGB555_CHANNEL_BITS)];
-                                            u8* p = sc + db;
-                                            Store16(p, v);
-                                            Store16(p + rd, v);
-                                            sc += 2;
-                                        }
-                                    }
-                                    break;
-                                }
-                            }
+                            ConvertRowDoubleFwd(base, &m_rleData[pos] - vis * m_srcBpp, vis, pitch);
                         }
                     } else {
                         i32 vis = x - clip->left;
@@ -1314,113 +899,12 @@ void CDDrawShadeBlit::BlitShadedForward(
                 } else {
                     if (m_doubleScanlines) {
                         if ((dst->top + row) % 2) {
-                            i32 count = m_rleData[pos];
-                            u8* s = &m_rleData[pos + 1];
-                            u8* d = base + (x - clip->left) * m_dstBpp;
-                            switch (m_drawType) {
-                                case SHADE_DST_BY_SRC: {
-                                    u8* pal = m_palDescr->m_data;
-                                    memcpy(g_scratch, d, count);
-                                    u8* sc = g_scratch;
-                                    while (count-- > 0) {
-                                        d[0] = pal[(*sc << PALETTE_INDEX_BITS) + *s];
-                                        d[pitch] = pal[(*sc << PALETTE_INDEX_BITS) + *s];
-                                        d++;
-                                        sc++;
-                                        s++;
-                                    }
-                                    break;
-                                }
-                                case SHADE_DST_BY_LEVEL: {
-                                    u8* pal = m_palDescr->m_data;
-                                    memcpy(g_scratch, d, count);
-                                    u8* sc = g_scratch;
-                                    while (count-- > 0) {
-                                        d[0] = pal[(*sc << PALETTE_INDEX_BITS) + m_light];
-                                        d[pitch] = pal[(*sc << PALETTE_INDEX_BITS) + m_light];
-                                        d++;
-                                        sc++;
-                                    }
-                                    break;
-                                }
-                                case SHADE_DST_BY_SRC_16: {
-                                    u16* pal1 = m_palDescr->Lut16();
-                                    u16* pal2 = g_greyShadeTable->Lut16();
-                                    memcpy(g_scratch, d, count * 2);
-                                    u8* sc = g_scratch;
-                                    while (count-- > 0) {
-                                        i32 rd = pitch / 2 * 2;
-                                        u32 idx = pal2[Load16(sc)];
-                                        u32 hi = *s++;
-                                        hi >>= CLUT_ALPHA_NIBBLE_SHIFT;
-                                        idx += hi << CLUT_ALPHA_INDEX_SHIFT;
-                                        u16 v = pal1[idx];
-                                        Store16(d, v);
-                                        Store16(d + rd, v);
-                                        d += 2;
-                                        sc += 2;
-                                    }
-                                    break;
-                                }
-                                case SHADE_ALPHA_16: {
-                                    memcpy(g_scratch, d, count * 2);
-                                    u8* sc = g_scratch;
-                                    if (m_blendVariant) {
-                                        while (count-- > 0) {
-                                            i32 rd = pitch / 2 * 2;
-                                            i32 db = d - g_scratch;
-                                            i32 sb = s - g_scratch;
-                                            u32 dv = Load16(sc);
-                                            u32 a = Load16(sc + sb);
-                                            i32 v =
-                                                m_lutBank0
-                                                    [(a >> RGB555_RED_UP)
-                                                     + ((dv >> PIXEL16_GREEN_UP)
-                                                        & ~RGB555_CHANNEL_MASK)]
-                                                | m_lutBank1
-                                                    [((a >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
-                                                     + (((dv >> PIXEL16_GREEN_UP)
-                                                         & RGB555_CHANNEL_MASK)
-                                                        << RGB555_CHANNEL_BITS)]
-                                                | m_lutBank2
-                                                    [(a & RGB555_CHANNEL_MASK)
-                                                     + ((dv & RGB555_CHANNEL_MASK)
-                                                        << RGB555_CHANNEL_BITS)];
-                                            u8* p = sc + db;
-                                            Store16(p, v);
-                                            Store16(p + rd, v);
-                                            sc += 2;
-                                        }
-                                    } else {
-                                        while (count-- > 0) {
-                                            i32 rd = pitch / 2 * 2;
-                                            i32 db = d - g_scratch;
-                                            i32 sb = s - g_scratch;
-                                            u32 dv = Load16(sc);
-                                            u32 a = Load16(sc + sb);
-                                            i32 v = m_lutBank0
-                                                        [(a >> RGB565_RED_UP)
-                                                         + ((dv >> RGB565_GREEN_TO_5_SHIFT)
-                                                            & ~RGB555_CHANNEL_MASK)]
-                                                    | m_lutBank1
-                                                        [((a >> RGB565_GREEN_TO_5_SHIFT)
-                                                          & RGB555_CHANNEL_MASK)
-                                                         + (((dv >> RGB565_GREEN_TO_5_SHIFT)
-                                                             & RGB555_CHANNEL_MASK)
-                                                            << RGB555_CHANNEL_BITS)]
-                                                    | m_lutBank2
-                                                        [(a & RGB555_CHANNEL_MASK)
-                                                         + ((dv & RGB555_CHANNEL_MASK)
-                                                            << RGB555_CHANNEL_BITS)];
-                                            u8* p = sc + db;
-                                            Store16(p, v);
-                                            Store16(p + rd, v);
-                                            sc += 2;
-                                        }
-                                    }
-                                    break;
-                                }
-                            }
+                            ConvertRowDoubleFwd(
+                                base + (x - clip->left) * m_dstBpp,
+                                &m_rleData[pos + 1],
+                                m_rleData[pos],
+                                pitch
+                            );
                         }
                     } else {
                         ConvertRow(
@@ -1488,7 +972,7 @@ void CDDrawShadeBlit::BlitShadedForward(
         }
     }
 
-    src->m_ddSurface->Unlock(NULL);
+    src->Unlock();
 }
 
 RVA(0x0014b770, 0x1280)
@@ -1541,270 +1025,15 @@ void CDDrawShadeBlit::BlitShadedMirrored(
             } else {
                 if (m_doubleScanlines) {
                     if ((dst->top + row) % 2) {
-
-                        u8* d = base + x * m_dstBpp;
-                        u8* s = &m_rleData[pos + 1];
-                        i32 count = m_rleData[pos];
-                        switch (m_drawType) {
-                            case SHADE_DST_BY_SRC: {
-                                u8* pbase = m_palDescr->m_data;
-                                memcpy(g_scratch, d - count + 1, count);
-                                u8* sc = &g_scratch[count - 1];
-                                while (count-- > 0) {
-                                    d[0] = pbase[(*sc << PALETTE_INDEX_BITS) + *s];
-                                    d[pitch] = pbase[(*sc << PALETTE_INDEX_BITS) + *s];
-                                    d--;
-                                    sc--;
-                                    s++;
-                                }
-                                break;
-                            }
-                            case SHADE_DST_BY_LEVEL: {
-                                u8* pbase = m_palDescr->m_data;
-                                memcpy(g_scratch, d - count + 1, count);
-                                u8* sc = &g_scratch[count - 1];
-                                while (count-- > 0) {
-                                    d[0] = pbase[(*sc << PALETTE_INDEX_BITS) + m_light];
-                                    d[pitch] = pbase[(*sc << PALETTE_INDEX_BITS) + *s];
-                                    d--;
-                                    sc--;
-                                }
-                                break;
-                            }
-                            case SHADE_DST_BY_SRC_16: {
-                                u16* pal1 = m_palDescr->Lut16();
-                                u16* pal2 = g_greyShadeTable->Lut16();
-                                memcpy(g_scratch, d - count * 2 - 2, count * 2);
-                                u8* sc = &g_scratch[count * 2 - 2];
-                                while (count-- > 0) {
-                                    i32 rd = 2 * pitch / 2;
-                                    u32 idx = pal2[Load16(sc)];
-                                    u32 hi = *s++;
-                                    hi >>= CLUT_ALPHA_NIBBLE_SHIFT;
-                                    idx += hi << CLUT_ALPHA_INDEX_SHIFT;
-                                    u16 v = pal1[idx];
-                                    Store16(d, v);
-                                    Store16(d + rd, v);
-                                    d -= 2;
-                                    sc -= 2;
-                                }
-                                break;
-                            }
-                            case SHADE_ALPHA_16: {
-                                memcpy(g_scratch, d - count * 2 - 2, count * 2);
-                                u8* sc = &g_scratch[count * 2 - 2];
-                                u8* ss2 = s;
-                                if (m_blendVariant) {
-                                    while (count-- > 0) {
-                                        i32 rd = pitch / 2 * 2;
-                                        u32 a = Load16(ss2);
-                                        u32 dv = Load16(sc);
-                                        i32 v = m_lutBank0
-                                            [(a >> RGB555_RED_UP)
-                                             + ((dv >> PIXEL16_GREEN_UP) & ~RGB555_CHANNEL_MASK)];
-                                        v |= m_lutBank1
-                                            [((a >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
-                                             + (((dv >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
-                                                << RGB555_CHANNEL_BITS)];
-                                        v |= m_lutBank2
-                                            [(a & RGB555_CHANNEL_MASK)
-                                             + ((dv & RGB555_CHANNEL_MASK) << RGB555_CHANNEL_BITS)];
-                                        Store16(d, v);
-                                        Store16(d + rd, v);
-                                        d -= 2;
-                                        sc -= 2;
-                                        ss2 += 2;
-                                    }
-                                } else {
-                                    while (count-- > 0) {
-                                        i32 rd = 2 * pitch / 2;
-                                        u32 a = Load16(ss2);
-                                        u32 dv = Load16(sc);
-                                        i32 v = m_lutBank0
-                                            [(a >> RGB565_RED_UP)
-                                             + ((dv >> RGB565_GREEN_TO_5_SHIFT)
-                                                & ~RGB555_CHANNEL_MASK)];
-                                        v |= m_lutBank1
-                                            [((a >> RGB565_GREEN_TO_5_SHIFT) & RGB555_CHANNEL_MASK)
-                                             + (((dv >> RGB565_GREEN_TO_5_SHIFT)
-                                                 & RGB555_CHANNEL_MASK)
-                                                << RGB555_CHANNEL_BITS)];
-                                        v |= m_lutBank2
-                                            [(a & RGB555_CHANNEL_MASK)
-                                             + ((dv & RGB555_CHANNEL_MASK) << RGB555_CHANNEL_BITS)];
-                                        Store16(d, v);
-                                        Store16(d + rd, v);
-                                        d -= 2;
-                                        sc -= 2;
-                                        ss2 += 2;
-                                    }
-                                }
-                                break;
-                            }
-                        }
+                        ConvertRowDouble(
+                            base + x * m_dstBpp,
+                            &m_rleData[pos + 1],
+                            m_rleData[pos],
+                            pitch
+                        );
                     }
                 } else {
-
-                    u8* d = base + x * m_dstBpp;
-                    u8* s = &m_rleData[pos + 1];
-                    i32 count = m_rleData[pos];
-                    u8* cbase = m_palDescr ? m_palDescr->m_data : s;
-                    switch (m_drawType) {
-                        case SHADE_DST_BY_SRC: {
-                            memcpy(g_scratch, d - count + 1, count);
-                            u8* sc = &g_scratch[count - 1];
-                            while (count-- > 0) {
-                                *d-- = cbase[*s++ + (*sc-- << PALETTE_INDEX_BITS)];
-                            }
-                            break;
-                        }
-                        case SHADE_DST_BY_SRC_16: {
-                            u16* pal1 = m_palDescr->Lut16();
-                            u16* pal2 = g_greyShadeTable->Lut16();
-                            memcpy(g_scratch, d - count * 2 - 2, count * 2);
-                            u8* sc = &g_scratch[count * 2 - 2];
-                            while (count-- > 0) {
-                                u32 idx = pal2[Load16(sc)];
-                                u32 hi = *s++;
-                                hi >>= CLUT_ALPHA_NIBBLE_SHIFT;
-                                idx += hi << CLUT_ALPHA_INDEX_SHIFT;
-                                Store16(d, static_cast<u16>(pal1[idx]));
-                                d -= 2;
-                                sc -= 2;
-                            }
-                            break;
-                        }
-                        case SHADE_PAL_16: {
-                            u16* pal = m_palDescr->Lut16();
-                            while (count-- > 0) {
-                                Store16(d, static_cast<u16>(pal[*s++]));
-                                d -= 2;
-                            }
-                            break;
-                        }
-                        case SHADE_ALPHA_16: {
-                            memcpy(g_scratch, d - count * 2 - 2, count * 2);
-                            u8* sc = &g_scratch[count * 2 - 2];
-                            u8* ss2 = s;
-                            if (m_blendVariant) {
-                                while (count-- > 0) {
-                                    u32 a = Load16(ss2);
-                                    u32 dv = Load16(sc);
-                                    u16 r = m_lutBank0
-                                        [(a >> RGB555_RED_UP)
-                                         + ((dv >> PIXEL16_GREEN_UP) & ~RGB555_CHANNEL_MASK)];
-                                    r |= m_lutBank1
-                                        [((a >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
-                                         + (((dv >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
-                                            << RGB555_CHANNEL_BITS)];
-                                    r |= m_lutBank2
-                                        [(a & RGB555_CHANNEL_MASK)
-                                         + ((dv & RGB555_CHANNEL_MASK) << RGB555_CHANNEL_BITS)];
-                                    Store16(d, r);
-                                    d -= 2;
-                                    sc -= 2;
-                                    ss2 += 2;
-                                }
-                            } else {
-                                while (count-- > 0) {
-                                    u32 a = Load16(ss2);
-                                    u32 dv = Load16(sc);
-                                    u16 r = m_lutBank0
-                                        [(a >> RGB565_RED_UP)
-                                         + ((dv >> RGB565_GREEN_TO_5_SHIFT)
-                                            & ~RGB555_CHANNEL_MASK)];
-                                    r |= m_lutBank1
-                                        [((a >> RGB565_GREEN_TO_5_SHIFT) & RGB555_CHANNEL_MASK)
-                                         + (((dv >> RGB565_GREEN_TO_5_SHIFT) & RGB555_CHANNEL_MASK)
-                                            << RGB555_CHANNEL_BITS)];
-                                    r |= m_lutBank2
-                                        [(a & RGB555_CHANNEL_MASK)
-                                         + ((dv & RGB555_CHANNEL_MASK) << RGB555_CHANNEL_BITS)];
-                                    Store16(d, r);
-                                    d -= 2;
-                                    sc -= 2;
-                                    ss2 += 2;
-                                }
-                            }
-                            break;
-                        }
-                        case SHADE_PAL_ALPHA_16: {
-                            memcpy(g_scratch, d - count * 2 - 2, count * 2);
-                            u16* pal = m_palDescr->Lut16();
-                            u8* sc = &g_scratch[count * 2 - 2];
-                            if (m_blendVariant) {
-                                while (count-- > 0) {
-                                    u32 a = pal[*s++];
-                                    u32 dv = Load16(sc);
-                                    u16 r = m_lutBank0
-                                        [(a >> RGB555_RED_UP)
-                                         + ((dv >> PIXEL16_GREEN_UP) & ~RGB555_CHANNEL_MASK)];
-                                    r |= m_lutBank1
-                                        [((a >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
-                                         + (((dv >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
-                                            << RGB555_CHANNEL_BITS)];
-                                    r |= m_lutBank2
-                                        [(a & RGB555_CHANNEL_MASK)
-                                         + ((dv & RGB555_CHANNEL_MASK) << RGB555_CHANNEL_BITS)];
-                                    Store16(d, r);
-                                    d -= 2;
-                                    sc -= 2;
-                                }
-                            } else {
-                                while (count-- > 0) {
-                                    u32 a = pal[*s++];
-                                    u32 dv = Load16(sc);
-                                    u16 r = m_lutBank0
-                                        [(a >> RGB565_RED_UP)
-                                         + ((dv >> RGB565_GREEN_TO_5_SHIFT)
-                                            & ~RGB555_CHANNEL_MASK)];
-                                    r |= m_lutBank1
-                                        [((a >> RGB565_GREEN_TO_5_SHIFT) & RGB555_CHANNEL_MASK)
-                                         + (((dv >> RGB565_GREEN_TO_5_SHIFT) & RGB555_CHANNEL_MASK)
-                                            << RGB555_CHANNEL_BITS)];
-                                    r |= m_lutBank2
-                                        [(a & RGB555_CHANNEL_MASK)
-                                         + ((dv & RGB555_CHANNEL_MASK) << RGB555_CHANNEL_BITS)];
-                                    Store16(d, r);
-                                    d -= 2;
-                                    sc -= 2;
-                                }
-                            }
-                            break;
-                        }
-                        case SHADE_DST_BY_LEVEL: {
-                            memcpy(g_scratch, d - count + 1, count);
-                            u8* sc = &g_scratch[count - 1];
-                            while (count-- > 0) {
-                                *d-- = cbase[(*sc-- << PALETTE_INDEX_BITS) + m_light];
-                            }
-                            break;
-                        }
-                        case SHADE_SRC_BY_LEVEL: {
-                            while (count-- > 0) {
-                                *d-- = cbase[(*s++ << PALETTE_INDEX_BITS) + m_light];
-                            }
-                            break;
-                        }
-                        case SHADE_FILL_LEVEL: {
-                            while (count-- > 0) {
-                                *d-- = static_cast<u8>(m_light);
-                            }
-                            break;
-                        }
-                        case SHADE_LERP_LEVEL: {
-                            memcpy(g_scratch, d - count - 1, count);
-                            u8* sc = &g_scratch[count + 1];
-                            while (count-- > 0) {
-                                i32 sv = cbase[*sc-- + PALETTE_ENTRY_COUNT];
-                                i32 dv = cbase[*s + PALETTE_ENTRY_COUNT];
-                                i32 t = (dv - sv) * m_light / 255 + sv;
-                                *d-- = cbase[t];
-                                s++;
-                            }
-                            break;
-                        }
-                    }
+                    ConvertRowFlip(base + x * m_dstBpp, &m_rleData[pos + 1], m_rleData[pos]);
                 }
                 x -= m_rleData[pos];
                 pos += static_cast<i32>(m_rleData[pos]) * m_srcBpp + 1;
@@ -1831,111 +1060,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
                         if ((dst->top + row) % 2) {
                             i32 v = x - clip->left;
                             i32 vis = v < 0 ? 0 : v;
-                            u8* s = &m_rleData[pos + 1];
-                            u8* d = base + v * m_dstBpp;
-                            switch (m_drawType) {
-                                case SHADE_DST_BY_SRC: {
-                                    u8* pbase = m_palDescr->m_data;
-                                    memcpy(g_scratch, d - vis + 1, vis);
-                                    u8* sc = &g_scratch[vis - 1];
-                                    while (vis-- > 0) {
-                                        d[0] = pbase[(*sc << PALETTE_INDEX_BITS) + *s];
-                                        d[pitch] = pbase[(*sc << PALETTE_INDEX_BITS) + *s];
-                                        d--;
-                                        sc--;
-                                        s++;
-                                    }
-                                    break;
-                                }
-                                case SHADE_DST_BY_LEVEL: {
-                                    u8* pbase = m_palDescr->m_data;
-                                    memcpy(g_scratch, d - vis + 1, vis);
-                                    u8* sc = &g_scratch[vis - 1];
-                                    while (vis-- > 0) {
-                                        d[0] = pbase[(*sc << PALETTE_INDEX_BITS) + m_light];
-                                        d[pitch] = pbase[(*sc << PALETTE_INDEX_BITS) + *s];
-                                        d--;
-                                        sc--;
-                                    }
-                                    break;
-                                }
-                                case SHADE_DST_BY_SRC_16: {
-                                    u16* pal1 = m_palDescr->Lut16();
-                                    u16* pal2 = g_greyShadeTable->Lut16();
-                                    memcpy(g_scratch, d - vis * 2 - 2, vis * 2);
-                                    u8* sc = &g_scratch[vis * 2 - 2];
-                                    while (vis-- > 0) {
-                                        i32 rd = pitch / 2 * 2;
-                                        u32 idx = pal2[Load16(sc)];
-                                        u32 hi = *s++;
-                                        hi >>= CLUT_ALPHA_NIBBLE_SHIFT;
-                                        idx += hi << CLUT_ALPHA_INDEX_SHIFT;
-                                        u16 v = pal1[idx];
-                                        Store16(d, v);
-                                        Store16(d + rd, v);
-                                        d -= 2;
-                                        sc -= 2;
-                                    }
-                                    break;
-                                }
-                                case SHADE_ALPHA_16: {
-                                    memcpy(g_scratch, d - vis * 2 - 2, vis * 2);
-                                    u8* sc = &g_scratch[vis * 2 - 2];
-                                    u8* ss2 = s;
-                                    if (m_blendVariant) {
-                                        while (vis-- > 0) {
-                                            i32 rd = pitch / 2 * 2;
-                                            u32 dv = Load16(sc);
-                                            u32 a = Load16(ss2);
-                                            i32 v =
-                                                m_lutBank0
-                                                    [(a >> RGB555_RED_UP)
-                                                     + ((dv >> PIXEL16_GREEN_UP)
-                                                        & ~RGB555_CHANNEL_MASK)]
-                                                | m_lutBank1
-                                                    [((a >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
-                                                     + (((dv >> PIXEL16_GREEN_UP)
-                                                         & RGB555_CHANNEL_MASK)
-                                                        << RGB555_CHANNEL_BITS)]
-                                                | m_lutBank2
-                                                    [(a & RGB555_CHANNEL_MASK)
-                                                     + ((dv & RGB555_CHANNEL_MASK)
-                                                        << RGB555_CHANNEL_BITS)];
-                                            Store16(d, v);
-                                            Store16(d + rd, v);
-                                            d -= 2;
-                                            sc -= 2;
-                                            ss2 += 2;
-                                        }
-                                    } else {
-                                        while (vis-- > 0) {
-                                            i32 rd = pitch / 2 * 2;
-                                            u32 dv = Load16(sc);
-                                            u32 a = Load16(ss2);
-                                            i32 v = m_lutBank0
-                                                        [(a >> RGB565_RED_UP)
-                                                         + ((dv >> RGB565_GREEN_TO_5_SHIFT)
-                                                            & ~RGB555_CHANNEL_MASK)]
-                                                    | m_lutBank1
-                                                        [((a >> RGB565_GREEN_TO_5_SHIFT)
-                                                          & RGB555_CHANNEL_MASK)
-                                                         + (((dv >> RGB565_GREEN_TO_5_SHIFT)
-                                                             & RGB555_CHANNEL_MASK)
-                                                            << RGB555_CHANNEL_BITS)]
-                                                    | m_lutBank2
-                                                        [(a & RGB555_CHANNEL_MASK)
-                                                         + ((dv & RGB555_CHANNEL_MASK)
-                                                            << RGB555_CHANNEL_BITS)];
-                                            Store16(d, v);
-                                            Store16(d + rd, v);
-                                            d -= 2;
-                                            sc -= 2;
-                                            ss2 += 2;
-                                        }
-                                    }
-                                    break;
-                                }
-                            }
+                            ConvertRowDouble(base + v * m_dstBpp, &m_rleData[pos + 1], vis, pitch);
                         }
                     } else {
                         i32 v = x - clip->left;
@@ -2040,7 +1165,7 @@ void CDDrawShadeBlit::BlitShadedMirrored(
         }
     }
 
-    surf->m_ddSurface->Unlock(NULL);
+    surf->Unlock();
 }
 
 RVA(0x0014c9f0, 0x5d0)
@@ -2051,8 +1176,7 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
             memcpy(g_scratch, dst, count);
             u8* sc = g_scratch;
             while (count-- > 0) {
-                u8* row = pal + (*sc++ << PALETTE_INDEX_BITS);
-                *dst++ = row[*src++];
+                *dst++ = pal[(*sc++ << PALETTE_INDEX_BITS) + *src++];
             }
             break;
         }
@@ -2060,16 +1184,14 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
             u16* pal1 = m_palDescr->Lut16();
             u16* pal2 = g_greyShadeTable->Lut16();
             memcpy(g_scratch, dst, count * 2);
-            u8* pd = dst;
-            u8* sc = g_scratch;
+            u16* d = reinterpret_cast<u16*>(dst);        // byte-forced
+            u16* sc = reinterpret_cast<u16*>(g_scratch); // byte-forced
             while (count-- > 0) {
-                u32 idx = pal2[Load16(sc)];
-                sc += 2;
+                u32 idx = pal2[*sc++];
                 u32 hi = *src++;
                 hi >>= CLUT_ALPHA_NIBBLE_SHIFT;
                 idx += hi << CLUT_ALPHA_INDEX_SHIFT;
-                Store16(pd, pal1[idx]);
-                pd += 2;
+                *d++ = pal1[idx];
             }
             break;
         }
@@ -2084,44 +1206,40 @@ void CDDrawShadeBlit::ConvertRow(u8* dst, u8* src, i32 count) {
         }
         case SHADE_ALPHA_16: {
             memcpy(g_scratch, dst, count * 2);
+            u16* d = reinterpret_cast<u16*>(dst);        // byte-forced
+            u16* s = reinterpret_cast<u16*>(src);        // byte-forced
+            u16* sc = reinterpret_cast<u16*>(g_scratch); // byte-forced
             if (m_blendVariant) {
-                u8* sc = g_scratch;
                 while (count-- > 0) {
-                    i32 db = dst - g_scratch;
-                    i32 sb = src - g_scratch;
-                    u32 a = Load16(sc + sb);
-                    u32 b = Load16(sc);
-                    u16 r = m_lutBank2
-                        [(a & RGB555_CHANNEL_MASK)
-                         + ((b & RGB555_CHANNEL_MASK) << RGB555_CHANNEL_BITS)];
-                    r |= m_lutBank0
-                        [(a >> RGB555_RED_UP) + ((b >> PIXEL16_GREEN_UP) & ~RGB555_CHANNEL_MASK)];
-                    r |= m_lutBank1
-                        [((a >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
-                         + (((b >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
-                            << RGB555_CHANNEL_BITS)];
-                    Store16(sc + db, r);
-                    sc += 2;
+                    u32 a = *s++;
+                    u32 b = *sc++;
+                    u16 v = m_lutBank0
+                                [(a >> RGB555_RED_UP)
+                                 + ((b >> PIXEL16_GREEN_UP) & ~RGB555_CHANNEL_MASK)]
+                            | m_lutBank1
+                                [((a >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
+                                 + (((b >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
+                                    << RGB555_CHANNEL_BITS)]
+                            | m_lutBank2
+                                [(a & RGB555_CHANNEL_MASK)
+                                 + ((b & RGB555_CHANNEL_MASK) << RGB555_CHANNEL_BITS)];
+                    *d++ = v;
                 }
             } else {
-                u8* sc = g_scratch;
                 while (count-- > 0) {
-                    i32 db = dst - g_scratch;
-                    i32 sb = src - g_scratch;
-                    u32 a = Load16(sc + sb);
-                    u32 b = Load16(sc);
-                    u16 r = m_lutBank2
-                        [(a & RGB555_CHANNEL_MASK)
-                         + ((b & RGB555_CHANNEL_MASK) << RGB555_CHANNEL_BITS)];
-                    r |= m_lutBank0
-                        [(a >> RGB565_RED_UP)
-                         + ((b >> RGB565_GREEN_TO_5_SHIFT) & ~RGB555_CHANNEL_MASK)];
-                    r |= m_lutBank1
-                        [((a >> RGB565_GREEN_TO_5_SHIFT) & RGB555_CHANNEL_MASK)
-                         + (((b >> RGB565_GREEN_TO_5_SHIFT) & RGB555_CHANNEL_MASK)
-                            << RGB555_CHANNEL_BITS)];
-                    Store16(sc + db, r);
-                    sc += 2;
+                    u32 a = *s++;
+                    u32 b = *sc++;
+                    u16 v = m_lutBank0
+                                [(a >> RGB565_RED_UP)
+                                 + ((b >> RGB565_GREEN_TO_5_SHIFT) & ~RGB555_CHANNEL_MASK)]
+                            | m_lutBank1
+                                [((a >> RGB565_GREEN_TO_5_SHIFT) & RGB555_CHANNEL_MASK)
+                                 + (((b >> RGB565_GREEN_TO_5_SHIFT) & RGB555_CHANNEL_MASK)
+                                    << RGB555_CHANNEL_BITS)]
+                            | m_lutBank2
+                                [(a & RGB555_CHANNEL_MASK)
+                                 + ((b & RGB555_CHANNEL_MASK) << RGB555_CHANNEL_BITS)];
+                    *d++ = v;
                 }
             }
             break;
@@ -2216,7 +1334,8 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
             u8* sc = &g_scratch[count - 1];
             u8* ss = src;
             while (count-- > 0) {
-                *dst-- = base[(*sc-- << PALETTE_INDEX_BITS) + *ss++];
+                u8* row = base + (*sc-- << PALETTE_INDEX_BITS);
+                *dst-- = row[*ss++];
             }
             break;
         }
@@ -2248,44 +1367,46 @@ void CDDrawShadeBlit::ConvertRowFlip(u8* dst, u8* src, i32 count) {
         }
         case SHADE_ALPHA_16: {
             memcpy(g_scratch, dst - count * 2 - 2, count * 2);
-            u8* sc = &g_scratch[count * 2 - 2];
-            u8* sw = dst;
+            u16* sc = reinterpret_cast<u16*>(&g_scratch[count * 2 - 2]); // byte-forced
+            u16* d = reinterpret_cast<u16*>(dst);                        // byte-forced
+            u16* s = reinterpret_cast<u16*>(src);                        // byte-forced
             if (m_blendVariant) {
                 while (count-- > 0) {
-                    u32 d = Load16(sc);
-                    u32 a = Load16(src);
-                    u16 r = m_lutBank1
-                        [((a >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
-                         + (((d >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
-                            << RGB555_CHANNEL_BITS)];
-                    r |= m_lutBank0
-                        [(a >> RGB555_RED_UP) + ((d >> PIXEL16_GREEN_UP) & ~RGB555_CHANNEL_MASK)];
-                    r |= m_lutBank2
-                        [(a & RGB555_CHANNEL_MASK)
-                         + ((d & RGB555_CHANNEL_MASK) << RGB555_CHANNEL_BITS)];
-                    Store16(sw, r);
-                    sc -= 2;
-                    src += 2;
-                    sw -= 2;
+                    u32 b = *sc;
+                    u32 a = *s;
+                    u16 v = m_lutBank0
+                                [(a >> RGB555_RED_UP)
+                                 + ((b >> PIXEL16_GREEN_UP) & ~RGB555_CHANNEL_MASK)]
+                            | m_lutBank1
+                                [((a >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
+                                 + (((b >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
+                                    << RGB555_CHANNEL_BITS)]
+                            | m_lutBank2
+                                [(a & RGB555_CHANNEL_MASK)
+                                 + ((b & RGB555_CHANNEL_MASK) << RGB555_CHANNEL_BITS)];
+                    *d = v;
+                    d--;
+                    s++;
+                    sc--;
                 }
             } else {
                 while (count-- > 0) {
-                    u32 d = Load16(sc);
-                    u32 a = Load16(src);
-                    u16 r = m_lutBank1
-                        [((a >> RGB565_GREEN_TO_5_SHIFT) & RGB555_CHANNEL_MASK)
-                         + (((d >> RGB565_GREEN_TO_5_SHIFT) & RGB555_CHANNEL_MASK)
-                            << RGB555_CHANNEL_BITS)];
-                    r |= m_lutBank0
-                        [(a >> RGB565_RED_UP)
-                         + ((d >> RGB565_GREEN_TO_5_SHIFT) & ~RGB555_CHANNEL_MASK)];
-                    r |= m_lutBank2
-                        [(a & RGB555_CHANNEL_MASK)
-                         + ((d & RGB555_CHANNEL_MASK) << RGB555_CHANNEL_BITS)];
-                    Store16(sw, r);
-                    sc -= 2;
-                    src += 2;
-                    sw -= 2;
+                    u32 b = *sc;
+                    u32 a = *s;
+                    u16 v = m_lutBank0
+                                [(a >> RGB565_RED_UP)
+                                 + ((b >> RGB565_GREEN_TO_5_SHIFT) & ~RGB555_CHANNEL_MASK)]
+                            | m_lutBank1
+                                [((a >> RGB565_GREEN_TO_5_SHIFT) & RGB555_CHANNEL_MASK)
+                                 + (((b >> RGB565_GREEN_TO_5_SHIFT) & RGB555_CHANNEL_MASK)
+                                    << RGB555_CHANNEL_BITS)]
+                            | m_lutBank2
+                                [(a & RGB555_CHANNEL_MASK)
+                                 + ((b & RGB555_CHANNEL_MASK) << RGB555_CHANNEL_BITS)];
+                    *d = v;
+                    d--;
+                    s++;
+                    sc--;
                 }
             }
             break;
@@ -2402,69 +1523,60 @@ void CDDrawShadeBlit::ConvertRowDoubleFwd(u8* dst, u8* src, i32 count, i32 rowDe
             u16* pal1 = m_palDescr->Lut16();
             u16* pal2 = g_greyShadeTable->Lut16();
             memcpy(g_scratch, dst, count * 2);
-            i32 sc = g_scratch - dst;
+            u16* d = reinterpret_cast<u16*>(dst);        // byte-forced
+            u16* sc = reinterpret_cast<u16*>(g_scratch); // byte-forced
             while (count-- > 0) {
-                i32 rd = rowDelta / 2 * 2;
-                u32 idx = pal2[Load16(dst + sc)];
+                u32 idx = pal2[*sc++];
                 u32 hi = *src++;
                 hi >>= CLUT_ALPHA_NIBBLE_SHIFT;
                 idx += hi << CLUT_ALPHA_INDEX_SHIFT;
                 u16 v = pal1[idx];
-                Store16(dst, v);
-                Store16(dst + rd, v);
-                dst += 2;
+                d[0] = v;
+                d[rowDelta / 2] = v;
+                d++;
             }
             break;
         }
         case SHADE_ALPHA_16: {
             memcpy(g_scratch, dst, count * 2);
+            u16* d = reinterpret_cast<u16*>(dst);        // byte-forced
+            u16* s = reinterpret_cast<u16*>(src);        // byte-forced
+            u16* sc = reinterpret_cast<u16*>(g_scratch); // byte-forced
             if (m_blendVariant) {
-                u8* sc = g_scratch;
-                u8* dd = dst;
-                u8* ss = src;
                 while (count-- > 0) {
-                    i32 rd = rowDelta / 2 * 2;
-                    u32 a = Load16(ss);
-                    u32 d = Load16(sc);
+                    u32 a = *s++;
+                    u32 b = *sc++;
                     i32 v = m_lutBank0
                                 [(a >> RGB555_RED_UP)
-                                 + ((d >> PIXEL16_GREEN_UP) & ~RGB555_CHANNEL_MASK)]
+                                 + ((b >> PIXEL16_GREEN_UP) & ~RGB555_CHANNEL_MASK)]
                             | m_lutBank1
                                 [((a >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
-                                 + (((d >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
+                                 + (((b >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
                                     << RGB555_CHANNEL_BITS)]
                             | m_lutBank2
                                 [(a & RGB555_CHANNEL_MASK)
-                                 + ((d & RGB555_CHANNEL_MASK) << RGB555_CHANNEL_BITS)];
-                    Store16(dd, v);
-                    Store16(dd + rd, v);
-                    sc += 2;
-                    dd += 2;
-                    ss += 2;
+                                 + ((b & RGB555_CHANNEL_MASK) << RGB555_CHANNEL_BITS)];
+                    u16* p = d++;
+                    p[0] = v;
+                    p[rowDelta / 2] = v;
                 }
             } else {
-                u8* sc = g_scratch;
-                u8* dd = dst;
-                u8* ss = src;
                 while (count-- > 0) {
-                    i32 rd = rowDelta / 2 * 2;
-                    u32 a = Load16(ss);
-                    u32 d = Load16(sc);
+                    u32 a = *s++;
+                    u32 b = *sc++;
                     i32 v = m_lutBank0
                                 [(a >> RGB565_RED_UP)
-                                 + ((d >> RGB565_GREEN_TO_5_SHIFT) & ~RGB555_CHANNEL_MASK)]
+                                 + ((b >> RGB565_GREEN_TO_5_SHIFT) & ~RGB555_CHANNEL_MASK)]
                             | m_lutBank1
                                 [((a >> RGB565_GREEN_TO_5_SHIFT) & RGB555_CHANNEL_MASK)
-                                 + (((d >> RGB565_GREEN_TO_5_SHIFT) & RGB555_CHANNEL_MASK)
+                                 + (((b >> RGB565_GREEN_TO_5_SHIFT) & RGB555_CHANNEL_MASK)
                                     << RGB555_CHANNEL_BITS)]
                             | m_lutBank2
                                 [(a & RGB555_CHANNEL_MASK)
-                                 + ((d & RGB555_CHANNEL_MASK) << RGB555_CHANNEL_BITS)];
-                    Store16(dd, v);
-                    Store16(dd + rd, v);
-                    sc += 2;
-                    dd += 2;
-                    ss += 2;
+                                 + ((b & RGB555_CHANNEL_MASK) << RGB555_CHANNEL_BITS)];
+                    u16* p = d++;
+                    p[0] = v;
+                    p[rowDelta / 2] = v;
                 }
             }
             break;
@@ -2521,49 +1633,48 @@ void CDDrawShadeBlit::ConvertRowDouble(u8* dst, u8* src, i32 count, i32 rowDelta
         }
         case SHADE_ALPHA_16: {
             memcpy(g_scratch, dst - count * 2 - 2, count * 2);
-            u8* sc = &g_scratch[count * 2 - 2];
-            u8* ss = src;
+            u16* d = reinterpret_cast<u16*>(dst);                        // byte-forced
+            u16* s = reinterpret_cast<u16*>(src);                        // byte-forced
+            u16* sc = reinterpret_cast<u16*>(&g_scratch[count * 2 - 2]); // byte-forced
             if (m_blendVariant) {
                 while (count-- > 0) {
-                    i32 rd = rowDelta / 2 * 2;
-                    u32 a = Load16(ss);
-                    u32 d = Load16(sc);
+                    u32 a = *s;
+                    u32 b = *sc;
                     i32 v = m_lutBank0
                                 [(a >> RGB555_RED_UP)
-                                 + ((d >> PIXEL16_GREEN_UP) & ~RGB555_CHANNEL_MASK)]
+                                 + ((b >> PIXEL16_GREEN_UP) & ~RGB555_CHANNEL_MASK)]
                             | m_lutBank1
                                 [((a >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
-                                 + (((d >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
+                                 + (((b >> PIXEL16_GREEN_UP) & RGB555_CHANNEL_MASK)
                                     << RGB555_CHANNEL_BITS)]
                             | m_lutBank2
                                 [(a & RGB555_CHANNEL_MASK)
-                                 + ((d & RGB555_CHANNEL_MASK) << RGB555_CHANNEL_BITS)];
-                    Store16(dst, v);
-                    Store16(dst + rd, v);
-                    dst -= 2;
-                    sc -= 2;
-                    ss += 2;
+                                 + ((b & RGB555_CHANNEL_MASK) << RGB555_CHANNEL_BITS)];
+                    d[0] = v;
+                    d[rowDelta / 2] = v;
+                    d--;
+                    s++;
+                    sc--;
                 }
             } else {
                 while (count-- > 0) {
-                    i32 rd = rowDelta / 2 * 2;
-                    u32 a = Load16(ss);
-                    u32 d = Load16(sc);
+                    u32 a = *s;
+                    u32 b = *sc;
                     i32 v = m_lutBank0
                                 [(a >> RGB565_RED_UP)
-                                 + ((d >> RGB565_GREEN_TO_5_SHIFT) & ~RGB555_CHANNEL_MASK)]
+                                 + ((b >> RGB565_GREEN_TO_5_SHIFT) & ~RGB555_CHANNEL_MASK)]
                             | m_lutBank1
                                 [((a >> RGB565_GREEN_TO_5_SHIFT) & RGB555_CHANNEL_MASK)
-                                 + (((d >> RGB565_GREEN_TO_5_SHIFT) & RGB555_CHANNEL_MASK)
+                                 + (((b >> RGB565_GREEN_TO_5_SHIFT) & RGB555_CHANNEL_MASK)
                                     << RGB555_CHANNEL_BITS)]
                             | m_lutBank2
                                 [(a & RGB555_CHANNEL_MASK)
-                                 + ((d & RGB555_CHANNEL_MASK) << RGB555_CHANNEL_BITS)];
-                    Store16(dst, v);
-                    Store16(dst + rd, v);
-                    dst -= 2;
-                    sc -= 2;
-                    ss += 2;
+                                 + ((b & RGB555_CHANNEL_MASK) << RGB555_CHANNEL_BITS)];
+                    d[0] = v;
+                    d[rowDelta / 2] = v;
+                    d--;
+                    s++;
+                    sc--;
                 }
             }
             break;

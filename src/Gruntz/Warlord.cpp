@@ -21,9 +21,11 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/Particlez.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
+#include <Gruntz/SerialWorkerRefMacros.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SpriteRefTable.h>
@@ -171,7 +173,7 @@ CWarlord::CWarlord(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE),
     );
 
     m_notifyTimer.m_start = 0;
-    m_notifyTimer.m_window = 0;
+    m_notifyTimer.m_interval = 0;
     m_deathStarted = false;
     ResolveMovingAnimation();
 }
@@ -237,119 +239,17 @@ i32 CWarlord::SerializeDispatch(
             memset(buf, 0, sizeof(buf));
             strcpy(buf, static_cast<const char*>(m_warlordName));
             ar->Write(buf, SERIAL_NAME_LEN);
-            g_serialCounter++;
-            memset(buf, 0, sizeof(buf));
-            if (m_idleAnims[0] != NULL) {
-                strcpy(
-                    buf,
-                    static_cast<const char*>(
-                        world->m_animRegistry->FindAnimationKey(m_idleAnims[0])
-                    )
-                );
-            }
-            ar->Write(buf, SERIAL_NAME_LEN);
-            g_serialCounter++;
-            memset(buf, 0, sizeof(buf));
-            if (m_idleAnims[1] != NULL) {
-                strcpy(
-                    buf,
-                    static_cast<const char*>(
-                        world->m_animRegistry->FindAnimationKey(m_idleAnims[1])
-                    )
-                );
-            }
-            ar->Write(buf, SERIAL_NAME_LEN);
-            g_serialCounter++;
-            memset(buf, 0, sizeof(buf));
-            if (m_idleAnims[2] != NULL) {
-                strcpy(
-                    buf,
-                    static_cast<const char*>(
-                        world->m_animRegistry->FindAnimationKey(m_idleAnims[2])
-                    )
-                );
-            }
-            ar->Write(buf, SERIAL_NAME_LEN);
-            g_serialCounter++;
-            memset(buf, 0, sizeof(buf));
-            if (m_idleAnims[3] != NULL) {
-                strcpy(
-                    buf,
-                    static_cast<const char*>(
-                        world->m_animRegistry->FindAnimationKey(m_idleAnims[3])
-                    )
-                );
-            }
-            ar->Write(buf, SERIAL_NAME_LEN);
-            g_serialCounter++;
-            memset(buf, 0, sizeof(buf));
-            if (m_battlecryAnims[0] != NULL) {
-                strcpy(
-                    buf,
-                    static_cast<const char*>(
-                        world->m_animRegistry->FindAnimationKey(m_battlecryAnims[0])
-                    )
-                );
-            }
-            ar->Write(buf, SERIAL_NAME_LEN);
-            g_serialCounter++;
-            memset(buf, 0, sizeof(buf));
-            if (m_battlecryAnims[1] != NULL) {
-                strcpy(
-                    buf,
-                    static_cast<const char*>(
-                        world->m_animRegistry->FindAnimationKey(m_battlecryAnims[1])
-                    )
-                );
-            }
-            ar->Write(buf, SERIAL_NAME_LEN);
-            g_serialCounter++;
-            memset(buf, 0, sizeof(buf));
-            if (m_battlecryAnims[2] != NULL) {
-                strcpy(
-                    buf,
-                    static_cast<const char*>(
-                        world->m_animRegistry->FindAnimationKey(m_battlecryAnims[2])
-                    )
-                );
-            }
-            ar->Write(buf, SERIAL_NAME_LEN);
-            g_serialCounter++;
-            memset(buf, 0, sizeof(buf));
-            if (m_animJoy != NULL) {
-                strcpy(
-                    buf,
-                    static_cast<const char*>(world->m_animRegistry->FindAnimationKey(m_animJoy))
-                );
-            }
-            ar->Write(buf, SERIAL_NAME_LEN);
-            g_serialCounter++;
-            memset(buf, 0, sizeof(buf));
-            if (m_animDeath != NULL) {
-                strcpy(
-                    buf,
-                    static_cast<const char*>(world->m_animRegistry->FindAnimationKey(m_animDeath))
-                );
-            }
-            ar->Write(buf, SERIAL_NAME_LEN);
-            g_serialCounter++;
-            memset(buf, 0, sizeof(buf));
-            if (m_animMoving != NULL) {
-                strcpy(
-                    buf,
-                    static_cast<const char*>(world->m_animRegistry->FindAnimationKey(m_animMoving))
-                );
-            }
-            ar->Write(buf, SERIAL_NAME_LEN);
-            g_serialCounter++;
-            memset(buf, 0, sizeof(buf));
-            if (m_animPanic != NULL) {
-                strcpy(
-                    buf,
-                    static_cast<const char*>(world->m_animRegistry->FindAnimationKey(m_animPanic))
-                );
-            }
-            ar->Write(buf, SERIAL_NAME_LEN);
+            SERIAL_WRITE_ANIMATION(ar, world, buf, m_idleAnims[0]);
+            SERIAL_WRITE_ANIMATION(ar, world, buf, m_idleAnims[1]);
+            SERIAL_WRITE_ANIMATION(ar, world, buf, m_idleAnims[2]);
+            SERIAL_WRITE_ANIMATION(ar, world, buf, m_idleAnims[3]);
+            SERIAL_WRITE_ANIMATION(ar, world, buf, m_battlecryAnims[0]);
+            SERIAL_WRITE_ANIMATION(ar, world, buf, m_battlecryAnims[1]);
+            SERIAL_WRITE_ANIMATION(ar, world, buf, m_battlecryAnims[2]);
+            SERIAL_WRITE_ANIMATION(ar, world, buf, m_animJoy);
+            SERIAL_WRITE_ANIMATION(ar, world, buf, m_animDeath);
+            SERIAL_WRITE_ANIMATION(ar, world, buf, m_animMoving);
+            SERIAL_WRITE_ANIMATION(ar, world, buf, m_animPanic);
             ar->Write(&m_deathStarted, sizeof(m_deathStarted));
             ar->Write(&m_ownerTag, sizeof(m_ownerTag));
             break;
@@ -363,94 +263,17 @@ i32 CWarlord::SerializeDispatch(
             ar->Read(buf, SERIAL_NAME_LEN);
             m_warlordName = buf;
 
-            g_serialCounter++;
-            ar->Read(buf, SERIAL_NAME_LEN);
-            if (strlen(buf) != 0) {
-                CAniElement* value = MapFind<CAniElement>(world->m_animRegistry->m_animations, buf);
-                m_idleAnims[0] = value;
-            } else {
-                m_idleAnims[0] = NULL;
-            }
-            g_serialCounter++;
-            ar->Read(buf, SERIAL_NAME_LEN);
-            if (strlen(buf) != 0) {
-                CAniElement* value = MapFind<CAniElement>(world->m_animRegistry->m_animations, buf);
-                m_idleAnims[1] = value;
-            } else {
-                m_idleAnims[1] = NULL;
-            }
-            g_serialCounter++;
-            ar->Read(buf, SERIAL_NAME_LEN);
-            if (strlen(buf) != 0) {
-                CAniElement* value = MapFind<CAniElement>(world->m_animRegistry->m_animations, buf);
-                m_idleAnims[2] = value;
-            } else {
-                m_idleAnims[2] = NULL;
-            }
-            g_serialCounter++;
-            ar->Read(buf, SERIAL_NAME_LEN);
-            if (strlen(buf) != 0) {
-                CAniElement* value = MapFind<CAniElement>(world->m_animRegistry->m_animations, buf);
-                m_idleAnims[3] = value;
-            } else {
-                m_idleAnims[3] = NULL;
-            }
-            g_serialCounter++;
-            ar->Read(buf, SERIAL_NAME_LEN);
-            if (strlen(buf) != 0) {
-                CAniElement* value = MapFind<CAniElement>(world->m_animRegistry->m_animations, buf);
-                m_battlecryAnims[0] = value;
-            } else {
-                m_battlecryAnims[0] = NULL;
-            }
-            g_serialCounter++;
-            ar->Read(buf, SERIAL_NAME_LEN);
-            if (strlen(buf) != 0) {
-                CAniElement* value = MapFind<CAniElement>(world->m_animRegistry->m_animations, buf);
-                m_battlecryAnims[1] = value;
-            } else {
-                m_battlecryAnims[1] = NULL;
-            }
-            g_serialCounter++;
-            ar->Read(buf, SERIAL_NAME_LEN);
-            if (strlen(buf) != 0) {
-                CAniElement* value = MapFind<CAniElement>(world->m_animRegistry->m_animations, buf);
-                m_battlecryAnims[2] = value;
-            } else {
-                m_battlecryAnims[2] = NULL;
-            }
-            g_serialCounter++;
-            ar->Read(buf, SERIAL_NAME_LEN);
-            if (strlen(buf) != 0) {
-                CAniElement* value = MapFind<CAniElement>(world->m_animRegistry->m_animations, buf);
-                m_animJoy = value;
-            } else {
-                m_animJoy = NULL;
-            }
-            g_serialCounter++;
-            ar->Read(buf, SERIAL_NAME_LEN);
-            if (strlen(buf) != 0) {
-                CAniElement* value = MapFind<CAniElement>(world->m_animRegistry->m_animations, buf);
-                m_animDeath = value;
-            } else {
-                m_animDeath = NULL;
-            }
-            g_serialCounter++;
-            ar->Read(buf, SERIAL_NAME_LEN);
-            if (strlen(buf) != 0) {
-                CAniElement* value = MapFind<CAniElement>(world->m_animRegistry->m_animations, buf);
-                m_animMoving = value;
-            } else {
-                m_animMoving = NULL;
-            }
-            g_serialCounter++;
-            ar->Read(buf, SERIAL_NAME_LEN);
-            if (strlen(buf) != 0) {
-                CAniElement* value = MapFind<CAniElement>(world->m_animRegistry->m_animations, buf);
-                m_animPanic = value;
-            } else {
-                m_animPanic = NULL;
-            }
+            SERIAL_READ_ANIMATION(ar, world, buf, m_idleAnims[0]);
+            SERIAL_READ_ANIMATION(ar, world, buf, m_idleAnims[1]);
+            SERIAL_READ_ANIMATION(ar, world, buf, m_idleAnims[2]);
+            SERIAL_READ_ANIMATION(ar, world, buf, m_idleAnims[3]);
+            SERIAL_READ_ANIMATION(ar, world, buf, m_battlecryAnims[0]);
+            SERIAL_READ_ANIMATION(ar, world, buf, m_battlecryAnims[1]);
+            SERIAL_READ_ANIMATION(ar, world, buf, m_battlecryAnims[2]);
+            SERIAL_READ_ANIMATION(ar, world, buf, m_animJoy);
+            SERIAL_READ_ANIMATION(ar, world, buf, m_animDeath);
+            SERIAL_READ_ANIMATION(ar, world, buf, m_animMoving);
+            SERIAL_READ_ANIMATION(ar, world, buf, m_animPanic);
             ar->Read(&m_deathStarted, sizeof(m_deathStarted));
             ar->Read(&m_ownerTag, sizeof(m_ownerTag));
             break;
@@ -520,8 +343,6 @@ void RegisterWarlordActions() {
 }
 
 #undef REGISTER_ACTION
-#undef REGISTER_ACTION_TYPED
-#undef REGISTER_NAME
 
 RVA(0x00044bb0, 0x38)
 i32 CWarlord::FinishIdleAnimation() {
@@ -552,7 +373,7 @@ i32 CWarlord::UpdateMovingState() {
         }
     }
 
-    if (static_cast<i64>(g_frameTime) - m_cooldownTimer.m_start >= m_cooldownTimer.m_window) {
+    if (m_cooldownTimer.Expired()) {
         if (rand() % 10 < 5) {
             ResolveIdleAnimation();
             return 0;
@@ -585,9 +406,9 @@ i32 CWarlord::UpdatePanicState() {
             ResolveMovingAnimation();
             return 0;
         }
-        if (static_cast<i64>(g_frameTime) - m_cooldownTimer.m_start >= m_cooldownTimer.m_window) {
+        if (m_cooldownTimer.Expired()) {
             g_gameReg->m_voiceManager->PlayVoice(m_object->m_objectId, 0x436, -1, -1, -1);
-            m_cooldownTimer.m_window = 0x7530;
+            m_cooldownTimer.m_interval = 0x7530;
             m_cooldownTimer.m_start = static_cast<u32>(g_frameTime);
         }
     }
@@ -601,9 +422,8 @@ i32 CWarlord::FinishJoyAnimation() {
         CTriggerMgr* h = g_gameReg->m_triggerMgr;
         if (h->m_phase != FINISH_STATE_ACTIVE && m_object->m_smarts == g_curPlayer) {
             h->m_pendingFx = NULL;
-            CueTimer* tm = &g_gameReg->m_triggerMgr->m_cueTimer;
-            tm->m_window = 0x3e8;
-            tm->m_base = static_cast<u32>(g_frameTime);
+            ClockInterval* tm = &g_gameReg->m_triggerMgr->m_cueTimer;
+            tm->Start(0x3e8);
         }
         ResolveMovingAnimation();
     }
@@ -627,26 +447,20 @@ i32 CWarlord::BuildFortSplashParticles() {
         i32 y = o->m_screenPosition.m_y;
         i32 x = o->m_screenPosition.m_x;
         if (::PtInRect(&g_gameReg->m_viewBounds, x, y)) {
-            CWwdSpriteObject* fx = g_gameReg->m_world->m_childGroup->CreateSprite(
-                0,
+            CreateParticlez(
+                g_gameReg->m_world->m_childGroup,
                 x - 30,
                 y + 10,
-                SORTKEY_ACTOR_BEHIND,
-                "Particlez",
-                WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                "LEVEL_FORTSPLASH",
+                "LEVEL_FORTSPLASH"
             );
-            if (fx != NULL) {
-                fx->SetImageSetByName("LEVEL_FORTSPLASH");
-                fx->SetAnimationByName("LEVEL_FORTSPLASH", 0);
-            }
         }
 
         CTriggerMgr* h = g_gameReg->m_triggerMgr;
         if (h->m_phase != FINISH_STATE_ACTIVE && m_object->m_smarts == g_curPlayer) {
             h->m_pendingFx = NULL;
-            CueTimer* tm = &g_gameReg->m_triggerMgr->m_cueTimer;
-            tm->m_window = 0x3e8;
-            tm->m_base = static_cast<u32>(g_frameTime);
+            ClockInterval* tm = &g_gameReg->m_triggerMgr->m_cueTimer;
+            tm->Start(0x3e8);
         }
 
         GruntzPlayer* slot = &g_gameReg->m_players[m_object->m_smarts];
@@ -670,25 +484,22 @@ i32 CWarlord::ResolveMovingAnimation() {
 
     SET_ANIMATION_ACT("B");
 
-    m_cooldownTimer.m_window = static_cast<u32>((rand() % 0x5dc1 + 0x1770) * 10);
+    m_cooldownTimer.m_interval = static_cast<u32>((rand() % 0x5dc1 + 0x1770) * 10);
     m_cooldownTimer.m_start = static_cast<u32>(g_frameTime);
     return 1;
 }
 
-// @early-stop
 RVA(0x00045270, 0x2a8)
 i32 CWarlord::NotifyFortUnderAttack() {
 
     if (m_deathStarted == false) {
-        bool alreadyPanicking = ANIMATION_ACT_EQUALS("D");
-        if (!alreadyPanicking) {
+        if (!ANIMATION_ACT_EQUALS("D")) {
             if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
                 g_gameReg->m_voiceManager->PlayVoice(m_object->m_objectId, 0x436, -1, -1, -1);
-                m_cooldownTimer.m_window = 0x7530;
+                m_cooldownTimer.m_interval = 0x7530;
                 m_cooldownTimer.m_start = static_cast<u32>(g_frameTime);
             } else {
-                if (static_cast<i64>(g_frameTime) - m_notifyTimer.m_start >= m_notifyTimer.m_window
-                    && g_gameReg->m_triggerMgr->m_pendingFx == this) {
+                if (m_notifyTimer.Expired() && g_gameReg->m_triggerMgr->m_pendingFx == this) {
                     g_gameReg->m_voiceManager->PlayVoice(m_object->m_objectId, 0x440, -1, -1, -1);
                     RVA_DYNINIT(0x000455d0, 0xa, s_alert)
                     DATA(0x002446fc)
@@ -700,12 +511,13 @@ i32 CWarlord::NotifyFortUnderAttack() {
                         FONT_ITEM_FLAGS_NONE,
                         0x11
                     );
-                    m_notifyTimer.m_window =
+                    m_notifyTimer.m_interval =
                         static_cast<u32>(g_buteMgr.GetInt("Warlordz", "NotifyTimer", 0x1770));
                     m_notifyTimer.m_start = static_cast<u32>(g_frameTime);
                 }
-                m_cooldownTimer.m_window = static_cast<u32>((rand() % 0x5dc1 + 0x1770) * 10);
-                m_cooldownTimer.m_start = static_cast<u32>(g_frameTime);
+                i64* cooldown = &m_cooldownTimer.m_start;
+                cooldown[1] = static_cast<u32>((rand() % 0x5dc1 + 0x1770) * 10);
+                cooldown[0] = static_cast<u32>(g_frameTime);
             }
 
             SwitchAnimation(m_animPanic);
@@ -718,6 +530,22 @@ i32 CWarlord::NotifyFortUnderAttack() {
     }
     return 0;
 }
+
+#define PLAY_WARLORD_VOICE(questzCue, otherCue)                                                    \
+    {                                                                                              \
+        CGruntzMgr* g = g_gameReg;                                                                 \
+        if (g->m_gameMode == GAMEMODE_QUESTZ) {                                                    \
+            CWwdSpriteObject* h = m_object;                                                        \
+            i32 cue = (questzCue);                                                                 \
+            i32 x = h->m_screenPosition.m_x;                                                       \
+            i32 y = h->m_screenPosition.m_y;                                                       \
+            if (::PtInRect(&g->m_viewBounds, x, y)) {                                              \
+                g->m_voiceManager->PlayVoice(h->m_objectId, cue, -1, -1, -1);                      \
+            }                                                                                      \
+        } else {                                                                                   \
+            g->m_voiceManager->PlayVoice(m_object->m_objectId, (otherCue), -1, -1, -1);            \
+        }                                                                                          \
+    }
 
 RVA(0x000455f0, 0x15b)
 i32 CWarlord::ResolveDeathAnimation() {
@@ -751,16 +579,7 @@ i32 CWarlord::ResolveJoyAnimation() {
         return 0;
     }
 
-    CGruntzMgr* g = g_gameReg;
-    if (g->m_gameMode == GAMEMODE_QUESTZ) {
-        CWwdSpriteObject* h = m_object;
-        Coord position = h->ScreenPos();
-        if (::PtInRect(&g->m_viewBounds, position.m_x, position.m_y)) {
-            g->m_voiceManager->PlayVoice(h->m_objectId, 0x435, -1, -1, -1);
-        }
-    } else {
-        g->m_voiceManager->PlayVoice(m_object->m_objectId, 0x43f, -1, -1, -1);
-    }
+    PLAY_WARLORD_VOICE(0x435, 0x43f);
 
     CAniElement* anim = m_animJoy;
     SwitchAnimation(anim);
@@ -779,18 +598,7 @@ i32 CWarlord::ResolveIdleAnimation() {
 
     i32 idx = GetRandom(1, 3);
 
-    CGruntzMgr* g = g_gameReg;
-    if (g->m_gameMode == GAMEMODE_QUESTZ) {
-        CWwdSpriteObject* h = m_object;
-
-        i32 cue = idx + 0x431;
-        Coord position = h->ScreenPos();
-        if (::PtInRect(&g->m_viewBounds, position.m_x, position.m_y)) {
-            g->m_voiceManager->PlayVoice(h->m_objectId, cue, -1, -1, -1);
-        }
-    } else {
-        g->m_voiceManager->PlayVoice(m_object->m_objectId, idx + 0x43b, -1, -1, -1);
-    }
+    PLAY_WARLORD_VOICE(idx + 0x431, idx + 0x43b);
 
     CAniElement* anim = m_idleAnims[idx];
     SwitchAnimation(anim);
@@ -811,17 +619,7 @@ i32 CWarlord::ResolveBattlecryAnimation() {
 
     i32 idx = GetRandom(0, 2);
 
-    CGruntzMgr* g = g_gameReg;
-    if (g->m_gameMode == GAMEMODE_QUESTZ) {
-        CWwdSpriteObject* h = m_object;
-        i32 cue = idx + 0x42e;
-        Coord position = h->ScreenPos();
-        if (::PtInRect(&g->m_viewBounds, position.m_x, position.m_y)) {
-            g->m_voiceManager->PlayVoice(h->m_objectId, cue, -1, -1, -1);
-        }
-    } else {
-        g->m_voiceManager->PlayVoice(m_object->m_objectId, idx + 0x438, -1, -1, -1);
-    }
+    PLAY_WARLORD_VOICE(idx + 0x42e, idx + 0x438);
 
     CAniElement* anim = m_battlecryAnims[idx];
     SwitchAnimation(anim);

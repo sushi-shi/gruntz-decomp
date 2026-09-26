@@ -15,15 +15,10 @@
          "GRUNTZ_" + m_animSetName + (sfx)                                                         \
      ))
 
-#define DEATH_FRAME()                                                                              \
-    (static_cast<CAniRecordView*>(                                                                 \
-         m_wwdObject->m_animationCursor.m_animation->m_records.GetSize() > 0                       \
-             ? m_wwdObject->m_animationCursor.m_animation->m_records.GetAt(0)                      \
-             : NULL                                                                                \
-    )                                                                                              \
-         ->m_param)
+#define DEATH_FRAME() (m_wwdObject->m_animationCursor.m_animation->RecordAt(0)->m_param)
 
-#define DEATH_CUE(tag)                                                                             \
+// *_IF_VISIBLE calls the out-of-line CGameLevel::PointInBounds; *_IN_VIEW inlines ::PtInRect.
+#define PLAY_VOICE_IF_VISIBLE(tag)                                                                 \
     do {                                                                                           \
         CGruntzMgr* _g = g_gameReg;                                                                \
         if (CGameLevel::PointInBounds(                                                             \
@@ -32,6 +27,42 @@
                 m_object->m_screenPosition.m_y                                                     \
             )) {                                                                                   \
             _g->m_voiceManager->PlayVoice(this, (tag), -1, 0, -1, -1);                             \
+        }                                                                                          \
+    } while (0)
+
+#define PLAY_GRUNT_CUE_IF_VISIBLE(cue)                                                             \
+    do {                                                                                           \
+        CGruntzMgr* _g = g_gameReg;                                                                \
+        if (CGameLevel::PointInBounds(                                                             \
+                &_g->m_world->m_level->m_mainPlane->m_planeViewRect,                               \
+                m_object->m_screenPosition.m_x,                                                    \
+                m_object->m_screenPosition.m_y                                                     \
+            )) {                                                                                   \
+            _g->m_voiceManager->PlayGruntVoiceCue(this, (cue), -1, -1, -1);                        \
+        }                                                                                          \
+    } while (0)
+
+#define PLAY_VOICE_IN_VIEW(tag)                                                                    \
+    do {                                                                                           \
+        CGruntzMgr* _g = g_gameReg;                                                                \
+        if (::PtInRect(                                                                            \
+                &_g->m_world->m_level->m_mainPlane->m_planeViewRect,                               \
+                m_object->m_screenPosition.m_x,                                                    \
+                m_object->m_screenPosition.m_y                                                     \
+            )) {                                                                                   \
+            _g->m_voiceManager->PlayVoice(this, (tag), -1, 0, -1, -1);                             \
+        }                                                                                          \
+    } while (0)
+
+#define PLAY_GRUNT_CUE_IN_VIEW(cue)                                                                \
+    do {                                                                                           \
+        CGruntzMgr* _g = g_gameReg;                                                                \
+        if (::PtInRect(                                                                            \
+                &_g->m_world->m_level->m_mainPlane->m_planeViewRect,                               \
+                m_object->m_screenPosition.m_x,                                                    \
+                m_object->m_screenPosition.m_y                                                     \
+            )) {                                                                                   \
+            _g->m_voiceManager->PlayGruntVoiceCue(this, (cue), -1, -1, -1);                        \
         }                                                                                          \
     } while (0)
 

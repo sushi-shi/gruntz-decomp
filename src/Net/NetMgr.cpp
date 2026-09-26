@@ -11,10 +11,10 @@
 #include <Net/NetGuids.h>
 #include <Net/NetProviderFindKind.h>
 #include <Net/NetProviderNode.h>
+#include <SafeDelete.h>
 
 #include <dplay.h>
 #include <dplobby.h>
-#include <new>
 #include <string.h>
 
 DATA(0x002bf840)
@@ -138,10 +138,7 @@ void CNetMgr::Destroy() {
     ClearSessionListings();
     ClearPlayers();
 
-    if (m_directPlayBase != NULL) {
-        m_directPlayBase->Release();
-        m_directPlayBase = NULL;
-    }
+    SAFE_RELEASE(m_directPlayBase);
 
 
 
@@ -240,46 +237,24 @@ void CNetMgr::PopulateProviderList(HWND hList, i32 excludedProviderKinds) {
         return;
     }
 
-    CNetProviderNode* provider;
-    CNetProviderNode* next;
-
     SendMessageA(hList, LB_RESETCONTENT, 0, 0);
 
-    m_providerCursor = m_providers.GetHeadPosition();
-    provider = m_providerCursor != NULL
-                 ? static_cast<CNetProviderNode*>(m_providers.GetNext(m_providerCursor))
-                 : NULL;
-
+    CNetProviderNode* provider = GetFirstProvider();
     while (provider != NULL) {
-        CNetProviderNode* service = provider;
-
-        if (((excludedProviderKinds & 1) && service->IsTcpIpProvider())
-            || ((excludedProviderKinds & 2) && service->IsIpxProvider())) {
-
-            if (m_providerCursor != NULL) {
-                next = static_cast<CNetProviderNode*>(m_providers.GetAt(m_providerCursor));
-                m_providers.GetNext(m_providerCursor);
-                provider = next;
-            } else {
-                provider = NULL;
-            }
+        if (((excludedProviderKinds & 1) && provider->IsTcpIpProvider())
+            || ((excludedProviderKinds & 2) && provider->IsIpxProvider())) {
+            provider = GetNextProvider();
         } else {
             i32 idx = static_cast<i32>(SendMessageA(
                 hList,
                 LB_ADDSTRING,
                 0,
-                reinterpret_cast<LPARAM>(static_cast<LPCTSTR>(service->ProviderName()))
+                reinterpret_cast<LPARAM>(static_cast<LPCTSTR>(provider->ProviderName()))
             ));
-            if (idx != -1) {
-                SendMessageA(hList, LB_SETITEMDATA, idx, reinterpret_cast<LPARAM>(service));
+            if (idx != LB_ERR) {
+                SendMessageA(hList, LB_SETITEMDATA, idx, reinterpret_cast<LPARAM>(provider));
             }
-            if (m_providerCursor != NULL) {
-                next = static_cast<CNetProviderNode*>(m_providers.GetAt(m_providerCursor));
-                m_providers.GetNext(m_providerCursor);
-                provider = next;
-            } else {
-                provider = NULL;
-            }
+            provider = GetNextProvider();
         }
     }
 }
@@ -378,7 +353,8 @@ CNetSessionListNode* CNetMgr::AddSessionListing(LPCDPSESSIONDESC2 sessionDesc) {
         return NULL;
     }
 
-    node->m_listPosition = static_cast<__POSITION*>(m_sessionListings.AddTail(static_cast<CObject*>(node)));
+    POSITION pos = m_sessionListings.AddTail(static_cast<CObject*>(node));
+    node->m_listPosition = pos;
     return node;
 }
 
@@ -411,9 +387,7 @@ void CNetMgr::PopulateSessionList(HWND hList) {
 
     SendMessageA(hList, LB_RESETCONTENT, 0, 0);
 
-    m_sessionCursor = m_sessionListings.GetHeadPosition();
-    CNetSessionListNode* listing =
-        m_sessionCursor != NULL ? static_cast<CNetSessionListNode*>(m_sessionListings.GetNext(m_sessionCursor)) : NULL;
+    CNetSessionListNode* listing = GetFirstSession();
 
     while (listing != NULL) {
         MsgParam name;
@@ -431,14 +405,7 @@ void CNetMgr::PopulateSessionList(HWND hList) {
 
 
 
-        if (m_sessionCursor != NULL) {
-            CNetSessionListNode* next =
-                static_cast<CNetSessionListNode*>(m_sessionListings.GetAt(m_sessionCursor));
-            m_sessionListings.GetNext(m_sessionCursor);
-            listing = next;
-        } else {
-            listing = NULL;
-        }
+        listing = GetNextSession();
     }
 }
 
@@ -716,9 +683,7 @@ void CNetMgr::PopulatePlayerList(HWND hList) {
 
     SendMessageA(hList, LB_RESETCONTENT, 0, 0);
 
-    m_playerCursor = m_players.GetHeadPosition();
-    CNetPlayerNode* player =
-        m_playerCursor != NULL ? static_cast<CNetPlayerNode*>(m_players.GetNext(m_playerCursor)) : NULL;
+    CNetPlayerNode* player = GetFirstPlayer();
 
     while (player != NULL) {
         MsgParam name;
@@ -736,13 +701,7 @@ void CNetMgr::PopulatePlayerList(HWND hList) {
 
 
 
-        if (m_playerCursor != NULL) {
-            CNetPlayerNode* next = static_cast<CNetPlayerNode*>(m_players.GetAt(m_playerCursor));
-            m_players.GetNext(m_playerCursor);
-            player = next;
-        } else {
-            player = NULL;
-        }
+        player = GetNextPlayer();
     }
 }
 
@@ -980,9 +939,7 @@ i32 CNetMgr::GetConnectionLatency(DWORD flags) {
 // Zero-ref: retail has no caller or address-taking reference.
 RVA(0x00179270, 0x89)
 CNetProviderNode* CNetMgr::FindProvider(i32 providerKind) {
-    m_providerCursor = m_providers.GetHeadPosition();
-    CNetProviderNode* provider =
-        m_providerCursor != NULL ? static_cast<CNetProviderNode*>(m_providers.GetNext(m_providerCursor)) : NULL;
+    CNetProviderNode* provider = GetFirstProvider();
     while (provider) {
         switch (providerKind) {
             case NETPROVIDER_FIND_TCPIP:
@@ -1002,13 +959,7 @@ CNetProviderNode* CNetMgr::FindProvider(i32 providerKind) {
                 break;
         }
 
-        if (m_providerCursor != NULL) {
-            CNetProviderNode* next = static_cast<CNetProviderNode*>(m_providers.GetAt(m_providerCursor));
-            m_providers.GetNext(m_providerCursor);
-            provider = next;
-        } else {
-            provider = NULL;
-        }
+        provider = GetNextProvider();
     }
     return NULL;
 }
@@ -1119,14 +1070,8 @@ i32 CNetSessionListNode::Initialize(LPCDPSESSIONDESC2 sessionDesc) {
 
 RVA(0x00179680, 0x3a)
 void CNetSessionListNode::FreeSessionStrings() {
-    if (m_sessionDesc.lpszSessionNameA) {
-        delete[] m_sessionDesc.lpszSessionNameA;
-        m_sessionDesc.lpszSessionNameA = NULL;
-    }
-    if (m_sessionDesc.lpszPasswordA) {
-        delete[] m_sessionDesc.lpszPasswordA;
-        m_sessionDesc.lpszPasswordA = NULL;
-    }
+    SAFE_DELETE_ARRAY(m_sessionDesc.lpszSessionNameA);
+    SAFE_DELETE_ARRAY(m_sessionDesc.lpszPasswordA);
     m_sessionDesc.dwSize = 0;
 }
 

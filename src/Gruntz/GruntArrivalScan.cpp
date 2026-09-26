@@ -18,6 +18,7 @@
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntRandomPointMacros.h>
+#include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
@@ -44,9 +45,16 @@ i32 CGrunt::StepBomberBehavior() {
     m_defenderPx = m_lastTilePx;
     if (occ != NULL && GruntInRadius(occ->m_playerIndex, occ->m_unitIndex) != 0) {
         if (static_cast<u32>(m_dwell) > 0xfa) {
-            Coord targetTile;
-            occ->GetScreenTile(&targetTile);
-            if (TileSwitch(targetTile.m_x, targetTile.m_y, 0, m_arrivalFlags, 1, 0) != 0) {
+            CGameObject* oh = occ->m_object;
+            if (TileSwitch(
+                    oh->m_screenPosition.m_x >> TILE_SHIFT_PX,
+                    oh->m_screenPosition.m_y >> TILE_SHIFT_PX,
+                    0,
+                    m_arrivalFlags,
+                    1,
+                    0
+                )
+                != 0) {
                 CGameObject* oh2 = occ->m_object;
                 if (m_triggerMgr->UseEquippedToolAt(
                         m_playerIndex,
@@ -57,12 +65,7 @@ i32 CGrunt::StepBomberBehavior() {
                     == -1) {
                     m_dwell = 0;
                     if (m_blockedVoicePending != false) {
-                        Coord voicePosition = m_object->ScreenPos();
-                        const RECT* rect =
-                            &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
-                        if (::PtInRect(rect, voicePosition.m_x, voicePosition.m_y)) {
-                            g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
-                        }
+                        PLAY_VOICE_IN_VIEW(0x366);
                         m_blockedVoicePending = false;
                         m_dwell = 0;
                         return 1;

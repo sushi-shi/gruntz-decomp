@@ -32,6 +32,12 @@ static __inline void HiCueTimed() {
     PlayRegistryCueIfElapsed(g_gameReg->m_world->m_soundRegistry, "GAME_TABHIGHLIGHT1");
 }
 
+static __inline void PlayTabCue(CStatusBarMgr* statusBar, StatusBarTab tab, const char* cueKey) {
+    if (statusBar->m_activeTab == tab && statusBar->m_position != STATUSBAR_HIDDEN) {
+        PlayRegistryCueIfElapsed(g_gameReg->m_world->m_soundRegistry, cueKey);
+    }
+}
+
 static __inline void HiPost(i32 cmdId) {
     PostMessageA(g_gameReg->m_gameWnd->m_hwnd, WM_COMMAND, cmdId, 0);
 }

@@ -630,12 +630,72 @@ def _relocation_width(typ: int) -> int:
         raise ValueError(f"unsupported i386 relocation type 0x{typ:x}") from error
 
 
-def _float_width(payload: bytes):
-    """Infer only widths proved by this allocation's bytes and physical span."""
+#: x87 memory forms by opcode: the ModRM `reg` digits that load or store a real
+#: of the given width. Control-word, environment and integer forms are absent.
+X87_REAL_OPERANDS = {
+    0xD8: (4, range(8)),     # fadd..fdivr m32fp
+    0xD9: (4, (0, 2, 3)),    # fld / fst / fstp m32fp
+    0xDC: (8, range(8)),     # fadd..fdivr m64fp
+    0xDD: (8, (0, 2, 3)),    # fld / fst / fstp m64fp
+}
+
+
+def _x87_operand_width(text: bytes, site: int) -> int | None:
+    """Real width of the x87 memory operand whose disp32 starts at `site`.
+
+    Accepts `[disp32]`, `[reg+disp32]` and the SIB forms of both; any other
+    instruction (a dword `mov` copy, an integer x87 form) proves no width.
+    """
+    for opcode_at, modrm_at, sib in ((site - 2, site - 1, False),
+                                     (site - 3, site - 2, True)):
+        if opcode_at < 0:
+            continue
+        modrm = text[modrm_at]
+        mod, reg, rm = modrm >> 6, (modrm >> 3) & 7, modrm & 7
+        if sib != (rm == 4):
+            continue
+        if sib:
+            has_disp32 = mod == 2 or (mod == 0 and text[site - 1] & 7 == 5)
+        else:
+            has_disp32 = mod == 2 or (mod == 0 and rm == 5)
+        form = X87_REAL_OPERANDS.get(text[opcode_at])
+        if has_disp32 and form and reg in form[1]:
+            return form[0]
+    return None
+
+
+def _x87_operand_widths(coff: CoffObject) -> dict[int, frozenset[int | None]]:
+    """Per referenced symbol, the real widths of the code operands naming it."""
+    widths: dict[int, set[int | None]] = defaultdict(set)
+    for relocation in coff.relocations:
+        section = coff.sections[relocation.section - 1]
+        if _storage(section) != "text" or relocation.typ != DIR32:
+            continue
+        text = coff.section_bytes(section)
+        addend = int.from_bytes(text[relocation.site:relocation.site + 4], "little")
+        widths[relocation.symbol_index].add(
+            None if addend else _x87_operand_width(text, relocation.site))
+    return {index: frozenset(rows) for index, rows in widths.items()}
+
+
+def _float_width(payload: bytes, operand_widths: frozenset[int | None] = frozenset()):
+    """Infer only widths proved by this allocation's bytes, span, and readers.
+
+    A zero tail is ambiguous by content alone: the delinker spans a pooled
+    float up to its aligned successor, and a double's upper dword may itself
+    be zero. There the width of every x87 operand that references the
+    constant decides, and only when all of them agree.
+    """
     if len(payload) == 4:
         return 4, "extent-4"
     if len(payload) == 8 and any(payload[4:]):
         return 8, "extent-8-nonzero-upper-dword"
+    if len(operand_widths) == 1:
+        (width,) = operand_widths
+        if (width and len(payload) >= width
+                and len(payload) - width <= MAX_ALIGNMENT_PADDING
+                and not any(payload[width:])):
+            return width, f"zero-tail-m{width * 8}fp-operands"
     return None, "ambiguous-content-width"
 
 
@@ -1271,6 +1331,7 @@ def canonicalize_coff(payload: bytes) -> CanonicalizedObject:
         if _is_canonical_candidate(row)
     }
     definition_aliases = _compiler_private_definition_aliases(coff, candidates)
+    operand_widths = _x87_operand_widths(coff)
     kinds: dict[int, tuple[str, bytes, str, str]] = {}
     for definition in candidates.values():
         family = _family(definition.symbol.name)
@@ -1301,7 +1362,8 @@ def canonicalize_coff(payload: bytes) -> CanonicalizedObject:
             if string_size is not None:
                 kind, meaningful, proof = "string", raw[:string_size], "nul-terminated"
         elif family and family[0] == "t":
-            width, proof = _float_width(raw)
+            width, proof = _float_width(
+                raw, operand_widths.get(definition.symbol.index, frozenset()))
             if width == 4:
                 kind, meaningful = "f32", raw[:4]
             elif width == 8:

@@ -41,6 +41,7 @@
 #include <Rez/RezArchive.h>
 #include <Rez/RezArchiveDir.h>
 #include <Rez/RezArchiveEntry.h>
+#include <SafeDelete.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/Object.h>
@@ -59,22 +60,16 @@ i32 CDDrawSubMgrPages::CreateChildren(i32 w, i32 h, ColorDepth bpp, i32 flags) {
     m_overlayPair = new CDDrawSurfacePair(m_ownerCtx, IDX(DDRAW_PAGE_OVERLAY), 0);
 
     if (m_frontSurface->SetGeometry(w, h, bpp) == BPP_UNSET) {
-        if (OwnerMgr()->m_lastError == WORLDERR_NONE) {
-            OwnerMgr()->m_lastError = WORLDERR_FRONT_SURFACE;
-        }
+        OwnerMgr()->SetInitError(WORLDERR_FRONT_SURFACE);
         return 0;
     }
     if (m_backPair->Create(w, h, bpp, 0) == BPP_UNSET) {
-        if (OwnerMgr()->m_lastError == WORLDERR_NONE) {
-            OwnerMgr()->m_lastError = WORLDERR_BACK_SURFACE;
-        }
+        OwnerMgr()->SetInitError(WORLDERR_BACK_SURFACE);
         return 0;
     }
     if (!HAS(static_cast<DDrawSurfaceMgrFlags>(flags), SURFACEMGR_SKIP_OVERLAY)) {
         if (m_overlayPair->Create(w, h, bpp, 0) == BPP_UNSET) {
-            if (OwnerMgr()->m_lastError == WORLDERR_NONE) {
-                OwnerMgr()->m_lastError = WORLDERR_OVERLAY_SURFACE;
-            }
+            OwnerMgr()->SetInitError(WORLDERR_OVERLAY_SURFACE);
             return 0;
         }
     }
@@ -83,18 +78,9 @@ i32 CDDrawSubMgrPages::CreateChildren(i32 w, i32 h, ColorDepth bpp, i32 flags) {
 
 RVA(0x00158ac0, 0x44)
 void CDDrawSubMgrPages::Unload() {
-    if (m_frontSurface != NULL) {
-        delete m_frontSurface;
-        m_frontSurface = NULL;
-    }
-    if (m_backPair != NULL) {
-        delete m_backPair;
-        m_backPair = NULL;
-    }
-    if (m_overlayPair != NULL) {
-        delete m_overlayPair;
-        m_overlayPair = NULL;
-    }
+    SAFE_DELETE(m_frontSurface);
+    SAFE_DELETE(m_backPair);
+    SAFE_DELETE(m_overlayPair);
 }
 
 // @dead-code

@@ -77,12 +77,52 @@ inline CMovingLogic::CMovingLogic(CGameObject* owner) : CUserLogic(owner) {
     InitOwner(0.001);
     CMotionState* m = Motion();
     double z = static_cast<double>(g_defaultZ);
-    m->m_maxStep.Init(z, z, z);
+    m->m_maxStep.m_x = z;
+    m->m_maxStep.m_y = z;
+    m->m_maxStep.m_z = z;
     BeginMotion();
 }
 
+// The bounds setup is written out, not an InitOwner call: CGrunt's constructor
+// carries enough inline sites that a nested InitOwner expansion is declined.
 inline CMovingLogic::CMovingLogic(CGameObject* owner, EGruntScale) : CUserLogic(owner) {
-    InitOwner(0.001);
+    i32 lo0 = m_logicRecord->m_minX;
+    if (lo0 == 0) {
+        Motion()->m_minBounds.m_x = g_movingLogicMin;
+    } else {
+        Motion()->m_minBounds.m_x = static_cast<double>(lo0);
+    }
+    i32 lo1 = m_logicRecord->m_minY;
+    if (lo1 == 0) {
+        Motion()->m_minBounds.m_y = g_movingLogicMin;
+    } else {
+        Motion()->m_minBounds.m_y = static_cast<double>(lo1);
+    }
+    i32 hi0 = m_logicRecord->m_maxX;
+    if (hi0 == 0) {
+        Motion()->m_maxBounds.m_x = g_movingLogicMax;
+    } else {
+        Motion()->m_maxBounds.m_x = static_cast<double>(hi0);
+    }
+    i32 hi1 = m_logicRecord->m_maxY;
+    if (hi1 == 0) {
+        Motion()->m_maxBounds.m_y = g_movingLogicMax;
+    } else {
+        Motion()->m_maxBounds.m_y = static_cast<double>(hi1);
+    }
+    m_motion.SetParams(
+        static_cast<double>(m_object->m_screenPosition.m_x),
+        static_cast<double>(m_object->m_screenPosition.m_y),
+        0.0,
+        static_cast<double>(m_object->m_speed.m_x),
+        static_cast<double>(m_object->m_speed.m_y),
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        static_cast<double>(g_frameTime) * 0.001,
+        0.0
+    );
     m_motion.SetZ(static_cast<double>(g_defaultZ));
     BeginMotion();
 }

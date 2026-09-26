@@ -15,9 +15,11 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntAiState.h>
 #include <Gruntz/GruntDirStatics.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPuddle.h>
+#include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/MapCellFlags.h>
@@ -40,7 +42,7 @@
 
 RVA(0x000f1c70, 0x620)
 i32 CGrunt::StepObjectGuardBehavior() {
-    m_arrivalFlags |= IDX(CELL_FLAG_IN_GAME_ICON);
+    m_arrivalFlags |= 0x40000;
     CGrunt* occ = m_triggerMgr->FindNearestEnemy(this);
     i32 inRange = 0;
     if (occ != NULL && GRUNT_AT_SAVED_SCREEN_POS(occ)
@@ -52,29 +54,26 @@ i32 CGrunt::StepObjectGuardBehavior() {
     b32 powered = m_poweredUp;
     if (powered != false) {
         b32 neighborValid = m_neighborValid;
-        if (neighborValid != false) {
-            m_neighborValid = false;
-            return 1;
-        }
-        if (m_combatActive != false) {
-            return 1;
-        }
-        if (m_stamina >= STAMINA_FULL) {
-            if (FindGridNeighbor(1) != NULL) {
+        if (neighborValid == false) {
+            if (m_combatActive != false) {
                 return 1;
             }
-            if (inRange != 0 && occ == NULL) {
+            if (m_stamina >= STAMINA_FULL) {
+                if (FindGridNeighbor(1) != NULL) {
+                    return 1;
+                }
+                if (inRange != 0 && occ == NULL) {
+                    return 1;
+                }
+                if (m_poweredUp == false) {
+                    return 1;
+                }
+                if (m_neighborValid != false) {
+                    return 1;
+                }
+                RESET_GRUNT_POWERED_STATE(this)
                 return 1;
             }
-            if (m_poweredUp == false) {
-                return 1;
-            }
-            if (m_neighborValid != false) {
-                return 1;
-            }
-            RESET_GRUNT_POWERED_STATE(this);
-            return 1;
-        } else {
             if (inRange != 0) {
                 return 1;
             }
@@ -84,9 +83,11 @@ i32 CGrunt::StepObjectGuardBehavior() {
             if (m_neighborValid != false) {
                 return 1;
             }
-            RESET_GRUNT_POWERED_STATE(this);
+            RESET_GRUNT_POWERED_STATE(this)
             return 1;
         }
+        m_neighborValid = false;
+        return 1;
     }
 
     switch (m_defenderState) {
@@ -96,7 +97,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
                 if (m_poweredUp != false) {
                     return 1;
                 }
-                if (m_stamina >= STAMINA_FULL && IsGruntAtSavedScreenPos(o)
+                if (m_stamina >= STAMINA_FULL && GRUNT_AT_SAVED_SCREEN_POS(o)
                     && RectContains(
                            o->m_object->m_screenPosition.m_x,
                            o->m_object->m_screenPosition.m_y
@@ -111,16 +112,16 @@ i32 CGrunt::StepObjectGuardBehavior() {
             {
                 Coord entrance = EntrancePx();
                 Coord tile = LastTilePx();
-                if (tile != entrance) {
+                if (tile.m_x != entrance.m_x || tile.m_y != entrance.m_y) {
                     return 1;
                 }
             }
             {
-                Coord tile = m_lastTilePx;
-                Coord guardTile = m_defenderPx;
-                ScreenTile(&tile);
-                ScreenTile(&guardTile);
-                if (tile.m_x < guardTile.m_x && tile.m_y < guardTile.m_y) {
+                i32 gx = m_defenderPx.m_x >> TILE_SHIFT_PX;
+                i32 gy = m_defenderPx.m_y >> TILE_SHIFT_PX;
+                i32 tx = LastTilePx().m_x >> TILE_SHIFT_PX;
+                i32 ty = LastTilePx().m_y >> TILE_SHIFT_PX;
+                if (tx < gx && ty < gy) {
                     StepArrivalDrop(
                         m_lastTilePx.m_x + 0x40,
                         m_lastTilePx.m_y,
@@ -131,7 +132,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
                     );
                     return 1;
                 }
-                if (tile.m_x < guardTile.m_x && tile.m_y > guardTile.m_y) {
+                if (tx < gx && ty > gy) {
                     StepArrivalDrop(
                         m_lastTilePx.m_x,
                         m_lastTilePx.m_y - 0x40,
@@ -142,7 +143,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
                     );
                     return 1;
                 }
-                if (tile.m_x > guardTile.m_x && tile.m_y < guardTile.m_y) {
+                if (tx > gx && ty < gy) {
                     StepArrivalDrop(
                         m_lastTilePx.m_x,
                         m_lastTilePx.m_y + 0x40,
@@ -153,7 +154,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
                     );
                     return 1;
                 }
-                if (tile.m_x > guardTile.m_x && tile.m_y > guardTile.m_y) {
+                if (tx > gx && ty > gy) {
                     StepArrivalDrop(
                         m_lastTilePx.m_x - 0x40,
                         m_lastTilePx.m_y,
@@ -169,24 +170,15 @@ i32 CGrunt::StepObjectGuardBehavior() {
         }
 
         case AISTATE_CHASE: {
-            CGrunt* o =
-                m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
+            CGrunt* o = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
             CGrunt* g = m_triggerMgr->FindNearestEnemy(this);
             if (g != NULL && g != o) {
-                m_arrivalCell.Set(-1, -1);
-                m_defenderState = AISTATE_SEEK;
+                ResetToSeek(this);
                 return 1;
             }
-            if (o == NULL) {
-                goto resetState;
-            }
-            if (o->m_entranceCommitted == false) {
-                goto resetState;
-            }
-            if (GruntInRadius(o->m_playerIndex, o->m_unitIndex) == 0) {
-                goto resetState;
-            }
-            if (GruntInRadius(m_arrivalCell.m_x, m_arrivalCell.m_y) == 0) {
+            if (o == NULL || o->m_entranceCommitted == false
+                || GruntInRadius(o->m_playerIndex, o->m_unitIndex) == 0
+                || GruntInRadius(m_arrivalCell.m_x, m_arrivalCell.m_y) == 0) {
                 goto resetState;
             }
             StepArrivalDrop(o->m_lastTilePx.m_x, o->m_lastTilePx.m_y, 0, m_arrivalFlags, 1, 0);
@@ -200,7 +192,7 @@ i32 CGrunt::StepObjectGuardBehavior() {
                 == 0) {
                 return 1;
             }
-            if (o->m_object->ScreenPos() != o->m_lastTilePx) {
+            if (!(GRUNT_AT_SAVED_SCREEN_POS(o))) {
                 return 1;
             }
             COMMIT_GRUNT_NEIGHBOR(o);
@@ -213,9 +205,16 @@ i32 CGrunt::StepObjectGuardBehavior() {
             return 1;
 
         case AISTATE_RETURN: {
-            Coord returnPosition = m_defenderPx - Coord(TILE_SIZE_PX, TILE_SIZE_PX);
-            StepArrivalDrop(returnPosition.m_x, returnPosition.m_y, 0, m_arrivalFlags, 1, 0);
-            if (m_object->ScreenPos() == returnPosition) {
+            StepArrivalDrop(
+                m_defenderPx.m_x - 0x20,
+                m_defenderPx.m_y - 0x20,
+                0,
+                m_arrivalFlags,
+                1,
+                0
+            );
+            if (m_object->m_screenPosition.m_x == m_defenderPx.m_x - 0x20
+                && m_object->m_screenPosition.m_y == m_defenderPx.m_y - 0x20) {
                 m_defenderState = AISTATE_SEEK;
                 return 1;
             }
@@ -234,15 +233,10 @@ i32 CGrunt::StepObjectGuardBehavior() {
             if (GruntInRadius(o->m_playerIndex, o->m_unitIndex) == 0) {
                 return 1;
             }
-            m_arrivalCell.Set(o->m_playerIndex, o->m_unitIndex);
+            m_arrivalCell.m_x = o->m_playerIndex;
+            m_arrivalCell.m_y = o->m_unitIndex;
             m_defenderState = AISTATE_CHASE;
-            {
-                Coord voicePosition = m_object->ScreenPos();
-                const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
-                if (::PtInRect(rect, voicePosition.m_x, voicePosition.m_y)) {
-                    g_gameReg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
-                }
-            }
+            PLAY_VOICE_IN_VIEW(0x366);
             return 1;
         }
 

@@ -24,6 +24,31 @@ public:
         m_live = false;
     }
 
+    i32 Build(
+        CTileTriggerContainer* owner,
+        BrickTileId code,
+        i32 tileX,
+        i32 tileY,
+        i32 cellKey,
+        const RECT& playerFlags
+    ) {
+        if (m_live != false) {
+            return 0;
+        }
+        m_actionCode = code;
+        m_tile.m_x = tileX;
+        m_tile.m_y = tileY;
+        m_cellKey = cellKey;
+        m_owner = owner;
+        m_live = true;
+        m_playerFlags[0] = playerFlags.left;
+        m_playerFlags[1] = playerFlags.top;
+        m_playerFlags[2] = playerFlags.right;
+        m_playerFlags[3] = playerFlags.bottom;
+        SetActionCode(code);
+        return 1;
+    }
+
     i32 SetActionCode(BrickTileId code);
 
     i32 BreakTopBrick(CGrunt* grunt);

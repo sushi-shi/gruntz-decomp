@@ -38,16 +38,15 @@ i32 DispatchActionAreaLogic(CGameObject* owner) {
     LOGIC_RECORD_DISPATCH(CActionArea)
 }
 
-// @early-stop
 RVA(0x00007da0, 0x17e)
-CActionArea::CActionArea(CGameObject* obj)
-    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj), m_timestamp(0), m_duration(0) {
+CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetImageSetByName("GAME_ACTIONAREA_RED");
     SET_ANIMATION_ACT("A");
     CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_ACTION_AREA);
     m_phase = 1;
-    m_duration = 0;
+    m_timing.m_intervalLo = 0;
+    m_timing.m_intervalHi = 0;
     Hide();
 }
 
@@ -68,22 +67,19 @@ void CProjActObj::RegisterType() {
 
 RVA(0x00008440, 0xfe)
 i32 CActionArea::Tick() {
-    i64* ts = &m_timestamp;
+    ClockInterval* timing = &m_timing;
     i32* phase = &m_phase;
-    if (static_cast<i64>(g_frameTime) - *ts >= m_duration) {
+    if (timing->Expired()) {
         *phase = (*phase == 0);
-        m_duration = 0x1f4;
-        *ts = static_cast<u32>(g_frameTime);
+        timing->Start(0x1f4);
     }
     if (*phase != 0) {
-        i64 d2 = static_cast<i64>(g_frameTime) - *ts;
-        double t = static_cast<double>((d2 < 0 ? 0 : static_cast<u32>(d2)));
+        double t = static_cast<double>(timing->Elapsed());
         m_wwdObject->m_imageSet->SetAllLightLevels(
             static_cast<i32>(((1.0 - t * 0.002) * 50.0 - (-155.0)))
         );
     } else {
-        i64 d2 = static_cast<i64>(g_frameTime) - *ts;
-        double t = static_cast<double>((d2 < 0 ? 0 : static_cast<u32>(d2)));
+        double t = static_cast<double>(timing->Elapsed());
         m_wwdObject->m_imageSet->SetAllLightLevels(static_cast<i32>((t * 0.1 - (-155.0))));
     }
     return 0;

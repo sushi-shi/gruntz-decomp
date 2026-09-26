@@ -163,13 +163,9 @@ i32 CMapMgr::AllocGrid(i32 width, i32 height, void (*callback)()) {
     if (m_rows == NULL) {
         return 0;
     }
-    memset(m_cellPool, 0, count * sizeof(BrickzCell));
-    i32 stride = width;
-    i32 off = 0;
-
+    memset(m_cellPool, 0, count * 0x1c);
     for (u32 i = 0; i < static_cast<u32>(height); i++) {
-        m_rows[i] = m_cellPool + off;
-        off += stride;
+        m_rows[i] = &m_cellPool[i * width];
     }
     if (m_nodePool.Allocate(count * 5) == 0) {
         return 0;
@@ -179,7 +175,16 @@ i32 CMapMgr::AllocGrid(i32 width, i32 height, void (*callback)()) {
     }
     m_stepCb = callback;
 
-    Clip(NULL);
+    RECT a;
+    RECT b;
+    SET_RECT_COMPONENTS(a, 0, 0, m_width, m_height);
+    SET_RECT_COMPONENTS(b, 0, 0, m_width, m_height);
+    RECT* out = &m_bounds;
+    if (!IntersectRect(out, &a, &b)) {
+        *out = a;
+    }
+    m_gridSize.cx = out->right - out->left;
+    m_gridSize.cy = out->bottom - out->top;
     return 1;
 }
 
@@ -503,13 +508,12 @@ void CMapMgr::LinkClosedNode(BrickzNode* node) {
         slot->m_cellPrev = NULL;
         slot->m_cellNext = NULL;
         slot->m_searchNode = node;
-        node->m_cellLink = slot;
     } else {
         slot->m_cellPrev = old;
         slot->m_cellNext = (*head)->m_cellNext;
         *head = slot;
-        node->m_cellLink = slot;
     }
+    node->m_cellLink = slot;
 }
 
 RVA(0x0009f500, 0x24)

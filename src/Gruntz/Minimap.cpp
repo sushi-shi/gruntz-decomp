@@ -113,8 +113,8 @@ i32 CMinimap::Refresh(i32 elapsedMs, b32 forceRefresh) {
             return 0;
         }
     }
-    if (m_surface->m_apiDesc.dwWidth != static_cast<i32>(m_mapMgr->m_width)
-        || m_surface->m_apiDesc.dwHeight != static_cast<i32>(m_mapMgr->m_height)) {
+    if (m_surface->GetWidth() != static_cast<i32>(m_mapMgr->m_width)
+        || m_surface->GetHeight() != static_cast<i32>(m_mapMgr->m_height)) {
         if (!AllocSurface()) {
             return 0;
         }
@@ -125,8 +125,7 @@ i32 CMinimap::Refresh(i32 elapsedMs, b32 forceRefresh) {
     }
     for (u32 y = 0; y < m_mapMgr->m_height; y++) {
         for (u32 x = 0; x < m_mapMgr->m_width; x++) {
-            u16* pixel =
-                Pix16(pixels + y * m_surface->m_apiDesc.lPitch + x * m_surface->m_bytesPerPixel);
+            u16* pixel = Pix16(pixels + m_surface->PixelOffset(x, y));
             i32 occupantId = m_mapMgr->OccupantAt(x, y);
 
             if (occupantId != -1) {
@@ -144,9 +143,7 @@ i32 CMinimap::Refresh(i32 elapsedMs, b32 forceRefresh) {
                     teamColor = SPRITE_TEAM_COLOR_SECONDARY;
                 }
 
-                if (static_cast<i64>(g_frameTime) - grunt->m_combatClock64
-                        >= grunt->m_combatTimeout64
-                    || grunt->m_playerIndex != g_curPlayer) {
+                if (grunt->m_combatTiming.Expired() || grunt->m_playerIndex != g_curPlayer) {
                     CSpriteRef* spriteRef =
                         m_gameMgr->m_spriteFactory->GetTool(IDX(grunt->m_moveIcon));
                     if (spriteRef == NULL) {
@@ -198,7 +195,7 @@ i32 CMinimap::Refresh(i32 elapsedMs, b32 forceRefresh) {
             }
         }
     }
-    m_surface->m_ddSurface->Unlock(NULL);
+    m_surface->Unlock();
     return 1;
 }
 
@@ -338,7 +335,7 @@ void CMinimap::DrawBorder(RECT* rect, CDDrawSurfacePair* target, i32 color) {
         rightOffset += rowStride;
     }
 
-    surface->m_ddSurface->Unlock(NULL);
+    surface->Unlock();
 }
 
 RVA(0x000a3c90, 0xe8)

@@ -726,6 +726,30 @@ class LabelStyleControls(unittest.TestCase):
                                "RVA(0x00002000, 0x10)\n")
         self.assertEqual(len(order), 1)
 
+    def test_declaration_between_rva_and_definition_fails(self):
+        from gruntz.verify import label_style
+        with tempfile.TemporaryDirectory() as td:
+            p = Path(td) / "Probe.h"
+            p.write_text("class CItem {\n"
+                         "    inline int IsSelectable();\n"
+                         "    RVA(0x00001000, 0xa)\n"
+                         "    virtual void SetState(int s) {\n"
+                         "        m_state = s;\n"
+                         "    }\n"
+                         "    RVA(0x00002000, 0xa)\n"
+                         "    inline int IsSelectable2();\n"
+                         "    virtual void SetState2(int s) {\n"
+                         "        m_state = s;\n"
+                         "    }\n"
+                         "};\n"
+                         "RVA(0x00003000, 0x6)\n"
+                         "DATA_MESSAGE_MAP(0x00004000, 0x00004008)\n"
+                         "BEGIN_MESSAGE_MAP(CDlg, CDialog)\n"
+                         "END_MESSAGE_MAP()\n")
+            hits = label_style.rva_binding(p)
+        self.assertEqual([line for line, _why in hits], [7])
+        self.assertIn("IsSelectable2", hits[0][1])
+
     def test_canonical_labels_pass(self):
         hits, order = self._scan("RVA(0x00001000, 0x10)\n"
                                  "RVA_COMPGEN(0x00001400, 0x0, ??_GX@@UAEPAXI@Z)\n"
@@ -4757,8 +4781,11 @@ class DecodeNormalizationControls(unittest.TestCase):
         lines = _decode(self.BODY, self.REL, "Self")
         self.assertEqual([x.addr for x in lines], [0, 5, 6, 7])
         self.assertTrue(lines[0].asm.startswith("call "))
-        # the referent means "here" and only our own object spells it
-        self.assertIsNone(lines[0].ref)
+        # the referent means "here" and only our own object spells it: the
+        # line keeps it for `features`, the referent sequence skips it
+        from gruntz.walls.semdiff import referent_runs
+        self.assertEqual(lines[0].ref, "Self")
+        self.assertEqual(referent_runs(lines, "Self"), [])
 
 
 class SemDiffControls(unittest.TestCase):
@@ -5175,6 +5202,47 @@ class ByValueAggregateControls(unittest.TestCase):
         payload = bytes.fromhex("eb05") + b"\xe8\0\0\0\0" + b"\xe8\0\0\0\0\xc3"
         self.assertEqual(callee(payload, 0, len(payload), {8: ("?Real@@YAXXZ", 20)}),
                          "?Real@@YAXXZ")
+
+
+class MaxGateClassificationControls(unittest.TestCase):
+    """MAX belongs to a function's own source hash, so only an edit can lower
+    it. An unedited CUR dip must never fail the gate: it used to, and that
+    pushed workers away from correct header changes."""
+
+    def _kinds(self, pct, prev_cur, prev_fp, cur_fp):
+        from gruntz.verify import classify as cl
+        base = {("u", "f"): {"best": 100.0, "cur": prev_cur, "fp": prev_fp,
+                             "addr": None, "hist": 100.0, "tries": 1,
+                             "state": ""}}
+        return [k for k, *_ in cl.classify({("u", "f"): pct}, base,
+                                           lambda *_: cur_fp, {})]
+
+    def test_an_unedited_dip_is_not_a_regression(self):
+        self.assertEqual(self._kinds(89.5, 100.0, "aaaa", "aaaa"), ["DIP"])
+
+    def test_an_edit_that_lowers_cur_is_a_regression(self):
+        self.assertEqual(self._kinds(89.5, 100.0, "aaaa", "bbbb"), ["REGRESS"])
+
+    def test_an_edit_that_keeps_cur_is_a_reset(self):
+        self.assertEqual(self._kinds(97.4, 97.4, "aaaa", "bbbb"), ["RESET"])
+
+    def test_a_changed_fallback_fingerprint_counts_as_an_edit(self):
+        from gruntz.verify.fingerprints import FALLBACK
+        self.assertEqual(
+            self._kinds(89.5, 100.0, FALLBACK + "1", FALLBACK + "2"), ["REGRESS"])
+
+    def test_only_regress_fails_the_gate(self):
+        from gruntz.verify import classify as cl
+        base = {("u", k): {"best": 100.0, "cur": c, "fp": "a", "addr": None,
+                           "hist": 100.0, "tries": 1, "state": ""}
+                for k, c in (("dip", 100.0), ("reset", 97.0), ("drop", 100.0))}
+        cur = {("u", "dip"): 90.0, ("u", "reset"): 97.0, ("u", "drop"): 90.0}
+        fps = {("u", "dip"): "a", ("u", "reset"): "b", ("u", "drop"): "b"}
+        buckets = cl.buckets_of(cur, base, lambda *k: fps[k], {})
+        regress = buckets.get("REGRESS", [])
+        self.assertEqual([r[1] for r in regress], ["drop"])
+        self.assertEqual([r[1] for r in cl.fresh_regressions(cur, base, regress)],
+                         ["drop"])
 
 
 def main(argv=None) -> int:

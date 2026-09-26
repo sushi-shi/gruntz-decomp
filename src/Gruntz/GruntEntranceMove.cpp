@@ -177,7 +177,7 @@ i32 CGrunt::RunEntranceMove() {
 
 RVA(0x00067b00, 0x92)
 i32 CGrunt::GruntInRadius(i32 playerIndex, i32 unitIndex) {
-    CGrunt* other = m_triggerMgr->m_units[playerIndex * TM_UNITS_PER_PLAYER + unitIndex];
+    CGrunt* other = m_triggerMgr->UnitAt(playerIndex, unitIndex);
     if (other != NULL && other->m_entranceCommitted != false && other->m_gruntKind != GRUNT_GHOST) {
         Coord otherTile = other->m_lastTilePx;
         ScreenTile(&otherTile);
@@ -221,8 +221,8 @@ i32 CGrunt::BuildEntranceAnimation(GruntEntranceMode mode) {
                 if (tm->m_recList.GetCount() != 1) {
                     focus = NULL;
                 } else {
-                    Coord rec = *tm->HeadRec();
-                    focus = tm->m_units[rec.m_x * TM_UNITS_PER_PLAYER + rec.m_y];
+                    Coord* rec = tm->HeadRec();
+                    focus = tm->UnitAt(rec->m_x, rec->m_y);
                 }
                 if (this == focus && m_playerIndex == g_curPlayer) {
                     onScreen = 1;
@@ -315,12 +315,12 @@ inline void CGrunt::ResolveEntranceOccupant() {
                 m_triggerMgr->ResetCell(m_playerIndex, m_unitIndex, 0, 0);                         \
             }                                                                                      \
             m_entranceDropActive = true;                                                           \
-            m_entranceSafeTimeLo = g_buteMgr.GetDword("Grunt", "EntranceSafeTime", 5000);          \
-            m_entranceSafeTimeHi = 0;                                                              \
-            m_entranceClockLo = g_frameTime;                                                       \
-            m_entranceClockHi = 0;                                                                 \
-            m_flashWindowLo = 0;                                                                   \
-            m_flashWindowHi = 0;                                                                   \
+            m_entranceTiming.m_intervalLo = g_buteMgr.GetDword("Grunt", "EntranceSafeTime", 5000); \
+            m_entranceTiming.m_intervalHi = 0;                                                     \
+            m_entranceTiming.m_startLo = g_frameTime;                                              \
+            m_entranceTiming.m_startHi = 0;                                                        \
+            m_flashTiming.m_intervalLo = 0;                                                        \
+            m_flashTiming.m_intervalHi = 0;                                                        \
         } else if (m_triggerMgr->RecordListHas(m_playerIndex, m_unitIndex)) {                      \
             CommitArrival();                                                                       \
         }                                                                                          \
@@ -350,11 +350,7 @@ i32 CGrunt::LoadEntranceConfig() {
         }
         {
             CGruntzMapMgr* ng = g_gameReg->m_tileGrid;
-            ng->AcquireCellOccupancy(
-                newTileX,
-                newTileY,
-                (m_playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | m_unitIndex
-            );
+            ng->AcquireCellOccupancy(newTileX, newTileY, m_playerIndex, m_unitIndex);
         }
         m_lastTilePx.m_x = newPxX;
         m_lastTilePx.m_y = newPxY;
@@ -405,7 +401,6 @@ i32 CGrunt::RearmEntranceDrop() {
     return 0;
 }
 
-// @early-stop
 RVA(0x00068520, 0x2a2)
 i32 CGrunt::StartBombGruntRun() {
     FinishActiveAction();
@@ -418,7 +413,7 @@ i32 CGrunt::StartBombGruntRun() {
     HIDE_AND_CLEAR_GRUNT_SPRITE(m_selectedSprite)
     m_gruntKind = GRUNT_NORMAL;
     if (m_poweredUp != false && m_neighborValid == false) {
-        RESET_GRUNT_POWERED_STATE(this);
+        RESET_GRUNT_POWERED_STATE(this)
     }
     BeginGruntEntranceAndReleaseCell(this);
     SnapToLastTile(1);
@@ -428,31 +423,23 @@ i32 CGrunt::StartBombGruntRun() {
         m_triggerMgr->LoadExplosionSprites(h->m_screenPosition.m_x, h->m_screenPosition.m_y, -1, 0);
         return 0;
     }
-    Coord move;
-    move.m_x = rand() % 3 - 1;
-    move.m_y = rand() % 3 - 1;
-    if (move == Coord(0, 0)) {
-        move.Set(1, 0);
+    i32 dx = rand() % 3 - 1;
+    i32 dy = rand() % 3 - 1;
+    if (dx == 0 && dy == 0) {
+        dx = 1;
     }
     {
         CWwdSpriteObject* h = m_object;
-        Coord tile;
-        GetScreenTile(&tile);
-        move += tile;
+        dx += h->m_screenPosition.m_x >> TILE_SHIFT_PX;
+        dy += h->m_screenPosition.m_y >> TILE_SHIFT_PX;
     }
-    FaceTowardTile(move);
-    m_moveTile = move;
+    FaceTowardTile(dx, dy);
+    m_moveTile.m_x = dx;
+    m_moveTile.m_y = dy;
     SET_ANIMATION_ACT("M");
     m_timePerTile = static_cast<i32>(g_buteMgr.GetDword("BOMBGRUNT", "RunningTimePerTile", 0x64));
     m_bombRunActive = true;
-    {
-        CWwdSpriteObject* h = m_object;
-        Coord position = h->ScreenPos();
-        const RECT* rect = &g_gameReg->m_world->m_level->m_mainPlane->m_planeViewRect;
-        if (::PtInRect(rect, position.m_x, position.m_y)) {
-            g_gameReg->m_voiceManager->PlayGruntVoiceCue(this, 8, -1, -1, -1);
-        }
-    }
+    PLAY_GRUNT_CUE_IN_VIEW(8);
     SwitchAnimation(AT(m_poseItem, GRUNT_ITEM1));
     char* cn = EntranceCell()->ItemName().GetBuffer(0);
     SetImageSetByName(cn);
@@ -464,11 +451,9 @@ RVA(0x00068880, 0x67c)
 i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
     if (enable != false) {
         m_wingzEnabled = true;
-        m_wingzDurationLo =
-            static_cast<i32>((static_cast<double>(m_wingzTime) * g_wingzScale - g_wingzBias));
-        m_wingzDurationHi = 0;
-        m_wingzClockLo = static_cast<i32>(g_frameTime);
-        m_wingzClockHi = 0;
+        m_wingzTiming.Start(
+            static_cast<i32>((static_cast<double>(m_wingzTime) * g_wingzScale - g_wingzBias))
+        );
         CreateWingzTimeSprite();
 
         m_cells[0].IdleName() = s_nwItem;
@@ -500,16 +485,11 @@ i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
         AT(m_poseIdle, GRUNT_IDLE4) = NULL;
         AT(m_poseIdle, GRUNT_IDLE5) = NULL;
 
-        CGruntzMgr* g = g_gameReg;
-        Coord position = m_object->ScreenPos();
-        CCueRect* r = &g->m_world->m_level->m_mainPlane->m_planeViewRect;
-        if (::PtInRect(r, position.m_x, position.m_y)) {
-            g->m_voiceManager->PlayGruntVoiceCue(this, 8, -1, -1, -1);
-        }
+        PLAY_GRUNT_CUE_IN_VIEW(8);
     } else {
         m_wingzEnabled = false;
-        m_wingzDurationLo = 0;
-        m_wingzDurationHi = 0;
+        m_wingzTiming.m_intervalLo = 0;
+        m_wingzTiming.m_intervalHi = 0;
         HIDE_AND_CLEAR_GRUNT_SPRITE(m_wingzTimeSprite)
 
         m_cells[0].WalkName() = s_nwWalk;
@@ -545,9 +525,7 @@ i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
             MapFind<CAniElement>(m_wwdObject->OwnerMgr()->m_animRegistry->m_animations, s_wgIdle5);
     }
 
-    CString* rec = &g_typeColl[m_logicRecord->m_eventCode];
-    bool eqWalk = (strcmp(*rec, "D") == 0);
-    if (eqWalk) {
+    if (ANIMATION_ACT_EQUALS("D")) {
         SwitchAnimation(m_poseWalk);
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
         char* buf = EntranceCell()->WalkName().GetBuffer(0);
@@ -555,9 +533,7 @@ i32 CGrunt::LoadWingzGruntSprites(b32 enable) {
         return 1;
     }
 
-    CString* rec2 = &g_typeColl[m_logicRecord->m_eventCode];
-    bool eqIdle = (strcmp(*rec2, "A") == 0);
-    if (eqIdle) {
+    if (ANIMATION_ACT_EQUALS("A")) {
         SwitchAnimation(AT(m_poseIdle, GRUNT_IDLE1));
         DECLARE_CURRENT_ANIMATION_FRAME(frame, desc, elem)
         char* buf = EntranceCell()->IdleName().GetBuffer(0);
@@ -639,14 +615,7 @@ i32 CGrunt::StepArrivalCommit() {
         if (m_entranceReason == PICKUP_WAND) {
             g_gameReg->m_voiceManager->StopVoice(m_object->m_objectId);
         }
-        m_triggerMgr->LoadTileArrivalFx(
-            m_playerIndex,
-            m_unitIndex,
-            m_moveTile.m_x,
-            m_moveTile.m_y,
-            m_entranceReason,
-            WWDDRAW_NO_ANIMATION
-        );
+        ClearMoveTileFx(this);
         if (m_entranceReason != PICKUP_BOMB) {
             goto finalize;
         }
@@ -720,12 +689,11 @@ i32 CGrunt::LoadFreezeSpellAssets() {
             return 0;
         }
         SwitchAnimationByName(s_gruntzDeathzSparkle, 0);
-        m_idleDelay = g_buteMgr.GetDword("Spellz", s_freezeDelay, 0x2710);
-        m_idleAnchor = g_frameTime;
+        m_idleDelayTiming.Start(g_buteMgr.GetDword("Spellz", s_freezeDelay, 0x2710));
         m_freezeDelayDone = false;
     }
     if (m_freezeDelayDone == false) {
-        if (static_cast<i64>(g_frameTime) - m_idleAnchor >= m_idleDelay) {
+        if (m_idleDelayTiming.Expired()) {
             SwitchAnimationByName(s_gruntzDeathzUnfreeze, 0);
             CWwdSpriteObject* h = m_object;
             Coord position = h->ScreenPos();
@@ -747,10 +715,7 @@ i32 CGrunt::FinishEntranceMove() {
     if (!cur->IsComplete()) {
         return 0;
     }
-    if (m_cellRemovalNotified == false) {
-
-        m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
-    }
+    UnregisterFromBoard(this, 0);
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     return 0;
 }
@@ -895,11 +860,7 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
             oldGrid->ReleaseCellOccupancy(oldTx, oldTy);                                           \
         }                                                                                          \
         CGruntzMapMgr* newGrid = g_gameReg->m_tileGrid;                                            \
-        newGrid->AcquireCellOccupancy(                                                             \
-            newTx,                                                                                 \
-            newTy,                                                                                 \
-            (m_playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | m_unitIndex                           \
-        );                                                                                         \
+        newGrid->AcquireCellOccupancy(newTx, newTy, m_playerIndex, m_unitIndex);                   \
         m_lastTilePx.m_x = newX;                                                                   \
         m_lastTilePx.m_y = newY;                                                                   \
         m_triggerMgr->WireTileSwitchLogic(this, newX, newY);                                       \
@@ -923,14 +884,7 @@ i32 CGrunt::FinishActiveAction() {
         if (m_entranceReason == PICKUP_WAND) {
             g_gameReg->m_voiceManager->StopVoice(m_object->m_objectId);
         }
-        m_triggerMgr->LoadTileArrivalFx(
-            m_playerIndex,
-            m_unitIndex,
-            m_moveTile.m_x,
-            m_moveTile.m_y,
-            m_entranceReason,
-            WWDDRAW_NO_ANIMATION
-        );
+        ClearMoveTileFx(this);
         return 1;
     }
     if (GRUNT_IS_USING_TOY(eq)) {

@@ -583,15 +583,6 @@ inline DoubleVector2 PixelRoundBias(const DoubleVector2& direction) {
     return DoubleVector2(PixelRoundBias(direction.m_x), PixelRoundBias(direction.m_y));
 }
 
-#define VECTOR_COMPONENT_ROUND_BIAS(out, value)                                                    \
-    if ((value) > 0.0) {                                                                           \
-        (out) = 0.5;                                                                               \
-    } else if ((value) < 0.0) {                                                                    \
-        (out) = -0.5;                                                                              \
-    } else {                                                                                       \
-        (out) = 0.0;                                                                               \
-    }
-
 #define VEC2_SET(vector, x, y)                                                                     \
     (vector).m_x = (x);                                                                            \
     (vector).m_y = (y)

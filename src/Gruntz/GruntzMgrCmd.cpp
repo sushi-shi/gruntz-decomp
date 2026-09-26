@@ -96,7 +96,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         return 1;
                     }
                     case CHEAT_TRAITOR_MODE:
-                        g_traitorMode = !g_traitorMode;
+                        g_traitorMode ^= 1;
                         PLAYCUE("GAME_MINORCHEAT");
                         ShowToggleMessage("Traitor Mode", g_traitorMode);
                         return 1;
@@ -270,13 +270,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         if (!_g) {
                             return 0;
                         }
-                        CTimer* _t = _g->m_levelTimer;
-                        _t->m_unusedStamp.m_lo = 0;
-                        _t->m_unusedStamp.m_hi = 0;
-                        _t->m_accum.m_lo = 0;
-                        _t->m_accum.m_hi = 0;
-                        _t->m_running = false;
-                        _t->m_currentMs = 0;
+                        _g->m_levelTimer->Stop();
                         PLAYCUE("GAME_MAJORCHEAT");
                         AppendChatMessage("Ah, who needed that stupid timer anyway?");
                         return 1;
@@ -393,7 +387,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                     }
 
                     case CHEAT_GOO_PUDDLEZ:
-                        g_gooPuddlez = !g_gooPuddlez;
+                        g_gooPuddlez ^= 1;
                         PLAYCUE("GAME_MAJORCHEAT");
                         ShowToggleMessage("Goo puddlez", g_gooPuddlez);
                         return 1;
@@ -412,12 +406,12 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         return 1;
                     }
                     case CHEAT_GRUNT_CREATION:
-                        g_gruntCreation = !g_gruntCreation;
+                        g_gruntCreation ^= 1;
                         PLAYCUE("GAME_MAJORCHEAT");
                         ShowToggleMessage("Grunt creation", g_gruntCreation);
                         return 1;
                     case CHEAT_GRUNT_DESTRUCTION:
-                        g_gruntDestruction = !g_gruntDestruction;
+                        g_gruntDestruction ^= 1;
                         PLAYCUE("GAME_MAJORCHEAT");
                         ShowToggleMessage("Grunt destruction", g_gruntDestruction);
                         return 1;
@@ -473,7 +467,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         m_saveGame->SetCurLevel(QUESTLEVEL_AREA7_STAGE4);
                         return 1;
                     case CHEAT_EXPLOSIONZ: {
-                        g_explosionz = !g_explosionz;
+                        g_explosionz ^= 1;
                         SoundCueRegistry* _reg = m_world->m_soundRegistry;
                         if (_reg->m_silentMode == false) {
                             _c = NULL;
@@ -802,17 +796,13 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                         return 1;
                     }
                 }
-                m_frameGate = !m_frameGate;
-                b32 f = m_frameGate;
-                FinishLevel(f, true);
+                FinishLevel(ToggleFrameGate(), true);
             }
             return 1;
         }
         case CMD_FINISH_LEVEL: {
             if (m_curState->Update() == GAMESTATE_PLAY || m_curState->Update() == GAMESTATE_MULTI) {
-                m_frameGate = !m_frameGate;
-                b32 f = m_frameGate;
-                FinishLevel(f, false);
+                FinishLevel(ToggleFrameGate(), false);
             }
             return 1;
         }
@@ -903,7 +893,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
             if (m_frameGate) {
                 return 1;
             }
-            m_musicEnabled = !m_musicEnabled;
+            m_musicEnabled ^= 1;
             b32 enabled = m_musicEnabled;
             b32 isPlayState = CheckPlayState();
             if (!isPlayState) {
@@ -926,7 +916,7 @@ i32 CGruntzMgr::HandleCommand(i32 notifyCode, GruntzCommandId nID, i32 lParam) {
                     soundStream->StopAllStreams();
                 }
             }
-            m_soundEnabled = !m_soundEnabled;
+            m_soundEnabled ^= 1;
             g_soundEnabled = m_soundEnabled;
             b32 soundEnabled = m_soundEnabled;
             if (soundEnabled != false) {

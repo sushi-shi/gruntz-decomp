@@ -20,6 +20,7 @@
 #include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPuddle.h>
+#include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/MapCellFlags.h>
@@ -136,7 +137,6 @@ state2: {
 }
 
 state0: {
-    CGruntzMgr* game;
     CGrunt* nb = m_triggerMgr->FindNearestEnemy(this);
     if (nb == NULL) {
         goto common;
@@ -149,8 +149,10 @@ state0: {
                != 0) {
         COMMIT_GRUNT_NEIGHBOR(nb);
         CWwdSpriteObject* hit = nb->m_object;
-        m_arrivalCell.m_x = hit->m_screenPosition.m_x >> TILE_SHIFT_PX;
-        m_arrivalCell.m_y = hit->m_screenPosition.m_y >> TILE_SHIFT_PX;
+        m_arrivalCell.Set(
+            hit->m_screenPosition.m_x >> TILE_SHIFT_PX,
+            hit->m_screenPosition.m_y >> TILE_SHIFT_PX
+        );
         m_defenderState = AISTATE_ATTACK;
         goto common;
     }
@@ -184,16 +186,7 @@ state0: {
     if (m_blockedVoicePending == false) {
         goto common;
     }
-    game = g_gameReg;
-    if (CGameLevel::PointInBounds(
-            &game->m_world->m_level->m_mainPlane->m_planeViewRect,
-            m_object->m_screenPosition.m_x,
-            m_object->m_screenPosition.m_y
-        )
-        == 0) {
-        goto s0_reset;
-    }
-    game->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
+    PLAY_VOICE_IF_VISIBLE(0x366);
 s0_reset:
     m_blockedVoicePending = false;
     goto common;
@@ -220,8 +213,7 @@ common: {
                 (bx << TILE_SHIFT_PX) + TILE_HALF_PX,
                 (by << TILE_SHIFT_PX) + TILE_HALF_PX
             );
-            m_arrivalCell.m_x = bx;
-            m_arrivalCell.m_y = by;
+            m_arrivalCell.Set(bx, by);
             m_defenderState = AISTATE_PHASE_MIRROR_THEN_COOLDOWN;
             return 1;
         }
@@ -229,7 +221,7 @@ common: {
     if (CoordCount() == 0) {
         return 1;
     }
-    Coord* head = static_cast<Coord*>(m_coordList.GetAt(CoordHead()));
+    Coord* head = GetHeadCoord();
     if ((g_gameReg->m_tileGrid->CellFlagsAt(head->m_x, head->m_y) & 0x20) == 0) {
         return 1;
     }

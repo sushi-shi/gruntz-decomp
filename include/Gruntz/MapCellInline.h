@@ -1,8 +1,11 @@
 #ifndef GRUNTZ_GRUNTZ_MAPCELLINLINE_H
 #define GRUNTZ_GRUNTZ_MAPCELLINLINE_H
 
+#include <DDrawMgr/DDrawWorkerHost.h>
 #include <Gruntz/Brickz.h>
+#include <Gruntz/GameLevel.h>
 #include <Gruntz/GameRegMfcPtr.h>
+#include <Gruntz/GruntIdentity.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/MapCellFlags.h>
@@ -10,15 +13,19 @@
 #include <Wwd/WwdGameObjectFamily.h>
 
 static inline void ClearTileBit(CGruntzMgr* reg, CGameObject* owner) {
-    CMapMgr* grid = reg->m_tileGrid;
-    Coord tile = owner->ScreenPos();
-    ScreenTile(&tile);
-    if (static_cast<u32>(tile.m_x) < static_cast<u32>(grid->m_width)
-        && static_cast<u32>(tile.m_y) < static_cast<u32>(grid->m_height)) {
-        grid->m_rows[tile.m_y][tile.m_x].m_objectId = 0;
-        grid->m_rows[tile.m_y][tile.m_x].m_flags &= ~IDX(CELL_FLAG_IN_GAME_ICON);
-    }
+    ReleaseCellObject(
+        reg->m_tileGrid,
+        owner->m_screenPosition.m_x >> TILE_SHIFT_PX,
+        owner->m_screenPosition.m_y >> TILE_SHIFT_PX
+    );
 }
+
+#define SET_MAIN_PLANE_TILE(reg, tileX, tileY, tile)                                               \
+    {                                                                                              \
+        CDDrawWorkerHost* plane = (reg)->m_world->m_level->m_mainPlane;                            \
+        SET_WORKER_HOST_CELL(plane, tileX, tileY, tile);                                           \
+        (reg)->m_tileGrid->ComputeCellFlags(tileX, tileY, tile);                                   \
+    }
 
 static inline BrickzCellNode* PopFreeCellNode(BrickzCellNode*& freeList) {
     BrickzCellNode* node = freeList;
@@ -59,30 +66,19 @@ inline void CGruntzMapMgr::ReleaseCellOccupancy(i32 tileX, i32 tileY) {
     m_rows[tileY][tileX].m_occupantId = -1;
 }
 
-inline void CGruntzMapMgr::AcquireCellOccupancy(i32 tileX, i32 tileY, i32 packedOwner) {
+inline void
+CGruntzMapMgr::AcquireCellOccupancy(i32 tileX, i32 tileY, i32 playerIndex, i32 unitIndex) {
     m_rows[tileY][tileX].m_flags |= BRICKZ_CELL_OCCUPIED;
-    m_rows[tileY][tileX].m_occupantId = packedOwner;
-}
-
-static inline i32 TBombGridCell(CGameObject* obj) {
-    CMapMgr* g = g_gameReg->m_tileGrid;
-    Coord tile = obj->ScreenPos();
-    ScreenTile(&tile);
-    if (static_cast<u32>(tile.m_x) < static_cast<u32>(g->m_width)
-        && static_cast<u32>(tile.m_y) < static_cast<u32>(g->m_height)) {
-        BrickzCell* row = g->m_rows[tile.m_y];
-        return row[tile.m_x].m_flags;
-    }
-    return 1;
+    m_rows[tileY][tileX].m_occupantId = (playerIndex << GRUNT_IDENTITY_PLAYER_SHIFT) | unitIndex;
 }
 
 static inline void TBombGridClear(CGameObject* obj) {
     CMapMgr* g = g_gameReg->m_tileGrid;
-    Coord tile = obj->ScreenPos();
-    ScreenTile(&tile);
-    if (static_cast<u32>(tile.m_x) < static_cast<u32>(g->m_width)
-        && static_cast<u32>(tile.m_y) < static_cast<u32>(g->m_height)) {
-        g->m_rows[tile.m_y][tile.m_x].m_flags &= ~IDX(CELL_FLAG_TIME_BOMB);
+    i32 cy = obj->m_screenPosition.m_y >> TILE_SHIFT_PX;
+    i32 cx = obj->m_screenPosition.m_x >> TILE_SHIFT_PX;
+    if (static_cast<u32>(cx) < static_cast<u32>(g->m_width)
+        && static_cast<u32>(cy) < static_cast<u32>(g->m_height)) {
+        g->m_rows[cy][cx].m_flags &= ~IDX(CELL_FLAG_TIME_BOMB);
     }
 }
 

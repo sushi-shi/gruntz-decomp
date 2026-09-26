@@ -46,13 +46,7 @@ i32 CSBI_Image::SetupImage(
         m_rect = rc;
         m_cmd = cmd;
         if (key != NULL) {
-            CDDrawWorker* rec = host->FindWorker(key);
-            CImage* val;
-            if (rec == NULL || !rec->ContainsFrame(1)) {
-                val = NULL;
-            } else {
-                val = rec->FrameAtUnchecked(1);
-            }
+            CImage* val = host->FindFrame(key, 1);
             SetFrame(val);
             return val != NULL;
         }
@@ -88,7 +82,6 @@ i32 CSBI_Image::Render() {
     return 1;
 }
 
-// @early-stop
 RVA(0x000e6e40, 0x17c)
 i32 CSBI_Image::SerializeFields(
     CFileMemBase* ar,
@@ -105,29 +98,21 @@ i32 CSBI_Image::SerializeFields(
     }
 
     char name[SERIAL_NAME_LEN];
-    i32 idx;
-    i32 v;
     switch (mode) {
-        case SERIAL_LOAD:
-
+        case SERIAL_LOAD: {
+            i32 idx;
             g_serialCounter++;
             ar->Read(name, SERIAL_NAME_LEN);
             ar->Read(&idx, sizeof(idx));
             if (strlen(name) != 0) {
-                i32 frameIndex = idx;
-                CDDrawWorker* r = mgr->FindWorker(name);
-                if (r && r->ContainsFrame(frameIndex)) {
-                    SetFrame(r->FrameAtUnchecked(frameIndex));
-                } else {
-                    SetFrame(NULL);
-                }
+                SetFrame(mgr->FindFrame(name, idx));
             } else {
                 SetFrame(NULL);
             }
             break;
-        case SERIAL_SAVE:
-
-            v = 0;
+        }
+        case SERIAL_SAVE: {
+            i32 v = 0;
             g_serialCounter++;
             memset(name, 0, sizeof(name));
             if (m_frame) {
@@ -136,6 +121,7 @@ i32 CSBI_Image::SerializeFields(
             ar->Write(name, SERIAL_NAME_LEN);
             ar->Write(&v, sizeof(v));
             break;
+        }
     }
 
     return CStatusBarItem::SerializeFields(ar, mode, typeId, payload) != 0;

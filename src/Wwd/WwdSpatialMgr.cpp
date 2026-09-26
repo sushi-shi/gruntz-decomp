@@ -9,6 +9,7 @@
 #include <Gruntz/WwdGameObject.h>
 #include <Gruntz/WwdGrid.h>
 #include <Gruntz/WwdGridIter.h>
+#include <SafeDelete.h>
 #include <Wap32/Object.h>
 #include <Wwd/LogicRecordEvent.h>
 #include <Wwd/WwdSpatialMgrInline.h>
@@ -16,25 +17,15 @@
 RVA_COMPGEN(0x00163a20, 0x1e, ??_GCWwdGridIter@@UAEPAXI@Z)
 RVA(0x001682f0, 0x4a)
 void CWwdSpatialMgr::FreeGrids() {
-    if (m_defaultRegionGrid) {
-        delete m_defaultRegionGrid;
-        m_defaultRegionGrid = NULL;
-    }
-    if (m_largeRegionGrid) {
-        delete m_largeRegionGrid;
-        m_largeRegionGrid = NULL;
-    }
-    if (m_smallRegionGrid) {
-        delete m_smallRegionGrid;
-        m_smallRegionGrid = NULL;
-    }
+    SAFE_DELETE(m_defaultRegionGrid);
+    SAFE_DELETE(m_largeRegionGrid);
+    SAFE_DELETE(m_smallRegionGrid);
     m_activeGroup = NULL;
 }
 
 RVA(0x00168340, 0xe1)
 i32 CWwdSpatialMgr::ActivateAt(i32 centerX, i32 centerY) {
-    Coord center(centerX, centerY);
-    if (m_activeCenter == center) {
+    if (m_activeCenter.m_x == centerX && m_activeCenter.m_y == centerY) {
         return 0;
     }
     SetActiveCenter(centerX, centerY);

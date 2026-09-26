@@ -5,8 +5,8 @@
 
 #include <Mfc.h>
 
-#include <Clock64.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
+#include <Gruntz/ClockInterval.h>
 #include <Gruntz/ColorTint.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/GameRegistry.h>
@@ -59,17 +59,6 @@ public:
     inline void SetNotifyLatch(b32 notify);
     inline void SetInitialFramePending(b32 pending);
     inline void ResetAssetLoadState(GruntzPlayer* player);
-    struct ClockInterval {
-        Clock64 m_start;
-        Clock64 m_interval;
-
-        ClockInterval() {
-            m_start.m_lo = 0;
-            m_interval.m_lo = 0;
-            m_start.m_hi = 0;
-            m_interval.m_hi = 0;
-        }
-    };
 
     QuestLevel CurrentQuestLevel() const {
         return static_cast<QuestLevel>(m_levelIndex);
@@ -170,6 +159,8 @@ public:
     i32 CameraBookmarkCount() {
         return m_cameraBookmarks.GetSize();
     }
+    inline void FreeStartMarkers();
+    inline void FreePlacedObjectCells(i32 group);
 
     i32 RestoreCursorSaveUnder();
 
@@ -193,6 +184,9 @@ public:
 
     i32 StepViewportResize();
     i32 GetAmbientId();
+    inline void UpdateAmbientMusic();
+    inline void DrawVisibleWorld();
+    inline void DrawWorldView();
     void StepScroll();
     i32 SetDarknessCurse(b32 active);
     i32 SetTinyViewportCurse(b32 active);
@@ -260,6 +254,7 @@ public:
     i32 FlushPendingOps();
 
     i32 SetDefeatCountdown(b32 active, i32 durationMs);
+    inline void CancelDefeatCountdown();
     i32 CanQuickSave();
     i32 PostHudRect();
 
@@ -325,12 +320,10 @@ public:
     RECT m_hudRect;
 
     CMinimap* m_minimap;
-    char m_pad324[0x328 - 0x324];
     ClockInterval m_bootyTiming;
 
     ClockInterval m_ambientTiming;
     b32 m_ambientInitDone;
-    char m_pad34c[0x350 - 0x34c];
     ClockInterval m_syncTiming;
     Coord m_tileClick;
     b32 m_dragInhibit1;
@@ -352,7 +345,6 @@ public:
     POINT m_pathPreviewSource;
     POINT m_pathPreviewDestination;
     i16 m_pathPreviewColor;
-    char m_pad42a[0x430 - 0x42a];
 
     ClockInterval m_region0Timing;
     ClockInterval m_region1Timing;
@@ -468,7 +460,6 @@ inline CPlay::~CPlay() {
     CPlay::ReleaseResources();
 }
 
-// @early-stop
 inline CPlay::CPlay() {
     m_returnToMenuOnComplete = false;
     m_completedFinalLevel = false;

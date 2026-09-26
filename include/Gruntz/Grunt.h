@@ -5,10 +5,10 @@
 
 #include <Mfc.h>
 
-#include <Clock64.h>
 #include <DDrawMgr/DDrawChildGroup.h>
 #include <Enums.h>
 #include <Gruntz/ActReg.h>
+#include <Gruntz/ClockInterval.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/CurPlayer.h>
 #include <Gruntz/DoubleVector.h>
@@ -362,40 +362,8 @@ public:
     class CTriggerMgr* m_triggerMgr;
     i32 m_struckCount;
 
-    union {
-        i64 m_struckClock64;
-        struct {
-            i32 m_struckClockLo;
-            i32 m_struckClockHi;
-        };
-    };
-    union {
-        i64 m_struckTimer64;
-        struct {
-            i32 m_struckTimerLo;
-            i32 m_struckTimerHi;
-        };
-    };
-
-    union {
-        struct {
-            union {
-                i64 m_holdAnchor64;
-                struct {
-                    i32 m_holdAnchorLo;
-                    i32 m_holdAnchorHi;
-                };
-            };
-            union {
-                i64 m_holdWindow64;
-                struct {
-                    i32 m_holdWindowLo;
-                    i32 m_holdWindowHi;
-                };
-            };
-        };
-        CPairRecord m_holdTiming;
-    };
+    ClockInterval m_struckTiming;
+    ClockInterval m_holdTiming;
     Coord m_arrivalTargetPx;
 
     RECT m_reachRect;
@@ -415,25 +383,7 @@ public:
     Coord m_unusedBattleCell; // invalidated with arrival/defender cells; never read
     Coord m_defenderPx;
 
-    union {
-        struct {
-            union {
-                i64 m_arrivalReroll64;
-                struct {
-                    i32 m_arrivalRerollLo;
-                    i32 m_arrivalRerollHi;
-                };
-            };
-            union {
-                i64 m_arrivalRerollWindow64;
-                struct {
-                    i32 m_arrivalRerollWindowLo;
-                    i32 m_arrivalRerollWindowHi;
-                };
-            };
-        };
-        CPairRecord m_arrivalRerollTiming;
-    };
+    ClockInterval m_arrivalRerollTiming;
     b32 m_hasExtent;
 
     CPtrList m_coordList;
@@ -448,12 +398,31 @@ public:
     i32 CoordCount() const {
         return m_coordList.GetCount();
     }
+    Coord* GetHeadCoord() {
+        return static_cast<Coord*>(m_coordList.GetAt(CoordHead()));
+    }
+    Coord* GetTailCoord() {
+        return static_cast<Coord*>(m_coordList.GetAt(CoordTail()));
+    }
     CGruntCellRec* EntranceCell() {
         GruntDirectionCell c = m_entranceCell;
         return &m_cells[3 * c.m_row + c.m_column];
     }
     i32 PayloadCount() const {
         return m_payloads.GetCount();
+    }
+    i32* HeadPayload() {
+        return PayloadCount() == 0 ? NULL : static_cast<i32*>(m_payloads.GetHead());
+    }
+    void DeleteHeadPayload() {
+        if (PayloadCount() != 0) {
+            delete[] static_cast<i32*>(m_payloads.RemoveHead());
+        }
+    }
+    void DeleteAllPayloads() {
+        while (HeadPayload() != NULL) {
+            DeleteHeadPayload();
+        }
     }
 
     b32 m_toolConfigured; // set on every tool (re)config; never read
@@ -512,254 +481,41 @@ public:
 
     CGruntCellRec m_cells[9];
 
-    union {
-        i64 m_toyClock;
-        struct {
-            i32 m_toyClockLo, m_toyClockHi;
-        };
-    };
-    union {
-        i64 m_toyDuration;
-        struct {
-            i32 m_toyDurationLo, m_toyDurationHi;
-        };
-    };
-    union {
-        i64 m_idleAnchor;
-        struct {
-            i32 m_idleAnchorLo, m_idleAnchorHi;
-        };
-    };
-    union {
-        i64 m_idleDelay;
-        struct {
-            i32 m_idleDelayLo, m_idleDelayHi;
-        };
-    };
-    union {
-        i64 m_idleTimer;
-        struct {
-            i32 m_idleTimerLo, m_idleTimerHi;
-        };
-    };
-    union {
-        i64 m_idleWindow;
-        struct {
-            i32 m_idleWindowLo, m_idleWindowHi;
-        };
-    };
-
-    union {
-        i64 m_entranceClock64;
-        struct {
-            i32 m_entranceClockLo;
-            i32 m_entranceClockHi;
-        };
-    };
-    union {
-        i64 m_entranceSafeTime64;
-        struct {
-            i32 m_entranceSafeTimeLo;
-            i32 m_entranceSafeTimeHi;
-        };
-    };
-
-    union {
-        i64 m_flashClock64;
-        struct {
-            i32 m_flashClockLo;
-            i32 m_flashClockHi;
-        };
-    };
-    union {
-        i64 m_flashWindow64;
-        struct {
-            i32 m_flashWindowLo;
-            i32 m_flashWindowHi;
-        };
-    };
-
-    union {
-        i64 m_attackClock64;
-        struct {
-            i32 m_attackClockLo;
-            i32 m_attackClockHi;
-        };
-    };
-    union {
-        i64 m_attackDowntime64;
-        struct {
-            i32 m_attackDowntimeLo;
-            i32 m_attackDowntimeHi;
-        };
-    };
-
-    union {
-        i64 m_combatClock64;
-        struct {
-            i32 m_combatClockLo;
-            i32 m_combatClockHi;
-        };
-    };
-    union {
-        i64 m_combatTimeout64;
-        struct {
-            i32 m_combatTimeoutLo;
-            i32 m_combatTimeoutHi;
-        };
-    };
-
-    union {
-        i64 m_hudRetireClock64;
-        struct {
-            i32 m_hudRetireClockLo;
-            i32 m_hudRetireClockHi;
-        };
-    };
-    union {
-        i64 m_hudRetireWindow64;
-        struct {
-            i32 m_hudRetireWindowLo;
-            i32 m_hudRetireWindowHi;
-        };
-    };
-    union {
-        struct {
-            union {
-                i64 m_wingzClock64;
-                struct {
-                    i32 m_wingzClockLo;
-                    i32 m_wingzClockHi;
-                };
-            };
-            union {
-                i64 m_wingzDuration64;
-                struct {
-                    i32 m_wingzDurationLo;
-                    i32 m_wingzDurationHi;
-                };
-            };
-        };
-        CPairRecord m_wingzTiming;
-    };
-
-    union {
-        struct {
-            union {
-                i64 m_convertClock64;
-                struct {
-                    i32 m_convertClockLo;
-                    i32 m_convertClockHi;
-                };
-            };
-            union {
-                i64 m_convertTime64;
-                struct {
-                    i32 m_convertTimeLo;
-                    i32 m_convertTimeHi;
-                };
-            };
-        };
-        CPairRecord m_conversionTiming;
-    };
-
-    union {
-        struct {
-            union {
-                i64 m_shimmerClock64;
-                struct {
-                    i32 m_shimmerClockLo;
-                    i32 m_shimmerClockHi;
-                };
-            };
-            union {
-                i64 m_shimmerWindow64;
-                struct {
-                    i32 m_shimmerWindowLo;
-                    i32 m_shimmerWindowHi;
-                };
-            };
-        };
-        CPairRecord m_shimmerTiming;
-    };
-
-    union {
-        struct {
-            union {
-                Clock64 m_arrivalVoiceClock;
-                struct {
-                    i32 m_arrivalVoiceClockLo;
-                    i32 m_arrivalVoiceClockHi;
-                };
-            };
-            union {
-                Clock64 m_arrivalVoiceWindow;
-                struct {
-                    i32 m_arrivalVoiceWindowLo;
-                    i32 m_arrivalVoiceWindowHi;
-                };
-            };
-        };
-        CPairRecord m_arrivalVoiceTiming;
-    };
+    ClockInterval m_toyTiming;
+    ClockInterval m_idleDelayTiming;
+    ClockInterval m_idleWindowTiming;
+    ClockInterval m_entranceTiming;
+    ClockInterval m_flashTiming;
+    ClockInterval m_attackTiming;
+    ClockInterval m_combatTiming;
+    ClockInterval m_hudRetireTiming;
+    ClockInterval m_wingzTiming;
+    ClockInterval m_conversionTiming;
+    ClockInterval m_shimmerTiming;
+    ClockInterval m_arrivalVoiceTiming;
     i32 m_reserved8d0;
 
-    CGrunt()
-        : CMovingLogic(CUserLogic::INLINE_BASE),
-          m_struckClock64(0),
-          m_struckTimer64(0),
-          m_holdAnchor64(0),
-          m_holdWindow64(0),
-          m_arrivalReroll64(0),
-          m_arrivalRerollWindow64(0),
-          m_toyClock(0),
-          m_toyDuration(0),
-          m_idleAnchor(0),
-          m_idleDelay(0),
-          m_idleTimer(0),
-          m_idleWindow(0),
-          m_entranceClock64(0),
-          m_entranceSafeTime64(0),
-          m_flashClock64(0),
-          m_flashWindow64(0),
-          m_attackClock64(0),
-          m_attackDowntime64(0),
-          m_combatClock64(0),
-          m_combatTimeout64(0),
-          m_hudRetireClock64(0),
-          m_hudRetireWindow64(0),
-          m_wingzClock64(0),
-          m_wingzDuration64(0),
-          m_convertClock64(0),
-          m_convertTime64(0),
-          m_shimmerClock64(0),
-          m_shimmerWindow64(0) {
-        m_arrivalVoiceClock.m_v = 0;
-        m_arrivalVoiceWindow.m_v = 0;
-    }
+    CGrunt() : CMovingLogic(CUserLogic::INLINE_BASE) {}
     CGrunt(CGameObject* owner);
 
     void LoadCellAnimNames(i32 kind, i32 directionOnly);
     void ResetEntranceAnimation(i32 refreshFrame, i32 chooseIdleVariant, i32 playVoiceCue);
 
     i32 IsArrivalRerollPending() {
-        return static_cast<i64>(g_frameTime) - m_arrivalReroll64 < m_arrivalRerollWindow64;
+        return !m_arrivalRerollTiming.Expired();
     }
 
     i32 IsHoldPending() {
-        return static_cast<i64>(g_frameTime) - m_holdAnchor64 < m_holdWindow64;
+        return !m_holdTiming.Expired();
     }
 
     void ResetArrivalReroll() {
         ResetEntranceAnimation(1, 1, 0);
-        m_arrivalRerollLo = 0;
-        m_arrivalRerollWindowLo = 0;
-        m_arrivalRerollHi = 0;
-        m_arrivalRerollWindowHi = 0;
-        m_arrivalRerollWindowLo = rand() % 30000 + 30000;
-        m_arrivalRerollWindowHi = 0;
-        m_arrivalRerollLo = static_cast<i32>(g_frameTime);
-        m_arrivalRerollHi = 0;
+        m_arrivalRerollTiming.m_startLo = 0;
+        m_arrivalRerollTiming.m_intervalLo = 0;
+        m_arrivalRerollTiming.m_startHi = 0;
+        m_arrivalRerollTiming.m_intervalHi = 0;
+        m_arrivalRerollTiming.Start(rand() % 30000 + 30000);
     }
     i32 ResolveEntranceArrival();
     void ClearAllSprites();

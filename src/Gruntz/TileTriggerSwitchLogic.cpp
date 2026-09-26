@@ -22,8 +22,11 @@
 #include <Gruntz/GruntzCommandId.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/LevelCollisionInline.h>
+#include <Gruntz/MapCellInline.h>
+#include <Gruntz/Particlez.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueInline.h>
 #include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Gruntz/TileActionEvent.h>
@@ -114,24 +117,7 @@ i32 CTileTriggerSwitchLogic::SwitchDown() {
 
     DECLARE_TILE_CENTER_PIXEL_PAIR(px, py, m_tile.m_x, m_tile.m_y)
     if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
-        SoundCueRegistry* h = g_gameReg->m_world->m_soundRegistry;
-        if (h->m_silentMode == false) {
-            SoundCue* found = h->FindCue("GAME_SWITCHDOWN");
-            SoundCue* spr = found;
-            if (spr) {
-                b32 soundEnabled = g_soundEnabled;
-                i32 volumePercent = g_soundVolumePercent;
-                if (soundEnabled != false) {
-                    u32 cueTimeMs = g_soundCueTimeMs;
-                    u32 elapsedMs = cueTimeMs - static_cast<u32>(spr->m_lastPlayTimeMs);
-                    u32 replayDelayMs = static_cast<u32>(spr->m_replayDelayMs);
-                    if (elapsedMs >= replayDelayMs) {
-                        spr->m_lastPlayTimeMs = cueTimeMs;
-                        spr->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                    }
-                }
-            }
-        }
+        PlayRegistryCueIfElapsed(g_gameReg->m_world->m_soundRegistry, "GAME_SWITCHDOWN");
     }
     m_linkGate = true;
     return 1;
@@ -150,24 +136,7 @@ i32 CTileTriggerSwitchLogic::SwitchUp() {
 
     DECLARE_TILE_CENTER_PIXEL_PAIR(px, py, m_tile.m_x, m_tile.m_y)
     if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
-        SoundCueRegistry* h = g_gameReg->m_world->m_soundRegistry;
-        if (h->m_silentMode == false) {
-            SoundCue* found = h->FindCue("GAME_SWITCHUP");
-            SoundCue* spr = found;
-            if (spr) {
-                b32 soundEnabled = g_soundEnabled;
-                i32 volumePercent = g_soundVolumePercent;
-                if (soundEnabled != false) {
-                    u32 cueTimeMs = g_soundCueTimeMs;
-                    u32 elapsedMs = cueTimeMs - static_cast<u32>(spr->m_lastPlayTimeMs);
-                    u32 replayDelayMs = static_cast<u32>(spr->m_replayDelayMs);
-                    if (elapsedMs >= replayDelayMs) {
-                        spr->m_lastPlayTimeMs = cueTimeMs;
-                        spr->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                    }
-                }
-            }
-        }
+        PlayRegistryCueIfElapsed(g_gameReg->m_world->m_soundRegistry, "GAME_SWITCHUP");
     }
     m_linkGate = false;
     return 1;
@@ -330,9 +299,7 @@ i32 CTileTriggerLogic::Tick() {
             i32 ty = m_tile.m_y;
             i32 tx = m_tile.m_x;
             CGruntzMgr* reg = g_gameReg;
-            CDDrawWorkerHost* pl = reg->m_world->m_level->m_mainPlane;
-            SET_WORKER_HOST_CELL(pl, tx, ty, 0xca);
-            reg->m_tileGrid->ComputeCellFlags(tx, ty, 0xca);
+            SET_MAIN_PLANE_TILE(reg, tx, ty, 0xca);
             break;
         }
         case TILEKIND_ARROW_DOWN_B: {
@@ -343,9 +310,7 @@ i32 CTileTriggerLogic::Tick() {
             i32 ty = m_tile.m_y;
             i32 tx = m_tile.m_x;
             CGruntzMgr* reg = g_gameReg;
-            CDDrawWorkerHost* pl = reg->m_world->m_level->m_mainPlane;
-            SET_WORKER_HOST_CELL(pl, tx, ty, 0xc9);
-            reg->m_tileGrid->ComputeCellFlags(tx, ty, 0xc9);
+            SET_MAIN_PLANE_TILE(reg, tx, ty, 0xc9);
             break;
         }
         case TILEKIND_ARROW_LEFT_B: {
@@ -356,9 +321,7 @@ i32 CTileTriggerLogic::Tick() {
             i32 ty = m_tile.m_y;
             i32 tx = m_tile.m_x;
             CGruntzMgr* reg = g_gameReg;
-            CDDrawWorkerHost* pl = reg->m_world->m_level->m_mainPlane;
-            SET_WORKER_HOST_CELL(pl, tx, ty, 0xcc);
-            reg->m_tileGrid->ComputeCellFlags(tx, ty, 0xcc);
+            SET_MAIN_PLANE_TILE(reg, tx, ty, 0xcc);
             break;
         }
         case TILEKIND_ARROW_RIGHT_B: {
@@ -369,9 +332,7 @@ i32 CTileTriggerLogic::Tick() {
             i32 ty = m_tile.m_y;
             i32 tx = m_tile.m_x;
             CGruntzMgr* reg = g_gameReg;
-            CDDrawWorkerHost* pl = reg->m_world->m_level->m_mainPlane;
-            SET_WORKER_HOST_CELL(pl, tx, ty, 0xcb);
-            reg->m_tileGrid->ComputeCellFlags(tx, ty, 0xcb);
+            SET_MAIN_PLANE_TILE(reg, tx, ty, 0xcb);
             break;
         }
 
@@ -386,16 +347,12 @@ i32 CTileTriggerLogic::Tick() {
                     i32 hit = 0;
                     if (PbResolveCell(world->m_level, gx, gy) == TILEKIND_REDPYRAMID_UP) {
                         CGruntzMgr* reg = g_gameReg;
-                        CDDrawWorkerHost* pl = reg->m_world->m_level->m_mainPlane;
-                        SET_WORKER_HOST_CELL(pl, gx, gy, 0xfd);
-                        reg->m_tileGrid->ComputeCellFlags(gx, gy, 0xfd);
+                        SET_MAIN_PLANE_TILE(reg, gx, gy, 0xfd);
                         anim = "GAME_PYRAMIDUP";
                         hit = 1;
                     } else if (PbResolveCell(world->m_level, gx, gy) == TILEKIND_REDPYRAMID_DOWN) {
                         CGruntzMgr* reg = g_gameReg;
-                        CDDrawWorkerHost* pl = reg->m_world->m_level->m_mainPlane;
-                        SET_WORKER_HOST_CELL(pl, gx, gy, 0xfe);
-                        reg->m_tileGrid->ComputeCellFlags(gx, gy, 0xfe);
+                        SET_MAIN_PLANE_TILE(reg, gx, gy, 0xfe);
                         anim = "GAME_PYRAMIDDOWN";
                         hit = 1;
                     }
@@ -734,7 +691,7 @@ i32 CTileExclusiveTriggerSwitchLogic::SwitchDown() {
             g_gameReg->ReportError(IDX(TRIGERR_LOOKUP_MISS), IDX(TRIGSITE_BCAST_KEY_MISS));
             return 0;
         }
-        if (m_cellKey != node->m_cellKey && node->m_linkGate != false) {
+        if (node->m_cellKey != m_cellKey && node->m_linkGate != false) {
             node->SwitchUp();
             b32 any = false;
             POSITION pos = m_owner->m_idleLogics.GetHeadPosition();
@@ -776,7 +733,8 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
 
     i32 inRect = 0;
     POINT pt;
-    SET_POINT_COMPONENTS(pt, TILE_CENTER_COMPONENT(m_tile.m_x), TILE_CENTER_COMPONENT(m_tile.m_y));
+    pt.x = (m_tile.m_x << TILE_SHIFT_PX) + TILE_HALF_PX;
+    pt.y = (m_tile.m_y << TILE_SHIFT_PX) + TILE_HALF_PX;
     if (PtInRect(&g_gameReg->m_viewBounds, pt)) {
         inRect = 1;
     }
@@ -787,24 +745,17 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
             i32 py = j + m_tile.m_y - 1;
             i32 px = i + m_tile.m_x - 1;
             CGruntzMgr* reg = g_gameReg;
-            CDDrawWorkerHost* plane = reg->m_world->m_level->m_mainPlane;
-            SET_WORKER_HOST_CELL(plane, px, py, value);
-            reg->m_tileGrid->ComputeCellFlags(px, py, value);
+            SET_MAIN_PLANE_TILE(reg, px, py, value);
             i32 sx = ((i + m_tile.m_x) << TILE_SHIFT_PX) - 0x10;
             i32 sy = ((j + m_tile.m_y) << TILE_SHIFT_PX) - 0x10;
             if (inRect) {
-                CWwdSpriteObject* spr = gameMgr->m_childGroup->CreateSprite(
-                    0,
+                CreateParticlez(
+                    gameMgr->m_childGroup,
                     sx,
                     sy,
-                    SORTKEY_ACTOR_BEHIND,
-                    "Particlez",
-                    WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                    "LEVEL_ROCKBREAK",
+                    "LEVEL_ROCKBREAK"
                 );
-                if (spr != NULL) {
-                    spr->SetImageSetByName("LEVEL_ROCKBREAK");
-                    spr->SetAnimationByName("LEVEL_ROCKBREAK", 0);
-                }
             }
         }
     }
@@ -832,22 +783,7 @@ i32 CGiantRockLogic::BuildRockBreakInGameText() {
     if (!::PtInRect(&g_gameReg->m_viewBounds, bx, by)) {
         return 0;
     }
-    SoundCueRegistry* sreg = g_gameReg->m_world->m_soundRegistry;
-    if (sreg->m_silentMode == false) {
-        SoundCue* found = sreg->FindCue("LEVEL_ROCKBREAK");
-        SoundCue* out = found;
-        if (out != NULL) {
-            i32 volumePercent = g_soundVolumePercent;
-            if (g_soundEnabled != false) {
-                i32 cueTimeMs = g_soundCueTimeMs;
-                if (static_cast<u32>((cueTimeMs - out->m_lastPlayTimeMs))
-                    >= static_cast<u32>(out->m_replayDelayMs)) {
-                    out->m_lastPlayTimeMs = cueTimeMs;
-                    out->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                }
-            }
-        }
-    }
+    PlayRegistryCueIfElapsed(g_gameReg->m_world->m_soundRegistry, "LEVEL_ROCKBREAK");
     return 0;
 }
 
@@ -859,9 +795,7 @@ i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
         CGruntzMgr* reg = g_gameReg;
         i32 ty = m_tile.m_y;
         i32 tx = m_tile.m_x;
-        CDDrawWorkerHost* L = reg->m_world->m_level->m_mainPlane;
-        SET_WORKER_HOST_CELL(L, tx, ty, tok);
-        (reg->m_tileGrid)->ComputeCellFlags(tx, ty, tok);
+        SET_MAIN_PLANE_TILE(reg, tx, ty, tok);
     } else {
         switch (verb) {
             case TILEKIND_COVERED_POWERUP: {
@@ -879,18 +813,14 @@ i32 CTileTriggerLogic::ApplyMove(TileCollisionKind verb) {
                 CGruntzMgr* reg = g_gameReg;
                 i32 ty = m_tile.m_y;
                 i32 tx = m_tile.m_x;
-                CDDrawWorkerHost* L = reg->m_world->m_level->m_mainPlane;
-                SET_WORKER_HOST_CELL(L, tx, ty, 0x5b);
-                (reg->m_tileGrid)->ComputeCellFlags(tx, ty, 0x5b);
+                SET_MAIN_PLANE_TILE(reg, tx, ty, 0x5b);
                 break;
             }
             case TILEKIND_GAUNTLET_ROCK_A: {
                 CGruntzMgr* reg = g_gameReg;
                 i32 ty = m_tile.m_y;
                 i32 tx = m_tile.m_x;
-                CDDrawWorkerHost* L = reg->m_world->m_level->m_mainPlane;
-                SET_WORKER_HOST_CELL(L, tx, ty, 0x5a);
-                (reg->m_tileGrid)->ComputeCellFlags(tx, ty, 0x5a);
+                SET_MAIN_PLANE_TILE(reg, tx, ty, 0x5a);
                 break;
             }
             default:

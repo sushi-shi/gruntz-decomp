@@ -71,32 +71,12 @@ i32 CSBI_SideTab::BuildStatzTabStatusBar(
     m_onLeft = onLeft;
 
     if (onLeft != 0) {
-        CDDrawWorker* worker;
-        worker = g_gameReg->m_world->FindWorker("GAME_STATUSBAR_TABZ_STATZTAB_TABONLEFT");
-        CImage* frame;
-        if (worker == NULL) {
-            frame = NULL;
-        } else if (DDRAW_WORKER_MISSES_FRAME(worker, 1)) {
-            frame = NULL;
-        } else {
-            frame = DDRAW_WORKER_FRAME_AT_UNCHECKED(worker, 1);
-        }
-        m_topFrame = frame;
-        m_drawPosition.m_x = parent->m_barRect.left - (RECT_WIDTH(rc)) / 2;
+        m_topFrame = g_gameReg->m_world->FindFrame("GAME_STATUSBAR_TABZ_STATZTAB_TABONLEFT", 1);
+        m_drawPosition.m_x = parent->m_barRect.left - (rc.right - rc.left) / 2;
         m_bottomFrameDy = 1;
     } else {
-        CDDrawWorker* worker;
-        worker = g_gameReg->m_world->FindWorker("GAME_STATUSBAR_TABZ_STATZTAB_TABONRIGHT");
-        CImage* frame;
-        if (worker == NULL) {
-            frame = NULL;
-        } else if (DDRAW_WORKER_MISSES_FRAME(worker, 1)) {
-            frame = NULL;
-        } else {
-            frame = DDRAW_WORKER_FRAME_AT_UNCHECKED(worker, 1);
-        }
-        m_topFrame = frame;
-        m_drawPosition.m_x = (RECT_WIDTH(rc)) / 2 + parent->m_barRect.right;
+        m_topFrame = g_gameReg->m_world->FindFrame("GAME_STATUSBAR_TABZ_STATZTAB_TABONRIGHT", 1);
+        m_drawPosition.m_x = (rc.right - rc.left) / 2 + parent->m_barRect.right;
         m_bottomFrameDy = -1;
     }
     m_drawPosition.m_y = colIndex * 0x12 + 0xd1;
@@ -130,7 +110,7 @@ i32 CSBI_SideTab::BuildHandle() {
     if (mode == STATUS_SAMPLE_NONE) {
         return 0;
     }
-    CGrunt* unit = g_gameReg->m_triggerMgr->m_units[m_colIndex + TM_UNITS_PER_PLAYER * m_rowIndex];
+    CGrunt* unit = g_gameReg->m_triggerMgr->UnitAt(m_rowIndex, m_colIndex);
     if (unit == NULL) {
         m_owner->ClearStat(m_colIndex);
         return 0;
@@ -168,13 +148,7 @@ i32 CSBI_SideTab::BuildHandle() {
     if (m_sampledValue == val) {
         return 1;
     }
-    CDDrawWorker* gm = g_gameReg->m_world->FindWorker("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ");
-    CImage* glyph;
-    if (gm == NULL || !gm->ContainsFrame(val)) {
-        glyph = NULL;
-    } else {
-        glyph = gm->FrameAtUnchecked(val);
-    }
+    CImage* glyph = g_gameReg->m_world->FindFrame("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", val);
     m_sampledValue = val;
     m_bottomFrame = glyph;
     return 1;
@@ -253,12 +227,7 @@ i32 CSBI_SideTab::SerializeFields(
                 out = NULL;
                 reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
                 CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
-                CImage* r;
-                if (rec != NULL && rec->ContainsFrame(i)) {
-                    r = rec->FrameAtUnchecked(i);
-                } else {
-                    r = NULL;
-                }
+                CImage* r = rec != NULL ? rec->GetAt(i) : NULL;
                 m_topFrame = r;
             } else {
                 m_topFrame = NULL;
@@ -272,12 +241,7 @@ i32 CSBI_SideTab::SerializeFields(
                 out = NULL;
                 reg->m_imageRegistry->m_workersByName.Lookup(buf, out);
                 CDDrawWorker* rec = static_cast<CDDrawWorker*>(out);
-                CImage* r;
-                if (rec != NULL && rec->ContainsFrame(i)) {
-                    r = rec->FrameAtUnchecked(i);
-                } else {
-                    r = NULL;
-                }
+                CImage* r = rec != NULL ? rec->GetAt(i) : NULL;
                 m_bottomFrame = r;
             } else {
                 m_bottomFrame = NULL;

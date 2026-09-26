@@ -66,10 +66,6 @@ public:
         m_screenPosition = position;
     }
 
-    void SetScreenPos(i32 x, i32 y) {
-        SetScreenPos(Coord(x, y));
-    }
-
     inline void SetDrawFillFraction(ShadeMode mode, i32 fraction) {
         m_drawActive = true;
         m_drawFillCmd = mode;
@@ -119,6 +115,10 @@ public:
 
     RECT m_clip;
 };
+
+#define SET_SCREEN_POS(node, x, y)                                                                 \
+    (node)->m_screenPosition.m_x = (x);                                                            \
+    (node)->m_screenPosition.m_y = (y)
 
 #define SET_DRAW_FILL(node, mode, table)                                                           \
     node->m_drawActive = true;                                                                     \

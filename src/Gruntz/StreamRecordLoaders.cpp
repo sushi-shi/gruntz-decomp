@@ -3,18 +3,15 @@
 #include <DDrawMgr/DDrawWorker.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/LogicRecordRegistry.h>
-#include <DDrawMgr/WorkerLookup.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/SerialArchive.h>
-#include <Gruntz/SerialCounter.h>
+#include <Gruntz/SerialWorkerRefMacros.h>
 #include <Gruntz/Sprite.h>
 #include <Gruntz/Timer.h>
 #include <Image/CImage.h>
 #include <Io/FileMem.h>
-
-#include <string.h>
 
 RVA(0x0009c650, 0x372)
 i32 CTimer::Deserialize(CFileMemBase* s) {
@@ -32,100 +29,19 @@ i32 CTimer::Deserialize(CFileMemBase* s) {
     s->Read(&m_basePosition.m_x, sizeof(m_basePosition.m_x));
     s->Read(&m_basePosition.m_y, sizeof(m_basePosition.m_y));
 
-    g_serialCounter++;
-    s->Read(buf, SERIAL_NAME_LEN);
-    if (strlen(buf) != 0) {
-        m_sprite = reg->FindWorker(buf);
-    } else {
-        m_sprite = NULL;
-    }
+    SERIAL_READ_WORKER(s, reg, buf, m_sprite);
 
     s->Read(&m_active, sizeof(m_active));
 
-    g_serialCounter++;
-    s->Read(buf, SERIAL_NAME_LEN);
-    s->Read(&idx, sizeof(idx));
-    if (strlen(buf) != 0) {
-        i32 i = idx;
-        CDDrawWorker* tt = reg->FindWorker(buf);
-        CImage* r;
-        if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = DDRAW_WORKER_FRAME_AT_UNCHECKED(tt, i);
-        } else {
-            r = NULL;
-        }
-        m_frameMinTens = r;
-    } else {
-        m_frameMinTens = NULL;
-    }
+    SERIAL_READ_FRAME(s, reg, buf, idx, m_frameMinTens);
 
-    g_serialCounter++;
-    s->Read(buf, SERIAL_NAME_LEN);
-    s->Read(&idx, sizeof(idx));
-    if (strlen(buf) != 0) {
-        i32 i = idx;
-        CDDrawWorker* tt = reg->FindWorker(buf);
-        CImage* r;
-        if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = DDRAW_WORKER_FRAME_AT_UNCHECKED(tt, i);
-        } else {
-            r = NULL;
-        }
-        m_frameMinOnes = r;
-    } else {
-        m_frameMinOnes = NULL;
-    }
+    SERIAL_READ_FRAME(s, reg, buf, idx, m_frameMinOnes);
 
-    g_serialCounter++;
-    s->Read(buf, SERIAL_NAME_LEN);
-    s->Read(&idx, sizeof(idx));
-    if (strlen(buf) != 0) {
-        i32 i = idx;
-        CDDrawWorker* tt = reg->FindWorker(buf);
-        CImage* r;
-        if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = DDRAW_WORKER_FRAME_AT_UNCHECKED(tt, i);
-        } else {
-            r = NULL;
-        }
-        m_frameSecTens = r;
-    } else {
-        m_frameSecTens = NULL;
-    }
+    SERIAL_READ_FRAME(s, reg, buf, idx, m_frameSecTens);
 
-    g_serialCounter++;
-    s->Read(buf, SERIAL_NAME_LEN);
-    s->Read(&idx, sizeof(idx));
-    if (strlen(buf) != 0) {
-        i32 i = idx;
-        CDDrawWorker* tt = reg->FindWorker(buf);
-        CImage* r;
-        if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = DDRAW_WORKER_FRAME_AT_UNCHECKED(tt, i);
-        } else {
-            r = NULL;
-        }
-        m_frameSecOnes = r;
-    } else {
-        m_frameSecOnes = NULL;
-    }
+    SERIAL_READ_FRAME(s, reg, buf, idx, m_frameSecOnes);
 
-    g_serialCounter++;
-    s->Read(buf, SERIAL_NAME_LEN);
-    s->Read(&idx, sizeof(idx));
-    if (strlen(buf) != 0) {
-        i32 i = idx;
-        CDDrawWorker* tt = reg->FindWorker(buf);
-        CImage* r;
-        if (tt != NULL && i >= tt->m_minIndex && i <= tt->m_maxIndex) {
-            r = DDRAW_WORKER_FRAME_AT_UNCHECKED(tt, i);
-        } else {
-            r = NULL;
-        }
-        m_frameColon = r;
-    } else {
-        m_frameColon = NULL;
-    }
+    SERIAL_READ_FRAME(s, reg, buf, idx, m_frameColon);
 
     s->Read(&m_running, sizeof(m_running));
     s->Read(&m_currentMs, sizeof(m_currentMs));

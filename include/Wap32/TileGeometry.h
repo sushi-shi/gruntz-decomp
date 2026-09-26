@@ -16,16 +16,6 @@ inline i32 SquaredDistance(i32 dx, i32 dy) {
     return SQR(dx) + SQR(dy);
 }
 
-#define TILE_SHIFT_INTO(out, size)                                                                 \
-    do {                                                                                           \
-        (out) = 0;                                                                                 \
-        i32 tileExtent = (size);                                                                   \
-        while (tileExtent > 1) {                                                                   \
-            tileExtent >>= 1;                                                                      \
-            (out) = (out) + 1;                                                                     \
-        }                                                                                          \
-    } while (0)
-
 inline i32 TileShiftForSize(i32 tileSize) {
     i32 shift = 0;
     while (tileSize > 1) {
@@ -54,4 +44,14 @@ inline i32 TileShiftForSize(i32 tileSize) {
     if ((value) > (upper)) {                                                                       \
         (value) = (upper);                                                                         \
     }
+
+#define ROUND_BIAS_FOR_SIGN(bias, value)                                                           \
+    if ((value) > 0.0) {                                                                           \
+        (bias) = 0.5;                                                                              \
+    } else if ((value) < 0.0) {                                                                    \
+        (bias) = -0.5;                                                                             \
+    } else {                                                                                       \
+        (bias) = 0.0;                                                                              \
+    }
+
 #endif // WAP32_TILEGEOMETRY_H

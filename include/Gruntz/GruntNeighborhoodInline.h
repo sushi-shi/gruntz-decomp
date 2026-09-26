@@ -2,13 +2,13 @@
 #define GRUNTZ_GRUNTZ_GRUNTNEIGHBORHOODINLINE_H
 
 #include <Gruntz/GruntMovementInline.h>
+#include <RectMacros.h>
 
 static inline Coord ScreenPosition(CGameObject* object) {
     Coord out;
     i32 y = object->m_screenPosition.m_y;
     i32 x = object->m_screenPosition.m_x;
-    out.m_y = y;
-    out.m_x = x;
+    out.Set(x, y);
     return out;
 }
 
@@ -28,10 +28,7 @@ static inline RECT AttackTileNeighborhood(CGrunt* grunt) {
     pt4.m_x >>= TILE_SHIFT_PX;
     i32 leftX = pt4.m_x;
     RECT box;
-    box.left = leftX - halfBox;
-    box.top = topY - halfBox;
-    box.right = bx + halfBox + 1;
-    box.bottom = by + halfBox + 1;
+    SET_RECT_COMPONENTS(box, leftX - halfBox, topY - halfBox, bx + halfBox + 1, by + halfBox + 1);
     return box;
 }
 

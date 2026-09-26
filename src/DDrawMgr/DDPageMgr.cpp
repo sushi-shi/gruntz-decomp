@@ -15,6 +15,8 @@
 #include <Io/MoviePlayer.h>
 #include <Io/MoviePlayerInline.h>
 #include <MakeRect.h>
+#include <RectMacros.h>
+#include <SafeDelete.h>
 #include <Wap32/ScreenGeometry.h>
 
 #include <ddraw.h>
@@ -249,14 +251,8 @@ i32 CMoviePlayer::OpenLo(
     m_streamOpen = true;
     i32 r = Configure(mode, openFlags, origin, rect);
     if (!r) {
-        if (m_srcSurf) {
-            m_srcSurf->Release();
-            m_srcSurf = NULL;
-        }
-        if (m_srcSurfRaw) {
-            m_srcSurfRaw->Release();
-            m_srcSurfRaw = NULL;
-        }
+        SAFE_RELEASE(m_srcSurf);
+        SAFE_RELEASE(m_srcSurfRaw);
         CloseSmacker();
     }
     return r;
@@ -295,14 +291,8 @@ i32 CMoviePlayer::OpenHi(
     m_streamOpen = true;
     i32 r = Configure(mode, openFlags, origin, rect);
     if (!r) {
-        if (m_srcSurf) {
-            m_srcSurf->Release();
-            m_srcSurf = NULL;
-        }
-        if (m_srcSurfRaw) {
-            m_srcSurfRaw->Release();
-            m_srcSurfRaw = NULL;
-        }
+        SAFE_RELEASE(m_srcSurf);
+        SAFE_RELEASE(m_srcSurfRaw);
         CloseSmacker();
     }
     return r;
@@ -426,10 +416,7 @@ i32 CMoviePlayer::CloseSmacker() {
     }
     SmackClose(m_smackHandle);
     m_smackHandle = NULL;
-    if (m_destRect) {
-        delete m_destRect;
-        m_destRect = NULL;
-    }
+    SAFE_DELETE(m_destRect);
     m_streamOpen = false;
     return 1;
 }
@@ -465,7 +452,7 @@ i32 CMoviePlayer::Frame() {
         UploadPalette();
     }
     DecodeFrame();
-    if (m_blitMode != MOVIE_SINGLE) {
+    if (m_blitMode != MOVIE_DEST_RECT) {
         while (SmackToBufferRect(m_smackHandle, 0) != 0) {
             BlitRegion(
                 m_smackHandle->LastRectx,
@@ -509,14 +496,8 @@ i32 CMoviePlayer::CheckGrid() {
 
 RVA(0x0017cc80, 0x109)
 void CMoviePlayer::HandleError() {
-    if (m_srcSurf) {
-        m_srcSurf->Release();
-        m_srcSurf = NULL;
-    }
-    if (m_srcSurfRaw) {
-        m_srcSurfRaw->Release();
-        m_srcSurfRaw = NULL;
-    }
+    SAFE_RELEASE(m_srcSurf);
+    SAFE_RELEASE(m_srcSurfRaw);
     if (m_bpp == BPP_PALETTED_8) {
         ResetPalette();
     }
@@ -534,27 +515,15 @@ void CMoviePlayer::HandleError() {
         }
     }
     if (m_borrowedDisplayResources == false) {
-        if (m_palette) {
-            m_palette->Release();
-            m_palette = NULL;
-        }
-        if (m_primary) {
-            m_primary->Release();
-            m_primary = NULL;
-        }
-        if (m_primaryRaw) {
-            m_primaryRaw->Release();
-            m_primaryRaw = NULL;
-        }
+        SAFE_RELEASE(m_palette);
+        SAFE_RELEASE(m_primary);
+        SAFE_RELEASE(m_primaryRaw);
         if (m_directDraw2) {
             m_directDraw2->RestoreDisplayMode();
             m_directDraw2->Release();
             m_directDraw2 = NULL;
         }
-        if (m_directDraw) {
-            m_directDraw->Release();
-            m_directDraw = NULL;
-        }
+        SAFE_RELEASE(m_directDraw);
     }
 }
 
@@ -641,7 +610,6 @@ i32 CMoviePlayer::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
     }
 }
 
-// @early-stop
 RVA(0x0017cfc0, 0x2f0)
 i32 CMoviePlayer::Configure(MovieLayout mode, MovieOpenFlags openFlags, POINT* origin, RECT* rect) {
     if (origin) {
@@ -730,7 +698,7 @@ i32 CMoviePlayer::Configure(MovieLayout mode, MovieOpenFlags openFlags, POINT* o
                 m_destRect->left = 0;
                 m_destRect->bottom = m_screenHeight;
                 m_destRect->right = m_screenWidth;
-                m_blitMode = MOVIE_SINGLE;
+                m_blitMode = MOVIE_DEST_RECT;
             }
             break;
         case MOVIE_DEST_RECT: {
@@ -860,18 +828,9 @@ i32 CMoviePlayer::RemoveAt(i32 idx) {
     }
 
     PLAYLISTINFOSTRUCT* rec = m_playlist[idx - 1];
-    if (rec->m_src) {
-        delete[] rec->m_src;
-        rec->m_src = NULL;
-    }
-    if (rec->m_origin) {
-        delete rec->m_origin;
-        rec->m_origin = NULL;
-    }
-    if (rec->m_rect) {
-        delete rec->m_rect;
-        rec->m_rect = NULL;
-    }
+    SAFE_DELETE_ARRAY(rec->m_src);
+    SAFE_DELETE(rec->m_origin);
+    SAFE_DELETE(rec->m_rect);
 
     m_playlist.RemoveAt(idx - 1);
     delete rec;

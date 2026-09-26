@@ -29,6 +29,7 @@
 #include <Utils/MapTyped.h>
 #include <Wap32/TileGeometry.h>
 #include <Wwd/WwdGameObjectFamily.h>
+#include <Wwd/WwdObjMgrInline.h>
 #include <ZTools/ZDArray.h>
 
 #include <stddef.h>
@@ -65,15 +66,15 @@ i32 CExitTrigger::AdvanceAnim() {
         i32 hitPlayerIndex;
         i32 hitUnitIndex;
         CWwdSpriteObject* obj = m_object;
-        CGrunt* hit = g_gameReg->m_triggerMgr->FindGruntAt(
-            obj->m_screenPosition.m_x,
-            obj->m_screenPosition.m_y,
-            &obj->m_area,
-            &hitPlayerIndex,
-            &hitUnitIndex,
-            NULL
-        );
-        if (hit != NULL) {
+        if (g_gameReg->m_triggerMgr->FindGruntAt(
+                obj->m_screenPosition.m_x,
+                obj->m_screenPosition.m_y,
+                &obj->m_area,
+                &hitPlayerIndex,
+                &hitUnitIndex,
+                NULL
+            )
+            != NULL) {
             i32 owningPlayer = m_object->m_smarts;
             if (hitPlayerIndex == owningPlayer) {
                 return 0;
@@ -101,15 +102,10 @@ i32 CExitTrigger::AdvanceAnim() {
             }
             GruntzPlayer* claimed = &g_gameReg->m_players[hitPlayerIndex];
             if (claimed != NULL) {
-                CGameObject* found = NULL;
-                CGameObject* warlordObj = NULL;
-                if (MapLookupById(
-                        g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
-                        claimed->m_warlordObjectId,
-                        found
-                    )) {
-                    warlordObj = found;
-                }
+                CGameObject* warlordObj = LookupObjectById(
+                    g_gameReg->m_world->m_childGroup->m_registeredGameObjectsById,
+                    claimed->m_warlordObjectId
+                );
                 CWarlord* wl = static_cast<CWarlord*>(warlordObj->m_logicRecord->m_userLogic);
                 if (wl != NULL) {
                     wl->ResolveJoyAnimation();
@@ -128,19 +124,12 @@ i32 CExitTrigger::AdvanceAnim() {
                     );
                     SET_DRAW_FILL(cur, SHADE_PAL_16, tbl);
                     if (hitPlayerIndex == g_curPlayer) {
-                        CoordPoolNode* head = g_coordPool.m_freeHead;
-                        Coord* mark = NULL;
-                        if (head->m_next != NULL) {
-                            mark = &head->m_value;
-                            head = head->m_next;
-                            g_coordPool.m_freeHead = head;
-                        }
-                        Coord position = cur->ScreenPos();
-                        SnapTileCenter(&position);
-                        *mark = position;
+                        Coord* mark = g_coordPool.Pop();
+                        mark->m_x = (cur->m_screenPosition.m_x & ~TILE_MASK_PX) + TILE_HALF_PX;
+                        mark->m_y = (cur->m_screenPosition.m_y & ~TILE_MASK_PX) + TILE_HALF_PX;
                         CPtrArray& marks =
                             static_cast<CPlay*>(g_gameReg->m_curState)->m_startMarkers;
-                        marks.SetAtGrow(marks.GetSize(), mark);
+                        marks.Add(mark);
                     }
                 }
                 if (cur->m_logicRecord->m_dispatch == DispatchFortressFlagLogic
@@ -191,12 +180,13 @@ i32 CExitTrigger::AdvanceAnim() {
                 if (dispatch == DispatchGruntCreationPointLogic
                     || dispatch == DispatchFortressFlagLogic) {
                     if (cur->m_smarts == m_object->m_smarts) {
-                        Coord position = cur->ScreenPos();
-                        if (::PtInRect(&g_gameReg->m_viewBounds, position.m_x, position.m_y)) {
+                        i32 x = cur->m_screenPosition.m_x;
+                        i32 y = cur->m_screenPosition.m_y;
+                        if (::PtInRect(&g_gameReg->m_viewBounds, x, y)) {
                             CWwdSpriteObject* fx = g_gameReg->m_world->m_childGroup->CreateSprite(
                                 0,
-                                position.m_x,
-                                position.m_y,
+                                x,
+                                y,
                                 SORTKEY_OVERLAY,
                                 "Explosion",
                                 WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE

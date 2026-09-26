@@ -17,6 +17,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
+#include <Gruntz/SerialWorkerRefMacros.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <Image/CImage.h>
 #include <Ints.h>
@@ -215,34 +216,8 @@ i32 CSBI_WellGoo::SerializeFields(
             arc->Read(&m_dstRect, sizeof(m_dstRect));
             char buf[SERIAL_NAME_LEN];
             i32 idx;
-            g_serialCounter++;
-            arc->Read(buf, SERIAL_NAME_LEN);
-            arc->Read(&idx, sizeof(idx));
-            if (strlen(buf) != 0) {
-                i32 frameIndex = idx;
-                CDDrawWorker* set = mgr->FindWorker(buf);
-                if (set != NULL) {
-                    m_fgFrame = set->GetAt(frameIndex);
-                } else {
-                    m_fgFrame = NULL;
-                }
-            } else {
-                m_fgFrame = NULL;
-            }
-            g_serialCounter++;
-            arc->Read(buf, SERIAL_NAME_LEN);
-            arc->Read(&idx, sizeof(idx));
-            if (strlen(buf) != 0) {
-                i32 frameIndex = idx;
-                CDDrawWorker* set = mgr->FindWorker(buf);
-                if (set != NULL) {
-                    m_baseFrame = set->GetAt(frameIndex);
-                } else {
-                    m_baseFrame = NULL;
-                }
-            } else {
-                m_baseFrame = NULL;
-            }
+            SERIAL_READ_FRAME(arc, mgr, buf, idx, m_fgFrame);
+            SERIAL_READ_FRAME(arc, mgr, buf, idx, m_baseFrame);
             return 1;
         }
         case SERIAL_POSTLOAD: {

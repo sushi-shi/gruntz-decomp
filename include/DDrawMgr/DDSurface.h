@@ -120,7 +120,7 @@ public:
     i32 GetWidth();
     i32 GetHeight();
     i32 Scale(i32 n);
-    void UnlockThunk();
+    void Unlock();
 
     i32 SaveFile(char* buf, FileImageFormat type, CFileImagePal* pal, i32 flag);
     i32 SaveDispatch(char* path, CFileImagePal* pal, i32 flag);
@@ -243,13 +243,33 @@ public:
     b32 m_hasColorKey;
 };
 
+RVA(0x00141310, 0x4)
+inline i32 CDDSurface::GetWidth() {
+    return m_apiDesc.dwWidth;
+}
+
+RVA(0x00141320, 0x4)
+inline i32 CDDSurface::GetHeight() {
+    return m_apiDesc.dwHeight;
+}
+
+RVA(0x001413b0, 0xf)
+inline void CDDSurface::Unlock() {
+    m_ddSurface->Unlock(NULL);
+}
+
+RVA(0x001413c0, 0xb)
+inline i32 CDDSurface::Scale(i32 n) {
+    return m_apiDesc.lPitch * n;
+}
+
 inline u8 CDDSurface::GetPixel(i32 x, i32 y) {
     u8* bits = static_cast<u8*>(Lock(NULL));
     if (bits != NULL) {
         i32 offset = m_bytesPerPixel * x;
         offset += m_apiDesc.lPitch * y;
         u8 color = bits[offset];
-        m_ddSurface->Unlock(NULL);
+        Unlock();
         return color;
     }
     return 0;
@@ -258,8 +278,10 @@ inline u8 CDDSurface::GetPixel(i32 x, i32 y) {
 inline void CDDSurface::PutPixel(i32 x, i32 y, u8 color) {
     u8* bits = static_cast<u8*>(Lock(NULL));
     if (bits != NULL) {
-        bits[m_bytesPerPixel * x + m_apiDesc.lPitch * y] = color;
-        m_ddSurface->Unlock(NULL);
+        i32 offset = m_bytesPerPixel * x;
+        offset += m_apiDesc.lPitch * y;
+        bits[offset] = color;
+        Unlock();
     }
 }
 

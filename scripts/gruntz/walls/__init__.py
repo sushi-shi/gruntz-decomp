@@ -20,6 +20,9 @@
                                   ordered referent sequence a masked diff
                                   structurally cannot show
     gruntz walls semsweep <tsv>   the same screen over a worklist range
+    gruntz walls switchmap <fn>   switch jump tables: the cases whose arms
+                                  reach different constants, referents or
+                                  callees (--all: every sub-100 row)
     gruntz walls aggregate-copies rep-movs count sieve; a source/CFG lead,
                                   never proof until block merging is excluded
     gruntz walls aggdecl          aggregate-vs-scalar declaration sieve per
@@ -64,6 +67,7 @@ _SUBS = {"inventory": "gruntz.walls.inventory",
          "global-refs": "gruntz.walls.global_refs",
          "semdiff": "gruntz.walls.semdiff",
          "semsweep": "gruntz.walls.semdiff",
+         "switchmap": "gruntz.walls.switchmap",
          "stale-markers": "gruntz.walls.stale_markers",
          "priors": "gruntz.walls.priors",
          "recheck": "gruntz.walls.recheck",

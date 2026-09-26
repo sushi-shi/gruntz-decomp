@@ -47,6 +47,7 @@ public:
     inline void Push(void* p);
 
     inline T* Pop();
+    inline T* PopCopy(const T& value);
 
     Node* NodeOf(void* payload) {
 
@@ -64,6 +65,16 @@ template<class T> inline T* FreeNodePool<T>::Pop() {
     T* result = NULL;
     if (m_freeHead->m_next != NULL) {
         result = &m_freeHead->m_value;
+        m_freeHead = m_freeHead->m_next;
+    }
+    return result;
+}
+
+template<class T> inline T* FreeNodePool<T>::PopCopy(const T& value) {
+    T* result = NULL;
+    if (m_freeHead->m_next != NULL) {
+        result = &m_freeHead->m_value;
+        *result = value;
         m_freeHead = m_freeHead->m_next;
     }
     return result;

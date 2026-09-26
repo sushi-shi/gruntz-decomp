@@ -6,6 +6,7 @@
 #include <Enums.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/DoubleVector.h>
+#include <Gruntz/ClockInterval.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialRecords.h>
@@ -26,10 +27,7 @@ public:
         return LOGIC_OBJECTDROPPER;
     }
     virtual i32 SerializeDispatch(CFileMemBase*, SerialMode, LogicTypeId, CGameObject*) OVERRIDE;
-    CObjectDropper() {
-        m_lastDropTime = 0;
-        m_dropInterval = 0;
-    }
+    CObjectDropper() {}
     CObjectDropper(CGameObject* obj);
 
     i32 Update();
@@ -43,13 +41,7 @@ public:
     i32 m_lastDropPlayerIndex;
     i32 m_lastDropUnitIndex;
     ObjectDropScope m_scrollMode;
-    union {
-        struct {
-            i64 m_lastDropTime;
-            i64 m_dropInterval;
-        };
-        CPairRecord m_dropTiming;
-    };
+    ClockInterval m_dropTiming;
 };
 
 #endif // GRUNTZ_COBJECTDROPPER_H

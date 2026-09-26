@@ -125,10 +125,9 @@ i32 CMenuState::LoadGameAssetNamespaces(CGruntzMgr* mgr, i32 areaArg, i32 prevSt
     menuTree->m_activationSoundKey = "MENU_ACTIVATE";
 
     {
-        SoundCue* activationCue =
-            MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
+        SoundCue* activationCue = m_world->m_soundRegistry->FindCue("MENU_ACTIVATE");
         if (activationCue != NULL) {
-            activationCue = MapFind<SoundCue>(m_world->m_soundRegistry->m_cues, "MENU_ACTIVATE");
+            activationCue = m_world->m_soundRegistry->FindCue("MENU_ACTIVATE");
             m_activateCueDurationMs = activationCue->m_sound->m_durationMs;
         } else {
             m_activateCueDurationMs = 0;

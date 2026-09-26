@@ -24,6 +24,7 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MapCellFlags.h>
 #include <Gruntz/MovingDeathTileId.h>
+#include <Gruntz/Particlez.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
@@ -52,7 +53,7 @@ RVA_COMPGEN(0x00012f80, 0x44, ??1CRollingBall@@UAE@XZ)
 
 RVA(0x000af820, 0x40d)
 CRollingBall::CRollingBall(CGameObject* obj)
-    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj), m_explodeStart(0), m_explodeWindow(0) {
+    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SwitchAnimationByName("GAME_CYCLE100", 0);
     SET_ANIMATION_ACT("A");
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
@@ -92,8 +93,7 @@ CRollingBall::CRollingBall(CGameObject* obj)
         && m_object->m_smarts != 1) {
         time += 1000;
     }
-    m_explodeWindow = static_cast<u32>(m_object->m_points);
-    m_explodeStart = static_cast<u32>(g_frameTime);
+    m_explodeTiming.Start(m_object->m_points);
     m_target = snappedPosition;
     m_explodeLatch = false;
     m_fallLatch = 0;
@@ -129,7 +129,7 @@ i32 CRollingBall::Update() {
 
     CWwdSpriteObject* logic = m_object;
     if (logic->m_points > 0) {
-        if (static_cast<i64>(g_frameTime) - m_explodeStart >= m_explodeWindow) {
+        if (m_explodeTiming.Expired()) {
             SetImageSetByName("LEVEL_ROLLINGBALL_EXPLOSION");
             SwitchAnimationByName("LEVEL_ROLLINGBALLEXPLOSION", 0);
             CMapMgr* map = g_gameReg->m_tileGrid;
@@ -240,19 +240,13 @@ i32 CRollingBall::Update() {
                             i32 px = o->m_screenPosition.m_x;
                             i32 py = o->m_screenPosition.m_y;
                             if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
-                                CWwdSpriteObject* fx =
-                                    g_gameReg->m_world->m_childGroup->CreateSprite(
-                                        0,
-                                        px,
-                                        py,
-                                        SORTKEY_ACTOR_BEHIND,
-                                        "Particlez",
-                                        WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
-                                    );
-                                if (fx != NULL) {
-                                    fx->SetImageSetByName("LEVEL_DEATHSPLASH");
-                                    fx->SetAnimationByName("LEVEL_DEATHSPLASH", 0);
-                                }
+                                CreateParticlez(
+                                    g_gameReg->m_world->m_childGroup,
+                                    px,
+                                    py,
+                                    "LEVEL_DEATHSPLASH",
+                                    "LEVEL_DEATHSPLASH"
+                                );
                             }
                             break;
                         }
@@ -347,18 +341,13 @@ i32 CRollingBall::Update() {
                     i32 px = o->m_screenPosition.m_x;
                     i32 py = o->m_screenPosition.m_y;
                     if (::PtInRect(&g_gameReg->m_viewBounds, px, py)) {
-                        CWwdSpriteObject* fx = g_gameReg->m_world->m_childGroup->CreateSprite(
-                            0,
+                        CreateParticlez(
+                            g_gameReg->m_world->m_childGroup,
                             px,
                             py,
-                            SORTKEY_ACTOR_BEHIND,
-                            "Particlez",
-                            WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                            "GAME_WATER",
+                            "GAME_WATER"
                         );
-                        if (fx != NULL) {
-                            fx->SetImageSetByName("GAME_WATER");
-                            fx->SetAnimationByName("GAME_WATER", 0);
-                        }
                     }
                     m_explodeLatch = true;
                     return 0;
@@ -560,7 +549,7 @@ i32 CRollingBall::SerializeDispatch(
 ) {
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
 
-    i64* explode = &m_explodeStart;
+    i64* explode = &m_explodeTiming.m_start;
     switch (mode) {
         case SERIAL_SAVE:
             ar->Write(explode, sizeof(*explode));

@@ -55,6 +55,7 @@
 #include <Rez/RezArchive.h>
 #include <Rez/RezArchiveEntry.h>
 #include <Rez/RezTypeTag.h>
+#include <SafeDelete.h>
 #include <Utils/MapTyped.h>
 #include <Utils/RegMgr.h>
 #include <Wap32/GameApp.h>
@@ -122,7 +123,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x406);
         return 0;
     }
-    m_savedModeSize = CSize(SCREEN_W_PX, SCREEN_H_PX);
+    SET_SIZE_COMPONENTS(m_savedModeSize, SCREEN_W_PX, SCREEN_H_PX);
     m_numRuns = m_settings->Get("Num Runs", 0);
     m_numMovies = m_settings->Get("Num Movies", 0);
     g_enableHqMovie = m_settings->Get("Disable High Quality Movie", 0) == 0;
@@ -163,11 +164,11 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     Resolution resolution =
         static_cast<Resolution>(m_settings->Get("Resolution", IDX(RES_640X480)));
     if (resolution == RES_1024X768) {
-        m_savedModeSize = CSize(DISPLAY_WIDTH_1024, DISPLAY_HEIGHT_768);
+        SET_SIZE_COMPONENTS(m_savedModeSize, DISPLAY_WIDTH_1024, DISPLAY_HEIGHT_768);
     } else if (resolution == RES_800X600) {
-        m_savedModeSize = CSize(DISPLAY_WIDTH_800, DISPLAY_HEIGHT_600);
+        SET_SIZE_COMPONENTS(m_savedModeSize, DISPLAY_WIDTH_800, DISPLAY_HEIGHT_600);
     } else {
-        m_savedModeSize = CSize(SCREEN_W_PX, SCREEN_H_PX);
+        SET_SIZE_COMPONENTS(m_savedModeSize, SCREEN_W_PX, SCREEN_H_PX);
     }
     i32 musicVolume = m_settings->Get("Music Volume", 0x64);
     i32 soundVolume = m_settings->Get("Sound Volume", 0x3c);
@@ -250,50 +251,47 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     AfxWinInit(m_owner->m_hInstance, NULL, dpBuf, 1);
     m_strWorldFile.Empty();
 
-    CDDrawSurfaceMgr* world = new CDDrawSurfaceMgr;
-    m_world = static_cast<CDDrawSurfaceMgr*>(world);
-    i32 flags = (g_disableAudio || g_disableSound) ? 0xe5 : 0xe1;
+    m_world = new CDDrawSurfaceMgr;
+    i32 flags = 0xe1;
+    if (g_disableAudio || g_disableSound) {
+        flags = 0xe5;
+    }
     if (g_enableEmulation) {
-        flags |= IDX(SURFACEMGR_EMULATION_ONLY);
+        flags |= 0x10;
     }
     m_colorDepth = BPP_RGB_16;
-    if (!world->Init(m_gameWnd->m_hwnd, SCREEN_W_PX, SCREEN_H_PX, BPP_RGB_16, flags)) {
+    if (!m_world->Init(m_gameWnd->m_hwnd, SCREEN_W_PX, SCREEN_H_PX, BPP_RGB_16, flags)) {
         ReportWorldStatus(WORLD_REPORT_STARTUP_INIT);
         return 0;
     }
     {
         LevelCoordRect rect;
-        rect = MakeRect(0, 0, 0x1df, 0x1df);
-        m_modeSize = CSize(SCREEN_W_PX, SCREEN_H_PX);
-        world->m_level->UpdatePlaneViewports(&rect);
+        SET_RECT_COMPONENTS(rect, 0, 0, 0x1df, 0x1df);
+        m_world->m_level->UpdatePlaneViewports(&rect);
     }
-    world->SetRestoreHandler(&PumpIdleFrame);
-    world->m_level->m_maxStep.Set(0xe, 0xe);
-    world->m_drawTarget->CreateOverlay(0, 0x30000);
+    SET_SIZE_COMPONENTS(m_modeSize, SCREEN_W_PX, SCREEN_H_PX);
+    m_world->SetRestoreHandler(&PumpIdleFrame);
+    CGameLevel* view = m_world->m_level;
+    view->m_maxStep.m_x = 0xe;
+    view->m_maxStep.m_y = 0xe;
+    m_world->m_drawTarget->CreateOverlay(0, 0x30000);
     RecomputeViewScale();
-    RegisterGameObjectLogicTypes(world);
+    RegisterGameObjectLogicTypes(m_world);
     if (!MakeRezPath()) {
         return 0;
     }
 
-    if (m_resourceArchive) {
-        delete m_resourceArchive;
-        m_resourceArchive = NULL;
-    }
+    SAFE_DELETE(m_resourceArchive);
     m_resourceArchive = new CRezMgr;
-    {
-        CString resourcePath = GetRezPath();
-
-        i32 parsed = m_resourceArchive->Open(
-                         const_cast<char*>(static_cast<const char*>(resourcePath)),
-                         true,
-                         false
-                     )
-                     != 0;
-        if (!parsed) {
-            ReportError(IDX(IDS_LOAD_RESOURCE_FILE), 0x409);
-            return 0;
-        }
+    bool parseFailed = m_resourceArchive->Open(
+                           const_cast<char*>(static_cast<const char*>(GetRezPath())),
+                           true,
+                           false
+                       )
+                       == 0;
+    if (parseFailed) {
+        ReportError(IDX(IDS_LOAD_RESOURCE_FILE), 0x409);
+        return 0;
     }
     if (!m_resourceArchive->OpenAdditional(const_cast<char*>("GRUNTZ.VRZ"), false)) {
         ReportError(IDX(IDS_LOAD_VOICE_RESOURCE_FILE), 0x460);
@@ -333,16 +331,13 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
         m_midi->m_midiAvailable = false;
     }
 
-    if (m_worldSounds) {
-        delete m_worldSounds;
-        m_worldSounds = NULL;
-    }
+    SAFE_DELETE(m_worldSounds);
     m_worldSounds = new CWorldSoundSet;
-    if (!m_worldSounds->Init(world->m_soundRegistry, soundVolume)) {
+    if (!m_worldSounds->Init(m_world->m_soundRegistry, soundVolume)) {
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x40d);
         return 0;
     }
-    m_worldSounds->SetEnabled(vMusic);
+    m_worldSounds->SetEnabled(vAmbient);
     SetSoundVolume(soundVolume);
 
     SetVoiceVolume(voiceVolume);
@@ -354,20 +349,16 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             m_owner->m_hInstance,
             IDX(DIN_CREATE_ASYNC_KEYBOARD | DIN_CREATE_NO_MOUSE | DIN_CREATE_NO_JOYSTICKS)
         )) {
-        if (g_inputMgr) {
-            delete g_inputMgr;
-            g_inputMgr = NULL;
-        }
+        SAFE_DELETE(g_inputMgr);
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x40e);
         return 0;
     }
 
-    i32 joystickCount = g_inputMgr->m_joysticks.GetSize();
     g_actorList = g_inputMgr->CreateDeviceGroup(
-        joystickCount > 0 ? static_cast<CInputDevBase*>(g_inputMgr->m_joysticks[0]) : NULL,
-        joystickCount > 1 ? static_cast<CInputDevBase*>(g_inputMgr->m_joysticks[1]) : NULL,
-        joystickCount > 2 ? static_cast<CInputDevBase*>(g_inputMgr->m_joysticks[2]) : NULL,
-        joystickCount > 3 ? static_cast<CInputDevBase*>(g_inputMgr->m_joysticks[3]) : NULL,
+        g_inputMgr->GetJoystick(0),
+        g_inputMgr->GetJoystick(1),
+        g_inputMgr->GetJoystick(2),
+        g_inputMgr->GetJoystick(3),
         NULL,
         NULL,
         0
@@ -396,19 +387,13 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
 
     m_lightFxMgr = new CLightFxMgr;
     if (!m_lightFxMgr->Init(this, NULL)) {
-        if (m_lightFxMgr) {
-            delete m_lightFxMgr;
-            m_lightFxMgr = NULL;
-        }
+        SAFE_DELETE(m_lightFxMgr);
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x411);
         return 0;
     }
     m_saveGame = new CSaveGame;
     if (!m_saveGame->InitializeSaveDirectory("")) {
-        if (m_saveGame) {
-            delete m_saveGame;
-            m_saveGame = NULL;
-        }
+        SAFE_DELETE(m_saveGame);
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x412);
         return 0;
     }
@@ -432,10 +417,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_commandMgr = new CGruntzCmdMgr;
 
     if (!m_commandMgr->SetManager(this)) {
-        if (m_commandMgr) {
-            delete m_commandMgr;
-            m_commandMgr = NULL;
-        }
+        SAFE_DELETE(m_commandMgr);
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x414);
         return 0;
     }
@@ -447,10 +429,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     m_spriteFactory = new CSpriteRefTable;
 
     if (!m_spriteFactory->Init(m_shadeCache, m_world)) {
-        if (m_spriteFactory) {
-            delete m_spriteFactory;
-            m_spriteFactory = NULL;
-        }
+        SAFE_DELETE(m_spriteFactory);
 
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x416);
     }
@@ -468,7 +447,10 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     {
         CRezItm* stream =
             g_gameReg->m_resourceArchive->GetRezFromPath("GAME_ATTRIBUTEZ", REZ_TAG_TXT);
-        TRACE("%s\n", static_cast<LPCTSTR>(CString("parsing ") + "GAME_ATTRIBUTEZ"));
+        // Dead trace: retail keeps two NULL-action unwind states and no conditional-temporary flag.
+        if (0) {
+            AfxTrace("%s\n", static_cast<LPCTSTR>(CString("parsing ") + "GAME_ATTRIBUTEZ"));
+        }
         g_buteMgr.Init(&ButeParseErrorSink);
         if (!g_buteMgr.Parse(stream, "1212C")) {
             ReportError(IDX(IDS_INITIALIZE_GAME), 0x418);
@@ -484,10 +466,7 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
     }
     m_triggerMgr = new CTriggerMgr;
     if (!m_triggerMgr->SetLevel(m_world)) {
-        if (m_triggerMgr) {
-            delete m_triggerMgr;
-            m_triggerMgr = NULL;
-        }
+        SAFE_DELETE(m_triggerMgr);
         ReportError(IDX(IDS_INITIALIZE_GAME), 0x41b);
         return 0;
     }
@@ -542,19 +521,18 @@ i32 CGruntzMgr::Run(CGameWnd* pGameWnd, char* szCmdLine) {
             g_attractStateCount++;
             title.Format("\\SCREENZ\\TITLE%d", g_attractStateCount + 1);
         }
-        if (TransitionState(mode, 1, false, 0)) {
-            g_frameDelta = 0;
-        } else if (mode == GAMESTATE_MULTI) {
-            if (TransitionState(GAMESTATE_ATTRACT, 1, false, 0)) {
-                g_frameDelta = 0;
+        if (!TransitionState(mode, 1, false, 0)) {
+            if (mode == GAMESTATE_MULTI) {
+                if (!TransitionState(GAMESTATE_ATTRACT, 1, false, 0)) {
+                    ReportError(IDX(IDS_SET_GAME_STATE), 0x41c);
+                    return 0;
+                }
             } else {
-                ReportError(IDX(IDS_SET_GAME_STATE), 0x41c);
+                ReportError(IDX(IDS_SET_GAME_STATE), 0x41d);
                 return 0;
             }
-        } else {
-            ReportError(IDX(IDS_SET_GAME_STATE), 0x41d);
-            return 0;
         }
+        g_frameDelta = 0;
     }
     return 1;
 }

@@ -305,8 +305,6 @@ i32 CGruntPuddle::SerializeDispatch(
 // @early-stop
 RVA(0x00041020, 0x170)
 CTeleporter::CTeleporter(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
-    m_armClock = 0;
-    m_interval = 0;
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
     CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_TELEPORT);
@@ -362,7 +360,7 @@ i32 CTeleporter::SerializeDispatch(
     CGameObject* object
 ) {
     SERIALIZE_USER_LOGIC_AND_ANIMATION_STATE_OR_RETURN(ar, mode, typeId, object)
-    i64* clocks = &m_armClock;
+    i64* clocks = &m_armTiming.m_start;
     if (mode != SERIAL_SAVE) {
         if (mode == SERIAL_LOAD) {
             ar->Read(clocks, sizeof(*clocks));
@@ -412,8 +410,7 @@ i32 CTeleporter::Begin() {
         return 0;
     }
 
-    m_interval = static_cast<u32>(m_object->m_logicRecord->m_speed);
-    m_armClock = static_cast<u32>(g_frameTime);
+    m_armTiming.Start(m_object->m_logicRecord->m_speed);
     SwitchAnimationByName("GAME_TELEPORTER", 0);
     SET_ANIMATION_ACT("B");
     return 0;
@@ -448,8 +445,8 @@ i32 CTeleporter::Update() {
 
     CWwdSpriteObject* o = m_object;
     if (o->m_logicRecord->m_speed != 0) {
-        i64 delta = static_cast<i64>(g_frameTime) - m_armClock;
-        if (delta >= m_interval) {
+        i64 delta = static_cast<i64>(g_frameTime) - m_armTiming.m_start;
+        if (delta >= m_armTiming.m_interval) {
             SwitchAnimationByName("GAME_TELEPORTERCLOSE", 0);
             m_object->m_logicRecord->m_speed = 0;
             m_tickHandled = true;
@@ -512,15 +509,7 @@ i32 CTeleporter::Update() {
     m_armed = false;
     m_tickHandled = true;
     mgr = g_gameReg;
-    CGrunt* current;
-    if ((static_cast<CTriggerMgr*>(mgr->m_triggerMgr))->m_recList.GetCount() != 1) {
-        current = NULL;
-    } else {
-        Coord* rec = (static_cast<CTriggerMgr*>(mgr->m_triggerMgr))->HeadRec();
-        current = (static_cast<CTriggerMgr*>(mgr->m_triggerMgr))
-                      ->m_units[rec->m_x * TM_UNITS_PER_PLAYER + rec->m_y];
-    }
-    if (found == current && playerIndex == g_curPlayer) {
+    if (found == mgr->m_triggerMgr->SoleSelectedGrunt() && playerIndex == g_curPlayer) {
         CGameObject* g = found->m_object;
         (static_cast<CPlay*>(mgr->m_curState))
             ->ResetGoals(g->m_screenPosition.m_x, g->m_screenPosition.m_y);

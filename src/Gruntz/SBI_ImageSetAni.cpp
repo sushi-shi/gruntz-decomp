@@ -57,8 +57,8 @@ i32 CSBI_ImageSetAni::Init(
         goto fail;
     }
     m_interval = intervalMs;
-    m_loop = loop;
     m_step = step;
+    m_loop = loop;
 
     if (frameStart == -1) {
         if (step >= 0) {
@@ -81,11 +81,7 @@ i32 CSBI_ImageSetAni::Init(
     m_frameIndex = m_frameStart;
 
     CImage* cel;
-    if (!tbl->ContainsFrame(m_frameStart)) {
-        cel = NULL;
-    } else {
-        cel = tbl->FrameAtUnchecked(m_frameStart);
-    }
+    cel = tbl->GetAt(m_frameStart);
     SetFrame(cel);
     return cel != NULL;
 fail:

@@ -27,6 +27,11 @@
 #define SET_SIZE_COMPONENTS(size, w, h)                                                            \
     (size).cx = (w);                                                                               \
     (size).cy = (h)
+#define OFFSET_RECT_COMPONENTS(rect, dx, dy)                                                       \
+    (rect).left += (dx);                                                                           \
+    (rect).top += (dy);                                                                            \
+    (rect).right += (dx);                                                                          \
+    (rect).bottom += (dy)
 #define OFFSET_RECT_X_EDGES(rect, leftDelta, rightDelta)                                           \
     (rect).left += (leftDelta);                                                                    \
     (rect).right += (rightDelta)
@@ -45,11 +50,6 @@
     (rect).top += (amount);                                                                        \
     (rect).bottom -= (amount)
 
-#define OFFSET_RECT_COMPONENTS(rect, dx, dy)                                                       \
-    (rect).left += (dx);                                                                           \
-    (rect).top += (dy);                                                                            \
-    (rect).right += (dx);                                                                          \
-    (rect).bottom += (dy)
 #define EXTEND_RECT_MAX(rect, dx, dy)                                                              \
     (rect).right += (dx);                                                                          \
     (rect).bottom += (dy)

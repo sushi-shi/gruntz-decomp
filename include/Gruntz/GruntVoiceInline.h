@@ -26,8 +26,8 @@ inline b32 CGruntVoice::PositionIndicatorAtLogicObject() {
         return false;
     }
     m_object->m_stateFlags &= ~SPRITE_STATE_HIDDEN;
-    SET_VECTOR2_COMPONENTS(
-        m_object->m_screenPosition,
+    SET_SCREEN_POS(
+        m_object,
         logic->m_object->m_screenPosition.m_x,
         logic->m_object->m_screenPosition.m_y - 0x32
     );
@@ -48,8 +48,8 @@ inline b32 CGruntVoice::PositionIndicatorAtSourceObject() {
             dx = layer->m_origin.x;
             dy = layer->m_origin.y;
         }
-        SET_VECTOR2_COMPONENTS(
-            m_object->m_screenPosition,
+        SET_SCREEN_POS(
+            m_object,
             resolved->m_screenPosition.m_x + dx,
             resolved->m_screenPosition.m_y + dy - 0x32
         );

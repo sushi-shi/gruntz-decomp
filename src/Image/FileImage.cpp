@@ -65,11 +65,7 @@ i32 CDDSurface::CreateFromBmpData(
         COPY_BGRX_PALETTE(g_paletteRampBuf, sourcePalette, i, PALETTE_ENTRY_COUNT)
         pal = g_paletteRampBuf;
     } else if (convert && displayBitDepth == BPP_PALETTED_8) {
-        if (manager->m_hasPalette != false) {
-            pal = manager->m_palette;
-        } else {
-            pal = NULL;
-        }
+        pal = manager->GetActivePalette();
     }
 
     if (CDDSurface::BlitSurf(manager, imageSize.cx, imageSize.cy, BPP_UNSET, surfaceCaps)
@@ -295,13 +291,13 @@ i32 CDDSurface::SaveBmp(const char* path, CFileImagePal* pal, i32 mode) {
     CFile file;
     if (mode != 0) {
         if (!file.Open(path, 0x2001, NULL)) {
-            m_ddSurface->Unlock(NULL);
+            Unlock();
             return 0;
         }
         file.Seek(0, 2);
     } else {
         if (!file.Open(path, 0x1001, NULL)) {
-            m_ddSurface->Unlock(NULL);
+            Unlock();
             return 0;
         }
     }
@@ -314,7 +310,7 @@ i32 CDDSurface::SaveBmp(const char* path, CFileImagePal* pal, i32 mode) {
         file.Write(buf + row * m_apiDesc.lPitch, m_apiDesc.dwWidth);
     }
 
-    m_ddSurface->Unlock(NULL);
+    Unlock();
     return 1;
 }
 
@@ -363,14 +359,14 @@ i32 CDDSurface::SaveRle16(char* path, CFileImagePal* pal, i32 flag) {
     CFile file;
     if (flag != 0) {
         if (file.Open(path, 0x2001, NULL) == false) {
-            this->m_ddSurface->Unlock(NULL);
+            Unlock();
             delete[] line;
             return 0;
         }
         file.Seek(0, 2);
     } else {
         if (file.Open(path, 0x1001, NULL) == false) {
-            this->m_ddSurface->Unlock(NULL);
+            Unlock();
             delete[] line;
             return 0;
         }
@@ -399,7 +395,7 @@ i32 CDDSurface::SaveRle16(char* path, CFileImagePal* pal, i32 flag) {
         file.Write(line, 3 * this->m_apiDesc.dwWidth);
     }
 
-    this->m_ddSurface->Unlock(NULL);
+    Unlock();
     delete[] line;
     return 1;
 }
@@ -444,13 +440,13 @@ i32 CDDSurface::SaveTga(const char* path, CFileImagePal* pal, i32 mode) {
     CFile file;
     if (mode != 0) {
         if (!file.Open(path, 0x2001, NULL)) {
-            m_ddSurface->Unlock(NULL);
+            Unlock();
             return 0;
         }
         file.Seek(0, 2);
     } else {
         if (!file.Open(path, 0x1001, NULL)) {
-            m_ddSurface->Unlock(NULL);
+            Unlock();
             return 0;
         }
     }
@@ -468,7 +464,7 @@ i32 CDDSurface::SaveTga(const char* path, CFileImagePal* pal, i32 mode) {
         }
     }
 
-    m_ddSurface->Unlock(NULL);
+    Unlock();
     return 1;
 }
 
@@ -514,11 +510,7 @@ i32 CDDSurface::CreateFromPcxData(
         COPY_RGB_PALETTE(g_grayRamp, p, i, 0x100)
         palette = g_grayRamp;
     } else if (convert && displayBitDepth == BPP_PALETTED_8) {
-        if (manager->m_hasPalette != false) {
-            palette = manager->m_palette;
-        } else {
-            palette = NULL;
-        }
+        palette = manager->GetActivePalette();
     }
 
     if (this->BlitSurf(manager, width, height, BPP_UNSET, surfaceCaps) == BPP_UNSET) {
@@ -627,11 +619,7 @@ i32 CDDSurface::DecodePcx(CDDrawDeviceManager* manager, PcxHeader* image, u32 da
                     COPY_RGB_PALETTE_DO(s_palPcx, src, i, 0x100)
                     palette = s_palPcx;
                 } else if (remap && palBpp == BPP_PALETTED_8) {
-                    if (manager->m_hasPalette != false) {
-                        palette = manager->m_palette;
-                    } else {
-                        palette = NULL;
-                    }
+                    palette = manager->GetActivePalette();
                 }
 
                 u8* pixels = static_cast<u8*>(static_cast<void*>(image)) + sizeof(PcxHeader);
@@ -736,36 +724,7 @@ i32 CDDSurface::DecodeByteRun1Plane(u8* dstBuf, u8* src, i32 width, i32 height) 
     for (y = 0; y < height; y++) {
         dstp = dstBuf + width * y;
         cols = width;
-        if (hold > 0) {
-            for (k = 0; k < hold; k++) {
-                *dstp = tok;
-                dstp++;
-            }
-            cols -= hold;
-            hold = 0;
-        }
-        while (cols > 0) {
-            tok = *sp;
-            sp++;
-            if ((tok & BYTE_RUN_CONTROL_MASK) == BYTE_RUN_MARKER) {
-                len = tok & BYTE_RUN_LENGTH_MASK;
-                tok = *sp;
-                sp++;
-                if (len > cols) {
-                    hold = len - cols;
-                    len = cols;
-                }
-                for (k = 0; k < len; k++) {
-                    *dstp = tok;
-                    dstp++;
-                }
-                cols -= len;
-            } else {
-                *dstp = tok;
-                dstp++;
-                cols--;
-            }
-        }
+        DECODE_BYTE_RUN_LINE(dstp, sp, cols, hold, tok, len, k, 1);
     }
     return 1;
 }
@@ -794,100 +753,13 @@ i32 CDDSurface::DecodeByteRun3Planes(u8* dstBuf, u8* src, i32 width, i32 height)
         base = y * width * 3;
         dstp = dstBuf + base;
         cols = width;
-        if (hold > 0) {
-            for (k = 0; k < hold; k++) {
-                *dstp = tok;
-                dstp += 3;
-            }
-            cols -= hold;
-            hold = 0;
-        }
-        while (cols > 0) {
-            tok = *sp;
-            sp++;
-            if ((tok & BYTE_RUN_CONTROL_MASK) == BYTE_RUN_MARKER) {
-                len = tok & BYTE_RUN_LENGTH_MASK;
-                tok = *sp;
-                sp++;
-                if (len > cols) {
-                    hold = len - cols;
-                    len = cols;
-                }
-                for (k = 0; k < len; k++) {
-                    *dstp = tok;
-                    dstp += 3;
-                }
-                cols -= len;
-            } else {
-                *dstp = tok;
-                dstp += 3;
-                cols--;
-            }
-        }
+        DECODE_BYTE_RUN_LINE(dstp, sp, cols, hold, tok, len, k, 3);
         dstp = dstBuf + base + 1;
         cols = width;
-        if (hold > 0) {
-            for (k = 0; k < hold; k++) {
-                *dstp = tok;
-                dstp += 3;
-            }
-            cols -= hold;
-            hold = 0;
-        }
-        while (cols > 0) {
-            tok = *sp;
-            sp++;
-            if ((tok & BYTE_RUN_CONTROL_MASK) == BYTE_RUN_MARKER) {
-                len = tok & BYTE_RUN_LENGTH_MASK;
-                tok = *sp;
-                sp++;
-                if (len > cols) {
-                    hold = len - cols;
-                    len = cols;
-                }
-                for (k = 0; k < len; k++) {
-                    *dstp = tok;
-                    dstp += 3;
-                }
-                cols -= len;
-            } else {
-                *dstp = tok;
-                dstp += 3;
-                cols--;
-            }
-        }
+        DECODE_BYTE_RUN_LINE(dstp, sp, cols, hold, tok, len, k, 3);
         dstp = dstBuf + base + 2;
         cols = width;
-        if (hold > 0) {
-            for (k = 0; k < hold; k++) {
-                *dstp = tok;
-                dstp += 3;
-            }
-            cols -= hold;
-            hold = 0;
-        }
-        while (cols > 0) {
-            tok = *sp;
-            sp++;
-            if ((tok & BYTE_RUN_CONTROL_MASK) == BYTE_RUN_MARKER) {
-                len = tok & BYTE_RUN_LENGTH_MASK;
-                tok = *sp;
-                sp++;
-                if (len > cols) {
-                    hold = len - cols;
-                    len = cols;
-                }
-                for (k = 0; k < len; k++) {
-                    *dstp = tok;
-                    dstp += 3;
-                }
-                cols -= len;
-            } else {
-                *dstp = tok;
-                dstp += 3;
-                cols--;
-            }
-        }
+        DECODE_BYTE_RUN_LINE(dstp, sp, cols, hold, tok, len, k, 3);
     }
     return 1;
 }
@@ -921,12 +793,7 @@ i32 CDDSurface::DecodePcxData(
     }
 
     i32 remap = 0;
-    PALETTEENTRY* palette;
-    if (manager->m_hasPalette) {
-        palette = manager->m_palette;
-    } else {
-        palette = NULL;
-    }
+    PALETTEENTRY* palette = manager->GetActivePalette();
     ColorDepth displayBitDepth = manager->m_displayColorDepth;
     if (displayBitDepth != BPP_PALETTED_8) {
         remap = 1;

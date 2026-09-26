@@ -23,6 +23,7 @@
 #include <Pix16.h>
 #include <RectMacros.h>
 #include <Rez/RezMgr.h>
+#include <SafeDelete.h>
 
 #include <string.h>
 
@@ -57,7 +58,7 @@ void CDibMgr::RemoveDib(CDib* dib) {
     CDibPal* palette = dib->GetPalette();
     if (palette != NULL && dib->IsPaletteOwner()) {
         RemovePal(palette);
-        dib->SetPalette(NULL, false);
+        SetPalette(NULL, FALSE);
     }
     POSITION pos = dib->GetPos();
     if (pos != NULL) {
@@ -411,10 +412,7 @@ void CDib::Term() {
         DeleteObject(m_hBmp);
         m_hBmp = NULL;
     }
-    if (m_pLines) {
-        delete[] m_pLines;
-        m_pLines = NULL;
-    }
+    SAFE_DELETE_ARRAY(m_pLines);
     m_pBytes = NULL;
     m_pPal = NULL;
 }

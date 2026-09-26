@@ -6,6 +6,7 @@
 #include <Bute/ButeMgr.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/DoubleVector.h>
+#include <Gruntz/ClockInterval.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameRegMfcPtr.h>
 #include <Gruntz/LogicTypeId.h>
@@ -14,12 +15,6 @@
 #include <Ints.h>
 
 typedef Coord CPathWaypoint;
-
-struct CHazardTimer {
-    i64 m_deadline;
-    i64 m_window;
-    CHazardTimer() : m_deadline(0), m_window(0) {}
-};
 
 #include <Rez/FrameClock.h>
 
@@ -63,9 +58,9 @@ public:
     Coord m_waypoint;
     i32 m_wpCount;
 
-    CHazardTimer m_leg;
+    ClockInterval m_leg;
     b32 m_strikeArmed;
-    CHazardTimer m_strike;
+    ClockInterval m_strike;
 };
 
 #endif // GRUNTZ_CPATHHAZARD_H

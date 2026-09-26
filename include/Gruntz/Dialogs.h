@@ -18,7 +18,6 @@ class CString;
 struct HWND__;
 struct tagMEASUREITEMSTRUCT;
 struct tagDRAWITEMSTRUCT;
-GZ_ENUM_FORWARD(CustomMapSelection);
 
 GZ_ENUM_CONST_BEGIN(DialogCtrlId)
     CTRL_PLAYER_TYPE0 = 0x500,
@@ -259,7 +258,7 @@ public:
 
     CLatencyList* m_latencyOptions;
     char m_pad64[8];
-    CustomMapSelection m_customMapSelection;
+    b32 m_usesCustomMap;
     CString m_worldName;
     CStringList m_reserved74;
 

@@ -42,8 +42,8 @@ build/objdiff/report.json), config/match_baseline.tsv, the Model
 (gruntz.model.resolve) for rva/unit joins, config/units.toml for the module
 rollup, and git for the bankable-tree precondition only.
 
-Writes: config/match_baseline.tsv and README.md's marked block from `bank`
-ONLY, and each gate's committed floor from its own `--update` bless ONLY -
+Writes: config/match_baseline.tsv from `bank` ONLY, README.md's marked
+block from `readme` (a default build edge), `check`, and `bank`, and each gate's committed floor from its own `--update` bless ONLY -
 never from a gate run. Gates otherwise write nothing but build/gen/ scratch
 (the fingerprint cache, the .LIB symbol cache, the layout and data-access
 maps), which is derived and regenerated.
@@ -51,7 +51,7 @@ maps), which is derived and regenerated.
 
 from __future__ import annotations
 
-_SUBS = ("status", "check", "bank", "fingerprints", "selftest")
+_SUBS = ("status", "check", "bank", "readme", "merge-baseline", "fingerprints", "selftest")
 
 #: the ported gate/audit modules, runnable as `gruntz verify <name>`. MOST are
 #: also a tier member of `check --tier` (gruntz.verify.tiers); the ones in
@@ -143,6 +143,9 @@ def main(argv=None) -> int:
     if sub == "fingerprints":
         from gruntz.verify.fingerprints import main as fp_main
         return fp_main(rest)
+    if sub == "merge-baseline":
+        from gruntz.verify.merge_baseline import main as mb_main
+        return mb_main(rest)
     if sub == "selftest":
         from gruntz.verify.selftest import main as st_main
         return st_main(rest)
@@ -154,4 +157,4 @@ def main(argv=None) -> int:
     from gruntz.verify import verbs
     sys.argv = [f"gruntz verify {sub}", *rest]
     return {"status": verbs.cmd_status, "check": verbs.cmd_check,
-            "bank": verbs.cmd_bank}[sub](rest)
+            "bank": verbs.cmd_bank, "readme": verbs.cmd_readme}[sub](rest)

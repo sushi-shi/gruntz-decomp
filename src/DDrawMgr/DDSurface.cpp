@@ -424,7 +424,7 @@ HRESULT __stdcall EnumSurfacesCallback(IDirectDrawSurface* surf, DDSURFACEDESC* 
         if (item->Refresh(payload) == 0) {
             delete item;
         } else {
-            g_imageCache.SetAtGrow(g_imageCache.GetSize(), item);
+            g_imageCache.Add(item);
         }
     }
     return 1;
@@ -503,7 +503,7 @@ void CDDSurface::FlipVertical() {
     }
     u8* tmp = new u8[m_apiDesc.dwWidth];
     if (tmp == NULL) {
-        m_ddSurface->Unlock(NULL);
+        Unlock();
         return;
     }
 
@@ -553,7 +553,7 @@ void CDDSurface::FlipVertical() {
         } while (i < half);
     }
 
-    m_ddSurface->Unlock(NULL);
+    Unlock();
     delete[] tmp;
 }
 
@@ -584,7 +584,7 @@ i32 CDDSurface::BlitDirect(u8* src, RasterRowOrder rowOrder) {
             src += this->m_bytesPerRow;
         }
     }
-    this->m_ddSurface->Unlock(NULL);
+    Unlock();
     return 1;
 }
 
@@ -823,14 +823,14 @@ i32 CDDSurface::ShadeBlt(
     } else {
         goto reject;
     }
-    m_ddSurface->Unlock(NULL);
-    src->m_ddSurface->Unlock(NULL);
+    Unlock();
+    src->Unlock();
     delete[] temp;
     return 1;
 reject:
     delete[] temp;
-    m_ddSurface->Unlock(NULL);
-    src->m_ddSurface->Unlock(NULL);
+    Unlock();
+    src->Unlock();
     return 0;
 }
 
@@ -924,11 +924,11 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
         }
     } else {
         delete[] scratch;
-        m_ddSurface->Unlock(NULL);
+        Unlock();
         return 0;
     }
 
-    m_ddSurface->Unlock(NULL);
+    Unlock();
     delete[] scratch;
     return 1;
 }
@@ -1142,7 +1142,7 @@ i32 CDDSurface::Blit168(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
             }
         }
     }
-    this->m_ddSurface->Unlock(NULL);
+    Unlock();
     return 1;
 }
 
@@ -1173,7 +1173,7 @@ i32 CDDSurface::Blit1624(u8* srcv, RasterRowOrder rowOrder) {
             }
         }
     }
-    this->m_ddSurface->Unlock(NULL);
+    Unlock();
     return 1;
 }
 
@@ -1207,7 +1207,7 @@ i32 CDDSurface::Blit248(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
             }
         }
     }
-    this->m_ddSurface->Unlock(NULL);
+    Unlock();
     return 1;
 }
 
@@ -1247,7 +1247,7 @@ i32 CDDSurface::Blit2416(u8* srcv, RasterRowOrder rowOrder) {
             }
         }
     }
-    this->m_ddSurface->Unlock(NULL);
+    Unlock();
     return 1;
 }
 
@@ -1281,7 +1281,7 @@ i32 CDDSurface::Blit824(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
             }
         }
     }
-    this->m_ddSurface->Unlock(NULL);
+    Unlock();
     return 1;
 }
 
@@ -1323,7 +1323,7 @@ i32 CDDSurface::Blit816(u8* srcv, PALETTEENTRY* pal, RasterRowOrder rowOrder) {
             }
         }
     }
-    this->m_ddSurface->Unlock(NULL);
+    Unlock();
     return 1;
 }
 
@@ -1510,38 +1510,9 @@ i32 CDDSurface::DecodeRun8(u8* src) {
     for (y = 0; y < height; y++) {
         dstp = (pbits + this->Scale(y));
         nleft = w;
-        if (hold > 0) {
-            for (kj = 0; kj < hold; kj++) {
-                *dstp = tok;
-                dstp++;
-            }
-            nleft -= hold;
-            hold = 0;
-        }
-        while (nleft > 0) {
-            tok = *sp;
-            sp++;
-            if ((tok & BYTE_RUN_CONTROL_MASK) == BYTE_RUN_MARKER) {
-                runx = tok & BYTE_RUN_LENGTH_MASK;
-                tok = *sp;
-                sp++;
-                if (runx > nleft) {
-                    hold = runx - nleft;
-                    runx = nleft;
-                }
-                for (kj = 0; kj < runx; kj++) {
-                    *dstp = tok;
-                    dstp++;
-                }
-                nleft -= runx;
-            } else {
-                *dstp = tok;
-                dstp++;
-                nleft--;
-            }
-        }
+        DECODE_BYTE_RUN_LINE(dstp, sp, nleft, hold, tok, runx, kj, 1);
     }
-    this->UnlockThunk();
+    Unlock();
     return 1;
 }
 
@@ -1569,102 +1540,15 @@ i32 CDDSurface::DecodeRun24(u8* src) {
     for (nrow = 0; nrow < this->GetHeight(); nrow++) {
         dst = (ln + this->Scale(nrow) + 2);
         cols = this->GetWidth();
-        if (rest > 0) {
-            for (k = 0; k < rest; k++) {
-                *dst = pm;
-                dst += 3;
-            }
-            cols -= rest;
-            rest = 0;
-        }
-        while (cols > 0) {
-            pm = *inp;
-            inp++;
-            if ((pm & BYTE_RUN_CONTROL_MASK) == BYTE_RUN_MARKER) {
-                cnt = pm & BYTE_RUN_LENGTH_MASK;
-                pm = *inp;
-                inp++;
-                if (cnt > cols) {
-                    rest = cnt - cols;
-                    cnt = cols;
-                }
-                for (k = 0; k < cnt; k++) {
-                    *dst = pm;
-                    dst += 3;
-                }
-                cols -= cnt;
-            } else {
-                *dst = pm;
-                dst += 3;
-                cols--;
-            }
-        }
+        DECODE_BYTE_RUN_LINE(dst, inp, cols, rest, pm, cnt, k, 3);
         dst = (ln + this->Scale(nrow) + 1);
         cols = this->GetWidth();
-        if (rest > 0) {
-            for (k = 0; k < rest; k++) {
-                *dst = pm;
-                dst += 3;
-            }
-            cols -= rest;
-            rest = 0;
-        }
-        while (cols > 0) {
-            pm = *inp;
-            inp++;
-            if ((pm & BYTE_RUN_CONTROL_MASK) == BYTE_RUN_MARKER) {
-                cnt = pm & BYTE_RUN_LENGTH_MASK;
-                pm = *inp;
-                inp++;
-                if (cnt > cols) {
-                    rest = cnt - cols;
-                    cnt = cols;
-                }
-                for (k = 0; k < cnt; k++) {
-                    *dst = pm;
-                    dst += 3;
-                }
-                cols -= cnt;
-            } else {
-                *dst = pm;
-                dst += 3;
-                cols--;
-            }
-        }
+        DECODE_BYTE_RUN_LINE(dst, inp, cols, rest, pm, cnt, k, 3);
         dst = (ln + this->Scale(nrow));
         cols = this->GetWidth();
-        if (rest > 0) {
-            for (k = 0; k < rest; k++) {
-                *dst = pm;
-                dst += 3;
-            }
-            cols -= rest;
-            rest = 0;
-        }
-        while (cols > 0) {
-            pm = *inp;
-            inp++;
-            if ((pm & BYTE_RUN_CONTROL_MASK) == BYTE_RUN_MARKER) {
-                cnt = pm & BYTE_RUN_LENGTH_MASK;
-                pm = *inp;
-                inp++;
-                if (cnt > cols) {
-                    rest = cnt - cols;
-                    cnt = cols;
-                }
-                for (k = 0; k < cnt; k++) {
-                    *dst = pm;
-                    dst += 3;
-                }
-                cols -= cnt;
-            } else {
-                *dst = pm;
-                dst += 3;
-                cols--;
-            }
-        }
+        DECODE_BYTE_RUN_LINE(dst, inp, cols, rest, pm, cnt, k, 3);
     }
-    this->UnlockThunk();
+    Unlock();
     return 1;
 }
 
@@ -1785,25 +1669,5 @@ DDSurfacePoolKind CDDSurface::GetPoolKind() {
     return POOLKIND_PLAIN;
 }
 
-RVA(0x00141310, 0x4)
-i32 CDDSurface::GetWidth() {
-    return m_apiDesc.dwWidth;
-}
-
-RVA(0x00141320, 0x4)
-i32 CDDSurface::GetHeight() {
-    return m_apiDesc.dwHeight;
-}
-
 RVA_COMPGEN(0x00141330, 0x1e, ??_GCDDSurface@@UAEPAXI@Z)
 RVA_COMPGEN(0x00141350, 0x53, ??1CDDSurface@@UAE@XZ)
-
-RVA(0x001413b0, 0xf)
-void CDDSurface::UnlockThunk() {
-    m_ddSurface->Unlock(NULL);
-}
-
-RVA(0x001413c0, 0xb)
-i32 CDDSurface::Scale(i32 n) {
-    return m_apiDesc.lPitch * n;
-}

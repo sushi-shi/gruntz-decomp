@@ -17,4 +17,11 @@
 #include <Ints.h>
 #include <MakeRect.h>
 
+#define NEW_STATUS_BAR_ITEM(item, type, host, cmd, tab, rect, key, frame, flags)                   \
+    item = new type;                                                                               \
+    if (!item->SetupImage(this, host, cmd, tab, rect, key, frame, flags)) {                        \
+        delete item;                                                                               \
+        return 0;                                                                                  \
+    }
+
 #endif // GRUNTZ_CSTATUSBARMGR_BUILDERS_H

@@ -12,6 +12,7 @@
 #include <Lith/BaseList.h>
 #include <Pix16.h>
 #include <Rez/RezMgr.h>
+#include <SafeDelete.h>
 #include <Utils/MillisPer.h>
 #include <Wap32/Wap32.h>
 
@@ -1269,10 +1270,7 @@ void SoundDevice::DestroyBuffer(SoundBuffer* buffer) {
     if (m_initialized) {
 
         m_volumeRamps.RemoveMatching(buffer, SOUND_TASK_TAG_ALL);
-        if (buffer->m_buffer) {
-            buffer->m_buffer->Release();
-            buffer->m_buffer = NULL;
-        }
+        SAFE_RELEASE(buffer->m_buffer);
         m_samples.Delete(buffer);
         if (buffer) {
             delete buffer;

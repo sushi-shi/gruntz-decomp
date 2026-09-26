@@ -2,12 +2,12 @@
 #include <Gruntz/ActRegistry.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/GruntDeathType.h>
+#include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/SpriteStateFlags.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Image/ImageSet.h>
 #include <Rez/FrameClock.h>
 
-// @early-stop
 RVA(0x000612a0, 0x23c)
 i32 CGrunt::UpdateDeathAnimation() {
     if (m_deathType == DEATH_DROP) {
@@ -43,35 +43,29 @@ i32 CGrunt::UpdateDeathAnimation() {
     if (mode == DEATH_NORMAL || mode == DEATH_SQUASH || mode == DEATH_EXPLODE
         || mode == DEATH_SHATTER) {
         SET_ANIMATION_ACT("R");
-        if (m_cellRemovalNotified == false) {
-            m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
-        }
+        UnregisterFromBoard(this, 0);
         i32 dt = static_cast<i32>(g_buteMgr.GetDword("Grunt", "DecayTime", 0xbb8));
         i32 epoch;
+        ClockInterval* clock = &m_idleWindowTiming;
         if (m_object->m_drawFillCmd == SHADE_PAL_ALPHA_16) {
             epoch = static_cast<i32>(g_frameTime) - m_object->m_fillFraction * dt / 256;
-            m_idleWindowLo = dt;
-            m_idleWindowHi = 0;
+            clock->m_interval = static_cast<u32>(dt);
+            clock->m_start = static_cast<u32>(epoch);
         } else {
-            m_idleWindowLo = dt;
-            m_idleWindowHi = 0;
+            clock->m_interval = static_cast<u32>(dt);
             epoch = static_cast<i32>(g_frameTime);
+            clock->m_start = static_cast<u32>(epoch);
         }
-        m_idleTimerLo = epoch;
-        m_idleTimerHi = 0;
-        i64 e = static_cast<i64>(g_frameTime) - m_idleTimer;
-        u32 elapsed = e < 0 ? 0 : static_cast<u32>(e);
+        u32 elapsed = m_idleWindowTiming.Elapsed();
+        CWwdSpriteObject* o = m_object;
         i32 r = static_cast<i32>(
             (static_cast<double>(elapsed) * 256.0
              / static_cast<double>(g_buteMgr.GetDword("Grunt", "DecayTime", 0xbb8)))
         );
-        CWwdSpriteObject* o = m_object;
-        o->SetDrawFillFraction(SHADE_PAL_ALPHA_16, r);
+        SET_DRAW_FILL_FRACTION(o, SHADE_PAL_ALPHA_16, r);
         return 0;
     }
-    if (m_cellRemovalNotified == false) {
-        m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
-    }
+    UnregisterFromBoard(this, 0);
     SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
     return 0;
 }
@@ -80,16 +74,14 @@ i32 CGrunt::UpdateDeathAnimation() {
 RVA(0x00061570, 0x11d)
 i32 CGrunt::UpdateDecayFade() {
     i64 now = static_cast<i64>(g_frameTime);
-    if (now - m_idleTimer >= m_idleWindow) {
+    if (now - m_idleWindowTiming.m_start >= m_idleWindowTiming.m_interval) {
         Hide();
         m_wwdObject->m_imageSet->SetAllTypes(SHADE_COPY);
-        if (m_cellRemovalNotified == false) {
-            m_triggerMgr->UnregisterUnit(m_playerIndex, m_unitIndex, 0);
-        }
+        UnregisterFromBoard(this, 0);
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         return 0;
     }
-    i64 e = now - m_idleTimer;
+    i64 e = now - m_idleWindowTiming.m_start;
     u32 elapsed = e < 0 ? 0 : static_cast<u32>(e);
     CWwdSpriteObject* o = m_object;
     i32 r = static_cast<i32>(

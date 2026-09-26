@@ -33,10 +33,12 @@
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/MapCellFlags.h>
 #include <Gruntz/MapCellInline.h>
+#include <Gruntz/Particlez.h>
 #include <Gruntz/PickupType.h>
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialCounter.h>
 #include <Gruntz/SerialRefLookup.h>
+#include <Gruntz/SerialWorkerRefMacros.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SortKeyMacros.h>
 #include <Gruntz/SoundCue.h>
@@ -234,8 +236,8 @@ i32 CProjectile::LoadProjectileSprites(
     dy /= len;
     m_velocity.m_y = dy;
 
-    VECTOR_COMPONENT_ROUND_BIAS(m_roundBias.m_x, vx);
-    VECTOR_COMPONENT_ROUND_BIAS(m_roundBias.m_y, dy);
+    ROUND_BIAS_FOR_SIGN(m_roundBias.m_x, vx);
+    ROUND_BIAS_FOR_SIGN(m_roundBias.m_y, dy);
     m_flightDist = fabs(len);
     m_currentPx.m_x = m_object->m_screenPosition.m_x;
     m_currentPx.m_y = m_object->m_screenPosition.m_y;
@@ -377,11 +379,9 @@ void CProjectile::AdvanceMotion() {
                 }
             }
         }
-        m_object->m_screenPosition.m_x = offX + m_currentPx.m_x;
-        m_object->m_screenPosition.m_y = offY + m_currentPx.m_y;
+        SET_SCREEN_POS(m_object, offX + m_currentPx.m_x, offY + m_currentPx.m_y);
         if (m_shadow != NULL) {
-            m_shadow->m_screenPosition.m_x = localX;
-            m_shadow->m_screenPosition.m_y = yRes;
+            SET_SCREEN_POS(m_shadow, localX, yRes);
         }
         return;
     }
@@ -419,18 +419,13 @@ void CProjectile::AdvanceMotion() {
                         default:
 
                             if (::PtInRect(&reg->m_viewBounds, m_targetPx.m_x, m_targetPx.m_y)) {
-                                CWwdSpriteObject* fx = reg->m_world->m_childGroup->CreateSprite(
-                                    0,
+                                CreateParticlez(
+                                    reg->m_world->m_childGroup,
                                     m_targetPx.m_x,
                                     m_targetPx.m_y,
-                                    SORTKEY_ACTOR_BEHIND,
-                                    "Particlez",
-                                    WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                                    "LEVEL_DEATHSPLASH",
+                                    "LEVEL_DEATHSPLASH"
                                 );
-                                if (fx != NULL) {
-                                    fx->SetImageSetByName("LEVEL_DEATHSPLASH");
-                                    fx->SetAnimationByName("LEVEL_DEATHSPLASH", 0);
-                                }
                             }
                             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
                             return;
@@ -439,18 +434,13 @@ void CProjectile::AdvanceMotion() {
             }
         } else {
             if (::PtInRect(&reg->m_viewBounds, m_targetPx.m_x, m_targetPx.m_y)) {
-                CWwdSpriteObject* fx = reg->m_world->m_childGroup->CreateSprite(
-                    0,
+                CreateParticlez(
+                    reg->m_world->m_childGroup,
                     m_targetPx.m_x,
                     m_targetPx.m_y,
-                    SORTKEY_ACTOR_BEHIND,
-                    "Particlez",
-                    WWD_GAME_OBJECT_FLAGS_WORLD_SPRITE
+                    "GAME_WATER",
+                    "GAME_WATER"
                 );
-                if (fx != NULL) {
-                    fx->SetImageSetByName("GAME_WATER");
-                    fx->SetAnimationByName("GAME_WATER", 0);
-                }
             }
             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
             return;
@@ -532,15 +522,13 @@ i32 CBoomerang::LoadProjectileSprites(
     m_direction.m_y = originY - static_cast<double>(m_launchPosition.m_y);
     m_phase = 0.0;
     m_velScale = d;
-    CGrunt* g =
-        g_gameReg->m_triggerMgr->m_units[TM_UNITS_PER_PLAYER * sourcePlayerIndex + sourceUnitIndex];
+    CGrunt* g = g_gameReg->m_triggerMgr->UnitAt(sourcePlayerIndex, sourceUnitIndex);
     if (g != NULL) {
-        g->m_holdWindowLo = static_cast<i32>(
-            (duration * m_flightDist * g_boomerangHoldScale - g_boomerangHoldBiasMs)
+        g->m_holdTiming.Start(
+            static_cast<i32>(
+                (duration * m_flightDist * g_boomerangHoldScale - g_boomerangHoldBiasMs)
+            )
         );
-        g->m_holdWindowHi = 0;
-        g->m_holdAnchorLo = g_frameTime;
-        g->m_holdAnchorHi = 0;
         if (g->CoordCount() != 0) {
             RECYCLE_GRUNT_COORDS(g)
         }
@@ -554,9 +542,9 @@ void CBoomerang::AdvanceMotion() {
     double s;
     double c;
     if (m_launched == false && m_phase > g_boomerangHalfTurnRadians) {
-        SET_VECTOR2_COMPONENTS(m_object->m_screenPosition, m_targetPx.m_x, m_targetPx.m_y);
+        SET_SCREEN_POS(m_object, m_targetPx.m_x, m_targetPx.m_y);
         if (m_shadow != NULL) {
-            SET_VECTOR2_COMPONENTS(m_shadow->m_screenPosition, m_targetPx.m_x, m_targetPx.m_y);
+            SET_SCREEN_POS(m_shadow, m_targetPx.m_x, m_targetPx.m_y);
         }
         m_launched = true;
     } else if (m_phase > g_boomerangFullTurnRadians && m_launched != false) {
@@ -579,21 +567,15 @@ void CBoomerang::AdvanceMotion() {
     double xCosTerm = vx * c;
     double ySinTerm = vx * s;
     double yCosTerm = vy * c;
-    SET_VECTOR2_COMPONENTS(m_position, xSinTerm - xCosTerm, ySinTerm + yCosTerm);
-    SET_VECTOR2_COMPONENTS(
-        m_position,
-        m_origin.m_x + m_position.m_x,
-        m_origin.m_y + m_position.m_y
-    );
+    m_position.m_x = xSinTerm - xCosTerm;
+    m_position.m_y = ySinTerm + yCosTerm;
+    m_position.m_x = m_origin.m_x + m_position.m_x;
+    m_position.m_y = m_origin.m_y + m_position.m_y;
     m_phase = phaseDelta + m_phase;
-    SET_VECTOR2_COMPONENTS(
-        m_object->m_screenPosition,
-        static_cast<i32>(m_position.m_x),
-        static_cast<i32>(m_position.m_y)
-    );
+    SET_SCREEN_POS(m_object, static_cast<i32>(m_position.m_x), static_cast<i32>(m_position.m_y));
     if (m_shadow != NULL) {
-        SET_VECTOR2_COMPONENTS(
-            m_shadow->m_screenPosition,
+        SET_SCREEN_POS(
+            m_shadow,
             static_cast<i32>(m_position.m_x),
             static_cast<i32>(m_position.m_y)
         );
@@ -664,8 +646,7 @@ void CProjectile::ScanTargets(i32 impact) {
             CoordPoolNode* p = g_coordPool.m_freeHead;
             if (p->m_next != NULL) {
                 slot = &p->m_value;
-                slot->m_x = hitPlayerIndex;
-                slot->m_y = hitUnitIndex;
+                slot->Set(hitPlayerIndex, hitUnitIndex);
                 g_coordPool.m_freeHead = g_coordPool.m_freeHead->m_next;
             }
             m_hitList.AddTail(slot);
@@ -725,13 +706,7 @@ i32 CProjectile::SerializeDispatch(
             s->Read(&m_sourcePx.m_y, sizeof(m_sourcePx.m_y));
 
             for (i32 ni = 0; ni < 7; ni++) {
-                g_serialCounter++;
-                s->Read(buf, SERIAL_NAME_LEN);
-                if (strlen(buf) != 0) {
-                    m_frames[ni] = MapFind<CAniElement>(reg->m_animRegistry->m_animations, buf);
-                } else {
-                    m_frames[ni] = NULL;
-                }
+                SERIAL_READ_ANIMATION(s, reg, buf, m_frames[ni]);
             }
 
             g_serialCounter++;
@@ -780,12 +755,7 @@ i32 CProjectile::SerializeDispatch(
 
             CAniElement** fp = m_frames;
             for (i32 fi = 0; fi < 7; fi++) {
-                g_serialCounter++;
-                memset(buf, 0, sizeof(buf));
-                if (*fp != NULL) {
-                    strcpy(buf, reg->m_animRegistry->FindAnimationKey(*fp));
-                }
-                s->Write(buf, SERIAL_NAME_LEN);
+                SERIAL_WRITE_ANIMATION(s, reg, buf, *fp);
                 fp++;
             }
 
@@ -899,8 +869,7 @@ void CTimeBomb::RegisterActs() {
 // @early-stop
 
 RVA(0x000e1b90, 0x23d)
-CTimeBomb::CTimeBomb(CGameObject* obj)
-    : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj), m_startTime(0), m_duration(0) {
+CTimeBomb::CTimeBomb(CGameObject* obj) : CUserLogic(obj, CUserLogic::INLINE_BASE), CWapX(obj) {
     SetObjectFlags(WWD_GAME_OBJECT_FLAGS_CULL_SOUND_KEEP_ACTIVE);
     CWwdSpriteObject* o = m_object;
     SET_SORT_KEY_IF_CHANGED(o, SORTKEY_PROJECTILE);
@@ -909,13 +878,11 @@ CTimeBomb::CTimeBomb(CGameObject* obj)
     m_value = m_wwdObject->m_animationCursor.m_animation;
     if (m_object->m_damage > 0) {
         m_wwdObject->SetAnimationByName("GAME_TIMEBOMBFAST", 0);
-        m_duration = static_cast<u32>(m_object->m_damage);
-        m_startTime = static_cast<u32>(g_frameTime);
+        m_timing.Start(m_object->m_damage);
         m_fastPhase = true;
     } else {
         m_wwdObject->SetAnimationByName("GAME_TIMEBOMBSLOW", 0);
-        m_duration = g_buteMgr.GetDword("Projectile", "TimeBombSlowTime", 0xfa0);
-        m_startTime = static_cast<u32>(g_frameTime);
+        m_timing.Start(g_buteMgr.GetDword("Projectile", "TimeBombSlowTime", 0xfa0));
         m_fastPhase = false;
     }
     Coord tile;
@@ -930,7 +897,10 @@ CTimeBomb::CTimeBomb(CGameObject* obj)
 // @early-stop
 RVA(0x000e1e60, 0x1ac)
 i32 CTimeBomb::UpdateCountdown() {
-    i32 cell = TBombGridCell(m_object);
+    i32 cell = g_gameReg->m_tileGrid->CellFlagsAt(
+        m_object->m_screenPosition.m_x >> TILE_SHIFT_PX,
+        m_object->m_screenPosition.m_y >> TILE_SHIFT_PX
+    );
     if ((cell & BRICKZ_BLOCKED_MASK) || (cell & IDX(CELL_FLAG_SPECIAL))) {
         SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));
         TBombGridClear(m_object);
@@ -938,11 +908,10 @@ i32 CTimeBomb::UpdateCountdown() {
     }
     m_wwdObject->m_animationCursor.Advance(g_engineFrameDelta);
 
-    if (static_cast<i64>(g_frameTime) - m_startTime >= m_duration) {
+    if (m_timing.Expired()) {
         if (m_fastPhase == false) {
             SwitchAnimationByName("GAME_TIMEBOMBFAST", 0);
-            m_duration = g_buteMgr.GetDword("Projectile", "TimeBombFastTime", 0x3e8);
-            m_startTime = g_frameTime;
+            m_timing.Start(g_buteMgr.GetDword("Projectile", "TimeBombFastTime", 0x3e8));
             m_fastPhase = true;
         } else {
             SetObjectFlags(IDX(WWD_GAME_OBJECT_FLAG_PENDING_DELETE));

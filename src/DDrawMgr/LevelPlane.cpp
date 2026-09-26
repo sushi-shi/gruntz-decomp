@@ -178,10 +178,13 @@ i32 CDDrawWorkerHost::InitGeometry(
     m_tileGridSize.cy = tileRows;
     m_tilePixelSize.cx = tileWidthPx;
     m_tilePixelSize.cy = tileHeightPx;
-    m_viewportRect.left = viewportRect->left;
-    m_viewportRect.top = viewportRect->top;
-    m_viewportRect.right = viewportRect->right;
-    m_viewportRect.bottom = viewportRect->bottom;
+    SET_RECT_COMPONENTS(
+        m_viewportRect,
+        viewportRect->left,
+        viewportRect->top,
+        viewportRect->right,
+        viewportRect->bottom
+    );
     m_movementPercent.m_x = movementXPercent;
     m_movementPercent.m_y = movementYPercent;
     m_tileRect.left = 0;
@@ -194,18 +197,9 @@ i32 CDDrawWorkerHost::InitGeometry(
     m_viewportSize.cy = m_viewportRect.bottom - m_viewportRect.top + 1;
     m_viewHalfSize.cx = m_viewportSize.cx / 2;
     m_viewHalfSize.cy = m_viewportSize.cy / 2;
-    m_tileShift.m_x = 0;
-    i32 v = tileWidthPx;
-    while (v > 1) {
-        v >>= 1;
-        m_tileShift.m_x = m_tileShift.m_x + 1;
-    }
-    m_tileShift.m_y = 0;
-    v = tileWidthPx;
-    while (v > 1) {
-        v >>= 1;
-        m_tileShift.m_y = m_tileShift.m_y + 1;
-    }
+    i32 v;
+    TILE_SHIFT_INTO(m_tileShift.m_x, v, tileWidthPx);
+    TILE_SHIFT_INTO(m_tileShift.m_y, v, tileWidthPx);
     if (planeName != NULL) {
         strcpy(m_planeName, planeName);
     }
@@ -346,8 +340,9 @@ void CDDrawWorkerHost::SetTileSize(i32 tileWidthPx, i32 tileHeightPx) {
     SET_RECT_COMPONENTS(m_tileRect, 0, 0, tileWidthPx, tileHeightPx);
     m_planePixelSize.cx = m_tileGridSize.cx * tileWidthPx;
     m_planePixelSize.cy = m_tileGridSize.cy * tileHeightPx;
-    TILE_SHIFT_INTO(m_tileShift.m_x, tileWidthPx);
-    TILE_SHIFT_INTO(m_tileShift.m_y, tileWidthPx);
+    i32 v;
+    TILE_SHIFT_INTO(m_tileShift.m_x, v, tileWidthPx);
+    TILE_SHIFT_INTO(m_tileShift.m_y, v, tileWidthPx);
 }
 
 // @dead-code
@@ -491,10 +486,9 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
         return 0;
     }
 
-    CWwdSpatialMgr*& spatialMgr = m_spatialMgr;
-    if (spatialMgr) {
-        delete spatialMgr;
-        spatialMgr = NULL;
+    if (m_spatialMgr) {
+        delete m_spatialMgr;
+        m_spatialMgr = NULL;
     }
 
     CRect rc = MakeRect(0, 0, m_planePixelSize.cx - 1, m_planePixelSize.cy - 1);
@@ -517,7 +511,7 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
     LevelDims smallRegionSize = level->m_smallActiveRegionSize;
 
     CWwdSpatialMgr* newSpatialMgr = new CWwdSpatialMgr;
-    spatialMgr = newSpatialMgr;
+    m_spatialMgr = newSpatialMgr;
     if (newSpatialMgr->Init(
             activeGroup,
             &rc,
@@ -530,7 +524,7 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
         )
         == 0) {
         delete m_spatialMgr;
-        spatialMgr = NULL;
+        m_spatialMgr = NULL;
         return 0;
     }
 
@@ -544,6 +538,16 @@ i32 CDDrawWorkerHost::RebuildPlanes(const char* base, i32 count) {
         base += r;
     }
     return 1;
+}
+
+static inline void ReadPlaneString(char* buf, const char*& cursor, i32 len) {
+    i32 n = 0;
+    if (len > 0) {
+        memcpy(buf, cursor, len);
+        cursor += len;
+        n = len;
+    }
+    buf[n] = 0;
 }
 
 // @early-stop
@@ -573,40 +577,16 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const PlaneObjectRecord* src) {
     const char* strCursor = src->m_strings;
     char buf[0x400];
 
-    i32 n = 0;
-    if (nameLen > 0) {
-        memcpy(buf, strCursor, nameLen);
-        strCursor += nameLen;
-        n = nameLen;
-    }
-    buf[n] = 0;
+    ReadPlaneString(buf, strCursor, nameLen);
     CString name(buf);
 
-    n = 0;
-    if (logicLen > 0) {
-        memcpy(buf, strCursor, logicLen);
-        strCursor += logicLen;
-        n = logicLen;
-    }
-    buf[n] = 0;
+    ReadPlaneString(buf, strCursor, logicLen);
     CString logic(buf);
 
-    n = 0;
-    if (imageSetLen > 0) {
-        memcpy(buf, strCursor, imageSetLen);
-        strCursor += imageSetLen;
-        n = imageSetLen;
-    }
-    buf[n] = 0;
+    ReadPlaneString(buf, strCursor, imageSetLen);
     CString imageSet(buf);
 
-    n = 0;
-    if (soundLen > 0) {
-        memcpy(buf, strCursor, soundLen);
-        strCursor += soundLen;
-        n = soundLen;
-    }
-    buf[n] = 0;
+    ReadPlaneString(buf, strCursor, soundLen);
     CString sound(buf);
 
     if (x < 0 || x >= m_planePixelSize.cx || y < 0 || y >= m_planePixelSize.cy) {
@@ -821,28 +801,23 @@ void CDDrawWorkerHost::UpdateActiveRegionSizes() {
     smallSize.m_h = level->m_smallActiveRegionSize.m_h;
 
     CWwdSpatialMgr* spatialMgr = m_spatialMgr;
-    spatialMgr->m_defaultRegionRect.left = 0;
-    spatialMgr->m_defaultRegionRect.top = 0;
-    spatialMgr->m_defaultRegionRect.right = defaultWidth - 1;
-    spatialMgr->m_defaultRegionRect.bottom = defaultHeight - 1;
-    SET_SIZE_COMPONENTS(spatialMgr->m_defaultRegionHalfSize, defaultWidth / 2, defaultHeight / 2);
+    SET_RECT_COMPONENTS(spatialMgr->m_defaultRegionRect, 0, 0, defaultWidth - 1, defaultHeight - 1);
+    spatialMgr->m_defaultRegionHalfSize.cx = defaultWidth / 2;
+    spatialMgr->m_defaultRegionHalfSize.cy = defaultHeight / 2;
 
     spatialMgr = m_spatialMgr;
-    spatialMgr->m_largeRegionRect.left = 0;
-    spatialMgr->m_largeRegionRect.top = 0;
-    spatialMgr->m_largeRegionRect.right = largeSize.m_w - 1;
-    spatialMgr->m_largeRegionRect.bottom = largeSize.m_h - 1;
-    SET_SIZE_COMPONENTS(spatialMgr->m_largeRegionHalfSize, largeSize.m_w / 2, largeSize.m_h / 2);
+    SET_RECT_COMPONENTS(spatialMgr->m_largeRegionRect, 0, 0, largeSize.m_w - 1, largeSize.m_h - 1);
+    spatialMgr->m_largeRegionHalfSize.cx = largeSize.m_w / 2;
+    spatialMgr->m_largeRegionHalfSize.cy = largeSize.m_h / 2;
 
     spatialMgr = m_spatialMgr;
-    spatialMgr->m_smallRegionRect.left = 0;
-    spatialMgr->m_smallRegionRect.top = 0;
-    spatialMgr->m_smallRegionRect.right = smallSize.m_w - 1;
-    spatialMgr->m_smallRegionRect.bottom = smallSize.m_h - 1;
-    SET_SIZE_COMPONENTS(spatialMgr->m_smallRegionHalfSize, smallSize.m_w / 2, smallSize.m_h / 2);
+    SET_RECT_COMPONENTS(spatialMgr->m_smallRegionRect, 0, 0, smallSize.m_w - 1, smallSize.m_h - 1);
+    spatialMgr->m_smallRegionHalfSize.cx = smallSize.m_w / 2;
+    spatialMgr->m_smallRegionHalfSize.cy = smallSize.m_h / 2;
 
     spatialMgr = m_spatialMgr;
-    SET_VECTOR2_COMPONENTS(spatialMgr->m_activeCenter, -22222, -22222);
+    spatialMgr->m_activeCenter.m_x = -22222;
+    spatialMgr->m_activeCenter.m_y = -22222;
 }
 
 // @early-stop

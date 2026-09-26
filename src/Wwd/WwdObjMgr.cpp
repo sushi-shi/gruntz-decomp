@@ -12,6 +12,7 @@
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <DDrawMgr/DDrawWorkerHost.h>
 #include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/DDSurfaceCaps.h>
 #include <DDrawMgr/LogicRecord.h>
 #include <DDrawMgr/LogicRecordRegistry.h>
 #include <Enums.h>
@@ -707,32 +708,14 @@ void CDDrawChildGroup::DrawObjectDebugGeometry() {
                 view->WorldToViewport(&rc.right, &rc.bottom);
                 if (fr->m_owned != NULL) {
                     drawHost->DrawLabel(&rc, s_dbgRle);
+                } else if (fr->m_surface != NULL
+                           && SurfaceCaps(fr->m_surface, DDSCAPS_VIDEOMEMORY) != 0) {
+                    drawHost->DrawLabel(&rc, s_dbgVid);
+                } else if (fr->m_surface != NULL
+                           && SurfaceCaps(fr->m_surface, DDSCAPS_SYSTEMMEMORY) != 0) {
+                    drawHost->DrawLabel(&rc, s_dbgSys);
                 } else {
-
-                    DDSCAPS caps;
-                    i32 vid;
-                    if (fr->m_surface != NULL && fr->m_surface->m_ddSurface->GetCaps(&caps) == 0) {
-                        vid = caps.dwCaps & DDSCAPS_VIDEOMEMORY;
-                    } else {
-                        vid = 0;
-                    }
-                    if (vid != 0) {
-                        drawHost->DrawLabel(&rc, s_dbgVid);
-                    } else {
-                        DDSCAPS caps2;
-                        i32 sys;
-                        if (fr->m_surface != NULL
-                            && fr->m_surface->m_ddSurface->GetCaps(&caps2) == 0) {
-                            sys = caps2.dwCaps & DDSCAPS_SYSTEMMEMORY;
-                        } else {
-                            sys = 0;
-                        }
-                        if (sys != 0) {
-                            drawHost->DrawLabel(&rc, s_dbgSys);
-                        } else {
-                            drawHost->DrawLabel(&rc, "???");
-                        }
-                    }
+                    drawHost->DrawLabel(&rc, "???");
                 }
             } while (pos != NULL);
         }
@@ -1113,11 +1096,11 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
     }
     for (u32 i = 0; i < count; i++) {
         WwdSnapshot desc;
+        CUserLogic* child;
         reader->Read(&desc, sizeof(desc));
 
         CGameObject* createdObj = NULL;
-        CWwdGameObject* found = NULL;
-        if (MapLookupById(m_registeredGameObjectsById, desc.m_objectId, found) && found != NULL) {
+        if (LookupObjectById(m_registeredGameObjectsById, desc.m_objectId) != NULL) {
             return 0;
         }
 
@@ -1227,7 +1210,7 @@ i32 CDDrawChildGroup::LoadObjects(class CFileMemBase* reader, u32 count, LogicTy
         }
         if (desc.m_logicTypeId != LOGIC_UNSET) {
 
-            CUserLogic* child = NULL;
+            child = NULL;
             if (OwnerMgr()->DispatchSerializationCallback(
                     reader,
                     SERIAL_CREATE,

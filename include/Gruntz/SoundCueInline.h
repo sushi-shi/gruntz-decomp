@@ -3,6 +3,7 @@
 
 #include <Dsndmgr/SoundBuffer.h>
 #include <Gruntz/SoundCue.h>
+#include <Gruntz/SoundCueRegistry.h>
 #include <Gruntz/SoundState.h>
 #include <Rez/FrameClock.h>
 
@@ -22,6 +23,16 @@ inline i32 PlaySoundCueIfElapsed(
     }
     cue->m_lastPlayTimeMs = g_soundCueTimeMs;
     return cue->m_sound->AcquireAndPlay(volumePercent, panPercent, frequencyOffsetPercent, looping);
+}
+
+static __inline i32 PlayRegistryCueIfElapsed(SoundCueRegistry* soundRegistry, const char* cueKey) {
+    if (!soundRegistry->m_silentMode) {
+        SoundCue* cue = soundRegistry->FindCue(cueKey);
+        if (cue != NULL) {
+            return PlaySoundCueIfElapsed(cue, g_soundVolumePercent, 0, 0, false);
+        }
+    }
+    return 0;
 }
 
 #endif // GRUNTZ_SOUNDCUEINLINE_H

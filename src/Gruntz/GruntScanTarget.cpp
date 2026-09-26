@@ -21,6 +21,7 @@
 #include <Gruntz/GruntPoweredStateMacros.h>
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/GruntRandomPointMacros.h>
+#include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
@@ -59,8 +60,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
         for (i32 candidateUnitIndex = 0; candidateUnitIndex < TM_UNITS_PER_PLAYER;
              candidateUnitIndex++) {
             CGrunt* cand =
-                g_gameReg->m_triggerMgr
-                    ->m_units[candidatePlayerIndex * TM_UNITS_PER_PLAYER + candidateUnitIndex];
+                g_gameReg->m_triggerMgr->UnitAt(candidatePlayerIndex, candidateUnitIndex);
             if (cand != NULL && cand->m_entranceCommitted != false
                 && cand->m_gruntKind != GRUNT_GHOST) {
                 i32 pa;
@@ -96,10 +96,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
         GetScreenPos(&pt4);
         pt4.m_x >>= TILE_SHIFT_PX;
         i32 t4x = pt4.m_x;
-        box.left = t4x - halfBox;
-        box.top = t3y - halfBox;
-        box.right = bx + halfBox + 1;
-        box.bottom = by + halfBox + 1;
+        SET_RECT_COMPONENTS(box, t4x - halfBox, t3y - halfBox, bx + halfBox + 1, by + halfBox + 1);
     }
     if (best != NULL) {
         Coord bp;
@@ -207,15 +204,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
                             != 0) {
                             SET_GRUNT_ARRIVAL_TARGET(best);
                             m_defenderState = AISTATE_CHASE;
-                            CGruntzMgr* reg = g_gameReg;
-                            if (CGameLevel::PointInBounds(
-                                    &reg->m_world->m_level->m_mainPlane->m_planeViewRect,
-                                    m_object->m_screenPosition.m_x,
-                                    m_object->m_screenPosition.m_y
-                                )
-                                != 0) {
-                                reg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
-                            }
+                            PLAY_VOICE_IF_VISIBLE(0x366);
                         }
                     }
                     m_dwell = 0;
@@ -253,12 +242,9 @@ i32 CGrunt::StepSmartChaserBehavior() {
             return 1;
         }
         case AISTATE_CHASE: {
-            CGrunt* sg =
-                m_triggerMgr->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
+            CGrunt* sg = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
             if (best != NULL && best != sg) {
-                Coord none;
-                m_arrivalCell = *none.Set(-1, -1);
-                m_defenderState = AISTATE_SEEK;
+                ResetToSeek(this);
                 return 1;
             }
             if (sg != NULL) {
@@ -268,17 +254,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
                 PRIO(pb, sg->m_entranceReason);
                 if (pa <= pb && sg->m_entranceCommitted != false
                     && this->GruntInRadius(sg->m_playerIndex, sg->m_unitIndex) != 0) {
-                    if (static_cast<u32>(m_dwell) > DWELL_REPATH_MS) {
-                        StepArrivalDrop(
-                            sg->m_lastTilePx.m_x,
-                            sg->m_lastTilePx.m_y,
-                            0,
-                            m_arrivalFlags,
-                            1,
-                            0
-                        );
-                        m_dwell = 0;
-                    }
+                    RepathToward(this, sg);
                     if (m_poweredUp != false || m_stamina < STAMINA_FULL) {
                         return 1;
                     }
@@ -307,9 +283,7 @@ i32 CGrunt::StepSmartChaserBehavior() {
                 return 1;
             }
             {
-                CGrunt* sg =
-                    m_triggerMgr
-                        ->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
+                CGrunt* sg = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
                 if (sg != NULL) {
                     i32 pa;
                     PRIO(pa, m_entranceReason);

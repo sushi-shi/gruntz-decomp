@@ -151,31 +151,4 @@ inline CWwdGridIter::CWwdGridIter() {
     m_cur = NULL;
 }
 
-#define WWD_RECT_CLAMP_COMPONENTS(rect, bounds)                                                    \
-    if ((rect).m_minX < (bounds).m_minX) {                                                         \
-        (rect).m_minX = (bounds).m_minX;                                                           \
-    }                                                                                              \
-    if ((rect).m_maxX > (bounds).m_maxX) {                                                         \
-        (rect).m_maxX = (bounds).m_maxX;                                                           \
-    }                                                                                              \
-    if ((rect).m_minY < (bounds).m_minY) {                                                         \
-        (rect).m_minY = (bounds).m_minY;                                                           \
-    }                                                                                              \
-    if ((rect).m_maxY > (bounds).m_maxY) {                                                         \
-        (rect).m_maxY = (bounds).m_maxY;                                                           \
-    }
-#define WWD_RECT_RETURN_IF_DISJOINT(rect, bounds, result)                                          \
-    if ((rect).m_minX > (bounds).m_maxX) {                                                         \
-        return result;                                                                             \
-    }                                                                                              \
-    if ((rect).m_maxX < (bounds).m_minX) {                                                         \
-        return result;                                                                             \
-    }                                                                                              \
-    if ((rect).m_minY > (bounds).m_maxY) {                                                         \
-        return result;                                                                             \
-    }                                                                                              \
-    if ((rect).m_maxY < (bounds).m_minY) {                                                         \
-        return result;                                                                             \
-    }
-
 #endif // GRUNTZ_WWDGRIDITER_H

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gruntz Orchestrator"
+  short_description: "Run parallel matching workers and merge their lanes"
+  default_prompt: "Use $orchestrator to plan disjoint lanes, run matching workers through matching, holista and structural passes, and merge each lane into main."

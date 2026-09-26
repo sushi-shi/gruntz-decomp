@@ -8,6 +8,8 @@
 #include <Bute/ButeMgr.h>
 #include <Enums.h>
 #include <Gruntz/CoordNode.h>
+#include <Gruntz/ClockInterval.h>
+#include <Gruntz/CoordPool.h>
 #include <Gruntz/DestructWarningState.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/GameTabContent.h>
@@ -43,48 +45,14 @@ GZ_ENUM_BEGIN(SbiSlotState)
 GZ_ENUM_END(SbiSlotState)
 
 struct CSbiSlot {
-
-    CSbiSlot() {
-        m_interval = 0;
-        m_startTime = 0;
-    }
     SbiSlotState m_state;
     i32 m_value;
-    union {
-        i64 m_startTime;
-        struct {
-            i32 m_startTimeLo;
-            i32 m_startTimeHi;
-        };
-    };
-    i64 m_interval;
-};
-
-struct SbiClockPair {
-    SbiClockPair() : m_last(0), m_interval(0) {}
-
-    union {
-        i64 m_last;
-        struct {
-            i32 m_lastLo, m_lastHi;
-        };
-    };
-    union {
-        i64 m_interval;
-        struct {
-            i32 m_intervalLo, m_intervalHi;
-        };
-    };
+    ClockInterval m_clock;
 };
 
 struct CSbiHlRow {
     RVA(0x000c86d0, 0x11)
-    CSbiHlRow() {
-        m_lastLo = 0;
-        m_intervalLo = 0;
-        m_lastHi = 0;
-        m_intervalHi = 0;
-    }
+    CSbiHlRow() {}
 
     i32 m_state;
 
@@ -92,31 +60,17 @@ struct CSbiHlRow {
         i32 m_value;
         i32 m_counter;
     };
-    union {
-        i64 m_last;
-        struct {
-            i32 m_lastLo, m_lastHi;
-        };
-    };
-    union {
-        i64 m_interval;
-        struct {
-            i32 m_intervalLo, m_intervalHi;
-        };
-    };
+    ClockInterval m_clock;
 };
 
 struct CSbiMachineRow {
-    CSbiMachineRow() : m_last(0), m_interval(0) {}
-
     i32 m_state;
 
     union {
         i32 m_value;
         i32 m_counter;
     };
-    i64 m_last;
-    i64 m_interval;
+    ClockInterval m_clock;
 };
 
 class CSBI_SideTab;
@@ -135,6 +89,15 @@ GZ_ENUM_CONST_BEGIN(GruntWellPct)
     GRUNT_WELL_EMPTY = 0,
     GRUNT_WELL_FULL = 100
 GZ_ENUM_CONST_END(GruntWellPct)
+
+#define DELETE_STATUS_ITEMS(list)                                                                  \
+    {                                                                                              \
+        POSITION pos = (list).GetHeadPosition();                                                   \
+        while (pos) {                                                                              \
+            delete static_cast<CStatusBarItem*>((list).GetNext(pos));                              \
+        }                                                                                          \
+        (list).RemoveAll();                                                                        \
+    }
 
 class CStatusBarMgr {
     inline b32 ActivateReadySlot(i32 slot);
@@ -307,8 +270,8 @@ public:
     i32 m_gruntWellLevel;
     i32 m_gruntWellTargetLevel;
 
-    SbiClockPair m_reserved2a0;
-    SbiClockPair m_reserved2b0;
+    ClockInterval m_reserved2a0;
+    ClockInterval m_reserved2b0;
 
     CSbiHlRow m_conveyorSlots[3];
     CSBI_ImageSet* m_conveyorSprites[3];
@@ -330,12 +293,12 @@ public:
     CSBI_ImageSet* m_resourceSlotSprites[12];
     SbiBeltPhase m_machinePhase;
     i32 m_machineItem;
-    SbiClockPair m_beltClock;
+    ClockInterval m_beltClock;
     CSBI_ImageSet* m_machineItemSprite;
     char m_pad4e4[0x4e8 - 0x4e4];
     SbiFallingItemState m_fallActive;
     i32 m_fallingItem;
-    SbiClockPair m_fallClock;
+    ClockInterval m_fallClock;
     CSBI_ImageSet* m_fallingItemSprite;
     RECT m_fallingItemRect;
     RECT m_machineItemRect;
@@ -346,13 +309,26 @@ public:
     CPtrArray m_rewardQueue;
     i32 m_reserved544;
 
+    Coord* GetReward(i32 index) const {
+        return static_cast<Coord*>(m_rewardQueue.GetAt(index));
+    }
+    void ClearRewardQueue() {
+        for (i32 i = 0; i < m_rewardQueue.GetSize(); i++) {
+            Coord* reward = GetReward(i);
+            if (reward) {
+                g_coordPool.Push(reward);
+            }
+        }
+        m_rewardQueue.SetSize(0, -1);
+    }
+
     b32 m_hlBusy;
     CWarpStoneFly* m_retabNotify;
     b32 m_levelOverlayActive;
     b32 m_quitConfirmationActive;
     DestructWarningState m_destructWarningState;
     DestructButtonFrame m_destructButtonFrame;
-    SbiClockPair m_destructWarningClock;
+    ClockInterval m_destructWarningClock;
     CSBI_ImageSet* m_destructButtonImage;
     b32 m_destructButtonLocked;
     b32 m_observerTabAvailable;

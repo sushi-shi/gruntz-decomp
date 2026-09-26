@@ -9,6 +9,7 @@
 #include <Gruntz/AnimatedMenuItem.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/MenuItem.h>
+#include <Gruntz/MenuItemState.h>
 #include <Ints.h>
 
 class CDDrawSurfaceMgr;
@@ -144,5 +145,9 @@ public:
     CDDrawWorker* animation = m_world->FindWorker(animationKey);                                   \
     m_headerAnimation = animation;                                                                 \
     return animation != NULL
+
+inline b32 CMenuItem::IsSelectable() {
+    return m_state == MENUSTATE_NORMAL || m_state == MENUSTATE_SELECTED;
+}
 
 #endif // GRUNTZ_MENUPAGE_H

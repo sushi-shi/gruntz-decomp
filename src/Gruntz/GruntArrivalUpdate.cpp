@@ -21,6 +21,8 @@
 #include <Gruntz/GruntMovementInline.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPuddle.h>
+#include <Gruntz/GruntRandomPointMacros.h>
+#include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/MapCellFlags.h>
@@ -44,14 +46,11 @@
 
 RVA(0x000f0130, 0x7c0)
 i32 CGrunt::StepGauntletGruntBehavior() {
-    const char* name = g_typeColl[m_logicRecord->m_eventCode];
-    bool eqI = (strcmp(name, "I") == 0);
-    if (eqI) {
+    if (ANIMATION_ACT_EQUALS("I")) {
         return 1;
     }
     this->m_defenderPx = this->m_lastTilePx;
-    i32 atTarget;
-    CGrunt* g = FindNearestEnemyAtTarget(this, &atTarget);
+    FIND_NEAREST_ENEMY_AT_TARGET(g, atTarget, x)
 
     b32 poweredUp = this->m_poweredUp;
     if (poweredUp != false) {
@@ -101,60 +100,56 @@ i32 CGrunt::StepGauntletGruntBehavior() {
     }
 
     switch (this->m_defenderState) {
-        case AISTATE_SEEK:
-            if (g != NULL) {
-                if (this->m_stamina >= STAMINA_FULL) {
-                    Coord position = g->m_object->ScreenPos();
-                    if (position == g->m_lastTilePx
-                        && RectContains(position.m_x, position.m_y) != 0) {
-                        COMMIT_GRUNT_NEIGHBOR(g);
-                        break;
+        case AISTATE_SEEK: {
+            Coord c;
+            if (g != NULL && this->m_poweredUp == false && this->m_stamina >= STAMINA_FULL
+                && GRUNT_AT_SAVED_SCREEN_POS(g)
+                && RectContains(
+                       g->m_object->m_screenPosition.m_x,
+                       g->m_object->m_screenPosition.m_y
+                   ) != 0) {
+                COMMIT_GRUNT_NEIGHBOR(g);
+                break;
+            }
+            if (g != NULL && static_cast<u32>(this->m_dwell) > 1000) {
+                if (GruntInRadius(g->m_playerIndex, g->m_unitIndex) != 0) {
+                    g->GetScreenPos(&c);
+                    if (TileSwitch(
+                            c.m_x >> TILE_SHIFT_PX,
+                            c.m_y >> TILE_SHIFT_PX,
+                            0,
+                            this->m_arrivalFlags,
+                            0,
+                            0x20
+                        )
+                        != 0) {
+                        SET_GRUNT_ARRIVAL_TARGET(g);
+                        this->m_defenderState = AISTATE_CHASE;
+                        PLAY_VOICE_IF_VISIBLE(0x366);
                     }
                 }
-                if (g != NULL && static_cast<u32>(this->m_dwell) > 1000) {
-                    if (GruntInRadius(g->m_playerIndex, g->m_unitIndex) != 0) {
-                        Coord targetTile;
-                        g->GetScreenTile(&targetTile);
-                        if (TileSwitch(
-                                targetTile.m_x,
-                                targetTile.m_y,
-                                0,
-                                this->m_arrivalFlags,
-                                0,
-                                BATTLEZ_ROUTE_OTHER_TOOLS
-                            )
-                            != 0) {
-                            SET_GRUNT_ARRIVAL_TARGET(g);
-                            this->m_defenderState = AISTATE_CHASE;
-                            CGruntzMgr* reg = g_gameReg;
-                            i32 r = CGameLevel::PointInBounds(
-                                &reg->m_world->m_level->m_mainPlane->m_planeViewRect,
-                                this->m_object->m_screenPosition.m_x,
-                                this->m_object->m_screenPosition.m_y
-                            );
-                            if (r != 0) {
-                                reg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
-                            }
-                        }
-                    }
-                    this->m_dwell = 0;
-                    break;
-                }
+                this->m_dwell = 0;
+                break;
             }
             if (this->m_resetApplied == false && this->m_hasExtent != false
                 && static_cast<u32>(this->m_dwell) > 3000) {
                 if (IsArrivalRerollPending() != 0) {
                     CGameObject* base = this->m_object;
-                    Coord point;
-                    Coord span;
-                    SelectRandomExtentPoint(base, &point, &span);
-                    if (static_cast<u32>(point.m_x) < g_gameReg->m_tileGrid->m_width
-                        && static_cast<u32>(point.m_y) < g_gameReg->m_tileGrid->m_height) {
-                        TileSwitch(point.m_x, point.m_y, 0, this->m_arrivalFlags, 1, 0);
+                    SELECT_RANDOM_EXTENT_POINT_UNSIGNED_CAST(base, lo, ax, lo2, ay)
+                    if (lo < g_gameReg->m_tileGrid->m_width
+                        && lo2 < g_gameReg->m_tileGrid->m_height) {
+                        TileSwitch(
+                            static_cast<i32>(lo),
+                            static_cast<i32>(lo2),
+                            0,
+                            this->m_arrivalFlags,
+                            1,
+                            0
+                        );
                     }
                     if (this->CoordCount() != 0) {
-                        span.m_x = Max(span.m_x, span.m_y);
-                        if (this->CoordCount() > span.m_x) {
+                        ax = Max(ax, ay);
+                        if (this->CoordCount() > ax) {
                             SetEntrancePos(1, 1);
                         }
                     }
@@ -164,10 +159,9 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                 this->m_dwell = 0;
             }
             break;
+        }
         case AISTATE_CHASE: {
-            CGrunt* slot =
-                m_triggerMgr->m_units
-                    [this->m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + this->m_arrivalCell.m_y];
+            CGrunt* slot = m_triggerMgr->UnitAt(this->m_arrivalCell.m_x, this->m_arrivalCell.m_y);
             CGrunt* found = m_triggerMgr->FindNearestEnemy(this);
             if (found == NULL || found == slot) {
                 if (slot == NULL || slot->m_entranceCommitted == false
@@ -180,7 +174,7 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                         0,
                         this->m_arrivalFlags,
                         0,
-                        BATTLEZ_ROUTE_OTHER_TOOLS
+                        0x20
                     );
                     if (this->m_poweredUp == false && this->m_stamina >= STAMINA_FULL
                         && RectContains(
@@ -193,65 +187,56 @@ i32 CGrunt::StepGauntletGruntBehavior() {
                     }
                 }
             } else {
-                this->m_arrivalCell.Set(-1, -1);
-                this->m_defenderState = AISTATE_SEEK;
+                ResetToSeek(this);
             }
             break;
         }
         case AISTATE_ATTACK: {
-            if (m_poweredUp != false) {
-                CGrunt* slot =
-                    m_triggerMgr
-                        ->m_units[m_arrivalCell.m_x * TM_UNITS_PER_PLAYER + m_arrivalCell.m_y];
-                if (slot != NULL && GruntInRadius(slot->m_playerIndex, slot->m_unitIndex) != 0
-                    && slot->m_entranceCommitted != false) {
-                    if (m_neighborValid != false || m_combatActive != false
-                        || m_stamina < STAMINA_FULL) {
-                        break;
-                    }
-                    if (RectContains(
-                            slot->m_object->m_screenPosition.m_x,
-                            slot->m_object->m_screenPosition.m_y
-                        ) != 0
-                        && GRUNT_AT_SAVED_SCREEN_POS(slot)) {
-                        COMMIT_GRUNT_NEIGHBOR(slot);
-                        break;
-                    }
-                }
-                if (slot == NULL) {
-                    m_defenderState = AISTATE_SEEK;
+            if (m_poweredUp == false) {
+                m_defenderState = AISTATE_CHASE;
+                break;
+            }
+            CGrunt* slot = m_triggerMgr->UnitAt(m_arrivalCell.m_x, m_arrivalCell.m_y);
+            if (slot != NULL && GruntInRadius(slot->m_playerIndex, slot->m_unitIndex) != 0
+                && slot->m_entranceCommitted != false) {
+                if (m_neighborValid != false || m_combatActive != false
+                    || m_stamina < STAMINA_FULL) {
                     break;
                 }
-                m_defenderState = AISTATE_CHASE;
-                {
-                    CGruntzMgr* reg = g_gameReg;
-                    const RECT& view = reg->m_world->m_level->m_mainPlane->m_planeViewRect;
-                    Coord voicePosition = m_object->ScreenPos();
-                    if (::PtInRect(&view, voicePosition.m_x, voicePosition.m_y)) {
-                        reg->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
-                    }
+                if (RectContains(
+                        slot->m_object->m_screenPosition.m_x,
+                        slot->m_object->m_screenPosition.m_y
+                    ) != 0
+                    && GRUNT_AT_SAVED_SCREEN_POS(slot)) {
+                    COMMIT_GRUNT_NEIGHBOR(slot);
+                    break;
                 }
+            } else if (slot == NULL) {
+                m_defenderState = AISTATE_SEEK;
                 break;
             }
             m_defenderState = AISTATE_CHASE;
+            PLAY_VOICE_IN_VIEW(0x366);
             break;
         }
     }
 
     if (this->CoordCount() != 0) {
 
-        Coord* cell = static_cast<Coord*>(m_coordList.GetAt(this->CoordHead()));
+        Coord* cell = GetHeadCoord();
 
         BrickzCell& gc = g_gameReg->m_tileGrid->m_rows[cell->m_y][cell->m_x];
-        if ((gc.m_flags & IDX(CELL_FLAG_DESTRUCTIBLE_ROCK)) != 0) {
+        if ((gc.m_flagBytes[0] & 0x20) != 0) {
             SetEntrancePos(1, 1);
             if (this->CoordCount() != 0) {
                 RECYCLE_GRUNT_COORDS(this)
             }
-            Coord position = *cell;
-            TileCenter(&position);
-            g_gameReg->m_triggerMgr
-                ->UseEquippedToolAt(m_playerIndex, m_unitIndex, position.m_x, position.m_y);
+            g_gameReg->m_triggerMgr->UseEquippedToolAt(
+                m_playerIndex,
+                m_unitIndex,
+                cell->m_x * 0x20 + 0x10,
+                cell->m_y * 0x20 + 0x10
+            );
         }
     }
     return 1;

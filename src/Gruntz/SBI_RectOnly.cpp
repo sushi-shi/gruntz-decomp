@@ -45,6 +45,9 @@
 #include <Gruntz/SerialArchive.h>
 #include <Gruntz/SerialClockInline.h>
 #include <Gruntz/SerialCounter.h>
+#include <Gruntz/SerialRecordMacros.h>
+#include <Gruntz/SerialRefLookup.h>
+#include <Gruntz/SerialWorkerRefMacros.h>
 #include <Gruntz/SortKeyLayer.h>
 #include <Gruntz/SoundCue.h>
 #include <Gruntz/SoundCueRegistry.h>
@@ -75,6 +78,7 @@
 #include <RectMacros.h>
 #include <Rez/RezList.h>
 #include <Rez/RezMgr.h>
+#include <SafeDelete.h>
 #include <Utils/MapTyped.h>
 #include <Utils/RegMgr.h>
 #include <Wap32/ScreenGeometry.h>
@@ -160,14 +164,7 @@ RVA(0x000fe350, 0x6d)
 void CStatusBarMgr::Teardown() {
     (static_cast<CRegMgr*>(g_gameReg->m_settings))->Set("StatusBar Position", IDX(m_position));
     ResetWidgets(false);
-    for (i32 i = 0; i < m_rewardQueue.GetSize(); i++) {
-        Coord* p = static_cast<Coord*>(m_rewardQueue.GetData()[i]);
-        if (p) {
-            g_coordPool.Push(p);
-        }
-    }
-
-    m_rewardQueue.SetSize(0, -1);
+    ClearRewardQueue();
 }
 
 RVA(0x000fe3e0, 0x55)
@@ -321,8 +318,9 @@ i32 CStatusBarMgr::SetSpritePos(i32 x, i32 y) {
     if (m_barSprite == NULL) {
         return 0;
     }
-    m_barPosition.Set(x, y);
-    m_barSprite->SetScreenPos(m_barPosition);
+    SET_SCREEN_POS(m_barSprite, x, y);
+    m_barPosition.m_x = x;
+    m_barPosition.m_y = y;
     return 1;
 }
 
@@ -410,9 +408,7 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                 case SBICMD_QUIT:
                     HiCueLookup();
                     if (g_gameReg->m_frameGate != false) {
-                        b32 gate = !g_gameReg->m_frameGate;
-                        g_gameReg->m_frameGate = gate;
-                        g_gameReg->FinishLevel(gate, true);
+                        g_gameReg->FinishLevel(g_gameReg->ToggleFrameGate(), true);
                     }
                     (static_cast<CPlay*>(g_gameReg->m_curState))->OpenLevelOverlay(true);
                     return 1;
@@ -436,10 +432,9 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
                         if (m_destructWarningState == DESTRUCT_WARNING_INACTIVE) {
                             m_destructWarningState = DESTRUCT_WARNING_FORWARD;
                             m_destructButtonFrame = DESTRUCT_FRAME_WARNING_FIRST;
-                            SbiClockPair* clock = &m_destructWarningClock;
-                            clock->m_interval =
-                                g_buteMgr.GetDword("StatusBar", "DestructButtonWarningDelay", 0x32);
-                            clock->m_last = static_cast<u32>(g_frameTime);
+                            m_destructWarningClock.Start(
+                                g_buteMgr.GetDword("StatusBar", "DestructButtonWarningDelay", 0x32)
+                            );
                             sm->SetDefeatCountdown(true, 0xbb7);
                         } else {
                             CSBI_ImageSet* destructButtonImage = m_destructButtonImage;
@@ -628,7 +623,6 @@ i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 mouseFlags, i32 x, i32 y) {
     return 1;
 }
 
-// @early-stop
 RVA(0x000ff850, 0x121)
 i32 CStatusBarMgr::HandleDoubleClick(i32 keyFlags, i32 x, i32 y) {
     CStatusBarItem* r = HitTestRects(x, y);
@@ -637,29 +631,15 @@ i32 CStatusBarMgr::HandleDoubleClick(i32 keyFlags, i32 x, i32 y) {
     }
     r->OnDoubleClick(keyFlags, x, y);
     SbiCommandId cmd = r->m_cmd;
-    if (r->m_tab == TAB_STATZ && m_chatBoxDisabled == false
-        && g_gameReg->m_triggerMgr->m_groupFlag != false && cmd >= SBICMD_CURSOR_TARGET_FIRST
-        && cmd <= SBICMD_CURSOR_TARGET_LAST) {
-        SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-        if (registry->m_silentMode == false) {
-            SoundCue* found = NULL;
-            CMapStringToPtr* map = &registry->m_cues;
-            MapLookup(*map, "GAME_TABHIGHLIGHT1", found);
-            if (found) {
-                b32 soundEnabled = g_soundEnabled;
-                i32 volumePercent = g_soundVolumePercent;
-                if (soundEnabled != false) {
-                    SoundCue* p = found;
-                    if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
-                        >= static_cast<u32>(p->m_replayDelayMs)) {
-                        p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                        p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                    }
-                }
+    switch (r->m_tab) {
+        case TAB_STATZ:
+            if (m_chatBoxDisabled == false && g_gameReg->m_triggerMgr->m_groupFlag != false
+                && cmd >= SBICMD_CURSOR_TARGET_FIRST && cmd <= SBICMD_CURSOR_TARGET_LAST) {
+                HiCueTimed();
+                PlaceCursorTarget(IDX(cmd) - IDX(SBICMD_CURSOR_TARGET_FIRST), 1);
+                return 1;
             }
-        }
-        PlaceCursorTarget(IDX(cmd) - IDX(SBICMD_CURSOR_TARGET_FIRST), 1);
-        return 1;
+            break;
     }
 
     return UpdateStatusBarTabHighlight(keyFlags, x, y);
@@ -869,71 +849,63 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     }
     AddTabItem(0, hide);
 
-    CSBI_MenuItem* statzTab = new CSBI_MenuItem;
-    if (!statzTab->SetupImage(
-            this,
-            code,
-            SBICMD_TAB_STATZ,
-            TAB_CONTROLS,
-            MakeRect(bx + 0x42, by + 0x82, bx + 0x62, by + 0xad),
-            "GAME_STATUSBAR_TABZ_STATZTAB",
-            -1,
-            0
-        )) {
-        delete statzTab;
-        return 0;
-    }
+    CSBI_MenuItem* statzTab;
+    NEW_STATUS_BAR_ITEM(
+        statzTab,
+        CSBI_MenuItem,
+        code,
+        SBICMD_TAB_STATZ,
+        TAB_CONTROLS,
+        MakeRect(bx + 0x42, by + 0x82, bx + 0x62, by + 0xad),
+        "GAME_STATUSBAR_TABZ_STATZTAB",
+        -1,
+        0
+    );
     AddTabItem(0, statzTab);
     m_statzTabButton = statzTab;
 
-    CSBI_MenuItem* gruntzTab = new CSBI_MenuItem;
-    if (!gruntzTab->SetupImage(
-            this,
-            code,
-            SBICMD_TAB_GRUNTZ,
-            TAB_CONTROLS,
-            MakeRect(bx + 0x04, by + 0x82, bx + 0x24, by + 0xad),
-            "GAME_STATUSBAR_TABZ_GRUNTZTAB",
-            -1,
-            0
-        )) {
-        delete gruntzTab;
-        return 0;
-    }
+    CSBI_MenuItem* gruntzTab;
+    NEW_STATUS_BAR_ITEM(
+        gruntzTab,
+        CSBI_MenuItem,
+        code,
+        SBICMD_TAB_GRUNTZ,
+        TAB_CONTROLS,
+        MakeRect(bx + 0x04, by + 0x82, bx + 0x24, by + 0xad),
+        "GAME_STATUSBAR_TABZ_GRUNTZTAB",
+        -1,
+        0
+    );
     AddTabItem(0, gruntzTab);
     m_gruntzTabButton = gruntzTab;
 
-    CSBI_MenuItem* resourceTab = new CSBI_MenuItem;
-    if (!resourceTab->SetupImage(
-            this,
-            code,
-            SBICMD_TAB_RESOURCE,
-            TAB_CONTROLS,
-            MakeRect(bx + 0x24, by + 0x82, bx + 0x44, by + 0xad),
-            "GAME_STATUSBAR_TABZ_RESOURCETAB",
-            -1,
-            0
-        )) {
-        delete resourceTab;
-        return 0;
-    }
+    CSBI_MenuItem* resourceTab;
+    NEW_STATUS_BAR_ITEM(
+        resourceTab,
+        CSBI_MenuItem,
+        code,
+        SBICMD_TAB_RESOURCE,
+        TAB_CONTROLS,
+        MakeRect(bx + 0x24, by + 0x82, bx + 0x44, by + 0xad),
+        "GAME_STATUSBAR_TABZ_RESOURCETAB",
+        -1,
+        0
+    );
     AddTabItem(0, resourceTab);
     m_resourceTabButton = resourceTab;
 
-    CSBI_MenuItem* multiTab = new CSBI_MenuItem;
-    if (!multiTab->SetupImage(
-            this,
-            code,
-            SBICMD_TAB_MULTIPLAYER,
-            TAB_CONTROLS,
-            MakeRect(bx + 0x60, by + 0x82, bx + 0x80, by + 0xad),
-            "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB",
-            -1,
-            0
-        )) {
-        delete multiTab;
-        return 0;
-    }
+    CSBI_MenuItem* multiTab;
+    NEW_STATUS_BAR_ITEM(
+        multiTab,
+        CSBI_MenuItem,
+        code,
+        SBICMD_TAB_MULTIPLAYER,
+        TAB_CONTROLS,
+        MakeRect(bx + 0x60, by + 0x82, bx + 0x80, by + 0xad),
+        "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB",
+        -1,
+        0
+    );
     AddTabItem(0, multiTab);
     m_multiTabButton = multiTab;
     if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
@@ -946,20 +918,18 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
         multiTab->RequestRedraw();
     }
 
-    CSBI_MenuItem* gameTab = new CSBI_MenuItem;
-    if (!gameTab->SetupImage(
-            this,
-            code,
-            SBICMD_TAB_GAME,
-            TAB_CONTROLS,
-            MakeRect(bx + 0x7e, by + 0x82, bx + 0x9e, by + 0xad),
-            "GAME_STATUSBAR_TABZ_GAMETAB",
-            -1,
-            0
-        )) {
-        delete gameTab;
-        return 0;
-    }
+    CSBI_MenuItem* gameTab;
+    NEW_STATUS_BAR_ITEM(
+        gameTab,
+        CSBI_MenuItem,
+        code,
+        SBICMD_TAB_GAME,
+        TAB_CONTROLS,
+        MakeRect(bx + 0x7e, by + 0x82, bx + 0x9e, by + 0xad),
+        "GAME_STATUSBAR_TABZ_GAMETAB",
+        -1,
+        0
+    );
     AddTabItem(0, gameTab);
     m_gameTabButton = gameTab;
 
@@ -1041,12 +1011,7 @@ RVA_COMPGEN(0x00100900, 0x1e, ??_GCSBI_Image@@UAEPAXI@Z)
 RVA(0x00100930, 0x16c)
 void CStatusBarMgr::ResetWidgets(b32 keepHost) {
     for (i32 t = 0; t < 8; t++) {
-        POSITION n = m_tabLists[t].GetHeadPosition();
-        while (n) {
-            CStatusBarItem* cur = static_cast<CStatusBarItem*>(m_tabLists[t].GetNext(n));
-            delete cur;
-        }
-        m_tabLists[t].RemoveAll();
+        DELETE_STATUS_ITEMS(m_tabLists[t])
     }
     if (keepHost) {
         if (m_barSprite) {
@@ -1096,13 +1061,7 @@ void CStatusBarMgr::ClearTabGroup() {
     if (m_activeTab == TAB_NONE) {
         return;
     }
-    CPtrList& tab = m_tabLists[IDX(m_activeTab)];
-    POSITION n = tab.GetHeadPosition();
-    while (n) {
-        CStatusBarItem* cur = static_cast<CStatusBarItem*>(tab.GetNext(n));
-        delete cur;
-    }
-    m_tabLists[IDX(m_activeTab)].RemoveAll();
+    DELETE_STATUS_ITEMS(m_tabLists[IDX(m_activeTab)])
     switch (m_activeTab) {
         case TAB_GAME:
             m_gameResumePauseButton = NULL;
@@ -1390,169 +1349,139 @@ i32 CStatusBarMgr::ClearTabSprites(StatusBarTab idx) {
 RVA(0x00101580, 0x806)
 i32 CStatusBarMgr::BuildGameMenu() {
     CDDrawSurfaceMgr* code = m_world;
-    CPoint barOrigin(m_barRect.left, m_barRect.top);
+    i32 bx = m_barRect.left;
+    i32 by = m_barRect.top;
 
     if (m_itemKind != GAME_TAB_MISSION_STATUS) {
 
         if (m_chatBoxDisabled != false && g_gameReg->m_frameGate != false) {
-            CSBI_MenuItem* resume = new CSBI_MenuItem;
-            if (!resume->SetupImage(
-                    this,
-                    code,
-                    SBICMD_PAUSE,
-                    TAB_GAME,
-                    MakeRect(
-                        barOrigin.x,
-                        barOrigin.y + 0xd5,
-                        barOrigin.x + 0x9f,
-                        barOrigin.y + 0xec
-                    ),
-                    "GAME_STATUSBAR_TABZ_GAMETAB_RESUME",
-                    -1,
-                    0
-                )) {
-                delete resume;
-                return 0;
-            }
+            CSBI_MenuItem* resume;
+            NEW_STATUS_BAR_ITEM(
+                resume,
+                CSBI_MenuItem,
+                code,
+                SBICMD_PAUSE,
+                TAB_GAME,
+                MakeRect(bx, by + 0xd5, bx + 0x9f, by + 0xec),
+                "GAME_STATUSBAR_TABZ_GAMETAB_RESUME",
+                -1,
+                0
+            );
             AddTabItem(5, resume);
             m_gameResumePauseButton = resume;
         } else {
-            CSBI_MenuItem* pause = new CSBI_MenuItem;
-            if (!pause->SetupImage(
-                    this,
-                    code,
-                    SBICMD_PAUSE,
-                    TAB_GAME,
-                    MakeRect(
-                        barOrigin.x,
-                        barOrigin.y + 0xd5,
-                        barOrigin.x + 0x9f,
-                        barOrigin.y + 0xec
-                    ),
-                    "GAME_STATUSBAR_TABZ_GAMETAB_PAUSE",
-                    -1,
-                    0
-                )) {
-                delete pause;
-                return 0;
-            }
+            CSBI_MenuItem* pause;
+            NEW_STATUS_BAR_ITEM(
+                pause,
+                CSBI_MenuItem,
+                code,
+                SBICMD_PAUSE,
+                TAB_GAME,
+                MakeRect(bx, by + 0xd5, bx + 0x9f, by + 0xec),
+                "GAME_STATUSBAR_TABZ_GAMETAB_PAUSE",
+                -1,
+                0
+            );
             AddTabItem(5, pause);
             m_gameResumePauseButton = pause;
         }
 
-        CSBI_MenuItem* load = new CSBI_MenuItem;
-        if (!load->SetupImage(
-                this,
-                code,
-                SBICMD_LOAD_GAME,
-                TAB_GAME,
-                MakeRect(barOrigin.x, barOrigin.y + 0x125, barOrigin.x + 0x9f, barOrigin.y + 0x13c),
-                "GAME_STATUSBAR_TABZ_GAMETAB_LOAD",
-                -1,
-                0
-            )) {
-            delete load;
-            return 0;
-        }
+        CSBI_MenuItem* load;
+        NEW_STATUS_BAR_ITEM(
+            load,
+            CSBI_MenuItem,
+            code,
+            SBICMD_LOAD_GAME,
+            TAB_GAME,
+            MakeRect(bx, by + 0x125, bx + 0x9f, by + 0x13c),
+            "GAME_STATUSBAR_TABZ_GAMETAB_LOAD",
+            -1,
+            0
+        );
         AddTabItem(5, load);
         m_gameLoadButton = load;
         if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
             load->SetEnabled(0);
         }
 
-        CSBI_MenuItem* save = new CSBI_MenuItem;
-        if (!save->SetupImage(
-                this,
-                code,
-                SBICMD_SAVE_GAME,
-                TAB_GAME,
-                MakeRect(barOrigin.x, barOrigin.y + 0xfd, barOrigin.x + 0x9f, barOrigin.y + 0x114),
-                "GAME_STATUSBAR_TABZ_GAMETAB_SAVE",
-                -1,
-                0
-            )) {
-            delete save;
-            return 0;
-        }
+        CSBI_MenuItem* save;
+        NEW_STATUS_BAR_ITEM(
+            save,
+            CSBI_MenuItem,
+            code,
+            SBICMD_SAVE_GAME,
+            TAB_GAME,
+            MakeRect(bx, by + 0xfd, bx + 0x9f, by + 0x114),
+            "GAME_STATUSBAR_TABZ_GAMETAB_SAVE",
+            -1,
+            0
+        );
         AddTabItem(5, save);
         m_gameSaveButton = save;
         if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
             save->SetEnabled(0);
         }
 
-        CSBI_MenuItem* settings = new CSBI_MenuItem;
-        if (!settings->SetupImage(
-                this,
-                code,
-                SBICMD_SETTINGS,
-                TAB_GAME,
-                MakeRect(barOrigin.x, barOrigin.y + 0x14d, barOrigin.x + 0x9f, barOrigin.y + 0x164),
-                "GAME_STATUSBAR_TABZ_GAMETAB_SETTINGS",
-                -1,
-                0
-            )) {
-            delete settings;
-            return 0;
-        }
+        CSBI_MenuItem* settings;
+        NEW_STATUS_BAR_ITEM(
+            settings,
+            CSBI_MenuItem,
+            code,
+            SBICMD_SETTINGS,
+            TAB_GAME,
+            MakeRect(bx, by + 0x14d, bx + 0x9f, by + 0x164),
+            "GAME_STATUSBAR_TABZ_GAMETAB_SETTINGS",
+            -1,
+            0
+        );
         AddTabItem(5, settings);
         m_gameSettingsButton = settings;
 
-        CSBI_MenuItem* help = new CSBI_MenuItem;
-        if (!help->SetupImage(
-                this,
-                code,
-                SBICMD_BOOTY_STATE,
-                TAB_GAME,
-                MakeRect(barOrigin.x, barOrigin.y + 0x175, barOrigin.x + 0x9f, barOrigin.y + 0x18c),
-                "GAME_STATUSBAR_TABZ_GAMETAB_HELP",
-                -1,
-                0
-            )) {
-            delete help;
-            return 0;
-        }
+        CSBI_MenuItem* help;
+        NEW_STATUS_BAR_ITEM(
+            help,
+            CSBI_MenuItem,
+            code,
+            SBICMD_BOOTY_STATE,
+            TAB_GAME,
+            MakeRect(bx, by + 0x175, bx + 0x9f, by + 0x18c),
+            "GAME_STATUSBAR_TABZ_GAMETAB_HELP",
+            -1,
+            0
+        );
         AddTabItem(5, help);
         m_gameHelpButton = help;
         if (g_gameReg->m_gameMode == GAMEMODE_MULTIPLAYER) {
             help->SetEnabled(0);
         }
 
-        CSBI_MenuItem* quit = new CSBI_MenuItem;
-        if (!quit->SetupImage(
-                this,
-                code,
-                SBICMD_QUIT,
-                TAB_GAME,
-                MakeRect(barOrigin.x, barOrigin.y + 0x19d, barOrigin.x + 0x9f, barOrigin.y + 0x1b4),
-                "GAME_STATUSBAR_TABZ_GAMETAB_QUIT",
-                -1,
-                0
-            )) {
-            delete quit;
-            return 0;
-        }
+        CSBI_MenuItem* quit;
+        NEW_STATUS_BAR_ITEM(
+            quit,
+            CSBI_MenuItem,
+            code,
+            SBICMD_QUIT,
+            TAB_GAME,
+            MakeRect(bx, by + 0x19d, bx + 0x9f, by + 0x1b4),
+            "GAME_STATUSBAR_TABZ_GAMETAB_QUIT",
+            -1,
+            0
+        );
         AddTabItem(5, quit);
         m_gameQuitButton = quit;
 
-        CSBI_ImageSet* destruct = new CSBI_ImageSet;
-        if (!destruct->SetupImage(
-                this,
-                code,
-                SBICMD_DESTRUCT,
-                TAB_GAME,
-                MakeRect(
-                    barOrigin.x + 0x22,
-                    barOrigin.y + 0x1be,
-                    barOrigin.x + 0x7d,
-                    barOrigin.y + 0x1d6
-                ),
-                "GAME_STATUSBAR_TABZ_GAMETAB_DESTRUCT",
-                IDX(m_destructButtonFrame),
-                0
-            )) {
-            delete destruct;
-            return 0;
-        }
+        CSBI_ImageSet* destruct;
+        NEW_STATUS_BAR_ITEM(
+            destruct,
+            CSBI_ImageSet,
+            code,
+            SBICMD_DESTRUCT,
+            TAB_GAME,
+            MakeRect(bx + 0x22, by + 0x1be, bx + 0x7d, by + 0x1d6),
+            "GAME_STATUSBAR_TABZ_GAMETAB_DESTRUCT",
+            IDX(m_destructButtonFrame),
+            0
+        );
         AddTabItem(5, destruct);
         m_destructButtonImage = destruct;
         if (g_gameReg->m_gameMode != GAMEMODE_QUESTZ) {
@@ -1566,37 +1495,32 @@ i32 CStatusBarMgr::BuildGameMenu() {
 
     CSBI_ImageSet* status;
     if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
-        status = new CSBI_ImageSet;
-        if (!status->SetupImage(
-                this,
-                code,
-                SBICMD_MISSION_STATUS,
-                TAB_GAME,
-                MakeRect(barOrigin.x, barOrigin.y + 0xd7, barOrigin.x + 0x9f, barOrigin.y + 0x118),
-                "GAME_STATUSBAR_TABZ_GAMETAB_MISSIONSTATUS",
-                1,
-                0
-            )) {
-            delete status;
-            return 0;
-        }
+        NEW_STATUS_BAR_ITEM(
+            status,
+            CSBI_ImageSet,
+            code,
+            SBICMD_MISSION_STATUS,
+            TAB_GAME,
+            MakeRect(bx, by + 0xd7, bx + 0x9f, by + 0x118),
+            "GAME_STATUSBAR_TABZ_GAMETAB_MISSIONSTATUS",
+            1,
+            0
+        );
+        AddTabItem(5, status);
     } else {
-        status = new CSBI_ImageSet;
-        if (!status->SetupImage(
-                this,
-                code,
-                SBICMD_MISSION_STATUS,
-                TAB_GAME,
-                MakeRect(barOrigin.x, barOrigin.y + 0xd7, barOrigin.x + 0x9f, barOrigin.y + 0x118),
-                "GAME_STATUSBAR_TABZ_GAMETAB_MISSIONSTATUS",
-                2,
-                0
-            )) {
-            delete status;
-            return 0;
-        }
+        NEW_STATUS_BAR_ITEM(
+            status,
+            CSBI_ImageSet,
+            code,
+            SBICMD_MISSION_STATUS,
+            TAB_GAME,
+            MakeRect(bx, by + 0xd7, bx + 0x9f, by + 0x118),
+            "GAME_STATUSBAR_TABZ_GAMETAB_MISSIONSTATUS",
+            2,
+            0
+        );
+        AddTabItem(5, status);
     }
-    AddTabItem(5, status);
     return 1;
 }
 
@@ -1609,12 +1533,7 @@ i32 CStatusBarMgr::SetTab(GameTabContent tab, b32 forceReload) {
     if (tab == m_itemKind && forceReload == false) {
         return 1;
     }
-    POSITION n = m_tabLists[5].GetHeadPosition();
-    while (n) {
-        CStatusBarItem* cur = static_cast<CStatusBarItem*>(m_tabLists[5].GetNext(n));
-        delete cur;
-    }
-    m_tabLists[5].RemoveAll();
+    DELETE_STATUS_ITEMS(m_tabLists[5])
     m_gameResumePauseButton = NULL;
     m_gameLoadButton = NULL;
     m_gameSaveButton = NULL;
@@ -1661,7 +1580,8 @@ void CStatusBarMgr::BuildGameTabPauseButton() {
 RVA(0x00102250, 0x1de4)
 i32 CStatusBarMgr::LoadTabSprites() {
     CDDrawSurfaceMgr* code = m_world;
-    CPoint barOrigin(m_barRect.left, m_barRect.top);
+    i32 bx = m_barRect.left;
+    i32 by = m_barRect.top;
 
     CSBI_Image* it;
     CSBI_ImageSet* imgSet;
@@ -1675,46 +1595,36 @@ i32 CStatusBarMgr::LoadTabSprites() {
 
     switch (m_activeTab) {
         case TAB_GRUNTZ:
-            it = new CSBI_Image;
-            if (!it->SetupImage(
-                    this,
-                    code,
-                    SBICMD_TAB_TITLE_TEXT,
-                    TAB_GRUNTZ,
-                    MakeRect(
-                        barOrigin.x + 0x18,
-                        barOrigin.y + 0xaf,
-                        barOrigin.x + 0x70,
-                        barOrigin.y + 0xbe
-                    ),
-                    "GAME_STATUSBAR_TABZ_GRUNTZTAB_TITLETEXT",
-                    -1,
-                    0
-                )) {
-                delete it;
-                return 0;
-            }
+            NEW_STATUS_BAR_ITEM(
+                it,
+                CSBI_Image,
+                code,
+                SBICMD_TAB_TITLE_TEXT,
+                TAB_GRUNTZ,
+                MakeRect(bx + 0x18, by + 0xaf, bx + 0x70, by + 0xbe),
+                "GAME_STATUSBAR_TABZ_GRUNTZTAB_TITLETEXT",
+                -1,
+                0
+            );
             AddTabItem(2, it);
 
             {
                 CSBI_ImageSet** aptr = m_slotNotify;
                 i32* bptr = &m_slots[0].m_value;
-                i32 y = barOrigin.y + 0xfe;
+                i32 y = by + 0xfe;
                 for (i = 0; i < 5; i++) {
-                    CSBI_ImageSet* set = new CSBI_ImageSet;
-                    if (!set->SetupImage(
-                            this,
-                            code,
-                            static_cast<SbiCommandId>(IDX(SBICMD_GRUNT_SLOT_FIRST) + i),
-                            TAB_GRUNTZ,
-                            MakeRect(barOrigin.x + 0xe, y - 0x32, barOrigin.x + 0x39, y),
-                            "GAME_STATUSBAR_TABZ_GRUNTZTAB_GRUNTOVEN",
-                            *bptr,
-                            0
-                        )) {
-                        delete set;
-                        return 0;
-                    }
+                    CSBI_ImageSet* set;
+                    NEW_STATUS_BAR_ITEM(
+                        set,
+                        CSBI_ImageSet,
+                        code,
+                        static_cast<SbiCommandId>(IDX(SBICMD_GRUNT_SLOT_FIRST) + i),
+                        TAB_GRUNTZ,
+                        MakeRect(bx + 0xe, y - 0x32, bx + 0x39, y),
+                        "GAME_STATUSBAR_TABZ_GRUNTZTAB_GRUNTOVEN",
+                        *bptr,
+                        0
+                    );
                     AddTabItem(2, set);
                     *aptr = set;
                     CShadeTable* sel = g_gameReg->m_spriteFactory->GetSel(
@@ -1731,67 +1641,43 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     y += 0x36;
                 }
             }
-            it = new CSBI_Image;
-            if (!it->SetupImage(
-                    this,
-                    code,
-                    SBICMD_GRUNT_WELL,
-                    TAB_GRUNTZ,
-                    MakeRect(
-                        barOrigin.x + 0x4c,
-                        barOrigin.y + 0xc8,
-                        barOrigin.x + 0x97,
-                        barOrigin.y + 0x1cd
-                    ),
-                    "GAME_STATUSBAR_TABZ_GRUNTZTAB_WELL",
-                    -1,
-                    0
-                )) {
-                delete it;
-                return 0;
-            }
+            NEW_STATUS_BAR_ITEM(
+                it,
+                CSBI_Image,
+                code,
+                SBICMD_GRUNT_WELL,
+                TAB_GRUNTZ,
+                MakeRect(bx + 0x4c, by + 0xc8, bx + 0x97, by + 0x1cd),
+                "GAME_STATUSBAR_TABZ_GRUNTZTAB_WELL",
+                -1,
+                0
+            );
             AddTabItem(2, it);
             m_gruntWellBackground = it;
             it->SetEnabled(1);
-            it = new CSBI_Image;
-            if (!it->SetupImage(
-                    this,
-                    code,
-                    SBICMD_GRUNT_OVENS_TEXT,
-                    TAB_GRUNTZ,
-                    MakeRect(
-                        barOrigin.x + 0x1e,
-                        barOrigin.y + 0xc4,
-                        barOrigin.x + 0x3d,
-                        barOrigin.y + 0xcd
-                    ),
-                    "GAME_STATUSBAR_TABZ_GRUNTZTAB_OVENZTEXT",
-                    -1,
-                    0
-                )) {
-                delete it;
-                return 0;
-            }
+            NEW_STATUS_BAR_ITEM(
+                it,
+                CSBI_Image,
+                code,
+                SBICMD_GRUNT_OVENS_TEXT,
+                TAB_GRUNTZ,
+                MakeRect(bx + 0x1e, by + 0xc4, bx + 0x3d, by + 0xcd),
+                "GAME_STATUSBAR_TABZ_GRUNTZTAB_OVENZTEXT",
+                -1,
+                0
+            );
             AddTabItem(2, it);
-            it = new CSBI_Image;
-            if (!it->SetupImage(
-                    this,
-                    code,
-                    SBICMD_GRUNT_WELL_TEXT,
-                    TAB_GRUNTZ,
-                    MakeRect(
-                        barOrigin.x + 0x68,
-                        barOrigin.y + 0x1cf,
-                        barOrigin.x + 0x87,
-                        barOrigin.y + 0x1d8
-                    ),
-                    "GAME_STATUSBAR_TABZ_GRUNTZTAB_WELLTEXT",
-                    -1,
-                    0
-                )) {
-                delete it;
-                return 0;
-            }
+            NEW_STATUS_BAR_ITEM(
+                it,
+                CSBI_Image,
+                code,
+                SBICMD_GRUNT_WELL_TEXT,
+                TAB_GRUNTZ,
+                MakeRect(bx + 0x68, by + 0x1cf, bx + 0x87, by + 0x1d8),
+                "GAME_STATUSBAR_TABZ_GRUNTZTAB_WELLTEXT",
+                -1,
+                0
+            );
             AddTabItem(2, it);
             goo = new CSBI_WellGoo;
             if (!goo->Setup(
@@ -1799,12 +1685,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     code,
                     SBICMD_GRUNT_WELL_GOO,
                     TAB_GRUNTZ,
-                    MakeRect(
-                        barOrigin.x + 0x6e,
-                        barOrigin.y + 0xf8,
-                        barOrigin.x + 0x81,
-                        barOrigin.y + 0x1b3
-                    ),
+                    MakeRect(bx + 0x6e, by + 0xf8, bx + 0x81, by + 0x1b3),
                     "GAME_STATUSBAR_TABZ_GRUNTZTAB_WELLGOO",
                     m_gruntWellLevel
                 )) {
@@ -1816,173 +1697,114 @@ i32 CStatusBarMgr::LoadTabSprites() {
             return 1;
 
         case TAB_RESOURCE:
-            it = new CSBI_Image;
-            if (!it->SetupImage(
-                    this,
-                    code,
-                    SBICMD_TAB_TITLE_TEXT,
-                    TAB_RESOURCE,
-                    MakeRect(
-                        barOrigin.x + 0x18,
-                        barOrigin.y + 0xaf,
-                        barOrigin.x + 0x70,
-                        barOrigin.y + 0xbe
-                    ),
-                    "GAME_STATUSBAR_TABZ_RESOURCETAB_TITLETEXT",
-                    -1,
-                    0
-                )) {
-                delete it;
-                return 0;
-            }
+            NEW_STATUS_BAR_ITEM(
+                it,
+                CSBI_Image,
+                code,
+                SBICMD_TAB_TITLE_TEXT,
+                TAB_RESOURCE,
+                MakeRect(bx + 0x18, by + 0xaf, bx + 0x70, by + 0xbe),
+                "GAME_STATUSBAR_TABZ_RESOURCETAB_TITLETEXT",
+                -1,
+                0
+            );
             AddTabItem(3, it);
-            it = new CSBI_Image;
-            if (!it->SetupImage(
-                    this,
-                    code,
-                    SBICMD_RESOURCE_MAIN_BACKGROUND,
-                    TAB_RESOURCE,
-                    MakeRect(
-                        barOrigin.x,
-                        barOrigin.y + 0x135,
-                        barOrigin.x + 0x9f,
-                        barOrigin.y + 0x1be
-                    ),
-                    "GAME_STATUSBAR_TABZ_RESOURCETAB_MAINBACKGROUND",
-                    -1,
-                    0
-                )) {
-                delete it;
-                return 0;
-            }
+            NEW_STATUS_BAR_ITEM(
+                it,
+                CSBI_Image,
+                code,
+                SBICMD_RESOURCE_MAIN_BACKGROUND,
+                TAB_RESOURCE,
+                MakeRect(bx, by + 0x135, bx + 0x9f, by + 0x1be),
+                "GAME_STATUSBAR_TABZ_RESOURCETAB_MAINBACKGROUND",
+                -1,
+                0
+            );
             AddTabItem(3, it);
             m_resourceMainBackground = it;
-            it = new CSBI_Image;
-            if (!it->SetupImage(
-                    this,
-                    code,
-                    SBICMD_RESOURCE_UPPER_BACKGROUND,
-                    TAB_RESOURCE,
-                    MakeRect(
-                        barOrigin.x,
-                        barOrigin.y + 0xfb,
-                        barOrigin.x + 0x9f,
-                        barOrigin.y + 0x134
-                    ),
-                    "GAME_STATUSBAR_TABZ_RESOURCETAB_UPPERBACKGROUND",
-                    -1,
-                    0
-                )) {
-                delete it;
-                return 0;
-            }
+            NEW_STATUS_BAR_ITEM(
+                it,
+                CSBI_Image,
+                code,
+                SBICMD_RESOURCE_UPPER_BACKGROUND,
+                TAB_RESOURCE,
+                MakeRect(bx, by + 0xfb, bx + 0x9f, by + 0x134),
+                "GAME_STATUSBAR_TABZ_RESOURCETAB_UPPERBACKGROUND",
+                -1,
+                0
+            );
             AddTabItem(3, it);
             m_resourceUpperBackground = it;
-            it = new CSBI_Image;
-            if (!it->SetupImage(
-                    this,
-                    code,
-                    SBICMD_RESOURCE_WINDOW_BACKGROUND,
-                    TAB_RESOURCE,
-                    MakeRect(
-                        barOrigin.x + 0x48,
-                        barOrigin.y + 0xd3,
-                        barOrigin.x + 0x67,
-                        barOrigin.y + 0xf3
-                    ),
-                    "GAME_STATUSBAR_TABZ_RESOURCETAB_WINDOWBACKGROUND",
-                    -1,
-                    0
-                )) {
-                delete it;
-                return 0;
-            }
+            NEW_STATUS_BAR_ITEM(
+                it,
+                CSBI_Image,
+                code,
+                SBICMD_RESOURCE_WINDOW_BACKGROUND,
+                TAB_RESOURCE,
+                MakeRect(bx + 0x48, by + 0xd3, bx + 0x67, by + 0xf3),
+                "GAME_STATUSBAR_TABZ_RESOURCETAB_WINDOWBACKGROUND",
+                -1,
+                0
+            );
             AddTabItem(3, it);
             m_resourceWindowBackground = it;
 
-            imgSet = new CSBI_ImageSet;
-            if (!imgSet->SetupImage(
-                    this,
-                    code,
-                    SBICMD_RESOURCE_BELT_TOOLS,
-                    TAB_RESOURCE,
-                    MakeRect(
-                        barOrigin.x + 0x19,
-                        barOrigin.y + 0x11c,
-                        barOrigin.x + 0x3c,
-                        barOrigin.y + 0x130
-                    ),
-                    "GAME_STATUSBAR_TABZ_RESOURCETAB_BELT",
-                    m_conveyorSlots[0].m_value,
-                    0
-                )) {
-                delete imgSet;
-                return 0;
-            }
+            NEW_STATUS_BAR_ITEM(
+                imgSet,
+                CSBI_ImageSet,
+                code,
+                SBICMD_RESOURCE_BELT_TOOLS,
+                TAB_RESOURCE,
+                MakeRect(bx + 0x19, by + 0x11c, bx + 0x3c, by + 0x130),
+                "GAME_STATUSBAR_TABZ_RESOURCETAB_BELT",
+                m_conveyorSlots[0].m_value,
+                0
+            );
             AddTabItem(3, imgSet);
             m_conveyorSprites[0] = imgSet;
-            imgSet = new CSBI_ImageSet;
-            if (!imgSet->SetupImage(
-                    this,
-                    code,
-                    SBICMD_RESOURCE_BELT_TOYS,
-                    TAB_RESOURCE,
-                    MakeRect(
-                        barOrigin.x + 0x40,
-                        barOrigin.y + 0x11c,
-                        barOrigin.x + 0x63,
-                        barOrigin.y + 0x130
-                    ),
-                    "GAME_STATUSBAR_TABZ_RESOURCETAB_BELT",
-                    m_conveyorSlots[1].m_value,
-                    0
-                )) {
-                delete imgSet;
-                return 0;
-            }
+            NEW_STATUS_BAR_ITEM(
+                imgSet,
+                CSBI_ImageSet,
+                code,
+                SBICMD_RESOURCE_BELT_TOYS,
+                TAB_RESOURCE,
+                MakeRect(bx + 0x40, by + 0x11c, bx + 0x63, by + 0x130),
+                "GAME_STATUSBAR_TABZ_RESOURCETAB_BELT",
+                m_conveyorSlots[1].m_value,
+                0
+            );
             AddTabItem(3, imgSet);
             m_conveyorSprites[1] = imgSet;
-            imgSet = new CSBI_ImageSet;
-            if (!imgSet->SetupImage(
-                    this,
-                    code,
-                    SBICMD_RESOURCE_BELT_BRICKS,
-                    TAB_RESOURCE,
-                    MakeRect(
-                        barOrigin.x + 0x68,
-                        barOrigin.y + 0x11c,
-                        barOrigin.x + 0x8b,
-                        barOrigin.y + 0x130
-                    ),
-                    "GAME_STATUSBAR_TABZ_RESOURCETAB_BELT",
-                    m_conveyorSlots[2].m_value,
-                    0
-                )) {
-                delete imgSet;
-                return 0;
-            }
+            NEW_STATUS_BAR_ITEM(
+                imgSet,
+                CSBI_ImageSet,
+                code,
+                SBICMD_RESOURCE_BELT_BRICKS,
+                TAB_RESOURCE,
+                MakeRect(bx + 0x68, by + 0x11c, bx + 0x8b, by + 0x130),
+                "GAME_STATUSBAR_TABZ_RESOURCETAB_BELT",
+                m_conveyorSlots[2].m_value,
+                0
+            );
             AddTabItem(3, imgSet);
             m_conveyorSprites[2] = imgSet;
 
-            imgSet = new CSBI_ImageSet;
-            if (!imgSet->SetupImage(
-                    this,
-                    code,
-                    SBICMD_RESOURCE_CURRENT_ITEM,
-                    TAB_RESOURCE,
-                    MakeRect(
-                        m_machineItemRect.left + barOrigin.x,
-                        m_machineItemRect.top + barOrigin.y,
-                        m_machineItemRect.right + barOrigin.x,
-                        m_machineItemRect.bottom + barOrigin.y
-                    ),
-                    "GAME_INGAMEICONZ_GREYCHIPZ",
-                    m_machineItem,
-                    0
-                )) {
-                delete imgSet;
-                return 0;
-            }
+            NEW_STATUS_BAR_ITEM(
+                imgSet,
+                CSBI_ImageSet,
+                code,
+                SBICMD_RESOURCE_CURRENT_ITEM,
+                TAB_RESOURCE,
+                MakeRect(
+                    m_machineItemRect.left + bx,
+                    m_machineItemRect.top + by,
+                    m_machineItemRect.right + bx,
+                    m_machineItemRect.bottom + by
+                ),
+                "GAME_INGAMEICONZ_GREYCHIPZ",
+                m_machineItem,
+                0
+            );
             AddTabItem(3, imgSet);
             m_machineItemSprite = imgSet;
             imgSet->SetEnabled(0);
@@ -1990,54 +1812,46 @@ i32 CStatusBarMgr::LoadTabSprites() {
             {
                 i32* cfgp = &m_resourceSlots[4].m_value;
                 CSBI_ImageSet** cachep = &m_resourceSlotSprites[4];
-                i32 y = barOrigin.y + 0x155;
+                i32 y = by + 0x155;
                 for (i = 0; i < 4; i++) {
-                    CSBI_ImageSet* set = new CSBI_ImageSet;
-                    if (!set->SetupImage(
-                            this,
-                            code,
-                            static_cast<SbiCommandId>(IDX(SBICMD_TOOL_RESOURCE_FIRST) + i),
-                            TAB_RESOURCE,
-                            MakeRect(barOrigin.x + 0x1d, y - 0x17, barOrigin.x + 0x34, y),
-                            "GAME_INGAMEICONZ_NORMCHIPZ",
-                            cfgp[-24],
-                            0
-                        )) {
-                        delete set;
-                        return 0;
-                    }
+                    CSBI_ImageSet* set;
+                    NEW_STATUS_BAR_ITEM(
+                        set,
+                        CSBI_ImageSet,
+                        code,
+                        static_cast<SbiCommandId>(IDX(SBICMD_TOOL_RESOURCE_FIRST) + i),
+                        TAB_RESOURCE,
+                        MakeRect(bx + 0x1d, y - 0x17, bx + 0x34, y),
+                        "GAME_INGAMEICONZ_NORMCHIPZ",
+                        cfgp[-24],
+                        0
+                    );
                     AddTabItem(3, set);
                     cachep[-4] = set;
-                    set = new CSBI_ImageSet;
-                    if (!set->SetupImage(
-                            this,
-                            code,
-                            static_cast<SbiCommandId>(IDX(SBICMD_TOY_RESOURCE_FIRST) + i),
-                            TAB_RESOURCE,
-                            MakeRect(barOrigin.x + 0x45, y - 0x17, barOrigin.x + 0x5c, y),
-                            "GAME_INGAMEICONZ_NORMCHIPZ",
-                            cfgp[0],
-                            0
-                        )) {
-                        delete set;
-                        return 0;
-                    }
+                    NEW_STATUS_BAR_ITEM(
+                        set,
+                        CSBI_ImageSet,
+                        code,
+                        static_cast<SbiCommandId>(IDX(SBICMD_TOY_RESOURCE_FIRST) + i),
+                        TAB_RESOURCE,
+                        MakeRect(bx + 0x45, y - 0x17, bx + 0x5c, y),
+                        "GAME_INGAMEICONZ_NORMCHIPZ",
+                        cfgp[0],
+                        0
+                    );
                     AddTabItem(3, set);
                     cachep[0] = set;
-                    set = new CSBI_ImageSet;
-                    if (!set->SetupImage(
-                            this,
-                            code,
-                            static_cast<SbiCommandId>(IDX(SBICMD_BRICK_RESOURCE_FIRST) + i),
-                            TAB_RESOURCE,
-                            MakeRect(barOrigin.x + 0x6d, y - 0x17, barOrigin.x + 0x84, y),
-                            "GAME_INGAMEICONZ_NORMCHIPZ",
-                            cfgp[24],
-                            0
-                        )) {
-                        delete set;
-                        return 0;
-                    }
+                    NEW_STATUS_BAR_ITEM(
+                        set,
+                        CSBI_ImageSet,
+                        code,
+                        static_cast<SbiCommandId>(IDX(SBICMD_BRICK_RESOURCE_FIRST) + i),
+                        TAB_RESOURCE,
+                        MakeRect(bx + 0x6d, y - 0x17, bx + 0x84, y),
+                        "GAME_INGAMEICONZ_NORMCHIPZ",
+                        cfgp[24],
+                        0
+                    );
                     AddTabItem(3, set);
                     cachep[4] = set;
                     cfgp += 6;
@@ -2052,12 +1866,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     code,
                     SBICMD_RESOURCE_MACHINE_BACKGROUND,
                     TAB_RESOURCE,
-                    MakeRect(
-                        barOrigin.x,
-                        barOrigin.y + 0xc8,
-                        barOrigin.x + 0x9f,
-                        barOrigin.y + 0xfa
-                    ),
+                    MakeRect(bx, by + 0xc8, bx + 0x9f, by + 0xfa),
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINE",
                     m_leftMachine.m_counter,
                     m_rightMachine.m_counter
@@ -2068,25 +1877,17 @@ i32 CStatusBarMgr::LoadTabSprites() {
             m_machineDisplay = mach;
             AddTabItem(3, mach);
 
-            it = new CSBI_Image;
-            if (!it->SetupImage(
-                    this,
-                    code,
-                    SBICMD_RESOURCE_MACHINE_FOREGROUND,
-                    TAB_RESOURCE,
-                    MakeRect(
-                        barOrigin.x,
-                        barOrigin.y + 0x135,
-                        barOrigin.x + 0x9f,
-                        barOrigin.y + 0x1df
-                    ),
-                    "GAME_STATUSBAR_TABZ_RESOURCETAB_FRAMEWORK",
-                    -1,
-                    0
-                )) {
-                delete it;
-                return 0;
-            }
+            NEW_STATUS_BAR_ITEM(
+                it,
+                CSBI_Image,
+                code,
+                SBICMD_RESOURCE_MACHINE_FOREGROUND,
+                TAB_RESOURCE,
+                MakeRect(bx, by + 0x135, bx + 0x9f, by + 0x1df),
+                "GAME_STATUSBAR_TABZ_RESOURCETAB_FRAMEWORK",
+                -1,
+                0
+            );
             AddTabItem(3, it);
             m_resourceMachineFramework = it;
 
@@ -2096,12 +1897,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     code,
                     SBICMD_CONVEYOR_TOP,
                     TAB_RESOURCE,
-                    MakeRect(
-                        barOrigin.x,
-                        barOrigin.y + 0x1bf,
-                        barOrigin.x + 0x9f,
-                        barOrigin.y + 0x1cc
-                    ),
+                    MakeRect(bx, by + 0x1bf, bx + 0x9f, by + 0x1cc),
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_TOPSHREDDER",
                     -1,
                     -1,
@@ -2114,25 +1910,22 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             AddTabItem(3, ani);
 
-            imgSet = new CSBI_ImageSet;
-            if (!imgSet->SetupImage(
-                    this,
-                    code,
-                    SBICMD_RESOURCE_FALLING_ITEM,
-                    TAB_RESOURCE,
-                    MakeRect(
-                        m_fallingItemRect.left + barOrigin.x,
-                        m_fallingItemRect.top + barOrigin.y,
-                        m_fallingItemRect.right + barOrigin.x,
-                        m_fallingItemRect.bottom + barOrigin.y
-                    ),
-                    "GAME_INGAMEICONZ_NORMCHIPZ",
-                    m_fallingItem,
-                    0
-                )) {
-                delete imgSet;
-                return 0;
-            }
+            NEW_STATUS_BAR_ITEM(
+                imgSet,
+                CSBI_ImageSet,
+                code,
+                SBICMD_RESOURCE_FALLING_ITEM,
+                TAB_RESOURCE,
+                MakeRect(
+                    m_fallingItemRect.left + bx,
+                    m_fallingItemRect.top + by,
+                    m_fallingItemRect.right + bx,
+                    m_fallingItemRect.bottom + by
+                ),
+                "GAME_INGAMEICONZ_NORMCHIPZ",
+                m_fallingItem,
+                0
+            );
             AddTabItem(3, imgSet);
             m_fallingItemSprite = imgSet;
             imgSet->SetEnabled(0);
@@ -2143,12 +1936,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     code,
                     SBICMD_CONVEYOR_BOTTOM,
                     TAB_RESOURCE,
-                    MakeRect(
-                        barOrigin.x,
-                        barOrigin.y + 0x1c7,
-                        barOrigin.x + 0x9f,
-                        barOrigin.y + 0x1df
-                    ),
+                    MakeRect(bx, by + 0x1c7, bx + 0x9f, by + 0x1df),
                     "GAME_STATUSBAR_TABZ_RESOURCETAB_BOTTOMSHREDDER",
                     -1,
                     -1,
@@ -2163,109 +1951,69 @@ i32 CStatusBarMgr::LoadTabSprites() {
             return 1;
 
         case TAB_MULTIPLAYER:
-            it = new CSBI_Image;
-            if (!it->SetupImage(
-                    this,
-                    code,
-                    SBICMD_TAB_TITLE_TEXT,
-                    TAB_MULTIPLAYER,
-                    MakeRect(
-                        barOrigin.x + 0x18,
-                        barOrigin.y + 0xaf,
-                        barOrigin.x + 0x70,
-                        barOrigin.y + 0xbe
-                    ),
-                    "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_TITLETEXT",
-                    -1,
-                    0
-                )) {
-                delete it;
-                return 0;
-            }
+            NEW_STATUS_BAR_ITEM(
+                it,
+                CSBI_Image,
+                code,
+                SBICMD_TAB_TITLE_TEXT,
+                TAB_MULTIPLAYER,
+                MakeRect(bx + 0x18, by + 0xaf, bx + 0x70, by + 0xbe),
+                "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_TITLETEXT",
+                -1,
+                0
+            );
             AddTabItem(4, it);
 
-            head = new CSBI_WarlordHead;
-            if (!head->SetupImage(
-                    this,
-                    code,
-                    SBICMD_MULTIPLAYER_HEAD1,
-                    TAB_MULTIPLAYER,
-                    MakeRect(
-                        barOrigin.x + 0x53,
-                        barOrigin.y + 0xcf,
-                        barOrigin.x + 0x8e,
-                        barOrigin.y + 0x10a
-                    ),
-                    "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD1",
-                    1,
-                    0
-                )) {
-                delete head;
-                return 0;
-            }
+            NEW_STATUS_BAR_ITEM(
+                head,
+                CSBI_WarlordHead,
+                code,
+                SBICMD_MULTIPLAYER_HEAD1,
+                TAB_MULTIPLAYER,
+                MakeRect(bx + 0x53, by + 0xcf, bx + 0x8e, by + 0x10a),
+                "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD1",
+                1,
+                0
+            );
             m_warlordHead[0] = head;
             AddTabItem(4, head);
-            head = new CSBI_WarlordHead;
-            if (!head->SetupImage(
-                    this,
-                    code,
-                    SBICMD_MULTIPLAYER_HEAD2,
-                    TAB_MULTIPLAYER,
-                    MakeRect(
-                        barOrigin.x + 0x53,
-                        barOrigin.y + 0x112,
-                        barOrigin.x + 0x8e,
-                        barOrigin.y + 0x14d
-                    ),
-                    "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD2",
-                    1,
-                    0
-                )) {
-                delete head;
-                return 0;
-            }
+            NEW_STATUS_BAR_ITEM(
+                head,
+                CSBI_WarlordHead,
+                code,
+                SBICMD_MULTIPLAYER_HEAD2,
+                TAB_MULTIPLAYER,
+                MakeRect(bx + 0x53, by + 0x112, bx + 0x8e, by + 0x14d),
+                "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD2",
+                1,
+                0
+            );
             m_warlordHead[1] = head;
             AddTabItem(4, head);
-            head = new CSBI_WarlordHead;
-            if (!head->SetupImage(
-                    this,
-                    code,
-                    SBICMD_MULTIPLAYER_HEAD3,
-                    TAB_MULTIPLAYER,
-                    MakeRect(
-                        barOrigin.x + 0x53,
-                        barOrigin.y + 0x155,
-                        barOrigin.x + 0x8e,
-                        barOrigin.y + 0x190
-                    ),
-                    "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD3",
-                    1,
-                    0
-                )) {
-                delete head;
-                return 0;
-            }
+            NEW_STATUS_BAR_ITEM(
+                head,
+                CSBI_WarlordHead,
+                code,
+                SBICMD_MULTIPLAYER_HEAD3,
+                TAB_MULTIPLAYER,
+                MakeRect(bx + 0x53, by + 0x155, bx + 0x8e, by + 0x190),
+                "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD3",
+                1,
+                0
+            );
             m_warlordHead[2] = head;
             AddTabItem(4, head);
-            head = new CSBI_WarlordHead;
-            if (!head->SetupImage(
-                    this,
-                    code,
-                    SBICMD_MULTIPLAYER_HEAD4,
-                    TAB_MULTIPLAYER,
-                    MakeRect(
-                        barOrigin.x + 0x53,
-                        barOrigin.y + 0x197,
-                        barOrigin.x + 0x8e,
-                        barOrigin.y + 0x1d2
-                    ),
-                    "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD4",
-                    1,
-                    0
-                )) {
-                delete head;
-                return 0;
-            }
+            NEW_STATUS_BAR_ITEM(
+                head,
+                CSBI_WarlordHead,
+                code,
+                SBICMD_MULTIPLAYER_HEAD4,
+                TAB_MULTIPLAYER,
+                MakeRect(bx + 0x53, by + 0x197, bx + 0x8e, by + 0x1d2),
+                "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_HEAD4",
+                1,
+                0
+            );
             m_warlordHead[3] = head;
             AddTabItem(4, head);
 
@@ -2292,9 +2040,9 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
 
             {
-                i32 gruntBarLeft = barOrigin.x + 0x17;
-                i32 gruntBarRight = barOrigin.x + 0x52;
-                i32 y = barOrigin.y + 0xd9;
+                i32 gruntBarLeft = bx + 0x17;
+                i32 gruntBarRight = bx + 0x52;
+                i32 y = by + 0xd9;
                 for (i = 0; i < TM_UNITS_PER_PLAYER; i++) {
                     bar = new CSBI_StatzTabGruntBar;
                     if (!bar->BuildMultiplayerTabStatusBar(
@@ -2318,25 +2066,17 @@ i32 CStatusBarMgr::LoadTabSprites() {
             return 1;
 
         case TAB_STATZ:
-            it = new CSBI_Image;
-            if (!it->SetupImage(
-                    this,
-                    code,
-                    SBICMD_TAB_TITLE_TEXT,
-                    TAB_STATZ,
-                    MakeRect(
-                        barOrigin.x + 0x18,
-                        barOrigin.y + 0xaf,
-                        barOrigin.x + 0x70,
-                        barOrigin.y + 0xbe
-                    ),
-                    "GAME_STATUSBAR_TABZ_STATZTAB_TITLETEXT",
-                    -1,
-                    0
-                )) {
-                delete it;
-                return 0;
-            }
+            NEW_STATUS_BAR_ITEM(
+                it,
+                CSBI_Image,
+                code,
+                SBICMD_TAB_TITLE_TEXT,
+                TAB_STATZ,
+                MakeRect(bx + 0x18, by + 0xaf, bx + 0x70, by + 0xbe),
+                "GAME_STATUSBAR_TABZ_STATZTAB_TITLETEXT",
+                -1,
+                0
+            );
             AddTabItem(1, it);
 
             {
@@ -2346,9 +2086,9 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     aOff = 0x7d;
                     cOff = 0x95;
                 }
-                i32 arrowL = barOrigin.x + aOff;
-                i32 arrowR = barOrigin.x + cOff;
-                i32 y = barOrigin.y + 0xd9;
+                i32 arrowL = bx + aOff;
+                i32 arrowR = bx + cOff;
+                i32 y = by + 0xd9;
                 for (i = 0; i < TM_UNITS_PER_PLAYER; i++) {
                     SbiCommandId id =
                         static_cast<SbiCommandId>(IDX(SBICMD_CURSOR_TARGET_FIRST) + i);
@@ -2382,7 +2122,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                             code,
                             id,
                             TAB_STATZ,
-                            MakeRect(barOrigin.x + 0x28, y - 0x11, barOrigin.x + 0x77, y),
+                            MakeRect(bx + 0x28, y - 0x11, bx + 0x77, y),
                             "GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ",
                             g_curPlayer,
                             i,
@@ -2398,129 +2138,86 @@ i32 CStatusBarMgr::LoadTabSprites() {
             return 1;
 
         case TAB_GAME:
-            it = new CSBI_Image;
-            if (!it->SetupImage(
-                    this,
-                    code,
-                    SBICMD_TAB_TITLE_TEXT,
-                    TAB_GAME,
-                    MakeRect(
-                        barOrigin.x + 0x18,
-                        barOrigin.y + 0xaf,
-                        barOrigin.x + 0x70,
-                        barOrigin.y + 0xbe
-                    ),
-                    "GAME_STATUSBAR_TABZ_GAMETAB_TITLETEXT",
-                    -1,
-                    0
-                )) {
-                delete it;
-                return 0;
-            }
+            NEW_STATUS_BAR_ITEM(
+                it,
+                CSBI_Image,
+                code,
+                SBICMD_TAB_TITLE_TEXT,
+                TAB_GAME,
+                MakeRect(bx + 0x18, by + 0xaf, bx + 0x70, by + 0xbe),
+                "GAME_STATUSBAR_TABZ_GAMETAB_TITLETEXT",
+                -1,
+                0
+            );
             AddTabItem(5, it);
 
-            it = new CSBI_ImageSet;
-            if (!it->SetupImage(
-                    this,
-                    code,
-                    SBICMD_WARPSTONE_BASE,
-                    TAB_GAME,
-                    MakeRect(barOrigin.x, barOrigin.y, barOrigin.x + 0x9f, barOrigin.y + 0x7f),
-                    "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
-                    1,
-                    0
-                )) {
-                delete it;
-                return 0;
-            }
+            NEW_STATUS_BAR_ITEM(
+                it,
+                CSBI_ImageSet,
+                code,
+                SBICMD_WARPSTONE_BASE,
+                TAB_GAME,
+                MakeRect(bx, by, bx + 0x9f, by + 0x7f),
+                "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
+                1,
+                0
+            );
             AddTabItem(5, it);
             if ((static_cast<CTriggerMgr*>(g_gameReg->m_triggerMgr))
                     ->ByteTableHas(WARPSTONE_FRAGMENT_FIRST)) {
-                it = new CSBI_ImageSet;
-                if (!it->SetupImage(
-                        this,
-                        code,
-                        SBICMD_WARPSTONE_FRAGMENT1,
-                        TAB_GAME,
-                        MakeRect(
-                            barOrigin.x + 0x17,
-                            barOrigin.y + 0xe,
-                            barOrigin.x + 0x52,
-                            barOrigin.y + 0x44
-                        ),
-                        "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
-                        2,
-                        0
-                    )) {
-                    delete it;
-                    return 0;
-                }
+                NEW_STATUS_BAR_ITEM(
+                    it,
+                    CSBI_ImageSet,
+                    code,
+                    SBICMD_WARPSTONE_FRAGMENT1,
+                    TAB_GAME,
+                    MakeRect(bx + 0x17, by + 0xe, bx + 0x52, by + 0x44),
+                    "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
+                    2,
+                    0
+                );
                 AddTabItem(5, it);
                 if ((static_cast<CTriggerMgr*>(g_gameReg->m_triggerMgr))
                         ->ByteTableHas(WARPSTONE_FRAGMENT_SECOND)) {
-                    it = new CSBI_ImageSet;
-                    if (!it->SetupImage(
-                            this,
-                            code,
-                            SBICMD_WARPSTONE_FRAGMENT2,
-                            TAB_GAME,
-                            MakeRect(
-                                barOrigin.x + 0x4c,
-                                barOrigin.y + 0xf,
-                                barOrigin.x + 0x87,
-                                barOrigin.y + 0x3e
-                            ),
-                            "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
-                            3,
-                            0
-                        )) {
-                        delete it;
-                        return 0;
-                    }
+                    NEW_STATUS_BAR_ITEM(
+                        it,
+                        CSBI_ImageSet,
+                        code,
+                        SBICMD_WARPSTONE_FRAGMENT2,
+                        TAB_GAME,
+                        MakeRect(bx + 0x4c, by + 0xf, bx + 0x87, by + 0x3e),
+                        "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
+                        3,
+                        0
+                    );
                     AddTabItem(5, it);
                     if ((static_cast<CTriggerMgr*>(g_gameReg->m_triggerMgr))
                             ->ByteTableHas(WARPSTONE_FRAGMENT_THIRD)) {
-                        it = new CSBI_ImageSet;
-                        if (!it->SetupImage(
-                                this,
-                                code,
-                                SBICMD_WARPSTONE_FRAGMENT3,
-                                TAB_GAME,
-                                MakeRect(
-                                    barOrigin.x + 0x1b,
-                                    barOrigin.y + 0x3b,
-                                    barOrigin.x + 0x52,
-                                    barOrigin.y + 0x71
-                                ),
-                                "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
-                                4,
-                                0
-                            )) {
-                            delete it;
-                            return 0;
-                        }
+                        NEW_STATUS_BAR_ITEM(
+                            it,
+                            CSBI_ImageSet,
+                            code,
+                            SBICMD_WARPSTONE_FRAGMENT3,
+                            TAB_GAME,
+                            MakeRect(bx + 0x1b, by + 0x3b, bx + 0x52, by + 0x71),
+                            "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
+                            4,
+                            0
+                        );
                         AddTabItem(5, it);
                         if ((static_cast<CTriggerMgr*>(g_gameReg->m_triggerMgr))
                                 ->ByteTableHas(WARPSTONE_FRAGMENT_FOURTH)) {
-                            it = new CSBI_ImageSet;
-                            if (!it->SetupImage(
-                                    this,
-                                    code,
-                                    SBICMD_WARPSTONE_FRAGMENT4,
-                                    TAB_GAME,
-                                    MakeRect(
-                                        barOrigin.x + 0x4a,
-                                        barOrigin.y + 0x35,
-                                        barOrigin.x + 0x89,
-                                        barOrigin.y + 0x74
-                                    ),
-                                    "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
-                                    5,
-                                    0
-                                )) {
-                                delete it;
-                                return 0;
-                            }
+                            NEW_STATUS_BAR_ITEM(
+                                it,
+                                CSBI_ImageSet,
+                                code,
+                                SBICMD_WARPSTONE_FRAGMENT4,
+                                TAB_GAME,
+                                MakeRect(bx + 0x4a, by + 0x35, bx + 0x89, by + 0x74),
+                                "GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE",
+                                5,
+                                0
+                            );
                             AddTabItem(5, it);
                         }
                     }
@@ -2591,8 +2288,7 @@ i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 idx, StatusSampleMode mode) {
         return 1;
     }
 
-    i32 slot = idx + TM_UNITS_PER_PLAYER * g_curPlayer;
-    if (g_gameReg->m_triggerMgr->m_units[slot] == NULL) {
+    if (g_gameReg->m_triggerMgr->UnitAt(g_curPlayer, idx) == NULL) {
         return 0;
     }
 
@@ -2603,24 +2299,7 @@ i32 CStatusBarMgr::LoadStatzTabToggleSprite(i32 idx, StatusSampleMode mode) {
         if (m_activeTab == TAB_STATZ) {
 
             m_statObj[idx]->SetSampledDirection(m_position, true);
-            SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-            if (registry->m_silentMode == false) {
-                SoundCue* found = NULL;
-                CMapStringToPtr* map = &registry->m_cues;
-                MapLookup(*map, "GAME_STATZTABTOGGLE", found);
-                if (found) {
-                    b32 soundEnabled = g_soundEnabled;
-                    i32 volumePercent = g_soundVolumePercent;
-                    if (soundEnabled != false) {
-                        SoundCue* p = found;
-                        if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
-                            >= static_cast<u32>(p->m_replayDelayMs)) {
-                            p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                            p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                        }
-                    }
-                }
-            }
+            PlayRegistryCueIfElapsed(g_gameReg->m_world->m_soundRegistry, "GAME_STATZTABTOGGLE");
         }
     }
     m_statFlags[idx] = mode;
@@ -2636,24 +2315,7 @@ i32 CStatusBarMgr::ClearStat(i32 idx) {
         if (m_activeTab == TAB_STATZ) {
 
             m_statObj[idx]->SetUnsampledDirection(m_position, true);
-            SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-            if (registry->m_silentMode == false) {
-                SoundCue* found = NULL;
-                CMapStringToPtr* map = &registry->m_cues;
-                MapLookup(*map, "GAME_STATZTABTOGGLE", found);
-                if (found) {
-                    b32 soundEnabled = g_soundEnabled;
-                    i32 volumePercent = g_soundVolumePercent;
-                    if (soundEnabled != false) {
-                        SoundCue* p = found;
-                        if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
-                            >= static_cast<u32>(p->m_replayDelayMs)) {
-                            p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                            p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                        }
-                    }
-                }
-            }
+            PlayRegistryCueIfElapsed(g_gameReg->m_world->m_soundRegistry, "GAME_STATZTABTOGGLE");
         }
     }
     m_statFlags[idx] = STATUS_SAMPLE_NONE;
@@ -2724,7 +2386,7 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
     i32 n = 5;
     do {
         if (tab->m_state == SLOT_FILLING) {
-            i64 d = static_cast<i64>(g_frameTime) - tab->m_startTime;
+            i64 d = static_cast<i64>(g_frameTime) - tab->m_clock.m_start;
 
             i32 elapsed = (d < 0) ? 0 : static_cast<i32>(d);
             u32 delay = g_buteMgr.GetDword("StatusBar", "GruntOvenDelay", 0xc8);
@@ -2732,24 +2394,10 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
             if (frame >= 0x1a) {
                 tab->m_state = SLOT_READY;
                 frame = 0x1a;
-                SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-                if (registry->m_silentMode == false) {
-                    SoundCue* found = NULL;
-                    CMapStringToPtr* map = &registry->m_cues;
-                    MapLookup(*map, "GAME_COOKINGCOMPLETE", found);
-                    if (found) {
-                        b32 soundEnabled = g_soundEnabled;
-                        i32 volumePercent = g_soundVolumePercent;
-                        if (soundEnabled != false) {
-                            SoundCue* p = found;
-                            if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
-                                >= static_cast<u32>(p->m_replayDelayMs)) {
-                                p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                                p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                            }
-                        }
-                    }
-                }
+                PlayRegistryCueIfElapsed(
+                    g_gameReg->m_world->m_soundRegistry,
+                    "GAME_COOKINGCOMPLETE"
+                );
             }
             if (frame != tab->m_value) {
                 tab->m_value = frame;
@@ -2830,29 +2478,8 @@ i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
     }
     sp->m_state = SLOT_FILLING;
 
-    i64* clock = &m_slots[idx].m_startTime;
-    clock[1] = INT_MAX;
-    clock[0] = g_frameTime;
-    if (m_activeTab == TAB_GRUNTZ && m_position != STATUSBAR_HIDDEN) {
-        SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-        if (registry->m_silentMode == false) {
-            SoundCue* found = NULL;
-            CMapStringToPtr* map = &registry->m_cues;
-            MapLookup(*map, "GAME_GOOCOOKING1", found);
-            if (found) {
-                b32 soundEnabled = g_soundEnabled;
-                i32 volumePercent = g_soundVolumePercent;
-                if (soundEnabled != false) {
-                    SoundCue* p = found;
-                    if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
-                        >= static_cast<u32>(p->m_replayDelayMs)) {
-                        p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                        p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                    }
-                }
-            }
-        }
-    }
+    m_slots[idx].m_clock.Start(INT_MAX);
+    PlayTabCue(this, TAB_GRUNTZ, "GAME_GOOCOOKING1");
     return 1;
 }
 
@@ -2902,8 +2529,7 @@ i32 CStatusBarMgr::PlaceCursorTarget(i32 unitIndex, i32 activateCamera) {
     i32 playerIndex = g_curPlayer;
     if (g_gameReg->m_triggerMgr->ResetCell(playerIndex, unitIndex, 0, 0) != 0) {
 
-        CGrunt* entry =
-            g_gameReg->m_triggerMgr->m_units[unitIndex + playerIndex * TM_UNITS_PER_PLAYER];
+        CGrunt* entry = g_gameReg->m_triggerMgr->UnitAt(playerIndex, unitIndex);
         if (entry != NULL) {
             (static_cast<CPlay*>(g_gameReg->m_curState))
                 ->ResetGoals(
@@ -2950,7 +2576,7 @@ void CStatusBarMgr::Reset() {
 RVA(0x00105990, 0x3b4)
 void CStatusBarMgr::UpdateRezConveyorStatusBar() {
     for (i32 i = 0; i < 3; i++) {
-        i64* clock = &m_conveyorSlots[i].m_last;
+        ClockInterval* clock = &m_conveyorSlots[i].m_clock;
         SbiHlRowState state = static_cast<SbiHlRowState>(m_conveyorSlots[i].m_state);
         switch (state) {
             case HLROW_IDLE_CYCLE:
@@ -2959,12 +2585,13 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                 }
                 break;
             case HLROW_RAMP_UP_LOW:
-                if (static_cast<i64>(g_frameTime) - clock[0] >= clock[1]) {
+                if (clock->Expired()) {
                     if (++m_conveyorSlots[i].m_counter >= 0x12) {
                         m_conveyorSlots[i].m_counter = 0x12;
                         m_conveyorSlots[i].m_state = IDX(HLROW_HOLD_LOW);
-                        clock[1] = g_buteMgr.GetDword("StatusBar", "ConveyorBeltHoldDelay", 0x1f4);
-                        clock[0] = static_cast<u32>(g_frameTime);
+                        clock->Start(
+                            g_buteMgr.GetDword("StatusBar", "ConveyorBeltHoldDelay", 0x1f4)
+                        );
                         UpdateFallingItemStatusBar(
                             m_machineItem,
                             m_machineItemRect.left + 0xc,
@@ -2975,7 +2602,7 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                 }
                 break;
             case HLROW_RAMP_DOWN_LOW:
-                if (static_cast<i64>(g_frameTime) - clock[0] >= clock[1]) {
+                if (clock->Expired()) {
                     if (--m_conveyorSlots[i].m_counter < 0xa) {
                         m_conveyorSlots[i].m_state = IDX(HLROW_OFF);
                         m_conveyorSlots[i].m_counter = 1;
@@ -2983,22 +2610,22 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                 }
                 break;
             case HLROW_RAMP_UP_HIGH:
-                if (static_cast<i64>(g_frameTime) - clock[0] >= clock[1]) {
+                if (clock->Expired()) {
                     if (++m_conveyorSlots[i].m_counter >= 0x18) {
                         m_conveyorSlots[i].m_counter = 0x18;
                         m_conveyorSlots[i].m_state = IDX(HLROW_HOLD_HIGH);
-                        clock[1] =
-                            g_buteMgr.GetDword("StatusBar", "ConveyorBeltHoldInDelay", 0x1f4);
-                        clock[0] = static_cast<u32>(g_frameTime);
+                        clock->Start(
+                            g_buteMgr.GetDword("StatusBar", "ConveyorBeltHoldInDelay", 0x1f4)
+                        );
                         m_machinePhase = BELT_FALLING_OFF;
-                        m_beltClock.m_interval =
-                            g_buteMgr.GetDword("StatusBar", "FallingItemDelay", 0x32);
-                        m_beltClock.m_last = static_cast<u32>(g_frameTime);
+                        m_beltClock.Start(
+                            g_buteMgr.GetDword("StatusBar", "FallingItemDelay", 0x32)
+                        );
                     }
                 }
                 break;
             case HLROW_RAMP_DOWN_HIGH:
-                if (static_cast<i64>(g_frameTime) - clock[0] >= clock[1]) {
+                if (clock->Expired()) {
                     if (--m_conveyorSlots[i].m_counter < 0x13) {
                         m_conveyorSlots[i].m_state = IDX(HLROW_OFF);
                         m_conveyorSlots[i].m_counter = 1;
@@ -3006,48 +2633,14 @@ void CStatusBarMgr::UpdateRezConveyorStatusBar() {
                 }
                 break;
             case HLROW_HOLD_HIGH:
-                if (static_cast<i64>(g_frameTime) - clock[0] >= clock[1]) {
-                    if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
-                        SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-                        if (registry->m_silentMode == false) {
-                            SoundCue* found = registry->FindCue("GAME_REZBELTRETURN");
-                            if (found) {
-                                b32 soundEnabled = g_soundEnabled;
-                                i32 volumePercent = g_soundVolumePercent;
-                                if (soundEnabled != false) {
-                                    SoundCue* p = found;
-                                    if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
-                                        >= static_cast<u32>(p->m_replayDelayMs)) {
-                                        p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                                        p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                                    }
-                                }
-                            }
-                        }
-                    }
+                if (clock->Expired()) {
+                    PlayTabCue(this, TAB_RESOURCE, "GAME_REZBELTRETURN");
                     m_conveyorSlots[i].m_state = IDX(HLROW_RAMP_DOWN_HIGH);
                 }
                 break;
             case HLROW_HOLD_LOW:
-                if (static_cast<i64>(g_frameTime) - clock[0] >= clock[1]) {
-                    if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
-                        SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-                        if (registry->m_silentMode == false) {
-                            SoundCue* found = registry->FindCue("GAME_REZBELTBACKUP");
-                            if (found) {
-                                b32 soundEnabled = g_soundEnabled;
-                                i32 volumePercent = g_soundVolumePercent;
-                                if (soundEnabled != false) {
-                                    SoundCue* p = found;
-                                    if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
-                                        >= static_cast<u32>(p->m_replayDelayMs)) {
-                                        p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                                        p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                                    }
-                                }
-                            }
-                        }
-                    }
+                if (clock->Expired()) {
+                    PlayTabCue(this, TAB_RESOURCE, "GAME_REZBELTBACKUP");
                     m_conveyorSlots[i].m_state = IDX(HLROW_RAMP_DOWN_LOW);
                 }
                 break;
@@ -3064,7 +2657,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
     CSbiMachineRow* leftMachine = &m_leftMachine;
     switch (static_cast<SbiMachineState>(rightMachine->m_state)) {
         case MACHINE_RIGHT_RUNNING:
-            if (static_cast<i64>(g_frameTime) - rightMachine->m_last >= rightMachine->m_interval) {
+            if (rightMachine->m_clock.Expired()) {
                 if (++rightMachine->m_counter > 0x34) {
                     SetRightRezMachineAnimation(
                         0x2b,
@@ -3072,20 +2665,20 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                         g_buteMgr.GetDword("StatusBar", "RightMachineRunningDelay", 0x7d)
                     );
                 } else {
-                    rightMachine->m_interval =
-                        g_buteMgr.GetDword("StatusBar", "RightMachineRunningDelay", 0x7d);
-                    rightMachine->m_last = static_cast<u32>(g_frameTime);
+                    rightMachine->m_clock.Start(
+                        g_buteMgr.GetDword("StatusBar", "RightMachineRunningDelay", 0x7d)
+                    );
                 }
             }
             break;
         case MACHINE_RIGHT_SPEWING:
-            if (static_cast<i64>(g_frameTime) - rightMachine->m_last >= rightMachine->m_interval) {
+            if (rightMachine->m_clock.Expired()) {
                 if (++rightMachine->m_counter > 0x44) {
                     SetRightRezMachineAnimation(0x2b, MACHINE_STOPPED, INT_MAX);
                 } else {
-                    rightMachine->m_interval =
-                        g_buteMgr.GetDword("StatusBar", "RightMachineSpewingDelay", 0x7d);
-                    rightMachine->m_last = static_cast<u32>(g_frameTime);
+                    rightMachine->m_clock.Start(
+                        g_buteMgr.GetDword("StatusBar", "RightMachineSpewingDelay", 0x7d)
+                    );
                 }
             }
             break;
@@ -3093,7 +2686,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
 
     switch (static_cast<SbiMachineState>(leftMachine->m_state)) {
         case MACHINE_SNOOZING:
-            if (static_cast<i64>(g_frameTime) - leftMachine->m_last >= leftMachine->m_interval) {
+            if (leftMachine->m_clock.Expired()) {
                 if (++leftMachine->m_counter > 8) {
                     SetLeftRezMachineAnimation(
                         1,
@@ -3101,14 +2694,14 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                         g_buteMgr.GetDword("StatusBar", "LeftMachineSnoozingDelay", 0x64)
                     );
                 } else {
-                    leftMachine->m_interval =
-                        g_buteMgr.GetDword("StatusBar", "LeftMachineSnoozingDelay", 0x64);
-                    leftMachine->m_last = static_cast<u32>(g_frameTime);
+                    leftMachine->m_clock.Start(
+                        g_buteMgr.GetDword("StatusBar", "LeftMachineSnoozingDelay", 0x64)
+                    );
                 }
             }
             break;
         case MACHINE_WAKING:
-            if (static_cast<i64>(g_frameTime) - leftMachine->m_last >= leftMachine->m_interval) {
+            if (leftMachine->m_clock.Expired()) {
                 if (++leftMachine->m_counter > 0x13) {
                     SetLeftRezMachineAnimation(
                         0x14,
@@ -3125,36 +2718,17 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                         m_conveyorSlots[i].m_value = 1;
                     }
                     m_machinePhase = BELT_IN_MACHINE;
-                    i64* belt = &m_beltClock.m_last;
-                    belt[1] = g_buteMgr.GetDword("StatusBar", "NextItemDelay", 0x64);
-                    belt[0] = static_cast<u32>(g_frameTime);
-                    if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
-                        SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-                        if (registry->m_silentMode == false) {
-                            SoundCue* found = registry->FindCue("GAME_REZMACHINE");
-                            if (found) {
-                                b32 soundEnabled = g_soundEnabled;
-                                i32 volumePercent = g_soundVolumePercent;
-                                if (soundEnabled != false) {
-                                    SoundCue* p = found;
-                                    if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
-                                        >= static_cast<u32>(p->m_replayDelayMs)) {
-                                        p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                                        p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    m_beltClock.Start(g_buteMgr.GetDword("StatusBar", "NextItemDelay", 0x64));
+                    PlayTabCue(this, TAB_RESOURCE, "GAME_REZMACHINE");
                 } else {
-                    leftMachine->m_interval =
-                        g_buteMgr.GetDword("StatusBar", "LeftMachineWakingDelay", 0x64);
-                    leftMachine->m_last = static_cast<u32>(g_frameTime);
+                    leftMachine->m_clock.Start(
+                        g_buteMgr.GetDword("StatusBar", "LeftMachineWakingDelay", 0x64)
+                    );
                 }
             }
             break;
         case MACHINE_TURNING_WHEEL:
-            if (static_cast<i64>(g_frameTime) - leftMachine->m_last >= leftMachine->m_interval) {
+            if (leftMachine->m_clock.Expired()) {
                 if (++leftMachine->m_counter > 0x1d) {
                     SetLeftRezMachineAnimation(
                         0x14,
@@ -3162,14 +2736,14 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                         g_buteMgr.GetDword("StatusBar", "LeftMachineTurningWheelDelay", 0x64)
                     );
                 } else {
-                    leftMachine->m_interval =
-                        g_buteMgr.GetDword("StatusBar", "LeftMachineTurningWheelDelay", 0x64);
-                    leftMachine->m_last = static_cast<u32>(g_frameTime);
+                    leftMachine->m_clock.Start(
+                        g_buteMgr.GetDword("StatusBar", "LeftMachineTurningWheelDelay", 0x64)
+                    );
                 }
             }
             break;
         case MACHINE_LEVER:
-            if (static_cast<i64>(g_frameTime) - leftMachine->m_last >= leftMachine->m_interval) {
+            if (leftMachine->m_clock.Expired()) {
                 if (++leftMachine->m_counter == MACHINE_LEVER_RELEASE_FRAME) {
                     b32 found = false;
                     i32 r = 3;
@@ -3193,49 +2767,15 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                     if (found) {
                         m_conveyorSlots[col].m_state = IDX(HLROW_RAMP_UP_HIGH);
                         m_conveyorSlots[col].m_counter = 0x13;
-                        if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
-                            SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-                            if (registry->m_silentMode == false) {
-                                SoundCue* fnd = registry->FindCue("GAME_REZBELTRETRACT");
-                                if (fnd) {
-                                    b32 soundEnabled = g_soundEnabled;
-                                    i32 volumePercent = g_soundVolumePercent;
-                                    if (soundEnabled != false) {
-                                        SoundCue* p = fnd;
-                                        if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
-                                            >= static_cast<u32>(p->m_replayDelayMs)) {
-                                            p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                                            p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        PlayTabCue(this, TAB_RESOURCE, "GAME_REZBELTRETRACT");
                     } else {
                         m_conveyorSlots[col].m_state = IDX(HLROW_RAMP_UP_LOW);
                         m_conveyorSlots[col].m_counter = 0xa;
-                        if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
-                            SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-                            if (registry->m_silentMode == false) {
-                                SoundCue* fnd = registry->FindCue("GAME_REZBELTDROP");
-                                if (fnd) {
-                                    b32 soundEnabled = g_soundEnabled;
-                                    i32 volumePercent = g_soundVolumePercent;
-                                    if (soundEnabled != false) {
-                                        SoundCue* p = fnd;
-                                        if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
-                                            >= static_cast<u32>(p->m_replayDelayMs)) {
-                                            p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                                            p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        PlayTabCue(this, TAB_RESOURCE, "GAME_REZBELTDROP");
                     }
-                    i64* rowClock = &m_conveyorSlots[col].m_last;
-                    rowClock[1] = g_buteMgr.GetDword("StatusBar", "ConveyorBeltDelay", 0x64);
-                    rowClock[0] = static_cast<u32>(g_frameTime);
+                    m_conveyorSlots[col].m_clock.Start(
+                        g_buteMgr.GetDword("StatusBar", "ConveyorBeltDelay", 0x64)
+                    );
                 }
                 if (leftMachine->m_counter > 0x2a) {
                     SetLeftRezMachineAnimation(
@@ -3244,9 +2784,9 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                         g_buteMgr.GetDword("StatusBar", "LeftMachineSnoozingDelay", 0x64)
                     );
                 } else {
-                    leftMachine->m_interval =
-                        g_buteMgr.GetDword("StatusBar", "LeftMachineLeverDelay", 0x64);
-                    leftMachine->m_last = static_cast<u32>(g_frameTime);
+                    leftMachine->m_clock.Start(
+                        g_buteMgr.GetDword("StatusBar", "LeftMachineLeverDelay", 0x64)
+                    );
                 }
             }
             break;
@@ -3289,11 +2829,9 @@ void CStatusBarMgr::SetLeftRezMachineAnimation(
     SbiMachineState state,
     i32 frameDelayMs
 ) {
-    i64* clock = &m_leftMachine.m_last;
     m_leftMachine.m_counter = initialFrame;
     m_leftMachine.m_state = IDX(state);
-    clock[1] = static_cast<u32>(frameDelayMs);
-    clock[0] = g_frameTime;
+    m_leftMachine.m_clock.Start(frameDelayMs);
 }
 
 RVA(0x00106740, 0x3b)
@@ -3302,11 +2840,9 @@ void CStatusBarMgr::SetRightRezMachineAnimation(
     SbiMachineState state,
     i32 frameDelayMs
 ) {
-    i64* clock = &m_rightMachine.m_last;
     m_rightMachine.m_counter = initialFrame;
     m_rightMachine.m_state = IDX(state);
-    clock[1] = static_cast<u32>(frameDelayMs);
-    clock[0] = g_frameTime;
+    m_rightMachine.m_clock.Start(frameDelayMs);
 }
 
 RVA(0x00106790, 0x62)
@@ -3443,111 +2979,66 @@ i32 CStatusBarMgr::SetHlCell(i32 row, i32 handle, i32 group) {
     return 1;
 }
 
-// @early-stop
 RVA(0x00106bb0, 0x7d8)
 void CStatusBarMgr::LoadChipMachineConfig() {
-    i32 rectFlag = 0;
     i32 refreshFlag = 0;
-    i64* belt = &m_beltClock.m_last;
+    i32 rectFlag = 0;
+    ClockInterval* belt = &m_beltClock;
     switch (m_machinePhase) {
         case BELT_IN_MACHINE:
-            if (static_cast<i64>(g_frameTime) - belt[0] >= belt[1]) {
+            if (belt->Expired()) {
                 OFFSET_RECT_X_EDGES(
                     m_machineItemRect,
                     g_buteMgr.GetInt("StatusBar", "NextItemSpeed", 2),
                     g_buteMgr.GetInt("StatusBar", "NextItemSpeed", 2)
                 );
                 rectFlag = 1;
-                belt[1] = g_buteMgr.GetDword("StatusBar", "NextItemDelay", 0x64);
-                belt[0] = static_cast<u32>(g_frameTime);
+                belt->Start(g_buteMgr.GetDword("StatusBar", "NextItemDelay", 0x64));
             }
             if (m_machineItemRect.left >= 0x6d) {
                 m_machineItemRect.left = 0x6d;
                 m_machineItemRect.right = 0x84;
                 rectFlag = 1;
                 m_machinePhase = BELT_SPEWING;
-                belt[1] = g_buteMgr.GetDword("StatusBar", "NextItemInMachineTime", 0x7d0);
-                belt[0] = static_cast<u32>(g_frameTime);
+                belt->Start(g_buteMgr.GetDword("StatusBar", "NextItemInMachineTime", 0x7d0));
             }
             refreshFlag = 1;
             break;
         case BELT_SPEWING:
-            if (static_cast<i64>(g_frameTime) - belt[0] >= belt[1]) {
+            if (belt->Expired()) {
                 SetRightRezMachineAnimation(
                     0x35,
                     MACHINE_RIGHT_SPEWING,
                     g_buteMgr.GetDword("StatusBar", "RightMachineSpewingDelay", 0x7d)
                 );
                 m_machinePhase = BELT_DROP_START;
-                belt[1] = g_buteMgr.GetDword("StatusBar", "NextItemWaitTime", 0x1f4);
-                belt[0] = static_cast<u32>(g_frameTime);
+                belt->Start(g_buteMgr.GetDword("StatusBar", "NextItemWaitTime", 0x1f4));
             }
             break;
         case BELT_DROP_START:
-            if (static_cast<i64>(g_frameTime) - belt[0] >= belt[1]) {
+            if (belt->Expired()) {
                 m_machinePhase = BELT_FALLING;
-                if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
-                    SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-                    if (registry->m_silentMode == false) {
-                        SoundCue* found = NULL;
-                        CMapStringToPtr* map = &registry->m_cues;
-                        MapLookup(*map, "GAME_CHIPFALLOUT", found);
-                        if (found) {
-                            b32 soundEnabled = g_soundEnabled;
-                            i32 volumePercent = g_soundVolumePercent;
-                            if (soundEnabled != false) {
-                                SoundCue* p = found;
-                                if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
-                                    >= static_cast<u32>(p->m_replayDelayMs)) {
-                                    p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                                    p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                                }
-                            }
-                        }
-                    }
-                }
-                belt[1] = g_buteMgr.GetDword("StatusBar", "FallingItemDelay", 0x32);
-                belt[0] = static_cast<u32>(g_frameTime);
+                PlayTabCue(this, TAB_RESOURCE, "GAME_CHIPFALLOUT");
+                belt->Start(g_buteMgr.GetDword("StatusBar", "FallingItemDelay", 0x32));
             }
             break;
         case BELT_FALLING:
-            if (static_cast<i64>(g_frameTime) - belt[0] >= belt[1]) {
+            if (belt->Expired()) {
                 OFFSET_RECT_Y_EDGES(
                     m_machineItemRect,
                     g_buteMgr.GetInt("StatusBar", "FallingItemSpeed", 2),
                     g_buteMgr.GetInt("StatusBar", "FallingItemSpeed", 2)
                 );
                 rectFlag = 1;
-                belt[1] = g_buteMgr.GetDword("StatusBar", "FallingItemDelay", 0x32);
-                belt[0] = static_cast<u32>(g_frameTime);
+                belt->Start(g_buteMgr.GetDword("StatusBar", "FallingItemDelay", 0x32));
             }
             if (m_machineItemRect.bottom >= 0x11c) {
                 m_machineItemRect.bottom = 0x11c;
                 m_machineItemRect.top = 0x104;
                 rectFlag = 1;
-                if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
-                    SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-                    if (registry->m_silentMode == false) {
-                        SoundCue* found = NULL;
-                        CMapStringToPtr* map = &registry->m_cues;
-                        MapLookup(*map, "GAME_CHIPLAND", found);
-                        if (found) {
-                            b32 soundEnabled = g_soundEnabled;
-                            i32 volumePercent = g_soundVolumePercent;
-                            if (soundEnabled != false) {
-                                SoundCue* p = found;
-                                if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
-                                    >= static_cast<u32>(p->m_replayDelayMs)) {
-                                    p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                                    p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                                }
-                            }
-                        }
-                    }
-                }
+                PlayTabCue(this, TAB_RESOURCE, "GAME_CHIPLAND");
                 m_machinePhase = BELT_TRAVELLING;
-                belt[1] = g_buteMgr.GetDword("StatusBar", "NextItemDelay", 0x64);
-                belt[0] = static_cast<u32>(g_frameTime);
+                belt->Start(g_buteMgr.GetDword("StatusBar", "NextItemDelay", 0x64));
                 PickupType activeItem = static_cast<PickupType>(m_machineItem);
                 if (activeItem >= PICKUP_BRICKZ_FIRST) {
                     m_machineItemTargetX = 0x6d;
@@ -3560,15 +3051,14 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             refreshFlag = 1;
             break;
         case BELT_TRAVELLING:
-            if (static_cast<i64>(g_frameTime) - belt[0] >= belt[1]) {
+            if (belt->Expired()) {
                 OFFSET_RECT_X_EDGES(
                     m_machineItemRect,
                     -g_buteMgr.GetInt("StatusBar", "NextItemSpeed", 2),
                     -g_buteMgr.GetInt("StatusBar", "NextItemSpeed", 2)
                 );
                 rectFlag = 1;
-                belt[1] = g_buteMgr.GetDword("StatusBar", "NextItemDelay", 0x64);
-                belt[0] = static_cast<u32>(g_frameTime);
+                belt->Start(g_buteMgr.GetDword("StatusBar", "NextItemDelay", 0x64));
             }
             if (m_machineItemRect.left <= m_machineItemTargetX) {
                 m_machineItemRect.left = m_machineItemTargetX;
@@ -3585,15 +3075,14 @@ void CStatusBarMgr::LoadChipMachineConfig() {
             refreshFlag = 1;
             break;
         case BELT_FALLING_OFF: {
-            if (static_cast<i64>(g_frameTime) - belt[0] >= belt[1]) {
+            if (belt->Expired()) {
                 OFFSET_RECT_Y_EDGES(
                     m_machineItemRect,
                     g_buteMgr.GetInt("StatusBar", "FallingItemSpeed", 2),
                     g_buteMgr.GetInt("StatusBar", "(FallingItemSpeed", 2)
                 );
                 rectFlag = 1;
-                belt[1] = g_buteMgr.GetDword("StatusBar", "FallingItemDelay", 0x32);
-                belt[0] = static_cast<u32>(g_frameTime);
+                belt->Start(g_buteMgr.GetDword("StatusBar", "FallingItemDelay", 0x32));
             }
             i32 col;
             PickupType item2 = static_cast<PickupType>(m_machineItem);
@@ -3610,26 +3099,7 @@ void CStatusBarMgr::LoadChipMachineConfig() {
                 }
             }
             if (m_machineItemRect.top >= row * 0x20 + 0x13e) {
-                if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
-                    SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-                    if (registry->m_silentMode == false) {
-                        SoundCue* found = NULL;
-                        CMapStringToPtr* map = &registry->m_cues;
-                        MapLookup(*map, "GAME_CHIPLAND", found);
-                        if (found) {
-                            b32 soundEnabled = g_soundEnabled;
-                            i32 volumePercent = g_soundVolumePercent;
-                            if (soundEnabled != false) {
-                                SoundCue* p = found;
-                                if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
-                                    >= static_cast<u32>(p->m_replayDelayMs)) {
-                                    p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                                    p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                                }
-                            }
-                        }
-                    }
-                }
+                PlayTabCue(this, TAB_RESOURCE, "GAME_CHIPLAND");
                 SetHlCell(col, m_machineItem, row);
                 StartChipMachineCycle();
             }
@@ -3664,9 +3134,7 @@ RVA(0x00107590, 0xc4)
 i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 item, i32 x, i32 y) {
     m_fallingItem = item;
     m_fallActive = FALLING_ITEM_DESCENDING;
-    i64* clock = &m_fallClock.m_last;
-    clock[1] = g_buteMgr.GetDword("StatusBar", "FallingItemDelay", 0x32);
-    clock[0] = static_cast<u32>(g_frameTime);
+    m_fallClock.Start(g_buteMgr.GetDword("StatusBar", "FallingItemDelay", 0x32));
     CSBI_ImageSet* n = m_fallingItemSprite;
     i32 l = x - 0xc;
     i32 t = y - 0xc;
@@ -3704,35 +3172,16 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
             m_fallingItem = 0;
         } else if (m_fallingItemRect.bottom >= 0x1bf) {
             if (m_fallActive != FALLING_ITEM_GRINDING) {
-                if (m_activeTab == TAB_RESOURCE && m_position != STATUSBAR_HIDDEN) {
-                    SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-                    if (registry->m_silentMode == false) {
-                        SoundCue* found = NULL;
-                        CMapStringToPtr* map = &registry->m_cues;
-                        MapLookup(*map, "GAME_REZGRINDING", found);
-                        if (found) {
-                            b32 soundEnabled = g_soundEnabled;
-                            i32 volumePercent = g_soundVolumePercent;
-                            if (soundEnabled != false) {
-                                SoundCue* p = found;
-                                if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
-                                    >= static_cast<u32>(p->m_replayDelayMs)) {
-                                    p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                                    p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                                }
-                            }
-                        }
-                    }
-                }
+                PlayTabCue(this, TAB_RESOURCE, "GAME_REZGRINDING");
                 m_fallActive = FALLING_ITEM_GRINDING;
             }
             delay = g_buteMgr.GetDword("StatusBar", "FallingItemShredderDelay", 0x64);
             speed = g_buteMgr.GetInt("StatusBar", "FallingItemShredderSpeed", 2);
         }
 
-        i64* clock = &m_fallClock.m_last;
-        i64 d = static_cast<i64>(g_frameTime) - clock[0];
-        if (d >= clock[1]) {
+        ClockInterval* clock = &m_fallClock;
+        i64 d = static_cast<i64>(g_frameTime) - clock->m_start;
+        if (d >= clock->m_interval) {
             OFFSET_RECT_Y_EDGES(m_fallingItemRect, speed, speed);
             CSBI_ImageSet* w = m_fallingItemSprite;
             if (w) {
@@ -3745,8 +3194,7 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
                 rc.right = m_fallingItemRect.right + sx;
                 w->m_rect = rc;
             }
-            clock[1] = delay;
-            clock[0] = g_frameTime;
+            clock->Start(delay);
         }
         stepped = 1;
     }
@@ -3840,21 +3288,12 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
         }
     }
 
-    for (i32 j = 0; j < m_rewardQueue.GetSize(); j++) {
-        Coord* p = static_cast<Coord*>(m_rewardQueue.GetData()[j]);
-        if (p) {
-            g_coordPool.Push(p);
-        }
-    }
-    m_rewardQueue.SetSize(0, -1);
-    i64* clock = &m_reserved2b0.m_last;
-    clock[0] = 0;
-    clock[1] = 0;
+    ClearRewardQueue();
+    ClockInterval* clock = &m_reserved2b0;
+    clock->m_start = 0;
+    clock->m_interval = 0;
     m_hlBusy = false;
-    if (m_retabNotify) {
-        delete m_retabNotify;
-        m_retabNotify = NULL;
-    }
+    SAFE_DELETE(m_retabNotify);
     ExitMode();
     m_observerTabAvailable = false;
     m_destructButtonLocked = false;
@@ -3865,7 +3304,7 @@ i32 CStatusBarMgr::StartChipMachineCycle() {
     PickupType result;
     if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
         if (m_rewardQueue.GetSize() > 0) {
-            Coord* p = static_cast<Coord*>(m_rewardQueue.GetData()[0]);
+            Coord* p = GetReward(0);
             result = static_cast<PickupType>(p->m_x);
             g_coordPool.Push(p);
             m_rewardQueue.RemoveAt(0, 1);
@@ -4056,16 +3495,16 @@ i32 CStatusBarMgr::SerializeDispatch(
         }
     }
 
-    SerializeClockPair(s, mode, &m_beltClock.m_last);
-    SerializeClockPair(s, mode, &m_fallClock.m_last);
-    SerializeClockPair(s, mode, &m_rightMachine.m_last);
-    SerializeClockPair(s, mode, &m_leftMachine.m_last);
-    SerializeClockPair(s, mode, &m_destructWarningClock.m_last);
+    SerializeClockPair(s, mode, &m_beltClock);
+    SerializeClockPair(s, mode, &m_fallClock);
+    SerializeClockPair(s, mode, &m_rightMachine.m_clock);
+    SerializeClockPair(s, mode, &m_leftMachine.m_clock);
+    SerializeClockPair(s, mode, &m_destructWarningClock);
 
     CSbiSlot* p = m_slots;
     i32 n = 5;
     do {
-        SerializeClockPair(s, mode, &p->m_startTime);
+        SerializeClockPair(s, mode, &p->m_clock);
         p++;
         n--;
     } while (n != 0);
@@ -4073,7 +3512,7 @@ i32 CStatusBarMgr::SerializeDispatch(
     n = 3;
     CSbiHlRow* r = m_conveyorSlots;
     do {
-        SerializeClockPair(s, mode, &r->m_last);
+        SerializeClockPair(s, mode, &r->m_clock);
         r++;
         n--;
     } while (n != 0);
@@ -4083,15 +3522,15 @@ i32 CStatusBarMgr::SerializeDispatch(
     do {
         n = 4;
         do {
-            SerializeClockPair(s, mode, &g->m_last);
+            SerializeClockPair(s, mode, &g->m_clock);
             g++;
             n--;
         } while (n != 0);
         outer--;
     } while (outer != 0);
 
-    SerializeClockPair(s, mode, &m_reserved2a0.m_last);
-    SerializeClockPair(s, mode, &m_reserved2b0.m_last);
+    SerializeClockPair(s, mode, &m_reserved2a0);
+    SerializeClockPair(s, mode, &m_reserved2b0);
     if (mode == SERIAL_LOAD && m_position != STATUSBAR_HIDDEN) {
         BuildStatusBarTabs();
     }
@@ -4267,122 +3706,98 @@ i32 CStatusBarMgr::Serialize(CFileMemBase* s) {
     i32 ptrCount = m_rewardQueue.GetSize();
     s->Write(&ptrCount, sizeof(ptrCount));
     for (u32 n = 0; n < static_cast<u32>(ptrCount); n++) {
-        s->Write(m_rewardQueue.GetData()[n], 8);
+        s->Write(GetReward(n), sizeof(Coord));
     }
     return 1;
 }
 
 RVA(0x00109520, 0x44c)
-i32 CStatusBarMgr::Deserialize(CFileMemBase* s) {
-    if (s == NULL) {
+i32 CStatusBarMgr::Deserialize(CFileMemBase* ar) {
+    if (ar == NULL) {
         return 0;
     }
-    CDDrawSurfaceMgr* gm = g_gameReg->m_world;
-    if (gm == NULL) {
+    CDDrawSurfaceMgr* dir = g_gameReg->m_world;
+    if (dir == NULL) {
         return 0;
     }
     m_destructWarningSound = NULL;
     ResetWidgets(false);
 
-    s->Read(this, 4);
-    s->Read(&m_restorePosition, sizeof(m_restorePosition));
+    ar->Read(this, 4);
+    ar->Read(&m_restorePosition, sizeof(m_restorePosition));
 
-    g_serialCounter++;
+    SERIALREF(m_barSprite);
 
-    i32 seq;
-    s->Read(&seq, sizeof(seq));
-
-    CGameObject* obj = NULL;
-    CWwdSpriteObject* barSprite;
-    if (MapLookupById(gm->m_childGroup->m_registeredGameObjectsById, seq, obj) == false) {
-        barSprite = NULL;
-    } else if (obj == NULL) {
-        barSprite = NULL;
-    } else {
-        barSprite =
-            (obj->GetClassId() == CLASSID_SERIALREF) ? static_cast<CWwdSpriteObject*>(obj) : NULL;
-    }
-    m_barSprite = barSprite;
-    if (barSprite == NULL && seq != 0) {
-        return 0;
-    }
-
-    s->Read(&m_barRect.left, sizeof(m_barRect));
-    s->Read(&m_redrawFrames, sizeof(m_redrawFrames));
-    s->Read(&m_barPosition.m_x, sizeof(m_barPosition.m_x));
-    s->Read(&m_barPosition.m_y, sizeof(m_barPosition.m_y));
-    s->Read(&m_itemKind, sizeof(m_itemKind));
-    s->Read(&m_tabCycle, sizeof(m_tabCycle));
+    ar->Read(&m_barRect.left, sizeof(m_barRect));
+    ar->Read(&m_redrawFrames, sizeof(m_redrawFrames));
+    ar->Read(&m_barPosition.m_x, sizeof(m_barPosition.m_x));
+    ar->Read(&m_barPosition.m_y, sizeof(m_barPosition.m_y));
+    ar->Read(&m_itemKind, sizeof(m_itemKind));
+    ar->Read(&m_tabCycle, sizeof(m_tabCycle));
 
     StatusSampleMode* p = m_statFlags;
     for (i32 i = 0; i < TM_UNITS_PER_PLAYER; i++) {
-        s->Read(p, sizeof(*p));
+        ar->Read(p, sizeof(*p));
         p += 1;
     }
 
-    s->Read(&m_reserved34c, sizeof(m_reserved34c));
-    s->Read(&m_reserved350, sizeof(m_reserved350));
-    s->Read(&m_chatBoxDisabled, sizeof(m_chatBoxDisabled));
-    s->Read(&m_activeSlot, sizeof(m_activeSlot));
-    s->Read(&m_pendingHlRow, sizeof(m_pendingHlRow));
-    s->Read(&m_activeTab, sizeof(m_activeTab));
-    s->Read(&m_gruntWellLevel, sizeof(m_gruntWellLevel));
-    s->Read(&m_gruntWellTargetLevel, sizeof(m_gruntWellTargetLevel));
-    s->Read(&m_machineItemTargetX, sizeof(m_machineItemTargetX));
-    s->Read(&m_rezTick, sizeof(m_rezTick));
-    s->Read(&m_rezActive, sizeof(m_rezActive));
-    s->Read(&m_reserved544, sizeof(m_reserved544));
-    s->Read(&m_fallingItemRect, sizeof(m_fallingItemRect));
-    s->Read(&m_machineItemRect, sizeof(m_machineItemRect));
-    s->Read(&m_hlBusy, sizeof(m_hlBusy));
-    s->Read(&m_levelOverlayActive, sizeof(m_levelOverlayActive));
-    s->Read(&m_quitConfirmationActive, sizeof(m_quitConfirmationActive));
-    s->Read(&m_machinePhase, sizeof(m_machinePhase));
-    s->Read(&m_machineItem, sizeof(m_machineItem));
-    s->Read(&m_fallActive, sizeof(m_fallActive));
-    s->Read(&m_fallingItem, sizeof(m_fallingItem));
-    s->Read(&m_rightMachine, 4);
-    s->Read(&m_rightMachine.m_value, sizeof(m_rightMachine.m_value));
-    s->Read(&m_leftMachine, 4);
-    s->Read(&m_leftMachine.m_value, sizeof(m_leftMachine.m_value));
-    s->Read(&m_destructWarningState, sizeof(m_destructWarningState));
-    s->Read(&m_destructButtonFrame, sizeof(m_destructButtonFrame));
-    s->Read(&m_destructButtonLocked, sizeof(m_destructButtonLocked));
-    s->Read(&m_observerTabAvailable, sizeof(m_observerTabAvailable));
+    ar->Read(&m_reserved34c, sizeof(m_reserved34c));
+    ar->Read(&m_reserved350, sizeof(m_reserved350));
+    ar->Read(&m_chatBoxDisabled, sizeof(m_chatBoxDisabled));
+    ar->Read(&m_activeSlot, sizeof(m_activeSlot));
+    ar->Read(&m_pendingHlRow, sizeof(m_pendingHlRow));
+    ar->Read(&m_activeTab, sizeof(m_activeTab));
+    ar->Read(&m_gruntWellLevel, sizeof(m_gruntWellLevel));
+    ar->Read(&m_gruntWellTargetLevel, sizeof(m_gruntWellTargetLevel));
+    ar->Read(&m_machineItemTargetX, sizeof(m_machineItemTargetX));
+    ar->Read(&m_rezTick, sizeof(m_rezTick));
+    ar->Read(&m_rezActive, sizeof(m_rezActive));
+    ar->Read(&m_reserved544, sizeof(m_reserved544));
+    ar->Read(&m_fallingItemRect, sizeof(m_fallingItemRect));
+    ar->Read(&m_machineItemRect, sizeof(m_machineItemRect));
+    ar->Read(&m_hlBusy, sizeof(m_hlBusy));
+    ar->Read(&m_levelOverlayActive, sizeof(m_levelOverlayActive));
+    ar->Read(&m_quitConfirmationActive, sizeof(m_quitConfirmationActive));
+    ar->Read(&m_machinePhase, sizeof(m_machinePhase));
+    ar->Read(&m_machineItem, sizeof(m_machineItem));
+    ar->Read(&m_fallActive, sizeof(m_fallActive));
+    ar->Read(&m_fallingItem, sizeof(m_fallingItem));
+    ar->Read(&m_rightMachine, 4);
+    ar->Read(&m_rightMachine.m_value, sizeof(m_rightMachine.m_value));
+    ar->Read(&m_leftMachine, 4);
+    ar->Read(&m_leftMachine.m_value, sizeof(m_leftMachine.m_value));
+    ar->Read(&m_destructWarningState, sizeof(m_destructWarningState));
+    ar->Read(&m_destructButtonFrame, sizeof(m_destructButtonFrame));
+    ar->Read(&m_destructButtonLocked, sizeof(m_destructButtonLocked));
+    ar->Read(&m_observerTabAvailable, sizeof(m_observerTabAvailable));
 
     for (i32 j = 0; j < 5; j++) {
-        s->Read(&m_slots[j].m_state, sizeof(m_slots[j].m_state));
-        s->Read(&m_slots[j].m_value, sizeof(m_slots[j].m_value));
+        ar->Read(&m_slots[j].m_state, sizeof(m_slots[j].m_state));
+        ar->Read(&m_slots[j].m_value, sizeof(m_slots[j].m_value));
     }
     for (i32 k = 0; k < 3; k++) {
-        s->Read(&m_conveyorSlots[k].m_state, sizeof(m_conveyorSlots[k].m_state));
-        s->Read(&m_conveyorSlots[k].m_value, sizeof(m_conveyorSlots[k].m_value));
+        ar->Read(&m_conveyorSlots[k].m_state, sizeof(m_conveyorSlots[k].m_state));
+        ar->Read(&m_conveyorSlots[k].m_value, sizeof(m_conveyorSlots[k].m_value));
     }
     CSbiHlRow* nb = m_resourceSlots;
-    seq = 3;
+    i32 seq = 3;
     do {
         for (i32 m = 0; m < 4; m++) {
-            s->Read(&nb[m].m_state, sizeof(nb[m].m_state));
-            s->Read(&nb[m].m_value, sizeof(nb[m].m_value));
+            ar->Read(&nb[m].m_state, sizeof(nb[m].m_state));
+            ar->Read(&nb[m].m_value, sizeof(nb[m].m_value));
         }
         nb += 4;
     } while (--seq);
 
-    for (i32 t = 0; t < m_rewardQueue.GetSize(); t++) {
-        Coord* pp = static_cast<Coord*>(m_rewardQueue.GetData()[t]);
-        if (pp) {
-            g_coordPool.Push(pp);
-        }
-    }
-    m_rewardQueue.SetSize(0, -1);
+    ClearRewardQueue();
 
     i32 cnt;
-    s->Read(&cnt, sizeof(cnt));
+    ar->Read(&cnt, sizeof(cnt));
     m_rewardQueue.SetSize(cnt, -1);
     for (u32 n = 0; n < static_cast<u32>(cnt); n++) {
         Coord* node = g_coordPool.Pop();
-        s->Read(node, 8);
-        m_rewardQueue.GetData()[n] = node;
+        ar->Read(node, sizeof(Coord));
+        m_rewardQueue.SetAt(n, node);
     }
     return 1;
 }
@@ -4422,8 +3837,7 @@ i32 CWarpStoneFly::Init(CStatusBarMgr* owner, i32 srcX, i32 srcY, WarpStoneFragm
     m_owner = owner;
 
     i32 n = IDX(fragment) + 1;
-    CDDrawWorker* spr = g_gameReg->m_world->FindWorker("GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE");
-    CImage* frame = spr ? spr->GetAt(n) : NULL;
+    CImage* frame = g_gameReg->m_world->FindFrame("GAME_STATUSBAR_TABZ_GAMETAB_WARPSTONE", n);
     m_sprite = frame;
     if (frame == NULL) {
 
@@ -4490,20 +3904,9 @@ i32 CWarpStoneFly::SerializeDispatch(
             arc->Read(&m_velocityScale, sizeof(m_velocityScale));
             arc->Read(&m_direction.m_x, sizeof(m_direction.m_x));
             arc->Read(&m_direction.m_y, sizeof(m_direction.m_y));
-            g_serialCounter++;
-
             char name[SERIAL_NAME_LEN];
             i32 index;
-            arc->Read(name, SERIAL_NAME_LEN);
-            arc->Read(&index, sizeof(index));
-            if (strlen(name) != 0) {
-                i32 i = index;
-                CDDrawWorker* rec = lvl->FindWorker(name);
-                CImage* r = rec != NULL ? rec->GetAt(i) : NULL;
-                m_sprite = r;
-            } else {
-                m_sprite = NULL;
-            }
+            SERIAL_READ_FRAME(arc, lvl, name, index, m_sprite);
             return 1;
         }
         case SERIAL_SAVE: {
@@ -4541,17 +3944,14 @@ i32 CWarpStoneFly::Tick(u32 dt) {
     if (cellX == m_target.m_x && cellY == m_target.m_y) {
         i32 mode = m_arrivalMode;
         CByteArray* arr = &g_gameReg->m_triggerMgr->m_byteArr;
-        arr->SetAtGrow(arr->GetSize(), static_cast<BYTE>(mode));
+        arr->Add(static_cast<BYTE>(mode));
         m_owner->m_hlBusy = false;
         if (m_owner->m_position != STATUSBAR_HIDDEN && m_owner->m_activeTab == TAB_GAME) {
             m_owner->ResetWidgets(false);
             m_owner->TryActivate();
         }
         CStatusBarMgr* owner = m_owner;
-        if (owner->m_retabNotify != NULL) {
-            delete owner->m_retabNotify;
-            owner->m_retabNotify = NULL;
-        }
+        SAFE_DELETE(owner->m_retabNotify);
         return 1;
     }
 
@@ -4602,237 +4002,221 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     }
 
     CDDrawSurfaceMgr* w = m_world;
-    CRect viewport = w->m_level->m_viewportRect;
-    CPoint center = viewport.CenterPoint();
+    i32 cx;
+    i32 cy;
+    {
+        RECT src = w->m_level->m_viewportRect;
+        RECT dst;
+        CopyRect(&dst, &src);
+        cx = dst.left + (dst.right - dst.left) / 2;
+        cy = dst.top + (dst.bottom - dst.top) / 2;
+    }
 
     if (m_quitConfirmationActive != false) {
-        center -= CPoint(0x5e, 0x3c);
+        cx -= 0x5e;
+        cy -= 0x3c;
 
-        CSBI_Image* areYouSure = new CSBI_Image;
-        if (!areYouSure->SetupImage(
-                this,
-                w,
-                SBICMD_DIALOG_FRAME,
-                TAB_DIALOG,
-                MakeRect(center.x, center.y, center.x + 0xbc, center.y + 0x79),
-                "GAME_STATUSBAR_TABZ_DIALOG_AREYOUSURE",
-                -1,
-                0
-            )) {
-            delete areYouSure;
-            return 0;
-        }
+        CSBI_Image* areYouSure;
+        NEW_STATUS_BAR_ITEM(
+            areYouSure,
+            CSBI_Image,
+            w,
+            SBICMD_DIALOG_FRAME,
+            TAB_DIALOG,
+            MakeRect(cx, cy, cx + 0xbc, cy + 0x79),
+            "GAME_STATUSBAR_TABZ_DIALOG_AREYOUSURE",
+            -1,
+            0
+        );
         AddTabItem(6, areYouSure);
 
-        CSBI_MenuItem* yes = new CSBI_MenuItem;
-        if (!yes->SetupImage(
-                this,
-                w,
-                SBICMD_DIALOG_YES,
-                TAB_DIALOG,
-                MakeRect(center.x + 0x19, center.y + 0x4d, center.x + 0x4c, center.y + 0x64),
-                "GAME_STATUSBAR_TABZ_DIALOG_YES",
-                -1,
-                0
-            )) {
-            delete yes;
-            return 0;
-        }
+        CSBI_MenuItem* yes;
+        NEW_STATUS_BAR_ITEM(
+            yes,
+            CSBI_MenuItem,
+            w,
+            SBICMD_DIALOG_YES,
+            TAB_DIALOG,
+            MakeRect(cx + 0x19, cy + 0x4d, cx + 0x4c, cy + 0x64),
+            "GAME_STATUSBAR_TABZ_DIALOG_YES",
+            -1,
+            0
+        );
         AddTabItem(6, yes);
         m_confirmYesButton = yes;
 
-        CSBI_MenuItem* no = new CSBI_MenuItem;
-        if (!no->SetupImage(
-                this,
-                w,
-                SBICMD_DIALOG_NO,
-                TAB_DIALOG,
-                MakeRect(center.x + 0x6b, center.y + 0x4d, center.x + 0x9e, center.y + 0x64),
-                "GAME_STATUSBAR_TABZ_DIALOG_NO",
-                -1,
-                0
-            )) {
-            delete no;
-            return 0;
-        }
+        CSBI_MenuItem* no;
+        NEW_STATUS_BAR_ITEM(
+            no,
+            CSBI_MenuItem,
+            w,
+            SBICMD_DIALOG_NO,
+            TAB_DIALOG,
+            MakeRect(cx + 0x6b, cy + 0x4d, cx + 0x9e, cy + 0x64),
+            "GAME_STATUSBAR_TABZ_DIALOG_NO",
+            -1,
+            0
+        );
         AddTabItem(6, no);
         m_confirmNoButton = no;
         return 1;
     }
 
-    center -= CPoint(0x8e, 0x48);
+    cx -= 0x8e;
+    cy -= 0x48;
 
     i32 reason = IDX(g_gameReg->m_triggerMgr->m_finishReasonFrame);
 
-    CSBI_Image* dialog = new CSBI_Image;
-    if (!dialog->SetupImage(
-            this,
-            w,
-            SBICMD_DIALOG_FRAME,
-            TAB_DIALOG,
-            MakeRect(center.x, center.y, center.x + 0x11c, center.y + 0x90),
-            "GAME_STATUSBAR_TABZ_DIALOG",
-            -1,
-            0
-        )) {
-        delete dialog;
-        return 0;
-    }
+    CSBI_Image* dialog;
+    NEW_STATUS_BAR_ITEM(
+        dialog,
+        CSBI_Image,
+        w,
+        SBICMD_DIALOG_FRAME,
+        TAB_DIALOG,
+        MakeRect(cx, cy, cx + 0x11c, cy + 0x90),
+        "GAME_STATUSBAR_TABZ_DIALOG",
+        -1,
+        0
+    );
     AddTabItem(6, dialog);
 
     if (g_gameReg->m_triggerMgr->m_phase == FINISH_STATE_VICTORY) {
 
-        CSBI_ImageSet* status = new CSBI_ImageSet;
-        if (!status->SetupImage(
-                this,
-                w,
-                SBICMD_DIALOG_MISSION_STATUS,
-                TAB_DIALOG,
-                MakeRect(center.x, center.y + 0x17, center.x + 0x11b, center.y + 0x32),
-                "GAME_STATUSBAR_TABZ_DIALOG_MISSIONSTATUS",
-                1,
-                0
-            )) {
-            delete status;
-            return 0;
-        }
-        AddTabItem(6, status);
-
-        CSBI_ImageSet* rsn = new CSBI_ImageSet;
-        if (!rsn->SetupImage(
-                this,
-                w,
-                SBICMD_DIALOG_REASON,
-                TAB_DIALOG,
-                MakeRect(center.x + 0x12, center.y + 0x37, center.x + 0x101, center.y + 0x4c),
-                "GAME_STATUSBAR_TABZ_DIALOG_REASON",
-                reason,
-                0
-            )) {
-            delete rsn;
-            return 0;
-        }
-        AddTabItem(6, rsn);
-
-        if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-            CSBI_MenuItem* next = new CSBI_MenuItem;
-            if (!next->SetupImage(
-                    this,
-                    w,
-                    SBICMD_DIALOG_PRIMARY,
-                    TAB_DIALOG,
-                    MakeRect(center.x + 0x11, center.y + 0x5f, center.x + 0x80, center.y + 0x7a),
-                    "GAME_STATUSBAR_TABZ_DIALOG_PLAYNEXTLEVEL",
-                    -1,
-                    0
-                )) {
-                delete next;
-                return 0;
-            }
-            AddTabItem(6, next);
-            m_endPrimaryButton = next;
-
-            CSBI_MenuItem* quit = new CSBI_MenuItem;
-            if (!quit->SetupImage(
-                    this,
-                    w,
-                    SBICMD_DIALOG_SECONDARY,
-                    TAB_DIALOG,
-                    MakeRect(center.x + 0x8e, center.y + 0x5f, center.x + 0xfd, center.y + 0x7a),
-                    "GAME_STATUSBAR_TABZ_DIALOG_QUITTOMAINMENU",
-                    -1,
-                    0
-                )) {
-                delete quit;
-                return 0;
-            }
-            AddTabItem(6, quit);
-            m_endSecondaryButton = quit;
-        } else {
-            CSBI_MenuItem* statz = new CSBI_MenuItem;
-            if (!statz->SetupImage(
-                    this,
-                    w,
-                    SBICMD_DIALOG_SECONDARY,
-                    TAB_DIALOG,
-                    MakeRect(center.x + 0x55, center.y + 0x5f, center.x + 0xc4, center.y + 0x7a),
-                    "GAME_STATUSBAR_TABZ_DIALOG_STATZ",
-                    -1,
-                    0
-                )) {
-                delete statz;
-                return 0;
-            }
-            AddTabItem(6, statz);
-            m_endSecondaryButton = statz;
-        }
-        return 1;
-    }
-
-    CSBI_ImageSet* status = new CSBI_ImageSet;
-    if (!status->SetupImage(
-            this,
+        CSBI_ImageSet* status;
+        NEW_STATUS_BAR_ITEM(
+            status,
+            CSBI_ImageSet,
             w,
             SBICMD_DIALOG_MISSION_STATUS,
             TAB_DIALOG,
-            MakeRect(center.x, center.y + 0x17, center.x + 0x11b, center.y + 0x32),
+            MakeRect(cx, cy + 0x17, cx + 0x11b, cy + 0x32),
             "GAME_STATUSBAR_TABZ_DIALOG_MISSIONSTATUS",
-            2,
+            1,
             0
-        )) {
-        delete status;
-        return 0;
-    }
-    AddTabItem(6, status);
+        );
+        AddTabItem(6, status);
 
-    CSBI_ImageSet* rsn = new CSBI_ImageSet;
-    if (!rsn->SetupImage(
-            this,
+        CSBI_ImageSet* rsn;
+        NEW_STATUS_BAR_ITEM(
+            rsn,
+            CSBI_ImageSet,
             w,
             SBICMD_DIALOG_REASON,
             TAB_DIALOG,
-            MakeRect(center.x + 0x12, center.y + 0x37, center.x + 0x101, center.y + 0x4c),
+            MakeRect(cx + 0x12, cy + 0x37, cx + 0x101, cy + 0x4c),
             "GAME_STATUSBAR_TABZ_DIALOG_REASON",
             reason,
             0
-        )) {
-        delete rsn;
-        return 0;
-    }
-    AddTabItem(6, rsn);
+        );
+        AddTabItem(6, rsn);
 
-    if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
-        CSBI_MenuItem* replay = new CSBI_MenuItem;
-        if (!replay->SetupImage(
-                this,
+        if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+            CSBI_MenuItem* next;
+            NEW_STATUS_BAR_ITEM(
+                next,
+                CSBI_MenuItem,
                 w,
                 SBICMD_DIALOG_PRIMARY,
                 TAB_DIALOG,
-                MakeRect(center.x + 0x11, center.y + 0x5f, center.x + 0x80, center.y + 0x7a),
-                "GAME_STATUSBAR_TABZ_DIALOG_REPLAYLEVEL",
+                MakeRect(cx + 0x11, cy + 0x5f, cx + 0x80, cy + 0x7a),
+                "GAME_STATUSBAR_TABZ_DIALOG_PLAYNEXTLEVEL",
                 -1,
                 0
-            )) {
-            delete replay;
-            return 0;
-        }
-        AddTabItem(6, replay);
-        m_endPrimaryButton = replay;
+            );
+            AddTabItem(6, next);
+            m_endPrimaryButton = next;
 
-        CSBI_MenuItem* quit = new CSBI_MenuItem;
-        if (!quit->SetupImage(
-                this,
+            CSBI_MenuItem* quit;
+            NEW_STATUS_BAR_ITEM(
+                quit,
+                CSBI_MenuItem,
                 w,
                 SBICMD_DIALOG_SECONDARY,
                 TAB_DIALOG,
-                MakeRect(center.x + 0x8e, center.y + 0x5f, center.x + 0xfd, center.y + 0x7a),
+                MakeRect(cx + 0x8e, cy + 0x5f, cx + 0xfd, cy + 0x7a),
                 "GAME_STATUSBAR_TABZ_DIALOG_QUITTOMAINMENU",
                 -1,
                 0
-            )) {
-            delete quit;
-            return 0;
+            );
+            AddTabItem(6, quit);
+            m_endSecondaryButton = quit;
+            return 1;
+        } else {
+            CSBI_MenuItem* statz;
+            NEW_STATUS_BAR_ITEM(
+                statz,
+                CSBI_MenuItem,
+                w,
+                SBICMD_DIALOG_SECONDARY,
+                TAB_DIALOG,
+                MakeRect(cx + 0x55, cy + 0x5f, cx + 0xc4, cy + 0x7a),
+                "GAME_STATUSBAR_TABZ_DIALOG_STATZ",
+                -1,
+                0
+            );
+            AddTabItem(6, statz);
+            m_endSecondaryButton = statz;
+            return 1;
         }
+    }
+
+    CSBI_ImageSet* status;
+    NEW_STATUS_BAR_ITEM(
+        status,
+        CSBI_ImageSet,
+        w,
+        SBICMD_DIALOG_MISSION_STATUS,
+        TAB_DIALOG,
+        MakeRect(cx, cy + 0x17, cx + 0x11b, cy + 0x32),
+        "GAME_STATUSBAR_TABZ_DIALOG_MISSIONSTATUS",
+        2,
+        0
+    );
+    AddTabItem(6, status);
+
+    CSBI_ImageSet* rsn;
+    NEW_STATUS_BAR_ITEM(
+        rsn,
+        CSBI_ImageSet,
+        w,
+        SBICMD_DIALOG_REASON,
+        TAB_DIALOG,
+        MakeRect(cx + 0x12, cy + 0x37, cx + 0x101, cy + 0x4c),
+        "GAME_STATUSBAR_TABZ_DIALOG_REASON",
+        reason,
+        0
+    );
+    AddTabItem(6, rsn);
+
+    if (g_gameReg->m_gameMode == GAMEMODE_QUESTZ) {
+        CSBI_MenuItem* replay;
+        NEW_STATUS_BAR_ITEM(
+            replay,
+            CSBI_MenuItem,
+            w,
+            SBICMD_DIALOG_PRIMARY,
+            TAB_DIALOG,
+            MakeRect(cx + 0x11, cy + 0x5f, cx + 0x80, cy + 0x7a),
+            "GAME_STATUSBAR_TABZ_DIALOG_REPLAYLEVEL",
+            -1,
+            0
+        );
+        AddTabItem(6, replay);
+        m_endPrimaryButton = replay;
+
+        CSBI_MenuItem* quit;
+        NEW_STATUS_BAR_ITEM(
+            quit,
+            CSBI_MenuItem,
+            w,
+            SBICMD_DIALOG_SECONDARY,
+            TAB_DIALOG,
+            MakeRect(cx + 0x8e, cy + 0x5f, cx + 0xfd, cy + 0x7a),
+            "GAME_STATUSBAR_TABZ_DIALOG_QUITTOMAINMENU",
+            -1,
+            0
+        );
         AddTabItem(6, quit);
         m_endSecondaryButton = quit;
         return 1;
@@ -4847,56 +4231,50 @@ i32 CStatusBarMgr::BuildTabzDialog() {
     }
 
     if (count >= 2) {
-        CSBI_MenuItem* observe = new CSBI_MenuItem;
-        if (!observe->SetupImage(
-                this,
-                w,
-                SBICMD_DIALOG_PRIMARY,
-                TAB_DIALOG,
-                MakeRect(center.x + 0x11, center.y + 0x5f, center.x + 0x80, center.y + 0x7a),
-                "GAME_STATUSBAR_TABZ_DIALOG_OBSERVE",
-                -1,
-                0
-            )) {
-            delete observe;
-            return 0;
-        }
+        CSBI_MenuItem* observe;
+        NEW_STATUS_BAR_ITEM(
+            observe,
+            CSBI_MenuItem,
+            w,
+            SBICMD_DIALOG_PRIMARY,
+            TAB_DIALOG,
+            MakeRect(cx + 0x11, cy + 0x5f, cx + 0x80, cy + 0x7a),
+            "GAME_STATUSBAR_TABZ_DIALOG_OBSERVE",
+            -1,
+            0
+        );
         AddTabItem(6, observe);
         m_endPrimaryButton = observe;
         m_observerTabAvailable = true;
 
-        CSBI_MenuItem* statz = new CSBI_MenuItem;
-        if (!statz->SetupImage(
-                this,
-                w,
-                SBICMD_DIALOG_SECONDARY,
-                TAB_DIALOG,
-                MakeRect(center.x + 0x8e, center.y + 0x5f, center.x + 0xfd, center.y + 0x7a),
-                "GAME_STATUSBAR_TABZ_DIALOG_STATZ",
-                -1,
-                0
-            )) {
-            delete statz;
-            return 0;
-        }
+        CSBI_MenuItem* statz;
+        NEW_STATUS_BAR_ITEM(
+            statz,
+            CSBI_MenuItem,
+            w,
+            SBICMD_DIALOG_SECONDARY,
+            TAB_DIALOG,
+            MakeRect(cx + 0x8e, cy + 0x5f, cx + 0xfd, cy + 0x7a),
+            "GAME_STATUSBAR_TABZ_DIALOG_STATZ",
+            -1,
+            0
+        );
         AddTabItem(6, statz);
         m_endSecondaryButton = statz;
     } else {
         m_observerTabAvailable = false;
-        CSBI_MenuItem* statz = new CSBI_MenuItem;
-        if (!statz->SetupImage(
-                this,
-                w,
-                SBICMD_DIALOG_SECONDARY,
-                TAB_DIALOG,
-                MakeRect(center.x + 0x55, center.y + 0x5f, center.x + 0xc4, center.y + 0x7a),
-                "GAME_STATUSBAR_TABZ_DIALOG_STATZ",
-                -1,
-                0
-            )) {
-            delete statz;
-            return 0;
-        }
+        CSBI_MenuItem* statz;
+        NEW_STATUS_BAR_ITEM(
+            statz,
+            CSBI_MenuItem,
+            w,
+            SBICMD_DIALOG_SECONDARY,
+            TAB_DIALOG,
+            MakeRect(cx + 0x55, cy + 0x5f, cx + 0xc4, cy + 0x7a),
+            "GAME_STATUSBAR_TABZ_DIALOG_STATZ",
+            -1,
+            0
+        );
         AddTabItem(6, statz);
         m_endSecondaryButton = statz;
     }
@@ -4908,12 +4286,7 @@ void CStatusBarMgr::ExitMode() {
     if (m_levelOverlayActive == false) {
         return;
     }
-    POSITION n = m_tabLists[6].GetHeadPosition();
-    while (n) {
-        CStatusBarItem* cur = static_cast<CStatusBarItem*>(m_tabLists[6].GetNext(n));
-        delete cur;
-    }
-    m_tabLists[6].RemoveAll();
+    DELETE_STATUS_ITEMS(m_tabLists[6])
     b32 wasQuitConfirmation = m_quitConfirmationActive;
     m_endPrimaryButton = NULL;
     m_endSecondaryButton = NULL;
@@ -4942,18 +4315,15 @@ void CStatusBarMgr::UpdateDestructWarningAnimation() {
 
     switch (m_destructWarningState) {
         case DESTRUCT_WARNING_FORWARD: {
-            SbiClockPair* clock = &m_destructWarningClock;
-            i64 d = static_cast<i64>(g_frameTime) - clock->m_last;
+            ClockInterval* clock = &m_destructWarningClock;
+            i64 d = static_cast<i64>(g_frameTime) - clock->m_start;
             if (d >= clock->m_interval) {
                 m_destructButtonFrame = static_cast<DestructButtonFrame>(m_destructButtonFrame + 1);
                 if (m_destructButtonFrame >= DESTRUCT_FRAME_WARNING_LAST) {
                     m_destructButtonFrame = DESTRUCT_FRAME_WARNING_LAST;
                     m_destructWarningState = DESTRUCT_WARNING_REVERSE;
                 }
-                clock->m_interval = static_cast<u32>(
-                    g_buteMgr.GetDword("StatusBar", "DestructButtonWarningDelay", 0x32)
-                );
-                clock->m_last = static_cast<u32>(g_frameTime);
+                clock->Start(g_buteMgr.GetDword("StatusBar", "DestructButtonWarningDelay", 0x32));
                 CSBI_ImageSet* destructButtonImage = m_destructButtonImage;
                 if (destructButtonImage) {
                     destructButtonImage->Notify(IDX(m_destructButtonFrame));
@@ -4962,18 +4332,15 @@ void CStatusBarMgr::UpdateDestructWarningAnimation() {
             break;
         }
         case DESTRUCT_WARNING_REVERSE: {
-            SbiClockPair* clock = &m_destructWarningClock;
-            i64 d = static_cast<i64>(g_frameTime) - clock->m_last;
+            ClockInterval* clock = &m_destructWarningClock;
+            i64 d = static_cast<i64>(g_frameTime) - clock->m_start;
             if (d >= clock->m_interval) {
                 m_destructButtonFrame = static_cast<DestructButtonFrame>(m_destructButtonFrame - 1);
                 if (m_destructButtonFrame <= DESTRUCT_FRAME_WARNING_FIRST) {
                     m_destructButtonFrame = DESTRUCT_FRAME_WARNING_FIRST;
                     m_destructWarningState = DESTRUCT_WARNING_FORWARD;
                 }
-                clock->m_interval = static_cast<u32>(
-                    g_buteMgr.GetDword("StatusBar", "DestructButtonWarningDelay", 0x32)
-                );
-                clock->m_last = static_cast<u32>(g_frameTime);
+                clock->Start(g_buteMgr.GetDword("StatusBar", "DestructButtonWarningDelay", 0x32));
                 CSBI_ImageSet* destructButtonImage = m_destructButtonImage;
                 if (destructButtonImage) {
                     destructButtonImage->Notify(IDX(m_destructButtonFrame));
@@ -5022,24 +4389,7 @@ i32 CStatusBarMgr::SelectToolResource(StatusBarHighlightRow row) {
         i32 handle = m_resourceSlots[rowIndex].m_value;
         i32* slot = &m_resourceSlots[rowIndex].m_value;
         if ((static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(handle)) {
-            SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-            if (registry->m_silentMode == false) {
-                SoundCue* found = NULL;
-                CMapStringToPtr* map = &registry->m_cues;
-                MapLookup(*map, "GAME_TABHIGHLIGHT1", found);
-                if (found) {
-                    b32 soundEnabled = g_soundEnabled;
-                    i32 volumePercent = g_soundVolumePercent;
-                    if (soundEnabled != false) {
-                        SoundCue* p = found;
-                        if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
-                            >= static_cast<u32>(p->m_replayDelayMs)) {
-                            p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                            p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                        }
-                    }
-                }
-            }
+            HiCueTimed();
             m_pendingHlRow = row;
             *slot = 0;
             NotifyAllSlots();
@@ -5057,24 +4407,7 @@ i32 CStatusBarMgr::SelectToyResource(StatusBarHighlightRow row) {
         i32 handle = m_resourceSlots[rowIndex + 4].m_value;
         i32* slot = &m_resourceSlots[rowIndex + 4].m_value;
         if ((static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(handle)) {
-            SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-            if (registry->m_silentMode == false) {
-                SoundCue* found = NULL;
-                CMapStringToPtr* map = &registry->m_cues;
-                MapLookup(*map, "GAME_TABHIGHLIGHT1", found);
-                if (found) {
-                    b32 soundEnabled = g_soundEnabled;
-                    i32 volumePercent = g_soundVolumePercent;
-                    if (soundEnabled != false) {
-                        SoundCue* p = found;
-                        if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
-                            >= static_cast<u32>(p->m_replayDelayMs)) {
-                            p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                            p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                        }
-                    }
-                }
-            }
+            HiCueTimed();
             m_pendingHlRow = row;
             *slot = 0;
             NotifyAllSlots();
@@ -5092,24 +4425,7 @@ i32 CStatusBarMgr::SelectBrickResource(StatusBarHighlightRow row) {
         i32 handle = m_resourceSlots[rowIndex + 8].m_value;
         i32* slot = &m_resourceSlots[rowIndex + 8].m_value;
         if ((static_cast<CPlay*>(g_gameReg->m_curState))->SetCursorFrame(handle)) {
-            SoundCueRegistry* registry = g_gameReg->m_world->m_soundRegistry;
-            if (registry->m_silentMode == false) {
-                SoundCue* found = NULL;
-                CMapStringToPtr* map = &registry->m_cues;
-                MapLookup(*map, "GAME_TABHIGHLIGHT1", found);
-                if (found) {
-                    b32 soundEnabled = g_soundEnabled;
-                    i32 volumePercent = g_soundVolumePercent;
-                    if (soundEnabled != false) {
-                        SoundCue* p = found;
-                        if (g_soundCueTimeMs - static_cast<u32>(p->m_lastPlayTimeMs)
-                            >= static_cast<u32>(p->m_replayDelayMs)) {
-                            p->m_lastPlayTimeMs = g_soundCueTimeMs;
-                            p->m_sound->AcquireAndPlay(volumePercent, 0, 0, false);
-                        }
-                    }
-                }
-            }
+            HiCueTimed();
             m_pendingHlRow = row;
             *slot = 0;
             NotifyAllSlots();
@@ -5161,7 +4477,7 @@ i32 CStatusBarMgr::GetActiveValue() {
         return m_machineItem;
     }
     if (m_rewardQueue.GetSize() > 0 && m_rewardQueue.GetSize() > m_rezTick) {
-        return static_cast<Coord*>(m_rewardQueue.GetAt(m_rezTick))->m_x;
+        return GetReward(m_rezTick)->m_x;
     }
     return 0;
 }

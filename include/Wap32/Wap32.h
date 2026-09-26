@@ -111,6 +111,11 @@ public:
     void ResetFpsSampleWindow(i32 reset);
     void ResetFrameTiming();
 
+    b32 ToggleFrameGate() {
+        m_frameGate ^= 1;
+        return m_frameGate;
+    }
+
     void SpinWaitForMs(i32 ms);
     void SetFrameRate(i32 fps);
     i32 TrySetFrameRate(i32 fps);

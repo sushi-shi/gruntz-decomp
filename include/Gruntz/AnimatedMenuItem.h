@@ -53,7 +53,6 @@ public:
     virtual i32 UsesStateAnimations() OVERRIDE {
         return 1;
     }
-    RVA(0x001847a0, 0xa)
     virtual void SetFramePeriod(i32 framePeriodMs);
 
     CDDrawWorker* GetStateAnimation();
@@ -68,6 +67,7 @@ public:
     i32 m_framePeriodMs;
 };
 
+RVA(0x001847a0, 0xa)
 inline void CAnimatedMenuItem::SetFramePeriod(i32 framePeriodMs) {
     m_framePeriodMs = framePeriodMs;
 }

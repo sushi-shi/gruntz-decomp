@@ -3,7 +3,7 @@
 
 #include <rva.h>
 
-#include <Clock64.h>
+#include <Gruntz/ClockInterval.h>
 #include <Gruntz/CoordNode.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialArchive.h>
@@ -26,6 +26,15 @@ public:
     i32 Serialize(CFileMemBase* ar);
     i32 Deserialize(CFileMemBase* ar);
 
+    void Stop() {
+        m_stamp.m_intervalLo = 0;
+        m_stamp.m_intervalHi = 0;
+        m_countdown.m_intervalLo = 0;
+        m_countdown.m_intervalHi = 0;
+        m_running = false;
+        m_currentMs = 0;
+    }
+
     Coord m_basePosition;
     CDDrawWorker* m_sprite;
     b32 m_active;
@@ -35,12 +44,9 @@ public:
     CImage* m_frameSecTens;
     CImage* m_frameSecOnes;
     CImage* m_frameColon;
-    char m_pad24[0x28 - 0x24];
 
-    Clock64 m_baseTime;
-    Clock64 m_accum;
-    Clock64 m_startStamp;
-    Clock64 m_unusedStamp; // only 0/-1 sentinel writes; never read
+    ClockInterval m_countdown;
+    ClockInterval m_stamp; // interval: only 0/-1 sentinel writes; never read
     b32 m_running;
     i32 m_currentMs;
 };

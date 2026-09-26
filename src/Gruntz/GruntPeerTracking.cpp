@@ -17,6 +17,7 @@
 #include <Gruntz/GruntDirStatics.h>
 #include <Gruntz/GruntMovementMacros.h>
 #include <Gruntz/GruntPuddle.h>
+#include <Gruntz/GruntSpriteMacros.h>
 #include <Gruntz/GruntzMapMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/PickupType.h>
@@ -69,19 +70,20 @@ i32 CGrunt::StepToyerBehavior() {
         return 1;
     }
     if (GruntInRadius(p->m_playerIndex, p->m_unitIndex)) {
-        Coord targetTile;
-        p->GetScreenTile(&targetTile);
-        TileSwitch(targetTile.m_x, targetTile.m_y, 0, m_arrivalFlags, 1, 0);
+        CGameObject* b = p->m_object;
+        TileSwitch(
+            b->m_screenPosition.m_x >> TILE_SHIFT_PX,
+            b->m_screenPosition.m_y >> TILE_SHIFT_PX,
+            0,
+            m_arrivalFlags,
+            1,
+            0
+        );
         m_dwell = 0;
         if (m_blockedVoicePending == false) {
             return 1;
         }
-        CGruntzMgr* g = g_gameReg;
-        Coord voicePosition = m_object->ScreenPos();
-        CDDrawWorkerHost* r = g->m_world->m_level->m_mainPlane;
-        if (::PtInRect(&r->m_planeViewRect, voicePosition.m_x, voicePosition.m_y)) {
-            g->m_voiceManager->PlayVoice(this, 0x366, -1, 0, -1, -1);
-        }
+        PLAY_VOICE_IN_VIEW(0x366);
     }
     m_blockedVoicePending = false;
     return 1;

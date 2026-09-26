@@ -12,6 +12,7 @@
 #include <DDrawMgr/DDrawWorker.h>
 #include <DDrawMgr/DDrawWorkerRegistry.h>
 #include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/DrawSubWorkerInline.h>
 #include <DDrawMgr/LogicRecord.h>
 #include <DDrawMgr/LogicRecordRegistry.h>
 #include <DDrawMgr/WorkerLookup.h>
@@ -37,6 +38,7 @@
 #include <Rez/FrameClock.h>
 #include <Rez/RezArchiveDir.h>
 #include <Rez/RezArchiveEntry.h>
+#include <SafeDelete.h>
 #include <Utils/MapTyped.h>
 #include <Wap32/CoordUnset.h>
 #include <Wap32/Object.h>
@@ -87,7 +89,7 @@ i32 CWwdSpriteObject::SetAnimationByName(const char* name, i32 advanceImmediatel
 
 RVA(0x00150610, 0x41)
 i32 CWwdSpriteObject::SetSoundCueByName(const char* name) {
-    SoundCue* cue = MapFind<SoundCue>(OwnerMgr()->m_soundRegistry->m_cues, name);
+    SoundCue* cue = OwnerMgr()->m_soundRegistry->FindCue(name);
     if (cue == NULL) {
         return 0;
     }
@@ -299,7 +301,7 @@ i32 CWwdSpriteObject::ReadSpriteState(CFileMemBase* stream) {
 RVA(0x00150d60, 0x14d)
 i32 CGameObject::Setup(i32 x, i32 y, i32 sortKey, CLogicRecord* logicTemplate) {
     CResolveNode::SetPosition(x, y);
-    SetScreenPos(x, y);
+    SET_SCREEN_POS(this, x, y);
     m_sortKey = sortKey;
     m_spawnPosition.Set(x, y);
     CLogicRecord* record = m_logicRecord;
@@ -674,11 +676,10 @@ i32 CGameObject::ResolveLinkedObject(b32 gate) {
                 m_carrierId,
                 found
             )
-            != false) {
-            m_carrier = found;
-            return 1;
+            == false) {
+            found = NULL;
         }
-        m_carrier = NULL;
+        m_carrier = found;
         return 1;
     }
     m_carrier = NULL;
@@ -758,10 +759,7 @@ CLogicRecord::~CLogicRecord() {
         m_payload = NULL;
         m_payloadSize = 0;
     }
-    if (m_userLogic) {
-        delete m_userLogic;
-        m_userLogic = NULL;
-    }
+    SAFE_DELETE(m_userLogic);
     m_target = NULL;
 }
 
@@ -794,10 +792,7 @@ void CLogicRecord::Unload() {
         m_payload = NULL;
         m_payloadSize = 0;
     }
-    if (m_userLogic) {
-        delete m_userLogic;
-        m_userLogic = NULL;
-    }
+    SAFE_DELETE(m_userLogic);
     m_target = NULL;
 }
 
@@ -933,13 +928,7 @@ i32 CDDrawWorker::ValidateFramesFromArchive(CRezDir* tab) {
     i32 liveFrames = 0;
     i32 n = m_items.GetSize();
     for (i32 i = 0; i < n; i++) {
-        CImage* el;
-        if (this->ContainsFrame(i)) {
-            el = this->FrameAtUnchecked(i);
-        } else {
-            el = NULL;
-        }
-        if (el != NULL) {
+        if (GetAt(i) != NULL) {
             liveFrames++;
         }
     }

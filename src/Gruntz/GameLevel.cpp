@@ -112,21 +112,7 @@ void CGameLevel::ResetSpatialDefaults() {
 
 RVA(0x0015d1f0, 0x87)
 void CGameLevel::Unload() {
-    i32 i;
-    for (i = 0; i < m_planes.GetSize(); i++) {
-        CDDrawWorkerHost* child = static_cast<CDDrawWorkerHost*>(m_planes.GetData()[i]);
-        if (child) {
-            delete child;
-        }
-    }
-    m_planes.SetSize(0, -1);
-    for (i = 0; i < m_imageSets.GetSize(); i++) {
-        CTileImageSet* child = static_cast<CTileImageSet*>(m_imageSets.GetData()[i]);
-        if (child) {
-            delete child;
-        }
-    }
-    m_imageSets.SetSize(0, -1);
+    RELEASE_LEVEL_CHILDREN;
     m_viewportRect.left = COORD_UNSET;
     m_mainPlane = NULL;
     m_mainIndex = -1;
@@ -290,6 +276,8 @@ i32 CGameLevel::LoadFromSource(CRezItm* source) {
 RVA(0x0015d680, 0x71)
 void CGameLevel::ReleaseChildren() {
     RELEASE_LEVEL_CHILDREN;
+    m_mainPlane = NULL;
+    m_mainIndex = -1;
 }
 
 RVA(0x0015d700, 0x81)
@@ -640,7 +628,7 @@ i32 CGameLevel::DispatchMove(CGameObject* target, i32 destX, i32 destY, i32 move
             result = MoveClimbing(target, destX, destY, moveFlags);
             break;
         case MOVE_DIRECT:
-            SET_VECTOR2_COMPONENTS(target->m_screenPosition, destX, destY);
+            SET_SCREEN_POS(target, destX, destY);
             break;
     }
 
@@ -654,7 +642,7 @@ i32 CGameLevel::DispatchMove(CGameObject* target, i32 destX, i32 destY, i32 move
     if (objectFlags & 0x10) {
         result |= IDX(MOVE_RESULT_ON_CARRIER);
     }
-    if (COORD_EQUALS_COMPONENTS(target->m_screenPosition, prevX, prevY)) {
+    if (target->m_screenPosition.m_x == prevX && target->m_screenPosition.m_y == prevY) {
         result |= IDX(MOVE_RESULT_NO_POSITION_CHANGE);
     }
     return result;
@@ -730,7 +718,7 @@ rebracket:
     t->m_moveMode = MOVE_CLIMBING;
 
 commit:
-    t->SetScreenPos(destX, destY);
+    SET_SCREEN_POS(t, destX, destY);
     return result;
 }
 
@@ -790,7 +778,7 @@ i32 CGameLevel::MoveFalling(CGameObject* t, i32 destX, i32 destY, i32 moveFlags)
         }
     }
 
-    t->SetScreenPos(destX, destY);
+    SET_SCREEN_POS(t, destX, destY);
     return result;
 }
 
@@ -826,7 +814,7 @@ i32 CGameLevel::MoveRising(CGameObject* t, i32 destX, i32 destY, i32 moveFlags) 
         }
     }
 
-    t->SetScreenPos(destX, destY);
+    SET_SCREEN_POS(t, destX, destY);
     return result;
 }
 
@@ -868,7 +856,7 @@ i32 CGameLevel::MoveClimbing(CGameObject* t, i32 destX, i32 destY, i32 moveFlags
         result = StepAxisHi(t, coord, cursor, &coord, moveFlags);
     }
 
-    t->SetScreenPos(coord, cursor);
+    SET_SCREEN_POS(t, coord, cursor);
     return result;
 }
 
@@ -1399,8 +1387,7 @@ i32 CGameLevel::HoldMove(CGameObject* et, CGameObject* p, i32 destX, i32 destY, 
 
 RVA(0x0015ffe0, 0x99)
 i32 CGameLevel::ClampSpan(i32 x, i32 y, i32* outLo, i32* outHi) {
-    CLAMP_PIXEL_COMPONENT(x, m_mainPlane->m_planePixelSize.cx);
-    CLAMP_PIXEL_COMPONENT(y, m_mainPlane->m_planePixelSize.cy);
+    CLAMP_PIXEL_TO_PLANE(x, y, m_mainPlane);
     CDDrawWorkerHost* pl = m_mainPlane;
     i32 qx = x >> pl->m_tileShift.m_x;
     i32 alignedX = qx << pl->m_tileShift.m_x;
@@ -1810,9 +1797,9 @@ RVA(0x00161270, 0xb2)
 TileCollisionKind CGameLevel::AxisProbe(i32 coord, i32 limit) {
 
     i32 px = coord;
-    CLAMP_PIXEL_COMPONENT(px, m_mainPlane->m_planePixelSize.cx);
+    CLAMP_TO_EXTENT(px, m_mainPlane->m_planePixelSize.cx);
     i32 py = limit;
-    CLAMP_PIXEL_COMPONENT(py, m_mainPlane->m_planePixelSize.cy);
+    CLAMP_TO_EXTENT(py, m_mainPlane->m_planePixelSize.cy);
     CDDrawWorkerHost* pl = m_mainPlane;
     i32 qx = px >> pl->m_tileShift.m_x;
     i32 qy = py >> pl->m_tileShift.m_y;
@@ -1821,12 +1808,7 @@ TileCollisionKind CGameLevel::AxisProbe(i32 coord, i32 limit) {
     i32 idx = pl->m_tileRowOffsets[qy] + col;
     i32 subY = py - (qy << pl->m_tileShift.m_y);
     i32 tile = pl->m_tileHandles[idx];
-    if (tile == UNINIT_FILL || tile == s_tileClear) {
-        return TILEKIND_PASSABLE;
-    }
-    CTileImageSet* set =
-        static_cast<CTileImageSet*>(m_imageSets[tile & WWD_TILE_IMAGE_SET_INDEX_MASK]);
-    return set->GetCollisionAt(subX, subY);
+    return CollisionAtHandle(tile, subX, subY);
 }
 
 RVA_COMPGEN(0x00161350, 0x1e, ??_GCUniformTileImageSet@@UAEPAXI@Z)
